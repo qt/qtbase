@@ -59,7 +59,9 @@
 #include <private/qtcpsocket_p.h>
 #include "qsslkey.h"
 #include "qsslconfiguration_p.h"
-#include <private/qsslcontext_p.h>
+#ifndef QT_NO_OPENSSL
+#include <private/qsslcontext_openssl_p.h>
+#endif
 
 #include <QtCore/qstringlist.h>
 

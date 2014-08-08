@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
@@ -40,8 +40,8 @@
 ****************************************************************************/
 
 
-#ifndef QSSLCERTIFICATE_P_H
-#define QSSLCERTIFICATE_P_H
+#ifndef QSSLCERTIFICATE_OPENSSL_P_H
+#define QSSLCERTIFICATE_OPENSSL_P_H
 
 #include "qsslcertificate.h"
 
@@ -61,9 +61,17 @@
 #include <QtCore/qdatetime.h>
 #include <QtCore/qmap.h>
 
+#ifndef QT_NO_OPENSSL
 #include <openssl/x509.h>
+#else
+struct X509;
+struct X509_EXTENSION;
+struct ASN1_OBJECT;
+#endif
 
 QT_BEGIN_NAMESPACE
+
+// forward declaration
 
 class QSslCertificatePrivate
 {
@@ -76,8 +84,10 @@ public:
 
     ~QSslCertificatePrivate()
     {
+#ifndef QT_NO_OPENSSL
         if (x509)
             q_X509_free(x509);
+#endif
     }
 
     bool null;
@@ -102,6 +112,7 @@ public:
     static QList<QSslCertificate> certificatesFromDer(const QByteArray &der, int count = -1);
     static bool isBlacklisted(const QSslCertificate &certificate);
     static QSslCertificateExtension convertExtension(X509_EXTENSION *ext);
+    static QByteArray subjectInfoToString(QSslCertificate::SubjectInfo info);
 
     friend class QSslSocketBackendPrivate;
 
@@ -110,4 +121,4 @@ public:
 
 QT_END_NAMESPACE
 
-#endif
+#endif // QSSLCERTIFICATE_OPENSSL_P_H

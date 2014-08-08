@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Copyright (C) 2014 BlackBerry Limited. All rights reserved.
 ** Contact: http://www.qt-project.org/legal
 **
@@ -41,8 +41,8 @@
 ****************************************************************************/
 
 
-#ifndef QSSLCONTEXT_H
-#define QSSLCONTEXT_H
+#ifndef QSSLCONTEXT_OPENSSL_P_H
+#define QSSLCONTEXT_OPENSSL_P_H
 
 #include <QtCore/qvariant.h>
 #include <QtNetwork/qsslcertificate.h>
@@ -110,4 +110,4 @@ private:
 
 QT_END_NAMESPACE
 
-#endif // QSSLCONTEXT_H
+#endif // QSSLCONTEXT_OPENSSL_P_H

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
@@ -40,8 +40,8 @@
 ****************************************************************************/
 
 
-#ifndef QSSLKEY_P_H
-#define QSSLKEY_P_H
+#ifndef QSSLKEY_OPENSSL_P_H
+#define QSSLKEY_OPENSSL_P_H
 
 #include "qsslkey.h"
 
@@ -58,8 +58,14 @@
 
 #include "qsslsocket_p.h" // includes wincrypt.h
 
+#ifndef QT_NO_OPENSSL
 #include <openssl/rsa.h>
 #include <openssl/dsa.h>
+#else
+struct RSA;
+struct DSA;
+struct EVP_PKEY;
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -87,6 +93,10 @@ public:
     QByteArray pemFromDer(const QByteArray &der) const;
     QByteArray derFromPem(const QByteArray &pem) const;
 
+    int length() const;
+    QByteArray toPem(const QByteArray &passPhrase) const;
+    Qt::HANDLE handle() const;
+
     bool isNull;
     QSsl::KeyType type;
     QSsl::KeyAlgorithm algorithm;
@@ -102,4 +112,4 @@ private:
 
 QT_END_NAMESPACE
 
-#endif // QSSLKEY_P_H
+#endif // QSSLKEY_OPENSSL_P_H

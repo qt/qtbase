@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Copyright (C) 2014 BlackBerry Limited. All rights reserved.
 ** Contact: http://www.qt-project.org/legal
 **
@@ -44,7 +44,7 @@
 #include <QtNetwork/qsslsocket.h>
 #include <QtCore/qmutex.h>
 
-#include "private/qsslcontext_p.h"
+#include "private/qsslcontext_openssl_p.h"
 #include "private/qsslsocket_p.h"
 #include "private/qsslsocket_openssl_p.h"
 #include "private/qsslsocket_openssl_symbols_p.h"

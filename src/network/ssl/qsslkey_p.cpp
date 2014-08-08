@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
@@ -58,7 +58,6 @@
 
 #include "qsslkey.h"
 #include "qsslkey_p.h"
-#include "qsslsocket_openssl_symbols_p.h"
 #include "qsslsocket.h"
 #include "qsslsocket_p.h"
 
@@ -72,63 +71,13 @@
 QT_BEGIN_NAMESPACE
 
 /*!
+    \fn void QSslKeyPrivate::clear(bool deep)
     \internal
  */
-void QSslKeyPrivate::clear(bool deep)
-{
-    isNull = true;
-    if (!QSslSocket::supportsSsl())
-        return;
-    if (rsa) {
-        if (deep)
-            q_RSA_free(rsa);
-        rsa = 0;
-    }
-    if (dsa) {
-        if (deep)
-            q_DSA_free(dsa);
-        dsa = 0;
-    }
-    if (opaque) {
-        if (deep)
-            q_EVP_PKEY_free(opaque);
-        opaque = 0;
-    }
-}
-
-bool QSslKeyPrivate::fromEVP_PKEY(EVP_PKEY *pkey)
-{
-    if (pkey->type == EVP_PKEY_RSA) {
-        isNull = false;
-        algorithm = QSsl::Rsa;
-        type = QSsl::PrivateKey;
-
-        rsa = q_RSA_new();
-        memcpy(rsa, q_EVP_PKEY_get1_RSA(pkey), sizeof(RSA));
-
-        return true;
-    }
-    else if (pkey->type == EVP_PKEY_DSA) {
-        isNull = false;
-        algorithm = QSsl::Dsa;
-        type = QSsl::PrivateKey;
-
-        dsa = q_DSA_new();
-        memcpy(rsa, q_EVP_PKEY_get1_DSA(pkey), sizeof(DSA));
-
-        return true;
-    }
-    else {
-        // Unknown key type. This could be handled as opaque, but then
-        // we'd eventually leak memory since we wouldn't be able to free
-        // the underlying EVP_PKEY structure. For now, we won't support
-        // this.
-    }
-
-    return false;
-}
 
 /*!
+    \fn void QSslKeyPrivate::decodePem(const QByteArray &pem, const QByteArray &passPhrase,
+                               bool deepClear)
     \internal
 
     Allocates a new rsa or dsa struct and decodes \a pem into it
@@ -141,39 +90,6 @@ bool QSslKeyPrivate::fromEVP_PKEY(EVP_PKEY *pkey)
     If \a passPhrase is non-empty, it will be used for decrypting
     \a pem.
 */
-void QSslKeyPrivate::decodePem(const QByteArray &pem, const QByteArray &passPhrase,
-                               bool deepClear)
-{
-    if (pem.isEmpty())
-        return;
-
-    clear(deepClear);
-
-    if (!QSslSocket::supportsSsl())
-        return;
-
-    BIO *bio = q_BIO_new_mem_buf(const_cast<char *>(pem.data()), pem.size());
-    if (!bio)
-        return;
-
-    void *phrase = (void *)passPhrase.constData();
-
-    if (algorithm == QSsl::Rsa) {
-        RSA *result = (type == QSsl::PublicKey)
-            ? q_PEM_read_bio_RSA_PUBKEY(bio, &rsa, 0, phrase)
-            : q_PEM_read_bio_RSAPrivateKey(bio, &rsa, 0, phrase);
-        if (rsa && rsa == result)
-            isNull = false;
-    } else {
-        DSA *result = (type == QSsl::PublicKey)
-            ? q_PEM_read_bio_DSA_PUBKEY(bio, &dsa, 0, phrase)
-            : q_PEM_read_bio_DSAPrivateKey(bio, &dsa, 0, phrase);
-        if (dsa && dsa == result)
-            isNull = false;
-    }
-
-    q_BIO_free(bio);
-}
 
 /*!
     Constructs a null key.
@@ -378,11 +294,7 @@ void QSslKey::clear()
 */
 int QSslKey::length() const
 {
-    if (d->isNull || d->algorithm == QSsl::Opaque)
-        return -1;
-
-    return (d->algorithm == QSsl::Rsa)
-           ? q_BN_num_bits(d->rsa->n) : q_BN_num_bits(d->dsa->p);
+    return d->length();
 }
 
 /*!
@@ -422,51 +334,7 @@ QByteArray QSslKey::toDer(const QByteArray &passPhrase) const
 */
 QByteArray QSslKey::toPem(const QByteArray &passPhrase) const
 {
-    if (!QSslSocket::supportsSsl() || d->isNull || d->algorithm == QSsl::Opaque)
-        return QByteArray();
-
-    BIO *bio = q_BIO_new(q_BIO_s_mem());
-    if (!bio)
-        return QByteArray();
-
-    bool fail = false;
-
-    if (d->algorithm == QSsl::Rsa) {
-        if (d->type == QSsl::PublicKey) {
-            if (!q_PEM_write_bio_RSA_PUBKEY(bio, d->rsa))
-                fail = true;
-        } else {
-            if (!q_PEM_write_bio_RSAPrivateKey(
-                    bio, d->rsa,
-                    // ### the cipher should be selectable in the API:
-                    passPhrase.isEmpty() ? (const EVP_CIPHER *)0 : q_EVP_des_ede3_cbc(),
-                    (uchar *)passPhrase.data(), passPhrase.size(), 0, 0)) {
-                fail = true;
-            }
-        }
-    } else {
-        if (d->type == QSsl::PublicKey) {
-            if (!q_PEM_write_bio_DSA_PUBKEY(bio, d->dsa))
-                fail = true;
-        } else {
-            if (!q_PEM_write_bio_DSAPrivateKey(
-                    bio, d->dsa,
-                    // ### the cipher should be selectable in the API:
-                    passPhrase.isEmpty() ? (const EVP_CIPHER *)0 : q_EVP_des_ede3_cbc(),
-                    (uchar *)passPhrase.data(), passPhrase.size(), 0, 0)) {
-                fail = true;
-            }
-        }
-    }
-
-    QByteArray pem;
-    if (!fail) {
-        char *data;
-        long size = q_BIO_get_mem_data(bio, &data);
-        pem = QByteArray(data, size);
-    }
-    q_BIO_free(bio);
-    return pem;
+    return d->toPem(passPhrase);
 }
 
 /*!
@@ -482,16 +350,7 @@ QByteArray QSslKey::toPem(const QByteArray &passPhrase) const
 */
 Qt::HANDLE QSslKey::handle() const
 {
-    switch (d->algorithm) {
-    case QSsl::Opaque:
-        return Qt::HANDLE(d->opaque);
-    case QSsl::Rsa:
-        return Qt::HANDLE(d->rsa);
-    case QSsl::Dsa:
-        return Qt::HANDLE(d->dsa);
-    default:
-        return Qt::HANDLE(NULL);
-    }
+    return d->handle();
 }
 
 /*!

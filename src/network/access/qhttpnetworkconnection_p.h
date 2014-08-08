@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
@@ -73,7 +73,7 @@
 #ifndef QT_NO_HTTP
 
 #ifndef QT_NO_SSL
-#    include <private/qsslcontext_p.h>
+#    include <private/qsslcontext_openssl_p.h>
 #    include <private/qsslsocket_p.h>
 #    include <QtNetwork/qsslsocket.h>
 #    include <QtNetwork/qsslerror.h>
