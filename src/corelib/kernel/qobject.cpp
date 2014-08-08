@@ -3309,7 +3309,7 @@ bool QMetaObjectPrivate::disconnectHelper(QObjectPrivate::Connection *c,
     while (c) {
         if (c->receiver
             && (receiver == 0 || (c->receiver == receiver
-                           && (method_index < 0 || c->method() == method_index)
+                           && (method_index < 0 || (!c->isSlotObject && c->method() == method_index))
                            && (slot == 0 || (c->isSlotObject && c->slotObj->compare(slot)))))) {
             bool needToUnlock = false;
             QMutex *receiverMutex = 0;
@@ -3999,6 +3999,11 @@ void QObject::dumpObjectInfo()
                     c = c->nextConnectionList;
                     continue;
                 }
+                if (c->isSlotObject) {
+                    qDebug("          <functor or function pointer>");
+                    c = c->nextConnectionList;
+                    continue;
+                }
                 const QMetaObject *receiverMetaObject = c->receiver->metaObject();
                 const QMetaMethod method = receiverMetaObject->method(c->method());
                 qDebug("          --> %s::%s %s",
@@ -4017,11 +4022,15 @@ void QObject::dumpObjectInfo()
 
     if (d->senders) {
         for (QObjectPrivate::Connection *s = d->senders; s; s = s->next) {
-            const QMetaMethod slot = metaObject()->method(s->method());
-            qDebug("          <-- %s::%s  %s",
+            QByteArray slotName = QByteArrayLiteral("<unknown>");
+            if (!s->isSlotObject) {
+                const QMetaMethod slot = metaObject()->method(s->method());
+                slotName = slot.methodSignature();
+            }
+            qDebug("          <-- %s::%s %s",
                    s->sender->metaObject()->className(),
                    s->sender->objectName().isEmpty() ? "unnamed" : qPrintable(s->sender->objectName()),
-                   slot.methodSignature().constData());
+                   slotName.constData());
         }
     } else {
         qDebug("        <None>");

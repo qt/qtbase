@@ -149,7 +149,7 @@ public:
             //ref_ is 2 for the use in the internal lists, and for the use in QMetaObject::Connection
         }
         ~Connection();
-        int method() const { return method_offset + method_relative; }
+        int method() const { Q_ASSERT(!isSlotObject); return method_offset + method_relative; }
         void ref() { ref_.ref(); }
         void deref() {
             if (!ref_.deref()) {
