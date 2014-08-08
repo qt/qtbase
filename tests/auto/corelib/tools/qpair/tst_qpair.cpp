@@ -42,12 +42,13 @@
 #include <QtTest/QtTest>
 
 #include <QPair>
+#include <QSize>
 
 class tst_QPair : public QObject
 {
     Q_OBJECT
 private Q_SLOTS:
-    void dummy() {}
+    void testConstexpr();
 };
 
 class C { char _[4]; };
@@ -100,6 +101,20 @@ Q_STATIC_ASSERT(!QTypeInfo<QPairPP>::isStatic );
 Q_STATIC_ASSERT(!QTypeInfo<QPairPP>::isDummy  );
 Q_STATIC_ASSERT(!QTypeInfo<QPairPP>::isPointer);
 
+
+void tst_QPair::testConstexpr()
+{
+    Q_CONSTEXPR QPair<int, double> pID = qMakePair(0, 0.0);
+    Q_UNUSED(pID);
+
+    Q_CONSTEXPR QPair<double, double> pDD  = qMakePair(0.0, 0.0);
+    Q_CONSTEXPR QPair<double, double> pDD2 = qMakePair(0, 0.0);   // involes (rvalue) conversion ctor
+    Q_CONSTEXPR bool equal = pDD2 == pDD;
+    QVERIFY(equal);
+
+    Q_CONSTEXPR QPair<QSize, int> pSI = qMakePair(QSize(4, 5), 6);
+    Q_UNUSED(pSI);
+}
 
 QTEST_APPLESS_MAIN(tst_QPair)
 #include "tst_qpair.moc"

@@ -53,18 +53,18 @@ struct QPair
     typedef T1 first_type;
     typedef T2 second_type;
 
-    QPair() : first(), second() {}
-    QPair(const T1 &t1, const T2 &t2) : first(t1), second(t2) {}
+    Q_DECL_CONSTEXPR QPair() : first(), second() {}
+    Q_DECL_CONSTEXPR QPair(const T1 &t1, const T2 &t2) : first(t1), second(t2) {}
     // compiler-generated copy/move ctor/assignment operators are fine!
 
     template <typename TT1, typename TT2>
-    QPair(const QPair<TT1, TT2> &p) : first(p.first), second(p.second) {}
+    Q_DECL_CONSTEXPR QPair(const QPair<TT1, TT2> &p) : first(p.first), second(p.second) {}
     template <typename TT1, typename TT2>
     QPair &operator=(const QPair<TT1, TT2> &p)
     { first = p.first; second = p.second; return *this; }
 #ifdef Q_COMPILER_RVALUE_REFS
     template <typename TT1, typename TT2>
-    QPair(QPair<TT1, TT2> &&p) : first(std::move(p.first)), second(std::move(p.second)) {}
+    Q_DECL_CONSTEXPR QPair(QPair<TT1, TT2> &&p) : first(std::move(p.first)), second(std::move(p.second)) {}
     template <typename TT1, typename TT2>
     QPair &operator=(QPair<TT1, TT2> &&p)
     { first = std::move(p.first); second = std::move(p.second); return *this; }
@@ -80,39 +80,39 @@ template<class T1, class T2>
 class QTypeInfo<QPair<T1, T2> > : public QTypeInfoMerger<QPair<T1, T2>, T1, T2> {}; // Q_DECLARE_TYPEINFO
 
 template <class T1, class T2>
-Q_INLINE_TEMPLATE bool operator==(const QPair<T1, T2> &p1, const QPair<T1, T2> &p2)
+Q_DECL_CONSTEXPR Q_INLINE_TEMPLATE bool operator==(const QPair<T1, T2> &p1, const QPair<T1, T2> &p2)
 { return p1.first == p2.first && p1.second == p2.second; }
 
 template <class T1, class T2>
-Q_INLINE_TEMPLATE bool operator!=(const QPair<T1, T2> &p1, const QPair<T1, T2> &p2)
+Q_DECL_CONSTEXPR Q_INLINE_TEMPLATE bool operator!=(const QPair<T1, T2> &p1, const QPair<T1, T2> &p2)
 { return !(p1 == p2); }
 
 template <class T1, class T2>
-Q_INLINE_TEMPLATE bool operator<(const QPair<T1, T2> &p1, const QPair<T1, T2> &p2)
+Q_DECL_CONSTEXPR Q_INLINE_TEMPLATE bool operator<(const QPair<T1, T2> &p1, const QPair<T1, T2> &p2)
 {
     return p1.first < p2.first || (!(p2.first < p1.first) && p1.second < p2.second);
 }
 
 template <class T1, class T2>
-Q_INLINE_TEMPLATE bool operator>(const QPair<T1, T2> &p1, const QPair<T1, T2> &p2)
+Q_DECL_CONSTEXPR Q_INLINE_TEMPLATE bool operator>(const QPair<T1, T2> &p1, const QPair<T1, T2> &p2)
 {
     return p2 < p1;
 }
 
 template <class T1, class T2>
-Q_INLINE_TEMPLATE bool operator<=(const QPair<T1, T2> &p1, const QPair<T1, T2> &p2)
+Q_DECL_CONSTEXPR Q_INLINE_TEMPLATE bool operator<=(const QPair<T1, T2> &p1, const QPair<T1, T2> &p2)
 {
     return !(p2 < p1);
 }
 
 template <class T1, class T2>
-Q_INLINE_TEMPLATE bool operator>=(const QPair<T1, T2> &p1, const QPair<T1, T2> &p2)
+Q_DECL_CONSTEXPR Q_INLINE_TEMPLATE bool operator>=(const QPair<T1, T2> &p1, const QPair<T1, T2> &p2)
 {
     return !(p1 < p2);
 }
 
 template <class T1, class T2>
-Q_OUTOFLINE_TEMPLATE QPair<T1, T2> qMakePair(const T1 &x, const T2 &y)
+Q_DECL_CONSTEXPR Q_OUTOFLINE_TEMPLATE QPair<T1, T2> qMakePair(const T1 &x, const T2 &y)
 {
     return QPair<T1, T2>(x, y);
 }
