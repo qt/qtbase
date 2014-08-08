@@ -264,7 +264,6 @@ static void getFontDescription(CTFontDescriptorRef font, FontDescription *fd)
 
     if (styles) {
         if (CFNumberRef weightValue = (CFNumberRef) CFDictionaryGetValue(styles, kCTFontWeightTrait)) {
-            Q_ASSERT(CFNumberIsFloatType(weightValue));
             double normalizedWeight;
             if (CFNumberGetValue(weightValue, kCFNumberDoubleType, &normalizedWeight)) {
                 if (normalizedWeight >= 0.62)
@@ -280,7 +279,6 @@ static void getFontDescription(CTFontDescriptorRef font, FontDescription *fd)
             }
         }
         if (CFNumberRef italic = (CFNumberRef) CFDictionaryGetValue(styles, kCTFontSlantTrait)) {
-            Q_ASSERT(CFNumberIsFloatType(italic));
             double d;
             if (CFNumberGetValue(italic, kCFNumberDoubleType, &d)) {
                 if (d > 0.0)
