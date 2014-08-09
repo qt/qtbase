@@ -6627,7 +6627,6 @@ if [ "$CFG_SHARED" = "no" ]; then
     echo "WARNING: Using static linking will disable the use of dynamically"
     echo "loaded plugins. Make sure to import all needed static plugins,"
     echo "or compile needed modules into the library."
-    echo
 fi
 if [ "$CFG_OPENSSL" = "linked" ] && [ "$OPENSSL_LIBS" = "" ]; then
     echo
@@ -6642,13 +6641,14 @@ if [ "$CFG_JOURNALD" = "yes" ] || [ "$CFG_SLOG2" = "yes" ]; then
     echo "If your users intend on developing applications against this build,"
     echo "ensure that the IDEs they use either set QT_LOGGING_TO_CONSOLE to 1"
     echo "or the IDE is able to read the logged output from journald or slog2."
-    echo
 fi
 if [ "$CFG_XKBCOMMON" = "qt" ] && [ "$CFG_XKB_CONFIG_ROOT" = "not found" ]; then
+    echo
     echo "WARNING: Could not find XKB config root, use -xkb-config-root to set a path to "
     echo "XKB configuration data. This is required for keyboard input support."
 fi
 if [ "$CFG_QREAL" = double ] && [ "$CFG_ARCH" = arm ]; then
+    echo
     echo "NOTE: Qt is using double for qreal on this system. This is binary incompatible against Qt 5.1."
     echo "Configure with '-qreal float' to create a build that is binary compatible with 5.1."
 fi
