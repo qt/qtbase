@@ -106,12 +106,11 @@ QSslKey::QSslKey()
 */
 QByteArray QSslKeyPrivate::pemHeader() const
 {
-    // ### use QByteArray::fromRawData() instead
     if (type == QSsl::PublicKey)
-        return QByteArray("-----BEGIN PUBLIC KEY-----\n");
+        return QByteArrayLiteral("-----BEGIN PUBLIC KEY-----");
     else if (algorithm == QSsl::Rsa)
-        return QByteArray("-----BEGIN RSA PRIVATE KEY-----\n");
-    return QByteArray("-----BEGIN DSA PRIVATE KEY-----\n");
+        return QByteArrayLiteral("-----BEGIN RSA PRIVATE KEY-----");
+    return QByteArrayLiteral("-----BEGIN DSA PRIVATE KEY-----");
 }
 
 /*!
@@ -119,12 +118,11 @@ QByteArray QSslKeyPrivate::pemHeader() const
 */
 QByteArray QSslKeyPrivate::pemFooter() const
 {
-    // ### use QByteArray::fromRawData() instead
     if (type == QSsl::PublicKey)
-        return QByteArray("-----END PUBLIC KEY-----\n");
+        return QByteArrayLiteral("-----END PUBLIC KEY-----");
     else if (algorithm == QSsl::Rsa)
-        return QByteArray("-----END RSA PRIVATE KEY-----\n");
-    return QByteArray("-----END DSA PRIVATE KEY-----\n");
+        return QByteArrayLiteral("-----END RSA PRIVATE KEY-----");
+    return QByteArrayLiteral("-----END DSA PRIVATE KEY-----");
 }
 
 /*!
@@ -146,8 +144,8 @@ QByteArray QSslKeyPrivate::pemFromDer(const QByteArray &der) const
     if (rem)
         pem.append('\n'); // ###
 
-    pem.prepend(pemHeader());
-    pem.append(pemFooter());
+    pem.prepend(pemHeader() + '\n');
+    pem.append(pemFooter() + '\n');
 
     return pem;
 }
