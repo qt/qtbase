@@ -762,10 +762,11 @@ void QDataWidgetMapper::clearMapping()
 {
     Q_D(QDataWidgetMapper);
 
-    while (!d->widgetMap.isEmpty()) {
-        QWidget *w = d->widgetMap.takeLast().widget;
-        if (w)
-            w->removeEventFilter(d->delegate);
+    QList<QDataWidgetMapperPrivate::WidgetMapper> copy;
+    d->widgetMap.swap(copy); // a C++98 move
+    for (std::reverse_iterator<QList<QDataWidgetMapperPrivate::WidgetMapper>::const_iterator> it(copy.cend()), end(copy.cbegin()); it != end; ++it) {
+        if (it->widget)
+            it->widget->removeEventFilter(d->delegate);
     }
 }
 
