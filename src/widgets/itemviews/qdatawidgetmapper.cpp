@@ -50,6 +50,8 @@
 #include "private/qobject_p.h"
 #include "private/qabstractitemmodel_p.h"
 
+#include <iterator>
+
 QT_BEGIN_NAMESPACE
 
 class QDataWidgetMapperPrivate: public QObjectPrivate
@@ -92,8 +94,8 @@ public:
     inline void flipEventFilters(QAbstractItemDelegate *oldDelegate,
                                  QAbstractItemDelegate *newDelegate)
     {
-        for (int i = 0; i < widgetMap.count(); ++i) {
-            QWidget *w = widgetMap.at(i).widget;
+        for (QList<WidgetMapper>::const_iterator it = widgetMap.cbegin(), end = widgetMap.cend(); it != end; ++it) {
+            QWidget *w = it->widget;
             if (!w)
                 continue;
             w->removeEventFilter(oldDelegate);
@@ -132,9 +134,9 @@ public:
 
 int QDataWidgetMapperPrivate::findWidget(QWidget *w) const
 {
-    for (int i = 0; i < widgetMap.count(); ++i) {
-        if (widgetMap.at(i).widget == w)
-            return i;
+    for (QList<WidgetMapper>::const_iterator it = widgetMap.cbegin(), end = widgetMap.cend(); it != end; ++it) {
+        if (it->widget == w)
+            return int(std::distance(widgetMap.cbegin(), it));
     }
     return -1;
 }
@@ -171,8 +173,8 @@ void QDataWidgetMapperPrivate::populate(WidgetMapper &m)
 
 void QDataWidgetMapperPrivate::populate()
 {
-    for (int i = 0; i < widgetMap.count(); ++i)
-        populate(widgetMap[i]);
+    for (QList<WidgetMapper>::iterator it = widgetMap.begin(), end = widgetMap.end(); it != end; ++it)
+        populate(*it);
 }
 
 static bool qContainsIndex(const QModelIndex &idx, const QModelIndex &topLeft,
@@ -187,10 +189,9 @@ void QDataWidgetMapperPrivate::_q_dataChanged(const QModelIndex &topLeft, const 
     if (topLeft.parent() != rootIndex)
         return; // not in our hierarchy
 
-    for (int i = 0; i < widgetMap.count(); ++i) {
-        WidgetMapper &m = widgetMap[i];
-        if (qContainsIndex(m.currentIndex, topLeft, bottomRight))
-            populate(m);
+    for (QList<WidgetMapper>::iterator it = widgetMap.begin(), end = widgetMap.end(); it != end; ++it) {
+        if (qContainsIndex(it->currentIndex, topLeft, bottomRight))
+            populate(*it);
     }
 }
 
@@ -582,9 +583,9 @@ QWidget *QDataWidgetMapper::mappedWidgetAt(int section) const
 {
     Q_D(const QDataWidgetMapper);
 
-    for (int i = 0; i < d->widgetMap.count(); ++i) {
-        if (d->widgetMap.at(i).section == section)
-            return d->widgetMap.at(i).widget;
+    for (QList<QDataWidgetMapperPrivate::WidgetMapper>::const_iterator it = d->widgetMap.cbegin(), end = d->widgetMap.cend(); it != end; ++it) {
+        if (it->section == section)
+            return it->widget;
     }
 
     return 0;
@@ -621,9 +622,8 @@ bool QDataWidgetMapper::submit()
 {
     Q_D(QDataWidgetMapper);
 
-    for (int i = 0; i < d->widgetMap.count(); ++i) {
-        const QDataWidgetMapperPrivate::WidgetMapper &m = d->widgetMap.at(i);
-        if (!d->commit(m))
+    for (QList<QDataWidgetMapperPrivate::WidgetMapper>::const_iterator it = d->widgetMap.cbegin(), end = d->widgetMap.cend(); it != end; ++it) {
+        if (!d->commit(*it))
             return false;
     }
 
