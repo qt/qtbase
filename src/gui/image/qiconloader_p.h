@@ -62,6 +62,7 @@
 #include <private/qicon_p.h>
 #include <private/qfactoryloader_p.h>
 #include <QtCore/QHash>
+#include <QtCore/QVector>
 #include <QtCore/QTypeInfo>
 
 QT_BEGIN_NAMESPACE
@@ -146,13 +147,13 @@ public:
     QIconTheme(const QString &name);
     QIconTheme() : m_valid(false) {}
     QStringList parents() { return m_parents; }
-    QList <QIconDirInfo> keyList() { return m_keyList; }
+    QVector<QIconDirInfo> keyList() { return m_keyList; }
     QString contentDir() { return m_contentDir; }
     bool isValid() { return m_valid; }
 
 private:
     QString m_contentDir;
-    QList <QIconDirInfo> m_keyList;
+    QVector<QIconDirInfo> m_keyList;
     QStringList m_parents;
     bool m_valid;
 };
