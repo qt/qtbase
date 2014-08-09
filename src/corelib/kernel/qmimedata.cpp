@@ -53,6 +53,7 @@ struct QMimeDataStruct
     QString format;
     QVariant data;
 };
+Q_DECLARE_TYPEINFO(QMimeDataStruct, Q_MOVABLE_TYPE);
 
 class QMimeDataPrivate : public QObjectPrivate
 {
@@ -64,7 +65,7 @@ public:
 
     QVariant retrieveTypedData(const QString &format, QVariant::Type type) const;
 
-    QList<QMimeDataStruct> dataList;
+    QVector<QMimeDataStruct> dataList;
 };
 
 void QMimeDataPrivate::removeData(const QString &format)
