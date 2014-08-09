@@ -109,6 +109,12 @@ bool QSslKeyPrivate::fromEVP_PKEY(EVP_PKEY *pkey)
     return false;
 }
 
+void QSslKeyPrivate::decodeDer(const QByteArray &der, const QByteArray &passPhrase,
+                               bool deepClear)
+{
+    decodePem(pemFromDer(der), passPhrase, deepClear);
+}
+
 void QSslKeyPrivate::decodePem(const QByteArray &pem, const QByteArray &passPhrase,
                                bool deepClear)
 {

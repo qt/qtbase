@@ -189,9 +189,10 @@ QSslKey::QSslKey(const QByteArray &encoded, QSsl::KeyAlgorithm algorithm,
 {
     d->type = type;
     d->algorithm = algorithm;
-    d->decodePem((encoding == QSsl::Der)
-                 ? d->pemFromDer(encoded) : encoded,
-                 passPhrase);
+    if (encoding == QSsl::Der)
+        d->decodeDer(encoded, passPhrase);
+    else
+        d->decodePem(encoded, passPhrase);
 }
 
 /*!
