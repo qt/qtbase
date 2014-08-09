@@ -62,7 +62,7 @@
 
 QT_BEGIN_NAMESPACE
 
-// Latin 1 case system:
+// Latin 1 case system, used by QByteArray::to{Upper,Lower}() and qstr(n)icmp():
 /*
 #!/usr/bin/perl -l
 use feature "unicode_strings";
@@ -314,7 +314,7 @@ int qstricmp(const char *str1, const char *str2)
     uchar c;
     if (!s1 || !s2)
         return s1 ? 1 : (s2 ? -1 : 0);
-    for (; !(res = (c = QChar::toLower((ushort)*s1)) - QChar::toLower((ushort)*s2)); s1++, s2++)
+    for (; !(res = (c = latin1_lowercased[*s1]) - latin1_lowercased[*s2]); s1++, s2++)
         if (!c)                                // strings are equal
             break;
     return res;
@@ -349,7 +349,7 @@ int qstrnicmp(const char *str1, const char *str2, uint len)
     if (!s1 || !s2)
         return s1 ? 1 : (s2 ? -1 : 0);
     for (; len--; s1++, s2++) {
-        if ((res = (c = QChar::toLower((ushort)*s1)) - QChar::toLower((ushort)*s2)))
+        if ((res = (c = latin1_lowercased[*s1]) - latin1_lowercased[*s2]))
             return res;
         if (!c)                                // strings are equal
             break;
