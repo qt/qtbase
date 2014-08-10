@@ -2677,6 +2677,14 @@ QByteArray QMetaEnum::valueToKeys(int value) const
     return keys;
 }
 
+/*!
+    \fn QMetaEnum QMetaEnum::fromType() const
+    \since 5.5
+
+    Returns the QMetaEnum corresponding to the type in the template parameter.
+    The enum needs to be declared with Q_ENUM.
+*/
+
 static QByteArray qualifiedName(const QMetaEnum &e)
 {
     return QByteArray(e.scope()) + "::" + e.name();

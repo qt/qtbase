@@ -9,6 +9,7 @@ SUBDIRS=\
     qmetamethod \
     qmetaproperty \
     qmetatype \
+    qmetaenum \
     qmimedata \
     qobject \
     qpointer \

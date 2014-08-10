@@ -223,6 +223,15 @@ public:
     inline const QMetaObject *enclosingMetaObject() const { return mobj; }
 
     inline bool isValid() const { return name() != 0; }
+
+    template<typename T> static QMetaEnum fromType() {
+        Q_STATIC_ASSERT_X(QtPrivate::IsQEnumHelper<T>::Value,
+                          "QMetaEnum::fromType only works with enums declared as Q_ENUM or Q_FLAG");
+        const QMetaObject *metaObject = qt_getEnumMetaObject(T());
+        const char *name = qt_getEnumName(T());
+        return metaObject->enumerator(metaObject->indexOfEnumerator(name));
+    }
+
 private:
     const QMetaObject *mobj;
     uint handle;
