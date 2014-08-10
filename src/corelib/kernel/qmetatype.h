@@ -1363,12 +1363,25 @@ namespace QtPrivate
         enum { Value = sizeof(checkType(static_cast<T*>(0))) == sizeof(void*)  };
     };
 
+    char qt_getEnumMetaObject(...);
+    char qt_getEnumMetaObject(); // Workaround bugs in MSVC.
+
+    template<typename T>
+    struct IsQEnumHelper {
+        static const T &declval();
+        enum { Value = sizeof(qt_getEnumMetaObject(declval())) == sizeof(QMetaObject*) };
+    };
+
     template<typename T, typename Enable = void>
     struct MetaObjectForType
     {
         static inline const QMetaObject *value() { return 0; }
     };
-
+    template<>
+    struct MetaObjectForType<void>
+    {
+        static inline const QMetaObject *value() { return Q_NULLPTR; }
+    };
     template<typename T>
     struct MetaObjectForType<T*, typename QEnableIf<IsPointerToTypeDerivedFromQObject<T*>::Value>::Type>
     {
@@ -1378,6 +1391,11 @@ namespace QtPrivate
     struct MetaObjectForType<T, typename QEnableIf<IsGadgetHelper<T>::Value>::Type>
     {
         static inline const QMetaObject *value() { return &T::staticMetaObject; }
+    };
+    template<typename T>
+    struct MetaObjectForType<T, typename QEnableIf<IsQEnumHelper<T>::Value>::Type >
+    {
+        static inline const QMetaObject *value() { return qt_getEnumMetaObject(T()); }
     };
 
     template<typename T>

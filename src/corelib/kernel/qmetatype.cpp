@@ -282,7 +282,7 @@ struct DefinedTypesFilter {
     \value NeedsDestruction This type has a non-trivial destructor. If the flag is not set calls to the destructor are not necessary before discarding objects.
     \value MovableType An instance of a type having this attribute can be safely moved by memcpy.
     \omitvalue SharedPointerToQObject
-    \omitvalue IsEnumeration
+    \value IsEnumeration This type is an enumeration
     \value PointerToQObject This type is a pointer to a derived of QObject
     \omitvalue WeakPointerToQObject
     \omitvalue TrackingPointerToQObject
@@ -375,6 +375,10 @@ struct DefinedTypesFilter {
     If the type is a Q_GADGET, flags contains QMetaType::IsGadget, and this function returns its
     QMetaObject.  This can be used to retrieve QMetaMethod and QMetaProperty and use them on a
     pointer of this type. (given by QVariant::data for example)
+
+    If the type is an enumaration, flags contains QMetaType::IsEnumeration, and this function
+    returns the QMetaObject of the enclosing object if the enum was registered as a Q_ENUM or 0
+    otherwise
 
     \sa QMetaType::metaObjectForType(), QMetaType::flags()
 */

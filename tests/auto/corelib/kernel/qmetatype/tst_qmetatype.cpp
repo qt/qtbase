@@ -1835,12 +1835,17 @@ void tst_QMetaType::saveAndLoadCustom()
     QCOMPARE(stream.status(), QDataStream::ReadPastEnd);
 }
 
-struct MyGadget {
+class MyGadget {
     Q_GADGET;
+public:
+    enum MyEnum { Val1, Val2, Val3 };
+    Q_ENUM(MyEnum)
 };
 
 Q_DECLARE_METATYPE(MyGadget);
 Q_DECLARE_METATYPE(const QMetaObject *);
+Q_DECLARE_METATYPE(Qt::ScrollBarPolicy);
+Q_DECLARE_METATYPE(MyGadget::MyEnum);
 
 void tst_QMetaType::metaObject_data()
 {
@@ -1855,6 +1860,8 @@ void tst_QMetaType::metaObject_data()
     QTest::newRow("int") << int(QMetaType::Int) << static_cast<const QMetaObject *>(0) << false << false;
     QTest::newRow("QEasingCurve") << ::qMetaTypeId<QEasingCurve>() <<  &QEasingCurve::staticMetaObject << true << false;
     QTest::newRow("MyGadget") << ::qMetaTypeId<MyGadget>() <<  &MyGadget::staticMetaObject << true << false;
+    QTest::newRow("MyEnum") << ::qMetaTypeId<MyGadget::MyEnum>() <<  &MyGadget::staticMetaObject << false << false;
+    QTest::newRow("Qt::ScrollBarPolicy") << ::qMetaTypeId<Qt::ScrollBarPolicy>() <<  &QObject::staticQtMetaObject << false << false;
 }
 
 
