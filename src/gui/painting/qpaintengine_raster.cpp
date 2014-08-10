@@ -2720,7 +2720,7 @@ void QRasterPaintEngine::alphaPenBlt(const void* src, int bpl, int depth, int rx
             scanline += bpl;
         }
     } else { // 32-bit alpha...
-        uint *sl = (uint *) src;
+        uint *sl = (uint *) scanline;
         for (int y = y0; y < y1; ++y) {
             for (int x = x0; x < x1; ) {
                 // Skip those with 0 coverage
