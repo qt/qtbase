@@ -55,9 +55,6 @@ class QLocalePrivate;
 class Q_CORE_EXPORT QLocale
 {
     Q_GADGET
-    Q_ENUMS(Language)
-    Q_ENUMS(Country)
-    Q_ENUMS(MeasurementSystem)
     friend class QString;
     friend class QStringRef;
     friend class QByteArray;
@@ -781,12 +778,16 @@ public:
     };
 // GENERATED PART ENDS HERE
 
+    Q_ENUM(Language)
+    Q_ENUM(Country)
+
     enum MeasurementSystem {
         MetricSystem,
         ImperialUSSystem,
         ImperialUKSystem,
         ImperialSystem = ImperialUSSystem // Qt 4 compatibility
     };
+    Q_ENUM(MeasurementSystem)
 
     enum FormatType { LongFormat, ShortFormat, NarrowFormat };
     enum NumberOption {

@@ -49,8 +49,7 @@ class QAbstractAnimationPrivate;
 class Q_CORE_EXPORT QAbstractAnimation : public QObject
 {
     Q_OBJECT
-    Q_ENUMS(State)
-    Q_ENUMS(Direction)
+
     Q_PROPERTY(State state READ state NOTIFY stateChanged)
     Q_PROPERTY(int loopCount READ loopCount WRITE setLoopCount)
     Q_PROPERTY(int currentTime READ currentTime WRITE setCurrentTime)
@@ -63,12 +62,14 @@ public:
         Forward,
         Backward
     };
+    Q_ENUM(Direction)
 
     enum State {
         Stopped,
         Paused,
         Running
     };
+    Q_ENUM(State)
 
     enum DeletionPolicy {
         KeepWhenStopped = 0,

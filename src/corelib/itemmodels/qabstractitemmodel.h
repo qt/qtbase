@@ -155,7 +155,6 @@ template <class Key, class T> class QMap;
 class Q_CORE_EXPORT QAbstractItemModel : public QObject
 {
     Q_OBJECT
-    Q_ENUMS(LayoutChangeHint)
 
     friend class QPersistentModelIndexData;
     friend class QAbstractItemViewPrivate;
@@ -239,6 +238,7 @@ public:
         VerticalSortHint,
         HorizontalSortHint
     };
+    Q_ENUM(LayoutChangeHint)
 
 Q_SIGNALS:
     void dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles = QVector<int>());

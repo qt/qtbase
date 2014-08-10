@@ -50,7 +50,6 @@ class QPointF;
 class Q_CORE_EXPORT QEasingCurve
 {
     Q_GADGET
-    Q_ENUMS(Type)
 public:
     enum Type {
         Linear,
@@ -67,6 +66,7 @@ public:
         InCurve, OutCurve, SineCurve, CosineCurve,
         BezierSpline, TCBSpline, Custom, NCurveTypes
     };
+    Q_ENUM(Type)
 
     QEasingCurve(Type type = Linear);
     QEasingCurve(const QEasingCurve &other);

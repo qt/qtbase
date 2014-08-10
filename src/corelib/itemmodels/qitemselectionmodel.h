@@ -148,7 +148,6 @@ class Q_CORE_EXPORT QItemSelectionModel : public QObject
     Q_PROPERTY(QModelIndex currentIndex READ currentIndex NOTIFY currentChanged STORED false DESIGNABLE false)
 
     Q_DECLARE_PRIVATE(QItemSelectionModel)
-    Q_FLAGS(SelectionFlags)
 
 public:
 
@@ -167,6 +166,7 @@ public:
     };
 
     Q_DECLARE_FLAGS(SelectionFlags, SelectionFlag)
+    Q_FLAG(SelectionFlags)
 
     explicit QItemSelectionModel(QAbstractItemModel *model = 0);
     explicit QItemSelectionModel(QAbstractItemModel *model, QObject *parent);

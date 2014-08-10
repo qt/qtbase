@@ -47,7 +47,6 @@ class Q_CORE_EXPORT QLibrary : public QObject
     Q_OBJECT
     Q_PROPERTY(QString fileName READ fileName WRITE setFileName)
     Q_PROPERTY(LoadHints loadHints READ loadHints WRITE setLoadHints)
-    Q_FLAGS(LoadHint LoadHints)
 public:
     enum LoadHint {
         ResolveAllSymbolsHint = 0x01,
@@ -57,6 +56,8 @@ public:
         DeepBindHint = 0x10
     };
     Q_DECLARE_FLAGS(LoadHints, LoadHint)
+    Q_FLAG(LoadHint)
+    Q_FLAG(LoadHints)
 
     explicit QLibrary(QObject *parent = 0);
     explicit QLibrary(const QString& fileName, QObject *parent = 0);

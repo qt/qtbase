@@ -47,12 +47,12 @@ class Q_CORE_EXPORT QHistoryState : public QAbstractState
     Q_OBJECT
     Q_PROPERTY(QAbstractState* defaultState READ defaultState WRITE setDefaultState NOTIFY defaultStateChanged)
     Q_PROPERTY(HistoryType historyType READ historyType WRITE setHistoryType NOTIFY historyTypeChanged)
-    Q_ENUMS(HistoryType)
 public:
     enum HistoryType {
         ShallowHistory,
         DeepHistory
     };
+    Q_ENUM(HistoryType)
 
     QHistoryState(QState *parent = 0);
     QHistoryState(HistoryType type, QState *parent = 0);

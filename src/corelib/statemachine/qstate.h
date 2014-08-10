@@ -53,17 +53,18 @@ class Q_CORE_EXPORT QState : public QAbstractState
     Q_PROPERTY(QAbstractState* initialState READ initialState WRITE setInitialState NOTIFY initialStateChanged)
     Q_PROPERTY(QAbstractState* errorState READ errorState WRITE setErrorState NOTIFY errorStateChanged)
     Q_PROPERTY(ChildMode childMode READ childMode WRITE setChildMode NOTIFY childModeChanged)
-    Q_ENUMS(ChildMode RestorePolicy)
 public:
     enum ChildMode {
         ExclusiveStates,
         ParallelStates
     };
+    Q_ENUM(ChildMode)
 
     enum RestorePolicy {
         DontRestoreProperties,
         RestoreProperties
     };
+    Q_ENUM(RestorePolicy)
 
     QState(QState *parent = 0);
     QState(ChildMode childMode, QState *parent = 0);

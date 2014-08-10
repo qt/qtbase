@@ -46,7 +46,6 @@ class Q_CORE_EXPORT QEvent           // event base class
 {
     Q_GADGET
     QDOC_PROPERTY(bool accepted READ isAccepted WRITE setAccepted)
-    Q_ENUMS(Type)
 public:
     enum Type {
         /*
@@ -283,6 +282,7 @@ public:
         User = 1000,                            // first user event id
         MaxUser = 65535                         // last user event id
     };
+    Q_ENUM(Type)
 
     explicit QEvent(Type type);
     QEvent(const QEvent &other);
