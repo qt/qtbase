@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2015 The Qt Company Ltd.
+** Copyright (C) 2015 Olivier Goffart <ogoffart@woboq.com>
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -58,6 +59,12 @@
 
 class CustomNonQObject;
 
+#if defined(Q_COMPILER_CLASS_ENUM)
+#define ENUM_SIZE(X) : X
+#else
+#define ENUM_SIZE(X)
+#endif
+
 class tst_QVariant : public QObject
 {
     Q_OBJECT
@@ -68,6 +75,23 @@ public:
     {
 
     }
+
+
+    enum MetaEnumTest_Enum0 { MetaEnumTest_Enum0_value = 42, MetaEnsureSignedEnum0 = -1 };
+    Q_ENUM(MetaEnumTest_Enum0)
+    enum MetaEnumTest_Enum1 { MetaEnumTest_Enum1_value = 42, MetaEnumTest_Enum1_bigValue = (Q_INT64_C(1) << 33) + 50 };
+    Q_ENUM(MetaEnumTest_Enum1)
+
+    enum MetaEnumTest_Enum3 ENUM_SIZE(qint64) { MetaEnumTest_Enum3_value = -47, MetaEnumTest_Enum3_bigValue = (Q_INT64_C(1) << 56) + 5  };
+    Q_ENUM(MetaEnumTest_Enum3)
+    enum MetaEnumTest_Enum4 ENUM_SIZE(quint64) { MetaEnumTest_Enum4_value = 47, MetaEnumTest_Enum4_bigValue = (Q_INT64_C(1) << 52) + 45 };
+    Q_ENUM(MetaEnumTest_Enum4)
+    enum MetaEnumTest_Enum5 ENUM_SIZE(uint) { MetaEnumTest_Enum5_value = 47 };
+    Q_ENUM(MetaEnumTest_Enum5)
+    enum MetaEnumTest_Enum6 ENUM_SIZE(uchar) { MetaEnumTest_Enum6_value = 47 };
+    Q_ENUM(MetaEnumTest_Enum6)
+    enum MetaEnumTest_Enum8 ENUM_SIZE(short) { MetaEnumTest_Enum8_value = 47 };
+    Q_ENUM(MetaEnumTest_Enum8)
 
 private slots:
     void cleanupTestCase();
@@ -249,7 +273,7 @@ private slots:
     void pairElements();
 
     void enums();
-
+    void metaEnums();
     void compareSanity_data();
     void compareSanity();
 
@@ -4491,7 +4515,7 @@ void tst_QVariant::pairElements()
     TEST_PAIR_ELEMENT_ACCESS(std::pair, int, QVariant, 44, 15)
 }
 
-enum EnumTest_Enum0 { EnumTest_Enum0_value = 42, ensureSignedEnum0 = -1 };
+enum EnumTest_Enum0 { EnumTest_Enum0_value = 42, EnumTest_Enum0_negValue = -8 };
 Q_DECLARE_METATYPE(EnumTest_Enum0)
 enum EnumTest_Enum1 { EnumTest_Enum1_value = 42, EnumTest_Enum1_bigValue = (Q_INT64_C(1) << 33) + 50 };
 Q_DECLARE_METATYPE(EnumTest_Enum1)
@@ -4533,6 +4557,11 @@ template<typename Enum> void testVariant(Enum value, bool *ok)
     QCOMPARE(var.value<short>(), static_cast<short>(value));
     QCOMPARE(var.value<unsigned short>(), static_cast<unsigned short>(value));
     QCOMPARE(var.value<qint64>(), static_cast<qint64>(value));
+    if (sizeof(value) < 8 && static_cast<qint64>(value) < 0) {
+        QEXPECT_FAIL("", "The metatype system don't store the sign of enums", Continue);
+        // The value is stored internaly with 32 bit. When asked to convert it to 64 bit unsigned,
+        // we consider that the value was unsigned, so we don't extent the bit signs
+    }
     QCOMPARE(var.value<quint64>(), static_cast<quint64>(value));
 
     QVariant var2 = var;
@@ -4546,6 +4575,8 @@ void tst_QVariant::enums()
 {
     bool ok = false;
     testVariant(EnumTest_Enum0_value, &ok);
+    QVERIFY(ok);
+    testVariant(EnumTest_Enum0_negValue, &ok);
     QVERIFY(ok);
     testVariant(EnumTest_Enum1_value, &ok);
     QVERIFY(ok);
@@ -4571,6 +4602,50 @@ void tst_QVariant::enums()
     testVariant(EnumTest_Enum3::EnumTest_Enum3_value, &ok);
     QVERIFY(ok);
 #endif
+}
+
+template<typename Enum> void testVariantMeta(Enum value, bool *ok, const char *string)
+{
+    testVariant<Enum>(value, ok);
+    QVERIFY(ok);
+    *ok = false;
+
+    QVariant var = QVariant::fromValue(value);
+    QVERIFY(var.canConvert<QString>());
+    QVERIFY(var.canConvert<QByteArray>());
+
+    QCOMPARE(var.value<QString>(), QString::fromLatin1(string));
+    QCOMPARE(var.value<QByteArray>(), QByteArray(string));
+
+    QVariant strVar = QString::fromLatin1(string);
+    QVERIFY(strVar.canConvert<Enum>());
+    if (value > INT_MAX) {
+        QEXPECT_FAIL("", "QMetaEnum api uses 'int' as return type  QTBUG-27451", Abort);
+        *ok = true;
+    }
+    QCOMPARE(strVar.value<Enum>(), value);
+    strVar = QByteArray(string);
+    QVERIFY(strVar.canConvert<Enum>());
+    QCOMPARE(strVar.value<Enum>(), value);
+    *ok = true;
+}
+
+void tst_QVariant::metaEnums()
+{
+    bool ok = false;
+#define METAENUMS_TEST(Value) \
+    testVariantMeta(Value, &ok, #Value); QVERIFY(ok)
+
+    METAENUMS_TEST(MetaEnumTest_Enum0_value);
+    METAENUMS_TEST(MetaEnumTest_Enum1_value);
+    METAENUMS_TEST(MetaEnumTest_Enum1_bigValue);
+    METAENUMS_TEST(MetaEnumTest_Enum3_value);
+    METAENUMS_TEST(MetaEnumTest_Enum3_bigValue);
+    METAENUMS_TEST(MetaEnumTest_Enum4_value);
+    METAENUMS_TEST(MetaEnumTest_Enum4_bigValue);
+    METAENUMS_TEST(MetaEnumTest_Enum5_value);
+    METAENUMS_TEST(MetaEnumTest_Enum6_value);
+    METAENUMS_TEST(MetaEnumTest_Enum8_value);
 }
 
 void tst_QVariant::compareSanity_data()

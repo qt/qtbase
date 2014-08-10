@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2015 The Qt Company Ltd.
-** Copyright (C) 2013 Olivier Goffart <ogoffart@woboq.com>
+** Copyright (C) 2015 Olivier Goffart <ogoffart@woboq.com>
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -57,6 +57,7 @@
 #endif
 #include "private/qvariant_p.h"
 #include "qmetatype_p.h"
+#include <qmetaobject.h>
 
 #ifndef QT_NO_GEOM_VARIANT
 #include "qsize.h"
@@ -66,6 +67,7 @@
 #endif
 
 #include <float.h>
+#include <cstring>
 
 QT_BEGIN_NAMESPACE
 
@@ -334,6 +336,27 @@ static const void *constData(const QVariant::Private &d)
     return d.is_shared ? d.data.shared->ptr : reinterpret_cast<const void *>(&d.data.c);
 }
 
+#ifndef QT_NO_QOBJECT
+/*!
+  \internal
+  returns a QMetaEnum for a given meta tape type id if possible
+*/
+static QMetaEnum metaEnumFromType(int type)
+{
+    QMetaType t(type);
+    if (t.flags() & QMetaType::IsEnumeration) {
+        if (const QMetaObject *metaObject = t.metaObject()) {
+            const char *enumName = QMetaType::typeName(type);
+            const char *lastColon = std::strrchr(enumName, ':');
+            if (lastColon)
+                enumName = lastColon + 1;
+            return metaObject->enumerator(metaObject->indexOfEnumerator(enumName));
+        }
+    }
+    return QMetaEnum();
+}
+#endif
+
 /*!
  \internal
 
@@ -433,6 +456,15 @@ static bool convert(const QVariant::Private *d, int t, void *result, bool *ok)
             *str = v_cast<QUuid>(d)->toString();
             break;
         default:
+#ifndef QT_NO_QOBJECT
+            {
+                QMetaEnum en = metaEnumFromType(d->type);
+                if (en.isValid()) {
+                    *str = QString::fromUtf8(en.valueToKeys(qConvertToNumber(d, ok)));
+                    return *ok;
+                }
+            }
+#endif
             return false;
         }
         break;
@@ -601,6 +633,15 @@ static bool convert(const QVariant::Private *d, int t, void *result, bool *ok)
             *ba = QByteArray(d->data.b ? "true" : "false");
             break;
         default:
+#ifndef QT_NO_QOBJECT
+            {
+                QMetaEnum en = metaEnumFromType(d->type);
+                if (en.isValid()) {
+                    *ba = en.valueToKeys(qConvertToNumber(d, ok));
+                    return *ok;
+                }
+            }
+#endif
             return false;
         }
     }
@@ -861,6 +902,31 @@ static bool convert(const QVariant::Private *d, int t, void *result, bool *ok)
         }
         break;
     default:
+#ifndef QT_NO_QOBJECT
+        if (d->type == QVariant::String || d->type == QVariant::ByteArray) {
+            QMetaEnum en = metaEnumFromType(t);
+            if (en.isValid()) {
+                QByteArray keys = (d->type == QVariant::String) ? v_cast<QString>(d)->toUtf8() : *v_cast<QByteArray>(d);
+                int value = en.keysToValue(keys.constData(), ok);
+                if (*ok) {
+                    switch (QMetaType::sizeOf(t)) {
+                    case 1:
+                        *static_cast<signed char *>(result) = value;
+                        return true;
+                    case 2:
+                        *static_cast<qint16 *>(result) = value;
+                        return true;
+                    case 4:
+                        *static_cast<qint32 *>(result) = value;
+                        return true;
+                    case 8:
+                        *static_cast<qint64 *>(result) = value;
+                        return true;
+                    }
+                }
+            }
+        }
+#endif
         return false;
     }
     return true;
@@ -3006,10 +3072,12 @@ bool QVariant::canConvert(int targetTypeId) const
         case QVariant::Bitmap:
             return currentType == QVariant::Pixmap || currentType == QVariant::Image;
         case QVariant::ByteArray:
-            return currentType == QVariant::Color;
+            return currentType == QVariant::Color
+                              || ((QMetaType::typeFlags(currentType) & QMetaType::IsEnumeration) && QMetaType::metaObjectForType(currentType));
         case QVariant::String:
             return currentType == QVariant::KeySequence || currentType == QVariant::Font
-                              || currentType == QVariant::Color;
+                              || currentType == QVariant::Color
+                              || ((QMetaType::typeFlags(currentType) & QMetaType::IsEnumeration) && QMetaType::metaObjectForType(currentType));
         case QVariant::KeySequence:
             return currentType == QVariant::String || currentType == QVariant::Int;
         case QVariant::Font:
