@@ -1518,6 +1518,9 @@ struct QMetaTypeId2
 template <typename T>
 struct QMetaTypeId2<const T&> : QMetaTypeId2<T> {};
 
+template <typename T>
+struct QMetaTypeId2<T&> { enum {Defined = false }; };
+
 namespace QtPrivate {
     template <typename T, bool Defined = QMetaTypeId2<T>::Defined>
     struct QMetaTypeIdHelper {
