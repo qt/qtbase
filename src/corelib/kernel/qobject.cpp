@@ -4251,13 +4251,26 @@ QDebug qt_QMetaEnum_debugOperator(QDebug &dbg, int value, const QMetaObject *met
 
     \note This macro requires the class to be a subclass of QObject. Use
     Q_GADGET instead of Q_OBJECT to enable the meta object system's support
-    for enums in a class that is not a QObject subclass. Q_GADGET makes a
-    class member, \c{staticMetaObject}, available.
-    \c{staticMetaObject} is of type QMetaObject and provides access to the
-    enums declared with Q_ENUMS.
-    Q_GADGET is provided only for C++.
+    for enums in a class that is not a QObject subclass.
 
     \sa {Meta-Object System}, {Signals and Slots}, {Qt's Property System}
+*/
+
+/*!
+    \macro Q_GADGET
+    \relates QObject
+
+    The Q_GADGET macro is a lighter version of the Q_OBJECT macro for classes
+    that do not inherit from QObject but still want to use some of the
+    reflection capabilities offered by QMetaObject. Just like the Q_OBJECT
+    macro, it must appear in the private section of a class definition.
+
+    Q_GADGETs can have Q_ENUM, Q_PROPERTY and Q_INVOKABLE, but they cannot have
+    signals or slots
+
+    Q_GADGET makes a class member, \c{staticMetaObject}, available.
+    \c{staticMetaObject} is of type QMetaObject and provides access to the
+    enums declared with Q_ENUMS.
 */
 
 /*!
