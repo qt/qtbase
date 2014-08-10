@@ -136,11 +136,42 @@ private:
     QPointer<QThread> thread;
 
     bool interrupt;
+
+    void fetchCoreDispatcher()
+    {
+        ComPtr<ICoreImmersiveApplication> application;
+        HRESULT hr = RoGetActivationFactory(HString::MakeReference(RuntimeClass_Windows_ApplicationModel_Core_CoreApplication).Get(),
+                                            IID_PPV_ARGS(&application));
+        RETURN_VOID_IF_FAILED("Failed to get the application factory");
+
+        ComPtr<ICoreApplicationView> view;
+        hr = application->get_MainView(&view);
+        RETURN_VOID_IF_FAILED("Failed to get the main view");
+
+        ComPtr<ICoreWindow> window;
+        hr = view->get_CoreWindow(&window);
+        RETURN_VOID_IF_FAILED("Failed to get the core window");
+
+        hr = window->get_Dispatcher(&coreDispatcher);
+        RETURN_VOID_IF_FAILED("Failed to get the core dispatcher");
+
+        thread = QThread::currentThread();
+    }
 };
 
 QEventDispatcherWinRT::QEventDispatcherWinRT(QObject *parent)
     : QAbstractEventDispatcher(*new QEventDispatcherWinRTPrivate, parent)
 {
+    Q_D(QEventDispatcherWinRT);
+
+    // Special treatment for the WinMain thread, as it is created before the UI
+    static bool firstThread = true;
+    if (firstThread) {
+        firstThread = false;
+        return;
+    }
+
+    d->fetchCoreDispatcher();
 }
 
 QEventDispatcherWinRT::QEventDispatcherWinRT(QEventDispatcherWinRTPrivate &dd, QObject *parent)
@@ -155,25 +186,8 @@ bool QEventDispatcherWinRT::processEvents(QEventLoop::ProcessEventsFlags flags)
 {
     Q_D(QEventDispatcherWinRT);
 
-    if (d->thread != QThread::currentThread()) {
-        ComPtr<ICoreImmersiveApplication> application;
-        HRESULT hr = RoGetActivationFactory(HString::MakeReference(RuntimeClass_Windows_ApplicationModel_Core_CoreApplication).Get(),
-                                            IID_PPV_ARGS(&application));
-        RETURN_FALSE_IF_FAILED("Failed to get the application factory");
-
-        ComPtr<ICoreApplicationView> view;
-        hr = application->get_MainView(&view);
-        RETURN_FALSE_IF_FAILED("Failed to get the main view");
-
-        ComPtr<ICoreWindow> window;
-        hr = view->get_CoreWindow(&window);
-        RETURN_FALSE_IF_FAILED("Failed to get the core window");
-
-        hr = window->get_Dispatcher(&d->coreDispatcher);
-        RETURN_FALSE_IF_FAILED("Failed to get the core dispatcher");
-
-        d->thread = QThread::currentThread();
-    }
+    if (d->thread != QThread::currentThread())
+        d->fetchCoreDispatcher();
 
     bool didProcess = false;
     forever {
