@@ -4178,6 +4178,7 @@ QDebug operator<<(QDebug dbg, const QObject *o)
 /*!
     \macro Q_ENUMS(...)
     \relates QObject
+    \obsolete
 
     This macro registers one or several enum types to the meta-object
     system.
@@ -4191,34 +4192,86 @@ QDebug operator<<(QDebug dbg, const QObject *o)
     defining it. In addition, the class \e defining the enum has to
     inherit QObject as well as declare the enum using Q_ENUMS().
 
+    In new code, you should prefer the use of the Q_ENUM() macro, which makes the
+    type available also to the meta type system.
+    For instance, QMetaEnum::fromType() will not work with types declared with Q_ENUMS().
+
     \sa {Qt's Property System}
 */
 
 /*!
     \macro Q_FLAGS(...)
     \relates QObject
+    \obsolete
 
-    This macro registers one or several \l{QFlags}{flags types} to the
+    This macro registers one or several \l{QFlags}{flags types} with the
     meta-object system. It is typically used in a class definition to declare
     that values of a given enum can be used as flags and combined using the
     bitwise OR operator.
-
-    For example, in QLibrary, the \l{QLibrary::LoadHints}{LoadHints} flag is
-    declared in the following way:
-
-    \snippet code/src_corelib_kernel_qobject.cpp 39a
-
-    The declaration of the flags themselves is performed in the public section
-    of the QLibrary class itself, using the \l Q_DECLARE_FLAGS() macro:
-
-    \snippet code/src_corelib_kernel_qobject.cpp 39b
 
     \note This macro takes care of registering individual flag values
     with the meta-object system, so it is unnecessary to use Q_ENUMS()
     in addition to this macro.
 
+    In new code, you should prefer the use of the Q_FLAG() macro, which makes the
+    type available also to the meta type system.
+
     \sa {Qt's Property System}
 */
+
+/*!
+    \macro Q_ENUM(...)
+    \relates QObject
+    \since 5.5
+
+    This macro registers an enum type with the meta-object system.
+    It must be placed after the enum declaration in a class that has the Q_OBJECT or the
+    Q_GADGET macro.
+
+    For example:
+
+    \snippet code/src_corelib_kernel_qobject.cpp 38
+
+    Enumerations that are declared with Q_ENUM have their QMetaEnum registered in the
+    enclosing QMetaObject. You can also use QMetaEnum::fromType() to get the QMetaEnum.
+
+    Registered enumerations are automatically registered also to the Qt meta
+    type system, making them known to QMetaType without the need to use
+    Q_DECLARE_METATYPE(). This will enable useful features; for example, if used
+    in a QVariant, you can convert them to strings. Likewise, passing them to
+    QDebug will print out their names.
+
+    \sa {Qt's Property System}
+*/
+
+
+/*!
+    \macro Q_FLAG(...)
+    \relates QObject
+    \since 5.5
+
+    This macro registers a single \l{QFlags}{flags types} with the
+    meta-object system. It is typically used in a class definition to declare
+    that values of a given enum can be used as flags and combined using the
+    bitwise OR operator.
+
+    The macro must be placed after the enum declaration.
+
+    For example, in QLibrary, the \l{QLibrary::LoadHints}{LoadHints} flag is
+    declared in the following way:
+
+    \snippet code/src_corelib_kernel_qobject.cpp 39
+
+    The declaration of the flags themselves is performed in the public section
+    of the QLibrary class itself, using the \l Q_DECLARE_FLAGS() macro.
+
+    \note The Q_FLAG macro takes care of registering individual flag values
+    with the meta-object system, so it is unnecessary to use Q_ENUM()
+    in addition to this macro.
+
+    \sa {Qt's Property System}
+*/
+
 
 /*!
     \macro Q_OBJECT

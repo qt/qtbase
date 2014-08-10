@@ -376,38 +376,37 @@ Q_PROPERTY(QString title READ title WRITE setTitle USER true)
 class MyClass : public QObject
 {
     Q_OBJECT
-    Q_ENUMS(Priority)
 
 public:
     MyClass(QObject *parent = 0);
     ~MyClass();
 
     enum Priority { High, Low, VeryHigh, VeryLow };
+    Q_ENUM(Priority)
     void setPriority(Priority priority);
     Priority priority() const;
 };
 //! [38]
 
 
-//! [39a]
+//! [39]
 class QLibrary : public QObject
 {
-    ...
-    Q_FLAGS(LoadHint LoadHints)
-    ...
-//! [39a]
+    Q_OBJECT
 
-//! [39b]
-    ...
 public:
+    ...
+
     enum LoadHint {
         ResolveAllSymbolsHint = 0x01,
         ExportExternalSymbolsHint = 0x02,
         LoadArchiveMemberHint = 0x04
     };
     Q_DECLARE_FLAGS(LoadHints, LoadHint)
+    Q_FLAG(LoadHints)
     ...
-//! [39b]
+}
+//! [39]
 
 
 //! [40]

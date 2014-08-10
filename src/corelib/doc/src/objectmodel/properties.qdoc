@@ -207,7 +207,7 @@
     section of the class. The required \c READ function is named \c
     priority, and we include a \c WRITE function named \c setPriority.
     The enumeration type must be registered with the \l {Meta-Object
-    System} using the Q_ENUMS() macro. Registering an enumeration type
+    System} using the Q_ENUM() macro. Registering an enumeration type
     makes the enumerator names available for use in calls to
     QObject::setProperty(). We must also provide our own declarations
     for the \c READ and \c WRITE functions. The declaration of MyClass
@@ -228,18 +228,18 @@
 
     In the example, the enumeration type that is the property type is
     declared in MyClass and registered with the \l{Meta-Object System}
-    using the Q_ENUMS() macro. This makes the enumeration values
+    using the Q_ENUM() macro. This makes the enumeration values
     available as strings for use as in the call to \l{QObject::}{setProperty()}. Had
     the enumeration type been declared in another class, its fully
     qualified name (i.e., OtherClass::Priority) would be required, and
     that other class would also have to inherit QObject and register
-    the enumeration type there using the Q_ENUMS() macro.
+    the enumeration type there using the Q_ENUM() macro.
 
-    A similar macro, Q_FLAGS(), is also available. Like Q_ENUMS(), it
+    A similar macro, Q_FLAG(), is also available. Like Q_ENUM(), it
     registers an enumeration type, but it marks the type as being a
     set of \e flags, i.e. values that can be OR'd together. An I/O
     class might have enumeration values \c Read and \c Write and then
-    QObject::setProperty() could accept \c{Read | Write}. Q_FLAGS()
+    QObject::setProperty() could accept \c{Read | Write}. Q_FLAG()
     should be used to register this enumeration type.
 
     \section1 Dynamic Properties

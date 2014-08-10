@@ -93,13 +93,13 @@ class MyClass : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(Priority priority READ priority WRITE setPriority NOTIFY priorityChanged)
-    Q_ENUMS(Priority)
 
 public:
     MyClass(QObject *parent = 0);
     ~MyClass();
 
     enum Priority { High, Low, VeryHigh, VeryLow };
+    Q_ENUM(Priority)
 
     void setPriority(Priority priority)
     {
