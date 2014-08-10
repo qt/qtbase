@@ -131,6 +131,19 @@ struct DefinedTypesFilter {
 
     \snippet code/src_corelib_kernel_qmetatype.cpp 2
 
+    Some types are registered automatically and do not need this macro:
+
+    \list
+    \li Pointers to classes derived from QObject
+    \li QList<T>, QVector<T>, QQueue<T>, QStack<T>, QSet<T> or QLinkedList<T>
+        where T is a registered meta type
+    \li QHash<T1, T2>, QMap<T1, T2> or QPair<T1, T2> where T1 and T2 are
+        registered meta types
+    \li QPointer<T>, QSharedPointer<T>, QWeakPointer<T>, where T is a class that derives from QObject
+    \li Enumerations registered with Q_ENUM or Q_FLAG
+    \li Classes that have a Q_GADGET macro
+    \endlist
+
     \sa qRegisterMetaType()
 */
 
