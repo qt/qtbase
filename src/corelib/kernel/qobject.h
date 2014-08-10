@@ -448,6 +448,8 @@ protected:
     QScopedPointer<QObjectData> d_ptr;
 
     static const QMetaObject staticQtMetaObject;
+    friend inline const QMetaObject *qt_getQtMetaObject() Q_DECL_NOEXCEPT
+    { return &staticQtMetaObject; }
 
     friend struct QMetaObject;
     friend struct QMetaObjectPrivate;
