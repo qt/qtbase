@@ -1136,6 +1136,7 @@ void QCommonStylePrivate::tabLayout(const QStyleOptionTabV3 *opt, const QWidget 
 }
 #endif //QT_NO_TABBAR
 
+#ifndef QT_NO_ANIMATION
 /*! \internal */
 QList<const QObject*> QCommonStylePrivate::animationTargets() const
 {
@@ -1176,6 +1177,7 @@ void QCommonStylePrivate::_q_removeAnimation()
     if (animation)
         animations.remove(animation->parent());
 }
+#endif
 
 /*!
   \reimp

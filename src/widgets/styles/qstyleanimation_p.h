@@ -48,6 +48,8 @@
 
 QT_BEGIN_NAMESPACE
 
+#ifndef QT_NO_ANIMATION
+
 //
 //  W A R N I N G
 //  -------------
@@ -183,6 +185,8 @@ private:
     Mode _mode;
     bool _active;
 };
+
+#endif // QT_NO_ANIMATION
 
 QT_END_NAMESPACE
 

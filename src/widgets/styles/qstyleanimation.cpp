@@ -40,6 +40,9 @@
 ****************************************************************************/
 
 #include "qstyleanimation_p.h"
+
+#ifndef QT_NO_ANIMATION
+
 #include <qcoreapplication.h>
 #include <qwidget.h>
 #include <qevent.h>
@@ -344,3 +347,5 @@ void QScrollbarStyleAnimation::updateCurrentTime(int time)
 }
 
 QT_END_NAMESPACE
+
+#endif //QT_NO_ANIMATION

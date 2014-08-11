@@ -337,6 +337,7 @@ void QLineEditIconButton::setOpacity(qreal value)
     }
 }
 
+#ifndef QT_NO_ANIMATION
 void QLineEditIconButton::startOpacityAnimation(qreal endValue)
 {
     QPropertyAnimation *animation = new QPropertyAnimation(this, QByteArrayLiteral("opacity"));
@@ -344,6 +345,7 @@ void QLineEditIconButton::startOpacityAnimation(qreal endValue)
     animation->setEndValue(endValue);
     animation->start(QAbstractAnimation::DeleteWhenStopped);
 }
+#endif
 
 void QLineEditIconButton::updateCursor()
 {
@@ -358,6 +360,7 @@ void QLineEditPrivate::_q_textChanged(const QString &text)
         const int newTextSize = text.size();
         if (!newTextSize || !lastTextSize) {
             lastTextSize = newTextSize;
+#ifndef QT_NO_ANIMATION
             const bool fadeIn = newTextSize > 0;
             foreach (const SideWidgetEntry &e, leadingSideWidgets) {
                 if (e.flags & SideWidgetFadeInWithText)
@@ -367,6 +370,7 @@ void QLineEditPrivate::_q_textChanged(const QString &text)
                 if (e.flags & SideWidgetFadeInWithText)
                    static_cast<QLineEditIconButton *>(e.widget)->animateShow(fadeIn);
             }
+#endif
         }
     }
 }
