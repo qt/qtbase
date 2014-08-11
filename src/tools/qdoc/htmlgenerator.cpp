@@ -2477,6 +2477,8 @@ QString HtmlGenerator::generateAllQmlMembersFile(QmlClassNode* qml_cn, CodeMarke
                     prefix = prefix.left(keys.at(j).indexOf("::")+1);
                 }
                 generateQmlItem(nodes[j], qcn, marker, true);
+                if (nodes[j]->isAttached())
+                    out() << " [attached]";
                 //generateSynopsis(nodes[j], qcn, marker, CodeMarker::Subpage, false, &prefix);
                 out() << "</li>\n";
             }
@@ -3627,8 +3629,13 @@ QString HtmlGenerator::refForNode(const Node *node)
         break;
     case Node::Document:
         break;
-    case Node::QmlPropertyGroup:
     case Node::QmlProperty:
+        if (node->isAttached())
+            ref = node->name() + "-attached-prop";
+        else
+            ref = node->name() + "-prop";
+        break;
+    case Node::QmlPropertyGroup:
     case Node::Property:
         ref = node->name() + "-prop";
         break;
