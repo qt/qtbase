@@ -1889,9 +1889,7 @@ void QGuiApplicationPrivate::processKeyEvent(QWindowSystemInterfacePrivate::KeyE
     if (e->keyType == QEvent::KeyPress) {
         backKeyPressAccepted = e->key == Qt::Key_Back && ev.isAccepted();
     } else if (e->keyType == QEvent::KeyRelease && e->key == Qt::Key_Back && !backKeyPressAccepted && !ev.isAccepted()) {
-        if (!window)
-            qApp->quit();
-        else
+        if (window)
             QWindowSystemInterface::handleCloseEvent(window);
     }
 #endif
