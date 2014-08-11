@@ -307,6 +307,7 @@ protected:
     int lcdFilterType;
     bool embeddedbitmap;
     bool cacheEnabled;
+    bool forceAutoHint;
 
 private:
     friend class QFontEngineFTRawFont;

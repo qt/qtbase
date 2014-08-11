@@ -624,6 +624,16 @@ QFontEngine *QFontconfigDatabase::fontEngine(const QFontDef &f, void *usrPtr)
     if (match) {
         engine->setDefaultHintStyle(defaultHintStyleFromMatch((QFont::HintingPreference)f.hintingPreference, match));
 
+        FcBool fc_autohint;
+        if (FcPatternGetBool(match, FC_AUTOHINT,0, &fc_autohint) == FcResultMatch)
+            engine->forceAutoHint = fc_autohint;
+
+#if defined(FT_LCD_FILTER_H)
+        int lcdFilter;
+        if (FcPatternGetInteger(match, FC_LCD_FILTER, 0, &lcdFilter) == FcResultMatch)
+            engine->lcdFilterType = lcdFilter;
+#endif
+
         if (antialias) {
             // If antialiasing is not fully disabled, fontconfig may still disable it on a font match basis.
             FcBool fc_antialias;
@@ -684,6 +694,16 @@ QFontEngine *QFontconfigDatabase::fontEngine(const QByteArray &fontData, qreal p
     FcPattern *match = FcFontMatch(0, pattern, &result);
     if (match) {
         engine->setDefaultHintStyle(defaultHintStyleFromMatch(hintingPreference, match));
+
+        FcBool fc_autohint;
+        if (FcPatternGetBool(match, FC_AUTOHINT,0, &fc_autohint) == FcResultMatch)
+            engine->forceAutoHint = fc_autohint;
+
+#if defined(FT_LCD_FILTER_H)
+        int lcdFilter;
+        if (FcPatternGetInteger(match, FC_LCD_FILTER, 0, &lcdFilter) == FcResultMatch)
+            engine->lcdFilterType = lcdFilter;
+#endif
 
         FcBool fc_antialias;
         if (FcPatternGetBool(match, FC_ANTIALIAS,0, &fc_antialias) != FcResultMatch)

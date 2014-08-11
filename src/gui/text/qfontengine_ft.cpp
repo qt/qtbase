@@ -678,6 +678,7 @@ QFontEngineFT::QFontEngineFT(const QFontDef &fd)
     const QByteArray env = qgetenv("QT_NO_FT_CACHE");
     cacheEnabled = env.isEmpty() || env.toInt() == 0;
     m_subPixelPositionCount = 4;
+    forceAutoHint = false;
 }
 
 QFontEngineFT::~QFontEngineFT()
@@ -831,6 +832,9 @@ int QFontEngineFT::loadFlags(QGlyphSet *set, GlyphFormat format, int flags,
         load_flags |= FT_LOAD_NO_HINTING;
     else
         load_flags |= load_target;
+
+    if (forceAutoHint)
+        load_flags |= FT_LOAD_FORCE_AUTOHINT;
 
     return load_flags;
 }
