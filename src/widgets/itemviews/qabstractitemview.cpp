@@ -1370,6 +1370,15 @@ bool QAbstractItemView::tabKeyNavigation() const
     return d->tabKeyNavigation;
 }
 
+/*!
+    \since 5.2
+    \reimp
+*/
+QSize QAbstractItemView::viewportSizeHint() const
+{
+    return QAbstractScrollArea::viewportSizeHint();
+}
+
 #ifndef QT_NO_DRAGANDDROP
 /*!
     \property QAbstractItemView::showDropIndicator
@@ -1388,15 +1397,6 @@ bool QAbstractItemView::showDropIndicator() const
 {
     Q_D(const QAbstractItemView);
     return d->showDropIndicator;
-}
-
-/*!
-    \since 5.2
-    \reimp
-*/
-QSize QAbstractItemView::viewportSizeHint() const
-{
-    return QAbstractScrollArea::viewportSizeHint();
 }
 
 /*!
