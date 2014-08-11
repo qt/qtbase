@@ -73,7 +73,9 @@ public:
         TrayWindow,
         GetTimestamp,
         X11Screen,
-        RootWindow
+        RootWindow,
+        ScreenSubpixelType,
+        ScreenAntialiasingEnabled
     };
 
     QXcbNativeInterface();

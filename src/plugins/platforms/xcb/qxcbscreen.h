@@ -104,13 +104,15 @@ public:
     void readXResources();
 
     QFontEngine::HintStyle hintStyle() const { return m_hintStyle; }
+    QFontEngine::SubpixelAntialiasingType subpixelType() const { return m_subpixelType; }
+    int antialiasingEnabled() const { return m_antialiasingEnabled; }
 
     QXcbXSettings *xSettings() const;
 
 private:
     static bool xResource(const QByteArray &identifier,
-                         const QByteArray &expectedIdentifier,
-                         int *value);
+                          const QByteArray &expectedIdentifier,
+                          QByteArray &stringValue);
     void sendStartupMessage(const QByteArray &message) const;
 
     xcb_screen_t *m_screen;
@@ -133,6 +135,8 @@ private:
     int m_refreshRate;
     int m_forcedDpi;
     QFontEngine::HintStyle m_hintStyle;
+    QFontEngine::SubpixelAntialiasingType m_subpixelType;
+    int m_antialiasingEnabled;
     QXcbXSettings *m_xSettings;
 };
 

@@ -69,6 +69,8 @@ QXcbScreen::QXcbScreen(QXcbConnection *connection, xcb_screen_t *scr,
     , m_refreshRate(60)
     , m_forcedDpi(-1)
     , m_hintStyle(QFontEngine::HintStyle(-1))
+    , m_subpixelType(QFontEngine::SubpixelAntialiasingType(-1))
+    , m_antialiasingEnabled(-1)
     , m_xSettings(0)
 {
     if (connection->hasXRandr())
@@ -547,32 +549,52 @@ QPixmap QXcbScreen::grabWindow(WId window, int x, int y, int width, int height) 
     return result;
 }
 
-bool QXcbScreen::xResource(const QByteArray &identifier,
-                           const QByteArray &expectedIdentifier,
-                           int *value)
+static bool parseXftInt(const QByteArray& stringValue, int *value)
 {
     Q_ASSERT(value != 0);
+    bool ok;
+    *value = stringValue.toInt(&ok);
+    return ok;
+}
+
+static QFontEngine::HintStyle parseXftHintStyle(const QByteArray& stringValue)
+{
+    if (stringValue == "hintfull")
+        return QFontEngine::HintFull;
+    else if (stringValue == "hintnone")
+        return QFontEngine::HintNone;
+    else if (stringValue == "hintmedium")
+        return QFontEngine::HintMedium;
+    else if (stringValue == "hintslight")
+        return QFontEngine::HintLight;
+
+    return QFontEngine::HintStyle(-1);
+}
+
+static QFontEngine::SubpixelAntialiasingType parseXftRgba(const QByteArray& stringValue)
+{
+    if (stringValue == "none")
+        return QFontEngine::Subpixel_None;
+    else if (stringValue == "rgb")
+        return QFontEngine::Subpixel_RGB;
+    else if (stringValue == "bgr")
+        return QFontEngine::Subpixel_BGR;
+    else if (stringValue == "vrgb")
+        return QFontEngine::Subpixel_VRGB;
+    else if (stringValue == "vbgr")
+        return QFontEngine::Subpixel_VBGR;
+
+    return QFontEngine::SubpixelAntialiasingType(-1);
+}
+
+bool QXcbScreen::xResource(const QByteArray &identifier,
+                           const QByteArray &expectedIdentifier,
+                           QByteArray& stringValue)
+{
     if (identifier.startsWith(expectedIdentifier)) {
-        QByteArray stringValue = identifier.mid(expectedIdentifier.size());
-
-        bool ok;
-        *value = stringValue.toInt(&ok);
-        if (!ok) {
-            if (stringValue == "hintfull")
-                *value = QFontEngine::HintFull;
-            else if (stringValue == "hintnone")
-                *value = QFontEngine::HintNone;
-            else if (stringValue == "hintmedium")
-                *value = QFontEngine::HintMedium;
-            else if (stringValue == "hintslight")
-                *value = QFontEngine::HintLight;
-
-            return *value != 0;
-        }
-
+        stringValue = identifier.mid(expectedIdentifier.size());
         return true;
     }
-
     return false;
 }
 
@@ -604,10 +626,18 @@ void QXcbScreen::readXResources()
     for (int i = 0; i < split.size(); ++i) {
         const QByteArray &r = split.at(i);
         int value;
-        if (xResource(r, "Xft.dpi:\t", &value))
-            m_forcedDpi = value;
-        else if (xResource(r, "Xft.hintstyle:\t", &value))
-            m_hintStyle = QFontEngine::HintStyle(value);
+        QByteArray stringValue;
+        if (xResource(r, "Xft.dpi:\t", stringValue)) {
+            if (parseXftInt(stringValue, &value))
+                m_forcedDpi = value;
+        } else if (xResource(r, "Xft.hintstyle:\t", stringValue)) {
+            m_hintStyle = parseXftHintStyle(stringValue);
+        } else if (xResource(r, "Xft.antialias:\t", stringValue)) {
+            if (parseXftInt(stringValue, &value))
+                m_antialiasingEnabled = value;
+        } else if (xResource(r, "Xft.rgba:\t", stringValue)) {
+            m_subpixelType = parseXftRgba(stringValue);
+        }
     }
 }
 
