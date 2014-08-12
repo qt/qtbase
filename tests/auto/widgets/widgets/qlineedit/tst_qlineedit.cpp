@@ -4182,10 +4182,12 @@ void tst_QLineEdit::clearButton()
     QVERIFY(clearButton);
     QCOMPARE(filterModel->rowCount(), 3);
     QTest::keyClick(filterLineEdit, 'a');
+    QTRY_COMPARE(clearButton->cursor().shape(), Qt::ArrowCursor);
     QTRY_COMPARE(filterModel->rowCount(), 2); // matches 'aa', 'ab'
     QTest::keyClick(filterLineEdit, 'b');
     QTRY_COMPARE(filterModel->rowCount(), 1); // matches 'ab'
     QTest::mouseClick(clearButton, Qt::LeftButton, 0, QRect(QPoint(0, 0), clearButton->size()).center());
+    QTRY_COMPARE(clearButton->cursor().shape(), filterLineEdit->cursor().shape());
     QTRY_COMPARE(filterModel->rowCount(), 3);
 
     filterLineEdit->setReadOnly(true); // QTBUG-34315
@@ -4215,6 +4217,8 @@ void tst_QLineEdit::sideWidgets()
     testWidget.move(300, 300);
     testWidget.show();
     QVERIFY(QTest::qWaitForWindowExposed(&testWidget));
+    foreach (QToolButton *button, lineEdit->findChildren<QToolButton *>())
+        QCOMPARE(button->cursor().shape(), Qt::ArrowCursor);
     // Arbitrarily add/remove actions, trying to detect crashes. Add QTRY_VERIFY(false) to view the result.
     delete label3Action;
     lineEdit->removeAction(label2Action);

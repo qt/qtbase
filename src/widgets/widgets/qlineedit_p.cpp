@@ -309,7 +309,6 @@ QLineEditIconButton::QLineEditIconButton(QWidget *parent)
     : QToolButton(parent)
     , m_opacity(0)
 {
-    updateCursor();
     setFocusPolicy(Qt::NoFocus);
 }
 
@@ -333,6 +332,7 @@ void QLineEditIconButton::setOpacity(qreal value)
 {
     if (!qFuzzyCompare(m_opacity, value)) {
         m_opacity = value;
+        updateCursor();
         update();
     }
 }
@@ -340,7 +340,6 @@ void QLineEditIconButton::setOpacity(qreal value)
 void QLineEditIconButton::startOpacityAnimation(qreal endValue)
 {
     QPropertyAnimation *animation = new QPropertyAnimation(this, QByteArrayLiteral("opacity"));
-    connect(animation, &QAbstractAnimation::finished, this, &QLineEditIconButton::updateCursor);
     animation->setDuration(160);
     animation->setEndValue(endValue);
     animation->start(QAbstractAnimation::DeleteWhenStopped);
