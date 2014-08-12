@@ -256,7 +256,11 @@ void QEGLPlatformContext::updateFormatFromGL()
         EGL_LARGEST_PBUFFER, EGL_FALSE,
         EGL_NONE
     };
-    EGLSurface pbuffer = eglCreatePbufferSurface(m_eglDisplay, m_eglConfig, pbufferAttributes);
+    // Cannot just pass m_eglConfig because it may not be suitable for pbuffers. Instead,
+    // do what QEGLPbuffer would do: request a config with the same attributes but with
+    // PBUFFER_BIT set.
+    EGLConfig config = q_configFromGLFormat(m_eglDisplay, m_format, false, EGL_PBUFFER_BIT);
+    EGLSurface pbuffer = eglCreatePbufferSurface(m_eglDisplay, config, pbufferAttributes);
     if (pbuffer == EGL_NO_SURFACE)
         return;
 
