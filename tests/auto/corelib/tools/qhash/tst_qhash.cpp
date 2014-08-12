@@ -84,6 +84,14 @@ private slots:
     void eraseValidIteratorOnSharedHash();
 };
 
+struct IdentityTracker {
+    int value, id;
+};
+
+inline uint qHash(IdentityTracker key) { return qHash(key.value); }
+inline bool operator==(IdentityTracker lhs, IdentityTracker rhs) { return lhs.value == rhs.value; }
+
+
 struct Foo {
     static int count;
     Foo():c(count) { ++count; }
@@ -442,6 +450,32 @@ void tst_QHash::insert1()
             QHash<int, int*> hash;
             QVERIFY(((const QHash<int,int*>*) &hash)->operator[](7) == 0);
         }
+    }
+    {
+        QHash<IdentityTracker, int> hash;
+        QCOMPARE(hash.size(), 0);
+        const int dummy = -1;
+        IdentityTracker id00 = {0, 0}, id01 = {0, 1}, searchKey = {0, dummy};
+        QCOMPARE(hash.insert(id00, id00.id).key().id, id00.id);
+        QCOMPARE(hash.size(), 1);
+        QCOMPARE(hash.insert(id01, id01.id).key().id, id00.id); // first key inserted is kept
+        QCOMPARE(hash.size(), 1);
+        QCOMPARE(hash.find(searchKey).value(), id01.id);  // last-inserted value
+        QCOMPARE(hash.find(searchKey).key().id, id00.id); // but first-inserted key
+    }
+    {
+        QMultiHash<IdentityTracker, int> hash;
+        QCOMPARE(hash.size(), 0);
+        const int dummy = -1;
+        IdentityTracker id00 = {0, 0}, id01 = {0, 1}, searchKey = {0, dummy};
+        QCOMPARE(hash.insert(id00, id00.id).key().id, id00.id);
+        QCOMPARE(hash.size(), 1);
+        QCOMPARE(hash.insert(id01, id01.id).key().id, id01.id);
+        QCOMPARE(hash.size(), 2);
+        QMultiHash<IdentityTracker, int>::const_iterator pos = hash.constFind(searchKey);
+        QCOMPARE(pos.value(), pos.key().id); // key fits to value it was inserted with
+        ++pos;
+        QCOMPARE(pos.value(), pos.key().id); // key fits to value it was inserted with
     }
 }
 

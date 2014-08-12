@@ -41,6 +41,7 @@
 
 #include <QtCore/qpropertyanimation.h>
 #include <QtWidgets/qwidget.h>
+#include <QtWidgets/qstyle.h>
 #include <private/qmainwindowlayout_p.h>
 
 #include "qwidgetanimator_p.h"

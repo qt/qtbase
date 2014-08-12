@@ -89,6 +89,12 @@ private slots:
     void eraseValidIteratorOnSharedMap();
 };
 
+struct IdentityTracker {
+    int value, id;
+};
+
+inline bool operator<(IdentityTracker lhs, IdentityTracker rhs) { return lhs.value < rhs.value; }
+
 typedef QMap<QString, QString> StringMap;
 
 class MyClass
@@ -1121,6 +1127,33 @@ void tst_QMap::insert()
         intMap.insert(i, -1);
         QCOMPARE(intMap.size(), 1000);
         QCOMPARE(intMap.value(i), -1);
+    }
+
+    {
+        QMap<IdentityTracker, int> map;
+        QCOMPARE(map.size(), 0);
+        const int dummy = -1;
+        IdentityTracker id00 = {0, 0}, id01 = {0, 1}, searchKey = {0, dummy};
+        QCOMPARE(map.insert(id00, id00.id).key().id, id00.id);
+        QCOMPARE(map.size(), 1);
+        QCOMPARE(map.insert(id01, id01.id).key().id, id00.id); // first key inserted is kept
+        QCOMPARE(map.size(), 1);
+        QCOMPARE(map.find(searchKey).value(), id01.id);  // last-inserted value
+        QCOMPARE(map.find(searchKey).key().id, id00.id); // but first-inserted key
+    }
+    {
+        QMultiMap<IdentityTracker, int> map;
+        QCOMPARE(map.size(), 0);
+        const int dummy = -1;
+        IdentityTracker id00 = {0, 0}, id01 = {0, 1}, searchKey = {0, dummy};
+        QCOMPARE(map.insert(id00, id00.id).key().id, id00.id);
+        QCOMPARE(map.size(), 1);
+        QCOMPARE(map.insert(id01, id01.id).key().id, id01.id);
+        QCOMPARE(map.size(), 2);
+        QMultiMap<IdentityTracker, int>::const_iterator pos = map.constFind(searchKey);
+        QCOMPARE(pos.value(), pos.key().id); // key fits to value it was inserted with
+        ++pos;
+        QCOMPARE(pos.value(), pos.key().id); // key fits to value it was inserted with
     }
 }
 

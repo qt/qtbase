@@ -308,7 +308,13 @@ QUrl QGtk2FileDialogHelper::directory() const
 void QGtk2FileDialogHelper::selectFile(const QUrl &filename)
 {
     GtkDialog *gtkDialog = d->gtkDialog();
-    gtk_file_chooser_select_filename(GTK_FILE_CHOOSER(gtkDialog), filename.toLocalFile().toUtf8());
+    if (options()->acceptMode() == QFileDialogOptions::AcceptSave) {
+        QFileInfo fi(filename.toLocalFile());
+        gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(gtkDialog), fi.path().toUtf8());
+        gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(gtkDialog), fi.fileName().toUtf8());
+    } else {
+        gtk_file_chooser_select_filename(GTK_FILE_CHOOSER(gtkDialog), filename.toLocalFile().toUtf8());
+    }
 }
 
 QList<QUrl> QGtk2FileDialogHelper::selectedFiles() const
