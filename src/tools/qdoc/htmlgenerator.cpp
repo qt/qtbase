@@ -342,8 +342,9 @@ int HtmlGenerator::generateAtom(const Atom *atom, const Node *relative, CodeMark
     case Atom::BaseName:
         break;
     case Atom::BriefLeft:
-        //do not output the brief for QML basic types and doc nodes (including examples).
-        if (relative->isQmlBasicType() || relative->isDocNode()) {
+        // Do not output the brief for QML nodes, doc nodes or collections
+        // (groups, modules, qml module nodes)
+        if (relative->isQmlType() || relative->isDocNode() || relative->isCollectionNode()) {
             skipAhead = skipAtoms(atom, Atom::BriefRight);
             break;
         }
