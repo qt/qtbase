@@ -76,7 +76,9 @@ public:
     static void addBenchmarkResult(const QBenchmarkResult &result);
 
     static void ignoreMessage(QtMsgType type, const char *msg);
+#ifndef QT_NO_REGULAREXPRESSION
     static void ignoreMessage(QtMsgType type, const QRegularExpression &expression);
+#endif
     static int unhandledIgnoreMessages();
     static void printUnhandledIgnoreMessages();
     static void clearIgnoreMessages();

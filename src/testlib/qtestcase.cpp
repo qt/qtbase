@@ -2617,10 +2617,12 @@ void QTest::ignoreMessage(QtMsgType type, const char *message)
     \since 5.3
 */
 
+#ifndef QT_NO_REGULAREXPRESSION
 void QTest::ignoreMessage(QtMsgType type, const QRegularExpression &messagePattern)
 {
     QTestLog::ignoreMessage(type, messagePattern);
 }
+#endif
 
 /*! \internal
  */

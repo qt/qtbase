@@ -133,7 +133,11 @@ namespace QTest {
             return tp == type
                    && (pattern.type() == QVariant::String ?
                        stringsMatch(pattern.toString(), message) :
+#ifndef QT_NO_REGULAREXPRESSION
                        pattern.toRegularExpression().match(message).hasMatch());
+#else
+                       false);
+#endif
         }
 
         QtMsgType type;
@@ -359,7 +363,9 @@ void QTestLog::printUnhandledIgnoreMessages()
         if (list->pattern.type() == QVariant::String) {
             message = QStringLiteral("Did not receive message: \"") + list->pattern.toString() + QLatin1Char('"');
         } else {
+#ifndef QT_NO_REGULAREXPRESSION
             message = QStringLiteral("Did not receive any message matching: \"") + list->pattern.toRegularExpression().pattern() + QLatin1Char('"');
+#endif
         }
         QTest::TestLoggers::addMessage(QAbstractTestLogger::Info, message);
 
@@ -512,12 +518,14 @@ void QTestLog::ignoreMessage(QtMsgType type, const char *msg)
     QTest::IgnoreResultList::append(QTest::ignoreResultList, type, QString::fromLocal8Bit(msg));
 }
 
+#ifndef QT_NO_REGULAREXPRESSION
 void QTestLog::ignoreMessage(QtMsgType type, const QRegularExpression &expression)
 {
     QTEST_ASSERT(expression.isValid());
 
     QTest::IgnoreResultList::append(QTest::ignoreResultList, type, QVariant(expression));
 }
+#endif
 
 void QTestLog::setMaxWarnings(int m)
 {

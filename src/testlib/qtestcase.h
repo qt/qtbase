@@ -248,7 +248,9 @@ namespace QTest
                            const char *file, int line);
     Q_TESTLIB_EXPORT void qWarn(const char *message, const char *file = 0, int line = 0);
     Q_TESTLIB_EXPORT void ignoreMessage(QtMsgType type, const char *message);
+#ifndef QT_NO_REGULAREXPRESSION
     Q_TESTLIB_EXPORT void ignoreMessage(QtMsgType type, const QRegularExpression &messagePattern);
+#endif
 
     Q_TESTLIB_EXPORT QString qFindTestData(const char* basepath, const char* file = 0, int line = 0, const char* builddir = 0);
     Q_TESTLIB_EXPORT QString qFindTestData(const QString& basepath, const char* file = 0, int line = 0, const char* builddir = 0);
