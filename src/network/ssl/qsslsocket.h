@@ -217,7 +217,7 @@ private:
     Q_PRIVATE_SLOT(d_func(), void _q_flushWriteBuffer())
     Q_PRIVATE_SLOT(d_func(), void _q_flushReadBuffer())
     Q_PRIVATE_SLOT(d_func(), void _q_resumeImplementation())
-#ifdef Q_OS_WIN
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
     Q_PRIVATE_SLOT(d_func(), void _q_caRootLoaded(QSslCertificate,QSslCertificate))
 #endif
     friend class QSslSocketBackendPrivate;

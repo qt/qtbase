@@ -116,6 +116,9 @@
 #ifndef QT_NO_OPENSSL
 #include "qsslsocket_openssl_symbols_p.h"
 #endif
+#ifdef Q_OS_WINRT
+#include "qsslsocket_winrt_p.h"
+#endif
 
 #include "qsslcertificate.h"
 #include "qsslcertificate_p.h"

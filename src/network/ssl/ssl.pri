@@ -1,5 +1,5 @@
 # OpenSSL support; compile in QSslSocket.
-contains(QT_CONFIG, openssl) | contains(QT_CONFIG, openssl-linked) {
+contains(QT_CONFIG, ssl) | contains(QT_CONFIG, openssl) | contains(QT_CONFIG, openssl-linked) {
     HEADERS += ssl/qssl.h \
                ssl/qsslcertificate.h \
                ssl/qsslcertificate_p.h \
@@ -11,25 +11,35 @@ contains(QT_CONFIG, openssl) | contains(QT_CONFIG, openssl-linked) {
                ssl/qsslkey.h \
                ssl/qsslkey_p.h \
                ssl/qsslsocket.h \
-               ssl/qsslsocket_openssl_p.h \
-               ssl/qsslsocket_openssl_symbols_p.h \
                ssl/qsslsocket_p.h \
                ssl/qsslcertificateextension.h \
-               ssl/qsslcertificateextension_p.h \
-               ssl/qsslcontext_openssl_p.h
+               ssl/qsslcertificateextension_p.h
     SOURCES += ssl/qssl.cpp \
                ssl/qsslcertificate.cpp \
-               ssl/qsslcertificate_openssl.cpp \
                ssl/qsslconfiguration.cpp \
                ssl/qsslcipher.cpp \
                ssl/qsslkey_p.cpp \
                ssl/qsslerror.cpp \
-               ssl/qsslkey_openssl.cpp \
                ssl/qsslsocket.cpp \
+               ssl/qsslcertificateextension.cpp
+
+    winrt {
+        HEADERS += ssl/qsslsocket_winrt_p.h
+        SOURCES += ssl/qsslcertificate_winrt.cpp \
+                   ssl/qsslkey_winrt.cpp \
+                   ssl/qsslsocket_winrt.cpp
+    }
+}
+
+contains(QT_CONFIG, openssl) | contains(QT_CONFIG, openssl-linked) {
+    HEADERS += ssl/qsslcontext_openssl_p.h \
+               ssl/qsslsocket_openssl_p.h \
+               ssl/qsslsocket_openssl_symbols_p.h
+    SOURCES += ssl/qsslcertificate_openssl.cpp \
+               ssl/qsslcontext_openssl.cpp \
+               ssl/qsslkey_openssl.cpp \
                ssl/qsslsocket_openssl.cpp \
-               ssl/qsslsocket_openssl_symbols.cpp \
-               ssl/qsslcertificateextension.cpp \
-               ssl/qsslcontext_openssl.cpp
+               ssl/qsslsocket_openssl_symbols.cpp
 
 android:!android-no-sdk: SOURCES += ssl/qsslsocket_openssl_android.cpp
 

@@ -294,6 +294,9 @@
 #ifndef QT_NO_OPENSSL
 #include "qsslsocket_openssl_p.h"
 #endif
+#ifdef Q_OS_WINRT
+#include "qsslsocket_winrt_p.h"
+#endif
 #include "qsslconfiguration_p.h"
 
 #include <QtCore/qdebug.h>

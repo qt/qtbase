@@ -73,7 +73,9 @@
 #ifndef QT_NO_HTTP
 
 #ifndef QT_NO_SSL
+#ifndef QT_NO_OPENSSL
 #    include <private/qsslcontext_openssl_p.h>
+#endif
 #    include <private/qsslsocket_p.h>
 #    include <QtNetwork/qsslsocket.h>
 #    include <QtNetwork/qsslerror.h>
