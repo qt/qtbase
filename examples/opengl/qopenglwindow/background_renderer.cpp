@@ -89,7 +89,7 @@ void FragmentToy::draw(const QSize &windowSize)
     glDisable(GL_STENCIL_TEST);
     glDisable(GL_DEPTH_TEST);
 
-    glClearColor(0,0,0,0);
+    glClearColor(0, 0, 0, 1);
     glClear(GL_COLOR_BUFFER_BIT);
     if (!m_vao.isCreated())
         m_vao.create();
