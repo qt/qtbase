@@ -92,8 +92,11 @@ public:
         Q_Q(QWindowContainer);
         QWidget *p = q->parentWidget();
         while (p) {
-            if (qobject_cast<QMdiSubWindow *>(p) != 0
-                    || qobject_cast<QAbstractScrollArea *>(p) != 0) {
+            if (
+#ifndef QT_NO_MDIAREA
+                qobject_cast<QMdiSubWindow *>(p) != 0 ||
+#endif
+                qobject_cast<QAbstractScrollArea *>(p) != 0) {
                 q->winId();
                 usesNativeWidgets = true;
                 break;
