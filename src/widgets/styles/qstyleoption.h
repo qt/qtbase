@@ -666,9 +666,10 @@ protected:
 template <typename T>
 T qstyleoption_cast(const QStyleOption *opt)
 {
-    if (opt && opt->version >= static_cast<T>(0)->Version && (opt->type == static_cast<T>(0)->Type
-        || int(static_cast<T>(0)->Type) == QStyleOption::SO_Default
-        || (int(static_cast<T>(0)->Type) == QStyleOption::SO_Complex
+    typedef typename QtPrivate::remove_cv<typename QtPrivate::remove_pointer<T>::type>::type Opt;
+    if (opt && opt->version >= Opt::Version && (opt->type == Opt::Type
+        || int(Opt::Type) == QStyleOption::SO_Default
+        || (int(Opt::Type) == QStyleOption::SO_Complex
             && opt->type > QStyleOption::SO_Complex)))
         return static_cast<T>(opt);
     return 0;
@@ -677,9 +678,10 @@ T qstyleoption_cast(const QStyleOption *opt)
 template <typename T>
 T qstyleoption_cast(QStyleOption *opt)
 {
-    if (opt && opt->version >= static_cast<T>(0)->Version && (opt->type == static_cast<T>(0)->Type
-        || int(static_cast<T>(0)->Type) == QStyleOption::SO_Default
-        || (int(static_cast<T>(0)->Type) == QStyleOption::SO_Complex
+    typedef typename QtPrivate::remove_cv<typename QtPrivate::remove_pointer<T>::type>::type Opt;
+    if (opt && opt->version >= Opt::Version && (opt->type == Opt::Type
+        || int(Opt::Type) == QStyleOption::SO_Default
+        || (int(Opt::Type) == QStyleOption::SO_Complex
             && opt->type > QStyleOption::SO_Complex)))
         return static_cast<T>(opt);
     return 0;
@@ -727,8 +729,9 @@ public:
 template <typename T>
 T qstyleoption_cast(const QStyleHintReturn *hint)
 {
-    if (hint && hint->version <= static_cast<T>(0)->Version &&
-        (hint->type == static_cast<T>(0)->Type || int(static_cast<T>(0)->Type) == QStyleHintReturn::SH_Default))
+    typedef typename QtPrivate::remove_cv<typename QtPrivate::remove_pointer<T>::type>::type Opt;
+    if (hint && hint->version <= Opt::Version &&
+        (hint->type == Opt::Type || int(Opt::Type) == QStyleHintReturn::SH_Default))
         return static_cast<T>(hint);
     return 0;
 }
@@ -736,8 +739,9 @@ T qstyleoption_cast(const QStyleHintReturn *hint)
 template <typename T>
 T qstyleoption_cast(QStyleHintReturn *hint)
 {
-    if (hint && hint->version <= static_cast<T>(0)->Version &&
-        (hint->type == static_cast<T>(0)->Type || int(static_cast<T>(0)->Type) == QStyleHintReturn::SH_Default))
+    typedef typename QtPrivate::remove_cv<typename QtPrivate::remove_pointer<T>::type>::type Opt;
+    if (hint && hint->version <= Opt::Version &&
+        (hint->type == Opt::Type || int(Opt::Type) == QStyleHintReturn::SH_Default))
         return static_cast<T>(hint);
     return 0;
 }

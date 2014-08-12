@@ -1030,14 +1030,16 @@ private:
 
 template <class T> inline T qgraphicsitem_cast(QGraphicsItem *item)
 {
-    return int(static_cast<T>(0)->Type) == int(QGraphicsItem::Type)
-        || (item && int(static_cast<T>(0)->Type) == item->type()) ? static_cast<T>(item) : 0;
+    typedef typename QtPrivate::remove_cv<typename QtPrivate::remove_pointer<T>::type>::type Item;
+    return int(Item::Type) == int(QGraphicsItem::Type)
+        || (item && int(Item::Type) == item->type()) ? static_cast<T>(item) : 0;
 }
 
 template <class T> inline T qgraphicsitem_cast(const QGraphicsItem *item)
 {
-    return int(static_cast<T>(0)->Type) == int(QGraphicsItem::Type)
-        || (item && int(static_cast<T>(0)->Type) == item->type()) ? static_cast<T>(item) : 0;
+    typedef typename QtPrivate::remove_cv<typename QtPrivate::remove_pointer<T>::type>::type Item;
+    return int(Item::Type) == int(QGraphicsItem::Type)
+        || (item && int(Item::Type) == item->type()) ? static_cast<T>(item) : 0;
 }
 
 #ifndef QT_NO_DEBUG_STREAM
