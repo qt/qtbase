@@ -148,12 +148,14 @@ private:
         hr = application->get_MainView(&view);
         RETURN_VOID_IF_FAILED("Failed to get the main view");
 
-        ComPtr<ICoreWindow> window;
-        hr = view->get_CoreWindow(&window);
-        RETURN_VOID_IF_FAILED("Failed to get the core window");
+        ComPtr<ICoreApplicationView2> view2;
+        hr = view.As(&view2);
+        RETURN_VOID_IF_FAILED("Failed to cast the main view");
 
-        hr = window->get_Dispatcher(&coreDispatcher);
-        RETURN_VOID_IF_FAILED("Failed to get the core dispatcher");
+        hr = view2->get_Dispatcher(&coreDispatcher);
+        if (hr == HRESULT_FROM_WIN32(ERROR_NOT_FOUND)) // expected in thread pool cases
+            return;
+        RETURN_VOID_IF_FAILED("Failed to get core dispatcher");
 
         thread = QThread::currentThread();
     }
@@ -186,7 +188,7 @@ bool QEventDispatcherWinRT::processEvents(QEventLoop::ProcessEventsFlags flags)
 {
     Q_D(QEventDispatcherWinRT);
 
-    if (d->thread != QThread::currentThread())
+    if (d->thread && d->thread != QThread::currentThread())
         d->fetchCoreDispatcher();
 
     bool didProcess = false;
