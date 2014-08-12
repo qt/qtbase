@@ -2572,6 +2572,9 @@ QString Node::fullDocumentName() const
 
     // Create a name based on the type of the ancestor node.
     QString concatenator = "::";
+    if (n->isQmlType())
+        concatenator = QLatin1Char('.');
+
     if (n->isDocNode())
         concatenator = QLatin1Char('#');
 

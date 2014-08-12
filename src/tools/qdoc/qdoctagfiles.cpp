@@ -120,6 +120,7 @@ void QDocTagFiles::generateTagFileCompounds(QXmlStreamWriter& writer, const Inne
             kind = "namespace";
             break;
         case Node::Class:
+        case Node::QmlType:
             kind = "class";
             break;
         case Node::Enum:
