@@ -58,7 +58,9 @@ static QBlittable::Capabilities dfb_blitter_capabilities()
                                     |QBlittable::SourceOverPixmapCapability
                                     |QBlittable::SourceOverScaledPixmapCapability
                                     |QBlittable::AlphaFillRectCapability
-                                    |QBlittable::OpacityPixmapCapability);
+                                    |QBlittable::OpacityPixmapCapability
+                                    |QBlittable::DrawScaledCachedGlyphsCapability
+                                    );
 }
 
 QDirectFbBlitter::QDirectFbBlitter(const QSize &rect, IDirectFBSurface *surface)
@@ -210,6 +212,86 @@ void QDirectFbBlitter::drawPixmapOpacity(const QRectF &rect, const QPixmap &pixm
         DirectFBError("QDirectFBBlitter::drawPixmapExtended()", result);
 }
 
+bool QDirectFbBlitter::drawCachedGlyphs(const QPaintEngineState *state, QFontEngine::GlyphFormat glyphFormat, int numGlyphs, const glyph_t *glyphs, const QFixedPoint *positions, QFontEngine *fontEngine)
+{
+    void *cacheKey = QDirectFbConvenience::dfbInterface();
+
+    QDirectFbTextureGlyphCache *cache =
+            static_cast<QDirectFbTextureGlyphCache *>(fontEngine->glyphCache(cacheKey, glyphFormat, state->transform()));
+    if (!cache) {
+        cache = new QDirectFbTextureGlyphCache(glyphFormat, state->transform());
+        fontEngine->setGlyphCache(cacheKey, cache);
+    }
+
+    cache->populate(fontEngine, numGlyphs, glyphs, positions);
+    cache->fillInPendingGlyphs();
+
+    if (cache->image().width() == 0 || cache->image().height() == 0)
+        return false;
+
+    const int margin = fontEngine->glyphMargin(glyphFormat);
+
+    QVarLengthArray<DFBRectangle, 64> sourceRects(numGlyphs);
+    QVarLengthArray<DFBPoint, 64> destPoints(numGlyphs);
+    int nGlyphs = 0;
+
+    for (int i=0; i<numGlyphs; ++i) {
+
+        QFixed subPixelPosition = fontEngine->subPixelPositionForX(positions[i].x);
+        QTextureGlyphCache::GlyphAndSubPixelPosition glyph(glyphs[i], subPixelPosition);
+        const QTextureGlyphCache::Coord &c = cache->coords[glyph];
+        if (c.isNull())
+            continue;
+
+        int x = qFloor(positions[i].x) + c.baseLineX - margin;
+        int y = qRound(positions[i].y) - c.baseLineY - margin;
+
+        // printf("drawing [%d %d %d %d] baseline [%d %d], glyph: %d, to: %d %d, pos: %d %d\n",
+        //        c.x, c.y,
+        //        c.w, c.h,
+        //        c.baseLineX, c.baseLineY,
+        //        glyphs[i],
+        //        x, y,
+        //        positions[i].x.toInt(), positions[i].y.toInt());
+
+        sourceRects[nGlyphs].x = c.x;
+        sourceRects[nGlyphs].y = c.y;
+        sourceRects[nGlyphs].w = c.w;
+        sourceRects[nGlyphs].h = c.h;
+        destPoints[nGlyphs].x = x;
+        destPoints[nGlyphs].y = y;
+        ++nGlyphs;
+    }
+
+    const QColor color = state->pen().color();
+    m_surface->SetColor(m_surface.data(), color.red(), color.green(), color.blue(), color.alpha());
+
+    m_surface->SetSrcBlendFunction(m_surface.data(), DSBF_SRCALPHA);
+    m_surface->SetDstBlendFunction(m_surface.data(), DSBF_INVSRCALPHA);
+
+    int flags = DSBLIT_BLEND_ALPHACHANNEL | DSBLIT_COLORIZE;
+    if (color.alpha() != 0xff)
+        flags |= DSBLIT_BLEND_COLORALPHA;
+    m_surface->SetBlittingFlags(m_surface.data(), DFBSurfaceBlittingFlags(flags));
+
+    const QRasterPaintEngineState *rs = static_cast<const QRasterPaintEngineState*>(state);
+    if (rs->clip && rs->clip->enabled) {
+        Q_ASSERT(rs->clip->hasRectClip);
+        DFBRegion dfbClip;
+        dfbClip.x1 = rs->clip->clipRect.x();
+        dfbClip.y1 = rs->clip->clipRect.y();
+        dfbClip.x2 = rs->clip->clipRect.right();
+        dfbClip.y2 = rs->clip->clipRect.bottom();
+        m_surface->SetClip(m_surface.data(), &dfbClip);
+    }
+
+    m_surface->BatchBlit(m_surface.data(), cache->sourceSurface(), sourceRects.constData(), destPoints.constData(), nGlyphs);
+
+    if (rs->clip && rs->clip->enabled)
+        m_surface->SetClip(m_surface.data(), 0);
+    return true;
+}
+
 QImage *QDirectFbBlitter::doLock()
 {
     Q_ASSERT(m_surface);
@@ -319,6 +401,46 @@ bool QDirectFbBlitterPlatformPixmap::fromFile(const QString &filename, const cha
 void QDirectFbBlitter::doUnlock()
 {
     m_surface->Unlock(m_surface.data());
+}
+
+void QDirectFbTextureGlyphCache::resizeTextureData(int width, int height)
+{
+    m_surface.reset();;
+    QImageTextureGlyphCache::resizeTextureData(width, height);
+}
+
+IDirectFBSurface *QDirectFbTextureGlyphCache::sourceSurface()
+{
+    if (m_surface.isNull()) {
+        const QImage &source = image();
+        DFBSurfaceDescription desc;
+        memset(&desc, 0, sizeof(desc));
+        desc.flags = DFBSurfaceDescriptionFlags(DSDESC_WIDTH | DSDESC_HEIGHT | DSDESC_PIXELFORMAT | DSDESC_PREALLOCATED | DSDESC_CAPS);
+        desc.width = source.width();
+        desc.height = source.height();
+        desc.caps = DSCAPS_SYSTEMONLY;
+
+        switch (source.format()) {
+        case QImage::Format_Mono:
+            desc.pixelformat = DSPF_A1;
+            break;
+        case QImage::Format_Indexed8:
+            desc.pixelformat = DSPF_A8;
+            break;
+        default:
+            qFatal("QDirectFBTextureGlyphCache: Unsupported source texture image format.");
+            break;
+        }
+
+        desc.preallocated[0].data = const_cast<void*>(static_cast<const void*>(source.bits()));
+        desc.preallocated[0].pitch = source.bytesPerLine();
+        desc.preallocated[1].data = 0;
+        desc.preallocated[1].pitch = 0;
+
+        IDirectFB *dfb = QDirectFbConvenience::dfbInterface();
+        dfb->CreateSurface(dfb , &desc, m_surface.outPtr());
+    }
+    return m_surface.data();
 }
 
 QT_END_NAMESPACE

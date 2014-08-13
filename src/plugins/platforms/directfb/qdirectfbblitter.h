@@ -61,6 +61,7 @@ public:
     virtual void drawPixmap(const QRectF &rect, const QPixmap &pixmap, const QRectF &subrect);
     void alphaFillRect(const QRectF &rect, const QColor &color, QPainter::CompositionMode cmode);
     void drawPixmapOpacity(const QRectF &rect, const QPixmap &pixmap, const QRectF &subrect, QPainter::CompositionMode cmode, qreal opacity);
+    virtual bool drawCachedGlyphs(const QPaintEngineState *state, QFontEngine::GlyphFormat glyphFormat, int numGlyphs, const glyph_t *glyphs, const QFixedPoint *positions, QFontEngine *fontEngine);
 
     IDirectFBSurface *dfbSurface() const;
 
@@ -109,6 +110,21 @@ inline IDirectFBSurface *QDirectFbBlitter::dfbSurface() const
 {
     return m_surface.data();
 }
+
+class QDirectFbTextureGlyphCache : public QImageTextureGlyphCache
+{
+public:
+    QDirectFbTextureGlyphCache(QFontEngine::GlyphFormat format, const QTransform &matrix)
+        : QImageTextureGlyphCache(format, matrix)
+    {}
+
+    virtual void resizeTextureData(int width, int height);
+
+    IDirectFBSurface *sourceSurface();
+
+private:
+    QDirectFBPointer<IDirectFBSurface> m_surface;
+};
 
 QT_END_NAMESPACE
 

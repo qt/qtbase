@@ -64,6 +64,9 @@ public:
         SourceOverScaledPixmapCapability = 0x0008,
         AlphaFillRectCapability         = 0x0010,
         OpacityPixmapCapability         = 0x0020,
+        DrawScaledCachedGlyphsCapability = 0x0040,
+        SubPixelGlyphsCapability         = 0x0080,
+        ComplexClipCapability            = 0x0100,
 
         // Internal ones
         OutlineCapability               = 0x0001000
@@ -92,6 +95,17 @@ public:
         Q_UNUSED(opacity);
         qWarning("Please implement drawPixmapOpacity function in your platform or remove OpacityPixmapCapability from it");
     }
+    virtual bool drawCachedGlyphs(const QPaintEngineState *state, QFontEngine::GlyphFormat glyphFormat, int numGlyphs, const glyph_t *glyphs, const QFixedPoint *positions, QFontEngine *fontEngine) {
+        Q_UNUSED(state);
+        Q_UNUSED(glyphFormat);
+        Q_UNUSED(numGlyphs);
+        Q_UNUSED(glyphs);
+        Q_UNUSED(positions);
+        Q_UNUSED(fontEngine);
+        qWarning("Please implement drawCachedGlyphs function in your platform or remove DrawCachedGlyphsCapability from it");
+        return true;
+    }
+
 
     QImage *lock();
     void unlock();

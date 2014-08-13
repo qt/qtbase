@@ -96,6 +96,7 @@ public:
     void drawPoints(const QPoint *points, int pointCount);
     void stroke(const QVectorPath &path, const QPen &pen);
     void drawStaticTextItem(QStaticTextItem *);
+    bool drawCachedGlyphs(int numGlyphs, const glyph_t *glyphs, const QFixedPoint *positions, QFontEngine *fontEngine);
 };
 
 QT_END_NAMESPACE
