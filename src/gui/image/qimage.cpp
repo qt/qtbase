@@ -660,7 +660,9 @@ bool QImageData::checkForAlphaPixels() const
 
     The following image formats are available in Qt. Values from Format_ARGB8565_Premultiplied
     to Format_ARGB4444_Premultiplied were added in Qt 4.4. Values Format_RGBX8888, Format_RGBA8888
-    and Format_RGBA8888_Premultiplied were added in Qt 5.2. See the notes after the table.
+    and Format_RGBA8888_Premultiplied were added in Qt 5.2. Values Format_BGR30, Format_A2BGR30_Premultiplied,
+    Format_RGB30, Format_A2RGB30_Premultiplied were added in Qt 5.4.
+    See the notes after the table.
 
     \value Format_Invalid   The image is invalid.
     \value Format_Mono      The image is stored using 1-bit per pixel. Bytes are
