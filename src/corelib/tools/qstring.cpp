@@ -3922,12 +3922,14 @@ QString QString::section(const QString &sep, int start, int end, SectionFlags fl
 #if !(defined(QT_NO_REGEXP) && defined(QT_NO_REGULAREXPRESSION))
 class qt_section_chunk {
 public:
+    qt_section_chunk() {}
     qt_section_chunk(int l, QString s) { length = l; string = s; }
     int length;
     QString string;
 };
+Q_DECLARE_TYPEINFO(qt_section_chunk, Q_MOVABLE_TYPE);
 
-static QString extractSections(const QList<qt_section_chunk> &sections,
+static QString extractSections(const QVector<qt_section_chunk> &sections,
                                int start,
                                int end,
                                QString::SectionFlags flags)
@@ -3995,7 +3997,7 @@ QString QString::section(const QRegExp &reg, int start, int end, SectionFlags fl
     sep.setCaseSensitivity((flags & SectionCaseInsensitiveSeps) ? Qt::CaseInsensitive
                                                                 : Qt::CaseSensitive);
 
-    QList<qt_section_chunk> sections;
+    QVector<qt_section_chunk> sections;
     int n = length(), m = 0, last_m = 0, last_len = 0;
     while ((m = sep.indexIn(*this, m)) != -1) {
         sections.append(qt_section_chunk(last_len, QString(uc + last_m, m - last_m)));
@@ -4040,7 +4042,7 @@ QString QString::section(const QRegularExpression &re, int start, int end, Secti
     if (flags & SectionCaseInsensitiveSeps)
         sep.setPatternOptions(sep.patternOptions() | QRegularExpression::CaseInsensitiveOption);
 
-    QList<qt_section_chunk> sections;
+    QVector<qt_section_chunk> sections;
     int n = length(), m = 0, last_m = 0, last_len = 0;
     QRegularExpressionMatchIterator iterator = sep.globalMatch(*this);
     while (iterator.hasNext()) {
