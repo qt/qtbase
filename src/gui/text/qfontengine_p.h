@@ -261,6 +261,14 @@ public:
     };
     virtual void setDefaultHintStyle(HintStyle) { }
 
+    enum SubpixelAntialiasingType {
+        Subpixel_None,
+        Subpixel_RGB,
+        Subpixel_BGR,
+        Subpixel_VRGB,
+        Subpixel_VBGR
+    };
+
 private:
     const Type m_type;
 
