@@ -2072,6 +2072,22 @@ QString &QString::append(QChar ch)
     Prepends the Latin-1 string \a str to this string.
 */
 
+/*! \fn QString &QString::prepend(const QChar *str, int len)
+    \since 5.5
+    \overload prepend()
+
+    Prepends \a len characters from the QChar array \a str to this string and
+    returns a reference to this string.
+*/
+
+/*! \fn QString &QString::prepend(const QStringRef &str)
+    \since 5.5
+    \overload prepend()
+
+    Prepends the string reference \a str to the beginning of this string and
+    returns a reference to this string.
+*/
+
 /*! \fn QString &QString::prepend(const QByteArray &ba)
 
     \overload prepend()

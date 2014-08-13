@@ -375,8 +375,12 @@ private slots:
 
     void prepend_qstring()            { prepend_impl<QString>(); }
     void prepend_qstring_data()       { prepend_data(true); }
+    void prepend_qstringref()         { prepend_impl<QStringRef>(); }
+    void prepend_qstringref_data()    { prepend_data(true); }
     void prepend_qlatin1string()      { prepend_impl<QLatin1String, QString &(QString::*)(QLatin1String)>(); }
     void prepend_qlatin1string_data() { prepend_data(true); }
+    void prepend_qcharstar_int()      { prepend_impl<QPair<const QChar *, int>, QString &(QString::*)(const QChar *, int)>(); }
+    void prepend_qcharstar_int_data() { prepend_data(true); }
     void prepend_qchar()              { prepend_impl<Reversed<QChar>, QString &(QString::*)(QChar)>(); }
     void prepend_qchar_data()         { prepend_data(true); }
     void prepend_qbytearray()         { prepend_impl<QByteArray>(); }

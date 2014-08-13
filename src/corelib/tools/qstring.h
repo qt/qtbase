@@ -428,7 +428,9 @@ public:
     QString &append(const QStringRef &s);
     QString &append(QLatin1String s);
     inline QString &prepend(QChar c) { return insert(0, c); }
+    inline QString &prepend(const QChar *uc, int len) { return insert(0, uc, len); }
     inline QString &prepend(const QString &s) { return insert(0, s); }
+    inline QString &prepend(const QStringRef &s) { return insert(0, s); }
     inline QString &prepend(QLatin1String s) { return insert(0, s); }
 
     inline QString &operator+=(QChar c) {
