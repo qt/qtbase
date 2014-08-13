@@ -337,9 +337,10 @@ void QXcbBackingStore::flush(QWindow *window, const QRegion &region, const QPoin
 
 #ifndef QT_NO_OPENGL
 void QXcbBackingStore::composeAndFlush(QWindow *window, const QRegion &region, const QPoint &offset,
-                                       QPlatformTextureList *textures, QOpenGLContext *context)
+                                       QPlatformTextureList *textures, QOpenGLContext *context,
+                                       bool translucentBackground)
 {
-    QPlatformBackingStore::composeAndFlush(window, region, offset, textures, context);
+    QPlatformBackingStore::composeAndFlush(window, region, offset, textures, context, translucentBackground);
 
     Q_XCB_NOOP(connection());
 

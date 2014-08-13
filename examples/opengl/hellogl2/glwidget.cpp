@@ -52,6 +52,11 @@ GLWidget::GLWidget(QWidget *parent)
       m_program(0)
 {
     m_core = QCoreApplication::arguments().contains(QStringLiteral("--coreprofile"));
+    // --transparent causes the clear color to be transparent. Therefore, on systems that
+    // support it, the widget will become transparent apart from the logo.
+    m_transparent = QCoreApplication::arguments().contains(QStringLiteral("--transparent"));
+    if (m_transparent)
+        setAttribute(Qt::WA_TranslucentBackground);
 }
 
 GLWidget::~GLWidget()
@@ -183,6 +188,7 @@ void GLWidget::initializeGL()
     connect(context(), &QOpenGLContext::aboutToBeDestroyed, this, &GLWidget::cleanup);
 
     initializeOpenGLFunctions();
+    glClearColor(0, 0, 0, m_transparent ? 0 : 1);
 
     m_program = new QOpenGLShaderProgram;
     m_program->addShaderFromSourceCode(QOpenGLShader::Vertex, m_core ? vertexShaderSourceCore : vertexShaderSource);

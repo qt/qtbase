@@ -165,13 +165,15 @@ void QEGLPlatformBackingStore::flush(QWindow *window, const QRegion &region, con
 }
 
 void QEGLPlatformBackingStore::composeAndFlush(QWindow *window, const QRegion &region, const QPoint &offset,
-                                               QPlatformTextureList *textures, QOpenGLContext *context)
+                                               QPlatformTextureList *textures, QOpenGLContext *context,
+                                               bool translucentBackground)
 {
     // QOpenGLWidget content provided as textures. The raster content should go on top.
 
     Q_UNUSED(region);
     Q_UNUSED(offset);
     Q_UNUSED(context);
+    Q_UNUSED(translucentBackground);
 
     QEGLPlatformScreen *screen = static_cast<QEGLPlatformScreen *>(m_window->screen());
     QEGLPlatformWindow *dstWin = screen->compositingWindow();

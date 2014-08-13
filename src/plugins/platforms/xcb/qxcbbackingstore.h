@@ -62,7 +62,8 @@ public:
     void flush(QWindow *window, const QRegion &region, const QPoint &offset);
 #ifndef QT_NO_OPENGL
     void composeAndFlush(QWindow *window, const QRegion &region, const QPoint &offset,
-                         QPlatformTextureList *textures, QOpenGLContext *context);
+                         QPlatformTextureList *textures, QOpenGLContext *context,
+                         bool translucentBackground);
 #endif
     QImage toImage() const;
     void resize(const QSize &size, const QRegion &staticContents);

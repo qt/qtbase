@@ -110,9 +110,11 @@ public:
     // offset is the (child) window's offset in relation to the window surface.
     virtual void flush(QWindow *window, const QRegion &region, const QPoint &offset) = 0;
 #ifndef QT_NO_OPENGL
-    virtual void composeAndFlush(QWindow *window, const QRegion &region, const QPoint &offset, QPlatformTextureList *textures, QOpenGLContext *context);
+    virtual void composeAndFlush(QWindow *window, const QRegion &region, const QPoint &offset,
+                                 QPlatformTextureList *textures, QOpenGLContext *context,
+                                 bool translucentBackground);
     virtual QImage toImage() const;
-    virtual GLuint toTexture(const QRegion &dirtyRegion, QSize *textureSize) const;
+    virtual GLuint toTexture(const QRegion &dirtyRegion, QSize *textureSize, bool *needsSwizzle) const;
 #endif
 
     virtual void resize(const QSize &size, const QRegion &staticContents) = 0;

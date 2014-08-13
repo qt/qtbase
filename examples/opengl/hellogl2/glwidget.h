@@ -98,6 +98,7 @@ private:
     QMatrix4x4 m_proj;
     QMatrix4x4 m_camera;
     QMatrix4x4 m_world;
+    bool m_transparent;
 };
 
 #endif

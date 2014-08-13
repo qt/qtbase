@@ -365,6 +365,10 @@ QT_BEGIN_NAMESPACE
   where a semi-transparent QOpenGLWidget with other widgets visible underneath
   is required.
 
+  Note that this does not apply when there are no other widgets underneath and
+  the intention is to have a semi-transparent window. In that case the
+  traditional approach of setting Qt::WA_TranslucentBackground is sufficient.
+
   \e{OpenGL is a trademark of Silicon Graphics, Inc. in the United States and other
   countries.}
 
@@ -670,11 +674,13 @@ QOpenGLWidget::~QOpenGLWidget()
   OpenGL widgets, individual calls to this function can be replaced by one single call to
   QSurfaceFormat::setDefaultFormat() before creating the first widget.
 
-  \note Requesting an alpha buffer via this function will not lead to the desired results
-  and should be avoided. Instead, use Qt::WA_AlwaysStackOnTop to enable semi-transparent
-  QOpenGLWidget instances with other widgets visible underneath. Keep in mind however that
-  this breaks the stacking order, so it will no longer be possible to have other widgets
-  on top of the QOpenGLWidget.
+  \note Requesting an alpha buffer via this function, or by setting
+  Qt::WA_TranslucentBackground, will not lead to the desired results when the intention is
+  to make other widgets beneath visible. Instead, use Qt::WA_AlwaysStackOnTop to enable
+  semi-transparent QOpenGLWidget instances with other widgets visible underneath. Keep in
+  mind however that this breaks the stacking order, so it will no longer be possible to
+  have other widgets on top of the QOpenGLWidget. When the intention is to have a
+  semi-transparent top-level window, Qt::WA_TranslucentBackground is sufficient.
 
   \sa format(), Qt::WA_AlwaysStackOnTop, QSurfaceFormat::setDefaultFormat()
  */
