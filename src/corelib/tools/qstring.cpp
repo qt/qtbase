@@ -4049,9 +4049,9 @@ QString QString::section(const QString &sep, int start, int end, SectionFlags fl
 class qt_section_chunk {
 public:
     qt_section_chunk() {}
-    qt_section_chunk(int l, QString s) : length(l), string(qMove(s)) {}
+    qt_section_chunk(int l, QStringRef s) : length(l), string(qMove(s)) {}
     int length;
-    QString string;
+    QStringRef string;
 };
 Q_DECLARE_TYPEINFO(qt_section_chunk, Q_MOVABLE_TYPE);
 
@@ -4144,12 +4144,12 @@ QString QString::section(const QRegExp &reg, int start, int end, SectionFlags fl
     QVector<qt_section_chunk> sections;
     int n = length(), m = 0, last_m = 0, last_len = 0;
     while ((m = sep.indexIn(*this, m)) != -1) {
-        sections.append(qt_section_chunk(last_len, QString(uc + last_m, m - last_m)));
+        sections.append(qt_section_chunk(last_len, QStringRef(this, last_m, m - last_m)));
         last_m = m;
         last_len = sep.matchedLength();
         m += qMax(sep.matchedLength(), 1);
     }
-    sections.append(qt_section_chunk(last_len, QString(uc + last_m, n - last_m)));
+    sections.append(qt_section_chunk(last_len, QStringRef(this, last_m, n - last_m)));
 
     return extractSections(sections, start, end, flags);
 }
@@ -4192,11 +4192,11 @@ QString QString::section(const QRegularExpression &re, int start, int end, Secti
     while (iterator.hasNext()) {
         QRegularExpressionMatch match = iterator.next();
         m = match.capturedStart();
-        sections.append(qt_section_chunk(last_len, QString(uc + last_m, m - last_m)));
+        sections.append(qt_section_chunk(last_len, QStringRef(this, last_m, m - last_m)));
         last_m = m;
         last_len = match.capturedLength();
     }
-    sections.append(qt_section_chunk(last_len, QString(uc + last_m, n - last_m)));
+    sections.append(qt_section_chunk(last_len, QStringRef(this, last_m, n - last_m)));
 
     return extractSections(sections, start, end, flags);
 }
