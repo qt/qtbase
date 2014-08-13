@@ -139,9 +139,11 @@ void QIBusPlatformInputContext::commit()
         return;
     }
 
-    QInputMethodEvent event;
-    event.setCommitString(d->predit);
-    QCoreApplication::sendEvent(input, &event);
+    if (!d->predit.isEmpty()) {
+        QInputMethodEvent event;
+        event.setCommitString(d->predit);
+        QCoreApplication::sendEvent(input, &event);
+    }
 
     d->context->Reset();
     d->predit = QString();
