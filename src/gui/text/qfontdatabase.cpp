@@ -822,6 +822,13 @@ QFontEngine *loadSingleEngine(int script,
     QFontCache::Key key(def,script);
     QFontEngine *engine = QFontCache::instance()->findEngine(key);
     if (!engine) {
+        // If the font data's native stretch matches the requested stretch we need to set stretch to 100
+        // to avoid the fontengine synthesizing stretch. If they didn't match exactly we need to calculate
+        // the new stretch factor. This only done if not matched by styleName.
+        bool styleNameMatch = !request.styleName.isEmpty() && request.styleName == style->styleName;
+        if (!styleNameMatch && style->key.stretch != 0 && request.stretch != 0)
+            def.stretch = (request.stretch * 100 + 50) / style->key.stretch;
+
         engine = pfdb->fontEngine(def, size->handle);
         if (engine) {
             Q_ASSERT(engine->type() != QFontEngine::Multi);
