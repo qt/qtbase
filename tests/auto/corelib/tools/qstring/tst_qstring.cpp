@@ -432,14 +432,20 @@ private slots:
 
     void insert_qstring()            { insert_impl<QString>(); }
     void insert_qstring_data()       { insert_data(true); }
+    void insert_qstringref()         { insert_impl<QStringRef>(); }
+    void insert_qstringref_data()    { insert_data(true); }
     void insert_qlatin1string()      { insert_impl<QLatin1String, QString &(QString::*)(int, QLatin1String)>(); }
     void insert_qlatin1string_data() { insert_data(true); }
     void insert_qcharstar_int()      { insert_impl<QPair<const QChar *, int>, QString &(QString::*)(int, const QChar*, int) >(); }
     void insert_qcharstar_int_data() { insert_data(true); }
     void insert_qchar()              { insert_impl<Reversed<QChar>, QString &(QString::*)(int, QChar)>(); }
     void insert_qchar_data()         { insert_data(true); }
+    void insert_qbytearray()         { insert_impl<QByteArray>(); }
+    void insert_qbytearray_data()    { insert_data(true); }
     void insert_char()               { insert_impl<Reversed<char>, QString &(QString::*)(int, QChar)>(); }
     void insert_char_data()          { insert_data(true); }
+    void insert_charstar()           { insert_impl<const char *, QString &(QString::*)(int, const char*) >(); }
+    void insert_charstar_data()      { insert_data(true); }
     void insert_special_cases();
 
     void simplified_data();

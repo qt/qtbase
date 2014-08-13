@@ -420,6 +420,7 @@ public:
     QString &insert(int i, QChar c);
     QString &insert(int i, const QChar *uc, int len);
     inline QString &insert(int i, const QString &s) { return insert(i, s.constData(), s.length()); }
+    inline QString &insert(int i, const QStringRef &s);
     QString &insert(int i, QLatin1String s);
     QString &append(QChar c);
     QString &append(const QChar *uc, int len);
@@ -668,6 +669,10 @@ public:
     { return append(QString::fromUtf8(s)); }
     inline QT_ASCII_CAST_WARN QString &append(const QByteArray &s)
     { return append(QString::fromUtf8(s)); }
+    inline QT_ASCII_CAST_WARN QString &insert(int i, const char *s)
+    { return insert(i, QString::fromUtf8(s)); }
+    inline QT_ASCII_CAST_WARN QString &insert(int i, const QByteArray &s)
+    { return insert(i, QString::fromUtf8(s)); }
     inline QT_ASCII_CAST_WARN QString &operator+=(const char *s)
     { return append(QString::fromUtf8(s)); }
     inline QT_ASCII_CAST_WARN QString &operator+=(const QByteArray &s)
@@ -1575,6 +1580,9 @@ inline bool QStringRef::contains(QChar c, Qt::CaseSensitivity cs) const
 { return indexOf(c, 0, cs) != -1; }
 inline bool QStringRef::contains(const QStringRef &s, Qt::CaseSensitivity cs) const
 { return indexOf(s, 0, cs) != -1; }
+
+inline QString &QString::insert(int i, const QStringRef &s)
+{ return insert(i, s.constData(), s.length()); }
 
 namespace Qt {
 #if QT_DEPRECATED_SINCE(5, 0)

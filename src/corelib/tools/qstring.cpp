@@ -1828,6 +1828,51 @@ QString &QString::operator=(QChar ch)
 
 
 /*!
+    \fn QString& QString::insert(int position, const QStringRef &str)
+    \since 5.5
+    \overload insert()
+
+    Inserts the string reference \a str at the given index \a position and
+    returns a reference to this string.
+
+    If the given \a position is greater than size(), the array is
+    first extended using resize().
+*/
+
+
+/*!
+    \fn QString& QString::insert(int position, const char *str)
+    \since 5.5
+    \overload insert()
+
+    Inserts the C string \a str at the given index \a position and
+    returns a reference to this string.
+
+    If the given \a position is greater than size(), the array is
+    first extended using resize().
+
+    This function is not available when QT_NO_CAST_FROM_ASCII is
+    defined.
+*/
+
+
+/*!
+    \fn QString& QString::insert(int position, const QByteArray &str)
+    \since 5.5
+    \overload insert()
+
+    Inserts the byte array \a str at the given index \a position and
+    returns a reference to this string.
+
+    If the given \a position is greater than size(), the array is
+    first extended using resize().
+
+    This function is not available when QT_NO_CAST_FROM_ASCII is
+    defined.
+*/
+
+
+/*!
     \fn QString &QString::insert(int position, QLatin1String str)
     \overload insert()
 
