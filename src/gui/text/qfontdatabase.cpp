@@ -931,7 +931,7 @@ static
 unsigned int bestFoundry(int script, unsigned int score, int styleStrategy,
                          const QtFontFamily *family, const QString &foundry_name,
                          QtFontStyle::Key styleKey, int pixelSize, char pitch,
-                         QtFontDesc *desc, int force_encoding_id)
+                         QtFontDesc *desc, int force_encoding_id, QString styleName = QString())
 {
     Q_UNUSED(force_encoding_id);
     Q_UNUSED(script);
@@ -953,7 +953,7 @@ unsigned int bestFoundry(int script, unsigned int score, int styleStrategy,
         FM_DEBUG("          looking for matching style in foundry '%s' %d",
                  foundry->name.isEmpty() ? "-- none --" : foundry->name.toLatin1().constData(), foundry->count);
 
-        QtFontStyle *style = bestStyle(foundry, styleKey);
+        QtFontStyle *style = bestStyle(foundry, styleKey, styleName);
 
         if (!style->smoothScalable && (styleStrategy & QFont::ForceOutline)) {
             FM_DEBUG("            ForceOutline set, but not smoothly scalable");
@@ -1140,13 +1140,13 @@ static int match(int script, const QFontDef &request,
         unsigned int newscore =
             bestFoundry(script, score, request.styleStrategy,
                         test.family, foundry_name, styleKey, request.pixelSize, pitch,
-                        &test, force_encoding_id);
+                        &test, force_encoding_id, request.styleName);
         if (test.foundry == 0) {
             // the specific foundry was not found, so look for
             // any foundry matching our requirements
             newscore = bestFoundry(script, score, request.styleStrategy, test.family,
                                    QString(), styleKey, request.pixelSize,
-                                   pitch, &test, force_encoding_id);
+                                   pitch, &test, force_encoding_id, request.styleName);
         }
 
         if (newscore < score) {

@@ -143,7 +143,9 @@ void MainWindow::showFont(QTreeWidgetItem *item)
     QString oldText = textEdit->toPlainText().trimmed();
     bool modified = textEdit->document()->isModified();
     textEdit->clear();
-    textEdit->document()->setDefaultFont(QFont(family, 32, weight, italic));
+    QFont font(family, 32, weight, italic);
+    font.setStyleName(style);
+    textEdit->document()->setDefaultFont(font);
 
     QTextCursor cursor = textEdit->textCursor();
     QTextBlockFormat blockFormat;
@@ -324,6 +326,7 @@ void MainWindow::printPage(int index, QPainter *painter, QPrinter *printer)
         // Calculate the maximum width and total height of the text.
         foreach (int size, sampleSizes) {
             QFont font(family, size, weight, italic);
+            font.setStyleName(style);
             font = QFont(font, painter->device());
             QFontMetricsF fontMetrics(font);
             QRectF rect = fontMetrics.boundingRect(
@@ -357,6 +360,7 @@ void MainWindow::printPage(int index, QPainter *painter, QPrinter *printer)
         // Draw each line of text.
         foreach (int size, sampleSizes) {
             QFont font(family, size, weight, italic);
+            font.setStyleName(style);
             font = QFont(font, painter->device());
             QFontMetricsF fontMetrics(font);
             QRectF rect = fontMetrics.boundingRect(QString("%1 %2").arg(
