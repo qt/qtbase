@@ -3966,7 +3966,7 @@ QString QString::section(const QString &sep, int start, int end, SectionFlags fl
 class qt_section_chunk {
 public:
     qt_section_chunk() {}
-    qt_section_chunk(int l, QString s) { length = l; string = s; }
+    qt_section_chunk(int l, QString s) : length(l), string(qMove(s)) {}
     int length;
     QString string;
 };
