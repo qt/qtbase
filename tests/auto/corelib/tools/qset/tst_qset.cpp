@@ -72,6 +72,7 @@ private slots:
     void javaMutableIterator();
     void makeSureTheComfortFunctionsCompile();
     void initializerList();
+    void qhash();
 };
 
 struct IdentityTracker {
@@ -966,6 +967,50 @@ void tst_QSet::initializerList()
 #else
     QSKIP("Compiler doesn't support initializer lists");
 #endif
+}
+
+QT_BEGIN_NAMESPACE
+extern Q_CORE_EXPORT QBasicAtomicInt qt_qhash_seed; // from qhash.cpp
+QT_END_NAMESPACE
+
+void tst_QSet::qhash()
+{
+    //
+    // check that sets containing the same elements hash to the same value
+    //
+    {
+        QSet<int> s1;
+        s1.reserve(4);
+        s1 << 400 << 300 << 200 << 100;
+
+        // also change the seed:
+        qt_qhash_seed = qt_qhash_seed + 0x9e3779b9;
+
+        QSet<int> s2;
+        s2.reserve(100); // provoke different bucket counts
+        s2 << 100 << 200 << 300 << 400; // and insert elements in different order, too
+
+        QVERIFY(s1.capacity() != s2.capacity());
+        QCOMPARE(s1, s2);
+        QVERIFY(!std::equal(s1.cbegin(), s1.cend(), s2.cbegin())); // verify that the order _is_ different
+        QCOMPARE(qHash(s1), qHash(s2));
+    }
+
+    //
+    // check that sets of sets work:
+    //
+    {
+#ifdef Q_COMPILER_INITIALIZER_LISTS
+        QSet<QSet<int> > intSetSet = { { 0, 1, 2 }, { 0, 1 }, { 1, 2 } };
+#else
+        QSet<QSet<int> > intSetSet;
+        QSet<int> intSet01, intSet12;
+        intSet01 << 0 << 1;
+        intSet12 << 1 << 2;
+        intSetSet << intSet01 << intSet12 << (intSet01|intSet12);
+#endif
+        QCOMPARE(intSetSet.size(), 3);
+    }
 }
 
 QTEST_APPLESS_MAIN(tst_QSet)

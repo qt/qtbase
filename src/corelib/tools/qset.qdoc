@@ -968,3 +968,14 @@
 
     \sa{Serializing Qt Data Types}{Format of the QDataStream operators}
 */
+
+/*!
+    \fn uint qHash(const QSet<T> &key, uint seed = 0)
+    \relates QHash
+    \since 5.5
+
+    Returns the hash value for the \a key, using \a seed to seed the calculation.
+
+    The hash value is independent of the order of elements in \a key, that is, sets
+    that contain the same elements hash to the same value.
+*/

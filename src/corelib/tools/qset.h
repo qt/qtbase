@@ -237,6 +237,15 @@ private:
     }
 };
 
+template <typename T>
+uint qHash(const QSet<T> &key, uint seed = 0)
+Q_DECL_NOEXCEPT_EXPR(noexcept(qHashRangeCommutative(key.begin(), key.end(), seed)))
+{
+    return qHashRangeCommutative(key.begin(), key.end(), seed);
+}
+
+// inline function implementations
+
 template <class T>
 Q_INLINE_TEMPLATE void QSet<T>::reserve(int asize) { q_hash.reserve(asize); }
 
