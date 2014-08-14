@@ -55,6 +55,7 @@ class QWindow;
 namespace QtAndroidMenu
 {
     // Menu support
+    void openOptionsMenu();
     void showContextMenu(QAndroidPlatformMenu *menu, JNIEnv *env = 0);
     void hideContextMenu(QAndroidPlatformMenu *menu);
     void syncMenu(QAndroidPlatformMenu *menu);

@@ -1886,11 +1886,17 @@ void QGuiApplicationPrivate::processKeyEvent(QWindowSystemInterfacePrivate::KeyE
         ev.setAccepted(false);
 
     static bool backKeyPressAccepted = false;
+    static bool menuKeyPressAccepted = false;
     if (e->keyType == QEvent::KeyPress) {
         backKeyPressAccepted = e->key == Qt::Key_Back && ev.isAccepted();
-    } else if (e->keyType == QEvent::KeyRelease && e->key == Qt::Key_Back && !backKeyPressAccepted && !ev.isAccepted()) {
-        if (window)
-            QWindowSystemInterface::handleCloseEvent(window);
+        menuKeyPressAccepted = e->key == Qt::Key_Menu && ev.isAccepted();
+    } else if (e->keyType == QEvent::KeyRelease) {
+        if (e->key == Qt::Key_Back && !backKeyPressAccepted && !ev.isAccepted()) {
+            if (window)
+                QWindowSystemInterface::handleCloseEvent(window);
+        } else if (e->key == Qt::Key_Menu && !menuKeyPressAccepted && !ev.isAccepted()) {
+            platform_theme->showPlatformMenuBar();
+        }
     }
 #endif
 }

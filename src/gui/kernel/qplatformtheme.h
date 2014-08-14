@@ -276,6 +276,7 @@ public:
     virtual QPlatformMenuItem* createPlatformMenuItem() const;
     virtual QPlatformMenu* createPlatformMenu() const;
     virtual QPlatformMenuBar* createPlatformMenuBar() const;
+    virtual void showPlatformMenuBar() {}
 
     virtual bool usePlatformNativeDialog(DialogType type) const;
     virtual QPlatformDialogHelper *createPlatformDialogHelper(DialogType type) const;
