@@ -137,6 +137,16 @@ void tst_QSet::operator_eq()
         QVERIFY(a != b);
         QVERIFY(!(a == b));
     }
+
+    {
+        QSet<int> s1, s2;
+        s1.reserve(100);
+        s2.reserve(4);
+        QVERIFY(s1 == s2);
+        s1 << 100 << 200 << 300 << 400;
+        s2 << 400 << 300 << 200 << 100;
+        QVERIFY(s1 == s2);
+    }
 }
 
 void tst_QSet::swap()
