@@ -71,7 +71,9 @@ HEADERS += \
         kernel/qpixelformat.h \
         kernel/qpaintdevicewindow.h \
         kernel/qpaintdevicewindow_p.h \
-        kernel/qrasterwindow.h
+        kernel/qrasterwindow.h \
+        kernel/qplatformgraphicsbuffer.h \
+        kernel/qplatformgraphicsbufferhelper.h
 
 SOURCES += \
         kernel/qgenericpluginfactory.cpp \
@@ -124,7 +126,9 @@ SOURCES += \
         kernel/qplatformmenu.cpp \
         kernel/qpixelformat.cpp \
         kernel/qpaintdevicewindow.cpp \
-        kernel/qrasterwindow.cpp
+        kernel/qrasterwindow.cpp \
+        kernel/qplatformgraphicsbuffer.cpp \
+        kernel/qplatformgraphicsbufferhelper.cpp
 
 contains(QT_CONFIG, opengl)|contains(QT_CONFIG, opengles2) {
     HEADERS += \

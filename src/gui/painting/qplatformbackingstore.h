@@ -62,6 +62,7 @@ class QPlatformWindow;
 class QPlatformTextureList;
 class QPlatformTextureListPrivate;
 class QOpenGLContext;
+class QPlatformGraphicsBuffer;
 
 #ifndef QT_NO_OPENGL
 class Q_GUI_EXPORT QPlatformTextureList : public QObject
@@ -115,6 +116,8 @@ public:
     virtual QImage toImage() const;
     virtual GLuint toTexture(const QRegion &dirtyRegion, QSize *textureSize, bool *needsSwizzle) const;
 #endif
+
+    virtual QPlatformGraphicsBuffer *graphicsBuffer() const;
 
     virtual void resize(const QSize &size, const QRegion &staticContents) = 0;
 

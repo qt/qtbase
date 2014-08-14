@@ -58,6 +58,9 @@ public:
                          bool translucentBackground) Q_DECL_OVERRIDE;
     QImage toImage() const Q_DECL_OVERRIDE;
 #endif
+
+    QPlatformGraphicsBuffer *graphicsBuffer() const Q_DECL_OVERRIDE;
+
     void resize(const QSize &size, const QRegion &staticContents) Q_DECL_OVERRIDE;
     bool scroll(const QRegion &area, int dx, int dy) Q_DECL_OVERRIDE;
 

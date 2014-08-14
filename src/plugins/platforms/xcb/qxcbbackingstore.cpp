@@ -49,6 +49,7 @@
 #include <qdebug.h>
 #include <qpainter.h>
 #include <qscreen.h>
+#include <qpa/qplatformgraphicsbuffer.h>
 
 #include <algorithm>
 QT_BEGIN_NAMESPACE
@@ -60,6 +61,8 @@ public:
     ~QXcbShmImage() { destroy(); }
 
     QImage *image() { return &m_qimage; }
+    QPlatformGraphicsBuffer *graphicsBuffer() { return m_graphics_buffer; }
+
     QSize size() const { return m_qimage.size(); }
 
     void put(xcb_window_t window, const QPoint &dst, const QRect &source);
@@ -73,6 +76,7 @@ private:
     xcb_image_t *m_xcb_image;
 
     QImage m_qimage;
+    QPlatformGraphicsBuffer *m_graphics_buffer;
 
     xcb_gcontext_t m_gc;
     xcb_window_t m_gc_window;
@@ -80,8 +84,39 @@ private:
     QRegion m_dirty;
 };
 
+class QXcbShmGraphicsBuffer : public QPlatformGraphicsBuffer
+{
+public:
+    QXcbShmGraphicsBuffer(QImage *image)
+        : QPlatformGraphicsBuffer(image->size(), QImage::toPixelFormat(image->format()))
+        , m_access_lock(QPlatformGraphicsBuffer::None)
+        , m_image(image)
+    { }
+
+    bool doLock(AccessTypes access, const QRect &rect) Q_DECL_OVERRIDE
+    {
+        Q_UNUSED(rect);
+        if (access & ~(QPlatformGraphicsBuffer::SWReadAccess | QPlatformGraphicsBuffer::SWWriteAccess))
+            return false;
+
+        m_access_lock |= access;
+        return true;
+    }
+    void doUnlock() Q_DECL_OVERRIDE { m_access_lock = None; }
+
+    const uchar *data() const Q_DECL_OVERRIDE { return m_image->bits(); }
+    uchar *data() Q_DECL_OVERRIDE { return m_image->bits(); }
+    int bytesPerLine() const Q_DECL_OVERRIDE { return m_image->bytesPerLine(); }
+
+    Origin origin() const Q_DECL_OVERRIDE { return QPlatformGraphicsBuffer::OriginTopLeft; }
+private:
+    AccessTypes m_access_lock;
+    QImage *m_image;
+};
+
 QXcbShmImage::QXcbShmImage(QXcbScreen *screen, const QSize &size, uint depth, QImage::Format format)
     : QXcbObject(screen->connection())
+    , m_graphics_buffer(Q_NULLPTR)
     , m_gc(0)
     , m_gc_window(0)
 {
@@ -137,6 +172,7 @@ QXcbShmImage::QXcbShmImage(QXcbScreen *screen, const QSize &size, uint depth, QI
     }
 
     m_qimage = QImage( (uchar*) m_xcb_image->data, m_xcb_image->width, m_xcb_image->height, m_xcb_image->stride, format);
+    m_graphics_buffer = new QXcbShmGraphicsBuffer(&m_qimage);
 }
 
 void QXcbShmImage::destroy()
@@ -158,6 +194,8 @@ void QXcbShmImage::destroy()
 
     if (m_gc)
         Q_XCB_CALL(xcb_free_gc(xcb_connection(), m_gc));
+    delete m_graphics_buffer;
+    m_graphics_buffer = Q_NULLPTR;
 }
 
 void QXcbShmImage::put(xcb_window_t window, const QPoint &target, const QRect &source)
@@ -293,6 +331,11 @@ QImage QXcbBackingStore::toImage() const
     return m_image && m_image->image() ? *m_image->image() : QImage();
 }
 #endif
+
+QPlatformGraphicsBuffer *QXcbBackingStore::graphicsBuffer() const
+{
+    return m_image ? m_image->graphicsBuffer() : Q_NULLPTR;
+}
 
 void QXcbBackingStore::flush(QWindow *window, const QRegion &region, const QPoint &offset)
 {

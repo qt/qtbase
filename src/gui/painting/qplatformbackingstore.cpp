@@ -45,6 +45,8 @@
 #ifndef QT_NO_OPENGL
 #include <QtGui/private/qopengltextureblitter_p.h>
 #endif
+#include <qpa/qplatformgraphicsbuffer.h>
+#include <qpa/qplatformgraphicsbufferhelper.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -69,7 +71,6 @@ public:
 #endif
     }
     QWindow *window;
-    QSize size;
 #ifndef QT_NO_OPENGL
     mutable GLuint textureId;
     mutable QSize textureSize;
@@ -267,13 +268,50 @@ void QPlatformBackingStore::composeAndFlush(QWindow *window, const QRegion &regi
     // semi-transparency even when it is not wanted.
     funcs->glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_FALSE);
 
-    // Backingstore texture with the normal widgets.
-    GLuint textureId = toTexture(deviceRegion(region, window), &d_ptr->textureSize, &d_ptr->needsSwizzle);
+    GLuint textureId = 0;
+    QOpenGLTextureBlitter::Origin origin = QOpenGLTextureBlitter::OriginTopLeft;
+    if (QPlatformGraphicsBuffer *graphicsBuffer = this->graphicsBuffer()) {
+        if (graphicsBuffer->size() != d_ptr->textureSize) {
+            if (d_ptr->textureId)
+                funcs->glDeleteTextures(1, &d_ptr->textureId);
+            funcs->glGenTextures(1, &d_ptr->textureId);
+            funcs->glBindTexture(GL_TEXTURE_2D, d_ptr->textureId);
+#ifndef QT_OPENGL_ES_2
+            if (!QOpenGLContext::currentContext()->isOpenGLES()) {
+                funcs->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+                funcs->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
+            }
+#endif
+            funcs->glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            funcs->glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+            funcs->glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            funcs->glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+            if (QPlatformGraphicsBufferHelper::lockAndBindToTexture(graphicsBuffer, &d_ptr->needsSwizzle)) {
+                d_ptr->textureSize = graphicsBuffer->size();
+            } else {
+                d_ptr->textureSize = QSize(0,0);
+            }
+
+            graphicsBuffer->unlock();
+        } else if (!region.isEmpty()){
+            funcs->glBindTexture(GL_TEXTURE_2D, d_ptr->textureId);
+            QPlatformGraphicsBufferHelper::lockAndBindToTexture(graphicsBuffer, &d_ptr->needsSwizzle);
+        }
+
+        if (graphicsBuffer->origin() == QPlatformGraphicsBuffer::OriginBottomLeft)
+            origin = QOpenGLTextureBlitter::OriginBottomLeft;
+        textureId = d_ptr->textureId;
+    } else {
+        // Backingstore texture with the normal widgets.
+        textureId = toTexture(deviceRegion(region, window), &d_ptr->textureSize, &d_ptr->needsSwizzle);
+    }
+
     if (textureId) {
         QMatrix4x4 target = QOpenGLTextureBlitter::targetTransform(QRect(QPoint(), d_ptr->textureSize), windowRect);
         if (d_ptr->needsSwizzle)
             d_ptr->blitter->setSwizzleRB(true);
-        d_ptr->blitter->blit(textureId, target, QOpenGLTextureBlitter::OriginTopLeft);
+        d_ptr->blitter->blit(textureId, target, origin);
         if (d_ptr->needsSwizzle)
             d_ptr->blitter->setSwizzleRB(false);
     }
@@ -460,6 +498,14 @@ void QPlatformBackingStore::beginPaint(const QRegion &)
 
 void QPlatformBackingStore::endPaint()
 {
+}
+
+/*!
+    Accessor for a backingstores graphics buffer abstraction
+*/
+QPlatformGraphicsBuffer *QPlatformBackingStore::graphicsBuffer() const
+{
+    return Q_NULLPTR;
 }
 
 /*!
