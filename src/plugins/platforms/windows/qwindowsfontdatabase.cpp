@@ -1582,11 +1582,11 @@ QStringList QWindowsFontDatabase::extraTryFontsForFamily(const QString &family)
         if (!tryFonts) {
             LANGID lid = GetUserDefaultLangID();
             switch (lid&0xff) {
-            case LANG_CHINESE: // Chinese (Taiwan)
-                if ( lid == 0x0804 ) // Taiwan
-                    tryFonts = ch_TW_tryFonts;
-                else
+            case LANG_CHINESE: // Chinese
+                if ( lid == 0x0804 || lid == 0x1004) // China mainland and Singapore
                     tryFonts = ch_CN_tryFonts;
+                else
+                    tryFonts = ch_TW_tryFonts; // Taiwan, Hong Kong and Macau
                 break;
             case LANG_JAPANESE:
                 tryFonts = jp_tryFonts;
