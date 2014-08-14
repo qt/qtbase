@@ -203,6 +203,11 @@ void QKmsBackingStore::resize(const QSize &size, const QRegion &staticContents)
 
     m_context->makeCurrent(window());
 
+    if (!m_initialized) {
+        initializeOpenGLFunctions();
+        m_initialized = true;
+    }
+
     if (m_texture)
         glDeleteTextures(1, &m_texture);
 
