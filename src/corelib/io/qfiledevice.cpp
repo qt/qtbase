@@ -269,7 +269,7 @@ int QFileDevice::handle() const
 
 /*!
     Returns the name of the file.
-    The default implementation in QFileDevice returns QString().
+    The default implementation in QFileDevice returns a null string.
 */
 QString QFileDevice::fileName() const
 {

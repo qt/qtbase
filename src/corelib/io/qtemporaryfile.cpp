@@ -700,18 +700,20 @@ void QTemporaryFile::setFileTemplate(const QString &name)
 
 
 /*!
-  If \a file is not already a native file then a QTemporaryFile is created
-  in the tempPath() and \a file is copied into the temporary file, then a
-  pointer to the temporary file is returned. If \a file is already a native
-  file, a QTemporaryFile is not created, no copy is made and 0 is returned.
+  If \a file is not already a native file, then a QTemporaryFile is created
+  in QDir::tempPath(), the contents of \a file is copied into it, and a pointer
+  to the temporary file is returned. Does nothing and returns \c 0 if \a file
+  is already a native file.
 
   For example:
 
+  \code
   QFile f(":/resources/file.txt");
   QTemporaryFile::createNativeFile(f); // Returns a pointer to a temporary file
 
   QFile f("/users/qt/file.txt");
   QTemporaryFile::createNativeFile(f); // Returns 0
+  \endcode
 
   \sa QFileInfo::isNativePath()
 */

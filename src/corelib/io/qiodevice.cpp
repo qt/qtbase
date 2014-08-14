@@ -217,7 +217,7 @@ QIODevicePrivate::~QIODevicePrivate()
 
     \li waitFor....() - Subclasses of QIODevice implement blocking
     functions for device-specific operations. For example, QProcess
-    has a function called waitForStarted() which suspends operation in
+    has a function called \l {QProcess::}{waitForStarted()} which suspends operation in
     the calling thread until the process has started.
     \endlist
 
@@ -730,8 +730,7 @@ qint64 QIODevice::bytesAvailable() const
     return d->buffer.size();
 }
 
-/*!
-    For buffered devices, this function returns the number of bytes
+/*!  For buffered devices, this function returns the number of bytes
     waiting to be written. For devices with no buffer, this function
     returns 0.
 
@@ -943,9 +942,10 @@ qint64 QIODevice::read(char *data, qint64 maxSize)
     data read as a QByteArray.
 
     This function has no way of reporting errors; returning an empty
-    QByteArray() can mean either that no data was currently available
+    QByteArray can mean either that no data was currently available
     for reading, or that an error occurred.
 */
+
 QByteArray QIODevice::read(qint64 maxSize)
 {
     Q_D(QIODevice);
@@ -994,10 +994,10 @@ QByteArray QIODevice::read(qint64 maxSize)
     \overload
 
     Reads all available data from the device, and returns it as a
-    QByteArray.
+    byte array.
 
     This function has no way of reporting errors; returning an empty
-    QByteArray() can mean either that no data was currently available
+    QByteArray can mean either that no data was currently available
     for reading, or that an error occurred.
 */
 QByteArray QIODevice::readAll()
@@ -1173,10 +1173,10 @@ qint64 QIODevice::readLine(char *data, qint64 maxSize)
     \overload
 
     Reads a line from the device, but no more than \a maxSize characters,
-    and returns the result as a QByteArray.
+    and returns the result as a byte array.
 
     This function has no way of reporting errors; returning an empty
-    QByteArray() can mean either that no data was currently available
+    QByteArray can mean either that no data was currently available
     for reading, or that an error occurred.
 */
 QByteArray QIODevice::readLine(qint64 maxSize)
@@ -1527,7 +1527,7 @@ qint64 QIODevice::peek(char *data, qint64 maxSize)
     \snippet code/src_corelib_io_qiodevice.cpp 5
 
     This function has no way of reporting errors; returning an empty
-    QByteArray() can mean either that no data was currently available
+    QByteArray can mean either that no data was currently available
     for peeking, or that an error occurred.
 
     \sa read()

@@ -2822,7 +2822,7 @@ QTextStream &reset(QTextStream &stream)
 /*!
     \relates QTextStream
 
-    Calls skipWhiteSpace() on \a stream and returns \a stream.
+    Calls \l {QTextStream::}{skipWhiteSpace()} on \a stream and returns \a stream.
 
     \sa {QTextStream manipulators}
 */

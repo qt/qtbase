@@ -2315,7 +2315,7 @@ void QUrl::setHost(const QString &host, ParsingMode mode)
     as DNS requests or in HTTP request headers). If that flag is not present,
     this function returns the International Domain Name (IDN) in Unicode form,
     according to the list of permissible top-level domains (see
-    idnWhiteList()).
+    idnWhitelist()).
 
     All other flags are ignored. Host names cannot contain control or percent
     characters, so the returned value can be considered fully decoded.
@@ -2656,8 +2656,8 @@ void QUrl::setQuery(const QUrlQuery &query)
     Sets the query string of the URL to an encoded version of \a
     query. The contents of \a query are converted to a string
     internally, each pair delimited by the character returned by
-    pairDelimiter(), and the key and value are delimited by
-    valueDelimiter().
+    queryPairDelimiter(), and the key and value are delimited by
+    queryValueDelimiter().
 
     \note This method does not encode spaces (ASCII 0x20) as plus (+) signs,
     like HTML forms do. If you need that kind of encoding, you must encode
@@ -2676,8 +2676,8 @@ void QUrl::setQuery(const QUrlQuery &query)
     Sets the query string of the URL to the encoded version of \a
     query. The contents of \a query are converted to a string
     internally, each pair delimited by the character returned by
-    pairDelimiter(), and the key and value are delimited by
-    valueDelimiter().
+    queryPairDelimiter(), and the key and value are delimited by
+    queryValueDelimiter().
 
     \obsolete Use QUrlQuery and setQuery().
 
@@ -2691,11 +2691,11 @@ void QUrl::setQuery(const QUrlQuery &query)
     Inserts the pair \a key = \a value into the query string of the
     URL.
 
-    The key/value pair is encoded before it is added to the query. The
+    The key-value pair is encoded before it is added to the query. The
     pair is converted into separate strings internally. The \a key and
     \a value is first encoded into UTF-8 and then delimited by the
-    character returned by valueDelimiter(). Each key/value pair is
-    delimited by the character returned by pairDelimiter().
+    character returned by queryValueDelimiter(). Each key-value pair is
+    delimited by the character returned by queryPairDelimiter().
 
     \note This method does not encode spaces (ASCII 0x20) as plus (+) signs,
     like HTML forms do. If you need that kind of encoding, you must encode
@@ -2929,9 +2929,8 @@ QString QUrl::query(ComponentFormattingOptions options) const
     The fragment is sometimes also referred to as the URL "reference".
 
     Passing an argument of QString() (a null QString) will unset the fragment.
-    Passing an argument of QString("") (an empty but not null QString)
-    will set the fragment to an empty string (as if the original URL
-    had a lone "#").
+    Passing an argument of QString("") (an empty but not null QString) will set the
+    fragment to an empty string (as if the original URL had a lone "#").
 
     The \a fragment data is interpreted according to \a mode: in StrictMode,
     any '%' characters must be followed by exactly two hexadecimal characters
@@ -3006,10 +3005,10 @@ QString QUrl::fragment(ComponentFormattingOptions options) const
 
     The fragment is sometimes also referred to as the URL "reference".
 
-    Passing an argument of QByteArray() (a null QByteArray) will unset
-    the fragment.  Passing an argument of QByteArray("") (an empty but
-    not null QByteArray) will set the fragment to an empty string (as
-    if the original URL had a lone "#").
+    Passing an argument of QByteArray() (a null QByteArray) will unset the fragment.
+    Passing an argument of QByteArray("") (an empty but not null QByteArray)
+    will set the fragment to an empty string (as if the original URL
+    had a lone "#").
 
     \obsolete Use setFragment(), which has the same behavior of null / empty.
 
