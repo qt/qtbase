@@ -3997,10 +3997,9 @@ int QString::count(const QRegularExpression &re) const
 
 QString QString::section(const QString &sep, int start, int end, SectionFlags flags) const
 {
-    QStringList sections = split(sep, KeepEmptyParts,
-                                 (flags & SectionCaseInsensitiveSeps) ? Qt::CaseInsensitive : Qt::CaseSensitive);
+    const QVector<QStringRef> sections = splitRef(sep, KeepEmptyParts,
+                                                  (flags & SectionCaseInsensitiveSeps) ? Qt::CaseInsensitive : Qt::CaseSensitive);
     const int sectionsSize = sections.size();
-
     if (!(flags & SectionSkipEmpty)) {
         if (start < 0)
             start += sectionsSize;
@@ -4024,7 +4023,7 @@ QString QString::section(const QString &sep, int start, int end, SectionFlags fl
     QString ret;
     int first_i = start, last_i = end;
     for (int i = 0; x <= end && i < sectionsSize; ++i) {
-        QString section = sections.at(i);
+        const QStringRef &section = sections.at(i);
         const bool empty = section.isEmpty();
         if (x >= start) {
             if(x == start)
