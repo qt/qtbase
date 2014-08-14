@@ -473,13 +473,7 @@ QDebug operator<<(QDebug debug, const QVersionNumber &version)
 */
 uint qHash(const QVersionNumber &key, uint seed)
 {
-    uint hash = seed;
-    for (QVector<int>::const_iterator it = key.m_segments.begin(), end = key.m_segments.end(); it != end; ++it) {
-        // used to preserve order
-        //   see N3876 for more information
-        hash ^= qHash(*it) + 0x9e3779b9 + (hash << 6) + (hash >> 2);
-    }
-    return hash;
+    return qHashRange(key.m_segments.begin(), key.m_segments.end(), seed);
 }
 
 QT_END_NAMESPACE
