@@ -710,6 +710,11 @@ QJsonObject::const_iterator QJsonObject::constFind(const QString &key) const
     \sa key()
 */
 
+/*! \fn QJsonValueRef *QJsonObject::iterator::operator->() const
+
+    Returns a pointer to a modifiable reference to the current item.
+*/
+
 /*!
     \fn bool QJsonObject::iterator::operator==(const iterator &other) const
     \fn bool QJsonObject::iterator::operator==(const const_iterator &other) const
@@ -891,6 +896,11 @@ QJsonObject::const_iterator QJsonObject::constFind(const QString &key) const
     Same as value().
 
     \sa key()
+*/
+
+/*! \fn QJsonValue *QJsonObject::const_iterator::operator->() const
+
+    Returns a pointer to the current item.
 */
 
 /*! \fn bool QJsonObject::const_iterator::operator==(const const_iterator &other) const
