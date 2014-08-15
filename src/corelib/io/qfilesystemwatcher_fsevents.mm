@@ -496,6 +496,7 @@ QStringList QFseventsFileSystemWatcherEngine::removePaths(const QStringList &pat
 bool QFseventsFileSystemWatcherEngine::startStream()
 {
     Q_ASSERT(stream == 0);
+    Q_AUTORELEASE_POOL(pool)
     if (stream) // This shouldn't happen, but let's be nice and handle it.
         stopStream();
 
