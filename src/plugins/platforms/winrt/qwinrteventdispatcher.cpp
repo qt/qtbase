@@ -42,7 +42,6 @@
 #include "qwinrteventdispatcher.h"
 #include <qpa/qwindowsysteminterface.h>
 #include <qpa/qplatformscreen.h>
-#include <qpa/qplatformscreenpageflipper.h>
 #include <QtCore/QThread>
 #include <QtGui/QGuiApplication>
 
