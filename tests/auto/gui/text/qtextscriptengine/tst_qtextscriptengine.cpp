@@ -1258,21 +1258,29 @@ void tst_QTextScriptEngine::thaiWithZWJ()
     QTextLayout layout(s, font);
     QTextEngine *e = layout.engine();
     e->itemize();
-    QCOMPARE(e->layoutData->items.size(), 3);
+    QCOMPARE(e->layoutData->items.size(), 11);
 
     for (int item = 0; item < e->layoutData->items.size(); ++item)
         e->shape(item);
 
-    QCOMPARE(e->layoutData->items[0].num_glyphs, ushort(15)); // Thai: The ZWJ and ZWNJ characters are inherited, so should be part of the thai script
-    QCOMPARE(e->layoutData->items[1].num_glyphs, ushort(1));  // Han: Kanji for tree
-    QCOMPARE(e->layoutData->items[2].num_glyphs, ushort(2));  // Thai: Thai character followed by superscript "a" which is of inherited type
+    QCOMPARE(e->layoutData->items[0].num_glyphs, ushort(7));  // Thai: The ZWJ and ZWNJ characters are inherited, so should be part of the thai script
+    QCOMPARE(e->layoutData->items[1].num_glyphs, ushort(1));  // Common: The smart quotes cannot be handled by thai, so should be a separate item
+    QCOMPARE(e->layoutData->items[2].num_glyphs, ushort(1));  // Thai: Thai character
+    QCOMPARE(e->layoutData->items[3].num_glyphs, ushort(1));  // Common: Ellipsis
+    QCOMPARE(e->layoutData->items[4].num_glyphs, ushort(1));  // Thai: Thai character
+    QCOMPARE(e->layoutData->items[5].num_glyphs, ushort(1));  // Common: Smart quote
+    QCOMPARE(e->layoutData->items[6].num_glyphs, ushort(1));  // Thai: Thai character
+    QCOMPARE(e->layoutData->items[7].num_glyphs, ushort(1));  // Common: \xA0 = non-breaking space. Could be useful to have in thai, but not currently implemented
+    QCOMPARE(e->layoutData->items[8].num_glyphs, ushort(1));  // Thai: Thai character
+    QCOMPARE(e->layoutData->items[9].num_glyphs, ushort(1));  // Japanese: Kanji for tree
+    QCOMPARE(e->layoutData->items[10].num_glyphs, ushort(2)); // Thai: Thai character followed by superscript "a" which is of inherited type
 
     //A quick sanity check - check all the characters are individual clusters
     unsigned short *logClusters = e->layoutData->logClustersPtr;
-    for (int i = 0; i <= 14; i++)
+    for (int i = 0; i < 7; i++)
         QCOMPARE(logClusters[i], ushort(i));
-    QCOMPARE(logClusters[15], ushort(0));
-    QCOMPARE(logClusters[16], ushort(0));
+    for (int i = 0; i < 10; i++)
+        QCOMPARE(logClusters[i+7], ushort(0));
 #ifndef Q_OS_MAC
     // ### Result differs for HarfBuzz-NG
     QCOMPARE(logClusters[17], ushort(1));

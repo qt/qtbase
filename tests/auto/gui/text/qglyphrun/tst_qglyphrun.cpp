@@ -77,6 +77,7 @@ private slots:
     void setRawData();
     void setRawDataAndGetAsVector();
     void boundingRect();
+    void mixedScripts();
 
 private:
     int m_testFontId;
@@ -399,7 +400,7 @@ void tst_QGlyphRun::setRawDataAndGetAsVector()
 void tst_QGlyphRun::drawNonExistentGlyphs()
 {
     QVector<quint32> glyphIndexes;
-    glyphIndexes.append(3);
+    glyphIndexes.append(4);
 
     QVector<QPointF> glyphPositions;
     glyphPositions.append(QPointF(0, 0));
@@ -723,6 +724,23 @@ void tst_QGlyphRun::boundingRect()
     boundingRect = QRectF(0, 0, 1, 1);
     glyphs.setBoundingRect(boundingRect);
     QCOMPARE(glyphs.boundingRect(), boundingRect);
+}
+
+void tst_QGlyphRun::mixedScripts()
+{
+    QString s;
+    s += QChar(0x31); // The character '1'
+    s += QChar(0xbc14); // Hangul character
+
+    QTextLayout layout;
+    layout.setFont(m_testFont);
+    layout.setText(s);
+    layout.beginLayout();
+    layout.createLine();
+    layout.endLayout();
+
+    QList<QGlyphRun> glyphRuns = layout.glyphRuns();
+    QCOMPARE(glyphRuns.size(), 2);
 }
 
 #endif // QT_NO_RAWFONT
