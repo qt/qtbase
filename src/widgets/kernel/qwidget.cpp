@@ -6569,6 +6569,11 @@ void QWidget::clearFocus()
             QAccessible::updateAccessibility(&event);
 #endif
         }
+
+        if (QTLWExtra *extra = window()->d_func()->maybeTopData()) {
+            if (extra->window)
+                emit extra->window->focusObjectChanged(extra->window->focusObject());
+        }
     }
 }
 
