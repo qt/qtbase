@@ -68,7 +68,7 @@ int QTextureGlyphCache::calculateSubPixelPositionCount(glyph_t glyph) const
             if (path.isEmpty())
                 break;
 
-            images[numImages++] = img;
+            images[numImages++] = qMove(img);
         } else {
             bool found = false;
             for (int j = 0; j < numImages; ++j) {
@@ -78,7 +78,7 @@ int QTextureGlyphCache::calculateSubPixelPositionCount(glyph_t glyph) const
                 }
             }
             if (!found)
-                images[numImages++] = img;
+                images[numImages++] = qMove(img);
         }
     }
 
