@@ -52,11 +52,14 @@ int QTextureGlyphCache::calculateSubPixelPositionCount(glyph_t glyph) const
     // Test 12 different subpixel positions since it factors into 3*4 so it gives
     // the coverage we need.
 
-    QList<QImage> images;
-    for (int i=0; i<12; ++i) {
+    const int NumSubpixelPositions = 12;
+
+    QImage images[NumSubpixelPositions];
+    int numImages = 0;
+    for (int i = 0; i < NumSubpixelPositions; ++i) {
         QImage img = textureMapForGlyph(glyph, QFixed::fromReal(i / 12.0));
 
-        if (images.isEmpty()) {
+        if (numImages == 0) {
             QPainterPath path;
             QFixedPoint point;
             m_current_fontengine->addGlyphsToPath(&glyph, &point, 1, &path, QTextItem::RenderFlags());
@@ -65,21 +68,21 @@ int QTextureGlyphCache::calculateSubPixelPositionCount(glyph_t glyph) const
             if (path.isEmpty())
                 break;
 
-            images.append(img);
+            images[numImages++] = img;
         } else {
             bool found = false;
-            for (int j=0; j<images.size(); ++j) {
-                if (images.at(j) == img) {
+            for (int j = 0; j < numImages; ++j) {
+                if (images[j] == img) {
                     found = true;
                     break;
                 }
             }
             if (!found)
-                images.append(img);
+                images[numImages++] = img;
         }
     }
 
-    return images.size();
+    return numImages;
 }
 
 bool QTextureGlyphCache::populate(QFontEngine *fontEngine, int numGlyphs, const glyph_t *glyphs,
