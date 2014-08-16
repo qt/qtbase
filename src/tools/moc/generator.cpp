@@ -425,7 +425,8 @@ void Generator::generateCode()
 //
 // Generate internal qt_static_metacall() function
 //
-    if (cdef->hasQObject && !isQt)
+    const bool hasStaticMetaCall = (cdef->hasQObject || !cdef->methodList.isEmpty()) && !isQt;
+    if (hasStaticMetaCall)
         generateStaticMetacall();
 
 //
@@ -513,7 +514,7 @@ void Generator::generateCode()
     fprintf(out, "qt_meta_stringdata_%s.data,\n"
             "      qt_meta_data_%s, ", qualifiedClassNameIdentifier.constData(),
             qualifiedClassNameIdentifier.constData());
-    if (cdef->hasQObject && !isQt)
+    if (hasStaticMetaCall)
         fprintf(out, " qt_static_metacall, ");
     else
         fprintf(out, " 0, ");
@@ -1246,10 +1247,14 @@ void Generator::generateStaticMetacall()
         else
             fprintf(out, "    ");
         fprintf(out, "if (_c == QMetaObject::InvokeMetaMethod) {\n");
+        if (cdef->hasQObject) {
 #ifndef QT_NO_DEBUG
-        fprintf(out, "        Q_ASSERT(staticMetaObject.cast(_o));\n");
+            fprintf(out, "        Q_ASSERT(staticMetaObject.cast(_o));\n");
 #endif
-        fprintf(out, "        %s *_t = static_cast<%s *>(_o);\n", cdef->classname.constData(), cdef->classname.constData());
+            fprintf(out, "        %s *_t = static_cast<%s *>(_o);\n", cdef->classname.constData(), cdef->classname.constData());
+        } else {
+            fprintf(out, "        %s *_t = reinterpret_cast<%s *>(_o);\n", cdef->classname.constData(), cdef->classname.constData());
+        }
         fprintf(out, "        switch (_id) {\n");
         for (int methodindex = 0; methodindex < methodList.size(); ++methodindex) {
             const FunctionDef &f = methodList.at(methodindex);
