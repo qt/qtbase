@@ -114,7 +114,7 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(NotificationReceiver);
 {
     Q_UNUSED(notification);
     QEvent event(QEvent::StyleChange);
-    QMutableSetIterator<QPointer<QObject> > it(QMacStylePrivate::scrollBars);
+    QMutableVectorIterator<QPointer<QObject> > it(QMacStylePrivate::scrollBars);
     while (it.hasNext()) {
         if (!it.next())
             it.remove();
@@ -138,12 +138,7 @@ const int QMacStylePrivate::BevelButtonW = 50;
 const int QMacStylePrivate::BevelButtonH = 22;
 const int QMacStylePrivate::PushButtonContentPadding = 6;
 
-QSet<QPointer<QObject> > QMacStylePrivate::scrollBars;
-
-static uint qHash(const QPointer<QObject> &ptr)
-{
-    return qHash(ptr.data());
-}
+QVector<QPointer<QObject> > QMacStylePrivate::scrollBars;
 
 // Title bar gradient colors for Lion were determined by inspecting PSDs exported
 // using CoreUI's CoreThemeDocument; there is no public API to retrieve them
@@ -5367,7 +5362,7 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
             // there is not enough space for them.
             if (cc == CC_ScrollBar) {
                 if (opt && opt->styleObject && !QMacStylePrivate::scrollBars.contains(opt->styleObject))
-                    QMacStylePrivate::scrollBars.insert(QPointer<QObject>(opt->styleObject));
+                    QMacStylePrivate::scrollBars.append(QPointer<QObject>(opt->styleObject));
                 const int scrollBarLength = (slider->orientation == Qt::Horizontal)
                     ? slider->rect.width() : slider->rect.height();
                 const QMacStyle::WidgetSizePolicy sizePolicy = widgetSizePolicy(widget, opt);
