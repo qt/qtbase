@@ -2299,6 +2299,112 @@ bool QMetaMethod::invoke(QObject *object,
 */
 
 /*!
+    \since 5.5
+
+    Invokes this method on a Q_GADGET. Returns \c true if the member could be invoked.
+    Returns \c false if there is no such member or the parameters did not match.
+
+    The pointer \a gadget must point to an instance of the gadget class.
+
+    The invocation is always synchronous.
+
+    The return value of this method call is placed in \a
+    returnValue. You can pass up to ten arguments (\a val0, \a val1,
+    \a val2, \a val3, \a val4, \a val5, \a val6, \a val7, \a val8,
+    and \a val9) to this method call.
+
+    \warning this method will not test the validity of the arguments: \a gadget
+    must be an instance of the class of the QMetaObject of which this QMetaMethod
+    has been constructed with.  The arguments must have the same type as the ones
+    expected by the method, else, the behavior is undefined.
+
+    \sa Q_ARG(), Q_RETURN_ARG(), qRegisterMetaType(), QMetaObject::invokeMethod()
+*/
+bool QMetaMethod::invokeOnGadget(void* gadget, QGenericReturnArgument returnValue, QGenericArgument val0, QGenericArgument val1, QGenericArgument val2, QGenericArgument val3, QGenericArgument val4, QGenericArgument val5, QGenericArgument val6, QGenericArgument val7, QGenericArgument val8, QGenericArgument val9) const
+{
+   if (!gadget || !mobj)
+        return false;
+
+    // check return type
+    if (returnValue.data()) {
+        const char *retType = typeName();
+        if (qstrcmp(returnValue.name(), retType) != 0) {
+            // normalize the return value as well
+            QByteArray normalized = QMetaObject::normalizedType(returnValue.name());
+            if (qstrcmp(normalized.constData(), retType) != 0) {
+                // String comparison failed, try compare the metatype.
+                int t = returnType();
+                if (t == QMetaType::UnknownType || t != QMetaType::type(normalized))
+                    return false;
+            }
+        }
+    }
+
+    // check argument count (we don't allow invoking a method if given too few arguments)
+    const char *typeNames[] = {
+        returnValue.name(),
+        val0.name(),
+        val1.name(),
+        val2.name(),
+        val3.name(),
+        val4.name(),
+        val5.name(),
+        val6.name(),
+        val7.name(),
+        val8.name(),
+        val9.name()
+    };
+    int paramCount;
+    for (paramCount = 1; paramCount < MaximumParamCount; ++paramCount) {
+        if (qstrlen(typeNames[paramCount]) <= 0)
+            break;
+    }
+    if (paramCount <= QMetaMethodPrivate::get(this)->parameterCount())
+        return false;
+
+    // invoke!
+    void *param[] = {
+        returnValue.data(),
+        val0.data(),
+        val1.data(),
+        val2.data(),
+        val3.data(),
+        val4.data(),
+        val5.data(),
+        val6.data(),
+        val7.data(),
+        val8.data(),
+        val9.data()
+    };
+    int idx_relative = QMetaMethodPrivate::get(this)->ownMethodIndex();
+    Q_ASSERT(QMetaObjectPrivate::get(mobj)->revision >= 6);
+    QObjectPrivate::StaticMetaCallFunction callFunction = mobj->d.static_metacall;
+    if (!callFunction)
+        return false;
+    callFunction(reinterpret_cast<QObject*>(gadget), QMetaObject::InvokeMetaMethod, idx_relative, param);
+    return true;
+}
+
+/*!
+    \fn bool QMetaMethod::invokeOnGadget(void *gadget,
+            QGenericArgument val0 = QGenericArgument(0),
+            QGenericArgument val1 = QGenericArgument(),
+            QGenericArgument val2 = QGenericArgument(),
+            QGenericArgument val3 = QGenericArgument(),
+            QGenericArgument val4 = QGenericArgument(),
+            QGenericArgument val5 = QGenericArgument(),
+            QGenericArgument val6 = QGenericArgument(),
+            QGenericArgument val7 = QGenericArgument(),
+            QGenericArgument val8 = QGenericArgument(),
+            QGenericArgument val9 = QGenericArgument()) const
+
+    \overload
+    \since 5.5
+
+    This overload invokes this method for a \a gadget and ignores return values.
+*/
+
+/*!
     \class QMetaEnum
     \inmodule QtCore
     \brief The QMetaEnum class provides meta-data about an enumerator.

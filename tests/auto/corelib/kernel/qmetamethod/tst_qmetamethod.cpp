@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Olivier Goffart <ogoffart@woboq.com>
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -50,6 +51,8 @@ private slots:
     void comparisonOperators();
 
     void fromSignal();
+
+    void gadget();
 };
 
 struct CustomType { };
@@ -726,6 +729,52 @@ void tst_QMetaMethod::fromSignal()
 
 #undef FROMSIGNAL_HELPER
 }
+
+class MyGadget {
+    Q_GADGET
+public:
+    QString m_value;
+    Q_INVOKABLE void setValue(const QString &value) { m_value = value; }
+    Q_INVOKABLE QString getValue() { return m_value; }
+};
+
+void tst_QMetaMethod::gadget()
+{
+    int idx;
+
+    idx = MyGadget::staticMetaObject.indexOfMethod("setValue(QString)");
+    QVERIFY(idx >= 0);
+    QMetaMethod setValueMethod = MyGadget::staticMetaObject.method(idx);
+    QVERIFY(setValueMethod.isValid());
+
+    idx = MyGadget::staticMetaObject.indexOfMethod("getValue()");
+    QVERIFY(idx >= 0);
+    QMetaMethod getValueMethod = MyGadget::staticMetaObject.method(idx);
+    QVERIFY(getValueMethod.isValid());
+
+    {
+        MyGadget gadget;
+        QString string;
+
+        QVERIFY(getValueMethod.invokeOnGadget(&gadget, Q_RETURN_ARG(QString, string)));
+        QCOMPARE(string, gadget.m_value);
+
+        QVERIFY(setValueMethod.invokeOnGadget(&gadget, Q_ARG(QString, QLatin1String("hello"))));
+        QCOMPARE(gadget.m_value, QLatin1String("hello"));
+
+        QVERIFY(getValueMethod.invokeOnGadget(&gadget, Q_RETURN_ARG(QString, string)));
+        QCOMPARE(string, gadget.m_value);
+    }
+
+    {
+        // Call with null should not crash
+        MyGadget *gadget = Q_NULLPTR;
+        QString string;
+        QVERIFY(!setValueMethod.invokeOnGadget(gadget, Q_ARG(QString, QLatin1String("hi"))));
+        QVERIFY(!getValueMethod.invokeOnGadget(gadget, Q_RETURN_ARG(QString, string)));
+    }
+}
+
 
 QTEST_MAIN(tst_QMetaMethod)
 #include "tst_qmetamethod.moc"
