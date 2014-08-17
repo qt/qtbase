@@ -1925,7 +1925,7 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
         QTestLog::addLogger(logFormat, logFilename);
 }
 
-QBenchmarkResult qMedian(const QList<QBenchmarkResult> &container)
+QBenchmarkResult qMedian(const QVector<QBenchmarkResult> &container)
 {
     const int count = container.count();
     if (count == 0)
@@ -1934,7 +1934,7 @@ QBenchmarkResult qMedian(const QList<QBenchmarkResult> &container)
     if (count == 1)
         return container.front();
 
-    QList<QBenchmarkResult> containerCopy = container;
+    QVector<QBenchmarkResult> containerCopy = container;
     std::sort(containerCopy.begin(), containerCopy.end());
 
     const int middle = count / 2;
@@ -1971,7 +1971,7 @@ static void qInvokeTestMethodDataEntry(char *slot)
     bool isBenchmark = false;
     int i = (QBenchmarkGlobalData::current->measurer->needsWarmupIteration()) ? -1 : 0;
 
-    QList<QBenchmarkResult> results;
+    QVector<QBenchmarkResult> results;
     bool minimumTotalReached = false;
     do {
         QBenchmarkTestMethodData::current->beginDataRun();
