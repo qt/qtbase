@@ -746,8 +746,10 @@ QHash<QStyle::SubControl, QRect> QStyleSheetStyle::titleBarLayout(const QWidget 
 
     int offsets[3] = { 0, 0, 0 };
     enum Where { Left, Right, Center, NoWhere } where = Left;
-    QList<ButtonInfo> infos;
-    for (int i = 0; i < layout.count(); i++) {
+    QVector<ButtonInfo> infos;
+    const int numLayouts = layout.size();
+    infos.reserve(numLayouts);
+    for (int i = 0; i < numLayouts; i++) {
         const int element = layout[i].toInt();
         if (element == '(') {
             where = Center;
@@ -801,14 +803,14 @@ QHash<QStyle::SubControl, QRect> QStyleSheetStyle::titleBarLayout(const QWidget 
             info.rule = subRule;
             info.offset = offsets[where];
             info.where = where;
-            infos.append(info);
+            infos.append(qMove(info));
 
             offsets[where] += info.width;
         }
     }
 
-    for (int i = 0; i < infos.count(); i++) {
-        ButtonInfo info = infos[i];
+    for (int i = 0; i < infos.size(); i++) {
+        const ButtonInfo &info = infos[i];
         QRect lr = cr;
         switch (info.where) {
         case Center: {
