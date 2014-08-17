@@ -48,6 +48,7 @@
 #include <private/qobject_p.h>
 
 #include <QtCore/qlist.h>
+#include <QtCore/qvector.h>
 #include <QtCore/qsharedpointer.h>
 
 QT_BEGIN_NAMESPACE
@@ -72,7 +73,7 @@ public:
     QStateMachine *machine() const;
     void emitTriggered();
 
-    QList<QPointer<QAbstractState> > targetStates;
+    QVector<QPointer<QAbstractState> > targetStates;
     QAbstractTransition::TransitionType transitionType;
 
 #ifndef QT_NO_ANIMATION

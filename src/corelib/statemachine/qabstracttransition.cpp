@@ -254,7 +254,7 @@ QList<QAbstractState*> QAbstractTransition::targetStates() const
 void QAbstractTransition::setTargetStates(const QList<QAbstractState*> &targets)
 {
     Q_D(QAbstractTransition);
-    QList<QPointer<QAbstractState> > copy(d->targetStates);
+    QVector<QPointer<QAbstractState> > copy(d->targetStates);
     bool sameList = true;
     for (int i = 0; i < targets.size(); ++i) {
         QAbstractState *target = targets.at(i);
