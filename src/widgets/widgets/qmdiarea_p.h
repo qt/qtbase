@@ -144,7 +144,7 @@ public:
     QList<QMdi::Rearranger *> pendingRearrangements;
     QVector< QPointer<QMdiSubWindow> > pendingPlacements;
     QVector< QPointer<QMdiSubWindow> > childWindows;
-    QList<int> indicesToActivatedChildren;
+    QVector<int> indicesToActivatedChildren;
     QPointer<QMdiSubWindow> active;
     QPointer<QMdiSubWindow> aboutToBecomeActive;
     QBrush background;
