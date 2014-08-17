@@ -128,6 +128,14 @@
 */
 
 /*!
+    \fn void QPointer::swap(QPointer<T> &other)
+    \since 5.6
+
+    Swaps the contents of this QPointer with the contents of \a other.
+    This operation is very fast and never fails.
+*/
+
+/*!
     \fn QPointer<T> & QPointer::operator=(T* p)
 
     Assignment operator. This guarded pointer will now point to the

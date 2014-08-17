@@ -66,6 +66,8 @@ public:
     // compiler-generated copy/move ctor/assignment operators are fine!
     inline ~QPointer() { }
 
+    inline void swap(QPointer &other) { wp.swap(other.wp); }
+
     inline QPointer<T> &operator=(T* p)
     { wp.assign(static_cast<QObjectType*>(p)); return *this; }
 
