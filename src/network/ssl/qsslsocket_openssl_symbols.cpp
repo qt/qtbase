@@ -443,39 +443,41 @@ bool q_resolveOpenSslSymbols()
 #else
 
 # ifdef Q_OS_UNIX
-static bool libGreaterThan(const QString &lhs, const QString &rhs)
+struct NumericallyLess
 {
-    QStringList lhsparts = lhs.split(QLatin1Char('.'));
-    QStringList rhsparts = rhs.split(QLatin1Char('.'));
-    Q_ASSERT(lhsparts.count() > 1 && rhsparts.count() > 1);
-
-    for (int i = 1; i < rhsparts.count(); ++i) {
-        if (lhsparts.count() <= i)
-            // left hand side is shorter, so it's less than rhs
-            return false;
-
+    typedef bool result_type;
+    result_type operator()(const QStringRef &lhs, const QStringRef &rhs) const
+    {
         bool ok = false;
         int b = 0;
-        int a = lhsparts.at(i).toInt(&ok);
+        int a = lhs.toInt(&ok);
         if (ok)
-            b = rhsparts.at(i).toInt(&ok);
+            b = rhs.toInt(&ok);
         if (ok) {
             // both toInt succeeded
-            if (a == b)
-                continue;
-            return a > b;
+            return a < b;
         } else {
             // compare as strings;
-            if (lhsparts.at(i) == rhsparts.at(i))
-                continue;
-            return lhsparts.at(i) > rhsparts.at(i);
+            return lhs < rhs;
         }
     }
+};
 
-    // they compared strictly equally so far
-    // lhs cannot be less than rhs
-    return true;
-}
+struct LibGreaterThan
+{
+    typedef bool result_type;
+    result_type operator()(const QString &lhs, const QString &rhs) const
+    {
+        const QVector<QStringRef> lhsparts = lhs.splitRef(QLatin1Char('.'));
+        const QVector<QStringRef> rhsparts = rhs.splitRef(QLatin1Char('.'));
+        Q_ASSERT(lhsparts.count() > 1 && rhsparts.count() > 1);
+
+        // note: checking rhs < lhs, the same as lhs > rhs
+        return std::lexicographical_compare(rhsparts.begin() + 1, rhsparts.end(),
+                                            lhsparts.begin() + 1, lhsparts.end(),
+                                            NumericallyLess());
+    }
+};
 
 #if defined(Q_OS_LINUX) && !defined(Q_OS_ANDROID)
 static int dlIterateCallback(struct dl_phdr_info *info, size_t size, void *data)
@@ -539,7 +541,7 @@ static QStringList findAllLibSsl()
         QDir dir(path);
         QStringList entryList = dir.entryList(QStringList() << QLatin1String("libssl.*"), QDir::Files);
 
-        std::sort(entryList.begin(), entryList.end(), libGreaterThan);
+        std::sort(entryList.begin(), entryList.end(), LibGreaterThan());
         foreach (const QString &entry, entryList)
             foundSsls << path + QLatin1Char('/') + entry;
     }
@@ -556,7 +558,7 @@ static QStringList findAllLibCrypto()
         QDir dir(path);
         QStringList entryList = dir.entryList(QStringList() << QLatin1String("libcrypto.*"), QDir::Files);
 
-        std::sort(entryList.begin(), entryList.end(), libGreaterThan);
+        std::sort(entryList.begin(), entryList.end(), LibGreaterThan());
         foreach (const QString &entry, entryList)
             foundCryptos << path + QLatin1Char('/') + entry;
     }
