@@ -124,21 +124,22 @@ public:
         qreal step;
         qreal value;
     };
-    QList<Pair> xPosition;
-    QList<Pair> yPosition;
-    QList<Pair> rotation;
-    QList<Pair> verticalScale;
-    QList<Pair> horizontalScale;
-    QList<Pair> verticalShear;
-    QList<Pair> horizontalShear;
-    QList<Pair> xTranslation;
-    QList<Pair> yTranslation;
+    QVector<Pair> xPosition;
+    QVector<Pair> yPosition;
+    QVector<Pair> rotation;
+    QVector<Pair> verticalScale;
+    QVector<Pair> horizontalScale;
+    QVector<Pair> verticalShear;
+    QVector<Pair> horizontalShear;
+    QVector<Pair> xTranslation;
+    QVector<Pair> yTranslation;
 
-    qreal linearValueForStep(qreal step, QList<Pair> *source, qreal defaultValue = 0);
-    void insertUniquePair(qreal step, qreal value, QList<Pair> *binList, const char* method);
+    qreal linearValueForStep(qreal step, QVector<Pair> *source, qreal defaultValue = 0);
+    void insertUniquePair(qreal step, qreal value, QVector<Pair> *binList, const char* method);
 };
+Q_DECLARE_TYPEINFO(QGraphicsItemAnimationPrivate::Pair, Q_PRIMITIVE_TYPE);
 
-qreal QGraphicsItemAnimationPrivate::linearValueForStep(qreal step, QList<Pair> *source, qreal defaultValue)
+qreal QGraphicsItemAnimationPrivate::linearValueForStep(qreal step, QVector<Pair> *source, qreal defaultValue)
 {
     if (source->isEmpty())
         return defaultValue;
@@ -168,14 +169,14 @@ qreal QGraphicsItemAnimationPrivate::linearValueForStep(qreal step, QList<Pair> 
     return valueBefore + (valueAfter - valueBefore) * ((step - stepBefore) / (stepAfter - stepBefore));
 }
 
-void QGraphicsItemAnimationPrivate::insertUniquePair(qreal step, qreal value, QList<Pair> *binList, const char* method)
+void QGraphicsItemAnimationPrivate::insertUniquePair(qreal step, qreal value, QVector<Pair> *binList, const char* method)
 {
     if (!check_step_valid(step, method))
         return;
 
     Pair pair(step, value);
 
-    QList<Pair>::iterator result = std::lower_bound(binList->begin(), binList->end(), pair);
+    const QVector<Pair>::iterator result = std::lower_bound(binList->begin(), binList->end(), pair);
     if ((result != binList->end()) && !(pair < *result))
         result->value = value;
     else {
