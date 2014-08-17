@@ -102,9 +102,9 @@ class QTornOffMenu : public QMenu
             causedPopup.action = ((QTornOffMenu*)p)->d_func()->causedPopup.action;
             causedStack = ((QTornOffMenu*)p)->d_func()->calcCausedStack();
         }
-        QList<QPointer<QWidget> > calcCausedStack() const Q_DECL_OVERRIDE { return causedStack; }
+        QVector<QPointer<QWidget> > calcCausedStack() const Q_DECL_OVERRIDE { return causedStack; }
         QPointer<QMenu> causedMenu;
-        QList<QPointer<QWidget> > causedStack;
+        QVector<QPointer<QWidget> > causedStack;
     };
 public:
     QTornOffMenu(QMenu *p) : QMenu(*(new QTornOffMenuPrivate(p)))
@@ -236,9 +236,9 @@ QRect QMenuPrivate::popupGeometry(int screen) const
     }
 }
 
-QList<QPointer<QWidget> > QMenuPrivate::calcCausedStack() const
+QVector<QPointer<QWidget> > QMenuPrivate::calcCausedStack() const
 {
-    QList<QPointer<QWidget> > ret;
+    QVector<QPointer<QWidget> > ret;
     for(QWidget *widget = causedPopup.widget; widget; ) {
         ret.append(widget);
         if (QTornOffMenu *qtmenu = qobject_cast<QTornOffMenu*>(widget))
@@ -1122,7 +1122,7 @@ bool QMenuPrivate::mouseEventTaken(QMouseEvent *e)
     return false;
 }
 
-void QMenuPrivate::activateCausedStack(const QList<QPointer<QWidget> > &causedStack, QAction *action, QAction::ActionEvent action_e, bool self)
+void QMenuPrivate::activateCausedStack(const QVector<QPointer<QWidget> > &causedStack, QAction *action, QAction::ActionEvent action_e, bool self)
 {
     QBoolBlocker guard(activationRecursionGuard);
     if(self)
@@ -1170,7 +1170,7 @@ void QMenuPrivate::activateAction(QAction *action, QAction::ActionEvent action_e
     /* I have to save the caused stack here because it will be undone after popup execution (ie in the hide).
        Then I iterate over the list to actually send the events. --Sam
     */
-    const QList<QPointer<QWidget> > causedStack = calcCausedStack();
+    const QVector<QPointer<QWidget> > causedStack = calcCausedStack();
     if (action_e == QAction::Trigger) {
 #ifndef QT_NO_WHATSTHIS
         if (!inWhatsThisMode)
@@ -1232,7 +1232,7 @@ void QMenuPrivate::_q_actionTriggered()
         if (!activationRecursionGuard && actionGuard) {
             //in case the action has not been activated by the mouse
             //we check the parent hierarchy
-            QList< QPointer<QWidget> > list;
+            QVector< QPointer<QWidget> > list;
             for(QWidget *widget = q->parentWidget(); widget; ) {
                 if (qobject_cast<QMenu*>(widget)
 #ifndef QT_NO_MENUBAR

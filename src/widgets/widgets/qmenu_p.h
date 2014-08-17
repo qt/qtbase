@@ -422,7 +422,7 @@ public:
         QPointer<QWidget> widget;
         QPointer<QAction> action;
     };
-    virtual QList<QPointer<QWidget> > calcCausedStack() const;
+    virtual QVector<QPointer<QWidget> > calcCausedStack() const;
     QMenuCaused causedPopup;
     void hideUpToMenuBar();
     void hideMenu(QMenu *menu);
@@ -450,7 +450,7 @@ public:
 
     //firing of events
     void activateAction(QAction *, QAction::ActionEvent, bool self=true);
-    void activateCausedStack(const QList<QPointer<QWidget> > &, QAction *, QAction::ActionEvent, bool);
+    void activateCausedStack(const QVector<QPointer<QWidget> > &, QAction *, QAction::ActionEvent, bool);
 
     void _q_actionTriggered();
     void _q_actionHovered();
