@@ -106,7 +106,7 @@ public:
     bool sizeDirty;
     bool layoutDirty;
 
-    QList<QPointer<QTextFrame> > floats;
+    QVector<QPointer<QTextFrame> > floats;
 };
 
 QTextFrameData::QTextFrameData()
