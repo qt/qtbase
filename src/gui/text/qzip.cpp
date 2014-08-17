@@ -430,7 +430,7 @@ public:
     QIODevice *device;
     bool ownDevice;
     bool dirtyFileTree;
-    QList<FileHeader> fileHeaders;
+    QVector<FileHeader> fileHeaders;
     QByteArray comment;
     uint start_of_directory;
 };
@@ -889,10 +889,10 @@ bool QZipReader::exists() const
 /*!
     Returns the list of files the archive contains.
 */
-QList<QZipReader::FileInfo> QZipReader::fileInfoList() const
+QVector<QZipReader::FileInfo> QZipReader::fileInfoList() const
 {
     d->scanFiles();
-    QList<QZipReader::FileInfo> files;
+    QVector<FileInfo> files;
     const int numFileHeaders = d->fileHeaders.size();
     files.reserve(numFileHeaders);
     for (int i = 0; i < numFileHeaders; ++i) {
@@ -1022,7 +1022,7 @@ bool QZipReader::extractAll(const QString &destinationDir) const
     QDir baseDir(destinationDir);
 
     // create directories first
-    QList<FileInfo> allFiles = fileInfoList();
+    const QVector<FileInfo> allFiles = fileInfoList();
     foreach (const FileInfo &fi, allFiles) {
         const QString absPath = destinationDir + QDir::separator() + fi.filePath;
         if (fi.isDir) {
