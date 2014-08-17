@@ -2235,8 +2235,7 @@ void tst_QListView::taskQTBUG_21804_hiddenItemsAndScrollingWithKeys()
             QTest::keyClick(&lv, Qt::Key_Down);
         else
             QTest::keyClick(&lv, Qt::Key_Right);
-        QTest::qWait(100);
-        QVERIFY(lv.rect().contains(lv.visualRect(lv.currentIndex())));
+        QTRY_VERIFY(lv.rect().contains(lv.visualRect(lv.currentIndex())));
     }
 
     // scroll backward
@@ -2245,8 +2244,7 @@ void tst_QListView::taskQTBUG_21804_hiddenItemsAndScrollingWithKeys()
             QTest::keyClick(&lv, Qt::Key_Up);
         else
             QTest::keyClick(&lv, Qt::Key_Left);
-        QTest::qWait(100);
-        QVERIFY(lv.rect().contains(lv.visualRect(lv.currentIndex())));
+        QTRY_VERIFY(lv.rect().contains(lv.visualRect(lv.currentIndex())));
     }
 
     // scroll forward only half way
@@ -2255,8 +2253,7 @@ void tst_QListView::taskQTBUG_21804_hiddenItemsAndScrollingWithKeys()
             QTest::keyClick(&lv, Qt::Key_Down);
         else
             QTest::keyClick(&lv, Qt::Key_Right);
-        QTest::qWait(100);
-        QVERIFY(lv.rect().contains(lv.visualRect(lv.currentIndex())));
+        QTRY_VERIFY(lv.rect().contains(lv.visualRect(lv.currentIndex())));
     }
 
     // scroll backward again
@@ -2265,8 +2262,7 @@ void tst_QListView::taskQTBUG_21804_hiddenItemsAndScrollingWithKeys()
             QTest::keyClick(&lv, Qt::Key_Up);
         else
             QTest::keyClick(&lv, Qt::Key_Left);
-        QTest::qWait(100);
-        QVERIFY(lv.rect().contains(lv.visualRect(lv.currentIndex())));
+        QTRY_VERIFY(lv.rect().contains(lv.visualRect(lv.currentIndex())));
     }
 }
 
