@@ -243,7 +243,7 @@ public:
     QPointF brushOrigin;
     QBrush brush;
     QPen pen;
-    QList<QPainterPath> clips;
+    QVector<QPainterPath> clips;
     bool clipEnabled;
     bool allClipped;
     bool hasPen;

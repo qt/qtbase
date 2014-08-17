@@ -1889,10 +1889,10 @@ bool QPathClipper::handleCrossingEdges(QWingedEdge &list, qreal y, ClipperMode m
 
 namespace {
 
-QList<QPainterPath> toSubpaths(const QPainterPath &path)
+QVector<QPainterPath> toSubpaths(const QPainterPath &path)
 {
 
-    QList<QPainterPath> subpaths;
+    QVector<QPainterPath> subpaths;
     if (path.isEmpty())
         return subpaths;
 
@@ -2092,7 +2092,7 @@ QPainterPath clip(const QPainterPath &path, qreal t)
 
 QPainterPath intersectPath(const QPainterPath &path, const QRectF &rect)
 {
-    QList<QPainterPath> subpaths = toSubpaths(path);
+    QVector<QPainterPath> subpaths = toSubpaths(path);
 
     QPainterPath result;
     result.setFillRule(path.fillRule());
