@@ -240,6 +240,9 @@ private slots:
     void last() const;
     void lastIndexOf() const;
     void mid() const;
+    void moveInt() const;
+    void moveMovable() const;
+    void moveCustom() const;
     void prependInt() const;
     void prependMovable() const;
     void prependCustom() const;
@@ -312,6 +315,7 @@ private:
     template<typename T> void fromList() const;
     template<typename T> void insert() const;
     template<typename T> void qhash() const;
+    template<typename T> void move() const;
     template<typename T> void prepend() const;
     template<typename T> void remove() const;
     template<typename T> void size() const;
@@ -349,6 +353,14 @@ template<>
 const Movable SimpleValue<Movable>::Values[] = { 110, 105, 101, 114, 111, 98 };
 template<>
 const Custom SimpleValue<Custom>::Values[] = { 110, 105, 101, 114, 111, 98 };
+
+// Make some macros for the tests to use in order to be slightly more readable...
+#define T_FOO SimpleValue<T>::at(0)
+#define T_BAR SimpleValue<T>::at(1)
+#define T_BAZ SimpleValue<T>::at(2)
+#define T_CAT SimpleValue<T>::at(3)
+#define T_DOG SimpleValue<T>::at(4)
+#define T_BLAH SimpleValue<T>::at(5)
 
 void tst_QVector::constructors_empty() const
 {
@@ -1602,6 +1614,44 @@ void tst_QVector::qhash() const
     l1 << SimpleValue<T>::at(0);
     l2 << SimpleValue<T>::at(0);
     QCOMPARE(qHash(l1), qHash(l2));
+}
+
+template <typename T>
+void tst_QVector::move() const
+{
+    QVector<T> list;
+    list << T_FOO << T_BAR << T_BAZ;
+
+    // move an item
+    list.move(0, list.count() - 1);
+    QCOMPARE(list, QVector<T>() << T_BAR << T_BAZ << T_FOO);
+
+    // move it back
+    list.move(list.count() - 1, 0);
+    QCOMPARE(list, QVector<T>() << T_FOO << T_BAR << T_BAZ);
+
+    // move an item in the middle
+    list.move(1, 0);
+    QCOMPARE(list, QVector<T>() << T_BAR << T_FOO << T_BAZ);
+}
+
+void tst_QVector::moveInt() const
+{
+    move<int>();
+}
+
+void tst_QVector::moveMovable() const
+{
+    const int instancesCount = Movable::counter.loadAcquire();
+    move<Movable>();
+    QCOMPARE(instancesCount, Movable::counter.loadAcquire());
+}
+
+void tst_QVector::moveCustom() const
+{
+    const int instancesCount = Custom::counter.loadAcquire();
+    move<Custom>();
+    QCOMPARE(instancesCount, Custom::counter.loadAcquire());
 }
 
 template<typename T>

@@ -172,6 +172,19 @@ public:
     }
     int length() const { return size(); }
     T takeAt(int i) { T t = at(i); remove(i); return t; }
+    void move(int from, int to)
+    {
+        Q_ASSERT_X(from >= 0 && from < size(), "QVector::move(int,int)", "'from' is out-of-range");
+        Q_ASSERT_X(to >= 0 && to < size(), "QVector::move(int,int)", "'to' is out-of-range");
+        if (from == to) // don't detach when no-op
+            return;
+        detach();
+        T * const b = d->begin();
+        if (from < to)
+            std::rotate(b + from, b + from + 1, b + to + 1);
+        else
+            std::rotate(b + to, b + from, b + from + 1);
+    }
 
     // STL-style
     typedef typename Data::iterator iterator;

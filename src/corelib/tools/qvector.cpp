@@ -688,6 +688,16 @@
     \sa takeFirst(), takeLast(), QList::takeAt()
 */
 
+/*! \fn void QVector::move(int from, int to)
+    \since 5.6
+
+    Moves the item at index position \a from to index position \a to.
+
+    Provided for compatibility with QList.
+
+    \sa QList::move()
+*/
+
 /*! \fn void QVector::removeFirst()
     \since 5.1
     Removes the first item in the vector. Calling this function is
