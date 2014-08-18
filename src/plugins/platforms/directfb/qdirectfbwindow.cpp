@@ -67,27 +67,39 @@ void QDirectFbWindow::createDirectFBWindow()
 
     DFBWindowDescription description;
     memset(&description,0,sizeof(DFBWindowDescription));
-    description.flags = DFBWindowDescriptionFlags(DWDESC_WIDTH|DWDESC_HEIGHT|DWDESC_POSX|DWDESC_POSY|DWDESC_SURFACE_CAPS
-                                                  |DWDESC_OPTIONS
-                                                  |DWDESC_CAPS);
-    description.width = qMax(1, window()->width());
-    description.height = qMax(1, window()->height());
-    description.posx = window()->x();
-    description.posy = window()->y();
 
-    if (layerConfig.surface_caps & DSCAPS_PREMULTIPLIED)
-        description.surface_caps = DSCAPS_PREMULTIPLIED;
-    description.pixelformat = layerConfig.pixelformat;
+    if (window()->type() == Qt::Desktop) {
+        QRect fullscreenRect(QPoint(), screen()->availableGeometry().size());
+        window()->setGeometry(fullscreenRect);
 
-    description.options = DFBWindowOptions(DWOP_ALPHACHANNEL);
-    description.caps = DFBWindowCapabilities(DWCAPS_DOUBLEBUFFER|DWCAPS_ALPHACHANNEL);
+        DFBResult result = layer->CreateWindow(layer, &description, m_dfbWindow.outPtr());
+        if (result != DFB_OK)
+            DirectFBError("QDirectFbWindow: failed to create window", result);
 
-    DFBResult result = layer->CreateWindow(layer, &description, m_dfbWindow.outPtr());
-    if (result != DFB_OK)
-        DirectFBError("QDirectFbWindow: failed to create window", result);
+    } else {
+        description.flags = DFBWindowDescriptionFlags(DWDESC_WIDTH|DWDESC_HEIGHT|DWDESC_POSX|DWDESC_POSY|DWDESC_SURFACE_CAPS
+                                                      |DWDESC_OPTIONS
+                                                      |DWDESC_CAPS);
+        description.width = qMax(1, window()->width());
+        description.height = qMax(1, window()->height());
+        description.posx = window()->x();
+        description.posy = window()->y();
 
-    m_dfbWindow->SetOpacity(m_dfbWindow.data(), 0xff);
-    m_inputHandler->addWindow(m_dfbWindow.data(), window());
+        if (layerConfig.surface_caps & DSCAPS_PREMULTIPLIED)
+            description.surface_caps = DSCAPS_PREMULTIPLIED;
+        description.pixelformat = layerConfig.pixelformat;
+
+        description.options = DFBWindowOptions(DWOP_ALPHACHANNEL);
+        description.caps = DFBWindowCapabilities(DWCAPS_DOUBLEBUFFER|DWCAPS_ALPHACHANNEL);
+
+
+        DFBResult result = layer->CreateWindow(layer, &description, m_dfbWindow.outPtr());
+        if (result != DFB_OK)
+            DirectFBError("QDirectFbWindow: failed to create window", result);
+
+        m_dfbWindow->SetOpacity(m_dfbWindow.data(), 0xff);
+        m_inputHandler->addWindow(m_dfbWindow.data(), window());
+    }
 }
 
 QDirectFbWindow::~QDirectFbWindow()
@@ -123,21 +135,23 @@ void QDirectFbWindow::setOpacity(qreal level)
 
 void QDirectFbWindow::setVisible(bool visible)
 {
-    if (visible) {
-        int x = geometry().x();
-        int y = geometry().y();
-        m_dfbWindow->MoveTo(m_dfbWindow.data(), x, y);
-    } else {
-        QDirectFBPointer<IDirectFBDisplayLayer> displayLayer;
-        QDirectFbConvenience::dfbInterface()->GetDisplayLayer(QDirectFbConvenience::dfbInterface(), DLID_PRIMARY, displayLayer.outPtr());
+    if (window()->type() != Qt::Desktop) {
+        if (visible) {
+            int x = geometry().x();
+            int y = geometry().y();
+            m_dfbWindow->MoveTo(m_dfbWindow.data(), x, y);
+        } else {
+            QDirectFBPointer<IDirectFBDisplayLayer> displayLayer;
+            QDirectFbConvenience::dfbInterface()->GetDisplayLayer(QDirectFbConvenience::dfbInterface(), DLID_PRIMARY, displayLayer.outPtr());
 
-        DFBDisplayLayerConfig config;
-        displayLayer->GetConfiguration(displayLayer.data(), &config);
-        m_dfbWindow->MoveTo(m_dfbWindow.data(), config. width + 1, config.height + 1);
+            DFBDisplayLayerConfig config;
+            displayLayer->GetConfiguration(displayLayer.data(), &config);
+            m_dfbWindow->MoveTo(m_dfbWindow.data(), config. width + 1, config.height + 1);
+        }
+
+        if (window()->isTopLevel() && visible)
+            QWindowSystemInterface::handleExposeEvent(window(), QRect(QPoint(0, 0), window()->geometry().size()));
     }
-
-    if (window()->isTopLevel() && visible)
-        QWindowSystemInterface::handleExposeEvent(window(), QRect(QPoint(0, 0), window()->geometry().size()));
 }
 
 void QDirectFbWindow::setWindowFlags(Qt::WindowFlags flags)
@@ -158,12 +172,14 @@ void QDirectFbWindow::setWindowFlags(Qt::WindowFlags flags)
 
 void QDirectFbWindow::raise()
 {
-    m_dfbWindow->RaiseToTop(m_dfbWindow.data());
+    if (window()->type() != Qt::Desktop)
+        m_dfbWindow->RaiseToTop(m_dfbWindow.data());
 }
 
 void QDirectFbWindow::lower()
 {
-    m_dfbWindow->LowerToBottom(m_dfbWindow.data());
+    if (window()->type() != Qt::Desktop)
+        m_dfbWindow->LowerToBottom(m_dfbWindow.data());
 }
 
 WId QDirectFbWindow::winId() const
