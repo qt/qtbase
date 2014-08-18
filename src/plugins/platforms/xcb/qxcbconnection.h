@@ -52,6 +52,7 @@
 #include <QVector>
 #include <QVarLengthArray>
 #include <qpa/qwindowsysteminterface.h>
+#include <QtCore/QLoggingCategory>
 
 // This is needed to make Qt compile together with XKB. xkb.h is using a variable
 // which is called 'explicit', this is a reserved keyword in c++
@@ -80,6 +81,9 @@ struct xcb_randr_get_output_info_reply_t;
 //#define Q_XCB_DEBUG
 
 QT_BEGIN_NAMESPACE
+
+Q_DECLARE_LOGGING_CATEGORY(lcQpaXInput)
+Q_DECLARE_LOGGING_CATEGORY(lcQpaXInputDevices)
 
 class QXcbScreen;
 class QXcbWindow;
@@ -613,8 +617,6 @@ private:
     bool has_input_shape;
     bool has_touch_without_mouse_emulation;
     bool has_xkb;
-    bool debug_xinput_devices;
-    bool debug_xinput;
 
     Qt::MouseButtons m_buttons;
 
