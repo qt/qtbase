@@ -707,13 +707,10 @@ bool QVector<T>::operator==(const QVector<T> &v) const
         return true;
     if (d->size != v.d->size)
         return false;
-    T* e = d->end();
-    T* i = d->begin();
-    T* vi = v.d->begin();
-    for (; i != e; ++i, ++vi)
-        if (!(*i == *vi))
-            return false;
-    return true;
+    const T *vb = v.d->begin();
+    const T *b  = d->begin();
+    const T *e  = d->end();
+    return std::equal(b, e, vb);
 }
 
 template <typename T>
