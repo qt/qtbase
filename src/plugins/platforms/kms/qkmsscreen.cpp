@@ -38,7 +38,6 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-//#include <QDebug>
 
 #include "qkmsscreen.h"
 #include "qkmscursor.h"
@@ -51,6 +50,8 @@
 #include <QtDebug>
 
 QT_BEGIN_NAMESPACE
+
+Q_LOGGING_CATEGORY(lcQpaScreen, "qt.qpa.kms.screen")
 
 //Fallback mode (taken from Wayland DRM demo compositor)
 static drmModeModeInfo builtin_1024x768 = {
@@ -148,7 +149,7 @@ void QKmsScreen::initializeScreenMode(const drmModeRes *resources, const drmMode
     m_crtcId = resources->crtcs[i];
     m_mode = *mode;
     m_geometry = QRect(0, 0, m_mode.hdisplay, m_mode.vdisplay);
-    qDebug() << "kms initialized with geometry" << m_geometry;
+    qCDebug(lcQpaScreen) << "kms initialized with geometry" << m_geometry;
     m_depth = 32;
     m_format = QImage::Format_RGB32;
     m_physicalSize = QSizeF(connector->mmWidth, connector->mmHeight);
@@ -158,7 +159,7 @@ void QKmsScreen::initializeScreenMode(const drmModeRes *resources, const drmMode
                                       GBM_BO_FORMAT_XRGB8888,
                                       GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING);
 
-    qDebug() << "created gbm surface" << m_gbmSurface << m_mode.hdisplay << m_mode.vdisplay;
+    qCDebug(lcQpaScreen) << "created gbm surface" << m_gbmSurface << m_mode.hdisplay << m_mode.vdisplay;
     //Cleanup
     drmModeFreeEncoder(encoder);
 }
@@ -180,7 +181,7 @@ void QKmsScreen::initializeWithFormat(const QSurfaceFormat &format)
     EGLConfig config = q_configFromGLFormat(display, tweakFormat(format), true);
 
     m_eglWindowSurface = eglCreateWindowSurface(display, config, (EGLNativeWindowType)m_gbmSurface, NULL);
-    qDebug() << "created window surface";
+    qCDebug(lcQpaScreen) << "created window surface";
 }
 
 void QKmsScreen::swapBuffers()
