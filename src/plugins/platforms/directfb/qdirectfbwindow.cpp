@@ -110,21 +110,9 @@ QDirectFbWindow::~QDirectFbWindow()
 
 void QDirectFbWindow::setGeometry(const QRect &rect)
 {
-//    bool isMoveOnly = (rect.topLeft() != geometry().topLeft()) && (rect.size() == geometry().size());
-
     QPlatformWindow::setGeometry(rect);
-    if (window()->isVisible()) {
-        m_dfbWindow->SetBounds(m_dfbWindow.data(), rect.x(),rect.y(),
-                               rect.width(), rect.height());
-// ### TODO port, verify if this is needed
-#if 0
-        //Hack. When moving since the WindowSurface of a window becomes invalid when moved
-        if (isMoveOnly) { //if resize then windowsurface is updated.
-            widget()->windowSurface()->resize(rect.size());
-            window()->update();
-        }
-#endif
-    }
+    m_dfbWindow->SetBounds(m_dfbWindow.data(), rect.x(),rect.y(),
+                           rect.width(), rect.height());
 }
 
 void QDirectFbWindow::setOpacity(qreal level)
@@ -150,7 +138,7 @@ void QDirectFbWindow::setVisible(bool visible)
         }
 
         if (window()->isTopLevel() && visible)
-            QWindowSystemInterface::handleExposeEvent(window(), QRect(QPoint(0, 0), window()->geometry().size()));
+            QPlatformWindow::setVisible(visible);
     }
 }
 
