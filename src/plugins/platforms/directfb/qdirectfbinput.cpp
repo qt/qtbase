@@ -154,7 +154,7 @@ void QDirectFbInput::handleEvents()
 void QDirectFbInput::handleMouseEvents(const DFBEvent &event)
 {
     QPoint p(event.window.x, event.window.y);
-    QPoint globalPos = globalPoint(event);
+    QPoint globalPos(event.window.cx, event.window.cy);
     Qt::MouseButtons buttons = QDirectFbConvenience::mouseButtons(event.window.buttons);
 
     QDirectFBPointer<IDirectFBDisplayLayer> layer(QDirectFbConvenience::dfbDisplayLayer());
@@ -169,8 +169,8 @@ void QDirectFbInput::handleMouseEvents(const DFBEvent &event)
 
 void QDirectFbInput::handleWheelEvent(const DFBEvent &event)
 {
-    QPoint p(event.window.cx, event.window.cy);
-    QPoint globalPos = globalPoint(event);
+    QPoint p(event.window.x, event.window.y);
+    QPoint globalPos(event.window.cx, event.window.cy);
     long timestamp = (event.window.timestamp.tv_sec*1000) + (event.window.timestamp.tv_usec/1000);
     QWindow *tlw = m_tlwMap.value(event.window.window_id);
     QWindowSystemInterface::handleWheelEvent(tlw, timestamp, p, globalPos,
@@ -225,15 +225,6 @@ void QDirectFbInput::handleGeometryEvent(const DFBEvent &event)
     QWindow *tlw = m_tlwMap.value(event.window.window_id);
     QRect rect(event.window.x, event.window.y, event.window.w, event.window.h);
     QWindowSystemInterface::handleGeometryChange(tlw, rect);
-}
-
-inline QPoint QDirectFbInput::globalPoint(const DFBEvent &event) const
-{
-    QDirectFBPointer<IDirectFBWindow> window;
-    m_dfbDisplayLayer->GetWindow(m_dfbDisplayLayer, event.window.window_id, window.outPtr());
-    int x,y;
-    window->GetPosition(window.data(), &x, &y);
-    return QPoint(event.window.cx +x, event.window.cy + y);
 }
 
 QT_END_NAMESPACE
