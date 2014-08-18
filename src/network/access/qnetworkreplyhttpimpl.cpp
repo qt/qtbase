@@ -560,23 +560,21 @@ bool QNetworkReplyHttpImplPrivate::loadFromCacheIfAllowed(QHttpNetworkRequest &h
         int resident_time = now - response_time;
         int current_age   = corrected_initial_age + resident_time;
 
+        int freshness_lifetime = 0;
+
         // RFC 2616 13.2.4 Expiration Calculations
-        if (!expirationDate.isValid()) {
-            if (lastModified.isValid()) {
-                int diff = currentDateTime.secsTo(lastModified);
-                expirationDate = lastModified.addSecs(diff / 10);
-                if (httpRequest.headerField("Warning").isEmpty()) {
-                    QDateTime dt;
-                    dt.setTime_t(current_age);
-                    if (dt.daysTo(currentDateTime) > 1)
-                        httpRequest.setHeaderField("Warning", "113");
-                }
+        if (lastModified.isValid() && dateHeader.isValid()) {
+            int diff = lastModified.secsTo(dateHeader);
+            freshness_lifetime = diff / 10;
+            if (httpRequest.headerField("Warning").isEmpty()) {
+                QDateTime dt = currentDateTime.addSecs(current_age);
+                if (currentDateTime.daysTo(dt) > 1)
+                    httpRequest.setHeaderField("Warning", "113");
             }
         }
 
-        // the cache-saving code below sets the expirationDate with date+max_age
-        // if "max-age" is present, or to Expires otherwise
-        int freshness_lifetime = dateHeader.secsTo(expirationDate);
+        // the cache-saving code below sets the freshness_lifetime with (dateHeader - last_modified) / 10
+        // if "last-modified" is present, or to Expires otherwise
         response_is_fresh = (freshness_lifetime > current_age);
     } else {
         // expiration date was calculated earlier (e.g. when storing object to the cache)

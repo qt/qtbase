@@ -203,9 +203,9 @@ void tst_QAbstractNetworkCache::lastModified_data()
     QTest::newRow("304-3") << QNetworkRequest::PreferCache << "httpcachetest_lastModified304.cgi" << true;
 
     QTest::newRow("200-0") << QNetworkRequest::AlwaysNetwork << "httpcachetest_lastModified200.cgi" << AlwaysFalse;
-    QTest::newRow("200-1") << QNetworkRequest::PreferNetwork << "httpcachetest_lastModified200.cgi" << false;
+    QTest::newRow("200-1") << QNetworkRequest::PreferNetwork << "httpcachetest_lastModified200.cgi" << true;
     QTest::newRow("200-2") << QNetworkRequest::AlwaysCache << "httpcachetest_lastModified200.cgi" << AlwaysTrue;
-    QTest::newRow("200-3") << QNetworkRequest::PreferCache << "httpcachetest_lastModified200.cgi" << false;
+    QTest::newRow("200-3") << QNetworkRequest::PreferCache << "httpcachetest_lastModified200.cgi" << true;
 }
 
 void tst_QAbstractNetworkCache::lastModified()
