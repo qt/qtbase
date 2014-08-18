@@ -105,10 +105,6 @@ public:
     void drawTextItem(const QPointF &p, const QTextItem &textItem) Q_DECL_OVERRIDE;
 
 private:
-    void drawGlyphRun(const D2D1_POINT_2F &pos, IDWriteFontFace *fontFace, const QFont &font,
-                      int numGlyphs, const UINT16 *glyphIndices, const FLOAT *glyphAdvances,
-                      const DWRITE_GLYPH_OFFSET *glyphOffsets, bool rtl);
-
     void ensureBrush();
     void ensureBrush(const QBrush &brush);
     void ensurePen();
@@ -122,8 +118,6 @@ private:
     bool antiAliasingEnabled() const;
     void adjustForAliasing(QRectF *rect);
     void adjustForAliasing(QPointF *point);
-
-    Microsoft::WRL::ComPtr<IDWriteFontFace> fontFaceFromFontEngine(const QFont &font, QFontEngine *fe);
 };
 
 QT_END_NAMESPACE
