@@ -121,7 +121,7 @@ MainWindow::MainWindow()
 
     connect(showLogo, SIGNAL(triggered(bool)), glwidget, SLOT(setLogo()));
     connect(showTexture, SIGNAL(triggered(bool)), glwidget, SLOT(setTexture()));
-    connect(showBubbles, SIGNAL(triggered(bool)), glwidget, SLOT(showBubbles(bool)));
+    connect(showBubbles, SIGNAL(triggered(bool)), glwidget, SLOT(setShowBubbles(bool)));
     connect(slider, SIGNAL(valueChanged(int)), glwidget, SLOT(setScaling(int)));
     connect(transparent, &QCheckBox::toggled, glwidget, &GLWidget::setTransparent);
 

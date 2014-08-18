@@ -44,6 +44,7 @@
 #include <QOpenGLWidget>
 #include <QOpenGLFunctions>
 #include <QOpenGLShaderProgram>
+#include <QOpenGLBuffer>
 #include <QVector3D>
 #include <QMatrix4x4>
 #include <QThread>
@@ -83,6 +84,7 @@ private:
     QVector<QVector3D> vertices;
     QVector<QVector3D> normals;
     QOpenGLShaderProgram program;
+    QOpenGLBuffer vbo;
     int vertexAttr;
     int normalAttr;
     int matrixUniform;

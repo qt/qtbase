@@ -56,15 +56,15 @@ void Bubble::updateCache()
 {
     if (cache)
         delete cache;
-    cache = new QImage(qRound(radius * 2 + 2), qRound(radius * 2 + 2), QImage::Format_ARGB32);
+    cache = new QImage(qRound(radius * 2 + 2), qRound(radius * 2 + 2), QImage::Format_ARGB32_Premultiplied);
     cache->fill(0x00000000);
     QPainter p(cache);
-    p.setRenderHint(QPainter::HighQualityAntialiasing);
+    p.setRenderHint(QPainter::Antialiasing);
     QPen pen(Qt::white);
     pen.setWidth(2);
     p.setPen(pen);
     p.setBrush(brush);
-    p.drawEllipse(0, 0, int(2*radius), int(2*radius));
+    p.drawEllipse(1, 1, int(2*radius), int(2*radius));
 }
 //! [0]
 

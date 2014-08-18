@@ -150,14 +150,6 @@ public:
         uchar *data;
     };
 
-    enum SubpixelAntialiasingType {
-        Subpixel_None,
-        Subpixel_RGB,
-        Subpixel_BGR,
-        Subpixel_VRGB,
-        Subpixel_VBGR
-    };
-
     struct GlyphInfo {
         unsigned short  width;
         unsigned short  height;
@@ -315,6 +307,7 @@ protected:
     int lcdFilterType;
     bool embeddedbitmap;
     bool cacheEnabled;
+    bool forceAutoHint;
 
 private:
     friend class QFontEngineFTRawFont;

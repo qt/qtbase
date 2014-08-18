@@ -2920,15 +2920,7 @@ bool QMetaProperty::write(QObject *object, const QVariant &value) const
             typeName = rawStringData(mobj, typeInfo & TypeNameIndexMask);
             t = QMetaType::type(typeName);
         }
-        if (t == QMetaType::UnknownType) {
-            Q_ASSERT(typeName != 0);
-            const char *vtypeName = value.typeName();
-            if (vtypeName && strcmp(typeName, vtypeName) == 0)
-                t = value.userType();
-            else
-                t = QVariant::nameToType(typeName);
-        }
-        if (t == QVariant::Invalid)
+        if (t == QMetaType::UnknownType)
             return false;
         if (t != QMetaType::QVariant && t != (uint)value.userType() && (t < QMetaType::User && !v.convert((QVariant::Type)t)))
             return false;

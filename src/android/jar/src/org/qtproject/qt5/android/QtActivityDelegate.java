@@ -815,15 +815,6 @@ public class QtActivityDelegate
         if (!m_started)
             return false;
 
-        if (keyCode == KeyEvent.KEYCODE_MENU) {
-            try {
-                return (Boolean)m_super_onKeyDown.invoke(m_activity, keyCode, event);
-            } catch (Exception e) {
-                e.printStackTrace();
-                return false;
-            }
-        }
-
         m_metaState = MetaKeyKeyListener.handleKeyDown(m_metaState, keyCode, event);
         int c = event.getUnicodeChar(MetaKeyKeyListener.getMetaState(m_metaState));
         int lc = c;
@@ -857,15 +848,6 @@ public class QtActivityDelegate
     {
         if (!m_started)
             return false;
-
-        if (keyCode == KeyEvent.KEYCODE_MENU) {
-            try {
-                return (Boolean)m_super_onKeyUp.invoke(m_activity, keyCode, event);
-            } catch (Exception e) {
-                e.printStackTrace();
-                return false;
-            }
-        }
 
         if ((keyCode == KeyEvent.KEYCODE_VOLUME_UP
             || keyCode == KeyEvent.KEYCODE_VOLUME_DOWN

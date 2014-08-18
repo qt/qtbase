@@ -128,12 +128,12 @@ void QWinRTBackingStore::flush(QWindow *window, const QRegion &region, const QPo
 
     glBindFramebuffer(GL_READ_FRAMEBUFFER, d->fbo->handle());
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-    const int y1 = bounds.height() + bounds.y();
-    const int y2 = d->size.height() - y1;
+    const int y1 = bounds.y();
+    const int y2 = y1 + bounds.height();
     const int x1 = bounds.x();
     const int x2 = x1 + bounds.width();
-    glBlitFramebuffer(x1, y2, x2, y1,
-                      x1, y1, x2, y2,
+    glBlitFramebuffer(x1, y1, x2, y2,
+                      x1, d->size.height() - y1, x2, d->size.height() - y2,
                       GL_COLOR_BUFFER_BIT, GL_NEAREST);
 
     d->context->swapBuffers(window);

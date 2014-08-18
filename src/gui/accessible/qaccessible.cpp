@@ -319,9 +319,11 @@ QT_BEGIN_NAMESPACE
     \value CheckBox         An object that represents an option that can be checked or unchecked. Some options provide a "mixed" state, e.g. neither checked nor unchecked.
     \value Client           The client area in a window.
     \value Clock            A clock displaying time.
+    \value ColorChooser     A dialog that lets the user choose a color.
     \value Column           A column of cells, usually within a table.
     \value ColumnHeader     A header for a column of data.
     \value ComboBox         A list of choices that the user can select from.
+    \value ComplementaryContent A part of the document or web page that is complementary to the main content, usually a landmark (see WAI-ARIA).
     \value Cursor           An object that represents the mouse cursor.
     \value Desktop          The object represents the desktop or workspace.
     \value Dial             An object that represents a dial or knob.
@@ -329,9 +331,12 @@ QT_BEGIN_NAMESPACE
     \value Document         A document, for example in an office application.
     \value EditableText     Editable text such as a line or text edit.
     \value Equation         An object that represents a mathematical equation.
+    \value Footer           A footer in a page (usually in documents).
+    \value Form             A web form containing controls.
     \value Graphic          A graphic or picture, e.g. an icon.
     \value Grip             A grip that the user can drag to change the size of widgets.
     \value Grouping         An object that represents a logical grouping of other objects.
+    \value Heading          A heading in a document.
     \value HelpBalloon      An object that displays help in a separate, short lived window.
     \value HotkeyField      A hotkey field that allows the user to enter a key sequence.
     \value Indicator        An indicator that represents a current value or item.
@@ -342,6 +347,7 @@ QT_BEGIN_NAMESPACE
     \value MenuBar          A menu bar from which menus are opened by the user.
     \value MenuItem         An item in a menu or menu bar.
     \value NoRole           The object has no role. This usually indicates an invalid object.
+    \value Note             A section whose content is parenthetic or ancillary to the main content of the resource.
     \value PageTab          A page tab that the user can select to switch to a different page in a dialog.
     \value PageTabList      A list of page tabs.
     \value Paragraph        A paragraph of text (usually found in documents).
@@ -465,9 +471,11 @@ Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
 #endif
 #endif
 
+// FIXME turn this into one global static struct
 Q_GLOBAL_STATIC(QList<QAccessible::InterfaceFactory>, qAccessibleFactories)
 typedef QHash<QString, QAccessiblePlugin*> QAccessiblePluginsHash;
-Q_GLOBAL_STATIC(QAccessiblePluginsHash, qAccessiblePlugins);
+Q_GLOBAL_STATIC(QAccessiblePluginsHash, qAccessiblePlugins)
+Q_GLOBAL_STATIC(QList<QAccessible::ActivationObserver *>, qAccessibleActivationObservers)
 
 QAccessible::UpdateHandler QAccessible::updateHandler = 0;
 QAccessible::RootObjectHandler QAccessible::rootObjectHandler = 0;
@@ -504,6 +512,7 @@ void QAccessible::cleanup()
 
 static void qAccessibleCleanup()
 {
+    qAccessibleActivationObservers()->clear();
     qAccessibleFactories()->clear();
 }
 
@@ -601,6 +610,44 @@ QAccessible::RootObjectHandler QAccessible::installRootObjectHandler(RootObjectH
     RootObjectHandler old = rootObjectHandler;
     rootObjectHandler = handler;
     return old;
+}
+
+/*!
+    \class QAccessible::ActivationObserver
+    \internal
+
+    Interface to listen to activation or deactivation of the accessibility framework.
+    \sa installActivationObserver()
+*/
+
+/*!
+    \internal
+
+    Install \a observer to get notified of activation or deactivation (global accessibility has been enabled or disabled).
+*/
+void QAccessible::installActivationObserver(QAccessible::ActivationObserver *observer)
+{
+    if (!observer)
+        return;
+
+    if (!cleanupAdded) {
+        qAddPostRoutine(qAccessibleCleanup);
+        cleanupAdded = true;
+    }
+    if (qAccessibleActivationObservers()->contains(observer))
+        return;
+    qAccessibleActivationObservers()->append(observer);
+}
+
+/*!
+    \internal
+
+    Remove an \a observer to no longer get notified of state changes.
+    \sa installActivationObserver()
+*/
+void QAccessible::removeActivationObserver(ActivationObserver *observer)
+{
+    qAccessibleActivationObservers()->removeAll(observer);
 }
 
 /*!
@@ -756,6 +803,15 @@ bool QAccessible::isActive()
     return false;
 }
 
+/*!
+    \internal
+*/
+void QAccessible::setActive(bool active)
+{
+    for (int i = 0; i < qAccessibleActivationObservers()->count() ;++i)
+        qAccessibleActivationObservers()->at(i)->accessibilityActiveChanged(active);
+}
+
 
 /*!
   Sets the root object of the accessible objects of this application
@@ -810,8 +866,7 @@ void QAccessible::updateAccessibility(QAccessibleEvent *event)
 
 #ifndef QT_NO_ACCESSIBILITY
     if (event->type() == QAccessible::TableModelChanged) {
-        Q_ASSERT(event->object());
-        if (QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(event->object())) {
+        if (QAccessibleInterface *iface = event->accessibleInterface()) {
             if (iface->tableInterface())
                 iface->tableInterface()->modelChange(static_cast<QAccessibleTableModelChangeEvent*>(event));
         }
@@ -1867,14 +1922,9 @@ QString QAccessibleTextInterface::textBeforeOffset(int offset, QAccessible::Text
 {
     const QString txt = text(0, characterCount());
 
-    if (txt.isEmpty() || offset < 0 || offset > txt.length()) {
-        *startOffset = *endOffset = -1;
+    *startOffset = *endOffset = -1;
+    if (txt.isEmpty() || offset <= 0 || offset > txt.length())
         return QString();
-    }
-    if (offset == 0) {
-        *startOffset = *endOffset = offset;
-        return QString();
-    }
 
     QTextBoundaryFinder::BoundaryType type;
     switch (boundaryType) {
@@ -1888,10 +1938,8 @@ QString QAccessibleTextInterface::textBeforeOffset(int offset, QAccessible::Text
         type = QTextBoundaryFinder::Sentence;
         break;
     default:
-        // in any other case return the whole line
-        *startOffset = 0;
-        *endOffset = txt.length();
-        return txt;
+        // return empty, this function currently only supports single lines, so there can be no line before
+        return QString();
     }
 
     // keep behavior in sync with QTextCursor::movePosition()!
@@ -1927,14 +1975,9 @@ QString QAccessibleTextInterface::textAfterOffset(int offset, QAccessible::TextB
 {
     const QString txt = text(0, characterCount());
 
-    if (txt.isEmpty() || offset < 0 || offset > txt.length()) {
-        *startOffset = *endOffset = -1;
+    *startOffset = *endOffset = -1;
+    if (txt.isEmpty() || offset < 0 || offset >= txt.length())
         return QString();
-    }
-    if (offset == txt.length()) {
-        *startOffset = *endOffset = offset;
-        return QString();
-    }
 
     QTextBoundaryFinder::BoundaryType type;
     switch (boundaryType) {
@@ -1948,10 +1991,8 @@ QString QAccessibleTextInterface::textAfterOffset(int offset, QAccessible::TextB
         type = QTextBoundaryFinder::Sentence;
         break;
     default:
-        // in any other case return the whole line
-        *startOffset = 0;
-        *endOffset = txt.length();
-        return txt;
+        // return empty, this function currently only supports single lines, so there can be no line after
+        return QString();
     }
 
     // keep behavior in sync with QTextCursor::movePosition()!
@@ -1959,19 +2000,30 @@ QString QAccessibleTextInterface::textAfterOffset(int offset, QAccessible::TextB
     QTextBoundaryFinder boundary(type, txt);
     boundary.setPosition(offset);
 
-    while (boundary.toNextBoundary() < txt.length()) {
+    while (true) {
+        int toNext = boundary.toNextBoundary();
         if ((boundary.boundaryReasons() & (QTextBoundaryFinder::StartOfItem | QTextBoundaryFinder::EndOfItem)))
             break;
+        if (toNext < 0 || toNext >= txt.length())
+            break; // not found, the boundary might not exist
     }
     Q_ASSERT(boundary.position() <= txt.length());
     *startOffset = boundary.position();
 
-    while (boundary.toNextBoundary() < txt.length()) {
+    while (true) {
+        int toNext = boundary.toNextBoundary();
         if ((boundary.boundaryReasons() & (QTextBoundaryFinder::StartOfItem | QTextBoundaryFinder::EndOfItem)))
             break;
+        if (toNext < 0 || toNext >= txt.length())
+            break; // not found, the boundary might not exist
     }
     Q_ASSERT(boundary.position() <= txt.length());
     *endOffset = boundary.position();
+
+    if ((*startOffset == -1) || (*endOffset == -1) || (*startOffset == *endOffset)) {
+        *endOffset = -1;
+        *startOffset = -1;
+    }
 
     return txt.mid(*startOffset, *endOffset - *startOffset);
 }
@@ -1987,14 +2039,12 @@ QString QAccessibleTextInterface::textAtOffset(int offset, QAccessible::TextBoun
 {
     const QString txt = text(0, characterCount());
 
-    if (txt.isEmpty() || offset < 0 || offset > txt.length()) {
-        *startOffset = *endOffset = -1;
+    *startOffset = *endOffset = -1;
+    if (txt.isEmpty() || offset < 0 || offset > txt.length())
         return QString();
-    }
-    if (offset == txt.length()) {
-        *startOffset = *endOffset = offset;
+
+    if (offset == txt.length() && boundaryType == QAccessible::CharBoundary)
         return QString();
-    }
 
     QTextBoundaryFinder::BoundaryType type;
     switch (boundaryType) {
@@ -2008,7 +2058,7 @@ QString QAccessibleTextInterface::textAtOffset(int offset, QAccessible::TextBoun
         type = QTextBoundaryFinder::Sentence;
         break;
     default:
-        // in any other case return the whole line
+        // return the whole line
         *startOffset = 0;
         *endOffset = txt.length();
         return txt;

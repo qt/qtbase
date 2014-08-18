@@ -1,4 +1,4 @@
-QT          += opengl widgets
+QT          += widgets
 
 HEADERS     = glwidget.h \
               helper.h \

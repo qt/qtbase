@@ -86,7 +86,7 @@ void QAndroidPlatformOpenGLWindow::setGeometry(const QRect &rect)
             && rect.height() > 0
             && availableGeometry.width() > 0
             && availableGeometry.height() > 0) {
-        QWindowSystemInterface::handleExposeEvent(window(), QRegion(rect));
+        QWindowSystemInterface::handleExposeEvent(window(), QRect(QPoint(0, 0), rect.size()));
     }
 }
 

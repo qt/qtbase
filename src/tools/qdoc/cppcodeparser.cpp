@@ -832,7 +832,7 @@ void CppCodeParser::processQmlProperties(const Doc& doc, NodeList& nodes, DocLis
             if (splitQmlPropertyArg(arg, type, module, qmlType, property)) {
                 qmlClass = qdb_->findQmlType(module, qmlType);
                 if (qmlClass) {
-                    if (qmlClass->hasQmlProperty(property) != 0) {
+                    if (qmlClass->hasQmlProperty(property, attached) != 0) {
                         QString msg = tr("QML property documented multiple times: '%1'").arg(arg);
                         doc.startLocation().warning(msg);
                     }

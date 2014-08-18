@@ -85,6 +85,14 @@ QVariant QGtk2Theme::themeHint(QPlatformTheme::ThemeHint hint) const
     }
 }
 
+QString QGtk2Theme::gtkFontName() const
+{
+    QString cfgFontName = gtkSetting("gtk-font-name");
+    if (!cfgFontName.isEmpty())
+        return cfgFontName;
+    return QGnomeTheme::gtkFontName();
+}
+
 bool QGtk2Theme::usePlatformNativeDialog(DialogType type) const
 {
     switch (type) {

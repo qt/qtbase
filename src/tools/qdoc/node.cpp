@@ -1339,6 +1339,27 @@ QmlPropertyNode* InnerNode::hasQmlProperty(const QString& n) const
 }
 
 /*!
+  If this node has a child that is a QML property named \a n
+  whose type (attached or normal property) matches \a attached,
+  return the pointer to that child.
+ */
+QmlPropertyNode* InnerNode::hasQmlProperty(const QString& n, bool attached) const
+{
+    foreach (Node* child, childNodes()) {
+        if (child->type() == Node::QmlProperty) {
+            if (child->name() == n && child->isAttached() == attached)
+                return static_cast<QmlPropertyNode*>(child);
+        }
+        else if (child->isQmlPropertyGroup()) {
+            QmlPropertyNode* t = child->hasQmlProperty(n, attached);
+            if (t)
+                return t;
+        }
+    }
+    return 0;
+}
+
+/*!
   \class LeafNode
  */
 
@@ -2551,6 +2572,9 @@ QString Node::fullDocumentName() const
 
     // Create a name based on the type of the ancestor node.
     QString concatenator = "::";
+    if (n->isQmlType())
+        concatenator = QLatin1Char('.');
+
     if (n->isDocNode())
         concatenator = QLatin1Char('#');
 
@@ -2797,7 +2821,10 @@ QString Node::idForNode() const
         str = "qml-module-" + name();
         break;
     case Node::QmlProperty:
-        str = "qml-property-" + name();
+        if (isAttached())
+            str = "qml-attached-property-" + name();
+        else
+            str = "qml-property-" + name();
         break;
     case Node::QmlPropertyGroup:
         {

@@ -75,7 +75,9 @@ class QPixelFormat
 
     enum Field {
         ModelField = 0,
-        FirstField = ModelField + ModelFieldWidth,
+        // work around bug in old clang versions: when building webkit
+        // with XCode 4.6 and older this fails compilation, thus cast to int
+        FirstField = ModelField + int(ModelFieldWidth),
         SecondField = FirstField + FirstFieldWidth,
         ThirdField = SecondField + SecondFieldWidth,
         FourthField = ThirdField + ThirdFieldWidth,

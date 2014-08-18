@@ -252,7 +252,7 @@ void QQnxWindow::setGeometry(const QRect &rect)
         setGeometryHelper(newGeometry);
 
     if (isExposed())
-        QWindowSystemInterface::handleExposeEvent(window(), newGeometry);
+        QWindowSystemInterface::handleExposeEvent(window(), QRect(QPoint(0, 0), newGeometry.size()));
 }
 
 void QQnxWindow::setGeometryHelper(const QRect &rect)
@@ -306,7 +306,7 @@ void QQnxWindow::setVisible(bool visible)
 
     root->updateVisibility(root->m_visible);
 
-    QWindowSystemInterface::handleExposeEvent(window(), window()->geometry());
+    QWindowSystemInterface::handleExposeEvent(window(), QRect(QPoint(0, 0), window()->geometry().size()));
 
     if (visible) {
         applyWindowState();
@@ -345,7 +345,7 @@ void QQnxWindow::setExposed(bool exposed)
 
     if (m_exposed != exposed) {
         m_exposed = exposed;
-        QWindowSystemInterface::handleExposeEvent(window(), window()->geometry());
+        QWindowSystemInterface::handleExposeEvent(window(), QRect(QPoint(0, 0), window()->geometry().size()));
     }
 }
 

@@ -258,6 +258,8 @@ private slots:
     void mdiAreaTest();
     void mdiSubWindowTest();
     void lineEditTest();
+    void lineEditTextFunctions_data();
+    void lineEditTextFunctions();
     void groupBoxTest();
     void dialogButtonBoxTest();
     void dialTest();
@@ -2284,6 +2286,91 @@ void tst_QAccessibility::lineEditTest()
     QVERIFY(QTestAccessibility::containsEvent(&insertO));
     }
     delete toplevel;
+    QTestAccessibility::clearEvents();
+}
+
+void tst_QAccessibility::lineEditTextFunctions_data()
+{
+    QTest::addColumn<QString>("text");
+    QTest::addColumn<int>("textFunction"); // before = 0, at = 1, after = 2
+    QTest::addColumn<int>("boundaryType");
+    QTest::addColumn<int>("cursorPosition");
+    QTest::addColumn<int>("offset");
+    QTest::addColumn<int>("expectedStart");
+    QTest::addColumn<int>("expectedEnd");
+    QTest::addColumn<QString>("expectedText");
+
+    // -2 gives cursor position, -1 is length
+    // invalid positions will return empty strings and either -1 and -1 or both the cursor position, both is fine
+    QTest::newRow("char before -2") << "hello" << 0 << (int) QAccessible::CharBoundary << 3 << -2 << 2 << 3 << "l";
+    QTest::newRow("char at -2") << "hello" << 1 << (int) QAccessible::CharBoundary << 3 << -2 << 3 << 4 << "l";
+    QTest::newRow("char after -2") << "hello" << 2 << (int) QAccessible::CharBoundary << 3 << -2 << 4 << 5 << "o";
+    QTest::newRow("char before -1") << "hello" << 0 << (int) QAccessible::CharBoundary << 3 << -1 << 4 << 5 << "o";
+    QTest::newRow("char at -1") << "hello" << 1 << (int) QAccessible::CharBoundary << 3 << -1 << -1 << -1 << "";
+    QTest::newRow("char after -1") << "hello" << 2 << (int) QAccessible::CharBoundary << 3 << -1 << -1 << -1 << "";
+    QTest::newRow("char before 0") << "hello" << 0 << (int) QAccessible::CharBoundary << 0 << 0 << -1 << -1 << "";
+    QTest::newRow("char at 0") << "hello" << 1 << (int) QAccessible::CharBoundary << 0 << 0 << 0 << 1 << "h";
+    QTest::newRow("char after 0") << "hello" << 2 << (int) QAccessible::CharBoundary << 0 << 0 << 1 << 2 << "e";
+    QTest::newRow("char before 1") << "hello" << 0 << (int) QAccessible::CharBoundary << 3 << 1 << 0 << 1 << "h";
+    QTest::newRow("char at 1") << "hello" << 1 << (int) QAccessible::CharBoundary << 3 << 1 << 1 << 2 << "e";
+    QTest::newRow("char after 1") << "hello" << 2 << (int) QAccessible::CharBoundary << 3 << 1 << 2 << 3 << "l";
+    QTest::newRow("char before 4") << "hello" << 0 << (int) QAccessible::CharBoundary << 3 << 4 << 3 << 4 << "l";
+    QTest::newRow("char at 4") << "hello" << 1 << (int) QAccessible::CharBoundary << 3 << 4 << 4 << 5 << "o";
+    QTest::newRow("char after 4") << "hello" << 2 << (int) QAccessible::CharBoundary << 3 << 4 << -1 << -1 << "";
+    QTest::newRow("char before 5") << "hello" << 0 << (int) QAccessible::CharBoundary << 3 << 5 << 4 << 5 << "o";
+    QTest::newRow("char at 5") << "hello" << 1 << (int) QAccessible::CharBoundary << 3 << 5 << -1 << -1 << "";
+    QTest::newRow("char after 5") << "hello" << 2 << (int) QAccessible::CharBoundary << 3 << 5 << -1 << -1 << "";
+    QTest::newRow("char before 6") << "hello" << 0 << (int) QAccessible::CharBoundary << 3 << 6 << -1 << -1 << "";
+    QTest::newRow("char at 6") << "hello" << 1 << (int) QAccessible::CharBoundary << 3 << 6 << -1 << -1 << "";
+    QTest::newRow("char after 6") << "hello" << 2 << (int) QAccessible::CharBoundary << 3 << 6 << -1 << -1 << "";
+
+    for (int i = -2; i < 6; ++i) {
+        QTest::newRow(QString::fromLatin1("line before %1").arg(i).toLocal8Bit().constData()) << "hello" << 0 << (int) QAccessible::LineBoundary << 3 << i << -1 << -1 << "";
+        QTest::newRow(QString::fromLatin1("line at %1").arg(i).toLocal8Bit().constData()) << "hello" << 1 << (int) QAccessible::LineBoundary << 3 << i << 0 << 5 << "hello";
+        QTest::newRow(QString::fromLatin1("line after %1").arg(i).toLocal8Bit().constData()) << "hello" << 2 << (int) QAccessible::LineBoundary << 3 << i << -1 << -1 << "";
+    }
+}
+
+void tst_QAccessibility::lineEditTextFunctions()
+{
+    {
+    QFETCH(QString, text);
+    QFETCH(int, textFunction);
+    QFETCH(int, boundaryType);
+    QFETCH(int, cursorPosition);
+    QFETCH(int, offset);
+    QFETCH(int, expectedStart);
+    QFETCH(int, expectedEnd);
+    QFETCH(QString, expectedText);
+
+    QLineEdit le;
+    le.show();
+    le.setText(text);
+    le.setCursorPosition(cursorPosition);
+
+    QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(&le);
+    QVERIFY(iface);
+    QAccessibleTextInterface *textIface = iface->textInterface();
+    QVERIFY(textIface);
+
+    int start = -33;
+    int end = -33;
+    QString result;
+    switch (textFunction) {
+    case 0:
+        result = textIface->textBeforeOffset(offset, (QAccessible::TextBoundaryType) boundaryType, &start, &end);
+        break;
+    case 1:
+        result = textIface->textAtOffset(offset, (QAccessible::TextBoundaryType) boundaryType, &start, &end);
+        break;
+    case 2:
+        result = textIface->textAfterOffset(offset, (QAccessible::TextBoundaryType) boundaryType, &start, &end);
+        break;
+    }
+    QCOMPARE(result, expectedText);
+    QCOMPARE(start, expectedStart);
+    QCOMPARE(end, expectedEnd);
+    }
     QTestAccessibility::clearEvents();
 }
 

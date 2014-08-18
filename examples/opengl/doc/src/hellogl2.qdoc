@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -26,13 +26,18 @@
 ****************************************************************************/
 
 /*!
-    \example pbuffers2
-    \title Pixel Buffers 2 Example
-
+    \example hellogl2
+    \title Hello GL2 Example
     \ingroup examples-widgets-opengl
-    \brief The Pixel Buffers 2 example demonstrates how to use the
-    QGLPixelBuffer class to render into an off-screen buffer and use
-    the contents as a dynamic texture in a QGLWidget.
 
-    \image pbuffers2-example.png
+    \brief The Hello GL2 example demonstrates the basic use of the OpenGL-related classes
+    provided with Qt.
+
+    \image hellogl2-example.png
+
+    Qt provides the QOpenGLWidget class to enable OpenGL graphics to be rendered
+    within a standard application user interface. By subclassing this class, and
+    providing reimplementations of event handler functions, 3D scenes can be
+    displayed on widgets that can be placed in layouts, connected to other
+    objects using signals and slots, and manipulated like any other widget.
 */

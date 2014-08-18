@@ -1706,6 +1706,13 @@ QByteArray QWindowsIA2Accessible::IIDToString(REFIID id)
     return strGuid;
 }
 
+// Q_STATIC_ASSERT(IA2_ROLE_CANVAS == QAccessible::Canvas); // ### Qt 6: make them the same
+Q_STATIC_ASSERT(IA2_ROLE_COLOR_CHOOSER == QAccessible::ColorChooser);
+Q_STATIC_ASSERT(IA2_ROLE_FOOTER == QAccessible::Footer);
+Q_STATIC_ASSERT(IA2_ROLE_FORM == QAccessible::Form);
+Q_STATIC_ASSERT(IA2_ROLE_HEADING == QAccessible::Heading);
+Q_STATIC_ASSERT(IA2_ROLE_NOTE == QAccessible::Note);
+Q_STATIC_ASSERT(IA2_ROLE_COMPLEMENTARY_CONTENT == QAccessible::ComplementaryContent);
 
 QT_END_NAMESPACE
 

@@ -519,15 +519,23 @@ const char *QGnomeTheme::name = "gnome";
 class QGnomeThemePrivate : public QPlatformThemePrivate
 {
 public:
-    QGnomeThemePrivate()
-        : systemFont(QLatin1Literal(defaultSystemFontNameC), defaultSystemFontSize)
-        , fixedFont(QStringLiteral("monospace"), systemFont.pointSize())
+    QGnomeThemePrivate() : fontsConfigured(false) { }
+    void configureFonts(QString gtkFontName) const
     {
+        Q_ASSERT(!fontsConfigured);
+        const int split = gtkFontName.lastIndexOf(QChar::Space);
+        float size = gtkFontName.mid(split+1).toFloat();
+        QString fontName = gtkFontName.left(split);
+
+        systemFont = QFont(fontName, size);
+        fixedFont = QFont(QLatin1String("monospace"), systemFont.pointSize());
         fixedFont.setStyleHint(QFont::TypeWriter);
+        fontsConfigured = true;
     }
 
-    const QFont systemFont;
-    QFont fixedFont;
+    mutable QFont systemFont;
+    mutable QFont fixedFont;
+    mutable bool fontsConfigured;
 };
 
 QGnomeTheme::QGnomeTheme()
@@ -565,14 +573,21 @@ QVariant QGnomeTheme::themeHint(QPlatformTheme::ThemeHint hint) const
 const QFont *QGnomeTheme::font(Font type) const
 {
     Q_D(const QGnomeTheme);
+    if (!d->fontsConfigured)
+        d->configureFonts(gtkFontName());
     switch (type) {
     case QPlatformTheme::SystemFont:
-        return  &d->systemFont;
+        return &d->systemFont;
     case QPlatformTheme::FixedFont:
         return &d->fixedFont;
     default:
         return 0;
     }
+}
+
+QString QGnomeTheme::gtkFontName() const
+{
+    return QStringLiteral("%1 %2").arg(QLatin1String(defaultSystemFontNameC)).arg(defaultSystemFontSize);
 }
 
 QString QGnomeTheme::standardButtonText(int button) const

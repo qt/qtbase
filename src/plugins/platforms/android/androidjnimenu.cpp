@@ -68,6 +68,7 @@ namespace QtAndroidMenu
     static jmethodID openContextMenuMethodID = 0;
     static jmethodID closeContextMenuMethodID = 0;
     static jmethodID resetOptionsMenuMethodID = 0;
+    static jmethodID openOptionsMenuMethodID = 0;
 
     static jmethodID clearMenuMethodID = 0;
     static jmethodID addMenuItemMethodID = 0;
@@ -85,6 +86,13 @@ namespace QtAndroidMenu
         AttachedJNIEnv env;
         if (env.jniEnv)
             env.jniEnv->CallStaticVoidMethod(applicationClass(), resetOptionsMenuMethodID);
+    }
+
+    void openOptionsMenu()
+    {
+        AttachedJNIEnv env;
+        if (env.jniEnv)
+            env.jniEnv->CallStaticVoidMethod(applicationClass(), openOptionsMenuMethodID);
     }
 
     void showContextMenu(QAndroidPlatformMenu *menu, JNIEnv *env)
@@ -409,6 +417,7 @@ namespace QtAndroidMenu
         GET_AND_CHECK_STATIC_METHOD(openContextMenuMethodID, appClass, "openContextMenu", "()V");
         GET_AND_CHECK_STATIC_METHOD(closeContextMenuMethodID, appClass, "closeContextMenu", "()V");
         GET_AND_CHECK_STATIC_METHOD(resetOptionsMenuMethodID, appClass, "resetOptionsMenu", "()V");
+        GET_AND_CHECK_STATIC_METHOD(openOptionsMenuMethodID, appClass, "openOptionsMenu", "()V");
 
         jclass clazz;
         FIND_AND_CHECK_CLASS("android/view/Menu");

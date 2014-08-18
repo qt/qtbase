@@ -239,6 +239,7 @@ public:
     virtual void setTitle(const QString& ) { }
     virtual void setSubTitle(const QString& ) { }
     virtual QmlPropertyNode* hasQmlProperty(const QString& ) const { return 0; }
+    virtual QmlPropertyNode* hasQmlProperty(const QString&, bool ) const { return 0; }
     virtual void getMemberNamespaces(NodeMap& ) { }
     virtual void getMemberClasses(NodeMap& ) { }
     virtual bool isInternal() const;
@@ -391,6 +392,7 @@ public:
     virtual void setOutputFileName(const QString& f) { outputFileName_ = f; }
     virtual QString outputFileName() const { return outputFileName_; }
     virtual QmlPropertyNode* hasQmlProperty(const QString& ) const;
+    virtual QmlPropertyNode* hasQmlProperty(const QString&, bool attached) const;
     void addChild(Node* child, const QString& title);
     const QStringList& groupNames() const { return groupNames_; }
     virtual void appendGroupName(const QString& t) { groupNames_.append(t); }

@@ -55,6 +55,7 @@ public:
     virtual QPlatformMenuBar *createPlatformMenuBar() const;
     virtual QPlatformMenu *createPlatformMenu() const;
     virtual QPlatformMenuItem *createPlatformMenuItem() const;
+    virtual void showPlatformMenuBar();
     virtual const QPalette *palette(Palette type = SystemPalette) const;
     virtual const QFont *font(Font type = SystemFont) const;
     virtual QVariant themeHint(ThemeHint hint) const;

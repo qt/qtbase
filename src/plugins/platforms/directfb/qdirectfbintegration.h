@@ -62,6 +62,7 @@ public:
 
     void connectToDirectFb();
 
+    bool hasCapability(Capability cap) const;
     QPlatformPixmap *createPlatformPixmap(QPlatformPixmap::PixelType type) const;
     QPlatformWindow *createPlatformWindow(QWindow *window) const;
     QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const;
@@ -80,6 +81,7 @@ protected:
     QScopedPointer<QDirectFbInput> m_input;
     QScopedPointer<QThread> m_inputRunner;
     QScopedPointer<QPlatformFontDatabase> m_fontDb;
+
 };
 
 QT_END_NAMESPACE

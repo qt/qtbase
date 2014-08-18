@@ -460,6 +460,17 @@ QT_BEGIN_NAMESPACE
         connecting to the messageLogged() signal.
 */
 
+// When using OpenGL ES 2.0, all the necessary GL_KHR_debug constants are
+// provided in qopengles2ext.h. Unfortunately, newer versions of that file
+// suffix everything with _KHR which causes extra headache when the goal is
+// to have a single piece of code that builds in all our target
+// environments. Therefore, try to detect this and use our custom defines
+// instead, which we anyway need for OS X.
+
+#if defined(GL_KHR_debug) && defined(GL_DEBUG_SOURCE_API_KHR)
+#define USE_MANUAL_DEFS
+#endif
+
 // Under OSX (at least up to 10.8) we cannot include our copy of glext.h,
 // but we use the system-wide one, which unfortunately lacks all the needed
 // defines/typedefs. In order to make the code compile, we just add here
@@ -467,6 +478,10 @@ QT_BEGIN_NAMESPACE
 
 #ifndef GL_KHR_debug
 #define GL_KHR_debug 1
+#define USE_MANUAL_DEFS
+#endif
+
+#ifdef USE_MANUAL_DEFS
 
 #ifndef GL_DEBUG_OUTPUT_SYNCHRONOUS
 #define GL_DEBUG_OUTPUT_SYNCHRONOUS       0x8242
@@ -589,9 +604,9 @@ QT_BEGIN_NAMESPACE
 #define GL_STACK_UNDERFLOW                0x0504
 #endif
 
-typedef void (QOPENGLF_APIENTRY *GLDEBUGPROC)(GLenum source,GLenum type,GLuint id,GLenum severity,GLsizei length,const GLchar *message,GLvoid *userParam);
+typedef void (QOPENGLF_APIENTRY *GLDEBUGPROC)(GLenum source,GLenum type,GLuint id,GLenum severity,GLsizei length,const GLchar *message,const GLvoid *userParam);
 
-#endif /* GL_KHR_debug */
+#endif /* USE_MANUAL_DEFS */
 
 
 /*!
@@ -1276,9 +1291,9 @@ static void QOPENGLF_APIENTRY qt_opengl_debug_callback(GLenum source,
                                                        GLenum severity,
                                                        GLsizei length,
                                                        const GLchar *rawMessage,
-                                                       GLvoid *userParam)
+                                                       const GLvoid *userParam)
 {
-    QOpenGLDebugLoggerPrivate *loggerPrivate = static_cast<QOpenGLDebugLoggerPrivate *>(userParam);
+    QOpenGLDebugLoggerPrivate *loggerPrivate = static_cast<QOpenGLDebugLoggerPrivate *>(const_cast<GLvoid *>(userParam));
     loggerPrivate->handleMessage(source, type, id, severity, length, rawMessage);
 }
 }

@@ -41,11 +41,12 @@
 #include "glwidget.h"
 #include "helper.h"
 
+#include <QPainter>
 #include <QTimer>
 
 //! [0]
 GLWidget::GLWidget(Helper *helper, QWidget *parent)
-    : QGLWidget(QGLFormat(QGL::SampleBuffers), parent), helper(helper)
+    : QOpenGLWidget(parent), helper(helper)
 {
     elapsed = 0;
     setFixedSize(200, 200);
@@ -57,7 +58,7 @@ GLWidget::GLWidget(Helper *helper, QWidget *parent)
 void GLWidget::animate()
 {
     elapsed = (elapsed + qobject_cast<QTimer*>(sender())->interval()) % 1000;
-    repaint();
+    update();
 }
 //! [1]
 

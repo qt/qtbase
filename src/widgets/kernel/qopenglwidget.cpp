@@ -228,6 +228,18 @@ QT_BEGIN_NAMESPACE
   regarding stacking orders for example. QOpenGLWidget avoids this by not
   creating a separate native window.
 
+  \section1 Multisampling
+
+  To enable multisampling, set the number of requested samples on the
+  QSurfaceFormat that is passed to setFormat(). On systems that do not support
+  it the request may get ignored.
+
+  Multisampling support requires support for multisampled renderbuffers and
+  framebuffer blits. On OpenGL ES 2.0 implementations it is likely that these
+  will not be present. This means that multisampling will not be available. With
+  modern OpenGL versions and OpenGL ES 3.0 and up this is usually not a problem
+  anymore.
+
   \section1 Threading
 
   Performing offscreen rendering on worker threads, for example to generate
@@ -353,6 +365,10 @@ QT_BEGIN_NAMESPACE
   where a semi-transparent QOpenGLWidget with other widgets visible underneath
   is required.
 
+  Note that this does not apply when there are no other widgets underneath and
+  the intention is to have a semi-transparent window. In that case the
+  traditional approach of setting Qt::WA_TranslucentBackground is sufficient.
+
   \e{OpenGL is a trademark of Silicon Graphics, Inc. in the United States and other
   countries.}
 
@@ -435,6 +451,7 @@ public:
     void beginCompose() Q_DECL_OVERRIDE;
     void endCompose() Q_DECL_OVERRIDE;
     void resizeViewportFramebuffer() Q_DECL_OVERRIDE;
+    void resolveSamples() Q_DECL_OVERRIDE;
 
     QOpenGLContext *context;
     QOpenGLFramebufferObject *fbo;
@@ -491,9 +508,11 @@ void QOpenGLWidgetPrivate::recreateFbo()
     context->makeCurrent(surface);
 
     delete fbo;
+    fbo = 0;
     delete resolvedFbo;
+    resolvedFbo = 0;
 
-    int samples = get(q->window())->shareContext()->format().samples();
+    int samples = context->format().samples();
     QOpenGLExtensions *extfuncs = static_cast<QOpenGLExtensions *>(context->functions());
     if (!extfuncs->hasOpenGLExtension(QOpenGLExtensions::FramebufferMultisample))
         samples = 0;
@@ -570,6 +589,16 @@ void QOpenGLWidgetPrivate::initialize()
     q->initializeGL();
 }
 
+void QOpenGLWidgetPrivate::resolveSamples()
+{
+    Q_Q(QOpenGLWidget);
+    if (resolvedFbo) {
+        q->makeCurrent();
+        QRect rect(QPoint(0, 0), fbo->size());
+        QOpenGLFramebufferObject::blitFramebuffer(resolvedFbo, rect, fbo, rect);
+    }
+}
+
 void QOpenGLWidgetPrivate::invokeUserPaint()
 {
     Q_Q(QOpenGLWidget);
@@ -577,11 +606,6 @@ void QOpenGLWidgetPrivate::invokeUserPaint()
     f->glViewport(0, 0, q->width() * q->devicePixelRatio(), q->height() * q->devicePixelRatio());
 
     q->paintGL();
-
-    if (resolvedFbo) {
-        QRect rect(QPoint(0, 0), fbo->size());
-        QOpenGLFramebufferObject::blitFramebuffer(resolvedFbo, rect, fbo, rect);
-    }
 }
 
 void QOpenGLWidgetPrivate::render()
@@ -605,6 +629,7 @@ QImage QOpenGLWidgetPrivate::grabFramebuffer()
         return QImage();
 
     render();
+    resolveSamples();
     q->makeCurrent();
     QImage res = qt_gl_read_framebuffer(q->size() * q->devicePixelRatio(), false, false);
 
@@ -649,11 +674,13 @@ QOpenGLWidget::~QOpenGLWidget()
   OpenGL widgets, individual calls to this function can be replaced by one single call to
   QSurfaceFormat::setDefaultFormat() before creating the first widget.
 
-  \note Requesting an alpha buffer via this function will not lead to the desired results
-  and should be avoided. Instead, use Qt::WA_AlwaysStackOnTop to enable semi-transparent
-  QOpenGLWidget instances with other widgets visible underneath. Keep in mind however that
-  this breaks the stacking order, so it will no longer be possible to have other widgets
-  on top of the QOpenGLWidget.
+  \note Requesting an alpha buffer via this function, or by setting
+  Qt::WA_TranslucentBackground, will not lead to the desired results when the intention is
+  to make other widgets beneath visible. Instead, use Qt::WA_AlwaysStackOnTop to enable
+  semi-transparent QOpenGLWidget instances with other widgets visible underneath. Keep in
+  mind however that this breaks the stacking order, so it will no longer be possible to
+  have other widgets on top of the QOpenGLWidget. When the intention is to have a
+  semi-transparent top-level window, Qt::WA_TranslucentBackground is sufficient.
 
   \sa format(), Qt::WA_AlwaysStackOnTop, QSurfaceFormat::setDefaultFormat()
  */

@@ -1307,7 +1307,8 @@ QMoveEvent::~QMoveEvent()
 */
 
 /*!
-    Constructs an expose event for the given \a exposeRegion.
+    Constructs an expose event for the given \a exposeRegion which must be
+    in local coordinates.
 */
 QExposeEvent::QExposeEvent(const QRegion &exposeRegion)
     : QEvent(Expose)
@@ -1325,7 +1326,7 @@ QExposeEvent::~QExposeEvent()
 /*!
     \fn const QRegion &QExposeEvent::region() const
 
-    Returns the window area that has been exposed.
+    Returns the window area that has been exposed. The region is given in local coordinates.
 */
 
 /*!

@@ -156,13 +156,17 @@ public:
 
     template<typename T>
     inline T findChild(const QString &aName = QString(), Qt::FindChildOptions options = Qt::FindChildrenRecursively) const
-    { return static_cast<T>(qt_qFindChild_helper(this, aName, reinterpret_cast<T>(0)->staticMetaObject, options)); }
+    {
+        typedef typename QtPrivate::remove_cv<typename QtPrivate::remove_pointer<T>::type>::type ObjType;
+        return static_cast<T>(qt_qFindChild_helper(this, aName, ObjType::staticMetaObject, options));
+    }
 
     template<typename T>
     inline QList<T> findChildren(const QString &aName = QString(), Qt::FindChildOptions options = Qt::FindChildrenRecursively) const
     {
+        typedef typename QtPrivate::remove_cv<typename QtPrivate::remove_pointer<T>::type>::type ObjType;
         QList<T> list;
-        qt_qFindChildren_helper(this, aName, reinterpret_cast<T>(0)->staticMetaObject,
+        qt_qFindChildren_helper(this, aName, ObjType::staticMetaObject,
                                 reinterpret_cast<QList<void *> *>(&list), options);
         return list;
     }
@@ -171,8 +175,9 @@ public:
     template<typename T>
     inline QList<T> findChildren(const QRegExp &re, Qt::FindChildOptions options = Qt::FindChildrenRecursively) const
     {
+        typedef typename QtPrivate::remove_cv<typename QtPrivate::remove_pointer<T>::type>::type ObjType;
         QList<T> list;
-        qt_qFindChildren_helper(this, re, reinterpret_cast<T>(0)->staticMetaObject,
+        qt_qFindChildren_helper(this, re, ObjType::staticMetaObject,
                                 reinterpret_cast<QList<void *> *>(&list), options);
         return list;
     }
@@ -182,8 +187,9 @@ public:
     template<typename T>
     inline QList<T> findChildren(const QRegularExpression &re, Qt::FindChildOptions options = Qt::FindChildrenRecursively) const
     {
+        typedef typename QtPrivate::remove_cv<typename QtPrivate::remove_pointer<T>::type>::type ObjType;
         QList<T> list;
-        qt_qFindChildren_helper(this, re, reinterpret_cast<T>(0)->staticMetaObject,
+        qt_qFindChildren_helper(this, re, ObjType::staticMetaObject,
                                 reinterpret_cast<QList<void *> *>(&list), options);
         return list;
     }
@@ -519,7 +525,7 @@ inline T qobject_cast(QObject *object)
     typedef typename QtPrivate::remove_cv<typename QtPrivate::remove_pointer<T>::type>::type ObjType;
     Q_STATIC_ASSERT_X(QtPrivate::HasQ_OBJECT_Macro<ObjType>::Value,
                     "qobject_cast requires the type to have a Q_OBJECT macro");
-    return static_cast<T>(reinterpret_cast<T>(object)->staticMetaObject.cast(object));
+    return static_cast<T>(ObjType::staticMetaObject.cast(object));
 }
 
 template <class T>
@@ -528,7 +534,7 @@ inline T qobject_cast(const QObject *object)
     typedef typename QtPrivate::remove_cv<typename QtPrivate::remove_pointer<T>::type>::type ObjType;
     Q_STATIC_ASSERT_X(QtPrivate::HasQ_OBJECT_Macro<ObjType>::Value,
                       "qobject_cast requires the type to have a Q_OBJECT macro");
-    return static_cast<T>(reinterpret_cast<T>(object)->staticMetaObject.cast(object));
+    return static_cast<T>(ObjType::staticMetaObject.cast(object));
 }
 
 

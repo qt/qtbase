@@ -85,8 +85,10 @@ void QEglFSHooks::platformInit()
 
     framebuffer = qt_safe_open(fbDev, O_RDONLY);
 
-    if (framebuffer == -1)
+    if (framebuffer == -1) {
         qWarning("EGLFS: Failed to open %s", qPrintable(fbDev));
+        qFatal("EGLFS: Can't continue without a display");
+    }
 }
 
 void QEglFSHooks::platformDestroy()

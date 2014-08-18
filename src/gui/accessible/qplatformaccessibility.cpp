@@ -139,6 +139,12 @@ void QPlatformAccessibility::cleanup()
     qDeleteAll(*bridges());
 }
 
+void QPlatformAccessibility::setActive(bool active)
+{
+    m_active = active;
+    QAccessible::setActive(active);
+}
+
 #endif // QT_NO_ACCESSIBILITY
 
 QT_END_NAMESPACE

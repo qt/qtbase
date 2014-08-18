@@ -86,6 +86,8 @@ public:
     void clear(bool deep = true);
 
     bool fromEVP_PKEY(EVP_PKEY *pkey);
+    void decodeDer(const QByteArray &der, const QByteArray &passPhrase,
+                   bool deepClear = true);
     void decodePem(const QByteArray &pem, const QByteArray &passPhrase,
                    bool deepClear = true);
     QByteArray pemHeader() const;

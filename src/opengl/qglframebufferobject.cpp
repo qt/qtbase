@@ -796,8 +796,6 @@ void QGLFramebufferObjectPrivate::init(QGLFramebufferObject *q, const QSize &sz,
     OpenGL ES 2.0 is required for this to work.
 
     \note This class has been deprecated in favor of QOpenGLFramebufferObject.
-
-    \sa {Framebuffer Object 2 Example}
 */
 
 

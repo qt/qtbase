@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the examples of the Qt Toolkit.
@@ -39,6 +39,7 @@
 ****************************************************************************/
 
 #include <QApplication>
+#include <QSurfaceFormat>
 
 #include "window.h"
 
@@ -47,6 +48,11 @@ int main(int argc, char *argv[])
     Q_INIT_RESOURCE(textures);
 
     QApplication app(argc, argv);
+
+    QSurfaceFormat format;
+    format.setDepthBufferSize(24);
+    QSurfaceFormat::setDefaultFormat(format);
+
     Window window;
     window.show();
     return app.exec();

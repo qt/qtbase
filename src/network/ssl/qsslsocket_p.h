@@ -72,11 +72,13 @@
 #include <CoreFoundation/CFArray.h>
 #elif defined(Q_OS_WIN)
 #include <QtCore/qt_windows.h>
+#ifndef Q_OS_WINRT
 #include <wincrypt.h>
+#endif // !Q_OS_WINRT
 #ifndef HCRYPTPROV_LEGACY
 #define HCRYPTPROV_LEGACY HCRYPTPROV
-#endif
-#endif
+#endif // !HCRYPTPROV_LEGACY
+#endif // Q_OS_WIN
 
 QT_BEGIN_NAMESPACE
 
@@ -86,7 +88,7 @@ QT_BEGIN_NAMESPACE
     typedef OSStatus (*PtrSecTrustCopyAnchorCertificates)(CFArrayRef*);
 #endif
 
-#if defined(Q_OS_WIN)
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
 #if defined(Q_OS_WINCE)
     typedef HCERTSTORE (WINAPI *PtrCertOpenSystemStoreW)(LPCSTR, DWORD, HCRYPTPROV_LEGACY, DWORD, const void*);
 #else
@@ -94,7 +96,7 @@ QT_BEGIN_NAMESPACE
 #endif
     typedef PCCERT_CONTEXT (WINAPI *PtrCertFindCertificateInStore)(HCERTSTORE, DWORD, DWORD, DWORD, const void*, PCCERT_CONTEXT);
     typedef BOOL (WINAPI *PtrCertCloseStore)(HCERTSTORE, DWORD);
-#endif
+#endif // Q_OS_WIN && !Q_OS_WINRT
 
 
 
@@ -153,11 +155,11 @@ public:
     static PtrSecCertificateCopyData ptrSecCertificateCopyData;
     static PtrSecTrustSettingsCopyCertificates ptrSecTrustSettingsCopyCertificates;
     static PtrSecTrustCopyAnchorCertificates ptrSecTrustCopyAnchorCertificates;
-#elif defined(Q_OS_WIN)
+#elif defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
     static PtrCertOpenSystemStoreW ptrCertOpenSystemStoreW;
     static PtrCertFindCertificateInStore ptrCertFindCertificateInStore;
     static PtrCertCloseStore ptrCertCloseStore;
-#endif
+#endif // Q_OS_WIN && !Q_OS_WINRT
 
     // The socket itself, including private slots.
     QTcpSocket *plainSocket;
@@ -178,7 +180,7 @@ public:
     void _q_flushWriteBuffer();
     void _q_flushReadBuffer();
     void _q_resumeImplementation();
-#ifdef Q_OS_WIN
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
     virtual void _q_caRootLoaded(QSslCertificate,QSslCertificate) = 0;
 #endif
 

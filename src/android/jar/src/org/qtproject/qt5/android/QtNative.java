@@ -484,6 +484,16 @@ public class QtNative
         });
     }
 
+    private static void openOptionsMenu()
+    {
+        runAction(new Runnable() {
+            @Override
+            public void run() {
+                m_activity.openOptionsMenu();
+            }
+        });
+    }
+
     private static byte[][] getSSLCertificates()
     {
         ArrayList<byte[]> certificateList = new ArrayList<byte[]>();

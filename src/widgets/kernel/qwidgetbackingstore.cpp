@@ -113,7 +113,12 @@ void QWidgetBackingStore::qt_flush(QWidget *widget, const QRegion &region, QBack
 #ifndef QT_NO_OPENGL
     if (widgetTextures) {
         widget->window()->d_func()->sendComposeStatus(widget->window(), false);
-        backingStore->handle()->composeAndFlush(widget->windowHandle(), region, offset, widgetTextures, tlw->d_func()->shareContext());
+        // A window may have alpha even when the app did not request
+        // WA_TranslucentBackground. Therefore the compositor needs to know whether the app intends
+        // to rely on translucency, in order to decide if it should clear to transparent or opaque.
+        const bool translucentBackground = widget->testAttribute(Qt::WA_TranslucentBackground);
+        backingStore->handle()->composeAndFlush(widget->windowHandle(), region, offset, widgetTextures,
+                                                widget->d_func()->shareContext(), translucentBackground);
         widget->window()->d_func()->sendComposeStatus(widget->window(), true);
     } else
 #endif

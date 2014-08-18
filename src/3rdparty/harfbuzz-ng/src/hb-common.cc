@@ -33,6 +33,10 @@
 
 #include <locale.h>
 
+#ifdef _WIN32_WCE
+#define strdup(x) _strdup(x)
+#endif
+
 
 /* hb_options_t */
 

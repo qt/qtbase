@@ -71,6 +71,19 @@ void QDirectFbIntegration::connectToDirectFb()
     initializeInput();
 }
 
+bool QDirectFbIntegration::hasCapability(Capability cap) const
+{
+    switch (cap) {
+    case ThreadedPixmaps: return true;
+    case MultipleWindows: return true;
+#ifdef DIRECTFB_GL_EGL
+    case OpenGL: return true;
+    case ThreadedOpenGL: return true;
+#endif
+    default: return QPlatformIntegration::hasCapability(cap);
+    }
+}
+
 void QDirectFbIntegration::initializeDirectFB()
 {
     const QStringList args = QCoreApplication::arguments();

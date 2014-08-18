@@ -342,8 +342,9 @@ int HtmlGenerator::generateAtom(const Atom *atom, const Node *relative, CodeMark
     case Atom::BaseName:
         break;
     case Atom::BriefLeft:
-        //do not output the brief for QML basic types and doc nodes (including examples).
-        if (relative->isQmlBasicType() || relative->isDocNode()) {
+        // Do not output the brief for QML nodes, doc nodes or collections
+        // (groups, modules, qml module nodes)
+        if (relative->isQmlType() || relative->isDocNode() || relative->isCollectionNode()) {
             skipAhead = skipAtoms(atom, Atom::BriefRight);
             break;
         }
@@ -2477,6 +2478,8 @@ QString HtmlGenerator::generateAllQmlMembersFile(QmlClassNode* qml_cn, CodeMarke
                     prefix = prefix.left(keys.at(j).indexOf("::")+1);
                 }
                 generateQmlItem(nodes[j], qcn, marker, true);
+                if (nodes[j]->isAttached())
+                    out() << " [attached]";
                 //generateSynopsis(nodes[j], qcn, marker, CodeMarker::Subpage, false, &prefix);
                 out() << "</li>\n";
             }
@@ -3627,8 +3630,13 @@ QString HtmlGenerator::refForNode(const Node *node)
         break;
     case Node::Document:
         break;
-    case Node::QmlPropertyGroup:
     case Node::QmlProperty:
+        if (node->isAttached())
+            ref = node->name() + "-attached-prop";
+        else
+            ref = node->name() + "-prop";
+        break;
+    case Node::QmlPropertyGroup:
     case Node::Property:
         ref = node->name() + "-prop";
         break;

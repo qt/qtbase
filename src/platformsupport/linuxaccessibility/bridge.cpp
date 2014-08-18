@@ -250,6 +250,18 @@ static RoleMapping map[] = {
     //: Role of an accessible object
     { QAccessible::Section, ATSPI_ROLE_SECTION, QT_TRANSLATE_NOOP("QSpiAccessibleBridge", "section") },
     //: Role of an accessible object
+    { QAccessible::ColorChooser, ATSPI_ROLE_COLOR_CHOOSER, QT_TRANSLATE_NOOP("QSpiAccessibleBridge", "color chooser") },
+    //: Role of an accessible object
+    { QAccessible::Footer, ATSPI_ROLE_FOOTER, QT_TRANSLATE_NOOP("QSpiAccessibleBridge", "footer") },
+    //: Role of an accessible object
+    { QAccessible::Form, ATSPI_ROLE_FORM, QT_TRANSLATE_NOOP("QSpiAccessibleBridge", "form") },
+    //: Role of an accessible object
+    { QAccessible::Heading, ATSPI_ROLE_HEADING, QT_TRANSLATE_NOOP("QSpiAccessibleBridge", "heading") },
+    //: Role of an accessible object
+    { QAccessible::Note, ATSPI_ROLE_COMMENT, QT_TRANSLATE_NOOP("QSpiAccessibleBridge", "note") },
+    //: Role of an accessible object
+    { QAccessible::ComplementaryContent, ATSPI_ROLE_SECTION, QT_TRANSLATE_NOOP("QSpiAccessibleBridge", "complementary content") },
+    //: Role of an accessible object
     { QAccessible::UserRole, ATSPI_ROLE_UNKNOWN, QT_TRANSLATE_NOOP("QSpiAccessibleBridge", "unknown") }
 };
 

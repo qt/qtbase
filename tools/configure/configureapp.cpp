@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Copyright (C) 2013 Intel Corporation
 ** Contact: http://www.qt-project.org/legal
 **
@@ -274,6 +274,7 @@ Configure::Configure(int& argc, char** argv)
     dictionary[ "OPENGL" ]          = "yes";
     dictionary[ "OPENGL_ES_2" ]     = "yes";
     dictionary[ "OPENVG" ]          = "no";
+    dictionary[ "SSL" ]             = "auto";
     dictionary[ "OPENSSL" ]         = "auto";
     dictionary[ "DBUS" ]            = "auto";
 
@@ -858,7 +859,11 @@ void Configure::parseCmdLine()
         else if (configCmdLine.at(i) == "-avx2")
             dictionary[ "AVX2" ] = "yes";
 
-        else if (configCmdLine.at(i) == "-no-openssl") {
+        else if (configCmdLine.at(i) == "-no-ssl") {
+            dictionary[ "SSL"] = "no";
+        } else if (configCmdLine.at(i) == "-ssl") {
+            dictionary[ "SSL" ] = "yes";
+        } else if (configCmdLine.at(i) == "-no-openssl") {
               dictionary[ "OPENSSL"] = "no";
         } else if (configCmdLine.at(i) == "-openssl") {
               dictionary[ "OPENSSL" ] = "yes";
@@ -1627,6 +1632,7 @@ void Configure::applySpecSpecifics()
         dictionary[ "OPENGL" ]              = "yes";
         dictionary[ "OPENGL_ES_2" ]         = "yes";
         dictionary[ "OPENVG" ]              = "no";
+        dictionary[ "SSL" ]                 = "yes";
         dictionary[ "OPENSSL" ]             = "no";
         dictionary[ "DBUS" ]                = "no";
         dictionary[ "ZLIB" ]                = "qt";
@@ -1643,6 +1649,7 @@ void Configure::applySpecSpecifics()
         dictionary[ "STYLE_WINDOWSCE" ]     = "yes";
         dictionary[ "STYLE_WINDOWSMOBILE" ] = "yes";
         dictionary[ "OPENGL" ]              = "no";
+        dictionary[ "SSL" ]                 = "no";
         dictionary[ "OPENSSL" ]             = "no";
         dictionary[ "RTTI" ]                = "no";
         dictionary[ "SSE2" ]                = "no";
@@ -1958,6 +1965,8 @@ bool Configure::displayHelp()
         desc("AVX", "yes",      "-avx",                 "Compile with use of AVX instructions.");
         desc("AVX2", "no",      "-no-avx2",             "Do not compile with use of AVX2 instructions.");
         desc("AVX2", "yes",     "-avx2",                "Compile with use of AVX2 instructions.\n");
+        desc("SSL", "no",        "-no-ssl",             "Do not compile support for SSL.");
+        desc("SSL", "yes",       "-ssl",                "Enable run-time SSL support.");
         desc("OPENSSL", "no",    "-no-openssl",         "Do not compile support for OpenSSL.");
         desc("OPENSSL", "yes",   "-openssl",            "Enable run-time OpenSSL support.");
         desc("OPENSSL", "linked","-openssl-linked",     "Enable linked OpenSSL support.\n");
@@ -2373,6 +2382,18 @@ void Configure::autoDetection()
         dictionary["AVX2"] = checkAvailability("AVX2") ? "yes" : "no";
     if (dictionary["NEON"] == "auto")
         dictionary["NEON"] = checkAvailability("NEON") ? "yes" : "no";
+    if (dictionary["SSL"] == "auto") {
+        if (platform() == WINDOWS_RT) {
+            dictionary["SSL"] = "yes";
+        } else {
+            // On Desktop Windows openssl and ssl always have the same value (for now). OpenSSL is
+            // the only backend and if it is available and should be built, that also means that
+            // SSL support in general is enabled.
+            if (dictionary["OPENSSL"] == "auto")
+                dictionary["OPENSSL"] = checkAvailability("OPENSSL") ? "yes" : "no";
+            dictionary["SSL"] = dictionary["OPENSSL"];
+        }
+    }
     if (dictionary["OPENSSL"] == "auto")
         dictionary["OPENSSL"] = checkAvailability("OPENSSL") ? "yes" : "no";
     if (dictionary["DBUS"] == "auto")
@@ -2804,6 +2825,9 @@ void Configure::generateOutputVars()
         qtConfig += "openvg";
         qtConfig += "egl";
     }
+
+    if (dictionary[ "SSL" ] == "yes")
+        qtConfig += "ssl";
 
     if (dictionary[ "OPENSSL" ] == "yes")
         qtConfig += "openssl";
@@ -3515,10 +3539,8 @@ void Configure::generateConfigfiles()
         if (dictionary["GUI"] == "no")               qconfigList += "QT_NO_GUI";
         if (dictionary["OPENGL"] == "no")            qconfigList += "QT_NO_OPENGL";
         if (dictionary["OPENVG"] == "no")            qconfigList += "QT_NO_OPENVG";
-        if (dictionary["OPENSSL"] == "no") {
-            qconfigList += "QT_NO_OPENSSL";
-            qconfigList += "QT_NO_SSL";
-        }
+        if (dictionary["SSL"] == "no")               qconfigList += "QT_NO_SSL";
+        if (dictionary["OPENSSL"] == "no")           qconfigList += "QT_NO_OPENSSL";
         if (dictionary["OPENSSL"] == "linked")       qconfigList += "QT_LINKED_OPENSSL";
         if (dictionary["DBUS"] == "no")              qconfigList += "QT_NO_DBUS";
         if (dictionary["QML_DEBUG"] == "no")         qconfigList += "QT_QML_NO_DEBUGGER";
@@ -3656,6 +3678,7 @@ void Configure::displayConfig()
     sout << "Glib support................" << dictionary[ "QT_GLIB" ] << endl;
     sout << "CUPS support................" << dictionary[ "QT_CUPS" ] << endl;
     sout << "OpenVG support.............." << dictionary[ "OPENVG" ] << endl;
+    sout << "SSL support................." << dictionary[ "SSL" ] << endl;
     sout << "OpenSSL support............." << dictionary[ "OPENSSL" ] << endl;
     sout << "Qt D-Bus support............" << dictionary[ "DBUS" ] << endl;
     sout << "Qt Widgets module support..." << dictionary[ "WIDGETS" ] << endl;

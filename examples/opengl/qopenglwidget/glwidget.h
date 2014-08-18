@@ -43,7 +43,7 @@
 
 #include <QOpenGLWidget>
 #include <QOpenGLFunctions>
-#include <QOpenGLShaderProgram>
+#include <QOpenGLBuffer>
 #include <QVector3D>
 #include <QMatrix4x4>
 #include <QTime>
@@ -52,6 +52,10 @@
 
 class Bubble;
 class MainWindow;
+
+QT_FORWARD_DECLARE_CLASS(QOpenGLTexture)
+QT_FORWARD_DECLARE_CLASS(QOpenGLShader)
+QT_FORWARD_DECLARE_CLASS(QOpenGLShaderProgram)
 
 class GLWidget : public QOpenGLWidget, protected QOpenGLFunctions
 {
@@ -64,7 +68,7 @@ public slots:
     void setScaling(int scale);
     void setLogo();
     void setTexture();
-    void showBubbles(bool);
+    void setShowBubbles(bool);
     void setTransparent(bool transparent);
 
 private slots:
@@ -76,33 +80,40 @@ protected:
     void initializeGL() Q_DECL_OVERRIDE;
 
 private:
-    MainWindow *m_mainWindow;
-    GLuint m_uiTexture;
-    qreal m_fAngle;
-    qreal m_fScale;
-    bool m_showBubbles;
     void paintTexturedCube();
     void paintQtLogo();
     void createGeometry();
     void createBubbles(int number);
     void quad(qreal x1, qreal y1, qreal x2, qreal y2, qreal x3, qreal y3, qreal x4, qreal y4);
     void extrude(qreal x1, qreal y1, qreal x2, qreal y2);
-    QVector<QVector3D> vertices;
-    QVector<QVector3D> normals;
-    bool qtLogo;
-    QList<Bubble*> bubbles;
-    int frames;
-    QTime time;
-    QOpenGLShaderProgram program1;
-    QOpenGLShaderProgram program2;
-    int vertexAttr1;
-    int normalAttr1;
-    int matrixUniform1;
-    int vertexAttr2;
-    int normalAttr2;
-    int texCoordAttr2;
-    int matrixUniform2;
-    int textureUniform2;
+
+    MainWindow *m_mainWindow;
+    qreal m_fAngle;
+    qreal m_fScale;
+    bool m_showBubbles;
+    QVector<QVector3D> m_vertices;
+    QVector<QVector3D> m_normals;
+    bool m_qtLogo;
+    QList<Bubble *> m_bubbles;
+    int m_frames;
+    QTime m_time;
+    QOpenGLShader *m_vshader1;
+    QOpenGLShader *m_fshader1;
+    QOpenGLShader *m_vshader2;
+    QOpenGLShader *m_fshader2;
+    QOpenGLShaderProgram *m_program1;
+    QOpenGLShaderProgram *m_program2;
+    QOpenGLTexture *m_texture;
+    QOpenGLBuffer m_vbo1;
+    QOpenGLBuffer m_vbo2;
+    int m_vertexAttr1;
+    int m_normalAttr1;
+    int m_matrixUniform1;
+    int m_vertexAttr2;
+    int m_normalAttr2;
+    int m_texCoordAttr2;
+    int m_matrixUniform2;
+    int m_textureUniform2;
     bool m_transparent;
     QPushButton *m_btn;
     bool m_hasButton;

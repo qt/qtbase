@@ -132,6 +132,19 @@ public:
         return checkStateAgainstMask(capabillitiesState, opacityPixmapMask);
     }
 
+    bool canBlitterDrawCachedGlyphs(const QTransform &transform, QFontEngine::GlyphFormat requestedGlyphFormat, bool complexClip) const
+    {
+        if (transform.type() > QTransform::TxScale)
+            return false;
+        if (!(m_capabilities & QBlittable::DrawScaledCachedGlyphsCapability))
+            return false;
+        if (requestedGlyphFormat == QFontEngine::Format_ARGB && !(m_capabilities & QBlittable::SubPixelGlyphsCapability))
+            return false;
+        if (complexClip && !(m_capabilities & QBlittable::ComplexClipCapability))
+            return false;
+        return true;
+    }
+
     inline void updateState(uint mask, bool on) {
         updateStateBits(&capabillitiesState, mask, on);
     }
@@ -796,6 +809,28 @@ void QBlitterPaintEngine::drawStaticTextItem(QStaticTextItem *sti)
 //#### d->pmData->markRasterOverlay(sti);
     qWarning("not implemented: markRasterOverlay for QStaticTextItem");
 #endif
+}
+
+bool QBlitterPaintEngine::drawCachedGlyphs(int numGlyphs, const glyph_t *glyphs, const QFixedPoint *positions, QFontEngine *fontEngine)
+{
+    Q_D(QBlitterPaintEngine);
+    QFontEngine::GlyphFormat glyphFormat = d->glyphCacheFormat;
+    if (fontEngine->glyphFormat != QFontEngine::Format_None)
+        glyphFormat = fontEngine->glyphFormat;
+
+    const QClipData *clipData = d->clip();
+    const bool complexClip = clipData && !clipData->hasRectClip;
+
+    const QPainterState *s = state();
+    if (d->caps.canBlitterDrawCachedGlyphs(s->transform(), glyphFormat, complexClip)) {
+        d->unlock();
+        const bool result = d->pmData->blittable()->drawCachedGlyphs(s, glyphFormat, numGlyphs, glyphs, positions, fontEngine);
+        // Lock again as the raster paint engine might draw decorations now.
+        d->lock();
+        return result;
+    } else {
+        return QRasterPaintEngine::drawCachedGlyphs(numGlyphs, glyphs, positions, fontEngine);
+    }
 }
 
 QT_END_NAMESPACE

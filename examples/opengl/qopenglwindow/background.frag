@@ -20,5 +20,6 @@ void main()
 {
     highp float coordNoise = noise(gl_FragCoord.xy);
     highp float proximity = smoothstep(0.5, 1.0, (curv() + 1.0) * (coordNoise ));
-    gl_FragColor = vec4(coordNoise, coordNoise, coordNoise, 1.0) * proximity;
+    highp vec3 color = vec3(coordNoise) * proximity;
+    gl_FragColor = vec4(color, 1.0);
 }

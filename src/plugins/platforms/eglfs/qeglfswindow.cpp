@@ -98,7 +98,7 @@ void QEglFSWindow::create()
 
     m_flags |= HasNativeWindow;
     setGeometry(QRect()); // will become fullscreen
-    QWindowSystemInterface::handleExposeEvent(window(), geometry());
+    QWindowSystemInterface::handleExposeEvent(window(), QRect(QPoint(0, 0), geometry().size()));
 
     EGLDisplay display = static_cast<QEglFSScreen *>(screen)->display();
     QSurfaceFormat platformFormat = QEglFSHooks::hooks()->surfaceFormatFor(window()->requestedFormat());
@@ -168,8 +168,9 @@ void QEglFSWindow::resetSurface()
 void QEglFSWindow::setVisible(bool visible)
 {
     QList<QEGLPlatformWindow *> windows = screen()->windows();
+    QWindow *wnd = window();
 
-    if (window()->type() != Qt::Desktop) {
+    if (wnd->type() != Qt::Desktop) {
         if (visible) {
             screen()->addWindow(this);
         } else {
@@ -180,7 +181,7 @@ void QEglFSWindow::setVisible(bool visible)
         }
     }
 
-    QWindowSystemInterface::handleExposeEvent(window(), window()->geometry());
+    QWindowSystemInterface::handleExposeEvent(wnd, QRect(QPoint(0, 0), wnd->geometry().size()));
 
     if (visible)
         QWindowSystemInterface::flushWindowSystemEvents();
@@ -218,15 +219,17 @@ void QEglFSWindow::requestActivateWindow()
     if (window()->type() != Qt::Desktop)
         screen()->moveToTop(this);
 
-    QWindowSystemInterface::handleWindowActivated(window());
-    QWindowSystemInterface::handleExposeEvent(window(), window()->geometry());
+    QWindow *wnd = window();
+    QWindowSystemInterface::handleWindowActivated(wnd);
+    QWindowSystemInterface::handleExposeEvent(wnd, QRect(QPoint(0, 0), wnd->geometry().size()));
 }
 
 void QEglFSWindow::raise()
 {
-    if (window()->type() != Qt::Desktop) {
+    QWindow *wnd = window();
+    if (wnd->type() != Qt::Desktop) {
         screen()->moveToTop(this);
-        QWindowSystemInterface::handleExposeEvent(window(), window()->geometry());
+        QWindowSystemInterface::handleExposeEvent(wnd, QRect(QPoint(0, 0), wnd->geometry().size()));
     }
 }
 
@@ -237,7 +240,8 @@ void QEglFSWindow::lower()
         int idx = windows.indexOf(this);
         if (idx > 0) {
             screen()->changeWindowIndex(this, idx - 1);
-            QWindowSystemInterface::handleExposeEvent(windows.last()->window(), windows.last()->geometry());
+            QWindowSystemInterface::handleExposeEvent(windows.last()->window(),
+                                                      QRect(QPoint(0, 0), windows.last()->geometry().size()));
         }
     }
 }

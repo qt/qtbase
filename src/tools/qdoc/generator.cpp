@@ -545,7 +545,10 @@ QString Generator::fullDocumentLocation(const Node *node, bool useSubdir)
         anchorRef = QLatin1Char('#') + node->name() + "-prop";
         break;
     case Node::QmlProperty:
-        anchorRef = QLatin1Char('#') + node->name() + "-prop";
+        if (node->isAttached())
+            anchorRef = QLatin1Char('#') + node->name() + "-attached-prop";
+        else
+            anchorRef = QLatin1Char('#') + node->name() + "-prop";
         break;
     case Node::QmlSignal:
         anchorRef = QLatin1Char('#') + node->name() + "-signal";

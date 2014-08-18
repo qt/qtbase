@@ -39,6 +39,7 @@
 **
 ****************************************************************************/
 
+#include "androidjnimenu.h"
 #include "qandroidplatformtheme.h"
 #include "qandroidplatformmenubar.h"
 #include "qandroidplatformmenu.h"
@@ -102,6 +103,11 @@ QPlatformMenu *QAndroidPlatformTheme::createPlatformMenu() const
 QPlatformMenuItem *QAndroidPlatformTheme::createPlatformMenuItem() const
 {
     return new QAndroidPlatformMenuItem;
+}
+
+void QAndroidPlatformTheme::showPlatformMenuBar()
+{
+    QtAndroidMenu::openOptionsMenu();
 }
 
 static inline int paletteType(QPlatformTheme::Palette type)

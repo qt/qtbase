@@ -266,7 +266,7 @@ bool QmlDocVisitor::applyDocumentation(QQmlJS::AST::SourceLocation location, Nod
                         }
                         else {
                             bool isAttached = (topic == COMMAND_QMLATTACHEDPROPERTY);
-                            QmlPropertyNode* n = parent->hasQmlProperty(qpa.name_);
+                            QmlPropertyNode* n = parent->hasQmlProperty(qpa.name_, isAttached);
                             if (n == 0)
                                 n = new QmlPropertyNode(parent, qpa.name_, qpa.type_, isAttached);
                             n->setLocation(doc.location());

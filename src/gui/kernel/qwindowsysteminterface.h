@@ -138,6 +138,7 @@ public:
     static void handleTouchCancelEvent(QWindow *w, QTouchDevice *device, Qt::KeyboardModifiers mods = Qt::NoModifier);
     static void handleTouchCancelEvent(QWindow *w, ulong timestamp, QTouchDevice *device, Qt::KeyboardModifiers mods = Qt::NoModifier);
 
+    // rect is relative to parent
     static void handleGeometryChange(QWindow *w, const QRect &newRect, const QRect &oldRect = QRect());
     static void handleCloseEvent(QWindow *w, bool *accepted = 0);
     static void handleEnterEvent(QWindow *w, const QPointF &local = QPointF(), const QPointF& global = QPointF());
@@ -150,6 +151,7 @@ public:
 
     static void handleApplicationStateChanged(Qt::ApplicationState newState, bool forcePropagate = false);
 
+    // region is in local coordinates, do not confuse with geometry which is parent-relative
     static void handleExposeEvent(QWindow *tlw, const QRegion &region);
 
 #ifndef QT_NO_DRAGANDDROP

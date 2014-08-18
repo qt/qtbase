@@ -57,7 +57,7 @@ Widget::Widget(Helper *helper, QWidget *parent)
 void Widget::animate()
 {
     elapsed = (elapsed + qobject_cast<QTimer*>(sender())->interval()) % 1000;
-    repaint();
+    update();
 }
 //! [1]
 

@@ -111,6 +111,8 @@ public:
     virtual const QFont *font(Font type) const;
     QString standardButtonText(int button) const Q_DECL_OVERRIDE;
 
+    virtual QString gtkFontName() const;
+
     static const char *name;
 };
 

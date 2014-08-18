@@ -137,7 +137,7 @@ void QDirectFbWindow::setVisible(bool visible)
     }
 
     if (window()->isTopLevel() && visible)
-        QWindowSystemInterface::handleExposeEvent(window(), window()->geometry());
+        QWindowSystemInterface::handleExposeEvent(window(), QRect(QPoint(0, 0), window()->geometry().size()));
 }
 
 void QDirectFbWindow::setWindowFlags(Qt::WindowFlags flags)

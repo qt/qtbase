@@ -634,14 +634,12 @@ public class QtActivity extends Activity
                 loaderParams.putStringArrayList(NATIVE_LIBRARIES_KEY, libraryList);
 
 
-                if (bundlingQtLibs) {
-                    String themePath = pluginsPrefix + "android-style/";
-                    String stylePath = themePath + m_displayDensity + "/";
-                    if (!(new File(stylePath)).exists())
-                        loaderParams.putString(EXTRACT_STYLE_KEY, stylePath);
-                    ENVIRONMENT_VARIABLES += "\tMINISTRO_ANDROID_STYLE_PATH=" + stylePath
-                                           + "\tQT_ANDROID_THEMES_ROOT_PATH=" + themePath;
-                }
+                String themePath = getApplicationInfo().dataDir + "/qt-reserved-files/android-style/";
+                String stylePath = themePath + m_displayDensity + "/";
+                if (!(new File(stylePath)).exists())
+                    loaderParams.putString(EXTRACT_STYLE_KEY, stylePath);
+                ENVIRONMENT_VARIABLES += "\tMINISTRO_ANDROID_STYLE_PATH=" + stylePath
+                                       + "\tQT_ANDROID_THEMES_ROOT_PATH=" + themePath;
 
                 loaderParams.putString(ENVIRONMENT_VARIABLES_KEY, ENVIRONMENT_VARIABLES
                                                                   + "\tQML2_IMPORT_PATH=" + pluginsPrefix + "/qml"

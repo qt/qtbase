@@ -116,6 +116,14 @@
 #define HB_FUNC __func__
 #endif
 
+// Take from https://github.com/behdad/harfbuzz/commit/26a963b9cb4af3119177f277a2d48a5d537458fb
+#ifdef _WIN32_WCE
+/* Some things not defined on Windows CE. */
+#define MemoryBarrier()
+#define getenv(Name) NULL
+#define setlocale(Category, Locale) "C"
+static int errno = 0; /* Use something better? */
+#endif
 
 
 /* Basics */
