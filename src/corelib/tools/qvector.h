@@ -810,7 +810,9 @@ bool QVector<T>::contains(const T &t) const
 template <typename T>
 int QVector<T>::count(const T &t) const
 {
-    return int(std::count(cbegin(), cend(), t));
+    const T *b = d->begin();
+    const T *e = d->end();
+    return int(std::count(b, e, t));
 }
 
 template <typename T>
