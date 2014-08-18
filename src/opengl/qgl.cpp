@@ -2126,7 +2126,7 @@ QGLContext::QGLContext(const QGLFormat &format)
     d->init(0, format);
 }
 
-void qDeleteQGLContext(void *handle)
+static void qDeleteQGLContext(void *handle)
 {
     QGLContext *context = static_cast<QGLContext *>(handle);
     delete context;
@@ -3475,7 +3475,7 @@ bool QGLContext::chooseContext(const QGLContext* shareContext)
         d->valid = d->guiGlContext->create();
 
         if (d->valid)
-            d->guiGlContext->setQGLContextHandle(this, qDeleteQGLContext);
+            d->guiGlContext->setQGLContextHandle(this, 0);
 
         d->glFormat = QGLFormat::fromSurfaceFormat(d->guiGlContext->format());
         d->setupSharing();

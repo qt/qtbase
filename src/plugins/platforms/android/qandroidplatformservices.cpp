@@ -54,11 +54,10 @@ QAndroidPlatformServices::QAndroidPlatformServices()
 bool QAndroidPlatformServices::openUrl(const QUrl &url)
 {
     QJNIObjectPrivate urlString = QJNIObjectPrivate::fromString(url.toString());
-    QJNIObjectPrivate::callStaticMethod<void>(QtAndroid::applicationClass(),
-                                              "openURL",
-                                              "(Ljava/lang/String;)V",
-                                              urlString.object());
-    return true;
+    return QJNIObjectPrivate::callStaticMethod<jboolean>(QtAndroid::applicationClass(),
+                                                         "openURL",
+                                                         "(Ljava/lang/String;)Z",
+                                                         urlString.object());
 }
 
 bool QAndroidPlatformServices::openDocument(const QUrl &url)

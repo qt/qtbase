@@ -2370,6 +2370,7 @@ for (code = first_significant_code(code + PRIV(OP_lengths)[*code], TRUE);
   if (c == OP_RECURSE)
     {
     const pcre_uchar *scode = cd->start_code + GET(code, 1);
+    const pcre_uchar *endgroup = scode;
     BOOL empty_branch;
 
     /* Test for forward reference or uncompleted reference. This is disabled
@@ -2384,24 +2385,20 @@ for (code = first_significant_code(code + PRIV(OP_lengths)[*code], TRUE);
       if (GET(scode, 1) == 0) return TRUE;    /* Unclosed */
       }
 
-    /* If we are scanning a completed pattern, there are no forward references
-    and all groups are complete. We need to detect whether this is a recursive
-    call, as otherwise there will be an infinite loop. If it is a recursion,
-    just skip over it. Simple recursions are easily detected. For mutual
-    recursions we keep a chain on the stack. */
+    /* If the reference is to a completed group, we need to detect whether this
+    is a recursive call, as otherwise there will be an infinite loop. If it is
+    a recursion, just skip over it. Simple recursions are easily detected. For
+    mutual recursions we keep a chain on the stack. */
 
+    do endgroup += GET(endgroup, 1); while (*endgroup == OP_ALT);
+    if (code >= scode && code <= endgroup) continue;  /* Simple recursion */
     else
-      {
+      {  
       recurse_check *r = recurses;
-      const pcre_uchar *endgroup = scode;
-
-      do endgroup += GET(endgroup, 1); while (*endgroup == OP_ALT);
-      if (code >= scode && code <= endgroup) continue;  /* Simple recursion */
-
       for (r = recurses; r != NULL; r = r->prev)
         if (r->group == scode) break;
       if (r != NULL) continue;   /* Mutual recursion */
-      }
+      } 
 
     /* Completed reference; scan the referenced group, remembering it on the
     stack chain to detect mutual recursions. */
@@ -8244,12 +8241,16 @@ for (;;)
 
     /* If it was a capturing subpattern, check to see if it contained any
     recursive back references. If so, we must wrap it in atomic brackets.
-    In any event, remove the block from the chain. */
+    Because we are moving code along, we must ensure that any pending recursive
+    references are updated. In any event, remove the block from the chain. */
 
     if (capnumber > 0)
       {
       if (cd->open_caps->flag)
         {
+        *code = OP_END;
+        adjust_recurse(start_bracket, 1 + LINK_SIZE,
+          (options & PCRE_UTF8) != 0, cd, cd->hwm);
         memmove(start_bracket + 1 + LINK_SIZE, start_bracket,
           IN_UCHARS(code - start_bracket));
         *start_bracket = OP_ONCE;

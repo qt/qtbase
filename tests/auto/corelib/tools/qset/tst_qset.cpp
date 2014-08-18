@@ -82,6 +82,13 @@ private slots:
     void initializerList();
 };
 
+struct IdentityTracker {
+    int value, id;
+};
+
+inline uint qHash(IdentityTracker key) { return qHash(key.value); }
+inline bool operator==(IdentityTracker lhs, IdentityTracker rhs) { return lhs.value == rhs.value; }
+
 void tst_QSet::operator_eq()
 {
     {
@@ -530,6 +537,18 @@ void tst_QSet::insert()
         QVERIFY(set1.size() == 2);
         QVERIFY(set1.contains(2));
     }
+
+    {
+        QSet<IdentityTracker> set;
+        QCOMPARE(set.size(), 0);
+        const int dummy = -1;
+        IdentityTracker id00 = {0, 0}, id01 = {0, 1}, searchKey = {0, dummy};
+        QCOMPARE(set.insert(id00)->id, id00.id);
+        QCOMPARE(set.size(), 1);
+        QCOMPARE(set.insert(id01)->id, id00.id); // first inserted is kept
+        QCOMPARE(set.size(), 1);
+        QCOMPARE(set.find(searchKey)->id, id00.id);
+    }
 }
 
 void tst_QSet::setOperations()
@@ -929,6 +948,13 @@ void tst_QSet::initializerList()
     QVERIFY(set.contains(3));
     QVERIFY(set.contains(4));
     QVERIFY(set.contains(5));
+
+    // check _which_ of the equal elements gets inserted (in the QHash/QMap case, it's the last):
+    const QSet<IdentityTracker> set2 = {{1, 0}, {1, 1}, {2, 2}, {3, 3}, {4, 4}, {5, 5}};
+    QCOMPARE(set2.count(), 5);
+    const int dummy = -1;
+    const IdentityTracker searchKey = {1, dummy};
+    QCOMPARE(set2.find(searchKey)->id, 0);
 
     QSet<int> emptySet{};
     QVERIFY(emptySet.isEmpty());

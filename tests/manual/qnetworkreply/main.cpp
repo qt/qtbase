@@ -49,6 +49,7 @@
 #include <QtNetwork/qnetworkaccessmanager.h>
 #include <QtNetwork/qsslconfiguration.h>
 #include <QtNetwork/qhttpmultipart.h>
+#include <QtNetwork/qauthenticator.h>
 #include <QtCore/QJsonDocument>
 #include "../../auto/network-settings.h"
 
@@ -73,9 +74,13 @@ private slots:
     void spdy_data();
     void spdy();
     void spdyMultipleRequestsPerHost();
+    void proxyAuthentication_data();
+    void proxyAuthentication();
+    void authentication();
 
 protected slots:
     void spdyReplyFinished(); // only used by spdyMultipleRequestsPerHost test
+    void authenticationRequiredSlot(QNetworkReply *, QAuthenticator *authenticator);
 
 private:
     QHttpMultiPart *createFacebookMultiPart(const QByteArray &accessToken);
@@ -502,6 +507,83 @@ void tst_qnetworkreply::spdyMultipleRequestsPerHost()
 #else
     QSKIP("Qt built withouth OpenSSL, or the OpenSSL version is too old");
 #endif // defined(QT_BUILD_INTERNAL) && !defined(QT_NO_SSL) ...
+}
+
+void tst_qnetworkreply::proxyAuthentication_data()
+{
+    QTest::addColumn<QUrl>("url");
+
+    QTest::newRow("http://www.google.com") << QUrl("http://www.google.com");
+    QTest::newRow("https://www.google.com") << QUrl("https://www.google.com");
+}
+
+void tst_qnetworkreply::proxyAuthentication()
+{
+    QFETCH(QUrl, url);
+    QNetworkRequest request(url);
+    QNetworkAccessManager manager;
+
+    QByteArray proxyHostName = qgetenv("QT_PROXY_HOST");
+    QByteArray proxyPort = qgetenv("QT_PROXY_PORT");
+    QByteArray proxyUser = qgetenv("QT_PROXY_USER");
+    QByteArray proxyPassword = qgetenv("QT_PROXY_PASSWORD");
+    if (proxyHostName.isEmpty() || proxyPort.isEmpty() || proxyUser.isEmpty()
+            || proxyPassword.isEmpty())
+        QSKIP("This test requires the QT_PROXY_* environment variables to be set. "
+              "Do something like:\n"
+              "export QT_PROXY_HOST=myNTLMHost\n"
+              "export QT_PROXY_PORT=8080\n"
+              "export QT_PROXY_USER='myDomain\\myUser'\n"
+              "export QT_PROXY_PASSWORD=myPassword\n");
+
+    QNetworkProxy proxy(QNetworkProxy::HttpProxy);
+    proxy.setHostName(proxyHostName);
+    proxy.setPort(proxyPort.toInt());
+    proxy.setUser(proxyUser);
+    proxy.setPassword(proxyPassword);
+
+    manager.setProxy(proxy);
+
+    reply = manager.get(request);
+    QObject::connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    QTestEventLoop::instance().enterLoop(15);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+    QCOMPARE(reply->error(), QNetworkReply::NoError);
+    int statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+    QVERIFY(statusCode >= 200 && statusCode < 400);
+}
+
+void tst_qnetworkreply::authenticationRequiredSlot(QNetworkReply *,
+                                                   QAuthenticator *authenticator)
+{
+    QString authUser = QString::fromLocal8Bit(qgetenv("QT_AUTH_USER"));
+    QString authPassword = QString::fromLocal8Bit(qgetenv("QT_AUTH_PASSWORD"));
+    authenticator->setUser(authUser);
+    authenticator->setPassword(authPassword);
+}
+
+void tst_qnetworkreply::authentication()
+{
+    QByteArray authUrl = qgetenv("QT_AUTH_URL");
+    if (authUrl.isEmpty())
+        QSKIP("This test requires the QT_AUTH_* environment variables to be set. "
+              "Do something like:\n"
+              "export QT_AUTH_URL='http://myUrl.com/myPath'\n"
+              "export QT_AUTH_USER='myDomain\\myUser'\n"
+              "export QT_AUTH_PASSWORD=myPassword\n");
+
+    QUrl url(QString::fromLocal8Bit(authUrl));
+    QNetworkRequest request(url);
+    QNetworkAccessManager manager;
+    QObject::connect(&manager, SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)),
+                     this, SLOT(authenticationRequiredSlot(QNetworkReply*,QAuthenticator*)));
+    reply = manager.get(request);
+    QObject::connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    QTestEventLoop::instance().enterLoop(15);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+    QVERIFY2(reply->error() == QNetworkReply::NoError, reply->errorString().toLocal8Bit());
+    int statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+    QVERIFY(statusCode >= 200 && statusCode < 400);
 }
 
 QTEST_MAIN(tst_qnetworkreply)
