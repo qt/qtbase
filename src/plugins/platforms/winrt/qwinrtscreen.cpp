@@ -512,8 +512,6 @@ QWinRTScreen::QWinRTScreen()
     d->surfaceFormat.setRenderableType(QSurfaceFormat::OpenGLES);
     d->surfaceFormat.setSamples(1);
     d->surfaceFormat.setSwapBehavior(QSurfaceFormat::DoubleBuffer);
-    d->surfaceFormat.setDepthBufferSize(24);
-    d->surfaceFormat.setStencilBufferSize(8);
 
     hr = d->coreWindow->add_KeyDown(Callback<KeyHandler>(this, &QWinRTScreen::onKeyDown).Get(), &d->windowTokens[&ICoreWindow::remove_KeyDown]);
     Q_ASSERT_SUCCEEDED(hr);
