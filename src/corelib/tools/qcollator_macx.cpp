@@ -96,9 +96,9 @@ void QCollator::setNumericMode(bool on)
     detach();
 
     if (on)
-        d->collator.options |= kUCCollateDigitsAsNumberMask;
+        d->collator.options |= kUCCollateDigitsAsNumberMask | kUCCollateDigitsOverrideMask;
     else
-        d->collator.options &= ~kUCCollateDigitsAsNumberMask;
+        d->collator.options &= ~(kUCCollateDigitsAsNumberMask | kUCCollateDigitsOverrideMask);
 
     d->init();
 }
