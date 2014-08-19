@@ -1352,10 +1352,17 @@ void HtmlGenerator::generateQmlTypePage(QmlClassNode* qcn, CodeMarker* marker)
     generateQmlRequisites(qcn, marker);
 
     QString allQmlMembersLink = generateAllQmlMembersFile(qcn, marker);
-    if (!allQmlMembersLink.isEmpty()) {
+    QString obsoleteLink = generateQmlMemberFile(qcn, marker, CodeMarker::Obsolete);
+    if (!allQmlMembersLink.isEmpty() || !obsoleteLink.isEmpty()) {
         out() << "<ul>\n";
-        out() << "<li><a href=\"" << allQmlMembersLink << "\">"
-              << "List of all members, including inherited members</a></li>\n";
+        if (!allQmlMembersLink.isEmpty()) {
+            out() << "<li><a href=\"" << allQmlMembersLink << "\">"
+                  << "List of all members, including inherited members</a></li>\n";
+        }
+        if (!obsoleteLink.isEmpty()) {
+            out() << "<li><a href=\"" << obsoleteLink << "\">"
+                  << "Obsolete members</a></li>\n";
+        }
         out() << "</ul>\n";
     }
 
@@ -2565,6 +2572,84 @@ QString HtmlGenerator::generateLowStatusMemberFile(InnerNode *inner,
                 generateDetailedMember(*m, inner, marker);
             ++m;
         }
+    }
+
+    generateFooter();
+    endSubPage();
+    return fileName;
+}
+
+/*!
+  Generates a separate file where certain members of the QML
+  type \a qcn are listed. The \a marker is used to generate
+  the section lists, which are then traversed and output here.
+
+  Note that this function currently only handles correctly the
+  case where \a status is \c {CodeMarker::Obsolete}.
+ */
+QString HtmlGenerator::generateQmlMemberFile(QmlClassNode* qcn,
+                                             CodeMarker *marker,
+                                             CodeMarker::Status status)
+{
+    QList<Section> sections = marker->qmlSections(qcn, CodeMarker::Summary, status);
+    QMutableListIterator<Section> j(sections);
+    while (j.hasNext()) {
+        if (j.next().members.size() == 0)
+            j.remove();
+    }
+    if (sections.isEmpty())
+        return QString();
+
+    QString title = "Obsolete Members for " + qcn->name();
+    QString fileName = fileBase(qcn) + "-obsolete." + fileExtension();
+
+    if (status == CodeMarker::Obsolete) {
+        QString link;
+        if (useOutputSubdirs() && !Generator::outputSubdir().isEmpty())
+            link = QString("../" + Generator::outputSubdir() + QLatin1Char('/'));
+        link += fileName;
+        qcn->setObsoleteLink(link);
+    }
+
+    beginSubPage(qcn, fileName);
+    generateHeader(title, qcn, marker);
+    generateTitle(title, Text(), SmallSubTitle, qcn, marker);
+
+    out() << "<p><b>The following members of QML type "
+          << "<a href=\"" << linkForNode(qcn, 0) << "\">"
+          << protectEnc(qcn->name()) << "</a>"
+          << " are obsolete.</b> "
+          << "They are provided to keep old source code working. "
+          << "We strongly advise against using them in new code.</p>\n";
+
+    QList<Section>::const_iterator s = sections.constBegin();
+    while (s != sections.constEnd()) {
+        out() << "<a name=\"" << registerRef((*s).name.toLower())
+              << "\"></a>" << divNavTop << '\n';
+        out() << "<h2>" << protectEnc((*s).name) << "</h2>\n";
+        generateQmlSummary(*s, qcn, marker);
+        ++s;
+    }
+
+    sections = marker->qmlSections(qcn, CodeMarker::Detailed, status);
+    QMutableListIterator<Section> k(sections);
+    while (k.hasNext()) {
+        if (k.next().members.size() == 0)
+            k.remove();
+    }
+    if (sections.isEmpty())
+        return QString();
+
+    s = sections.constBegin();
+    while (s != sections.constEnd()) {
+        out() << "<h2>" << protectEnc((*s).name) << "</h2>\n";
+        NodeList::ConstIterator m = (*s).members.constBegin();
+        while (m != (*s).members.constEnd()) {
+            generateDetailedQmlMember(*m, qcn, marker);
+            out() << "<br/>\n";
+            ++m;
+        }
+        ++s;
     }
 
     generateFooter();

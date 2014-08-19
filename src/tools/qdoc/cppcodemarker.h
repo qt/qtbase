@@ -78,7 +78,9 @@ public:
     virtual QList<Section> sections(const InnerNode *innerNode,
                                     SynopsisStyle style,
                                     Status status);
-    virtual QList<Section> qmlSections(QmlClassNode* qmlClassNode, SynopsisStyle style);
+    virtual QList<Section> qmlSections(QmlClassNode* qmlClassNode,
+                                       SynopsisStyle style,
+                                       Status status = Okay);
 
 private:
     QString addMarkUp(const QString& protectedCode,

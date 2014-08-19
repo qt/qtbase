@@ -159,6 +159,9 @@ private:
     QString generateLowStatusMemberFile(InnerNode *inner,
                                         CodeMarker *marker,
                                         CodeMarker::Status status);
+    QString generateQmlMemberFile(QmlClassNode* qcn,
+                                  CodeMarker *marker,
+                                  CodeMarker::Status status);
     void generateClassHierarchy(const Node *relative, NodeMap &classMap);
     void generateAnnotatedList(const Node* relative, CodeMarker* marker, const NodeMap& nodeMap);
     void generateAnnotatedList(const Node* relative, CodeMarker* marker, const NodeList& nodes);

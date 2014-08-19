@@ -407,8 +407,7 @@ void QmlDocVisitor::applyMetacommands(QQmlJS::AST::SourceLocation,
                 node->setStatus(Node::Internal);
             }
             else if (command == COMMAND_OBSOLETE) {
-                if (node->status() != Node::Compat)
-                    node->setStatus(Node::Obsolete);
+                node->setStatus(Node::Obsolete);
             }
             else if (command == COMMAND_PAGEKEYWORDS) {
                 // Not done yet. Do we need this?

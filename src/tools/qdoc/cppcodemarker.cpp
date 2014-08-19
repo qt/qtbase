@@ -1094,7 +1094,7 @@ QString CppCodeMarker::addMarkUp(const QString &in,
   the list of documentation sections for the children of the
   \a qmlClassNode.
  */
-QList<Section> CppCodeMarker::qmlSections(QmlClassNode* qmlClassNode, SynopsisStyle style)
+QList<Section> CppCodeMarker::qmlSections(QmlClassNode* qmlClassNode, SynopsisStyle style, Status status)
 {
     QList<Section> sections;
     if (qmlClassNode) {
@@ -1144,32 +1144,32 @@ QList<Section> CppCodeMarker::qmlSections(QmlClassNode* qmlClassNode, SynopsisSt
                         continue;
                     }
                     if ((*c)->type() == Node::QmlPropertyGroup) {
-                        insert(qmlproperties, *c, style, Okay);
+                        insert(qmlproperties, *c, style, status);
                     }
                     else if ((*c)->type() == Node::QmlProperty) {
                         const QmlPropertyNode* pn = static_cast<const QmlPropertyNode*>(*c);
                         if (pn->isAttached())
-                            insert(qmlattachedproperties,*c,style,Okay);
+                            insert(qmlattachedproperties,*c,style, status);
                         else {
-                            insert(qmlproperties,*c,style,Okay);
+                            insert(qmlproperties,*c,style, status);
                         }
                     }
                     else if ((*c)->type() == Node::QmlSignal) {
                         const FunctionNode* sn = static_cast<const FunctionNode*>(*c);
                         if (sn->isAttached())
-                            insert(qmlattachedsignals,*c,style,Okay);
+                            insert(qmlattachedsignals,*c,style, status);
                         else
-                            insert(qmlsignals,*c,style,Okay);
+                            insert(qmlsignals,*c,style, status);
                     }
                     else if ((*c)->type() == Node::QmlSignalHandler) {
-                        insert(qmlsignalhandlers,*c,style,Okay);
+                        insert(qmlsignalhandlers,*c,style, status);
                     }
                     else if ((*c)->type() == Node::QmlMethod) {
                         const FunctionNode* mn = static_cast<const FunctionNode*>(*c);
                         if (mn->isAttached())
-                            insert(qmlattachedmethods,*c,style,Okay);
+                            insert(qmlattachedmethods,*c,style, status);
                         else
-                            insert(qmlmethods,*c,style,Okay);
+                            insert(qmlmethods,*c,style, status);
                     }
                     ++c;
                 }
@@ -1209,31 +1209,31 @@ QList<Section> CppCodeMarker::qmlSections(QmlClassNode* qmlClassNode, SynopsisSt
                         continue;
                     }
                     if ((*c)->type() == Node::QmlPropertyGroup) {
-                        insert(qmlproperties,*c,style,Okay);
+                        insert(qmlproperties,*c,style, status);
                     }
                     else if ((*c)->type() == Node::QmlProperty) {
                         const QmlPropertyNode* pn = static_cast<const QmlPropertyNode*>(*c);
                         if (pn->isAttached())
-                            insert(qmlattachedproperties,*c,style,Okay);
+                            insert(qmlattachedproperties,*c,style, status);
                         else
-                            insert(qmlproperties,*c,style,Okay);
+                            insert(qmlproperties,*c,style, status);
                     }
                     else if ((*c)->type() == Node::QmlSignal) {
                         const FunctionNode* sn = static_cast<const FunctionNode*>(*c);
                         if (sn->isAttached())
-                            insert(qmlattachedsignals,*c,style,Okay);
+                            insert(qmlattachedsignals,*c,style, status);
                         else
-                            insert(qmlsignals,*c,style,Okay);
+                            insert(qmlsignals,*c,style, status);
                     }
                     else if ((*c)->type() == Node::QmlSignalHandler) {
-                        insert(qmlsignalhandlers,*c,style,Okay);
+                        insert(qmlsignalhandlers,*c,style, status);
                     }
                     else if ((*c)->type() == Node::QmlMethod) {
                         const FunctionNode* mn = static_cast<const FunctionNode*>(*c);
                         if (mn->isAttached())
-                            insert(qmlattachedmethods,*c,style,Okay);
+                            insert(qmlattachedmethods,*c,style, status);
                         else
-                            insert(qmlmethods,*c,style,Okay);
+                            insert(qmlmethods,*c,style, status);
                     }
                     ++c;
                 }

@@ -154,7 +154,9 @@ public:
     virtual QList<Section> sections(const InnerNode *inner,
                                     SynopsisStyle style,
                                     Status status) = 0;
-    virtual QList<Section> qmlSections(QmlClassNode* qmlClassNode, SynopsisStyle style);
+    virtual QList<Section> qmlSections(QmlClassNode* qmlClassNode,
+                                       SynopsisStyle style,
+                                       Status status = Okay);
     virtual QStringList macRefsForNode(Node* node);
 
     static void initialize(const Config& config);
