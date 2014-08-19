@@ -84,8 +84,6 @@ public:
     int childCount() const Q_DECL_OVERRIDE;
     QAccessibleInterface *child(int index) const Q_DECL_OVERRIDE;
 
-    QString text(QAccessible::Text t) const Q_DECL_OVERRIDE;
-
     // QAccessibleActionInterface
     QStringList actionNames() const Q_DECL_OVERRIDE;
     void doAction(const QString &actionName) Q_DECL_OVERRIDE;

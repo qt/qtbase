@@ -298,29 +298,6 @@ QAccessibleInterface *QAccessibleToolButton::child(int index) const
     return 0;
 }
 
-/*!
-    \internal
-
-    Returns the button's text label, depending on the text \a t, and
-    the \a child.
-*/
-QString QAccessibleToolButton::text(QAccessible::Text t) const
-{
-    QString str;
-    switch (t) {
-    case QAccessible::Name:
-        str = toolButton()->accessibleName();
-        if (str.isEmpty())
-            str = toolButton()->text();
-        break;
-    default:
-        break;
-    }
-    if (str.isEmpty())
-        str = QAccessibleButton::text(t);
-    return qt_accStripAmp(str);
-}
-
 /*
    The three different tool button types can have the following actions:
 | DelayedPopup    | ShowMenuAction + (PressedAction || CheckedAction) |
