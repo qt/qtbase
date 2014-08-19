@@ -49,10 +49,6 @@
 #include <QtSql>
 #include "qdebug.h"
 
-#ifdef Q_OS_LINUX
-#include <sched.h>
-#endif
-
 const QString qtest(qTableName("qtest", __FILE__, QSqlDatabase()));
 // set this define if Oracle is built with threading support
 //#define QOCI_THREADED
@@ -158,9 +154,7 @@ public:
             q.bindValue(1, "threaddy");
             q.bindValue(2, 10);
             QVERIFY_SQL(q, exec());
-#ifdef Q_OS_LINUX
-            sched_yield();
-#endif
+            QThread::yieldCurrentThread();
         }
     }
 
@@ -196,9 +190,7 @@ public:
             q2.bindValue("id", q1.value(0));
             q1.clear();
             QVERIFY_SQL(q2, exec());
-#ifdef Q_OS_LINUX
-            sched_yield();
-#endif
+            QThread::yieldCurrentThread();
         }
     }
 
