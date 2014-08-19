@@ -383,8 +383,7 @@ void tst_QSqlThread::simpleThreading()
     t1.start();
     t2.start();
 
-    while (threadFinishedCount < 2)
-        QTest::qWait(100);
+    QTRY_VERIFY(threadFinishedCount >= 2);
 }
 
 // This test creates two threads that clone their db connection and read
@@ -409,8 +408,7 @@ void tst_QSqlThread::readWriteThreading()
     producer.start();
     consumer.start();
 
-    while (threadFinishedCount < 2)
-        QTest::qWait(100);
+    QTRY_VERIFY(threadFinishedCount >= 2);
 }
 
 // run with n threads in parallel. Change this constant to hammer the poor DB server even more
@@ -433,8 +431,7 @@ void tst_QSqlThread::readFromSingleConnection()
         reader->start();
     }
 
-    while (threadFinishedCount < maxThreadCount)
-        QTest::qWait(100);
+    QTRY_VERIFY(threadFinishedCount >= maxThreadCount);
 #endif
 }
 
@@ -459,8 +456,7 @@ void tst_QSqlThread::readWriteFromSingleConnection()
         writer->start();
     }
 
-    while (threadFinishedCount < maxThreadCount * 2)
-        QTest::qWait(100);
+    QTRY_VERIFY(threadFinishedCount >= maxThreadCount * 2);
 #endif
 }
 
@@ -485,8 +481,7 @@ void tst_QSqlThread::preparedReadWriteFromSingleConnection()
         writer->start();
     }
 
-    while (threadFinishedCount < maxThreadCount * 2)
-        QTest::qWait(100);
+    QTRY_VERIFY(threadFinishedCount >= maxThreadCount * 2);
 #endif
 }
 
