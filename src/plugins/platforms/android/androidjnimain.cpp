@@ -554,6 +554,12 @@ static void setDisplayMetrics(JNIEnv */*env*/, jclass /*clazz*/,
                             jint desktopWidthPixels, jint desktopHeightPixels,
                             jdouble xdpi, jdouble ydpi, jdouble scaledDensity)
 {
+    // Android does not give us the correct screen size for immersive mode, but
+    // the surface does have the right size
+
+    widthPixels = qMax(widthPixels, desktopWidthPixels);
+    heightPixels = qMax(heightPixels, desktopHeightPixels);
+
     m_desktopWidthPixels = desktopWidthPixels;
     m_desktopHeightPixels = desktopHeightPixels;
     m_scaledDensity = scaledDensity;
