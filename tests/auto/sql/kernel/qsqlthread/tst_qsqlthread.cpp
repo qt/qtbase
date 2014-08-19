@@ -77,7 +77,10 @@ public slots:
     void cleanup();
 
 protected slots:
-    void threadFinished() { ++threadFinishedCount; }
+    void threadFinished() {
+        ++threadFinishedCount;
+        qDebug("Thread finished, total finished: %d", threadFinishedCount);
+    }
 
 private slots:
     void simpleThreading_data() { generic_data(); }
