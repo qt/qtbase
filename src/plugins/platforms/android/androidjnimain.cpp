@@ -574,8 +574,8 @@ static void setDisplayMetrics(JNIEnv */*env*/, jclass /*clazz*/,
     } else {
         m_androidPlatformIntegration->setDisplayMetrics(qRound(double(widthPixels)  / xdpi * 25.4),
                                                         qRound(double(heightPixels) / ydpi * 25.4));
-        m_androidPlatformIntegration->setDesktopSize(desktopWidthPixels, desktopHeightPixels);
         m_androidPlatformIntegration->setScreenSize(widthPixels, heightPixels);
+        m_androidPlatformIntegration->setDesktopSize(desktopWidthPixels, desktopHeightPixels);
     }
 }
 
