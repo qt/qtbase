@@ -377,6 +377,12 @@ private:
     {
         return (constBegin().i <= i.i) && (i.i <= constEnd().i);
     }
+
+private:
+    inline bool contains_impl(const T &, QListData::NotArrayCompatibleLayout) const;
+    inline bool contains_impl(const T &, QListData::ArrayCompatibleLayout) const;
+    inline int count_impl(const T &, QListData::NotArrayCompatibleLayout) const;
+    inline int count_impl(const T &, QListData::ArrayCompatibleLayout) const;
 };
 
 #if defined(Q_CC_BOR)
@@ -941,6 +947,12 @@ Q_OUTOFLINE_TEMPLATE int QList<T>::lastIndexOf(const T &t, int from) const
 template <typename T>
 Q_OUTOFLINE_TEMPLATE bool QList<T>::contains(const T &t) const
 {
+    return contains_impl(t, MemoryLayout());
+}
+
+template <typename T>
+inline bool QList<T>::contains_impl(const T &t, QListData::NotArrayCompatibleLayout) const
+{
     Node *e = reinterpret_cast<Node *>(p.end());
     Node *i = reinterpret_cast<Node *>(p.begin());
     for (; i != e; ++i)
@@ -950,7 +962,21 @@ Q_OUTOFLINE_TEMPLATE bool QList<T>::contains(const T &t) const
 }
 
 template <typename T>
+inline bool QList<T>::contains_impl(const T &t, QListData::ArrayCompatibleLayout) const
+{
+    const T *b = reinterpret_cast<const T*>(p.begin());
+    const T *e = reinterpret_cast<const T*>(p.end());
+    return std::find(b, e, t) != e;
+}
+
+template <typename T>
 Q_OUTOFLINE_TEMPLATE int QList<T>::count(const T &t) const
+{
+    return this->count_impl(t, MemoryLayout());
+}
+
+template <typename T>
+inline int QList<T>::count_impl(const T &t, QListData::NotArrayCompatibleLayout) const
 {
     int c = 0;
     Node *e = reinterpret_cast<Node *>(p.end());
@@ -959,6 +985,14 @@ Q_OUTOFLINE_TEMPLATE int QList<T>::count(const T &t) const
         if (i->t() == t)
             ++c;
     return c;
+}
+
+template <typename T>
+inline int QList<T>::count_impl(const T &t, QListData::ArrayCompatibleLayout) const
+{
+    return int(std::count(reinterpret_cast<const T*>(p.begin()),
+                          reinterpret_cast<const T*>(p.end()),
+                          t));
 }
 
 Q_DECLARE_SEQUENTIAL_ITERATOR(List)
