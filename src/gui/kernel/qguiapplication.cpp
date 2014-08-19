@@ -588,6 +588,7 @@ QGuiApplication::~QGuiApplication()
 #endif //QT_NO_SESSIONMANAGER
 
     clearPalette();
+    QFontDatabase::removeAllApplicationFonts();
 
 #ifndef QT_NO_CURSOR
     d->cursor_list.clear();
