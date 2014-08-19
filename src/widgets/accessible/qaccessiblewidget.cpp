@@ -112,7 +112,6 @@ static int qt_accAmpIndex(const QString &text)
         return -1;
 
     int fa = 0;
-    QChar ac;
     while ((fa = text.indexOf(QLatin1Char('&'), fa)) != -1) {
         ++fa;
         if (fa < text.length()) {
