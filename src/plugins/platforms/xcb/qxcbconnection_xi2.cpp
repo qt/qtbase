@@ -164,7 +164,10 @@ void QXcbConnection::xi2SetupDevices()
                 if (bci->num_buttons >= 5) {
                     Atom label4 = bci->labels[3];
                     Atom label5 = bci->labels[4];
-                    if ((!label4 || qatom(label4) == QXcbAtom::ButtonWheelUp) && (!label5 || qatom(label5) == QXcbAtom::ButtonWheelDown))
+                    // Some drivers have no labels on the wheel buttons, some have no label on just one and some have no label on
+                    // button 4 and the wrong one on button 5. So we just check that they are not labelled with unrelated buttons.
+                    if ((!label4 || qatom(label4) == QXcbAtom::ButtonWheelUp || qatom(label4) == QXcbAtom::ButtonWheelDown) &&
+                        (!label5 || qatom(label5) == QXcbAtom::ButtonWheelUp || qatom(label5) == QXcbAtom::ButtonWheelDown))
                         scrollingDevice.legacyOrientations |= Qt::Vertical;
                 }
                 if (bci->num_buttons >= 7) {
