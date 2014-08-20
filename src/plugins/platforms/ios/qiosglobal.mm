@@ -141,5 +141,30 @@ int infoPlistValue(NSString* key, int defaultValue)
     return value ? [value intValue] : defaultValue;
 }
 
+// -------------------------------------------------------------------------
+
+@interface QtFirstResponderEvent : UIEvent
+@property (nonatomic, strong) id firstResponder;
+@end
+
+@implementation QtFirstResponderEvent
+@end
+
+@implementation UIResponder (QtFirstResponder)
+
++(id)currentFirstResponder
+{
+    QtFirstResponderEvent *event = [[[QtFirstResponderEvent alloc] init] autorelease];
+    [[UIApplication sharedApplication] sendAction:@selector(qt_findFirstResponder:event:) to:nil from:nil forEvent:event];
+    return event.firstResponder;
+}
+
+- (void)qt_findFirstResponder:(id)sender event:(QtFirstResponderEvent *)event
+{
+    Q_UNUSED(sender);
+    event.firstResponder = self;
+}
+@end
+
 QT_END_NAMESPACE
 

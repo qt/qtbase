@@ -65,4 +65,8 @@ int infoPlistValue(NSString* key, int defaultValue);
 
 QT_END_NAMESPACE
 
+@interface UIResponder (QtFirstResponder)
++(id)currentFirstResponder;
+@end
+
 #endif // QIOSGLOBAL_H
