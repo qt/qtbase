@@ -165,4 +165,9 @@ QPlatformServices *QDirectFbIntegration::services() const
     return m_services.data();
 }
 
+QPlatformNativeInterface *QDirectFbIntegration::nativeInterface() const
+{
+    return const_cast<QDirectFbIntegration *>(this);
+}
+
 QT_END_NAMESPACE
