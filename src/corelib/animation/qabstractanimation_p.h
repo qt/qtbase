@@ -132,9 +132,8 @@ private:
 class Q_CORE_EXPORT QAnimationDriverPrivate : public QObjectPrivate
 {
 public:
-    QAnimationDriverPrivate() : running(false), startTime(0) {}
+    QAnimationDriverPrivate() : running(false) {}
     bool running;
-    qint64 startTime;
 };
 
 class Q_CORE_EXPORT QAbstractAnimationTimer : public QObject
@@ -193,6 +192,10 @@ public:
     int runningAnimationCount();
     void registerProfilerCallback(void (*cb)(qint64));
 
+    void startAnimationDriver();
+    void stopAnimationDriver();
+    qint64 elapsed() const;
+
 protected:
     void timerEvent(QTimerEvent *);
 
@@ -233,6 +236,9 @@ private:
     int closestPausedAnimationTimerTimeToFinish();
 
     void (*profilerCallback)(qint64);
+
+    qint64 driverStartTime; // The time the animation driver was started
+    qint64 temporalDrift; // The delta between animation driver time and wall time.
 };
 
 class QAnimationTimer : public QAbstractAnimationTimer
