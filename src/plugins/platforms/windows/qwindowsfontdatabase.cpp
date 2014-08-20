@@ -964,6 +964,31 @@ static int QT_WIN_CALLBACK storeFont(ENUMLOGFONTEX* f, NEWTEXTMETRICEX *textmetr
     return 1;
 }
 
+static int QT_WIN_CALLBACK storeFontSub(ENUMLOGFONTEX* f, NEWTEXTMETRICEX *textmetric,
+                                        int type, LPARAM namesSetIn)
+{
+    Q_UNUSED(textmetric)
+    Q_UNUSED(type)
+
+    HDC dummy = GetDC(0);
+    LOGFONT lf;
+    lf.lfCharSet = DEFAULT_CHARSET;
+    if (wcslen(f->elfLogFont.lfFaceName) >= LF_FACESIZE) {
+        qWarning("%s: Unable to enumerate family '%s'.",
+                 __FUNCTION__, qPrintable(QString::fromWCharArray(f->elfLogFont.lfFaceName)));
+        return 1;
+    }
+    wmemcpy(lf.lfFaceName, f->elfLogFont.lfFaceName,
+            wcslen(f->elfLogFont.lfFaceName) + 1);
+    lf.lfPitchAndFamily = 0;
+    EnumFontFamiliesEx(dummy, &lf, (FONTENUMPROC)storeFont,
+                       (LPARAM)namesSetIn, 0);
+    ReleaseDC(0, dummy);
+
+    // keep on enumerating
+    return 1;
+}
+
 void QWindowsFontDatabase::populateFontDatabase()
 {
     m_families.clear();
@@ -999,8 +1024,15 @@ void QWindowsFontDatabase::populate(const QString &family)
     wmemcpy(lf.lfFaceName, reinterpret_cast<const wchar_t*>(family.utf16()),
             family.size() + 1);
     lf.lfPitchAndFamily = 0;
-    EnumFontFamiliesEx(dummy, &lf, (FONTENUMPROC)storeFont,
-                       (LPARAM)&m_families, 0);
+
+    if (family.isEmpty()) {
+        EnumFontFamiliesEx(dummy, &lf, (FONTENUMPROC)storeFontSub,
+                           (LPARAM)&m_families, 0);
+    } else {
+        EnumFontFamiliesEx(dummy, &lf, (FONTENUMPROC)storeFont,
+                           (LPARAM)&m_families, 0);
+    }
+
     ReleaseDC(0, dummy);
 }
 
