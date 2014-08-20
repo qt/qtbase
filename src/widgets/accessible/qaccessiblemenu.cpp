@@ -294,8 +294,7 @@ QString QAccessibleMenuItem::text(QAccessible::Text t) const
     QString str;
     switch (t) {
     case QAccessible::Name:
-        str = m_action->text();
-        str = qt_accStripAmp(str);
+        str = qt_accStripAmp(m_action->text());
         break;
     case QAccessible::Accelerator: {
 #ifndef QT_NO_SHORTCUT

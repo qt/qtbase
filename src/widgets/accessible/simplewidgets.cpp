@@ -121,14 +121,14 @@ QString QAccessibleButton::text(QAccessible::Text t) const
     case QAccessible::Name:
         str = widget()->accessibleName();
         if (str.isEmpty())
-            str = button()->text();
+            str = qt_accStripAmp(button()->text());
         break;
     default:
         break;
     }
     if (str.isEmpty())
         str = QAccessibleWidget::text(t);
-    return qt_accStripAmp(str);
+    return str;
 }
 
 QAccessible::State QAccessibleButton::state() const
@@ -395,6 +395,8 @@ QString QAccessibleDisplay::text(QAccessible::Text t) const
                     doc.setHtml(str);
                     str = doc.toPlainText();
                 }
+                if (label->buddy())
+                    str = qt_accStripAmp(str);
 #ifndef QT_NO_LCDNUMBER
             } else if (qobject_cast<QLCDNumber*>(object())) {
                 QLCDNumber *l = qobject_cast<QLCDNumber*>(object());
@@ -419,7 +421,7 @@ QString QAccessibleDisplay::text(QAccessible::Text t) const
     }
     if (str.isEmpty())
         str = QAccessibleWidget::text(t);
-    return qt_accStripAmp(str);
+    return str;
 }
 
 /*! \reimp */
@@ -508,7 +510,10 @@ QString QAccessibleGroupBox::text(QAccessible::Text t) const
             txt = qt_accStripAmp(groupBox()->title());
             break;
         case QAccessible::Description:
-            txt = qt_accStripAmp(groupBox()->toolTip());
+            txt = groupBox()->toolTip();
+            break;
+        case QAccessible::Accelerator:
+            txt = qt_accHotKey(groupBox()->title());
             break;
         default:
             break;
@@ -611,7 +616,7 @@ QString QAccessibleLineEdit::text(QAccessible::Text t) const
     }
     if (str.isEmpty())
         str = QAccessibleWidget::text(t);
-    return qt_accStripAmp(str);
+    return str;
 }
 
 void QAccessibleLineEdit::setText(QAccessible::Text t, const QString &text)
