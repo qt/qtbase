@@ -314,10 +314,10 @@ void QPlatformScreen::resizeMaximizedWindows()
         if (platformScreenForWindow(w) != this)
             continue;
 
-        if (w->windowState() & Qt::WindowFullScreen || w->geometry() == oldGeometry)
-            w->setGeometry(newGeometry);
-        else if (w->windowState() & Qt::WindowMaximized || w->geometry() == oldAvailableGeometry)
+        if (w->windowState() & Qt::WindowMaximized || w->geometry() == oldAvailableGeometry)
             w->setGeometry(newAvailableGeometry);
+        else if (w->windowState() & Qt::WindowFullScreen || w->geometry() == oldGeometry)
+            w->setGeometry(newGeometry);
     }
 }
 
