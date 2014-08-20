@@ -53,8 +53,8 @@
 #include <X11/extensions/XI2proto.h>
 #define FINGER_MAX_WIDTH_MM 10
 
-struct XInput2DeviceData {
-    XInput2DeviceData()
+struct XInput2TouchDeviceData {
+    XInput2TouchDeviceData()
     : xiDeviceInfo(0)
     , qtTouchDevice(0)
     {
@@ -214,17 +214,21 @@ void QXcbConnection::xi2SetupDevices()
         }
 #endif
 
-        if (!isTablet && lcQpaXInputDevices().isDebugEnabled()) {
-            XInput2DeviceData *dev = deviceForId(devices[i].deviceid);
-            if (dev && dev->qtTouchDevice->type() == QTouchDevice::TouchScreen)
-                qCDebug(lcQpaXInputDevices, "   it's a touchscreen with type %d capabilities 0x%X max touch points %d",
-                        dev->qtTouchDevice->type(), (unsigned int)dev->qtTouchDevice->capabilities(),
-                        dev->qtTouchDevice->maximumTouchPoints());
-            else if (dev && dev->qtTouchDevice->type() == QTouchDevice::TouchPad)
-                qCDebug(lcQpaXInputDevices, "   it's a touchpad with type %d capabilities 0x%X max touch points %d size %f x %f",
-                        dev->qtTouchDevice->type(), (unsigned int)dev->qtTouchDevice->capabilities(),
-                        dev->qtTouchDevice->maximumTouchPoints(),
-                        dev->size.width(), dev->size.height());
+        if (!isTablet) {
+            // touchDeviceForId populates XInput2DeviceData the first time it is called
+            // with a new deviceId. On subsequent calls it will return the cached object.
+            XInput2TouchDeviceData *dev = touchDeviceForId(devices[i].deviceid);
+            if (dev && lcQpaXInputDevices().isDebugEnabled()) {
+                if (dev->qtTouchDevice->type() == QTouchDevice::TouchScreen)
+                    qCDebug(lcQpaXInputDevices, "   it's a touchscreen with type %d capabilities 0x%X max touch points %d",
+                            dev->qtTouchDevice->type(), (unsigned int)dev->qtTouchDevice->capabilities(),
+                            dev->qtTouchDevice->maximumTouchPoints());
+                else if (dev->qtTouchDevice->type() == QTouchDevice::TouchPad)
+                    qCDebug(lcQpaXInputDevices, "   it's a touchpad with type %d capabilities 0x%X max touch points %d size %f x %f",
+                            dev->qtTouchDevice->type(), (unsigned int)dev->qtTouchDevice->capabilities(),
+                            dev->qtTouchDevice->maximumTouchPoints(),
+                            dev->size.width(), dev->size.height());
+            }
         }
     }
     XIFreeDeviceInfo(devices);
@@ -232,7 +236,7 @@ void QXcbConnection::xi2SetupDevices()
 
 void QXcbConnection::finalizeXInput2()
 {
-    foreach (XInput2DeviceData *dev, m_touchDevices) {
+    foreach (XInput2TouchDeviceData *dev, m_touchDevices) {
         if (dev->xiDeviceInfo)
             XIFreeDeviceInfo(dev->xiDeviceInfo);
         delete dev;
@@ -328,13 +332,13 @@ void QXcbConnection::xi2Select(xcb_window_t window)
     }
 }
 
-XInput2DeviceData *QXcbConnection::deviceForId(int id)
+XInput2TouchDeviceData *QXcbConnection::touchDeviceForId(int id)
 {
-    XInput2DeviceData *dev = m_touchDevices[id];
+    XInput2TouchDeviceData *dev = m_touchDevices[id];
     if (!dev) {
         int unused = 0;
         QTouchDevice::Capabilities caps = 0;
-        dev = new XInput2DeviceData;
+        dev = new XInput2TouchDeviceData;
         dev->xiDeviceInfo = XIQueryDevice(static_cast<Display *>(m_xlib_display), id, &unused);
         int type = -1;
         int maxTouchPoints = 1;
@@ -456,7 +460,7 @@ void QXcbConnection::xi2HandleEvent(xcb_ge_event_t *event)
                         fixed1616ToReal(xiDeviceEvent->root_x), fixed1616ToReal(xiDeviceEvent->root_y) );
 
             if (QXcbWindow *platformWindow = platformWindowFromId(xiDeviceEvent->event)) {
-                XInput2DeviceData *dev = deviceForId(xiDeviceEvent->sourceid);
+                XInput2TouchDeviceData *dev = touchDeviceForId(xiDeviceEvent->sourceid);
                 Q_ASSERT(dev);
                 const bool firstTouch = m_touchPoints.isEmpty();
                 if (xiEvent->evtype == XI_TouchBegin) {
