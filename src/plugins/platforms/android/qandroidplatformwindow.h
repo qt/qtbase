@@ -49,6 +49,7 @@
 QT_BEGIN_NAMESPACE
 
 class QAndroidPlatformScreen;
+class QAndroidPlatformBackingStore;
 
 class QAndroidPlatformWindow: public QPlatformWindow
 {
@@ -71,10 +72,19 @@ public:
     void propagateSizeHints();
     void requestActivateWindow();
     void updateStatusBarVisibility();
-    inline bool isRaster() const { return window()->surfaceType() == QSurface::RasterSurface; }
+    inline bool isRaster() const {
+        return window()->surfaceType() == QSurface::RasterSurface
+            || window()->surfaceType() == QSurface::RasterGLSurface;
+    }
     bool isExposed() const;
 
     virtual void applicationStateChanged(Qt::ApplicationState);
+
+    void setBackingStore(QAndroidPlatformBackingStore *store) { m_backingStore = store; }
+    QAndroidPlatformBackingStore *backingStore() const { return m_backingStore; }
+
+    virtual void repaint(const QRegion &) { }
+
 protected:
     void setGeometry(const QRect &rect);
 
@@ -83,6 +93,8 @@ protected:
     Qt::WindowState m_windowState;
 
     WId m_windowId;
+
+    QAndroidPlatformBackingStore *m_backingStore = nullptr;
 };
 
 QT_END_NAMESPACE

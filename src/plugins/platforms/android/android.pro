@@ -47,7 +47,6 @@ SOURCES += $$PWD/androidplatformplugin.cpp \
            $$PWD/qandroidplatformscreen.cpp \
            $$PWD/qandroidplatformwindow.cpp \
            $$PWD/qandroidplatformopenglwindow.cpp \
-           $$PWD/qandroidplatformrasterwindow.cpp \
            $$PWD/qandroidplatformbackingstore.cpp \
            $$PWD/qandroidplatformopenglcontext.cpp \
            $$PWD/qandroidplatformforeignwindow.cpp \
@@ -76,7 +75,6 @@ HEADERS += $$PWD/qandroidplatformintegration.h \
            $$PWD/qandroidplatformscreen.h \
            $$PWD/qandroidplatformwindow.h \
            $$PWD/qandroidplatformopenglwindow.h \
-           $$PWD/qandroidplatformrasterwindow.h \
            $$PWD/qandroidplatformbackingstore.h \
            $$PWD/qandroidplatformopenglcontext.h \
            $$PWD/qandroidplatformforeignwindow.h \
