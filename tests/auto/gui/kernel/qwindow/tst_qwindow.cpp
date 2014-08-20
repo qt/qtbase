@@ -366,6 +366,7 @@ void tst_QWindow::isExposed()
     QTRY_VERIFY(window.received(QEvent::Expose) > 0);
     QTRY_VERIFY(window.isExposed());
 
+#ifndef Q_OS_WIN
     // This is a top-level window so assuming it is completely exposed, the
     // expose region must be (0, 0), (width, height). If this is not the case,
     // the platform plugin is sending expose events with a region in an
@@ -373,6 +374,7 @@ void tst_QWindow::isExposed()
     QRect r = window.exposeRegion().boundingRect();
     r = QRect(window.mapToGlobal(r.topLeft()), r.size());
     QCOMPARE(r, window.geometry());
+#endif
 
     window.hide();
 
