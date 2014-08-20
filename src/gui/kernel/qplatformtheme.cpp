@@ -508,7 +508,11 @@ QVariant QPlatformTheme::defaultThemeHint(ThemeHint hint)
     case MousePressAndHoldInterval:
         return QVariant(800);
     case MouseDoubleClickDistance:
-        return QVariant(5);
+        {
+            bool ok = false;
+            int dist = qgetenv("QT_DBL_CLICK_DIST").toInt(&ok);
+            return QVariant(ok ? dist : 5);
+        }
     }
     return QVariant();
 }
