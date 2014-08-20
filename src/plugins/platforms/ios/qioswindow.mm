@@ -85,6 +85,7 @@ QIOSWindow::~QIOSWindow()
     // cancellation of all touch events.
     [m_view touchesCancelled:0 withEvent:0];
 
+    clearAccessibleCache();
     m_view->m_qioswindow = 0;
     [m_view removeFromSuperview];
     [m_view release];
