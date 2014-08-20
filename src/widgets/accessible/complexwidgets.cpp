@@ -67,6 +67,7 @@
 QT_BEGIN_NAMESPACE
 
 QString qt_accStripAmp(const QString &text);
+QString qt_accHotKey(const QString &text);
 
 #ifndef QT_NO_TABBAR
 /*!
@@ -94,9 +95,12 @@ public:
     QObject *object() const { return 0; }
     QAccessible::Role role() const { return QAccessible::PageTab; }
     QAccessible::State state() const {
-        QAccessibleInterface *parentInterface = parent();
-        QAccessible::State state = parentInterface->state();
-        return state;
+        if (!isValid()) {
+            QAccessible::State s;
+            s.invalid = true;
+            return s;
+        }
+        return parent()->state();
     }
     QRect rect() const {
         if (!isValid())
@@ -108,7 +112,7 @@ public:
         return rec;
     }
 
-    bool isValid() const { return true; }// (!m_parent.isNull()) && m_parent->count() > m_index; }
+    bool isValid() const { return m_parent.data() && m_parent->count() > m_index; }
 
     QAccessibleInterface *childAt(int, int) const { return 0; }
     int childCount() const { return 0; }
@@ -116,21 +120,30 @@ public:
 
     QString text(QAccessible::Text t) const
     {
-        if (t == QAccessible::Name)
+        if (!isValid())
+            return QString();
+        switch (t) {
+        case QAccessible::Name:
             return qt_accStripAmp(m_parent->tabText(m_index));
-        else if (t == QAccessible::Description)
+        case QAccessible::Accelerator:
+            return qt_accHotKey(m_parent->tabText(m_index));
+        case QAccessible::Description:
             return m_parent->tabToolTip(m_index);
-        else if (t == QAccessible::Help)
+        case QAccessible::Help:
             return m_parent->tabWhatsThis(m_index);
+        default:
+            break;
+        }
         return QString();
     }
 
     void setText(QAccessible::Text, const QString &) {}
 
     QAccessibleInterface *parent() const {
-        return QAccessible::queryAccessibleInterface(m_parent);
+        return QAccessible::queryAccessibleInterface(m_parent.data());
     }
     QAccessibleInterface *child(int) const { return 0; }
+
     // action interface
     QStringList actionNames() const
     {
@@ -139,7 +152,7 @@ public:
 
     void doAction(const QString &actionName)
     {
-        if (actionName == pressAction())
+        if (isValid() && actionName == pressAction())
             m_parent->setCurrentIndex(m_index);
     }
 
@@ -227,6 +240,8 @@ QString QAccessibleTabBar::text(QAccessible::Text t) const
 {
     if (t == QAccessible::Name) {
         return qt_accStripAmp(tabBar()->tabText(tabBar()->currentIndex()));
+    } else if (t == QAccessible::Accelerator) {
+        return qt_accHotKey(tabBar()->tabText(tabBar()->currentIndex()));
     }
     return QString();
 }
