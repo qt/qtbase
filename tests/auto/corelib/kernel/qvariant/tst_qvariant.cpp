@@ -250,6 +250,10 @@ private slots:
     void pairElements();
 
     void enums();
+
+    void compareSanity_data();
+    void compareSanity();
+
 private:
     void dataStream_data(QDataStream::Version version);
     void loadQVariantFromDataStream(QDataStream::Version version);
@@ -4151,6 +4155,32 @@ void tst_QVariant::enums()
     testVariant(EnumTest_Enum3::EnumTest_Enum3_value, &ok);
     QVERIFY(ok);
 #endif
+}
+
+void tst_QVariant::compareSanity_data()
+{
+    QTest::addColumn<QVariant>("value1");
+    QTest::addColumn<QVariant>("value2");
+
+    QTest::newRow( "int <>/== QUrl" ) << QVariant( 97 ) << QVariant(QUrl("a"));
+    QTest::newRow( "int <>/== QChar" ) << QVariant( 97 ) << QVariant(QChar('a'));
+    QTest::newRow( "int <>/== QString" ) << QVariant( 97 ) << QVariant(QString("a"));
+    QTest::newRow( "QUrl <>/== QChar" ) << QVariant(QUrl("a")) << QVariant(QChar('a'));
+    QTest::newRow( "QUrl <>/== QString" ) << QVariant(QUrl("a")) << QVariant(QString("a"));
+    QTest::newRow( "QChar <>/== QString" ) << QVariant(QChar('a')) << QVariant(QString("a"));
+}
+
+void tst_QVariant::compareSanity()
+{
+    QFETCH(QVariant, value1);
+    QFETCH(QVariant, value2);
+
+    if (value1 == value2) {
+        QVERIFY(!(value1 < value2) && !(value1 > value2));
+    } else {
+        QVERIFY(value1 != value2);
+        QVERIFY((value1 < value2) || (value1 > value2));
+    }
 }
 
 QTEST_MAIN(tst_QVariant)

@@ -3198,7 +3198,12 @@ int QVariant::compare(const QVariant &v) const
         }
         if (v1.d.type != v2.d.type) {
             // if conversion fails, default to toString
-            return v1.toString().compare(v2.toString(), Qt::CaseInsensitive);
+            int r = v1.toString().compare(v2.toString(), Qt::CaseInsensitive);
+            if (r == 0) {
+                // cmp(v) returned false, so we should try to agree with it.
+                return (v1.d.type < v2.d.type) ? -1 : 1;
+            }
+            return r;
         }
     }
     if (v1.d.type >= QMetaType::User) {
@@ -3220,7 +3225,12 @@ int QVariant::compare(const QVariant &v) const
     case QVariant::DateTime:
         return v1.toDateTime() < v2.toDateTime() ? -1 : 1;
     }
-    return v1.toString().compare(v2.toString(), Qt::CaseInsensitive);
+    int r = v1.toString().compare(v2.toString(), Qt::CaseInsensitive);
+    if (r == 0) {
+        // cmp(v) returned false, so we should try to agree with it.
+        return (d.type < v.d.type) ? -1 : 1;
+    }
+    return r;
 }
 
 /*!
