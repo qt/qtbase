@@ -3595,6 +3595,12 @@ public:
         static const int enumIdx = QObject::staticQtMetaObject.indexOfEnumerator("FocusReason");
         return QObject::staticQtMetaObject.enumerator(enumIdx).valueToKey(reason);
     }
+
+    static const char *nativeGestureTypeToString(Qt::NativeGestureType type)
+    {
+        static const int enumIdx = QObject::staticQtMetaObject.indexOfEnumerator("NativeGestureType");
+        return QObject::staticQtMetaObject.enumerator(enumIdx).valueToKey(type);
+    }
 };
 } // namespace
 
@@ -3775,7 +3781,8 @@ QDebug operator<<(QDebug dbg, const QEvent *e)
 #  ifndef QT_NO_GESTURES
     case QEvent::NativeGesture: {
         const QNativeGestureEvent *ne = static_cast<const QNativeGestureEvent *>(e);
-        dbg << "QNativeGestureEvent(localPos=" << ne->localPos() << ", value=" << ne->value() << ')';
+        dbg << "QNativeGestureEvent(" << DebugHelper::nativeGestureTypeToString(ne->gestureType())
+            << "localPos=" << ne->localPos() << ", value=" << ne->value() << ')';
     }
          break;
 #  endif // !QT_NO_GESTURES

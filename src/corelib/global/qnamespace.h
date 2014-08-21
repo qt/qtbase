@@ -98,6 +98,7 @@ Qt {
 #ifndef QT_NO_GESTURES
     Q_ENUMS(GestureState)
     Q_ENUMS(GestureType)
+    Q_ENUMS(NativeGestureType)
 #endif
     Q_ENUMS(CursorMoveStyle)
     Q_ENUMS(TimerType)
