@@ -6,35 +6,27 @@
 **
 ** This file is part of the tools applications of the Qt Toolkit.
 **
-** $QT_BEGIN_LICENSE:LGPL$
+** $QT_BEGIN_LICENSE:LGPL21$
 ** Commercial License Usage
 ** Licensees holding valid commercial Qt licenses may use this file in
 ** accordance with the commercial license agreement provided with the
 ** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and Digia.  For licensing terms and
-** conditions see http://qt.digia.com/licensing.  For further information
+** a written agreement between you and Digia. For licensing terms and
+** conditions see http://qt.digia.com/licensing. For further information
 ** use the contact form at http://qt.digia.com/contact-us.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** General Public License version 2.1 or version 3 as published by the Free
+** Software Foundation and appearing in the file LICENSE.LGPLv21 and
+** LICENSE.LGPLv3 included in the packaging of this file. Please review the
+** following information to ensure the GNU Lesser General Public License
+** requirements will be met: https://www.gnu.org/licenses/lgpl.html and
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Digia gives you certain additional
-** rights.  These rights are described in the Digia Qt LGPL Exception
+** rights. These rights are described in the Digia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
-**
 **
 ** $QT_END_LICENSE$
 **
@@ -4227,14 +4219,14 @@ bool Configure::showLicense(QString orgLicenseFile)
         return true;
     }
 
-    bool haveGpl3 = false;
+    bool haveLgpl3 = false;
     QString licenseFile = orgLicenseFile;
     QString theLicense;
     if (dictionary["EDITION"] == "OpenSource" || dictionary["EDITION"] == "Snapshot") {
-        haveGpl3 = QFile::exists(orgLicenseFile + "/LICENSE.GPL");
+        haveLgpl3 = QFile::exists(orgLicenseFile + "/LICENSE.LGPLv3");
         theLicense = "GNU Lesser General Public License (LGPL) version 2.1";
-        if (haveGpl3)
-            theLicense += "\nor the GNU General Public License (GPL) version 3";
+        if (haveLgpl3)
+            theLicense += "\nor the GNU Lesser General Public License (LGPL) version 3";
     } else {
         // the first line of the license file tells us which license it is
         QFile file(licenseFile);
@@ -4251,8 +4243,8 @@ bool Configure::showLicense(QString orgLicenseFile)
              << "the " << theLicense << "." << endl
              << endl;
         if (dictionary["EDITION"] == "OpenSource" || dictionary["EDITION"] == "Snapshot") {
-            if (haveGpl3)
-                cout << "Type '3' to view the GNU General Public License version 3 (GPLv3)." << endl;
+            if (haveLgpl3)
+                cout << "Type '3' to view the Lesser GNU General Public License version 3 (LGPLv3)." << endl;
             cout << "Type 'L' to view the Lesser GNU General Public License version 2.1 (LGPLv2.1)." << endl;
         } else {
             cout << "Type '?' to view the " << theLicense << "." << endl;
@@ -4271,9 +4263,9 @@ bool Configure::showLicense(QString orgLicenseFile)
         } else {
             if (dictionary["EDITION"] == "OpenSource" || dictionary["EDITION"] == "Snapshot") {
                 if (accept == '3')
-                    licenseFile = orgLicenseFile + "/LICENSE.GPL";
+                    licenseFile = orgLicenseFile + "/LICENSE.LGPLv3";
                 else
-                    licenseFile = orgLicenseFile + "/LICENSE.LGPL";
+                    licenseFile = orgLicenseFile + "/LICENSE.LGPLv21";
             }
             // Get console line height, to fill the screen properly
             int i = 0, screenHeight = 25; // default
@@ -4308,7 +4300,7 @@ void Configure::readLicense()
     dictionary["LICENSE FILE"] = sourcePath;
 
     bool openSource = false;
-    bool hasOpenSource = QFile::exists(dictionary["LICENSE FILE"] + "/LICENSE.GPL") || QFile::exists(dictionary["LICENSE FILE"] + "/LICENSE.LGPL");
+    bool hasOpenSource = QFile::exists(dictionary["LICENSE FILE"] + "/LICENSE.LGPLv3") || QFile::exists(dictionary["LICENSE FILE"] + "/LICENSE.LGPLv21");
     if (dictionary["BUILDTYPE"] == "commercial") {
         openSource = false;
     } else if (dictionary["BUILDTYPE"] == "opensource") {
