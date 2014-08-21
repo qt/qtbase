@@ -1301,6 +1301,7 @@ QTextCursor QTextDocument::find(const QString &subString, const QTextCursor &cur
 }
 
 
+#ifndef QT_NO_REGEXP
 static bool findInBlock(const QTextBlock &block, const QRegExp &expression, int offset,
                         QTextDocument::FindFlags options, QTextCursor *cursor)
 {
@@ -1420,6 +1421,7 @@ QTextCursor QTextDocument::find(const QRegExp &expr, const QTextCursor &cursor, 
     }
     return find(expr, pos, options);
 }
+#endif // QT_REGEXP
 
 #ifndef QT_NO_REGULAREXPRESSION
 static bool findInBlock(const QTextBlock &block, const QRegularExpression &expression, int offset,
