@@ -66,7 +66,11 @@
 #include <accessibilityinspector.h>
 #endif
 
-Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.tabletsupport")
+Q_LOGGING_CATEGORY(lcQpaTouch, "qt.qpa.input.touch")
+#ifndef QT_NO_GESTURES
+Q_LOGGING_CATEGORY(lcQpaGestures, "qt.qpa.input.gestures")
+#endif
+Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
 
 static QTouchDevice *touchDevice = 0;
 
@@ -1124,6 +1128,7 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
 {
     const NSTimeInterval timestamp = [event timestamp];
     const QList<QWindowSystemInterface::TouchPoint> points = QCocoaTouch::getCurrentTouchPointList(event, /*acceptSingleTouch= ### true or false?*/false);
+    qCDebug(lcQpaTouch) << "touchesBeganWithEvent" << points;
     QWindowSystemInterface::handleTouchEvent(m_window, timestamp * 1000, touchDevice, points);
 }
 
@@ -1131,6 +1136,7 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
 {
     const NSTimeInterval timestamp = [event timestamp];
     const QList<QWindowSystemInterface::TouchPoint> points = QCocoaTouch::getCurrentTouchPointList(event, /*acceptSingleTouch= ### true or false?*/false);
+    qCDebug(lcQpaTouch) << "touchesMovedWithEvent" << points;
     QWindowSystemInterface::handleTouchEvent(m_window, timestamp * 1000, touchDevice, points);
 }
 
@@ -1138,6 +1144,7 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
 {
     const NSTimeInterval timestamp = [event timestamp];
     const QList<QWindowSystemInterface::TouchPoint> points = QCocoaTouch::getCurrentTouchPointList(event, /*acceptSingleTouch= ### true or false?*/false);
+    qCDebug(lcQpaTouch) << "touchesEndedWithEvent" << points;
     QWindowSystemInterface::handleTouchEvent(m_window, timestamp * 1000, touchDevice, points);
 }
 
@@ -1145,16 +1152,14 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
 {
     const NSTimeInterval timestamp = [event timestamp];
     const QList<QWindowSystemInterface::TouchPoint> points = QCocoaTouch::getCurrentTouchPointList(event, /*acceptSingleTouch= ### true or false?*/false);
+    qCDebug(lcQpaTouch) << "touchesCancelledWithEvent" << points;
     QWindowSystemInterface::handleTouchEvent(m_window, timestamp * 1000, touchDevice, points);
 }
 
 #ifndef QT_NO_GESTURES
-//#define QT_COCOA_ENABLE_GESTURE_DEBUG
 - (void)magnifyWithEvent:(NSEvent *)event
 {
-#ifdef QT_COCOA_ENABLE_GESTURE_DEBUG
-    qDebug() << "magnifyWithEvent" << [event magnification];
-#endif
+    qCDebug(lcQpaGestures) << "magnifyWithEvent" << [event magnification];
     const NSTimeInterval timestamp = [event timestamp];
     QPointF windowPoint;
     QPointF screenPoint;
@@ -1167,9 +1172,7 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
 - (void)smartMagnifyWithEvent:(NSEvent *)event
 {
     static bool zoomIn = true;
-#ifdef QT_COCOA_ENABLE_GESTURE_DEBUG
-    qDebug() << "smartMagnifyWithEvent" << zoomIn;
-#endif
+    qCDebug(lcQpaGestures) << "smartMagnifyWithEvent" << zoomIn;
     const NSTimeInterval timestamp = [event timestamp];
     QPointF windowPoint;
     QPointF screenPoint;
@@ -1182,9 +1185,7 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
 
 - (void)rotateWithEvent:(NSEvent *)event
 {
-#ifdef QT_COCOA_ENABLE_GESTURE_DEBUG
-    qDebug() << "rotateWithEvent" << [event rotation];
-#endif
+    qCDebug(lcQpaGestures) << "rotateWithEvent" << [event rotation];
     const NSTimeInterval timestamp = [event timestamp];
     QPointF windowPoint;
     QPointF screenPoint;
@@ -1195,9 +1196,7 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
 
 - (void)swipeWithEvent:(NSEvent *)event
 {
-#ifdef QT_COCOA_ENABLE_GESTURE_DEBUG
-    qDebug() << "swipeWithEvent" << [event deltaX] << [event deltaY];
-#endif
+    qCDebug(lcQpaGestures) << "swipeWithEvent" << [event deltaX] << [event deltaY];
     const NSTimeInterval timestamp = [event timestamp];
     QPointF windowPoint;
     QPointF screenPoint;
@@ -1219,22 +1218,18 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
 
 - (void)beginGestureWithEvent:(NSEvent *)event
 {
-#ifdef QT_COCOA_ENABLE_GESTURE_DEBUG
-    qDebug() << "beginGestureWithEvent";
-#endif
     const NSTimeInterval timestamp = [event timestamp];
     QPointF windowPoint;
     QPointF screenPoint;
     [self convertFromScreen:[NSEvent mouseLocation] toWindowPoint:&windowPoint andScreenPoint:&screenPoint];
+    qCDebug(lcQpaGestures) << "beginGestureWithEvent @" << windowPoint;
     QWindowSystemInterface::handleGestureEvent(m_window, timestamp, Qt::BeginNativeGesture,
                                                windowPoint, screenPoint);
 }
 
 - (void)endGestureWithEvent:(NSEvent *)event
 {
-#ifdef QT_COCOA_ENABLE_GESTURE_DEBUG
-    qDebug() << "endGestureWithEvent";
-#endif
+    qCDebug(lcQpaGestures) << "endGestureWithEvent";
     const NSTimeInterval timestamp = [event timestamp];
     QPointF windowPoint;
     QPointF screenPoint;

@@ -92,8 +92,8 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_LOGGING_CATEGORY(lcQpaXInput, "qt.qpa.events.input")
-Q_LOGGING_CATEGORY(lcQpaXInputDevices, "qt.qpa.devices")
+Q_LOGGING_CATEGORY(lcQpaXInput, "qt.qpa.input")
+Q_LOGGING_CATEGORY(lcQpaXInputDevices, "qt.qpa.input.devices")
 
 #ifdef XCB_USE_XLIB
 static const char * const xcbConnectionErrors[] = {

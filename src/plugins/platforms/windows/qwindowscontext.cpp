@@ -88,9 +88,9 @@ Q_LOGGING_CATEGORY(lcQpaEvents, "qt.qpa.events")
 Q_LOGGING_CATEGORY(lcQpaFonts, "qt.qpa.fonts")
 Q_LOGGING_CATEGORY(lcQpaGl, "qt.qpa.gl")
 Q_LOGGING_CATEGORY(lcQpaMime, "qt.qpa.mime")
-Q_LOGGING_CATEGORY(lcQpaInputMethods, "qt.qpa.inputmethods")
+Q_LOGGING_CATEGORY(lcQpaInputMethods, "qt.qpa.input.methods")
 Q_LOGGING_CATEGORY(lcQpaDialogs, "qt.qpa.dialogs")
-Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.tabletsupport")
+Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
 Q_LOGGING_CATEGORY(lcQpaAccessibility, "qt.qpa.accessibility")
 
 int QWindowsContext::verbose = 0;
