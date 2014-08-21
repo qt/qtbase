@@ -392,23 +392,18 @@ void QUnifiedTimer::startTimers()
 {
     startTimersPending = false;
 
-    // Initialize the wall clock right away as we need this for
-    // both localRestart and updateAnimationTimers() down below..
-    if (!time.isValid()) {
-        lastTick = 0;
-        time.start();
-        temporalDrift = 0;
-        driverStartTime = 0;
-    }
-
-    if (!animationTimers.isEmpty())
-        updateAnimationTimers(-1);
-
     //we transfer the waiting animations into the "really running" state
     animationTimers += animationTimersToStart;
     animationTimersToStart.clear();
-    if (!animationTimers.isEmpty())
+    if (!animationTimers.isEmpty()) {
+        if (!time.isValid()) {
+            lastTick = 0;
+            time.start();
+            temporalDrift = 0;
+            driverStartTime = 0;
+        }
         localRestart();
+    }
 }
 
 void QUnifiedTimer::stopTimer()
@@ -642,11 +637,12 @@ void QAnimationTimer::restartAnimationTimer()
 
 void QAnimationTimer::startAnimations()
 {
+    if (!startAnimationPending)
+        return;
     startAnimationPending = false;
 
     //force timer to update, which prevents large deltas for our newly added animations
-    if (!animations.isEmpty())
-        QUnifiedTimer::instance()->maybeUpdateAnimationsToCurrentTime();
+    QUnifiedTimer::instance()->maybeUpdateAnimationsToCurrentTime();
 
     //we transfer the waiting animations into the "really running" state
     animations += animationsToStart;
@@ -658,7 +654,8 @@ void QAnimationTimer::startAnimations()
 void QAnimationTimer::stopTimer()
 {
     stopTimerPending = false;
-    if (animations.isEmpty()) {
+    bool pendingStart = startAnimationPending && animationsToStart.size() > 0;
+    if (animations.isEmpty() && !pendingStart) {
         QUnifiedTimer::resumeAnimationTimer(this);
         QUnifiedTimer::stopAnimationTimer(this);
         // invalidate the start reference time
