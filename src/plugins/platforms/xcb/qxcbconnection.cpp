@@ -384,6 +384,9 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGra
         qunsetenv("DESKTOP_STARTUP_ID");
 
     sync();
+
+    if (qEnvironmentVariableIsEmpty("QT_IM_MODULE"))
+        qputenv("QT_IM_MODULE", QByteArray("compose"));
 }
 
 QXcbConnection::~QXcbConnection()
