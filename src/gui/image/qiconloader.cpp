@@ -561,15 +561,16 @@ void QIconLoaderEngine::virtual_hook(int id, void *data)
         {
             QIconEngine::AvailableSizesArgument &arg
                     = *reinterpret_cast<QIconEngine::AvailableSizesArgument*>(data);
-            arg.sizes.clear();
             const int N = m_entries.size();
-            arg.sizes.reserve(N);
+            QList<QSize> sizes;
+            sizes.reserve(N);
 
             // Gets all sizes from the DirectoryInfo entries
             for (int i = 0; i < N; ++i) {
                 int size = m_entries.at(i)->dir.size;
-                arg.sizes.append(QSize(size, size));
+                sizes.append(QSize(size, size));
             }
+            arg.sizes.swap(sizes); // commit
         }
         break;
     case QIconEngine::IconNameHook:
