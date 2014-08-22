@@ -101,13 +101,13 @@ public:
 
 struct ScalableEntry : public QIconLoaderEngineEntry
 {
-    QPixmap pixmap(const QSize &size, QIcon::Mode mode, QIcon::State state);
+    QPixmap pixmap(const QSize &size, QIcon::Mode mode, QIcon::State state) Q_DECL_OVERRIDE;
     QIcon svgIcon;
 };
 
 struct PixmapEntry : public QIconLoaderEngineEntry
 {
-    QPixmap pixmap(const QSize &size, QIcon::Mode mode, QIcon::State state);
+    QPixmap pixmap(const QSize &size, QIcon::Mode mode, QIcon::State state) Q_DECL_OVERRIDE;
     QPixmap basePixmap;
 };
 
