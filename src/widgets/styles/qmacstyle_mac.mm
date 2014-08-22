@@ -3532,11 +3532,18 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                 break;
             }
 
+            // No default button pulsating animation on Yosemite,
+            // so we have to do few things differently.
+            const bool yosemiteOrLater = QSysInfo::QSysInfo::MacintoshVersion > QSysInfo::MV_10_9;
+
             // a focused auto-default button within an active window
             // takes precedence over a normal default button
             if (btn->features & QStyleOptionButton::AutoDefaultButton
                     && opt->state & State_Active && opt->state & State_HasFocus) {
-                d->setAutoDefaultButton(opt->styleObject);
+                if (yosemiteOrLater)
+                    d->autoDefaultButton = opt->styleObject;
+                else
+                    d->setAutoDefaultButton(opt->styleObject);
             } else if (d->autoDefaultButton == opt->styleObject) {
                 d->setAutoDefaultButton(0);
             }
@@ -3544,7 +3551,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
             if (!d->autoDefaultButton) {
                 if (btn->features & QStyleOptionButton::DefaultButton && opt->state & State_Active) {
                     d->defaultButton = opt->styleObject;
-                    if (!d->animation(opt->styleObject))
+                    if (!yosemiteOrLater && !d->animation(opt->styleObject))
                         d->startAnimation(new QStyleAnimation(opt->styleObject));
                 } else if (d->defaultButton == opt->styleObject) {
                     if (QStyleAnimation *animation = d->animation(opt->styleObject)) {
@@ -3562,29 +3569,41 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
             else if (d->pressedButton == opt->styleObject)
                 d->pressedButton = 0;
 
-            // the default button animation is paused meanwhile any button
-            // is pressed or an auto-default button is animated instead
-            if (QStyleAnimation *defaultAnimation = d->animation(d->defaultButton)) {
-                if (d->pressedButton || d->autoDefaultButton) {
-                    if (defaultAnimation->state() == QStyleAnimation::Running) {
-                        defaultAnimation->pause();
-                        defaultAnimation->updateTarget();
+            HIThemeButtonDrawInfo bdi;
+            d->initHIThemePushButton(btn, w, tds, &bdi);
+
+            if (yosemiteOrLater) {
+                // We can't rely on an animation existing to test for the default look. That means a bit
+                // more logic (notice that the logic is slightly different for the bevel and the label).
+                if (tds == kThemeStateActive
+                    && (btn->features & QStyleOptionButton::DefaultButton
+                        || (btn->features & QStyleOptionButton::AutoDefaultButton
+                            && d->autoDefaultButton == btn->styleObject)))
+                    bdi.adornment |= kThemeAdornmentDefault;
+            } else {
+                // the default button animation is paused meanwhile any button
+                // is pressed or an auto-default button is animated instead
+                if (QStyleAnimation *defaultAnimation = d->animation(d->defaultButton)) {
+                    if (d->pressedButton || d->autoDefaultButton) {
+                        if (defaultAnimation->state() == QStyleAnimation::Running) {
+                            defaultAnimation->pause();
+                            defaultAnimation->updateTarget();
+                        }
+                    } else if (defaultAnimation->state() == QStyleAnimation::Paused) {
+                        defaultAnimation->resume();
                     }
-                } else if (defaultAnimation->state() == QStyleAnimation::Paused) {
-                    defaultAnimation->resume();
+                }
+
+                if (!d->pressedButton) {
+                    QStyleAnimation* animation = d->animation(opt->styleObject);
+                    if (animation && animation->state() == QStyleAnimation::Running) {
+                        bdi.adornment |= kThemeAdornmentDefault;
+                        bdi.animation.time.start = d->defaultButtonStart;
+                        bdi.animation.time.current = CFAbsoluteTimeGetCurrent();
+                    }
                 }
             }
 
-            HIThemeButtonDrawInfo bdi;
-            d->initHIThemePushButton(btn, w, tds, &bdi);
-            if (!d->pressedButton) {
-                QStyleAnimation* animation = d->animation(opt->styleObject);
-                if (animation && animation->state() == QStyleAnimation::Running) {
-                    bdi.adornment |= kThemeAdornmentDefault;
-                    bdi.animation.time.start = d->defaultButtonStart;
-                    bdi.animation.time.current = CFAbsoluteTimeGetCurrent();
-                }
-            }
             // Unlike Carbon, we want the button to always be drawn inside its bounds.
             // Therefore, make the button a bit smaller, so that even if it got focus,
             // the focus 'shadow' will be inside.
@@ -3650,14 +3669,24 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
         }
         break;
     case CE_PushButtonLabel:
-        if (const QStyleOptionButton *btn = qstyleoption_cast<const QStyleOptionButton *>(opt)) {
+        if (const QStyleOptionButton *b = qstyleoption_cast<const QStyleOptionButton *>(opt)) {
+            QStyleOptionButton btn(*b);
             // We really don't want the label to be drawn the same as on
             // windows style if it has an icon and text, then it should be more like a
             // tab. So, cheat a little here. However, if it *is* only an icon
             // the windows style works great, so just use that implementation.
-            bool hasMenu = btn->features & QStyleOptionButton::HasMenu;
-            bool hasIcon = !btn->icon.isNull();
-            bool hasText = !btn->text.isEmpty();
+            bool hasMenu = btn.features & QStyleOptionButton::HasMenu;
+            bool hasIcon = !btn.icon.isNull();
+            bool hasText = !btn.text.isEmpty();
+
+            if (QSysInfo::QSysInfo::MacintoshVersion > QSysInfo::MV_10_9) {
+                if (tds == kThemeStatePressed
+                    || (tds == kThemeStateActive
+                        && ((btn.features & QStyleOptionButton::DefaultButton && !d->autoDefaultButton)
+                            || d->autoDefaultButton == btn.styleObject)))
+                btn.palette.setColor(QPalette::ButtonText, Qt::white);
+            }
+
             if (!hasIcon && !hasMenu) {
                 // ### this is really overly difficult, simplify.
                 // It basically tries to get the right font for "small" and "mini" icons.
@@ -3676,8 +3705,9 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                         break;
                     }
                 }
+
                 if (themeId == kThemePushButtonFont) {
-                    QCommonStyle::drawControl(ce, btn, p, w);
+                    QCommonStyle::drawControl(ce, &btn, p, w);
                 } else {
                     p->save();
                     CGContextSetShouldAntialias(cg, true);
@@ -3685,7 +3715,8 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                     HIThemeTextInfo tti;
                     tti.version = qt_mac_hitheme_version;
                     tti.state = tds;
-                    QColor textColor = btn->palette.buttonText().color();
+                    QColor textColor;
+                    textColor = btn.palette.buttonText().color();
                     CGFloat colorComp[] = { static_cast<CGFloat>(textColor.redF()), static_cast<CGFloat>(textColor.greenF()),
                                           static_cast<CGFloat>(textColor.blueF()), static_cast<CGFloat>(textColor.alphaF()) };
                     CGContextSetFillColorSpace(cg, qt_mac_genericColorSpace());
@@ -3695,9 +3726,9 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                     tti.verticalFlushness = kHIThemeTextVerticalFlushCenter;
                     tti.options = kHIThemeTextBoxOptionNone;
                     tti.truncationPosition = kHIThemeTextTruncationNone;
-                    tti.truncationMaxLines = 1 + btn->text.count(QLatin1Char('\n'));
-                    QCFString buttonText = qt_mac_removeMnemonics(btn->text);
-                    QRect r = btn->rect;
+                    tti.truncationMaxLines = 1 + btn.text.count(QLatin1Char('\n'));
+                    QCFString buttonText = qt_mac_removeMnemonics(btn.text);
+                    QRect r = btn.rect;
                     HIRect bounds = qt_hirectForQRect(r);
                     HIThemeDrawTextBox(buttonText, &bounds, &tti,
                                        cg, kHIThemeOrientationNormal);
@@ -3705,11 +3736,11 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                 }
             } else {
                 if (hasIcon && !hasText) {
-                    QCommonStyle::drawControl(ce, btn, p, w);
+                    QCommonStyle::drawControl(ce, &btn, p, w);
                 } else {
-                    QRect freeContentRect = btn->rect;
+                    QRect freeContentRect = btn.rect;
                     QRect textRect = itemTextRect(
-                        btn->fontMetrics, freeContentRect, Qt::AlignCenter, btn->state & State_Enabled, btn->text);
+                        btn.fontMetrics, freeContentRect, Qt::AlignCenter, btn.state & State_Enabled, btn.text);
                     if (hasMenu) {
                         if (QSysInfo::macVersion() > QSysInfo::MV_10_6)
                             textRect.moveTo(w ? 15 : 11, textRect.top()); // Supports Qt Quick Controls
@@ -3721,21 +3752,21 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                         int contentW = textRect.width();
                         if (hasMenu)
                             contentW += proxy()->pixelMetric(PM_MenuButtonIndicator) + 4;
-                        QIcon::Mode mode = btn->state & State_Enabled ? QIcon::Normal : QIcon::Disabled;
-                        if (mode == QIcon::Normal && btn->state & State_HasFocus)
+                        QIcon::Mode mode = btn.state & State_Enabled ? QIcon::Normal : QIcon::Disabled;
+                        if (mode == QIcon::Normal && btn.state & State_HasFocus)
                             mode = QIcon::Active;
                         // Decide if the icon is should be on or off:
                         QIcon::State state = QIcon::Off;
-                        if (btn->state & State_On)
+                        if (btn.state & State_On)
                             state = QIcon::On;
-                        QPixmap pixmap = btn->icon.pixmap(btn->iconSize, mode, state);
+                        QPixmap pixmap = btn.icon.pixmap(btn.iconSize, mode, state);
                         int pixmapWidth = pixmap.width() / pixmap.devicePixelRatio();
                         int pixmapHeight = pixmap.height() / pixmap.devicePixelRatio();
                         contentW += pixmapWidth + QMacStylePrivate::PushButtonContentPadding;
                         int iconLeftOffset = freeContentRect.x() + (freeContentRect.width() - contentW) / 2;
                         int iconTopOffset = freeContentRect.y() + (freeContentRect.height() - pixmapHeight) / 2;
                         QRect iconDestRect(iconLeftOffset, iconTopOffset, pixmapWidth, pixmapHeight);
-                        QRect visualIconDestRect = visualRect(btn->direction, freeContentRect, iconDestRect);
+                        QRect visualIconDestRect = visualRect(btn.direction, freeContentRect, iconDestRect);
                         proxy()->drawItemPixmap(p, visualIconDestRect, Qt::AlignLeft | Qt::AlignVCenter, pixmap);
                         int newOffset = iconDestRect.x() + iconDestRect.width()
                                         + QMacStylePrivate::PushButtonContentPadding - textRect.x();
@@ -3743,9 +3774,9 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                     }
                     // Draw the text:
                     if (hasText) {
-                        textRect = visualRect(btn->direction, freeContentRect, textRect);
-                        proxy()->drawItemText(p, textRect, Qt::AlignLeft | Qt::AlignVCenter | Qt::TextShowMnemonic, btn->palette,
-                                                   (btn->state & State_Enabled), btn->text, QPalette::ButtonText);
+                        textRect = visualRect(btn.direction, freeContentRect, textRect);
+                        proxy()->drawItemText(p, textRect, Qt::AlignLeft | Qt::AlignVCenter | Qt::TextShowMnemonic, btn.palette,
+                                                   (btn.state & State_Enabled), btn.text, QPalette::ButtonText);
                     }
                 }
             }
