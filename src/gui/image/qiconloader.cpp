@@ -332,9 +332,7 @@ QIconLoaderEngine::QIconLoaderEngine(const QString& iconName)
 
 QIconLoaderEngine::~QIconLoaderEngine()
 {
-    while (!m_entries.isEmpty())
-        delete m_entries.takeLast();
-    Q_ASSERT(m_entries.size() == 0);
+    qDeleteAll(m_entries);
 }
 
 QIconLoaderEngine::QIconLoaderEngine(const QIconLoaderEngine &other)
@@ -370,10 +368,8 @@ void QIconLoaderEngine::ensureLoaded()
 {
     if (!(QIconLoader::instance()->themeKey() == m_key)) {
 
-        while (!m_entries.isEmpty())
-            delete m_entries.takeLast();
+        qDeleteAll(m_entries);
 
-        Q_ASSERT(m_entries.size() == 0);
         m_entries = QIconLoader::instance()->loadIcon(m_iconName);
         m_key = QIconLoader::instance()->themeKey();
     }
