@@ -1558,6 +1558,15 @@ bool QFontDatabase::isSmoothlyScalable(const QString &family, const QString &sty
     QtFontStyle::Key styleKey(style);
 
     QtFontFamily *f = d->family(familyName);
+    if (!f) {
+        for (int i = 0; i < d->count; i++) {
+            if (d->families[i]->matchesFamilyName(familyName)) {
+                f = d->families[i];
+                f->ensurePopulated();
+                break;
+            }
+        }
+    }
     if (!f) return smoothScalable;
 
     for (int j = 0; j < f->count; j++) {
