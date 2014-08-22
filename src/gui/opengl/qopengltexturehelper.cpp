@@ -164,6 +164,60 @@ QOpenGLTextureHelper::QOpenGLTextureHelper(QOpenGLContext *context)
     TexSubImage2D = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLint , GLint , GLint , GLsizei , GLsizei , GLenum , GLenum , const GLvoid *)>(GetProcAddress(handle, QByteArrayLiteral("glTexSubImage2D")));
     TexSubImage1D = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLint , GLint , GLsizei , GLenum , GLenum , const GLvoid *)>(GetProcAddress(handle, QByteArrayLiteral("glTexSubImage1D")));
 
+#elif defined(QT_OPENGL_ES_2)
+    // Here we are targeting OpenGL ES 2.0+ only. This is likely using EGL, where,
+    // similarly to WGL, non-extension functions (i.e. any function that is part of the
+    // GLES spec) *may* not be queried via eglGetProcAddress.
+
+    // OpenGL 1.0
+    GetIntegerv = ::glGetIntegerv;
+    GetBooleanv = ::glGetBooleanv;
+    PixelStorei = ::glPixelStorei;
+    GetTexLevelParameteriv = 0;
+    GetTexLevelParameterfv = 0;
+    GetTexParameteriv = ::glGetTexParameteriv;
+    GetTexParameterfv = ::glGetTexParameterfv;
+    GetTexImage = 0;
+    TexImage2D = ::glTexImage2D;
+    TexImage1D = 0;
+    TexParameteriv = ::glTexParameteriv;
+    TexParameteri = ::glTexParameteri;
+    TexParameterfv = ::glTexParameterfv;
+    TexParameterf = ::glTexParameterf;
+
+    // OpenGL 1.1
+    GenTextures = ::glGenTextures;
+    DeleteTextures = ::glDeleteTextures;
+    BindTexture = ::glBindTexture;
+    TexSubImage2D = ::glTexSubImage2D;
+    TexSubImage1D = 0;
+
+    // OpenGL 1.3
+    GetCompressedTexImage = 0;
+    CompressedTexSubImage1D = 0;
+    CompressedTexSubImage2D = ::glCompressedTexSubImage2D;
+    CompressedTexImage1D = 0;
+    CompressedTexImage2D = ::glCompressedTexImage2D;
+    ActiveTexture = ::glActiveTexture;
+
+    // OpenGL 3.0
+    GenerateMipmap = ::glGenerateMipmap;
+
+    // OpenGL 3.2
+    TexImage3DMultisample = 0;
+    TexImage2DMultisample = 0;
+
+    // OpenGL 4.2
+    TexStorage3D = 0;
+    TexStorage2D = 0;
+    TexStorage1D = 0;
+
+    // OpenGL 4.3
+    TexStorage3DMultisample = 0;
+    TexStorage2DMultisample = 0;
+    TexBufferRange = 0;
+    TextureView = 0;
+
 #else
 
     // OpenGL 1.0
@@ -196,6 +250,13 @@ QOpenGLTextureHelper::QOpenGLTextureHelper(QOpenGLContext *context)
         CompressedTexImage3D = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum, GLint, GLenum, GLsizei, GLsizei, GLsizei, GLint, GLsizei, const GLvoid*)>(context->getProcAddress(QByteArrayLiteral("glCompressedTexImage3DOES")));
         CompressedTexSubImage3D = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GLenum, GLsizei, const GLvoid*)>(context->getProcAddress(QByteArrayLiteral("glCompressedTexSubImage3DOES")));
     } else {
+#ifdef QT_OPENGL_ES_3
+        // OpenGL ES 3.0+ has glTexImage3D.
+        TexImage3D = ::glTexImage3D;
+        TexSubImage3D = ::glTexSubImage3D;
+        CompressedTexImage3D = ::glCompressedTexImage3D;
+        CompressedTexSubImage3D = ::glCompressedTexSubImage3D;
+#else
         // OpenGL 1.2
         TexImage3D = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLint , GLint , GLsizei , GLsizei , GLsizei , GLint , GLenum , GLenum , const GLvoid *)>(context->getProcAddress(QByteArrayLiteral("glTexImage3D")));
         TexSubImage3D = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLint , GLint , GLint , GLint , GLsizei , GLsizei , GLsizei , GLenum , GLenum , const GLvoid *)>(context->getProcAddress(QByteArrayLiteral("glTexSubImage3D")));
@@ -203,8 +264,10 @@ QOpenGLTextureHelper::QOpenGLTextureHelper(QOpenGLContext *context)
         // OpenGL 1.3
         CompressedTexImage3D = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLint , GLenum , GLsizei , GLsizei , GLsizei , GLint , GLsizei , const GLvoid *)>(context->getProcAddress(QByteArrayLiteral("glCompressedTexImage3D")));
         CompressedTexSubImage3D = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLint , GLint , GLint , GLint , GLsizei , GLsizei , GLsizei , GLenum , GLsizei , const GLvoid *)>(context->getProcAddress(QByteArrayLiteral("glCompressedTexSubImage3D")));
+#endif
     }
 
+#ifndef QT_OPENGL_ES_2
     // OpenGL 1.3
     GetCompressedTexImage = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLint , GLvoid *)>(context->getProcAddress(QByteArrayLiteral("glGetCompressedTexImage")));
     CompressedTexSubImage1D = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLint , GLint , GLsizei , GLenum , GLsizei , const GLvoid *)>(context->getProcAddress(QByteArrayLiteral("glCompressedTexSubImage1D")));
@@ -230,6 +293,7 @@ QOpenGLTextureHelper::QOpenGLTextureHelper(QOpenGLContext *context)
     TexStorage2DMultisample = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLsizei , GLenum , GLsizei , GLsizei , GLboolean )>(context->getProcAddress(QByteArrayLiteral("glTexStorage2DMultisample")));
     TexBufferRange = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLenum , GLuint , GLintptr , GLsizeiptr )>(context->getProcAddress(QByteArrayLiteral("glTexBufferRange")));
     TextureView = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLenum , GLuint , GLenum , GLuint , GLuint , GLuint , GLuint )>(context->getProcAddress(QByteArrayLiteral("glTextureView")));
+#endif
 }
 
 void QOpenGLTextureHelper::dsa_TextureParameteri(GLuint texture, GLenum target, GLenum bindingTarget, GLenum pname, GLint param)
