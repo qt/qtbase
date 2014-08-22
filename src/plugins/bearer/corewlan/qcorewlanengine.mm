@@ -419,7 +419,8 @@ QCoreWlanEngine::QCoreWlanEngine(QObject *parent)
 
 QCoreWlanEngine::~QCoreWlanEngine()
 {
-    scanThread->wait(5000);
+    scanThread->terminate();
+    scanThread->wait();
 
     while (!foundConfigurations.isEmpty())
         delete foundConfigurations.takeFirst();
