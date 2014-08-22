@@ -176,7 +176,6 @@ QIconTheme::QIconTheme(const QString &themeName)
 {
     QFile themeIndex;
 
-    QList <QIconDirInfo> keyList;
     QStringList iconDirs = QIcon::themeSearchPaths();
     for ( int i = 0 ; i < iconDirs.size() ; ++i) {
         QDir iconDir(iconDirs[i]);
