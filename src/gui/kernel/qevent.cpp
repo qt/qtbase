@@ -3495,11 +3495,13 @@ static const char *eventClassName(QEvent::Type t)
         return "QCloseEvent";
     case QEvent::FileOpen:
         return "QFileOpenEvent";
+#ifndef QT_NO_GESTURES
     case QEvent::NativeGesture:
         return "QNativeGestureEvent";
     case QEvent::Gesture:
     case QEvent::GestureOverride:
         return "QGestureEvent";
+#endif
     case QEvent::HoverEnter:
     case QEvent::HoverLeave:
     case QEvent::HoverMove:
@@ -3596,11 +3598,13 @@ public:
         return QObject::staticQtMetaObject.enumerator(enumIdx).valueToKey(reason);
     }
 
+#  ifndef QT_NO_GESTURES
     static const char *nativeGestureTypeToString(Qt::NativeGestureType type)
     {
         static const int enumIdx = QObject::staticQtMetaObject.indexOfEnumerator("NativeGestureType");
         return QObject::staticQtMetaObject.enumerator(enumIdx).valueToKey(type);
     }
+#  endif // !QT_NO_GESTURES
 };
 } // namespace
 
