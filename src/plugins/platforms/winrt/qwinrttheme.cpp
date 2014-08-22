@@ -112,6 +112,7 @@ QWinRTTheme::QWinRTTheme()
     Q_ASSERT_SUCCEEDED(hr);
     d->palette.setColor(QPalette::ButtonText, fromColor(color));
     d->palette.setColor(QPalette::Text, fromColor(color));
+    d->palette.setColor(QPalette::WindowText, fromColor(color));
 
     hr = uiSettings()->UIElementColor(UIElementType_TextMedium, &color);
     Q_ASSERT_SUCCEEDED(hr);
