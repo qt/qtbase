@@ -921,6 +921,7 @@ void WriteInitialization::acceptLayout(DomLayout *node)
     m_layoutMarginType = SubLayoutMargin;
 
     DomPropertyList propList = node->elementProperty();
+    DomPropertyList newPropList;
     if (m_layoutWidget) {
         bool left, top, right, bottom;
         left = top = right = bottom = false;
@@ -940,30 +941,37 @@ void WriteInitialization::acceptLayout(DomLayout *node)
             DomProperty *p = new DomProperty();
             p->setAttributeName(QLatin1String("leftMargin"));
             p->setElementNumber(0);
-            propList.append(p);
+            newPropList.append(p);
         }
         if (!top) {
             DomProperty *p = new DomProperty();
             p->setAttributeName(QLatin1String("topMargin"));
             p->setElementNumber(0);
-            propList.append(p);
+            newPropList.append(p);
         }
         if (!right) {
             DomProperty *p = new DomProperty();
             p->setAttributeName(QLatin1String("rightMargin"));
             p->setElementNumber(0);
-            propList.append(p);
+            newPropList.append(p);
         }
         if (!bottom) {
             DomProperty *p = new DomProperty();
             p->setAttributeName(QLatin1String("bottomMargin"));
             p->setElementNumber(0);
-            propList.append(p);
+            newPropList.append(p);
         }
         m_layoutWidget = false;
     }
 
+    propList.append(newPropList);
+
     writeProperties(varName, className, propList, WritePropertyIgnoreMargin|WritePropertyIgnoreSpacing);
+
+    // Clean up again:
+    propList.clear();
+    qDeleteAll(newPropList);
+    newPropList.clear();
 
     m_layoutChain.push(node);
     TreeWalker::acceptLayout(node);
