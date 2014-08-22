@@ -78,6 +78,7 @@ Q_FORWARD_DECLARE_OBJC_CLASS(QNSViewMouseMoveHelper);
     bool m_shouldSetGLContextinDrawRect;
     NSString *m_inputSource;
     QNSViewMouseMoveHelper *m_mouseMoveHelper;
+    bool m_resendKeyEvent;
 }
 
 - (id)init;

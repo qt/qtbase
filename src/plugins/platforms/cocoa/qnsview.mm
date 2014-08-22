@@ -149,6 +149,7 @@ static NSString *_q_NSWindowDidChangeOcclusionStateNotification = nil;
         m_sendUpAsRightButton = false;
         m_inputSource = 0;
         m_mouseMoveHelper = [[QNSViewMouseMoveHelper alloc] initWithView:self];
+        m_resendKeyEvent = false;
 
         if (!touchDevice) {
             touchDevice = new QTouchDevice;
@@ -1402,6 +1403,8 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
                 }
             }
         }
+        if (m_resendKeyEvent)
+            m_sendKeyEvent = true;
     }
 
     if (m_sendKeyEvent && m_composingText.isEmpty())
@@ -1409,6 +1412,7 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
                                                        nativeScanCode, nativeVirtualKey, nativeModifiers, text, [nsevent isARepeat]);
 
     m_sendKeyEvent = false;
+    m_resendKeyEvent = false;
 }
 
 - (void)keyDown:(NSEvent *)nsevent
@@ -1477,6 +1481,12 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
                                                modifier_key_symbols[i].qt_code,
                                                qmodifiers ^ [QNSView convertKeyModifiers:mac_mask]);
     }
+}
+
+- (void) insertNewline:(id)sender
+{
+    Q_UNUSED(sender);
+    m_resendKeyEvent = true;
 }
 
 - (void) doCommandBySelector:(SEL)aSelector
