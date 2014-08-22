@@ -62,6 +62,7 @@
 #include <private/qicon_p.h>
 #include <private/qfactoryloader_p.h>
 #include <QtCore/QHash>
+#include <QtCore/QTypeInfo>
 
 QT_BEGIN_NAMESPACE
 
@@ -84,6 +85,7 @@ struct QIconDirInfo
     short threshold;
     Type type : 4;
 };
+Q_DECLARE_TYPEINFO(QIconDirInfo, Q_MOVABLE_TYPE);
 
 class QIconLoaderEngineEntry
  {
