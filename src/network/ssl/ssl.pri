@@ -27,7 +27,7 @@ contains(QT_CONFIG, ssl) | contains(QT_CONFIG, openssl) | contains(QT_CONFIG, op
 
     winrt {
         HEADERS += ssl/qsslsocket_winrt_p.h
-        SOURCES += ssl/qsslcertificate_winrt.cpp \
+        SOURCES += ssl/qsslcertificate_qt.cpp \
                    ssl/qsslkey_winrt.cpp \
                    ssl/qsslsocket_winrt.cpp
     }

@@ -43,6 +43,10 @@
 
 #include "qsslcertificate.h"
 #include "qsslcertificate_p.h"
+#include "qsslkey.h"
+#include "qsslkey_p.h"
+#include "qsslcertificateextension.h"
+#include "qsslcertificateextension_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -50,85 +54,79 @@ bool QSslCertificate::operator==(const QSslCertificate &other) const
 {
     if (d == other.d)
         return true;
-    return false;
+    if (d->null && other.d->null)
+        return true;
+    return d->derData == other.d->derData;
 }
 
 bool QSslCertificate::isNull() const
 {
-    Q_UNIMPLEMENTED();
-    return true;
+    return d->null;
 }
 
 bool QSslCertificate::isSelfSigned() const
 {
-    Q_UNIMPLEMENTED();
-    return true;
+    if (d->null)
+        return false;
+
+    qWarning("QSslCertificate::isSelfSigned: This function does not check, whether the certificate \
+             is actually signed. It just checks whether issuer and subject are identical");
+    return d->subjectMatchesIssuer;
 }
 
 QByteArray QSslCertificate::version() const
 {
-    Q_UNIMPLEMENTED();
-    return QByteArray();
+    return d->versionString;
 }
 
 QByteArray QSslCertificate::serialNumber() const
 {
-    Q_UNIMPLEMENTED();
-    return QByteArray();
+    return d->serialNumberString;
 }
 
 QStringList QSslCertificate::issuerInfo(SubjectInfo info) const
 {
-    Q_UNIMPLEMENTED();
-    return QStringList();
+    return issuerInfo(QSslCertificatePrivate::subjectInfoToString(info));
 }
 
 QStringList QSslCertificate::issuerInfo(const QByteArray &attribute) const
 {
-    Q_UNIMPLEMENTED();
-    return QStringList();
+    return d->issuerInfo.values(attribute);
 }
 
 QStringList QSslCertificate::subjectInfo(SubjectInfo info) const
 {
-    Q_UNIMPLEMENTED();
-    return QStringList();
+    return subjectInfo(QSslCertificatePrivate::subjectInfoToString(info));
 }
 
 QStringList QSslCertificate::subjectInfo(const QByteArray &attribute) const
 {
-    Q_UNIMPLEMENTED();
-    return QStringList();
+    return d->subjectInfo.values(attribute);
 }
 
 QList<QByteArray> QSslCertificate::subjectInfoAttributes() const
 {
-    Q_UNIMPLEMENTED();
-    return QList<QByteArray>();
+    return d->subjectInfo.uniqueKeys();
 }
 
 QList<QByteArray> QSslCertificate::issuerInfoAttributes() const
 {
-    Q_UNIMPLEMENTED();
-    return QList<QByteArray>();
+    return d->issuerInfo.uniqueKeys();
 }
 
 QMultiMap<QSsl::AlternativeNameEntryType, QString> QSslCertificate::subjectAlternativeNames() const
 {
-    Q_UNIMPLEMENTED();
-    return QMultiMap<QSsl::AlternativeNameEntryType, QString>();
+    return d->subjectAlternativeNames;
 }
 
 QDateTime QSslCertificate::effectiveDate() const
 {
-    Q_UNIMPLEMENTED();
-    return QDateTime();
+    return d->notValidBefore;
 }
 
 QDateTime QSslCertificate::expiryDate() const
 {
-    Q_UNIMPLEMENTED();
-    return QDateTime();
+    return d->notValidAfter;
 }
 
 Qt::HANDLE QSslCertificate::handle() const
@@ -139,8 +137,13 @@ Qt::HANDLE QSslCertificate::handle() const
 
 QSslKey QSslCertificate::publicKey() const
 {
-    Q_UNIMPLEMENTED();
-    return QSslKey();
+    QSslKey key;
+    key.d->type = QSsl::PublicKey;
+    if (d->publicKeyAlgorithm != QSsl::Opaque) {
+    key.d->algorithm = d->publicKeyAlgorithm;
+    key.d->decodeDer(d->publicKeyDerData, QByteArray());
+    }
+    return key;
 }
 
 QList<QSslCertificateExtension> QSslCertificate::extensions() const
@@ -149,16 +152,31 @@ QList<QSslCertificateExtension> QSslCertificate::extensions() const
     return QList<QSslCertificateExtension>();
 }
 
+#define BEGINCERTSTRING "-----BEGIN CERTIFICATE-----"
+#define ENDCERTSTRING "-----END CERTIFICATE-----"
+
 QByteArray QSslCertificate::toPem() const
 {
-    Q_UNIMPLEMENTED();
-    return QByteArray();
+    QByteArray array = toDer();
+
+    // Convert to Base64 - wrap at 64 characters.
+    array = array.toBase64();
+    QByteArray tmp;
+    for (int i = 0; i <= array.size() - 64; i += 64) {
+        tmp += QByteArray::fromRawData(array.data() + i, 64);
+        tmp += '\n';
+    }
+    if (int remainder = array.size() % 64) {
+        tmp += QByteArray::fromRawData(array.data() + array.size() - remainder, remainder);
+        tmp += '\n';
+    }
+
+    return BEGINCERTSTRING "\n" + tmp + ENDCERTSTRING "\n";
 }
 
 QByteArray QSslCertificate::toDer() const
 {
-    Q_UNIMPLEMENTED();
-    return QByteArray();
+    return d->derData;
 }
 
 QString QSslCertificate::toText() const
@@ -169,23 +187,78 @@ QString QSslCertificate::toText() const
 
 void QSslCertificatePrivate::init(const QByteArray &data, QSsl::EncodingFormat format)
 {
-    Q_UNIMPLEMENTED();
+    if (!data.isEmpty()) {
+        QList<QSslCertificate> certs = (format == QSsl::Pem)
+            ? certificatesFromPem(data, 1)
+            : certificatesFromDer(data, 1);
+        if (!certs.isEmpty()) {
+            *this = *certs.first().d;
+        }
+    }
+}
+
+static bool matchLineFeed(const QByteArray &pem, int *offset)
+{
+    char ch = 0;
+
+    // ignore extra whitespace at the end of the line
+    while (*offset < pem.size() && (ch = pem.at(*offset)) == ' ')
+        ++*offset;
+
+    if (ch == '\n') {
+        *offset += 1;
+        return true;
+    }
+    if (ch == '\r' && pem.size() > (*offset + 1) && pem.at(*offset + 1) == '\n') {
+        *offset += 2;
+        return true;
+    }
+    return false;
 }
 
 QList<QSslCertificate> QSslCertificatePrivate::certificatesFromPem(const QByteArray &pem, int count)
 {
-    Q_UNIMPLEMENTED();
-    Q_UNUSED(pem)
-    Q_UNUSED(count)
-    return QList<QSslCertificate>();
+    QList<QSslCertificate> certificates;
+    int offset = 0;
+    while (count == -1 || certificates.size() < count) {
+        int startPos = pem.indexOf(BEGINCERTSTRING, offset);
+        if (startPos == -1)
+            break;
+        startPos += sizeof(BEGINCERTSTRING) - 1;
+        if (!matchLineFeed(pem, &startPos))
+            break;
+
+        int endPos = pem.indexOf(ENDCERTSTRING, startPos);
+        if (endPos == -1)
+            break;
+
+        offset = endPos + sizeof(ENDCERTSTRING) - 1;
+        if (offset < pem.size() && !matchLineFeed(pem, &offset))
+            break;
+
+        QByteArray decoded = QByteArray::fromBase64(
+            QByteArray::fromRawData(pem.data() + startPos, endPos - startPos));
+        certificates << certificatesFromDer(decoded, 1);;
+    }
+
+    return certificates;
 }
 
 QList<QSslCertificate> QSslCertificatePrivate::certificatesFromDer(const QByteArray &der, int count)
 {
-    Q_UNIMPLEMENTED();
-    Q_UNUSED(der)
-    Q_UNUSED(count)
-    return QList<QSslCertificate>();
+    QList<QSslCertificate> certificates;
+
+    QByteArray data = der;
+    while (count == -1 || certificates.size() < count) {
+        QSslCertificate cert;
+        if (!cert.d->parse(data))
+            break;
+
+        certificates << cert;
+        data.remove(0, cert.d->derData.size());
+    }
+
+    return certificates;
 }
 
 QT_END_NAMESPACE
