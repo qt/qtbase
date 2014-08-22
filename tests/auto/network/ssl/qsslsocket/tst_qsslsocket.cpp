@@ -32,7 +32,7 @@
 **
 ****************************************************************************/
 
-
+#include <QtCore/qglobal.h>
 #include <QtCore/qthread.h>
 #include <QtNetwork/qhostaddress.h>
 #include <QtNetwork/qhostinfo.h>
@@ -992,7 +992,7 @@ void tst_QSslSocket::protocol()
         socket->abort();
     }
 #endif
-#ifndef OPENSSL_NO_SSL2
+#if !defined(OPENSSL_NO_SSL2) && !defined(QT_SECURETRANSPORT)
     {
         // qt-test-server allows SSLV2.
         socket->setProtocol(QSsl::SslV2);
@@ -1129,7 +1129,7 @@ void tst_QSslSocket::protocolServerSide_data()
     QTest::addColumn<QSsl::SslProtocol>("clientProtocol");
     QTest::addColumn<bool>("works");
 
-#ifndef OPENSSL_NO_SSL2
+#if !defined(OPENSSL_NO_SSL2) && !defined(QT_SECURETRANSPORT)
     QTest::newRow("ssl2-ssl2") << QSsl::SslV2 << QSsl::SslV2 << false; // no idea why it does not work, but we don't care about SSL 2
 #endif
     QTest::newRow("ssl3-ssl3") << QSsl::SslV3 << QSsl::SslV3 << true;
@@ -1138,7 +1138,7 @@ void tst_QSslSocket::protocolServerSide_data()
     QTest::newRow("any-any") << QSsl::AnyProtocol << QSsl::AnyProtocol << true;
     QTest::newRow("secure-secure") << QSsl::SecureProtocols << QSsl::SecureProtocols << true;
 
-#ifndef OPENSSL_NO_SSL2
+#if !defined(OPENSSL_NO_SSL2) && !defined(QT_SECURETRANSPORT)
     QTest::newRow("ssl2-ssl3") << QSsl::SslV2 << QSsl::SslV3 << false;
     QTest::newRow("ssl2-tls1.0") << QSsl::SslV2 << QSsl::TlsV1_0 << false;
     QTest::newRow("ssl2-tls1ssl3") << QSsl::SslV2 << QSsl::TlsV1SslV3 << false;
@@ -1146,33 +1146,33 @@ void tst_QSslSocket::protocolServerSide_data()
     QTest::newRow("ssl2-any") << QSsl::SslV2 << QSsl::AnyProtocol << false; // no idea why it does not work, but we don't care about SSL 2
 #endif
 
-#ifndef OPENSSL_NO_SSL2
+#if !defined(OPENSSL_NO_SSL2) && !defined(QT_SECURETRANSPORT)
     QTest::newRow("ssl3-ssl2") << QSsl::SslV3 << QSsl::SslV2 << false;
 #endif
     QTest::newRow("ssl3-tls1.0") << QSsl::SslV3 << QSsl::TlsV1_0 << false;
     QTest::newRow("ssl3-tls1ssl3") << QSsl::SslV3 << QSsl::TlsV1SslV3 << true;
     QTest::newRow("ssl3-secure") << QSsl::SslV3 << QSsl::SecureProtocols << false;
-#ifndef OPENSSL_NO_SSL2
+#if !defined(OPENSSL_NO_SSL2) && !defined(QT_SECURETRANSPORT)
     QTest::newRow("ssl3-any") << QSsl::SslV3 << QSsl::AnyProtocol << false; // we won't set a SNI header here because we connect to a
                                                                             // numerical IP, so OpenSSL will send a SSL 2 handshake
 #else
     QTest::newRow("ssl3-any") << QSsl::SslV3 << QSsl::AnyProtocol << true;
 #endif
 
-#ifndef OPENSSL_NO_SSL2
+#if !defined(OPENSSL_NO_SSL2) && !defined(QT_SECURETRANSPORT)
     QTest::newRow("tls1.0-ssl2") << QSsl::TlsV1_0 << QSsl::SslV2 << false;
 #endif
     QTest::newRow("tls1.0-ssl3") << QSsl::TlsV1_0 << QSsl::SslV3 << false;
     QTest::newRow("tls1-tls1ssl3") << QSsl::TlsV1_0 << QSsl::TlsV1SslV3 << true;
     QTest::newRow("tls1.0-secure") << QSsl::TlsV1_0 << QSsl::SecureProtocols << true;
-#ifndef OPENSSL_NO_SSL2
+#if !defined(OPENSSL_NO_SSL2) && !defined(QT_SECURETRANSPORT)
     QTest::newRow("tls1.0-any") << QSsl::TlsV1_0 << QSsl::AnyProtocol << false; // we won't set a SNI header here because we connect to a
                                                                             // numerical IP, so OpenSSL will send a SSL 2 handshake
 #else
     QTest::newRow("tls1.0-any") << QSsl::TlsV1_0 << QSsl::AnyProtocol << true;
 #endif
 
-#ifndef OPENSSL_NO_SSL2
+#if !defined(OPENSSL_NO_SSL2) && !defined(QT_SECURETRANSPORT)
     QTest::newRow("tls1ssl3-ssl2") << QSsl::TlsV1SslV3 << QSsl::SslV2 << false;
 #endif
     QTest::newRow("tls1ssl3-ssl3") << QSsl::TlsV1SslV3 << QSsl::SslV3 << true;
@@ -1180,7 +1180,7 @@ void tst_QSslSocket::protocolServerSide_data()
     QTest::newRow("tls1ssl3-secure") << QSsl::TlsV1SslV3 << QSsl::SecureProtocols << true;
     QTest::newRow("tls1ssl3-any") << QSsl::TlsV1SslV3 << QSsl::AnyProtocol << true;
 
-#ifndef OPENSSL_NO_SSL2
+#if !defined(OPENSSL_NO_SSL2) && !defined(QT_SECURETRANSPORT)
     QTest::newRow("secure-ssl2") << QSsl::SecureProtocols << QSsl::SslV2 << false;
 #endif
     QTest::newRow("secure-ssl3") << QSsl::SecureProtocols << QSsl::SslV3 << false;
@@ -1188,7 +1188,7 @@ void tst_QSslSocket::protocolServerSide_data()
     QTest::newRow("secure-tls1ssl3") << QSsl::SecureProtocols << QSsl::TlsV1SslV3 << true;
     QTest::newRow("secure-any") << QSsl::SecureProtocols << QSsl::AnyProtocol << true;
 
-#ifndef OPENSSL_NO_SSL2
+#if !defined(OPENSSL_NO_SSL2) && !defined(QT_SECURETRANSPORT)
     QTest::newRow("any-ssl2") << QSsl::AnyProtocol << QSsl::SslV2 << false; // no idea why it does not work, but we don't care about SSL 2
 #endif
     QTest::newRow("any-ssl3") << QSsl::AnyProtocol << QSsl::SslV3 << true;

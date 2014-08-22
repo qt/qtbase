@@ -40,6 +40,15 @@ contains(QT_CONFIG, ssl) | contains(QT_CONFIG, openssl) | contains(QT_CONFIG, op
                    ssl/qsslsocket_winrt.cpp \
                    ssl/qsslellipticcurve_dummy.cpp
     }
+
+    contains(QT_CONFIG, securetransport) {
+        HEADERS += ssl/qsslsocket_mac_p.h
+        SOURCES += ssl/qsslcertificate_qt.cpp \
+                   ssl/qsslkey_qt.cpp \
+                   ssl/qsslkey_mac.cpp \
+                   ssl/qsslsocket_mac.cpp \
+                   ssl/qsslellipticcurve_dummy.cpp
+    }
 }
 
 contains(QT_CONFIG, openssl) | contains(QT_CONFIG, openssl-linked) {

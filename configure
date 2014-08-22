@@ -665,6 +665,7 @@ CFG_GLIB=auto
 CFG_QGTKSTYLE=auto
 CFG_LARGEFILE=auto
 CFG_OPENSSL=auto
+CFG_SECURETRANSPORT=auto
 CFG_PRECOMPILE=auto
 CFG_SEPARATE_DEBUG_INFO=no
 CFG_REDUCE_EXPORTS=auto
@@ -1952,6 +1953,13 @@ while [ "$#" -gt 0 ]; do
     openssl-linked)
         if [ "$VAL" = "yes" ]; then
             CFG_OPENSSL="linked"
+        else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
+    securetransport)
+        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
+            CFG_SECURETRANSPORT="$VAL"
         else
             UNKNOWN_OPT=yes
         fi
@@ -5698,6 +5706,12 @@ if [ "$CFG_OPENSSL" != "no" ]; then
     fi
 fi
 
+if [ "$CFG_SECURETRANSPORT" != "no" ] && [ "$CFG_OPENSSL" = "no" ] && [ "$XPLATFORM_MAC" = "yes" ]; then
+    CFG_SECURETRANSPORT=yes
+else
+    CFG_SECURETRANSPORT=no
+fi
+
 # detect PCRE
 if [ "$CFG_PCRE" != "qt" ]; then
     if compileTest unix/pcre "PCRE"; then
@@ -5980,6 +5994,7 @@ fi
 [ "$CFG_DBUS" = "linked" ] && QT_CONFIG="$QT_CONFIG dbus-linked"
 [ "$CFG_OPENSSL" = "yes" ] && QT_CONFIG="$QT_CONFIG openssl"
 [ "$CFG_OPENSSL" = "linked" ] && QT_CONFIG="$QT_CONFIG openssl-linked"
+[ "$CFG_SECURETRANSPORT" = "yes" ] && QT_CONFIG="$QT_CONFIG ssl securetransport"
 [ "$CFG_XCB" != "no" ] && QT_CONFIG="$QT_CONFIG xcb"
 [ "$CFG_XINPUT2" = "yes" ] && QT_CONFIG="$QT_CONFIG xinput2"
 [ "$CFG_SYSTEM_PROXIES" = "yes" ] && QT_CONFIG="$QT_CONFIG system-proxies"
@@ -6387,8 +6402,10 @@ QMakeVar set sql-plugins "$SQL_PLUGINS"
 [ "$CFG_INOTIFY" = "no" ]    && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_INOTIFY"
 [ "$CFG_EVENTFD" = "no" ]    && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_EVENTFD"
 [ "$CFG_NIS" = "no" ]        && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_NIS"
-[ "$CFG_OPENSSL" = "no" ]    && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_OPENSSL QT_NO_SSL"
+[ "$CFG_OPENSSL" = "no" ]    && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_OPENSSL"
 [ "$CFG_OPENSSL" = "linked" ]&& QCONFIG_FLAGS="$QCONFIG_FLAGS QT_LINKED_OPENSSL"
+[ "$CFG_OPENSSL" = "no" ] && [ "$CFG_SECURETRANSPORT" = "no" ] && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_SSL"
+[ "$CFG_SECURETRANSPORT" = "yes" ] && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_SECURETRANSPORT"
 
 [ "$CFG_SM" = "no" ]         && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_SESSIONMANAGER"
 [ "$CFG_TSLIB" = "no" ]      && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_TSLIB"
@@ -6818,6 +6835,8 @@ report_support "    getaddrinfo .........." "$CFG_GETADDRINFO"
 report_support "    getifaddrs ..........." "$CFG_GETIFADDRS"
 report_support "    IPv6 ifname .........." "$CFG_IPV6IFNAME"
 report_support "    OpenSSL .............." "$CFG_OPENSSL" yes "loading libraries at run-time" linked "linked to the libraries"
+[ "$XPLATFORM_MAC" = "yes" ] && \
+    report_support "    SecureTransport ......" "$CFG_SECURETRANSPORT"
 report_support "  NIS ...................." "$CFG_NIS"
 report_support "  OpenGL / OpenVG:"
 report_support "    EGL .................." "$CFG_EGL"

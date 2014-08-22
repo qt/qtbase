@@ -53,6 +53,8 @@
 #include "qsslconfiguration_p.h"
 #ifndef QT_NO_OPENSSL
 #include <private/qsslcontext_openssl_p.h>
+#else
+class QSslContext;
 #endif
 
 #include <QtCore/qstringlist.h>
