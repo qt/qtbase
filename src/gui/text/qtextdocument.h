@@ -168,13 +168,13 @@ public:
     Q_DECLARE_FLAGS(FindFlags, FindFlag)
 
     QTextCursor find(const QString &subString, int from = 0, FindFlags options = 0) const;
-    QTextCursor find(const QString &subString, const QTextCursor &from, FindFlags options = 0) const;
+    QTextCursor find(const QString &subString, const QTextCursor &cursor, FindFlags options = 0) const;
     QTextCursor find(const QRegExp &expr, int from = 0, FindFlags options = 0) const;
-    QTextCursor find(const QRegExp &expr, const QTextCursor &from, FindFlags options = 0) const;
+    QTextCursor find(const QRegExp &expr, const QTextCursor &cursor, FindFlags options = 0) const;
 
 #ifndef QT_NO_REGULAREXPRESSION
     QTextCursor find(const QRegularExpression &expr, int from = 0, FindFlags options = 0) const;
-    QTextCursor find(const QRegularExpression &expr, const QTextCursor &from, FindFlags options = 0) const;
+    QTextCursor find(const QRegularExpression &expr, const QTextCursor &cursor, FindFlags options = 0) const;
 #endif
 
     QTextFrame *frameAt(int pos) const;
