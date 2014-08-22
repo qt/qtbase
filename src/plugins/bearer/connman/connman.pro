@@ -6,7 +6,6 @@ load(qt_plugin)
 
 QT = core network-private dbus
 CONFIG += link_pkgconfig
-packagesExist(connectionagent) { DEFINES += QT_HAS_CONNECTIONAGENT }
 
 HEADERS += qconnmanservice_linux_p.h \
            qofonoservice_linux_p.h \

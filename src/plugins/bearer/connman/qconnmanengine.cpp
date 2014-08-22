@@ -54,11 +54,6 @@
 #include <QtDBus/QDBusInterface>
 #include <QtDBus/QDBusMessage>
 #include <QtDBus/QDBusReply>
-#ifdef QT_HAS_CONNECTIONAGENT
-#include <sys/inotify.h>
-#include <fcntl.h>
-#include <qcore_unix_p.h>
-#endif
 #ifndef QT_NO_BEARERMANAGEMENT
 #ifndef QT_NO_DBUS
 
@@ -78,9 +73,6 @@ QConnmanEngine::QConnmanEngine(QObject *parent)
 
 QConnmanEngine::~QConnmanEngine()
 {
-#ifdef QT_HAS_CONNECTIONAGENT
-    qt_safe_close(inotifyFileDescriptor);
-#endif
 }
 
 bool QConnmanEngine::connmanAvailable() const
@@ -108,16 +100,6 @@ void QConnmanEngine::initialize()
         addServiceConfiguration(servPath);
     }
     Q_EMIT updateCompleted();
-#ifdef QT_HAS_CONNECTIONAGENT
-    QSettings confFile(QStringLiteral("nemomobile"),QStringLiteral("connectionagent"));
-
-    inotifyFileDescriptor = ::inotify_init();
-    inotifyWatcher = ::inotify_add_watch(inotifyFileDescriptor, QFile::encodeName(confFile.fileName()), IN_MODIFY);
-    if (inotifyWatcher > 0) {
-        QSocketNotifier *notifier = new QSocketNotifier(inotifyFileDescriptor, QSocketNotifier::Read, this);
-        connect(notifier, SIGNAL(activated(int)), this, SLOT(inotifyActivated()));
-    }
-#endif
 }
 
 void QConnmanEngine::changedModem()
@@ -257,12 +239,11 @@ QNetworkSession::State QConnmanEngine::sessionStateForId(const QString &id)
         return QNetworkSession::Disconnected;
     }
 
-    if (servState == QLatin1String("association") || servState == QLatin1String("configuration")
-            || servState == QLatin1String("ready")) {
+    if (servState == QLatin1String("association") || servState == QLatin1String("configuration")) {
         return QNetworkSession::Connecting;
     }
 
-    if (servState == QLatin1String("online")) {
+    if (servState == QLatin1String("online") || servState == QLatin1String("ready")) {
         return QNetworkSession::Connected;
     }
 
@@ -402,9 +383,8 @@ QNetworkConfiguration::StateFlags QConnmanEngine::getStateForService(const QStri
 
     if (serv->type() == QLatin1String("cellular")) {
 
-        if (!serv->autoConnect()
-                || (serv->roaming()
-                    && (isAlwaysAskRoaming() || !isRoamingAllowed(serv->path())))) {
+        if (!serv->autoConnect()|| (serv->roaming()
+                    && !isRoamingAllowed(serv->path()))) {
             flag = (flag | QNetworkConfiguration::Defined);
         } else {
             flag = (flag | QNetworkConfiguration::Discovered);
@@ -418,7 +398,7 @@ QNetworkConfiguration::StateFlags QConnmanEngine::getStateForService(const QStri
             flag = QNetworkConfiguration::Undefined;
         }
     }
-    if (state == QLatin1String("online")) {
+    if (state == QLatin1String("online") || state == QLatin1String("ready")) {
         flag = (flag | QNetworkConfiguration::Active);
     }
 
@@ -557,17 +537,6 @@ bool QConnmanEngine::requiresPolling() const
     return false;
 }
 
-bool QConnmanEngine::isAlwaysAskRoaming()
-{
-#ifdef QT_HAS_CONNECTIONAGENT
-    QSettings confFile(QStringLiteral("nemomobile"),QStringLiteral("connectionagent"));
-    confFile.beginGroup(QStringLiteral("Connectionagent"));
-    return confFile.value(QStringLiteral("askForRoaming")).toBool();
-#else
-    return false;
-#endif
-}
-
 void QConnmanEngine::reEvaluateCellular()
 {
     Q_FOREACH (const QString &servicePath, connmanManager->getServices()) {
@@ -575,21 +544,6 @@ void QConnmanEngine::reEvaluateCellular()
             configurationChange(connmanServiceInterfaces.value(servicePath));
         }
     }
-}
-
-void QConnmanEngine::inotifyActivated()
-{
-#ifdef QT_HAS_CONNECTIONAGENT
-
-    char buffer[1024];
-    int len = qt_safe_read(inotifyFileDescriptor, (void *)buffer, sizeof(buffer));
-    if (len > 0) {
-        struct inotify_event *event = (struct inotify_event *)buffer;
-        if (event->wd == inotifyWatcher && (event->mask & IN_MODIFY) == 0) {
-            QTimer::singleShot(1000, this, SLOT(reEvaluateCellular())); //give this time to finish write
-        }
-    }
-#endif
 }
 
 QT_END_NAMESPACE

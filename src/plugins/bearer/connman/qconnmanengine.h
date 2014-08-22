@@ -108,7 +108,6 @@ private Q_SLOTS:
     void serviceStateChanged(const QString &state);
     void configurationChange(QConnmanServiceInterface * service);
     void reEvaluateCellular();
-    void inotifyActivated();
 private:
     QConnmanManagerInterface *connmanManager;
 
@@ -134,11 +133,7 @@ private:
 
     QNetworkConfiguration::BearerType ofonoTechToBearerType(const QString &type);
     bool isRoamingAllowed(const QString &context);
-    bool isAlwaysAskRoaming();
     QMap <QString,QConnmanServiceInterface *> connmanServiceInterfaces;
-
-    int inotifyWatcher;
-    int inotifyFileDescriptor;
 
 protected:
     bool requiresPolling() const;
