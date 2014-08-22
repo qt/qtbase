@@ -1680,13 +1680,12 @@ void HtmlGenerator::generateNavigationBar(const QString &title,
                           << Atom(Atom::FormattingRight, ATOM_FORMATTING_LINK)
                           << Atom(Atom::ListItemRight);
     }
-    else if (node->isDocNode()) {
-        const DocNode *dn = static_cast<const DocNode *>(node);
-        if (dn && dn->isExampleFile()) {
+    else {
+        if (node->isExampleFile()) {
             navigationbar << Atom(Atom::ListItemLeft)
-                          << Atom(Atom::Link, dn->parent()->name())
+                          << Atom(Atom::Link, node->parent()->name())
                           << Atom(Atom::FormattingLeft, ATOM_FORMATTING_LINK)
-                          << Atom(Atom::String, dn->parent()->title())
+                          << Atom(Atom::String, node->parent()->title())
                           << Atom(Atom::FormattingRight, ATOM_FORMATTING_LINK)
                           << Atom(Atom::ListItemRight);
 
