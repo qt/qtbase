@@ -134,6 +134,9 @@ signals:
     void readReady();
     void writeReady();
 
+private slots:
+    void establishRead();
+
 private:
     Q_DECLARE_PRIVATE(QNativeSocketEngine)
     Q_DISABLE_COPY(QNativeSocketEngine)
@@ -192,17 +195,22 @@ public:
 
     bool checkProxy(const QHostAddress &address);
     bool fetchConnectionParameters();
+
 private:
-    Microsoft::WRL::ComPtr<ABI::Windows::Networking::Sockets::IStreamSocket> tcp;
-    Microsoft::WRL::ComPtr<ABI::Windows::Networking::Sockets::IDatagramSocket> udp;
+    inline ABI::Windows::Networking::Sockets::IStreamSocket *tcpSocket() const
+        { return reinterpret_cast<ABI::Windows::Networking::Sockets::IStreamSocket *>(socketDescriptor); }
+    inline ABI::Windows::Networking::Sockets::IDatagramSocket *udpSocket() const
+        { return reinterpret_cast<ABI::Windows::Networking::Sockets::IDatagramSocket *>(socketDescriptor); }
     Microsoft::WRL::ComPtr<ABI::Windows::Networking::Sockets::IStreamSocketListener> tcpListener;
     Microsoft::WRL::ComPtr<ABI::Windows::Storage::Streams::IBuffer> readBuffer;
+    Microsoft::WRL::ComPtr<ABI::Windows::Foundation::IAsyncAction> connectOp;
     QBuffer readBytes;
     QMutex readMutex;
     QList<ABI::Windows::Networking::Sockets::IDatagramSocketMessageReceivedEventArgs *> pendingDatagrams;
     QList<ABI::Windows::Networking::Sockets::IStreamSocket *> pendingConnections;
     QList<ABI::Windows::Networking::Sockets::IStreamSocket *> currentConnections;
     QEventLoop eventLoop;
+    QAbstractSocket *sslSocket;
 
     HRESULT handleBindCompleted(ABI::Windows::Foundation::IAsyncAction *, ABI::Windows::Foundation::AsyncStatus);
     HRESULT handleNewDatagram(ABI::Windows::Networking::Sockets::IDatagramSocket *socket,
