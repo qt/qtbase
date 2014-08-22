@@ -316,7 +316,7 @@ QString Generator::fileBase(const Node *node) const
     QString base;
     if (node->isDocNode()) {
         base = node->name();
-        if (base.endsWith(".html"))
+        if (base.endsWith(".html") && !node->isExampleFile())
             base.truncate(base.length() - 5);
 
         if (node->isExample() || node->isExampleFile()) {

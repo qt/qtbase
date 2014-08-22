@@ -1627,8 +1627,12 @@ const Node* QDocDatabase::findNodeForAtom(const Atom* atom, const Node* relative
         }
     }
     else {
-        if (first.endsWith(".html"))
+        if (first.endsWith(".html")) {
             node = findNodeByNameAndType(QStringList(first), Node::Document);
+            // the path may also refer to an example file with .html extension
+            if (!node && first.contains("/"))
+                return findNodeForTarget(targetPath, relative, genus, ref);
+        }
         else if (first.endsWith("()"))
             node = findFunctionNode(first, relative, genus);
         else {
