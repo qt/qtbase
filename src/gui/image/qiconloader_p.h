@@ -158,7 +158,7 @@ private:
     bool m_valid;
 };
 
-class Q_GUI_EXPORT QIconLoader : public QObject
+class Q_GUI_EXPORT QIconLoader
 {
 public:
     QIconLoader();
