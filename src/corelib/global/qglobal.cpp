@@ -3940,6 +3940,21 @@ bool QInternal::activateCallbacks(Callback cb, void **parameters)
 
     It expands to "constexpr" if your compiler supports that C++11 keyword, or to nothing
     otherwise.
+
+    \sa Q_DECL_RELAXED_CONSTEXPR
+*/
+
+/*!
+    \macro Q_DECL_RELAXED_CONSTEXPR
+    \relates <QtGlobal>
+
+    This macro can be used to declare an inline function that can be computed
+    at compile-time according to the relaxed rules from C++14.
+
+    It expands to "constexpr" if your compiler supports C++14 relaxed constant
+    expressions, or to nothing otherwise.
+
+    \sa Q_DECL_CONSTEXPR
 */
 
 /*!

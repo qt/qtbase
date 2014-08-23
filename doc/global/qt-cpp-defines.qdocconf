@@ -28,6 +28,7 @@ Cpp.ignoretokens        += \
                           Q_CORE_EXPORT_INLINE \
                           Q_DBUS_EXPORT \
                           Q_DECL_CONSTEXPR \
+                          Q_DECL_RELAXED_CONSTEXPR \
                           Q_DECL_CONST_FUNCTION \
                           Q_DECL_DEPRECATED \
                           Q_DECL_NOEXCEPT \

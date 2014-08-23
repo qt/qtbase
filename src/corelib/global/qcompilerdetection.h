@@ -916,12 +916,21 @@
 #  define Q_COMPILER_DEFAULT_DELETE_MEMBERS
 #endif
 
-#ifdef Q_COMPILER_CONSTEXPR
+#if defined(__cpp_constexpr) && __cpp_constexpr-0 >= 201304
 # define Q_DECL_CONSTEXPR constexpr
+# define Q_DECL_RELAXED_CONSTEXPR constexpr
 # define Q_CONSTEXPR constexpr
+# define Q_RELAXED_CONSTEXPR constexpr
+#elif defined Q_COMPILER_CONSTEXPR
+# define Q_DECL_CONSTEXPR constexpr
+# define Q_DECL_RELAXED_CONSTEXPR
+# define Q_CONSTEXPR constexpr
+# define Q_RELAXED_CONSTEXPR const
 #else
 # define Q_DECL_CONSTEXPR
+# define Q_DECL_RELAXED_CONSTEXPR
 # define Q_CONSTEXPR const
+# define Q_RELAXED_CONSTEXPR const
 #endif
 
 #ifdef Q_COMPILER_EXPLICIT_OVERRIDES
