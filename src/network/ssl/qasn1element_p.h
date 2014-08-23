@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Jeremy Lainé <jeremy.laine@m4x.org>
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
@@ -40,10 +40,8 @@
 ****************************************************************************/
 
 
-#ifndef QSSLCERTIFICATE_OPENSSL_P_H
-#define QSSLCERTIFICATE_OPENSSL_P_H
-
-#include "qsslcertificate.h"
+#ifndef QASN1ELEMENT_P_H
+#define QASN1ELEMENT_P_H
 
 //
 //  W A R N I N G
@@ -56,78 +54,63 @@
 // We mean it.
 //
 
-#include "qsslsocket_p.h"
-#include "qsslcertificateextension.h"
 #include <QtCore/qdatetime.h>
 #include <QtCore/qmap.h>
 
-#ifndef QT_NO_OPENSSL
-#include <openssl/x509.h>
-#else
-struct X509;
-struct X509_EXTENSION;
-struct ASN1_OBJECT;
-#endif
-
 QT_BEGIN_NAMESPACE
 
-// forward declaration
-
-class QSslCertificatePrivate
+class Q_AUTOTEST_EXPORT QAsn1Element
 {
 public:
-    QSslCertificatePrivate()
-        : null(true), x509(0)
-    {
-        QSslSocketPrivate::ensureInitialized();
-    }
+    enum ElementType {
+        // universal
+        IntegerType  = 0x02,
+        BitStringType  = 0x03,
+        OctetStringType = 0x04,
+        NullType = 0x05,
+        ObjectIdentifierType = 0x06,
+        Utf8StringType = 0x0c,
+        PrintableStringType = 0x13,
+        TeletexStringType = 0x14,
+        UtcTimeType = 0x17,
+        GeneralizedTimeType = 0x18,
+        SequenceType = 0x30,
+        SetType = 0x31,
 
-    ~QSslCertificatePrivate()
-    {
-#ifndef QT_NO_OPENSSL
-        if (x509)
-            q_X509_free(x509);
-#endif
-    }
+        // application
+        Rfc822NameType = 0x81,
+        DnsNameType = 0x82,
 
-    bool null;
-    QByteArray versionString;
-    QByteArray serialNumberString;
+        // context specific
+        Context0Type = 0xA0,
+        Context3Type = 0xA3
+    };
 
-    QMap<QByteArray, QString> issuerInfo;
-    QMap<QByteArray, QString> subjectInfo;
-    QDateTime notValidAfter;
-    QDateTime notValidBefore;
+    explicit QAsn1Element(quint8 type = 0, const QByteArray &value = QByteArray());
+    bool read(QDataStream &data);
+    bool read(const QByteArray &data);
+    void write(QDataStream &data) const;
 
-#ifdef QT_NO_OPENSSL
-    bool subjectMatchesIssuer;
-    QSsl::KeyAlgorithm publicKeyAlgorithm;
-    QByteArray publicKeyDerData;
-    QMultiMap<QSsl::AlternativeNameEntryType, QString> subjectAlternativeNames;
+    static QAsn1Element fromInteger(unsigned int val);
+    static QAsn1Element fromVector(const QVector<QAsn1Element> &items);
+    static QAsn1Element fromObjectId(const QByteArray &id);
 
-    QByteArray derData;
-#endif
-    X509 *x509;
+    QDateTime toDateTime() const;
+    QMultiMap<QByteArray, QString> toInfo() const;
+    QVector<QAsn1Element> toVector() const;
+    QByteArray toObjectId() const;
+    QByteArray toObjectName() const;
+    QString toString() const;
 
-    void init(const QByteArray &data, QSsl::EncodingFormat format);
-    bool parse(const QByteArray &data);
+    quint8 type() const { return mType; }
+    QByteArray value() const { return mValue; }
 
-    static QByteArray asn1ObjectId(ASN1_OBJECT *object);
-    static QByteArray asn1ObjectName(ASN1_OBJECT *object);
-    static QByteArray QByteArray_from_X509(X509 *x509, QSsl::EncodingFormat format);
-    static QString text_from_X509(X509 *x509);
-    static QSslCertificate QSslCertificate_from_X509(X509 *x509);
-    static QList<QSslCertificate> certificatesFromPem(const QByteArray &pem, int count = -1);
-    static QList<QSslCertificate> certificatesFromDer(const QByteArray &der, int count = -1);
-    static bool isBlacklisted(const QSslCertificate &certificate);
-    static QSslCertificateExtension convertExtension(X509_EXTENSION *ext);
-    static QByteArray subjectInfoToString(QSslCertificate::SubjectInfo info);
-
-    friend class QSslSocketBackendPrivate;
-
-    QAtomicInt ref;
+private:
+    quint8 mType;
+    QByteArray mValue;
 };
+Q_DECLARE_TYPEINFO(QAsn1Element, Q_MOVABLE_TYPE);
 
 QT_END_NAMESPACE
 
-#endif // QSSLCERTIFICATE_OPENSSL_P_H
+#endif
