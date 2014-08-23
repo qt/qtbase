@@ -94,6 +94,16 @@ void tst_QFlags::testFlagMultiBits() const
 
 template <unsigned int N, typename T> bool verifyConstExpr(T n) { return n == N; }
 
+Q_DECL_RELAXED_CONSTEXPR Qt::MouseButtons testRelaxedConstExpr()
+{
+    Qt::MouseButtons value;
+    value = Qt::LeftButton | Qt::RightButton;
+    value |= Qt::MiddleButton;
+    value &= ~Qt::LeftButton;
+    value ^= Qt::RightButton;
+    return value;
+}
+
 void tst_QFlags::constExpr()
 {
 #ifdef Q_COMPILER_CONSTEXPR
@@ -115,6 +125,10 @@ void tst_QFlags::constExpr()
     QVERIFY(verifyConstExpr<Qt::MouseButtons(Qt::RightButton) | 0xff>(0xff));
 
     QVERIFY(!verifyConstExpr<Qt::RightButton>(!Qt::MouseButtons(Qt::LeftButton)));
+
+#if defined(__cpp_constexpr) &&  __cpp_constexpr-0 >= 201304
+    QVERIFY(verifyConstExpr<testRelaxedConstExpr()>(Qt::MiddleButton));
+#endif
 #endif
 }
 

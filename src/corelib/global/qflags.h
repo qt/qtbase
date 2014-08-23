@@ -117,13 +117,13 @@ public:
         : i(initializer_list_helper(flags.begin(), flags.end())) {}
 #endif
 
-    inline QFlags &operator&=(int mask) { i &= mask; return *this; }
-    inline QFlags &operator&=(uint mask) { i &= mask; return *this; }
-    inline QFlags &operator&=(Enum mask) { i &= Int(mask); return *this; }
-    inline QFlags &operator|=(QFlags f) { i |= f.i; return *this; }
-    inline QFlags &operator|=(Enum f) { i |= Int(f); return *this; }
-    inline QFlags &operator^=(QFlags f) { i ^= f.i; return *this; }
-    inline QFlags &operator^=(Enum f) { i ^= Int(f); return *this; }
+    Q_DECL_RELAXED_CONSTEXPR inline QFlags &operator&=(int mask) { i &= mask; return *this; }
+    Q_DECL_RELAXED_CONSTEXPR inline QFlags &operator&=(uint mask) { i &= mask; return *this; }
+    Q_DECL_RELAXED_CONSTEXPR inline QFlags &operator&=(Enum mask) { i &= Int(mask); return *this; }
+    Q_DECL_RELAXED_CONSTEXPR inline QFlags &operator|=(QFlags f) { i |= f.i; return *this; }
+    Q_DECL_RELAXED_CONSTEXPR inline QFlags &operator|=(Enum f) { i |= Int(f); return *this; }
+    Q_DECL_RELAXED_CONSTEXPR inline QFlags &operator^=(QFlags f) { i ^= f.i; return *this; }
+    Q_DECL_RELAXED_CONSTEXPR inline QFlags &operator^=(Enum f) { i ^= Int(f); return *this; }
 
     Q_DECL_CONSTEXPR  inline operator Int() const { return i; }
 
