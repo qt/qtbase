@@ -163,6 +163,7 @@ private slots:
     void lastIndexOfInvalidRegex();
     void indexOf_data();
     void indexOf();
+    void indexOfInvalidRegex();
     void indexOf2_data();
     void indexOf2();
     void indexOf3_data();
@@ -1296,6 +1297,12 @@ void tst_QString::indexOf2()
         got = chaystack.lastIndexOf(cneedle, -1);
         QVERIFY( got == resultpos || (resultpos >= 0 && got >= resultpos) );
     }
+}
+
+void tst_QString::indexOfInvalidRegex()
+{
+    QTest::ignoreMessage(QtWarningMsg, "QString::indexOf: invalid QRegularExpression object");
+    QCOMPARE(QString("invalid regex\\").indexOf(QRegularExpression("invalid regex\\")), -1);
 }
 
 void tst_QString::lastIndexOf_data()
