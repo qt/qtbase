@@ -1280,6 +1280,8 @@ void QFormLayout::addRow(QLayout *layout)
 void QFormLayout::insertRow(int row, QWidget *label, QWidget *field)
 {
     Q_D(QFormLayout);
+    if ((label && !d->checkWidget(label)) || (field && !d->checkWidget(field)))
+        return;
 
     row = d->insertRow(row);
     if (label)
@@ -1295,6 +1297,8 @@ void QFormLayout::insertRow(int row, QWidget *label, QWidget *field)
 void QFormLayout::insertRow(int row, QWidget *label, QLayout *field)
 {
     Q_D(QFormLayout);
+    if ((label && !d->checkWidget(label)) || (field && !d->checkLayout(field)))
+        return;
 
     row = d->insertRow(row);
     if (label)
@@ -1313,6 +1317,10 @@ void QFormLayout::insertRow(int row, QWidget *label, QLayout *field)
 */
 void QFormLayout::insertRow(int row, const QString &labelText, QWidget *field)
 {
+    Q_D(QFormLayout);
+    if (field && !d->checkWidget(field))
+        return;
+
     QLabel *label = 0;
     if (!labelText.isEmpty()) {
         label = new QLabel(labelText);
@@ -1331,6 +1339,10 @@ void QFormLayout::insertRow(int row, const QString &labelText, QWidget *field)
 */
 void QFormLayout::insertRow(int row, const QString &labelText, QLayout *field)
 {
+    Q_D(QFormLayout);
+    if (field && !d->checkLayout(field))
+        return;
+
     insertRow(row, labelText.isEmpty() ? 0 : new QLabel(labelText), field);
 }
 
@@ -1344,11 +1356,8 @@ void QFormLayout::insertRow(int row, const QString &labelText, QLayout *field)
 void QFormLayout::insertRow(int row, QWidget *widget)
 {
     Q_D(QFormLayout);
-
-    if (!widget) {
-        qWarning("QFormLayout: Cannot add null field to %s", qPrintable(objectName()));
+    if (!d->checkWidget(widget))
         return;
-    }
 
     row = d->insertRow(row);
     d->setWidget(row, SpanningRole, widget);
@@ -1365,11 +1374,8 @@ void QFormLayout::insertRow(int row, QWidget *widget)
 void QFormLayout::insertRow(int row, QLayout *layout)
 {
     Q_D(QFormLayout);
-
-    if (!layout) {
-        qWarning("QFormLayout: Cannot add null field to %s", qPrintable(objectName()));
+    if (!d->checkLayout(layout))
         return;
-    }
 
     row = d->insertRow(row);
     d->setLayout(row, SpanningRole, layout);

@@ -101,6 +101,8 @@ private slots:
     void distributeMultiCell();
 
     void taskQTBUG_27420_takeAtShouldUnparentLayout();
+    void taskQTBUG_40609_addingWidgetToItsOwnLayout();
+    void taskQTBUG_40609_addingLayoutToItself();
     void replaceWidget();
 
 private:
@@ -1658,6 +1660,36 @@ void tst_QGridLayout::taskQTBUG_27420_takeAtShouldUnparentLayout()
         delete item; // success: a taken item/layout should not be deleted when the old parent is deleted
     else
         QVERIFY(!inner.isNull());
+}
+
+void tst_QGridLayout::taskQTBUG_40609_addingWidgetToItsOwnLayout(){
+    QWidget widget;
+    widget.setObjectName("9bb37ca762aeb7269b8");
+    QGridLayout layout(&widget);
+    layout.setObjectName("d631e91a35f2b66a6dff35");
+
+    QTest::ignoreMessage(QtWarningMsg, "QLayout: Cannot add a null widget to QGridLayout/d631e91a35f2b66a6dff35");
+    layout.addWidget(Q_NULLPTR, 0, 0);
+    QCOMPARE(layout.count(), 0);
+
+    QTest::ignoreMessage(QtWarningMsg, "QLayout: Cannot add parent widget QWidget/9bb37ca762aeb7269b8 to its child layout QGridLayout/d631e91a35f2b66a6dff35");
+    layout.addWidget(&widget, 0, 0);
+    QCOMPARE(layout.count(), 0);
+}
+
+void tst_QGridLayout::taskQTBUG_40609_addingLayoutToItself(){
+    QWidget widget;
+    widget.setObjectName("0373d417fffe2c59c6fe543");
+    QGridLayout layout(&widget);
+    layout.setObjectName("5d79e1b0aed83f100e3c2");
+
+    QTest::ignoreMessage(QtWarningMsg, "QLayout: Cannot add a null layout to QGridLayout/5d79e1b0aed83f100e3c2");
+    layout.addLayout(Q_NULLPTR, 0, 0);
+    QCOMPARE(layout.count(), 0);
+
+    QTest::ignoreMessage(QtWarningMsg, "QLayout: Cannot add layout QGridLayout/5d79e1b0aed83f100e3c2 to itself");
+    layout.addLayout(&layout, 0, 0);
+    QCOMPARE(layout.count(), 0);
 }
 
 void tst_QGridLayout::replaceWidget()
