@@ -1072,11 +1072,12 @@ struct QRegionPrivate {
     int innerArea;
 
     inline QRegionPrivate() : numRects(0), innerArea(-1) {}
-    inline QRegionPrivate(const QRect &r) {
-        numRects = 1;
-        extents = r;
-        innerRect = r;
-        innerArea = r.width() * r.height();
+    inline QRegionPrivate(const QRect &r)
+        : numRects(1),
+          extents(r),
+          innerRect(r),
+          innerArea(r.width() * r.height())
+    {
     }
 
     void intersect(const QRect &r);
