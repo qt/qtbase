@@ -1079,23 +1079,6 @@ struct QRegionPrivate {
         innerArea = r.width() * r.height();
     }
 
-    inline QRegionPrivate(const QRegionPrivate &r) {
-        rects = r.rects;
-        numRects = r.numRects;
-        extents = r.extents;
-        innerRect = r.innerRect;
-        innerArea = r.innerArea;
-    }
-
-    inline QRegionPrivate &operator=(const QRegionPrivate &r) {
-        rects = r.rects;
-        numRects = r.numRects;
-        extents = r.extents;
-        innerRect = r.innerRect;
-        innerArea = r.innerArea;
-        return *this;
-    }
-
     void intersect(const QRect &r);
 
     /*
