@@ -450,7 +450,10 @@ QDebug operator<<(QDebug s, const QRegion &r)
 
     \sa united(), operator+()
 */
-const QRegion QRegion::operator|(const QRegion &r) const
+#ifdef Q_COMPILER_MANGLES_RETURN_TYPE
+const
+#endif
+QRegion QRegion::operator|(const QRegion &r) const
     { return united(r); }
 
 /*!
@@ -459,14 +462,20 @@ const QRegion QRegion::operator|(const QRegion &r) const
 
     \sa united(), operator|()
 */
-const QRegion QRegion::operator+(const QRegion &r) const
+#ifdef Q_COMPILER_MANGLES_RETURN_TYPE
+const
+#endif
+QRegion QRegion::operator+(const QRegion &r) const
     { return united(r); }
 
 /*!
    \overload
    \since 4.4
  */
-const QRegion QRegion::operator+(const QRect &r) const
+#ifdef Q_COMPILER_MANGLES_RETURN_TYPE
+const
+#endif
+QRegion QRegion::operator+(const QRect &r) const
     { return united(r); }
 
 /*!
@@ -475,14 +484,20 @@ const QRegion QRegion::operator+(const QRect &r) const
 
     \sa intersected()
 */
-const QRegion QRegion::operator&(const QRegion &r) const
+#ifdef Q_COMPILER_MANGLES_RETURN_TYPE
+const
+#endif
+QRegion QRegion::operator&(const QRegion &r) const
     { return intersected(r); }
 
 /*!
    \overload
    \since 4.4
  */
-const QRegion QRegion::operator&(const QRect &r) const
+#ifdef Q_COMPILER_MANGLES_RETURN_TYPE
+const
+#endif
+QRegion QRegion::operator&(const QRect &r) const
 {
     return intersected(r);
 }
@@ -493,7 +508,10 @@ const QRegion QRegion::operator&(const QRect &r) const
 
     \sa subtracted()
 */
-const QRegion QRegion::operator-(const QRegion &r) const
+#ifdef Q_COMPILER_MANGLES_RETURN_TYPE
+const
+#endif
+QRegion QRegion::operator-(const QRegion &r) const
     { return subtracted(r); }
 
 /*!
@@ -502,7 +520,10 @@ const QRegion QRegion::operator-(const QRegion &r) const
 
     \sa xored()
 */
-const QRegion QRegion::operator^(const QRegion &r) const
+#ifdef Q_COMPILER_MANGLES_RETURN_TYPE
+const
+#endif
+QRegion QRegion::operator^(const QRegion &r) const
     { return xored(r); }
 
 /*!

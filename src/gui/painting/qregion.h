@@ -112,7 +112,8 @@ public:
     QVector<QRect> rects() const;
     void setRects(const QRect *rect, int num);
     int rectCount() const;
-
+#ifdef Q_COMPILER_MANGLES_RETURN_TYPE
+    // ### Qt 6: remove these, they're kept for MSVC compat
     const QRegion operator|(const QRegion &r) const;
     const QRegion operator+(const QRegion &r) const;
     const QRegion operator+(const QRect &r) const;
@@ -120,6 +121,15 @@ public:
     const QRegion operator&(const QRect &r) const;
     const QRegion operator-(const QRegion &r) const;
     const QRegion operator^(const QRegion &r) const;
+#else
+    QRegion operator|(const QRegion &r) const;
+    QRegion operator+(const QRegion &r) const;
+    QRegion operator+(const QRect &r) const;
+    QRegion operator&(const QRegion &r) const;
+    QRegion operator&(const QRect &r) const;
+    QRegion operator-(const QRegion &r) const;
+    QRegion operator^(const QRegion &r) const;
+#endif // Q_COMPILER_MANGLES_RETURN_TYPE
     QRegion& operator|=(const QRegion &r);
     QRegion& operator+=(const QRegion &r);
     QRegion& operator+=(const QRect &r);
