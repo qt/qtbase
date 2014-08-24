@@ -3732,12 +3732,7 @@ int QString::lastIndexOf(const QRegularExpression &re, int from) const
 */
 bool QString::contains(const QRegularExpression &re) const
 {
-    if (!re.isValid()) {
-        qWarning("QString::contains: invalid QRegularExpression object");
-        return false;
-    }
-    QRegularExpressionMatch match = re.match(*this);
-    return match.hasMatch();
+    return contains(re, Q_NULLPTR);
 }
 
 /*!
@@ -3757,13 +3752,13 @@ bool QString::contains(const QRegularExpression &re) const
 bool QString::contains(const QRegularExpression &re, QRegularExpressionMatch *match) const
 {
     if (!re.isValid()) {
-        qWarning("QString::contains: invalid QRegularExpresssion object");
+        qWarning("QString::contains: invalid QRegularExpression object");
         return false;
     }
     QRegularExpressionMatch m = re.match(*this);
     bool hasMatch = m.hasMatch();
     if (hasMatch && match)
-        *match = m;
+        *match = qMove(m);
     return hasMatch;
 }
 
