@@ -305,6 +305,10 @@ headers
         margin-left: 0px;
         margin-right: 0px;
     }
+    .subtitle, .small-subtitle {
+        display: block;
+        clear: left;
+    }
 }
 
 h1 {
