@@ -1846,14 +1846,44 @@ void QCommonListViewBase::updateHorizontalScrollBar(const QSize &step)
 {
     horizontalScrollBar()->setSingleStep(step.width() + spacing());
     horizontalScrollBar()->setPageStep(viewport()->width());
-    horizontalScrollBar()->setRange(0, contentsSize.width() - viewport()->width());
+
+    // If both scroll bars are set to auto, we might end up in a situation with enough space
+    // for the actual content. But still one of the scroll bars will become enabled due to
+    // the other one using the space. The other one will become invisible in the same cycle.
+    // -> Infinite loop, QTBUG-39902
+    const bool bothScrollBarsAuto = qq->verticalScrollBarPolicy() == Qt::ScrollBarAsNeeded &&
+                                    qq->horizontalScrollBarPolicy() == Qt::ScrollBarAsNeeded;
+
+    if (bothScrollBarsAuto && contentsSize.width() - qq->verticalScrollBar()->width() <= viewport()->width()
+                           && contentsSize.height() - qq->horizontalScrollBar()->height() <= viewport()->height()) {
+        // break the infinite loop described above by setting the range to 0, 0.
+        // QAbstractScrollArea will then hide the scroll bar for us
+        horizontalScrollBar()->setRange(0, 0);
+    } else {
+        horizontalScrollBar()->setRange(0, contentsSize.width() - viewport()->width());
+    }
 }
 
 void QCommonListViewBase::updateVerticalScrollBar(const QSize &step)
 {
     verticalScrollBar()->setSingleStep(step.height() + spacing());
     verticalScrollBar()->setPageStep(viewport()->height());
-    verticalScrollBar()->setRange(0, contentsSize.height() - viewport()->height());
+
+    // If both scroll bars are set to auto, we might end up in a situation with enough space
+    // for the actual content. But still one of the scroll bars will become enabled due to
+    // the other one using the space. The other one will become invisible in the same cycle.
+    // -> Infinite loop, QTBUG-39902
+    const bool bothScrollBarsAuto = qq->verticalScrollBarPolicy() == Qt::ScrollBarAsNeeded &&
+                                    qq->horizontalScrollBarPolicy() == Qt::ScrollBarAsNeeded;
+
+    if (bothScrollBarsAuto && contentsSize.width() - qq->verticalScrollBar()->width() <= viewport()->width()
+                           && contentsSize.height() - qq->horizontalScrollBar()->height() <= viewport()->height()) {
+        // break the infinite loop described above by setting the range to 0, 0.
+        // QAbstractScrollArea will then hide the scroll bar for us
+        verticalScrollBar()->setRange(0, 0);
+    } else {
+        verticalScrollBar()->setRange(0, contentsSize.height() - viewport()->height());
+    }
 }
 
 void QCommonListViewBase::scrollContentsBy(int dx, int dy, bool /*scrollElasticBand*/)
