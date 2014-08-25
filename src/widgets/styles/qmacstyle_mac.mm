@@ -3811,6 +3811,9 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                     return;
                 }
             }
+
+            bool usingYosemiteOrLater = QSysInfo::MacintoshVersion > QSysInfo::MV_10_9;
+
             HIThemeTabDrawInfo tdi;
             tdi.version = 1;
             tdi.style = kThemeTabNonFront;
@@ -3851,10 +3854,13 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
             else
                 tdi.adornment = kHIThemeTabAdornmentNone;
             tdi.kind = kHIThemeTabKindNormal;
-            if (!verticalTabs)
-                tabRect.setY(tabRect.y() - 1);
-            else
-                tabRect.setX(tabRect.x() - 1);
+
+            if (!usingYosemiteOrLater) {
+                if (!verticalTabs)
+                    tabRect.setY(tabRect.y() - 1);
+                else
+                    tabRect.setX(tabRect.x() - 1);
+            }
             QStyleOptionTab::TabPosition tp = tabOpt->position;
             QStyleOptionTab::SelectedPosition sp = tabOpt->selectedPosition;
             if (tabOpt->direction == Qt::RightToLeft && !verticalTabs) {
@@ -3919,18 +3925,21 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
             ThemeTabDirection ttd = getTabDirection(myTab.shape);
             bool verticalTabs = ttd == kThemeTabWest || ttd == kThemeTabEast;
             bool selected = (myTab.state & QStyle::State_Selected);
-            bool usingModernOSX = QSysInfo::MacintoshVersion > QSysInfo::MV_10_6;
+            bool usingLionOrLater = QSysInfo::MacintoshVersion > QSysInfo::MV_10_6;
+            bool usingYosemiteOrLater = QSysInfo::MacintoshVersion > QSysInfo::MV_10_9;
 
-            if (usingModernOSX && selected && !myTab.documentMode)
-                myTab.palette.setColor(QPalette::WindowText, QColor(Qt::white));
+            if (usingLionOrLater && selected && !myTab.documentMode
+                && (!usingYosemiteOrLater || myTab.state & State_Active))
+                myTab.palette.setColor(QPalette::WindowText, Qt::white);
 
             // Check to see if we use have the same as the system font
             // (QComboMenuItem is internal and should never be seen by the
             // outside world, unless they read the source, in which case, it's
             // their own fault).
             bool nonDefaultFont = p->font() != qt_app_fonts_hash()->value("QComboMenuItem");
-            if ((usingModernOSX && selected) || verticalTabs || nonDefaultFont || !tab->icon.isNull()
-                || !myTab.leftButtonSize.isNull() || !myTab.rightButtonSize.isNull()) {
+            bool isSelectedAndNeedsShadow = selected && usingLionOrLater && !usingYosemiteOrLater;
+            if (isSelectedAndNeedsShadow || verticalTabs || nonDefaultFont || !tab->icon.isNull()
+                || !myTab.leftButtonSize.isEmpty() || !myTab.rightButtonSize.isEmpty()) {
                 int heightOffset = 0;
                 if (verticalTabs) {
                     heightOffset = -1;
@@ -3940,7 +3949,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                 }
                 myTab.rect.setHeight(myTab.rect.height() + heightOffset);
 
-                if (myTab.documentMode || (usingModernOSX && selected)) {
+                if (myTab.documentMode || isSelectedAndNeedsShadow) {
                     p->save();
                     rotateTabPainter(p, myTab.shape, myTab.rect);
 
