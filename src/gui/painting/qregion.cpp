@@ -240,7 +240,7 @@ QRegion::QRegion(int x, int y, int w, int h, RegionType t)
 
 void QRegion::detach()
 {
-    if (d->ref.load() != 1)
+    if (d->ref.isShared())
         *this = copy();
 }
 
@@ -1588,7 +1588,7 @@ void QRegionPrivate::selfTest() const
 #endif // QT_REGION_DEBUG
 
 static QRegionPrivate qrp;
-QRegion::QRegionData QRegion::shared_empty = {Q_BASIC_ATOMIC_INITIALIZER(1), &qrp};
+const QRegion::QRegionData QRegion::shared_empty = {Q_REFCOUNT_INITIALIZE_STATIC, &qrp};
 
 typedef void (*OverlapFunc)(QRegionPrivate &dest, const QRect *r1, const QRect *r1End,
                             const QRect *r2, const QRect *r2End, int y1, int y2);
@@ -3786,19 +3786,17 @@ QRegionPrivate *qt_bitmapToRegion(const QBitmap& bitmap)
 }
 
 QRegion::QRegion()
-    : d(&shared_empty)
+    : d(const_cast<QRegionData*>(&shared_empty))
 {
-    d->ref.ref();
 }
 
 QRegion::QRegion(const QRect &r, RegionType t)
 {
     if (r.isEmpty()) {
-        d = &shared_empty;
-        d->ref.ref();
+        d = const_cast<QRegionData*>(&shared_empty);
     } else {
         d = new QRegionData;
-        d->ref.store(1);
+        d->ref.initializeOwned();
         if (t == Rectangle) {
             d->qt_rgn = new QRegionPrivate(r);
         } else if (t == Ellipse) {
@@ -3817,15 +3815,13 @@ QRegion::QRegion(const QPolygon &a, Qt::FillRule fillRule)
                                                fillRule == Qt::WindingFill ? WindingRule : EvenOddRule);
         if (qt_rgn) {
             d =  new QRegionData;
-            d->ref.store(1);
+            d->ref.initializeOwned();
             d->qt_rgn = qt_rgn;
         } else {
-            d = &shared_empty;
-            d->ref.ref();
+            d = const_cast<QRegionData*>(&shared_empty);
         }
     } else {
-        d = &shared_empty;
-        d->ref.ref();
+        d = const_cast<QRegionData*>(&shared_empty);
     }
 }
 
@@ -3839,11 +3835,10 @@ QRegion::QRegion(const QRegion &r)
 QRegion::QRegion(const QBitmap &bm)
 {
     if (bm.isNull()) {
-        d = &shared_empty;
-        d->ref.ref();
+        d = const_cast<QRegionData*>(&shared_empty);
     } else {
         d = new QRegionData;
-        d->ref.store(1);
+        d->ref.initializeOwned();
         d->qt_rgn = qt_bitmapToRegion(bm);
     }
 }
@@ -3878,7 +3873,7 @@ QRegion QRegion::copy() const
 {
     QRegion r;
     QScopedPointer<QRegionData> x(new QRegionData);
-    x->ref.store(1);
+    x->ref.initializeOwned();
     if (d->qt_rgn)
         x->qt_rgn = new QRegionPrivate(*d->qt_rgn);
     else

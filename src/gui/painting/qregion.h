@@ -150,11 +150,11 @@ Q_GUI_EXPORT
     void exec(const QByteArray &ba, int ver = 0, QDataStream::ByteOrder byteOrder = QDataStream::BigEndian);
 #endif
     struct QRegionData {
-        QBasicAtomicInt ref;
+        QtPrivate::RefCount ref;
         QRegionPrivate *qt_rgn;
     };
     struct QRegionData *d;
-    static struct QRegionData shared_empty;
+    static const struct QRegionData shared_empty;
     static void cleanUp(QRegionData *x);
 };
 
