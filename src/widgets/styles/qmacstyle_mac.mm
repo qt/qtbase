@@ -1098,6 +1098,19 @@ static QAquaWidgetSize qt_aqua_guess_size(const QWidget *widg, QSize large, QSiz
 }
 #endif
 
+static void qt_drawFocusRingOnPath(CGContextRef cg, NSBezierPath *focusRingPath)
+{
+    CGContextSaveGState(cg);
+    [NSGraphicsContext setCurrentContext:[NSGraphicsContext
+         graphicsContextWithGraphicsPort:(CGContextRef)cg flipped:NO]];
+    [NSGraphicsContext saveGraphicsState];
+    NSSetFocusRingStyle(NSFocusRingOnly);
+    [focusRingPath setClip]; // Clear clip path to avoid artifacts when rendering the cursor at zero pos
+    [focusRingPath fill];
+    [NSGraphicsContext restoreGraphicsState];
+    CGContextRestoreGState(cg);
+}
+
 QAquaWidgetSize QMacStylePrivate::aquaSizeConstrain(const QStyleOption *option, const QWidget *widg,
                                        QStyle::ContentsType ct, QSize szHint, QSize *insz) const
 {
@@ -3573,6 +3586,10 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
             d->initHIThemePushButton(btn, w, tds, &bdi);
 
             if (yosemiteOrLater) {
+                // HITheme is not drawing a nice focus frame around buttons.
+                // We'll do it ourselves further down.
+                bdi.adornment &= ~kThemeAdornmentFocus;
+
                 // We can't rely on an animation existing to test for the default look. That means a bit
                 // more logic (notice that the logic is slightly different for the bevel and the label).
                 if (tds == kThemeStateActive
@@ -3624,6 +3641,37 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                 d->drawColorlessButton(newRect, &bdi, p, opt);
             else
                 HIThemeDrawButton(&newRect, &bdi, cg, kHIThemeOrientationNormal, 0);
+
+            if (yosemiteOrLater && btn->state & State_HasFocus) {
+                CGRect focusRect = newRect;
+                if (bdi.kind == kThemePushButton)
+                    focusRect.size.height += 1; // Another thing HITheme and Cocoa seem to disagree about.
+                else if (bdi.kind == kThemePushButtonMini)
+                    focusRect.size.height = 15; // Our QPushButton sizes are really weird
+
+                if (bdi.adornment & kThemeAdornmentDefault || bdi.state == kThemeStatePressed) {
+                    if (bdi.kind == kThemePushButtonSmall) {
+                        focusRect = CGRectInset(focusRect, -1, 0);
+                    } else if (bdi.kind == kThemePushButtonMini) {
+                        focusRect = CGRectInset(focusRect, 1, 0);
+                    }
+                } else {
+                    if (bdi.kind == kThemePushButton) {
+                        focusRect = CGRectInset(focusRect, 1, 1);
+                    } else if (bdi.kind == kThemePushButtonSmall) {
+                        focusRect = CGRectInset(focusRect, 0, 2);
+                    } else if (bdi.kind == kThemePushButtonMini) {
+                        focusRect = CGRectInset(focusRect, 2, 1);
+                    }
+                }
+
+                NSBezierPath *pushButtonFocusRingPath;
+                if (bdi.kind == kThemeBevelButton)
+                    pushButtonFocusRingPath = [NSBezierPath bezierPathWithRect:focusRect];
+                else
+                    pushButtonFocusRingPath = [NSBezierPath bezierPathWithRoundedRect:focusRect xRadius:4 yRadius:4];
+                qt_drawFocusRingOnPath(cg, pushButtonFocusRingPath);
+            }
 
             if (hasMenu) {
                 int mbi = proxy()->pixelMetric(QStyle::PM_MenuButtonIndicator, btn, w);
@@ -4089,16 +4137,8 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
         int yOff = proxy()->pixelMetric(PM_FocusFrameVMargin, opt, w);
         NSRect rect = NSMakeRect(xOff+opt->rect.x(), yOff+opt->rect.y(), opt->rect.width() - 2 * xOff,
                                  opt->rect.height() - 2 * yOff);
-        CGContextSaveGState(cg);
-        [NSGraphicsContext setCurrentContext:[NSGraphicsContext
-             graphicsContextWithGraphicsPort:(CGContextRef)cg flipped:NO]];
-        [NSGraphicsContext saveGraphicsState];
-        NSSetFocusRingStyle(NSFocusRingOnly);
         NSBezierPath *focusFramePath = [NSBezierPath bezierPathWithRect:rect];
-        [focusFramePath setClip]; // Clear clip path to avoid artifacts when rendering the cursor at zero pos
-        [focusFramePath fill];
-        [NSGraphicsContext restoreGraphicsState];
-        CGContextRestoreGState(cg);
+        qt_drawFocusRingOnPath(cg, focusFramePath);
         break; }
     case CE_MenuItem:
     case CE_MenuEmptyArea:
