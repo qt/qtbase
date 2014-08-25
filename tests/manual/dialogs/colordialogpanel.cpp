@@ -169,6 +169,8 @@ void ColorDialogPanel::execModal()
     QColorDialog dialog(this);
     applySettings(&dialog);
     connect(&dialog, SIGNAL(accepted()), this, SLOT(accepted()));
+    connect(&dialog, SIGNAL(rejected()), this, SLOT(rejected()));
+    connect(&dialog, SIGNAL(currentColorChanged(const QColor&)), this, SLOT(currentColorChanged(const QColor&)));
     dialog.setWindowTitle(tr("Modal Color Dialog Qt %1").arg(QLatin1String(QT_VERSION_STR)));
     dialog.exec();
 }
@@ -180,6 +182,8 @@ void ColorDialogPanel::showModal()
         m_modalDialog = new QColorDialog(this);
         m_modalDialog->setModal(true);
         connect(m_modalDialog.data(), SIGNAL(accepted()), this, SLOT(accepted()));
+        connect(m_modalDialog.data(), SIGNAL(rejected()), this, SLOT(rejected()));
+        connect(m_modalDialog.data(), SIGNAL(currentColorChanged(const QColor&)), this, SLOT(currentColorChanged(const QColor&)));
         m_modalDialog->setWindowTitle(tr("Modal Color Dialog #%1 Qt %2")
                                       .arg(++n)
                                       .arg(QLatin1String(QT_VERSION_STR)));
@@ -195,6 +199,8 @@ void ColorDialogPanel::showNonModal()
         static int  n = 0;
         m_nonModalDialog = new QColorDialog(this);
         connect(m_nonModalDialog.data(), SIGNAL(accepted()), this, SLOT(accepted()));
+        connect(m_nonModalDialog.data(), SIGNAL(rejected()), this, SLOT(rejected()));
+        connect(m_nonModalDialog.data(), SIGNAL(currentColorChanged(const QColor&)), this, SLOT(currentColorChanged(const QColor&)));
         m_nonModalDialog->setWindowTitle(tr("Non-Modal Color Dialog #%1 Qt %2")
                                          .arg(++n)
                                          .arg(QLatin1String(QT_VERSION_STR)));
@@ -223,10 +229,22 @@ void ColorDialogPanel::accepted()
     const QColorDialog *d = qobject_cast<const QColorDialog *>(sender());
     Q_ASSERT(d);
     m_result.clear();
+    qDebug() << "Current color: " << d->currentColor()
+             << "Selected color: " << d->selectedColor();
     QDebug(&m_result).nospace()
         << "Current color: " << d->currentColor()
         << "\nSelected color: " << d->selectedColor();
     QTimer::singleShot(0, this, SLOT(showAcceptedResult())); // Avoid problems with the closing (modal) dialog as parent.
+}
+
+void ColorDialogPanel::rejected()
+{
+    qDebug() << "rejected";
+}
+
+void ColorDialogPanel::currentColorChanged(const QColor &color)
+{
+    qDebug() << color;
 }
 
 void ColorDialogPanel::showAcceptedResult()
