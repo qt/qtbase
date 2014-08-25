@@ -187,8 +187,11 @@ public:
         inline Glyph *getGlyph(glyph_t index, QFixed subPixelPosition = 0) const;
         void setGlyph(glyph_t index, QFixed spp, Glyph *glyph);
 
+        inline bool isGlyphMissing(glyph_t index) const { return missing_glyphs.contains(index); }
+        inline void setGlyphMissing(glyph_t index) const { missing_glyphs.insert(index); }
 private:
         mutable QHash<GlyphAndSubPixelPosition, Glyph *> glyph_data; // maps from glyph index to glyph data
+        mutable QSet<glyph_t> missing_glyphs;
         mutable Glyph *fast_glyph_data[256]; // for fast lookup of glyphs < 256
         mutable int fast_glyph_count;
     };
