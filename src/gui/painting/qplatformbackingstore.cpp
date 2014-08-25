@@ -62,6 +62,7 @@ public:
     QPlatformBackingStorePrivate(QWindow *w)
         : window(w)
 #ifndef QT_NO_OPENGL
+        , textureId(0)
         , blitter(0)
 #endif
     {
