@@ -183,8 +183,8 @@ QAbstractEventDispatcher *QAbstractEventDispatcher::instance(QThread *thread)
     otherwise returns \c false.
 
     This function is especially useful if you have a long running
-    operation and want to show its progress without allowing user
-    input; i.e. by using the QEventLoop::ExcludeUserInputEvents flag.
+    operation, and want to show its progress without allowing user
+    input by using the QEventLoop::ExcludeUserInputEvents flag.
 
     If the QEventLoop::WaitForMoreEvents flag is set in \a flags, the
     behavior of this function is as follows:
@@ -317,7 +317,7 @@ int QAbstractEventDispatcher::registerTimer(int interval, Qt::TimerType timerTyp
 /*!
     \fn void QAbstractEventDispatcher::interrupt()
 
-    Interrupts event dispatching; i.e. the event dispatcher will
+    Interrupts event dispatching.  The event dispatcher will
     return from processEvents() as soon as possible.
 */
 
@@ -379,11 +379,11 @@ void QAbstractEventDispatcher::closingDown()
     Installs an event filter \a filterObj for all native event filters
     received by the application.
 
-    The event filter \a filterObj receives events via its nativeEventFilter()
+    The event filter \a filterObj receives events via its \l {QAbstractNativeEventFilter::}{nativeEventFilter()}
     function, which is called for all events received by all threads.
 
-    The nativeEventFilter() function should return true if the event should
-    be filtered, (i.e. stopped). It should return false to allow
+    The  \l {QAbstractNativeEventFilter::}{nativeEventFilter()} function should return true
+    if the event should be filtered, (in this case, stopped). It should return false to allow
     normal Qt processing to continue: the native event can then be translated
     into a QEvent and handled by the standard Qt \l{QEvent} {event} filtering,
     e.g. QObject::installEventFilter().
@@ -392,7 +392,7 @@ void QAbstractEventDispatcher::closingDown()
     is activated first.
 
     \note The filter function set here receives native messages,
-    i.e. MSG or XEvent structs.
+    that is, MSG or XEvent structs.
 
     For maximum portability, you should always try to use QEvents
     and QObject::installEventFilter() whenever possible.
@@ -418,8 +418,8 @@ void QAbstractEventDispatcher::installNativeEventFilter(QAbstractNativeEventFilt
     All event filters for this object are automatically removed when
     this object is destroyed.
 
-    It is always safe to remove an event filter, even during event
-    filter activation (i.e. from the nativeEventFilter() function).
+    It is always safe to remove an event filter, even during event filter
+    filter activation (that is, even from within the \l {QAbstractNativeEventFilter::}{nativeEventFilter()} function).
 
     \sa installNativeEventFilter(), QAbstractNativeEventFilter
     \since 5.0

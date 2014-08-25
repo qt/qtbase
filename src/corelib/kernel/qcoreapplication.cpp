@@ -956,8 +956,8 @@ bool QCoreApplication::notifyInternal(QObject *receiver, QEvent *event)
   reimplementing this virtual function is just one of them. All five
   approaches are listed below:
   \list 1
-  \li Reimplementing paintEvent(), mousePressEvent() and so
-  on. This is the commonest, easiest and least powerful way.
+  \li Reimplementing \l {QWidget::}{paintEvent()}, \l {QWidget::}{mousePressEvent()} and so
+  on. This is the commonest, easiest, and least powerful way.
 
   \li Reimplementing this function. This is very powerful, providing
   complete control; but only one subclass can be active at a time.
@@ -1154,7 +1154,7 @@ void QCoreApplication::processEvents(QEventLoop::ProcessEventsFlags flags, int m
     main event loop receives events from the window system and
     dispatches these to the application widgets.
 
-    To make your application perform idle processing (i.e. executing a
+    To make your application perform idle processing (by executing a
     special function whenever there are no pending events), use a
     QTimer with 0 timeout. More advanced idle processing schemes can
     be achieved using processEvents().
@@ -1162,11 +1162,11 @@ void QCoreApplication::processEvents(QEventLoop::ProcessEventsFlags flags, int m
     We recommend that you connect clean-up code to the
     \l{QCoreApplication::}{aboutToQuit()} signal, instead of putting it in
     your application's \c{main()} function because on some platforms the
-    QCoreApplication::exec() call may not return. For example, on Windows
+    exec() call may not return. For example, on Windows
     when the user logs off, the system terminates the process after Qt
     closes all top-level windows. Hence, there is no guarantee that the
     application will have time to exit its event loop and execute code at
-    the end of the \c{main()} function after the QCoreApplication::exec()
+    the end of the \c{main()} function after the exec()
     call.
 
     \sa quit(), exit(), processEvents(), QApplication::exec()
@@ -2215,7 +2215,7 @@ QStringList QCoreApplication::arguments()
     using the empty constructor. This saves having to repeat this
     information each time a QSettings object is created.
 
-    On Mac, QSettings uses organizationDomain() as the organization
+    On Mac, QSettings uses \l {QCoreApplication::}{organizationDomain()} as the organization
     if it's not an empty string; otherwise it uses
     organizationName(). On all other platforms, QSettings uses
     organizationName() as the organization.
@@ -2518,10 +2518,10 @@ void QCoreApplication::removeLibraryPath(const QString &path)
     Installs an event filter \a filterObj for all native events
     received by the application in the main thread.
 
-    The event filter \a filterObj receives events via its nativeEventFilter()
+    The event filter \a filterObj receives events via its \l {QAbstractNativeEventFilter::}{nativeEventFilter()}
     function, which is called for all native events received in the main thread.
 
-    The nativeEventFilter() function should return true if the event should
+    The QAbstractNativeEventFilter::nativeEventFilter() function should return true if the event should
     be filtered, (i.e. stopped). It should return false to allow
     normal Qt processing to continue: the native event can then be translated
     into a QEvent and handled by the standard Qt \l{QEvent} {event} filtering,
@@ -2665,13 +2665,12 @@ void QCoreApplication::setEventDispatcher(QAbstractEventDispatcher *eventDispatc
 
     \snippet code/src_corelib_kernel_qcoreapplication.cpp 4
 
-    Note that for an application- or module-wide cleanup,
-    qAddPostRoutine() is often not suitable. For example, if the
-    program is split into dynamically loaded modules, the relevant
-    module may be unloaded long before the QCoreApplication destructor is
-    called. In such cases, if using qAddPostRoutine() is still desirable,
-    qRemovePostRoutine() can be used to prevent a routine from being
-    called by the QCoreApplication destructor. For example, if that
+    Note that for an application- or module-wide cleanup, qaddPostRoutine()
+    is often not suitable. For example, if the program is split into dynamically
+    loaded modules, the relevant module may be unloaded long before the
+    QCoreApplication destructor is called. In such cases, if using qaddPostRoutine()
+    is still desirable, qRemovePostRoutine() can be used to prevent a routine
+    from being called by the QCoreApplication destructor. For example, if that
     routine was called before the module was unloaded.
 
     For modules and libraries, using a reference-counted
