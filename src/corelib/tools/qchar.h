@@ -83,7 +83,9 @@ public:
 
 #ifndef QT_NO_CAST_FROM_ASCII
     QT_ASCII_CAST_WARN Q_DECL_CONSTEXPR explicit QChar(char c) : ucs(uchar(c)) { }
+#ifndef QT_RESTRICTED_CAST_FROM_ASCII
     QT_ASCII_CAST_WARN Q_DECL_CONSTEXPR explicit QChar(uchar c) : ucs(c) { }
+#endif
 #endif
     // Unicode information
 
