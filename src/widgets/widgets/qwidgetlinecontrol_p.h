@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QWidgetLineControl_P_H
-#define QWidgetLineControl_P_H
+#ifndef QWIDGETLINECONTROL_P_H
+#define QWIDGETLINECONTROL_P_H
 
 //
 //  W A R N I N G
@@ -555,4 +555,4 @@ QT_END_NAMESPACE
 
 #endif // QT_NO_LINEEDIT
 
-#endif // QWidgetLineControl_P_H
+#endif // QWIDGETLINECONTROL_P_H
