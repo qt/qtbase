@@ -1599,11 +1599,19 @@ QDataStream &operator<<(QDataStream &s, const QKeySequence &keysequence)
 */
 QDataStream &operator>>(QDataStream &s, QKeySequence &keysequence)
 {
+    const quint32 MaxKeys = QKeySequencePrivate::MaxKeyCount;
+    quint32 c;
+    s >> c;
+    quint32 keys[MaxKeys] = {0};
+    for (uint i = 0; i < qMin(c, MaxKeys); ++i) {
+        if (s.atEnd()) {
+            qWarning("Premature EOF while reading QKeySequence");
+            return s;
+        }
+        s >> keys[i];
+    }
     qAtomicDetach(keysequence.d);
-    QList<quint32> list;
-    s >> list;
-    for (int i = 0; i < 4; ++i)
-        keysequence.d->key[i] = list.value(i);
+    std::copy(keys, keys + MaxKeys, keysequence.d->key);
     return s;
 }
 
