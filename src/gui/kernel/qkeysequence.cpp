@@ -1577,15 +1577,14 @@ QString QKeySequence::listToString(const QList<QKeySequence> &list, SequenceForm
 */
 QDataStream &operator<<(QDataStream &s, const QKeySequence &keysequence)
 {
-    QList<quint32> list;
-    list << keysequence.d->key[0];
-
-    if (s.version() >= 5 && keysequence.count() > 1) {
-        list << keysequence.d->key[1];
-        list << keysequence.d->key[2];
-        list << keysequence.d->key[3];
+    Q_STATIC_ASSERT_X(QKeySequencePrivate::MaxKeyCount == 4, "Forgot to adapt QDataStream &operator<<(QDataStream &s, const QKeySequence &keysequence) to new QKeySequence::MaxKeyCount");
+    const bool extended = s.version() >= 5 && keysequence.count() > 1;
+    s << quint32(extended ? 4 : 1) << quint32(keysequence.d->key[0]);
+    if (extended) {
+        s << quint32(keysequence.d->key[1])
+          << quint32(keysequence.d->key[2])
+          << quint32(keysequence.d->key[3]);
     }
-    s << list;
     return s;
 }
 
