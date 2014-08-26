@@ -1101,7 +1101,7 @@ int QKeySequencePrivate::decodeString(const QString &str, QKeySequence::Sequence
     int i = 0;
     int lastI = 0;
     while ((i = sl.indexOf(QLatin1Char('+'), i + 1)) != -1) {
-        const QString sub = sl.mid(lastI, i - lastI + 1);
+        const QStringRef sub = sl.midRef(lastI, i - lastI + 1);
         // If we get here the shortcuts contains at least one '+'. We break up
         // along the following strategy:
         //      Meta+Ctrl++   ( "Meta+", "Ctrl+", "+" )
