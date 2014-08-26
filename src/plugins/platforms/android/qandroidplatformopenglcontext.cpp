@@ -64,7 +64,7 @@ void QAndroidPlatformOpenGLContext::swapBuffers(QPlatformSurface *surface)
         static_cast<QAndroidPlatformOpenGLWindow *>(surface)->checkNativeSurface(eglConfig());
 }
 
-bool QAndroidPlatformOpenGLContext::needsFBOReadBackWorkaroud()
+bool QAndroidPlatformOpenGLContext::needsFBOReadBackWorkaround()
 {
     static bool set = false;
     static bool needsWorkaround = false;
@@ -74,7 +74,12 @@ bool QAndroidPlatformOpenGLContext::needsFBOReadBackWorkaroud()
         needsWorkaround =
                 qstrncmp(rendererString, "Mali-4xx", 6) == 0 // Mali-400, Mali-450
                 || qstrncmp(rendererString, "Adreno (TM) 2xx", 13) == 0 // Adreno 200, 203, 205
-                || qstrcmp(rendererString, "GC1000 core") == 0;
+                || qstrncmp(rendererString, "Adreno 2xx", 8) == 0 // Same as above but without the '(TM)'
+                || qstrncmp(rendererString, "Adreno (TM) 30x", 14) == 0 // Adreno 302, 305
+                || qstrncmp(rendererString, "Adreno 30x", 9) == 0 // Same as above but without the '(TM)'
+                || qstrcmp(rendererString, "GC800 core") == 0
+                || qstrcmp(rendererString, "GC1000 core") == 0
+                || qstrcmp(rendererString, "Immersion.16") == 0;
         set = true;
     }
 
@@ -90,7 +95,7 @@ bool QAndroidPlatformOpenGLContext::makeCurrent(QPlatformSurface *surface)
     if (rendererString != 0 && qstrncmp(rendererString, "Android Emulator", 16) == 0)
         ctx_d->workaround_missingPrecisionQualifiers = true;
 
-    if (!ctx_d->workaround_brokenFBOReadBack && needsFBOReadBackWorkaroud())
+    if (!ctx_d->workaround_brokenFBOReadBack && needsFBOReadBackWorkaround())
         ctx_d->workaround_brokenFBOReadBack = true;
 
     return ret;
