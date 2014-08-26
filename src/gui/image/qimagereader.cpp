@@ -77,14 +77,15 @@
     Call supportedImageFormats() for a list of formats that
     QImageReader can read. QImageReader supports all built-in image
     formats, in addition to any image format plugins that support
-    reading.
+    reading. Call supportedMimeTypes() to obtain a list of supported MIME
+    types, which for example can be passed to QFileDialog::setMimeTypeFilters().
 
     QImageReader autodetects the image format by default, by looking at the
     provided (optional) format string, the file name suffix, and the data
     stream contents. You can enable or disable this feature, by calling
     setAutoDetectImageFormat().
 
-    \sa QImageWriter, QImageIOHandler, QImageIOPlugin
+    \sa QImageWriter, QImageIOHandler, QImageIOPlugin, QMimeDatabase
 */
 
 /*!
