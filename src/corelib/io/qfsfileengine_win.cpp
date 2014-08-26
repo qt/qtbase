@@ -369,15 +369,15 @@ qint64 QFSFileEnginePrivate::nativeRead(char *data, qint64 maxlen)
     if (fileHandle == INVALID_HANDLE_VALUE)
         return -1;
 
-    DWORD bytesToRead = DWORD(maxlen); // <- lossy
+    qint64 bytesToRead = maxlen;
 
     // Reading on Windows fails with ERROR_NO_SYSTEM_RESOURCES when
     // the chunks are too large, so we limit the block size to 32MB.
-    static const DWORD maxBlockSize = 32 * 1024 * 1024;
+    static const qint64 maxBlockSize = 32 * 1024 * 1024;
 
     qint64 totalRead = 0;
     do {
-        DWORD blockSize = qMin<DWORD>(bytesToRead, maxBlockSize);
+        DWORD blockSize = DWORD(qMin(bytesToRead, maxBlockSize));
         DWORD bytesRead;
         if (!ReadFile(fileHandle, data + totalRead, blockSize, &bytesRead, NULL)) {
             if (totalRead == 0) {
@@ -392,7 +392,7 @@ qint64 QFSFileEnginePrivate::nativeRead(char *data, qint64 maxlen)
         totalRead += bytesRead;
         bytesToRead -= bytesRead;
     } while (totalRead < maxlen);
-    return qint64(totalRead);
+    return totalRead;
 }
 
 /*
