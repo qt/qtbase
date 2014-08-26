@@ -74,6 +74,8 @@
     that occurred, or errorString() to get a human readable
     description of what went wrong.
 
+    \section1 Formats
+
     Call supportedImageFormats() for a list of formats that
     QImageReader can read. QImageReader supports all built-in image
     formats, in addition to any image format plugins that support
@@ -85,7 +87,19 @@
     stream contents. You can enable or disable this feature, by calling
     setAutoDetectImageFormat().
 
+    \section1 High Resolution Versions of Images
+
+    It is possible to provide high resolution versions of images should a scaling
+    between \e{device pixels} and \e{device independent pixels} be in effect.
+
+    The high resolution version is marked by the suffix \c @2x on the base name.
+    The image read will have its \e{device pixel ratio} set to a value of 2.
+
+    This can be disabled by setting the environment variable
+    \c QT_HIGHDPI_DISABLE_2X_IMAGE_LOADING.
+
     \sa QImageWriter, QImageIOHandler, QImageIOPlugin, QMimeDatabase
+    \sa QImage::devicePixelRatio(), QPixmap::devicePixelRatio(), QIcon, QPainter::drawPixmap(), QPainter::drawImage(), Qt::AA_UseHighDpiPixmaps
 */
 
 /*!

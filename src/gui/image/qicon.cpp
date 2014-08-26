@@ -989,10 +989,16 @@ void QIcon::addPixmap(const QPixmap &pixmap, Mode mode, State state)
     QImageWriter::supportedImageFormats() functions to retrieve a
     complete list of the supported file formats.
 
-    Note: When you add a non-empty filename to a QIcon, the icon becomes
+    If a high resolution version of the image exists (identified by
+    the suffix \c @2x on the base name), it is automatically loaded
+    and added with the \e{device pixel ratio} set to a value of 2.
+    This can be disabled by setting the environment variable
+    \c QT_HIGHDPI_DISABLE_2X_IMAGE_LOADING (see QImageReader).
+
+    \note When you add a non-empty filename to a QIcon, the icon becomes
     non-null, even if the file doesn't exist or points to a corrupt file.
 
-    \sa addPixmap()
+    \sa addPixmap(), QPixmap::devicePixelRatio()
  */
 void QIcon::addFile(const QString &fileName, const QSize &size, Mode mode, State state)
 {

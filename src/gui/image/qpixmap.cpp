@@ -648,14 +648,14 @@ void QPixmap::setMask(const QBitmap &mask)
 
 /*!
     Returns the device pixel ratio for the pixmap. This is the
-    ratio between pixmap pixels and device-independent pixels.
+    ratio between \e{device pixels} and \e{device independent pixels}.
 
     Use this function when calculating layout geometry based on
     the pixmap size: QSize layoutSize = image.size() / image.devicePixelRatio()
 
     The default value is 1.0.
 
-    \sa setDevicePixelRatio()
+    \sa setDevicePixelRatio(), QImageReader
 */
 qreal QPixmap::devicePixelRatio() const
 {
@@ -680,7 +680,8 @@ qreal QPixmap::devicePixelRatio() const
     pixmap size will take the ratio into account:
     QSize layoutSize = pixmap.size() / pixmap.devicePixelRatio()
     The net effect of this is that the pixmap is displayed as
-    high-dpi pixmap rather than a large pixmap.
+    high-DPI pixmap rather than a large pixmap
+    (see \l{Drawing High Resolution Versions of Pixmaps and Images}).
 
         \sa devicePixelRatio()
 */
