@@ -379,6 +379,8 @@ private:
     }
 
 private:
+    inline bool op_eq_impl(const QList &other, QListData::NotArrayCompatibleLayout) const;
+    inline bool op_eq_impl(const QList &other, QListData::ArrayCompatibleLayout) const;
     inline bool contains_impl(const T &, QListData::NotArrayCompatibleLayout) const;
     inline bool contains_impl(const T &, QListData::ArrayCompatibleLayout) const;
     inline int count_impl(const T &, QListData::NotArrayCompatibleLayout) const;
@@ -796,6 +798,12 @@ Q_OUTOFLINE_TEMPLATE bool QList<T>::operator==(const QList<T> &l) const
         return true;
     if (p.size() != l.p.size())
         return false;
+    return this->op_eq_impl(l, MemoryLayout());
+}
+
+template <typename T>
+inline bool QList<T>::op_eq_impl(const QList &l, QListData::NotArrayCompatibleLayout) const
+{
     Node *i = reinterpret_cast<Node *>(p.begin());
     Node *e = reinterpret_cast<Node *>(p.end());
     Node *li = reinterpret_cast<Node *>(l.p.begin());
@@ -804,6 +812,15 @@ Q_OUTOFLINE_TEMPLATE bool QList<T>::operator==(const QList<T> &l) const
             return false;
     }
     return true;
+}
+
+template <typename T>
+inline bool QList<T>::op_eq_impl(const QList &l, QListData::ArrayCompatibleLayout) const
+{
+    const T *lb = reinterpret_cast<const T*>(l.p.begin());
+    const T *b  = reinterpret_cast<const T*>(p.begin());
+    const T *e  = reinterpret_cast<const T*>(p.end());
+    return std::equal(b, e, lb);
 }
 
 template <typename T>
