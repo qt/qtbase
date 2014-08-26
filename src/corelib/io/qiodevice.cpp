@@ -833,7 +833,7 @@ qint64 QIODevice::read(char *data, qint64 maxSize)
                 // In buffered mode, we try to fill up the QIODevice buffer before
                 // we do anything else.
                 // buffer is empty at this point, try to fill it
-                int bytesToBuffer = QIODEVICE_BUFFERSIZE;
+                const int bytesToBuffer = QIODEVICE_BUFFERSIZE;
                 char *writePointer = d->buffer.reserve(bytesToBuffer);
 
                 // Make sure the device is positioned correctly.
@@ -1013,6 +1013,8 @@ QByteArray QIODevice::readAll()
 
     // flush internal read buffer
     if (!(d->openMode & Text) && !d->buffer.isEmpty()) {
+        if (d->buffer.size() >= INT_MAX)
+            return QByteArray();
         result = d->buffer.readAll();
         readBytes = result.size();
         d->pos += readBytes;
@@ -1031,6 +1033,8 @@ QByteArray QIODevice::readAll()
     } else {
         // Read it all in one go.
         // If resize fails, don't read anything.
+        if (readBytes + theSize - d->pos > INT_MAX)
+            return QByteArray();
         result.resize(int(readBytes + theSize - d->pos));
         readBytes += read(result.data() + readBytes, result.size() - readBytes);
     }
