@@ -202,7 +202,6 @@ private:
     inline ABI::Windows::Networking::Sockets::IDatagramSocket *udpSocket() const
         { return reinterpret_cast<ABI::Windows::Networking::Sockets::IDatagramSocket *>(socketDescriptor); }
     Microsoft::WRL::ComPtr<ABI::Windows::Networking::Sockets::IStreamSocketListener> tcpListener;
-    Microsoft::WRL::ComPtr<ABI::Windows::Storage::Streams::IBuffer> readBuffer;
     Microsoft::WRL::ComPtr<ABI::Windows::Foundation::IAsyncAction> connectOp;
     QBuffer readBytes;
     QMutex readMutex;
@@ -219,7 +218,6 @@ private:
                                    ABI::Windows::Networking::Sockets::IStreamSocketListenerConnectionReceivedEventArgs *args);
     HRESULT handleConnectToHost(ABI::Windows::Foundation::IAsyncAction *, ABI::Windows::Foundation::AsyncStatus);
     HRESULT handleReadyRead(ABI::Windows::Foundation::IAsyncOperationWithProgress<ABI::Windows::Storage::Streams::IBuffer *, UINT32> *asyncInfo, ABI::Windows::Foundation::AsyncStatus);
-    HRESULT handleWriteCompleted(ABI::Windows::Foundation::IAsyncOperationWithProgress<UINT32, UINT32> *, ABI::Windows::Foundation::AsyncStatus);
 };
 
 QT_END_NAMESPACE

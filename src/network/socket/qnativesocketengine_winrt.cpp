@@ -130,6 +130,20 @@ struct SocketHandler
 
 Q_GLOBAL_STATIC(SocketHandler, gSocketHandler)
 
+struct SocketGlobal
+{
+    SocketGlobal()
+    {
+        HRESULT hr;
+        hr = GetActivationFactory(HString::MakeReference(RuntimeClass_Windows_Storage_Streams_Buffer).Get(),
+                                  &bufferFactory);
+        Q_ASSERT_SUCCEEDED(hr);
+    }
+
+    ComPtr<IBufferFactory> bufferFactory;
+};
+Q_GLOBAL_STATIC(SocketGlobal, g)
+
 static inline QString qt_QStringFromHString(const HString &string)
 {
     UINT32 length;
@@ -137,60 +151,7 @@ static inline QString qt_QStringFromHString(const HString &string)
     return QString::fromWCharArray(rawString, length);
 }
 
-#define READ_BUFFER_SIZE 8192
-
-class ByteArrayBuffer : public Microsoft::WRL::RuntimeClass<RuntimeClassFlags<WinRtClassicComMix>,
-        IBuffer, Windows::Storage::Streams::IBufferByteAccess>
-{
-public:
-    ByteArrayBuffer(int size) : m_bytes(size, Qt::Uninitialized), m_length(0)
-    {
-    }
-
-    ByteArrayBuffer(const char *data, int size) : m_bytes(data, size), m_length(size)
-    {
-    }
-
-    HRESULT __stdcall Buffer(byte **value)
-    {
-        *value = reinterpret_cast<byte *>(m_bytes.data());
-        return S_OK;
-    }
-
-    HRESULT __stdcall get_Capacity(UINT32 *value)
-    {
-        *value = m_bytes.size();
-        return S_OK;
-    }
-
-    HRESULT __stdcall get_Length(UINT32 *value)
-    {
-        *value = m_length;
-        return S_OK;
-    }
-
-    HRESULT __stdcall put_Length(UINT32 value)
-    {
-        Q_ASSERT(value <= UINT32(m_bytes.size()));
-        m_length = value;
-        return S_OK;
-    }
-
-    ComPtr<IInputStream> inputStream() const
-    {
-        return m_stream;
-    }
-
-    void setInputStream(const ComPtr<IInputStream> &stream)
-    {
-        m_stream = stream;
-    }
-
-private:
-    QByteArray m_bytes;
-    UINT32 m_length;
-    ComPtr<IInputStream> m_stream;
-};
+#define READ_BUFFER_SIZE 65536
 
 template <typename T>
 static AsyncStatus opStatus(const ComPtr<T> &op)
@@ -414,13 +375,16 @@ int QNativeSocketEngine::accept()
     if (d->socketType == QAbstractSocket::TcpSocket) {
         IStreamSocket *socket = d->pendingConnections.takeFirst();
 
-        IInputStream *stream;
-        socket->get_InputStream(&stream);
-        // TODO: delete buffer and stream on socket close
-        ByteArrayBuffer *buffer = static_cast<ByteArrayBuffer *>(d->readBuffer.Get());
-        buffer->setInputStream(stream);
+        HRESULT hr;
+        ComPtr<IBuffer> buffer;
+        hr = g->bufferFactory->Create(READ_BUFFER_SIZE, &buffer);
+        Q_ASSERT_SUCCEEDED(hr);
+
+        ComPtr<IInputStream> stream;
+        hr = socket->get_InputStream(&stream);
+        Q_ASSERT_SUCCEEDED(hr);
         ComPtr<IAsyncBufferOperation> op;
-        HRESULT hr = stream->ReadAsync(buffer, READ_BUFFER_SIZE, InputStreamOptions_Partial, &op);
+        hr = stream->ReadAsync(buffer.Get(), READ_BUFFER_SIZE, InputStreamOptions_Partial, &op);
         if (FAILED(hr)) {
             qErrnoWarning(hr, "Faild to read from the socket buffer.");
             return -1;
@@ -543,31 +507,26 @@ qint64 QNativeSocketEngine::write(const char *data, qint64 len)
         return -1;
     }
 
-    ComPtr<ByteArrayBuffer> buffer = Make<ByteArrayBuffer>(data, len);
+    ComPtr<IBuffer> buffer;
+    hr = g->bufferFactory->Create(len, &buffer);
+    Q_ASSERT_SUCCEEDED(hr);
+    hr = buffer->put_Length(len);
+    Q_ASSERT_SUCCEEDED(hr);
+    ComPtr<Windows::Storage::Streams::IBufferByteAccess> byteArrayAccess;
+    hr = buffer.As(&byteArrayAccess);
+    Q_ASSERT_SUCCEEDED(hr);
+    byte *bytes;
+    hr = byteArrayAccess->Buffer(&bytes);
+    Q_ASSERT_SUCCEEDED(hr);
+    memcpy(bytes, data, len);
     ComPtr<IAsyncOperationWithProgress<UINT32, UINT32>> op;
     hr = stream->WriteAsync(buffer.Get(), &op);
-    if (FAILED(hr)) {
-        qErrnoWarning(hr, "Failed to write to socket.");
-        return -1;
-    }
-    hr = op->put_Completed(Callback<IAsyncOperationWithProgressCompletedHandler<UINT32, UINT32>>(
-                               d, &QNativeSocketEnginePrivate::handleWriteCompleted).Get());
-    if (FAILED(hr)) {
-        qErrnoWarning(hr, "Failed to set socket write callback.");
-        return -1;
-    }
-
-    while (opStatus(op) == Started)
-        d->eventLoop.processEvents();
-
-    AsyncStatus status = opStatus(op);
-    if (status == Error || status == Canceled)
-        return -1;
+    RETURN_IF_FAILED("Failed to write to stream", return -1);
 
     UINT32 bytesWritten;
-    hr = op->GetResults(&bytesWritten);
+    hr = QWinRTFunctions::await(op, &bytesWritten);
     if (FAILED(hr)) {
-        qErrnoWarning(hr, "Failed to get written socket length.");
+        d->setError(QAbstractSocket::SocketAccessError, QNativeSocketEnginePrivate::AccessErrorString);
         return -1;
     }
 
@@ -816,10 +775,13 @@ void QNativeSocketEngine::establishRead()
     ComPtr<IInputStream> stream;
     hr = d->tcpSocket()->get_InputStream(&stream);
     RETURN_VOID_IF_FAILED("Failed to get socket input stream");
-    ByteArrayBuffer *buffer = static_cast<ByteArrayBuffer *>(d->readBuffer.Get());
-    buffer->setInputStream(stream);
+
+    ComPtr<IBuffer> buffer;
+    hr = g->bufferFactory->Create(READ_BUFFER_SIZE, &buffer);
+    Q_ASSERT_SUCCEEDED(hr);
+
     ComPtr<IAsyncBufferOperation> op;
-    hr = stream->ReadAsync(buffer, READ_BUFFER_SIZE, InputStreamOptions_Partial, &op);
+    hr = stream->ReadAsync(buffer.Get(), READ_BUFFER_SIZE, InputStreamOptions_Partial, &op);
     RETURN_VOID_IF_FAILED("Failed to initiate socket read");
     hr = op->put_Completed(Callback<SocketReadCompletedHandler>(d, &QNativeSocketEnginePrivate::handleReadyRead).Get());
     Q_ASSERT_SUCCEEDED(hr);
@@ -866,8 +828,6 @@ QNativeSocketEnginePrivate::QNativeSocketEnginePrivate()
     , closingDown(false)
     , socketDescriptor(-1)
 {
-    ComPtr<ByteArrayBuffer> buffer = Make<ByteArrayBuffer>(READ_BUFFER_SIZE);
-    readBuffer = buffer;
 }
 
 QNativeSocketEnginePrivate::~QNativeSocketEnginePrivate()
@@ -1222,22 +1182,25 @@ HRESULT QNativeSocketEnginePrivate::handleReadyRead(IAsyncBufferOperation *async
     if (status == Error || status == Canceled)
         return S_OK;
 
-    ByteArrayBuffer *buffer = 0;
-    HRESULT hr = asyncInfo->GetResults((IBuffer **)&buffer);
-    if (FAILED(hr)) {
-        qErrnoWarning(hr, "Failed to get ready read results.");
-        return S_OK;
-    }
-    UINT32 len;
-    buffer->get_Length(&len);
-    if (!len) {
+    ComPtr<IBuffer> buffer;
+    HRESULT hr = asyncInfo->GetResults(&buffer);
+    RETURN_OK_IF_FAILED("Failed to get read results buffer");
+
+    UINT32 bufferLength;
+    hr = buffer->get_Length(&bufferLength);
+    Q_ASSERT_SUCCEEDED(hr);
+    if (!bufferLength) {
         if (q->isReadNotificationEnabled())
             emit q->readReady();
         return S_OK;
     }
 
+    ComPtr<Windows::Storage::Streams::IBufferByteAccess> byteArrayAccess;
+    hr = buffer.As(&byteArrayAccess);
+    Q_ASSERT_SUCCEEDED(hr);
     byte *data;
-    buffer->Buffer(&data);
+    hr = byteArrayAccess->Buffer(&data);
+    Q_ASSERT_SUCCEEDED(hr);
 
     readMutex.lock();
     if (readBytes.atEnd()) // Everything has been read; the buffer is safe to reset
@@ -1247,15 +1210,25 @@ HRESULT QNativeSocketEnginePrivate::handleReadyRead(IAsyncBufferOperation *async
     qint64 readPos = readBytes.pos();
     readBytes.seek(readBytes.size());
     Q_ASSERT(readBytes.atEnd());
-    readBytes.write(reinterpret_cast<const char*>(data), qint64(len));
+    readBytes.write(reinterpret_cast<const char*>(data), qint64(bufferLength));
     readBytes.seek(readPos);
     readMutex.unlock();
 
     if (q->isReadNotificationEnabled())
         emit q->readReady();
 
+    ComPtr<IInputStream> stream;
+    hr = tcpSocket()->get_InputStream(&stream);
+    Q_ASSERT_SUCCEEDED(hr);
+
+    // Reuse the stream buffer
+    hr = buffer->get_Capacity(&bufferLength);
+    Q_ASSERT_SUCCEEDED(hr);
+    hr = buffer->put_Length(0);
+    Q_ASSERT_SUCCEEDED(hr);
+
     ComPtr<IAsyncBufferOperation> op;
-    hr = buffer->inputStream()->ReadAsync(buffer, READ_BUFFER_SIZE, InputStreamOptions_Partial, &op);
+    hr = stream->ReadAsync(buffer.Get(), bufferLength, InputStreamOptions_Partial, &op);
     if (FAILED(hr)) {
         qErrnoWarning(hr, "Could not read into socket stream buffer.");
         return S_OK;
@@ -1265,28 +1238,6 @@ HRESULT QNativeSocketEnginePrivate::handleReadyRead(IAsyncBufferOperation *async
         qErrnoWarning(hr, "Failed to set socket read callback.");
         return S_OK;
     }
-    return S_OK;
-}
-
-HRESULT QNativeSocketEnginePrivate::handleWriteCompleted(IAsyncOperationWithProgress<UINT32, UINT32> *op, AsyncStatus status)
-{
-    if (status == Error) {
-        ComPtr<IAsyncInfo> info;
-        HRESULT hr = op->QueryInterface(IID_PPV_ARGS(&info));
-        if (FAILED(hr)) {
-            qErrnoWarning(hr, "Failed to cast operation.");
-            return S_OK;
-        }
-        HRESULT errorCode;
-        hr = info->get_ErrorCode(&errorCode);
-        if (FAILED(hr)) {
-            qErrnoWarning(hr, "Failed to get error code.");
-            return S_OK;
-        }
-        qErrnoWarning(errorCode, "A socket error occurred.");
-        return S_OK;
-    }
-
     return S_OK;
 }
 
