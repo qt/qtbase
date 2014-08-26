@@ -711,10 +711,10 @@ typename QVector<T>::iterator QVector<T>::erase(iterator abegin, iterator aend)
 template <typename T>
 bool QVector<T>::operator==(const QVector<T> &v) const
 {
-    if (d->size != v.d->size)
-        return false;
     if (d == v.d)
         return true;
+    if (d->size != v.d->size)
+        return false;
     T* b = d->begin();
     T* i = b + d->size;
     T* j = v.d->end();
