@@ -150,6 +150,11 @@ bool QOpenGLVertexArrayObjectPrivate::create()
         qWarning("QOpenGLVertexArrayObject::create() requires a valid current OpenGL context");
         return false;
     }
+
+    //Fail early, if context is the same as ctx, it means we have tried to initialize for this context and failed
+    if (ctx == context)
+        return false;
+
     context = ctx;
     QObject::connect(context, SIGNAL(aboutToBeDestroyed()), q, SLOT(_q_contextAboutToBeDestroyed()));
 
