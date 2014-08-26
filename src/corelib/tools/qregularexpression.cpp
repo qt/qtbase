@@ -1722,6 +1722,32 @@ QRegularExpressionMatch QRegularExpression::match(const QString &subject,
 }
 
 /*!
+    \since 5.5
+    \overload
+
+    Attempts to match the regular expression against the given \a subjectRef
+    string reference, starting at the position \a offset inside the subject, using a
+    match of type \a matchType and honoring the given \a matchOptions.
+
+    The returned QRegularExpressionMatch object contains the results of the
+    match.
+
+    \sa QRegularExpressionMatch, {normal matching}
+*/
+QRegularExpressionMatch QRegularExpression::match(const QStringRef &subjectRef,
+                                                  int offset,
+                                                  MatchType matchType,
+                                                  MatchOptions matchOptions) const
+{
+    d.data()->compilePattern();
+
+    const QString subject = subjectRef.string() ? *subjectRef.string() : QString();
+
+    QRegularExpressionMatchPrivate *priv = d->doMatch(subject, subjectRef.position(), subjectRef.length(), offset, matchType, matchOptions);
+    return QRegularExpressionMatch(*priv);
+}
+
+/*!
     Attempts to perform a global match of the regular expression against the
     given \a subject string, starting at the position \a offset inside the
     subject, using a match of type \a matchType and honoring the given \a
@@ -1742,6 +1768,34 @@ QRegularExpressionMatchIterator QRegularExpression::globalMatch(const QString &s
                                                        matchType,
                                                        matchOptions,
                                                        match(subject, offset, matchType, matchOptions));
+
+    return QRegularExpressionMatchIterator(*priv);
+}
+
+/*!
+    \since 5.5
+    \overload
+
+    Attempts to perform a global match of the regular expression against the
+    given \a subjectRef string reference, starting at the position \a offset inside the
+    subject, using a match of type \a matchType and honoring the given \a
+    matchOptions.
+
+    The returned QRegularExpressionMatchIterator is positioned before the
+    first match result (if any).
+
+    \sa QRegularExpressionMatchIterator, {global matching}
+*/
+QRegularExpressionMatchIterator QRegularExpression::globalMatch(const QStringRef &subjectRef,
+                                                                int offset,
+                                                                MatchType matchType,
+                                                                MatchOptions matchOptions) const
+{
+    QRegularExpressionMatchIteratorPrivate *priv =
+            new QRegularExpressionMatchIteratorPrivate(*this,
+                                                       matchType,
+                                                       matchOptions,
+                                                       match(subjectRef, offset, matchType, matchOptions));
 
     return QRegularExpressionMatchIterator(*priv);
 }

@@ -120,7 +120,17 @@ public:
                                   MatchType matchType       = NormalMatch,
                                   MatchOptions matchOptions = NoMatchOption) const;
 
+    QRegularExpressionMatch match(const QStringRef &subjectRef,
+                                  int offset                = 0,
+                                  MatchType matchType       = NormalMatch,
+                                  MatchOptions matchOptions = NoMatchOption) const;
+
     QRegularExpressionMatchIterator globalMatch(const QString &subject,
+                                                int offset                = 0,
+                                                MatchType matchType       = NormalMatch,
+                                                MatchOptions matchOptions = NoMatchOption) const;
+
+    QRegularExpressionMatchIterator globalMatch(const QStringRef &subjectRef,
                                                 int offset                = 0,
                                                 MatchType matchType       = NormalMatch,
                                                 MatchOptions matchOptions = NoMatchOption) const;

@@ -257,18 +257,15 @@ static void prepareResultForNoMatchType(Match *m, const Match &orig)
     m->isValid = orig.isValid;
 }
 
-template<typename QREMatch, typename QREMatchFunc, typename Result>
-static void testMatch(const QRegularExpression &regexp,
-                      QREMatchFunc matchingMethod,
-                      const QString &subject,
-                      int offset,
-                      QRegularExpression::MatchType matchType,
-                      QRegularExpression::MatchOptions matchOptions,
-                      const Result &result)
+template<typename QREMatch, typename QREMatchFunc, typename Subject, typename Result>
+static void testMatchImpl(const QRegularExpression &regexp,
+                          QREMatchFunc matchingMethod,
+                          const Subject &subject,
+                          int offset,
+                          QRegularExpression::MatchType matchType,
+                          QRegularExpression::MatchOptions matchOptions,
+                          const Result &result)
 {
-    if (forceOptimize)
-        regexp.optimize();
-
     {
         const QREMatch m = (regexp.*matchingMethod)(subject, offset, matchType, matchOptions);
         consistencyCheck(m);
@@ -293,6 +290,36 @@ static void testMatch(const QRegularExpression &regexp,
     }
 }
 
+template<typename QREMatch, typename QREMatchFuncForString, typename QREMatchFuncForStringRef, typename Result>
+static void testMatch(const QRegularExpression &regexp,
+                      QREMatchFuncForString matchingMethodForString,
+                      QREMatchFuncForStringRef matchingMethodForStringRef,
+                      const QString &subject,
+                      int offset,
+                      QRegularExpression::MatchType matchType,
+                      QRegularExpression::MatchOptions matchOptions,
+                      const Result &result)
+{
+    if (forceOptimize)
+        regexp.optimize();
+
+    // test with QString as subject type
+    testMatchImpl<QREMatch>(regexp, matchingMethodForString, subject, offset, matchType, matchOptions, result);
+
+    // test with QStringRef as subject type
+    testMatchImpl<QREMatch>(regexp,
+                            matchingMethodForStringRef,
+                            QStringRef(&subject, 0, subject.length()),
+                            offset,
+                            matchType,
+                            matchOptions,
+                            result);
+}
+
+typedef QRegularExpressionMatch (QRegularExpression::*QREMatchStringPMF)(const QString &, int, QRegularExpression::MatchType, QRegularExpression::MatchOptions) const;
+typedef QRegularExpressionMatch (QRegularExpression::*QREMatchStringRefPMF)(const QStringRef &, int, QRegularExpression::MatchType, QRegularExpression::MatchOptions) const;
+typedef QRegularExpressionMatchIterator (QRegularExpression::*QREGlobalMatchStringPMF)(const QString &, int, QRegularExpression::MatchType, QRegularExpression::MatchOptions) const;
+typedef QRegularExpressionMatchIterator (QRegularExpression::*QREGlobalMatchStringRefPMF)(const QStringRef &, int, QRegularExpression::MatchType, QRegularExpression::MatchOptions) const;
 
 void tst_QRegularExpression::provideRegularExpressions()
 {
@@ -785,7 +812,14 @@ void tst_QRegularExpression::normalMatch()
     QFETCH(QRegularExpression::MatchOptions, matchOptions);
     QFETCH(Match, match);
 
-    testMatch<QRegularExpressionMatch>(regexp, &QRegularExpression::match, subject, offset, QRegularExpression::NormalMatch, matchOptions, match);
+    testMatch<QRegularExpressionMatch>(regexp,
+                                       static_cast<QREMatchStringPMF>(&QRegularExpression::match),
+                                       static_cast<QREMatchStringRefPMF>(&QRegularExpression::match),
+                                       subject,
+                                       offset,
+                                       QRegularExpression::NormalMatch,
+                                       matchOptions,
+                                       match);
 }
 
 void tst_QRegularExpression::partialMatch_data()
@@ -1041,7 +1075,14 @@ void tst_QRegularExpression::partialMatch()
     QFETCH(QRegularExpression::MatchOptions, matchOptions);
     QFETCH(Match, match);
 
-    testMatch<QRegularExpressionMatch>(regexp, &QRegularExpression::match, subject, offset, matchType, matchOptions, match);
+    testMatch<QRegularExpressionMatch>(regexp,
+                                       static_cast<QREMatchStringPMF>(&QRegularExpression::match),
+                                       static_cast<QREMatchStringRefPMF>(&QRegularExpression::match),
+                                       subject,
+                                       offset,
+                                       matchType,
+                                       matchOptions,
+                                       match);
 }
 
 void tst_QRegularExpression::globalMatch_data()
@@ -1311,7 +1352,14 @@ void tst_QRegularExpression::globalMatch()
     QFETCH(QRegularExpression::MatchOptions, matchOptions);
     QFETCH(QList<Match>, matchList);
 
-    testMatch<QRegularExpressionMatchIterator>(regexp, &QRegularExpression::globalMatch, subject, offset, matchType, matchOptions, matchList);
+    testMatch<QRegularExpressionMatchIterator>(regexp,
+                                               static_cast<QREGlobalMatchStringPMF>(&QRegularExpression::globalMatch),
+                                               static_cast<QREGlobalMatchStringRefPMF>(&QRegularExpression::globalMatch),
+                                               subject,
+                                               offset,
+                                               matchType,
+                                               matchOptions,
+                                               matchList);
 }
 
 void tst_QRegularExpression::serialize_data()
