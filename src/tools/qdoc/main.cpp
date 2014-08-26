@@ -49,6 +49,7 @@
 #include "ditaxmlgenerator.h"
 #include "doc.h"
 #include "htmlgenerator.h"
+#include "location.h"
 #include "plaincodemarker.h"
 #include "puredocparser.h"
 #include "tokenizer.h"
@@ -101,8 +102,8 @@ static void loadIndexFiles(Config& config)
         QFileInfo fi(index);
         if (fi.exists() && fi.isFile())
             indexFiles << index;
-        else if (Generator::runGenerateOnly())
-            qDebug() << "warning: Index file not found:" << index;
+        else
+            Location::null.warning(QString("Index file not found: %1").arg(index));
     }
 
     dependModules += config.getStringList(CONFIG_DEPENDS);
@@ -165,11 +166,14 @@ static void loadIndexFiles(Config& config)
                         multiple index files for a module, since the last modified file has the
                         highest UNIX timestamp.
                     */
-                    qDebug() << "Multiple indices found for dependency:" << dependModules[i] << "\nFound:";
+                    QStringList indexPaths;
                     for (int k = 0; k < foundIndices.size(); k++)
-                        qDebug() << foundIndices[k].absoluteFilePath();
-                    qDebug() << "Using" << foundIndices[foundIndices.size() - 1].absoluteFilePath()
-                            << "as index for" << dependModules[i];
+                        indexPaths << foundIndices[k].absoluteFilePath();
+                    Location::null.warning(QString("Multiple index files found for dependency \"%1\":\n%2").arg(
+                                               dependModules[i], indexPaths.join('\n')));
+                    Location::null.warning(QString("Using %1 as index file for dependency \"%2\"").arg(
+                                               foundIndices[foundIndices.size() - 1].absoluteFilePath(),
+                                               dependModules[i]));
                     indexToAdd = foundIndices[foundIndices.size() - 1].absoluteFilePath();
                 }
                 else if (foundIndices.size() == 1) {
@@ -179,16 +183,14 @@ static void loadIndexFiles(Config& config)
                     if (!indexFiles.contains(indexToAdd))
                         indexFiles << indexToAdd;
                 }
-                else if (Generator::runGenerateOnly()) {
-                    qDebug() << "warning:" << config.getString(CONFIG_PROJECT)
-                             << "Cannot locate index file for dependency"
-                             << dependModules[i];
+                else {
+                    Location::null.warning(QString("\"%1\" Cannot locate index file for dependency \"%2\"").arg(
+                                               config.getString(CONFIG_PROJECT), dependModules[i]));
                 }
             }
         }
         else {
-            qDebug() << "Dependent modules specified, but no index directories were set."
-                     << "There will probably be errors for missing links.";
+            Location::null.warning(QLatin1String("Dependent modules specified, but no index directories were set. There will probably be errors for missing links."));
         }
     }
     qdb->readIndexes(indexFiles);
