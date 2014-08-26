@@ -774,10 +774,10 @@ Q_OUTOFLINE_TEMPLATE QList<T>::~QList()
 template <typename T>
 Q_OUTOFLINE_TEMPLATE bool QList<T>::operator==(const QList<T> &l) const
 {
-    if (p.size() != l.p.size())
-        return false;
     if (d == l.d)
         return true;
+    if (p.size() != l.p.size())
+        return false;
     Node *i = reinterpret_cast<Node *>(p.end());
     Node *b = reinterpret_cast<Node *>(p.begin());
     Node *li = reinterpret_cast<Node *>(l.p.end());
