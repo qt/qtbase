@@ -154,6 +154,11 @@ void tst_QStorageInfo::tempFile()
     QVERIFY(file.open());
 
     QStorageInfo storage1(file.fileName());
+#ifdef Q_OS_LINUX
+    if (storage1.fileSystemType() == "btrfs")
+        QSKIP("This test doesn't work on btrfs, probably due to a btrfs bug");
+#endif
+
     qint64 free = storage1.bytesFree();
 
     file.write(QByteArray(1024*1024, '1'));
@@ -170,6 +175,11 @@ void tst_QStorageInfo::caching()
     QVERIFY(file.open());
 
     QStorageInfo storage1(file.fileName());
+#ifdef Q_OS_LINUX
+    if (storage1.fileSystemType() == "btrfs")
+        QSKIP("This test doesn't work on btrfs, probably due to a btrfs bug");
+#endif
+
     qint64 free = storage1.bytesFree();
     QStorageInfo storage2(storage1);
     QVERIFY(free == storage2.bytesFree());
