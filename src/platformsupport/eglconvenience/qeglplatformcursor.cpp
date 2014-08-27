@@ -343,6 +343,8 @@ void QEGLPlatformCursor::draw(const QRectF &r)
 {
     if (!m_program) {
         // one time initialization
+        initializeOpenGLFunctions();
+
         createShaderPrograms();
 
         if (!m_cursorAtlas.texture) {
@@ -387,6 +389,7 @@ void QEGLPlatformCursor::draw(const QRectF &r)
     };
 
     glBindTexture(GL_TEXTURE_2D, m_cursor.texture);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
 
     m_program->enableAttributeArray(m_vertexCoordEntry);
     m_program->enableAttributeArray(m_textureCoordEntry);
