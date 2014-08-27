@@ -60,6 +60,7 @@
 #include <qhash.h>
 
 #include <string>
+#include <algorithm>
 
 #define CREATE_REF(string)                                              \
     const QString padded = QString::fromLatin1(" %1 ").arg(string);     \
@@ -72,6 +73,9 @@ namespace {
 template <typename T>
 class Arg;
 
+template <typename T>
+class Reversed {}; // marker for Arg<QChar> to apply the operation in reverse order (for prepend())
+
 class ArgBase
 {
 protected:
@@ -81,7 +85,7 @@ protected:
 };
 
 template <>
-class Arg<QChar> : ArgBase
+class Arg<QChar> : protected ArgBase
 {
 public:
     explicit Arg(const char *str) : ArgBase(str) {}
@@ -89,6 +93,18 @@ public:
     template <typename MemFun>
     void apply0(QString &s, MemFun mf) const
     { Q_FOREACH (QChar ch, this->pinned) (s.*mf)(ch); }
+};
+
+template <>
+class Arg<Reversed<QChar> > : private Arg<QChar>
+{
+public:
+    explicit Arg(const char *str) : Arg<QChar>(str)
+    {
+        std::reverse(this->pinned.begin(), this->pinned.end());
+    }
+
+    using Arg<QChar>::apply0;
 };
 
 template <>
@@ -154,6 +170,22 @@ public:
                 (s.*mf)(*it);
         }
     }
+};
+
+template <>
+class Arg<Reversed<char> > : private Arg<char>
+{
+    static const char *dupAndReverse(const char *s)
+    {
+        char *s2 = qstrdup(s);
+        std::reverse(s2, s2 + qstrlen(s2));
+        return s2;
+    }
+public:
+    explicit Arg(const char *str) : Arg<char>(dupAndReverse(str)) {}
+    ~Arg() { delete[] str; }
+
+    using Arg<char>::apply0;
 };
 
 template <>
@@ -223,6 +255,11 @@ class tst_QString : public QObject
     template <typename ArgType>
     void append_impl() const { append_impl<ArgType, QString &(QString::*)(const ArgType&)>(); }
     void append_data(bool emptyIsNoop = false);
+    template <typename ArgType, typename MemFun>
+    void prepend_impl() const { do_apply0<ArgType>(MemFun(&QString::prepend)); }
+    template <typename ArgType>
+    void prepend_impl() const { prepend_impl<ArgType, QString &(QString::*)(const ArgType&)>(); }
+    void prepend_data(bool emptyIsNoop = false);
 public:
     tst_QString();
 public slots:
@@ -271,9 +308,21 @@ private slots:
     void remove_regexp_data();
     void remove_regexp();
     void swap();
-    void prepend();
-    void prepend_bytearray_data();
-    void prepend_bytearray();
+
+    void prepend_qstring()            { prepend_impl<QString>(); }
+    void prepend_qstring_data()       { prepend_data(true); }
+    void prepend_qlatin1string()      { prepend_impl<QLatin1String, QString &(QString::*)(QLatin1String)>(); }
+    void prepend_qlatin1string_data() { prepend_data(true); }
+    void prepend_qchar()              { prepend_impl<Reversed<QChar>, QString &(QString::*)(QChar)>(); }
+    void prepend_qchar_data()         { prepend_data(true); }
+    void prepend_qbytearray()         { prepend_impl<QByteArray>(); }
+    void prepend_qbytearray_data()    { prepend_data(true); }
+    void prepend_char()               { prepend_impl<Reversed<char>, QString &(QString::*)(QChar)>(); }
+    void prepend_char_data()          { prepend_data(true); }
+    void prepend_charstar()           { prepend_impl<const char *, QString &(QString::*)(const char *)>(); }
+    void prepend_charstar_data()      { prepend_data(true); }
+    void prepend_bytearray_special_cases_data();
+    void prepend_bytearray_special_cases();
 
     void append_qstring()            { append_impl<QString>(); }
     void append_qstring_data()       { append_data(); }
@@ -2413,14 +2462,37 @@ void tst_QString::swap()
     QCOMPARE(s2,QLatin1String("s1"));
 }
 
-void tst_QString::prepend()
+void tst_QString::prepend_data(bool emptyIsNoop)
 {
-    QString a;
-    a = "<>ABCABCABCABC>";
-    QCOMPARE(a.prepend("-"),(QString)"-<>ABCABCABCABC>");
+    QTest::addColumn<QString>("s");
+    QTest::addColumn<CharStarContainer>("arg");
+    QTest::addColumn<QString>("expected");
+
+    const CharStarContainer nullC;
+    const CharStarContainer emptyC("");
+    const CharStarContainer aC("a");
+    const CharStarContainer bC("b");
+    const CharStarContainer baC("ba");
+
+    const QString null;
+    const QString empty("");
+    const QString a("a");
+    //const QString b("b");
+    const QString ba("ba");
+
+    QTest::newRow("null.prepend(null)") << null << nullC << null;
+    QTest::newRow("null.prepend(empty)") << null << emptyC << (emptyIsNoop ? null : empty);
+    QTest::newRow("null.prepend(a)") << null << aC << a;
+    QTest::newRow("empty.prepend(null)") << empty << nullC << empty;
+    QTest::newRow("empty.prepend(empty)") << empty << emptyC << empty;
+    QTest::newRow("empty.prepend(a)") << empty << aC << a;
+    QTest::newRow("a.prepend(null)") << a << nullC << a;
+    QTest::newRow("a.prepend(empty)") << a << emptyC << a;
+    QTest::newRow("a.prepend(b)") << a << bC << ba;
+    QTest::newRow("a.prepend(ba)") << a << baC << (ba + a);
 }
 
-void tst_QString::prepend_bytearray_data()
+void tst_QString::prepend_bytearray_special_cases_data()
 {
     QTest::addColumn<QString>("str" );
     QTest::addColumn<QByteArray>("ba" );
@@ -2446,7 +2518,7 @@ void tst_QString::prepend_bytearray_data()
     QTest::newRow( "nonAsciiByteArray2") << QString() << QByteArray("\xc3\xa9") << QString::fromUtf8("\xc3\xa9");
 }
 
-void tst_QString::prepend_bytearray()
+void tst_QString::prepend_bytearray_special_cases()
 {
     {
         QFETCH( QString, str );
