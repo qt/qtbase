@@ -65,6 +65,150 @@
     const QString padded = QString::fromLatin1(" %1 ").arg(string);     \
     QStringRef ref = padded.midRef(1, padded.size() - 2);
 
+namespace {
+
+// this wraps an argument to a QString function, as well as how to apply
+// the argument to a given QString member function.
+template <typename T>
+class Arg;
+
+class ArgBase
+{
+protected:
+    QString pinned;
+    explicit ArgBase(const char *str)
+        : pinned(QString::fromLatin1(str)) {}
+};
+
+template <>
+class Arg<QChar> : ArgBase
+{
+public:
+    explicit Arg(const char *str) : ArgBase(str) {}
+
+    template <typename MemFun>
+    void apply0(QString &s, MemFun mf) const
+    { Q_FOREACH (QChar ch, this->pinned) (s.*mf)(ch); }
+};
+
+template <>
+class Arg<QString> : ArgBase
+{
+public:
+    explicit Arg(const char *str) : ArgBase(str) {}
+
+    template <typename MemFun>
+    void apply0(QString &s, MemFun mf) const
+    { (s.*mf)(this->pinned); }
+};
+
+template <>
+class Arg<QStringRef> : ArgBase
+{
+    QStringRef ref() const
+    { return this->pinned.isNull() ? QStringRef() : this->pinned.midRef(0) ; }
+public:
+    explicit Arg(const char *str) : ArgBase(str) {}
+
+    template <typename MemFun>
+    void apply0(QString &s, MemFun mf) const
+    { (s.*mf)(ref()); }
+};
+
+template <>
+class Arg<QPair<const QChar *, int> > : ArgBase
+{
+public:
+    explicit Arg(const char *str) : ArgBase(str) {}
+
+    template <typename MemFun>
+    void apply0(QString &s, MemFun mf) const
+    { (s.*mf)(this->pinned.constData(), this->pinned.length()); }
+};
+
+template <>
+class Arg<QLatin1String>
+{
+    QLatin1String l1;
+public:
+    explicit Arg(const char *str) : l1(str) {}
+
+    template <typename MemFun>
+    void apply0(QString &s, MemFun mf) const
+    { (s.*mf)(l1); }
+};
+
+template <>
+class Arg<char>
+{
+protected:
+    const char *str;
+public:
+    explicit Arg(const char *str) : str(str) {}
+
+    template <typename MemFun>
+    void apply0(QString &s, MemFun mf) const
+    {
+        if (str) {
+            for (const char *it = str; *it; ++it)
+                (s.*mf)(*it);
+        }
+    }
+};
+
+template <>
+class Arg<const char*>
+{
+    const char *str;
+public:
+    explicit Arg(const char *str) : str(str) {}
+
+    template <typename MemFun>
+    void apply0(QString &s, MemFun mf) const
+    { (s.*mf)(str); }
+};
+
+template <>
+class Arg<QByteArray>
+{
+    QByteArray ba;
+public:
+    explicit Arg(const char *str) : ba(str) {}
+
+    template <typename MemFun>
+    void apply0(QString &s, MemFun mf) const
+    { (s.*mf)(ba); }
+};
+
+// const char* is not allowed as columns in data-driven tests (causes static_assert failure),
+// so wrap it in a container (default ctor is a QMetaType/QVariant requirement):
+class CharStarContainer
+{
+    const char *str;
+public:
+    explicit Q_DECL_CONSTEXPR CharStarContainer(const char *s = Q_NULLPTR) : str(s) {}
+    Q_DECL_CONSTEXPR operator const char *() const { return str; }
+};
+
+} // unnamed namespace
+
+Q_DECLARE_METATYPE(CharStarContainer)
+
+// implementation helpers for append_impl/prepend_impl etc
+template <typename ArgType, typename MemFun>
+static void do_apply0(MemFun mf)
+{
+    QFETCH(QString, s);
+    QFETCH(CharStarContainer, arg);
+    QFETCH(QString, expected);
+
+    Arg<ArgType>(arg).apply0(s, mf);
+
+    QCOMPARE(s, expected);
+    QCOMPARE(s.isEmpty(), expected.isEmpty());
+    QCOMPARE(s.isNull(), expected.isNull());
+}
+
 class tst_QString : public QObject
 {
     Q_OBJECT
@@ -73,6 +217,12 @@ class tst_QString : public QObject
     void split_regexp(const QString &string, const QString &pattern, QStringList result);
     template<typename List>
     void split(const QString &string, const QString &separator, QStringList result);
+
+    template <typename ArgType, typename MemFun>
+    void append_impl() const { do_apply0<ArgType>(MemFun(&QString::append)); }
+    template <typename ArgType>
+    void append_impl() const { append_impl<ArgType, QString &(QString::*)(const ArgType&)>(); }
+    void append_data(bool emptyIsNoop = false);
 public:
     tst_QString();
 public slots:
@@ -124,9 +274,27 @@ private slots:
     void prepend();
     void prepend_bytearray_data();
     void prepend_bytearray();
-    void append();
-    void append_bytearray_data();
-    void append_bytearray();
+
+    void append_qstring()            { append_impl<QString>(); }
+    void append_qstring_data()       { append_data(); }
+    void append_qstringref()         { append_impl<QStringRef>(); }
+    void append_qstringref_data()    { append_data(); }
+    void append_qlatin1string()      { append_impl<QLatin1String, QString &(QString::*)(QLatin1String)>(); }
+    void append_qlatin1string_data() { append_data(); }
+    void append_qcharstar_int()      { append_impl<QPair<const QChar *, int>, QString&(QString::*)(const QChar *, int)>(); }
+    void append_qcharstar_int_data() { append_data(true); }
+    void append_qchar()              { append_impl<QChar, QString &(QString::*)(QChar)>(); }
+    void append_qchar_data()         { append_data(true); }
+    void append_qbytearray()         { append_impl<QByteArray>(); }
+    void append_qbytearray_data()    { append_data(); }
+    void append_char()               { append_impl<char, QString &(QString::*)(QChar)>(); }
+    void append_char_data()          { append_data(true); }
+    void append_charstar()           { append_impl<const char *, QString &(QString::*)(const char *)>(); }
+    void append_charstar_data()      { append_data(); }
+    void append_special_cases();
+    void append_bytearray_special_cases_data();
+    void append_bytearray_special_cases();
+
     void operator_pluseq_bytearray_data();
     void operator_pluseq_bytearray();
     void operator_eqeq_bytearray_data();
@@ -2092,14 +2260,37 @@ void tst_QString::insert()
     QCOMPARE(a.insert(0, QLatin1String("a")), QString("aMontreal"));
 }
 
-void tst_QString::append()
+void tst_QString::append_data(bool emptyIsNoop)
 {
-    {
-        QString a;
-        a = "<>ABCABCABCABC";
-        QCOMPARE(a.append(">"),QString("<>ABCABCABCABC>"));
-    }
+    QTest::addColumn<QString>("s");
+    QTest::addColumn<CharStarContainer>("arg");
+    QTest::addColumn<QString>("expected");
 
+    const CharStarContainer nullC;
+    const CharStarContainer emptyC("");
+    const CharStarContainer aC("a");
+    const CharStarContainer bC("b");
+    //const CharStarContainer abC("ab");
+
+    const QString null;
+    const QString empty("");
+    const QString a("a");
+    //const QString b("b");
+    const QString ab("ab");
+
+    QTest::newRow("null + null") << null << nullC << null;
+    QTest::newRow("null + empty") << null << emptyC << (emptyIsNoop ? null : empty);
+    QTest::newRow("null + a") << null << aC << a;
+    QTest::newRow("empty + null") << empty << nullC << empty;
+    QTest::newRow("empty + empty") << empty << emptyC << empty;
+    QTest::newRow("empty + a") << empty << aC << a;
+    QTest::newRow("a + null") << a << nullC << a;
+    QTest::newRow("a + empty") << a << emptyC << a;
+    QTest::newRow("a + b") << a << bC << ab;
+}
+
+void tst_QString::append_special_cases()
+{
     {
         QString a;
         static const QChar unicode[] = { 'H', 'e', 'l', 'l', 'o', ',', ' ', 'W', 'o', 'r', 'l', 'd', '!' };
@@ -2119,7 +2310,7 @@ void tst_QString::append()
     }
 }
 
-void tst_QString::append_bytearray_data()
+void tst_QString::append_bytearray_special_cases_data()
 {
     QTest::addColumn<QString>("str" );
     QTest::addColumn<QByteArray>("ba" );
@@ -2153,7 +2344,7 @@ void tst_QString::append_bytearray_data()
     QTest::newRow( "nonAsciiByteArray2") << QString() << QByteArray("\xc3\xa9") << QString::fromUtf8("\xc3\xa9");
 }
 
-void tst_QString::append_bytearray()
+void tst_QString::append_bytearray_special_cases()
 {
     {
         QFETCH( QString, str );
@@ -2175,7 +2366,7 @@ void tst_QString::append_bytearray()
 
 void tst_QString::operator_pluseq_bytearray_data()
 {
-    append_bytearray_data();
+    append_bytearray_special_cases_data();
 }
 
 void tst_QString::operator_pluseq_bytearray()
