@@ -44,6 +44,8 @@
 
 #include <QtCore/qglobal.h>
 
+#ifdef Q_OS_WIN
+
 #include <QtCore/QThread>
 #include <QtCore/QAbstractEventDispatcher>
 #include <QtCore/qt_windows.h>
@@ -212,5 +214,7 @@ static inline HRESULT await(const Microsoft::WRL::ComPtr<T> &asyncOp, U *results
 }
 
 } // QWinRTFunctions
+
+#endif // Q_OS_WIN
 
 #endif // QFUNCTIONS_WINRT_H
