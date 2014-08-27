@@ -995,8 +995,10 @@ Q_INVOKABLE QVariant QAndroidInputContext::queryFocusObjectUnsafe(Qt::InputMetho
 
 QVariant QAndroidInputContext::queryFocusObjectThreadSafe(Qt::InputMethodQuery query, QVariant argument)
 {
-    bool inMainThread = qGuiApp->thread() == QThread::currentThread();
     QVariant retval;
+    if (!qGuiApp)
+        return retval;
+    bool inMainThread = qGuiApp->thread() == QThread::currentThread();
 
     QMetaObject::invokeMethod(this, "queryFocusObjectUnsafe",
                               inMainThread ? Qt::DirectConnection : Qt::BlockingQueuedConnection,
