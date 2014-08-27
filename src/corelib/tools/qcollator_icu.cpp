@@ -55,6 +55,8 @@ QT_BEGIN_NAMESPACE
 
 void QCollatorPrivate::init()
 {
+    cleanup();
+
     UErrorCode status = U_ZERO_ERROR;
     QByteArray name = locale.bcp47Name().replace(QLatin1Char('-'), QLatin1Char('_')).toLatin1();
     collator = ucol_open(name.constData(), &status);
@@ -63,17 +65,6 @@ void QCollatorPrivate::init()
 
     // enable normalization by default
     ucol_setAttribute(collator, UCOL_NORMALIZATION_MODE, UCOL_ON, &status);
-}
-
-void QCollatorPrivate::cleanup()
-{
-    if (collator)
-        ucol_close(collator);
-}
-
-void QCollator::setCaseSensitivity(Qt::CaseSensitivity cs)
-{
-    detach();
 
     // The strength attribute in ICU is rather badly documented. Basically UCOL_PRIMARY
     // ignores differences between base characters and accented characters as well as case.
@@ -82,55 +73,38 @@ void QCollator::setCaseSensitivity(Qt::CaseSensitivity cs)
     // and does case sensitive comparison.
     // UCOL_QUATERNARY is used as default in a few languages such as Japanese to take care of some
     // additional differences in those languages.
-    UColAttributeValue val = (cs == Qt::CaseSensitive) ? UCOL_DEFAULT_STRENGTH : UCOL_SECONDARY;
+    UColAttributeValue val = (caseSensitivity == Qt::CaseSensitive) ? UCOL_DEFAULT_STRENGTH : UCOL_SECONDARY;
 
-    UErrorCode status = U_ZERO_ERROR;
-    ucol_setAttribute(d->collator, UCOL_STRENGTH, val, &status);
+    status = U_ZERO_ERROR;
+    ucol_setAttribute(collator, UCOL_STRENGTH, val, &status);
     if (U_FAILURE(status))
         qWarning("ucol_setAttribute: Case First failed: %d", status);
-}
 
-Qt::CaseSensitivity QCollator::caseSensitivity() const
-{
-    UErrorCode status = U_ZERO_ERROR;
-    UColAttributeValue attribute = ucol_getAttribute(d->collator, UCOL_CASE_FIRST, &status);
-    return (attribute == UCOL_OFF) ? Qt::CaseInsensitive : Qt::CaseSensitive;
-}
-
-void QCollator::setNumericMode(bool on)
-{
-    detach();
-
-    UErrorCode status = U_ZERO_ERROR;
-    ucol_setAttribute(d->collator, UCOL_NUMERIC_COLLATION, on ? UCOL_ON : UCOL_OFF, &status);
+    status = U_ZERO_ERROR;
+    ucol_setAttribute(collator, UCOL_NUMERIC_COLLATION, numericMode ? UCOL_ON : UCOL_OFF, &status);
     if (U_FAILURE(status))
         qWarning("ucol_setAttribute: numeric collation failed: %d", status);
-}
 
-bool QCollator::numericMode() const
-{
-    UErrorCode status;
-    return ucol_getAttribute(d->collator, UCOL_NUMERIC_COLLATION, &status) == UCOL_ON;
-}
-
-void QCollator::setIgnorePunctuation(bool on)
-{
-    detach();
-
-    UErrorCode status;
-    ucol_setAttribute(d->collator, UCOL_ALTERNATE_HANDLING, on ? UCOL_SHIFTED : UCOL_NON_IGNORABLE, &status);
+    status = U_ZERO_ERROR;
+    ucol_setAttribute(collator, UCOL_ALTERNATE_HANDLING, ignorePunctuation ? UCOL_SHIFTED : UCOL_NON_IGNORABLE, &status);
     if (U_FAILURE(status))
         qWarning("ucol_setAttribute: Alternate handling failed: %d", status);
+
+    dirty = false;
 }
 
-bool QCollator::ignorePunctuation() const
+void QCollatorPrivate::cleanup()
 {
-    UErrorCode status;
-    return ucol_getAttribute(d->collator, UCOL_ALTERNATE_HANDLING, &status) == UCOL_SHIFTED;
+    if (collator)
+        ucol_close(collator);
+    collator = 0;
 }
 
 int QCollator::compare(const QChar *s1, int len1, const QChar *s2, int len2) const
 {
+    if (d->dirty)
+        d->init();
+
     return ucol_strcoll(d->collator, (const UChar *)s1, len1, (const UChar *)s2, len2);
 }
 
@@ -146,6 +120,9 @@ int QCollator::compare(const QStringRef &s1, const QStringRef &s2) const
 
 QCollatorSortKey QCollator::sortKey(const QString &string) const
 {
+    if (d->dirty)
+        d->init();
+
     QByteArray result(16 + string.size() + (string.size() >> 2), Qt::Uninitialized);
     int size = ucol_getSortKey(d->collator, (const UChar *)string.constData(),
                                string.size(), (uint8_t *)result.data(), result.size());

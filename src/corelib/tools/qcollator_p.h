@@ -49,6 +49,8 @@
 #include <unicode/ucol.h>
 #elif defined(Q_OS_OSX)
 #include <CoreServices/CoreServices.h>
+#elif defined(Q_OS_WIN)
+#include <qt_windows.h>
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -58,17 +60,16 @@ typedef UCollator *CollatorType;
 typedef QByteArray CollatorKeyType;
 
 #elif defined(Q_OS_OSX)
+typedef CollatorRef CollatorType;
 typedef QVector<UCCollationValue> CollatorKeyType;
 
-struct CollatorType {
-    CollatorType(int opt) : collator(NULL), options(opt) {}
-
-    CollatorRef collator;
-    UInt32 options;
-};
 #elif defined(Q_OS_WIN)
 typedef QString CollatorKeyType;
 typedef int CollatorType;
+#  ifdef Q_OS_WINRT
+#    define USE_COMPARESTRINGEX
+#  endif
+
 #else //posix
 typedef QVector<wchar_t> CollatorKeyType;
 typedef int CollatorType;
@@ -79,6 +80,17 @@ class Q_CORE_EXPORT QCollatorPrivate
 public:
     QAtomicInt ref;
     QLocale locale;
+#if defined(Q_OS_WIN)
+#ifdef USE_COMPARESTRINGEX
+    QString localeName;
+#else
+    LCID localeID;
+#endif
+#endif
+    Qt::CaseSensitivity caseSensitivity;
+    bool numericMode;
+    bool ignorePunctuation;
+    bool dirty;
 
     CollatorType collator;
 
@@ -91,7 +103,12 @@ public:
     void cleanup();
 
     QCollatorPrivate()
-        : ref(1), collator(0)
+        : ref(1),
+          caseSensitivity(Qt::CaseSensitive),
+          numericMode(false),
+          ignorePunctuation(false),
+          dirty(true),
+          collator(0)
     { cleanup(); }
 
     ~QCollatorPrivate() { cleanup(); }

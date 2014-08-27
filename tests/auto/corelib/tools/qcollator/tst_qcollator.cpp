@@ -55,6 +55,8 @@ private Q_SLOTS:
 
     void compare_data();
     void compare();
+
+    void state();
 };
 
 #ifdef Q_COMPILER_RVALUE_REFS
@@ -121,26 +123,18 @@ void tst_QCollator::compare_data()
         diaresis (E4), which comes before o diaresis (F6), which
         all come after z.
     */
-#if !defined(Q_OS_WIN) || defined(QT_USE_ICU)
     QTest::newRow("swedish1") << QString("sv_SE") << QString::fromLatin1("\xe5") << QString::fromLatin1("\xe4") << -1 << -1;
-#endif
     QTest::newRow("swedish2") << QString("sv_SE") << QString::fromLatin1("\xe4") << QString::fromLatin1("\xf6") << -1 << -1;
     QTest::newRow("swedish3") << QString("sv_SE") << QString::fromLatin1("\xe5") << QString::fromLatin1("\xf6") << -1 << -1;
-#if !defined(Q_OS_OSX) && (!defined(Q_OS_WIN) || defined(QT_USE_ICU))
     QTest::newRow("swedish4") << QString("sv_SE") << QString::fromLatin1("z") << QString::fromLatin1("\xe5") << -1 << -1;
-#endif
 
     /*
         In Norwegian, ae (E6) comes before o with stroke (D8), which
         comes before a with ring above (E5).
     */
     QTest::newRow("norwegian1") << QString("no_NO") << QString::fromLatin1("\xe6") << QString::fromLatin1("\xd8") << -1 << -1;
-#if !defined(Q_OS_WIN) || defined(QT_USE_ICU)
-#  ifndef Q_OS_OSX
     QTest::newRow("norwegian2") << QString("no_NO") << QString::fromLatin1("\xd8") << QString::fromLatin1("\xe5") << -1 << -1;
-#  endif
     QTest::newRow("norwegian3") << QString("no_NO") << QString::fromLatin1("\xe6") << QString::fromLatin1("\xe5") << -1 << -1;
-#endif // !Q_OS_WIN || QT_USE_ICU
     /*
         In German, z comes *after* a with diaresis (E4),
         which comes before o diaresis (F6).
@@ -178,6 +172,30 @@ void tst_QCollator::compare()
     QCOMPARE(collator.compare(s1, s2), result);
     collator.setCaseSensitivity(Qt::CaseInsensitive);
     QCOMPARE(collator.compare(s1, s2), caseInsensitiveResult);
+}
+
+
+void tst_QCollator::state()
+{
+    QCollator c;
+    c.setCaseSensitivity(Qt::CaseInsensitive);
+    c.setLocale(QLocale::German);
+
+    c.compare(QString("a"), QString("b"));
+
+    QCOMPARE(c.caseSensitivity(), Qt::CaseInsensitive);
+    QCOMPARE(c.locale(), QLocale(QLocale::German));
+
+    c.setLocale(QLocale::French);
+    c.setNumericMode(true);
+    c.setIgnorePunctuation(true);
+    c.setLocale(QLocale::Norwegian);
+
+    QCOMPARE(c.caseSensitivity(), Qt::CaseInsensitive);
+    QCOMPARE(c.numericMode(), true);
+    QCOMPARE(c.ignorePunctuation(), true);
+    QCOMPARE(c.locale(), QLocale(QLocale::Norwegian));
+
 }
 
 QTEST_APPLESS_MAIN(tst_QCollator)

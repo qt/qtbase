@@ -166,10 +166,12 @@ void QCollator::detach()
  */
 void QCollator::setLocale(const QLocale &locale)
 {
+    if (locale == d->locale)
+        return;
+
     detach();
-    d->clear();
     d->locale = locale;
-    d->init();
+    d->dirty = true;
 }
 
 /*!
@@ -187,6 +189,15 @@ QLocale QCollator::locale() const
 
     \sa caseSensitivity()
  */
+void QCollator::setCaseSensitivity(Qt::CaseSensitivity cs)
+{
+    if (d->caseSensitivity == cs)
+        return;
+
+    detach();
+    d->caseSensitivity = cs;
+    d->dirty = true;
+}
 
 /*!
     \fn Qt::CaseSensitivity QCollator::caseSensitivity() const
@@ -195,6 +206,10 @@ QLocale QCollator::locale() const
 
     \sa setCaseSensitivity()
  */
+Qt::CaseSensitivity QCollator::caseSensitivity() const
+{
+    return d->caseSensitivity;
+}
 
 /*!
     \fn void QCollator::setNumericMode(bool on)
@@ -212,6 +227,15 @@ QLocale QCollator::locale() const
 
     \sa numericMode()
  */
+void QCollator::setNumericMode(bool on)
+{
+    if (d->numericMode == on)
+        return;
+
+    detach();
+    d->numericMode = on;
+    d->dirty = true;
+}
 
 /*!
     \fn bool QCollator::numericMode() const
@@ -220,6 +244,10 @@ QLocale QCollator::locale() const
 
     \sa setNumericMode()
  */
+bool QCollator::numericMode() const
+{
+    return d->numericMode;
+}
 
 /*!
     \fn void QCollator::setIgnorePunctuation(bool on)
@@ -230,6 +258,15 @@ QLocale QCollator::locale() const
 
     \sa ignorePunctuation()
  */
+void QCollator::setIgnorePunctuation(bool on)
+{
+    if (d->ignorePunctuation == on)
+        return;
+
+    detach();
+    d->ignorePunctuation = on;
+    d->dirty = true;
+}
 
 /*!
     \fn bool QCollator::ignorePunctuation() const
@@ -238,6 +275,10 @@ QLocale QCollator::locale() const
 
     \sa setIgnorePunctuation()
  */
+bool QCollator::ignorePunctuation() const
+{
+    return d->ignorePunctuation;
+}
 
 /*!
     \fn int QCollator::compare(const QString &s1, const QString &s2) const

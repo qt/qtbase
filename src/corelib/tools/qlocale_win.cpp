@@ -1012,6 +1012,32 @@ static const char *winLangCodeToIsoName(int code)
 
 }
 
+LCID qt_inIsoNametoLCID(const char *name)
+{
+    // handle norwegian manually, the list above will fail
+    if (!strncmp(name, "nb", 2))
+        return 0x0414;
+    else if (!strncmp(name, "nn", 2))
+        return 0x0814;
+
+    char n[64];
+    strncpy(n, name, sizeof(n));
+    n[sizeof(n)-1] = 0;
+    char *c = n;
+    while (*c) {
+        if (*c == '-')
+            *c = '_';
+        ++c;
+    }
+
+    for (int i = 0; i < windows_to_iso_count; ++i) {
+        if (!strcmp(n, windows_to_iso_list[i].iso_name))
+            return windows_to_iso_list[i].windows_code;
+    }
+    return LOCALE_USER_DEFAULT;
+}
+
+
 #ifndef Q_OS_WINRT
 static QString winIso639LangName(LCID id)
 #else

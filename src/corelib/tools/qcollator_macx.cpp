@@ -55,85 +55,50 @@ void QCollatorPrivate::init()
 {
     cleanup();
     LocaleRef localeRef;
-    int rc = LocaleRefFromLocaleString(locale.name().toLocal8Bit(), &localeRef);
+    int rc = LocaleRefFromLocaleString(locale.bcp47Name().toLocal8Bit(), &localeRef);
     if (rc != 0)
         qWarning() << "couldn't initialize the locale";
+
+    UInt32 options = 0;
+
+    if (caseSensitivity == Qt::CaseInsensitive)
+        options |= kUCCollateCaseInsensitiveMask;
+    if (numericMode)
+        options |= kUCCollateDigitsAsNumberMask;
+    if (ignorePunctuation)
+        options |= kUCCollatePunctuationSignificantMask;
 
     OSStatus status = UCCreateCollator(
         localeRef,
         0,
-        collator.options,
-        &collator.collator
+        options,
+        &collator
     );
     if (status != 0)
         qWarning() << "Couldn't initialize the collator";
+
+    dirty = false;
 }
 
 void QCollatorPrivate::cleanup()
 {
-    UCDisposeCollator(&collator.collator);
-    collator.collator = 0;
-}
-
-void QCollator::setCaseSensitivity(Qt::CaseSensitivity cs)
-{
-    detach();
-
-    if (cs == Qt::CaseSensitive)
-        d->collator.options &= ~kUCCollateCaseInsensitiveMask;
-    else
-        d->collator.options |= kUCCollateCaseInsensitiveMask;
-    d->init();
-}
-
-Qt::CaseSensitivity QCollator::caseSensitivity() const
-{
-    return !(d->collator.options & kUCCollateCaseInsensitiveMask) ? Qt::CaseInsensitive : Qt::CaseSensitive;
-}
-
-void QCollator::setNumericMode(bool on)
-{
-    detach();
-
-    if (on)
-        d->collator.options |= kUCCollateDigitsAsNumberMask;
-    else
-        d->collator.options &= ~kUCCollateDigitsAsNumberMask;
-
-    d->init();
-}
-
-bool QCollator::numericMode() const
-{
-    return bool(d->collator.options & kUCCollateDigitsAsNumberMask);
-}
-
-void QCollator::setIgnorePunctuation(bool on)
-{
-    detach();
-
-    if (on)
-        d->collator.options |= kUCCollatePunctuationSignificantMask;
-    else
-        d->collator.options &= ~kUCCollatePunctuationSignificantMask;
-
-    d->init();
-}
-
-bool QCollator::ignorePunctuation() const
-{
-    return bool(d->collator.options & kUCCollatePunctuationSignificantMask);
+    if (collator)
+        UCDisposeCollator(&collator);
+    collator = 0;
 }
 
 int QCollator::compare(const QChar *s1, int len1, const QChar *s2, int len2) const
 {
+    if (d->dirty)
+        d->init();
+
     SInt32 result;
     Boolean equivalent;
-    UCCompareText(d->collator.collator,
-                         reinterpret_cast<const UniChar *>(s1), len1,
-                         reinterpret_cast<const UniChar *>(s2), len2,
-                         &equivalent,
-                         &result);
+    UCCompareText(d->collator,
+                  reinterpret_cast<const UniChar *>(s1), len1,
+                  reinterpret_cast<const UniChar *>(s2), len2,
+                  &equivalent,
+                  &result);
     if (equivalent)
         return 0;
     return result < 0 ? -1 : 1;
@@ -150,15 +115,18 @@ int QCollator::compare(const QStringRef &s1, const QStringRef &s2) const
 
 QCollatorSortKey QCollator::sortKey(const QString &string) const
 {
+    if (d->dirty)
+        d->init();
+
     //Documentation recommends having it 5 times as big as the input
     QVector<UCCollationValue> ret(string.size() * 5);
     ItemCount actualSize;
-    int status = UCGetCollationKey(d->collator.collator, reinterpret_cast<const UniChar *>(string.constData()), string.count(),
+    int status = UCGetCollationKey(d->collator, reinterpret_cast<const UniChar *>(string.constData()), string.count(),
                                    ret.size(), &actualSize, ret.data());
 
     ret.resize(actualSize+1);
     if (status == kUCOutputBufferTooSmall) {
-        UCGetCollationKey(d->collator.collator, reinterpret_cast<const UniChar *>(string.constData()), string.count(),
+        UCGetCollationKey(d->collator, reinterpret_cast<const UniChar *>(string.constData()), string.count(),
                           ret.size(), &actualSize, ret.data());
     }
     ret[actualSize] = 0;
