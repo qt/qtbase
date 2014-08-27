@@ -113,7 +113,7 @@ public:
 
         // if need buffer reallocation
         if (tail + bytes > buffers.last().size()) {
-            if (tail >= basicBlockSize) {
+            if (tail + bytes > buffers.last().capacity() && tail >= basicBlockSize) {
                 // shrink this buffer to its current size
                 buffers.last().resize(tail);
 
