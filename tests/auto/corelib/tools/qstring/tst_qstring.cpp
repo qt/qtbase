@@ -93,6 +93,10 @@ public:
     template <typename MemFun>
     void apply0(QString &s, MemFun mf) const
     { Q_FOREACH (QChar ch, this->pinned) (s.*mf)(ch); }
+
+    template <typename MemFun, typename A1>
+    void apply1(QString &s, MemFun mf, A1 a1) const
+    { Q_FOREACH (QChar ch, this->pinned) (s.*mf)(a1, ch); }
 };
 
 template <>
@@ -105,6 +109,7 @@ public:
     }
 
     using Arg<QChar>::apply0;
+    using Arg<QChar>::apply1;
 };
 
 template <>
@@ -116,6 +121,10 @@ public:
     template <typename MemFun>
     void apply0(QString &s, MemFun mf) const
     { (s.*mf)(this->pinned); }
+
+    template <typename MemFun, typename A1>
+    void apply1(QString &s, MemFun mf, A1 a1) const
+    { (s.*mf)(a1, this->pinned); }
 };
 
 template <>
@@ -129,6 +138,10 @@ public:
     template <typename MemFun>
     void apply0(QString &s, MemFun mf) const
     { (s.*mf)(ref()); }
+
+    template <typename MemFun, typename A1>
+    void apply1(QString &s, MemFun mf, A1 a1) const
+    { (s.*mf)(a1, ref()); }
 };
 
 template <>
@@ -140,6 +153,10 @@ public:
     template <typename MemFun>
     void apply0(QString &s, MemFun mf) const
     { (s.*mf)(this->pinned.constData(), this->pinned.length()); }
+
+    template <typename MemFun, typename A1>
+    void apply1(QString &s, MemFun mf, A1 a1) const
+    { (s.*mf)(a1, this->pinned.constData(), this->pinned.length()); }
 };
 
 template <>
@@ -152,6 +169,10 @@ public:
     template <typename MemFun>
     void apply0(QString &s, MemFun mf) const
     { (s.*mf)(l1); }
+
+    template <typename MemFun, typename A1>
+    void apply1(QString &s, MemFun mf, A1 a1) const
+    { (s.*mf)(a1, l1); }
 };
 
 template <>
@@ -170,6 +191,15 @@ public:
                 (s.*mf)(*it);
         }
     }
+
+    template <typename MemFun, typename A1>
+    void apply1(QString &s, MemFun mf, A1 a1) const
+    {
+        if (str) {
+            for (const char *it = str; *it; ++it)
+                (s.*mf)(a1, *it);
+        }
+    }
 };
 
 template <>
@@ -186,6 +216,7 @@ public:
     ~Arg() { delete[] str; }
 
     using Arg<char>::apply0;
+    using Arg<char>::apply1;
 };
 
 template <>
@@ -198,6 +229,10 @@ public:
     template <typename MemFun>
     void apply0(QString &s, MemFun mf) const
     { (s.*mf)(str); }
+
+    template <typename MemFun, typename A1>
+    void apply1(QString &s, MemFun mf, A1 a1) const
+    { (s.*mf)(a1, str); }
 };
 
 template <>
@@ -210,6 +245,10 @@ public:
     template <typename MemFun>
     void apply0(QString &s, MemFun mf) const
     { (s.*mf)(ba); }
+
+    template <typename MemFun, typename A1>
+    void apply1(QString &s, MemFun mf, A1 a1) const
+    { (s.*mf)(a1, ba); }
 };
 
 // const char* is not allowed as columns in data-driven tests (causes static_assert failure),
@@ -241,6 +280,21 @@ static void do_apply0(MemFun mf)
     QCOMPARE(s.isNull(), expected.isNull());
 }
 
+template <typename ArgType, typename A1, typename MemFun>
+static void do_apply1(MemFun mf)
+{
+    QFETCH(QString, s);
+    QFETCH(CharStarContainer, arg);
+    QFETCH(A1, a1);
+    QFETCH(QString, expected);
+
+    Arg<ArgType>(arg).apply1(s, mf, a1);
+
+    QCOMPARE(s, expected);
+    QCOMPARE(s.isEmpty(), expected.isEmpty());
+    QCOMPARE(s.isNull(), expected.isNull());
+}
+
 class tst_QString : public QObject
 {
     Q_OBJECT
@@ -260,6 +314,11 @@ class tst_QString : public QObject
     template <typename ArgType>
     void prepend_impl() const { prepend_impl<ArgType, QString &(QString::*)(const ArgType&)>(); }
     void prepend_data(bool emptyIsNoop = false);
+    template <typename ArgType, typename MemFun>
+    void insert_impl() const { do_apply1<ArgType, int>(MemFun(&QString::insert)); }
+    template <typename ArgType>
+    void insert_impl() const { insert_impl<ArgType, QString &(QString::*)(int, const ArgType&)>(); }
+    void insert_data(bool emptyIsNoop = false);
 public:
     tst_QString();
 public slots:
@@ -350,7 +409,19 @@ private slots:
     void operator_eqeq_bytearray();
     void operator_eqeq_nullstring();
     void operator_smaller();
-    void insert();
+
+    void insert_qstring()            { insert_impl<QString>(); }
+    void insert_qstring_data()       { insert_data(true); }
+    void insert_qlatin1string()      { insert_impl<QLatin1String, QString &(QString::*)(int, QLatin1String)>(); }
+    void insert_qlatin1string_data() { insert_data(true); }
+    void insert_qcharstar_int()      { insert_impl<QPair<const QChar *, int>, QString &(QString::*)(int, const QChar*, int) >(); }
+    void insert_qcharstar_int_data() { insert_data(true); }
+    void insert_qchar()              { insert_impl<Reversed<QChar>, QString &(QString::*)(int, QChar)>(); }
+    void insert_qchar_data()         { insert_data(true); }
+    void insert_char()               { insert_impl<Reversed<char>, QString &(QString::*)(int, QChar)>(); }
+    void insert_char_data()          { insert_data(true); }
+    void insert_special_cases();
+
     void simplified_data();
     void simplified();
     void trimmed();
@@ -2278,7 +2349,46 @@ void tst_QString::simplified()
     QCOMPARE(qMove(full).simplified(), simple);
 }
 
-void tst_QString::insert()
+void tst_QString::insert_data(bool emptyIsNoop)
+{
+    QTest::addColumn<QString>("s");
+    QTest::addColumn<CharStarContainer>("arg");
+    QTest::addColumn<int>("a1");
+    QTest::addColumn<QString>("expected");
+
+    const CharStarContainer nullC;
+    const CharStarContainer emptyC("");
+    const CharStarContainer aC("a");
+    const CharStarContainer bC("b");
+    //const CharStarContainer abC("ab");
+    const CharStarContainer baC("ba");
+
+    const QString null;
+    const QString empty("");
+    const QString a("a");
+    const QString b("b");
+    const QString ab("ab");
+    const QString ba("ba");
+
+    QTest::newRow("null.insert(0, null)") << null << nullC << 0 << null;
+    QTest::newRow("null.insert(0, empty)") << null << emptyC << 0 << (emptyIsNoop ? null : empty);
+    QTest::newRow("null.insert(0, a)") << null << aC << 0 << a;
+    QTest::newRow("empty.insert(0, null)") << empty << nullC << 0 << empty;
+    QTest::newRow("empty.insert(0, empty)") << empty << emptyC << 0 << empty;
+    QTest::newRow("empty.insert(0, a)") << empty << aC << 0 << a;
+    QTest::newRow("a.insert(0, null)") << a << nullC << 0 << a;
+    QTest::newRow("a.insert(0, empty)") << a << emptyC << 0 << a;
+    QTest::newRow("a.insert(0, b)") << a << bC << 0 << ba;
+    QTest::newRow("a.insert(0, ba)") << a << baC << 0 << (ba + a);
+    QTest::newRow("a.insert(1, null)") << a << nullC << 1 << a;
+    QTest::newRow("a.insert(1, empty)") << a << emptyC << 1 << a;
+    QTest::newRow("a.insert(1, b)") << a << bC << 1 << ab;
+    QTest::newRow("a.insert(1, ba)") << a << baC << 1 << (a + ba);
+    QTest::newRow("ba.insert(1, a)") << ba << aC << 1 << (ba + a);
+    QTest::newRow("ba.insert(2, b)") << ba << bC << 2 << (ba + b);
+}
+
+void tst_QString::insert_special_cases()
 {
     QString a;
 
