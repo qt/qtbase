@@ -47,6 +47,7 @@
 #include <QTouchEvent>
 #include <QPointer>
 
+#include <QGuiApplication>
 #include <QDebug>
 
 QT_BEGIN_NAMESPACE
@@ -716,7 +717,7 @@ namespace QtAndroidInput
     static void keyboardVisibilityChanged(JNIEnv */*env*/, jobject /*thiz*/, jboolean /*visibility*/)
     {
         QAndroidInputContext *inputContext = QAndroidInputContext::androidInputContext();
-        if (inputContext)
+        if (inputContext && qGuiApp)
             inputContext->emitInputPanelVisibleChanged();
 #ifdef QT_DEBUG_ANDROID_IM_PROTOCOL
         qDebug() << "@@@ KEYBOARDVISIBILITYCHANGED" << inputContext;
