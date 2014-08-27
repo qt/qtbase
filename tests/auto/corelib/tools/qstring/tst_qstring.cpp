@@ -1418,7 +1418,7 @@ void tst_QString::lastIndexOf()
 void tst_QString::lastIndexOfInvalidRegex()
 {
     QTest::ignoreMessage(QtWarningMsg, "QString::lastIndexOf: invalid QRegularExpression object");
-    QCOMPARE(QString("").lastIndexOf(QRegularExpression("invalid regex\\"), 0), -1);
+    QCOMPARE(QString("invalid regex\\").lastIndexOf(QRegularExpression("invalid regex\\"), 0), -1);
 }
 
 void tst_QString::count()
