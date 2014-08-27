@@ -86,6 +86,8 @@ private slots:
     void find2();
     void findWithRegExp_data();
     void findWithRegExp();
+    void findWithRegularExpression_data();
+    void findWithRegularExpression();
     void findMultiple();
     void basicIsModifiedChecks();
     void moreIsModified();
@@ -196,6 +198,7 @@ private slots:
 
 private:
     void backgroundImage_checkExpectedHtml(const QTextDocument &doc);
+    void buildRegExpData();
 
     QTextDocument *doc;
     QTextCursor cursor;
@@ -352,21 +355,7 @@ void tst_QTextDocument::find()
 
 void tst_QTextDocument::findWithRegExp_data()
 {
-    QTest::addColumn<QString>("haystack");
-    QTest::addColumn<QString>("needle");
-    QTest::addColumn<int>("flags");
-    QTest::addColumn<int>("from");
-    QTest::addColumn<int>("anchor");
-    QTest::addColumn<int>("position");
-
-    // match integers 0 to 99
-    QTest::newRow("1") << "23" << "^\\d\\d?$" << int(QTextDocument::FindCaseSensitively) << 0 << 0 << 2;
-    // match ampersands but not &amp;
-    QTest::newRow("2") << "His &amp; hers & theirs" << "&(?!amp;)"<< int(QTextDocument::FindCaseSensitively) << 0 << 15 << 16;
-    //backward search
-    QTest::newRow("3") << QString::fromLatin1("HelloBlahWorld Blah Hah")
-                              << "h" << int(QTextDocument::FindBackward) << 18 << 8 << 9;
-
+    buildRegExpData();
 }
 
 void tst_QTextDocument::findWithRegExp()
@@ -383,6 +372,34 @@ void tst_QTextDocument::findWithRegExp()
     QRegExp expr(needle);
     QTextDocument::FindFlags flg(flags);
     expr.setCaseSensitivity((flg & QTextDocument::FindCaseSensitively) ? Qt::CaseSensitive : Qt::CaseInsensitive);
+    cursor = doc->find(expr, from, flg);
+
+    if (anchor != -1) {
+        QCOMPARE(cursor.anchor(), anchor);
+        QCOMPARE(cursor.position(), position);
+    } else {
+        QVERIFY(cursor.isNull());
+    }
+}
+
+void tst_QTextDocument::findWithRegularExpression_data()
+{
+    buildRegExpData();
+}
+
+void tst_QTextDocument::findWithRegularExpression()
+{
+    QFETCH(QString, haystack);
+    QFETCH(QString, needle);
+    QFETCH(int, flags);
+    QFETCH(int, from);
+    QFETCH(int, anchor);
+    QFETCH(int, position);
+
+    cursor.insertText(haystack);
+    //search using a regular expression
+    QRegularExpression expr(needle);
+    QTextDocument::FindFlags flg(flags);
     cursor = doc->find(expr, from, flg);
 
     if (anchor != -1) {
@@ -2600,6 +2617,24 @@ void tst_QTextDocument::backgroundImage_checkExpectedHtml(const QTextDocument &d
     expectedHtml = expectedHtml.arg(defaultFont.family()).arg(defaultFont.pointSizeF()).arg(defaultFont.weight() * 8).arg((defaultFont.italic() ? "italic" : "normal"));
 
     QCOMPARE(doc.toHtml(), expectedHtml);
+}
+
+void tst_QTextDocument::buildRegExpData()
+{
+    QTest::addColumn<QString>("haystack");
+    QTest::addColumn<QString>("needle");
+    QTest::addColumn<int>("flags");
+    QTest::addColumn<int>("from");
+    QTest::addColumn<int>("anchor");
+    QTest::addColumn<int>("position");
+
+    // match integers 0 to 99
+    QTest::newRow("1") << "23" << "^\\d\\d?$" << int(QTextDocument::FindCaseSensitively) << 0 << 0 << 2;
+    // match ampersands but not &amp;
+    QTest::newRow("2") << "His &amp; hers & theirs" << "&(?!amp;)"<< int(QTextDocument::FindCaseSensitively) << 0 << 15 << 16;
+    //backward search
+    QTest::newRow("3") << QString::fromLatin1("HelloBlahWorld Blah Hah")
+                              << "h" << int(QTextDocument::FindBackward) << 18 << 8 << 9;
 }
 
 void tst_QTextDocument::backgroundImage_toHtml()
