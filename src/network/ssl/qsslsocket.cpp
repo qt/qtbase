@@ -1894,8 +1894,10 @@ void QSslSocket::disconnectFromHost()
         emit stateChanged(d->state);
     }
 
-    if (!d->writeBuffer.isEmpty())
+    if (!d->writeBuffer.isEmpty()) {
+        d->pendingClose = true;
         return;
+    }
 
     if (d->mode == UnencryptedMode) {
         d->plainSocket->disconnectFromHost();
