@@ -150,6 +150,8 @@ public:
                                          QRegExp::PatternSyntax syntax);
     static void addDefaultCaCertificate(const QSslCertificate &cert);
     static void addDefaultCaCertificates(const QList<QSslCertificate> &certs);
+    static bool isMatchingHostname(const QSslCertificate &cert, const QString &peerName);
+    Q_AUTOTEST_EXPORT static bool isMatchingHostname(const QString &cn, const QString &hostname);
 
 #if defined(Q_OS_MACX)
     static PtrSecCertificateCopyData ptrSecCertificateCopyData;
