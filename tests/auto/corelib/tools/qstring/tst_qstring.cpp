@@ -310,6 +310,11 @@ class tst_QString : public QObject
     void append_impl() const { append_impl<ArgType, QString &(QString::*)(const ArgType&)>(); }
     void append_data(bool emptyIsNoop = false);
     template <typename ArgType, typename MemFun>
+    void operator_pluseq_impl() const { do_apply0<ArgType>(MemFun(&QString::operator+=)); }
+    template <typename ArgType>
+    void operator_pluseq_impl() const { operator_pluseq_impl<ArgType, QString &(QString::*)(const ArgType&)>(); }
+    void operator_pluseq_data(bool emptyIsNoop = false);
+    template <typename ArgType, typename MemFun>
     void prepend_impl() const { do_apply0<ArgType>(MemFun(&QString::prepend)); }
     template <typename ArgType>
     void prepend_impl() const { prepend_impl<ArgType, QString &(QString::*)(const ArgType&)>(); }
@@ -403,8 +408,23 @@ private slots:
     void append_bytearray_special_cases_data();
     void append_bytearray_special_cases();
 
-    void operator_pluseq_bytearray_data();
-    void operator_pluseq_bytearray();
+    void operator_pluseq_qstring()            { operator_pluseq_impl<QString>(); }
+    void operator_pluseq_qstring_data()       { operator_pluseq_data(); }
+    void operator_pluseq_qstringref()         { operator_pluseq_impl<QStringRef>(); }
+    void operator_pluseq_qstringref_data()    { operator_pluseq_data(); }
+    void operator_pluseq_qlatin1string()      { operator_pluseq_impl<QLatin1String, QString &(QString::*)(QLatin1String)>(); }
+    void operator_pluseq_qlatin1string_data() { operator_pluseq_data(); }
+    void operator_pluseq_qchar()              { operator_pluseq_impl<QChar, QString &(QString::*)(QChar)>(); }
+    void operator_pluseq_qchar_data()         { operator_pluseq_data(true); }
+    void operator_pluseq_qbytearray()         { operator_pluseq_impl<QByteArray>(); }
+    void operator_pluseq_qbytearray_data()    { operator_pluseq_data(); }
+    void operator_pluseq_char()               { operator_pluseq_impl<char, QString &(QString::*)(char)>(); }
+    void operator_pluseq_char_data()          { operator_pluseq_data(true); }
+    void operator_pluseq_charstar()           { operator_pluseq_impl<const char *, QString &(QString::*)(const char *)>(); }
+    void operator_pluseq_charstar_data()      { operator_pluseq_data(); }
+    void operator_pluseq_bytearray_special_cases_data();
+    void operator_pluseq_bytearray_special_cases();
+
     void operator_eqeq_bytearray_data();
     void operator_eqeq_bytearray();
     void operator_eqeq_nullstring();
@@ -2523,12 +2543,17 @@ void tst_QString::append_bytearray_special_cases()
     }
 }
 
-void tst_QString::operator_pluseq_bytearray_data()
+void tst_QString::operator_pluseq_data(bool emptyIsNoop)
+{
+    append_data(emptyIsNoop);
+}
+
+void tst_QString::operator_pluseq_bytearray_special_cases_data()
 {
     append_bytearray_special_cases_data();
 }
 
-void tst_QString::operator_pluseq_bytearray()
+void tst_QString::operator_pluseq_bytearray_special_cases()
 {
     {
         QFETCH( QString, str );
