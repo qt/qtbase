@@ -367,9 +367,28 @@ void QWindowPrivate::setScreen(QScreen *newScreen, bool recreate)
         if (newScreen) {
             q->connect(screen, SIGNAL(destroyed(QObject*)), q, SLOT(screenDestroyed(QObject*)));
             if (shouldRecreate)
-                q->create();
+                create(true);
         }
         emit q->screenChanged(newScreen);
+    }
+}
+
+void QWindowPrivate::create(bool recursive)
+{
+    Q_Q(QWindow);
+    if (!platformWindow) {
+        platformWindow = QGuiApplicationPrivate::platformIntegration()->createPlatformWindow(q);
+        QObjectList childObjects = q->children();
+        for (int i = 0; i < childObjects.size(); i ++) {
+            QObject *object = childObjects.at(i);
+            if (object->isWindowType()) {
+                QWindow *window = static_cast<QWindow *>(object);
+                if (recursive)
+                    window->d_func()->create(true);
+                if (window->d_func()->platformWindow)
+                    window->d_func()->platformWindow->setParent(platformWindow);
+            }
+        }
     }
 }
 
@@ -490,18 +509,7 @@ bool QWindow::isVisible() const
 void QWindow::create()
 {
     Q_D(QWindow);
-    if (!d->platformWindow) {
-        d->platformWindow = QGuiApplicationPrivate::platformIntegration()->createPlatformWindow(this);
-        QObjectList childObjects = children();
-        for (int i = 0; i < childObjects.size(); i ++) {
-            QObject *object = childObjects.at(i);
-            if(object->isWindowType()) {
-                QWindow *window = static_cast<QWindow *>(object);
-                if (window->d_func()->platformWindow)
-                    window->d_func()->platformWindow->setParent(d->platformWindow);
-            }
-        }
-    }
+    d->create(false);
 }
 
 /*!

@@ -52,6 +52,9 @@
 #include <qlistwidget.h>
 #include <qpushbutton.h>
 #include <qboxlayout.h>
+#include <qtabwidget.h>
+#include <qlabel.h>
+#include <private/qwindow_p.h>
 
 static inline void setFrameless(QWidget *w)
 {
@@ -96,6 +99,8 @@ private slots:
 #endif
 
     void tst_qtbug35600();
+    void tst_recreateWindow_QTBUG40817();
+
 };
 
 void tst_QWidget_window::initTestCase()
@@ -597,6 +602,38 @@ void tst_QWidget_window::tst_qtbug35600()
 
     // QTBUG-35600: program may crash here or on exit
 }
+
+void tst_QWidget_window::tst_recreateWindow_QTBUG40817()
+{
+    QTabWidget tab;
+
+    QWidget *w = new QWidget;
+    tab.addTab(w, "Tab1");
+    QVBoxLayout *vl = new QVBoxLayout(w);
+    QLabel *lbl = new QLabel("HELLO1");
+    lbl->setObjectName("label1");
+    vl->addWidget(lbl);
+    w = new QWidget;
+    tab.addTab(w, "Tab2");
+    vl = new QVBoxLayout(w);
+    lbl = new QLabel("HELLO2");
+    lbl->setAttribute(Qt::WA_NativeWindow);
+    lbl->setObjectName("label2");
+    vl->addWidget(lbl);
+
+    tab.show();
+
+    QVERIFY(QTest::qWaitForWindowExposed(&tab));
+
+    QWindow *win = tab.windowHandle();
+    win->destroy();
+    QWindowPrivate *p = qt_window_private(win);
+    p->create(true);
+    win->show();
+
+    tab.setCurrentIndex(1);
+}
+
 
 QTEST_MAIN(tst_QWidget_window)
 #include "tst_qwidget_window.moc"

@@ -132,6 +132,7 @@ public:
     void _q_clearAlert();
 
     void setScreen(QScreen *newScreen, bool recreate);
+    void create(bool recursive);
 
     virtual void clearFocusObject();
 
