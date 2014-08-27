@@ -287,13 +287,12 @@ QPixmap QWindowsScreen::grabWindow(WId window, int qX, int qY, int qWidth, int q
     \brief Find a top level window taking the flags of ChildWindowFromPointEx.
 */
 
-QWindow *QWindowsScreen::findTopLevelAt(const QPoint &point, unsigned flags)
+QWindow *QWindowsScreen::topLevelAt(const QPoint &point) const
 {
-    QWindow* result = 0;
-    if (QPlatformWindow *bw = QWindowsContext::instance()->
-            findPlatformWindowAt(GetDesktopWindow(), point, flags))
-        result = QWindowsWindow::topLevelOf(bw->window());
-    qCDebug(lcQpaWindows) <<__FUNCTION__ << point << flags << result;
+    QWindow *result = 0;
+    if (QWindow *child = QWindowsScreen::windowAt(point * QWindowsScaling::factor(), CWP_SKIPINVISIBLE))
+        result = QWindowsWindow::topLevelOf(child);
+    qCDebug(lcQpaWindows) <<__FUNCTION__ << point << result;
     return result;
 }
 
@@ -305,15 +304,6 @@ QWindow *QWindowsScreen::windowAt(const QPoint &screenPoint, unsigned flags)
         result = bw->window();
     qCDebug(lcQpaWindows) <<__FUNCTION__ << screenPoint << " returns " << result;
     return result;
-}
-
-QWindow *QWindowsScreen::windowUnderMouse(unsigned flags)
-{
-#ifndef QT_NO_CURSOR
-    return QWindowsScreen::windowAt(QWindowsCursor::mousePosition(), flags);
-#else
-    return 0;
-#endif
 }
 
 QWindowsScreen *QWindowsScreen::screenOf(const QWindow *w)

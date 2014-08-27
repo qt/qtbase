@@ -47,6 +47,7 @@
 #include "qwindowscontext.h"
 #include "qwindowskeymapper.h"
 #include "qwindowswindow.h"
+#include "qwindowsscreen.h"
 
 #include <qpa/qwindowsysteminterface.h>
 
@@ -437,8 +438,7 @@ bool QWindowsTabletSupport::translateTabletPacketEvent()
         }
 
         if (!target)
-            if (QPlatformWindow *pw = QWindowsContext::instance()->findPlatformWindowAt(GetDesktopWindow(), globalPos, CWP_SKIPINVISIBLE | CWP_SKIPTRANSPARENT))
-                target = pw->window();
+            target = QWindowsScreen::windowAt(globalPos, CWP_SKIPINVISIBLE | CWP_SKIPTRANSPARENT);
         if (!target)
             continue;
 

@@ -246,11 +246,6 @@ public:
     void setCursor(const QWindowsWindowCursor &c);
     void applyCursor();
 
-    QWindowsWindow *childAt(const QPoint &clientPoint,
-                                unsigned cwexflags = CWP_SKIPINVISIBLE) const;
-    QWindowsWindow *childAtScreenPoint(const QPoint &screenPoint,
-                                           unsigned cwexflags = CWP_SKIPINVISIBLE) const;
-
     static QByteArray debugWindowFlags(Qt::WindowFlags wf);
 
     inline bool testFlag(unsigned f) const  { return (m_flags & f) != 0; }

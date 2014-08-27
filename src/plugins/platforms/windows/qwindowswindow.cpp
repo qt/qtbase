@@ -2083,26 +2083,6 @@ void QWindowsWindow::setCursor(const QWindowsWindowCursor &c)
 #endif
 }
 
-/*!
-    \brief Find a child window using flags from  ChildWindowFromPointEx.
-*/
-
-QWindowsWindow *QWindowsWindow::childAtScreenPoint(const QPoint &screenPoint,
-                                                           unsigned cwexflags) const
-{
-    if (m_data.hwnd)
-        return QWindowsContext::instance()->findPlatformWindowAt(m_data.hwnd, screenPoint, cwexflags);
-    return 0;
-}
-
-QWindowsWindow *QWindowsWindow::childAt(const QPoint &clientPoint, unsigned cwexflags) const
-{
-    if (m_data.hwnd)
-        return childAtScreenPoint(QWindowsGeometryHint::mapToGlobal(m_data.hwnd, clientPoint),
-                                  cwexflags);
-    return 0;
-}
-
 #ifndef Q_OS_WINCE
 void QWindowsWindow::setAlertState(bool enabled)
 {
