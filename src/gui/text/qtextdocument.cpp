@@ -1310,7 +1310,7 @@ QTextCursor QTextDocument::find(const QString &subString, const QTextCursor &cur
 
 
 static bool findInBlock(const QTextBlock &block, const QRegExp &expression, int offset,
-                        QTextDocument::FindFlags options, QTextCursor &cursor)
+                        QTextDocument::FindFlags options, QTextCursor *cursor)
 {
     QRegExp expr(expression);
     QString text = block.text();
@@ -1339,8 +1339,8 @@ static bool findInBlock(const QTextBlock &block, const QRegExp &expression, int 
     }
     if (idx == -1)
         return false;
-    cursor = QTextCursor(block.docHandle(), block.position() + idx);
-    cursor.setPosition(cursor.position() + expr.matchedLength(), QTextCursor::KeepAnchor);
+    *cursor = QTextCursor(block.docHandle(), block.position() + idx);
+    cursor->setPosition(cursor->position() + expr.matchedLength(), QTextCursor::KeepAnchor);
     return true;
 }
 
@@ -1381,7 +1381,7 @@ QTextCursor QTextDocument::find(const QRegExp & expr, int from, FindFlags option
     if (!(options & FindBackward)) {
        int blockOffset = qMax(0, pos - block.position());
         while (block.isValid()) {
-            if (findInBlock(block, expr, blockOffset, options, cursor))
+            if (findInBlock(block, expr, blockOffset, options, &cursor))
                 return cursor;
             blockOffset = 0;
             block = block.next();
@@ -1389,7 +1389,7 @@ QTextCursor QTextDocument::find(const QRegExp & expr, int from, FindFlags option
     } else {
         int blockOffset = pos - block.position();
         while (block.isValid()) {
-            if (findInBlock(block, expr, blockOffset, options, cursor))
+            if (findInBlock(block, expr, blockOffset, options, &cursor))
                 return cursor;
             block = block.previous();
             blockOffset = block.length() - 1;
