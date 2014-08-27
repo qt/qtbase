@@ -3677,14 +3677,39 @@ int QString::count(const QRegExp& rx) const
 */
 int QString::indexOf(const QRegularExpression& re, int from) const
 {
+    return indexOf(re, from, Q_NULLPTR);
+}
+
+/*!
+    \overload
+    \since 5.5
+
+    Returns the index position of the first match of the regular
+    expression \a re in the string, searching forward from index
+    position \a from. Returns -1 if \a re didn't match anywhere.
+
+    If the match is successful and \a rmatch is not a null pointer, it also
+    writes the results of the match into the QRegularExpressionMatch object
+    pointed to by \a rmatch.
+
+    Example:
+
+    \snippet qstring/main.cpp 97
+*/
+int QString::indexOf(const QRegularExpression &re, int from, QRegularExpressionMatch *rmatch) const
+{
     if (!re.isValid()) {
         qWarning("QString::indexOf: invalid QRegularExpression object");
         return -1;
     }
 
     QRegularExpressionMatch match = re.match(*this, from);
-    if (match.hasMatch())
-        return match.capturedStart();
+    if (match.hasMatch()) {
+        const int ret = match.capturedStart();
+        if (rmatch)
+            *rmatch = qMove(match);
+        return ret;
+    }
 
     return -1;
 }
@@ -3703,22 +3728,45 @@ int QString::indexOf(const QRegularExpression& re, int from) const
 */
 int QString::lastIndexOf(const QRegularExpression &re, int from) const
 {
+    return lastIndexOf(re, from, Q_NULLPTR);
+}
+
+/*!
+    \overload
+    \since 5.5
+
+    Returns the index position of the last match of the regular
+    expression \a re in the string, which starts before the index
+    position \a from. Returns -1 if \a re didn't match anywhere.
+
+    If the match is successful and \a rmatch is not a null pointer, it also
+    writes the results of the match into the QRegularExpressionMatch object
+    pointed to by \a rmatch.
+
+    Example:
+
+    \snippet qstring/main.cpp 98
+*/
+int QString::lastIndexOf(const QRegularExpression &re, int from, QRegularExpressionMatch *rmatch) const
+{
     if (!re.isValid()) {
         qWarning("QString::lastIndexOf: invalid QRegularExpression object");
         return -1;
     }
 
     int endpos = (from < 0) ? (size() + from + 1) : (from + 1);
-
     QRegularExpressionMatchIterator iterator = re.globalMatch(*this);
     int lastIndex = -1;
     while (iterator.hasNext()) {
         QRegularExpressionMatch match = iterator.next();
         int start = match.capturedStart();
-        if (start < endpos)
+        if (start < endpos) {
             lastIndex = start;
-        else
+            if (rmatch)
+                *rmatch = qMove(match);
+        } else {
             break;
+        }
     }
 
     return lastIndex;

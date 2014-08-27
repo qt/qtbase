@@ -394,6 +394,13 @@ void Widget::firstIndexOfFunction()
     QString str = "the minimum";
     str.indexOf(QRegularExpression("m[aeiou]"), 0);       // returns 4
     //! [93]
+
+    //! [97]
+    QString str = "the minimum";
+    QRegularExpressionMatch match;
+    str.indexOf(QRegularExpression("m[aeiou]"), 0, &match);       // returns 4
+    // match.captured() == mi
+    //! [97]
 }
 
 void Widget::insertFunction()
@@ -444,6 +451,13 @@ void Widget::lastIndexOfFunction()
     QString str = "the minimum";
     str.lastIndexOf(QRegularExpression("m[aeiou]"));      // returns 8
     //! [94]
+
+    //! [98]
+    QString str = "the minimum";
+    QRegularExpressionMatch match;
+    str.lastIndexOf(QRegularExpression("m[aeiou]"), -1, &match);      // returns 8
+    // match.captured() == mu
+    //! [98]
 }
 
 void Widget::leftFunction()

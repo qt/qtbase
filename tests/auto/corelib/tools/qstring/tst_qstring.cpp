@@ -1191,6 +1191,18 @@ void tst_QString::indexOf()
 
         QRegularExpression re(QRegularExpression::escape(needle), options);
         QCOMPARE( haystack.indexOf(re, startpos), resultpos );
+        QCOMPARE(haystack.indexOf(re, startpos, Q_NULLPTR), resultpos);
+
+        QRegularExpressionMatch match;
+        QVERIFY(!match.hasMatch());
+        QCOMPARE(haystack.indexOf(re, startpos, &match), resultpos);
+        QCOMPARE(match.hasMatch(), resultpos != -1);
+        if (resultpos > -1 && needleIsLatin) {
+            if (bcs)
+                QVERIFY(match.captured() == needle);
+            else
+                QVERIFY(match.captured().toLower() == needle.toLower());
+        }
     }
 
     if (cs == Qt::CaseSensitive) {
@@ -1303,6 +1315,14 @@ void tst_QString::indexOfInvalidRegex()
 {
     QTest::ignoreMessage(QtWarningMsg, "QString::indexOf: invalid QRegularExpression object");
     QCOMPARE(QString("invalid regex\\").indexOf(QRegularExpression("invalid regex\\")), -1);
+    QTest::ignoreMessage(QtWarningMsg, "QString::indexOf: invalid QRegularExpression object");
+    QCOMPARE(QString("invalid regex\\").indexOf(QRegularExpression("invalid regex\\"), -1, Q_NULLPTR), -1);
+
+    QRegularExpressionMatch match;
+    QVERIFY(!match.hasMatch());
+    QTest::ignoreMessage(QtWarningMsg, "QString::indexOf: invalid QRegularExpression object");
+    QCOMPARE(QString("invalid regex\\").indexOf(QRegularExpression("invalid regex\\"), -1, &match), -1);
+    QVERIFY(!match.hasMatch());
 }
 
 void tst_QString::lastIndexOf_data()
@@ -1394,6 +1414,17 @@ void tst_QString::lastIndexOf()
 
             QRegularExpression re(QRegularExpression::escape(needle), options);
             QCOMPARE(haystack.lastIndexOf(re, from), expected);
+            QCOMPARE(haystack.lastIndexOf(re, from, Q_NULLPTR), expected);
+            QRegularExpressionMatch match;
+            QVERIFY(!match.hasMatch());
+            QCOMPARE(haystack.lastIndexOf(re, from, &match), expected);
+            QCOMPARE(match.hasMatch(), expected > -1);
+            if (expected > -1) {
+                if (caseSensitive)
+                    QCOMPARE(match.captured(), needle);
+                else
+                    QCOMPARE(match.captured().toLower(), needle.toLower());
+            }
         }
     }
 
@@ -1419,6 +1450,14 @@ void tst_QString::lastIndexOfInvalidRegex()
 {
     QTest::ignoreMessage(QtWarningMsg, "QString::lastIndexOf: invalid QRegularExpression object");
     QCOMPARE(QString("invalid regex\\").lastIndexOf(QRegularExpression("invalid regex\\"), 0), -1);
+    QTest::ignoreMessage(QtWarningMsg, "QString::lastIndexOf: invalid QRegularExpression object");
+    QCOMPARE(QString("invalid regex\\").lastIndexOf(QRegularExpression("invalid regex\\"), -1, Q_NULLPTR), -1);
+
+    QRegularExpressionMatch match;
+    QVERIFY(!match.hasMatch());
+    QTest::ignoreMessage(QtWarningMsg, "QString::lastIndexOf: invalid QRegularExpression object");
+    QCOMPARE(QString("invalid regex\\").lastIndexOf(QRegularExpression("invalid regex\\"), -1, &match), -1);
+    QVERIFY(!match.hasMatch());
 }
 
 void tst_QString::count()
