@@ -1335,7 +1335,7 @@ void QMacStylePrivate::initComboboxBdi(const QStyleOptionComboBox *combo, HIThem
         bdi->adornment = kThemeAdornmentFocus;
     if (combo->activeSubControls & QStyle::SC_ComboBoxArrow)
         bdi->state = kThemeStatePressed;
-    else if (tds == kThemeStateInactive)
+    else if (tds == kThemeStateInactive && QSysInfo::MacintoshVersion <= QSysInfo::MV_10_9)
         bdi->state = kThemeStateActive;
     else
         bdi->state = tds;
@@ -1744,6 +1744,7 @@ void QMacStylePrivate::drawColorlessButton(const HIRect &macRect, HIThemeButtonD
     const bool combo = opt->type == QStyleOption::SO_ComboBox;
     const bool button = opt->type == QStyleOption::SO_Button;
     const bool pressed = bdi->state == kThemeStatePressed;
+    const bool usingYosemiteOrLater = QSysInfo::MacintoshVersion > QSysInfo::MV_10_9;
 
     if (button && pressed) {
         if (bdi->kind == kThemePushButton) {
@@ -1788,7 +1789,7 @@ void QMacStylePrivate::drawColorlessButton(const HIRect &macRect, HIThemeButtonD
 
         if (!combo && !button && bdi->value == kThemeButtonOff) {
             pm = activePixmap;
-        } else if (combo || button) {
+        } else if ((combo && !usingYosemiteOrLater) || button) {
             QImage image = activePixmap.toImage();
 
             for (int y = 0; y < height; ++y) {
@@ -1812,6 +1813,30 @@ void QMacStylePrivate::drawColorlessButton(const HIRect &macRect, HIThemeButtonD
                     if (pressed)
                         gray *= 0.88;
                     pixel = qRgba(gray, gray, gray, qAlpha(pixel));
+                }
+            }
+            pm = QPixmap::fromImage(image);
+        } else if (combo && usingYosemiteOrLater) {
+            QImage image = activePixmap.toImage();
+
+            for (int y = 0; y < height; ++y) {
+                QRgb *scanLine = reinterpret_cast<QRgb *>(image.scanLine(y));
+
+                for (int x = 0; x < width; ++x) {
+                    QRgb &pixel = scanLine[x];
+                    int gray = qRed(pixel); // We know the image is grayscale
+                    int alpha = qAlpha(pixel);
+
+                    if (gray == 128 && alpha == 128) {
+                        pixel = qRgba(255, 255, 255, 255);
+                    } else if (alpha == 0) {
+                        pixel = 0;
+                    } else {
+                        bool belowThreshold = (alpha * gray) / 255 + 255 - alpha < 128;
+                        gray = belowThreshold ? 0 : 2 * gray - 255;
+                        alpha = belowThreshold ? 0 : 2 * alpha - 255;
+                        pixel = qRgba(gray, gray, gray, alpha);
+                    }
                 }
             }
             pm = QPixmap::fromImage(image);
