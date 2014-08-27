@@ -56,9 +56,12 @@ public:
     QWindowsDirect2DWindow(QWindow *window, const QWindowsWindowData &data);
     ~QWindowsDirect2DWindow();
 
+    void setWindowFlags(Qt::WindowFlags flags) Q_DECL_OVERRIDE;
+
     QPixmap *pixmap();
     void flush(QWindowsDirect2DBitmap *bitmap, const QRegion &region, const QPoint &offset);
-    void present();
+    void present(const QRegion &region);
+    void setupSwapChain();
     void resizeSwapChain(const QSize &size);
 
     QSharedPointer<QWindowsDirect2DBitmap> copyBackBuffer() const;
@@ -72,6 +75,7 @@ private:
     QScopedPointer<QWindowsDirect2DBitmap> m_bitmap;
     QScopedPointer<QPixmap> m_pixmap;
     bool m_needsFullFlush;
+    bool m_directRendering;
 };
 
 QT_END_NAMESPACE

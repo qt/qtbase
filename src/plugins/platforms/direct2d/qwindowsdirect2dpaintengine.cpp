@@ -343,7 +343,7 @@ public:
                                                    D2D1::IdentityMatrix(),
                                                    1.0,
                                                    NULL,
-                                                   D2D1_LAYER_OPTIONS1_INITIALIZE_FROM_BACKGROUND),
+                                                   D2D1_LAYER_OPTIONS1_NONE),
                             NULL);
             pushedClips.push(LayerClip);
         }
@@ -953,7 +953,7 @@ bool QWindowsDirect2DPaintEngine::begin(QPaintDevice * pdev)
                                                D2D1::IdentityMatrix(),
                                                1.0,
                                                NULL,
-                                               D2D1_LAYER_OPTIONS1_INITIALIZE_FROM_BACKGROUND),
+                                               D2D1_LAYER_OPTIONS1_NONE),
                         NULL);
     } else {
         QRect clip(0, 0, pdev->width(), pdev->height());
