@@ -243,7 +243,7 @@ private:
             qreal cx, cy, angle;
         } conical;
     } m_data;
-    void *dummy;
+    void *dummy; // ### Qt 6: replace with actual content (CoordinateMode, InterpolationMode, ...)
 };
 
 inline void QGradient::setSpread(Spread aspread)
