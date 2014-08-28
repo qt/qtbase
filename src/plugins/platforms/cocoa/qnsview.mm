@@ -122,7 +122,7 @@ static NSString *_q_NSWindowDidChangeOcclusionStateNotification = nil;
 
 @end
 
-@implementation QNSView
+@implementation QT_MANGLE_NAMESPACE(QNSView)
 
 + (void)initialize
 {
