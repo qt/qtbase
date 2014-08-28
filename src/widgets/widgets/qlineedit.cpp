@@ -1412,7 +1412,7 @@ bool QLineEdit::event(QEvent * e)
 {
     Q_D(QLineEdit);
     if (e->type() == QEvent::Timer) {
-        // should be timerEvent, is here for binary compatibility
+        // ### Qt6: move to timerEvent, is here for binary compatibility
         int timerId = ((QTimerEvent*)e)->timerId();
         if (false) {
 #ifndef QT_NO_DRAGANDDROP
