@@ -1027,17 +1027,17 @@ protected:
         if (m_interFile.isEmpty()) {
             QList<QSslCertificate> localCert = QSslCertificate::fromPath(m_certFile);
             QVERIFY(!localCert.isEmpty());
-            QVERIFY(localCert.first().handle());
+            QVERIFY(!localCert.first().isNull());
             socket->setLocalCertificate(localCert.first());
         }
         else {
             QList<QSslCertificate> localCert = QSslCertificate::fromPath(m_certFile);
             QVERIFY(!localCert.isEmpty());
-            QVERIFY(localCert.first().handle());
+            QVERIFY(!localCert.first().isNull());
 
             QList<QSslCertificate> interCert = QSslCertificate::fromPath(m_interFile);
             QVERIFY(!interCert.isEmpty());
-            QVERIFY(interCert.first().handle());
+            QVERIFY(!interCert.first().isNull());
 
             socket->setLocalCertificateChain(localCert + interCert);
         }
@@ -1527,7 +1527,7 @@ protected:
         // Only set the certificate
         QList<QSslCertificate> localCert = QSslCertificate::fromPath(SRCDIR "certs/fluke.cert");
         QVERIFY(!localCert.isEmpty());
-        QVERIFY(localCert.first().handle());
+        QVERIFY(!localCert.first().isNull());
         socket->setLocalCertificate(localCert.first());
 
         QVERIFY(socket->setSocketDescriptor(socketDescriptor, QAbstractSocket::ConnectedState));
@@ -1762,7 +1762,7 @@ protected:
 
         QList<QSslCertificate> localCert = QSslCertificate::fromPath(SRCDIR "certs/fluke.cert");
         QVERIFY(!localCert.isEmpty());
-        QVERIFY(localCert.first().handle());
+        QVERIFY(!localCert.first().isNull());
         socket->setLocalCertificate(localCert.first());
 
         QVERIFY(socket->setSocketDescriptor(socketDescriptor, QAbstractSocket::ConnectedState));
@@ -2458,7 +2458,7 @@ void WebSocket::_startServerEncryption (void)
 
     QList<QSslCertificate> localCert = QSslCertificate::fromPath(m_certFile);
     QVERIFY(!localCert.isEmpty());
-    QVERIFY(localCert.first().handle());
+    QVERIFY(!localCert.first().isNull());
     setLocalCertificate(localCert.first());
 
     QVERIFY(!peerAddress().isNull());
@@ -2638,7 +2638,7 @@ void tst_QSslSocket::qtbug18498_peek2()
 
     QList<QSslCertificate> localCert = QSslCertificate::fromPath(SRCDIR "certs/fluke.cert");
     QVERIFY(!localCert.isEmpty());
-    QVERIFY(localCert.first().handle());
+    QVERIFY(!localCert.first().isNull());
     server->setLocalCertificate(localCert.first());
 
     server->setProtocol(QSsl::AnyProtocol);
