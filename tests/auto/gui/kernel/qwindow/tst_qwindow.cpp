@@ -39,10 +39,11 @@
 **
 ****************************************************************************/
 
-#include <qwindow.h>
+#include <qrasterwindow.h>
 #include <qpa/qwindowsysteminterface.h>
 #include <qpa/qplatformintegration.h>
 #include <private/qguiapplication_p.h>
+#include <QtGui/QPainter>
 
 #include <QtTest/QtTest>
 
@@ -51,6 +52,8 @@
 
 #if defined(Q_OS_QNX)
 #include <QOpenGLContext>
+#elif defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
+#  include <QtCore/qt_windows.h>
 #endif
 
 // For QSignalSpy slot connections.
@@ -94,6 +97,7 @@ private slots:
     void modalWithChildWindow();
     void modalWindowModallity();
     void modalWindowPosition();
+    void windowsTransientChildren();
     void initTestCase();
     void cleanup();
 
@@ -1537,6 +1541,59 @@ void tst_QWindow::modalWindowPosition()
     window.show();
     QVERIFY(QTest::qWaitForWindowExposed(&window));
     QCOMPARE(window.geometry(), origGeo);
+}
+
+class ColoredWindow : public QRasterWindow {
+public:
+    explicit ColoredWindow(const QColor &color, QWindow *parent = 0) : QRasterWindow(parent), m_color(color) {}
+    void paintEvent(QPaintEvent *) Q_DECL_OVERRIDE
+    {
+        QPainter p(this);
+        p.fillRect(QRect(QPoint(0, 0), size()), m_color);
+    }
+
+private:
+    const QColor m_color;
+};
+
+static bool isNativeWindowVisible(const QWindow *window)
+{
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
+    return IsWindowVisible(reinterpret_cast<HWND>(window->winId()));
+#else
+    Q_UNIMPLEMENTED();
+    return window->isVisible();
+#endif
+}
+
+void tst_QWindow::windowsTransientChildren()
+{
+    if (QGuiApplication::platformName().compare(QStringLiteral("windows"), Qt::CaseInsensitive))
+        QSKIP("Windows only test");
+
+    ColoredWindow mainWindow(Qt::yellow);
+    mainWindow.setGeometry(QRect(m_availableTopLeft + QPoint(100, 100), m_testWindowSize));
+    mainWindow.setTitle(QStringLiteral("Main"));
+    ColoredWindow child(Qt::blue, &mainWindow);
+    child.setGeometry(QRect(QPoint(0, 0), m_testWindowSize / 2));
+
+    ColoredWindow dialog(Qt::red);
+    dialog.setGeometry(QRect(m_availableTopLeft + QPoint(200, 200), m_testWindowSize));
+    dialog.setTitle(QStringLiteral("Dialog"));
+    dialog.setTransientParent(&mainWindow);
+
+    mainWindow.show();
+    child.show();
+    dialog.show();
+
+    QVERIFY(QTest::qWaitForWindowExposed(&dialog));
+    mainWindow.setWindowState(Qt::WindowMinimized);
+    QVERIFY(!isNativeWindowVisible(&dialog));
+    dialog.hide();
+    mainWindow.setWindowState(Qt::WindowNoState);
+    // QTBUG-40696, transient children hidden by Qt should not be re-shown by Windows.
+    QVERIFY(!isNativeWindowVisible(&dialog));
+    QVERIFY(isNativeWindowVisible(&child)); // Real children should be visible.
 }
 
 #include <tst_qwindow.moc>

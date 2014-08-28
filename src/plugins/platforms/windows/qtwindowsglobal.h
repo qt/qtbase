@@ -77,6 +77,7 @@ enum WindowsEventType // Simplify event types
     LeaveEvent = WindowEventFlag + 5,
     CloseEvent = WindowEventFlag + 6,
     ShowEvent = WindowEventFlag + 7,
+    ShowEventOnParentRestoring = WindowEventFlag + 20,
     HideEvent = WindowEventFlag + 8,
     DestroyEvent = WindowEventFlag + 9,
     MoveEvent = WindowEventFlag + 10,
@@ -128,7 +129,7 @@ enum ProcessDpiAwareness
 
 } // namespace QtWindows
 
-inline QtWindows::WindowsEventType windowsEventType(UINT message, WPARAM wParamIn)
+inline QtWindows::WindowsEventType windowsEventType(UINT message, WPARAM wParamIn, LPARAM lParamIn)
 {
     switch (message) {
     case WM_PAINT:
@@ -156,7 +157,9 @@ inline QtWindows::WindowsEventType windowsEventType(UINT message, WPARAM wParamI
     case WM_MOVE:
         return QtWindows::MoveEvent;
     case WM_SHOWWINDOW:
-        return wParamIn ? QtWindows::ShowEvent : QtWindows::HideEvent;
+        if (wParamIn)
+            return lParamIn == SW_PARENTOPENING ? QtWindows::ShowEventOnParentRestoring : QtWindows::ShowEvent;
+        return QtWindows::HideEvent;
     case WM_SIZE:
         return QtWindows::ResizeEvent;
     case WM_NCCALCSIZE:

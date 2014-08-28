@@ -1052,6 +1052,12 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
     case QtWindows::FocusOutEvent:
         handleFocusEvent(et, platformWindow);
         return true;
+    case QtWindows::ShowEventOnParentRestoring: // QTBUG-40696, prevent Windows from re-showing hidden transient children (dialogs).
+        if (!platformWindow->window()->isVisible()) {
+            *result = 0;
+            return true;
+        }
+        break;
     case QtWindows::HideEvent:
         platformWindow->handleHidden();
         return false;// Indicate transient children should be hidden by windows (SW_PARENTCLOSING)
@@ -1243,7 +1249,7 @@ void QWindowsContext::setAsyncExpose(bool value)
 extern "C" LRESULT QT_WIN_CALLBACK qWindowsWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     LRESULT result;
-    const QtWindows::WindowsEventType et = windowsEventType(message, wParam);
+    const QtWindows::WindowsEventType et = windowsEventType(message, wParam, lParam);
     const bool handled = QWindowsContext::instance()->windowsProc(hwnd, message, et, wParam, lParam, &result);
     if (QWindowsContext::verbose > 1 && lcQpaEvents().isDebugEnabled()) {
         if (const char *eventName = QWindowsGuiEventDispatcher::windowsMessageName(message)) {
