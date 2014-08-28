@@ -2583,7 +2583,7 @@ qreal QTextLine::cursorToX(int *cursorPos, Edge edge) const
     }
 
     int lineEnd = line.from + line.length + line.trailingSpaces;
-    int pos = *cursorPos;
+    int pos = qBound(0, *cursorPos, lineEnd);
     int itm;
     const QCharAttributes *attributes = eng->attributes();
     if (!attributes) {
