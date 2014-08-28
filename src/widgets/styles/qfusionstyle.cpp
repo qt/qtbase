@@ -1614,7 +1614,7 @@ void QFusionStyle::drawControl(ControlElement element, const QStyleOption *optio
                 QRect pmr(0, 0, pixw, pixh);
                 pmr.moveCenter(vCheckRect.center());
                 painter->setPen(menuItem->palette.text().color());
-                if (checkable && checked) {
+                if (!ignoreCheckMark && checkable && checked) {
                     QStyleOption opt = *option;
                     if (act) {
                         QColor activeColor = mergedColors(option->palette.background().color(),
