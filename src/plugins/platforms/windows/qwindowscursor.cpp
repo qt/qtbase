@@ -44,6 +44,7 @@
 #include "qwindowscontext.h"
 #include "qwindowswindow.h"
 #include "qwindowsscreen.h"
+#include "qwindowsscaling.h"
 
 #include <QtGui/QBitmap>
 #include <QtGui/QImage>
@@ -624,9 +625,15 @@ QWindowsCursor::CursorState QWindowsCursor::cursorState()
     return CursorHidden;
 }
 
+QPoint QWindowsCursor::pos() const
+{
+    return mousePosition() / QWindowsScaling::factor();
+}
+
 void QWindowsCursor::setPos(const QPoint &pos)
 {
-    SetCursorPos(pos.x(), pos.y());
+    const QPoint posDp = pos * QWindowsScaling::factor();
+    SetCursorPos(posDp.x() , posDp.y());
 }
 
 /*!
