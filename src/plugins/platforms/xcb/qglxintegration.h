@@ -76,7 +76,7 @@ public:
     static void queryDummyContext();
 
 private:
-    QXcbScreen *m_screen;
+    Display *m_display;
     GLXContext m_context;
     GLXContext m_shareContext;
     QSurfaceFormat m_format;
