@@ -39,30 +39,15 @@
 **
 ****************************************************************************/
 
-/****************************************************************************
-**
-** In addition, as a special exception, the copyright holders listed above give
-** permission to link the code of its release of Qt with the OpenSSL project's
-** "OpenSSL" library (or modified versions of the "OpenSSL" library that use the
-** same license as the original version), and distribute the linked executables.
-**
-** You must comply with the GNU General Public License version 2 in all
-** respects for all of the code used other than the "OpenSSL" code.  If you
-** modify this file, you may extend this exception to your version of the file,
-** but you are not obligated to do so.  If you do not wish to do so, delete
-** this exception statement from your version of this file.
-**
-****************************************************************************/
-
-#ifndef QSSLSOCKET_OPENSSL_P_H
-#define QSSLSOCKET_OPENSSL_P_H
+#ifndef QSSLSOCKET_WINRT_P_H
+#define QSSLSOCKET_WINRT_P_H
 
 //
 //  W A R N I N G
 //  -------------
 //
 // This file is not part of the Qt API.  It exists for the convenience
-// of the QLibrary class.  This header file may change from
+// of the QtNetwork library.  This header file may change from
 // version to version without notice, or even be removed.
 //
 // We mean it.
@@ -70,7 +55,23 @@
 
 #include "qsslsocket_p.h"
 
+#include <wrl.h>
+#include <windows.networking.sockets.h>
+
 QT_BEGIN_NAMESPACE
+
+class QSslSocketConnectionHelper : public QObject
+{
+    Q_OBJECT
+public:
+    QSslSocketConnectionHelper(QSslSocketBackendPrivate *d)
+        : d(d) { }
+
+    Q_INVOKABLE void disconnectSocketFromHost();
+
+private:
+    QSslSocketBackendPrivate *d;
+};
 
 class QSslSocketBackendPrivate : public QSslSocketPrivate
 {
@@ -89,13 +90,22 @@ public:
     QSsl::SslProtocol sessionProtocol() const Q_DECL_OVERRIDE;
     void continueHandshake() Q_DECL_OVERRIDE;
 
+    static QList<QSslCipher> defaultCiphers();
     static QList<QSslError> verify(QList<QSslCertificate> certificateChain, const QString &hostName);
     static bool importPKCS12(QIODevice *device,
                              QSslKey *key, QSslCertificate *cert,
                              QList<QSslCertificate> *caCertificates,
                              const QByteArray &passPhrase);
+
+private:
+    HRESULT onSslUpgrade(ABI::Windows::Foundation::IAsyncAction *,
+                         ABI::Windows::Foundation::AsyncStatus);
+
+    QScopedPointer<QSslSocketConnectionHelper> connectionHelper;
+    ABI::Windows::Networking::Sockets::SocketProtectionLevel protectionLevel;
+    QSet<QSslCertificate> previousCaCertificates;
 };
 
 QT_END_NAMESPACE
 
-#endif
+#endif // QSSLSOCKET_WINRT_P_H
