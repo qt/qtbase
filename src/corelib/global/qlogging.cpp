@@ -1282,12 +1282,9 @@ static void qDefaultMsgHandler(QtMsgType type, const char *buf)
     qDefaultMessageHandler(type, emptyContext, QString::fromLocal8Bit(buf));
 }
 
-#if defined(Q_COMPILER_THREAD_LOCAL) || (defined(Q_CC_MSVC) && !defined(Q_OS_WINCE))
-#if defined(Q_CC_MSVC)
-static __declspec(thread) bool msgHandlerGrabbed = false;
-#else
+#if defined(Q_COMPILER_THREAD_LOCAL)
+
 static thread_local bool msgHandlerGrabbed = false;
-#endif
 
 static bool grabMessageHandler()
 {
@@ -1306,7 +1303,7 @@ static void ungrabMessageHandler()
 #else
 static bool grabMessageHandler() { return true; }
 static void ungrabMessageHandler() { }
-#endif // (Q_COMPILER_THREAD_LOCAL) || ((Q_CC_MSVC) && !(Q_OS_WINCE))
+#endif // (Q_COMPILER_THREAD_LOCAL)
 
 static void qt_message_print(QtMsgType msgType, const QMessageLogContext &context, const QString &message)
 {
