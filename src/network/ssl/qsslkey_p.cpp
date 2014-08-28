@@ -228,7 +228,11 @@ QSslKey::QSslKey(QIODevice *device, QSsl::KeyAlgorithm algorithm, QSsl::Encoding
 QSslKey::QSslKey(Qt::HANDLE handle, QSsl::KeyType type)
     : d(new QSslKeyPrivate)
 {
+#ifndef QT_NO_OPENSSL
     d->opaque = reinterpret_cast<EVP_PKEY *>(handle);
+#else
+    d->opaque = handle;
+#endif
     d->algorithm = QSsl::Opaque;
     d->type = type;
     d->isNull = !d->opaque;
@@ -323,7 +327,15 @@ QByteArray QSslKey::toDer(const QByteArray &passPhrase) const
     if (d->isNull || d->algorithm == QSsl::Opaque)
         return QByteArray();
 
+#ifndef QT_NO_OPENSSL
     return d->derFromPem(toPem(passPhrase));
+#else
+    // Encrypted DER is nonsense, see QTBUG-41038.
+    if (d->type == QSsl::PrivateKey && !passPhrase.isEmpty())
+        return QByteArray();
+
+    return d->derData;
+#endif
 }
 
 /*!

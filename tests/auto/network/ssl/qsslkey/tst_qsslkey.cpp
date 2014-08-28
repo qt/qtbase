@@ -47,14 +47,6 @@
 #include <QtNetwork/qhostaddress.h>
 #include <QtNetwork/qnetworkproxy.h>
 
-#ifdef Q_OS_WINRT
-#define WINRT_EXPECT_FAILURES \
-    if (type == QSsl::PrivateKey) \
-        QEXPECT_FAIL("", "No support for private keys on WinRT: QTBUG-40688", Abort); \
-    if (strstr(QTest::currentDataTag(), "rsa-pub-40")) \
-        QEXPECT_FAIL("", "Weak public keys are not supported on WinRT", Abort);
-#endif
-
 class tst_QSslKey : public QObject
 {
     Q_OBJECT
@@ -179,10 +171,6 @@ void tst_QSslKey::constructor()
     QFETCH(QSsl::KeyType, type);
     QFETCH(QSsl::EncodingFormat, format);
 
-#ifdef Q_OS_WINRT
-    WINRT_EXPECT_FAILURES
-#endif
-
     QByteArray encoded = readFile(absFilePath);
     QSslKey key(encoded, algorithm, format, type);
     QVERIFY(!key.isNull());
@@ -244,10 +232,6 @@ void tst_QSslKey::length()
     QFETCH(int, length);
     QFETCH(QSsl::EncodingFormat, format);
 
-#ifdef Q_OS_WINRT
-    WINRT_EXPECT_FAILURES
-#endif
-
     QByteArray encoded = readFile(absFilePath);
     QSslKey key(encoded, algorithm, format, type);
     QVERIFY(!key.isNull());
@@ -268,10 +252,6 @@ void tst_QSslKey::toPemOrDer()
     QFETCH(QSsl::KeyAlgorithm, algorithm);
     QFETCH(QSsl::KeyType, type);
     QFETCH(QSsl::EncodingFormat, format);
-
-#ifdef Q_OS_WINRT
-    WINRT_EXPECT_FAILURES
-#endif
 
     QByteArray encoded = readFile(absFilePath);
     QSslKey key(encoded, algorithm, format, type);
@@ -317,10 +297,6 @@ void tst_QSslKey::toEncryptedPemOrDer()
     QFETCH(QSsl::EncodingFormat, format);
     QFETCH(QString, password);
 
-#ifdef Q_OS_WINRT
-    WINRT_EXPECT_FAILURES
-#endif
-
     QByteArray plain = readFile(absFilePath);
     QSslKey key(plain, algorithm, format, type);
     QVERIFY(!key.isNull());
@@ -328,6 +304,9 @@ void tst_QSslKey::toEncryptedPemOrDer()
     QByteArray pwBytes(password.toLatin1());
 
     if (type == QSsl::PrivateKey) {
+#ifdef QT_NO_OPENSSL
+        QSKIP("Encrypted keys require support from the SSL backend");
+#endif
         QByteArray encryptedPem = key.toPem(pwBytes);
         QVERIFY(!encryptedPem.isEmpty());
         QSslKey keyPem(encryptedPem, algorithm, QSsl::Pem, type, pwBytes);
@@ -398,8 +377,8 @@ void tst_QSslKey::passphraseChecks()
             QSslKey key(&keyFile,QSsl::Rsa,QSsl::Pem, QSsl::PrivateKey, "WRONG!");
             QVERIFY(key.isNull()); // wrong passphrase => should not be able to decode key
         }
-#ifdef Q_OS_WINRT
-        QEXPECT_FAIL("", "The WinRT backend does not support private key imports: QTBUG-40688", Abort);
+#ifdef QT_NO_OPENSSL
+        QEXPECT_FAIL("", "Encrypted keys require support from the SSL backend", Abort);
 #endif
         {
             if (!keyFile.isOpen())
