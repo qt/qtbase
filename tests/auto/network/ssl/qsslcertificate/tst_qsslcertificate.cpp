@@ -927,6 +927,9 @@ void tst_QSslCertificate::toText()
 
     QString txtcert = cert.toText();
 
+#ifdef Q_OS_WINRT
+    QEXPECT_FAIL("", "QTBUG-40884: QSslCertificate::toText is not implemented on WinRT", Continue);
+#endif
     QVERIFY(QString::fromLatin1(txt098) == txtcert ||
             QString::fromLatin1(txt100) == txtcert ||
             QString::fromLatin1(txt101) == txtcert ||
@@ -972,6 +975,9 @@ void tst_QSslCertificate::verify()
         qPrintable(QString("errors: %1").arg(toString(errors))) \
     )
 
+#ifdef Q_OS_WINRT
+    QEXPECT_FAIL("", "QTBUG-40884: WinRT API does not yet support verifying a chain", Abort);
+#endif
     // Empty chain is unspecified error
     errors = QSslCertificate::verify(toVerify);
     VERIFY_VERBOSE(errors.count() == 1);
@@ -1053,6 +1059,9 @@ void tst_QSslCertificate::extensions()
 
     QSslCertificate cert = certList[0];
     QList<QSslCertificateExtension> extensions = cert.extensions();
+#ifdef Q_OS_WINRT
+    QEXPECT_FAIL("", "QTBUG-40884: WinRT API does not support extensions information", Abort);
+#endif
     QVERIFY(extensions.count() == 9);
 
     int unknown_idx = -1;
@@ -1245,6 +1254,9 @@ void tst_QSslCertificate::pkcs12()
     QSslCertificate cert;
     QList<QSslCertificate> caCerts;
 
+#ifdef Q_OS_WINRT
+    QEXPECT_FAIL("", "QTBUG-40884: WinRT API does not support pkcs12 imports", Abort);
+#endif
     ok = QSslCertificate::importPKCS12(&f, &key, &cert, &caCerts);
     QVERIFY(ok);
     f.close();

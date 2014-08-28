@@ -69,6 +69,11 @@ struct X509_EXTENSION;
 struct ASN1_OBJECT;
 #endif
 
+#ifdef Q_OS_WINRT
+#include <wrl.h>
+#include <windows.security.cryptography.certificates.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 // forward declaration
@@ -126,6 +131,12 @@ public:
     friend class QSslSocketBackendPrivate;
 
     QAtomicInt ref;
+
+#ifdef Q_OS_WINRT
+    Microsoft::WRL::ComPtr<ABI::Windows::Security::Cryptography::Certificates::ICertificate> certificate;
+
+    static QSslCertificate QSslCertificate_from_Certificate(ABI::Windows::Security::Cryptography::Certificates::ICertificate *iCertificate);
+#endif
 };
 
 QT_END_NAMESPACE

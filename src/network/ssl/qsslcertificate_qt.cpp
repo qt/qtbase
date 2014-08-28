@@ -129,11 +129,13 @@ QDateTime QSslCertificate::expiryDate() const
     return d->notValidAfter;
 }
 
+#ifndef Q_OS_WINRT // implemented in qsslcertificate_winrt.cpp
 Qt::HANDLE QSslCertificate::handle() const
 {
     Q_UNIMPLEMENTED();
     return 0;
 }
+#endif
 
 QSslKey QSslCertificate::publicKey() const
 {
