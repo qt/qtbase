@@ -1025,8 +1025,8 @@ public class QtActivityDelegate
             view.setLayoutParams(new QtLayout.LayoutParams(w, h, x, y));
         }
 
+        view.setId(id);
         m_layout.addView(view);
-        m_layout.bringChildToFront(view);
         m_nativeViews.put(id, view);
     }
 
@@ -1057,9 +1057,11 @@ public class QtActivityDelegate
             surface.setLayoutParams( new QtLayout.LayoutParams(w, h, x, y));
         }
 
-        m_layout.addView(surface);
-        if (onTop)
-            m_layout.bringChildToFront(surface);
+        // Native views are always inserted in the end of the stack (i.e., on top).
+        // All other views are stacked based on the order they are created.
+        final int index = m_layout.getChildCount() - m_nativeViews.size() - 1;
+        m_layout.addView(surface, index < 0 ? 0 : index);
+
         m_surfaces.put(id, surface);
     }
 
@@ -1070,7 +1072,6 @@ public class QtActivityDelegate
         } else if (m_nativeViews.containsKey(id)) {
             View view = m_nativeViews.get(id);
             view.setLayoutParams(new QtLayout.LayoutParams(w, h, x, y));
-            m_layout.bringChildToFront(view);
         } else {
             Log.e(QtNative.QtTAG, "Surface " + id +" not found!");
             return;

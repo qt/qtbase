@@ -69,7 +69,6 @@ static AAssetManager *m_assetManager = Q_NULLPTR;
 static jobject m_resourcesObj = Q_NULLPTR;
 static jobject m_activityObject = Q_NULLPTR;
 static jmethodID m_createSurfaceMethodID = Q_NULLPTR;
-static jmethodID m_insertNativeViewMethodID = Q_NULLPTR;
 static jmethodID m_setSurfaceGeometryMethodID = Q_NULLPTR;
 static jmethodID m_destroySurfaceMethodID = Q_NULLPTR;
 
@@ -345,27 +344,24 @@ namespace QtAndroid
 
     int insertNativeView(jobject view, const QRect &geometry)
     {
-        QJNIEnvironmentPrivate env;
-        if (!env)
-            return 0;
-
         m_surfacesMutex.lock();
         const int surfaceId = m_surfaceId++;
+        m_surfaces[surfaceId] = Q_NULLPTR; // dummy
         m_surfacesMutex.unlock();
 
         jint x = 0, y = 0, w = -1, h = -1;
-        if (!geometry.isNull()) {
-            x = geometry.x();
-            y = geometry.y();
-            w = std::max(geometry.width(), 1);
-            h = std::max(geometry.height(), 1);
-        }
+        if (!geometry.isNull())
+            geometry.getRect(&x, &y, &w, &h);
 
-        env->CallStaticVoidMethod(m_applicationClass,
-                                  m_insertNativeViewMethodID,
-                                  surfaceId,
-                                  view,
-                                  x, y, w, h);
+        QJNIObjectPrivate::callStaticMethod<void>(m_applicationClass,
+                                                  "insertNativeView",
+                                                  "(ILandroid/view/View;IIII)V",
+                                                  surfaceId,
+                                                  view,
+                                                  x,
+                                                  y,
+                                                  qMax(w, 1),
+                                                  qMax(h, 1));
 
         return surfaceId;
     }
@@ -539,6 +535,9 @@ static void setSurface(JNIEnv *env, jobject /*thiz*/, jint id, jobject jSurface,
 {
     QMutexLocker lock(&m_surfacesMutex);
     const auto &it = m_surfaces.find(id);
+    if (it.value() == Q_NULLPTR) // This should never happen...
+        return;
+
     if (it == m_surfaces.end()) {
         qWarning()<<"Can't find surface" << id;
         return;
@@ -718,7 +717,6 @@ static int registerNatives(JNIEnv *env)
     }
 
     GET_AND_CHECK_STATIC_METHOD(m_createSurfaceMethodID, m_applicationClass, "createSurface", "(IZIIIII)V");
-    GET_AND_CHECK_STATIC_METHOD(m_insertNativeViewMethodID, m_applicationClass, "insertNativeView", "(ILandroid/view/View;IIII)V");
     GET_AND_CHECK_STATIC_METHOD(m_setSurfaceGeometryMethodID, m_applicationClass, "setSurfaceGeometry", "(IIIII)V");
     GET_AND_CHECK_STATIC_METHOD(m_destroySurfaceMethodID, m_applicationClass, "destroySurface", "(I)V");
 

@@ -65,6 +65,9 @@ public:
     void requestActivateWindow();
     void updateStatusBarVisibility();
     inline bool isRaster() const {
+        if ((window()->flags() & Qt::ForeignWindow) == Qt::ForeignWindow)
+            return false;
+
         return window()->surfaceType() == QSurface::RasterSurface
             || window()->surfaceType() == QSurface::RasterGLSurface;
     }

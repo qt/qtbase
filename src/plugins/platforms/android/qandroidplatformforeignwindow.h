@@ -38,16 +38,23 @@
 #include "qandroidplatformwindow.h"
 #include <QtCore/private/qjni_p.h>
 
+QT_BEGIN_NAMESPACE
+
 class QAndroidPlatformForeignWindow : public QAndroidPlatformWindow
 {
 public:
     explicit QAndroidPlatformForeignWindow(QWindow *window);
     ~QAndroidPlatformForeignWindow();
-    void setGeometry(const QRect &rect);
+    void setGeometry(const QRect &rect) Q_DECL_OVERRIDE;
+    void setVisible(bool visible) Q_DECL_OVERRIDE;
+    void applicationStateChanged(Qt::ApplicationState state) Q_DECL_OVERRIDE;
+    void setParent(const QPlatformWindow *window) Q_DECL_OVERRIDE;
 
 private:
+    int m_surfaceId;
     QJNIObjectPrivate m_view;
-    int m_surfaceId = -1;
 };
+
+QT_END_NAMESPACE
 
 #endif // QANDROIDPLATFORMFOREIGNWINDOW_H

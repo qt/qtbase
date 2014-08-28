@@ -34,16 +34,17 @@
 #include "qandroidplatformforeignwindow.h"
 #include "androidjnimain.h"
 #include <QtCore/qvariant.h>
+#include <qpa/qwindowsysteminterface.h>
+#include <QtCore/private/qjnihelpers_p.h>
+
+QT_BEGIN_NAMESPACE
 
 QAndroidPlatformForeignWindow::QAndroidPlatformForeignWindow(QWindow *window)
-    : QAndroidPlatformWindow(window)
+    : QAndroidPlatformWindow(window),
+      m_surfaceId(-1)
 {
     const WId wId = window->property("_q_foreignWinId").value<WId>();
-    if (wId) {
-        m_view = reinterpret_cast<jobject>(wId);
-        Q_ASSERT(m_view.isValid());
-        m_surfaceId = QtAndroid::insertNativeView(m_view.object(), geometry());
-    }
+    m_view = reinterpret_cast<jobject>(wId);
 }
 
 QAndroidPlatformForeignWindow::~QAndroidPlatformForeignWindow()
@@ -54,9 +55,64 @@ QAndroidPlatformForeignWindow::~QAndroidPlatformForeignWindow()
 
 void QAndroidPlatformForeignWindow::setGeometry(const QRect &rect)
 {
-    if (rect == geometry())
+    QWindow *parent = window()->parent();
+    QRect newGeometry = rect;
+
+    if (parent != 0)
+        newGeometry.moveTo(parent->mapToGlobal(rect.topLeft()));
+
+    if (newGeometry == geometry())
         return;
 
-    QAndroidPlatformWindow::setGeometry(rect);
-    QtAndroid::setSurfaceGeometry(m_surfaceId, rect);
+    QAndroidPlatformWindow::setGeometry(newGeometry);
+
+    if (m_surfaceId != -1)
+        QtAndroid::setSurfaceGeometry(m_surfaceId, newGeometry);
 }
+
+void QAndroidPlatformForeignWindow::setVisible(bool visible)
+{
+    if (!m_view.isValid())
+        return;
+
+    QAndroidPlatformWindow::setVisible(visible);
+
+    if (!visible && m_surfaceId != -1) {
+        QtAndroid::destroySurface(m_surfaceId);
+        m_surfaceId = -1;
+    } else if (m_surfaceId == -1) {
+        m_surfaceId = QtAndroid::insertNativeView(m_view.object(), geometry());
+    }
+}
+
+void QAndroidPlatformForeignWindow::applicationStateChanged(Qt::ApplicationState state)
+{
+    if (state <= Qt::ApplicationHidden
+            && QtAndroid::blockEventLoopsWhenSuspended()
+            && m_surfaceId != -1) {
+        QtAndroid::destroySurface(m_surfaceId);
+        m_surfaceId = -1;
+    } else if (m_view.isValid() && m_surfaceId == -1){
+        m_surfaceId = QtAndroid::insertNativeView(m_view.object(), geometry());
+    }
+
+    QAndroidPlatformWindow::applicationStateChanged(state);
+}
+
+void QAndroidPlatformForeignWindow::setParent(const QPlatformWindow *window)
+{
+    QRect newGeometry = geometry();
+
+    if (window != 0)
+        newGeometry.moveTo(window->mapToGlobal(geometry().topLeft()));
+
+    if (newGeometry != geometry())
+        QAndroidPlatformWindow::setGeometry(newGeometry);
+
+    if (m_surfaceId == -1)
+        return;
+
+    QtAndroid::setSurfaceGeometry(m_surfaceId, newGeometry);
+}
+
+QT_END_NAMESPACE
