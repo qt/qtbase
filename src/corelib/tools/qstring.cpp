@@ -1306,9 +1306,6 @@ const QString::Null QString::null = { };
     Returns a copy of the \a str string. The given string is converted
     to Unicode using the fromUtf8() function.
 
-    This constructor is only available if Qt is configured with STL
-    compatibility enabled.
-
     \sa fromLatin1(), fromLocal8Bit(), fromUtf8()
 */
 
@@ -1341,7 +1338,7 @@ const QString::Null QString::null = { };
     wchar_t is 2 bytes wide (e.g. windows) and in ucs4 on platforms
     where wchar_t is 4 bytes wide (most Unix systems).
 
-    This operator is mostly useful to pass a QString to a function
+    This method is mostly useful to pass a QString to a function
     that accepts a std::wstring object.
 
     \sa utf16(), toLatin1(), toUtf8(), toLocal8Bit()
@@ -7720,11 +7717,8 @@ bool QString::isRightToLeft() const
     QString. The Unicode data is converted into 8-bit characters using
     the toUtf8() function.
 
-    This operator is mostly useful to pass a QString to a function
+    This method is mostly useful to pass a QString to a function
     that accepts a std::string object.
-
-    If the QString contains non-Latin1 Unicode characters, using this
-    can lead to loss of information.
 
     \sa toLatin1(), toUtf8(), toLocal8Bit()
 */
