@@ -355,6 +355,57 @@ int QWindowsStylePrivate::pixelMetricFromSystemDp(QStyle::PixelMetric pm, const 
     return QWindowsStylePrivate::InvalidMetric;
 }
 
+int QWindowsStylePrivate::fixedPixelMetric(QStyle::PixelMetric pm)
+{
+    switch (pm) {
+    case QStyle::PM_ToolBarItemSpacing:
+        return 0;
+    case QStyle::PM_ButtonDefaultIndicator:
+    case QStyle::PM_ButtonShiftHorizontal:
+    case QStyle::PM_ButtonShiftVertical:
+    case QStyle::PM_MenuHMargin:
+    case QStyle::PM_MenuVMargin:
+    case QStyle::PM_ToolBarItemMargin:
+        return 1;
+        break;
+    case QStyle::PM_DockWidgetSeparatorExtent:
+        return 4;
+#ifndef QT_NO_TABBAR
+    case QStyle::PM_TabBarTabShiftHorizontal:
+        return 0;
+    case QStyle::PM_TabBarTabShiftVertical:
+        return 2;
+#endif
+
+#ifndef QT_NO_SLIDER
+    case QStyle::PM_SliderLength:
+        return 11;
+#endif // QT_NO_SLIDER
+
+#ifndef QT_NO_MENU
+    case QStyle::PM_MenuBarHMargin:
+    case QStyle::PM_MenuBarVMargin:
+    case QStyle::PM_MenuBarPanelWidth:
+        return 0;
+    case QStyle::PM_SmallIconSize:
+        return 16;
+    case QStyle::PM_LargeIconSize:
+        return 32;
+    case QStyle::PM_DockWidgetTitleMargin:
+        return 2;
+    case QStyle::PM_DockWidgetTitleBarButtonMargin:
+    case QStyle::PM_DockWidgetFrameWidth:
+        return 4;
+
+#endif // QT_NO_MENU
+    case QStyle::PM_ToolBarHandleExtent:
+        return 10;
+    default:
+        break;
+    }
+    return QWindowsStylePrivate::InvalidMetric;
+}
+
 /*!
   \reimp
 */
@@ -364,29 +415,13 @@ int QWindowsStyle::pixelMetric(PixelMetric pm, const QStyleOption *opt, const QW
     if (ret != QWindowsStylePrivate::InvalidMetric)
         return ret / QWindowsStylePrivate::devicePixelRatio(widget);
 
+    ret = QWindowsStylePrivate::fixedPixelMetric(pm);
+    if (ret != QWindowsStylePrivate::InvalidMetric)
+        return int(QStyleHelper::dpiScaled(ret));
+
     ret = 0;
 
     switch (pm) {
-    case PM_ToolBarItemSpacing:
-        break;
-    case PM_ButtonDefaultIndicator:
-    case PM_ButtonShiftHorizontal:
-    case PM_ButtonShiftVertical:
-    case PM_MenuHMargin:
-    case PM_MenuVMargin:
-    case PM_ToolBarItemMargin:
-        ret = 1;
-        break;
-    case PM_DockWidgetSeparatorExtent:
-        ret = int(QStyleHelper::dpiScaled(4.));
-        break;
-#ifndef QT_NO_TABBAR
-    case PM_TabBarTabShiftHorizontal:
-        break;
-    case PM_TabBarTabShiftVertical:
-        ret = 2;
-        break;
-#endif
     case PM_MaximumDragDistance:
         ret = QCommonStyle::pixelMetric(PM_MaximumDragDistance);
         if (ret == -1)
@@ -394,10 +429,6 @@ int QWindowsStyle::pixelMetric(PixelMetric pm, const QStyleOption *opt, const QW
         break;
 
 #ifndef QT_NO_SLIDER
-    case PM_SliderLength:
-        ret = int(QStyleHelper::dpiScaled(11.));
-        break;
-
         // Returns the number of pixels to use for the business part of the
         // slider (i.e., the non-tickmark portion). The remaining space is shared
         // equally between the tickmark regions.
@@ -427,43 +458,14 @@ int QWindowsStyle::pixelMetric(PixelMetric pm, const QStyleOption *opt, const QW
         break;
 #endif // QT_NO_SLIDER
 
-#ifndef QT_NO_MENU
-    case PM_MenuBarHMargin:
-    case PM_MenuBarVMargin:
-    case PM_MenuBarPanelWidth:
-        break;
-
-    case PM_SmallIconSize:
-        ret = int(QStyleHelper::dpiScaled(16.));
-        break;
-
-    case PM_LargeIconSize:
-        ret = int(QStyleHelper::dpiScaled(32.));
-        break;
-
     case PM_IconViewIconSize:
         ret = proxy()->pixelMetric(PM_LargeIconSize, opt, widget);
         break;
 
-    case PM_DockWidgetTitleMargin:
-        ret = int(QStyleHelper::dpiScaled(2.));
-        break;
-    case PM_DockWidgetTitleBarButtonMargin:
-        ret = int(QStyleHelper::dpiScaled(4.));
-        break;
-    case PM_DockWidgetFrameWidth:
-        ret = 4;
-        break;
-    break;
-
-#endif // QT_NO_MENU
     case PM_SplitterWidth:
-        ret = qMax(4, QApplication::globalStrut().width());
+        ret = qMax(int(QStyleHelper::dpiScaled(4)), QApplication::globalStrut().width());
         break;
 
-    case PM_ToolBarHandleExtent:
-        ret = int(QStyleHelper::dpiScaled(10.));
-        break;
     default:
         ret = QCommonStyle::pixelMetric(pm, opt, widget);
         break;

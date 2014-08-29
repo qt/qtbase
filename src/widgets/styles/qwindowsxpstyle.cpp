@@ -3507,7 +3507,7 @@ QRect QWindowsXPStyle::subControlRect(ComplexControl cc, const QStyleOptionCompl
             const bool isToolTitle = false;
             const int height = tb->rect.height();
             const int width = tb->rect.width();
-            const int buttonMargin = 4;
+            const int buttonMargin = int(QStyleHelper::dpiScaled(4));
             int buttonHeight = GetSystemMetrics(SM_CYSIZE) / QWindowsStylePrivate::devicePixelRatio(widget)
                 - buttonMargin;
             int buttonWidth = GetSystemMetrics(SM_CXSIZE) / QWindowsStylePrivate::devicePixelRatio(widget)

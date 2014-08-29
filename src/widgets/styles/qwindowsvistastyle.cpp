@@ -2192,7 +2192,7 @@ QRect QWindowsVistaStyle::subControlRect(ComplexControl control, const QStyleOpt
             const int height = tb->rect.height();
             const int width = tb->rect.width();
             int buttonWidth = GetSystemMetrics(SM_CXSIZE) / QWindowsStylePrivate::devicePixelRatio(widget)
-                - 4;
+                - int(QStyleHelper::dpiScaled(4));
 
             const int frameWidth = proxy()->pixelMetric(PM_MdiSubWindowFrameWidth, option, widget);
             const bool sysmenuHint  = (tb->titleBarFlags & Qt::WindowSystemMenuHint) != 0;
@@ -2265,28 +2265,36 @@ QStyle::SubControl QWindowsVistaStyle::hitTestComplexControl(ComplexControl cont
     return QWindowsXPStyle::hitTestComplexControl(control, option, pos, widget);
 }
 
+int QWindowsVistaStylePrivate::fixedPixelMetric(QStyle::PixelMetric pm)
+{
+    switch (pm) {
+    case QStyle::PM_DockWidgetTitleBarButtonMargin:
+        return 5;
+    case QStyle::PM_ScrollBarSliderMin:
+        return 18;
+    case QStyle::PM_MenuHMargin:
+    case QStyle::PM_MenuVMargin:
+        return 0;
+    case QStyle::PM_MenuPanelWidth:
+        return 3;
+    default:
+        break;
+    }
+    return QWindowsVistaStylePrivate::InvalidMetric;
+}
+
 /*!
  \internal
  */
 int QWindowsVistaStyle::pixelMetric(PixelMetric metric, const QStyleOption *option, const QWidget *widget) const
 {
-    if (!QWindowsVistaStylePrivate::useVista()) {
+    if (!QWindowsVistaStylePrivate::useVista())
         return QWindowsStyle::pixelMetric(metric, option, widget);
-    }
-    switch (metric) {
 
-    case PM_DockWidgetTitleBarButtonMargin:
-        return int(QStyleHelper::dpiScaled(5.));
-    case PM_ScrollBarSliderMin:
-        return int(QStyleHelper::dpiScaled(18.));
-    case PM_MenuHMargin:
-    case PM_MenuVMargin:
-        return 0;
-    case PM_MenuPanelWidth:
-        return 3;
-    default:
-        break;
-    }
+    int ret = QWindowsStylePrivate::fixedPixelMetric(metric);
+    if (ret != QWindowsStylePrivate::InvalidMetric)
+        return int(QStyleHelper::dpiScaled(ret));
+
     return QWindowsXPStyle::pixelMetric(metric, option, widget);
 }
 

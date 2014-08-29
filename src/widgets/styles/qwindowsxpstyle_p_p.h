@@ -385,6 +385,7 @@ public:
     { cleanup(); }
 
     static int pixelMetricFromSystemDp(QStyle::PixelMetric pm, const QStyleOption *option = 0, const QWidget *widget = 0);
+    static int fixedPixelMetric(QStyle::PixelMetric pm, const QStyleOption *option = 0, const QWidget *widget = 0);
 
     static HWND winId(const QWidget *widget);
 

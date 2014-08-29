@@ -72,6 +72,7 @@ public:
 
     QWindowsStylePrivate();
     static int pixelMetricFromSystemDp(QStyle::PixelMetric pm, const QStyleOption *option = 0, const QWidget *widget = 0);
+    static int fixedPixelMetric(QStyle::PixelMetric pm);
     static int devicePixelRatio(const QWidget *widget = 0)
         { return widget ? widget->devicePixelRatio() : QWindowsStylePrivate::appDevicePixelRatio(); }
 
