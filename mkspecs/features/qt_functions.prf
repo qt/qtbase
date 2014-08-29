@@ -19,10 +19,9 @@ defineReplace(qtLibraryTarget) {
       QMAKE_FRAMEWORK_BUNDLE_NAME = $$LIBRARY_NAME
       export(QMAKE_FRAMEWORK_BUNDLE_NAME)
    } else {
-       # insert the major version in the library name
+       # insert the major version of Qt in the library name
        # unless it's a framework build
-       MAJOR_VERSION = $$section(VERSION, ., 0, 0)
-       LIBRARY_NAME ~= s,^Qt,Qt$$MAJOR_VERSION,
+       LIBRARY_NAME ~= s,^Qt,Qt$$QT_MAJOR_VERSION,
    }
    return($$LIBRARY_NAME$$qtPlatformTargetSuffix())
 }
@@ -64,7 +63,6 @@ defineTest(qtAddModule) {
     MODULE_INCLUDES = $$eval(QT.$${1}.includes)
     MODULE_LIBS = $$eval(QT.$${1}.libs)
     MODULE_CONFIG = $$eval(QT.$${1}.module_config)
-    MODULE_MAJOR_VERSION = $$eval(QT.$${1}.MAJOR_VERSION)
 
     contains(MODULE_CONFIG, internal_module) {
         using_privates = true
@@ -104,7 +102,7 @@ defineTest(qtAddModule) {
         # Re-insert the major version in the library name (cf qtLibraryTarget above)
         # unless it's a framework build
         !mac|!contains(MODULE_CONFIG, lib_bundle): \
-            MODULE_NAME ~= s,^Qt,Qt$$MODULE_MAJOR_VERSION,
+            MODULE_NAME ~= s,^Qt,Qt$$QT_MAJOR_VERSION,
 
         win32 {
             # Make sure the version number isn't appended again to the lib name

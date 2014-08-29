@@ -180,8 +180,8 @@ unix|mingw {
     QMAKE_PKGCONFIG_LIBDIR = $$qt_libdir
     QMAKE_PKGCONFIG_INCDIR = $$[QT_INSTALL_HEADERS/raw]
     QMAKE_PKGCONFIG_CFLAGS = -I${includedir}/$$MODULE_INCNAME
-    QMAKE_PKGCONFIG_NAME = $$replace(TARGET, ^Qt, "Qt$$section(VERSION, ., 0, 0) ")
-    QMAKE_PKGCONFIG_FILE = $$replace(TARGET, ^Qt, Qt$$section(VERSION, ., 0, 0))
+    QMAKE_PKGCONFIG_NAME = $$replace(TARGET, ^Qt, "Qt$$QT_MAJOR_VERSION ")
+    QMAKE_PKGCONFIG_FILE = $$replace(TARGET, ^Qt, Qt$$QT_MAJOR_VERSION)
     for(i, MODULE_DEPENDS): \
         QMAKE_PKGCONFIG_REQUIRES += $$replace(QT.$${i}.name, ^Qt, Qt$$eval(QT.$${i}.MAJOR_VERSION))
     isEmpty(QMAKE_PKGCONFIG_DESCRIPTION): \
