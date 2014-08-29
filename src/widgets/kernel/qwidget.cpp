@@ -5486,22 +5486,30 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
                 //paint the background
                 if ((asRoot || q->autoFillBackground() || onScreen || q->testAttribute(Qt::WA_StyledBackground))
                     && !q->testAttribute(Qt::WA_OpaquePaintEvent) && !q->testAttribute(Qt::WA_NoSystemBackground)) {
+#ifndef QT_NO_OPENGL
                     beginBackingStorePainting();
+#endif
                     QPainter p(q);
                     paintBackground(&p, toBePainted, (asRoot || onScreen) ? flags | DrawAsRoot : 0);
+#ifndef QT_NO_OPENGL
                     endBackingStorePainting();
+#endif
                 }
 
                 if (!sharedPainter)
                     setSystemClip(pdev, toBePainted.translated(offset));
 
                 if (!onScreen && !asRoot && !isOpaque && q->testAttribute(Qt::WA_TintedBackground)) {
+#ifndef QT_NO_OPENGL
                     beginBackingStorePainting();
+#endif
                     QPainter p(q);
                     QColor tint = q->palette().window().color();
                     tint.setAlphaF(qreal(.6));
                     p.fillRect(toBePainted.boundingRect(), tint);
+#ifndef QT_NO_OPENGL
                     endBackingStorePainting();
+#endif
                 }
             }
 
