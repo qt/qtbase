@@ -68,7 +68,13 @@ class QWindowsStylePrivate : public QCommonStylePrivate
 {
     Q_DECLARE_PUBLIC(QWindowsStyle)
 public:
+    enum { InvalidMetric = -23576 };
+
     QWindowsStylePrivate();
+    static int pixelMetricFromSystemDp(QStyle::PixelMetric pm, const QStyleOption *option = 0, const QWidget *widget = 0);
+    static int devicePixelRatio(const QWidget *widget = 0)
+        { return widget ? widget->devicePixelRatio() : QWindowsStylePrivate::appDevicePixelRatio(); }
+
     bool hasSeenAlt(const QWidget *widget) const;
     bool altDown() const { return alt_down; }
     bool alt_down;
@@ -90,6 +96,10 @@ public:
         windowsRightBorder      = 15, // right border on windows
         windowsCheckMarkWidth   = 12  // checkmarks width on windows
     };
+
+private:
+    static int appDevicePixelRatio();
+    static int m_appDevicePixelRatio;
 };
 
 QT_END_NAMESPACE

@@ -118,6 +118,9 @@ enum QSliderDirection { SlUp, SlDown, SlLeft, SlRight };
 /*
     \internal
 */
+
+int QWindowsStylePrivate::m_appDevicePixelRatio = 0;
+
 QWindowsStylePrivate::QWindowsStylePrivate()
     : alt_down(false), menuBarTimer(0)
 {
@@ -128,6 +131,13 @@ QWindowsStylePrivate::QWindowsStylePrivate()
         pSHGetStockIconInfo = (PtrSHGetStockIconInfo)shellLib.resolve("SHGetStockIconInfo");
     }
 #endif
+}
+
+int QWindowsStylePrivate::appDevicePixelRatio()
+{
+    if (!QWindowsStylePrivate::m_appDevicePixelRatio)
+        QWindowsStylePrivate::m_appDevicePixelRatio = qRound(qApp->devicePixelRatio());
+    return QWindowsStylePrivate::m_appDevicePixelRatio;
 }
 
 // Returns \c true if the toplevel parent of \a widget has seen the Alt-key
@@ -295,19 +305,76 @@ void QWindowsStyle::polish(QPalette &pal)
     QCommonStyle::polish(pal);
 }
 
+int QWindowsStylePrivate::pixelMetricFromSystemDp(QStyle::PixelMetric pm, const QStyleOption *, const QWidget *widget)
+{
+    switch (pm) {
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
+    case QStyle::PM_DockWidgetFrameWidth:
+#  ifndef Q_OS_WINCE
+        return GetSystemMetrics(SM_CXFRAME);
+#  else
+        return GetSystemMetrics(SM_CXDLGFRAME);
+#  endif
+        break;
+
+    case QStyle::PM_TitleBarHeight:
+        if (widget && (widget->windowType() == Qt::Tool)) {
+            // MS always use one less than they say
+#  ifndef Q_OS_WINCE
+            return GetSystemMetrics(SM_CYSMCAPTION) - 1;
+#  else
+            return GetSystemMetrics(SM_CYCAPTION) - 1;
+#  endif
+        }
+        return GetSystemMetrics(SM_CYCAPTION) - 1;
+
+#  ifndef Q_OS_WINCE
+    case QStyle::PM_ScrollBarExtent:
+        {
+            NONCLIENTMETRICS ncm;
+            ncm.cbSize = FIELD_OFFSET(NONCLIENTMETRICS, lfMessageFont) + sizeof(LOGFONT);
+            if (SystemParametersInfo(SPI_GETNONCLIENTMETRICS, sizeof(NONCLIENTMETRICS), &ncm, 0))
+                return qMax(ncm.iScrollHeight, ncm.iScrollWidth);
+        }
+        break;
+#  endif // !Q_OS_WINCE
+
+    case  QStyle::PM_MdiSubWindowFrameWidth:
+#  ifndef Q_OS_WINCE
+        return GetSystemMetrics(SM_CYFRAME);
+#  else
+        return GetSystemMetrics(SM_CYDLGFRAME);
+#  endif
+#else
+    Q_UNUSED(widget)
+#endif // Q_OS_WIN
+
+    default:
+        break;
+    }
+    return QWindowsStylePrivate::InvalidMetric;
+}
+
 /*!
   \reimp
 */
 int QWindowsStyle::pixelMetric(PixelMetric pm, const QStyleOption *opt, const QWidget *widget) const
 {
-    int ret;
+    int ret = QWindowsStylePrivate::pixelMetricFromSystemDp(pm, opt, widget);
+    if (ret != QWindowsStylePrivate::InvalidMetric)
+        return ret / QWindowsStylePrivate::devicePixelRatio(widget);
+
+    ret = 0;
 
     switch (pm) {
+    case PM_ToolBarItemSpacing:
+        break;
     case PM_ButtonDefaultIndicator:
     case PM_ButtonShiftHorizontal:
     case PM_ButtonShiftVertical:
     case PM_MenuHMargin:
     case PM_MenuVMargin:
+    case PM_ToolBarItemMargin:
         ret = 1;
         break;
     case PM_DockWidgetSeparatorExtent:
@@ -315,7 +382,6 @@ int QWindowsStyle::pixelMetric(PixelMetric pm, const QStyleOption *opt, const QW
         break;
 #ifndef QT_NO_TABBAR
     case PM_TabBarTabShiftHorizontal:
-        ret = 0;
         break;
     case PM_TabBarTabShiftVertical:
         ret = 2;
@@ -357,23 +423,14 @@ int QWindowsStyle::pixelMetric(PixelMetric pm, const QStyleOption *opt, const QW
             if (space > 0)
                 thick += (space * 2) / (n + 2);
             ret = thick;
-        } else {
-            ret = 0;
         }
         break;
 #endif // QT_NO_SLIDER
 
 #ifndef QT_NO_MENU
     case PM_MenuBarHMargin:
-        ret = 0;
-        break;
-
     case PM_MenuBarVMargin:
-        ret = 0;
-        break;
-
     case PM_MenuBarPanelWidth:
-        ret = 0;
         break;
 
     case PM_SmallIconSize:
@@ -394,76 +451,16 @@ int QWindowsStyle::pixelMetric(PixelMetric pm, const QStyleOption *opt, const QW
     case PM_DockWidgetTitleBarButtonMargin:
         ret = int(QStyleHelper::dpiScaled(4.));
         break;
-#if defined(Q_WS_WIN)
-    case PM_DockWidgetFrameWidth:
-#if defined(Q_OS_WINCE)
-        ret = GetSystemMetrics(SM_CXDLGFRAME);
-#else
-        ret = GetSystemMetrics(SM_CXFRAME);
-#endif
-        break;
-#else
     case PM_DockWidgetFrameWidth:
         ret = 4;
         break;
-#endif // Q_WS_WIN
     break;
 
 #endif // QT_NO_MENU
-
-
-#if defined(Q_OS_WIN)
-#ifndef Q_OS_WINRT // There is no title bar in Windows Runtime applications
-    case PM_TitleBarHeight:
-        if (widget && (widget->windowType() == Qt::Tool)) {
-            // MS always use one less than they say
-#if defined(Q_OS_WINCE)
-            ret = GetSystemMetrics(SM_CYCAPTION) - 1;
-#else
-            ret = GetSystemMetrics(SM_CYSMCAPTION) - 1;
-#endif
-        } else {
-            ret = GetSystemMetrics(SM_CYCAPTION) - 1;
-        }
-
-        break;
-#endif // !Q_OS_WINRT
-
-    case PM_ScrollBarExtent:
-        {
-#if !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
-            NONCLIENTMETRICS ncm;
-            ncm.cbSize = FIELD_OFFSET(NONCLIENTMETRICS, lfMessageFont) + sizeof(LOGFONT);
-            if (SystemParametersInfo(SPI_GETNONCLIENTMETRICS, sizeof(NONCLIENTMETRICS), &ncm, 0))
-                ret = qMax(ncm.iScrollHeight, ncm.iScrollWidth);
-            else
-#endif // !Q_OS_WINCE && !Q_OS_WINRT
-                ret = QCommonStyle::pixelMetric(pm, opt, widget);
-        }
-        break;
-#endif // Q_OS_WIN
-
     case PM_SplitterWidth:
         ret = qMax(4, QApplication::globalStrut().width());
         break;
 
-#if defined(Q_OS_WIN)
-#ifndef Q_OS_WINRT // Mdi concept not available for WinRT applications
-    case PM_MdiSubWindowFrameWidth:
-#if defined(Q_OS_WINCE)
-        ret = GetSystemMetrics(SM_CYDLGFRAME);
-#else
-        ret = GetSystemMetrics(SM_CYFRAME);
-#endif
-        break;
-#endif // !Q_OS_WINRT
-#endif // Q_OS_WIN
-    case PM_ToolBarItemMargin:
-        ret = 1;
-        break;
-    case PM_ToolBarItemSpacing:
-        ret = 0;
-        break;
     case PM_ToolBarHandleExtent:
         ret = int(QStyleHelper::dpiScaled(10.));
         break;
