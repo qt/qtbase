@@ -73,7 +73,7 @@ public:
     QColor(QRgb rgb);
     QColor(const QString& name);
     QColor(const char *name);
-    QColor(const QColor &color);
+    QColor(const QColor &color); // ### Qt 6: remove, the trivial one is fine.
     QColor(Spec spec);
 
     bool isValid() const;
