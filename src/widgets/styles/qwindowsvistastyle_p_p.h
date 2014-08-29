@@ -171,7 +171,6 @@ class QWindowsVistaStylePrivate :  public QWindowsXPStylePrivate
 public:
     QWindowsVistaStylePrivate();
     ~QWindowsVistaStylePrivate();
-    static bool resolveSymbols();
     static inline bool useVista();
     bool transitionsEnabled() const;
 
