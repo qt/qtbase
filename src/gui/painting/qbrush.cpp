@@ -569,11 +569,20 @@ void QBrush::cleanUp(QBrushData *x)
     QBrushDataPointerDeleter::deleteData(x);
 }
 
+static Q_DECL_CONSTEXPR inline bool use_same_brushdata(Qt::BrushStyle lhs, Qt::BrushStyle rhs)
+{
+    return lhs == rhs // includes Qt::TexturePattern
+        || (lhs >= Qt::NoBrush && lhs <= Qt::DiagCrossPattern && rhs >= Qt::NoBrush && rhs <= Qt::DiagCrossPattern)
+        || (lhs >= Qt::LinearGradientPattern && lhs <= Qt::ConicalGradientPattern && rhs >= Qt::LinearGradientPattern && rhs <= Qt::ConicalGradientPattern)
+           ;
+}
 
 void QBrush::detach(Qt::BrushStyle newStyle)
 {
-    if (newStyle == d->style && d->ref.load() == 1)
+    if (use_same_brushdata(newStyle, d->style) && d->ref.load() == 1) {
+        d->style = newStyle;
         return;
+    }
 
     QScopedPointer<QBrushData> x;
     switch(newStyle) {
