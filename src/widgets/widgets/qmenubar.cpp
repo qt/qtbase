@@ -616,15 +616,15 @@ void QMenuBar::initStyleOption(QStyleOptionMenuItem *option, const QAction *acti
     for items in the menu bar are only shown when the \uicontrol{Alt} key is
     pressed.
 
-    \section1 QMenuBar on Mac OS X
+    \section1 QMenuBar on OS X
 
-    QMenuBar on Mac OS X is a wrapper for using the system-wide menu bar.
+    QMenuBar on OS X is a wrapper for using the system-wide menu bar.
     If you have multiple menu bars in one dialog the outermost menu bar
     (normally inside a widget with widget flag Qt::Window) will
     be used for the system-wide menu bar.
 
-    Qt for Mac OS X also provides a menu bar merging feature to make
-    QMenuBar conform more closely to accepted Mac OS X menu bar layout.
+    Qt for OS X also provides a menu bar merging feature to make
+    QMenuBar conform more closely to accepted OS X menu bar layout.
     The merging functionality is based on string matching the title of
     a QMenu entry. These strings are translated (using QObject::tr())
     in the "QMenuBar" context. If an entry is moved its slots will still
@@ -663,7 +663,7 @@ void QMenuBar::initStyleOption(QStyleOptionMenuItem *option, const QAction *acti
 
     \b{Note:} The text used for the application name in the menu
     bar is obtained from the value set in the \c{Info.plist} file in
-    the application's bundle. See \l{Qt for Mac OS X - Deployment}
+    the application's bundle. See \l{Qt for OS X - Deployment}
     for more information.
 
     \section1 QMenuBar on Windows CE
@@ -908,7 +908,7 @@ void QMenuBar::setActiveAction(QAction *act)
 /*!
     Removes all the actions from the menu bar.
 
-    \note On Mac OS X, menu items that have been merged to the system
+    \note On OS X, menu items that have been merged to the system
     menu bar are not removed by this function. One way to handle this
     would be to remove the extra actions yourself. You can set the
     \l{QAction::MenuRole}{menu role} on the different menus, so that
@@ -1806,7 +1806,7 @@ QWidget *QMenuBar::cornerWidget(Qt::Corner corner) const
     \since 4.6
 
     This property specifies whether or not the menubar should be used as a native menubar on platforms
-    that support it. The currently supported platforms are Mac OS X and Windows CE. On these platforms
+    that support it. The currently supported platforms are OS X and Windows CE. On these platforms
     if this property is \c true, the menubar is used in the native menubar and is not in the window of
     its parent, if false the menubar remains in the window. On other platforms the value of this
     attribute has no effect.

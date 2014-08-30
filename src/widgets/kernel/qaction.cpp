@@ -261,7 +261,7 @@ void QActionPrivate::setShortcutEnabled(bool enable, QShortcutMap &map)
 /*!
     \enum QAction::MenuRole
 
-    This enum describes how an action should be moved into the application menu on Mac OS X.
+    This enum describes how an action should be moved into the application menu on OS X.
 
     \value NoRole This action should not be put into the application menu
     \value TextHeuristicRole This action should be put in the application menu based on the action's text
@@ -270,7 +270,7 @@ void QActionPrivate::setShortcutEnabled(bool enable, QShortcutMap &map)
     \value AboutQtRole This action matches handles the "About Qt" menu item.
     \value AboutRole This action should be placed where the "About" menu item is in the application menu. The text of
            the menu item will be set to "About <application name>". The application name is fetched from the
-           \c{Info.plist} file in the application's bundle (See \l{Qt for Mac OS X - Deployment}).
+           \c{Info.plist} file in the application's bundle (See \l{Qt for OS X - Deployment}).
     \value PreferencesRole This action should be placed where the  "Preferences..." menu item is in the application menu.
     \value QuitRole This action should be placed where the Quit menu item is in the application menu.
 
@@ -1247,7 +1247,7 @@ void QAction::activate(ActionEvent event)
     the action is added based on its text (see QMenuBar for more information).
 
     The menu role can only be changed before the actions are put into the menu
-    bar in Mac OS X (usually just before the first application window is
+    bar in OS X (usually just before the first application window is
     shown).
 */
 void QAction::setMenuRole(MenuRole menuRole)
