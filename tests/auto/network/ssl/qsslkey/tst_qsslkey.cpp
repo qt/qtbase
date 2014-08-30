@@ -87,7 +87,9 @@ private slots:
     void toEncryptedPemOrDer_data();
     void toEncryptedPemOrDer();
 
+    void passphraseChecks_data();
     void passphraseChecks();
+    void noPassphraseChecks();
 #endif
 private:
     QString testDataDir;
@@ -347,77 +349,88 @@ void tst_QSslKey::toEncryptedPemOrDer()
     // ### add a test to verify that public keys are _decrypted_ correctly (by the ctor)
 }
 
+void tst_QSslKey::passphraseChecks_data()
+{
+    QTest::addColumn<QString>("fileName");
+
+    QTest::newRow("DES") << QString(testDataDir + "/rsa-with-passphrase-des.pem");
+    QTest::newRow("3DES") << QString(testDataDir + "/rsa-with-passphrase-3des.pem");
+}
+
 void tst_QSslKey::passphraseChecks()
 {
-    {
-        QString fileName(testDataDir + "/rsa-with-passphrase.pem");
-        QFile keyFile(fileName);
-        QVERIFY(keyFile.exists());
-        {
-            if (!keyFile.isOpen())
-                keyFile.open(QIODevice::ReadOnly);
-            else
-                keyFile.reset();
-            QSslKey key(&keyFile,QSsl::Rsa,QSsl::Pem, QSsl::PrivateKey);
-            QVERIFY(key.isNull()); // null passphrase => should not be able to decode key
-        }
-        {
-            if (!keyFile.isOpen())
-                keyFile.open(QIODevice::ReadOnly);
-            else
-                keyFile.reset();
-            QSslKey key(&keyFile,QSsl::Rsa,QSsl::Pem, QSsl::PrivateKey, "");
-            QVERIFY(key.isNull()); // empty passphrase => should not be able to decode key
-        }
-        {
-            if (!keyFile.isOpen())
-                keyFile.open(QIODevice::ReadOnly);
-            else
-                keyFile.reset();
-            QSslKey key(&keyFile,QSsl::Rsa,QSsl::Pem, QSsl::PrivateKey, "WRONG!");
-            QVERIFY(key.isNull()); // wrong passphrase => should not be able to decode key
-        }
-#ifdef QT_NO_OPENSSL
-        QEXPECT_FAIL("", "Encrypted keys require support from the SSL backend", Abort);
-#endif
-        {
-            if (!keyFile.isOpen())
-                keyFile.open(QIODevice::ReadOnly);
-            else
-                keyFile.reset();
-            QSslKey key(&keyFile,QSsl::Rsa,QSsl::Pem, QSsl::PrivateKey, "123");
-            QVERIFY(!key.isNull()); // correct passphrase
-        }
-    }
+    QFETCH(QString, fileName);
 
+    QFile keyFile(fileName);
+    QVERIFY(keyFile.exists());
     {
-        // be sure and check a key without passphrase too
-        QString fileName(testDataDir + "/rsa-without-passphrase.pem");
-        QFile keyFile(fileName);
-        {
-            if (!keyFile.isOpen())
-                keyFile.open(QIODevice::ReadOnly);
-            else
-                keyFile.reset();
-            QSslKey key(&keyFile,QSsl::Rsa,QSsl::Pem, QSsl::PrivateKey);
-            QVERIFY(!key.isNull()); // null passphrase => should be able to decode key
-        }
-        {
-            if (!keyFile.isOpen())
-                keyFile.open(QIODevice::ReadOnly);
-            else
-                keyFile.reset();
-            QSslKey key(&keyFile,QSsl::Rsa,QSsl::Pem, QSsl::PrivateKey, "");
-            QVERIFY(!key.isNull()); // empty passphrase => should be able to decode key
-        }
-        {
-            if (!keyFile.isOpen())
-                keyFile.open(QIODevice::ReadOnly);
-            else
-                keyFile.reset();
-            QSslKey key(&keyFile,QSsl::Rsa,QSsl::Pem, QSsl::PrivateKey, "xxx");
-            QVERIFY(!key.isNull()); // passphrase given but key is not encrypted anyway => should work
-        }
+        if (!keyFile.isOpen())
+            keyFile.open(QIODevice::ReadOnly);
+        else
+            keyFile.reset();
+        QSslKey key(&keyFile,QSsl::Rsa,QSsl::Pem, QSsl::PrivateKey);
+        QVERIFY(key.isNull()); // null passphrase => should not be able to decode key
+    }
+    {
+        if (!keyFile.isOpen())
+            keyFile.open(QIODevice::ReadOnly);
+        else
+            keyFile.reset();
+        QSslKey key(&keyFile,QSsl::Rsa,QSsl::Pem, QSsl::PrivateKey, "");
+        QVERIFY(key.isNull()); // empty passphrase => should not be able to decode key
+    }
+    {
+        if (!keyFile.isOpen())
+            keyFile.open(QIODevice::ReadOnly);
+        else
+            keyFile.reset();
+        QSslKey key(&keyFile,QSsl::Rsa,QSsl::Pem, QSsl::PrivateKey, "WRONG!");
+        QVERIFY(key.isNull()); // wrong passphrase => should not be able to decode key
+    }
+#ifdef QT_NO_OPENSSL
+    QEXPECT_FAIL("", "Encrypted keys require support from the SSL backend", Abort);
+#endif
+    {
+        if (!keyFile.isOpen())
+            keyFile.open(QIODevice::ReadOnly);
+        else
+            keyFile.reset();
+        QSslKey key(&keyFile,QSsl::Rsa,QSsl::Pem, QSsl::PrivateKey, "123");
+        QVERIFY(!key.isNull()); // correct passphrase
+    }
+}
+
+void tst_QSslKey::noPassphraseChecks()
+{
+    // be sure and check a key without passphrase too
+    QString fileName(testDataDir + "/rsa-without-passphrase.pem");
+    QFile keyFile(fileName);
+    {
+        if (!keyFile.isOpen())
+            keyFile.open(QIODevice::ReadOnly);
+        else
+            keyFile.reset();
+        QSslKey key(&keyFile,QSsl::Rsa,QSsl::Pem, QSsl::PrivateKey);
+        QVERIFY(!key.isNull()); // null passphrase => should be able to decode key
+    }
+    {
+        if (!keyFile.isOpen())
+            keyFile.open(QIODevice::ReadOnly);
+        else
+            keyFile.reset();
+        QSslKey key(&keyFile,QSsl::Rsa,QSsl::Pem, QSsl::PrivateKey, "");
+        QVERIFY(!key.isNull()); // empty passphrase => should be able to decode key
+    }
+#ifdef QT_NO_OPENSSL
+    QEXPECT_FAIL("", "Encrypted keys require support from the SSL backend", Abort);
+#endif
+    {
+        if (!keyFile.isOpen())
+            keyFile.open(QIODevice::ReadOnly);
+        else
+            keyFile.reset();
+        QSslKey key(&keyFile,QSsl::Rsa,QSsl::Pem, QSsl::PrivateKey, "xxx");
+        QVERIFY(!key.isNull()); // passphrase given but key is not encrypted anyway => should work
     }
 }
 
