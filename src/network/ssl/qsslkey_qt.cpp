@@ -86,18 +86,12 @@ void QSslKeyPrivate::clear(bool deep)
     keyLength = -1;
 }
 
-void QSslKeyPrivate::decodeDer(const QByteArray &der, const QByteArray &passPhrase,
-                               bool deepClear)
+void QSslKeyPrivate::decodeDer(const QByteArray &der, bool deepClear)
 {
     clear(deepClear);
 
     if (der.isEmpty())
         return;
-
-    if (type == QSsl::PrivateKey && !passPhrase.isEmpty()) {
-        Q_UNIMPLEMENTED();
-        return;
-    }
 
     QAsn1Element elem;
     if (!elem.read(der) || elem.type() != QAsn1Element::SequenceType)
@@ -161,7 +155,12 @@ void QSslKeyPrivate::decodeDer(const QByteArray &der, const QByteArray &passPhra
 void QSslKeyPrivate::decodePem(const QByteArray &pem, const QByteArray &passPhrase,
                                bool deepClear)
 {
-    decodeDer(derFromPem(pem), passPhrase, deepClear);
+    if (type == QSsl::PrivateKey && !passPhrase.isEmpty()) {
+        Q_UNIMPLEMENTED();
+        return;
+    }
+
+    decodeDer(derFromPem(pem), deepClear);
 }
 
 int QSslKeyPrivate::length() const

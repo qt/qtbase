@@ -143,7 +143,7 @@ QSslKey QSslCertificate::publicKey() const
     key.d->type = QSsl::PublicKey;
     if (d->publicKeyAlgorithm != QSsl::Opaque) {
     key.d->algorithm = d->publicKeyAlgorithm;
-    key.d->decodeDer(d->publicKeyDerData, QByteArray());
+    key.d->decodeDer(d->publicKeyDerData);
     }
     return key;
 }

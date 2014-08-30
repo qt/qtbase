@@ -86,8 +86,7 @@ public:
 #ifndef QT_NO_OPENSSL
     bool fromEVP_PKEY(EVP_PKEY *pkey);
 #endif
-    void decodeDer(const QByteArray &der, const QByteArray &passPhrase,
-                   bool deepClear = true);
+    void decodeDer(const QByteArray &der, bool deepClear = true);
     void decodePem(const QByteArray &pem, const QByteArray &passPhrase,
                    bool deepClear = true);
     QByteArray pemHeader() const;

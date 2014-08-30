@@ -175,8 +175,10 @@ QByteArray QSslKeyPrivate::derFromPem(const QByteArray &pem) const
 /*!
     Constructs a QSslKey by decoding the string in the byte array
     \a encoded using a specified \a algorithm and \a encoding format.
-    If the encoded key is encrypted, \a passPhrase is used to decrypt
-    it. \a type specifies whether the key is public or private.
+    \a type specifies whether the key is public or private.
+
+    If the key is encoded as PEM and encrypted, \a passPhrase is used
+    to decrypt it.
 
     After construction, use isNull() to check if \a encoded contained
     a valid key.
@@ -188,7 +190,7 @@ QSslKey::QSslKey(const QByteArray &encoded, QSsl::KeyAlgorithm algorithm,
     d->type = type;
     d->algorithm = algorithm;
     if (encoding == QSsl::Der)
-        d->decodeDer(encoded, passPhrase);
+        d->decodeDer(encoded);
     else
         d->decodePem(encoded, passPhrase);
 }
@@ -196,8 +198,10 @@ QSslKey::QSslKey(const QByteArray &encoded, QSsl::KeyAlgorithm algorithm,
 /*!
     Constructs a QSslKey by reading and decoding data from a
     \a device using a specified \a algorithm and \a encoding format.
-    If the encoded key is encrypted, \a passPhrase is used to decrypt
-    it. \a type specifies whether the key is public or private.
+    \a type specifies whether the key is public or private.
+
+    If the key is encoded as PEM and encrypted, \a passPhrase is used
+    to decrypt it.
 
     After construction, use isNull() to check if \a device provided
     a valid key.
@@ -211,9 +215,10 @@ QSslKey::QSslKey(QIODevice *device, QSsl::KeyAlgorithm algorithm, QSsl::Encoding
         encoded = device->readAll();
     d->type = type;
     d->algorithm = algorithm;
-    d->decodePem((encoding == QSsl::Der) ?
-                 d->pemFromDer(encoded) : encoded,
-                 passPhrase);
+    if (encoding == QSsl::Der)
+        d->decodeDer(encoded);
+    else
+        d->decodePem(encoded, passPhrase);
 }
 
 /*!
@@ -317,23 +322,23 @@ QSsl::KeyAlgorithm QSslKey::algorithm() const
 }
 
 /*!
-  Returns the key in DER encoding. The result is encrypted with
-  \a passPhrase if the key is a private key and \a passPhrase is
-  non-empty.
+  Returns the key in DER encoding.
+
+  The \a passPhrase argument should be omitted as DER cannot be
+  encrypted. It will be removed in a future version of Qt.
 */
-// ### autotest failure for non-empty passPhrase and private key
 QByteArray QSslKey::toDer(const QByteArray &passPhrase) const
 {
     if (d->isNull || d->algorithm == QSsl::Opaque)
         return QByteArray();
 
-#ifndef QT_NO_OPENSSL
-    return d->derFromPem(toPem(passPhrase));
-#else
     // Encrypted DER is nonsense, see QTBUG-41038.
     if (d->type == QSsl::PrivateKey && !passPhrase.isEmpty())
         return QByteArray();
 
+#ifndef QT_NO_OPENSSL
+    return d->derFromPem(toPem(passPhrase));
+#else
     return d->derData;
 #endif
 }

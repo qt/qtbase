@@ -325,18 +325,10 @@ void tst_QSslKey::toEncryptedPemOrDer()
     }
 
     if (type == QSsl::PrivateKey) {
+        // verify that private keys are never "encrypted" by toDer() and
+        // instead an empty string is returned, see QTBUG-41038.
         QByteArray encryptedDer = key.toDer(pwBytes);
-        // ### at this point, encryptedDer is invalid, hence the below QEXPECT_FAILs
-        QVERIFY(!encryptedDer.isEmpty());
-        QSslKey keyDer(encryptedDer, algorithm, QSsl::Der, type, pwBytes);
-        if (type == QSsl::PrivateKey)
-            QEXPECT_FAIL(
-                QTest::currentDataTag(), "We're not able to decrypt these yet...", Continue);
-        QVERIFY(!keyDer.isNull());
-        if (type == QSsl::PrivateKey)
-            QEXPECT_FAIL(
-                QTest::currentDataTag(), "We're not able to decrypt these yet...", Continue);
-        QCOMPARE(keyDer.toPem(), key.toPem());
+        QVERIFY(encryptedDer.isEmpty());
     } else {
         // verify that public keys are never encrypted by toDer()
         QByteArray encryptedDer = key.toDer(pwBytes);
