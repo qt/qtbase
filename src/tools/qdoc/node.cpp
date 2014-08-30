@@ -428,8 +428,8 @@ void Node::setPageType(const QString& t)
         pageType_ = OverviewPage;
     else if (t == "tutorial")
         pageType_ = TutorialPage;
-    else if (t == "howto")
-        pageType_ = HowToPage;
+    else if (t == "faq")
+        pageType_ = FAQPage;
     else if (t == "article")
         pageType_ = ArticlePage;
     else if (t == "example")
