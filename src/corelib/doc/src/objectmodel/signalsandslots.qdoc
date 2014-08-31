@@ -36,7 +36,8 @@
     Signals and slots are used for communication between objects. The
     signals and slots mechanism is a central feature of Qt and
     probably the part that differs most from the features provided by
-    other frameworks.
+    other frameworks. Signals and slots are made possible by Qt's
+    \l{The Meta-Object System}{meta-object system}.
 
     \tableofcontents
 
@@ -182,17 +183,6 @@
     \l{Using a Designer UI File in Your Application#Automatic Connections}
     {automatic connections} feature.
 
-    \section1 Building the Example
-
-    The C++ preprocessor changes or removes the \c{signals},
-    \c{slots}, and \c{emit} keywords so that the compiler is
-    presented with standard C++.
-
-    By running the \l moc on class definitions that contain signals
-    or slots, a C++ source file is produced which should be compiled
-    and linked with the other object files for the application. If
-    you use \l qmake, the makefile rules to automatically invoke \c
-    moc will be added to your project's makefile.
 
     \section1 Signals
 
@@ -267,27 +257,6 @@
     alongside a Qt-based application. To solve this problem, \c
     #undef the offending preprocessor symbol.
 
-    \section1 Meta-Object Information
-
-    The meta-object compiler (\l moc) parses the class declaration in
-    a C++ file and generates C++ code that initializes the
-    meta-object. The meta-object contains the names of all the signal
-    and slot members, as well as pointers to these functions.
-
-    The meta-object contains additional information such as the
-    object's \l{QMetaObject::className()}{class name}. You can
-    also check if an object \l{QObject::inherits()}{inherits}
-    a specific class, for example:
-
-    \snippet signalsandslots/signalsandslots.cpp 5
-    \snippet signalsandslots/signalsandslots.cpp 6
-
-    The meta-object information is also used by qobject_cast<T>(), which
-    is similar to QObject::inherits() but is less error-prone:
-
-    \snippet signalsandslots/signalsandslots.cpp 7
-
-    See \l{Meta-Object System} for more information.
 
     \section1 A Real Example
 
