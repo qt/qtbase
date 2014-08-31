@@ -841,6 +841,8 @@ struct QRegularExpressionPrivate : QSharedData
     };
 
     QRegularExpressionMatchPrivate *doMatch(const QString &subject,
+                                            int subjectStartPos,
+                                            int subjectLength,
                                             int offset,
                                             QRegularExpression::MatchType matchType,
                                             QRegularExpression::MatchOptions matchOptions,
@@ -878,6 +880,8 @@ struct QRegularExpressionMatchPrivate : QSharedData
 {
     QRegularExpressionMatchPrivate(const QRegularExpression &re,
                                    const QString &subject,
+                                   int subjectStart,
+                                   int subjectLength,
                                    QRegularExpression::MatchType matchType,
                                    QRegularExpression::MatchOptions matchOptions,
                                    int capturingCount = 0);
@@ -889,6 +893,9 @@ struct QRegularExpressionMatchPrivate : QSharedData
     // the capturedOffsets vector contains pairs of (start, end) positions
     // for each captured substring
     QVector<int> capturedOffsets;
+
+    const int subjectStart;
+    const int subjectLength;
 
     const QRegularExpression::MatchType matchType;
     const QRegularExpression::MatchOptions matchOptions;
@@ -1225,13 +1232,20 @@ static int pcre16SafeExec(const pcre16 *code, const pcre16_extra *extra,
 /*!
     \internal
 
-    Performs a match of type \a matchType on the given \a subject string with
-    options \a matchOptions and returns the QRegularExpressionMatchPrivate of
-    the result. It also advances a match if a previous result is given as \a
+    Performs a match on the substring of the given \a subject string,
+    substring which starts from \a subjectStart and up to
+    (but not including) \a subjectStart + \a subjectLength. The match
+    will be of type \a matchType and using the options \a matchOptions;
+    the matching \a offset is relative the substring,
+    and if negative, it's taken as an offset from the end of the substring.
+
+    It also advances a match if a previous result is given as \a
     previous. The \a subject string goes a Unicode validity check if
     \a checkSubjectString is CheckSubjectString and the match options don't
     include DontCheckSubjectStringMatchOption (PCRE doesn't like illegal
     UTF-16 sequences).
+
+    Returns the QRegularExpressionMatchPrivate of the result.
 
     Advancing a match is a tricky algorithm. If the previous match matched a
     non-empty string, we just do an ordinary match at the offset position.
@@ -1245,6 +1259,8 @@ static int pcre16SafeExec(const pcre16 *code, const pcre16_extra *extra,
     must advance over it.
 */
 QRegularExpressionMatchPrivate *QRegularExpressionPrivate::doMatch(const QString &subject,
+                                                                   int subjectStart,
+                                                                   int subjectLength,
                                                                    int offset,
                                                                    QRegularExpression::MatchType matchType,
                                                                    QRegularExpression::MatchOptions matchOptions,
@@ -1252,21 +1268,22 @@ QRegularExpressionMatchPrivate *QRegularExpressionPrivate::doMatch(const QString
                                                                    const QRegularExpressionMatchPrivate *previous) const
 {
     if (offset < 0)
-        offset += subject.length();
+        offset += subjectLength;
 
     QRegularExpression re(*const_cast<QRegularExpressionPrivate *>(this));
 
-    if (offset < 0 || offset > subject.length())
-        return new QRegularExpressionMatchPrivate(re, subject, matchType, matchOptions);
+    if (offset < 0 || offset > subjectLength)
+        return new QRegularExpressionMatchPrivate(re, subject, subjectStart, subjectLength, matchType, matchOptions);
 
     if (!compiledPattern) {
         qWarning("QRegularExpressionPrivate::doMatch(): called on an invalid QRegularExpression object");
-        return new QRegularExpressionMatchPrivate(re, subject, matchType, matchOptions);
+        return new QRegularExpressionMatchPrivate(re, subject, subjectStart, subjectLength, matchType, matchOptions);
     }
 
     // skip optimizing and doing the actual matching if NoMatch type was requested
     if (matchType == QRegularExpression::NoMatch) {
         QRegularExpressionMatchPrivate *priv = new QRegularExpressionMatchPrivate(re, subject,
+                                                                                  subjectStart, subjectLength,
                                                                                   matchType, matchOptions);
         priv->isValid = true;
         return priv;
@@ -1274,6 +1291,7 @@ QRegularExpressionMatchPrivate *QRegularExpressionPrivate::doMatch(const QString
 
     // capturingCount doesn't include the implicit "0" capturing group
     QRegularExpressionMatchPrivate *priv = new QRegularExpressionMatchPrivate(re, subject,
+                                                                              subjectStart, subjectLength,
                                                                               matchType, matchOptions,
                                                                               capturingCount + 1);
 
@@ -1313,45 +1331,49 @@ QRegularExpressionMatchPrivate *QRegularExpressionPrivate::doMatch(const QString
     int * const captureOffsets = priv->capturedOffsets.data();
     const int captureOffsetsCount = priv->capturedOffsets.size();
 
+    int realOffset = offset + subjectStart;
+    const int realSubjectLength = subjectLength + subjectStart;
+
     const unsigned short * const subjectUtf16 = subject.utf16();
-    const int subjectLength = subject.length();
 
     int result;
 
     if (!previousMatchWasEmpty) {
         result = pcre16SafeExec(compiledPattern, currentStudyData,
-                                subjectUtf16, subjectLength,
-                                offset, pcreOptions,
+                                subjectUtf16, realSubjectLength,
+                                realOffset, pcreOptions,
                                 captureOffsets, captureOffsetsCount);
     } else {
         result = pcre16SafeExec(compiledPattern, currentStudyData,
-                                subjectUtf16, subjectLength,
-                                offset, pcreOptions | PCRE_NOTEMPTY_ATSTART | PCRE_ANCHORED,
+                                subjectUtf16, realSubjectLength,
+                                realOffset, pcreOptions | PCRE_NOTEMPTY_ATSTART | PCRE_ANCHORED,
                                 captureOffsets, captureOffsetsCount);
 
         if (result == PCRE_ERROR_NOMATCH) {
-            ++offset;
+            ++realOffset;
 
             if (usingCrLfNewlines
-                    && offset < subjectLength
-                    && subjectUtf16[offset - 1] == QLatin1Char('\r')
-                    && subjectUtf16[offset] == QLatin1Char('\n')) {
-                ++offset;
-            } else if (offset < subjectLength
-                       && QChar::isLowSurrogate(subjectUtf16[offset])) {
-                ++offset;
+                    && realOffset < realSubjectLength
+                    && subjectUtf16[realOffset - 1] == QLatin1Char('\r')
+                    && subjectUtf16[realOffset] == QLatin1Char('\n')) {
+                ++realOffset;
+            } else if (realOffset < realSubjectLength
+                       && QChar::isLowSurrogate(subjectUtf16[realOffset])) {
+                ++realOffset;
             }
 
             result = pcre16SafeExec(compiledPattern, currentStudyData,
-                                    subjectUtf16, subjectLength,
-                                    offset, pcreOptions,
+                                    subjectUtf16, realSubjectLength,
+                                    realOffset, pcreOptions,
                                     captureOffsets, captureOffsetsCount);
         }
     }
 
 #ifdef QREGULAREXPRESSION_DEBUG
     qDebug() << "Matching" <<  pattern << "against" << subject
-             << offset << matchType << matchOptions << previousMatchWasEmpty
+             << "starting at" << subjectStart << "len" << subjectLength << "real len" << realSubjectLength
+             << "offset" << offset << "real offset" << realOffset
+             << matchType << matchOptions << previousMatchWasEmpty
              << "result" << result;
 #endif
 
@@ -1389,10 +1411,13 @@ QRegularExpressionMatchPrivate *QRegularExpressionPrivate::doMatch(const QString
 */
 QRegularExpressionMatchPrivate::QRegularExpressionMatchPrivate(const QRegularExpression &re,
                                                                const QString &subject,
+                                                               int subjectStart,
+                                                               int subjectLength,
                                                                QRegularExpression::MatchType matchType,
                                                                QRegularExpression::MatchOptions matchOptions,
                                                                int capturingCount)
     : regularExpression(re), subject(subject),
+      subjectStart(subjectStart), subjectLength(subjectLength),
       matchType(matchType), matchOptions(matchOptions),
       capturedCount(0),
       hasMatch(false), hasPartialMatch(false), isValid(false)
@@ -1418,6 +1443,8 @@ QRegularExpressionMatch QRegularExpressionMatchPrivate::nextMatch() const
     // then that subject was already checked at least once (when this object
     // was created, or when the object that created this one was created, etc.)
     QRegularExpressionMatchPrivate *nextPrivate = regularExpression.d->doMatch(subject,
+                                                                               subjectStart,
+                                                                               subjectLength,
                                                                                capturedOffsets.at(1),
                                                                                matchType,
                                                                                matchOptions,
@@ -1690,7 +1717,7 @@ QRegularExpressionMatch QRegularExpression::match(const QString &subject,
 {
     d.data()->compilePattern();
 
-    QRegularExpressionMatchPrivate *priv = d->doMatch(subject, offset, matchType, matchOptions);
+    QRegularExpressionMatchPrivate *priv = d->doMatch(subject, 0, subject.length(), offset, matchType, matchOptions);
     return QRegularExpressionMatch(*priv);
 }
 
@@ -1829,6 +1856,8 @@ QString QRegularExpression::escape(const QString &str)
 QRegularExpressionMatch::QRegularExpressionMatch()
     : d(new QRegularExpressionMatchPrivate(QRegularExpression(),
                                            QString(),
+                                           0,
+                                           0,
                                            QRegularExpression::NoMatch,
                                            QRegularExpression::NoMatchOption))
 {
