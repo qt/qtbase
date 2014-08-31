@@ -57,7 +57,7 @@ QLinuxFbIntegration::QLinuxFbIntegration(const QStringList &paramList)
 
 QLinuxFbIntegration::~QLinuxFbIntegration()
 {
-    delete m_primaryScreen;
+    destroyScreen(m_primaryScreen);
 }
 
 void QLinuxFbIntegration::initialize()

@@ -60,7 +60,7 @@ QMinimalEglIntegration::QMinimalEglIntegration()
 
 QMinimalEglIntegration::~QMinimalEglIntegration()
 {
-    delete mScreen;
+    destroyScreen(mScreen);
 }
 
 bool QMinimalEglIntegration::hasCapability(QPlatformIntegration::Capability cap) const

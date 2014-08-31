@@ -439,7 +439,7 @@ QList<int> QPlatformIntegration::possibleKeys(const QKeyEvent *) const
   This adds the screen to QGuiApplication::screens(), and emits the
   QGuiApplication::screenAdded() signal.
 
-  The screen is automatically removed when the QPlatformScreen is destroyed.
+  The screen should be deleted by calling QPlatformIntegration::destroyScreen().
 */
 void QPlatformIntegration::screenAdded(QPlatformScreen *ps)
 {
@@ -447,6 +447,22 @@ void QPlatformIntegration::screenAdded(QPlatformScreen *ps)
     ps->d_func()->screen = screen;
     QGuiApplicationPrivate::screen_list << screen;
     emit qGuiApp->screenAdded(screen);
+}
+
+/*!
+  Should be called by the implementation whenever a screen is removed.
+
+  This removes the screen from QGuiApplication::screens(), and deletes it.
+
+  Failing to call this and manually deleting the QPlatformScreen instead may
+  lead to a crash due to a pure virtual call.
+*/
+void QPlatformIntegration::destroyScreen(QPlatformScreen *screen)
+{
+    QGuiApplicationPrivate::screen_list.removeOne(screen->d_func()->screen);
+    delete screen->d_func()->screen;
+    screen->d_func()->screen = Q_NULLPTR;
+    delete screen;
 }
 
 QStringList QPlatformIntegration::themeNames() const

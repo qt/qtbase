@@ -554,7 +554,7 @@ void QQnxIntegration::removeDisplay(QQnxScreen *screen)
     Q_CHECK_PTR(screen);
     Q_ASSERT(m_screens.contains(screen));
     m_screens.removeAll(screen);
-    screen->deleteLater();
+    destroyScreen(screen);
 }
 
 void QQnxIntegration::destroyDisplays()

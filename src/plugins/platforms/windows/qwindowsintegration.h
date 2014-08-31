@@ -94,6 +94,7 @@ public:
     static QWindowsIntegration *instance();
 
     inline void emitScreenAdded(QPlatformScreen *s) { screenAdded(s); }
+    inline void emitDestroyScreen(QPlatformScreen *s) { destroyScreen(s); }
 
     unsigned options() const;
 

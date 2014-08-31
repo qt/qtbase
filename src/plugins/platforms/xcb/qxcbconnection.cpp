@@ -240,11 +240,12 @@ void QXcbConnection::updateScreens()
         ++xcbScreenNumber;
     } // for each xcb screen
 
+    QXcbIntegration *integration = static_cast<QXcbIntegration *>(QGuiApplicationPrivate::platformIntegration());
     // Now activeScreens is the complete set of screens which are active at this time.
     // Delete any existing screens which are not in activeScreens
     for (int i = m_screens.count() - 1; i >= 0; --i) {
         if (!activeScreens.contains(m_screens[i])) {
-            delete m_screens[i];
+            integration->destroyScreen(m_screens.at(i));
             m_screens.removeAt(i);
         }
     }
@@ -261,7 +262,7 @@ void QXcbConnection::updateScreens()
     // Now that they are in the right order, emit the added signals for new screens only
     foreach (QXcbScreen* screen, m_screens)
         if (newScreens.contains(screen))
-            ((QXcbIntegration*)QGuiApplicationPrivate::platformIntegration())->screenAdded(screen);
+            integration->screenAdded(screen);
 }
 
 QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGrabServer, const char *displayName)
@@ -400,9 +401,10 @@ QXcbConnection::~QXcbConnection()
 
     delete m_reader;
 
+    QXcbIntegration *integration = static_cast<QXcbIntegration *>(QGuiApplicationPrivate::platformIntegration());
     // Delete screens in reverse order to avoid crash in case of multiple screens
     while (!m_screens.isEmpty())
-        delete m_screens.takeLast();
+        integration->destroyScreen(m_screens.takeLast());
 
 #ifdef XCB_USE_XLIB
     XCloseDisplay((Display *)m_xlib_display);

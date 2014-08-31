@@ -52,9 +52,11 @@ QPlatformScreen::QPlatformScreen()
 QPlatformScreen::~QPlatformScreen()
 {
     Q_D(QPlatformScreen);
-
-    QGuiApplicationPrivate::screen_list.removeOne(d->screen);
-    delete d->screen;
+    if (d->screen) {
+        qWarning("Manually deleting a QPlatformScreen. Call QPlatformIntegration::destroyScreen instead.");
+        QGuiApplicationPrivate::screen_list.removeOne(d->screen);
+        delete d->screen;
+    }
 }
 
 /*!

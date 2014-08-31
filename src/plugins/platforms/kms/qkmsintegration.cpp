@@ -74,7 +74,7 @@ QKmsIntegration::~QKmsIntegration()
         delete device;
     }
     foreach (QPlatformScreen *screen, m_screens) {
-        delete screen;
+        destroyScreen(screen);
     }
     delete m_fontDatabase;
     delete m_vtHandler;

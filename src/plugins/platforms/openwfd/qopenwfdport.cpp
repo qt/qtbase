@@ -140,7 +140,7 @@ void QOpenWFDPort::detach()
     mAttached = false;
     mOn = false;
 
-    delete mScreen;
+    mDevice->integration()->destroyScreen(mScreen);
 
     wfdDestroyPipeline(mDevice->handle(),mPipeline);
     mPipelineId = WFD_INVALID_PIPELINE_ID;

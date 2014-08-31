@@ -63,6 +63,7 @@ public:
     QPlatformPrinterSupport *printerSupport() const;
 
     void addScreen(QOpenWFDScreen *screen);
+    void destroyScreen(QOpenWFDScreen *screen);
 private:
     QList<QPlatformScreen *> mScreens;
     QList<QOpenWFDDevice *>mDevices;

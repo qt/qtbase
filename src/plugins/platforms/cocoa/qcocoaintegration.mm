@@ -337,7 +337,7 @@ QCocoaIntegration::~QCocoaIntegration()
 
     // Delete screens in reverse order to avoid crash in case of multiple screens
     while (!mScreens.isEmpty()) {
-        delete mScreens.takeLast();
+        destroyScreen(mScreens.takeLast());
     }
 
     clearToolbars();
@@ -397,7 +397,7 @@ void QCocoaIntegration::updateScreens()
     // Now the leftovers in remainingScreens are no longer current, so we can delete them.
     foreach (QCocoaScreen* screen, remainingScreens) {
         mScreens.removeOne(screen);
-        delete screen;
+        destroyScreen(screen);
     }
     // All screens in mScreens are siblings, because we ignored the mirrors.
     foreach (QCocoaScreen* screen, mScreens)

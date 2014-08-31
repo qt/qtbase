@@ -133,3 +133,8 @@ void QOpenWFDIntegration::addScreen(QOpenWFDScreen *screen)
 {
     screenAdded(screen);
 }
+
+void QOpenWFDIntegration::destroyScreen(QOpenWFDScreen *screen)
+{
+    QPlatformIntegration::destroyScreen(screen);
+}

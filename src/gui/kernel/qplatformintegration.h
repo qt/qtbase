@@ -171,6 +171,7 @@ public:
 
 protected:
     void screenAdded(QPlatformScreen *screen);
+    void destroyScreen(QPlatformScreen *screen);
 };
 
 QT_END_NAMESPACE

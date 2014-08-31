@@ -120,7 +120,7 @@ QIOSIntegration::~QIOSIntegration()
     m_inputContext = 0;
 
     foreach (QScreen *screen, QGuiApplication::screens())
-        delete screen->handle();
+        destroyScreen(screen->handle());
 
     delete m_platformServices;
     m_platformServices = 0;

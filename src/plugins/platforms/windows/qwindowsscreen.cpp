@@ -462,7 +462,7 @@ void QWindowsScreenManager::removeScreen(int index)
         if (movedWindowCount)
             QWindowSystemInterface::flushWindowSystemEvents();
     }
-    delete m_screens.takeAt(index);
+    QWindowsIntegration::instance()->emitDestroyScreen(m_screens.takeAt(index));
 }
 
 /*!
@@ -495,6 +495,13 @@ bool QWindowsScreenManager::handleScreenChanges()
         }     // for existing screens
     }     // not lock screen
     return true;
+}
+
+void QWindowsScreenManager::clearScreens()
+{
+    // Delete screens in reverse order to avoid crash in case of multiple screens
+    while (!m_screens.isEmpty())
+        QWindowsIntegration::instance()->emitDestroyScreen(m_screens.takeLast());
 }
 
 QT_END_NAMESPACE

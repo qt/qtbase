@@ -127,11 +127,7 @@ public:
 
     QWindowsScreenManager();
 
-    inline void clearScreens() {
-        // Delete screens in reverse order to avoid crash in case of multiple screens
-        while (!m_screens.isEmpty())
-            delete m_screens.takeLast();
-    }
+    void clearScreens();
 
     bool handleScreenChanges();
     bool handleDisplayChange(WPARAM wParam, LPARAM lParam);
