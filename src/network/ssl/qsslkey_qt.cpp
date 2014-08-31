@@ -43,6 +43,8 @@
 #include "qsslkey_p.h"
 #include "qasn1element_p.h"
 
+#include <QtCore/qcryptographichash.h>
+
 QT_USE_NAMESPACE
 
 static const quint8 bits_table[256] = {
@@ -76,6 +78,31 @@ static int numberOfBits(const QByteArray &modulus)
         }
     }
     return bits;
+}
+
+static QByteArray deriveKey(QSslKeyPrivate::Cipher cipher, const QByteArray &passPhrase, const QByteArray &iv)
+{
+    QByteArray key;
+    QCryptographicHash hash(QCryptographicHash::Md5);
+    hash.addData(passPhrase);
+    hash.addData(iv);
+    switch (cipher) {
+    case QSslKeyPrivate::DesCbc:
+        key = hash.result().left(8);
+        break;
+    case QSslKeyPrivate::DesEde3Cbc:
+        key = hash.result();
+        hash.reset();
+        hash.addData(key);
+        hash.addData(passPhrase);
+        hash.addData(iv);
+        key += hash.result().left(8);
+        break;
+    case QSslKeyPrivate::Rc2Cbc:
+        key = hash.result();
+        break;
+    }
+    return key;
 }
 
 void QSslKeyPrivate::clear(bool deep)
@@ -155,12 +182,32 @@ void QSslKeyPrivate::decodeDer(const QByteArray &der, bool deepClear)
 void QSslKeyPrivate::decodePem(const QByteArray &pem, const QByteArray &passPhrase,
                                bool deepClear)
 {
-    if (type == QSsl::PrivateKey && !passPhrase.isEmpty()) {
-        Q_UNIMPLEMENTED();
-        return;
-    }
+    QMap<QByteArray, QByteArray> headers;
+    QByteArray data = derFromPem(pem, &headers);
+    if (headers.value("Proc-Type") == "4,ENCRYPTED") {
+        QList<QByteArray> dekInfo = headers.value("DEK-Info").split(',');
+        if (dekInfo.size() != 2) {
+            clear(deepClear);
+            return;
+        }
 
-    decodeDer(derFromPem(pem), deepClear);
+        Cipher cipher;
+        if (dekInfo.first() == "DES-CBC") {
+            cipher = DesCbc;
+        } else if (dekInfo.first() == "DES-EDE3-CBC") {
+            cipher = DesEde3Cbc;
+        } else if (dekInfo.first() == "RC2-CBC") {
+            cipher = Rc2Cbc;
+        } else {
+            clear(deepClear);
+            return;
+        }
+
+        const QByteArray iv = QByteArray::fromHex(dekInfo.last());
+        const QByteArray key = deriveKey(cipher, passPhrase, iv);
+        data = decrypt(cipher, data, key, iv);
+    }
+    decodeDer(data, deepClear);
 }
 
 int QSslKeyPrivate::length() const
@@ -170,12 +217,27 @@ int QSslKeyPrivate::length() const
 
 QByteArray QSslKeyPrivate::toPem(const QByteArray &passPhrase) const
 {
+    QByteArray data;
+    QMap<QByteArray, QByteArray> headers;
+
     if (type == QSsl::PrivateKey && !passPhrase.isEmpty()) {
-        Q_UNIMPLEMENTED();
-        return QByteArray();
+        // ### use a cryptographically secure random number generator
+        QByteArray iv;
+        iv.resize(8);
+        for (int i = 0; i < iv.size(); ++i)
+            iv[i] = (qrand() & 0xff);
+
+        Cipher cipher = DesEde3Cbc;
+        const QByteArray key = deriveKey(cipher, passPhrase, iv);
+        data = encrypt(cipher, derData, key, iv);
+
+        headers.insert("Proc-Type", "4,ENCRYPTED");
+        headers.insert("DEK-Info", "DES-EDE3-CBC," + iv.toHex());
+    } else {
+        data = derData;
     }
 
-    return pemFromDer(derData);
+    return pemFromDer(data, headers);
 }
 
 Qt::HANDLE QSslKeyPrivate::handle() const

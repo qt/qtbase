@@ -91,8 +91,8 @@ public:
                    bool deepClear = true);
     QByteArray pemHeader() const;
     QByteArray pemFooter() const;
-    QByteArray pemFromDer(const QByteArray &der) const;
-    QByteArray derFromPem(const QByteArray &pem) const;
+    QByteArray pemFromDer(const QByteArray &der, const QMap<QByteArray, QByteArray> &headers) const;
+    QByteArray derFromPem(const QByteArray &pem, QMap<QByteArray, QByteArray> *headers) const;
 
     int length() const;
     QByteArray toPem(const QByteArray &passPhrase) const;
@@ -106,6 +106,15 @@ public:
     RSA *rsa;
     DSA *dsa;
 #else
+    enum Cipher {
+        DesCbc,
+        DesEde3Cbc,
+        Rc2Cbc
+    };
+
+    Q_AUTOTEST_EXPORT static QByteArray decrypt(Cipher cipher, const QByteArray &data, const QByteArray &key, const QByteArray &iv);
+    Q_AUTOTEST_EXPORT static QByteArray encrypt(Cipher cipher, const QByteArray &data, const QByteArray &key, const QByteArray &iv);
+
     Qt::HANDLE opaque;
     QByteArray derData;
     int keyLength;
