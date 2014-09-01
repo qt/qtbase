@@ -909,7 +909,7 @@ void QWindowsStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, 
             int xOffset = 0;
             int yOffset = 0;
             int indicatorWidth = proxy()->pixelMetric(PM_ExclusiveIndicatorWidth);
-            int indicatorHeight = proxy()->pixelMetric(PM_ExclusiveIndicatorWidth);
+            int indicatorHeight = proxy()->pixelMetric(PM_ExclusiveIndicatorHeight);
             if (ir.width() > indicatorWidth)
                 xOffset += (ir.width() - indicatorWidth)/2;
             if (ir.height() > indicatorHeight)
