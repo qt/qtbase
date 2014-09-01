@@ -1207,6 +1207,9 @@ QWindowsGLContext::~QWindowsGLContext()
 
 bool QWindowsGLContext::updateObtainedParams(HDC hdc, int *obtainedSwapInterval)
 {
+    HGLRC prevContext = wglGetCurrentContext();
+    HDC prevSurface = wglGetCurrentDC();
+
     if (!QOpenGLStaticContext::opengl32.wglMakeCurrent(hdc, m_renderingContext)) {
         qWarning("Failed to make context current.");
         return false;
@@ -1217,7 +1220,7 @@ bool QWindowsGLContext::updateObtainedParams(HDC hdc, int *obtainedSwapInterval)
     if (m_staticContext->wglGetSwapInternalExt && obtainedSwapInterval)
         *obtainedSwapInterval = m_staticContext->wglGetSwapInternalExt();
 
-    QOpenGLStaticContext::opengl32.wglMakeCurrent(0, 0);
+    QOpenGLStaticContext::opengl32.wglMakeCurrent(prevSurface, prevContext);
     return true;
 }
 

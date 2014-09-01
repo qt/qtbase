@@ -512,6 +512,13 @@ QWindowsEGLContext::QWindowsEGLContext(QWindowsEGLStaticContext *staticContext,
     if (pbuffer == EGL_NO_SURFACE)
         return;
 
+    EGLDisplay prevDisplay = eglGetCurrentDisplay();
+    if (prevDisplay == EGL_NO_DISPLAY) // when no context is current
+        prevDisplay = m_eglDisplay;
+    EGLContext prevContext = eglGetCurrentContext();
+    EGLSurface prevSurfaceDraw = eglGetCurrentSurface(EGL_DRAW);
+    EGLSurface prevSurfaceRead = eglGetCurrentSurface(EGL_READ);
+
     if (QWindowsEGLStaticContext::libEGL.eglMakeCurrent(m_eglDisplay, pbuffer, pbuffer, m_eglContext)) {
         const GLubyte *s = QWindowsEGLStaticContext::libGLESv2.glGetString(GL_VERSION);
         if (s) {
@@ -524,7 +531,7 @@ QWindowsEGLContext::QWindowsEGLContext(QWindowsEGLStaticContext *staticContext,
         }
         m_format.setProfile(QSurfaceFormat::NoProfile);
         m_format.setOptions(QSurfaceFormat::FormatOptions());
-        QWindowsEGLStaticContext::libEGL.eglMakeCurrent(m_eglDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+        QWindowsEGLStaticContext::libEGL.eglMakeCurrent(prevDisplay, prevSurfaceDraw, prevSurfaceRead, prevContext);
     }
     QWindowsEGLStaticContext::libEGL.eglDestroySurface(m_eglDisplay, pbuffer);
 }

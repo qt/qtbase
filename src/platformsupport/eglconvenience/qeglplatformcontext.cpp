@@ -249,6 +249,15 @@ void QEGLPlatformContext::adopt(const QVariant &nativeHandle, QPlatformOpenGLCon
 void QEGLPlatformContext::updateFormatFromGL()
 {
 #ifndef QT_NO_OPENGL
+    // Have to save & restore to prevent QOpenGLContext::currentContext() from becoming
+    // inconsistent after QOpenGLContext::create().
+    EGLDisplay prevDisplay = eglGetCurrentDisplay();
+    if (prevDisplay == EGL_NO_DISPLAY) // when no context is current
+        prevDisplay = m_eglDisplay;
+    EGLContext prevContext = eglGetCurrentContext();
+    EGLSurface prevSurfaceDraw = eglGetCurrentSurface(EGL_DRAW);
+    EGLSurface prevSurfaceRead = eglGetCurrentSurface(EGL_READ);
+
     // Make the context current to ensure the GL version query works. This needs a surface too.
     const EGLint pbufferAttributes[] = {
         EGL_WIDTH, 1,
@@ -300,7 +309,7 @@ void QEGLPlatformContext::updateFormatFromGL()
                 }
             }
         }
-        eglMakeCurrent(m_eglDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+        eglMakeCurrent(prevDisplay, prevSurfaceDraw, prevSurfaceRead, prevContext);
     }
     eglDestroySurface(m_eglDisplay, pbuffer);
 #endif // QT_NO_OPENGL

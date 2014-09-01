@@ -323,11 +323,11 @@ void QGLXContext::init(QXcbScreen *screen, QPlatformOpenGLContext *share)
 
     // Query the OpenGL version and profile
     if (m_context && window) {
+        GLXContext prevContext = glXGetCurrentContext();
+        GLXDrawable prevDrawable = glXGetCurrentDrawable();
         glXMakeCurrent(DISPLAY_FROM_XCB(screen), window, m_context);
         updateFormatFromContext(m_format);
-
-        // Make our context non-current
-        glXMakeCurrent(DISPLAY_FROM_XCB(screen), 0, 0);
+        glXMakeCurrent(DISPLAY_FROM_XCB(screen), prevDrawable, prevContext);
     }
 
     // Destroy our temporary window
@@ -419,6 +419,8 @@ void QGLXContext::init(QXcbScreen *screen, QPlatformOpenGLContext *share, const 
     }
 
     // Update OpenGL version and buffer sizes in our format.
+    GLXContext prevContext = glXGetCurrentContext();
+    GLXDrawable prevDrawable = glXGetCurrentDrawable();
     if (!glXMakeCurrent(dpy, window, context)) {
         qWarning("QGLXContext: Failed to make provided context current");
         return;
@@ -431,7 +433,7 @@ void QGLXContext::init(QXcbScreen *screen, QPlatformOpenGLContext *share, const 
         qglx_surfaceFormatFromVisualInfo(&m_format, dpy, vinfo);
     else
         qglx_surfaceFormatFromGLXFBConfig(&m_format, dpy, config);
-    glXMakeCurrent(dpy, 0, 0);
+    glXMakeCurrent(dpy, prevDrawable, prevContext);
     XDestroyWindow(dpy, window);
 
     if (vinfo)
