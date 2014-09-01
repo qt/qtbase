@@ -896,7 +896,7 @@ QLibrary::~QLibrary()
     suffix (see isLibrary()).
 
     When loading the library, QLibrary searches in all system-specific
-    library locations (e.g. \c LD_LIBRARY_PATH on Unix), unless the
+    library locations (for example, \c LD_LIBRARY_PATH on Unix), unless the
     file name has an absolute path. After loading the library
     successfully, fileName() returns the fully-qualified file name of
     the library, including the full path to the library if one was given
@@ -1073,7 +1073,7 @@ QString QLibrary::errorString() const
 
     You can give some hints on how the symbols are resolved. Usually,
     the symbols are not resolved at load time, but resolved lazily,
-    (that is, when resolve() is called). If you set the loadHint to
+    (that is, when resolve() is called). If you set the loadHints to
     ResolveAllSymbolsHint, then all symbols will be resolved at load time
     if the platform supports it.
 
