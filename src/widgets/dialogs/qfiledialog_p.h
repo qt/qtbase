@@ -273,6 +273,11 @@ public:
 
     QSharedPointer<QFileDialogOptions> options;
 
+    // Memory of what was read from QSettings in restoreState() in case widgets are not used
+    QByteArray splitterState;
+    QByteArray headerData;
+    QList<QUrl> sidebarUrls;
+
     ~QFileDialogPrivate();
 
 private:
