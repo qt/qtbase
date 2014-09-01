@@ -219,6 +219,7 @@ private Q_SLOTS:
     void putToFile();
     void putToFtp_data();
     void putToFtp();
+    void putToFtpWithInvalidCredentials();    // QTBUG-40622
     void putToHttp_data();
     void putToHttp();
     void putToHttpSynchronous_data();
@@ -2073,6 +2074,28 @@ void tst_QNetworkReply::putToFtp()
     QObject::connect(r, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
     QTestEventLoop::instance().enterLoop(10);
     QObject::disconnect(r, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+}
+
+void tst_QNetworkReply::putToFtpWithInvalidCredentials()
+{
+    QUrl url("ftp://" + QtNetworkSettings::serverName());
+    url.setPath(QString("/qtest/upload/qnetworkaccess-putToFtp-%1-%2")
+                .arg(QTest::currentDataTag())
+                .arg(uniqueExtension));
+    url.setUserName("invalidUser");
+    url.setPassword("InvalidPassword");
+    QNetworkRequest req(url);
+    QNetworkReplyPtr r;
+
+    for (int i = 0; i < 2; i++)
+    {
+        runSimpleRequest(QNetworkAccessManager::PutOperation, req, r, QByteArray());
+
+        QVERIFY(r->isFinished());
+        QCOMPARE(r->url(), url);
+        QCOMPARE(r->error(), QNetworkReply::AuthenticationRequiredError);
+        r->close();
+    }
 }
 
 void tst_QNetworkReply::putToHttp_data()
