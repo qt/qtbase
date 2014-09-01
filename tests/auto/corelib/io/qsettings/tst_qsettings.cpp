@@ -161,6 +161,7 @@ private slots:
     void testByteArray_data();
     void testByteArray();
     void iniCodec();
+    void bom();
 
 private:
     const bool m_canWriteNativeSystemSettings;
@@ -728,6 +729,15 @@ void tst_QSettings::iniCodec()
             QCOMPARE((uchar)ba.at(i), (uchar)i);
     }
 
+}
+
+void tst_QSettings::bom()
+{
+    QSettings s(":/bom.ini", QSettings::IniFormat);
+    QStringList allkeys = s.allKeys();
+    QCOMPARE(allkeys.size(), 2);
+    QVERIFY(allkeys.contains("section1/foo1"));
+    QVERIFY(allkeys.contains("section2/foo2"));
 }
 
 void tst_QSettings::testErrorHandling_data()
