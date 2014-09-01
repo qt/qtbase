@@ -46,6 +46,10 @@
 #include <QtCore/QDebug>
 #include <QtGui/QOpenGLContext>
 
+#if defined(QT_OPENGL_ES_2_ANGLE)
+#  include <QtANGLE/EGL/eglext.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 /*!
@@ -140,6 +144,7 @@ bool QWindowsLibEGL::init()
 
     eglGetError = RESOLVE((EGLint (EGLAPIENTRY *)(void)), eglGetError);
     eglGetDisplay = RESOLVE((EGLDisplay (EGLAPIENTRY *)(EGLNativeDisplayType)), eglGetDisplay);
+    eglGetPlatformDisplayEXT = RESOLVE((EGLDisplay (EGLAPIENTRY *)(EGLenum platform, void *native_display, const EGLint *attrib_list)), eglGetPlatformDisplayEXT);
     eglInitialize = RESOLVE((EGLBoolean (EGLAPIENTRY *)(EGLDisplay, EGLint *, EGLint *)), eglInitialize);
     eglTerminate = RESOLVE((EGLBoolean (EGLAPIENTRY *)(EGLDisplay)), eglTerminate);
     eglChooseConfig = RESOLVE((EGLBoolean (EGLAPIENTRY *)(EGLDisplay, const EGLint *, EGLConfig *, EGLint, EGLint *)), eglChooseConfig);
@@ -359,7 +364,31 @@ QWindowsEGLStaticContext *QWindowsEGLStaticContext::create()
         return 0;
     }
 
-    EGLDisplay display = libEGL.eglGetDisplay((EGLNativeDisplayType)dc);
+    EGLDisplay display = EGL_NO_DISPLAY;
+#ifdef EGL_ANGLE_platform_angle_opengl
+    if (libEGL.eglGetPlatformDisplayEXT && qEnvironmentVariableIsSet("QT_ANGLE_PLATFORM")) {
+        const EGLint anglePlatformAttributes[][3] = {
+            { EGL_PLATFORM_ANGLE_TYPE_ANGLE, EGL_PLATFORM_ANGLE_TYPE_D3D11_ANGLE, EGL_NONE },
+            { EGL_PLATFORM_ANGLE_TYPE_ANGLE, EGL_PLATFORM_ANGLE_TYPE_D3D9_ANGLE, EGL_NONE },
+            { EGL_PLATFORM_ANGLE_TYPE_ANGLE, EGL_PLATFORM_ANGLE_TYPE_D3D11_WARP_ANGLE, EGL_NONE }
+        };
+        const EGLint *attributes = 0;
+        const QByteArray anglePlatform = qgetenv("QT_ANGLE_PLATFORM");
+        if (anglePlatform == "d3d11")
+            attributes = anglePlatformAttributes[0];
+        else if (anglePlatform == "d3d9")
+            attributes = anglePlatformAttributes[1];
+        else if (anglePlatform == "warp")
+            attributes = anglePlatformAttributes[2];
+        else
+            qCWarning(lcQpaGl) << "Invalid value set for QT_ANGLE_PLATFORM:" << anglePlatform;
+
+        if (attributes)
+            display = libEGL.eglGetPlatformDisplayEXT(EGL_PLATFORM_ANGLE_ANGLE, dc, attributes);
+    }
+#endif // EGL_ANGLE_platform_angle_opengl
+    if (display == EGL_NO_DISPLAY)
+        display = libEGL.eglGetDisplay((EGLNativeDisplayType)dc);
     if (!display) {
         qWarning("%s: Could not obtain EGL display", Q_FUNC_INFO);
         return 0;
