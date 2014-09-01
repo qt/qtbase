@@ -41,6 +41,7 @@ HEADERS += \
         painting/qrasterdefs_p.h \
         painting/qrasterizer_p.h \
         painting/qregion.h \
+        painting/qrgb.h \
         painting/qstroker_p.h \
         painting/qtextureglyphcache_p.h \
         painting/qtransform.h \
