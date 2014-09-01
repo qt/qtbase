@@ -113,76 +113,6 @@
     Together, signals and slots make up a powerful component programming
     mechanism.
 
-    \section1 A Small Example
-
-    A minimal C++ class declaration might read:
-
-    \snippet signalsandslots/signalsandslots.h 0
-
-    A small QObject-based class might read:
-
-    \snippet signalsandslots/signalsandslots.h 1
-    \codeline
-    \snippet signalsandslots/signalsandslots.h 2
-    \snippet signalsandslots/signalsandslots.h 3
-
-    The QObject-based version has the same internal state, and provides
-    public methods to access the state, but in addition it has support
-    for component programming using signals and slots. This class can
-    tell the outside world that its state has changed by emitting a
-    signal, \c{valueChanged()}, and it has a slot which other objects
-    can send signals to.
-
-    All classes that contain signals or slots must mention
-    Q_OBJECT at the top of their declaration. They must also derive
-    (directly or indirectly) from QObject.
-
-    Slots are implemented by the application programmer.
-    Here is a possible implementation of the \c{Counter::setValue()}
-    slot:
-
-    \snippet signalsandslots/signalsandslots.cpp 0
-
-    The \c{emit} line emits the signal \c valueChanged() from the
-    object, with the new value as argument.
-
-    In the following code snippet, we create two \c Counter objects
-    and connect the first object's \c valueChanged() signal to the
-    second object's \c setValue() slot using QObject::connect():
-
-    \snippet signalsandslots/signalsandslots.cpp 1
-    \snippet signalsandslots/signalsandslots.cpp 2
-    \codeline
-    \snippet signalsandslots/signalsandslots.cpp 3
-    \snippet signalsandslots/signalsandslots.cpp 4
-
-    Calling \c{a.setValue(12)} makes \c{a} emit a
-    \c{valueChanged(12)} signal, which \c{b} will receive in its
-    \c{setValue()} slot, i.e. \c{b.setValue(12)} is called. Then
-    \c{b} emits the same \c{valueChanged()} signal, but since no slot
-    has been connected to \c{b}'s \c{valueChanged()} signal, the
-    signal is ignored.
-
-    Note that the \c{setValue()} function sets the value and emits
-    the signal only if \c{value != m_value}. This prevents infinite
-    looping in the case of cyclic connections (e.g., if
-    \c{b.valueChanged()} were connected to \c{a.setValue()}).
-
-    By default, for every connection you make, a signal is emitted;
-    two signals are emitted for duplicate connections. You can break
-    all of these connections with a single disconnect() call.
-    If you pass the Qt::UniqueConnection \a type, the connection will only
-    be made if it is not a duplicate. If there is already a duplicate
-    (exact same signal to the exact same slot on the same objects),
-    the connection will fail and connect will return false
-
-    This example illustrates that objects can work together without needing to
-    know any information about each other. To enable this, the objects only
-    need to be connected together, and this can be achieved with some simple
-    QObject::connect() function calls, or with \c{uic}'s
-    \l{Using a Designer UI File in Your Application#Automatic Connections}
-    {automatic connections} feature.
-
 
     \section1 Signals
 
@@ -256,6 +186,77 @@
     or \c slots may cause compiler warnings and errors when compiled
     alongside a Qt-based application. To solve this problem, \c
     #undef the offending preprocessor symbol.
+
+
+    \section1 A Small Example
+
+    A minimal C++ class declaration might read:
+
+    \snippet signalsandslots/signalsandslots.h 0
+
+    A small QObject-based class might read:
+
+    \snippet signalsandslots/signalsandslots.h 1
+    \codeline
+    \snippet signalsandslots/signalsandslots.h 2
+    \snippet signalsandslots/signalsandslots.h 3
+
+    The QObject-based version has the same internal state, and provides
+    public methods to access the state, but in addition it has support
+    for component programming using signals and slots. This class can
+    tell the outside world that its state has changed by emitting a
+    signal, \c{valueChanged()}, and it has a slot which other objects
+    can send signals to.
+
+    All classes that contain signals or slots must mention
+    Q_OBJECT at the top of their declaration. They must also derive
+    (directly or indirectly) from QObject.
+
+    Slots are implemented by the application programmer.
+    Here is a possible implementation of the \c{Counter::setValue()}
+    slot:
+
+    \snippet signalsandslots/signalsandslots.cpp 0
+
+    The \c{emit} line emits the signal \c valueChanged() from the
+    object, with the new value as argument.
+
+    In the following code snippet, we create two \c Counter objects
+    and connect the first object's \c valueChanged() signal to the
+    second object's \c setValue() slot using QObject::connect():
+
+    \snippet signalsandslots/signalsandslots.cpp 1
+    \snippet signalsandslots/signalsandslots.cpp 2
+    \codeline
+    \snippet signalsandslots/signalsandslots.cpp 3
+    \snippet signalsandslots/signalsandslots.cpp 4
+
+    Calling \c{a.setValue(12)} makes \c{a} emit a
+    \c{valueChanged(12)} signal, which \c{b} will receive in its
+    \c{setValue()} slot, i.e. \c{b.setValue(12)} is called. Then
+    \c{b} emits the same \c{valueChanged()} signal, but since no slot
+    has been connected to \c{b}'s \c{valueChanged()} signal, the
+    signal is ignored.
+
+    Note that the \c{setValue()} function sets the value and emits
+    the signal only if \c{value != m_value}. This prevents infinite
+    looping in the case of cyclic connections (e.g., if
+    \c{b.valueChanged()} were connected to \c{a.setValue()}).
+
+    By default, for every connection you make, a signal is emitted;
+    two signals are emitted for duplicate connections. You can break
+    all of these connections with a single disconnect() call.
+    If you pass the Qt::UniqueConnection \a type, the connection will only
+    be made if it is not a duplicate. If there is already a duplicate
+    (exact same signal to the exact same slot on the same objects),
+    the connection will fail and connect will return false
+
+    This example illustrates that objects can work together without needing to
+    know any information about each other. To enable this, the objects only
+    need to be connected together, and this can be achieved with some simple
+    QObject::connect() function calls, or with \c{uic}'s
+    \l{Using a Designer UI File in Your Application#Automatic Connections}
+    {automatic connections} feature.
 
 
     \section1 A Real Example
