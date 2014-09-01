@@ -116,8 +116,8 @@ Clear11::Clear11(Renderer11 *renderer)
 
     mFloatClearShader = CreateClearShader(device, DXGI_FORMAT_R32G32B32A32_FLOAT, g_VS_ClearFloat, g_PS_ClearFloat);
     if (mRenderer->isLevel9()) {
-        mUintClearShader = { 0 };
-        mIntClearShader = { 0 };
+        memset(&mUintClearShader, 0, sizeof(ClearShader));
+        memset(&mIntClearShader, 0, sizeof(ClearShader));
         return;
     }
 

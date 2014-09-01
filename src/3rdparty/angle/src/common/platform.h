@@ -59,8 +59,10 @@
 #       include <d3d10.h>
 #       include <d3d11.h>
 #       include <dxgi.h>
+#      if _MSC_VER >= 1700
 #       include <dxgi1_2.h>
 #       include <d3dcompiler.h>
+#      endif
 #   endif
 
 #   undef near
