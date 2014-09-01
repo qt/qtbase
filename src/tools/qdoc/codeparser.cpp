@@ -261,8 +261,7 @@ void CodeParser::processCommonMetaCommand(const Location& location,
         node->setStatus(Node::Main);
     }
     else if (command == COMMAND_OBSOLETE) {
-        if (node->status() != Node::Compat)
-            node->setStatus(Node::Obsolete);
+        node->setStatus(Node::Obsolete);
     }
     else if (command == COMMAND_NONREENTRANT) {
         node->setThreadSafeness(Node::NonReentrant);

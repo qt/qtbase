@@ -75,7 +75,6 @@ private:
     void handleGotFocusEvent(const DFBEvent &event);
     void handleCloseEvent(const DFBEvent& event);
     void handleGeometryEvent(const DFBEvent& event);
-    inline QPoint globalPoint(const DFBEvent &event) const;
 
 
     IDirectFB *m_dfbInterface;

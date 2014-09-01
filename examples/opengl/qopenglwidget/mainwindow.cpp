@@ -95,12 +95,9 @@ MainWindow::MainWindow()
 
     groupBox->setLayout(m_layout);
 
-    QMenu *fileMenu = new QMenu("&File");
-    QMenu *helpMenu = new QMenu("&Help");
-    QMenu *showMenu = new QMenu("&Show");
-    menuBar()->addMenu(fileMenu);
-    menuBar()->addMenu(showMenu);
-    menuBar()->addMenu(helpMenu);
+    QMenu *fileMenu = menuBar()->addMenu("&File");
+    QMenu *showMenu = menuBar()->addMenu("&Show");
+    QMenu *helpMenu = menuBar()->addMenu("&Help");
     QAction *exit = new QAction("E&xit", fileMenu);
     QAction *aboutQt = new QAction("About Qt", helpMenu);
     QAction *showLogo = new QAction("Show 3D Logo", showMenu);

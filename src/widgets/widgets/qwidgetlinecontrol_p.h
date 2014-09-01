@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QWidgetLineControl_P_H
-#define QWidgetLineControl_P_H
+#ifndef QWIDGETLINECONTROL_P_H
+#define QWIDGETLINECONTROL_P_H
 
 //
 //  W A R N I N G
@@ -99,6 +99,7 @@ public:
         , m_passwordMaskDelayOverride(-1)
 #endif
         , m_keyboardScheme(0)
+        , m_accessibleObject(0)
     {
         init(txt);
     }
@@ -106,6 +107,19 @@ public:
     ~QWidgetLineControl()
     {
         delete [] m_maskData;
+    }
+
+    void setAccessibleObject(QObject *object)
+    {
+        Q_ASSERT(object);
+        m_accessibleObject = object;
+    }
+
+    QObject *accessibleObject()
+    {
+        if (m_accessibleObject)
+            return m_accessibleObject;
+        return parent();
     }
 
     int nextMaskBlank(int pos)
@@ -532,10 +546,13 @@ private Q_SLOTS:
 
 private:
     int m_keyboardScheme;
+
+    // accessibility events are sent for this object
+    QObject *m_accessibleObject;
 };
 
 QT_END_NAMESPACE
 
 #endif // QT_NO_LINEEDIT
 
-#endif // QWidgetLineControl_P_H
+#endif // QWIDGETLINECONTROL_P_H

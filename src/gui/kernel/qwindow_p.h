@@ -100,6 +100,7 @@ public:
         , cursor(Qt::ArrowCursor)
         , hasCursor(false)
 #endif
+        , compositing(false)
     {
         isWindow = true;
     }
@@ -175,6 +176,8 @@ public:
     QCursor cursor;
     bool hasCursor;
 #endif
+
+    bool compositing;
 };
 
 

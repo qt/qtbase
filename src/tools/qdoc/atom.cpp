@@ -146,6 +146,8 @@ QT_BEGIN_NAMESPACE
   \value UnknownCommand
 */
 
+QString Atom::noError_ = QString();
+
 static const struct {
     const char *english;
     int no;
@@ -369,12 +371,15 @@ void Atom::dump() const
 }
 
 /*!
-  The only constructor for LinkAtom. It only create an Atom
-  of type Atom::Link with \a p1 being the link text. \a p2
-  contains some search parameters.
+  The only constructor for LinkAtom. It creates an Atom of
+  type Atom::Link. \a p1 being the link target. \a p2 is the
+  parameters in square brackets. Normally there is just one
+  word in the square brackets, but there can be up to three
+  words separated by spaces. The constructor splits \a p2 on
+  the space character.
  */
 LinkAtom::LinkAtom(const QString& p1, const QString& p2)
-    : Atom(p1), genus_(DontCare), goal_(Node::NoType), domain_(0)
+    : Atom(p1), genus_(Node::DontCare), goal_(Node::NoType), domain_(0)
 {
     QStringList params = p2.toLower().split(QLatin1Char(' '));
     foreach (const QString& p, params) {
@@ -388,10 +393,16 @@ LinkAtom::LinkAtom(const QString& p1, const QString& p2)
             if (goal_ != Node::NoType)
                 continue;
         }
-        if (p == "qml")
-            genus_ = QML;
-        else if (p == "cpp")
-            genus_ = CPP;
+        if (p == "qml") {
+            genus_ = Node::QML;
+            continue;
+        }
+        if (p == "cpp") {
+            genus_ = Node::CPP;
+            continue;
+        }
+        error_ = p2;
+        break;
     }
 }
 
@@ -402,7 +413,8 @@ LinkAtom::LinkAtom(const LinkAtom& t)
     : Atom(Link, t.string()),
       genus_(t.genus_),
       goal_(t.goal_),
-      domain_(t.domain_)
+      domain_(t.domain_),
+      error_(t.error_)
 {
     // nothing
 }
@@ -416,7 +428,8 @@ LinkAtom::LinkAtom(Atom* previous, const LinkAtom& t)
     : Atom(previous, Link, t.string()),
       genus_(t.genus_),
       goal_(t.goal_),
-      domain_(t.domain_)
+      domain_(t.domain_),
+      error_(t.error_)
 {
     previous->next_ = this;
 }

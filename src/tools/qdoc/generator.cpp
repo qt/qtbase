@@ -69,6 +69,7 @@ QStringList Generator::imageFiles;
 QMap<QString, QStringList> Generator::imgFileExts;
 QString Generator::outDir_;
 QString Generator::outSubdir_;
+QStringList Generator::outFileNames_;
 QSet<QString> Generator::outputFormats;
 QHash<QString, QString> Generator::outputPrefixes;
 QString Generator::project;
@@ -244,8 +245,6 @@ void Generator::appendSortedQmlNames(Text& text, const Node* base, const NodeLis
     }
 }
 
-QMultiMap<QString,QString> outFileNames;
-
 /*!
   For debugging qdoc.
  */
@@ -255,10 +254,8 @@ void Generator::writeOutFileNames()
     if (!files.open(QFile::WriteOnly))
         return;
     QTextStream filesout(&files);
-    QMultiMap<QString,QString>::ConstIterator i = outFileNames.begin();
-    while (i != outFileNames.end()) {
-        filesout << i.key() << "\n";
-        ++i;
+    foreach (const QString &file, outFileNames_) {
+        filesout << file << "\n";
     }
 }
 
@@ -280,7 +277,7 @@ void Generator::beginSubPage(const InnerNode* node, const QString& fileName)
     if (!outFile->open(QFile::WriteOnly))
         node->location().fatal(tr("Cannot open output file '%1'").arg(outFile->fileName()));
     Generator::debug("Writing: " + path);
-    outFileNames.insert(fileName,fileName);
+    outFileNames_ << fileName;
     QTextStream* out = new QTextStream(outFile);
 
 #ifndef QT_NO_TEXTCODEC
@@ -319,10 +316,7 @@ QString Generator::fileBase(const Node *node) const
     QString base;
     if (node->isDocNode()) {
         base = node->name();
-        if (node->subType() == Node::Collision)
-            base.prepend("collision-");
-        //Was QDOC2_COMPAT, required for index.html
-        if (base.endsWith(".html"))
+        if (base.endsWith(".html") && !node->isExampleFile())
             base.truncate(base.length() - 5);
 
         if (node->isExample() || node->isExampleFile()) {
@@ -976,10 +970,6 @@ void Generator::generateInherits(const ClassNode *classe, CodeMarker *marker)
 
   \note DitaXmlGenerator overrides this function, but
   HtmlGenerator does not.
-
-  \note NameCollisionNodes are skipped here and processed
-  later. See HtmlGenerator::generateCollisionPages() for
-  more on this.
  */
 void Generator::generateInnerNode(InnerNode* node)
 {
@@ -1010,65 +1000,54 @@ void Generator::generateInnerNode(InnerNode* node)
     CodeMarker *marker = CodeMarker::markerForFileName(node->location().filePath());
 
     if (node->parent() != 0) {
-        /*
-          Skip name collision nodes here and process them
-          later in generateCollisionPages(). Each one is
-          appended to a list for later.
-         */
-        if (node->isCollisionNode()) {
-            NameCollisionNode* ncn = static_cast<NameCollisionNode*>(node);
-            collisionNodes.append(const_cast<NameCollisionNode*>(ncn));
+        if (node->isNamespace() || node->isClass()) {
+            beginSubPage(node, fileName(node));
+            generateClassLikeNode(node, marker);
+            endSubPage();
         }
-        else {
-            if (node->isNamespace() || node->isClass()) {
-                beginSubPage(node, fileName(node));
-                generateClassLikeNode(node, marker);
-                endSubPage();
-            }
-            if (node->isQmlType()) {
-                beginSubPage(node, fileName(node));
-                QmlClassNode* qcn = static_cast<QmlClassNode*>(node);
-                generateQmlTypePage(qcn, marker);
-                endSubPage();
-            }
-            else if (node->isDocNode()) {
-                beginSubPage(node, fileName(node));
-                generateDocNode(static_cast<DocNode*>(node), marker);
-                endSubPage();
-            }
-            else if (node->isQmlBasicType()) {
-                beginSubPage(node, fileName(node));
-                QmlBasicTypeNode* qbtn = static_cast<QmlBasicTypeNode*>(node);
-                generateQmlBasicTypePage(qbtn, marker);
-                endSubPage();
-            }
-            else if (node->isCollectionNode()) {
-                CollectionNode* cn = static_cast<CollectionNode*>(node);
-                /*
-                  A collection node is one of: group, module,
-                  or QML module.
+        if (node->isQmlType()) {
+            beginSubPage(node, fileName(node));
+            QmlClassNode* qcn = static_cast<QmlClassNode*>(node);
+            generateQmlTypePage(qcn, marker);
+            endSubPage();
+        }
+        else if (node->isDocNode()) {
+            beginSubPage(node, fileName(node));
+            generateDocNode(static_cast<DocNode*>(node), marker);
+            endSubPage();
+        }
+        else if (node->isQmlBasicType()) {
+            beginSubPage(node, fileName(node));
+            QmlBasicTypeNode* qbtn = static_cast<QmlBasicTypeNode*>(node);
+            generateQmlBasicTypePage(qbtn, marker);
+            endSubPage();
+        }
+        else if (node->isCollectionNode()) {
+            CollectionNode* cn = static_cast<CollectionNode*>(node);
+            /*
+              A collection node is one of: group, module,
+              or QML module.
 
-                  Don't output an HTML page for the collection
-                  node unless the \group, \module, or \qmlmodule
-                  command was actually seen by qdoc in the qdoc
-                  comment for the node.
+              Don't output an HTML page for the collection
+              node unless the \group, \module, or \qmlmodule
+              command was actually seen by qdoc in the qdoc
+              comment for the node.
 
-                  A key prerequisite in this case is the call to
-                  mergeCollections(cn). We don't know if this
-                  collection (group, module, or QML module) has
-                  members in other modules. We know at this point
-                  that cn's members list contains only members in
-                  the current module. Therefore, before outputting
-                  the page for cn, we must search for members of
-                  cn in the other modules and add them to the
-                  members list.
-                 */
-                if (cn->wasSeen()) {
-                    qdb_->mergeCollections(cn);
-                    beginSubPage(node, fileName(node));
-                    generateCollectionNode(cn, marker);
-                    endSubPage();
-                }
+              A key prerequisite in this case is the call to
+              mergeCollections(cn). We don't know if this
+              collection (group, module, or QML module) has
+              members in other modules. We know at this point
+              that cn's members list contains only members in
+              the current module. Therefore, before outputting
+              the page for cn, we must search for members of
+              cn in the other modules and add them to the
+              members list.
+            */
+            if (cn->wasSeen()) {
+                qdb_->mergeCollections(cn);
+                beginSubPage(node, fileName(node));
+                generateCollectionNode(cn, marker);
+                endSubPage();
             }
         }
     }
@@ -1445,47 +1424,6 @@ Generator *Generator::generatorForFormat(const QString& format)
     }
     return 0;
 }
-
-#if 0
-/*!
-  This function might be useless now with the addition of
-  multiple node trees. It is called a few hundred times,
-  but it never finds a collision node. The single call has
-  been commented out by mws (19/05/2014). If it is no
-  longer needed, it will be removed.
-
-  This function can be called if getLink() returns an empty
-  string. It tests the \a atom string to see if it is a link
-  of the form <element> :: <name>, where <element> is a QML
-  element or component without a module qualifier. If so, it
-  constructs a link to the <name> clause on the disambiguation
-  page for <element> and returns that link string. It also
-  adds the <name> as a target in the NameCollisionNode for
-  <element>. These clauses are then constructed when the
-  disambiguation page is actually generated.
- */
-QString Generator::getCollisionLink(const Atom* atom)
-{
-    QString link;
-    if (!atom->string().contains("::"))
-        return link;
-    QStringList path = atom->string().split("::");
-    NameCollisionNode* ncn = qdb_->findCollisionNode(path[0]);
-    if (ncn) {
-        QString label;
-        if (atom->next() && atom->next()->next()) {
-            if (atom->next()->type() == Atom::FormattingLeft &&
-                    atom->next()->next()->type() == Atom::String)
-                label = atom->next()->next()->string();
-        }
-        ncn->addLinkTarget(path[1],label);
-        link = fileName(ncn);
-        link += QLatin1Char('#');
-        link += Doc::canonicalTitle(path[1]);
-    }
-    return link;
-}
-#endif
 
 /*!
   Looks up the tag \a t in the map of metadata values for the

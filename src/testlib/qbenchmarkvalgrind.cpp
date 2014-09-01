@@ -66,7 +66,7 @@ bool QBenchmarkValgrindUtils::haveValgrind()
     if (!process.waitForFinished(-1))
         return false;
     const QByteArray out = process.readAllStandardOutput();
-    QRegExp rx(QLatin1String("^valgrind-([0-9]).([0-9]).[0-9]"));
+    QRegExp rx(QLatin1String("^valgrind-([0-9]+).([0-9]+).[0-9]+"));
     if (rx.indexIn(QLatin1String(out.data())) == -1)
         return false;
     bool ok;

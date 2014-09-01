@@ -102,7 +102,8 @@ public:
     QColor basicWindowFrameColor();
     enum VistaState { VistaAero, VistaBasic, Classic, Dirty };
     static VistaState vistaState();
-    static int titleBarSize() { return frameSize() + captionSize(); }
+    static int titleBarSize() { return QVistaHelper::titleBarSizeDp() / QVistaHelper::m_devicePixelRatio; }
+    static int titleBarSizeDp() { return QVistaHelper::frameSizeDp() + QVistaHelper::captionSizeDp(); }
     static int topPadding() { // padding under text
         return int(QStyleHelper::dpiScaled(
                 QSysInfo::WindowsVersion >= QSysInfo::WV_WINDOWS7 ? 4 : 6));
@@ -117,12 +118,14 @@ private:
     bool drawTitleText(QPainter *painter, const QString &text, const QRect &rect, HDC hdc);
     static bool drawBlackRect(const QRect &rect, HDC hdc);
 
-    static int frameSize();
-    static int captionSize();
+    static int frameSize() { return QVistaHelper::frameSizeDp() / QVistaHelper::m_devicePixelRatio; }
+    static int frameSizeDp();
+    static int captionSize() { return QVistaHelper::captionSizeDp() / QVistaHelper::m_devicePixelRatio; }
+    static int captionSizeDp();
 
     static int backButtonSize() { return int(QStyleHelper::dpiScaled(30)); }
-    static int iconSize() { return 16; } // Standard Aero
-    static int glowSize() { return 10; }
+    static int iconSize();
+    static int glowSize();
     int leftMargin() { return backButton_->isVisible() ? backButtonSize() + iconSpacing : 0; }
 
     int titleOffset();
@@ -152,6 +155,7 @@ private:
     int titleBarOffset;  // Extra spacing above the text
     int iconSpacing;    // Space between button and icon
     int textSpacing;    // Space between icon and text
+    static int m_devicePixelRatio;
 };
 
 

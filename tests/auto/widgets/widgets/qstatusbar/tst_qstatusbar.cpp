@@ -285,25 +285,27 @@ void tst_QStatusBar::QTBUG25492_msgtimeout()
     QCOMPARE(testWidget->currentMessage(), QString("Ready"));
     QCOMPARE(testWidget->currentMessage(), currentMessage);
 
-    QTest::qWait(1000);
-
-    // Set display message for 2 seconds again
-    testWidget->showMessage("Ready", 2000);
-    QCOMPARE(testWidget->currentMessage(), QString("Ready"));
+    // Set display message for 2 seconds
+    QElapsedTimer t;
+    t.start();
+    testWidget->showMessage("Ready 2000", 2000);
+    QCOMPARE(testWidget->currentMessage(), QString("Ready 2000"));
     QCOMPARE(testWidget->currentMessage(), currentMessage);
-
-    QTest::qWait(1500);
 
     // Message disappears after 2 seconds
     QTRY_VERIFY(testWidget->currentMessage().isNull());
+    qint64 ts = t.elapsed();
+
+    // XXX: ideally ts should be 2000, but sometimes it appears to go away early, probably due to timer granularity.
+    QVERIFY2(ts >= 1800, qPrintable("Timer was " + QString::number(ts)));
+    if (ts < 2000)
+        qWarning("QTBUG25492_msgtimeout: message vanished early, should be >= 2000, was %lld", ts);
     QVERIFY(currentMessage.isNull());
 
     // Set display message for 2 seconds first
     testWidget->showMessage("Ready 25492", 2000);
     QCOMPARE(testWidget->currentMessage(), QString("Ready 25492"));
     QCOMPARE(testWidget->currentMessage(), currentMessage);
-
-    QTest::qWait(1000);
 
     // Set display message forever again
     testWidget->showMessage("Ready 25492", 0);

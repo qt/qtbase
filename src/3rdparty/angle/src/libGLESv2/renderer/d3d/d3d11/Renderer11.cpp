@@ -305,6 +305,19 @@ EGLint Renderer11::initialize()
         mMaxSupportedSamples = std::max(mMaxSupportedSamples, support.maxSupportedSamples);
     }
 
+#if !defined(ANGLE_PLATFORM_WINRT)
+    static wchar_t *qt_d3dcreate_multihreaded_var = _wgetenv(L"QT_D3DCREATE_MULTITHREADED");
+    if (qt_d3dcreate_multihreaded_var && wcsstr(qt_d3dcreate_multihreaded_var, L"1"))
+    {
+        ID3D10Multithread *multithread;
+        result = mDevice->QueryInterface(IID_PPV_ARGS(&multithread));
+        ASSERT(SUCCEEDED(result));
+        result = multithread->SetMultithreadProtected(true);
+        ASSERT(SUCCEEDED(result));
+        multithread->Release();
+    }
+#endif
+
     initializeDevice();
 
     return EGL_SUCCESS;

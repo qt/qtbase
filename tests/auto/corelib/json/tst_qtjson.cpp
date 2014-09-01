@@ -746,6 +746,8 @@ void tst_QtJson::testObjectIteration()
 
     QCOMPARE(object.size(), 10);
 
+    QCOMPARE(object.begin()->toDouble(), object.constBegin()->toDouble());
+
     for (QJsonObject::iterator it = object.begin(); it != object.end(); ++it) {
         QJsonValue value = it.value();
         QCOMPARE((double)it.key().toInt(), value.toDouble());
@@ -821,6 +823,8 @@ void tst_QtJson::testArrayIteration()
         QJsonValue value = (*it);
         QCOMPARE((double)i, value.toDouble());
     }
+
+    QCOMPARE(array.begin()->toDouble(), array.constBegin()->toDouble());
 
     {
         QJsonArray array2 = array;

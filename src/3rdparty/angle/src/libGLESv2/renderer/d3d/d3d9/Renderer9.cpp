@@ -319,6 +319,10 @@ EGLint Renderer9::initialize()
     D3DPRESENT_PARAMETERS presentParameters = getDefaultPresentParameters();
     DWORD behaviorFlags = D3DCREATE_FPU_PRESERVE | D3DCREATE_NOWINDOWCHANGES;
 
+    static wchar_t *qt_d3dcreate_multihreaded_var = _wgetenv(L"QT_D3DCREATE_MULTITHREADED");
+    if (qt_d3dcreate_multihreaded_var && wcsstr(qt_d3dcreate_multihreaded_var, L"1"))
+        behaviorFlags |= D3DCREATE_MULTITHREADED;
+
     {
         TRACE_EVENT0("gpu", "D3d9_CreateDevice");
         result = mD3d9->CreateDevice(mAdapter, mDeviceType, mDeviceWindow, behaviorFlags | D3DCREATE_HARDWARE_VERTEXPROCESSING | D3DCREATE_PUREDEVICE, &presentParameters, &mDevice);

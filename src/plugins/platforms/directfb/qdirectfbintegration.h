@@ -46,6 +46,7 @@
 #include "qdirectfbscreen.h"
 
 #include <qpa/qplatformintegration.h>
+#include <qpa/qplatformnativeinterface.h>
 #include <directfb.h>
 #include <directfb_version.h>
 
@@ -54,7 +55,7 @@ QT_BEGIN_NAMESPACE
 class QThread;
 class QAbstractEventDispatcher;
 
-class QDirectFbIntegration : public QPlatformIntegration
+class QDirectFbIntegration : public QPlatformIntegration, public QPlatformNativeInterface
 {
 public:
     QDirectFbIntegration();
@@ -69,6 +70,9 @@ public:
     QAbstractEventDispatcher *createEventDispatcher() const;
 
     QPlatformFontDatabase *fontDatabase() const;
+    QPlatformServices *services() const;
+    QPlatformInputContext *inputContext() const { return m_inputContext; }
+    QPlatformNativeInterface *nativeInterface() const;
 
 protected:
     virtual void initializeDirectFB();
@@ -81,7 +85,8 @@ protected:
     QScopedPointer<QDirectFbInput> m_input;
     QScopedPointer<QThread> m_inputRunner;
     QScopedPointer<QPlatformFontDatabase> m_fontDb;
-
+    QScopedPointer<QPlatformServices> m_services;
+    QPlatformInputContext *m_inputContext;
 };
 
 QT_END_NAMESPACE

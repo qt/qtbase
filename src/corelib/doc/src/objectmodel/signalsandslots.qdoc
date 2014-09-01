@@ -392,7 +392,7 @@
     compatible with the slot's arguments. Arguments can also be implicitly
     converted by the compiler, if needed.
 
-    You can also connect to functors or C++11 lamdas:
+    You can also connect to functors or C++11 lambdas:
 
     \code
     connect(sender, &QObject::destroyed, [=](){ this->m_objects.remove(sender); });

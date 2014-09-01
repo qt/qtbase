@@ -62,7 +62,6 @@
 #include "qandroidplatformfontdatabase.h"
 #include "qandroidplatformopenglcontext.h"
 #include "qandroidplatformopenglwindow.h"
-#include "qandroidplatformrasterwindow.h"
 #include "qandroidplatformscreen.h"
 #include "qandroidplatformservices.h"
 #include "qandroidplatformtheme.h"
@@ -192,6 +191,7 @@ bool QAndroidPlatformIntegration::hasCapability(Capability cap) const
                 return false;
             else
                 return true;
+        case RasterGLSurface: return true;
         default:
             return QPlatformIntegration::hasCapability(cap);
     }
@@ -227,8 +227,6 @@ QPlatformWindow *QAndroidPlatformIntegration::createPlatformWindow(QWindow *wind
 {
     if (window->type() == Qt::ForeignWindow)
         return new QAndroidPlatformForeignWindow(window);
-    else if (window->surfaceType() == QSurface::RasterSurface)
-        return new QAndroidPlatformRasterWindow(window);
     else
         return new QAndroidPlatformOpenGLWindow(window, m_eglDisplay);
 }

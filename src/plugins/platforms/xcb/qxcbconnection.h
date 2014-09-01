@@ -52,6 +52,7 @@
 #include <QVector>
 #include <QVarLengthArray>
 #include <qpa/qwindowsysteminterface.h>
+#include <QtCore/QLoggingCategory>
 
 // This is needed to make Qt compile together with XKB. xkb.h is using a variable
 // which is called 'explicit', this is a reserved keyword in c++
@@ -73,13 +74,16 @@
 #define XCB_USE_XINPUT22    // XI 2.2 adds multi-point touch support
 #endif
 #endif
-struct XInput2DeviceData;
+struct XInput2TouchDeviceData;
 #endif
 struct xcb_randr_get_output_info_reply_t;
 
 //#define Q_XCB_DEBUG
 
 QT_BEGIN_NAMESPACE
+
+Q_DECLARE_LOGGING_CATEGORY(lcQpaXInput)
+Q_DECLARE_LOGGING_CATEGORY(lcQpaXInputDevices)
 
 class QXcbScreen;
 class QXcbWindow;
@@ -504,7 +508,7 @@ private:
     void initializeXInput2();
     void finalizeXInput2();
     void xi2SetupDevices();
-    XInput2DeviceData *deviceForId(int id);
+    XInput2TouchDeviceData *touchDeviceForId(int id);
     void xi2HandleEvent(xcb_ge_event_t *event);
     void xi2HandleHierachyEvent(void *event);
     int m_xiOpCode, m_xiEventBase, m_xiErrorBase;
@@ -579,7 +583,7 @@ private:
     QXcbEventReader *m_reader;
 #if defined(XCB_USE_XINPUT2)
     QHash<int, QWindowSystemInterface::TouchPoint> m_touchPoints;
-    QHash<int, XInput2DeviceData*> m_touchDevices;
+    QHash<int, XInput2TouchDeviceData*> m_touchDevices;
 #endif
 #if defined(XCB_USE_EGL)
     void *m_egl_display;
@@ -613,8 +617,6 @@ private:
     bool has_input_shape;
     bool has_touch_without_mouse_emulation;
     bool has_xkb;
-    bool debug_xinput_devices;
-    bool debug_xinput;
 
     Qt::MouseButtons m_buttons;
 

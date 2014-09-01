@@ -62,6 +62,7 @@ public:
     QPlatformBackingStorePrivate(QWindow *w)
         : window(w)
 #ifndef QT_NO_OPENGL
+        , textureId(0)
         , blitter(0)
 #endif
     {
@@ -276,7 +277,6 @@ void QPlatformBackingStore::composeAndFlush(QWindow *window, const QRegion &regi
         if (d_ptr->needsSwizzle)
             d_ptr->blitter->setSwizzleRB(false);
     }
-    funcs->glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 
     // Textures for renderToTexture widgets that have WA_AlwaysStackOnTop set.
     for (int i = 0; i < textures->count(); ++i) {
@@ -287,6 +287,7 @@ void QPlatformBackingStore::composeAndFlush(QWindow *window, const QRegion &regi
         }
     }
 
+    funcs->glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
     funcs->glDisable(GL_BLEND);
     d_ptr->blitter->release();
 

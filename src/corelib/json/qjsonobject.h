@@ -107,7 +107,6 @@ public:
         typedef std::bidirectional_iterator_tag iterator_category;
         typedef int difference_type;
         typedef QJsonValue value_type;
-//        typedef T *pointer;
         typedef QJsonValueRef reference;
 
         Q_DECL_CONSTEXPR inline iterator() : o(0), i(0) {}
@@ -116,7 +115,11 @@ public:
         inline QString key() const { return o->keyAt(i); }
         inline QJsonValueRef value() const { return QJsonValueRef(o, i); }
         inline QJsonValueRef operator*() const { return QJsonValueRef(o, i); }
-        //inline T *operator->() const { return &concrete(i)->value; }
+#ifdef Q_QDOC
+        inline QJsonValueRef* operator->() const;
+#else
+        inline QJsonValueRefPtr operator->() const { return QJsonValueRefPtr(o, i); }
+#endif
         inline bool operator==(const iterator &other) const { return i == other.i; }
         inline bool operator!=(const iterator &other) const { return i != other.i; }
 
@@ -157,7 +160,11 @@ public:
         inline QString key() const { return o->keyAt(i); }
         inline QJsonValue value() const { return o->valueAt(i); }
         inline QJsonValue operator*() const { return o->valueAt(i); }
-        //inline const T *operator->() const { return &concrete(i)->value; }
+#ifdef Q_QDOC
+        inline QJsonValue* operator->() const;
+#else
+        inline QJsonValuePtr operator->() const { return QJsonValuePtr(o->valueAt(i)); }
+#endif
         inline bool operator==(const const_iterator &other) const { return i == other.i; }
         inline bool operator!=(const const_iterator &other) const { return i != other.i; }
 

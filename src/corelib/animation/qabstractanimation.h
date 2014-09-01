@@ -149,6 +149,7 @@ public:
 
     virtual qint64 elapsed() const;
 
+    // ### Qt6: Remove these two functions
     void setStartTime(qint64 startTime);
     qint64 startTime() const;
 
@@ -157,6 +158,7 @@ Q_SIGNALS:
     void stopped();
 
 protected:
+    // ### Qt6: Remove timestep argument
     void advanceAnimation(qint64 timeStep = -1);
     virtual void start();
     virtual void stop();

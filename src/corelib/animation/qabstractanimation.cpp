@@ -222,7 +222,8 @@ QUnifiedTimer::QUnifiedTimer() :
     QObject(), defaultDriver(this), lastTick(0), timingInterval(DEFAULT_TIMER_INTERVAL),
     currentAnimationIdx(0), insideTick(false), insideRestart(false), consistentTiming(false), slowMode(false),
     startTimersPending(false), stopTimerPending(false),
-    slowdownFactor(5.0f), profilerCallback(0)
+    slowdownFactor(5.0f), profilerCallback(0),
+    driverStartTime(0), temporalDrift(0)
 {
     time.invalidate();
     driver = &defaultDriver;
@@ -253,18 +254,56 @@ QUnifiedTimer *QUnifiedTimer::instance()
 
 void QUnifiedTimer::maybeUpdateAnimationsToCurrentTime()
 {
-    qint64 elapsed = driver->elapsed();
-    if (elapsed - lastTick > 50)
-        updateAnimationTimers(elapsed);
+    if (elapsed() - lastTick > 50)
+        updateAnimationTimers(-1);
 }
 
-void QUnifiedTimer::updateAnimationTimers(qint64 currentTick)
+qint64 QUnifiedTimer::elapsed() const
+{
+    if (driver->isRunning())
+        return driverStartTime + driver->elapsed();
+    else if (time.isValid())
+        return time.elapsed() + temporalDrift;
+
+    // Reaching here would normally indicate that the function is called
+    // under the wrong circumstances as neither pauses nor actual animations
+    // are running and there should be no need to query for elapsed().
+    return 0;
+}
+
+void QUnifiedTimer::startAnimationDriver()
+{
+    if (driver->isRunning()) {
+        qWarning("QUnifiedTimer::startAnimationDriver: driver is already running...");
+        return;
+    }
+    // Set the start time to the currently elapsed() value before starting.
+    // This means we get the animation system time including the temporal drift
+    // which is what we want.
+    driverStartTime = elapsed();
+    driver->start();
+}
+
+void QUnifiedTimer::stopAnimationDriver()
+{
+    if (!driver->isRunning()) {
+        qWarning("QUnifiedTimer::stopAnimationDriver: driver is not running");
+        return;
+    }
+    // Update temporal drift. Since the driver is running, elapsed() will
+    // return the total animation time in driver-time. Subtract the current
+    // wall time to get the delta.
+    temporalDrift = elapsed() - time.elapsed();
+    driver->stop();
+}
+
+void QUnifiedTimer::updateAnimationTimers(qint64)
 {
     //setCurrentTime can get this called again while we're the for loop. At least with pauseAnimations
     if(insideTick)
         return;
 
-    qint64 totalElapsed = currentTick >= 0 ? currentTick : driver->elapsed();
+    qint64 totalElapsed = elapsed();
 
     // ignore consistentTiming in case the pause timer is active
     qint64 delta = (consistentTiming && !pauseTimer.isActive()) ?
@@ -323,8 +362,7 @@ void QUnifiedTimer::localRestart()
     } else if (!driver->isRunning()) {
         if (pauseTimer.isActive())
             pauseTimer.stop();
-        driver->setStartTime(time.isValid() ? time.elapsed() : 0);
-        driver->start();
+        startAnimationDriver();
     }
 
 }
@@ -345,27 +383,26 @@ void QUnifiedTimer::setTimingInterval(int interval)
 
     if (driver->isRunning() && !pauseTimer.isActive()) {
         //we changed the timing interval
-        driver->stop();
-        driver->setStartTime(time.isValid() ? time.elapsed() : 0);
-        driver->start();
+        stopAnimationDriver();
+        startAnimationDriver();
     }
 }
 
 void QUnifiedTimer::startTimers()
 {
     startTimersPending = false;
-    if (!animationTimers.isEmpty())
-        updateAnimationTimers(-1);
 
     //we transfer the waiting animations into the "really running" state
     animationTimers += animationTimersToStart;
     animationTimersToStart.clear();
     if (!animationTimers.isEmpty()) {
-        localRestart();
         if (!time.isValid()) {
             lastTick = 0;
             time.start();
+            temporalDrift = 0;
+            driverStartTime = 0;
         }
+        localRestart();
     }
 }
 
@@ -373,7 +410,7 @@ void QUnifiedTimer::stopTimer()
 {
     stopTimerPending = false;
     if (animationTimers.isEmpty()) {
-        driver->stop();
+        stopAnimationDriver();
         pauseTimer.stop();
         // invalidate the start reference time
         time.invalidate();
@@ -483,14 +520,12 @@ void QUnifiedTimer::installAnimationDriver(QAnimationDriver *d)
         return;
     }
 
-    if (driver->isRunning()) {
-        driver->stop();
-        d->setStartTime(time.isValid() ? time.elapsed() : 0);
-        d->start();
-    }
-
+    bool running = driver->isRunning();
+    if (running)
+        stopAnimationDriver();
     driver = d;
-
+    if (running)
+        startAnimationDriver();
 }
 
 void QUnifiedTimer::uninstallAnimationDriver(QAnimationDriver *d)
@@ -500,13 +535,12 @@ void QUnifiedTimer::uninstallAnimationDriver(QAnimationDriver *d)
         return;
     }
 
+    bool running = driver->isRunning();
+    if (running)
+        stopAnimationDriver();
     driver = &defaultDriver;
-
-    if (d->isRunning()) {
-        d->stop();
-        driver->setStartTime(time.isValid() ? time.elapsed() : 0);
-        driver->start();
-    }
+    if (running)
+        startAnimationDriver();
 }
 
 /*!
@@ -603,10 +637,12 @@ void QAnimationTimer::restartAnimationTimer()
 
 void QAnimationTimer::startAnimations()
 {
+    if (!startAnimationPending)
+        return;
     startAnimationPending = false;
+
     //force timer to update, which prevents large deltas for our newly added animations
-    if (!animations.isEmpty())
-        QUnifiedTimer::instance()->maybeUpdateAnimationsToCurrentTime();
+    QUnifiedTimer::instance()->maybeUpdateAnimationsToCurrentTime();
 
     //we transfer the waiting animations into the "really running" state
     animations += animationsToStart;
@@ -618,7 +654,8 @@ void QAnimationTimer::startAnimations()
 void QAnimationTimer::stopTimer()
 {
     stopTimerPending = false;
-    if (animations.isEmpty()) {
+    bool pendingStart = startAnimationPending && animationsToStart.size() > 0;
+    if (animations.isEmpty() && !pendingStart) {
         QUnifiedTimer::resumeAnimationTimer(this);
         QUnifiedTimer::stopAnimationTimer(this);
         // invalidate the start reference time
@@ -749,20 +786,25 @@ QAnimationDriver::~QAnimationDriver()
     This is to take into account that pauses can occur in running
     animations which will stop the driver, but the time still
     increases.
+
+    \obsolete
+
+    This logic is now handled internally in the animation system.
  */
-void QAnimationDriver::setStartTime(qint64 startTime)
+void QAnimationDriver::setStartTime(qint64)
 {
-    Q_D(QAnimationDriver);
-    d->startTime = startTime;
 }
 
 /*!
     Returns the start time of the animation.
+
+    \obsolete
+
+    This logic is now handled internally in the animation system.
  */
 qint64 QAnimationDriver::startTime() const
 {
-    Q_D(const QAnimationDriver);
-    return d->startTime;
+    return 0;
 }
 
 
@@ -772,6 +814,10 @@ qint64 QAnimationDriver::startTime() const
 
     If \a timeStep is positive, it will be used as the current time in the
     calculations; otherwise, the current clock time will be used.
+
+    Since 5.4, the timeStep argument is ignored and elapsed() will be
+    used instead in combination with the internal time offsets of the
+    animation system.
  */
 
 void QAnimationDriver::advanceAnimation(qint64 timeStep)

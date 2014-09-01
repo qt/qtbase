@@ -1027,17 +1027,17 @@ protected:
         if (m_interFile.isEmpty()) {
             QList<QSslCertificate> localCert = QSslCertificate::fromPath(m_certFile);
             QVERIFY(!localCert.isEmpty());
-            QVERIFY(localCert.first().handle());
+            QVERIFY(!localCert.first().isNull());
             socket->setLocalCertificate(localCert.first());
         }
         else {
             QList<QSslCertificate> localCert = QSslCertificate::fromPath(m_certFile);
             QVERIFY(!localCert.isEmpty());
-            QVERIFY(localCert.first().handle());
+            QVERIFY(!localCert.first().isNull());
 
             QList<QSslCertificate> interCert = QSslCertificate::fromPath(m_interFile);
             QVERIFY(!interCert.isEmpty());
-            QVERIFY(interCert.first().handle());
+            QVERIFY(!interCert.first().isNull());
 
             socket->setLocalCertificateChain(localCert + interCert);
         }
@@ -1462,25 +1462,25 @@ void tst_QSslSocket::systemCaCertificates()
 void tst_QSslSocket::wildcardCertificateNames()
 {
     // Passing CN matches
-    QCOMPARE( QSslSocketBackendPrivate::isMatchingHostname(QString("www.example.com"), QString("www.example.com")), true );
-    QCOMPARE( QSslSocketBackendPrivate::isMatchingHostname(QString("*.example.com"), QString("www.example.com")), true );
-    QCOMPARE( QSslSocketBackendPrivate::isMatchingHostname(QString("xxx*.example.com"), QString("xxxwww.example.com")), true );
-    QCOMPARE( QSslSocketBackendPrivate::isMatchingHostname(QString("f*.example.com"), QString("foo.example.com")), true );
-    QCOMPARE( QSslSocketBackendPrivate::isMatchingHostname(QString("192.168.0.0"), QString("192.168.0.0")), true );
+    QCOMPARE( QSslSocketPrivate::isMatchingHostname(QString("www.example.com"), QString("www.example.com")), true );
+    QCOMPARE( QSslSocketPrivate::isMatchingHostname(QString("*.example.com"), QString("www.example.com")), true );
+    QCOMPARE( QSslSocketPrivate::isMatchingHostname(QString("xxx*.example.com"), QString("xxxwww.example.com")), true );
+    QCOMPARE( QSslSocketPrivate::isMatchingHostname(QString("f*.example.com"), QString("foo.example.com")), true );
+    QCOMPARE( QSslSocketPrivate::isMatchingHostname(QString("192.168.0.0"), QString("192.168.0.0")), true );
 
     // Failing CN matches
-    QCOMPARE( QSslSocketBackendPrivate::isMatchingHostname(QString("xxx.example.com"), QString("www.example.com")), false );
-    QCOMPARE( QSslSocketBackendPrivate::isMatchingHostname(QString("*"), QString("www.example.com")), false );
-    QCOMPARE( QSslSocketBackendPrivate::isMatchingHostname(QString("*.*.com"), QString("www.example.com")), false );
-    QCOMPARE( QSslSocketBackendPrivate::isMatchingHostname(QString("*.example.com"), QString("baa.foo.example.com")), false );
-    QCOMPARE( QSslSocketBackendPrivate::isMatchingHostname(QString("f*.example.com"), QString("baa.example.com")), false );
-    QCOMPARE( QSslSocketBackendPrivate::isMatchingHostname(QString("*.com"), QString("example.com")), false );
-    QCOMPARE( QSslSocketBackendPrivate::isMatchingHostname(QString("*fail.com"), QString("example.com")), false );
-    QCOMPARE( QSslSocketBackendPrivate::isMatchingHostname(QString("*.example."), QString("www.example.")), false );
-    QCOMPARE( QSslSocketBackendPrivate::isMatchingHostname(QString("*.example."), QString("www.example")), false );
-    QCOMPARE( QSslSocketBackendPrivate::isMatchingHostname(QString(""), QString("www")), false );
-    QCOMPARE( QSslSocketBackendPrivate::isMatchingHostname(QString("*"), QString("www")), false );
-    QCOMPARE( QSslSocketBackendPrivate::isMatchingHostname(QString("*.168.0.0"), QString("192.168.0.0")), false );
+    QCOMPARE( QSslSocketPrivate::isMatchingHostname(QString("xxx.example.com"), QString("www.example.com")), false );
+    QCOMPARE( QSslSocketPrivate::isMatchingHostname(QString("*"), QString("www.example.com")), false );
+    QCOMPARE( QSslSocketPrivate::isMatchingHostname(QString("*.*.com"), QString("www.example.com")), false );
+    QCOMPARE( QSslSocketPrivate::isMatchingHostname(QString("*.example.com"), QString("baa.foo.example.com")), false );
+    QCOMPARE( QSslSocketPrivate::isMatchingHostname(QString("f*.example.com"), QString("baa.example.com")), false );
+    QCOMPARE( QSslSocketPrivate::isMatchingHostname(QString("*.com"), QString("example.com")), false );
+    QCOMPARE( QSslSocketPrivate::isMatchingHostname(QString("*fail.com"), QString("example.com")), false );
+    QCOMPARE( QSslSocketPrivate::isMatchingHostname(QString("*.example."), QString("www.example.")), false );
+    QCOMPARE( QSslSocketPrivate::isMatchingHostname(QString("*.example."), QString("www.example")), false );
+    QCOMPARE( QSslSocketPrivate::isMatchingHostname(QString(""), QString("www")), false );
+    QCOMPARE( QSslSocketPrivate::isMatchingHostname(QString("*"), QString("www")), false );
+    QCOMPARE( QSslSocketPrivate::isMatchingHostname(QString("*.168.0.0"), QString("192.168.0.0")), false );
 }
 
 void tst_QSslSocket::wildcard()
@@ -1527,7 +1527,7 @@ protected:
         // Only set the certificate
         QList<QSslCertificate> localCert = QSslCertificate::fromPath(SRCDIR "certs/fluke.cert");
         QVERIFY(!localCert.isEmpty());
-        QVERIFY(localCert.first().handle());
+        QVERIFY(!localCert.first().isNull());
         socket->setLocalCertificate(localCert.first());
 
         QVERIFY(socket->setSocketDescriptor(socketDescriptor, QAbstractSocket::ConnectedState));
@@ -1762,7 +1762,7 @@ protected:
 
         QList<QSslCertificate> localCert = QSslCertificate::fromPath(SRCDIR "certs/fluke.cert");
         QVERIFY(!localCert.isEmpty());
-        QVERIFY(localCert.first().handle());
+        QVERIFY(!localCert.first().isNull());
         socket->setLocalCertificate(localCert.first());
 
         QVERIFY(socket->setSocketDescriptor(socketDescriptor, QAbstractSocket::ConnectedState));
@@ -2458,7 +2458,7 @@ void WebSocket::_startServerEncryption (void)
 
     QList<QSslCertificate> localCert = QSslCertificate::fromPath(m_certFile);
     QVERIFY(!localCert.isEmpty());
-    QVERIFY(localCert.first().handle());
+    QVERIFY(!localCert.first().isNull());
     setLocalCertificate(localCert.first());
 
     QVERIFY(!peerAddress().isNull());
@@ -2638,7 +2638,7 @@ void tst_QSslSocket::qtbug18498_peek2()
 
     QList<QSslCertificate> localCert = QSslCertificate::fromPath(SRCDIR "certs/fluke.cert");
     QVERIFY(!localCert.isEmpty());
-    QVERIFY(localCert.first().handle());
+    QVERIFY(!localCert.first().isNull());
     server->setLocalCertificate(localCert.first());
 
     server->setProtocol(QSsl::AnyProtocol);

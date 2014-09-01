@@ -1670,13 +1670,10 @@ void tst_QAccessibility::spinBoxTest()
     QCOMPARE(accessibleRect, widgetRect);
     QCOMPARE(interface->text(QAccessible::Value), QLatin1String("3"));
 
-    // one child, the line edit
+    // make sure that the line edit is not there
     const int numChildren = interface->childCount();
-    QCOMPARE(numChildren, 1);
-    QAccessibleInterface *lineEdit = interface->child(0);
-
-    QCOMPARE(lineEdit->role(), QAccessible::EditableText);
-    QCOMPARE(lineEdit->text(QAccessible::Value), QLatin1String("3"));
+    QCOMPARE(numChildren, 0);
+    QVERIFY(interface->child(0) == Q_NULLPTR);
 
     QVERIFY(interface->valueInterface());
     QCOMPARE(interface->valueInterface()->currentValue().toInt(), 3);
@@ -1690,6 +1687,10 @@ void tst_QAccessibility::spinBoxTest()
     QTest::qWait(200);
     QAccessibleValueChangeEvent expectedEvent(spinBox, spinBox->value());
     QVERIFY(QTestAccessibility::containsEvent(&expectedEvent));
+
+    QAccessibleTextInterface *textIface = interface->textInterface();
+    QVERIFY(textIface);
+
     delete spinBox;
     QTestAccessibility::clearEvents();
 }

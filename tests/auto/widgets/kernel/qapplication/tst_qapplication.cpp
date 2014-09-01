@@ -1976,7 +1976,9 @@ public:
 
     TouchEventPropagationTestWidget(QWidget *parent = 0)
         : QWidget(parent), seenTouchEvent(false), acceptTouchEvent(false), seenMouseEvent(false), acceptMouseEvent(false)
-    { }
+    {
+        setAttribute(Qt::WA_TouchPadAcceptSingleTouchEvents);
+    }
 
     void reset()
     {

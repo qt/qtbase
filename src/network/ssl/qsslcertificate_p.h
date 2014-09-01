@@ -69,6 +69,11 @@ struct X509_EXTENSION;
 struct ASN1_OBJECT;
 #endif
 
+#ifdef Q_OS_WINRT
+#include <wrl.h>
+#include <windows.security.cryptography.certificates.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 // forward declaration
@@ -99,9 +104,18 @@ public:
     QDateTime notValidAfter;
     QDateTime notValidBefore;
 
+#ifdef QT_NO_OPENSSL
+    bool subjectMatchesIssuer;
+    QSsl::KeyAlgorithm publicKeyAlgorithm;
+    QByteArray publicKeyDerData;
+    QMultiMap<QSsl::AlternativeNameEntryType, QString> subjectAlternativeNames;
+
+    QByteArray derData;
+#endif
     X509 *x509;
 
     void init(const QByteArray &data, QSsl::EncodingFormat format);
+    bool parse(const QByteArray &data);
 
     static QByteArray asn1ObjectId(ASN1_OBJECT *object);
     static QByteArray asn1ObjectName(ASN1_OBJECT *object);
@@ -117,6 +131,12 @@ public:
     friend class QSslSocketBackendPrivate;
 
     QAtomicInt ref;
+
+#ifdef Q_OS_WINRT
+    Microsoft::WRL::ComPtr<ABI::Windows::Security::Cryptography::Certificates::ICertificate> certificate;
+
+    static QSslCertificate QSslCertificate_from_Certificate(ABI::Windows::Security::Cryptography::Certificates::ICertificate *iCertificate);
+#endif
 };
 
 QT_END_NAMESPACE

@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Jeremy Lainé <jeremy.laine@m4x.org>
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtNetwork module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -39,54 +39,78 @@
 **
 ****************************************************************************/
 
-#ifndef QPLATFORMSCREENPAGEFLIPPER_H
-#define QPLATFORMSCREENPAGEFLIPPER_H
+
+#ifndef QASN1ELEMENT_P_H
+#define QASN1ELEMENT_P_H
 
 //
 //  W A R N I N G
 //  -------------
 //
-// This file is part of the QPA API and is not meant to be used
-// in applications. Usage of this API may make your code
-// source and binary incompatible with future versions of Qt.
+// This file is not part of the Qt API.  It exists for the convenience
+// of the QLibrary class.  This header file may change from
+// version to version without notice, or even be removed.
+//
+// We mean it.
 //
 
-#include <QtCore/QObject>
+#include <QtCore/qdatetime.h>
+#include <QtCore/qmap.h>
 
 QT_BEGIN_NAMESPACE
 
-class Q_GUI_EXPORT QPlatformScreenBuffer {
-public:
-    QPlatformScreenBuffer();
-    virtual ~QPlatformScreenBuffer();
-
-    bool isDestroyed() const;
-    bool isReady() const;
-
-    virtual void aboutToBeDisplayed();
-    virtual void displayed();
-    virtual void release() = 0;
-
-    virtual void *handle() const = 0;
-
-protected:
-    bool m_destroyed;
-    bool m_ready;
-};
-
-class Q_GUI_EXPORT QPlatformScreenPageFlipper : public QObject
+class Q_AUTOTEST_EXPORT QAsn1Element
 {
-    Q_OBJECT
 public:
-    explicit QPlatformScreenPageFlipper(QObject *parent = 0);
+    enum ElementType {
+        // universal
+        IntegerType  = 0x02,
+        BitStringType  = 0x03,
+        OctetStringType = 0x04,
+        NullType = 0x05,
+        ObjectIdentifierType = 0x06,
+        Utf8StringType = 0x0c,
+        PrintableStringType = 0x13,
+        TeletexStringType = 0x14,
+        UtcTimeType = 0x17,
+        GeneralizedTimeType = 0x18,
+        SequenceType = 0x30,
+        SetType = 0x31,
 
-    virtual bool displayBuffer(QPlatformScreenBuffer *) = 0;
+        // application
+        Rfc822NameType = 0x81,
+        DnsNameType = 0x82,
 
-Q_SIGNALS:
-    void bufferDisplayed(QPlatformScreenBuffer *);
-    void bufferReleased(QPlatformScreenBuffer *);
+        // context specific
+        Context0Type = 0xA0,
+        Context3Type = 0xA3
+    };
+
+    explicit QAsn1Element(quint8 type = 0, const QByteArray &value = QByteArray());
+    bool read(QDataStream &data);
+    bool read(const QByteArray &data);
+    void write(QDataStream &data) const;
+
+    static QAsn1Element fromInteger(unsigned int val);
+    static QAsn1Element fromVector(const QVector<QAsn1Element> &items);
+    static QAsn1Element fromObjectId(const QByteArray &id);
+
+    QDateTime toDateTime() const;
+    QMultiMap<QByteArray, QString> toInfo() const;
+    QVector<QAsn1Element> toVector() const;
+    QByteArray toObjectId() const;
+    QByteArray toObjectName() const;
+    QString toString() const;
+
+    quint8 type() const { return mType; }
+    QByteArray value() const { return mValue; }
+
+private:
+    quint8 mType;
+    QByteArray mValue;
 };
+Q_DECLARE_TYPEINFO(QAsn1Element, Q_MOVABLE_TYPE);
 
 QT_END_NAMESPACE
 
-#endif // QPLATFORMSCREENPAGEFLIPPER_H
+#endif

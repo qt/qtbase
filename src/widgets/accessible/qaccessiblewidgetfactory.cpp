@@ -66,7 +66,10 @@ QAccessibleInterface *qAccessibleFactory(const QString &classname, QObject *obje
     if (false) {
 #ifndef QT_NO_LINEEDIT
     } else if (classname == QLatin1String("QLineEdit")) {
-        iface = new QAccessibleLineEdit(widget);
+        if (widget->objectName() == QLatin1String("qt_spinbox_lineedit"))
+            iface = 0;
+        else
+            iface = new QAccessibleLineEdit(widget);
 #endif
 #ifndef QT_NO_COMBOBOX
     } else if (classname == QLatin1String("QComboBox")) {

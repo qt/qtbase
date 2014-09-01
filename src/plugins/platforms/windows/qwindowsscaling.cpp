@@ -1,7 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2014 BogDan Vatra <bogdan@kde.org>
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -40,44 +39,41 @@
 **
 ****************************************************************************/
 
-#include "qandroidplatformrasterwindow.h"
+#include  "qwindowsscaling.h"
+#include  "qwindowsscreen.h"
 
-#include "qandroidplatformscreen.h"
+#include <QtCore/QDebug>
+#include <QtCore/QCoreApplication>
 
 QT_BEGIN_NAMESPACE
 
-QAndroidPlatformRasterWindow::QAndroidPlatformRasterWindow(QWindow *window)
-    :QAndroidPlatformWindow(window)
+/*!
+    \class QWindowsScaling
+    \brief Windows scaling utilities
+
+    \internal
+    \ingroup qt-lighthouse-win
+*/
+
+int QWindowsScaling::m_factor = 1;
+
+static const char devicePixelRatioEnvVar[] = "QT_DEVICE_PIXEL_RATIO";
+
+// Suggest a scale factor by checking monitor sizes.
+int QWindowsScaling::determineUiScaleFactor()
 {
-
-}
-
-void QAndroidPlatformRasterWindow::repaint(const QRegion &region)
-{
-    if (QAndroidPlatformWindow::parent())
-        return;
-
-    QRect currentGeometry = geometry();
-
-    QRect dirtyClient = region.boundingRect();
-    QRect dirtyRegion(currentGeometry.left() + dirtyClient.left(),
-                      currentGeometry.top() + dirtyClient.top(),
-                      dirtyClient.width(),
-                      dirtyClient.height());
-    QRect mOldGeometryLocal = m_oldGeometry;
-    m_oldGeometry = currentGeometry;
-    // If this is a move, redraw the previous location
-    if (mOldGeometryLocal != currentGeometry)
-        platformScreen()->setDirty(mOldGeometryLocal);
-    platformScreen()->setDirty(dirtyRegion);
-}
-
-void QAndroidPlatformRasterWindow::setGeometry(const QRect &rect)
-{
-    m_oldGeometry = geometry();
-    QAndroidPlatformWindow::setGeometry(rect);
-    if (rect.topLeft() != m_oldGeometry.topLeft())
-        repaint(QRegion(rect));
+    if (!qEnvironmentVariableIsSet(devicePixelRatioEnvVar))
+        return 1;
+    const QByteArray envDevicePixelRatioEnv = qgetenv(devicePixelRatioEnvVar);
+    // Auto: Suggest a scale factor by checking monitor resolution.
+    if (envDevicePixelRatioEnv == QByteArrayLiteral("auto")) {
+        const int maxResolution = QWindowsScreen::maxMonitorHorizResolution();
+        return maxResolution > 180 ? maxResolution / 96 : 1;
+    }
+    // Get factor from environment
+    bool ok = false;
+    const int envFactor = envDevicePixelRatioEnv.toInt(&ok);
+    return ok && envFactor > 0 ? envFactor : 1;
 }
 
 QT_END_NAMESPACE

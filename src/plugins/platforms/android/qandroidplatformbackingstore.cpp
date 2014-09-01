@@ -42,7 +42,7 @@
 
 #include "qandroidplatformbackingstore.h"
 #include "qandroidplatformscreen.h"
-#include "qandroidplatformrasterwindow.h"
+#include "qandroidplatformwindow.h"
 #include <qpa/qplatformscreen.h>
 
 QT_BEGIN_NAMESPACE
@@ -66,7 +66,7 @@ void QAndroidPlatformBackingStore::flush(QWindow *window, const QRegion &region,
     if (!m_backingStoreSet)
         setBackingStore(window);
 
-    (static_cast<QAndroidPlatformRasterWindow *>(window->handle()))->repaint(region);
+    (static_cast<QAndroidPlatformWindow *>(window->handle()))->repaint(region);
 }
 
 void QAndroidPlatformBackingStore::resize(const QSize &size, const QRegion &staticContents)
@@ -79,11 +79,11 @@ void QAndroidPlatformBackingStore::resize(const QSize &size, const QRegion &stat
 
 void QAndroidPlatformBackingStore::setBackingStore(QWindow *window)
 {
-    if (window->surfaceType() == QSurface::RasterSurface) {
-        (static_cast<QAndroidPlatformRasterWindow *>(window->handle()))->setBackingStore(this);
+    if (window->surfaceType() == QSurface::RasterSurface || window->surfaceType() == QSurface::RasterGLSurface) {
+        (static_cast<QAndroidPlatformWindow *>(window->handle()))->setBackingStore(this);
         m_backingStoreSet = true;
     } else {
-        qWarning("QAndroidPlatformBackingStore does not support GL windows.");
+        qWarning("QAndroidPlatformBackingStore does not support OpenGL-only windows.");
     }
 }
 

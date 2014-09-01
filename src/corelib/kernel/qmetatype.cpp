@@ -65,6 +65,7 @@
 #  include "qjsonobject.h"
 #  include "qjsonarray.h"
 #  include "qjsondocument.h"
+#  include "qbytearraylist.h"
 #endif
 
 #ifndef QT_NO_GEOM_VARIANT
@@ -270,6 +271,7 @@ struct DefinedTypesFilter {
     \value QJsonDocument QJsonDocument
     \value QModelIndex QModelIndex
     \value QUuid QUuid
+    \value QByteArrayList QByteArrayList
 
     \value User  Base value for user types
     \value UnknownType This is an invalid type id. It is returned from QMetaType for types that are not registered
@@ -1191,6 +1193,9 @@ bool QMetaType::save(QDataStream &stream, int type, const void *data)
     case QMetaType::QVariant:
         stream << *static_cast<const NS(QVariant)*>(data);
         break;
+    case QMetaType::QByteArrayList:
+        stream << *static_cast<const NS(QByteArrayList)*>(data);
+        break;
 #endif
     case QMetaType::QByteArray:
         stream << *static_cast<const NS(QByteArray)*>(data);
@@ -1413,6 +1418,9 @@ bool QMetaType::load(QDataStream &stream, int type, void *data)
         break;
     case QMetaType::QVariant:
         stream >> *static_cast< NS(QVariant)*>(data);
+        break;
+    case QMetaType::QByteArrayList:
+        stream >> *static_cast< NS(QByteArrayList)*>(data);
         break;
 #endif
     case QMetaType::QByteArray:

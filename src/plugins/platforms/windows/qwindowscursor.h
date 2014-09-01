@@ -102,7 +102,7 @@ public:
     QWindowsCursor() {}
 
     void changeCursor(QCursor * widgetCursor, QWindow * widget) Q_DECL_OVERRIDE;
-    QPoint pos() const Q_DECL_OVERRIDE { return mousePosition(); }
+    QPoint pos() const Q_DECL_OVERRIDE;
     void setPos(const QPoint &pos) Q_DECL_OVERRIDE;
 
     static HCURSOR createPixmapCursor(const QPixmap &pixmap, const QPoint &hotSpot);

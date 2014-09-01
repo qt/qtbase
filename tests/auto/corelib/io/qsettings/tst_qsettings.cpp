@@ -191,7 +191,7 @@ static void removePath(const QString& _path)
     QDir dir(path);
     if (!dir.exists())
         return;
-    QStringList entries = dir.entryList(QDir::NoDotAndDotDot);
+    QStringList entries = dir.entryList(QDir::AllEntries | QDir::NoDotAndDotDot);
     foreach(QString name, entries) {
         QString absolute = path + name;
         if (QFileInfo(absolute).isDir())
@@ -209,7 +209,11 @@ static void removePath(const QString& _path)
 static QString settingsPath(const char *path = "")
 {
     // Temporary path for files that are specified explicitly in the constructor.
+#ifndef Q_OS_WINRT
     QString tempPath = QDir::tempPath();
+#else
+    QString tempPath = QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation);
+#endif
     if (tempPath.endsWith("/"))
         tempPath.truncate(tempPath.size() - 1);
     return QDir::toNativeSeparators(tempPath + "/tst_QSettings/" + QLatin1String(path));
@@ -351,9 +355,12 @@ void tst_QSettings::init()
     QSettings(QSettings::SystemScope, "software.org").clear();
     QSettings(QSettings::UserScope, "other.software.org").clear();
     QSettings(QSettings::SystemScope, "other.software.org").clear();
+    QSettings("foo", QSettings::NativeFormat).clear();
     removePath(settingsPath());
-#endif
+    QFile::remove(QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation) + "/foo");
+#else
     QFile::remove("foo");
+#endif
 }
 
 void tst_QSettings::cleanup()
@@ -1804,6 +1811,11 @@ void tst_QSettings::testChildKeysAndGroups()
 
 void tst_QSettings::testUpdateRequestEvent()
 {
+#ifdef Q_OS_WINRT
+    const QString oldCur = QDir::currentPath();
+    QDir::setCurrent(QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation));
+#endif
+
     QFile::remove("foo");
     QVERIFY(!QFile::exists("foo"));
 
@@ -1829,6 +1841,10 @@ void tst_QSettings::testUpdateRequestEvent()
     QVERIFY(QFileInfo("foo").size() > 0);
 
     QTRY_VERIFY(QFileInfo("foo").size() == 0);
+
+#ifdef Q_OS_WINRT
+    QDir::setCurrent(oldCur);
+#endif
 }
 
 const int NumIterations = 5;
@@ -1941,7 +1957,7 @@ void tst_QSettings::testNormalizedKey()
 
 void tst_QSettings::testEmptyData()
 {
-    QString filename(QDir::tempPath() + "/empty.ini");
+    QString filename(settingsPath("empty.ini"));
     QFile::remove(filename);
     QVERIFY(!QFile::exists(filename));
 
@@ -2054,6 +2070,14 @@ void tst_QSettings::fromFile()
 {
     QFETCH(QSettings::Format, format);
 
+    // Sandboxed WinRT applications cannot write into the
+    // application directory. Hence reset the current
+    // directory
+#ifdef Q_OS_WINRT
+    const QString oldCur = QDir::currentPath();
+    QDir::setCurrent(QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation));
+#endif
+
     QFile::remove("foo");
     QVERIFY(!QFile::exists("foo"));
 
@@ -2078,7 +2102,7 @@ void tst_QSettings::fromFile()
         QCOMPARE(settings2.value("alpha").toInt(), 2);
 
         settings1.sync();
-#if !defined(Q_OS_WIN) || defined(Q_OS_WINRT)
+#if !defined(Q_OS_WIN)
         QVERIFY(QFile::exists("foo"));
 #endif
         QCOMPARE(settings1.value("alpha").toInt(), 2);
@@ -2101,6 +2125,9 @@ void tst_QSettings::fromFile()
         QCOMPARE(settings1.value("gamma/foo.bar").toInt(), 4);
         QCOMPARE(settings1.allKeys().size(), 3);
     }
+#ifdef Q_OS_WINRT
+    QDir::setCurrent(oldCur);
+#endif
 }
 
 #ifdef QT_BUILD_INTERNAL

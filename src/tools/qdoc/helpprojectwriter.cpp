@@ -284,7 +284,6 @@ bool HelpProjectWriter::generateSection(HelpProject &project,
 
     case Node::Class:
         project.keywords.append(keywordDetails(node));
-        project.files.insert(gen_->fullDocumentLocation(node,Generator::useOutputSubdirs()));
         break;
     case Node::QmlType:
     case Node::QmlBasicType:
@@ -303,12 +302,10 @@ bool HelpProjectWriter::generateSection(HelpProject &project,
             }
         }
         project.keywords.append(keywordDetails(node));
-        project.files.insert(gen_->fullDocumentLocation(node,Generator::useOutputSubdirs()));
         break;
 
     case Node::Namespace:
         project.keywords.append(keywordDetails(node));
-        project.files.insert(gen_->fullDocumentLocation(node,Generator::useOutputSubdirs()));
         break;
 
     case Node::Enum:
@@ -357,7 +354,6 @@ bool HelpProjectWriter::generateSection(HelpProject &project,
                     }
                 }
                 project.keywords.append(keywordDetails(node));
-                project.files.insert(gen_->fullDocumentLocation(node,Generator::useOutputSubdirs()));
             }
         }
         break;
@@ -388,7 +384,6 @@ bool HelpProjectWriter::generateSection(HelpProject &project,
 
         if (node->relates()) {
             project.memberStatus[node->relates()].insert(node->status());
-            project.files.insert(gen_->fullDocumentLocation(node->relates(),Generator::useOutputSubdirs()));
         } else if (node->parent())
             project.memberStatus[node->parent()].insert(node->status());
     }
@@ -410,8 +405,6 @@ bool HelpProjectWriter::generateSection(HelpProject &project,
 
     case Node::Variable:
     {
-        QString location = gen_->fullDocumentLocation(node,Generator::useOutputSubdirs());
-        project.files.insert(location.left(location.lastIndexOf(QLatin1Char('#'))));
         project.keywords.append(keywordDetails(node));
     }
         break;
@@ -442,7 +435,6 @@ bool HelpProjectWriter::generateSection(HelpProject &project,
                 }
                 project.keywords.append(keywordDetails(node));
             }
-            project.files.insert(gen_->fullDocumentLocation(node,Generator::useOutputSubdirs()));
         }
         break;
     }
@@ -513,8 +505,6 @@ void HelpProjectWriter::generateSections(HelpProject &project,
                 project.memberStatus[node].insert(childNode->status());
                 if (childNode->relates()) {
                     project.memberStatus[childNode->relates()].insert(childNode->status());
-                    project.files.insert(gen_->fullDocumentLocation(childNode->relates(),
-                                                                    Generator::useOutputSubdirs()));
                 }
 
                 if (childNode->type() == Node::Function) {
@@ -525,11 +515,6 @@ void HelpProjectWriter::generateSections(HelpProject &project,
                 childMap[childNode->fullDocumentName()] = childNode;
             }
         }
-        // Insert files for all/compatibility/obsolete members
-        addMembers(project, writer, node, false);
-        if (node->relates())
-            addMembers(project, writer, node->relates(), false);
-
         foreach (const Node *child, childMap)
             generateSections(project, writer, child);
     }
@@ -564,11 +549,10 @@ void HelpProjectWriter::writeSection(QXmlStreamWriter &writer, const QString &pa
 }
 
 /*
-    Add files for all members, compatibility members and obsolete members
-    Also write subsections for these depending on 'writeSections' (default=true).
+    Write subsections for all members, compatibility members and obsolete members.
 */
 void HelpProjectWriter::addMembers(HelpProject &project, QXmlStreamWriter &writer,
-                                          const Node *node, bool writeSections)
+                                          const Node *node)
 {
     QString href = gen_->fullDocumentLocation(node,Generator::useOutputSubdirs());
     href = href.left(href.size()-5);
@@ -584,21 +568,15 @@ void HelpProjectWriter::addMembers(HelpProject &project, QXmlStreamWriter &write
     if (!node->isNamespace() && !node->isHeaderFile() &&
         (derivedClass || node->isQmlType() || !project.memberStatus[node].isEmpty())) {
         QString membersPath = href + QStringLiteral("-members.html");
-        project.files.insert(membersPath);
-        if (writeSections)
-            writeSection(writer, membersPath, tr("List of all members"));
+        writeSection(writer, membersPath, tr("List of all members"));
     }
     if (project.memberStatus[node].contains(Node::Compat)) {
         QString compatPath = href + QStringLiteral("-compat.html");
-        project.files.insert(compatPath);
-        if (writeSections)
-            writeSection(writer, compatPath, tr("Compatibility members"));
+        writeSection(writer, compatPath, tr("Compatibility members"));
     }
     if (project.memberStatus[node].contains(Node::Obsolete)) {
         QString obsoletePath = href + QStringLiteral("-obsolete.html");
-        project.files.insert(obsoletePath);
-        if (writeSections)
-            writeSection(writer, obsoletePath, tr("Obsolete members"));
+        writeSection(writer, obsoletePath, tr("Obsolete members"));
     }
 }
 
@@ -716,14 +694,12 @@ void HelpProjectWriter::generateProject(HelpProject &project)
     if (node == 0)
         node = qdb_->findNodeByNameAndType(QStringList("index.html"), Node::Document);
     QString indexPath;
-    // Never use a collision node as a landing page
-    if (node && !node->isCollisionNode())
+    if (node)
         indexPath = gen_->fullDocumentLocation(node,Generator::useOutputSubdirs());
     else
         indexPath = "index.html";
     writer.writeAttribute("ref", indexPath);
     writer.writeAttribute("title", project.indexTitle);
-    project.files.insert(gen_->fullDocumentLocation(rootNode));
 
     generateSections(project, writer, rootNode);
 
@@ -765,7 +741,6 @@ void HelpProjectWriter::generateProject(HelpProject &project)
                                                                            Generator::useOutputSubdirs());
                             writer.writeAttribute("ref", indexPath);
                             writer.writeAttribute("title", atom->string());
-                            project.files.insert(indexPath);
 
                             sectionStack.top() += 1;
                         }
@@ -790,7 +765,6 @@ void HelpProjectWriter::generateProject(HelpProject &project)
                 QString indexPath = gen_->fullDocumentLocation(qdb_->findDocNodeByTitle(subproject.indexTitle),Generator::useOutputSubdirs());
                 writer.writeAttribute("ref", indexPath);
                 writer.writeAttribute("title", subproject.title);
-                project.files.insert(indexPath);
             }
             if (subproject.sortPages) {
                 QStringList titles = subproject.nodes.keys();
@@ -844,12 +818,16 @@ void HelpProjectWriter::generateProject(HelpProject &project)
     writer.writeEndElement(); // keywords
 
     writer.writeStartElement("files");
-    foreach (const QString &usedFile, project.files) {
+
+    // The list of files to write is the union of generated files and
+    // other files (images and extras) included in the project
+    QSet<QString> files = QSet<QString>::fromList(gen_->outputFileNames());
+    files.unite(project.files);
+    files.unite(project.extraFiles);
+    foreach (const QString &usedFile, files) {
         if (!usedFile.isEmpty())
             writer.writeTextElement("file", usedFile);
     }
-    foreach (const QString &usedFile, project.extraFiles)
-        writer.writeTextElement("file", usedFile);
     writer.writeEndElement(); // files
 
     writer.writeEndElement(); // filterSection

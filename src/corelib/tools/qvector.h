@@ -256,7 +256,7 @@ public:
     static inline QVector<T> fromStdVector(const std::vector<T> &vector)
     { QVector<T> tmp; tmp.reserve(int(vector.size())); std::copy(vector.begin(), vector.end(), std::back_inserter(tmp)); return tmp; }
     inline std::vector<T> toStdVector() const
-    { std::vector<T> tmp; tmp.reserve(size()); std::copy(constBegin(), constEnd(), std::back_inserter(tmp)); return tmp; }
+    { return std::vector<T>(d->begin(), d->end()); }
 private:
     friend class QRegion; // Optimization for QRegion::rects()
 
@@ -711,10 +711,10 @@ typename QVector<T>::iterator QVector<T>::erase(iterator abegin, iterator aend)
 template <typename T>
 bool QVector<T>::operator==(const QVector<T> &v) const
 {
-    if (d->size != v.d->size)
-        return false;
     if (d == v.d)
         return true;
+    if (d->size != v.d->size)
+        return false;
     T* b = d->begin();
     T* i = b + d->size;
     T* j = v.d->end();
@@ -810,7 +810,9 @@ bool QVector<T>::contains(const T &t) const
 template <typename T>
 int QVector<T>::count(const T &t) const
 {
-    return int(std::count(cbegin(), cend(), t));
+    const T *b = d->begin();
+    const T *e = d->end();
+    return int(std::count(b, e, t));
 }
 
 template <typename T>

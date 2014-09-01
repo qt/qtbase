@@ -104,6 +104,9 @@ TextEdit::TextEdit(QWidget *parent)
     textEdit->setFocus();
     setCurrentFileName(QString());
 
+    QFont textFont("Helvetica");
+    textFont.setStyleHint(QFont::SansSerif);
+    textEdit->setFont(textFont);
     fontChanged(textEdit->font());
     colorChanged(textEdit->textColor());
     alignmentChanged(textEdit->alignment());

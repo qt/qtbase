@@ -147,7 +147,7 @@ tst_QStyleSheetStyle::~tst_QStyleSheetStyle()
 
 void tst_QStyleSheetStyle::numinstances()
 {
-    /*QWidget w;
+    QWidget w;
     w.resize(200, 200);
     centerOnScreen(&w);
     QCommonStyle *style = new QCommonStyle;
@@ -180,7 +180,7 @@ void tst_QStyleSheetStyle::numinstances()
     c.setStyle(style);
     QCOMPARE(QStyleSheetStyle::numinstances, 2);
     w.setStyleSheet("");
-    QCOMPARE(QStyleSheetStyle::numinstances, 0);*/
+    QCOMPARE(QStyleSheetStyle::numinstances, 0);
 }
 
 void tst_QStyleSheetStyle::widgetsBeforeAppStyleSheet()
@@ -351,7 +351,7 @@ void tst_QStyleSheetStyle::repolish()
 
 void tst_QStyleSheetStyle::widgetStyle()
 {
-    /*qApp->setStyleSheet("");
+    qApp->setStyleSheet("");
 
     QWidget *window1 = new QWidget;
     window1->setObjectName("window1");
@@ -488,12 +488,12 @@ void tst_QStyleSheetStyle::widgetStyle()
     delete widget2;
     delete window2;
     delete style1;
-    delete style2;*/
+    delete style2;
 }
 
 void tst_QStyleSheetStyle::appStyle()
 {
-   /* qApp->setStyleSheet("");
+    qApp->setStyleSheet("");
     // qApp style can never be 0
     QVERIFY(QApplication::style() != 0);
     QPointer<QStyle> style1 = QStyleFactory::create("Windows");
@@ -531,7 +531,7 @@ void tst_QStyleSheetStyle::appStyle()
     QVERIFY(qApp->style() == style1);
 
     qApp->setStyleSheet("");
-    QVERIFY(qApp->style() == style1);*/
+    QVERIFY(qApp->style() == style1);
 }
 
 void tst_QStyleSheetStyle::dynamicProperty()

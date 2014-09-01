@@ -68,7 +68,10 @@ QXcbScreen::QXcbScreen(QXcbConnection *connection, xcb_screen_t *scr,
     , m_number(number)
     , m_refreshRate(60)
     , m_forcedDpi(-1)
+    , m_devicePixelRatio(1)
     , m_hintStyle(QFontEngine::HintStyle(-1))
+    , m_subpixelType(QFontEngine::SubpixelAntialiasingType(-1))
+    , m_antialiasingEnabled(-1)
     , m_xSettings(0)
 {
     if (connection->hasXRandr())
@@ -76,18 +79,17 @@ QXcbScreen::QXcbScreen(QXcbConnection *connection, xcb_screen_t *scr,
 
     updateGeometry(output ? output->timestamp : 0);
     updateRefreshRate();
-
+    const int dpr = int(devicePixelRatio());
     // On VNC, it can be that physical size is unknown while
     // virtual size is known (probably back-calculated from DPI and resolution)
     if (m_sizeMillimeters.isEmpty())
         m_sizeMillimeters = m_virtualSizeMillimeters;
     if (m_geometry.isEmpty())
-        m_geometry = QRect(QPoint(), m_virtualSize);
+        m_geometry = QRect(QPoint(), m_virtualSize/dpr);
     if (m_availableGeometry.isEmpty())
-        m_availableGeometry = QRect(QPoint(), m_virtualSize);
+        m_availableGeometry = m_geometry;
 
     readXResources();
-
 
 #ifdef Q_XCB_DEBUG
     qDebug();
@@ -99,6 +101,7 @@ QXcbScreen::QXcbScreen(QXcbConnection *connection, xcb_screen_t *scr,
     qDebug("  virtual height.: %lf", m_virtualSizeMillimeters.height());
     qDebug("  virtual geom...: %d x %d", m_virtualSize.width(), m_virtualSize.height());
     qDebug("  avail virt geom: %d x %d +%d +%d", m_availableGeometry.width(), m_availableGeometry.height(), m_availableGeometry.x(), m_availableGeometry.y());
+    qDebug("  pixel ratio....: %d", m_devicePixelRatio);
     qDebug("  depth..........: %d", screen()->root_depth);
     qDebug("  white pixel....: %x", screen()->white_pixel);
     qDebug("  black pixel....: %x", screen()->black_pixel);
@@ -220,8 +223,9 @@ QWindow *QXcbScreen::topLevelAt(const QPoint &p) const
 {
     xcb_window_t root = m_screen->root;
 
-    int x = p.x();
-    int y = p.y();
+    int dpr = int(devicePixelRatio());
+    int x = p.x() / dpr;
+    int y = p.y() / dpr;
 
     xcb_window_t parent = root;
     xcb_window_t child = root;
@@ -312,11 +316,25 @@ QImage::Format QXcbScreen::format() const
 
 QDpi QXcbScreen::logicalDpi() const
 {
-    if (m_forcedDpi > 0)
-        return QDpi(m_forcedDpi, m_forcedDpi);
+    int dpr = int(devicePixelRatio());
 
-    return QDpi(Q_MM_PER_INCH * m_virtualSize.width() / m_virtualSizeMillimeters.width(),
-                Q_MM_PER_INCH * m_virtualSize.height() / m_virtualSizeMillimeters.height());
+    if (m_forcedDpi > 0)
+        return QDpi(m_forcedDpi/dpr, m_forcedDpi/dpr);
+
+    return QDpi(Q_MM_PER_INCH * m_virtualSize.width() / m_virtualSizeMillimeters.width() / dpr,
+                Q_MM_PER_INCH * m_virtualSize.height() / m_virtualSizeMillimeters.height() / dpr);
+}
+
+
+qreal QXcbScreen::devicePixelRatio() const
+{
+    static int override_dpr = qgetenv("QT_DEVICE_PIXEL_RATIO").toInt();
+    static bool auto_dpr = qgetenv("QT_DEVICE_PIXEL_RATIO").toLower() == "auto";
+    if (override_dpr > 0)
+        return override_dpr;
+    if (auto_dpr)
+        return m_devicePixelRatio;
+    return 1.0;
 }
 
 QPlatformCursor *QXcbScreen::cursor() const
@@ -394,12 +412,15 @@ void QXcbScreen::handleScreenChange(xcb_randr_screen_change_notify_event_t *chan
 
 void QXcbScreen::updateGeometry(xcb_timestamp_t timestamp)
 {
+    QRect xGeometry;
+    QRect xAvailableGeometry;
+
     if (connection()->hasXRandr()) {
         xcb_randr_get_crtc_info_reply_t *crtc = xcb_randr_get_crtc_info_reply(xcb_connection(),
             xcb_randr_get_crtc_info_unchecked(xcb_connection(), m_crtc, timestamp), NULL);
         if (crtc) {
-            m_geometry = QRect(crtc->x, crtc->y, crtc->width, crtc->height);
-            m_availableGeometry = m_geometry;
+            xGeometry = QRect(crtc->x, crtc->y, crtc->width, crtc->height);
+            xAvailableGeometry = xGeometry;
             free(crtc);
         }
     }
@@ -420,9 +441,15 @@ void QXcbScreen::updateGeometry(xcb_timestamp_t timestamp)
         QRect virtualAvailableGeometry(geom[0], geom[1], geom[2], geom[3]);
         // Take the intersection of the desktop's available geometry with this screen's geometry
         // to get the part of the available geometry which belongs to this screen.
-        m_availableGeometry = m_geometry & virtualAvailableGeometry;
+        xAvailableGeometry = xGeometry & virtualAvailableGeometry;
     }
     free(workArea);
+
+    qreal dpi = xGeometry.width() / physicalSize().width() * qreal(25.4);
+    m_devicePixelRatio = qRound(dpi/96);
+    const int dpr = int(devicePixelRatio()); // we may override m_devicePixelRatio
+    m_geometry = QRect(xGeometry.topLeft()/dpr, xGeometry.size()/dpr);
+    m_availableGeometry = QRect(xAvailableGeometry.topLeft()/dpr, xAvailableGeometry.size()/dpr);
 
     QWindowSystemInterface::handleScreenAvailableGeometryChange(QPlatformScreen::screen(), m_availableGeometry);
 }
@@ -547,32 +574,52 @@ QPixmap QXcbScreen::grabWindow(WId window, int x, int y, int width, int height) 
     return result;
 }
 
-bool QXcbScreen::xResource(const QByteArray &identifier,
-                           const QByteArray &expectedIdentifier,
-                           int *value)
+static bool parseXftInt(const QByteArray& stringValue, int *value)
 {
     Q_ASSERT(value != 0);
+    bool ok;
+    *value = stringValue.toInt(&ok);
+    return ok;
+}
+
+static QFontEngine::HintStyle parseXftHintStyle(const QByteArray& stringValue)
+{
+    if (stringValue == "hintfull")
+        return QFontEngine::HintFull;
+    else if (stringValue == "hintnone")
+        return QFontEngine::HintNone;
+    else if (stringValue == "hintmedium")
+        return QFontEngine::HintMedium;
+    else if (stringValue == "hintslight")
+        return QFontEngine::HintLight;
+
+    return QFontEngine::HintStyle(-1);
+}
+
+static QFontEngine::SubpixelAntialiasingType parseXftRgba(const QByteArray& stringValue)
+{
+    if (stringValue == "none")
+        return QFontEngine::Subpixel_None;
+    else if (stringValue == "rgb")
+        return QFontEngine::Subpixel_RGB;
+    else if (stringValue == "bgr")
+        return QFontEngine::Subpixel_BGR;
+    else if (stringValue == "vrgb")
+        return QFontEngine::Subpixel_VRGB;
+    else if (stringValue == "vbgr")
+        return QFontEngine::Subpixel_VBGR;
+
+    return QFontEngine::SubpixelAntialiasingType(-1);
+}
+
+bool QXcbScreen::xResource(const QByteArray &identifier,
+                           const QByteArray &expectedIdentifier,
+                           QByteArray& stringValue)
+{
     if (identifier.startsWith(expectedIdentifier)) {
-        QByteArray stringValue = identifier.mid(expectedIdentifier.size());
-
-        bool ok;
-        *value = stringValue.toInt(&ok);
-        if (!ok) {
-            if (stringValue == "hintfull")
-                *value = QFontEngine::HintFull;
-            else if (stringValue == "hintnone")
-                *value = QFontEngine::HintNone;
-            else if (stringValue == "hintmedium")
-                *value = QFontEngine::HintMedium;
-            else if (stringValue == "hintslight")
-                *value = QFontEngine::HintLight;
-
-            return *value != 0;
-        }
-
+        stringValue = identifier.mid(expectedIdentifier.size());
         return true;
     }
-
     return false;
 }
 
@@ -604,10 +651,18 @@ void QXcbScreen::readXResources()
     for (int i = 0; i < split.size(); ++i) {
         const QByteArray &r = split.at(i);
         int value;
-        if (xResource(r, "Xft.dpi:\t", &value))
-            m_forcedDpi = value;
-        else if (xResource(r, "Xft.hintstyle:\t", &value))
-            m_hintStyle = QFontEngine::HintStyle(value);
+        QByteArray stringValue;
+        if (xResource(r, "Xft.dpi:\t", stringValue)) {
+            if (parseXftInt(stringValue, &value))
+                m_forcedDpi = value;
+        } else if (xResource(r, "Xft.hintstyle:\t", stringValue)) {
+            m_hintStyle = parseXftHintStyle(stringValue);
+        } else if (xResource(r, "Xft.antialias:\t", stringValue)) {
+            if (parseXftInt(stringValue, &value))
+                m_antialiasingEnabled = value;
+        } else if (xResource(r, "Xft.rgba:\t", stringValue)) {
+            m_subpixelType = parseXftRgba(stringValue);
+        }
     }
 }
 

@@ -203,7 +203,7 @@ bool QWin32PrintEngine::newPage()
 
     bool transparent = GetBkMode(d->hdc) == TRANSPARENT;
 
-    if (!EndPage(d->hdc)) {
+    if (EndPage(d->hdc) <= 0) {
         qErrnoWarning("QWin32PrintEngine::newPage: EndPage failed");
         return false;
     }
@@ -216,7 +216,7 @@ bool QWin32PrintEngine::newPage()
         d->reinit = false;
     }
 
-    if (!StartPage(d->hdc)) {
+    if (StartPage(d->hdc) <= 0) {
         qErrnoWarning("Win32PrintEngine::newPage: StartPage failed");
         return false;
     }
@@ -235,7 +235,7 @@ bool QWin32PrintEngine::newPage()
 
     bool success = false;
     if (d->hdc && d->state == QPrinter::Active) {
-        if (EndPage(d->hdc) != SP_ERROR) {
+        if (EndPage(d->hdc) > 0) {
             // reinitialize the DC before StartPage if needed,
             // because resetdc is disabled between calls to the StartPage and EndPage functions
             // (see StartPage documentation in the Platform SDK:Windows GDI)
@@ -248,7 +248,7 @@ bool QWin32PrintEngine::newPage()
                     qErrnoWarning("QWin32PrintEngine::newPage(), ResetDC failed (2)");
                 d->reinit = false;
             }
-            success = (StartPage(d->hdc) != SP_ERROR);
+            success = (StartPage(d->hdc) > 0);
         }
         if (!success) {
             d->state = QPrinter::Aborted;

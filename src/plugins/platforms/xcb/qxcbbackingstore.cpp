@@ -280,13 +280,14 @@ void QXcbBackingStore::beginPaint(const QRegion &region)
 {
     if (!m_image)
         return;
-
-    m_image->preparePaint(region);
+    const int dpr = int(m_image->image()->devicePixelRatio());
+    QRegion xRegion =  dpr == 1 ? region : QTransform::fromScale(dpr,dpr).map(region);
+    m_image->preparePaint(xRegion);
 
     if (m_image->image()->hasAlphaChannel()) {
         QPainter p(m_image->image());
         p.setCompositionMode(QPainter::CompositionMode_Source);
-        const QVector<QRect> rects = region.rects();
+        const QVector<QRect> rects = xRegion.rects();
         const QColor blank = Qt::transparent;
         for (QVector<QRect>::const_iterator it = rects.begin(); it != rects.end(); ++it) {
             p.fillRect(*it, blank);
@@ -323,9 +324,13 @@ void QXcbBackingStore::flush(QWindow *window, const QRegion &region, const QPoin
         return;
     }
 
+    const int dpr = int(window->devicePixelRatio());
+
     QVector<QRect> rects = clipped.rects();
-    for (int i = 0; i < rects.size(); ++i)
-        m_image->put(platformWindow->xcb_window(), rects.at(i).topLeft(), rects.at(i).translated(offset));
+    for (int i = 0; i < rects.size(); ++i) {
+        QRect rect = QRect(rects.at(i).topLeft() * dpr, rects.at(i).size() * dpr);
+        m_image->put(platformWindow->xcb_window(), rect.topLeft(), rect.translated(offset * dpr));
+    }
 
     Q_XCB_NOOP(connection());
 
@@ -355,9 +360,11 @@ void QXcbBackingStore::composeAndFlush(QWindow *window, const QRegion &region, c
 
 void QXcbBackingStore::resize(const QSize &size, const QRegion &)
 {
-    if (m_image && size == m_image->size())
-        return;
+    const int dpr = int(window()->devicePixelRatio());
+    const QSize xSize = size * dpr;
 
+    if (m_image && xSize == m_image->size())
+        return;
     Q_XCB_NOOP(connection());
 
     QXcbScreen *screen = static_cast<QXcbScreen *>(window()->screen()->handle());
@@ -369,7 +376,8 @@ void QXcbBackingStore::resize(const QSize &size, const QRegion &)
     QXcbWindow* win = static_cast<QXcbWindow *>(pw);
 
     delete m_image;
-    m_image = new QXcbShmImage(screen, size, win->depth(), win->imageFormat());
+    m_image = new QXcbShmImage(screen, xSize, win->depth(), win->imageFormat());
+    m_image->image()->setDevicePixelRatio(dpr);
     Q_XCB_NOOP(connection());
 }
 
@@ -380,12 +388,14 @@ bool QXcbBackingStore::scroll(const QRegion &area, int dx, int dy)
     if (!m_image || m_image->image()->isNull())
         return false;
 
+    const int dpr = int(m_image->image()->devicePixelRatio());
+    QRegion xArea = dpr == 1 ? area : QTransform::fromScale(dpr,dpr).map(area);
     m_image->preparePaint(area);
 
-    const QVector<QRect> rects = area.rects();
-    for (int i = 0; i < rects.size(); ++i)
-        qt_scrollRectInImage(*m_image->image(), rects.at(i), QPoint(dx, dy));
-
+    QPoint delta(dx * dpr, dy * dpr);
+    const QVector<QRect> xRects = xArea.rects();
+    for (int i = 0; i < xRects.size(); ++i)
+        qt_scrollRectInImage(*m_image->image(), xRects.at(i), delta);
     return true;
 }
 

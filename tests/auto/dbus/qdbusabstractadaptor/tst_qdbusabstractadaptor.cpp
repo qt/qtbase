@@ -363,8 +363,6 @@ void emitSignalPeer(const QString &interface, const QString &name, const QVarian
         req << name;
         QDBusConnection::sessionBus().send(req);
     }
-
-    QTest::qWait(1000);
 }
 
 QString slotSpyPeer()
@@ -492,7 +490,6 @@ void tst_QDBusAbstractAdaptor::initTestCase()
 
     WaitForQMyServer w;
     QVERIFY(w.ok());
-    //QTest::qWait(2000);
 
     // get peer server address
     QDBusMessage req = QDBusMessage::createMethodCall(serviceName, objectPath, interfaceName, "address");
@@ -616,8 +613,6 @@ static void emitSignal(MyObject *obj, const QString &iface, const QString &name,
         obj->if4->emitSignal(name, parameter);
     else
         obj->emitSignal(name, parameter);
-
-    QTest::qWait(200);
 }
 
 void tst_QDBusAbstractAdaptor::signalEmissions_data()
@@ -670,7 +665,7 @@ void tst_QDBusAbstractAdaptor::signalEmissions()
 
         emitSignal(&obj, interface, name, parameter);
 
-        QCOMPARE(spy.count, 1);
+        QTRY_COMPARE(spy.count, 1);
         QCOMPARE(spy.interface, interface);
         QCOMPARE(spy.name, name);
         QTEST(spy.signature, "signature");
@@ -689,7 +684,7 @@ void tst_QDBusAbstractAdaptor::signalEmissions()
         emitSignal(&obj, "local.MyObject", "scriptableSignalInt", QVariant(1));
         emitSignal(&obj, "local.MyObject", "scriptableSignalString", QVariant("foo"));
 
-        QCOMPARE(spy.count, 1);
+        QTRY_COMPARE(spy.count, 1);
         QCOMPARE(spy.interface, interface);
         QCOMPARE(spy.name, name);
         QTEST(spy.signature, "signature");
@@ -710,9 +705,8 @@ void tst_QDBusAbstractAdaptor::sameSignalDifferentPaths()
     QDBusSignalSpy spy;
     con.connect(con.baseService(), "/p1", "local.Interface2", "signal", &spy, SLOT(slot(QDBusMessage)));
     obj.if2->emitSignal(QString(), QVariant());
-    QTest::qWait(200);
 
-    QCOMPARE(spy.count, 1);
+    QTRY_COMPARE(spy.count, 1);
     QCOMPARE(spy.interface, QString("local.Interface2"));
     QCOMPARE(spy.name, QString("signal"));
     QVERIFY(spy.signature.isEmpty());
@@ -721,9 +715,8 @@ void tst_QDBusAbstractAdaptor::sameSignalDifferentPaths()
     spy.count = 0;
     con.connect(con.baseService(), "/p2", "local.Interface2", "signal", &spy, SLOT(slot(QDBusMessage)));
     obj.if2->emitSignal(QString(), QVariant());
-    QTest::qWait(200);
 
-    QCOMPARE(spy.count, 2);
+    QTRY_COMPARE(spy.count, 2);
 }
 
 void tst_QDBusAbstractAdaptor::sameObjectDifferentPaths()
@@ -740,9 +733,8 @@ void tst_QDBusAbstractAdaptor::sameObjectDifferentPaths()
     con.connect(con.baseService(), "/p1", "local.Interface2", "signal", &spy, SLOT(slot(QDBusMessage)));
     con.connect(con.baseService(), "/p2", "local.Interface2", "signal", &spy, SLOT(slot(QDBusMessage)));
     obj.if2->emitSignal(QString(), QVariant());
-    QTest::qWait(200);
 
-    QCOMPARE(spy.count, 1);
+    QTRY_COMPARE(spy.count, 1);
     QCOMPARE(spy.interface, QString("local.Interface2"));
     QCOMPARE(spy.name, QString("signal"));
     QVERIFY(spy.signature.isEmpty());
@@ -848,7 +840,7 @@ void tst_QDBusAbstractAdaptor::overloadedSignalEmission()
 
         emitSignal(&obj, interface, name, parameter);
 
-        QCOMPARE(spy.count, 1);
+        QTRY_COMPARE(spy.count, 1);
         QCOMPARE(spy.interface, interface);
         QCOMPARE(spy.name, name);
         QTEST(spy.signature, "signature");
@@ -864,7 +856,7 @@ void tst_QDBusAbstractAdaptor::overloadedSignalEmission()
         emitSignal(&obj, "local.Interface4", "signal", QVariant(1));
         emitSignal(&obj, "local.Interface4", "signal", QVariant("foo"));
 
-        QCOMPARE(spy.count, 1);
+        QTRY_COMPARE(spy.count, 1);
         QCOMPARE(spy.interface, interface);
         QCOMPARE(spy.name, name);
         QTEST(spy.signature, "signature");
@@ -1193,7 +1185,7 @@ void tst_QDBusAbstractAdaptor::signalEmissionsPeer()
 
         emitSignalPeer(interface, name, parameter);
 
-        QCOMPARE(spy.count, 1);
+        QTRY_COMPARE(spy.count, 1);
         QCOMPARE(spy.interface, interface);
         QCOMPARE(spy.name, name);
         QTEST(spy.signature, "signature");
@@ -1212,7 +1204,7 @@ void tst_QDBusAbstractAdaptor::signalEmissionsPeer()
         emitSignalPeer("local.MyObject", "scriptableSignalInt", QVariant(1));
         emitSignalPeer("local.MyObject", "scriptableSignalString", QVariant("foo"));
 
-        QCOMPARE(spy.count, 1);
+        QTRY_COMPARE(spy.count, 1);
         QCOMPARE(spy.interface, interface);
         QCOMPARE(spy.name, name);
         QTEST(spy.signature, "signature");
@@ -1233,9 +1225,8 @@ void tst_QDBusAbstractAdaptor::sameSignalDifferentPathsPeer()
     QDBusSignalSpy spy;
     con.connect(QString(), "/p1", "local.Interface2", "signal", &spy, SLOT(slot(QDBusMessage)));
     emitSignalPeer("local.Interface2", QString(), QVariant());
-    QTest::qWait(200);
 
-    QCOMPARE(spy.count, 1);
+    QTRY_COMPARE(spy.count, 1);
     QCOMPARE(spy.interface, QString("local.Interface2"));
     QCOMPARE(spy.name, QString("signal"));
     QVERIFY(spy.signature.isEmpty());
@@ -1244,9 +1235,8 @@ void tst_QDBusAbstractAdaptor::sameSignalDifferentPathsPeer()
     spy.count = 0;
     con.connect(QString(), "/p2", "local.Interface2", "signal", &spy, SLOT(slot(QDBusMessage)));
     emitSignalPeer("local.Interface2", QString(), QVariant());
-    QTest::qWait(200);
 
-    QCOMPARE(spy.count, 2);
+    QTRY_COMPARE(spy.count, 2);
 }
 
 void tst_QDBusAbstractAdaptor::sameObjectDifferentPathsPeer()
@@ -1263,9 +1253,8 @@ void tst_QDBusAbstractAdaptor::sameObjectDifferentPathsPeer()
     con.connect(QString(), "/p1", "local.Interface2", "signal", &spy, SLOT(slot(QDBusMessage)));
     con.connect(QString(), "/p2", "local.Interface2", "signal", &spy, SLOT(slot(QDBusMessage)));
     emitSignalPeer("local.Interface2", QString(), QVariant());
-    QTest::qWait(200);
 
-    QCOMPARE(spy.count, 1);
+    QTRY_COMPARE(spy.count, 1);
     QCOMPARE(spy.interface, QString("local.Interface2"));
     QCOMPARE(spy.name, QString("signal"));
     QVERIFY(spy.signature.isEmpty());
@@ -1367,7 +1356,7 @@ void tst_QDBusAbstractAdaptor::overloadedSignalEmissionPeer()
 
         emitSignalPeer(interface, name, parameter);
 
-        QCOMPARE(spy.count, 1);
+        QTRY_COMPARE(spy.count, 1);
         QCOMPARE(spy.interface, interface);
         QCOMPARE(spy.name, name);
         QTEST(spy.signature, "signature");
@@ -1383,7 +1372,7 @@ void tst_QDBusAbstractAdaptor::overloadedSignalEmissionPeer()
         emitSignalPeer("local.Interface4", "signal", QVariant(1));
         emitSignalPeer("local.Interface4", "signal", QVariant("foo"));
 
-        QCOMPARE(spy.count, 1);
+        QTRY_COMPARE(spy.count, 1);
         QCOMPARE(spy.interface, interface);
         QCOMPARE(spy.name, name);
         QTEST(spy.signature, "signature");

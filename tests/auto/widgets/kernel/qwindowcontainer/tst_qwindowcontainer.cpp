@@ -193,7 +193,7 @@ void tst_QWindowContainer::testActivation()
     QVERIFY(QTest::qWaitForWindowExposed(&root));
 
     QVERIFY(QTest::qWaitForWindowActive(root.windowHandle()));
-    QVERIFY(QGuiApplication::focusWindow() == root.windowHandle());
+    QCOMPARE(QGuiApplication::focusWindow(), root.windowHandle());
 
     // Verify that all states in the root widget indicate it is active
     QVERIFY(root.windowHandle()->isActive());
@@ -207,7 +207,7 @@ void tst_QWindowContainer::testActivation()
         QTest::qWait(100);
 
     window->requestActivate();
-    QTRY_VERIFY(QGuiApplication::focusWindow() == window);
+    QTRY_COMPARE(QGuiApplication::focusWindow(), window);
 
     // Verify that all states in the root widget still indicate it is active
     QVERIFY(root.windowHandle()->isActive());
@@ -303,7 +303,7 @@ void tst_QWindowContainer::testDockWidget()
 
     mainWindow.show();
     QVERIFY(QTest::qWaitForWindowExposed(&mainWindow));
-    QVERIFY(window->parent() == mainWindow.window()->windowHandle());
+    QCOMPARE(window->parent(), mainWindow.window()->windowHandle());
 
     QTest::qWait(1000);
     dock->setFloating(true);

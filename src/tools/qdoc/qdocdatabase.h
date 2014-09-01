@@ -88,9 +88,12 @@ class QDocForest
     const QVector<Tree*>& indexSearchOrder();
     void setSearchOrder();
 
-    const Node* findNode(const QStringList& path, const Node* relative, int findFlags) {
+    const Node* findNode(const QStringList& path,
+                         const Node* relative,
+                         int findFlags,
+                         Node::Genus genus) {
         foreach (Tree* t, searchOrder()) {
-            const Node* n = t->findNode(path, relative, findFlags);
+            const Node* n = t->findNode(path, relative, findFlags, genus);
             if (n)
                 return n;
             relative = 0;
@@ -116,6 +119,15 @@ class QDocForest
         return 0;
     }
 
+    Node* findNodeForInclude(const QStringList& path) {
+        foreach (Tree* t, searchOrder()) {
+            Node* n = t->findNodeForInclude(path);
+            if (n)
+                return n;
+        }
+        return 0;
+    }
+
     InnerNode* findRelatesNode(const QStringList& path) {
         foreach (Tree* t, searchOrder()) {
             InnerNode* n = t->findRelatesNode(path);
@@ -125,34 +137,30 @@ class QDocForest
         return 0;
     }
 
-    const Node* resolveFunctionTarget(const QString& target, const Node* relative) {
+    const Node* findFunctionNode(const QString& target,
+                                 const Node* relative,
+                                 Node::Genus genus) {
         foreach (Tree* t, searchOrder()) {
-            const Node* n = t->resolveFunctionTarget(target, relative);
+            const Node* n = t->findFunctionNode(target, relative, genus);
             if (n)
                 return n;
             relative = 0;
         }
         return 0;
     }
-    const Node* resolveTarget(const QString& target, const Node* relative);
+    const Node* findNodeForTarget(QStringList& targetPath,
+                                  const Node* relative,
+                                  Node::Genus genus,
+                                  QString& ref);
 
-    const Node* resolveType(const QStringList& path, const Node* relative)
+    const Node* findTypeNode(const QStringList& path, const Node* relative)
     {
         foreach (Tree* t, searchOrder()) {
-            const Node* n = resolveTypeHelper(path, relative, t);
+            int flags = SearchBaseClasses | SearchEnumValues | NonFunction;
+            const Node* n = t->findNode(path, relative, flags, Node::DontCare);
             if (n)
                 return n;
             relative = 0;
-        }
-        return 0;
-    }
-
-    const Node* findUnambiguousTarget(const QString& target, QString& ref)
-    {
-        foreach (Tree* t, searchOrder()) {
-            const Node* n = t->findUnambiguousTarget(target, ref);
-            if (n)
-                return n;
         }
         return 0;
     }
@@ -189,7 +197,6 @@ class QDocForest
   private:
     void newPrimaryTree(const QString& module);
     NamespaceNode* newIndexTree(const QString& module);
-    const Node* resolveTypeHelper(const QStringList& path, const Node* relative, Tree* t);
 
   private:
     QDocDatabase*          qdb_;
@@ -281,8 +288,12 @@ class QDocDatabase
     void resolveTargets() {
         primaryTree()->resolveTargets(primaryTreeRoot());
     }
-    void insertTarget(const QString& name, TargetRec::Type type, Node* node, int priority) {
-        primaryTree()->insertTarget(name, type, node, priority);
+    void insertTarget(const QString& name,
+                      const QString& title,
+                      TargetRec::Type type,
+                      Node* node,
+                      int priority) {
+        primaryTree()->insertTarget(name, title, type, node, priority);
     }
 
     /*******************************************************************
@@ -293,10 +304,7 @@ class QDocDatabase
     }
     FunctionNode* findNodeInOpenNamespace(const QStringList& parentPath, const FunctionNode* clone);
     Node* findNodeInOpenNamespace(QStringList& path, Node::Type type);
-    NameCollisionNode* findCollisionNode(const QString& name) {
-        return primaryTree()->findCollisionNode(name);
-    }
-    NameCollisionNode* checkForCollision(const QString& name) {
+    const Node* checkForCollision(const QString& name) {
         return primaryTree()->checkForCollision(name);
     }
     /*******************************************************************/
@@ -304,38 +312,37 @@ class QDocDatabase
     /*******************************************************************
       The functions declared below handle the parameters in '[' ']'.
     ********************************************************************/
-    Node* findNode(const Atom* atom);
-    const Node* findNode(const Atom* atom, const Node* relative, QString& ref);
-    const DocNode* findDocNodeByTitle(const Atom* atom);
+    const Node* findNodeForAtom(const Atom* atom, const Node* relative, QString& ref);
     /*******************************************************************/
 
     /*******************************************************************
       The functions declared below are called for all trees.
     ********************************************************************/
     ClassNode* findClassNode(const QStringList& path) { return forest_.findClassNode(path); }
+    Node* findNodeForInclude(const QStringList& path) { return forest_.findNodeForInclude(path); }
     InnerNode* findRelatesNode(const QStringList& path) { return forest_.findRelatesNode(path); }
-    const Node* resolveTarget(const QString& target, const Node* relative) {
-        return forest_.resolveTarget(target, relative);
+    const Node* findFunctionNode(const QString& target, const Node* relative, Node::Genus genus) {
+        return forest_.findFunctionNode(target, relative, genus);
     }
-    const Node* resolveFunctionTarget(const QString& target, const Node* relative) {
-        return forest_.resolveFunctionTarget(target, relative);
-    }
-    const Node* resolveType(const QString& type, const Node* relative);
+    const Node* findTypeNode(const QString& type, const Node* relative);
     const Node* findNodeForTarget(const QString& target, const Node* relative);
     const DocNode* findDocNodeByTitle(const QString& title) {
         return forest_.findDocNodeByTitle(title);
     }
-    const Node* findUnambiguousTarget(const QString& target, QString& ref) {
-        return forest_.findUnambiguousTarget(target, ref);
-    }
     Node* findNodeByNameAndType(const QStringList& path, Node::Type type) {
         return forest_.findNodeByNameAndType(path, type);
     }
-    /*******************************************************************/
 
-    QString findTarget(const QString& target, const Node* node) {
-        return node->root()->tree()->findTarget(target, node);
+  private:
+    const Node* findNodeForTarget(QStringList& targetPath,
+                                  const Node* relative,
+                                  Node::Genus genus,
+                                  QString& ref) {
+        return forest_.findNodeForTarget(targetPath, relative, genus, ref);
     }
+
+    /*******************************************************************/
+  public:
     void addPropertyFunction(PropertyNode* property,
                              const QString& funcName,
                              PropertyNode::FunctionRole funcRole) {
@@ -371,8 +378,11 @@ class QDocDatabase
     friend class QDocIndexFiles;
     friend class QDocTagFiles;
 
-    const Node* findNode(const QStringList& path, const Node* relative, int findFlags) {
-        return forest_.findNode(path, relative, findFlags);
+    const Node* findNode(const QStringList& path,
+                         const Node* relative,
+                         int findFlags,
+                         Node::Genus genus) {
+        return forest_.findNode(path, relative, findFlags, genus);
     }
     void processForest(void (QDocDatabase::*) (InnerNode*));
     static void initializeDB();

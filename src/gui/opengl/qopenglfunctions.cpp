@@ -47,6 +47,10 @@
 #include <QtGui/private/qguiapplication_p.h>
 #include <qpa/qplatformintegration.h>
 
+#ifndef GL_FRAMEBUFFER_SRGB_CAPABLE_EXT
+#define GL_FRAMEBUFFER_SRGB_CAPABLE_EXT   0x8DBA
+#endif
+
 QT_BEGIN_NAMESPACE
 
 /*!
@@ -360,8 +364,6 @@ static int qt_gl_resolve_extensions()
         extensions |= QOpenGLExtensions::BGRATextureFormat;
     if (extensionMatcher.match("GL_ARB_texture_rectangle"))
         extensions |= QOpenGLExtensions::TextureRectangle;
-    if (extensionMatcher.match("GL_SGIS_generate_mipmap"))
-        extensions |= QOpenGLExtensions::GenerateMipmap;
     if (extensionMatcher.match("GL_ARB_texture_compression"))
         extensions |= QOpenGLExtensions::TextureCompression;
     if (extensionMatcher.match("GL_EXT_texture_compression_s3tc"))
@@ -385,44 +387,51 @@ static int qt_gl_resolve_extensions()
         if (format.majorVersion() >= 2)
             extensions |= QOpenGLExtensions::GenerateMipmap;
 
-        if (format.majorVersion() >= 3)
+        if (format.majorVersion() >= 3) {
             extensions |= QOpenGLExtensions::PackedDepthStencil
                 | QOpenGLExtensions::Depth24
                 | QOpenGLExtensions::ElementIndexUint
-                | QOpenGLExtensions::MapBufferRange;
+                | QOpenGLExtensions::MapBufferRange
+                | QOpenGLExtensions::FramebufferBlit
+                | QOpenGLExtensions::FramebufferMultisample;
+        } else {
+            // Recognize features by extension name.
+            if (extensionMatcher.match("GL_OES_packed_depth_stencil"))
+                extensions |= QOpenGLExtensions::PackedDepthStencil;
+            if (extensionMatcher.match("GL_OES_depth24"))
+                extensions |= QOpenGLExtensions::Depth24;
+            if (extensionMatcher.match("GL_ANGLE_framebuffer_blit"))
+                extensions |= QOpenGLExtensions::FramebufferBlit;
+            if (extensionMatcher.match("GL_ANGLE_framebuffer_multisample"))
+                extensions |= QOpenGLExtensions::FramebufferMultisample;
+            if (extensionMatcher.match("GL_NV_framebuffer_blit"))
+                extensions |= QOpenGLExtensions::FramebufferBlit;
+            if (extensionMatcher.match("GL_NV_framebuffer_multisample"))
+                extensions |= QOpenGLExtensions::FramebufferMultisample;
+        }
 
         if (extensionMatcher.match("GL_OES_mapbuffer"))
             extensions |= QOpenGLExtensions::MapBuffer;
-        if (extensionMatcher.match("GL_OES_packed_depth_stencil"))
-            extensions |= QOpenGLExtensions::PackedDepthStencil;
         if (extensionMatcher.match("GL_OES_element_index_uint"))
             extensions |= QOpenGLExtensions::ElementIndexUint;
-        if (extensionMatcher.match("GL_OES_depth24"))
-            extensions |= QOpenGLExtensions::Depth24;
-        // TODO: Consider matching GL_APPLE_texture_format_BGRA8888 as well, but it needs testing.
+        // We don't match GL_APPLE_texture_format_BGRA8888 here because it has different semantics.
         if (extensionMatcher.match("GL_IMG_texture_format_BGRA8888") || extensionMatcher.match("GL_EXT_texture_format_BGRA8888"))
             extensions |= QOpenGLExtensions::BGRATextureFormat;
-        if (extensionMatcher.match("GL_ANGLE_framebuffer_blit"))
-            extensions |= QOpenGLExtensions::FramebufferBlit;
-        if (extensionMatcher.match("GL_ANGLE_framebuffer_multisample"))
-            extensions |= QOpenGLExtensions::FramebufferMultisample;
-        if (extensionMatcher.match("GL_NV_framebuffer_blit"))
-            extensions |= QOpenGLExtensions::FramebufferBlit;
-        if (extensionMatcher.match("GL_NV_framebuffer_multisample"))
-            extensions |= QOpenGLExtensions::FramebufferMultisample;
-        if (format.majorVersion() >= 3)
-            extensions |= QOpenGLExtensions::FramebufferBlit | QOpenGLExtensions::FramebufferMultisample;
     } else {
         extensions |= QOpenGLExtensions::ElementIndexUint | QOpenGLExtensions::MapBuffer;
 
-        // Recognize features by extension name.
-        if (format.majorVersion() >= 3
-            || extensionMatcher.match("GL_ARB_framebuffer_object"))
-        {
+        if (format.version() >= qMakePair(1, 2))
+            extensions |= QOpenGLExtensions::BGRATextureFormat;
+
+        if (format.version() >= qMakePair(1, 4) || extensionMatcher.match("GL_SGIS_generate_mipmap"))
+            extensions |= QOpenGLExtensions::GenerateMipmap;
+
+        if (format.majorVersion() >= 3 || extensionMatcher.match("GL_ARB_framebuffer_object")) {
             extensions |= QOpenGLExtensions::FramebufferMultisample |
                 QOpenGLExtensions::FramebufferBlit |
                 QOpenGLExtensions::PackedDepthStencil;
         } else {
+            // Recognize features by extension name.
             if (extensionMatcher.match("GL_EXT_framebuffer_multisample"))
                 extensions |= QOpenGLExtensions::FramebufferMultisample;
             if (extensionMatcher.match("GL_EXT_framebuffer_blit"))
@@ -430,21 +439,20 @@ static int qt_gl_resolve_extensions()
             if (extensionMatcher.match("GL_EXT_packed_depth_stencil"))
                 extensions |= QOpenGLExtensions::PackedDepthStencil;
         }
+
+        if (format.version() >= qMakePair(3, 2) || extensionMatcher.match("GL_ARB_geometry_shader4"))
+            extensions |= QOpenGLExtensions::GeometryShaders;
+
         if (extensionMatcher.match("GL_ARB_map_buffer_range"))
             extensions |= QOpenGLExtensions::MapBufferRange;
-    }
 
-    if (format.renderableType() == QSurfaceFormat::OpenGL && format.version() >= qMakePair(3, 2))
-        extensions |= QOpenGLExtensions::GeometryShaders;
-
-#ifndef QT_OPENGL_ES
-    if (extensionMatcher.match("GL_EXT_framebuffer_sRGB")) {
-        GLboolean srgbCapableFramebuffers = false;
-        ctx->functions()->glGetBooleanv(GL_FRAMEBUFFER_SRGB_CAPABLE_EXT, &srgbCapableFramebuffers);
-        if (srgbCapableFramebuffers)
-            extensions |= QOpenGLExtensions::SRGBFrameBuffer;
+        if (extensionMatcher.match("GL_EXT_framebuffer_sRGB")) {
+            GLboolean srgbCapableFramebuffers = false;
+            ctx->functions()->glGetBooleanv(GL_FRAMEBUFFER_SRGB_CAPABLE_EXT, &srgbCapableFramebuffers);
+            if (srgbCapableFramebuffers)
+                extensions |= QOpenGLExtensions::SRGBFrameBuffer;
+        }
     }
-#endif
 
     return extensions;
 }

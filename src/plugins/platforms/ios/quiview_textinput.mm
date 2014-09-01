@@ -177,7 +177,7 @@ Q_GLOBAL_STATIC(StaticVariables, staticVariables);
     [super becomeFirstResponder];
 }
 
-- (void)updateUITextInputDelegate:(NSNumber *)intQuery
+- (void)updateUITextInputDelegate:(Qt::InputMethodQueries)query
 {
     // As documented, we should not report textWillChange/textDidChange unless the text
     // was changed externally. That will cause spell checking etc to fail. But we don't
@@ -187,7 +187,6 @@ Q_GLOBAL_STATIC(StaticVariables, staticVariables);
     if (m_inSendEventToFocusObject)
         return;
 
-    Qt::InputMethodQueries query = Qt::InputMethodQueries([intQuery intValue]);
     if (query & (Qt::ImCursorPosition | Qt::ImAnchorPosition)) {
         [self.inputDelegate selectionWillChange:id<UITextInput>(self)];
         [self.inputDelegate selectionDidChange:id<UITextInput>(self)];
@@ -213,7 +212,7 @@ Q_GLOBAL_STATIC(StaticVariables, staticVariables);
     // not be any performance gain by only updating \a query.
     staticVariables()->inputMethodQueryEvent = QInputMethodQueryEvent(Qt::ImQueryInput);
     QCoreApplication::sendEvent(focusObject, &staticVariables()->inputMethodQueryEvent);
-    [self updateUITextInputDelegate:[NSNumber numberWithInt:int(query)]];
+    [self updateUITextInputDelegate:query];
 }
 
 - (void)sendEventToFocusObject:(QEvent &)e
@@ -234,20 +233,23 @@ Q_GLOBAL_STATIC(StaticVariables, staticVariables);
 {
     [self setMarkedText:@"" selectedRange:NSMakeRange(0, 0)];
     [self updateInputMethodWithQuery:Qt::ImQueryInput];
+
     // Guard agains recursive callbacks by posting calls to UITextInput
-    [self performSelectorOnMainThread:@selector(updateKeyboardLayout) withObject:nil waitUntilDone:NO];
-    [self performSelectorOnMainThread:@selector(updateUITextInputDelegate:)
-      withObject:[NSNumber numberWithInt:int(Qt::ImQueryInput)]
-      waitUntilDone:NO];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self updateKeyboardLayout];
+        [self updateUITextInputDelegate:Qt::ImQueryInput];
+    });
 }
 
 - (void)commit
 {
     [self unmarkText];
+
     // Guard agains recursive callbacks by posting calls to UITextInput
-    [self performSelectorOnMainThread:@selector(updateUITextInputDelegate:)
-      withObject:[NSNumber numberWithInt:int(Qt::ImSurroundingText)]
-      waitUntilDone:NO];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self updateKeyboardLayout];
+        [self updateUITextInputDelegate:Qt::ImSurroundingText];
+    });
 }
 
 - (QVariant)imValue:(Qt::InputMethodQuery)query

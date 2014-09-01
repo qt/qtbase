@@ -39,153 +39,76 @@
 **
 ****************************************************************************/
 
-
-
-#include "qsslcertificate.h"
 #include "qsslcertificate_p.h"
 
-QT_BEGIN_NAMESPACE
+#include <QtCore/qfunctions_winrt.h>
 
-bool QSslCertificate::operator==(const QSslCertificate &other) const
-{
-    if (d == other.d)
-        return true;
-    return false;
-}
+#include <wrl.h>
+#include <windows.storage.streams.h>
+#include <windows.security.cryptography.h>
+#include <robuffer.h>
 
-bool QSslCertificate::isNull() const
-{
-    Q_UNIMPLEMENTED();
-    return true;
-}
+using namespace Microsoft::WRL;
+using namespace Microsoft::WRL::Wrappers;
+using namespace ABI::Windows::Foundation;
+using namespace ABI::Windows::Security::Cryptography;
+using namespace ABI::Windows::Security::Cryptography::Certificates;
+using namespace ABI::Windows::Storage::Streams;
 
-bool QSslCertificate::isSelfSigned() const
-{
-    Q_UNIMPLEMENTED();
-    return true;
-}
+QT_USE_NAMESPACE
 
-QByteArray QSslCertificate::version() const
+struct SslCertificateGlobal
 {
-    Q_UNIMPLEMENTED();
-    return QByteArray();
-}
+    SslCertificateGlobal() {
+        HRESULT hr;
+        hr = GetActivationFactory(HString::MakeReference(RuntimeClass_Windows_Security_Cryptography_Certificates_Certificate).Get(),
+                                  &certificateFactory);
+        Q_ASSERT_SUCCEEDED(hr);
+        hr = GetActivationFactory(HString::MakeReference(RuntimeClass_Windows_Security_Cryptography_CryptographicBuffer).Get(),
+                                  &bufferFactory);
+        Q_ASSERT_SUCCEEDED(hr);
+    }
 
-QByteArray QSslCertificate::serialNumber() const
-{
-    Q_UNIMPLEMENTED();
-    return QByteArray();
-}
+    ComPtr<ICertificateFactory> certificateFactory;
+    ComPtr<ICryptographicBufferStatics> bufferFactory;
+};
+Q_GLOBAL_STATIC(SslCertificateGlobal, g)
 
-QStringList QSslCertificate::issuerInfo(SubjectInfo info) const
+QSslCertificate QSslCertificatePrivate::QSslCertificate_from_Certificate(ICertificate *iCertificate)
 {
-    Q_UNIMPLEMENTED();
-    return QStringList();
-}
+    Q_ASSERT(iCertificate);
+    ComPtr<IBuffer> buffer;
+    HRESULT hr = iCertificate->GetCertificateBlob(&buffer);
+    RETURN_IF_FAILED("Could not obtain certification blob", return QSslCertificate());
+    ComPtr<Windows::Storage::Streams::IBufferByteAccess> byteAccess;
+    hr = buffer.As(&byteAccess);
+    RETURN_IF_FAILED("Could not obtain byte access to buffer", return QSslCertificate());
+    char *data;
+    hr = byteAccess->Buffer(reinterpret_cast<byte **>(&data));
+    RETURN_IF_FAILED("Could not obtain buffer data", return QSslCertificate());
+    UINT32 size;
+    hr = buffer->get_Length(&size);
+    RETURN_IF_FAILED("Could not obtain buffer length ", return QSslCertificate());
+    QByteArray der(data, size);
 
-QStringList QSslCertificate::issuerInfo(const QByteArray &attribute) const
-{
-    Q_UNIMPLEMENTED();
-    return QStringList();
-}
+    QSslCertificate certificate;
+    certificate.d->null = false;
+    certificate.d->certificate = iCertificate;
 
-QStringList QSslCertificate::subjectInfo(SubjectInfo info) const
-{
-    Q_UNIMPLEMENTED();
-    return QStringList();
-}
-
-QStringList QSslCertificate::subjectInfo(const QByteArray &attribute) const
-{
-    Q_UNIMPLEMENTED();
-    return QStringList();
-}
-
-QList<QByteArray> QSslCertificate::subjectInfoAttributes() const
-{
-    Q_UNIMPLEMENTED();
-    return QList<QByteArray>();
-}
-
-QList<QByteArray> QSslCertificate::issuerInfoAttributes() const
-{
-    Q_UNIMPLEMENTED();
-    return QList<QByteArray>();
-}
-
-QMultiMap<QSsl::AlternativeNameEntryType, QString> QSslCertificate::subjectAlternativeNames() const
-{
-    Q_UNIMPLEMENTED();
-    return QMultiMap<QSsl::AlternativeNameEntryType, QString>();
-}
-
-QDateTime QSslCertificate::effectiveDate() const
-{
-    Q_UNIMPLEMENTED();
-    return QDateTime();
-}
-
-QDateTime QSslCertificate::expiryDate() const
-{
-    Q_UNIMPLEMENTED();
-    return QDateTime();
+    return certificatesFromDer(der, 1).at(0);
 }
 
 Qt::HANDLE QSslCertificate::handle() const
 {
-    Q_UNIMPLEMENTED();
-    return 0;
-}
+    if (!d->certificate) {
+        HRESULT hr;
+        ComPtr<IBuffer> buffer;
+        hr = g->bufferFactory->CreateFromByteArray(d->derData.length(), (BYTE *)d->derData.data(), &buffer);
+        RETURN_IF_FAILED("Failed to create the certificate data buffer", return 0);
 
-QSslKey QSslCertificate::publicKey() const
-{
-    Q_UNIMPLEMENTED();
-    return QSslKey();
-}
+        hr = g->certificateFactory->CreateCertificate(buffer.Get(), &d->certificate);
+        RETURN_IF_FAILED("Failed to create the certificate handle from the data buffer", return 0);
+    }
 
-QList<QSslCertificateExtension> QSslCertificate::extensions() const
-{
-    Q_UNIMPLEMENTED();
-    return QList<QSslCertificateExtension>();
+    return d->certificate.Get();
 }
-
-QByteArray QSslCertificate::toPem() const
-{
-    Q_UNIMPLEMENTED();
-    return QByteArray();
-}
-
-QByteArray QSslCertificate::toDer() const
-{
-    Q_UNIMPLEMENTED();
-    return QByteArray();
-}
-
-QString QSslCertificate::toText() const
-{
-    Q_UNIMPLEMENTED();
-    return QString();
-}
-
-void QSslCertificatePrivate::init(const QByteArray &data, QSsl::EncodingFormat format)
-{
-    Q_UNIMPLEMENTED();
-}
-
-QList<QSslCertificate> QSslCertificatePrivate::certificatesFromPem(const QByteArray &pem, int count)
-{
-    Q_UNIMPLEMENTED();
-    Q_UNUSED(pem)
-    Q_UNUSED(count)
-    return QList<QSslCertificate>();
-}
-
-QList<QSslCertificate> QSslCertificatePrivate::certificatesFromDer(const QByteArray &der, int count)
-{
-    Q_UNIMPLEMENTED();
-    Q_UNUSED(der)
-    Q_UNUSED(count)
-    return QList<QSslCertificate>();
-}
-
-QT_END_NAMESPACE

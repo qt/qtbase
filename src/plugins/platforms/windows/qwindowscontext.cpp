@@ -59,6 +59,7 @@
 #endif
 #include "qwindowsscreen.h"
 #include "qwindowstheme.h"
+#include "qwindowsscaling.h"
 
 #include <QtGui/QWindow>
 #include <qpa/qwindowsysteminterface.h>
@@ -88,9 +89,9 @@ Q_LOGGING_CATEGORY(lcQpaEvents, "qt.qpa.events")
 Q_LOGGING_CATEGORY(lcQpaFonts, "qt.qpa.fonts")
 Q_LOGGING_CATEGORY(lcQpaGl, "qt.qpa.gl")
 Q_LOGGING_CATEGORY(lcQpaMime, "qt.qpa.mime")
-Q_LOGGING_CATEGORY(lcQpaInputMethods, "qt.qpa.inputmethods")
+Q_LOGGING_CATEGORY(lcQpaInputMethods, "qt.qpa.input.methods")
 Q_LOGGING_CATEGORY(lcQpaDialogs, "qt.qpa.dialogs")
-Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.tabletsupport")
+Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
 Q_LOGGING_CATEGORY(lcQpaAccessibility, "qt.qpa.accessibility")
 
 int QWindowsContext::verbose = 0;
@@ -1051,6 +1052,12 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
     case QtWindows::FocusOutEvent:
         handleFocusEvent(et, platformWindow);
         return true;
+    case QtWindows::ShowEventOnParentRestoring: // QTBUG-40696, prevent Windows from re-showing hidden transient children (dialogs).
+        if (!platformWindow->window()->isVisible()) {
+            *result = 0;
+            return true;
+        }
+        break;
     case QtWindows::HideEvent:
         platformWindow->handleHidden();
         return false;// Indicate transient children should be hidden by windows (SW_PARENTCLOSING)
@@ -1212,7 +1219,9 @@ bool QWindowsContext::handleContextMenuEvent(QWindow *window, const MSG &msg)
         }
     }
 
-    QWindowSystemInterface::handleContextMenuEvent(window, mouseTriggered, pos, globalPos,
+    QWindowSystemInterface::handleContextMenuEvent(window, mouseTriggered,
+                                                   pos / QWindowsScaling::factor(),
+                                                   globalPos / QWindowsScaling::factor(),
                                                    QWindowsKeyMapper::queryKeyboardModifiers());
     return true;
 }
@@ -1240,7 +1249,7 @@ void QWindowsContext::setAsyncExpose(bool value)
 extern "C" LRESULT QT_WIN_CALLBACK qWindowsWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     LRESULT result;
-    const QtWindows::WindowsEventType et = windowsEventType(message, wParam);
+    const QtWindows::WindowsEventType et = windowsEventType(message, wParam, lParam);
     const bool handled = QWindowsContext::instance()->windowsProc(hwnd, message, et, wParam, lParam, &result);
     if (QWindowsContext::verbose > 1 && lcQpaEvents().isDebugEnabled()) {
         if (const char *eventName = QWindowsGuiEventDispatcher::windowsMessageName(message)) {

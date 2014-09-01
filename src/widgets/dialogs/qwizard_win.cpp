@@ -172,6 +172,7 @@ static PtrGetThemePartSize pGetThemePartSize = 0;
 static PtrGetThemeColor pGetThemeColor = 0;
 
 int QVistaHelper::instanceCount = 0;
+int QVistaHelper::m_devicePixelRatio = 1;
 bool QVistaHelper::is_vista = false;
 QVistaHelper::VistaState QVistaHelper::cachedVistaState = QVistaHelper::Dirty;
 
@@ -228,11 +229,15 @@ void QVistaBackButton::paintEvent(QPaintEvent *)
     RECT clipRect;
     int xoffset = origin.x() + QWidget::mapToParent(r.topLeft()).x() - 1;
     int yoffset = origin.y() + QWidget::mapToParent(r.topLeft()).y() - 1;
+    const int dpr = devicePixelRatio();
+    const QRect rDp = QRect(r.topLeft() * dpr, r.size() * dpr);
+    const int xoffsetDp = xoffset * dpr;
+    const int yoffsetDp = yoffset * dpr;
 
-    clipRect.top = r.top() + yoffset;
-    clipRect.bottom = r.bottom() + yoffset;
-    clipRect.left = r.left() + xoffset;
-    clipRect.right = r.right()  + xoffset;
+    clipRect.top = rDp.top() + yoffsetDp;
+    clipRect.bottom = rDp.bottom() + yoffsetDp;
+    clipRect.left = rDp.left() + xoffsetDp;
+    clipRect.right = rDp.right()  + xoffsetDp;
 
     int state = WIZ_NAV_BB_NORMAL;
     if (!isEnabled())
@@ -259,6 +264,7 @@ QVistaHelper::QVistaHelper(QWizard *wizard)
     , wizard(wizard)
     , backButton_(0)
 {
+    QVistaHelper::m_devicePixelRatio = wizard->devicePixelRatio();
     is_vista = resolveSymbols();
     if (instanceCount++ == 0)
         cachedVistaState = Dirty;
@@ -281,10 +287,12 @@ QVistaHelper::~QVistaHelper()
 void QVistaHelper::updateCustomMargins(bool vistaMargins)
 {
     if (QWindow *window = wizard->windowHandle()) {
-        // Reduce top frame to zero since we paint it ourselves.
-        const QMargins customMargins = vistaMargins ?
-                       QMargins(0, -titleBarSize(), 0, 0) : QMargins();
-        const QVariant customMarginsV = qVariantFromValue(customMargins);
+        // Reduce top frame to zero since we paint it ourselves. Use
+        // device pixel to avoid rounding errors.
+        const QMargins customMarginsDp = vistaMargins
+            ? QMargins(0, -titleBarSizeDp(), 0, 0)
+            : QMargins();
+        const QVariant customMarginsV = qVariantFromValue(customMarginsDp);
         // The dynamic property takes effect when creating the platform window.
         window->setProperty("_q_windowsCustomMargins", customMarginsV);
         // If a platform window exists, change via native interface.
@@ -351,7 +359,7 @@ bool QVistaHelper::setDWMTitleBar(TitleBarChangeType type)
         if (type == NormalTitleBar)
             mar.cyTopHeight = 0;
         else
-            mar.cyTopHeight = titleBarSize() + topOffset();
+            mar.cyTopHeight = (titleBarSize() + topOffset()) * QVistaHelper::m_devicePixelRatio;
         if (const HWND wizardHandle = wizardHWND())
             if (SUCCEEDED(pDwmExtendFrameIntoClientArea(wizardHandle, &mar)))
                 value = true;
@@ -371,6 +379,8 @@ void QVistaHelper::drawTitleBar(QPainter *painter)
     if (vistaState() == VistaAero && isWindow)
         drawBlackRect(QRect(0, 0, wizard->width(),
                             titleBarSize() + topOffset()), hdc);
+    // The button is positioned in QWizardPrivate::handleAeroStyleChange(),
+    // all calculation is relative to it.
     const int btnTop = backButton_->mapToParent(QPoint()).y();
     const int btnHeight = backButton_->size().height();
     const int verticalCenter = (btnTop + btnHeight / 2) - 1;
@@ -405,14 +415,15 @@ void QVistaHelper::drawTitleBar(QPainter *painter)
 
     const QIcon windowIcon = wizard->windowIcon();
     if (!windowIcon.isNull()) {
+        const int size = QVistaHelper::iconSize();
         const int iconLeft = (wizard->layoutDirection() == Qt::LeftToRight
                               ? leftMargin()
-                              : wizard->width() - leftMargin() - iconSize());
+                              : wizard->width() - leftMargin() - size);
 
-        const QRect rect(origin.x() + iconLeft,
-                         origin.y() + verticalCenter - iconSize() / 2, iconSize(), iconSize());
-        const HICON hIcon = qt_pixmapToWinHICON(windowIcon.pixmap(iconSize()));
-        DrawIconEx(hdc, rect.left(), rect.top(), hIcon, 0, 0, 0, NULL, DI_NORMAL | DI_COMPAT);
+        const QPoint pos(origin.x() + iconLeft, origin.y() + verticalCenter - size / 2);
+        const QPoint posDp = pos * QVistaHelper::m_devicePixelRatio;
+        const HICON hIcon = qt_pixmapToWinHICON(windowIcon.pixmap(size * QVistaHelper::m_devicePixelRatio));
+        DrawIconEx(hdc, posDp.x(), posDp.y(), hIcon, 0, 0, 0, NULL, DI_NORMAL | DI_COMPAT);
         DestroyIcon(hIcon);
     }
 }
@@ -691,6 +702,8 @@ bool QVistaHelper::drawTitleText(QPainter *painter, const QString &text, const Q
 {
     bool value = false;
     if (vistaState() == VistaAero) {
+        const QRect rectDp = QRect(rect.topLeft() * QVistaHelper::m_devicePixelRatio,
+                                   rect.size() * QVistaHelper::m_devicePixelRatio);
         HWND handle = QApplicationPrivate::getHWNDForWidget(QApplication::desktop());
         HANDLE hTheme = pOpenThemeData(handle, L"WINDOW");
         if (!hTheme) return false;
@@ -702,8 +715,8 @@ bool QVistaHelper::drawTitleText(QPainter *painter, const QString &text, const Q
         dcMem = CreateCompatibleDC(hdc);
 
         dib.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-        dib.bmiHeader.biWidth = rect.width();
-        dib.bmiHeader.biHeight = -rect.height();
+        dib.bmiHeader.biWidth = rectDp.width();
+        dib.bmiHeader.biHeight = -rectDp.height();
         dib.bmiHeader.biPlanes = 1;
         dib.bmiHeader.biBitCount = 32;
         dib.bmiHeader.biCompression = BI_RGB;
@@ -719,13 +732,13 @@ bool QVistaHelper::drawTitleText(QPainter *painter, const QString &text, const Q
         WIZ_DTTOPTS dto;
         dto.dwSize = sizeof(WIZ_DTTOPTS);
         const UINT uFormat = WIZ_DT_SINGLELINE|WIZ_DT_CENTER|WIZ_DT_VCENTER|WIZ_DT_NOPREFIX;
-        RECT rctext ={0,0, rect.width(), rect.height()};
+        RECT rctext ={0,0, rectDp.width(), rectDp.height()};
 
         dto.dwFlags = WIZ_DTT_COMPOSITED|WIZ_DTT_GLOWSIZE;
         dto.iGlowSize = glowSize();
 
         pDrawThemeTextEx(hTheme, dcMem, 0, 0, (LPCWSTR)text.utf16(), -1, uFormat, &rctext, &dto );
-        BitBlt(hdc, rect.left(), rect.top(), rect.width(), rect.height(), dcMem, 0, 0, SRCCOPY);
+        BitBlt(hdc, rectDp.left(), rectDp.top(), rectDp.width(), rectDp.height(), dcMem, 0, 0, SRCCOPY);
         SelectObject(dcMem, (HGDIOBJ) hOldBmp);
         SelectObject(dcMem, (HGDIOBJ) hOldFont);
         DeleteObject(bmp);
@@ -743,6 +756,8 @@ bool QVistaHelper::drawBlackRect(const QRect &rect, HDC hdc)
     bool value = false;
     if (vistaState() == VistaAero) {
         // Set up a memory DC and bitmap that we'll draw into
+        const QRect rectDp = QRect(rect.topLeft() * QVistaHelper::m_devicePixelRatio,
+                                   rect.size() * QVistaHelper::m_devicePixelRatio);
         HDC dcMem;
         HBITMAP bmp;
         BITMAPINFO dib;
@@ -750,8 +765,8 @@ bool QVistaHelper::drawBlackRect(const QRect &rect, HDC hdc)
         dcMem = CreateCompatibleDC(hdc);
 
         dib.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-        dib.bmiHeader.biWidth = rect.width();
-        dib.bmiHeader.biHeight = -rect.height();
+        dib.bmiHeader.biWidth = rectDp.width();
+        dib.bmiHeader.biHeight = -rectDp.height();
         dib.bmiHeader.biPlanes = 1;
         dib.bmiHeader.biBitCount = 32;
         dib.bmiHeader.biCompression = BI_RGB;
@@ -759,7 +774,7 @@ bool QVistaHelper::drawBlackRect(const QRect &rect, HDC hdc)
         bmp = CreateDIBSection(hdc, &dib, DIB_RGB_COLORS, NULL, NULL, 0);
         HBITMAP hOldBmp = (HBITMAP)SelectObject(dcMem, (HGDIOBJ) bmp);
 
-        BitBlt(hdc, rect.left(), rect.top(), rect.width(), rect.height(), dcMem, 0, 0, SRCCOPY);
+        BitBlt(hdc, rectDp.left(), rectDp.top(), rectDp.width(), rectDp.height(), dcMem, 0, 0, SRCCOPY);
         SelectObject(dcMem, (HGDIOBJ) hOldBmp);
 
         DeleteObject(bmp);
@@ -785,12 +800,12 @@ static inline int getWindowBottomMargin()
 }
 #endif // _MSC_VER >= 1700
 
-int QVistaHelper::frameSize()
+int QVistaHelper::frameSizeDp()
 {
     return getWindowBottomMargin();
 }
 
-int QVistaHelper::captionSize()
+int QVistaHelper::captionSizeDp()
 {
     return GetSystemMetrics(SM_CYCAPTION);
 }
@@ -844,6 +859,16 @@ int QVistaHelper::titleOffset()
 {
     int iconOffset = wizard ->windowIcon().isNull() ? 0 : iconSize() + textSpacing;
     return leftMargin() + iconOffset;
+}
+
+int QVistaHelper::iconSize()
+{
+    return QStyleHelper::dpiScaled(16); // Standard Aero
+}
+
+int QVistaHelper::glowSize()
+{
+    return QStyleHelper::dpiScaled(10);
 }
 
 int QVistaHelper::topOffset()

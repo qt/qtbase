@@ -101,21 +101,19 @@ static inline QDpi deviceDPI(const QSize &pixels, const QSizeF &physicalSizeMM)
 
 typedef QList<QWindowsScreenData> WindowsScreenDataList;
 
-// from QDesktopWidget, taking WindowsScreenDataList as LPARAM
-BOOL QT_WIN_CALLBACK monitorEnumCallback(HMONITOR hMonitor, HDC, LPRECT, LPARAM p)
+static bool monitorData(HMONITOR hMonitor, QWindowsScreenData *data)
 {
     MONITORINFOEX info;
     memset(&info, 0, sizeof(MONITORINFOEX));
     info.cbSize = sizeof(MONITORINFOEX);
     if (GetMonitorInfo(hMonitor, &info) == FALSE)
-        return TRUE;
+        return false;
 
-    WindowsScreenDataList *result = reinterpret_cast<WindowsScreenDataList *>(p);
-    QWindowsScreenData data;
-    data.geometry = QRect(QPoint(info.rcMonitor.left, info.rcMonitor.top), QPoint(info.rcMonitor.right - 1, info.rcMonitor.bottom - 1));
-    data.name = QString::fromWCharArray(info.szDevice);
-    if (data.name == QLatin1String("WinDisc")) {
-        data.flags |= QWindowsScreenData::LockScreen;
+    data->geometry = QRect(QPoint(info.rcMonitor.left, info.rcMonitor.top), QPoint(info.rcMonitor.right - 1, info.rcMonitor.bottom - 1));
+    data->availableGeometry = QRect(QPoint(info.rcWork.left, info.rcWork.top), QPoint(info.rcWork.right - 1, info.rcWork.bottom - 1));
+    data->name = QString::fromWCharArray(info.szDevice);
+    if (data->name == QLatin1String("WinDisc")) {
+        data->flags |= QWindowsScreenData::LockScreen;
     } else {
 #ifdef Q_OS_WINCE
         //Windows CE, just supports one Display and expects to get only DISPLAY,
@@ -127,40 +125,48 @@ BOOL QT_WIN_CALLBACK monitorEnumCallback(HMONITOR hMonitor, HDC, LPRECT, LPARAM 
         if (hdc) {
 #ifndef Q_OS_WINCE
             const QDpi dpi = monitorDPI(hMonitor);
-            data.dpi = dpi.first ? dpi : deviceDPI(hdc);
+            data->dpi = dpi.first ? dpi : deviceDPI(hdc);
 #else
-            data.dpi = deviceDPI(hdc);
+            data->dpi = deviceDPI(hdc);
 #endif
-            data.depth = GetDeviceCaps(hdc, BITSPIXEL);
-            data.format = data.depth == 16 ? QImage::Format_RGB16 : QImage::Format_RGB32;
-            data.physicalSizeMM = QSizeF(GetDeviceCaps(hdc, HORZSIZE), GetDeviceCaps(hdc, VERTSIZE));
+            data->depth = GetDeviceCaps(hdc, BITSPIXEL);
+            data->format = data->depth == 16 ? QImage::Format_RGB16 : QImage::Format_RGB32;
+            data->physicalSizeMM = QSizeF(GetDeviceCaps(hdc, HORZSIZE), GetDeviceCaps(hdc, VERTSIZE));
             const int refreshRate = GetDeviceCaps(hdc, VREFRESH);
             if (refreshRate > 1) // 0,1 means hardware default.
-                data.refreshRateHz = refreshRate;
+                data->refreshRateHz = refreshRate;
             DeleteDC(hdc);
         } else {
             qWarning("%s: Unable to obtain handle for monitor '%s', defaulting to %g DPI.",
                      __FUNCTION__, qPrintable(QString::fromWCharArray(info.szDevice)),
-                     data.dpi.first);
+                     data->dpi.first);
         } // CreateDC() failed
     } // not lock screen
-    data.geometry = QRect(QPoint(info.rcMonitor.left, info.rcMonitor.top), QPoint(info.rcMonitor.right - 1, info.rcMonitor.bottom - 1));
-    data.availableGeometry = QRect(QPoint(info.rcWork.left, info.rcWork.top), QPoint(info.rcWork.right - 1, info.rcWork.bottom - 1));
-    data.orientation = data.geometry.height() > data.geometry.width() ?
+    data->orientation = data->geometry.height() > data->geometry.width() ?
                        Qt::PortraitOrientation : Qt::LandscapeOrientation;
     // EnumDisplayMonitors (as opposed to EnumDisplayDevices) enumerates only
     // virtual desktop screens.
-    data.flags |= QWindowsScreenData::VirtualDesktop;
-    if (info.dwFlags & MONITORINFOF_PRIMARY) {
-        data.flags |= QWindowsScreenData::PrimaryScreen;
+    data->flags |= QWindowsScreenData::VirtualDesktop;
+    if (info.dwFlags & MONITORINFOF_PRIMARY)
+        data->flags |= QWindowsScreenData::PrimaryScreen;
+    return true;
+}
+
+// from QDesktopWidget, taking WindowsScreenDataList as LPARAM
+BOOL QT_WIN_CALLBACK monitorEnumCallback(HMONITOR hMonitor, HDC, LPRECT, LPARAM p)
+{
+    QWindowsScreenData data;
+    if (monitorData(hMonitor, &data)) {
+        WindowsScreenDataList *result = reinterpret_cast<WindowsScreenDataList *>(p);
         // QPlatformIntegration::screenAdded() documentation specifies that first
         // added screen will be the primary screen, so order accordingly.
         // Note that the side effect of this policy is that there is no way to change primary
         // screen reported by Qt, unless we want to delete all existing screens and add them
         // again whenever primary screen changes.
-        result->prepend(data);
-    } else {
-        result->append(data);
+        if (data.flags & QWindowsScreenData::PrimaryScreen)
+            result->prepend(data);
+        else
+            result->append(data);
     }
     return TRUE;
 }
@@ -217,14 +223,36 @@ QWindowsScreen::QWindowsScreen(const QWindowsScreenData &data) :
 {
 }
 
+BOOL QT_WIN_CALLBACK monitorResolutionEnumCallback(HMONITOR hMonitor, HDC, LPRECT, LPARAM p)
+{
+    QWindowsScreenData data;
+    if (monitorData(hMonitor, &data)) {
+        int *maxHorizResolution = reinterpret_cast<int *>(p);
+        const int horizResolution = qRound(data.dpi.first);
+        if (horizResolution > *maxHorizResolution)
+            *maxHorizResolution = horizResolution;
+    }
+    return TRUE;
+}
+
+int QWindowsScreen::maxMonitorHorizResolution()
+{
+    int result = 0;
+    EnumDisplayMonitors(0, 0, monitorResolutionEnumCallback, (LPARAM)&result);
+    return result;
+}
+
 Q_GUI_EXPORT QPixmap qt_pixmapFromWinHBITMAP(HBITMAP bitmap, int hbitmapFormat = 0);
 
-QPixmap QWindowsScreen::grabWindow(WId window, int x, int y, int width, int height) const
+QPixmap QWindowsScreen::grabWindow(WId window, int qX, int qY, int qWidth, int qHeight) const
 {
     RECT r;
     HWND hwnd = window ? (HWND)window : GetDesktopWindow();
     GetClientRect(hwnd, &r);
-
+    const int x = qX * QWindowsScaling::factor();
+    const int y = qY * QWindowsScaling::factor();
+    int width = qWidth * QWindowsScaling::factor();
+    int height = qHeight * QWindowsScaling::factor();
     if (width < 0) width = r.right - r.left;
     if (height < 0) height = r.bottom - r.top;
 
@@ -248,6 +276,10 @@ QPixmap QWindowsScreen::grabWindow(WId window, int x, int y, int width, int heig
     DeleteObject(bitmap);
     ReleaseDC(0, display_dc);
 
+    if (QWindowsScaling::isActive()) {
+        const qreal factor = 1.0 / qreal(QWindowsScaling::factor());
+        return pixmap.transformed(QTransform::fromScale(factor, factor));
+    }
     return pixmap;
 }
 

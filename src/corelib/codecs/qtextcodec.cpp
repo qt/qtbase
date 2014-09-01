@@ -1045,7 +1045,7 @@ QTextCodec *QTextCodec::codecForHtml(const QByteArray &ba, QTextCodec *defaultCo
     // determine charset
     QTextCodec *c = QTextCodec::codecForUtfText(ba, 0);
     if (!c) {
-        QByteArray header = ba.left(512).toLower();
+        QByteArray header = ba.left(1024).toLower();
         int pos = header.indexOf("meta ");
         if (pos != -1) {
             pos = header.indexOf("charset=", pos);

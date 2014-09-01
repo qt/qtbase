@@ -42,9 +42,11 @@
 
 #include "qandroidplatformopenglwindow.h"
 
+#include "qandroidplatformscreen.h"
 #include "androidjnimain.h"
 
 #include <QSurfaceFormat>
+#include <QtGui/private/qwindow_p.h>
 
 #include <qpa/qwindowsysteminterface.h>
 #include <qpa/qplatformscreen.h>
@@ -69,25 +71,52 @@ QAndroidPlatformOpenGLWindow::~QAndroidPlatformOpenGLWindow()
     unlockSurface();
 }
 
+void QAndroidPlatformOpenGLWindow::repaint(const QRegion &region)
+{
+    // This is only for real raster top-level windows. Stop in all other cases.
+    if ((window()->surfaceType() == QSurface::RasterGLSurface && qt_window_private(window())->compositing)
+        || window()->surfaceType() == QSurface::OpenGLSurface
+        || QAndroidPlatformWindow::parent())
+        return;
+
+    QRect currentGeometry = geometry();
+
+    QRect dirtyClient = region.boundingRect();
+    QRect dirtyRegion(currentGeometry.left() + dirtyClient.left(),
+                      currentGeometry.top() + dirtyClient.top(),
+                      dirtyClient.width(),
+                      dirtyClient.height());
+    QRect mOldGeometryLocal = m_oldGeometry;
+    m_oldGeometry = currentGeometry;
+    // If this is a move, redraw the previous location
+    if (mOldGeometryLocal != currentGeometry)
+        platformScreen()->setDirty(mOldGeometryLocal);
+    platformScreen()->setDirty(dirtyRegion);
+}
+
 void QAndroidPlatformOpenGLWindow::setGeometry(const QRect &rect)
 {
     if (rect == geometry())
         return;
 
-    QRect oldGeometry = geometry();
+    m_oldGeometry = geometry();
 
     QAndroidPlatformWindow::setGeometry(rect);
-    QtAndroid::setSurfaceGeometry(m_nativeSurfaceId, rect);
+    if (m_nativeSurfaceId != -1)
+        QtAndroid::setSurfaceGeometry(m_nativeSurfaceId, rect);
 
     QRect availableGeometry = screen()->availableGeometry();
-    if (oldGeometry.width() == 0
-            && oldGeometry.height() == 0
+    if (m_oldGeometry.width() == 0
+            && m_oldGeometry.height() == 0
             && rect.width() > 0
             && rect.height() > 0
             && availableGeometry.width() > 0
             && availableGeometry.height() > 0) {
         QWindowSystemInterface::handleExposeEvent(window(), QRect(QPoint(0, 0), rect.size()));
     }
+
+    if (rect.topLeft() != m_oldGeometry.topLeft())
+        repaint(QRegion(rect));
 }
 
 EGLSurface QAndroidPlatformOpenGLWindow::eglSurface(EGLConfig config)
@@ -162,8 +191,8 @@ QSurfaceFormat QAndroidPlatformOpenGLWindow::format() const
 
 void QAndroidPlatformOpenGLWindow::clearEgl()
 {
-    eglMakeCurrent(m_eglDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
     if (m_eglSurface != EGL_NO_SURFACE) {
+        eglMakeCurrent(m_eglDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
         eglDestroySurface(m_eglDisplay, m_eglSurface);
         m_eglSurface = EGL_NO_SURFACE;
     }

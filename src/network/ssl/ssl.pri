@@ -1,6 +1,7 @@
 # OpenSSL support; compile in QSslSocket.
 contains(QT_CONFIG, ssl) | contains(QT_CONFIG, openssl) | contains(QT_CONFIG, openssl-linked) {
-    HEADERS += ssl/qssl.h \
+    HEADERS += ssl/qasn1element_p.h \
+               ssl/qssl.h \
                ssl/qsslcertificate.h \
                ssl/qsslcertificate_p.h \
                ssl/qsslconfiguration.h \
@@ -14,7 +15,8 @@ contains(QT_CONFIG, ssl) | contains(QT_CONFIG, openssl) | contains(QT_CONFIG, op
                ssl/qsslsocket_p.h \
                ssl/qsslcertificateextension.h \
                ssl/qsslcertificateextension_p.h
-    SOURCES += ssl/qssl.cpp \
+    SOURCES += ssl/qasn1element.cpp \
+               ssl/qssl.cpp \
                ssl/qsslcertificate.cpp \
                ssl/qsslconfiguration.cpp \
                ssl/qsslcipher.cpp \
@@ -25,7 +27,9 @@ contains(QT_CONFIG, ssl) | contains(QT_CONFIG, openssl) | contains(QT_CONFIG, op
 
     winrt {
         HEADERS += ssl/qsslsocket_winrt_p.h
-        SOURCES += ssl/qsslcertificate_winrt.cpp \
+        SOURCES += ssl/qsslcertificate_qt.cpp \
+                   ssl/qsslcertificate_winrt.cpp \
+                   ssl/qsslkey_qt.cpp \
                    ssl/qsslkey_winrt.cpp \
                    ssl/qsslsocket_winrt.cpp
     }

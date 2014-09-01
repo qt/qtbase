@@ -48,11 +48,11 @@
 #include "qwindowsdirect2ddevicecontext.h"
 
 #include "qwindowsfontengine.h"
-#include "qwindowsfontenginedirectwrite.h"
 #include "qwindowsfontdatabase.h"
 #include "qwindowsintegration.h"
 
 #include <QtCore/QStack>
+#include <QtCore/QSettings>
 #include <QtGui/private/qpaintengine_p.h>
 #include <QtGui/private/qtextengine_p.h>
 #include <QtGui/private/qfontengine_p.h>
@@ -107,6 +107,13 @@ Q_GUI_EXPORT QImage qt_imageForBrush(int brushStyle, bool invert);
 static inline ID2D1Factory1 *factory()
 {
     return QWindowsDirect2DContext::instance()->d2dFactory();
+}
+
+inline static FLOAT pixelSizeToDIP(int pixelSize)
+{
+    FLOAT dpiX, dpiY;
+    QWindowsDirect2DContext::instance()->d2dFactory()->GetDesktopDpi(&dpiX, &dpiY);
+    return FLOAT(pixelSize) * 96.0f / dpiY;
 }
 
 class Direct2DPathGeometryWriter
@@ -243,7 +250,7 @@ public:
 
     QPointF currentBrushOrigin;
 
-    QHash< QFont, ComPtr<IDWriteFontFace> > fontCache;
+    QHash< QFontDef, ComPtr<IDWriteFontFace> > fontCache;
 
     struct {
         bool emulate;
@@ -836,6 +843,74 @@ public:
     {
         dc()->SetAntialiasMode(antialiasMode());
     }
+
+    void drawGlyphRun(const D2D1_POINT_2F &pos,
+                      IDWriteFontFace *fontFace,
+                      const QFontDef &fontDef,
+                      int numGlyphs,
+                      const UINT16 *glyphIndices,
+                      const FLOAT *glyphAdvances,
+                      const DWRITE_GLYPH_OFFSET *glyphOffsets,
+                      bool rtl)
+    {
+        Q_Q(QWindowsDirect2DPaintEngine);
+
+        DWRITE_GLYPH_RUN glyphRun = {
+            fontFace,                           //    IDWriteFontFace           *fontFace;
+            pixelSizeToDIP(fontDef.pixelSize),  //    FLOAT                     fontEmSize;
+            numGlyphs,                          //    UINT32                    glyphCount;
+            glyphIndices,                       //    const UINT16              *glyphIndices;
+            glyphAdvances,                      //    const FLOAT               *glyphAdvances;
+            glyphOffsets,                       //    const DWRITE_GLYPH_OFFSET *glyphOffsets;
+            FALSE,                              //    BOOL                      isSideways;
+            rtl ? 1 : 0                         //    UINT32                    bidiLevel;
+        };
+
+        const bool antiAlias = bool((q->state()->renderHints & QPainter::TextAntialiasing)
+                                    && !(fontDef.styleStrategy & QFont::NoAntialias));
+        dc()->SetTextAntialiasMode(antiAlias ? D2D1_TEXT_ANTIALIAS_MODE_CLEARTYPE
+                                             : D2D1_TEXT_ANTIALIAS_MODE_ALIASED);
+
+        dc()->DrawGlyphRun(pos,
+                           &glyphRun,
+                           NULL,
+                           pen.brush.Get(),
+                           DWRITE_MEASURING_MODE_GDI_CLASSIC);
+    }
+
+    ComPtr<IDWriteFontFace> fontFaceFromFontEngine(QFontEngine *fe)
+    {
+        const QFontDef fontDef = fe->fontDef;
+        ComPtr<IDWriteFontFace> fontFace = fontCache.value(fontDef);
+        if (fontFace)
+            return fontFace;
+
+        LOGFONT lf = QWindowsFontDatabase::fontDefToLOGFONT(fontDef);
+
+        // Get substitute name
+        static const char keyC[] = "HKEY_LOCAL_MACHINE\\Software\\Microsoft\\Windows NT\\CurrentVersion\\FontSubstitutes";
+        const QString familyName = QString::fromWCharArray(lf.lfFaceName);
+        const QString nameSubstitute = QSettings(QLatin1String(keyC), QSettings::NativeFormat).value(familyName, familyName).toString();
+        memcpy(lf.lfFaceName, nameSubstitute.utf16(), sizeof(wchar_t) * qMin(nameSubstitute.length() + 1, LF_FACESIZE));
+
+        ComPtr<IDWriteFont> dwriteFont;
+        HRESULT hr = QWindowsDirect2DContext::instance()->dwriteGdiInterop()->CreateFontFromLOGFONT(&lf, &dwriteFont);
+        if (FAILED(hr)) {
+            qDebug("%s: CreateFontFromLOGFONT failed: %#x", __FUNCTION__, hr);
+            return fontFace;
+        }
+
+        hr = dwriteFont->CreateFontFace(&fontFace);
+        if (FAILED(hr)) {
+            qDebug("%s: CreateFontFace failed: %#x", __FUNCTION__, hr);
+            return fontFace;
+        }
+
+        if (fontFace)
+            fontCache.insert(fontDef, fontFace);
+
+        return fontFace;
+    }
 };
 
 QWindowsDirect2DPaintEngine::QWindowsDirect2DPaintEngine(QWindowsDirect2DBitmap *bitmap)
@@ -1411,7 +1486,7 @@ void QWindowsDirect2DPaintEngine::drawStaticTextItem(QStaticTextItem *staticText
         return;
     }
 
-    ComPtr<IDWriteFontFace> fontFace = fontFaceFromFontEngine(staticTextItem->font, staticTextItem->fontEngine());
+    ComPtr<IDWriteFontFace> fontFace = d->fontFaceFromFontEngine(staticTextItem->fontEngine());
     if (!fontFace) {
         qWarning("%s: Could not find font - falling back to slow text rendering path.", __FUNCTION__);
         QPaintEngineEx::drawStaticTextItem(staticTextItem);
@@ -1432,14 +1507,14 @@ void QWindowsDirect2DPaintEngine::drawStaticTextItem(QStaticTextItem *staticText
         glyphOffsets[i].ascenderOffset = staticTextItem->glyphPositions[i].y.toReal() * -1;
     }
 
-    drawGlyphRun(D2D1::Point2F(0, 0),
-                 fontFace.Get(),
-                 staticTextItem->font,
-                 staticTextItem->numGlyphs,
-                 glyphIndices.constData(),
-                 glyphAdvances.constData(),
-                 glyphOffsets.constData(),
-                 false);
+    d->drawGlyphRun(D2D1::Point2F(0, 0),
+                    fontFace.Get(),
+                    staticTextItem->fontEngine()->fontDef,
+                    staticTextItem->numGlyphs,
+                    glyphIndices.constData(),
+                    glyphAdvances.constData(),
+                    glyphOffsets.constData(),
+                    false);
 }
 
 void QWindowsDirect2DPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textItem)
@@ -1459,7 +1534,7 @@ void QWindowsDirect2DPaintEngine::drawTextItem(const QPointF &p, const QTextItem
         return;
     }
 
-    ComPtr<IDWriteFontFace> fontFace = fontFaceFromFontEngine(*ti.f, ti.fontEngine);
+    ComPtr<IDWriteFontFace> fontFace = d->fontFaceFromFontEngine(ti.fontEngine);
     if (!fontFace) {
         qWarning("%s: Could not find font - falling back to slow text rendering path.", __FUNCTION__);
         QPaintEngine::drawTextItem(p, textItem);
@@ -1482,72 +1557,14 @@ void QWindowsDirect2DPaintEngine::drawTextItem(const QPointF &p, const QTextItem
     const bool rtl = (ti.flags & QTextItem::RightToLeft);
     const QPointF offset(rtl ? ti.width.toReal() : 0, 0);
 
-    drawGlyphRun(to_d2d_point_2f(p + offset),
-                 fontFace.Get(),
-                 ti.font(),
-                 ti.glyphs.numGlyphs,
-                 glyphIndices.constData(),
-                 glyphAdvances.constData(),
-                 glyphOffsets.constData(),
-                 rtl);
-}
-
-inline static FLOAT pointSizeToDIP(qreal pointSize, FLOAT dpiY)
-{
-    return (pointSize + (pointSize / qreal(3.0))) * (dpiY / 96.0f);
-}
-
-inline static FLOAT pixelSizeToDIP(int pixelSize, FLOAT dpiY)
-{
-    return FLOAT(pixelSize) * 96.0f / dpiY;
-}
-
-inline static FLOAT fontSizeInDIP(const QFont &font)
-{
-    FLOAT dpiX, dpiY;
-    QWindowsDirect2DContext::instance()->d2dFactory()->GetDesktopDpi(&dpiX, &dpiY);
-
-    if (font.pixelSize() == -1) {
-        // font size was set as points
-        return pointSizeToDIP(font.pointSizeF(), dpiY);
-    } else {
-        // font size was set as pixels
-        return pixelSizeToDIP(font.pixelSize(), dpiY);
-    }
-}
-
-void QWindowsDirect2DPaintEngine::drawGlyphRun(const D2D1_POINT_2F &pos,
-                                               IDWriteFontFace *fontFace,
-                                               const QFont &font,
-                                               int numGlyphs,
-                                               const UINT16 *glyphIndices,
-                                               const FLOAT *glyphAdvances,
-                                               const DWRITE_GLYPH_OFFSET *glyphOffsets,
-                                               bool rtl)
-{
-    Q_D(QWindowsDirect2DPaintEngine);
-
-    DWRITE_GLYPH_RUN glyphRun = {
-        fontFace,               //    IDWriteFontFace           *fontFace;
-        fontSizeInDIP(font),    //    FLOAT                     fontEmSize;
-        numGlyphs,              //    UINT32                    glyphCount;
-        glyphIndices,           //    const UINT16              *glyphIndices;
-        glyphAdvances,          //    const FLOAT               *glyphAdvances;
-        glyphOffsets,           //    const DWRITE_GLYPH_OFFSET *glyphOffsets;
-        FALSE,                  //    BOOL                      isSideways;
-        rtl ? 1 : 0             //    UINT32                    bidiLevel;
-    };
-
-    const bool antiAlias = bool((state()->renderHints & QPainter::TextAntialiasing)
-                                && !(font.styleStrategy() & QFont::NoAntialias));
-    d->dc()->SetTextAntialiasMode(antiAlias ? D2D1_TEXT_ANTIALIAS_MODE_CLEARTYPE
-                                            : D2D1_TEXT_ANTIALIAS_MODE_ALIASED);
-
-    d->dc()->DrawGlyphRun(pos,
-                          &glyphRun,
-                          NULL,
-                          d->pen.brush.Get(),
-                          DWRITE_MEASURING_MODE_GDI_CLASSIC);
+    d->drawGlyphRun(to_d2d_point_2f(p + offset),
+                    fontFace.Get(),
+                    ti.fontEngine->fontDef,
+                    ti.glyphs.numGlyphs,
+                    glyphIndices.constData(),
+                    glyphAdvances.constData(),
+                    glyphOffsets.constData(),
+                    rtl);
 }
 
 void QWindowsDirect2DPaintEngine::ensureBrush()
@@ -1676,51 +1693,6 @@ void QWindowsDirect2DPaintEngine::adjustForAliasing(QPointF *point)
 
     if (!antiAliasingEnabled())
         (*point) += adjustment;
-}
-
-Microsoft::WRL::ComPtr<IDWriteFontFace> QWindowsDirect2DPaintEngine::fontFaceFromFontEngine(const QFont &font, QFontEngine *fe)
-{
-    Q_D(QWindowsDirect2DPaintEngine);
-
-    ComPtr<IDWriteFontFace> fontFace = d->fontCache.value(font);
-    if (fontFace)
-        return fontFace;
-
-    switch (fe->type()) {
-    case QFontEngine::Win:
-    {
-        QWindowsFontEngine *wfe = static_cast<QWindowsFontEngine *>(fe);
-        QSharedPointer<QWindowsFontEngineData> wfed = wfe->fontEngineData();
-
-        HGDIOBJ oldfont = wfe->selectDesignFont();
-        HRESULT hr = QWindowsDirect2DContext::instance()->dwriteGdiInterop()->CreateFontFaceFromHdc(wfed->hdc, &fontFace);
-        DeleteObject(SelectObject(wfed->hdc, oldfont));
-        if (FAILED(hr))
-            qWarning("%s: Could not create DirectWrite fontface from HDC: %#x", __FUNCTION__, hr);
-
-    }
-        break;
-
-#ifndef QT_NO_DIRECTWRITE
-
-    case QFontEngine::DirectWrite:
-    {
-        QWindowsFontEngineDirectWrite *wfedw = static_cast<QWindowsFontEngineDirectWrite *>(fe);
-        fontFace = wfedw->directWriteFontFace();
-    }
-        break;
-
-#endif // QT_NO_DIRECTWRITE
-
-    default:
-        qWarning("%s: Unknown font engine!", __FUNCTION__);
-        break;
-    }
-
-    if (fontFace)
-        d->fontCache.insert(font, fontFace);
-
-    return fontFace;
 }
 
 QT_END_NAMESPACE

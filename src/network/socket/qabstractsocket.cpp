@@ -2008,6 +2008,9 @@ static int qt_timeout_value(int msecs, int elapsed)
     \note Multiple calls to this functions do not accumulate the time.
     If the function times out, the connecting process will be aborted.
 
+    \note This function may fail randomly on Windows. Consider using the event
+    loop and the connected() signal if your software will run on Windows.
+
     \sa connectToHost(), connected()
 */
 bool QAbstractSocket::waitForConnected(int msecs)
@@ -2107,6 +2110,9 @@ bool QAbstractSocket::waitForConnected(int msecs)
     there is new data available for reading; otherwise it returns \c false
     (if an error occurred or the operation timed out).
 
+    \note This function may fail randomly on Windows. Consider using the event
+    loop and the readyRead() signal if your software will run on Windows.
+
     \sa waitForBytesWritten()
 */
 bool QAbstractSocket::waitForReadyRead(int msecs)
@@ -2166,6 +2172,20 @@ bool QAbstractSocket::waitForReadyRead(int msecs)
 }
 
 /*! \reimp
+
+    This function blocks until at least one byte has been written on the socket
+    and the \l{QIODevice::}{bytesWritten()} signal has been emitted. The
+    function will timeout after \a msecs milliseconds; the default timeout is
+    30000 milliseconds.
+
+    The function returns \c true if the bytesWritten() signal is emitted;
+    otherwise it returns \c false (if an error occurred or the operation timed
+    out).
+
+    \note This function may fail randomly on Windows. Consider using the event
+    loop and the bytesWritten() signal if your software will run on Windows.
+
+    \sa waitForReadyRead()
  */
 bool QAbstractSocket::waitForBytesWritten(int msecs)
 {
@@ -2246,6 +2266,9 @@ bool QAbstractSocket::waitForBytesWritten(int msecs)
     \snippet code/src_network_socket_qabstractsocket.cpp 1
 
     If msecs is -1, this function will not time out.
+
+    \note This function may fail randomly on Windows. Consider using the event
+    loop and the disconnected() signal if your software will run on Windows.
 
     \sa disconnectFromHost(), close()
 */

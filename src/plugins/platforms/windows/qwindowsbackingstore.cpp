@@ -43,6 +43,7 @@
 #include "qwindowswindow.h"
 #include "qwindowsnativeimage.h"
 #include "qwindowscontext.h"
+#include "qwindowsscaling.h"
 
 #include <QtGui/QWindow>
 #include <QtGui/QPainter>
@@ -75,12 +76,10 @@ QPaintDevice *QWindowsBackingStore::paintDevice()
     return &m_image->image();
 }
 
-void QWindowsBackingStore::flush(QWindow *window, const QRegion &region,
-                                        const QPoint &offset)
+void QWindowsBackingStore::flushDp(QWindow *window, const QRect &br, const QPoint &offset)
 {
     Q_ASSERT(window);
 
-    const QRect br = region.boundingRect();
     if (QWindowsContext::verbose > 1)
         qCDebug(lcQpaBackingStore) << __FUNCTION__ << this << window << offset << br;
     QWindowsWindow *rw = QWindowsWindow::baseWindowOf(window);
@@ -90,8 +89,9 @@ void QWindowsBackingStore::flush(QWindow *window, const QRegion &region,
     const Qt::WindowFlags flags = window->flags();
     if ((flags & Qt::FramelessWindowHint) && QWindowsWindow::setWindowLayered(rw->handle(), flags, hasAlpha, rw->opacity()) && hasAlpha) {
         // Windows with alpha: Use blend function to update.
-        QRect r = window->frameGeometry();
-        QPoint frameOffset(window->frameMargins().left(), window->frameMargins().top());
+        const QMargins marginsDP = rw->frameMarginsDp();
+        const QRect r = rw->geometryDp() + marginsDP;
+        const QPoint frameOffset(marginsDP.left(), marginsDP.top());
         QRect dirtyRect = br.translated(offset + frameOffset);
 
         SIZE size = {r.width(), r.height()};
@@ -135,14 +135,15 @@ void QWindowsBackingStore::flush(QWindow *window, const QRegion &region,
     }
 }
 
-void QWindowsBackingStore::resize(const QSize &size, const QRegion &region)
+void QWindowsBackingStore::resize(const QSize &sizeDip, const QRegion &regionDip)
 {
+    const QSize size = sizeDip * QWindowsScaling::factor();
     if (m_image.isNull() || m_image->image().size() != size) {
 #ifndef QT_NO_DEBUG_OUTPUT
         if (QWindowsContext::verbose && lcQpaBackingStore().isDebugEnabled()) {
             qCDebug(lcQpaBackingStore)
-                << __FUNCTION__ << ' ' << window() << ' ' << size << ' ' << region
-                << " from: " << (m_image.isNull() ? QSize() : m_image->image().size());
+                << __FUNCTION__ << ' ' << window() << ' ' << size << ' ' << sizeDip << ' '
+                << regionDip << " from: " << (m_image.isNull() ? QSize() : m_image->image().size());
         }
 #endif
         const QImage::Format format = window()->format().hasAlpha() ?
@@ -151,10 +152,10 @@ void QWindowsBackingStore::resize(const QSize &size, const QRegion &region)
         QWindowsNativeImage *oldwni = m_image.data();
         QWindowsNativeImage *newwni = new QWindowsNativeImage(size.width(), size.height(), format);
 
-        if (oldwni && !region.isEmpty()) {
+        if (oldwni && !regionDip.isEmpty()) {
             const QImage &oldimg(oldwni->image());
             QImage &newimg(newwni->image());
-            QRegion staticRegion(region);
+            QRegion staticRegion = QWindowsScaling::mapToNative(regionDip);
             staticRegion &= QRect(0, 0, oldimg.width(), oldimg.height());
             staticRegion &= QRect(0, 0, newimg.width(), newimg.height());
             QPainter painter(&newimg);
@@ -163,35 +164,38 @@ void QWindowsBackingStore::resize(const QSize &size, const QRegion &region)
                 painter.drawImage(rect, oldimg, rect);
         }
 
+        if (QWindowsScaling::isActive())
+            newwni->setDevicePixelRatio(QWindowsScaling::factor());
         m_image.reset(newwni);
     }
 }
 
 Q_GUI_EXPORT void qt_scrollRectInImage(QImage &img, const QRect &rect, const QPoint &offset);
 
-bool QWindowsBackingStore::scroll(const QRegion &area, int dx, int dy)
+bool QWindowsBackingStore::scroll(const QRegion &areaDip, int dxDip, int dyDip)
 {
     if (m_image.isNull() || m_image->image().isNull())
         return false;
 
-    const QVector<QRect> rects = area.rects();
+    const QPoint dp = QPoint(dxDip, dyDip) * QWindowsScaling::factor();
+    const QVector<QRect> rects = areaDip.rects();
     for (int i = 0; i < rects.size(); ++i)
-        qt_scrollRectInImage(m_image->image(), rects.at(i), QPoint(dx, dy));
+        qt_scrollRectInImage(m_image->image(), QWindowsScaling::mapToNative(rects.at(i)), dp);
 
     return true;
 }
 
-void QWindowsBackingStore::beginPaint(const QRegion &region)
+void QWindowsBackingStore::beginPaint(const QRegion &regionDip)
 {
     if (QWindowsContext::verbose > 1)
-        qCDebug(lcQpaBackingStore) <<__FUNCTION__ << region;
+        qCDebug(lcQpaBackingStore) <<__FUNCTION__ << regionDip;
 
     if (m_image->image().hasAlphaChannel()) {
         QPainter p(&m_image->image());
         p.setCompositionMode(QPainter::CompositionMode_Source);
         const QColor blank = Qt::transparent;
-        foreach (const QRect &r, region.rects())
-            p.fillRect(r, blank);
+        foreach (const QRect &r, regionDip.rects())
+            p.fillRect(QWindowsScaling::mapToNative(r), blank);
     }
 }
 

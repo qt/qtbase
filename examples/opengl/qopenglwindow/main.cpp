@@ -185,7 +185,7 @@ int main(int argc, char **argv)
     fmt.setDepthBufferSize(24);
     fmt.setStencilBufferSize(8);
     window.setFormat(fmt);
-    window.show();
+    window.showMaximized();
 
     return app.exec();
 }

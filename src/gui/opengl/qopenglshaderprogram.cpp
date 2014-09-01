@@ -278,16 +278,27 @@ bool QOpenGLShaderPrivate::compile(QOpenGLShader *q)
             "Fragment",
             "Vertex",
             "Geometry",
+            "Tessellation Control",
+            "Tessellation Evaluation",
+            "Compute",
             ""
         };
 
-        const char *type = types[3];
-        if (shaderType == QOpenGLShader::Fragment)
-            type = types[0];
-        else if (shaderType == QOpenGLShader::Vertex)
-            type = types[1];
-        else if (shaderType == QOpenGLShader::Geometry)
-            type = types[2];
+        const char *type = types[6];
+        switch (shaderType) {
+        case QOpenGLShader::Fragment:
+            type = types[0]; break;
+        case QOpenGLShader::Vertex:
+            type = types[1]; break;
+        case QOpenGLShader::Geometry:
+            type = types[2]; break;
+        case QOpenGLShader::TessellationControl:
+            type = types[3]; break;
+        case QOpenGLShader::TessellationEvaluation:
+            type = types[4]; break;
+        case QOpenGLShader::Compute:
+            type = types[5]; break;
+        }
 
         // Get info and source code lengths
         GLint infoLogLength = 0;

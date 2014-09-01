@@ -288,8 +288,7 @@ void tst_QSyntaxHighlighter::highlightOnInit()
     cursor.insertText("World");
 
     TestHighlighter *hl = new TestHighlighter(doc);
-    QTest::qWait(100);
-    QVERIFY(hl->highlighted);
+    QTRY_VERIFY(hl->highlighted);
 }
 
 class StateTestHighlighter : public QSyntaxHighlighter
@@ -328,8 +327,7 @@ void tst_QSyntaxHighlighter::stopHighlightingWhenStateDoesNotChange()
     cursor.insertText("changestate");
 
     StateTestHighlighter *hl = new StateTestHighlighter(doc);
-    QTest::qWait(100);
-    QVERIFY(hl->highlighted);
+    QTRY_VERIFY(hl->highlighted);
 
     hl->reset();
 
@@ -488,8 +486,7 @@ void tst_QSyntaxHighlighter::avoidUnnecessaryRehighlight()
     QVERIFY(hl->highlighted);
 
     hl->highlighted = false;
-    QTest::qWait(100);
-    QVERIFY(!hl->highlighted);
+    QTRY_VERIFY(!hl->highlighted);
 }
 
 void tst_QSyntaxHighlighter::noContentsChangedDuringHighlight()

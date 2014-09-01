@@ -1391,14 +1391,14 @@ QVector<QRgb> QImage::colorTable() const
 
 /*!
     Returns the device pixel ratio for the image. This is the
-    ratio between image pixels and device-independent pixels.
+    ratio between \e{device pixels} and \e{device independent pixels}.
 
     Use this function when calculating layout geometry based on
     the image size: QSize layoutSize = image.size() / image.devicePixelRatio()
 
     The default value is 1.0.
 
-    \sa setDevicePixelRatio()
+    \sa setDevicePixelRatio(), QImageReader
 */
 qreal QImage::devicePixelRatio() const
 {
@@ -1423,7 +1423,8 @@ qreal QImage::devicePixelRatio() const
     image size will take the ratio into account:
     QSize layoutSize = image.size() / image.devicePixelRatio()
     The net effect of this is that the image is displayed as
-    high-dpi image rather than a large image.
+    high-DPI image rather than a large image
+    (see \l{Drawing High Resolution Versions of Pixmaps and Images}).
 
     \sa devicePixelRatio()
 */

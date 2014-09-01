@@ -48,24 +48,24 @@ QT_BEGIN_NAMESPACE
     \class QStorageInfo
     \inmodule QtCore
     \since 5.4
-    \brief Provides information about currently mounted storages and drives.
+    \brief Provides information about currently mounted storage and drives.
 
     \ingroup io
     \ingroup shared
 
     Allows retrieving information about the volume's space, its mount point,
-    label, filesystem name.
+    label, and filesystem name.
 
     You can create an instance of QStorageInfo by passing the path to the
-    volume's mount point as the constructor parameter, or you can set it using
-    setPath() method. The static mountedVolumes() method can be used to get the
+    volume's mount point as a constructor parameter, or you can set it using
+    the setPath() method. The static mountedVolumes() method can be used to get the
     list of all mounted filesystems.
 
-    QStorageInfo always caches the retrieved information but you can call
+    QStorageInfo always caches the retrieved information, but you can call
     refresh() to invalidate the cache.
 
     The following example retrieves the most common information about the root
-    volume of the system and prints information about it.
+    volume of the system, and prints information about it.
 
     \snippet code/src_corelib_io_qstorageinfo.cpp 2
 */
@@ -73,7 +73,8 @@ QT_BEGIN_NAMESPACE
 /*!
     Constructs an empty QStorageInfo object.
 
-    This object is not ready for use, invalid and all its parameters are empty.
+    Objects created with the default constructor will be invalid and therefore
+    not ready for use.
 
     \sa setPath(), isReady(), isValid()
 */
@@ -83,15 +84,15 @@ QStorageInfo::QStorageInfo()
 }
 
 /*!
-    Constructs a new QStorageInfo that gives information about the volume
+    Constructs a new QStorageInfo object that gives information about the volume
     mounted at \a path.
 
     If you pass a directory or file, the QStorageInfo object will refer to the
     volume where this directory or file is located.
     You can check if the created object is correct using the isValid() method.
 
-    The following example shows how to get volume on which application is
-    located. It is recommended to always check that volume is ready and valid.
+    The following example shows how to get the volume on which the application is
+    located. It is recommended to always check that the volume is ready and valid.
 
     \snippet code/src_corelib_io_qstorageinfo.cpp 0
 
@@ -104,8 +105,8 @@ QStorageInfo::QStorageInfo(const QString &path)
 }
 
 /*!
-    Constructs a new QStorageInfo that gives information about the volume
-    that contains the \a dir folder.
+    Constructs a new QStorageInfo object that gives information about the volume
+    containing the \a dir folder.
 */
 QStorageInfo::QStorageInfo(const QDir &dir)
     : d(new QStorageInfoPrivate)
@@ -114,7 +115,7 @@ QStorageInfo::QStorageInfo(const QDir &dir)
 }
 
 /*!
-    Constructs a new QStorageInfo that is a copy of the \a other QStorageInfo.
+    Constructs a new QStorageInfo object that is a copy of the \a other QStorageInfo object.
 */
 QStorageInfo::QStorageInfo(const QStorageInfo &other)
     : d(other.d)
@@ -122,14 +123,14 @@ QStorageInfo::QStorageInfo(const QStorageInfo &other)
 }
 
 /*!
-    Destroys the QStorageInfo and frees its resources.
+    Destroys the QStorageInfo object and frees its resources.
 */
 QStorageInfo::~QStorageInfo()
 {
 }
 
 /*!
-    Makes a copy of \a other QStorageInfo and assigns it to this QStorageInfo.
+    Makes a copy of the QStorageInfo object \a other and assigns it to this QStorageInfo object.
 */
 QStorageInfo &QStorageInfo::operator=(const QStorageInfo &other)
 {
@@ -140,20 +141,20 @@ QStorageInfo &QStorageInfo::operator=(const QStorageInfo &other)
 /*!
     \fn QStorageInfo &QStorageInfo::operator=(QStorageInfo &&other)
 
-    Move-assigns \a other to this QStorageInfo instance.
+    Assigns \a other to this QStorageInfo instance.
 */
 
 /*!
     \fn void QStorageInfo::swap(QStorageInfo &other)
 
-    Swaps this volume info with the \a other. This function is very fast and
+    Swaps this volume info with \a other. This function is very fast and
     never fails.
 */
 
 /*!
-    Sets QStorageInfo to the filesystem mounted where \a path is located.
+    Sets this QStorageInfo object to the filesystem mounted where \a path is located.
 
-    Path can either be a root path of the filesystem, or a directory or a file
+    \a path can either be a root path of the filesystem, a directory, or a file
     within that filesystem.
 
     \sa rootPath()
@@ -171,12 +172,12 @@ void QStorageInfo::setPath(const QString &path)
     Returns the mount point of the filesystem this QStorageInfo object
     represents.
 
-    On Windows, returns the volume letter in case the volume is not mounted to
+    On Windows, it returns the volume letter in case the volume is not mounted to
     a directory.
 
     Note that the value returned by rootPath() is the real mount point of a
-    volume and may not be equal to the value passed to constructor or setPath()
-    method. For example, if you have only the root volume in the system and
+    volume, and may not be equal to the value passed to the constructor or setPath()
+    method. For example, if you have only the root volume in the system, and
     pass '/directory' to setPath(), then this method will return '/'.
 
     \sa setPath(), device()
@@ -187,10 +188,10 @@ QString QStorageInfo::rootPath() const
 }
 
 /*!
-    Returns the size (in bytes) available for the current user. If the user is
-    the root user or a system administrator returns all available size.
+    Returns the size (in bytes) available for the current user. It returns
+    the total size available if the user is the root user or a system administrator.
 
-    This size can be less than or equal to the free size, returned by
+    This size can be less than or equal to the free size returned by
     bytesFree() function.
 
     \sa bytesTotal(), bytesFree()
@@ -201,9 +202,9 @@ qint64 QStorageInfo::bytesAvailable() const
 }
 
 /*!
-    Returns the number of free bytes on a volume. Note, that if there are some
-    kind of quotas on the filesystem, this value can be bigger than
-    bytesAvailable().
+    Returns the number of free bytes in a volume. Note that if there are
+    quotas on the filesystem, this value can be larger than the value
+    returned by bytesAvailable().
 
     \sa bytesTotal(), bytesAvailable()
 */
@@ -213,7 +214,7 @@ qint64 QStorageInfo::bytesFree() const
 }
 
 /*!
-    Returns total volume size in bytes.
+    Returns the total volume size in bytes.
 
     \sa bytesFree(), bytesAvailable()
 */
@@ -227,7 +228,7 @@ qint64 QStorageInfo::bytesTotal() const
 
     This is a platform-dependent function, and filesystem names can vary
     between different operating systems. For example, on Windows filesystems
-    can be named as 'NTFS' and on Linux as 'ntfs-3g' or 'fuseblk'.
+    they can be named \c NTFS, and on Linux they can be named \c ntfs-3g or \c fuseblk.
 
     \sa name()
 */
@@ -240,8 +241,8 @@ QByteArray QStorageInfo::fileSystemType() const
     Returns the device for this volume.
 
     For example, on Unix filesystems (including OS X), this returns the
-    devpath like '/dev/sda0' for local storages. On Windows, returns the UNC
-    path starting with \\\\?\\ for local storages (i.e. volume GUID).
+    devpath like \c /dev/sda0 for local storages. On Windows, it returns the UNC
+    path starting with \c \\\\?\\ for local storages (in other words, the volume GUID).
 
     \sa rootPath()
 */
@@ -251,13 +252,13 @@ QByteArray QStorageInfo::device() const
 }
 
 /*!
-    Returns the human-readable name of a filesystem, usually called 'label'.
+    Returns the human-readable name of a filesystem, usually called \c label.
 
-    Not all filesystems support this feature, in this case value returned by
+    Not all filesystems support this feature. In this case, the value returned by
     this method could be empty. An empty string is returned if the file system
-    does not support labels or no label is set.
+    does not support labels, or if no label is set.
 
-    On Linux, retrieving the volume's label requires udev to be present in the
+    On Linux, retrieving the volume's label requires \c udev to be present in the
     system.
 
     \sa fileSystemType()
@@ -283,8 +284,8 @@ QString QStorageInfo::displayName() const
     Returns true if this QStorageInfo represents the system root volume; false
     otherwise.
 
-    On Unix filesystems, the root volume is a volume mounted at "/", on Windows
-    the root volume is the volume where OS is installed.
+    On Unix filesystems, the root volume is a volume mounted on \c /. On Windows,
+    the root volume is the volume where the OS is installed.
 
     \sa root()
 */
@@ -299,8 +300,8 @@ bool QStorageInfo::isReadOnly() const
 }
 
 /*!
-    Returns true if current filesystem is ready to work; false otherwise. For
-    example, false is returned if CD volume is not inserted.
+    Returns true if the current filesystem is ready to work; false otherwise. For
+    example, false is returned if the CD volume is not inserted.
 
     Note that fileSystemType(), name(), bytesTotal(), bytesFree(), and
     bytesAvailable() will return invalid data until the volume is ready.
@@ -326,9 +327,9 @@ bool QStorageInfo::isValid() const
 /*!
     Resets QStorageInfo's internal cache.
 
-    QStorageInfo caches information about storages to speed up performance -
-    QStorageInfo retrieves information during object construction and/or call
-    to setPath() method. You have to manually reset the cache by calling this
+    QStorageInfo caches information about storage to speed up performance.
+    QStorageInfo retrieves information during object construction and/or when calling
+    the setPath() method. You have to manually reset the cache by calling this
     function to update storage information.
 */
 void QStorageInfo::refresh()
@@ -338,17 +339,16 @@ void QStorageInfo::refresh()
 }
 
 /*!
-    Returns list of QStorageInfos that corresponds to the list of currently
+    Returns the list of QStorageInfo objects that corresponds to the list of currently
     mounted filesystems.
 
-    On Windows, this returns drives presented in 'My Computer' folder. On Unix
-    operating systems, returns list of all mounted filesystems (except for
+    On Windows, this returns the drives visible in the \gui{My Computer} folder. On Unix
+    operating systems, it returns the list of all mounted filesystems (except for
     pseudo filesystems).
 
-    By default, returns all currently mounted filesystems.
+    Returns all currently mounted filesystems by default.
 
-    The example shows how to retrieve all storages present in the system and
-    skip read-only storages.
+    The example shows how to retrieve all available filesystems, skipping read-only ones.
 
     \snippet code/src_corelib_io_qstorageinfo.cpp 1
 
@@ -364,8 +364,8 @@ Q_GLOBAL_STATIC_WITH_ARGS(QStorageInfo, getRoot, (QStorageInfoPrivate::root()))
 /*!
     Returns a QStorageInfo object that represents the system root volume.
 
-    On Unix systems this call returns '/' volume, on Windows the volume where
-    operating system is installed is returned.
+    On Unix systems this call returns the root ('/') volume; in Windows the volume where
+    the operating system is installed.
 
     \sa isRoot()
 */
@@ -379,8 +379,8 @@ QStorageInfo QStorageInfo::root()
 
     \relates QStorageInfo
 
-    Returns true if \a first QStorageInfo object refers to the same drive or volume
-    as the \a second; otherwise returns false.
+    Returns true if the \a first QStorageInfo object refers to the same drive or volume
+    as the \a second; otherwise it returns false.
 
     Note that the result of comparing two invalid QStorageInfo objects is always
     positive.
@@ -391,8 +391,8 @@ QStorageInfo QStorageInfo::root()
 
     \relates QStorageInfo
 
-    Returns true if \a first QStorageInfo object refers to a different drive or
-    volume than the one specified by \a second; otherwise returns false.
+    Returns true if the \a first QStorageInfo object refers to a different drive or
+    volume than the \a second; otherwise returns false.
 */
 
 QT_END_NAMESPACE

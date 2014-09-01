@@ -66,6 +66,9 @@ class Q_WIDGETS_EXPORT QStyle : public QObject
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QStyle)
+    Q_ENUMS(StateFlag PrimitiveElement ControlElement SubElement ComplexControl)
+    Q_ENUMS(SubControl PixelMetric ContentsType RequestSoftwareInputPanel StyleHint)
+    Q_ENUMS(StandardPixmap)
 
 protected:
     QStyle(QStylePrivate &dd);

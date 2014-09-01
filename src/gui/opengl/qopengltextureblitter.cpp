@@ -248,9 +248,6 @@ bool QOpenGLTextureBlitter::create()
 
     Q_D(QOpenGLTextureBlitter);
 
-    d->vao->create();
-    d->vao->bind();
-
     if (d->program)
         return true;
 
@@ -273,6 +270,9 @@ bool QOpenGLTextureBlitter::create()
 
     d->program->bind();
 
+    // Create and bind the VAO, if supported.
+    QOpenGLVertexArrayObject::Binder vaoBinder(d->vao.data());
+
     d->vertexBuffer.create();
     d->vertexBuffer.bind();
     d->vertexBuffer.allocate(vertex_buffer_data, sizeof(vertex_buffer_data));
@@ -291,8 +291,6 @@ bool QOpenGLTextureBlitter::create()
     d->opacityUniformPos = d->program->uniformLocation("opacity");
 
     d->program->setUniformValue(d->swizzleUniformPos,false);
-
-    d->vao->release();
 
     return true;
 }
@@ -316,7 +314,8 @@ void QOpenGLTextureBlitter::bind()
 {
     Q_D(QOpenGLTextureBlitter);
 
-    d->vao->bind();
+    if (d->vao->isCreated())
+        d->vao->bind();
 
     d->program->bind();
 
@@ -335,7 +334,8 @@ void QOpenGLTextureBlitter::release()
 {
     Q_D(QOpenGLTextureBlitter);
     d->program->release();
-    d->vao->release();
+    if (d->vao->isCreated())
+        d->vao->release();
 }
 
 void QOpenGLTextureBlitter::setSwizzleRB(bool swizzle)

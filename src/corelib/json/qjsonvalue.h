@@ -192,6 +192,33 @@ private:
     struct UnionHelper;
 };
 
+#ifndef Q_QDOC
+// ### Qt 6: Get rid of these fake pointer classes
+class QJsonValuePtr
+{
+    QJsonValue value;
+public:
+    explicit QJsonValuePtr(const QJsonValue& val)
+        : value(val) {}
+
+    QJsonValue& operator*() { return value; }
+    QJsonValue* operator->() { return &value; }
+};
+
+class QJsonValueRefPtr
+{
+    QJsonValueRef valueRef;
+public:
+    QJsonValueRefPtr(QJsonArray *array, int idx)
+        : valueRef(array, idx) {}
+    QJsonValueRefPtr(QJsonObject *object, int idx)
+        : valueRef(object, idx)  {}
+
+    QJsonValueRef& operator*() { return valueRef; }
+    QJsonValueRef* operator->() { return &valueRef; }
+};
+#endif
+
 #if !defined(QT_NO_DEBUG_STREAM) && !defined(QT_JSON_READONLY)
 Q_CORE_EXPORT QDebug operator<<(QDebug, const QJsonValue &);
 #endif

@@ -48,6 +48,7 @@
 
 #include <QtPlatformSupport/private/qgenericunixfontdatabase_p.h>
 #include <QtPlatformSupport/private/qgenericunixeventdispatcher_p.h>
+#include <QtPlatformSupport/private/qgenericunixservices_p.h>
 
 #include <QtGui/private/qpixmap_blitter_p.h>
 #include <QtGui/private/qpixmap_raster_p.h>
@@ -56,11 +57,13 @@
 #include <QtCore/QCoreApplication>
 #include <QtCore/QThread>
 #include <QtCore/QAbstractEventDispatcher>
+#include <qpa/qplatforminputcontextfactory_p.h>
 
 QT_BEGIN_NAMESPACE
 
 QDirectFbIntegration::QDirectFbIntegration()
     : m_fontDb(new QGenericUnixFontDatabase())
+    , m_services(new QGenericUnixServices)
 {
 }
 
@@ -69,6 +72,8 @@ void QDirectFbIntegration::connectToDirectFb()
     initializeDirectFB();
     initializeScreen();
     initializeInput();
+
+    m_inputContext = QPlatformInputContextFactory::create();
 }
 
 bool QDirectFbIntegration::hasCapability(Capability cap) const
@@ -153,6 +158,16 @@ QPlatformBackingStore *QDirectFbIntegration::createPlatformBackingStore(QWindow 
 QPlatformFontDatabase *QDirectFbIntegration::fontDatabase() const
 {
     return m_fontDb.data();
+}
+
+QPlatformServices *QDirectFbIntegration::services() const
+{
+    return m_services.data();
+}
+
+QPlatformNativeInterface *QDirectFbIntegration::nativeInterface() const
+{
+    return const_cast<QDirectFbIntegration *>(this);
 }
 
 QT_END_NAMESPACE

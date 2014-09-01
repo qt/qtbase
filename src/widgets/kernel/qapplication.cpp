@@ -3326,6 +3326,15 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
         {
             QWidget* w = static_cast<QWidget *>(receiver);
             QWheelEvent* wheel = static_cast<QWheelEvent*>(e);
+
+            // QTBUG-40656, combo and other popups should close when the main window gets a wheel event.
+            while (QWidget *popup = QApplication::activePopupWidget()) {
+                if (w->window() != popup)
+                    popup->close();
+                else
+                    break;
+            }
+
             QPoint relpos = wheel->pos();
             bool eventAccepted = wheel->isAccepted();
 
@@ -4343,7 +4352,16 @@ bool QApplicationPrivate::translateRawTouchEvent(QWidget *window,
         }
         Q_ASSERT(target.data() != 0);
 
-        StatesAndTouchPoints &maskAndPoints = widgetsNeedingEvents[static_cast<QWidget *>(target.data())];
+        QWidget *targetWidget = static_cast<QWidget *>(target.data());
+
+#ifdef Q_OS_OSX
+        // Single-touch events are normally not sent unless WA_TouchPadAcceptSingleTouchEvents is set.
+        // In Qt 4 this check was in OS X-only coode. That behavior is preserved here by the #ifdef.
+        if (touchPoints.count() == 1 && !targetWidget->testAttribute(Qt::WA_TouchPadAcceptSingleTouchEvents))
+            continue;
+#endif
+
+        StatesAndTouchPoints &maskAndPoints = widgetsNeedingEvents[targetWidget];
         maskAndPoints.first |= touchPoint.state();
         maskAndPoints.second.append(touchPoint);
     }

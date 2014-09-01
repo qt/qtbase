@@ -629,16 +629,18 @@ void QXcbCursor::queryPointer(QXcbConnection *c, xcb_window_t *rootWin, QPoint *
 
 QPoint QXcbCursor::pos() const
 {
+    const int dpr = int(m_screen->devicePixelRatio());
     QPoint p;
     queryPointer(connection(), 0, &p);
-    return p;
+    return p / dpr;
 }
 
 void QXcbCursor::setPos(const QPoint &pos)
 {
+    const int dpr = int(m_screen->devicePixelRatio());
     xcb_window_t root = 0;
     queryPointer(connection(), &root, 0);
-    xcb_warp_pointer(xcb_connection(), XCB_NONE, root, 0, 0, 0, 0, pos.x(), pos.y());
+    xcb_warp_pointer(xcb_connection(), XCB_NONE, root, 0, 0, 0, 0, pos.x()*dpr, pos.y()*dpr);
     xcb_flush(xcb_connection());
 }
 

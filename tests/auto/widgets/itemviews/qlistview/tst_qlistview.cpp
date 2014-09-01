@@ -155,6 +155,7 @@ private slots:
     void spacing();
     void testScrollToWithHidden();
     void testViewOptions();
+    void taskQTBUG_39902_mutualScrollBars();
 };
 
 // Testing get/set functions
@@ -2235,8 +2236,7 @@ void tst_QListView::taskQTBUG_21804_hiddenItemsAndScrollingWithKeys()
             QTest::keyClick(&lv, Qt::Key_Down);
         else
             QTest::keyClick(&lv, Qt::Key_Right);
-        QTest::qWait(100);
-        QVERIFY(lv.rect().contains(lv.visualRect(lv.currentIndex())));
+        QTRY_VERIFY(lv.rect().contains(lv.visualRect(lv.currentIndex())));
     }
 
     // scroll backward
@@ -2245,8 +2245,7 @@ void tst_QListView::taskQTBUG_21804_hiddenItemsAndScrollingWithKeys()
             QTest::keyClick(&lv, Qt::Key_Up);
         else
             QTest::keyClick(&lv, Qt::Key_Left);
-        QTest::qWait(100);
-        QVERIFY(lv.rect().contains(lv.visualRect(lv.currentIndex())));
+        QTRY_VERIFY(lv.rect().contains(lv.visualRect(lv.currentIndex())));
     }
 
     // scroll forward only half way
@@ -2255,8 +2254,7 @@ void tst_QListView::taskQTBUG_21804_hiddenItemsAndScrollingWithKeys()
             QTest::keyClick(&lv, Qt::Key_Down);
         else
             QTest::keyClick(&lv, Qt::Key_Right);
-        QTest::qWait(100);
-        QVERIFY(lv.rect().contains(lv.visualRect(lv.currentIndex())));
+        QTRY_VERIFY(lv.rect().contains(lv.visualRect(lv.currentIndex())));
     }
 
     // scroll backward again
@@ -2265,8 +2263,7 @@ void tst_QListView::taskQTBUG_21804_hiddenItemsAndScrollingWithKeys()
             QTest::keyClick(&lv, Qt::Key_Up);
         else
             QTest::keyClick(&lv, Qt::Key_Left);
-        QTest::qWait(100);
-        QVERIFY(lv.rect().contains(lv.visualRect(lv.currentIndex())));
+        QTRY_VERIFY(lv.rect().contains(lv.visualRect(lv.currentIndex())));
     }
 }
 
@@ -2357,6 +2354,30 @@ void tst_QListView::testViewOptions()
     view.setViewMode(QListView::IconMode);
     options = view.viewOptions();
     QCOMPARE(options.decorationPosition, QStyleOptionViewItem::Top);
+}
+
+void tst_QListView::taskQTBUG_39902_mutualScrollBars()
+{
+    QWidget window;
+    window.resize(400, 300);
+    QListView *view = new QListView(&window);
+    QStandardItemModel model(200, 1);
+    const QSize itemSize(100, 20);
+    for (int i = 0; i < model.rowCount(); ++i)
+        model.setData(model.index(i, 0), itemSize, Qt::SizeHintRole);
+    view->setModel(&model);
+
+    window.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&window));
+    // make sure QListView is done with layouting the items (1/10 sec, like QListView)
+    QTest::qWait(100);
+
+    model.setRowCount(2);
+    for (int i = 0; i < model.rowCount(); ++i)
+        model.setData(model.index(i, 0), itemSize, Qt::SizeHintRole);
+    view->resize(itemSize.width() + view->frameWidth() * 2, model.rowCount() * itemSize.height() + view->frameWidth() * 2);
+    // this will end up in a stack overflow, if QTBUG-39902 is not fixed
+    QTest::qWait(100);
 }
 
 QTEST_MAIN(tst_QListView)

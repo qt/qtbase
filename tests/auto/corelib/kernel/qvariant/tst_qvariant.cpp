@@ -3646,6 +3646,24 @@ struct ContainerAPI<Container, QString>
     }
 };
 
+template<typename Container>
+struct ContainerAPI<Container, QByteArray>
+{
+    static void insert(Container &container, int value)
+    {
+        container.push_back(QByteArray::number(value));
+    }
+
+    static bool compare(const QVariant &variant, QByteArray value)
+    {
+        return variant.value<QByteArray>() == value;
+    }
+    static bool compare(QVariant variant, const QVariant &value)
+    {
+        return variant == value;
+    }
+};
+
 // We have no built-in defines to check the stdlib features.
 // #define TEST_FORWARD_LIST
 
@@ -3762,12 +3780,12 @@ void tst_QVariant::iterateContainerElements()
 {
 #ifdef Q_COMPILER_RANGE_FOR
 
-#define TEST_RANGE_FOR(CONTAINER, VALUE_TYPE) \
+#define TEST_RANGE_FOR(CONTAINER) \
         numSeen = 0; \
         containerIter = intList.begin(); \
         for (QVariant v : listIter) { \
-            QVERIFY(ContainerAPI<CONTAINER<VALUE_TYPE > >::compare(v, *containerIter)); \
-            QVERIFY(ContainerAPI<CONTAINER<VALUE_TYPE > >::compare(v, varList.at(numSeen))); \
+            QVERIFY(ContainerAPI<CONTAINER >::compare(v, *containerIter)); \
+            QVERIFY(ContainerAPI<CONTAINER >::compare(v, varList.at(numSeen))); \
             ++containerIter; \
             ++numSeen; \
         } \
@@ -3775,17 +3793,17 @@ void tst_QVariant::iterateContainerElements()
 
 #else
 
-#define TEST_RANGE_FOR(CONTAINER, VALUE_TYPE)
+#define TEST_RANGE_FOR(CONTAINER)
 
 #endif
 
-#define TEST_SEQUENTIAL_ITERATION(CONTAINER, VALUE_TYPE) \
+#define TEST_SEQUENTIAL_ITERATION_ON_FULL_NAME(CONTAINER) \
     { \
         int numSeen = 0; \
-        CONTAINER<VALUE_TYPE > intList; \
-        ContainerAPI<CONTAINER<VALUE_TYPE > >::insert(intList, 1); \
-        ContainerAPI<CONTAINER<VALUE_TYPE > >::insert(intList, 2); \
-        ContainerAPI<CONTAINER<VALUE_TYPE > >::insert(intList, 3); \
+        CONTAINER intList; \
+        ContainerAPI<CONTAINER >::insert(intList, 1); \
+        ContainerAPI<CONTAINER >::insert(intList, 2); \
+        ContainerAPI<CONTAINER >::insert(intList, 3); \
         \
         QVariant listVariant = QVariant::fromValue(intList); \
         QVERIFY(listVariant.canConvert<QVariantList>()); \
@@ -3794,12 +3812,12 @@ void tst_QVariant::iterateContainerElements()
         QSequentialIterable listIter = listVariant.value<QSequentialIterable>(); \
         QCOMPARE(varList.size(), listIter.size()); \
         \
-        CONTAINER<VALUE_TYPE >::iterator containerIter = intList.begin(); \
-        const CONTAINER<VALUE_TYPE >::iterator containerEnd = intList.end(); \
+        CONTAINER::iterator containerIter = intList.begin(); \
+        const CONTAINER::iterator containerEnd = intList.end(); \
         for (int i = 0; i < listIter.size(); ++i, ++containerIter, ++numSeen) \
         { \
-            QVERIFY(ContainerAPI<CONTAINER<VALUE_TYPE > >::compare(listIter.at(i), *containerIter)); \
-            QVERIFY(ContainerAPI<CONTAINER<VALUE_TYPE > >::compare(listIter.at(i), varList.at(i))); \
+            QVERIFY(ContainerAPI<CONTAINER >::compare(listIter.at(i), *containerIter)); \
+            QVERIFY(ContainerAPI<CONTAINER >::compare(listIter.at(i), varList.at(i))); \
         } \
         QCOMPARE(numSeen, (int)std::distance(intList.begin(), intList.end())); \
         QCOMPARE(containerIter, containerEnd); \
@@ -3807,14 +3825,18 @@ void tst_QVariant::iterateContainerElements()
         containerIter = intList.begin(); \
         numSeen = 0; \
         Q_FOREACH (const QVariant &v, listIter) { \
-            QVERIFY(ContainerAPI<CONTAINER<VALUE_TYPE > >::compare(v, *containerIter)); \
-            QVERIFY(ContainerAPI<CONTAINER<VALUE_TYPE > >::compare(v, varList.at(numSeen))); \
+            QVERIFY(ContainerAPI<CONTAINER >::compare(v, *containerIter)); \
+            QVERIFY(ContainerAPI<CONTAINER >::compare(v, varList.at(numSeen))); \
             ++containerIter; \
             ++numSeen; \
         } \
         QCOMPARE(numSeen, (int)std::distance(intList.begin(), intList.end())); \
-        TEST_RANGE_FOR(CONTAINER, VALUE_TYPE) \
+        TEST_RANGE_FOR(CONTAINER) \
     }
+
+#define TEST_SEQUENTIAL_ITERATION(CONTAINER, VALUE_TYPE) \
+    TEST_SEQUENTIAL_ITERATION_ON_FULL_NAME(CONTAINER<VALUE_TYPE > )
+
 
     TEST_SEQUENTIAL_ITERATION(QVector, int)
     TEST_SEQUENTIAL_ITERATION(QVector, QVariant)
@@ -3825,6 +3847,7 @@ void tst_QVariant::iterateContainerElements()
     TEST_SEQUENTIAL_ITERATION(QList, int)
     TEST_SEQUENTIAL_ITERATION(QList, QVariant)
     TEST_SEQUENTIAL_ITERATION(QList, QString)
+    TEST_SEQUENTIAL_ITERATION(QList, QByteArray)
     TEST_SEQUENTIAL_ITERATION(QStack, int)
     TEST_SEQUENTIAL_ITERATION(QStack, QVariant)
     TEST_SEQUENTIAL_ITERATION(QStack, QString)
@@ -3834,6 +3857,8 @@ void tst_QVariant::iterateContainerElements()
     TEST_SEQUENTIAL_ITERATION(std::list, int)
     TEST_SEQUENTIAL_ITERATION(std::list, QVariant)
     TEST_SEQUENTIAL_ITERATION(std::list, QString)
+    TEST_SEQUENTIAL_ITERATION_ON_FULL_NAME(QStringList)
+    TEST_SEQUENTIAL_ITERATION_ON_FULL_NAME(QByteArrayList)
 
 #ifdef TEST_FORWARD_LIST
     TEST_SEQUENTIAL_ITERATION(std::forward_list, int)

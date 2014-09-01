@@ -51,8 +51,11 @@
 #include <qglobal.h>
 #include <QDoubleSpinBox>
 #include <QDial>
+#include <QtWidgets/qlineedit.h>
 #include <qmath.h>
 #include <private/qmath_p.h>
+
+#include "simplewidgets.h" // let spinbox use line edit's interface
 
 QT_BEGIN_NAMESPACE
 
@@ -60,9 +63,14 @@ QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_SPINBOX
 QAccessibleAbstractSpinBox::QAccessibleAbstractSpinBox(QWidget *w)
-: QAccessibleWidget(w, QAccessible::SpinBox)
+: QAccessibleWidget(w, QAccessible::SpinBox), lineEdit(Q_NULLPTR)
 {
     Q_ASSERT(abstractSpinBox());
+}
+
+QAccessibleAbstractSpinBox::~QAccessibleAbstractSpinBox()
+{
+    delete lineEdit;
 }
 
 /*!
@@ -71,6 +79,14 @@ QAccessibleAbstractSpinBox::QAccessibleAbstractSpinBox(QWidget *w)
 QAbstractSpinBox *QAccessibleAbstractSpinBox::abstractSpinBox() const
 {
     return qobject_cast<QAbstractSpinBox*>(object());
+}
+
+QAccessibleInterface *QAccessibleAbstractSpinBox::lineEditIface() const
+{
+    // QAccessibleLineEdit is only used to forward the text functions
+    if (!lineEdit)
+        lineEdit = new QAccessibleLineEdit(abstractSpinBox()->lineEdit());
+    return lineEdit;
 }
 
 QString QAccessibleAbstractSpinBox::text(QAccessible::Text t) const
@@ -84,6 +100,10 @@ void *QAccessibleAbstractSpinBox::interface_cast(QAccessible::InterfaceType t)
 {
     if (t == QAccessible::ValueInterface)
         return static_cast<QAccessibleValueInterface*>(this);
+    if (t == QAccessible::TextInterface)
+        return static_cast<QAccessibleTextInterface*>(this);
+    if (t == QAccessible::EditableTextInterface)
+        return static_cast<QAccessibleEditableTextInterface*>(this);
     return QAccessibleWidget::interface_cast(t);
 }
 
@@ -111,6 +131,102 @@ QVariant QAccessibleAbstractSpinBox::minimumStepSize() const
 {
     return abstractSpinBox()->property("stepSize");
 }
+
+void QAccessibleAbstractSpinBox::addSelection(int startOffset, int endOffset)
+{
+    lineEditIface()->textInterface()->addSelection(startOffset, endOffset);
+}
+
+QString QAccessibleAbstractSpinBox::attributes(int offset, int *startOffset, int *endOffset) const
+{
+    return lineEditIface()->textInterface()->attributes(offset, startOffset, endOffset);
+}
+
+int QAccessibleAbstractSpinBox::cursorPosition() const
+{
+    return lineEditIface()->textInterface()->cursorPosition();
+}
+
+QRect QAccessibleAbstractSpinBox::characterRect(int offset) const
+{
+    return lineEditIface()->textInterface()->characterRect(offset);
+}
+
+int QAccessibleAbstractSpinBox::selectionCount() const
+{
+    return lineEditIface()->textInterface()->selectionCount();
+}
+
+int QAccessibleAbstractSpinBox::offsetAtPoint(const QPoint &point) const
+{
+    return lineEditIface()->textInterface()->offsetAtPoint(point);
+}
+
+void QAccessibleAbstractSpinBox::selection(int selectionIndex, int *startOffset, int *endOffset) const
+{
+    lineEditIface()->textInterface()->selection(selectionIndex, startOffset, endOffset);
+}
+
+QString QAccessibleAbstractSpinBox::text(int startOffset, int endOffset) const
+{
+    return lineEditIface()->textInterface()->text(startOffset, endOffset);
+}
+
+QString QAccessibleAbstractSpinBox::textBeforeOffset(int offset, QAccessible::TextBoundaryType boundaryType, int *startOffset, int *endOffset) const
+{
+    return lineEditIface()->textInterface()->textBeforeOffset(offset, boundaryType, startOffset, endOffset);
+}
+
+QString QAccessibleAbstractSpinBox::textAfterOffset(int offset, QAccessible::TextBoundaryType boundaryType, int *startOffset, int *endOffset) const
+{
+    return lineEditIface()->textInterface()->textAfterOffset(offset, boundaryType, startOffset, endOffset);
+}
+
+QString QAccessibleAbstractSpinBox::textAtOffset(int offset, QAccessible::TextBoundaryType boundaryType, int *startOffset, int *endOffset) const
+{
+    return lineEditIface()->textInterface()->textAtOffset(offset, boundaryType, startOffset, endOffset);
+}
+
+void QAccessibleAbstractSpinBox::removeSelection(int selectionIndex)
+{
+    lineEditIface()->textInterface()->removeSelection(selectionIndex);
+}
+
+void QAccessibleAbstractSpinBox::setCursorPosition(int position)
+{
+    lineEditIface()->textInterface()->setCursorPosition(position);
+}
+
+void QAccessibleAbstractSpinBox::setSelection(int selectionIndex, int startOffset, int endOffset)
+{
+    lineEditIface()->textInterface()->setSelection(selectionIndex, startOffset, endOffset);
+}
+
+int QAccessibleAbstractSpinBox::characterCount() const
+{
+    return lineEditIface()->textInterface()->characterCount();
+}
+
+void QAccessibleAbstractSpinBox::scrollToSubstring(int startIndex, int endIndex)
+{
+    lineEditIface()->textInterface()->scrollToSubstring(startIndex, endIndex);
+}
+
+void QAccessibleAbstractSpinBox::deleteText(int startOffset, int endOffset)
+{
+    lineEditIface()->editableTextInterface()->deleteText(startOffset, endOffset);
+}
+
+void QAccessibleAbstractSpinBox::insertText(int offset, const QString &text)
+{
+    lineEditIface()->editableTextInterface()->insertText(offset, text);
+}
+
+void QAccessibleAbstractSpinBox::replaceText(int startOffset, int endOffset, const QString &text)
+{
+    lineEditIface()->editableTextInterface()->replaceText(startOffset, endOffset, text);
+}
+
 
 /*!
   \class QAccessibleSpinBox

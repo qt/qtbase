@@ -55,12 +55,18 @@ class QSlider;
 class QSpinBox;
 class QDoubleSpinBox;
 class QDial;
+class QAccessibleLineEdit;
 
 #ifndef QT_NO_SPINBOX
-class QAccessibleAbstractSpinBox: public QAccessibleWidget, public QAccessibleValueInterface // TODO, public QAccessibleActionInterface
+class QAccessibleAbstractSpinBox:
+        public QAccessibleWidget,
+        public QAccessibleValueInterface,
+        public QAccessibleTextInterface,
+        public QAccessibleEditableTextInterface
 {
 public:
     explicit QAccessibleAbstractSpinBox(QWidget *w);
+    virtual ~QAccessibleAbstractSpinBox();
 
     QString text(QAccessible::Text t) const Q_DECL_OVERRIDE;
     void *interface_cast(QAccessible::InterfaceType t) Q_DECL_OVERRIDE;
@@ -72,10 +78,37 @@ public:
     QVariant minimumValue() const Q_DECL_OVERRIDE;
     QVariant minimumStepSize() const Q_DECL_OVERRIDE;
 
-    // FIXME Action interface
+    // QAccessibleTextInterface
+    void addSelection(int startOffset, int endOffset) Q_DECL_OVERRIDE;
+    QString attributes(int offset, int *startOffset, int *endOffset) const Q_DECL_OVERRIDE;
+    int cursorPosition() const Q_DECL_OVERRIDE;
+    QRect characterRect(int offset) const Q_DECL_OVERRIDE;
+    int selectionCount() const Q_DECL_OVERRIDE;
+    int offsetAtPoint(const QPoint &point) const Q_DECL_OVERRIDE;
+    void selection(int selectionIndex, int *startOffset, int *endOffset) const Q_DECL_OVERRIDE;
+    QString text(int startOffset, int endOffset) const Q_DECL_OVERRIDE;
+    QString textBeforeOffset (int offset, QAccessible::TextBoundaryType boundaryType,
+            int *endOffset, int *startOffset) const Q_DECL_OVERRIDE;
+    QString textAfterOffset(int offset, QAccessible::TextBoundaryType boundaryType,
+            int *startOffset, int *endOffset) const Q_DECL_OVERRIDE;
+    QString textAtOffset(int offset, QAccessible::TextBoundaryType boundaryType,
+            int *startOffset, int *endOffset) const Q_DECL_OVERRIDE;
+    void removeSelection(int selectionIndex) Q_DECL_OVERRIDE;
+    void setCursorPosition(int position) Q_DECL_OVERRIDE;
+    void setSelection(int selectionIndex, int startOffset, int endOffset) Q_DECL_OVERRIDE;
+    int characterCount() const Q_DECL_OVERRIDE;
+    void scrollToSubstring(int startIndex, int endIndex) Q_DECL_OVERRIDE;
+
+    // QAccessibleEditableTextInterface
+    void deleteText(int startOffset, int endOffset) Q_DECL_OVERRIDE;
+    void insertText(int offset, const QString &text) Q_DECL_OVERRIDE;
+    void replaceText(int startOffset, int endOffset, const QString &text) Q_DECL_OVERRIDE;
 
 protected:
     QAbstractSpinBox *abstractSpinBox() const;
+    QAccessibleInterface *lineEditIface() const;
+private:
+    mutable QAccessibleLineEdit *lineEdit;
 };
 
 class QAccessibleSpinBox : public QAccessibleAbstractSpinBox
@@ -94,6 +127,7 @@ public:
 
     QString text(QAccessible::Text t) const Q_DECL_OVERRIDE;
 
+    using QAccessibleAbstractSpinBox::text;
 protected:
     QDoubleSpinBox *doubleSpinBox() const;
 };

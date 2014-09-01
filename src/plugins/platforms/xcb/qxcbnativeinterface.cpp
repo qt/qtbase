@@ -85,7 +85,8 @@ static int resourceType(const QByteArray &key)
         QByteArrayLiteral("appusertime"), QByteArrayLiteral("hintstyle"),
         QByteArrayLiteral("startupid"), QByteArrayLiteral("traywindow"),
         QByteArrayLiteral("gettimestamp"), QByteArrayLiteral("x11screen"),
-        QByteArrayLiteral("rootwindow")
+        QByteArrayLiteral("rootwindow"),
+        QByteArrayLiteral("subpixeltype"), QByteArrayLiteral("antialiasingEnabled")
     };
     const QByteArray *end = names + sizeof(names) / sizeof(names[0]);
     const QByteArray *result = std::find(names, end, key);
@@ -276,6 +277,12 @@ void *QXcbNativeInterface::nativeResourceForScreen(const QByteArray &resource, Q
         break;
     case ScreenHintStyle:
         result = reinterpret_cast<void *>(xcbScreen->hintStyle() + 1);
+        break;
+    case ScreenSubpixelType:
+        result = reinterpret_cast<void *>(xcbScreen->subpixelType() + 1);
+        break;
+    case ScreenAntialiasingEnabled:
+        result = reinterpret_cast<void *>(xcbScreen->antialiasingEnabled() + 1);
         break;
     case TrayWindow:
         if (QXcbSystemTrayTracker *s = systemTrayTracker(screen))

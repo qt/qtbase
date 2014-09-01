@@ -3495,11 +3495,13 @@ static const char *eventClassName(QEvent::Type t)
         return "QCloseEvent";
     case QEvent::FileOpen:
         return "QFileOpenEvent";
+#ifndef QT_NO_GESTURES
     case QEvent::NativeGesture:
         return "QNativeGestureEvent";
     case QEvent::Gesture:
     case QEvent::GestureOverride:
         return "QGestureEvent";
+#endif
     case QEvent::HoverEnter:
     case QEvent::HoverLeave:
     case QEvent::HoverMove:
@@ -3595,6 +3597,14 @@ public:
         static const int enumIdx = QObject::staticQtMetaObject.indexOfEnumerator("FocusReason");
         return QObject::staticQtMetaObject.enumerator(enumIdx).valueToKey(reason);
     }
+
+#  ifndef QT_NO_GESTURES
+    static const char *nativeGestureTypeToString(Qt::NativeGestureType type)
+    {
+        static const int enumIdx = QObject::staticQtMetaObject.indexOfEnumerator("NativeGestureType");
+        return QObject::staticQtMetaObject.enumerator(enumIdx).valueToKey(type);
+    }
+#  endif // !QT_NO_GESTURES
 };
 } // namespace
 
@@ -3775,7 +3785,8 @@ QDebug operator<<(QDebug dbg, const QEvent *e)
 #  ifndef QT_NO_GESTURES
     case QEvent::NativeGesture: {
         const QNativeGestureEvent *ne = static_cast<const QNativeGestureEvent *>(e);
-        dbg << "QNativeGestureEvent(localPos=" << ne->localPos() << ", value=" << ne->value() << ')';
+        dbg << "QNativeGestureEvent(" << DebugHelper::nativeGestureTypeToString(ne->gestureType())
+            << "localPos=" << ne->localPos() << ", value=" << ne->value() << ')';
     }
          break;
 #  endif // !QT_NO_GESTURES

@@ -106,7 +106,7 @@ private:
     void writeNode(HelpProject &project, QXmlStreamWriter &writer, const Node *node);
     void readSelectors(SubProject &subproject, const QStringList &selectors);
     void addMembers(HelpProject &project, QXmlStreamWriter &writer,
-                           const Node *node, bool writeSections = true);
+                           const Node *node);
     void writeSection(QXmlStreamWriter &writer, const QString &path,
                             const QString &value);
 

@@ -81,6 +81,7 @@ static NSButton *macCreateButton(const char *text, NSView *superview)
     NSInteger mResultCode;
     BOOL mDialogIsExecuting;
     BOOL mResultSet;
+    BOOL mClosingDueToKnownButton;
 };
 - (void)restoreOriginalContentView;
 - (void)relayout;
@@ -103,6 +104,7 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSColorPanelDelegate);
     mResultCode = NSCancelButton;
     mDialogIsExecuting = false;
     mResultSet = false;
+    mClosingDueToKnownButton = false;
 
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
     if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_7)
@@ -113,6 +115,11 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSColorPanelDelegate);
         selector:@selector(colorChanged:)
         name:NSColorPanelColorDidChangeNotification
         object:mColorPanel];
+
+    [[NSNotificationCenter defaultCenter] addObserver:self
+      selector:@selector(windowWillClose:)
+      name:NSWindowWillCloseNotification
+      object:mColorPanel];
 
     [mColorPanel retain];
     return self;
@@ -177,6 +184,15 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSColorPanelDelegate);
     [self updateQtColor];
     if (mHelper)
         emit mHelper->colorSelected(mQtColor);
+}
+
+- (void)windowWillClose:(NSNotification *)notification
+{
+    Q_UNUSED(notification);
+    if (mCancelButton && mHelper && !mClosingDueToKnownButton) {
+        mClosingDueToKnownButton = true; // prevent repeating emit
+        emit mHelper->reject();
+    }
 }
 
 - (void)restoreOriginalContentView
@@ -246,6 +262,7 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSColorPanelDelegate);
 
 - (void)onOkClicked
 {
+    mClosingDueToKnownButton = true;
     [mColorPanel close];
     [self updateQtColor];
     [self finishOffWithCode:NSOKButton];
@@ -254,6 +271,7 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSColorPanelDelegate);
 - (void)onCancelClicked
 {
     if (mOkButton) {
+        mClosingDueToKnownButton = true;
         [mColorPanel close];
         mQtColor = QColor();
         [self finishOffWithCode:NSCancelButton];
@@ -298,6 +316,7 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSColorPanelDelegate);
 {
     mDialogIsExecuting = false;
     mResultSet = false;
+    mClosingDueToKnownButton = false;
     [mColorPanel makeKeyAndOrderFront:mColorPanel];
 }
 

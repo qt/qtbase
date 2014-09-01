@@ -275,15 +275,6 @@ QPlatformScreen * QPlatformScreen::platformScreenForWindow(const QWindow *window
 */
 
 /*!
-  Implemented in subclasses to return a page flipper object for the screen, or 0 if the
-  hardware does not support page flipping. The default implementation returns 0.
- */
-QPlatformScreenPageFlipper *QPlatformScreen::pageFlipper() const
-{
-    return 0;
-}
-
-/*!
     Reimplement this function in subclass to return the cursor of the screen.
 
     The default implementation returns 0.

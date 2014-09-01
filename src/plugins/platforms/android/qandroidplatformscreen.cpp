@@ -48,9 +48,9 @@
 #include "qandroidplatformscreen.h"
 #include "qandroidplatformbackingstore.h"
 #include "qandroidplatformintegration.h"
+#include "qandroidplatformwindow.h"
 #include "androidjnimain.h"
 #include "androidjnimenu.h"
-#include "qandroidplatformrasterwindow.h"
 
 #include <android/bitmap.h>
 #include <android/native_window_jni.h>
@@ -58,6 +58,7 @@
 
 #include <QtGui/QGuiApplication>
 #include <QtGui/QWindow>
+#include <QtGui/private/qwindow_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -291,6 +292,19 @@ void QAndroidPlatformScreen::doRedraw()
     if (m_dirtyRect.isEmpty())
         return;
 
+    // Stop if there no visible raster windows. This is important because if we only have
+    // RasterGLSurface windows that have renderToTexture children (i.e. they need the
+    // OpenGL path) then we must bail out right now.
+    bool hasVisibleRasterWindows = false;
+    foreach (QAndroidPlatformWindow *window, m_windowStack) {
+        if (window->window()->isVisible() && window->isRaster() && !qt_window_private(window->window())->compositing) {
+            hasVisibleRasterWindows = true;
+            break;
+        }
+    }
+    if (!hasVisibleRasterWindows)
+        return;
+
     QMutexLocker lock(&m_surfaceMutex);
     if (m_id == -1 && m_rasterSurfaces) {
         m_id = QtAndroid::createSurface(this, m_availableGeometry, true, m_depth);
@@ -343,7 +357,7 @@ void QAndroidPlatformScreen::doRedraw()
 
             visibleRegion -= targetRect;
             QRect windowRect = targetRect.translated(-window->geometry().topLeft());
-            QAndroidPlatformBackingStore *backingStore = static_cast<QAndroidPlatformRasterWindow *>(window)->backingStore();
+            QAndroidPlatformBackingStore *backingStore = static_cast<QAndroidPlatformWindow *>(window)->backingStore();
             if (backingStore)
                 compositePainter.drawImage(targetRect.topLeft(), backingStore->toImage(), windowRect);
         }

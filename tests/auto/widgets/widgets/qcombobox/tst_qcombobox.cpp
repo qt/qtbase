@@ -53,6 +53,7 @@
 #include <qdialog.h>
 #include <qevent.h>
 #include <qlineedit.h>
+#include <qlabel.h>
 #include <qlistview.h>
 #include <qheaderview.h>
 #include <qlistwidget.h>
@@ -131,6 +132,7 @@ private slots:
     void pixmapIcon();
     void mouseWheel_data();
     void mouseWheel();
+    void wheelClosingPopup();
     void layoutDirection();
     void itemListPosition();
     void separatorItem_data();
@@ -2039,6 +2041,32 @@ void tst_QComboBox::mouseWheel()
 
         QCOMPARE(box.currentIndex(), expectedIndex);
     }
+}
+
+void tst_QComboBox::wheelClosingPopup()
+{
+    // QTBUG-40656, combo and other popups should close when the main window gets a wheel event.
+    QScrollArea scrollArea;
+    scrollArea.move(300, 300);
+    QWidget *widget = new QWidget;
+    scrollArea.setWidget(widget);
+    QVBoxLayout *layout = new QVBoxLayout(widget);
+    layout->setSizeConstraint(QLayout::SetMinAndMaxSize);
+    layout->addSpacing(100);
+    QComboBox *comboBox = new QComboBox;
+    comboBox->addItems(QStringList() << QStringLiteral("Won") << QStringLiteral("Too")
+                       << QStringLiteral("3") << QStringLiteral("fore"));
+    layout->addWidget(comboBox);
+    layout->addSpacing(100);
+    const QPoint sizeP(scrollArea.width(), scrollArea.height());
+    scrollArea.move(QGuiApplication::primaryScreen()->availableGeometry().center() - sizeP / 2);
+    scrollArea.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&scrollArea));
+    comboBox->showPopup();
+    QTRY_VERIFY(comboBox->view() && comboBox->view()->isVisible());
+    QWheelEvent event(QPointF(10, 10), WHEEL_DELTA, Qt::NoButton, Qt::NoModifier);
+    QVERIFY(QCoreApplication::sendEvent(scrollArea.windowHandle(), &event));
+    QTRY_VERIFY(!comboBox->view()->isVisible());
 }
 
 void tst_QComboBox::layoutDirection()

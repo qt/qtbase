@@ -880,7 +880,12 @@ public:
     int control;
 };
 
-#  ifdef Q_COMPILER_DECLTYPE
+// We need to use __typeof__ if we don't have decltype or if the compiler
+// hasn't been updated to the fix of Core Language Defect Report 382
+// (http://www.open-std.org/jtc1/sc22/wg21/docs/cwg_defects.html#382).
+// GCC 4.3 and 4.4 have support for decltype, but are affected by DR 382.
+#  if defined(Q_COMPILER_DECLTYPE) && \
+    (defined(Q_CC_CLANG) || defined(Q_CC_INTEL) || !defined(Q_CC_GNU) || (__GNUC__ * 100 + __GNUC_MINOR__) >= 405)
 #    define QT_FOREACH_DECLTYPE(x) typename QtPrivate::remove_reference<decltype(x)>::type
 #  else
 #    define QT_FOREACH_DECLTYPE(x) __typeof__((x))

@@ -184,6 +184,7 @@ QT_BEGIN_NAMESPACE
     \value MouseMove                        Mouse move (QMouseEvent).
     \value MouseTrackingChange              The mouse tracking state has changed.
     \value Move                             Widget's position changed (QMoveEvent).
+    \value NativeGesture                    The system has detected a gesture (QNativeGestureEvent).
     \value OrientationChange                The screens orientation has changes (QScreenOrientationChangeEvent)
     \value Paint                            Screen update necessary (QPaintEvent).
     \value PaletteChange                    Palette of the widget changed.

@@ -154,6 +154,30 @@ enum QX11EmbedMessageType {
 
 const quint32 XEMBED_VERSION = 0;
 
+static inline QRect mapToNative(const QRect &qtRect, int dpr)
+{
+    return QRect(qtRect.x() * dpr, qtRect.y() * dpr, qtRect.width() * dpr, qtRect.height() * dpr);
+}
+
+// When converting native rects to Qt rects: round top/left towards the origin and
+// bottom/right away from the origin, making sure that we cover the whole widget
+
+static inline QPoint dpr_floor(const QPoint &p, int dpr)
+{
+    return QPoint(p.x()/dpr, p.y()/dpr);
+}
+
+static inline QPoint dpr_ceil(const QPoint &p, int dpr)
+{
+    return QPoint((p.x() + dpr - 1) / dpr, (p.y() + dpr - 1) / dpr);
+}
+
+static inline QRect mapFromNative(const QRect &xRect, int dpr)
+{
+    return QRect(dpr_floor(xRect.topLeft(), dpr), dpr_ceil(xRect.bottomRight(), dpr));
+}
+
+
 // Returns \c true if we should set WM_TRANSIENT_FOR on \a w
 static inline bool isTransient(const QWindow *w)
 {
@@ -288,11 +312,12 @@ void QXcbWindow::create()
     // currently no way to implement it for frame-exclusive geometries.
     QRect rect = window()->geometry();
     QPlatformWindow::setGeometry(rect);
+    const int dpr = int(devicePixelRatio());
 
     QSize minimumSize = window()->minimumSize();
     if (rect.width() > 0 || rect.height() > 0) {
-        rect.setWidth(qBound(1, rect.width(), XCOORD_MAX));
-        rect.setHeight(qBound(1, rect.height(), XCOORD_MAX));
+        rect.setWidth(qBound(1, rect.width(), XCOORD_MAX/dpr));
+        rect.setHeight(qBound(1, rect.height(), XCOORD_MAX/dpr));
     } else if (minimumSize.width() > 0 || minimumSize.height() > 0) {
         rect.setSize(minimumSize);
     } else {
@@ -350,7 +375,9 @@ void QXcbWindow::create()
 
             m_visualId = visualInfo->visualid;
 
-            m_window = XCreateWindow(DISPLAY_FROM_XCB(this), xcb_parent_id, rect.x(), rect.y(), rect.width(), rect.height(),
+            const QRect xRect = mapToNative(rect, dpr);
+
+            m_window = XCreateWindow(DISPLAY_FROM_XCB(this), xcb_parent_id, xRect.x(), xRect.y(), xRect.width(), xRect.height(),
                                       0, visualInfo->depth, InputOutput, visualInfo->visual,
                                       CWBackPixel|CWBorderPixel|CWColormap, &a);
 
@@ -561,7 +588,9 @@ void QXcbWindow::setGeometry(const QRect &rect)
     QPlatformWindow::setGeometry(rect);
 
     propagateSizeHints();
-    const QRect wmGeometry = windowToWmGeometry(rect);
+
+    const QRect xRect = mapToNative(rect, int(devicePixelRatio()));
+    const QRect wmGeometry = windowToWmGeometry(xRect);
 
     if (qt_window_private(window())->positionAutomatic) {
         const quint32 mask = XCB_CONFIG_WINDOW_WIDTH | XCB_CONFIG_WINDOW_HEIGHT;
@@ -1444,23 +1473,26 @@ void QXcbWindow::propagateSizeHints()
     xcb_size_hints_t hints;
     memset(&hints, 0, sizeof(hints));
 
-    const QRect rect = windowToWmGeometry(geometry());
+    const int dpr = int(devicePixelRatio());
+    const QRect xRect = mapToNative(windowToWmGeometry(geometry()), dpr);
 
     QWindow *win = window();
 
     if (!qt_window_private(win)->positionAutomatic)
-        xcb_size_hints_set_position(&hints, true, rect.x(), rect.y());
-    if (rect.width() < QWINDOWSIZE_MAX || rect.height() < QWINDOWSIZE_MAX)
-        xcb_size_hints_set_size(&hints, true, rect.width(), rect.height());
+        xcb_size_hints_set_position(&hints, true, xRect.x(), xRect.y());
+    if (xRect.width() < QWINDOWSIZE_MAX || xRect.height() < QWINDOWSIZE_MAX)
+        xcb_size_hints_set_size(&hints, true, xRect.width(), xRect.height());
     xcb_size_hints_set_win_gravity(&hints, m_gravity);
 
-    QSize minimumSize = win->minimumSize();
-    QSize maximumSize = win->maximumSize();
-    QSize baseSize = win->baseSize();
-    QSize sizeIncrement = win->sizeIncrement();
+    QSize minimumSize = win->minimumSize() * dpr;
+    QSize maximumSize = win->maximumSize() * dpr;
+    QSize baseSize = win->baseSize() * dpr;
+    QSize sizeIncrement = win->sizeIncrement() * dpr;
 
     if (minimumSize.width() > 0 || minimumSize.height() > 0)
-        xcb_size_hints_set_min_size(&hints, minimumSize.width(), minimumSize.height());
+        xcb_size_hints_set_min_size(&hints,
+                                    qMin(XCOORD_MAX,minimumSize.width()),
+                                    qMin(XCOORD_MAX,minimumSize.height()));
 
     if (maximumSize.width() < QWINDOWSIZE_MAX || maximumSize.height() < QWINDOWSIZE_MAX)
         xcb_size_hints_set_max_size(&hints,
@@ -1664,9 +1696,10 @@ void QXcbWindow::setWmWindowType(QXcbWindowFunctions::WmWindowTypes types)
 class ExposeCompressor
 {
 public:
-    ExposeCompressor(xcb_window_t window, QRegion *region)
+    ExposeCompressor(xcb_window_t window, QRegion *region, int devicePixelRatio)
         : m_window(window)
         , m_region(region)
+        , m_dpr(devicePixelRatio)
         , m_pending(true)
     {
     }
@@ -1682,7 +1715,7 @@ public:
             return false;
         if (expose->count == 0)
             m_pending = false;
-        *m_region |= QRect(expose->x, expose->y, expose->width, expose->height);
+        *m_region |= mapFromNative(QRect(expose->x, expose->y, expose->width, expose->height), m_dpr);
         return true;
     }
 
@@ -1694,6 +1727,7 @@ public:
 private:
     xcb_window_t m_window;
     QRegion *m_region;
+    int m_dpr;
     bool m_pending;
 };
 
@@ -1707,14 +1741,16 @@ bool QXcbWindow::handleGenericEvent(xcb_generic_event_t *event, long *result)
 
 void QXcbWindow::handleExposeEvent(const xcb_expose_event_t *event)
 {
-    QRect rect(event->x, event->y, event->width, event->height);
+    const int dpr = int(devicePixelRatio());
+    QRect x_rect(event->x, event->y, event->width, event->height);
+    QRect rect = mapFromNative(x_rect, dpr);
 
     if (m_exposeRegion.isEmpty())
         m_exposeRegion = rect;
     else
         m_exposeRegion |= rect;
 
-    ExposeCompressor compressor(m_window, &m_exposeRegion);
+    ExposeCompressor compressor(m_window, &m_exposeRegion, dpr);
     xcb_generic_event_t *filter = 0;
     do {
         filter = connection()->checkEvent(compressor);
@@ -1808,7 +1844,7 @@ void QXcbWindow::handleConfigureNotifyEvent(const xcb_configure_notify_event_t *
         }
     }
 
-    QRect rect(pos, QSize(event->width, event->height));
+    QRect rect = mapFromNative(QRect(pos, QSize(event->width, event->height)), int(devicePixelRatio()));
 
     QPlatformWindow::setGeometry(rect);
     QWindowSystemInterface::handleGeometryChange(window(), rect);
@@ -1850,15 +1886,16 @@ QPoint QXcbWindow::mapToGlobal(const QPoint &pos) const
     if (!m_embedded)
         return pos;
 
+    const int dpr = int(devicePixelRatio());
     QPoint ret;
     xcb_translate_coordinates_cookie_t cookie =
         xcb_translate_coordinates(xcb_connection(), xcb_window(), m_screen->root(),
-                                  pos.x(), pos.y());
+                                  pos.x() * dpr, pos.y() * dpr);
     xcb_translate_coordinates_reply_t *reply =
         xcb_translate_coordinates_reply(xcb_connection(), cookie, NULL);
     if (reply) {
-        ret.setX(reply->dst_x);
-        ret.setY(reply->dst_y);
+        ret.setX(reply->dst_x / dpr);
+        ret.setY(reply->dst_y / dpr);
         free(reply);
     }
 
@@ -1869,15 +1906,17 @@ QPoint QXcbWindow::mapFromGlobal(const QPoint &pos) const
 {
     if (!m_embedded)
         return pos;
+
+    const int dpr = int(devicePixelRatio());
     QPoint ret;
     xcb_translate_coordinates_cookie_t cookie =
         xcb_translate_coordinates(xcb_connection(), m_screen->root(), xcb_window(),
-                                  pos.x(), pos.y());
+                                  pos.x() *dpr, pos.y() * dpr);
     xcb_translate_coordinates_reply_t *reply =
         xcb_translate_coordinates_reply(xcb_connection(), cookie, NULL);
     if (reply) {
-        ret.setX(reply->dst_x);
-        ret.setY(reply->dst_y);
+        ret.setX(reply->dst_x / dpr);
+        ret.setY(reply->dst_y / dpr);
         free(reply);
     }
 
@@ -1893,7 +1932,7 @@ void QXcbWindow::handleMapNotifyEvent(const xcb_map_notify_event_t *event)
         if (m_configureNotifyPending)
             m_deferredExpose = true;
         else
-            QWindowSystemInterface::handleExposeEvent(window(), QRect(QPoint(), geometry().size()));
+            QWindowSystemInterface::handleExposeEvent(window(), QRect(QPoint(), geometry().size() * int(devicePixelRatio())));
     }
 }
 
@@ -1924,9 +1963,9 @@ void QXcbWindow::handleButtonPressEvent(const xcb_button_press_event_t *event)
             sendXEmbedMessage(container->xcb_window(), XEMBED_REQUEST_FOCUS);
         }
     }
-
-    QPoint local(event->event_x, event->event_y);
-    QPoint global(event->root_x, event->root_y);
+    const int dpr = int(devicePixelRatio());
+    QPoint local(event->event_x/dpr, event->event_y/dpr);
+    QPoint global(event->root_x/dpr, event->root_y/dpr);
 
     Qt::KeyboardModifiers modifiers = connection()->keyboard()->translateModifiers(event->state);
 
@@ -1949,8 +1988,9 @@ void QXcbWindow::handleButtonPressEvent(const xcb_button_press_event_t *event)
 
 void QXcbWindow::handleButtonReleaseEvent(const xcb_button_release_event_t *event)
 {
-    QPoint local(event->event_x, event->event_y);
-    QPoint global(event->root_x, event->root_y);
+    const int dpr = int(devicePixelRatio());
+    QPoint local(event->event_x/dpr, event->event_y/dpr);
+    QPoint global(event->root_x/dpr, event->root_y/dpr);
     Qt::KeyboardModifiers modifiers = connection()->keyboard()->translateModifiers(event->state);
 
     if (event->detail >= 4 && event->detail <= 7) {
@@ -1963,8 +2003,9 @@ void QXcbWindow::handleButtonReleaseEvent(const xcb_button_release_event_t *even
 
 void QXcbWindow::handleMotionNotifyEvent(const xcb_motion_notify_event_t *event)
 {
-    QPoint local(event->event_x, event->event_y);
-    QPoint global(event->root_x, event->root_y);
+    const int dpr = int(devicePixelRatio());
+    QPoint local(event->event_x/dpr, event->event_y/dpr);
+    QPoint global(event->root_x/dpr, event->root_y/dpr);
     Qt::KeyboardModifiers modifiers = connection()->keyboard()->translateModifiers(event->state);
 
     handleMouseEvent(event->time, local, global, modifiers);
@@ -2014,9 +2055,9 @@ void QXcbWindow::handleEnterNotifyEvent(const xcb_enter_notify_event_t *event)
     {
         return;
     }
-
-    const QPoint local(event->event_x, event->event_y);
-    const QPoint global(event->root_x, event->root_y);
+    const int dpr = int(devicePixelRatio());
+    const QPoint local(event->event_x/dpr, event->event_y/dpr);
+    const QPoint global(event->root_x/dpr, event->root_y/dpr);
     QWindowSystemInterface::handleEnterEvent(window(), local, global);
 }
 
@@ -2036,8 +2077,9 @@ void QXcbWindow::handleLeaveNotifyEvent(const xcb_leave_notify_event_t *event)
     QXcbWindow *enterWindow = enter ? connection()->platformWindowFromId(enter->event) : 0;
 
     if (enterWindow) {
-        QPoint local(enter->event_x, enter->event_y);
-        QPoint global(enter->root_x, enter->root_y);
+        const int dpr = int(devicePixelRatio());
+        QPoint local(enter->event_x/dpr, enter->event_y/dpr);
+        QPoint global(enter->root_x/dpr, enter->root_y/dpr);
 
         QWindowSystemInterface::handleEnterLeaveEvent(enterWindow->window(), window(), local, global);
     } else {
@@ -2190,6 +2232,7 @@ void QXcbWindow::windowEvent(QEvent *event)
 
 bool QXcbWindow::startSystemResize(const QPoint &pos, Qt::Corner corner)
 {
+    const int dpr = int(devicePixelRatio());
     const xcb_atom_t moveResize = connection()->atom(QXcbAtom::_NET_WM_MOVERESIZE);
     if (!connection()->wmSupport()->isSupportedByWM(moveResize))
         return false;
@@ -2198,7 +2241,7 @@ bool QXcbWindow::startSystemResize(const QPoint &pos, Qt::Corner corner)
     xev.type = moveResize;
     xev.window = xcb_window();
     xev.format = 32;
-    const QPoint globalPos = window()->mapToGlobal(pos);
+    const QPoint globalPos = window()->mapToGlobal(pos) * dpr;
     xev.data.data32[0] = globalPos.x();
     xev.data.data32[1] = globalPos.y();
     const bool bottom = corner == Qt::BottomRightCorner || corner == Qt::BottomLeftCorner;
@@ -2316,9 +2359,10 @@ void QXcbWindow::setMask(const QRegion &region)
         xcb_shape_mask(connection()->xcb_connection(), XCB_SHAPE_SO_SET,
                        XCB_SHAPE_SK_BOUNDING, xcb_window(), 0, 0, XCB_NONE);
     } else {
+        const int dpr = devicePixelRatio();
         QVector<xcb_rectangle_t> rects;
         foreach (const QRect &r, region.rects())
-            rects.push_back(qRectToXCBRectangle(r));
+            rects.push_back(qRectToXCBRectangle(mapToNative(r, dpr)));
         xcb_shape_rectangles(connection()->xcb_connection(), XCB_SHAPE_SO_SET,
                              XCB_SHAPE_SK_BOUNDING, XCB_CLIP_ORDERING_UNSORTED,
                              xcb_window(), 0, 0, rects.size(), &rects[0]);
@@ -2350,6 +2394,11 @@ void QXcbWindow::postSyncWindowRequest()
         m_pendingSyncRequest = e;
         QCoreApplication::postEvent(m_screen->connection(), e);
     }
+}
+
+qreal QXcbWindow::devicePixelRatio() const
+{
+    return m_screen ? m_screen->devicePixelRatio() : 1.0;
 }
 
 QT_END_NAMESPACE

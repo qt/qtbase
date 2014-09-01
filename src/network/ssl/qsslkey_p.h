@@ -61,10 +61,6 @@
 #ifndef QT_NO_OPENSSL
 #include <openssl/rsa.h>
 #include <openssl/dsa.h>
-#else
-struct RSA;
-struct DSA;
-struct EVP_PKEY;
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -73,9 +69,11 @@ class QSslKeyPrivate
 {
 public:
     inline QSslKeyPrivate()
-        : rsa(0)
+        : opaque(0)
+#ifndef QT_NO_OPENSSL
+        , rsa(0)
         , dsa(0)
-        , opaque(0)
+#endif
     {
         clear();
     }
@@ -85,9 +83,10 @@ public:
 
     void clear(bool deep = true);
 
+#ifndef QT_NO_OPENSSL
     bool fromEVP_PKEY(EVP_PKEY *pkey);
-    void decodeDer(const QByteArray &der, const QByteArray &passPhrase,
-                   bool deepClear = true);
+#endif
+    void decodeDer(const QByteArray &der, bool deepClear = true);
     void decodePem(const QByteArray &pem, const QByteArray &passPhrase,
                    bool deepClear = true);
     QByteArray pemHeader() const;
@@ -102,9 +101,15 @@ public:
     bool isNull;
     QSsl::KeyType type;
     QSsl::KeyAlgorithm algorithm;
+#ifndef QT_NO_OPENSSL
+    EVP_PKEY *opaque;
     RSA *rsa;
     DSA *dsa;
-    EVP_PKEY *opaque;
+#else
+    Qt::HANDLE opaque;
+    QByteArray derData;
+    int keyLength;
+#endif
 
     QAtomicInt ref;
 

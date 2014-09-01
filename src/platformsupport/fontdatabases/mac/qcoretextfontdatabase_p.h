@@ -47,6 +47,7 @@
 #define HAVE_ATS QT_MAC_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_5, __IPHONE_NA)
 
 #include <qpa/qplatformfontdatabase.h>
+#include <qpa/qplatformtheme.h>
 #include <private/qcore_mac_p.h>
 
 #ifndef Q_OS_IOS
@@ -66,6 +67,8 @@ Q_DECLARE_METATYPE(ATSFontContainerRef);
 
 QT_BEGIN_NAMESPACE
 
+struct FontDescription;
+
 class QCoreTextFontDatabase : public QPlatformFontDatabase
 {
 public:
@@ -79,17 +82,25 @@ public:
     QStringList fallbacksForFamily(const QString &family, QFont::Style style, QFont::StyleHint styleHint, QChar::Script script) const;
     QStringList addApplicationFont(const QByteArray &fontData, const QString &fileName);
     void releaseHandle(void *handle);
+    bool isPrivateFontFamily(const QString &family) const;
     QFont defaultFont() const;
     QList<int> standardSizes() const;
 
+    // For iOS and OS X platform themes
+    QFont *themeFont(QPlatformTheme::Font) const;
+    const QHash<QPlatformTheme::Font, QFont *> &themeFonts() const;
+
 private:
     void populateFromDescriptor(CTFontDescriptorRef font);
+    void populateFromFontDescription(CTFontDescriptorRef font, const FontDescription &fd);
 
     mutable QString defaultFontName;
 
     void removeApplicationFonts();
 
     QVector<QVariant> m_applicationFonts;
+    mutable QSet<CTFontDescriptorRef> m_systemFontDescriptors;
+    mutable QHash<QPlatformTheme::Font, QFont *> m_themeFonts;
 };
 
 QT_END_NAMESPACE

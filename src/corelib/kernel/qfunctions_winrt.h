@@ -44,7 +44,7 @@
 
 #include <QtCore/qglobal.h>
 
-#ifdef Q_OS_WINRT
+#ifdef Q_OS_WIN
 
 #include <QtCore/QThread>
 #include <QtCore/QAbstractEventDispatcher>
@@ -56,6 +56,8 @@ QT_BEGIN_NAMESPACE
 #endif
 
 QT_END_NAMESPACE
+
+#ifdef Q_OS_WINRT
 
 // Environment ------------------------------------------------------
 errno_t qt_winrt_getenv_s(size_t*, char*, size_t, const char*);
@@ -121,6 +123,8 @@ generate_inline_return_func4(getenv_s, errno_t, size_t *, char *, size_t, const 
 generate_inline_return_func2(_putenv_s, errno_t, const char *, const char *)
 generate_inline_return_func0(tzset, void)
 generate_inline_return_func0(_tzset, void)
+
+#endif // Q_OS_WINRT
 
 // Convenience macros for handling HRESULT values
 #define RETURN_IF_FAILED(msg, ret) \
@@ -211,5 +215,6 @@ static inline HRESULT await(const Microsoft::WRL::ComPtr<T> &asyncOp, U *results
 
 } // QWinRTFunctions
 
-#endif // Q_OS_WINRT
+#endif // Q_OS_WIN
+
 #endif // QFUNCTIONS_WINRT_H

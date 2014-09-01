@@ -249,7 +249,7 @@ bool QmlDocVisitor::applyDocumentation(QQmlJS::AST::SourceLocation location, Nod
         nodes.append(node);
         if (topicsUsed.size() > 0) {
             for (int i=0; i<topicsUsed.size(); ++i) {
-                if (topicsUsed.at(i).topic == QString("qmlpropertygroup")) {
+                if (topicsUsed.at(i).topic == COMMAND_QMLPROPERTYGROUP) {
                     qDebug() << "PROPERTY GROUP COMMAND SEEN:" <<  topicsUsed.at(i).args << filePath_;
                     break;
                 }
@@ -407,8 +407,7 @@ void QmlDocVisitor::applyMetacommands(QQmlJS::AST::SourceLocation,
                 node->setStatus(Node::Internal);
             }
             else if (command == COMMAND_OBSOLETE) {
-                if (node->status() != Node::Compat)
-                    node->setStatus(Node::Obsolete);
+                node->setStatus(Node::Obsolete);
             }
             else if (command == COMMAND_PAGEKEYWORDS) {
                 // Not done yet. Do we need this?

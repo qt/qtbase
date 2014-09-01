@@ -64,6 +64,8 @@ public slots:
     void deleteNonModalDialog();
     void deleteModalDialog();
     void accepted();
+    void rejected();
+    void currentColorChanged(const QColor & color);
     void showAcceptedResult();
     void restoreDefaults();
 

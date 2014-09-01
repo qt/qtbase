@@ -122,7 +122,7 @@ private:
     static QRect translateRectToWindowCoordinates(QAccessibleInterface *interface, const QRect &rect);
 
     // action helper functions
-    QSpiActionArray getActions(QAccessibleActionInterface* interface) const;
+    QSpiActionArray getActions(QAccessibleInterface *interface) const;
 
     // text helper functions
     QVariantList getAttributes(QAccessibleInterface *, int offset, bool includeDefaults) const;

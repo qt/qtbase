@@ -170,6 +170,7 @@ private:
 
     Q_DECLARE_PRIVATE(QAbstractSpinBox)
     Q_DISABLE_COPY(QAbstractSpinBox)
+    friend class QAccessibleAbstractSpinBox;
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(QAbstractSpinBox::StepEnabled)
 

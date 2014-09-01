@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "qwindowstabletsupport.h"
+#include "qwindowsscaling.h"
 
 #ifndef QT_NO_TABLETEVENT
 
@@ -275,6 +276,8 @@ static inline QTabletEvent::TabletDevice deviceType(const UINT cursorType)
 {
     if (((cursorType & 0x0006) == 0x0002) && ((cursorType & CursorTypeBitMask) != 0x0902))
         return QTabletEvent::Stylus;
+    if (cursorType == 0x4020) // Surface Pro 2 tablet device
+        return QTabletEvent::Stylus;
     switch (cursorType & CursorTypeBitMask) {
     case 0x0802:
         return QTabletEvent::Stylus;
@@ -403,7 +406,8 @@ bool QWindowsTabletSupport::translateTabletPacketEvent()
     //    in which case we snap the position to the mouse position.
     // It seems there is no way to find out the mode programmatically, the LOGCONTEXT orgX/Y/Ext
     // area is always the virtual desktop.
-    const QRect virtualDesktopArea = QGuiApplication::primaryScreen()->virtualGeometry();
+    const QRect virtualDesktopArea
+        = QWindowsScaling::mapToNative(QGuiApplication::primaryScreen()->virtualGeometry());
 
     qCDebug(lcQpaTablet) << __FUNCTION__ << "processing " << packetCount
         << "target:" << QGuiApplicationPrivate::tabletPressTarget;
@@ -423,7 +427,7 @@ bool QWindowsTabletSupport::translateTabletPacketEvent()
         QPoint globalPos = globalPosF.toPoint();
 
         // Get Mouse Position and compare to tablet info
-        const QPoint mouseLocation = QWindowsCursor::mousePosition();
+        QPoint mouseLocation = QWindowsCursor::mousePosition();
 
         // Positions should be almost the same if we are in absolute
         // mode. If they are not, use the mouse location.
@@ -479,7 +483,9 @@ bool QWindowsTabletSupport::translateTabletPacketEvent()
                 << tiltY << "tanP:" << tangentialPressure << "rotation:" << rotation;
         }
 
-        QWindowSystemInterface::handleTabletEvent(target, QPointF(localPos), globalPosF,
+        const QPointF localPosDip = QPointF(localPos / QWindowsScaling::factor());
+        const QPointF globalPosDip = globalPosF / qreal(QWindowsScaling::factor());
+        QWindowSystemInterface::handleTabletEvent(target, localPosDip, globalPosDip,
                                                   currentDevice, currentPointer,
                                                   static_cast<Qt::MouseButtons>(packet.pkButtons),
                                                   pressureNew, tiltX, tiltY,

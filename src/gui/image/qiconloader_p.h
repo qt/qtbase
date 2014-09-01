@@ -62,6 +62,8 @@
 #include <private/qicon_p.h>
 #include <private/qfactoryloader_p.h>
 #include <QtCore/QHash>
+#include <QtCore/QVector>
+#include <QtCore/QTypeInfo>
 
 QT_BEGIN_NAMESPACE
 
@@ -84,6 +86,7 @@ struct QIconDirInfo
     short threshold;
     Type type : 4;
 };
+Q_DECLARE_TYPEINFO(QIconDirInfo, Q_MOVABLE_TYPE);
 
 class QIconLoaderEngineEntry
  {
@@ -99,13 +102,13 @@ public:
 
 struct ScalableEntry : public QIconLoaderEngineEntry
 {
-    QPixmap pixmap(const QSize &size, QIcon::Mode mode, QIcon::State state);
+    QPixmap pixmap(const QSize &size, QIcon::Mode mode, QIcon::State state) Q_DECL_OVERRIDE;
     QIcon svgIcon;
 };
 
 struct PixmapEntry : public QIconLoaderEngineEntry
 {
-    QPixmap pixmap(const QSize &size, QIcon::Mode mode, QIcon::State state);
+    QPixmap pixmap(const QSize &size, QIcon::Mode mode, QIcon::State state) Q_DECL_OVERRIDE;
     QPixmap basePixmap;
 };
 
@@ -144,18 +147,18 @@ public:
     QIconTheme(const QString &name);
     QIconTheme() : m_valid(false) {}
     QStringList parents() { return m_parents; }
-    QList <QIconDirInfo> keyList() { return m_keyList; }
+    QVector<QIconDirInfo> keyList() { return m_keyList; }
     QString contentDir() { return m_contentDir; }
     bool isValid() { return m_valid; }
 
 private:
     QString m_contentDir;
-    QList <QIconDirInfo> m_keyList;
+    QVector<QIconDirInfo> m_keyList;
     QStringList m_parents;
     bool m_valid;
 };
 
-class Q_GUI_EXPORT QIconLoader : public QObject
+class Q_GUI_EXPORT QIconLoader
 {
 public:
     QIconLoader();

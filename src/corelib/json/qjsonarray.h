@@ -112,14 +112,17 @@ public:
         typedef std::random_access_iterator_tag  iterator_category;
         typedef int difference_type;
         typedef QJsonValue value_type;
-        //typedef T *pointer;
         typedef QJsonValueRef reference;
 
         inline iterator() : a(0), i(0) { }
         explicit inline iterator(QJsonArray *array, int index) : a(array), i(index) { }
 
         inline QJsonValueRef operator*() const { return QJsonValueRef(a, i); }
-        //inline T *operator->() const { return &concrete(i)->value; }
+#ifdef Q_QDOC
+        inline QJsonValueRef* operator->() const;
+#else
+        inline QJsonValueRefPtr operator->() const { return QJsonValueRefPtr(a, i); }
+#endif
         inline QJsonValueRef operator[](int j) const { return QJsonValueRef(a, i + j); }
 
         inline bool operator==(const iterator &o) const { return i == o.i; }
@@ -153,7 +156,6 @@ public:
         typedef std::random_access_iterator_tag  iterator_category;
         typedef qptrdiff difference_type;
         typedef QJsonValue value_type;
-        //typedef const T *pointer;
         typedef QJsonValue reference;
 
         inline const_iterator() : a(0), i(0) { }
@@ -162,7 +164,11 @@ public:
         inline const_iterator(const iterator &o) : a(o.a), i(o.i) {}
 
         inline QJsonValue operator*() const { return a->at(i); }
-        //inline T *operator->() const { return &concrete(i)->value; }
+#ifdef Q_QDOC
+        inline QJsonValue* operator->() const;
+#else
+        inline QJsonValuePtr operator->() const { return QJsonValuePtr(a->at(i)); }
+#endif
         inline QJsonValue operator[](int j) const { return a->at(i+j); }
         inline bool operator==(const const_iterator &o) const { return i == o.i; }
         inline bool operator!=(const const_iterator &o) const { return i != o.i; }

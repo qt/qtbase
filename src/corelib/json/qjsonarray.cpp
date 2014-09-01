@@ -746,6 +746,11 @@ bool QJsonArray::operator!=(const QJsonArray &other) const
     from which you got the reference.
 */
 
+/*! \fn QJsonValueRef *QJsonArray::iterator::operator->() const
+
+    Returns a pointer to a modifiable reference to the current item.
+*/
+
 /*! \fn QJsonValueRef QJsonArray::iterator::operator[](int j) const
 
     Returns a modifiable reference to the item at offset \a j from the
@@ -969,6 +974,11 @@ bool QJsonArray::operator!=(const QJsonArray &other) const
 /*! \fn QJsonValue QJsonArray::const_iterator::operator*() const
 
     Returns the current item.
+*/
+
+/*! \fn QJsonValue *QJsonArray::const_iterator::operator->() const
+
+    Returns a pointer to the current item.
 */
 
 /*! \fn QJsonValue QJsonArray::const_iterator::operator[](int j) const

@@ -649,7 +649,7 @@ void DocParser::parse(const QString& source,
                     append(Atom::CodeBad,getCode(CMD_BADCODE, marker));
                     break;
                 case CMD_BR:
-                    leavePara();
+                    enterPara();
                     append(Atom::BR);
                     break;
                 case CMD_BOLD:
@@ -975,6 +975,11 @@ void DocParser::parse(const QString& source,
                     if (isLeftBraceAhead()) {
                         p1 = getArgument();
                         append(p1, p2);
+                        if (!p2.isEmpty() && !(priv->text.lastAtom()->error().isEmpty())) {
+                            location().warning(tr("Check parameter in '[ ]' of '\\l' command: '%1', "
+                                                  "possible misspelling, or unrecognized module name")
+                                               .arg(priv->text.lastAtom()->error()));
+                        }
                         if (isLeftBraceAhead()) {
                             currentLinkAtom = priv->text.lastAtom();
                             startFormat(ATOM_FORMATTING_LINK, cmd);
@@ -988,6 +993,11 @@ void DocParser::parse(const QString& source,
                     else {
                         p1 = getArgument();
                         append(p1, p2);
+                        if (!p2.isEmpty() && !(priv->text.lastAtom()->error().isEmpty())) {
+                            location().warning(tr("Check parameter in '[ ]' of '\\l' command: '%1', "
+                                                  "possible misspelling, or unrecognized module name")
+                                               .arg(priv->text.lastAtom()->error()));
+                        }
                         append(Atom::FormattingLeft, ATOM_FORMATTING_LINK);
                         append(Atom::String, cleanLink(p1));
                         append(Atom::FormattingRight, ATOM_FORMATTING_LINK);

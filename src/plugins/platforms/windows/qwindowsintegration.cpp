@@ -41,6 +41,7 @@
 ****************************************************************************/
 
 #include "qwindowsintegration.h"
+#include "qwindowsscaling.h"
 #include "qwindowswindow.h"
 #include "qwindowscontext.h"
 #include "qwindowsopenglcontext.h"
@@ -229,6 +230,12 @@ QWindowsIntegrationPrivate::QWindowsIntegrationPrivate(const QStringList &paramL
         m_context.setProcessDpiAwareness(dpiAwareness);
         dpiAwarenessSet = true;
     }
+    // Determine suitable scale factor, don't mix Windows and Qt scaling
+    if (dpiAwareness != QtWindows::ProcessDpiUnaware)
+        QWindowsScaling::setFactor(QWindowsScaling::determineUiScaleFactor());
+    qCDebug(lcQpaWindows)
+        << __FUNCTION__ << "DpiAwareness=" << dpiAwareness <<",Scaling="
+        << QWindowsScaling::factor();
 }
 
 QWindowsIntegrationPrivate::~QWindowsIntegrationPrivate()
@@ -289,7 +296,7 @@ QWindowsWindowData QWindowsIntegration::createWindowData(QWindow *window) const
 {
     QWindowsWindowData requested;
     requested.flags = window->flags();
-    requested.geometry = window->geometry();
+    requested.geometry = QWindowsScaling::mapToNative(window->geometry());
     // Apply custom margins (see  QWindowsWindow::setCustomMargins())).
     const QVariant customMarginsV = window->property("_q_windowsCustomMargins");
     if (customMarginsV.isValid())
@@ -310,7 +317,7 @@ QWindowsWindowData QWindowsIntegration::createWindowData(QWindow *window) const
             window->setFlags(obtained.flags);
         // Trigger geometry change signals of QWindow.
         if ((obtained.flags & Qt::Desktop) != Qt::Desktop && requested.geometry != obtained.geometry)
-            QWindowSystemInterface::handleGeometryChange(window, obtained.geometry);
+            QWindowSystemInterface::handleGeometryChange(window, QWindowsScaling::mapFromNative(obtained.geometry));
     }
 
 #ifndef QT_NO_OPENGL

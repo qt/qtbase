@@ -324,7 +324,7 @@ QWinRTSettingsPrivate::QWinRTSettingsPrivate(QSettings::Scope scope, const QStri
 }
 
 QWinRTSettingsPrivate::QWinRTSettingsPrivate(QString rPath)
-    : QSettingsPrivate(QSettings::NativeFormat)
+    : QSettingsPrivate(QSettings::NativeFormat, QSettings::UserScope, rPath, QString())
     , writeContainer(0)
 {
     init(QSettings::UserScope);

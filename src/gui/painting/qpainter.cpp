@@ -1106,6 +1106,11 @@ void QPainterPrivate::updateState(QPainterState *newState)
     \li \inlineimage qpainter-pathstroking.png
     \endtable
 
+    Text drawing is done using drawText(). When you need
+    fine-grained positioning, boundingRect() tells you where a given
+    drawText() command will draw.
+
+    \section1 Drawing Pixmaps and Images
 
     There are functions to draw pixmaps/images, namely drawPixmap(),
     drawImage() and drawTiledPixmap(). Both drawPixmap() and drawImage()
@@ -1113,14 +1118,24 @@ void QPainterPrivate::updateState(QPainterState *newState)
     on-screen while drawImage() may be faster on a QPrinter or other
     devices.
 
-    Text drawing is done using drawText(). When you need
-    fine-grained positioning, boundingRect() tells you where a given
-    drawText() command will draw.
-
     There is a drawPicture() function that draws the contents of an
     entire QPicture. The drawPicture() function is the only function
     that disregards all the painter's settings as QPicture has its own
     settings.
+
+    \section2 Drawing High Resolution Versions of Pixmaps and Images
+
+    High resolution versions of pixmaps have a \e{device pixel ratio} value larger
+    than 1 (see QImageReader, QPixmap::devicePixelRatio()). Should it match the value
+    of the underlying QPaintDevice, it is drawn directly onto the device with no
+    additional transformation applied.
+
+    This is for example the case when drawing a QPixmap of 64x64 pixels size with
+    a device pixel ratio of 2 onto a high DPI screen which also has
+    a device pixel ratio of 2. Note that the pixmap is then effectively 32x32
+    pixels in \e{user space}. Code paths in Qt that calculate layout geometry
+    based on the pixmap size will use this size. The net effect of this is that
+    the pixmap is displayed as high DPI pixmap rather than a large pixmap.
 
     \section1 Rendering Quality
 
@@ -5024,6 +5039,8 @@ static inline QPointF roundInDeviceCoordinates(const QPointF &p, const QTransfor
     into the given \a target in the paint device.
 
     \note The pixmap is scaled to fit the rectangle, if both the pixmap and rectangle size disagree.
+    \note See \l{Drawing High Resolution Versions of Pixmaps and Images} on how this is affected
+    by QPixmap::devicePixelRatio().
 
     \table 100%
     \row
@@ -5038,7 +5055,7 @@ static inline QPointF roundInDeviceCoordinates(const QPointF &p, const QTransfor
     transparent. Drawing bitmaps with gradient or texture colors is
     not supported.
 
-    \sa drawImage()
+    \sa drawImage(), QPixmap::devicePixelRatio()
 */
 void QPainter::drawPixmap(const QPointF &p, const QPixmap &pm)
 {
@@ -7694,6 +7711,8 @@ void QPainterState::init(QPainter *p) {
     into the \a target rectangle in the paint device.
 
     \note The image is scaled to fit the rectangle, if both the image and rectangle size disagree.
+    \note See \l{Drawing High Resolution Versions of Pixmaps and Images} on how this is affected
+    by QImage::devicePixelRatio().
 
     If the image needs to be modified to fit in a lower-resolution
     result (e.g. converting from 32-bit to 8-bit), use the \a flags to
@@ -7705,7 +7724,7 @@ void QPainterState::init(QPainter *p) {
     \snippet code/src_gui_painting_qpainter.cpp 20
     \endtable
 
-    \sa drawPixmap()
+    \sa drawPixmap(), QImage::devicePixelRatio()
 */
 
 /*!

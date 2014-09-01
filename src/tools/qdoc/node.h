@@ -66,7 +66,6 @@ class PropertyNode;
 class QmlModuleNode;
 class CollectionNode;
 class QmlPropertyNode;
-class NameCollisionNode;
 
 typedef QList<Node*> NodeList;
 typedef QMap<QString, Node*> NodeMap;
@@ -113,9 +112,10 @@ public:
         Page,
         ExternalPage,
         DitaMap,
-        Collision,
         LastSubtype
     };
+
+    enum Genus { DontCare, CPP, QML };
 
     enum Access { Public, Protected, Private };
 
@@ -217,10 +217,10 @@ public:
     virtual bool isNamespace() const { return false; }
     virtual bool isClass() const { return false; }
     virtual bool isQmlNode() const { return false; }
+    virtual bool isCppNode() const { return false; }
     virtual bool isQtQuickNode() const { return false; }
     virtual bool isAbstract() const { return false; }
     virtual bool isQmlPropertyGroup() const { return false; }
-    virtual bool isCollisionNode() const { return false; }
     virtual bool isAttached() const { return false; }
     virtual bool isAlias() const { return false; }
     virtual bool isWrapper() const;
@@ -233,6 +233,7 @@ public:
     virtual bool hasClasses() const { return false; }
     virtual void setAbstract(bool ) { }
     virtual void setWrapper() { }
+    virtual Node::Genus genus() const { return DontCare; }
     virtual QString title() const { return name(); }
     virtual QString fullTitle() const { return name(); }
     virtual QString subTitle() const { return QString(); }
@@ -250,6 +251,7 @@ public:
     virtual void appendGroupName(const QString& ) { }
     virtual QString element() const { return QString(); }
     virtual Tree* tree() const;
+    virtual void findChildren(const QString& , NodeList& nodes) const { nodes.clear(); }
     bool isIndexNode() const { return indexNodeFlag_; }
     Type type() const { return nodeType_; }
     virtual SubType subType() const { return NoSubType; }
@@ -271,6 +273,7 @@ public:
     void setLink(LinkType linkType, const QString &link, const QString &desc);
 
     Access access() const { return access_; }
+    bool isPrivate() const { return access_ == Private; }
     QString accessString() const;
     const Location& location() const { return loc_; }
     const Doc& doc() const { return doc_; }
@@ -360,10 +363,11 @@ class InnerNode : public Node
 public:
     virtual ~InnerNode();
 
-    Node* findChildNode(const QString& name) const;
-    Node* findChildNode(const QString& name, bool qml) const;
+    Node* findChildNode(const QString& name, Node::Genus genus) const;
+    //Node* findChildNode(const QString& name, bool qml) const;
     Node* findChildNode(const QString& name, Type type);
-    void findNodes(const QString& name, QList<Node*>& n);
+    //void findNodes(const QString& name, NodeList& n);
+    virtual void findChildren(const QString& name, NodeList& nodes) const;
     FunctionNode* findFunctionNode(const QString& name) const;
     FunctionNode* findFunctionNode(const FunctionNode* clone);
     void addInclude(const QString &include);
@@ -403,7 +407,6 @@ protected:
 
 private:
     friend class Node;
-    friend class NameCollisionNode;
 
     static bool isSameSignature(const FunctionNode* f1, const FunctionNode* f2);
     void addChild(Node* child);
@@ -443,6 +446,8 @@ public:
     virtual ~NamespaceNode() { }
     virtual bool isNamespace() const { return true; }
     virtual Tree* tree() const { return (parent() ? parent()->tree() : tree_); }
+    virtual bool isCppNode() const { return true; }
+    virtual Node::Genus genus() const { return Node::CPP; }
     void setTree(Tree* t) { tree_ = t; }
 
  private:
@@ -473,7 +478,9 @@ public:
     ClassNode(InnerNode* parent, const QString& name);
     virtual ~ClassNode() { }
     virtual bool isClass() const { return true; }
+    virtual bool isCppNode() const { return true; }
     virtual bool isWrapper() const { return wrapper_; }
+    virtual Node::Genus genus() const { return Node::CPP; }
     virtual QString obsoleteLink() const { return obsoleteLink_; }
     virtual void setObsoleteLink(const QString& t) { obsoleteLink_ = t; }
     virtual void setWrapper() { wrapper_ = true; }
@@ -544,24 +551,6 @@ protected:
     QString subtitle_;
 };
 
-class NameCollisionNode : public DocNode
-{
-public:
-    NameCollisionNode(InnerNode* child);
-    ~NameCollisionNode();
-    virtual bool isQmlNode() const;
-    virtual bool isCollisionNode() const { return true; }
-    virtual const Node* applyModuleName(const Node* origin) const;
-    virtual Node* disambiguate(Type t, SubType st);
-    InnerNode* findAny(Node::Type t, Node::SubType st);
-    void addCollision(InnerNode* child);
-    const QMap<QString,QString>& linkTargets() const { return targets; }
-    void addLinkTarget(const QString& t, const QString& v) { targets.insert(t,v); }
-
-private:
-    QMap<QString,QString> targets;
-};
-
 class ExampleNode : public DocNode
 {
 public:
@@ -618,6 +607,7 @@ public:
     virtual QString qmlModuleIdentifier() const;
     virtual QmlModuleNode* qmlModule() const { return qmlModule_; }
     virtual void setQmlModule(QmlModuleNode* t) { qmlModule_ = t; }
+    virtual Node::Genus genus() const { return Node::QML; }
     const ImportList& importList() const { return importList_; }
     void setImportList(const ImportList& il) { importList_ = il; }
     const QString& qmlBaseName() const { return qmlBaseName_; }
@@ -655,6 +645,7 @@ public:
     virtual ~QmlBasicTypeNode() { }
     virtual bool isQmlNode() const { return true; }
     virtual bool isQmlBasicType() const { return true; }
+    virtual Node::Genus genus() const { return Node::QML; }
 };
 
 class QmlPropertyGroupNode : public InnerNode
@@ -670,6 +661,7 @@ public:
     virtual QString qmlModuleIdentifier() const { return parent()->qmlModuleIdentifier(); }
     virtual QString idNumber();
     virtual bool isQmlPropertyGroup() const { return true; }
+    virtual Node::Genus genus() const { return Node::QML; }
 
     virtual QString element() const { return parent()->name(); }
 
@@ -688,6 +680,7 @@ public:
                     bool attached);
     virtual ~QmlPropertyNode() { }
 
+    virtual Node::Genus genus() const { return Node::QML; }
     virtual void setDataType(const QString& dataType) { type_ = dataType; }
     void setStored(bool stored) { stored_ = toFlagValue(stored); }
     void setDesignable(bool designable) { designable_ = toFlagValue(designable); }
@@ -746,6 +739,8 @@ public:
     EnumNode(InnerNode* parent, const QString& name);
     virtual ~EnumNode() { }
 
+    virtual Node::Genus genus() const { return Node::CPP; }
+    virtual bool isCppNode() const { return true; }
     void addItem(const EnumItem& item);
     void setFlagsType(TypedefNode* typedeff);
     bool hasItem(const QString &name) const { return names.contains(name); }
@@ -767,6 +762,8 @@ public:
     TypedefNode(InnerNode* parent, const QString& name);
     virtual ~TypedefNode() { }
 
+    virtual Node::Genus genus() const { return Node::CPP; }
+    virtual bool isCppNode() const { return true; }
     const EnumNode* associatedEnum() const { return ae; }
 
 private:
@@ -873,6 +870,8 @@ public:
                 (type() == QmlMethod) ||
                 (type() == QmlSignalHandler));
     }
+    virtual bool isCppNode() const { return !isQmlNode(); }
+    virtual Node::Genus genus() const { return (isQmlNode() ? Node::QML : Node::CPP); }
     virtual bool isQtQuickNode() const { return parent()->isQtQuickNode(); }
     virtual QString qmlTypeName() const { return parent()->qmlTypeName(); }
     virtual QString qmlModuleName() const { return parent()->qmlModuleName(); }
@@ -911,6 +910,8 @@ public:
     PropertyNode(InnerNode* parent, const QString& name);
     virtual ~PropertyNode() { }
 
+    virtual Node::Genus genus() const { return Node::CPP; }
+    virtual bool isCppNode() const { return true; }
     virtual void setDataType(const QString& dataType) { type_ = dataType; }
     void addFunction(FunctionNode* function, FunctionRole role);
     void addSignal(FunctionNode* function, FunctionRole role);
@@ -998,6 +999,8 @@ public:
     VariableNode(InnerNode* parent, const QString &name);
     virtual ~VariableNode() { }
 
+    virtual Node::Genus genus() const { return Node::CPP; }
+    virtual bool isCppNode() const { return true; }
     void setLeftType(const QString &leftType) { lt = leftType; }
     void setRightType(const QString &rightType) { rt = rightType; }
     void setStatic(bool statique) { sta = statique; }
@@ -1084,6 +1087,7 @@ class ModuleNode : public CollectionNode
     virtual ~ModuleNode() { }
 
     virtual bool isModule() const { return true; }
+    virtual bool isCppNode() const { return true; }
     virtual void setQtVariable(const QString& v) { qtVariable_ = v; }
     virtual QString qtVariable() const { return qtVariable_; }
 
@@ -1098,6 +1102,7 @@ class QmlModuleNode : public CollectionNode
         : CollectionNode(Node::QmlModule, parent, name) { }
     virtual ~QmlModuleNode() { }
 
+    virtual bool isQmlNode() const { return true; }
     virtual bool isQmlModule() const { return true; }
     virtual QString qmlModuleName() const { return qmlModuleName_; }
     virtual QString qmlModuleVersion() const {

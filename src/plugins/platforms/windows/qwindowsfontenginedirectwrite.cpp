@@ -574,7 +574,7 @@ QImage QWindowsFontEngineDirectWrite::imageForGlyph(glyph_t t,
 
         int size = width * height * 3;
         BYTE *alphaValues = new BYTE[size];
-        memset(alphaValues, size, 0);
+        memset(alphaValues, 0, size);
 
         hr = glyphAnalysis->CreateAlphaTexture(DWRITE_TEXTURE_CLEARTYPE_3x1,
                                                &rect,

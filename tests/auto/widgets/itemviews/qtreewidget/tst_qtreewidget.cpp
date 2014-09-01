@@ -3342,6 +3342,9 @@ void tst_QTreeWidget::setChildIndicatorPolicy()
 
 void tst_QTreeWidget::task20345_sortChildren()
 {
+    if (qApp->platformName().toLower() == QLatin1String("wayland"))
+        QSKIP("Wayland: This causes a crash triggered by setVisible(false)");
+
     // This test case is considered successful if it is executed (no crash in sorting)
     QTreeWidget tw;
     tw.setColumnCount(3);

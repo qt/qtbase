@@ -64,7 +64,7 @@ enum ResourceType {
 
 static int resourceType(const QByteArray &key)
 {
-    static const QByteArray names[] = { // match ResourceType
+    static const char *names[] = { // match ResourceType
         "renderingcontext",
         "eglcontext",
         "egldisplay",
@@ -74,8 +74,8 @@ static int resourceType(const QByteArray &key)
         "getdc",
         "releasedc"
     };
-    const QByteArray *end = names + sizeof(names) / sizeof(names[0]);
-    const QByteArray *result = std::find(names, end, key);
+    const char ** const end = names + sizeof(names) / sizeof(names[0]);
+    const char **result = std::find(names, end, key);
     if (result == end)
         result = std::find(names, end, key.toLower());
     return int(result - names);

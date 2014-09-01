@@ -516,7 +516,7 @@ QFontEngineMulti *QFontconfigDatabase::fontEngineMulti(QFontEngine *fontEngine, 
 }
 
 namespace {
-QFontEngine::HintStyle defaultHintStyleFromMatch(QFont::HintingPreference hintingPreference, FcPattern *match)
+QFontEngine::HintStyle defaultHintStyleFromMatch(QFont::HintingPreference hintingPreference, FcPattern *match, bool useXftConf)
 {
     switch (hintingPreference) {
     case QFont::PreferNoHinting:
@@ -529,8 +529,7 @@ QFontEngine::HintStyle defaultHintStyleFromMatch(QFont::HintingPreference hintin
         break;
     }
 
-    const QPlatformServices *services = QGuiApplicationPrivate::platformIntegration()->services();
-    if (services && (services->desktopEnvironment() == "GNOME" || services->desktopEnvironment() == "UNITY")) {
+    if (useXftConf) {
         void *hintStyleResource =
                 QGuiApplication::platformNativeInterface()->nativeResourceForScreen("hintstyle",
                                                                                     QGuiApplication::primaryScreen());
@@ -558,8 +557,17 @@ QFontEngine::HintStyle defaultHintStyleFromMatch(QFont::HintingPreference hintin
     return QFontEngine::HintFull;
 }
 
-QFontEngine::SubpixelAntialiasingType subpixelTypeFromMatch(FcPattern *match)
+QFontEngine::SubpixelAntialiasingType subpixelTypeFromMatch(FcPattern *match, bool useXftConf)
 {
+    if (useXftConf) {
+        void *subpixelTypeResource =
+                QGuiApplication::platformNativeInterface()->nativeResourceForScreen("subpixeltype",
+                                                                                    QGuiApplication::primaryScreen());
+        int subpixelType = int(reinterpret_cast<qintptr>(subpixelTypeResource));
+        if (subpixelType > 0)
+            return QFontEngine::SubpixelAntialiasingType(subpixelType - 1);
+    }
+
     int subpixel = FC_RGBA_UNKNOWN;
     FcPatternGetInteger(match, FC_RGBA, 0, &subpixel);
 
@@ -596,7 +604,21 @@ QFontEngine *QFontconfigDatabase::fontEngine(const QFontDef &f, void *usrPtr)
     fid.index = fontfile->indexValue;
 
     bool antialias = !(fontDef.styleStrategy & QFont::NoAntialias);
+    bool forcedAntialiasSetting = !antialias;
     engine = new QFontEngineFT(fontDef);
+
+    const QPlatformServices *services = QGuiApplicationPrivate::platformIntegration()->services();
+    bool useXftConf = (services && (services->desktopEnvironment() == "GNOME" || services->desktopEnvironment() == "UNITY"));
+    if (useXftConf) {
+        void *antialiasResource =
+                QGuiApplication::platformNativeInterface()->nativeResourceForScreen("antialiasingEnabled",
+                                                                                    QGuiApplication::primaryScreen());
+        int antialiasingEnabled = int(reinterpret_cast<qintptr>(antialiasResource));
+        if (antialiasingEnabled > 0) {
+            antialias = antialiasingEnabled - 1;
+            forcedAntialiasSetting = true;
+        }
+    }
 
     QFontEngine::GlyphFormat format;
     // try and get the pattern
@@ -622,7 +644,7 @@ QFontEngine *QFontconfigDatabase::fontEngine(const QFontDef &f, void *usrPtr)
 
     FcPattern *match = FcFontMatch(0, pattern, &result);
     if (match) {
-        engine->setDefaultHintStyle(defaultHintStyleFromMatch((QFont::HintingPreference)f.hintingPreference, match));
+        engine->setDefaultHintStyle(defaultHintStyleFromMatch((QFont::HintingPreference)f.hintingPreference, match, useXftConf));
 
         FcBool fc_autohint;
         if (FcPatternGetBool(match, FC_AUTOHINT,0, &fc_autohint) == FcResultMatch)
@@ -634,18 +656,16 @@ QFontEngine *QFontconfigDatabase::fontEngine(const QFontDef &f, void *usrPtr)
             engine->lcdFilterType = lcdFilter;
 #endif
 
-        if (antialias) {
-            // If antialiasing is not fully disabled, fontconfig may still disable it on a font match basis.
+        if (!forcedAntialiasSetting) {
             FcBool fc_antialias;
-            if (FcPatternGetBool(match, FC_ANTIALIAS,0, &fc_antialias) != FcResultMatch)
-                fc_antialias = true;
-            antialias = fc_antialias;
+            if (FcPatternGetBool(match, FC_ANTIALIAS,0, &fc_antialias) == FcResultMatch)
+                antialias = fc_antialias;
         }
 
         if (antialias) {
             QFontEngine::SubpixelAntialiasingType subpixelType = QFontEngine::Subpixel_None;
             if (!(f.styleStrategy & QFont::NoSubpixelAntialias))
-                subpixelType = subpixelTypeFromMatch(match);
+                subpixelType = subpixelTypeFromMatch(match, useXftConf);
             engine->subpixelType = subpixelType;
 
             format = (subpixelType == QFontEngine::Subpixel_None)
@@ -676,6 +696,20 @@ QFontEngine *QFontconfigDatabase::fontEngine(const QByteArray &fontData, qreal p
 
     QFontDef fontDef = engine->fontDef;
 
+    bool forcedAntialiasSetting = false;
+    const QPlatformServices *services = QGuiApplicationPrivate::platformIntegration()->services();
+    bool useXftConf = (services && (services->desktopEnvironment() == "GNOME" || services->desktopEnvironment() == "UNITY"));
+    if (useXftConf) {
+        void *antialiasResource =
+                QGuiApplication::platformNativeInterface()->nativeResourceForScreen("antialiasingEnabled",
+                                                                                    QGuiApplication::primaryScreen());
+        int antialiasingEnabled = int(reinterpret_cast<qintptr>(antialiasResource));
+        if (antialiasingEnabled > 0) {
+            engine->antialias = antialiasingEnabled - 1;
+            forcedAntialiasSetting = true;
+        }
+    }
+
     QFontEngine::GlyphFormat format;
     // try and get the pattern
     FcPattern *pattern = FcPatternCreate();
@@ -693,7 +727,7 @@ QFontEngine *QFontconfigDatabase::fontEngine(const QByteArray &fontData, qreal p
 
     FcPattern *match = FcFontMatch(0, pattern, &result);
     if (match) {
-        engine->setDefaultHintStyle(defaultHintStyleFromMatch(hintingPreference, match));
+        engine->setDefaultHintStyle(defaultHintStyleFromMatch(hintingPreference, match, useXftConf));
 
         FcBool fc_autohint;
         if (FcPatternGetBool(match, FC_AUTOHINT,0, &fc_autohint) == FcResultMatch)
@@ -705,13 +739,14 @@ QFontEngine *QFontconfigDatabase::fontEngine(const QByteArray &fontData, qreal p
             engine->lcdFilterType = lcdFilter;
 #endif
 
-        FcBool fc_antialias;
-        if (FcPatternGetBool(match, FC_ANTIALIAS,0, &fc_antialias) != FcResultMatch)
-            fc_antialias = true;
-        engine->antialias = fc_antialias;
+        if (!forcedAntialiasSetting) {
+            FcBool fc_antialias;
+            if (FcPatternGetBool(match, FC_ANTIALIAS,0, &fc_antialias) == FcResultMatch)
+                engine->antialias = fc_antialias;
+        }
 
         if (engine->antialias) {
-            QFontEngine::SubpixelAntialiasingType subpixelType = subpixelTypeFromMatch(match);
+            QFontEngine::SubpixelAntialiasingType subpixelType = subpixelTypeFromMatch(match, useXftConf);
             engine->subpixelType = subpixelType;
 
             format = subpixelType == QFontEngine::Subpixel_None

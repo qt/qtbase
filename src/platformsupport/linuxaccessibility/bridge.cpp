@@ -136,8 +136,8 @@ static RoleMapping map[] = {
     { QAccessible::Caret, ATSPI_ROLE_UNKNOWN, QT_TRANSLATE_NOOP("QSpiAccessibleBridge", "text caret") },
     //: Role of an accessible object
     { QAccessible::AlertMessage, ATSPI_ROLE_ALERT, QT_TRANSLATE_NOOP("QSpiAccessibleBridge", "alert message") },
-    //: Role of an accessible object
-    { QAccessible::Window, ATSPI_ROLE_WINDOW, QT_TRANSLATE_NOOP("QSpiAccessibleBridge", "window") },
+    //: Role of an accessible object: a window with frame and title
+    { QAccessible::Window, ATSPI_ROLE_FRAME, QT_TRANSLATE_NOOP("QSpiAccessibleBridge", "frame") },
     //: Role of an accessible object
     { QAccessible::Client, ATSPI_ROLE_FILLER, QT_TRANSLATE_NOOP("QSpiAccessibleBridge", "filler") },
     //: Role of an accessible object

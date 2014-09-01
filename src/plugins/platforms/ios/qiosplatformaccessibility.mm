@@ -64,9 +64,11 @@ void invalidateCache(QAccessibleInterface *iface)
         win = parent->window();
         parent = parent->parent();
     } while (!win && parent);
-    Q_ASSERT(win && win->handle());
-    QIOSWindow *window = static_cast<QIOSWindow*>(win->handle());
-    window->clearAccessibleCache();
+
+    if (win && win->handle()) {
+        QIOSWindow *window = static_cast<QIOSWindow*>(win->handle());
+        window->clearAccessibleCache();
+    }
 }
 
 

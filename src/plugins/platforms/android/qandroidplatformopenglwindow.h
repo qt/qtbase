@@ -66,6 +66,8 @@ public:
 
     void applicationStateChanged(Qt::ApplicationState);
 
+    void repaint(const QRegion &region) Q_DECL_OVERRIDE;
+
 protected:
     virtual void surfaceChanged(JNIEnv *jniEnv, jobject surface, int w, int h);
     void createEgl(EGLConfig config);
@@ -80,6 +82,7 @@ private:
     QJNIObjectPrivate m_androidSurfaceObject;
     QWaitCondition m_surfaceWaitCondition;
     QSurfaceFormat m_format;
+    QRect m_oldGeometry;
 };
 
 QT_END_NAMESPACE

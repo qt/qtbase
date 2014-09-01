@@ -127,6 +127,7 @@ inline Q_DECL_CONSTEXPR int qMetaTypeId();
     F(QVariantMap, 8, QVariantMap) \
     F(QVariantList, 9, QVariantList) \
     F(QVariantHash, 28, QVariantHash) \
+    F(QByteArrayList, 49, QByteArrayList) \
 
 #define QT_FOR_EACH_STATIC_GUI_CLASS(F)\
     F(QFont, 64, QFont) \
@@ -180,6 +181,7 @@ inline Q_DECL_CONSTEXPR int qMetaTypeId();
     F(QVariantList, -1, QVariantList, "QList<QVariant>") \
     F(QVariantMap, -1, QVariantMap, "QMap<QString,QVariant>") \
     F(QVariantHash, -1, QVariantHash, "QHash<QString,QVariant>") \
+    F(QByteArrayList, -1, QByteArrayList, "QList<QByteArray>") \
 
 #define QT_FOR_EACH_STATIC_TYPE(F)\
     QT_FOR_EACH_STATIC_PRIMITIVE_TYPE(F)\
@@ -393,7 +395,7 @@ public:
         QT_FOR_EACH_STATIC_TYPE(QT_DEFINE_METATYPE_ID)
 
         FirstCoreType = Bool,
-        LastCoreType = QJsonDocument,
+        LastCoreType = QByteArrayList,
         FirstGuiType = QFont,
         LastGuiType = QPolygonF,
         FirstWidgetsType = QSizePolicy,
@@ -419,7 +421,7 @@ public:
         QEasingCurve = 29, QUuid = 30, QVariant = 41, QModelIndex = 42,
         QRegularExpression = 44,
         QJsonValue = 45, QJsonObject = 46, QJsonArray = 47, QJsonDocument = 48,
-        QObjectStar = 39, SChar = 40,
+        QByteArrayList = 49, QObjectStar = 39, SChar = 40,
         Void = 43,
         QVariantMap = 8, QVariantList = 9, QVariantHash = 28,
         QFont = 64, QPixmap = 65, QBrush = 66, QColor = 67, QPalette = 68,
@@ -1763,6 +1765,7 @@ QT_FOR_EACH_STATIC_WIDGETS_CLASS(QT_FORWARD_DECLARE_STATIC_TYPES_ITER)
 typedef QList<QVariant> QVariantList;
 typedef QMap<QString, QVariant> QVariantMap;
 typedef QHash<QString, QVariant> QVariantHash;
+typedef QList<QByteArray> QByteArrayList;
 
 #define Q_DECLARE_METATYPE_TEMPLATE_1ARG(SINGLE_ARG_TEMPLATE) \
 QT_BEGIN_NAMESPACE \

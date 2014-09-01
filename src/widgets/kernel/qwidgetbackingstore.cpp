@@ -56,6 +56,7 @@
 #include <private/qapplication_p.h>
 #include <private/qpaintengine_raster_p.h>
 #include <private/qgraphicseffect_p.h>
+#include <QtGui/private/qwindow_p.h>
 
 #include <qpa/qplatformbackingstore.h>
 
@@ -1132,6 +1133,7 @@ void QWidgetBackingStore::doSync()
         widgetTextures = new QPlatformTextureList;
         findTextureWidgetsRecursively(tlw, tlw, widgetTextures);
     }
+    qt_window_private(tlw->windowHandle())->compositing = widgetTextures && !widgetTextures->isEmpty();
     fullUpdatePending = false;
 #endif
 

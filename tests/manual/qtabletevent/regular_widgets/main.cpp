@@ -60,14 +60,15 @@ enum TabletPointType {
 struct TabletPoint
 {
     TabletPoint(const QPointF &p = QPointF(), TabletPointType t = TabletMove,
-                Qt::MouseButton b = Qt::LeftButton, QTabletEvent::PointerType pt = QTabletEvent::UnknownPointer, qreal prs = 0) :
-        pos(p), type(t), button(b), ptype(pt), pressure(prs) {}
+                Qt::MouseButton b = Qt::LeftButton, QTabletEvent::PointerType pt = QTabletEvent::UnknownPointer, qreal prs = 0, qreal rotation = 0) :
+        pos(p), type(t), button(b), ptype(pt), pressure(prs), angle(rotation) {}
 
     QPointF pos;
     TabletPointType type;
     Qt::MouseButton button;
     QTabletEvent::PointerType ptype;
     qreal pressure;
+    qreal angle;
 };
 
 class EventReportWidget : public QWidget
@@ -111,6 +112,8 @@ void EventReportWidget::paintEvent(QPaintEvent *)
     p.fillRect(geom, Qt::white);
     p.drawRect(QRectF(geom.topLeft(), geom.bottomRight() - QPointF(1,1)));
     p.setPen(Qt::white);
+    QPainterPath ellipse;
+    ellipse.addEllipse(0, 0, 50, 10);
     foreach (const TabletPoint &t, m_points) {
         if (geom.contains(t.pos)) {
               QPainterPath pp;
@@ -130,7 +133,16 @@ void EventReportWidget::paintEvent(QPaintEvent *)
               case TabletMove:
                   if (t.pressure > 0.0) {
                       p.setPen(t.ptype == QTabletEvent::Eraser ? Qt::red : Qt::black);
-                      p.drawEllipse(t.pos, t.pressure * 10.0, t.pressure * 10.0);
+                      if (t.angle != 0.0) {
+                          p.save();
+                          p.translate(t.pos);
+                          p.scale(t.pressure, t.pressure);
+                          p.rotate(t.angle);
+                          p.drawPath(ellipse);
+                          p.restore();
+                      } else {
+                          p.drawEllipse(t.pos, t.pressure * 10.0, t.pressure * 10.0);
+                      }
                       p.setPen(Qt::white);
                   } else {
                       p.fillRect(t.pos.x() - 2, t.pos.y() - 2, 4, 4, Qt::black);
@@ -155,18 +167,18 @@ void EventReportWidget::tabletEvent(QTabletEvent *event)
         break;
     case QEvent::TabletMove:
         type = QString::fromLatin1("TabletMove");
-        m_points.push_back(TabletPoint(event->pos(), TabletMove, m_lastButton, event->pointerType(), event->pressure()));
+        m_points.push_back(TabletPoint(event->pos(), TabletMove, m_lastButton, event->pointerType(), event->pressure(), event->rotation()));
         update();
         break;
     case QEvent::TabletPress:
         type = QString::fromLatin1("TabletPress");
-        m_points.push_back(TabletPoint(event->pos(), TabletButtonPress, event->button(), event->pointerType()));
+        m_points.push_back(TabletPoint(event->pos(), TabletButtonPress, event->button(), event->pointerType(), event->rotation()));
         m_lastButton = event->button();
         update();
         break;
     case QEvent::TabletRelease:
         type = QString::fromLatin1("TabletRelease");
-        m_points.push_back(TabletPoint(event->pos(), TabletButtonRelease, event->button(), event->pointerType()));
+        m_points.push_back(TabletPoint(event->pos(), TabletButtonRelease, event->button(), event->pointerType(), event->rotation()));
         update();
         break;
     default:

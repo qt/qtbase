@@ -191,8 +191,10 @@ bool QWindowsMouseHandler::translateMouseEvent(QWindow *window, HWND hwnd,
         const QPoint globalPosition = winEventPosition;
         const QPoint clientPosition = QWindowsGeometryHint::mapFromGlobal(hwnd, globalPosition);
         const Qt::MouseButtons buttons = QWindowsMouseHandler::queryMouseButtons();
-        QWindowSystemInterface::handleFrameStrutMouseEvent(window, clientPosition,
-                                                           globalPosition, buttons,
+        QWindowSystemInterface::handleFrameStrutMouseEvent(window,
+                                                           clientPosition  / QWindowsScaling::factor(),
+                                                           globalPosition  / QWindowsScaling::factor(),
+                                                           buttons,
                                                            QWindowsKeyMapper::queryKeyboardModifiers(),
                                                            source);
         return false; // Allow further event processing (dragging of windows).
@@ -334,7 +336,10 @@ bool QWindowsMouseHandler::translateMouseEvent(QWindow *window, HWND hwnd,
         m_windowUnderMouse = currentWindowUnderMouse;
     }
 
-    QWindowSystemInterface::handleMouseEvent(window, winEventPosition, globalPosition, buttons,
+    QWindowSystemInterface::handleMouseEvent(window,
+                                             winEventPosition / QWindowsScaling::factor(),
+                                             globalPosition / QWindowsScaling::factor(),
+                                             buttons,
                                              QWindowsKeyMapper::queryKeyboardModifiers(),
                                              source);
     m_previousCaptureWindow = hasCapture ? window : 0;
@@ -388,10 +393,11 @@ bool QWindowsMouseHandler::translateMouseWheelEvent(QWindow *window, HWND,
     }
 
     if (handleEvent) {
+        const QPoint posDip = QWindowsGeometryHint::mapFromGlobal(receiver, globalPos) / QWindowsScaling::factor();
         QWindowSystemInterface::handleWheelEvent(receiver,
-                                                 QWindowsGeometryHint::mapFromGlobal(receiver, globalPos),
-                                                 globalPos,
-                                                 delta, orientation, mods);
+                                                 posDip, globalPos / QWindowsScaling::factor(),
+                                                 delta / QWindowsScaling::factor(),
+                                                 orientation, mods);
     }
 
     return true;
@@ -419,6 +425,7 @@ bool QWindowsMouseHandler::translateTouchEvent(QWindow *window, HWND,
     Q_ASSERT(QWindowsContext::user32dll.getTouchInputInfo);
 
     QWindowsContext::user32dll.getTouchInputInfo((HANDLE) msg.lParam, msg.wParam, winTouchInputs.data(), sizeof(TOUCHINPUT));
+    const qreal screenPosFactor = 0.01 / qreal(QWindowsScaling::factor());
     for (int i = 0; i < winTouchPointCount; ++i) {
         const TOUCHINPUT &winTouchInput = winTouchInputs[i];
         int id = m_touchInputIDToTouchPointID.value(winTouchInput.dwID, -1);
@@ -432,10 +439,9 @@ bool QWindowsMouseHandler::translateTouchEvent(QWindow *window, HWND,
         if (m_lastTouchPositions.contains(id))
             touchPoint.normalPosition = m_lastTouchPositions.value(id);
 
-        QPointF screenPos = QPointF(qreal(winTouchInput.x) / qreal(100.), qreal(winTouchInput.y) / qreal(100.));
+        const QPointF screenPos = QPointF(winTouchInput.x, winTouchInput.y) * screenPosFactor;
         if (winTouchInput.dwMask & TOUCHINPUTMASKF_CONTACTAREA)
-            touchPoint.area.setSize(QSizeF(qreal(winTouchInput.cxContact) / qreal(100.),
-                                           qreal(winTouchInput.cyContact) / qreal(100.)));
+            touchPoint.area.setSize(QSizeF(winTouchInput.cxContact, winTouchInput.cyContact) * screenPosFactor);
         touchPoint.area.moveCenter(screenPos);
         QPointF normalPosition = QPointF(screenPos.x() / screenGeometry.width(),
                                          screenPos.y() / screenGeometry.height());

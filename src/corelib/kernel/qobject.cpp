@@ -4749,10 +4749,14 @@ bool QObject::disconnectImpl(const QObject *sender, void **signal, const QObject
     int signal_index = -1;
     if (signal) {
         void *args[] = { &signal_index, signal };
-        senderMetaObject->static_metacall(QMetaObject::IndexOfMethod, 0, args);
-        if (signal_index < 0 || signal_index >= QMetaObjectPrivate::get(senderMetaObject)->signalCount) {
-            qWarning("QObject::disconnect: signal not found in %s", senderMetaObject->className());
-            return false;
+        for (; senderMetaObject && signal_index < 0; senderMetaObject = senderMetaObject->superClass()) {
+            senderMetaObject->static_metacall(QMetaObject::IndexOfMethod, 0, args);
+            if (signal_index >= 0 && signal_index < QMetaObjectPrivate::get(senderMetaObject)->signalCount)
+                break;
+        }
+        if (!senderMetaObject) {
+            qWarning("QObject::disconnect: signal not found in %s", sender->metaObject()->className());
+            return QMetaObject::Connection(0);
         }
         signal_index += QMetaObjectPrivate::signalOffset(senderMetaObject);
     }

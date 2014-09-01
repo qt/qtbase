@@ -176,7 +176,6 @@ QIconTheme::QIconTheme(const QString &themeName)
 {
     QFile themeIndex;
 
-    QList <QIconDirInfo> keyList;
     QStringList iconDirs = QIcon::themeSearchPaths();
     for ( int i = 0 ; i < iconDirs.size() ; ++i) {
         QDir iconDir(iconDirs[i]);
@@ -269,7 +268,7 @@ QThemeIconEntries QIconLoader::findIconHelper(const QString &themeName,
     }
 
     QString contentDir = theme.contentDir() + QLatin1Char('/');
-    QList<QIconDirInfo> subDirs = theme.keyList();
+    const QVector<QIconDirInfo> subDirs = theme.keyList();
 
     const QString svgext(QLatin1String(".svg"));
     const QString pngext(QLatin1String(".png"));
@@ -333,9 +332,7 @@ QIconLoaderEngine::QIconLoaderEngine(const QString& iconName)
 
 QIconLoaderEngine::~QIconLoaderEngine()
 {
-    while (!m_entries.isEmpty())
-        delete m_entries.takeLast();
-    Q_ASSERT(m_entries.size() == 0);
+    qDeleteAll(m_entries);
 }
 
 QIconLoaderEngine::QIconLoaderEngine(const QIconLoaderEngine &other)
@@ -371,10 +368,8 @@ void QIconLoaderEngine::ensureLoaded()
 {
     if (!(QIconLoader::instance()->themeKey() == m_key)) {
 
-        while (!m_entries.isEmpty())
-            delete m_entries.takeLast();
+        qDeleteAll(m_entries);
 
-        Q_ASSERT(m_entries.size() == 0);
         m_entries = QIconLoader::instance()->loadIcon(m_iconName);
         m_key = QIconLoader::instance()->themeKey();
     }
@@ -448,8 +443,10 @@ QIconLoaderEngineEntry *QIconLoaderEngine::entryForSize(const QSize &size)
     // Note that m_entries are sorted so that png-files
     // come first
 
+    const int numEntries = m_entries.size();
+
     // Search for exact matches first
-    for (int i = 0; i < m_entries.count(); ++i) {
+    for (int i = 0; i < numEntries; ++i) {
         QIconLoaderEngineEntry *entry = m_entries.at(i);
         if (directoryMatchesSize(entry->dir, iconsize)) {
             return entry;
@@ -459,7 +456,7 @@ QIconLoaderEngineEntry *QIconLoaderEngine::entryForSize(const QSize &size)
     // Find the minimum distance icon
     int minimalSize = INT_MAX;
     QIconLoaderEngineEntry *closestMatch = 0;
-    for (int i = 0; i < m_entries.count(); ++i) {
+    for (int i = 0; i < numEntries; ++i) {
         QIconLoaderEngineEntry *entry = m_entries.at(i);
         int distance = directorySizeDistance(entry->dir, iconsize);
         if (distance < minimalSize) {
@@ -564,11 +561,12 @@ void QIconLoaderEngine::virtual_hook(int id, void *data)
         {
             QIconEngine::AvailableSizesArgument &arg
                     = *reinterpret_cast<QIconEngine::AvailableSizesArgument*>(data);
-            const QList<QIconDirInfo> directoryKey = QIconLoader::instance()->theme().keyList();
             arg.sizes.clear();
+            const int N = m_entries.size();
+            arg.sizes.reserve(N);
 
             // Gets all sizes from the DirectoryInfo entries
-            for (int i = 0 ; i < m_entries.size() ; ++i) {
+            for (int i = 0; i < N; ++i) {
                 int size = m_entries.at(i)->dir.size;
                 arg.sizes.append(QSize(size, size));
             }

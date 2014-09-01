@@ -249,7 +249,7 @@
     If the value is \e not compatible with the property's type, the
     property is \e not changed, and false is returned. But if the
     property with the given name doesn't exist in the QObject (i.e.,
-    if it wasn't declared with Q_PROPERTY(), a new property with the
+    if it wasn't declared with Q_PROPERTY()), a new property with the
     given name and value is automatically added to the QObject, but
     false is still returned. This means that a return of false can't
     be used to determine whether a particular property was actually

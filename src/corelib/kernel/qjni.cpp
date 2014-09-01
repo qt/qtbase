@@ -721,7 +721,7 @@ jboolean QJNIObjectPrivate::callStaticMethod<jboolean>(jclass clazz,
 {
     va_list args;
     va_start(args, sig);
-    jboolean res = callStaticMethod<jboolean>(clazz, methodName, sig);
+    jboolean res = callStaticMethod<jboolean>(clazz, methodName, sig, args);
     va_end(args);
     return res;
 }
@@ -1026,7 +1026,7 @@ jlong QJNIObjectPrivate::callStaticMethod<jlong>(jclass clazz,
 {
     va_list args;
     va_start(args, sig);
-    jlong res = callStaticMethod<jlong>(clazz, methodName, sig);
+    jlong res = callStaticMethod<jlong>(clazz, methodName, sig, args);
     va_end(args);
     return res;
 }
@@ -1119,7 +1119,7 @@ jdouble QJNIObjectPrivate::callStaticMethod<jdouble>(const char *className,
 {
     va_list args;
     va_start(args, sig);
-    jdouble res = callStaticMethod<jdouble>(className, methodName, sig);
+    jdouble res = callStaticMethod<jdouble>(className, methodName, sig, args);
     va_end(args);
     return res;
 }

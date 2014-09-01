@@ -1273,7 +1273,6 @@ void QWindowsNativeFileDialogBase::setLabelText(QFileDialogOptions::DialogLabel 
 {
     wchar_t *wText = const_cast<wchar_t *>(reinterpret_cast<const wchar_t *>(text.utf16()));
     switch (l) {
-        break;
     case QFileDialogOptions::FileName:
         m_fileDialog->SetFileNameLabel(wText);
         break;

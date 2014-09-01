@@ -497,27 +497,21 @@ Node* CppCodeParser::processTopicCommand(const Doc& doc,
                 ptype = Node::DitaMapPage;
         }
 
-        /*
-          Search for a node with the same name. If there is one,
-          then there is a collision, so create a collision node
-          and make the existing node a child of the collision
-          node, and then create the new Page node and make
-          it a child of the collision node as well. Return the
-          collision node.
-
-          If there is no collision, just create a new Page
-          node and return that one.
-        */
-        NameCollisionNode* ncn = qdb_->checkForCollision(args[0]);
+#if 0
+        const Node* n = qdb_->checkForCollision(args[0]);
+        if (n) {
+            QString other = n->doc().location().fileName();
+            doc.location().warning(tr("Name/title collision detected: '%1' in '\\%2'")
+                                   .arg(args[0]).arg(command),
+                                   tr("Also used here: %1").arg(other));
+        }
+#endif
         DocNode* dn = 0;
         if (ptype == Node::DitaMapPage)
             dn = new DitaMapNode(qdb_->primaryTreeRoot(), args[0]);
         else
             dn = new DocNode(qdb_->primaryTreeRoot(), args[0], Node::Page, ptype);
         dn->setLocation(doc.startLocation());
-        if (ncn) {
-            ncn->addCollision(dn);
-        }
         return dn;
     }
     else if (command == COMMAND_DITAMAP) {
@@ -549,40 +543,18 @@ Node* CppCodeParser::processTopicCommand(const Doc& doc,
                 classNode = qdb_->findClassNode(names[1].split("::"));
         }
 
-        /*
-          Search for a node with the same name. If there is one,
-          then there is a collision, so create a collision node
-          and make the existing node a child of the collision
-          node, and then create the new QML class node and make
-          it a child of the collision node as well. Return the
-          collision node.
-
-          If there is no collision, just create a new QML class
-          node and return that one.
-         */
-        NameCollisionNode* ncn = qdb_->checkForCollision(names[0]);
+#if 0
+        const Node* n = qdb_->checkForCollision(names[0]);
+        if (n) {
+            QString other = n->doc().location().fileName();
+            doc.location().warning(tr("Name/title collision detected: '%1' in '\\%2'")
+                                   .arg(names[0]).arg(command),
+                                   tr("Also used here: %1").arg(other));
+        }
+#endif
         QmlClassNode* qcn = new QmlClassNode(qdb_->primaryTreeRoot(), names[0]);
         qcn->setClassNode(classNode);
         qcn->setLocation(doc.startLocation());
-#if 0
-        // to be removed if \qmltype and \instantiates work ok
-        if (isParsingCpp() || isParsingQdoc()) {
-            qcn->requireCppClass();
-            if (names.size() < 2) {
-                QString msg = "C++ class name not specified for class documented as "
-                    "QML type: '\\qmlclass " + arg.first + " <class name>'";
-                doc.startLocation().warning(tr(msg.toLatin1().data()));
-            }
-            else if (!classNode) {
-                QString msg = "C++ class not found in any .h file for class documented "
-                    "as QML type: '\\qmlclass " + arg.first + "'";
-                doc.startLocation().warning(tr(msg.toLatin1().data()));
-            }
-        }
-#endif
-        if (ncn) {
-            ncn->addCollision(qcn);
-        }
         return qcn;
     }
     else if (command == COMMAND_QMLBASICTYPE) {

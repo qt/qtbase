@@ -303,7 +303,6 @@ public:
     virtual QString format();
     virtual bool canHandleFormat(const QString& format);
     virtual void generateDocs();
-    void generateCollisionPages();
 
     QString protectEnc(const QString& string);
     static QString protect(const QString& string, const QString& encoding = "ISO-8859-1");

@@ -90,6 +90,7 @@ public:
     static const QString& outputDir() { return outDir_; }
     static const QString& outputSubdir() { return outSubdir_; }
     static void terminate();
+    static const QStringList& outputFileNames() { return outFileNames_; }
     static void writeOutFileNames();
     static void augmentImageDirs(QSet<QString>& moreImageDirs);
     static void debug(const QString& message);
@@ -157,7 +158,6 @@ protected:
     void generateSince(const Node *node, CodeMarker *marker);
     void generateStatus(const Node *node, CodeMarker *marker);
     void generateThreadSafeness(const Node *node, CodeMarker *marker);
-    //QString getCollisionLink(const Atom* atom);
     QString getMetadataElement(const InnerNode* inner, const QString& t);
     QStringList getMetadataElements(const InnerNode* inner, const QString& t);
     QString indent(int level, const QString& markedCode);
@@ -175,7 +175,6 @@ protected:
     void unknownAtom(const Atom *atom);
     void appendSortedQmlNames(Text& text, const Node* base, const NodeList& subs);
 
-    QList<NameCollisionNode*> collisionNodes;
     QMap<QString, QStringList> editionGroupMap;
     QMap<QString, QStringList> editionModuleMap;
     QString naturalLanguage;
@@ -210,6 +209,7 @@ private:
     static QString project;
     static QString outDir_;
     static QString outSubdir_;
+    static QStringList outFileNames_;
     static QSet<QString> outputFormats;
     static QHash<QString, QString> outputPrefixes;
     static QStringList scriptDirs;

@@ -565,11 +565,14 @@ void tst_QDialog::snapToDefaultButton()
 #ifdef QT_NO_CURSOR
     QSKIP("Test relies on there being a cursor");
 #else
+    if (qApp->platformName().toLower() == QLatin1String("wayland"))
+        QSKIP("Wayland: Wayland does not support setting the cursor position.");
+
     QPoint topLeftPos = QApplication::desktop()->availableGeometry().topLeft();
     topLeftPos = QPoint(topLeftPos.x() + 100, topLeftPos.y() + 100);
     QPoint startingPos(topLeftPos.x() + 250, topLeftPos.y() + 250);
     QCursor::setPos(startingPos);
-    QVERIFY(QCursor::pos() == startingPos);
+    QCOMPARE(QCursor::pos(), startingPos);
     QDialog dialog;
     QPushButton *button = new QPushButton(&dialog);
     button->setDefault(true);
@@ -581,7 +584,7 @@ void tst_QDialog::snapToDefaultButton()
             QPoint localPos = button->mapFromGlobal(QCursor::pos());
             QVERIFY(button->rect().contains(localPos));
         } else {
-            QVERIFY(startingPos == QCursor::pos());
+            QCOMPARE(startingPos, QCursor::pos());
         }
     }
 #endif // !QT_NO_CURSOR
