@@ -90,6 +90,16 @@ public:
     bool isNull;
     QSsl::KeyType type;
     QSsl::KeyAlgorithm algorithm;
+
+    enum Cipher {
+        DesCbc,
+        DesEde3Cbc,
+        Rc2Cbc
+    };
+
+    Q_AUTOTEST_EXPORT static QByteArray decrypt(Cipher cipher, const QByteArray &data, const QByteArray &key, const QByteArray &iv);
+    Q_AUTOTEST_EXPORT static QByteArray encrypt(Cipher cipher, const QByteArray &data, const QByteArray &key, const QByteArray &iv);
+
 #ifndef QT_NO_OPENSSL
     union {
         EVP_PKEY *opaque;
@@ -100,15 +110,6 @@ public:
 #endif
     };
 #else
-    enum Cipher {
-        DesCbc,
-        DesEde3Cbc,
-        Rc2Cbc
-    };
-
-    Q_AUTOTEST_EXPORT static QByteArray decrypt(Cipher cipher, const QByteArray &data, const QByteArray &key, const QByteArray &iv);
-    Q_AUTOTEST_EXPORT static QByteArray encrypt(Cipher cipher, const QByteArray &data, const QByteArray &key, const QByteArray &iv);
-
     Qt::HANDLE opaque;
     QByteArray derData;
     int keyLength;
