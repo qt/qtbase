@@ -828,12 +828,14 @@ HRESULT QWinRTScreen::onCharacterReceived(ICoreWindow *, ICharacterReceivedEvent
 
 HRESULT QWinRTScreen::onPointerEntered(ICoreWindow *, IPointerEventArgs *args)
 {
+    Q_D(QWinRTScreen);
+
     ComPtr<IPointerPoint> pointerPoint;
     if (SUCCEEDED(args->get_CurrentPoint(&pointerPoint))) {
         // Assumes full-screen window
         Point point;
         pointerPoint->get_Position(&point);
-        QPoint pos(point.X, point.Y);
+        QPoint pos(point.X * d->scaleFactor, point.Y * d->scaleFactor);
 
         QWindowSystemInterface::handleEnterEvent(topWindow(), pos, pos);
     }
@@ -856,7 +858,7 @@ HRESULT QWinRTScreen::onPointerUpdated(ICoreWindow *, IPointerEventArgs *args)
     // Common traits - point, modifiers, properties
     Point point;
     pointerPoint->get_Position(&point);
-    QPointF pos(point.X, point.Y);
+    QPointF pos(point.X * d->scaleFactor, point.Y * d->scaleFactor);
 
     VirtualKeyModifiers modifiers;
     args->get_KeyModifiers(&modifiers);
@@ -954,7 +956,7 @@ HRESULT QWinRTScreen::onPointerUpdated(ICoreWindow *, IPointerEventArgs *args)
         }
         it.value().area = QRectF(area.X * d->scaleFactor, area.Y * d->scaleFactor,
                                  area.Width * d->scaleFactor, area.Height * d->scaleFactor);
-        it.value().normalPosition = QPointF(pos.x()/d->logicalSize.width(), pos.y()/d->logicalSize.height());
+        it.value().normalPosition = QPointF(point.X/d->logicalSize.width(), point.Y/d->logicalSize.height());
         it.value().pressure = pressure;
 
         QWindowSystemInterface::handleTouchEvent(topWindow(), d->touchDevice, d->touchPoints.values(), mods);
