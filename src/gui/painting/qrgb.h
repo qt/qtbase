@@ -80,9 +80,11 @@ inline Q_DECL_CONSTEXPR int qGray(QRgb rgb)                // convert RGB to gra
 inline Q_DECL_CONSTEXPR bool qIsGray(QRgb rgb)
 { return qRed(rgb) == qGreen(rgb) && qRed(rgb) == qBlue(rgb); }
 
+template <int ProcessorWordSize>
+inline QRgb qPremultiply_impl(QRgb x);
 
-#if Q_PROCESSOR_WORDSIZE == 8 // 64-bit version
-inline QRgb qPremultiply(QRgb x)
+template <> // 64-bit version
+inline QRgb qPremultiply_impl<8>(QRgb x)
 {
     const uint a = qAlpha(x);
     quint64 t = (((quint64(x)) | ((quint64(x)) << 24)) & 0x00ff00ff00ff00ff) * a;
@@ -90,8 +92,9 @@ inline QRgb qPremultiply(QRgb x)
     t &= 0x000000ff00ff00ff;
     return (uint(t)) | (uint(t >> 24)) | (a << 24);
 }
-#else // 32-bit version
-inline QRgb qPremultiply(QRgb x)
+
+template <> // 32-bit version
+inline QRgb qPremultiply_impl<4>(QRgb x)
 {
     const uint a = qAlpha(x);
     uint t = (x & 0xff00ff) * a;
@@ -104,7 +107,8 @@ inline QRgb qPremultiply(QRgb x)
     x |= t | (a << 24);
     return x;
 }
-#endif
+
+inline QRgb qPremultiply(QRgb x) { return qPremultiply_impl<Q_PROCESSOR_WORDSIZE>(x); }
 
 Q_GUI_EXPORT extern const uint qt_inv_premul_factor[];
 
