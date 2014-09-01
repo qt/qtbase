@@ -4,12 +4,10 @@ include(../common/common.pri)
 INCLUDEPATH += $$OUT_PWD/.. $$ANGLE_DIR/src/libGLESv2
 
 # Remember to adapt tools/configure/configureapp.cpp if the Direct X version changes.
-angle_d3d11: \
-    LIBS_PRIVATE += -ldxgi -ld3d11
 !winrt: \
     LIBS_PRIVATE += -ld3d9
 winrt: \
-    LIBS_PRIVATE += -ld3dcompiler
+    LIBS_PRIVATE += -ld3dcompiler -ldxgi -ld3d11
 
 LIBS_PRIVATE += -ldxguid
 

@@ -1,10 +1,7 @@
 CONFIG += installed
 include(../common/common.pri)
 
-angle_d3d11: \
-    LIBS_PRIVATE += -ld3d11
-!winrt: \
-    LIBS_PRIVATE += -ld3d9
+winrt: LIBS_PRIVATE += -ld3d11
 
 LIBS_PRIVATE += -ldxguid -L$$QT_BUILD_TREE/lib -l$$qtLibraryTarget(libGLESv2)
 
