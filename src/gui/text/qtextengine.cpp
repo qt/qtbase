@@ -2385,8 +2385,7 @@ bool QTextEngine::LayoutData::reallocate(int totalGlyphs)
         return false;
     }
 
-    void **newMem = memory;
-    newMem = (void **)::realloc(memory_on_stack ? 0 : memory, newAllocated*sizeof(void *));
+    void **newMem = (void **)::realloc(memory_on_stack ? 0 : memory, newAllocated*sizeof(void *));
     if (!newMem) {
         layoutState = LayoutFailed;
         return false;
