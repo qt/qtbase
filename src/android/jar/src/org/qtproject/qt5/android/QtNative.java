@@ -397,25 +397,6 @@ public class QtNative
         });
     }
 
-    private static boolean isSoftwareKeyboardVisible()
-    {
-        final Semaphore semaphore = new Semaphore(0);
-        final Boolean[] ret = {false};
-        runAction(new Runnable() {
-            @Override
-            public void run() {
-                ret[0] = m_activityDelegate.isSoftwareKeyboardVisible();
-                semaphore.release();
-            }
-        });
-        try {
-            semaphore.acquire();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return ret[0];
-    }
-
     private static void setFullScreen(final boolean fullScreen)
     {
         runAction(new Runnable() {

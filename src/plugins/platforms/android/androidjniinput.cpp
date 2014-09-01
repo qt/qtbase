@@ -59,10 +59,10 @@ namespace QtAndroidInput
     static jmethodID m_showSoftwareKeyboardMethodID = 0;
     static jmethodID m_resetSoftwareKeyboardMethodID = 0;
     static jmethodID m_hideSoftwareKeyboardMethodID = 0;
-    static jmethodID m_isSoftwareKeyboardVisibleMethodID = 0;
     static jmethodID m_updateSelectionMethodID = 0;
 
     static bool m_ignoreMouseEvents = false;
+    static bool m_softwareKeyboardVisible = false;
 
     static QList<QWindowSystemInterface::TouchPoint> m_touchPoints;
 
@@ -125,15 +125,7 @@ namespace QtAndroidInput
 
     bool isSoftwareKeyboardVisible()
     {
-        AttachedJNIEnv env;
-        if (!env.jniEnv)
-            return false;
-
-        bool visibility = env.jniEnv->CallStaticBooleanMethod(applicationClass(), m_isSoftwareKeyboardVisibleMethodID);
-#ifdef QT_DEBUG_ANDROID_IM_PROTOCOL
-        qDebug() << "@@@ ISSOFTWAREKEYBOARDVISIBLE" << visibility;
-#endif
-        return visibility;
+        return m_softwareKeyboardVisible;
     }
 
 
@@ -714,8 +706,9 @@ namespace QtAndroidInput
                                                false);
     }
 
-    static void keyboardVisibilityChanged(JNIEnv */*env*/, jobject /*thiz*/, jboolean /*visibility*/)
+    static void keyboardVisibilityChanged(JNIEnv */*env*/, jobject /*thiz*/, jboolean visibility)
     {
+        m_softwareKeyboardVisible = visibility;
         QAndroidInputContext *inputContext = QAndroidInputContext::androidInputContext();
         if (inputContext && qGuiApp)
             inputContext->emitInputPanelVisibleChanged();
@@ -756,7 +749,6 @@ namespace QtAndroidInput
         GET_AND_CHECK_STATIC_METHOD(m_showSoftwareKeyboardMethodID, appClass, "showSoftwareKeyboard", "(IIIII)V");
         GET_AND_CHECK_STATIC_METHOD(m_resetSoftwareKeyboardMethodID, appClass, "resetSoftwareKeyboard", "()V");
         GET_AND_CHECK_STATIC_METHOD(m_hideSoftwareKeyboardMethodID, appClass, "hideSoftwareKeyboard", "()V");
-        GET_AND_CHECK_STATIC_METHOD(m_isSoftwareKeyboardVisibleMethodID, appClass, "isSoftwareKeyboardVisible", "()Z");
         GET_AND_CHECK_STATIC_METHOD(m_updateSelectionMethodID, appClass, "updateSelection", "(IIII)V");
         return true;
     }
