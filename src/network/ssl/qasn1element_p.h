@@ -97,6 +97,7 @@ public:
 
     QDateTime toDateTime() const;
     QMultiMap<QByteArray, QString> toInfo() const;
+    qint64 toInteger(bool *ok = 0) const;
     QVector<QAsn1Element> toVector() const;
     QByteArray toObjectId() const;
     QByteArray toObjectName() const;

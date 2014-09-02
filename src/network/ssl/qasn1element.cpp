@@ -242,6 +242,30 @@ QMultiMap<QByteArray, QString> QAsn1Element::toInfo() const
     return info;
 }
 
+qint64 QAsn1Element::toInteger(bool *ok) const
+{
+    if (mType != QAsn1Element::IntegerType || mValue.isEmpty()) {
+        if (ok)
+            *ok = false;
+        return 0;
+    }
+
+    // NOTE: negative numbers are not handled
+    if (mValue.at(0) & 0x80) {
+        if (ok)
+            *ok = false;
+        return 0;
+    }
+
+    qint64 value = mValue.at(0) & 0x7f;
+    for (int i = 1; i < mValue.size(); ++i)
+        value = (value << 8) | quint8(mValue.at(i));
+
+    if (ok)
+        *ok = true;
+    return value;
+}
+
 QVector<QAsn1Element> QAsn1Element::toVector() const
 {
     QVector<QAsn1Element> items;

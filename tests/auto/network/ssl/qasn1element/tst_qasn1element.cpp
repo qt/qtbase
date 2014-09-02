@@ -122,6 +122,14 @@ void tst_QAsn1Element::integer()
     QFETCH(QByteArray, encoded);
     QFETCH(int, value);
 
+    // read
+    bool ok;
+    QAsn1Element elem;
+    QVERIFY(elem.read(encoded));
+    QCOMPARE(elem.type(), quint8(QAsn1Element::IntegerType));
+    QCOMPARE(elem.toInteger(&ok), value);
+    QVERIFY(ok);
+
     // write
     QByteArray buffer;
     QDataStream stream(&buffer, QIODevice::WriteOnly);
