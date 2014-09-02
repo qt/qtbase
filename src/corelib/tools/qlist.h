@@ -188,6 +188,7 @@ public:
     public:
         Node *i;
         typedef std::random_access_iterator_tag  iterator_category;
+        // ### Qt6: use int
         typedef qptrdiff difference_type;
         typedef T value_type;
         typedef T *pointer;
@@ -198,7 +199,7 @@ public:
         inline iterator(const iterator &o): i(o.i){}
         inline T &operator*() const { return i->t(); }
         inline T *operator->() const { return &i->t(); }
-        inline T &operator[](int j) const { return i[j].t(); }
+        inline T &operator[](difference_type j) const { return i[j].t(); }
         inline bool operator==(const iterator &o) const { return i == o.i; }
         inline bool operator!=(const iterator &o) const { return i != o.i; }
         inline bool operator<(const iterator& other) const { return i < other.i; }
@@ -223,10 +224,10 @@ public:
         inline iterator operator++(int) { Node *n = i; ++i; return n; }
         inline iterator &operator--() { i--; return *this; }
         inline iterator operator--(int) { Node *n = i; i--; return n; }
-        inline iterator &operator+=(int j) { i+=j; return *this; }
-        inline iterator &operator-=(int j) { i-=j; return *this; }
-        inline iterator operator+(int j) const { return iterator(i+j); }
-        inline iterator operator-(int j) const { return iterator(i-j); }
+        inline iterator &operator+=(difference_type j) { i+=j; return *this; }
+        inline iterator &operator-=(difference_type j) { i-=j; return *this; }
+        inline iterator operator+(difference_type j) const { return iterator(i+j); }
+        inline iterator operator-(difference_type j) const { return iterator(i-j); }
         inline int operator-(iterator j) const { return int(i - j.i); }
     };
     friend class iterator;
@@ -235,6 +236,7 @@ public:
     public:
         Node *i;
         typedef std::random_access_iterator_tag  iterator_category;
+        // ### Qt6: use int
         typedef qptrdiff difference_type;
         typedef T value_type;
         typedef const T *pointer;
@@ -250,7 +252,7 @@ public:
 #endif
         inline const T &operator*() const { return i->t(); }
         inline const T *operator->() const { return &i->t(); }
-        inline const T &operator[](int j) const { return i[j].t(); }
+        inline const T &operator[](difference_type j) const { return i[j].t(); }
         inline bool operator==(const const_iterator &o) const { return i == o.i; }
         inline bool operator!=(const const_iterator &o) const { return i != o.i; }
         inline bool operator<(const const_iterator& other) const { return i < other.i; }
@@ -261,10 +263,10 @@ public:
         inline const_iterator operator++(int) { Node *n = i; ++i; return n; }
         inline const_iterator &operator--() { i--; return *this; }
         inline const_iterator operator--(int) { Node *n = i; i--; return n; }
-        inline const_iterator &operator+=(int j) { i+=j; return *this; }
-        inline const_iterator &operator-=(int j) { i-=j; return *this; }
-        inline const_iterator operator+(int j) const { return const_iterator(i+j); }
-        inline const_iterator operator-(int j) const { return const_iterator(i-j); }
+        inline const_iterator &operator+=(difference_type j) { i+=j; return *this; }
+        inline const_iterator &operator-=(difference_type j) { i-=j; return *this; }
+        inline const_iterator operator+(difference_type j) const { return const_iterator(i+j); }
+        inline const_iterator operator-(difference_type j) const { return const_iterator(i-j); }
         inline int operator-(const_iterator j) const { return int(i - j.i); }
     };
     friend class const_iterator;
@@ -316,6 +318,7 @@ public:
     typedef const value_type *const_pointer;
     typedef value_type &reference;
     typedef const value_type &const_reference;
+    // ### Qt6: use int
     typedef qptrdiff difference_type;
 
     // comfort
