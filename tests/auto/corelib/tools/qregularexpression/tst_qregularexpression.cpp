@@ -610,6 +610,7 @@ void tst_QRegularExpression::normalMatch_data()
     QTest::addColumn<Match>("match");
 
     Match m;
+    int offset = 0;
 
     m.clear();
     m.isValid = true; m.hasMatch = true;
@@ -661,20 +662,28 @@ void tst_QRegularExpression::normalMatch_data()
     m.clear();
     m.isValid = true; m.hasMatch = true;
     m.captured << "c123def" << "c12" << "3" << "def";
-    QTest::newRow("match06") << QRegularExpression("(\\w*)(\\d+)(\\w*)")
-                             << "abc123def"
-                             << 2
-                             << QRegularExpression::MatchOptions(QRegularExpression::NoMatchOption)
-                             << m;
+    offset = 2;
+    for (int i = 0; i <= offset; ++i) {
+        QTest::newRow(QStringLiteral("match06-offset%1").arg(i).toUtf8().constData())
+                << QRegularExpression("(\\w*)(\\d+)(\\w*)")
+                << QStringLiteral("abc123def").mid(offset - i)
+                << i
+                << QRegularExpression::MatchOptions(QRegularExpression::NoMatchOption)
+                << m;
+    }
 
     m.clear();
     m.isValid = true; m.hasMatch = true;
     m.captured << QString("");
-    QTest::newRow("match07") << QRegularExpression("\\w*")
-                             << "abc123def"
-                             << 9
-                             << QRegularExpression::MatchOptions(QRegularExpression::NoMatchOption)
-                             << m;
+    offset = 9;
+    for (int i = 0; i <= offset; ++i) {
+        QTest::newRow(QStringLiteral("match07-offset%1").arg(i).toUtf8().constData())
+                << QRegularExpression("\\w*")
+                << QStringLiteral("abc123def").mid(offset - i)
+                << i
+                << QRegularExpression::MatchOptions(QRegularExpression::NoMatchOption)
+                << m;
+    }
 
     m.clear();
     m.isValid = true; m.hasMatch = true;
@@ -732,19 +741,27 @@ void tst_QRegularExpression::normalMatch_data()
 
     m.clear();
     m.isValid = true;
-    QTest::newRow("nomatch02") << QRegularExpression("(\\w+) (\\w+)")
-                               << "a string"
-                               << 1
-                               << QRegularExpression::MatchOptions(QRegularExpression::NoMatchOption)
-                               << m;
+    offset = 1;
+    for (int i = 0; i <= offset; ++i) {
+        QTest::newRow(QStringLiteral("nomatch02-offset%1").arg(i).toUtf8().constData())
+            << QRegularExpression("(\\w+) (\\w+)")
+            << QStringLiteral("a string").mid(offset - i)
+            << i
+            << QRegularExpression::MatchOptions(QRegularExpression::NoMatchOption)
+            << m;
+    }
 
     m.clear();
     m.isValid = true;
-    QTest::newRow("nomatch03") << QRegularExpression("\\w+")
-                               << "abc123def"
-                               << 9
-                               << QRegularExpression::MatchOptions(QRegularExpression::NoMatchOption)
-                               << m;
+    offset = 9;
+    for (int i = 0; i <= offset; ++i) {
+        QTest::newRow(QStringLiteral("nomatch03-offset%1").arg(i).toUtf8().constData())
+                << QRegularExpression("\\w+")
+                << QStringLiteral("abc123def").mid(offset - i)
+                << i
+                << QRegularExpression::MatchOptions(QRegularExpression::NoMatchOption)
+                << m;
+    }
 
     // ***
 
@@ -832,6 +849,7 @@ void tst_QRegularExpression::partialMatch_data()
     QTest::addColumn<Match>("match");
 
     Match m;
+    int offset = 0;
 
     m.clear();
     m.isValid = true; m.hasPartialMatch = true;
@@ -906,12 +924,16 @@ void tst_QRegularExpression::partialMatch_data()
     m.clear();
     m.isValid = true; m.hasPartialMatch = true;
     m.captured << "def";
-    QTest::newRow("softmatch08") << QRegularExpression("abc\\w+X|defY")
-                                    << "abcdef"
-                                    << 1
-                                    << QRegularExpression::PartialPreferCompleteMatch
-                                    << QRegularExpression::MatchOptions(QRegularExpression::NoMatchOption)
-                                    << m;
+    offset = 1;
+    for (int i = 0; i <= offset; ++i) {
+        QTest::newRow(QStringLiteral("softmatch08-offset%1").arg(i).toUtf8().constData())
+                << QRegularExpression("abc\\w+X|defY")
+                << QStringLiteral("abcdef").mid(offset - i)
+                << i
+                << QRegularExpression::PartialPreferCompleteMatch
+                << QRegularExpression::MatchOptions(QRegularExpression::NoMatchOption)
+                << m;
+    }
 
     // ***
 
@@ -988,12 +1010,16 @@ void tst_QRegularExpression::partialMatch_data()
     m.clear();
     m.isValid = true; m.hasPartialMatch = true;
     m.captured << "def";
-    QTest::newRow("hardmatch08") << QRegularExpression("abc\\w+X|defY")
-                                    << "abcdef"
-                                    << 1
-                                    << QRegularExpression::PartialPreferFirstMatch
-                                    << QRegularExpression::MatchOptions(QRegularExpression::NoMatchOption)
-                                    << m;
+    offset = 1;
+    for (int i = 0; i <= offset; ++i) {
+        QTest::newRow(QStringLiteral("hardmatch08-offset%1").arg(i).toUtf8().constData())
+                << QRegularExpression("abc\\w+X|defY")
+                << QStringLiteral("abcdef").mid(offset - i)
+                << i
+                << QRegularExpression::PartialPreferFirstMatch
+                << QRegularExpression::MatchOptions(QRegularExpression::NoMatchOption)
+                << m;
+    }
 
     m.clear();
     m.isValid = true; m.hasPartialMatch = true;
