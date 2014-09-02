@@ -314,6 +314,19 @@ static void testMatch(const QRegularExpression &regexp,
                             matchType,
                             matchOptions,
                             result);
+
+    // offset <= 0 tested above; now also test stringrefs not spanning over
+    // the entire subject. Note that the offset can be negative, hence the above
+    // tests can't be merged into this one
+    for (int i = 1; i <= offset; ++i) {
+        testMatchImpl<QREMatch>(regexp,
+                                matchingMethodForStringRef,
+                                QStringRef(&subject, i, subject.length() - i),
+                                offset - i,
+                                matchType,
+                                matchOptions,
+                                result);
+    }
 }
 
 typedef QRegularExpressionMatch (QRegularExpression::*QREMatchStringPMF)(const QString &, int, QRegularExpression::MatchType, QRegularExpression::MatchOptions) const;
