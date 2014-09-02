@@ -85,7 +85,6 @@ src_3rdparty_harfbuzzng.target = sub-3rdparty-harfbuzzng
 
 src_angle.subdir = $$PWD/angle
 src_angle.target = sub-angle
-angle_d3d11: src_angle.depends = src_corelib
 
 src_gui.subdir = $$PWD/gui
 src_gui.target = sub-gui
