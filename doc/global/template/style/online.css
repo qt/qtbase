@@ -48,6 +48,10 @@ links
     text-height: 24px;
 }
 
+.flags:target {
+    background-color: #FFFFD6;
+}
+
 /*
 -------------------------------
 NOTE styles
@@ -204,12 +208,20 @@ h2, p.h2 {
     overflow: hidden;
 }
 
+h2:target {
+    background-color: #F2F3D4;
+}
+
 h3 {
     font: 500 14px/1.2 Arial;
     font-weight: 100;
     text-decoration: underline;
     margin-bottom: 30px;
     margin-top: 30px;
+}
+
+h3.fn:target {
+    background-color: #F6F6D6;
 }
 
 h3.fn, span.fn {
@@ -291,6 +303,10 @@ table, pre {
  table tr.odd {
      background-color: #F6F6F6;
      color: #66666E;
+ }
+
+ table tr:target {
+     background-color: #F6F6D6;
  }
 
  table thead {
