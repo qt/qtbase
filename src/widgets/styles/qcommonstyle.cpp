@@ -1645,30 +1645,33 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
         break;
     case CE_ToolBoxTabShape:
         if (const QStyleOptionToolBox *tb = qstyleoption_cast<const QStyleOptionToolBox *>(opt)) {
-            int d = 20 + tb->rect.height() - 3;
-            QPolygon a(7);
-            if (tb->direction != Qt::RightToLeft) {
-                a.setPoint(0, -1, tb->rect.height() + 1);
-                a.setPoint(1, -1, 1);
-                a.setPoint(2, tb->rect.width() - d, 1);
-                a.setPoint(3, tb->rect.width() - 20, tb->rect.height() - 2);
-                a.setPoint(4, tb->rect.width() - 1, tb->rect.height() - 2);
-                a.setPoint(5, tb->rect.width() - 1, tb->rect.height() + 1);
-                a.setPoint(6, -1, tb->rect.height() + 1);
-            } else {
-                a.setPoint(0, tb->rect.width(), tb->rect.height() + 1);
-                a.setPoint(1, tb->rect.width(), 1);
-                a.setPoint(2, d - 1, 1);
-                a.setPoint(3, 20 - 1, tb->rect.height() - 2);
-                a.setPoint(4, 0, tb->rect.height() - 2);
-                a.setPoint(5, 0, tb->rect.height() + 1);
-                a.setPoint(6, tb->rect.width(), tb->rect.height() + 1);
-            }
-
             p->setPen(tb->palette.mid().color().darker(150));
             bool oldQt4CompatiblePainting = p->testRenderHint(QPainter::Qt4CompatiblePainting);
             p->setRenderHint(QPainter::Qt4CompatiblePainting);
-            p->drawPolygon(a);
+            int d = 20 + tb->rect.height() - 3;
+            if (tb->direction != Qt::RightToLeft) {
+                const QPoint points[] = {
+                    QPoint(-1, tb->rect.height() + 1),
+                    QPoint(-1, 1),
+                    QPoint(tb->rect.width() - d, 1),
+                    QPoint(tb->rect.width() - 20, tb->rect.height() - 2),
+                    QPoint(tb->rect.width() - 1, tb->rect.height() - 2),
+                    QPoint(tb->rect.width() - 1, tb->rect.height() + 1),
+                    QPoint(-1, tb->rect.height() + 1),
+                };
+                p->drawPolygon(points, sizeof points / sizeof *points);
+            } else {
+                const QPoint points[] = {
+                    QPoint(tb->rect.width(), tb->rect.height() + 1),
+                    QPoint(tb->rect.width(), 1),
+                    QPoint(d - 1, 1),
+                    QPoint(20 - 1, tb->rect.height() - 2),
+                    QPoint(0, tb->rect.height() - 2),
+                    QPoint(0, tb->rect.height() + 1),
+                    QPoint(tb->rect.width(), tb->rect.height() + 1),
+                };
+                p->drawPolygon(points, sizeof points / sizeof *points);
+            }
             p->setRenderHint(QPainter::Qt4CompatiblePainting, oldQt4CompatiblePainting);
             p->setPen(tb->palette.light().color());
             if (tb->direction != Qt::RightToLeft) {
