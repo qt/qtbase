@@ -70,7 +70,7 @@ class Q_AUTOTEST_EXPORT QGraphicsSceneLinearIndex : public QGraphicsSceneIndex
     Q_OBJECT
 
 public:
-    QGraphicsSceneLinearIndex(QGraphicsScene *scene = 0) : QGraphicsSceneIndex(scene)
+    QGraphicsSceneLinearIndex(QGraphicsScene *scene = 0) : QGraphicsSceneIndex(scene), m_numSortedElements(0)
     { }
 
     QList<QGraphicsItem *> items(Qt::SortOrder order = Qt::DescendingOrder) const
@@ -85,16 +85,35 @@ public:
 
 protected :
     virtual void clear()
-    { m_items.clear(); }
+    {
+        m_items.clear();
+        m_numSortedElements = 0;
+    }
 
     virtual void addItem(QGraphicsItem *item)
     { m_items << item; }
 
     virtual void removeItem(QGraphicsItem *item)
-    { m_items.removeOne(item); }
+    {
+        // Sort m_items if needed
+        if (m_numSortedElements < m_items.size())
+        {
+            std::sort(m_items.begin() + m_numSortedElements, m_items.end() );
+            std::inplace_merge(m_items.begin(), m_items.begin() + m_numSortedElements, m_items.end());
+            m_numSortedElements = m_items.size();
+        }
+
+        QList<QGraphicsItem*>::iterator element = std::lower_bound(m_items.begin(), m_items.end(), item);
+        if (element != m_items.end() && *element == item)
+        {
+            m_items.erase(element);
+            --m_numSortedElements;
+        }
+    }
 
 private:
     QList<QGraphicsItem*> m_items;
+    int m_numSortedElements;
 };
 
 #endif // QT_NO_GRAPHICSVIEW
