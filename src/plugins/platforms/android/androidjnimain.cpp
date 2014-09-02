@@ -380,6 +380,9 @@ namespace QtAndroid
 
     void setSurfaceGeometry(int surfaceId, const QRect &geometry)
     {
+        if (surfaceId == -1)
+            return;
+
         QJNIEnvironmentPrivate env;
         if (!env)
             return;
@@ -399,6 +402,9 @@ namespace QtAndroid
 
     void destroySurface(int surfaceId)
     {
+        if (surfaceId == -1)
+            return;
+
         QMutexLocker lock(&m_surfacesMutex);
         const auto &it = m_surfaces.find(surfaceId);
         if (it != m_surfaces.end())

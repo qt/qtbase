@@ -1085,11 +1085,14 @@ public class QtActivityDelegate
             Log.e(QtNative.QtTAG, "Surface " + id +" not found!");
         }
 
+        if (view == null)
+            return;
+
         // Keep last frame in stack until it is replaced to get correct
         // shutdown transition
         if (m_surfaces.size() == 0 && m_nativeViews.size() == 0) {
             m_dummyView = view;
-        } else if (view != null) {
+        } else {
             m_layout.removeView(view);
         }
     }
