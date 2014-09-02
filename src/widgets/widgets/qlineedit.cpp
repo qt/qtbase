@@ -1877,14 +1877,12 @@ void QLineEdit::paintEvent(QPaintEvent *)
 {
     Q_D(QLineEdit);
     QPainter p(this);
-
-    QRect r = rect();
     QPalette pal = palette();
 
     QStyleOptionFrameV2 panel;
     initStyleOption(&panel);
     style()->drawPrimitive(QStyle::PE_PanelLineEdit, &panel, &p, this);
-    r = style()->subElementRect(QStyle::SE_LineEditContents, &panel, this);
+    QRect r = style()->subElementRect(QStyle::SE_LineEditContents, &panel, this);
     r.setX(r.x() + d->effectiveLeftTextMargin());
     r.setY(r.y() + d->topTextMargin);
     r.setRight(r.right() - d->effectiveRightTextMargin());
