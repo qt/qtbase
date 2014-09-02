@@ -83,10 +83,10 @@
 #  define ARCH_PROCESSOR "unknown"
 #endif
 
-// endinanness
-#if defined(Q_LITTLE_ENDIAN)
+// endianness
+#if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
 #  define ARCH_ENDIANNESS "little_endian"
-#elif defined(Q_BIG_ENDIAN)
+#elif Q_BYTE_ORDER == Q_BIG_ENDIAN
 #  define ARCH_ENDIANNESS "big_endian"
 #endif
 
