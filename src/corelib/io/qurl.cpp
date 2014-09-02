@@ -4079,6 +4079,11 @@ static QUrl adjustFtpPath(QUrl url)
     return url;
 }
 
+static bool isIp6(const QString &text)
+{
+    QIPAddressUtils::IPv6Address address;
+    return !text.isEmpty() && QIPAddressUtils::parseIp6(address, text.begin(), text.end()) == 0;
+}
 
 // The following code has the following copyright:
 /*
@@ -4135,8 +4140,18 @@ QUrl QUrl::fromUserInput(const QString &userInput, const QString &workingDirecto
     if (trimmedString.isEmpty())
         return QUrl();
 
-    // Check both QUrl::isRelative (to detect full URLs) and QDir::isAbsolutePath (since on Windows drive letters can be interpreted as schemes)
+
+    // Check for IPv6 addresses, since a path starting with ":" is absolute (a resource)
+    // and IPv6 addresses can start with "c:" too
+    if (isIp6(trimmedString)) {
+        QUrl url;
+        url.setHost(trimmedString);
+        url.setScheme(QStringLiteral("http"));
+        return url;
+    }
+
     QUrl url = QUrl(trimmedString, QUrl::TolerantMode);
+    // Check both QUrl::isRelative (to detect full URLs) and QDir::isAbsolutePath (since on Windows drive letters can be interpreted as schemes)
     if (url.isRelative() && !QDir::isAbsolutePath(trimmedString)) {
         QFileInfo fileInfo(QDir(workingDirectory), trimmedString);
         if ((options & AssumeLocalFile) || fileInfo.exists())
@@ -4180,6 +4195,15 @@ QUrl QUrl::fromUserInput(const QString &userInput, const QString &workingDirecto
 QUrl QUrl::fromUserInput(const QString &userInput)
 {
     QString trimmedString = userInput.trimmed();
+
+    // Check for IPv6 addresses, since a path starting with ":" is absolute (a resource)
+    // and IPv6 addresses can start with "c:" too
+    if (isIp6(trimmedString)) {
+        QUrl url;
+        url.setHost(trimmedString);
+        url.setScheme(QStringLiteral("http"));
+        return url;
+    }
 
     // Check first for files, since on Windows drive letters can be interpretted as schemes
     if (QDir::isAbsolutePath(trimmedString))

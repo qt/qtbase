@@ -2871,6 +2871,13 @@ void tst_QUrl::fromUserInput_data()
     QTest::newRow("add scheme-1") << "www.example.org" << QUrl("http://www.example.org");
     QTest::newRow("add scheme-2") << "ftp.example.org" << QUrl("ftp://ftp.example.org");
     QTest::newRow("add scheme-3") << "hostname" << QUrl("http://hostname");
+    QTest::newRow("ipv4-1") << "127.0.0.1" << QUrl("http://127.0.0.1");
+    QTest::newRow("ipv6-0") << "::" << QUrl("http://[::]");
+    QTest::newRow("ipv6-1") << "::1" << QUrl("http://[::1]");
+    QTest::newRow("ipv6-2") << "1::1" << QUrl("http://[1::1]");
+    QTest::newRow("ipv6-3") << "1::" << QUrl("http://[1::]");
+    QTest::newRow("ipv6-4") << "c::" << QUrl("http://[c::]");
+    QTest::newRow("ipv6-5") << "c:f00:ba4::" << QUrl("http://[c:f00:ba4::]");
 
     // no host
     QTest::newRow("nohost-1") << "http://" << QUrl("http://");
@@ -2949,6 +2956,16 @@ void tst_QUrl::fromUserInputWithCwd_data()
 #ifdef Q_OS_WIN
     QTest::newRow("windows-absolute") << "c:/doesnotexist.txt" << QDir::currentPath() << QUrl("file:///c:/doesnotexist.txt") << QUrl("file:///c:/doesnotexist.txt");
 #endif
+
+    // IPv4 & IPv6
+    // same as fromUserInput, but needs retesting
+    QTest::newRow("ipv4-1") << "127.0.0.1" << QDir::currentPath() << QUrl("http://127.0.0.1") << QUrl::fromLocalFile(QDir::currentPath() + "/127.0.0.1");
+    QTest::newRow("ipv6-0") << "::" << QDir::currentPath() << QUrl("http://[::]") << QUrl("http://[::]");
+    QTest::newRow("ipv6-1") << "::1" << QDir::currentPath() << QUrl("http://[::1]") << QUrl("http://[::1]");
+    QTest::newRow("ipv6-2") << "1::1" << QDir::currentPath() << QUrl("http://[1::1]") << QUrl("http://[1::1]");
+    QTest::newRow("ipv6-3") << "1::" << QDir::currentPath() << QUrl("http://[1::]") << QUrl("http://[1::]");
+    QTest::newRow("ipv6-4") << "c::" << QDir::currentPath() << QUrl("http://[c::]") << QUrl("http://[c::]");
+    QTest::newRow("ipv6-5") << "c:f00:ba4::" << QDir::currentPath() << QUrl("http://[c:f00:ba4::]") << QUrl("http://[c:f00:ba4::]");
 }
 
 void tst_QUrl::fromUserInputWithCwd()
