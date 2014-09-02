@@ -266,20 +266,6 @@ private:
     friend QDataStream &operator>>(QDataStream &, QTextFormat &);
 };
 
-// this is only safe because sizeof(int) == sizeof(float)
-static inline uint hash(float d)
-{
-#ifdef Q_CC_GNU
-    // this is a GCC extension and isn't guaranteed to work in other compilers
-    // the reinterpret_cast below generates a strict-aliasing warning with GCC
-    union { float f; uint u; } cvt;
-    cvt.f = d;
-    return cvt.u;
-#else
-    return reinterpret_cast<uint&>(d);
-#endif
-}
-
 static inline uint hash(const QColor &color)
 {
     return (color.isValid()) ? color.rgba() : 0x234109;
@@ -287,7 +273,7 @@ static inline uint hash(const QColor &color)
 
 static inline uint hash(const QPen &pen)
 {
-    return hash(pen.color()) + hash(pen.widthF());
+    return hash(pen.color()) + qHash(pen.widthF());
 }
 
 static inline uint hash(const QBrush &brush)
@@ -300,7 +286,7 @@ static inline uint variantHash(const QVariant &variant)
     // simple and fast hash functions to differentiate between type and value
     switch (variant.userType()) { // sorted by occurrence frequency
     case QVariant::String: return qHash(variant.toString());
-    case QVariant::Double: return hash(variant.toDouble());
+    case QVariant::Double: return qHash(variant.toDouble());
     case QVariant::Int: return 0x811890 + variant.toInt();
     case QVariant::Brush:
         return 0x01010101 + hash(qvariant_cast<QBrush>(variant));
@@ -311,7 +297,7 @@ static inline uint variantHash(const QVariant &variant)
     case QVariant::Color: return hash(qvariant_cast<QColor>(variant));
       case QVariant::TextLength:
         return 0x377 + hash(qvariant_cast<QTextLength>(variant).rawValue());
-    case QMetaType::Float: return hash(variant.toFloat());
+    case QMetaType::Float: return qHash(variant.toFloat());
     case QVariant::Invalid: return 0;
     default: break;
     }
