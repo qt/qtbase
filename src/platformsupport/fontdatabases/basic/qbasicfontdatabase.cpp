@@ -96,8 +96,9 @@ void QBasicFontDatabase::populateFontDatabase()
     QString fontpath = fontDir();
 
     if(!QFile::exists(fontpath)) {
-        qFatal("QFontDatabase: Cannot find font directory %s - is Qt installed correctly?",
+        qWarning("QFontDatabase: Cannot find font directory %s - is Qt installed correctly?",
                qPrintable(fontpath));
+        return;
     }
 
     QDir dir(fontpath);
