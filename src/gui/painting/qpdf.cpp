@@ -2323,6 +2323,14 @@ int QPdfEnginePrivate::addBrushPattern(const QTransform &m, bool *specifyColor, 
     return patternObj;
 }
 
+static inline bool is_monochrome(const QVector<QRgb> &colorTable)
+{
+    return colorTable.size() == 2
+        && colorTable.at(0) == QColor(Qt::black).rgba()
+        && colorTable.at(1) == QColor(Qt::white).rgba()
+        ;
+}
+
 /*!
  * Adds an image to the pdf and return the pdf-object id. Returns -1 if adding the image failed.
  */
@@ -2337,10 +2345,7 @@ int QPdfEnginePrivate::addImage(const QImage &img, bool *bitmap, qint64 serial_n
 
     QImage image = img;
     QImage::Format format = image.format();
-    if (image.depth() == 1 && *bitmap && img.colorTable().size() == 2
-        && img.colorTable().at(0) == QColor(Qt::black).rgba()
-        && img.colorTable().at(1) == QColor(Qt::white).rgba())
-    {
+    if (image.depth() == 1 && *bitmap && is_monochrome(img.colorTable())) {
         if (format == QImage::Format_MonoLSB)
             image = image.convertToFormat(QImage::Format_Mono);
         format = QImage::Format_Mono;
