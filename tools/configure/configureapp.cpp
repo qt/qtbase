@@ -566,9 +566,6 @@ void Configure::parseCmdLine()
         else if (configCmdLine.at(i) == "-angle") {
             dictionary[ "ANGLE" ] = "yes";
             dictionary[ "ANGLE_FROM" ] = "commandline";
-        } else if (configCmdLine.at(i) == "-angle-d3d11") {
-            dictionary[ "ANGLE" ] = "d3d11";
-            dictionary[ "ANGLE_FROM" ] = "commandline";
         } else if (configCmdLine.at(i) == "-no-angle") {
             dictionary[ "ANGLE" ] = "no";
             dictionary[ "ANGLE_FROM" ] = "commandline";
@@ -1640,7 +1637,7 @@ void Configure::applySpecSpecifics()
         dictionary[ "ICU" ]                 = "qt";
         dictionary[ "CE_CRT" ]              = "yes";
         dictionary[ "LARGE_FILE" ]          = "no";
-        dictionary[ "ANGLE" ]               = "d3d11";
+        dictionary[ "ANGLE" ]               = "yes";
         dictionary[ "DYNAMICGL" ]           = "no";
     } else if (dictionary.value("XQMAKESPEC").startsWith("wince")) {
         dictionary[ "STYLE_WINDOWSXP" ]     = "no";
@@ -1931,7 +1928,6 @@ bool Configure::displayHelp()
         }
 
         desc("ANGLE", "yes",       "-angle",            "Use the ANGLE implementation of OpenGL ES 2.0.");
-        desc("ANGLE", "d3d11",     "-angle-d3d11",      "Use the Direct3D 11-based ANGLE implementation of OpenGL ES 2.0.");
         desc("ANGLE", "no",        "-no-angle",         "Do not use ANGLE.\nSee http://code.google.com/p/angleproject/\n");
         // Qt\Windows only options go below here --------------------------------------------------------------------------------
         desc("\nQt for Windows only:\n\n");
@@ -2124,7 +2120,7 @@ bool Configure::checkAngleAvailability(QString *errorMessage /* = 0 */) const
         }
     }
 
-    const QString directXLibrary = dictionary["ANGLE"] == "d3d11" ? QStringLiteral("d3d11.lib") : QStringLiteral("d3d9.lib");
+    const QString directXLibrary = QStringLiteral("d3d11.lib"); // Ensures at least the June 2010 DXSDK is present
     if (!findFile(directXLibrary)) {
         if (errorMessage)
             *errorMessage = QString::fromLatin1("The library '%1' could not be found.").arg(directXLibrary);
@@ -2577,8 +2573,7 @@ bool Configure::verifyConfiguration()
     }
 
     if (dictionary["DYNAMICGL"] == "yes") {
-        // Note that d3d11 is still allowed for ANGLE, hence the check for == "yes".
-        if (dictionary["OPENGL_ES_2"] == "yes" || dictionary["ANGLE"] == "yes") {
+        if (dictionary["OPENGL_ES_2"] == "yes" || dictionary["ANGLE"] != "no") {
             cout << "ERROR: Dynamic OpenGL cannot be used with -angle." << endl;
             dictionary[ "DONE" ] = "error";
         }
@@ -2660,15 +2655,11 @@ void Configure::generateOutputVars()
     // ANGLE --------------------------------------------------------
     if (dictionary[ "ANGLE" ] != "no") {
         qtConfig  += "angle";
-        if (dictionary[ "ANGLE" ] == "d3d11")
-            qmakeConfig += "angle_d3d11";
     }
 
     // Dynamic OpenGL loading ---------------------------------------
     if (dictionary[ "DYNAMICGL" ] != "no") {
         qtConfig += "dynamicgl";
-        if (dictionary[ "ANGLE" ] == "d3d11")
-            qmakeConfig += "angle_d3d11";
     }
 
     // Image formates -----------------------------------------------
