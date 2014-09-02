@@ -110,6 +110,7 @@ public:
                             const QPoint& pos, int timeout, bool showArrow = true);
     static void hideBalloon();
     static bool isBalloonVisible();
+    static void updateBalloonPosition(const QPoint& pos);
 
 private:
     QBalloonTip(QSystemTrayIcon::MessageIcon icon, const QString& title,
@@ -127,6 +128,7 @@ private:
     QSystemTrayIcon *trayIcon;
     QPixmap pixmap;
     int timerId;
+    bool showArrow;
 };
 
 QT_END_NAMESPACE

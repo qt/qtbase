@@ -416,6 +416,14 @@ void QBalloonTip::hideBalloon()
     theSolitaryBalloonTip = 0;
 }
 
+void QBalloonTip::updateBalloonPosition(const QPoint& pos)
+{
+    if (!theSolitaryBalloonTip)
+        return;
+    theSolitaryBalloonTip->hide();
+    theSolitaryBalloonTip->balloon(pos, 0, theSolitaryBalloonTip->showArrow);
+}
+
 bool QBalloonTip::isBalloonVisible()
 {
     return theSolitaryBalloonTip;
@@ -549,6 +557,7 @@ void QBalloonTip::resizeEvent(QResizeEvent *ev)
 
 void QBalloonTip::balloon(const QPoint& pos, int msecs, bool showArrow)
 {
+    this->showArrow = showArrow;
     QRect scr = QApplication::desktop()->screenGeometry(pos);
     QSize sh = sizeHint();
     const int border = 1;

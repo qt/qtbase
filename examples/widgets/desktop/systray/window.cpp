@@ -144,6 +144,7 @@ void Window::iconActivated(QSystemTrayIcon::ActivationReason reason)
 //! [5]
 void Window::showMessage()
 {
+    showIconCheckBox->setChecked(true);
     QSystemTrayIcon::MessageIcon icon = QSystemTrayIcon::MessageIcon(
             typeComboBox->itemData(typeComboBox->currentIndex()).toInt());
     trayIcon->showMessage(titleEdit->text(), bodyEdit->toPlainText(), icon,

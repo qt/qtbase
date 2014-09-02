@@ -79,6 +79,7 @@ protected:
     virtual bool event(QEvent *);
     virtual void paintEvent(QPaintEvent *);
     virtual void resizeEvent(QResizeEvent *);
+    virtual void moveEvent(QMoveEvent *);
 
 private slots:
     void systemTrayWindowChanged(QScreen *screen);
@@ -223,11 +224,20 @@ void QSystemTrayIconSys::paintEvent(QPaintEvent *)
     q->icon().paint(&painter, rect);
 }
 
-void QSystemTrayIconSys::resizeEvent(QResizeEvent *)
+void QSystemTrayIconSys::moveEvent(QMoveEvent *event)
 {
-    update();
+    QWidget::moveEvent(event);
+    if (QBalloonTip::isBalloonVisible())
+        QBalloonTip::updateBalloonPosition(globalGeometry().center());
 }
 
+void QSystemTrayIconSys::resizeEvent(QResizeEvent *event)
+{
+    update();
+    QWidget::resizeEvent(event);
+    if (QBalloonTip::isBalloonVisible())
+        QBalloonTip::updateBalloonPosition(globalGeometry().center());
+}
 ////////////////////////////////////////////////////////////////////////////
 
 QSystemTrayIconPrivate::QSystemTrayIconPrivate()
@@ -340,9 +350,8 @@ void QSystemTrayIconPrivate::showMessage_sys(const QString &message, const QStri
     }
     if (!sys)
         return;
-    const QPoint g = sys->globalGeometry().topLeft();
     QBalloonTip::showBalloon(icon, message, title, sys->systemTrayIcon(),
-                             QPoint(g.x() + sys->width()/2, g.y() + sys->height()/2),
+                             sys->globalGeometry().center(),
                              msecs);
 }
 
