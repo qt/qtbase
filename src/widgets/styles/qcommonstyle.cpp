@@ -321,22 +321,24 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
         if (const QStyleOptionHeader *header = qstyleoption_cast<const QStyleOptionHeader *>(opt)) {
             QPen oldPen = p->pen();
             if (header->sortIndicator & QStyleOptionHeader::SortUp) {
-                QPolygon pa(3);
                 p->setPen(QPen(opt->palette.light(), 0));
                 p->drawLine(opt->rect.x() + opt->rect.width(), opt->rect.y(),
                             opt->rect.x() + opt->rect.width() / 2, opt->rect.y() + opt->rect.height());
                 p->setPen(QPen(opt->palette.dark(), 0));
-                pa.setPoint(0, opt->rect.x() + opt->rect.width() / 2, opt->rect.y() + opt->rect.height());
-                pa.setPoint(1, opt->rect.x(), opt->rect.y());
-                pa.setPoint(2, opt->rect.x() + opt->rect.width(), opt->rect.y());
-                p->drawPolyline(pa);
+                const QPoint points[] = {
+                    QPoint(opt->rect.x() + opt->rect.width() / 2, opt->rect.y() + opt->rect.height()),
+                    QPoint(opt->rect.x(), opt->rect.y()),
+                    QPoint(opt->rect.x() + opt->rect.width(), opt->rect.y()),
+                };
+                p->drawPolyline(points, sizeof points / sizeof *points);
             } else if (header->sortIndicator & QStyleOptionHeader::SortDown) {
-                QPolygon pa(3);
                 p->setPen(QPen(opt->palette.light(), 0));
-                pa.setPoint(0, opt->rect.x(), opt->rect.y() + opt->rect.height());
-                pa.setPoint(1, opt->rect.x() + opt->rect.width(), opt->rect.y() + opt->rect.height());
-                pa.setPoint(2, opt->rect.x() + opt->rect.width() / 2, opt->rect.y());
-                p->drawPolyline(pa);
+                const QPoint points[] = {
+                    QPoint(opt->rect.x(), opt->rect.y() + opt->rect.height()),
+                    QPoint(opt->rect.x() + opt->rect.width(), opt->rect.y() + opt->rect.height()),
+                    QPoint(opt->rect.x() + opt->rect.width() / 2, opt->rect.y()),
+                };
+                p->drawPolyline(points, sizeof points / sizeof *points);
                 p->setPen(QPen(opt->palette.dark(), 0));
                 p->drawLine(opt->rect.x(), opt->rect.y() + opt->rect.height(),
                             opt->rect.x() + opt->rect.width() / 2, opt->rect.y());
