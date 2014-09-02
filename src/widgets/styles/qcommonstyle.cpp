@@ -521,11 +521,6 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
         if (pe == PE_IndicatorSpinUp && fw)
             --sy;
 
-        QPolygon a;
-        if (pe == PE_IndicatorSpinDown)
-            a.setPoints(3, 0, 1,  sw-1, 1,  sh-2, sh-1);
-        else
-            a.setPoints(3, 0, sh-1,  sw-1, sh-1,  sh-2, 1);
         int bsx = 0;
         int bsy = 0;
         if (opt->state & State_Sunken) {
@@ -537,7 +532,13 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
         p->setPen(opt->palette.buttonText().color());
         p->setBrush(opt->palette.buttonText());
         p->setRenderHint(QPainter::Qt4CompatiblePainting);
-        p->drawPolygon(a);
+        if (pe == PE_IndicatorSpinDown) {
+            const QPoint points[] = { QPoint(0, 1), QPoint(sw-1, 1), QPoint(sh-2, sh-1) };
+            p->drawPolygon(points, sizeof points / sizeof *points);
+        } else {
+            const QPoint points[] = { QPoint(0, sh-1), QPoint(sw-1, sh-1), QPoint(sh-2, 1) };
+            p->drawPolygon(points, sizeof points / sizeof *points);
+        }
         p->restore();
         break; }
 #endif // QT_NO_SPINBOX
