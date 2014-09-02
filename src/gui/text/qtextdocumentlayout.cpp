@@ -2080,15 +2080,32 @@ QRectF QTextDocumentLayoutPrivate::layoutFrame(QTextFrame *f, int layoutFrom, in
     QTextFrameData *fd = data(f);
     QFixed newContentsWidth;
 
+    bool fullLayout = false;
     {
         QTextFrameFormat fformat = f->frameFormat();
         // set sizes of this frame from the format
-        fd->topMargin = QFixed::fromReal(fformat.topMargin());
-        fd->bottomMargin = QFixed::fromReal(fformat.bottomMargin());
+        QFixed tm = QFixed::fromReal(fformat.topMargin());
+        if (tm != fd->topMargin) {
+            fd->topMargin = tm;
+            fullLayout = true;
+        }
+        QFixed bm = QFixed::fromReal(fformat.bottomMargin());
+        if (bm != fd->bottomMargin) {
+            fd->bottomMargin = bm;
+            fullLayout = true;
+        }
         fd->leftMargin = QFixed::fromReal(fformat.leftMargin());
         fd->rightMargin = QFixed::fromReal(fformat.rightMargin());
-        fd->border = QFixed::fromReal(fformat.border());
-        fd->padding = QFixed::fromReal(fformat.padding());
+        QFixed b = QFixed::fromReal(fformat.border());
+        if (b != fd->border) {
+            fd->border = b;
+            fullLayout = true;
+        }
+        QFixed p = QFixed::fromReal(fformat.padding());
+        if (p != fd->padding) {
+            fd->padding = p;
+            fullLayout = true;
+        }
 
         QTextFrame *parent = f->parentFrame();
         const QTextFrameData *pd = parent ? data(parent) : 0;
@@ -2143,7 +2160,7 @@ QRectF QTextDocumentLayoutPrivate::layoutFrame(QTextFrame *f, int layoutFrom, in
     layoutStruct.contentsWidth = 0;
     layoutStruct.minimumWidth = 0;
     layoutStruct.maximumWidth = QFIXED_MAX;
-    layoutStruct.fullLayout = fd->oldContentsWidth != newContentsWidth;
+    layoutStruct.fullLayout = fullLayout || (fd->oldContentsWidth != newContentsWidth);
     layoutStruct.updateRect = QRectF(QPointF(0, 0), QSizeF(qreal(INT_MAX), qreal(INT_MAX)));
     LDEBUG << "layoutStruct: x_left" << layoutStruct.x_left << "x_right" << layoutStruct.x_right
            << "fullLayout" << layoutStruct.fullLayout;
