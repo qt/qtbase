@@ -320,6 +320,7 @@ public:
 
     QMutex mutex;
     QList<QSslCipher> supportedCiphers;
+    QVector<QSslEllipticCurve> supportedEllipticCurves;
     QExplicitlySharedDataPointer<QSslConfigurationPrivate> config;
 };
 Q_GLOBAL_STATIC(QSslSocketGlobalData, globalData)
@@ -899,6 +900,7 @@ void QSslSocket::setSslConfiguration(const QSslConfiguration &configuration)
     d->configuration.localCertificateChain = configuration.localCertificateChain();
     d->configuration.privateKey = configuration.privateKey();
     d->configuration.ciphers = configuration.ciphers();
+    d->configuration.ellipticCurves = configuration.ellipticCurves();
     d->configuration.caCertificates = configuration.caCertificates();
     d->configuration.peerVerifyDepth = configuration.peerVerifyDepth();
     d->configuration.peerVerifyMode = configuration.peerVerifyMode();
@@ -1264,6 +1266,120 @@ QList<QSslCipher> QSslSocket::defaultCiphers()
 QList<QSslCipher> QSslSocket::supportedCiphers()
 {
     return QSslSocketPrivate::supportedCiphers();
+}
+
+/*!
+    \since 5.5
+
+    Returns this socket's current list of elliptic curves. This
+    list is used during the socket's handshake phase for choosing an
+    elliptic curve (when using an elliptic curve cipher).
+    The returned list of curves is ordered by descending preference
+    (i.e., the first curve in the list is the most preferred one).
+
+    By default, this list is empty. An empty default list means that the
+    handshake phase can choose any of the curves supported by this system's SSL
+    libraries (which may vary from system to system). The list of curves
+    supported by this system's SSL libraries is returned by
+    supportedEllipticCurves().
+
+    You can restrict the list of curves used for choosing the session cipher
+    for this socket by calling setEllipticCurves() with a subset of the
+    supported ciphers. You can revert to using the entire set by calling
+    setEllipticCurves() with the list returned by supportedEllipticCurves().
+
+    \sa setEllipticCurves(), defaultEllipticCurves(), setDefaultEllipticCurves(), supportedEllipticCurves()
+*/
+QVector<QSslEllipticCurve> QSslSocket::ellipticCurves() const
+{
+    Q_D(const QSslSocket);
+    return d->configuration.ellipticCurves;
+}
+
+/*!
+    \since 5.5
+
+    Sets the list of elliptic curves to be used by this socket to \a curves,
+    which must contain a subset of the curves in the list returned by
+    supportedEllipticCurves().
+
+    Restricting the elliptic curves must be done before the handshake
+    phase, where the session cipher is chosen.
+
+    If an empty list is set, then the handshake phase can choose any of the
+    curves supported by this system's SSL libraries (which may vary from system
+    to system). The list of curves supported by this system's SSL libraries is
+    returned by supportedEllipticCurves().
+
+    Use setCipher() in order to disable the usage of elliptic curve ciphers.
+
+    \sa ellipticCurves(), setDefaultEllipticCurves(), supportedEllipticCurves()
+*/
+void QSslSocket::setEllipticCurves(const QVector<QSslEllipticCurve> &curves)
+{
+    Q_D(QSslSocket);
+    d->configuration.ellipticCurves = curves;
+}
+
+/*!
+    \since 5.5
+
+    Sets the list of elliptic curves to be used by all sockets in this
+    application to \a curves, which must contain a subset of the curves in the
+    list returned by supportedEllipticCurves().
+
+    Restricting the default elliptic curves only affects SSL sockets
+    that perform their handshake phase after the default list has been changed.
+
+    If an empty list is set, then the handshake phase can choose any of the
+    curves supported by this system's SSL libraries (which may vary from system
+    to system). The list of curves supported by this system's SSL libraries is
+    returned by supportedEllipticCurves().
+
+    Use setDefaultCiphers() in order to disable the usage of elliptic curve ciphers.
+
+    \sa setEllipticCurves(), defaultEllipticCurves(), supportedEllipticCurves()
+*/
+void QSslSocket::setDefaultEllipticCurves(const QVector<QSslEllipticCurve> &curves)
+{
+    QSslSocketPrivate::setDefaultEllipticCurves(curves);
+}
+
+
+/*!
+    \since 5.5
+
+    Returns the default elliptic curves list for all sockets in
+    this application. This list is used during the socket's handshake
+    phase when negotiating with the peer to choose a session cipher.
+    The list is ordered by preference (i.e., the first curve in the
+    list is the most preferred one).
+
+    By default, this list is empty. An empty default list means that the
+    handshake phase can choose any of the curves supported by this system's SSL
+    libraries (which may vary from system to system). The list of curves
+    supported by this system's SSL libraries is returned by
+    supportedEllipticCurves().
+
+    \sa setDefaultEllipticCurves(), supportedEllipticCurves()
+*/
+QVector<QSslEllipticCurve> QSslSocket::defaultEllipticCurves()
+{
+    return QSslSocketPrivate::defaultEllipticCurves();
+}
+
+/*!
+    \since 5.5
+
+    Returns the list of elliptic curves supported by this
+    system. This list is set by the system's SSL libraries and may
+    vary from system to system.
+
+    \sa ellipticCurves(), setEllipticCurves(), defaultEllipticCurves()
+*/
+QVector<QSslEllipticCurve> QSslSocket::supportedEllipticCurves()
+{
+    return QSslSocketPrivate::supportedEllipticCurves();
 }
 
 /*!
@@ -2031,6 +2147,46 @@ void QSslSocketPrivate::setDefaultSupportedCiphers(const QList<QSslCipher> &ciph
 /*!
     \internal
 */
+QVector<QSslEllipticCurve> QSslSocketPrivate::defaultEllipticCurves()
+{
+    QSslSocketPrivate::ensureInitialized();
+    const QMutexLocker locker(&globalData()->mutex);
+    return globalData()->config->ellipticCurves;
+}
+
+/*!
+    \internal
+*/
+QVector<QSslEllipticCurve> QSslSocketPrivate::supportedEllipticCurves()
+{
+    QSslSocketPrivate::ensureInitialized();
+    const QMutexLocker locker(&globalData()->mutex);
+    return globalData()->supportedEllipticCurves;
+}
+
+/*!
+    \internal
+*/
+void QSslSocketPrivate::setDefaultEllipticCurves(const QVector<QSslEllipticCurve> &curves)
+{
+    const QMutexLocker locker(&globalData()->mutex);
+    globalData()->config.detach();
+    globalData()->config->ellipticCurves = curves;
+}
+
+/*!
+    \internal
+*/
+void QSslSocketPrivate::setDefaultSupportedEllipticCurves(const QVector<QSslEllipticCurve> &curves)
+{
+    const QMutexLocker locker(&globalData()->mutex);
+    globalData()->config.detach();
+    globalData()->supportedEllipticCurves = curves;
+}
+
+/*!
+    \internal
+*/
 QList<QSslCertificate> QSslSocketPrivate::defaultCaCertificates()
 {
     QSslSocketPrivate::ensureInitialized();
@@ -2139,6 +2295,7 @@ void QSslConfigurationPrivate::deepCopyDefaultConfiguration(QSslConfigurationPri
     ptr->peerVerifyMode = global->peerVerifyMode;
     ptr->peerVerifyDepth = global->peerVerifyDepth;
     ptr->sslOptions = global->sslOptions;
+    ptr->ellipticCurves = global->ellipticCurves;
 }
 
 /*!

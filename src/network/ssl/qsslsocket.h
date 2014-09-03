@@ -51,6 +51,7 @@ class QDir;
 class QSslCipher;
 class QSslCertificate;
 class QSslConfiguration;
+class QSslEllipticCurve;
 
 class QSslSocketPrivate;
 class Q_NETWORK_EXPORT QSslSocket : public QTcpSocket
@@ -148,6 +149,13 @@ public:
     static void setDefaultCiphers(const QList<QSslCipher> &ciphers);
     static QList<QSslCipher> defaultCiphers();
     static QList<QSslCipher> supportedCiphers();
+
+    // EC settings.
+    QVector<QSslEllipticCurve> ellipticCurves() const;
+    void setEllipticCurves(const QVector<QSslEllipticCurve> &curves);
+    static void setDefaultEllipticCurves(const QVector<QSslEllipticCurve> &curves);
+    static QVector<QSslEllipticCurve> defaultEllipticCurves();
+    static QVector<QSslEllipticCurve> supportedEllipticCurves();
 
     // CA settings.
     bool addCaCertificates(const QString &path, QSsl::EncodingFormat format = QSsl::Pem,

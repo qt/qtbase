@@ -8,6 +8,7 @@ contains(QT_CONFIG, ssl) | contains(QT_CONFIG, openssl) | contains(QT_CONFIG, op
 	       ssl/qsslconfiguration_p.h \
                ssl/qsslcipher.h \
                ssl/qsslcipher_p.h \
+               ssl/qsslellipticcurve.h \
                ssl/qsslerror.h \
                ssl/qsslkey.h \
                ssl/qsslkey_p.h \
@@ -20,6 +21,7 @@ contains(QT_CONFIG, ssl) | contains(QT_CONFIG, openssl) | contains(QT_CONFIG, op
                ssl/qsslcertificate.cpp \
                ssl/qsslconfiguration.cpp \
                ssl/qsslcipher.cpp \
+               ssl/qsslellipticcurve.cpp \
                ssl/qsslkey_p.cpp \
                ssl/qsslerror.cpp \
                ssl/qsslsocket.cpp \
@@ -31,7 +33,8 @@ contains(QT_CONFIG, ssl) | contains(QT_CONFIG, openssl) | contains(QT_CONFIG, op
                    ssl/qsslcertificate_winrt.cpp \
                    ssl/qsslkey_qt.cpp \
                    ssl/qsslkey_winrt.cpp \
-                   ssl/qsslsocket_winrt.cpp
+                   ssl/qsslsocket_winrt.cpp \
+                   ssl/qsslellipticcurve_dummy.cpp
     }
 }
 
@@ -41,6 +44,7 @@ contains(QT_CONFIG, openssl) | contains(QT_CONFIG, openssl-linked) {
                ssl/qsslsocket_openssl_symbols_p.h
     SOURCES += ssl/qsslcertificate_openssl.cpp \
                ssl/qsslcontext_openssl.cpp \
+               ssl/qsslellipticcurve_openssl.cpp \
                ssl/qsslkey_openssl.cpp \
                ssl/qsslsocket_openssl.cpp \
                ssl/qsslsocket_openssl_symbols.cpp

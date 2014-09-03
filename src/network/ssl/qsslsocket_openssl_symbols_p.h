@@ -248,6 +248,7 @@ Q_AUTOTEST_EXPORT EVP_PKEY *q_EVP_PKEY_new();
 int q_i2d_X509(X509 *a, unsigned char **b);
 const char *q_OBJ_nid2sn(int a);
 const char *q_OBJ_nid2ln(int a);
+int q_OBJ_sn2nid(const char *s);
 int q_i2t_ASN1_OBJECT(char *buf, int buf_len, ASN1_OBJECT *obj);
 int q_OBJ_obj2txt(char *buf, int buf_len, ASN1_OBJECT *obj, int no_name);
 int q_OBJ_obj2nid(const ASN1_OBJECT *a);
@@ -435,6 +436,12 @@ BIGNUM *q_BN_bin2bn(const unsigned char *s, int len, BIGNUM *ret);
 EC_KEY *q_EC_KEY_new_by_curve_name(int nid);
 void q_EC_KEY_free(EC_KEY *ecdh);
 #define q_SSL_CTX_set_tmp_ecdh(ctx, ecdh) q_SSL_CTX_ctrl((ctx), SSL_CTRL_SET_TMP_ECDH, 0, (char *)ecdh)
+
+// EC curves management
+size_t q_EC_get_builtin_curves(EC_builtin_curve *r, size_t nitems);
+#if OPENSSL_VERSION_NUMBER >= 0x10002000L
+int q_EC_curve_nist2nid(const char *name);
+#endif // OPENSSL_VERSION_NUMBER >= 0x10002000L
 #endif // OPENSSL_NO_EC
 
 // PKCS#12 support

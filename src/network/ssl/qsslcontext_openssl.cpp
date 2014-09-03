@@ -2,6 +2,7 @@
 **
 ** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Copyright (C) 2014 BlackBerry Limited. All rights reserved.
+** Copyright (C) 2014 Governikus GmbH & Co. KG.
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
@@ -326,6 +327,30 @@ init_context:
     q_SSL_CTX_set_tmp_ecdh(sslContext->ctx, ecdh);
     q_EC_KEY_free(ecdh);
 #endif // OPENSSL_NO_EC
+
+    const QVector<QSslEllipticCurve> qcurves = sslContext->sslConfiguration.ellipticCurves();
+    if (!qcurves.isEmpty()) {
+#if OPENSSL_VERSION_NUMBER >= 0x10002000L && !defined(OPENSSL_NO_EC)
+        // Set the curves to be used
+        if (q_SSLeay() >= 0x10002000L) {
+            QVarLengthArray<int, 32> curves;
+            foreach (const QSslEllipticCurve curve, qcurves)
+                curves.append(curve.id);
+
+            if (!q_SSL_CTX_ctrl(sslContext->ctx, SSL_CTRL_SET_CURVES, curves.size(), curves.data())) {
+                sslContext->errorStr = QSslSocket::tr("Error when setting the elliptic curves (%1)").arg(QSslSocketBackendPrivate::getErrorsFromOpenSsl());
+                sslContext->errorCode = QSslError::UnspecifiedError;
+                return sslContext;
+            }
+        } else
+#endif // OPENSSL_VERSION_NUMBER >= 0x10002000L && !defined(OPENSSL_NO_EC)
+        {
+            // specific curves requested, but not possible to set -> error
+            sslContext->errorStr = QSslSocket::tr("Error when setting the elliptic curves (OpenSSL version too old, need at least v1.0.2)");
+            sslContext->errorCode = QSslError::UnspecifiedError;
+            return sslContext;
+        }
+    }
 
     return sslContext;
 }

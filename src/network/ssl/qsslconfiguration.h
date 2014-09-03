@@ -62,6 +62,7 @@ template<typename T> class QList;
 class QSslCertificate;
 class QSslCipher;
 class QSslKey;
+class QSslEllipticCurve;
 
 class QSslConfigurationPrivate;
 class Q_NETWORK_EXPORT QSslConfiguration
@@ -121,6 +122,10 @@ public:
     QByteArray sessionTicket() const;
     void setSessionTicket(const QByteArray &sessionTicket);
     int sessionTicketLifeTimeHint() const;
+
+    // EC settings
+    QVector<QSslEllipticCurve> ellipticCurves() const;
+    void setEllipticCurves(const QVector<QSslEllipticCurve> &curves);
 
     static QSslConfiguration defaultConfiguration();
     static void setDefaultConfiguration(const QSslConfiguration &configuration);

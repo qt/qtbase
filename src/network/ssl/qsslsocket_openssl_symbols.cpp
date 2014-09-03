@@ -167,6 +167,7 @@ DEFINEFUNC(int, EVP_PKEY_type, int a, a, return NID_undef, return)
 DEFINEFUNC2(int, i2d_X509, X509 *a, a, unsigned char **b, b, return -1, return)
 DEFINEFUNC(const char *, OBJ_nid2sn, int a, a, return 0, return)
 DEFINEFUNC(const char *, OBJ_nid2ln, int a, a, return 0, return)
+DEFINEFUNC(int, OBJ_sn2nid, const char *s, s, return 0, return)
 DEFINEFUNC3(int, i2t_ASN1_OBJECT, char *a, a, int b, b, ASN1_OBJECT *c, c, return -1, return)
 DEFINEFUNC4(int, OBJ_obj2txt, char *a, a, int b, b, ASN1_OBJECT *c, c, int d, d, return -1, return)
 
@@ -371,6 +372,10 @@ DEFINEFUNC3(BIGNUM *, BN_bin2bn, const unsigned char *s, s, int len, len, BIGNUM
 #ifndef OPENSSL_NO_EC
 DEFINEFUNC(EC_KEY *, EC_KEY_new_by_curve_name, int nid, nid, return 0, return)
 DEFINEFUNC(void, EC_KEY_free, EC_KEY *ecdh, ecdh, return, DUMMYARG)
+DEFINEFUNC2(size_t, EC_get_builtin_curves, EC_builtin_curve * r, r, size_t nitems, nitems, return 0, return)
+#if OPENSSL_VERSION_NUMBER >= 0x10002000L
+DEFINEFUNC(int, EC_curve_nist2nid, const char *name, name, return 0, return)
+#endif // OPENSSL_VERSION_NUMBER >= 0x10002000L
 #endif // OPENSSL_NO_EC
 
 DEFINEFUNC5(int, PKCS12_parse, PKCS12 *p12, p12, const char *pass, pass, EVP_PKEY **pkey, pkey, \
@@ -728,6 +733,7 @@ bool q_resolveOpenSslSymbols()
     RESOLVEFUNC(EVP_PKEY_type)
     RESOLVEFUNC(OBJ_nid2sn)
     RESOLVEFUNC(OBJ_nid2ln)
+    RESOLVEFUNC(OBJ_sn2nid)
     RESOLVEFUNC(i2t_ASN1_OBJECT)
     RESOLVEFUNC(OBJ_obj2txt)
     RESOLVEFUNC(OBJ_obj2nid)
@@ -878,6 +884,11 @@ bool q_resolveOpenSslSymbols()
 #ifndef OPENSSL_NO_EC
     RESOLVEFUNC(EC_KEY_new_by_curve_name)
     RESOLVEFUNC(EC_KEY_free)
+    RESOLVEFUNC(EC_get_builtin_curves)
+#if OPENSSL_VERSION_NUMBER >= 0x10002000L
+    if (q_SSLeay() >= 0x10002000L)
+        RESOLVEFUNC(EC_curve_nist2nid)
+#endif // OPENSSL_VERSION_NUMBER >= 0x10002000L
 #endif // OPENSSL_NO_EC
     RESOLVEFUNC(PKCS12_parse)
     RESOLVEFUNC(d2i_PKCS12_bio)

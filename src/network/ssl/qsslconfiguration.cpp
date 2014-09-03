@@ -202,6 +202,7 @@ bool QSslConfiguration::operator==(const QSslConfiguration &other) const
         d->sessionCipher == other.d->sessionCipher &&
         d->sessionProtocol == other.d->sessionProtocol &&
         d->ciphers == other.d->ciphers &&
+        d->ellipticCurves == other.d->ellipticCurves &&
         d->caCertificates == other.d->caCertificates &&
         d->protocol == other.d->protocol &&
         d->peerVerifyMode == other.d->peerVerifyMode &&
@@ -242,6 +243,7 @@ bool QSslConfiguration::isNull() const
             d->allowRootCertOnDemandLoading == true &&
             d->caCertificates.count() == 0 &&
             d->ciphers.count() == 0 &&
+            d->ellipticCurves.isEmpty() &&
             d->localCertificateChain.isEmpty() &&
             d->privateKey.isNull() &&
             d->peerCertificate.isNull() &&
@@ -692,6 +694,50 @@ void QSslConfiguration::setSessionTicket(const QByteArray &sessionTicket)
 int QSslConfiguration::sessionTicketLifeTimeHint() const
 {
     return d->sslSessionTicketLifeTimeHint;
+}
+
+/*!
+    \since 5.5
+
+    Returns this connection's current list of elliptic curves. This
+    list is used during the handshake phase for choosing an
+    elliptic curve (when using an elliptic curve cipher).
+    The returned list of curves is ordered by descending preference
+    (i.e., the first curve in the list is the most preferred one).
+
+    By default, the handshake phase can choose any of the curves
+    supported by this system's SSL libraries, which may vary from
+    system to system. The list of curves supported by this system's
+    SSL libraries is returned by QSslSocket::supportedEllipticCurves().
+
+    You can restrict the list of curves used for choosing the session cipher
+    for this socket by calling setEllipticCurves() with a subset of the
+    supported ciphers. You can revert to using the entire set by calling
+    setEllipticCurves() with the list returned by
+    QSslSocket::supportedEllipticCurves().
+
+    \sa setEllipticCurves
+ */
+QVector<QSslEllipticCurve> QSslConfiguration::ellipticCurves() const
+{
+    return d->ellipticCurves;
+}
+
+/*!
+    \since 5.5
+
+    Sets the list of elliptic curves to be used by this socket to \a curves,
+    which must contain a subset of the curves in the list returned by
+    supportedEllipticCurves().
+
+    Restricting the elliptic curves must be done before the handshake
+    phase, where the session cipher is chosen.
+
+    \sa ellipticCurves
+ */
+void QSslConfiguration::setEllipticCurves(const QVector<QSslEllipticCurve> &curves)
+{
+    d->ellipticCurves = curves;
 }
 
 /*!

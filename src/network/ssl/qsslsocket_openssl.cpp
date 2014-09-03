@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Governikus GmbH & Co. KG
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
@@ -55,6 +56,7 @@
 #include "qsslcertificate_p.h"
 #include "qsslcipher_p.h"
 #include "qsslkey_p.h"
+#include "qsslellipticcurve.h"
 
 #include <QtCore/qdatetime.h>
 #include <QtCore/qdebug.h>
@@ -479,6 +481,7 @@ void QSslSocketPrivate::ensureCiphersAndCertsLoaded()
     s_loadedCiphersAndCerts = true;
 
     resetDefaultCiphers();
+    resetDefaultEllipticCurves();
 
 #ifndef QT_NO_LIBRARY
     //load symbols needed to receive certificates from system store
@@ -625,6 +628,31 @@ void QSslSocketPrivate::resetDefaultCiphers()
 
     setDefaultSupportedCiphers(ciphers);
     setDefaultCiphers(defaultCiphers);
+}
+
+void QSslSocketPrivate::resetDefaultEllipticCurves()
+{
+    QVector<QSslEllipticCurve> curves;
+
+#ifndef OPENSSL_NO_EC
+    const size_t curveCount = q_EC_get_builtin_curves(NULL, 0);
+
+    QVarLengthArray<EC_builtin_curve> builtinCurves(static_cast<int>(curveCount));
+
+    if (q_EC_get_builtin_curves(builtinCurves.data(), curveCount) == curveCount) {
+        for (size_t i = 0; i < curveCount; ++i) {
+            QSslEllipticCurve curve;
+            curve.id = builtinCurves[i].nid;
+            curves.append(curve);
+        }
+    }
+#endif // OPENSSL_NO_EC
+
+    // set the list of supported ECs, but not the list
+    // of *default* ECs. OpenSSL doesn't like forcing an EC for the wrong
+    // ciphersuite, so don't try it -- leave the empty list to mean
+    // "the implementation will choose the most suitable one".
+    setDefaultSupportedEllipticCurves(curves);
 }
 
 QList<QSslCertificate> QSslSocketPrivate::systemCaCertificates()

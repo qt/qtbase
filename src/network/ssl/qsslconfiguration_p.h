@@ -66,6 +66,7 @@
 #include "qsslcertificate.h"
 #include "qsslcipher.h"
 #include "qsslkey.h"
+#include "qsslellipticcurve.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -106,6 +107,8 @@ public:
     QSsl::SslOptions sslOptions;
 
     Q_AUTOTEST_EXPORT static const QSsl::SslOptions defaultSslOptions;
+
+    QVector<QSslEllipticCurve> ellipticCurves;
 
     QByteArray sslSession;
     int sslSessionTicketLifeTimeHint;
