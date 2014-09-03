@@ -69,7 +69,7 @@ Q_GLOBAL_STATIC(QIconLoader, iconLoaderInstance)
 static QString fallbackTheme()
 {
     if (const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme()) {
-        const QVariant themeHint = theme->themeHint(QPlatformTheme::SystemIconThemeName);
+        const QVariant themeHint = theme->themeHint(QPlatformTheme::SystemIconFallbackThemeName);
         if (themeHint.isValid())
             return themeHint.toString();
     }
