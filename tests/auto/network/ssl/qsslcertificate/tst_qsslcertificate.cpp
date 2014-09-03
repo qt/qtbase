@@ -1096,6 +1096,8 @@ void tst_QSslCertificate::extensions()
     QSslCertificateExtension unknown = extensions[unknown_idx];
     QVERIFY(unknown.oid() == QStringLiteral("1.3.6.1.5.5.7.1.12"));
     QVERIFY(unknown.name() == QStringLiteral("1.3.6.1.5.5.7.1.12"));
+    QVERIFY(!unknown.isCritical());
+    QVERIFY(!unknown.isSupported());
 
     QByteArray unknownValue = QByteArray::fromHex(
                         "3060A15EA05C305A305830561609696D6167652F6769663021301F300706052B0E03021A0414" \
@@ -1107,8 +1109,11 @@ void tst_QSslCertificate::extensions()
     QSslCertificateExtension aia = extensions[authority_info_idx];
     QVERIFY(aia.oid() == QStringLiteral("1.3.6.1.5.5.7.1.1"));
     QVERIFY(aia.name() == QStringLiteral("authorityInfoAccess"));
+    QVERIFY(!aia.isCritical());
+    QVERIFY(aia.isSupported());
 
     QVariantMap aiaValue = aia.value().toMap();
+    QCOMPARE(aiaValue.keys(), QList<QString>() << QStringLiteral("OCSP") << QStringLiteral("caIssuers"));
     QString ocsp = aiaValue[QStringLiteral("OCSP")].toString();
     QString caIssuers = aiaValue[QStringLiteral("caIssuers")].toString();
 
@@ -1119,22 +1124,30 @@ void tst_QSslCertificate::extensions()
     QSslCertificateExtension basic = extensions[basic_constraints_idx];
     QVERIFY(basic.oid() == QStringLiteral("2.5.29.19"));
     QVERIFY(basic.name() == QStringLiteral("basicConstraints"));
+    QVERIFY(!basic.isCritical());
+    QVERIFY(basic.isSupported());
 
     QVariantMap basicValue = basic.value().toMap();
+    QCOMPARE(basicValue.keys(), QList<QString>() << QStringLiteral("ca"));
     QVERIFY(basicValue[QStringLiteral("ca")].toBool() == false);
 
     // Subject key identifier
     QSslCertificateExtension subjectKey = extensions[subject_key_idx];
     QVERIFY(subjectKey.oid() == QStringLiteral("2.5.29.14"));
     QVERIFY(subjectKey.name() == QStringLiteral("subjectKeyIdentifier"));
+    QVERIFY(!subjectKey.isCritical());
+    QVERIFY(subjectKey.isSupported());
     QVERIFY(subjectKey.value().toString() == QStringLiteral("5F:90:23:CD:24:CA:52:C9:36:29:F0:7E:9D:B1:FE:08:E0:EE:69:F0"));
 
     // Authority key identifier
     QSslCertificateExtension authKey = extensions[auth_key_idx];
     QVERIFY(authKey.oid() == QStringLiteral("2.5.29.35"));
     QVERIFY(authKey.name() == QStringLiteral("authorityKeyIdentifier"));
+    QVERIFY(!authKey.isCritical());
+    QVERIFY(authKey.isSupported());
 
     QVariantMap authValue = authKey.value().toMap();
+    QCOMPARE(authValue.keys(), QList<QString>() << QStringLiteral("keyid"));
     QVERIFY(authValue[QStringLiteral("keyid")].toByteArray() ==
             QByteArray("4e43c81d76ef37537a4ff2586f94f338e2d5bddf"));
 
