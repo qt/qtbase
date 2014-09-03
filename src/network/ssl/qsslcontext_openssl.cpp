@@ -195,7 +195,7 @@ init_context:
 
     // Initialize ciphers
     QByteArray cipherString;
-    int first = true;
+    bool first = true;
     QList<QSslCipher> ciphers = sslContext->sslConfiguration.ciphers();
     if (ciphers.isEmpty())
         ciphers = QSslSocketPrivate::defaultCiphers();
