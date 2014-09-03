@@ -435,6 +435,23 @@ void tst_QVersionNumber::assignment()
 void tst_QVersionNumber::fromString_data()
 {
     singleInstanceData();
+
+    const quint64 largerThanIntCanHold = quint64(std::numeric_limits<int>::max()) + 1;
+    const QString largerThanIntCanHoldString0 = QString::number(largerThanIntCanHold) + ".0";
+    const QString largerThanIntCanHoldString1 = "0." + QString::number(largerThanIntCanHold);
+
+    QTest::newRow(qPrintable(largerThanIntCanHoldString0))
+            << QVector<int>()  << QVersionNumber()  << QString()           << largerThanIntCanHoldString0 << 0 << true;
+    QTest::newRow(qPrintable(largerThanIntCanHoldString1))
+            << QVector<int>(0) << QVersionNumber(0) << QStringLiteral("0") << largerThanIntCanHoldString1 << 1 << true;
+
+    const QString largerThanULongLongCanHoldString0 = QString::number(std::numeric_limits<qulonglong>::max()) + "0.0";      // 10x ULLONG_MAX
+    const QString largerThanULongLongCanHoldString1 = "0." + QString::number(std::numeric_limits<qulonglong>::max()) + '0'; // 10x ULLONG_MAX
+
+    QTest::newRow(qPrintable(largerThanULongLongCanHoldString0))
+            << QVector<int>()  << QVersionNumber()  << QString()           << largerThanULongLongCanHoldString0 << 0 << true;
+    QTest::newRow(qPrintable(largerThanULongLongCanHoldString1))
+            << QVector<int>(0) << QVersionNumber(0) << QStringLiteral("0") << largerThanULongLongCanHoldString1 << 1 << true;
 }
 
 void tst_QVersionNumber::fromString()

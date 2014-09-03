@@ -54,6 +54,7 @@
 #endif
 
 #include <algorithm>
+#include <limits>
 
 QT_BEGIN_NAMESPACE
 
@@ -390,14 +391,13 @@ QVersionNumber QVersionNumber::fromString(const QString &string, int *suffixInde
     const char *end = start;
     const char *lastGoodEnd = start;
     const char *endOfString = cString.constData() + cString.size();
-    int value;
 
     do {
         bool ok = false;
-        value = int(qstrtoull(start, &end, 10, &ok));
-        if (!ok)
+        const qulonglong value = qstrtoull(start, &end, 10, &ok);
+        if (!ok || value > qulonglong(std::numeric_limits<int>::max()))
             break;
-        seg.append(value);
+        seg.append(int(value));
         start = end + 1;
         lastGoodEnd = end;
     } while (start < endOfString && (end < endOfString && *end == '.'));
