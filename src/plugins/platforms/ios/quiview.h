@@ -56,40 +56,12 @@ class QIOSWindow;
     QHash<UITouch *, QWindowSystemInterface::TouchPoint> m_activeTouches;
     int m_nextTouchId;
 
-  @public
-    UITextAutocapitalizationType autocapitalizationType;
-    UITextAutocorrectionType autocorrectionType;
-    BOOL enablesReturnKeyAutomatically;
-    UIKeyboardAppearance keyboardAppearance;
-    UIKeyboardType keyboardType;
-    UIReturnKeyType returnKeyType;
-    BOOL secureTextEntry;
-    QString m_markedText;
-    BOOL m_inSendEventToFocusObject;
-
   @private
     NSMutableArray *m_accessibleElements;
 }
 
-@property(nonatomic, assign) id<UITextInputDelegate> inputDelegate;
-@property(nonatomic) UITextAutocapitalizationType autocapitalizationType;
-@property(nonatomic) UITextAutocorrectionType autocorrectionType;
-@property(nonatomic) UITextSpellCheckingType spellCheckingType;
-@property(nonatomic) BOOL enablesReturnKeyAutomatically;
-@property(nonatomic) UIKeyboardAppearance keyboardAppearance;
-@property(nonatomic) UIKeyboardType keyboardType;
-@property(nonatomic) UIReturnKeyType returnKeyType;
-@property(nonatomic, getter=isSecureTextEntry) BOOL secureTextEntry;
-
 - (id)initWithQIOSWindow:(QIOSWindow *)window;
 - (void)sendUpdatedExposeEvent;
-@end
-
-@interface QUIView (TextInput) <UITextInput>
-- (void)updateInputMethodWithQuery:(Qt::InputMethodQueries)query;
-- (void)reset;
-- (void)commit;
-+ (bool)inUpdateKeyboardLayout;
 @end
 
 @interface QUIView (Accessibility)

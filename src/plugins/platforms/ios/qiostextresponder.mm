@@ -39,31 +39,22 @@
 **
 ****************************************************************************/
 
-#include "qiosinputcontext.h"
+#include "qiostextresponder.h"
 
+#include "qiosglobal.h"
+#include "qiosinputcontext.h"
+#include "quiview.h"
+
+#include <QtCore/qscopedvaluerollback.h>
+
+#include <QtGui/qevent.h>
 #include <QtGui/qtextformat.h>
 #include <QtGui/private/qguiapplication_p.h>
-
-class StaticVariables
-{
-public:
-    QInputMethodQueryEvent inputMethodQueryEvent;
-    bool inUpdateKeyboardLayout;
-
-    StaticVariables()
-        : inputMethodQueryEvent(Qt::ImQueryInput)
-        , inUpdateKeyboardLayout(false)
-    {
-    }
-};
-
-Q_GLOBAL_STATIC(StaticVariables, staticVariables);
+#include <QtGui/qpa/qplatformwindow.h>
 
 // -------------------------------------------------------------------------
 
 @interface QUITextPosition : UITextPosition
-{
-}
 
 @property (nonatomic) NSUInteger index;
 + (QUITextPosition *)positionWithIndex:(NSUInteger)index;
@@ -84,8 +75,6 @@ Q_GLOBAL_STATIC(StaticVariables, staticVariables);
 // -------------------------------------------------------------------------
 
 @interface QUITextRange : UITextRange
-{
-}
 
 @property (nonatomic) NSRange range;
 + (QUITextRange *)rangeWithNSRange:(NSRange)range;
@@ -125,51 +114,82 @@ Q_GLOBAL_STATIC(StaticVariables, staticVariables);
 
 // -------------------------------------------------------------------------
 
-@implementation QUIView (TextInput)
+@implementation QIOSTextInputResponder
 
-- (BOOL)canBecomeFirstResponder
+- (id)initWithInputContext:(QIOSInputContext *)inputContext
+{
+    if (!(self = [self init]))
+        return self;
+
+    m_inSendEventToFocusObject = NO;
+    m_inputContext = inputContext;
+
+    Qt::InputMethodHints hints = Qt::InputMethodHints([self imValue:Qt::ImHints].toUInt());
+
+    self.returnKeyType = (hints & Qt::ImhMultiLine) ? UIReturnKeyDefault : UIReturnKeyDone;
+    self.secureTextEntry = BOOL(hints & Qt::ImhHiddenText);
+    self.autocorrectionType = (hints & Qt::ImhNoPredictiveText) ?
+                UITextAutocorrectionTypeNo : UITextAutocorrectionTypeDefault;
+    self.spellCheckingType = (hints & Qt::ImhNoPredictiveText) ?
+                UITextSpellCheckingTypeNo : UITextSpellCheckingTypeDefault;
+
+    if (hints & Qt::ImhUppercaseOnly)
+        self.autocapitalizationType = UITextAutocapitalizationTypeAllCharacters;
+    else if (hints & Qt::ImhNoAutoUppercase)
+        self.autocapitalizationType = UITextAutocapitalizationTypeNone;
+    else
+        self.autocapitalizationType = UITextAutocapitalizationTypeSentences;
+
+    if (hints & Qt::ImhUrlCharactersOnly)
+        self.keyboardType = UIKeyboardTypeURL;
+    else if (hints & Qt::ImhEmailCharactersOnly)
+        self.keyboardType = UIKeyboardTypeEmailAddress;
+    else if (hints & Qt::ImhDigitsOnly)
+        self.keyboardType = UIKeyboardTypeNumberPad;
+    else if (hints & Qt::ImhFormattedNumbersOnly)
+        self.keyboardType = UIKeyboardTypeDecimalPad;
+    else if (hints & Qt::ImhDialableCharactersOnly)
+        self.keyboardType = UIKeyboardTypeNumberPad;
+    else
+        self.keyboardType = UIKeyboardTypeDefault;
+
+    return self;
+}
+
+- (void)dealloc
+{
+    [super dealloc];
+}
+
+- (BOOL)isFirstResponder
 {
     return YES;
 }
 
-- (BOOL)becomeFirstResponder
+- (UIResponder*)nextResponder
 {
-    // Note: QIOSInputContext controls our first responder status based on
-    // whether or not the keyboard should be open or closed.
-    [self updateTextInputTraits];
-    return [super becomeFirstResponder];
+    return qApp->focusWindow() ?
+        reinterpret_cast<QUIView *>(qApp->focusWindow()->handle()->winId()) : 0;
 }
 
-- (BOOL)resignFirstResponder
+/*!
+    iOS uses [UIResponder(Internal) _requiresKeyboardWhenFirstResponder] to check if the
+    current responder should bring up the keyboard, which in turn checks if the responder
+    supports the UIKeyInput protocol. By dynamically reporting our protocol conformance
+    we can control the keyboard visibility depending on whether or not we have a focus
+    object with IME enabled.
+*/
+- (BOOL)conformsToProtocol:(Protocol *)protocol
 {
-    // Resigning first responed status means that the virtual keyboard was closed, or
-    // some other view became first responder. In either case we clear the focus object to
-    // avoid blinking cursors in line edits etc:
-    if (m_qioswindow)
-        static_cast<QWindowPrivate *>(QObjectPrivate::get(m_qioswindow->window()))->clearFocusObject();
-    return [super resignFirstResponder];
+    if (protocol == @protocol(UIKeyInput))
+        return m_inputContext->inputMethodAccepted();
+
+    return [super conformsToProtocol:protocol];
 }
 
-+ (bool)inUpdateKeyboardLayout
-{
-    return staticVariables()->inUpdateKeyboardLayout;
-}
+// -------------------------------------------------------------------------
 
-- (void)updateKeyboardLayout
-{
-    if (![self isFirstResponder])
-        return;
-
-    // There seems to be no API to inform that the keyboard layout needs to update.
-    // As a work-around, we quickly resign first responder just to reassign it again.
-    QScopedValueRollback<bool> rollback(staticVariables()->inUpdateKeyboardLayout);
-    staticVariables()->inUpdateKeyboardLayout = true;
-    [super resignFirstResponder];
-    [self updateTextInputTraits];
-    [super becomeFirstResponder];
-}
-
-- (void)updateUITextInputDelegate:(Qt::InputMethodQueries)query
+- (void)notifyInputDelegate:(Qt::InputMethodQueries)updatedProperties
 {
     // As documented, we should not report textWillChange/textDidChange unless the text
     // was changed externally. That will cause spell checking etc to fail. But we don't
@@ -179,32 +199,15 @@ Q_GLOBAL_STATIC(StaticVariables, staticVariables);
     if (m_inSendEventToFocusObject)
         return;
 
-    if (query & (Qt::ImCursorPosition | Qt::ImAnchorPosition)) {
-        [self.inputDelegate selectionWillChange:id<UITextInput>(self)];
-        [self.inputDelegate selectionDidChange:id<UITextInput>(self)];
+    if (updatedProperties & (Qt::ImCursorPosition | Qt::ImAnchorPosition)) {
+        [self.inputDelegate selectionWillChange:self];
+        [self.inputDelegate selectionDidChange:self];
     }
 
-    if (query & Qt::ImSurroundingText) {
-        [self.inputDelegate textWillChange:id<UITextInput>(self)];
-        [self.inputDelegate textDidChange:id<UITextInput>(self)];
+    if (updatedProperties & Qt::ImSurroundingText) {
+        [self.inputDelegate textWillChange:self];
+        [self.inputDelegate textDidChange:self];
     }
-}
-
-- (void)updateInputMethodWithQuery:(Qt::InputMethodQueries)query
-{
-    Q_UNUSED(query);
-
-    QObject *focusObject = QGuiApplication::focusObject();
-    if (!focusObject)
-        return;
-
-    // Note that we ignore \a query, and instead update using Qt::ImQueryInput. This enables us to just
-    // store the event without copying out the result from the event each time. Besides, we seem to be
-    // called with Qt::ImQueryInput when only changing selection, and always if typing text. So there would
-    // not be any performance gain by only updating \a query.
-    staticVariables()->inputMethodQueryEvent = QInputMethodQueryEvent(Qt::ImQueryInput);
-    QCoreApplication::sendEvent(focusObject, &staticVariables()->inputMethodQueryEvent);
-    [self updateUITextInputDelegate:query];
 }
 
 - (void)sendEventToFocusObject:(QEvent &)e
@@ -221,32 +224,9 @@ Q_GLOBAL_STATIC(StaticVariables, staticVariables);
     QCoreApplication::sendEvent(focusObject, &e);
 }
 
-- (void)reset
-{
-    [self setMarkedText:@"" selectedRange:NSMakeRange(0, 0)];
-    [self updateInputMethodWithQuery:Qt::ImQueryInput];
-
-    // Guard agains recursive callbacks by posting calls to UITextInput
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [self updateKeyboardLayout];
-        [self updateUITextInputDelegate:Qt::ImQueryInput];
-    });
-}
-
-- (void)commit
-{
-    [self unmarkText];
-
-    // Guard agains recursive callbacks by posting calls to UITextInput
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [self updateKeyboardLayout];
-        [self updateUITextInputDelegate:Qt::ImSurroundingText];
-    });
-}
-
 - (QVariant)imValue:(Qt::InputMethodQuery)query
 {
-    return staticVariables()->inputMethodQueryEvent.value(query);
+    return m_inputContext->imeState().currentState.value(query);
 }
 
 -(id<UITextInputTokenizer>)tokenizer
@@ -274,7 +254,8 @@ Q_GLOBAL_STATIC(StaticVariables, staticVariables);
     [self sendEventToFocusObject:e];
 }
 
-- (UITextRange *)selectedTextRange {
+- (UITextRange *)selectedTextRange
+{
     int cursorPos = [self imValue:Qt::ImCursorPosition].toInt();
     int anchorPos = [self imValue:Qt::ImAnchorPosition].toInt();
     return [QUITextRange rangeWithNSRange:NSMakeRange(qMin(cursorPos, anchorPos), qAbs(anchorPos - cursorPos))];
@@ -333,7 +314,8 @@ Q_GLOBAL_STATIC(StaticVariables, staticVariables);
     return NSOrderedSame;
 }
 
-- (UITextRange *)markedTextRange {
+- (UITextRange *)markedTextRange
+{
     return m_markedText.isEmpty() ? nil : [QUITextRange rangeWithNSRange:NSMakeRange(0, m_markedText.length())];
 }
 
@@ -377,7 +359,8 @@ Q_GLOBAL_STATIC(StaticVariables, staticVariables);
     // to be relative to the view this method returns.
     // Since QInputMethod returns rects relative to the top level
     // QWindow, that is also the view we need to return.
-    QPlatformWindow *topLevel = m_qioswindow;
+    Q_ASSERT(qApp->focusWindow()->handle());
+    QPlatformWindow *topLevel = qApp->focusWindow()->handle();
     while (QPlatformWindow *p = topLevel->parent())
         topLevel = p;
     return reinterpret_cast<UIView *>(topLevel->winId());
@@ -530,13 +513,14 @@ Q_GLOBAL_STATIC(StaticVariables, staticVariables);
         return;
 
     if ([text isEqualToString:@"\n"]) {
-        if (self.returnKeyType == UIReturnKeyDone)
-            qApp->inputMethod()->hide();
-
         QKeyEvent press(QEvent::KeyPress, Qt::Key_Return, Qt::NoModifier);
         QKeyEvent release(QEvent::KeyRelease, Qt::Key_Return, Qt::NoModifier);
         [self sendEventToFocusObject:press];
         [self sendEventToFocusObject:release];
+
+        Qt::InputMethodHints imeHints = static_cast<Qt::InputMethodHints>([self imValue:Qt::ImHints].toUInt());
+        if (!(imeHints & Qt::ImhMultiLine))
+            m_inputContext->hideVirtualKeyboard();
 
         return;
     }
@@ -555,49 +539,6 @@ Q_GLOBAL_STATIC(StaticVariables, staticVariables);
     QKeyEvent release(QEvent::KeyRelease, (int)Qt::Key_Backspace, Qt::NoModifier);
     [self sendEventToFocusObject:press];
     [self sendEventToFocusObject:release];
-}
-
-- (void)updateTextInputTraits
-{
-    // Ask the current focus object what kind of input it
-    // expects, and configure the keyboard appropriately:
-    QObject *focusObject = QGuiApplication::focusObject();
-    if (!focusObject)
-        return;
-    QInputMethodQueryEvent queryEvent(Qt::ImEnabled | Qt::ImHints);
-    if (!QCoreApplication::sendEvent(focusObject, &queryEvent))
-        return;
-    if (!queryEvent.value(Qt::ImEnabled).toBool())
-        return;
-
-    Qt::InputMethodHints hints = static_cast<Qt::InputMethodHints>(queryEvent.value(Qt::ImHints).toUInt());
-
-    self.returnKeyType = (hints & Qt::ImhMultiLine) ? UIReturnKeyDefault : UIReturnKeyDone;
-    self.secureTextEntry = BOOL(hints & Qt::ImhHiddenText);
-    self.autocorrectionType = (hints & Qt::ImhNoPredictiveText) ?
-                UITextAutocorrectionTypeNo : UITextAutocorrectionTypeDefault;
-    self.spellCheckingType = (hints & Qt::ImhNoPredictiveText) ?
-                UITextSpellCheckingTypeNo : UITextSpellCheckingTypeDefault;
-
-    if (hints & Qt::ImhUppercaseOnly)
-        self.autocapitalizationType = UITextAutocapitalizationTypeAllCharacters;
-    else if (hints & Qt::ImhNoAutoUppercase)
-        self.autocapitalizationType = UITextAutocapitalizationTypeNone;
-    else
-        self.autocapitalizationType = UITextAutocapitalizationTypeSentences;
-
-    if (hints & Qt::ImhUrlCharactersOnly)
-        self.keyboardType = UIKeyboardTypeURL;
-    else if (hints & Qt::ImhEmailCharactersOnly)
-        self.keyboardType = UIKeyboardTypeEmailAddress;
-    else if (hints & Qt::ImhDigitsOnly)
-        self.keyboardType = UIKeyboardTypeNumberPad;
-    else if (hints & Qt::ImhFormattedNumbersOnly)
-        self.keyboardType = UIKeyboardTypeDecimalPad;
-    else if (hints & Qt::ImhDialableCharactersOnly)
-        self.keyboardType = UIKeyboardTypeNumberPad;
-    else
-        self.keyboardType = UIKeyboardTypeDefault;
 }
 
 @end

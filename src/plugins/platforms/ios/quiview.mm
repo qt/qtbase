@@ -50,14 +50,6 @@
 
 @implementation QUIView
 
-@synthesize autocapitalizationType;
-@synthesize autocorrectionType;
-@synthesize enablesReturnKeyAutomatically;
-@synthesize keyboardAppearance;
-@synthesize keyboardType;
-@synthesize returnKeyType;
-@synthesize secureTextEntry;
-
 + (Class)layerClass
 {
     return [CAEAGLLayer class];
@@ -86,7 +78,6 @@
             self.hidden = YES;
 
         self.multipleTouchEnabled = YES;
-        m_inSendEventToFocusObject = NO;
     }
 
     return self;
@@ -201,6 +192,46 @@
     QWindowSystemInterface::handleExposeEvent(m_qioswindow->window(), region);
     QWindowSystemInterface::flushWindowSystemEvents();
 }
+
+// -------------------------------------------------------------------------
+
+- (BOOL)canBecomeFirstResponder
+{
+    return YES;
+}
+
+- (BOOL)becomeFirstResponder
+{
+    if ([super becomeFirstResponder]) {
+        QWindowSystemInterface::handleWindowActivated(m_qioswindow->window());
+        QWindowSystemInterface::flushWindowSystemEvents();
+
+        return YES;
+    }
+
+    return NO;
+}
+
+- (BOOL)resignFirstResponder
+{
+    if ([super resignFirstResponder]) {
+        // We don't want to send window deactivation in case we're in the process
+        // of activating another window. The handleWindowActivated of the activation
+        // will take care of both.
+        dispatch_async(dispatch_get_main_queue (), ^{
+            if (![[UIResponder currentFirstResponder] isKindOfClass:[QUIView class]])
+                QWindowSystemInterface::handleWindowActivated(0);
+                QWindowSystemInterface::flushWindowSystemEvents();
+        });
+
+        return YES;
+    }
+
+    return NO;
+}
+
+// -------------------------------------------------------------------------
+
 
 - (void)updateTouchList:(NSSet *)touches withState:(Qt::TouchPointState)state
 {
@@ -342,5 +373,4 @@
 @end
 
 // Include category as an alternative to using -ObjC (Apple QA1490)
-#include "quiview_textinput.mm"
 #include "quiview_accessibility.mm"

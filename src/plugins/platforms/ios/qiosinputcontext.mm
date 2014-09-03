@@ -44,8 +44,10 @@
 #import <UIKit/UIGestureRecognizerSubclass.h>
 
 #include "qiosglobal.h"
+#include "qiostextresponder.h"
 #include "qioswindow.h"
 #include "quiview.h"
+
 #include <QGuiApplication>
 #include <QtGui/private/qwindow_p.h>
 
@@ -158,8 +160,6 @@
 
 - (void) keyboardWillShow:(NSNotification *)notification
 {
-    if ([QUIView inUpdateKeyboardLayout])
-        return;
     // Note that UIKeyboardWillShowNotification is only sendt when the keyboard is docked.
     m_keyboardVisibleAndDocked = YES;
     m_keyboardEndRect = [self getKeyboardRect:notification];
@@ -173,8 +173,6 @@
 
 - (void) keyboardWillHide:(NSNotification *)notification
 {
-    if ([QUIView inUpdateKeyboardLayout])
-        return;
     // Note that UIKeyboardWillHideNotification is also sendt when the keyboard is undocked.
     m_keyboardVisibleAndDocked = NO;
     m_keyboardEndRect = [self getKeyboardRect:notification];
@@ -207,7 +205,7 @@
     QPointF p = fromCGPoint([[touches anyObject] locationInView:m_viewController.view]);
     if (m_keyboardRect.contains(p)) {
         m_keyboardHiddenByGesture = YES;
-        m_context->hideInputPanel();
+        m_context->hideVirtualKeyboard();
     }
 
     [super touchesMoved:touches withEvent:event];
@@ -253,11 +251,43 @@
 
 @end
 
+// -------------------------------------------------------------------------
+
+Qt::InputMethodQueries ImeState::update(Qt::InputMethodQueries properties)
+{
+    if (!properties)
+        return 0;
+
+    QInputMethodQueryEvent newState(properties);
+
+    if (qApp && qApp->focusObject())
+        QCoreApplication::sendEvent(qApp->focusObject(), &newState);
+
+    Qt::InputMethodQueries updatedProperties;
+    for (uint i = 0; i < (sizeof(Qt::ImQueryAll) * CHAR_BIT); ++i) {
+        if (Qt::InputMethodQuery property = Qt::InputMethodQuery(int(properties & (1 << i)))) {
+            if (newState.value(property) != currentState.value(property)) {
+                updatedProperties |= property;
+                currentState.setValue(property, newState.value(property));
+            }
+        }
+    }
+
+    return updatedProperties;
+}
+
+// -------------------------------------------------------------------------
+
+static QUIView *focusView()
+{
+    return qApp->focusWindow() ?
+        reinterpret_cast<QUIView *>(qApp->focusWindow()->handle()->winId()) : 0;
+}
+
 QIOSInputContext::QIOSInputContext()
     : QPlatformInputContext()
     , m_keyboardListener([[QIOSKeyboardListener alloc] initWithQIOSInputContext:this])
-    , m_focusView(0)
-    , m_hasPendingHideRequest(false)
+    , m_textResponder(0)
 {
     if (isQtApplication())
         connect(qGuiApp->inputMethod(), &QInputMethod::cursorRectangleChanged, this, &QIOSInputContext::cursorRectangleChanged);
@@ -267,7 +297,7 @@ QIOSInputContext::QIOSInputContext()
 QIOSInputContext::~QIOSInputContext()
 {
     [m_keyboardListener release];
-    [m_focusView release];
+    [m_textResponder release];
 }
 
 QRectF QIOSInputContext::keyboardRect() const
@@ -277,61 +307,22 @@ QRectF QIOSInputContext::keyboardRect() const
 
 void QIOSInputContext::showInputPanel()
 {
-    if (m_keyboardListener->m_keyboardHiddenByGesture) {
-        // We refuse to re-show the keyboard until the touch
-        // sequence that triggered the gesture has ended.
-        return;
-    }
-
-    // Documentation tells that one should call (and recall, if necessary) becomeFirstResponder/resignFirstResponder
-    // to show/hide the keyboard. This is slightly inconvenient, since there exist no API to get the current first
-    // responder. Rather than searching for it from the top, we let the active QIOSWindow tell us which view to use.
-    // Note that Qt will forward keyevents to whichever QObject that needs it, regardless of which UIView the input
-    // actually came from. So in this respect, we're undermining iOS' responder chain.
-    m_hasPendingHideRequest = false;
-    [m_focusView becomeFirstResponder];
+    // No-op, keyboard controlled fully by platform based on focus
 }
 
 void QIOSInputContext::hideInputPanel()
 {
-    // Delay hiding the keyboard for cases where the user is transferring focus between
-    // 'line edits'. In that case the 'line edit' that lost focus will close the input
-    // panel, just to see that the new 'line edit' will open it again:
-    m_hasPendingHideRequest = true;
-    dispatch_async(dispatch_get_main_queue(), ^{
-        if (m_hasPendingHideRequest)
-            [m_focusView resignFirstResponder];
-    });
+    // No-op, keyboard controlled fully by platform based on focus
+}
+
+void QIOSInputContext::hideVirtualKeyboard()
+{
+    static_cast<QWindowPrivate *>(QObjectPrivate::get(qApp->focusWindow()))->clearFocusObject();
 }
 
 bool QIOSInputContext::isInputPanelVisible() const
 {
     return m_keyboardListener->m_keyboardVisible;
-}
-
-void QIOSInputContext::setFocusObject(QObject *focusObject)
-{
-    if (!focusObject || !m_focusView || !m_focusView.isFirstResponder) {
-        scroll(0);
-        return;
-    }
-
-    reset();
-
-    if (m_keyboardListener->m_keyboardVisibleAndDocked)
-        scrollToCursor();
-}
-
-void QIOSInputContext::focusWindowChanged(QWindow *focusWindow)
-{
-    QUIView *view = focusWindow ? reinterpret_cast<QUIView *>(focusWindow->handle()->winId()) : 0;
-    if ([m_focusView isFirstResponder])
-        [view becomeFirstResponder];
-    [m_focusView release];
-    m_focusView = [view retain];
-
-    if (view.window != m_keyboardListener->m_viewController.view)
-        scroll(0);
 }
 
 void QIOSInputContext::cursorRectangleChanged()
@@ -353,7 +344,7 @@ void QIOSInputContext::cursorRectangleChanged()
 
 void QIOSInputContext::scrollToCursor()
 {
-    if (!isQtApplication() || !m_focusView)
+    if (!isQtApplication())
         return;
 
     if (m_keyboardListener->m_touchPressWhileKeyboardVisible) {
@@ -364,12 +355,12 @@ void QIOSInputContext::scrollToCursor()
     }
 
     UIView *view = m_keyboardListener->m_viewController.view;
-    if (view.window != m_focusView.window)
+    if (view.window != focusView().window)
         return;
 
     const int margin = 20;
     QRectF translatedCursorPos = qApp->inputMethod()->cursorRectangle();
-    translatedCursorPos.translate(m_focusView.qwindow->geometry().topLeft());
+    translatedCursorPos.translate(focusView().qwindow->geometry().topLeft());
     qreal keyboardY = m_keyboardListener->m_keyboardEndRect.y();
     int statusBarY = qGuiApp->primaryScreen()->availableGeometry().y();
 
@@ -398,18 +389,84 @@ void QIOSInputContext::scroll(int y)
     ];
 }
 
-void QIOSInputContext::update(Qt::InputMethodQueries query)
+// -------------------------------------------------------------------------
+
+void QIOSInputContext::setFocusObject(QObject *focusObject)
 {
-    [m_focusView updateInputMethodWithQuery:query];
+    Q_UNUSED(focusObject);
+
+    reset();
+
+    if (m_keyboardListener->m_keyboardVisibleAndDocked)
+        scrollToCursor();
 }
 
+void QIOSInputContext::focusWindowChanged(QWindow *focusWindow)
+{
+    Q_UNUSED(focusWindow);
+
+    reset();
+
+    if (m_keyboardListener->m_keyboardVisibleAndDocked)
+        scrollToCursor();
+}
+
+/*!
+    Called by the input item to inform the platform input methods when there has been
+    state changes in editor's input method query attributes. When calling the function
+    \a queries parameter has to be used to tell what has changes, which input method
+    can use to make queries for attributes it's interested with QInputMethodQueryEvent.
+*/
+void QIOSInputContext::update(Qt::InputMethodQueries updatedProperties)
+{
+    // Mask for properties that we are interested in and see if any of them changed
+    updatedProperties &= (Qt::ImEnabled | Qt::ImHints | Qt::ImQueryInput);
+
+    Qt::InputMethodQueries changedProperties = m_imeState.update(updatedProperties);
+    if (changedProperties & (Qt::ImEnabled | Qt::ImHints)) {
+        // Changes to enablement or hints require virtual keyboard reconfigure
+        [m_textResponder release];
+        m_textResponder = [[QIOSTextInputResponder alloc] initWithInputContext:this];
+        [m_textResponder reloadInputViews];
+    } else {
+        [m_textResponder notifyInputDelegate:changedProperties];
+    }
+}
+
+/*!
+    Called by the input item to reset the input method state.
+*/
 void QIOSInputContext::reset()
 {
-    [m_focusView reset];
+    update(Qt::ImQueryAll);
+
+    [m_textResponder setMarkedText:@"" selectedRange:NSMakeRange(0, 0)];
+    [m_textResponder notifyInputDelegate:Qt::ImQueryInput];
 }
 
+/*!
+    Commits the word user is currently composing to the editor. The function is
+    mostly needed by the input methods with text prediction features and by the
+    methods where the script used for typing characters is different from the
+    script that actually gets appended to the editor. Any kind of action that
+    interrupts the text composing needs to flush the composing state by calling the
+    commit() function, for example when the cursor is moved elsewhere.
+*/
 void QIOSInputContext::commit()
 {
-    [m_focusView commit];
+    [m_textResponder unmarkText];
+    [m_textResponder notifyInputDelegate:Qt::ImSurroundingText];
 }
 
+// -------------------------------------------------------------------------
+
+@interface QUIView (InputMethods)
+- (void)reloadInputViews;
+@end
+
+@implementation QUIView (InputMethods)
+- (void)reloadInputViews
+{
+    qApp->inputMethod()->reset();
+}
+@end

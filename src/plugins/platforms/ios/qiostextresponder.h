@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -39,59 +39,36 @@
 **
 ****************************************************************************/
 
-#ifndef QIOSINPUTCONTEXT_H
-#define QIOSINPUTCONTEXT_H
+#import <UIKit/UIKit.h>
 
-#include <UIKit/UIKit.h>
+#include <QtCore/qstring.h>
 
-#include <QtGui/qevent.h>
-#include <QtGui/qtransform.h>
-#include <qpa/qplatforminputcontext.h>
+class QIOSInputContext;
 
-QT_BEGIN_NAMESPACE
-
-@class QIOSKeyboardListener;
-@class QIOSTextInputResponder;
-
-struct ImeState
+@interface QIOSTextInputResponder : UIResponder <UITextInputTraits, UIKeyInput, UITextInput>
 {
-    ImeState() : currentState(0) {}
-    Qt::InputMethodQueries update(Qt::InputMethodQueries properties);
-    QInputMethodQueryEvent currentState;
-};
+  @public
+    QString m_markedText;
+    BOOL m_inSendEventToFocusObject;
 
-class QIOSInputContext : public QPlatformInputContext
-{
-public:
-    QIOSInputContext();
-    ~QIOSInputContext();
+  @private
+    QIOSInputContext *m_inputContext;
+}
 
-    QRectF keyboardRect() const;
+- (id)initWithInputContext:(QIOSInputContext *)context;
+- (void)notifyInputDelegate:(Qt::InputMethodQueries)updatedProperties;
 
-    void showInputPanel();
-    void hideInputPanel();
-    void hideVirtualKeyboard();
+// UITextInputTraits
+@property(nonatomic) UITextAutocapitalizationType autocapitalizationType;
+@property(nonatomic) UITextAutocorrectionType autocorrectionType;
+@property(nonatomic) UITextSpellCheckingType spellCheckingType;
+@property(nonatomic) BOOL enablesReturnKeyAutomatically;
+@property(nonatomic) UIKeyboardAppearance keyboardAppearance;
+@property(nonatomic) UIKeyboardType keyboardType;
+@property(nonatomic) UIReturnKeyType returnKeyType;
+@property(nonatomic, getter=isSecureTextEntry) BOOL secureTextEntry;
 
-    bool isInputPanelVisible() const;
-    void setFocusObject(QObject *object);
+// UITextInput
+@property(nonatomic, assign) id<UITextInputDelegate> inputDelegate;
 
-    void focusWindowChanged(QWindow *focusWindow);
-    void cursorRectangleChanged();
-    void scrollToCursor();
-    void scroll(int y);
-
-    void update(Qt::InputMethodQueries);
-    void reset();
-    void commit();
-
-    const ImeState &imeState() { return m_imeState; };
-
-private:
-    QIOSKeyboardListener *m_keyboardListener;
-    QIOSTextInputResponder *m_textResponder;
-    ImeState m_imeState;
-};
-
-QT_END_NAMESPACE
-
-#endif
+@end

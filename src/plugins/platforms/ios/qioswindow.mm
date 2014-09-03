@@ -264,12 +264,12 @@ void QIOSWindow::requestActivateWindow()
     if (blockedByModal())
         return;
 
+    Q_ASSERT(m_view.window);
     [m_view.window makeKeyWindow];
+    [m_view becomeFirstResponder];
 
     if (window()->isTopLevel())
         raise();
-
-    QWindowSystemInterface::handleWindowActivated(window());
 }
 
 void QIOSWindow::raiseOrLower(bool raise)
