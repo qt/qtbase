@@ -62,10 +62,11 @@ public:
         , devicePixelRatio(1.0)
     {}
 
-    QWindowsDirect2DPlatformPixmapPrivate(QWindowsDirect2DBitmap *bitmap)
+    QWindowsDirect2DPlatformPixmapPrivate(QWindowsDirect2DBitmap *bitmap,
+                                          QWindowsDirect2DPaintEngine::Flags flags)
         : owns_bitmap(false)
         , bitmap(bitmap)
-        , device(new QWindowsDirect2DPaintDevice(bitmap, QInternal::Pixmap))
+        , device(new QWindowsDirect2DPaintDevice(bitmap, QInternal::Pixmap, flags))
         , devicePixelRatio(1.0)
     {}
 
@@ -91,9 +92,10 @@ QWindowsDirect2DPlatformPixmap::QWindowsDirect2DPlatformPixmap(PixelType pixelTy
 }
 
 QWindowsDirect2DPlatformPixmap::QWindowsDirect2DPlatformPixmap(QPlatformPixmap::PixelType pixelType,
+                                                               QWindowsDirect2DPaintEngine::Flags flags,
                                                                QWindowsDirect2DBitmap *bitmap)
     : QPlatformPixmap(pixelType, Direct2DClass)
-    , d_ptr(new QWindowsDirect2DPlatformPixmapPrivate(bitmap))
+    , d_ptr(new QWindowsDirect2DPlatformPixmapPrivate(bitmap, flags))
 {
     setSerialNumber(qt_d2dpixmap_serno++);
 

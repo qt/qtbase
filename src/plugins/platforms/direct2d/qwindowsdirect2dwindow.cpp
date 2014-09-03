@@ -308,7 +308,11 @@ void QWindowsDirect2DWindow::setupBitmap()
 
     m_bitmap.reset(new QWindowsDirect2DBitmap(backBufferBitmap.Get(), m_deviceContext.Get()));
 
+    QWindowsDirect2DPaintEngine::Flags flags = QWindowsDirect2DPaintEngine::NoFlag;
+    if (!m_directRendering)
+        flags |= QWindowsDirect2DPaintEngine::UseGrayscaleAntialiasing;
     QWindowsDirect2DPlatformPixmap *pp = new QWindowsDirect2DPlatformPixmap(QPlatformPixmap::PixmapType,
+                                                                            flags,
                                                                             m_bitmap.data());
     m_pixmap.reset(new QPixmap(pp));
 }

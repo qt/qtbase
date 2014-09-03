@@ -44,6 +44,7 @@
 
 #include <QtCore/QScopedPointer>
 #include <QtGui/QPaintDevice>
+#include "qwindowsdirect2dpaintengine.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -55,7 +56,8 @@ class QWindowsDirect2DPaintDevice : public QPaintDevice
     Q_DECLARE_PRIVATE(QWindowsDirect2DPaintDevice)
 
 public:
-    QWindowsDirect2DPaintDevice(QWindowsDirect2DBitmap *bitmap, QInternal::PaintDeviceFlags flags);
+    QWindowsDirect2DPaintDevice(QWindowsDirect2DBitmap *bitmap, QInternal::PaintDeviceFlags flags,
+                                QWindowsDirect2DPaintEngine::Flags paintFlags = QWindowsDirect2DPaintEngine::NoFlag);
     QPaintEngine *paintEngine() const Q_DECL_OVERRIDE;
     int devType() const Q_DECL_OVERRIDE;
 

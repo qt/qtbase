@@ -53,8 +53,9 @@ QT_BEGIN_NAMESPACE
 class QWindowsDirect2DPaintDevicePrivate
 {
 public:
-    QWindowsDirect2DPaintDevicePrivate(QWindowsDirect2DBitmap *bitmap, QInternal::PaintDeviceFlags f)
-        : engine(new QWindowsDirect2DPaintEngine(bitmap))
+    QWindowsDirect2DPaintDevicePrivate(QWindowsDirect2DBitmap *bitmap, QInternal::PaintDeviceFlags f,
+                                       QWindowsDirect2DPaintEngine::Flags paintFlags)
+        : engine(new QWindowsDirect2DPaintEngine(bitmap, paintFlags))
         , bitmap(bitmap)
         , flags(f)
     {}
@@ -64,8 +65,9 @@ public:
     QInternal::PaintDeviceFlags flags;
 };
 
-QWindowsDirect2DPaintDevice::QWindowsDirect2DPaintDevice(QWindowsDirect2DBitmap *bitmap, QInternal::PaintDeviceFlags flags)
-    : d_ptr(new QWindowsDirect2DPaintDevicePrivate(bitmap, flags))
+QWindowsDirect2DPaintDevice::QWindowsDirect2DPaintDevice(QWindowsDirect2DBitmap *bitmap, QInternal::PaintDeviceFlags flags,
+                                                         QWindowsDirect2DPaintEngine::Flags paintFlags)
+    : d_ptr(new QWindowsDirect2DPaintDevicePrivate(bitmap, flags, paintFlags))
 {
 }
 
