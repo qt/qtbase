@@ -45,11 +45,8 @@
 #include "qiosintegration.h"
 #include "qioswindow.h"
 
+#include <QtGui/private/qguiapplication_p.h>
 #include <QtGui/private/qwindow_p.h>
-
-// Include category as an alternative to using -ObjC (Apple QA1490)
-#include "quiview_textinput.mm"
-#include "quiview_accessibility.mm"
 
 @implementation QUIView
 
@@ -343,3 +340,7 @@
 }
 
 @end
+
+// Include category as an alternative to using -ObjC (Apple QA1490)
+#include "quiview_textinput.mm"
+#include "quiview_accessibility.mm"
