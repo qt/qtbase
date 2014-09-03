@@ -861,15 +861,20 @@ void QAccessible::setRootObject(QObject *object)
 */
 void QAccessible::updateAccessibility(QAccessibleEvent *event)
 {
-    if (!isActive())
+    // NOTE: Querying for the accessibleInterface below will result in
+    // resolving and caching the interface, which in some cases will
+    // cache the wrong information as updateAccessibility is called
+    // during construction of widgets. If you see cases where the
+    // cache seems wrong, this call is "to blame", but the code that
+    // caches dynamic data should be updated to handle change events.
+    if (!isActive() || !event->accessibleInterface())
         return;
 
 #ifndef QT_NO_ACCESSIBILITY
     if (event->type() == QAccessible::TableModelChanged) {
-        if (QAccessibleInterface *iface = event->accessibleInterface()) {
-            if (iface->tableInterface())
-                iface->tableInterface()->modelChange(static_cast<QAccessibleTableModelChangeEvent*>(event));
-        }
+        QAccessibleInterface *iface = event->accessibleInterface();
+        if (iface && iface->tableInterface())
+            iface->tableInterface()->modelChange(static_cast<QAccessibleTableModelChangeEvent*>(event));
     }
 
     if (updateHandler) {

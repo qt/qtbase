@@ -939,29 +939,19 @@ void tst_QAccessibility::mainWindowTest()
     window.show();
     QTRY_VERIFY(QGuiApplication::focusWindow() == &window);
 
-//    We currently don't have an accessible interface for QWindow
-//    the active state is either in the QMainWindow or QQuickView
-//    QAccessibleInterface *windowIface(QAccessible::queryAccessibleInterface(&window));
-//    QVERIFY(windowIface->state().active);
+    // We currently don't have an accessible interface for QWindow
+    // the active state is either in the QMainWindow or QQuickView
+    QAccessibleInterface *windowIface(QAccessible::queryAccessibleInterface(&window));
+    QVERIFY(!windowIface);
 
     QAccessible::State activeState;
     activeState.active = true;
+
+    // We should still not crash if we somehow end up sending state change events
+    // Note that we do not QVERIFY_EVENT, as that relies on the updateHandler being
+    // called, which does not happen/make sense when there's no interface for the event.
     QAccessibleStateChangeEvent active(&window, activeState);
-    QVERIFY_EVENT(&active);
-
-    QWindow child;
-    child.setParent(&window);
-    child.setGeometry(10, 10, 20, 20);
-    child.show();
-
-    child.requestActivate();
-    QTRY_VERIFY(QGuiApplication::focusWindow() == &child);
-
     QAccessibleStateChangeEvent deactivate(&window, activeState);
-    QVERIFY_EVENT(&deactivate); // deactivation of parent
-
-    QAccessibleStateChangeEvent activeChild(&child, activeState);
-    QVERIFY_EVENT(&activeChild);
     }
 }
 
