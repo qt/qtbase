@@ -335,7 +335,7 @@ QGestureRecognizer::Result QSwipeGestureRecognizer::recognize(QGesture *state,
             d->swipeAngle = QLineF(p1.startScreenPos(), p1.screenPos()).angle();
 
             static const int MoveThreshold = 50;
-            if (xDistance > MoveThreshold || yDistance > MoveThreshold) {
+            if (qAbs(xDistance) > MoveThreshold || qAbs(yDistance) > MoveThreshold) {
                 // measure the distance to check if the direction changed
                 d->lastPositions[0] = p1.screenPos().toPoint();
                 d->lastPositions[1] = p2.screenPos().toPoint();
