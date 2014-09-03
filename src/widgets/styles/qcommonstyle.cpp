@@ -3043,7 +3043,18 @@ QRect QCommonStyle::subElementRect(SubElement sr, const QStyleOption *opt,
 
 #ifndef QT_NO_DIAL
 
-static QPolygonF calcArrow(const QStyleOptionSlider *dial, qreal &a)
+// in lieu of std::array, minimal API
+template <int N>
+struct StaticPolygonF
+{
+    QPointF data[N];
+
+    Q_DECL_CONSTEXPR int size() const { return N; }
+    Q_DECL_CONSTEXPR const QPointF *cbegin() const { return data; }
+    Q_DECL_CONSTEXPR const QPointF &operator[](int idx) const { return data[idx]; }
+};
+
+static StaticPolygonF<3> calcArrow(const QStyleOptionSlider *dial, qreal &a)
 {
     int width = dial->rect.width();
     int height = dial->rect.height();
@@ -3067,13 +3078,14 @@ static QPolygonF calcArrow(const QStyleOptionSlider *dial, qreal &a)
         len = 5;
     int back = len / 2;
 
-    QPolygonF arrow(3);
-    arrow[0] = QPointF(0.5 + xc + len * qCos(a),
-                       0.5 + yc - len * qSin(a));
-    arrow[1] = QPointF(0.5 + xc + back * qCos(a + Q_PI * 5 / 6),
-                       0.5 + yc - back * qSin(a + Q_PI * 5 / 6));
-    arrow[2] = QPointF(0.5 + xc + back * qCos(a - Q_PI * 5 / 6),
-                       0.5 + yc - back * qSin(a - Q_PI * 5 / 6));
+    StaticPolygonF<3> arrow = {{
+        QPointF(0.5 + xc + len * qCos(a),
+                0.5 + yc - len * qSin(a)),
+        QPointF(0.5 + xc + back * qCos(a + Q_PI * 5 / 6),
+                0.5 + yc - back * qSin(a + Q_PI * 5 / 6)),
+        QPointF(0.5 + xc + back * qCos(a - Q_PI * 5 / 6),
+                0.5 + yc - back * qSin(a - Q_PI * 5 / 6)),
+    }};
     return arrow;
 }
 
@@ -3575,12 +3587,12 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
             p->drawArc(br, 240 * 16, 180 * 16);
 
             qreal a;
-            QPolygonF arrow(calcArrow(dial, a));
+            const StaticPolygonF<3> arrow = calcArrow(dial, a);
 
             p->setPen(Qt::NoPen);
             p->setBrush(pal.button());
             p->setRenderHint(QPainter::Qt4CompatiblePainting);
-            p->drawPolygon(arrow);
+            p->drawPolygon(arrow.cbegin(), arrow.size());
 
             a = QStyleHelper::angle(QPointF(width / 2, height / 2), arrow[0]);
             p->setBrush(Qt::NoBrush);
