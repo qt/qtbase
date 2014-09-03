@@ -79,7 +79,10 @@ protected:
     friend class QDirectFbConvenience;
 
 private:
+    void drawDebugRect(const QRect &rect, const QColor &color);
+
     bool m_premult;
+    bool m_debugPaint;
 };
 
 class QDirectFbBlitterPlatformPixmap : public QBlittablePlatformPixmap

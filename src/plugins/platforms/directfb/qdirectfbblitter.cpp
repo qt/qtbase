@@ -65,17 +65,22 @@ static QBlittable::Capabilities dfb_blitter_capabilities()
 
 QDirectFbBlitter::QDirectFbBlitter(const QSize &rect, IDirectFBSurface *surface)
     : QBlittable(rect, dfb_blitter_capabilities())
-        , m_surface(surface)
+    , m_surface(surface)
+    , m_debugPaint(false)
 {
     m_surface->AddRef(m_surface.data());
 
     DFBSurfaceCapabilities surfaceCaps;
     m_surface->GetCapabilities(m_surface.data(), &surfaceCaps);
     m_premult = (surfaceCaps & DSCAPS_PREMULTIPLIED);
+    if (qgetenv("QT_DIRECTFB_BLITTER_DEBUGPAINT").toInt())
+        m_debugPaint = true;
 }
 
 QDirectFbBlitter::QDirectFbBlitter(const QSize &rect, bool alpha)
-    : QBlittable(rect, dfb_blitter_capabilities()), m_premult(false)
+    : QBlittable(rect, dfb_blitter_capabilities())
+    , m_premult(false)
+    , m_debugPaint(false)
 {
     DFBSurfaceDescription surfaceDesc;
     memset(&surfaceDesc,0,sizeof(DFBSurfaceDescription));
@@ -94,6 +99,9 @@ QDirectFbBlitter::QDirectFbBlitter(const QSize &rect, bool alpha)
         surfaceDesc.flags = DFBSurfaceDescriptionFlags(DSDESC_WIDTH | DSDESC_HEIGHT | DSDESC_PIXELFORMAT);
         surfaceDesc.pixelformat = QDirectFbBlitter::pixmapFormat();
     }
+
+    if (qgetenv("QT_DIRECTFB_BLITTER_DEBUGPAINT").toInt())
+        m_debugPaint = true;
 
     IDirectFB *dfb = QDirectFbConvenience::dfbInterface();
     dfb->CreateSurface(dfb , &surfaceDesc, m_surface.outPtr());
@@ -165,6 +173,8 @@ void QDirectFbBlitter::alphaFillRect(const QRectF &rect, const QColor &color, QP
     result = m_surface->FillRectangle(m_surface.data(), x, y, w, h);
     if (result != DFB_OK)
         DirectFBError("QDirectFBBlitter::alphaFillRect()", result);
+    if (m_debugPaint)
+        drawDebugRect(QRect(x, y, w, h), QColor(Qt::blue));
 }
 
 void QDirectFbBlitter::drawPixmapOpacity(const QRectF &rect, const QPixmap &pixmap, const QRectF &subrect, QPainter::CompositionMode cmode, qreal opacity)
@@ -203,13 +213,19 @@ void QDirectFbBlitter::drawPixmapOpacity(const QRectF &rect, const QPixmap &pixm
     if (cmode == QPainter::CompositionMode_SourceOver)
         m_surface->SetDstBlendFunction(m_surface.data(), DSBF_INVSRCALPHA);
 
-    if ((sRect.w == dRect.w) && (sRect.h == dRect.h))
+    if ((sRect.w == dRect.w) && (sRect.h == dRect.h)) {
         result = m_surface->Blit(m_surface.data(), s, &sRect, dRect.x, dRect.y);
-    else
+        if (result != DFB_OK)
+            DirectFBError("QDirectFBBlitter::drawPixmapOpacity()", result);
+        if (m_debugPaint)
+            drawDebugRect(QRect(dRect.x, dRect.y, sRect.w, sRect.h), QColor(Qt::green));
+    } else {
         result = m_surface->StretchBlit(m_surface.data(), s, &sRect, &dRect);
-
-    if (result != DFB_OK)
-        DirectFBError("QDirectFBBlitter::drawPixmapExtended()", result);
+        if (result != DFB_OK)
+            DirectFBError("QDirectFBBlitter::drawPixmapOpacity()", result);
+        if (m_debugPaint)
+            drawDebugRect(QRect(dRect.x, dRect.y, dRect.w, dRect.h), QColor(Qt::red));
+    }
 }
 
 bool QDirectFbBlitter::drawCachedGlyphs(const QPaintEngineState *state, QFontEngine::GlyphFormat glyphFormat, int numGlyphs, const glyph_t *glyphs, const QFixedPoint *positions, QFontEngine *fontEngine)
@@ -286,6 +302,12 @@ bool QDirectFbBlitter::drawCachedGlyphs(const QPaintEngineState *state, QFontEng
     }
 
     m_surface->BatchBlit(m_surface.data(), cache->sourceSurface(), sourceRects.constData(), destPoints.constData(), nGlyphs);
+
+    if (m_debugPaint) {
+        for (int i = 0; i < nGlyphs; ++i) {
+            drawDebugRect(QRect(destPoints[i].x, destPoints[i].y, sourceRects[i].w, sourceRects[i].h), QColor(Qt::yellow));
+        }
+    }
 
     if (rs->clip && rs->clip->enabled)
         m_surface->SetClip(m_surface.data(), 0);
@@ -401,6 +423,41 @@ bool QDirectFbBlitterPlatformPixmap::fromFile(const QString &filename, const cha
 void QDirectFbBlitter::doUnlock()
 {
     m_surface->Unlock(m_surface.data());
+}
+
+void QDirectFbBlitter::drawDebugRect(const QRect &rect, const QColor &color)
+{
+    int x, y, w, h;
+    DFBResult result;
+
+    // check parameters
+    rect.getRect(&x, &y ,&w, &h);
+    if ((w <= 0) || (h <= 0)) return;
+
+    m_surface->SetDrawingFlags(m_surface.data(),
+    DFBSurfaceDrawingFlags(m_premult ? (DSDRAW_BLEND | DSDRAW_SRC_PREMULTIPLY) : DSDRAW_BLEND));
+    m_surface->SetPorterDuff(m_surface.data(), DSPD_SRC_OVER);
+
+    // set color
+    m_surface->SetColor(m_surface.data(), color.red(), color.green(), color.blue(), 120);
+
+    result = m_surface->DrawLine(m_surface.data(), x, y, x + w-1, y);
+    if (result != DFB_OK)
+        DirectFBError("QDirectFBBlitter::drawDebugRect()", result);
+    result = m_surface->DrawLine(m_surface.data(), x + w-1, y, x + w-1, y + h-1);
+    if (result != DFB_OK)
+        DirectFBError("QDirectFBBlitter::drawDebugRect()", result);
+    result = m_surface->DrawLine(m_surface.data(), x + w-1, y + h-1, x, y + h-1);
+    if (result != DFB_OK)
+        DirectFBError("QDirectFBBlitter::drawDebugRect()", result);
+    result = m_surface->DrawLine(m_surface.data(), x, y + h-1, x, y);
+    if (result != DFB_OK)
+        DirectFBError("QDirectFBBlitter::drawDebugRect()", result);
+
+    m_surface->SetColor(m_surface.data(), color.red(), color.green(), color.blue(), 10);
+    result = m_surface->FillRectangle(m_surface.data(), x, y, w, h);
+    if (result != DFB_OK)
+        DirectFBError("QDirectFBBlitter::drawDebugRect()", result);
 }
 
 void QDirectFbTextureGlyphCache::resizeTextureData(int width, int height)
