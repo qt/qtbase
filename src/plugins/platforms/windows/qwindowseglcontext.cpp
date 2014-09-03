@@ -46,7 +46,7 @@
 #include <QtCore/QDebug>
 #include <QtGui/QOpenGLContext>
 
-#if defined(QT_OPENGL_ES_2_ANGLE)
+#if defined(QT_OPENGL_ES_2_ANGLE) || defined(QT_OPENGL_DYNAMIC)
 #  include <QtANGLE/EGL/eglext.h>
 #endif
 
