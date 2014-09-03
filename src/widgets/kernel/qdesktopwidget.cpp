@@ -97,6 +97,8 @@ void QDesktopWidgetPrivate::_q_updateScreens()
             screenWidget->setGeometry(qScreen->geometry());
             QObject::connect(qScreen, SIGNAL(geometryChanged(QRect)),
                              q, SLOT(_q_updateScreens()), Qt::QueuedConnection);
+            QObject::connect(qScreen, SIGNAL(availableGeometryChanged(QRect)),
+                             q, SLOT(_q_availableGeometryChanged()), Qt::QueuedConnection);
             QObject::connect(qScreen, SIGNAL(destroyed()),
                              q, SLOT(_q_updateScreens()), Qt::QueuedConnection);
             screens.append(screenWidget);
@@ -122,10 +124,15 @@ void QDesktopWidgetPrivate::_q_updateScreens()
     if (oldLength != targetLength)
         emit q->screenCountChanged(targetLength);
 
-    foreach (int changedScreen, changedScreens) {
+    foreach (int changedScreen, changedScreens)
         emit q->resized(changedScreen);
-        emit q->workAreaResized(changedScreen);
-    }
+}
+
+void QDesktopWidgetPrivate::_q_availableGeometryChanged()
+{
+    Q_Q(QDesktopWidget);
+    if (QScreen *screen = qobject_cast<QScreen *>(q->sender()))
+        emit q->workAreaResized(QGuiApplication::screens().indexOf(screen));
 }
 
 QDesktopWidget::QDesktopWidget()
