@@ -120,13 +120,12 @@ QEGLPlatformContext *QEglFSIntegration::createContext(const QSurfaceFormat &form
                                                       QVariant *nativeHandle) const
 {
     QEglFSContext *ctx;
+    QSurfaceFormat adjustedFormat = QEglFSHooks::hooks()->surfaceFormatFor(format);
     if (!nativeHandle || nativeHandle->isNull()) {
-        EGLConfig config = QEglFSIntegration::chooseConfig(display, format);
-        ctx =  new QEglFSContext(QEglFSHooks::hooks()->surfaceFormatFor(format), shareContext, display,
-                                 &config, QVariant());
+        EGLConfig config = QEglFSIntegration::chooseConfig(display, adjustedFormat);
+        ctx =  new QEglFSContext(adjustedFormat, shareContext, display, &config, QVariant());
     } else {
-        ctx =  new QEglFSContext(QEglFSHooks::hooks()->surfaceFormatFor(format), shareContext, display,
-                                 0, *nativeHandle);
+        ctx =  new QEglFSContext(adjustedFormat, shareContext, display, 0, *nativeHandle);
     }
     *nativeHandle = QVariant::fromValue<QEGLNativeContext>(QEGLNativeContext(ctx->eglContext(), display));
     return ctx;
