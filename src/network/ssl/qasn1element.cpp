@@ -155,6 +155,12 @@ void QAsn1Element::write(QDataStream &stream) const
     stream.writeRawData(mValue.data(), mValue.size());
 }
 
+QAsn1Element QAsn1Element::fromBool(bool val)
+{
+    return QAsn1Element(QAsn1Element::BooleanType,
+        QByteArray(1, val ? 0xff : 0x00));
+}
+
 QAsn1Element QAsn1Element::fromInteger(unsigned int val)
 {
     QAsn1Element elem(QAsn1Element::IntegerType);
@@ -197,6 +203,23 @@ QAsn1Element QAsn1Element::fromObjectId(const QByteArray &id)
         elem.mValue += pBuffer;
     }
     return elem;
+}
+
+bool QAsn1Element::toBool(bool *ok) const
+{
+    if (*this == fromBool(true)) {
+        if (ok)
+            *ok = true;
+        return true;
+    } else if (*this == fromBool(false)) {
+        if (ok)
+            *ok = true;
+        return false;
+    } else {
+        if (ok)
+            *ok = false;
+        return false;
+    }
 }
 
 QDateTime QAsn1Element::toDateTime() const
