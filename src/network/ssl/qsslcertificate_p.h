@@ -109,13 +109,16 @@ public:
     QSsl::KeyAlgorithm publicKeyAlgorithm;
     QByteArray publicKeyDerData;
     QMultiMap<QSsl::AlternativeNameEntryType, QString> subjectAlternativeNames;
+    QList<QSslCertificateExtension> extensions;
 
     QByteArray derData;
+
+    bool parse(const QByteArray &data);
+    bool parseExtension(const QByteArray &data, QSslCertificateExtension *extension);
 #endif
     X509 *x509;
 
     void init(const QByteArray &data, QSsl::EncodingFormat format);
-    bool parse(const QByteArray &data);
 
     static QByteArray asn1ObjectId(ASN1_OBJECT *object);
     static QByteArray asn1ObjectName(ASN1_OBJECT *object);

@@ -133,7 +133,7 @@ void QSslKeyPrivate::decodeDer(const QByteArray &der, bool deepClear)
         if (infoItems.size() < 2 || infoItems[0].type() != QAsn1Element::ObjectIdentifierType)
             return;
         if (algorithm == QSsl::Rsa) {
-            if (infoItems[0].toObjectId() != "1.2.840.113549.1.1.1")
+            if (infoItems[0].toObjectId() != RSA_ENCRYPTION_OID)
                 return;
             // key data
             if (!elem.read(keyStream) || elem.type() != QAsn1Element::BitStringType || elem.value().isEmpty())
@@ -144,7 +144,7 @@ void QSslKeyPrivate::decodeDer(const QByteArray &der, bool deepClear)
                 return;
             keyLength = numberOfBits(elem.value());
         } else if (algorithm == QSsl::Dsa) {
-            if (infoItems[0].toObjectId() != "1.2.840.10040.4.1")
+            if (infoItems[0].toObjectId() != DSA_ENCRYPTION_OID)
                 return;
             if (infoItems[1].type() != QAsn1Element::SequenceType)
                 return;

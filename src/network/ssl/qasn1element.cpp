@@ -56,6 +56,14 @@ static OidNameMap createOidMap()
     // used by unit tests
     oids.insert(oids.end(), QByteArrayLiteral("0.9.2342.19200300.100.1.5"), QByteArrayLiteral("favouriteDrink"));
     oids.insert(oids.end(), QByteArrayLiteral("1.2.840.113549.1.9.1"), QByteArrayLiteral("emailAddress"));
+    oids.insert(oids.end(), QByteArrayLiteral("1.3.6.1.5.5.7.1.1"), QByteArrayLiteral("authorityInfoAccess"));
+    oids.insert(oids.end(), QByteArrayLiteral("1.3.6.1.5.5.7.48.1"), QByteArrayLiteral("OCSP"));
+    oids.insert(oids.end(), QByteArrayLiteral("1.3.6.1.5.5.7.48.2"), QByteArrayLiteral("caIssuers"));
+    oids.insert(oids.end(), QByteArrayLiteral("2.5.29.14"), QByteArrayLiteral("subjectKeyIdentifier"));
+    oids.insert(oids.end(), QByteArrayLiteral("2.5.29.15"), QByteArrayLiteral("keyUsage"));
+    oids.insert(oids.end(), QByteArrayLiteral("2.5.29.17"), QByteArrayLiteral("subjectAltName"));
+    oids.insert(oids.end(), QByteArrayLiteral("2.5.29.19"), QByteArrayLiteral("basicConstraints"));
+    oids.insert(oids.end(), QByteArrayLiteral("2.5.29.35"), QByteArrayLiteral("authorityKeyIdentifier"));
     oids.insert(oids.end(), QByteArrayLiteral("2.5.4.10"), QByteArrayLiteral("O"));
     oids.insert(oids.end(), QByteArrayLiteral("2.5.4.11"), QByteArrayLiteral("OU"));
     oids.insert(oids.end(), QByteArrayLiteral("2.5.4.12"), QByteArrayLiteral("title"));

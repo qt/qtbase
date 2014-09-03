@@ -59,6 +59,9 @@
 
 QT_BEGIN_NAMESPACE
 
+#define RSA_ENCRYPTION_OID QByteArrayLiteral("1.2.840.113549.1.1.1")
+#define DSA_ENCRYPTION_OID QByteArrayLiteral("1.2.840.10040.4.1")
+
 class Q_AUTOTEST_EXPORT QAsn1Element
 {
 public:
@@ -77,10 +80,6 @@ public:
         GeneralizedTimeType = 0x18,
         SequenceType = 0x30,
         SetType = 0x31,
-
-        // application
-        Rfc822NameType = 0x81,
-        DnsNameType = 0x82,
 
         // context specific
         Context0Type = 0xA0,
