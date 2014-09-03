@@ -70,62 +70,31 @@ class Q_AUTOTEST_EXPORT QGraphicsSceneLinearIndex : public QGraphicsSceneIndex
     Q_OBJECT
 
 public:
-    QGraphicsSceneLinearIndex(QGraphicsScene *scene = 0) : QGraphicsSceneIndex(scene), m_itemsIsValid(true)
+    QGraphicsSceneLinearIndex(QGraphicsScene *scene = 0) : QGraphicsSceneIndex(scene)
     { }
 
     QList<QGraphicsItem *> items(Qt::SortOrder order = Qt::DescendingOrder) const
-    {
-        Q_UNUSED(order);
-        return validList();
-    }
+    { Q_UNUSED(order); return m_items; }
 
     virtual QList<QGraphicsItem *> estimateItems(const QRectF &rect, Qt::SortOrder order) const
     {
         Q_UNUSED(rect);
         Q_UNUSED(order);
-        return validList();
+        return m_items;
     }
 
 protected :
     virtual void clear()
-    {
-        m_items.clear();
-        m_itemsIsValid = true;
-    }
+    { m_items.clear(); }
 
     virtual void addItem(QGraphicsItem *item)
-    {
-        if (m_itemsIsValid)
-            m_items << item;
-    }
+    { m_items << item; }
 
     virtual void removeItem(QGraphicsItem *item)
-    {
-        Q_UNUSED(item);
-        m_itemsIsValid = false;
-    }
+    { m_items.removeOne(item); }
 
 private:
-    mutable QList<QGraphicsItem*> m_items;
-    mutable bool m_itemsIsValid;
-
-    QList<QGraphicsItem*>& validList() const
-    {
-        if (!m_itemsIsValid)
-        {
-            m_items.clear();
-
-            QList<QGraphicsItem*> stack = scene()->d_func()->topLevelItems;
-            m_items << stack;
-            while (!stack.isEmpty())
-            {
-                m_items << stack.last()->childItems();
-                stack << stack.takeLast()->childItems();
-            }
-            m_itemsIsValid = true;
-        }
-        return m_items;
-    }
+    QList<QGraphicsItem*> m_items;
 };
 
 #endif // QT_NO_GRAPHICSVIEW
