@@ -1043,6 +1043,7 @@ void QMdiSubWindowPrivate::createSystemMenu()
     Q_ASSERT_X(q, "QMdiSubWindowPrivate::createSystemMenu",
                "You can NOT call this function before QMdiSubWindow's ctor");
     systemMenu = new QMenu(q);
+    systemMenu->installEventFilter(q);
     const QStyle *style = q->style();
     addToSystemMenu(RestoreAction, QMdiSubWindow::tr("&Restore"), SLOT(showNormal()));
     actions[RestoreAction]->setIcon(style->standardIcon(QStyle::SP_TitleBarNormalButton, 0, q));
@@ -2569,7 +2570,6 @@ void QMdiSubWindow::showSystemMenu()
     // Adjust x() with -menuwidth in reverse mode.
     if (isRightToLeft())
         globalPopupPos -= QPoint(d->systemMenu->sizeHint().width(), 0);
-    d->systemMenu->installEventFilter(this);
     d->systemMenu->popup(globalPopupPos);
 }
 #endif // QT_NO_MENU
@@ -2702,7 +2702,6 @@ bool QMdiSubWindow::eventFilter(QObject *object, QEvent *event)
             QMouseEvent *mouseEvent = static_cast<QMouseEvent *>(event);
             d->hoveredSubControl = d->getSubControl(mapFromGlobal(mouseEvent->globalPos()));
         } else if (event->type() == QEvent::Hide) {
-            d->systemMenu->removeEventFilter(this);
             d->activeSubControl = QStyle::SC_None;
             update(QRegion(0, 0, width(), d->titleBarHeight()));
         }
