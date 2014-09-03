@@ -111,6 +111,7 @@ private slots:
     void subjectAndIssuerAttributes();
     void verify();
     void extensions();
+    void extensionsCritical();
     void threadSafeConstMethods();
     void version_data();
     void version();
@@ -1150,7 +1151,53 @@ void tst_QSslCertificate::extensions()
     QCOMPARE(authValue.keys(), QList<QString>() << QStringLiteral("keyid"));
     QVERIFY(authValue[QStringLiteral("keyid")].toByteArray() ==
             QByteArray("4e43c81d76ef37537a4ff2586f94f338e2d5bddf"));
+}
 
+void tst_QSslCertificate::extensionsCritical()
+{
+    QList<QSslCertificate> certList =
+        QSslCertificate::fromPath(testDataDir + "/verify-certs/test-addons-mozilla-org-cert.pem");
+    QVERIFY2(certList.count() > 0, "Please run this test from the source directory");
+
+    QSslCertificate cert = certList[0];
+    QList<QSslCertificateExtension> extensions = cert.extensions();
+#ifdef Q_OS_WINRT
+    QEXPECT_FAIL("", "QTBUG-40884: WinRT API does not support extensions information", Abort);
+#endif
+    QVERIFY(extensions.count() == 9);
+
+    int basic_constraints_idx = -1;
+    int key_usage_idx = -1;
+
+    for (int i=0; i < extensions.length(); ++i) {
+        QSslCertificateExtension ext = extensions[i];
+
+        if (ext.name() == QStringLiteral("basicConstraints"))
+            basic_constraints_idx = i;
+        if (ext.name() == QStringLiteral("keyUsage"))
+            key_usage_idx = i;
+    }
+
+    QVERIFY(basic_constraints_idx != -1);
+    QVERIFY(key_usage_idx != -1);
+
+    // Basic constraints
+    QSslCertificateExtension basic = extensions[basic_constraints_idx];
+    QVERIFY(basic.oid() == QStringLiteral("2.5.29.19"));
+    QVERIFY(basic.name() == QStringLiteral("basicConstraints"));
+    QVERIFY(basic.isCritical());
+    QVERIFY(basic.isSupported());
+
+    QVariantMap basicValue = basic.value().toMap();
+    QCOMPARE(basicValue.keys(), QList<QString>() << QStringLiteral("ca"));
+    QVERIFY(basicValue[QStringLiteral("ca")].toBool() == false);
+
+    // Key Usage
+    QSslCertificateExtension keyUsage = extensions[key_usage_idx];
+    QVERIFY(keyUsage.oid() == QStringLiteral("2.5.29.15"));
+    QVERIFY(keyUsage.name() == QStringLiteral("keyUsage"));
+    QVERIFY(keyUsage.isCritical());
+    QVERIFY(!keyUsage.isSupported());
 }
 
 class TestThread : public QThread
