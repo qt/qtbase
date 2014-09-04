@@ -318,7 +318,7 @@ static inline uint qCpuFeatures()
 
 #ifdef Q_PROCESSOR_X86
 // Bit scan functions for x86
-#  ifdef Q_CC_MSVC
+#  if defined(Q_CC_MSVC) && !defined(Q_OS_WINCE)
 // MSVC calls it _BitScanReverse and returns the carry flag, which we don't need
 static __forceinline unsigned long _bit_scan_reverse(uint val)
 {
