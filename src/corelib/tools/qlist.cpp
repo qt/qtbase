@@ -386,8 +386,8 @@ void **QListData::erase(void **xi)
 
     Qt includes a QStringList class that inherits QList\<QString\>
     and adds a few convenience functions, such as QStringList::join()
-    and QStringList::find(). (QString::split() creates QStringLists
-    from strings.)
+    and QStringList::filter().  QString::split() creates QStringLists
+    from strings.
 
     QList stores a list of items. The default constructor creates an
     empty list. To insert items into the list, you can use

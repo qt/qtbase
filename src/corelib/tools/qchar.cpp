@@ -1527,13 +1527,13 @@ static inline ushort foldCase(ushort ch)
     \fn QChar QChar::toCaseFolded() const
 
     Returns the case folded equivalent of the character.
-    For most Unicode characters this is the same as toLowerCase().
+    For most Unicode characters this is the same as toLower().
 */
 
 /*!
     \overload
     Returns the case folded equivalent of the UCS-4-encoded character specified
-    by \a ucs4. For most Unicode characters this is the same as toLowerCase().
+    by \a ucs4. For most Unicode characters this is the same as toLower().
 */
 uint QChar::toCaseFolded(uint ucs4)
 {

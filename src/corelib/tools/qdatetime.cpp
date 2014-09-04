@@ -866,9 +866,9 @@ QString QDate::longDayName(int weekday, MonthNameType type)
     Qt::DefaultLocaleLongDate, the string format depends on the
     default application locale. This is the locale set with
     QLocale::setDefault(), or the system locale if no default locale
-    has been set. Identical to calling QLocale().toString(date,
-    QLocale::ShortFormat) or QLocale().toString(date,
-    QLocale::LongFormat).
+    has been set. Identical to calling
+    \l {QLocale::toString()}{QLocale().toString(date, QLocale::ShortFormat) } or
+    \l {QLocale::toString()}{QLocale().toString(date, QLocale::LongFormat)}.
 
     If the \a format is Qt::RFC2822Date, the string is formatted in
     an \l{RFC 2822} compatible way. An example of this formatting is
@@ -1623,9 +1623,10 @@ int QTime::msec() const
     Qt::DefaultLocaleLongDate, the string format depends on the
     default application locale. This is the locale set with
     QLocale::setDefault(), or the system locale if no default locale
-    has been set. Identical to calling QLocale().toString(time,
-    QLocale::ShortFormat) or QLocale().toString(time,
-    QLocale::LongFormat).
+    has been set. Identical to calling
+
+    \l {QLocale::toString()}{QLocale().toString(time, QLocale::ShortFormat)} or
+    \l {QLocale::toString()}{QLocale().toString(time, QLocale::LongFormat)}.
 
     If the \a format is Qt::RFC2822Date, the string is formatted in
     an \l{RFC 2822} compatible way. An example of this formatting is

@@ -74,7 +74,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     Constructs a QCollator from \a locale. If \a locale is not specified
-    QLocale::default() will be used.
+    the system's default locale is used.
 
     \sa setLocale()
  */

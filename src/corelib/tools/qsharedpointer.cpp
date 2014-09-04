@@ -460,7 +460,7 @@
     The \a deleter parameter specifies the custom deleter for this
     object. The custom deleter is called, instead of the operator delete(),
     when the strong reference count drops to 0. This is useful,
-    for instance, for calling deleteLater() on a QObject instead:
+    for instance, for calling \l {QObject::}{deleteLater()} on a QObject instead:
 
     \code
     static void doDeleteLater(MyObject *obj)

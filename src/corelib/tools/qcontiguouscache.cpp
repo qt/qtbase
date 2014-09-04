@@ -482,7 +482,7 @@ MyRecord record(int row) const
     INT_MAX or prepended before the index position 0.  This is only expected
     to occur in very long lived circular buffer style usage of the
     contiguous cache.  Indexes can be made valid again by calling
-    normalizeIndexs().
+    normalizeIndexes().
 
     \sa normalizeIndexes(), append(), prepend()
 */

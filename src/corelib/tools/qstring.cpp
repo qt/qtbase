@@ -1006,8 +1006,7 @@ const QString::Null QString::null = { };
     \endlist
 
     One way to define these preprocessor symbols globally for your
-    application is to add the following entry to your
-    \l{qmake Project Files}{qmake project file}:
+    application is to add the following entry to your \l {Creating Project Files}{qmake project file}:
 
     \snippet code/src_corelib_tools_qstring.cpp 0
 
@@ -6185,7 +6184,7 @@ qulonglong QString::toIntegral_helper(const QChar *data, uint len, bool *ok, int
     base 8 is used; otherwise, base 10 is used.
 
     The string conversion will always happen in the 'C' locale. For locale
-    dependent conversion use QLocale::toLong()
+    dependent conversion use QLocale::toLongLong()
 
     Example:
 
@@ -6214,7 +6213,7 @@ long QString::toLong(bool *ok, int base) const
     base 8 is used; otherwise, base 10 is used.
 
     The string conversion will always happen in the 'C' locale. For locale
-    dependent conversion use QLocale::toULong()
+    dependent conversion use QLocale::toULongLong()
 
     Example:
 
@@ -9943,7 +9942,7 @@ long QStringRef::toLong(bool *ok, int base) const
     base 8 is used; otherwise, base 10 is used.
 
     The string conversion will always happen in the 'C' locale. For locale
-    dependent conversion use QLocale::toULong()
+    dependent conversion use QLocale::toULongLong()
 
     \sa QString::toULong()
 

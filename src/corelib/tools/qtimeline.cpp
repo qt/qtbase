@@ -175,8 +175,8 @@ void QTimeLinePrivate::setCurrentTime(int msecs)
     milliseconds to QTimeLine's constructor. The timeline's duration describes
     for how long the animation will run. Then you set a suitable frame range
     by calling setFrameRange(). Finally connect the frameChanged() signal to a
-    suitable slot in the widget you wish to animate (e.g., setValue() in
-    QProgressBar). When you proceed to calling start(), QTimeLine will enter
+    suitable slot in the widget you wish to animate (for example, \l {QProgressBar::}{setValue()}
+    in QProgressBar). When you proceed to calling start(), QTimeLine will enter
     Running state, and start emitting frameChanged() at regular intervals,
     causing your widget's connected property's value to grow from the lower
     end to the upper and of your frame range, at a steady rate. You can
