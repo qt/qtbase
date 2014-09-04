@@ -768,6 +768,9 @@ QList<int> QCoreTextFontDatabase::standardSizes() const
 
 void QCoreTextFontDatabase::removeApplicationFonts()
 {
+    if (m_applicationFonts.isEmpty())
+        return;
+
     foreach (const QVariant &font, m_applicationFonts) {
 #if HAVE_CORETEXT
         if (&CTFontManagerUnregisterGraphicsFont && &CTFontManagerUnregisterFontsForURL) {
