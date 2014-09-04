@@ -43,12 +43,89 @@ public:
     tst_QPolygon();
 
 private slots:
+    void boundingRect_data();
+    void boundingRect();
+    void boundingRectF_data();
+    void boundingRectF();
     void makeEllipse();
     void swap();
 };
 
 tst_QPolygon::tst_QPolygon()
 {
+}
+
+void tst_QPolygon::boundingRect_data()
+{
+    QTest::addColumn<QPolygon>("poly");
+    QTest::addColumn<QRect>("brect");
+
+#define ROW(args, rect) \
+    do { \
+        QPolygon poly; \
+        poly.setPoints args; \
+        QTest::newRow(#args) << poly << QRect rect; \
+    } while (0)
+
+    QTest::newRow("empty") << QPolygon() << QRect(0, 0, 0, 0);
+    ROW((1,  0,1),             ( 0, 1, 1, 1));
+    ROW((2,  0,1,  1,0),       ( 0, 0, 2, 2));
+    ROW((3, -1,1, -1,-1, 1,0), (-1,-1, 3, 3));
+#undef ROW
+}
+
+void tst_QPolygon::boundingRect()
+{
+    QFETCH(QPolygon, poly);
+    QFETCH(QRect, brect);
+
+    QCOMPARE(poly.boundingRect(), brect);
+}
+
+namespace {
+struct MyPolygonF : QPolygonF
+{
+    // QPolygonF doesn't have setPoints...
+    void setPoints(int nPoints, int firstx, int firsty, ...) {
+        va_list ap;
+        reserve(nPoints);
+        *this << QPointF(firstx, firsty);
+        va_start(ap, firsty);
+        while (--nPoints) {
+            const int x = va_arg(ap, int);
+            const int y = va_arg(ap, int);
+            *this << QPointF(x, y);
+        }
+        va_end(ap);
+    }
+};
+}
+
+void tst_QPolygon::boundingRectF_data()
+{
+    QTest::addColumn<QPolygonF>("poly");
+    QTest::addColumn<QRectF>("brect");
+
+#define ROW(args, rect) \
+    do { \
+        MyPolygonF poly; \
+        poly.setPoints args; \
+        QTest::newRow(#args) << QPolygonF(poly) << QRectF rect; \
+    } while (0)
+
+    QTest::newRow("empty") << QPolygonF() << QRectF(0, 0, 0, 0);
+    ROW((1,  0,1),             ( 0, 1, 0, 0));
+    ROW((2,  0,1,  1,0),       ( 0, 0, 1, 1));
+    ROW((3, -1,1, -1,-1, 1,0), (-1,-1, 2, 2));
+#undef ROW
+}
+
+void tst_QPolygon::boundingRectF()
+{
+    QFETCH(QPolygonF, poly);
+    QFETCH(QRectF, brect);
+
+    QCOMPARE(poly.boundingRect(), brect);
 }
 
 void tst_QPolygon::makeEllipse()
