@@ -206,7 +206,10 @@ void QLockFile::unlock()
         return;
     close(d->fileHandle);
     d->fileHandle = -1;
-    QFile::remove(d->fileName);
+    if (!QFile::remove(d->fileName)) {
+        qWarning() << "Could not remove our own lock file" << d->fileName << "maybe permissions changed meanwhile?";
+        // This is bad because other users of this lock file will now have to wait for the stale-lock-timeout...
+    }
     d->lockError = QLockFile::NoError;
     d->isLocked = false;
 }

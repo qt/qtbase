@@ -57,6 +57,7 @@ private slots:
     void lockUnlock();
     void lockOutOtherProcess();
     void lockOutOtherThread();
+    void raceWithOtherThread();
     void waitForLock_data();
     void waitForLock();
     void staleLockFromCrashedProcess_data();
@@ -162,6 +163,25 @@ void tst_QLockFile::lockOutOtherThread()
 
     // Now other thread can acquire lock
     QFuture<QLockFile::LockError> ret2 = QtConcurrent::run<QLockFile::LockError>(tryLockFromThread, fileName);
+    QCOMPARE(ret2.result(), QLockFile::NoError);
+}
+
+static QLockFile::LockError lockFromThread(const QString &fileName)
+{
+    QLockFile lockInThread(fileName);
+    lockInThread.lock();
+    return lockInThread.error();
+}
+
+// QTBUG-38853, best way to trigger it was to add a QThread::sleep(1) in QLockFilePrivate::getLockInfo() after the first readLine.
+// Then (on Windows), the QFile::remove() in unlock() (called by the first thread who got the lock, in the destructor)
+// would fail due to the existing reader on the file. Fixed by checking the return value of QFile::remove() in unlock().
+void tst_QLockFile::raceWithOtherThread()
+{
+    const QString fileName = dir.path() + "/raceWithOtherThread";
+    QFuture<QLockFile::LockError> ret = QtConcurrent::run<QLockFile::LockError>(lockFromThread, fileName);
+    QFuture<QLockFile::LockError> ret2 = QtConcurrent::run<QLockFile::LockError>(lockFromThread, fileName);
+    QCOMPARE(ret.result(), QLockFile::NoError);
     QCOMPARE(ret2.result(), QLockFile::NoError);
 }
 

@@ -47,6 +47,7 @@
 #include "QtCore/qfileinfo.h"
 #include "QtCore/qdatetime.h"
 #include "QtCore/qdebug.h"
+#include "QtCore/qthread.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -149,7 +150,16 @@ void QLockFile::unlock()
      if (!d->isLocked)
         return;
      CloseHandle(d->fileHandle);
-     QFile::remove(d->fileName);
+     int attempts = 0;
+     static const int maxAttempts = 500; // 500ms
+     while (!QFile::remove(d->fileName) && ++attempts < maxAttempts) {
+         // Someone is reading the lock file right now (on Windows this prevents deleting it).
+         QThread::msleep(1);
+     }
+     if (attempts == maxAttempts) {
+        qWarning() << "Could not remove our own lock file" << d->fileName << ". Either other users of the lock file are reading it constantly for 500 ms, or we (no longer) have permissions to delete the file";
+        // This is bad because other users of this lock file will now have to wait for the stale-lock-timeout...
+     }
      d->lockError = QLockFile::NoError;
      d->isLocked = false;
 }
