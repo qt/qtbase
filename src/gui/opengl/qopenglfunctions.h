@@ -563,8 +563,10 @@ struct QOpenGLFunctionsPrivate
     void (QOPENGLF_APIENTRYP VertexAttribPointer)(GLuint indx, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const void* ptr);
 
     // Special non-ES OpenGL variants, not to be called directly
+#ifndef QT_OPENGL_ES_2
     void (QOPENGLF_APIENTRYP ClearDepth)(GLdouble depth);
     void (QOPENGLF_APIENTRYP DepthRange)(GLdouble zNear, GLdouble zFar);
+#endif
 };
 
 // GLES2 + OpenGL1 common subset
