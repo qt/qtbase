@@ -92,40 +92,67 @@ static int getFontWeight(const QString &weightString)
 {
     QString s = weightString.toLower();
 
-    // Test in decreasing order of commonness
+    // Order here is important. We want to match the common cases first, but we
+    // must also take care to acknowledge the cost of our tests.
+    //
+    // As a result, we test in two orders; the order of commonness, and the
+    // order of "expense".
+    //
+    // A simple string test is the cheapest, so let's do that first.
     if (s == QLatin1String("medium") ||
-        s == QLatin1String("normal")
-        || s.compare(QCoreApplication::translate("QFontDatabase", "Normal"), Qt::CaseInsensitive) == 0)
+        s == QLatin1String("normal"))
         return QFont::Normal;
-    if (s == QLatin1String("bold")
-        || s.compare(QCoreApplication::translate("QFontDatabase", "Bold"), Qt::CaseInsensitive) == 0)
+    if (s == QLatin1String("bold"))
         return QFont::Bold;
-    if (s == QLatin1String("demibold") || s == QLatin1String("demi bold")
-        || s.compare(QCoreApplication::translate("QFontDatabase", "Demi Bold"), Qt::CaseInsensitive) == 0)
+    if (s == QLatin1String("demibold") || s == QLatin1String("demi bold"))
         return QFont::DemiBold;
-    if (s == QLatin1String("black")
-        || s.compare(QCoreApplication::translate("QFontDatabase", "Black"), Qt::CaseInsensitive) == 0)
+    if (s == QLatin1String("black"))
         return QFont::Black;
     if (s == QLatin1String("light"))
         return QFont::Light;
 
-    if (s.contains(QLatin1String("bold"))
-        || s.contains(QCoreApplication::translate("QFontDatabase", "Bold"), Qt::CaseInsensitive)) {
-        if (s.contains(QLatin1String("demi"))
-            || s.compare(QCoreApplication::translate("QFontDatabase", "Demi"), Qt::CaseInsensitive) == 0)
-            return (int) QFont::DemiBold;
-        return (int) QFont::Bold;
+    // Next up, let's see if contains() matches: slightly more expensive, but
+    // still fast enough.
+    if (s.contains(QLatin1String("bold"))) {
+        if (s.contains(QLatin1String("demi")))
+            return QFont::DemiBold;
+        return QFont::Bold;
+    }
+    if (s.contains(QLatin1String("light")))
+        return QFont::Light;
+    if (s.contains(QLatin1String("black")))
+        return QFont::Black;
+
+    // Now, we perform string translations & comparisons with those.
+    // These are (very) slow compared to simple string ops, so we do these last.
+    // As using translated values for such things is not very common, this should
+    // not be too bad.
+    QString translatedNormal = QCoreApplication::translate("QFontDatabase", "Normal").toLower();
+    if (s == translatedNormal)
+        return QFont::Normal;
+    QString translatedBold = QCoreApplication::translate("QFontDatabase", "Bold").toLower();
+    if (s == translatedBold)
+        return QFont::Bold;
+    QString translatedDemiBold = QCoreApplication::translate("QFontDatabase", "Demi Bold").toLower();
+    if (s == translatedDemiBold)
+        return QFont::DemiBold;
+    QString translatedBlack = QCoreApplication::translate("QFontDatabase", "Black").toLower();
+    if (s == translatedBlack)
+        return QFont::Black;
+
+    // And now the contains() checks for the translated strings.
+    if (s.contains(translatedBold)) {
+        QString translatedDemi = QCoreApplication::translate("QFontDatabase", "Demi").toLower();
+        if (s == translatedDemi)
+            return QFont::DemiBold;
+        return QFont::Bold;
     }
 
-    if (s.contains(QLatin1String("light"))
-        || s.compare(QCoreApplication::translate("QFontDatabase", "Light"), Qt::CaseInsensitive) == 0)
-        return (int) QFont::Light;
+    QString translatedLight = QCoreApplication::translate("QFontDatabase", "Light").toLower();
+    if (s == translatedLight || s.contains(translatedLight))
+        return QFont::Light;
 
-    if (s.contains(QLatin1String("black"))
-        || s.compare(QCoreApplication::translate("QFontDatabase", "Black"), Qt::CaseInsensitive) == 0)
-        return (int) QFont::Black;
-
-    return (int) QFont::Normal;
+    return QFont::Normal;
 }
 
 // convert 0 ~ 1000 integer to QFont::Weight
