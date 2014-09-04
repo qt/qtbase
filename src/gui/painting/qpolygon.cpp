@@ -443,14 +443,15 @@ void QPolygon::putPoints(int index, int nPoints, const QPolygon & from, int from
 
 QRect QPolygon::boundingRect() const
 {
-    if (isEmpty())
-        return QRect(0, 0, 0, 0);
     const QPoint *pd = constData();
+    const QPoint *pe = pd + size();
+    if (pd == pe)
+        return QRect(0, 0, 0, 0);
     int minx, maxx, miny, maxy;
     minx = maxx = pd->x();
     miny = maxy = pd->y();
     ++pd;
-    for (int i = 1; i < size(); ++i) {
+    for (; pd != pe; ++pd) {
         if (pd->x() < minx)
             minx = pd->x();
         else if (pd->x() > maxx)
@@ -459,7 +460,6 @@ QRect QPolygon::boundingRect() const
             miny = pd->y();
         else if (pd->y() > maxy)
             maxy = pd->y();
-        ++pd;
     }
     return QRect(QPoint(minx,miny), QPoint(maxx,maxy));
 }
@@ -657,14 +657,15 @@ QPolygonF QPolygonF::translated(const QPointF &offset) const
 
 QRectF QPolygonF::boundingRect() const
 {
-    if (isEmpty())
-        return QRectF(0, 0, 0, 0);
     const QPointF *pd = constData();
+    const QPointF *pe = pd + size();
+    if (pd == pe)
+        return QRectF(0, 0, 0, 0);
     qreal minx, maxx, miny, maxy;
     minx = maxx = pd->x();
     miny = maxy = pd->y();
     ++pd;
-    for (int i = 1; i < size(); ++i) {
+    while (pd != pe) {
         if (pd->x() < minx)
             minx = pd->x();
         else if (pd->x() > maxx)
