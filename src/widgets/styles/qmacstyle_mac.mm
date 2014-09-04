@@ -1702,7 +1702,7 @@ void QMacStylePrivate::setAutoDefaultButton(QObject *button) const
 }
 
 QMacStylePrivate::QMacStylePrivate()
-    : mouseDown(false)
+    : mouseDown(false), backingStoreNSView(nil)
 {
     defaultButtonStart = CFAbsoluteTimeGetCurrent();
     memset(&buttonState, 0, sizeof(ButtonState));
@@ -1713,6 +1713,12 @@ QMacStylePrivate::QMacStylePrivate()
         ptrHIShapeGetBounds = reinterpret_cast<PtrHIShapeGetBounds>(library.resolve("HIShapeGetBounds"));
     }
 
+}
+
+QMacStylePrivate::~QMacStylePrivate()
+{
+    Q_FOREACH (NSView *b, buttons)
+        [b release];
 }
 
 ThemeDrawState QMacStylePrivate::getDrawState(QStyle::State flags)
@@ -1732,6 +1738,97 @@ ThemeDrawState QMacStylePrivate::getDrawState(QStyle::State flags)
     return tds;
 }
 
+NSView *QMacStylePrivate::buttonOfKind(ThemeButtonKind kind) const
+{
+    NSView *bv = buttons[kind];
+    if (!bv) {
+        if (kind == kThemePopupButton)
+            bv = [[NSPopUpButton alloc] init];
+        else if (kind == kThemeComboBox)
+            bv = [[NSComboBox alloc] init];
+        else
+            bv = [[NSButton alloc] init];
+
+        switch (kind) {
+        case kThemeArrowButton: {
+            NSButton *bc = (NSButton *)bv;
+            bc.buttonType = NSOnOffButton;
+            bc.bezelStyle = NSDisclosureBezelStyle;
+            break;
+        }
+        case kThemeCheckBox:
+        case kThemeCheckBoxSmall:
+        case kThemeCheckBoxMini: {
+            NSButton *bc = (NSButton *)bv;
+            bc.buttonType = NSSwitchButton;
+            break;
+        }
+        case kThemeRadioButton:
+        case kThemeRadioButtonSmall:
+        case kThemeRadioButtonMini: {
+            NSButton *bc = (NSButton *)bv;
+            bc.buttonType = NSRadioButton;
+            break;
+        }
+        case kThemePushButton:
+        case kThemePushButtonSmall:
+        case kThemePushButtonMini: {
+            NSButton *bc = (NSButton *)bv;
+            bc.buttonType = NSMomentaryPushButton;
+            bc.bezelStyle = NSRoundedBezelStyle;
+            break;
+        }
+        default:
+            break;
+        }
+
+//        if (kind == kThemePushButtonSmall
+//            || kind == kThemePopupButtonSmall
+//            || kind == kThemeCheckBoxSmall
+//            || kind == kThemeRadioButtonSmall)
+//            bc.controlSize = NSSmallControlSize;
+//        else if (kind == kThemePushButtonMini
+//                 || kind == kThemePopupButtonMini
+//                 || kind == kThemeCheckBoxMini
+//                 || kind == kThemeRadioButtonMini)
+//            bc.controlSize = NSMiniControlSize;
+
+        if ([bv isKindOfClass:[NSButton class]]) {
+            NSButton *bc = (NSButton *)bv;
+            bc.title = nil;
+        }
+
+        const_cast<QMacStylePrivate *>(this)->buttons.insert(kind, bv);
+    }
+
+    return bv;
+}
+
+void QMacStylePrivate::drawNSViewInRect(NSView *view, const QRect &qtRect, QPainter *p) const
+{
+    QMacCGContext ctx(p);
+    CGContextSaveGState(ctx);
+
+    [NSGraphicsContext saveGraphicsState];
+    [NSGraphicsContext setCurrentContext:[NSGraphicsContext
+                                          graphicsContextWithGraphicsPort:ctx flipped:YES]];
+
+    CGRect rect = CGRectMake(qtRect.x() + 1, qtRect.y(), qtRect.width(), qtRect.height());
+
+    [backingStoreNSView addSubview:view];
+    view.frame = rect;
+    [view drawRect:rect];
+    [view removeFromSuperviewWithoutNeedingDisplay];
+
+    [NSGraphicsContext restoreGraphicsState];
+    CGContextRestoreGState(ctx);
+}
+
+void QMacStylePrivate::resolveCurrentNSView(QWindow *window)
+{
+    backingStoreNSView = window ? (NSView *)window->winId() : nil;
+}
+
 void QMacStylePrivate::drawColorlessButton(const HIRect &macRect, HIThemeButtonDrawInfo *bdi,
                                            QPainter *p, const QStyleOption *opt) const
 {
@@ -1742,6 +1839,9 @@ void QMacStylePrivate::drawColorlessButton(const HIRect &macRect, HIThemeButtonD
         finalyoff = 0;
 
     const bool combo = opt->type == QStyleOption::SO_ComboBox;
+    const bool editableCombo = bdi->kind == kThemeComboBox
+                               || bdi->kind == kThemeComboBoxSmall
+                               || bdi->kind == kThemeComboBoxMini;
     const bool button = opt->type == QStyleOption::SO_Button;
     const bool pressed = bdi->state == kThemeStatePressed;
     const bool usingYosemiteOrLater = QSysInfo::MacintoshVersion > QSysInfo::MV_10_9;
@@ -1789,7 +1889,7 @@ void QMacStylePrivate::drawColorlessButton(const HIRect &macRect, HIThemeButtonD
 
         if (!combo && !button && bdi->value == kThemeButtonOff) {
             pm = activePixmap;
-        } else if ((combo && !usingYosemiteOrLater) || button) {
+        } else if (!usingYosemiteOrLater && (combo || button)) {
             QImage image = activePixmap.toImage();
 
             for (int y = 0; y < height; ++y) {
@@ -1816,7 +1916,17 @@ void QMacStylePrivate::drawColorlessButton(const HIRect &macRect, HIThemeButtonD
                 }
             }
             pm = QPixmap::fromImage(image);
-        } else if (combo && usingYosemiteOrLater) {
+        } else if ((usingYosemiteOrLater && combo && !editableCombo) || button) {
+            NSButton *bc = (NSButton *)buttonOfKind(bdi->kind);
+            [bc highlight:pressed];
+            bc.enabled = bdi->state != kThemeStateUnavailable && bdi->state != kThemeStateUnavailableInactive;
+            bc.state = bdi->value == kThemeButtonOn ? NSOnState :
+                       bdi->value == kThemeButtonMixed ? NSMixedState : NSOffState;
+            p->translate(0, 1);
+            drawNSViewInRect(bc, opt->rect, p);
+            p->translate(0, -1);
+            return;
+        } else if (usingYosemiteOrLater && editableCombo) {
             QImage image = activePixmap.toImage();
 
             for (int y = 0; y < height; ++y) {
@@ -2944,6 +3054,9 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
     Q_D(const QMacStyle);
     ThemeDrawState tds = d->getDrawState(opt->state);
     QMacCGContext cg(p);
+    QWindow *window = w && w->window() ? w->window()->windowHandle() :
+                     QStyleHelper::styleObjectWindow(opt->styleObject);
+    const_cast<QMacStylePrivate *>(d)->resolveCurrentNSView(window);
     switch (pe) {
     case PE_IndicatorArrowUp:
     case PE_IndicatorArrowDown:
@@ -3358,6 +3471,9 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
     Q_D(const QMacStyle);
     ThemeDrawState tds = d->getDrawState(opt->state);
     QMacCGContext cg(p);
+    QWindow *window = w && w->window() ? w->window()->windowHandle() :
+                     QStyleHelper::styleObjectWindow(opt->styleObject);
+    const_cast<QMacStylePrivate *>(d)->resolveCurrentNSView(window);
     switch (ce) {
     case CE_HeaderSection:
         if (const QStyleOptionHeader *header = qstyleoption_cast<const QStyleOptionHeader *>(opt)) {
@@ -5075,6 +5191,9 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
     Q_D(const QMacStyle);
     ThemeDrawState tds = d->getDrawState(opt->state);
     QMacCGContext cg(p);
+    QWindow *window = widget && widget->window() ? widget->window()->windowHandle() :
+                     QStyleHelper::styleObjectWindow(opt->styleObject);
+    const_cast<QMacStylePrivate *>(d)->resolveCurrentNSView(window);
     switch (cc) {
     case CC_Slider:
     case CC_ScrollBar:

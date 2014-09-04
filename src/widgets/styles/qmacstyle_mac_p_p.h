@@ -145,6 +145,7 @@ class QMacStylePrivate : public QCommonStylePrivate
     Q_DECLARE_PUBLIC(QMacStyle)
 public:
     QMacStylePrivate();
+    ~QMacStylePrivate();
 
     // Ideally these wouldn't exist, but since they already exist we need some accessors.
     static const int PushButtonLeftOffset;
@@ -194,6 +195,11 @@ public:
 
     void setAutoDefaultButton(QObject *button) const;
 
+    NSView *buttonOfKind(ThemeButtonKind kind) const;
+
+    void drawNSViewInRect(NSView *view, const QRect &rect, QPainter *p) const;
+    void resolveCurrentNSView(QWindow *window);
+
 public:
     mutable QPointer<QObject> pressedButton;
     mutable QPointer<QObject> defaultButton;
@@ -212,6 +218,8 @@ public:
     void *nsscroller;
 #endif
     void *indicatorBranchButtonCell;
+    NSView *backingStoreNSView;
+    QHash<ThemeButtonKind , NSView *> buttons;
 };
 
 QT_END_NAMESPACE

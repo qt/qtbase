@@ -47,6 +47,7 @@
 #include <qmath.h>
 #include <qscrollbar.h>
 #include <qabstractscrollarea.h>
+#include <qwindow.h>
 
 #include "qstylehelper_p.h"
 #include <qstringbuilder.h>
@@ -397,5 +398,14 @@ QColor backgroundColor(const QPalette &pal, const QWidget* widget)
         return widget->parentWidget()->parentWidget()->palette().color(QPalette::Base);
     return pal.color(QPalette::Base);
 }
+
+QWindow *styleObjectWindow(QObject *so)
+{
+    if (so)
+        return so->property("_q_styleObjectWindow").value<QWindow *>();
+
+    return 0;
+}
+
 }
 QT_END_NAMESPACE

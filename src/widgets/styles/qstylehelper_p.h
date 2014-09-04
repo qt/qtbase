@@ -68,6 +68,7 @@ class QPainter;
 class QPixmap;
 class QStyleOptionSlider;
 class QStyleOption;
+class QWindow;
 
 namespace QStyleHelper
 {
@@ -87,6 +88,7 @@ namespace QStyleHelper
     bool hasAncestor(QObject *obj, QAccessible::Role role);
 #endif
     QColor backgroundColor(const QPalette &pal, const QWidget* widget = 0);
+    QWindow *styleObjectWindow(QObject *so);
 }
 
 
