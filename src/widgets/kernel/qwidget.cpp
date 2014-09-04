@@ -7213,9 +7213,9 @@ QByteArray QWidget::saveGeometry() const
     const quint32 magicNumber = 0x1D9D0CB;
     // Version history:
     // - Qt 4.2 - 4.8.6, 5.0 - 5.3    : Version 1.0
-    // - Qt 4.8.6 - today, 5.4 - today: Version 1.1, save screen width in addition to check for high DPI scaling.
-    quint16 majorVersion = 1;
-    quint16 minorVersion = 1;
+    // - Qt 4.8.6 - today, 5.4 - today: Version 2.0, save screen width in addition to check for high DPI scaling.
+    quint16 majorVersion = 2;
+    quint16 minorVersion = 0;
     const int screenNumber = QApplication::desktop()->screenNumber(this);
     stream << magicNumber
            << majorVersion
@@ -7270,13 +7270,13 @@ bool QWidget::restoreGeometry(const QByteArray &geometry)
     if (storedMagicNumber != magicNumber)
         return false;
 
-    const quint16 currentMajorVersion = 1;
+    const quint16 currentMajorVersion = 2;
     quint16 majorVersion = 0;
     quint16 minorVersion = 0;
 
     stream >> majorVersion >> minorVersion;
 
-    if (majorVersion != currentMajorVersion)
+    if (majorVersion > currentMajorVersion)
         return false;
     // (Allow all minor versions.)
 
@@ -7293,7 +7293,7 @@ bool QWidget::restoreGeometry(const QByteArray &geometry)
            >> maximized
            >> fullScreen;
 
-    if (majorVersion > 1 || minorVersion >= 1)
+    if (majorVersion > 1)
         stream >> restoredScreenWidth;
 
     const QDesktopWidget * const desktop = QApplication::desktop();
