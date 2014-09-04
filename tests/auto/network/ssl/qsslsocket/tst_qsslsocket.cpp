@@ -138,7 +138,9 @@ private slots:
     void peerCertificate();
     void peerCertificateChain();
     void privateKey();
+#ifndef QT_NO_OPENSSL
     void privateKeyOpaque();
+#endif
     void protocol();
     void protocolServerSide_data();
     void protocolServerSide();
@@ -186,7 +188,9 @@ private slots:
     void writeBigChunk();
     void blacklistedCertificates();
     void versionAccessors();
+#ifndef QT_NO_OPENSSL
     void sslOptions();
+#endif
     void encryptWithoutConnecting();
     void resume_data();
     void resume();
@@ -810,6 +814,7 @@ void tst_QSslSocket::privateKey()
 {
 }
 
+#ifndef QT_NO_OPENSSL
 void tst_QSslSocket::privateKeyOpaque()
 {
     if (!QSslSocket::supportsSsl())
@@ -839,6 +844,7 @@ void tst_QSslSocket::privateKeyOpaque()
     if (setProxy && !socket->waitForEncrypted(10000))
         QSKIP("Skipping flaky test - See QTBUG-29941");
 }
+#endif
 
 void tst_QSslSocket::protocol()
 {
@@ -2280,6 +2286,7 @@ void tst_QSslSocket::versionAccessors()
     qDebug() << QString::number(QSslSocket::sslLibraryVersionNumber(), 16);
 }
 
+#ifndef QT_NO_OPENSSL
 void tst_QSslSocket::sslOptions()
 {
     if (!QSslSocket::supportsSsl())
@@ -2331,6 +2338,7 @@ void tst_QSslSocket::sslOptions()
 #endif
 #endif
 }
+#endif
 
 void tst_QSslSocket::encryptWithoutConnecting()
 {
