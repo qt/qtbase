@@ -36,6 +36,15 @@
 #ifndef D3D_FL9_3_REQ_TEXTURE2D_U_OR_V_DIMENSION
 #  define D3D_FL9_3_REQ_TEXTURE2D_U_OR_V_DIMENSION 4096
 #endif
+#ifndef D3D11_REQ_TEXTURECUBE_DIMENSION
+#  define D3D11_REQ_TEXTURECUBE_DIMENSION 16384
+#endif
+#ifndef D3D11_REQ_TEXTURE2D_ARRAY_AXIS_DIMENSION
+#  define D3D11_REQ_TEXTURE2D_ARRAY_AXIS_DIMENSION 2048
+#endif
+#ifndef D3D11_REQ_TEXTURE3D_U_V_OR_W_DIMENSION
+#  define D3D11_REQ_TEXTURE3D_U_V_OR_W_DIMENSION 2048
+#endif
 
 namespace rx
 {
@@ -671,7 +680,7 @@ void SetPositionLayerTexCoord3DVertex(PositionLayerTexCoord3DVertex* vertex, flo
 
 HRESULT SetDebugName(ID3D11DeviceChild *resource, const char *name)
 {
-#if defined(_DEBUG)
+#if !defined(__MINGW32__) && defined(_DEBUG)
     return resource->SetPrivateData(WKPDID_D3DDebugObjectName, strlen(name), name);
 #else
     return S_OK;
