@@ -526,11 +526,16 @@ void tst_QAbstractItemView::basic_tests(TestView *view)
     // setIconSize
     view->setIconSize(QSize(16, 16));
     QCOMPARE(view->iconSize(), QSize(16, 16));
+    QSignalSpy spy(view, &QAbstractItemView::iconSizeChanged);
+    QVERIFY(spy.isValid());
     view->setIconSize(QSize(32, 32));
     QCOMPARE(view->iconSize(), QSize(32, 32));
+    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.at(0).at(0).value<QSize>(), QSize(32, 32));
     // Should this happen?
     view->setIconSize(QSize(-1, -1));
     QCOMPARE(view->iconSize(), QSize(-1, -1));
+    QCOMPARE(spy.count(), 2);
 
     QCOMPARE(view->currentIndex(), QModelIndex());
     QCOMPARE(view->rootIndex(), QModelIndex());

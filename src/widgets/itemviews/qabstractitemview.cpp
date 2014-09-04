@@ -1538,6 +1538,7 @@ void QAbstractItemView::setIconSize(const QSize &size)
         return;
     d->iconSize = size;
     d->doDelayedItemsLayout();
+    emit iconSizeChanged(size);
 }
 
 QSize QAbstractItemView::iconSize() const
