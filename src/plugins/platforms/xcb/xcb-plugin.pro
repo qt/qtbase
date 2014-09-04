@@ -105,6 +105,7 @@ contains(QT_CONFIG, opengl) {
 DEFINES += $$QMAKE_DEFINES_XCB
 LIBS += $$QMAKE_LIBS_XCB
 QMAKE_CXXFLAGS += $$QMAKE_CFLAGS_XCB
+QMAKE_CFLAGS += $$QMAKE_CFLAGS_XCB
 
 CONFIG += qpa/genericunixfontdatabase
 
