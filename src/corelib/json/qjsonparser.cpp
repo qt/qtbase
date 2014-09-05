@@ -79,6 +79,7 @@ QT_BEGIN_NAMESPACE
 #define JSONERR_MISS_OBJ    QT_TRANSLATE_NOOP("QJsonParseError", "object is missing after a comma")
 #define JSONERR_DEEP_NEST   QT_TRANSLATE_NOOP("QJsonParseError", "too deeply nested document")
 #define JSONERR_DOC_LARGE   QT_TRANSLATE_NOOP("QJsonParseError", "too large document")
+#define JSONERR_GARBAGEEND  QT_TRANSLATE_NOOP("QJsonParseError", "garbage at the end of the document")
 
 /*!
     \class QJsonParseError
@@ -111,6 +112,8 @@ QT_BEGIN_NAMESPACE
     \value MissingObject            An object was expected but couldn't be found
     \value DeepNesting              The JSON document is too deeply nested for the parser to parse it
     \value DocumentTooLarge         The JSON document is too large for the parser to parse it
+    \value GarbageAtEnd             The parsed document contains additional garbage characters at the end
+
 */
 
 /*!
@@ -181,6 +184,9 @@ QString QJsonParseError::errorString() const
         break;
     case DocumentTooLarge:
         sz = JSONERR_DOC_LARGE;
+        break;
+    case GarbageAtEnd:
+        sz = JSONERR_GARBAGEEND;
         break;
     }
 #ifndef QT_BOOTSTRAPPED
@@ -320,6 +326,12 @@ QJsonDocument Parser::parse(QJsonParseError *error)
             goto error;
     } else {
         lastError = QJsonParseError::IllegalValue;
+        goto error;
+    }
+
+    eatSpace();
+    if (json < end) {
+        lastError = QJsonParseError::GarbageAtEnd;
         goto error;
     }
 

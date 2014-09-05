@@ -151,6 +151,7 @@ private Q_SLOTS:
     void objectInitializerList();
 
     void unicodeKeys();
+    void garbageAtEnd();
 private:
     QString testDataDir;
 };
@@ -2775,6 +2776,19 @@ void tst_QtJson::unicodeKeys()
         QString suffix = key.mid(key.indexOf(QLatin1Char('_')));
         QCOMPARE(o[key].toString(), QString("hello") + suffix);
     }
+}
+
+void tst_QtJson::garbageAtEnd()
+{
+    QJsonParseError error;
+    QJsonDocument doc = QJsonDocument::fromJson("{},", &error);
+    QVERIFY(error.error == QJsonParseError::GarbageAtEnd);
+    QVERIFY(error.offset == 2);
+    QVERIFY(doc.isEmpty());
+
+    doc = QJsonDocument::fromJson("{}    ", &error);
+    QVERIFY(error.error == QJsonParseError::NoError);
+    QVERIFY(!doc.isEmpty());
 }
 
 QTEST_MAIN(tst_QtJson)
