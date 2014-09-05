@@ -47,30 +47,38 @@
 #include <QAuthenticator>
 
 #include "private/qhostinfo_p.h"
-#ifndef QT_NO_SSL
-#include "private/qsslsocket_openssl_p.h"
-#include "private/qsslsocket_openssl_symbols_p.h"
-#include "private/qsslconfiguration_p.h"
-#endif
+#include "private/qiodevice_p.h" // for QIODEVICE_BUFFERSIZE
 
 #include "../../../network-settings.h"
 
 #ifndef QT_NO_SSL
+#ifndef QT_NO_OPENSSL
+#include "private/qsslsocket_openssl_p.h"
+#include "private/qsslsocket_openssl_symbols_p.h"
+#endif
+#include "private/qsslsocket_p.h"
+#include "private/qsslconfiguration_p.h"
+
 Q_DECLARE_METATYPE(QSslSocket::SslMode)
 typedef QList<QSslError::SslError> SslErrorList;
 Q_DECLARE_METATYPE(SslErrorList)
 Q_DECLARE_METATYPE(QSslError)
 Q_DECLARE_METATYPE(QSsl::SslProtocol)
+typedef QSharedPointer<QSslSocket> QSslSocketPtr;
+
+// Non-OpenSSL backends are not able to report a specific error code
+// for self-signed certificate for certificates.
+#ifndef QT_NO_OPENSSL
+#define FLUKE_CERTIFICATE_ERROR QSslError::SelfSignedCertificate
+#else
+#define FLUKE_CERTIFICATE_ERROR QSslError::CertificateUntrusted
 #endif
+#endif // QT_NO_SSL
 
 #if defined Q_OS_HPUX && defined Q_CC_GNU
 // This error is delivered every time we try to use the fluke CA
 // certificate. For now we work around this bug. Task 202317.
 #define QSSLSOCKET_CERTUNTRUSTED_WORKAROUND
-#endif
-
-#ifndef QT_NO_SSL
-typedef QSharedPointer<QSslSocket> QSslSocketPtr;
 #endif
 
 class tst_QSslSocket : public QObject
@@ -168,7 +176,6 @@ private slots:
     void waitForMinusOne();
     void verifyMode();
     void verifyDepth();
-    void peerVerifyError();
     void disconnectFromHostWhenConnecting();
     void disconnectFromHostWhenConnected();
     void resetProxy();
@@ -546,37 +553,53 @@ void tst_QSslSocket::sslErrors_data()
 {
     QTest::addColumn<QString>("host");
     QTest::addColumn<int>("port");
-    QTest::addColumn<SslErrorList>("expected");
 
-    QTest::newRow(qPrintable(QtNetworkSettings::serverLocalName()))
-        << QtNetworkSettings::serverLocalName()
-        << 993
-        << (SslErrorList() << QSslError::HostNameMismatch
-                           << QSslError::SelfSignedCertificate);
+    QString name = QtNetworkSettings::serverLocalName();
+    QTest::newRow(qPrintable(name)) << name << 993;
+
+    name = QHostInfo::fromName(QtNetworkSettings::serverName()).addresses().first().toString();
+    QTest::newRow(qPrintable(name)) << name << 443;
 }
 
 void tst_QSslSocket::sslErrors()
 {
     QFETCH(QString, host);
     QFETCH(int, port);
-    QFETCH(SslErrorList, expected);
 
     QSslSocketPtr socket = newSocket();
+    QSignalSpy sslErrorsSpy(socket.data(), SIGNAL(sslErrors(QList<QSslError>)));
+    QSignalSpy peerVerifyErrorSpy(socket.data(), SIGNAL(peerVerifyError(QSslError)));
+
     socket->connectToHostEncrypted(host, port);
     if (!socket->waitForConnected())
-        QEXPECT_FAIL("imap.trolltech.com", "server not open to internet", Continue);
-    socket->waitForEncrypted(5000);
+        QSKIP("Skipping flaky test - See QTBUG-29941");
+    socket->waitForEncrypted(10000);
 
-    SslErrorList output;
-    foreach (QSslError error, socket->sslErrors()) {
-        output << error.error();
-    }
+    // check the SSL errors contain HostNameMismatch and an error due to
+    // the certificate being self-signed
+    SslErrorList sslErrors;
+    foreach (const QSslError &err, socket->sslErrors())
+        sslErrors << err.error();
+    qSort(sslErrors);
+    QVERIFY(sslErrors.contains(QSslError::HostNameMismatch));
+    QVERIFY(sslErrors.contains(FLUKE_CERTIFICATE_ERROR));
 
-#ifdef QSSLSOCKET_CERTUNTRUSTED_WORKAROUND
-    if (output.count() && output.last() == QSslError::CertificateUntrusted)
-        output.takeLast();
-#endif
-    QCOMPARE(output, expected);
+    // check the same errors were emitted by sslErrors
+    QVERIFY(!sslErrorsSpy.isEmpty());
+    SslErrorList emittedErrors;
+    foreach (const QSslError &err, qvariant_cast<QList<QSslError> >(sslErrorsSpy.first().first()))
+        emittedErrors << err.error();
+    qSort(emittedErrors);
+    QCOMPARE(sslErrors, emittedErrors);
+
+    // check the same errors were emitted by peerVerifyError
+    QVERIFY(!peerVerifyErrorSpy.isEmpty());
+    SslErrorList peerErrors;
+    const QList<QVariantList> &peerVerifyList = peerVerifyErrorSpy;
+    foreach (const QVariantList &args, peerVerifyList)
+        peerErrors << qvariant_cast<QSslError>(args.first()).error();
+    qSort(peerErrors);
+    QCOMPARE(sslErrors, peerErrors);
 }
 
 void tst_QSslSocket::addCaCertificate()
@@ -1950,7 +1973,7 @@ void tst_QSslSocket::verifyMode()
         QSKIP("Skipping flaky test - See QTBUG-29941");
 
     QList<QSslError> expectedErrors = QList<QSslError>()
-                                      << QSslError(QSslError::SelfSignedCertificate, socket.peerCertificate());
+                                      << QSslError(FLUKE_CERTIFICATE_ERROR, socket.peerCertificate());
     QCOMPARE(socket.sslErrors(), expectedErrors);
     socket.abort();
 
@@ -1979,34 +2002,6 @@ void tst_QSslSocket::verifyDepth()
     QTest::ignoreMessage(QtWarningMsg, "QSslSocket::setPeerVerifyDepth: cannot set negative depth of -1");
     socket.setPeerVerifyDepth(-1);
     QCOMPARE(socket.peerVerifyDepth(), 1);
-}
-
-void tst_QSslSocket::peerVerifyError()
-{
-    QSslSocketPtr socket = newSocket();
-    QSignalSpy sslErrorsSpy(socket.data(), SIGNAL(sslErrors(QList<QSslError>)));
-    QSignalSpy peerVerifyErrorSpy(socket.data(), SIGNAL(peerVerifyError(QSslError)));
-
-    socket->connectToHostEncrypted(QHostInfo::fromName(QtNetworkSettings::serverName()).addresses().first().toString(), 443);
-    if (socket->waitForEncrypted(10000))
-        QSKIP("Skipping flaky test - See QTBUG-29941");
-
-    // check HostNameMismatch was emitted by peerVerifyError
-    QVERIFY(!peerVerifyErrorSpy.isEmpty());
-    SslErrorList peerErrors;
-    const QList<QVariantList> &peerVerifyList = peerVerifyErrorSpy;
-    foreach (const QVariantList &args, peerVerifyList)
-        peerErrors << qvariant_cast<QSslError>(args.first()).error();
-    QVERIFY(peerErrors.contains(QSslError::HostNameMismatch));
-
-    // check HostNameMismatch was emitted by sslErrors
-    QVERIFY(!sslErrorsSpy.isEmpty());
-    SslErrorList sslErrors;
-    foreach (const QSslError &err, qvariant_cast<QList<QSslError> >(sslErrorsSpy.first().first()))
-        sslErrors << err.error();
-    QVERIFY(peerErrors.contains(QSslError::HostNameMismatch));
-
-    QCOMPARE(sslErrors.size(), peerErrors.size());
 }
 
 void tst_QSslSocket::disconnectFromHostWhenConnecting()
@@ -2105,8 +2100,8 @@ void tst_QSslSocket::ignoreSslErrorsList_data()
     QList<QSslError> expectedSslErrors;
     // fromPath gives us a list of certs, but it actually only contains one
     QList<QSslCertificate> certs = QSslCertificate::fromPath(QLatin1String(SRCDIR "certs/qt-test-server-cacert.pem"));
-    QSslError rightError(QSslError::SelfSignedCertificate, certs.at(0));
-    QSslError wrongError(QSslError::SelfSignedCertificate);
+    QSslError rightError(FLUKE_CERTIFICATE_ERROR, certs.at(0));
+    QSslError wrongError(FLUKE_CERTIFICATE_ERROR);
 
 
     QTest::newRow("SSL-failure-empty-list") << expectedSslErrors << 1;
@@ -2368,8 +2363,8 @@ void tst_QSslSocket::resume_data()
     QTest::newRow("ignoreAllErrors") << true << QList<QSslError>() << true;
 
     QList<QSslCertificate> certs = QSslCertificate::fromPath(QLatin1String(SRCDIR "certs/qt-test-server-cacert.pem"));
-    QSslError rightError(QSslError::SelfSignedCertificate, certs.at(0));
-    QSslError wrongError(QSslError::SelfSignedCertificate);
+    QSslError rightError(FLUKE_CERTIFICATE_ERROR, certs.at(0));
+    QSslError wrongError(FLUKE_CERTIFICATE_ERROR);
     errorsList.append(wrongError);
     QTest::newRow("ignoreSpecificErrors-Wrong") << true << errorsList << false;
     errorsList.clear();
