@@ -751,11 +751,13 @@ int QtPrivate::QStringList_removeDuplicates(QStringList *that)
     int j = 0;
     QSet<QString> seen;
     seen.reserve(n);
+    int setSize = 0;
     for (int i = 0; i < n; ++i) {
         const QString &s = that->at(i);
-        if (seen.contains(s))
-            continue;
         seen.insert(s);
+        if (setSize == seen.size()) // unchanged size => was already seen
+            continue;
+        ++setSize;
         if (j != i)
             that->swap(i, j);
         ++j;
