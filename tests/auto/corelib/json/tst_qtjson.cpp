@@ -149,6 +149,8 @@ private Q_SLOTS:
 
     void arrayInitializerList();
     void objectInitializerList();
+
+    void unicodeKeys();
 private:
     QString testDataDir;
 };
@@ -2751,6 +2753,28 @@ void tst_QtJson::objectInitializerList()
         QCOMPARE(QJsonValue(nested[1]), QJsonValue(2.1));
     }
 #endif
+}
+
+void tst_QtJson::unicodeKeys()
+{
+    QByteArray json = "{"
+                      "\"x\u2090_1\": \"hello_1\","
+                      "\"y\u2090_2\": \"hello_2\","
+                      "\"T\u2090_3\": \"hello_3\","
+                      "\"xyz_4\": \"hello_4\","
+                      "\"abc_5\": \"hello_5\""
+                      "}";
+
+    QJsonParseError error;
+    QJsonDocument doc = QJsonDocument::fromJson(json, &error);
+    QVERIFY(error.error == QJsonParseError::NoError);
+    QJsonObject o = doc.object();
+
+    QCOMPARE(o.keys().size(), 5);
+    Q_FOREACH (const QString &key, o.keys()) {
+        QString suffix = key.mid(key.indexOf(QLatin1Char('_')));
+        QCOMPARE(o[key].toString(), QString("hello") + suffix);
+    }
 }
 
 QTEST_MAIN(tst_QtJson)

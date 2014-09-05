@@ -354,7 +354,7 @@ public:
         return !memcmp(d->utf16, str.d->utf16, d->length*sizeof(ushort));
     }
     inline bool operator<(const String &other) const;
-    inline bool operator >=(const String &other) const { return other < *this; }
+    inline bool operator >=(const String &other) const { return !(*this < other); }
 
     inline QString toString() const {
 #if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
@@ -414,12 +414,29 @@ public:
             val = d->length - str.d->length;
         return val >= 0;
     }
+    inline bool operator<(const String &str) const
+    {
+        const qle_ushort *uc = (qle_ushort *) str.d->utf16;
+        if (!uc || *uc == 0)
+            return false;
 
+        const uchar *c = (uchar *)d->latin1;
+        const uchar *e = c + qMin((int)d->length, (int)str.d->length);
+
+        while (c < e) {
+            if (*c != *uc)
+                break;
+            ++c;
+            ++uc;
+        }
+        return (c == e ? (int)d->length < (int)str.d->length : *c < *uc);
+
+    }
     inline bool operator ==(const String &str) const {
         return (str == *this);
     }
     inline bool operator >=(const String &str) const {
-        return (str < *this);
+        return !(*this < str);
     }
 
     inline QString toString() const {
@@ -456,7 +473,7 @@ inline bool String::operator <(const String &other) const
         a++,b++;
     if (l==-1)
         return (alen < blen);
-    return (ushort)*a - (ushort)*b;
+    return (ushort)*a < (ushort)*b;
 }
 
 inline bool String::operator<(const Latin1String &str) const
