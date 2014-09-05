@@ -374,7 +374,7 @@ bool QFontEngine::supportsScript(QChar::Script script) const
             hb_tag_t script_tag_1, script_tag_2;
             hb_ot_tags_from_script(hb_qt_script_to_script(script), &script_tag_1, &script_tag_2);
 
-            unsigned int script_index = -1;
+            unsigned int script_index;
             ret = hb_ot_layout_table_find_script(face, HB_OT_TAG_GSUB, script_tag_1, &script_index);
             if (!ret) {
                 ret = hb_ot_layout_table_find_script(face, HB_OT_TAG_GSUB, script_tag_2, &script_index);
