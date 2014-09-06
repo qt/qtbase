@@ -1757,7 +1757,6 @@ void QWindowsVistaStyle::drawComplexControl(ComplexControl control, const QStyle
                         stateId = SCRBS_NORMAL;
 
                     // Draw handle
-                    theme.rect = proxy()->subControlRect(CC_ScrollBar, option, SC_ScrollBarSlider, widget);
                     theme.partId = flags & State_Horizontal ? SBP_THUMBBTNHORZ : SBP_THUMBBTNVERT;
                     theme.stateId = stateId;
                     d->drawBackground(theme);
