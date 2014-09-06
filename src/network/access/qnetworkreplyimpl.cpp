@@ -301,13 +301,13 @@ void QNetworkReplyImplPrivate::_q_networkSessionConnected()
         return;
 
     switch (state) {
-    case QNetworkReplyImplPrivate::Buffering:
-    case QNetworkReplyImplPrivate::Working:
-    case QNetworkReplyImplPrivate::Reconnecting:
+    case QNetworkReplyPrivate::Buffering:
+    case QNetworkReplyPrivate::Working:
+    case QNetworkReplyPrivate::Reconnecting:
         // Migrate existing downloads to new network connection.
         migrateBackend();
         break;
-    case QNetworkReplyImplPrivate::WaitingForSession:
+    case QNetworkReplyPrivate::WaitingForSession:
         // Start waiting requests.
         QMetaObject::invokeMethod(q, "_q_startOperation", Qt::QueuedConnection);
         break;
@@ -916,7 +916,7 @@ QNetworkReplyImpl::~QNetworkReplyImpl()
 void QNetworkReplyImpl::abort()
 {
     Q_D(QNetworkReplyImpl);
-    if (d->state == QNetworkReplyImplPrivate::Finished || d->state == QNetworkReplyImplPrivate::Aborted)
+    if (d->state == QNetworkReplyPrivate::Finished || d->state == QNetworkReplyPrivate::Aborted)
         return;
 
     // stop both upload and download
@@ -927,14 +927,14 @@ void QNetworkReplyImpl::abort()
 
     QNetworkReply::close();
 
-    if (d->state != QNetworkReplyImplPrivate::Finished) {
+    if (d->state != QNetworkReplyPrivate::Finished) {
         // call finished which will emit signals
         d->error(OperationCanceledError, tr("Operation canceled"));
-        if (d->state == QNetworkReplyImplPrivate::WaitingForSession)
-            d->state = QNetworkReplyImplPrivate::Working;
+        if (d->state == QNetworkReplyPrivate::WaitingForSession)
+            d->state = QNetworkReplyPrivate::Working;
         d->finished();
     }
-    d->state = QNetworkReplyImplPrivate::Aborted;
+    d->state = QNetworkReplyPrivate::Aborted;
 
     // finished may access the backend
     if (d->backend) {
@@ -946,8 +946,8 @@ void QNetworkReplyImpl::abort()
 void QNetworkReplyImpl::close()
 {
     Q_D(QNetworkReplyImpl);
-    if (d->state == QNetworkReplyImplPrivate::Aborted ||
-        d->state == QNetworkReplyImplPrivate::Finished)
+    if (d->state == QNetworkReplyPrivate::Aborted ||
+        d->state == QNetworkReplyPrivate::Finished)
         return;
 
     // stop the download
@@ -1041,7 +1041,7 @@ qint64 QNetworkReplyImpl::readData(char *data, qint64 maxlen)
     if (d->downloadBuffer) {
         qint64 maxAvail = qMin<qint64>(d->downloadBufferCurrentSize - d->downloadBufferReadPosition, maxlen);
         if (maxAvail == 0)
-            return d->state == QNetworkReplyImplPrivate::Finished ? -1 : 0;
+            return d->state == QNetworkReplyPrivate::Finished ? -1 : 0;
         // FIXME what about "Aborted" state?
         memcpy(data, d->downloadBuffer + d->downloadBufferReadPosition, maxAvail);
         d->downloadBufferReadPosition += maxAvail;
@@ -1050,7 +1050,7 @@ qint64 QNetworkReplyImpl::readData(char *data, qint64 maxlen)
 
 
     if (d->readBuffer.isEmpty())
-        return d->state == QNetworkReplyImplPrivate::Finished ? -1 : 0;
+        return d->state == QNetworkReplyPrivate::Finished ? -1 : 0;
     // FIXME what about "Aborted" state?
 
     d->backendNotify(QNetworkReplyImplPrivate::NotifyDownstreamReadyWrite);
@@ -1101,7 +1101,7 @@ bool QNetworkReplyImplPrivate::migrateBackend()
     if (!backend->canResume())
         return false;
 
-    state = QNetworkReplyImplPrivate::Reconnecting;
+    state = QNetworkReplyPrivate::Reconnecting;
 
     if (backend) {
         delete backend;

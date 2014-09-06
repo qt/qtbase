@@ -250,8 +250,8 @@ void QNetworkReplyHttpImpl::close()
 {
     Q_D(QNetworkReplyHttpImpl);
 
-    if (d->state == QNetworkReplyHttpImplPrivate::Aborted ||
-        d->state == QNetworkReplyHttpImplPrivate::Finished)
+    if (d->state == QNetworkReplyPrivate::Aborted ||
+        d->state == QNetworkReplyPrivate::Finished)
         return;
 
     // According to the documentation close only stops the download
@@ -268,23 +268,23 @@ void QNetworkReplyHttpImpl::abort()
 {
     Q_D(QNetworkReplyHttpImpl);
     // FIXME
-    if (d->state == QNetworkReplyHttpImplPrivate::Finished || d->state == QNetworkReplyHttpImplPrivate::Aborted)
+    if (d->state == QNetworkReplyPrivate::Finished || d->state == QNetworkReplyPrivate::Aborted)
         return;
 
     QNetworkReply::close();
 
-    if (d->state != QNetworkReplyHttpImplPrivate::Finished) {
+    if (d->state != QNetworkReplyPrivate::Finished) {
         // call finished which will emit signals
         // FIXME shouldn't this be emitted Queued?
         d->error(OperationCanceledError, tr("Operation canceled"));
 
         // If state is WaitingForSession, calling finished has no effect
-        if (d->state == QNetworkReplyHttpImplPrivate::WaitingForSession)
-            d->state = QNetworkReplyHttpImplPrivate::Working;
+        if (d->state == QNetworkReplyPrivate::WaitingForSession)
+            d->state = QNetworkReplyPrivate::Working;
         d->finished();
     }
 
-    d->state = QNetworkReplyHttpImplPrivate::Aborted;
+    d->state = QNetworkReplyPrivate::Aborted;
 
     emit abortHttpRequest();
 }
@@ -1800,13 +1800,13 @@ void QNetworkReplyHttpImplPrivate::_q_networkSessionConnected()
         return;
 
     switch (state) {
-    case QNetworkReplyImplPrivate::Buffering:
-    case QNetworkReplyImplPrivate::Working:
-    case QNetworkReplyImplPrivate::Reconnecting:
+    case QNetworkReplyPrivate::Buffering:
+    case QNetworkReplyPrivate::Working:
+    case QNetworkReplyPrivate::Reconnecting:
         // Migrate existing downloads to new network connection.
         migrateBackend();
         break;
-    case QNetworkReplyImplPrivate::WaitingForSession:
+    case QNetworkReplyPrivate::WaitingForSession:
         // Start waiting requests.
         QMetaObject::invokeMethod(q, "_q_startOperation", Qt::QueuedConnection);
         break;
