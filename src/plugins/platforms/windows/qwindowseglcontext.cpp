@@ -47,6 +47,7 @@
 #include <QtGui/QOpenGLContext>
 
 #if defined(QT_OPENGL_ES_2_ANGLE) || defined(QT_OPENGL_DYNAMIC)
+#  define EGL_EGLEXT_PROTOTYPES
 #  include <QtANGLE/EGL/eglext.h>
 #endif
 
