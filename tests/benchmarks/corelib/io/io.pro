@@ -6,5 +6,6 @@ SUBDIRS = \
         qfileinfo \
         qiodevice \
         qprocess \
-        qtemporaryfile
+        qtemporaryfile \
+        qtextstream
 

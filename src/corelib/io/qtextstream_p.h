@@ -174,7 +174,9 @@ public:
     bool getReal(double *f);
 
     inline void write(const QString &data);
+    inline void write(QChar ch);
     inline void putString(const QString &ch, bool number = false);
+    inline void putChar(QChar ch);
     void putNumber(qulonglong number, bool negative);
 
     // buffers

@@ -835,6 +835,21 @@ inline void QTextStreamPrivate::write(const QString &data)
 /*!
     \internal
 */
+inline void QTextStreamPrivate::write(QChar ch)
+{
+    if (string) {
+        // ### What about seek()??
+        string->append(ch);
+    } else {
+        writeBuffer += ch;
+        if (writeBuffer.size() > QTEXTSTREAM_BUFFERSIZE)
+            flushWriteBuffer();
+    }
+}
+
+/*!
+    \internal
+*/
 inline bool QTextStreamPrivate::getChar(QChar *ch)
 {
     if ((string && stringOffset == string->size())
@@ -868,6 +883,17 @@ inline void QTextStreamPrivate::ungetChar(QChar ch)
     }
 
     readBuffer[--readBufferOffset] = ch;
+}
+
+/*!
+    \internal
+*/
+inline void QTextStreamPrivate::putChar(QChar ch)
+{
+    if (params.fieldWidth > 0)
+        putString(QString(ch));
+    else
+        write(ch);
 }
 
 /*!
@@ -2240,7 +2266,7 @@ QTextStream &QTextStream::operator<<(QChar c)
 {
     Q_D(QTextStream);
     CHECK_VALID_STREAM(*this);
-    d->putString(QString(c));
+    d->putChar(c);
     return *this;
 }
 
@@ -2253,7 +2279,7 @@ QTextStream &QTextStream::operator<<(char c)
 {
     Q_D(QTextStream);
     CHECK_VALID_STREAM(*this);
-    d->putString(QString(QChar::fromLatin1(c)));
+    d->putChar(QChar::fromLatin1(c));
     return *this;
 }
 
