@@ -1283,10 +1283,8 @@ void QWidget::create(WId window, bool initializeWindow, bool destroyOldWindow)
     }
 
 
-    static int paintOnScreenEnv = -1;
-    if (paintOnScreenEnv == -1)
-        paintOnScreenEnv = qEnvironmentVariableIntValue("QT_ONSCREEN_PAINT") > 0 ? 1 : 0;
-    if (paintOnScreenEnv == 1)
+    static const bool paintOnScreenEnv = qEnvironmentVariableIntValue("QT_ONSCREEN_PAINT") > 0;
+    if (paintOnScreenEnv)
         setAttribute(Qt::WA_PaintOnScreen);
 
     if (QApplicationPrivate::testAttribute(Qt::AA_NativeWindows))
