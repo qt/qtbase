@@ -47,6 +47,7 @@
 #include "qthreadstorage.h"
 #include "qdir.h"
 #include "qdatetime.h"
+#include <private/qlocale_tools_p.h>
 
 #ifndef QT_NO_QOBJECT
 #include <private/qthread_p.h>
@@ -3009,6 +3010,53 @@ bool qEnvironmentVariableIsEmpty(const char *varName) Q_DECL_NOEXCEPT
     const char * const value = ::getenv(varName);
     return !value || !*value;
 #endif
+}
+
+/*!
+    \relates <QtGlobal>
+    \since 5.5
+
+    Returns the numerical value of the environment variable \a varName.
+    If \a ok is not null, sets \c{*ok} to \c true or \c false depending
+    on the success of the conversion.
+
+    Equivalent to
+    \code
+    qgetenv(varName).toInt()
+    \endcode
+    except that it's much faster, and can't throw exceptions.
+
+    \sa qgetenv(), qEnvironmentVariableIsSet()
+*/
+int qEnvironmentVariableIntValue(const char *varName, bool *ok) Q_DECL_NOEXCEPT
+{
+#if defined(_MSC_VER) && _MSC_VER >= 1400
+    // we provide a buffer that can hold any int value:
+    static const int NumBinaryDigitsPerOctalDigit = 3;
+    static const int MaxDigitsForOctalInt =
+        (std::numeric_limits<uint>::digits + NumBinaryDigitsPerOctalDigit - 1) / NumBinaryDigitsPerOctalDigit;
+    char buffer[MaxDigitsForOctalInt + 2]; // +1 for NUL +1 for optional '-'
+    size_t dummy;
+    if (getenv_s(&dummy, buffer, sizeof buffer, varName) != 0) {
+        if (ok)
+            *ok = false;
+        return 0;
+    }
+#else
+    const char * const buffer = ::getenv(varName);
+    if (!buffer || !*buffer) {
+        if (ok)
+            *ok = false;
+        return 0;
+    }
+#endif
+    const qlonglong value = qstrtoll(buffer, Q_NULLPTR, 0, ok);
+    if (int(value) != value) { // this is the check in QByteArray::toInt(), keep it in sync
+        if (ok)
+            *ok = false;
+        return 0;
+    }
+    return int(value);
 }
 
 /*!

@@ -49,14 +49,22 @@ class tst_QGetPutEnv : public QObject
 Q_OBJECT
 private slots:
     void getSetCheck();
+    void intValue_data();
+    void intValue();
 };
 
 void tst_QGetPutEnv::getSetCheck()
 {
     const char varName[] = "should_not_exist";
 
+    bool ok;
+
     QVERIFY(!qEnvironmentVariableIsSet(varName));
     QVERIFY(qEnvironmentVariableIsEmpty(varName));
+    ok = true;
+    QCOMPARE(qEnvironmentVariableIntValue(varName), 0);
+    QCOMPARE(qEnvironmentVariableIntValue(varName, &ok), 0);
+    QVERIFY(!ok);
     QByteArray result = qgetenv(varName);
     QCOMPARE(result, QByteArray());
 
@@ -65,12 +73,20 @@ void tst_QGetPutEnv::getSetCheck()
 
     QVERIFY(qEnvironmentVariableIsSet(varName));
     QVERIFY(qEnvironmentVariableIsEmpty(varName));
+    ok = true;
+    QCOMPARE(qEnvironmentVariableIntValue(varName), 0);
+    QCOMPARE(qEnvironmentVariableIntValue(varName, &ok), 0);
+    QVERIFY(!ok);
 #endif
 
     QVERIFY(qputenv(varName, QByteArray("supervalue")));
 
     QVERIFY(qEnvironmentVariableIsSet(varName));
     QVERIFY(!qEnvironmentVariableIsEmpty(varName));
+    ok = true;
+    QCOMPARE(qEnvironmentVariableIntValue(varName), 0);
+    QCOMPARE(qEnvironmentVariableIntValue(varName, &ok), 0);
+    QVERIFY(!ok);
     result = qgetenv(varName);
     QVERIFY(result == "supervalue");
 
@@ -80,8 +96,60 @@ void tst_QGetPutEnv::getSetCheck()
     QVERIFY(qunsetenv(varName));
     QVERIFY(!qEnvironmentVariableIsSet(varName));
     QVERIFY(qEnvironmentVariableIsEmpty(varName));
+    ok = true;
+    QCOMPARE(qEnvironmentVariableIntValue(varName), 0);
+    QCOMPARE(qEnvironmentVariableIntValue(varName, &ok), 0);
+    QVERIFY(!ok);
     result = qgetenv(varName);
     QCOMPARE(result, QByteArray());
+}
+
+void tst_QGetPutEnv::intValue_data()
+{
+    QTest::addColumn<QByteArray>("value");
+    QTest::addColumn<int>("expected");
+    QTest::addColumn<bool>("ok");
+
+    // most non-success cases already tested in getSetCheck()
+
+#define ROW(x, i, b) \
+    QTest::newRow(#x) << QByteArray(#x) << (i) << (b)
+    ROW(auto, 0, false);
+    ROW(0, 0, true);
+    ROW(1, 1, true);
+    ROW(010, 8, true);
+    ROW(0x10, 16, true);
+    ROW(-1, -1, true);
+    ROW(-010, -8, true);
+    // ROW(0xffffffff, -1, true); // could be expected, but not how QByteArray::toInt() works
+    ROW(0xffffffff, 0, false);
+    const int bases[] = {10, 8, 16};
+    for (size_t i = 0; i < sizeof bases / sizeof *bases; ++i) {
+        QTest::newRow(qPrintable(QString().sprintf("INT_MAX, base %d", bases[i])))
+                << QByteArray::number(INT_MAX) << INT_MAX << true;
+        QTest::newRow(qPrintable(QString().sprintf("INT_MAX+1, base %d", bases[i])))
+                << QByteArray::number(qlonglong(INT_MAX) + 1) << 0 << false;
+        QTest::newRow(qPrintable(QString().sprintf("INT_MIN, base %d", bases[i])))
+                << QByteArray::number(INT_MIN) << INT_MIN << true;
+        QTest::newRow(qPrintable(QString().sprintf("INT_MIN-1, base %d", bases[i])))
+                << QByteArray::number(qlonglong(INT_MIN) - 1) << 0 << false;
+    };
+}
+
+void tst_QGetPutEnv::intValue()
+{
+    const char varName[] = "should_not_exist";
+
+    QFETCH(QByteArray, value);
+    QFETCH(int, expected);
+    QFETCH(bool, ok);
+
+    bool actualOk = !ok;
+
+    QVERIFY(qputenv(varName, value));
+    QCOMPARE(qEnvironmentVariableIntValue(varName), expected);
+    QCOMPARE(qEnvironmentVariableIntValue(varName, &actualOk), expected);
+    QCOMPARE(actualOk, ok);
 }
 
 QTEST_MAIN(tst_QGetPutEnv)
