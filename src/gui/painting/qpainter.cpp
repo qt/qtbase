@@ -208,8 +208,7 @@ void QPainterPrivate::checkEmulation()
 QPainterPrivate::~QPainterPrivate()
 {
     delete emulationEngine;
-    for (int i=0; i<states.size(); ++i)
-        delete states.at(i);
+    qDeleteAll(states);
 
     if (dummyState)
         delete dummyState;
