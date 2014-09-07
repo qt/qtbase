@@ -343,7 +343,7 @@ void QFileSelectorPrivate::updateSelectors()
     if (envSelectors.count())
         sharedData->staticSelectors << envSelectors;
 
-    if (!qgetenv(env_override).isEmpty())
+    if (!qEnvironmentVariableIsEmpty(env_override))
         return;
 
     sharedData->staticSelectors << sharedData->preloadedStatics; //Potential for static selectors from other modules
