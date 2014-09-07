@@ -461,7 +461,7 @@ void QPainterPrivate::draw_helper(const QPainterPath &originalPath, DrawOperatio
     p.drawPath(originalPath);
 
 #ifndef QT_NO_DEBUG
-    static bool do_fallback_overlay = qgetenv("QT_PAINT_FALLBACK_OVERLAY").size() > 0;
+    static bool do_fallback_overlay = !qEnvironmentVariableIsEmpty("QT_PAINT_FALLBACK_OVERLAY");
     if (do_fallback_overlay) {
         QImage block(8, 8, QImage::Format_ARGB32_Premultiplied);
         QPainter pt(&block);
