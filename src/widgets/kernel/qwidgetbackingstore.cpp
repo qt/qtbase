@@ -780,10 +780,7 @@ void QWidgetPrivate::moveRect(const QRect &rect, int dx, int dy)
     if (x->inTopLevelResize)
         return;
 
-    static int accelEnv = -1;
-    if (accelEnv == -1) {
-        accelEnv = qEnvironmentVariableIntValue("QT_NO_FAST_MOVE") == 0;
-    }
+    static const bool accelEnv = qEnvironmentVariableIntValue("QT_NO_FAST_MOVE") == 0;
 
     QWidget *pw = q->parentWidget();
     QPoint toplevelOffset = pw->mapTo(tlw, QPoint());
@@ -862,10 +859,7 @@ void QWidgetPrivate::scrollRect(const QRect &rect, int dx, int dy)
     if (!wbs)
         return;
 
-    static int accelEnv = -1;
-    if (accelEnv == -1) {
-        accelEnv = qEnvironmentVariableIntValue("QT_NO_FAST_SCROLL") == 0;
-    }
+    static const bool accelEnv = qEnvironmentVariableIntValue("QT_NO_FAST_SCROLL") == 0;
 
     QRect scrollRect = rect & clipRect();
     bool overlapped = false;
