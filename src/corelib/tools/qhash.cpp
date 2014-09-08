@@ -267,9 +267,7 @@ static uint qt_create_qhash_seed()
 
     quintptr seedPtr = reinterpret_cast<quintptr>(&seed);
     seed ^= seedPtr;
-#if QT_POINTER_SIZE == 8
-    seed ^= (seedPtr >> 32);
-#endif
+    seed ^= (qulonglong(seedPtr) >> 32); // no-op on 32-bit platforms
 #endif // QT_BOOTSTRAPPED
 
     return seed;
