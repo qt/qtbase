@@ -52,8 +52,16 @@ class Q_WIDGETS_EXPORT QOpenGLWidget : public QWidget
     Q_DECLARE_PRIVATE(QOpenGLWidget)
 
 public:
+    enum UpdateBehavior {
+        NoPartialUpdate,
+        PartialUpdate
+    };
+
     explicit QOpenGLWidget(QWidget* parent = 0, Qt::WindowFlags f = 0);
     ~QOpenGLWidget();
+
+    void setUpdateBehavior(UpdateBehavior updateBehavior);
+    UpdateBehavior updateBehavior() const;
 
     void setFormat(const QSurfaceFormat &format);
     QSurfaceFormat format() const;

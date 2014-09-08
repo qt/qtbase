@@ -420,10 +420,25 @@ QT_BEGIN_NAMESPACE
   the intention is to have a semi-transparent window. In that case the
   traditional approach of setting Qt::WA_TranslucentBackground is sufficient.
 
+  QOpenGLWidget supports multiple update behaviors, just like QOpenGLWindow. In
+  preserved mode the rendered content from the previous paintGL() call is
+  available in the next one, allowing incremental rendering. In non-preserved
+  mode the content is lost and paintGL() implementations are expected to redraw
+  everything in the view.
+
+  Before Qt 5.5 the default behavior of QOpenGLWidget was to preserve the
+  rendered contents between paintGL() calls. Since Qt 5.5 the default behavior
+  is non-preserved because this provides better performance and the majority of
+  applications have no need for the previous content. This also resembles the
+  semantics of an OpenGL-based QWindow and matches the default behavior of
+  QOpenGLWindow in that the color and ancillary buffers are invalidated for
+  each frame. To restore the preserved behavior, call setUpdateBehavior() with
+  \c PartialUpdate.
+
   \e{OpenGL is a trademark of Silicon Graphics, Inc. in the United States and other
   countries.}
 
-  \sa QOpenGLFunctions, QOpenGLWindow, Qt::AA_ShareOpenGLContexts
+  \sa QOpenGLFunctions, QOpenGLWindow, Qt::AA_ShareOpenGLContexts, UpdateBehavior
 */
 
 /*!
@@ -453,6 +468,30 @@ QT_BEGIN_NAMESPACE
 
     This signal is emitted right after the framebuffer object has been recreated
     due to resizing the widget.
+*/
+
+/*!
+    \enum QOpenGLWidget::UpdateBehavior
+    \since 5.5
+
+    This enum describes the update semantics of QOpenGLWidget.
+
+    \value NoPartialUpdate QOpenGLWidget will discard the
+    contents of the color buffer and the ancillary buffers after the
+    QOpenGLWidget is rendered to screen. This is the same behavior that can be
+    expected by calling QOpenGLContext::swapBuffers with a default opengl
+    enabled QWindow as the argument. NoPartialUpdate can have some performance
+    benefits on certain hardware architectures common in the mobile and
+    embedded space when a framebuffer object is used as the rendering target.
+    The framebuffer object is invalidated between frames with
+    glDiscardFramebufferEXT if supported or a glClear. Please see the
+    documentation of EXT_discard_framebuffer for more information:
+    https://www.khronos.org/registry/gles/extensions/EXT/EXT_discard_framebuffer.txt
+
+    \value PartialUpdate The framebuffer objects color buffer and ancillary
+    buffers are not invalidated between frames.
+
+    \sa updateBehavior(), setUpdateBehavior()
 */
 
 class QOpenGLWidgetPaintDevicePrivate : public QOpenGLPaintDevicePrivate
@@ -486,9 +525,11 @@ public:
           surface(0),
           initialized(false),
           fakeHidden(false),
-          paintDevice(0),
           inBackingStorePaint(false),
-          flushPending(false)
+          hasBeenComposed(false),
+          flushPending(false),
+          paintDevice(0),
+          updateBehavior(QOpenGLWidget::NoPartialUpdate)
     {
         requestedFormat = QSurfaceFormat::defaultFormat();
     }
@@ -507,6 +548,8 @@ public:
     void invokeUserPaint();
     void render();
 
+    void invalidateFbo();
+
     QImage grabFramebuffer() Q_DECL_OVERRIDE;
     void beginBackingStorePainting() Q_DECL_OVERRIDE { inBackingStorePaint = true; }
     void endBackingStorePainting() Q_DECL_OVERRIDE { inBackingStorePaint = false; }
@@ -522,10 +565,12 @@ public:
     QOffscreenSurface *surface;
     bool initialized;
     bool fakeHidden;
-    QOpenGLPaintDevice *paintDevice;
     bool inBackingStorePaint;
-    QSurfaceFormat requestedFormat;
+    bool hasBeenComposed;
     bool flushPending;
+    QOpenGLPaintDevice *paintDevice;
+    QSurfaceFormat requestedFormat;
+    QOpenGLWidget::UpdateBehavior updateBehavior;
 };
 
 void QOpenGLWidgetPaintDevicePrivate::beginPaint()
@@ -648,6 +693,7 @@ void QOpenGLWidgetPrivate::beginCompose()
         q->makeCurrent();
         context->functions()->glFlush();
     }
+    hasBeenComposed = true;
     emit q->aboutToCompose();
 }
 
@@ -743,7 +789,29 @@ void QOpenGLWidgetPrivate::render()
         return;
 
     q->makeCurrent();
+
+    if (updateBehavior == QOpenGLWidget::NoPartialUpdate && hasBeenComposed) {
+        invalidateFbo();
+        hasBeenComposed = false;
+    }
+
     invokeUserPaint();
+}
+
+void QOpenGLWidgetPrivate::invalidateFbo()
+{
+    QOpenGLExtensions *f = static_cast<QOpenGLExtensions *>(QOpenGLContext::currentContext()->functions());
+    if (f->hasOpenGLExtension(QOpenGLExtensions::DiscardFramebuffer)) {
+        const int gl_color_ext = 0x1800;
+        const int gl_depth_ext = 0x1801;
+        const int gl_stencil_ext = 0x1802;
+        const GLenum attachments[] = {
+            gl_color_ext, gl_depth_ext, gl_stencil_ext
+        };
+        f->glDiscardFramebufferEXT(GL_FRAMEBUFFER, sizeof attachments / sizeof *attachments, attachments);
+    } else {
+        f->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+    }
 }
 
 extern Q_GUI_EXPORT QImage qt_gl_read_framebuffer(const QSize &size, bool alpha_format, bool include_alpha);
@@ -798,6 +866,26 @@ QOpenGLWidget::QOpenGLWidget(QWidget *parent, Qt::WindowFlags f)
  */
 QOpenGLWidget::~QOpenGLWidget()
 {
+}
+
+/*!
+  Sets this widget's update behavior to \a updateBehavior.
+  \since 5.5
+*/
+void QOpenGLWidget::setUpdateBehavior(UpdateBehavior updateBehavior)
+{
+    Q_D(QOpenGLWidget);
+    d->updateBehavior = updateBehavior;
+}
+
+/*!
+  \return the update behavior of the widget.
+  \since 5.5
+*/
+QOpenGLWidget::UpdateBehavior QOpenGLWidget::updateBehavior() const
+{
+    Q_D(const QOpenGLWidget);
+    return d->updateBehavior;
 }
 
 /*!
