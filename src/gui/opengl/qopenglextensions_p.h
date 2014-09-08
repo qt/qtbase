@@ -81,7 +81,8 @@ public:
         MapBuffer               = 0x00040000,
         GeometryShaders         = 0x00080000,
         MapBufferRange          = 0x00100000,
-        Sized8Formats           = 0x00200000
+        Sized8Formats           = 0x00200000,
+        DiscardFramebuffer      = 0x00400000
     };
     Q_DECLARE_FLAGS(OpenGLExtensions, OpenGLExtension)
 
@@ -101,6 +102,8 @@ public:
                                           GLsizei width, GLsizei height);
 
     void glGetBufferSubData(GLenum target, qopengl_GLintptr offset, qopengl_GLsizeiptr size, GLvoid *data);
+
+    void glDiscardFramebufferEXT (GLenum target, GLsizei numAttachments, const GLenum *attachments);
 
 private:
     static bool isInitialized(const QOpenGLFunctionsPrivate *d) { return d != 0; }
@@ -124,6 +127,7 @@ public:
                                           GLenum internalFormat,
                                           GLsizei width, GLsizei height);
     void (QOPENGLF_APIENTRYP GetBufferSubData)(GLenum target, qopengl_GLintptr offset, qopengl_GLsizeiptr size, GLvoid *data);
+    void (QOPENGLF_APIENTRYP DiscardFramebuffer)(GLenum target, GLsizei numAttachments, const GLenum *attachments);
 };
 
 inline GLvoid *QOpenGLExtensions::glMapBuffer(GLenum target, GLenum access)
@@ -182,6 +186,14 @@ inline void QOpenGLExtensions::glGetBufferSubData(GLenum target, qopengl_GLintpt
     Q_OPENGL_FUNCTIONS_DEBUG
 }
 
+
+inline void QOpenGLExtensions::glDiscardFramebufferEXT (GLenum target, GLsizei numAttachments, const GLenum *attachments)
+{
+    Q_D(QOpenGLExtensions);
+    Q_ASSERT(QOpenGLExtensions::isInitialized(d));
+    d->DiscardFramebuffer(target,numAttachments, attachments);
+    Q_OPENGL_FUNCTIONS_DEBUG
+}
 QT_END_NAMESPACE
 
 #endif // QOPENGL_EXTENSIONS_P_H

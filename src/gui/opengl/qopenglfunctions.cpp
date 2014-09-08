@@ -415,6 +415,9 @@ static int qt_gl_resolve_extensions()
         // We don't match GL_APPLE_texture_format_BGRA8888 here because it has different semantics.
         if (extensionMatcher.match("GL_IMG_texture_format_BGRA8888") || extensionMatcher.match("GL_EXT_texture_format_BGRA8888"))
             extensions |= QOpenGLExtensions::BGRATextureFormat;
+
+        if (extensionMatcher.match("GL_EXT_discard_framebuffer"))
+            extensions |= QOpenGLExtensions::DiscardFramebuffer;
     } else {
         extensions |= QOpenGLExtensions::ElementIndexUint | QOpenGLExtensions::MapBuffer;
 
@@ -3257,6 +3260,11 @@ static void QOPENGLF_APIENTRY qopenglfResolveGetBufferSubData(GLenum target, qop
         (target, offset, size, data);
 }
 
+static void QOPENGLF_APIENTRY qopenglfResolveDiscardFramebuffer(GLenum target, GLsizei numAttachments, const GLenum *attachments)
+{
+    RESOLVE_FUNC_VOID(ResolveEXT, DiscardFramebuffer)(target, numAttachments, attachments);
+}
+
 #if !defined(QT_OPENGL_ES_2) && !defined(QT_OPENGL_DYNAMIC)
 // Special translation functions for ES-specific calls on desktop GL
 
@@ -3495,6 +3503,7 @@ QOpenGLExtensionsPrivate::QOpenGLExtensionsPrivate(QOpenGLContext *ctx)
     BlitFramebuffer = qopenglfResolveBlitFramebuffer;
     RenderbufferStorageMultisample = qopenglfResolveRenderbufferStorageMultisample;
     GetBufferSubData = qopenglfResolveGetBufferSubData;
+    DiscardFramebuffer = qopenglfResolveDiscardFramebuffer;
 }
 
 QT_END_NAMESPACE
