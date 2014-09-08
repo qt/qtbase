@@ -271,6 +271,7 @@ protected:
     QRectF blockBoundingGeometry(const QTextBlock &block) const;
     QAbstractTextDocumentLayout::PaintContext getPaintContext() const;
 
+    void zoomInF(float range);
 
 private:
     Q_DISABLE_COPY(QPlainTextEdit)

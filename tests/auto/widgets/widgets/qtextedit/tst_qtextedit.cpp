@@ -211,6 +211,10 @@ private slots:
     void findWithRegExpReturnsFalseIfNoMoreResults();
 #endif
 
+#ifndef QT_NO_WHEELEVENT
+    void wheelEvent();
+#endif
+
 private:
     void createSelection();
     int blockCount() const;
@@ -2562,6 +2566,40 @@ void tst_QTextEdit::findWithRegExpReturnsFalseIfNoMoreResults()
     QVERIFY(found == false);
     QCOMPARE(ed->textCursor().selectedText(), QStringLiteral("text"));
 }
+#endif
+
+#ifndef QT_NO_WHEELEVENT
+
+class TextEdit : public QTextEdit
+{
+public:
+    TextEdit(QWidget *parent = 0)
+        : QTextEdit(parent)
+    {}
+    void wheelEvent(QWheelEvent *event)
+    {
+        QTextEdit::wheelEvent(event);
+    }
+};
+
+void tst_QTextEdit::wheelEvent()
+{
+    TextEdit ed(0);
+    ed.setPlainText(QStringLiteral("Line\nLine\nLine\n"));
+    ed.setReadOnly(true);
+
+    float defaultFontSize = ed.font().pointSizeF();
+    QWheelEvent wheelUp(QPointF(), QPointF(), QPoint(), QPoint(0, 120), 120, Qt::Vertical, Qt::NoButton, Qt::ControlModifier);
+    ed.wheelEvent(&wheelUp);
+
+    QCOMPARE(defaultFontSize + 1, ed.font().pointSizeF());
+
+    QWheelEvent wheelHalfDown(QPointF(), QPointF(), QPoint(), QPoint(0, -60), -60, Qt::Vertical, Qt::NoButton, Qt::ControlModifier);
+    ed.wheelEvent(&wheelHalfDown);
+
+    QCOMPARE(defaultFontSize + 0.5, ed.font().pointSizeF());
+}
+
 #endif
 
 QTEST_MAIN(tst_QTextEdit)

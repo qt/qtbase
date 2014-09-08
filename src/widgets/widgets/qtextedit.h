@@ -304,6 +304,8 @@ protected:
     virtual void scrollContentsBy(int dx, int dy);
     virtual void doSetTextCursor(const QTextCursor &cursor);
 
+    void zoomInF(float range);
+
 private:
     Q_DISABLE_COPY(QTextEdit)
     Q_PRIVATE_SLOT(d_func(), void _q_repaintContents(const QRectF &r))

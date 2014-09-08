@@ -1813,11 +1813,8 @@ void QTextEdit::wheelEvent(QWheelEvent *e)
     Q_D(QTextEdit);
     if (!(d->control->textInteractionFlags() & Qt::TextEditable)) {
         if (e->modifiers() & Qt::ControlModifier) {
-            const int delta = e->delta();
-            if (delta < 0)
-                zoomOut();
-            else if (delta > 0)
-                zoomIn();
+            float delta = e->angleDelta().y() / 120.f;
+            zoomInF(delta);
             return;
         }
     }
@@ -2276,12 +2273,7 @@ void QTextEdit::scrollToAnchor(const QString &name)
 */
 void QTextEdit::zoomIn(int range)
 {
-    QFont f = font();
-    const int newSize = f.pointSize() + range;
-    if (newSize <= 0)
-        return;
-    f.setPointSize(newSize);
-    setFont(f);
+    zoomInF(range);
 }
 
 /*!
@@ -2297,7 +2289,22 @@ void QTextEdit::zoomIn(int range)
 */
 void QTextEdit::zoomOut(int range)
 {
-    zoomIn(-range);
+    zoomInF(-range);
+}
+
+/*!
+    \internal
+*/
+void QTextEdit::zoomInF(float range)
+{
+    if (range == 0.f)
+        return;
+    QFont f = font();
+    const float newSize = f.pointSizeF() + range;
+    if (newSize <= 0)
+        return;
+    f.setPointSizeF(newSize);
+    setFont(f);
 }
 
 /*!
