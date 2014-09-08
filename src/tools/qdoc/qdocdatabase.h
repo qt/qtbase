@@ -370,6 +370,8 @@ class QDocDatabase
     void newPrimaryTree(const QString& module) { forest_.newPrimaryTree(module); }
     NamespaceNode* newIndexTree(const QString& module) { return forest_.newIndexTree(module); }
     const QVector<Tree*>& searchOrder() { return forest_.searchOrder(); }
+    void setLocalSearch() { forest_.searchOrder_ = QVector<Tree*>(1, primaryTree()); }
+    void setSearchOrder(const QVector<Tree*>& searchOrder) { forest_.searchOrder_ = searchOrder; }
     void setSearchOrder() { forest_.setSearchOrder(); }
     void mergeCollections(Node::Type nt, CNMap& cnm, const Node* relative);
     void mergeCollections(CollectionNode* cn);

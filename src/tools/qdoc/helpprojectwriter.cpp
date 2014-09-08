@@ -646,6 +646,11 @@ void HelpProjectWriter::writeNode(HelpProject &project, QXmlStreamWriter &writer
 void HelpProjectWriter::generateProject(HelpProject &project)
 {
     const Node *rootNode;
+
+    // Restrict searching only to the local (primary) tree
+    QVector<Tree*> searchOrder = qdb_->searchOrder();
+    qdb_->setLocalSearch();
+
     if (!project.indexRoot.isEmpty())
         rootNode = qdb_->findDocNodeByTitle(project.indexRoot);
     else
@@ -708,7 +713,7 @@ void HelpProjectWriter::generateProject(HelpProject &project)
 
         if (subproject.type == QLatin1String("manual")) {
 
-            const DocNode *indexPage = qdb_->findDocNodeByTitle(subproject.indexTitle);
+            const Node *indexPage = qdb_->findNodeForTarget(subproject.indexTitle, 0);
             if (indexPage) {
                 Text indexBody = indexPage->doc().body();
                 const Atom *atom = indexBody.firstAtom();
@@ -735,7 +740,7 @@ void HelpProjectWriter::generateProject(HelpProject &project)
                             if (sectionStack.top() > 0)
                                 writer.writeEndElement(); // section
 
-                            const DocNode *page = qdb_->findDocNodeByTitle(atom->string());
+                            const Node *page = qdb_->findNodeForTarget(atom->string(), 0);
                             writer.writeStartElement("section");
                             QString indexPath = gen_->fullDocumentLocation(page,
                                                                            Generator::useOutputSubdirs());
@@ -762,7 +767,8 @@ void HelpProjectWriter::generateProject(HelpProject &project)
 
             if (!name.isEmpty()) {
                 writer.writeStartElement("section");
-                QString indexPath = gen_->fullDocumentLocation(qdb_->findDocNodeByTitle(subproject.indexTitle),Generator::useOutputSubdirs());
+                QString indexPath = gen_->fullDocumentLocation(qdb_->findNodeForTarget(subproject.indexTitle, 0),
+                                                               Generator::useOutputSubdirs());
                 writer.writeAttribute("ref", indexPath);
                 writer.writeAttribute("title", subproject.title);
             }
@@ -781,7 +787,7 @@ void HelpProjectWriter::generateProject(HelpProject &project)
                     if (!nextTitle.isEmpty() &&
                             node->links().value(Node::ContentsLink).first.isEmpty()) {
 
-                        DocNode *nextPage = const_cast<DocNode *>(qdb_->findDocNodeByTitle(nextTitle));
+                        const Node *nextPage = qdb_->findNodeForTarget(nextTitle, 0);
 
                         // Write the contents node.
                         writeNode(project, writer, node);
@@ -791,7 +797,7 @@ void HelpProjectWriter::generateProject(HelpProject &project)
                             nextTitle = nextPage->links().value(Node::NextLink).first;
                             if (nextTitle.isEmpty() || visited.contains(nextTitle))
                                 break;
-                            nextPage = const_cast<DocNode *>(qdb_->findDocNodeByTitle(nextTitle));
+                            nextPage = qdb_->findNodeForTarget(nextTitle, 0);
                             visited.insert(nextTitle);
                         }
                         break;
@@ -803,6 +809,9 @@ void HelpProjectWriter::generateProject(HelpProject &project)
                 writer.writeEndElement(); // section
         }
     }
+
+    // Restore original search order
+    qdb_->setSearchOrder(searchOrder);
 
     writer.writeEndElement(); // section
     writer.writeEndElement(); // toc
