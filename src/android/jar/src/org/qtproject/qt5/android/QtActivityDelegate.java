@@ -1102,4 +1102,33 @@ public class QtActivityDelegate
             m_layout.removeView(view);
         }
     }
+
+    public void bringChildToFront(int id)
+    {
+        View view = m_surfaces.get(id);
+        if (view != null) {
+            final int index = m_layout.getChildCount() - m_nativeViews.size() - 1;
+            m_layout.moveChild(view, index < 0 ? 0 : index);
+            return;
+        }
+
+        view = m_nativeViews.get(id);
+        if (view != null)
+            m_layout.moveChild(view, -1);
+    }
+
+    public void bringChildToBack(int id)
+    {
+        View view = m_surfaces.get(id);
+        if (view != null) {
+            m_layout.moveChild(view, 0);
+            return;
+        }
+
+        view = m_nativeViews.get(id);
+        if (view != null) {
+            final int index = m_layout.getChildCount() - m_nativeViews.size();
+            m_layout.moveChild(view, index);
+        }
+    }
 }

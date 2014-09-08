@@ -53,6 +53,24 @@ QAndroidPlatformForeignWindow::~QAndroidPlatformForeignWindow()
         QtAndroid::destroySurface(m_surfaceId);
 }
 
+void QAndroidPlatformForeignWindow::lower()
+{
+    if (m_surfaceId == -1)
+        return;
+
+    QAndroidPlatformWindow::lower();
+    QtAndroid::bringChildToBack(m_surfaceId);
+}
+
+void QAndroidPlatformForeignWindow::raise()
+{
+    if (m_surfaceId == -1)
+        return;
+
+    QAndroidPlatformWindow::raise();
+    QtAndroid::bringChildToFront(m_surfaceId);
+}
+
 void QAndroidPlatformForeignWindow::setGeometry(const QRect &rect)
 {
     QWindow *parent = window()->parent();

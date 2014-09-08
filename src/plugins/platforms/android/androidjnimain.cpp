@@ -401,6 +401,28 @@ namespace QtAndroid
                                      surfaceId);
     }
 
+    void bringChildToFront(int surfaceId)
+    {
+        if (surfaceId == -1)
+            return;
+
+        QJNIObjectPrivate::callStaticMethod<void>(m_applicationClass,
+                                                  "bringChildToFront",
+                                                  "(I)V",
+                                                  surfaceId);
+    }
+
+    void bringChildToBack(int surfaceId)
+    {
+        if (surfaceId == -1)
+            return;
+
+        QJNIObjectPrivate::callStaticMethod<void>(m_applicationClass,
+                                                  "bringChildToBack",
+                                                  "(I)V",
+                                                  surfaceId);
+    }
+
     bool blockEventLoopsWhenSuspended()
     {
         static bool block = qgetenv("QT_BLOCK_EVENT_LOOPS_WHEN_SUSPENDED").toInt();

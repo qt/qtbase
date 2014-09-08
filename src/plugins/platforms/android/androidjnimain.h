@@ -64,6 +64,8 @@ namespace QtAndroid
     int insertNativeView(jobject view, const QRect &geometry);
     void setSurfaceGeometry(int surfaceId, const QRect &geometry);
     void destroySurface(int surfaceId);
+    void bringChildToFront(int surfaceId);
+    void bringChildToBack(int surfaceId);
 
     QWindow *topLevelWindowAt(const QPoint &globalPos);
     int desktopWidthPixels();

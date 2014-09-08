@@ -537,6 +537,26 @@ public class QtNative
         });
     }
 
+    private static void bringChildToFront(final int id)
+    {
+        runAction(new Runnable() {
+            @Override
+            public void run() {
+                m_activityDelegate.bringChildToFront(id);
+            }
+        });
+    }
+
+    private static void bringChildToBack(final int id)
+    {
+        runAction(new Runnable() {
+            @Override
+            public void run() {
+                m_activityDelegate.bringChildToBack(id);
+            }
+        });
+    }
+
     private static void destroySurface(final int id)
     {
         runAction(new Runnable() {
