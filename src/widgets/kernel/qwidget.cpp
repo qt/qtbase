@@ -1285,7 +1285,7 @@ void QWidget::create(WId window, bool initializeWindow, bool destroyOldWindow)
 
     static int paintOnScreenEnv = -1;
     if (paintOnScreenEnv == -1)
-        paintOnScreenEnv = qgetenv("QT_ONSCREEN_PAINT").toInt() > 0 ? 1 : 0;
+        paintOnScreenEnv = qEnvironmentVariableIntValue("QT_ONSCREEN_PAINT") > 0 ? 1 : 0;
     if (paintOnScreenEnv == 1)
         setAttribute(Qt::WA_PaintOnScreen);
 
@@ -2112,7 +2112,7 @@ void QWidgetPrivate::subtractOpaqueSiblings(QRegion &sourceRegion, bool *hasDirt
                                             bool alsoNonOpaque) const
 {
     Q_Q(const QWidget);
-    static int disableSubtractOpaqueSiblings = qgetenv("QT_NO_SUBTRACTOPAQUESIBLINGS").toInt();
+    static int disableSubtractOpaqueSiblings = qEnvironmentVariableIntValue("QT_NO_SUBTRACTOPAQUESIBLINGS");
     if (disableSubtractOpaqueSiblings || q->isWindow())
         return;
 
