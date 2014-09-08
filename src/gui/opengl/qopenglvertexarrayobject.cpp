@@ -386,6 +386,16 @@ QOpenGLVertexArrayObject::~QOpenGLVertexArrayObject()
     that supports vertex array objects current for this function to succeed.
 
     Returns \c true if the OpenGL vertex array object was successfully created.
+
+    When the return value is \c false, vertex array object support is not available. This
+    is not an error: on systems with OpenGL 2.x or OpenGL ES 2.0 vertex array objects may
+    not be supported. The application is free to continue execution in this case, but it
+    then has to be prepared to operate in a VAO-less manner too. This means that instead
+    of merely calling bind(), the value of isCreated() must be checked and the vertex
+    arrays has to be initialized in the traditional way when there is no vertex array
+    object present.
+
+    \sa isCreated()
 */
 bool QOpenGLVertexArrayObject::create()
 {
