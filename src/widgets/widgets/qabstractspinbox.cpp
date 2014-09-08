@@ -1100,7 +1100,10 @@ void QAbstractSpinBox::keyReleaseEvent(QKeyEvent *event)
 #ifndef QT_NO_WHEELEVENT
 void QAbstractSpinBox::wheelEvent(QWheelEvent *event)
 {
-    const int steps = (event->delta() > 0 ? 1 : -1);
+    Q_D(QAbstractSpinBox);
+    d->wheelDeltaRemainder += event->angleDelta().y();
+    const int steps = d->wheelDeltaRemainder / 120;
+    d->wheelDeltaRemainder -= steps * 120;
     if (stepEnabled() & (steps > 0 ? StepUpEnabled : StepDownEnabled))
         stepBy(event->modifiers() & Qt::ControlModifier ? steps * 10 : steps);
     event->accept();
@@ -1344,7 +1347,7 @@ QAbstractSpinBoxPrivate::QAbstractSpinBoxPrivate()
       ignoreCursorPositionChanged(false), frame(true), accelerate(false), keyboardTracking(true),
       cleared(false), ignoreUpdateEdit(false), correctionMode(QAbstractSpinBox::CorrectToPreviousValue),
       acceleration(0), hoverControl(QStyle::SC_None), buttonSymbols(QAbstractSpinBox::UpDownArrows), validator(0),
-      showGroupSeparator(0)
+      showGroupSeparator(0), wheelDeltaRemainder(0)
 {
 }
 

@@ -642,6 +642,10 @@ QWheelEvent::QWheelEvent(const QPointF &pos, int delta,
     : QInputEvent(Wheel, modifiers), p(pos), qt4D(delta), qt4O(orient), mouseState(buttons)
 {
     g = QCursor::pos();
+    if (orient == Qt::Vertical)
+        angleD = QPoint(0, delta);
+    else
+        angleD = QPoint(delta, 0);
 }
 
 /*!
@@ -670,7 +674,12 @@ QWheelEvent::QWheelEvent(const QPointF &pos, const QPointF& globalPos, int delta
                          Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers,
                          Qt::Orientation orient)
     : QInputEvent(Wheel, modifiers), p(pos), g(globalPos), qt4D(delta), qt4O(orient), mouseState(buttons)
-{}
+{
+    if (orient == Qt::Vertical)
+        angleD = QPoint(0, delta);
+    else
+        angleD = QPoint(delta, 0);
+}
 
 /*!
     Constructs a wheel event object.

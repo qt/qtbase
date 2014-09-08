@@ -151,6 +151,7 @@ public:
     QAbstractSpinBox::ButtonSymbols buttonSymbols;
     QSpinBoxValidator *validator;
     uint showGroupSeparator : 1;
+    int wheelDeltaRemainder;
 };
 
 class QSpinBoxValidator : public QValidator

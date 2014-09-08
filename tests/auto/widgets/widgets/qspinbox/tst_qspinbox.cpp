@@ -82,6 +82,12 @@ public:
     {
         return QSpinBox::valueFromText(text);
     }
+#ifndef QT_NO_WHEELEVENT
+    void wheelEvent(QWheelEvent *event)
+    {
+        QSpinBox::wheelEvent(event);
+    }
+#endif
 
     QLineEdit *lineEdit() const { return QSpinBox::lineEdit(); }
 };
@@ -147,6 +153,8 @@ private slots:
 
     void setGroupSeparatorShown_data();
     void setGroupSeparatorShown();
+
+    void wheelEvents();
 
 public slots:
     void valueChangedHelper(const QString &);
@@ -1188,6 +1196,30 @@ void tst_QSpinBox::setGroupSeparatorShown()
 
     spinBox.lineEdit()->setText(QStringLiteral("32,000"));
     QCOMPARE(spinBox.value()+1000, 33000);
+}
+
+void tst_QSpinBox::wheelEvents()
+{
+#ifndef QT_NO_WHEELEVENT
+    SpinBox spinBox;
+    spinBox.setRange(-20, 20);
+    spinBox.setValue(0);
+
+    QWheelEvent wheelUp(QPointF(), QPointF(), QPoint(), QPoint(0, 120), 120, Qt::Vertical, Qt::NoButton, Qt::NoModifier);
+    spinBox.wheelEvent(&wheelUp);
+    QCOMPARE(spinBox.value(), 1);
+
+    QWheelEvent wheelDown(QPointF(), QPointF(), QPoint(), QPoint(0, -120), -120, Qt::Vertical, Qt::NoButton, Qt::NoModifier);
+    spinBox.wheelEvent(&wheelDown);
+    spinBox.wheelEvent(&wheelDown);
+    QCOMPARE(spinBox.value(), -1);
+
+    QWheelEvent wheelHalfUp(QPointF(), QPointF(), QPoint(), QPoint(0, 60), 60,  Qt::Vertical, Qt::NoButton, Qt::NoModifier);
+    spinBox.wheelEvent(&wheelHalfUp);
+    QCOMPARE(spinBox.value(), -1);
+    spinBox.wheelEvent(&wheelHalfUp);
+    QCOMPARE(spinBox.value(), 0);
+#endif
 }
 
 QTEST_MAIN(tst_QSpinBox)
