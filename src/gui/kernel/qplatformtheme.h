@@ -109,7 +109,8 @@ public:
         DialogSnapToDefaultButton,
         ContextMenuOnMouseRelease,
         MousePressAndHoldInterval,
-        MouseDoubleClickDistance
+        MouseDoubleClickDistance,
+        WheelScrollLines
     };
 
     enum DialogType {

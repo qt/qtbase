@@ -666,8 +666,12 @@ void QApplicationPrivate::initialize()
         initializeMultitouch();
 
     if (QApplication::desktopSettingsAware())
-        if (const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme())
+        if (const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme()) {
             QApplicationPrivate::enabledAnimations = theme->themeHint(QPlatformTheme::UiEffects).toInt();
+#ifndef QT_NO_WHEELEVENT
+            QApplicationPrivate::wheel_scroll_lines = theme->themeHint(QPlatformTheme::WheelScrollLines).toInt();
+#endif
+        }
 
     is_app_running = true; // no longer starting up
 }

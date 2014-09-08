@@ -513,6 +513,8 @@ QVariant QPlatformTheme::defaultThemeHint(ThemeHint hint)
             int dist = qgetenv("QT_DBL_CLICK_DIST").toInt(&ok);
             return QVariant(ok ? dist : 5);
         }
+    case WheelScrollLines:
+        return QVariant(3);
     }
     return QVariant();
 }

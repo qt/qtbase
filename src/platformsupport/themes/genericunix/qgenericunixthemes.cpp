@@ -178,6 +178,7 @@ public:
         , toolButtonStyle(Qt::ToolButtonTextBesideIcon)
         , toolBarIconSize(0)
         , singleClick(true)
+        , wheelScrollLines(3)
     { }
 
     static QString kdeGlobals(const QString &kdeDir)
@@ -201,6 +202,7 @@ public:
     int toolButtonStyle;
     int toolBarIconSize;
     bool singleClick;
+    int wheelScrollLines;
 };
 
 void QKdeThemePrivate::refresh()
@@ -249,6 +251,10 @@ void QKdeThemePrivate::refresh()
         else if (toolBarStyle == QStringLiteral("TextUnderIcon"))
             toolButtonStyle = Qt::ToolButtonTextUnderIcon;
     }
+
+    const QVariant wheelScrollLinesValue = readKdeSetting(QStringLiteral("KDE/WheelScrollLines"), kdeDirs, kdeSettings);
+    if (wheelScrollLinesValue.isValid())
+        wheelScrollLines = wheelScrollLinesValue.toInt();
 
     // Read system font, ignore 'smallestReadableFont'
     if (QFont *systemFont = kdeFont(readKdeSetting(QStringLiteral("font"), kdeDirs, kdeSettings)))
@@ -436,6 +442,8 @@ QVariant QKdeTheme::themeHint(QPlatformTheme::ThemeHint hint) const
         return QVariant(int(KdeKeyboardScheme));
     case QPlatformTheme::ItemViewActivateItemOnSingleClick:
         return QVariant(d->singleClick);
+    case QPlatformTheme::WheelScrollLines:
+        return QVariant(d->wheelScrollLines);
     default:
         break;
     }
