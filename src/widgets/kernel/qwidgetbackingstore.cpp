@@ -81,14 +81,14 @@ void QWidgetBackingStore::qt_flush(QWidget *widget, const QRegion &region, QBack
     Q_ASSERT(tlw);
 
 #if !defined(QT_NO_PAINT_DEBUG)
-    static int flushUpdate = qgetenv("QT_FLUSH_UPDATE").toInt();
+    static int flushUpdate = qEnvironmentVariableIntValue("QT_FLUSH_UPDATE");
     if (flushUpdate > 0)
         QWidgetBackingStore::showYellowThing(widget, region, flushUpdate * 10, false);
 #endif
 
     if (tlw->testAttribute(Qt::WA_DontShowOnScreen) || widget->testAttribute(Qt::WA_DontShowOnScreen))
         return;
-    static bool fpsDebug = qgetenv("QT_DEBUG_FPS").toInt();
+    static bool fpsDebug = qEnvironmentVariableIntValue("QT_DEBUG_FPS");
     if (fpsDebug) {
         if (!widgetBackingStore->perfFrames++)
             widgetBackingStore->perfTime.start();
@@ -239,12 +239,12 @@ bool QWidgetBackingStore::flushPaint(QWidget *widget, const QRegion &rgn)
 
     int delay = 0;
     if (widget->testAttribute(Qt::WA_WState_InPaintEvent)) {
-        static int flushPaintEvent = qgetenv("QT_FLUSH_PAINT_EVENT").toInt();
+        static int flushPaintEvent = qEnvironmentVariableIntValue("QT_FLUSH_PAINT_EVENT");
         if (!flushPaintEvent)
             return false;
         delay = flushPaintEvent;
     } else {
-        static int flushPaint = qgetenv("QT_FLUSH_PAINT").toInt();
+        static int flushPaint = qEnvironmentVariableIntValue("QT_FLUSH_PAINT");
         if (!flushPaint)
             return false;
         delay = flushPaint;
@@ -782,7 +782,7 @@ void QWidgetPrivate::moveRect(const QRect &rect, int dx, int dy)
 
     static int accelEnv = -1;
     if (accelEnv == -1) {
-        accelEnv = qgetenv("QT_NO_FAST_MOVE").toInt() == 0;
+        accelEnv = qEnvironmentVariableIntValue("QT_NO_FAST_MOVE") == 0;
     }
 
     QWidget *pw = q->parentWidget();
@@ -864,7 +864,7 @@ void QWidgetPrivate::scrollRect(const QRect &rect, int dx, int dy)
 
     static int accelEnv = -1;
     if (accelEnv == -1) {
-        accelEnv = qgetenv("QT_NO_FAST_SCROLL").toInt() == 0;
+        accelEnv = qEnvironmentVariableIntValue("QT_NO_FAST_SCROLL") == 0;
     }
 
     QRect scrollRect = rect & clipRect();
