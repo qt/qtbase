@@ -228,6 +228,22 @@ QT_BEGIN_NAMESPACE
   regarding stacking orders for example. QOpenGLWidget avoids this by not
   creating a separate native window.
 
+  Due to being backed by a framebuffer object, the behavior of QOpenGLWidget is
+  very similar to QOpenGLWindow with the update behavior set to \c
+  PartialUpdateBlit or \c PartialUpdateBlend. This means that the contents are
+  preserved between paintGL() calls so that incremental rendering is
+  possible. With QGLWidget (and naturally QOpenGLWindow with the default update
+  behavior) this is usually not the case because swapping the buffers leaves the
+  back buffer with undefined contents.
+
+  \note Most applications do not need incremental rendering because they will
+  render everything in the view on every paint call. In this case it is
+  important to call glClear() as early as possible in paintGL(). This helps
+  mobile GPUs that use a tile-based architecture to recognize that the tile
+  buffer does not need to be reloaded with the framebuffer's previous
+  contents. Omitting the clear call can lead to significant performance drops on
+  such systems.
+
   \section1 Multisampling
 
   To enable multisampling, set the number of requested samples on the
@@ -372,7 +388,7 @@ QT_BEGIN_NAMESPACE
   \e{OpenGL is a trademark of Silicon Graphics, Inc. in the United States and other
   countries.}
 
-  \sa QOpenGLFunctions
+  \sa QOpenGLFunctions, QOpenGLWindow
 */
 
 /*!
