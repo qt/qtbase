@@ -896,6 +896,7 @@ void QOpenGLWidget::resizeEvent(QResizeEvent *e)
     resizeGL(width(), height());
     d->invokeUserPaint();
     d->context->functions()->glFlush();
+    d->resolveSamples();
 }
 
 /*!
