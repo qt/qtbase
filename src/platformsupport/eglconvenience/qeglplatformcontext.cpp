@@ -189,7 +189,7 @@ void QEGLPlatformContext::init(const QSurfaceFormat &format, QPlatformOpenGLCont
         return;
     }
 
-    static const bool printConfig = qgetenv("QT_QPA_EGLFS_DEBUG").toInt();
+    static const bool printConfig = qEnvironmentVariableIntValue("QT_QPA_EGLFS_DEBUG");
     if (printConfig) {
         qDebug() << "Created context for format" << format << "with config:";
         q_printEglConfig(m_eglDisplay, m_eglConfig);

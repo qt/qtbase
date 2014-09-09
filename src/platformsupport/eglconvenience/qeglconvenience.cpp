@@ -465,8 +465,8 @@ QSizeF q_physicalScreenSizeFromFb(int framebufferDevice, const QSize &screenSize
 
     if (size.isEmpty()) {
         // Note: in millimeters
-        int width = qgetenv("QT_QPA_EGLFS_PHYSICAL_WIDTH").toInt();
-        int height = qgetenv("QT_QPA_EGLFS_PHYSICAL_HEIGHT").toInt();
+        int width = qEnvironmentVariableIntValue("QT_QPA_EGLFS_PHYSICAL_WIDTH");
+        int height = qEnvironmentVariableIntValue("QT_QPA_EGLFS_PHYSICAL_HEIGHT");
 
         if (width && height) {
             size.setWidth(width);
@@ -507,8 +507,8 @@ QSize q_screenSizeFromFb(int framebufferDevice)
     static QSize size;
 
     if (size.isEmpty()) {
-        int width = qgetenv("QT_QPA_EGLFS_WIDTH").toInt();
-        int height = qgetenv("QT_QPA_EGLFS_HEIGHT").toInt();
+        int width = qEnvironmentVariableIntValue("QT_QPA_EGLFS_WIDTH");
+        int height = qEnvironmentVariableIntValue("QT_QPA_EGLFS_HEIGHT");
 
         if (width && height) {
             size.setWidth(width);
@@ -539,7 +539,7 @@ QSize q_screenSizeFromFb(int framebufferDevice)
 int q_screenDepthFromFb(int framebufferDevice)
 {
     const int defaultDepth = 32;
-    static int depth = qgetenv("QT_QPA_EGLFS_DEPTH").toInt();
+    static int depth = qEnvironmentVariableIntValue("QT_QPA_EGLFS_DEPTH");
 
     if (depth == 0) {
         struct fb_var_screeninfo vinfo;
