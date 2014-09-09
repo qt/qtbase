@@ -213,7 +213,7 @@ namespace QtAndroidMenu
         env->DeleteLocalRef(env->CallObjectMethod(menuItem, setEnabledMenuItemMethodID, enabled));
 
         if (!icon.isNull()) { // isNull() only checks the d pointer, not the actual image data.
-            int sz = qMax(36, qgetenv("QT_ANDROID_APP_ICON_SIZE").toInt());
+            int sz = qMax(36, qEnvironmentVariableIntValue("QT_ANDROID_APP_ICON_SIZE"));
             QImage img = icon.pixmap(QSize(sz,sz),
                                      enabled
                                         ? QIcon::Normal

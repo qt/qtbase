@@ -180,7 +180,7 @@ QVariant QAndroidPlatformTheme::themeHint(ThemeHint hint) const
 {
     switch (hint) {
     case StyleNames:
-        if (qgetenv("QT_USE_ANDROID_NATIVE_STYLE").toInt()
+        if (qEnvironmentVariableIntValue("QT_USE_ANDROID_NATIVE_STYLE")
                 && (!qgetenv("MINISTRO_ANDROID_STYLE_PATH").isEmpty()
                     || QFileInfo(STYLES_PATH
                                  + QLatin1String(qgetenv("QT_ANDROID_THEME_DISPLAY_DPI"))
@@ -191,7 +191,7 @@ QVariant QAndroidPlatformTheme::themeHint(ThemeHint hint) const
 
     case MouseDoubleClickDistance:
     {
-            int minimumDistance = qgetenv("QT_ANDROID_MINIMUM_MOUSE_DOUBLE_CLICK_DISTANCE").toInt();
+            int minimumDistance = qEnvironmentVariableIntValue("QT_ANDROID_MINIMUM_MOUSE_DOUBLE_CLICK_DISTANCE");
             int ret = minimumDistance;
 
             QAndroidPlatformIntegration *platformIntegration
@@ -235,7 +235,7 @@ QString QAndroidPlatformTheme::standardButtonText(int button) const
 bool QAndroidPlatformTheme::usePlatformNativeDialog(QPlatformTheme::DialogType type) const
 {
     if (type == MessageDialog)
-        return qgetenv("QT_USE_ANDROID_NATIVE_DIALOGS").toInt() == 1;
+        return qEnvironmentVariableIntValue("QT_USE_ANDROID_NATIVE_DIALOGS") == 1;
     return false;
 }
 

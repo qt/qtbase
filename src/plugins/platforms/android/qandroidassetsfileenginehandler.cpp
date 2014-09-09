@@ -262,7 +262,7 @@ private:
 
 
 AndroidAssetsFileEngineHandler::AndroidAssetsFileEngineHandler()
-    : m_assetsCache(std::max(5, qgetenv("QT_ANDROID_MAX_ASSETS_CACHE_SIZE").toInt()))
+    : m_assetsCache(std::max(5, qEnvironmentVariableIntValue("QT_ANDROID_MAX_ASSETS_CACHE_SIZE")))
     , m_hasPrepopulatedCache(false)
     , m_hasTriedPrepopulatingCache(false)
 {

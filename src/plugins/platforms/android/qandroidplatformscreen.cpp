@@ -92,7 +92,7 @@ QAndroidPlatformScreen::QAndroidPlatformScreen():QObject(),QPlatformScreen()
     m_size = QSize(QAndroidPlatformIntegration::m_defaultScreenWidth, QAndroidPlatformIntegration::m_defaultScreenHeight);
     // Raster only apps should set QT_ANDROID_RASTER_IMAGE_DEPTH to 16
     // is way much faster than 32
-    if (qgetenv("QT_ANDROID_RASTER_IMAGE_DEPTH").toInt() == 16) {
+    if (qEnvironmentVariableIntValue("QT_ANDROID_RASTER_IMAGE_DEPTH") == 16) {
         m_format = QImage::Format_RGB16;
         m_depth = 16;
     } else {

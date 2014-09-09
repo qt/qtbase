@@ -423,7 +423,7 @@ namespace QtAndroid
 
     bool blockEventLoopsWhenSuspended()
     {
-        static bool block = qgetenv("QT_BLOCK_EVENT_LOOPS_WHEN_SUSPENDED").toInt();
+        static bool block = qEnvironmentVariableIntValue("QT_BLOCK_EVENT_LOOPS_WHEN_SUSPENDED");
         return block;
     }
 
