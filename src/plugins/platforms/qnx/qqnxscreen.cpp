@@ -313,7 +313,7 @@ static int defaultDepth()
     if (defaultDepth == 0) {
         // check if display depth was specified in environment variable;
         // use default value if no valid value found
-        defaultDepth = qgetenv("QQNX_DISPLAY_DEPTH").toInt();
+        defaultDepth = qEnvironmentVariableIntValue("QQNX_DISPLAY_DEPTH");
         if (defaultDepth != 16 && defaultDepth != 32)
             defaultDepth = 32;
     }
@@ -687,7 +687,7 @@ void QQnxScreen::adjustOrientation()
         return;
 
     bool ok = false;
-    const int rotation = qgetenv("ORIENTATION").toInt(&ok);
+    const int rotation = qEnvironmentVariableIntValue("ORIENTATION", &ok);
 
     if (ok)
         setRotation(rotation);
@@ -866,7 +866,7 @@ void QQnxScreen::setRootWindow(QQnxWindow *window)
 {
     // Optionally disable the screen power save
     bool ok = false;
-    const int disablePowerSave = qgetenv("QQNX_DISABLE_POWER_SAVE").toInt(&ok);
+    const int disablePowerSave = qEnvironmentVariableIntValue("QQNX_DISABLE_POWER_SAVE", &ok);
     if (ok && disablePowerSave) {
         const int mode = SCREEN_IDLE_MODE_KEEP_AWAKE;
         int result = screen_set_window_property_iv(window->nativeHandle(), SCREEN_PROPERTY_IDLE_MODE, &mode);
