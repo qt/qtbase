@@ -7035,7 +7035,7 @@ void QPainter::setRenderHint(RenderHint hint, bool on)
 #endif
 
 #ifndef QT_NO_DEBUG
-    static const bool antialiasingDisabled = qgetenv("QT_NO_ANTIALIASING").toInt();
+    static const bool antialiasingDisabled = qEnvironmentVariableIntValue("QT_NO_ANTIALIASING");
     if (hint == QPainter::Antialiasing && antialiasingDisabled)
         return;
 #endif
