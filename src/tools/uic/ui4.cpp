@@ -3471,7 +3471,7 @@ void DomWidget::read(QXmlStreamReader &reader)
             continue;
         }
         if (name == QStringLiteral("native")) {
-            setAttributeNative((attribute.value().toString() == QStringLiteral("true") ? true : false));
+            setAttributeNative(attribute.value().toString() == QStringLiteral("true"));
             continue;
         }
         reader.raiseError(QStringLiteral("Unexpected attribute ") + name.toString());
@@ -4845,23 +4845,23 @@ void DomFont::read(QXmlStreamReader &reader)
                 continue;
             }
             if (tag == QStringLiteral("italic")) {
-                setElementItalic((reader.readElementText() == QStringLiteral("true") ? true : false));
+                setElementItalic(reader.readElementText() == QStringLiteral("true"));
                 continue;
             }
             if (tag == QStringLiteral("bold")) {
-                setElementBold((reader.readElementText() == QStringLiteral("true") ? true : false));
+                setElementBold(reader.readElementText() == QStringLiteral("true"));
                 continue;
             }
             if (tag == QStringLiteral("underline")) {
-                setElementUnderline((reader.readElementText() == QStringLiteral("true") ? true : false));
+                setElementUnderline(reader.readElementText() == QStringLiteral("true"));
                 continue;
             }
             if (tag == QStringLiteral("strikeout")) {
-                setElementStrikeOut((reader.readElementText() == QStringLiteral("true") ? true : false));
+                setElementStrikeOut(reader.readElementText() == QStringLiteral("true"));
                 continue;
             }
             if (tag == QStringLiteral("antialiasing")) {
-                setElementAntialiasing((reader.readElementText() == QStringLiteral("true") ? true : false));
+                setElementAntialiasing(reader.readElementText() == QStringLiteral("true"));
                 continue;
             }
             if (tag == QStringLiteral("stylestrategy")) {
@@ -4869,7 +4869,7 @@ void DomFont::read(QXmlStreamReader &reader)
                 continue;
             }
             if (tag == QStringLiteral("kerning")) {
-                setElementKerning((reader.readElementText() == QStringLiteral("true") ? true : false));
+                setElementKerning(reader.readElementText() == QStringLiteral("true"));
                 continue;
             }
             reader.raiseError(QStringLiteral("Unexpected element ") + tag);

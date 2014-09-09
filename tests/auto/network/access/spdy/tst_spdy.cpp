@@ -166,8 +166,7 @@ void tst_Spdy::settingsAndNegotiation()
     QFETCH(QByteArray, expectedProtocol);
 
 #ifndef QT_NO_OPENSSL
-    bool expectedSpdyUsed = (expectedProtocol == QSslConfiguration::NextProtocolSpdy3_0)
-            ? true : false;
+    bool expectedSpdyUsed = (expectedProtocol == QSslConfiguration::NextProtocolSpdy3_0);
     QCOMPARE(reply->attribute(QNetworkRequest::SpdyWasUsedAttribute).toBool(), expectedSpdyUsed);
 #endif // QT_NO_OPENSSL
 

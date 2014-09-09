@@ -1163,7 +1163,7 @@ bool QNativeSocketEnginePrivate::nativeHasPendingDatagrams() const
     timeout.tv_sec = 0;
     timeout.tv_usec = 5000;
     int available = ::select(1, &readS, 0, 0, &timeout);
-    result = available > 0 ? true : false;
+    result = available > 0;
 #endif
 
 #if defined (QNATIVESOCKETENGINE_DEBUG)

@@ -1101,7 +1101,7 @@ void Config::load(Location location, const QString& fileName)
 
                     ConfigVarMultimap::Iterator i;
                     i = configVars_.insert(*key, ConfigVar(*key, rhsValues, QDir::currentPath(), keyLoc));
-                    i.value().plus_ = (plus ? true : false);
+                    i.value().plus_ = plus;
                     ++key;
                 }
             }

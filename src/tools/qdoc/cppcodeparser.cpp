@@ -1076,7 +1076,7 @@ bool CppCodeParser::skipTo(int target)
 {
     while ((tok != Tok_Eoi) && (tok != target))
         readToken();
-    return (tok == target ? true : false);
+    return tok == target;
 }
 
 /*!

@@ -984,7 +984,7 @@ void tst_QGraphicsProxyWidget::hoverEnterLeaveEvent()
     // in
     QTest::mouseMove(&view, QPoint(50, 50));
     QSKIP("QTBUG-25294");
-    QTRY_COMPARE(widget->testAttribute(Qt::WA_UnderMouse), hasWidget ? true : false);
+    QTRY_COMPARE(widget->testAttribute(Qt::WA_UnderMouse), hasWidget);
     // ### this attribute isn't supported
     QCOMPARE(widget->enterCount, hasWidget ? 1 : 0);
     QCOMPARE(widget->hoverEnter, (hasWidget && hoverEnabled) ? 1 : 0);
@@ -1366,7 +1366,7 @@ void tst_QGraphicsProxyWidget::sizeHint()
 void tst_QGraphicsProxyWidget::sizePolicy()
 {
     for (int p = 0; p < 2; ++p) {
-        bool hasWidget = (p == 0 ? true : false);
+        bool hasWidget = (p == 0);
         SubQGraphicsProxyWidget proxy;
         QWidget *widget = new QWidget;
         QSizePolicy proxyPol(QSizePolicy::Maximum, QSizePolicy::Expanding);

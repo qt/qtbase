@@ -162,7 +162,7 @@ bool QTestElementAttribute::setPair(QTest::AttributeIndex index, const char *val
     attributeIndex = index;
     attributeValue = qstrdup(value);
 
-    return (attributeValue!=0) ? true:false;
+    return attributeValue != 0;
 }
 
 QT_END_NAMESPACE
