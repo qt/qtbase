@@ -558,6 +558,7 @@ void QOpenGLWidgetPrivate::recreateFbo()
     fbo->bind();
 
     paintDevice->setSize(deviceSize);
+    paintDevice->setDevicePixelRatio(q->devicePixelRatio());
 
     emit q->resized();
 }
