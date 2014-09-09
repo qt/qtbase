@@ -76,7 +76,7 @@ QFbVtHandler::QFbVtHandler(QObject *parent)
 
     m_tty = 0;
     ::ioctl(m_tty, KDGKBMODE, &m_oldKbdMode);
-    if (!qgetenv("QT_QPA_ENABLE_TERMINAL_KEYBOARD").toInt()) {
+    if (!qEnvironmentVariableIntValue("QT_QPA_ENABLE_TERMINAL_KEYBOARD")) {
         ::ioctl(m_tty, KDSKBMODE, KBD_OFF_MODE);
         QGuiApplicationPrivate *appd = QGuiApplicationPrivate::instance();
         Q_ASSERT(appd);
