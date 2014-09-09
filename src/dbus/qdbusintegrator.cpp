@@ -1022,7 +1022,7 @@ QDBusConnectionPrivate::QDBusConnectionPrivate(QObject *p)
 {
     static const bool threads = q_dbus_threads_init_default();
     if (::isDebugging == -1)
-       ::isDebugging = qgetenv("QDBUS_DEBUG").toInt();
+       ::isDebugging = qEnvironmentVariableIntValue("QDBUS_DEBUG");
     Q_UNUSED(threads)
 
 #ifdef QDBUS_THREAD_DEBUG
