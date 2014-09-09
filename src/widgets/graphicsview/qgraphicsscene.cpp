@@ -4918,7 +4918,7 @@ void QGraphicsScenePrivate::draw(QGraphicsItem *item, QPainter *painter, const Q
         if (painterStateProtection || restorePainterClip)
             painter->restore();
 
-        static int drawRect = qgetenv("QT_DRAW_SCENE_ITEM_RECTS").toInt();
+        static int drawRect = qEnvironmentVariableIntValue("QT_DRAW_SCENE_ITEM_RECTS");
         if (drawRect) {
             QPen oldPen = painter->pen();
             QBrush oldBrush = painter->brush();
