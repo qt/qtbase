@@ -188,6 +188,11 @@
            instance \l{Qt for Windows}, for more information.  This value has
            been added in Qt 5.4.
 
+    \value AA_ShareOpenGLContexts Enables resource sharing between the OpenGL
+           contexts used by classes like QOpenGLWidget and QQuickWidget. This
+           allows sharing OpenGL resources, like textures, between QOpenGLWidget
+           instances that belong to different top-level windows.
+
     The following values are obsolete:
 
     \value AA_ImmediateWidgetCreation This attribute is no longer fully

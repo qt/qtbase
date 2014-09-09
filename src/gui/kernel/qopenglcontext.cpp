@@ -245,8 +245,9 @@ QMutex QOpenGLContextPrivate::makeCurrentTrackerMutex;
 /*!
     \internal
 
-    This function is used by the Qt WebEngine to set up context sharing
-    across multiple windows. Do not use it for any other purpose.
+    This function is used by Qt::AA_ShareOpenGLContexts and the Qt
+    WebEngine to set up context sharing across multiple windows. Do
+    not use it for any other purpose.
 
     Please maintain the binary compatibility of these functions.
 */

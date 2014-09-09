@@ -527,6 +527,7 @@ public:
         AA_UseDesktopOpenGL = 15,
         AA_UseOpenGLES = 16,
         AA_UseSoftwareOpenGL = 17,
+        AA_ShareOpenGLContexts = 18,
 
         // Add new attributes before this line
         AA_AttributeCount

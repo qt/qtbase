@@ -53,6 +53,8 @@
 #include <QOpenGLContext>
 #endif
 
+#include <QtGui/private/qopenglcontext_p.h>
+
 #include <QDebug>
 
 #include "tst_qcoreapplication.h"
@@ -79,6 +81,7 @@ private slots:
     void quitOnLastWindowClosed();
     void genericPluginsAndWindowSystemEvents();
     void layoutDirection();
+    void globalShareContext();
 };
 
 void tst_QGuiApplication::cleanup()
@@ -913,6 +916,30 @@ void tst_QGuiApplication::layoutDirection()
     QGuiApplication::setLayoutDirection(oldDirection);
     QCOMPARE(QGuiApplication::layoutDirection(), oldDirection);
     QCOMPARE(signalSpy.count(), 1);
+}
+
+void tst_QGuiApplication::globalShareContext()
+{
+#ifndef QT_NO_OPENGL
+    // Test that there is a global share context when requested.
+    QCoreApplication::setAttribute(Qt::AA_ShareOpenGLContexts);
+    int argc = 1;
+    char *argv[] = { const_cast<char*>("tst_qguiapplication") };
+    QScopedPointer<QGuiApplication> app(new QGuiApplication(argc, argv));
+    QOpenGLContext *ctx = qt_gl_global_share_context();
+    QVERIFY(ctx);
+    app.reset();
+    ctx = qt_gl_global_share_context();
+    QVERIFY(!ctx);
+
+    // Test that there is no global share context by default.
+    QCoreApplication::setAttribute(Qt::AA_ShareOpenGLContexts, false);
+    app.reset(new QGuiApplication(argc, argv));
+    ctx = qt_gl_global_share_context();
+    QVERIFY(!ctx);
+#else
+    QSKIP("No OpenGL support");
+#endif
 }
 
 QTEST_APPLESS_MAIN(tst_QGuiApplication)

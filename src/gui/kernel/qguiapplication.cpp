@@ -82,6 +82,7 @@
 #include <qpa/qwindowsysteminterface_p.h>
 #include "private/qwindow_p.h"
 #include "private/qcursor_p.h"
+#include "private/qopenglcontext_p.h"
 
 #include "private/qdnd_p.h"
 #include <qpa/qplatformthemefactory_p.h>
@@ -604,7 +605,8 @@ QGuiApplicationPrivate::QGuiApplicationPrivate(int &argc, char **argv, int flags
     : QCoreApplicationPrivate(argc, argv, flags),
       styleHints(0),
       inputMethod(0),
-      lastTouchType(QEvent::TouchEnd)
+      lastTouchType(QEvent::TouchEnd),
+      ownGlobalShareContext(false)
 {
     self = this;
     application_type = QCoreApplicationPrivate::Gui;
@@ -1313,6 +1315,17 @@ void QGuiApplicationPrivate::init()
     // trigger registering of animation interpolators
     qRegisterGuiGetInterpolator();
 
+    // set a global share context when enabled unless there is already one
+#ifndef QT_NO_OPENGL
+    if (qApp->testAttribute(Qt::AA_ShareOpenGLContexts) && !qt_gl_global_share_context()) {
+        QOpenGLContext *ctx = new QOpenGLContext;
+        ctx->setFormat(QSurfaceFormat::defaultFormat());
+        ctx->create();
+        qt_gl_set_global_share_context(ctx);
+        ownGlobalShareContext = true;
+    }
+#endif
+
     QWindowSystemInterfacePrivate::eventTime.start();
 
     is_app_running = true;
@@ -1373,6 +1386,13 @@ QGuiApplicationPrivate::~QGuiApplicationPrivate()
     qt_cleanupFontDatabase();
 
     QPixmapCache::clear();
+
+#ifndef QT_NO_OPENGL
+    if (ownGlobalShareContext) {
+        delete qt_gl_global_share_context();
+        qt_gl_set_global_share_context(0);
+    }
+#endif
 
     delete platform_theme;
     platform_theme = 0;

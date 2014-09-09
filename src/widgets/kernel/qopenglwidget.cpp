@@ -297,6 +297,18 @@ QT_BEGIN_NAMESPACE
   sharable resources, like textures, and there is no need for an extra "global
   share" context, as was the case with QGLWidget.
 
+  To set up sharing between QOpenGLWidget instances belonging to different
+  windows, set the Qt::AA_ShareOpenGLContexts application attribute before
+  instantiating QApplication. This will trigger sharing between all
+  QOpenGLWidget instances without any further steps.
+
+  Creating extra QOpenGLContext instances that share resources like textures
+  with the QOpenGLWidget's context is also possible. Simply pass the pointer
+  returned from context() to QOpenGLContext::setShareContext() before calling
+  QOpenGLContext::create(). The resulting context can also be used on a
+  different thread, allowing threaded generation of textures and asynchronous
+  texture uploads.
+
   Note that QOpenGLWidget expects a standard conformant implementation of
   resource sharing when it comes to the underlying graphics drivers. For
   example, some drivers, in particular for mobile and embedded hardware, have
@@ -359,11 +371,12 @@ QT_BEGIN_NAMESPACE
   each QOpenGLWidget's associated context is destroyed together with the
   QOpenGLWidget, the sharable resources in that context, like textures, will
   stay valid until the top-level window, in which the QOpenGLWidget lived, is
-  destroyed. Additionally, some Qt modules may trigger an even wider scope for
-  sharing contexts, potentially leading to keeping the resources in question
-  alive for the entire lifetime of the application. Therefore the safest and
-  most robust is always to perform explicit cleanup for all resources and
-  resource wrappers used in the QOpenGLWidget.
+  destroyed. Additionally, settings like Qt::AA_ShareOpenGLContexts and some Qt
+  modules may trigger an even wider scope for sharing contexts, potentially
+  leading to keeping the resources in question alive for the entire lifetime of
+  the application. Therefore the safest and most robust is always to perform
+  explicit cleanup for all resources and resource wrappers used in the
+  QOpenGLWidget.
 
   \section1 Limitations
 
@@ -388,7 +401,7 @@ QT_BEGIN_NAMESPACE
   \e{OpenGL is a trademark of Silicon Graphics, Inc. in the United States and other
   countries.}
 
-  \sa QOpenGLFunctions, QOpenGLWindow
+  \sa QOpenGLFunctions, QOpenGLWindow, Qt::AA_ShareOpenGLContexts
 */
 
 /*!

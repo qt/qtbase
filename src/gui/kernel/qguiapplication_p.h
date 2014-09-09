@@ -307,6 +307,8 @@ private:
     static QTouchDevice *m_fakeTouchDevice;
     static int m_fakeMouseSourcePointId;
     QAtomicPointer<QDrawHelperGammaTables> m_gammaTables;
+
+    bool ownGlobalShareContext;
 };
 
 Q_GUI_EXPORT uint qHash(const QGuiApplicationPrivate::ActiveTouchPointsKey &k);
