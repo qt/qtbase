@@ -70,7 +70,7 @@ QT_BEGIN_NAMESPACE
 
 QEglFSIntegration::QEglFSIntegration()
 {
-    mDisableInputHandlers = qgetenv("QT_QPA_EGLFS_DISABLE_INPUT").toInt();
+    mDisableInputHandlers = qEnvironmentVariableIntValue("QT_QPA_EGLFS_DISABLE_INPUT");
 
     initResources();
 }

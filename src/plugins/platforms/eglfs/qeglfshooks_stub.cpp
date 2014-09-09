@@ -145,7 +145,7 @@ QSurfaceFormat QEglFSHooks::surfaceFormatFor(const QSurfaceFormat &inputFormat) 
 {
     QSurfaceFormat format = inputFormat;
 
-    static const bool force888 = qgetenv("QT_QPA_EGLFS_FORCE888").toInt();
+    static const bool force888 = qEnvironmentVariableIntValue("QT_QPA_EGLFS_FORCE888");
     if (force888) {
         format.setRedBufferSize(8);
         format.setGreenBufferSize(8);
@@ -189,7 +189,7 @@ QEGLPlatformCursor *QEglFSHooks::createCursor(QPlatformScreen *screen) const
 void QEglFSHooks::waitForVSync() const
 {
 #if defined(FBIO_WAITFORVSYNC)
-    static const bool forceSync = qgetenv("QT_QPA_EGLFS_FORCEVSYNC").toInt();
+    static const bool forceSync = qEnvironmentVariableIntValue("QT_QPA_EGLFS_FORCEVSYNC");
     if (forceSync && framebuffer != -1) {
         int arg = 0;
         if (ioctl(framebuffer, FBIO_WAITFORVSYNC, &arg) == -1)

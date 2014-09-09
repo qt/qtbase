@@ -321,7 +321,7 @@ EGLNativeWindowType QEglFSX11Hooks::createNativeWindow(QPlatformWindow *platform
     xcb_change_property(m_connection, XCB_PROP_MODE_REPLACE, m_window,
                         m_atoms[Atoms::WM_PROTOCOLS], XCB_ATOM_ATOM, 32, 1, &m_atoms[Atoms::WM_DELETE_WINDOW]);
 
-    if (qgetenv("EGLFS_X11_FULLSCREEN").toInt()) {
+    if (qEnvironmentVariableIntValue("EGLFS_X11_FULLSCREEN")) {
         // Go fullscreen. The QScreen and QWindow size is controlled by EGLFS_X11_SIZE regardless,
         // this is just the native window.
         xcb_change_property(m_connection, XCB_PROP_MODE_REPLACE, m_window,
