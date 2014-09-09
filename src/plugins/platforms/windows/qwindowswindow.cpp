@@ -185,6 +185,7 @@ static inline QRect frameGeometry(HWND hwnd, bool topLevel)
 #ifndef Q_OS_WINCE
     if (topLevel) {
         WINDOWPLACEMENT windowPlacement;
+        windowPlacement.length = sizeof(WINDOWPLACEMENT);
         GetWindowPlacement(hwnd, &windowPlacement);
         if (windowPlacement.showCmd == SW_SHOWMINIMIZED)
             return qrectFromRECT(windowPlacement.rcNormalPosition);
@@ -1418,6 +1419,7 @@ void QWindowsWindow::setGeometry_sys(const QRect &rect) const
     bool result = false;
 #ifndef Q_OS_WINCE
     WINDOWPLACEMENT windowPlacement;
+    windowPlacement.length = sizeof(WINDOWPLACEMENT);
     GetWindowPlacement(m_data.hwnd, &windowPlacement);
     // If the window is hidden and in maximized state or minimized, instead of moving the
     // window, set the normal position of the window.
