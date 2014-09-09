@@ -172,7 +172,7 @@ QEvdevTouchScreenHandler::QEvdevTouchScreenHandler(const QString &specification,
 {
     setObjectName(QLatin1String("Evdev Touch Handler"));
 
-    bool printDeviceInfo = qgetenv("QT_QPA_EVDEV_DEBUG").toInt();
+    bool printDeviceInfo = qEnvironmentVariableIntValue("QT_QPA_EVDEV_DEBUG");
 
     // only the first device argument is used for now
     QString spec = QString::fromLocal8Bit(qgetenv("QT_QPA_EVDEV_TOUCHSCREEN_PARAMETERS"));
