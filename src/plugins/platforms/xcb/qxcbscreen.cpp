@@ -328,7 +328,7 @@ QDpi QXcbScreen::logicalDpi() const
 
 qreal QXcbScreen::devicePixelRatio() const
 {
-    static int override_dpr = qgetenv("QT_DEVICE_PIXEL_RATIO").toInt();
+    static int override_dpr = qEnvironmentVariableIntValue("QT_DEVICE_PIXEL_RATIO");
     static bool auto_dpr = qgetenv("QT_DEVICE_PIXEL_RATIO").toLower() == "auto";
     if (override_dpr > 0)
         return override_dpr;
