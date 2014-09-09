@@ -502,7 +502,7 @@ QVariant QPlatformTheme::defaultThemeHint(ThemeHint hint)
     case MouseDoubleClickDistance:
         {
             bool ok = false;
-            int dist = qgetenv("QT_DBL_CLICK_DIST").toInt(&ok);
+            const int dist = qEnvironmentVariableIntValue("QT_DBL_CLICK_DIST", &ok);
             return QVariant(ok ? dist : 5);
         }
     case WheelScrollLines:
