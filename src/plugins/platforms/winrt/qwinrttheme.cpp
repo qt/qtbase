@@ -178,7 +178,7 @@ QWinRTTheme::QWinRTTheme()
 bool QWinRTTheme::usePlatformNativeDialog(DialogType type) const
 {
     static bool useNativeDialogs = qEnvironmentVariableIsSet("QT_USE_WINRT_NATIVE_DIALOGS")
-            ? qgetenv("QT_USE_WINRT_NATIVE_DIALOGS").toInt() : true;
+            ? qEnvironmentVariableIntValue("QT_USE_WINRT_NATIVE_DIALOGS") : true;
 
     if (type == FileDialog || type == MessageDialog)
         return useNativeDialogs;
