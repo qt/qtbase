@@ -464,7 +464,7 @@ void QAndroidInputContext::commit()
 
 void QAndroidInputContext::updateCursorPosition()
 {
-    QSharedPointer<QInputMethodQueryEvent> query = focusObjectInputMethodQuery();
+    QSharedPointer<QInputMethodQueryEvent> query = focusObjectInputMethodQueryThreadSafe();
     if (!query.isNull() && !m_blockUpdateSelection && !m_batchEditNestingLevel) {
         const int cursorPos = getAbsoluteCursorPosition(query);
         const int composeLength = m_composingText.length();
@@ -497,7 +497,7 @@ void QAndroidInputContext::updateCursorPosition()
 
 void QAndroidInputContext::update(Qt::InputMethodQueries queries)
 {
-    QSharedPointer<QInputMethodQueryEvent> query = focusObjectInputMethodQuery(queries);
+    QSharedPointer<QInputMethodQueryEvent> query = focusObjectInputMethodQueryThreadSafe(queries);
     if (query.isNull())
         return;
 #warning TODO extract the needed data from query
@@ -525,7 +525,7 @@ bool QAndroidInputContext::isAnimating() const
 
 void QAndroidInputContext::showInputPanel()
 {
-    QSharedPointer<QInputMethodQueryEvent> query = focusObjectInputMethodQuery();
+    QSharedPointer<QInputMethodQueryEvent> query = focusObjectInputMethodQueryThreadSafe();
     if (query.isNull())
         return;
 
@@ -581,16 +581,6 @@ void QAndroidInputContext::setFocusObject(QObject *object)
     QPlatformInputContext::setFocusObject(object);
 }
 
-void QAndroidInputContext::sendEvent(QObject *receiver, QInputMethodEvent *event)
-{
-    QCoreApplication::sendEvent(receiver, event);
-}
-
-void QAndroidInputContext::sendEvent(QObject *receiver, QInputMethodQueryEvent *event)
-{
-    QCoreApplication::sendEvent(receiver, event);
-}
-
 jboolean QAndroidInputContext::beginBatchEdit()
 {
     ++m_batchEditNestingLevel;
@@ -616,12 +606,12 @@ jboolean QAndroidInputContext::commitText(const QString &text, jint newCursorPos
 {
     QInputMethodEvent event;
     event.setCommitString(text);
-    sendInputMethodEvent(&event);
+    sendInputMethodEventThreadSafe(&event);
     clear();
 
     // Qt has now put the cursor at the end of the text, corresponding to newCursorPosition == 1
     if (newCursorPosition != 1) {
-        QSharedPointer<QInputMethodQueryEvent> query = focusObjectInputMethodQuery();
+        QSharedPointer<QInputMethodQueryEvent> query = focusObjectInputMethodQueryThreadSafe();
         if (!query.isNull()) {
             QList<QInputMethodEvent::Attribute> attributes;
             const int localPos = query->value(Qt::ImCursorPosition).toInt();
@@ -640,7 +630,7 @@ jboolean QAndroidInputContext::commitText(const QString &text, jint newCursorPos
 
 jboolean QAndroidInputContext::deleteSurroundingText(jint leftLength, jint rightLength)
 {
-    QSharedPointer<QInputMethodQueryEvent> query = focusObjectInputMethodQuery();
+    QSharedPointer<QInputMethodQueryEvent> query = focusObjectInputMethodQueryThreadSafe();
     if (query.isNull())
         return JNI_TRUE;
 
@@ -649,7 +639,7 @@ jboolean QAndroidInputContext::deleteSurroundingText(jint leftLength, jint right
 
     QInputMethodEvent event;
     event.setCommitString(QString(), -leftLength, leftLength+rightLength);
-    sendInputMethodEvent(&event);
+    sendInputMethodEventThreadSafe(&event);
     clear();
 
     return JNI_TRUE;
@@ -658,7 +648,7 @@ jboolean QAndroidInputContext::deleteSurroundingText(jint leftLength, jint right
 // Android docs say the cursor must not move
 jboolean QAndroidInputContext::finishComposingText()
 {
-    QSharedPointer<QInputMethodQueryEvent> query = focusObjectInputMethodQuery();
+    QSharedPointer<QInputMethodQueryEvent> query = focusObjectInputMethodQueryThreadSafe();
     if (query.isNull())
         return JNI_FALSE;
 
@@ -674,7 +664,7 @@ jboolean QAndroidInputContext::finishComposingText()
 
     QInputMethodEvent event(QString(), attributes);
     event.setCommitString(m_composingText);
-    sendInputMethodEvent(&event);
+    sendInputMethodEventThreadSafe(&event);
     clear();
 
     return JNI_TRUE;
@@ -683,7 +673,7 @@ jboolean QAndroidInputContext::finishComposingText()
 jint QAndroidInputContext::getCursorCapsMode(jint /*reqModes*/)
 {
     jint res = 0;
-    QSharedPointer<QInputMethodQueryEvent> query = focusObjectInputMethodQuery();
+    QSharedPointer<QInputMethodQueryEvent> query = focusObjectInputMethodQueryThreadSafe();
     if (query.isNull())
         return res;
 
@@ -706,7 +696,7 @@ const QAndroidInputContext::ExtractedText &QAndroidInputContext::getExtractedTex
     // updateExtractedText(View, int, ExtractedText) whenever you call
     // updateSelection(View, int, int, int, int)."  QTBUG-37980
 
-    QSharedPointer<QInputMethodQueryEvent> query = focusObjectInputMethodQuery();
+    QSharedPointer<QInputMethodQueryEvent> query = focusObjectInputMethodQueryThreadSafe();
     if (query.isNull())
         return m_extractedText;
 
@@ -751,7 +741,7 @@ const QAndroidInputContext::ExtractedText &QAndroidInputContext::getExtractedTex
 
 QString QAndroidInputContext::getSelectedText(jint /*flags*/)
 {
-    QSharedPointer<QInputMethodQueryEvent> query = focusObjectInputMethodQuery();
+    QSharedPointer<QInputMethodQueryEvent> query = focusObjectInputMethodQueryThreadSafe();
     if (query.isNull())
         return QString();
 
@@ -767,7 +757,7 @@ QString QAndroidInputContext::getTextAfterCursor(jint length, jint /*flags*/)
     }
 
     //compatibility code for old controls that do not implement the new API
-    QSharedPointer<QInputMethodQueryEvent> query = focusObjectInputMethodQuery();
+    QSharedPointer<QInputMethodQueryEvent> query = focusObjectInputMethodQueryThreadSafe();
     if (query.isNull())
         return QString();
 
@@ -787,7 +777,7 @@ QString QAndroidInputContext::getTextBeforeCursor(jint length, jint /*flags*/)
     }
 
     //compatibility code for old controls that do not implement the new API
-    QSharedPointer<QInputMethodQueryEvent> query = focusObjectInputMethodQuery();
+    QSharedPointer<QInputMethodQueryEvent> query = focusObjectInputMethodQueryThreadSafe();
     if (query.isNull())
         return QString();
 
@@ -813,7 +803,7 @@ QString QAndroidInputContext::getTextBeforeCursor(jint length, jint /*flags*/)
 
 jboolean QAndroidInputContext::setComposingText(const QString &text, jint newCursorPosition)
 {
-    QSharedPointer<QInputMethodQueryEvent> query = focusObjectInputMethodQuery();
+    QSharedPointer<QInputMethodQueryEvent> query = focusObjectInputMethodQueryThreadSafe();
     if (query.isNull())
         return JNI_FALSE;
 
@@ -836,7 +826,7 @@ jboolean QAndroidInputContext::setComposingText(const QString &text, jint newCur
                                                    QVariant(underlined)));
 
     QInputMethodEvent event(m_composingText, attributes);
-    sendInputMethodEvent(&event);
+    sendInputMethodEventThreadSafe(&event);
 
     updateCursorPosition();
 
@@ -858,7 +848,7 @@ jboolean QAndroidInputContext::setComposingRegion(jint start, jint end)
     if (wasComposing)
         finishComposingText();
 
-    QSharedPointer<QInputMethodQueryEvent> query = focusObjectInputMethodQuery();
+    QSharedPointer<QInputMethodQueryEvent> query = focusObjectInputMethodQueryThreadSafe();
     if (query.isNull())
         return JNI_FALSE;
 
@@ -904,7 +894,7 @@ jboolean QAndroidInputContext::setComposingRegion(jint start, jint end)
 
     QInputMethodEvent event(m_composingText, attributes);
     event.setCommitString(QString(), relativeStart, length);
-    sendInputMethodEvent(&event);
+    sendInputMethodEventThreadSafe(&event);
 
     m_blockUpdateSelection = updateSelectionWasBlocked;
 
@@ -921,7 +911,7 @@ jboolean QAndroidInputContext::setComposingRegion(jint start, jint end)
 
 jboolean QAndroidInputContext::setSelection(jint start, jint end)
 {
-    QSharedPointer<QInputMethodQueryEvent> query = focusObjectInputMethodQuery();
+    QSharedPointer<QInputMethodQueryEvent> query = focusObjectInputMethodQueryThreadSafe();
     if (query.isNull())
         return JNI_FALSE;
 
@@ -953,7 +943,7 @@ jboolean QAndroidInputContext::setSelection(jint start, jint end)
                                                        QVariant()));
     }
     QInputMethodEvent event(m_composingText, attributes);
-    sendInputMethodEvent(&event);
+    sendInputMethodEventThreadSafe(&event);
     updateCursorPosition();
     return JNI_TRUE;
 }
@@ -996,8 +986,10 @@ Q_INVOKABLE QVariant QAndroidInputContext::queryFocusObjectUnsafe(Qt::InputMetho
 
 QVariant QAndroidInputContext::queryFocusObjectThreadSafe(Qt::InputMethodQuery query, QVariant argument)
 {
-    const bool inMainThread = qGuiApp->thread() == QThread::currentThread();
     QVariant retval;
+    if (!qGuiApp)
+        return retval;
+    const bool inMainThread = qGuiApp->thread() == QThread::currentThread();
     if (QAndroidEventDispatcherStopper::stopped() && !inMainThread)
         return retval;
 
@@ -1010,46 +1002,54 @@ QVariant QAndroidInputContext::queryFocusObjectThreadSafe(Qt::InputMethodQuery q
     return retval;
 }
 
-QSharedPointer<QInputMethodQueryEvent> QAndroidInputContext::focusObjectInputMethodQuery(Qt::InputMethodQueries queries)
-{
-#warning TODO make qGuiApp->focusObject() thread safe !!!
+QSharedPointer<QInputMethodQueryEvent> QAndroidInputContext::focusObjectInputMethodQueryThreadSafe(Qt::InputMethodQueries queries) {
+    QSharedPointer<QInputMethodQueryEvent> retval;
+    if (!qGuiApp)
+        return QSharedPointer<QInputMethodQueryEvent>();
     const bool inMainThread = qGuiApp->thread() == QThread::currentThread();
     if (QAndroidEventDispatcherStopper::stopped() && !inMainThread)
         return QSharedPointer<QInputMethodQueryEvent>();
+
+    QInputMethodQueryEvent *queryEvent = 0;
+    QMetaObject::invokeMethod(this, "focusObjectInputMethodQueryUnsafe",
+                              inMainThread ? Qt::DirectConnection : Qt::BlockingQueuedConnection,
+                              Q_RETURN_ARG(QInputMethodQueryEvent*, queryEvent),
+                              Q_ARG(Qt::InputMethodQueries, queries));
+
+    return QSharedPointer<QInputMethodQueryEvent>(queryEvent);
+}
+
+QInputMethodQueryEvent *QAndroidInputContext::focusObjectInputMethodQueryUnsafe(Qt::InputMethodQueries queries)
+{
     QObject *focusObject = qGuiApp->focusObject();
     if (!focusObject)
-        return QSharedPointer<QInputMethodQueryEvent>();
+        return 0;
 
-    QSharedPointer<QInputMethodQueryEvent> ret = QSharedPointer<QInputMethodQueryEvent>(new QInputMethodQueryEvent(queries));
-    if (inMainThread) {
-        QCoreApplication::sendEvent(focusObject, ret.data());
-    } else {
-        QMetaObject::invokeMethod(this,
-                                  "sendEvent",
-                                  Qt::BlockingQueuedConnection,
-                                  Q_ARG(QObject*, focusObject),
-                                  Q_ARG(QInputMethodQueryEvent*, ret.data()));
-    }
-
+    QInputMethodQueryEvent *ret = new QInputMethodQueryEvent(queries);
+    QCoreApplication::sendEvent(focusObject, ret);
     return ret;
 }
 
-void QAndroidInputContext::sendInputMethodEvent(QInputMethodEvent *event)
+void QAndroidInputContext::sendInputMethodEventUnsafe(QInputMethodEvent *event)
 {
-#warning TODO make qGuiApp->focusObject() thread safe !!!
     QObject *focusObject = qGuiApp->focusObject();
     if (!focusObject)
         return;
 
-    if (qGuiApp->thread() == QThread::currentThread()) {
-        QCoreApplication::sendEvent(focusObject, event);
-    } else {
-        QMetaObject::invokeMethod(this,
-                                  "sendEvent",
-                                  Qt::BlockingQueuedConnection,
-                                  Q_ARG(QObject*, focusObject),
-                                  Q_ARG(QInputMethodEvent*, event));
-    }
+    QCoreApplication::sendEvent(focusObject, event);
+}
+
+void QAndroidInputContext::sendInputMethodEventThreadSafe(QInputMethodEvent *event)
+{
+    if (!qGuiApp)
+        return;
+    const bool inMainThread = qGuiApp->thread() == QThread::currentThread();
+    if (QAndroidEventDispatcherStopper::stopped() && !inMainThread)
+        return;
+
+    QMetaObject::invokeMethod(this, "sendInputMethodEventUnsafe",
+                              inMainThread ? Qt::DirectConnection : Qt::BlockingQueuedConnection,
+                              Q_ARG(QInputMethodEvent*, event));
 }
 
 QT_END_NAMESPACE

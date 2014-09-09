@@ -121,15 +121,14 @@ public slots:
     void updateCursorPosition();
 
 private:
-    QSharedPointer<QInputMethodQueryEvent> focusObjectInputMethodQuery(Qt::InputMethodQueries queries = Qt::ImQueryAll);
-    void sendInputMethodEvent(QInputMethodEvent *event);
+    void sendInputMethodEventThreadSafe(QInputMethodEvent *event);
+    Q_INVOKABLE void sendInputMethodEventUnsafe(QInputMethodEvent *event);
+
+    QSharedPointer<QInputMethodQueryEvent> focusObjectInputMethodQueryThreadSafe(Qt::InputMethodQueries queries = Qt::ImQueryAll);
+    Q_INVOKABLE QInputMethodQueryEvent *focusObjectInputMethodQueryUnsafe(Qt::InputMethodQueries queries);
 
     Q_INVOKABLE QVariant queryFocusObjectUnsafe(Qt::InputMethodQuery query, QVariant argument);
     QVariant queryFocusObjectThreadSafe(Qt::InputMethodQuery query, QVariant argument);
-
-private slots:
-    virtual void sendEvent(QObject *receiver, QInputMethodEvent *event);
-    virtual void sendEvent(QObject *receiver, QInputMethodQueryEvent *event);
 
 private:
     ExtractedText m_extractedText;
