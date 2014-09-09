@@ -170,6 +170,8 @@ protected:
 class Q_GUI_EXPORT QWheelEvent : public QInputEvent
 {
 public:
+    enum { DefaultDeltasPerStep = 120 };
+
     QWheelEvent(const QPointF &pos, int delta,
                 Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers,
                 Qt::Orientation orient = Qt::Vertical);
