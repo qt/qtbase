@@ -2462,9 +2462,8 @@ inline T qNumVariantToHelper(const QVariant::Private &d,
 
     T ret = 0;
     if ((d.type >= QMetaType::User || t >= QMetaType::User)
-        && QMetaType::convert(&val, d.type, &ret, t)) {
+        && QMetaType::convert(constData(d), d.type, &ret, t))
         return ret;
-    }
 
     if (!handlerManager[d.type]->convert(&d, t, &ret, ok) && ok)
         *ok = false;

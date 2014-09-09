@@ -224,6 +224,7 @@ private slots:
     void moreCustomTypes();
     void movabilityTest();
     void variantInVariant();
+    void userConversion();
 
     void forwardDeclare();
     void debugStream_data();
@@ -3310,6 +3311,98 @@ void tst_QVariant::variantInVariant()
     QVariant var9(qMetaTypeId<QVariant>(), &var1);
     QCOMPARE(var9.userType(), qMetaTypeId<QVariant>());
     QCOMPARE(qvariant_cast<QVariant>(var9), var1);
+}
+
+struct Convertible {
+    double d;
+    operator int() const { return (int)d; }
+    operator double() const { return d; }
+    operator QString() const { return QString::number(d); }
+};
+
+Q_DECLARE_METATYPE(Convertible);
+
+struct BigConvertible {
+    double d;
+    double dummy;
+    double dummy2;
+    operator int() const { return (int)d; }
+    operator double() const { return d; }
+    operator QString() const { return QString::number(d); }
+};
+
+Q_DECLARE_METATYPE(BigConvertible);
+Q_STATIC_ASSERT(sizeof(BigConvertible) > sizeof(QVariant));
+
+void tst_QVariant::userConversion()
+{
+    {
+        QVERIFY(!(QMetaType::hasRegisteredConverterFunction<int, Convertible>()));
+        QVERIFY(!(QMetaType::hasRegisteredConverterFunction<double, Convertible>()));
+        QVERIFY(!(QMetaType::hasRegisteredConverterFunction<QString, Convertible>()));
+
+        Convertible c = { 123 };
+        QVariant v = qVariantFromValue(c);
+
+        bool ok;
+        v.toInt(&ok);
+        QVERIFY(!ok);
+
+        v.toDouble(&ok);
+        QVERIFY(!ok);
+
+        QString s = v.toString();
+        QVERIFY(s.isEmpty());
+
+        QMetaType::registerConverter<Convertible, int>();
+        QMetaType::registerConverter<Convertible, double>();
+        QMetaType::registerConverter<Convertible, QString>();
+
+        int i = v.toInt(&ok);
+        QVERIFY(ok);
+        QCOMPARE(i, 123);
+
+        double d = v.toDouble(&ok);
+        QVERIFY(ok);
+        QCOMPARE(d, 123.);
+
+        s = v.toString();
+        QCOMPARE(s, QString::fromLatin1("123"));
+    }
+
+    {
+        QVERIFY(!(QMetaType::hasRegisteredConverterFunction<int, BigConvertible>()));
+        QVERIFY(!(QMetaType::hasRegisteredConverterFunction<double, BigConvertible>()));
+        QVERIFY(!(QMetaType::hasRegisteredConverterFunction<QString, BigConvertible>()));
+
+        BigConvertible c = { 123, 0, 0 };
+        QVariant v = qVariantFromValue(c);
+
+        bool ok;
+        v.toInt(&ok);
+        QVERIFY(!ok);
+
+        v.toDouble(&ok);
+        QVERIFY(!ok);
+
+        QString s = v.toString();
+        QVERIFY(s.isEmpty());
+
+        QMetaType::registerConverter<BigConvertible, int>();
+        QMetaType::registerConverter<BigConvertible, double>();
+        QMetaType::registerConverter<BigConvertible, QString>();
+
+        int i = v.toInt(&ok);
+        QVERIFY(ok);
+        QCOMPARE(i, 123);
+
+        double d = v.toDouble(&ok);
+        QVERIFY(ok);
+        QCOMPARE(d, 123.);
+
+        s = v.toString();
+        QCOMPARE(s, QString::fromLatin1("123"));
+    }
 }
 
 class Forward;
