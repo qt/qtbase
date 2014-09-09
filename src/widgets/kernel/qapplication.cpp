@@ -636,7 +636,7 @@ void QApplicationPrivate::initialize()
     qRegisterGuiStateMachine();
 #endif
 
-    if (qgetenv("QT_USE_NATIVE_WINDOWS").toInt() > 0)
+    if (qEnvironmentVariableIntValue("QT_USE_NATIVE_WINDOWS") > 0)
         QCoreApplication::setAttribute(Qt::AA_NativeWindows);
 
 #ifdef Q_OS_WINCE
