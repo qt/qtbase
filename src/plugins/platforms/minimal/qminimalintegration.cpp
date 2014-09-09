@@ -74,7 +74,7 @@ QMinimalIntegration::QMinimalIntegration(const QStringList &parameters)
     , m_options(parseOptions(parameters))
 {
     if (qEnvironmentVariableIsSet(debugBackingStoreEnvironmentVariable)
-        && qgetenv(debugBackingStoreEnvironmentVariable).toInt() > 0) {
+        && qEnvironmentVariableIntValue(debugBackingStoreEnvironmentVariable) > 0) {
         m_options |= DebugBackingStore | EnableFonts;
     }
 
