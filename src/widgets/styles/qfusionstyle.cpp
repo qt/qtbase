@@ -959,7 +959,7 @@ void QFusionStyle::drawPrimitive(PrimitiveElement elem,
     {
         Q_D(const QFusionStyle);
         if (d->tabBarcloseButtonIcon.isNull())
-            d->tabBarcloseButtonIcon = standardIcon(SP_DialogCloseButton, option, widget);
+            d->tabBarcloseButtonIcon = proxy()->standardIcon(SP_DialogCloseButton, option, widget);
         if ((option->state & State_Enabled) && (option->state & State_MouseOver))
             proxy()->drawPrimitive(PE_PanelButtonCommand, option, painter, widget);
         QPixmap pixmap = d->tabBarcloseButtonIcon.pixmap(QSize(16, 16), QIcon::Normal, QIcon::On);
@@ -2383,7 +2383,7 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
                     } else {
                         QStyleOption tool(0);
                         tool.palette = titleBar->palette;
-                        QPixmap pm = standardIcon(SP_TitleBarMenuButton, &tool, widget).pixmap(16, 16);
+                        QPixmap pm = proxy()->standardIcon(SP_TitleBarMenuButton, &tool, widget).pixmap(16, 16);
                         tool.rect = iconRect;
                         painter->save();
                         proxy()->drawItemPixmap(painter, iconRect, Qt::AlignCenter, pm);

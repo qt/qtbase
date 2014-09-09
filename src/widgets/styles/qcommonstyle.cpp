@@ -2918,7 +2918,7 @@ QRect QCommonStyle::subElementRect(SubElement sr, const QStyleOption *opt,
 
             QRect closeRect;
             if (canClose) {
-                QSize sz = standardIcon(QStyle::SP_TitleBarCloseButton,
+                QSize sz = proxy()->standardIcon(QStyle::SP_TitleBarCloseButton,
                                         opt, widget).actualSize(QSize(iconSize, iconSize));
                 sz += QSize(buttonMargin, buttonMargin);
                 if (verticalTitleBar)
@@ -2935,7 +2935,7 @@ QRect QCommonStyle::subElementRect(SubElement sr, const QStyleOption *opt,
 
             QRect floatRect;
             if (canFloat) {
-                QSize sz = standardIcon(QStyle::SP_TitleBarNormalButton,
+                QSize sz = proxy()->standardIcon(QStyle::SP_TitleBarNormalButton,
                                         opt, widget).actualSize(QSize(iconSize, iconSize));
                 sz += QSize(buttonMargin, buttonMargin);
                 if (verticalTitleBar)
@@ -3410,9 +3410,9 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
                     || qobject_cast<const QDockWidget *>(widget)
 #endif
                     )
-                    pm = standardIcon(SP_DockWidgetCloseButton, &tool, widget).pixmap(10, 10);
+                    pm = proxy()->standardIcon(SP_DockWidgetCloseButton, &tool, widget).pixmap(10, 10);
                 else
-                    pm = standardIcon(SP_TitleBarCloseButton, &tool, widget).pixmap(10, 10);
+                    pm = proxy()->standardIcon(SP_TitleBarCloseButton, &tool, widget).pixmap(10, 10);
                 tool.rect = ir;
                 tool.state = down ? State_Sunken : State_Raised;
                 proxy()->drawPrimitive(PE_PanelButtonTool, &tool, p, widget);
@@ -3431,7 +3431,7 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
                 ir = proxy()->subControlRect(CC_TitleBar, tb, SC_TitleBarMaxButton, widget);
 
                 down = tb->activeSubControls & SC_TitleBarMaxButton && (opt->state & State_Sunken);
-                pm = standardIcon(SP_TitleBarMaxButton, &tool, widget).pixmap(10, 10);
+                pm = proxy()->standardIcon(SP_TitleBarMaxButton, &tool, widget).pixmap(10, 10);
                 tool.rect = ir;
                 tool.state = down ? State_Sunken : State_Raised;
                 proxy()->drawPrimitive(PE_PanelButtonTool, &tool, p, widget);
@@ -3449,7 +3449,7 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
                     && !(tb->titleBarState & Qt::WindowMinimized)) {
                 ir = proxy()->subControlRect(CC_TitleBar, tb, SC_TitleBarMinButton, widget);
                 down = tb->activeSubControls & SC_TitleBarMinButton && (opt->state & State_Sunken);
-                pm = standardIcon(SP_TitleBarMinButton, &tool, widget).pixmap(10, 10);
+                pm = proxy()->standardIcon(SP_TitleBarMinButton, &tool, widget).pixmap(10, 10);
                 tool.rect = ir;
                 tool.state = down ? State_Sunken : State_Raised;
                 proxy()->drawPrimitive(PE_PanelButtonTool, &tool, p, widget);
@@ -3471,7 +3471,7 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
             if (drawNormalButton) {
                 ir = proxy()->subControlRect(CC_TitleBar, tb, SC_TitleBarNormalButton, widget);
                 down = tb->activeSubControls & SC_TitleBarNormalButton && (opt->state & State_Sunken);
-                pm = standardIcon(SP_TitleBarNormalButton, &tool, widget).pixmap(10, 10);
+                pm = proxy()->standardIcon(SP_TitleBarNormalButton, &tool, widget).pixmap(10, 10);
                 tool.rect = ir;
                 tool.state = down ? State_Sunken : State_Raised;
                 proxy()->drawPrimitive(PE_PanelButtonTool, &tool, p, widget);
@@ -3489,7 +3489,7 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
                     && !(tb->titleBarState & Qt::WindowMinimized)) {
                 ir = proxy()->subControlRect(CC_TitleBar, tb, SC_TitleBarShadeButton, widget);
                 down = (tb->activeSubControls & SC_TitleBarShadeButton && (opt->state & State_Sunken));
-                pm = standardIcon(SP_TitleBarShadeButton, &tool, widget).pixmap(10, 10);
+                pm = proxy()->standardIcon(SP_TitleBarShadeButton, &tool, widget).pixmap(10, 10);
                 tool.rect = ir;
                 tool.state = down ? State_Sunken : State_Raised;
                 proxy()->drawPrimitive(PE_PanelButtonTool, &tool, p, widget);
@@ -3507,7 +3507,7 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
                 ir = proxy()->subControlRect(CC_TitleBar, tb, SC_TitleBarUnshadeButton, widget);
 
                 down = tb->activeSubControls & SC_TitleBarUnshadeButton  && (opt->state & State_Sunken);
-                pm = standardIcon(SP_TitleBarUnshadeButton, &tool, widget).pixmap(10, 10);
+                pm = proxy()->standardIcon(SP_TitleBarUnshadeButton, &tool, widget).pixmap(10, 10);
                 tool.rect = ir;
                 tool.state = down ? State_Sunken : State_Raised;
                 proxy()->drawPrimitive(PE_PanelButtonTool, &tool, p, widget);
@@ -3523,7 +3523,7 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
                 ir = proxy()->subControlRect(CC_TitleBar, tb, SC_TitleBarContextHelpButton, widget);
 
                 down = tb->activeSubControls & SC_TitleBarContextHelpButton  && (opt->state & State_Sunken);
-                pm = standardIcon(SP_TitleBarContextHelpButton, &tool, widget).pixmap(10, 10);
+                pm = proxy()->standardIcon(SP_TitleBarContextHelpButton, &tool, widget).pixmap(10, 10);
                 tool.rect = ir;
                 tool.state = down ? State_Sunken : State_Raised;
                 proxy()->drawPrimitive(PE_PanelButtonTool, &tool, p, widget);
@@ -3540,7 +3540,7 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
                     tb->icon.paint(p, ir);
                 } else {
                     int iconSize = proxy()->pixelMetric(PM_SmallIconSize, tb, widget);
-                    pm = standardIcon(SP_TitleBarMenuButton, &tool, widget).pixmap(iconSize, iconSize);
+                    pm = proxy()->standardIcon(SP_TitleBarMenuButton, &tool, widget).pixmap(iconSize, iconSize);
                     tool.rect = ir;
                     p->save();
                     proxy()->drawItemPixmap(p, ir, Qt::AlignCenter, pm);
@@ -3727,7 +3727,7 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
                 }
                 btnOpt.rect = proxy()->subControlRect(CC_MdiControls, opt, SC_MdiCloseButton, widget);
                 proxy()->drawPrimitive(PE_PanelButtonCommand, &btnOpt, p, widget);
-                QPixmap pm = standardIcon(SP_TitleBarCloseButton).pixmap(16, 16);
+                QPixmap pm = proxy()->standardIcon(SP_TitleBarCloseButton).pixmap(16, 16);
                 proxy()->drawItemPixmap(p, btnOpt.rect.translated(bsx, bsy), Qt::AlignCenter, pm);
             }
             if (opt->subControls & QStyle::SC_MdiNormalButton) {
@@ -3744,7 +3744,7 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
                 }
                 btnOpt.rect = proxy()->subControlRect(CC_MdiControls, opt, SC_MdiNormalButton, widget);
                 proxy()->drawPrimitive(PE_PanelButtonCommand, &btnOpt, p, widget);
-                QPixmap pm = standardIcon(SP_TitleBarNormalButton).pixmap(16, 16);
+                QPixmap pm = proxy()->standardIcon(SP_TitleBarNormalButton).pixmap(16, 16);
                 proxy()->drawItemPixmap(p, btnOpt.rect.translated(bsx, bsy), Qt::AlignCenter, pm);
             }
             if (opt->subControls & QStyle::SC_MdiMinButton) {
@@ -3761,7 +3761,7 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
                 }
                 btnOpt.rect = proxy()->subControlRect(CC_MdiControls, opt, SC_MdiMinButton, widget);
                 proxy()->drawPrimitive(PE_PanelButtonCommand, &btnOpt, p, widget);
-                QPixmap pm = standardIcon(SP_TitleBarMinButton).pixmap(16, 16);
+                QPixmap pm = proxy()->standardIcon(SP_TitleBarMinButton).pixmap(16, 16);
                 proxy()->drawItemPixmap(p, btnOpt.rect.translated(bsx, bsy), Qt::AlignCenter, pm);
             }
         }

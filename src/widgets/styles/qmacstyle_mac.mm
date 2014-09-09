@@ -2848,7 +2848,7 @@ QPixmap QMacStyle::standardPixmap(StandardPixmap standardPixmap, const QStyleOpt
         return QCommonStyle::standardPixmap(standardPixmap, opt, widget);
 
     recursionGuard = true;
-    QIcon icon = standardIcon(standardPixmap, opt, widget);
+    QIcon icon = proxy()->standardIcon(standardPixmap, opt, widget);
     recursionGuard = false;
     int size;
     switch (standardPixmap) {
@@ -4888,7 +4888,7 @@ QRect QMacStyle::subElementRect(SubElement sr, const QStyleOption *opt,
 
                 QRect closeRect;
                 if (canClose) {
-                    QSize sz = standardIcon(QStyle::SP_TitleBarCloseButton,
+                    QSize sz = proxy()->standardIcon(QStyle::SP_TitleBarCloseButton,
                                             opt, widget).actualSize(QSize(iconSize, iconSize));
                     sz += QSize(buttonMargin, buttonMargin);
                     if (verticalTitleBar)
@@ -4905,7 +4905,7 @@ QRect QMacStyle::subElementRect(SubElement sr, const QStyleOption *opt,
 
                 QRect floatRect;
                 if (canFloat) {
-                    QSize sz = standardIcon(QStyle::SP_TitleBarNormalButton,
+                    QSize sz = proxy()->standardIcon(QStyle::SP_TitleBarNormalButton,
                                             opt, widget).actualSize(QSize(iconSize, iconSize));
                     sz += QSize(buttonMargin, buttonMargin);
                     if (verticalTitleBar)

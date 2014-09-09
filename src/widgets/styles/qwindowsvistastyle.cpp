@@ -1410,12 +1410,12 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
             QRect titleRect = r;
 
             if (dwOpt->closable) {
-                QSize sz = standardIcon(QStyle::SP_TitleBarCloseButton, dwOpt, widget).actualSize(QSize(10, 10));
+                QSize sz = proxy()->standardIcon(QStyle::SP_TitleBarCloseButton, dwOpt, widget).actualSize(QSize(10, 10));
                 titleRect.adjust(0, 0, -sz.width() - mw - buttonMargin, 0);
             }
 
             if (dwOpt->floatable) {
-                QSize sz = standardIcon(QStyle::SP_TitleBarMaxButton, dwOpt, widget).actualSize(QSize(10, 10));
+                QSize sz = proxy()->standardIcon(QStyle::SP_TitleBarMaxButton, dwOpt, widget).actualSize(QSize(10, 10));
                 titleRect.adjust(0, 0, -sz.width() - mw - buttonMargin, 0);
             }
 
