@@ -223,7 +223,7 @@ void QKmsScreen::performPageFlip()
 
         // Initialize cursor
 
-        static int hideCursor = qgetenv("QT_QPA_KMS_HIDECURSOR").toInt();
+        static int hideCursor = qEnvironmentVariableIntValue("QT_QPA_KMS_HIDECURSOR");
         if (!hideCursor) {
             QCursor cursor(Qt::ArrowCursor);
             m_cursor->changeCursor(&cursor, 0);
