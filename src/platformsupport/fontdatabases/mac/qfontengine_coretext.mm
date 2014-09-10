@@ -50,7 +50,7 @@ QT_BEGIN_NAMESPACE
 
 static float SYNTHETIC_ITALIC_SKEW = tanf(14 * acosf(0) / 90);
 
-static bool ct_getSfntTable(void *user_data, uint tag, uchar *buffer, uint *length)
+bool QCoreTextFontEngine::ct_getSfntTable(void *user_data, uint tag, uchar *buffer, uint *length)
 {
     CTFontRef ctfont = *(CTFontRef *)user_data;
 

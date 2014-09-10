@@ -118,6 +118,8 @@ public:
 #endif
     }
 
+    static bool ct_getSfntTable(void *user_data, uint tag, uchar *buffer, uint *length);
+
     static int antialiasingThreshold;
     static QFontEngine::GlyphFormat defaultGlyphFormat;
 
