@@ -101,9 +101,10 @@ protected:
 
 private slots:
     void updateObjectName();
-    void repaintWindow();
+    void handleScreenChange();
 
 private:
+    void repaintWindow();
     void updateGeometry();
     void updateNormalGeometry();
 

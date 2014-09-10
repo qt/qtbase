@@ -1061,6 +1061,10 @@ bool QOpenGLWidget::event(QEvent *e)
                 d->recreateFbo();
         }
         break;
+    case QEvent::ScreenChangeInternal:
+        if (d->initialized && d->paintDevice->devicePixelRatio() != devicePixelRatio())
+            d->recreateFbo();
+        break;
     default:
         break;
     }

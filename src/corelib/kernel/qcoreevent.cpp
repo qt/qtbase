@@ -278,6 +278,7 @@ QT_BEGIN_NAMESPACE
     \omitvalue FutureCallOut
     \omitvalue NativeGesture
     \omitvalue WindowChangeInternal
+    \omitvalue ScreenChangeInternal
 */
 
 /*!

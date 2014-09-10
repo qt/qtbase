@@ -99,7 +99,7 @@ QWidgetWindow::QWidgetWindow(QWidget *widget)
         setSurfaceType(QSurface::RasterGLSurface);
     }
     connect(m_widget, &QObject::objectNameChanged, this, &QWidgetWindow::updateObjectName);
-    connect(this, SIGNAL(screenChanged(QScreen*)), this, SLOT(repaintWindow()));
+    connect(this, SIGNAL(screenChanged(QScreen*)), this, SLOT(handleScreenChange()));
 }
 
 QWidgetWindow::~QWidgetWindow()
@@ -558,8 +558,27 @@ void QWidgetWindow::updateGeometry()
     m_widget->data->fstrut_dirty = false;
 }
 
-// Invalidates the backing store buffer and repaints immediately.
-// ### Qt 5.4: replace with QUpdateWindowRequestEvent.
+static void sendScreenChangeRecursively(QWidget *widget)
+{
+    QEvent e(QEvent::ScreenChangeInternal);
+    QApplication::sendEvent(widget, &e);
+    QWidgetPrivate *d = QWidgetPrivate::get(widget);
+    for (int i = 0; i < d->children.size(); ++i) {
+        QWidget *w = qobject_cast<QWidget *>(d->children.at(i));
+        if (w)
+            sendScreenChangeRecursively(w);
+    }
+}
+
+void QWidgetWindow::handleScreenChange()
+{
+    // Send an event recursively to the widget and its children.
+    sendScreenChangeRecursively(m_widget);
+
+    // Invalidate the backing store buffer and repaint immediately.
+    repaintWindow();
+}
+
 void QWidgetWindow::repaintWindow()
 {
     if (!m_widget->isVisible() || !m_widget->updatesEnabled())

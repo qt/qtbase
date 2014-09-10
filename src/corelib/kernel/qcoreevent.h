@@ -281,6 +281,7 @@ public:
         ApplicationStateChange = 214,
 
         WindowChangeInternal = 215,             // internal for QQuickWidget
+        ScreenChangeInternal = 216,
 
         // 512 reserved for Qt Jambi's MetaCall event
         // 513 reserved for Qt Jambi's DeleteOnMainThread event
