@@ -229,6 +229,7 @@ QGLSignalProxy *QGLSignalProxy::instance()
 /*!
     \class QGLFormat
     \inmodule QtOpenGL
+    \obsolete
 
     \brief The QGLFormat class specifies the display format of an OpenGL
     rendering context.
@@ -2006,6 +2007,7 @@ struct DDSFormat {
 /*!
     \class QGLContext
     \inmodule QtOpenGL
+    \obsolete
 
     \brief The QGLContext class encapsulates an OpenGL rendering context.
 
@@ -3602,6 +3604,7 @@ void QGLContext::doneCurrent()
 /*!
     \class QGLWidget
     \inmodule QtOpenGL
+    \obsolete
 
     \brief The QGLWidget class is a widget for rendering OpenGL graphics.
 
