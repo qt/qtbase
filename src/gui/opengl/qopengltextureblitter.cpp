@@ -238,6 +238,7 @@ QOpenGLTextureBlitter::QOpenGLTextureBlitter()
 
 QOpenGLTextureBlitter::~QOpenGLTextureBlitter()
 {
+    destroy();
 }
 
 bool QOpenGLTextureBlitter::create()
@@ -303,6 +304,8 @@ bool QOpenGLTextureBlitter::isCreated() const
 
 void QOpenGLTextureBlitter::destroy()
 {
+    if (!isCreated())
+        return;
     Q_D(QOpenGLTextureBlitter);
     d->program.reset();
     d->vertexBuffer.destroy();
