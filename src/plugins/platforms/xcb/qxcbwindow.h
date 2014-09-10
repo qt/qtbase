@@ -48,11 +48,10 @@
 QT_BEGIN_NAMESPACE
 
 class QXcbScreen;
-class QXcbEGLSurface;
 class QXcbSyncWindowRequest;
 class QIcon;
 
-class QXcbWindow : public QXcbObject, public QXcbWindowEventListener, public QPlatformWindow
+class Q_XCB_EXPORT QXcbWindow : public QXcbObject, public QXcbWindowEventListener, public QPlatformWindow
 {
 public:
     enum NetWmState {
@@ -138,10 +137,6 @@ public:
 
     void updateNetWmUserTime(xcb_timestamp_t timestamp);
 
-#if defined(XCB_USE_EGL)
-    QXcbEGLSurface *eglSurface() const;
-#endif
-
     static void setWmWindowTypeStatic(QWindow *window, QXcbWindowFunctions::WmWindowTypes windowTypes);
 
     QXcbWindowFunctions::WmWindowTypes wmWindowTypes() const;
@@ -154,10 +149,16 @@ public:
 
     qreal devicePixelRatio() const Q_DECL_OVERRIDE;
 
+    virtual void create();
+    virtual void destroy();
 public Q_SLOTS:
     void updateSyncRequestCounter();
 
-private:
+protected:
+    virtual void resolveFormat() { m_format = window()->requestedFormat(); }
+    virtual void *createVisual() { return Q_NULLPTR; }
+    virtual bool supportsSyncProtocol() { return !window()->supportsOpenGL(); }
+
     void changeNetWmState(bool set, xcb_atom_t one, xcb_atom_t two = 0);
     NetWmStates netWmStates();
     void setNetWmStates(NetWmStates);
@@ -175,9 +176,6 @@ private:
     void sendXEmbedMessage(xcb_window_t window, quint32 message,
                            quint32 detail = 0, quint32 data1 = 0, quint32 data2 = 0);
     void handleXEmbedMessage(const xcb_client_message_event_t *event);
-
-    void create();
-    void destroy();
 
     void show();
     void hide();
@@ -214,10 +212,6 @@ private:
 
     mutable bool m_dirtyFrameMargins;
     mutable QMargins m_frameMargins;
-
-#if defined(XCB_USE_EGL)
-    mutable QXcbEGLSurface *m_eglSurface;
-#endif
 
     QRegion m_exposeRegion;
 

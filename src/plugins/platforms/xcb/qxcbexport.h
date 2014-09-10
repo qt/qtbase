@@ -31,34 +31,19 @@
 **
 ****************************************************************************/
 
-#ifndef QXCBEGLSURFACE_H
-#define QXCBEGLSURFACE_H
+#ifndef QXCBEXPORT_H
+#define QXCBEXPORT_H
 
-#include <EGL/egl.h>
+#include <QtCore/qglobal.h>
 
 QT_BEGIN_NAMESPACE
 
-class QXcbEGLSurface
-{
-public:
-    QXcbEGLSurface(EGLDisplay display, EGLSurface surface)
-        : m_display(display)
-        , m_surface(surface)
-    {
-    }
-
-    ~QXcbEGLSurface()
-    {
-        eglDestroySurface(m_display, m_surface);
-    }
-
-    EGLSurface surface() const { return m_surface; }
-
-private:
-    EGLDisplay m_display;
-    EGLSurface m_surface;
-};
+#  if defined(QT_BUILD_XCB_PLUGIN)
+#    define Q_XCB_EXPORT Q_DECL_EXPORT
+#  else
+#    define Q_XCB_EXPORT Q_DECL_IMPORT
+#  endif
 
 QT_END_NAMESPACE
+#endif //QXCBEXPORT_H
 
-#endif

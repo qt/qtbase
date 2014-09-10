@@ -41,6 +41,7 @@
 #include "qxcbnativeinterface.h"
 #include "qxcbclipboard.h"
 #include "qxcbdrag.h"
+#include "qxcbglintegration.h"
 
 #ifndef QT_NO_SESSIONMANAGER
 #include "qxcbsessionmanager.h"
@@ -68,15 +69,6 @@
 #include <qpa/qplatforminputcontextfactory_p.h>
 #include <private/qgenericunixthemes_p.h>
 #include <qpa/qplatforminputcontext.h>
-
-#if defined(XCB_USE_GLX)
-#include "qglxintegration.h"
-#elif defined(XCB_USE_EGL)
-#include "qxcbeglsurface.h"
-#include <QtPlatformSupport/private/qeglplatformcontext_p.h>
-#include <QtPlatformSupport/private/qeglpbuffer_p.h>
-#include <QtPlatformHeaders/QEGLNativeContext>
-#endif
 
 #include <QtGui/QOpenGLContext>
 #include <QtGui/QScreen>
@@ -191,82 +183,32 @@ QXcbIntegration::~QXcbIntegration()
 
 QPlatformWindow *QXcbIntegration::createPlatformWindow(QWindow *window) const
 {
-    return new QXcbWindow(window);
+    if (window->type() != Qt::Desktop) {
+        QXcbScreen *screen = static_cast<QXcbScreen *>(window->screen()->handle());
+        QXcbGlIntegration *glIntegration = screen->connection()->glIntegration();
+        if (glIntegration) {
+            QXcbWindow *xcbWindow = glIntegration->createWindow(window);
+            xcbWindow->create();
+            return xcbWindow;
+        }
+    }
+
+    Q_ASSERT(window->type() == Qt::Desktop || !window->supportsOpenGL());
+    QXcbWindow *xcbWindow = new QXcbWindow(window);
+    xcbWindow->create();
+    return xcbWindow;
 }
-
-#if defined(XCB_USE_EGL)
-class QEGLXcbPlatformContext : public QEGLPlatformContext
-{
-public:
-    QEGLXcbPlatformContext(const QSurfaceFormat &glFormat, QPlatformOpenGLContext *share,
-                           EGLDisplay display, QXcbConnection *c, const QVariant &nativeHandle)
-        : QEGLPlatformContext(glFormat, share, display, 0, nativeHandle)
-        , m_connection(c)
-    {
-        Q_XCB_NOOP(m_connection);
-    }
-
-    void swapBuffers(QPlatformSurface *surface)
-    {
-        Q_XCB_NOOP(m_connection);
-        QEGLPlatformContext::swapBuffers(surface);
-        Q_XCB_NOOP(m_connection);
-    }
-
-    bool makeCurrent(QPlatformSurface *surface)
-    {
-        Q_XCB_NOOP(m_connection);
-        bool ret = QEGLPlatformContext::makeCurrent(surface);
-        Q_XCB_NOOP(m_connection);
-        return ret;
-    }
-
-    void doneCurrent()
-    {
-        Q_XCB_NOOP(m_connection);
-        QEGLPlatformContext::doneCurrent();
-        Q_XCB_NOOP(m_connection);
-    }
-
-    EGLSurface eglSurfaceForPlatformSurface(QPlatformSurface *surface)
-    {
-        if (surface->surface()->surfaceClass() == QSurface::Window)
-            return static_cast<QXcbWindow *>(surface)->eglSurface()->surface();
-        else
-            return static_cast<QEGLPbuffer *>(surface)->pbuffer();
-    }
-
-    QVariant nativeHandle() const {
-        return QVariant::fromValue<QEGLNativeContext>(QEGLNativeContext(eglContext(), eglDisplay()));
-    }
-
-private:
-    QXcbConnection *m_connection;
-};
-#endif
 
 #ifndef QT_NO_OPENGL
 QPlatformOpenGLContext *QXcbIntegration::createPlatformOpenGLContext(QOpenGLContext *context) const
 {
     QXcbScreen *screen = static_cast<QXcbScreen *>(context->screen()->handle());
-#if defined(XCB_USE_GLX)
-    QGLXContext *platformContext = new QGLXContext(screen, context->format(),
-                                                   context->shareHandle(), context->nativeHandle());
-    context->setNativeHandle(platformContext->nativeHandle());
-    return platformContext;
-#elif defined(XCB_USE_EGL)
-    QEGLXcbPlatformContext *platformContext = new QEGLXcbPlatformContext(context->format(),
-                                                                         context->shareHandle(),
-                                                                         screen->connection()->egl_display(),
-                                                                         screen->connection(),
-                                                                         context->nativeHandle());
-    context->setNativeHandle(platformContext->nativeHandle());
-    return platformContext;
-#else
-    Q_UNUSED(screen);
-    qWarning("QXcbIntegration: Cannot create platform OpenGL context, neither GLX nor EGL are enabled");
-    return 0;
-#endif
+    QXcbGlIntegration *glIntegration = screen->connection()->glIntegration();
+    if (!glIntegration) {
+        qWarning("QXcbIntegration: Cannot create platform OpenGL context, neither GLX nor EGL are enabled");
+        return Q_NULLPTR;
+    }
+    return glIntegration->createPlatformOpenGLContext(context);
 }
 #endif
 
@@ -277,45 +219,23 @@ QPlatformBackingStore *QXcbIntegration::createPlatformBackingStore(QWindow *wind
 
 QPlatformOffscreenSurface *QXcbIntegration::createPlatformOffscreenSurface(QOffscreenSurface *surface) const
 {
-#if defined(XCB_USE_GLX)
-    static bool vendorChecked = false;
-    static bool glxPbufferUsable = true;
-    if (!vendorChecked) {
-        vendorChecked = true;
-        const char *glxvendor = glXGetClientString(glXGetCurrentDisplay(), GLX_VENDOR);
-        if (glxvendor && !strcmp(glxvendor, "ATI"))
-            glxPbufferUsable = false;
-    }
-    if (glxPbufferUsable)
-        return new QGLXPbuffer(surface);
-    else
-        return 0; // trigger fallback to hidden QWindow
-#elif defined(XCB_USE_EGL)
     QXcbScreen *screen = static_cast<QXcbScreen *>(surface->screen()->handle());
-    return new QEGLPbuffer(screen->connection()->egl_display(), surface->requestedFormat(), surface);
-#else
-    Q_UNUSED(surface);
-    qWarning("QXcbIntegration: Cannot create platform offscreen surface, neither GLX nor EGL are enabled");
-    return 0;
-#endif
+    QXcbGlIntegration *glIntegration = screen->connection()->glIntegration();
+    if (!glIntegration) {
+        qWarning("QXcbIntegration: Cannot create platform offscreen surface, neither GLX nor EGL are enabled");
+        return Q_NULLPTR;
+    }
+    return glIntegration->createPlatformOffscreenSurface(surface);
 }
 
 bool QXcbIntegration::hasCapability(QPlatformIntegration::Capability cap) const
 {
     switch (cap) {
     case ThreadedPixmaps: return true;
-#if defined(XCB_USE_GLX)
-    case OpenGL: return m_connections.at(0)->hasGLX();
-#elif defined(XCB_USE_EGL)
-    case OpenGL: return true;
-#else
-    case OpenGL: return false;
-#endif
-#if defined(XCB_USE_GLX)
-    case ThreadedOpenGL: return m_connections.at(0)->supportsThreadedRendering() && QGLXContext::supportsThreading();
-#else
-    case ThreadedOpenGL: return m_connections.at(0)->supportsThreadedRendering();
-#endif
+    case OpenGL: return m_connections.first()->glIntegration();
+    case ThreadedOpenGL: return m_connections.at(0)->threadedEventHandling()
+                         && m_connections.at(0)->glIntegration()
+                             && m_connections.at(0)->glIntegration()->supportsThreadedOpenGL();
     case WindowMasks: return true;
     case MultipleWindows: return true;
     case ForeignWindows: return true;

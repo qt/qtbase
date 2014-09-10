@@ -39,25 +39,23 @@
 
 #include <QtCore/QRect>
 
+#include "qxcbexport.h"
+
 QT_BEGIN_NAMESPACE
 
 class QWidget;
 class QXcbScreen;
 class QXcbConnection;
+class QXcbNativeInterfaceHandler;
 
-class QXcbNativeInterface : public QPlatformNativeInterface
+class Q_XCB_EXPORT QXcbNativeInterface : public QPlatformNativeInterface
 {
     Q_OBJECT
 public:
     enum ResourceType {
         Display,
-        EglDisplay,
         Connection,
         Screen,
-        EglContext,
-        EglConfig,
-        GLXConfig,
-        GLXContext,
         AppTime,
         AppUserTime,
         ScreenHintStyle,
@@ -76,17 +74,19 @@ public:
     void *nativeResourceForContext(const QByteArray &resourceString, QOpenGLContext *context) Q_DECL_OVERRIDE;
     void *nativeResourceForScreen(const QByteArray &resource, QScreen *screen) Q_DECL_OVERRIDE;
     void *nativeResourceForWindow(const QByteArray &resourceString, QWindow *window) Q_DECL_OVERRIDE;
+    void *nativeResourceForBackingStore(const QByteArray &resource, QBackingStore *backingStore) Q_DECL_OVERRIDE;
 
     NativeResourceForIntegrationFunction nativeResourceFunctionForIntegration(const QByteArray &resource) Q_DECL_OVERRIDE;
     NativeResourceForContextFunction nativeResourceFunctionForContext(const QByteArray &resource) Q_DECL_OVERRIDE;
     NativeResourceForScreenFunction nativeResourceFunctionForScreen(const QByteArray &resource) Q_DECL_OVERRIDE;
+    NativeResourceForWindowFunction nativeResourceFunctionForWindow(const QByteArray &resource) Q_DECL_OVERRIDE;
+    NativeResourceForBackingStoreFunction nativeResourceFunctionForBackingStore(const QByteArray &resource) Q_DECL_OVERRIDE;
 
     QFunctionPointer platformFunction(const QByteArray &function) const Q_DECL_OVERRIDE;
 
     inline const QByteArray &genericEventFilterType() const { return m_genericEventFilterType; }
 
     void *displayForWindow(QWindow *window);
-    void *eglDisplayForWindow(QWindow *window);
     void *connectionForWindow(QWindow *window);
     void *screenForWindow(QWindow *window);
     void *appTime(const QXcbScreen *screen);
@@ -98,10 +98,6 @@ public:
     static void setStartupId(const char *);
     static void setAppTime(QScreen *screen, xcb_timestamp_t time);
     static void setAppUserTime(QScreen *screen, xcb_timestamp_t time);
-    static void *eglContextForContext(QOpenGLContext *context);
-    static void *eglConfigForContext(QOpenGLContext *context);
-    static void *glxContextForContext(QOpenGLContext *context);
-    static void *glxConfigForContext(QOpenGLContext *context);
 
     Q_INVOKABLE void beep();
     Q_INVOKABLE bool systemTrayAvailable(const QScreen *screen) const;
@@ -111,6 +107,8 @@ public:
     Q_INVOKABLE bool requestSystemTrayWindowDock(const QWindow *window);
     Q_INVOKABLE QRect systemTrayWindowGlobalGeometry(const QWindow *window);
 
+    void addHandler(QXcbNativeInterfaceHandler *handler);
+    void removeHandler(QXcbNativeInterfaceHandler *handler);
 signals:
     void systemTrayWindowChanged(QScreen *screen);
 
@@ -123,6 +121,19 @@ private:
     xcb_visualid_t m_systrayVisualId;
 
     static QXcbScreen *qPlatformScreenForWindow(QWindow *window);
+
+    QList<QXcbNativeInterfaceHandler *> m_handlers;
+    NativeResourceForIntegrationFunction handlerNativeResourceFunctionForIntegration(const QByteArray &resource) const;
+    NativeResourceForContextFunction handlerNativeResourceFunctionForContext(const QByteArray &resource) const;
+    NativeResourceForScreenFunction handlerNativeResourceFunctionForScreen(const QByteArray &resource) const;
+    NativeResourceForWindowFunction handlerNativeResourceFunctionForWindow(const QByteArray &resource) const;
+    NativeResourceForBackingStoreFunction handlerNativeResourceFunctionForBackingStore(const QByteArray &resource) const;
+    QFunctionPointer handlerPlatformFunction(const QByteArray &function) const;
+    void *handlerNativeResourceForIntegration(const QByteArray &resource) const;
+    void *handlerNativeResourceForContext(const QByteArray &resource, QOpenGLContext *context) const;
+    void *handlerNativeResourceForScreen(const QByteArray &resource, QScreen *screen) const;
+    void *handlerNativeResourceForWindow(const QByteArray &resource, QWindow *window) const;
+    void *handlerNativeResourceForBackingStore(const QByteArray &resource, QBackingStore *backingStore) const;
 };
 
 QT_END_NAMESPACE

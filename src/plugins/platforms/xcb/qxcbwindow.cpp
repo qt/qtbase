@@ -97,15 +97,6 @@
 #include <X11/extensions/XInput2.h>
 #endif
 
-#if defined(XCB_USE_GLX)
-#include "qglxintegration.h"
-#include <QtPlatformSupport/private/qglxconvenience_p.h>
-#elif defined(XCB_USE_EGL)
-#include "qxcbeglsurface.h"
-#include <QtPlatformSupport/private/qeglconvenience_p.h>
-#include <QtPlatformSupport/private/qxlibeglintegration_p.h>
-#endif
-
 #define XCOORD_MAX 16383
 enum {
     defaultWindowWidth = 160,
@@ -234,9 +225,6 @@ QXcbWindow::QXcbWindow(QWindow *window)
     , m_alertState(false)
     , m_netWmUserTimeWindow(XCB_NONE)
     , m_dirtyFrameMargins(false)
-#if defined(XCB_USE_EGL)
-    , m_eglSurface(0)
-#endif
     , m_lastWindowStateEvent(-1)
     , m_syncState(NoSyncNeeded)
     , m_pendingSyncRequest(0)
@@ -244,11 +232,6 @@ QXcbWindow::QXcbWindow(QWindow *window)
     m_screen = static_cast<QXcbScreen *>(window->screen()->handle());
 
     setConnection(m_screen->connection());
-
-    if (window->type() != Qt::ForeignWindow)
-        create();
-    else
-        m_window = window->winId();
 }
 
 #ifdef Q_COMPILER_CLASS_ENUM
@@ -274,6 +257,11 @@ enum {
 
 void QXcbWindow::create()
 {
+    if (window()->type() == Qt::ForeignWindow) {
+        m_window = window()->winId();
+        return;
+    }
+
     destroy();
 
     m_deferredExpose = false;
@@ -337,27 +325,11 @@ void QXcbWindow::create()
             window()->setFormat(parentFormat);
         }
     }
-    m_format = window()->requestedFormat();
 
-#if (defined(XCB_USE_GLX) || defined(XCB_USE_EGL)) && defined(XCB_USE_XLIB)
+    resolveFormat();
+
     if (QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::OpenGL)) {
-#if defined(XCB_USE_GLX)
-        XVisualInfo *visualInfo = qglx_findVisualInfo(DISPLAY_FROM_XCB(m_screen), m_screen->screenNumber(), &m_format);
-#elif defined(XCB_USE_EGL)
-        EGLDisplay eglDisplay = connection()->egl_display();
-        EGLConfig eglConfig = q_configFromGLFormat(eglDisplay, m_format, true);
-        m_format = q_glFormatFromConfig(eglDisplay, eglConfig, m_format);
-
-        VisualID id = QXlibEglIntegration::getCompatibleVisualId(DISPLAY_FROM_XCB(this), eglDisplay, eglConfig);
-
-        XVisualInfo visualInfoTemplate;
-        memset(&visualInfoTemplate, 0, sizeof(XVisualInfo));
-        visualInfoTemplate.visualid = id;
-
-        XVisualInfo *visualInfo;
-        int matchingCount = 0;
-        visualInfo = XGetVisualInfo(DISPLAY_FROM_XCB(this), VisualIDMask, &visualInfoTemplate, &matchingCount);
-#endif //XCB_USE_GLX
+        XVisualInfo *visualInfo = static_cast<XVisualInfo *>(createVisual());
         if (!visualInfo && window()->surfaceType() == QSurface::OpenGLSurface)
             qFatal("Could not initialize OpenGL");
 
@@ -365,6 +337,7 @@ void QXcbWindow::create()
             qWarning("Could not initialize OpenGL for RasterGLSurface, reverting to RasterSurface.");
             window()->setSurfaceType(QSurface::RasterSurface);
         }
+
         if (visualInfo) {
             m_depth = visualInfo->depth;
             m_imageFormat = imageFormatForVisual(visualInfo->depth, visualInfo->red_mask, visualInfo->blue_mask);
@@ -388,7 +361,6 @@ void QXcbWindow::create()
     }
 
     if (!m_window)
-#endif //defined(XCB_USE_GLX) || defined(XCB_USE_EGL)
     {
         m_window = xcb_generate_id(xcb_connection());
         m_visualId = m_screen->screen()->root_visual;
@@ -449,12 +421,10 @@ void QXcbWindow::create()
     properties[propertyCount++] = atom(QXcbAtom::WM_TAKE_FOCUS);
     properties[propertyCount++] = atom(QXcbAtom::_NET_WM_PING);
 
-    m_usingSyncProtocol = m_screen->syncRequestSupported();
-#if !defined(XCB_USE_GLX)
-    // synced resize only implemented on GLX
-    if (window()->supportsOpenGL())
+    if (m_screen->syncRequestSupported())
+        m_usingSyncProtocol = supportsSyncProtocol();
+    else
         m_usingSyncProtocol = false;
-#endif
 
     if (m_usingSyncProtocol)
         properties[propertyCount++] = atom(QXcbAtom::_NET_WM_SYNC_REQUEST);
@@ -575,11 +545,6 @@ void QXcbWindow::destroy()
         m_window = 0;
     }
     m_mapped = false;
-
-#if defined(XCB_USE_EGL)
-    delete m_eglSurface;
-    m_eglSurface = 0;
-#endif
 
     if (m_pendingSyncRequest)
         m_pendingSyncRequest->invalidate();
@@ -1556,21 +1521,6 @@ QSurfaceFormat QXcbWindow::format() const
     // ### return actual format
     return m_format;
 }
-
-#if defined(XCB_USE_EGL)
-QXcbEGLSurface *QXcbWindow::eglSurface() const
-{
-    if (!m_eglSurface) {
-        EGLDisplay display = connection()->egl_display();
-        EGLConfig config = q_configFromGLFormat(display, window()->requestedFormat(), true);
-        EGLSurface surface = eglCreateWindowSurface(display, config, (EGLNativeWindowType)m_window, 0);
-
-        m_eglSurface = new QXcbEGLSurface(display, surface);
-    }
-
-    return m_eglSurface;
-}
-#endif
 
 void QXcbWindow::setWmWindowTypeStatic(QWindow *window, QXcbWindowFunctions::WmWindowTypes windowTypes)
 {

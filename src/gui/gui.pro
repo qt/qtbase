@@ -9,6 +9,7 @@ QMAKE_DOCS = $$PWD/doc/qtgui.qdocconf
 
 MODULE_PLUGIN_TYPES = \
     platforms \
+    xcbglintegrations \
     platformthemes \
     platforminputcontexts \
     generic \

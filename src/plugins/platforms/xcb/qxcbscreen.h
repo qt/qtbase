@@ -41,6 +41,7 @@
 #include <xcb/randr.h>
 
 #include "qxcbobject.h"
+#include "qxcbscreen.h"
 
 #include <private/qfontengine_p.h>
 
@@ -50,7 +51,7 @@ class QXcbConnection;
 class QXcbCursor;
 class QXcbXSettings;
 
-class QXcbScreen : public QXcbObject, public QPlatformScreen
+class Q_XCB_EXPORT QXcbScreen : public QXcbObject, public QPlatformScreen
 {
 public:
     QXcbScreen(QXcbConnection *connection, xcb_screen_t *screen,

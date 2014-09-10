@@ -37,6 +37,8 @@
 #include <qpa/qplatformintegration.h>
 #include <qpa/qplatformscreen.h>
 
+#include "qxcbexport.h"
+
 QT_BEGIN_NAMESPACE
 
 class QXcbConnection;
@@ -44,7 +46,7 @@ class QAbstractEventDispatcher;
 class QXcbNativeInterface;
 class QXcbScreen;
 
-class QXcbIntegration : public QPlatformIntegration
+class Q_XCB_EXPORT QXcbIntegration : public QPlatformIntegration
 {
 public:
     QXcbIntegration(const QStringList &parameters, int &argc, char **argv);

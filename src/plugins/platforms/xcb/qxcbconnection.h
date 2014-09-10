@@ -36,6 +36,7 @@
 
 #include <xcb/xcb.h>
 
+#include "qxcbexport.h"
 #include <QHash>
 #include <QList>
 #include <QMutex>
@@ -85,6 +86,7 @@ class QXcbClipboard;
 class QXcbWMSupport;
 class QXcbNativeInterface;
 class QXcbSystemTrayTracker;
+class QXcbGlIntegration;
 
 namespace QXcbAtom {
     enum Atom {
@@ -360,7 +362,7 @@ private:
 };
 
 class QAbstractEventDispatcher;
-class QXcbConnection : public QObject
+class Q_XCB_EXPORT QXcbConnection : public QObject
 {
     Q_OBJECT
 public:
@@ -395,15 +397,9 @@ public:
     QXcbWMSupport *wmSupport() const { return m_wmSupport.data(); }
     xcb_window_t rootWindow();
 #ifdef XCB_USE_XLIB
-    void *xlib_display() const { return m_xlib_display; }
+    void *xlib_display() const;
 #endif
 
-#ifdef XCB_USE_EGL
-    bool hasEgl() const;
-#endif
-#if defined(XCB_USE_EGL)
-    void *egl_display() const { return m_egl_display; }
-#endif
 #if defined(XCB_USE_XINPUT2)
     void xi2Select(xcb_window_t window);
 #endif
@@ -437,7 +433,6 @@ public:
     inline xcb_timestamp_t netWmUserTime() const { return m_netWmUserTime; }
     inline void setNetWmUserTime(xcb_timestamp_t t) { if (t > m_netWmUserTime) m_netWmUserTime = t; }
 
-    bool hasGLX() const { return has_glx_extension; }
     bool hasXFixes() const { return xfixes_first_event > 0; }
     bool hasXShape() const { return has_shape_extension; }
     bool hasXRandr() const { return has_randr_extension; }
@@ -446,6 +441,7 @@ public:
     bool hasXKB() const { return has_xkb; }
 
     bool supportsThreadedRendering() const { return m_reader->isRunning(); }
+    bool threadedEventHandling() const { return m_reader->isRunning(); }
 
     xcb_timestamp_t getTimestamp();
 
@@ -472,6 +468,8 @@ public:
     QXcbEventReader *eventReader() const { return m_reader; }
 
     bool canGrab() const { return m_canGrabServer; }
+
+    QXcbGlIntegration *glIntegration() const { return m_glIntegration; }
 protected:
     bool event(QEvent *e) Q_DECL_OVERRIDE;
 
@@ -484,7 +482,6 @@ private slots:
 private:
     void initializeAllAtoms();
     void sendConnectionEvent(QXcbAtom::Atom atom, uint id = 0);
-    void initializeGLX();
     void initializeXFixes();
     void initializeXRender();
     void initializeXRandr();
@@ -580,10 +577,6 @@ private:
     QHash<int, QWindowSystemInterface::TouchPoint> m_touchPoints;
     QHash<int, XInput2TouchDeviceData*> m_touchDevices;
 #endif
-#if defined(XCB_USE_EGL)
-    void *m_egl_display;
-    bool m_has_egl;
-#endif
 #ifdef Q_XCB_DEBUG
     struct CallInfo {
         int sequence;
@@ -604,9 +597,7 @@ private:
     uint32_t xfixes_first_event;
     uint32_t xrandr_first_event;
     uint32_t xkb_first_event;
-    uint32_t glx_first_event;
 
-    bool has_glx_extension;
     bool has_shape_extension;
     bool has_randr_extension;
     bool has_input_shape;
@@ -619,6 +610,7 @@ private:
 
     QByteArray m_startupId;
     QXcbSystemTrayTracker *m_systemTrayTracker;
+    QXcbGlIntegration *m_glIntegration;
 
     friend class QXcbEventReader;
 };
@@ -666,11 +658,6 @@ cookie_t q_xcb_call_template(const cookie_t &cookie, QXcbConnection *connection,
 #define Q_XCB_CALL(x) x
 #define Q_XCB_CALL2(x, connection) x
 #define Q_XCB_NOOP(c)
-#endif
-
-
-#if defined(XCB_USE_EGL)
-#define EGL_DISPLAY_FROM_XCB(object) ((EGLDisplay)(object->connection()->egl_display()))
 #endif
 
 QT_END_NAMESPACE
