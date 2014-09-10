@@ -4695,6 +4695,9 @@ int QCommonStyle::pixelMetric(PixelMetric m, const QStyleOption *opt, const QWid
     case PM_SubMenuOverlap:
         ret = -proxy()->pixelMetric(QStyle::PM_MenuPanelWidth, opt, widget);
         break;
+    case PM_TreeViewIndentation:
+        ret = int(QStyleHelper::dpiScaled(20.));
+        break;
     default:
         ret = 0;
         break;

@@ -556,6 +556,7 @@ public:
         PM_ScrollView_ScrollBarSpacing,
         PM_ScrollView_ScrollBarOverlap,
         PM_SubMenuOverlap,
+        PM_TreeViewIndentation,
 
         // do not add any values below/greater than this
         PM_CustomBase = 0xf0000000

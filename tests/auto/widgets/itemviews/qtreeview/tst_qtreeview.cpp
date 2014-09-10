@@ -212,6 +212,7 @@ private slots:
     void rowSizeHint();
     void setSortingEnabled();
     void headerHidden();
+    void indentation();
 
     void selection();
     void removeAndInsertExpandedCol0();
@@ -439,7 +440,8 @@ void tst_QTreeView::getSetCheck()
 
     // int QTreeView::indentation()
     // void QTreeView::setIndentation(int)
-    QCOMPARE(obj1.indentation(), 20);
+    const int styledIndentation = obj1.style()->pixelMetric(QStyle::PM_TreeViewIndentation, 0, &obj1);
+    QCOMPARE(obj1.indentation(), styledIndentation);
     obj1.setIndentation(0);
     QCOMPARE(obj1.indentation(), 0);
     obj1.setIndentation(INT_MIN);
@@ -554,7 +556,8 @@ void tst_QTreeView::construction()
     QCOMPARE(view.columnWidth(0), 0);
     QCOMPARE(view.columnWidth(1), 0);
     QVERIFY(view.header());
-    QCOMPARE(view.indentation(), 20);
+    const int styledIndentation = view.style()->pixelMetric(QStyle::PM_TreeViewIndentation, 0, &view);
+    QCOMPARE(view.indentation(), styledIndentation);
     QCOMPARE(view.indexAbove(QModelIndex()), QModelIndex());
     QCOMPARE(view.indexBelow(QModelIndex()), QModelIndex());
     QVERIFY(!view.isAnimated());
@@ -2574,6 +2577,42 @@ void tst_QTreeView::headerHidden()
     view.setHeaderHidden(true);
     QCOMPARE(view.isHeaderHidden(), true);
     QCOMPARE(view.header()->isHidden(), true);
+}
+
+class TestTreeViewStyle : public QProxyStyle
+{
+public:
+    TestTreeViewStyle() : indentation(20) {}
+    int pixelMetric(PixelMetric metric, const QStyleOption *option = 0, const QWidget *widget = 0) const Q_DECL_OVERRIDE
+    {
+        if (metric == QStyle::PM_TreeViewIndentation)
+            return indentation;
+        else
+            return QProxyStyle::pixelMetric(metric, option, widget);
+    }
+    int indentation;
+};
+
+void tst_QTreeView::indentation()
+{
+    TestTreeViewStyle style1;
+    TestTreeViewStyle style2;
+    style1.indentation = 20;
+    style2.indentation = 30;
+
+    QTreeView view;
+    view.setStyle(&style1);
+    QCOMPARE(view.indentation(), style1.indentation);
+    view.setStyle(&style2);
+    QCOMPARE(view.indentation(), style2.indentation);
+    view.setIndentation(70);
+    QCOMPARE(view.indentation(), 70);
+    view.setStyle(&style1);
+    QCOMPARE(view.indentation(), 70);
+    view.resetIndentation();
+    QCOMPARE(view.indentation(), style1.indentation);
+    view.setStyle(&style2);
+    QCOMPARE(view.indentation(), style2.indentation);
 }
 
 // From Task 145199 (crash when column 0 having at least one expanded item is removed and then

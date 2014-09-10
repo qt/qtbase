@@ -1470,6 +1470,9 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
     \value PM_TabCloseIndicatorWidth The default width of a close button on a tab in a tab bar.
     \value PM_TabCloseIndicatorHeight The default height of a close button on a tab in a tab bar.
 
+    \value PM_TreeViewIndentation The indentation of items in a tree view.
+           This enum value has been introduced in Qt 5.4.
+
     \value PM_CustomBase Base value for custom pixel metrics.  Custom
     values must be greater than this value.
 

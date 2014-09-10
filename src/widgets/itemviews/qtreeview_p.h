@@ -89,7 +89,7 @@ public:
           uniformRowHeights(false), rootDecoration(true),
           itemsExpandable(true), sortingEnabled(false),
           expandsOnDoubleClick(true),
-          allColumnsShowFocus(false), current(0), spanning(false),
+          allColumnsShowFocus(false), customIndent(false), current(0), spanning(false),
           animationsEnabled(false), columnResizeTimerID(0),
           autoExpandDelay(-1), hoverBranch(-1), geometryRecursionBlock(false), hasRemovedItems(false),
           treePosition(0) {}
@@ -191,6 +191,7 @@ public:
     bool sortingEnabled;
     bool expandsOnDoubleClick;
     bool allColumnsShowFocus;
+    bool customIndent;
 
     // used for drawing
     mutable QPair<int,int> leftAndRight;
@@ -240,6 +241,8 @@ public:
     }
 
     int accessibleTree2Index(const QModelIndex &index) const;
+
+    void updateIndentationFromStyle();
 
     // used for spanning rows
     QVector<QPersistentModelIndex> spanningIndexes;

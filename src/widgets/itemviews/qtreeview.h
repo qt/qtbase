@@ -56,7 +56,7 @@ class Q_WIDGETS_EXPORT QTreeView : public QAbstractItemView
 {
     Q_OBJECT
     Q_PROPERTY(int autoExpandDelay READ autoExpandDelay WRITE setAutoExpandDelay)
-    Q_PROPERTY(int indentation READ indentation WRITE setIndentation)
+    Q_PROPERTY(int indentation READ indentation WRITE setIndentation RESET resetIndentation)
     Q_PROPERTY(bool rootIsDecorated READ rootIsDecorated WRITE setRootIsDecorated)
     Q_PROPERTY(bool uniformRowHeights READ uniformRowHeights WRITE setUniformRowHeights)
     Q_PROPERTY(bool itemsExpandable READ itemsExpandable WRITE setItemsExpandable)
@@ -83,6 +83,7 @@ public:
 
     int indentation() const;
     void setIndentation(int i);
+    void resetIndentation();
 
     bool rootIsDecorated() const;
     void setRootIsDecorated(bool show);

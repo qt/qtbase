@@ -371,7 +371,9 @@ void QTreeView::setAutoExpandDelay(int delay)
   horizontal distance from the viewport edge to the items in the first column;
   for child items, it specifies their indentation from their parent items.
 
-  By default, this property has a value of 20.
+  By default, the value of this property is style dependent. Thus, when the style
+  changes, this property updates from it. Calling setIndentation() stops the updates,
+  calling resetIndentation() will restore default behavior.
 */
 int QTreeView::indentation() const
 {
@@ -382,9 +384,19 @@ int QTreeView::indentation() const
 void QTreeView::setIndentation(int i)
 {
     Q_D(QTreeView);
-    if (i != d->indent) {
+    if (!d->customIndent || (i != d->indent)) {
         d->indent = i;
+        d->customIndent = true;
         d->viewport->update();
+    }
+}
+
+void QTreeView::resetIndentation()
+{
+    Q_D(QTreeView);
+    if (d->customIndent) {
+        d->updateIndentationFromStyle();
+        d->customIndent = false;
     }
 }
 
@@ -2081,6 +2093,12 @@ QModelIndex QTreeView::indexBelow(const QModelIndex &index) const
 void QTreeView::doItemsLayout()
 {
     Q_D(QTreeView);
+    if (!d->customIndent) {
+        // ### Qt 6: move to event()
+        // QAbstractItemView calls this method in case of a style change,
+        // so update the indentation here if it wasn't set manually.
+        d->updateIndentationFromStyle();
+    }
     if (d->hasRemovedItems) {
         //clean the QSet that may contains old (and this invalid) indexes
         d->hasRemovedItems = false;
@@ -3025,6 +3043,8 @@ bool QTreeView::isIndexHidden(const QModelIndex &index) const
 void QTreeViewPrivate::initialize()
 {
     Q_Q(QTreeView);
+
+    updateIndentationFromStyle();
     updateStyledFrameWidths();
     q->setSelectionBehavior(QAbstractItemView::SelectRows);
     q->setSelectionMode(QAbstractItemView::SingleSelection);
@@ -3909,6 +3929,12 @@ int QTreeViewPrivate::accessibleTree2Index(const QModelIndex &index) const
 
     // Note that this will include the header, even if its hidden.
     return (q->visualIndex(index) + (q->header() ? 1 : 0)) * index.model()->columnCount() + index.column();
+}
+
+void QTreeViewPrivate::updateIndentationFromStyle()
+{
+    Q_Q(const QTreeView);
+    indent = q->style()->pixelMetric(QStyle::PM_TreeViewIndentation, 0, q);
 }
 
 /*!
