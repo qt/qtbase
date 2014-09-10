@@ -3563,7 +3563,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
             for (int i = 0; i < touchEvent->_touchPoints.size(); ++i) {
                 QTouchEvent::TouchPoint &pt = touchEvent->_touchPoints[i];
                 QRectF rect = pt.rect();
-                rect.moveCenter(offset);
+                rect.translate(offset);
                 pt.d->rect = rect;
                 pt.d->startPos = pt.startPos() + offset;
                 pt.d->lastPos = pt.lastPos() + offset;

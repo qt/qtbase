@@ -313,7 +313,6 @@ private:
     friend class QGraphicsEffect;
     friend class QGraphicsSceneIndex;
     friend class QGraphicsSceneIndexPrivate;
-    friend class QGraphicsSceneLinearIndex;
     friend class QGraphicsSceneBspTreeIndex;
     friend class QGraphicsSceneBspTreeIndexPrivate;
     friend class QGraphicsItemEffectSourcePrivate;

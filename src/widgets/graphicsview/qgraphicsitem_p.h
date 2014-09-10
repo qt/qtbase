@@ -318,7 +318,7 @@ public:
     virtual void resolvePalette(uint inheritedMask)
     {
         for (int i = 0; i < children.size(); ++i)
-            children.at(i)->d_ptr->resolveFont(inheritedMask);
+            children.at(i)->d_ptr->resolvePalette(inheritedMask);
     }
 
     virtual bool isProxyWidget() const;

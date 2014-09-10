@@ -87,6 +87,8 @@ void QElapsedTimer::start() Q_DECL_NOTHROW
     and then starting the timer again with start(), but it does so in one
     single operation, avoiding the need to obtain the clock value twice.
 
+    Restarting the timer makes it valid again.
+
     The following example illustrates how to use this function to calibrate a
     parameter to a slow operation (for example, an iteration count) so that
     this operation takes at least 250 milliseconds:

@@ -102,13 +102,13 @@ void QOpenGL2GradientCache::cleanCache()
 
 GLuint QOpenGL2GradientCache::getBuffer(const QGradient &gradient, qreal opacity)
 {
-    QMutexLocker lock(&m_mutex);
     quint64 hash_val = 0;
 
     QGradientStops stops = gradient.stops();
     for (int i = 0; i < stops.size() && i <= 2; i++)
         hash_val += stops[i].second.rgba();
 
+    const QMutexLocker lock(&m_mutex);
     QOpenGLGradientColorTableHash::const_iterator it = cache.constFind(hash_val);
 
     if (it == cache.constEnd())

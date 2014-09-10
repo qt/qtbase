@@ -66,13 +66,14 @@ protected:
 private:
     QAtomicInt m_stopRequest;
     QAtomicInt m_goingToStop;
-    QSemaphore m_dispatcherSemaphore, m_stopperSemaphore;
+    QSemaphore m_semaphore;
 };
 
 class QAndroidEventDispatcherStopper
 {
 public:
     static QAndroidEventDispatcherStopper *instance();
+    static bool stopped() {return !instance()->started; }
     void startAll();
     void stopAll();
     void addEventDispatcher(QAndroidEventDispatcher *dispatcher);

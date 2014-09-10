@@ -42,6 +42,10 @@
 #ifndef QOPENGLWIDGET_H
 #define QOPENGLWIDGET_H
 
+#include <QtCore/qglobal.h>
+
+#ifndef QT_NO_OPENGL
+
 #include <QtWidgets/QWidget>
 #include <QtGui/QSurfaceFormat>
 #include <QtGui/qopengl.h>
@@ -96,5 +100,7 @@ private:
 };
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_OPENGL
 
 #endif // QOPENGLWIDGET_H

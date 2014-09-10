@@ -12,6 +12,14 @@
 #include "libGLESv2/renderer/d3d/d3d11/renderer11_utils.h"
 #include "libGLESv2/main.h"
 
+#if defined(__MINGW32__) // Provide undefined struct
+typedef struct D3D11_QUERY_DATA_SO_STATISTICS
+{
+    UINT64 NumPrimitivesWritten;
+    UINT64 PrimitivesStorageNeeded;
+} D3D11_QUERY_DATA_SO_STATISTICS;
+#endif
+
 namespace rx
 {
 

@@ -138,7 +138,9 @@ private slots:
     void peerCertificate();
     void peerCertificateChain();
     void privateKey();
+#ifndef QT_NO_OPENSSL
     void privateKeyOpaque();
+#endif
     void protocol();
     void protocolServerSide_data();
     void protocolServerSide();
@@ -186,7 +188,9 @@ private slots:
     void writeBigChunk();
     void blacklistedCertificates();
     void versionAccessors();
+#ifndef QT_NO_OPENSSL
     void sslOptions();
+#endif
     void encryptWithoutConnecting();
     void resume_data();
     void resume();
@@ -810,6 +814,7 @@ void tst_QSslSocket::privateKey()
 {
 }
 
+#ifndef QT_NO_OPENSSL
 void tst_QSslSocket::privateKeyOpaque()
 {
     if (!QSslSocket::supportsSsl())
@@ -839,6 +844,7 @@ void tst_QSslSocket::privateKeyOpaque()
     if (setProxy && !socket->waitForEncrypted(10000))
         QSKIP("Skipping flaky test - See QTBUG-29941");
 }
+#endif
 
 void tst_QSslSocket::protocol()
 {
@@ -1992,10 +1998,23 @@ void tst_QSslSocket::peerVerifyError()
     socket->connectToHostEncrypted(QHostInfo::fromName(QtNetworkSettings::serverName()).addresses().first().toString(), 443);
     if (socket->waitForEncrypted(10000))
         QSKIP("Skipping flaky test - See QTBUG-29941");
+
+    // check HostNameMismatch was emitted by peerVerifyError
     QVERIFY(!peerVerifyErrorSpy.isEmpty());
+    SslErrorList peerErrors;
+    const QList<QVariantList> &peerVerifyList = peerVerifyErrorSpy;
+    foreach (const QVariantList &args, peerVerifyList)
+        peerErrors << qvariant_cast<QSslError>(args.first()).error();
+    QVERIFY(peerErrors.contains(QSslError::HostNameMismatch));
+
+    // check HostNameMismatch was emitted by sslErrors
     QVERIFY(!sslErrorsSpy.isEmpty());
-    QCOMPARE(qvariant_cast<QSslError>(peerVerifyErrorSpy.last().at(0)).error(), QSslError::HostNameMismatch);
-    QCOMPARE(qvariant_cast<QList<QSslError> >(sslErrorsSpy.at(0).at(0)).size(), peerVerifyErrorSpy.size());
+    SslErrorList sslErrors;
+    foreach (const QSslError &err, qvariant_cast<QList<QSslError> >(sslErrorsSpy.first().first()))
+        sslErrors << err.error();
+    QVERIFY(peerErrors.contains(QSslError::HostNameMismatch));
+
+    QCOMPARE(sslErrors.size(), peerErrors.size());
 }
 
 void tst_QSslSocket::disconnectFromHostWhenConnecting()
@@ -2280,6 +2299,7 @@ void tst_QSslSocket::versionAccessors()
     qDebug() << QString::number(QSslSocket::sslLibraryVersionNumber(), 16);
 }
 
+#ifndef QT_NO_OPENSSL
 void tst_QSslSocket::sslOptions()
 {
     if (!QSslSocket::supportsSsl())
@@ -2331,6 +2351,7 @@ void tst_QSslSocket::sslOptions()
 #endif
 #endif
 }
+#endif
 
 void tst_QSslSocket::encryptWithoutConnecting()
 {

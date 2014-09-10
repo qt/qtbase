@@ -324,7 +324,7 @@ void QLineEditIconButton::paintEvent(QPaintEvent *)
         state = isDown() ? QIcon::Selected : QIcon::Normal;
     const QPixmap iconPixmap = icon().pixmap(QSize(IconButtonSize, IconButtonSize),
                                              state, QIcon::Off);
-    QRect pixmapRect = QRect(0, 0, iconPixmap.width(), iconPixmap.height());
+    QRect pixmapRect = QRect(QPoint(0, 0), iconPixmap.size() / iconPixmap.devicePixelRatio());
     pixmapRect.moveCenter(rect().center());
     painter.setOpacity(m_opacity);
     painter.drawPixmap(pixmapRect, iconPixmap);

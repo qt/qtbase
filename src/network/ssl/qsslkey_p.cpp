@@ -63,6 +63,7 @@
 
 #include <QtCore/qatomic.h>
 #include <QtCore/qbytearray.h>
+#include <QtCore/qbytearraymatcher.h>
 #include <QtCore/qiodevice.h>
 #ifndef QT_NO_DEBUG_STREAM
 #include <QtCore/qdebug.h>
@@ -130,7 +131,7 @@ QByteArray QSslKeyPrivate::pemFooter() const
 
     Returns a DER key formatted as PEM.
 */
-QByteArray QSslKeyPrivate::pemFromDer(const QByteArray &der) const
+QByteArray QSslKeyPrivate::pemFromDer(const QByteArray &der, const QMap<QByteArray, QByteArray> &headers) const
 {
     QByteArray pem(der.toBase64());
 
@@ -144,7 +145,16 @@ QByteArray QSslKeyPrivate::pemFromDer(const QByteArray &der) const
     if (rem)
         pem.append('\n'); // ###
 
-    pem.prepend(pemHeader() + '\n');
+    QByteArray extra;
+    if (!headers.isEmpty()) {
+        QMap<QByteArray, QByteArray>::const_iterator it = headers.constEnd();
+        do {
+            it--;
+                extra += it.key() + ": " + it.value() + '\n';
+        } while (it != headers.constBegin());
+        extra += '\n';
+    }
+    pem.prepend(pemHeader() + '\n' + extra);
     pem.append(pemFooter() + '\n');
 
     return pem;
@@ -155,7 +165,7 @@ QByteArray QSslKeyPrivate::pemFromDer(const QByteArray &der) const
 
     Returns a PEM key formatted as DER.
 */
-QByteArray QSslKeyPrivate::derFromPem(const QByteArray &pem) const
+QByteArray QSslKeyPrivate::derFromPem(const QByteArray &pem, QMap<QByteArray, QByteArray> *headers) const
 {
     const QByteArray header = pemHeader();
     const QByteArray footer = pemFooter();
@@ -168,6 +178,39 @@ QByteArray QSslKeyPrivate::derFromPem(const QByteArray &pem) const
         return QByteArray();
 
     der = der.mid(headerIndex + header.size(), footerIndex - (headerIndex + header.size()));
+
+    if (der.contains("Proc-Type:")) {
+        // taken from QHttpNetworkReplyPrivate::parseHeader
+        const QByteArrayMatcher lf("\n");
+        const QByteArrayMatcher colon(":");
+        int i = 0;
+        while (i < der.count()) {
+            int j = colon.indexIn(der, i); // field-name
+            if (j == -1)
+                break;
+            const QByteArray field = der.mid(i, j - i).trimmed();
+            j++;
+            // any number of LWS is allowed before and after the value
+            QByteArray value;
+            do {
+                i = lf.indexIn(der, j);
+                if (i == -1)
+                    break;
+                if (!value.isEmpty())
+                    value += ' ';
+                // check if we have CRLF or only LF
+                bool hasCR = (i && der[i-1] == '\r');
+                int length = i -(hasCR ? 1: 0) - j;
+                value += der.mid(j, length).trimmed();
+                j = ++i;
+            } while (i < der.count() && (der.at(i) == ' ' || der.at(i) == '\t'));
+            if (i == -1)
+                break; // something is wrong
+
+            headers->insert(field, value);
+        }
+        der = der.mid(i);
+    }
 
     return QByteArray::fromBase64(der); // ignores newlines
 }
@@ -337,7 +380,8 @@ QByteArray QSslKey::toDer(const QByteArray &passPhrase) const
         return QByteArray();
 
 #ifndef QT_NO_OPENSSL
-    return d->derFromPem(toPem(passPhrase));
+    QMap<QByteArray, QByteArray> headers;
+    return d->derFromPem(toPem(passPhrase), &headers);
 #else
     return d->derData;
 #endif

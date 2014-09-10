@@ -287,13 +287,12 @@ QPixmap QWindowsScreen::grabWindow(WId window, int qX, int qY, int qWidth, int q
     \brief Find a top level window taking the flags of ChildWindowFromPointEx.
 */
 
-QWindow *QWindowsScreen::findTopLevelAt(const QPoint &point, unsigned flags)
+QWindow *QWindowsScreen::topLevelAt(const QPoint &point) const
 {
-    QWindow* result = 0;
-    if (QPlatformWindow *bw = QWindowsContext::instance()->
-            findPlatformWindowAt(GetDesktopWindow(), point, flags))
-        result = QWindowsWindow::topLevelOf(bw->window());
-    qCDebug(lcQpaWindows) <<__FUNCTION__ << point << flags << result;
+    QWindow *result = 0;
+    if (QWindow *child = QWindowsScreen::windowAt(point * QWindowsScaling::factor(), CWP_SKIPINVISIBLE))
+        result = QWindowsWindow::topLevelOf(child);
+    qCDebug(lcQpaWindows) <<__FUNCTION__ << point << result;
     return result;
 }
 
@@ -305,15 +304,6 @@ QWindow *QWindowsScreen::windowAt(const QPoint &screenPoint, unsigned flags)
         result = bw->window();
     qCDebug(lcQpaWindows) <<__FUNCTION__ << screenPoint << " returns " << result;
     return result;
-}
-
-QWindow *QWindowsScreen::windowUnderMouse(unsigned flags)
-{
-#ifndef QT_NO_CURSOR
-    return QWindowsScreen::windowAt(QWindowsCursor::mousePosition(), flags);
-#else
-    return 0;
-#endif
 }
 
 QWindowsScreen *QWindowsScreen::screenOf(const QWindow *w)
@@ -439,6 +429,23 @@ static inline int indexOfMonitor(const QList<QWindowsScreenData> &screenData,
     return -1;
 }
 
+// Move a window to a new virtual screen, accounting for varying sizes.
+static void moveToVirtualScreen(QWindow *w, const QScreen *newScreen)
+{
+    QRect geometry = w->geometry();
+    const QRect oldScreenGeometry = w->screen()->geometry();
+    const QRect newScreenGeometry = newScreen->geometry();
+    QPoint relativePosition = geometry.topLeft() - oldScreenGeometry.topLeft();
+    if (oldScreenGeometry.size() != newScreenGeometry.size()) {
+        const qreal factor =
+            qreal(QPoint(newScreenGeometry.width(), newScreenGeometry.height()).manhattanLength()) /
+            qreal(QPoint(oldScreenGeometry.width(), oldScreenGeometry.height()).manhattanLength());
+        relativePosition = (QPointF(relativePosition) * factor).toPoint();
+    }
+    geometry.moveTopLeft(relativePosition);
+    w->setGeometry(geometry);
+}
+
 void QWindowsScreenManager::removeScreen(int index)
 {
     qCDebug(lcQpaWindows) << "Removing Monitor:" << m_screens.at(index)->data();
@@ -449,11 +456,18 @@ void QWindowsScreenManager::removeScreen(int index)
     // event, but unfortunately after the screen destruction signal. To prevent
     // QtGui from automatically hiding the QWindow, pretend all Windows move to
     // the primary screen first (which is likely the correct, final screen).
+    // QTBUG-39320: Windows does not automatically move WS_EX_TOOLWINDOW (dock) windows;
+    // move those manually.
     if (screen != primaryScreen) {
         unsigned movedWindowCount = 0;
         foreach (QWindow *w, QGuiApplication::topLevelWindows()) {
             if (w->screen() == screen && w->handle() && w->type() != Qt::Desktop) {
-                QWindowSystemInterface::handleWindowScreenChanged(w, primaryScreen);
+                if (w->isVisible() && w->windowState() != Qt::WindowMinimized
+                    && (QWindowsWindow::baseWindowOf(w)->exStyle() & WS_EX_TOOLWINDOW)) {
+                    moveToVirtualScreen(w, primaryScreen);
+                } else {
+                    QWindowSystemInterface::handleWindowScreenChanged(w, primaryScreen);
+                }
                 ++movedWindowCount;
             }
         }

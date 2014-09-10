@@ -970,3 +970,15 @@ int main() { return featureFunction(); }
 # <project root>/project.pro
 qtCompileTest(test)
 #! [182]
+
+#! [183]
+# <project root>/project.pro
+QMAKE_SONAME_PREFIX = @rpath
+#! [183]
+
+#! [184]
+# <project root>/project.pro
+QMAKE_SONAME_PREFIX = @executable_path/../Frameworks
+QMAKE_SONAME_PREFIX = @loader_path/Frameworks
+QMAKE_SONAME_PREFIX = /Library/Frameworks
+#! [184]

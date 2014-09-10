@@ -104,12 +104,8 @@ public:
     QString name() const Q_DECL_OVERRIDE { return m_data.name; }
     Qt::ScreenOrientation orientation() const Q_DECL_OVERRIDE { return m_data.orientation; }
     QList<QPlatformScreen *> virtualSiblings() const Q_DECL_OVERRIDE;
-    QWindow *topLevelAt(const QPoint &point) const Q_DECL_OVERRIDE
-        {  return QWindowsScreen::findTopLevelAt(point * QWindowsScaling::factor() , CWP_SKIPINVISIBLE);  }
-
-    static QWindow *findTopLevelAt(const QPoint &point, unsigned flags);
-    static QWindow *windowAt(const QPoint &point, unsigned flags = CWP_SKIPINVISIBLE);
-    static QWindow *windowUnderMouse(unsigned flags = CWP_SKIPINVISIBLE);
+    QWindow *topLevelAt(const QPoint &point) const Q_DECL_OVERRIDE;
+    static QWindow *windowAt(const QPoint &point, unsigned flags);
 
     QPixmap grabWindow(WId window, int qX, int qY, int qWidth, int qHeight) const Q_DECL_OVERRIDE;
 

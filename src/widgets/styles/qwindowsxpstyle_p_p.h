@@ -219,8 +219,18 @@ public:
     HRGN mask(QWidget *widget);
     HTHEME handle();
 
-    RECT toRECT(const QRect &qr);
+    static RECT toRECT(const QRect &qr);
     bool isValid();
+
+    QSize size();
+    QMargins margins(const QRect &rect, int propId = TMT_CONTENTMARGINS);
+    QMargins margins(int propId = TMT_CONTENTMARGINS);
+
+    static QSize themeSize(const QWidget *w = 0, QPainter *p = 0, int themeIn = -1, int part = 0, int state = 0);
+    static QMargins themeMargins(const QRect &rect, const QWidget *w = 0, QPainter *p = 0, int themeIn = -1,
+                                 int part = 0, int state = 0, int propId = TMT_CONTENTMARGINS);
+    static QMargins themeMargins(const QWidget *w = 0, QPainter *p = 0, int themeIn = -1,
+                                 int part = 0, int state = 0, int propId = TMT_CONTENTMARGINS);
 
     const QWidget *widget;
     QPainter *painter;
@@ -282,7 +292,65 @@ struct ThemeMapData {
                      hasAlphaChannel(false), wasAlphaSwapped(false), hadInvalidAlpha(false) {}
 };
 
-class QWindowsXPStylePrivate : public QWindowsStylePrivate
+struct QWindowsUxThemeLib {
+    typedef bool (WINAPI *PtrIsAppThemed)();
+    typedef bool (WINAPI *PtrIsThemeActive)();
+    typedef HTHEME (WINAPI *PtrOpenThemeData)(HWND hwnd, LPCWSTR pszClassList);
+    typedef HRESULT (WINAPI *PtrCloseThemeData)(HTHEME hTheme);
+    typedef HRESULT (WINAPI *PtrDrawThemeBackground)(HTHEME hTheme, HDC hdc, int iPartId, int iStateId, const RECT *pRect, OPTIONAL const RECT *pClipRect);
+    typedef HRESULT (WINAPI *PtrDrawThemeBackgroundEx)(HTHEME hTheme, HDC hdc, int iPartId, int iStateId, const RECT *pRect, OPTIONAL const DTBGOPTS *pOptions);
+    typedef HRESULT (WINAPI *PtrGetCurrentThemeName)(OUT LPWSTR pszThemeFileName, int cchMaxNameChars, OUT OPTIONAL LPWSTR pszColorBuff, int cchMaxColorChars, OUT OPTIONAL LPWSTR pszSizeBuff, int cchMaxSizeChars);
+    typedef HRESULT (WINAPI *PtrGetThemeDocumentationProperty)(LPCWSTR pszThemeName, LPCWSTR pszPropertyName, OUT LPWSTR pszValueBuff, int cchMaxValChars);
+    typedef HRESULT (WINAPI *PtrGetThemeBool)(HTHEME hTheme, int iPartId, int iStateId, int iPropId, OUT BOOL *pfVal);
+    typedef HRESULT (WINAPI *PtrGetThemeColor)(HTHEME hTheme, int iPartId, int iStateId, int iPropId, OUT COLORREF *pColor);
+    typedef HRESULT (WINAPI *PtrGetThemeEnumValue)(HTHEME hTheme, int iPartId, int iStateId, int iPropId, OUT int *piVal);
+    typedef HRESULT (WINAPI *PtrGetThemeFilename)(HTHEME hTheme, int iPartId, int iStateId, int iPropId, OUT LPWSTR pszThemeFileName, int cchMaxBuffChars);
+    typedef HRESULT (WINAPI *PtrGetThemeFont)(HTHEME hTheme, OPTIONAL HDC hdc, int iPartId, int iStateId, int iPropId, OUT LOGFONT *pFont);
+    typedef HRESULT (WINAPI *PtrGetThemeInt)(HTHEME hTheme, int iPartId, int iStateId, int iPropId, OUT int *piVal);
+    typedef HRESULT (WINAPI *PtrGetThemeIntList)(HTHEME hTheme, int iPartId, int iStateId, int iPropId, OUT INTLIST *pIntList);
+    typedef HRESULT (WINAPI *PtrGetThemeMargins)(HTHEME hTheme, OPTIONAL HDC hdc, int iPartId, int iStateId, int iPropId, OPTIONAL RECT *prc, OUT MARGINS *pMargins);
+    typedef HRESULT (WINAPI *PtrGetThemeMetric)(HTHEME hTheme, OPTIONAL HDC hdc, int iPartId, int iStateId, int iPropId, OUT int *piVal);
+    typedef HRESULT (WINAPI *PtrGetThemePartSize)(HTHEME hTheme, HDC hdc, int iPartId, int iStateId, OPTIONAL RECT *prc, enum THEMESIZE eSize, OUT SIZE *psz);
+    typedef HRESULT (WINAPI *PtrGetThemePosition)(HTHEME hTheme, int iPartId, int iStateId, int iPropId, OUT POINT *pPoint);
+    typedef HRESULT (WINAPI *PtrGetThemePropertyOrigin)(HTHEME hTheme, int iPartId, int iStateId, int iPropId, OUT enum PROPERTYORIGIN *pOrigin);
+    typedef HRESULT (WINAPI *PtrGetThemeRect)(HTHEME hTheme, int iPartId, int iStateId, int iPropId, OUT RECT *pRect);
+    typedef HRESULT (WINAPI *PtrGetThemeString)(HTHEME hTheme, int iPartId, int iStateId, int iPropId, OUT LPWSTR pszBuff, int cchMaxBuffChars);
+    typedef HRESULT (WINAPI *PtrGetThemeBackgroundRegion)(HTHEME hTheme, OPTIONAL HDC hdc, int iPartId, int iStateId, const RECT *pRect, OUT HRGN *pRegion);
+    typedef BOOL (WINAPI *PtrIsThemeBackgroundPartiallyTransparent)(HTHEME hTheme, int iPartId, int iStateId);
+    typedef HRESULT (WINAPI *PtrSetWindowTheme)(HWND hwnd, LPCWSTR pszSubAppName, LPCWSTR pszSubIdList);
+    typedef HRESULT (WINAPI *PtrGetThemeTransitionDuration)(HTHEME hTheme, int iPartId, int iStateFromId, int iStateToId, int iPropId, int *pDuration);
+
+    static bool resolveSymbols();
+
+    static PtrIsAppThemed pIsAppThemed;
+    static PtrIsThemeActive pIsThemeActive;
+    static PtrOpenThemeData pOpenThemeData;
+    static PtrCloseThemeData pCloseThemeData;
+    static PtrDrawThemeBackground pDrawThemeBackground;
+    static PtrDrawThemeBackgroundEx pDrawThemeBackgroundEx;
+    static PtrGetCurrentThemeName pGetCurrentThemeName;
+    static PtrGetThemeBool pGetThemeBool;
+    static PtrGetThemeColor pGetThemeColor;
+    static PtrGetThemeEnumValue pGetThemeEnumValue;
+    static PtrGetThemeFilename pGetThemeFilename;
+    static PtrGetThemeFont pGetThemeFont;
+    static PtrGetThemeInt pGetThemeInt;
+    static PtrGetThemeIntList pGetThemeIntList;
+    static PtrGetThemeMargins pGetThemeMargins;
+    static PtrGetThemeMetric pGetThemeMetric;
+    static PtrGetThemePartSize pGetThemePartSize;
+    static PtrGetThemePosition pGetThemePosition;
+    static PtrGetThemePropertyOrigin pGetThemePropertyOrigin;
+    static PtrGetThemeRect pGetThemeRect;
+    static PtrGetThemeString pGetThemeString;
+    static PtrGetThemeBackgroundRegion pGetThemeBackgroundRegion;
+    static PtrGetThemeDocumentationProperty pGetThemeDocumentationProperty;
+    static PtrIsThemeBackgroundPartiallyTransparent pIsThemeBackgroundPartiallyTransparent;
+    static PtrSetWindowTheme pSetWindowTheme;
+    static PtrGetThemeTransitionDuration pGetThemeTransitionDuration; // Windows Vista onwards.
+};
+
+class QWindowsXPStylePrivate : public QWindowsStylePrivate, public QWindowsUxThemeLib
 {
     Q_DECLARE_PUBLIC(QWindowsXPStyle)
 public:
@@ -315,6 +383,9 @@ public:
 
     ~QWindowsXPStylePrivate()
     { cleanup(); }
+
+    static int pixelMetricFromSystemDp(QStyle::PixelMetric pm, const QStyleOption *option = 0, const QWidget *widget = 0);
+    static int fixedPixelMetric(QStyle::PixelMetric pm, const QStyleOption *option = 0, const QWidget *widget = 0);
 
     static HWND winId(const QWidget *widget);
 
@@ -373,6 +444,60 @@ private:
 
     static HTHEME m_themes[NThemes];
 };
+
+inline QSize XPThemeData::size()
+{
+    QSize result(0, 0);
+    if (isValid()) {
+        SIZE size;
+        if (SUCCEEDED(QWindowsXPStylePrivate::pGetThemePartSize(handle(), 0, partId, stateId, 0, TS_TRUE, &size)))
+            result = QSize(size.cx, size.cy);
+    }
+    return result;
+}
+
+inline QMargins XPThemeData::margins(const QRect &qRect, int propId)
+{
+    QMargins result(0, 0, 0 ,0);
+    if (isValid()) {
+        MARGINS margins;
+        RECT rect = XPThemeData::toRECT(qRect);
+        if (SUCCEEDED(QWindowsXPStylePrivate::pGetThemeMargins(handle(), 0, partId, stateId, propId, &rect, &margins)))
+            result = QMargins(margins.cxLeftWidth, margins.cyTopHeight, margins.cxRightWidth, margins.cyBottomHeight);
+    }
+    return result;
+}
+
+inline QMargins XPThemeData::margins(int propId)
+{
+    QMargins result(0, 0, 0 ,0);
+    if (isValid()) {
+        MARGINS margins;
+        if (SUCCEEDED(QWindowsXPStylePrivate::pGetThemeMargins(handle(), 0, partId, stateId, propId, NULL, &margins)))
+            result = QMargins(margins.cxLeftWidth, margins.cyTopHeight, margins.cxRightWidth, margins.cyBottomHeight);
+    }
+    return result;
+}
+
+inline QSize XPThemeData::themeSize(const QWidget *w, QPainter *p, int themeIn, int part, int state)
+{
+    XPThemeData theme(w, p, themeIn, part, state);
+    return theme.size();
+}
+
+inline QMargins XPThemeData::themeMargins(const QRect &rect, const QWidget *w, QPainter *p, int themeIn,
+                                          int part, int state, int propId)
+{
+    XPThemeData theme(w, p, themeIn, part, state);
+    return theme.margins(rect, propId);
+}
+
+inline QMargins XPThemeData::themeMargins(const QWidget *w, QPainter *p, int themeIn,
+                                          int part, int state, int propId)
+{
+    XPThemeData theme(w, p, themeIn, part, state);
+    return theme.margins(propId);
+}
 
 #endif // QT_NO_STYLE_WINDOWS
 

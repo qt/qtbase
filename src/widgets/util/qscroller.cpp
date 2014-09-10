@@ -746,9 +746,8 @@ void QScroller::ensureVisible(const QRectF &rect, qreal xmargin, qreal ymargin, 
         return;
 
     // -- calculate the current pos (or the position after the current scroll)
-    QPointF startPos = d->contentPosition + d->overshootPosition;
-    startPos = QPointF(d->scrollingSegmentsEndPos(Qt::Horizontal),
-                       d->scrollingSegmentsEndPos(Qt::Vertical));
+    QPointF startPos(d->scrollingSegmentsEndPos(Qt::Horizontal),
+                     d->scrollingSegmentsEndPos(Qt::Vertical));
 
     QRectF marginRect(rect.x() - xmargin, rect.y() - ymargin,
                       rect.width() + 2 * xmargin, rect.height() + 2 * ymargin);

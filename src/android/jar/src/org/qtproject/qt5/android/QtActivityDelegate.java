@@ -45,6 +45,7 @@ package org.qtproject.qt5.android;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Configuration;
@@ -110,6 +111,7 @@ public class QtActivityDelegate
     private String m_mainLib;
     private long m_metaState;
     private int m_lastChar = 0;
+    private int m_softInputMode = 0;
     private boolean m_fullScreen = false;
     private boolean m_started = false;
     private HashMap<Integer, QtSurface> m_surfaces = null;
@@ -246,10 +248,12 @@ public class QtActivityDelegate
         if (m_imm == null)
             return;
 
-        if (height > m_layout.getHeight() * 2 / 3)
-            m_activity.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_UNCHANGED | WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
-        else
+        if (m_softInputMode == 0 && height > m_layout.getHeight() * 2 / 3)
+           m_activity.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_UNCHANGED | WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+        else if (m_softInputMode == 0)
             m_activity.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_UNCHANGED | WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
+        else
+            m_activity.getWindow().setSoftInputMode(m_softInputMode);
 
         int initialCapsMode = 0;
         int imeOptions = android.view.inputmethod.EditorInfo.IME_ACTION_DONE;
@@ -473,6 +477,12 @@ public class QtActivityDelegate
             m_applicationParameters = loaderParams.getString(APPLICATION_PARAMETERS_KEY);
         else
             m_applicationParameters = "";
+
+        try {
+            m_softInputMode = m_activity.getPackageManager().getActivityInfo(m_activity.getComponentName(), 0).softInputMode;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         return true;
     }
@@ -1085,11 +1095,14 @@ public class QtActivityDelegate
             Log.e(QtNative.QtTAG, "Surface " + id +" not found!");
         }
 
+        if (view == null)
+            return;
+
         // Keep last frame in stack until it is replaced to get correct
         // shutdown transition
         if (m_surfaces.size() == 0 && m_nativeViews.size() == 0) {
             m_dummyView = view;
-        } else if (view != null) {
+        } else {
             m_layout.removeView(view);
         }
     }

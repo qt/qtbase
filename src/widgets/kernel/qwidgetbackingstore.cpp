@@ -1158,6 +1158,7 @@ void QWidgetBackingStore::doSync()
         return;
     }
 
+#ifndef QT_NO_OPENGL
     // There is something other dirty than the renderToTexture widgets.
     // Now it is time to include the renderToTexture ones among the others.
     if (widgetTextures && widgetTextures->count()) {
@@ -1167,6 +1168,8 @@ void QWidgetBackingStore::doSync()
             toClean += rect;
         }
     }
+#endif
+
     // The dirtyRenderToTextureWidgets list is useless here, so just reset. As
     // unintuitive as it is, we need to send paint events to renderToTexture
     // widgets always when something (any widget) needs to be updated, even if
@@ -1249,8 +1252,10 @@ void QWidgetBackingStore::flush(QWidget *widget)
         QWidget *target = widget ? widget : tlw;
         qt_flush(target, dirtyOnScreen, store, tlw, tlwOffset, widgetTextures, this);
         dirtyOnScreen = QRegion();
+#ifndef QT_NO_OPENGL
         if (widgetTextures && widgetTextures->count())
             return;
+#endif
     }
 
     if (!dirtyOnScreenWidgets || dirtyOnScreenWidgets->isEmpty()) {

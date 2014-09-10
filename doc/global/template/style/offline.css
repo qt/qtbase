@@ -97,6 +97,10 @@ a[href*="http://"], a[href*="ftp://"], a[href*="https://"] {
     text-height: 24px;
 }
 
+.flags:target {
+    background-color: #FFFFD6;
+}
+
 /*
 -------------------------------
 NOTE styles
@@ -327,6 +331,10 @@ h2, p.h2 {
     max-width: 99%;
 }
 
+h2:target {
+    background-color: #F2F3D4;
+}
+
 h3 {
     font: 500 14px/1.2 Arial;
     font-weight: 100;
@@ -351,6 +359,10 @@ h3.fn, span.fn {
     font-size: 14px;
     margin: 0px;
     margin-top: 45px;
+}
+
+h3.fn:target {
+    background-color: #F6F6D6;
 }
 
 .name {
@@ -411,6 +423,10 @@ table, pre {
  table tr.odd {
      background-color: #F6F6F6;
      color: #66666E;
+ }
+
+ table tr:target {
+     background-color: #F6F6D6;
  }
 
  table thead {

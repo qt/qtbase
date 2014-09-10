@@ -49,6 +49,7 @@
 
 #include "qwindowscontext.h"
 
+#include <QtGui/QPainter>
 #include <QtGui/QWindow>
 #include <QtCore/QDebug>
 
@@ -85,9 +86,18 @@ QWindowsDirect2DBackingStore::~QWindowsDirect2DBackingStore()
 {
 }
 
-void QWindowsDirect2DBackingStore::beginPaint(const QRegion &)
+void QWindowsDirect2DBackingStore::beginPaint(const QRegion &region)
 {
-    bitmap(nativeWindow(window())->pixmap())->deviceContext()->begin();
+    QPixmap *pixmap = nativeWindow(window())->pixmap();
+    bitmap(pixmap)->deviceContext()->begin();
+
+    QPainter painter(pixmap);
+    QColor clear(Qt::transparent);
+
+    painter.setCompositionMode(QPainter::CompositionMode_Source);
+
+    foreach (const QRect &r, region.rects())
+        painter.fillRect(r, clear);
 }
 
 void QWindowsDirect2DBackingStore::endPaint()
@@ -107,7 +117,7 @@ void QWindowsDirect2DBackingStore::flush(QWindow *targetWindow, const QRegion &r
         nativeWindow(targetWindow)->flush(copy.data(), region, offset);
     }
 
-    nativeWindow(targetWindow)->present();
+    nativeWindow(targetWindow)->present(region);
 }
 
 void QWindowsDirect2DBackingStore::resize(const QSize &size, const QRegion &region)

@@ -1,0 +1,203 @@
+From bfcd8298f9ba074116de434bf252ea95be968a20 Mon Sep 17 00:00:00 2001
+From: Andrew Knight <andrew.knight@digia.com>
+Date: Mon, 1 Sep 2014 12:11:17 +0300
+Subject: [PATCH] ANGLE: Fix -angle-d3d11 on MSVC2010
+
+Allow the D3D11 renderer to build with the June 2010 DirectX SDK.
+
+Change-Id: I2343acedab16845d6a0d4a53cf3145f583efc4a7
+---
+ src/3rdparty/angle/src/common/platform.h           |  2 +
+ .../src/libGLESv2/renderer/d3d/d3d11/Clear11.cpp   |  4 +-
+ .../renderer/d3d/d3d11/renderer11_utils.cpp        | 49 ++++++++++++++++++++++
+ 3 files changed, 53 insertions(+), 2 deletions(-)
+
+diff --git a/src/3rdparty/angle/src/common/platform.h b/src/3rdparty/angle/src/common/platform.h
+index cedc6f2..44c5c7c 100644
+--- a/src/3rdparty/angle/src/common/platform.h
++++ b/src/3rdparty/angle/src/common/platform.h
+@@ -59,8 +59,10 @@
+ #       include <d3d10.h>
+ #       include <d3d11.h>
+ #       include <dxgi.h>
++#      if _MSC_VER >= 1700
+ #       include <dxgi1_2.h>
+ #       include <d3dcompiler.h>
++#      endif
+ #   endif
+ 
+ #   undef near
+diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/Clear11.cpp b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/Clear11.cpp
+index 8db5ea2..5121950 100644
+--- a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/Clear11.cpp
++++ b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/Clear11.cpp
+@@ -116,8 +116,8 @@ Clear11::Clear11(Renderer11 *renderer)
+ 
+     mFloatClearShader = CreateClearShader(device, DXGI_FORMAT_R32G32B32A32_FLOAT, g_VS_ClearFloat, g_PS_ClearFloat);
+     if (mRenderer->isLevel9()) {
+-        mUintClearShader = { 0 };
+-        mIntClearShader = { 0 };
++        memset(&mUintClearShader, 0, sizeof(ClearShader));
++        memset(&mIntClearShader, 0, sizeof(ClearShader));
+         return;
+     }
+ 
+diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/renderer11_utils.cpp b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/renderer11_utils.cpp
+index d3d135f..8e0c21b 100644
+--- a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/renderer11_utils.cpp
++++ b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/renderer11_utils.cpp
+@@ -12,6 +12,31 @@
+ #include "libGLESv2/renderer/d3d/d3d11/formatutils11.h"
+ #include "common/debug.h"
+ 
++#ifndef D3D_FL9_1_DEFAULT_MAX_ANISOTROPY
++#  define D3D_FL9_1_DEFAULT_MAX_ANISOTROPY 2
++#endif
++#ifndef D3D_FL9_1_SIMULTANEOUS_RENDER_TARGET_COUNT
++#  define D3D_FL9_1_SIMULTANEOUS_RENDER_TARGET_COUNT 1
++#endif
++#ifndef D3D_FL9_3_SIMULTANEOUS_RENDER_TARGET_COUNT
++#  define D3D_FL9_3_SIMULTANEOUS_RENDER_TARGET_COUNT 4
++#endif
++#ifndef D3D_FL9_1_REQ_TEXTURECUBE_DIMENSION
++#  define D3D_FL9_1_REQ_TEXTURECUBE_DIMENSION 512
++#endif
++#ifndef D3D_FL9_3_REQ_TEXTURECUBE_DIMENSION
++#  define D3D_FL9_3_REQ_TEXTURECUBE_DIMENSION 4096
++#endif
++#ifndef D3D_FL9_1_REQ_TEXTURE2D_U_OR_V_DIMENSION
++#  define D3D_FL9_1_REQ_TEXTURE2D_U_OR_V_DIMENSION 2048
++#endif
++#ifndef D3D_FL9_1_REQ_TEXTURE3D_U_V_OR_W_DIMENSION
++#  define D3D_FL9_1_REQ_TEXTURE3D_U_V_OR_W_DIMENSION 256
++#endif
++#ifndef D3D_FL9_3_REQ_TEXTURE2D_U_OR_V_DIMENSION
++#  define D3D_FL9_3_REQ_TEXTURE2D_U_OR_V_DIMENSION 4096
++#endif
++
+ namespace rx
+ {
+ 
+@@ -273,7 +298,9 @@ static bool GetNPOTTextureSupport(D3D_FEATURE_LEVEL featureLevel)
+ {
+     switch (featureLevel)
+     {
++#if _MSC_VER >= 1700
+       case D3D_FEATURE_LEVEL_11_1:
++#endif
+       case D3D_FEATURE_LEVEL_11_0:
+       case D3D_FEATURE_LEVEL_10_1:
+       case D3D_FEATURE_LEVEL_10_0: return true;
+@@ -291,7 +318,9 @@ static float GetMaximumAnisotropy(D3D_FEATURE_LEVEL featureLevel)
+ {
+     switch (featureLevel)
+     {
++#if _MSC_VER >= 1700
+       case D3D_FEATURE_LEVEL_11_1:
++#endif
+       case D3D_FEATURE_LEVEL_11_0: return D3D11_MAX_MAXANISOTROPY;
+ 
+       case D3D_FEATURE_LEVEL_10_1:
+@@ -311,7 +340,9 @@ static bool GetOcclusionQuerySupport(D3D_FEATURE_LEVEL featureLevel)
+ {
+     switch (featureLevel)
+     {
++#if _MSC_VER >= 1700
+       case D3D_FEATURE_LEVEL_11_1:
++#endif
+       case D3D_FEATURE_LEVEL_11_0:
+       case D3D_FEATURE_LEVEL_10_1:
+       case D3D_FEATURE_LEVEL_10_0: return true;
+@@ -331,7 +362,9 @@ static bool GetEventQuerySupport(D3D_FEATURE_LEVEL featureLevel)
+ 
+     switch (featureLevel)
+     {
++#if _MSC_VER >= 1700
+       case D3D_FEATURE_LEVEL_11_1:
++#endif
+       case D3D_FEATURE_LEVEL_11_0:
+       case D3D_FEATURE_LEVEL_10_1:
+       case D3D_FEATURE_LEVEL_10_0:
+@@ -349,7 +382,9 @@ static bool GetInstancingSupport(D3D_FEATURE_LEVEL featureLevel)
+ 
+     switch (featureLevel)
+     {
++#if _MSC_VER >= 1700
+       case D3D_FEATURE_LEVEL_11_1:
++#endif
+       case D3D_FEATURE_LEVEL_11_0:
+       case D3D_FEATURE_LEVEL_10_1:
+       case D3D_FEATURE_LEVEL_10_0:
+@@ -372,7 +407,9 @@ static bool GetDerivativeInstructionSupport(D3D_FEATURE_LEVEL featureLevel)
+ 
+     switch (featureLevel)
+     {
++#if _MSC_VER >= 1700
+       case D3D_FEATURE_LEVEL_11_1:
++#endif
+       case D3D_FEATURE_LEVEL_11_0:
+       case D3D_FEATURE_LEVEL_10_1:
+       case D3D_FEATURE_LEVEL_10_0:
+@@ -390,7 +427,9 @@ static size_t GetMaximumSimultaneousRenderTargets(D3D_FEATURE_LEVEL featureLevel
+ 
+     switch (featureLevel)
+     {
++#if _MSC_VER >= 1700
+       case D3D_FEATURE_LEVEL_11_1:
++#endif
+       case D3D_FEATURE_LEVEL_11_0: return D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT;
+ 
+         // FIXME(geofflang): Work around NVIDIA driver bug by repacking buffers
+@@ -409,7 +448,9 @@ static size_t GetMaximum2DTextureSize(D3D_FEATURE_LEVEL featureLevel)
+ {
+     switch (featureLevel)
+     {
++#if _MSC_VER >= 1700
+       case D3D_FEATURE_LEVEL_11_1:
++#endif
+       case D3D_FEATURE_LEVEL_11_0: return D3D11_REQ_TEXTURE2D_U_OR_V_DIMENSION;
+ 
+       case D3D_FEATURE_LEVEL_10_1:
+@@ -427,7 +468,9 @@ static size_t GetMaximumCubeMapTextureSize(D3D_FEATURE_LEVEL featureLevel)
+ {
+     switch (featureLevel)
+     {
++#if _MSC_VER >= 1700
+       case D3D_FEATURE_LEVEL_11_1:
++#endif
+       case D3D_FEATURE_LEVEL_11_0: return D3D11_REQ_TEXTURECUBE_DIMENSION;
+ 
+       case D3D_FEATURE_LEVEL_10_1:
+@@ -445,7 +488,9 @@ static size_t GetMaximum2DTextureArraySize(D3D_FEATURE_LEVEL featureLevel)
+ {
+     switch (featureLevel)
+     {
++#if _MSC_VER >= 1700
+       case D3D_FEATURE_LEVEL_11_1:
++#endif
+       case D3D_FEATURE_LEVEL_11_0: return D3D11_REQ_TEXTURE2D_ARRAY_AXIS_DIMENSION;
+ 
+       case D3D_FEATURE_LEVEL_10_1:
+@@ -463,7 +508,9 @@ static size_t GetMaximum3DTextureSize(D3D_FEATURE_LEVEL featureLevel)
+ {
+     switch (featureLevel)
+     {
++#if _MSC_VER >= 1700
+       case D3D_FEATURE_LEVEL_11_1:
++#endif
+       case D3D_FEATURE_LEVEL_11_0: return D3D11_REQ_TEXTURE3D_U_V_OR_W_DIMENSION;
+ 
+       case D3D_FEATURE_LEVEL_10_1:
+@@ -481,7 +528,9 @@ static size_t GetMaximumViewportSize(D3D_FEATURE_LEVEL featureLevel)
+ {
+     switch (featureLevel)
+     {
++#if _MSC_VER >= 1700
+       case D3D_FEATURE_LEVEL_11_1:
++#endif
+       case D3D_FEATURE_LEVEL_11_0: return D3D11_VIEWPORT_BOUNDS_MAX;
+ 
+       case D3D_FEATURE_LEVEL_10_1:
+-- 
+1.9.0.msysgit.0
+

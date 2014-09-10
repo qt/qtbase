@@ -47,6 +47,11 @@
 #include <QtNetwork/qhostaddress.h>
 #include <QtNetwork/qnetworkproxy.h>
 
+#if !defined(QT_NO_SSL) && defined(QT_NO_OPENSSL) && defined(QT_BUILD_INTERNAL)
+#include "private/qsslkey_p.h"
+#define TEST_CRYPTO
+#endif
+
 class tst_QSslKey : public QObject
 {
     Q_OBJECT
@@ -90,6 +95,11 @@ private slots:
     void passphraseChecks_data();
     void passphraseChecks();
     void noPassphraseChecks();
+#ifdef TEST_CRYPTO
+    void encrypt_data();
+    void encrypt();
+#endif
+
 #endif
 private:
     QString testDataDir;
@@ -306,9 +316,6 @@ void tst_QSslKey::toEncryptedPemOrDer()
     QByteArray pwBytes(password.toLatin1());
 
     if (type == QSsl::PrivateKey) {
-#ifdef QT_NO_OPENSSL
-        QSKIP("Encrypted keys require support from the SSL backend");
-#endif
         QByteArray encryptedPem = key.toPem(pwBytes);
         QVERIFY(!encryptedPem.isEmpty());
         QSslKey keyPem(encryptedPem, algorithm, QSsl::Pem, type, pwBytes);
@@ -347,6 +354,7 @@ void tst_QSslKey::passphraseChecks_data()
 
     QTest::newRow("DES") << QString(testDataDir + "/rsa-with-passphrase-des.pem");
     QTest::newRow("3DES") << QString(testDataDir + "/rsa-with-passphrase-3des.pem");
+    QTest::newRow("RC2") << QString(testDataDir + "/rsa-with-passphrase-rc2.pem");
 }
 
 void tst_QSslKey::passphraseChecks()
@@ -379,9 +387,6 @@ void tst_QSslKey::passphraseChecks()
         QSslKey key(&keyFile,QSsl::Rsa,QSsl::Pem, QSsl::PrivateKey, "WRONG!");
         QVERIFY(key.isNull()); // wrong passphrase => should not be able to decode key
     }
-#ifdef QT_NO_OPENSSL
-    QEXPECT_FAIL("", "Encrypted keys require support from the SSL backend", Abort);
-#endif
     {
         if (!keyFile.isOpen())
             keyFile.open(QIODevice::ReadOnly);
@@ -413,9 +418,6 @@ void tst_QSslKey::noPassphraseChecks()
         QSslKey key(&keyFile,QSsl::Rsa,QSsl::Pem, QSsl::PrivateKey, "");
         QVERIFY(!key.isNull()); // empty passphrase => should be able to decode key
     }
-#ifdef QT_NO_OPENSSL
-    QEXPECT_FAIL("", "Encrypted keys require support from the SSL backend", Abort);
-#endif
     {
         if (!keyFile.isOpen())
             keyFile.open(QIODevice::ReadOnly);
@@ -425,6 +427,112 @@ void tst_QSslKey::noPassphraseChecks()
         QVERIFY(!key.isNull()); // passphrase given but key is not encrypted anyway => should work
     }
 }
+
+#ifdef TEST_CRYPTO
+Q_DECLARE_METATYPE(QSslKeyPrivate::Cipher)
+
+void tst_QSslKey::encrypt_data()
+{
+    QTest::addColumn<QSslKeyPrivate::Cipher>("cipher");
+    QTest::addColumn<QByteArray>("key");
+    QTest::addColumn<QByteArray>("plainText");
+    QTest::addColumn<QByteArray>("cipherText");
+
+    QTest::newRow("DES-CBC, length 0")
+        << QSslKeyPrivate::DesCbc << QByteArray("01234567")
+        << QByteArray()
+        << QByteArray::fromHex("956585228BAF9B1F");
+    QTest::newRow("DES-CBC, length 1")
+        << QSslKeyPrivate::DesCbc << QByteArray("01234567")
+        << QByteArray(1, 'a')
+        << QByteArray::fromHex("E6880AF202BA3C12");
+    QTest::newRow("DES-CBC, length 2")
+        << QSslKeyPrivate::DesCbc << QByteArray("01234567")
+        << QByteArray(2, 'a')
+        << QByteArray::fromHex("A82492386EED6026");
+    QTest::newRow("DES-CBC, length 3")
+        << QSslKeyPrivate::DesCbc << QByteArray("01234567")
+        << QByteArray(3, 'a')
+        << QByteArray::fromHex("90B76D5B79519CBA");
+    QTest::newRow("DES-CBC, length 4")
+        << QSslKeyPrivate::DesCbc << QByteArray("01234567")
+        << QByteArray(4, 'a')
+        << QByteArray::fromHex("63E3DD6FED87052A");
+    QTest::newRow("DES-CBC, length 5")
+        << QSslKeyPrivate::DesCbc << QByteArray("01234567")
+        << QByteArray(5, 'a')
+        << QByteArray::fromHex("03ACDB0EACBDFA94");
+    QTest::newRow("DES-CBC, length 6")
+        << QSslKeyPrivate::DesCbc << QByteArray("01234567")
+        << QByteArray(6, 'a')
+        << QByteArray::fromHex("7D95024E42A3A88A");
+    QTest::newRow("DES-CBC, length 7")
+        << QSslKeyPrivate::DesCbc << QByteArray("01234567")
+        << QByteArray(7, 'a')
+        << QByteArray::fromHex("5003436B8A8E42E9");
+    QTest::newRow("DES-CBC, length 8")
+        << QSslKeyPrivate::DesCbc << QByteArray("01234567")
+        << QByteArray(8, 'a')
+        << QByteArray::fromHex("E4C1F054BF5521C0A4A0FD4A2BC6C1B1");
+
+    QTest::newRow("DES-EDE3-CBC, length 0")
+        << QSslKeyPrivate::DesEde3Cbc << QByteArray("0123456789abcdefghijklmn")
+        << QByteArray()
+        << QByteArray::fromHex("3B2B4CD0B0FD495F");
+    QTest::newRow("DES-EDE3-CBC, length 8")
+        << QSslKeyPrivate::DesEde3Cbc << QByteArray("0123456789abcdefghijklmn")
+        << QByteArray(8, 'a')
+        << QByteArray::fromHex("F2A5A87763C54A72A3224103D90CDB03");
+
+    QTest::newRow("RC2-40-CBC, length 0")
+        << QSslKeyPrivate::Rc2Cbc << QByteArray("01234")
+        << QByteArray()
+        << QByteArray::fromHex("6D05D52392FF6E7A");
+    QTest::newRow("RC2-40-CBC, length 8")
+        << QSslKeyPrivate::Rc2Cbc << QByteArray("01234")
+        << QByteArray(8, 'a')
+        << QByteArray::fromHex("75768E64C5749072A5D168F3AFEB0005");
+
+    QTest::newRow("RC2-64-CBC, length 0")
+        << QSslKeyPrivate::Rc2Cbc << QByteArray("01234567")
+        << QByteArray()
+        << QByteArray::fromHex("ADAE6BF70F420130");
+    QTest::newRow("RC2-64-CBC, length 8")
+        << QSslKeyPrivate::Rc2Cbc << QByteArray("01234567")
+        << QByteArray(8, 'a')
+        << QByteArray::fromHex("C7BF5C80AFBE9FBEFBBB9FD935F6D0DF");
+
+    QTest::newRow("RC2-128-CBC, length 0")
+        << QSslKeyPrivate::Rc2Cbc << QByteArray("012345679abcdefg")
+        << QByteArray()
+        << QByteArray::fromHex("1E965D483A13C8FB");
+    QTest::newRow("RC2-128-CBC, length 8")
+        << QSslKeyPrivate::Rc2Cbc << QByteArray("012345679abcdefg")
+        << QByteArray(8, 'a')
+        << QByteArray::fromHex("5AEC1A5B295660B02613454232F7DECE");
+}
+
+void tst_QSslKey::encrypt()
+{
+    QFETCH(QSslKeyPrivate::Cipher, cipher);
+    QFETCH(QByteArray, key);
+    QFETCH(QByteArray, plainText);
+    QFETCH(QByteArray, cipherText);
+    QByteArray iv("abcdefgh");
+
+#ifdef Q_OS_WINRT
+    QEXPECT_FAIL("RC2-40-CBC, length 0", "WinRT treats RC2 as 128-bit", Abort);
+    QEXPECT_FAIL("RC2-40-CBC, length 8", "WinRT treats RC2 as 128-bit", Abort);
+    QEXPECT_FAIL("RC2-64-CBC, length 0", "WinRT treats RC2 as 128-bit", Abort);
+    QEXPECT_FAIL("RC2-64-CBC, length 8", "WinRT treats RC2 as 128-bit", Abort);
+#endif
+    QByteArray encrypted = QSslKeyPrivate::encrypt(cipher, plainText, key, iv);
+    QCOMPARE(encrypted, cipherText);
+
+    QByteArray decrypted = QSslKeyPrivate::decrypt(cipher, cipherText, key, iv);
+    QCOMPARE(decrypted, plainText);
+}
+#endif
 
 #endif
 

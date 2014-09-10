@@ -1265,6 +1265,13 @@ void UnixMakefileGenerator::init2()
                     if(!instpath.endsWith(Option::dir_sep))
                         instpath += Option::dir_sep;
                     soname.prepend(instpath);
+                } else if (!project->isEmpty("QMAKE_SONAME_PREFIX")) {
+                    QString sonameprefix = project->first("QMAKE_SONAME_PREFIX").toQString();
+                    if (!sonameprefix.startsWith('@') && !sonameprefix.startsWith('$'))
+                        sonameprefix = Option::fixPathToTargetOS(sonameprefix, false);
+                    if (!sonameprefix.endsWith(Option::dir_sep))
+                        sonameprefix += Option::dir_sep;
+                    soname.prepend(sonameprefix);
                 }
                 project->values("QMAKE_LFLAGS_SONAME").first() += escapeFilePath(soname);
             }

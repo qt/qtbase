@@ -321,22 +321,24 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
         if (const QStyleOptionHeader *header = qstyleoption_cast<const QStyleOptionHeader *>(opt)) {
             QPen oldPen = p->pen();
             if (header->sortIndicator & QStyleOptionHeader::SortUp) {
-                QPolygon pa(3);
                 p->setPen(QPen(opt->palette.light(), 0));
                 p->drawLine(opt->rect.x() + opt->rect.width(), opt->rect.y(),
                             opt->rect.x() + opt->rect.width() / 2, opt->rect.y() + opt->rect.height());
                 p->setPen(QPen(opt->palette.dark(), 0));
-                pa.setPoint(0, opt->rect.x() + opt->rect.width() / 2, opt->rect.y() + opt->rect.height());
-                pa.setPoint(1, opt->rect.x(), opt->rect.y());
-                pa.setPoint(2, opt->rect.x() + opt->rect.width(), opt->rect.y());
-                p->drawPolyline(pa);
+                const QPoint points[] = {
+                    QPoint(opt->rect.x() + opt->rect.width() / 2, opt->rect.y() + opt->rect.height()),
+                    QPoint(opt->rect.x(), opt->rect.y()),
+                    QPoint(opt->rect.x() + opt->rect.width(), opt->rect.y()),
+                };
+                p->drawPolyline(points, sizeof points / sizeof *points);
             } else if (header->sortIndicator & QStyleOptionHeader::SortDown) {
-                QPolygon pa(3);
                 p->setPen(QPen(opt->palette.light(), 0));
-                pa.setPoint(0, opt->rect.x(), opt->rect.y() + opt->rect.height());
-                pa.setPoint(1, opt->rect.x() + opt->rect.width(), opt->rect.y() + opt->rect.height());
-                pa.setPoint(2, opt->rect.x() + opt->rect.width() / 2, opt->rect.y());
-                p->drawPolyline(pa);
+                const QPoint points[] = {
+                    QPoint(opt->rect.x(), opt->rect.y() + opt->rect.height()),
+                    QPoint(opt->rect.x() + opt->rect.width(), opt->rect.y() + opt->rect.height()),
+                    QPoint(opt->rect.x() + opt->rect.width() / 2, opt->rect.y()),
+                };
+                p->drawPolyline(points, sizeof points / sizeof *points);
                 p->setPen(QPen(opt->palette.dark(), 0));
                 p->drawLine(opt->rect.x(), opt->rect.y() + opt->rect.height(),
                             opt->rect.x() + opt->rect.width() / 2, opt->rect.y());
@@ -519,11 +521,6 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
         if (pe == PE_IndicatorSpinUp && fw)
             --sy;
 
-        QPolygon a;
-        if (pe == PE_IndicatorSpinDown)
-            a.setPoints(3, 0, 1,  sw-1, 1,  sh-2, sh-1);
-        else
-            a.setPoints(3, 0, sh-1,  sw-1, sh-1,  sh-2, 1);
         int bsx = 0;
         int bsy = 0;
         if (opt->state & State_Sunken) {
@@ -535,7 +532,13 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
         p->setPen(opt->palette.buttonText().color());
         p->setBrush(opt->palette.buttonText());
         p->setRenderHint(QPainter::Qt4CompatiblePainting);
-        p->drawPolygon(a);
+        if (pe == PE_IndicatorSpinDown) {
+            const QPoint points[] = { QPoint(0, 1), QPoint(sw-1, 1), QPoint(sh-2, sh-1) };
+            p->drawPolygon(points, sizeof points / sizeof *points);
+        } else {
+            const QPoint points[] = { QPoint(0, sh-1), QPoint(sw-1, sh-1), QPoint(sh-2, 1) };
+            p->drawPolygon(points, sizeof points / sizeof *points);
+        }
         p->restore();
         break; }
 #endif // QT_NO_SPINBOX
@@ -1642,30 +1645,33 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
         break;
     case CE_ToolBoxTabShape:
         if (const QStyleOptionToolBox *tb = qstyleoption_cast<const QStyleOptionToolBox *>(opt)) {
-            int d = 20 + tb->rect.height() - 3;
-            QPolygon a(7);
-            if (tb->direction != Qt::RightToLeft) {
-                a.setPoint(0, -1, tb->rect.height() + 1);
-                a.setPoint(1, -1, 1);
-                a.setPoint(2, tb->rect.width() - d, 1);
-                a.setPoint(3, tb->rect.width() - 20, tb->rect.height() - 2);
-                a.setPoint(4, tb->rect.width() - 1, tb->rect.height() - 2);
-                a.setPoint(5, tb->rect.width() - 1, tb->rect.height() + 1);
-                a.setPoint(6, -1, tb->rect.height() + 1);
-            } else {
-                a.setPoint(0, tb->rect.width(), tb->rect.height() + 1);
-                a.setPoint(1, tb->rect.width(), 1);
-                a.setPoint(2, d - 1, 1);
-                a.setPoint(3, 20 - 1, tb->rect.height() - 2);
-                a.setPoint(4, 0, tb->rect.height() - 2);
-                a.setPoint(5, 0, tb->rect.height() + 1);
-                a.setPoint(6, tb->rect.width(), tb->rect.height() + 1);
-            }
-
             p->setPen(tb->palette.mid().color().darker(150));
             bool oldQt4CompatiblePainting = p->testRenderHint(QPainter::Qt4CompatiblePainting);
             p->setRenderHint(QPainter::Qt4CompatiblePainting);
-            p->drawPolygon(a);
+            int d = 20 + tb->rect.height() - 3;
+            if (tb->direction != Qt::RightToLeft) {
+                const QPoint points[] = {
+                    QPoint(-1, tb->rect.height() + 1),
+                    QPoint(-1, 1),
+                    QPoint(tb->rect.width() - d, 1),
+                    QPoint(tb->rect.width() - 20, tb->rect.height() - 2),
+                    QPoint(tb->rect.width() - 1, tb->rect.height() - 2),
+                    QPoint(tb->rect.width() - 1, tb->rect.height() + 1),
+                    QPoint(-1, tb->rect.height() + 1),
+                };
+                p->drawPolygon(points, sizeof points / sizeof *points);
+            } else {
+                const QPoint points[] = {
+                    QPoint(tb->rect.width(), tb->rect.height() + 1),
+                    QPoint(tb->rect.width(), 1),
+                    QPoint(d - 1, 1),
+                    QPoint(20 - 1, tb->rect.height() - 2),
+                    QPoint(0, tb->rect.height() - 2),
+                    QPoint(0, tb->rect.height() + 1),
+                    QPoint(tb->rect.width(), tb->rect.height() + 1),
+                };
+                p->drawPolygon(points, sizeof points / sizeof *points);
+            }
             p->setRenderHint(QPainter::Qt4CompatiblePainting, oldQt4CompatiblePainting);
             p->setPen(tb->palette.light().color());
             if (tb->direction != Qt::RightToLeft) {
@@ -3037,7 +3043,18 @@ QRect QCommonStyle::subElementRect(SubElement sr, const QStyleOption *opt,
 
 #ifndef QT_NO_DIAL
 
-static QPolygonF calcArrow(const QStyleOptionSlider *dial, qreal &a)
+// in lieu of std::array, minimal API
+template <int N>
+struct StaticPolygonF
+{
+    QPointF data[N];
+
+    Q_DECL_CONSTEXPR int size() const { return N; }
+    Q_DECL_CONSTEXPR const QPointF *cbegin() const { return data; }
+    Q_DECL_CONSTEXPR const QPointF &operator[](int idx) const { return data[idx]; }
+};
+
+static StaticPolygonF<3> calcArrow(const QStyleOptionSlider *dial, qreal &a)
 {
     int width = dial->rect.width();
     int height = dial->rect.height();
@@ -3061,13 +3078,14 @@ static QPolygonF calcArrow(const QStyleOptionSlider *dial, qreal &a)
         len = 5;
     int back = len / 2;
 
-    QPolygonF arrow(3);
-    arrow[0] = QPointF(0.5 + xc + len * qCos(a),
-                       0.5 + yc - len * qSin(a));
-    arrow[1] = QPointF(0.5 + xc + back * qCos(a + Q_PI * 5 / 6),
-                       0.5 + yc - back * qSin(a + Q_PI * 5 / 6));
-    arrow[2] = QPointF(0.5 + xc + back * qCos(a - Q_PI * 5 / 6),
-                       0.5 + yc - back * qSin(a - Q_PI * 5 / 6));
+    StaticPolygonF<3> arrow = {{
+        QPointF(0.5 + xc + len * qCos(a),
+                0.5 + yc - len * qSin(a)),
+        QPointF(0.5 + xc + back * qCos(a + Q_PI * 5 / 6),
+                0.5 + yc - back * qSin(a + Q_PI * 5 / 6)),
+        QPointF(0.5 + xc + back * qCos(a - Q_PI * 5 / 6),
+                0.5 + yc - back * qSin(a - Q_PI * 5 / 6)),
+    }};
     return arrow;
 }
 
@@ -3569,12 +3587,12 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
             p->drawArc(br, 240 * 16, 180 * 16);
 
             qreal a;
-            QPolygonF arrow(calcArrow(dial, a));
+            const StaticPolygonF<3> arrow = calcArrow(dial, a);
 
             p->setPen(Qt::NoPen);
             p->setBrush(pal.button());
             p->setRenderHint(QPainter::Qt4CompatiblePainting);
-            p->drawPolygon(arrow);
+            p->drawPolygon(arrow.cbegin(), arrow.size());
 
             a = QStyleHelper::angle(QPointF(width / 2, height / 2), arrow[0]);
             p->setBrush(Qt::NoBrush);

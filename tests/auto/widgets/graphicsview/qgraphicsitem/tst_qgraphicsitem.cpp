@@ -461,6 +461,7 @@ private slots:
     void touchEventPropagation_data();
     void touchEventPropagation();
     void deviceCoordinateCache_simpleRotations();
+    void resolvePaletteForItemChildren();
 
     // task specific tests below me
     void task141694_textItemEnsureVisible();
@@ -11693,6 +11694,22 @@ void tst_QGraphicsItem::QTBUG_21618_untransformable_sceneTransform()
     QCOMPARE(item2->deviceTransform(tx).map(QPointF(100, 100)), QPointF(100, 300));
     QCOMPARE(item2_topleft->deviceTransform(tx).map(QPointF()), QPointF(200, 200));
     QCOMPARE(item2_bottomright->deviceTransform(tx).map(QPointF()), QPointF(100, 300));
+}
+
+void tst_QGraphicsItem::resolvePaletteForItemChildren()
+{
+    QGraphicsScene scene;
+    QGraphicsRectItem item(0, 0, 50, -150);
+    scene.addItem(&item);
+    QGraphicsWidget widget;
+    widget.setParentItem(&item);
+
+    QColor green(Qt::green);
+    QPalette paletteForScene = scene.palette();
+    paletteForScene.setColor(QPalette::Active, QPalette::Window, green);
+    scene.setPalette(paletteForScene);
+
+    QCOMPARE(widget.palette().color(QPalette::Active, QPalette::Window), green);
 }
 
 QTEST_MAIN(tst_QGraphicsItem)

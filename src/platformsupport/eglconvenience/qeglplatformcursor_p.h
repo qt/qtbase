@@ -44,6 +44,7 @@
 
 #include <qpa/qplatformcursor.h>
 #include <qpa/qplatformscreen.h>
+#include <QtGui/QOpenGLFunctions>
 
 QT_BEGIN_NAMESPACE
 
@@ -86,7 +87,7 @@ private:
     bool m_active;
 };
 
-class QEGLPlatformCursor : public QPlatformCursor
+class QEGLPlatformCursor : public QPlatformCursor, protected QOpenGLFunctions
 {
 public:
     QEGLPlatformCursor(QPlatformScreen *screen);
@@ -113,7 +114,7 @@ private:
     void draw(const QRectF &rect);
     void update(const QRegion &region);
     void createShaderPrograms();
-    static void createCursorTexture(uint *texture, const QImage &image);
+    void createCursorTexture(uint *texture, const QImage &image);
     void initCursorAtlas();
 
     // current cursor information

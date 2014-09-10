@@ -310,7 +310,7 @@ struct DefinedTypesFilter {
     name to a type so that it can be created and destructed
     dynamically at run-time. Declare new types with Q_DECLARE_METATYPE()
     to make them available to QVariant and other template-based functions.
-    Call qRegisterMetaType() to make type available to non-template based
+    Call qRegisterMetaType() to make types available to non-template based
     functions, such as the queued signal and slot connections.
 
     Any class or struct that has a public default

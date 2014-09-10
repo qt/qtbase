@@ -742,7 +742,6 @@
 #      define Q_COMPILER_DEFAULT_MEMBERS
 #      define Q_COMPILER_DELETE_MEMBERS
 #      define Q_COMPILER_EXTERN_TEMPLATES
-#      define Q_COMPILER_INITIALIZER_LISTS
 #      define Q_COMPILER_UNIFORM_INIT
 #      define Q_COMPILER_UNICODE_STRINGS
 #      define Q_COMPILER_VARIADIC_TEMPLATES
@@ -750,6 +749,9 @@
 #    if (__GNUC__ * 100 + __GNUC_MINOR__) >= 405
        /* C++11 features supported in GCC 4.5: */
 #      define Q_COMPILER_EXPLICIT_CONVERSIONS
+       /* GCC 4.4 implements initializer_list but does not define typedefs required
+        * by the standard. */
+#      define Q_COMPILER_INITIALIZER_LISTS
 #      define Q_COMPILER_LAMBDA
 #      define Q_COMPILER_RAW_STRINGS
 #    endif

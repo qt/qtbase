@@ -59,11 +59,15 @@
 
 QT_BEGIN_NAMESPACE
 
+#define RSA_ENCRYPTION_OID QByteArrayLiteral("1.2.840.113549.1.1.1")
+#define DSA_ENCRYPTION_OID QByteArrayLiteral("1.2.840.10040.4.1")
+
 class Q_AUTOTEST_EXPORT QAsn1Element
 {
 public:
     enum ElementType {
         // universal
+        BooleanType = 0x01,
         IntegerType  = 0x02,
         BitStringType  = 0x03,
         OctetStringType = 0x04,
@@ -77,10 +81,6 @@ public:
         SequenceType = 0x30,
         SetType = 0x31,
 
-        // application
-        Rfc822NameType = 0x81,
-        DnsNameType = 0x82,
-
         // context specific
         Context0Type = 0xA0,
         Context3Type = 0xA3
@@ -91,12 +91,15 @@ public:
     bool read(const QByteArray &data);
     void write(QDataStream &data) const;
 
+    static QAsn1Element fromBool(bool val);
     static QAsn1Element fromInteger(unsigned int val);
     static QAsn1Element fromVector(const QVector<QAsn1Element> &items);
     static QAsn1Element fromObjectId(const QByteArray &id);
 
+    bool toBool(bool *ok = 0) const;
     QDateTime toDateTime() const;
     QMultiMap<QByteArray, QString> toInfo() const;
+    qint64 toInteger(bool *ok = 0) const;
     QVector<QAsn1Element> toVector() const;
     QByteArray toObjectId() const;
     QByteArray toObjectName() const;
@@ -105,11 +108,20 @@ public:
     quint8 type() const { return mType; }
     QByteArray value() const { return mValue; }
 
+    friend inline bool operator==(const QAsn1Element &, const QAsn1Element &);
+    friend inline bool operator!=(const QAsn1Element &, const QAsn1Element &);
+
 private:
     quint8 mType;
     QByteArray mValue;
 };
 Q_DECLARE_TYPEINFO(QAsn1Element, Q_MOVABLE_TYPE);
+
+inline bool operator==(const QAsn1Element &e1, const QAsn1Element &e2)
+{ return e1.mType == e2.mType && e1.mValue == e2.mValue; }
+
+inline bool operator!=(const QAsn1Element &e1, const QAsn1Element &e2)
+{ return e1.mType != e2.mType || e1.mValue != e2.mValue; }
 
 QT_END_NAMESPACE
 

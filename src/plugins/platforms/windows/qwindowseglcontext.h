@@ -53,6 +53,7 @@ struct QWindowsLibEGL
 
     EGLint (EGLAPIENTRY * eglGetError)(void);
     EGLDisplay (EGLAPIENTRY * eglGetDisplay)(EGLNativeDisplayType display_id);
+    EGLDisplay (EGLAPIENTRY * eglGetPlatformDisplayEXT)(EGLenum platform, void *native_display, const EGLint *attrib_list);
     EGLBoolean (EGLAPIENTRY * eglInitialize)(EGLDisplay dpy, EGLint *major, EGLint *minor);
     EGLBoolean (EGLAPIENTRY * eglTerminate)(EGLDisplay dpy);
     EGLBoolean (EGLAPIENTRY * eglChooseConfig)(EGLDisplay dpy, const EGLint *attrib_list,

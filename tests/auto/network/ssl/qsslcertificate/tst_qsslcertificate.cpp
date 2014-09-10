@@ -111,6 +111,7 @@ private slots:
     void subjectAndIssuerAttributes();
     void verify();
     void extensions();
+    void extensionsCritical();
     void threadSafeConstMethods();
     void version_data();
     void version();
@@ -927,7 +928,7 @@ void tst_QSslCertificate::toText()
 
     QString txtcert = cert.toText();
 
-#ifdef Q_OS_WINRT
+#ifdef QT_NO_OPENSSL
     QEXPECT_FAIL("", "QTBUG-40884: QSslCertificate::toText is not implemented on WinRT", Continue);
 #endif
     QVERIFY(QString::fromLatin1(txt098) == txtcert ||
@@ -975,7 +976,7 @@ void tst_QSslCertificate::verify()
         qPrintable(QString("errors: %1").arg(toString(errors))) \
     )
 
-#ifdef Q_OS_WINRT
+#ifdef QT_NO_OPENSSL
     QEXPECT_FAIL("", "QTBUG-40884: WinRT API does not yet support verifying a chain", Abort);
 #endif
     // Empty chain is unspecified error
@@ -1059,9 +1060,6 @@ void tst_QSslCertificate::extensions()
 
     QSslCertificate cert = certList[0];
     QList<QSslCertificateExtension> extensions = cert.extensions();
-#ifdef Q_OS_WINRT
-    QEXPECT_FAIL("", "QTBUG-40884: WinRT API does not support extensions information", Abort);
-#endif
     QVERIFY(extensions.count() == 9);
 
     int unknown_idx = -1;
@@ -1096,6 +1094,8 @@ void tst_QSslCertificate::extensions()
     QSslCertificateExtension unknown = extensions[unknown_idx];
     QVERIFY(unknown.oid() == QStringLiteral("1.3.6.1.5.5.7.1.12"));
     QVERIFY(unknown.name() == QStringLiteral("1.3.6.1.5.5.7.1.12"));
+    QVERIFY(!unknown.isCritical());
+    QVERIFY(!unknown.isSupported());
 
     QByteArray unknownValue = QByteArray::fromHex(
                         "3060A15EA05C305A305830561609696D6167652F6769663021301F300706052B0E03021A0414" \
@@ -1107,8 +1107,11 @@ void tst_QSslCertificate::extensions()
     QSslCertificateExtension aia = extensions[authority_info_idx];
     QVERIFY(aia.oid() == QStringLiteral("1.3.6.1.5.5.7.1.1"));
     QVERIFY(aia.name() == QStringLiteral("authorityInfoAccess"));
+    QVERIFY(!aia.isCritical());
+    QVERIFY(aia.isSupported());
 
     QVariantMap aiaValue = aia.value().toMap();
+    QCOMPARE(aiaValue.keys(), QList<QString>() << QStringLiteral("OCSP") << QStringLiteral("caIssuers"));
     QString ocsp = aiaValue[QStringLiteral("OCSP")].toString();
     QString caIssuers = aiaValue[QStringLiteral("caIssuers")].toString();
 
@@ -1119,25 +1122,76 @@ void tst_QSslCertificate::extensions()
     QSslCertificateExtension basic = extensions[basic_constraints_idx];
     QVERIFY(basic.oid() == QStringLiteral("2.5.29.19"));
     QVERIFY(basic.name() == QStringLiteral("basicConstraints"));
+    QVERIFY(!basic.isCritical());
+    QVERIFY(basic.isSupported());
 
     QVariantMap basicValue = basic.value().toMap();
+    QCOMPARE(basicValue.keys(), QList<QString>() << QStringLiteral("ca"));
     QVERIFY(basicValue[QStringLiteral("ca")].toBool() == false);
 
     // Subject key identifier
     QSslCertificateExtension subjectKey = extensions[subject_key_idx];
     QVERIFY(subjectKey.oid() == QStringLiteral("2.5.29.14"));
     QVERIFY(subjectKey.name() == QStringLiteral("subjectKeyIdentifier"));
+    QVERIFY(!subjectKey.isCritical());
+    QVERIFY(subjectKey.isSupported());
     QVERIFY(subjectKey.value().toString() == QStringLiteral("5F:90:23:CD:24:CA:52:C9:36:29:F0:7E:9D:B1:FE:08:E0:EE:69:F0"));
 
     // Authority key identifier
     QSslCertificateExtension authKey = extensions[auth_key_idx];
     QVERIFY(authKey.oid() == QStringLiteral("2.5.29.35"));
     QVERIFY(authKey.name() == QStringLiteral("authorityKeyIdentifier"));
+    QVERIFY(!authKey.isCritical());
+    QVERIFY(authKey.isSupported());
 
     QVariantMap authValue = authKey.value().toMap();
+    QCOMPARE(authValue.keys(), QList<QString>() << QStringLiteral("keyid"));
     QVERIFY(authValue[QStringLiteral("keyid")].toByteArray() ==
             QByteArray("4e43c81d76ef37537a4ff2586f94f338e2d5bddf"));
+}
 
+void tst_QSslCertificate::extensionsCritical()
+{
+    QList<QSslCertificate> certList =
+        QSslCertificate::fromPath(testDataDir + "/verify-certs/test-addons-mozilla-org-cert.pem");
+    QVERIFY2(certList.count() > 0, "Please run this test from the source directory");
+
+    QSslCertificate cert = certList[0];
+    QList<QSslCertificateExtension> extensions = cert.extensions();
+    QVERIFY(extensions.count() == 9);
+
+    int basic_constraints_idx = -1;
+    int key_usage_idx = -1;
+
+    for (int i=0; i < extensions.length(); ++i) {
+        QSslCertificateExtension ext = extensions[i];
+
+        if (ext.name() == QStringLiteral("basicConstraints"))
+            basic_constraints_idx = i;
+        if (ext.name() == QStringLiteral("keyUsage"))
+            key_usage_idx = i;
+    }
+
+    QVERIFY(basic_constraints_idx != -1);
+    QVERIFY(key_usage_idx != -1);
+
+    // Basic constraints
+    QSslCertificateExtension basic = extensions[basic_constraints_idx];
+    QVERIFY(basic.oid() == QStringLiteral("2.5.29.19"));
+    QVERIFY(basic.name() == QStringLiteral("basicConstraints"));
+    QVERIFY(basic.isCritical());
+    QVERIFY(basic.isSupported());
+
+    QVariantMap basicValue = basic.value().toMap();
+    QCOMPARE(basicValue.keys(), QList<QString>() << QStringLiteral("ca"));
+    QVERIFY(basicValue[QStringLiteral("ca")].toBool() == false);
+
+    // Key Usage
+    QSslCertificateExtension keyUsage = extensions[key_usage_idx];
+    QVERIFY(keyUsage.oid() == QStringLiteral("2.5.29.15"));
+    QVERIFY(keyUsage.name() == QStringLiteral("keyUsage"));
+    QVERIFY(keyUsage.isCritical());
+    QVERIFY(!keyUsage.isSupported());
 }
 
 class TestThread : public QThread
@@ -1254,7 +1308,7 @@ void tst_QSslCertificate::pkcs12()
     QSslCertificate cert;
     QList<QSslCertificate> caCerts;
 
-#ifdef Q_OS_WINRT
+#ifdef QT_NO_OPENSSL
     QEXPECT_FAIL("", "QTBUG-40884: WinRT API does not support pkcs12 imports", Abort);
 #endif
     ok = QSslCertificate::importPKCS12(&f, &key, &cert, &caCerts);

@@ -749,7 +749,6 @@ int QDateTimeParser::parseSection(const QDateTime &currentValue, int sectionInde
             break;
         }
         if (state != Invalid) {
-            QString str = text;
             text.replace(index, used, sectiontext.left(used));
         }
         break; }
@@ -770,7 +769,6 @@ int QDateTimeParser::parseSection(const QDateTime &currentValue, int sectionInde
 
             if (num != -1) {
                 state = (used == sectiontext.size() ? Acceptable : Intermediate);
-                QString str = text;
                 text.replace(index, used, sectiontext.left(used));
             } else {
                 state = Intermediate;

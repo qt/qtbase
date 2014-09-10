@@ -147,6 +147,21 @@ void Renderer::render()
     f->glViewport(0, 0, viewSize.width() * surface->devicePixelRatio(), viewSize.height() * surface->devicePixelRatio());
     f->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+    f->glClearColor(0.1f, 0.1f, 0.2f, 1.0f);
+    f->glFrontFace(GL_CW);
+    f->glCullFace(GL_FRONT);
+    f->glEnable(GL_CULL_FACE);
+    f->glEnable(GL_DEPTH_TEST);
+
+    m_program->bind();
+    m_vbo.bind();
+
+    m_program->enableAttributeArray(vertexAttr);
+    m_program->enableAttributeArray(normalAttr);
+    m_program->setAttributeBuffer(vertexAttr, GL_FLOAT, 0, 3);
+    const int verticesSize = vertices.count() * 3 * sizeof(GLfloat);
+    m_program->setAttributeBuffer(normalAttr, GL_FLOAT, verticesSize, 3);
+
     QMatrix4x4 modelview;
     modelview.rotate(m_fAngle, 0.0f, 1.0f, 0.0f);
     modelview.rotate(m_fAngle, 1.0f, 0.0f, 0.0f);
@@ -212,18 +227,6 @@ void Renderer::initialize()
     m_vbo.allocate(verticesSize * 2);
     m_vbo.write(0, vertices.constData(), verticesSize);
     m_vbo.write(verticesSize, normals.constData(), verticesSize);
-
-    QOpenGLFunctions *f = m_context->functions();
-    f->glClearColor(0.1f, 0.1f, 0.2f, 1.0f);
-    f->glFrontFace(GL_CW);
-    f->glCullFace(GL_FRONT);
-    f->glEnable(GL_CULL_FACE);
-    f->glEnable(GL_DEPTH_TEST);
-
-    m_program->enableAttributeArray(vertexAttr);
-    m_program->enableAttributeArray(normalAttr);
-    m_program->setAttributeBuffer(vertexAttr, GL_FLOAT, 0, 3);
-    m_program->setAttributeBuffer(normalAttr, GL_FLOAT, verticesSize, 3);
 }
 
 void Renderer::createGeometry()

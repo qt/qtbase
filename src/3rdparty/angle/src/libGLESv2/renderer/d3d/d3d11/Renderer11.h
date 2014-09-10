@@ -261,7 +261,7 @@ class Renderer11 : public Renderer
     };
     MultisampleSupportInfo getMultisampleSupportInfo(DXGI_FORMAT format);
 
-    typedef std::unordered_map<DXGI_FORMAT, MultisampleSupportInfo> MultisampleSupportMap;
+    typedef std::unordered_map<GLenum, MultisampleSupportInfo> MultisampleSupportMap;
     MultisampleSupportMap mMultisampleSupportMap;
 
     unsigned int mMaxSupportedSamples;

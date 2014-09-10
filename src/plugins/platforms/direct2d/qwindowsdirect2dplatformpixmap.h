@@ -42,6 +42,7 @@
 #ifndef QWINDOWSDIRECT2DPLATFORMPIXMAP_H
 #define QWINDOWSDIRECT2DPLATFORMPIXMAP_H
 
+#include "qwindowsdirect2dpaintengine.h"
 #include <QtGui/qpa/qplatformpixmap.h>
 #include <QtCore/QScopedPointer>
 
@@ -57,7 +58,7 @@ public:
     QWindowsDirect2DPlatformPixmap(PixelType pixelType);
 
     // We do NOT take ownership of the bitmap through this constructor!
-    QWindowsDirect2DPlatformPixmap(PixelType pixelType, QWindowsDirect2DBitmap *bitmap);
+    QWindowsDirect2DPlatformPixmap(PixelType pixelType, QWindowsDirect2DPaintEngine::Flags flags, QWindowsDirect2DBitmap *bitmap);
     ~QWindowsDirect2DPlatformPixmap();
 
     void resize(int width, int height) Q_DECL_OVERRIDE;

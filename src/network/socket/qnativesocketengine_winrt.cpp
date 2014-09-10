@@ -176,10 +176,8 @@ QNativeSocketEngine::QNativeSocketEngine(QObject *parent)
 {
 #ifndef QT_NO_SSL
     Q_D(QNativeSocketEngine);
-    Q_ASSERT(parent);
-    d->sslSocket = qobject_cast<QSslSocket *>(parent->parent());
-#else
-    d->sslSocket = Q_NULLPTR;
+    if (parent)
+        d->sslSocket = qobject_cast<QSslSocket *>(parent->parent());
 #endif
 
     connect(this, SIGNAL(connectionReady()), SLOT(connectionNotification()), Qt::QueuedConnection);
@@ -809,8 +807,8 @@ bool QNativeSocketEnginePrivate::createNewSocket(QAbstractSocket::SocketType soc
             return false;
         }
         EventRegistrationToken token;
-        udpSocket()->add_MessageReceived(Callback<DatagramReceivedHandler>(this, &QNativeSocketEnginePrivate::handleNewDatagram).Get(), &token);
         socketDescriptor = qintptr(socket.Detach());
+        udpSocket()->add_MessageReceived(Callback<DatagramReceivedHandler>(this, &QNativeSocketEnginePrivate::handleNewDatagram).Get(), &token);
         return true;
     }
     default:
@@ -827,6 +825,7 @@ QNativeSocketEnginePrivate::QNativeSocketEnginePrivate()
     , notifyOnException(false)
     , closingDown(false)
     , socketDescriptor(-1)
+    , sslSocket(Q_NULLPTR)
 {
 }
 

@@ -45,6 +45,8 @@
 
 #include <QPair>
 #include <QTextCodec>
+#include <QSysInfo>
+#include <QLatin1String>
 
 class tst_QGlobal: public QObject
 {
@@ -65,6 +67,7 @@ private slots:
     void integerForSize();
     void qprintable();
     void qprintable_data();
+    void buildAbiEndianness();
 };
 
 void tst_QGlobal::qIsNull()
@@ -650,6 +653,16 @@ void tst_QGlobal::qprintable_data()
 
     QTest::newRow("Japanese") << japanesestrings << 0;
 
+}
+
+void tst_QGlobal::buildAbiEndianness()
+{
+#if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
+    QLatin1String endian("little_endian");
+#elif Q_BYTE_ORDER == Q_BIG_ENDIAN
+    QLatin1String endian("big_endian");
+#endif
+    QVERIFY(QSysInfo::buildAbi().contains(endian));
 }
 
 QTEST_APPLESS_MAIN(tst_QGlobal)

@@ -42,6 +42,10 @@
 #ifndef QOPENGLWINDOW_H
 #define QOPENGLWINDOW_H
 
+#include <QtCore/qglobal.h>
+
+#ifndef QT_NO_OPENGL
+
 #include <QtGui/QPaintDeviceWindow>
 #include <QtGui/QOpenGLContext>
 #include <QtGui/QImage>
@@ -96,5 +100,7 @@ private:
 };
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_OPENGL
 
 #endif

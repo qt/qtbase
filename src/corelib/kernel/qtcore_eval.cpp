@@ -119,9 +119,11 @@ static EvaluationStatus qt_eval_is_supported()
 
 static int qt_eval_days_left()
 {
+    const char *expiry_date = const_cast<const char*>(qt_eval_expiry_date + 12);
+
     QDate today = QDate::currentDate();
-    QDate build = QLibraryInfo::buildDate();
-    return qMax<qint64>(-1, today.daysTo(build) + 30);
+    QDate lastday = QDate::fromString(QString::fromLatin1(expiry_date), Qt::ISODate);
+    return today.daysTo(lastday);
 }
 
 static bool qt_eval_is_expired()

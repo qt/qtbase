@@ -12,6 +12,40 @@
 #include "libGLESv2/renderer/d3d/d3d11/formatutils11.h"
 #include "common/debug.h"
 
+#ifndef D3D_FL9_1_DEFAULT_MAX_ANISOTROPY
+#  define D3D_FL9_1_DEFAULT_MAX_ANISOTROPY 2
+#endif
+#ifndef D3D_FL9_1_SIMULTANEOUS_RENDER_TARGET_COUNT
+#  define D3D_FL9_1_SIMULTANEOUS_RENDER_TARGET_COUNT 1
+#endif
+#ifndef D3D_FL9_3_SIMULTANEOUS_RENDER_TARGET_COUNT
+#  define D3D_FL9_3_SIMULTANEOUS_RENDER_TARGET_COUNT 4
+#endif
+#ifndef D3D_FL9_1_REQ_TEXTURECUBE_DIMENSION
+#  define D3D_FL9_1_REQ_TEXTURECUBE_DIMENSION 512
+#endif
+#ifndef D3D_FL9_3_REQ_TEXTURECUBE_DIMENSION
+#  define D3D_FL9_3_REQ_TEXTURECUBE_DIMENSION 4096
+#endif
+#ifndef D3D_FL9_1_REQ_TEXTURE2D_U_OR_V_DIMENSION
+#  define D3D_FL9_1_REQ_TEXTURE2D_U_OR_V_DIMENSION 2048
+#endif
+#ifndef D3D_FL9_1_REQ_TEXTURE3D_U_V_OR_W_DIMENSION
+#  define D3D_FL9_1_REQ_TEXTURE3D_U_V_OR_W_DIMENSION 256
+#endif
+#ifndef D3D_FL9_3_REQ_TEXTURE2D_U_OR_V_DIMENSION
+#  define D3D_FL9_3_REQ_TEXTURE2D_U_OR_V_DIMENSION 4096
+#endif
+#ifndef D3D11_REQ_TEXTURECUBE_DIMENSION
+#  define D3D11_REQ_TEXTURECUBE_DIMENSION 16384
+#endif
+#ifndef D3D11_REQ_TEXTURE2D_ARRAY_AXIS_DIMENSION
+#  define D3D11_REQ_TEXTURE2D_ARRAY_AXIS_DIMENSION 2048
+#endif
+#ifndef D3D11_REQ_TEXTURE3D_U_V_OR_W_DIMENSION
+#  define D3D11_REQ_TEXTURE3D_U_V_OR_W_DIMENSION 2048
+#endif
+
 namespace rx
 {
 
@@ -273,7 +307,9 @@ static bool GetNPOTTextureSupport(D3D_FEATURE_LEVEL featureLevel)
 {
     switch (featureLevel)
     {
+#if _MSC_VER >= 1700
       case D3D_FEATURE_LEVEL_11_1:
+#endif
       case D3D_FEATURE_LEVEL_11_0:
       case D3D_FEATURE_LEVEL_10_1:
       case D3D_FEATURE_LEVEL_10_0: return true;
@@ -291,7 +327,9 @@ static float GetMaximumAnisotropy(D3D_FEATURE_LEVEL featureLevel)
 {
     switch (featureLevel)
     {
+#if _MSC_VER >= 1700
       case D3D_FEATURE_LEVEL_11_1:
+#endif
       case D3D_FEATURE_LEVEL_11_0: return D3D11_MAX_MAXANISOTROPY;
 
       case D3D_FEATURE_LEVEL_10_1:
@@ -311,7 +349,9 @@ static bool GetOcclusionQuerySupport(D3D_FEATURE_LEVEL featureLevel)
 {
     switch (featureLevel)
     {
+#if _MSC_VER >= 1700
       case D3D_FEATURE_LEVEL_11_1:
+#endif
       case D3D_FEATURE_LEVEL_11_0:
       case D3D_FEATURE_LEVEL_10_1:
       case D3D_FEATURE_LEVEL_10_0: return true;
@@ -331,7 +371,9 @@ static bool GetEventQuerySupport(D3D_FEATURE_LEVEL featureLevel)
 
     switch (featureLevel)
     {
+#if _MSC_VER >= 1700
       case D3D_FEATURE_LEVEL_11_1:
+#endif
       case D3D_FEATURE_LEVEL_11_0:
       case D3D_FEATURE_LEVEL_10_1:
       case D3D_FEATURE_LEVEL_10_0:
@@ -349,7 +391,9 @@ static bool GetInstancingSupport(D3D_FEATURE_LEVEL featureLevel)
 
     switch (featureLevel)
     {
+#if _MSC_VER >= 1700
       case D3D_FEATURE_LEVEL_11_1:
+#endif
       case D3D_FEATURE_LEVEL_11_0:
       case D3D_FEATURE_LEVEL_10_1:
       case D3D_FEATURE_LEVEL_10_0:
@@ -372,7 +416,9 @@ static bool GetDerivativeInstructionSupport(D3D_FEATURE_LEVEL featureLevel)
 
     switch (featureLevel)
     {
+#if _MSC_VER >= 1700
       case D3D_FEATURE_LEVEL_11_1:
+#endif
       case D3D_FEATURE_LEVEL_11_0:
       case D3D_FEATURE_LEVEL_10_1:
       case D3D_FEATURE_LEVEL_10_0:
@@ -390,7 +436,9 @@ static size_t GetMaximumSimultaneousRenderTargets(D3D_FEATURE_LEVEL featureLevel
 
     switch (featureLevel)
     {
+#if _MSC_VER >= 1700
       case D3D_FEATURE_LEVEL_11_1:
+#endif
       case D3D_FEATURE_LEVEL_11_0: return D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT;
 
         // FIXME(geofflang): Work around NVIDIA driver bug by repacking buffers
@@ -409,7 +457,9 @@ static size_t GetMaximum2DTextureSize(D3D_FEATURE_LEVEL featureLevel)
 {
     switch (featureLevel)
     {
+#if _MSC_VER >= 1700
       case D3D_FEATURE_LEVEL_11_1:
+#endif
       case D3D_FEATURE_LEVEL_11_0: return D3D11_REQ_TEXTURE2D_U_OR_V_DIMENSION;
 
       case D3D_FEATURE_LEVEL_10_1:
@@ -427,7 +477,9 @@ static size_t GetMaximumCubeMapTextureSize(D3D_FEATURE_LEVEL featureLevel)
 {
     switch (featureLevel)
     {
+#if _MSC_VER >= 1700
       case D3D_FEATURE_LEVEL_11_1:
+#endif
       case D3D_FEATURE_LEVEL_11_0: return D3D11_REQ_TEXTURECUBE_DIMENSION;
 
       case D3D_FEATURE_LEVEL_10_1:
@@ -445,7 +497,9 @@ static size_t GetMaximum2DTextureArraySize(D3D_FEATURE_LEVEL featureLevel)
 {
     switch (featureLevel)
     {
+#if _MSC_VER >= 1700
       case D3D_FEATURE_LEVEL_11_1:
+#endif
       case D3D_FEATURE_LEVEL_11_0: return D3D11_REQ_TEXTURE2D_ARRAY_AXIS_DIMENSION;
 
       case D3D_FEATURE_LEVEL_10_1:
@@ -463,7 +517,9 @@ static size_t GetMaximum3DTextureSize(D3D_FEATURE_LEVEL featureLevel)
 {
     switch (featureLevel)
     {
+#if _MSC_VER >= 1700
       case D3D_FEATURE_LEVEL_11_1:
+#endif
       case D3D_FEATURE_LEVEL_11_0: return D3D11_REQ_TEXTURE3D_U_V_OR_W_DIMENSION;
 
       case D3D_FEATURE_LEVEL_10_1:
@@ -481,7 +537,9 @@ static size_t GetMaximumViewportSize(D3D_FEATURE_LEVEL featureLevel)
 {
     switch (featureLevel)
     {
+#if _MSC_VER >= 1700
       case D3D_FEATURE_LEVEL_11_1:
+#endif
       case D3D_FEATURE_LEVEL_11_0: return D3D11_VIEWPORT_BOUNDS_MAX;
 
       case D3D_FEATURE_LEVEL_10_1:
@@ -622,7 +680,7 @@ void SetPositionLayerTexCoord3DVertex(PositionLayerTexCoord3DVertex* vertex, flo
 
 HRESULT SetDebugName(ID3D11DeviceChild *resource, const char *name)
 {
-#if defined(_DEBUG)
+#if !defined(__MINGW32__) && defined(_DEBUG)
     return resource->SetPrivateData(WKPDID_D3DDebugObjectName, strlen(name), name);
 #else
     return S_OK;

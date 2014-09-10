@@ -49,6 +49,31 @@
 #define ANGLE_SUPPRESS_D3D11_HAZARD_WARNINGS 1
 #endif
 
+#ifndef D3D11_PS_INPUT_REGISTER_COUNT
+#  define D3D11_PS_INPUT_REGISTER_COUNT 32
+#endif
+#ifndef D3D10_1_VS_OUTPUT_REGISTER_COUNT
+#  define D3D10_1_VS_OUTPUT_REGISTER_COUNT 32
+#endif
+#ifndef D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT
+#  define D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT 14
+#endif
+#ifndef D3D11_SO_BUFFER_SLOT_COUNT
+#  define D3D11_SO_BUFFER_SLOT_COUNT 4
+#endif
+#ifndef D3D10_1_SO_BUFFER_SLOT_COUNT
+#  define D3D10_1_SO_BUFFER_SLOT_COUNT 4
+#endif
+#ifndef D3D11_REQ_CONSTANT_BUFFER_ELEMENT_COUNT
+#  define D3D11_REQ_CONSTANT_BUFFER_ELEMENT_COUNT 4096
+#endif
+#ifndef D3D11_REQ_DRAWINDEXED_INDEX_COUNT_2_TO_EXP
+#  define D3D11_REQ_DRAWINDEXED_INDEX_COUNT_2_TO_EXP 32
+#endif
+#ifndef D3D11_REQ_DRAW_VERTEX_COUNT_2_TO_EXP
+#  define D3D11_REQ_DRAW_VERTEX_COUNT_2_TO_EXP 32
+#endif
+
 namespace rx
 {
 static const DXGI_FORMAT RenderTargetFormats[] =
@@ -275,7 +300,7 @@ EGLint Renderer11::initialize()
     }
 
     // Disable some spurious D3D11 debug warnings to prevent them from flooding the output log
-#if defined(ANGLE_SUPPRESS_D3D11_HAZARD_WARNINGS) && defined(_DEBUG)
+#if !defined(__MINGW32__) && defined(ANGLE_SUPPRESS_D3D11_HAZARD_WARNINGS) && defined(_DEBUG)
     ID3D11InfoQueue *infoQueue;
     result = mDevice->QueryInterface(__uuidof(ID3D11InfoQueue),  (void **)&infoQueue);
 

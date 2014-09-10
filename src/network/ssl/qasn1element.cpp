@@ -56,6 +56,14 @@ static OidNameMap createOidMap()
     // used by unit tests
     oids.insert(oids.end(), QByteArrayLiteral("0.9.2342.19200300.100.1.5"), QByteArrayLiteral("favouriteDrink"));
     oids.insert(oids.end(), QByteArrayLiteral("1.2.840.113549.1.9.1"), QByteArrayLiteral("emailAddress"));
+    oids.insert(oids.end(), QByteArrayLiteral("1.3.6.1.5.5.7.1.1"), QByteArrayLiteral("authorityInfoAccess"));
+    oids.insert(oids.end(), QByteArrayLiteral("1.3.6.1.5.5.7.48.1"), QByteArrayLiteral("OCSP"));
+    oids.insert(oids.end(), QByteArrayLiteral("1.3.6.1.5.5.7.48.2"), QByteArrayLiteral("caIssuers"));
+    oids.insert(oids.end(), QByteArrayLiteral("2.5.29.14"), QByteArrayLiteral("subjectKeyIdentifier"));
+    oids.insert(oids.end(), QByteArrayLiteral("2.5.29.15"), QByteArrayLiteral("keyUsage"));
+    oids.insert(oids.end(), QByteArrayLiteral("2.5.29.17"), QByteArrayLiteral("subjectAltName"));
+    oids.insert(oids.end(), QByteArrayLiteral("2.5.29.19"), QByteArrayLiteral("basicConstraints"));
+    oids.insert(oids.end(), QByteArrayLiteral("2.5.29.35"), QByteArrayLiteral("authorityKeyIdentifier"));
     oids.insert(oids.end(), QByteArrayLiteral("2.5.4.10"), QByteArrayLiteral("O"));
     oids.insert(oids.end(), QByteArrayLiteral("2.5.4.11"), QByteArrayLiteral("OU"));
     oids.insert(oids.end(), QByteArrayLiteral("2.5.4.12"), QByteArrayLiteral("title"));
@@ -155,6 +163,12 @@ void QAsn1Element::write(QDataStream &stream) const
     stream.writeRawData(mValue.data(), mValue.size());
 }
 
+QAsn1Element QAsn1Element::fromBool(bool val)
+{
+    return QAsn1Element(QAsn1Element::BooleanType,
+        QByteArray(1, val ? 0xff : 0x00));
+}
+
 QAsn1Element QAsn1Element::fromInteger(unsigned int val)
 {
     QAsn1Element elem(QAsn1Element::IntegerType);
@@ -199,6 +213,23 @@ QAsn1Element QAsn1Element::fromObjectId(const QByteArray &id)
     return elem;
 }
 
+bool QAsn1Element::toBool(bool *ok) const
+{
+    if (*this == fromBool(true)) {
+        if (ok)
+            *ok = true;
+        return true;
+    } else if (*this == fromBool(false)) {
+        if (ok)
+            *ok = true;
+        return false;
+    } else {
+        if (ok)
+            *ok = false;
+        return false;
+    }
+}
+
 QDateTime QAsn1Element::toDateTime() const
 {
     if (mValue.endsWith('Z')) {
@@ -240,6 +271,30 @@ QMultiMap<QByteArray, QString> QAsn1Element::toInfo() const
         }
     }
     return info;
+}
+
+qint64 QAsn1Element::toInteger(bool *ok) const
+{
+    if (mType != QAsn1Element::IntegerType || mValue.isEmpty()) {
+        if (ok)
+            *ok = false;
+        return 0;
+    }
+
+    // NOTE: negative numbers are not handled
+    if (mValue.at(0) & 0x80) {
+        if (ok)
+            *ok = false;
+        return 0;
+    }
+
+    qint64 value = mValue.at(0) & 0x7f;
+    for (int i = 1; i < mValue.size(); ++i)
+        value = (value << 8) | quint8(mValue.at(i));
+
+    if (ok)
+        *ok = true;
+    return value;
 }
 
 QVector<QAsn1Element> QAsn1Element::toVector() const

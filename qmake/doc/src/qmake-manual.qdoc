@@ -2071,6 +2071,39 @@
     qmake or \l{#QMAKESPEC}{qmake.conf} and rarely
     needs to be modified.
 
+    \section1 QMAKE_SONAME_PREFIX
+
+    If defined, the value of this variable is used as a path to be prepended to
+    the built shared library's \c SONAME identifier. The \c SONAME is the
+    identifier that the dynamic linker will later use to reference the library.
+    In general this reference may be a library name or full library path. On OS
+    X and iOS, the path may be specified relatively using the following
+    placeholders:
+
+    \table
+    \header \li Placeholder  \li Effect
+    \row \li @rpath
+         \li Expands to paths defined by LC_RPATH mach-o commands in
+             the current process executable or the referring libraries.
+    \row \li @executable_path
+         \li Expands to the current process executable location.
+    \row \li @loader_path
+         \li Expands to the referring executable or library location.
+    \endtable
+
+    In most cases, using \c @rpath is sufficient and recommended:
+
+    \snippet code/doc_src_qmake-manual.pro 183
+
+    However, the prefix may be also specified using different placeholders, or
+    an absolute path, such as one of the following:
+
+    \snippet code/doc_src_qmake-manual.pro 184
+
+    For more information, see
+    \l{https://developer.apple.com/library/mac/documentation/Darwin/Reference/ManPages/man1/dyld.1.html}{dyld}
+    documentation on dynamic library install names.
+
     \section1 QMAKE_TARGET
 
     Specifies the name of the project target.  The value of this

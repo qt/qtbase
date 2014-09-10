@@ -73,6 +73,7 @@
 QT_BEGIN_NAMESPACE
 
 QString qt_accStripAmp(const QString &text);
+QString qt_accHotKey(const QString &text);
 
 QList<QWidget*> childWidgets(const QWidget *widget)
 {
@@ -636,6 +637,8 @@ QString QAccessibleDockWidget::text(QAccessible::Text t) const
 {
     if (t == QAccessible::Name) {
         return qt_accStripAmp(dockWidget()->windowTitle());
+    } else if (t == QAccessible::Accelerator) {
+        return qt_accHotKey(dockWidget()->windowTitle());
     }
     return QString();
 }

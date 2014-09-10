@@ -49,19 +49,11 @@ class StaticVariables
 public:
     QInputMethodQueryEvent inputMethodQueryEvent;
     bool inUpdateKeyboardLayout;
-    QTextCharFormat markedTextFormat;
 
     StaticVariables()
         : inputMethodQueryEvent(Qt::ImQueryInput)
         , inUpdateKeyboardLayout(false)
     {
-        // There seems to be no way to query how the preedit text
-        // should be drawn. So we need to hard-code the color.
-        QSysInfo::MacVersion iosVersion = QSysInfo::MacintoshVersion;
-        if (iosVersion < QSysInfo::MV_IOS_7_0)
-            markedTextFormat.setBackground(QColor(235, 239, 247));
-        else
-            markedTextFormat.setBackground(QColor(206, 221, 238));
     }
 };
 
@@ -301,8 +293,19 @@ Q_GLOBAL_STATIC(StaticVariables, staticVariables);
 
     m_markedText = markedText ? QString::fromNSString(markedText) : QString();
 
+    static QTextCharFormat markedTextFormat;
+    if (markedTextFormat.isEmpty()) {
+        // There seems to be no way to query how the preedit text
+        // should be drawn. So we need to hard-code the color.
+        QSysInfo::MacVersion iosVersion = QSysInfo::MacintoshVersion;
+        if (iosVersion < QSysInfo::MV_IOS_7_0)
+            markedTextFormat.setBackground(QColor(235, 239, 247));
+        else
+            markedTextFormat.setBackground(QColor(206, 221, 238));
+    }
+
     QList<QInputMethodEvent::Attribute> attrs;
-    attrs << QInputMethodEvent::Attribute(QInputMethodEvent::TextFormat, 0, markedText.length, staticVariables()->markedTextFormat);
+    attrs << QInputMethodEvent::Attribute(QInputMethodEvent::TextFormat, 0, markedText.length, markedTextFormat);
     QInputMethodEvent e(m_markedText, attrs);
     [self sendEventToFocusObject:e];
 }

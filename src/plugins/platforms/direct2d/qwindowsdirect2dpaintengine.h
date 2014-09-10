@@ -59,7 +59,13 @@ class QWindowsDirect2DPaintEngine : public QPaintEngineEx
     Q_DECLARE_PRIVATE(QWindowsDirect2DPaintEngine)
 
 public:
-    QWindowsDirect2DPaintEngine(QWindowsDirect2DBitmap *bitmap);
+    enum Flag {
+        NoFlag = 0,
+        UseGrayscaleAntialiasing = 1,
+    };
+    Q_DECLARE_FLAGS(Flags, Flag)
+
+    QWindowsDirect2DPaintEngine(QWindowsDirect2DBitmap *bitmap, Flags flags);
 
     bool begin(QPaintDevice *pdev) Q_DECL_OVERRIDE;
     bool end() Q_DECL_OVERRIDE;
@@ -119,6 +125,7 @@ private:
     void adjustForAliasing(QRectF *rect);
     void adjustForAliasing(QPointF *point);
 };
+Q_DECLARE_OPERATORS_FOR_FLAGS(QWindowsDirect2DPaintEngine::Flags)
 
 QT_END_NAMESPACE
 

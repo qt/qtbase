@@ -6636,7 +6636,7 @@ if [ "$CFG_OPENSSL" = "linked" ] && [ "$OPENSSL_LIBS" = "" ]; then
     echo "For example:"
     echo "    OPENSSL_LIBS='-L/opt/ssl/lib -lssl -lcrypto' ./configure -openssl-linked"
 fi
-if [ "$CFG_JOURNALD" = "yes" ] || [ "$CFG_SLOG2" = "yes"]; then
+if [ "$CFG_JOURNALD" = "yes" ] || [ "$CFG_SLOG2" = "yes" ]; then
     echo
     echo "NOTE: journald or slog2 integration is enabled."
     echo "If your users intend on developing applications against this build,"

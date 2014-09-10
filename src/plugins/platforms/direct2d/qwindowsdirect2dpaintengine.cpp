@@ -233,9 +233,10 @@ class QWindowsDirect2DPaintEnginePrivate : public QPaintEngineExPrivate
 {
     Q_DECLARE_PUBLIC(QWindowsDirect2DPaintEngine)
 public:
-    QWindowsDirect2DPaintEnginePrivate(QWindowsDirect2DBitmap *bm)
+    QWindowsDirect2DPaintEnginePrivate(QWindowsDirect2DBitmap *bm, QWindowsDirect2DPaintEngine::Flags flags)
         : bitmap(bm)
         , clipFlags(0)
+        , flags(flags)
     {
         pen.reset();
         brush.reset();
@@ -247,6 +248,7 @@ public:
 
     unsigned int clipFlags;
     QStack<ClipType> pushedClips;
+    QWindowsDirect2DPaintEngine::Flags flags;
 
     QPointF currentBrushOrigin;
 
@@ -343,7 +345,7 @@ public:
                                                    D2D1::IdentityMatrix(),
                                                    1.0,
                                                    NULL,
-                                                   D2D1_LAYER_OPTIONS1_INITIALIZE_FROM_BACKGROUND),
+                                                   D2D1_LAYER_OPTIONS1_NONE),
                             NULL);
             pushedClips.push(LayerClip);
         }
@@ -868,8 +870,9 @@ public:
 
         const bool antiAlias = bool((q->state()->renderHints & QPainter::TextAntialiasing)
                                     && !(fontDef.styleStrategy & QFont::NoAntialias));
-        dc()->SetTextAntialiasMode(antiAlias ? D2D1_TEXT_ANTIALIAS_MODE_CLEARTYPE
-                                             : D2D1_TEXT_ANTIALIAS_MODE_ALIASED);
+        const D2D1_TEXT_ANTIALIAS_MODE antialiasMode = (flags & QWindowsDirect2DPaintEngine::UseGrayscaleAntialiasing)
+                ? D2D1_TEXT_ANTIALIAS_MODE_GRAYSCALE : D2D1_TEXT_ANTIALIAS_MODE_CLEARTYPE;
+        dc()->SetTextAntialiasMode(antiAlias ? antialiasMode : D2D1_TEXT_ANTIALIAS_MODE_ALIASED);
 
         dc()->DrawGlyphRun(pos,
                            &glyphRun,
@@ -913,8 +916,8 @@ public:
     }
 };
 
-QWindowsDirect2DPaintEngine::QWindowsDirect2DPaintEngine(QWindowsDirect2DBitmap *bitmap)
-    : QPaintEngineEx(*(new QWindowsDirect2DPaintEnginePrivate(bitmap)))
+QWindowsDirect2DPaintEngine::QWindowsDirect2DPaintEngine(QWindowsDirect2DBitmap *bitmap, Flags flags)
+    : QPaintEngineEx(*(new QWindowsDirect2DPaintEnginePrivate(bitmap, flags)))
 {
     QPaintEngine::PaintEngineFeatures unsupported =
             // As of 1.1 Direct2D does not natively support complex composition modes
@@ -953,7 +956,7 @@ bool QWindowsDirect2DPaintEngine::begin(QPaintDevice * pdev)
                                                D2D1::IdentityMatrix(),
                                                1.0,
                                                NULL,
-                                               D2D1_LAYER_OPTIONS1_INITIALIZE_FROM_BACKGROUND),
+                                               D2D1_LAYER_OPTIONS1_NONE),
                         NULL);
     } else {
         QRect clip(0, 0, pdev->width(), pdev->height());

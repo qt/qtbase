@@ -49,6 +49,10 @@ class tst_QAsn1Element : public QObject
 
 private slots:
     void emptyConstructor();
+    void equals_data();
+    void equals();
+    void toBool_data();
+    void toBool();
     void dateTime_data();
     void dateTime();
     void integer_data();
@@ -66,6 +70,62 @@ void tst_QAsn1Element::emptyConstructor()
     QAsn1Element elem;
     QCOMPARE(elem.type(), quint8(0));
     QCOMPARE(elem.value(), QByteArray());
+}
+
+Q_DECLARE_METATYPE(QAsn1Element)
+
+void tst_QAsn1Element::equals_data()
+{
+    QTest::addColumn<QAsn1Element>("a");
+    QTest::addColumn<QAsn1Element>("b");
+    QTest::addColumn<bool>("equals");
+
+    QTest::newRow("equal")
+        << QAsn1Element(QAsn1Element::BooleanType, QByteArray("\0", 1))
+        << QAsn1Element(QAsn1Element::BooleanType, QByteArray("\0", 1))
+        << true;
+    QTest::newRow("different type")
+        << QAsn1Element(QAsn1Element::BooleanType, QByteArray("\0", 1))
+        << QAsn1Element(QAsn1Element::IntegerType, QByteArray("\0", 1))
+        << false;
+    QTest::newRow("different value")
+        << QAsn1Element(QAsn1Element::BooleanType, QByteArray("\0", 1))
+        << QAsn1Element(QAsn1Element::BooleanType, QByteArray("\xff", 1))
+        << false;
+}
+
+void tst_QAsn1Element::equals()
+{
+    QFETCH(QAsn1Element, a);
+    QFETCH(QAsn1Element, b);
+    QFETCH(bool, equals);
+    QCOMPARE(a == b, equals);
+    QCOMPARE(a != b, !equals);
+}
+
+void tst_QAsn1Element::toBool_data()
+{
+    QTest::addColumn<QByteArray>("encoded");
+    QTest::addColumn<bool>("value");
+    QTest::addColumn<bool>("valid");
+
+    QTest::newRow("bad type") << QByteArray::fromHex("0201ff") << false << false;
+    QTest::newRow("bad value") << QByteArray::fromHex("010102") << false << false;
+    QTest::newRow("false") << QByteArray::fromHex("010100") << false << true;
+    QTest::newRow("true") << QByteArray::fromHex("0101ff") << true << true;
+}
+
+void tst_QAsn1Element::toBool()
+{
+    QFETCH(QByteArray, encoded);
+    QFETCH(bool, value);
+    QFETCH(bool, valid);
+
+    bool ok;
+    QAsn1Element elem;
+    QVERIFY(elem.read(encoded));
+    QCOMPARE(elem.toBool(&ok), value);
+    QCOMPARE(ok, valid);
 }
 
 void tst_QAsn1Element::dateTime_data()
@@ -121,6 +181,14 @@ void tst_QAsn1Element::integer()
 {
     QFETCH(QByteArray, encoded);
     QFETCH(int, value);
+
+    // read
+    bool ok;
+    QAsn1Element elem;
+    QVERIFY(elem.read(encoded));
+    QCOMPARE(elem.type(), quint8(QAsn1Element::IntegerType));
+    QCOMPARE(elem.toInteger(&ok), value);
+    QVERIFY(ok);
 
     // write
     QByteArray buffer;

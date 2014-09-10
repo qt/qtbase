@@ -55,20 +55,26 @@ QAndroidEventDispatcher::~QAndroidEventDispatcher()
         QAndroidEventDispatcherStopper::instance()->removeEventDispatcher(this);
 }
 
+enum States {Running = 0, StopRequest = 1, Stopping = 2};
+
 void QAndroidEventDispatcher::start()
 {
-    if (m_stopRequest.testAndSetAcquire(1, 0)) {
-        m_dispatcherSemaphore.release();
+    int prevState = m_stopRequest.fetchAndStoreAcquire(Running);
+    if (prevState == Stopping) {
+        m_semaphore.release();
         wakeUp();
+    } else if (prevState == Running) {
+        qWarning("Error: start without corresponding stop");
     }
+    //else if prevState == StopRequest, no action needed
 }
 
 void QAndroidEventDispatcher::stop()
 {
-    if (m_stopRequest.testAndSetAcquire(0, 1)) {
+    if (m_stopRequest.testAndSetAcquire(Running, StopRequest))
         wakeUp();
-        m_stopperSemaphore.acquire();
-    }
+    else
+        qWarning("Error: start/stop out of sync");
 }
 
 void QAndroidEventDispatcher::goingToStop(bool stop)
@@ -80,9 +86,8 @@ void QAndroidEventDispatcher::goingToStop(bool stop)
 
 int QAndroidEventDispatcher::select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, timespec *timeout)
 {
-    if (m_stopRequest.load() == 1) {
-        m_stopperSemaphore.release();
-        m_dispatcherSemaphore.acquire();
+    if (m_stopRequest.testAndSetAcquire(StopRequest, Stopping)) {
+        m_semaphore.acquire();
         wakeUp();
     }
 

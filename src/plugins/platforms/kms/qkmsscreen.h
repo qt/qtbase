@@ -56,10 +56,13 @@ extern "C" {
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
 #include <QtGui/qopengl.h>
+#include <QtCore/qloggingcategory.h>
 
 #include <qpa/qplatformscreen.h>
 
 QT_BEGIN_NAMESPACE
+
+Q_DECLARE_LOGGING_CATEGORY(lcQpaScreen)
 
 class QKmsCursor;
 class QKmsDevice;

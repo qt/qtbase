@@ -37,7 +37,9 @@ DEFINES +=  _WINDOWS \
             NOMINMAX \
             WIN32_LEAN_AND_MEAN=1
 
-!winrt: DEFINES += ANGLE_ENABLE_D3D9
+!winrt: DEFINES += ANGLE_ENABLE_D3D9 ANGLE_SKIP_DXGI_1_2_CHECK
+
+CONFIG += angle_d3d11 # Remove to disable D3D11 renderer
 
 angle_d3d11 {
     DEFINES += ANGLE_ENABLE_D3D11 ANGLE_DEFAULT_D3D11=1

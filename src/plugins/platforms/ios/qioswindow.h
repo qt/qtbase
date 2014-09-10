@@ -73,6 +73,7 @@ public:
     void setParent(const QPlatformWindow *window);
     void handleContentOrientationChange(Qt::ScreenOrientation orientation);
     void setVisible(bool visible);
+    void setOpacity(qreal level) Q_DECL_OVERRIDE;
 
     bool isExposed() const Q_DECL_OVERRIDE;
 

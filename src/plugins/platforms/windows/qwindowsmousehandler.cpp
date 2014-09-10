@@ -384,7 +384,7 @@ bool QWindowsMouseHandler::translateMouseWheelEvent(QWindow *window, HWND,
     // 2) The window receiving the event
     // If a window is blocked by modality, it can't get the event.
     const QPoint globalPos(GET_X_LPARAM(msg.lParam), GET_Y_LPARAM(msg.lParam));
-    QWindow *receiver = QWindowsScreen::windowAt(globalPos);
+    QWindow *receiver = QWindowsScreen::windowAt(globalPos, CWP_SKIPINVISIBLE);
     bool handleEvent = true;
     if (!isValidWheelReceiver(receiver)) {
         receiver = window;

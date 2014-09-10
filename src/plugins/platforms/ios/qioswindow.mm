@@ -74,6 +74,7 @@ QIOSWindow::QIOSWindow(QWindow *window)
         screen()->availableGeometry().width(), screen()->availableGeometry().height());
 
     setWindowState(window->windowState());
+    setOpacity(window->opacity());
 }
 
 QIOSWindow::~QIOSWindow()
@@ -133,6 +134,11 @@ void QIOSWindow::setVisible(bool visible)
             }
         }
     }
+}
+
+void QIOSWindow::setOpacity(qreal level)
+{
+    m_view.alpha = qBound(0.0, level, 1.0);
 }
 
 void QIOSWindow::setGeometry(const QRect &rect)

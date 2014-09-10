@@ -184,25 +184,6 @@ QIOSScreen::QIOSScreen(UIScreen *screen)
     , m_uiWindow(0)
     , m_orientationListener(0)
 {
-    for (UIWindow *existingWindow in [[UIApplication sharedApplication] windows]) {
-        if (existingWindow.screen == m_uiScreen) {
-            m_uiWindow = [m_uiWindow retain];
-            break;
-        }
-    }
-
-    if (!m_uiWindow) {
-        // Create a window and associated view-controller that we can use
-        m_uiWindow = [[UIWindow alloc] initWithFrame:[m_uiScreen bounds]];
-        m_uiWindow.rootViewController = [[[QIOSViewController alloc] initWithQIOSScreen:this] autorelease];
-
-        // FIXME: Only do once windows are added to the screen, and for any screen
-        if (screen == [UIScreen mainScreen]) {
-            m_uiWindow.screen = m_uiScreen;
-            m_uiWindow.hidden = NO;
-        }
-    }
-
     if (screen == [UIScreen mainScreen]) {
         QString deviceIdentifier = deviceModelIdentifier();
 
@@ -223,6 +204,25 @@ QIOSScreen::QIOSScreen(UIScreen *screen)
         // External display, hard to say
         m_depth = 24;
         m_unscaledDpi = 96;
+    }
+
+    for (UIWindow *existingWindow in [[UIApplication sharedApplication] windows]) {
+        if (existingWindow.screen == m_uiScreen) {
+            m_uiWindow = [m_uiWindow retain];
+            break;
+        }
+    }
+
+    if (!m_uiWindow) {
+        // Create a window and associated view-controller that we can use
+        m_uiWindow = [[UIWindow alloc] initWithFrame:[m_uiScreen bounds]];
+        m_uiWindow.rootViewController = [[[QIOSViewController alloc] initWithQIOSScreen:this] autorelease];
+
+        // FIXME: Only do once windows are added to the screen, and for any screen
+        if (screen == [UIScreen mainScreen]) {
+            m_uiWindow.screen = m_uiScreen;
+            m_uiWindow.hidden = NO;
+        }
     }
 
     connect(qGuiApp, &QGuiApplication::focusWindowChanged, this, &QIOSScreen::updateStatusBarVisibility);
@@ -373,8 +373,15 @@ qreal QIOSScreen::devicePixelRatio() const
 
 Qt::ScreenOrientation QIOSScreen::nativeOrientation() const
 {
-    // A UIScreen stays in the native orientation, regardless of rotation
-    return m_uiScreen.bounds.size.width >= m_uiScreen.bounds.size.height ?
+    CGRect nativeBounds =
+#if QT_IOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__IPHONE_8_0)
+        QSysInfo::MacintoshVersion >= QSysInfo::MV_IOS_8_0 ? m_uiScreen.nativeBounds :
+#endif
+        m_uiScreen.bounds;
+
+    // All known iOS devices have a native orientation of portrait, but to
+    // be on the safe side we compare the width and height of the bounds.
+    return nativeBounds.size.width >= nativeBounds.size.height ?
         Qt::LandscapeOrientation : Qt::PortraitOrientation;
 }
 

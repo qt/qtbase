@@ -1608,9 +1608,9 @@ void QGraphicsScenePrivate::updatePalette(const QPalette &palette)
     // whose parent is not a widget.
     foreach (QGraphicsItem *item, q->items()) {
         if (!item->parentItem()) {
-            // Resolvefont for an item is a noop operation, but
+            // ResolvePalette for an item is a noop operation, but
             // every item can be a widget, or can have a widget
-            // childre.
+            // children.
             item->d_ptr->resolvePalette(palette.resolve());
         }
     }

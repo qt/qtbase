@@ -117,12 +117,6 @@ typedef char GLchar;
 
 #  include <QtGui/qopengles2ext.h>
 # endif // Q_OS_MAC
-# ifndef GL_DOUBLE
-#  define GL_DOUBLE GL_FLOAT
-# endif
-# ifndef GLdouble
-typedef GLfloat GLdouble;
-# endif
 #else // non-ES2 platforms
 # if defined(Q_OS_MAC)
 #  include <OpenGL/gl.h>

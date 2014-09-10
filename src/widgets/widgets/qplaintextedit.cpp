@@ -690,10 +690,9 @@ void QPlainTextEditPrivate::ensureVisible(int position, bool center, bool forceC
     QRectF br = control->blockBoundingRect(block);
     if (!br.isValid())
         return;
-    QRectF lr = br;
     QTextLine line = block.layout()->lineForTextPosition(position - block.position());
     Q_ASSERT(line.isValid());
-    lr = line.naturalTextRect().translated(br.topLeft());
+    QRectF lr = line.naturalTextRect().translated(br.topLeft());
 
     if (lr.bottom() >= visible.bottom() || (center && lr.top() < visible.top()) || forceCenter){
 

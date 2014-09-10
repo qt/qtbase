@@ -406,7 +406,7 @@ void QXcbDrag::move(const QMouseEvent *me)
     int target_version = 1;
 
     if (proxy_target) {
-        xcb_get_property_cookie_t cookie = xcb_get_property(xcb_connection(), false, target,
+        xcb_get_property_cookie_t cookie = xcb_get_property(xcb_connection(), false, proxy_target,
                                                             atom(QXcbAtom::XdndAware), XCB_GET_PROPERTY_TYPE_ANY, 0, 1);
         xcb_get_property_reply_t *reply = xcb_get_property_reply(xcb_connection(), cookie, 0);
         if (!reply || reply->type == XCB_NONE)

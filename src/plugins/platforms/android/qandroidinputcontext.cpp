@@ -45,6 +45,7 @@
 #include "qandroidinputcontext.h"
 #include "androidjnimain.h"
 #include "androidjniinput.h"
+#include "qandroideventdispatcher.h"
 #include <QDebug>
 #include <qevent.h>
 #include <qguiapplication.h>
@@ -995,8 +996,10 @@ Q_INVOKABLE QVariant QAndroidInputContext::queryFocusObjectUnsafe(Qt::InputMetho
 
 QVariant QAndroidInputContext::queryFocusObjectThreadSafe(Qt::InputMethodQuery query, QVariant argument)
 {
-    bool inMainThread = qGuiApp->thread() == QThread::currentThread();
+    const bool inMainThread = qGuiApp->thread() == QThread::currentThread();
     QVariant retval;
+    if (QAndroidEventDispatcherStopper::stopped() && !inMainThread)
+        return retval;
 
     QMetaObject::invokeMethod(this, "queryFocusObjectUnsafe",
                               inMainThread ? Qt::DirectConnection : Qt::BlockingQueuedConnection,
@@ -1010,12 +1013,15 @@ QVariant QAndroidInputContext::queryFocusObjectThreadSafe(Qt::InputMethodQuery q
 QSharedPointer<QInputMethodQueryEvent> QAndroidInputContext::focusObjectInputMethodQuery(Qt::InputMethodQueries queries)
 {
 #warning TODO make qGuiApp->focusObject() thread safe !!!
+    const bool inMainThread = qGuiApp->thread() == QThread::currentThread();
+    if (QAndroidEventDispatcherStopper::stopped() && !inMainThread)
+        return QSharedPointer<QInputMethodQueryEvent>();
     QObject *focusObject = qGuiApp->focusObject();
     if (!focusObject)
         return QSharedPointer<QInputMethodQueryEvent>();
 
     QSharedPointer<QInputMethodQueryEvent> ret = QSharedPointer<QInputMethodQueryEvent>(new QInputMethodQueryEvent(queries));
-    if (qGuiApp->thread()==QThread::currentThread()) {
+    if (inMainThread) {
         QCoreApplication::sendEvent(focusObject, ret.data());
     } else {
         QMetaObject::invokeMethod(this,

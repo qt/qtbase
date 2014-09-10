@@ -12,6 +12,10 @@
 #include "libGLESv2/renderer/d3d/d3d11/Renderer11.h"
 #include "libGLESv2/renderer/d3d/d3d11/formatutils11.h"
 
+#if defined(__MINGW32__) && !defined(D3D11_MAP_FLAG_DO_NOT_WAIT)
+#  define D3D11_MAP_FLAG_DO_NOT_WAIT 0x100000L
+#endif
+
 namespace rx
 {
 

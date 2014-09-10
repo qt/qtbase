@@ -284,7 +284,7 @@ QT_BEGIN_NAMESPACE
 
     Returns \c true if the rectangle is valid, otherwise returns \c false.
 
-    A valid rectangle has a left() < right() and top() <
+    A valid rectangle has a left() <= right() and top() <=
     bottom(). Note that non-trivial operations like intersections are
     not defined for invalid rectangles. A valid rectangle is not empty
     (i.e., isValid() == !isEmpty()).
