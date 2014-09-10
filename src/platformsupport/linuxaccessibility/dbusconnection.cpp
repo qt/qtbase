@@ -87,7 +87,7 @@ void DBusConnection::serviceRegistered()
     //The variable was introduced because on some embedded platforms there are custom accessibility
     //clients which don't set Status.ScreenReaderEnabled to true. The variable is also useful for
     //debugging.
-    static const bool a11yAlwaysOn = !qEnvironmentVariableIsSet("QT_LINUX_ACCESSIBILITY_ALWAYS_ON");
+    static const bool a11yAlwaysOn = qEnvironmentVariableIsSet("QT_LINUX_ACCESSIBILITY_ALWAYS_ON");
 
     // a11yStatus->isEnabled() returns always true (since Gnome 3.6)
     bool enabled = a11yAlwaysOn || a11yStatus->screenReaderEnabled();
