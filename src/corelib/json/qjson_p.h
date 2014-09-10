@@ -61,8 +61,6 @@
 #include <qstring.h>
 #include <qendian.h>
 #include <qnumeric.h>
-#include <QtCore/qhash.h>
-#include <QtCore/qmutex.h>
 
 #include <limits.h>
 #include <limits>
@@ -795,75 +793,6 @@ private:
     Q_DISABLE_COPY(Data)
 };
 
-struct ObjectUndefinedKeys
-{
-    static void insertKey(const QJsonObject *object, int index, const QString &key)
-    {
-        QMutexLocker lock(&mutex);
-        keys()[object][index] = key;
-    }
-    static QString takeKey(const QJsonObject *object, int index)
-    {
-        QMutexLocker lock(&mutex);
-        return keys()[object].take(index);
-    }
-    static void removeKeys(const QJsonObject *object)
-    {
-        QMutexLocker lock(&mutex);
-        keys().remove(object);
-    }
-private:
-    typedef QHash<const QJsonObject*, QHash<int, QString> > KeysHash;
-    static KeysHash &keys()
-    {
-        static KeysHash keys;
-        return keys;
-    }
-   static QBasicMutex mutex;
-};
-
-} // namespace QJsonPrivate
-
-struct QJsonValueRef::UnionHelper
-{
-    static inline QJsonObject *untaggedPointer(QJsonObject *object)
-    {
-        const quintptr Mask = ~quintptr(0) << 2;
-        return reinterpret_cast<QJsonObject*>(quintptr(object) & Mask);
-    }
-    static inline QJsonObject *taggedPointer(QJsonObject *object)
-    {
-        const quintptr Mask = 1;
-        return reinterpret_cast<QJsonObject*>(quintptr(object) | Mask);
-    }
-
-    static void setValueAt(QJsonValueRef *ref, QJsonValue value)
-    {
-        using namespace QJsonPrivate;
-        QJsonObject *object = untaggedPointer(ref->o);
-        if (ref->o != object)
-            object->insert(ObjectUndefinedKeys::takeKey(object, ref->index), value);
-        else
-            object->setValueAt(ref->index, value);
-    }
-
-    static QJsonValue valueAt(const QJsonValueRef *ref)
-    {
-        QJsonObject *object = untaggedPointer(ref->o);
-        if (ref->o != object)
-            return QJsonValue::Undefined;
-        return ref->o->valueAt(ref->index);
-    }
-};
-
-/*!
-    \internal
-    Constructor that creates reference to an undefined value in \a object.
-*/
-inline QJsonValueRef::QJsonValueRef(QJsonObject *object, const QString &key)
-    : o(UnionHelper::taggedPointer(object)), is_object(true), index(qHash(key))
-{
-    QJsonPrivate::ObjectUndefinedKeys::insertKey(object, index, key);
 }
 
 QT_END_NAMESPACE

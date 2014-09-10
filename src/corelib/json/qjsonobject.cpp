@@ -161,7 +161,6 @@ QJsonObject::~QJsonObject()
 {
     if (d && !d->ref.deref())
         delete d;
-    QJsonPrivate::ObjectUndefinedKeys::removeKeys(this); // ### Qt6 move it to ~QJsonValueRef
 }
 
 /*!
@@ -318,9 +317,14 @@ QJsonValue QJsonObject::operator [](const QString &key) const
  */
 QJsonValueRef QJsonObject::operator [](const QString &key)
 {
+    // ### somewhat inefficient, as we lookup the key twice if it doesn't yet exist
     bool keyExists = false;
     int index = o ? o->indexOf(key, &keyExists) : -1;
-    return keyExists ? QJsonValueRef(this, index) : QJsonValueRef(this, key);
+    if (!keyExists) {
+        iterator i = insert(key, QJsonValue());
+        index = i.i;
+    }
+    return QJsonValueRef(this, index);
 }
 
 /*!
@@ -1034,9 +1038,7 @@ void QJsonObject::compact()
 
     detach();
     d->compact();
-    using namespace QJsonPrivate;
-    o = static_cast<Object *>(d->header->root());
-    ObjectUndefinedKeys::removeKeys(this); // ### Qt6 move it to ~QJsonValueRef
+    o = static_cast<QJsonPrivate::Object *>(d->header->root());
 }
 
 /*!
@@ -1072,8 +1074,6 @@ void QJsonObject::setValueAt(int i, const QJsonValue &val)
     QJsonPrivate::Entry *e = o->entryAt(i);
     insert(e->key(), val);
 }
-
-QBasicMutex QJsonPrivate::ObjectUndefinedKeys::mutex;
 
 #if !defined(QT_NO_DEBUG_STREAM) && !defined(QT_JSON_READONLY)
 QDebug operator<<(QDebug dbg, const QJsonObject &o)
