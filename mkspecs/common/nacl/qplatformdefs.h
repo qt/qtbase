@@ -30,19 +30,23 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#define _POSIX_TIMERS
+
 
 #include "qglobal.h"
 
-// extra disabling.
-#ifdef __native_client__
-#define QT_NO_FSFILEENGINE
-#endif
-
-#define QT_NO_SOCKET_H
-
 #define DIR void *
-#define PATH_MAX 256
+
+#undef QT_LSTAT
+#define QT_LSTAT                QT_STAT
+
+#define QT_NO_SYSTEMSEMAPHORE
+#define QT_NO_PROCESS
+#define QT_NO_SHAREDMEMORY
+//#define QT_NO_FILESYSTEMITERATOR
+//#define QT_NO_SETTINGS
+
+#undef QT_OPEN_LARGEFILE
+#define QT_OPEN_LARGEFILE       0
 
 #include "qfunctions_nacl.h"
 #include <pthread.h>

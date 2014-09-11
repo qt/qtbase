@@ -63,7 +63,18 @@ win32 {
                 QMAKE_RESOLVED_TARGET = $${QMAKE_RESOLVED_TARGET}$${LIBPREFIX}$${TARGET}.so.$${TEMP_VERSION}
             }
         } else {
-            QMAKE_RESOLVED_TARGET = $${QMAKE_RESOLVED_TARGET}$${TARGET}
+            nacl {
+                # Add .nexe extenson to app targes.
+                # Except don't do it for the configure tests. QT_CONFIG does not contain "qpa"
+                # at configure time, use that as a somewhat arbitray test condition.
+                # better way?: QTDIR_build|!contains(IN_PWD, ^$$[QT_HOST_PREFIX/get].*)
+                contains(QT_CONFIG, "qpa") {
+                    TARGET_EXT = .nexe
+                    TARGET=$${TARGET}$${TARGET_EXT}
+                }
+            } else {
+                QMAKE_RESOLVED_TARGET = $${QMAKE_RESOLVED_TARGET}$${TARGET}
+            }
         }
     }
 }

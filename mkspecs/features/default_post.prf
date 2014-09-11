@@ -97,5 +97,10 @@ breakpad {
 
 !precompile_header: SOURCES += $$NO_PCH_SOURCES
 
+# Add .nexe extention on NaCl
+nacl {
+    load(resolve_target)
+}
+
 QMAKE_INCDIR += $$QMAKE_INCDIR_POST
 QMAKE_LIBDIR += $$QMAKE_LIBDIR_POST
