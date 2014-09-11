@@ -75,14 +75,14 @@ QT_BEGIN_NAMESPACE
     are useful reference examples for how to render to a QWindow using
     either approach.
 
-    \section1 Resource management
+    \section1 Resource Management
 
     Windows can potentially use a lot of memory. A usual measurement is
     width times height times color depth. A window might also include multiple
     buffers to support double and triple buffering, as well as depth and stencil
     buffers. To release a window's memory resources, call the destroy() function.
 
-    \section1 Content orientation
+    \section1 Content Orientation
 
     QWindow has reportContentOrientationChange() that can be used to specify
     the layout of the window contents in relation to the screen. The content
@@ -93,7 +93,7 @@ QT_BEGIN_NAMESPACE
     system might use this value to determine the layout of system popups or
     dialogs.
 
-    \section1 Visibility and Windowing system exposure.
+    \section1 Visibility and Windowing System Exposure
 
     By default, the window is not visible, and you must call setVisible(true),
     or show() or similar to make it visible. To make a window hidden again,
@@ -123,7 +123,7 @@ QT_BEGIN_NAMESPACE
     isExposed() changes, reimplement exposeEvent(). The window will always get
     a resize event before the first expose event.
 
-    \section1 Initial geometry
+    \section1 Initial Geometry
 
     If the window's width and height are left uninitialized, the window will
     get a reasonable default geometry from the platform window. If the position

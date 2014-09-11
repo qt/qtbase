@@ -512,7 +512,7 @@
     In contrast, setting a font and propagate using QWidget::setFont() and
     QWidget::setPalette() propagates to child widgets.
 
-    \section1 Widgets inside C++ namespaces
+    \section1 Widgets Inside C++ Namespaces
 
     The Type Selector can be used to style widgets of a particular type. For
     example,
@@ -528,7 +528,7 @@
 
     \snippet code/doc_src_stylesheet.cpp 27
 
-    \section1 Setting QObject properties
+    \section1 Setting QObject Properties
 
     From 4.3 and above, any designable Q_PROPERTY
     can be set using the qproperty-<property name> syntax.
@@ -3549,7 +3549,7 @@
     [Hint: The \l{The Style Sheet Syntax#Conflict Resolution}{Conflict Resolution} section above explains
     what happens in cases like this.]
 
-    \section1 Customizing specific widgets
+    \section1 Customizing Specific Widgets
 
     This section provides examples to customize specific widgets using Style Sheets.
 
@@ -3930,7 +3930,7 @@
     \sa {Style Sheet Example}, {Supported HTML Subset}, QStyle
 
 
-    \section1 Common mistakes
+    \section1 Common Mistakes
 
     This section lists some common mistakes when using stylesheets.
 

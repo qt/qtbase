@@ -133,7 +133,7 @@ QT_BEGIN_NAMESPACE
     special requirements.
 
     \target raw
-    \section1 Reading and writing raw binary data
+    \section1 Reading and Writing Raw Binary Data
 
     You may wish to read/write your own raw binary data to/from the
     data stream directly. Data may be read from the stream into a
@@ -149,14 +149,14 @@ QT_BEGIN_NAMESPACE
     data, followed by the data. Note that any encoding/decoding of
     the data (apart from the length quint32) must be done by you.
 
-    \section1 Reading and writing Qt collection classes
+    \section1 Reading and Writing Qt Collection Classes
 
     The Qt container classes can also be serialized to a QDataStream.
     These include QList, QLinkedList, QVector, QSet, QHash, and QMap.
     The stream operators are declared as non-members of the classes.
 
     \target Serializing Qt Classes
-    \section1 Reading and writing other Qt classes.
+    \section1 Reading and Writing Other Qt Classes
 
     In addition to the overloaded stream operators documented here,
     any Qt classes that you might want to serialize to a QDataStream

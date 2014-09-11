@@ -69,7 +69,7 @@
     respectively after and behind the iterator's current position, but they
     will not return the code point the iterator has moved through.
 
-    \section1 Unicode handling
+    \section1 Unicode Handling
 
     QString and all of its functions work in terms of UTF-16 code units. Unicode code points
     that fall outside the Basic Multilingual Plane (U+10000 to U+10FFFF) will therefore
@@ -91,7 +91,7 @@
     a decoding problem; please refer to the each function documentation for
     more details.
 
-    \section1 Unchecked iteration
+    \section1 Unchecked Iteration
 
     It is possible to optimize iterating over a QString contents by skipping
     some checks. This is in general not safe to do, because a QString is allowed

@@ -71,7 +71,7 @@ QT_BEGIN_NAMESPACE
 
     \snippet code/src_gui_qopenglshaderprogram.cpp 0
 
-    \section1 Writing portable shaders
+    \section1 Writing Portable Shaders
 
     Shader programs can be difficult to reuse across OpenGL implementations
     because of varying levels of support for standard vertex attributes and
@@ -95,7 +95,7 @@ QT_BEGIN_NAMESPACE
     to just features that are present in GLSL/ES, and avoid
     standard variable names that only work on the desktop.
 
-    \section1 Simple shader example
+    \section1 Simple Shader Example
 
     \snippet code/src_gui_qopenglshaderprogram.cpp 1
 
@@ -104,7 +104,7 @@ QT_BEGIN_NAMESPACE
 
     \snippet code/src_gui_qopenglshaderprogram.cpp 2
 
-    \section1 Binary shaders and programs
+    \section1 Binary Shaders and Programs
 
     Binary shaders may be specified using \c{glShaderBinary()} on
     the return value from QOpenGLShader::shaderId().  The QOpenGLShader instance

@@ -77,7 +77,7 @@ QT_BEGIN_NAMESPACE
 
     \snippet qelapsedtimer/main.cpp 2
 
-    \section1 Reference clocks
+    \section1 Reference Clocks
 
     QElapsedTimer will use the platform's monotonic reference clock in all
     platforms that support it (see QElapsedTimer::isMonotonic()). This has

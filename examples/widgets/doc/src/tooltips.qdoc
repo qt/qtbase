@@ -61,7 +61,7 @@
     First we will review the \c SortingBox class, then we will take a
     look at the \c ShapeItem class.
 
-    \section1  SortingBox Class Definition
+    \section1 SortingBox Class Definition
 
     \snippet widgets/tooltips/sortingbox.h 0
 

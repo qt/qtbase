@@ -73,7 +73,7 @@ QT_BEGIN_NAMESPACE
 
     \snippet code/src_corelib_tools_qscopedpointer.cpp 2
 
-    \section1 Custom cleanup handlers
+    \section1 Custom Cleanup Handlers
 
     Arrays as well as pointers that have been allocated with \c malloc must
     not be deleted using \c delete. QScopedPointer's second template parameter

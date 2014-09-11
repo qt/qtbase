@@ -197,7 +197,7 @@ static void ensureInitialized()
     can be:
     \snippet code/src_network_access_qnetworkaccessmanager.cpp 1
 
-    \section1 Network and Roaming support
+    \section1 Network and Roaming Support
 
     With the addition of the \l {Bearer Management} API to Qt 4.7
     QNetworkAccessManager gained the ability to manage network connections.

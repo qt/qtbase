@@ -672,7 +672,7 @@
 
     In this chapter we will see how to write a simple GUI test.
 
-    \section1 Writing a GUI test
+    \section1 Writing a GUI Test
 
     This time, let's assume you want to test the behavior of our
     QLineEdit class. As before, you will need a class that contains

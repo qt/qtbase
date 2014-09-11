@@ -226,7 +226,7 @@
     In the example, the enumeration type that is the property type is
     declared in MyClass and registered with the \l{Meta-Object System}
     using the Q_ENUMS() macro. This makes the enumeration values
-    available as strings for use as in the call to setProperty(). Had
+    available as strings for use as in the call to \l{QObject::}{setProperty()}. Had
     the enumeration type been declared in another class, its fully
     qualified name (i.e., OtherClass::Priority) would be required, and
     that other class would also have to inherit QObject and register

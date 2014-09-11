@@ -75,7 +75,7 @@ QT_BEGIN_NAMESPACE
     the default behavior suffices, some circumstances require greater control over the
     interaction with screen.
 
-    \section1 Window types
+    \section1 Window Types
 
     The QNX QPA plugin can operate in two modes, with or without a root window. The
     selection of mode is made via the \e rootwindow and \e no-rootwindow options to the

@@ -140,7 +140,7 @@ QFileSelectorPrivate::QFileSelectorPrivate()
     deployment step as an optimization. As selectors come with a performance cost, it is
     recommended to avoid their use in circumstances involving performance-critical code.
 
-    \section1 Adding selectors
+    \section1 Adding Selectors
 
     Selectors normally available are
     \list
@@ -158,7 +158,7 @@ QFileSelectorPrivate::QFileSelectorPrivate()
     future calls to select(). If the extra selectors list has been changed, calls to select() will
     use the new list and may return differently.
 
-    \section1 Conflict resolution when multiple selectors apply
+    \section1 Conflict Resolution when Multiple Selectors Apply
 
     When multiple selectors could be applied to the same file, the first matching selector is chosen.
     The order selectors are checked in are:

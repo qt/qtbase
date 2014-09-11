@@ -34,7 +34,7 @@
 
     \image openglwindow-example.png Screenshot of the OpenGLWindow example
 
-    \section1 OpenGLWindow super class
+    \section1 OpenGLWindow Super Class
 
     Our OpenGLWindow class acts as an API which is then subclassed to do the
     actual rendering. It has functions to make a request for render() to be
@@ -118,7 +118,7 @@
 
     \snippet openglwindow/openglwindow.cpp 5
 
-    \section1 Example OpenGL rendering sub class
+    \section1 Example OpenGL Rendering Sub Class
 
     Here we sub class OpenGLWindow to show how to do OpenGL to render a
     rotating triangle. By indirectly sub classing QOpenGLFunctions we gain

@@ -90,7 +90,7 @@
 
     \snippet cube/mainwidget.cpp 2
 
-    \section1 Loading textures from Qt Resource files
+    \section1 Loading Textures from Qt Resource Files
 
     \c QGLWidget interface implements methods for loading textures from QImage to GL
     texture memory. We still need to use OpenGL provided functions for specifying
@@ -133,14 +133,14 @@
 
     \snippet cube/geometryengine.cpp 2
 
-    \section1 Perspective projection
+    \section1 Perspective Projection
 
     Using \c QMatrix4x4 helper methods it's really easy to calculate perpective
     projection matrix. This matrix is used to project vertices to screen space.
 
     \snippet cube/mainwidget.cpp 5
 
-    \section1 Orientation of the 3D object
+    \section1 Orientation of the 3D Object
 
     Quaternions are handy way to represent orientation of the 3D object. Quaternions
     involve quite complex mathematics but fortunately all the necessary mathematics

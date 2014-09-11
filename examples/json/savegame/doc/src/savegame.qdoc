@@ -43,7 +43,7 @@
     In this example, we'll demonstrate how to save and load a simple game to
     and from JSON and binary formats.
 
-    \section1 The Character class
+    \section1 The Character Class
 
     The Character class represents a non-player character (NPC) in our game, and
     stores the player's name, level, and class type.

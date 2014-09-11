@@ -138,7 +138,7 @@ QT_BEGIN_NAMESPACE
 
     \snippet code/src_corelib_tools_qregularexpression.cpp 3
 
-    \section1 Pattern options
+    \section1 Pattern Options
 
     The meaning of the pattern string can be modified by setting one or more
     \e{pattern options}. For instance, it is possible to set a pattern to match
@@ -162,7 +162,7 @@ QT_BEGIN_NAMESPACE
     Please refer to the QRegularExpression::PatternOption enum documentation for
     more information about each pattern option.
 
-    \section1 Match type and match options
+    \section1 Match Type and Match Options
 
     The last two arguments of the match() and the globalMatch() functions set
     the match type and the match options. The match type is a value of the
@@ -177,7 +177,7 @@ QT_BEGIN_NAMESPACE
     QRegularExpression::MatchOption enum documentation for more details.
 
     \target normal matching
-    \section1 Normal matching
+    \section1 Normal Matching
 
     In order to perform a match you can simply invoke the match() function
     passing a string to match against. We refer to this string as the
@@ -227,7 +227,7 @@ QT_BEGIN_NAMESPACE
     \snippet code/src_corelib_tools_qregularexpression.cpp 12
 
     \target global matching
-    \section1 Global matching
+    \section1 Global Matching
 
     \e{Global matching} is useful to find all the occurrences of a given
     regular expression inside a subject string. Suppose that we want to extract
@@ -257,7 +257,7 @@ QT_BEGIN_NAMESPACE
     the globalMatch() function, exactly like normal matching with match().
 
     \target partial matching
-    \section1 Partial matching
+    \section1 Partial Matching
 
     A \e{partial match} is obtained when the end of the subject string is
     reached, but more characters are needed to successfully complete the match.
@@ -396,7 +396,7 @@ QT_BEGIN_NAMESPACE
     text) would have been \c{"abcabc"}; by matching only against the leading
     \c{"abc"} we instead get a partial match.
 
-    \section1 Error handling
+    \section1 Error Handling
 
     It is possible for a QRegularExpression object to be invalid because of
     syntax errors in the pattern string. The isValid() function will return
@@ -415,7 +415,7 @@ QT_BEGIN_NAMESPACE
     its \l{QRegularExpressionMatch::}{isValid()} function will return false).
     The same applies for attempting a global match.
 
-    \section1 Unsupported Perl-compatible regular expressions features
+    \section1 Unsupported Perl-compatible Regular Expressions Features
 
     QRegularExpression does not support all the features available in
     Perl-compatible regular expressions. The most notable one is the fact that
@@ -424,7 +424,7 @@ QT_BEGIN_NAMESPACE
 
     This may change in a future version of Qt.
 
-    \section1 Notes for QRegExp users
+    \section1 Notes for QRegExp Users
 
     The QRegularExpression class introduced in Qt 5 is a big improvement upon
     QRegExp, in terms of APIs offered, supported pattern syntax and speed of
@@ -517,7 +517,7 @@ QT_BEGIN_NAMESPACE
     QRegExp::CaretAtOffset behaviour. There is no equivalent for the other
     QRegExp::CaretMode modes.
 
-    \section1 Debugging code that uses QRegularExpression
+    \section1 Debugging Code that Uses QRegularExpression
 
     QRegularExpression internally uses a just in time compiler (JIT) to
     optimize the execution of the matching algorithm. The JIT makes extensive

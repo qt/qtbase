@@ -45,7 +45,7 @@ QT_BEGIN_NAMESPACE
 
     \brief Class documentation of the  Qt Lighthouse plugin for Windows.
 
-    \section1 Supported parameters
+    \section1 Supported Parameters
 
     The following parameters can be passed on to the -platform argument
     of QGuiApplication:

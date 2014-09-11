@@ -71,14 +71,14 @@ static void setBoolLane(QBasicAtomicInt *atomic, bool enable, int shift)
     boundaries, nor to manipulate the objects directly, nor to inherit from
     QLoggingCategory.
 
-    \section1 Creating category objects
+    \section1 Creating Category Objects
 
     The Q_DECLARE_LOGGING_CATEGORY() and Q_LOGGING_CATEGORY() macros
     conveniently declare and create QLoggingCategory objects:
 
     \snippet qloggingcategory/main.cpp 1
 
-    \section1 Checking category configuration
+    \section1 Checking Category Configuration
 
     QLoggingCategory provides \l isDebugEnabled(), \l isWarningEnabled(),
     \l isCriticalEnabled(), as well as \l isEnabled()
@@ -90,7 +90,7 @@ static void setBoolLane(QBasicAtomicInt *atomic, bool enable, int shift)
 
     \snippet qloggingcategory/main.cpp 4
 
-    \section1 Default category configuration
+    \section1 Default Category Configuration
 
     Both the QLoggingCategory constructor and the Q_LOGGING_CATEGORY() macro
     accept an optional QtMsgType argument, which disables all message types with
@@ -172,7 +172,7 @@ static void setBoolLane(QBasicAtomicInt *atomic, bool enable, int shift)
     custom filter via \l installFilter(). All filter rules are ignored in this
     case.
 
-    \section1 Printing the category
+    \section1 Printing the Category
 
     Use the \c %{category} place holder to print the category in the default
     message handler:

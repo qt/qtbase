@@ -103,7 +103,7 @@
     does so weakly. QWeakPointer has the same functionality, but its use for
     that function is deprecated.
 
-    \section1 Optional pointer tracking
+    \section1 Optional Pointer Tracking
 
     A feature of QSharedPointer that can be enabled at compile-time for
     debugging purposes is a pointer tracking mechanism. When enabled,
