@@ -220,7 +220,7 @@ public:
         }
 
         if (updateBehavior > QOpenGLWindow::NoPartialUpdate) {
-            if (!fbo || fbo->size() != q->size()) {
+            if (!fbo || fbo->size() != q->size() * q->devicePixelRatio()) {
                 QOpenGLFramebufferObjectFormat fboFormat;
                 fboFormat.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
                 if (q->requestedFormat().samples() > 0) {
@@ -229,7 +229,7 @@ public:
                     else
                         qWarning("QOpenGLWindow: PartialUpdateBlend does not support multisampling");
                 }
-                fbo.reset(new QOpenGLFramebufferObject(q->size(), fboFormat));
+                fbo.reset(new QOpenGLFramebufferObject(q->size() * q->devicePixelRatio(), fboFormat));
                 markWindowAsDirty();
             }
         } else {
@@ -239,6 +239,7 @@ public:
         const int deviceWidth = q->width() * q->devicePixelRatio();
         const int deviceHeight = q->height() * q->devicePixelRatio();
         paintDevice->setSize(QSize(deviceWidth, deviceHeight));
+        paintDevice->setDevicePixelRatio(q->devicePixelRatio());
         context->functions()->glViewport(0, 0, deviceWidth, deviceHeight);
 
         context->functions()->glBindFramebuffer(GL_FRAMEBUFFER, context->defaultFramebufferObject());
@@ -273,7 +274,7 @@ public:
             if (!blitter.isCreated())
                 blitter.create();
 
-            QRect windowRect(QPoint(0, 0), q->size());
+            QRect windowRect(QPoint(0, 0), fbo->size());
             QMatrix4x4 target = QOpenGLTextureBlitter::targetTransform(windowRect, windowRect);
             blitter.bind();
             blitter.blit(fbo->texture(), target, QOpenGLTextureBlitter::OriginBottomLeft);
