@@ -133,6 +133,7 @@ class Q_CORE_EXPORT QAnimationDriverPrivate : public QObjectPrivate
 {
 public:
     QAnimationDriverPrivate() : running(false) {}
+    QElapsedTimer timer;
     bool running;
 };
 

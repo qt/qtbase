@@ -877,6 +877,7 @@ void QAnimationDriver::start()
     Q_D(QAnimationDriver);
     if (!d->running) {
         d->running = true;
+        d->timer.start();
         emit started();
     }
 }
@@ -900,9 +901,8 @@ void QAnimationDriver::stop()
 
 qint64 QAnimationDriver::elapsed() const
 {
-    // The default implementation picks up the elapsed time from the
-    // unified timer and can ignore the time offset.
-    return QUnifiedTimer::instance()->time.elapsed();
+    Q_D(const QAnimationDriver);
+    return d->running ? d->timer.elapsed() : 0;
 }
 
 /*!
