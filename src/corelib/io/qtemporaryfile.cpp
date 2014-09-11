@@ -222,6 +222,7 @@ static bool createFileFromTemplate(NativeFileHandle &file,
     }
 
     Q_ASSERT(false);
+    return false;
 }
 
 //************* QTemporaryFileEngine

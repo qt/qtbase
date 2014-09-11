@@ -125,14 +125,12 @@ static bool isValidBlockSeparator(QChar ch)
         || ch == QTextEndOfFrame;
 }
 
-#if !defined(QT_NO_DEBUG) || defined(QT_FORCE_ASSERTS)
 static bool noBlockInString(const QString &str)
 {
     return !str.contains(QChar::ParagraphSeparator)
         && !str.contains(QTextBeginningOfFrame)
         && !str.contains(QTextEndOfFrame);
 }
-#endif
 
 bool QTextUndoCommand::tryMerge(const QTextUndoCommand &other)
 {

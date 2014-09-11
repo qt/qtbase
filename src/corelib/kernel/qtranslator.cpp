@@ -273,6 +273,7 @@ static uint numerusHelper(int n, const uchar *rules, uint rulesSize)
     }
 
     Q_ASSERT(false);
+    return 0;
 }
 
 class QTranslatorPrivate : public QObjectPrivate
