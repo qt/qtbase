@@ -753,6 +753,9 @@ void QNetworkReplyHttpImplPrivate::postRequest()
                              QNetworkRequest::Automatic).toInt()) == QNetworkRequest::Manual)
         httpRequest.setWithCredentials(false);
 
+    if (request.attribute(QNetworkRequest::EmitAllUploadProgressSignalsAttribute).toBool() == true)
+        emitAllUploadProgressSignals = true;
+
 
     // Create the HTTP thread delegate
     QHttpThreadDelegate *delegate = new QHttpThreadDelegate;
@@ -1854,14 +1857,16 @@ void QNetworkReplyHttpImplPrivate::emitReplyUploadProgress(qint64 bytesSent, qin
     if (isFinished)
         return;
 
-    //choke signal emissions, except the first and last signals which are unconditional
-    if (uploadProgressSignalChoke.isValid()) {
-        if (bytesSent != bytesTotal && uploadProgressSignalChoke.elapsed() < progressSignalInterval) {
-            return;
+    if (!emitAllUploadProgressSignals) {
+        //choke signal emissions, except the first and last signals which are unconditional
+        if (uploadProgressSignalChoke.isValid()) {
+            if (bytesSent != bytesTotal && uploadProgressSignalChoke.elapsed() < progressSignalInterval) {
+                return;
+            }
+            uploadProgressSignalChoke.restart();
+        } else {
+            uploadProgressSignalChoke.start();
         }
-        uploadProgressSignalChoke.restart();
-    } else {
-        uploadProgressSignalChoke.start();
     }
 
     emit q->uploadProgress(bytesSent, bytesTotal);

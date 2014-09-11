@@ -41,6 +41,7 @@ const int QNetworkReplyPrivate::progressSignalInterval = 100;
 
 QNetworkReplyPrivate::QNetworkReplyPrivate()
     : readBufferMaxSize(0),
+      emitAllUploadProgressSignals(false),
       operation(QNetworkAccessManager::UnknownOperation),
       errorCode(QNetworkReply::NoError)
     , isFinished(false)

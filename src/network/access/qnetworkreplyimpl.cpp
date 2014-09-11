@@ -59,6 +59,8 @@ inline QNetworkReplyImplPrivate::QNetworkReplyImplPrivate()
       , downloadBufferMaximumSize(0)
       , downloadBuffer(0)
 {
+    if (request.attribute(QNetworkRequest::EmitAllUploadProgressSignalsAttribute).toBool() == true)
+        emitAllUploadProgressSignals = true;
 }
 
 void QNetworkReplyImplPrivate::_q_startOperation()
@@ -542,14 +544,16 @@ void QNetworkReplyImplPrivate::emitUploadProgress(qint64 bytesSent, qint64 bytes
     Q_Q(QNetworkReplyImpl);
     bytesUploaded = bytesSent;
 
-    //choke signal emissions, except the first and last signals which are unconditional
-    if (uploadProgressSignalChoke.isValid()) {
-        if (bytesSent != bytesTotal && uploadProgressSignalChoke.elapsed() < progressSignalInterval) {
-            return;
+    if (!emitAllUploadProgressSignals) {
+        //choke signal emissions, except the first and last signals which are unconditional
+        if (uploadProgressSignalChoke.isValid()) {
+            if (bytesSent != bytesTotal && uploadProgressSignalChoke.elapsed() < progressSignalInterval) {
+                return;
+            }
+            uploadProgressSignalChoke.restart();
+        } else {
+            uploadProgressSignalChoke.start();
         }
-        uploadProgressSignalChoke.restart();
-    } else {
-        uploadProgressSignalChoke.start();
     }
 
     pauseNotificationHandling();

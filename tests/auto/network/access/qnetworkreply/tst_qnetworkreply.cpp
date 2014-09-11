@@ -315,6 +315,7 @@ private Q_SLOTS:
     void ioPostToHttpFromMiddleOfQBufferFiveBytes();
     void ioPostToHttpNoBufferFlag();
     void ioPostToHttpUploadProgress();
+    void emitAllUploadProgressSignals();
     void ioPostToHttpEmptyUploadProgress();
 
     void lastModifiedHeaderForFile();
@@ -4977,6 +4978,59 @@ void tst_QNetworkReply::ioPostToHttpUploadProgress()
 
     incomingSocket->close();
     server.close();
+}
+
+void tst_QNetworkReply::emitAllUploadProgressSignals()
+{
+    QFile sourceFile(testDataDir + "/image1.jpg");
+    QVERIFY(sourceFile.open(QIODevice::ReadOnly));
+
+    // emulate a minimal http server
+    QTcpServer server;
+    server.listen(QHostAddress(QHostAddress::LocalHost), 0);
+    connect(&server, SIGNAL(newConnection()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+
+    QUrl url = QUrl(QString("http://127.0.0.1:%1/").arg(server.serverPort()));
+    QNetworkRequest normalRequest(url);
+    normalRequest.setRawHeader("Content-Type", "application/octet-stream");
+
+    QNetworkRequest catchAllSignalsRequest(normalRequest);
+    catchAllSignalsRequest.setAttribute(QNetworkRequest::EmitAllUploadProgressSignalsAttribute, true);
+
+    QList<QNetworkRequest> requests;
+    requests << normalRequest << catchAllSignalsRequest;
+
+    QList<int> signalCount;
+
+    foreach (const QNetworkRequest &request, requests) {
+
+        sourceFile.seek(0);
+        QNetworkReplyPtr reply(manager.post(request, &sourceFile));
+        QSignalSpy spy(reply.data(), SIGNAL(uploadProgress(qint64,qint64)));
+
+        // get the request started and the incoming socket connected
+        QTestEventLoop::instance().enterLoop(10);
+        QVERIFY(!QTestEventLoop::instance().timeout());
+        QTcpSocket *incomingSocket = server.nextPendingConnection();
+        QVERIFY(incomingSocket);
+        QTestEventLoop::instance().enterLoop(10);
+
+        connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+        incomingSocket->write("HTTP/1.0 200 OK\r\n");
+        incomingSocket->write("Content-Length: 0\r\n");
+        incomingSocket->write("\r\n");
+        QTestEventLoop::instance().enterLoop(10);
+        // not timeouted -> finished() was emitted
+        QVERIFY(!QTestEventLoop::instance().timeout());
+
+        incomingSocket->close();
+        signalCount.append(spy.count());
+        reply->deleteLater();
+    }
+    server.close();
+
+    // verify that the normal request emitted less signals than the one emitting all signals
+    QVERIFY2(signalCount.at(0) < signalCount.at(1), "no upload signal was suppressed");
 }
 
 void tst_QNetworkReply::ioPostToHttpEmptyUploadProgress()

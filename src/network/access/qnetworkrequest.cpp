@@ -249,6 +249,13 @@ QT_BEGIN_NAMESPACE
         Indicates whether SPDY was used for receiving
         this reply.
 
+    \value EmitAllUploadProgressSignalsAttribute
+        Requests only, type: QMetaType::Bool (default: false)
+        Indicates whether all upload signals should be emitted.
+        By default, the uploadProgress signal is emitted only
+        in 100 millisecond intervals.
+        (This value was introduced in 5.5.)
+
     \value User
         Special type. Additional information can be passed in
         QVariants with types ranging from User to UserMax. The default
