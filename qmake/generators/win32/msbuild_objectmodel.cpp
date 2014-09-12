@@ -636,7 +636,8 @@ void VCXProjectWriter::write(XmlOutput &xml, VCProject &tool)
         << tagValue("Keyword", tool.Keyword);
 
     if (isWinRT) {
-        xml << tagValue("MinimumVisualStudioVersion", tool.Version);
+        xml << tagValue("MinimumVisualStudioVersion", tool.Version)
+            << tagValue("DefaultLanguage", "en");
         if (isWinPhone80) {
             xml << tagValue("WinMDAssembly", "true");
             if (tool.SingleProjects.at(0).Configuration.ConfigurationType == typeApplication) {
