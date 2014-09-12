@@ -184,8 +184,6 @@ contains(QT_CONFIG, concurrent):SUBDIRS += src_concurrent
 }
 SUBDIRS += src_plugins src_tools_qdoc
 
-nacl: SUBDIRS -= src_network src_testlib
-
 android:!android-no-sdk: SUBDIRS += src_android
 
 TR_EXCLUDE = \
