@@ -36,6 +36,7 @@ HEADERS += \
         kernel/qsurfaceformat.h \
         kernel/qguiapplication.h \
         kernel/qguiapplication_p.h \
+        kernel/qguimain.h \
         kernel/qwindow_p.h \
         kernel/qwindow.h \
         kernel/qoffscreensurface.h \
@@ -102,6 +103,7 @@ SOURCES += \
         kernel/qsimpledrag.cpp \
         kernel/qsurfaceformat.cpp \
         kernel/qguiapplication.cpp \
+        kernel/qguimain.cpp \
         kernel/qwindow.cpp \
         kernel/qoffscreensurface.cpp \
         kernel/qplatformsurface.cpp \
