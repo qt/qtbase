@@ -166,6 +166,10 @@ QString QLocalePrivate::languageToCode(QLocale::Language language)
 
     const unsigned char *c = language_code_list + 3*(uint(language));
 
+// Work around x86_64-nacl-g++ ICE
+#ifdef Q_OS_NACL
+    return QLatin1String("C");
+#else
     QString code(c[2] == 0 ? 2 : 3, Qt::Uninitialized);
 
     code[0] = ushort(c[0]);
@@ -174,6 +178,7 @@ QString QLocalePrivate::languageToCode(QLocale::Language language)
         code[2] = ushort(c[2]);
 
     return code;
+#endif
 }
 
 QString QLocalePrivate::scriptToCode(QLocale::Script script)
@@ -191,6 +196,10 @@ QString QLocalePrivate::countryToCode(QLocale::Country country)
 
     const unsigned char *c = country_code_list + 3*(uint(country));
 
+// Work around x86_64-nacl-g++ ICE
+#ifdef Q_OS_NACL
+    return QLatin1String("C");
+#else
     QString code(c[2] == 0 ? 2 : 3, Qt::Uninitialized);
 
     code[0] = ushort(c[0]);
@@ -199,6 +208,7 @@ QString QLocalePrivate::countryToCode(QLocale::Country country)
         code[2] = ushort(c[2]);
 
     return code;
+#endif
 }
 
 // http://www.unicode.org/reports/tr35/#Likely_Subtags

@@ -290,4 +290,24 @@
 #endif
 #endif
 
+// Define NaCL variants:
+// - static build using newlib : Q_OS_NACL_NEWLIB
+// - shared libraries build using glibc: Q_OS_NACL_GLIBC
+// - portable native client: Q_OS_PNACL
+//   (pNaCl is currently a newlib build)
+//
+#ifdef Q_OS_NACL
+// include in libc header to get _NEWLIB_VERSION defined when using newlib
+#include <stdio.h>
+#  if defined(_NEWLIB_VERSION)
+#    define Q_OS_NACL_NEWLIB
+#  else
+#    define Q_OS_NACL_GLIBC
+#  endif
+#ifdef __pnacl__
+#  define Q_OS_PNACL
+#endif
+#endif
+
+
 #endif // QSYSTEMDETECTION_H

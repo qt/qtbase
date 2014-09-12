@@ -48,6 +48,10 @@
 #include "private/qfreelist_p.h"
 #endif
 
+#ifdef Q_OS_NACL
+#include <time.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 static inline bool isRecursive(QMutexData *d)

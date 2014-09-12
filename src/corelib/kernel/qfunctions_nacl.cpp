@@ -56,16 +56,17 @@
 
 extern "C" {
 
-void pthread_cleanup_push(void (*)(void *), void *)
-{
+//void pthread_cleanup_push(void (*)(void *), void *)
+//{
+//
+//}
 
-}
+//void pthread_cleanup_pop(int)
+//{
+//
+//}
 
-void pthread_cleanup_pop(int)
-{
-
-}
-
+#ifdef Q_OS_NACL_NEWLIB
 int pthread_setcancelstate(int, int *)
 {
     return 0;
@@ -97,6 +98,33 @@ int pthread_attr_getinheritsched(const pthread_attr_t *, int *)
 {
     return 0;
 }
+
+int pthread_condattr_init(pthread_condattr_t *)
+{
+    return 0;
+}
+
+int pthread_condattr_destroy(pthread_condattr_t *attr)
+{
+    return 0;
+}
+
+pid_t getpid(void)
+{
+    return 0;
+}
+
+uid_t geteuid(void)
+{
+    return 0;
+}
+
+int gethostname(char *name, size_t namelen)
+{
+    return -1;
+}
+#endif
+
 
 // event dispatcher, select
 //struct fd_set;
@@ -140,9 +168,44 @@ off64_t lseek64(int, off_t, int)
     return 0;
 }
 
+#ifdef Q_OS_NACL_NEWLIB
+char * getenv(const char *)
+{
+    return 0;
+}
+
+int putenv(char *)
+{
+    return 0;
+}
+
+int setenv(const char *name, const char *value, int overwrite)
+{
+    return 0;
+}
+
+int unsetenv(const char *name)
+{
+    return 0;
+}
+#endif
+
 } // Extern C
 
 int select(int, fd_set *, fd_set *, fd_set *, struct timeval *)
 {
     return 0;
 }
+
+int pselect(int nfds, fd_set * readfds, fd_set * writefds, fd_set * errorfds, const struct timespec * timeout, const sigset_t * sigmask)
+{
+    return 0;
+}
+
+#ifdef Q_OS_NACL
+// The Pepper networking API requires access to a global instance object.
+// Following the Qt architechture, this object is owned by the platform
+// plugin. Add a global pointer here to give QtNetwork access. The pointer
+// is set during pepper platform plugin initialization.
+Q_CORE_EXPORT void *qtPepperInstance = 0;
+#endif

@@ -38,21 +38,29 @@
 
 #ifdef Q_OS_NACL
 
+#ifdef Q_OS_NACL_NEWLIB
+#include <sys/nacl_syscalls.h>
+#endif
+
 #include <sys/types.h>
 
 // pthread
 #include <pthread.h>
+
+#ifdef Q_OS_NACL_NEWLIB
 #define PTHREAD_CANCEL_DISABLE 1
 #define PTHREAD_CANCEL_ENABLE 2
 #define PTHREAD_INHERIT_SCHED 3
-
+#endif
 QT_BEGIN_NAMESPACE
 
 
 extern "C" {
+//void pthread_cleanup_push(void (*handler)(void *), void *arg);
+//void pthread_cleanup_pop(int execute);
 
-void pthread_cleanup_push(void (*handler)(void *), void *arg);
-void pthread_cleanup_pop(int execute);
+
+#ifdef Q_OS_NACL_NEWLIB
 
 int pthread_setcancelstate(int state, int *oldstate);
 int pthread_setcanceltype(int type, int *oldtype);
@@ -63,6 +71,43 @@ int pthread_attr_setinheritsched(pthread_attr_t *attr,
     int inheritsched);
 int pthread_attr_getinheritsched(const pthread_attr_t *attr,
     int *inheritsched);
+
+// No condition variable attributes on pnacl, and no dummy pthread_condattr_* either
+int pthread_condattr_init(pthread_condattr_t *);
+int pthread_condattr_destroy(pthread_condattr_t *);
+
+pid_t getpid(void);
+uid_t geteuid(void);
+int gethostname(char *name, size_t namelen);
+
+// Several function declarations in the newlib headers are
+// disabled with a '#ifndef __STRICT_ANSI__' flag.
+// ### find a better way.
+#ifndef Q_OS_PNACL
+#define isascii(__c)	((unsigned)(__c)<=0177)
+#define toascii(__c)	((__c)&0177)
+
+int	_EXFUN(fseeko, (FILE *, _off_t, int));
+off_t	_EXFUN(ftello, ( FILE *));
+
+int	_EXFUN(fileno, (FILE *));
+int	_EXFUN(getw, (FILE *));
+int	_EXFUN(pclose, (FILE *));
+FILE *  _EXFUN(popen, (const char *, const char *));
+int	_EXFUN(putw, (int, FILE *));
+void    _EXFUN(setbuffer, (FILE *, char *, int));
+int	_EXFUN(setlinebuf, (FILE *));
+int	_EXFUN(getc_unlocked, (FILE *));
+int	_EXFUN(getchar_unlocked, (void));
+void	_EXFUN(flockfile, (FILE *));
+int	_EXFUN(ftrylockfile, (FILE *));
+void	_EXFUN(funlockfile, (FILE *));
+int	_EXFUN(putc_unlocked, (int, FILE *));
+int	_EXFUN(putchar_unlocked, (int));
+
+char * _EXFUN(mkdtemp,(char *));
+#endif
+#endif
 
 // event dispatcher, select
 //struct fd_set;
@@ -75,9 +120,17 @@ off64_t ftello64(void *stream);
 off64_t lseek64(int fildes, off_t offset, int whence);
 int open64(const char *path, int oflag, ...);
 
+#ifdef Q_OS_NACL_NEWLIB
+char * getenv(const char *name);
+int putenv(char *string);
+int setenv(const char *name, const char *value, int overwrite);
+int unsetenv(const char *name);
+#endif
+
 }
 
 int select(int nfds, fd_set * readfds, fd_set * writefds, fd_set * errorfds, struct timeval * timeout);
+int pselect(int nfds, fd_set * readfds, fd_set * writefds, fd_set * errorfds, const struct timespec * timeout, const sigset_t * sigmask);
 
 QT_END_NAMESPACE
 

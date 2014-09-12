@@ -113,6 +113,7 @@ void QFactoryLoader::update()
 {
 #ifdef QT_SHARED
     Q_D(QFactoryLoader);
+#ifndef Q_OS_NACL // Skip all filname variations on NaCl
     QStringList paths = QCoreApplication::libraryPaths();
     for (int i = 0; i < paths.count(); ++i) {
         const QString &pluginDir = paths.at(i);
@@ -160,13 +161,23 @@ void QFactoryLoader::update()
                 qDebug() << "QFactoryLoader::QFactoryLoader() looking at" << fileName;
             }
             library = QLibraryPrivate::findOrCreate(QFileInfo(fileName).canonicalFilePath());
+#else
+        qWarning("QFactoryLoader::update is broken");
+        return;
+        QLibraryPrivate *library = 0; //QLibraryPrivate::findOrCreate(fileName);
+#endif
+
             if (!library->isPlugin()) {
                 if (qt_debug_component()) {
                     qDebug() << library->errorString;
                     qDebug() << "         not a plugin";
                 }
                 library->release();
+#ifndef Q_OS_NACL
                 continue;
+#else
+                return;
+#endif
             }
 
             QStringList keys;
@@ -187,7 +198,11 @@ void QFactoryLoader::update()
 
             if (!metaDataOk) {
                 library->release();
+#ifndef Q_OS_NACL
                 continue;
+#else
+                return;
+#endif
             }
 
             int keyUsageCount = 0;
@@ -212,8 +227,10 @@ void QFactoryLoader::update()
                 d->libraryList += library;
             else
                 library->release();
+#ifndef Q_OS_NACL // (for loop end braces)
         }
     }
+#endif
 #else
     Q_D(QFactoryLoader);
     if (qt_debug_component()) {

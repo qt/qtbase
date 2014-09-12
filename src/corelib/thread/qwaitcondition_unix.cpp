@@ -77,7 +77,7 @@ void qt_initialize_pthread_cond(pthread_cond_t *cond, const char *where)
 #if defined(Q_OS_ANDROID)
     if (local_condattr_setclock && QElapsedTimer::clockType() == QElapsedTimer::MonotonicClock)
         local_condattr_setclock(&condattr, CLOCK_MONOTONIC);
-#elif !defined(Q_OS_MAC) && !defined(Q_OS_HAIKU)
+#elif !defined(Q_OS_MAC) && !defined(Q_OS_HAIKU) && !defined(Q_OS_NACL)
     if (QElapsedTimer::clockType() == QElapsedTimer::MonotonicClock)
         pthread_condattr_setclock(&condattr, CLOCK_MONOTONIC);
 #endif

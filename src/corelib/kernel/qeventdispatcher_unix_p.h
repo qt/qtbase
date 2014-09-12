@@ -86,6 +86,12 @@ public:
 
 class QEventDispatcherUNIXPrivate;
 
+//### the pepper platform plugin inherits QEventDispatcherUNIX and overrides registerSocketNotifier etc
+#ifdef Q_OS_NACL
+# undef Q_DECL_FINAL
+# define Q_DECL_FINAL
+#endif
+
 #ifdef Q_OS_QNX
 #  define FINAL_EXCEPT_BLACKBERRY
 #else

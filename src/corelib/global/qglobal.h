@@ -1119,6 +1119,11 @@ QT_END_NAMESPACE
 #include <QtCore/qglobalstatic.h>
 #include <QtCore/qnumeric.h>
 
+// ### should not be required
+#ifdef Q_OS_NACL
+#include <qplatformdefs.h>
+#endif
+
 #endif /* __cplusplus */
 
 #endif /* QGLOBAL_H */

@@ -31,8 +31,6 @@ HEADERS += \
         kernel/qmetaobjectbuilder_p.h \
         kernel/qobject_p.h \
         kernel/qcoreglobaldata_p.h \
-        kernel/qsharedmemory.h \
-        kernel/qsharedmemory_p.h \
         kernel/qsystemsemaphore.h \
         kernel/qsystemsemaphore_p.h \
         kernel/qfunctions_p.h \
@@ -40,6 +38,12 @@ HEADERS += \
         kernel/qsystemerror_p.h \
         kernel/qmetatype_p.h \
         kernel/qmetatypeswitcher_p.h \
+
+# prevent moc from generating code that references QSharedMemory
+!nacl {
+    HEADERS += kernel/qsharedmemory.h \
+               kernel/qsharedmemory_p.h
+}
 
 SOURCES += \
         kernel/qabstracteventdispatcher.cpp \

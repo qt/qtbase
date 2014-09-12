@@ -51,6 +51,7 @@ QFileSystemIterator::QFileSystemIterator(const QFileSystemEntry &entry, QDir::Fi
 #endif
     , lastError(0)
 {
+#ifndef Q_OS_NACL
     Q_UNUSED(filters)
     Q_UNUSED(nameFilters)
     Q_UNUSED(flags)
@@ -85,16 +86,20 @@ QFileSystemIterator::QFileSystemIterator(const QFileSystemEntry &entry, QDir::Fi
 #endif
 #endif
     }
+#endif // Q_OS_NACL
 }
 
 QFileSystemIterator::~QFileSystemIterator()
 {
+#ifndef Q_OS_NACL
     if (dir)
         QT_CLOSEDIR(dir);
+#endif
 }
 
 bool QFileSystemIterator::advance(QFileSystemEntry &fileEntry, QFileSystemMetaData &metaData)
 {
+#ifndef Q_OS_NACL
     if (!dir)
         return false;
 
@@ -118,6 +123,7 @@ bool QFileSystemIterator::advance(QFileSystemEntry &fileEntry, QFileSystemMetaDa
     }
 
     lastError = errno;
+#endif // Q_OS_NACL
     return false;
 }
 

@@ -348,6 +348,7 @@ QByteArray QFileSystemEngine::id(const QFileSystemEntry &entry)
 //static
 QString QFileSystemEngine::resolveUserName(uint userId)
 {
+#ifndef Q_OS_NACL
 #if !defined(QT_NO_THREAD) && defined(_POSIX_THREAD_SAFE_FUNCTIONS) && !defined(Q_OS_OPENBSD)
     int size_max = sysconf(_SC_GETPW_R_SIZE_MAX);
     if (size_max == -1)
@@ -366,12 +367,14 @@ QString QFileSystemEngine::resolveUserName(uint userId)
 #endif
     if (pw)
         return QFile::decodeName(QByteArray(pw->pw_name));
+#endif
     return QString();
 }
 
 //static
 QString QFileSystemEngine::resolveGroupName(uint groupId)
 {
+#if !defined(Q_OS_NACL)
 #if !defined(QT_NO_THREAD) && defined(_POSIX_THREAD_SAFE_FUNCTIONS) && !defined(Q_OS_OPENBSD)
     int size_max = sysconf(_SC_GETPW_R_SIZE_MAX);
     if (size_max == -1)
@@ -403,6 +406,7 @@ QString QFileSystemEngine::resolveGroupName(uint groupId)
 #endif
     if (gr)
         return QFile::decodeName(QByteArray(gr->gr_name));
+#endif // Q_OS_NACL
     return QString();
 }
 

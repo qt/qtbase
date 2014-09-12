@@ -36,9 +36,14 @@
 #include <qfile.h>
 #include "qlibrary_p.h"
 #include <qcoreapplication.h>
+#include <qdebug.h>
 #include <private/qfilesystementry_p.h>
 
 #ifndef QT_NO_LIBRARY
+
+#if defined (Q_OS_NACL_GLIBC)
+#include <dlfcn.h>
+#endif
 
 #ifdef Q_OS_MAC
 #  include <private/qcore_mac_p.h>
@@ -71,6 +76,17 @@ static QString qdlerror()
 #endif
     return err ? QLatin1Char('(') + QString::fromLocal8Bit(err) + QLatin1Char(')'): QString();
 }
+
+#if defined (Q_OS_NACL_GLIBC)
+void *naclDlopenFn(void *name)
+{
+    QString *nameString = reinterpret_cast<QString *>(name);
+    void *handle = dlopen(nameString->toLocal8Bit().constData() , RTLD_LAZY);
+    if (!handle)
+        qWarning() << "dlerror" << dlerror();
+    return 0;
+}
+#endif
 
 QStringList QLibraryPrivate::suffixes_sys(const QString& fullVersion)
 {
@@ -129,6 +145,24 @@ QStringList QLibraryPrivate::prefixes_sys()
 bool QLibraryPrivate::load_sys()
 {
     QString attempt;
+
+#if defined(Q_OS_NACL_GLIBC)
+    pthread_t tid;
+    if (pthread_create(&tid, NULL, naclDlopenFn, &fileName)) {
+        qDebug() << "NaCl pthread_create failed";
+    }
+    pthread_join(tid, 0);
+    pHnd = dlopen(fileName.toLocal8Bit().constData(), RTLD_LAZY);
+    if (pHnd) {
+        qualifiedFileName = attempt;
+        errorString.clear();
+    } else {
+        qDebug() << "dlopen failed" << dlerror();
+        errorString = QStringLiteral("Nacl load of ibqtpepper.so failed");
+    }
+    return (pHnd != 0);
+#endif
+
 #if !defined(QT_NO_DYNAMIC_LIBRARY)
     QFileSystemEntry fsEntry(fileName);
 

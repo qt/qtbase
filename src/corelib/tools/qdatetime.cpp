@@ -2110,6 +2110,9 @@ static void qt_tzset()
 #if defined(Q_OS_WINCE)
     // WinCE doesn't use tzset
     return;
+#elif defined(Q_OS_NACL)
+    // NaCl doesn't use tzset
+    return;
 #elif defined(Q_OS_WIN)
     _tzset();
 #else
@@ -2148,6 +2151,8 @@ static int qt_timezone()
         // - It also takes DST into account, so we need to adjust it to always
         //   get the Standard Time offset.
         return -t.tm_gmtoff + (t.tm_isdst ? SECS_PER_HOUR : 0L);
+#elif defined(Q_OS_NACL)
+        return 0;
 #else
         return timezone;
 #endif // Q_OS_WIN
@@ -2165,6 +2170,8 @@ static QString qt_tzname(QDateTimePrivate::DaylightStatus daylightStatus)
         return QString::fromWCharArray(tzi.DaylightName);
     else
         return QString::fromWCharArray(tzi.StandardName);
+#elif defined (Q_OS_NACL)
+    return QString();
 #else
     int isDst = (daylightStatus == QDateTimePrivate::DaylightTime) ? 1 : 0;
 #if defined(_MSC_VER) && _MSC_VER >= 1400
@@ -4104,6 +4111,11 @@ qint64 QDateTime::currentMSecsSinceEpoch() Q_DECL_NOTHROW
 }
 
 #elif defined(Q_OS_UNIX)
+
+#ifdef Q_OS_NACL
+#include <sys/time.h>
+#endif
+
 QDate QDate::currentDate()
 {
     return QDateTime::currentDateTime().date();

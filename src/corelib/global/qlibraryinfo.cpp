@@ -473,6 +473,7 @@ QLibraryInfo::rawLocation(LibraryLocation loc, PathGroup group)
     } else {
         QString key;
         QString defaultValue;
+
         if (unsigned(loc) < sizeof(qtConfEntries)/sizeof(qtConfEntries[0])) {
             key = QLatin1String(qtConfEntries[loc].key);
             defaultValue = QLatin1String(qtConfEntries[loc].value);

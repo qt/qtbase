@@ -31,8 +31,10 @@
 **
 ****************************************************************************/
 
+#ifndef Q_OS_NACL
 // ask for the latest POSIX, just in case
 #define _POSIX_C_SOURCE 200809L
+#endif
 
 #include "qelapsedtimer.h"
 #if defined(Q_OS_VXWORKS)
@@ -83,8 +85,8 @@ QT_BEGIN_NAMESPACE
  *  included in POSIX.1-2001
  *  see http://pubs.opengroup.org/onlinepubs/9699919799/functions/clock_getres.html
  */
-
-#if !defined(CLOCK_REALTIME)
+ 
+#if !defined(CLOCK_REALTIME) || defined(Q_OS_NACL)
 #  define CLOCK_REALTIME 0
 static inline void qt_clock_gettime(int, struct timespec *ts)
 {
@@ -102,7 +104,9 @@ static inline void qt_clock_gettime(int, struct timespec *ts)
 #else
 static inline void qt_clock_gettime(clockid_t clock, struct timespec *ts)
 {
+#ifndef Q_OS_NACL
     clock_gettime(clock, ts);
+#endif
 }
 #endif
 

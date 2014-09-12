@@ -518,6 +518,10 @@ int ffs(int i)
 # define ffs __builtin_ffs
 #endif
 
+#ifdef Q_OS_NACL_NEWLIB
+#  define ffs __builtin_ffs
+#endif
+
 QBasicAtomicInt qt_cpu_features = Q_BASIC_ATOMIC_INITIALIZER(0);
 
 void qDetectCpuFeatures()
