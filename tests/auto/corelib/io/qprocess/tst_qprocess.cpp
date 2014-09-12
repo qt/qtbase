@@ -717,7 +717,7 @@ void tst_QProcess::waitForFinished()
     QCOMPARE(output.count("\n"), 10*1024);
 
     process.start("blurdybloop");
-#ifdef QPROCESS_USE_SPAWN
+#if defined(QPROCESS_USE_SPAWN) && !defined(Q_OS_QNX)
     QEXPECT_FAIL("", "QProcess cannot detect failure to start when using posix_spawn()", Abort);
 #endif
     QVERIFY(!process.waitForFinished());
@@ -1540,7 +1540,7 @@ void tst_QProcess::exitCodeTest()
 //-----------------------------------------------------------------------------
 void tst_QProcess::failToStart()
 {
-#ifdef QPROCESS_USE_SPAWN
+#if defined(QPROCESS_USE_SPAWN) && !defined(Q_OS_QNX)
     QSKIP("QProcess cannot detect failure to start when using posix_spawn()");
 #endif
     qRegisterMetaType<QProcess::ProcessError>("QProcess::ProcessError");
@@ -1610,7 +1610,7 @@ void tst_QProcess::failToStart()
 //-----------------------------------------------------------------------------
 void tst_QProcess::failToStartWithWait()
 {
-#ifdef QPROCESS_USE_SPAWN
+#if defined(QPROCESS_USE_SPAWN) && !defined(Q_OS_QNX)
     QSKIP("QProcess cannot detect failure to start when using posix_spawn()");
 #endif
     qRegisterMetaType<QProcess::ProcessError>("QProcess::ProcessError");
@@ -1640,7 +1640,7 @@ void tst_QProcess::failToStartWithWait()
 //-----------------------------------------------------------------------------
 void tst_QProcess::failToStartWithEventLoop()
 {
-#ifdef QPROCESS_USE_SPAWN
+#if defined(QPROCESS_USE_SPAWN) && !defined(Q_OS_QNX)
     QSKIP("QProcess cannot detect failure to start when using posix_spawn()");
 #endif
     qRegisterMetaType<QProcess::ProcessError>("QProcess::ProcessError");
@@ -1891,7 +1891,7 @@ void tst_QProcess::waitForReadyReadForNonexistantProcess()
     QVERIFY(!process.waitForReadyRead()); // used to crash
     process.start("doesntexist");
     QVERIFY(!process.waitForReadyRead());
-#ifdef QPROCESS_USE_SPAWN
+#if defined(QPROCESS_USE_SPAWN) && !defined(Q_OS_QNX)
     QEXPECT_FAIL("", "QProcess cannot detect failure to start when using posix_spawn()", Abort);
 #endif
     QCOMPARE(errorSpy.count(), 1);
