@@ -171,38 +171,38 @@ QOpenGLTextureHelper::QOpenGLTextureHelper(QOpenGLContext *context)
     // GLES spec) *may* not be queried via eglGetProcAddress.
 
     // OpenGL 1.0
-    GetIntegerv = ::glGetIntegerv;
-    GetBooleanv = ::glGetBooleanv;
-    PixelStorei = ::glPixelStorei;
+    GetIntegerv = ::GLES2GetIntegerv;
+    GetBooleanv = ::GLES2GetBooleanv;
+    PixelStorei = ::GLES2PixelStorei;
     GetTexLevelParameteriv = 0;
     GetTexLevelParameterfv = 0;
-    GetTexParameteriv = ::glGetTexParameteriv;
-    GetTexParameterfv = ::glGetTexParameterfv;
+    GetTexParameteriv = ::GLES2GetTexParameteriv;
+    GetTexParameterfv = ::GLES2GetTexParameterfv;
     GetTexImage = 0;
-    TexImage2D = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLint , GLint , GLsizei , GLsizei , GLint , GLenum , GLenum , const GLvoid *)>(::glTexImage2D);
+    TexImage2D = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLint , GLint , GLsizei , GLsizei , GLint , GLenum , GLenum , const GLvoid *)>(::GLES2TexImage2D);
     TexImage1D = 0;
-    TexParameteriv = ::glTexParameteriv;
-    TexParameteri = ::glTexParameteri;
-    TexParameterfv = ::glTexParameterfv;
-    TexParameterf = ::glTexParameterf;
+    TexParameteriv = ::GLES2TexParameteriv;
+    TexParameteri = ::GLES2TexParameteri;
+    TexParameterfv = ::GLES2TexParameterfv;
+    TexParameterf = ::GLES2TexParameterf;
 
     // OpenGL 1.1
-    GenTextures = ::glGenTextures;
-    DeleteTextures = ::glDeleteTextures;
-    BindTexture = ::glBindTexture;
-    TexSubImage2D = ::glTexSubImage2D;
+    GenTextures = ::GLES2GenTextures;
+    DeleteTextures = ::GLES2DeleteTextures;
+    BindTexture = ::GLES2BindTexture;
+    TexSubImage2D = ::GLES2TexSubImage2D;
     TexSubImage1D = 0;
 
     // OpenGL 1.3
     GetCompressedTexImage = 0;
     CompressedTexSubImage1D = 0;
-    CompressedTexSubImage2D = ::glCompressedTexSubImage2D;
+    CompressedTexSubImage2D = ::GLES2CompressedTexSubImage2D;
     CompressedTexImage1D = 0;
-    CompressedTexImage2D = ::glCompressedTexImage2D;
-    ActiveTexture = ::glActiveTexture;
+    CompressedTexImage2D = ::GLES2CompressedTexImage2D;
+    ActiveTexture = ::GLES2ActiveTexture;
 
     // OpenGL 3.0
-    GenerateMipmap = ::glGenerateMipmap;
+    GenerateMipmap = ::GLES2GenerateMipmap;
 
     // OpenGL 3.2
     TexImage3DMultisample = 0;
