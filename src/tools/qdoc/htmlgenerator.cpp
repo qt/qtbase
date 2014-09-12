@@ -1668,22 +1668,16 @@ void HtmlGenerator::generateNavigationBar(const QString &title,
                         << Atom(Atom::String, cn->name())
                         << Atom(Atom::ListItemRight);
     }
-    else if (node->isQmlType()) {
+    else if (node->isQmlType() || node->isQmlBasicType()) {
         if (!qmltypespage.isEmpty())
             navigationbar << Atom(Atom::ListItemLeft)
                           << Atom(Atom::Link, qmltypespage)
                           << Atom(Atom::FormattingLeft, ATOM_FORMATTING_LINK)
                           << Atom(Atom::String, QLatin1String("QML Types"))
                           << Atom(Atom::FormattingRight, ATOM_FORMATTING_LINK)
-                          << Atom(Atom::ListItemRight);
-    }
-    else if (node->isQmlBasicType()) {
-        if (!qmltypespage.isEmpty())
-            navigationbar << Atom(Atom::ListItemLeft)
-                          << Atom(Atom::Link, qmltypespage)
-                          << Atom(Atom::FormattingLeft, ATOM_FORMATTING_LINK)
-                          << Atom(Atom::String, QLatin1String("QML Types"))
-                          << Atom(Atom::FormattingRight, ATOM_FORMATTING_LINK)
+                          << Atom(Atom::ListItemRight)
+                          << Atom(Atom::ListItemLeft)
+                          << Atom(Atom::String, title)
                           << Atom(Atom::ListItemRight);
     }
     else {
