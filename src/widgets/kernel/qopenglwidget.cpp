@@ -367,6 +367,10 @@ QT_BEGIN_NAMESPACE
   from the derived class' destructor, since the slot connected to the signal
   will not get invoked when the widget is being destroyed.
 
+  \note When Qt::AA_ShareOpenGLContexts is set, the widget's context never
+  changes, not even when reparenting because the widget's associated texture is
+  guaranteed to be accessible also from the new top-level's context.
+
   Proper cleanup is especially important due to context sharing. Even though
   each QOpenGLWidget's associated context is destroyed together with the
   QOpenGLWidget, the sharable resources in that context, like textures, will
@@ -1052,6 +1056,8 @@ bool QOpenGLWidget::event(QEvent *e)
     Q_D(QOpenGLWidget);
     switch (e->type()) {
     case QEvent::WindowChangeInternal:
+        if (qGuiApp->testAttribute(Qt::AA_ShareOpenGLContexts))
+            break;
         if (d->initialized)
             d->reset();
         // FALLTHROUGH
