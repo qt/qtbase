@@ -26,6 +26,10 @@ qnx {
     SUBDIRS += qnx
 }
 
+nacl {
+    # pepper plugin is built into QtGui
+}
+
 contains(QT_CONFIG, eglfs) {
     SUBDIRS += eglfs
     SUBDIRS += minimalegl
