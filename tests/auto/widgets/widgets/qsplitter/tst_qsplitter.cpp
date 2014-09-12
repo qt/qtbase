@@ -56,6 +56,7 @@
 #include <qlabel.h>
 #include <qdialog.h>
 #include <qscreen.h>
+#include <qproxystyle.h>
 #include <qdebug.h> // for file error messages
 
 QT_FORWARD_DECLARE_CLASS(QSplitter)
@@ -88,6 +89,7 @@ private slots:
     void testRemoval();
     void rubberBandNotInSplitter();
     void saveAndRestoreStateOfNotYetShownSplitter();
+    void saveAndRestoreHandleWidth();
 
     // task-specific tests below me:
     void task187373_addAbstractScrollAreas();
@@ -299,6 +301,41 @@ void tst_QSplitter::saveAndRestoreStateOfNotYetShownSplitter()
     QCOMPARE(l2->geometry().isValid(), true);
 
     delete spl;
+}
+
+class TestSplitterStyle : public QProxyStyle
+{
+public:
+    TestSplitterStyle() : handleWidth(5) {}
+    int pixelMetric(PixelMetric metric, const QStyleOption *option = 0, const QWidget *widget = 0) const Q_DECL_OVERRIDE
+    {
+        if (metric == QStyle::PM_SplitterWidth)
+            return handleWidth;
+        else
+            return QProxyStyle::pixelMetric(metric, option, widget);
+    }
+    int handleWidth;
+};
+
+void tst_QSplitter::saveAndRestoreHandleWidth()
+{
+    TestSplitterStyle style;
+    style.handleWidth = 5;
+    QSplitter spl;
+    spl.setStyle(&style);
+
+    QCOMPARE(spl.handleWidth(), style.handleWidth);
+    style.handleWidth = 10;
+    QCOMPARE(spl.handleWidth(), style.handleWidth);
+    QByteArray ba = spl.saveState();
+    spl.setHandleWidth(20);
+    QCOMPARE(spl.handleWidth(), 20);
+    spl.setHandleWidth(-1);
+    QCOMPARE(spl.handleWidth(), style.handleWidth);
+    spl.setHandleWidth(15);
+    QCOMPARE(spl.handleWidth(), 15);
+    spl.restoreState(ba);
+    QCOMPARE(spl.handleWidth(), style.handleWidth);
 }
 
 void tst_QSplitter::saveState_data()

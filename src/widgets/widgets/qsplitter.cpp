@@ -1609,7 +1609,7 @@ QByteArray QSplitter::saveState() const
     }
     stream << list;
     stream << childrenCollapsible();
-    stream << qint32(handleWidth());
+    stream << qint32(d->handleWidth);
     stream << opaqueResize();
     stream << qint32(orientation());
     stream << d->opaqueResizeSet;
