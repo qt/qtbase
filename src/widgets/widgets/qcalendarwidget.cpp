@@ -60,7 +60,6 @@
 #include <qapplication.h>
 #include <qbasictimer.h>
 #include <qstylepainter.h>
-#include <private/qcalendartextnavigator_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -670,6 +669,47 @@ void QCalendarDateValidator::handleKeyEvent(QKeyEvent *keyEvent)
     else if (m_lastSectionMove == QCalendarDateSectionValidator::PrevSection)
         toPreviousToken();
 }
+
+//////////////////////////////////
+
+class QCalendarTextNavigator: public QObject
+{
+    Q_OBJECT
+public:
+    QCalendarTextNavigator(QObject *parent = 0)
+        : QObject(parent), m_dateText(0), m_dateFrame(0), m_dateValidator(0), m_widget(0), m_editDelay(1500), m_date(QDate::currentDate()) { }
+
+    QWidget *widget() const;
+    void setWidget(QWidget *widget);
+
+    int dateEditAcceptDelay() const;
+    void setDateEditAcceptDelay(int delay);
+
+    QDate date() const;
+    void setDate(const QDate &date);
+
+    bool eventFilter(QObject *o, QEvent *e);
+    void timerEvent(QTimerEvent *e);
+
+signals:
+    void dateChanged(const QDate &date);
+    void editingFinished();
+
+private:
+    void applyDate();
+    void updateDateLabel();
+    void createDateLabel();
+    void removeDateLabel();
+
+    QLabel *m_dateText;
+    QFrame *m_dateFrame;
+    QBasicTimer m_acceptTimer;
+    QCalendarDateValidator *m_dateValidator;
+    QWidget *m_widget;
+    int m_editDelay;
+
+    QDate m_date;
+};
 
 QWidget *QCalendarTextNavigator::widget() const
 {
