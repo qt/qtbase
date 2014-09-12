@@ -587,7 +587,8 @@ void QOpenGLWidgetPrivate::initialize()
 
     // Get our toplevel's context with which we will share in order to make the
     // texture usable by the underlying window's backingstore.
-    QOpenGLContext *shareContext = get(q->window())->shareContext();
+    QWidget *tlw = q->window();
+    QOpenGLContext *shareContext = get(tlw)->shareContext();
     if (!shareContext) {
         qWarning("QOpenGLWidget: Cannot be used without a context shared with the toplevel.");
         return;
@@ -599,6 +600,19 @@ void QOpenGLWidgetPrivate::initialize()
     if (!ctx->create()) {
         qWarning("QOpenGLWidget: Failed to create context");
         return;
+    }
+
+    // Propagate settings that make sense only for the tlw.
+    QSurfaceFormat tlwFormat = tlw->windowHandle()->format();
+    if (requestedFormat.swapInterval() != tlwFormat.swapInterval()) {
+        // Most platforms will pick up the changed swap interval on the next
+        // makeCurrent or swapBuffers.
+        tlwFormat.setSwapInterval(requestedFormat.swapInterval());
+        tlw->windowHandle()->setFormat(tlwFormat);
+    }
+    if (requestedFormat.swapBehavior() != tlwFormat.swapBehavior()) {
+        tlwFormat.setSwapBehavior(requestedFormat.swapBehavior());
+        tlw->windowHandle()->setFormat(tlwFormat);
     }
 
     // The top-level window's surface is not good enough since it causes way too
