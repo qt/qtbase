@@ -2272,7 +2272,7 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
                                                                e->timestamp,
                                                                synthIt->pos,
                                                                synthIt->screenPos,
-                                                               Qt::NoButton,
+                                                               buttons & ~Qt::LeftButton,
                                                                e->modifiers,
                                                                Qt::MouseEventSynthesizedByQt);
                 fake.synthetic = true;
@@ -2474,7 +2474,8 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
                         QWindowSystemInterfacePrivate::MouseEvent fake(w, e->timestamp,
                                                                        touchPoint.pos(),
                                                                        touchPoint.screenPos(),
-                                                                       b, e->modifiers);
+                                                                       b | (buttons & ~Qt::LeftButton),
+                                                                       e->modifiers);
                         fake.synthetic = true;
                         processMouseEvent(&fake);
                         break;
