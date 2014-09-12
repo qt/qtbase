@@ -66,6 +66,14 @@ static qint64 getticks()
     return mach_absolute_time();
 }
 
+#elif defined(Q_OS_NACL)
+
+static qint64 getticks()
+{
+    // ### figure out if clock_gettime or gettimeofday or something else is available.
+    return 0;
+}
+
 #elif defined(Q_OS_UNIX)
 
 
