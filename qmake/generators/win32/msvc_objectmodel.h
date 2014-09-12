@@ -885,6 +885,7 @@ public:
     VCConfiguration();
     ~VCConfiguration(){}
 
+    bool                    suppressUnknownOptionWarnings;
     DotNET                  CompilerVersion;
     bool                    WinRT, WinPhone, WinPhone80;
 

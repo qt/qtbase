@@ -312,6 +312,18 @@ static QString vcCommandSeparator()
     return cmdSep;
 }
 
+static void unknownOptionWarning(const char *tool, const char *option)
+{
+    static bool firstCall = true;
+    warn_msg(WarnLogic, "Could not parse %s option '%s'; added to AdditionalOptions.", tool, option);
+    if (firstCall) {
+        firstCall = false;
+        warn_msg(WarnLogic,
+                 "You can suppress these warnings with CONFIG+=suppress_vcproj_warnings.");
+    }
+}
+
+
 // VCCLCompilerTool -------------------------------------------------
 VCCLCompilerTool::VCCLCompilerTool()
     :        AssemblerOutput(asmListingNone),
@@ -1148,7 +1160,8 @@ bool VCCLCompilerTool::parseOption(const char* option)
         break;
     }
     if(!found) {
-        warn_msg(WarnLogic, "Could not parse Compiler option: %s, added as AdditionalOption", option);
+        if (!config->suppressUnknownOptionWarnings)
+            unknownOptionWarning("Compiler", option);
         AdditionalOptions += option;
     }
     return true;
@@ -1743,7 +1756,8 @@ bool VCLinkerTool::parseOption(const char* option)
         break;
     }
     if(!found) {
-        warn_msg(WarnLogic, "Could not parse Linker options: %s, added as AdditionalOption", option);
+        if (!config->suppressUnknownOptionWarnings)
+            unknownOptionWarning("Linker", option);
         AdditionalOptions += option;
     }
     return found;
