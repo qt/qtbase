@@ -21,8 +21,10 @@ load(qt_module)
 include(access/access.pri)
 include(bearer/bearer.pri)
 include(kernel/kernel.pri)
-include(socket/socket.pri)
-include(ssl/ssl.pri)
+!nacl {
+    include(socket/socket.pri)
+    include(ssl/ssl.pri)
+}
 
 QMAKE_LIBS += $$QMAKE_LIBS_NETWORK
 
@@ -36,3 +38,9 @@ MODULE_PLUGIN_TYPES = \
     bearer
 ANDROID_PERMISSIONS += \
     android.permission.ACCESS_NETWORK_STATE
+
+nacl {
+    DEFINES += QT_NO_FTP QT_NO_NETWORKPROXY QT_NO_BEARERMANAGEMENT QT_NO_HTTP QT_NO_NETWORKPROXY
+    LIBS_PRIVATE += -lppapi -lppapi_cpp
+}
+

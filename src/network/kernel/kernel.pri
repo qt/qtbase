@@ -4,28 +4,33 @@ PRECOMPILED_HEADER = ../corelib/global/qt_pch.h
 INCLUDEPATH += $$PWD
 
 HEADERS += kernel/qauthenticator.h \
-	   kernel/qauthenticator_p.h \
-           kernel/qdnslookup.h \
-           kernel/qdnslookup_p.h \
+	       kernel/qauthenticator_p.h \
            kernel/qhostaddress.h \
            kernel/qhostaddress_p.h \
-           kernel/qhostinfo.h \
-           kernel/qhostinfo_p.h \
            kernel/qurlinfo_p.h \
            kernel/qnetworkproxy.h \
            kernel/qnetworkproxy_p.h \
-	   kernel/qnetworkinterface.h \
-	   kernel/qnetworkinterface_p.h
 
 SOURCES += kernel/qauthenticator.cpp \
-           kernel/qdnslookup.cpp \
            kernel/qhostaddress.cpp \
-           kernel/qhostinfo.cpp \
            kernel/qurlinfo.cpp \
            kernel/qnetworkproxy.cpp \
-	   kernel/qnetworkinterface.cpp
 
-unix:SOURCES += kernel/qdnslookup_unix.cpp kernel/qhostinfo_unix.cpp kernel/qnetworkinterface_unix.cpp
+# skip these files on NaCl
+!nacl {
+    HEADERS += kernel/qdnslookup.h \
+               kernel/qdnslookup_p.h \
+               kernel/qhostinfo.h \
+               kernel/qhostinfo_p.h \
+               kernel/qnetworkinterface.h \
+               kernel/qnetworkinterface_p.h
+
+    SOURCES +=  kernel/qdnslookup.cpp \
+                kernel/qhostinfo.cpp \
+                kernel/qnetworkinterface.cpp
+}
+
+!nacl:unix:SOURCES += kernel/qdnslookup_unix.cpp kernel/qhostinfo_unix.cpp kernel/qnetworkinterface_unix.cpp
 
 android {
     SOURCES -= kernel/qdnslookup_unix.cpp

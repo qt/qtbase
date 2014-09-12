@@ -54,6 +54,10 @@
 #include "qnetworkreplynsurlconnectionimpl_p.h"
 #endif
 
+#ifdef Q_OS_NACL
+#include "qnetworkreplypepperimpl_p.h"
+#endif
+
 #include "QtCore/qbuffer.h"
 #include "QtCore/qurl.h"
 #include "QtCore/qvector.h"
@@ -74,8 +78,10 @@ Q_GLOBAL_STATIC(QNetworkAccessFileBackendFactory, fileBackend)
 Q_GLOBAL_STATIC(QNetworkAccessFtpBackendFactory, ftpBackend)
 #endif // QT_NO_FTP
 
+#ifndef Q_OS_NACL
 #ifdef QT_BUILD_INTERNAL
 Q_GLOBAL_STATIC(QNetworkAccessDebugPipeBackendFactory, debugpipeBackend)
+#endif
 #endif
 
 #if defined(Q_OS_MACX)
@@ -144,8 +150,10 @@ static void ensureInitialized()
     (void) ftpBackend();
 #endif
 
+#ifndef Q_OS_NACL
 #ifdef QT_BUILD_INTERNAL
     (void) debugpipeBackend();
+#endif
 #endif
 
     // leave this one last since it will query the special QAbstractFileEngines
@@ -477,6 +485,8 @@ QNetworkAccessManager::QNetworkAccessManager(QObject *parent)
         // and potentially expensive. We can just check the configuration here
         d->online = (d->networkConfiguration.state() & QNetworkConfiguration::Active);
     }
+#else
+    Q_UNUSED(d);
 #endif
 }
 
@@ -1129,6 +1139,12 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
             && scheme == QLatin1String("data")) {
         return new QNetworkReplyDataImpl(this, req, op);
     }
+
+#ifdef Q_OS_NACL
+    if (op == QNetworkAccessManager::GetOperation) {
+        return new QNetworkReplyPepperImpl(this, req, op);
+    }
+#endif
 
     // A request with QNetworkRequest::AlwaysCache does not need any bearer management
     QNetworkRequest::CacheLoadControl mode =
