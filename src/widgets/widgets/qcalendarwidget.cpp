@@ -71,6 +71,8 @@ enum {
     MinimumDayOffset = 1
 };
 
+namespace {
+
 class QCalendarDateSectionValidator
 {
 public:
@@ -1612,6 +1614,8 @@ protected:
         painter.drawComplexControl(QStyle::CC_ToolButton, opt);
     }
 };
+
+} // unnamed namespace
 
 class QCalendarWidgetPrivate : public QWidgetPrivate
 {
