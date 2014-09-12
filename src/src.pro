@@ -16,6 +16,11 @@ src_tools_rcc.target = sub-rcc
 src_tools_rcc.depends = src_tools_bootstrap
 src_tools_rcc.CONFIG = host_build
 
+src_tools_nacldeployqt.subdir = tools/nacldeployqt
+src_tools_nacldeployqt.target = sub-nacldeployqt
+src_tools_nacldeployqt.depends = src_tools_bootstrap
+src_tools_nacldeployqt.CONFIG = host_build
+
 src_tools_qlalr.subdir = tools/qlalr
 src_tools_qlalr.target = sub-qlalr
 src_tools_qlalr.CONFIG = host_build
@@ -136,8 +141,8 @@ SUBDIRS += src_tools_bootstrap src_tools_moc src_tools_rcc
     SUBDIRS += src_3rdparty_pcre
     src_corelib.depends += src_3rdparty_pcre
 }
-SUBDIRS += src_corelib src_tools_qlalr
-TOOLS = src_tools_moc src_tools_rcc src_tools_qlalr
+SUBDIRS += src_corelib src_tools_qlalr src_tools_nacldeployqt
+TOOLS = src_tools_moc src_tools_rcc src_tools_qlalr src_tools_nacldeployqt
 win32:SUBDIRS += src_winmain
 SUBDIRS += src_network src_sql src_xml src_testlib
 contains(QT_CONFIG, dbus) {
