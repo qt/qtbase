@@ -90,6 +90,7 @@ public:
         , surfaceType(QSurface::OpenGLSurface)
         , platformOffscreenSurface(0)
         , offscreenWindow(0)
+        , requestedFormat(QSurfaceFormat::defaultFormat())
         , screen(0)
         , size(1, 1)
     {
