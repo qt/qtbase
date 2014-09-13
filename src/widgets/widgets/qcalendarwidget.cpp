@@ -423,6 +423,20 @@ QString QCalendarYearValidator::text(const QDate &date, int repeat) const
 
 ///////////////////////////////////
 
+struct SectionToken {
+    Q_DECL_CONSTEXPR SectionToken() : validator(Q_NULLPTR), repeat(0) {}
+    Q_DECL_CONSTEXPR SectionToken(QCalendarDateSectionValidator *v, int rep)
+        : validator(v), repeat(rep) {}
+
+    QCalendarDateSectionValidator *validator;
+    int repeat;
+
+    Q_DECL_CONSTEXPR bool isNull() const { return !validator; }
+};
+} // unnamed namespace
+Q_DECLARE_TYPEINFO(SectionToken, Q_PRIMITIVE_TYPE);
+namespace {
+
 class QCalendarDateValidator
 {
 public:
@@ -438,13 +452,6 @@ public:
     void setLocale(const QLocale &locale);
 
 private:
-
-    struct SectionToken {
-        SectionToken(QCalendarDateSectionValidator *val, int rep) : validator(val), repeat(rep) {}
-        QCalendarDateSectionValidator *validator;
-        int repeat;
-    };
-
     void toNextToken();
     void toPreviousToken();
     void applyToDate();
@@ -453,12 +460,12 @@ private:
     void clear();
 
     QStringList m_separators;
-    QList<SectionToken *> m_tokens;
+    QVector<SectionToken> m_tokens;
     QCalendarYearValidator m_yearValidator;
     QCalendarMonthValidator m_monthValidator;
     QCalendarDayValidator m_dayValidator;
 
-    SectionToken *m_currentToken;
+    int m_currentToken;
 
     QDate m_initialDate;
     QDate m_currentDate;
@@ -467,7 +474,7 @@ private:
 };
 
 QCalendarDateValidator::QCalendarDateValidator()
-    : m_currentToken(Q_NULLPTR),
+    : m_currentToken(-1),
       m_initialDate(QDate::currentDate()),
       m_currentDate(m_initialDate),
       m_lastSectionMove(QCalendarDateSectionValidator::ThisSection)
@@ -510,17 +517,16 @@ void QCalendarDateValidator::setInitialDate(const QDate &date)
 QString QCalendarDateValidator::currentText() const
 {
     QString str;
-    QStringListIterator itSep(m_separators);
-    QListIterator<SectionToken *> itTok(m_tokens);
-    while (itSep.hasNext()) {
-        str += itSep.next();
-        if (itTok.hasNext()) {
-            SectionToken *token = itTok.next();
-            QCalendarDateSectionValidator *validator = token->validator;
-            if (m_currentToken == token)
-                str += validator->text();
+    const int numSeps = m_separators.size();
+    const int numTokens = m_tokens.size();
+    for (int i = 0; i < numSeps; ++i) {
+        str += m_separators.at(i);
+        if (i < numTokens) {
+            const SectionToken &token = m_tokens.at(i);
+            if (i == m_currentToken)
+                str += token.validator->text();
             else
-                str += validator->text(m_currentDate, token->repeat);
+                str += token.validator->text(m_currentDate, token.repeat);
         }
     }
     return str;
@@ -528,14 +534,10 @@ QString QCalendarDateValidator::currentText() const
 
 void QCalendarDateValidator::clear()
 {
-    QListIterator<SectionToken *> it(m_tokens);
-    while (it.hasNext())
-        delete it.next();
-
     m_tokens.clear();
     m_separators.clear();
 
-    m_currentToken = 0;
+    m_currentToken = -1;
 }
 
 void QCalendarDateValidator::setFormat(const QString &format)
@@ -558,25 +560,25 @@ void QCalendarDateValidator::setFormat(const QString &format)
                 separator += nextChar;
                 quoting = false;
             } else {
-                SectionToken *token = 0;
+                SectionToken token;
                 if (nextChar == QLatin1Char('d')) {
                     offset = qMin(4, countRepeat(format, pos));
-                    token = new SectionToken(&m_dayValidator, offset);
+                    token = SectionToken(&m_dayValidator, offset);
                 } else if (nextChar == QLatin1Char('M')) {
                     offset = qMin(4, countRepeat(format, pos));
-                    token = new SectionToken(&m_monthValidator, offset);
+                    token = SectionToken(&m_monthValidator, offset);
                 } else if (nextChar == QLatin1Char('y')) {
                     offset = qMin(4, countRepeat(format, pos));
-                    token = new SectionToken(&m_yearValidator, offset);
+                    token = SectionToken(&m_yearValidator, offset);
                 } else {
                     separator += nextChar;
                 }
-                if (token) {
+                if (!token.isNull()) {
                     m_tokens.append(token);
                     m_separators.append(separator);
                     separator = QString();
-                    if (!m_currentToken)
-                        m_currentToken = token;
+                    if (m_currentToken < 0)
+                        m_currentToken = m_tokens.size() - 1;
 
                 }
             }
@@ -595,29 +597,23 @@ void QCalendarDateValidator::applyToDate()
 
 void QCalendarDateValidator::toNextToken()
 {
-    const int idx = m_tokens.indexOf(m_currentToken);
-    if (idx == -1)
+    if (m_currentToken < 0)
         return;
-    if (idx + 1 >= m_tokens.count())
-        m_currentToken = m_tokens.first();
-    else
-        m_currentToken = m_tokens.at(idx + 1);
+    ++m_currentToken;
+    m_currentToken %= m_tokens.size();
 }
 
 void QCalendarDateValidator::toPreviousToken()
 {
-    const int idx = m_tokens.indexOf(m_currentToken);
-    if (idx == -1)
+    if (m_currentToken < 0)
         return;
-    if (idx - 1 < 0)
-        m_currentToken = m_tokens.last();
-    else
-        m_currentToken = m_tokens.at(idx - 1);
+    --m_currentToken;
+    m_currentToken %= m_tokens.size();
 }
 
 void QCalendarDateValidator::handleKeyEvent(QKeyEvent *keyEvent)
 {
-    if (!m_currentToken)
+    if (m_currentToken < 0)
         return;
 
     int key = keyEvent->key();
@@ -630,7 +626,7 @@ void QCalendarDateValidator::handleKeyEvent(QKeyEvent *keyEvent)
     else if (key == Qt::Key_Left)
         toPreviousToken();
 
-    m_lastSectionMove = m_currentToken->validator->handleKey(key);
+    m_lastSectionMove = m_tokens.at(m_currentToken).validator->handleKey(key);
 
     applyToDate();
     if (m_lastSectionMove == QCalendarDateSectionValidator::NextSection)
