@@ -86,11 +86,11 @@ public:
     QLocale m_locale;
 
 protected:
-    QString highlightString(const QString &str, int pos) const;
+    static QString highlightString(const QString &str, int pos);
 private:
 };
 
-QString QCalendarDateSectionValidator::highlightString(const QString &str, int pos) const
+QString QCalendarDateSectionValidator::highlightString(const QString &str, int pos)
 {
     if (pos == 0)
         return QLatin1String("<b>") + str + QLatin1String("</b>");
