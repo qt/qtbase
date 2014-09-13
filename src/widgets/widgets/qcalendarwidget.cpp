@@ -463,9 +463,9 @@ private:
 
     QStringList m_separators;
     QList<SectionToken *> m_tokens;
-    QCalendarDateSectionValidator *m_yearValidator;
-    QCalendarDateSectionValidator *m_monthValidator;
-    QCalendarDateSectionValidator *m_dayValidator;
+    QCalendarYearValidator m_yearValidator;
+    QCalendarMonthValidator m_monthValidator;
+    QCalendarDayValidator m_dayValidator;
 
     SectionToken *m_currentToken;
 
@@ -481,23 +481,17 @@ QCalendarDateValidator::QCalendarDateValidator()
       m_currentDate(m_initialDate),
       m_lastSectionMove(QCalendarDateSectionValidator::ThisSection)
 {
-    m_yearValidator = new QCalendarYearValidator();
-    m_monthValidator = new QCalendarMonthValidator();
-    m_dayValidator = new QCalendarDayValidator();
 }
 
 void QCalendarDateValidator::setLocale(const QLocale &locale)
 {
-    m_yearValidator->m_locale = locale;
-    m_monthValidator->m_locale = locale;
-    m_dayValidator->m_locale = locale;
+    m_yearValidator.m_locale = locale;
+    m_monthValidator.m_locale = locale;
+    m_dayValidator.m_locale = locale;
 }
 
 QCalendarDateValidator::~QCalendarDateValidator()
 {
-    delete m_yearValidator;
-    delete m_monthValidator;
-    delete m_dayValidator;
     clear();
 }
 
@@ -514,9 +508,9 @@ int QCalendarDateValidator::countRepeat(const QString &str, int index) const
 
 void QCalendarDateValidator::setInitialDate(const QDate &date)
 {
-    m_yearValidator->setDate(date);
-    m_monthValidator->setDate(date);
-    m_dayValidator->setDate(date);
+    m_yearValidator.setDate(date);
+    m_monthValidator.setDate(date);
+    m_dayValidator.setDate(date);
     m_initialDate = date;
     m_currentDate = date;
     m_lastSectionMove = QCalendarDateSectionValidator::ThisSection;
@@ -576,13 +570,13 @@ void QCalendarDateValidator::setFormat(const QString &format)
                 SectionToken *token = 0;
                 if (nextChar == QLatin1Char('d')) {
                     offset = qMin(4, countRepeat(format, pos));
-                    token = new SectionToken(m_dayValidator, offset);
+                    token = new SectionToken(&m_dayValidator, offset);
                 } else if (nextChar == QLatin1Char('M')) {
                     offset = qMin(4, countRepeat(format, pos));
-                    token = new SectionToken(m_monthValidator, offset);
+                    token = new SectionToken(&m_monthValidator, offset);
                 } else if (nextChar == QLatin1Char('y')) {
                     offset = qMin(4, countRepeat(format, pos));
-                    token = new SectionToken(m_yearValidator, offset);
+                    token = new SectionToken(&m_yearValidator, offset);
                 } else {
                     separator += nextChar;
                 }
@@ -603,9 +597,9 @@ void QCalendarDateValidator::setFormat(const QString &format)
 
 void QCalendarDateValidator::applyToDate()
 {
-    m_currentDate = m_yearValidator->applyToDate(m_currentDate);
-    m_currentDate = m_monthValidator->applyToDate(m_currentDate);
-    m_currentDate = m_dayValidator->applyToDate(m_currentDate);
+    m_currentDate = m_yearValidator.applyToDate(m_currentDate);
+    m_currentDate = m_monthValidator.applyToDate(m_currentDate);
+    m_currentDate = m_dayValidator.applyToDate(m_currentDate);
 }
 
 void QCalendarDateValidator::toNextToken()
