@@ -65,6 +65,20 @@ enum {
 
 namespace {
 
+static QString formatNumber(int number, int fieldWidth)
+{
+    QString str;
+    int pow = 10;
+    for (int i = 0; i < fieldWidth - 1; ++i) {
+        if (number / pow == 0)
+            str += QLatin1Char('0');
+        pow *= 10;
+    }
+    str += QString::number(number);
+
+    return str;
+}
+
 class QCalendarDateSectionValidator
 {
 public:
@@ -189,11 +203,7 @@ void QCalendarDayValidator::setDate(const QDate &date)
 
 QString QCalendarDayValidator::text() const
 {
-    QString str;
-    if (m_day / 10 == 0)
-        str += QLatin1Char('0');
-    str += QString::number(m_day);
-    return highlightString(str, m_pos);
+    return highlightString(formatNumber(m_day, 2), m_pos);
 }
 
 QString QCalendarDayValidator::text(const QDate &date, int repeat) const
@@ -201,10 +211,7 @@ QString QCalendarDayValidator::text(const QDate &date, int repeat) const
     if (repeat <= 1) {
         return QString::number(date.day());
     } else if (repeat == 2) {
-        QString str;
-        if (date.day() / 10 == 0)
-            str += QLatin1Char('0');
-        return str + QString::number(date.day());
+        return formatNumber(date.day(), 2);
     } else if (repeat == 3) {
         return m_locale.dayName(date.dayOfWeek(), QLocale::ShortFormat);
     } else if (repeat >= 4) {
@@ -307,11 +314,7 @@ void QCalendarMonthValidator::setDate(const QDate &date)
 
 QString QCalendarMonthValidator::text() const
 {
-    QString str;
-    if (m_month / 10 == 0)
-        str += QLatin1Char('0');
-    str += QString::number(m_month);
-    return highlightString(str, m_pos);
+    return highlightString(formatNumber(m_month, 2), m_pos);
 }
 
 QString QCalendarMonthValidator::text(const QDate &date, int repeat) const
@@ -319,10 +322,7 @@ QString QCalendarMonthValidator::text(const QDate &date, int repeat) const
     if (repeat <= 1) {
         return QString::number(date.month());
     } else if (repeat == 2) {
-        QString str;
-        if (date.month() / 10 == 0)
-            str += QLatin1Char('0');
-        return str + QString::number(date.month());
+        return formatNumber(date.month(), 2);
     } else if (repeat == 3) {
         return m_locale.standaloneMonthName(date.month(), QLocale::ShortFormat);
     } else /*if (repeat >= 4)*/ {
@@ -420,26 +420,13 @@ void QCalendarYearValidator::setDate(const QDate &date)
 
 QString QCalendarYearValidator::text() const
 {
-    QString str;
-    int pow = 10;
-    for (int i = 0; i < 3; i++) {
-        if (m_year / pow == 0)
-            str += QLatin1Char('0');
-        pow *= 10;
-    }
-    str += QString::number(m_year);
-    return highlightString(str, m_pos);
+    return highlightString(formatNumber(m_year, 4), m_pos);
 }
 
 QString QCalendarYearValidator::text(const QDate &date, int repeat) const
 {
-    if (repeat < 4) {
-        QString str;
-        int year = date.year() % 100;
-        if (year / 10 == 0)
-            str = QLatin1Char('0');
-        return str + QString::number(year);
-    }
+    if (repeat < 4)
+        return formatNumber(date.year() % 100, 2);
     return QString::number(date.year());
 }
 
