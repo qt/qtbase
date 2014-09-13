@@ -969,19 +969,19 @@ private:
 };
 
 QCalendarModel::QCalendarModel(QObject *parent)
-    : QAbstractTableModel(parent)
+    : QAbstractTableModel(parent),
+      m_firstColumn(1),
+      m_firstRow(1),
+      m_date(QDate::currentDate()),
+      m_minimumDate(QDate::fromJulianDay(1)),
+      m_maximumDate(7999, 12, 31),
+      m_shownYear(m_date.year()),
+      m_shownMonth(m_date.month()),
+      m_firstDay(QLocale().firstDayOfWeek()),
+      m_horizontalHeaderFormat(QCalendarWidget::ShortDayNames),
+      m_weekNumbersShown(true),
+      m_view(Q_NULLPTR)
 {
-    m_date = QDate::currentDate();
-    m_minimumDate = QDate::fromJulianDay(1);
-    m_maximumDate = QDate(7999, 12, 31);
-    m_shownYear = m_date.year();
-    m_shownMonth = m_date.month();
-    m_firstDay = QLocale().firstDayOfWeek();
-    m_horizontalHeaderFormat = QCalendarWidget::ShortDayNames;
-    m_weekNumbersShown = true;
-    m_firstColumn = 1;
-    m_firstRow = 1;
-    m_view = 0;
 }
 
 Qt::DayOfWeek QCalendarModel::dayOfWeekForColumn(int column) const
