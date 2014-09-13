@@ -489,9 +489,11 @@ private:
 };
 
 QCalendarDateValidator::QCalendarDateValidator()
-    : m_currentToken(0), m_lastSectionMove(QCalendarDateSectionValidator::ThisSection)
+    : m_currentToken(Q_NULLPTR),
+      m_initialDate(QDate::currentDate()),
+      m_currentDate(m_initialDate),
+      m_lastSectionMove(QCalendarDateSectionValidator::ThisSection)
 {
-    m_initialDate = m_currentDate = QDate::currentDate();
     m_yearValidator = new QCalendarYearValidator();
     m_monthValidator = new QCalendarMonthValidator();
     m_dayValidator = new QCalendarDayValidator();
