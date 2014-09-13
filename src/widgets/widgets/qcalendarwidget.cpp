@@ -817,6 +817,41 @@ void QCalendarTextNavigator::setDateEditAcceptDelay(int delay)
 
 class QCalendarView;
 
+// a small helper class that replaces a QMap<Qt::DayOfWeek, T>,
+// but requires T to have a member-swap and a default constructor
+// which should be cheap (no memory allocations)
+
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_MSVC(4351) // "new behavior: elements of array ... will be default initialized"
+
+template <typename T>
+class StaticDayOfWeekAssociativeArray {
+    bool contained[7];
+    T data[7];
+
+    static Q_DECL_CONSTEXPR int day2idx(Qt::DayOfWeek day) Q_DECL_NOTHROW { return int(day) - 1; } // alt: day % 7
+public:
+    Q_DECL_CONSTEXPR StaticDayOfWeekAssociativeArray() Q_DECL_NOEXCEPT_EXPR(noexcept(T()))
+        : contained(), data() {}
+
+    Q_DECL_CONSTEXPR bool contains(Qt::DayOfWeek day) const Q_DECL_NOTHROW { return contained[day2idx(day)]; }
+    Q_DECL_CONSTEXPR const T &value(Qt::DayOfWeek day) const Q_DECL_NOTHROW { return data[day2idx(day)]; }
+
+    Q_DECL_RELAXED_CONSTEXPR T &operator[](Qt::DayOfWeek day) Q_DECL_NOTHROW
+    {
+        const int idx = day2idx(day);
+        contained[idx] = true;
+        return data[idx];
+    }
+
+    Q_DECL_RELAXED_CONSTEXPR void insert(Qt::DayOfWeek day, T v) Q_DECL_NOTHROW
+    {
+        operator[](day).swap(v);
+    }
+};
+
+QT_WARNING_POP
+
 class QCalendarModel : public QAbstractTableModel
 {
     Q_OBJECT
@@ -895,7 +930,7 @@ public:
     Qt::DayOfWeek m_firstDay;
     QCalendarWidget::HorizontalHeaderFormat m_horizontalHeaderFormat;
     bool m_weekNumbersShown;
-    QMap<Qt::DayOfWeek, QTextCharFormat> m_dayFormats;
+    StaticDayOfWeekAssociativeArray<QTextCharFormat> m_dayFormats;
     QMap<QDate, QTextCharFormat> m_dateFormats;
     QTextCharFormat m_headerFormat;
     QCalendarView *m_view;
