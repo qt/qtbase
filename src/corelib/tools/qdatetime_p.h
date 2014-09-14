@@ -119,6 +119,9 @@ public:
                                                       m_status(other.m_status)
     {}
 
+    // ### XXX: when the tooling situation improves, look at fixing the padding.
+    // 4 bytes padding
+
     qint64 m_msecs;
     Qt::TimeSpec m_spec;
     int m_offsetFromUtc;
