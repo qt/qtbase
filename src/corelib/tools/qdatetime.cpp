@@ -906,18 +906,18 @@ QString QDate::toString(Qt::DateFormat format) const
 #ifndef QT_NO_TEXTDATE
     case Qt::TextDate:
         getDateFromJulianDay(jd, &y, &m, &d);
-        return QString::fromUtf8("%1 %2 %3 %4").arg(shortDayName(dayOfWeek()))
-                                               .arg(shortMonthName(m))
-                                               .arg(d)
-                                               .arg(y);
+        return QString::fromLatin1("%1 %2 %3 %4").arg(shortDayName(dayOfWeek()))
+                                                 .arg(shortMonthName(m))
+                                                 .arg(d)
+                                                 .arg(y);
 #endif
     case Qt::ISODate:
         getDateFromJulianDay(jd, &y, &m, &d);
         if (y < 0 || y > 9999)
             return QString();
-        return QString::fromUtf8("%1-%2-%3").arg(y, 4, 10, QLatin1Char('0'))
-                                            .arg(m, 2, 10, QLatin1Char('0'))
-                                            .arg(d, 2, 10, QLatin1Char('0'));
+        return QString::fromLatin1("%1-%2-%3").arg(y, 4, 10, QLatin1Char('0'))
+                                              .arg(m, 2, 10, QLatin1Char('0'))
+                                              .arg(d, 2, 10, QLatin1Char('0'));
     }
 }
 
@@ -1656,9 +1656,9 @@ QString QTime::toString(Qt::DateFormat format) const
     case Qt::ISODate:
     case Qt::TextDate:
     default:
-        return QString::fromUtf8("%1:%2:%3").arg(hour(), 2, 10, QLatin1Char('0'))
-                                            .arg(minute(), 2, 10, QLatin1Char('0'))
-                                            .arg(second(), 2, 10, QLatin1Char('0'));
+        return QString::fromLatin1("%1:%2:%3").arg(hour(), 2, 10, QLatin1Char('0'))
+                                              .arg(minute(), 2, 10, QLatin1Char('0'))
+                                              .arg(second(), 2, 10, QLatin1Char('0'));
     }
 }
 
@@ -3603,11 +3603,11 @@ QString QDateTime::toString(Qt::DateFormat format) const
         QTime tm;
         d->getDateTime(&dt, &tm);
         //We cant use date.toString(Qt::TextDate) as we need to insert the time before the year
-        buf = QString::fromUtf8("%1 %2 %3 %4 %5").arg(dt.shortDayName(dt.dayOfWeek()))
-                                                 .arg(dt.shortMonthName(dt.month()))
-                                                 .arg(dt.day())
-                                                 .arg(tm.toString(Qt::TextDate))
-                                                 .arg(dt.year());
+        buf = QString::fromLatin1("%1 %2 %3 %4 %5").arg(dt.shortDayName(dt.dayOfWeek()))
+                                                   .arg(dt.shortMonthName(dt.month()))
+                                                   .arg(dt.day())
+                                                   .arg(tm.toString(Qt::TextDate))
+                                                   .arg(dt.year());
         if (timeSpec() != Qt::LocalTime) {
             buf += QStringLiteral(" GMT");
             if (d->m_spec == Qt::OffsetFromUTC)
@@ -4994,7 +4994,7 @@ QDebug operator<<(QDebug dbg, const QDateTime &date)
         spec = QStringLiteral(" Qt::UTC");
         break;
     case Qt::OffsetFromUTC:
-        spec = QString::fromUtf8(" Qt::OffsetFromUTC %1s").arg(date.offsetFromUtc());
+        spec = QString::fromLatin1(" Qt::OffsetFromUTC %1s").arg(date.offsetFromUtc());
         break;
     case Qt::TimeZone:
 #ifndef QT_BOOTSTRAPPED
