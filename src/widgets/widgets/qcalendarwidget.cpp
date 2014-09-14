@@ -590,6 +590,7 @@ void QCalendarDateValidator::setFormat(const QString &format)
             const QChar nextChar = format.at(pos);
             if (quoting) {
                 separator += nextChar;
+                quoting = false;
             } else {
                 SectionToken *token = 0;
                 if (nextChar == QLatin1Char('d')) {
