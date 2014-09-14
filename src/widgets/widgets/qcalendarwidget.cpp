@@ -53,6 +53,8 @@
 #include <qbasictimer.h>
 #include <qstylepainter.h>
 
+#include <vector>
+
 QT_BEGIN_NAMESPACE
 
 enum {
@@ -424,14 +426,11 @@ QString QCalendarYearValidator::text(const QDate &date, int repeat) const
 ///////////////////////////////////
 
 struct SectionToken {
-    Q_DECL_CONSTEXPR SectionToken() : validator(Q_NULLPTR), repeat(0) {}
     Q_DECL_CONSTEXPR SectionToken(QCalendarDateSectionValidator *v, int rep)
         : validator(v), repeat(rep) {}
 
     QCalendarDateSectionValidator *validator;
     int repeat;
-
-    Q_DECL_CONSTEXPR bool isNull() const { return !validator; }
 };
 } // unnamed namespace
 Q_DECLARE_TYPEINFO(SectionToken, Q_PRIMITIVE_TYPE);
@@ -460,7 +459,7 @@ private:
     void clear();
 
     QStringList m_separators;
-    QVector<SectionToken> m_tokens;
+    std::vector<SectionToken> m_tokens;
     QCalendarYearValidator m_yearValidator;
     QCalendarMonthValidator m_monthValidator;
     QCalendarDayValidator m_dayValidator;
@@ -518,11 +517,11 @@ QString QCalendarDateValidator::currentText() const
 {
     QString str;
     const int numSeps = m_separators.size();
-    const int numTokens = m_tokens.size();
+    const int numTokens = int(m_tokens.size());
     for (int i = 0; i < numSeps; ++i) {
         str += m_separators.at(i);
         if (i < numTokens) {
-            const SectionToken &token = m_tokens.at(i);
+            const SectionToken &token = m_tokens[i];
             if (i == m_currentToken)
                 str += token.validator->text();
             else
@@ -560,25 +559,25 @@ void QCalendarDateValidator::setFormat(const QString &format)
                 separator += nextChar;
                 quoting = false;
             } else {
-                SectionToken token;
+                QCalendarDateSectionValidator *validator = 0;
                 if (nextChar == QLatin1Char('d')) {
                     offset = qMin(4, countRepeat(format, pos));
-                    token = SectionToken(&m_dayValidator, offset);
+                    validator = &m_dayValidator;
                 } else if (nextChar == QLatin1Char('M')) {
                     offset = qMin(4, countRepeat(format, pos));
-                    token = SectionToken(&m_monthValidator, offset);
+                    validator = &m_monthValidator;
                 } else if (nextChar == QLatin1Char('y')) {
                     offset = qMin(4, countRepeat(format, pos));
-                    token = SectionToken(&m_yearValidator, offset);
+                    validator = &m_yearValidator;
                 } else {
                     separator += nextChar;
                 }
-                if (!token.isNull()) {
-                    m_tokens.append(token);
+                if (validator) {
+                    m_tokens.push_back(SectionToken(validator, offset));
                     m_separators.append(separator);
                     separator = QString();
                     if (m_currentToken < 0)
-                        m_currentToken = m_tokens.size() - 1;
+                        m_currentToken = int(m_tokens.size()) - 1;
 
                 }
             }
@@ -626,7 +625,7 @@ void QCalendarDateValidator::handleKeyEvent(QKeyEvent *keyEvent)
     else if (key == Qt::Key_Left)
         toPreviousToken();
 
-    m_lastSectionMove = m_tokens.at(m_currentToken).validator->handleKey(key);
+    m_lastSectionMove = m_tokens[m_currentToken].validator->handleKey(key);
 
     applyToDate();
     if (m_lastSectionMove == QCalendarDateSectionValidator::NextSection)
