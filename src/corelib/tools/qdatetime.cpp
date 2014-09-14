@@ -1296,10 +1296,10 @@ QDate QDate::fromString(const QString& string, Qt::DateFormat format)
             || (string.size() > 10 && string.at(10).isDigit())) {
             return QDate();
         }
-        const int year = string.mid(0, 4).toInt();
+        const int year = string.midRef(0, 4).toInt();
         if (year <= 0 || year > 9999)
             return QDate();
-        return QDate(year, string.mid(5, 2).toInt(), string.mid(8, 2).toInt());
+        return QDate(year, string.midRef(5, 2).toInt(), string.midRef(8, 2).toInt());
         }
     }
     return QDate();
