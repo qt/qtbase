@@ -1,0 +1,9 @@
+
+Test case for using QT_GUI_MAIN instead of the normal main() startup pattern.
+
+Deployment:
+$NACL_SDK_ROOT/tools/create_nmf.py main.nexe -L ../../../../lib -s . -o main.nmf && $NACL_SDK_ROOT/tools/create_html.py main.nmf && python -m SimpleHTTPServer
+
+- or - 
+
+nacldeployqt main.nexe

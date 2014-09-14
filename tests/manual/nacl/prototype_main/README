@@ -1,0 +1,12 @@
+
+This test prototypes an application startup approach where
+the application registers a qt_main function and the ppapi
+plugin is implemented in a shared library.
+
+Subdirs:
+    lib: the library
+    main: the app main nexe
+
+Deploy:
+
+$NACL_SDK_ROOT/tools/create_nmf.py main.nexe -s . -o main.nmf && $NACL_SDK_ROOT/tools/create_html.py main.nmf && python -m SimpleHTTPServer

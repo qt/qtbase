@@ -1,0 +1,19 @@
+
+This test prototypes an approach for preserving the "Qt main" pattern
+where the application provides a main() implementation which start Qt.
+
+To accomplish this Qt must call PpapiPluginMain() at some point during
+startup. Currently this seems to only be possible fromt he main application
+executable. Calling PpapiPluginMain() froma shared library results in a
+verification error. ("failed to load code from shared object: Invalid argument")
+
+
+Subdirs:
+    lib: a library
+    main: a main nexe
+
+Deploy:
+
+$NACL_SDK_ROOT/tools/create_nmf.py main.nexe -s . -o main.nmf && $NACL_SDK_ROOT/tools/create_html.py main.nmf && python -m SimpleHTTPServer
+
+
