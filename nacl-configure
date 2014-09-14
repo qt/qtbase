@@ -1,0 +1,141 @@
+# This scripts generates a configure line for Qt on NaCl.
+
+# Require that NACL_SDK_ROOT is set.
+if [[ -z "$NACL_SDK_ROOT" ]]
+then
+    echo ""
+    echo Set NACL_SDK_ROOT before running nacl-configure. 
+    echo Example: export NACL_SDK_ROOT=/Users/USER/code/nacl_sdk/pepper_35
+    echo ""
+    exit
+fi
+
+# Require that $NACL_SDK_ROOT exists on disk.
+if [ ! -d "$NACL_SDK_ROOT" ]; then
+    echo ""
+    echo Directory not found: $NACL_SDK_ROOT. Check NACL_SDK_ROOT.
+    echo ""
+    exit
+
+fi
+
+# Require a toolcahin as an argument
+if [ $# -eq 0 ]
+  then
+    echo ""
+    echo "No arguments supplied. Usage:"
+    echo "\"nacl-configure <tooolchain>\". Toolchain is one of:" 
+    echo "mac_arm_newlib mac_pnacl mac_x86_glibc mac_x86_newlib"
+    echo "(replace "mac" with your platform)"
+    echo ""
+    exit 
+fi
+
+# QtBase and configure script location:
+QTBASE="$(dirname $0)"
+
+# Argument: Which toolchain?
+TOOLCHAIN=$1
+# Select 32/64 bit builds for the non-pnacl toolchains. Currently hardcoded to 32.
+BITS=32
+
+# Extract parts from the toolchain
+# PNACL: pnacl|<blank>
+# ARCH : x86|arm
+# CLIB : glibc|newlib
+
+if [[ $TOOLCHAIN == *pnacl ]]
+  then
+    PNACL="pnacl"
+fi
+if [[ $TOOLCHAIN == *x86* ]]
+  then
+    ARCH="x86"
+fi
+if [[ $TOOLCHAIN == *arm* ]]
+  then
+    ARCH="arm"
+fi
+if [[ $TOOLCHAIN == *newlib* ]]
+  then
+    CLIB="newlib"
+fi
+if [[ $TOOLCHAIN == *glibc* ]]
+  then
+    CLIB="glibc"
+fi
+
+# Select a mkspec, which can be one of:
+# nacl-arm-newlib-g++
+# nacl-x86-glibc-g++
+# nacl-x86-glibc-g++64
+# nacl-x86-newlib-g++
+# pnacl-newlib-clang
+
+# Map the selected toolchain to a mkspec. (It's currently not possible to compile for nacl-x86-glibc-g++64 this way)
+if [[ $TOOLCHAIN == *arm_newlib ]]
+  then
+    QT_MKSPEC="nacl-arm-newlib-g++"
+fi
+if [[ $TOOLCHAIN == *pnacl ]]
+  then
+    QT_MKSPEC="pnacl-newlib-clang"
+fi
+if [[ $TOOLCHAIN == *x86_glibc ]]
+  then
+    QT_MKSPEC="nacl-x86-glibc-g++"
+fi
+if [[ $TOOLCHAIN == *x86_newlib ]]
+  then
+    QT_MKSPEC="nacl-x86-newlib-g++"
+fi
+
+# Map the toolchain and bits to a lib directory. One of:
+# glibc_x86_32
+# glibc_x86_64
+# newlib_arm
+# newlib_x86_32
+# newlib_x86_64
+# pnacl
+if [[ $PNACL == pnacl ]]
+  then
+      LIBDIR="pnacl"
+else
+    LIBDIR="${CLIB}_${ARCH}"
+fi
+if [[ $ARCH == x86 ]]
+  then
+      LIBDIR="${LIBDIR}_${BITS}"
+fi
+
+# Assemble command-line options for the configure line
+NACL_CONFIGURE_LINE="$QTBASE/../configure"
+# mkspec and nacl toolchain path
+NACL_CONFIGURE_LINE="$NACL_CONFIGURE_LINE -xplatform unsupported/$QT_MKSPEC -device-option CROSS_COMPILE=$NACL_SDK_ROOT/toolchain/$TOOLCHAIN/bin/"
+NACL_CONFIGURE_LINE="$NACL_CONFIGURE_LINE -I $NACL_SDK_ROOT/include -L $NACL_SDK_ROOT/lib/$LIBDIR/Release"
+# developer build
+NACL_CONFIGURE_LINE="$NACL_CONFIGURE_LINE -developer-build -opensource -confirm-license -nomake examples -nomake tests"
+# misc
+NACL_CONFIGURE_LINE="$NACL_CONFIGURE_LINE -no-sse2 -no-qpa-platform-guard -opengl es2 -skip xmlpatterns -skip qtsvg"
+
+# Newlib is static builds only. Debug binaries are large and generally not usable.
+if [[ $QT_MKSPEC == *newlib* ]]
+  then
+    NACL_CONFIGURE_LINE="$NACL_CONFIGURE_LINE -static -release"
+fi
+
+# C++11 is broken on pnacl, see Chromium bug 314944 
+if [[ $QT_MKSPEC == *pnacl* ]]
+  then
+    NACL_CONFIGURE_LINE="$NACL_CONFIGURE_LINE -no-c++11"
+fi
+
+# ### WORKAROUND: re-configuring breaks if mkspecs/qconfig.pri is present
+rm qtbase/mkspecs/qconfig.pri
+# Make configure work on compiler upgrades (For example: Xcode.app -> XcodeBeta.app)
+rm qtbase/.qmake.cache
+
+echo $NACL_CONFIGURE_LINE
+
+# Run configure
+$NACL_CONFIGURE_LINE

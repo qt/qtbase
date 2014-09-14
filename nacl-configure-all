@@ -1,0 +1,21 @@
+# Script for creating shadow builds of Qt for all NaCl tool chains.
+
+# QtBase and configure script location (relative path):
+QTBASE="$(dirname $0)"
+
+# Available toolchains
+TOOLCHAINS="mac_arm_newlib mac_pnacl mac_x86_glibc mac_x86_newlib"
+
+# Create subdir and configure Qt for each tool chain
+for TOOLCHAIN in $TOOLCHAINS
+do
+    echo mkdir $TOOLCHAIN
+    pushd .
+    mkdir -p $TOOLCHAIN
+    cd $TOOLCHAIN
+    echo ../$QTBASE/nacl-configure $TOOLCHAIN
+    ../$QTBASE/nacl-configure $TOOLCHAIN&
+    popd
+done
+
+

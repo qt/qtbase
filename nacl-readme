@@ -1,0 +1,49 @@
+* Using Qt for Google Native Client
+
+Building QtBase:
+
+Use nacl-configure in qtbase:
+
+1) Set NACL_SDK_ROOT. (Example: export NACL_SDK_ROOT=/Users/USER/code/nacl_sdk/pepper_35)
+
+2) Select the toolchain and configure Qt. Using shadow builds is recomended.
+   /path/to/nacl-configure nacl-arm-newlib-g++
+                           nacl-x86-glibc-g++
+                           nacl-x86-glibc-g++64
+                           nacl-x86-newlib-g++
+                           pnacl-newlib-clang
+
+   (nacl-configure calls Qt's configure; the final command line with configure options is 
+    printed to the terminal)
+
+3) Build:
+   make module-qtbase
+   
+* Developing Qt for Google Native Client
+
+Standard output goes to Chrome standard out. Lauch Chrome from the command line:
+
+NACL_DEBUG_ENABLE=1 PPAPI_BROWSER_DEBUG=1 NACL_UGIN_DEBUG=1 /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --incognito --disable-cache --no-default-browser-check --new-window "http://localhost:8000"
+
+
+Qt bootstrapping / tests
+
+In qtbase/tests/manual/nacl. qtnacl.pro
+
+
+Debugging:
+
+1) Run Chrome in debug mode:
+
+    /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --enable-nacl-debug --no-sandbox
+
+2) Attach debugger: [TODO successfully load debug symbols.]
+
+    ~/code/nacl_sdk/pepper_35/toolchain/mac_x86_glibc/bin/x86_64-nacl-gdb
+   target remote localhost:4014
+   nacl-manifest wiggly.nmf
+   remote get irt /Applications/Google\ Chrome.app/Contents/Versions/36.0.1985.125/Google\ Chrome\ Framework.framework/Internet\ Plug-Ins/nacl_irt_x86_32.nexe
+   nacl-irt /Applications/Google\ Chrome.app/Contents/Versions/36.0.1985.125/Google\ Chrome\ Framework.framework/Internet\ Plug-Ins/nacl_irt_x86_32.nexe
+
+   NACL_DEBUG_ENABLE=1 PPAPI_BROWSER_DEBUG=1 NACL_PLUGIN_DEBUG=1 /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --vmodule=ppb*=4 --enable-logging=stderr   
+

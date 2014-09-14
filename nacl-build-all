@@ -1,0 +1,38 @@
+# Script for building selected parts of Qt for all NaCl tool chains.
+
+# QtBase and configure script location
+QTBASE="$(dirname $0)"
+
+# Available toolchains
+#TOOLCHAINS="mac_arm_newlib mac_pnacl mac_x86_glibc mac_x86_newlib"
+TOOLCHAINS=mac_x86_glibc
+
+# Build qtbase
+for TOOLCHAIN in $TOOLCHAINS
+do
+    pushd .
+    cd $TOOLCHAIN
+    make module-qtbase -k
+    popd
+done
+
+# build qtbase tests
+for TOOLCHAIN in $TOOLCHAINS
+do
+    mkdir -p $TOOLCHAIN/qtbase/tests/manual/nacl
+    pushd .
+    cd $TOOLCHAIN/qtbase/tests/manual/nacl
+    # path heck
+    ../../../bin/qmake ../../../../../$QTBASE/tests/manual/nacl/nacl.pro -r
+    make
+    popd
+done
+
+# build qtdeclarative (Qt Quick 2)
+for TOOLCHAIN in $TOOLCHAINS
+do
+    pushd .
+    cd $TOOLCHAIN
+    make module-qtdeclarative -k
+    popd
+done
