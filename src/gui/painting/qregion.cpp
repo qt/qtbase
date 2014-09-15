@@ -1087,17 +1087,17 @@ Q_GUI_EXPORT QPainterPath qt_regionToPath(const QRegion &region)
 
 struct QRegionPrivate {
     int numRects;
+    int innerArea;
     QVector<QRect> rects;
     QRect extents;
     QRect innerRect;
-    int innerArea;
 
     inline QRegionPrivate() : numRects(0), innerArea(-1) {}
     inline QRegionPrivate(const QRect &r)
         : numRects(1),
+          innerArea(r.width() * r.height()),
           extents(r),
-          innerRect(r),
-          innerArea(r.width() * r.height())
+          innerRect(r)
     {
     }
 
