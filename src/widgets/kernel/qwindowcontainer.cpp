@@ -295,6 +295,17 @@ bool QWindowContainer::event(QEvent *e)
             }
         }
         break;
+    case QEvent::Drop:
+    case QEvent::DragMove:
+    case QEvent::DragLeave:
+        QCoreApplication::sendEvent(d->window, e);
+        return e->isAccepted();
+    case QEvent::DragEnter:
+        // Don't reject drag events for the entire widget when one
+        // item rejects the drag enter
+        QCoreApplication::sendEvent(d->window, e);
+        e->accept();
+        return true;
     default:
         break;
     }
