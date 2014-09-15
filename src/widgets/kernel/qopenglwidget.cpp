@@ -244,6 +244,9 @@ QT_BEGIN_NAMESPACE
   contents. Omitting the clear call can lead to significant performance drops on
   such systems.
 
+  \note Avoid calling winId() on a QOpenGLWidget. This function triggers the creation of
+  a native window, resulting in reduced performance and possibly rendering glitches.
+
   \section1 Multisampling
 
   To enable multisampling, set the number of requested samples on the
