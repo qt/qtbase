@@ -2658,8 +2658,8 @@ QMetaObject::Connection QObject::connect(const QObject *sender, const char *sign
     const char *method_arg = method;
     ++method; // skip code
 
-    QByteArray methodName;
     QArgumentTypeArray methodTypes;
+    QByteArray methodName = QMetaObjectPrivate::decodeMethodSignature(method, methodTypes);
     const QMetaObject *rmeta = receiver->metaObject();
     int method_index_relative = -1;
     Q_ASSERT(QMetaObjectPrivate::get(rmeta)->revision >= 7);
