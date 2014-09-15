@@ -89,12 +89,12 @@ contains(qt_module_deps, qml): \
     }
 
     # run qmlimportscanner
-    qtPrepareTool(QMLIMPORTSCANNER, qmlimportscanner, _SYS)
+    qtPrepareTool(QMLIMPORTSCANNER, qmlimportscanner, , system)
     for (QMLPATH, QMLPATHS): \
         IMPORTPATHS += -importPath $$QMLPATH
 
-    #message(run $$QMLIMPORTSCANNER_SYS $$_PRO_FILE_PWD_  $$IMPORTPATHS)
-    JSON = $$system($$QMLIMPORTSCANNER_SYS $$_PRO_FILE_PWD_ $$IMPORTPATHS)
+    #message(run $$QMLIMPORTSCANNER $$_PRO_FILE_PWD_  $$IMPORTPATHS)
+    JSON = $$system($$QMLIMPORTSCANNER $$_PRO_FILE_PWD_ $$IMPORTPATHS)
 
     parseJson(JSON, IMPORTS)| error("Failed to parse qmlimportscanner output.")
 
