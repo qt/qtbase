@@ -87,5 +87,5 @@ FAIL!  : tst_Cmptest::compareQImages(different format) Compared QImages differ i
 FAIL!  : tst_Cmptest::compareQImages(different pixels) Compared values are not the same
    Loc: [tst_cmptest.cpp(380)]
 PASS   : tst_Cmptest::cleanupTestCase()
-Totals: 11 passed, 20 failed, 0 skipped
+Totals: 11 passed, 20 failed, 0 skipped, 0 blacklisted
 ********* Finished testing of tst_Cmptest *********

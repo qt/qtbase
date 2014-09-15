@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtTest module of the Qt Toolkit.
@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QTESTLOG_P_H
-#define QTESTLOG_P_H
+#ifndef QTESTBLACKLIST_P_H
+#define QTESTBLACKLIST_P_H
 
 //
 //  W A R N I N G
@@ -57,66 +57,10 @@
 
 QT_BEGIN_NAMESPACE
 
-class QBenchmarkResult;
-class QRegularExpression;
-
-class Q_TESTLIB_EXPORT QTestLog
-{
-public:
-    enum LogMode { Plain = 0, XML, LightXML, XunitXML, CSV };
-
-    static void enterTestFunction(const char* function);
-    static void leaveTestFunction();
-
-    static void addPass(const char *msg);
-    static void addFail(const char *msg, const char *file, int line);
-    static void addXFail(const char *msg, const char *file, int line);
-    static void addXPass(const char *msg, const char *file, int line);
-    static void addBPass(const char *msg);
-    static void addBFail(const char *msg, const char *file, int line);
-    static void addSkip(const char *msg, const char *file, int line);
-    static void addBenchmarkResult(const QBenchmarkResult &result);
-
-    static void ignoreMessage(QtMsgType type, const char *msg);
-    static void ignoreMessage(QtMsgType type, const QRegularExpression &expression);
-    static int unhandledIgnoreMessages();
-    static void printUnhandledIgnoreMessages();
-    static void clearIgnoreMessages();
-
-    static void warn(const char *msg, const char *file, int line);
-    static void info(const char *msg, const char *file, int line);
-
-    static void startLogging();
-    static void stopLogging();
-
-    static void addLogger(LogMode mode, const char *filename);
-
-    static int loggerCount();
-    static bool loggerUsingStdout();
-
-    static void setVerboseLevel(int level);
-    static int verboseLevel();
-
-    static void setMaxWarnings(int max);
-
-    static void setPrintAvailableTagsMode();
-
-    static int passCount();
-    static int failCount();
-    static int skipCount();
-    static int blacklistCount();
-
-    static void resetCounters();
-
-    static void setInstalledTestCoverage(bool installed);
-    static bool installedTestCoverage();
-
-private:
-    QTestLog();
-    ~QTestLog();
-
-    static bool printAvailableTags;
-};
+namespace QTestPrivate {
+    void parseBlackList();
+    void checkBlackList(const char *slot, const char *data);
+}
 
 QT_END_NAMESPACE
 

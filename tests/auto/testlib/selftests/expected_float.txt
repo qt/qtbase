@@ -28,5 +28,5 @@ FAIL!  : tst_float::compareFloatTests(1e+7) Compared floats are not the same (fu
    Expected (t3): 3e+07
    Loc: [tst_float.cpp(109)]
 PASS   : tst_float::cleanupTestCase()
-Totals: 4 passed, 6 failed, 0 skipped
+Totals: 4 passed, 6 failed, 0 skipped, 0 blacklisted
 ********* Finished testing of tst_float *********

@@ -33,7 +33,8 @@ HEADERS = qbenchmark.h \
     qtestmouse.h \
     qtestspontaneevent.h \
     qtestsystem.h \
-    qtesttouch.h
+    qtesttouch.h \
+    qtestblacklist_p.h
 
 SOURCES = qtestcase.cpp \
     qtestlog.cpp \
@@ -55,7 +56,9 @@ SOURCES = qtestcase.cpp \
     qtestelement.cpp \
     qtestelementattribute.cpp \
     qtestxunitstreamer.cpp \
-    qxunittestlogger.cpp
+    qxunittestlogger.cpp \
+    qtestblacklist.cpp
+
 DEFINES *= QT_NO_CAST_TO_ASCII \
     QT_NO_CAST_FROM_ASCII \
     QT_NO_DATASTREAM

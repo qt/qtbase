@@ -74,6 +74,7 @@ public:
     static void finishedCurrentTestDataCleanup();
     static void finishedCurrentTestFunction();
     static void reset();
+    static void setBlacklistCurrentTest(bool b);
 
     static void addFailure(const char *message, const char *file, int line);
     static bool compare(bool success, const char *failureMsg,

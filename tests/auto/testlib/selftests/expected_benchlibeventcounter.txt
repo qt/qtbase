@@ -23,5 +23,5 @@ PASS   : tst_BenchlibEventCounter::events(100000)
 RESULT : tst_BenchlibEventCounter::events():"100000":
      100,000 events per iteration (total: 100,000, iterations: 1)
 PASS   : tst_BenchlibEventCounter::cleanupTestCase()
-Totals: 9 passed, 0 failed, 0 skipped
+Totals: 9 passed, 0 failed, 0 skipped, 0 blacklisted
 ********* Finished testing of tst_BenchlibEventCounter *********

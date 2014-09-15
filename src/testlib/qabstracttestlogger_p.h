@@ -68,7 +68,9 @@ public:
         Pass,
         XFail,
         Fail,
-        XPass
+        XPass,
+        BlacklistedPass,
+        BlacklistedFail
     };
 
     enum MessageTypes {

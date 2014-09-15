@@ -63,6 +63,7 @@
 #include <QtTest/private/qsignaldumper_p.h>
 #include <QtTest/private/qbenchmark_p.h>
 #include <QtTest/private/cycle_p.h>
+#include <QtTest/private/qtestblacklist_p.h>
 
 #include <numeric>
 #include <algorithm>
@@ -2016,6 +2017,9 @@ static bool qInvokeTestMethod(const char *slotName, const char *data=0)
                 QTestResult::setSkipCurrentTest(false);
                 if (!data || !qstrcmp(data, table.testData(curDataIndex)->dataTag())) {
                     foundFunction = true;
+
+                    QTestPrivate::checkBlackList(slot, dataCount ? table.testData(curDataIndex)->dataTag() : 0);
+
                     QTestDataSetter s(curDataIndex >= dataCount ? static_cast<QTestData *>(0)
                                                       : table.testData(curDataIndex));
 
@@ -2432,6 +2436,8 @@ int QTest::qExec(QObject *testObject, int argc, char **argv)
             macNeedsActivate = false; // no need to release the assertion on exit.
     }
 #endif
+
+    QTestPrivate::parseBlackList();
 
     QTestResult::reset();
 

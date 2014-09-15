@@ -4,5 +4,5 @@ PASS   : tst_FailCleanup::initTestCase()
 PASS   : tst_FailCleanup::aTestFunction()
 FAIL!  : tst_FailCleanup::cleanupTestCase() 'false' returned FALSE. (Fail inside cleanupTestCase)
    Loc: [tst_failcleanup.cpp(59)]
-Totals: 2 passed, 1 failed, 0 skipped
+Totals: 2 passed, 1 failed, 0 skipped, 0 blacklisted
 ********* Finished testing of tst_FailCleanup *********

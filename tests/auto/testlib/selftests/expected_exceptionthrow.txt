@@ -3,5 +3,5 @@ Config: Using QtTest library @INSERT_QT_VERSION_HERE@, Qt @INSERT_QT_VERSION_HER
 PASS   : tst_Exception::initTestCase()
 FAIL!  : tst_Exception::throwException() Caught unhandled exception
    Loc: [/home/frederik/dev/qt/qt-src-dev/qtbase/src/testlib/qtestcase.cpp(2229)]
-Totals: 1 passed, 1 failed, 0 skipped
+Totals: 1 passed, 1 failed, 0 skipped, 0 blacklisted
 ********* Finished testing of tst_Exception *********

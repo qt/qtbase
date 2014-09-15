@@ -84,6 +84,7 @@ namespace QTest {
     int fails = 0;
     int passes = 0;
     int skips = 0;
+    int blacklists = 0;
 
     struct IgnoreResultList
     {
@@ -415,6 +416,25 @@ void QTestLog::addXPass(const char *msg, const char *file, int line)
     QTest::TestLoggers::addIncident(QAbstractTestLogger::XPass, msg, file, line);
 }
 
+void QTestLog::addBPass(const char *msg)
+{
+    QTEST_ASSERT(msg);
+
+    ++QTest::blacklists;
+
+    QTest::TestLoggers::addIncident(QAbstractTestLogger::BlacklistedPass, msg);
+}
+
+void QTestLog::addBFail(const char *msg, const char *file, int line)
+{
+    QTEST_ASSERT(msg);
+    QTEST_ASSERT(file);
+
+    ++QTest::blacklists;
+
+    QTest::TestLoggers::addIncident(QAbstractTestLogger::BlacklistedFail, msg, file, line);
+}
+
 void QTestLog::addSkip(const char *msg, const char *file, int line)
 {
     QTEST_ASSERT(msg);
@@ -550,6 +570,11 @@ int QTestLog::failCount()
 int QTestLog::skipCount()
 {
     return QTest::skips;
+}
+
+int QTestLog::blacklistCount()
+{
+    return QTest::blacklists;
 }
 
 void QTestLog::resetCounters()

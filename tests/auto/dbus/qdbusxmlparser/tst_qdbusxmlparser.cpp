@@ -79,9 +79,8 @@ QT_END_NAMESPACE
 
 void tst_QDBusXmlParser::initTestCase()
 {
-    // If the seed not initialized yet (-1), set it to 0
-    // otherwise abort, so we don't get unexplained test failures later.
-    QVERIFY(qt_qhash_seed.testAndSetRelaxed(-1, 0));
+    // Always initialize the hash seed to 0 to get reliable test results
+    qt_qhash_seed.store(0);
 }
 
 void tst_QDBusXmlParser::parsing_data()

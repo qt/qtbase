@@ -16,5 +16,5 @@ FAIL!  : tst_DateTime::qurl(empty lhs) Compared values are not the same
    Loc: [tst_datetime.cpp(73)]
 PASS   : tst_DateTime::qurl(same urls)
 PASS   : tst_DateTime::cleanupTestCase()
-Totals: 4 passed, 3 failed, 0 skipped
+Totals: 4 passed, 3 failed, 0 skipped, 0 blacklisted
 ********* Finished testing of tst_DateTime *********

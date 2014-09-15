@@ -50,5 +50,5 @@ QDEBUG : tst_globaldata::skipSingle(2:local 2) cleanup skipSingle local 2
 PASS   : tst_globaldata::skipSingle(2:local 2)
 QDEBUG : tst_globaldata::cleanupTestCase() cleanupTestCase cleanupTestCase (null)
 PASS   : tst_globaldata::cleanupTestCase()
-Totals: 9 passed, 0 failed, 4 skipped
+Totals: 9 passed, 0 failed, 4 skipped, 0 blacklisted
 ********* Finished testing of tst_globaldata *********

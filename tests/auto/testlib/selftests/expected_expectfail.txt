@@ -51,5 +51,5 @@ XPASS  : tst_ExpectFail::xpassDataDrivenWithQCompare(XPass) QCOMPARE(1, 1) retur
    Loc: [tst_expectfail.cpp(271)]
 PASS   : tst_ExpectFail::xpassDataDrivenWithQCompare(Pass)
 PASS   : tst_ExpectFail::cleanupTestCase()
-Totals: 18 passed, 6 failed, 0 skipped
+Totals: 18 passed, 6 failed, 0 skipped, 0 blacklisted
 ********* Finished testing of tst_ExpectFail *********

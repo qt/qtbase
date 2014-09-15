@@ -17,5 +17,5 @@ FAIL!  : tst_VerifyExceptionThrown::testFailMyDerivedException() Expected except
 FAIL!  : tst_VerifyExceptionThrown::testFailNoException() Expected exception of type std::exception to be thrown but no exception caught
    Loc: [tst_verifyexceptionthrown.cpp(153)]
 PASS   : tst_VerifyExceptionThrown::cleanupTestCase()
-Totals: 5 passed, 6 failed, 0 skipped
+Totals: 5 passed, 6 failed, 0 skipped, 0 blacklisted
 ********* Finished testing of tst_VerifyExceptionThrown *********

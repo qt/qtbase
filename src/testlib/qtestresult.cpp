@@ -62,6 +62,7 @@ namespace QTest
     static const char *currentTestObjectName = 0;
     static bool failed = false;
     static bool skipCurrentTest = false;
+    static bool blacklistCurrentTest = false;
 
     static const char *expectFailComment = 0;
     static int expectFailMode = 0;
@@ -77,8 +78,14 @@ void QTestResult::reset()
 
     QTest::expectFailComment = 0;
     QTest::expectFailMode = 0;
+    QTest::blacklistCurrentTest = false;
 
     QTestLog::resetCounters();
+}
+
+void QTestResult::setBlacklistCurrentTest(bool b)
+{
+    QTest::blacklistCurrentTest = b;
 }
 
 bool QTestResult::currentTestFailed()
@@ -139,7 +146,10 @@ void QTestResult::finishedCurrentTestDataCleanup()
 {
     // If the current test hasn't failed or been skipped, then it passes.
     if (!QTest::failed && !QTest::skipCurrentTest) {
-        QTestLog::addPass("");
+        if (QTest::blacklistCurrentTest)
+            QTestLog::addBPass("");
+        else
+            QTestLog::addPass("");
     }
 
     QTest::failed = false;
@@ -290,7 +300,10 @@ void QTestResult::addFailure(const char *message, const char *file, int line)
 {
     clearExpectFail();
 
-    QTestLog::addFail(message, file, line);
+    if (QTest::blacklistCurrentTest)
+        QTestLog::addBFail(message, file, line);
+    else
+        QTestLog::addFail(message, file, line);
     QTest::failed = true;
 }
 

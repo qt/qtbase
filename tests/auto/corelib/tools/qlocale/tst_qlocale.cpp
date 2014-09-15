@@ -52,6 +52,7 @@
 #include <float.h>
 
 #include <qlocale.h>
+#include <private/qlocale_p.h>
 #include <qnumeric.h>
 
 #if defined(Q_OS_LINUX) && !defined(__UCLIBC__)
@@ -1544,6 +1545,9 @@ public:
         setWinLocaleInfo(LOCALE_SSHORTDATE, m_sdate);
         setWinLocaleInfo(LOCALE_SLONGDATE, m_ldate);
         setWinLocaleInfo(shortTimeType(), m_time);
+
+        // make sure QLocale::system() gets updated
+        QLocalePrivate::updateSystemPrivate();
     }
 
     QString m_decimal, m_thousand, m_sdate, m_ldate, m_time;
@@ -1567,7 +1571,11 @@ void tst_QLocale::windowsDefaultLocale()
     setWinLocaleInfo(LOCALE_SLONGDATE, longDateFormat);
     const QString shortTimeFormat = QStringLiteral("h^m^s");
     setWinLocaleInfo(shortTimeType(), shortTimeFormat);
+
+    // make sure QLocale::system() gets updated
+    QLocalePrivate::updateSystemPrivate();
     QLocale locale = QLocale::system();
+
     // make sure we are seeing the system's format strings
     QCOMPARE(locale.decimalPoint(), QChar('@'));
     QCOMPARE(locale.groupSeparator(), QChar('?'));

@@ -5,5 +5,5 @@ PASS   : tst_BenchlibCallgrind::twoHundredMillionInstructions()
 RESULT : tst_BenchlibCallgrind::twoHundredMillionInstructions():
      200,000,158 instruction reads per iteration (total: 200,000,158, iterations: 1)
 PASS   : tst_BenchlibCallgrind::cleanupTestCase()
-Totals: 3 passed, 0 failed, 0 skipped
+Totals: 3 passed, 0 failed, 0 skipped, 0 blacklisted
 ********* Finished testing of tst_BenchlibCallgrind *********

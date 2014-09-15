@@ -47,5 +47,5 @@ FAIL!  : tst_DataTable::fiveIsolatedFailures(fiveIsolatedFailures_data 4) '!test
 FAIL!  : tst_DataTable::fiveIsolatedFailures(fiveIsolatedFailures_data 5) '!test' returned FALSE. ()
    Loc: [tst_datatable.cpp(173)]
 PASS   : tst_DataTable::cleanupTestCase()
-Totals: 21 passed, 13 failed, 0 skipped
+Totals: 21 passed, 13 failed, 0 skipped, 0 blacklisted
 ********* Finished testing of tst_DataTable *********

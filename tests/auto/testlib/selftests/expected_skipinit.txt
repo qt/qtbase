@@ -3,5 +3,5 @@ Config: Using QtTest library @INSERT_QT_VERSION_HERE@, Qt @INSERT_QT_VERSION_HER
 SKIP   : tst_SkipInit::initTestCase() Skip inside initTestCase. This should skip all tests in the class.
    Loc: [tst_skipinit.cpp(55)]
 PASS   : tst_SkipInit::cleanupTestCase()
-Totals: 1 passed, 0 failed, 1 skipped
+Totals: 1 passed, 0 failed, 1 skipped, 0 blacklisted
 ********* Finished testing of tst_SkipInit *********

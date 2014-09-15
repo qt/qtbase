@@ -9,5 +9,5 @@ QWARN  : tst_Alive::alive() TEST LAGS 4 PINGS behind!
 PASS   : tst_Alive::alive()
 PASS   : tst_Alive::addMouseDClick()
 PASS   : tst_Alive::cleanupTestCase()
-Totals: 4 passed, 0 failed, 0 skipped
+Totals: 4 passed, 0 failed, 0 skipped, 0 blacklisted
 ********* Finished testing of tst_Alive *********

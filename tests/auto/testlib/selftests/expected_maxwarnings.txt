@@ -2005,5 +2005,5 @@ QWARN  : MaxWarnings::warn() 2000
 QSYSTEM: MaxWarnings::warn() Maximum amount of warnings exceeded. Use -maxwarnings to override.
 PASS   : MaxWarnings::warn()
 PASS   : MaxWarnings::cleanupTestCase()
-Totals: 3 passed, 0 failed, 0 skipped
+Totals: 3 passed, 0 failed, 0 skipped, 0 blacklisted
 ********* Finished testing of MaxWarnings *********

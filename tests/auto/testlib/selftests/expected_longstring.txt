@@ -12,5 +12,5 @@ Curabitur ligula sapien, tincidunt non, euismod vitae, posuere imperdiet, leo. M
 Aenean posuere, tortor sed cursus feugiat, nunc augue blandit nunc, eu sollicitudin urna dolor sagittis lacus. Donec elit libero, sodales nec, volutpat a, suscipit non, turpis. Nullam sagittis. Suspendisse pulvinar, augue ac venenatis condimentum, sem libero volutpat nibh, nec pellentesque velit pede quis nunc. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Fusce id purus. Ut varius tincidunt libero. Phasellus dolor. Maecenas vestibulum mollis diam. Pellentesque ut neque. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas.
    Loc: [tst_longstring.cpp(67)]
 PASS   : tst_LongString::cleanupTestCase()
-Totals: 2 passed, 1 failed, 0 skipped
+Totals: 2 passed, 1 failed, 0 skipped, 0 blacklisted
 ********* Finished testing of tst_LongString *********

@@ -89,6 +89,10 @@ namespace QTest {
             return "FAIL!  ";
         case QAbstractTestLogger::XPass:
             return "XPASS  ";
+        case QAbstractTestLogger::BlacklistedPass:
+            return "BPASS  ";
+        case QAbstractTestLogger::BlacklistedFail:
+            return "BFAIL  ";
         }
         return "??????";
     }
@@ -351,15 +355,16 @@ void QPlainTestLogger::stopLogging()
 {
     char buf[1024];
     if (QTestLog::verboseLevel() < 0) {
-        qsnprintf(buf, sizeof(buf), "Totals: %d passed, %d failed, %d skipped\n",
+        qsnprintf(buf, sizeof(buf), "Totals: %d passed, %d failed, %d skipped, %d blacklisted\n",
                   QTestLog::passCount(), QTestLog::failCount(),
-                  QTestLog::skipCount());
+                  QTestLog::skipCount(), QTestLog::blacklistCount());
     } else {
         qsnprintf(buf, sizeof(buf),
-                  "Totals: %d passed, %d failed, %d skipped\n"
+                  "Totals: %d passed, %d failed, %d skipped, %d blacklisted\n"
                   "********* Finished testing of %s *********\n",
                   QTestLog::passCount(), QTestLog::failCount(),
-                  QTestLog::skipCount(), QTestResult::currentTestObjectName());
+                  QTestLog::skipCount(), QTestLog::blacklistCount(),
+                  QTestResult::currentTestObjectName());
     }
     outputMessage(buf);
 

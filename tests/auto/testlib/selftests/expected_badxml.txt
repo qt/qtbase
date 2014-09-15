@@ -41,5 +41,5 @@ FAIL!  : tst_BadXml::failWithNoFile() failure message
 SKIP   : tst_BadXml::encoding() Skipped for text due to unpredictable console encoding.
    Loc: [tst_badxml.cpp(139)]
 PASS   : tst_BadXml::cleanupTestCase()
-Totals: 10 passed, 5 failed, 1 skipped
+Totals: 10 passed, 5 failed, 1 skipped, 0 blacklisted
 ********* Finished testing of tst_BadXml *********
