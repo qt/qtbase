@@ -2955,11 +2955,11 @@ typedef struct {
 
 typedef struct _EdgeTableEntry {
      int ymax;             /* ycoord at which we exit this edge. */
+     int ClockWise;        /* flag for winding number rule       */
      BRESINFO bres;        /* Bresenham info to run the edge     */
      struct _EdgeTableEntry *next;       /* next in the list     */
      struct _EdgeTableEntry *back;       /* for insertion sort   */
      struct _EdgeTableEntry *nextWETE;   /* for winding num rule */
-     int ClockWise;        /* flag for winding number rule       */
 } EdgeTableEntry;
 
 
