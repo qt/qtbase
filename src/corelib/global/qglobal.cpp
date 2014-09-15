@@ -4237,7 +4237,7 @@ bool QInternal::activateCallbacks(Callback cb, void **parameters)
     \relates <QtGlobal>
 
     Forward-declares a mutable Core Foundation \a type. This includes the actual
-    type and the ref type. For example, Q_FORWARD_DECLARE_CF_TYPE(CFString)
+    type and the ref type. For example, Q_FORWARD_DECLARE_MUTABLE_CF_TYPE(CFMutableString)
     declares __CFMutableString and CFMutableStringRef.
 */
 
