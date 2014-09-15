@@ -37,6 +37,8 @@
 #include <QObject>
 #include <qpa/qplatformdialoghelper.h>
 
+Q_FORWARD_DECLARE_OBJC_CLASS(QT_MANGLE_NAMESPACE(QNSOpenSavePanelDelegate));
+
 QT_BEGIN_NAMESPACE
 
 class QFileDialog;
@@ -73,7 +75,7 @@ public:
     void QNSOpenSavePanelDelegate_filterSelected(int menuIndex);
 
 private:
-    void *mDelegate;
+    QT_MANGLE_NAMESPACE(QNSOpenSavePanelDelegate) *mDelegate;
     QUrl mDir;
 };
 
