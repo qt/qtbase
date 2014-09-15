@@ -884,7 +884,13 @@ public:
     virtual QString mappingRoot() const { return root; }
     virtual ResourceRootType type() const { return Resource_Buffer; }
 
-    bool registerSelf(const uchar *b) {
+    // size == -1 means "unknown"
+    bool registerSelf(const uchar *b, int size)
+    {
+        // 5 int "pointers"
+        if (size >= 0 && size < 20)
+            return false;
+
         //setup the data now
         int offset = 0;
 
@@ -910,6 +916,10 @@ public:
         const int name_offset = (b[offset+0] << 24) + (b[offset+1] << 16) +
                                 (b[offset+2] << 8) + (b[offset+3] << 0);
         offset += 4;
+
+        // Some sanity checking for sizes. This is _not_ a security measure.
+        if (size >= 0 && (tree_offset >= size || data_offset >= size || name_offset >= size))
+            return false;
 
         if(version == 0x01) {
             buffer = b;
@@ -1017,7 +1027,7 @@ public:
             }
             fromMM = false;
         }
-        if(data && QDynamicBufferResourceRoot::registerSelf(data)) {
+        if (data && QDynamicBufferResourceRoot::registerSelf(data, data_len)) {
             if(fromMM) {
                 unmapPointer = data;
                 unmapLength = data_len;
@@ -1132,7 +1142,7 @@ QResource::registerResource(const uchar *rccData, const QString &resourceRoot)
     }
 
     QDynamicBufferResourceRoot *root = new QDynamicBufferResourceRoot(r);
-    if(root->registerSelf(rccData)) {
+    if (root->registerSelf(rccData, -1)) {
         root->ref.ref();
         QMutexLocker lock(resourceMutex());
         resourceList()->append(root);
