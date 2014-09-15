@@ -165,10 +165,15 @@ QStyleOptionMenuItem QComboMenuDelegate::getStyleOption(const QStyleOptionViewIt
     if (mCombo->testAttribute(Qt::WA_SetFont)
             || mCombo->testAttribute(Qt::WA_MacSmallSize)
             || mCombo->testAttribute(Qt::WA_MacMiniSize)
-            || mCombo->font() != qt_app_fonts_hash()->value("QComboBox", QFont()))
+            || mCombo->font() != qt_app_fonts_hash()->value("QComboBox", QFont())) {
         menuOption.font = mCombo->font();
-    else
-        menuOption.font = qt_app_fonts_hash()->value("QComboMenuItem", mCombo->font());
+    } else {
+        QVariant fontRoleData = index.data(Qt::FontRole);
+        if (fontRoleData.isValid())
+            menuOption.font = fontRoleData.value<QFont>();
+        else
+            menuOption.font = qt_app_fonts_hash()->value("QComboMenuItem", mCombo->font());
+    }
 
     menuOption.fontMetrics = QFontMetrics(menuOption.font);
 
