@@ -5180,6 +5180,17 @@ int QCommonStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget
     return ret;
 }
 
+static QPixmap cachedPixmapFromXPM(const char * const *xpm)
+{
+    QPixmap result;
+    const QString tag = QString().sprintf("xpm:0x%p", static_cast<const void*>(xpm));
+    if (!QPixmapCache::find(tag, &result)) {
+        result = QPixmap(xpm);
+        QPixmapCache::insert(tag, result);
+    }
+    return result;
+}
+
 /*! \reimp */
 QPixmap QCommonStyle::standardPixmap(StandardPixmap sp, const QStyleOption *option,
                                      const QWidget *widget) const
@@ -5375,13 +5386,13 @@ QPixmap QCommonStyle::standardPixmap(StandardPixmap sp, const QStyleOption *opti
             im = im.convertToFormat(QImage::Format_ARGB32).mirrored(true, false);
             return QPixmap::fromImage(im);
         }
-        return QPixmap(tb_extension_arrow_h_xpm);
+        return cachedPixmapFromXPM(tb_extension_arrow_h_xpm);
     case SP_ToolBarVerticalExtensionButton:
-        return QPixmap(tb_extension_arrow_v_xpm);
+        return cachedPixmapFromXPM(tb_extension_arrow_v_xpm);
     case SP_FileDialogStart:
-        return QPixmap(filedialog_start_xpm);
+        return cachedPixmapFromXPM(filedialog_start_xpm);
     case SP_FileDialogEnd:
-        return QPixmap(filedialog_end_xpm);
+        return cachedPixmapFromXPM(filedialog_end_xpm);
 #endif
 #ifndef QT_NO_IMAGEFORMAT_PNG
     case SP_CommandLink:
@@ -5497,31 +5508,31 @@ QPixmap QCommonStyle::standardPixmap(StandardPixmap sp, const QStyleOption *opti
 #ifndef QT_NO_IMAGEFORMAT_XPM
     switch (sp) {
     case SP_TitleBarMenuButton:
-        return QPixmap(qt_menu_xpm);
+        return cachedPixmapFromXPM(qt_menu_xpm);
     case SP_TitleBarShadeButton:
-        return QPixmap(qt_shade_xpm);
+        return cachedPixmapFromXPM(qt_shade_xpm);
     case SP_TitleBarUnshadeButton:
-        return QPixmap(qt_unshade_xpm);
+        return cachedPixmapFromXPM(qt_unshade_xpm);
     case SP_TitleBarNormalButton:
-        return QPixmap(qt_normalizeup_xpm);
+        return cachedPixmapFromXPM(qt_normalizeup_xpm);
     case SP_TitleBarMinButton:
-        return QPixmap(qt_minimize_xpm);
+        return cachedPixmapFromXPM(qt_minimize_xpm);
     case SP_TitleBarMaxButton:
-        return QPixmap(qt_maximize_xpm);
+        return cachedPixmapFromXPM(qt_maximize_xpm);
     case SP_TitleBarCloseButton:
-        return QPixmap(qt_close_xpm);
+        return cachedPixmapFromXPM(qt_close_xpm);
     case SP_TitleBarContextHelpButton:
-        return QPixmap(qt_help_xpm);
+        return cachedPixmapFromXPM(qt_help_xpm);
     case SP_DockWidgetCloseButton:
-        return QPixmap(dock_widget_close_xpm);
+        return cachedPixmapFromXPM(dock_widget_close_xpm);
     case SP_MessageBoxInformation:
-        return QPixmap(information_xpm);
+        return cachedPixmapFromXPM(information_xpm);
     case SP_MessageBoxWarning:
-        return QPixmap(warning_xpm);
+        return cachedPixmapFromXPM(warning_xpm);
     case SP_MessageBoxCritical:
-        return QPixmap(critical_xpm);
+        return cachedPixmapFromXPM(critical_xpm);
     case SP_MessageBoxQuestion:
-        return QPixmap(question_xpm);
+        return cachedPixmapFromXPM(question_xpm);
     default:
         break;
     }
