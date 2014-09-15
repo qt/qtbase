@@ -931,7 +931,7 @@ void QSqlTableModel::setPrimaryKey(const QSqlIndex &key)
 }
 
 /*!
-    Returns a pointer to the used QSqlDatabase or 0 if no database was set.
+    Returns the model's database connection.
 */
 QSqlDatabase QSqlTableModel::database() const
 {
