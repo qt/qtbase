@@ -481,6 +481,17 @@ QStringList QCoreTextFontDatabase::fallbacksForFamily(const QString &family, QFo
                             QCFString fallbackFamilyName = (CFStringRef) CTFontDescriptorCopyAttribute(fontFallback, kCTFontFamilyNameAttribute);
                             fallbackList.append(QCFString::toQString(fallbackFamilyName));
                         }
+
+#if defined(Q_OS_OSX)
+                        // Since we are only returning a list of default fonts for the current language, we do not
+                        // cover all unicode completely. This was especially an issue for some of the common script
+                        // symbols such as mathematical symbols, currency or geometric shapes. To minimize the risk
+                        // of missing glyphs, we add Arial Unicode MS as a final fail safe, since this covers most
+                        // of Unicode 2.1.
+                        if (!fallbackList.contains(QStringLiteral("Arial Unicode MS")))
+                            fallbackList.append(QStringLiteral("Arial Unicode MS"));
+#endif
+
                         fallbackLists[family] = fallbackList;
                     }
                 }
@@ -523,6 +534,14 @@ QStringList QCoreTextFontDatabase::fallbacksForFamily(const QString &family, QFo
 
             if (QCoreTextFontEngine::supportsColorGlyphs())
                 fallbackList.append(QLatin1String("Apple Color Emoji"));
+
+            // Since we are only returning a list of default fonts for the current language, we do not
+            // cover all unicode completely. This was especially an issue for some of the common script
+            // symbols such as mathematical symbols, currency or geometric shapes. To minimize the risk
+            // of missing glyphs, we add Arial Unicode MS as a final fail safe, since this covers most
+            // of Unicode 2.1.
+            if (!fallbackList.contains(QStringLiteral("Arial Unicode MS")))
+                fallbackList.append(QStringLiteral("Arial Unicode MS"));
 
             fallbackLists[styleLookupKey.arg(fallbackStyleHint)] = fallbackList;
         }
