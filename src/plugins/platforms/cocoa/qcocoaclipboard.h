@@ -40,8 +40,10 @@
 
 QT_BEGIN_NAMESPACE
 
-class QCocoaClipboard : public QPlatformClipboard
+class QCocoaClipboard : public QObject, public QPlatformClipboard
 {
+    Q_OBJECT
+
 public:
     QCocoaClipboard();
 
@@ -49,6 +51,10 @@ public:
     void setMimeData(QMimeData *data, QClipboard::Mode mode = QClipboard::Clipboard);
     bool supportsMode(QClipboard::Mode mode) const;
     bool ownsMode(QClipboard::Mode mode) const;
+
+private Q_SLOTS:
+    void handleApplicationStateChanged(Qt::ApplicationState state);
+
 protected:
     QMacPasteboard *pasteboardForMode(QClipboard::Mode mode) const;
 
