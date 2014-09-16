@@ -563,6 +563,7 @@ void QOpenGLWidgetPrivate::recreateFbo()
         resolvedFbo = new QOpenGLFramebufferObject(deviceSize);
 
     fbo->bind();
+    context->functions()->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
     paintDevice->setSize(deviceSize);
     paintDevice->setDevicePixelRatio(q->devicePixelRatio());
