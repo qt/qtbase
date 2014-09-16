@@ -121,10 +121,10 @@ bool MainWindow::saveAs()
     QFileDialog dialog(this);
     dialog.setWindowModality(Qt::WindowModal);
     dialog.setAcceptMode(QFileDialog::AcceptSave);
-    dialog.exec();
-    QStringList files = dialog.selectedFiles();
-
-    if (files.isEmpty())
+    QStringList files;
+    if (dialog.exec())
+        files = dialog.selectedFiles();
+    else
         return false;
 
     return saveFile(files.at(0));
