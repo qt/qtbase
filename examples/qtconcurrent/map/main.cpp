@@ -64,7 +64,7 @@ int main(int argc, char *argv[])
 
     // Use QtConcurrentBlocking::mapped to apply the scale function to all the
     // images in the list.
-    QList<QImage> thumbnails = QtConcurrent::blockingMapped(images, scale);
+    QList<QImage> thumbnails = QtConcurrent::blockingMapped<QList<QImage> >(images, scale);
 
     return 0;
 }
