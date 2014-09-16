@@ -122,8 +122,13 @@ QPoint QPlatformCursor::pos() const
 
 void QPlatformCursor::setPos(const QPoint &pos)
 {
-    Q_UNUSED(pos);
-    qWarning("This plugin does not support QCursor::setPos()");
+    static bool firstCall = true;
+    if (firstCall) {
+        firstCall = false;
+        qWarning("This plugin does not support QCursor::setPos()"
+                 "; emulating movement within the application.");
+    }
+    QWindowSystemInterface::handleMouseEvent(0, pos, pos, Qt::NoButton);
 }
 
 // End of display and pointer event handling code
