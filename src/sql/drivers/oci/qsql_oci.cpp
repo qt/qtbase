@@ -508,7 +508,7 @@ QOCIDriverPrivate::QOCIDriverPrivate()
     : QSqlDriverPrivate(), env(0), svc(0), srvhp(0), authp(0), err(0), transaction(false),
       serverVersion(-1), prefetchRows(-1), prefetchMem(QOCI_PREFETCH_MEM)
 {
-    dbmsType = Oracle;
+    dbmsType = QSqlDriver::Oracle;
 }
 
 void QOCIDriverPrivate::allocErrorHandle()

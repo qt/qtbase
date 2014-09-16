@@ -160,9 +160,9 @@ void tst_QSqlTableModel::dropTestTables()
 {
     for (int i = 0; i < dbs.dbNames.count(); ++i) {
         QSqlDatabase db = QSqlDatabase::database(dbs.dbNames.at(i));
-        QSqlDriverPrivate::DBMSType dbType = tst_Databases::getDatabaseType(db);
+        QSqlDriver::DBMSType dbType = tst_Databases::getDatabaseType(db);
         QSqlQuery q(db);
-        if (dbType == QSqlDriverPrivate::PostgreSQL)
+        if (dbType == QSqlDriver::PostgreSQL)
             QVERIFY_SQL( q, exec("set client_min_messages='warning'"));
 
         QStringList tableNames;
@@ -189,7 +189,7 @@ void tst_QSqlTableModel::createTestTables()
 {
     for (int i = 0; i < dbs.dbNames.count(); ++i) {
         QSqlDatabase db = QSqlDatabase::database(dbs.dbNames.at(i));
-        QSqlDriverPrivate::DBMSType dbType = tst_Databases::getDatabaseType(db);
+        QSqlDriver::DBMSType dbType = tst_Databases::getDatabaseType(db);
         QSqlQuery q(db);
 
         QVERIFY_SQL( q, exec("create table " + test + "(id int, name varchar(20), title int)"));
@@ -198,7 +198,7 @@ void tst_QSqlTableModel::createTestTables()
 
         QVERIFY_SQL( q, exec("create table " + test3 + "(id int, random varchar(20), randomtwo varchar(20))"));
 
-        if (dbType != QSqlDriverPrivate::MSSqlServer)
+        if (dbType != QSqlDriver::MSSqlServer)
             QVERIFY_SQL(q, exec("create table " + qTableName("test4", __FILE__, db) + "(column1 varchar(50), column2 varchar(50), column3 varchar(50))"));
         else
             QVERIFY_SQL(q, exec("create table " + qTableName("test4", __FILE__, db) + "(column1 varchar(50), column2 varchar(50) NULL, column3 varchar(50))"));
@@ -1699,11 +1699,11 @@ void tst_QSqlTableModel::primaryKeyOrder()
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
-    QSqlDriverPrivate::DBMSType dbType = tst_Databases::getDatabaseType(db);
+    QSqlDriver::DBMSType dbType = tst_Databases::getDatabaseType(db);
 
     QSqlQuery q(db);
 
-    if (dbType == QSqlDriverPrivate::PostgreSQL)
+    if (dbType == QSqlDriver::PostgreSQL)
         QVERIFY_SQL( q, exec("set client_min_messages='warning'"));
 
     QVERIFY_SQL(q, exec("create table " + qTableName("foo", __FILE__, db) + "(a varchar(20), id int not null primary key, b varchar(20))"));

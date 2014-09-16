@@ -66,7 +66,7 @@ static const SQLSMALLINT qParamType[4] = { SQL_PARAM_INPUT, SQL_PARAM_INPUT, SQL
 class QDB2DriverPrivate : public QSqlDriverPrivate
 {
 public:
-    QDB2DriverPrivate() : QSqlDriverPrivate(), hEnv(0), hDbc(0) { dbmsType = DB2; }
+    QDB2DriverPrivate() : QSqlDriverPrivate(), hEnv(0), hDbc(0) { dbmsType = QSqlDriver::DB2; }
     SQLHANDLE hEnv;
     SQLHANDLE hDbc;
     QString user;

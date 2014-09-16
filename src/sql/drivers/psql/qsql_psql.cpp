@@ -130,7 +130,7 @@ public:
         sn(0),
         pendingNotifyCheck(false),
         hasBackslashEscape(false)
-    { dbmsType = PostgreSQL; }
+    { dbmsType = QSqlDriver::PostgreSQL; }
 
     PGconn *connection;
     bool isUtf8;

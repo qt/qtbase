@@ -143,13 +143,13 @@ void tst_QSqlRelationalTableModel::initTestCase()
 {
     foreach (const QString &dbname, dbs.dbNames) {
         QSqlDatabase db=QSqlDatabase::database(dbname);
-        QSqlDriverPrivate::DBMSType dbType = tst_Databases::getDatabaseType(db);
-        if (dbType == QSqlDriverPrivate::Interbase) {
+        QSqlDriver::DBMSType dbType = tst_Databases::getDatabaseType(db);
+        if (dbType == QSqlDriver::Interbase) {
             db.exec("SET DIALECT 3");
-        } else if (dbType == QSqlDriverPrivate::MSSqlServer) {
+        } else if (dbType == QSqlDriver::MSSqlServer) {
             db.exec("SET ANSI_DEFAULTS ON");
             db.exec("SET IMPLICIT_TRANSACTIONS OFF");
-        } else if (dbType == QSqlDriverPrivate::PostgreSQL) {
+        } else if (dbType == QSqlDriver::PostgreSQL) {
             db.exec("set client_min_messages='warning'");
         }
         recreateTestTables(db);
@@ -238,7 +238,7 @@ void tst_QSqlRelationalTableModel::setData()
     QFETCH_GLOBAL(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
-    const QSqlDriverPrivate::DBMSType dbType = tst_Databases::getDatabaseType(db);
+    const QSqlDriver::DBMSType dbType = tst_Databases::getDatabaseType(db);
 
     // set the values using OnRowChange Strategy
     {
@@ -321,7 +321,7 @@ void tst_QSqlRelationalTableModel::setData()
 
         //sybase doesn't allow tables with the same alias used twice as col names
         //so don't set up an identical relation when using the tds driver
-        if (dbType != QSqlDriverPrivate::Sybase)
+        if (dbType != QSqlDriver::Sybase)
             model.setRelation(3, QSqlRelation(reltest2, "tid", "title"));
 
         model.setEditStrategy(QSqlTableModel::OnManualSubmit);
@@ -334,7 +334,7 @@ void tst_QSqlRelationalTableModel::setData()
 
         QCOMPARE(model.data(model.index(2, 1)).toString(), QString("vohi2"));
         QCOMPARE(model.data(model.index(3, 2)).toString(), QString("herr"));
-        if (dbType != QSqlDriverPrivate::Sybase)
+        if (dbType != QSqlDriver::Sybase)
             QCOMPARE(model.data(model.index(0, 3)).toString(), QString("herr"));
         else
             QCOMPARE(model.data(model.index(0, 3)).toInt(), 1);
@@ -352,12 +352,12 @@ void tst_QSqlRelationalTableModel::setData()
         QCOMPARE(model.data(model.index(0, 3)).toInt(), 1);
 
         model.setRelation(2, QSqlRelation(reltest2, "tid", "title"));
-        if (dbType != QSqlDriverPrivate::Sybase)
+        if (dbType != QSqlDriver::Sybase)
             model.setRelation(3, QSqlRelation(reltest2, "tid", "title"));
         QVERIFY_SQL(model, select());
         QCOMPARE(model.data(model.index(3, 2)).toString(), QString("herr"));
 
-        if (dbType != QSqlDriverPrivate::Sybase)
+        if (dbType != QSqlDriver::Sybase)
             QCOMPARE(model.data(model.index(0, 3)).toString(), QString("herr"));
         else
             QCOMPARE(model.data(model.index(0, 3)).toInt(), 1);
@@ -554,7 +554,7 @@ void tst_QSqlRelationalTableModel::insertWithStrategies()
     QFETCH_GLOBAL(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
-    const QSqlDriverPrivate::DBMSType dbType = tst_Databases::getDatabaseType(db);
+    const QSqlDriver::DBMSType dbType = tst_Databases::getDatabaseType(db);
 
     QSqlRelationalTableModel model(0, db);
 
@@ -562,14 +562,14 @@ void tst_QSqlRelationalTableModel::insertWithStrategies()
     model.setRelation(2, QSqlRelation(reltest2, "tid", "title"));
     model.setSort(0, Qt::AscendingOrder);
 
-    if (dbType != QSqlDriverPrivate::Sybase)
+    if (dbType != QSqlDriver::Sybase)
         model.setRelation(3, QSqlRelation(reltest2, "tid", "title"));
     QVERIFY_SQL(model, select());
 
     QCOMPARE(model.data(model.index(0,0)).toInt(), 1);
     QCOMPARE(model.data(model.index(0,1)).toString(), QString("harry"));
     QCOMPARE(model.data(model.index(0,2)).toString(), QString("herr"));
-    if (dbType != QSqlDriverPrivate::Sybase)
+    if (dbType != QSqlDriver::Sybase)
         QCOMPARE(model.data(model.index(0,3)).toString(), QString("mister"));
     else
         QCOMPARE(model.data(model.index(0,3)).toInt(), 2);
@@ -583,7 +583,7 @@ void tst_QSqlRelationalTableModel::insertWithStrategies()
     QCOMPARE(model.data(model.index(0,0)).toInt(), 1011);
     QCOMPARE(model.data(model.index(0,1)).toString(), QString("test"));
     QCOMPARE(model.data(model.index(0,2)).toString(), QString("mister"));
-    if (dbType != QSqlDriverPrivate::Sybase)
+    if (dbType != QSqlDriver::Sybase)
         QCOMPARE(model.data(model.index(0,3)).toString(), QString("herr"));
     else
         QCOMPARE(model.data(model.index(0,3)).toInt(), 1);
@@ -591,7 +591,7 @@ void tst_QSqlRelationalTableModel::insertWithStrategies()
     QCOMPARE(model.data(model.index(1,0)).toInt(), 1);
     QCOMPARE(model.data(model.index(1,1)).toString(), QString("harry"));
     QCOMPARE(model.data(model.index(1,2)).toString(), QString("herr"));
-    if (dbType != QSqlDriverPrivate::Sybase)
+    if (dbType != QSqlDriver::Sybase)
         QCOMPARE(model.data(model.index(1,3)).toString(), QString("mister"));
     else
         QCOMPARE(model.data(model.index(1,3)).toInt(), 2);
@@ -608,7 +608,7 @@ void tst_QSqlRelationalTableModel::insertWithStrategies()
     QCOMPARE(model.data(model.index(0,1)).toString(), QString("harry"));
     QCOMPARE(model.data(model.index(0,2)).toString(), QString("herr"));
 
-    if (dbType != QSqlDriverPrivate::Sybase) {
+    if (dbType != QSqlDriver::Sybase) {
         QCOMPARE(model.data(model.index(0,3)).toString(), QString("mister"));
         model.setData(model.index(0,3),1);
         QCOMPARE(model.data(model.index(0,3)).toString(), QString("herr"));
@@ -632,7 +632,7 @@ void tst_QSqlRelationalTableModel::insertWithStrategies()
     QCOMPARE(model.data(model.index(0,0)).toInt(),1012);
     QCOMPARE(model.data(model.index(0,1)).toString(), QString("george"));
     QCOMPARE(model.data(model.index(0,2)).toString(), QString("mister"));
-    if (dbType != QSqlDriverPrivate::Sybase)
+    if (dbType != QSqlDriver::Sybase)
         QCOMPARE(model.data(model.index(0,3)).toString(), QString("mister"));
     else
         QCOMPARE(model.data(model.index(0,3)).toInt(), 2);
@@ -641,7 +641,7 @@ void tst_QSqlRelationalTableModel::insertWithStrategies()
     QCOMPARE(model.data(model.index(1,0)).toInt(),1013);
     QCOMPARE(model.data(model.index(1,1)).toString(), QString("kramer"));
     QCOMPARE(model.data(model.index(1,2)).toString(), QString("mister"));
-    if (dbType != QSqlDriverPrivate::Sybase)
+    if (dbType != QSqlDriver::Sybase)
         QCOMPARE(model.data(model.index(1,3)).toString(), QString("herr"));
     else
         QCOMPARE(model.data(model.index(1,3)).toInt(), 1);
@@ -649,7 +649,7 @@ void tst_QSqlRelationalTableModel::insertWithStrategies()
     QCOMPARE(model.data(model.index(2,0)).toInt(), 1);
     QCOMPARE(model.data(model.index(2,1)).toString(), QString("harry"));
     QCOMPARE(model.data(model.index(2,2)).toString(), QString("herr"));
-    if (dbType != QSqlDriverPrivate::Sybase)
+    if (dbType != QSqlDriver::Sybase)
         QCOMPARE(model.data(model.index(2,3)).toString(), QString("herr"));
     else
         QCOMPARE(model.data(model.index(2,3)).toInt(), 1);
@@ -746,13 +746,13 @@ void tst_QSqlRelationalTableModel::sort()
     QFETCH_GLOBAL(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
-    const QSqlDriverPrivate::DBMSType dbType = tst_Databases::getDatabaseType(db);
+    const QSqlDriver::DBMSType dbType = tst_Databases::getDatabaseType(db);
 
     QSqlRelationalTableModel model(0, db);
 
     model.setTable(reltest1);
     model.setRelation(2, QSqlRelation(reltest2, "tid", "title"));
-    if (dbType != QSqlDriverPrivate::Sybase)
+    if (dbType != QSqlDriver::Sybase)
         model.setRelation(3, QSqlRelation(reltest2, "tid", "title"));
 
     model.setSort(2, Qt::DescendingOrder);
@@ -768,7 +768,7 @@ void tst_QSqlRelationalTableModel::sort()
     model.setSort(3, Qt::AscendingOrder);
     QVERIFY_SQL(model, select());
 
-     if (dbType != QSqlDriverPrivate::Sybase) {
+     if (dbType != QSqlDriver::Sybase) {
         QCOMPARE(model.rowCount(), 4);
         QCOMPARE(model.data(model.index(0, 3)).toString(), QString("herr"));
         QCOMPARE(model.data(model.index(1, 3)).toString(), QString("mister"));
@@ -797,7 +797,7 @@ void tst_QSqlRelationalTableModel::sort()
     model.setSort(3, Qt::AscendingOrder);
     QVERIFY_SQL(model, select());
 
-    if (dbType != QSqlDriverPrivate::Sybase) {
+    if (dbType != QSqlDriver::Sybase) {
         QCOMPARE(model.rowCount(), 6);
         QCOMPARE(model.data(model.index(0, 3)).toString(), QString(""));
         QCOMPARE(model.data(model.index(1, 3)).toString(), QString("herr"));
@@ -912,14 +912,14 @@ void tst_QSqlRelationalTableModel::clearDisplayValuesCache()
     QFETCH_GLOBAL(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
-    const QSqlDriverPrivate::DBMSType dbType = tst_Databases::getDatabaseType(db);
+    const QSqlDriver::DBMSType dbType = tst_Databases::getDatabaseType(db);
 
     QSqlRelationalTableModel model(0, db);
 
     model.setTable(reltest1);
     model.setRelation(2, QSqlRelation(reltest2, "tid", "title"));
 
-    if (dbType != QSqlDriverPrivate::Sybase)
+    if (dbType != QSqlDriver::Sybase)
         model.setRelation(3, QSqlRelation(reltest2, "tid", "title"));
     model.setSort(1, Qt::AscendingOrder);
     model.setEditStrategy(QSqlTableModel::OnManualSubmit);
@@ -929,7 +929,7 @@ void tst_QSqlRelationalTableModel::clearDisplayValuesCache()
     QCOMPARE(model.data(model.index(3, 0)).toInt(), 3);
     QCOMPARE(model.data(model.index(3, 1)).toString(), QString("vohi"));
     QCOMPARE(model.data(model.index(3, 2)).toString(), QString("herr"));
-    if (dbType != QSqlDriverPrivate::Sybase)
+    if (dbType != QSqlDriver::Sybase)
         QCOMPARE(model.data(model.index(3, 3)).toString(), QString("mister"));
     else
         QCOMPARE(model.data(model.index(3, 3)).toInt(), 2 );
@@ -944,7 +944,7 @@ void tst_QSqlRelationalTableModel::clearDisplayValuesCache()
     QCOMPARE(model.data(model.index(0, 0)).toInt(), 7);
     QCOMPARE(model.data(model.index(0, 1)).toString(), QString("anders"));
     QCOMPARE(model.data(model.index(0, 2)).toString(), QString("herr"));
-    if (dbType != QSqlDriverPrivate::Sybase)
+    if (dbType != QSqlDriver::Sybase)
         QCOMPARE(model.data(model.index(0, 3)).toString(), QString("herr"));
     else
         QCOMPARE(model.data(model.index(0, 3)).toInt(), 1);
@@ -952,7 +952,7 @@ void tst_QSqlRelationalTableModel::clearDisplayValuesCache()
     QCOMPARE(model.data(model.index(4, 0)).toInt(), 3);
     QCOMPARE(model.data(model.index(4, 1)).toString(), QString("vohi"));
     QCOMPARE(model.data(model.index(4, 2)).toString(), QString("herr"));
-    if (dbType != QSqlDriverPrivate::Sybase)
+    if (dbType != QSqlDriver::Sybase)
         QCOMPARE(model.data(model.index(4, 3)).toString(), QString("mister"));
     else
         QCOMPARE(model.data(model.index(4, 3)).toInt(), 2);
@@ -966,7 +966,7 @@ void tst_QSqlRelationalTableModel::insertRecordDuplicateFieldNames()
     QFETCH_GLOBAL(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
-    const QSqlDriverPrivate::DBMSType dbType = tst_Databases::getDatabaseType(db);
+    const QSqlDriver::DBMSType dbType = tst_Databases::getDatabaseType(db);
 
     QSqlRelationalTableModel model(0, db);
     model.setTable(reltest3);
@@ -977,7 +977,7 @@ void tst_QSqlRelationalTableModel::insertRecordDuplicateFieldNames()
     model.setRelation(2, QSqlRelation(reltest4, "id", "name"));
     QVERIFY_SQL(model, select());
 
-    if (dbType == QSqlDriverPrivate::Interbase || dbType == QSqlDriverPrivate::Oracle || dbType == QSqlDriverPrivate::DB2) {
+    if (dbType == QSqlDriver::Interbase || dbType == QSqlDriver::Oracle || dbType == QSqlDriver::DB2) {
         QCOMPARE(model.record(1).value((reltest4+QLatin1String("_name_2")).toUpper()).toString(),
             QString("Trondheim"));
     } else {
@@ -990,7 +990,7 @@ void tst_QSqlRelationalTableModel::insertRecordDuplicateFieldNames()
     rec.setValue(1, "Berge");
     rec.setValue(2, 1); // Must insert the key value
 
-    if (dbType == QSqlDriverPrivate::Interbase || dbType == QSqlDriverPrivate::Oracle || dbType == QSqlDriverPrivate::DB2) {
+    if (dbType == QSqlDriver::Interbase || dbType == QSqlDriver::Oracle || dbType == QSqlDriver::DB2) {
         QCOMPARE(rec.fieldName(0), QLatin1String("ID"));
         QCOMPARE(rec.fieldName(1), QLatin1String("NAME")); // This comes from main table
     } else {
@@ -999,7 +999,7 @@ void tst_QSqlRelationalTableModel::insertRecordDuplicateFieldNames()
     }
 
     // The duplicate field names is aliased because it's comes from the relation's display column.
-    if (dbType == QSqlDriverPrivate::Interbase || dbType == QSqlDriverPrivate::Oracle || dbType == QSqlDriverPrivate::DB2)
+    if (dbType == QSqlDriver::Interbase || dbType == QSqlDriver::Oracle || dbType == QSqlDriver::DB2)
         QCOMPARE(rec.fieldName(2), (reltest4+QLatin1String("_name_2")).toUpper());
     else
         QCOMPARE(rec.fieldName(2), reltest4+QLatin1String("_name_2"));
@@ -1088,9 +1088,9 @@ void tst_QSqlRelationalTableModel::casing()
     QFETCH_GLOBAL(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
-    const QSqlDriverPrivate::DBMSType dbType = tst_Databases::getDatabaseType(db);
+    const QSqlDriver::DBMSType dbType = tst_Databases::getDatabaseType(db);
 
-    if (dbType == QSqlDriverPrivate::Interbase || dbType == QSqlDriverPrivate::SQLite || dbType == QSqlDriverPrivate::MSSqlServer)
+    if (dbType == QSqlDriver::Interbase || dbType == QSqlDriver::SQLite || dbType == QSqlDriver::MSSqlServer)
         QSKIP("The casing test for this database is irrelevant since this database does not treat different cases as separate entities");
 
     QSqlQuery q(db);
@@ -1109,7 +1109,7 @@ void tst_QSqlRelationalTableModel::casing()
     QVERIFY_SQL( q, exec("insert into " + qTableName("casetest1", db) + " values(2, 'george', 2)"));
     QVERIFY_SQL( q, exec("insert into " + qTableName("casetest1", db) + " values(4, 'kramer', 2)"));
 
-    if (dbType == QSqlDriverPrivate::Oracle) {
+    if (dbType == QSqlDriver::Oracle) {
         //try an owner that doesn't exist
         QSqlRecord rec = db.driver()->record("doug." + qTableName("CASETEST1", db).toUpper());
         QCOMPARE( rec.count(), 0);
@@ -1155,7 +1155,7 @@ void tst_QSqlRelationalTableModel::escapedRelations()
     QFETCH_GLOBAL(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
-    const QSqlDriverPrivate::DBMSType dbType = tst_Databases::getDatabaseType(db);
+    const QSqlDriver::DBMSType dbType = tst_Databases::getDatabaseType(db);
 
     recreateTestTables(db);
 
@@ -1163,7 +1163,7 @@ void tst_QSqlRelationalTableModel::escapedRelations()
     model.setTable(reltest1);
 
     //try with relation table name quoted
-    if (dbType == QSqlDriverPrivate::Interbase || dbType == QSqlDriverPrivate::Oracle || dbType == QSqlDriverPrivate::DB2) {
+    if (dbType == QSqlDriver::Interbase || dbType == QSqlDriver::Oracle || dbType == QSqlDriver::DB2) {
         model.setRelation(2, QSqlRelation(db.driver()->escapeIdentifier(reltest2.toUpper(),QSqlDriver::TableName),
                             "tid",
                             "title"));
@@ -1188,7 +1188,7 @@ void tst_QSqlRelationalTableModel::escapedRelations()
 
     //try with index column quoted
     model.setJoinMode(QSqlRelationalTableModel::InnerJoin);
-    if (dbType == QSqlDriverPrivate::Interbase || dbType == QSqlDriverPrivate::Oracle || dbType == QSqlDriverPrivate::DB2) {
+    if (dbType == QSqlDriver::Interbase || dbType == QSqlDriver::Oracle || dbType == QSqlDriver::DB2) {
         model.setRelation(2, QSqlRelation(reltest2,
                             db.driver()->escapeIdentifier("tid", QSqlDriver::FieldName).toUpper(),
                             "title"));
@@ -1212,7 +1212,7 @@ void tst_QSqlRelationalTableModel::escapedRelations()
 
     //try with display column quoted
     model.setJoinMode(QSqlRelationalTableModel::InnerJoin);
-    if (dbType == QSqlDriverPrivate::Interbase || dbType == QSqlDriverPrivate::Oracle || dbType == QSqlDriverPrivate::DB2) {
+    if (dbType == QSqlDriver::Interbase || dbType == QSqlDriver::Oracle || dbType == QSqlDriver::DB2) {
 
         model.setRelation(2, QSqlRelation(reltest2,
                             "tid",
@@ -1238,7 +1238,7 @@ void tst_QSqlRelationalTableModel::escapedRelations()
 
     //try with tablename and index and display columns quoted in the relation
     model.setJoinMode(QSqlRelationalTableModel::InnerJoin);
-    if (dbType == QSqlDriverPrivate::Interbase || dbType == QSqlDriverPrivate::Oracle || dbType == QSqlDriverPrivate::DB2) {
+    if (dbType == QSqlDriver::Interbase || dbType == QSqlDriver::Oracle || dbType == QSqlDriver::DB2) {
         model.setRelation(2, QSqlRelation(reltest2,
                             "tid",
                             db.driver()->escapeIdentifier("title", QSqlDriver::FieldName).toUpper()));
@@ -1266,13 +1266,13 @@ void tst_QSqlRelationalTableModel::escapedTableName()
     QFETCH_GLOBAL(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
-    const QSqlDriverPrivate::DBMSType dbType = tst_Databases::getDatabaseType(db);
+    const QSqlDriver::DBMSType dbType = tst_Databases::getDatabaseType(db);
 
     // set the values using OnRowChange Strategy with an escaped tablename
     {
         QSqlRelationalTableModel model(0, db);
 
-        if (dbType == QSqlDriverPrivate::Interbase || dbType == QSqlDriverPrivate::Oracle || dbType == QSqlDriverPrivate::DB2) {
+        if (dbType == QSqlDriver::Interbase || dbType == QSqlDriver::Oracle || dbType == QSqlDriver::DB2) {
             model.setTable(db.driver()->escapeIdentifier(reltest1.toUpper(), QSqlDriver::TableName));
         } else {
             model.setTable(db.driver()->escapeIdentifier(reltest1, QSqlDriver::TableName));
@@ -1319,7 +1319,7 @@ void tst_QSqlRelationalTableModel::escapedTableName()
     {
         QSqlRelationalTableModel model(0, db);
 
-        if (dbType == QSqlDriverPrivate::Interbase || dbType == QSqlDriverPrivate::Oracle || dbType == QSqlDriverPrivate::DB2) {
+        if (dbType == QSqlDriver::Interbase || dbType == QSqlDriver::Oracle || dbType == QSqlDriver::DB2) {
             model.setTable(db.driver()->escapeIdentifier(reltest1.toUpper(), QSqlDriver::TableName));
         } else {
             model.setTable(db.driver()->escapeIdentifier(reltest1, QSqlDriver::TableName));
@@ -1455,9 +1455,9 @@ void tst_QSqlRelationalTableModel::psqlSchemaTest()
     QFETCH_GLOBAL(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
-    QSqlDriverPrivate::DBMSType dbType = tst_Databases::getDatabaseType(db);
+    QSqlDriver::DBMSType dbType = tst_Databases::getDatabaseType(db);
 
-    if (dbType != QSqlDriverPrivate::PostgreSQL)
+    if (dbType != QSqlDriver::PostgreSQL)
         QSKIP("Postgresql specific test");
 
     QSqlRelationalTableModel model(0, db);

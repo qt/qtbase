@@ -78,7 +78,7 @@ public:
 #else
         tc(0),
 #endif
-        preparedQuerysEnabled(false) { dbmsType = MySqlServer; }
+        preparedQuerysEnabled(false) { dbmsType = QSqlDriver::MySqlServer; }
     MYSQL *mysql;
     QTextCodec *tc;
 

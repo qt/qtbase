@@ -91,11 +91,6 @@ public:
               int /* port */, const QString & /* options */)
         { return false; }
     void close() {}
-    QSqlDriverPrivate::DBMSType dbmsType() const
-    {
-        Q_D(const QSqlDriver);
-        return d->dbmsType;
-    }
 
     QSqlResult *createResult() const { return new TestSqlDriverResult(this); }
 };

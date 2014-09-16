@@ -237,6 +237,22 @@ bool QSqlDriver::isOpenError() const
 */
 
 /*!
+    \enum QSqlDriver::DBMSType
+
+    This enum contains DBMS types.
+
+    \value UnknownDBMS
+    \value MSSqlServer
+    \value MySqlServer
+    \value PostgreSQL
+    \value Oracle
+    \value Sybase
+    \value SQLite
+    \value Interbase
+    \value DB2
+*/
+
+/*!
     \fn bool QSqlDriver::hasFeature(DriverFeature feature) const
 
     Returns \c true if the driver supports feature \a feature; otherwise
@@ -764,6 +780,16 @@ void QSqlDriver::setNumericalPrecisionPolicy(QSql::NumericalPrecisionPolicy prec
 QSql::NumericalPrecisionPolicy QSqlDriver::numericalPrecisionPolicy() const
 {
     return d_func()->precisionPolicy;
+}
+
+/*!
+    \since 5.4
+
+    Returns the current DBMS type for the database connection.
+*/
+QSqlDriver::DBMSType QSqlDriver::dbmsType() const
+{
+    return d_func()->dbmsType;
 }
 
 /*!

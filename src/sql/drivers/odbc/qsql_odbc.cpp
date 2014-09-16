@@ -1660,14 +1660,14 @@ QVariant QODBCResult::lastInsertId() const
     QString sql;
 
     switch (d->driverPrivate->dbmsType) {
-    case QODBCDriverPrivate::MSSqlServer:
-    case QODBCDriverPrivate::Sybase:
+    case QSqlDriver::MSSqlServer:
+    case QSqlDriver::Sybase:
         sql = QLatin1String("SELECT @@IDENTITY;");
         break;
-    case QODBCDriverPrivate::MySqlServer:
+    case QSqlDriver::MySqlServer:
         sql = QLatin1String("SELECT LAST_INSERT_ID();");
         break;
-    case QODBCDriverPrivate::PostgreSQL:
+    case QSqlDriver::PostgreSQL:
         sql = QLatin1String("SELECT lastval();");
         break;
     default:
@@ -1807,14 +1807,14 @@ bool QODBCDriver::hasFeature(DriverFeature f) const
     case CancelQuery:
         return false;
     case LastInsertId:
-        return (d->dbmsType == QODBCDriverPrivate::MSSqlServer)
-                || (d->dbmsType == QODBCDriverPrivate::Sybase)
-                || (d->dbmsType == QODBCDriverPrivate::MySqlServer)
-                || (d->dbmsType == QODBCDriverPrivate::PostgreSQL);
+        return (d->dbmsType == MSSqlServer)
+                || (d->dbmsType == Sybase)
+                || (d->dbmsType == MySqlServer)
+                || (d->dbmsType == PostgreSQL);
     case MultipleResultSets:
         return d->hasMultiResultSets;
     case BLOB: {
-        if (d->dbmsType == QODBCDriverPrivate::MySqlServer)
+        if (d->dbmsType == MySqlServer)
             return true;
         else
             return false;
@@ -1911,7 +1911,7 @@ bool QODBCDriver::open(const QString & db,
     d->checkDateTimePrecision();
     setOpen(true);
     setOpenError(false);
-    if (d->dbmsType == QODBCDriverPrivate::MSSqlServer) {
+    if (d->dbmsType == MSSqlServer) {
         QSqlQuery i(createResult());
         i.exec(QLatin1String("SET QUOTED_IDENTIFIER ON"));
     }
@@ -2097,15 +2097,15 @@ void QODBCDriverPrivate::checkDBMS()
         serverType = QString::fromUtf8((const char *)serverString.constData(), t);
 #endif
         if (serverType.contains(QLatin1String("PostgreSQL"), Qt::CaseInsensitive))
-            dbmsType = PostgreSQL;
+            dbmsType = QSqlDriver::PostgreSQL;
         else if (serverType.contains(QLatin1String("Oracle"), Qt::CaseInsensitive))
-            dbmsType = Oracle;
+            dbmsType = QSqlDriver::Oracle;
         else if (serverType.contains(QLatin1String("MySql"), Qt::CaseInsensitive))
-            dbmsType = MySqlServer;
+            dbmsType = QSqlDriver::MySqlServer;
         else if (serverType.contains(QLatin1String("Microsoft SQL Server"), Qt::CaseInsensitive))
-            dbmsType = MSSqlServer;
+            dbmsType = QSqlDriver::MSSqlServer;
         else if (serverType.contains(QLatin1String("Sybase"), Qt::CaseInsensitive))
-            dbmsType = Sybase;
+            dbmsType = QSqlDriver::Sybase;
     }
     r = SQLGetInfo(hDbc,
                    SQL_DRIVER_NAME,

@@ -87,7 +87,7 @@ QString QSqlResultPrivate::positionalToNamedBinding(const QString &query) const
     result.reserve(n * 5 / 4);
     QChar closingQuote;
     int count = 0;
-    bool ignoreBraces = (sqldriver->d_func()->dbmsType == QSqlDriverPrivate::PostgreSQL);
+    bool ignoreBraces = (sqldriver->d_func()->dbmsType == QSqlDriver::PostgreSQL);
 
     for (int i = 0; i < n; ++i) {
         QChar ch = query.at(i);
@@ -128,7 +128,7 @@ QString QSqlResultPrivate::namedToPositionalBinding(const QString &query)
     QChar closingQuote;
     int count = 0;
     int i = 0;
-    bool ignoreBraces = (sqldriver->d_func()->dbmsType == QSqlDriverPrivate::PostgreSQL);
+    bool ignoreBraces = (sqldriver->d_func()->dbmsType == QSqlDriver::PostgreSQL);
 
     while (i < n) {
         QChar ch = query.at(i);

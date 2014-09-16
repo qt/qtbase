@@ -71,17 +71,17 @@ void tst_QSqlResult::parseOfBoundValues()
     QVERIFY(result.savePrepare("SELECT :1 AS ':2'"));
     QCOMPARE(result.boundValues().count(), 1);
     QVERIFY(result.savePrepare("SELECT :1 AS [:2]"));
-    if (testDriver.dbmsType() == QSqlDriverPrivate::PostgreSQL)
+    if (testDriver.dbmsType() == QSqlDriver::PostgreSQL)
         QCOMPARE(result.boundValues().count(), 2);
     else
         QCOMPARE(result.boundValues().count(), 1);
     QVERIFY(result.savePrepare("SELECT :1 AS [:2]]]"));
-    if (testDriver.dbmsType() == QSqlDriverPrivate::PostgreSQL)
+    if (testDriver.dbmsType() == QSqlDriver::PostgreSQL)
         QCOMPARE(result.boundValues().count(), 2);
     else
         QCOMPARE(result.boundValues().count(), 1);
     QVERIFY(result.savePrepare("SELECT :1 AS [:2]]]]]"));
-    if (testDriver.dbmsType() == QSqlDriverPrivate::PostgreSQL)
+    if (testDriver.dbmsType() == QSqlDriver::PostgreSQL)
         QCOMPARE(result.boundValues().count(), 2);
     else
         QCOMPARE(result.boundValues().count(), 1);
@@ -91,7 +91,7 @@ void tst_QSqlResult::parseOfBoundValues()
     QVERIFY(result.savePrepare("SELECT ? AS '?'"));
     QCOMPARE(result.boundValues().count(), 1);
     QVERIFY(result.savePrepare("SELECT ? AS [?]"));
-    if (testDriver.dbmsType() == QSqlDriverPrivate::PostgreSQL)
+    if (testDriver.dbmsType() == QSqlDriver::PostgreSQL)
         QCOMPARE(result.boundValues().count(), 2);
     else
         QCOMPARE(result.boundValues().count(), 1);

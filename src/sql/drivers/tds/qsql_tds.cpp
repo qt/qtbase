@@ -132,7 +132,7 @@ QSqlError qMakeError(const QString& err, QSqlError::ErrorType type, int errNo = 
 class QTDSDriverPrivate : public QSqlDriverPrivate
 {
 public:
-    QTDSDriverPrivate() : QSqlDriverPrivate(), login(0), initialized(false) { dbmsType = Sybase; }
+    QTDSDriverPrivate() : QSqlDriverPrivate(), login(0), initialized(false) { dbmsType = QSqlDriver::Sybase; }
     LOGINREC* login;  // login information
     QString hostName;
     QString db;

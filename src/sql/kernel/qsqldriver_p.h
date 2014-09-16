@@ -56,21 +56,19 @@ class QSqlDriverPrivate : public QObjectPrivate
     Q_DECLARE_PUBLIC(QSqlDriver)
 
 public:
-    enum DBMSType {UnknownDB, MSSqlServer, MySqlServer, PostgreSQL, Oracle, Sybase, SQLite, Interbase, DB2};
-
     QSqlDriverPrivate()
       : QObjectPrivate(),
         isOpen(false),
         isOpenError(false),
         precisionPolicy(QSql::LowPrecisionDouble),
-        dbmsType(UnknownDB)
+        dbmsType(QSqlDriver::UnknownDBMS)
     { }
 
     uint isOpen;
     uint isOpenError;
     QSqlError error;
     QSql::NumericalPrecisionPolicy precisionPolicy;
-    DBMSType dbmsType;
+    QSqlDriver::DBMSType dbmsType;
 };
 
 QT_END_NAMESPACE

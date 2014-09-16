@@ -71,6 +71,18 @@ public:
 
     enum NotificationSource { UnknownSource, SelfSource, OtherSource };
 
+    enum DBMSType {
+        UnknownDBMS,
+        MSSqlServer,
+        MySqlServer,
+        PostgreSQL,
+        Oracle,
+        Sybase,
+        SQLite,
+        Interbase,
+        DB2
+    };
+
     explicit QSqlDriver(QObject *parent=0);
     ~QSqlDriver();
     virtual bool isOpen() const;
@@ -110,6 +122,8 @@ public:
 
     void setNumericalPrecisionPolicy(QSql::NumericalPrecisionPolicy precisionPolicy);
     QSql::NumericalPrecisionPolicy numericalPrecisionPolicy() const;
+
+    DBMSType dbmsType() const;
 
 public Q_SLOTS:
     virtual bool cancelQuery();

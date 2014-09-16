@@ -86,7 +86,7 @@ public:
 QSQLite2DriverPrivate::QSQLite2DriverPrivate() : QSqlDriverPrivate(), access(0)
 {
     utf8 = (qstrcmp(sqlite_encoding, "UTF-8") == 0);
-    dbmsType = SQLite;
+    dbmsType = QSqlDriver::SQLite;
 }
 
 class QSQLite2ResultPrivate;
