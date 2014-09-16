@@ -70,7 +70,7 @@ void QEglFSContext::swapBuffers(QPlatformSurface *surface)
     // draw the cursor
     if (surface->surface()->surfaceClass() == QSurface::Window) {
         QPlatformWindow *window = static_cast<QPlatformWindow *>(surface);
-        if (QEGLPlatformCursor *cursor = static_cast<QEGLPlatformCursor *>(window->screen()->cursor()))
+        if (QEGLPlatformCursor *cursor = qobject_cast<QEGLPlatformCursor *>(window->screen()->cursor()))
             cursor->paintOnScreen();
     }
 

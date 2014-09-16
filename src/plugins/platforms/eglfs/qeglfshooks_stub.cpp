@@ -181,7 +181,7 @@ bool QEglFSHooks::hasCapability(QPlatformIntegration::Capability cap) const
     return false;
 }
 
-QEGLPlatformCursor *QEglFSHooks::createCursor(QPlatformScreen *screen) const
+QPlatformCursor *QEglFSHooks::createCursor(QPlatformScreen *screen) const
 {
     return new QEGLPlatformCursor(screen);
 }

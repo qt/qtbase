@@ -50,7 +50,6 @@
 
 QT_BEGIN_NAMESPACE
 
-class QEGLPlatformCursor;
 class QEglFSWindow;
 class QOpenGLContext;
 
@@ -87,7 +86,7 @@ private:
 
     EGLDisplay m_dpy;
     EGLSurface m_surface;
-    QEGLPlatformCursor *m_cursor;
+    QPlatformCursor *m_cursor;
     QEGLPlatformWindow *m_rootWindow;
     QOpenGLContext *m_rootContext;
 };

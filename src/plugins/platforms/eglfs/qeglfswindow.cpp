@@ -124,7 +124,7 @@ void QEglFSWindow::destroy()
 {
     QEglFSScreen *screen = this->screen();
     if (m_flags.testFlag(HasNativeWindow)) {
-        QEGLPlatformCursor *cursor = static_cast<QEGLPlatformCursor *>(screen->cursor());
+        QEGLPlatformCursor *cursor = qobject_cast<QEGLPlatformCursor *>(screen->cursor());
         if (cursor)
             cursor->resetResources();
 

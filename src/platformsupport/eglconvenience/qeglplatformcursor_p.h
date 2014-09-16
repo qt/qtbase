@@ -89,6 +89,7 @@ private:
 
 class QEGLPlatformCursor : public QPlatformCursor, protected QOpenGLFunctions
 {
+    Q_OBJECT
 public:
     QEGLPlatformCursor(QPlatformScreen *screen);
     ~QEGLPlatformCursor();

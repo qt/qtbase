@@ -42,7 +42,7 @@
 #include "qeglfsscreen.h"
 #include "qeglfswindow.h"
 #include "qeglfshooks.h"
-#include <QtPlatformSupport/private/qeglplatformcursor_p.h>
+#include <QtGui/qpa/qplatformcursor.h>
 
 QT_BEGIN_NAMESPACE
 
