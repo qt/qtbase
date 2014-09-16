@@ -1142,7 +1142,7 @@ QTextHtmlImporter::ProcessNodeResult QTextHtmlImporter::processBlockNode()
         }
         if (hasBlock) {
             QTextBlockFormat fmt;
-            fmt.setIndent(0);
+            fmt.setIndent(currentNode->blockFormat.indent());
             cursor.mergeBlockFormat(fmt);
         }
     }
