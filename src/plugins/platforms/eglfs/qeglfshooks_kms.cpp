@@ -68,9 +68,8 @@ public:
                                            const QSurfaceFormat &format) Q_DECL_OVERRIDE;
     void destroyNativeWindow(EGLNativeWindowType window) Q_DECL_OVERRIDE;
     bool hasCapability(QPlatformIntegration::Capability cap) const Q_DECL_OVERRIDE;
-    void waitForVSync() const Q_DECL_OVERRIDE;
+    void presentBuffer() Q_DECL_OVERRIDE;
 
-    void waitForVSyncImpl();
     bool setup_kms();
 
     struct FrameBuffer {
@@ -276,12 +275,7 @@ static void page_flip_handler(int fd,
     *static_cast<bool *>(user_data) = false;
 }
 
-void QEglKmsHooks::waitForVSync() const
-{
-    const_cast<QEglKmsHooks*>(this)->waitForVSyncImpl();
-}
-
-void QEglKmsHooks::waitForVSyncImpl()
+void QEglKmsHooks::presentBuffer()
 {
     if (!m_gbm_surface) {
         qWarning("Cannot sync before platform init!");
