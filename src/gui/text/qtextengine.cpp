@@ -1406,7 +1406,6 @@ void QTextEngine::init(QTextEngine *e)
     e->minWidth = 0;
     e->maxWidth = 0;
 
-    e->underlinePositions = 0;
     e->specialData = 0;
     e->stackEngine = false;
 #ifndef QT_NO_RAWFONT

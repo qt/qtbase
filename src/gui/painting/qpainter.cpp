@@ -7418,8 +7418,6 @@ void qt_format_text(const QFont &fnt, const QRectF &_r,
         tf |= Qt::TextDontPrint;
 
     uint maxUnderlines = 0;
-    int numUnderlines = 0;
-    QVarLengthArray<int, 32> underlinePositions(1);
 
     QFontMetricsF fm(fnt);
     QString text = str;
@@ -7450,10 +7448,13 @@ start_lengthVariant:
         }
     }
 
+    // no need to do extra work for underlines if we don't paint
+    if (tf & Qt::TextDontPrint)
+        maxUnderlines = 0;
+
+    QList<QTextLayout::FormatRange> underlineFormats;
     int length = offset - old_offset;
     if ((hidemnmemonic || showmnemonic) && maxUnderlines > 0) {
-        underlinePositions.resize(maxUnderlines + 1);
-
         QChar *cout = text.data() + old_offset;
         QChar *cout0 = cout;
         QChar *cin = cout;
@@ -7465,8 +7466,13 @@ start_lengthVariant:
                 --l;
                 if (!l)
                     break;
-                if (*cin != QLatin1Char('&') && !hidemnmemonic)
-                    underlinePositions[numUnderlines++] = cout - cout0;
+                if (*cin != QLatin1Char('&') && !hidemnmemonic) {
+                    QTextLayout::FormatRange range;
+                    range.start = cout - cout0;
+                    range.length = 1;
+                    range.format.setFontUnderline(true);
+                    underlineFormats.append(range);
+                }
             } else if (hidemnmemonic && *cin == QLatin1Char('(') && l >= 4 &&
                        cin[1] == QLatin1Char('&') && cin[2] != QLatin1Char('&') &&
                        cin[3] == QLatin1Char(')')) {
@@ -7486,11 +7492,6 @@ start_lengthVariant:
         }
     }
 
-    // no need to do extra work for underlines if we don't paint
-    if (tf & Qt::TextDontPrint)
-        numUnderlines = 0;
-
-    underlinePositions[numUnderlines] = -1;
     qreal height = 0;
     qreal width = 0;
 
@@ -7523,7 +7524,7 @@ start_lengthVariant:
         engine.forceJustification = true;
     QTextLayout textLayout(&engine);
     textLayout.setCacheEnabled(true);
-    textLayout.engine()->underlinePositions = underlinePositions.data();
+    textLayout.setAdditionalFormats(underlineFormats);
 
     if (finalText.isEmpty()) {
         height = fm.height();

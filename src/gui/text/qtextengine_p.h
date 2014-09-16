@@ -563,8 +563,6 @@ public:
     uint useRawFont : 1;
 #endif
 
-    int *underlinePositions;
-
     mutable LayoutData *layoutData;
 
     ItemDecorationList underlineList;
