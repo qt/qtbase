@@ -4,8 +4,7 @@
 QTBASE="$(dirname $0)"
 
 # Available toolchains
-#TOOLCHAINS="mac_arm_newlib mac_pnacl mac_x86_glibc mac_x86_newlib"
-TOOLCHAINS=mac_x86_glibc
+TOOLCHAINS="mac_arm_newlib mac_pnacl mac_x86_glibc mac_x86_newlib"
 
 # Build qtbase
 for TOOLCHAIN in $TOOLCHAINS

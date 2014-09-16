@@ -1,12 +1,21 @@
 * Using Qt for Google Native Client
 
-Building QtBase:
+The Native Client SDK provides several toolchains. Qt for NaCl has configure and build
+scripts that makes dealing with them easier:
 
-Use nacl-configure in qtbase:
+nacl-configure      : configure Qt for a single toolchain
+nacl-configure-all  : configure Qt for all toolchains
+nacl-build-all      : build supported parts of Qt for all toolchains.
 
-1) Set NACL_SDK_ROOT. (Example: export NACL_SDK_ROOT=/Users/USER/code/nacl_sdk/pepper_35)
+Using the scripts is optional - it's also possible to build Qt using plain 
+"configure" and "make"
 
-2) Select the toolchain and configure Qt. Using shadow builds is recomended.
+A preqesite is installing the Native Cleint SDK and setting NACL_SDK_ROOT:
+0) Set NACL_SDK_ROOT. (Example: export NACL_SDK_ROOT=/Users/USER/code/nacl_sdk/pepper_35)
+
+A) Building Qt for a single toolchain using nacl-configure in QtBase:
+
+1) Select the toolchain and configure Qt. Use shadow builds (CWD is the build dir)
    /path/to/nacl-configure nacl-arm-newlib-g++
                            nacl-x86-glibc-g++
                            nacl-x86-glibc-g++64
@@ -16,9 +25,23 @@ Use nacl-configure in qtbase:
    (nacl-configure calls Qt's configure; the final command line with configure options is 
     printed to the terminal)
 
-3) Build:
-   make module-qtbase
+2) Build:
+   "make"
    
+B) Building Qt for all toolchains using nacl-configure-all in QtBase:
+
+(cwd is the build dir)
+
+1) /path/to/nacl-configure-all
+   You should now have the following build directories:
+       mac_arm_newlib
+       mac_pnacl
+       mac_x86_glibc
+       mac_x86_newlib
+
+2) /path/to/nacl-build-all
+   
+
 * Developing Qt for Google Native Client
 
 Standard output goes to Chrome standard out. Lauch Chrome from the command line:
