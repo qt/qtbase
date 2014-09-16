@@ -76,6 +76,7 @@ public:
     virtual QEGLPlatformCursor *createCursor(QPlatformScreen *screen) const;
     virtual bool filterConfig(EGLDisplay display, EGLConfig config) const;
     virtual void waitForVSync() const;
+    virtual void presentBuffer();
 
     virtual QByteArray fbDeviceName() const;
     virtual int framebufferIndex() const;

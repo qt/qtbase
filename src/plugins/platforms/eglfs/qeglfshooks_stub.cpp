@@ -198,6 +198,10 @@ void QEglFSHooks::waitForVSync() const
 #endif
 }
 
+void QEglFSHooks::presentBuffer()
+{
+}
+
 #ifndef EGLFS_PLATFORM_HOOKS
 QEglFSHooks stubHooks;
 #endif
