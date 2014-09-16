@@ -43,13 +43,55 @@
 #include <QtPlatformSupport/private/qdevicediscovery_p.h>
 #include <QtCore/private/qcore_unix_p.h>
 #include <QtCore/QScopedPointer>
+#include <QtCore/QJsonDocument>
+#include <QtCore/QJsonObject>
+#include <QtCore/QJsonArray>
 #include <QtGui/qpa/qplatformwindow.h>
+#include <QtGui/qpa/qplatformcursor.h>
+#include <QtGui/QPainter>
 
 #include <xf86drm.h>
 #include <xf86drmMode.h>
 #include <gbm.h>
 
 QT_USE_NAMESPACE
+
+class QKmsCursor : public QPlatformCursor
+{
+    Q_OBJECT
+public:
+    QKmsCursor(gbm_device *gbm_device, int dri_fd, uint32_t crtcId);
+    ~QKmsCursor();
+
+    // input methods
+    void pointerEvent(const QMouseEvent & event) Q_DECL_OVERRIDE;
+#ifndef QT_NO_CURSOR
+    void changeCursor(QCursor * windowCursor, QWindow * window) Q_DECL_OVERRIDE;
+#endif
+    QPoint pos() const Q_DECL_OVERRIDE;
+    void setPos(const QPoint &pos) Q_DECL_OVERRIDE;
+
+private:
+    void initCursorAtlas();
+
+    gbm_device *m_gbm_device;
+    int m_dri_fd;
+    uint32_t m_crtc;
+    gbm_bo *m_bo;
+    QPoint m_pos;
+    QPlatformCursorImage m_cursorImage;
+    bool m_visible;
+
+    // cursor atlas information
+    struct CursorAtlas {
+        CursorAtlas() : cursorsPerRow(0), cursorWidth(0), cursorHeight(0) { }
+        int cursorsPerRow;
+        int width, height; // width and height of the atlas
+        int cursorWidth, cursorHeight; // width and height of cursors inside the atlas
+        QList<QPoint> hotSpots;
+        QImage image;
+    } m_cursorAtlas;
+};
 
 class QEglKmsHooks : public QEglFSHooks
 {
@@ -68,6 +110,7 @@ public:
                                            const QSurfaceFormat &format) Q_DECL_OVERRIDE;
     void destroyNativeWindow(EGLNativeWindowType window) Q_DECL_OVERRIDE;
     bool hasCapability(QPlatformIntegration::Capability cap) const Q_DECL_OVERRIDE;
+    QPlatformCursor *createCursor(QPlatformScreen *screen) const Q_DECL_OVERRIDE;
     void presentBuffer() Q_DECL_OVERRIDE;
 
     bool setup_kms();
@@ -219,6 +262,12 @@ bool QEglKmsHooks::hasCapability(QPlatformIntegration::Capability cap) const
     default:
         return false;
     }
+}
+
+QPlatformCursor *QEglKmsHooks::createCursor(QPlatformScreen *screen) const
+{
+    Q_UNUSED(screen);
+    return new QKmsCursor(m_gbm_device, m_dri_fd, m_drm_crtc);
 }
 
 static void gbm_bo_destroyed_callback(gbm_bo *bo, void *data)
@@ -414,3 +463,143 @@ bool QEglKmsHooks::setup_kms()
 
     return true;
 }
+
+QKmsCursor::QKmsCursor(gbm_device *gbm_device, int dri_fd, uint32_t crtcId)
+    : m_gbm_device(gbm_device)
+    , m_dri_fd(dri_fd)
+    , m_crtc(crtcId)
+    , m_bo(gbm_bo_create(gbm_device, 64, 64, GBM_FORMAT_ARGB8888,
+                         GBM_BO_USE_CURSOR_64X64 | GBM_BO_USE_WRITE))
+    , m_cursorImage(0, 0, 0, 0, 0, 0)
+    , m_visible(true)
+{
+    if (!m_bo) {
+        qWarning("Could not create buffer for cursor!");
+    } else {
+        initCursorAtlas();
+    }
+
+    drmModeMoveCursor(m_dri_fd, m_crtc, 0, 0);
+}
+
+QKmsCursor::~QKmsCursor()
+{
+    drmModeSetCursor(m_dri_fd, m_crtc, 0, 0, 0);
+    drmModeMoveCursor(m_dri_fd, m_crtc, 0, 0);
+
+    gbm_bo_destroy(m_bo);
+    m_bo = Q_NULLPTR;
+}
+
+void QKmsCursor::pointerEvent(const QMouseEvent &event)
+{
+    setPos(event.screenPos().toPoint());
+}
+
+#ifndef QT_NO_CURSOR
+void QKmsCursor::changeCursor(QCursor *windowCursor, QWindow *window)
+{
+    Q_UNUSED(window);
+
+    if (!m_visible)
+        return;
+
+    const Qt::CursorShape newShape = windowCursor ? windowCursor->shape() : Qt::ArrowCursor;
+    if (newShape == Qt::BitmapCursor) {
+        m_cursorImage.set(windowCursor->pixmap().toImage(),
+                          windowCursor->hotSpot().x(),
+                          windowCursor->hotSpot().y());
+    } else {
+        // Standard cursor, look up in atlas
+        const int width = m_cursorAtlas.cursorWidth;
+        const int height = m_cursorAtlas.cursorHeight;
+        const qreal ws = (qreal)m_cursorAtlas.cursorWidth / m_cursorAtlas.width;
+        const qreal hs = (qreal)m_cursorAtlas.cursorHeight / m_cursorAtlas.height;
+
+        QRect textureRect(ws * (newShape % m_cursorAtlas.cursorsPerRow) * m_cursorAtlas.width,
+                          hs * (newShape / m_cursorAtlas.cursorsPerRow) * m_cursorAtlas.height,
+                          width,
+                          height);
+        QPoint hotSpot = m_cursorAtlas.hotSpots[newShape];
+        m_cursorImage.set(m_cursorAtlas.image.copy(textureRect),
+                          hotSpot.x(),
+                          hotSpot.y());
+    }
+
+    if (m_cursorImage.image()->width() > 64 || m_cursorImage.image()->height() > 64)
+        qWarning("Cursor larger than 64x64, cursor will be clipped.");
+
+    QImage cursorImage(64, 64, QImage::Format_ARGB32);
+    cursorImage.fill(Qt::transparent);
+
+    QPainter painter;
+    painter.begin(&cursorImage);
+    painter.drawImage(0, 0, *m_cursorImage.image());
+    painter.end();
+
+    gbm_bo_write(m_bo, cursorImage.constBits(), cursorImage.byteCount());
+
+    uint32_t handle = gbm_bo_get_handle(m_bo).u32;
+    QPoint hot = m_cursorImage.hotspot();
+    int status = drmModeSetCursor2(m_dri_fd, m_crtc, handle, 64, 64, hot.x(), hot.y());
+    if (status != 0)
+        qWarning("Could not set cursor: %d", status);
+}
+#endif // QT_NO_CURSOR
+
+QPoint QKmsCursor::pos() const
+{
+    return m_pos;
+}
+
+void QKmsCursor::setPos(const QPoint &pos)
+{
+    QPoint adjustedPos = pos - m_cursorImage.hotspot();
+    int ret = drmModeMoveCursor(m_dri_fd, m_crtc, adjustedPos.x(), adjustedPos.y());
+    if (ret == 0) {
+        m_pos = pos;
+    } else {
+        qWarning("Failed to move cursor: %d", ret);
+    }
+}
+
+void QKmsCursor::initCursorAtlas()
+{
+    static QByteArray json = qgetenv("QT_QPA_EGLFS_CURSOR");
+    if (json.isEmpty())
+        json = ":/cursor.json";
+
+    QFile file(QString::fromUtf8(json));
+    if (!file.open(QFile::ReadOnly)) {
+        drmModeSetCursor(m_dri_fd, m_crtc, 0, 0, 0);
+        drmModeMoveCursor(m_dri_fd, m_crtc, 0, 0);
+        m_visible = false;
+        return;
+    }
+
+    QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
+    QJsonObject object = doc.object();
+
+    QString atlas = object.value(QLatin1String("image")).toString();
+    Q_ASSERT(!atlas.isEmpty());
+
+    const int cursorsPerRow = object.value(QLatin1String("cursorsPerRow")).toDouble();
+    Q_ASSERT(cursorsPerRow);
+    m_cursorAtlas.cursorsPerRow = cursorsPerRow;
+
+    const QJsonArray hotSpots = object.value(QLatin1String("hotSpots")).toArray();
+    Q_ASSERT(hotSpots.count() == Qt::LastCursor + 1);
+    for (int i = 0; i < hotSpots.count(); i++) {
+        QPoint hotSpot(hotSpots[i].toArray()[0].toDouble(), hotSpots[i].toArray()[1].toDouble());
+        m_cursorAtlas.hotSpots << hotSpot;
+    }
+
+    QImage image = QImage(atlas).convertToFormat(QImage::Format_ARGB32);
+    m_cursorAtlas.cursorWidth = image.width() / m_cursorAtlas.cursorsPerRow;
+    m_cursorAtlas.cursorHeight = image.height() / ((Qt::LastCursor + cursorsPerRow) / cursorsPerRow);
+    m_cursorAtlas.width = image.width();
+    m_cursorAtlas.height = image.height();
+    m_cursorAtlas.image = image;
+}
+
+#include "qeglfshooks_kms.moc"
