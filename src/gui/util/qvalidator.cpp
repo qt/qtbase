@@ -314,7 +314,7 @@ void QValidator::fixup(QString &) const
     Notice that the value \c 999 returns Intermediate. Values
     consisting of a number of digits equal to or less than the max
     value are considered intermediate. This is intended because the
-    digit that prevents a number to be in range is not necessarily the
+    digit that prevents a number from being in range is not necessarily the
     last digit typed. This also means that an intermediate number can
     have leading zeros.
 
