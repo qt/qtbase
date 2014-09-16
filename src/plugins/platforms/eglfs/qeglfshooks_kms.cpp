@@ -113,13 +113,21 @@ public:
     QPlatformCursor *createCursor(QPlatformScreen *screen) const Q_DECL_OVERRIDE;
     void presentBuffer() Q_DECL_OVERRIDE;
 
+private:
     bool setup_kms();
 
     struct FrameBuffer {
         FrameBuffer() : fb(0) {}
         uint32_t fb;
     };
+    static void bufferDestroyedHandler(gbm_bo *bo, void *data);
     FrameBuffer *framebufferForBufferObject(gbm_bo *bo);
+
+    static void pageFlipHandler(int fd,
+                                unsigned int sequence,
+                                unsigned int tv_sec,
+                                unsigned int tv_usec,
+                                void *user_data);
 
 private:
     // device bits
@@ -135,6 +143,10 @@ private:
 
     // Drawing bits
     gbm_surface *m_gbm_surface;
+    gbm_bo *m_gbm_bo_current;
+    gbm_bo *m_gbm_bo_next;
+    bool m_flipping;
+    bool m_mode_set;
 };
 
 static QEglKmsHooks kms_hooks;
@@ -147,6 +159,10 @@ QEglKmsHooks::QEglKmsHooks()
     , m_drm_encoder(Q_NULLPTR)
     , m_drm_crtc(0)
     , m_gbm_surface(Q_NULLPTR)
+    , m_gbm_bo_current(Q_NULLPTR)
+    , m_gbm_bo_next(Q_NULLPTR)
+    , m_flipping(false)
+    , m_mode_set(false)
 {
 
 }
@@ -257,7 +273,6 @@ bool QEglKmsHooks::hasCapability(QPlatformIntegration::Capability cap) const
     case QPlatformIntegration::ThreadedPixmaps:
     case QPlatformIntegration::OpenGL:
     case QPlatformIntegration::ThreadedOpenGL:
-    case QPlatformIntegration::BufferQueueingOpenGL:
         return true;
     default:
         return false;
@@ -270,7 +285,7 @@ QPlatformCursor *QEglKmsHooks::createCursor(QPlatformScreen *screen) const
     return new QKmsCursor(m_gbm_device, m_dri_fd, m_drm_crtc);
 }
 
-static void gbm_bo_destroyed_callback(gbm_bo *bo, void *data)
+void QEglKmsHooks::bufferDestroyedHandler(gbm_bo *bo, void *data)
 {
     QEglKmsHooks::FrameBuffer *fb = static_cast<QEglKmsHooks::FrameBuffer *>(data);
 
@@ -305,23 +320,32 @@ QEglKmsHooks::FrameBuffer *QEglKmsHooks::framebufferForBufferObject(gbm_bo *bo)
         return Q_NULLPTR;
     }
 
-    gbm_bo_set_user_data(bo, fb.data(), gbm_bo_destroyed_callback);
+    gbm_bo_set_user_data(bo, fb.data(), bufferDestroyedHandler);
     return fb.take();
 }
 
-static void page_flip_handler(int fd,
-                              unsigned int sequence,
-                              unsigned int tv_sec,
-                              unsigned int tv_usec,
-                              void *user_data)
+void QEglKmsHooks::pageFlipHandler(int fd,
+                                   unsigned int sequence,
+                                   unsigned int tv_sec,
+                                   unsigned int tv_usec,
+                                   void *user_data)
 {
     Q_UNUSED(fd);
     Q_UNUSED(sequence);
     Q_UNUSED(tv_sec);
     Q_UNUSED(tv_usec);
 
+    QEglKmsHooks *hooks = static_cast<QEglKmsHooks *>(user_data);
+
+    if (hooks->m_gbm_bo_current)
+        gbm_surface_release_buffer(hooks->m_gbm_surface,
+                                   hooks->m_gbm_bo_current);
+
+    hooks->m_gbm_bo_current = hooks->m_gbm_bo_next;
+    hooks->m_gbm_bo_next = Q_NULLPTR;
+
     // We are no longer flipping
-    *static_cast<bool *>(user_data) = false;
+    hooks->m_flipping = false;
 }
 
 void QEglKmsHooks::presentBuffer()
@@ -331,64 +355,55 @@ void QEglKmsHooks::presentBuffer()
         return;
     }
 
-    if (!gbm_surface_has_free_buffers(m_gbm_surface)) {
-        qWarning("Out of free GBM buffers!");
-        return;
-    }
-
-    gbm_bo *front_buffer = gbm_surface_lock_front_buffer(m_gbm_surface);
-    if (!front_buffer) {
+    m_gbm_bo_next = gbm_surface_lock_front_buffer(m_gbm_surface);
+    if (!m_gbm_bo_next) {
         qWarning("Could not lock GBM surface front buffer!");
         return;
     }
 
-    QEglKmsHooks::FrameBuffer *fb = framebufferForBufferObject(front_buffer);
+    QEglKmsHooks::FrameBuffer *fb = framebufferForBufferObject(m_gbm_bo_next);
 
-    int ret = drmModeSetCrtc(m_dri_fd,
-                             m_drm_crtc,
-                             fb->fb,
-                             0, 0,
-                             &m_drm_connector->connector_id, 1,
-                             &m_drm_mode);
-    if (ret) {
-        qErrnoWarning("Could not set DRM mode!");
-        return;
+    if (!m_mode_set) {
+        int ret = drmModeSetCrtc(m_dri_fd,
+                                 m_drm_crtc,
+                                 fb->fb,
+                                 0, 0,
+                                 &m_drm_connector->connector_id, 1,
+                                 &m_drm_mode);
+        if (ret) {
+            qErrnoWarning("Could not set DRM mode!");
+        } else {
+            m_mode_set = true;
+        }
     }
 
-    bool flipping = true;
-    ret = drmModePageFlip(m_dri_fd,
-                          m_drm_encoder->crtc_id,
-                          fb->fb,
-                          DRM_MODE_PAGE_FLIP_EVENT,
-                          &flipping);
+    int ret = drmModePageFlip(m_dri_fd,
+                              m_drm_encoder->crtc_id,
+                              fb->fb,
+                              DRM_MODE_PAGE_FLIP_EVENT,
+                              this);
     if (ret) {
         qErrnoWarning("Could not queue DRM page flip!");
         return;
     }
 
+    m_flipping = true;
+
     drmEventContext drmEvent = {
         DRM_EVENT_CONTEXT_VERSION,
         Q_NULLPTR,          // vblank handler
-        page_flip_handler   // page flip handler
+        pageFlipHandler     // page flip handler
     };
 
     fd_set fds;
     FD_ZERO(&fds);
     FD_SET(m_dri_fd, &fds);
 
-    time_t start, cur;
-    time(&start);
-
-    while (flipping && (time(&cur) < start + 1)) {
-        timespec v;
-        memset(&v, 0, sizeof(v));
-        v.tv_sec = start + 1 - cur;
-
-        ret = qt_safe_select(m_dri_fd + 1, &fds, Q_NULLPTR, Q_NULLPTR, &v);
+    while (m_flipping) {
+        ret = qt_safe_select(m_dri_fd + 1, &fds, Q_NULLPTR, Q_NULLPTR, Q_NULLPTR);
 
         if (ret == 0) {
             // timeout
-            break;
         } else if (ret == -1) {
             qErrnoWarning("Error while selecting on DRM fd");
             break;
@@ -396,8 +411,6 @@ void QEglKmsHooks::presentBuffer()
             qWarning("Could not handle DRM event!");
         }
     }
-
-    gbm_surface_release_buffer(m_gbm_surface, front_buffer);
 }
 
 bool QEglKmsHooks::setup_kms()
@@ -463,6 +476,7 @@ bool QEglKmsHooks::setup_kms()
 
     return true;
 }
+
 
 QKmsCursor::QKmsCursor(gbm_device *gbm_device, int dri_fd, uint32_t crtcId)
     : m_gbm_device(gbm_device)
