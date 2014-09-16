@@ -1585,8 +1585,14 @@ bool QNetworkReplyHttpImplPrivate::start()
                             q, SLOT(_q_networkSessionUsagePoliciesChanged(QNetworkSession::UsagePolicies)));
         postRequest();
         return true;
+    } else if (synchronous) {
+        // Command line applications using the synchronous path such as xmlpatterns may need an extra push.
+        networkSession->open();
+        if (networkSession->waitForOpened()) {
+            postRequest();
+            return true;
+        }
     }
-
     return false;
 #endif
 }
