@@ -652,6 +652,10 @@ void QToolButton::setMenu(QMenu* menu)
     } else {
         d->menuAction = 0;
     }
+
+    // changing the menu set may change the size hint, so reset it
+    d->sizeHint = QSize();
+    updateGeometry();
     update();
 }
 
