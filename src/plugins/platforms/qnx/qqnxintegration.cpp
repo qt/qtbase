@@ -182,7 +182,7 @@ QQnxIntegration::QQnxIntegration(const QStringList &paramList)
 
 #if !defined(QT_NO_OPENGL)
     // Initialize global OpenGL resources
-    QQnxGLContext::initialize();
+    QQnxGLContext::initializeContext();
 #endif
 
     // Create/start event thread
@@ -306,7 +306,7 @@ QQnxIntegration::~QQnxIntegration()
 
 #if !defined(QT_NO_OPENGL)
     // Cleanup global OpenGL resources
-    QQnxGLContext::shutdown();
+    QQnxGLContext::shutdownContext();
 #endif
 
 #if defined(QQNX_PPS)

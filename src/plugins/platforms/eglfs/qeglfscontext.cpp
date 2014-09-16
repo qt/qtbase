@@ -45,7 +45,8 @@ QT_BEGIN_NAMESPACE
 
 QEglFSContext::QEglFSContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share, EGLDisplay display,
                              EGLConfig *config, const QVariant &nativeHandle)
-    : QEGLPlatformContext(format, share, display, config, nativeHandle)
+    : QEGLPlatformContext(format, share, display, config, nativeHandle),
+      m_tempWindow(0)
 {
 }
 
@@ -55,6 +56,33 @@ EGLSurface QEglFSContext::eglSurfaceForPlatformSurface(QPlatformSurface *surface
         return static_cast<QEglFSWindow *>(surface)->surface();
     else
         return static_cast<QEGLPbuffer *>(surface)->pbuffer();
+}
+
+EGLSurface QEglFSContext::createTemporaryOffscreenSurface()
+{
+    if (QEglFSHooks::hooks()->supportsPBuffers())
+        return QEGLPlatformContext::createTemporaryOffscreenSurface();
+
+    if (!m_tempWindow) {
+        m_tempWindow = QEglFSHooks::hooks()->createNativeOffscreenWindow(format());
+        if (!m_tempWindow) {
+            qWarning("QEglFSContext: Failed to create temporary native window");
+            return EGL_NO_SURFACE;
+        }
+    }
+    EGLConfig config = q_configFromGLFormat(eglDisplay(), format());
+    return eglCreateWindowSurface(eglDisplay(), config, m_tempWindow, 0);
+}
+
+void QEglFSContext::destroyTemporaryOffscreenSurface(EGLSurface surface)
+{
+    if (QEglFSHooks::hooks()->supportsPBuffers()) {
+        QEGLPlatformContext::destroyTemporaryOffscreenSurface(surface);
+    } else {
+        eglDestroySurface(eglDisplay(), surface);
+        QEglFSHooks::hooks()->destroyNativeWindow(m_tempWindow);
+        m_tempWindow = 0;
+    }
 }
 
 void QEglFSContext::swapBuffers(QPlatformSurface *surface)

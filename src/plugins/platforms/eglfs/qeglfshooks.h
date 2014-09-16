@@ -62,6 +62,7 @@ public:
     virtual EGLNativeWindowType createNativeWindow(QPlatformWindow *platformWindow,
                                                    const QSize &size,
                                                    const QSurfaceFormat &format);
+    virtual EGLNativeWindowType createNativeOffscreenWindow(const QSurfaceFormat &format);
     virtual void destroyNativeWindow(EGLNativeWindowType window);
     virtual bool hasCapability(QPlatformIntegration::Capability cap) const;
     virtual QPlatformCursor *createCursor(QPlatformScreen *screen) const;
@@ -71,6 +72,8 @@ public:
 
     virtual QByteArray fbDeviceName() const;
     virtual int framebufferIndex() const;
+
+    virtual bool supportsPBuffers() const;
 
     static QEglFSHooks *hooks()
     {

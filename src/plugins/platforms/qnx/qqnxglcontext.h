@@ -53,8 +53,8 @@ public:
 
     static EGLenum checkEGLError(const char *msg);
 
-    static void initialize();
-    static void shutdown();
+    static void initializeContext();
+    static void shutdownContext();
 
     void requestSurfaceChange();
 

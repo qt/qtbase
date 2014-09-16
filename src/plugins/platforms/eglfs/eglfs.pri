@@ -17,13 +17,15 @@ SOURCES +=  $$PWD/qeglfsintegration.cpp \
             $$PWD/qeglfswindow.cpp \
             $$PWD/qeglfsscreen.cpp \
             $$PWD/qeglfshooks_stub.cpp \
-            $$PWD/qeglfscontext.cpp
+            $$PWD/qeglfscontext.cpp \
+            $$PWD/qeglfsoffscreenwindow.cpp
 
 HEADERS +=  $$PWD/qeglfsintegration.h \
             $$PWD/qeglfswindow.h \
             $$PWD/qeglfsscreen.h \
             $$PWD/qeglfshooks.h \
-            $$PWD/qeglfscontext.h
+            $$PWD/qeglfscontext.h \
+            $$PWD/qeglfsoffscreenwindow.h
 
 QMAKE_LFLAGS += $$QMAKE_LFLAGS_NOUNDEF
 

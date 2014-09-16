@@ -164,7 +164,7 @@ EGLenum QQnxGLContext::checkEGLError(const char *msg)
     return error;
 }
 
-void QQnxGLContext::initialize()
+void QQnxGLContext::initializeContext()
 {
     qGLContextDebug() << Q_FUNC_INFO;
 
@@ -182,7 +182,7 @@ void QQnxGLContext::initialize()
     }
 }
 
-void QQnxGLContext::shutdown()
+void QQnxGLContext::shutdownContext()
 {
     qGLContextDebug() << Q_FUNC_INFO;
 

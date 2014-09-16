@@ -108,10 +108,12 @@ public:
     EGLNativeWindowType createNativeWindow(QPlatformWindow *platformWindow,
                                            const QSize &size,
                                            const QSurfaceFormat &format) Q_DECL_OVERRIDE;
+    EGLNativeWindowType createNativeOffscreenWindow(const QSurfaceFormat &format) Q_DECL_OVERRIDE;
     void destroyNativeWindow(EGLNativeWindowType window) Q_DECL_OVERRIDE;
     bool hasCapability(QPlatformIntegration::Capability cap) const Q_DECL_OVERRIDE;
     QPlatformCursor *createCursor(QPlatformScreen *screen) const Q_DECL_OVERRIDE;
     void presentBuffer() Q_DECL_OVERRIDE;
+    bool supportsPBuffers() const Q_DECL_OVERRIDE;
 
 private:
     bool setup_kms();
@@ -257,6 +259,18 @@ EGLNativeWindowType QEglKmsHooks::createNativeWindow(QPlatformWindow *platformWi
         qFatal("Could not initialize GBM surface");
 
     return reinterpret_cast<EGLNativeWindowType>(m_gbm_surface);
+}
+
+EGLNativeWindowType QEglKmsHooks::createNativeOffscreenWindow(const QSurfaceFormat &format)
+{
+    Q_UNUSED(format);
+
+    gbm_surface *surface = gbm_surface_create(m_gbm_device,
+                                              1, 1,
+                                              GBM_FORMAT_XRGB8888,
+                                              GBM_BO_USE_RENDERING);
+
+    return reinterpret_cast<EGLNativeWindowType>(surface);
 }
 
 void QEglKmsHooks::destroyNativeWindow(EGLNativeWindowType window)
@@ -411,6 +425,11 @@ void QEglKmsHooks::presentBuffer()
             qWarning("Could not handle DRM event!");
         }
     }
+}
+
+bool QEglKmsHooks::supportsPBuffers() const
+{
+    return false;
 }
 
 bool QEglKmsHooks::setup_kms()

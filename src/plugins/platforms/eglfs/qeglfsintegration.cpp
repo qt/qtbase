@@ -36,6 +36,7 @@
 #include "qeglfswindow.h"
 #include "qeglfshooks.h"
 #include "qeglfscontext.h"
+#include "qeglfsoffscreenwindow.h"
 
 #include <QtGui/private/qguiapplication_p.h>
 
@@ -116,9 +117,9 @@ QEGLPlatformContext *QEglFSIntegration::createContext(const QSurfaceFormat &form
     QSurfaceFormat adjustedFormat = QEglFSHooks::hooks()->surfaceFormatFor(format);
     if (!nativeHandle || nativeHandle->isNull()) {
         EGLConfig config = QEglFSIntegration::chooseConfig(display, adjustedFormat);
-        ctx =  new QEglFSContext(adjustedFormat, shareContext, display, &config, QVariant());
+        ctx = new QEglFSContext(adjustedFormat, shareContext, display, &config, QVariant());
     } else {
-        ctx =  new QEglFSContext(adjustedFormat, shareContext, display, 0, *nativeHandle);
+        ctx = new QEglFSContext(adjustedFormat, shareContext, display, 0, *nativeHandle);
     }
     *nativeHandle = QVariant::fromValue<QEGLNativeContext>(QEGLNativeContext(ctx->eglContext(), display));
     return ctx;
@@ -128,7 +129,13 @@ QPlatformOffscreenSurface *QEglFSIntegration::createOffscreenSurface(EGLDisplay 
                                                                      const QSurfaceFormat &format,
                                                                      QOffscreenSurface *surface) const
 {
-    return new QEGLPbuffer(display, QEglFSHooks::hooks()->surfaceFormatFor(format), surface);
+    QSurfaceFormat fmt = QEglFSHooks::hooks()->surfaceFormatFor(format);
+    if (QEglFSHooks::hooks()->supportsPBuffers())
+        return new QEGLPbuffer(display, fmt, surface);
+    else
+        return new QEglFSOffscreenWindow(display, fmt, surface);
+
+    // Never return null. Multiple QWindows are not supported by this plugin.
 }
 
 QVariant QEglFSIntegration::styleHint(QPlatformIntegration::StyleHint hint) const

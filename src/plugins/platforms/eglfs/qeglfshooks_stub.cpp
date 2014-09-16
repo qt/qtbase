@@ -162,6 +162,12 @@ EGLNativeWindowType QEglFSHooks::createNativeWindow(QPlatformWindow *platformWin
     return 0;
 }
 
+EGLNativeWindowType QEglFSHooks::createNativeOffscreenWindow(const QSurfaceFormat &format)
+{
+    Q_UNUSED(format);
+    return 0;
+}
+
 void QEglFSHooks::destroyNativeWindow(EGLNativeWindowType window)
 {
     Q_UNUSED(window);
@@ -192,6 +198,11 @@ void QEglFSHooks::waitForVSync() const
 
 void QEglFSHooks::presentBuffer()
 {
+}
+
+bool QEglFSHooks::supportsPBuffers() const
+{
+    return true;
 }
 
 #ifndef EGLFS_PLATFORM_HOOKS

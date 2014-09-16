@@ -59,6 +59,7 @@ public:
                         EGLConfig *config = 0, const QVariant &nativeHandle = QVariant());
     ~QEGLPlatformContext();
 
+    void initialize();
     bool makeCurrent(QPlatformSurface *surface);
     void doneCurrent();
     void swapBuffers(QPlatformSurface *surface);
@@ -74,6 +75,8 @@ public:
 
 protected:
     virtual EGLSurface eglSurfaceForPlatformSurface(QPlatformSurface *surface) = 0;
+    virtual EGLSurface createTemporaryOffscreenSurface();
+    virtual void destroyTemporaryOffscreenSurface(EGLSurface surface);
 
 private:
     void init(const QSurfaceFormat &format, QPlatformOpenGLContext *share);

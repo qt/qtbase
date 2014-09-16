@@ -45,7 +45,12 @@ public:
     QEglFSContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share, EGLDisplay display,
                   EGLConfig *config, const QVariant &nativeHandle);
     EGLSurface eglSurfaceForPlatformSurface(QPlatformSurface *surface) Q_DECL_OVERRIDE;
+    EGLSurface createTemporaryOffscreenSurface() Q_DECL_OVERRIDE;
+    void destroyTemporaryOffscreenSurface(EGLSurface surface) Q_DECL_OVERRIDE;
     void swapBuffers(QPlatformSurface *surface) Q_DECL_OVERRIDE;
+
+private:
+    EGLNativeWindowType m_tempWindow;
 };
 
 QT_END_NAMESPACE

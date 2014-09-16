@@ -187,7 +187,7 @@ void QEGLPlatformContext::init(const QSurfaceFormat &format, QPlatformOpenGLCont
         q_printEglConfig(m_eglDisplay, m_eglConfig);
     }
 
-    updateFormatFromGL();
+    // Cannot just call updateFormatFromGL() since it relies on virtuals. Defer it to initialize().
 }
 
 void QEGLPlatformContext::adopt(const QVariant &nativeHandle, QPlatformOpenGLContext *share)
@@ -238,6 +238,34 @@ void QEGLPlatformContext::adopt(const QVariant &nativeHandle, QPlatformOpenGLCon
     updateFormatFromGL();
 }
 
+void QEGLPlatformContext::initialize()
+{
+    updateFormatFromGL();
+}
+
+EGLSurface QEGLPlatformContext::createTemporaryOffscreenSurface()
+{
+    // Make the context current to ensure the GL version query works. This needs a surface too.
+    const EGLint pbufferAttributes[] = {
+        EGL_WIDTH, 1,
+        EGL_HEIGHT, 1,
+        EGL_LARGEST_PBUFFER, EGL_FALSE,
+        EGL_NONE
+    };
+
+    // Cannot just pass m_eglConfig because it may not be suitable for pbuffers. Instead,
+    // do what QEGLPbuffer would do: request a config with the same attributes but with
+    // PBUFFER_BIT set.
+    EGLConfig config = q_configFromGLFormat(m_eglDisplay, m_format, false, EGL_PBUFFER_BIT);
+
+    return eglCreatePbufferSurface(m_eglDisplay, config, pbufferAttributes);
+}
+
+void QEGLPlatformContext::destroyTemporaryOffscreenSurface(EGLSurface surface)
+{
+    eglDestroySurface(m_eglDisplay, surface);
+}
+
 void QEGLPlatformContext::updateFormatFromGL()
 {
 #ifndef QT_NO_OPENGL
@@ -250,22 +278,8 @@ void QEGLPlatformContext::updateFormatFromGL()
     EGLSurface prevSurfaceDraw = eglGetCurrentSurface(EGL_DRAW);
     EGLSurface prevSurfaceRead = eglGetCurrentSurface(EGL_READ);
 
-    // Make the context current to ensure the GL version query works. This needs a surface too.
-    const EGLint pbufferAttributes[] = {
-        EGL_WIDTH, 1,
-        EGL_HEIGHT, 1,
-        EGL_LARGEST_PBUFFER, EGL_FALSE,
-        EGL_NONE
-    };
-    // Cannot just pass m_eglConfig because it may not be suitable for pbuffers. Instead,
-    // do what QEGLPbuffer would do: request a config with the same attributes but with
-    // PBUFFER_BIT set.
-    EGLConfig config = q_configFromGLFormat(m_eglDisplay, m_format, false, EGL_PBUFFER_BIT);
-    EGLSurface pbuffer = eglCreatePbufferSurface(m_eglDisplay, config, pbufferAttributes);
-    if (pbuffer == EGL_NO_SURFACE)
-        return;
-
-    if (eglMakeCurrent(m_eglDisplay, pbuffer, pbuffer, m_eglContext)) {
+    EGLSurface tempSurface = createTemporaryOffscreenSurface();
+    if (eglMakeCurrent(m_eglDisplay, tempSurface, tempSurface, m_eglContext)) {
         if (m_format.renderableType() == QSurfaceFormat::OpenGL
             || m_format.renderableType() == QSurfaceFormat::OpenGLES) {
             const GLubyte *s = glGetString(GL_VERSION);
@@ -303,7 +317,7 @@ void QEGLPlatformContext::updateFormatFromGL()
         }
         eglMakeCurrent(prevDisplay, prevSurfaceDraw, prevSurfaceRead, prevContext);
     }
-    eglDestroySurface(m_eglDisplay, pbuffer);
+    destroyTemporaryOffscreenSurface(tempSurface);
 #endif // QT_NO_OPENGL
 }
 

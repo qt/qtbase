@@ -63,6 +63,8 @@ public:
     QPlatformOpenGLContext();
     virtual ~QPlatformOpenGLContext();
 
+    virtual void initialize();
+
     virtual QSurfaceFormat format() const = 0;
 
     virtual void swapBuffers(QPlatformSurface *surface) = 0;

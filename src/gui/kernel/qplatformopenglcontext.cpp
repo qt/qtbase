@@ -89,6 +89,16 @@ QPlatformOpenGLContext::~QPlatformOpenGLContext()
 }
 
 /*!
+  Called after a new instance is constructed. The default implementation does nothing.
+
+  Subclasses can use this function to perform additional initialization that relies on
+  virtual functions.
+ */
+void QPlatformOpenGLContext::initialize()
+{
+}
+
+/*!
     Reimplement in subclass if your platform uses framebuffer objects for surfaces.
 
     The default implementation returns 0.
