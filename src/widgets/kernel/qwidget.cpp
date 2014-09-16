@@ -9042,6 +9042,12 @@ bool QWidget::event(QEvent *event)
         event->ignore();
         break;
 #endif
+    case QEvent::ScreenChangeInternal:
+        if (const QTLWExtra *te = d->maybeTopData()) {
+            const QWindow *win = te->window;
+            d->setWinId((win && win->handle()) ? win->handle()->winId() : 0);
+        }
+        break;
 #ifndef QT_NO_PROPERTIES
     case QEvent::DynamicPropertyChange: {
         const QByteArray &propName = static_cast<QDynamicPropertyChangeEvent *>(event)->propertyName();

@@ -52,6 +52,8 @@
 #include <qlistwidget.h>
 #include <qpushbutton.h>
 #include <qboxlayout.h>
+#include <qlabel.h>
+#include <private/qwindow_p.h>
 
 static inline void setFrameless(QWidget *w)
 {
@@ -97,6 +99,7 @@ private slots:
 #endif
 
     void tst_qtbug35600();
+    void tst_updateWinId_QTBUG40681();
 };
 
 void tst_QWidget_window::initTestCase()
@@ -601,6 +604,34 @@ void tst_QWidget_window::tst_qtbug35600()
     wA->setParent(&w);
 
     // QTBUG-35600: program may crash here or on exit
+}
+
+void tst_QWidget_window::tst_updateWinId_QTBUG40681()
+{
+    QWidget w;
+    QVBoxLayout *vl = new QVBoxLayout(&w);
+    QLabel *lbl = new QLabel("HELLO1");
+    lbl->setAttribute(Qt::WA_NativeWindow);
+    lbl->setObjectName("label1");
+    vl->addWidget(lbl);
+    w.setMinimumWidth(200);
+
+    w.show();
+
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
+
+    QCOMPARE(lbl->winId(), lbl->windowHandle()->winId());
+
+     // simulate screen change and notification
+    QWindow *win = w.windowHandle();
+    w.windowHandle()->destroy();
+    lbl->windowHandle()->destroy();
+    w.windowHandle()->create();
+    lbl->windowHandle()->create();
+    QWindowPrivate *p = qt_window_private(win);
+    p->emitScreenChangedRecursion(win->screen());
+
+    QCOMPARE(lbl->winId(), lbl->windowHandle()->winId());
 }
 
 QTEST_MAIN(tst_QWidget_window)
