@@ -80,7 +80,7 @@ class Q_CORE_EXPORT QCollatorPrivate
 public:
     QAtomicInt ref;
     QLocale locale;
-#if defined(Q_OS_WIN)
+#if defined(Q_OS_WIN) && !defined(QT_USE_ICU)
 #ifdef USE_COMPARESTRINGEX
     QString localeName;
 #else
