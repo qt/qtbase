@@ -24,6 +24,7 @@ SUBDIRS=\
    qprocess_and_guieventloop \
    qtokenautomaton \
    windowsmobile \
+   toolsupport \
 
 !qtHaveModule(widgets): SUBDIRS -= \
    baselineexample \
