@@ -1634,6 +1634,9 @@ QStyleOptionProgressBar::QStyleOptionProgressBar(int version)
     \brief the progress bar's orientation (horizontal or vertical);
     the default orentation is Qt::Horizontal
 
+    \deprecated
+    Use the QStyle::State_Horizontal flag instead (in the the QStyleOption::state member).
+
     \sa QProgressBar::orientation
 */
 

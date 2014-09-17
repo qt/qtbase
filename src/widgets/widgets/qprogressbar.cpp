@@ -140,7 +140,7 @@ void QProgressBar::initStyleOption(QStyleOptionProgressBar *option) const
 
     if (QStyleOptionProgressBarV2 *optionV2
             = qstyleoption_cast<QStyleOptionProgressBarV2 *>(option)) {
-        optionV2->orientation = d->orientation;  // ### Qt 5: use State_Horizontal instead
+        optionV2->orientation = d->orientation;  // ### Qt 6: remove this member from QStyleOptionProgressBarV2
         optionV2->invertedAppearance = d->invertedAppearance;
         optionV2->bottomToTop = (d->textDirection == QProgressBar::BottomToTop);
     }
