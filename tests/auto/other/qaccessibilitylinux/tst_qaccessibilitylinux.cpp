@@ -465,6 +465,7 @@ void tst_QAccessibilityLinux::testSlider()
 
     valueInterface->setProperty("CurrentValue", 4);
     QCOMPARE(valueInterface->property("CurrentValue").toInt(), 4);
+    m_window->clearChildren();
 }
 
 quint64 getAtspiState(QDBusInterface *interface)
@@ -513,6 +514,11 @@ void tst_QAccessibilityLinux::testFocus()
     QVERIFY(lineEdit2->hasFocus());
     QVERIFY(!(getAtspiState(accessibleInterfaceLineEdit1) & focusedState));
     QVERIFY(getAtspiState(accessibleInterfaceLineEdit2) & focusedState);
+    m_window->clearChildren();
+    delete accessibleInterfaceLineEdit1;
+    delete accessibleInterfaceLineEdit2;
+    delete componentInterfaceLineEdit1;
+    delete componentInterfaceLineEdit2;
 }
 
 QTEST_MAIN(tst_QAccessibilityLinux)
