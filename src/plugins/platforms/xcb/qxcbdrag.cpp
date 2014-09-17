@@ -242,9 +242,16 @@ xcb_window_t QXcbDrag::findRealWindow(const QPoint & pos, xcb_window_t w, int md
         if (reply->map_state != XCB_MAP_STATE_VIEWABLE)
             return 0;
 
+        free(reply);
+
         xcb_get_geometry_cookie_t gcookie = xcb_get_geometry(xcb_connection(), w);
         xcb_get_geometry_reply_t *greply = xcb_get_geometry_reply(xcb_connection(), gcookie, 0);
-        if (reply && QRect(greply->x, greply->y, greply->width, greply->height).contains(pos)) {
+        if (!greply)
+            return 0;
+
+        QRect windowRect(greply->x, greply->y, greply->width, greply->height);
+        free(greply);
+        if (windowRect.contains(pos)) {
             bool windowContainsMouse = !ignoreNonXdndAwareWindows;
             {
                 xcb_get_property_cookie_t cookie =
@@ -255,7 +262,7 @@ xcb_window_t QXcbDrag::findRealWindow(const QPoint & pos, xcb_window_t w, int md
                 bool isAware = reply && reply->type != XCB_NONE;
                 free(reply);
                 if (isAware) {
-                    const QPoint relPos = pos - QPoint(greply->x, greply->y);
+                    const QPoint relPos = pos - windowRect.topLeft();
                     // When ShapeInput and ShapeBounding are not set they return a single rectangle with the geometry of the window, this is why we
                     // need to check both here so that in the case one is set and the other is not we still get the correct result.
                     if (connection()->hasInputShape())
@@ -279,7 +286,7 @@ xcb_window_t QXcbDrag::findRealWindow(const QPoint & pos, xcb_window_t w, int md
 
             xcb_window_t r = 0;
             for (uint i = nc; !r && i--;)
-                r = findRealWindow(pos - QPoint(greply->x, greply->y), c[i], md-1, ignoreNonXdndAwareWindows);
+                r = findRealWindow(pos - windowRect.topLeft(), c[i], md-1, ignoreNonXdndAwareWindows);
 
             free(reply);
             if (r)
