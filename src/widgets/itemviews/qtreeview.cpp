@@ -109,6 +109,10 @@ QT_BEGIN_NAMESPACE
     its header. If this value is set to true, this property will override the
     resize mode set on the last section in the header.
 
+    By default, all columns in a tree view are movable except the first. To
+    disable movement of these columns, use QHeaderView's
+    \l {QHeaderView::}{setSectionsMovable()} function. For more information
+    about rearranging sections, see \l {Moving Header Sections}.
 
     \section1 Key Bindings
 

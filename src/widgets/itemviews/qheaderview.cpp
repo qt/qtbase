@@ -1087,6 +1087,9 @@ int QHeaderView::logicalIndex(int visualIndex) const
     If \a movable is true, the header may be moved by the user; otherwise it
     is fixed in place.
 
+    By default, all sections are movable except the first, which always stays
+    fixed.
+
     \sa sectionsMovable(), sectionMoved()
 */
 
