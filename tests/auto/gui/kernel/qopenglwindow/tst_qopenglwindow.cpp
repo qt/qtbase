@@ -116,8 +116,8 @@ void tst_QOpenGLWindow::basic()
     QVERIFY(w.paintCount >= 1);
 
     // Check that something has been drawn;
-    QCOMPARE(w.img.size(), w.size());
-    QVERIFY(w.img.pixel(5, 5) == qRgb(255, 0, 0));
+    QCOMPARE(w.img.size(), w.size() * w.devicePixelRatio());
+    QVERIFY(w.img.pixel(QPoint(5, 5) * w.devicePixelRatio()) == qRgb(255, 0, 0));
 
     // Check that the viewport was properly set.
     w.makeCurrent();
@@ -168,9 +168,9 @@ void tst_QOpenGLWindow::painter()
     w.show();
     QTest::qWaitForWindowExposed(&w);
 
-    QCOMPARE(w.img.size(), w.size());
-    QVERIFY(w.img.pixel(5, 5) == qRgb(0, 0, 255));
-    QVERIFY(w.img.pixel(200, 5) == qRgb(255, 0, 0));
+    QCOMPARE(w.img.size(), w.size() * w.devicePixelRatio());
+    QVERIFY(w.img.pixel(QPoint(5, 5) * w.devicePixelRatio()) == qRgb(0, 0, 255));
+    QVERIFY(w.img.pixel(QPoint(200, 5) * w.devicePixelRatio()) == qRgb(255, 0, 0));
 }
 
 class PartialPainterWindow : public QOpenGLWindow
@@ -222,10 +222,10 @@ void tst_QOpenGLWindow::partial()
     // Now since the painting went to an extra framebuffer, all the rects should
     // be present since everything is preserved between the frames.
     QImage img = w.grabFramebuffer();
-    QCOMPARE(img.size(), w.size());
-    QCOMPARE(img.pixel(5, 5), qRgb(0, 0, 255));
-    QCOMPARE(img.pixel(15, 5), qRgb(0, 255, 0));
-    QCOMPARE(img.pixel(25, 5), qRgb(0, 0, 255));
+    QCOMPARE(img.size(), w.size() * w.devicePixelRatio());
+    QCOMPARE(img.pixel(QPoint(5, 5) * w.devicePixelRatio()), qRgb(0, 0, 255));
+    QCOMPARE(img.pixel(QPoint(15, 5) * w.devicePixelRatio()), qRgb(0, 255, 0));
+    QCOMPARE(img.pixel(QPoint(25, 5) * w.devicePixelRatio()), qRgb(0, 0, 255));
 }
 
 class PaintUnderOverWindow : public QOpenGLWindow

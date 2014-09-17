@@ -211,8 +211,11 @@ public:
             context->makeCurrent(q);
         }
 
+        const int deviceWidth = q->width() * q->devicePixelRatio();
+        const int deviceHeight = q->height() * q->devicePixelRatio();
+        const QSize deviceSize(deviceWidth, deviceHeight);
         if (updateBehavior > QOpenGLWindow::NoPartialUpdate) {
-            if (!fbo || fbo->size() != q->size() * q->devicePixelRatio()) {
+            if (!fbo || fbo->size() != deviceSize) {
                 QOpenGLFramebufferObjectFormat fboFormat;
                 fboFormat.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
                 if (q->requestedFormat().samples() > 0) {
@@ -221,15 +224,13 @@ public:
                     else
                         qWarning("QOpenGLWindow: PartialUpdateBlend does not support multisampling");
                 }
-                fbo.reset(new QOpenGLFramebufferObject(q->size() * q->devicePixelRatio(), fboFormat));
+                fbo.reset(new QOpenGLFramebufferObject(deviceSize, fboFormat));
                 markWindowAsDirty();
             }
         } else {
             markWindowAsDirty();
         }
 
-        const int deviceWidth = q->width() * q->devicePixelRatio();
-        const int deviceHeight = q->height() * q->devicePixelRatio();
         paintDevice->setSize(QSize(deviceWidth, deviceHeight));
         paintDevice->setDevicePixelRatio(q->devicePixelRatio());
         context->functions()->glViewport(0, 0, deviceWidth, deviceHeight);
@@ -252,11 +253,13 @@ public:
         context->functions()->glBindFramebuffer(GL_FRAMEBUFFER, context->defaultFramebufferObject());
 
         if (updateBehavior == QOpenGLWindow::PartialUpdateBlit && hasFboBlit) {
+            const int deviceWidth = q->width() * q->devicePixelRatio();
+            const int deviceHeight = q->height() * q->devicePixelRatio();
             QOpenGLExtensions extensions(context.data());
             extensions.glBindFramebuffer(GL_READ_FRAMEBUFFER, fbo->handle());
             extensions.glBindFramebuffer(GL_DRAW_FRAMEBUFFER, context->defaultFramebufferObject());
-            extensions.glBlitFramebuffer(0, 0, q->width(), q->height(),
-                                         0, 0, q->width(), q->height(),
+            extensions.glBlitFramebuffer(0, 0, deviceWidth, deviceHeight,
+                                         0, 0, deviceWidth, deviceHeight,
                                          GL_COLOR_BUFFER_BIT, GL_NEAREST);
         } else if (updateBehavior > QOpenGLWindow::NoPartialUpdate) {
             if (updateBehavior == QOpenGLWindow::PartialUpdateBlend) {
@@ -591,7 +594,7 @@ int QOpenGLWindow::metric(PaintDeviceMetric metric) const
             break;
         case PdmDevicePixelRatio:
             if (d->paintDevice)
-                return d->paintDevice->devicePixelRatio();
+                return devicePixelRatio();
             break;
         default:
             break;
