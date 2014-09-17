@@ -797,7 +797,6 @@ QImageData *QImageData::create(uchar *data, int width, int height,  int bpl, QIm
         || INT_MAX/sizeof(uchar *) < uint(height)
         || INT_MAX/uint(depth) < uint(width)
         || bpl <= 0
-        || height <= 0
         || bpl < min_bytes_per_line
         || INT_MAX/uint(bpl) < uint(height))
         return d;                                        // invalid parameter(s)
