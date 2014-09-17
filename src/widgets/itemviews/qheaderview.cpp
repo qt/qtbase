@@ -124,7 +124,7 @@ static const int maxSizeSection = 1048575; // since section size is in a bitfiel
 
     A header can be fixed in place, or made movable with setSectionsMovable(). It can
     be made clickable with setSectionsClickable(), and has resizing behavior in
-    accordance with setSectionResizeMode()
+    accordance with setSectionResizeMode().
 
     \note Double-clicking on a header to resize a section only applies for
     visible rows.
