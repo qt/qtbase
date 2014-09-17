@@ -3266,6 +3266,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
                 me.spont = mouse->spontaneous();
                 me.setTimestamp(mouse->timestamp());
                 QGuiApplicationPrivate::setMouseEventFlags(&me, mouse->flags());
+                QGuiApplicationPrivate::setMouseEventSource(&me, mouse->source());
                 // throw away any mouse-tracking-only mouse events
                 if (!w->hasMouseTracking()
                     && mouse->type() == QEvent::MouseMove && mouse->buttons() == 0) {

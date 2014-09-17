@@ -1712,7 +1712,8 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
         // with the current event, we fake a move-only event that we recurse and process first. This
         // will update the global mouse position and cause the second event to be a button only event.
         QWindowSystemInterfacePrivate::MouseEvent moveEvent(e->window.data(),
-                e->timestamp, e->type, e->localPos, e->globalPos, buttons, e->modifiers);
+                e->timestamp, e->type, e->localPos, e->globalPos, buttons, e->modifiers, e->source);
+        moveEvent.synthetic = e->synthetic;
         processMouseEvent(&moveEvent);
         Q_ASSERT(e->globalPos == QGuiApplicationPrivate::lastCursorPosition);
         // continue with processing mouse button change event
