@@ -3083,8 +3083,7 @@ int QFusionStyle::pixelMetric(PixelMetric metric, const QStyleOption *option, co
         val = 2;
         break;
     case PM_MaximumDragDistance:
-        val = -1;
-        break;
+        return -1; // Do not dpi-scale because the value is magic
     case PM_TabCloseIndicatorWidth:
     case PM_TabCloseIndicatorHeight:
         val = 20;
@@ -3099,8 +3098,7 @@ int QFusionStyle::pixelMetric(PixelMetric metric, const QStyleOption *option, co
         val = 2;
         break;
     case PM_SubMenuOverlap:
-        val = -1;
-        break;
+        return -1; // Do not dpi-scale because the value is magic
     case PM_DockWidgetHandleExtent:
     case PM_SplitterWidth:
         val = 4;
@@ -3121,7 +3119,6 @@ int QFusionStyle::pixelMetric(PixelMetric metric, const QStyleOption *option, co
         break;
     case PM_DefaultFrameWidth:
         return 1; // Do not dpi-scale because the drawn frame is always exactly 1 pixel thick
-        break;
     default:
         return QCommonStyle::pixelMetric(metric, option, widget);
     }
