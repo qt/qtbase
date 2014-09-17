@@ -82,6 +82,8 @@ public:
 class QTableModel : public QAbstractTableModel
 {
     Q_OBJECT
+    friend class QTableWidget;
+
 public:
     enum ItemFlagsExtension {
         ItemIsHeaderItem = 128

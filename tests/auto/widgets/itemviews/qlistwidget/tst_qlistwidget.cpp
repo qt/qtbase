@@ -123,7 +123,7 @@ private slots:
     void task258949_keypressHangup();
     void QTBUG8086_currentItemChangedOnClick();
     void QTBUG14363_completerWithAnyKeyPressedEditTriggers();
-
+    void mimeData();
 
 protected slots:
     void rowsAboutToBeInserted(const QModelIndex &parent, int first, int last)
@@ -1082,6 +1082,9 @@ public:
         Q_UNUSED(item);
         return QListWidget::state() == QListWidget::EditingState;
     }
+
+    using QListWidget::mimeData;
+    using QListWidget::indexFromItem;
 };
 
 void tst_QListWidget::closeEditor()
@@ -1662,7 +1665,57 @@ void tst_QListWidget::QTBUG14363_completerWithAnyKeyPressedEditTriggers()
     QCOMPARE(le->completer()->currentCompletion(), QString("completer"));
 }
 
+void tst_QListWidget::mimeData()
+{
+    TestListWidget list;
 
+    for (int x = 0; x < 10; ++x) {
+        QListWidgetItem *item = new QListWidgetItem(QStringLiteral("123"));
+        list.addItem(item);
+    }
+
+    QList<QListWidgetItem *> tableWidgetItemList;
+    QModelIndexList modelIndexList;
+
+    // do these checks more than once to ensure that the "cached indexes" work as expected
+    QVERIFY(!list.mimeData(tableWidgetItemList));
+    QVERIFY(!list.model()->mimeData(modelIndexList));
+    QVERIFY(!list.model()->mimeData(modelIndexList));
+    QVERIFY(!list.mimeData(tableWidgetItemList));
+
+    tableWidgetItemList << list.item(1);
+    modelIndexList << list.indexFromItem(list.item(1));
+
+    QMimeData *data;
+
+    QVERIFY(data = list.mimeData(tableWidgetItemList));
+    delete data;
+
+    QVERIFY(data = list.model()->mimeData(modelIndexList));
+    delete data;
+
+    QVERIFY(data = list.model()->mimeData(modelIndexList));
+    delete data;
+
+    QVERIFY(data = list.mimeData(tableWidgetItemList));
+    delete data;
+
+    // check the saved data is actually the same
+
+    QMimeData *data2;
+
+    data = list.mimeData(tableWidgetItemList);
+    data2 = list.model()->mimeData(modelIndexList);
+
+    const QString format = QStringLiteral("application/x-qabstractitemmodeldatalist");
+
+    QVERIFY(data->hasFormat(format));
+    QVERIFY(data2->hasFormat(format));
+    QVERIFY(data->data(format) == data2->data(format));
+
+    delete data;
+    delete data2;
+}
 
 QTEST_MAIN(tst_QListWidget)
 #include "tst_qlistwidget.moc"

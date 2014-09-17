@@ -93,6 +93,7 @@ private slots:
     void task219380_removeLastRow();
     void task262056_sortDuplicate();
     void itemWithHeaderItems();
+    void mimeData();
 
 private:
     QTableWidget *testWidget;
@@ -1495,6 +1496,73 @@ void tst_QTableWidget::itemWithHeaderItems()
     table.setItem(1, 0, item1_0);
 
     QCOMPARE(table.item(0, 1), static_cast<QTableWidgetItem *>(0));
+}
+
+class TestTableWidget : public QTableWidget
+{
+    Q_OBJECT
+public:
+    TestTableWidget(int rows, int columns, QWidget *parent = 0)
+        : QTableWidget(rows, columns, parent)
+    {
+    }
+
+    using QTableWidget::mimeData;
+    using QTableWidget::indexFromItem;
+};
+
+void tst_QTableWidget::mimeData()
+{
+    TestTableWidget table(10, 10);
+
+    for (int x = 0; x < 10; ++x) {
+        for (int y = 0; y < 10; ++y) {
+            QTableWidgetItem *item = new QTableWidgetItem(QStringLiteral("123"));
+            table.setItem(y, x, item);
+        }
+    }
+
+    QList<QTableWidgetItem *> tableWidgetItemList;
+    QModelIndexList modelIndexList;
+
+    // do these checks more than once to ensure that the "cached indexes" work as expected
+    QVERIFY(!table.mimeData(tableWidgetItemList));
+    QVERIFY(!table.model()->mimeData(modelIndexList));
+    QVERIFY(!table.model()->mimeData(modelIndexList));
+    QVERIFY(!table.mimeData(tableWidgetItemList));
+
+    tableWidgetItemList << table.item(1, 1);
+    modelIndexList << table.indexFromItem(table.item(1, 1));
+
+    QMimeData *data;
+
+    QVERIFY(data = table.mimeData(tableWidgetItemList));
+    delete data;
+
+    QVERIFY(data = table.model()->mimeData(modelIndexList));
+    delete data;
+
+    QVERIFY(data = table.model()->mimeData(modelIndexList));
+    delete data;
+
+    QVERIFY(data = table.mimeData(tableWidgetItemList));
+    delete data;
+
+    // check the saved data is actually the same
+
+    QMimeData *data2;
+
+    data = table.mimeData(tableWidgetItemList);
+    data2 = table.model()->mimeData(modelIndexList);
+
+    const QString format = QStringLiteral("application/x-qabstractitemmodeldatalist");
+
+    QVERIFY(data->hasFormat(format));
+    QVERIFY(data2->hasFormat(format));
+    QVERIFY(data->data(format) == data2->data(format));
+
+    delete data;
+    delete data2;
 }
 
 QTEST_MAIN(tst_QTableWidget)

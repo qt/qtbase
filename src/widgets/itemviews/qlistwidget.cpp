@@ -1783,9 +1783,24 @@ QStringList QListWidget::mimeTypes() const
     If the list of items is empty, 0 is returned instead of a serialized empty
     list.
 */
-QMimeData *QListWidget::mimeData(const QList<QListWidgetItem*>) const
+QMimeData *QListWidget::mimeData(const QList<QListWidgetItem*> items) const
 {
-    return d_func()->listModel()->internalMimeData();
+    Q_D(const QListWidget);
+
+    QModelIndexList &cachedIndexes = d->listModel()->cachedIndexes;
+
+    // if non empty, it's called from the model's own mimeData
+    if (cachedIndexes.isEmpty()) {
+        foreach (QListWidgetItem *item, items)
+            cachedIndexes << indexFromItem(item);
+
+        QMimeData *result = d->listModel()->internalMimeData();
+
+        cachedIndexes.clear();
+        return result;
+    }
+
+    return d->listModel()->internalMimeData();
 }
 
 #ifndef QT_NO_DRAGANDDROP

@@ -72,6 +72,8 @@ public:
 class Q_AUTOTEST_EXPORT QListModel : public QAbstractListModel
 {
     Q_OBJECT
+    friend class QListWidget;
+
 public:
     QListModel(QListWidget *parent);
     ~QListModel();

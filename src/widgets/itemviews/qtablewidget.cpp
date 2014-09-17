@@ -2553,9 +2553,24 @@ QStringList QTableWidget::mimeTypes() const
     If the list of items is empty, 0 is returned rather than a serialized
     empty list.
 */
-QMimeData *QTableWidget::mimeData(const QList<QTableWidgetItem*>) const
+QMimeData *QTableWidget::mimeData(const QList<QTableWidgetItem*> items) const
 {
-    return d_func()->tableModel()->internalMimeData();
+    Q_D(const QTableWidget);
+
+    QModelIndexList &cachedIndexes = d->tableModel()->cachedIndexes;
+
+    // if non empty, it's called from the model's own mimeData
+    if (cachedIndexes.isEmpty()) {
+        foreach (QTableWidgetItem *item, items)
+            cachedIndexes << indexFromItem(item);
+
+        QMimeData *result = d->tableModel()->internalMimeData();
+
+        cachedIndexes.clear();
+        return result;
+    }
+
+    return d->tableModel()->internalMimeData();
 }
 
 /*!
