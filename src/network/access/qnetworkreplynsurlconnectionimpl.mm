@@ -295,7 +295,7 @@ void QNetworkReplyNSURLConnectionImpl::readyReadOutgoingData()
 
     if ([response expectedContentLength] != NSURLResponseUnknownLength) {
         QMetaObject::invokeMethod(replyprivate->q_func(), "downloadProgress", Qt::QueuedConnection,
-            Q_ARG(qint64, qint64([responseData length])),
+            Q_ARG(qint64, qint64([responseData length] + replyprivate->bytesRead)),
             Q_ARG(qint64, qint64([response expectedContentLength])));
     }
 
@@ -426,9 +426,7 @@ qint64 QNetworkReplyNSURLConnectionImpl::bytesAvailable() const
 {
     Q_D(const QNetworkReplyNSURLConnectionImpl);
     qint64 available = QNetworkReply::bytesAvailable() +
-            [[d->urlConnectionDelegate responseData] length] -
-            d->bytesRead;
-
+              [[d->urlConnectionDelegate responseData] length];
     return available;
 }
 
@@ -440,7 +438,7 @@ bool QNetworkReplyNSURLConnectionImpl::isSequential() const
 qint64 QNetworkReplyNSURLConnectionImpl::size() const
 {
     Q_D(const QNetworkReplyNSURLConnectionImpl);
-    return [[d->urlConnectionDelegate responseData] length];
+    return [[d->urlConnectionDelegate responseData] length] + d->bytesRead;
 }
 
 /*!
@@ -450,9 +448,10 @@ qint64 QNetworkReplyNSURLConnectionImpl::readData(char *data, qint64 maxlen)
 {
     Q_D(QNetworkReplyNSURLConnectionImpl);
     qint64 dataSize = [[d->urlConnectionDelegate responseData] length];
-    qint64 canRead = qMin(maxlen, dataSize - d->bytesRead);
+    qint64 canRead = qMin(maxlen, dataSize);
     const char *sourceBase = static_cast<const char *>([[d->urlConnectionDelegate responseData] bytes]);
-    memcpy(data,  sourceBase + d->bytesRead, canRead);
+    memcpy(data,  sourceBase, canRead);
+    [[d->urlConnectionDelegate responseData] replaceBytesInRange:NSMakeRange(0, canRead) withBytes:NULL length:0];
     d->bytesRead += canRead;
     return canRead;
 }
