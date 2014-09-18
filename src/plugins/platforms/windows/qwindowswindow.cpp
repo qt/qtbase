@@ -770,9 +770,8 @@ void QWindowsGeometryHint::applyToMinMaxInfo(DWORD style, DWORD exStyle, MINMAXI
     const int maximumHeight = qMax(maximumSize.height(), minimumSize.height());
     if (maximumWidth < QWINDOWSIZE_MAX)
         mmi->ptMaxTrackSize.x = maximumWidth + frameWidth;
-    // windows with title bar have an implicit size limit of 112 pixels
     if (maximumHeight < QWINDOWSIZE_MAX)
-        mmi->ptMaxTrackSize.y = qMax(maximumHeight + frameHeight, 112);
+        mmi->ptMaxTrackSize.y = maximumHeight + frameHeight;
     qCDebug(lcQpaWindows).nospace() << '<' << __FUNCTION__
         << " frame=" << margins << ' ' << frameWidth << ',' << frameHeight
         << " out " << *mmi;
