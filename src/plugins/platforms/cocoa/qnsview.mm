@@ -580,6 +580,8 @@ static NSString *_q_NSWindowDidChangeOcclusionStateNotification = nil;
     CGImageRelease(subMask);
 
     [self invalidateWindowShadowIfNeeded];
+
+    m_backingStore = 0;
 }
 
 - (BOOL) isFlipped
