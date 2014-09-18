@@ -518,6 +518,8 @@ void tst_QMdiArea::subWindowActivated2()
 #ifdef Q_OS_MAC
     QSKIP("QTBUG-25298: This test is unstable on Mac.");
 #endif
+    if (qApp->platformName().toLower() == QStringLiteral("xcb"))
+        QSKIP("QTBUG-25298: Unstable on some X11 window managers");
     QTRY_COMPARE(spy.count(), 1);
     QVERIFY(!mdiArea.activeSubWindow());
     QCOMPARE(mdiArea.currentSubWindow(), activeSubWindow);
@@ -1011,11 +1013,6 @@ void tst_QMdiArea::activeSubWindow()
     qApp->setActiveWindow(&mainWindow);
     QCOMPARE(mdiArea->activeSubWindow(), subWindow);
 
-#if !defined(Q_OS_MAC) && !defined(Q_OS_WIN) && !defined(Q_OS_QNX)
-    qApp->setActiveWindow(0);
-    QVERIFY(!mdiArea->activeSubWindow());
-#endif
-
     //task 202657
     dockWidgetLineEdit->setFocus();
     qApp->setActiveWindow(&mainWindow);
@@ -1091,12 +1088,6 @@ void tst_QMdiArea::currentSubWindow()
     qApp->sendEvent(active, &windowActivate);
     QVERIFY(mdiArea.activeSubWindow());
     QVERIFY(mdiArea.currentSubWindow());
-
-#if !defined(Q_OS_MAC) && !defined(Q_OS_WIN) && !defined(Q_OS_QNX)
-    qApp->setActiveWindow(0);
-    QVERIFY(!mdiArea.activeSubWindow());
-    QVERIFY(mdiArea.currentSubWindow());
-#endif
 }
 
 void tst_QMdiArea::addAndRemoveWindows()
