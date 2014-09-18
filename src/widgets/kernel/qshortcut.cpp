@@ -279,7 +279,7 @@ static bool correctActionContext(Qt::ShortcutContext context, QAction *a, QWidge
             // (and reaches this point), then the menu item itself has been disabled.
             // This occurs at the QPA level on Mac, were we disable all the Cocoa menus
             // when showing a modal window.
-            if (a->shortcut().count() <= 1)
+            if (a->shortcut().count() < 1 || (a->shortcut().count() == 1 && (a->shortcut()[0] & Qt::MODIFIER_MASK) != 0))
                 continue;
 #endif
             QAction *a = menu->menuAction();
