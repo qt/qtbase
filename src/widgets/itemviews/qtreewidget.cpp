@@ -1010,6 +1010,9 @@ void QTreeModel::timerEvent(QTimerEvent *ev)
   \since 4.2
 
   Hides the item if \a hide is true, otherwise shows the item.
+  \note A call to this function has no effect if the item is not currently in a view. In particular,
+        calling \c setHidden(true) on an item and only then adding it to a view will result in
+        a visible item.
 
   \sa isHidden()
 */
