@@ -128,6 +128,7 @@ private slots:
     void testEmptyData();
     void testResourceFiles();
     void testRegistryShortRootNames();
+    void trailingWhitespace();
 #ifdef Q_OS_MAC
     void fileName();
 #endif
@@ -2028,6 +2029,23 @@ void tst_QSettings::testRegistryShortRootNames()
     QVERIFY(QSettings("HKEY_CLASSES_ROOT", QSettings::NativeFormat).childGroups() == QSettings("HKCR", QSettings::NativeFormat).childGroups());
     QVERIFY(QSettings("HKEY_USERS", QSettings::NativeFormat).childGroups() == QSettings("HKU", QSettings::NativeFormat).childGroups());
 #endif
+}
+
+void tst_QSettings::trailingWhitespace()
+{
+    {
+        QSettings s("tst_QSettings_trailingWhitespace");
+        s.setValue("trailingSpace", "x  ");
+        s.setValue("trailingTab", "x\t");
+        s.setValue("trailingNewline", "x\n");
+    }
+    {
+        QSettings s("tst_QSettings_trailingWhitespace");
+        QCOMPARE(s.value("trailingSpace").toString(), QLatin1String("x  "));
+        QCOMPARE(s.value("trailingTab").toString(), QLatin1String("x\t"));
+        QCOMPARE(s.value("trailingNewline").toString(), QLatin1String("x\n"));
+        s.clear();
+    }
 }
 
 void tst_QSettings::fromFile_data()
