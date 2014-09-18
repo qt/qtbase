@@ -58,6 +58,9 @@ class QIOSInputContext;
 - (id)initWithInputContext:(QIOSInputContext *)context;
 - (void)notifyInputDelegate:(Qt::InputMethodQueries)updatedProperties;
 
+@property(readwrite, retain) UIView *inputView;
+@property(readwrite, retain) UIView *inputAccessoryView;
+
 // UITextInputTraits
 @property(nonatomic) UITextAutocapitalizationType autocapitalizationType;
 @property(nonatomic) UITextAutocorrectionType autocorrectionType;

@@ -114,6 +114,55 @@
 
 // -------------------------------------------------------------------------
 
+@interface WrapperView : UIView
+@end
+
+@implementation WrapperView
+
+-(id)initWithView:(UIView *)view
+{
+    if (self = [self init]) {
+        [self addSubview:view];
+
+        self.autoresizingMask = view.autoresizingMask;
+
+        [self sizeToFit];
+    }
+
+    return self;
+}
+
+- (void)layoutSubviews
+{
+    UIView* view = [self.subviews firstObject];
+    view.frame = self.bounds;
+
+    // FIXME: During orientation changes the size and position
+    // of the view is not respected by the host view, even if
+    // we call sizeToFit or setNeedsLayout on the superview.
+}
+
+- (CGSize)sizeThatFits:(CGSize)size
+{
+    return [[self.subviews firstObject] sizeThatFits:size];
+}
+
+// By keeping the responder (QIOSTextInputResponder in this case)
+// retained, we ensure that all messages sent to the view during
+// its lifetime in a window hierarcy will be able to traverse the
+// responder chain.
+-(void)willMoveToWindow:(UIWindow *)window
+{
+    if (window)
+        [[self nextResponder] retain];
+    else
+        [[self nextResponder] autorelease];
+}
+
+@end
+
+// -------------------------------------------------------------------------
+
 @implementation QIOSTextInputResponder
 
 - (id)initWithInputContext:(QIOSInputContext *)inputContext
@@ -153,11 +202,19 @@
     else
         self.keyboardType = UIKeyboardTypeDefault;
 
+    QVariantMap platformData = [self imValue:Qt::ImPlatformData].toMap();
+    if (UIView *inputView = static_cast<UIView *>(platformData.value(kImePlatformDataInputView).value<void *>()))
+        self.inputView = [[[WrapperView alloc] initWithView:inputView] autorelease];
+    if (UIView *accessoryView = static_cast<UIView *>(platformData.value(kImePlatformDataInputAccessoryView).value<void *>()))
+        self.inputAccessoryView = [[[WrapperView alloc] initWithView:accessoryView] autorelease];
+
     return self;
 }
 
 - (void)dealloc
 {
+    self.inputView = 0;
+    self.inputAccessoryView = 0;
     [super dealloc];
 }
 

@@ -48,6 +48,9 @@
 #include <QtGui/qtransform.h>
 #include <qpa/qplatforminputcontext.h>
 
+const char kImePlatformDataInputView[] = "inputView";
+const char kImePlatformDataInputAccessoryView[] = "inputAccessoryView";
+
 QT_BEGIN_NAMESPACE
 
 @class QIOSKeyboardListener;
