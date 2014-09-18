@@ -1242,6 +1242,11 @@ void QPaintBufferEngine::drawTiledPixmap(const QRectF &r, const QPixmap &pm, con
 
 void QPaintBufferEngine::drawStaticTextItem(QStaticTextItem *staticTextItem)
 {
+    if (staticTextItem->usesRawFont) {
+        QPaintEngineEx::drawStaticTextItem(staticTextItem);  // Draw as path
+        return;
+    }
+
     QVariantList variants;
 
     variants << QVariant(staticTextItem->font);

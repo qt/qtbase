@@ -5619,6 +5619,8 @@ void QPainterPrivate::drawGlyphs(const quint32 *glyphArray, QFixedPoint *positio
         staticTextItem.numGlyphs = glyphCount;
         staticTextItem.glyphs = reinterpret_cast<glyph_t *>(const_cast<glyph_t *>(glyphArray));
         staticTextItem.glyphPositions = positions;
+        // The font property is meaningless, the fontengine must be used directly:
+        staticTextItem.usesRawFont = true;
 
         extended->drawStaticTextItem(&staticTextItem);
     } else {
