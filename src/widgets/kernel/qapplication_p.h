@@ -282,6 +282,7 @@ public:
     QWidget *findClosestTouchPointTarget(QTouchDevice *device, const QTouchEvent::TouchPoint &touchPoint);
     void appendTouchPoint(const QTouchEvent::TouchPoint &touchPoint);
     void removeTouchPoint(int touchPointId);
+    void activateImplicitTouchGrab(QWidget *widget, QTouchEvent *touchBeginEvent);
     static bool translateRawTouchEvent(QWidget *widget,
                                        QTouchDevice *device,
                                        const QList<QTouchEvent::TouchPoint> &touchPoints,

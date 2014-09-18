@@ -3548,6 +3548,10 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
             QApplicationPrivate::giveFocusAccordingToFocusPolicy(widget, e, localPos);
         }
 
+#ifndef QT_NO_GESTURES
+        QPointer<QWidget> gesturePendingWidget;
+#endif
+
         while (widget) {
             // first, try to deliver the touch event
             acceptTouchEvents = widget->testAttribute(Qt::WA_AcceptTouchEvents);
@@ -3565,14 +3569,16 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
             touchEvent->spont = false;
             if (res && eventAccepted) {
                 // the first widget to accept the TouchBegin gets an implicit grab.
-                for (int i = 0; i < touchEvent->touchPoints().count(); ++i) {
-                    const QTouchEvent::TouchPoint &touchPoint = touchEvent->touchPoints().at(i);
-                    d->activeTouchPoints[QGuiApplicationPrivate::ActiveTouchPointsKey(touchEvent->device(), touchPoint.id())].target = widget;
-                }
-                break;
-            } else if (p.isNull() || widget->isWindow() || widget->testAttribute(Qt::WA_NoMousePropagation)) {
+                d->activateImplicitTouchGrab(widget, touchEvent);
                 break;
             }
+#ifndef QT_NO_GESTURES
+            if (gesturePendingWidget.isNull() && widget && QGestureManager::gesturePending(widget))
+                gesturePendingWidget = widget;
+#endif
+            if (p.isNull() || widget->isWindow() || widget->testAttribute(Qt::WA_NoMousePropagation))
+                break;
+
             QPoint offset = widget->pos();
             widget = widget->parentWidget();
             touchEvent->setTarget(widget);
@@ -3586,7 +3592,25 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
             }
         }
 
+#ifndef QT_NO_GESTURES
+        if (!eventAccepted && !gesturePendingWidget.isNull()) {
+            // the first widget subscribed to a gesture gets an implicit grab
+            d->activateImplicitTouchGrab(gesturePendingWidget, touchEvent);
+        }
+#endif
+
         touchEvent->setAccepted(eventAccepted);
+        break;
+    }
+    case QEvent::TouchUpdate:
+    case QEvent::TouchEnd:
+    {
+        QWidget *widget = static_cast<QWidget *>(receiver);
+        // We may get here if the widget is subscribed to a gesture,
+        // but has not accepted TouchBegin. Propagate touch events
+        // only if TouchBegin has been accepted.
+        if (widget && widget->testAttribute(Qt::WA_WState_AcceptedTouchBeginEvent))
+            res = d->notify_helper(widget, e);
         break;
     }
     case QEvent::RequestSoftwareInputPanel:
@@ -4328,6 +4352,17 @@ QWidget *QApplicationPrivate::findClosestTouchPointTarget(QTouchDevice *device, 
     return static_cast<QWidget *>(closestTarget);
 }
 
+void QApplicationPrivate::activateImplicitTouchGrab(QWidget *widget, QTouchEvent *touchEvent)
+{
+    if (touchEvent->type() != QEvent::TouchBegin)
+        return;
+
+    for (int i = 0, tc = touchEvent->touchPoints().count(); i < tc; ++i) {
+        const QTouchEvent::TouchPoint &touchPoint = touchEvent->touchPoints().at(i);
+        activeTouchPoints[QGuiApplicationPrivate::ActiveTouchPointsKey(touchEvent->device(), touchPoint.id())].target = widget;
+    }
+}
+
 bool QApplicationPrivate::translateRawTouchEvent(QWidget *window,
                                                  QTouchDevice *device,
                                                  const QList<QTouchEvent::TouchPoint> &touchPoints,
@@ -4458,10 +4493,11 @@ bool QApplicationPrivate::translateRawTouchEvent(QWidget *window,
                 || QGestureManager::gesturePending(widget)
 #endif
                 ) {
-                if (touchEvent.type() == QEvent::TouchEnd)
-                    widget->setAttribute(Qt::WA_WState_AcceptedTouchBeginEvent, false);
                 if (QApplication::sendSpontaneousEvent(widget, &touchEvent) && touchEvent.isAccepted())
                     accepted = true;
+                // widget can be deleted on TouchEnd
+                if (touchEvent.type() == QEvent::TouchEnd && !widget.isNull())
+                    widget->setAttribute(Qt::WA_WState_AcceptedTouchBeginEvent, false);
             }
             break;
         }

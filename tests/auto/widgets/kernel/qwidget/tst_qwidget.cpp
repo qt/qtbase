@@ -447,6 +447,7 @@ private slots:
 
     void touchEventSynthesizedMouseEvent();
     void touchUpdateOnNewTouch();
+    void touchEventsForGesturePendingWidgets();
 
     void styleSheetPropagation();
 
@@ -9788,6 +9789,7 @@ public:
           m_touchUpdateCount(0),
           m_touchEndCount(0),
           m_touchEventCount(0),
+          m_gestureEventCount(0),
           m_acceptTouch(false),
           m_mouseEventCount(0),
           m_acceptMouse(true)
@@ -9825,6 +9827,9 @@ protected:
             else
                 e->ignore();
             return true;
+        case QEvent::Gesture:
+            ++m_gestureEventCount;
+            return true;
 
         case QEvent::MouseButtonPress:
         case QEvent::MouseMove:
@@ -9847,6 +9852,7 @@ public:
     int m_touchUpdateCount;
     int m_touchEndCount;
     int m_touchEventCount;
+    int m_gestureEventCount;
     bool m_acceptTouch;
     int m_mouseEventCount;
     bool m_acceptMouse;
@@ -10000,6 +10006,48 @@ void tst_QWidget::touchUpdateOnNewTouch()
     QCOMPARE(widget.m_touchBeginCount, 1);
     QCOMPARE(widget.m_touchUpdateCount, 3);
     QCOMPARE(widget.m_touchEndCount, 1);
+}
+
+void tst_QWidget::touchEventsForGesturePendingWidgets()
+{
+    QTouchDevice *device = new QTouchDevice;
+    device->setType(QTouchDevice::TouchScreen);
+    QWindowSystemInterface::registerTouchDevice(device);
+
+    TouchMouseWidget parent;
+    TouchMouseWidget child(&parent);
+    parent.grabGesture(Qt::TapAndHoldGesture);
+    parent.show();
+
+    QWindow* window = parent.windowHandle();
+    QVERIFY(QTest::qWaitForWindowExposed(window));
+    QTest::qWait(500); // needed for QApplication::topLevelAt(), which is used by QGestureManager
+    QCOMPARE(child.m_touchEventCount, 0);
+    QCOMPARE(child.m_gestureEventCount, 0);
+    QCOMPARE(parent.m_touchEventCount, 0);
+    QCOMPARE(parent.m_gestureEventCount, 0);
+    QTest::touchEvent(window, device).press(0, QPoint(20, 20), window);
+    QCOMPARE(child.m_touchEventCount, 0);
+    QCOMPARE(child.m_gestureEventCount, 0);
+    QCOMPARE(parent.m_touchBeginCount, 1); // QTapAndHoldGestureRecognizer::create() sets Qt::WA_AcceptTouchEvents
+    QCOMPARE(parent.m_touchUpdateCount, 0);
+    QCOMPARE(parent.m_touchEndCount, 0);
+    QCOMPARE(parent.m_gestureEventCount, 0);
+    QTest::touchEvent(window, device).move(0, QPoint(25, 25), window);
+    QCOMPARE(child.m_touchEventCount, 0);
+    QCOMPARE(child.m_gestureEventCount, 0);
+    QCOMPARE(parent.m_touchBeginCount, 1);
+    QCOMPARE(parent.m_touchUpdateCount, 0);
+    QCOMPARE(parent.m_touchEndCount, 0);
+    QCOMPARE(parent.m_gestureEventCount, 0);
+    QTest::qWait(1000);
+    QTest::touchEvent(window, device).release(0, QPoint(25, 25), window);
+    QCOMPARE(child.m_touchEventCount, 0);
+    QCOMPARE(child.m_gestureEventCount, 0);
+    QCOMPARE(parent.m_touchBeginCount, 1);
+    QCOMPARE(parent.m_touchUpdateCount, 0);
+    QCOMPARE(parent.m_touchEndCount, 0);
+    QVERIFY(parent.m_gestureEventCount > 0);
 }
 
 void tst_QWidget::styleSheetPropagation()
