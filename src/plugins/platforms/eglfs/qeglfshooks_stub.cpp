@@ -32,9 +32,13 @@
 ****************************************************************************/
 
 #include "qeglfshooks.h"
+#include "qeglfsintegration.h"
+#include "qeglfsscreen.h"
+
 #include <QtPlatformSupport/private/qeglplatformcursor_p.h>
 #include <QtPlatformSupport/private/qeglconvenience_p.h>
 #include <QtCore/QRegularExpression>
+#include <QtGui/private/qguiapplication_p.h>
 
 #if defined(Q_OS_LINUX)
 #include <fcntl.h>
@@ -92,6 +96,18 @@ void QEglFSHooks::platformDestroy()
 EGLNativeDisplayType QEglFSHooks::platformDisplay() const
 {
     return EGL_DEFAULT_DISPLAY;
+}
+
+void QEglFSHooks::screenInit()
+{
+    QEglFSIntegration *integration = static_cast<QEglFSIntegration *>(QGuiApplicationPrivate::platformIntegration());
+    integration->addScreen(new QEglFSScreen(integration->display()));
+}
+
+void QEglFSHooks::screenDestroy()
+{
+    while (!qApp->screens().isEmpty())
+        delete qApp->screens().last()->handle();
 }
 
 QSizeF QEglFSHooks::physicalScreenSize() const
@@ -184,8 +200,10 @@ QPlatformCursor *QEglFSHooks::createCursor(QPlatformScreen *screen) const
     return new QEGLPlatformCursor(screen);
 }
 
-void QEglFSHooks::waitForVSync() const
+void QEglFSHooks::waitForVSync(QPlatformSurface *surface) const
 {
+    Q_UNUSED(surface);
+
 #if defined(FBIO_WAITFORVSYNC)
     static const bool forceSync = qEnvironmentVariableIntValue("QT_QPA_EGLFS_FORCEVSYNC");
     if (forceSync && framebuffer != -1) {
@@ -196,8 +214,9 @@ void QEglFSHooks::waitForVSync() const
 #endif
 }
 
-void QEglFSHooks::presentBuffer()
+void QEglFSHooks::presentBuffer(QPlatformSurface *surface)
 {
+    Q_UNUSED(surface);
 }
 
 bool QEglFSHooks::supportsPBuffers() const

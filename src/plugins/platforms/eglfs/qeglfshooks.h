@@ -43,6 +43,8 @@
 QT_BEGIN_NAMESPACE
 
 class QEglFSScreen;
+class QEglFSIntegration;
+class QPlatformSurface;
 
 class QEglFSHooks
 {
@@ -51,6 +53,8 @@ public:
     virtual void platformInit();
     virtual void platformDestroy();
     virtual EGLNativeDisplayType platformDisplay() const;
+    virtual void screenInit();
+    virtual void screenDestroy();
     virtual QSizeF physicalScreenSize() const;
     virtual QSize screenSize() const;
     virtual QDpi logicalDpi() const;
@@ -67,8 +71,8 @@ public:
     virtual bool hasCapability(QPlatformIntegration::Capability cap) const;
     virtual QPlatformCursor *createCursor(QPlatformScreen *screen) const;
     virtual bool filterConfig(EGLDisplay display, EGLConfig config) const;
-    virtual void waitForVSync() const;
-    virtual void presentBuffer();
+    virtual void waitForVSync(QPlatformSurface *surface) const;
+    virtual void presentBuffer(QPlatformSurface *surface);
 
     virtual QByteArray fbDeviceName() const;
     virtual int framebufferIndex() const;

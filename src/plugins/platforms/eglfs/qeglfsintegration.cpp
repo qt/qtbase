@@ -77,6 +77,11 @@ bool QEglFSIntegration::hasCapability(QPlatformIntegration::Capability cap) cons
     return QEGLPlatformIntegration::hasCapability(cap);
 }
 
+void QEglFSIntegration::addScreen(QPlatformScreen *screen)
+{
+    screenAdded(screen);
+}
+
 void QEglFSIntegration::initialize()
 {
     QEglFSHooks::hooks()->platformInit();
@@ -85,10 +90,13 @@ void QEglFSIntegration::initialize()
 
     if (!mDisableInputHandlers)
         createInputHandlers();
+
+    QEglFSHooks::hooks()->screenInit();
 }
 
 void QEglFSIntegration::destroy()
 {
+    QEglFSHooks::hooks()->screenDestroy();
     QEGLPlatformIntegration::destroy();
     QEglFSHooks::hooks()->platformDestroy();
 }
@@ -96,11 +104,6 @@ void QEglFSIntegration::destroy()
 EGLNativeDisplayType QEglFSIntegration::nativeDisplay() const
 {
     return QEglFSHooks::hooks()->platformDisplay();
-}
-
-QEGLPlatformScreen *QEglFSIntegration::createScreen() const
-{
-    return new QEglFSScreen(display());
 }
 
 QEGLPlatformWindow *QEglFSIntegration::createWindow(QWindow *window) const
@@ -136,17 +139,6 @@ QPlatformOffscreenSurface *QEglFSIntegration::createOffscreenSurface(EGLDisplay 
         return new QEglFSOffscreenWindow(display, fmt, surface);
 
     // Never return null. Multiple QWindows are not supported by this plugin.
-}
-
-QVariant QEglFSIntegration::styleHint(QPlatformIntegration::StyleHint hint) const
-{
-    switch (hint)
-    {
-    case QPlatformIntegration::ShowIsFullScreen:
-        return screen()->compositingWindow() == 0;
-    default:
-        return QPlatformIntegration::styleHint(hint);
-    }
 }
 
 EGLConfig QEglFSIntegration::chooseConfig(EGLDisplay display, const QSurfaceFormat &format)

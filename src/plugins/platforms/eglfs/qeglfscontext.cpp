@@ -94,9 +94,9 @@ void QEglFSContext::swapBuffers(QPlatformSurface *surface)
             cursor->paintOnScreen();
     }
 
-    QEglFSHooks::hooks()->waitForVSync();
+    QEglFSHooks::hooks()->waitForVSync(surface);
     QEGLPlatformContext::swapBuffers(surface);
-    QEglFSHooks::hooks()->presentBuffer();
+    QEglFSHooks::hooks()->presentBuffer(surface);
 }
 
 QT_END_NAMESPACE

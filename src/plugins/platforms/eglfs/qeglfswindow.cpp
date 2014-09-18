@@ -147,8 +147,9 @@ void QEglFSWindow::invalidateSurface()
 
 void QEglFSWindow::resetSurface()
 {
-    EGLDisplay display = static_cast<QEglFSScreen *>(screen())->display();
-    m_window = QEglFSHooks::hooks()->createNativeWindow(this, QEglFSHooks::hooks()->screenSize(), m_format);
+    QEglFSScreen *nativeScreen = static_cast<QEglFSScreen *>(screen());
+    EGLDisplay display = nativeScreen->display();
+    m_window = QEglFSHooks::hooks()->createNativeWindow(this, nativeScreen->geometry().size(), m_format);
     m_surface = eglCreateWindowSurface(display, m_config, m_window, NULL);
     if (m_surface == EGL_NO_SURFACE) {
         EGLint error = eglGetError();

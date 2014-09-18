@@ -45,16 +45,16 @@ class QEglFSIntegration : public QEGLPlatformIntegration
 public:
     QEglFSIntegration();
 
+    void addScreen(QPlatformScreen *screen);
+
     void initialize() Q_DECL_OVERRIDE;
     void destroy() Q_DECL_OVERRIDE;
 
     bool hasCapability(QPlatformIntegration::Capability cap) const Q_DECL_OVERRIDE;
-    QVariant styleHint(QPlatformIntegration::StyleHint hint) const Q_DECL_OVERRIDE;
 
     static EGLConfig chooseConfig(EGLDisplay display, const QSurfaceFormat &format);
 
 protected:
-    QEGLPlatformScreen *createScreen() const Q_DECL_OVERRIDE;
     QEGLPlatformWindow *createWindow(QWindow *window) const Q_DECL_OVERRIDE;
     QEGLPlatformContext *createContext(const QSurfaceFormat &format,
                                        QPlatformOpenGLContext *shareContext,

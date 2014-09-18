@@ -52,7 +52,6 @@
 
 QT_BEGIN_NAMESPACE
 
-class QEGLPlatformScreen;
 class QEGLPlatformWindow;
 class QEGLPlatformContext;
 class QFbVtHandler;
@@ -67,7 +66,6 @@ public:
     void initialize() Q_DECL_OVERRIDE;
     void destroy() Q_DECL_OVERRIDE;
 
-    QEGLPlatformScreen *screen() const { return m_screen; }
     EGLDisplay display() const { return m_display; }
 
     QAbstractEventDispatcher *createEventDispatcher() const Q_DECL_OVERRIDE;
@@ -93,7 +91,6 @@ public:
     QFunctionPointer platformFunction(const QByteArray &function) const Q_DECL_OVERRIDE;
 
 protected:
-    virtual QEGLPlatformScreen *createScreen() const = 0;
     virtual QEGLPlatformWindow *createWindow(QWindow *window) const = 0;
     virtual QEGLPlatformContext *createContext(const QSurfaceFormat &format,
                                                QPlatformOpenGLContext *shareContext,
@@ -110,7 +107,6 @@ protected:
 private:
     static void loadKeymapStatic(const QString &filename);
 
-    QEGLPlatformScreen *m_screen;
     EGLDisplay m_display;
     QPlatformInputContext *m_inputContext;
     QScopedPointer<QPlatformFontDatabase> m_fontDb;

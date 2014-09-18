@@ -84,8 +84,7 @@ QT_BEGIN_NAMESPACE
  */
 
 QEGLPlatformIntegration::QEGLPlatformIntegration()
-    : m_screen(0),
-      m_display(EGL_NO_DISPLAY),
+    : m_display(EGL_NO_DISPLAY),
       m_inputContext(0),
       m_fontDb(new QGenericUnixFontDatabase),
       m_services(new QGenericUnixServices),
@@ -95,7 +94,6 @@ QEGLPlatformIntegration::QEGLPlatformIntegration()
 
 QEGLPlatformIntegration::~QEGLPlatformIntegration()
 {
-
 }
 
 void QEGLPlatformIntegration::initialize()
@@ -108,9 +106,6 @@ void QEGLPlatformIntegration::initialize()
     if (!eglInitialize(m_display, &major, &minor))
         qFatal("Could not initialize egl display");
 
-    m_screen = createScreen();
-    screenAdded(m_screen);
-
     m_inputContext = QPlatformInputContextFactory::create();
 
     m_vtHandler.reset(new QFbVtHandler);
@@ -120,8 +115,6 @@ void QEGLPlatformIntegration::destroy()
 {
     foreach (QWindow *w, qGuiApp->topLevelWindows())
         w->destroy();
-
-    delete m_screen;
 
     if (m_display != EGL_NO_DISPLAY)
         eglTerminate(m_display);
@@ -228,7 +221,7 @@ void *QEGLPlatformIntegration::nativeResourceForIntegration(const QByteArray &re
 
     switch (resourceType(resource)) {
     case EglDisplay:
-        result = m_screen->display();
+        result = display();
         break;
     case NativeDisplay:
         result = reinterpret_cast<void*>(nativeDisplay());
@@ -266,7 +259,7 @@ void *QEGLPlatformIntegration::nativeResourceForWindow(const QByteArray &resourc
         if (window && window->handle())
             result = static_cast<QEGLPlatformScreen *>(window->handle()->screen())->display();
         else
-            result = m_screen->display();
+            result = display();
         break;
     case EglWindow:
         if (window && window->handle())
