@@ -254,13 +254,15 @@ void QEventDispatcherWinRT::registerTimer(int timerId, int interval, Qt::TimerTy
 {
     Q_UNUSED(timerType);
 
+#ifndef QT_NO_DEBUG
     if (timerId < 1 || interval < 0 || !object) {
         qWarning("QEventDispatcherWinRT::registerTimer: invalid arguments");
         return;
     } else if (object->thread() != thread() || thread() != QThread::currentThread()) {
-        qWarning("QObject::startTimer: timers cannot be started from another thread");
+        qWarning("QEventDispatcherWinRT::registerTimer: timers cannot be started from another thread");
         return;
     }
+#endif
 
     Q_D(QEventDispatcherWinRT);
 
@@ -289,14 +291,16 @@ void QEventDispatcherWinRT::registerTimer(int timerId, int interval, Qt::TimerTy
 
 bool QEventDispatcherWinRT::unregisterTimer(int timerId)
 {
+#ifndef QT_NO_DEBUG
     if (timerId < 1) {
         qWarning("QEventDispatcherWinRT::unregisterTimer: invalid argument");
         return false;
     }
     if (thread() != QThread::currentThread()) {
-        qWarning("QObject::killTimer: timers cannot be stopped from another thread");
+        qWarning("QEventDispatcherWinRT::unregisterTimer: timers cannot be stopped from another thread");
         return false;
     }
+#endif
 
     Q_D(QEventDispatcherWinRT);
 
@@ -310,15 +314,17 @@ bool QEventDispatcherWinRT::unregisterTimer(int timerId)
 
 bool QEventDispatcherWinRT::unregisterTimers(QObject *object)
 {
+#ifndef QT_NO_DEBUG
     if (!object) {
         qWarning("QEventDispatcherWinRT::unregisterTimers: invalid argument");
         return false;
     }
     QThread *currentThread = QThread::currentThread();
     if (object->thread() != thread() || thread() != currentThread) {
-        qWarning("QObject::killTimers: timers cannot be stopped from another thread");
+        qWarning("QEventDispatcherWinRT::unregisterTimers: timers cannot be stopped from another thread");
         return false;
     }
+#endif
 
     Q_D(QEventDispatcherWinRT);
     for (QHash<int, WinRTTimerInfo *>::iterator it = d->timerDict.begin(); it != d->timerDict.end();) {

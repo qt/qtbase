@@ -518,7 +518,7 @@ void QEventDispatcherGlib::registerTimer(int timerId, int interval, Qt::TimerTyp
         qWarning("QEventDispatcherGlib::registerTimer: invalid arguments");
         return;
     } else if (object->thread() != thread() || thread() != QThread::currentThread()) {
-        qWarning("QObject::startTimer: timers cannot be started from another thread");
+        qWarning("QEventDispatcherGlib::registerTimer: timers cannot be started from another thread");
         return;
     }
 #endif
@@ -534,7 +534,7 @@ bool QEventDispatcherGlib::unregisterTimer(int timerId)
         qWarning("QEventDispatcherGlib::unregisterTimer: invalid argument");
         return false;
     } else if (thread() != QThread::currentThread()) {
-        qWarning("QObject::killTimer: timers cannot be stopped from another thread");
+        qWarning("QEventDispatcherGlib::unregisterTimer: timers cannot be stopped from another thread");
         return false;
     }
 #endif
@@ -550,7 +550,7 @@ bool QEventDispatcherGlib::unregisterTimers(QObject *object)
         qWarning("QEventDispatcherGlib::unregisterTimers: invalid argument");
         return false;
     } else if (object->thread() != thread() || thread() != QThread::currentThread()) {
-        qWarning("QObject::killTimers: timers cannot be stopped from another thread");
+        qWarning("QEventDispatcherGlib::unregisterTimers: timers cannot be stopped from another thread");
         return false;
     }
 #endif

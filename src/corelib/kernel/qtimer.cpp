@@ -395,6 +395,10 @@ void QTimer::singleShot(int msec, const QObject *receiver, const char *member)
 */
 void QTimer::singleShot(int msec, Qt::TimerType timerType, const QObject *receiver, const char *member)
 {
+    if (Q_UNLIKELY(msec < 0)) {
+        qWarning("QTimer::singleShot: Timers cannot have negative timeouts");
+        return;
+    }
     if (receiver && member) {
         if (msec == 0) {
             // special code shortpath for 0-timers

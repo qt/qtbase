@@ -225,13 +225,17 @@ QObjectPrivate::QObjectPrivate(int version)
 QObjectPrivate::~QObjectPrivate()
 {
     if (extraData && !extraData->runningTimers.isEmpty()) {
-        // unregister pending timers
-        if (threadData->eventDispatcher.load())
-            threadData->eventDispatcher.load()->unregisterTimers(q_ptr);
+        if (Q_LIKELY(threadData->thread == QThread::currentThread())) {
+            // unregister pending timers
+            if (threadData->eventDispatcher.load())
+                threadData->eventDispatcher.load()->unregisterTimers(q_ptr);
 
-        // release the timer ids back to the pool
-        for (int i = 0; i < extraData->runningTimers.size(); ++i)
-            QAbstractEventDispatcherPrivate::releaseTimerId(extraData->runningTimers.at(i));
+            // release the timer ids back to the pool
+            for (int i = 0; i < extraData->runningTimers.size(); ++i)
+                QAbstractEventDispatcherPrivate::releaseTimerId(extraData->runningTimers.at(i));
+        } else {
+            qWarning("QObject::~QObject: Timers cannot be stopped from another thread");
+        }
     }
 
     if (postedEvents)
@@ -1612,13 +1616,16 @@ int QObject::startTimer(int interval, Qt::TimerType timerType)
 {
     Q_D(QObject);
 
-    if (interval < 0) {
+    if (Q_UNLIKELY(interval < 0)) {
         qWarning("QObject::startTimer: Timers cannot have negative intervals");
         return 0;
     }
-
-    if (!d->threadData->eventDispatcher.load()) {
+    if (Q_UNLIKELY(!d->threadData->eventDispatcher.load())) {
         qWarning("QObject::startTimer: Timers can only be used with threads started with QThread");
+        return 0;
+    }
+    if (Q_UNLIKELY(thread() != QThread::currentThread())) {
+        qWarning("QObject::startTimer: Timers cannot be started from another thread");
         return 0;
     }
     int timerId = d->threadData->eventDispatcher.load()->registerTimer(interval, timerType, this);
@@ -1640,6 +1647,10 @@ int QObject::startTimer(int interval, Qt::TimerType timerType)
 void QObject::killTimer(int id)
 {
     Q_D(QObject);
+    if (Q_UNLIKELY(thread() != QThread::currentThread())) {
+        qWarning("QObject::killTimer: Timers cannot be stopped from another thread");
+        return;
+    }
     if (id) {
         int at = d->extraData ? d->extraData->runningTimers.indexOf(id) : -1;
         if (at == -1) {
