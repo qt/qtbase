@@ -181,4 +181,9 @@ bool QAndroidPlatformMenuItem::isEnabled() const
     return m_isEnabled;
 }
 
+void QAndroidPlatformMenuItem::setIconSize(int size)
+{
+    Q_UNUSED(size)
+}
+
 QT_END_NAMESPACE

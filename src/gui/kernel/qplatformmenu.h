@@ -86,7 +86,7 @@ public:
     virtual void setChecked(bool isChecked) = 0;
     virtual void setShortcut(const QKeySequence& shortcut) = 0;
     virtual void setEnabled(bool enabled) = 0;
-
+    virtual void setIconSize(int size) = 0;
     virtual void setNativeContents(WId item) { Q_UNUSED(item); }
 
 Q_SIGNALS:

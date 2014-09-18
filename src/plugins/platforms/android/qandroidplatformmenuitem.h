@@ -85,6 +85,8 @@ public:
     void setEnabled(bool enabled);
     bool isEnabled() const;
 
+    void setIconSize(int size);
+
 private:
     quintptr m_tag;
     QString m_text;

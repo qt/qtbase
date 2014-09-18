@@ -86,6 +86,7 @@ public:
     void setCheckable(bool checkable) { Q_UNUSED(checkable) }
     void setChecked(bool isChecked);
     void setEnabled(bool isEnabled);
+    void setIconSize(int size);
 
     void setNativeContents(WId item);
 
@@ -123,6 +124,7 @@ private:
     bool m_checked;
     bool m_merged;
     quintptr m_tag;
+    int m_iconSize;
 };
 
 #define COCOA_MENU_ANCESTOR(m) ((m)->property("_qCocoaMenuAncestor").value<QObject *>())

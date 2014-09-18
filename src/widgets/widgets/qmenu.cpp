@@ -2978,8 +2978,17 @@ static void copyActionToPlatformItem(const QAction *action, QPlatformMenuItem* i
 {
     item->setText(action->text());
     item->setIsSeparator(action->isSeparator());
-    if (action->isIconVisibleInMenu())
+    if (action->isIconVisibleInMenu()) {
         item->setIcon(action->icon());
+        if (QWidget *w = action->parentWidget()) {
+            QStyleOption opt;
+            opt.init(w);
+            item->setIconSize(w->style()->pixelMetric(QStyle::PM_SmallIconSize, &opt, w));
+        } else {
+            QStyleOption opt;
+            item->setIconSize(qApp->style()->pixelMetric(QStyle::PM_SmallIconSize, &opt, 0));
+        }
+    }
     item->setVisible(action->isVisible());
     item->setShortcut(action->shortcut());
     item->setCheckable(action->isCheckable());
