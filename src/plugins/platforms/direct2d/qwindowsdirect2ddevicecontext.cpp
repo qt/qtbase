@@ -125,4 +125,38 @@ bool QWindowsDirect2DDeviceContext::end()
     return d->end();
 }
 
+void QWindowsDirect2DDeviceContext::suspend()
+{
+    Q_D(QWindowsDirect2DDeviceContext);
+    if (d->refCount > 0)
+        d->deviceContext->EndDraw();
+}
+
+void QWindowsDirect2DDeviceContext::resume()
+{
+    Q_D(QWindowsDirect2DDeviceContext);
+    if (d->refCount > 0)
+        d->deviceContext->BeginDraw();
+}
+
+QWindowsDirect2DDeviceContextSuspender::QWindowsDirect2DDeviceContextSuspender(QWindowsDirect2DDeviceContext *dc)
+    : m_dc(dc)
+{
+    Q_ASSERT(m_dc);
+    m_dc->suspend();
+}
+
+QWindowsDirect2DDeviceContextSuspender::~QWindowsDirect2DDeviceContextSuspender()
+{
+    resume();
+}
+
+void QWindowsDirect2DDeviceContextSuspender::resume()
+{
+    if (m_dc) {
+        m_dc->resume();
+        m_dc = Q_NULLPTR;
+    }
+}
+
 QT_END_NAMESPACE

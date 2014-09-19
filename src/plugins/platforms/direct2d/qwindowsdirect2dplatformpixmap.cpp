@@ -161,17 +161,8 @@ QImage QWindowsDirect2DPlatformPixmap::toImage(const QRect &rect) const
 {
     Q_D(const QWindowsDirect2DPlatformPixmap);
 
-    bool active = d->device->paintEngine()->isActive();
-
-    if (active)
-        d->device->paintEngine()->end();
-
-    QImage result = d->bitmap->toImage(rect);
-
-    if (active)
-        d->device->paintEngine()->begin(d->device.data());
-
-    return result;
+    QWindowsDirect2DPaintEngineSuspender suspender(static_cast<QWindowsDirect2DPaintEngine *>(d->device->paintEngine()));
+    return d->bitmap->toImage(rect);
 }
 
 QPaintEngine* QWindowsDirect2DPlatformPixmap::paintEngine() const

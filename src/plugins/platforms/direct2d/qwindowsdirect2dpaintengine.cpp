@@ -230,6 +230,7 @@ public:
     }
 
     QWindowsDirect2DBitmap *bitmap;
+    QImage fallbackImage;
 
     unsigned int clipFlags;
     QStack<ClipType> pushedClips;
@@ -393,7 +394,10 @@ public:
             break;
 
         default:
-            qWarning("Unsupported composition mode: %d", mode);
+            // Activating an unsupported mode at any time will cause the QImage
+            // fallback to be used for the remainder of the active paint session
+            dc()->SetPrimitiveBlend(D2D1_PRIMITIVE_BLEND_COPY);
+            flags |= QWindowsDirect2DPaintEngine::EmulateComposition;
             break;
         }
     }
@@ -968,7 +972,17 @@ bool QWindowsDirect2DPaintEngine::begin(QPaintDevice * pdev)
 bool QWindowsDirect2DPaintEngine::end()
 {
     Q_D(QWindowsDirect2DPaintEngine);
-    // First pop any user-applied clipping
+
+    // Always clear all emulation-related things so we are in a clean state for our next painting run
+    const bool emulatingComposition = d->flags.testFlag(EmulateComposition);
+    d->flags &= ~QWindowsDirect2DPaintEngine::EmulateComposition;
+    if (!d->fallbackImage.isNull()) {
+        if (emulatingComposition)
+            drawImage(d->fallbackImage.rect(), d->fallbackImage, d->fallbackImage.rect());
+        d->fallbackImage = QImage();
+    }
+
+    // Pop any user-applied clipping
     d->clearClips();
     // Now the system clip from begin() above
     if (d->clipFlags & SimpleSystemClip) {
@@ -977,6 +991,7 @@ bool QWindowsDirect2DPaintEngine::end()
     } else {
         d->dc()->PopLayer();
     }
+
     return d->bitmap->deviceContext()->end();
 }
 
@@ -1406,6 +1421,19 @@ void QWindowsDirect2DPaintEngine::drawPixmap(const QRectF &r,
         return;
     }
 
+    if (d->flags.testFlag(EmulateComposition)) {
+        const qreal points[] = {
+            r.x(), r.y(),
+            r.x() + r.width(), r.y(),
+            r.x() + r.width(), r.y() + r.height(),
+            r.x(), r.y() + r.height()
+        };
+        const QVectorPath vp(points, 4, 0, QVectorPath::RectangleHint);
+        const QBrush brush(sr.isValid() ? pm.copy(sr.toRect()) : pm);
+        rasterFill(vp, brush);
+        return;
+    }
+
     QWindowsDirect2DPlatformPixmap *pp = static_cast<QWindowsDirect2DPlatformPixmap *>(pm.handle());
     QWindowsDirect2DBitmap *bitmap = pp->bitmap();
 
@@ -1589,9 +1617,17 @@ void QWindowsDirect2DPaintEngine::rasterFill(const QVectorPath &path, const QBru
 {
     Q_D(QWindowsDirect2DPaintEngine);
 
-    QImage img(d->bitmap->size(), QImage::Format_ARGB32);
-    img.fill(Qt::transparent);
+    if (d->fallbackImage.isNull()) {
+        if (d->flags.testFlag(EmulateComposition)) {
+            QWindowsDirect2DPaintEngineSuspender suspender(this);
+            d->fallbackImage = d->bitmap->toImage();
+        } else {
+            d->fallbackImage = QImage(d->bitmap->size(), QImage::Format_ARGB32_Premultiplied);
+            d->fallbackImage.fill(Qt::transparent);
+        }
+    }
 
+    QImage &img = d->fallbackImage;
     QPainter p;
     QPaintEngine *engine = img.paintEngine();
 
@@ -1638,11 +1674,14 @@ void QWindowsDirect2DPaintEngine::rasterFill(const QVectorPath &path, const QBru
         if (!p.end())
             qWarning("%s: Paint Engine end returned false", __FUNCTION__);
 
-        d->updateClipEnabled(false);
-        d->updateTransform(QTransform());
-        drawImage(img.rect(), img, img.rect());
-        transformChanged();
-        clipEnabledChanged();
+        if (!d->flags.testFlag(EmulateComposition)) { // Emulated fallback will be flattened in end()
+            d->updateClipEnabled(false);
+            d->updateTransform(QTransform());
+            drawImage(img.rect(), img, img.rect());
+            d->fallbackImage = QImage();
+            transformChanged();
+            clipEnabledChanged();
+        }
     } else {
         qWarning("%s: Could not fall back to QImage", __FUNCTION__);
     }
@@ -1651,6 +1690,9 @@ void QWindowsDirect2DPaintEngine::rasterFill(const QVectorPath &path, const QBru
 bool QWindowsDirect2DPaintEngine::emulationRequired(EmulationType type) const
 {
     Q_D(const QWindowsDirect2DPaintEngine);
+
+    if (d->flags.testFlag(EmulateComposition))
+        return true;
 
     if (!state()->matrix.isAffine())
         return true;
@@ -1689,6 +1731,73 @@ void QWindowsDirect2DPaintEngine::adjustForAliasing(QPointF *point)
 
     if (!antiAliasingEnabled())
         (*point) += adjustment;
+}
+
+void QWindowsDirect2DPaintEngine::suspend()
+{
+    end();
+}
+
+void QWindowsDirect2DPaintEngine::resume()
+{
+    begin(paintDevice());
+    clipEnabledChanged();
+    penChanged();
+    brushChanged();
+    brushOriginChanged();
+    opacityChanged();
+    compositionModeChanged();
+    renderHintsChanged();
+    transformChanged();
+}
+
+class QWindowsDirect2DPaintEngineSuspenderImpl
+{
+    Q_DISABLE_COPY(QWindowsDirect2DPaintEngineSuspenderImpl)
+    QWindowsDirect2DPaintEngine *m_engine;
+    bool m_active;
+public:
+    QWindowsDirect2DPaintEngineSuspenderImpl(QWindowsDirect2DPaintEngine *engine)
+        : m_engine(engine)
+        , m_active(engine->isActive())
+    {
+        if (m_active)
+            m_engine->suspend();
+    }
+
+    ~QWindowsDirect2DPaintEngineSuspenderImpl()
+    {
+        if (m_active)
+            m_engine->resume();
+    }
+};
+
+class QWindowsDirect2DPaintEngineSuspenderPrivate
+{
+public:
+    QWindowsDirect2DPaintEngineSuspenderPrivate(QWindowsDirect2DPaintEngine *engine)
+        : engineSuspender(engine)
+        , dcSuspender(static_cast<QWindowsDirect2DPaintEnginePrivate *>(engine->d_ptr.data())->bitmap->deviceContext())
+    {
+    }
+
+    QWindowsDirect2DPaintEngineSuspenderImpl engineSuspender;
+    QWindowsDirect2DDeviceContextSuspender dcSuspender;
+};
+
+QWindowsDirect2DPaintEngineSuspender::QWindowsDirect2DPaintEngineSuspender(QWindowsDirect2DPaintEngine *engine)
+    : d_ptr(new QWindowsDirect2DPaintEngineSuspenderPrivate(engine))
+{
+
+}
+
+QWindowsDirect2DPaintEngineSuspender::~QWindowsDirect2DPaintEngineSuspender()
+{
+}
+
+void QWindowsDirect2DPaintEngineSuspender::resume()
+{
+    d_ptr.reset();
 }
 
 QT_END_NAMESPACE

@@ -69,6 +69,7 @@ class QWindowsDirect2DDeviceContextPrivate;
 class QWindowsDirect2DDeviceContext
 {
     Q_DECLARE_PRIVATE(QWindowsDirect2DDeviceContext)
+    friend class QWindowsDirect2DDeviceContextSuspender;
 public:
     QWindowsDirect2DDeviceContext(ID2D1DeviceContext *dc);
     ~QWindowsDirect2DDeviceContext();
@@ -79,7 +80,21 @@ public:
     bool end();
 
 private:
+    void suspend();
+    void resume();
+
     QScopedPointer<QWindowsDirect2DDeviceContextPrivate> d_ptr;
+};
+
+class QWindowsDirect2DDeviceContextSuspender {
+    Q_DISABLE_COPY(QWindowsDirect2DDeviceContextSuspender)
+
+    QWindowsDirect2DDeviceContext *m_dc;
+public:
+    QWindowsDirect2DDeviceContextSuspender(QWindowsDirect2DDeviceContext *dc);
+    ~QWindowsDirect2DDeviceContextSuspender();
+
+    void resume();
 };
 
 QT_END_NAMESPACE

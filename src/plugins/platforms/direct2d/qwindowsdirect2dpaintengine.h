@@ -49,11 +49,13 @@ class QWindowsDirect2DBitmap;
 class QWindowsDirect2DPaintEngine : public QPaintEngineEx
 {
     Q_DECLARE_PRIVATE(QWindowsDirect2DPaintEngine)
-
+    friend class QWindowsDirect2DPaintEngineSuspenderImpl;
+    friend class QWindowsDirect2DPaintEngineSuspenderPrivate;
 public:
     enum Flag {
         NoFlag = 0,
-        TranslucentTopLevelWindow = 1
+        TranslucentTopLevelWindow = 1,
+        EmulateComposition = 2,
     };
     Q_DECLARE_FLAGS(Flags, Flag)
 
@@ -116,8 +118,23 @@ private:
     bool antiAliasingEnabled() const;
     void adjustForAliasing(QRectF *rect);
     void adjustForAliasing(QPointF *point);
+
+    void suspend();
+    void resume();
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(QWindowsDirect2DPaintEngine::Flags)
+
+class QWindowsDirect2DPaintEngineSuspenderPrivate;
+class QWindowsDirect2DPaintEngineSuspender
+{
+    Q_DISABLE_COPY(QWindowsDirect2DPaintEngineSuspender)
+    Q_DECLARE_PRIVATE(QWindowsDirect2DPaintEngineSuspender)
+    QScopedPointer<QWindowsDirect2DPaintEngineSuspenderPrivate> d_ptr;
+public:
+    QWindowsDirect2DPaintEngineSuspender(QWindowsDirect2DPaintEngine *engine);
+    ~QWindowsDirect2DPaintEngineSuspender();
+    void resume();
+};
 
 QT_END_NAMESPACE
 
