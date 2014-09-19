@@ -4662,7 +4662,7 @@ static Q_CONSTEXPR QPixelFormat pixelformats[] = {
         //QImage::Format_Invalid:
         QPixelFormat(),
         //QImage::Format_Mono:
-        QPixelFormat(QPixelFormat::Grayscale,
+        QPixelFormat(QPixelFormat::Indexed,
                         /*RED*/            1,
                         /*GREEN*/          0,
                         /*BLUE*/           0,
@@ -4675,7 +4675,7 @@ static Q_CONSTEXPR QPixelFormat pixelformats[] = {
                         /*INTERPRETATION*/ QPixelFormat::UnsignedByte,
                         /*BYTE ORDER*/     QPixelFormat::CurrentSystemEndian),
         //QImage::Format_MonoLSB:
-        QPixelFormat(QPixelFormat::Grayscale,
+        QPixelFormat(QPixelFormat::Indexed,
                         /*RED*/            1,
                         /*GREEN*/          0,
                         /*BLUE*/           0,
@@ -4787,7 +4787,7 @@ static Q_CONSTEXPR QPixelFormat pixelformats[] = {
                      /*FIFTH*/              0,
                      /*ALPHA*/              6,
                      /*ALPHA USAGE*/       QPixelFormat::UsesAlpha,
-                     /*ALPHA POSITION*/    QPixelFormat::AtBeginning,
+                     /*ALPHA POSITION*/    QPixelFormat::AtEnd,
                      /*PREMULTIPLIED*/     QPixelFormat::Premultiplied,
                      /*INTERPRETATION*/    QPixelFormat::UnsignedInteger,
                      /*BYTE ORDER*/        QPixelFormat::CurrentSystemEndian),
@@ -4852,7 +4852,7 @@ static Q_CONSTEXPR QPixelFormat pixelformats[] = {
                      /*FIFTH*/              0,
                      /*ALPHA*/              4,
                      /*ALPHA USAGE*/       QPixelFormat::UsesAlpha,
-                     /*ALPHA POSITION*/    QPixelFormat::AtBeginning,
+                     /*ALPHA POSITION*/    QPixelFormat::AtEnd,
                      /*PREMULTIPLIED*/     QPixelFormat::Premultiplied,
                      /*INTERPRETATION*/    QPixelFormat::UnsignedShort,
                      /*BYTE ORDER*/        QPixelFormat::CurrentSystemEndian),
