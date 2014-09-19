@@ -501,7 +501,6 @@ void QOpenGL2PaintEngineExPrivate::drawTexture(const QOpenGLRect& dest, const QO
 {
     // Setup for texture drawing
     currentBrush = noBrush;
-    shaderManager->setSrcPixelType(pattern ? QOpenGLEngineShaderManager::PatternSrc : QOpenGLEngineShaderManager::ImageSrc);
 
     if (snapToPixelGrid) {
         snapToPixelGrid = false;
@@ -1367,6 +1366,11 @@ void QOpenGL2PaintEngineEx::drawPixmap(const QRectF& dest, const QPixmap & pixma
     Q_D(QOpenGL2PaintEngineEx);
     QOpenGLContext *ctx = d->ctx;
 
+    // Draw pixmaps that are really images as images since drawImage has
+    // better handling of non-default image formats.
+    if (pixmap.paintEngine()->type() == QPaintEngine::Raster && !pixmap.isQBitmap())
+        return drawImage(dest, pixmap.toImage(), src);
+
     int max_texture_size = ctx->d_func()->maxTextureSize();
     if (pixmap.width() > max_texture_size || pixmap.height() > max_texture_size) {
         QPixmap scaled = pixmap.scaled(max_texture_size, max_texture_size, Qt::KeepAspectRatio);
@@ -1391,6 +1395,8 @@ void QOpenGL2PaintEngineEx::drawPixmap(const QRectF& dest, const QPixmap & pixma
 
     d->updateTextureFilter(GL_TEXTURE_2D, GL_CLAMP_TO_EDGE,
                            state()->renderHints & QPainter::SmoothPixmapTransform, id);
+
+    d->shaderManager->setSrcPixelType(isBitmap ? QOpenGLEngineShaderManager::PatternSrc : QOpenGLEngineShaderManager::ImageSrc);
     d->drawTexture(dest, srcRect, pixmap.size(), isOpaque, isBitmap);
 }
 
@@ -1414,12 +1420,25 @@ void QOpenGL2PaintEngineEx::drawImage(const QRectF& dest, const QImage& image, c
     ensureActive();
     d->transferMode(ImageDrawingMode);
 
-    d->funcs.glActiveTexture(GL_TEXTURE0 + QT_IMAGE_TEXTURE_UNIT);
+    QOpenGLTextureCache::BindOptions bindOption = QOpenGLTextureCache::PremultipliedAlphaBindOption;
+    // Use specialized bind for formats we have specialized shaders for.
+    switch (image.format()) {
+    case QImage::Format_RGBA8888:
+    case QImage::Format_ARGB32:
+        d->shaderManager->setSrcPixelType(QOpenGLEngineShaderManager::NonPremultipliedImageSrc);
+        bindOption = 0;
+        break;
+    default:
+        d->shaderManager->setSrcPixelType(QOpenGLEngineShaderManager::ImageSrc);
+        break;
+    }
 
-    GLuint id = QOpenGLTextureCache::cacheForContext(ctx)->bindTexture(ctx, image);
+    d->funcs.glActiveTexture(GL_TEXTURE0 + QT_IMAGE_TEXTURE_UNIT);
+    GLuint id = QOpenGLTextureCache::cacheForContext(ctx)->bindTexture(ctx, image, bindOption);
 
     d->updateTextureFilter(GL_TEXTURE_2D, GL_CLAMP_TO_EDGE,
                            state()->renderHints & QPainter::SmoothPixmapTransform, id);
+
     d->drawTexture(dest, src, image.size(), !image.hasAlphaChannel());
 }
 
@@ -1466,6 +1485,7 @@ bool QOpenGL2PaintEngineEx::drawTexture(const QRectF &dest, GLuint textureId, co
 
     d->updateTextureFilter(GL_TEXTURE_2D, GL_CLAMP_TO_EDGE,
                            state()->renderHints & QPainter::SmoothPixmapTransform, textureId);
+    d->shaderManager->setSrcPixelType(QOpenGLEngineShaderManager::ImageSrc);
     d->drawTexture(dest, srcRect, size, false);
     return true;
 }
