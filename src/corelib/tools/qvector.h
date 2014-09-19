@@ -327,9 +327,11 @@ inline QVector<T>::QVector(const QVector<T> &v)
     } else {
         if (v.d->capacityReserved) {
             d = Data::allocate(v.d->alloc);
+            Q_CHECK_PTR(d);
             d->capacityReserved = true;
         } else {
             d = Data::allocate(v.d->size);
+            Q_CHECK_PTR(d);
         }
         if (d->alloc) {
             copyConstruct(v.d->begin(), v.d->end(), d->begin());
@@ -439,6 +441,7 @@ QVector<T>::QVector(int asize)
     Q_ASSERT_X(asize >= 0, "QVector::QVector", "Size must be greater than or equal to 0.");
     if (Q_LIKELY(asize > 0)) {
         d = Data::allocate(asize);
+        Q_CHECK_PTR(d);
         d->size = asize;
         defaultConstruct(d->begin(), d->end());
     } else {
@@ -452,6 +455,7 @@ QVector<T>::QVector(int asize, const T &t)
     Q_ASSERT_X(asize >= 0, "QVector::QVector", "Size must be greater than or equal to 0.");
     if (asize > 0) {
         d = Data::allocate(asize);
+        Q_CHECK_PTR(d);
         d->size = asize;
         T* i = d->end();
         while (i != d->begin())
@@ -467,6 +471,7 @@ QVector<T>::QVector(std::initializer_list<T> args)
 {
     if (args.size() > 0) {
         d = Data::allocate(args.size());
+        Q_CHECK_PTR(d);
         // std::initializer_list<T>::iterator is guaranteed to be
         // const T* ([support.initlist]/1), so can be memcpy'ed away from by copyConstruct
         copyConstruct(args.begin(), args.end(), d->begin());
