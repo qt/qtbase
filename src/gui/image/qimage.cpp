@@ -4151,21 +4151,15 @@ QImage QImage::alphaChannel() const
 */
 bool QImage::hasAlphaChannel() const
 {
-    return d && (d->format == Format_ARGB32_Premultiplied
-                 || d->format == Format_ARGB32
-                 || d->format == Format_ARGB8565_Premultiplied
-                 || d->format == Format_ARGB8555_Premultiplied
-                 || d->format == Format_ARGB6666_Premultiplied
-                 || d->format == Format_ARGB4444_Premultiplied
-                 || d->format == Format_RGBA8888
-                 || d->format == Format_RGBA8888_Premultiplied
-                 || d->format == Format_A2BGR30_Premultiplied
-                 || d->format == Format_A2RGB30_Premultiplied
-                 || (d->has_alpha_clut && (d->format == Format_Indexed8
-                                           || d->format == Format_Mono
-                                           || d->format == Format_MonoLSB)));
+    if (!d)
+        return false;
+    const QPixelFormat format = pixelFormat();
+    if (format.alphaUsage() == QPixelFormat::UsesAlpha)
+        return true;
+    if (format.colorModel() == QPixelFormat::Indexed)
+        return d->has_alpha_clut;
+    return false;
 }
-
 
 /*!
     \since 4.7
