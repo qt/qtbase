@@ -1280,8 +1280,8 @@ void QComboBoxPrivate::_q_emitHighlighted(const QModelIndex &index)
 void QComboBoxPrivate::_q_emitCurrentIndexChanged(const QModelIndex &index)
 {
     Q_Q(QComboBox);
-    emit q->currentIndexChanged(index.row());
     const QString text = itemText(index);
+    emit q->currentIndexChanged(index.row());
     emit q->currentIndexChanged(text);
     // signal lineEdit.textChanged already connected to signal currentTextChanged, so don't emit double here
     if (!lineEdit)
