@@ -296,6 +296,8 @@ private slots:
     void blendARGBonRGB_data();
     void blendARGBonRGB();
 
+    void RasterOp_NotDestination();
+
 private:
     void fillData();
     void setPenColor(QPainter& p);
@@ -4801,6 +4803,21 @@ void tst_QPainter::cosmeticStrokerClipping()
 
     // ditto for regular clips
     QCOMPARE(old, image);
+}
+
+void tst_QPainter::RasterOp_NotDestination()
+{
+    QImage image(3, 3, QImage::Format_RGB32);
+    image.fill(Qt::red);
+
+    {
+        QPainter p(&image);
+        p.setCompositionMode(QPainter::RasterOp_NotDestination);
+        p.fillRect(image.rect(), Qt::black);
+    }
+
+    uint pixel = image.pixel(1, 1);
+    QCOMPARE(pixel, 0xff00ffff);
 }
 
 QTEST_MAIN(tst_QPainter)
