@@ -786,7 +786,7 @@ qint64 QIODevice::read(char *data, qint64 maxSize)
     bool moreToRead = true;
     do {
         // Try reading from the buffer.
-        int lastReadChunkSize = d->buffer.read(data, maxSize);
+        qint64 lastReadChunkSize = d->buffer.read(data, maxSize);
         if (lastReadChunkSize > 0) {
             *d->pPos += lastReadChunkSize;
             readSoFar += lastReadChunkSize;
