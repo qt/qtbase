@@ -43,6 +43,7 @@
 #include "qwindowsfontdatabase.h"
 #include "qwindowsintegration.h"
 
+#include <QtCore/QtMath>
 #include <QtCore/QStack>
 #include <QtCore/QSettings>
 #include <QtGui/private/qpaintengine_p.h>
@@ -99,6 +100,16 @@ Q_GUI_EXPORT QImage qt_imageForBrush(int brushStyle, bool invert);
 static inline ID2D1Factory1 *factory()
 {
     return QWindowsDirect2DContext::instance()->d2dFactory();
+}
+
+static inline D2D1_MATRIX_3X2_F transformFromLine(const QLineF &line, qreal penWidth)
+{
+    const qreal halfWidth = penWidth / 2;
+    const qreal angle = -qDegreesToRadians(line.angle());
+    QTransform transform = QTransform::fromTranslate(line.p1().x() + qSin(angle) * halfWidth,
+                                                     line.p1().y() - qCos(angle) * halfWidth);
+    transform.rotateRadians(angle);
+    return to_d2d_matrix_3x2_f(transform);
 }
 
 class Direct2DPathGeometryWriter
@@ -245,12 +256,14 @@ public:
         QPen qpen;
         ComPtr<ID2D1Brush> brush;
         ComPtr<ID2D1StrokeStyle1> strokeStyle;
+        ComPtr<ID2D1BitmapBrush1> dashBrush;
 
         inline void reset() {
             emulate = false;
             qpen = QPen();
             brush.Reset();
             strokeStyle.Reset();
+            dashBrush.Reset();
         }
     } pen;
 
@@ -528,12 +541,31 @@ public:
         if (props.dashStyle == D2D1_DASH_STYLE_CUSTOM) {
             QVector<qreal> dashes = newPen.dashPattern();
             QVector<FLOAT> converted(dashes.size());
-
+            qreal penWidth = pen.qpen.widthF();
+            qreal brushWidth = 0;
             for (int i = 0; i < dashes.size(); i++) {
                 converted[i] = dashes[i];
+                brushWidth += penWidth * dashes[i];
             }
 
             hr = factory()->CreateStrokeStyle(props, converted.constData(), converted.size(), &pen.strokeStyle);
+
+            // Create a combined brush/dash pattern for optimized line drawing
+            QWindowsDirect2DBitmap bitmap;
+            bitmap.resize(ceil(brushWidth), ceil(penWidth));
+            bitmap.deviceContext()->begin();
+            bitmap.deviceContext()->get()->SetAntialiasMode(antialiasMode());
+            bitmap.deviceContext()->get()->SetTransform(D2D1::IdentityMatrix());
+            bitmap.deviceContext()->get()->Clear();
+            const qreal offsetX = (qreal(bitmap.size().width()) - brushWidth) / 2;
+            const qreal offsetY = qreal(bitmap.size().height()) / 2;
+            bitmap.deviceContext()->get()->DrawLine(D2D1::Point2F(offsetX, offsetY),
+                                                    D2D1::Point2F(brushWidth, offsetY),
+                                                    pen.brush.Get(), penWidth, pen.strokeStyle.Get());
+            bitmap.deviceContext()->end();
+            D2D1_BITMAP_BRUSH_PROPERTIES1 bitmapBrushProperties = D2D1::BitmapBrushProperties1(
+                        D2D1_EXTEND_MODE_WRAP, D2D1_EXTEND_MODE_CLAMP, D2D1_INTERPOLATION_MODE_LINEAR);
+            hr = dc()->CreateBitmapBrush(bitmap.bitmap(), bitmapBrushProperties, &pen.dashBrush);
         } else {
             hr = factory()->CreateStrokeStyle(props, NULL, 0, &pen.strokeStyle);
         }
@@ -1296,7 +1328,12 @@ void QWindowsDirect2DPaintEngine::drawLines(const QLine *lines, int lineCount)
             D2D1_POINT_2F d2d_p1 = to_d2d_point_2f(p1);
             D2D1_POINT_2F d2d_p2 = to_d2d_point_2f(p2);
 
-            d->dc()->DrawLine(d2d_p1, d2d_p2, d->pen.brush.Get(), d->pen.qpen.widthF(), d->pen.strokeStyle.Get());
+            if (!d->pen.dashBrush || state()->renderHints.testFlag(QPainter::HighQualityAntialiasing)) {
+                d->dc()->DrawLine(d2d_p1, d2d_p2, d->pen.brush.Get(), d->pen.qpen.widthF(), d->pen.strokeStyle.Get());
+            } else {
+                d->pen.dashBrush->SetTransform(transformFromLine(lines[i], d->pen.qpen.widthF()));
+                d->dc()->DrawLine(d2d_p1, d2d_p2, d->pen.dashBrush.Get(), d->pen.qpen.widthF(), NULL);
+            }
         }
     }
 }
@@ -1332,7 +1369,12 @@ void QWindowsDirect2DPaintEngine::drawLines(const QLineF *lines, int lineCount)
             D2D1_POINT_2F d2d_p1 = to_d2d_point_2f(p1);
             D2D1_POINT_2F d2d_p2 = to_d2d_point_2f(p2);
 
-            d->dc()->DrawLine(d2d_p1, d2d_p2, d->pen.brush.Get(), d->pen.qpen.widthF(), d->pen.strokeStyle.Get());
+            if (!d->pen.dashBrush || state()->renderHints.testFlag(QPainter::HighQualityAntialiasing)) {
+                d->dc()->DrawLine(d2d_p1, d2d_p2, d->pen.brush.Get(), d->pen.qpen.widthF(), d->pen.strokeStyle.Get());
+            } else {
+                d->pen.dashBrush->SetTransform(transformFromLine(lines[i], d->pen.qpen.widthF()));
+                d->dc()->DrawLine(d2d_p1, d2d_p2, d->pen.dashBrush.Get(), d->pen.qpen.widthF(), NULL);
+            }
         }
     }
 }
