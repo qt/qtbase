@@ -7883,6 +7883,8 @@ protected slots:
         //qDebug() << Q_FUNC_INFO;
         bandwidthQuota = 8*1024; // fill quota
         emit readyRead();
+        // Emitting readyRead() several times triggers a bug ("QIODevice::read: Called with maxSize < 0") we fix with this commit
+        emit readyRead();
     }
 };
 

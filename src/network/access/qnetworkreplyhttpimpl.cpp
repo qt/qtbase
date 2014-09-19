@@ -428,6 +428,7 @@ QNetworkReplyHttpImplPrivate::QNetworkReplyHttpImplPrivate()
     , synchronous(false)
     , state(Idle)
     , statusCode(0)
+    , uploadDeviceChoking(false)
     , outgoingData(0)
     , bytesUploaded(-1)
     , cacheLoadDevice(0)
@@ -1291,9 +1292,12 @@ void QNetworkReplyHttpImplPrivate::wantUploadDataSlot(qint64 maxSize)
     char *data = const_cast<char*>(uploadByteDevice->readPointer(maxSize, currentUploadDataLength));
 
     if (currentUploadDataLength == 0) {
+        uploadDeviceChoking = true;
         // No bytes from upload byte device. There will be bytes later, it will emit readyRead()
         // and our uploadByteDeviceReadyReadSlot() is called.
         return;
+    } else {
+        uploadDeviceChoking = false;
     }
 
     // Let's make a copy of this data
@@ -1306,7 +1310,12 @@ void QNetworkReplyHttpImplPrivate::wantUploadDataSlot(qint64 maxSize)
 void QNetworkReplyHttpImplPrivate::uploadByteDeviceReadyReadSlot()
 {
     // Start the flow between this thread and the HTTP thread again by triggering a upload.
-    wantUploadDataSlot(1024);
+    // However only do this when we were choking before, else the state in
+    // QNonContiguousByteDeviceThreadForwardImpl gets messed up.
+    if (uploadDeviceChoking) {
+        uploadDeviceChoking = false;
+        wantUploadDataSlot(1024);
+    }
 }
 
 
