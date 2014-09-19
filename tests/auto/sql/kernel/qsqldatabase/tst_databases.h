@@ -61,11 +61,13 @@
 #  if defined(Q_OS_WINCE) || defined(Q_OS_WINRT)
 #    include <winsock2.h>
 #  endif
-#  if defined(Q_OS_WINRT) && !defined(Q_OS_WINPHONE)
-static inline int gethostname(char *name, int len) { qstrcpy(name, "localhost"); return 9; }
-#  endif
 #else
 #include <unistd.h>
+#endif
+#if defined(Q_OS_WINRT)
+   static inline int qgethostname(char *name, int) { qstrcpy(name, "localhost"); return 9; }
+#else
+#  define qgethostname gethostname
 #endif
 
 #define CHECK_DATABASE( db ) \
@@ -87,7 +89,7 @@ static QString qGetHostName()
 
     char hn[257];
 
-    if ( gethostname( hn, 255 ) == 0 ) {
+    if ( qgethostname( hn, 255 ) == 0 ) {
         hn[256] = '\0';
         hostname = QString::fromLatin1( hn );
         hostname.replace( QLatin1Char( '.' ), QLatin1Char( '_' ) );
