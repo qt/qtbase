@@ -1183,17 +1183,17 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
             bundle_resources_files += keyFor(icon + ".BUILDABLE");
         }
 
-        if (!bundle_resources_files.isEmpty()) {
-            QString grp("Copy Bundle Resources"), key = keyFor(grp);
-            project->values("QMAKE_PBX_BUILDPHASES").append(key);
-            t << "\t\t" << key << " = {\n"
-              << "\t\t\t" << writeSettings("buildActionMask", "2147483647", SettingsNoQuote) << ";\n"
-              << "\t\t\t" << writeSettings("files", bundle_resources_files, SettingsAsList, 4) << ";\n"
-              << "\t\t\t" << writeSettings("isa", "PBXResourcesBuildPhase", SettingsNoQuote) << ";\n"
-              << "\t\t\t" << writeSettings("runOnlyForDeploymentPostprocessing", "0", SettingsNoQuote) << ";\n"
-              << "\t\t\t" << writeSettings("name", escapeFilePath(grp)) << ";\n"
-              << "\t\t};\n";
-        }
+        // Always add "Copy Bundle Resources" phase, even when we have no bundle
+        // resources, since Xcode depends on it being there for e.g asset catalogs.
+        QString grp("Copy Bundle Resources"), key = keyFor(grp);
+        project->values("QMAKE_PBX_BUILDPHASES").append(key);
+        t << "\t\t" << key << " = {\n"
+          << "\t\t\t" << writeSettings("buildActionMask", "2147483647", SettingsNoQuote) << ";\n"
+          << "\t\t\t" << writeSettings("files", bundle_resources_files, SettingsAsList, 4) << ";\n"
+          << "\t\t\t" << writeSettings("isa", "PBXResourcesBuildPhase", SettingsNoQuote) << ";\n"
+          << "\t\t\t" << writeSettings("runOnlyForDeploymentPostprocessing", "0", SettingsNoQuote) << ";\n"
+          << "\t\t\t" << writeSettings("name", escapeFilePath(grp)) << ";\n"
+          << "\t\t};\n";
     }
 
     //REFERENCE
