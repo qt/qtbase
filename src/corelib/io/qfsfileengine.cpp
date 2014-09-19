@@ -619,8 +619,7 @@ qint64 QFSFileEnginePrivate::readFdFh(char *data, qint64 len)
 #endif
         do {
             result = QT_READ(fd, data + readBytes, size_t(len - readBytes));
-        } while ((result == -1 && errno == EINTR)
-                || (result > 0 && (readBytes += result) < len));
+        } while (result > 0 && (readBytes += result) < len);
 
         eof = !(result == -1);
     }
@@ -737,8 +736,7 @@ qint64 QFSFileEnginePrivate::writeFdFh(const char *data, qint64 len)
 #endif
         do {
             result = QT_WRITE(fd, data + writtenBytes, size_t(len - writtenBytes));
-        } while ((result == -1 && errno == EINTR)
-                || (result > 0 && (writtenBytes += result) < len));
+        } while (result > 0 && (writtenBytes += result) < len);
     }
 
     if (len &&  writtenBytes == 0) {
