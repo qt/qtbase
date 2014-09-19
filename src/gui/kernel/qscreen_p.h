@@ -67,11 +67,11 @@ public:
         : platformScreen(screen)
         , orientationUpdateMask(0)
     {
-        orientation = screen->orientation();
-        geometry = screen->geometry();
-        availableGeometry = screen->availableGeometry();
-        logicalDpi = screen->logicalDpi();
-        refreshRate = screen->refreshRate();
+        orientation = platformScreen->orientation();
+        geometry = platformScreen->geometry();
+        availableGeometry = platformScreen->availableGeometry();
+        logicalDpi = platformScreen->logicalDpi();
+        refreshRate = platformScreen->refreshRate();
 
         updatePrimaryOrientation();
 
