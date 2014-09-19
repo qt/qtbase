@@ -67,11 +67,6 @@ QEglFSIntegration::QEglFSIntegration()
     initResources();
 }
 
-QEglFSIntegration::~QEglFSIntegration()
-{
-    QEglFSHooks::hooks()->platformDestroy();
-}
-
 bool QEglFSIntegration::hasCapability(QPlatformIntegration::Capability cap) const
 {
     // We assume that devices will have more and not less capabilities
@@ -89,6 +84,11 @@ void QEglFSIntegration::initialize()
 
     if (!mDisableInputHandlers)
         createInputHandlers();
+}
+
+void QEglFSIntegration::destroy()
+{
+    QEglFSHooks::hooks()->platformDestroy();
 }
 
 EGLNativeDisplayType QEglFSIntegration::nativeDisplay() const

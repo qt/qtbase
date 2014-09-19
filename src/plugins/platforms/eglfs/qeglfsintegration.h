@@ -44,9 +44,9 @@ class QEglFSIntegration : public QEGLPlatformIntegration
 {
 public:
     QEglFSIntegration();
-    ~QEglFSIntegration();
 
     void initialize() Q_DECL_OVERRIDE;
+    void destroy() Q_DECL_OVERRIDE;
 
     bool hasCapability(QPlatformIntegration::Capability cap) const Q_DECL_OVERRIDE;
     QVariant styleHint(QPlatformIntegration::StyleHint hint) const Q_DECL_OVERRIDE;

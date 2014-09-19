@@ -95,9 +95,15 @@ QEGLPlatformIntegration::QEGLPlatformIntegration()
 
 QEGLPlatformIntegration::~QEGLPlatformIntegration()
 {
+    foreach (QWindow *w, qGuiApp->topLevelWindows())
+        w->destroy();
+
     delete m_screen;
+
     if (m_display != EGL_NO_DISPLAY)
         eglTerminate(m_display);
+
+    destroy();
 }
 
 void QEGLPlatformIntegration::initialize()
@@ -116,6 +122,11 @@ void QEGLPlatformIntegration::initialize()
     m_inputContext = QPlatformInputContextFactory::create();
 
     m_vtHandler.reset(new QFbVtHandler);
+}
+
+void QEGLPlatformIntegration::destroy()
+{
+
 }
 
 QAbstractEventDispatcher *QEGLPlatformIntegration::createEventDispatcher() const
