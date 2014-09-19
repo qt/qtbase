@@ -95,37 +95,13 @@ QAccessibleInterface *qAccessibleFactory(const QString &classname, QObject *obje
 #endif
 #ifndef QT_NO_TOOLBUTTON
     } else if (classname == QLatin1String("QToolButton")) {
-        QAccessible::Role role = QAccessible::NoRole;
-#ifndef QT_NO_MENU
-        QToolButton *tb = qobject_cast<QToolButton*>(widget);
-        if (!tb->menu())
-            role = tb->isCheckable() ? QAccessible::CheckBox : QAccessible::PushButton;
-        else if (tb->popupMode() == QToolButton::DelayedPopup)
-            role = QAccessible::ButtonDropDown;
-        else
-#endif
-            role = QAccessible::ButtonMenu;
-        iface = new QAccessibleToolButton(widget, role);
+        iface = new QAccessibleToolButton(widget);
 #endif // QT_NO_TOOLBUTTON
-    } else if (classname == QLatin1String("QCheckBox")) {
-        iface = new QAccessibleButton(widget, QAccessible::CheckBox);
-    } else if (classname == QLatin1String("QRadioButton")) {
-        iface = new QAccessibleButton(widget, QAccessible::RadioButton);
-    } else if (classname == QLatin1String("QPushButton")) {
-        QAccessible::Role role = QAccessible::NoRole;
-        QPushButton *pb = qobject_cast<QPushButton*>(widget);
-#ifndef QT_NO_MENU
-        if (pb->menu())
-            role = QAccessible::ButtonMenu;
-        else
-#endif
-        if (pb->isCheckable())
-            role = QAccessible::CheckBox;
-        else
-            role = QAccessible::PushButton;
-        iface = new QAccessibleButton(widget, role);
-    } else if (classname == QLatin1String("QAbstractButton")) {
-        iface = new QAccessibleButton(widget, QAccessible::PushButton);
+    } else if (classname == QLatin1String("QCheckBox")
+            || classname == QLatin1String("QRadioButton")
+            || classname == QLatin1String("QPushButton")
+            || classname == QLatin1String("QAbstractButton")) {
+        iface = new QAccessibleButton(widget);
     } else if (classname == QLatin1String("QDialog")) {
         iface = new QAccessibleWidget(widget, QAccessible::Dialog);
     } else if (classname == QLatin1String("QMessageBox")) {

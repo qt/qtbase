@@ -59,11 +59,12 @@ class QAccessibleButton : public QAccessibleWidget
 {
     Q_DECLARE_TR_FUNCTIONS(QAccessibleButton)
 public:
-    QAccessibleButton(QWidget *w, QAccessible::Role r);
+    QAccessibleButton(QWidget *w);
 
     QString text(QAccessible::Text t) const Q_DECL_OVERRIDE;
     QAccessible::State state() const Q_DECL_OVERRIDE;
     QRect rect() const Q_DECL_OVERRIDE;
+    QAccessible::Role role() const Q_DECL_OVERRIDE;
 
     QStringList actionNames() const Q_DECL_OVERRIDE;
     void doAction(const QString &actionName) Q_DECL_OVERRIDE;
@@ -77,9 +78,10 @@ protected:
 class QAccessibleToolButton : public QAccessibleButton
 {
 public:
-    QAccessibleToolButton(QWidget *w, QAccessible::Role role);
+    QAccessibleToolButton(QWidget *w);
 
     QAccessible::State state() const Q_DECL_OVERRIDE;
+    QAccessible::Role role() const Q_DECL_OVERRIDE;
 
     int childCount() const Q_DECL_OVERRIDE;
     QAccessibleInterface *child(int index) const Q_DECL_OVERRIDE;

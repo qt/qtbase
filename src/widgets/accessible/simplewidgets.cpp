@@ -84,12 +84,14 @@ QString qt_accHotKey(const QString &text);
 
 /*!
   Creates a QAccessibleButton object for \a w.
-  \a role is propagated to the QAccessibleWidget constructor.
 */
-QAccessibleButton::QAccessibleButton(QWidget *w, QAccessible::Role role)
-: QAccessibleWidget(w, role)
+QAccessibleButton::QAccessibleButton(QWidget *w)
+: QAccessibleWidget(w)
 {
     Q_ASSERT(button());
+
+    // FIXME: The checkable state of the button is dynamic,
+    // while we only update the controlling signal once :(
     if (button()->isCheckable())
         addControllingSignal(QLatin1String("toggled(bool)"));
     else
@@ -178,6 +180,23 @@ QRect QAccessibleButton::rect() const
     return QAccessibleWidget::rect();
 }
 
+QAccessible::Role QAccessibleButton::role() const
+{
+    QAbstractButton *ab = button();
+
+#ifndef QT_NO_MENU
+    if (QPushButton *pb = qobject_cast<QPushButton*>(ab)) {
+        if (pb->menu())
+            return QAccessible::ButtonMenu;
+    }
+#endif
+
+    if (ab->isCheckable())
+        return ab->autoExclusive() ? QAccessible::RadioButton : QAccessible::CheckBox;
+
+    return QAccessible::Button;
+}
+
 QStringList QAccessibleButton::actionNames() const
 {
     QStringList names;
@@ -244,10 +263,9 @@ QStringList QAccessibleButton::keyBindingsForAction(const QString &actionName) c
 
 /*!
   Creates a QAccessibleToolButton object for \a w.
-  \a role is propagated to the QAccessibleWidget constructor.
 */
-QAccessibleToolButton::QAccessibleToolButton(QWidget *w, QAccessible::Role role)
-: QAccessibleButton(w, role)
+QAccessibleToolButton::QAccessibleToolButton(QWidget *w)
+: QAccessibleButton(w)
 {
     Q_ASSERT(toolButton());
 }
@@ -285,6 +303,21 @@ QAccessible::State QAccessibleToolButton::state() const
 int QAccessibleToolButton::childCount() const
 {
     return isSplitButton() ? 1 : 0;
+}
+
+QAccessible::Role QAccessibleToolButton::role() const
+{
+    QAbstractButton *ab = button();
+
+#ifndef QT_NO_MENU
+    QToolButton *tb = qobject_cast<QToolButton*>(ab);
+    if (!tb->menu())
+        return tb->isCheckable() ? QAccessible::CheckBox : QAccessible::PushButton;
+    else if (tb->popupMode() == QToolButton::DelayedPopup)
+        return QAccessible::ButtonDropDown;
+#endif
+
+    return QAccessible::ButtonMenu;
 }
 
 QAccessibleInterface *QAccessibleToolButton::child(int index) const
