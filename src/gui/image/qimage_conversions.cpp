@@ -1047,8 +1047,7 @@ void dither_to_Mono(QImageData *dst, const QImageData *src,
                 dst_data += dst_bpl;
                 src_data += src_bpl;
             }
-        } else
-            /* (d == 8) */ {
+        } else if (d == 8) {
             for (int i=0; i<h; i++) {
                 const uchar *p = src_data;
                 const uchar *end = p + w;
