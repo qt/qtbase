@@ -865,6 +865,10 @@ QList<int> QXcbKeyboard::possibleKeys(const QKeyEvent *event) const
     xkb_mod_index_t altMod = xkb_keymap_mod_get_index(xkb_keymap, "Alt");
     xkb_mod_index_t controlMod = xkb_keymap_mod_get_index(xkb_keymap, "Control");
 
+    Q_ASSERT(shiftMod < 32);
+    Q_ASSERT(altMod < 32);
+    Q_ASSERT(controlMod < 32);
+
     xkb_mod_mask_t depressed;
     struct xkb_keymap *fallback_keymap = 0;
     int qtKey = 0;
