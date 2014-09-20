@@ -567,7 +567,8 @@ QLibraryInfo::rawLocation(LibraryLocation loc, PathGroup group)
 QStringList QLibraryInfo::platformPluginArguments(const QString &platformName)
 {
 #if !defined(QT_BOOTSTRAPPED) && !defined(QT_NO_SETTINGS)
-    if (const QSettings *settings = QLibraryInfoPrivate::findConfiguration()) {
+    QScopedPointer<const QSettings> settings(QLibraryInfoPrivate::findConfiguration());
+    if (!settings.isNull()) {
         QString key = QLatin1String(platformsSection);
         key += QLatin1Char('/');
         key += platformName;
