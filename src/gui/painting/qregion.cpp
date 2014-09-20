@@ -3562,8 +3562,10 @@ static QRegionPrivate *PolygonRegion(const QPoint *Pts, int Count, int rule)
         return region;
     }
 
-    if (!(pETEs = static_cast<EdgeTableEntry *>(malloc(sizeof(EdgeTableEntry) * Count))))
+    if (!(pETEs = static_cast<EdgeTableEntry *>(malloc(sizeof(EdgeTableEntry) * Count)))) {
+        delete region;
         return 0;
+    }
 
     region->vectorize();
 
