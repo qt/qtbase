@@ -147,13 +147,13 @@ bool QNativeSocketEnginePrivate::createNewSocket(QAbstractSocket::SocketType soc
     int type = (socketType == QAbstractSocket::UdpSocket) ? SOCK_DGRAM : SOCK_STREAM;
 
     int socket = qt_safe_socket(protocol, type, 0);
-    if (socket <= 0 && socketProtocol == QAbstractSocket::AnyIPProtocol && errno == EAFNOSUPPORT) {
+    if (socket < 0 && socketProtocol == QAbstractSocket::AnyIPProtocol && errno == EAFNOSUPPORT) {
         protocol = AF_INET;
         socket = qt_safe_socket(protocol, type, 0);
         socketProtocol = QAbstractSocket::IPv4Protocol;
     }
 
-    if (socket <= 0) {
+    if (socket < 0) {
         switch (errno) {
         case EPROTONOSUPPORT:
         case EAFNOSUPPORT:
