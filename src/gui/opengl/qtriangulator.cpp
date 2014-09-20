@@ -457,7 +457,7 @@ static inline int primeForCount(int count)
     int high = 32;
     for (int i = 0; i < 5; ++i) {
         int mid = (high + low) / 2;
-        if (count >= 1 << mid)
+        if (uint(count) >= (1u << mid))
             low = mid;
         else
             high = mid;
