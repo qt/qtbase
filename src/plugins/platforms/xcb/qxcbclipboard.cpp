@@ -738,6 +738,9 @@ void QXcbClipboard::handleSelectionRequest(xcb_selection_request_event_t *req)
 void QXcbClipboard::handleXFixesSelectionRequest(xcb_xfixes_selection_notify_event_t *event)
 {
     QClipboard::Mode mode = modeForAtom(event->selection);
+    if (mode > QClipboard::Selection)
+        return;
+
     // here we care only about the xfixes events that come from non Qt processes
     if (event->owner != XCB_NONE && event->owner != owner()) {
         if (!m_xClipboard[mode]) {
