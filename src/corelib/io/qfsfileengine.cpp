@@ -170,10 +170,7 @@ QFSFileEngine::~QFSFileEngine()
         if (d->fh) {
             fclose(d->fh);
         } else if (d->fd != -1) {
-            int ret;
-            do {
-                ret = QT_CLOSE(d->fd);
-            } while (ret == -1 && errno == EINTR);
+            QT_CLOSE(d->fd);
         }
     }
     QList<uchar*> keys = d->maps.keys();
@@ -378,7 +375,7 @@ bool QFSFileEnginePrivate::closeFdFh()
             ret = fclose(fh);
         } else {
             // Close unbuffered file.
-            EINTR_LOOP(ret, QT_CLOSE(fd));
+            ret = QT_CLOSE(fd);
         }
 
         // We must reset these guys regardless; calling close again after a
