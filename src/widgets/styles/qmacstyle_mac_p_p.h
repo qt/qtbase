@@ -195,7 +195,7 @@ public:
 
     void setAutoDefaultButton(QObject *button) const;
 
-    NSView *buttonOfKind(ThemeButtonKind kind) const;
+    NSView *buttonOfKind(ThemeButtonKind kind, QPoint *offset) const;
 
     void drawNSViewInRect(NSView *view, const QRect &rect, QPainter *p) const;
     void resolveCurrentNSView(QWindow *window);

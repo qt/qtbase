@@ -1738,11 +1738,13 @@ ThemeDrawState QMacStylePrivate::getDrawState(QStyle::State flags)
     return tds;
 }
 
-NSView *QMacStylePrivate::buttonOfKind(ThemeButtonKind kind) const
+NSView *QMacStylePrivate::buttonOfKind(ThemeButtonKind kind, QPoint *offset) const
 {
     NSView *bv = buttons[kind];
     if (!bv) {
-        if (kind == kThemePopupButton)
+        if (kind == kThemePopupButton
+            || kind == kThemePopupButtonSmall
+            || kind == kThemePopupButtonMini)
             bv = [[NSPopUpButton alloc] init];
         else if (kind == kThemeComboBox)
             bv = [[NSComboBox alloc] init];
@@ -1782,23 +1784,59 @@ NSView *QMacStylePrivate::buttonOfKind(ThemeButtonKind kind) const
             break;
         }
 
-//        if (kind == kThemePushButtonSmall
-//            || kind == kThemePopupButtonSmall
-//            || kind == kThemeCheckBoxSmall
-//            || kind == kThemeRadioButtonSmall)
-//            bc.controlSize = NSSmallControlSize;
-//        else if (kind == kThemePushButtonMini
-//                 || kind == kThemePopupButtonMini
-//                 || kind == kThemeCheckBoxMini
-//                 || kind == kThemeRadioButtonMini)
-//            bc.controlSize = NSMiniControlSize;
-
         if ([bv isKindOfClass:[NSButton class]]) {
             NSButton *bc = (NSButton *)bv;
             bc.title = nil;
+
+            NSCell *bcell = bc.cell;
+            switch (kind) {
+            case kThemePushButtonSmall:
+            case kThemePopupButtonSmall:
+            case kThemeCheckBoxSmall:
+            case kThemeRadioButtonSmall:
+                bcell.controlSize = NSSmallControlSize;
+                break;
+            case kThemePushButtonMini:
+            case kThemePopupButtonMini:
+            case kThemeCheckBoxMini:
+            case kThemeRadioButtonMini:
+                bcell.controlSize = NSMiniControlSize;
+                break;
+            default:
+                break;
+            }
         }
 
         const_cast<QMacStylePrivate *>(this)->buttons.insert(kind, bv);
+    }
+
+    if (offset) {
+        switch (kind) {
+        case kThemeRadioButton:
+            offset->setY(2);
+            break;
+        case kThemeRadioButtonSmall:
+            *offset = QPoint(-1, 2);
+            break;
+        case kThemeRadioButtonMini:
+            offset->setY(2);
+            break;
+        case kThemePopupButtonSmall:
+        case kThemeCheckBox:
+            offset->setY(1);
+            break;
+        case kThemeCheckBoxSmall:
+            offset->setX(-1);
+            break;
+        case kThemeCheckBoxMini:
+            *offset = QPoint(7, 5);
+            break;
+        case kThemePopupButtonMini:
+            *offset = QPoint(2, -1);
+            break;
+        default:
+            break;
+        }
     }
 
     return bv;
@@ -1917,14 +1955,20 @@ void QMacStylePrivate::drawColorlessButton(const HIRect &macRect, HIThemeButtonD
             }
             pm = QPixmap::fromImage(image);
         } else if ((usingYosemiteOrLater && combo && !editableCombo) || button) {
-            NSButton *bc = (NSButton *)buttonOfKind(bdi->kind);
+            QPoint offset;
+            NSButton *bc = (NSButton *)buttonOfKind(bdi->kind, &offset);
             [bc highlight:pressed];
             bc.enabled = bdi->state != kThemeStateUnavailable && bdi->state != kThemeStateUnavailableInactive;
+            bc.allowsMixedState = YES;
             bc.state = bdi->value == kThemeButtonOn ? NSOnState :
                        bdi->value == kThemeButtonMixed ? NSMixedState : NSOffState;
-            p->translate(0, 1);
-            drawNSViewInRect(bc, opt->rect, p);
-            p->translate(0, -1);
+            // The view frame may differ from what we pass to HITheme
+            QRect rect = opt->rect;
+            if (bdi->kind == kThemePopupButtonMini)
+                rect.adjust(0, 0, -5, 0);
+            p->translate(offset);
+            drawNSViewInRect(bc, rect, p);
+            p->translate(-offset);
             return;
         } else if (usingYosemiteOrLater && editableCombo) {
             QImage image = activePixmap.toImage();
