@@ -2671,8 +2671,9 @@ void QHeaderView::paintSection(QPainter *painter, const QRect &rect, int logical
     opt.iconAlignment = Qt::AlignVCenter;
     opt.text = d->model->headerData(logicalIndex, d->orientation,
                                     Qt::DisplayRole).toString();
+    const int margin = 2 * style()->pixelMetric(QStyle::PM_HeaderMargin, 0, this);
     if (d->textElideMode != Qt::ElideNone)
-        opt.text = opt.fontMetrics.elidedText(opt.text, d->textElideMode , rect.width() - 4);
+        opt.text = opt.fontMetrics.elidedText(opt.text, d->textElideMode , rect.width() - margin);
 
     QVariant variant = d->model->headerData(logicalIndex, d->orientation,
                                     Qt::DecorationRole);
