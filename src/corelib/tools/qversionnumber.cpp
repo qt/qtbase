@@ -169,6 +169,9 @@ QT_BEGIN_NAMESPACE
 */
 QVector<int> QVersionNumber::segments() const
 {
+    if (m_segments.isUsingPointer())
+        return *m_segments.pointer_segments;
+
     QVector<int> result;
     result.resize(segmentCount());
     for (int i = 0; i < segmentCount(); ++i)
@@ -205,10 +208,14 @@ QVector<int> QVersionNumber::segments() const
  */
 QVersionNumber QVersionNumber::normalized() const
 {
-    QVector<int> segs = m_segments;
-    while (segs.size() && segs.last() == 0)
-        segs.pop_back();
-    return QVersionNumber(qMove(segs));
+    int i;
+    for (i = m_segments.size(); i; --i)
+        if (m_segments.at(i - 1) != 0)
+            break;
+
+    QVersionNumber result(*this);
+    result.m_segments.resize(i);
+    return result;
 }
 
 /*!
@@ -247,10 +254,23 @@ bool QVersionNumber::isPrefixOf(const QVersionNumber &other) const Q_DECL_NOTHRO
 */
 int QVersionNumber::compare(const QVersionNumber &v1, const QVersionNumber &v2) Q_DECL_NOTHROW
 {
-    int commonlen = qMin(v1.segmentCount(), v2.segmentCount());
-    for (int i = 0; i < commonlen; ++i) {
-        if (v1.segmentAt(i) != v2.segmentAt(i))
-            return v1.segmentAt(i) - v2.segmentAt(i);
+    int commonlen;
+
+    if (Q_LIKELY(!v1.m_segments.isUsingPointer() && !v2.m_segments.isUsingPointer())) {
+        // we can't use memcmp because it interprets the data as unsigned bytes
+        const qint8 *ptr1 = v1.m_segments.inline_segments + InlineSegmentStartIdx;
+        const qint8 *ptr2 = v2.m_segments.inline_segments + InlineSegmentStartIdx;
+        commonlen = qMin(v1.m_segments.size(),
+                         v2.m_segments.size());
+        for (int i = 0; i < commonlen; ++i)
+            if (int x = ptr1[i] - ptr2[i])
+                return x;
+    } else {
+        commonlen = qMin(v1.segmentCount(), v2.segmentCount());
+        for (int i = 0; i < commonlen; ++i) {
+            if (v1.segmentAt(i) != v2.segmentAt(i))
+                return v1.segmentAt(i) - v2.segmentAt(i);
+        }
     }
 
     // ran out of segments in v1 and/or v2 and need to check the first trailing
@@ -294,8 +314,10 @@ QVersionNumber QVersionNumber::commonPrefix(const QVersionNumber &v1,
     if (i == 0)
         return QVersionNumber();
 
-    // will use a vector
-    return QVersionNumber(v1.m_segments.mid(0, i));
+    // try to use the one with inline segments, if there's one
+    QVersionNumber result(!v1.m_segments.isUsingPointer() ? v1 : v2);
+    result.m_segments.resize(i);
+    return result;
 }
 
 /*!
@@ -419,6 +441,19 @@ QVersionNumber QVersionNumber::fromString(const QString &string, int *suffixInde
     return QVersionNumber(qMove(seg));
 }
 
+void QVersionNumber::SegmentStorage::setVector(int len, int maj, int min, int mic)
+{
+    pointer_segments = new QVector<int>;
+    pointer_segments->resize(len);
+    pointer_segments->data()[0] = maj;
+    if (len > 1) {
+        pointer_segments->data()[1] = min;
+        if (len > 2) {
+            pointer_segments->data()[2] = mic;
+        }
+    }
+}
+
 #ifndef QT_NO_DATASTREAM
 /*!
    \fn  QDataStream& operator<<(QDataStream &out,
@@ -445,7 +480,9 @@ QDataStream& operator<<(QDataStream &out, const QVersionNumber &version)
  */
 QDataStream& operator>>(QDataStream &in, QVersionNumber &version)
 {
-    in >> version.m_segments;
+    if (!version.m_segments.isUsingPointer())
+        version.m_segments.pointer_segments = new QVector<int>;
+    in >> *version.m_segments.pointer_segments;
     return in;
 }
 #endif
