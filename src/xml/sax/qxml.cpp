@@ -5265,7 +5265,12 @@ bool QXmlSimpleReaderPrivate::parsePEReference()
                                 return false;
                             }
                             if (ret) {
-                                xmlRefString = ret->data();
+                                QString buffer = ret->data();
+                                while (!buffer.isEmpty()) {
+                                    xmlRefString += buffer;
+                                    ret->fetchData();
+                                    buffer = ret->data();
+                                }
                                 delete ret;
                                 if (!stripTextDecl(xmlRefString)) {
                                     reportParseError(QLatin1String(XMLERR_ERRORINTEXTDECL));
@@ -7614,7 +7619,14 @@ bool QXmlSimpleReaderPrivate::processReference()
                                     return false;
                                 }
                                 if (ret) {
-                                    QString xmlRefString = ret->data();
+                                    QString xmlRefString;
+                                    QString buffer = ret->data();
+                                    while (!buffer.isEmpty()) {
+                                        xmlRefString += buffer;
+                                        ret->fetchData();
+                                        buffer = ret->data();
+                                    }
+
                                     delete ret;
                                     if (!stripTextDecl(xmlRefString)) {
                                         reportParseError(QLatin1String(XMLERR_ERRORINTEXTDECL));
