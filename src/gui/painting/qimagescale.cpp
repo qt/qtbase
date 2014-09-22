@@ -143,8 +143,8 @@ unsigned int** QImageScale::qimageCalcYPoints(unsigned int *src,
                                               int sw, int sh, int dh)
 {
     unsigned int **p;
-    int i, j = 0;
-    int val, inc, rv = 0;
+    int i, j = 0, rv = 0;
+    qint64 val, inc;
 
     if(dh < 0){
         dh = -dh;
@@ -154,9 +154,9 @@ unsigned int** QImageScale::qimageCalcYPoints(unsigned int *src,
 
     int up = qAbs(dh) >= sh;
     val = up ? 0x8000 * sh / dh - 0x8000 : 0;
-    inc = (sh << 16) / dh;
+    inc = (((qint64)sh) << 16) / dh;
     for(i = 0; i < dh; i++){
-        p[j++] = src + qMax(0, val >> 16) * sw;
+        p[j++] = src + qMax(0LL, val >> 16) * sw;
         val += inc;
     }
     if(rv){
@@ -171,8 +171,8 @@ unsigned int** QImageScale::qimageCalcYPoints(unsigned int *src,
 
 int* QImageScale::qimageCalcXPoints(int sw, int dw)
 {
-    int *p, i, j = 0;
-    int val, inc, rv = 0;
+    int *p, i, j = 0, rv = 0;
+    qint64 val, inc;
 
     if(dw < 0){
         dw = -dw;
@@ -182,9 +182,9 @@ int* QImageScale::qimageCalcXPoints(int sw, int dw)
 
     int up = qAbs(dw) >= sw;
     val = up ? 0x8000 * sw / dw - 0x8000 : 0;
-    inc = (sw << 16) / dw;
+    inc = (((qint64)sw) << 16) / dw;
     for(i = 0; i < dw; i++){
-        p[j++] = qMax(0, val >> 16);
+        p[j++] = qMax(0LL, val >> 16);
         val += inc;
     }
 
@@ -210,10 +210,10 @@ int* QImageScale::qimageCalcApoints(int s, int d, int up)
 
     /* scaling up */
     if(up){
-        int val, inc;
+        qint64 val, inc;
 
         val = 0x8000 * s / d - 0x8000;
-        inc = (s << 16) / d;
+        inc = (((qint64)s) << 16) / d;
         for(i = 0; i < d; i++){
             int pos = val >> 16;
             if (pos < 0)
@@ -227,9 +227,10 @@ int* QImageScale::qimageCalcApoints(int s, int d, int up)
     }
     /* scaling down */
     else{
-        int val, inc, ap, Cp;
+        qint64 val, inc;
+        int ap, Cp;
         val = 0;
-        inc = (s << 16) / d;
+        inc = (((qint64)s) << 16) / d;
         Cp = ((d << 14) / s) + 1;
         for(i = 0; i < d; i++){
             ap = ((0x100 - ((val >> 8) & 0xff)) * Cp) >> 8;
