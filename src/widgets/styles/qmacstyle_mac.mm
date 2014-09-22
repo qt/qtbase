@@ -1816,8 +1816,8 @@ void QMacStylePrivate::drawNSViewInRect(NSView *view, const QRect &qtRect, QPain
     CGRect rect = CGRectMake(qtRect.x() + 1, qtRect.y(), qtRect.width(), qtRect.height());
 
     [backingStoreNSView addSubview:view];
-    view.frame = rect;
-    [view drawRect:rect];
+    view.frame = NSRectFromCGRect(rect);
+    [view drawRect:NSRectFromCGRect(rect)];
     [view removeFromSuperviewWithoutNeedingDisplay];
 
     [NSGraphicsContext restoreGraphicsState];
@@ -3808,9 +3808,9 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
 
                 NSBezierPath *pushButtonFocusRingPath;
                 if (bdi.kind == kThemeBevelButton)
-                    pushButtonFocusRingPath = [NSBezierPath bezierPathWithRect:focusRect];
+                    pushButtonFocusRingPath = [NSBezierPath bezierPathWithRect:NSRectFromCGRect(focusRect)];
                 else
-                    pushButtonFocusRingPath = [NSBezierPath bezierPathWithRoundedRect:focusRect xRadius:4 yRadius:4];
+                    pushButtonFocusRingPath = [NSBezierPath bezierPathWithRoundedRect:NSRectFromCGRect(focusRect) xRadius:4 yRadius:4];
                 qt_drawFocusRingOnPath(cg, pushButtonFocusRingPath);
             }
 
