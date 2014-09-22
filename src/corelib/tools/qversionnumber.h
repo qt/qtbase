@@ -83,10 +83,10 @@ public:
     { m_segments.reserve(3); m_segments << maj << min << mic; }
 
     inline bool isNull() const Q_DECL_NOTHROW Q_REQUIRED_RESULT
-    { return m_segments.isEmpty(); }
+    { return segmentCount() == 0; }
 
     inline bool isNormalized() const Q_DECL_NOTHROW Q_REQUIRED_RESULT
-    { return isNull() || m_segments.last() != 0; }
+    { return isNull() || segmentAt(segmentCount() - 1) != 0; }
 
     inline int majorVersion() const Q_DECL_NOTHROW Q_REQUIRED_RESULT
     { return segmentAt(0); }
