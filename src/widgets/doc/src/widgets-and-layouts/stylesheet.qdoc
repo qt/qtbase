@@ -2901,6 +2901,9 @@
            \li \c ex: the ex width of the font (i.e., the height of 'x')
            \endlist
 
+           However, Qt is limited to font sizes in \c pt and \c px and any other
+           size must be in \c px, \c em or \c ex.
+
     \row
         \li \b{Number} \target Number
         \li A decimal integer or a real number
