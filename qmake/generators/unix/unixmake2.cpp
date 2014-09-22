@@ -736,8 +736,13 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
             if (!destdir.isEmpty())
                 t << mkdir_p_asstring(destdir, false) << "\n\t";
             ProStringList commonSedArgs;
-            if (!project->values("VERSION").isEmpty())
-                commonSedArgs << "-e \"s,@SHORT_VERSION@," << project->first("VER_MAJ") << "." << project->first("VER_MIN") << ",g\" ";
+            if (!project->values("VERSION").isEmpty()) {
+                commonSedArgs << "-e \"s,@SHORT_VERSION@," << project->first("VER_MAJ") << "."
+                                                           << project->first("VER_MIN") << ",g\" ";
+                commonSedArgs << "-e \"s,@FULL_VERSION@," << project->first("VER_MAJ") << "."
+                                                          << project->first("VER_MIN") << "."
+                                                          << project->first("VER_PAT") << ",g\" ";
+            }
             commonSedArgs << "-e \"s,@TYPEINFO@,"<< (project->isEmpty("QMAKE_PKGINFO_TYPEINFO") ?
                        QString::fromLatin1("????") : project->first("QMAKE_PKGINFO_TYPEINFO").left(4)) << ",g\" ";
             if (project->first("TEMPLATE") == "app") {
