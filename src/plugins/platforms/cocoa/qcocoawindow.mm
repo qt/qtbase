@@ -1477,7 +1477,11 @@ void QCocoaWindow::setNSWindow(QCocoaNSWindow *window)
 {
     if (window.contentView != m_contentView) {
         [m_contentView setPostsFrameChangedNotifications: NO];
+        [m_contentView retain];
+        if (m_contentView.superview) // m_contentView comes from another NSWindow
+            [m_contentView removeFromSuperview];
         [window setContentView:m_contentView];
+        [m_contentView release];
         [m_contentView setPostsFrameChangedNotifications: YES];
     }
 }
