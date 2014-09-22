@@ -1750,8 +1750,7 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
     \value SH_ComboBox_Popup  Allows popups as a combobox drop-down
         menu.
 
-    \omitvalue SH_ComboBox_UseNativePopup  Whether we should use a native popup.
-        Only supported for non-editable combo boxes on Mac OS X so far.
+    \omitvalue SH_ComboBox_UseNativePopup
 
     \value SH_Workspace_FillSpaceOnMaximize  The workspace should
         maximize the client area.
