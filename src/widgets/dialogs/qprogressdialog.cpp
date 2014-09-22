@@ -138,9 +138,10 @@ void QProgressDialogPrivate::init(const QString &labelText, const QString &cance
 void QProgressDialogPrivate::layout()
 {
     Q_Q(QProgressDialog);
-    int sp = q->style()->pixelMetric(QStyle::PM_DefaultLayoutSpacing);
-    int mtb = q->style()->pixelMetric(QStyle::PM_DefaultTopLevelMargin);
-    int mlr = qMin(q->width() / 10, mtb);
+    int sp = q->style()->pixelMetric(QStyle::PM_LayoutVerticalSpacing, 0, q);
+    int mb = q->style()->pixelMetric(QStyle::PM_LayoutBottomMargin, 0, q);
+    int ml = qMin(q->width() / 10, q->style()->pixelMetric(QStyle::PM_LayoutLeftMargin, 0, q));
+    int mr = qMin(q->width() / 10, q->style()->pixelMetric(QStyle::PM_LayoutRightMargin, 0, q));
     const bool centered =
         bool(q->style()->styleHint(QStyle::SH_ProgressDialog_CenterCancelButton, 0, q));
 
@@ -154,12 +155,12 @@ void QProgressDialogPrivate::layout()
     // dialog can be made very small if the user demands it so.
     for (int attempt=5; attempt--;) {
         cspc = cancel ? cs.height() + sp : 0;
-        lh = qMax(0, q->height() - mtb - bh.height() - sp - cspc);
+        lh = qMax(0, q->height() - mb - bh.height() - sp - cspc);
 
         if (lh < q->height()/4) {
             // Getting cramped
             sp /= 2;
-            mtb /= 2;
+            mb /= 2;
             if (cancel) {
                 cs.setHeight(qMax(4,cs.height()-sp-2));
             }
@@ -171,14 +172,14 @@ void QProgressDialogPrivate::layout()
 
     if (cancel) {
         cancel->setGeometry(
-            centered ? q->width()/2 - cs.width()/2 : q->width() - mlr - cs.width(),
-            q->height() - mtb - cs.height(),
+            centered ? q->width()/2 - cs.width()/2 : q->width() - mr - cs.width(),
+            q->height() - mb - cs.height(),
             cs.width(), cs.height());
     }
 
     if (label)
-        label->setGeometry(mlr, additionalSpacing, q->width() - mlr * 2, lh);
-    bar->setGeometry(mlr, lh + sp + additionalSpacing, q->width() - mlr * 2, bh.height());
+        label->setGeometry(ml, additionalSpacing, q->width() - ml - mr, lh);
+    bar->setGeometry(ml, lh + sp + additionalSpacing, q->width() - ml - mr, bh.height());
 }
 
 void QProgressDialogPrivate::retranslateStrings()
