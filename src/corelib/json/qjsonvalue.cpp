@@ -420,17 +420,17 @@ QJsonValue QJsonValue::fromVariant(const QVariant &variant)
 }
 
 /*!
-    Converts the value to a QVariant.
+    Converts the value to a \l {QVariant::}{QVariant()}.
 
     The QJsonValue types will be converted as follows:
 
-    \value Null     QVariant()
+    \value Null     {QVariant::}{QVariant()}
     \value Bool     QMetaType::Bool
     \value Double   QMetaType::Double
     \value String   QString
     \value Array    QVariantList
     \value Object   QVariantMap
-    \value Undefined QVariant()
+    \value Undefined {QVariant::}{QVariant()}
 
     \sa fromVariant()
  */
@@ -553,7 +553,7 @@ QJsonArray QJsonValue::toArray(const QJsonArray &defaultValue) const
 
     Converts the value to an array and returns it.
 
-    If type() is not Array, a QJsonArray() will be returned.
+    If type() is not Array, a \l{QJsonArray::}{QJsonArray()} will be returned.
  */
 QJsonArray QJsonValue::toArray() const
 {
@@ -578,8 +578,8 @@ QJsonObject QJsonValue::toObject(const QJsonObject &defaultValue) const
 
     Converts the value to an object and returns it.
 
-    If type() is not Object, the QJsonObject() will be returned.
- */
+    If type() is not Object, the \l {QJsonObject::}{QJsonObject()} will be returned.
+*/
 QJsonObject QJsonValue::toObject() const
 {
     return toObject(QJsonObject());

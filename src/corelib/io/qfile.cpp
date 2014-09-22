@@ -167,7 +167,7 @@ QAbstractFileEngine *QFilePrivate::engine() const
     disk into a 16-bit Unicode QString. By default, it assumes that
     the user system's local 8-bit encoding is used (e.g., UTF-8
     on most unix based operating systems; see QTextCodec::codecForLocale() for
-    details). This can be changed using setCodec().
+    details). This can be changed using \l QTextStream::setCodec().
 
     To write text, we can use operator<<(), which is overloaded to
     take a QTextStream on the left and various data types (including
@@ -987,8 +987,8 @@ bool QFile::open(FILE *fh, OpenMode mode, FileHandleFlags handleFlags)
     those cases, size() returns \c 0.  See QIODevice::isSequential()
     for more information.
 
-    \warning For Windows CE you may not be able to call seek(), setSize(),
-    fileTime(). size() returns \c 0.
+    \warning For Windows CE you may not be able to call seek(), and size()
+             returns \c 0.
 
     \warning Since this function opens the file without specifying the file name,
              you cannot use this QFile with a QFileInfo.

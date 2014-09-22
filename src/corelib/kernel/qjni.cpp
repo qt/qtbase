@@ -86,15 +86,14 @@ Q_GLOBAL_STATIC(JClassHash, cachedClasses)
 static jclass getCachedClass(JNIEnv *env, const char *className)
 {
     jclass clazz = 0;
-    QString key = QLatin1String(className);
-    QHash<QString, jclass>::iterator it = cachedClasses->find(key);
+    QString classDotEnc = QString::fromLatin1(className).replace(QLatin1Char('/'), QLatin1Char('.'));
+    QHash<QString, jclass>::iterator it = cachedClasses->find(classDotEnc);
     if (it == cachedClasses->end()) {
         QJNIObjectPrivate classLoader = QtAndroidPrivate::classLoader();
         if (!classLoader.isValid())
             return 0;
 
-        QJNIObjectPrivate stringName = QJNIObjectPrivate::fromString(QString::fromLatin1(className).replace(QLatin1Char('/'),
-                                                                                                            QLatin1Char('.')));
+        QJNIObjectPrivate stringName = QJNIObjectPrivate::fromString(classDotEnc);
         QJNIObjectPrivate classObject = classLoader.callObjectMethod("loadClass",
                                                                      "(Ljava/lang/String;)Ljava/lang/Class;",
                                                                      stringName.object());
@@ -102,7 +101,7 @@ static jclass getCachedClass(JNIEnv *env, const char *className)
         if (!exceptionCheckAndClear(env) && classObject.isValid())
             clazz = static_cast<jclass>(env->NewGlobalRef(classObject.object()));
 
-        cachedClasses->insert(key, clazz);
+        cachedClasses->insert(classDotEnc, clazz);
     } else {
         clazz = it.value();
     }

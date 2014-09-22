@@ -165,6 +165,7 @@ static QNetworkConfiguration::BearerType qGetInterfaceType(const QString &interf
 
     ifreq request;
     strncpy(request.ifr_name, interface.toLocal8Bit().data(), sizeof(request.ifr_name));
+    request.ifr_name[sizeof(request.ifr_name) - 1] = '\0';
     int result = ioctl(sock, SIOCGIFHWADDR, &request);
     close(sock);
 

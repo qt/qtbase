@@ -86,6 +86,7 @@ private slots:
     void cursorToXForSetColumns();
     void cursorToXForTrailingSpaces_data();
     void cursorToXForTrailingSpaces();
+    void cursorToXInvalidInput();
     void horizontalAlignment_data();
     void horizontalAlignment();
     void horizontalAlignmentMultiline_data();
@@ -672,6 +673,28 @@ void tst_QTextLayout::cursorToXForTrailingSpaces()
     QCOMPARE(line.cursorToX(0), cursorAt0);
     QCOMPARE(line.cursorToX(4), cursorAt4);
     QCOMPARE(line.cursorToX(6), cursorAt6);
+}
+
+void tst_QTextLayout::cursorToXInvalidInput()
+{
+    QTextLayout layout("aaa", testFont);
+
+    layout.beginLayout();
+    QTextLine line = layout.createLine();
+    line.setLineWidth(5);
+    layout.endLayout();
+
+    int cursorPos;
+
+    cursorPos = 0;
+    layout.lineAt(0).cursorToX(&cursorPos);
+    QCOMPARE(cursorPos, 0);
+    cursorPos = -300;
+    layout.lineAt(0).cursorToX(&cursorPos);
+    QCOMPARE(cursorPos, 0);
+    cursorPos = 300;
+    layout.lineAt(0).cursorToX(&cursorPos);
+    QCOMPARE(cursorPos, 3);
 }
 
 void tst_QTextLayout::horizontalAlignment_data()

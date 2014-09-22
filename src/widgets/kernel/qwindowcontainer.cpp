@@ -92,8 +92,11 @@ public:
         Q_Q(QWindowContainer);
         QWidget *p = q->parentWidget();
         while (p) {
-            if (qobject_cast<QMdiSubWindow *>(p) != 0
-                    || qobject_cast<QAbstractScrollArea *>(p) != 0) {
+            if (
+#ifndef QT_NO_MDIAREA
+                qobject_cast<QMdiSubWindow *>(p) != 0 ||
+#endif
+                qobject_cast<QAbstractScrollArea *>(p) != 0) {
                 q->winId();
                 usesNativeWidgets = true;
                 break;
@@ -203,6 +206,7 @@ QWindowContainer::QWindowContainer(QWindow *embeddedWindow, QWidget *parent, Qt:
 
     d->window = embeddedWindow;
     d->window->setParent(&d->fakeParent);
+    setAcceptDrops(true);
 
     connect(QGuiApplication::instance(), SIGNAL(focusWindowChanged(QWindow*)), this, SLOT(focusWindowChanged(QWindow*)));
 }
@@ -295,6 +299,7 @@ bool QWindowContainer::event(QEvent *e)
             }
         }
         break;
+#ifndef QT_NO_DRAGANDDROP
     case QEvent::Drop:
     case QEvent::DragMove:
     case QEvent::DragLeave:
@@ -306,6 +311,7 @@ bool QWindowContainer::event(QEvent *e)
         QCoreApplication::sendEvent(d->window, e);
         e->accept();
         return true;
+#endif
     default:
         break;
     }

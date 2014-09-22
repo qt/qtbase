@@ -79,6 +79,8 @@ private slots:
 
     void taskQTBUG_7103_minMaxWidthNotRespected();
     void taskQTBUG_27420_takeAtShouldUnparentLayout();
+    void taskQTBUG_40609_addingWidgetToItsOwnLayout();
+    void taskQTBUG_40609_addingLayoutToItself();
     void replaceWidget();
 };
 
@@ -327,6 +329,36 @@ void tst_QBoxLayout::taskQTBUG_27420_takeAtShouldUnparentLayout()
         delete item; // success: a taken item/layout should not be deleted when the old parent is deleted
     else
         QVERIFY(!inner.isNull());
+}
+
+void tst_QBoxLayout::taskQTBUG_40609_addingWidgetToItsOwnLayout(){
+    QWidget widget;
+    widget.setObjectName("347b469225a24a0ef05150a");
+    QVBoxLayout layout(&widget);
+    layout.setObjectName("ef9e2b42298e0e6420105bb");
+
+    QTest::ignoreMessage(QtWarningMsg, "QLayout: Cannot add a null widget to QVBoxLayout/ef9e2b42298e0e6420105bb");
+    layout.addWidget(Q_NULLPTR);
+    QCOMPARE(layout.count(), 0);
+
+    QTest::ignoreMessage(QtWarningMsg, "QLayout: Cannot add parent widget QWidget/347b469225a24a0ef05150a to its child layout QVBoxLayout/ef9e2b42298e0e6420105bb");
+    layout.addWidget(&widget);
+    QCOMPARE(layout.count(), 0);
+}
+
+void tst_QBoxLayout::taskQTBUG_40609_addingLayoutToItself(){
+    QWidget widget;
+    widget.setObjectName("fe44e5cb6c08006597126a");
+    QVBoxLayout layout(&widget);
+    layout.setObjectName("cc751dd0f50f62b05a62da");
+
+    QTest::ignoreMessage(QtWarningMsg, "QLayout: Cannot add a null layout to QVBoxLayout/cc751dd0f50f62b05a62da");
+    layout.addLayout(Q_NULLPTR);
+    QCOMPARE(layout.count(), 0);
+
+    QTest::ignoreMessage(QtWarningMsg, "QLayout: Cannot add layout QVBoxLayout/cc751dd0f50f62b05a62da to itself");
+    layout.addLayout(&layout);
+    QCOMPARE(layout.count(), 0);
 }
 
 struct Descr

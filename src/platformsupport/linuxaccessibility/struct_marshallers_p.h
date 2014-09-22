@@ -43,6 +43,17 @@
 #ifndef Q_SPI_STRUCT_MARSHALLERS_H
 #define Q_SPI_STRUCT_MARSHALLERS_H
 
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
 #include <QtCore/qlist.h>
 #include <QtCore/qpair.h>
 #include <QtDBus/QDBusArgument>

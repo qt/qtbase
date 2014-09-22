@@ -2927,6 +2927,8 @@ QImage QImage::mirrored_helper(bool horizontal, bool vertical) const
     result.d->colortable = d->colortable;
     result.d->has_alpha_clut = d->has_alpha_clut;
     result.d->devicePixelRatio = d->devicePixelRatio;
+    result.d->dpmx = d->dpmx;
+    result.d->dpmy = d->dpmy;
 
     do_mirror(result.d, d, horizontal, vertical);
 

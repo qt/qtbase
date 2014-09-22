@@ -83,7 +83,7 @@ QPlatformInputContext *QPlatformInputContextFactory::create()
     QString icString = QString::fromLatin1(qgetenv("QT_IM_MODULE"));
 
     if (icString == QLatin1String("none"))
-        icString = QStringLiteral("compose");
+        return 0;
 
     ic = create(icString);
     if (ic && ic->isValid())

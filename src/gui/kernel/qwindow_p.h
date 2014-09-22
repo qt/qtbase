@@ -133,6 +133,7 @@ public:
     void _q_clearAlert();
 
     bool windowRecreationRequired(QScreen *newScreen) const;
+    void create(bool recursive);
     void setTopLevelScreen(QScreen *newScreen, bool recreate);
     void connectToScreen(QScreen *topLevelScreen);
     void disconnectFromScreen();

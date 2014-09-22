@@ -463,9 +463,8 @@ void QCocoaMenu::showPopup(const QWindow *parentWindow, QPoint pos, const QPlatf
         // Else, we need to transform 'pos' to window or screen coordinates.
         NSPoint nsPos = NSMakePoint(pos.x() - 1, pos.y());
         if (view) {
-            // Flip y-coordinate first, the convert to content view space.
-            nsPos.y = view.frame.size.height - nsPos.y;
-            nsPos = [view convertPoint:nsPos toView:view.window.contentView];
+            // convert coordinates from view to the view's window
+            nsPos = [view convertPoint:nsPos toView:nil];
         } else if (!QGuiApplication::screens().isEmpty()) {
             QScreen *screen = QGuiApplication::screens().at(0);
             nsPos.y = screen->availableVirtualSize().height() - nsPos.y;

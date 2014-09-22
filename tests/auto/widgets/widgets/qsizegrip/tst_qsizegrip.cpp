@@ -46,6 +46,10 @@
 #include <QLineEdit>
 #include <QVBoxLayout>
 #include <QLabel>
+#include <QMainWindow>
+#include <QStatusBar>
+#include <QMdiArea>
+#include <QMdiSubWindow>
 
 static inline Qt::Corner sizeGripCorner(QWidget *parent, QSizeGrip *sizeGrip)
 {
@@ -75,6 +79,7 @@ private slots:
     void hideAndShowOnWindowStateChange_data();
     void hideAndShowOnWindowStateChange();
     void orientation();
+    void dontCrashOnTLWChange();
 
 private:
     QLineEdit *dummyWidget;
@@ -189,6 +194,26 @@ void tst_QSizeGrip::orientation()
     widget.unsetLayoutDirection();
     qApp->processEvents();
     QCOMPARE(sizeGripCorner(&widget, sizeGrip), Qt::TopRightCorner);
+}
+
+void tst_QSizeGrip::dontCrashOnTLWChange()
+{
+    // QTBUG-22867
+    QMdiArea mdiArea;
+    mdiArea.show();
+
+    QMainWindow *mw = new QMainWindow();
+    QMdiSubWindow *mdi = mdiArea.addSubWindow(mw);
+    mw->statusBar()->setSizeGripEnabled(true);
+    mdiArea.removeSubWindow(mw);
+    delete mdi;
+    mw->show();
+
+    // the above setup causes a change of TLW for the size grip,
+    // and it must not crash.
+
+    QVERIFY(QTest::qWaitForWindowExposed(&mdiArea));
+    QVERIFY(QTest::qWaitForWindowExposed(mw));
 }
 
 QTEST_MAIN(tst_QSizeGrip)

@@ -64,7 +64,7 @@ void QCollatorPrivate::init()
     if (caseSensitivity == Qt::CaseInsensitive)
         options |= kUCCollateCaseInsensitiveMask;
     if (numericMode)
-        options |= kUCCollateDigitsAsNumberMask;
+        options |= kUCCollateDigitsAsNumberMask | kUCCollateDigitsOverrideMask;
     if (ignorePunctuation)
         options |= kUCCollatePunctuationSignificantMask;
 

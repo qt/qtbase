@@ -77,7 +77,9 @@ public:
 
     ~QCommonStylePrivate()
     {
+#ifndef QT_NO_ANIMATION
         qDeleteAll(animations);
+#endif
 #ifndef QT_NO_ITEMVIEWS
         delete cachedOption;
 #endif
@@ -114,6 +116,7 @@ public:
 #endif
 
     int animationFps;
+#ifndef QT_NO_ANIMATION
     void _q_removeAnimation();
 
     QList<const QObject*> animationTargets() const;
@@ -123,6 +126,7 @@ public:
 
 private:
     mutable QHash<const QObject*, QStyleAnimation*> animations;
+#endif // QT_NO_ANIMATION
 };
 
 QT_END_NAMESPACE

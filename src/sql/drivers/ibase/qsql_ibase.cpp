@@ -1030,11 +1030,15 @@ bool QIBaseResult::exec()
                     *((qint64*)d->inda->sqlvar[para].sqldata) = val.toLongLong();
                 break;
             case SQL_LONG:
-                if (d->inda->sqlvar[para].sqlscale < 0)
-                    *((long*)d->inda->sqlvar[para].sqldata) =
-                        (long)floor(0.5 + val.toDouble() * pow(10.0, d->inda->sqlvar[para].sqlscale * -1));
-                else
-                    *((long*)d->inda->sqlvar[para].sqldata) = (long)val.toLongLong();
+                if (d->inda->sqlvar[para].sqllen == 4) {
+                    if (d->inda->sqlvar[para].sqlscale < 0)
+                        *((qint32*)d->inda->sqlvar[para].sqldata) =
+                            (qint32)floor(0.5 + val.toDouble() * pow(10.0, d->inda->sqlvar[para].sqlscale * -1));
+                    else
+                        *((qint32*)d->inda->sqlvar[para].sqldata) = (qint32)val.toInt();
+                } else {
+                    *((qint64*)d->inda->sqlvar[para].sqldata) = val.toLongLong();
+                }
                 break;
             case SQL_SHORT:
                 if (d->inda->sqlvar[para].sqlscale < 0)

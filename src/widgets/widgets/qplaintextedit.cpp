@@ -997,7 +997,8 @@ void QPlainTextEditPrivate::_q_adjustScrollbars()
 
     } else {
         vmax = qMax(0, doc->lineCount() - 1);
-        vSliderLength = viewport->height() / q->fontMetrics().lineSpacing();
+        int lineSpacing = q->fontMetrics().lineSpacing();
+        vSliderLength = lineSpacing != 0 ? viewport->height() / lineSpacing : 0;
     }
 
 

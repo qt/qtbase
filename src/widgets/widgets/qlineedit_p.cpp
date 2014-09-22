@@ -310,7 +310,6 @@ QLineEditIconButton::QLineEditIconButton(QWidget *parent)
     : QToolButton(parent)
     , m_opacity(0)
 {
-    updateCursor();
     setFocusPolicy(Qt::NoFocus);
 }
 
@@ -334,18 +333,20 @@ void QLineEditIconButton::setOpacity(qreal value)
 {
     if (!qFuzzyCompare(m_opacity, value)) {
         m_opacity = value;
+        updateCursor();
         update();
     }
 }
 
+#ifndef QT_NO_ANIMATION
 void QLineEditIconButton::startOpacityAnimation(qreal endValue)
 {
     QPropertyAnimation *animation = new QPropertyAnimation(this, QByteArrayLiteral("opacity"));
-    connect(animation, &QAbstractAnimation::finished, this, &QLineEditIconButton::updateCursor);
     animation->setDuration(160);
     animation->setEndValue(endValue);
     animation->start(QAbstractAnimation::DeleteWhenStopped);
 }
+#endif
 
 void QLineEditIconButton::updateCursor()
 {
@@ -360,6 +361,7 @@ void QLineEditPrivate::_q_textChanged(const QString &text)
         const int newTextSize = text.size();
         if (!newTextSize || !lastTextSize) {
             lastTextSize = newTextSize;
+#ifndef QT_NO_ANIMATION
             const bool fadeIn = newTextSize > 0;
             foreach (const SideWidgetEntry &e, leadingSideWidgets) {
                 if (e.flags & SideWidgetFadeInWithText)
@@ -369,6 +371,7 @@ void QLineEditPrivate::_q_textChanged(const QString &text)
                 if (e.flags & SideWidgetFadeInWithText)
                    static_cast<QLineEditIconButton *>(e.widget)->animateShow(fadeIn);
             }
+#endif
         }
     }
 }

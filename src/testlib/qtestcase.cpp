@@ -2630,7 +2630,6 @@ void QTest::ignoreMessage(QtMsgType type, const char *message)
 
     \since 5.3
 */
-
 void QTest::ignoreMessage(QtMsgType type, const QRegularExpression &messagePattern)
 {
     QTestLog::ignoreMessage(type, messagePattern);

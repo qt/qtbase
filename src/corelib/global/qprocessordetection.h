@@ -169,6 +169,7 @@
 #elif defined(__i386) || defined(__i386__) || defined(_M_IX86)
 #  define Q_PROCESSOR_X86_32
 #  define Q_BYTE_ORDER Q_LITTLE_ENDIAN
+#  define Q_PROCESSOR_WORDSIZE   4
 
 /*
  * We define Q_PROCESSOR_X86 == 6 for anything above a equivalent or better

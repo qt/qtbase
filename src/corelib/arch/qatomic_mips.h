@@ -121,7 +121,7 @@ void QBasicAtomicOps<size>::releaseMemoryFence(const T &) Q_DECL_NOTHROW
 {
     asm volatile (".set push\n"
                   ".set mips32\n"
-                  "sync 0x11\n"
+                  "sync 0x12\n"
                   ".set pop\n" ::: "memory");
 }
 
