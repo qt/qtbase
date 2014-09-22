@@ -109,13 +109,6 @@ static inline ID2D1Factory1 *factory()
     return QWindowsDirect2DContext::instance()->d2dFactory();
 }
 
-inline static FLOAT pixelSizeToDIP(int pixelSize)
-{
-    FLOAT dpiX, dpiY;
-    QWindowsDirect2DContext::instance()->d2dFactory()->GetDesktopDpi(&dpiX, &dpiY);
-    return FLOAT(pixelSize) * 96.0f / dpiY;
-}
-
 class Direct2DPathGeometryWriter
 {
 public:
@@ -866,14 +859,14 @@ public:
         Q_Q(QWindowsDirect2DPaintEngine);
 
         DWRITE_GLYPH_RUN glyphRun = {
-            fontFace,                           //    IDWriteFontFace           *fontFace;
-            pixelSizeToDIP(fontDef.pixelSize),  //    FLOAT                     fontEmSize;
-            numGlyphs,                          //    UINT32                    glyphCount;
-            glyphIndices,                       //    const UINT16              *glyphIndices;
-            glyphAdvances,                      //    const FLOAT               *glyphAdvances;
-            glyphOffsets,                       //    const DWRITE_GLYPH_OFFSET *glyphOffsets;
-            FALSE,                              //    BOOL                      isSideways;
-            rtl ? 1 : 0                         //    UINT32                    bidiLevel;
+            fontFace,          //    IDWriteFontFace           *fontFace;
+            fontDef.pixelSize, //    FLOAT                     fontEmSize;
+            numGlyphs,         //    UINT32                    glyphCount;
+            glyphIndices,      //    const UINT16              *glyphIndices;
+            glyphAdvances,     //    const FLOAT               *glyphAdvances;
+            glyphOffsets,      //    const DWRITE_GLYPH_OFFSET *glyphOffsets;
+            FALSE,             //    BOOL                      isSideways;
+            rtl ? 1 : 0        //    UINT32                    bidiLevel;
         };
 
         const bool antiAlias = bool((q->state()->renderHints & QPainter::TextAntialiasing)
