@@ -642,12 +642,12 @@ jboolean QAndroidInputContext::deleteSurroundingText(jint leftLength, jint right
 // Android docs say the cursor must not move
 jboolean QAndroidInputContext::finishComposingText()
 {
+    if (m_composingText.isEmpty())
+        return JNI_TRUE; // not composing
+
     QSharedPointer<QInputMethodQueryEvent> query = focusObjectInputMethodQueryThreadSafe();
     if (query.isNull())
         return JNI_FALSE;
-
-    if (m_composingText.isEmpty())
-        return JNI_TRUE; // not composing
 
     const int blockPos = getBlockPosition(query);
     const int localCursorPos = m_composingCursor - blockPos;
