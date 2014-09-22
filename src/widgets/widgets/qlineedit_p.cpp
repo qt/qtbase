@@ -135,7 +135,7 @@ void QLineEditPrivate::_q_selectionChanged()
 {
     Q_Q(QLineEdit);
     if (control->preeditAreaText().isEmpty()) {
-        QStyleOptionFrameV2 opt;
+        QStyleOptionFrame opt;
         q->initStyleOption(&opt);
         bool showCursor = control->hasSelectedText() ?
                           q->style()->styleHint(QStyle::SH_BlinkCursorWhenTextSelected, &opt, q):
@@ -194,7 +194,7 @@ void QLineEditPrivate::init(const QString& txt)
     QObject::connect(control, SIGNAL(updateNeeded(QRect)),
             q, SLOT(_q_updateNeeded(QRect)));
 
-    QStyleOptionFrameV2 opt;
+    QStyleOptionFrame opt;
     q->initStyleOption(&opt);
     control->setPasswordCharacter(q->style()->styleHint(QStyle::SH_LineEdit_PasswordCharacter, &opt, q));
     control->setPasswordMaskDelay(q->style()->styleHint(QStyle::SH_LineEdit_PasswordMaskDelay, &opt, q));
@@ -217,7 +217,7 @@ void QLineEditPrivate::init(const QString& txt)
 QRect QLineEditPrivate::adjustedContentsRect() const
 {
     Q_Q(const QLineEdit);
-    QStyleOptionFrameV2 opt;
+    QStyleOptionFrame opt;
     q->initStyleOption(&opt);
     QRect r = q->style()->subElementRect(QStyle::SE_LineEditContents, &opt, q);
     r.setX(r.x() + effectiveLeftTextMargin());
@@ -387,7 +387,7 @@ QSize QLineEditPrivate::iconSize() const
 QIcon QLineEditPrivate::clearButtonIcon() const
 {
     Q_Q(const QLineEdit);
-    QStyleOptionFrameV2 styleOption;
+    QStyleOptionFrame styleOption;
     q->initStyleOption(&styleOption);
     return QIcon(q->style()->standardPixmap(QStyle::SP_LineEditClearButton, &styleOption, q));
 }

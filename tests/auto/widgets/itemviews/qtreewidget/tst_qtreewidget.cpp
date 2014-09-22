@@ -3200,7 +3200,7 @@ void tst_QTreeWidget::task239150_editorWidth()
     //we check that an item with no text will get an editor with a correct size
     QTreeWidget tree;
 
-    QStyleOptionFrameV2 opt;
+    QStyleOptionFrame opt;
     opt.init(&tree);
     const int minWidth = tree.style()->sizeFromContents(QStyle::CT_LineEdit, &opt, QSize(0, 0).
         expandedTo(QApplication::globalStrut()), 0).width();

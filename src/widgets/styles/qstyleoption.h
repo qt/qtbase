@@ -611,7 +611,7 @@ public:
     enum StyleOptionType { Type = SO_GroupBox };
     enum StyleOptionVersion { Version = 1 };
 
-    QStyleOptionFrameV2::FrameFeatures features;
+    QStyleOptionFrame::FrameFeatures features;
     QString text;
     Qt::Alignment textAlignment;
     QColor textColor;

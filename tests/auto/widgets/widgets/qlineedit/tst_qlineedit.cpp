@@ -1670,7 +1670,7 @@ void tst_QLineEdit::displayText()
 
 void tst_QLineEdit::passwordEchoOnEdit()
 {
-    QStyleOptionFrameV2 opt;
+    QStyleOptionFrame opt;
     QLineEdit *testWidget = ensureTestWidget();
     QChar fillChar = testWidget->style()->styleHint(QStyle::SH_LineEdit_PasswordCharacter, &opt, testWidget);
 
@@ -1715,7 +1715,7 @@ void tst_QLineEdit::passwordEchoDelay()
     if (delay <= 0)
         QSKIP("Platform not defining echo delay and overriding only possible in internal build");
 
-    QStyleOptionFrameV2 opt;
+    QStyleOptionFrame opt;
     QChar fillChar = testWidget->style()->styleHint(QStyle::SH_LineEdit_PasswordCharacter, &opt, testWidget);
 
     testWidget->setEchoMode(QLineEdit::Password);
@@ -3648,7 +3648,7 @@ void tst_QLineEdit::task233101_cursorPosAfterInputMethod()
 
 void tst_QLineEdit::task241436_passwordEchoOnEditRestoreEchoMode()
 {
-    QStyleOptionFrameV2 opt;
+    QStyleOptionFrame opt;
     QLineEdit *testWidget = ensureTestWidget();
     QChar fillChar = testWidget->style()->styleHint(QStyle::SH_LineEdit_PasswordCharacter, &opt, testWidget);
 

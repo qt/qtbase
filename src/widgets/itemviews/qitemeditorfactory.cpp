@@ -550,7 +550,7 @@ void QExpandingLineEdit::updateMinimumWidth()
     getContentsMargins(&left, 0, &right, 0);
     width += left + right;
 
-    QStyleOptionFrameV2 opt;
+    QStyleOptionFrame opt;
     initStyleOption(&opt);
 
     int minWidth = style()->sizeFromContents(QStyle::CT_LineEdit, &opt, QSize(width, 0).

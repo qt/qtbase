@@ -87,10 +87,8 @@ extern void qt_mac_secure_keyboard(bool); //qapplication_mac.cpp
 
 /*!
     Initialize \a option with the values from this QLineEdit. This method
-    is useful for subclasses when they need a QStyleOptionFrame or QStyleOptionFrameV2, but don't want
-    to fill in all the information themselves. This function will check the version
-    of the QStyleOptionFrame and fill in the additional values for a
-    QStyleOptionFrameV2.
+    is useful for subclasses when they need a QStyleOptionFrame, but don't want
+    to fill in all the information themselves.
 
     \sa QStyleOption::initFrom()
 */
@@ -695,7 +693,7 @@ QSize QLineEdit::sizeHint() const
     int w = fm.width(QLatin1Char('x')) * 17 + 2*d->horizontalMargin
             + d->effectiveLeftTextMargin() + d->effectiveRightTextMargin()
             + d->leftmargin + d->rightmargin; // "some"
-    QStyleOptionFrameV2 opt;
+    QStyleOptionFrame opt;
     initStyleOption(&opt);
     return (style()->sizeFromContents(QStyle::CT_LineEdit, &opt, QSize(w, h).
                                       expandedTo(QApplication::globalStrut()), this));
@@ -716,7 +714,7 @@ QSize QLineEdit::minimumSizeHint() const
     int h = fm.height() + qMax(2*d->verticalMargin, fm.leading())
             + d->topmargin + d->bottommargin;
     int w = fm.maxWidth() + d->leftmargin + d->rightmargin;
-    QStyleOptionFrameV2 opt;
+    QStyleOptionFrame opt;
     initStyleOption(&opt);
     return (style()->sizeFromContents(QStyle::CT_LineEdit, &opt, QSize(w, h).
                                       expandedTo(QApplication::globalStrut()), this));
@@ -995,7 +993,7 @@ void QLineEdit::setSelection(int start, int length)
     d->control->setSelection(start, length);
 
     if (d->control->hasSelectedText()){
-        QStyleOptionFrameV2 opt;
+        QStyleOptionFrame opt;
         initStyleOption(&opt);
         if (!style()->styleHint(QStyle::SH_BlinkCursorWhenTextSelected, &opt, this))
             d->setCursorVisible(false);
@@ -1433,7 +1431,7 @@ bool QLineEdit::event(QEvent * e)
         //In order to get the cursor blinking if QComboBox::setEditable is called when the combobox has focus
         if (hasFocus()) {
             d->control->setCursorBlinkPeriod(QApplication::cursorFlashTime());
-            QStyleOptionFrameV2 opt;
+            QStyleOptionFrame opt;
             initStyleOption(&opt);
             if ((!hasSelectedText() && d->control->preeditAreaText().isEmpty())
                 || style()->styleHint(QStyle::SH_BlinkCursorWhenTextSelected, &opt, this))
@@ -1795,7 +1793,7 @@ void QLineEdit::focusInEvent(QFocusEvent *e)
     if (!QApplication::keypadNavigationEnabled() || (hasEditFocus() && ( e->reason() == Qt::PopupFocusReason))) {
 #endif
     d->control->setCursorBlinkPeriod(QApplication::cursorFlashTime());
-    QStyleOptionFrameV2 opt;
+    QStyleOptionFrame opt;
     initStyleOption(&opt);
     if((!hasSelectedText() && d->control->preeditAreaText().isEmpty())
        || style()->styleHint(QStyle::SH_BlinkCursorWhenTextSelected, &opt, this))
@@ -1871,7 +1869,7 @@ void QLineEdit::paintEvent(QPaintEvent *)
     QPainter p(this);
     QPalette pal = palette();
 
-    QStyleOptionFrameV2 panel;
+    QStyleOptionFrame panel;
     initStyleOption(&panel);
     style()->drawPrimitive(QStyle::PE_PanelLineEdit, &panel, &p, this);
     QRect r = style()->subElementRect(QStyle::SE_LineEditContents, &panel, this);
@@ -2177,7 +2175,7 @@ void QLineEdit::changeEvent(QEvent *ev)
         break;
     case QEvent::StyleChange:
         {
-            QStyleOptionFrameV2 opt;
+            QStyleOptionFrame opt;
             initStyleOption(&opt);
             d->control->setPasswordCharacter(style()->styleHint(QStyle::SH_LineEdit_PasswordCharacter, &opt, this));
             d->control->setPasswordMaskDelay(style()->styleHint(QStyle::SH_LineEdit_PasswordMaskDelay, &opt, this));
