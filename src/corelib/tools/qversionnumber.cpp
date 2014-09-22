@@ -167,6 +167,14 @@ QT_BEGIN_NAMESPACE
 
     \sa majorVersion(), minorVersion(), microVersion()
 */
+QVector<int> QVersionNumber::segments() const
+{
+    QVector<int> result;
+    result.resize(segmentCount());
+    for (int i = 0; i < segmentCount(); ++i)
+        result[i] = segmentAt(i);
+    return result;
+}
 
 /*!
     \fn int QVersionNumber::segmentAt(int index) const
@@ -195,6 +203,13 @@ QT_BEGIN_NAMESPACE
 
     \snippet qversionnumber/main.cpp 4
  */
+QVersionNumber QVersionNumber::normalized() const
+{
+    QVector<int> segs = m_segments;
+    while (segs.size() && segs.last() == 0)
+        segs.pop_back();
+    return QVersionNumber(qMove(segs));
+}
 
 /*!
     \fn bool QVersionNumber::isPrefixOf(const QVersionNumber &other) const
@@ -402,21 +417,6 @@ QVersionNumber QVersionNumber::fromString(const QString &string, int *suffixInde
         *suffixIndex = int(lastGoodEnd - cString.constData());
 
     return QVersionNumber(qMove(seg));
-}
-
-/*!
-    \fn QVersionNumber QVersionNumber::normalizedImpl(QVector<int> &segs)
-
-    Implementation of the normalized() function.  Takes the movable list \a segs
-    and normalizes them.
-
-    \internal
- */
-QVersionNumber QVersionNumber::normalizedImpl(QVector<int> &segs)
-{
-    while (segs.size() && segs.last() == 0)
-        segs.pop_back();
-    return QVersionNumber(qMove(segs));
 }
 
 #ifndef QT_NO_DATASTREAM

@@ -97,44 +97,9 @@ public:
     inline int microVersion() const Q_DECL_NOTHROW Q_REQUIRED_RESULT
     { return segmentAt(2); }
 
-#if defined(Q_COMPILER_REF_QUALIFIERS)
-#  if defined(Q_CC_GNU)
-    // required due to https://gcc.gnu.org/bugzilla/show_bug.cgi?id=61941
-#    pragma push_macro("Q_REQUIRED_RESULT")
-#    undef Q_REQUIRED_RESULT
-#    define Q_REQUIRED_RESULT
-#    define Q_REQUIRED_RESULT_pushed
-#  endif
-    inline QVersionNumber normalized() const & Q_REQUIRED_RESULT
-    {
-        QVector<int> segs(m_segments);
-        return normalizedImpl(segs);
-    }
+    Q_CORE_EXPORT QVersionNumber normalized() const Q_REQUIRED_RESULT;
 
-    inline QVersionNumber normalized() && Q_REQUIRED_RESULT
-    {
-        return normalizedImpl(m_segments);
-    }
-
-    inline QVector<int> segments() const & Q_DECL_NOTHROW Q_REQUIRED_RESULT
-    { return m_segments; }
-
-    inline QVector<int> segments() && Q_DECL_NOTHROW Q_REQUIRED_RESULT
-    { return qMove(m_segments); }
-
-#  ifdef Q_REQUIRED_RESULT_pushed
-#    pragma pop_macro("Q_REQUIRED_RESULT")
-#  endif
-#else
-    inline QVersionNumber normalized() const Q_REQUIRED_RESULT
-    {
-        QVector<int> segs(m_segments);
-        return normalizedImpl(segs);
-    }
-
-    inline QVector<int> segments() const Q_DECL_NOTHROW Q_REQUIRED_RESULT
-    { return m_segments; }
-#endif
+    Q_CORE_EXPORT QVector<int> segments() const Q_REQUIRED_RESULT;
 
     inline int segmentAt(int index) const Q_DECL_NOTHROW Q_REQUIRED_RESULT
     { return (m_segments.size() > index) ? m_segments.at(index) : 0; }
@@ -152,8 +117,6 @@ public:
     Q_CORE_EXPORT static Q_DECL_PURE_FUNCTION QVersionNumber fromString(const QString &string, int *suffixIndex = 0) Q_REQUIRED_RESULT;
 
 private:
-    Q_CORE_EXPORT static QVersionNumber normalizedImpl(QVector<int> &segs) Q_REQUIRED_RESULT;
-
 #ifndef QT_NO_DATASTREAM
     friend Q_CORE_EXPORT QDataStream& operator>>(QDataStream &in, QVersionNumber &version);
 #endif
