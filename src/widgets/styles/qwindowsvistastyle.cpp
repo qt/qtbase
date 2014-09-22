@@ -1183,7 +1183,8 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
     case CE_MenuItem:
         if (const QStyleOptionMenuItem *menuitem = qstyleoption_cast<const QStyleOptionMenuItem *>(option)) {
             // windows always has a check column, regardless whether we have an icon or not
-            int checkcol = 25;
+            int checkcol = 25 / QWindowsXPStylePrivate::devicePixelRatio(widget);
+            const int gutterWidth = 3 / QWindowsXPStylePrivate::devicePixelRatio(widget);
             {
                 XPThemeData theme(widget, 0, QWindowsXPStylePrivate::MenuTheme,
                                   MENU_POPUPCHECKBACKGROUND, MBI_HOT);
@@ -1192,7 +1193,7 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
                 themeSize.stateId = 0;
                 const QSize size = themeSize.size() / QWindowsXPStylePrivate::devicePixelRatio(widget);
                 const QMargins margins = themeSize.margins() / QWindowsXPStylePrivate::devicePixelRatio(widget);
-                checkcol = qMax(menuitem->maxIconWidth, int(3 + size.width() + margins.left() + margins.right()));
+                checkcol = qMax(menuitem->maxIconWidth, gutterWidth + size.width() + margins.left() + margins.right());
             }
             QRect rect = option->rect;
 
@@ -1201,7 +1202,7 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
                 checkcol += rect.x();
             QPoint p1 = QStyle::visualPos(option->direction, menuitem->rect, QPoint(checkcol, rect.top()));
             QPoint p2 = QStyle::visualPos(option->direction, menuitem->rect, QPoint(checkcol, rect.bottom()));
-            QRect gutterRect(p1.x(), p1.y(), 3, p2.y() - p1.y() + 1);
+            QRect gutterRect(p1.x(), p1.y(), gutterWidth, p2.y() - p1.y() + 1);
             XPThemeData theme2(widget, painter, QWindowsXPStylePrivate::MenuTheme,
                                MENU_POPUPGUTTER, stateId, gutterRect);
             d->drawBackground(theme2);
@@ -1216,10 +1217,12 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
 
             if (menuitem->menuItemType == QStyleOptionMenuItem::Separator) {
                 int yoff = y-2 + h / 2;
+                const int separatorSize = 6 / QWindowsXPStylePrivate::devicePixelRatio(widget);
                 QPoint p1 = QPoint(x + checkcol, yoff);
-                QPoint p2 = QPoint(x + w + 6 , yoff);
+                QPoint p2 = QPoint(x + w + separatorSize, yoff);
                 stateId = MBI_HOT;
-                QRect subRect(p1.x() + (3 - menuitem->rect.x()), p1.y(), p2.x() - p1.x(), 6);
+                QRect subRect(p1.x() + (gutterWidth - menuitem->rect.x()), p1.y(),
+                              p2.x() - p1.x(), separatorSize);
                 subRect  = QStyle::visualRect(option->direction, option->rect, subRect );
                 XPThemeData theme2(widget, painter,
                                    QWindowsXPStylePrivate::MenuTheme,
@@ -1229,7 +1232,7 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
             }
 
             QRect vCheckRect = visualRect(option->direction, menuitem->rect, QRect(menuitem->rect.x(),
-                                          menuitem->rect.y(), checkcol - (3 + menuitem->rect.x()), menuitem->rect.height()));
+                                          menuitem->rect.y(), checkcol - (gutterWidth + menuitem->rect.x()), menuitem->rect.height()));
 
             if (act) {
                 stateId = dis ? MBI_DISABLED : MBI_HOT;
@@ -1294,7 +1297,7 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
             if (dis)
                 painter->setPen(textColor);
 
-            int xm = windowsItemFrame + checkcol + windowsItemHMargin + (3 - menuitem->rect.x()) - 1;
+            int xm = windowsItemFrame + checkcol + windowsItemHMargin + (gutterWidth - menuitem->rect.x()) - 1;
             int xpos = menuitem->rect.x() + xm;
             QRect textRect(xpos, y + windowsItemVMargin, w - xm - windowsRightBorder - tab + 1, h - 2 * windowsItemVMargin);
             QRect vTextRect = visualRect(option->direction, menuitem->rect, textRect);
