@@ -1463,6 +1463,12 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
     \value PM_TabCloseIndicatorWidth The default width of a close button on a tab in a tab bar.
     \value PM_TabCloseIndicatorHeight The default height of a close button on a tab in a tab bar.
 
+    \value PM_ScrollView_ScrollBarSpacing  Distance between frame and scrollbar
+                                                with SH_ScrollView_FrameOnlyAroundContents set.
+    \value PM_ScrollView_ScrollBarOverlap  Overlap between scroll bars and scroll content
+
+    \value PM_SubMenuOverlap The horizontal overlap between a submenu and its parent.
+
     \value PM_TreeViewIndentation The indentation of items in a tree view.
            This enum value has been introduced in Qt 5.4.
 
@@ -1482,12 +1488,6 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
     \value PM_DefaultLayoutSpacing  Use PM_LayoutHorizontalSpacing
                                     and PM_LayoutVerticalSpacing
                                     instead.
-
-    \value PM_ScrollView_ScrollBarSpacing  Distance between frame and scrollbar
-                                                with SH_ScrollView_FrameOnlyAroundContents set.
-    \value PM_ScrollView_ScrollBarOverlap  Overlap between scroll bars and scroll content
-
-    \value PM_SubMenuOverlap The horizontal overlap between a submenu and its parent.
 
 
     \sa pixelMetric()
