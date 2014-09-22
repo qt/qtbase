@@ -289,7 +289,7 @@ void QPlainTextDocumentLayout::documentChanged(int from, int charsRemoved, int c
     Q_D(QPlainTextDocumentLayout);
     QTextDocument *doc = document();
     int newBlockCount = doc->blockCount();
-    int charsChanged = qMax(charsRemoved, charsAdded);
+    int charsChanged = charsRemoved + charsAdded;
 
     QTextBlock changeStartBlock = doc->findBlock(from);
     QTextBlock changeEndBlock = doc->findBlock(qMax(0, from + charsChanged - 1));
