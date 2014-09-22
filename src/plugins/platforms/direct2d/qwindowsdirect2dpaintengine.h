@@ -61,7 +61,7 @@ class QWindowsDirect2DPaintEngine : public QPaintEngineEx
 public:
     enum Flag {
         NoFlag = 0,
-        UseGrayscaleAntialiasing = 1,
+        TranslucentTopLevelWindow = 1
     };
     Q_DECLARE_FLAGS(Flags, Flag)
 

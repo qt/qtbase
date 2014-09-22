@@ -300,6 +300,14 @@ public:
                                                                   : D2D1_ANTIALIAS_MODE_ALIASED;
     }
 
+    inline D2D1_LAYER_OPTIONS1 layerOptions() const
+    {
+        if (flags & QWindowsDirect2DPaintEngine::TranslucentTopLevelWindow)
+            return D2D1_LAYER_OPTIONS1_NONE;
+        else
+            return D2D1_LAYER_OPTIONS1_INITIALIZE_FROM_BACKGROUND;
+    }
+
     void updateTransform(const QTransform &transform)
     {
         dc()->SetTransform(to_d2d_matrix_3x2_f(transform));
@@ -345,7 +353,7 @@ public:
                                                    D2D1::IdentityMatrix(),
                                                    1.0,
                                                    NULL,
-                                                   D2D1_LAYER_OPTIONS1_NONE),
+                                                   layerOptions()),
                             NULL);
             pushedClips.push(LayerClip);
         }
@@ -870,7 +878,7 @@ public:
 
         const bool antiAlias = bool((q->state()->renderHints & QPainter::TextAntialiasing)
                                     && !(fontDef.styleStrategy & QFont::NoAntialias));
-        const D2D1_TEXT_ANTIALIAS_MODE antialiasMode = (flags & QWindowsDirect2DPaintEngine::UseGrayscaleAntialiasing)
+        const D2D1_TEXT_ANTIALIAS_MODE antialiasMode = (flags & QWindowsDirect2DPaintEngine::TranslucentTopLevelWindow)
                 ? D2D1_TEXT_ANTIALIAS_MODE_GRAYSCALE : D2D1_TEXT_ANTIALIAS_MODE_CLEARTYPE;
         dc()->SetTextAntialiasMode(antiAlias ? antialiasMode : D2D1_TEXT_ANTIALIAS_MODE_ALIASED);
 
@@ -956,7 +964,7 @@ bool QWindowsDirect2DPaintEngine::begin(QPaintDevice * pdev)
                                                D2D1::IdentityMatrix(),
                                                1.0,
                                                NULL,
-                                               D2D1_LAYER_OPTIONS1_NONE),
+                                               d->layerOptions()),
                         NULL);
     } else {
         QRect clip(0, 0, pdev->width(), pdev->height());
