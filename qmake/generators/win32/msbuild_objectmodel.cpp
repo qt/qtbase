@@ -1872,14 +1872,8 @@ bool VCXProjectWriter::outputFileConfig(VCFilter filter, XmlOutput &xml, XmlOutp
     filter.CompilerTool = VCCLCompilerTool();
     filter.CompilerTool.config = filter.Config;
 
-    bool inBuild = false;
-    VCFilterFile info;
-    for (int i = 0; i < filter.Files.count(); ++i) {
-        if (filter.Files.at(i).file == filename) {
-            info = filter.Files.at(i);
-            inBuild = true;
-        }
-    }
+    bool inBuild;
+    VCFilterFile info = filter.findFile(filename, &inBuild);
     inBuild &= !info.excludeFromBuild;
 
     if (inBuild) {

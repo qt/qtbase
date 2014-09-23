@@ -952,6 +952,7 @@ public:
     void addFiles(const ProStringList& fileList);
     bool addExtraCompiler(const VCFilterFile &info);
     void modifyPCHstage(QString str);
+    VCFilterFile findFile(const QString &filePath, bool *found) const;
 
     // Variables
     QString                 Name;

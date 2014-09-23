@@ -2241,6 +2241,19 @@ void VCFilter::modifyPCHstage(QString str)
     CompilerTool.ForcedIncludeFiles       = QStringList("$(NOINHERIT)");
 }
 
+VCFilterFile VCFilter::findFile(const QString &filePath, bool *found) const
+{
+    for (int i = 0; i < Files.count(); ++i) {
+        const VCFilterFile &f = Files.at(i);
+        if (f.file == filePath) {
+            *found = true;
+            return f;
+        }
+    }
+    *found = false;
+    return VCFilterFile();
+}
+
 bool VCFilter::addExtraCompiler(const VCFilterFile &info)
 {
     const QStringList &extraCompilers = Project->extraCompilerSources.value(info.file);
@@ -2974,14 +2987,8 @@ void VCProjectWriter::outputFileConfig(VCFilter &filter, XmlOutput &xml, const Q
     filter.CompilerTool.WarningLevel = warningLevelUnknown;
     filter.CompilerTool.config = filter.Config;
 
-    bool inBuild = false;
-    VCFilterFile info;
-    for (int i = 0; i < filter.Files.count(); ++i) {
-        if (filter.Files.at(i).file == filename) {
-            info = filter.Files.at(i);
-            inBuild = true;
-        }
-    }
+    bool inBuild;
+    VCFilterFile info = filter.findFile(filename, &inBuild);
     inBuild &= !info.excludeFromBuild;
 
     if (inBuild) {
