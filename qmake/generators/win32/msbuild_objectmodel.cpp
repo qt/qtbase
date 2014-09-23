@@ -1855,7 +1855,7 @@ void VCXProjectWriter::outputFileConfigs(VCProject &project, XmlOutput &xml, Xml
     }
 
     if ( !fileAdded )
-        outputFileConfig(xml, xmlFilter, info.file, filtername, false);
+        outputFileConfig(xml, xmlFilter, info.file, filtername);
 
     xml << closetag();
     xmlFilter << closetag();
@@ -1928,7 +1928,7 @@ bool VCXProjectWriter::outputFileConfig(VCFilter &filter, XmlOutput &xml, XmlOut
         if ( !fileAdded && !fileAllreadyAdded )
         {
             fileAdded = true;
-            outputFileConfig(xml, xmlFilter, filename, filtername, true);
+            outputFileConfig(xml, xmlFilter, filename, filtername);
         }
 
         const QString condition = generateCondition(*filter.Config);
@@ -1968,8 +1968,7 @@ bool VCXProjectWriter::outputFileConfig(VCFilter &filter, XmlOutput &xml, XmlOut
 }
 
 void VCXProjectWriter::outputFileConfig(XmlOutput &xml, XmlOutput &xmlFilter,
-                                        const QString &filePath, const QString &filterName,
-                                        bool checkDeploymentFilter)
+                                        const QString &filePath, const QString &filterName)
 {
     const QString nativeFilePath = Option::fixPathToLocalOS(filePath);
     if (filterName.startsWith("Source Files")) {
@@ -2017,7 +2016,7 @@ void VCXProjectWriter::outputFileConfig(XmlOutput &xml, XmlOutput &xmlFilter,
             xml << tag("ResourceCompile")
                 << attrTag("Include", nativeFilePath);
         }
-    } else if (!checkDeploymentFilter || filterName.startsWith("Deployment Files")) {
+    } else {
         xmlFilter << tag("None")
                   << attrTag("Include", nativeFilePath)
                   << attrTagS("Filter", filterName);
