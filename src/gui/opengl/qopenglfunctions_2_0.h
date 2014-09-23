@@ -683,7 +683,7 @@ private:
     QOpenGLFunctions_1_2_DeprecatedBackend* d_1_2_Deprecated;
     QOpenGLFunctions_1_3_DeprecatedBackend* d_1_3_Deprecated;
     QOpenGLFunctions_1_4_DeprecatedBackend* d_1_4_Deprecated;
-    QOpenGLFunctions_2_0_DeprecatedBackend* d_2_0_Deprecated;
+    void *m_reserved_2_0_Deprecated; // To maintain BC
 };
 
 // OpenGL 1.0 core functions
@@ -931,12 +931,12 @@ inline void QOpenGLFunctions_2_0::glCullFace(GLenum mode)
 // OpenGL 1.1 core functions
 inline void QOpenGLFunctions_2_0::glIndexubv(const GLubyte *c)
 {
-    d_1_1_Core->Indexubv(c);
+    d_1_1_Deprecated->Indexubv(c);
 }
 
 inline void QOpenGLFunctions_2_0::glIndexub(GLubyte c)
 {
-    d_1_1_Core->Indexub(c);
+    d_1_1_Deprecated->Indexub(c);
 }
 
 inline GLboolean QOpenGLFunctions_2_0::glIsTexture(GLuint texture)
@@ -996,7 +996,7 @@ inline void QOpenGLFunctions_2_0::glPolygonOffset(GLfloat factor, GLfloat units)
 
 inline void QOpenGLFunctions_2_0::glGetPointerv(GLenum pname, GLvoid* *params)
 {
-    d_1_1_Core->GetPointerv(pname, params);
+    d_1_1_Deprecated->GetPointerv(pname, params);
 }
 
 inline void QOpenGLFunctions_2_0::glDrawElements(GLenum mode, GLsizei count, GLenum type, const GLvoid *indices)
@@ -3420,182 +3420,182 @@ inline void QOpenGLFunctions_2_0::glFogCoordf(GLfloat coord)
 // OpenGL 2.0 deprecated functions
 inline void QOpenGLFunctions_2_0::glVertexAttrib4usv(GLuint index, const GLushort *v)
 {
-    d_2_0_Deprecated->VertexAttrib4usv(index, v);
+    d_2_0_Core->VertexAttrib4usv(index, v);
 }
 
 inline void QOpenGLFunctions_2_0::glVertexAttrib4uiv(GLuint index, const GLuint *v)
 {
-    d_2_0_Deprecated->VertexAttrib4uiv(index, v);
+    d_2_0_Core->VertexAttrib4uiv(index, v);
 }
 
 inline void QOpenGLFunctions_2_0::glVertexAttrib4ubv(GLuint index, const GLubyte *v)
 {
-    d_2_0_Deprecated->VertexAttrib4ubv(index, v);
+    d_2_0_Core->VertexAttrib4ubv(index, v);
 }
 
 inline void QOpenGLFunctions_2_0::glVertexAttrib4sv(GLuint index, const GLshort *v)
 {
-    d_2_0_Deprecated->VertexAttrib4sv(index, v);
+    d_2_0_Core->VertexAttrib4sv(index, v);
 }
 
 inline void QOpenGLFunctions_2_0::glVertexAttrib4s(GLuint index, GLshort x, GLshort y, GLshort z, GLshort w)
 {
-    d_2_0_Deprecated->VertexAttrib4s(index, x, y, z, w);
+    d_2_0_Core->VertexAttrib4s(index, x, y, z, w);
 }
 
 inline void QOpenGLFunctions_2_0::glVertexAttrib4iv(GLuint index, const GLint *v)
 {
-    d_2_0_Deprecated->VertexAttrib4iv(index, v);
+    d_2_0_Core->VertexAttrib4iv(index, v);
 }
 
 inline void QOpenGLFunctions_2_0::glVertexAttrib4fv(GLuint index, const GLfloat *v)
 {
-    d_2_0_Deprecated->VertexAttrib4fv(index, v);
+    d_2_0_Core->VertexAttrib4fv(index, v);
 }
 
 inline void QOpenGLFunctions_2_0::glVertexAttrib4f(GLuint index, GLfloat x, GLfloat y, GLfloat z, GLfloat w)
 {
-    d_2_0_Deprecated->VertexAttrib4f(index, x, y, z, w);
+    d_2_0_Core->VertexAttrib4f(index, x, y, z, w);
 }
 
 inline void QOpenGLFunctions_2_0::glVertexAttrib4dv(GLuint index, const GLdouble *v)
 {
-    d_2_0_Deprecated->VertexAttrib4dv(index, v);
+    d_2_0_Core->VertexAttrib4dv(index, v);
 }
 
 inline void QOpenGLFunctions_2_0::glVertexAttrib4d(GLuint index, GLdouble x, GLdouble y, GLdouble z, GLdouble w)
 {
-    d_2_0_Deprecated->VertexAttrib4d(index, x, y, z, w);
+    d_2_0_Core->VertexAttrib4d(index, x, y, z, w);
 }
 
 inline void QOpenGLFunctions_2_0::glVertexAttrib4bv(GLuint index, const GLbyte *v)
 {
-    d_2_0_Deprecated->VertexAttrib4bv(index, v);
+    d_2_0_Core->VertexAttrib4bv(index, v);
 }
 
 inline void QOpenGLFunctions_2_0::glVertexAttrib4Nusv(GLuint index, const GLushort *v)
 {
-    d_2_0_Deprecated->VertexAttrib4Nusv(index, v);
+    d_2_0_Core->VertexAttrib4Nusv(index, v);
 }
 
 inline void QOpenGLFunctions_2_0::glVertexAttrib4Nuiv(GLuint index, const GLuint *v)
 {
-    d_2_0_Deprecated->VertexAttrib4Nuiv(index, v);
+    d_2_0_Core->VertexAttrib4Nuiv(index, v);
 }
 
 inline void QOpenGLFunctions_2_0::glVertexAttrib4Nubv(GLuint index, const GLubyte *v)
 {
-    d_2_0_Deprecated->VertexAttrib4Nubv(index, v);
+    d_2_0_Core->VertexAttrib4Nubv(index, v);
 }
 
 inline void QOpenGLFunctions_2_0::glVertexAttrib4Nub(GLuint index, GLubyte x, GLubyte y, GLubyte z, GLubyte w)
 {
-    d_2_0_Deprecated->VertexAttrib4Nub(index, x, y, z, w);
+    d_2_0_Core->VertexAttrib4Nub(index, x, y, z, w);
 }
 
 inline void QOpenGLFunctions_2_0::glVertexAttrib4Nsv(GLuint index, const GLshort *v)
 {
-    d_2_0_Deprecated->VertexAttrib4Nsv(index, v);
+    d_2_0_Core->VertexAttrib4Nsv(index, v);
 }
 
 inline void QOpenGLFunctions_2_0::glVertexAttrib4Niv(GLuint index, const GLint *v)
 {
-    d_2_0_Deprecated->VertexAttrib4Niv(index, v);
+    d_2_0_Core->VertexAttrib4Niv(index, v);
 }
 
 inline void QOpenGLFunctions_2_0::glVertexAttrib4Nbv(GLuint index, const GLbyte *v)
 {
-    d_2_0_Deprecated->VertexAttrib4Nbv(index, v);
+    d_2_0_Core->VertexAttrib4Nbv(index, v);
 }
 
 inline void QOpenGLFunctions_2_0::glVertexAttrib3sv(GLuint index, const GLshort *v)
 {
-    d_2_0_Deprecated->VertexAttrib3sv(index, v);
+    d_2_0_Core->VertexAttrib3sv(index, v);
 }
 
 inline void QOpenGLFunctions_2_0::glVertexAttrib3s(GLuint index, GLshort x, GLshort y, GLshort z)
 {
-    d_2_0_Deprecated->VertexAttrib3s(index, x, y, z);
+    d_2_0_Core->VertexAttrib3s(index, x, y, z);
 }
 
 inline void QOpenGLFunctions_2_0::glVertexAttrib3fv(GLuint index, const GLfloat *v)
 {
-    d_2_0_Deprecated->VertexAttrib3fv(index, v);
+    d_2_0_Core->VertexAttrib3fv(index, v);
 }
 
 inline void QOpenGLFunctions_2_0::glVertexAttrib3f(GLuint index, GLfloat x, GLfloat y, GLfloat z)
 {
-    d_2_0_Deprecated->VertexAttrib3f(index, x, y, z);
+    d_2_0_Core->VertexAttrib3f(index, x, y, z);
 }
 
 inline void QOpenGLFunctions_2_0::glVertexAttrib3dv(GLuint index, const GLdouble *v)
 {
-    d_2_0_Deprecated->VertexAttrib3dv(index, v);
+    d_2_0_Core->VertexAttrib3dv(index, v);
 }
 
 inline void QOpenGLFunctions_2_0::glVertexAttrib3d(GLuint index, GLdouble x, GLdouble y, GLdouble z)
 {
-    d_2_0_Deprecated->VertexAttrib3d(index, x, y, z);
+    d_2_0_Core->VertexAttrib3d(index, x, y, z);
 }
 
 inline void QOpenGLFunctions_2_0::glVertexAttrib2sv(GLuint index, const GLshort *v)
 {
-    d_2_0_Deprecated->VertexAttrib2sv(index, v);
+    d_2_0_Core->VertexAttrib2sv(index, v);
 }
 
 inline void QOpenGLFunctions_2_0::glVertexAttrib2s(GLuint index, GLshort x, GLshort y)
 {
-    d_2_0_Deprecated->VertexAttrib2s(index, x, y);
+    d_2_0_Core->VertexAttrib2s(index, x, y);
 }
 
 inline void QOpenGLFunctions_2_0::glVertexAttrib2fv(GLuint index, const GLfloat *v)
 {
-    d_2_0_Deprecated->VertexAttrib2fv(index, v);
+    d_2_0_Core->VertexAttrib2fv(index, v);
 }
 
 inline void QOpenGLFunctions_2_0::glVertexAttrib2f(GLuint index, GLfloat x, GLfloat y)
 {
-    d_2_0_Deprecated->VertexAttrib2f(index, x, y);
+    d_2_0_Core->VertexAttrib2f(index, x, y);
 }
 
 inline void QOpenGLFunctions_2_0::glVertexAttrib2dv(GLuint index, const GLdouble *v)
 {
-    d_2_0_Deprecated->VertexAttrib2dv(index, v);
+    d_2_0_Core->VertexAttrib2dv(index, v);
 }
 
 inline void QOpenGLFunctions_2_0::glVertexAttrib2d(GLuint index, GLdouble x, GLdouble y)
 {
-    d_2_0_Deprecated->VertexAttrib2d(index, x, y);
+    d_2_0_Core->VertexAttrib2d(index, x, y);
 }
 
 inline void QOpenGLFunctions_2_0::glVertexAttrib1sv(GLuint index, const GLshort *v)
 {
-    d_2_0_Deprecated->VertexAttrib1sv(index, v);
+    d_2_0_Core->VertexAttrib1sv(index, v);
 }
 
 inline void QOpenGLFunctions_2_0::glVertexAttrib1s(GLuint index, GLshort x)
 {
-    d_2_0_Deprecated->VertexAttrib1s(index, x);
+    d_2_0_Core->VertexAttrib1s(index, x);
 }
 
 inline void QOpenGLFunctions_2_0::glVertexAttrib1fv(GLuint index, const GLfloat *v)
 {
-    d_2_0_Deprecated->VertexAttrib1fv(index, v);
+    d_2_0_Core->VertexAttrib1fv(index, v);
 }
 
 inline void QOpenGLFunctions_2_0::glVertexAttrib1f(GLuint index, GLfloat x)
 {
-    d_2_0_Deprecated->VertexAttrib1f(index, x);
+    d_2_0_Core->VertexAttrib1f(index, x);
 }
 
 inline void QOpenGLFunctions_2_0::glVertexAttrib1dv(GLuint index, const GLdouble *v)
 {
-    d_2_0_Deprecated->VertexAttrib1dv(index, v);
+    d_2_0_Core->VertexAttrib1dv(index, v);
 }
 
 inline void QOpenGLFunctions_2_0::glVertexAttrib1d(GLuint index, GLdouble x)
 {
-    d_2_0_Deprecated->VertexAttrib1d(index, x);
+    d_2_0_Core->VertexAttrib1d(index, x);
 }
 
 

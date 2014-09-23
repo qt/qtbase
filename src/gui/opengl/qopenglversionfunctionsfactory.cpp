@@ -43,6 +43,10 @@
 #include "qopenglversionfunctionsfactory_p.h"
 
 #if !defined(QT_OPENGL_ES_2)
+#include "qopenglfunctions_4_5_core.h"
+#include "qopenglfunctions_4_5_compatibility.h"
+#include "qopenglfunctions_4_4_core.h"
+#include "qopenglfunctions_4_4_compatibility.h"
 #include "qopenglfunctions_4_3_core.h"
 #include "qopenglfunctions_4_3_compatibility.h"
 #include "qopenglfunctions_4_2_core.h"
@@ -80,7 +84,11 @@ QAbstractOpenGLFunctions *QOpenGLVersionFunctionsFactory::create(const QOpenGLVe
     if (versionProfile.hasProfiles()) {
         switch (versionProfile.profile()) {
         case QSurfaceFormat::CoreProfile:
-            if (major == 4 && minor == 3)
+            if (major == 4 && minor == 5)
+                return new QOpenGLFunctions_4_5_Core;
+            else if (major == 4 && minor == 4)
+                return new QOpenGLFunctions_4_4_Core;
+            else if (major == 4 && minor == 3)
                 return new QOpenGLFunctions_4_3_Core;
             else if (major == 4 && minor == 2)
                 return new QOpenGLFunctions_4_2_Core;
@@ -95,7 +103,11 @@ QAbstractOpenGLFunctions *QOpenGLVersionFunctionsFactory::create(const QOpenGLVe
             break;
 
         case QSurfaceFormat::CompatibilityProfile:
-            if (major == 4 && minor == 3)
+            if (major == 4 && minor == 5)
+                return new QOpenGLFunctions_4_5_Compatibility;
+            else if (major == 4 && minor == 4)
+                return new QOpenGLFunctions_4_4_Compatibility;
+            else if (major == 4 && minor == 3)
                 return new QOpenGLFunctions_4_3_Compatibility;
             else if (major == 4 && minor == 2)
                 return new QOpenGLFunctions_4_2_Compatibility;

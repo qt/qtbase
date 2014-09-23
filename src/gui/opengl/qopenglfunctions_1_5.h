@@ -832,12 +832,12 @@ inline void QOpenGLFunctions_1_5::glCullFace(GLenum mode)
 // OpenGL 1.1 core functions
 inline void QOpenGLFunctions_1_5::glIndexubv(const GLubyte *c)
 {
-    d_1_1_Core->Indexubv(c);
+    d_1_1_Deprecated->Indexubv(c);
 }
 
 inline void QOpenGLFunctions_1_5::glIndexub(GLubyte c)
 {
-    d_1_1_Core->Indexub(c);
+    d_1_1_Deprecated->Indexub(c);
 }
 
 inline GLboolean QOpenGLFunctions_1_5::glIsTexture(GLuint texture)
@@ -897,7 +897,7 @@ inline void QOpenGLFunctions_1_5::glPolygonOffset(GLfloat factor, GLfloat units)
 
 inline void QOpenGLFunctions_1_5::glGetPointerv(GLenum pname, GLvoid* *params)
 {
-    d_1_1_Core->GetPointerv(pname, params);
+    d_1_1_Deprecated->GetPointerv(pname, params);
 }
 
 inline void QOpenGLFunctions_1_5::glDrawElements(GLenum mode, GLsizei count, GLenum type, const GLvoid *indices)

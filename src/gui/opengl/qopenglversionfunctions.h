@@ -61,6 +61,10 @@ class QOpenGLContext;
 #pragma qt_sync_stop_processing
 #endif
 
+#define QOPENGL_DEPRECATEDFUNCTION \
+    qFatal("This function was erroneously included in previous versions of Qt and is here only for binary compatibility. " \
+           "If you need to use this function, please use a legacy OpenGL version or a Compatibility profile.")
+
 struct QOpenGLVersionStatus
 {
     enum OpenGLStatus {
@@ -169,13 +173,13 @@ public:
     void (QOPENGLF_APIENTRYP GetTexParameterfv)(GLenum target, GLenum pname, GLfloat *params);
     void (QOPENGLF_APIENTRYP GetTexImage)(GLenum target, GLint level, GLenum format, GLenum type, GLvoid *pixels);
     const GLubyte * (QOPENGLF_APIENTRYP GetString)(GLenum name);
-    void (QOPENGLF_APIENTRYP GetIntegerv)(GLenum pname, GLint *params);
-    void (QOPENGLF_APIENTRYP GetFloatv)(GLenum pname, GLfloat *params);
+    void (QOPENGLF_APIENTRYP GetIntegerv)(GLenum pname, GLint *data);
+    void (QOPENGLF_APIENTRYP GetFloatv)(GLenum pname, GLfloat *data);
     GLenum (QOPENGLF_APIENTRYP GetError)();
-    void (QOPENGLF_APIENTRYP GetDoublev)(GLenum pname, GLdouble *params);
-    void (QOPENGLF_APIENTRYP GetBooleanv)(GLenum pname, GLboolean *params);
+    void (QOPENGLF_APIENTRYP GetDoublev)(GLenum pname, GLdouble *data);
+    void (QOPENGLF_APIENTRYP GetBooleanv)(GLenum pname, GLboolean *data);
     void (QOPENGLF_APIENTRYP ReadPixels)(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, GLvoid *pixels);
-    void (QOPENGLF_APIENTRYP ReadBuffer)(GLenum mode);
+    void (QOPENGLF_APIENTRYP ReadBuffer)(GLenum src);
     void (QOPENGLF_APIENTRYP PixelStorei)(GLenum pname, GLint param);
     void (QOPENGLF_APIENTRYP PixelStoref)(GLenum pname, GLfloat param);
     void (QOPENGLF_APIENTRYP DepthFunc)(GLenum func);
@@ -194,7 +198,7 @@ public:
     void (QOPENGLF_APIENTRYP ClearStencil)(GLint s);
     void (QOPENGLF_APIENTRYP ClearColor)(GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha);
     void (QOPENGLF_APIENTRYP Clear)(GLbitfield mask);
-    void (QOPENGLF_APIENTRYP DrawBuffer)(GLenum mode);
+    void (QOPENGLF_APIENTRYP DrawBuffer)(GLenum buf);
     void (QOPENGLF_APIENTRYP TexImage2D)(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const GLvoid *pixels);
     void (QOPENGLF_APIENTRYP TexImage1D)(GLenum target, GLint level, GLint internalformat, GLsizei width, GLint border, GLenum format, GLenum type, const GLvoid *pixels);
     void (QOPENGLF_APIENTRYP TexParameteriv)(GLenum target, GLenum pname, const GLint *params);
@@ -219,8 +223,6 @@ public:
     static QOpenGLVersionStatus versionStatus();
 
     // OpenGL 1.1 core functions
-    void (QOPENGLF_APIENTRYP Indexubv)(const GLubyte *c);
-    void (QOPENGLF_APIENTRYP Indexub)(GLubyte c);
     GLboolean (QOPENGLF_APIENTRYP IsTexture)(GLuint texture);
     void (QOPENGLF_APIENTRYP GenTextures)(GLsizei n, GLuint *textures);
     void (QOPENGLF_APIENTRYP DeleteTextures)(GLsizei n, const GLuint *textures);
@@ -232,7 +234,6 @@ public:
     void (QOPENGLF_APIENTRYP CopyTexImage2D)(GLenum target, GLint level, GLenum internalformat, GLint x, GLint y, GLsizei width, GLsizei height, GLint border);
     void (QOPENGLF_APIENTRYP CopyTexImage1D)(GLenum target, GLint level, GLenum internalformat, GLint x, GLint y, GLsizei width, GLint border);
     void (QOPENGLF_APIENTRYP PolygonOffset)(GLfloat factor, GLfloat units);
-    void (QOPENGLF_APIENTRYP GetPointerv)(GLenum pname, GLvoid* *params);
     void (QOPENGLF_APIENTRYP DrawElements)(GLenum mode, GLsizei count, GLenum type, const GLvoid *indices);
     void (QOPENGLF_APIENTRYP DrawArrays)(GLenum mode, GLint first, GLsizei count);
 
@@ -332,6 +333,42 @@ public:
 
     // OpenGL 2.0 core functions
     void (QOPENGLF_APIENTRYP VertexAttribPointer)(GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const GLvoid *pointer);
+    void (QOPENGLF_APIENTRYP VertexAttrib4usv)(GLuint index, const GLushort *v);
+    void (QOPENGLF_APIENTRYP VertexAttrib4uiv)(GLuint index, const GLuint *v);
+    void (QOPENGLF_APIENTRYP VertexAttrib4ubv)(GLuint index, const GLubyte *v);
+    void (QOPENGLF_APIENTRYP VertexAttrib4sv)(GLuint index, const GLshort *v);
+    void (QOPENGLF_APIENTRYP VertexAttrib4s)(GLuint index, GLshort x, GLshort y, GLshort z, GLshort w);
+    void (QOPENGLF_APIENTRYP VertexAttrib4iv)(GLuint index, const GLint *v);
+    void (QOPENGLF_APIENTRYP VertexAttrib4fv)(GLuint index, const GLfloat *v);
+    void (QOPENGLF_APIENTRYP VertexAttrib4f)(GLuint index, GLfloat x, GLfloat y, GLfloat z, GLfloat w);
+    void (QOPENGLF_APIENTRYP VertexAttrib4dv)(GLuint index, const GLdouble *v);
+    void (QOPENGLF_APIENTRYP VertexAttrib4d)(GLuint index, GLdouble x, GLdouble y, GLdouble z, GLdouble w);
+    void (QOPENGLF_APIENTRYP VertexAttrib4bv)(GLuint index, const GLbyte *v);
+    void (QOPENGLF_APIENTRYP VertexAttrib4Nusv)(GLuint index, const GLushort *v);
+    void (QOPENGLF_APIENTRYP VertexAttrib4Nuiv)(GLuint index, const GLuint *v);
+    void (QOPENGLF_APIENTRYP VertexAttrib4Nubv)(GLuint index, const GLubyte *v);
+    void (QOPENGLF_APIENTRYP VertexAttrib4Nub)(GLuint index, GLubyte x, GLubyte y, GLubyte z, GLubyte w);
+    void (QOPENGLF_APIENTRYP VertexAttrib4Nsv)(GLuint index, const GLshort *v);
+    void (QOPENGLF_APIENTRYP VertexAttrib4Niv)(GLuint index, const GLint *v);
+    void (QOPENGLF_APIENTRYP VertexAttrib4Nbv)(GLuint index, const GLbyte *v);
+    void (QOPENGLF_APIENTRYP VertexAttrib3sv)(GLuint index, const GLshort *v);
+    void (QOPENGLF_APIENTRYP VertexAttrib3s)(GLuint index, GLshort x, GLshort y, GLshort z);
+    void (QOPENGLF_APIENTRYP VertexAttrib3fv)(GLuint index, const GLfloat *v);
+    void (QOPENGLF_APIENTRYP VertexAttrib3f)(GLuint index, GLfloat x, GLfloat y, GLfloat z);
+    void (QOPENGLF_APIENTRYP VertexAttrib3dv)(GLuint index, const GLdouble *v);
+    void (QOPENGLF_APIENTRYP VertexAttrib3d)(GLuint index, GLdouble x, GLdouble y, GLdouble z);
+    void (QOPENGLF_APIENTRYP VertexAttrib2sv)(GLuint index, const GLshort *v);
+    void (QOPENGLF_APIENTRYP VertexAttrib2s)(GLuint index, GLshort x, GLshort y);
+    void (QOPENGLF_APIENTRYP VertexAttrib2fv)(GLuint index, const GLfloat *v);
+    void (QOPENGLF_APIENTRYP VertexAttrib2f)(GLuint index, GLfloat x, GLfloat y);
+    void (QOPENGLF_APIENTRYP VertexAttrib2dv)(GLuint index, const GLdouble *v);
+    void (QOPENGLF_APIENTRYP VertexAttrib2d)(GLuint index, GLdouble x, GLdouble y);
+    void (QOPENGLF_APIENTRYP VertexAttrib1sv)(GLuint index, const GLshort *v);
+    void (QOPENGLF_APIENTRYP VertexAttrib1s)(GLuint index, GLshort x);
+    void (QOPENGLF_APIENTRYP VertexAttrib1fv)(GLuint index, const GLfloat *v);
+    void (QOPENGLF_APIENTRYP VertexAttrib1f)(GLuint index, GLfloat x);
+    void (QOPENGLF_APIENTRYP VertexAttrib1dv)(GLuint index, const GLdouble *v);
+    void (QOPENGLF_APIENTRYP VertexAttrib1d)(GLuint index, GLdouble x);
     void (QOPENGLF_APIENTRYP ValidateProgram)(GLuint program);
     void (QOPENGLF_APIENTRYP UniformMatrix4fv)(GLint location, GLsizei count, GLboolean transpose, const GLfloat *value);
     void (QOPENGLF_APIENTRYP UniformMatrix3fv)(GLint location, GLsizei count, GLboolean transpose, const GLfloat *value);
@@ -370,7 +407,7 @@ public:
     void (QOPENGLF_APIENTRYP GetProgramInfoLog)(GLuint program, GLsizei bufSize, GLsizei *length, GLchar *infoLog);
     void (QOPENGLF_APIENTRYP GetProgramiv)(GLuint program, GLenum pname, GLint *params);
     GLint (QOPENGLF_APIENTRYP GetAttribLocation)(GLuint program, const GLchar *name);
-    void (QOPENGLF_APIENTRYP GetAttachedShaders)(GLuint program, GLsizei maxCount, GLsizei *count, GLuint *obj);
+    void (QOPENGLF_APIENTRYP GetAttachedShaders)(GLuint program, GLsizei maxCount, GLsizei *count, GLuint *shaders);
     void (QOPENGLF_APIENTRYP GetActiveUniform)(GLuint program, GLuint index, GLsizei bufSize, GLsizei *length, GLint *size, GLenum *type, GLchar *name);
     void (QOPENGLF_APIENTRYP GetActiveAttrib)(GLuint program, GLuint index, GLsizei bufSize, GLsizei *length, GLint *size, GLenum *type, GLchar *name);
     void (QOPENGLF_APIENTRYP EnableVertexAttribArray)(GLuint index);
@@ -462,6 +499,26 @@ public:
     GLint (QOPENGLF_APIENTRYP GetFragDataLocation)(GLuint program, const GLchar *name);
     void (QOPENGLF_APIENTRYP BindFragDataLocation)(GLuint program, GLuint color, const GLchar *name);
     void (QOPENGLF_APIENTRYP GetUniformuiv)(GLuint program, GLint location, GLuint *params);
+    void (QOPENGLF_APIENTRYP VertexAttribI4usv)(GLuint index, const GLushort *v);
+    void (QOPENGLF_APIENTRYP VertexAttribI4ubv)(GLuint index, const GLubyte *v);
+    void (QOPENGLF_APIENTRYP VertexAttribI4sv)(GLuint index, const GLshort *v);
+    void (QOPENGLF_APIENTRYP VertexAttribI4bv)(GLuint index, const GLbyte *v);
+    void (QOPENGLF_APIENTRYP VertexAttribI4uiv)(GLuint index, const GLuint *v);
+    void (QOPENGLF_APIENTRYP VertexAttribI3uiv)(GLuint index, const GLuint *v);
+    void (QOPENGLF_APIENTRYP VertexAttribI2uiv)(GLuint index, const GLuint *v);
+    void (QOPENGLF_APIENTRYP VertexAttribI1uiv)(GLuint index, const GLuint *v);
+    void (QOPENGLF_APIENTRYP VertexAttribI4iv)(GLuint index, const GLint *v);
+    void (QOPENGLF_APIENTRYP VertexAttribI3iv)(GLuint index, const GLint *v);
+    void (QOPENGLF_APIENTRYP VertexAttribI2iv)(GLuint index, const GLint *v);
+    void (QOPENGLF_APIENTRYP VertexAttribI1iv)(GLuint index, const GLint *v);
+    void (QOPENGLF_APIENTRYP VertexAttribI4ui)(GLuint index, GLuint x, GLuint y, GLuint z, GLuint w);
+    void (QOPENGLF_APIENTRYP VertexAttribI3ui)(GLuint index, GLuint x, GLuint y, GLuint z);
+    void (QOPENGLF_APIENTRYP VertexAttribI2ui)(GLuint index, GLuint x, GLuint y);
+    void (QOPENGLF_APIENTRYP VertexAttribI1ui)(GLuint index, GLuint x);
+    void (QOPENGLF_APIENTRYP VertexAttribI4i)(GLuint index, GLint x, GLint y, GLint z, GLint w);
+    void (QOPENGLF_APIENTRYP VertexAttribI3i)(GLuint index, GLint x, GLint y, GLint z);
+    void (QOPENGLF_APIENTRYP VertexAttribI2i)(GLuint index, GLint x, GLint y);
+    void (QOPENGLF_APIENTRYP VertexAttribI1i)(GLuint index, GLint x);
     void (QOPENGLF_APIENTRYP GetVertexAttribIuiv)(GLuint index, GLenum pname, GLuint *params);
     void (QOPENGLF_APIENTRYP GetVertexAttribIiv)(GLuint index, GLenum pname, GLint *params);
     void (QOPENGLF_APIENTRYP VertexAttribIPointer)(GLuint index, GLint size, GLenum type, GLsizei stride, const GLvoid *pointer);
@@ -514,12 +571,12 @@ public:
     static QOpenGLVersionStatus versionStatus();
 
     // OpenGL 3.2 core functions
-    void (QOPENGLF_APIENTRYP SampleMaski)(GLuint index, GLbitfield mask);
+    void (QOPENGLF_APIENTRYP SampleMaski)(GLuint maskNumber, GLbitfield mask);
     void (QOPENGLF_APIENTRYP GetMultisamplefv)(GLenum pname, GLuint index, GLfloat *val);
-    void (QOPENGLF_APIENTRYP TexImage3DMultisample)(GLenum target, GLsizei samples, GLint internalformat, GLsizei width, GLsizei height, GLsizei depth, GLboolean fixedsamplelocations);
-    void (QOPENGLF_APIENTRYP TexImage2DMultisample)(GLenum target, GLsizei samples, GLint internalformat, GLsizei width, GLsizei height, GLboolean fixedsamplelocations);
+    void (QOPENGLF_APIENTRYP TexImage3DMultisample)(GLenum target, GLsizei samples, GLenum internalformat, GLsizei width, GLsizei height, GLsizei depth, GLboolean fixedsamplelocations);
+    void (QOPENGLF_APIENTRYP TexImage2DMultisample)(GLenum target, GLsizei samples, GLenum internalformat, GLsizei width, GLsizei height, GLboolean fixedsamplelocations);
     void (QOPENGLF_APIENTRYP GetSynciv)(GLsync sync, GLenum pname, GLsizei bufSize, GLsizei *length, GLint *values);
-    void (QOPENGLF_APIENTRYP GetInteger64v)(GLenum pname, GLint64 *params);
+    void (QOPENGLF_APIENTRYP GetInteger64v)(GLenum pname, GLint64 *data);
     void (QOPENGLF_APIENTRYP WaitSync)(GLsync sync, GLbitfield flags, GLuint64 timeout);
     GLenum (QOPENGLF_APIENTRYP ClientWaitSync)(GLsync sync, GLbitfield flags, GLuint64 timeout);
     void (QOPENGLF_APIENTRYP DeleteSync)(GLsync sync);
@@ -552,36 +609,6 @@ public:
     void (QOPENGLF_APIENTRYP VertexAttribP2ui)(GLuint index, GLenum type, GLboolean normalized, GLuint value);
     void (QOPENGLF_APIENTRYP VertexAttribP1uiv)(GLuint index, GLenum type, GLboolean normalized, const GLuint *value);
     void (QOPENGLF_APIENTRYP VertexAttribP1ui)(GLuint index, GLenum type, GLboolean normalized, GLuint value);
-    void (QOPENGLF_APIENTRYP SecondaryColorP3uiv)(GLenum type, const GLuint *color);
-    void (QOPENGLF_APIENTRYP SecondaryColorP3ui)(GLenum type, GLuint color);
-    void (QOPENGLF_APIENTRYP ColorP4uiv)(GLenum type, const GLuint *color);
-    void (QOPENGLF_APIENTRYP ColorP4ui)(GLenum type, GLuint color);
-    void (QOPENGLF_APIENTRYP ColorP3uiv)(GLenum type, const GLuint *color);
-    void (QOPENGLF_APIENTRYP ColorP3ui)(GLenum type, GLuint color);
-    void (QOPENGLF_APIENTRYP NormalP3uiv)(GLenum type, const GLuint *coords);
-    void (QOPENGLF_APIENTRYP NormalP3ui)(GLenum type, GLuint coords);
-    void (QOPENGLF_APIENTRYP MultiTexCoordP4uiv)(GLenum texture, GLenum type, const GLuint *coords);
-    void (QOPENGLF_APIENTRYP MultiTexCoordP4ui)(GLenum texture, GLenum type, GLuint coords);
-    void (QOPENGLF_APIENTRYP MultiTexCoordP3uiv)(GLenum texture, GLenum type, const GLuint *coords);
-    void (QOPENGLF_APIENTRYP MultiTexCoordP3ui)(GLenum texture, GLenum type, GLuint coords);
-    void (QOPENGLF_APIENTRYP MultiTexCoordP2uiv)(GLenum texture, GLenum type, const GLuint *coords);
-    void (QOPENGLF_APIENTRYP MultiTexCoordP2ui)(GLenum texture, GLenum type, GLuint coords);
-    void (QOPENGLF_APIENTRYP MultiTexCoordP1uiv)(GLenum texture, GLenum type, const GLuint *coords);
-    void (QOPENGLF_APIENTRYP MultiTexCoordP1ui)(GLenum texture, GLenum type, GLuint coords);
-    void (QOPENGLF_APIENTRYP TexCoordP4uiv)(GLenum type, const GLuint *coords);
-    void (QOPENGLF_APIENTRYP TexCoordP4ui)(GLenum type, GLuint coords);
-    void (QOPENGLF_APIENTRYP TexCoordP3uiv)(GLenum type, const GLuint *coords);
-    void (QOPENGLF_APIENTRYP TexCoordP3ui)(GLenum type, GLuint coords);
-    void (QOPENGLF_APIENTRYP TexCoordP2uiv)(GLenum type, const GLuint *coords);
-    void (QOPENGLF_APIENTRYP TexCoordP2ui)(GLenum type, GLuint coords);
-    void (QOPENGLF_APIENTRYP TexCoordP1uiv)(GLenum type, const GLuint *coords);
-    void (QOPENGLF_APIENTRYP TexCoordP1ui)(GLenum type, GLuint coords);
-    void (QOPENGLF_APIENTRYP VertexP4uiv)(GLenum type, const GLuint *value);
-    void (QOPENGLF_APIENTRYP VertexP4ui)(GLenum type, GLuint value);
-    void (QOPENGLF_APIENTRYP VertexP3uiv)(GLenum type, const GLuint *value);
-    void (QOPENGLF_APIENTRYP VertexP3ui)(GLenum type, GLuint value);
-    void (QOPENGLF_APIENTRYP VertexP2uiv)(GLenum type, const GLuint *value);
-    void (QOPENGLF_APIENTRYP VertexP2ui)(GLenum type, GLuint value);
     void (QOPENGLF_APIENTRYP GetQueryObjectui64v)(GLuint id, GLenum pname, GLuint64 *params);
     void (QOPENGLF_APIENTRYP GetQueryObjecti64v)(GLuint id, GLenum pname, GLint64 *params);
     void (QOPENGLF_APIENTRYP QueryCounter)(GLuint id, GLenum target);
@@ -792,6 +819,16 @@ public:
     static QOpenGLVersionStatus versionStatus();
 
     // OpenGL 4.3 core functions
+    void (QOPENGLF_APIENTRYP GetObjectPtrLabel)(const GLvoid *ptr, GLsizei bufSize, GLsizei *length, GLchar *label);
+    void (QOPENGLF_APIENTRYP ObjectPtrLabel)(const GLvoid *ptr, GLsizei length, const GLchar *label);
+    void (QOPENGLF_APIENTRYP GetObjectLabel)(GLenum identifier, GLuint name, GLsizei bufSize, GLsizei *length, GLchar *label);
+    void (QOPENGLF_APIENTRYP ObjectLabel)(GLenum identifier, GLuint name, GLsizei length, const GLchar *label);
+    void (QOPENGLF_APIENTRYP PopDebugGroup)();
+    void (QOPENGLF_APIENTRYP PushDebugGroup)(GLenum source, GLuint id, GLsizei length, const GLchar *message);
+    GLuint (QOPENGLF_APIENTRYP GetDebugMessageLog)(GLuint count, GLsizei bufSize, GLenum *sources, GLenum *types, GLuint *ids, GLenum *severities, GLsizei *lengths, GLchar *messageLog);
+    void (QOPENGLF_APIENTRYP DebugMessageCallback)(GLDEBUGPROC callback, const GLvoid *userParam);
+    void (QOPENGLF_APIENTRYP DebugMessageInsert)(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *buf);
+    void (QOPENGLF_APIENTRYP DebugMessageControl)(GLenum source, GLenum type, GLenum severity, GLsizei count, const GLuint *ids, GLboolean enabled);
     void (QOPENGLF_APIENTRYP TexStorage3DMultisample)(GLenum target, GLsizei samples, GLenum internalformat, GLsizei width, GLsizei height, GLsizei depth, GLboolean fixedsamplelocations);
     void (QOPENGLF_APIENTRYP TexStorage2DMultisample)(GLenum target, GLsizei samples, GLenum internalformat, GLsizei width, GLsizei height, GLboolean fixedsamplelocations);
     void (QOPENGLF_APIENTRYP TexBufferRange)(GLenum target, GLenum internalformat, GLuint buffer, GLintptr offset, GLsizeiptr size);
@@ -825,6 +862,143 @@ public:
     void (QOPENGLF_APIENTRYP DispatchCompute)(GLuint num_groups_x, GLuint num_groups_y, GLuint num_groups_z);
     void (QOPENGLF_APIENTRYP ClearBufferSubData)(GLenum target, GLenum internalformat, GLintptr offset, GLsizeiptr size, GLenum format, GLenum type, const void *data);
     void (QOPENGLF_APIENTRYP ClearBufferData)(GLenum target, GLenum internalformat, GLenum format, GLenum type, const void *data);
+
+};
+
+class QOpenGLFunctions_4_4_CoreBackend : public QOpenGLVersionFunctionsBackend
+{
+public:
+    QOpenGLFunctions_4_4_CoreBackend(QOpenGLContext *context);
+
+    static QOpenGLVersionStatus versionStatus();
+
+    // OpenGL 4.4 core functions
+    void (QOPENGLF_APIENTRYP BindVertexBuffers)(GLuint first, GLsizei count, const GLuint *buffers, const GLintptr *offsets, const GLsizei *strides);
+    void (QOPENGLF_APIENTRYP BindImageTextures)(GLuint first, GLsizei count, const GLuint *textures);
+    void (QOPENGLF_APIENTRYP BindSamplers)(GLuint first, GLsizei count, const GLuint *samplers);
+    void (QOPENGLF_APIENTRYP BindTextures)(GLuint first, GLsizei count, const GLuint *textures);
+    void (QOPENGLF_APIENTRYP BindBuffersRange)(GLenum target, GLuint first, GLsizei count, const GLuint *buffers, const GLintptr *offsets, const GLsizeiptr *sizes);
+    void (QOPENGLF_APIENTRYP BindBuffersBase)(GLenum target, GLuint first, GLsizei count, const GLuint *buffers);
+    void (QOPENGLF_APIENTRYP ClearTexSubImage)(GLuint texture, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLenum type, const void *data);
+    void (QOPENGLF_APIENTRYP ClearTexImage)(GLuint texture, GLint level, GLenum format, GLenum type, const void *data);
+    void (QOPENGLF_APIENTRYP BufferStorage)(GLenum target, GLsizeiptr size, const void *data, GLbitfield flags);
+
+};
+
+class QOpenGLFunctions_4_5_CoreBackend : public QOpenGLVersionFunctionsBackend
+{
+public:
+    QOpenGLFunctions_4_5_CoreBackend(QOpenGLContext *context);
+
+    static QOpenGLVersionStatus versionStatus();
+
+    // OpenGL 4.5 core functions
+    void (QOPENGLF_APIENTRYP TextureBarrier)();
+    void (QOPENGLF_APIENTRYP ReadnPixels)(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, GLsizei bufSize, void *data);
+    void (QOPENGLF_APIENTRYP GetnUniformuiv)(GLuint program, GLint location, GLsizei bufSize, GLuint *params);
+    void (QOPENGLF_APIENTRYP GetnUniformiv)(GLuint program, GLint location, GLsizei bufSize, GLint *params);
+    void (QOPENGLF_APIENTRYP GetnUniformfv)(GLuint program, GLint location, GLsizei bufSize, GLfloat *params);
+    void (QOPENGLF_APIENTRYP GetnUniformdv)(GLuint program, GLint location, GLsizei bufSize, GLdouble *params);
+    void (QOPENGLF_APIENTRYP GetnTexImage)(GLenum target, GLint level, GLenum format, GLenum type, GLsizei bufSize, void *pixels);
+    void (QOPENGLF_APIENTRYP GetnCompressedTexImage)(GLenum target, GLint lod, GLsizei bufSize, void *pixels);
+    GLenum (QOPENGLF_APIENTRYP GetGraphicsResetStatus)();
+    void (QOPENGLF_APIENTRYP GetCompressedTextureSubImage)(GLuint texture, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLsizei bufSize, void *pixels);
+    void (QOPENGLF_APIENTRYP GetTextureSubImage)(GLuint texture, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLenum type, GLsizei bufSize, void *pixels);
+    void (QOPENGLF_APIENTRYP MemoryBarrierByRegion)(GLbitfield barriers);
+    void (QOPENGLF_APIENTRYP CreateQueries)(GLenum target, GLsizei n, GLuint *ids);
+    void (QOPENGLF_APIENTRYP CreateProgramPipelines)(GLsizei n, GLuint *pipelines);
+    void (QOPENGLF_APIENTRYP CreateSamplers)(GLsizei n, GLuint *samplers);
+    void (QOPENGLF_APIENTRYP GetVertexArrayIndexed64iv)(GLuint vaobj, GLuint index, GLenum pname, GLint64 *param);
+    void (QOPENGLF_APIENTRYP GetVertexArrayIndexediv)(GLuint vaobj, GLuint index, GLenum pname, GLint *param);
+    void (QOPENGLF_APIENTRYP GetVertexArrayiv)(GLuint vaobj, GLenum pname, GLint *param);
+    void (QOPENGLF_APIENTRYP VertexArrayBindingDivisor)(GLuint vaobj, GLuint bindingindex, GLuint divisor);
+    void (QOPENGLF_APIENTRYP VertexArrayAttribLFormat)(GLuint vaobj, GLuint attribindex, GLint size, GLenum type, GLuint relativeoffset);
+    void (QOPENGLF_APIENTRYP VertexArrayAttribIFormat)(GLuint vaobj, GLuint attribindex, GLint size, GLenum type, GLuint relativeoffset);
+    void (QOPENGLF_APIENTRYP VertexArrayAttribFormat)(GLuint vaobj, GLuint attribindex, GLint size, GLenum type, GLboolean normalized, GLuint relativeoffset);
+    void (QOPENGLF_APIENTRYP VertexArrayAttribBinding)(GLuint vaobj, GLuint attribindex, GLuint bindingindex);
+    void (QOPENGLF_APIENTRYP VertexArrayVertexBuffers)(GLuint vaobj, GLuint first, GLsizei count, const GLuint *buffers, const GLintptr *offsets, const GLsizei *strides);
+    void (QOPENGLF_APIENTRYP VertexArrayVertexBuffer)(GLuint vaobj, GLuint bindingindex, GLuint buffer, GLintptr offset, GLsizei stride);
+    void (QOPENGLF_APIENTRYP VertexArrayElementBuffer)(GLuint vaobj, GLuint buffer);
+    void (QOPENGLF_APIENTRYP EnableVertexArrayAttrib)(GLuint vaobj, GLuint index);
+    void (QOPENGLF_APIENTRYP DisableVertexArrayAttrib)(GLuint vaobj, GLuint index);
+    void (QOPENGLF_APIENTRYP CreateVertexArrays)(GLsizei n, GLuint *arrays);
+    void (QOPENGLF_APIENTRYP GetTextureParameteriv)(GLuint texture, GLenum pname, GLint *params);
+    void (QOPENGLF_APIENTRYP GetTextureParameterIuiv)(GLuint texture, GLenum pname, GLuint *params);
+    void (QOPENGLF_APIENTRYP GetTextureParameterIiv)(GLuint texture, GLenum pname, GLint *params);
+    void (QOPENGLF_APIENTRYP GetTextureParameterfv)(GLuint texture, GLenum pname, GLfloat *params);
+    void (QOPENGLF_APIENTRYP GetTextureLevelParameteriv)(GLuint texture, GLint level, GLenum pname, GLint *params);
+    void (QOPENGLF_APIENTRYP GetTextureLevelParameterfv)(GLuint texture, GLint level, GLenum pname, GLfloat *params);
+    void (QOPENGLF_APIENTRYP GetCompressedTextureImage)(GLuint texture, GLint level, GLsizei bufSize, void *pixels);
+    void (QOPENGLF_APIENTRYP GetTextureImage)(GLuint texture, GLint level, GLenum format, GLenum type, GLsizei bufSize, void *pixels);
+    void (QOPENGLF_APIENTRYP BindTextureUnit)(GLuint unit, GLuint texture);
+    void (QOPENGLF_APIENTRYP GenerateTextureMipmap)(GLuint texture);
+    void (QOPENGLF_APIENTRYP TextureParameteriv)(GLuint texture, GLenum pname, const GLint *param);
+    void (QOPENGLF_APIENTRYP TextureParameterIuiv)(GLuint texture, GLenum pname, const GLuint *params);
+    void (QOPENGLF_APIENTRYP TextureParameterIiv)(GLuint texture, GLenum pname, const GLint *params);
+    void (QOPENGLF_APIENTRYP TextureParameteri)(GLuint texture, GLenum pname, GLint param);
+    void (QOPENGLF_APIENTRYP TextureParameterfv)(GLuint texture, GLenum pname, const GLfloat *param);
+    void (QOPENGLF_APIENTRYP TextureParameterf)(GLuint texture, GLenum pname, GLfloat param);
+    void (QOPENGLF_APIENTRYP CopyTextureSubImage3D)(GLuint texture, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLint x, GLint y, GLsizei width, GLsizei height);
+    void (QOPENGLF_APIENTRYP CopyTextureSubImage2D)(GLuint texture, GLint level, GLint xoffset, GLint yoffset, GLint x, GLint y, GLsizei width, GLsizei height);
+    void (QOPENGLF_APIENTRYP CopyTextureSubImage1D)(GLuint texture, GLint level, GLint xoffset, GLint x, GLint y, GLsizei width);
+    void (QOPENGLF_APIENTRYP CompressedTextureSubImage3D)(GLuint texture, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLsizei imageSize, const void *data);
+    void (QOPENGLF_APIENTRYP CompressedTextureSubImage2D)(GLuint texture, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLsizei imageSize, const void *data);
+    void (QOPENGLF_APIENTRYP CompressedTextureSubImage1D)(GLuint texture, GLint level, GLint xoffset, GLsizei width, GLenum format, GLsizei imageSize, const void *data);
+    void (QOPENGLF_APIENTRYP TextureSubImage3D)(GLuint texture, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLenum type, const void *pixels);
+    void (QOPENGLF_APIENTRYP TextureSubImage2D)(GLuint texture, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, const void *pixels);
+    void (QOPENGLF_APIENTRYP TextureSubImage1D)(GLuint texture, GLint level, GLint xoffset, GLsizei width, GLenum format, GLenum type, const void *pixels);
+    void (QOPENGLF_APIENTRYP TextureStorage3DMultisample)(GLuint texture, GLsizei samples, GLenum internalformat, GLsizei width, GLsizei height, GLsizei depth, GLboolean fixedsamplelocations);
+    void (QOPENGLF_APIENTRYP TextureStorage2DMultisample)(GLuint texture, GLsizei samples, GLenum internalformat, GLsizei width, GLsizei height, GLboolean fixedsamplelocations);
+    void (QOPENGLF_APIENTRYP TextureStorage3D)(GLuint texture, GLsizei levels, GLenum internalformat, GLsizei width, GLsizei height, GLsizei depth);
+    void (QOPENGLF_APIENTRYP TextureStorage2D)(GLuint texture, GLsizei levels, GLenum internalformat, GLsizei width, GLsizei height);
+    void (QOPENGLF_APIENTRYP TextureStorage1D)(GLuint texture, GLsizei levels, GLenum internalformat, GLsizei width);
+    void (QOPENGLF_APIENTRYP TextureBufferRange)(GLuint texture, GLenum internalformat, GLuint buffer, GLintptr offset, GLsizei size);
+    void (QOPENGLF_APIENTRYP TextureBuffer)(GLuint texture, GLenum internalformat, GLuint buffer);
+    void (QOPENGLF_APIENTRYP CreateTextures)(GLenum target, GLsizei n, GLuint *textures);
+    void (QOPENGLF_APIENTRYP GetNamedRenderbufferParameteriv)(GLuint renderbuffer, GLenum pname, GLint *params);
+    void (QOPENGLF_APIENTRYP NamedRenderbufferStorageMultisample)(GLuint renderbuffer, GLsizei samples, GLenum internalformat, GLsizei width, GLsizei height);
+    void (QOPENGLF_APIENTRYP NamedRenderbufferStorage)(GLuint renderbuffer, GLenum internalformat, GLsizei width, GLsizei height);
+    void (QOPENGLF_APIENTRYP CreateRenderbuffers)(GLsizei n, GLuint *renderbuffers);
+    void (QOPENGLF_APIENTRYP GetNamedFramebufferAttachmentParameteriv)(GLuint framebuffer, GLenum attachment, GLenum pname, GLint *params);
+    void (QOPENGLF_APIENTRYP GetNamedFramebufferParameteriv)(GLuint framebuffer, GLenum pname, GLint *param);
+    GLenum (QOPENGLF_APIENTRYP CheckNamedFramebufferStatus)(GLuint framebuffer, GLenum target);
+    void (QOPENGLF_APIENTRYP BlitNamedFramebuffer)(GLuint readFramebuffer, GLuint drawFramebuffer, GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1, GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1, GLbitfield mask, GLenum filter);
+    void (QOPENGLF_APIENTRYP ClearNamedFramebufferfi)(GLuint framebuffer, GLenum buffer, GLfloat depth, GLint stencil);
+    void (QOPENGLF_APIENTRYP ClearNamedFramebufferfv)(GLuint framebuffer, GLenum buffer, GLint drawbuffer, const GLfloat *value);
+    void (QOPENGLF_APIENTRYP ClearNamedFramebufferuiv)(GLuint framebuffer, GLenum buffer, GLint drawbuffer, const GLuint *value);
+    void (QOPENGLF_APIENTRYP ClearNamedFramebufferiv)(GLuint framebuffer, GLenum buffer, GLint drawbuffer, const GLint *value);
+    void (QOPENGLF_APIENTRYP InvalidateNamedFramebufferSubData)(GLuint framebuffer, GLsizei numAttachments, const GLenum *attachments, GLint x, GLint y, GLsizei width, GLsizei height);
+    void (QOPENGLF_APIENTRYP InvalidateNamedFramebufferData)(GLuint framebuffer, GLsizei numAttachments, const GLenum *attachments);
+    void (QOPENGLF_APIENTRYP NamedFramebufferReadBuffer)(GLuint framebuffer, GLenum src);
+    void (QOPENGLF_APIENTRYP NamedFramebufferDrawBuffers)(GLuint framebuffer, GLsizei n, const GLenum *bufs);
+    void (QOPENGLF_APIENTRYP NamedFramebufferDrawBuffer)(GLuint framebuffer, GLenum buf);
+    void (QOPENGLF_APIENTRYP NamedFramebufferTextureLayer)(GLuint framebuffer, GLenum attachment, GLuint texture, GLint level, GLint layer);
+    void (QOPENGLF_APIENTRYP NamedFramebufferTexture)(GLuint framebuffer, GLenum attachment, GLuint texture, GLint level);
+    void (QOPENGLF_APIENTRYP NamedFramebufferParameteri)(GLuint framebuffer, GLenum pname, GLint param);
+    void (QOPENGLF_APIENTRYP NamedFramebufferRenderbuffer)(GLuint framebuffer, GLenum attachment, GLenum renderbuffertarget, GLuint renderbuffer);
+    void (QOPENGLF_APIENTRYP CreateFramebuffers)(GLsizei n, GLuint *framebuffers);
+    void (QOPENGLF_APIENTRYP GetNamedBufferSubData)(GLuint buffer, GLintptr offset, GLsizei size, void *data);
+    void (QOPENGLF_APIENTRYP GetNamedBufferPointerv)(GLuint buffer, GLenum pname, GLvoid* *params);
+    void (QOPENGLF_APIENTRYP GetNamedBufferParameteri64v)(GLuint buffer, GLenum pname, GLint64 *params);
+    void (QOPENGLF_APIENTRYP GetNamedBufferParameteriv)(GLuint buffer, GLenum pname, GLint *params);
+    void (QOPENGLF_APIENTRYP FlushMappedNamedBufferRange)(GLuint buffer, GLintptr offset, GLsizei length);
+    GLboolean (QOPENGLF_APIENTRYP UnmapNamedBuffer)(GLuint buffer);
+    GLvoid* (QOPENGLF_APIENTRYP MapNamedBufferRange)(GLuint buffer, GLintptr offset, GLsizei length, GLbitfield access);
+    GLvoid* (QOPENGLF_APIENTRYP MapNamedBuffer)(GLuint buffer, GLenum access);
+    void (QOPENGLF_APIENTRYP ClearNamedBufferSubData)(GLuint buffer, GLenum internalformat, GLintptr offset, GLsizei size, GLenum format, GLenum type, const void *data);
+    void (QOPENGLF_APIENTRYP ClearNamedBufferData)(GLuint buffer, GLenum internalformat, GLenum format, GLenum type, const void *data);
+    void (QOPENGLF_APIENTRYP CopyNamedBufferSubData)(GLuint readBuffer, GLuint writeBuffer, GLintptr readOffset, GLintptr writeOffset, GLsizei size);
+    void (QOPENGLF_APIENTRYP NamedBufferSubData)(GLuint buffer, GLintptr offset, GLsizei size, const void *data);
+    void (QOPENGLF_APIENTRYP NamedBufferData)(GLuint buffer, GLsizei size, const void *data, GLenum usage);
+    void (QOPENGLF_APIENTRYP NamedBufferStorage)(GLuint buffer, GLsizei size, const void *data, GLbitfield flags);
+    void (QOPENGLF_APIENTRYP CreateBuffers)(GLsizei n, GLuint *buffers);
+    void (QOPENGLF_APIENTRYP GetTransformFeedbacki64_v)(GLuint xfb, GLenum pname, GLuint index, GLint64 *param);
+    void (QOPENGLF_APIENTRYP GetTransformFeedbacki_v)(GLuint xfb, GLenum pname, GLuint index, GLint *param);
+    void (QOPENGLF_APIENTRYP GetTransformFeedbackiv)(GLuint xfb, GLenum pname, GLint *param);
+    void (QOPENGLF_APIENTRYP TransformFeedbackBufferRange)(GLuint xfb, GLuint index, GLuint buffer, GLintptr offset, GLsizei size);
+    void (QOPENGLF_APIENTRYP TransformFeedbackBufferBase)(GLuint xfb, GLuint index, GLuint buffer);
+    void (QOPENGLF_APIENTRYP CreateTransformFeedbacks)(GLsizei n, GLuint *ids);
+    void (QOPENGLF_APIENTRYP ClipControl)(GLenum origin, GLenum depth);
 
 };
 
@@ -872,9 +1046,9 @@ public:
     void (QOPENGLF_APIENTRYP GetClipPlane)(GLenum plane, GLdouble *equation);
     void (QOPENGLF_APIENTRYP DrawPixels)(GLsizei width, GLsizei height, GLenum format, GLenum type, const GLvoid *pixels);
     void (QOPENGLF_APIENTRYP CopyPixels)(GLint x, GLint y, GLsizei width, GLsizei height, GLenum type);
-    void (QOPENGLF_APIENTRYP PixelMapusv)(GLenum map, GLint mapsize, const GLushort *values);
-    void (QOPENGLF_APIENTRYP PixelMapuiv)(GLenum map, GLint mapsize, const GLuint *values);
-    void (QOPENGLF_APIENTRYP PixelMapfv)(GLenum map, GLint mapsize, const GLfloat *values);
+    void (QOPENGLF_APIENTRYP PixelMapusv)(GLenum map, GLsizei mapsize, const GLushort *values);
+    void (QOPENGLF_APIENTRYP PixelMapuiv)(GLenum map, GLsizei mapsize, const GLuint *values);
+    void (QOPENGLF_APIENTRYP PixelMapfv)(GLenum map, GLsizei mapsize, const GLfloat *values);
     void (QOPENGLF_APIENTRYP PixelTransferi)(GLenum pname, GLint param);
     void (QOPENGLF_APIENTRYP PixelTransferf)(GLenum pname, GLfloat param);
     void (QOPENGLF_APIENTRYP PixelZoom)(GLfloat xfactor, GLfloat yfactor);
@@ -1107,12 +1281,15 @@ public:
     // OpenGL 1.1 deprecated functions
     void (QOPENGLF_APIENTRYP PushClientAttrib)(GLbitfield mask);
     void (QOPENGLF_APIENTRYP PopClientAttrib)();
+    void (QOPENGLF_APIENTRYP Indexubv)(const GLubyte *c);
+    void (QOPENGLF_APIENTRYP Indexub)(GLubyte c);
     void (QOPENGLF_APIENTRYP PrioritizeTextures)(GLsizei n, const GLuint *textures, const GLfloat *priorities);
     GLboolean (QOPENGLF_APIENTRYP AreTexturesResident)(GLsizei n, const GLuint *textures, GLboolean *residences);
     void (QOPENGLF_APIENTRYP VertexPointer)(GLint size, GLenum type, GLsizei stride, const GLvoid *pointer);
     void (QOPENGLF_APIENTRYP TexCoordPointer)(GLint size, GLenum type, GLsizei stride, const GLvoid *pointer);
     void (QOPENGLF_APIENTRYP NormalPointer)(GLenum type, GLsizei stride, const GLvoid *pointer);
     void (QOPENGLF_APIENTRYP InterleavedArrays)(GLenum format, GLsizei stride, const GLvoid *pointer);
+    void (QOPENGLF_APIENTRYP GetPointerv)(GLenum pname, GLvoid* *params);
     void (QOPENGLF_APIENTRYP IndexPointer)(GLenum type, GLsizei stride, const GLvoid *pointer);
     void (QOPENGLF_APIENTRYP EnableClientState)(GLenum array);
     void (QOPENGLF_APIENTRYP EdgeFlagPointer)(GLsizei stride, const GLvoid *pointer);
@@ -1130,38 +1307,38 @@ public:
     static QOpenGLVersionStatus versionStatus();
 
     // OpenGL 1.2 deprecated functions
-    void (QOPENGLF_APIENTRYP ResetMinmax)(GLenum target);
-    void (QOPENGLF_APIENTRYP ResetHistogram)(GLenum target);
-    void (QOPENGLF_APIENTRYP Minmax)(GLenum target, GLenum internalformat, GLboolean sink);
-    void (QOPENGLF_APIENTRYP Histogram)(GLenum target, GLsizei width, GLenum internalformat, GLboolean sink);
-    void (QOPENGLF_APIENTRYP GetMinmaxParameteriv)(GLenum target, GLenum pname, GLint *params);
-    void (QOPENGLF_APIENTRYP GetMinmaxParameterfv)(GLenum target, GLenum pname, GLfloat *params);
-    void (QOPENGLF_APIENTRYP GetMinmax)(GLenum target, GLboolean reset, GLenum format, GLenum type, GLvoid *values);
-    void (QOPENGLF_APIENTRYP GetHistogramParameteriv)(GLenum target, GLenum pname, GLint *params);
-    void (QOPENGLF_APIENTRYP GetHistogramParameterfv)(GLenum target, GLenum pname, GLfloat *params);
-    void (QOPENGLF_APIENTRYP GetHistogram)(GLenum target, GLboolean reset, GLenum format, GLenum type, GLvoid *values);
-    void (QOPENGLF_APIENTRYP SeparableFilter2D)(GLenum target, GLenum internalformat, GLsizei width, GLsizei height, GLenum format, GLenum type, const GLvoid *row, const GLvoid *column);
-    void (QOPENGLF_APIENTRYP GetSeparableFilter)(GLenum target, GLenum format, GLenum type, GLvoid *row, GLvoid *column, GLvoid *span);
-    void (QOPENGLF_APIENTRYP GetConvolutionParameteriv)(GLenum target, GLenum pname, GLint *params);
-    void (QOPENGLF_APIENTRYP GetConvolutionParameterfv)(GLenum target, GLenum pname, GLfloat *params);
-    void (QOPENGLF_APIENTRYP GetConvolutionFilter)(GLenum target, GLenum format, GLenum type, GLvoid *image);
-    void (QOPENGLF_APIENTRYP CopyConvolutionFilter2D)(GLenum target, GLenum internalformat, GLint x, GLint y, GLsizei width, GLsizei height);
-    void (QOPENGLF_APIENTRYP CopyConvolutionFilter1D)(GLenum target, GLenum internalformat, GLint x, GLint y, GLsizei width);
-    void (QOPENGLF_APIENTRYP ConvolutionParameteriv)(GLenum target, GLenum pname, const GLint *params);
-    void (QOPENGLF_APIENTRYP ConvolutionParameteri)(GLenum target, GLenum pname, GLint params);
-    void (QOPENGLF_APIENTRYP ConvolutionParameterfv)(GLenum target, GLenum pname, const GLfloat *params);
-    void (QOPENGLF_APIENTRYP ConvolutionParameterf)(GLenum target, GLenum pname, GLfloat params);
-    void (QOPENGLF_APIENTRYP ConvolutionFilter2D)(GLenum target, GLenum internalformat, GLsizei width, GLsizei height, GLenum format, GLenum type, const GLvoid *image);
-    void (QOPENGLF_APIENTRYP ConvolutionFilter1D)(GLenum target, GLenum internalformat, GLsizei width, GLenum format, GLenum type, const GLvoid *image);
-    void (QOPENGLF_APIENTRYP CopyColorSubTable)(GLenum target, GLsizei start, GLint x, GLint y, GLsizei width);
-    void (QOPENGLF_APIENTRYP ColorSubTable)(GLenum target, GLsizei start, GLsizei count, GLenum format, GLenum type, const GLvoid *data);
-    void (QOPENGLF_APIENTRYP GetColorTableParameteriv)(GLenum target, GLenum pname, GLint *params);
-    void (QOPENGLF_APIENTRYP GetColorTableParameterfv)(GLenum target, GLenum pname, GLfloat *params);
-    void (QOPENGLF_APIENTRYP GetColorTable)(GLenum target, GLenum format, GLenum type, GLvoid *table);
-    void (QOPENGLF_APIENTRYP CopyColorTable)(GLenum target, GLenum internalformat, GLint x, GLint y, GLsizei width);
-    void (QOPENGLF_APIENTRYP ColorTableParameteriv)(GLenum target, GLenum pname, const GLint *params);
-    void (QOPENGLF_APIENTRYP ColorTableParameterfv)(GLenum target, GLenum pname, const GLfloat *params);
     void (QOPENGLF_APIENTRYP ColorTable)(GLenum target, GLenum internalformat, GLsizei width, GLenum format, GLenum type, const GLvoid *table);
+    void (QOPENGLF_APIENTRYP ColorTableParameterfv)(GLenum target, GLenum pname, const GLfloat *params);
+    void (QOPENGLF_APIENTRYP ColorTableParameteriv)(GLenum target, GLenum pname, const GLint *params);
+    void (QOPENGLF_APIENTRYP CopyColorTable)(GLenum target, GLenum internalformat, GLint x, GLint y, GLsizei width);
+    void (QOPENGLF_APIENTRYP GetColorTable)(GLenum target, GLenum format, GLenum type, GLvoid *table);
+    void (QOPENGLF_APIENTRYP GetColorTableParameterfv)(GLenum target, GLenum pname, GLfloat *params);
+    void (QOPENGLF_APIENTRYP GetColorTableParameteriv)(GLenum target, GLenum pname, GLint *params);
+    void (QOPENGLF_APIENTRYP ColorSubTable)(GLenum target, GLsizei start, GLsizei count, GLenum format, GLenum type, const GLvoid *data);
+    void (QOPENGLF_APIENTRYP CopyColorSubTable)(GLenum target, GLsizei start, GLint x, GLint y, GLsizei width);
+    void (QOPENGLF_APIENTRYP ConvolutionFilter1D)(GLenum target, GLenum internalformat, GLsizei width, GLenum format, GLenum type, const GLvoid *image);
+    void (QOPENGLF_APIENTRYP ConvolutionFilter2D)(GLenum target, GLenum internalformat, GLsizei width, GLsizei height, GLenum format, GLenum type, const GLvoid *image);
+    void (QOPENGLF_APIENTRYP ConvolutionParameterf)(GLenum target, GLenum pname, GLfloat params);
+    void (QOPENGLF_APIENTRYP ConvolutionParameterfv)(GLenum target, GLenum pname, const GLfloat *params);
+    void (QOPENGLF_APIENTRYP ConvolutionParameteri)(GLenum target, GLenum pname, GLint params);
+    void (QOPENGLF_APIENTRYP ConvolutionParameteriv)(GLenum target, GLenum pname, const GLint *params);
+    void (QOPENGLF_APIENTRYP CopyConvolutionFilter1D)(GLenum target, GLenum internalformat, GLint x, GLint y, GLsizei width);
+    void (QOPENGLF_APIENTRYP CopyConvolutionFilter2D)(GLenum target, GLenum internalformat, GLint x, GLint y, GLsizei width, GLsizei height);
+    void (QOPENGLF_APIENTRYP GetConvolutionFilter)(GLenum target, GLenum format, GLenum type, GLvoid *image);
+    void (QOPENGLF_APIENTRYP GetConvolutionParameterfv)(GLenum target, GLenum pname, GLfloat *params);
+    void (QOPENGLF_APIENTRYP GetConvolutionParameteriv)(GLenum target, GLenum pname, GLint *params);
+    void (QOPENGLF_APIENTRYP GetSeparableFilter)(GLenum target, GLenum format, GLenum type, GLvoid *row, GLvoid *column, GLvoid *span);
+    void (QOPENGLF_APIENTRYP SeparableFilter2D)(GLenum target, GLenum internalformat, GLsizei width, GLsizei height, GLenum format, GLenum type, const GLvoid *row, const GLvoid *column);
+    void (QOPENGLF_APIENTRYP GetHistogram)(GLenum target, GLboolean reset, GLenum format, GLenum type, GLvoid *values);
+    void (QOPENGLF_APIENTRYP GetHistogramParameterfv)(GLenum target, GLenum pname, GLfloat *params);
+    void (QOPENGLF_APIENTRYP GetHistogramParameteriv)(GLenum target, GLenum pname, GLint *params);
+    void (QOPENGLF_APIENTRYP GetMinmax)(GLenum target, GLboolean reset, GLenum format, GLenum type, GLvoid *values);
+    void (QOPENGLF_APIENTRYP GetMinmaxParameterfv)(GLenum target, GLenum pname, GLfloat *params);
+    void (QOPENGLF_APIENTRYP GetMinmaxParameteriv)(GLenum target, GLenum pname, GLint *params);
+    void (QOPENGLF_APIENTRYP Histogram)(GLenum target, GLsizei width, GLenum internalformat, GLboolean sink);
+    void (QOPENGLF_APIENTRYP Minmax)(GLenum target, GLenum internalformat, GLboolean sink);
+    void (QOPENGLF_APIENTRYP ResetHistogram)(GLenum target);
+    void (QOPENGLF_APIENTRYP ResetMinmax)(GLenum target);
 
 };
 
@@ -1262,84 +1439,69 @@ public:
 
 };
 
-class QOpenGLFunctions_2_0_DeprecatedBackend : public QOpenGLVersionFunctionsBackend
+class QOpenGLFunctions_3_3_DeprecatedBackend : public QOpenGLVersionFunctionsBackend
 {
 public:
-    QOpenGLFunctions_2_0_DeprecatedBackend(QOpenGLContext *context);
+    QOpenGLFunctions_3_3_DeprecatedBackend(QOpenGLContext *context);
 
     static QOpenGLVersionStatus versionStatus();
 
-    // OpenGL 2.0 deprecated functions
-    void (QOPENGLF_APIENTRYP VertexAttrib4usv)(GLuint index, const GLushort *v);
-    void (QOPENGLF_APIENTRYP VertexAttrib4uiv)(GLuint index, const GLuint *v);
-    void (QOPENGLF_APIENTRYP VertexAttrib4ubv)(GLuint index, const GLubyte *v);
-    void (QOPENGLF_APIENTRYP VertexAttrib4sv)(GLuint index, const GLshort *v);
-    void (QOPENGLF_APIENTRYP VertexAttrib4s)(GLuint index, GLshort x, GLshort y, GLshort z, GLshort w);
-    void (QOPENGLF_APIENTRYP VertexAttrib4iv)(GLuint index, const GLint *v);
-    void (QOPENGLF_APIENTRYP VertexAttrib4fv)(GLuint index, const GLfloat *v);
-    void (QOPENGLF_APIENTRYP VertexAttrib4f)(GLuint index, GLfloat x, GLfloat y, GLfloat z, GLfloat w);
-    void (QOPENGLF_APIENTRYP VertexAttrib4dv)(GLuint index, const GLdouble *v);
-    void (QOPENGLF_APIENTRYP VertexAttrib4d)(GLuint index, GLdouble x, GLdouble y, GLdouble z, GLdouble w);
-    void (QOPENGLF_APIENTRYP VertexAttrib4bv)(GLuint index, const GLbyte *v);
-    void (QOPENGLF_APIENTRYP VertexAttrib4Nusv)(GLuint index, const GLushort *v);
-    void (QOPENGLF_APIENTRYP VertexAttrib4Nuiv)(GLuint index, const GLuint *v);
-    void (QOPENGLF_APIENTRYP VertexAttrib4Nubv)(GLuint index, const GLubyte *v);
-    void (QOPENGLF_APIENTRYP VertexAttrib4Nub)(GLuint index, GLubyte x, GLubyte y, GLubyte z, GLubyte w);
-    void (QOPENGLF_APIENTRYP VertexAttrib4Nsv)(GLuint index, const GLshort *v);
-    void (QOPENGLF_APIENTRYP VertexAttrib4Niv)(GLuint index, const GLint *v);
-    void (QOPENGLF_APIENTRYP VertexAttrib4Nbv)(GLuint index, const GLbyte *v);
-    void (QOPENGLF_APIENTRYP VertexAttrib3sv)(GLuint index, const GLshort *v);
-    void (QOPENGLF_APIENTRYP VertexAttrib3s)(GLuint index, GLshort x, GLshort y, GLshort z);
-    void (QOPENGLF_APIENTRYP VertexAttrib3fv)(GLuint index, const GLfloat *v);
-    void (QOPENGLF_APIENTRYP VertexAttrib3f)(GLuint index, GLfloat x, GLfloat y, GLfloat z);
-    void (QOPENGLF_APIENTRYP VertexAttrib3dv)(GLuint index, const GLdouble *v);
-    void (QOPENGLF_APIENTRYP VertexAttrib3d)(GLuint index, GLdouble x, GLdouble y, GLdouble z);
-    void (QOPENGLF_APIENTRYP VertexAttrib2sv)(GLuint index, const GLshort *v);
-    void (QOPENGLF_APIENTRYP VertexAttrib2s)(GLuint index, GLshort x, GLshort y);
-    void (QOPENGLF_APIENTRYP VertexAttrib2fv)(GLuint index, const GLfloat *v);
-    void (QOPENGLF_APIENTRYP VertexAttrib2f)(GLuint index, GLfloat x, GLfloat y);
-    void (QOPENGLF_APIENTRYP VertexAttrib2dv)(GLuint index, const GLdouble *v);
-    void (QOPENGLF_APIENTRYP VertexAttrib2d)(GLuint index, GLdouble x, GLdouble y);
-    void (QOPENGLF_APIENTRYP VertexAttrib1sv)(GLuint index, const GLshort *v);
-    void (QOPENGLF_APIENTRYP VertexAttrib1s)(GLuint index, GLshort x);
-    void (QOPENGLF_APIENTRYP VertexAttrib1fv)(GLuint index, const GLfloat *v);
-    void (QOPENGLF_APIENTRYP VertexAttrib1f)(GLuint index, GLfloat x);
-    void (QOPENGLF_APIENTRYP VertexAttrib1dv)(GLuint index, const GLdouble *v);
-    void (QOPENGLF_APIENTRYP VertexAttrib1d)(GLuint index, GLdouble x);
+    // OpenGL 3.3 deprecated functions
+    void (QOPENGLF_APIENTRYP SecondaryColorP3uiv)(GLenum type, const GLuint *color);
+    void (QOPENGLF_APIENTRYP SecondaryColorP3ui)(GLenum type, GLuint color);
+    void (QOPENGLF_APIENTRYP ColorP4uiv)(GLenum type, const GLuint *color);
+    void (QOPENGLF_APIENTRYP ColorP4ui)(GLenum type, GLuint color);
+    void (QOPENGLF_APIENTRYP ColorP3uiv)(GLenum type, const GLuint *color);
+    void (QOPENGLF_APIENTRYP ColorP3ui)(GLenum type, GLuint color);
+    void (QOPENGLF_APIENTRYP NormalP3uiv)(GLenum type, const GLuint *coords);
+    void (QOPENGLF_APIENTRYP NormalP3ui)(GLenum type, GLuint coords);
+    void (QOPENGLF_APIENTRYP MultiTexCoordP4uiv)(GLenum texture, GLenum type, const GLuint *coords);
+    void (QOPENGLF_APIENTRYP MultiTexCoordP4ui)(GLenum texture, GLenum type, GLuint coords);
+    void (QOPENGLF_APIENTRYP MultiTexCoordP3uiv)(GLenum texture, GLenum type, const GLuint *coords);
+    void (QOPENGLF_APIENTRYP MultiTexCoordP3ui)(GLenum texture, GLenum type, GLuint coords);
+    void (QOPENGLF_APIENTRYP MultiTexCoordP2uiv)(GLenum texture, GLenum type, const GLuint *coords);
+    void (QOPENGLF_APIENTRYP MultiTexCoordP2ui)(GLenum texture, GLenum type, GLuint coords);
+    void (QOPENGLF_APIENTRYP MultiTexCoordP1uiv)(GLenum texture, GLenum type, const GLuint *coords);
+    void (QOPENGLF_APIENTRYP MultiTexCoordP1ui)(GLenum texture, GLenum type, GLuint coords);
+    void (QOPENGLF_APIENTRYP TexCoordP4uiv)(GLenum type, const GLuint *coords);
+    void (QOPENGLF_APIENTRYP TexCoordP4ui)(GLenum type, GLuint coords);
+    void (QOPENGLF_APIENTRYP TexCoordP3uiv)(GLenum type, const GLuint *coords);
+    void (QOPENGLF_APIENTRYP TexCoordP3ui)(GLenum type, GLuint coords);
+    void (QOPENGLF_APIENTRYP TexCoordP2uiv)(GLenum type, const GLuint *coords);
+    void (QOPENGLF_APIENTRYP TexCoordP2ui)(GLenum type, GLuint coords);
+    void (QOPENGLF_APIENTRYP TexCoordP1uiv)(GLenum type, const GLuint *coords);
+    void (QOPENGLF_APIENTRYP TexCoordP1ui)(GLenum type, GLuint coords);
+    void (QOPENGLF_APIENTRYP VertexP4uiv)(GLenum type, const GLuint *value);
+    void (QOPENGLF_APIENTRYP VertexP4ui)(GLenum type, GLuint value);
+    void (QOPENGLF_APIENTRYP VertexP3uiv)(GLenum type, const GLuint *value);
+    void (QOPENGLF_APIENTRYP VertexP3ui)(GLenum type, GLuint value);
+    void (QOPENGLF_APIENTRYP VertexP2uiv)(GLenum type, const GLuint *value);
+    void (QOPENGLF_APIENTRYP VertexP2ui)(GLenum type, GLuint value);
 
 };
 
-class QOpenGLFunctions_3_0_DeprecatedBackend : public QOpenGLVersionFunctionsBackend
+class QOpenGLFunctions_4_5_DeprecatedBackend : public QOpenGLVersionFunctionsBackend
 {
 public:
-    QOpenGLFunctions_3_0_DeprecatedBackend(QOpenGLContext *context);
+    QOpenGLFunctions_4_5_DeprecatedBackend(QOpenGLContext *context);
 
     static QOpenGLVersionStatus versionStatus();
 
-    // OpenGL 3.0 deprecated functions
-    void (QOPENGLF_APIENTRYP VertexAttribI4usv)(GLuint index, const GLushort *v);
-    void (QOPENGLF_APIENTRYP VertexAttribI4ubv)(GLuint index, const GLubyte *v);
-    void (QOPENGLF_APIENTRYP VertexAttribI4sv)(GLuint index, const GLshort *v);
-    void (QOPENGLF_APIENTRYP VertexAttribI4bv)(GLuint index, const GLbyte *v);
-    void (QOPENGLF_APIENTRYP VertexAttribI4uiv)(GLuint index, const GLuint *v);
-    void (QOPENGLF_APIENTRYP VertexAttribI3uiv)(GLuint index, const GLuint *v);
-    void (QOPENGLF_APIENTRYP VertexAttribI2uiv)(GLuint index, const GLuint *v);
-    void (QOPENGLF_APIENTRYP VertexAttribI1uiv)(GLuint index, const GLuint *v);
-    void (QOPENGLF_APIENTRYP VertexAttribI4iv)(GLuint index, const GLint *v);
-    void (QOPENGLF_APIENTRYP VertexAttribI3iv)(GLuint index, const GLint *v);
-    void (QOPENGLF_APIENTRYP VertexAttribI2iv)(GLuint index, const GLint *v);
-    void (QOPENGLF_APIENTRYP VertexAttribI1iv)(GLuint index, const GLint *v);
-    void (QOPENGLF_APIENTRYP VertexAttribI4ui)(GLuint index, GLuint x, GLuint y, GLuint z, GLuint w);
-    void (QOPENGLF_APIENTRYP VertexAttribI3ui)(GLuint index, GLuint x, GLuint y, GLuint z);
-    void (QOPENGLF_APIENTRYP VertexAttribI2ui)(GLuint index, GLuint x, GLuint y);
-    void (QOPENGLF_APIENTRYP VertexAttribI1ui)(GLuint index, GLuint x);
-    void (QOPENGLF_APIENTRYP VertexAttribI4i)(GLuint index, GLint x, GLint y, GLint z, GLint w);
-    void (QOPENGLF_APIENTRYP VertexAttribI3i)(GLuint index, GLint x, GLint y, GLint z);
-    void (QOPENGLF_APIENTRYP VertexAttribI2i)(GLuint index, GLint x, GLint y);
-    void (QOPENGLF_APIENTRYP VertexAttribI1i)(GLuint index, GLint x);
+    // OpenGL 4.5 deprecated functions
+    void (QOPENGLF_APIENTRYP GetnMinmax)(GLenum target, GLboolean reset, GLenum format, GLenum type, GLsizei bufSize, GLvoid *values);
+    void (QOPENGLF_APIENTRYP GetnHistogram)(GLenum target, GLboolean reset, GLenum format, GLenum type, GLsizei bufSize, GLvoid *values);
+    void (QOPENGLF_APIENTRYP GetnSeparableFilter)(GLenum target, GLenum format, GLenum type, GLsizei rowBufSize, GLvoid *row, GLsizei columnBufSize, GLvoid *column, GLvoid *span);
+    void (QOPENGLF_APIENTRYP GetnConvolutionFilter)(GLenum target, GLenum format, GLenum type, GLsizei bufSize, GLvoid *image);
+    void (QOPENGLF_APIENTRYP GetnColorTable)(GLenum target, GLenum format, GLenum type, GLsizei bufSize, GLvoid *table);
+    void (QOPENGLF_APIENTRYP GetnPolygonStipple)(GLsizei bufSize, GLubyte *pattern);
+    void (QOPENGLF_APIENTRYP GetnPixelMapusv)(GLenum map, GLsizei bufSize, GLushort *values);
+    void (QOPENGLF_APIENTRYP GetnPixelMapuiv)(GLenum map, GLsizei bufSize, GLuint *values);
+    void (QOPENGLF_APIENTRYP GetnPixelMapfv)(GLenum map, GLsizei bufSize, GLfloat *values);
+    void (QOPENGLF_APIENTRYP GetnMapiv)(GLenum target, GLenum query, GLsizei bufSize, GLint *v);
+    void (QOPENGLF_APIENTRYP GetnMapfv)(GLenum target, GLenum query, GLsizei bufSize, GLfloat *v);
+    void (QOPENGLF_APIENTRYP GetnMapdv)(GLenum target, GLenum query, GLsizei bufSize, GLdouble *v);
 
 };
-
 
 #else
 

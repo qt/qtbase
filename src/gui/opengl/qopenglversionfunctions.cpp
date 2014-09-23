@@ -338,8 +338,6 @@ QOpenGLFunctions_1_1_CoreBackend::QOpenGLFunctions_1_1_CoreBackend(QOpenGLContex
     HMODULE handle = static_cast<HMODULE>(QOpenGLContext::openGLModuleHandle());
     if (!handle)
         handle = GetModuleHandleA("opengl32.dll");
-    Indexubv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(const GLubyte *)>(GetProcAddress(handle, "glIndexubv"));
-    Indexub = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLubyte )>(GetProcAddress(handle, "glIndexub"));
     IsTexture = reinterpret_cast<GLboolean (QOPENGLF_APIENTRYP)(GLuint )>(GetProcAddress(handle, "glIsTexture"));
     GenTextures = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLsizei , GLuint *)>(GetProcAddress(handle, "glGenTextures"));
     DeleteTextures = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLsizei , const GLuint *)>(GetProcAddress(handle, "glDeleteTextures"));
@@ -351,12 +349,9 @@ QOpenGLFunctions_1_1_CoreBackend::QOpenGLFunctions_1_1_CoreBackend(QOpenGLContex
     CopyTexImage2D = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLint , GLenum , GLint , GLint , GLsizei , GLsizei , GLint )>(GetProcAddress(handle, "glCopyTexImage2D"));
     CopyTexImage1D = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLint , GLenum , GLint , GLint , GLsizei , GLint )>(GetProcAddress(handle, "glCopyTexImage1D"));
     PolygonOffset = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLfloat , GLfloat )>(GetProcAddress(handle, "glPolygonOffset"));
-    GetPointerv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLvoid* *)>(GetProcAddress(handle, "glGetPointerv"));
     DrawElements = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLsizei , GLenum , const GLvoid *)>(GetProcAddress(handle, "glDrawElements"));
     DrawArrays = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLint , GLsizei )>(GetProcAddress(handle, "glDrawArrays"));
 #else
-    Indexubv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(const GLubyte *)>(context->getProcAddress("glIndexubv"));
-    Indexub = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLubyte )>(context->getProcAddress("glIndexub"));
     IsTexture = reinterpret_cast<GLboolean (QOPENGLF_APIENTRYP)(GLuint )>(context->getProcAddress("glIsTexture"));
     GenTextures = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLsizei , GLuint *)>(context->getProcAddress("glGenTextures"));
     DeleteTextures = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLsizei , const GLuint *)>(context->getProcAddress("glDeleteTextures"));
@@ -368,7 +363,6 @@ QOpenGLFunctions_1_1_CoreBackend::QOpenGLFunctions_1_1_CoreBackend(QOpenGLContex
     CopyTexImage2D = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLint , GLenum , GLint , GLint , GLsizei , GLsizei , GLint )>(context->getProcAddress("glCopyTexImage2D"));
     CopyTexImage1D = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLint , GLenum , GLint , GLint , GLsizei , GLint )>(context->getProcAddress("glCopyTexImage1D"));
     PolygonOffset = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLfloat , GLfloat )>(context->getProcAddress("glPolygonOffset"));
-    GetPointerv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLvoid* *)>(context->getProcAddress("glGetPointerv"));
     DrawElements = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLsizei , GLenum , const GLvoid *)>(context->getProcAddress("glDrawElements"));
     DrawArrays = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLint , GLsizei )>(context->getProcAddress("glDrawArrays"));
 #endif
@@ -474,6 +468,42 @@ QOpenGLFunctions_2_0_CoreBackend::QOpenGLFunctions_2_0_CoreBackend(QOpenGLContex
 {
     // OpenGL 2.0 core functions
     VertexAttribPointer = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLint , GLenum , GLboolean , GLsizei , const GLvoid *)>(context->getProcAddress("glVertexAttribPointer"));
+    VertexAttrib4usv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , const GLushort *)>(context->getProcAddress("glVertexAttrib4usv"));
+    VertexAttrib4uiv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , const GLuint *)>(context->getProcAddress("glVertexAttrib4uiv"));
+    VertexAttrib4ubv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , const GLubyte *)>(context->getProcAddress("glVertexAttrib4ubv"));
+    VertexAttrib4sv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , const GLshort *)>(context->getProcAddress("glVertexAttrib4sv"));
+    VertexAttrib4s = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLshort , GLshort , GLshort , GLshort )>(context->getProcAddress("glVertexAttrib4s"));
+    VertexAttrib4iv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , const GLint *)>(context->getProcAddress("glVertexAttrib4iv"));
+    VertexAttrib4fv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , const GLfloat *)>(context->getProcAddress("glVertexAttrib4fv"));
+    VertexAttrib4f = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLfloat , GLfloat , GLfloat , GLfloat )>(context->getProcAddress("glVertexAttrib4f"));
+    VertexAttrib4dv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , const GLdouble *)>(context->getProcAddress("glVertexAttrib4dv"));
+    VertexAttrib4d = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLdouble , GLdouble , GLdouble , GLdouble )>(context->getProcAddress("glVertexAttrib4d"));
+    VertexAttrib4bv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , const GLbyte *)>(context->getProcAddress("glVertexAttrib4bv"));
+    VertexAttrib4Nusv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , const GLushort *)>(context->getProcAddress("glVertexAttrib4Nusv"));
+    VertexAttrib4Nuiv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , const GLuint *)>(context->getProcAddress("glVertexAttrib4Nuiv"));
+    VertexAttrib4Nubv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , const GLubyte *)>(context->getProcAddress("glVertexAttrib4Nubv"));
+    VertexAttrib4Nub = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLubyte , GLubyte , GLubyte , GLubyte )>(context->getProcAddress("glVertexAttrib4Nub"));
+    VertexAttrib4Nsv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , const GLshort *)>(context->getProcAddress("glVertexAttrib4Nsv"));
+    VertexAttrib4Niv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , const GLint *)>(context->getProcAddress("glVertexAttrib4Niv"));
+    VertexAttrib4Nbv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , const GLbyte *)>(context->getProcAddress("glVertexAttrib4Nbv"));
+    VertexAttrib3sv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , const GLshort *)>(context->getProcAddress("glVertexAttrib3sv"));
+    VertexAttrib3s = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLshort , GLshort , GLshort )>(context->getProcAddress("glVertexAttrib3s"));
+    VertexAttrib3fv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , const GLfloat *)>(context->getProcAddress("glVertexAttrib3fv"));
+    VertexAttrib3f = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLfloat , GLfloat , GLfloat )>(context->getProcAddress("glVertexAttrib3f"));
+    VertexAttrib3dv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , const GLdouble *)>(context->getProcAddress("glVertexAttrib3dv"));
+    VertexAttrib3d = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLdouble , GLdouble , GLdouble )>(context->getProcAddress("glVertexAttrib3d"));
+    VertexAttrib2sv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , const GLshort *)>(context->getProcAddress("glVertexAttrib2sv"));
+    VertexAttrib2s = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLshort , GLshort )>(context->getProcAddress("glVertexAttrib2s"));
+    VertexAttrib2fv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , const GLfloat *)>(context->getProcAddress("glVertexAttrib2fv"));
+    VertexAttrib2f = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLfloat , GLfloat )>(context->getProcAddress("glVertexAttrib2f"));
+    VertexAttrib2dv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , const GLdouble *)>(context->getProcAddress("glVertexAttrib2dv"));
+    VertexAttrib2d = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLdouble , GLdouble )>(context->getProcAddress("glVertexAttrib2d"));
+    VertexAttrib1sv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , const GLshort *)>(context->getProcAddress("glVertexAttrib1sv"));
+    VertexAttrib1s = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLshort )>(context->getProcAddress("glVertexAttrib1s"));
+    VertexAttrib1fv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , const GLfloat *)>(context->getProcAddress("glVertexAttrib1fv"));
+    VertexAttrib1f = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLfloat )>(context->getProcAddress("glVertexAttrib1f"));
+    VertexAttrib1dv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , const GLdouble *)>(context->getProcAddress("glVertexAttrib1dv"));
+    VertexAttrib1d = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLdouble )>(context->getProcAddress("glVertexAttrib1d"));
     ValidateProgram = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint )>(context->getProcAddress("glValidateProgram"));
     UniformMatrix4fv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLint , GLsizei , GLboolean , const GLfloat *)>(context->getProcAddress("glUniformMatrix4fv"));
     UniformMatrix3fv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLint , GLsizei , GLboolean , const GLfloat *)>(context->getProcAddress("glUniformMatrix3fv"));
@@ -606,6 +636,26 @@ QOpenGLFunctions_3_0_CoreBackend::QOpenGLFunctions_3_0_CoreBackend(QOpenGLContex
     GetFragDataLocation = reinterpret_cast<GLint (QOPENGLF_APIENTRYP)(GLuint , const GLchar *)>(context->getProcAddress("glGetFragDataLocation"));
     BindFragDataLocation = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLuint , const GLchar *)>(context->getProcAddress("glBindFragDataLocation"));
     GetUniformuiv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLint , GLuint *)>(context->getProcAddress("glGetUniformuiv"));
+    VertexAttribI4usv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , const GLushort *)>(context->getProcAddress("glVertexAttribI4usv"));
+    VertexAttribI4ubv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , const GLubyte *)>(context->getProcAddress("glVertexAttribI4ubv"));
+    VertexAttribI4sv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , const GLshort *)>(context->getProcAddress("glVertexAttribI4sv"));
+    VertexAttribI4bv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , const GLbyte *)>(context->getProcAddress("glVertexAttribI4bv"));
+    VertexAttribI4uiv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , const GLuint *)>(context->getProcAddress("glVertexAttribI4uiv"));
+    VertexAttribI3uiv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , const GLuint *)>(context->getProcAddress("glVertexAttribI3uiv"));
+    VertexAttribI2uiv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , const GLuint *)>(context->getProcAddress("glVertexAttribI2uiv"));
+    VertexAttribI1uiv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , const GLuint *)>(context->getProcAddress("glVertexAttribI1uiv"));
+    VertexAttribI4iv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , const GLint *)>(context->getProcAddress("glVertexAttribI4iv"));
+    VertexAttribI3iv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , const GLint *)>(context->getProcAddress("glVertexAttribI3iv"));
+    VertexAttribI2iv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , const GLint *)>(context->getProcAddress("glVertexAttribI2iv"));
+    VertexAttribI1iv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , const GLint *)>(context->getProcAddress("glVertexAttribI1iv"));
+    VertexAttribI4ui = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLuint , GLuint , GLuint , GLuint )>(context->getProcAddress("glVertexAttribI4ui"));
+    VertexAttribI3ui = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLuint , GLuint , GLuint )>(context->getProcAddress("glVertexAttribI3ui"));
+    VertexAttribI2ui = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLuint , GLuint )>(context->getProcAddress("glVertexAttribI2ui"));
+    VertexAttribI1ui = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLuint )>(context->getProcAddress("glVertexAttribI1ui"));
+    VertexAttribI4i = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLint , GLint , GLint , GLint )>(context->getProcAddress("glVertexAttribI4i"));
+    VertexAttribI3i = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLint , GLint , GLint )>(context->getProcAddress("glVertexAttribI3i"));
+    VertexAttribI2i = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLint , GLint )>(context->getProcAddress("glVertexAttribI2i"));
+    VertexAttribI1i = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLint )>(context->getProcAddress("glVertexAttribI1i"));
     GetVertexAttribIuiv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLenum , GLuint *)>(context->getProcAddress("glGetVertexAttribIuiv"));
     GetVertexAttribIiv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLenum , GLint *)>(context->getProcAddress("glGetVertexAttribIiv"));
     VertexAttribIPointer = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLint , GLenum , GLsizei , const GLvoid *)>(context->getProcAddress("glVertexAttribIPointer"));
@@ -662,8 +712,8 @@ QOpenGLFunctions_3_2_CoreBackend::QOpenGLFunctions_3_2_CoreBackend(QOpenGLContex
     // OpenGL 3.2 core functions
     SampleMaski = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLbitfield )>(context->getProcAddress("glSampleMaski"));
     GetMultisamplefv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLuint , GLfloat *)>(context->getProcAddress("glGetMultisamplefv"));
-    TexImage3DMultisample = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLsizei , GLint , GLsizei , GLsizei , GLsizei , GLboolean )>(context->getProcAddress("glTexImage3DMultisample"));
-    TexImage2DMultisample = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLsizei , GLint , GLsizei , GLsizei , GLboolean )>(context->getProcAddress("glTexImage2DMultisample"));
+    TexImage3DMultisample = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLsizei , GLenum , GLsizei , GLsizei , GLsizei , GLboolean )>(context->getProcAddress("glTexImage3DMultisample"));
+    TexImage2DMultisample = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLsizei , GLenum , GLsizei , GLsizei , GLboolean )>(context->getProcAddress("glTexImage2DMultisample"));
     GetSynciv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLsync , GLenum , GLsizei , GLsizei *, GLint *)>(context->getProcAddress("glGetSynciv"));
     GetInteger64v = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLint64 *)>(context->getProcAddress("glGetInteger64v"));
     WaitSync = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLsync , GLbitfield , GLuint64 )>(context->getProcAddress("glWaitSync"));
@@ -699,36 +749,6 @@ QOpenGLFunctions_3_3_CoreBackend::QOpenGLFunctions_3_3_CoreBackend(QOpenGLContex
     VertexAttribP2ui = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLenum , GLboolean , GLuint )>(context->getProcAddress("glVertexAttribP2ui"));
     VertexAttribP1uiv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLenum , GLboolean , const GLuint *)>(context->getProcAddress("glVertexAttribP1uiv"));
     VertexAttribP1ui = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLenum , GLboolean , GLuint )>(context->getProcAddress("glVertexAttribP1ui"));
-    SecondaryColorP3uiv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , const GLuint *)>(context->getProcAddress("glSecondaryColorP3uiv"));
-    SecondaryColorP3ui = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLuint )>(context->getProcAddress("glSecondaryColorP3ui"));
-    ColorP4uiv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , const GLuint *)>(context->getProcAddress("glColorP4uiv"));
-    ColorP4ui = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLuint )>(context->getProcAddress("glColorP4ui"));
-    ColorP3uiv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , const GLuint *)>(context->getProcAddress("glColorP3uiv"));
-    ColorP3ui = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLuint )>(context->getProcAddress("glColorP3ui"));
-    NormalP3uiv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , const GLuint *)>(context->getProcAddress("glNormalP3uiv"));
-    NormalP3ui = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLuint )>(context->getProcAddress("glNormalP3ui"));
-    MultiTexCoordP4uiv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLenum , const GLuint *)>(context->getProcAddress("glMultiTexCoordP4uiv"));
-    MultiTexCoordP4ui = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLenum , GLuint )>(context->getProcAddress("glMultiTexCoordP4ui"));
-    MultiTexCoordP3uiv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLenum , const GLuint *)>(context->getProcAddress("glMultiTexCoordP3uiv"));
-    MultiTexCoordP3ui = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLenum , GLuint )>(context->getProcAddress("glMultiTexCoordP3ui"));
-    MultiTexCoordP2uiv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLenum , const GLuint *)>(context->getProcAddress("glMultiTexCoordP2uiv"));
-    MultiTexCoordP2ui = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLenum , GLuint )>(context->getProcAddress("glMultiTexCoordP2ui"));
-    MultiTexCoordP1uiv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLenum , const GLuint *)>(context->getProcAddress("glMultiTexCoordP1uiv"));
-    MultiTexCoordP1ui = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLenum , GLuint )>(context->getProcAddress("glMultiTexCoordP1ui"));
-    TexCoordP4uiv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , const GLuint *)>(context->getProcAddress("glTexCoordP4uiv"));
-    TexCoordP4ui = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLuint )>(context->getProcAddress("glTexCoordP4ui"));
-    TexCoordP3uiv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , const GLuint *)>(context->getProcAddress("glTexCoordP3uiv"));
-    TexCoordP3ui = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLuint )>(context->getProcAddress("glTexCoordP3ui"));
-    TexCoordP2uiv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , const GLuint *)>(context->getProcAddress("glTexCoordP2uiv"));
-    TexCoordP2ui = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLuint )>(context->getProcAddress("glTexCoordP2ui"));
-    TexCoordP1uiv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , const GLuint *)>(context->getProcAddress("glTexCoordP1uiv"));
-    TexCoordP1ui = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLuint )>(context->getProcAddress("glTexCoordP1ui"));
-    VertexP4uiv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , const GLuint *)>(context->getProcAddress("glVertexP4uiv"));
-    VertexP4ui = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLuint )>(context->getProcAddress("glVertexP4ui"));
-    VertexP3uiv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , const GLuint *)>(context->getProcAddress("glVertexP3uiv"));
-    VertexP3ui = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLuint )>(context->getProcAddress("glVertexP3ui"));
-    VertexP2uiv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , const GLuint *)>(context->getProcAddress("glVertexP2uiv"));
-    VertexP2ui = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLuint )>(context->getProcAddress("glVertexP2ui"));
     GetQueryObjectui64v = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLenum , GLuint64 *)>(context->getProcAddress("glGetQueryObjectui64v"));
     GetQueryObjecti64v = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLenum , GLint64 *)>(context->getProcAddress("glGetQueryObjecti64v"));
     QueryCounter = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLenum )>(context->getProcAddress("glQueryCounter"));
@@ -943,6 +963,16 @@ QOpenGLFunctions_4_3_CoreBackend::QOpenGLFunctions_4_3_CoreBackend(QOpenGLContex
     : QOpenGLVersionFunctionsBackend(context)
 {
     // OpenGL 4.3 core functions
+    GetObjectPtrLabel = reinterpret_cast<void (QOPENGLF_APIENTRYP)(const void *, GLsizei , GLsizei *, GLchar *)>(context->getProcAddress("glGetObjectPtrLabel"));
+    ObjectPtrLabel = reinterpret_cast<void (QOPENGLF_APIENTRYP)(const void *, GLsizei , const GLchar *)>(context->getProcAddress("glObjectPtrLabel"));
+    GetObjectLabel = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLuint , GLsizei , GLsizei *, GLchar *)>(context->getProcAddress("glGetObjectLabel"));
+    ObjectLabel = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLuint , GLsizei , const GLchar *)>(context->getProcAddress("glObjectLabel"));
+    PopDebugGroup = reinterpret_cast<void (QOPENGLF_APIENTRYP)()>(context->getProcAddress("glPopDebugGroup"));
+    PushDebugGroup = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLuint , GLsizei , const GLchar *)>(context->getProcAddress("glPushDebugGroup"));
+    GetDebugMessageLog = reinterpret_cast<GLuint (QOPENGLF_APIENTRYP)(GLuint , GLsizei , GLenum *, GLenum *, GLuint *, GLenum *, GLsizei *, GLchar *)>(context->getProcAddress("glGetDebugMessageLog"));
+    DebugMessageCallback = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLDEBUGPROC , const void *)>(context->getProcAddress("glDebugMessageCallback"));
+    DebugMessageInsert = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLenum , GLuint , GLenum , GLsizei , const GLchar *)>(context->getProcAddress("glDebugMessageInsert"));
+    DebugMessageControl = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLenum , GLenum , GLsizei , const GLuint *, GLboolean )>(context->getProcAddress("glDebugMessageControl"));
     TexStorage3DMultisample = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLsizei , GLenum , GLsizei , GLsizei , GLsizei , GLboolean )>(context->getProcAddress("glTexStorage3DMultisample"));
     TexStorage2DMultisample = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLsizei , GLenum , GLsizei , GLsizei , GLboolean )>(context->getProcAddress("glTexStorage2DMultisample"));
     TexBufferRange = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLenum , GLuint , GLintptr , GLsizeiptr )>(context->getProcAddress("glTexBufferRange"));
@@ -982,6 +1012,145 @@ QOpenGLFunctions_4_3_CoreBackend::QOpenGLFunctions_4_3_CoreBackend(QOpenGLContex
 QOpenGLVersionStatus QOpenGLFunctions_4_3_CoreBackend::versionStatus()
 {
     return QOpenGLVersionStatus(4, 3, QOpenGLVersionStatus::CoreStatus);
+}
+
+QOpenGLFunctions_4_4_CoreBackend::QOpenGLFunctions_4_4_CoreBackend(QOpenGLContext *context)
+    : QOpenGLVersionFunctionsBackend(context)
+{
+    // OpenGL 4.4 core functions
+    BindVertexBuffers = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLsizei , const GLuint *, const GLintptr *, const GLsizei *)>(context->getProcAddress("glBindVertexBuffers"));
+    BindImageTextures = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLsizei , const GLuint *)>(context->getProcAddress("glBindImageTextures"));
+    BindSamplers = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLsizei , const GLuint *)>(context->getProcAddress("glBindSamplers"));
+    BindTextures = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLsizei , const GLuint *)>(context->getProcAddress("glBindTextures"));
+    BindBuffersRange = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLuint , GLsizei , const GLuint *, const GLintptr *, const GLsizeiptr *)>(context->getProcAddress("glBindBuffersRange"));
+    BindBuffersBase = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLuint , GLsizei , const GLuint *)>(context->getProcAddress("glBindBuffersBase"));
+    ClearTexSubImage = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLint , GLint , GLint , GLint , GLsizei , GLsizei , GLsizei , GLenum , GLenum , const void *)>(context->getProcAddress("glClearTexSubImage"));
+    ClearTexImage = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLint , GLenum , GLenum , const void *)>(context->getProcAddress("glClearTexImage"));
+    BufferStorage = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLsizeiptr , const void *, GLbitfield )>(context->getProcAddress("glBufferStorage"));
+
+}
+
+QOpenGLVersionStatus QOpenGLFunctions_4_4_CoreBackend::versionStatus()
+{
+    return QOpenGLVersionStatus(4, 4, QOpenGLVersionStatus::CoreStatus);
+}
+
+QOpenGLFunctions_4_5_CoreBackend::QOpenGLFunctions_4_5_CoreBackend(QOpenGLContext *context)
+    : QOpenGLVersionFunctionsBackend(context)
+{
+    // OpenGL 4.5 core functions
+    TextureBarrier = reinterpret_cast<void (QOPENGLF_APIENTRYP)()>(context->getProcAddress("glTextureBarrier"));
+    ReadnPixels = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLint , GLint , GLsizei , GLsizei , GLenum , GLenum , GLsizei , void *)>(context->getProcAddress("glReadnPixels"));
+    GetnUniformuiv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLint , GLsizei , GLuint *)>(context->getProcAddress("glGetnUniformuiv"));
+    GetnUniformiv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLint , GLsizei , GLint *)>(context->getProcAddress("glGetnUniformiv"));
+    GetnUniformfv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLint , GLsizei , GLfloat *)>(context->getProcAddress("glGetnUniformfv"));
+    GetnUniformdv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLint , GLsizei , GLdouble *)>(context->getProcAddress("glGetnUniformdv"));
+    GetnTexImage = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLint , GLenum , GLenum , GLsizei , void *)>(context->getProcAddress("glGetnTexImage"));
+    GetnCompressedTexImage = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLint , GLsizei , void *)>(context->getProcAddress("glGetnCompressedTexImage"));
+    GetGraphicsResetStatus = reinterpret_cast<GLenum (QOPENGLF_APIENTRYP)()>(context->getProcAddress("glGetGraphicsResetStatus"));
+    GetCompressedTextureSubImage = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLint , GLint , GLint , GLint , GLsizei , GLsizei , GLsizei , GLsizei , void *)>(context->getProcAddress("glGetCompressedTextureSubImage"));
+    GetTextureSubImage = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLint , GLint , GLint , GLint , GLsizei , GLsizei , GLsizei , GLenum , GLenum , GLsizei , void *)>(context->getProcAddress("glGetTextureSubImage"));
+    MemoryBarrierByRegion = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLbitfield )>(context->getProcAddress("glMemoryBarrierByRegion"));
+    CreateQueries = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLsizei , GLuint *)>(context->getProcAddress("glCreateQueries"));
+    CreateProgramPipelines = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLsizei , GLuint *)>(context->getProcAddress("glCreateProgramPipelines"));
+    CreateSamplers = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLsizei , GLuint *)>(context->getProcAddress("glCreateSamplers"));
+    GetVertexArrayIndexed64iv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLuint , GLenum , GLint64 *)>(context->getProcAddress("glGetVertexArrayIndexed64iv"));
+    GetVertexArrayIndexediv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLuint , GLenum , GLint *)>(context->getProcAddress("glGetVertexArrayIndexediv"));
+    GetVertexArrayiv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLenum , GLint *)>(context->getProcAddress("glGetVertexArrayiv"));
+    VertexArrayBindingDivisor = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLuint , GLuint )>(context->getProcAddress("glVertexArrayBindingDivisor"));
+    VertexArrayAttribLFormat = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLuint , GLint , GLenum , GLuint )>(context->getProcAddress("glVertexArrayAttribLFormat"));
+    VertexArrayAttribIFormat = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLuint , GLint , GLenum , GLuint )>(context->getProcAddress("glVertexArrayAttribIFormat"));
+    VertexArrayAttribFormat = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLuint , GLint , GLenum , GLboolean , GLuint )>(context->getProcAddress("glVertexArrayAttribFormat"));
+    VertexArrayAttribBinding = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLuint , GLuint )>(context->getProcAddress("glVertexArrayAttribBinding"));
+    VertexArrayVertexBuffers = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLuint , GLsizei , const GLuint *, const GLintptr *, const GLsizei *)>(context->getProcAddress("glVertexArrayVertexBuffers"));
+    VertexArrayVertexBuffer = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLuint , GLuint , GLintptr , GLsizei )>(context->getProcAddress("glVertexArrayVertexBuffer"));
+    VertexArrayElementBuffer = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLuint )>(context->getProcAddress("glVertexArrayElementBuffer"));
+    EnableVertexArrayAttrib = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLuint )>(context->getProcAddress("glEnableVertexArrayAttrib"));
+    DisableVertexArrayAttrib = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLuint )>(context->getProcAddress("glDisableVertexArrayAttrib"));
+    CreateVertexArrays = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLsizei , GLuint *)>(context->getProcAddress("glCreateVertexArrays"));
+    GetTextureParameteriv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLenum , GLint *)>(context->getProcAddress("glGetTextureParameteriv"));
+    GetTextureParameterIuiv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLenum , GLuint *)>(context->getProcAddress("glGetTextureParameterIuiv"));
+    GetTextureParameterIiv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLenum , GLint *)>(context->getProcAddress("glGetTextureParameterIiv"));
+    GetTextureParameterfv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLenum , GLfloat *)>(context->getProcAddress("glGetTextureParameterfv"));
+    GetTextureLevelParameteriv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLint , GLenum , GLint *)>(context->getProcAddress("glGetTextureLevelParameteriv"));
+    GetTextureLevelParameterfv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLint , GLenum , GLfloat *)>(context->getProcAddress("glGetTextureLevelParameterfv"));
+    GetCompressedTextureImage = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLint , GLsizei , void *)>(context->getProcAddress("glGetCompressedTextureImage"));
+    GetTextureImage = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLint , GLenum , GLenum , GLsizei , void *)>(context->getProcAddress("glGetTextureImage"));
+    BindTextureUnit = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLuint )>(context->getProcAddress("glBindTextureUnit"));
+    GenerateTextureMipmap = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint )>(context->getProcAddress("glGenerateTextureMipmap"));
+    TextureParameteriv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLenum , const GLint *)>(context->getProcAddress("glTextureParameteriv"));
+    TextureParameterIuiv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLenum , const GLuint *)>(context->getProcAddress("glTextureParameterIuiv"));
+    TextureParameterIiv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLenum , const GLint *)>(context->getProcAddress("glTextureParameterIiv"));
+    TextureParameteri = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLenum , GLint )>(context->getProcAddress("glTextureParameteri"));
+    TextureParameterfv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLenum , const GLfloat *)>(context->getProcAddress("glTextureParameterfv"));
+    TextureParameterf = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLenum , GLfloat )>(context->getProcAddress("glTextureParameterf"));
+    CopyTextureSubImage3D = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLint , GLint , GLint , GLint , GLint , GLint , GLsizei , GLsizei )>(context->getProcAddress("glCopyTextureSubImage3D"));
+    CopyTextureSubImage2D = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLint , GLint , GLint , GLint , GLint , GLsizei , GLsizei )>(context->getProcAddress("glCopyTextureSubImage2D"));
+    CopyTextureSubImage1D = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLint , GLint , GLint , GLint , GLsizei )>(context->getProcAddress("glCopyTextureSubImage1D"));
+    CompressedTextureSubImage3D = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLint , GLint , GLint , GLint , GLsizei , GLsizei , GLsizei , GLenum , GLsizei , const void *)>(context->getProcAddress("glCompressedTextureSubImage3D"));
+    CompressedTextureSubImage2D = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLint , GLint , GLint , GLsizei , GLsizei , GLenum , GLsizei , const void *)>(context->getProcAddress("glCompressedTextureSubImage2D"));
+    CompressedTextureSubImage1D = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLint , GLint , GLsizei , GLenum , GLsizei , const void *)>(context->getProcAddress("glCompressedTextureSubImage1D"));
+    TextureSubImage3D = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLint , GLint , GLint , GLint , GLsizei , GLsizei , GLsizei , GLenum , GLenum , const void *)>(context->getProcAddress("glTextureSubImage3D"));
+    TextureSubImage2D = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLint , GLint , GLint , GLsizei , GLsizei , GLenum , GLenum , const void *)>(context->getProcAddress("glTextureSubImage2D"));
+    TextureSubImage1D = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLint , GLint , GLsizei , GLenum , GLenum , const void *)>(context->getProcAddress("glTextureSubImage1D"));
+    TextureStorage3DMultisample = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLsizei , GLenum , GLsizei , GLsizei , GLsizei , GLboolean )>(context->getProcAddress("glTextureStorage3DMultisample"));
+    TextureStorage2DMultisample = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLsizei , GLenum , GLsizei , GLsizei , GLboolean )>(context->getProcAddress("glTextureStorage2DMultisample"));
+    TextureStorage3D = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLsizei , GLenum , GLsizei , GLsizei , GLsizei )>(context->getProcAddress("glTextureStorage3D"));
+    TextureStorage2D = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLsizei , GLenum , GLsizei , GLsizei )>(context->getProcAddress("glTextureStorage2D"));
+    TextureStorage1D = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLsizei , GLenum , GLsizei )>(context->getProcAddress("glTextureStorage1D"));
+    TextureBufferRange = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLenum , GLuint , GLintptr , GLsizei )>(context->getProcAddress("glTextureBufferRange"));
+    TextureBuffer = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLenum , GLuint )>(context->getProcAddress("glTextureBuffer"));
+    CreateTextures = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLsizei , GLuint *)>(context->getProcAddress("glCreateTextures"));
+    GetNamedRenderbufferParameteriv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLenum , GLint *)>(context->getProcAddress("glGetNamedRenderbufferParameteriv"));
+    NamedRenderbufferStorageMultisample = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLsizei , GLenum , GLsizei , GLsizei )>(context->getProcAddress("glNamedRenderbufferStorageMultisample"));
+    NamedRenderbufferStorage = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLenum , GLsizei , GLsizei )>(context->getProcAddress("glNamedRenderbufferStorage"));
+    CreateRenderbuffers = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLsizei , GLuint *)>(context->getProcAddress("glCreateRenderbuffers"));
+    GetNamedFramebufferAttachmentParameteriv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLenum , GLenum , GLint *)>(context->getProcAddress("glGetNamedFramebufferAttachmentParameteriv"));
+    GetNamedFramebufferParameteriv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLenum , GLint *)>(context->getProcAddress("glGetNamedFramebufferParameteriv"));
+    CheckNamedFramebufferStatus = reinterpret_cast<GLenum (QOPENGLF_APIENTRYP)(GLuint , GLenum )>(context->getProcAddress("glCheckNamedFramebufferStatus"));
+    BlitNamedFramebuffer = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLuint , GLint , GLint , GLint , GLint , GLint , GLint , GLint , GLint , GLbitfield , GLenum )>(context->getProcAddress("glBlitNamedFramebuffer"));
+    ClearNamedFramebufferfi = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLenum , GLfloat , GLint )>(context->getProcAddress("glClearNamedFramebufferfi"));
+    ClearNamedFramebufferfv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLenum , GLint , const GLfloat *)>(context->getProcAddress("glClearNamedFramebufferfv"));
+    ClearNamedFramebufferuiv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLenum , GLint , const GLuint *)>(context->getProcAddress("glClearNamedFramebufferuiv"));
+    ClearNamedFramebufferiv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLenum , GLint , const GLint *)>(context->getProcAddress("glClearNamedFramebufferiv"));
+    InvalidateNamedFramebufferSubData = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLsizei , const GLenum *, GLint , GLint , GLsizei , GLsizei )>(context->getProcAddress("glInvalidateNamedFramebufferSubData"));
+    InvalidateNamedFramebufferData = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLsizei , const GLenum *)>(context->getProcAddress("glInvalidateNamedFramebufferData"));
+    NamedFramebufferReadBuffer = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLenum )>(context->getProcAddress("glNamedFramebufferReadBuffer"));
+    NamedFramebufferDrawBuffers = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLsizei , const GLenum *)>(context->getProcAddress("glNamedFramebufferDrawBuffers"));
+    NamedFramebufferDrawBuffer = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLenum )>(context->getProcAddress("glNamedFramebufferDrawBuffer"));
+    NamedFramebufferTextureLayer = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLenum , GLuint , GLint , GLint )>(context->getProcAddress("glNamedFramebufferTextureLayer"));
+    NamedFramebufferTexture = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLenum , GLuint , GLint )>(context->getProcAddress("glNamedFramebufferTexture"));
+    NamedFramebufferParameteri = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLenum , GLint )>(context->getProcAddress("glNamedFramebufferParameteri"));
+    NamedFramebufferRenderbuffer = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLenum , GLenum , GLuint )>(context->getProcAddress("glNamedFramebufferRenderbuffer"));
+    CreateFramebuffers = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLsizei , GLuint *)>(context->getProcAddress("glCreateFramebuffers"));
+    GetNamedBufferSubData = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLintptr , GLsizei , void *)>(context->getProcAddress("glGetNamedBufferSubData"));
+    GetNamedBufferPointerv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLenum , void * *)>(context->getProcAddress("glGetNamedBufferPointerv"));
+    GetNamedBufferParameteri64v = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLenum , GLint64 *)>(context->getProcAddress("glGetNamedBufferParameteri64v"));
+    GetNamedBufferParameteriv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLenum , GLint *)>(context->getProcAddress("glGetNamedBufferParameteriv"));
+    FlushMappedNamedBufferRange = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLintptr , GLsizei )>(context->getProcAddress("glFlushMappedNamedBufferRange"));
+    UnmapNamedBuffer = reinterpret_cast<GLboolean (QOPENGLF_APIENTRYP)(GLuint )>(context->getProcAddress("glUnmapNamedBuffer"));
+    MapNamedBufferRange = reinterpret_cast<void * (QOPENGLF_APIENTRYP)(GLuint , GLintptr , GLsizei , GLbitfield )>(context->getProcAddress("glMapNamedBufferRange"));
+    MapNamedBuffer = reinterpret_cast<void * (QOPENGLF_APIENTRYP)(GLuint , GLenum )>(context->getProcAddress("glMapNamedBuffer"));
+    ClearNamedBufferSubData = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLenum , GLintptr , GLsizei , GLenum , GLenum , const void *)>(context->getProcAddress("glClearNamedBufferSubData"));
+    ClearNamedBufferData = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLenum , GLenum , GLenum , const void *)>(context->getProcAddress("glClearNamedBufferData"));
+    CopyNamedBufferSubData = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLuint , GLintptr , GLintptr , GLsizei )>(context->getProcAddress("glCopyNamedBufferSubData"));
+    NamedBufferSubData = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLintptr , GLsizei , const void *)>(context->getProcAddress("glNamedBufferSubData"));
+    NamedBufferData = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLsizei , const void *, GLenum )>(context->getProcAddress("glNamedBufferData"));
+    NamedBufferStorage = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLsizei , const void *, GLbitfield )>(context->getProcAddress("glNamedBufferStorage"));
+    CreateBuffers = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLsizei , GLuint *)>(context->getProcAddress("glCreateBuffers"));
+    GetTransformFeedbacki64_v = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLenum , GLuint , GLint64 *)>(context->getProcAddress("glGetTransformFeedbacki64_v"));
+    GetTransformFeedbacki_v = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLenum , GLuint , GLint *)>(context->getProcAddress("glGetTransformFeedbacki_v"));
+    GetTransformFeedbackiv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLenum , GLint *)>(context->getProcAddress("glGetTransformFeedbackiv"));
+    TransformFeedbackBufferRange = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLuint , GLuint , GLintptr , GLsizei )>(context->getProcAddress("glTransformFeedbackBufferRange"));
+    TransformFeedbackBufferBase = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLuint , GLuint )>(context->getProcAddress("glTransformFeedbackBufferBase"));
+    CreateTransformFeedbacks = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLsizei , GLuint *)>(context->getProcAddress("glCreateTransformFeedbacks"));
+    ClipControl = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLenum )>(context->getProcAddress("glClipControl"));
+
+}
+
+QOpenGLVersionStatus QOpenGLFunctions_4_5_CoreBackend::versionStatus()
+{
+    return QOpenGLVersionStatus(4, 5, QOpenGLVersionStatus::CoreStatus);
 }
 
 QOpenGLFunctions_1_0_DeprecatedBackend::QOpenGLFunctions_1_0_DeprecatedBackend(QOpenGLContext *context)
@@ -1028,9 +1197,9 @@ QOpenGLFunctions_1_0_DeprecatedBackend::QOpenGLFunctions_1_0_DeprecatedBackend(Q
     GetClipPlane = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLdouble *)>(GetProcAddress(handle, "glGetClipPlane"));
     DrawPixels = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLsizei , GLsizei , GLenum , GLenum , const GLvoid *)>(GetProcAddress(handle, "glDrawPixels"));
     CopyPixels = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLint , GLint , GLsizei , GLsizei , GLenum )>(GetProcAddress(handle, "glCopyPixels"));
-    PixelMapusv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLint , const GLushort *)>(GetProcAddress(handle, "glPixelMapusv"));
-    PixelMapuiv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLint , const GLuint *)>(GetProcAddress(handle, "glPixelMapuiv"));
-    PixelMapfv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLint , const GLfloat *)>(GetProcAddress(handle, "glPixelMapfv"));
+    PixelMapusv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLsizei , const GLushort *)>(GetProcAddress(handle, "glPixelMapusv"));
+    PixelMapuiv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLsizei , const GLuint *)>(GetProcAddress(handle, "glPixelMapuiv"));
+    PixelMapfv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLsizei , const GLfloat *)>(GetProcAddress(handle, "glPixelMapfv"));
     PixelTransferi = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLint )>(GetProcAddress(handle, "glPixelTransferi"));
     PixelTransferf = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLfloat )>(GetProcAddress(handle, "glPixelTransferf"));
     PixelZoom = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLfloat , GLfloat )>(GetProcAddress(handle, "glPixelZoom"));
@@ -1287,9 +1456,9 @@ QOpenGLFunctions_1_0_DeprecatedBackend::QOpenGLFunctions_1_0_DeprecatedBackend(Q
     GetClipPlane = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLdouble *)>(context->getProcAddress("glGetClipPlane"));
     DrawPixels = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLsizei , GLsizei , GLenum , GLenum , const GLvoid *)>(context->getProcAddress("glDrawPixels"));
     CopyPixels = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLint , GLint , GLsizei , GLsizei , GLenum )>(context->getProcAddress("glCopyPixels"));
-    PixelMapusv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLint , const GLushort *)>(context->getProcAddress("glPixelMapusv"));
-    PixelMapuiv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLint , const GLuint *)>(context->getProcAddress("glPixelMapuiv"));
-    PixelMapfv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLint , const GLfloat *)>(context->getProcAddress("glPixelMapfv"));
+    PixelMapusv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLsizei , const GLushort *)>(context->getProcAddress("glPixelMapusv"));
+    PixelMapuiv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLsizei , const GLuint *)>(context->getProcAddress("glPixelMapuiv"));
+    PixelMapfv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLsizei , const GLfloat *)>(context->getProcAddress("glPixelMapfv"));
     PixelTransferi = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLint )>(context->getProcAddress("glPixelTransferi"));
     PixelTransferf = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLfloat )>(context->getProcAddress("glPixelTransferf"));
     PixelZoom = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLfloat , GLfloat )>(context->getProcAddress("glPixelZoom"));
@@ -1528,12 +1697,15 @@ QOpenGLFunctions_1_1_DeprecatedBackend::QOpenGLFunctions_1_1_DeprecatedBackend(Q
         handle = GetModuleHandleA("opengl32.dll");
     PushClientAttrib = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLbitfield )>(GetProcAddress(handle, "glPushClientAttrib"));
     PopClientAttrib = reinterpret_cast<void (QOPENGLF_APIENTRYP)()>(GetProcAddress(handle, "glPopClientAttrib"));
+    Indexubv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(const GLubyte *)>(GetProcAddress(handle, "glIndexubv"));
+    Indexub = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLubyte )>(GetProcAddress(handle, "glIndexub"));
     PrioritizeTextures = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLsizei , const GLuint *, const GLfloat *)>(GetProcAddress(handle, "glPrioritizeTextures"));
     AreTexturesResident = reinterpret_cast<GLboolean (QOPENGLF_APIENTRYP)(GLsizei , const GLuint *, GLboolean *)>(GetProcAddress(handle, "glAreTexturesResident"));
     VertexPointer = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLint , GLenum , GLsizei , const GLvoid *)>(GetProcAddress(handle, "glVertexPointer"));
     TexCoordPointer = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLint , GLenum , GLsizei , const GLvoid *)>(GetProcAddress(handle, "glTexCoordPointer"));
     NormalPointer = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLsizei , const GLvoid *)>(GetProcAddress(handle, "glNormalPointer"));
     InterleavedArrays = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLsizei , const GLvoid *)>(GetProcAddress(handle, "glInterleavedArrays"));
+    GetPointerv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLvoid * *)>(GetProcAddress(handle, "glGetPointerv"));
     IndexPointer = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLsizei , const GLvoid *)>(GetProcAddress(handle, "glIndexPointer"));
     EnableClientState = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum )>(GetProcAddress(handle, "glEnableClientState"));
     EdgeFlagPointer = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLsizei , const GLvoid *)>(GetProcAddress(handle, "glEdgeFlagPointer"));
@@ -1543,12 +1715,15 @@ QOpenGLFunctions_1_1_DeprecatedBackend::QOpenGLFunctions_1_1_DeprecatedBackend(Q
 #else
     PushClientAttrib = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLbitfield )>(context->getProcAddress("glPushClientAttrib"));
     PopClientAttrib = reinterpret_cast<void (QOPENGLF_APIENTRYP)()>(context->getProcAddress("glPopClientAttrib"));
+    Indexubv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(const GLubyte *)>(context->getProcAddress("glIndexubv"));
+    Indexub = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLubyte )>(context->getProcAddress("glIndexub"));
     PrioritizeTextures = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLsizei , const GLuint *, const GLfloat *)>(context->getProcAddress("glPrioritizeTextures"));
     AreTexturesResident = reinterpret_cast<GLboolean (QOPENGLF_APIENTRYP)(GLsizei , const GLuint *, GLboolean *)>(context->getProcAddress("glAreTexturesResident"));
     VertexPointer = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLint , GLenum , GLsizei , const GLvoid *)>(context->getProcAddress("glVertexPointer"));
     TexCoordPointer = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLint , GLenum , GLsizei , const GLvoid *)>(context->getProcAddress("glTexCoordPointer"));
     NormalPointer = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLsizei , const GLvoid *)>(context->getProcAddress("glNormalPointer"));
     InterleavedArrays = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLsizei , const GLvoid *)>(context->getProcAddress("glInterleavedArrays"));
+    GetPointerv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLvoid * *)>(context->getProcAddress("glGetPointerv"));
     IndexPointer = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLsizei , const GLvoid *)>(context->getProcAddress("glIndexPointer"));
     EnableClientState = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum )>(context->getProcAddress("glEnableClientState"));
     EdgeFlagPointer = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLsizei , const GLvoid *)>(context->getProcAddress("glEdgeFlagPointer"));
@@ -1707,86 +1882,71 @@ QOpenGLVersionStatus QOpenGLFunctions_1_4_DeprecatedBackend::versionStatus()
     return QOpenGLVersionStatus(1, 4, QOpenGLVersionStatus::DeprecatedStatus);
 }
 
-QOpenGLFunctions_2_0_DeprecatedBackend::QOpenGLFunctions_2_0_DeprecatedBackend(QOpenGLContext *context)
+QOpenGLFunctions_3_3_DeprecatedBackend::QOpenGLFunctions_3_3_DeprecatedBackend(QOpenGLContext *context)
     : QOpenGLVersionFunctionsBackend(context)
 {
-    // OpenGL 2.0 deprecated functions
-    VertexAttrib4usv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , const GLushort *)>(context->getProcAddress("glVertexAttrib4usv"));
-    VertexAttrib4uiv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , const GLuint *)>(context->getProcAddress("glVertexAttrib4uiv"));
-    VertexAttrib4ubv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , const GLubyte *)>(context->getProcAddress("glVertexAttrib4ubv"));
-    VertexAttrib4sv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , const GLshort *)>(context->getProcAddress("glVertexAttrib4sv"));
-    VertexAttrib4s = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLshort , GLshort , GLshort , GLshort )>(context->getProcAddress("glVertexAttrib4s"));
-    VertexAttrib4iv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , const GLint *)>(context->getProcAddress("glVertexAttrib4iv"));
-    VertexAttrib4fv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , const GLfloat *)>(context->getProcAddress("glVertexAttrib4fv"));
-    VertexAttrib4f = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLfloat , GLfloat , GLfloat , GLfloat )>(context->getProcAddress("glVertexAttrib4f"));
-    VertexAttrib4dv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , const GLdouble *)>(context->getProcAddress("glVertexAttrib4dv"));
-    VertexAttrib4d = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLdouble , GLdouble , GLdouble , GLdouble )>(context->getProcAddress("glVertexAttrib4d"));
-    VertexAttrib4bv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , const GLbyte *)>(context->getProcAddress("glVertexAttrib4bv"));
-    VertexAttrib4Nusv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , const GLushort *)>(context->getProcAddress("glVertexAttrib4Nusv"));
-    VertexAttrib4Nuiv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , const GLuint *)>(context->getProcAddress("glVertexAttrib4Nuiv"));
-    VertexAttrib4Nubv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , const GLubyte *)>(context->getProcAddress("glVertexAttrib4Nubv"));
-    VertexAttrib4Nub = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLubyte , GLubyte , GLubyte , GLubyte )>(context->getProcAddress("glVertexAttrib4Nub"));
-    VertexAttrib4Nsv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , const GLshort *)>(context->getProcAddress("glVertexAttrib4Nsv"));
-    VertexAttrib4Niv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , const GLint *)>(context->getProcAddress("glVertexAttrib4Niv"));
-    VertexAttrib4Nbv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , const GLbyte *)>(context->getProcAddress("glVertexAttrib4Nbv"));
-    VertexAttrib3sv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , const GLshort *)>(context->getProcAddress("glVertexAttrib3sv"));
-    VertexAttrib3s = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLshort , GLshort , GLshort )>(context->getProcAddress("glVertexAttrib3s"));
-    VertexAttrib3fv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , const GLfloat *)>(context->getProcAddress("glVertexAttrib3fv"));
-    VertexAttrib3f = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLfloat , GLfloat , GLfloat )>(context->getProcAddress("glVertexAttrib3f"));
-    VertexAttrib3dv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , const GLdouble *)>(context->getProcAddress("glVertexAttrib3dv"));
-    VertexAttrib3d = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLdouble , GLdouble , GLdouble )>(context->getProcAddress("glVertexAttrib3d"));
-    VertexAttrib2sv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , const GLshort *)>(context->getProcAddress("glVertexAttrib2sv"));
-    VertexAttrib2s = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLshort , GLshort )>(context->getProcAddress("glVertexAttrib2s"));
-    VertexAttrib2fv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , const GLfloat *)>(context->getProcAddress("glVertexAttrib2fv"));
-    VertexAttrib2f = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLfloat , GLfloat )>(context->getProcAddress("glVertexAttrib2f"));
-    VertexAttrib2dv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , const GLdouble *)>(context->getProcAddress("glVertexAttrib2dv"));
-    VertexAttrib2d = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLdouble , GLdouble )>(context->getProcAddress("glVertexAttrib2d"));
-    VertexAttrib1sv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , const GLshort *)>(context->getProcAddress("glVertexAttrib1sv"));
-    VertexAttrib1s = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLshort )>(context->getProcAddress("glVertexAttrib1s"));
-    VertexAttrib1fv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , const GLfloat *)>(context->getProcAddress("glVertexAttrib1fv"));
-    VertexAttrib1f = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLfloat )>(context->getProcAddress("glVertexAttrib1f"));
-    VertexAttrib1dv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , const GLdouble *)>(context->getProcAddress("glVertexAttrib1dv"));
-    VertexAttrib1d = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLdouble )>(context->getProcAddress("glVertexAttrib1d"));
+    // OpenGL 3.3 deprecated functions
+    SecondaryColorP3uiv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , const GLuint *)>(context->getProcAddress("glSecondaryColorP3uiv"));
+    SecondaryColorP3ui = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLuint )>(context->getProcAddress("glSecondaryColorP3ui"));
+    ColorP4uiv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , const GLuint *)>(context->getProcAddress("glColorP4uiv"));
+    ColorP4ui = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLuint )>(context->getProcAddress("glColorP4ui"));
+    ColorP3uiv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , const GLuint *)>(context->getProcAddress("glColorP3uiv"));
+    ColorP3ui = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLuint )>(context->getProcAddress("glColorP3ui"));
+    NormalP3uiv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , const GLuint *)>(context->getProcAddress("glNormalP3uiv"));
+    NormalP3ui = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLuint )>(context->getProcAddress("glNormalP3ui"));
+    MultiTexCoordP4uiv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLenum , const GLuint *)>(context->getProcAddress("glMultiTexCoordP4uiv"));
+    MultiTexCoordP4ui = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLenum , GLuint )>(context->getProcAddress("glMultiTexCoordP4ui"));
+    MultiTexCoordP3uiv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLenum , const GLuint *)>(context->getProcAddress("glMultiTexCoordP3uiv"));
+    MultiTexCoordP3ui = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLenum , GLuint )>(context->getProcAddress("glMultiTexCoordP3ui"));
+    MultiTexCoordP2uiv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLenum , const GLuint *)>(context->getProcAddress("glMultiTexCoordP2uiv"));
+    MultiTexCoordP2ui = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLenum , GLuint )>(context->getProcAddress("glMultiTexCoordP2ui"));
+    MultiTexCoordP1uiv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLenum , const GLuint *)>(context->getProcAddress("glMultiTexCoordP1uiv"));
+    MultiTexCoordP1ui = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLenum , GLuint )>(context->getProcAddress("glMultiTexCoordP1ui"));
+    TexCoordP4uiv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , const GLuint *)>(context->getProcAddress("glTexCoordP4uiv"));
+    TexCoordP4ui = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLuint )>(context->getProcAddress("glTexCoordP4ui"));
+    TexCoordP3uiv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , const GLuint *)>(context->getProcAddress("glTexCoordP3uiv"));
+    TexCoordP3ui = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLuint )>(context->getProcAddress("glTexCoordP3ui"));
+    TexCoordP2uiv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , const GLuint *)>(context->getProcAddress("glTexCoordP2uiv"));
+    TexCoordP2ui = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLuint )>(context->getProcAddress("glTexCoordP2ui"));
+    TexCoordP1uiv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , const GLuint *)>(context->getProcAddress("glTexCoordP1uiv"));
+    TexCoordP1ui = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLuint )>(context->getProcAddress("glTexCoordP1ui"));
+    VertexP4uiv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , const GLuint *)>(context->getProcAddress("glVertexP4uiv"));
+    VertexP4ui = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLuint )>(context->getProcAddress("glVertexP4ui"));
+    VertexP3uiv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , const GLuint *)>(context->getProcAddress("glVertexP3uiv"));
+    VertexP3ui = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLuint )>(context->getProcAddress("glVertexP3ui"));
+    VertexP2uiv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , const GLuint *)>(context->getProcAddress("glVertexP2uiv"));
+    VertexP2ui = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLuint )>(context->getProcAddress("glVertexP2ui"));
 
 }
 
-QOpenGLVersionStatus QOpenGLFunctions_2_0_DeprecatedBackend::versionStatus()
+QOpenGLVersionStatus QOpenGLFunctions_3_3_DeprecatedBackend::versionStatus()
 {
-    return QOpenGLVersionStatus(2, 0, QOpenGLVersionStatus::DeprecatedStatus);
+    return QOpenGLVersionStatus(3, 3, QOpenGLVersionStatus::DeprecatedStatus);
 }
 
-QOpenGLFunctions_3_0_DeprecatedBackend::QOpenGLFunctions_3_0_DeprecatedBackend(QOpenGLContext *context)
+QOpenGLFunctions_4_5_DeprecatedBackend::QOpenGLFunctions_4_5_DeprecatedBackend(QOpenGLContext *context)
     : QOpenGLVersionFunctionsBackend(context)
 {
-    // OpenGL 3.0 deprecated functions
-    VertexAttribI4usv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , const GLushort *)>(context->getProcAddress("glVertexAttribI4usv"));
-    VertexAttribI4ubv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , const GLubyte *)>(context->getProcAddress("glVertexAttribI4ubv"));
-    VertexAttribI4sv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , const GLshort *)>(context->getProcAddress("glVertexAttribI4sv"));
-    VertexAttribI4bv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , const GLbyte *)>(context->getProcAddress("glVertexAttribI4bv"));
-    VertexAttribI4uiv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , const GLuint *)>(context->getProcAddress("glVertexAttribI4uiv"));
-    VertexAttribI3uiv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , const GLuint *)>(context->getProcAddress("glVertexAttribI3uiv"));
-    VertexAttribI2uiv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , const GLuint *)>(context->getProcAddress("glVertexAttribI2uiv"));
-    VertexAttribI1uiv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , const GLuint *)>(context->getProcAddress("glVertexAttribI1uiv"));
-    VertexAttribI4iv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , const GLint *)>(context->getProcAddress("glVertexAttribI4iv"));
-    VertexAttribI3iv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , const GLint *)>(context->getProcAddress("glVertexAttribI3iv"));
-    VertexAttribI2iv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , const GLint *)>(context->getProcAddress("glVertexAttribI2iv"));
-    VertexAttribI1iv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , const GLint *)>(context->getProcAddress("glVertexAttribI1iv"));
-    VertexAttribI4ui = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLuint , GLuint , GLuint , GLuint )>(context->getProcAddress("glVertexAttribI4ui"));
-    VertexAttribI3ui = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLuint , GLuint , GLuint )>(context->getProcAddress("glVertexAttribI3ui"));
-    VertexAttribI2ui = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLuint , GLuint )>(context->getProcAddress("glVertexAttribI2ui"));
-    VertexAttribI1ui = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLuint )>(context->getProcAddress("glVertexAttribI1ui"));
-    VertexAttribI4i = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLint , GLint , GLint , GLint )>(context->getProcAddress("glVertexAttribI4i"));
-    VertexAttribI3i = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLint , GLint , GLint )>(context->getProcAddress("glVertexAttribI3i"));
-    VertexAttribI2i = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLint , GLint )>(context->getProcAddress("glVertexAttribI2i"));
-    VertexAttribI1i = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLint )>(context->getProcAddress("glVertexAttribI1i"));
+    // OpenGL 4.5 deprecated functions
+    GetnMinmax = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLboolean , GLenum , GLenum , GLsizei , void *)>(context->getProcAddress("glGetnMinmax"));
+    GetnHistogram = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLboolean , GLenum , GLenum , GLsizei , void *)>(context->getProcAddress("glGetnHistogram"));
+    GetnSeparableFilter = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLenum , GLenum , GLsizei , void *, GLsizei , void *, void *)>(context->getProcAddress("glGetnSeparableFilter"));
+    GetnConvolutionFilter = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLenum , GLenum , GLsizei , void *)>(context->getProcAddress("glGetnConvolutionFilter"));
+    GetnColorTable = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLenum , GLenum , GLsizei , void *)>(context->getProcAddress("glGetnColorTable"));
+    GetnPolygonStipple = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLsizei , GLubyte *)>(context->getProcAddress("glGetnPolygonStipple"));
+    GetnPixelMapusv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLsizei , GLushort *)>(context->getProcAddress("glGetnPixelMapusv"));
+    GetnPixelMapuiv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLsizei , GLuint *)>(context->getProcAddress("glGetnPixelMapuiv"));
+    GetnPixelMapfv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLsizei , GLfloat *)>(context->getProcAddress("glGetnPixelMapfv"));
+    GetnMapiv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLenum , GLsizei , GLint *)>(context->getProcAddress("glGetnMapiv"));
+    GetnMapfv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLenum , GLsizei , GLfloat *)>(context->getProcAddress("glGetnMapfv"));
+    GetnMapdv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLenum , GLsizei , GLdouble *)>(context->getProcAddress("glGetnMapdv"));
 
 }
 
-QOpenGLVersionStatus QOpenGLFunctions_3_0_DeprecatedBackend::versionStatus()
+QOpenGLVersionStatus QOpenGLFunctions_4_5_DeprecatedBackend::versionStatus()
 {
-    return QOpenGLVersionStatus(3, 0, QOpenGLVersionStatus::DeprecatedStatus);
+    return QOpenGLVersionStatus(4, 5, QOpenGLVersionStatus::DeprecatedStatus);
 }
-
 
 #else
 
