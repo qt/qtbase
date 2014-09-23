@@ -100,6 +100,10 @@ using namespace ABI::Windows::Storage;
 #define CSIDL_APPDATA           0x001a  // <username>\Application Data
 #endif
 
+#if defined(Q_OS_UNIX) && !defined(Q_OS_MAC) && !defined(Q_OS_BLACKBERRY) && !defined(Q_OS_ANDROID)
+#define Q_XDG_PLATFORM
+#endif
+
 // ************************************************************************
 // QConfFile
 
@@ -1041,7 +1045,9 @@ static void initDefaultPaths(QMutexLocker *locker)
                          windowsConfigPath(CSIDL_COMMON_APPDATA) + QDir::separator());
 #else
 
-#ifdef QT_NO_STANDARDPATHS
+#if defined(QT_NO_STANDARDPATHS) || !defined(Q_XDG_PLATFORM)
+        // Non XDG platforms (OS X, iOS, Blackberry, Android...) have used this code path erroneously
+        // for some time now. Moving away from that would require migrating existing settings.
         QString userPath;
         char *env = getenv("XDG_CONFIG_HOME");
         if (env == 0) {
@@ -1056,6 +1062,9 @@ static void initDefaultPaths(QMutexLocker *locker)
             userPath += QFile::decodeName(env);
         }
 #else
+        // When using a proper XDG platform, use QStandardPaths rather than the above hand-written code;
+        // it makes the use of test mode from unit tests possible.
+        // Ideally all platforms should use this, but see above for the migration issue.
         QString userPath = QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation);
 #endif
         userPath += QLatin1Char('/');
