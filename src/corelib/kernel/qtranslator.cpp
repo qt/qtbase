@@ -426,9 +426,8 @@ QTranslator::~QTranslator()
     directory. Returns \c true if the translation is successfully loaded;
     otherwise returns \c false.
 
-    If \a directory is not specified, the directory of the
-    application's executable is used (i.e., as
-    \l{QCoreApplication::}{applicationDirPath()}).
+    If \a directory is not specified, the current directory is used
+    (i.e., as \l{QDir::}{currentPath()}).
 
     The previous contents of this translator object are discarded.
 
