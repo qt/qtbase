@@ -192,8 +192,8 @@ QT_BEGIN_NAMESPACE
 bool QFileSystemModel::remove(const QModelIndex &aindex)
 {
     const QString path = filePath(aindex);
-    QFileSystemModelPrivate * d = const_cast<QFileSystemModelPrivate*>(d_func());
 #ifndef QT_NO_FILESYSTEMWATCHER
+    QFileSystemModelPrivate * d = const_cast<QFileSystemModelPrivate*>(d_func());
     d->fileInfoGatherer.removePath(path);
 #endif
     if (QFileInfo(path).isFile())
@@ -1541,6 +1541,8 @@ void QFileSystemModel::setResolveSymlinks(bool enable)
 #ifndef QT_NO_FILESYSTEMWATCHER
     Q_D(QFileSystemModel);
     d->fileInfoGatherer.setResolveSymlinks(enable);
+#else
+    Q_UNUSED(enable)
 #endif
 }
 
@@ -1656,21 +1658,21 @@ QStringList QFileSystemModel::nameFilters() const
 */
 bool QFileSystemModel::event(QEvent *event)
 {
+#ifndef QT_NO_FILESYSTEMWATCHER
     Q_D(QFileSystemModel);
     if (event->type() == QEvent::LanguageChange) {
-#ifndef QT_NO_FILESYSTEMWATCHER
         d->root.retranslateStrings(d->fileInfoGatherer.iconProvider(), QString());
-#endif
         return true;
     }
+#endif
     return QAbstractItemModel::event(event);
 }
 
 bool QFileSystemModel::rmdir(const QModelIndex &aindex)
 {
     QString path = filePath(aindex);
-    QFileSystemModelPrivate * d = const_cast<QFileSystemModelPrivate*>(d_func());
 #ifndef QT_NO_FILESYSTEMWATCHER
+    QFileSystemModelPrivate * d = const_cast<QFileSystemModelPrivate*>(d_func());
     d->fileInfoGatherer.removePath(path);
 #endif
     return QDir().rmdir(path);
@@ -1715,6 +1717,8 @@ QFileSystemModelPrivate::QFileSystemNode* QFileSystemModelPrivate::addNode(QFile
     QFileSystemModelPrivate::QFileSystemNode *node = new QFileSystemModelPrivate::QFileSystemNode(fileName, parentNode);
 #ifndef QT_NO_FILESYSTEMWATCHER
     node->populate(info);
+#else
+    Q_UNUSED(info)
 #endif
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
     //The parentNode is "" so we are listing the drives
@@ -1935,6 +1939,9 @@ void QFileSystemModelPrivate::_q_fileSystemChanged(const QString &path, const QL
         forceSort = true;
         delayedSort();
     }
+#else
+    Q_UNUSED(path)
+    Q_UNUSED(updates)
 #endif // !QT_NO_FILESYSTEMWATCHER
 }
 
