@@ -1848,7 +1848,7 @@ void VCXProjectWriter::outputFileConfigs(VCProject &project, XmlOutput &xml, Xml
     bool fileAdded = false;
 
     for (int i = 0; i < project.SingleProjects.count(); ++i) {
-        VCFilter filter = project.SingleProjects.at(i).filterByName(filtername);
+        const VCFilter &filter = project.SingleProjects.at(i).filterByName(filtername);
         if (filter.Config) // only if the filter is not empty
             if (outputFileConfig(filter, xml, xmlFilter, info.file, fileAdded)) // only add it once.
                 fileAdded = true;
@@ -1861,22 +1861,15 @@ void VCXProjectWriter::outputFileConfigs(VCProject &project, XmlOutput &xml, Xml
     xmlFilter << closetag();
 }
 
-bool VCXProjectWriter::outputFileConfig(VCFilter &filter, XmlOutput &xml, XmlOutput &xmlFilter,
+bool VCXProjectWriter::outputFileConfig(VCFilter filter, XmlOutput &xml, XmlOutput &xmlFilter,
                                         const QString &filename, bool fileAdded)
 {
     // Clearing each filter tool
     filter.useCustomBuildTool = false;
     filter.useCompilerTool = false;
     filter.CustomBuildTool = VCCustomBuildTool();
-    filter.CompilerTool = VCCLCompilerTool();
-
-    // Unset some default options
     filter.CustomBuildTool.config = filter.Config;
-    filter.CompilerTool.BufferSecurityCheck = unset;
-    filter.CompilerTool.DebugInformationFormat = debugUnknown;
-    filter.CompilerTool.ExceptionHandling = ehDefault;
-    filter.CompilerTool.ProgramDataBaseFileName.clear();
-    filter.CompilerTool.RuntimeLibrary = rtUnknown;
+    filter.CompilerTool = VCCLCompilerTool();
     filter.CompilerTool.config = filter.Config;
 
     bool inBuild = false;
