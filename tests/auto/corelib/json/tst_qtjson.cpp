@@ -2708,9 +2708,9 @@ void tst_QtJson::objectInitializerList()
 void tst_QtJson::unicodeKeys()
 {
     QByteArray json = "{"
-                      "\"x\u2090_1\": \"hello_1\","
-                      "\"y\u2090_2\": \"hello_2\","
-                      "\"T\u2090_3\": \"hello_3\","
+                      "\"x\\u2090_1\": \"hello_1\","
+                      "\"y\\u2090_2\": \"hello_2\","
+                      "\"T\\u2090_3\": \"hello_3\","
                       "\"xyz_4\": \"hello_4\","
                       "\"abc_5\": \"hello_5\""
                       "}";
