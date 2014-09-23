@@ -1855,80 +1855,7 @@ void VCXProjectWriter::outputFileConfigs(VCProject &project, XmlOutput &xml, Xml
     }
 
     if ( !fileAdded )
-    {
-        if (filtername.startsWith("Source Files")) {
-
-            xmlFilter << tag("ClCompile")
-                      << attrTag("Include",Option::fixPathToLocalOS(info.file))
-                      << attrTagS("Filter", filtername);
-
-            xml << tag("ClCompile")
-                << attrTag("Include",Option::fixPathToLocalOS(info.file));
-
-        } else if(filtername.startsWith("Header Files")) {
-
-            xmlFilter << tag("ClInclude")
-                << attrTag("Include",Option::fixPathToLocalOS(info.file))
-                << attrTagS("Filter", filtername);
-
-            xml << tag("ClInclude")
-                << attrTag("Include",Option::fixPathToLocalOS(info.file));
-        } else if(filtername.startsWith("Generated Files") || filtername.startsWith("Form Files")) {
-
-            if (info.file.endsWith(".h")) {
-
-                xmlFilter << tag("ClInclude")
-                          << attrTag("Include",Option::fixPathToLocalOS(info.file))
-                          << attrTagS("Filter", filtername);
-
-                xml << tag("ClInclude")
-                    << attrTag("Include",Option::fixPathToLocalOS(info.file));
-            } else if(info.file.endsWith(".cpp")) {
-
-                xmlFilter << tag("ClCompile")
-                          << attrTag("Include",Option::fixPathToLocalOS(info.file))
-                          << attrTagS("Filter", filtername);
-
-                xml << tag("ClCompile")
-                    << attrTag("Include",Option::fixPathToLocalOS(info.file));
-            } else if(info.file.endsWith(".res")) {
-
-                    xmlFilter << tag("CustomBuild")
-                              << attrTag("Include",Option::fixPathToLocalOS(info.file))
-                              << attrTagS("Filter", filtername);
-
-                    xml << tag("CustomBuild")
-                        << attrTag("Include",Option::fixPathToLocalOS(info.file));
-            } else {
-
-                xmlFilter << tag("CustomBuild")
-                          << attrTag("Include",Option::fixPathToLocalOS(info.file))
-                          << attrTagS("Filter", filtername);
-
-                xml << tag("CustomBuild")
-                    << attrTag("Include",Option::fixPathToLocalOS(info.file));
-            }
-
-        } else if(filtername.startsWith("Root Files")) {
-
-            if (info.file.endsWith(".rc")) {
-
-                xmlFilter << tag("ResourceCompile")
-                          << attrTag("Include",Option::fixPathToLocalOS(info.file));
-
-                xml << tag("ResourceCompile")
-                    << attrTag("Include",Option::fixPathToLocalOS(info.file));
-            }
-        } else {
-
-            xmlFilter << tag("None")
-                      << attrTag("Include",Option::fixPathToLocalOS(info.file))
-                      << attrTagS("Filter", filtername);
-
-                xml << tag("None")
-                    << attrTag("Include",Option::fixPathToLocalOS(info.file));
-        }
-    }
+        outputFileConfig(xml, xmlFilter, info.file, filtername, false);
 
     xml << closetag();
     xmlFilter << closetag();
@@ -2001,77 +1928,7 @@ bool VCXProjectWriter::outputFileConfig(VCFilter &filter, XmlOutput &xml, XmlOut
         if ( !fileAdded && !fileAllreadyAdded )
         {
             fileAdded = true;
-
-            if (filtername.startsWith("Source Files")) {
-
-                xmlFilter << tag("ClCompile")
-                          << attrTag("Include",Option::fixPathToLocalOS(filename))
-                          << attrTagS("Filter", filtername);
-
-                xml << tag("ClCompile")
-                    << attrTag("Include",Option::fixPathToLocalOS(filename));
-
-            } else if(filtername.startsWith("Header Files")) {
-
-                xmlFilter << tag("ClInclude")
-                    << attrTag("Include",Option::fixPathToLocalOS(filename))
-                    << attrTagS("Filter", filtername);
-
-                xml << tag("ClInclude")
-                    << attrTag("Include",Option::fixPathToLocalOS(filename));
-            } else if(filtername.startsWith("Generated Files") || filtername.startsWith("Form Files")) {
-
-                if (filename.endsWith(".h")) {
-
-                    xmlFilter << tag("ClInclude")
-                              << attrTag("Include",Option::fixPathToLocalOS(filename))
-                              << attrTagS("Filter", filtername);
-
-                    xml << tag("ClInclude")
-                        << attrTag("Include",Option::fixPathToLocalOS(filename));
-                } else if(filename.endsWith(".cpp")) {
-
-                    xmlFilter << tag("ClCompile")
-                              << attrTag("Include",Option::fixPathToLocalOS(filename))
-                              << attrTagS("Filter", filtername);
-
-                    xml << tag("ClCompile")
-                        << attrTag("Include",Option::fixPathToLocalOS(filename));
-                } else if(filename.endsWith(".res")) {
-
-                    xmlFilter << tag("CustomBuild")
-                              << attrTag("Include",Option::fixPathToLocalOS(filename))
-                              << attrTagS("Filter", filtername);
-
-                    xml << tag("CustomBuild")
-                        << attrTag("Include",Option::fixPathToLocalOS(filename));
-                } else {
-
-                    xmlFilter << tag("CustomBuild")
-                              << attrTag("Include",Option::fixPathToLocalOS(filename))
-                              << attrTagS("Filter", filtername);
-
-                    xml << tag("CustomBuild")
-                        << attrTag("Include",Option::fixPathToLocalOS(filename));
-                }
-            } else if(filtername.startsWith("Root Files")) {
-
-                if (filename.endsWith(".rc")) {
-
-                    xmlFilter << tag("ResourceCompile")
-                              << attrTag("Include",Option::fixPathToLocalOS(filename));
-
-                    xml << tag("ResourceCompile")
-                        << attrTag("Include",Option::fixPathToLocalOS(filename));
-                }
-            } else if (filtername.startsWith("Deployment Files")) {
-                xmlFilter << tag("None")
-                          << attrTag("Include",Option::fixPathToLocalOS(filename))
-                          << attrTagS("Filter", filtername);
-
-                xml << tag("None")
-                    << attrTag("Include",Option::fixPathToLocalOS(filename));
-            }
+            outputFileConfig(xml, xmlFilter, filename, filtername, true);
         }
 
         const QString condition = generateCondition(*filter.Config);
@@ -2108,6 +1965,65 @@ bool VCXProjectWriter::outputFileConfig(VCFilter &filter, XmlOutput &xml, XmlOut
     }
 
     return fileAdded;
+}
+
+void VCXProjectWriter::outputFileConfig(XmlOutput &xml, XmlOutput &xmlFilter,
+                                        const QString &filePath, const QString &filterName,
+                                        bool checkDeploymentFilter)
+{
+    const QString nativeFilePath = Option::fixPathToLocalOS(filePath);
+    if (filterName.startsWith("Source Files")) {
+        xmlFilter << tag("ClCompile")
+                  << attrTag("Include", nativeFilePath)
+                  << attrTagS("Filter", filterName);
+        xml << tag("ClCompile")
+            << attrTag("Include", nativeFilePath);
+    } else if (filterName.startsWith("Header Files")) {
+        xmlFilter << tag("ClInclude")
+                  << attrTag("Include", nativeFilePath)
+                  << attrTagS("Filter", filterName);
+        xml << tag("ClInclude")
+            << attrTag("Include", nativeFilePath);
+    } else if (filterName.startsWith("Generated Files") || filterName.startsWith("Form Files")) {
+        if (filePath.endsWith(".h")) {
+            xmlFilter << tag("ClInclude")
+                      << attrTag("Include", nativeFilePath)
+                      << attrTagS("Filter", filterName);
+            xml << tag("ClInclude")
+                << attrTag("Include", nativeFilePath);
+        } else if (filePath.endsWith(".cpp")) {
+            xmlFilter << tag("ClCompile")
+                      << attrTag("Include", nativeFilePath)
+                      << attrTagS("Filter", filterName);
+            xml << tag("ClCompile")
+                << attrTag("Include", nativeFilePath);
+        } else if (filePath.endsWith(".res")) {
+            xmlFilter << tag("CustomBuild")
+                      << attrTag("Include", nativeFilePath)
+                      << attrTagS("Filter", filterName);
+            xml << tag("CustomBuild")
+                << attrTag("Include", nativeFilePath);
+        } else {
+            xmlFilter << tag("CustomBuild")
+                      << attrTag("Include", nativeFilePath)
+                      << attrTagS("Filter", filterName);
+            xml << tag("CustomBuild")
+                << attrTag("Include", nativeFilePath);
+        }
+    } else if (filterName.startsWith("Root Files")) {
+        if (filePath.endsWith(".rc")) {
+            xmlFilter << tag("ResourceCompile")
+                      << attrTag("Include", nativeFilePath);
+            xml << tag("ResourceCompile")
+                << attrTag("Include", nativeFilePath);
+        }
+    } else if (!checkDeploymentFilter || filterName.startsWith("Deployment Files")) {
+        xmlFilter << tag("None")
+                  << attrTag("Include", nativeFilePath)
+                  << attrTagS("Filter", filterName);
+        xml << tag("None")
+            << attrTag("Include", nativeFilePath);
+    }
 }
 
 QString VCXProjectWriter::generateCondition(const VCConfiguration &config)
