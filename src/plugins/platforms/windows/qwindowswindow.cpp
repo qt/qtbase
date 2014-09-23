@@ -652,7 +652,7 @@ void WindowCreationData::initialize(HWND hwnd, bool frameChange, qreal opacityLe
         } else if (flags & Qt::WindowStaysOnBottomHint) {
             SetWindowPos(hwnd, HWND_BOTTOM, 0, 0, 0, 0, swpFlags);
         } else if (frameChange) { // Force WM_NCCALCSIZE with wParam=1 in case of custom margins.
-            SetWindowPos(hwnd, 0, 0, 0, 0, 0, swpFlags);
+            SetWindowPos(hwnd, HWND_NOTOPMOST, 0, 0, 0, 0, swpFlags);
         }
         if (flags & (Qt::CustomizeWindowHint|Qt::WindowTitleHint)) {
             HMENU systemMenu = GetSystemMenu(hwnd, FALSE);
