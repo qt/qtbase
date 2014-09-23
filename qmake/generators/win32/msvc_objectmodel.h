@@ -72,12 +72,6 @@ enum DotNET {
     forcing the tool to utilize default values.
     False/True values will be in the output...
 */
-enum customBuildCheck {
-    none,
-    mocSrc,
-    mocHdr,
-    lexyacc
-};
 enum triState {
     unset = -1,
     _False = 0,
@@ -967,8 +961,6 @@ public:
     VcprojGenerator*        Project;
     VCConfiguration*        Config;
     QList<VCFilterFile>     Files;
-
-    customBuildCheck        CustomBuild;
 
     bool                    useCustomBuildTool;
     VCCustomBuildTool       CustomBuildTool;
