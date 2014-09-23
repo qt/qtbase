@@ -1845,13 +1845,36 @@ void VCXProjectWriter::outputFileConfigs(VCProject &project, XmlOutput &xml, Xml
 {
     // We need to check if the file has any custom build step.
     // If there is one then it has to be included with "CustomBuild Include"
-    bool fileAdded = false;
+    bool hasCustomBuildStep = false;
+    QVarLengthArray<OutputFilterData> data(project.SingleProjects.count());
+    for (int i = 0; i < project.SingleProjects.count(); ++i) {
+        data[i].filter = project.SingleProjects.at(i).filterByName(filtername);
+        if (!data[i].filter.Config) // only if the filter is not empty
+            continue;
+        VCFilter &filter = data[i].filter;
 
+        // Clearing each filter tool
+        filter.useCustomBuildTool = false;
+        filter.useCompilerTool = false;
+        filter.CustomBuildTool = VCCustomBuildTool();
+        filter.CustomBuildTool.config = filter.Config;
+        filter.CompilerTool = VCCLCompilerTool();
+        filter.CompilerTool.config = filter.Config;
+
+        VCFilterFile fileInFilter = filter.findFile(info.file, &data[i].inBuild);
+        data[i].inBuild &= !fileInFilter.excludeFromBuild;
+        if (data[i].inBuild && filter.addExtraCompiler(fileInFilter))
+            hasCustomBuildStep = true;
+    }
+
+    bool fileAdded = false;
     for (int i = 0; i < project.SingleProjects.count(); ++i) {
         const VCFilter &filter = project.SingleProjects.at(i).filterByName(filtername);
-        if (filter.Config) // only if the filter is not empty
-            if (outputFileConfig(filter, xml, xmlFilter, info.file, fileAdded)) // only add it once.
-                fileAdded = true;
+        if (!filter.Config) // only if the filter is not empty
+            continue;
+        if (outputFileConfig(&data[i], xml, xmlFilter, info.file, fileAdded,
+                             hasCustomBuildStep))
+            fileAdded = true;
     }
 
     if ( !fileAdded )
@@ -1861,36 +1884,25 @@ void VCXProjectWriter::outputFileConfigs(VCProject &project, XmlOutput &xml, Xml
     xmlFilter << closetag();
 }
 
-bool VCXProjectWriter::outputFileConfig(VCFilter filter, XmlOutput &xml, XmlOutput &xmlFilter,
-                                        const QString &filename, bool fileAdded)
+bool VCXProjectWriter::outputFileConfig(OutputFilterData *d, XmlOutput &xml, XmlOutput &xmlFilter,
+                                        const QString &filename, bool fileAdded,
+                                        bool hasCustomBuildStep)
 {
-    // Clearing each filter tool
-    filter.useCustomBuildTool = false;
-    filter.useCompilerTool = false;
-    filter.CustomBuildTool = VCCustomBuildTool();
-    filter.CustomBuildTool.config = filter.Config;
-    filter.CompilerTool = VCCLCompilerTool();
-    filter.CompilerTool.config = filter.Config;
-
-    bool inBuild;
-    VCFilterFile info = filter.findFile(filename, &inBuild);
-    inBuild &= !info.excludeFromBuild;
-
-    if (inBuild) {
-        filter.addExtraCompiler(info);
+    VCFilter &filter = d->filter;
+    if (d->inBuild) {
         if (filter.Project->usePCH)
-            filter.modifyPCHstage(info.file);
+            filter.modifyPCHstage(filename);
     } else {
         // Excluded files uses an empty compiler stage
-        if(info.excludeFromBuild)
+        if (d->info.excludeFromBuild)
             filter.useCompilerTool = true;
     }
 
     // Actual XML output ----------------------------------
-    if (filter.useCustomBuildTool || filter.useCompilerTool
-            || !inBuild || filter.Name.startsWith("Deployment Files")) {
+    if (hasCustomBuildStep || filter.useCompilerTool
+            || !d->inBuild || filter.Name.startsWith("Deployment Files")) {
 
-        if (filter.useCustomBuildTool)
+        if (hasCustomBuildStep)
         {
             if (!fileAdded) {
                 fileAdded = true;
@@ -1919,13 +1931,13 @@ bool VCXProjectWriter::outputFileConfig(VCFilter filter, XmlOutput &xml, XmlOutp
         }
 
         const QString condition = generateCondition(*filter.Config);
-        if(!inBuild) {
+        if (!d->inBuild) {
             xml << tag("ExcludedFromBuild")
                 << attrTag("Condition", condition)
                 << valueTag("true");
         }
 
-        if (filter.Name.startsWith("Deployment Files") && inBuild) {
+        if (filter.Name.startsWith("Deployment Files") && d->inBuild) {
             xml << tag("DeploymentContent")
                 << attrTag("Condition", condition)
                 << valueTag("true");
