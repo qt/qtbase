@@ -215,6 +215,7 @@ QIOSMenuItem::QIOSMenuItem()
     , m_text(QString())
     , m_role(MenuRole(0))
     , m_enabled(true)
+    , m_separator(false)
 {
 }
 
@@ -236,6 +237,11 @@ void QIOSMenuItem::setText(const QString &text)
 void QIOSMenuItem::setVisible(bool isVisible)
 {
     m_visible = isVisible;
+}
+
+void QIOSMenuItem::setIsSeparator(bool isSeparator)
+{
+   m_separator = isSeparator;
 }
 
 void QIOSMenuItem::setRole(QPlatformMenuItem::MenuRole role)
@@ -487,7 +493,7 @@ QIOSMenuItemList QIOSMenu::visibleMenuItems() const
 
     for (int i = visibleMenuItems.count() - 1; i >= 0; --i) {
         QIOSMenuItem *item = visibleMenuItems.at(i);
-        if (!item->m_enabled || !item->m_visible)
+        if (!item->m_enabled || !item->m_visible || item->m_separator)
             visibleMenuItems.removeAt(i);
     }
 

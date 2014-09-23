@@ -64,7 +64,7 @@ public:
     void setIcon(const QIcon &) Q_DECL_OVERRIDE {}
     void setMenu(QPlatformMenu *) Q_DECL_OVERRIDE {}
     void setVisible(bool isVisible) Q_DECL_OVERRIDE;
-    void setIsSeparator(bool) Q_DECL_OVERRIDE {}
+    void setIsSeparator(bool) Q_DECL_OVERRIDE;
     void setFont(const QFont &) Q_DECL_OVERRIDE {}
     void setRole(MenuRole role) Q_DECL_OVERRIDE;
     void setCheckable(bool) Q_DECL_OVERRIDE {}
@@ -78,6 +78,7 @@ public:
     QString m_text;
     MenuRole m_role;
     bool m_enabled;
+    bool m_separator;
 
 private:
     QString removeMnemonics(const QString &original);
