@@ -107,9 +107,7 @@ static NSString *const kSelectorPrefix = @"_qtMenuItem_";
     NSString *selector = NSStringFromSelector(invocation.selector);
     NSRange range = NSMakeRange(kSelectorPrefix.length, selector.length - kSelectorPrefix.length - 1);
     NSInteger selectedIndex = [[selector substringWithRange:range] integerValue];
-
-    emit m_visibleMenuItems.at(selectedIndex)->activated();
-    QIOSMenu::currentMenu()->setVisible(false);
+    QIOSMenu::currentMenu()->handleItemSelected(m_visibleMenuItems.at(selectedIndex));
 }
 
 @end
@@ -195,8 +193,9 @@ static NSString *const kSelectorPrefix = @"_qtMenuItem_";
 - (void)closeMenu
 {
     if (!m_visibleMenuItems.isEmpty())
-        emit m_visibleMenuItems.at(m_selectedRow)->activated();
-    QIOSMenu::currentMenu()->setVisible(false);
+        QIOSMenu::currentMenu()->handleItemSelected(m_visibleMenuItems.at(m_selectedRow));
+    else
+        QIOSMenu::currentMenu()->setVisible(false);
 }
 
 - (void)cancelMenu
@@ -216,6 +215,7 @@ QIOSMenuItem::QIOSMenuItem()
     , m_role(MenuRole(0))
     , m_enabled(true)
     , m_separator(false)
+    , m_menu(0)
 {
 }
 
@@ -232,6 +232,11 @@ quintptr QIOSMenuItem::tag() const
 void QIOSMenuItem::setText(const QString &text)
 {
     m_text = removeMnemonics(text);
+}
+
+void QIOSMenuItem::setMenu(QPlatformMenu *menu)
+{
+   m_menu = static_cast<QIOSMenu *>(menu);
 }
 
 void QIOSMenuItem::setVisible(bool isVisible)
@@ -299,7 +304,7 @@ QIOSMenu::QIOSMenu()
     , m_text(QString())
     , m_menuType(DefaultMenu)
     , m_effectiveMenuType(DefaultMenu)
-    , m_targetRect(QRect(qGuiApp->primaryScreen()->availableGeometry().center(), QSize()))
+    , m_parentWindow(0)
     , m_targetItem(0)
     , m_menuController(0)
     , m_pickerView(0)
@@ -352,11 +357,25 @@ void QIOSMenu::setEnabled(bool enabled)
 
 void QIOSMenu::showPopup(const QWindow *parentWindow, const QRect &targetRect, const QPlatformMenuItem *item)
 {
-    if (!parentWindow->isActive())
-        const_cast<QWindow *>(parentWindow)->requestActivate();
-    m_targetRect = QRect(parentWindow->mapToGlobal(targetRect.topLeft()), targetRect.size());
+    m_parentWindow = const_cast<QWindow *>(parentWindow);
+    m_targetRect = targetRect;
     m_targetItem = static_cast<const QIOSMenuItem *>(item);
+
+    if (m_parentWindow && !m_parentWindow->isActive())
+        m_parentWindow->requestActivate();
+
     setVisible(true);
+}
+
+void QIOSMenu::handleItemSelected(QIOSMenuItem *menuItem)
+{
+    emit menuItem->activated();
+    setVisible(false);
+
+    if (QIOSMenu *menu = menuItem->m_menu) {
+        menu->setMenuType(m_effectiveMenuType);
+        menu->showPopup(m_parentWindow, m_targetRect, 0);
+    }
 }
 
 void QIOSMenu::dismiss()
@@ -504,7 +523,7 @@ void QIOSMenu::repositionMenu()
 {
     switch (m_effectiveMenuType) {
     case EditMenu: {
-        UIView *view = [UIApplication sharedApplication].keyWindow.rootViewController.view;
+        UIView *view = reinterpret_cast<UIView *>(m_parentWindow->winId());
         [[UIMenuController sharedMenuController] setTargetRect:toCGRect(m_targetRect) inView:view];
         [[UIMenuController sharedMenuController] setMenuVisible:YES animated:YES];
         break; }

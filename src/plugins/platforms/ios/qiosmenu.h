@@ -49,6 +49,7 @@
 
 #import "quiview.h"
 
+class QIOSMenu;
 @class QUIMenuController;
 @class QUIPickerView;
 
@@ -62,7 +63,7 @@ public:
 
     void setText(const QString &text) Q_DECL_OVERRIDE;
     void setIcon(const QIcon &) Q_DECL_OVERRIDE {}
-    void setMenu(QPlatformMenu *) Q_DECL_OVERRIDE {}
+    void setMenu(QPlatformMenu *) Q_DECL_OVERRIDE;
     void setVisible(bool isVisible) Q_DECL_OVERRIDE;
     void setIsSeparator(bool) Q_DECL_OVERRIDE;
     void setFont(const QFont &) Q_DECL_OVERRIDE {}
@@ -79,6 +80,7 @@ public:
     MenuRole m_role;
     bool m_enabled;
     bool m_separator;
+    QIOSMenu *m_menu;
 
 private:
     QString removeMnemonics(const QString &original);
@@ -112,6 +114,8 @@ public:
     QPlatformMenuItem *menuItemAt(int position) const Q_DECL_OVERRIDE;
     QPlatformMenuItem *menuItemForTag(quintptr tag) const Q_DECL_OVERRIDE;
 
+    void handleItemSelected(QIOSMenuItem *menuItem);
+
     static QIOSMenu *currentMenu() { return m_currentMenu; }
     static id menuActionTarget() { return m_currentMenu ? m_currentMenu->m_menuController : 0; }
 
@@ -126,6 +130,7 @@ private:
     QString m_text;
     MenuType m_menuType;
     MenuType m_effectiveMenuType;
+    QPointer<QWindow> m_parentWindow;
     QRect m_targetRect;
     const QIOSMenuItem *m_targetItem;
     QUIMenuController *m_menuController;
