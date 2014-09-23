@@ -96,6 +96,7 @@ public:
     bool dropMimeData(const QMimeData *data, Qt::DropAction action,
                       int row, int column, const QModelIndex &parent) Q_DECL_OVERRIDE;
     QStringList mimeTypes() const;
+    Qt::DropActions supportedDragActions() const;
     Qt::DropActions supportedDropActions() const;
 
 Q_SIGNALS:

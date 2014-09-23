@@ -428,6 +428,15 @@ QStringList QAbstractProxyModel::mimeTypes() const
 /*!
     \reimp
  */
+Qt::DropActions QAbstractProxyModel::supportedDragActions() const
+{
+    Q_D(const QAbstractProxyModel);
+    return d->model->supportedDragActions();
+}
+
+/*!
+    \reimp
+ */
 Qt::DropActions QAbstractProxyModel::supportedDropActions() const
 {
     Q_D(const QAbstractProxyModel);

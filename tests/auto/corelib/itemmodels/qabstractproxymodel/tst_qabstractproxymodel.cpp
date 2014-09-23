@@ -72,6 +72,7 @@ private slots:
     void submit();
     void testRoleNames();
     void testSwappingRowsProxy();
+    void testDragAndDrop();
 };
 
 // Subclass that exposes the protected functions.
@@ -494,6 +495,25 @@ void tst_QAbstractProxyModel::testSwappingRowsProxy()
         QCOMPARE(right.sibling(right.row(), 0), left);
     }
 }
+
+class StandardItemModelWithCustomDragAndDrop : public QStandardItemModel
+{
+public:
+    QStringList mimeTypes() const { return QStringList() << QStringLiteral("foo/mimetype"); }
+    Qt::DropActions supportedDragActions() const { return Qt::CopyAction | Qt::LinkAction; }
+    Qt::DropActions supportedDropActions() const { return Qt::MoveAction; }
+};
+
+void tst_QAbstractProxyModel::testDragAndDrop()
+{
+    StandardItemModelWithCustomDragAndDrop sourceModel;
+    SubQAbstractProxyModel proxy;
+    proxy.setSourceModel(&sourceModel);
+    QCOMPARE(proxy.mimeTypes(), sourceModel.mimeTypes());
+    QCOMPARE(proxy.supportedDragActions(), sourceModel.supportedDragActions());
+    QCOMPARE(proxy.supportedDropActions(), sourceModel.supportedDropActions());
+}
+
 
 QTEST_MAIN(tst_QAbstractProxyModel)
 #include "tst_qabstractproxymodel.moc"
