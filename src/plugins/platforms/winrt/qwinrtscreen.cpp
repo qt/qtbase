@@ -1007,8 +1007,8 @@ HRESULT QWinRTScreen::onPointerUpdated(ICoreWindow *, IPointerEventArgs *args)
 
 HRESULT QWinRTScreen::onAutomationProviderRequested(ICoreWindow *, IAutomationProviderRequestedEventArgs *args)
 {
-    Q_D(const QWinRTScreen);
 #ifndef Q_OS_WINPHONE
+    Q_D(const QWinRTScreen);
     args->put_AutomationProvider(d->inputContext.Get());
 #else
     Q_UNUSED(args)
