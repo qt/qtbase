@@ -27,7 +27,7 @@ LINKER  = link
 !if "$(QMAKESPEC)" == "win32-msvc2005"
 CFLAGS_EXTRA      = /Zc:wchar_t-
 !elseif "$(QMAKESPEC)" == "win32-msvc2008" || "$(QMAKESPEC)" == "win32-msvc2010" || "$(QMAKESPEC)" == "win32-msvc2012" || "$(QMAKESPEC)" == "win32-msvc2013"
-CFLAGS_EXTRA      = /MP /D_CRT_SECURE_NO_WARNINGS
+CFLAGS_EXTRA      = /MP /D_CRT_SECURE_NO_WARNINGS $(CFLAGS_CRT)
 !endif
 
 CFLAGS_BARE = -c -Fo./ -Fdqmake.pdb \
