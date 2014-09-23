@@ -2414,11 +2414,34 @@ bool VCFilter::addExtraCompiler(const VCFilterFile &info)
 }
 
 // VCProjectSingleConfig --------------------------------------------
-VCFilter& VCProjectSingleConfig::filterForExtraCompiler(const QString &compilerName)
+const VCFilter &VCProjectSingleConfig::filterByName(const QString &name) const
+{
+    if (name == "Root Files")
+        return RootFiles;
+    if (name == "Source Files")
+        return SourceFiles;
+    if (name == "Header Files")
+        return HeaderFiles;
+    if (name == "Generated Files")
+        return GeneratedFiles;
+    if (name == "LexYacc Files")
+        return LexYaccFiles;
+    if (name == "Translation Files")
+        return TranslationFiles;
+    if (name == "Form Files")
+        return FormFiles;
+    if (name == "Resource Files")
+        return ResourceFiles;
+    if (name == "Deployment Files")
+        return DeploymentFiles;
+    return filterForExtraCompiler(name);
+}
+
+const VCFilter &VCProjectSingleConfig::filterForExtraCompiler(const QString &compilerName) const
 {
     for (int i = 0; i < ExtraCompilersFiles.count(); ++i)
         if (ExtraCompilersFiles.at(i).Name == compilerName)
-            return ExtraCompilersFiles[i];
+            return ExtraCompilersFiles.at(i);
 
     static VCFilter nullFilter;
     return nullFilter;
@@ -2885,30 +2908,7 @@ void VCProjectWriter::outputFilter(VCProject &project, XmlOutput &xml, const QSt
     triState parse = unset;
 
     for (int i = 0; i < project.SingleProjects.count(); ++i) {
-        VCFilter filter;
-        const VCProjectSingleConfig &projectSingleConfig = project.SingleProjects.at(i);
-        if (filtername == "RootFiles") {
-            filter = projectSingleConfig.RootFiles;
-        } else if (filtername == "Sources") {
-            filter = projectSingleConfig.SourceFiles;
-        } else if (filtername == "Headers") {
-            filter = projectSingleConfig.HeaderFiles;
-        } else if (filtername == "GeneratedFiles") {
-            filter = projectSingleConfig.GeneratedFiles;
-        } else if (filtername == "LexYaccFiles") {
-            filter = projectSingleConfig.LexYaccFiles;
-        } else if (filtername == "TranslationFiles") {
-            filter = projectSingleConfig.TranslationFiles;
-        } else if (filtername == "FormFiles") {
-            filter = projectSingleConfig.FormFiles;
-        } else if (filtername == "ResourceFiles") {
-            filter = projectSingleConfig.ResourceFiles;
-        } else if (filtername == "DeploymentFiles") {
-            filter = projectSingleConfig.DeploymentFiles;
-        } else {
-            // ExtraCompilers
-            filter = project.SingleProjects[i].filterForExtraCompiler(filtername);
-        }
+        const VCFilter filter = project.SingleProjects.at(i).filterByName(filtername);
 
         // Merge all files in this filter to root tree
         for (int x = 0; x < filter.Files.count(); ++x)
@@ -2947,31 +2947,7 @@ void VCProjectWriter::outputFileConfigs(VCProject &project, XmlOutput &xml, cons
     xml << tag(q_File)
             << attrS(_RelativePath, Option::fixPathToLocalOS(info.file));
     for (int i = 0; i < project.SingleProjects.count(); ++i) {
-        VCFilter filter;
-        const VCProjectSingleConfig &projectSingleConfig = project.SingleProjects.at(i);
-        if (filtername == "RootFiles") {
-            filter = projectSingleConfig.RootFiles;
-        } else if (filtername == "Sources") {
-            filter = projectSingleConfig.SourceFiles;
-        } else if (filtername == "Headers") {
-            filter = projectSingleConfig.HeaderFiles;
-        } else if (filtername == "GeneratedFiles") {
-            filter = projectSingleConfig.GeneratedFiles;
-        } else if (filtername == "LexYaccFiles") {
-            filter = projectSingleConfig.LexYaccFiles;
-        } else if (filtername == "TranslationFiles") {
-            filter = projectSingleConfig.TranslationFiles;
-        } else if (filtername == "FormFiles") {
-            filter = projectSingleConfig.FormFiles;
-        } else if (filtername == "ResourceFiles") {
-            filter = projectSingleConfig.ResourceFiles;
-        } else if (filtername == "DeploymentFiles") {
-            filter = projectSingleConfig.DeploymentFiles;
-        } else {
-            // ExtraCompilers
-            filter = project.SingleProjects[i].filterForExtraCompiler(filtername);
-        }
-
+        VCFilter filter = project.SingleProjects.at(i).filterByName(filtername);
         if (filter.Config) // only if the filter is not empty
             outputFileConfig(filter, xml, info.file);
     }

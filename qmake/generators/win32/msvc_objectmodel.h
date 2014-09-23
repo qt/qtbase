@@ -1020,8 +1020,8 @@ public:
 
     bool                    flat_files;
 
-    // Accessor for extracompilers
-    VCFilter               &filterForExtraCompiler(const QString &compilerName);
+    const VCFilter &filterByName(const QString &name) const;
+    const VCFilter &filterForExtraCompiler(const QString &compilerName) const;
 };
 
 // Tree & Flat view of files --------------------------------------------------
