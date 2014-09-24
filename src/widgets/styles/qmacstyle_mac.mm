@@ -1717,7 +1717,7 @@ QMacStylePrivate::QMacStylePrivate()
 
 QMacStylePrivate::~QMacStylePrivate()
 {
-    Q_FOREACH (NSView *b, buttons)
+    Q_FOREACH (NSView *b, cocoaControls)
         [b release];
 }
 
@@ -1738,43 +1738,92 @@ ThemeDrawState QMacStylePrivate::getDrawState(QStyle::State flags)
     return tds;
 }
 
-NSView *QMacStylePrivate::buttonOfKind(ThemeButtonKind kind, QPoint *offset) const
+static QCocoaWidget cocoaWidgetFromHIThemeButtonKind(ThemeButtonKind kind)
 {
-    NSView *bv = buttons[kind];
+    QCocoaWidget w;
+
+    switch (kind) {
+    case kThemePopupButton:
+    case kThemePopupButtonSmall:
+    case kThemePopupButtonMini:
+        w.first = QCocoaPopupButton;
+        break;
+    case kThemeComboBox:
+        w.first = QCocoaComboBox;
+        break;
+    case kThemeArrowButton:
+        w.first = QCocoaArrowButton;
+        break;
+    case kThemeCheckBox:
+    case kThemeCheckBoxSmall:
+    case kThemeCheckBoxMini:
+        w.first = QCocoaCheckBox;
+        break;
+    case kThemeRadioButton:
+    case kThemeRadioButtonSmall:
+    case kThemeRadioButtonMini:
+        w.first = QCocoaRadioButton;
+        break;
+    case kThemePushButton:
+    case kThemePushButtonSmall:
+    case kThemePushButtonMini:
+        w.first = QCocoaPushButton;
+        break;
+    default:
+        break;
+    }
+
+    switch (kind) {
+    case kThemePushButtonSmall:
+    case kThemePopupButtonSmall:
+    case kThemeCheckBoxSmall:
+    case kThemeRadioButtonSmall:
+        w.second = QAquaSizeSmall;
+        break;
+    case kThemePushButtonMini:
+    case kThemePopupButtonMini:
+    case kThemeCheckBoxMini:
+    case kThemeRadioButtonMini:
+        w.second = QAquaSizeMini;
+        break;
+    default:
+        w.second = QAquaSizeLarge;
+        break;
+    }
+
+    return w;
+}
+
+NSView *QMacStylePrivate::cocoaControl(QCocoaWidget widget, QPoint *offset) const
+{
+    NSView *bv = cocoaControls[widget];
     if (!bv) {
-        if (kind == kThemePopupButton
-            || kind == kThemePopupButtonSmall
-            || kind == kThemePopupButtonMini)
+
+        if (widget.first == QCocoaPopupButton)
             bv = [[NSPopUpButton alloc] init];
-        else if (kind == kThemeComboBox)
+        else if (widget.first == QCocoaComboBox)
             bv = [[NSComboBox alloc] init];
         else
             bv = [[NSButton alloc] init];
 
-        switch (kind) {
-        case kThemeArrowButton: {
+        switch (widget.first) {
+        case QCocoaArrowButton: {
             NSButton *bc = (NSButton *)bv;
             bc.buttonType = NSOnOffButton;
             bc.bezelStyle = NSDisclosureBezelStyle;
             break;
         }
-        case kThemeCheckBox:
-        case kThemeCheckBoxSmall:
-        case kThemeCheckBoxMini: {
+        case QCocoaCheckBox: {
             NSButton *bc = (NSButton *)bv;
             bc.buttonType = NSSwitchButton;
             break;
         }
-        case kThemeRadioButton:
-        case kThemeRadioButtonSmall:
-        case kThemeRadioButtonMini: {
+        case QCocoaRadioButton: {
             NSButton *bc = (NSButton *)bv;
             bc.buttonType = NSRadioButton;
             break;
         }
-        case kThemePushButton:
-        case kThemePushButtonSmall:
-        case kThemePushButtonMini: {
+        case QCocoaPushButton: {
             NSButton *bc = (NSButton *)bv;
             bc.buttonType = NSMomentaryPushButton;
             bc.bezelStyle = NSRoundedBezelStyle;
@@ -1787,19 +1836,15 @@ NSView *QMacStylePrivate::buttonOfKind(ThemeButtonKind kind, QPoint *offset) con
         if ([bv isKindOfClass:[NSButton class]]) {
             NSButton *bc = (NSButton *)bv;
             bc.title = nil;
+        }
 
-            NSCell *bcell = bc.cell;
-            switch (kind) {
-            case kThemePushButtonSmall:
-            case kThemePopupButtonSmall:
-            case kThemeCheckBoxSmall:
-            case kThemeRadioButtonSmall:
+        if ([bv isKindOfClass:[NSControl class]]) {
+            NSCell *bcell = [(NSControl *)bv cell];
+            switch (widget.second) {
+            case QAquaSizeSmall:
                 bcell.controlSize = NSSmallControlSize;
                 break;
-            case kThemePushButtonMini:
-            case kThemePopupButtonMini:
-            case kThemeCheckBoxMini:
-            case kThemeRadioButtonMini:
+            case QAquaSizeMini:
                 bcell.controlSize = NSMiniControlSize;
                 break;
             default:
@@ -1807,36 +1852,25 @@ NSView *QMacStylePrivate::buttonOfKind(ThemeButtonKind kind, QPoint *offset) con
             }
         }
 
-        const_cast<QMacStylePrivate *>(this)->buttons.insert(kind, bv);
+        const_cast<QMacStylePrivate *>(this)->cocoaControls.insert(widget, bv);
     }
 
     if (offset) {
-        switch (kind) {
-        case kThemeRadioButton:
+        if (widget == QCocoaWidget(QCocoaRadioButton, QAquaSizeLarge))
             offset->setY(2);
-            break;
-        case kThemeRadioButtonSmall:
+        else if (widget == QCocoaWidget(QCocoaRadioButton, QAquaSizeSmall))
             *offset = QPoint(-1, 2);
-            break;
-        case kThemeRadioButtonMini:
+        else if (widget == QCocoaWidget(QCocoaRadioButton, QAquaSizeMini))
             offset->setY(2);
-            break;
-        case kThemePopupButtonSmall:
-        case kThemeCheckBox:
+        else if (widget == QCocoaWidget(QCocoaPopupButton, QAquaSizeSmall)
+                 || widget == QCocoaWidget(QCocoaCheckBox, QAquaSizeLarge))
             offset->setY(1);
-            break;
-        case kThemeCheckBoxSmall:
+        else if (widget == QCocoaWidget(QCocoaCheckBox, QAquaSizeSmall))
             offset->setX(-1);
-            break;
-        case kThemeCheckBoxMini:
+        else if (widget == QCocoaWidget(QCocoaCheckBox, QAquaSizeMini))
             *offset = QPoint(7, 5);
-            break;
-        case kThemePopupButtonMini:
+        else if (widget == QCocoaWidget(QCocoaPopupButton, QAquaSizeMini))
             *offset = QPoint(2, -1);
-            break;
-        default:
-            break;
-        }
     }
 
     return bv;
@@ -1956,7 +1990,7 @@ void QMacStylePrivate::drawColorlessButton(const HIRect &macRect, HIThemeButtonD
             pm = QPixmap::fromImage(image);
         } else if ((usingYosemiteOrLater && combo && !editableCombo) || button) {
             QPoint offset;
-            NSButton *bc = (NSButton *)buttonOfKind(bdi->kind, &offset);
+            NSButton *bc = (NSButton *)cocoaControl(cocoaWidgetFromHIThemeButtonKind(bdi->kind), &offset);
             [bc highlight:pressed];
             bc.enabled = bdi->state != kThemeStateUnavailable && bdi->state != kThemeStateUnavailableInactive;
             bc.allowsMixedState = YES;

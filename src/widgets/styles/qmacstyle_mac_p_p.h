@@ -93,6 +93,7 @@
 #include <qlibrary.h>
 #include <qdatetimeedit.h>
 #include <qmath.h>
+#include <qpair.h>
 #include <qset.h>
 #include <QtWidgets/qgraphicsproxywidget.h>
 #include <QtWidgets/qgraphicsview.h>
@@ -127,6 +128,17 @@ QT_BEGIN_NAMESPACE
 
 enum QAquaWidgetSize { QAquaSizeLarge = 0, QAquaSizeSmall = 1, QAquaSizeMini = 2,
                        QAquaSizeUnknown = -1 };
+
+enum QCocoaWidgetKind {
+    QCocoaArrowButton,  // Disclosure triangle, like in QTreeView
+    QCocoaCheckBox,
+    QCocoaComboBox,     // Editable QComboBox
+    QCocoaPopupButton,  // Non-editable QComboBox
+    QCocoaPushButton,
+    QCocoaRadioButton
+};
+
+typedef QPair<QCocoaWidgetKind, QAquaWidgetSize> QCocoaWidget;
 
 #define SIZE(large, small, mini) \
     (controlSize == QAquaSizeLarge ? (large) : controlSize == QAquaSizeSmall ? (small) : (mini))
@@ -195,7 +207,7 @@ public:
 
     void setAutoDefaultButton(QObject *button) const;
 
-    NSView *buttonOfKind(ThemeButtonKind kind, QPoint *offset) const;
+    NSView *cocoaControl(QCocoaWidget widget, QPoint *offset) const;
 
     void drawNSViewInRect(NSView *view, const QRect &rect, QPainter *p) const;
     void resolveCurrentNSView(QWindow *window);
@@ -219,7 +231,7 @@ public:
 #endif
     void *indicatorBranchButtonCell;
     NSView *backingStoreNSView;
-    QHash<ThemeButtonKind , NSView *> buttons;
+    QHash<QCocoaWidget, NSView *> cocoaControls;
 };
 
 QT_END_NAMESPACE
