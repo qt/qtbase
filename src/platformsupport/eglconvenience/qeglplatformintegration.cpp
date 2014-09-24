@@ -354,7 +354,7 @@ void QEGLPlatformIntegration::createInputHandlers()
     m_kbdMgr = new QEvdevKeyboardManager(QLatin1String("EvdevKeyboard"), QString() /* spec */, this);
     QEvdevMouseManager *mouseMgr = new QEvdevMouseManager(QLatin1String("EvdevMouse"), QString() /* spec */, this);
     Q_FOREACH (QScreen *screen, QGuiApplication::screens()) {
-        QEGLPlatformCursor *cursor = static_cast<QEGLPlatformCursor *>(screen->handle()->cursor());
+        QEGLPlatformCursor *cursor = qobject_cast<QEGLPlatformCursor *>(screen->handle()->cursor());
         if (cursor)
             cursor->setMouseDeviceDiscovery(mouseMgr->deviceDiscovery());
     }
