@@ -300,5 +300,7 @@ cmake_qt5_module_files.path = $$[QT_INSTALL_LIBS]/cmake/Qt5$${CMAKE_MODULE_NAME}
 # with 'CONFIG -= create_cmake'
 !equals(CMAKE_MODULE_TESTS, -) {
     isEmpty(CMAKE_MODULE_TESTS): CMAKE_MODULE_TESTS = $$MODULE_BASE_INDIR/tests/auto/cmake
-    !exists($$CMAKE_MODULE_TESTS): error("Missing CMake tests.")
+    !exists($$CMAKE_MODULE_TESTS): \
+        error("Missing CMake tests. Either create tests in tests/auto/cmake," \
+              "or disable cmake config file creation with CONFIG-=create_cmake.")
 }
