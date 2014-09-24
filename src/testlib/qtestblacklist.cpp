@@ -70,6 +70,7 @@ QT_BEGIN_NAMESPACE
 // this table can be extended with new keywords as required
 const char *matchedConditions[] =
 {
+    "*",
 #ifdef Q_OS_LINUX
     "linux",
 #endif
