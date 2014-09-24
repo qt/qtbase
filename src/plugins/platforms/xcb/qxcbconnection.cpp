@@ -244,7 +244,7 @@ void QXcbConnection::updateScreens()
                         // the first or an exact match.  An exact match isn't
                         // always available if primary->output is XCB_NONE
                         // or currently disconnected output.
-                        if (m_primaryScreen == xcbScreenNumber) {
+                        if (m_primaryScreenNumber == xcbScreenNumber) {
                             if (!primaryScreen || (primary && outputs[i] == primary->output)) {
                                 primaryScreen = screen;
                                 siblings.prepend(siblings.takeLast());
@@ -306,7 +306,7 @@ void QXcbConnection::updateScreens()
 QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGrabServer, const char *displayName)
     : m_connection(0)
     , m_canGrabServer(canGrabServer)
-    , m_primaryScreen(0)
+    , m_primaryScreenNumber(0)
     , m_displayName(displayName ? QByteArray(displayName) : qgetenv("DISPLAY"))
     , m_nativeInterface(nativeInterface)
     , xfixes_first_event(0)
@@ -331,7 +331,7 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGra
 #ifdef XCB_USE_XLIB
     dpy = XOpenDisplay(m_displayName.constData());
     if (dpy) {
-        m_primaryScreen = DefaultScreen(dpy);
+        m_primaryScreenNumber = DefaultScreen(dpy);
         m_connection = XGetXCBConnection(dpy);
         XSetEventQueueOwner(dpy, XCBOwnsEventQueue);
         XSetErrorHandler(nullErrorHandler);
@@ -339,7 +339,7 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGra
         m_xlib_display = dpy;
     }
 #else
-    m_connection = xcb_connect(m_displayName.constData(), &m_primaryScreen);
+    m_connection = xcb_connect(m_displayName.constData(), &m_primaryScreenNumber);
 #endif //XCB_USE_XLIB
 
     if (!m_connection || xcb_connection_has_error(m_connection))
@@ -447,6 +447,16 @@ QXcbConnection::~QXcbConnection()
 #endif
 
     delete m_keyboard;
+}
+
+QXcbScreen *QXcbConnection::primaryScreen() const
+{
+    if (!m_screens.isEmpty()) {
+        Q_ASSERT(m_screens.first()->screenNumber() == primaryScreenNumber());
+        return m_screens.first();
+    }
+
+    return Q_NULLPTR;
 }
 
 void QXcbConnection::addWindowEventListener(xcb_window_t id, QXcbWindowEventListener *eventListener)
@@ -1219,7 +1229,7 @@ xcb_timestamp_t QXcbConnection::getTimestamp()
 
 xcb_window_t QXcbConnection::rootWindow()
 {
-    return screens().at(primaryScreen())->root();
+    return primaryScreen()->root();
 }
 
 void QXcbConnection::processXcbEvents()

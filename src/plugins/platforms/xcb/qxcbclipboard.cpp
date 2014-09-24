@@ -276,7 +276,7 @@ QXcbClipboard::QXcbClipboard(QXcbConnection *c)
     m_timestamp[QClipboard::Clipboard] = XCB_CURRENT_TIME;
     m_timestamp[QClipboard::Selection] = XCB_CURRENT_TIME;
 
-    m_screen = connection()->screens().at(connection()->primaryScreen());
+    m_screen = connection()->primaryScreen();
 
     int x = 0, y = 0, w = 3, h = 3;
 

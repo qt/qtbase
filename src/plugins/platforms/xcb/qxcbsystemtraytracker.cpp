@@ -59,7 +59,7 @@ QXcbSystemTrayTracker *QXcbSystemTrayTracker::create(QXcbConnection *connection)
     const xcb_atom_t trayAtom = connection->atom(QXcbAtom::_NET_SYSTEM_TRAY_OPCODE);
     if (!trayAtom)
         return 0;
-    const QByteArray netSysTray = QByteArrayLiteral("_NET_SYSTEM_TRAY_S") + QByteArray::number(connection->primaryScreen());
+    const QByteArray netSysTray = QByteArrayLiteral("_NET_SYSTEM_TRAY_S") + QByteArray::number(connection->primaryScreenNumber());
     const xcb_atom_t selection = connection->internAtom(netSysTray.constData());
     if (!selection)
         return 0;
@@ -145,11 +145,8 @@ QRect QXcbSystemTrayTracker::systemTrayWindowGlobalGeometry(xcb_window_t window)
 
 inline void QXcbSystemTrayTracker::emitSystemTrayWindowChanged()
 {
-    const int screen = m_connection->primaryScreen();
-    if (screen >= 0 && screen < m_connection->screens().size()) {
-        const QPlatformScreen *ps = m_connection->screens().at(screen);
+    if (const QPlatformScreen *ps = m_connection->primaryScreen())
         emit systemTrayWindowChanged(ps->screen());
-    }
 }
 
 // Client messages with the "MANAGER" atom on the root window indicate creation of a new tray.

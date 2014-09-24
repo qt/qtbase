@@ -417,10 +417,8 @@ QVariant QXcbIntegration::styleHint(QPlatformIntegration::StyleHint hint) const
     case QPlatformIntegration::StartDragDistance: {
         // The default (in QPlatformTheme::defaultThemeHint) is 10 pixels, but
         // on a high-resolution screen it makes sense to increase it.
-        const QList<QXcbScreen *> &screens = defaultConnection()->screens();
         qreal dpi = 100.0;
-        if (screens.length() > 0) {
-            const QXcbScreen *screen = screens.at(defaultConnection()->primaryScreen());
+        if (const QXcbScreen *screen = defaultConnection()->primaryScreen()) {
             if (screen->logicalDpi().first > dpi)
                 dpi = screen->logicalDpi().first;
             if (screen->logicalDpi().second > dpi)
