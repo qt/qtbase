@@ -347,7 +347,8 @@ void SimpleCascader::rearrange(QList<QWidget *> &widgets, const QRect &domain) c
     options.initFrom(widgets.at(0));
     int titleBarHeight = widgets.at(0)->style()->pixelMetric(QStyle::PM_TitleBarHeight, &options, widgets.at(0));
     const QFontMetrics fontMetrics = QFontMetrics(QApplication::font("QMdiSubWindowTitleBar"));
-    const int dy = qMax(titleBarHeight - (titleBarHeight - fontMetrics.height()) / 2, 1);
+    const int dy = qMax(titleBarHeight - (titleBarHeight - fontMetrics.height()) / 2, 1)
+        + widgets.at(0)->style()->pixelMetric(QStyle::PM_FocusFrameVMargin, 0, widgets.at(0));
 
     const int n = widgets.size();
     const int nrows = qMax((domain.height() - (topOffset + bottomOffset)) / dy, 1);
