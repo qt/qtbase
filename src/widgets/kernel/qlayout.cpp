@@ -858,6 +858,47 @@ void QLayoutPrivate::reparentChildWidgets(QWidget *mw)
 }
 
 /*!
+    Returns \c true if the \a widget can be added to the \a layout;
+    otherwise returns \c false.
+*/
+bool QLayoutPrivate::checkWidget(QWidget *widget) const
+{
+    Q_Q(const QLayout);
+    if (!widget) {
+        qWarning("QLayout: Cannot add a null widget to %s/%s", q->metaObject()->className(),
+                  qPrintable(q->objectName()));
+        return false;
+    }
+    if (widget == q->parentWidget()) {
+        qWarning("QLayout: Cannot add parent widget %s/%s to its child layout %s/%s",
+                  widget->metaObject()->className(), qPrintable(widget->objectName()),
+                  q->metaObject()->className(), qPrintable(q->objectName()));
+        return false;
+    }
+    return true;
+}
+
+/*!
+    Returns \c true if the \a otherLayout can be added to the \a layout;
+    otherwise returns \c false.
+*/
+bool QLayoutPrivate::checkLayout(QLayout *otherLayout) const
+{
+    Q_Q(const QLayout);
+    if (!otherLayout) {
+        qWarning("QLayout: Cannot add a null layout to %s/%s", q->metaObject()->className(),
+                  qPrintable(q->objectName()));
+        return false;
+    }
+    if (otherLayout == q) {
+        qWarning("QLayout: Cannot add layout %s/%s to itself", q->metaObject()->className(),
+                  qPrintable(q->objectName()));
+        return false;
+    }
+    return true;
+}
+
+/*!
     This function is called from \c addWidget() functions in
     subclasses to add \a w as a managed widget of a layout.
 

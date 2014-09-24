@@ -64,19 +64,11 @@ public:
     void endPaint();
 
 private:
-    class ScrollOp {
-    public:
-        ScrollOp(const QRegion &a, int x, int y) : totalArea(a), dx(x), dy(y) {}
-        QRegion totalArea;
-        int dx;
-        int dy;
-    };
-
     QQnxRasterWindow *platformWindow() const;
 
     QWindow *m_window;
-    QList<ScrollOp> m_scrollOpList;
-    bool m_hasUnflushedPaintOperations;
+    bool m_needsPosting;
+    bool m_scrolled;
 };
 
 QT_END_NAMESPACE

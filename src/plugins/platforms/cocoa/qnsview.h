@@ -48,6 +48,8 @@
 #include <QtGui/QImage>
 #include <QtGui/QAccessible>
 
+#include "private/qcore_mac_p.h"
+
 QT_BEGIN_NAMESPACE
 class QCocoaWindow;
 class QCocoaBackingStore;
@@ -56,7 +58,7 @@ QT_END_NAMESPACE
 
 Q_FORWARD_DECLARE_OBJC_CLASS(QNSViewMouseMoveHelper);
 
-@interface QNSView : NSView <NSTextInputClient> {
+@interface QT_MANGLE_NAMESPACE(QNSView) : NSView <NSTextInputClient> {
     QCocoaBackingStore* m_backingStore;
     QPoint m_backingStoreOffset;
     CGImageRef m_maskImage;
@@ -78,6 +80,7 @@ Q_FORWARD_DECLARE_OBJC_CLASS(QNSViewMouseMoveHelper);
 #endif
     NSString *m_inputSource;
     QNSViewMouseMoveHelper *m_mouseMoveHelper;
+    bool m_resendKeyEvent;
 }
 
 - (id)init;
@@ -137,5 +140,7 @@ Q_FORWARD_DECLARE_OBJC_CLASS(QNSViewMouseMoveHelper);
 - (NSDragOperation)handleDrag:(id <NSDraggingInfo>)sender;
 
 @end
+
+QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSView);
 
 #endif //QNSVIEW_H

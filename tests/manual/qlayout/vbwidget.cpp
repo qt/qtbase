@@ -53,6 +53,7 @@ VbWidget::VbWidget(QWidget *parent) :
     QWidget(parent)
 {
     QVBoxLayout *hb = new QVBoxLayout(this);
+    hb->setObjectName("VbWidget");
     QComboBox *combo = new QComboBox(this);
     combo->addItem("123");
     QComboBox *combo2 = new QComboBox();
@@ -67,4 +68,11 @@ VbWidget::VbWidget(QWidget *parent) :
     hb->addWidget(new QDateTimeEdit());
     hb->addWidget(new QPushButton("123"));
     hb->addWidget(new QSpinBox());
+
+    qDebug("There should be four warnings, but no crash or freeze:");
+    hb->addWidget(this); ///< This command should print a warning, but should not add "this"
+    hb->addWidget(Q_NULLPTR); ///< This command should print a warning, but should not add "NULL"
+    hb->addLayout(hb); ///< This command should print a warning, but should not add "hb"
+    hb->addLayout(Q_NULLPTR); ///< This command should print a warning, but should not add "NULL"
+    qDebug("Neither crashed nor frozen");
 }

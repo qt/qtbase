@@ -456,15 +456,15 @@ QByteArray QFileDialog::saveState() const
         stream << d->qFileDialogUi->splitter->saveState();
         stream << d->qFileDialogUi->sidebar->urls();
     } else {
-        stream << QByteArray();
-        stream << QList<QUrl>();
+        stream << d->splitterState;
+        stream << d->sidebarUrls;
     }
     stream << history();
     stream << *lastVisitedDir();
     if (d->usingWidgets())
         stream << d->qFileDialogUi->treeView->header()->saveState();
     else
-        stream << QByteArray();
+        stream << d->headerData;
     stream << qint32(viewMode());
     return data;
 }
@@ -485,9 +485,6 @@ bool QFileDialog::restoreState(const QByteArray &state)
     QDataStream stream(&sd, QIODevice::ReadOnly);
     if (stream.atEnd())
         return false;
-    QByteArray splitterState;
-    QByteArray headerData;
-    QList<QUrl> bookmarks;
     QStringList history;
     QUrl currentDirectory;
     qint32 marker;
@@ -499,8 +496,8 @@ bool QFileDialog::restoreState(const QByteArray &state)
     if (marker != QFileDialogMagic || (v != 3 && v != 4))
         return false;
 
-    stream >> splitterState
-           >> bookmarks
+    stream >> d->splitterState
+           >> d->sidebarUrls
            >> history;
     if (v == 3) {
         QString currentDirectoryString;
@@ -509,7 +506,7 @@ bool QFileDialog::restoreState(const QByteArray &state)
     } else {
         stream >> currentDirectory;
     }
-    stream >> headerData
+    stream >> d->headerData
            >> viewMode;
 
     setDirectoryUrl(lastVisitedDir()->isEmpty() ? currentDirectory : *lastVisitedDir());
@@ -518,7 +515,7 @@ bool QFileDialog::restoreState(const QByteArray &state)
     if (!d->usingWidgets())
         return true;
 
-    if (!d->qFileDialogUi->splitter->restoreState(splitterState))
+    if (!d->qFileDialogUi->splitter->restoreState(d->splitterState))
         return false;
     QList<int> list = d->qFileDialogUi->splitter->sizes();
     if (list.count() >= 2 && list.at(0) == 0 && list.at(1) == 0) {
@@ -527,12 +524,12 @@ bool QFileDialog::restoreState(const QByteArray &state)
         d->qFileDialogUi->splitter->setSizes(list);
     }
 
-    d->qFileDialogUi->sidebar->setUrls(bookmarks);
+    d->qFileDialogUi->sidebar->setUrls(d->sidebarUrls);
     while (history.count() > 5)
         history.pop_front();
     setHistory(history);
     QHeaderView *headerView = d->qFileDialogUi->treeView->header();
-    if (!headerView->restoreState(headerData))
+    if (!headerView->restoreState(d->headerData))
         return false;
 
     QList<QAction*> actions = headerView->actions();

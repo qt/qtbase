@@ -163,6 +163,9 @@ static void cleanupCocoaApplicationDelegate()
 - (NSMenu *)applicationDockMenu:(NSApplication *)sender
 {
     Q_UNUSED(sender);
+    // Manually invoke the delegate's -menuWillOpen: method.
+    // See QTBUG-39604 (and its fix) for details.
+    [[dockMenu delegate] menuWillOpen:dockMenu];
     return [[dockMenu retain] autorelease];
 }
 

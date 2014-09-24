@@ -1299,13 +1299,20 @@ private:
     bool m_release;
 };
 
-void QXcbKeyboard::handleKeyEvent(QWindow *window, QEvent::Type type, xcb_keycode_t code,
+void QXcbKeyboard::handleKeyEvent(xcb_window_t sourceWindow, QEvent::Type type, xcb_keycode_t code,
                                   quint16 state, xcb_timestamp_t time)
 {
     Q_XCB_NOOP(connection());
 
     if (!m_config)
         return;
+
+    QXcbWindow *source = connection()->platformWindowFromId(sourceWindow);
+    QXcbWindow *targetWindow = connection()->focusWindow() ? connection()->focusWindow() : source;
+    if (!targetWindow || !source)
+        return;
+    if (type == QEvent::KeyPress)
+        targetWindow->updateNetWmUserTime(time);
 
     // It is crucial the order of xkb_state_key_get_one_sym & xkb_state_update_key operations is not reversed!
     xcb_keysym_t sym = xkb_state_key_get_one_sym(xkb_state, code);
@@ -1347,7 +1354,7 @@ void QXcbKeyboard::handleKeyEvent(QWindow *window, QEvent::Type type, xcb_keycod
         }
     } else {
         // look ahead for auto-repeat
-        KeyChecker checker(((QXcbWindow *)window->handle())->xcb_window(), code, time);
+        KeyChecker checker(source->xcb_window(), code, time);
         xcb_generic_event_t *event = connection()->checkEvent(checker);
         if (event) {
             isAutoRepeat = true;
@@ -1363,6 +1370,7 @@ void QXcbKeyboard::handleKeyEvent(QWindow *window, QEvent::Type type, xcb_keycod
         filtered = inputContext->filterEvent(&event);
     }
 
+    QWindow *window = targetWindow->window();
     if (!filtered) {
         if (type == QEvent::KeyPress && qtcode == Qt::Key_Menu) {
             const QPoint globalPos = window->screen()->handle()->cursor()->pos();
@@ -1405,21 +1413,14 @@ QString QXcbKeyboard::lookupString(struct xkb_state *state, xcb_keycode_t code) 
     return QString::fromUtf8(chars);
 }
 
-void QXcbKeyboard::handleKeyPressEvent(QXcbWindowEventListener *eventListener, const xcb_key_press_event_t *event)
+void QXcbKeyboard::handleKeyPressEvent(const xcb_key_press_event_t *event)
 {
-    QXcbWindow *window = eventListener->toWindow();
-    if (!window)
-        return;
-    window->updateNetWmUserTime(event->time);
-    handleKeyEvent(window->window(), QEvent::KeyPress, event->detail, event->state, event->time);
+    handleKeyEvent(event->event, QEvent::KeyPress, event->detail, event->state, event->time);
 }
 
-void QXcbKeyboard::handleKeyReleaseEvent(QXcbWindowEventListener *eventListener, const xcb_key_release_event_t *event)
+void QXcbKeyboard::handleKeyReleaseEvent(const xcb_key_release_event_t *event)
 {
-    QXcbWindow *window = eventListener->toWindow();
-    if (!window)
-        return;
-    handleKeyEvent(window->window(), QEvent::KeyRelease, event->detail, event->state, event->time);
+    handleKeyEvent(event->event, QEvent::KeyRelease, event->detail, event->state, event->time);
 }
 
 void QXcbKeyboard::handleMappingNotifyEvent(const void *event)

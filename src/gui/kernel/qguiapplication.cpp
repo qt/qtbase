@@ -176,7 +176,9 @@ bool QGuiApplicationPrivate::noGrab = false;
 static qreal fontSmoothingGamma = 1.7;
 
 extern void qRegisterGuiVariant();
+#ifndef QT_NO_ANIMATION
 extern void qRegisterGuiGetInterpolator();
+#endif
 extern void qInitDrawhelperAsm();
 extern void qInitImageConversions();
 
@@ -588,6 +590,7 @@ QGuiApplication::~QGuiApplication()
 #endif //QT_NO_SESSIONMANAGER
 
     clearPalette();
+    QFontDatabase::removeAllApplicationFonts();
 
 #ifndef QT_NO_CURSOR
     d->cursor_list.clear();
@@ -1312,8 +1315,10 @@ void QGuiApplicationPrivate::init()
     // trigger registering of QVariant's GUI types
     qRegisterGuiVariant();
 
+#ifndef QT_NO_ANIMATION
     // trigger registering of animation interpolators
     qRegisterGuiGetInterpolator();
+#endif
 
     // set a global share context when enabled unless there is already one
 #ifndef QT_NO_OPENGL

@@ -42,6 +42,17 @@
 #ifndef QTRIANGULATINGSTROKER_P_H
 #define QTRIANGULATINGSTROKER_P_H
 
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
 #include <private/qdatabuffer_p.h>
 #include <qvarlengtharray.h>
 #include <private/qvectorpath_p.h>

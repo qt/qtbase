@@ -66,6 +66,7 @@ private slots:
     void task230994_iconSize();
     void task176137_autoRepeatOfAction();
     void qtbug_26956_popupTimerDone();
+    void qtbug_34759_sizeHintResetWhenSettingMenu();
 
 protected slots:
     void sendMouseClick();
@@ -263,6 +264,33 @@ void tst_QToolButton::qtbug_26956_popupTimerDone()
     tb->menu()->addAction("Qt");
     tb->deleteLater();
     tb->showMenu();
+}
+
+void tst_QToolButton::qtbug_34759_sizeHintResetWhenSettingMenu()
+{
+    // There is no reliable way of checking what's ultimately a style-dependent
+    // sizing. So the idea is checking if the size is the "correct" size w.r.t.
+    // another toolbutton which has had a menu set before it was shown for the first time
+
+    QToolButton button1;
+    QToolButton button2;
+
+    button1.setToolButtonStyle(Qt::ToolButtonIconOnly);
+    button1.setPopupMode(QToolButton::MenuButtonPopup);
+
+    button2.setToolButtonStyle(Qt::ToolButtonIconOnly);
+    button2.setPopupMode(QToolButton::MenuButtonPopup);
+
+    button2.setMenu(new QMenu(&button2));
+
+    button1.show();
+    button2.show();
+
+    QVERIFY(QTest::qWaitForWindowExposed(&button1));
+    QVERIFY(QTest::qWaitForWindowExposed(&button2));
+
+    button1.setMenu(new QMenu(&button1));
+    QTRY_COMPARE(button1.sizeHint(), button2.sizeHint());
 }
 
 QTEST_MAIN(tst_QToolButton)

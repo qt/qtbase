@@ -822,6 +822,13 @@ QFontEngine *loadSingleEngine(int script,
     QFontCache::Key key(def,script);
     QFontEngine *engine = QFontCache::instance()->findEngine(key);
     if (!engine) {
+        // If the font data's native stretch matches the requested stretch we need to set stretch to 100
+        // to avoid the fontengine synthesizing stretch. If they didn't match exactly we need to calculate
+        // the new stretch factor. This only done if not matched by styleName.
+        bool styleNameMatch = !request.styleName.isEmpty() && request.styleName == style->styleName;
+        if (!styleNameMatch && style->key.stretch != 0 && request.stretch != 0)
+            def.stretch = (request.stretch * 100 + 50) / style->key.stretch;
+
         engine = pfdb->fontEngine(def, size->handle);
         if (engine) {
             Q_ASSERT(engine->type() != QFontEngine::Multi);
@@ -931,7 +938,7 @@ static
 unsigned int bestFoundry(int script, unsigned int score, int styleStrategy,
                          const QtFontFamily *family, const QString &foundry_name,
                          QtFontStyle::Key styleKey, int pixelSize, char pitch,
-                         QtFontDesc *desc, int force_encoding_id)
+                         QtFontDesc *desc, int force_encoding_id, QString styleName = QString())
 {
     Q_UNUSED(force_encoding_id);
     Q_UNUSED(script);
@@ -953,7 +960,7 @@ unsigned int bestFoundry(int script, unsigned int score, int styleStrategy,
         FM_DEBUG("          looking for matching style in foundry '%s' %d",
                  foundry->name.isEmpty() ? "-- none --" : foundry->name.toLatin1().constData(), foundry->count);
 
-        QtFontStyle *style = bestStyle(foundry, styleKey);
+        QtFontStyle *style = bestStyle(foundry, styleKey, styleName);
 
         if (!style->smoothScalable && (styleStrategy & QFont::ForceOutline)) {
             FM_DEBUG("            ForceOutline set, but not smoothly scalable");
@@ -1140,13 +1147,13 @@ static int match(int script, const QFontDef &request,
         unsigned int newscore =
             bestFoundry(script, score, request.styleStrategy,
                         test.family, foundry_name, styleKey, request.pixelSize, pitch,
-                        &test, force_encoding_id);
+                        &test, force_encoding_id, request.styleName);
         if (test.foundry == 0) {
             // the specific foundry was not found, so look for
             // any foundry matching our requirements
             newscore = bestFoundry(script, score, request.styleStrategy, test.family,
                                    QString(), styleKey, request.pixelSize,
-                                   pitch, &test, force_encoding_id);
+                                   pitch, &test, force_encoding_id, request.styleName);
         }
 
         if (newscore < score) {

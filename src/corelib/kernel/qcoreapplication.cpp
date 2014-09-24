@@ -2533,6 +2533,9 @@ void QCoreApplication::removeLibraryPath(const QString &path)
     \note The filter function set here receives native messages,
     i.e. MSG or XCB event structs.
 
+    \note Native event filters will be disabled when the application the
+    Qt::AA_MacPluginApplication attribute is set.
+
     For maximum portability, you should always try to use QEvents
     and QObject::installEventFilter() whenever possible.
 
@@ -2542,6 +2545,11 @@ void QCoreApplication::removeLibraryPath(const QString &path)
 */
 void QCoreApplication::installNativeEventFilter(QAbstractNativeEventFilter *filterObj)
 {
+    if (QCoreApplication::testAttribute(Qt::AA_MacPluginApplication)) {
+        qWarning("Native event filters are not applied when the Qt::AA_MacPluginApplication attribute is set");
+        return;
+    }
+
     QAbstractEventDispatcher *eventDispatcher = QAbstractEventDispatcher::instance(QCoreApplicationPrivate::theMainThread);
     if (!filterObj || !eventDispatcher)
         return;

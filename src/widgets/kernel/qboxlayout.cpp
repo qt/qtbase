@@ -51,20 +51,6 @@
 
 QT_BEGIN_NAMESPACE
 
-/*
-    Returns \c true if the \a widget can be added to the \a layout;
-    otherwise returns \c false.
-*/
-static bool checkWidget(QLayout *layout, QWidget *widget)
-{
-    if (!widget) {
-        qWarning("QLayout: Cannot add null widget to %s/%s", layout->metaObject()->className(),
-                  layout->objectName().toLocal8Bit().data());
-        return false;
-    }
-    return true;
-}
-
 struct QBoxLayoutItem
 {
     QBoxLayoutItem(QLayoutItem *it, int stretch_ = 0)
@@ -958,6 +944,8 @@ void QBoxLayout::insertSpacerItem(int index, QSpacerItem *spacerItem)
 void QBoxLayout::insertLayout(int index, QLayout *layout, int stretch)
 {
     Q_D(QBoxLayout);
+    if (!d->checkLayout(layout))
+        return;
     if (!adoptLayout(layout))
         return;
     if (index < 0)                                // append
@@ -991,7 +979,7 @@ void QBoxLayout::insertWidget(int index, QWidget *widget, int stretch,
                               Qt::Alignment alignment)
 {
     Q_D(QBoxLayout);
-    if (!checkWidget(this, widget))
+    if (!d->checkWidget(widget))
          return;
     addChildWidget(widget);
     if (index < 0)                                // append

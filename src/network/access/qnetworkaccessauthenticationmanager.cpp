@@ -231,6 +231,8 @@ void QNetworkAccessAuthenticationManager::cacheCredentials(const QUrl &url,
                                                   const QAuthenticator *authenticator)
 {
     Q_ASSERT(authenticator);
+    if (authenticator->isNull())
+        return;
     QString domain = QString::fromLatin1("/"); // FIXME: make QAuthenticator return the domain
     QString realm = authenticator->realm();
 

@@ -1655,9 +1655,10 @@ void QObject::killTimer(int id)
         int at = d->extraData ? d->extraData->runningTimers.indexOf(id) : -1;
         if (at == -1) {
             // timer isn't owned by this object
-            qWarning("QObject::killTimer(): Error: timer id %d is not valid for object %p (%s), timer has not been killed",
+            qWarning("QObject::killTimer(): Error: timer id %d is not valid for object %p (%s, %s), timer has not been killed",
                      id,
                      this,
+                     metaObject()->className(),
                      qPrintable(objectName()));
             return;
         }

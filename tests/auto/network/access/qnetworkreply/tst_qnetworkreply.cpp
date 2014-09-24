@@ -206,6 +206,7 @@ private Q_SLOTS:
     void getFromFileSpecial();
     void getFromFtp_data();
     void getFromFtp();
+    void getFromFtpAfterError();    // QTBUG-40797
     void getFromHttp_data();
     void getFromHttp();
     void getErrors_data();
@@ -218,6 +219,7 @@ private Q_SLOTS:
     void putToFile();
     void putToFtp_data();
     void putToFtp();
+    void putToFtpWithInvalidCredentials();    // QTBUG-40622
     void putToHttp_data();
     void putToHttp();
     void putToHttpSynchronous_data();
@@ -1753,6 +1755,26 @@ void tst_QNetworkReply::getFromFtp()
     QCOMPARE(reply->readAll(), reference.readAll());
 }
 
+void tst_QNetworkReply::getFromFtpAfterError()
+{
+    QNetworkRequest invalidRequest(QUrl("ftp://" + QtNetworkSettings::serverName() + "/qtest/invalid.txt"));
+    QNetworkReplyPtr invalidReply;
+    invalidReply.reset(manager.get(invalidRequest));
+    QSignalSpy spy(invalidReply.data(), SIGNAL(error(QNetworkReply::NetworkError)));
+    QVERIFY(spy.wait());
+    QCOMPARE(invalidReply->error(), QNetworkReply::ContentNotFoundError);
+
+    QFile reference(testDataDir + "/rfc3252.txt");
+    QVERIFY(reference.open(QIODevice::ReadOnly));
+    QNetworkRequest validRequest(QUrl("ftp://" + QtNetworkSettings::serverName() + "/qtest/rfc3252.txt"));
+    QNetworkReplyPtr validReply;
+    RUN_REQUEST(runSimpleRequest(QNetworkAccessManager::GetOperation, validRequest, validReply));
+    QCOMPARE(validReply->url(), validRequest.url());
+    QCOMPARE(validReply->error(), QNetworkReply::NoError);
+    QCOMPARE(validReply->header(QNetworkRequest::ContentLengthHeader).toLongLong(), reference.size());
+    QCOMPARE(validReply->readAll(), reference.readAll());
+}
+
 void tst_QNetworkReply::getFromHttp_data()
 {
     QTest::addColumn<QString>("referenceName");
@@ -2052,6 +2074,28 @@ void tst_QNetworkReply::putToFtp()
     QObject::connect(r, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
     QTestEventLoop::instance().enterLoop(10);
     QObject::disconnect(r, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+}
+
+void tst_QNetworkReply::putToFtpWithInvalidCredentials()
+{
+    QUrl url("ftp://" + QtNetworkSettings::serverName());
+    url.setPath(QString("/qtest/upload/qnetworkaccess-putToFtp-%1-%2")
+                .arg(QTest::currentDataTag())
+                .arg(uniqueExtension));
+    url.setUserName("invalidUser");
+    url.setPassword("InvalidPassword");
+    QNetworkRequest req(url);
+    QNetworkReplyPtr r;
+
+    for (int i = 0; i < 2; i++)
+    {
+        runSimpleRequest(QNetworkAccessManager::PutOperation, req, r, QByteArray());
+
+        QVERIFY(r->isFinished());
+        QCOMPARE(r->url(), url);
+        QCOMPARE(r->error(), QNetworkReply::AuthenticationRequiredError);
+        r->close();
+    }
 }
 
 void tst_QNetworkReply::putToHttp_data()

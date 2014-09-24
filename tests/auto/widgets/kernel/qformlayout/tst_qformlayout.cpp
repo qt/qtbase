@@ -135,6 +135,8 @@ private slots:
 */
 
     void taskQTBUG_27420_takeAtShouldUnparentLayout();
+    void taskQTBUG_40609_addingWidgetToItsOwnLayout();
+    void taskQTBUG_40609_addingLayoutToItself();
 
 };
 
@@ -947,6 +949,28 @@ void tst_QFormLayout::taskQTBUG_27420_takeAtShouldUnparentLayout()
         delete item; // success: a taken item/layout should not be deleted when the old parent is deleted
     else
         QVERIFY(!inner.isNull());
+}
+
+void tst_QFormLayout::taskQTBUG_40609_addingWidgetToItsOwnLayout(){
+    QWidget widget;
+    widget.setObjectName("6435cbada60548b4522cbb6");
+    QFormLayout layout(&widget);
+    layout.setObjectName("c03c0e22c0b6d019a93a248");
+
+    QTest::ignoreMessage(QtWarningMsg, "QLayout: Cannot add parent widget QWidget/6435cbada60548b4522cbb6 to its child layout QFormLayout/c03c0e22c0b6d019a93a248");
+    layout.addRow(QLatin1String("48c81f39b7320082f8"), &widget);
+    QCOMPARE(layout.count(), 0);
+}
+
+void tst_QFormLayout::taskQTBUG_40609_addingLayoutToItself(){
+    QWidget widget;
+    widget.setObjectName("2bc425637d084c07ce65956");
+    QFormLayout layout(&widget);
+    layout.setObjectName("60e31de0c8800eaba713a4f2");
+
+    QTest::ignoreMessage(QtWarningMsg, "QLayout: Cannot add layout QFormLayout/60e31de0c8800eaba713a4f2 to itself");
+    layout.addRow(QLatin1String("9a2cd4f40c06b489f889"), &layout);
+    QCOMPARE(layout.count(), 0);
 }
 
 void tst_QFormLayout::replaceWidget()

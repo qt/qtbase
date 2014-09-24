@@ -163,7 +163,9 @@ bool convert_generic_inplace(QImageData *data, QImage::Format dst_format, Qt::Im
             const uint *ptr = fetch(buffer, srcData, x, l);
             ptr = srcLayout->convertToARGB32PM(buffer, ptr, l, srcLayout, 0);
             ptr = destLayout->convertFromARGB32PM(buffer, ptr, l, destLayout, 0);
-            store(srcData, ptr, x, l);
+            // The conversions might be passthrough and not use the buffer, in that case we are already done.
+            if (srcData != (const uchar*)ptr)
+                store(srcData, ptr, x, l);
             x += l;
         }
         srcData += data->bytes_per_line;

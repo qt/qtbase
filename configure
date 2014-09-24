@@ -195,7 +195,7 @@ expandQMakeConf()
 
 extractQMakeVariables()
 {
-    $AWK '
+    LC_ALL=C $AWK '
 BEGIN {
     values["LITERAL_WHITESPACE"] = " "
     values["LITERAL_DOLLAR"] = "$"

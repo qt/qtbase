@@ -1689,8 +1689,8 @@ void QProcess::setEnvironment(const QStringList &environment)
     \deprecated
     Returns the environment that QProcess will use when starting a
     process, or an empty QStringList if no environment has been set
-    using setEnvironment() or setEnvironmentHash(). If no environment
-    has been set, the environment of the calling process will be used.
+    using setEnvironment(). If no environment has been set, the
+    environment of the calling process will be used.
 
     \note The environment settings are ignored on Windows CE,
     as there is no concept of an environment.
@@ -2016,7 +2016,7 @@ QByteArray QProcess::readAllStandardError()
     \note No further splitting of the arguments is performed.
 
     \b{Windows:} The arguments are quoted and joined into a command line
-    that is compatible with the CommandLineToArgvW() Windows function.
+    that is compatible with the \c CommandLineToArgvW() Windows function.
     For programs that have different command line quoting requirements,
     you need to use setNativeArguments().
 
@@ -2320,8 +2320,8 @@ int QProcess::exitCode() const
 
     Returns the exit status of the last process that finished.
 
-    On Windows, if the process was terminated with TerminateProcess()
-    from another application this function will still return NormalExit
+    On Windows, if the process was terminated with TerminateProcess() from
+    another application, this function will still return NormalExit
     unless the exit code is less than 0.
 */
 QProcess::ExitStatus QProcess::exitStatus() const

@@ -1083,12 +1083,6 @@ bool QSqlQuery::execBatch(BatchExecutionMode mode)
   To bind a NULL value, use a null QVariant; for example, use
   \c {QVariant(QVariant::String)} if you are binding a string.
 
-  Values cannot be bound to multiple locations in the query, eg:
-  \code
-  INSERT INTO testtable (id, name, samename) VALUES (:id, :name, :name)
-  \endcode
-  Binding to name will bind to the first :name, but not the second.
-
   \sa addBindValue(), prepare(), exec(), boundValue(), boundValues()
 */
 void QSqlQuery::bindValue(const QString& placeholder, const QVariant& val,

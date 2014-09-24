@@ -414,6 +414,9 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGra
         qunsetenv("DESKTOP_STARTUP_ID");
 
     sync();
+
+    if (qEnvironmentVariableIsEmpty("QT_IM_MODULE"))
+        qputenv("QT_IM_MODULE", QByteArray("compose"));
 }
 
 QXcbConnection::~QXcbConnection()
@@ -494,7 +497,7 @@ break;
     if (QXcbWindowEventListener *eventListener = windowEventListenerFromId(e->event)) { \
         handled = eventListener->handleGenericEvent(event, &result); \
         if (!handled) \
-            m_keyboard->handler(m_focusWindow ? m_focusWindow : eventListener, e); \
+            m_keyboard->handler(e); \
     } \
 } \
 break;

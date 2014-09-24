@@ -90,7 +90,12 @@ public:
 
     virtual void downstreamReadyWrite();
 
-    void disconnectFromFtp();
+    enum CacheCleanupMode {
+        ReleaseCachedConnection,
+        RemoveCachedConnection
+    };
+
+    void disconnectFromFtp(CacheCleanupMode mode = ReleaseCachedConnection);
 
 public slots:
     void ftpConnectionReady(QNetworkAccessCache::CacheableObject *object);

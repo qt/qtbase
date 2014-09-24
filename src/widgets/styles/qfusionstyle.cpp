@@ -2894,7 +2894,7 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
                         clipRect = QRect(groove.left(), groove.top(), groove.width(), handle.top() - groove.top());
                 }
                 painter->save();
-                painter->setClipRect(clipRect.adjusted(0, 0, 1, 1));
+                painter->setClipRect(clipRect.adjusted(0, 0, 1, 1), Qt::IntersectClip);
                 painter->drawPixmap(groove.topLeft(), cache);
                 painter->restore();
             }

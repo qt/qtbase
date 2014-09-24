@@ -76,6 +76,8 @@ public:
     void getMargin(int *result, int userMargin, QStyle::PixelMetric pm) const;
     void doResize(const QSize &);
     void reparentChildWidgets(QWidget *mw);
+    bool checkWidget(QWidget *widget) const;
+    bool checkLayout(QLayout *otherLayout) const;
 
     static QWidgetItem *createWidgetItem(const QLayout *layout, QWidget *widget);
     static QSpacerItem *createSpacerItem(const QLayout *layout, int w, int h, QSizePolicy::Policy hPolicy = QSizePolicy::Minimum, QSizePolicy::Policy vPolicy = QSizePolicy::Minimum);

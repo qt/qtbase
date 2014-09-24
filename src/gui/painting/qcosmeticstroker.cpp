@@ -533,8 +533,8 @@ void QCosmeticStroker::drawPath(const QVectorPath &path)
 
             QPointF p = QPointF(points[0], points[1]) * state->matrix;
             patternOffset = state->lastPen.dashOffset()*64;
-            lastPixel.x = -1;
-            lastPixel.y = -1;
+            lastPixel.x = INT_MIN;
+            lastPixel.y = INT_MIN;
 
             bool closed;
             const QPainterPath::ElementType *e = subPath(type, end, points, &closed);
@@ -588,8 +588,8 @@ void QCosmeticStroker::drawPath(const QVectorPath &path)
         QPointF p = QPointF(points[0], points[1]) * state->matrix;
         QPointF movedTo = p;
         patternOffset = state->lastPen.dashOffset()*64;
-        lastPixel.x = -1;
-        lastPixel.y = -1;
+        lastPixel.x = INT_MIN;
+        lastPixel.y = INT_MIN;
 
         const qreal *begin = points;
         const qreal *end = points + 2*path.elementCount();

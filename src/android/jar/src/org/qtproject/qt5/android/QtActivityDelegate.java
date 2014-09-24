@@ -366,11 +366,6 @@ public class QtActivityDelegate
         });
     }
 
-    public boolean isSoftwareKeyboardVisible()
-    {
-        return m_keyboardIsVisible;
-    }
-
     String getAppIconSize(Activity a)
     {
         int size = a.getResources().getDimensionPixelSize(android.R.dimen.app_icon_size);
