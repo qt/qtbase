@@ -163,7 +163,7 @@ void *QWindowsOpengl32DLL::resolve(const char *name)
 bool QWindowsOpengl32DLL::init(bool softwareRendering)
 {
     const QByteArray opengl32 = QByteArrayLiteral("opengl32.dll");
-    const QByteArray swopengl = QByteArrayLiteral("QtSoftwareOpenGL.dll");
+    const QByteArray swopengl = QByteArrayLiteral("opengl32sw.dll");
 
     QByteArray openglDll = qgetenv("QT_OPENGL_DLL");
     if (openglDll.isEmpty())
