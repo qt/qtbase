@@ -159,7 +159,7 @@ private:
     QVariantMap propertiesMap;
     QVariant getProperty(const QString &);
     QStringList contextList;
-private slots:
+private Q_SLOTS:
     void propertyChanged(const QString &, const QDBusVariant &value);
 };
 
