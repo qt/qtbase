@@ -155,7 +155,7 @@ public:
 Q_SIGNALS:
     void roamingAllowedChanged(bool);
 private:
-    QVariantMap getProperties();
+    QVariantMap &getProperties();
     QVariantMap propertiesMap;
     QVariant getProperty(const QString &);
     QStringList contextList;

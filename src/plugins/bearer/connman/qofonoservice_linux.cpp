@@ -272,13 +272,10 @@ bool QOfonoDataConnectionManagerInterface::roamingAllowed()
 
 QVariant QOfonoDataConnectionManagerInterface::getProperty(const QString &property)
 {
-    QVariant var;
-    QVariantMap map = getProperties();
-    var = map.value(property);
-    return var;
+    return getProperties().value(property);
 }
 
-QVariantMap QOfonoDataConnectionManagerInterface::getProperties()
+QVariantMap &QOfonoDataConnectionManagerInterface::getProperties()
 {
     if (propertiesMap.isEmpty()) {
         QList<QVariant> argumentList;
