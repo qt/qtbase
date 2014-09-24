@@ -124,6 +124,7 @@ public:
     Q_PRIVATE_SLOT(d_func(), void uploadByteDeviceReadyReadSlot())
     Q_PRIVATE_SLOT(d_func(), void emitReplyUploadProgress(qint64, qint64))
     Q_PRIVATE_SLOT(d_func(), void _q_cacheSaveDeviceAboutToClose())
+    Q_PRIVATE_SLOT(d_func(), void _q_metaDataChanged())
 
 
 #ifndef QT_NO_SSL
@@ -175,7 +176,7 @@ public:
     void finished();
     void error(QNetworkReply::NetworkError code, const QString &errorString);
     void _q_error(QNetworkReply::NetworkError code, const QString &errorString);
-    void metaDataChanged();
+    void _q_metaDataChanged();
 
     void checkForRedirect(const int statusCode);
 

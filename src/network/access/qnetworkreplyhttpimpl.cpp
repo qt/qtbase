@@ -1166,7 +1166,7 @@ void QNetworkReplyHttpImplPrivate::replyDownloadMetaData
             setCachingEnabled(true);
     }
 
-    metaDataChanged();
+    _q_metaDataChanged();
 }
 
 void QNetworkReplyHttpImplPrivate::replyDownloadProgressSlot(qint64 bytesReceived,  qint64 bytesTotal)
@@ -1359,7 +1359,7 @@ bool QNetworkReplyHttpImplPrivate::sendCacheContents(const QNetworkCacheMetaData
     // This needs to be emitted in the event loop because it can be reached at
     // the direct code path of qnam.get(...) before the user has a chance
     // to connect any signals.
-    QMetaObject::invokeMethod(q, "metaDataChanged", Qt::QueuedConnection);
+    QMetaObject::invokeMethod(q, "_q_metaDataChanged", Qt::QueuedConnection);
     QMetaObject::invokeMethod(q, "_q_cacheLoadReadyRead", Qt::QueuedConnection);
 
 
@@ -1986,7 +1986,7 @@ void QNetworkReplyHttpImplPrivate::error(QNetworkReplyImpl::NetworkError code, c
     emit q->error(code);
 }
 
-void QNetworkReplyHttpImplPrivate::metaDataChanged()
+void QNetworkReplyHttpImplPrivate::_q_metaDataChanged()
 {
     // FIXME merge this with replyDownloadMetaData(); ?
 
