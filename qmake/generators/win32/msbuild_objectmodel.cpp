@@ -1850,7 +1850,7 @@ void VCXProjectWriter::outputFileConfigs(VCProject &project, XmlOutput &xml, Xml
     for (int i = 0; i < project.SingleProjects.count(); ++i) {
         VCFilter filter = project.SingleProjects.at(i).filterByName(filtername);
         if (filter.Config) // only if the filter is not empty
-            if (outputFileConfig(filter, xml, xmlFilter, info.file, filtername, fileAdded)) // only add it once.
+            if (outputFileConfig(filter, xml, xmlFilter, info.file, fileAdded)) // only add it once.
                 fileAdded = true;
     }
 
@@ -1861,7 +1861,7 @@ void VCXProjectWriter::outputFileConfigs(VCProject &project, XmlOutput &xml, Xml
     xmlFilter << closetag();
 }
 
-bool VCXProjectWriter::outputFileConfig(VCFilter &filter, XmlOutput &xml, XmlOutput &xmlFilter, const QString &filename, const QString &filtername, bool fileAllreadyAdded)
+bool VCXProjectWriter::outputFileConfig(VCFilter &filter, XmlOutput &xml, XmlOutput &xmlFilter, const QString &filename, bool fileAllreadyAdded)
 {
     bool fileAdded = false;
 
@@ -1902,7 +1902,7 @@ bool VCXProjectWriter::outputFileConfig(VCFilter &filter, XmlOutput &xml, XmlOut
 
     // Actual XML output ----------------------------------
     if (filter.useCustomBuildTool || filter.useCompilerTool
-            || !inBuild || filtername.startsWith("Deployment Files")) {
+            || !inBuild || filter.Name.startsWith("Deployment Files")) {
 
         if (filter.useCustomBuildTool)
         {
@@ -1912,13 +1912,15 @@ bool VCXProjectWriter::outputFileConfig(VCFilter &filter, XmlOutput &xml, XmlOut
 
                 xmlFilter << tag("CustomBuild")
                     << attrTag("Include",Option::fixPathToLocalOS(filename))
-                    << attrTagS("Filter", filtername);
+                    << attrTagS("Filter", filter.Name);
 
                 xml << tag("CustomBuild")
                     << attrTag("Include",Option::fixPathToLocalOS(filename));
 
-                if (filtername.startsWith("Form Files") || filtername.startsWith("Generated Files")
-                        || filtername.startsWith("Resource Files") || filtername.startsWith("Deployment Files"))
+                if (filter.Name.startsWith("Form Files")
+                        || filter.Name.startsWith("Generated Files")
+                        || filter.Name.startsWith("Resource Files")
+                        || filter.Name.startsWith("Deployment Files"))
                     xml << attrTagS("FileType", "Document");
             }
 
@@ -1928,7 +1930,7 @@ bool VCXProjectWriter::outputFileConfig(VCFilter &filter, XmlOutput &xml, XmlOut
         if ( !fileAdded && !fileAllreadyAdded )
         {
             fileAdded = true;
-            outputFileConfig(xml, xmlFilter, filename, filtername);
+            outputFileConfig(xml, xmlFilter, filename, filter.Name);
         }
 
         const QString condition = generateCondition(*filter.Config);
@@ -1938,7 +1940,7 @@ bool VCXProjectWriter::outputFileConfig(VCFilter &filter, XmlOutput &xml, XmlOut
                 << valueTag("true");
         }
 
-        if (filtername.startsWith("Deployment Files") && inBuild) {
+        if (filter.Name.startsWith("Deployment Files") && inBuild) {
             xml << tag("DeploymentContent")
                 << attrTag("Condition", condition)
                 << valueTag("true");
