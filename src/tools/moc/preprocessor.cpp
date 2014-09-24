@@ -632,12 +632,6 @@ Symbols Preprocessor::macroExpandIdentifier(Preprocessor *that, SymbolStack &sym
         if (macro.isVariadic && arguments.size() == macro.arguments.size() - 1)
             arguments += Symbols();
 
-        if (arguments.size() != macro.arguments.size() &&
-            // 0 argument macros are a bit special. They are ok if the
-            // argument is pure whitespace or empty
-            (macro.arguments.size() != 0 || arguments.size() != 1 || !arguments.at(0).isEmpty()))
-            that->warning("Macro argument mismatch.");
-
         // now replace the macro arguments with the expanded arguments
         enum Mode {
             Normal,
