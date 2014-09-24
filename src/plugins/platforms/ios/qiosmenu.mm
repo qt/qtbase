@@ -195,12 +195,12 @@ static NSString *const kSelectorPrefix = @"_qtMenuItem_";
     if (!m_visibleMenuItems.isEmpty())
         QIOSMenu::currentMenu()->handleItemSelected(m_visibleMenuItems.at(m_selectedRow));
     else
-        QIOSMenu::currentMenu()->setVisible(false);
+        QIOSMenu::currentMenu()->dismiss();
 }
 
 - (void)cancelMenu
 {
-    QIOSMenu::currentMenu()->setVisible(false);
+    QIOSMenu::currentMenu()->dismiss();
 }
 
 @end
@@ -299,8 +299,7 @@ QIOSMenu::QIOSMenu()
     : QPlatformMenu()
     , m_tag(0)
     , m_enabled(true)
-    , m_visible(false)
-    , m_effectiveVisible(false)
+    , m_visible(true)
     , m_text(QString())
     , m_menuType(DefaultMenu)
     , m_effectiveMenuType(DefaultMenu)
@@ -348,96 +347,12 @@ void QIOSMenu::setText(const QString &text)
 
 void QIOSMenu::setEnabled(bool enabled)
 {
-    if (m_enabled == enabled)
-        return;
-
     m_enabled = enabled;
-    updateVisibility();
-}
-
-void QIOSMenu::showPopup(const QWindow *parentWindow, const QRect &targetRect, const QPlatformMenuItem *item)
-{
-    m_parentWindow = const_cast<QWindow *>(parentWindow);
-    m_targetRect = targetRect;
-    m_targetItem = static_cast<const QIOSMenuItem *>(item);
-
-    if (m_parentWindow && !m_parentWindow->isActive())
-        m_parentWindow->requestActivate();
-
-    setVisible(true);
-}
-
-void QIOSMenu::handleItemSelected(QIOSMenuItem *menuItem)
-{
-    emit menuItem->activated();
-    setVisible(false);
-
-    if (QIOSMenu *menu = menuItem->m_menu) {
-        menu->setMenuType(m_effectiveMenuType);
-        menu->showPopup(m_parentWindow, m_targetRect, 0);
-    }
-}
-
-void QIOSMenu::dismiss()
-{
-    setVisible(false);
 }
 
 void QIOSMenu::setVisible(bool visible)
 {
-    if (m_visible == visible)
-        return;
-
     m_visible = visible;
-    updateVisibility();
-}
-
-void QIOSMenu::updateVisibility()
-{
-    bool visibleAndEnabled = m_visible && m_enabled;
-    if ((visibleAndEnabled && m_effectiveVisible) || (!visibleAndEnabled && m_currentMenu != this))
-        return;
-
-    if (visibleAndEnabled && !qApp->focusObject()) {
-        // Since the menus depend on communicating with a focus object, a focus object is required to show
-        // the menu. Note that QIOSMenu::showPopup() will activate the parent window (and set a focus object)
-        // before this function is called, so this should normally be the case. Not having a focus object is only
-        // expected in a hybrid environment where the first responder can be something else than a QUIView (then
-        // no QWindow will be active). If the focus object changes while the menu is visible, the menu will hide.
-        qWarning() << "QIOSMenu: cannot open menu without any active QWindows!";
-        return;
-    }
-
-    m_effectiveVisible = visibleAndEnabled;
-
-    if (m_effectiveVisible) {
-        Q_ASSERT(m_currentMenu != this);
-        if (m_currentMenu) {
-            // The current implementation allow only one visible
-            // menu at a time, so close the one currently showing.
-            m_currentMenu->setVisible(false);
-        }
-
-        m_currentMenu = this;
-        m_effectiveMenuType = m_menuType;
-        connect(qGuiApp, &QGuiApplication::focusObjectChanged, this, &QIOSMenu::hide);
-    } else {
-        disconnect(qGuiApp, &QGuiApplication::focusObjectChanged, this, &QIOSMenu::hide);
-        m_currentMenu = 0;
-    }
-
-    switch (m_effectiveMenuType) {
-    case EditMenu:
-        updateVisibilityUsingUIMenuController();
-        break;
-    default:
-        updateVisibilityUsingUIPickerView();
-        break;
-    }
-
-    // Emit the signal after the fact in case a
-    // receiver opens a new menu when receiving it.
-    emit (m_effectiveVisible ? aboutToShow() : aboutToHide());
 }
 
 void QIOSMenu::setMenuType(QPlatformMenu::MenuType type)
@@ -445,9 +360,72 @@ void QIOSMenu::setMenuType(QPlatformMenu::MenuType type)
     m_menuType = type;
 }
 
-void QIOSMenu::updateVisibilityUsingUIMenuController()
+void QIOSMenu::handleItemSelected(QIOSMenuItem *menuItem)
 {
-    if (m_effectiveVisible) {
+    emit menuItem->activated();
+    dismiss();
+
+    if (QIOSMenu *menu = menuItem->m_menu) {
+        menu->setMenuType(m_effectiveMenuType);
+        menu->showPopup(m_parentWindow, m_targetRect, 0);
+    }
+}
+
+void QIOSMenu::showPopup(const QWindow *parentWindow, const QRect &targetRect, const QPlatformMenuItem *item)
+{
+    if (m_currentMenu == this || !m_visible || !m_enabled || !parentWindow)
+        return;
+
+    emit aboutToShow();
+
+    m_parentWindow = const_cast<QWindow *>(parentWindow);
+    m_targetRect = targetRect;
+    m_targetItem = static_cast<const QIOSMenuItem *>(item);
+
+    if (!m_parentWindow->isActive())
+        m_parentWindow->requestActivate();
+
+    if (m_currentMenu && m_currentMenu != this)
+        m_currentMenu->dismiss();
+
+    m_currentMenu = this;
+    m_effectiveMenuType = m_menuType;
+    connect(qGuiApp, &QGuiApplication::focusObjectChanged, this, &QIOSMenu::dismiss);
+
+    switch (m_effectiveMenuType) {
+    case EditMenu:
+        toggleShowUsingUIMenuController(true);
+        break;
+    default:
+        toggleShowUsingUIPickerView(true);
+        break;
+    }
+}
+
+void QIOSMenu::dismiss()
+{
+    if (m_currentMenu != this)
+        return;
+
+    emit aboutToHide();
+
+    disconnect(qGuiApp, &QGuiApplication::focusObjectChanged, this, &QIOSMenu::dismiss);
+
+    switch (m_effectiveMenuType) {
+    case EditMenu:
+        toggleShowUsingUIMenuController(false);
+        break;
+    default:
+        toggleShowUsingUIPickerView(false);
+        break;
+    }
+
+    m_currentMenu = 0;
+}
+
+void QIOSMenu::toggleShowUsingUIMenuController(bool show)
+{
+    if (show) {
         Q_ASSERT(!m_menuController);
         m_menuController = [[QUIMenuController alloc] initWithVisibleMenuItems:visibleMenuItems()];
         repositionMenu();
@@ -462,11 +440,11 @@ void QIOSMenu::updateVisibilityUsingUIMenuController()
     }
 }
 
-void QIOSMenu::updateVisibilityUsingUIPickerView()
+void QIOSMenu::toggleShowUsingUIPickerView(bool show)
 {
     static QObject *focusObjectWithPickerView = 0;
 
-    if (m_effectiveVisible) {
+    if (show) {
         Q_ASSERT(!m_pickerView);
         m_pickerView = [[QUIPickerView alloc] initWithVisibleMenuItems:visibleMenuItems() selectItem:m_targetItem];
 

@@ -126,7 +126,6 @@ private:
     quintptr m_tag;
     bool m_enabled;
     bool m_visible;
-    bool m_effectiveVisible;
     QString m_text;
     MenuType m_menuType;
     MenuType m_effectiveMenuType;
@@ -140,11 +139,10 @@ private:
     static QIOSMenu *m_currentMenu;
 
     void updateVisibility();
-    void updateVisibilityUsingUIMenuController();
-    void updateVisibilityUsingUIPickerView();
+    void toggleShowUsingUIMenuController(bool show);
+    void toggleShowUsingUIPickerView(bool show);
     QIOSMenuItemList visibleMenuItems() const;
     void repositionMenu();
-    void hide() { setVisible(false); }
 };
 
 #endif // QIOSMENU_H
