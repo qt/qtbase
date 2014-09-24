@@ -144,7 +144,7 @@ static inline QColor mixColors(const QColor &c1, const QColor &c2)
 
 static inline QColor getSysColor(int index)
 {
-    return qColorToCOLORREF(GetSysColor(index));
+    return COLORREFToQColor(GetSysColor(index));
 }
 
 // from QStyle::standardPalette
