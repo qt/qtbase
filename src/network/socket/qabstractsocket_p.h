@@ -97,7 +97,6 @@ public:
     bool emittedBytesWritten;
 
     bool abortCalled;
-    bool closeCalled;
     bool pendingClose;
 
     QAbstractSocket::PauseModes pauseMode;

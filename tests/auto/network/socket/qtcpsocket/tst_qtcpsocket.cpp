@@ -196,7 +196,7 @@ private slots:
     void qtbug14268_peek();
 
     void setSocketOption();
-
+    void clientSendDataOnDelayedDisconnect();
 
 protected slots:
     void nonBlockingIMAP_hostFound();
@@ -2813,6 +2813,38 @@ void tst_QTcpSocket::setSocketOption()
     outgoing->setSocketOption(QAbstractSocket::TypeOfServiceOption, 32); //high priority
     v = outgoing->socketOption(QAbstractSocket::TypeOfServiceOption);
     QVERIFY(v.isValid() && v.toInt() == 32);
+}
+
+// Test buffered socket properly send data on delayed disconnect
+void tst_QTcpSocket::clientSendDataOnDelayedDisconnect()
+{
+    QFETCH_GLOBAL(bool, setProxy);
+    if (setProxy)
+        return;
+
+    QTcpServer server;
+    QTcpSocket *socket = newSocket();
+
+    QVERIFY(server.listen(QHostAddress::LocalHost));
+
+    // Connect to server, write data and close socket
+    const QByteArray sendData("GET /\r\n");
+    socket->connectToHost(server.serverAddress(), server.serverPort());
+    QVERIFY(socket->waitForConnected(5000)); // ready for write
+    QCOMPARE(socket->write(sendData), sendData.size());
+    socket->close();
+    QVERIFY(socket->waitForDisconnected(5000)); // flush buffer
+
+    // Check data on server side
+    QByteArray recData;
+    QVERIFY(server.waitForNewConnection(5000));
+    QTcpSocket *newConnection = server.nextPendingConnection();
+    QVERIFY(newConnection != NULL);
+    while (newConnection->waitForReadyRead(5000)) // have data to read
+        recData += newConnection->readAll();
+    QCOMPARE(sendData, recData);
+
+    delete socket;
 }
 
 QTEST_MAIN(tst_QTcpSocket)

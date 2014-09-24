@@ -549,7 +549,6 @@ QAbstractSocketPrivate::QAbstractSocketPrivate()
       emittedReadyRead(false),
       emittedBytesWritten(false),
       abortCalled(false),
-      closeCalled(false),
       pendingClose(false),
       pauseMode(QAbstractSocket::PauseNever),
       port(0),
@@ -1610,7 +1609,6 @@ void QAbstractSocket::connectToHost(const QString &hostName, quint16 port,
     d->buffer.clear();
     d->writeBuffer.clear();
     d->abortCalled = false;
-    d->closeCalled = false;
     d->pendingClose = false;
     d->localPort = 0;
     d->peerPort = 0;
@@ -2650,10 +2648,8 @@ void QAbstractSocket::close()
     qDebug("QAbstractSocket::close()");
 #endif
     QIODevice::close();
-    if (d->state != UnconnectedState) {
-        d->closeCalled = true;
+    if (d->state != UnconnectedState)
         disconnectFromHost();
-    }
 
     d->localPort = 0;
     d->peerPort = 0;
@@ -2763,19 +2759,12 @@ void QAbstractSocket::disconnectFromHost()
     d->peerPort = 0;
     d->localAddress.clear();
     d->peerAddress.clear();
+    d->writeBuffer.clear();
 
 #if defined(QABSTRACTSOCKET_DEBUG)
         qDebug("QAbstractSocket::disconnectFromHost() disconnected!");
 #endif
 
-    if (d->closeCalled) {
-#if defined(QABSTRACTSOCKET_DEBUG)
-        qDebug("QAbstractSocket::disconnectFromHost() closed!");
-#endif
-        d->buffer.clear();
-        d->writeBuffer.clear();
-        QIODevice::close();
-    }
 }
 
 /*!
