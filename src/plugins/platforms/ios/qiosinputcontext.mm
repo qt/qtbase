@@ -424,6 +424,7 @@ void QIOSInputContext::focusWindowChanged(QWindow *focusWindow)
 
     reset();
 
+    [m_keyboardListener handleKeyboardRectChanged];
     if (m_keyboardListener->m_keyboardVisibleAndDocked)
         scrollToCursor();
 }
