@@ -1697,7 +1697,7 @@ void QWindow::setScreen(QScreen *newScreen)
 void QWindow::screenDestroyed(QObject *object)
 {
     Q_D(QWindow);
-    if (d->parentWindow)
+    if (d->parentWindow || QGuiApplication::closingDown())
         return;
     if (object == static_cast<QObject *>(d->topLevelScreen)) {
         const bool wasVisible = isVisible();
