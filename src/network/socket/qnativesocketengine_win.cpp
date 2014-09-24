@@ -214,6 +214,7 @@ static void convertToLevelAndOption(QNativeSocketEngine::SocketOption opt,
     switch (opt) {
     case QNativeSocketEngine::NonBlockingSocketOption:      // WSAIoctl
     case QNativeSocketEngine::TypeOfServiceOption:          // not supported
+    case QNativeSocketEngine::MaxStreamsSocketOption:
         Q_UNREACHABLE();
 
     case QNativeSocketEngine::ReceiveBufferSocketOption:
@@ -325,6 +326,14 @@ bool QNativeSocketEnginePrivate::createNewSocket(QAbstractSocket::SocketType soc
         return -1;
     }
     */
+
+    //### SCTP not implemented
+    if (socketType == QAbstractSocket::SctpSocket) {
+        setError(QAbstractSocket::UnsupportedSocketOperationError,
+                 ProtocolUnsupportedErrorString);
+        return false;
+    }
+
     QSysInfo::WinVersion osver = QSysInfo::windowsVersion();
 
     //Windows XP and 2003 support IPv6 but not dual stack sockets
@@ -451,6 +460,7 @@ int QNativeSocketEnginePrivate::option(QNativeSocketEngine::SocketOption opt) co
         break;
     }
     case QNativeSocketEngine::TypeOfServiceOption:
+    case QNativeSocketEngine::MaxStreamsSocketOption:
         return -1;
 
     default:
@@ -501,6 +511,7 @@ bool QNativeSocketEnginePrivate::setOption(QNativeSocketEngine::SocketOption opt
         break;
         }
     case QNativeSocketEngine::TypeOfServiceOption:
+    case QNativeSocketEngine::MaxStreamsSocketOption:
         return false;
 
     default:

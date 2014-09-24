@@ -739,6 +739,18 @@ void QIODevicePrivate::setWriteChannelCount(int count)
 }
 
 /*!
+    \internal
+*/
+bool QIODevicePrivate::allWriteBuffersEmpty() const
+{
+    for (const QRingBuffer &ringBuffer : writeBuffers) {
+        if (!ringBuffer.isEmpty())
+            return false;
+    }
+    return true;
+}
+
+/*!
     Opens the device and sets its OpenMode to \a mode. Returns \c true if successful;
     otherwise returns \c false. This function should be called from any
     reimplementations of open() or other functions that open the device.

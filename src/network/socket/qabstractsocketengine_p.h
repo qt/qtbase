@@ -104,7 +104,8 @@ public:
         MulticastLoopbackOption,
         TypeOfServiceOption,
         ReceivePacketInformation,
-        ReceiveHopLimit
+        ReceiveHopLimit,
+        MaxStreamsSocketOption
     };
 
     enum PacketHeaderOption {
@@ -112,6 +113,8 @@ public:
         WantDatagramSender = 0x01,
         WantDatagramDestination = 0x02,
         WantDatagramHopLimit = 0x04,
+        WantStreamNumber = 0x08,
+        WantEndOfRecord = 0x10,
 
         WantAll = 0xff
     };
@@ -147,13 +150,13 @@ public:
     virtual bool setMulticastInterface(const QNetworkInterface &iface) = 0;
 #endif // QT_NO_NETWORKINTERFACE
 
-    virtual qint64 readDatagram(char *data, qint64 maxlen, QIpPacketHeader *header = 0,
-                                PacketHeaderOptions = WantNone) = 0;
-    virtual qint64 writeDatagram(const char *data, qint64 len, const QIpPacketHeader &header) = 0;
     virtual bool hasPendingDatagrams() const = 0;
     virtual qint64 pendingDatagramSize() const = 0;
 #endif // QT_NO_UDPSOCKET
 
+    virtual qint64 readDatagram(char *data, qint64 maxlen, QIpPacketHeader *header = 0,
+                                PacketHeaderOptions = WantNone) = 0;
+    virtual qint64 writeDatagram(const char *data, qint64 len, const QIpPacketHeader &header) = 0;
     virtual qint64 bytesToWrite() const = 0;
 
     virtual int option(SocketOption option) const = 0;

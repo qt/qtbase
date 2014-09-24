@@ -1,0 +1,4 @@
+SOURCES = sctp.cpp
+CONFIG -= qt
+QT =
+LIBS += $$QMAKE_LIBS_NETWORK

@@ -25,6 +25,18 @@ SOURCES += socket/qabstractsocketengine.cpp \
            socket/qlocalsocket.cpp \
            socket/qlocalserver.cpp
 
+# SCTP support.
+
+contains(QT_CONFIG, sctp) {
+    HEADERS += socket/qsctpserver.h \
+                socket/qsctpserver_p.h \
+                socket/qsctpsocket.h \
+                socket/qsctpsocket_p.h
+
+    SOURCES += socket/qsctpserver.cpp \
+                socket/qsctpsocket.cpp
+}
+
 !winrt {
     SOURCES += socket/qnativesocketengine.cpp
     HEADERS += socket/qnativesocketengine_p.h

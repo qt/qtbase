@@ -157,13 +157,13 @@ public:
     bool setMulticastInterface(const QNetworkInterface &iface) Q_DECL_OVERRIDE;
 #endif
 
-    qint64 readDatagram(char *data, qint64 maxlen, QIpPacketHeader * = 0,
-                        PacketHeaderOptions = WantNone) Q_DECL_OVERRIDE;
-    qint64 writeDatagram(const char *data, qint64 len, const QIpPacketHeader &) Q_DECL_OVERRIDE;
     bool hasPendingDatagrams() const Q_DECL_OVERRIDE;
     qint64 pendingDatagramSize() const Q_DECL_OVERRIDE;
 #endif // QT_NO_UDPSOCKET
 
+    qint64 readDatagram(char *data, qint64 maxlen, QIpPacketHeader * = 0,
+                        PacketHeaderOptions = WantNone) Q_DECL_OVERRIDE;
+    qint64 writeDatagram(const char *data, qint64 len, const QIpPacketHeader &) Q_DECL_OVERRIDE;
     qint64 bytesToWrite() const Q_DECL_OVERRIDE;
 
     qint64 receiveBufferSize() const;

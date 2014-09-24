@@ -347,6 +347,12 @@ qint64 QUdpSocket::writeDatagram(const char *data, qint64 size, const QHostAddre
     if (sent >= 0) {
         emit bytesWritten(sent);
     } else {
+        if (sent == -2) {
+            // Socket engine reports EAGAIN. Treat as a temporary error.
+            d->setErrorAndEmit(QAbstractSocket::TemporaryError,
+                               tr("Unable to send a datagram"));
+            return -1;
+        }
         d->setErrorAndEmit(d->socketEngine->error(), d->socketEngine->errorString());
     }
     return sent;
@@ -495,8 +501,15 @@ qint64 QUdpSocket::readDatagram(char *data, qint64 maxSize, QHostAddress *addres
 
     d->hasPendingData = false;
     d->socketEngine->setReadNotificationEnabled(true);
-    if (readBytes < 0)
+    if (readBytes < 0) {
+        if (readBytes == -2) {
+            // No pending datagram. Treat as a temporary error.
+            d->setErrorAndEmit(QAbstractSocket::TemporaryError,
+                               tr("No datagram available for reading"));
+            return -1;
+        }
         d->setErrorAndEmit(d->socketEngine->error(), d->socketEngine->errorString());
+    }
     return readBytes;
 }
 

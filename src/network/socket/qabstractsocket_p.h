@@ -86,7 +86,7 @@ public:
 
     virtual bool bind(const QHostAddress &address, quint16 port, QAbstractSocket::BindMode mode);
 
-    bool canReadNotification();
+    virtual bool canReadNotification();
     bool canWriteNotification();
     void canCloseNotification();
 
@@ -136,8 +136,9 @@ public:
     void startConnectingByName(const QString &host);
     void fetchConnectionParameters();
     bool readFromSocket();
-    bool writeToSocket();
-    void emitReadyRead();
+    virtual bool writeToSocket();
+    void emitReadyRead(int channel = 0);
+    void emitBytesWritten(qint64 bytes, int channel = 0);
 
     void setError(QAbstractSocket::SocketError errorCode, const QString &errorString);
     void setErrorAndEmit(QAbstractSocket::SocketError errorCode, const QString &errorString);

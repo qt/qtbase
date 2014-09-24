@@ -68,6 +68,11 @@
 #endif
 
 #include <netinet/tcp.h>
+#ifndef QT_NO_SCTP
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/sctp.h>
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -142,6 +147,7 @@ static void convertToLevelAndOption(QNativeSocketEngine::SocketOption opt,
     switch (opt) {
     case QNativeSocketEngine::NonBlockingSocketOption:  // fcntl, not setsockopt
     case QNativeSocketEngine::BindExclusively:          // not handled on Unix
+    case QNativeSocketEngine::MaxStreamsSocketOption:
         Q_UNREACHABLE();
 
     case QNativeSocketEngine::BroadcastSocketOption:
@@ -229,13 +235,28 @@ static void convertToLevelAndOption(QNativeSocketEngine::SocketOption opt,
 bool QNativeSocketEnginePrivate::createNewSocket(QAbstractSocket::SocketType socketType,
                                          QAbstractSocket::NetworkLayerProtocol &socketProtocol)
 {
-    int protocol = (socketProtocol == QAbstractSocket::IPv6Protocol || socketProtocol == QAbstractSocket::AnyIPProtocol) ? AF_INET6 : AF_INET;
+#ifndef QT_NO_SCTP
+    int protocol = (socketType == QAbstractSocket::SctpSocket) ? IPPROTO_SCTP : 0;
+#else
+    if (socketType == QAbstractSocket::SctpSocket) {
+        setError(QAbstractSocket::UnsupportedSocketOperationError,
+                 ProtocolUnsupportedErrorString);
+#if defined (QNATIVESOCKETENGINE_DEBUG)
+        qDebug("QNativeSocketEnginePrivate::createNewSocket(%d, %d): unsupported protocol",
+               socketType, socketProtocol);
+#endif
+        return false;
+    }
+    int protocol = 0;
+#endif // QT_NO_SCTP
+    int domain = (socketProtocol == QAbstractSocket::IPv6Protocol
+                  || socketProtocol == QAbstractSocket::AnyIPProtocol) ? AF_INET6 : AF_INET;
     int type = (socketType == QAbstractSocket::UdpSocket) ? SOCK_DGRAM : SOCK_STREAM;
 
-    int socket = qt_safe_socket(protocol, type, 0, O_NONBLOCK);
+    int socket = qt_safe_socket(domain, type, protocol, O_NONBLOCK);
     if (socket < 0 && socketProtocol == QAbstractSocket::AnyIPProtocol && errno == EAFNOSUPPORT) {
-        protocol = AF_INET;
-        socket = qt_safe_socket(protocol, type, 0, O_NONBLOCK);
+        domain = AF_INET;
+        socket = qt_safe_socket(domain, type, protocol, O_NONBLOCK);
         socketProtocol = QAbstractSocket::IPv4Protocol;
     }
 
@@ -291,10 +312,26 @@ int QNativeSocketEnginePrivate::option(QNativeSocketEngine::SocketOption opt) co
     if (!q->isValid())
         return -1;
 
-    // handle non-getsockopt cases first
-    if (opt == QNativeSocketEngine::BindExclusively || opt == QNativeSocketEngine::NonBlockingSocketOption
-            || opt == QNativeSocketEngine::BroadcastSocketOption)
+    // handle non-getsockopt and specific cases first
+    switch (opt) {
+    case QNativeSocketEngine::BindExclusively:
+    case QNativeSocketEngine::NonBlockingSocketOption:
+    case QNativeSocketEngine::BroadcastSocketOption:
         return true;
+    case QNativeSocketEngine::MaxStreamsSocketOption: {
+#ifndef QT_NO_SCTP
+        sctp_initmsg sctpInitMsg;
+        QT_SOCKOPTLEN_T sctpInitMsgSize = sizeof(sctpInitMsg);
+        if (::getsockopt(socketDescriptor, SOL_SCTP, SCTP_INITMSG, &sctpInitMsg,
+                         &sctpInitMsgSize) == 0)
+            return int(qMin(sctpInitMsg.sinit_num_ostreams, sctpInitMsg.sinit_max_instreams));
+#endif
+        return -1;
+    }
+
+    default:
+        break;
+    }
 
     int n, level;
     int v = -1;
@@ -317,7 +354,7 @@ bool QNativeSocketEnginePrivate::setOption(QNativeSocketEngine::SocketOption opt
     if (!q->isValid())
         return false;
 
-    // handle non-setsockopt cases first
+    // handle non-setsockopt and specific cases first
     switch (opt) {
     case QNativeSocketEngine::NonBlockingSocketOption: {
         // Make the socket nonblocking.
@@ -350,6 +387,20 @@ bool QNativeSocketEnginePrivate::setOption(QNativeSocketEngine::SocketOption opt
     }
     case QNativeSocketEngine::BindExclusively:
         return true;
+
+    case QNativeSocketEngine::MaxStreamsSocketOption: {
+#ifndef QT_NO_SCTP
+        sctp_initmsg sctpInitMsg;
+        QT_SOCKOPTLEN_T sctpInitMsgSize = sizeof(sctpInitMsg);
+        if (::getsockopt(socketDescriptor, SOL_SCTP, SCTP_INITMSG, &sctpInitMsg,
+                         &sctpInitMsgSize) == 0) {
+            sctpInitMsg.sinit_num_ostreams = sctpInitMsg.sinit_max_instreams = uint16_t(v);
+            return ::setsockopt(socketDescriptor, SOL_SCTP, SCTP_INITMSG, &sctpInitMsg,
+                                sctpInitMsgSize) == 0;
+        }
+#endif
+        return false;
+    }
 
     default:
         break;
@@ -830,6 +881,9 @@ qint64 QNativeSocketEnginePrivate::nativeReceiveDatagram(char *data, qint64 maxS
 #if !defined(IP_PKTINFO) && defined(IP_RECVIF) && defined(Q_OS_BSD4)
                    + CMSG_SPACE(sizeof(sockaddr_dl))
 #endif
+#ifndef QT_NO_SCTP
+                   + CMSG_SPACE(sizeof(struct sctp_sndrcvinfo))
+#endif
                    + sizeof(quintptr) - 1) / sizeof(quintptr)];
 
     struct msghdr msg;
@@ -848,7 +902,8 @@ qint64 QNativeSocketEnginePrivate::nativeReceiveDatagram(char *data, qint64 maxS
         msg.msg_name = &aa;
         msg.msg_namelen = sizeof(aa);
     }
-    if (options & (QAbstractSocketEngine::WantDatagramHopLimit | QAbstractSocketEngine::WantDatagramDestination)) {
+    if (options & (QAbstractSocketEngine::WantDatagramHopLimit | QAbstractSocketEngine::WantDatagramDestination
+                   | QAbstractSocketEngine::WantStreamNumber)) {
         msg.msg_control = cbuf;
         msg.msg_controllen = sizeof(cbuf);
     }
@@ -859,13 +914,27 @@ qint64 QNativeSocketEnginePrivate::nativeReceiveDatagram(char *data, qint64 maxS
     } while (recvResult == -1 && errno == EINTR);
 
     if (recvResult == -1) {
-        setError(QAbstractSocket::NetworkError, ReceiveDatagramErrorString);
+        switch (errno) {
+#if EWOULDBLOCK-0 && EWOULDBLOCK != EAGAIN
+        case EWOULDBLOCK:
+#endif
+        case EAGAIN:
+            // No datagram was available for reading
+            recvResult = -2;
+            break;
+        case ECONNREFUSED:
+            setError(QAbstractSocket::ConnectionRefusedError, ConnectionRefusedErrorString);
+            break;
+        default:
+            setError(QAbstractSocket::NetworkError, ReceiveDatagramErrorString);
+        }
         if (header)
             header->clear();
     } else if (options != QAbstractSocketEngine::WantNone) {
         Q_ASSERT(header);
         qt_socket_getPortAndAddress(&aa, &header->senderPort, &header->senderAddress);
         header->destinationPort = localPort;
+        header->endOfRecord = (msg.msg_flags & MSG_EOR) != 0;
 
         // parse the ancillary data
         struct cmsghdr *cmsgptr;
@@ -912,6 +981,15 @@ qint64 QNativeSocketEnginePrivate::nativeReceiveDatagram(char *data, qint64 maxS
                         || (cmsgptr->cmsg_level == IPPROTO_IP && cmsgptr->cmsg_type == IP_TTL))) {
                 header->hopLimit = *reinterpret_cast<int *>(CMSG_DATA(cmsgptr));
             }
+
+#ifndef QT_NO_SCTP
+            if (cmsgptr->cmsg_level == IPPROTO_SCTP && cmsgptr->cmsg_type == SCTP_SNDRCV
+                && cmsgptr->cmsg_len >= CMSG_LEN(sizeof(sctp_sndrcvinfo))) {
+                sctp_sndrcvinfo *rcvInfo = reinterpret_cast<sctp_sndrcvinfo *>(CMSG_DATA(cmsgptr));
+
+                header->streamNumber = int(rcvInfo->sinfo_stream);
+            }
+#endif
         }
     }
 
@@ -924,13 +1002,17 @@ qint64 QNativeSocketEnginePrivate::nativeReceiveDatagram(char *data, qint64 maxS
            ? header->senderPort : 0, (qint64) recvResult);
 #endif
 
-    return qint64(maxSize ? recvResult : recvResult == -1 ? -1 : 0);
+    return qint64((maxSize || recvResult < 0) ? recvResult : Q_INT64_C(0));
 }
 
 qint64 QNativeSocketEnginePrivate::nativeSendDatagram(const char *data, qint64 len, const QIpPacketHeader &header)
 {
     // we use quintptr to force the alignment
-    quintptr cbuf[(CMSG_SPACE(sizeof(struct in6_pktinfo)) + CMSG_SPACE(sizeof(int)) + sizeof(quintptr) - 1) / sizeof(quintptr)];
+    quintptr cbuf[(CMSG_SPACE(sizeof(struct in6_pktinfo)) + CMSG_SPACE(sizeof(int))
+#ifndef QT_NO_SCTP
+                   + CMSG_SPACE(sizeof(struct sctp_sndrcvinfo))
+#endif
+                   + sizeof(quintptr) - 1) / sizeof(quintptr)];
 
     struct cmsghdr *cmsgptr = reinterpret_cast<struct cmsghdr *>(cbuf);
     struct msghdr msg;
@@ -943,10 +1025,13 @@ qint64 QNativeSocketEnginePrivate::nativeSendDatagram(const char *data, qint64 l
     vec.iov_len = len;
     msg.msg_iov = &vec;
     msg.msg_iovlen = 1;
-    msg.msg_name = &aa.a;
     msg.msg_control = &cbuf;
 
-    setPortAndAddress(header.destinationPort, header.destinationAddress, &aa, &msg.msg_namelen);
+    if (header.destinationPort != 0) {
+        msg.msg_name = &aa.a;
+        setPortAndAddress(header.destinationPort, header.destinationAddress,
+                          &aa, &msg.msg_namelen);
+    }
 
     if (msg.msg_namelen == sizeof(aa.a6)) {
         if (header.hopLimit != -1) {
@@ -1001,14 +1086,36 @@ qint64 QNativeSocketEnginePrivate::nativeSendDatagram(const char *data, qint64 l
 #endif
     }
 
+#ifndef QT_NO_SCTP
+    if (header.streamNumber != -1) {
+        struct sctp_sndrcvinfo *data = reinterpret_cast<sctp_sndrcvinfo *>(CMSG_DATA(cmsgptr));
+        memset(data, 0, sizeof(*data));
+        msg.msg_controllen += CMSG_SPACE(sizeof(sctp_sndrcvinfo));
+        cmsgptr->cmsg_len = CMSG_LEN(sizeof(sctp_sndrcvinfo));
+        cmsgptr->cmsg_level = IPPROTO_SCTP;
+        cmsgptr->cmsg_type =  SCTP_SNDRCV;
+        data->sinfo_stream = uint16_t(header.streamNumber);
+        cmsgptr = reinterpret_cast<cmsghdr *>(reinterpret_cast<char *>(cmsgptr) + CMSG_SPACE(sizeof(*data)));
+    }
+#endif
+
     if (msg.msg_controllen == 0)
         msg.msg_control = 0;
     ssize_t sentBytes = qt_safe_sendmsg(socketDescriptor, &msg, 0);
 
     if (sentBytes < 0) {
         switch (errno) {
+#if EWOULDBLOCK-0 && EWOULDBLOCK != EAGAIN
+        case EWOULDBLOCK:
+#endif
+        case EAGAIN:
+            sentBytes = -2;
+            break;
         case EMSGSIZE:
             setError(QAbstractSocket::DatagramTooLargeError, DatagramTooLargeErrorString);
+            break;
+        case ECONNRESET:
+            setError(QAbstractSocket::RemoteHostClosedError, RemoteHostClosedErrorString);
             break;
         default:
             setError(QAbstractSocket::NetworkError, SendDatagramErrorString);
@@ -1082,21 +1189,51 @@ bool QNativeSocketEnginePrivate::fetchConnectionParameters()
 #endif
 
     // Determine the remote address
-    if (!::getpeername(socketDescriptor, &sa.a, &sockAddrSize)) {
+    bool connected = ::getpeername(socketDescriptor, &sa.a, &sockAddrSize) == 0;
+    if (connected) {
         qt_socket_getPortAndAddress(&sa, &peerPort, &peerAddress);
         inboundStreamCount = outboundStreamCount = 1;
     }
 
-    // Determine the socket type (UDP/TCP)
+    // Determine the socket type (UDP/TCP/SCTP)
     int value = 0;
     QT_SOCKOPTLEN_T valueSize = sizeof(int);
     if (::getsockopt(socketDescriptor, SOL_SOCKET, SO_TYPE, &value, &valueSize) == 0) {
-        if (value == SOCK_STREAM)
-            socketType = QAbstractSocket::TcpSocket;
-        else if (value == SOCK_DGRAM)
-            socketType = QAbstractSocket::UdpSocket;
-        else
-            socketType = QAbstractSocket::UnknownSocketType;
+        if (value == SOCK_STREAM) {
+#ifndef QT_NO_SCTP
+            if (option(QNativeSocketEngine::MaxStreamsSocketOption) != -1) {
+                socketType = QAbstractSocket::SctpSocket;
+                if (connected) {
+                    sctp_status sctpStatus;
+                    QT_SOCKOPTLEN_T sctpStatusSize = sizeof(sctpStatus);
+                    sctp_event_subscribe sctpEvents;
+
+                    memset(&sctpEvents, 0, sizeof(sctpEvents));
+                    sctpEvents.sctp_data_io_event = 1;
+                    if (::getsockopt(socketDescriptor, SOL_SCTP, SCTP_STATUS, &sctpStatus,
+                                     &sctpStatusSize) == 0 &&
+                        ::setsockopt(socketDescriptor, SOL_SCTP, SCTP_EVENTS, &sctpEvents,
+                                     sizeof(sctpEvents)) == 0) {
+                        inboundStreamCount = int(sctpStatus.sstat_instrms);
+                        outboundStreamCount = int(sctpStatus.sstat_outstrms);
+                    } else {
+                        setError(QAbstractSocket::UnsupportedSocketOperationError,
+                                 InvalidSocketErrorString);
+                        return false;
+                    }
+                }
+            } else {
+                socketType = QAbstractSocket::TcpSocket;
+            }
+#else
+                socketType = QAbstractSocket::TcpSocket;
+#endif
+        } else {
+            if (value == SOCK_DGRAM)
+                socketType = QAbstractSocket::UdpSocket;
+            else
+                socketType = QAbstractSocket::UnknownSocketType;
+        }
     }
 #if defined (QNATIVESOCKETENGINE_DEBUG)
     QString socketProtocolStr = QStringLiteral("UnknownProtocol");
@@ -1106,6 +1243,7 @@ bool QNativeSocketEnginePrivate::fetchConnectionParameters()
     QString socketTypeStr = QStringLiteral("UnknownSocketType");
     if (socketType == QAbstractSocket::TcpSocket) socketTypeStr = QStringLiteral("TcpSocket");
     else if (socketType == QAbstractSocket::UdpSocket) socketTypeStr = QStringLiteral("UdpSocket");
+    else if (socketType == QAbstractSocket::SctpSocket) socketTypeStr = QStringLiteral("SctpSocket");
 
     qDebug("QNativeSocketEnginePrivate::fetchConnectionParameters() local == %s:%i,"
            " peer == %s:%i, socket == %s - %s, inboundStreamCount == %i, outboundStreamCount == %i",

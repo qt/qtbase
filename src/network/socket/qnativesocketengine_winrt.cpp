@@ -632,6 +632,7 @@ qint64 QNativeSocketEngine::write(const char *data, qint64 len)
 qint64 QNativeSocketEngine::readDatagram(char *data, qint64 maxlen, QIpPacketHeader *header,
                                          PacketHeaderOptions)
 {
+#ifndef QT_NO_UDPSOCKET
     Q_D(QNativeSocketEngine);
     if (d->socketType != QAbstractSocket::UdpSocket || d->pendingDatagrams.isEmpty()) {
         if (header)
@@ -654,10 +655,17 @@ qint64 QNativeSocketEngine::readDatagram(char *data, qint64 maxlen, QIpPacketHea
     }
     memcpy(data, readOrigin, qMin(maxlen, qint64(datagram.data.length())));
     return readOrigin.length();
+#else
+    Q_UNUSED(data)
+    Q_UNUSED(maxlen)
+    Q_UNUSED(header)
+    return -1;
+#endif // QT_NO_UDPSOCKET
 }
 
 qint64 QNativeSocketEngine::writeDatagram(const char *data, qint64 len, const QIpPacketHeader &header)
 {
+#ifndef QT_NO_UDPSOCKET
     Q_D(QNativeSocketEngine);
     if (d->socketType != QAbstractSocket::UdpSocket)
         return -1;
@@ -684,6 +692,12 @@ qint64 QNativeSocketEngine::writeDatagram(const char *data, qint64 len, const QI
     Q_ASSERT_SUCCEEDED(hr);
 
     return writeIOStream(stream, data, len);
+#else
+    Q_UNUSED(data)
+    Q_UNUSED(len)
+    Q_UNUSED(header)
+    return -1;
+#endif // QT_NO_UDPSOCKET
 }
 
 bool QNativeSocketEngine::hasPendingDatagrams() const
@@ -1088,6 +1102,7 @@ int QNativeSocketEnginePrivate::option(QAbstractSocketEngine::SocketOption opt) 
     case QAbstractSocketEngine::MulticastTtlOption:
     case QAbstractSocketEngine::MulticastLoopbackOption:
     case QAbstractSocketEngine::TypeOfServiceOption:
+    case QAbstractSocketEngine::MaxStreamsSocketOption:
     default:
         return -1;
     }
@@ -1146,6 +1161,7 @@ bool QNativeSocketEnginePrivate::setOption(QAbstractSocketEngine::SocketOption o
     case QAbstractSocketEngine::MulticastTtlOption:
     case QAbstractSocketEngine::MulticastLoopbackOption:
     case QAbstractSocketEngine::TypeOfServiceOption:
+    case QAbstractSocketEngine::MaxStreamsSocketOption:
     default:
         return false;
     }

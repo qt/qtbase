@@ -119,6 +119,7 @@ QT_BEGIN_NAMESPACE
 */
 QTcpServerPrivate::QTcpServerPrivate()
  : port(0)
+ , socketType(QAbstractSocket::UnknownSocketType)
  , state(QAbstractSocket::UnconnectedState)
  , socketEngine(0)
  , serverSocketError(QAbstractSocket::UnknownSocketError)
@@ -148,13 +149,21 @@ QNetworkProxy QTcpServerPrivate::resolveProxy(const QHostAddress &address, quint
         proxies << proxy;
     } else {
         // try the application settings instead
-        QNetworkProxyQuery query(port, QString(), QNetworkProxyQuery::TcpServer);
+        QNetworkProxyQuery query(port, QString(),
+                                 socketType == QAbstractSocket::SctpSocket ?
+                                 QNetworkProxyQuery::SctpServer :
+                                 QNetworkProxyQuery::TcpServer);
         proxies = QNetworkProxyFactory::proxyForQuery(query);
     }
 
     // return the first that we can use
     for (const QNetworkProxy &p : qAsConst(proxies)) {
-        if (p.capabilities() & QNetworkProxy::ListeningCapability)
+        if (socketType == QAbstractSocket::TcpSocket &&
+            (p.capabilities() & QNetworkProxy::ListeningCapability) != 0)
+            return p;
+
+        if (socketType == QAbstractSocket::SctpSocket &&
+            (p.capabilities() & QNetworkProxy::SctpListeningCapability) != 0)
             return p;
     }
 
@@ -228,9 +237,11 @@ void QTcpServerPrivate::readNotification()
 QTcpServer::QTcpServer(QObject *parent)
     : QObject(*new QTcpServerPrivate, parent)
 {
+    Q_D(QTcpServer);
 #if defined(QTCPSERVER_DEBUG)
     qDebug("QTcpServer::QTcpServer(%p)", parent);
 #endif
+    d->socketType = QAbstractSocket::TcpSocket;
 }
 
 /*!
@@ -251,13 +262,22 @@ QTcpServer::~QTcpServer()
 }
 
 /*! \internal
+
+    Constructs a new server object with socket of type \a socketType. The \a
+    parent argument is passed to QObject's constructor.
 */
-QTcpServer::QTcpServer(QTcpServerPrivate &dd, QObject *parent)
-    : QObject(dd, parent)
+QTcpServer::QTcpServer(QAbstractSocket::SocketType socketType, QTcpServerPrivate &dd,
+                       QObject *parent) : QObject(dd, parent)
 {
+    Q_D(QTcpServer);
 #if defined(QTCPSERVER_DEBUG)
-    qDebug("QTcpServer::QTcpServer(QTcpServerPrivate == %p, parent == %p)", &dd, parent);
+    qDebug("QTcpServer::QTcpServer(%sSocket, QTcpServerPrivate == %p, parent == %p)",
+           socketType == QAbstractSocket::TcpSocket ? "Tcp"
+           : socketType == QAbstractSocket::UdpSocket ? "Udp"
+           : socketType == QAbstractSocket::SctpSocket ? "Sctp"
+           : "Unknown", &dd, parent);
 #endif
+    d->socketType = socketType;
 }
 
 /*!
@@ -288,7 +308,7 @@ bool QTcpServer::listen(const QHostAddress &address, quint16 port)
 #endif
 
     delete d->socketEngine;
-    d->socketEngine = QAbstractSocketEngine::createSocketEngine(QAbstractSocket::TcpSocket, proxy, this);
+    d->socketEngine = QAbstractSocketEngine::createSocketEngine(d->socketType, proxy, this);
     if (!d->socketEngine) {
         d->serverSocketError = QAbstractSocket::UnsupportedSocketOperationError;
         d->serverSocketErrorString = tr("Operation on socket is not supported");
@@ -298,7 +318,7 @@ bool QTcpServer::listen(const QHostAddress &address, quint16 port)
     //copy network session down to the socket engine (if it has been set)
     d->socketEngine->setProperty("_q_networksession", property("_q_networksession"));
 #endif
-    if (!d->socketEngine->initialize(QAbstractSocket::TcpSocket, proto)) {
+    if (!d->socketEngine->initialize(d->socketType, proto)) {
         d->serverSocketError = d->socketEngine->error();
         d->serverSocketErrorString = d->socketEngine->errorString();
         return false;

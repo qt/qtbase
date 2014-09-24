@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2016 Alex Trotsenko <alex1973tr@gmail.com>
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
@@ -74,6 +75,7 @@ public:
     quint16 port;
     QHostAddress address;
 
+    QAbstractSocket::SocketType socketType;
     QAbstractSocket::SocketState state;
     QAbstractSocketEngine *socketEngine;
 

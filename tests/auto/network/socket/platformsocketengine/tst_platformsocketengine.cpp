@@ -603,8 +603,8 @@ void tst_PlatformSocketEngine::invalidSend()
     PLATFORMSOCKETENGINE socket;
     QVERIFY(socket.initialize(QAbstractSocket::TcpSocket));
 
-    QTest::ignoreMessage(QtWarningMsg, PLATFORMSOCKETENGINESTRING "::writeDatagram() was"
-                               " called by a socket other than QAbstractSocket::UdpSocket");
+    QTest::ignoreMessage(QtWarningMsg, PLATFORMSOCKETENGINESTRING "::writeDatagram() was called"
+                         " not in QAbstractSocket::BoundState or QAbstractSocket::ConnectedState");
     QCOMPARE(socket.writeDatagram("hei", 3, QIpPacketHeader(QHostAddress::LocalHost, 143)),
             (qlonglong) -1);
 }

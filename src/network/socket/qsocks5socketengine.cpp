@@ -1605,8 +1605,31 @@ bool QSocks5SocketEngine::setMulticastInterface(const QNetworkInterface &)
 }
 #endif // QT_NO_NETWORKINTERFACE
 
+bool QSocks5SocketEngine::hasPendingDatagrams() const
+{
+    Q_D(const QSocks5SocketEngine);
+    Q_INIT_CHECK(false);
+
+    d->checkForDatagrams();
+
+    return !d->udpData->pendingDatagrams.isEmpty();
+}
+
+qint64 QSocks5SocketEngine::pendingDatagramSize() const
+{
+    Q_D(const QSocks5SocketEngine);
+
+    d->checkForDatagrams();
+
+    if (!d->udpData->pendingDatagrams.isEmpty())
+        return d->udpData->pendingDatagrams.head().data.size();
+    return 0;
+}
+#endif // QT_NO_UDPSOCKET
+
 qint64 QSocks5SocketEngine::readDatagram(char *data, qint64 maxlen, QIpPacketHeader *header, PacketHeaderOptions)
 {
+#ifndef QT_NO_UDPSOCKET
     Q_D(QSocks5SocketEngine);
 
     d->checkForDatagrams();
@@ -1620,10 +1643,17 @@ qint64 QSocks5SocketEngine::readDatagram(char *data, qint64 maxlen, QIpPacketHea
     header->senderAddress = datagram.address;
     header->senderPort = datagram.port;
     return copyLen;
+#else
+    Q_UNUSED(data)
+    Q_UNUSED(maxlen)
+    Q_UNUSED(header)
+    return -1;
+#endif // QT_NO_UDPSOCKET
 }
 
 qint64 QSocks5SocketEngine::writeDatagram(const char *data, qint64 len, const QIpPacketHeader &header)
 {
+#ifndef QT_NO_UDPSOCKET
     Q_D(QSocks5SocketEngine);
 
     // it is possible to send with out first binding with udp, but socks5 requires a bind.
@@ -1660,29 +1690,13 @@ qint64 QSocks5SocketEngine::writeDatagram(const char *data, qint64 len, const QI
     }
 
     return len;
-}
-
-bool QSocks5SocketEngine::hasPendingDatagrams() const
-{
-    Q_D(const QSocks5SocketEngine);
-    Q_INIT_CHECK(false);
-
-    d->checkForDatagrams();
-
-    return !d->udpData->pendingDatagrams.isEmpty();
-}
-
-qint64 QSocks5SocketEngine::pendingDatagramSize() const
-{
-    Q_D(const QSocks5SocketEngine);
-
-    d->checkForDatagrams();
-
-    if (!d->udpData->pendingDatagrams.isEmpty())
-        return d->udpData->pendingDatagrams.head().data.size();
-    return 0;
-}
+#else
+    Q_UNUSED(data)
+    Q_UNUSED(len)
+    Q_UNUSED(header)
+    return -1;
 #endif // QT_NO_UDPSOCKET
+}
 
 qint64 QSocks5SocketEngine::bytesToWrite() const
 {

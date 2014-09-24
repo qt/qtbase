@@ -289,6 +289,19 @@ bool QHttpSocketEngine::setMulticastInterface(const QNetworkInterface &)
 }
 #endif // QT_NO_NETWORKINTERFACE
 
+bool QHttpSocketEngine::hasPendingDatagrams() const
+{
+    qWarning("Operation is not supported");
+    return false;
+}
+
+qint64 QHttpSocketEngine::pendingDatagramSize() const
+{
+    qWarning("Operation is not supported");
+    return -1;
+}
+#endif // QT_NO_UDPSOCKET
+
 qint64 QHttpSocketEngine::readDatagram(char *, qint64, QIpPacketHeader *, PacketHeaderOptions)
 {
     qWarning("Operation is not supported");
@@ -304,19 +317,6 @@ qint64 QHttpSocketEngine::writeDatagram(const char *, qint64, const QIpPacketHea
              QLatin1String("Unsupported socket operation"));
     return -1;
 }
-
-bool QHttpSocketEngine::hasPendingDatagrams() const
-{
-    qWarning("Operation is not supported");
-    return false;
-}
-
-qint64 QHttpSocketEngine::pendingDatagramSize() const
-{
-    qWarning("Operation is not supported");
-    return -1;
-}
-#endif // QT_NO_UDPSOCKET
 
 qint64 QHttpSocketEngine::bytesToWrite() const
 {

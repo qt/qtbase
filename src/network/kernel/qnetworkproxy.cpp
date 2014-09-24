@@ -212,6 +212,12 @@
     lookup on a remote host name and connect to it, as opposed to
     requiring the application to perform the name lookup and request
     connection to IP addresses only.
+
+    \value SctpTunnelingCapability Ability to open transparent, tunneled
+    SCTP connections to a remote host.
+
+    \value SctpListeningCapability Ability to create a listening socket
+    and wait for an incoming SCTP connection from a remote host.
 */
 
 #include "qnetworkproxy.h"
@@ -369,7 +375,9 @@ static QNetworkProxy::Capabilities defaultCapabilitiesForType(QNetworkProxy::Pro
         /* [QNetworkProxy::DefaultProxy] = */
         (int(QNetworkProxy::ListeningCapability) |
          int(QNetworkProxy::TunnelingCapability) |
-         int(QNetworkProxy::UdpTunnelingCapability)),
+         int(QNetworkProxy::UdpTunnelingCapability) |
+         int(QNetworkProxy::SctpTunnelingCapability) |
+         int(QNetworkProxy::SctpListeningCapability)),
         /* [QNetworkProxy::Socks5Proxy] = */
         (int(QNetworkProxy::TunnelingCapability) |
          int(QNetworkProxy::ListeningCapability) |
@@ -379,7 +387,9 @@ static QNetworkProxy::Capabilities defaultCapabilitiesForType(QNetworkProxy::Pro
         /* [QNetworkProxy::NoProxy] = */
         (int(QNetworkProxy::ListeningCapability) |
          int(QNetworkProxy::TunnelingCapability) |
-         int(QNetworkProxy::UdpTunnelingCapability)),
+         int(QNetworkProxy::UdpTunnelingCapability) |
+         int(QNetworkProxy::SctpTunnelingCapability) |
+         int(QNetworkProxy::SctpListeningCapability)),
         /* [QNetworkProxy::HttpProxy] = */
         (int(QNetworkProxy::TunnelingCapability) |
          int(QNetworkProxy::CachingCapability) |
@@ -966,6 +976,14 @@ template<> void QSharedDataPointer<QNetworkProxyQueryPrivate>::detach()
          characteristics of the socket. The URL component is not used.
 
     \row
+      \li SctpSocket
+      \li Message-oriented sockets requesting a connection to a remote
+         server. The peer hostname and peer port match the values passed
+         to QSctpSocket::connectToHost(). The local port is usually -1,
+         indicating the socket has no preference in which port should be
+         used. The URL component is not used.
+
+    \row
       \li TcpServer
       \li Passive server sockets that listen on a port and await
          incoming connections from the network. Normally, only the
@@ -981,6 +999,14 @@ template<> void QSharedDataPointer<QNetworkProxyQueryPrivate>::detach()
          indicate that more detailed information is present in the URL
          component. For ease of implementation, the URL's host and
          port are set as the destination address.
+
+    \row
+      \li SctpServer
+      \li Passive server sockets that listen on a SCTP port and await
+         incoming connections from the network. Normally, only the
+         local port is used, but the remote address could be used in
+         specific circumstances, for example to indicate which remote
+         host a connection is expected from. The URL component is not used.
     \endtable
 
     It should be noted that any of the criteria may be missing or
@@ -1001,10 +1027,13 @@ template<> void QSharedDataPointer<QNetworkProxyQueryPrivate>::detach()
     \value TcpSocket    a normal, outgoing TCP socket
     \value UdpSocket    a datagram-based UDP socket, which could send
                         to multiple destinations
+    \value SctpSocket   a message-oriented, outgoing SCTP socket
     \value TcpServer    a TCP server that listens for incoming
                         connections from the network
     \value UrlRequest   a more complex request which involves loading
                         of a URL
+    \value SctpServer   a SCTP server that listens for incoming
+                        connections from the network
 
     \sa queryType(), setQueryType()
 */
@@ -1614,6 +1643,10 @@ QDebug operator<<(QDebug debug, const QNetworkProxy &proxy)
         scaps << QStringLiteral("Caching");
     if (caps & QNetworkProxy::HostNameLookupCapability)
         scaps << QStringLiteral("NameLookup");
+    if (caps & QNetworkProxy::SctpTunnelingCapability)
+        scaps << QStringLiteral("SctpTunnel");
+    if (caps & QNetworkProxy::SctpListeningCapability)
+        scaps << QStringLiteral("SctpListen");
     debug << '[' << scaps.join(QLatin1Char(' ')) << ']';
     return debug;
 }

@@ -267,7 +267,8 @@
 
     \value TcpSocket TCP
     \value UdpSocket UDP
-    \value UnknownSocketType Other than TCP and UDP
+    \value SctpSocket SCTP
+    \value UnknownSocketType Other than TCP, UDP and SCTP
 
     \sa QAbstractSocket::socketType()
 */
@@ -626,6 +627,7 @@ bool QAbstractSocketPrivate::initSocketLayer(QAbstractSocket::NetworkLayerProtoc
     QString typeStr;
     if (q->socketType() == QAbstractSocket::TcpSocket) typeStr = QLatin1String("TcpSocket");
     else if (q->socketType() == QAbstractSocket::UdpSocket) typeStr = QLatin1String("UdpSocket");
+    else if (q->socketType() == QAbstractSocket::SctpSocket) typeStr = QLatin1String("SctpSocket");
     else typeStr = QLatin1String("UnknownSocketType");
     QString protocolStr;
     if (protocol == QAbstractSocket::IPv4Protocol) protocolStr = QLatin1String("IPv4Protocol");
@@ -670,6 +672,12 @@ bool QAbstractSocketPrivate::initSocketLayer(QAbstractSocket::NetworkLayerProtoc
 */
 void QAbstractSocketPrivate::configureCreatedSocket()
 {
+#ifndef QT_NO_SCTP
+    Q_Q(QAbstractSocket);
+    // Set single stream mode for unbuffered SCTP socket
+    if (socketEngine && q->socketType() == QAbstractSocket::SctpSocket)
+        socketEngine->setOption(QAbstractSocketEngine::MaxStreamsSocketOption, 1);
+#endif
 }
 
 /*! \internal
@@ -771,7 +779,8 @@ void QAbstractSocketPrivate::canCloseNotification()
 
             QMetaObject::invokeMethod(socketEngine, "closeNotification", Qt::QueuedConnection);
         }
-    } else if (socketType == QAbstractSocket::TcpSocket && socketEngine) {
+    } else if ((socketType == QAbstractSocket::TcpSocket ||
+                socketType == QAbstractSocket::SctpSocket) && socketEngine) {
         emitReadyRead();
     }
 }
@@ -862,13 +871,9 @@ bool QAbstractSocketPrivate::writeToSocket()
     if (written > 0) {
         // Remove what we wrote so far.
         writeBuffer.free(written);
-        // Don't emit bytesWritten() recursively.
-        if (!emittedBytesWritten) {
-            QScopedValueRollback<bool> r(emittedBytesWritten);
-            emittedBytesWritten = true;
-            emit q->bytesWritten(written);
-        }
-        emit q->channelBytesWritten(0, written);
+
+        // Emit notifications.
+        emitBytesWritten(written);
     }
 
     if (writeBuffer.isEmpty() && socketEngine && !socketEngine->bytesToWrite())
@@ -889,7 +894,7 @@ bool QAbstractSocketPrivate::flush()
 {
     bool dataWasWritten = false;
 
-    while (!writeBuffer.isEmpty() && writeToSocket())
+    while (!allWriteBuffersEmpty() && writeToSocket())
         dataWasWritten = true;
 
     return dataWasWritten;
@@ -912,6 +917,8 @@ void QAbstractSocketPrivate::resolveProxy(const QString &hostname, quint16 port)
         QNetworkProxyQuery query(hostname, port, QString(),
                                  socketType == QAbstractSocket::TcpSocket ?
                                  QNetworkProxyQuery::TcpSocket :
+                                 socketType == QAbstractSocket::SctpSocket ?
+                                 QNetworkProxyQuery::SctpSocket :
                                  QNetworkProxyQuery::UdpSocket);
         proxies = QNetworkProxyFactory::proxyForQuery(query);
     }
@@ -924,6 +931,10 @@ void QAbstractSocketPrivate::resolveProxy(const QString &hostname, quint16 port)
 
         if (socketType == QAbstractSocket::TcpSocket &&
             (p.capabilities() & QNetworkProxy::TunnelingCapability) == 0)
+            continue;
+
+        if (socketType == QAbstractSocket::SctpSocket &&
+            (p.capabilities() & QNetworkProxy::SctpTunnelingCapability) == 0)
             continue;
 
         proxyInUse = p;
@@ -1280,16 +1291,34 @@ bool QAbstractSocketPrivate::readFromSocket()
 
     Prevents from the recursive readyRead() emission.
 */
-void QAbstractSocketPrivate::emitReadyRead()
+void QAbstractSocketPrivate::emitReadyRead(int channel)
 {
     Q_Q(QAbstractSocket);
     // Only emit readyRead() when not recursing.
-    if (!emittedReadyRead) {
+    if (!emittedReadyRead && channel == currentReadChannel) {
         QScopedValueRollback<bool> r(emittedReadyRead);
         emittedReadyRead = true;
         emit q->readyRead();
     }
-    emit q->channelReadyRead(0);
+    // channelReadyRead() can be emitted recursively - even for the same channel.
+    emit q->channelReadyRead(channel);
+}
+
+/*! \internal
+
+    Prevents from the recursive bytesWritten() emission.
+*/
+void QAbstractSocketPrivate::emitBytesWritten(qint64 bytes, int channel)
+{
+    Q_Q(QAbstractSocket);
+    // Only emit bytesWritten() when not recursing.
+    if (!emittedBytesWritten && channel == currentWriteChannel) {
+        QScopedValueRollback<bool> r(emittedBytesWritten);
+        emittedBytesWritten = true;
+        emit q->bytesWritten(bytes);
+    }
+    // channelBytesWritten() can be emitted recursively - even for the same channel.
+    emit q->channelBytesWritten(channel, bytes);
 }
 
 /*! \internal
@@ -1400,8 +1429,8 @@ QAbstractSocket::QAbstractSocket(SocketType socketType,
     Q_D(QAbstractSocket);
 #if defined(QABSTRACTSOCKET_DEBUG)
     qDebug("QAbstractSocket::QAbstractSocket(%sSocket, QAbstractSocketPrivate == %p, parent == %p)",
-           socketType == TcpSocket ? "Tcp" : socketType == UdpSocket
-           ? "Udp" : "Unknown", &dd, parent);
+           socketType == TcpSocket ? "Tcp" : socketType == UdpSocket ? "Udp"
+           : socketType == SctpSocket ? "Sctp" : "Unknown", &dd, parent);
 #endif
     d->socketType = socketType;
 }
@@ -1665,9 +1694,9 @@ void QAbstractSocket::connectToHost(const QString &hostName, quint16 port,
 #endif
 
     if (openMode & QIODevice::Unbuffered)
-        d->isBuffered = false; // Unbuffered QTcpSocket
+        d->isBuffered = false;
     else if (!d_func()->isBuffered)
-        openMode |= QAbstractSocket::Unbuffered; // QUdpSocket
+        openMode |= QAbstractSocket::Unbuffered;
 
     QIODevice::open(openMode);
     d->readChannelCount = d->writeChannelCount = 0;
@@ -2503,10 +2532,8 @@ qint64 QAbstractSocket::writeData(const char *data, qint64 size)
            qt_prettyDebug(data, qMin((int)size, 32), size).data(),
            size, written);
 #endif
-        if (written >= 0) {
-            emit bytesWritten(written);
-            emit channelBytesWritten(0, written);
-        }
+        if (written >= 0)
+            d->emitBytesWritten(written);
         return written;
     }
 
@@ -2714,14 +2741,14 @@ void QAbstractSocket::disconnectFromHost()
         }
 
         // Wait for pending data to be written.
-        if (d->socketEngine && d->socketEngine->isValid() && (d->writeBuffer.size() > 0
+        if (d->socketEngine && d->socketEngine->isValid() && (!d->allWriteBuffersEmpty()
             || d->socketEngine->bytesToWrite() > 0)) {
             // hack: when we are waiting for the socket engine to write bytes (only
             // possible when using Socks5 or HTTP socket engine), then close
             // anyway after 2 seconds. This is to prevent a timeout on Mac, where we
             // sometimes just did not get the write notifier from the underlying
             // CFSocket and no progress was made.
-            if (d->writeBuffer.size() == 0 && d->socketEngine->bytesToWrite() > 0) {
+            if (d->allWriteBuffersEmpty() && d->socketEngine->bytesToWrite() > 0) {
                 if (!d->disconnectTimer) {
                     d->disconnectTimer = new QTimer(this);
                     connect(d->disconnectTimer, SIGNAL(timeout()), this,

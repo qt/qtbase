@@ -180,6 +180,7 @@ Configure::Configure(int& argc, char** argv) : verbose(0)
     dictionary[ "PPS" ]             = "no";
     dictionary[ "LGMON" ]           = "no";
     dictionary[ "SYSTEM_PROXIES" ]  = "yes";
+    dictionary[ "SCTP" ]            = "no";
     dictionary[ "WERROR" ]          = "auto";
     dictionary[ "QREAL" ]           = "double";
     dictionary[ "ATOMIC64" ]        = "auto";
@@ -829,6 +830,10 @@ void Configure::parseCmdLine()
             dictionary[ "SYSTEM_PROXIES" ] = "no";
         } else if (configCmdLine.at(i) == "-system-proxies") {
             dictionary[ "SYSTEM_PROXIES" ] = "yes";
+        } else if (configCmdLine.at(i) == "-no-sctp") {
+            dictionary[ "SCTP" ] = "no";
+        } else if (configCmdLine.at(i) == "-sctp") {
+            dictionary[ "SCTP" ] = "yes";
         } else if (configCmdLine.at(i) == "-warnings-are-errors" ||
                    configCmdLine.at(i) == "-Werror") {
             dictionary[ "WERROR" ] = "yes";
@@ -1698,6 +1703,9 @@ bool Configure::displayHelp()
         desc("SYSTEM_PROXIES", "yes",  "-system-proxies",    "Use system network proxies by default.");
         desc("SYSTEM_PROXIES", "no",   "-no-system-proxies", "Do not use system network proxies by default.\n");
 
+        desc("SCTP",        "yes",     "-sctp",         "Compile SCTP support.");
+        desc("SCTP",        "no",      "-no-sctp",      "Do not compile SCTP network protocol support.\n");
+
         desc("WERROR",      "yes",     "-warnings-are-errors",   "Make warnings be treated as errors.");
         desc("WERROR",      "no",      "-no-warnings-are-errors","Make warnings be treated normally.");
 
@@ -2103,6 +2111,8 @@ bool Configure::checkAvailability(const QString &part)
         available = (platform() == QNX) && tryCompileProject("unix/pps");
     } else if (part == "LGMON") {
         available = (platform() == QNX) && tryCompileProject("unix/lgmon");
+    } else if (part == "SCTP") {
+        available = tryCompileProject("unix/sctp");
     } else if (part == "NEON") {
         available = dictionary["QT_CPU_FEATURES"].contains("neon");
     } else if (part == "FONT_CONFIG") {
@@ -2299,6 +2309,10 @@ void Configure::autoDetection()
 
     if (platform() == QNX && dictionary["LGMON"] == "auto") {
         dictionary["LGMON"] = checkAvailability("LGMON") ? "yes" : "no";
+    }
+
+    if (dictionary["SCTP"] == "auto") {
+        dictionary["SCTP"] = checkAvailability("SCTP") ? "yes" : "no";
     }
 
     if (dictionary["QT_EVENTFD"] == "auto")
@@ -2743,6 +2757,9 @@ void Configure::generateOutputVars()
 
     if (dictionary[ "SYSTEM_PROXIES" ] == "yes")
         qtConfig += "system-proxies";
+
+    if (dictionary[ "SCTP" ] == "yes")
+        qtConfig += "sctp";
 
     if (dictionary.contains("XQMAKESPEC") && (dictionary["QMAKESPEC"] != dictionary["XQMAKESPEC"])) {
             qmakeConfig += "cross_compile";
@@ -3387,6 +3404,8 @@ void Configure::generateConfigfiles()
         else
             qconfigList += "QT_NO_NIS";
 
+        if (dictionary["SCTP"] == "no")              qconfigList += "QT_NO_SCTP";
+
         if (dictionary["LARGE_FILE"] == "yes")       qconfigList += "QT_LARGEFILE_SUPPORT=64";
         if (dictionary["QT_CUPS"] == "no")           qconfigList += "QT_NO_CUPS";
         if (dictionary["QT_ICONV"] == "no")          qconfigList += "QT_NO_ICONV";
@@ -3520,6 +3539,7 @@ void Configure::displayConfig()
     sout << "DirectWrite support........." << dictionary[ "DIRECTWRITE" ] << endl;
     sout << "DirectWrite 2 support......." << dictionary[ "DIRECTWRITE2" ] << endl;
     sout << "Use system proxies.........." << dictionary[ "SYSTEM_PROXIES" ] << endl;
+    sout << "SCTP support................" << dictionary[ "SCTP" ] << endl;
     sout << endl;
 
     sout << "QPA Backends:" << endl;

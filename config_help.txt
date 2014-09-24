@@ -365,6 +365,9 @@ Additional options:
     -no-system-proxies ... Do not use system network proxies by default.
  *  -system-proxies ...... Use system network proxies by default.
 
+ *  -no-sctp ............. Do not compile SCTP network protocol support.
+    -sctp ................ Compile SCTP support.
+
     -no-warnings-are-errors Make warnings be treated normally
     -warnings-are-errors   Make warnings be treated as errors
                            (enabled if -developer-build is active)

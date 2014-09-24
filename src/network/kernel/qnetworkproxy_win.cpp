@@ -232,8 +232,14 @@ static QList<QNetworkProxy> filterProxyListByCapabilities(const QList<QNetworkPr
     case QNetworkProxyQuery::UdpSocket:
         requiredCaps = QNetworkProxy::UdpTunnelingCapability;
         break;
+    case QNetworkProxyQuery::SctpSocket:
+        requiredCaps = QNetworkProxy::SctpTunnelingCapability;
+        break;
     case QNetworkProxyQuery::TcpServer:
         requiredCaps = QNetworkProxy::ListeningCapability;
+        break;
+    case QNetworkProxyQuery::SctpServer:
+        requiredCaps = QNetworkProxy::SctpListeningCapability;
         break;
     default:
         return proxyList;
@@ -281,7 +287,9 @@ static QList<QNetworkProxy> parseServerList(const QNetworkProxyQuery &query, con
     QList<QNetworkProxy> result;
     QHash<QString, QNetworkProxy> taggedProxies;
     const QString requiredTag = query.protocolTag();
-    bool checkTags = !requiredTag.isEmpty() && query.queryType() != QNetworkProxyQuery::TcpServer; //windows tags are only for clients
+    // windows tags are only for clients
+    bool checkTags = !requiredTag.isEmpty() && query.queryType() != QNetworkProxyQuery::TcpServer
+            && query.queryType() != QNetworkProxyQuery::SctpServer;
     for (const QString &entry : proxyList) {
         int server = 0;
 

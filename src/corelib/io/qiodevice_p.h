@@ -154,6 +154,8 @@ public:
         return buffer.isEmpty() || (transactionStarted && isSequential()
                                     && transactionPos == buffer.size());
     }
+    bool allWriteBuffersEmpty() const;
+
     void seekBuffer(qint64 newPos);
 
     inline void setCurrentReadChannel(int channel)

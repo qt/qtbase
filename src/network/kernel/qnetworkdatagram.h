@@ -104,6 +104,7 @@ public:
 private:
     QNetworkDatagramPrivate *d;
     friend class QUdpSocket;
+    friend class QSctpSocket;
 
     explicit QNetworkDatagram(QNetworkDatagramPrivate &dd);
     QNetworkDatagram makeReply_helper(const QByteArray &data) const;

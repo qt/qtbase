@@ -94,7 +94,8 @@ protected:
     virtual void incomingConnection(qintptr handle);
     void addPendingConnection(QTcpSocket* socket);
 
-    QTcpServer(QTcpServerPrivate &dd, QObject *parent = Q_NULLPTR);
+    QTcpServer(QAbstractSocket::SocketType socketType, QTcpServerPrivate &dd,
+               QObject *parent = Q_NULLPTR);
 
 Q_SIGNALS:
     void newConnection();

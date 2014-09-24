@@ -60,8 +60,10 @@ public:
     enum QueryType {
         TcpSocket,
         UdpSocket,
+        SctpSocket,
         TcpServer = 100,
-        UrlRequest
+        UrlRequest,
+        SctpServer
     };
 
     QNetworkProxyQuery();
@@ -141,7 +143,9 @@ public:
         ListeningCapability = 0x0002,
         UdpTunnelingCapability = 0x0004,
         CachingCapability = 0x0008,
-        HostNameLookupCapability = 0x0010
+        HostNameLookupCapability = 0x0010,
+        SctpTunnelingCapability = 0x00020,
+        SctpListeningCapability = 0x00040
     };
     Q_DECLARE_FLAGS(Capabilities, Capability)
 

@@ -130,6 +130,7 @@
             "release": { "type": "enum", "name": "debug", "values": { "yes": "no", "no": "yes" } },
             "rpath": "boolean",
             "sanitize": "sanitize",
+            "sctp": "boolean",
             "sdk": "string",
             "securetransport": "boolean",
             "separate-debug-info": { "type": "boolean", "name": "separate_debug_info" },
@@ -595,6 +596,11 @@
             "description": "OpenSSL Libraries",
             "type": "openssl",
             "libs": "-lssl -lcrypto"
+        },
+        "sctp": {
+            "description": "SCTP support",
+            "type": "compile",
+            "test": "unix/sctp"
         },
         "icu": {
             "description": "ICU",
@@ -1625,6 +1631,12 @@
             "condition": "features.securetransport || features.openssl",
             "output": [ "feature" ]
         },
+        "sctp": {
+            "description": "SCTP",
+            "autoDetect": false,
+            "condition": "tests.sctp",
+            "output": [ "feature" ]
+        },
         "accessibility": {
             "description": "Accessibility",
             "output": [ "feature" ]
@@ -2462,6 +2474,7 @@ Please apply the patch corresponding to your Standard Library vendor, found in
                         },
                         "openssl",
                         "openssl-linked",
+                        "sctp",
                         "system-proxies"
                     ]
                 },
