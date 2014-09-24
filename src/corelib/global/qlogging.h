@@ -124,13 +124,28 @@ private:
     QMessageLogContext context;
 };
 
-/*
-  qDebug, qWarning, qCritical, qFatal are redefined to automatically include context information
- */
-#define qDebug QMessageLogger(__FILE__, __LINE__, Q_FUNC_INFO).debug
-#define qWarning QMessageLogger(__FILE__, __LINE__, Q_FUNC_INFO).warning
-#define qCritical QMessageLogger(__FILE__, __LINE__, Q_FUNC_INFO).critical
-#define qFatal QMessageLogger(__FILE__, __LINE__, Q_FUNC_INFO).fatal
+#if !defined(QT_MESSAGELOGCONTEXT) && !defined(QT_NO_MESSAGELOGCONTEXT)
+#  if defined(QT_NO_DEBUG)
+#    define QT_NO_MESSAGELOGCONTEXT
+#  else
+#    define QT_MESSAGELOGCONTEXT
+#  endif
+#endif
+
+#ifdef QT_MESSAGELOGCONTEXT
+  #define QT_MESSAGELOG_FILE __FILE__
+  #define QT_MESSAGELOG_LINE __LINE__
+  #define QT_MESSAGELOG_FUNC Q_FUNC_INFO
+#else
+  #define QT_MESSAGELOG_FILE 0
+  #define QT_MESSAGELOG_LINE 0
+  #define QT_MESSAGELOG_FUNC 0
+#endif
+
+#define qDebug QMessageLogger(QT_MESSAGELOG_FILE, QT_MESSAGELOG_LINE, QT_MESSAGELOG_FUNC).debug
+#define qWarning QMessageLogger(QT_MESSAGELOG_FILE, QT_MESSAGELOG_LINE, QT_MESSAGELOG_FUNC).warning
+#define qCritical QMessageLogger(QT_MESSAGELOG_FILE, QT_MESSAGELOG_LINE, QT_MESSAGELOG_FUNC).critical
+#define qFatal QMessageLogger(QT_MESSAGELOG_FILE, QT_MESSAGELOG_LINE, QT_MESSAGELOG_FUNC).fatal
 
 #define QT_NO_QDEBUG_MACRO while (false) QMessageLogger().noDebug
 #define QT_NO_QWARNING_MACRO while (false) QMessageLogger().noDebug

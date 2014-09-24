@@ -174,6 +174,9 @@ Q_CORE_EXPORT bool qt_logging_to_console()
     The class provides information about the source code location a qDebug(), qWarning(),
     qCritical() or qFatal() message was generated.
 
+    \note By default, this information is recorded only in debug builds. You can overwrite
+    this explicitly by defining \c QT_MESSAGELOGCONTEXT or \c{QT_NO_MESSAGELOGCONTEXT}.
+
     \sa QMessageLogger, QtMessageHandler, qInstallMessageHandler()
 */
 
@@ -185,8 +188,9 @@ Q_CORE_EXPORT bool qt_logging_to_console()
 
     QMessageLogger is used to generate messages for the Qt logging framework. Usually one uses
     it through qDebug(), qWarning(), qCritical, or qFatal() functions,
-    which are actually macros that expand to QMessageLogger(__FILE__, __LINE__, Q_FUNC_INFO).debug()
-    et al.
+    which are actually macros: For example qDebug() expands to
+    QMessageLogger(__FILE__, __LINE__, Q_FUNC_INFO).debug()
+    for debug builds, and QMessageLogger(0, 0, 0).debug() for release builds.
 
     One example of direct use is to forward errors that stem from a scripting language, e.g. QML:
 
