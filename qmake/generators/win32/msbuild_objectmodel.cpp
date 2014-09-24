@@ -1861,10 +1861,9 @@ void VCXProjectWriter::outputFileConfigs(VCProject &project, XmlOutput &xml, Xml
     xmlFilter << closetag();
 }
 
-bool VCXProjectWriter::outputFileConfig(VCFilter &filter, XmlOutput &xml, XmlOutput &xmlFilter, const QString &filename, bool fileAllreadyAdded)
+bool VCXProjectWriter::outputFileConfig(VCFilter &filter, XmlOutput &xml, XmlOutput &xmlFilter,
+                                        const QString &filename, bool fileAdded)
 {
-    bool fileAdded = false;
-
     // Clearing each filter tool
     filter.useCustomBuildTool = false;
     filter.useCompilerTool = false;
@@ -1906,8 +1905,7 @@ bool VCXProjectWriter::outputFileConfig(VCFilter &filter, XmlOutput &xml, XmlOut
 
         if (filter.useCustomBuildTool)
         {
-            if ( !fileAllreadyAdded ) {
-
+            if (!fileAdded) {
                 fileAdded = true;
 
                 xmlFilter << tag("CustomBuild")
@@ -1927,7 +1925,7 @@ bool VCXProjectWriter::outputFileConfig(VCFilter &filter, XmlOutput &xml, XmlOut
             filter.Project->projectWriter->write(xml, filter.CustomBuildTool);
         }
 
-        if ( !fileAdded && !fileAllreadyAdded )
+        if (!fileAdded)
         {
             fileAdded = true;
             outputFileConfig(xml, xmlFilter, filename, filter.Name);
