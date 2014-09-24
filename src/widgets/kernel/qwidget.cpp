@@ -8893,13 +8893,27 @@ bool QWidget::event(QEvent *event)
     case QEvent::ModifiedChange:
     case QEvent::MouseTrackingChange:
     case QEvent::ParentChange:
-    case QEvent::WindowStateChange:
     case QEvent::LocaleChange:
     case QEvent::MacSizeChange:
     case QEvent::ContentsRectChange:
     case QEvent::ThemeChange:
     case QEvent::ReadOnlyChange:
         changeEvent(event);
+        break;
+
+    case QEvent::WindowStateChange: {
+        const bool wasMinimized = static_cast<const QWindowStateChangeEvent *>(event)->oldState() & Qt::WindowMinimized;
+        if (wasMinimized != isMinimized()) {
+            if (wasMinimized) {
+                QShowEvent showEvent;
+                QCoreApplication::sendEvent(const_cast<QWidget *>(this), &showEvent);
+            } else {
+                QHideEvent hideEvent;
+                QCoreApplication::sendEvent(const_cast<QWidget *>(this), &hideEvent);
+            }
+        }
+        changeEvent(event);
+    }
         break;
 
     case QEvent::WindowActivate:

@@ -272,6 +272,7 @@ private slots:
 
     void showHideEvent_data();
     void showHideEvent();
+    void showHideEventWhileMinimize();
 
     void lostUpdatesOnHide();
 
@@ -4085,6 +4086,29 @@ void tst_QWidget::showHideEvent()
 
     QCOMPARE(widget.numberOfShowEvents, expectedShowEvents);
     QCOMPARE(widget.numberOfHideEvents, expectedHideEvents);
+}
+
+void tst_QWidget::showHideEventWhileMinimize()
+{
+    const QPlatformIntegration *pi = QGuiApplicationPrivate::platformIntegration();
+    if (!pi->hasCapability(QPlatformIntegration::MultipleWindows)
+        || !pi->hasCapability(QPlatformIntegration::NonFullScreenWindows)
+        || !pi->hasCapability(QPlatformIntegration::WindowManagement)) {
+        QSKIP("This test requires window management capabilities");
+    }
+    // QTBUG-41312, hide, show events should be received during minimized.
+    ShowHideEventWidget widget;
+    widget.setWindowTitle(__FUNCTION__);
+    widget.resize(m_testWidgetSize);
+    centerOnScreen(&widget);
+    widget.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&widget));
+    const int showEventsBeforeMinimize = widget.numberOfShowEvents;
+    const int hideEventsBeforeMinimize = widget.numberOfHideEvents;
+    widget.showMinimized();
+    QTRY_COMPARE(widget.numberOfHideEvents, hideEventsBeforeMinimize + 1);
+    widget.showNormal();
+    QTRY_COMPARE(widget.numberOfShowEvents, showEventsBeforeMinimize + 1);
 }
 
 void tst_QWidget::update()
