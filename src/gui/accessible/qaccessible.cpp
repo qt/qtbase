@@ -1972,7 +1972,8 @@ QString QAccessibleTextInterface::textBeforeOffset(int offset, QAccessible::Text
     if (txt.isEmpty() || offset <= 0 || offset > txt.length())
         return QString();
 
-    QTextBoundaryFinder::BoundaryType type;
+    // type initialized just to silence a compiler warning [-Werror=maybe-uninitialized]
+    QTextBoundaryFinder::BoundaryType type = QTextBoundaryFinder::Grapheme;
     switch (boundaryType) {
     case QAccessible::CharBoundary:
         type = QTextBoundaryFinder::Grapheme;
@@ -2043,7 +2044,8 @@ QString QAccessibleTextInterface::textAfterOffset(int offset, QAccessible::TextB
     if (txt.isEmpty() || offset < 0 || offset >= txt.length())
         return QString();
 
-    QTextBoundaryFinder::BoundaryType type;
+    // type initialized just to silence a compiler warning [-Werror=maybe-uninitialized]
+    QTextBoundaryFinder::BoundaryType type = QTextBoundaryFinder::Grapheme;
     switch (boundaryType) {
     case QAccessible::CharBoundary:
         type = QTextBoundaryFinder::Grapheme;
@@ -2128,7 +2130,8 @@ QString QAccessibleTextInterface::textAtOffset(int offset, QAccessible::TextBoun
     if (offset == txt.length() && boundaryType == QAccessible::CharBoundary)
         return QString();
 
-    QTextBoundaryFinder::BoundaryType type;
+    // type initialized just to silence a compiler warning [-Werror=maybe-uninitialized]
+    QTextBoundaryFinder::BoundaryType type = QTextBoundaryFinder::Grapheme;
     switch (boundaryType) {
     case QAccessible::CharBoundary:
         type = QTextBoundaryFinder::Grapheme;
