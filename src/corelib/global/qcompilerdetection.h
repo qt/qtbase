@@ -730,7 +730,6 @@
        /* C++11 features supported in GCC 4.4: */
 #      define Q_COMPILER_AUTO_FUNCTION
 #      define Q_COMPILER_AUTO_TYPE
-#      define Q_COMPILER_CLASS_ENUM
 #      define Q_COMPILER_DEFAULT_MEMBERS
 #      define Q_COMPILER_DELETE_MEMBERS
 #      define Q_COMPILER_EXTERN_TEMPLATES
@@ -746,6 +745,7 @@
 #      define Q_COMPILER_INITIALIZER_LISTS
 #      define Q_COMPILER_LAMBDA
 #      define Q_COMPILER_RAW_STRINGS
+#      define Q_COMPILER_CLASS_ENUM
 #    endif
 #    if (__GNUC__ * 100 + __GNUC_MINOR__) >= 406
        /* C++11 features supported in GCC 4.6: */
