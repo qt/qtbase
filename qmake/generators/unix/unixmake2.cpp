@@ -702,26 +702,27 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
               << "@$(QMAKE) -prl " << buildArgs() << " " << project->projectFile() << endl;
     }
 
-    if(!project->first("QMAKE_PKGINFO").isEmpty()) {
-        ProString pkginfo = escapeFilePath(project->first("QMAKE_PKGINFO"));
-        QString destdir = project->first("DESTDIR") + project->first("QMAKE_BUNDLE") + "/Contents";
-        t << pkginfo << ": \n\t";
-        if(!destdir.isEmpty())
+    if (!project->isEmpty("QMAKE_BUNDLE")) {
+        if (!project->first("QMAKE_PKGINFO").isEmpty()) {
+            ProString pkginfo = escapeFilePath(project->first("QMAKE_PKGINFO"));
+            QString destdir = project->first("DESTDIR") + project->first("QMAKE_BUNDLE") + "/Contents";
+            t << pkginfo << ": \n\t";
+            if (!destdir.isEmpty())
+                t << mkdir_p_asstring(destdir) << "\n\t";
+            t << "@$(DEL_FILE) " << pkginfo << "\n\t"
+              << "@echo \"APPL"
+              << (project->isEmpty("QMAKE_PKGINFO_TYPEINFO")
+                  ? QString::fromLatin1("????") : project->first("QMAKE_PKGINFO_TYPEINFO").left(4))
+              << "\" >" << pkginfo << endl;
+        }
+        if (!project->first("QMAKE_BUNDLE_RESOURCE_FILE").isEmpty()) {
+            ProString resources = escapeFilePath(project->first("QMAKE_BUNDLE_RESOURCE_FILE"));
+            bundledFiles << resources;
+            QString destdir = project->first("DESTDIR") + project->first("QMAKE_BUNDLE") + "/Contents/Resources";
+            t << resources << ": \n\t";
             t << mkdir_p_asstring(destdir) << "\n\t";
-        t << "@$(DEL_FILE) " << pkginfo << "\n\t"
-          << "@echo \"APPL"
-          << (project->isEmpty("QMAKE_PKGINFO_TYPEINFO") ? QString::fromLatin1("????") : project->first("QMAKE_PKGINFO_TYPEINFO").left(4))
-          << "\" >" << pkginfo << endl;
-    }
-    if(!project->first("QMAKE_BUNDLE_RESOURCE_FILE").isEmpty()) {
-        ProString resources = escapeFilePath(project->first("QMAKE_BUNDLE_RESOURCE_FILE"));
-        bundledFiles << resources;
-        QString destdir = project->first("DESTDIR") + project->first("QMAKE_BUNDLE") + "/Contents/Resources";
-        t << resources << ": \n\t";
-        t << mkdir_p_asstring(destdir) << "\n\t";
-        t << "@touch " << resources << "\n\t\n";
-    }
-    if(!project->isEmpty("QMAKE_BUNDLE")) {
+            t << "@touch " << resources << "\n\t\n";
+        }
         //copy the plist
         QString info_plist = escapeFilePath(fileFixify(project->first("QMAKE_INFO_PLIST").toQString())),
             info_plist_out = escapeFilePath(project->first("QMAKE_INFO_PLIST_OUT").toQString());
