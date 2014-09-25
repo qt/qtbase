@@ -376,6 +376,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
             }
         }
     }
+    QString allDeps;
     if (!project->values("QMAKE_APP_FLAG").isEmpty() || project->first("TEMPLATE") == "aux") {
         QString destdir = project->first("DESTDIR").toQString();
         if(!project->isEmpty("QMAKE_BUNDLE")) {
@@ -436,8 +437,6 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                 deps.prepend(incr_target_dir + " ");
                 incr_deps = "$(OBJECTS)";
             }
-            t << "all: " << escapeDependencyPath(deps) <<  " " << valGlue(escapeDependencyPaths(project->values("ALL_DEPS")),""," "," ") <<  "$(TARGET)"
-              << endl << endl;
 
             //real target
             t << var("TARGET") << ": " << var("PRE_TARGETDEPS") << " " << incr_deps << " " << target_deps
@@ -451,9 +450,6 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                 t << "\n\t" << var("QMAKE_POST_LINK");
             t << endl << endl;
         } else {
-            t << "all: " << escapeDependencyPath(deps) <<  " " << valGlue(escapeDependencyPaths(project->values("ALL_DEPS")),""," "," ") <<  "$(TARGET)"
-              << endl << endl;
-
             t << "$(TARGET): " << var("PRE_TARGETDEPS") << " $(OBJECTS) "
               << target_deps << " " << var("POST_TARGETDEPS") << "\n\t";
             if (project->first("TEMPLATE") != "aux") {
@@ -467,6 +463,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
             }
             t << endl << endl;
         }
+        allDeps = " $(TARGET)";
     } else if(!project->isActiveConfig("staticlib")) {
         QString destdir = unescapeFilePath(project->first("DESTDIR").toQString()), incr_deps;
         if(!project->isEmpty("QMAKE_BUNDLE")) {
@@ -526,19 +523,15 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                 incr_deps = "$(OBJECTS)";
             }
 
-            t << "all:  " << escapeDependencyPath(deps) << " " << valGlue(escapeDependencyPaths(project->values("ALL_DEPS")),""," "," ")
-              << " " << destdir << "$(TARGET)\n\n";
-
             //real target
             t << destdir << "$(TARGET): " << var("PRE_TARGETDEPS") << " "
               << incr_deps << " $(SUBLIBS) " << target_deps << " " << var("POST_TARGETDEPS");
         } else {
-            t << "all: " << escapeDependencyPath(deps) << " " << valGlue(escapeDependencyPaths(project->values("ALL_DEPS")),""," "," ") << " " <<
-                destdir << "$(TARGET)\n\n";
             t << destdir << "$(TARGET): " << var("PRE_TARGETDEPS")
               << " $(OBJECTS) $(SUBLIBS) $(OBJCOMP) " << target_deps
               << " " << var("POST_TARGETDEPS");
         }
+        allDeps = ' ' + destdir + "$(TARGET)";
         if(!destdir.isEmpty())
             t << "\n\t" << mkdir_p_asstring(destdir, false);
         if(!project->isEmpty("QMAKE_PRE_LINK"))
@@ -641,9 +634,9 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
         }
     } else {
         QString destdir = project->first("DESTDIR").toQString();
-        t << "all: " << escapeDependencyPath(deps) << " " << valGlue(escapeDependencyPaths(project->values("ALL_DEPS")),""," "," ") << destdir << "$(TARGET) "
-          << varGlue("QMAKE_AR_SUBLIBS", destdir, " " + destdir, "") << "\n\n"
-          << "staticlib: " << destdir << "$(TARGET)\n\n";
+        allDeps = ' ' + destdir + "$(TARGET)"
+                  + varGlue("QMAKE_AR_SUBLIBS", ' ' + destdir, ' ' + destdir, "");
+        t << "staticlib: " << destdir << "$(TARGET)\n\n";
         if(project->isEmpty("QMAKE_AR_SUBLIBS")) {
             t << destdir << "$(TARGET): " << var("PRE_TARGETDEPS")
               << " $(OBJECTS) $(OBJCOMP) " << var("POST_TARGETDEPS") << "\n\t";
@@ -827,6 +820,10 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
             }
         }
     }
+
+    t << endl << "all: " << escapeDependencyPath(deps)
+      << valGlue(escapeDependencyPaths(project->values("ALL_DEPS")), " ", " ", "")
+      << allDeps << endl << endl;
 
     ProString ddir;
     ProString packageName(project->first("QMAKE_ORIG_TARGET"));
