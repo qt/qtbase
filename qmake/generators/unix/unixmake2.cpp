@@ -811,8 +811,12 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                 if (!project->isEmpty(vkey)) {
                     QString version = project->first(vkey) + "/" +
                                       project->first("QMAKE_FRAMEWORK_VERSION") + "/";
-                    symlinks[Option::fixPathToLocalOS(path + project->first(pkey))] =
-                            project->first(vkey) + "/Current/" + project->first(pkey);
+                    ProString name = project->first(pkey);
+                    int pos = name.indexOf('/');
+                    if (pos > 0)
+                        name = name.mid(0, pos);
+                    symlinks[Option::fixPathToLocalOS(path + name)] =
+                            project->first(vkey) + "/Current/" + name;
                     path += version;
                 }
                 path += project->first(pkey).toQString();
