@@ -703,9 +703,10 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
     }
 
     if (!project->isEmpty("QMAKE_BUNDLE")) {
+        QString bundle_dir = project->first("DESTDIR") + project->first("QMAKE_BUNDLE") + "/";
         if (!project->first("QMAKE_PKGINFO").isEmpty()) {
             ProString pkginfo = escapeFilePath(project->first("QMAKE_PKGINFO"));
-            QString destdir = project->first("DESTDIR") + project->first("QMAKE_BUNDLE") + "/Contents";
+            QString destdir = bundle_dir + "Contents";
             t << pkginfo << ": \n\t";
             if (!destdir.isEmpty())
                 t << mkdir_p_asstring(destdir) << "\n\t";
@@ -718,7 +719,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
         if (!project->first("QMAKE_BUNDLE_RESOURCE_FILE").isEmpty()) {
             ProString resources = escapeFilePath(project->first("QMAKE_BUNDLE_RESOURCE_FILE"));
             bundledFiles << resources;
-            QString destdir = project->first("DESTDIR") + project->first("QMAKE_BUNDLE") + "/Contents/Resources";
+            QString destdir = bundle_dir + "Contents/Resources";
             t << resources << ": \n\t";
             t << mkdir_p_asstring(destdir) << "\n\t";
             t << "@touch " << resources << "\n\t\n";
@@ -760,7 +761,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
               << "" << info_plist << " >" << info_plist_out << endl;
             //copy the icon
             if(!project->isEmpty("ICON")) {
-                QString dir = project->first("DESTDIR") + project->first("QMAKE_BUNDLE") + "/Contents/Resources/";
+                QString dir = bundle_dir + "Contents/Resources/";
                 const QString icon_path = escapeFilePath(dir + icon.section(Option::dir_sep, -1));
                 bundledFiles << icon_path;
                 t << icon_path << ": " << icon << "\n\t"
@@ -781,7 +782,6 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
         }
         //copy other data
         if(!project->isEmpty("QMAKE_BUNDLE_DATA")) {
-            QString bundle_dir = project->first("DESTDIR") + project->first("QMAKE_BUNDLE") + "/";
             const ProStringList &bundle_data = project->values("QMAKE_BUNDLE_DATA");
             for(int i = 0; i < bundle_data.count(); i++) {
                 const ProStringList &files = project->values(ProKey(bundle_data[i] + ".files"));
