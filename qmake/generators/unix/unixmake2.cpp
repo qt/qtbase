@@ -703,10 +703,12 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
     }
 
     if (!project->isEmpty("QMAKE_BUNDLE")) {
+        ProStringList &alldeps = project->values("ALL_DEPS");
         QString bundle_dir = project->first("DESTDIR") + project->first("QMAKE_BUNDLE") + "/";
         if (!project->first("QMAKE_PKGINFO").isEmpty()) {
             ProString pkginfo = escapeFilePath(project->first("QMAKE_PKGINFO"));
             bundledFiles << pkginfo;
+            alldeps << pkginfo;
             QString destdir = bundle_dir + "Contents";
             t << pkginfo << ": \n\t";
             if (!destdir.isEmpty())
@@ -720,18 +722,25 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
         if (!project->first("QMAKE_BUNDLE_RESOURCE_FILE").isEmpty()) {
             ProString resources = escapeFilePath(project->first("QMAKE_BUNDLE_RESOURCE_FILE"));
             bundledFiles << resources;
+            alldeps << resources;
             QString destdir = bundle_dir + "Contents/Resources";
             t << resources << ": \n\t";
             t << mkdir_p_asstring(destdir) << "\n\t";
             t << "@touch " << resources << "\n\t\n";
         }
         //copy the plist
-        if (!project->isActiveConfig("no_plist")) {
-            QString info_plist = escapeFilePath(fileFixify(project->first("QMAKE_INFO_PLIST").toQString())),
-                info_plist_out = escapeFilePath(project->first("QMAKE_INFO_PLIST_OUT").toQString());
+        while (!project->isActiveConfig("no_plist")) {  // 'while' just to be able to 'break'
+            QString info_plist = escapeFilePath(fileFixify(project->first("QMAKE_INFO_PLIST").toQString()));
             if (info_plist.isEmpty())
                 info_plist = specdir() + QDir::separator() + "Info.plist." + project->first("TEMPLATE");
+            if (!exists(Option::fixPathToLocalOS(info_plist))) {
+                warn_msg(WarnLogic, "Could not resolve Info.plist: '%s'. Check if QMAKE_INFO_PLIST points to a valid file.",
+                         info_plist.toLatin1().constData());
+                break;
+            }
+            QString info_plist_out = escapeFilePath(bundle_dir + "Contents/Info.plist");
             bundledFiles << info_plist_out;
+            alldeps << info_plist_out;
             QString destdir = info_plist_out.section(Option::dir_sep, 0, -2);
             t << info_plist_out << ": \n\t";
             if (!destdir.isEmpty())
@@ -771,6 +780,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                     QString dir = bundle_dir + "Contents/Resources/";
                     const QString icon_path = escapeFilePath(dir + icon.section(Option::dir_sep, -1));
                     bundledFiles << icon_path;
+                    alldeps << icon_path;
                     t << icon_path << ": " << icon << "\n\t"
                       << mkdir_p_asstring(dir) << "\n\t"
                       << "@$(DEL_FILE) " << icon_path << "\n\t"
@@ -787,6 +797,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                       QString::fromLatin1("????") : project->first("QMAKE_PKGINFO_TYPEINFO").left(4)) << ",g\" "
                   << "" << info_plist << " >" << info_plist_out << endl;
             }
+            break;
         } // project->isActiveConfig("no_plist")
         //copy other data
         if(!project->isEmpty("QMAKE_BUNDLE_DATA")) {
@@ -801,6 +812,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                                       project->first("QMAKE_FRAMEWORK_VERSION") + "/";
                     QString link = Option::fixPathToLocalOS(path + project->first(pkey));
                     bundledFiles << link;
+                    alldeps << link;
                     t << link << ": \n\t"
                       << mkdir_p_asstring(path) << "\n\t"
                       << "@$(SYMLINK) " << project->first(vkey) + "/Current/" << project->first(pkey)
@@ -817,6 +829,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                     src = escapeFilePath(src);
                     const QString dst = escapeFilePath(path + Option::dir_sep + fileInfo(fn).fileName());
                     bundledFiles << dst;
+                    alldeps << dst;
                     t << dst << ": " << src << "\n\t"
                       << mkdir_p_asstring(path) << "\n\t";
                     QFileInfo fi(fileInfo(fn));
@@ -1273,44 +1286,6 @@ void UnixMakefileGenerator::init2()
         ProString MD_flag(project->values("QMAKE_CFLAGS_ISYSTEM").isEmpty() ? "-MD" : "-MMD");
         project->values("QMAKE_CFLAGS") += MD_flag;
         project->values("QMAKE_CXXFLAGS") += MD_flag;
-    }
-
-    if (!project->isEmpty("QMAKE_BUNDLE") && !project->isActiveConfig("no_plist")) {
-        QString plist = fileFixify(project->first("QMAKE_INFO_PLIST").toQString(), qmake_getpwd());
-        if(plist.isEmpty())
-            plist = specdir() + QDir::separator() + "Info.plist." + project->first("TEMPLATE");
-        if(exists(Option::fixPathToLocalOS(plist))) {
-            project->values("QMAKE_INFO_PLIST_OUT").append(project->first("DESTDIR") +
-                                                                project->first("QMAKE_BUNDLE") +
-                                                                "/Contents/Info.plist");
-            project->values("ALL_DEPS") += project->first("QMAKE_INFO_PLIST_OUT");
-            if(!project->isEmpty("ICON") && project->first("TEMPLATE") == "app")
-                project->values("ALL_DEPS") += project->first("DESTDIR") +
-                                                    project->first("QMAKE_BUNDLE") +
-                                                    "/Contents/Resources/" + project->first("ICON").toQString().section('/', -1);
-            if(!project->isEmpty("QMAKE_BUNDLE_DATA")) {
-                QString bundle_dir = project->first("DESTDIR") + project->first("QMAKE_BUNDLE") + "/";
-                ProStringList &alldeps = project->values("ALL_DEPS");
-                const ProStringList &bundle_data = project->values("QMAKE_BUNDLE_DATA");
-                for(int i = 0; i < bundle_data.count(); i++) {
-                    const ProStringList &files = project->values(ProKey(bundle_data[i] + ".files"));
-                    QString path = bundle_dir;
-                    const ProKey vkey(bundle_data[i] + ".version");
-                    const ProKey pkey(bundle_data[i] + ".path");
-                    if (!project->isEmpty(vkey)) {
-                        alldeps += Option::fixPathToLocalOS(path + Option::dir_sep + project->first(pkey));
-                        path += project->first(vkey) + "/" +
-                                project->first("QMAKE_FRAMEWORK_VERSION") + "/";
-                    }
-                    path += project->first(pkey);
-                    path = Option::fixPathToLocalOS(path);
-                    for(int file = 0; file < files.count(); file++)
-                        alldeps += path + Option::dir_sep + fileInfo(files[file].toQString()).fileName();
-                }
-            }
-        } else {
-            warn_msg(WarnLogic, "Could not resolve Info.plist: '%s'. Check if QMAKE_INFO_PLIST points to a valid file.", plist.toLatin1().constData());
-        }
     }
 }
 
