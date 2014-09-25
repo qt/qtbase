@@ -739,7 +739,11 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                          info_plist.toLatin1().constData());
                 break;
             }
-            QString info_plist_out = escapeFilePath(bundle_dir + "Contents/Info.plist");
+            bool isApp = (project->first("TEMPLATE") == "app");
+            QString info_plist_out = escapeFilePath(
+                    bundle_dir + (isApp ? "Contents/Info.plist"
+                                        : "Versions/" + project->first("QMAKE_FRAMEWORK_VERSION")
+                                          + "/Resources/Info.plist"));
             bundledFiles << info_plist_out;
             alldeps << info_plist_out;
             QString destdir = info_plist_out.section(Option::dir_sep, 0, -2);
@@ -756,7 +760,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
             }
             commonSedArgs << "-e \"s,@TYPEINFO@,"<< (project->isEmpty("QMAKE_PKGINFO_TYPEINFO") ?
                        QString::fromLatin1("????") : project->first("QMAKE_PKGINFO_TYPEINFO").left(4)) << ",g\" ";
-            if (project->first("TEMPLATE") == "app") {
+            if (isApp) {
                 QString icon = fileFixify(var("ICON"));
                 QString bundlePrefix = project->first("QMAKE_TARGET_BUNDLE_PREFIX").toQString();
                 if (bundlePrefix.isEmpty())
@@ -788,6 +792,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                       << "@$(COPY_FILE) " << escapeFilePath(icon) << " " << icon_path << endl;
                 }
             } else {
+                symlinks[bundle_dir + "Resources"] = "Versions/Current/Resources";
                 t << "@$(DEL_FILE) " << info_plist_out << "\n\t"
                   << "@sed ";
                 foreach (const ProString &arg, commonSedArgs)
