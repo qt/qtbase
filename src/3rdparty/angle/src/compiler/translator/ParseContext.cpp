@@ -1018,6 +1018,45 @@ void TParseContext::handlePragmaDirective(const TSourceLoc& loc, const char* nam
 //
 /////////////////////////////////////////////////////////////////////////////////
 
+const TVariable *TParseContext::getNamedVariable(const TSourceLoc &location,
+                                                 const TString *name,
+                                                 const TSymbol *symbol)
+{
+    const TVariable *variable = NULL;
+
+    if (!symbol)
+    {
+        error(location, "undeclared identifier", name->c_str());
+        recover();
+    }
+    else if (!symbol->isVariable())
+    {
+        error(location, "variable expected", name->c_str());
+        recover();
+    }
+    else
+    {
+        variable = static_cast<const TVariable*>(symbol);
+
+        if (symbolTable.findBuiltIn(variable->getName(), shaderVersion) &&
+            !variable->getExtension().empty() &&
+            extensionErrorCheck(location, variable->getExtension()))
+        {
+            recover();
+        }
+    }
+
+    if (!variable)
+    {
+        TType type(EbtFloat, EbpUndefined);
+        TVariable *fakeVariable = new TVariable(name, type);
+        symbolTable.declare(fakeVariable);
+        variable = fakeVariable;
+    }
+
+    return variable;
+}
+
 //
 // Look up a function name in the symbol table, and make sure it is a function.
 //
@@ -1049,6 +1088,8 @@ const TFunction* TParseContext::findFunction(const TSourceLoc& line, TFunction* 
 //
 // Initializers show up in several places in the grammar.  Have one set of
 // code to handle them here.
+//
+// Returns true on error, false if no error
 //
 bool TParseContext::executeInitializer(const TSourceLoc& line, const TString& identifier, TPublicType& pType, 
                                        TIntermTyped* initializer, TIntermNode*& intermNode, TVariable* variable)
@@ -1308,14 +1349,40 @@ TIntermAggregate* TParseContext::parseSingleInitDeclaration(TPublicType &publicT
     }
 }
 
-TIntermAggregate* TParseContext::parseDeclarator(TPublicType &publicType, TIntermAggregate *aggregateDeclaration, TSymbol *identifierSymbol, const TSourceLoc& identifierLocation, const TString &identifier)
+TIntermAggregate* TParseContext::parseInvariantDeclaration(const TSourceLoc &invariantLoc,
+                                                           const TSourceLoc &identifierLoc,
+                                                           const TString *identifier,
+                                                           const TSymbol *symbol)
 {
-    if (publicType.type == EbtInvariant && !identifierSymbol)
+    // invariant declaration
+    if (globalErrorCheck(invariantLoc, symbolTable.atGlobalLevel(), "invariant varying"))
     {
-        error(identifierLocation, "undeclared identifier declared as invariant", identifier.c_str());
         recover();
     }
 
+    if (!symbol)
+    {
+        error(identifierLoc, "undeclared identifier declared as invariant", identifier->c_str());
+        recover();
+
+        return NULL;
+    }
+    else
+    {
+        const TVariable *variable = getNamedVariable(identifierLoc, identifier, symbol);
+        ASSERT(variable);
+        const TType &type = variable->getType();
+        TIntermSymbol *intermSymbol = intermediate.addSymbol(variable->getUniqueId(),
+                                                             *identifier, type, identifierLoc);
+
+        TIntermAggregate *aggregate = intermediate.makeAggregate(intermSymbol, identifierLoc);
+        aggregate->setOp(EOpInvariantDeclaration);
+        return aggregate;
+    }
+}
+
+TIntermAggregate* TParseContext::parseDeclarator(TPublicType &publicType, TIntermAggregate *aggregateDeclaration, TSymbol *identifierSymbol, const TSourceLoc& identifierLocation, const TString &identifier)
+{
     TIntermSymbol* symbol = intermediate.addSymbol(0, identifier, TType(publicType), identifierLocation);
     TIntermAggregate* intermAggregate = intermediate.growAggregate(aggregateDeclaration, symbol, identifierLocation);
 
@@ -1548,7 +1615,7 @@ TIntermTyped *TParseContext::addConstructor(TIntermNode *arguments, const TType 
 
         for (size_t i = 0; i < fields.size(); i++)
         {
-            if ((*args)[i]->getAsTyped()->getType() != *fields[i]->type())
+            if (i >= args->size() || (*args)[i]->getAsTyped()->getType() != *fields[i]->type())
             {
                 error(line, "Structure constructor arguments do not match structure fields", "Error");
                 recover();

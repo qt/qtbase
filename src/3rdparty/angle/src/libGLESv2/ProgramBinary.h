@@ -10,11 +10,6 @@
 #ifndef LIBGLESV2_PROGRAM_BINARY_H_
 #define LIBGLESV2_PROGRAM_BINARY_H_
 
-#include "angle_gl.h"
-
-#include <string>
-#include <vector>
-
 #include "common/RefCountObject.h"
 #include "angletypes.h"
 #include "common/mathutil.h"
@@ -22,12 +17,29 @@
 #include "libGLESv2/Shader.h"
 #include "libGLESv2/Constants.h"
 #include "libGLESv2/renderer/d3d/VertexDataManager.h"
-#include "libGLESv2/DynamicHLSL.h"
+#include "libGLESv2/renderer/d3d/DynamicHLSL.h"
+
+#include "angle_gl.h"
+
+#include <string>
+#include <vector>
+
+// TODO(jmadill): place this in workarounds library
+#define ANGLE_WORKAROUND_ENABLED 1
+#define ANGLE_WORKAROUND_DISABLED 2
+#define ANGLE_MRT_PERF_WORKAROUND ANGLE_WORKAROUND_ENABLED
 
 namespace sh
 {
 class HLSLBlockEncoder;
 }
+
+#include <GLES3/gl3.h>
+#include <GLES2/gl2.h>
+#include <GLES2/gl2ext.h>
+
+#include <string>
+#include <vector>
 
 namespace rx
 {
@@ -35,12 +47,13 @@ class ShaderExecutable;
 class Renderer;
 struct TranslatedAttribute;
 class UniformStorage;
+class ProgramImpl;
 }
 
 namespace gl
 {
-class FragmentShader;
-class VertexShader;
+struct Caps;
+class Shader;
 class InfoLog;
 class AttributeBindings;
 class Buffer;
@@ -82,8 +95,11 @@ struct LinkedVarying
 class ProgramBinary : public RefCountObject
 {
   public:
-    explicit ProgramBinary(rx::Renderer *renderer);
+    explicit ProgramBinary(rx::ProgramImpl *impl);
     ~ProgramBinary();
+
+    rx::ProgramImpl *getImplementation() { return mProgram; }
+    const rx::ProgramImpl *getImplementation() const { return mProgram; }
 
     rx::ShaderExecutable *getPixelExecutableForFramebuffer(const Framebuffer *fbo);
     rx::ShaderExecutable *getPixelExecutableForOutputLayout(const std::vector<GLenum> &outputLayout);
@@ -93,8 +109,8 @@ class ProgramBinary : public RefCountObject
     GLuint getAttributeLocation(const char *name);
     int getSemanticIndex(int attributeIndex);
 
-    GLint getSamplerMapping(SamplerType type, unsigned int samplerIndex);
-    TextureType getSamplerTextureType(SamplerType type, unsigned int samplerIndex);
+    GLint getSamplerMapping(SamplerType type, unsigned int samplerIndex, const Caps &caps);
+    GLenum getSamplerTextureType(SamplerType type, unsigned int samplerIndex);
     GLint getUsedSamplerRange(SamplerType type);
     bool usesPointSize() const;
     bool usesPointSpriteEmulation() const;
@@ -125,20 +141,21 @@ class ProgramBinary : public RefCountObject
     void setUniformMatrix3x4fv(GLint location, GLsizei count, GLboolean transpose, const GLfloat *value);
     void setUniformMatrix4x3fv(GLint location, GLsizei count, GLboolean transpose, const GLfloat *value);
 
-    bool getUniformfv(GLint location, GLsizei *bufSize, GLfloat *params);
-    bool getUniformiv(GLint location, GLsizei *bufSize, GLint *params);
-    bool getUniformuiv(GLint location, GLsizei *bufSize, GLuint *params);
+    void getUniformfv(GLint location, GLfloat *params);
+    void getUniformiv(GLint location, GLint *params);
+    void getUniformuiv(GLint location, GLuint *params);
 
     void dirtyAllUniforms();
-    void applyUniforms();
-    bool applyUniformBuffers(const std::vector<Buffer*> boundBuffers);
 
-    bool load(InfoLog &infoLog, const void *binary, GLsizei length);
-    bool save(void* binary, GLsizei bufSize, GLsizei *length);
+    Error applyUniforms();
+    Error applyUniformBuffers(const std::vector<Buffer*> boundBuffers, const Caps &caps);
+
+    bool load(InfoLog &infoLog, GLenum binaryFormat, const void *binary, GLsizei length);
+    bool save(GLenum *binaryFormat, void *binary, GLsizei bufSize, GLsizei *length);
     GLint getLength();
 
-    bool link(InfoLog &infoLog, const AttributeBindings &attributeBindings, FragmentShader *fragmentShader, VertexShader *vertexShader,
-              const std::vector<std::string>& transformFeedbackVaryings, GLenum transformFeedbackBufferMode);
+    bool link(InfoLog &infoLog, const AttributeBindings &attributeBindings, Shader *fragmentShader, Shader *vertexShader,
+              const std::vector<std::string>& transformFeedbackVaryings, GLenum transformFeedbackBufferMode, const Caps &caps);
     void getAttachedShaders(GLsizei maxCount, GLsizei *count, GLuint *shaders);
 
     void getActiveAttribute(GLuint index, GLsizei bufsize, GLsizei *length, GLint *size, GLenum *type, GLchar *name) const;
@@ -165,8 +182,8 @@ class ProgramBinary : public RefCountObject
     const LinkedVarying &getTransformFeedbackVarying(size_t idx) const;
     GLenum getTransformFeedbackBufferMode() const;
 
-    void validate(InfoLog &infoLog);
-    bool validateSamplers(InfoLog *infoLog);
+    void validate(InfoLog &infoLog, const Caps &caps);
+    bool validateSamplers(InfoLog *infoLog, const Caps &caps);
     bool isValidated() const;
     void updateSamplerMapping();
 
@@ -177,8 +194,8 @@ class ProgramBinary : public RefCountObject
     void sortAttributesByLayout(rx::TranslatedAttribute attributes[MAX_VERTEX_ATTRIBS], int sortedSemanticIndices[MAX_VERTEX_ATTRIBS]) const;
 
     const std::vector<LinkedUniform*> &getUniforms() const { return mUniforms; }
-    const rx::UniformStorage &getVertexUniformStorage() const { return *mVertexUniformStorage; }
-    const rx::UniformStorage &getFragmentUniformStorage() const { return *mFragmentUniformStorage; }
+
+    static bool linkVaryings(InfoLog &infoLog, Shader *fragmentShader, Shader *vertexShader);
 
   private:
     DISALLOW_COPY_AND_ASSIGN(ProgramBinary);
@@ -189,40 +206,43 @@ class ProgramBinary : public RefCountObject
 
         bool active;
         GLint logicalTextureUnit;
-        TextureType textureType;
+        GLenum textureType;
     };
 
     void reset();
 
-    bool linkVaryings(InfoLog &infoLog, FragmentShader *fragmentShader, VertexShader *vertexShader);
-    bool linkAttributes(InfoLog &infoLog, const AttributeBindings &attributeBindings, FragmentShader *fragmentShader, VertexShader *vertexShader);
+    bool linkAttributes(InfoLog &infoLog, const AttributeBindings &attributeBindings, const Shader *vertexShader);
 
-    template <class ShaderVarType>
-    bool linkValidateFields(InfoLog &infoLog, const std::string &varName, const ShaderVarType &vertexVar, const ShaderVarType &fragmentVar);
-    bool linkValidateVariablesBase(InfoLog &infoLog, const std::string &variableName, const sh::ShaderVariable &vertexVariable, const sh::ShaderVariable &fragmentVariable, bool validatePrecision);
+    static bool linkValidateVariablesBase(InfoLog &infoLog,
+                                          const std::string &variableName,
+                                          const sh::ShaderVariable &vertexVariable,
+                                          const sh::ShaderVariable &fragmentVariable,
+                                          bool validatePrecision);
 
-    bool linkValidateVariables(InfoLog &infoLog, const std::string &uniformName, const sh::Uniform &vertexUniform, const sh::Uniform &fragmentUniform);
-    bool linkValidateVariables(InfoLog &infoLog, const std::string &varyingName, const sh::Varying &vertexVarying, const sh::Varying &fragmentVarying);
-    bool linkValidateVariables(InfoLog &infoLog, const std::string &uniformName, const sh::InterfaceBlockField &vertexUniform, const sh::InterfaceBlockField &fragmentUniform);
-    bool linkUniforms(InfoLog &infoLog, const VertexShader &vertexShader, const FragmentShader &fragmentShader);
+    static bool linkValidateUniforms(InfoLog &infoLog, const std::string &uniformName, const sh::Uniform &vertexUniform, const sh::Uniform &fragmentUniform);
+    static bool linkValidateVaryings(InfoLog &infoLog, const std::string &varyingName, const sh::Varying &vertexVarying, const sh::Varying &fragmentVarying);
+    static bool linkValidateInterfaceBlockFields(InfoLog &infoLog, const std::string &uniformName, const sh::InterfaceBlockField &vertexUniform, const sh::InterfaceBlockField &fragmentUniform);
+    bool linkUniforms(InfoLog &infoLog, const Shader &vertexShader, const Shader &fragmentShader, const Caps &caps);
     void defineUniformBase(GLenum shader, const sh::Uniform &uniform, unsigned int uniformRegister);
-    void defineUniform(GLenum shader, const sh::Uniform &uniform, const std::string &fullName, sh::HLSLBlockEncoder *encoder);
-    bool indexSamplerUniform(const LinkedUniform &uniform, InfoLog &infoLog);
-    bool indexUniforms(InfoLog &infoLog);
+    void defineUniform(GLenum shader, const sh::ShaderVariable &uniform, const std::string &fullName, sh::HLSLBlockEncoder *encoder);
+    bool indexSamplerUniform(const LinkedUniform &uniform, InfoLog &infoLog, const Caps &caps);
+    bool indexUniforms(InfoLog &infoLog, const Caps &caps);
     static bool assignSamplers(unsigned int startSamplerIndex, GLenum samplerType, unsigned int samplerCount,
-                               Sampler *outArray, GLuint *usedRange, unsigned int limit);
+                               std::vector<Sampler> &outSamplers, GLuint *outUsedRange);
     bool areMatchingInterfaceBlocks(InfoLog &infoLog, const sh::InterfaceBlock &vertexInterfaceBlock, const sh::InterfaceBlock &fragmentInterfaceBlock);
-    bool linkUniformBlocks(InfoLog &infoLog, const VertexShader &vertexShader, const FragmentShader &fragmentShader);
+    bool linkUniformBlocks(InfoLog &infoLog, const Shader &vertexShader, const Shader &fragmentShader, const Caps &caps);
     bool gatherTransformFeedbackLinkedVaryings(InfoLog &infoLog, const std::vector<LinkedVarying> &linkedVaryings,
                                                const std::vector<std::string> &transformFeedbackVaryingNames,
                                                GLenum transformFeedbackBufferMode,
-                                               std::vector<LinkedVarying> *outTransformFeedbackLinkedVaryings) const;
-    void defineUniformBlockMembers(const std::vector<sh::InterfaceBlockField> &fields, const std::string &prefix, int blockIndex,
-                                   sh::BlockLayoutEncoder *encoder, std::vector<unsigned int> *blockUniformIndexes);
-    bool defineUniformBlock(InfoLog &infoLog, const Shader &shader, const sh::InterfaceBlock &interfaceBlock);
-    bool assignUniformBlockRegister(InfoLog &infoLog, UniformBlock *uniformBlock, GLenum shader, unsigned int registerIndex);
-    void defineOutputVariables(FragmentShader *fragmentShader);
-    void initializeUniformStorage();
+                                               std::vector<LinkedVarying> *outTransformFeedbackLinkedVaryings,
+                                               const Caps &caps) const;
+    template <typename VarT>
+    void defineUniformBlockMembers(const std::vector<VarT> &fields, const std::string &prefix, int blockIndex,
+                                   sh::BlockLayoutEncoder *encoder, std::vector<unsigned int> *blockUniformIndexes,
+                                   bool inRowMajorLayout);
+    bool defineUniformBlock(InfoLog &infoLog, const Shader &shader, const sh::InterfaceBlock &interfaceBlock, const Caps &caps);
+    bool assignUniformBlockRegister(InfoLog &infoLog, UniformBlock *uniformBlock, GLenum shader, unsigned int registerIndex, const Caps &caps);
+    void defineOutputVariables(Shader *fragmentShader);
 
     template <typename T>
     void setUniform(GLint location, GLsizei count, const T* v, GLenum targetUniformType);
@@ -231,7 +251,7 @@ class ProgramBinary : public RefCountObject
     void setUniformMatrixfv(GLint location, GLsizei count, GLboolean transpose, const GLfloat *value, GLenum targetUniformType);
 
     template <typename T>
-    bool getUniformv(GLint location, GLsizei *bufSize, T *params, GLenum uniformType);
+    void getUniformv(GLint location, T *params, GLenum uniformType);
 
     class VertexExecutable
     {
@@ -259,8 +279,7 @@ class ProgramBinary : public RefCountObject
         PixelExecutable(const std::vector<GLenum> &outputSignature, rx::ShaderExecutable *shaderExecutable);
         ~PixelExecutable();
 
-        // FIXME(geofflang): Work around NVIDIA driver bug by repacking buffers
-        bool matchesSignature(const std::vector<GLenum> &signature) const { return true; /* mOutputSignature == signature; */ }
+        bool matchesSignature(const std::vector<GLenum> &signature) const { return mOutputSignature == signature; }
 
         const std::vector<GLenum> &outputSignature() const { return mOutputSignature; }
         rx::ShaderExecutable *shaderExecutable() const { return mShaderExecutable; }
@@ -270,17 +289,9 @@ class ProgramBinary : public RefCountObject
         rx::ShaderExecutable *mShaderExecutable;
     };
 
-    rx::Renderer *const mRenderer;
-    DynamicHLSL *mDynamicHLSL;
+    rx::ProgramImpl *mProgram;
 
-    std::string mVertexHLSL;
-    rx::D3DWorkaroundType mVertexWorkarounds;
     std::vector<VertexExecutable *> mVertexExecutables;
-
-    std::string mPixelHLSL;
-    rx::D3DWorkaroundType mPixelWorkarounds;
-    bool mUsesFragDepth;
-    std::vector<PixelShaderOuputVariable> mPixelShaderKey;
     std::vector<PixelExecutable *> mPixelExecutables;
 
     rx::ShaderExecutable *mGeometryExecutable;
@@ -293,8 +304,8 @@ class ProgramBinary : public RefCountObject
     GLenum mTransformFeedbackBufferMode;
     std::vector<LinkedVarying> mTransformFeedbackLinkedVaryings;
 
-    Sampler mSamplersPS[MAX_TEXTURE_IMAGE_UNITS];
-    Sampler mSamplersVS[IMPLEMENTATION_MAX_VERTEX_TEXTURE_IMAGE_UNITS];
+    std::vector<Sampler> mSamplersPS;
+    std::vector<Sampler> mSamplersVS;
     GLuint mUsedVertexSamplerRange;
     GLuint mUsedPixelSamplerRange;
     bool mUsesPointSize;
@@ -305,8 +316,6 @@ class ProgramBinary : public RefCountObject
     std::vector<UniformBlock*> mUniformBlocks;
     std::vector<VariableLocation> mUniformIndex;
     std::map<int, VariableLocation> mOutputVariables;
-    rx::UniformStorage *mVertexUniformStorage;
-    rx::UniformStorage *mFragmentUniformStorage;
 
     bool mValidated;
 

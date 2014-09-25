@@ -1,27 +1,73 @@
-From ac4e9bb72ca22fd39bfc43f087108694db2ae8ac Mon Sep 17 00:00:00 2001
+From 75c39e9020f062d155097f6b49aebbc12970b1e8 Mon Sep 17 00:00:00 2001
 From: Andrew Knight <andrew.knight@digia.com>
-Date: Thu, 4 Sep 2014 15:32:17 +0300
-Subject: [PATCH] ANGLE: Fix compilation with MinGW + D3D11
+Date: Tue, 23 Sep 2014 23:39:14 +0300
+Subject: [PATCH 16/16] ANGLE: Fix compilation with MinGW + D3D11
 
 Provide workarounds for things GCC doesn't like, and define a number
 of macros not found in the MinGW headers.
 
 Change-Id: I254c208209c0071fae5efb6727f2b3cfd5542da6
 ---
- src/3rdparty/angle/src/libGLESv2/Context.cpp       |  4 ++--
- .../src/libGLESv2/renderer/d3d/d3d11/Buffer11.cpp  |  4 ++++
- .../src/libGLESv2/renderer/d3d/d3d11/Query11.cpp   |  8 +++++++
- .../libGLESv2/renderer/d3d/d3d11/RenderTarget11.h  |  2 +-
- .../libGLESv2/renderer/d3d/d3d11/Renderer11.cpp    | 27 +++++++++++++++++++++-
- .../src/libGLESv2/renderer/d3d/d3d11/Renderer11.h  |  2 +-
- .../renderer/d3d/d3d11/renderer11_utils.cpp        | 11 ++++++++-
- 7 files changed, 52 insertions(+), 6 deletions(-)
+ src/3rdparty/angle/src/common/platform.h           | 11 +++++
+ src/3rdparty/angle/src/libEGL/Display.cpp          |  1 +
+ src/3rdparty/angle/src/libGLESv2/Context.cpp       |  5 +-
+ src/3rdparty/angle/src/libGLESv2/angletypes.h      |  1 +
+ .../angle/src/libGLESv2/renderer/copyimage.inl     |  2 +-
+ .../src/libGLESv2/renderer/d3d/TextureD3D.cpp      |  4 +-
+ .../libGLESv2/renderer/d3d/d3d11/Renderer11.cpp    |  2 +-
+ .../libGLESv2/renderer/d3d/d3d11/SwapChain11.cpp   |  2 +-
+ .../renderer/d3d/d3d11/renderer11_utils.cpp        | 53 +++++++++++++++++++++-
+ .../src/libGLESv2/renderer/d3d/d3d9/Renderer9.cpp  |  4 +-
+ src/3rdparty/angle/src/libGLESv2/validationES.cpp  |  2 +-
+ 11 files changed, 76 insertions(+), 11 deletions(-)
 
+diff --git a/src/3rdparty/angle/src/common/platform.h b/src/3rdparty/angle/src/common/platform.h
+index 3c619f3..b53394f 100644
+--- a/src/3rdparty/angle/src/common/platform.h
++++ b/src/3rdparty/angle/src/common/platform.h
+@@ -68,6 +68,17 @@
+ #      if !defined(COMPILER_IMPLEMENTATION)
+ #       include <d3dcompiler.h>
+ #      endif
++#      if defined(__MINGW32__)
++typedef enum D3D11_MAP_FLAG
++{
++    D3D11_MAP_FLAG_DO_NOT_WAIT = 0x100000L
++} D3D11_MAP_FLAG;
++typedef struct D3D11_QUERY_DATA_SO_STATISTICS
++{
++    UINT64 NumPrimitivesWritten;
++    UINT64 PrimitivesStorageNeeded;
++} D3D11_QUERY_DATA_SO_STATISTICS;
++#      endif
+ #   endif
+ 
+ #   undef near
+diff --git a/src/3rdparty/angle/src/libEGL/Display.cpp b/src/3rdparty/angle/src/libEGL/Display.cpp
+index ba09631..5a50e4b 100644
+--- a/src/3rdparty/angle/src/libEGL/Display.cpp
++++ b/src/3rdparty/angle/src/libEGL/Display.cpp
+@@ -14,6 +14,7 @@
+ #include <map>
+ #include <vector>
+ #include <sstream>
++#include <iterator>
+ 
+ #include "common/debug.h"
+ #include "common/mathutil.h"
 diff --git a/src/3rdparty/angle/src/libGLESv2/Context.cpp b/src/3rdparty/angle/src/libGLESv2/Context.cpp
-index 8201acd..99df85b 100644
+index 04c7616..5342de1 100644
 --- a/src/3rdparty/angle/src/libGLESv2/Context.cpp
 +++ b/src/3rdparty/angle/src/libGLESv2/Context.cpp
-@@ -368,7 +368,7 @@ void Context::deleteFenceSync(GLsync fenceSync)
+@@ -33,6 +33,7 @@
+ #include "libEGL/Surface.h"
+ 
+ #include <sstream>
++#include <iterator>
+ 
+ namespace gl
+ {
+@@ -354,7 +355,7 @@ void Context::deleteFenceSync(GLsync fenceSync)
      // wait commands finish. However, since the name becomes invalid, we cannot query the fence,
      // and since our API is currently designed for being called from a single thread, we can delete
      // the fence immediately.
@@ -30,7 +76,7 @@ index 8201acd..99df85b 100644
  }
  
  void Context::deleteVertexArray(GLuint vertexArray)
-@@ -474,7 +474,7 @@ Renderbuffer *Context::getRenderbuffer(GLuint handle)
+@@ -460,7 +461,7 @@ Renderbuffer *Context::getRenderbuffer(GLuint handle)
  
  FenceSync *Context::getFenceSync(GLsync handle) const
  {
@@ -39,87 +85,58 @@ index 8201acd..99df85b 100644
  }
  
  VertexArray *Context::getVertexArray(GLuint handle) const
-diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/Buffer11.cpp b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/Buffer11.cpp
-index 352da96..1301124 100644
---- a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/Buffer11.cpp
-+++ b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/Buffer11.cpp
-@@ -12,6 +12,10 @@
- #include "libGLESv2/renderer/d3d/d3d11/Renderer11.h"
- #include "libGLESv2/renderer/d3d/d3d11/formatutils11.h"
+diff --git a/src/3rdparty/angle/src/libGLESv2/angletypes.h b/src/3rdparty/angle/src/libGLESv2/angletypes.h
+index 922053e..642a6ec 100644
+--- a/src/3rdparty/angle/src/libGLESv2/angletypes.h
++++ b/src/3rdparty/angle/src/libGLESv2/angletypes.h
+@@ -11,6 +11,7 @@
  
-+#if defined(__MINGW32__) && !defined(D3D11_MAP_FLAG_DO_NOT_WAIT)
-+#  define D3D11_MAP_FLAG_DO_NOT_WAIT 0x100000L
-+#endif
-+
- namespace rx
+ #include "libGLESv2/constants.h"
+ #include "common/RefCountObject.h"
++#include <float.h>
+ 
+ namespace gl
  {
- 
-diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/Query11.cpp b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/Query11.cpp
-index 17cf5ca..e5e0032 100644
---- a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/Query11.cpp
-+++ b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/Query11.cpp
-@@ -12,6 +12,14 @@
- #include "libGLESv2/renderer/d3d/d3d11/renderer11_utils.h"
- #include "libGLESv2/main.h"
- 
-+#if defined(__MINGW32__) // Provide undefined struct
-+typedef struct D3D11_QUERY_DATA_SO_STATISTICS
-+{
-+    UINT64 NumPrimitivesWritten;
-+    UINT64 PrimitivesStorageNeeded;
-+} D3D11_QUERY_DATA_SO_STATISTICS;
-+#endif
-+
- namespace rx
+diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/copyimage.inl b/src/3rdparty/angle/src/libGLESv2/renderer/copyimage.inl
+index ea6970c..0498cf7 100644
+--- a/src/3rdparty/angle/src/libGLESv2/renderer/copyimage.inl
++++ b/src/3rdparty/angle/src/libGLESv2/renderer/copyimage.inl
+@@ -24,7 +24,7 @@ inline void WriteColor(const uint8_t *source, uint8_t *dest)
+ template <typename sourceType, typename destType, typename colorDataType>
+ inline void CopyPixel(const uint8_t *source, uint8_t *dest)
  {
- 
-diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/RenderTarget11.h b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/RenderTarget11.h
-index ba9f76e..8218295 100644
---- a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/RenderTarget11.h
-+++ b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/RenderTarget11.h
-@@ -51,4 +51,4 @@ class RenderTarget11 : public RenderTarget
- 
+-    colorType temp;
++    colorDataType temp;
+     ReadColor<sourceType, colorDataType>(source, &temp);
+     WriteColor<destType, colorDataType>(&temp, dest);
  }
+diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/TextureD3D.cpp b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/TextureD3D.cpp
+index 2650913..96c8497 100644
+--- a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/TextureD3D.cpp
++++ b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/TextureD3D.cpp
+@@ -129,7 +129,7 @@ bool TextureD3D::subImage(GLint xoffset, GLint yoffset, GLint zoffset, GLsizei w
+     if (unpack.pixelBuffer.id() != 0)
+     {
+         gl::Buffer *pixelBuffer = unpack.pixelBuffer.get();
+-        unsigned int offset = reinterpret_cast<unsigned int>(pixels);
++        ptrdiff_t offset = reinterpret_cast<ptrdiff_t>(pixels);
+         // TODO: setImage/subImage is the only place outside of renderer that asks for a buffers raw data.
+         // This functionality should be moved into renderer and the getData method of BufferImpl removed.
+         const void *bufferData = pixelBuffer->getImplementation()->getData();
+@@ -186,7 +186,7 @@ bool TextureD3D::fastUnpackPixels(const gl::PixelUnpackState &unpack, const void
+     // to create a render target.
+     ASSERT(mRenderer->supportsFastCopyBufferToTexture(sizedInternalFormat));
  
--#endif LIBGLESV2_RENDERER_RENDERTARGET11_H_
-+#endif // LIBGLESV2_RENDERER_RENDERTARGET11_H_
+-    unsigned int offset = reinterpret_cast<unsigned int>(pixels);
++    ptrdiff_t offset = reinterpret_cast<ptrdiff_t>(pixels);
+ 
+     return mRenderer->fastCopyBufferToTexture(unpack, offset, destRenderTarget, sizedInternalFormat, type, destArea);
+ }
 diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/Renderer11.cpp b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/Renderer11.cpp
-index 651b065..3ba0cc7 100644
+index bd07ee1..b29b2ef 100644
 --- a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/Renderer11.cpp
 +++ b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/Renderer11.cpp
-@@ -49,6 +49,31 @@
- #define ANGLE_SUPPRESS_D3D11_HAZARD_WARNINGS 1
- #endif
- 
-+#ifndef D3D11_PS_INPUT_REGISTER_COUNT
-+#  define D3D11_PS_INPUT_REGISTER_COUNT 32
-+#endif
-+#ifndef D3D10_1_VS_OUTPUT_REGISTER_COUNT
-+#  define D3D10_1_VS_OUTPUT_REGISTER_COUNT 32
-+#endif
-+#ifndef D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT
-+#  define D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT 14
-+#endif
-+#ifndef D3D11_SO_BUFFER_SLOT_COUNT
-+#  define D3D11_SO_BUFFER_SLOT_COUNT 4
-+#endif
-+#ifndef D3D10_1_SO_BUFFER_SLOT_COUNT
-+#  define D3D10_1_SO_BUFFER_SLOT_COUNT 4
-+#endif
-+#ifndef D3D11_REQ_CONSTANT_BUFFER_ELEMENT_COUNT
-+#  define D3D11_REQ_CONSTANT_BUFFER_ELEMENT_COUNT 4096
-+#endif
-+#ifndef D3D11_REQ_DRAWINDEXED_INDEX_COUNT_2_TO_EXP
-+#  define D3D11_REQ_DRAWINDEXED_INDEX_COUNT_2_TO_EXP 32
-+#endif
-+#ifndef D3D11_REQ_DRAW_VERTEX_COUNT_2_TO_EXP
-+#  define D3D11_REQ_DRAW_VERTEX_COUNT_2_TO_EXP 32
-+#endif
-+
- namespace rx
- {
- static const DXGI_FORMAT RenderTargetFormats[] =
-@@ -275,7 +300,7 @@ EGLint Renderer11::initialize()
+@@ -281,7 +281,7 @@ EGLint Renderer11::initialize()
      }
  
      // Disable some spurious D3D11 debug warnings to prevent them from flooding the output log
@@ -128,24 +145,24 @@ index 651b065..3ba0cc7 100644
      ID3D11InfoQueue *infoQueue;
      result = mDevice->QueryInterface(__uuidof(ID3D11InfoQueue),  (void **)&infoQueue);
  
-diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/Renderer11.h b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/Renderer11.h
-index a31f15e..b54f75d 100644
---- a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/Renderer11.h
-+++ b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/Renderer11.h
-@@ -261,7 +261,7 @@ class Renderer11 : public Renderer
-     };
-     MultisampleSupportInfo getMultisampleSupportInfo(DXGI_FORMAT format);
+diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/SwapChain11.cpp b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/SwapChain11.cpp
+index 787c511..4b29be0 100644
+--- a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/SwapChain11.cpp
++++ b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/SwapChain11.cpp
+@@ -537,7 +537,7 @@ void SwapChain11::initPassThroughResources()
+     samplerDesc.BorderColor[2] = 0.0f;
+     samplerDesc.BorderColor[3] = 0.0f;
+     samplerDesc.MinLOD = 0;
+-    samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
++    samplerDesc.MaxLOD = FLT_MAX;
  
--    typedef std::unordered_map<DXGI_FORMAT, MultisampleSupportInfo> MultisampleSupportMap;
-+    typedef std::unordered_map<GLenum, MultisampleSupportInfo> MultisampleSupportMap;
-     MultisampleSupportMap mMultisampleSupportMap;
- 
-     unsigned int mMaxSupportedSamples;
+     result = device->CreateSamplerState(&samplerDesc, &mPassThroughSampler);
+     ASSERT(SUCCEEDED(result));
 diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/renderer11_utils.cpp b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/renderer11_utils.cpp
-index 8e0c21b..d914a82 100644
+index 345fd24..2af97e7 100644
 --- a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/renderer11_utils.cpp
 +++ b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/renderer11_utils.cpp
-@@ -36,6 +36,15 @@
+@@ -47,6 +47,57 @@
  #ifndef D3D_FL9_3_REQ_TEXTURE2D_U_OR_V_DIMENSION
  #  define D3D_FL9_3_REQ_TEXTURE2D_U_OR_V_DIMENSION 4096
  #endif
@@ -158,10 +175,52 @@ index 8e0c21b..d914a82 100644
 +#ifndef D3D11_REQ_TEXTURE3D_U_V_OR_W_DIMENSION
 +#  define D3D11_REQ_TEXTURE3D_U_V_OR_W_DIMENSION 2048
 +#endif
++#ifndef D3D11_REQ_DRAWINDEXED_INDEX_COUNT_2_TO_EXP
++#  define D3D11_REQ_DRAWINDEXED_INDEX_COUNT_2_TO_EXP 32
++#endif
++#ifndef D3D11_REQ_DRAW_VERTEX_COUNT_2_TO_EXP
++#  define D3D11_REQ_DRAW_VERTEX_COUNT_2_TO_EXP 32
++#endif
++#ifndef D3D10_1_STANDARD_VERTEX_ELEMENT_COUNT
++#  define D3D10_1_STANDARD_VERTEX_ELEMENT_COUNT 32
++#endif
++#ifndef D3D11_STANDARD_VERTEX_ELEMENT_COUNT
++#  define D3D11_STANDARD_VERTEX_ELEMENT_COUNT 32
++#endif
++#ifndef D3D10_1_SO_BUFFER_SLOT_COUNT
++#  define D3D10_1_SO_BUFFER_SLOT_COUNT 4
++#endif
++#ifndef D3D11_SO_BUFFER_SLOT_COUNT
++#  define D3D11_SO_BUFFER_SLOT_COUNT 4
++#endif
++#ifndef D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT
++#  define D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT 14
++#endif
++#ifndef D3D11_COMMONSHADER_SAMPLER_SLOT_COUNT
++#  define D3D11_COMMONSHADER_SAMPLER_SLOT_COUNT 16
++#endif
++#ifndef D3D11_COMMONSHADER_TEXEL_OFFSET_MAX_NEGATIVE
++#  define D3D11_COMMONSHADER_TEXEL_OFFSET_MAX_NEGATIVE -8
++#endif
++#ifndef D3D11_COMMONSHADER_TEXEL_OFFSET_MAX_POSITIVE
++#  define D3D11_COMMONSHADER_TEXEL_OFFSET_MAX_POSITIVE 7
++#endif
++#ifndef D3D11_REQ_CONSTANT_BUFFER_ELEMENT_COUNT
++#  define D3D11_REQ_CONSTANT_BUFFER_ELEMENT_COUNT 4096
++#endif
++#ifndef D3D11_PS_INPUT_REGISTER_COUNT
++#  define D3D11_PS_INPUT_REGISTER_COUNT 32
++#endif
++#ifndef D3D10_1_VS_OUTPUT_REGISTER_COUNT
++#  define D3D10_1_VS_OUTPUT_REGISTER_COUNT 32
++#endif
++#ifndef D3D11_VS_OUTPUT_REGISTER_COUNT
++#  define D3D11_VS_OUTPUT_REGISTER_COUNT 32
++#endif
  
  namespace rx
  {
-@@ -671,7 +680,7 @@ void SetPositionLayerTexCoord3DVertex(PositionLayerTexCoord3DVertex* vertex, flo
+@@ -1147,7 +1198,7 @@ void SetPositionLayerTexCoord3DVertex(PositionLayerTexCoord3DVertex* vertex, flo
  
  HRESULT SetDebugName(ID3D11DeviceChild *resource, const char *name)
  {
@@ -170,6 +229,41 @@ index 8e0c21b..d914a82 100644
      return resource->SetPrivateData(WKPDID_D3DDebugObjectName, strlen(name), name);
  #else
      return S_OK;
+diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d9/Renderer9.cpp b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d9/Renderer9.cpp
+index 1d52705..d63f9b8 100644
+--- a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d9/Renderer9.cpp
++++ b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d9/Renderer9.cpp
+@@ -205,7 +205,7 @@ EGLint Renderer9::initialize()
+     if (ANGLE_ENABLE_D3D9EX && Direct3DCreate9ExPtr && SUCCEEDED(Direct3DCreate9ExPtr(D3D_SDK_VERSION, &mD3d9Ex)))
+     {
+         ASSERT(mD3d9Ex);
+-        mD3d9Ex->QueryInterface(__uuidof(IDirect3D9), reinterpret_cast<void**>(&mD3d9));
++        mD3d9Ex->QueryInterface(IID_IDirect3D9, reinterpret_cast<void**>(&mD3d9));
+         ASSERT(mD3d9);
+     }
+     else
+@@ -329,7 +329,7 @@ EGLint Renderer9::initialize()
+ 
+     if (mD3d9Ex)
+     {
+-        result = mDevice->QueryInterface(__uuidof(IDirect3DDevice9Ex), (void**)&mDeviceEx);
++        result = mDevice->QueryInterface(IID_IDirect3DDevice9Ex, (void**)&mDeviceEx);
+         ASSERT(SUCCEEDED(result));
+     }
+ 
+diff --git a/src/3rdparty/angle/src/libGLESv2/validationES.cpp b/src/3rdparty/angle/src/libGLESv2/validationES.cpp
+index 1b6180d..f79bc97 100644
+--- a/src/3rdparty/angle/src/libGLESv2/validationES.cpp
++++ b/src/3rdparty/angle/src/libGLESv2/validationES.cpp
+@@ -1667,7 +1667,7 @@ bool ValidateDrawElements(Context *context, GLenum mode, GLsizei count, GLenum t
+     // TODO: also disable index checking on back-ends that are robust to out-of-range accesses.
+     if (elementArrayBuffer)
+     {
+-        unsigned int offset = reinterpret_cast<unsigned int>(indices);
++        GLint64 offset = reinterpret_cast<GLint64>(indices);
+         if (!elementArrayBuffer->getIndexRangeCache()->findRange(type, offset, count, indexRangeOut, NULL))
+         {
+             const void *dataPointer = elementArrayBuffer->getImplementation()->getData();
 -- 
 1.9.0.msysgit.0
 

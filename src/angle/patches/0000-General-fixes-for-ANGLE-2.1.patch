@@ -1,44 +1,47 @@
-From 7597b9363748afc84d682dd9ef5bc8bc272812f3 Mon Sep 17 00:00:00 2001
+From f409f6837ce80d722eb6d2ff178b61b713d3e8c7 Mon Sep 17 00:00:00 2001
 From: Andrew Knight <andrew.knight@digia.com>
-Date: Tue, 5 Aug 2014 09:21:44 +0300
+Date: Thu, 25 Sep 2014 13:23:19 +0300
 Subject: [PATCH] General fixes for ANGLE 2.1
 
 - Fix commit.h include (use hard-coded version)
 - Fix undefined intptr_t in egl.h and eglext.h
-- Fix export mismatch caused by angle_gl.h
+- Fix export mismatch in libEGL.cpp and libGLESv2.cpp
 - Remove D3D9 d3dcompiler.h include requirement in the translator
 - Normalize all precompiled shader names and includes
+- Remove third-party event tracing; it was hardly used in ANGLE
+  and not enabled in Qt builds anyway.
 
 Change-Id: I22254aed62e89a26756ca0784bae95909189c0f9
 ---
- src/3rdparty/angle/include/EGL/egl.h               |  2 +-
- src/3rdparty/angle/include/EGL/eglext.h            |  2 +-
- src/3rdparty/angle/include/angle_gl.h              |  3 +
- src/3rdparty/angle/src/common/platform.h           |  5 +-
- src/3rdparty/angle/src/common/version.h            |  2 +-
- src/3rdparty/angle/src/libEGL/Config.h             |  1 -
- src/3rdparty/angle/src/libEGL/Display.cpp          |  3 +-
- src/3rdparty/angle/src/libEGL/Surface.h            |  1 -
- src/3rdparty/angle/src/libEGL/main.h               |  1 +
- src/3rdparty/angle/src/libGLESv2/Context.h         |  1 -
- src/3rdparty/angle/src/libGLESv2/formatutils.h     |  2 +-
- src/3rdparty/angle/src/libGLESv2/main.h            |  3 +
- src/3rdparty/angle/src/libGLESv2/precompiled.h     |  1 +
- .../angle/src/libGLESv2/renderer/IndexRangeCache.h |  2 +-
- .../angle/src/libGLESv2/renderer/Renderer.h        |  1 +
- .../angle/src/libGLESv2/renderer/copyimage.h       |  2 +-
- .../src/libGLESv2/renderer/d3d/HLSLCompiler.cpp    |  2 +
- .../src/libGLESv2/renderer/d3d/d3d11/Blit11.cpp    | 66 +++++++++++-----------
- .../src/libGLESv2/renderer/d3d/d3d11/Clear11.cpp   | 12 ++--
- .../renderer/d3d/d3d11/PixelTransfer11.cpp         | 10 ++--
- .../libGLESv2/renderer/d3d/d3d11/SwapChain11.cpp   |  6 +-
- .../renderer/d3d/d3d11/shaders/Clear11.hlsl        |  4 ++
- .../src/libGLESv2/renderer/d3d/d3d9/Blit9.cpp      | 20 +++----
- .../src/libGLESv2/renderer/d3d/d3d9/Renderer9.cpp  |  4 +-
- .../src/libGLESv2/renderer/d3d/d3d9/SwapChain9.cpp |  2 +-
- .../libGLESv2/renderer/d3d/d3d9/shaders/Blit.ps    |  6 +-
- .../libGLESv2/renderer/d3d/d3d9/shaders/Blit.vs    |  4 +-
- 27 files changed, 92 insertions(+), 76 deletions(-)
+ src/3rdparty/angle/include/EGL/egl.h               |   2 +-
+ src/3rdparty/angle/include/EGL/eglext.h            |   2 +-
+ src/3rdparty/angle/src/common/event_tracer.cpp     |  49 --
+ src/3rdparty/angle/src/common/event_tracer.h       |  43 --
+ src/3rdparty/angle/src/common/version.h            |   2 +-
+ src/3rdparty/angle/src/libEGL/libEGL.cpp           |   3 +
+ src/3rdparty/angle/src/libGLESv2/libGLESv2.cpp     |   5 +
+ src/3rdparty/angle/src/libGLESv2/libGLESv2.def     |   3 -
+ .../angle/src/libGLESv2/libGLESv2_mingw32.def      |   3 -
+ src/3rdparty/angle/src/libGLESv2/libGLESv2d.def    |   3 -
+ .../angle/src/libGLESv2/libGLESv2d_mingw32.def     |   3 -
+ .../angle/src/libGLESv2/renderer/Renderer.cpp      |   1 -
+ .../angle/src/libGLESv2/renderer/SwapChain.h       |   4 -
+ .../src/libGLESv2/renderer/d3d/HLSLCompiler.cpp    |   6 +-
+ .../src/libGLESv2/renderer/d3d/d3d11/Blit11.cpp    |  66 +-
+ .../src/libGLESv2/renderer/d3d/d3d11/Clear11.cpp   |  12 +-
+ .../renderer/d3d/d3d11/PixelTransfer11.cpp         |  10 +-
+ .../libGLESv2/renderer/d3d/d3d11/SwapChain11.cpp   |   4 +-
+ .../renderer/d3d/d3d11/shaders/Clear11.hlsl        |   4 +
+ .../src/libGLESv2/renderer/d3d/d3d9/Blit9.cpp      |  20 +-
+ .../src/libGLESv2/renderer/d3d/d3d9/Renderer9.cpp  |  12 -
+ .../libGLESv2/renderer/d3d/d3d9/shaders/Blit.ps    |   6 +-
+ .../libGLESv2/renderer/d3d/d3d9/shaders/Blit.vs    |   4 +-
+ .../src/third_party/trace_event/trace_event.h      | 826 ---------------------
+ src/angle/src/common/common.pri                    |   2 -
+ 25 files changed, 80 insertions(+), 1015 deletions(-)
+ delete mode 100644 src/3rdparty/angle/src/common/event_tracer.cpp
+ delete mode 100644 src/3rdparty/angle/src/common/event_tracer.h
+ delete mode 100644 src/3rdparty/angle/src/third_party/trace_event/trace_event.h
 
 diff --git a/src/3rdparty/angle/include/EGL/egl.h b/src/3rdparty/angle/include/EGL/egl.h
 index 12590a0..ab2f0cd 100644
@@ -66,43 +69,110 @@ index 9e29605..989359b 100644
  typedef EGLSyncKHR (EGLAPIENTRYP PFNEGLCREATESYNC64KHRPROC) (EGLDisplay dpy, EGLenum type, const EGLAttribKHR *attrib_list);
  #ifdef EGL_EGLEXT_PROTOTYPES
  EGLAPI EGLSyncKHR EGLAPIENTRY eglCreateSync64KHR (EGLDisplay dpy, EGLenum type, const EGLAttribKHR *attrib_list);
-diff --git a/src/3rdparty/angle/include/angle_gl.h b/src/3rdparty/angle/include/angle_gl.h
-index d093f75..663aa25 100644
---- a/src/3rdparty/angle/include/angle_gl.h
-+++ b/src/3rdparty/angle/include/angle_gl.h
-@@ -10,6 +10,9 @@
- #ifndef ANGLE_GL_H_
- #define ANGLE_GL_H_
- 
-+#define GL_GLEXT_PROTOTYPES
-+#define GL_APICALL
-+
- #include "GLES2/gl2.h"
- #include "GLES2/gl2ext.h"
- #include "GLES3/gl3.h"
-diff --git a/src/3rdparty/angle/src/common/platform.h b/src/3rdparty/angle/src/common/platform.h
-index d07297d..aa0b985 100644
---- a/src/3rdparty/angle/src/common/platform.h
-+++ b/src/3rdparty/angle/src/common/platform.h
-@@ -49,7 +49,6 @@
- 
- #   if defined(ANGLE_ENABLE_D3D9) || defined(ANGLE_ENABLE_PERF)
- #       include <d3d9.h>
--#       include <d3dcompiler.h>
- #   endif
- 
- #   if defined(ANGLE_ENABLE_D3D11)
-@@ -62,6 +61,10 @@
- 
- #   undef near
- #   undef far
-+#   undef NEAR
-+#   define NEAR
-+#   undef FAR
-+#   define FAR
- #endif
- 
- #endif // COMMON_PLATFORM_H_
+diff --git a/src/3rdparty/angle/src/common/event_tracer.cpp b/src/3rdparty/angle/src/common/event_tracer.cpp
+deleted file mode 100644
+index 353c69d..0000000
+--- a/src/3rdparty/angle/src/common/event_tracer.cpp
++++ /dev/null
+@@ -1,49 +0,0 @@
+-// Copyright (c) 2012 The ANGLE Project Authors. All rights reserved.
+-// Use of this source code is governed by a BSD-style license that can be
+-// found in the LICENSE file.
+-
+-#include "common/event_tracer.h"
+-
+-namespace gl
+-{
+-
+-GetCategoryEnabledFlagFunc g_getCategoryEnabledFlag;
+-AddTraceEventFunc g_addTraceEvent;
+-
+-}  // namespace gl
+-
+-extern "C" {
+-
+-void TRACE_ENTRY SetTraceFunctionPointers(GetCategoryEnabledFlagFunc getCategoryEnabledFlag,
+-                                          AddTraceEventFunc addTraceEvent)
+-{
+-    gl::g_getCategoryEnabledFlag = getCategoryEnabledFlag;
+-    gl::g_addTraceEvent = addTraceEvent;
+-}
+-
+-}  // extern "C"
+-
+-namespace gl
+-{
+-
+-const unsigned char* TraceGetTraceCategoryEnabledFlag(const char* name)
+-{
+-    if (g_getCategoryEnabledFlag)
+-    {
+-        return g_getCategoryEnabledFlag(name);
+-    }
+-    static unsigned char disabled = 0;
+-    return &disabled;
+-}
+-
+-void TraceAddTraceEvent(char phase, const unsigned char* categoryGroupEnabled, const char* name, unsigned long long id,
+-                        int numArgs, const char** argNames, const unsigned char* argTypes,
+-                        const unsigned long long* argValues, unsigned char flags)
+-{
+-    if (g_addTraceEvent)
+-    {
+-        g_addTraceEvent(phase, categoryGroupEnabled, name, id, numArgs, argNames, argTypes, argValues, flags);
+-    }
+-}
+-
+-}  // namespace gl
+diff --git a/src/3rdparty/angle/src/common/event_tracer.h b/src/3rdparty/angle/src/common/event_tracer.h
+deleted file mode 100644
+index fa97435..0000000
+--- a/src/3rdparty/angle/src/common/event_tracer.h
++++ /dev/null
+@@ -1,43 +0,0 @@
+-// Copyright (c) 2012 The ANGLE Project Authors. All rights reserved.
+-// Use of this source code is governed by a BSD-style license that can be
+-// found in the LICENSE file.
+-
+-#ifndef COMMON_EVENT_TRACER_H_
+-#define COMMON_EVENT_TRACER_H_
+-
+-#include "common/platform.h"
+-
+-#if !defined(TRACE_ENTRY)
+-#   ifdef ANGLE_PLATFORM_WINDOWS
+-#       define TRACE_ENTRY __stdcall
+-#   else
+-#       define TRACE_ENTRY
+-#   endif // ANGLE_PLATFORM_WINDOWS
+-#endif //TRACE_ENTRY
+-
+-extern "C" {
+-
+-typedef const unsigned char* (*GetCategoryEnabledFlagFunc)(const char* name);
+-typedef void (*AddTraceEventFunc)(char phase, const unsigned char* categoryGroupEnabled, const char* name,
+-                                  unsigned long long id, int numArgs, const char** argNames,
+-                                  const unsigned char* argTypes, const unsigned long long* argValues,
+-                                  unsigned char flags);
+-
+-// extern "C" so that it has a reasonable name for GetProcAddress.
+-void TRACE_ENTRY SetTraceFunctionPointers(GetCategoryEnabledFlagFunc get_category_enabled_flag,
+-                                          AddTraceEventFunc add_trace_event_func);
+-
+-}
+-
+-namespace gl
+-{
+-
+-const unsigned char* TraceGetTraceCategoryEnabledFlag(const char* name);
+-
+-void TraceAddTraceEvent(char phase, const unsigned char* categoryGroupEnabled, const char* name, unsigned long long id,
+-                        int numArgs, const char** argNames, const unsigned char* argTypes,
+-                        const unsigned long long* argValues, unsigned char flags);
+-
+-}
+-
+-#endif  // COMMON_EVENT_TRACER_H_
 diff --git a/src/3rdparty/angle/src/common/version.h b/src/3rdparty/angle/src/common/version.h
 index d9148d1..f01e024 100644
 --- a/src/3rdparty/angle/src/common/version.h
@@ -113,163 +183,146 @@ index d9148d1..f01e024 100644
  
  #define ANGLE_MAJOR_VERSION 2
  #define ANGLE_MINOR_VERSION 1
-diff --git a/src/3rdparty/angle/src/libEGL/Config.h b/src/3rdparty/angle/src/libEGL/Config.h
-index 680337b..9844114 100644
---- a/src/3rdparty/angle/src/libEGL/Config.h
-+++ b/src/3rdparty/angle/src/libEGL/Config.h
-@@ -11,7 +11,6 @@
- #ifndef INCLUDE_CONFIG_H_
- #define INCLUDE_CONFIG_H_
+diff --git a/src/3rdparty/angle/src/libEGL/libEGL.cpp b/src/3rdparty/angle/src/libEGL/libEGL.cpp
+index f9a4780..7ce2b93 100644
+--- a/src/3rdparty/angle/src/libEGL/libEGL.cpp
++++ b/src/3rdparty/angle/src/libEGL/libEGL.cpp
+@@ -6,6 +6,9 @@
  
--#define EGLAPI
- #include <EGL/egl.h>
+ // libEGL.cpp: Implements the exported EGL functions.
  
- #include <set>
-diff --git a/src/3rdparty/angle/src/libEGL/Display.cpp b/src/3rdparty/angle/src/libEGL/Display.cpp
-index 43d9b26..459648c 100644
---- a/src/3rdparty/angle/src/libEGL/Display.cpp
-+++ b/src/3rdparty/angle/src/libEGL/Display.cpp
-@@ -14,6 +14,7 @@
- #include <map>
- #include <vector>
- #include <sstream>
-+#include <iterator>
- 
- #include "common/debug.h"
- #include "common/mathutil.h"
-@@ -552,7 +553,7 @@ void Display::initDisplayExtensionString()
-     }
- 
-     // TODO: complete support for the EGL_KHR_create_context extension
--    extensions.push_back("EGL_KHR_create_context");
-+    //extensions.push_back("EGL_KHR_create_context");
- 
-     std::ostringstream stream;
-     std::copy(extensions.begin(), extensions.end(), std::ostream_iterator<std::string>(stream, " "));
-diff --git a/src/3rdparty/angle/src/libEGL/Surface.h b/src/3rdparty/angle/src/libEGL/Surface.h
-index 2361fcd..3caf620 100644
---- a/src/3rdparty/angle/src/libEGL/Surface.h
-+++ b/src/3rdparty/angle/src/libEGL/Surface.h
-@@ -11,7 +11,6 @@
- #ifndef LIBEGL_SURFACE_H_
- #define LIBEGL_SURFACE_H_
- 
--#define EGLAPI
- #include <EGL/egl.h>
- 
- #include "common/angleutils.h"
-diff --git a/src/3rdparty/angle/src/libEGL/main.h b/src/3rdparty/angle/src/libEGL/main.h
-index 77da8f0..6030fb6 100644
---- a/src/3rdparty/angle/src/libEGL/main.h
-+++ b/src/3rdparty/angle/src/libEGL/main.h
-@@ -9,6 +9,7 @@
- #ifndef LIBEGL_MAIN_H_
- #define LIBEGL_MAIN_H_
- 
-+#undef EGLAPI
- #define EGLAPI
- #include <EGL/egl.h>
- #include <EGL/eglext.h>
-diff --git a/src/3rdparty/angle/src/libGLESv2/Context.h b/src/3rdparty/angle/src/libGLESv2/Context.h
-index 4b7e59e..6c93c74 100644
---- a/src/3rdparty/angle/src/libGLESv2/Context.h
-+++ b/src/3rdparty/angle/src/libGLESv2/Context.h
-@@ -11,7 +11,6 @@
- #define LIBGLESV2_CONTEXT_H_
- 
- #include "angle_gl.h"
--#include <EGL/egl.h>
- 
- #include <string>
- #include <set>
-diff --git a/src/3rdparty/angle/src/libGLESv2/formatutils.h b/src/3rdparty/angle/src/libGLESv2/formatutils.h
-index fb4d2a3..2f59279 100644
---- a/src/3rdparty/angle/src/libGLESv2/formatutils.h
-+++ b/src/3rdparty/angle/src/libGLESv2/formatutils.h
-@@ -85,4 +85,4 @@ ColorWriteFunction GetColorWriteFunction(GLenum format, GLenum type);
- 
- }
- 
--#endif LIBGLESV2_FORMATUTILS_H_
-+#endif // LIBGLESV2_FORMATUTILS_H_
-diff --git a/src/3rdparty/angle/src/libGLESv2/main.h b/src/3rdparty/angle/src/libGLESv2/main.h
-index 372b03f..c117039 100644
---- a/src/3rdparty/angle/src/libGLESv2/main.h
-+++ b/src/3rdparty/angle/src/libGLESv2/main.h
-@@ -10,6 +10,9 @@
- #define LIBGLESV2_MAIN_H_
- 
- #include "common/debug.h"
 +#undef EGLAPI
 +#define EGLAPI
-+#include <EGL/egl.h>
- 
- namespace egl
- {
-diff --git a/src/3rdparty/angle/src/libGLESv2/precompiled.h b/src/3rdparty/angle/src/libGLESv2/precompiled.h
-index cc935a1..0404eab 100644
---- a/src/3rdparty/angle/src/libGLESv2/precompiled.h
-+++ b/src/3rdparty/angle/src/libGLESv2/precompiled.h
-@@ -29,3 +29,4 @@
- #include <string>
- #include <unordered_map>
- #include <vector>
-+#include <iterator>
-diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/IndexRangeCache.h b/src/3rdparty/angle/src/libGLESv2/renderer/IndexRangeCache.h
-index 4318e2b..837a44a 100644
---- a/src/3rdparty/angle/src/libGLESv2/renderer/IndexRangeCache.h
-+++ b/src/3rdparty/angle/src/libGLESv2/renderer/IndexRangeCache.h
-@@ -56,4 +56,4 @@ class IndexRangeCache
- 
- }
- 
--#endif LIBGLESV2_RENDERER_INDEXRANGECACHE_H
-+#endif // LIBGLESV2_RENDERER_INDEXRANGECACHE_H
-diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/Renderer.h b/src/3rdparty/angle/src/libGLESv2/renderer/Renderer.h
-index f1c7b49..be3ba29 100644
---- a/src/3rdparty/angle/src/libGLESv2/renderer/Renderer.h
-+++ b/src/3rdparty/angle/src/libGLESv2/renderer/Renderer.h
-@@ -15,6 +15,7 @@
- #include "libGLESv2/Caps.h"
- 
- #if !defined(ANGLE_COMPILE_OPTIMIZATION_LEVEL)
-+#include <d3dcompiler.h>
- // WARNING: D3DCOMPILE_OPTIMIZATION_LEVEL3 may lead to a DX9 shader compiler hang.
- // It should only be used selectively to work around specific bugs.
- #define ANGLE_COMPILE_OPTIMIZATION_LEVEL D3DCOMPILE_OPTIMIZATION_LEVEL1
-diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/copyimage.h b/src/3rdparty/angle/src/libGLESv2/renderer/copyimage.h
-index 2f37e1c..9b94404 100644
---- a/src/3rdparty/angle/src/libGLESv2/renderer/copyimage.h
-+++ b/src/3rdparty/angle/src/libGLESv2/renderer/copyimage.h
-@@ -30,7 +30,7 @@ void WriteColor(const void *source, void *dest)
- template <typename sourceType, typename destType, typename colorDataType>
- void CopyPixel(const void *source, void *dest)
- {
--    colorType temp;
-+    colorDataType temp;
-     ReadColor<sourceType, colorDataType>(source, &temp);
-     WriteColor<destType, colorDataType>(&temp, dest);
- }
-diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/HLSLCompiler.cpp b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/HLSLCompiler.cpp
-index 5613919..499ed52 100644
---- a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/HLSLCompiler.cpp
-+++ b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/HLSLCompiler.cpp
-@@ -7,6 +7,8 @@
- 
- #include "third_party/trace_event/trace_event.h"
- 
-+#include <d3dcompiler.h>
 +
+ #include <exception>
+ 
+ #include "common/debug.h"
+diff --git a/src/3rdparty/angle/src/libGLESv2/libGLESv2.cpp b/src/3rdparty/angle/src/libGLESv2/libGLESv2.cpp
+index 198c0ee..07f5d47 100644
+--- a/src/3rdparty/angle/src/libGLESv2/libGLESv2.cpp
++++ b/src/3rdparty/angle/src/libGLESv2/libGLESv2.cpp
+@@ -6,6 +6,10 @@
+ 
+ // libGLESv2.cpp: Implements the exported OpenGL ES 2.0 functions.
+ 
++#undef GL_APICALL
++#define GL_APICALL
++#define GL_GLEXT_PROTOTYPES
++
+ #include "common/version.h"
+ #include "common/utilities.h"
+ 
+@@ -30,6 +34,7 @@
+ #include "libGLESv2/validationES3.h"
+ #include "libGLESv2/queryconversions.h"
+ 
++
+ extern "C"
+ {
+ 
+diff --git a/src/3rdparty/angle/src/libGLESv2/libGLESv2.def b/src/3rdparty/angle/src/libGLESv2/libGLESv2.def
+index 88dceb3..33557eb 100644
+--- a/src/3rdparty/angle/src/libGLESv2/libGLESv2.def
++++ b/src/3rdparty/angle/src/libGLESv2/libGLESv2.def
+@@ -294,6 +294,3 @@ EXPORTS
+     glBindTexImage                  @158 NONAME
+     glCreateRenderer                @177 NONAME
+     glDestroyRenderer               @178 NONAME
+-
+-    ; Setting up TRACE macro callbacks
+-    SetTraceFunctionPointers        @284
+diff --git a/src/3rdparty/angle/src/libGLESv2/libGLESv2_mingw32.def b/src/3rdparty/angle/src/libGLESv2/libGLESv2_mingw32.def
+index d6272c4d..18ffcf6 100644
+--- a/src/3rdparty/angle/src/libGLESv2/libGLESv2_mingw32.def
++++ b/src/3rdparty/angle/src/libGLESv2/libGLESv2_mingw32.def
+@@ -294,6 +294,3 @@ EXPORTS
+     glBindTexImage@4                         @158 NONAME
+     glCreateRenderer                         @177 NONAME
+     glDestroyRenderer                        @178 NONAME
+-
+-    ; Setting up TRACE macro callbacks
+-    SetTraceFunctionPointers@8               @284
+diff --git a/src/3rdparty/angle/src/libGLESv2/libGLESv2d.def b/src/3rdparty/angle/src/libGLESv2/libGLESv2d.def
+index d301aa0..120371e 100644
+--- a/src/3rdparty/angle/src/libGLESv2/libGLESv2d.def
++++ b/src/3rdparty/angle/src/libGLESv2/libGLESv2d.def
+@@ -294,6 +294,3 @@ EXPORTS
+     glBindTexImage                  @158 NONAME
+     glCreateRenderer                @177 NONAME
+     glDestroyRenderer               @178 NONAME
+-
+-    ; Setting up TRACE macro callbacks
+-    SetTraceFunctionPointers        @284
+diff --git a/src/3rdparty/angle/src/libGLESv2/libGLESv2d_mingw32.def b/src/3rdparty/angle/src/libGLESv2/libGLESv2d_mingw32.def
+index a82d629..8c1306a 100644
+--- a/src/3rdparty/angle/src/libGLESv2/libGLESv2d_mingw32.def
++++ b/src/3rdparty/angle/src/libGLESv2/libGLESv2d_mingw32.def
+@@ -294,6 +294,3 @@ EXPORTS
+     glBindTexImage@4                         @158 NONAME
+     glCreateRenderer                         @177 NONAME
+     glDestroyRenderer                        @178 NONAME
+-
+-    ; Setting up TRACE macro callbacks
+-    SetTraceFunctionPointers@8               @284
+diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/Renderer.cpp b/src/3rdparty/angle/src/libGLESv2/renderer/Renderer.cpp
+index df43012..910d028 100644
+--- a/src/3rdparty/angle/src/libGLESv2/renderer/Renderer.cpp
++++ b/src/3rdparty/angle/src/libGLESv2/renderer/Renderer.cpp
+@@ -10,7 +10,6 @@
+ #include "libGLESv2/Program.h"
+ #include "libGLESv2/renderer/Renderer.h"
+ #include "common/utilities.h"
+-#include "third_party/trace_event/trace_event.h"
+ #include "libGLESv2/Shader.h"
+ 
+ #if defined (ANGLE_ENABLE_D3D9)
+diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/SwapChain.h b/src/3rdparty/angle/src/libGLESv2/renderer/SwapChain.h
+index c53b2af..12be9b3 100644
+--- a/src/3rdparty/angle/src/libGLESv2/renderer/SwapChain.h
++++ b/src/3rdparty/angle/src/libGLESv2/renderer/SwapChain.h
+@@ -16,10 +16,6 @@
+ #include <GLES2/gl2.h>
+ #include <EGL/egl.h>
+ 
+-#if !defined(ANGLE_FORCE_VSYNC_OFF)
+-#define ANGLE_FORCE_VSYNC_OFF 0
+-#endif
+-
  namespace rx
  {
  
+diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/HLSLCompiler.cpp b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/HLSLCompiler.cpp
+index df2e46c..acbd852 100644
+--- a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/HLSLCompiler.cpp
++++ b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/HLSLCompiler.cpp
+@@ -10,8 +10,6 @@
+ 
+ #include "common/utilities.h"
+ 
+-#include "third_party/trace_event/trace_event.h"
+-
+ namespace rx
+ {
+ 
+@@ -28,7 +26,11 @@ HLSLCompiler::~HLSLCompiler()
+ 
+ bool HLSLCompiler::initialize()
+ {
++<<<<<<< HEAD
+     TRACE_EVENT0("gpu", "initializeCompiler");
++=======
++#if !defined(ANGLE_PLATFORM_WINRT)
++>>>>>>> 429814a... ANGLE: remove event tracing
+ #if defined(ANGLE_PRELOADED_D3DCOMPILER_MODULE_NAMES)
+     // Find a D3DCompiler module that had already been loaded based on a predefined list of versions.
+     static const char *d3dCompilerNames[] = ANGLE_PRELOADED_D3DCOMPILER_MODULE_NAMES;
 diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/Blit11.cpp b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/Blit11.cpp
-index 446149c..79a6543 100644
+index 3bdb9e7..72820a4 100644
 --- a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/Blit11.cpp
 +++ b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/Blit11.cpp
-@@ -14,39 +14,39 @@
- #include "libGLESv2/renderer/d3d/d3d11/renderer11_utils.h"
- #include "libGLESv2/renderer/d3d/d3d11/formatutils11.h"
+@@ -13,39 +13,39 @@
+ #include "libGLESv2/main.h"
+ #include "libGLESv2/formatutils.h"
  
 -#include "libGLESv2/renderer/d3d/d3d11/shaders/compiled/passthrough2d11vs.h"
 -#include "libGLESv2/renderer/d3d/d3d11/shaders/compiled/passthroughdepth2d11ps.h"
@@ -341,13 +394,13 @@ index 446149c..79a6543 100644
  #include "libGLESv2/renderer/d3d/d3d11/shaders/compiled/swizzlef2dps.h"
  #include "libGLESv2/renderer/d3d/d3d11/shaders/compiled/swizzlei2dps.h"
 diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/Clear11.cpp b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/Clear11.cpp
-index 656cd94..9cd0b7d 100644
+index c60b7a6..5caa427 100644
 --- a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/Clear11.cpp
 +++ b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/Clear11.cpp
-@@ -16,14 +16,14 @@
- #include "libGLESv2/Framebuffer.h"
+@@ -15,14 +15,14 @@
  #include "libGLESv2/FramebufferAttachment.h"
  
+ // Precompiled shaders
 -#include "libGLESv2/renderer/d3d/d3d11/shaders/compiled/clearfloat11vs.h"
 -#include "libGLESv2/renderer/d3d/d3d11/shaders/compiled/clearfloat11ps.h"
 +#include "libGLESv2/renderer/d3d/d3d11/shaders/compiled/clearfloatvs.h"
@@ -366,10 +419,10 @@ index 656cd94..9cd0b7d 100644
  namespace rx
  {
 diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/PixelTransfer11.cpp b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/PixelTransfer11.cpp
-index 1ca456c..67540bb 100644
+index f54bacc..edaafec 100644
 --- a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/PixelTransfer11.cpp
 +++ b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/PixelTransfer11.cpp
-@@ -23,11 +23,11 @@
+@@ -22,11 +22,11 @@
  #include "libGLESv2/Context.h"
  
  // Precompiled shaders
@@ -387,13 +440,13 @@ index 1ca456c..67540bb 100644
  namespace rx
  {
 diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/SwapChain11.cpp b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/SwapChain11.cpp
-index ed0c4ae..98166f0 100644
+index 5ec132e..50dae4e 100644
 --- a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/SwapChain11.cpp
 +++ b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/SwapChain11.cpp
 @@ -12,8 +12,8 @@
- #include "libGLESv2/renderer/d3d/d3d11/renderer11_utils.h"
- #include "libGLESv2/renderer/d3d/d3d11/formatutils11.h"
  #include "libGLESv2/renderer/d3d/d3d11/Renderer11.h"
+ 
+ // Precompiled shaders
 -#include "libGLESv2/renderer/d3d/d3d11/shaders/compiled/passthrough2d11vs.h"
 -#include "libGLESv2/renderer/d3d/d3d11/shaders/compiled/passthroughrgba2d11ps.h"
 +#include "libGLESv2/renderer/d3d/d3d11/shaders/compiled/passthrough2dvs.h"
@@ -401,15 +454,6 @@ index ed0c4ae..98166f0 100644
  
  namespace rx
  {
-@@ -584,7 +584,7 @@ EGLint SwapChain11::swapRect(EGLint x, EGLint y, EGLint width, EGLint height)
-     // Draw
-     deviceContext->Draw(4, 0);
- 
--#ifdef ANGLE_FORCE_VSYNC_OFF
-+#if ANGLE_FORCE_VSYNC_OFF
-     result = mSwapChain->Present(0, 0);
- #else
-     result = mSwapChain->Present(mSwapInterval, 0);
 diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/shaders/Clear11.hlsl b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/shaders/Clear11.hlsl
 index 6deef2b..b4cf380 100644
 --- a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/shaders/Clear11.hlsl
@@ -441,10 +485,10 @@ index 6deef2b..b4cf380 100644
  }
  
 diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d9/Blit9.cpp b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d9/Blit9.cpp
-index 2d72729..f486e5a 100644
+index 80503d5..f061a32 100644
 --- a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d9/Blit9.cpp
 +++ b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d9/Blit9.cpp
-@@ -28,20 +28,20 @@ namespace
+@@ -27,20 +27,20 @@ namespace
  
  const BYTE* const g_shaderCode[] =
  {
@@ -476,40 +520,95 @@ index 2d72729..f486e5a 100644
  }
  
 diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d9/Renderer9.cpp b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d9/Renderer9.cpp
-index 69c3feb..491c27a 100644
+index 73c1abc..e8564bd 100644
 --- a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d9/Renderer9.cpp
 +++ b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d9/Renderer9.cpp
-@@ -205,7 +205,7 @@ EGLint Renderer9::initialize()
+@@ -39,8 +39,6 @@
+ 
+ #include "common/utilities.h"
+ 
+-#include "third_party/trace_event/trace_event.h"
+-
+ #include <sstream>
+ 
+ // Can also be enabled by defining FORCE_REF_RAST in the project's predefined macros
+@@ -190,7 +188,6 @@ EGLint Renderer9::initialize()
+         return EGL_NOT_INITIALIZED;
+     }
+ 
+-    TRACE_EVENT0("gpu", "GetModuleHandle_d3d9");
+     mD3d9Module = GetModuleHandle(TEXT("d3d9.dll"));
+ 
+     if (mD3d9Module == NULL)
+@@ -207,14 +204,12 @@ EGLint Renderer9::initialize()
+     // desktop. Direct3D9Ex is available in Windows Vista and later if suitable drivers are available.
+     if (ANGLE_ENABLE_D3D9EX && Direct3DCreate9ExPtr && SUCCEEDED(Direct3DCreate9ExPtr(D3D_SDK_VERSION, &mD3d9Ex)))
      {
-         TRACE_EVENT0("gpu", "D3d9Ex_QueryInterface");
+-        TRACE_EVENT0("gpu", "D3d9Ex_QueryInterface");
          ASSERT(mD3d9Ex);
--        mD3d9Ex->QueryInterface(__uuidof(IDirect3D9), reinterpret_cast<void**>(&mD3d9));
-+        mD3d9Ex->QueryInterface(IID_IDirect3D9, reinterpret_cast<void**>(&mD3d9));
+         mD3d9Ex->QueryInterface(__uuidof(IDirect3D9), reinterpret_cast<void**>(&mD3d9));
          ASSERT(mD3d9);
      }
      else
-@@ -343,7 +343,7 @@ EGLint Renderer9::initialize()
+     {
+-        TRACE_EVENT0("gpu", "Direct3DCreate9");
+         mD3d9 = Direct3DCreate9(D3D_SDK_VERSION);
+     }
+ 
+@@ -233,7 +228,6 @@ EGLint Renderer9::initialize()
+ 
+     // Give up on getting device caps after about one second.
+     {
+-        TRACE_EVENT0("gpu", "GetDeviceCaps");
+         for (int i = 0; i < 10; ++i)
+         {
+             result = mD3d9->GetDeviceCaps(mAdapter, mDeviceType, &mDeviceCaps);
+@@ -268,7 +262,6 @@ EGLint Renderer9::initialize()
+     }
+ 
+     {
+-        TRACE_EVENT0("gpu", "GetAdapterIdentifier");
+         mD3d9->GetAdapterIdentifier(mAdapter, 0, &mAdapterIdentifier);
+     }
+ 
+@@ -305,7 +298,6 @@ EGLint Renderer9::initialize()
+     static const TCHAR className[] = TEXT("STATIC");
+ 
+     {
+-        TRACE_EVENT0("gpu", "CreateWindowEx");
+         mDeviceWindow = CreateWindowEx(WS_EX_NOACTIVATE, className, windowName, WS_DISABLED | WS_POPUP, 0, 0, 1, 1, HWND_MESSAGE, NULL, GetModuleHandle(NULL), NULL);
+     }
+ 
+@@ -313,7 +305,6 @@ EGLint Renderer9::initialize()
+     DWORD behaviorFlags = D3DCREATE_FPU_PRESERVE | D3DCREATE_NOWINDOWCHANGES;
+ 
+     {
+-        TRACE_EVENT0("gpu", "D3d9_CreateDevice");
+         result = mD3d9->CreateDevice(mAdapter, mDeviceType, mDeviceWindow, behaviorFlags | D3DCREATE_HARDWARE_VERTEXPROCESSING | D3DCREATE_PUREDEVICE, &presentParameters, &mDevice);
+     }
+     if (result == D3DERR_OUTOFVIDEOMEMORY || result == E_OUTOFMEMORY || result == D3DERR_DEVICELOST)
+@@ -323,7 +314,6 @@ EGLint Renderer9::initialize()
+ 
+     if (FAILED(result))
+     {
+-        TRACE_EVENT0("gpu", "D3d9_CreateDevice2");
+         result = mD3d9->CreateDevice(mAdapter, mDeviceType, mDeviceWindow, behaviorFlags | D3DCREATE_SOFTWARE_VERTEXPROCESSING, &presentParameters, &mDevice);
+ 
+         if (FAILED(result))
+@@ -335,13 +325,11 @@ EGLint Renderer9::initialize()
+ 
      if (mD3d9Ex)
      {
-         TRACE_EVENT0("gpu", "mDevice_QueryInterface");
--        result = mDevice->QueryInterface(__uuidof(IDirect3DDevice9Ex), (void**)&mDeviceEx);
-+        result = mDevice->QueryInterface(IID_IDirect3DDevice9Ex, (void**)&mDeviceEx);
+-        TRACE_EVENT0("gpu", "mDevice_QueryInterface");
+         result = mDevice->QueryInterface(__uuidof(IDirect3DDevice9Ex), (void**)&mDeviceEx);
          ASSERT(SUCCEEDED(result));
      }
  
-diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d9/SwapChain9.cpp b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d9/SwapChain9.cpp
-index aef80a7..4a17acf 100644
---- a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d9/SwapChain9.cpp
-+++ b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d9/SwapChain9.cpp
-@@ -50,7 +50,7 @@ void SwapChain9::release()
- 
- static DWORD convertInterval(EGLint interval)
- {
--#ifdef ANGLE_FORCE_VSYNC_OFF
-+#if ANGLE_FORCE_VSYNC_OFF
-     return D3DPRESENT_INTERVAL_IMMEDIATE;
- #else
-     switch(interval)
+     {
+-        TRACE_EVENT0("gpu", "ShaderCache initialize");
+         mVertexShaderCache.initialize(mDevice);
+         mPixelShaderCache.initialize(mDevice);
+     }
 diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d9/shaders/Blit.ps b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d9/shaders/Blit.ps
 index dc357d0..eb43eb3 100644
 --- a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d9/shaders/Blit.ps
@@ -562,6 +661,858 @@ index 3a36980..3bd611b 100644
 +VS_OUTPUT VS_flipy(in float4 position : POSITION)
  {
      VS_OUTPUT Out;
+ 
+diff --git a/src/3rdparty/angle/src/third_party/trace_event/trace_event.h b/src/3rdparty/angle/src/third_party/trace_event/trace_event.h
+deleted file mode 100644
+index 1880056..0000000
+--- a/src/3rdparty/angle/src/third_party/trace_event/trace_event.h
++++ /dev/null
+@@ -1,826 +0,0 @@
+-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+-// Use of this source code is governed by a BSD-style license that can be
+-// found in the LICENSE file.
+-
+-// Trace events are for tracking application performance and resource usage.
+-// Macros are provided to track:
+-//    Begin and end of function calls
+-//    Counters
+-//
+-// Events are issued against categories. Whereas LOG's
+-// categories are statically defined, TRACE categories are created
+-// implicitly with a string. For example:
+-//   TRACE_EVENT_INSTANT0("MY_SUBSYSTEM", "SomeImportantEvent")
+-//
+-// Events can be INSTANT, or can be pairs of BEGIN and END in the same scope:
+-//   TRACE_EVENT_BEGIN0("MY_SUBSYSTEM", "SomethingCostly")
+-//   doSomethingCostly()
+-//   TRACE_EVENT_END0("MY_SUBSYSTEM", "SomethingCostly")
+-// Note: our tools can't always determine the correct BEGIN/END pairs unless
+-// these are used in the same scope. Use ASYNC_BEGIN/ASYNC_END macros if you need them
+-// to be in separate scopes.
+-//
+-// A common use case is to trace entire function scopes. This
+-// issues a trace BEGIN and END automatically:
+-//   void doSomethingCostly() {
+-//     TRACE_EVENT0("MY_SUBSYSTEM", "doSomethingCostly");
+-//     ...
+-//   }
+-//
+-// Additional parameters can be associated with an event:
+-//   void doSomethingCostly2(int howMuch) {
+-//     TRACE_EVENT1("MY_SUBSYSTEM", "doSomethingCostly",
+-//         "howMuch", howMuch);
+-//     ...
+-//   }
+-//
+-// The trace system will automatically add to this information the
+-// current process id, thread id, and a timestamp in microseconds.
+-//
+-// To trace an asynchronous procedure such as an IPC send/receive, use ASYNC_BEGIN and
+-// ASYNC_END:
+-//   [single threaded sender code]
+-//     static int send_count = 0;
+-//     ++send_count;
+-//     TRACE_EVENT_ASYNC_BEGIN0("ipc", "message", send_count);
+-//     Send(new MyMessage(send_count));
+-//   [receive code]
+-//     void OnMyMessage(send_count) {
+-//       TRACE_EVENT_ASYNC_END0("ipc", "message", send_count);
+-//     }
+-// The third parameter is a unique ID to match ASYNC_BEGIN/ASYNC_END pairs.
+-// ASYNC_BEGIN and ASYNC_END can occur on any thread of any traced process. Pointers can
+-// be used for the ID parameter, and they will be mangled internally so that
+-// the same pointer on two different processes will not match. For example:
+-//   class MyTracedClass {
+-//    public:
+-//     MyTracedClass() {
+-//       TRACE_EVENT_ASYNC_BEGIN0("category", "MyTracedClass", this);
+-//     }
+-//     ~MyTracedClass() {
+-//       TRACE_EVENT_ASYNC_END0("category", "MyTracedClass", this);
+-//     }
+-//   }
+-//
+-// Trace event also supports counters, which is a way to track a quantity
+-// as it varies over time. Counters are created with the following macro:
+-//   TRACE_COUNTER1("MY_SUBSYSTEM", "myCounter", g_myCounterValue);
+-//
+-// Counters are process-specific. The macro itself can be issued from any
+-// thread, however.
+-//
+-// Sometimes, you want to track two counters at once. You can do this with two
+-// counter macros:
+-//   TRACE_COUNTER1("MY_SUBSYSTEM", "myCounter0", g_myCounterValue[0]);
+-//   TRACE_COUNTER1("MY_SUBSYSTEM", "myCounter1", g_myCounterValue[1]);
+-// Or you can do it with a combined macro:
+-//   TRACE_COUNTER2("MY_SUBSYSTEM", "myCounter",
+-//       "bytesPinned", g_myCounterValue[0],
+-//       "bytesAllocated", g_myCounterValue[1]);
+-// This indicates to the tracing UI that these counters should be displayed
+-// in a single graph, as a summed area chart.
+-//
+-// Since counters are in a global namespace, you may want to disembiguate with a
+-// unique ID, by using the TRACE_COUNTER_ID* variations.
+-//
+-// By default, trace collection is compiled in, but turned off at runtime.
+-// Collecting trace data is the responsibility of the embedding
+-// application. In Chrome's case, navigating to about:tracing will turn on
+-// tracing and display data collected across all active processes.
+-//
+-//
+-// Memory scoping note:
+-// Tracing copies the pointers, not the string content, of the strings passed
+-// in for category, name, and arg_names. Thus, the following code will
+-// cause problems:
+-//     char* str = strdup("impprtantName");
+-//     TRACE_EVENT_INSTANT0("SUBSYSTEM", str);  // BAD!
+-//     free(str);                   // Trace system now has dangling pointer
+-//
+-// To avoid this issue with the |name| and |arg_name| parameters, use the
+-// TRACE_EVENT_COPY_XXX overloads of the macros at additional runtime overhead.
+-// Notes: The category must always be in a long-lived char* (i.e. static const).
+-//        The |arg_values|, when used, are always deep copied with the _COPY
+-//        macros.
+-//
+-// When are string argument values copied:
+-// const char* arg_values are only referenced by default:
+-//     TRACE_EVENT1("category", "name",
+-//                  "arg1", "literal string is only referenced");
+-// Use TRACE_STR_COPY to force copying of a const char*:
+-//     TRACE_EVENT1("category", "name",
+-//                  "arg1", TRACE_STR_COPY("string will be copied"));
+-// std::string arg_values are always copied:
+-//     TRACE_EVENT1("category", "name",
+-//                  "arg1", std::string("string will be copied"));
+-//
+-//
+-// Thread Safety:
+-// A thread safe singleton and mutex are used for thread safety. Category
+-// enabled flags are used to limit the performance impact when the system
+-// is not enabled.
+-//
+-// TRACE_EVENT macros first cache a pointer to a category. The categories are
+-// statically allocated and safe at all times, even after exit. Fetching a
+-// category is protected by the TraceLog::lock_. Multiple threads initializing
+-// the static variable is safe, as they will be serialized by the lock and
+-// multiple calls will return the same pointer to the category.
+-//
+-// Then the category_enabled flag is checked. This is a unsigned char, and
+-// not intended to be multithread safe. It optimizes access to addTraceEvent
+-// which is threadsafe internally via TraceLog::lock_. The enabled flag may
+-// cause some threads to incorrectly call or skip calling addTraceEvent near
+-// the time of the system being enabled or disabled. This is acceptable as
+-// we tolerate some data loss while the system is being enabled/disabled and
+-// because addTraceEvent is threadsafe internally and checks the enabled state
+-// again under lock.
+-//
+-// Without the use of these static category pointers and enabled flags all
+-// trace points would carry a significant performance cost of aquiring a lock
+-// and resolving the category.
+-
+-#ifndef COMMON_TRACE_EVENT_H_
+-#define COMMON_TRACE_EVENT_H_
+-
+-#include <string>
+-
+-#include "common/event_tracer.h"
+-
+-// By default, const char* argument values are assumed to have long-lived scope
+-// and will not be copied. Use this macro to force a const char* to be copied.
+-#define TRACE_STR_COPY(str) \
+-    WebCore::TraceEvent::TraceStringWithCopy(str)
+-
+-// Records a pair of begin and end events called "name" for the current
+-// scope, with 0, 1 or 2 associated arguments. If the category is not
+-// enabled, then this does nothing.
+-// - category and name strings must have application lifetime (statics or
+-//   literals). They may not include " chars.
+-#define TRACE_EVENT0(category, name) \
+-    INTERNAL_TRACE_EVENT_ADD_SCOPED(category, name)
+-#define TRACE_EVENT1(category, name, arg1_name, arg1_val) \
+-    INTERNAL_TRACE_EVENT_ADD_SCOPED(category, name, arg1_name, arg1_val)
+-#define TRACE_EVENT2(category, name, arg1_name, arg1_val, arg2_name, arg2_val) \
+-    INTERNAL_TRACE_EVENT_ADD_SCOPED(category, name, arg1_name, arg1_val, \
+-        arg2_name, arg2_val)
+-
+-// Records a single event called "name" immediately, with 0, 1 or 2
+-// associated arguments. If the category is not enabled, then this
+-// does nothing.
+-// - category and name strings must have application lifetime (statics or
+-//   literals). They may not include " chars.
+-#define TRACE_EVENT_INSTANT0(category, name) \
+-    INTERNAL_TRACE_EVENT_ADD(TRACE_EVENT_PHASE_INSTANT, \
+-        category, name, TRACE_EVENT_FLAG_NONE)
+-#define TRACE_EVENT_INSTANT1(category, name, arg1_name, arg1_val) \
+-    INTERNAL_TRACE_EVENT_ADD(TRACE_EVENT_PHASE_INSTANT, \
+-        category, name, TRACE_EVENT_FLAG_NONE, arg1_name, arg1_val)
+-#define TRACE_EVENT_INSTANT2(category, name, arg1_name, arg1_val, \
+-        arg2_name, arg2_val) \
+-    INTERNAL_TRACE_EVENT_ADD(TRACE_EVENT_PHASE_INSTANT, \
+-        category, name, TRACE_EVENT_FLAG_NONE, arg1_name, arg1_val, \
+-        arg2_name, arg2_val)
+-#define TRACE_EVENT_COPY_INSTANT0(category, name) \
+-    INTERNAL_TRACE_EVENT_ADD(TRACE_EVENT_PHASE_INSTANT, \
+-        category, name, TRACE_EVENT_FLAG_COPY)
+-#define TRACE_EVENT_COPY_INSTANT1(category, name, arg1_name, arg1_val) \
+-    INTERNAL_TRACE_EVENT_ADD(TRACE_EVENT_PHASE_INSTANT, \
+-        category, name, TRACE_EVENT_FLAG_COPY, arg1_name, arg1_val)
+-#define TRACE_EVENT_COPY_INSTANT2(category, name, arg1_name, arg1_val, \
+-        arg2_name, arg2_val) \
+-    INTERNAL_TRACE_EVENT_ADD(TRACE_EVENT_PHASE_INSTANT, \
+-        category, name, TRACE_EVENT_FLAG_COPY, arg1_name, arg1_val, \
+-        arg2_name, arg2_val)
+-
+-// Records a single BEGIN event called "name" immediately, with 0, 1 or 2
+-// associated arguments. If the category is not enabled, then this
+-// does nothing.
+-// - category and name strings must have application lifetime (statics or
+-//   literals). They may not include " chars.
+-#define TRACE_EVENT_BEGIN0(category, name) \
+-    INTERNAL_TRACE_EVENT_ADD(TRACE_EVENT_PHASE_BEGIN, \
+-        category, name, TRACE_EVENT_FLAG_NONE)
+-#define TRACE_EVENT_BEGIN1(category, name, arg1_name, arg1_val) \
+-    INTERNAL_TRACE_EVENT_ADD(TRACE_EVENT_PHASE_BEGIN, \
+-        category, name, TRACE_EVENT_FLAG_NONE, arg1_name, arg1_val)
+-#define TRACE_EVENT_BEGIN2(category, name, arg1_name, arg1_val, \
+-        arg2_name, arg2_val) \
+-    INTERNAL_TRACE_EVENT_ADD(TRACE_EVENT_PHASE_BEGIN, \
+-        category, name, TRACE_EVENT_FLAG_NONE, arg1_name, arg1_val, \
+-        arg2_name, arg2_val)
+-#define TRACE_EVENT_COPY_BEGIN0(category, name) \
+-    INTERNAL_TRACE_EVENT_ADD(TRACE_EVENT_PHASE_BEGIN, \
+-        category, name, TRACE_EVENT_FLAG_COPY)
+-#define TRACE_EVENT_COPY_BEGIN1(category, name, arg1_name, arg1_val) \
+-    INTERNAL_TRACE_EVENT_ADD(TRACE_EVENT_PHASE_BEGIN, \
+-        category, name, TRACE_EVENT_FLAG_COPY, arg1_name, arg1_val)
+-#define TRACE_EVENT_COPY_BEGIN2(category, name, arg1_name, arg1_val, \
+-        arg2_name, arg2_val) \
+-    INTERNAL_TRACE_EVENT_ADD(TRACE_EVENT_PHASE_BEGIN, \
+-        category, name, TRACE_EVENT_FLAG_COPY, arg1_name, arg1_val, \
+-        arg2_name, arg2_val)
+-
+-// Records a single END event for "name" immediately. If the category
+-// is not enabled, then this does nothing.
+-// - category and name strings must have application lifetime (statics or
+-//   literals). They may not include " chars.
+-#define TRACE_EVENT_END0(category, name) \
+-    INTERNAL_TRACE_EVENT_ADD(TRACE_EVENT_PHASE_END, \
+-        category, name, TRACE_EVENT_FLAG_NONE)
+-#define TRACE_EVENT_END1(category, name, arg1_name, arg1_val) \
+-    INTERNAL_TRACE_EVENT_ADD(TRACE_EVENT_PHASE_END, \
+-        category, name, TRACE_EVENT_FLAG_NONE, arg1_name, arg1_val)
+-#define TRACE_EVENT_END2(category, name, arg1_name, arg1_val, \
+-        arg2_name, arg2_val) \
+-    INTERNAL_TRACE_EVENT_ADD(TRACE_EVENT_PHASE_END, \
+-        category, name, TRACE_EVENT_FLAG_NONE, arg1_name, arg1_val, \
+-        arg2_name, arg2_val)
+-#define TRACE_EVENT_COPY_END0(category, name) \
+-    INTERNAL_TRACE_EVENT_ADD(TRACE_EVENT_PHASE_END, \
+-        category, name, TRACE_EVENT_FLAG_COPY)
+-#define TRACE_EVENT_COPY_END1(category, name, arg1_name, arg1_val) \
+-    INTERNAL_TRACE_EVENT_ADD(TRACE_EVENT_PHASE_END, \
+-        category, name, TRACE_EVENT_FLAG_COPY, arg1_name, arg1_val)
+-#define TRACE_EVENT_COPY_END2(category, name, arg1_name, arg1_val, \
+-        arg2_name, arg2_val) \
+-    INTERNAL_TRACE_EVENT_ADD(TRACE_EVENT_PHASE_END, \
+-        category, name, TRACE_EVENT_FLAG_COPY, arg1_name, arg1_val, \
+-        arg2_name, arg2_val)
+-
+-// Records the value of a counter called "name" immediately. Value
+-// must be representable as a 32 bit integer.
+-// - category and name strings must have application lifetime (statics or
+-//   literals). They may not include " chars.
+-#define TRACE_COUNTER1(category, name, value) \
+-    INTERNAL_TRACE_EVENT_ADD(TRACE_EVENT_PHASE_COUNTER, \
+-        category, name, TRACE_EVENT_FLAG_NONE, \
+-        "value", static_cast<int>(value))
+-#define TRACE_COPY_COUNTER1(category, name, value) \
+-    INTERNAL_TRACE_EVENT_ADD(TRACE_EVENT_PHASE_COUNTER, \
+-        category, name, TRACE_EVENT_FLAG_COPY, \
+-        "value", static_cast<int>(value))
+-
+-// Records the values of a multi-parted counter called "name" immediately.
+-// The UI will treat value1 and value2 as parts of a whole, displaying their
+-// values as a stacked-bar chart.
+-// - category and name strings must have application lifetime (statics or
+-//   literals). They may not include " chars.
+-#define TRACE_COUNTER2(category, name, value1_name, value1_val, \
+-        value2_name, value2_val) \
+-    INTERNAL_TRACE_EVENT_ADD(TRACE_EVENT_PHASE_COUNTER, \
+-        category, name, TRACE_EVENT_FLAG_NONE, \
+-        value1_name, static_cast<int>(value1_val), \
+-        value2_name, static_cast<int>(value2_val))
+-#define TRACE_COPY_COUNTER2(category, name, value1_name, value1_val, \
+-        value2_name, value2_val) \
+-    INTERNAL_TRACE_EVENT_ADD(TRACE_EVENT_PHASE_COUNTER, \
+-        category, name, TRACE_EVENT_FLAG_COPY, \
+-        value1_name, static_cast<int>(value1_val), \
+-        value2_name, static_cast<int>(value2_val))
+-
+-// Records the value of a counter called "name" immediately. Value
+-// must be representable as a 32 bit integer.
+-// - category and name strings must have application lifetime (statics or
+-//   literals). They may not include " chars.
+-// - |id| is used to disambiguate counters with the same name. It must either
+-//   be a pointer or an integer value up to 64 bits. If it's a pointer, the bits
+-//   will be xored with a hash of the process ID so that the same pointer on
+-//   two different processes will not collide.
+-#define TRACE_COUNTER_ID1(category, name, id, value) \
+-    INTERNAL_TRACE_EVENT_ADD_WITH_ID(TRACE_EVENT_PHASE_COUNTER, \
+-        category, name, id, TRACE_EVENT_FLAG_NONE, \
+-        "value", static_cast<int>(value))
+-#define TRACE_COPY_COUNTER_ID1(category, name, id, value) \
+-    INTERNAL_TRACE_EVENT_ADD_WITH_ID(TRACE_EVENT_PHASE_COUNTER, \
+-        category, name, id, TRACE_EVENT_FLAG_COPY, \
+-        "value", static_cast<int>(value))
+-
+-// Records the values of a multi-parted counter called "name" immediately.
+-// The UI will treat value1 and value2 as parts of a whole, displaying their
+-// values as a stacked-bar chart.
+-// - category and name strings must have application lifetime (statics or
+-//   literals). They may not include " chars.
+-// - |id| is used to disambiguate counters with the same name. It must either
+-//   be a pointer or an integer value up to 64 bits. If it's a pointer, the bits
+-//   will be xored with a hash of the process ID so that the same pointer on
+-//   two different processes will not collide.
+-#define TRACE_COUNTER_ID2(category, name, id, value1_name, value1_val, \
+-        value2_name, value2_val) \
+-    INTERNAL_TRACE_EVENT_ADD_WITH_ID(TRACE_EVENT_PHASE_COUNTER, \
+-        category, name, id, TRACE_EVENT_FLAG_NONE, \
+-        value1_name, static_cast<int>(value1_val), \
+-        value2_name, static_cast<int>(value2_val))
+-#define TRACE_COPY_COUNTER_ID2(category, name, id, value1_name, value1_val, \
+-        value2_name, value2_val) \
+-    INTERNAL_TRACE_EVENT_ADD_WITH_ID(TRACE_EVENT_PHASE_COUNTER, \
+-        category, name, id, TRACE_EVENT_FLAG_COPY, \
+-        value1_name, static_cast<int>(value1_val), \
+-        value2_name, static_cast<int>(value2_val))
+-
+-// Records a single ASYNC_BEGIN event called "name" immediately, with 0, 1 or 2
+-// associated arguments. If the category is not enabled, then this
+-// does nothing.
+-// - category and name strings must have application lifetime (statics or
+-//   literals). They may not include " chars.
+-// - |id| is used to match the ASYNC_BEGIN event with the ASYNC_END event. ASYNC
+-//   events are considered to match if their category, name and id values all
+-//   match. |id| must either be a pointer or an integer value up to 64 bits. If
+-//   it's a pointer, the bits will be xored with a hash of the process ID so
+-//   that the same pointer on two different processes will not collide.
+-// An asynchronous operation can consist of multiple phases. The first phase is
+-// defined by the ASYNC_BEGIN calls. Additional phases can be defined using the
+-// ASYNC_STEP_BEGIN macros. When the operation completes, call ASYNC_END.
+-// An async operation can span threads and processes, but all events in that
+-// operation must use the same |name| and |id|. Each event can have its own
+-// args.
+-#define TRACE_EVENT_ASYNC_BEGIN0(category, name, id) \
+-    INTERNAL_TRACE_EVENT_ADD_WITH_ID(TRACE_EVENT_PHASE_ASYNC_BEGIN, \
+-        category, name, id, TRACE_EVENT_FLAG_NONE)
+-#define TRACE_EVENT_ASYNC_BEGIN1(category, name, id, arg1_name, arg1_val) \
+-    INTERNAL_TRACE_EVENT_ADD_WITH_ID(TRACE_EVENT_PHASE_ASYNC_BEGIN, \
+-        category, name, id, TRACE_EVENT_FLAG_NONE, arg1_name, arg1_val)
+-#define TRACE_EVENT_ASYNC_BEGIN2(category, name, id, arg1_name, arg1_val, \
+-        arg2_name, arg2_val) \
+-    INTERNAL_TRACE_EVENT_ADD_WITH_ID(TRACE_EVENT_PHASE_ASYNC_BEGIN, \
+-        category, name, id, TRACE_EVENT_FLAG_NONE, \
+-        arg1_name, arg1_val, arg2_name, arg2_val)
+-#define TRACE_EVENT_COPY_ASYNC_BEGIN0(category, name, id) \
+-    INTERNAL_TRACE_EVENT_ADD_WITH_ID(TRACE_EVENT_PHASE_ASYNC_BEGIN, \
+-        category, name, id, TRACE_EVENT_FLAG_COPY)
+-#define TRACE_EVENT_COPY_ASYNC_BEGIN1(category, name, id, arg1_name, arg1_val) \
+-    INTERNAL_TRACE_EVENT_ADD_WITH_ID(TRACE_EVENT_PHASE_ASYNC_BEGIN, \
+-        category, name, id, TRACE_EVENT_FLAG_COPY, \
+-        arg1_name, arg1_val)
+-#define TRACE_EVENT_COPY_ASYNC_BEGIN2(category, name, id, arg1_name, arg1_val, \
+-        arg2_name, arg2_val) \
+-    INTERNAL_TRACE_EVENT_ADD_WITH_ID(TRACE_EVENT_PHASE_ASYNC_BEGIN, \
+-        category, name, id, TRACE_EVENT_FLAG_COPY, \
+-        arg1_name, arg1_val, arg2_name, arg2_val)
+-
+-// Records a single ASYNC_STEP event for |step| immediately. If the category
+-// is not enabled, then this does nothing. The |name| and |id| must match the
+-// ASYNC_BEGIN event above. The |step| param identifies this step within the
+-// async event. This should be called at the beginning of the next phase of an
+-// asynchronous operation.
+-#define TRACE_EVENT_ASYNC_STEP0(category, name, id, step) \
+-    INTERNAL_TRACE_EVENT_ADD_WITH_ID(TRACE_EVENT_PHASE_ASYNC_STEP, \
+-        category, name, id, TRACE_EVENT_FLAG_NONE, "step", step)
+-#define TRACE_EVENT_ASYNC_STEP1(category, name, id, step, \
+-                                      arg1_name, arg1_val) \
+-    INTERNAL_TRACE_EVENT_ADD_WITH_ID(TRACE_EVENT_PHASE_ASYNC_STEP, \
+-        category, name, id, TRACE_EVENT_FLAG_NONE, "step", step, \
+-        arg1_name, arg1_val)
+-#define TRACE_EVENT_COPY_ASYNC_STEP0(category, name, id, step) \
+-    INTERNAL_TRACE_EVENT_ADD_WITH_ID(TRACE_EVENT_PHASE_ASYNC_STEP, \
+-        category, name, id, TRACE_EVENT_FLAG_COPY, "step", step)
+-#define TRACE_EVENT_COPY_ASYNC_STEP1(category, name, id, step, \
+-        arg1_name, arg1_val) \
+-    INTERNAL_TRACE_EVENT_ADD_WITH_ID(TRACE_EVENT_PHASE_ASYNC_STEP, \
+-        category, name, id, TRACE_EVENT_FLAG_COPY, "step", step, \
+-        arg1_name, arg1_val)
+-
+-// Records a single ASYNC_END event for "name" immediately. If the category
+-// is not enabled, then this does nothing.
+-#define TRACE_EVENT_ASYNC_END0(category, name, id) \
+-    INTERNAL_TRACE_EVENT_ADD_WITH_ID(TRACE_EVENT_PHASE_ASYNC_END, \
+-        category, name, id, TRACE_EVENT_FLAG_NONE)
+-#define TRACE_EVENT_ASYNC_END1(category, name, id, arg1_name, arg1_val) \
+-    INTERNAL_TRACE_EVENT_ADD_WITH_ID(TRACE_EVENT_PHASE_ASYNC_END, \
+-        category, name, id, TRACE_EVENT_FLAG_NONE, arg1_name, arg1_val)
+-#define TRACE_EVENT_ASYNC_END2(category, name, id, arg1_name, arg1_val, \
+-        arg2_name, arg2_val) \
+-    INTERNAL_TRACE_EVENT_ADD_WITH_ID(TRACE_EVENT_PHASE_ASYNC_END, \
+-        category, name, id, TRACE_EVENT_FLAG_NONE, \
+-        arg1_name, arg1_val, arg2_name, arg2_val)
+-#define TRACE_EVENT_COPY_ASYNC_END0(category, name, id) \
+-    INTERNAL_TRACE_EVENT_ADD_WITH_ID(TRACE_EVENT_PHASE_ASYNC_END, \
+-        category, name, id, TRACE_EVENT_FLAG_COPY)
+-#define TRACE_EVENT_COPY_ASYNC_END1(category, name, id, arg1_name, arg1_val) \
+-    INTERNAL_TRACE_EVENT_ADD_WITH_ID(TRACE_EVENT_PHASE_ASYNC_END, \
+-        category, name, id, TRACE_EVENT_FLAG_COPY, \
+-        arg1_name, arg1_val)
+-#define TRACE_EVENT_COPY_ASYNC_END2(category, name, id, arg1_name, arg1_val, \
+-        arg2_name, arg2_val) \
+-    INTERNAL_TRACE_EVENT_ADD_WITH_ID(TRACE_EVENT_PHASE_ASYNC_END, \
+-        category, name, id, TRACE_EVENT_FLAG_COPY, \
+-        arg1_name, arg1_val, arg2_name, arg2_val)
+-
+-// Creates a scope of a sampling state with the given category and name (both must
+-// be constant strings). These states are intended for a sampling profiler.
+-// Implementation note: we store category and name together because we don't
+-// want the inconsistency/expense of storing two pointers.
+-// |thread_bucket| is [0..2] and is used to statically isolate samples in one
+-// thread from others.
+-//
+-// {  // The sampling state is set within this scope.
+-//    TRACE_EVENT_SAMPLING_STATE_SCOPE_FOR_BUCKET(0, "category", "name");
+-//    ...;
+-// }
+-#define TRACE_EVENT_SCOPED_SAMPLING_STATE_FOR_BUCKET(bucket_number, category, name) \
+-    TraceEvent::SamplingStateScope<bucket_number> traceEventSamplingScope(category "\0" name);
+-
+-// Returns a current sampling state of the given bucket.
+-// The format of the returned string is "category\0name".
+-#define TRACE_EVENT_GET_SAMPLING_STATE_FOR_BUCKET(bucket_number) \
+-    TraceEvent::SamplingStateScope<bucket_number>::current()
+-
+-// Sets a current sampling state of the given bucket.
+-// |category| and |name| have to be constant strings.
+-#define TRACE_EVENT_SET_SAMPLING_STATE_FOR_BUCKET(bucket_number, category, name) \
+-    TraceEvent::SamplingStateScope<bucket_number>::set(category "\0" name)
+-
+-// Sets a current sampling state of the given bucket.
+-// |categoryAndName| doesn't need to be a constant string.
+-// The format of the string is "category\0name".
+-#define TRACE_EVENT_SET_NONCONST_SAMPLING_STATE_FOR_BUCKET(bucket_number, categoryAndName) \
+-    TraceEvent::SamplingStateScope<bucket_number>::set(categoryAndName)
+-
+-// Syntactic sugars for the sampling tracing in the main thread.
+-#define TRACE_EVENT_SCOPED_SAMPLING_STATE(category, name) \
+-    TRACE_EVENT_SCOPED_SAMPLING_STATE_FOR_BUCKET(0, category, name)
+-#define TRACE_EVENT_GET_SAMPLING_STATE() \
+-    TRACE_EVENT_GET_SAMPLING_STATE_FOR_BUCKET(0)
+-#define TRACE_EVENT_SET_SAMPLING_STATE(category, name) \
+-    TRACE_EVENT_SET_SAMPLING_STATE_FOR_BUCKET(0, category, name)
+-#define TRACE_EVENT_SET_NONCONST_SAMPLING_STATE(categoryAndName) \
+-    TRACE_EVENT_SET_NONCONST_SAMPLING_STATE_FOR_BUCKET(0, categoryAndName)
+-
+-////////////////////////////////////////////////////////////////////////////////
+-// Implementation specific tracing API definitions.
+-
+-// Get a pointer to the enabled state of the given trace category. Only
+-// long-lived literal strings should be given as the category name. The returned
+-// pointer can be held permanently in a local static for example. If the
+-// unsigned char is non-zero, tracing is enabled. If tracing is enabled,
+-// TRACE_EVENT_API_ADD_TRACE_EVENT can be called. It's OK if tracing is disabled
+-// between the load of the tracing state and the call to
+-// TRACE_EVENT_API_ADD_TRACE_EVENT, because this flag only provides an early out
+-// for best performance when tracing is disabled.
+-// const unsigned char*
+-//     TRACE_EVENT_API_GET_CATEGORY_ENABLED(const char* category_name)
+-#define TRACE_EVENT_API_GET_CATEGORY_ENABLED \
+-    gl::TraceGetTraceCategoryEnabledFlag
+-
+-// Add a trace event to the platform tracing system.
+-// void TRACE_EVENT_API_ADD_TRACE_EVENT(
+-//                    char phase,
+-//                    const unsigned char* category_enabled,
+-//                    const char* name,
+-//                    unsigned long long id,
+-//                    int num_args,
+-//                    const char** arg_names,
+-//                    const unsigned char* arg_types,
+-//                    const unsigned long long* arg_values,
+-//                    unsigned char flags)
+-#define TRACE_EVENT_API_ADD_TRACE_EVENT \
+-    gl::TraceAddTraceEvent
+-
+-////////////////////////////////////////////////////////////////////////////////
+-
+-// Implementation detail: trace event macros create temporary variables
+-// to keep instrumentation overhead low. These macros give each temporary
+-// variable a unique name based on the line number to prevent name collissions.
+-#define INTERNAL_TRACE_EVENT_UID3(a, b) \
+-    trace_event_unique_##a##b
+-#define INTERNAL_TRACE_EVENT_UID2(a, b) \
+-    INTERNAL_TRACE_EVENT_UID3(a, b)
+-#define INTERNALTRACEEVENTUID(name_prefix) \
+-    INTERNAL_TRACE_EVENT_UID2(name_prefix, __LINE__)
+-
+-// Implementation detail: internal macro to create static category.
+-#define INTERNAL_TRACE_EVENT_GET_CATEGORY_INFO(category) \
+-    static const unsigned char* INTERNALTRACEEVENTUID(catstatic) = 0; \
+-    if (!INTERNALTRACEEVENTUID(catstatic)) \
+-      INTERNALTRACEEVENTUID(catstatic) = \
+-          TRACE_EVENT_API_GET_CATEGORY_ENABLED(category);
+-
+-// Implementation detail: internal macro to create static category and add
+-// event if the category is enabled.
+-#define INTERNAL_TRACE_EVENT_ADD(phase, category, name, flags, ...) \
+-    do { \
+-        INTERNAL_TRACE_EVENT_GET_CATEGORY_INFO(category); \
+-        if (*INTERNALTRACEEVENTUID(catstatic)) { \
+-            gl::TraceEvent::addTraceEvent( \
+-                phase, INTERNALTRACEEVENTUID(catstatic), name, \
+-                gl::TraceEvent::noEventId, flags, ##__VA_ARGS__); \
+-        } \
+-    } while (0)
+-
+-// Implementation detail: internal macro to create static category and add begin
+-// event if the category is enabled. Also adds the end event when the scope
+-// ends.
+-#define INTERNAL_TRACE_EVENT_ADD_SCOPED(category, name, ...) \
+-    INTERNAL_TRACE_EVENT_GET_CATEGORY_INFO(category); \
+-    gl::TraceEvent::TraceEndOnScopeClose \
+-        INTERNALTRACEEVENTUID(profileScope); \
+-    if (*INTERNALTRACEEVENTUID(catstatic)) { \
+-      gl::TraceEvent::addTraceEvent( \
+-          TRACE_EVENT_PHASE_BEGIN, \
+-          INTERNALTRACEEVENTUID(catstatic), \
+-          name, gl::TraceEvent::noEventId, \
+-          TRACE_EVENT_FLAG_NONE, ##__VA_ARGS__); \
+-      INTERNALTRACEEVENTUID(profileScope).initialize( \
+-          INTERNALTRACEEVENTUID(catstatic), name); \
+-    }
+-
+-// Implementation detail: internal macro to create static category and add
+-// event if the category is enabled.
+-#define INTERNAL_TRACE_EVENT_ADD_WITH_ID(phase, category, name, id, flags, \
+-                                         ...) \
+-    do { \
+-        INTERNAL_TRACE_EVENT_GET_CATEGORY_INFO(category); \
+-        if (*INTERNALTRACEEVENTUID(catstatic)) { \
+-            unsigned char traceEventFlags = flags | TRACE_EVENT_FLAG_HAS_ID; \
+-            gl::TraceEvent::TraceID traceEventTraceID( \
+-                id, &traceEventFlags); \
+-            gl::TraceEvent::addTraceEvent( \
+-                phase, INTERNALTRACEEVENTUID(catstatic), \
+-                name, traceEventTraceID.data(), traceEventFlags, \
+-                ##__VA_ARGS__); \
+-        } \
+-    } while (0)
+-
+-// Notes regarding the following definitions:
+-// New values can be added and propagated to third party libraries, but existing
+-// definitions must never be changed, because third party libraries may use old
+-// definitions.
+-
+-// Phase indicates the nature of an event entry. E.g. part of a begin/end pair.
+-#define TRACE_EVENT_PHASE_BEGIN    ('B')
+-#define TRACE_EVENT_PHASE_END      ('E')
+-#define TRACE_EVENT_PHASE_INSTANT  ('I')
+-#define TRACE_EVENT_PHASE_ASYNC_BEGIN ('S')
+-#define TRACE_EVENT_PHASE_ASYNC_STEP  ('T')
+-#define TRACE_EVENT_PHASE_ASYNC_END   ('F')
+-#define TRACE_EVENT_PHASE_METADATA ('M')
+-#define TRACE_EVENT_PHASE_COUNTER  ('C')
+-#define TRACE_EVENT_PHASE_SAMPLE  ('P')
+-
+-// Flags for changing the behavior of TRACE_EVENT_API_ADD_TRACE_EVENT.
+-#define TRACE_EVENT_FLAG_NONE        (static_cast<unsigned char>(0))
+-#define TRACE_EVENT_FLAG_COPY        (static_cast<unsigned char>(1 << 0))
+-#define TRACE_EVENT_FLAG_HAS_ID      (static_cast<unsigned char>(1 << 1))
+-#define TRACE_EVENT_FLAG_MANGLE_ID   (static_cast<unsigned char>(1 << 2))
+-
+-// Type values for identifying types in the TraceValue union.
+-#define TRACE_VALUE_TYPE_BOOL         (static_cast<unsigned char>(1))
+-#define TRACE_VALUE_TYPE_UINT         (static_cast<unsigned char>(2))
+-#define TRACE_VALUE_TYPE_INT          (static_cast<unsigned char>(3))
+-#define TRACE_VALUE_TYPE_DOUBLE       (static_cast<unsigned char>(4))
+-#define TRACE_VALUE_TYPE_POINTER      (static_cast<unsigned char>(5))
+-#define TRACE_VALUE_TYPE_STRING       (static_cast<unsigned char>(6))
+-#define TRACE_VALUE_TYPE_COPY_STRING  (static_cast<unsigned char>(7))
+-
+-
+-namespace gl {
+-
+-namespace TraceEvent {
+-
+-// Specify these values when the corresponding argument of addTraceEvent is not
+-// used.
+-const int zeroNumArgs = 0;
+-const unsigned long long noEventId = 0;
+-
+-// TraceID encapsulates an ID that can either be an integer or pointer. Pointers
+-// are mangled with the Process ID so that they are unlikely to collide when the
+-// same pointer is used on different processes.
+-class TraceID {
+-public:
+-    explicit TraceID(const void* id, unsigned char* flags) :
+-        m_data(static_cast<unsigned long long>(reinterpret_cast<unsigned long>(id)))
+-    {
+-        *flags |= TRACE_EVENT_FLAG_MANGLE_ID;
+-    }
+-    explicit TraceID(unsigned long long id, unsigned char* flags) : m_data(id) { (void)flags; }
+-    explicit TraceID(unsigned long id, unsigned char* flags) : m_data(id) { (void)flags; }
+-    explicit TraceID(unsigned int id, unsigned char* flags) : m_data(id) { (void)flags; }
+-    explicit TraceID(unsigned short id, unsigned char* flags) : m_data(id) { (void)flags; }
+-    explicit TraceID(unsigned char id, unsigned char* flags) : m_data(id) { (void)flags; }
+-    explicit TraceID(long long id, unsigned char* flags) :
+-        m_data(static_cast<unsigned long long>(id)) { (void)flags; }
+-    explicit TraceID(long id, unsigned char* flags) :
+-        m_data(static_cast<unsigned long long>(id)) { (void)flags; }
+-    explicit TraceID(int id, unsigned char* flags) :
+-        m_data(static_cast<unsigned long long>(id)) { (void)flags; }
+-    explicit TraceID(short id, unsigned char* flags) :
+-        m_data(static_cast<unsigned long long>(id)) { (void)flags; }
+-    explicit TraceID(signed char id, unsigned char* flags) :
+-        m_data(static_cast<unsigned long long>(id)) { (void)flags; }
+-
+-    unsigned long long data() const { return m_data; }
+-
+-private:
+-    unsigned long long m_data;
+-};
+-
+-// Simple union to store various types as unsigned long long.
+-union TraceValueUnion {
+-    bool m_bool;
+-    unsigned long long m_uint;
+-    long long m_int;
+-    double m_double;
+-    const void* m_pointer;
+-    const char* m_string;
+-};
+-
+-// Simple container for const char* that should be copied instead of retained.
+-class TraceStringWithCopy {
+-public:
+-    explicit TraceStringWithCopy(const char* str) : m_str(str) { }
+-    operator const char* () const { return m_str; }
+-private:
+-    const char* m_str;
+-};
+-
+-// Define setTraceValue for each allowed type. It stores the type and
+-// value in the return arguments. This allows this API to avoid declaring any
+-// structures so that it is portable to third_party libraries.
+-#define INTERNAL_DECLARE_SET_TRACE_VALUE(actual_type, \
+-                                         union_member, \
+-                                         value_type_id) \
+-    static inline void setTraceValue(actual_type arg, \
+-                                     unsigned char* type, \
+-                                     unsigned long long* value) { \
+-        TraceValueUnion typeValue; \
+-        typeValue.union_member = arg; \
+-        *type = value_type_id; \
+-        *value = typeValue.m_uint; \
+-    }
+-// Simpler form for int types that can be safely casted.
+-#define INTERNAL_DECLARE_SET_TRACE_VALUE_INT(actual_type, \
+-                                             value_type_id) \
+-    static inline void setTraceValue(actual_type arg, \
+-                                     unsigned char* type, \
+-                                     unsigned long long* value) { \
+-        *type = value_type_id; \
+-        *value = static_cast<unsigned long long>(arg); \
+-    }
+-
+-INTERNAL_DECLARE_SET_TRACE_VALUE_INT(unsigned long long, TRACE_VALUE_TYPE_UINT)
+-INTERNAL_DECLARE_SET_TRACE_VALUE_INT(unsigned int, TRACE_VALUE_TYPE_UINT)
+-INTERNAL_DECLARE_SET_TRACE_VALUE_INT(unsigned short, TRACE_VALUE_TYPE_UINT)
+-INTERNAL_DECLARE_SET_TRACE_VALUE_INT(unsigned char, TRACE_VALUE_TYPE_UINT)
+-INTERNAL_DECLARE_SET_TRACE_VALUE_INT(long long, TRACE_VALUE_TYPE_INT)
+-INTERNAL_DECLARE_SET_TRACE_VALUE_INT(int, TRACE_VALUE_TYPE_INT)
+-INTERNAL_DECLARE_SET_TRACE_VALUE_INT(short, TRACE_VALUE_TYPE_INT)
+-INTERNAL_DECLARE_SET_TRACE_VALUE_INT(signed char, TRACE_VALUE_TYPE_INT)
+-INTERNAL_DECLARE_SET_TRACE_VALUE(bool, m_bool, TRACE_VALUE_TYPE_BOOL)
+-INTERNAL_DECLARE_SET_TRACE_VALUE(double, m_double, TRACE_VALUE_TYPE_DOUBLE)
+-INTERNAL_DECLARE_SET_TRACE_VALUE(const void*, m_pointer,
+-                                 TRACE_VALUE_TYPE_POINTER)
+-INTERNAL_DECLARE_SET_TRACE_VALUE(const char*, m_string,
+-                                 TRACE_VALUE_TYPE_STRING)
+-INTERNAL_DECLARE_SET_TRACE_VALUE(const TraceStringWithCopy&, m_string,
+-                                 TRACE_VALUE_TYPE_COPY_STRING)
+-
+-#undef INTERNAL_DECLARE_SET_TRACE_VALUE
+-#undef INTERNAL_DECLARE_SET_TRACE_VALUE_INT
+-
+-static inline void setTraceValue(const std::string& arg,
+-                                 unsigned char* type,
+-                                 unsigned long long* value) {
+-    TraceValueUnion typeValue;
+-    typeValue.m_string = arg.data();
+-    *type = TRACE_VALUE_TYPE_COPY_STRING;
+-    *value = typeValue.m_uint;
+-}
+-
+-// These addTraceEvent template functions are defined here instead of in the
+-// macro, because the arg values could be temporary string objects. In order to
+-// store pointers to the internal c_str and pass through to the tracing API, the
+-// arg values must live throughout these procedures.
+-
+-static inline void addTraceEvent(char phase,
+-                                const unsigned char* categoryEnabled,
+-                                const char* name,
+-                                unsigned long long id,
+-                                unsigned char flags) {
+-    TRACE_EVENT_API_ADD_TRACE_EVENT(
+-        phase, categoryEnabled, name, id,
+-        zeroNumArgs, 0, 0, 0,
+-        flags);
+-}
+-
+-template<class ARG1_TYPE>
+-static inline void addTraceEvent(char phase,
+-                                const unsigned char* categoryEnabled,
+-                                const char* name,
+-                                unsigned long long id,
+-                                unsigned char flags,
+-                                const char* arg1Name,
+-                                const ARG1_TYPE& arg1Val) {
+-    const int numArgs = 1;
+-    unsigned char argTypes[1];
+-    unsigned long long argValues[1];
+-    setTraceValue(arg1Val, &argTypes[0], &argValues[0]);
+-    TRACE_EVENT_API_ADD_TRACE_EVENT(
+-        phase, categoryEnabled, name, id,
+-        numArgs, &arg1Name, argTypes, argValues,
+-        flags);
+-}
+-
+-template<class ARG1_TYPE, class ARG2_TYPE>
+-static inline void addTraceEvent(char phase,
+-                                const unsigned char* categoryEnabled,
+-                                const char* name,
+-                                unsigned long long id,
+-                                unsigned char flags,
+-                                const char* arg1Name,
+-                                const ARG1_TYPE& arg1Val,
+-                                const char* arg2Name,
+-                                const ARG2_TYPE& arg2Val) {
+-    const int numArgs = 2;
+-    const char* argNames[2] = { arg1Name, arg2Name };
+-    unsigned char argTypes[2];
+-    unsigned long long argValues[2];
+-    setTraceValue(arg1Val, &argTypes[0], &argValues[0]);
+-    setTraceValue(arg2Val, &argTypes[1], &argValues[1]);
+-    return TRACE_EVENT_API_ADD_TRACE_EVENT(
+-        phase, categoryEnabled, name, id,
+-        numArgs, argNames, argTypes, argValues,
+-        flags);
+-}
+-
+-// Used by TRACE_EVENTx macro. Do not use directly.
+-class TraceEndOnScopeClose {
+-public:
+-    // Note: members of m_data intentionally left uninitialized. See initialize.
+-    TraceEndOnScopeClose() : m_pdata(0) { }
+-    ~TraceEndOnScopeClose()
+-    {
+-        if (m_pdata)
+-            addEventIfEnabled();
+-    }
+-
+-    void initialize(const unsigned char* categoryEnabled,
+-                    const char* name)
+-    {
+-        m_data.categoryEnabled = categoryEnabled;
+-        m_data.name = name;
+-        m_pdata = &m_data;
+-    }
+-
+-private:
+-    // Add the end event if the category is still enabled.
+-    void addEventIfEnabled()
+-    {
+-        // Only called when m_pdata is non-null.
+-        if (*m_pdata->categoryEnabled) {
+-            TRACE_EVENT_API_ADD_TRACE_EVENT(
+-                TRACE_EVENT_PHASE_END,
+-                m_pdata->categoryEnabled,
+-                m_pdata->name, noEventId,
+-                zeroNumArgs, 0, 0, 0,
+-                TRACE_EVENT_FLAG_NONE);
+-        }
+-    }
+-
+-    // This Data struct workaround is to avoid initializing all the members
+-    // in Data during construction of this object, since this object is always
+-    // constructed, even when tracing is disabled. If the members of Data were
+-    // members of this class instead, compiler warnings occur about potential
+-    // uninitialized accesses.
+-    struct Data {
+-        const unsigned char* categoryEnabled;
+-        const char* name;
+-    };
+-    Data* m_pdata;
+-    Data m_data;
+-};
+-
+-// TraceEventSamplingStateScope records the current sampling state
+-// and sets a new sampling state. When the scope exists, it restores
+-// the sampling state having recorded.
+-template<size_t BucketNumber>
+-class SamplingStateScope {
+-public:
+-    SamplingStateScope(const char* categoryAndName)
+-    {
+-        m_previousState = SamplingStateScope<BucketNumber>::current();
+-        SamplingStateScope<BucketNumber>::set(categoryAndName);
+-    }
+-
+-    ~SamplingStateScope()
+-    {
+-        SamplingStateScope<BucketNumber>::set(m_previousState);
+-    }
+-
+-    // FIXME: Make load/store to traceSamplingState[] thread-safe and atomic.
+-    static inline const char* current()
+-    {
+-        return reinterpret_cast<const char*>(*gl::traceSamplingState[BucketNumber]);
+-    }
+-    static inline void set(const char* categoryAndName)
+-    {
+-        *gl::traceSamplingState[BucketNumber] = reinterpret_cast<long>(const_cast<char*>(categoryAndName));
+-    }
+-
+-private:
+-    const char* m_previousState;
+-};
+-
+-} // namespace TraceEvent
+-
+-} // namespace gl
+-
+-#endif
+diff --git a/src/angle/src/common/common.pri b/src/angle/src/common/common.pri
+index fd1c31c..8baedc5 100644
+--- a/src/angle/src/common/common.pri
++++ b/src/angle/src/common/common.pri
+@@ -51,7 +51,6 @@ static: DEFINES *= QT_OPENGL_ES_2_ANGLE_STATIC
+ HEADERS +=  \
+     $$ANGLE_DIR/src/common/angleutils.h \
+     $$ANGLE_DIR/src/common/debug.h \
+-    $$ANGLE_DIR/src/common/event_tracer.h \
+     $$ANGLE_DIR/src/common/mathutil.h \
+     $$ANGLE_DIR/src/common/platform.h \
+     $$ANGLE_DIR/src/common/RefCountObject.h \
+@@ -61,7 +60,6 @@ HEADERS +=  \
+ SOURCES +=  \
+     $$ANGLE_DIR/src/common/angleutils.cpp \
+     $$ANGLE_DIR/src/common/debug.cpp \
+-    $$ANGLE_DIR/src/common/event_tracer.cpp \
+     $$ANGLE_DIR/src/common/RefCountObject.cpp \
+     $$ANGLE_DIR/src/common/tls.cpp
  
 -- 
 1.9.0.msysgit.0

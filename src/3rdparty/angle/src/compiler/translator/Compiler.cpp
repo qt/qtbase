@@ -12,6 +12,7 @@
 #include "compiler/translator/InitializeParseContext.h"
 #include "compiler/translator/InitializeVariables.h"
 #include "compiler/translator/ParseContext.h"
+#include "compiler/translator/RegenerateStructNames.h"
 #include "compiler/translator/RenameFunction.h"
 #include "compiler/translator/ScalarizeVecAndMatConstructorArgs.h"
 #include "compiler/translator/UnfoldShortCircuitAST.h"
@@ -257,8 +258,15 @@ bool TCompiler::compile(const char* const shaderStrings[],
 
         if (success && (compileOptions & SH_SCALARIZE_VEC_AND_MAT_CONSTRUCTOR_ARGS))
         {
-            ScalarizeVecAndMatConstructorArgs scalarizer;
+            ScalarizeVecAndMatConstructorArgs scalarizer(
+                shaderType, fragmentPrecisionHigh);
             root->traverse(&scalarizer);
+        }
+
+        if (success && (compileOptions & SH_REGENERATE_STRUCT_NAMES))
+        {
+            RegenerateStructNames gen(symbolTable, shaderVersion);
+            root->traverse(&gen);
         }
 
         if (success && (compileOptions & SH_INTERMEDIATE_TREE))
@@ -494,18 +502,18 @@ bool TCompiler::enforceVertexShaderTimingRestrictions(TIntermNode* root)
 
 void TCompiler::collectVariables(TIntermNode* root)
 {
-    CollectVariables collect(&attributes,
-                             &outputVariables,
-                             &uniforms,
-                             &varyings,
-                             &interfaceBlocks,
-                             hashFunction);
+    sh::CollectVariables collect(&attributes,
+                                 &outputVariables,
+                                 &uniforms,
+                                 &varyings,
+                                 &interfaceBlocks,
+                                 hashFunction);
     root->traverse(&collect);
 
     // For backwards compatiblity with ShGetVariableInfo, expand struct
     // uniforms and varyings into separate variables for each field.
-    ExpandVariables(uniforms, &expandedUniforms);
-    ExpandVariables(varyings, &expandedVaryings);
+    sh::ExpandVariables(uniforms, &expandedUniforms);
+    sh::ExpandVariables(varyings, &expandedVaryings);
 }
 
 bool TCompiler::enforcePackingRestrictions()

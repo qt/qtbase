@@ -1,4 +1,3 @@
-#include "precompiled.h"
 //
 // Copyright (c) 2012-2014 The ANGLE Project Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
@@ -10,7 +9,6 @@
 
 #include "libGLESv2/renderer/d3d/d3d9/RenderTarget9.h"
 #include "libGLESv2/renderer/d3d/d3d9/Renderer9.h"
-
 #include "libGLESv2/renderer/d3d/d3d9/renderer9_utils.h"
 #include "libGLESv2/renderer/d3d/d3d9/formatutils9.h"
 #include "libGLESv2/main.h"
@@ -33,8 +31,9 @@ RenderTarget9::RenderTarget9(Renderer *renderer, IDirect3DSurface9 *surface)
         mHeight = description.Height;
         mDepth = 1;
 
-        mInternalFormat = d3d9_gl::GetInternalFormat(description.Format);
-        mActualFormat = d3d9_gl::GetInternalFormat(description.Format);
+        const d3d9::D3DFormat &d3dFormatInfo = d3d9::GetD3DFormatInfo(description.Format);
+        mInternalFormat = d3dFormatInfo.internalFormat;
+        mActualFormat = d3dFormatInfo.internalFormat;
         mSamples = d3d9_gl::GetSamplesCount(description.MultiSampleType);
     }
 }
@@ -44,15 +43,11 @@ RenderTarget9::RenderTarget9(Renderer *renderer, GLsizei width, GLsizei height, 
     mRenderer = Renderer9::makeRenderer9(renderer);
     mRenderTarget = NULL;
 
-    D3DFORMAT renderFormat = gl_d3d9::GetRenderFormat(internalFormat);
-    int supportedSamples = mRenderer->getNearestSupportedSamples(renderFormat, samples);
+    const d3d9::TextureFormat &d3d9FormatInfo = d3d9::GetTextureFormatInfo(internalFormat);
+    const d3d9::D3DFormat &d3dFormatInfo = d3d9::GetD3DFormatInfo(d3d9FormatInfo.renderFormat);
 
-    if (supportedSamples == -1)
-    {
-        gl::error(GL_OUT_OF_MEMORY);
-
-        return;
-    }
+    const gl::TextureCaps &textureCaps = mRenderer->getRendererTextureCaps().get(internalFormat);
+    GLuint supportedSamples = textureCaps.getNearestSamples(samples);
 
     HRESULT result = D3DERR_INVALIDCALL;
 
@@ -62,18 +57,17 @@ RenderTarget9::RenderTarget9(Renderer *renderer, GLsizei width, GLsizei height, 
 
         bool requiresInitialization = false;
 
-        if (gl::GetDepthBits(internalFormat) > 0 ||
-            gl::GetStencilBits(internalFormat) > 0)
+        const gl::InternalFormat &formatInfo = gl::GetInternalFormatInfo(internalFormat);
+        if (formatInfo.depthBits > 0 || formatInfo.stencilBits > 0)
         {
-            result = device->CreateDepthStencilSurface(width, height, renderFormat,
+            result = device->CreateDepthStencilSurface(width, height, d3d9FormatInfo.renderFormat,
                                                        gl_d3d9::GetMultisampleType(supportedSamples),
                                                        0, FALSE, &mRenderTarget, NULL);
         }
         else
         {
-            requiresInitialization = gl_d3d9::RequiresTextureDataInitialization(internalFormat);
-
-            result = device->CreateRenderTarget(width, height, renderFormat,
+            requiresInitialization = (d3d9FormatInfo.dataInitializerFunction != NULL);
+            result = device->CreateRenderTarget(width, height, d3d9FormatInfo.renderFormat,
                                                 gl_d3d9::GetMultisampleType(supportedSamples),
                                                 0, FALSE, &mRenderTarget, NULL);
         }
@@ -105,7 +99,7 @@ RenderTarget9::RenderTarget9(Renderer *renderer, GLsizei width, GLsizei height, 
     mDepth = 1;
     mInternalFormat = internalFormat;
     mSamples = supportedSamples;
-    mActualFormat = d3d9_gl::GetInternalFormat(renderFormat);
+    mActualFormat = d3dFormatInfo.internalFormat;
 }
 
 RenderTarget9::~RenderTarget9()

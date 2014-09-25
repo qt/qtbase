@@ -9,7 +9,7 @@
 #include "compiler/translator/Compiler.h"
 #include "compiler/translator/Diagnostics.h"
 #include "compiler/translator/DirectiveHandler.h"
-#include "compiler/translator/localintermediate.h"
+#include "compiler/translator/Intermediate.h"
 #include "compiler/translator/SymbolTable.h"
 #include "compiler/preprocessor/Preprocessor.h"
 
@@ -77,6 +77,9 @@ struct TParseContext {
     void trace(const char* str);
     void recover();
 
+    // This method is guaranteed to succeed, even if no variable with 'name' exists.
+    const TVariable *getNamedVariable(const TSourceLoc &location, const TString *name, const TSymbol *symbol);
+
     bool parseVectorFields(const TString&, int vecSize, TVectorFields&, const TSourceLoc& line);
     bool parseMatrixFields(const TString&, int matCols, int matRows, TMatrixFields&, const TSourceLoc& line);
 
@@ -126,6 +129,8 @@ struct TParseContext {
     TIntermAggregate* parseSingleDeclaration(TPublicType &publicType, const TSourceLoc& identifierLocation, const TString &identifier);
     TIntermAggregate* parseSingleArrayDeclaration(TPublicType &publicType, const TSourceLoc& identifierLocation, const TString &identifier, const TSourceLoc& indexLocation, TIntermTyped *indexExpression);
     TIntermAggregate* parseSingleInitDeclaration(TPublicType &publicType, const TSourceLoc& identifierLocation, const TString &identifier, const TSourceLoc& initLocation, TIntermTyped *initializer);
+    TIntermAggregate* parseInvariantDeclaration(const TSourceLoc &invariantLoc, const TSourceLoc &identifierLoc, const TString *identifier, const TSymbol *symbol);
+
     TIntermAggregate* parseDeclarator(TPublicType &publicType, TIntermAggregate *aggregateDeclaration, TSymbol *identifierSymbol, const TSourceLoc& identifierLocation, const TString &identifier);
     TIntermAggregate* parseArrayDeclarator(TPublicType &publicType, const TSourceLoc& identifierLocation, const TString &identifier, const TSourceLoc& arrayLocation, TIntermNode *declaratorList, TIntermTyped *indexExpression);
     TIntermAggregate* parseInitDeclarator(TPublicType &publicType, TIntermAggregate *declaratorList, const TSourceLoc& identifierLocation, const TString &identifier, const TSourceLoc& initLocation, TIntermTyped *initializer);

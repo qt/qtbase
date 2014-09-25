@@ -105,15 +105,15 @@ extern "C" BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, LPVOID reserved
         break;
       case DLL_THREAD_DETACH:
         {
+#if !defined(ANGLE_PLATFORM_WINRT)
             egl::DeallocateCurrent();
+#endif
         }
         break;
       case DLL_PROCESS_DETACH:
         {
-#if !defined(ANGLE_PLATFORM_WINRT)
             egl::DeallocateCurrent();
             DestroyTLSIndex(currentTLS);
-#endif
         }
         break;
       default:

@@ -1,7 +1,7 @@
-From d52fac0c0b5d12cd117ae4b871f0ac6a202755ad Mon Sep 17 00:00:00 2001
-From: =?UTF-8?q?Michael=20Br=C3=BCning?= <michael.bruning@digia.com>
-Date: Wed, 27 Aug 2014 12:42:00 +0200
-Subject: [PATCH] Let ANGLE use multithreaded devices if necessary.
+From a3046fef7f754f06937161e779ce0a651e77317b Mon Sep 17 00:00:00 2001
+From: Michael Bruning <michael.bruning@digia.com>
+Date: Mon, 22 Sep 2014 23:23:40 +0300
+Subject: [PATCH 14/16] Let ANGLE use multithreaded devices if necessary.
 
 This is needed to prevent lock-ups in application that use ANGLE from
 multiple threads, as e.g. QtWebEngine based applications do.
@@ -17,10 +17,10 @@ Change-Id: Ibd5a5c75eb68af567d420d9a35efb3490c93b27c
  3 files changed, 18 insertions(+)
 
 diff --git a/src/3rdparty/angle/src/common/platform.h b/src/3rdparty/angle/src/common/platform.h
-index e16e7ac..cedc6f2 100644
+index 387ba41..7d0d957 100644
 --- a/src/3rdparty/angle/src/common/platform.h
 +++ b/src/3rdparty/angle/src/common/platform.h
-@@ -56,6 +56,7 @@
+@@ -57,6 +57,7 @@
  
  #   if defined(ANGLE_ENABLE_D3D11)
  #       include <d3d10_1.h>
@@ -29,12 +29,12 @@ index e16e7ac..cedc6f2 100644
  #       include <dxgi.h>
  #       include <dxgi1_2.h>
 diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/Renderer11.cpp b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/Renderer11.cpp
-index 17a13f9..651b065 100644
+index b4b26a8..bd07ee1 100644
 --- a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/Renderer11.cpp
 +++ b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/Renderer11.cpp
-@@ -305,6 +305,19 @@ EGLint Renderer11::initialize()
-         mMaxSupportedSamples = std::max(mMaxSupportedSamples, support.maxSupportedSamples);
+@@ -301,6 +301,19 @@ EGLint Renderer11::initialize()
      }
+ #endif
  
 +#if !defined(ANGLE_PLATFORM_WINRT)
 +    static wchar_t *qt_d3dcreate_multihreaded_var = _wgetenv(L"QT_D3DCREATE_MULTITHREADED");
@@ -53,10 +53,10 @@ index 17a13f9..651b065 100644
  
      return EGL_SUCCESS;
 diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d9/Renderer9.cpp b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d9/Renderer9.cpp
-index 491c27a..2c8a79f 100644
+index e8564bd..1d52705 100644
 --- a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d9/Renderer9.cpp
 +++ b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d9/Renderer9.cpp
-@@ -319,6 +319,10 @@ EGLint Renderer9::initialize()
+@@ -304,6 +304,10 @@ EGLint Renderer9::initialize()
      D3DPRESENT_PARAMETERS presentParameters = getDefaultPresentParameters();
      DWORD behaviorFlags = D3DCREATE_FPU_PRESERVE | D3DCREATE_NOWINDOWCHANGES;
  
@@ -65,8 +65,8 @@ index 491c27a..2c8a79f 100644
 +        behaviorFlags |= D3DCREATE_MULTITHREADED;
 +
      {
-         TRACE_EVENT0("gpu", "D3d9_CreateDevice");
          result = mD3d9->CreateDevice(mAdapter, mDeviceType, mDeviceWindow, behaviorFlags | D3DCREATE_HARDWARE_VERTEXPROCESSING | D3DCREATE_PUREDEVICE, &presentParameters, &mDevice);
+     }
 -- 
-1.8.3.2
+1.9.0.msysgit.0
 

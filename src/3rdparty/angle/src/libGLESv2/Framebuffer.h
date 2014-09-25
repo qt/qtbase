@@ -10,6 +10,8 @@
 #ifndef LIBGLESV2_FRAMEBUFFER_H_
 #define LIBGLESV2_FRAMEBUFFER_H_
 
+#include <vector>
+
 #include "common/angleutils.h"
 #include "common/RefCountObject.h"
 #include "constants.h"
@@ -26,6 +28,9 @@ class Colorbuffer;
 class Depthbuffer;
 class Stencilbuffer;
 class DepthStencilbuffer;
+struct Caps;
+
+typedef std::vector<FramebufferAttachment *> ColorbufferInfo;
 
 class Framebuffer
 {
@@ -67,6 +72,15 @@ class Framebuffer
     virtual GLenum completeness() const;
     bool hasValidDepthStencil() const;
 
+    void invalidate(const Caps &caps, GLsizei numAttachments, const GLenum *attachments);
+    void invalidateSub(const Caps &caps, GLsizei numAttachments, const GLenum *attachments,
+                       GLint x, GLint y, GLsizei width, GLsizei height);
+
+    // Use this method to retrieve the color buffer map when doing rendering.
+    // It will apply a workaround for poor shader performance on some systems
+    // by compacting the list to skip NULL values.
+    ColorbufferInfo getColorbuffersForRender() const;
+
   protected:
     rx::Renderer *mRenderer;
 
@@ -79,10 +93,10 @@ class Framebuffer
     FramebufferAttachment *mDepthbuffer;
     FramebufferAttachment *mStencilbuffer;
 
-private:
+  private:
     DISALLOW_COPY_AND_ASSIGN(Framebuffer);
 
-    FramebufferAttachment *createAttachment(GLenum type, GLuint handle, GLint level, GLint layer) const;
+    FramebufferAttachment *createAttachment(GLenum binding, GLenum type, GLuint handle, GLint level, GLint layer) const;
 };
 
 class DefaultFramebuffer : public Framebuffer
@@ -96,6 +110,16 @@ class DefaultFramebuffer : public Framebuffer
   private:
     DISALLOW_COPY_AND_ASSIGN(DefaultFramebuffer);
 };
+
+}
+
+namespace rx
+{
+class RenderTarget;
+
+// TODO: place this in FramebufferD3D.h
+RenderTarget *GetAttachmentRenderTarget(gl::FramebufferAttachment *attachment);
+unsigned int GetAttachmentSerial(gl::FramebufferAttachment *attachment);
 
 }
 

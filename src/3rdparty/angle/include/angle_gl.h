@@ -10,9 +10,6 @@
 #ifndef ANGLE_GL_H_
 #define ANGLE_GL_H_
 
-#define GL_GLEXT_PROTOTYPES
-#define GL_APICALL
-
 #include "GLES2/gl2.h"
 #include "GLES2/gl2ext.h"
 #include "GLES3/gl3.h"

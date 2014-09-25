@@ -9,9 +9,10 @@
 
 #include <stack>
 
-#include "compiler/translator/Types.h"
 #include "angle_gl.h"
-#include "common/shadervars.h"
+#include <GLSLANG/ShaderLang.h>
+
+#include "compiler/translator/Types.h"
 
 // atof_clamp is like atof but
 //   1. it forces C locale, i.e. forcing '.' as decimal point.
@@ -32,33 +33,22 @@ bool IsVaryingIn(TQualifier qualifier);
 bool IsVaryingOut(TQualifier qualifier);
 bool IsVarying(TQualifier qualifier);
 InterpolationType GetInterpolationType(TQualifier qualifier);
-BlockLayoutType GetBlockLayoutType(TLayoutBlockStorage blockStorage);
 TString ArrayString(const TType &type);
 
-template <typename VarT>
 class GetVariableTraverser
 {
   public:
-    GetVariableTraverser(std::vector<VarT> *output);
-    void traverse(const TType &type, const TString &name);
+    GetVariableTraverser() {}
+
+    template <typename VarT>
+    void traverse(const TType &type, const TString &name, std::vector<VarT> *output);
 
   protected:
     // May be overloaded
-    virtual void visitVariable(VarT *newVar) {}
+    virtual void visitVariable(ShaderVariable *newVar) {}
 
   private:
-    std::stack<std::vector<VarT> *> mOutputStack;
-};
-
-struct GetInterfaceBlockFieldTraverser : public GetVariableTraverser<InterfaceBlockField>
-{
-  public:
-    GetInterfaceBlockFieldTraverser(std::vector<InterfaceBlockField> *output, bool isRowMajorMatrix);
-
-  private:
-    virtual void visitVariable(InterfaceBlockField *newField);
-
-    bool mIsRowMajorMatrix;
+    DISALLOW_COPY_AND_ASSIGN(GetVariableTraverser);
 };
 
 }

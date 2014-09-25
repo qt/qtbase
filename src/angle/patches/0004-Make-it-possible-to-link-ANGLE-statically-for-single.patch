@@ -1,7 +1,7 @@
-From 6706ecec3897bf1c6cbfa6891ee9edbde6b64dd0 Mon Sep 17 00:00:00 2001
+From cb00356bad800ca2397301cb8b79ad0b097bddd8 Mon Sep 17 00:00:00 2001
 From: Friedemann Kleint <Friedemann.Kleint@digia.com>
-Date: Sat, 28 Jun 2014 17:00:55 +0300
-Subject: [PATCH 04/12] Make it possible to link ANGLE statically for
+Date: Tue, 16 Sep 2014 23:43:00 +0300
+Subject: [PATCH 04/16] Make it possible to link ANGLE statically for
  single-thread use.
 
 Fix exports and provide static instances of thread-local
@@ -66,10 +66,10 @@ index 0f8439c..8a1baef 100644
  
  void setCurrentError(EGLint error)
 diff --git a/src/3rdparty/angle/src/libGLESv2/main.cpp b/src/3rdparty/angle/src/libGLESv2/main.cpp
-index 81e70a4..5a45ec3 100644
+index 4444d1a..1c577bc 100644
 --- a/src/3rdparty/angle/src/libGLESv2/main.cpp
 +++ b/src/3rdparty/angle/src/libGLESv2/main.cpp
-@@ -47,6 +47,8 @@ void DeallocateCurrent()
+@@ -46,6 +46,8 @@ void DeallocateCurrent()
  
  }
  
@@ -78,7 +78,7 @@ index 81e70a4..5a45ec3 100644
  extern "C" BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, LPVOID reserved)
  {
      switch (reason)
-@@ -83,16 +85,24 @@ extern "C" BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, LPVOID reserved
+@@ -82,16 +84,24 @@ extern "C" BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, LPVOID reserved
      return TRUE;
  }
  

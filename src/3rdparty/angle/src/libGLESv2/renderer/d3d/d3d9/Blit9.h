@@ -11,6 +11,8 @@
 
 #include "common/angleutils.h"
 
+#include <GLES2/gl2.h>
+
 namespace gl
 {
 class Framebuffer;
@@ -19,8 +21,7 @@ class Framebuffer;
 namespace rx
 {
 class Renderer9;
-class TextureStorageInterface2D;
-class TextureStorageInterfaceCube;
+class TextureStorage;
 
 class Blit9
 {
@@ -30,8 +31,8 @@ class Blit9
 
     // Copy from source surface to dest surface.
     // sourceRect, xoffset, yoffset are in D3D coordinates (0,0 in upper-left)
-    bool copy(gl::Framebuffer *framebuffer, const RECT &sourceRect, GLenum destFormat, GLint xoffset, GLint yoffset, TextureStorageInterface2D *storage, GLint level);
-    bool copy(gl::Framebuffer *framebuffer, const RECT &sourceRect, GLenum destFormat, GLint xoffset, GLint yoffset, TextureStorageInterfaceCube *storage, GLenum target, GLint level);
+    bool copy2D(gl::Framebuffer *framebuffer, const RECT &sourceRect, GLenum destFormat, GLint xoffset, GLint yoffset, TextureStorage *storage, GLint level);
+    bool copyCube(gl::Framebuffer *framebuffer, const RECT &sourceRect, GLenum destFormat, GLint xoffset, GLint yoffset, TextureStorage *storage, GLenum target, GLint level);
 
     // Copy from source surface to dest surface.
     // sourceRect, xoffset, yoffset are in D3D coordinates (0,0 in upper-left)

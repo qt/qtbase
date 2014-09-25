@@ -1,4 +1,3 @@
-#include "precompiled.h"
 //
 // Copyright (c) 2012-2014 The ANGLE Project Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
@@ -9,7 +8,6 @@
 // executable implementation details.
 
 #include "libGLESv2/renderer/d3d/d3d11/ShaderExecutable11.h"
-
 #include "libGLESv2/renderer/d3d/d3d11/Renderer11.h"
 
 namespace rx

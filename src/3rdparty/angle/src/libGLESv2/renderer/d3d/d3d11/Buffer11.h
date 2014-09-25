@@ -55,21 +55,20 @@ class Buffer11 : public BufferD3D
     ID3D11Buffer *getBuffer(BufferUsage usage);
     ID3D11ShaderResourceView *getSRV(DXGI_FORMAT srvFormat);
     bool isMapped() const { return mMappedStorage != NULL; }
-    void packPixels(ID3D11Texture2D *srcTexure, UINT srcSubresource, const PackPixelsParams &params);
+    gl::Error packPixels(ID3D11Texture2D *srcTexure, UINT srcSubresource, const PackPixelsParams &params);
 
     // BufferD3D implementation
     virtual size_t getSize() const { return mSize; }
-    virtual void clear();
-    virtual bool supportsDirectBinding() const { return true; }
+    virtual bool supportsDirectBinding() const;
     virtual Renderer* getRenderer();
 
     // BufferImpl implementation
-    virtual void setData(const void* data, size_t size, GLenum usage);
+    virtual gl::Error setData(const void* data, size_t size, GLenum usage);
     virtual void *getData();
-    virtual void setSubData(const void* data, size_t size, size_t offset);
-    virtual void copySubData(BufferImpl* source, GLintptr sourceOffset, GLintptr destOffset, GLsizeiptr size);
-    virtual GLvoid* map(size_t offset, size_t length, GLbitfield access);
-    virtual void unmap();
+    virtual gl::Error setSubData(const void* data, size_t size, size_t offset);
+    virtual gl::Error copySubData(BufferImpl* source, GLintptr sourceOffset, GLintptr destOffset, GLsizeiptr size);
+    virtual gl::Error map(size_t offset, size_t length, GLbitfield access, GLvoid **mapPtr);
+    virtual gl::Error unmap();
     virtual void markTransformFeedbackUsage();
 
   private:

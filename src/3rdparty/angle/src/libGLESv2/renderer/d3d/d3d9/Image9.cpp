@@ -1,5 +1,3 @@
-
-#include "precompiled.h"
 //
 // Copyright (c) 2002-2012 The ANGLE Project Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
@@ -10,17 +8,16 @@
 // the actual underlying surfaces of a Texture.
 
 #include "libGLESv2/renderer/d3d/d3d9/Image9.h"
-
+#include "libGLESv2/renderer/d3d/d3d9/renderer9_utils.h"
+#include "libGLESv2/renderer/d3d/d3d9/formatutils9.h"
+#include "libGLESv2/renderer/d3d/d3d9/Renderer9.h"
+#include "libGLESv2/renderer/d3d/d3d9/RenderTarget9.h"
+#include "libGLESv2/renderer/d3d/d3d9/TextureStorage9.h"
 #include "libGLESv2/main.h"
 #include "libGLESv2/Framebuffer.h"
 #include "libGLESv2/FramebufferAttachment.h"
 #include "libGLESv2/Renderbuffer.h"
-#include "libGLESv2/renderer/d3d/d3d9/Renderer9.h"
-#include "libGLESv2/renderer/d3d/d3d9/RenderTarget9.h"
-#include "libGLESv2/renderer/d3d/d3d9/TextureStorage9.h"
 
-#include "libGLESv2/renderer/d3d/d3d9/renderer9_utils.h"
-#include "libGLESv2/renderer/d3d/d3d9/formatutils9.h"
 
 namespace rx
 {
@@ -53,8 +50,8 @@ void Image9::generateMip(IDirect3DSurface9 *destSurface, IDirect3DSurface9 *sour
     ASSERT(sourceDesc.Width == 1 || sourceDesc.Width / 2 == destDesc.Width);
     ASSERT(sourceDesc.Height == 1 || sourceDesc.Height / 2 == destDesc.Height);
 
-    MipGenerationFunction mipFunction = d3d9::GetMipGenerationFunction(sourceDesc.Format);
-    ASSERT(mipFunction != NULL);
+    const d3d9::D3DFormat &d3dFormatInfo = d3d9::GetD3DFormatInfo(sourceDesc.Format);
+    ASSERT(d3dFormatInfo.mipGenerationFunction != NULL);
 
     D3DLOCKED_RECT sourceLocked = {0};
     result = sourceSurface->LockRect(&sourceLocked, NULL, D3DLOCK_READONLY);
@@ -69,8 +66,8 @@ void Image9::generateMip(IDirect3DSurface9 *destSurface, IDirect3DSurface9 *sour
 
     if (sourceData && destData)
     {
-        mipFunction(sourceDesc.Width, sourceDesc.Height, 1, sourceData, sourceLocked.Pitch, 0,
-                    destData, destLocked.Pitch, 0);
+        d3dFormatInfo.mipGenerationFunction(sourceDesc.Width, sourceDesc.Height, 1, sourceData, sourceLocked.Pitch, 0,
+                                            destData, destLocked.Pitch, 0);
     }
 
     destSurface->UnlockRect();
@@ -99,22 +96,23 @@ void Image9::copyLockableSurfaces(IDirect3DSurface9 *dest, IDirect3DSurface9 *so
 {
     D3DLOCKED_RECT sourceLock = {0};
     D3DLOCKED_RECT destLock = {0};
-    
+
     source->LockRect(&sourceLock, NULL, 0);
     dest->LockRect(&destLock, NULL, 0);
-    
+
     if (sourceLock.pBits && destLock.pBits)
     {
         D3DSURFACE_DESC desc;
         source->GetDesc(&desc);
 
-        int blockHeight = d3d9::GetBlockHeight(desc.Format);
-        int rows = desc.Height / blockHeight;
+        const d3d9::D3DFormat &d3dFormatInfo = d3d9::GetD3DFormatInfo(desc.Format);
+        unsigned int rows = desc.Height / d3dFormatInfo.blockHeight;
 
-        int bytes = d3d9::GetBlockSize(desc.Format, desc.Width, blockHeight);
-        ASSERT(bytes <= sourceLock.Pitch && bytes <= destLock.Pitch);
+        unsigned int bytes = d3d9::ComputeBlockSize(desc.Format, desc.Width, d3dFormatInfo.blockHeight);
+        ASSERT(bytes <= static_cast<unsigned int>(sourceLock.Pitch) &&
+               bytes <= static_cast<unsigned int>(destLock.Pitch));
 
-        for(int i = 0; i < rows; i++)
+        for(unsigned int i = 0; i < rows; i++)
         {
             memcpy((char*)destLock.pBits + destLock.Pitch * i, (char*)sourceLock.pBits + sourceLock.Pitch * i, bytes);
         }
@@ -147,12 +145,14 @@ bool Image9::redefine(rx::Renderer *renderer, GLenum target, GLenum internalform
         mInternalFormat = internalformat;
 
         // compute the d3d format that will be used
-        mD3DFormat = gl_d3d9::GetTextureFormat(internalformat);
-        mActualFormat = d3d9_gl::GetInternalFormat(mD3DFormat);
-        mRenderable = gl_d3d9::GetRenderFormat(internalformat) != D3DFMT_UNKNOWN;
+        const d3d9::TextureFormat &d3d9FormatInfo = d3d9::GetTextureFormatInfo(internalformat);
+        const d3d9::D3DFormat &d3dFormatInfo = d3d9::GetD3DFormatInfo(d3d9FormatInfo.texFormat);
+        mD3DFormat = d3d9FormatInfo.texFormat;
+        mActualFormat = d3dFormatInfo.internalFormat;
+        mRenderable = (d3d9FormatInfo.renderFormat != D3DFMT_UNKNOWN);
 
         SafeRelease(mSurface);
-        mDirty = gl_d3d9::RequiresTextureDataInitialization(mInternalFormat);
+        mDirty = (d3d9FormatInfo.dataInitializerFunction != NULL);
 
         return true;
     }
@@ -194,10 +194,9 @@ void Image9::createSurface()
         newTexture->GetSurfaceLevel(levelToFetch, &newSurface);
         SafeRelease(newTexture);
 
-        if (gl_d3d9::RequiresTextureDataInitialization(mInternalFormat))
+        const d3d9::TextureFormat &d3dFormatInfo = d3d9::GetTextureFormatInfo(mInternalFormat);
+        if (d3dFormatInfo.dataInitializerFunction != NULL)
         {
-            InitializeTextureDataFunction initializeFunc = gl_d3d9::GetTextureDataInitializationFunction(mInternalFormat);
-
             RECT entireRect;
             entireRect.left = 0;
             entireRect.right = mWidth;
@@ -208,7 +207,8 @@ void Image9::createSurface()
             result = newSurface->LockRect(&lockedRect, &entireRect, 0);
             ASSERT(SUCCEEDED(result));
 
-            initializeFunc(mWidth, mHeight, 1, reinterpret_cast<uint8_t*>(lockedRect.pBits), lockedRect.Pitch, 0);
+            d3dFormatInfo.dataInitializerFunction(mWidth, mHeight, 1, reinterpret_cast<uint8_t*>(lockedRect.pBits),
+                                                  lockedRect.Pitch, 0);
 
             result = newSurface->UnlockRect();
             ASSERT(SUCCEEDED(result));
@@ -260,7 +260,7 @@ bool Image9::isDirty() const
 {
     // Make sure to that this image is marked as dirty even if the staging texture hasn't been created yet
     // if initialization is required before use.
-    return (mSurface || gl_d3d9::RequiresTextureDataInitialization(mInternalFormat)) && mDirty;
+    return (mSurface || d3d9::GetTextureFormatInfo(mInternalFormat).dataInitializerFunction != NULL) && mDirty;
 }
 
 IDirect3DSurface9 *Image9::getSurface()
@@ -270,15 +270,15 @@ IDirect3DSurface9 *Image9::getSurface()
     return mSurface;
 }
 
-void Image9::setManagedSurface(TextureStorageInterface2D *storage, int level)
+void Image9::setManagedSurface2D(TextureStorage *storage, int level)
 {
-    TextureStorage9_2D *storage9 = TextureStorage9_2D::makeTextureStorage9_2D(storage->getStorageInstance());
+    TextureStorage9_2D *storage9 = TextureStorage9_2D::makeTextureStorage9_2D(storage);
     setManagedSurface(storage9->getSurfaceLevel(level, false));
 }
 
-void Image9::setManagedSurface(TextureStorageInterfaceCube *storage, int face, int level)
+void Image9::setManagedSurfaceCube(TextureStorage *storage, int face, int level)
 {
-    TextureStorage9_Cube *storage9 = TextureStorage9_Cube::makeTextureStorage9_Cube(storage->getStorageInstance());
+    TextureStorage9_Cube *storage9 = TextureStorage9_Cube::makeTextureStorage9_Cube(storage);
     setManagedSurface(storage9->getCubeMapSurface(GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, level, false));
 }
 
@@ -301,28 +301,28 @@ void Image9::setManagedSurface(IDirect3DSurface9 *surface)
     }
 }
 
-bool Image9::copyToStorage(TextureStorageInterface2D *storage, int level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height)
+bool Image9::copyToStorage2D(TextureStorage *storage, int level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height)
 {
     ASSERT(getSurface() != NULL);
-    TextureStorage9_2D *storage9 = TextureStorage9_2D::makeTextureStorage9_2D(storage->getStorageInstance());
+    TextureStorage9_2D *storage9 = TextureStorage9_2D::makeTextureStorage9_2D(storage);
     return copyToSurface(storage9->getSurfaceLevel(level, true), xoffset, yoffset, width, height);
 }
 
-bool Image9::copyToStorage(TextureStorageInterfaceCube *storage, int face, int level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height)
+bool Image9::copyToStorageCube(TextureStorage *storage, int face, int level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height)
 {
     ASSERT(getSurface() != NULL);
-    TextureStorage9_Cube *storage9 = TextureStorage9_Cube::makeTextureStorage9_Cube(storage->getStorageInstance());
+    TextureStorage9_Cube *storage9 = TextureStorage9_Cube::makeTextureStorage9_Cube(storage);
     return copyToSurface(storage9->getCubeMapSurface(GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, level, true), xoffset, yoffset, width, height);
 }
 
-bool Image9::copyToStorage(TextureStorageInterface3D *storage, int level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth)
+bool Image9::copyToStorage3D(TextureStorage *storage, int level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth)
 {
     // 3D textures are not supported by the D3D9 backend.
     UNREACHABLE();
     return false;
 }
 
-bool Image9::copyToStorage(TextureStorageInterface2DArray *storage, int level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height)
+bool Image9::copyToStorage2DArray(TextureStorage *storage, int level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height)
 {
     // 2D array textures are not supported by the D3D9 backend.
     UNREACHABLE();
@@ -368,7 +368,7 @@ bool Image9::copyToSurface(IDirect3DSurface9 *destSurface, GLint xoffset, GLint 
         }
         else
         {
-            // UpdateSurface: source must be SYSTEMMEM, dest must be DEFAULT pools 
+            // UpdateSurface: source must be SYSTEMMEM, dest must be DEFAULT pools
             HRESULT result = device->UpdateSurface(sourceSurface, &rect, destSurface, &point);
             UNUSED_ASSERTION_VARIABLE(result);
             ASSERT(SUCCEEDED(result));
@@ -387,10 +387,11 @@ void Image9::loadData(GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width
     // 3D textures are not supported by the D3D9 backend.
     ASSERT(zoffset == 0 && depth == 1);
 
-    GLsizei inputRowPitch = gl::GetRowPitch(mInternalFormat, type, width, unpackAlignment);
+    const gl::InternalFormat &formatInfo = gl::GetInternalFormatInfo(mInternalFormat);
+    GLsizei inputRowPitch = formatInfo.computeRowPitch(type, width, unpackAlignment);
 
-    LoadImageFunction loadFunction = d3d9::GetImageLoadFunction(mInternalFormat);
-    ASSERT(loadFunction != NULL);
+    const d3d9::TextureFormat &d3dFormatInfo = d3d9::GetTextureFormatInfo(mInternalFormat);
+    ASSERT(d3dFormatInfo.loadFunction != NULL);
 
     RECT lockRect =
     {
@@ -405,9 +406,9 @@ void Image9::loadData(GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width
         return;
     }
 
-    loadFunction(width, height, depth,
-                 reinterpret_cast<const uint8_t*>(input), inputRowPitch, 0,
-                 reinterpret_cast<uint8_t*>(locked.pBits), locked.Pitch, 0);
+    d3dFormatInfo.loadFunction(width, height, depth,
+                               reinterpret_cast<const uint8_t*>(input), inputRowPitch, 0,
+                               reinterpret_cast<uint8_t*>(locked.pBits), locked.Pitch, 0);
 
     unlock();
 }
@@ -418,14 +419,16 @@ void Image9::loadCompressedData(GLint xoffset, GLint yoffset, GLint zoffset, GLs
     // 3D textures are not supported by the D3D9 backend.
     ASSERT(zoffset == 0 && depth == 1);
 
-    GLsizei inputRowPitch = gl::GetRowPitch(mInternalFormat, GL_UNSIGNED_BYTE, width, 1);
-    GLsizei inputDepthPitch = gl::GetDepthPitch(mInternalFormat, GL_UNSIGNED_BYTE, width, height, 1);
+    const gl::InternalFormat &formatInfo = gl::GetInternalFormatInfo(mInternalFormat);
+    GLsizei inputRowPitch = formatInfo.computeRowPitch(GL_UNSIGNED_BYTE, width, 1);
+    GLsizei inputDepthPitch = formatInfo.computeDepthPitch(GL_UNSIGNED_BYTE, width, height, 1);
 
-    ASSERT(xoffset % d3d9::GetBlockWidth(mD3DFormat) == 0);
-    ASSERT(yoffset % d3d9::GetBlockHeight(mD3DFormat) == 0);
+    const d3d9::TextureFormat &d3d9FormatInfo = d3d9::GetTextureFormatInfo(mInternalFormat);
 
-    LoadImageFunction loadFunction = d3d9::GetImageLoadFunction(mInternalFormat);
-    ASSERT(loadFunction != NULL);
+    ASSERT(xoffset % d3d9::GetD3DFormatInfo(d3d9FormatInfo.texFormat).blockWidth == 0);
+    ASSERT(yoffset % d3d9::GetD3DFormatInfo(d3d9FormatInfo.texFormat).blockHeight == 0);
+
+    ASSERT(d3d9FormatInfo.loadFunction != NULL);
 
     RECT lockRect =
     {
@@ -440,9 +443,9 @@ void Image9::loadCompressedData(GLint xoffset, GLint yoffset, GLint zoffset, GLs
         return;
     }
 
-    loadFunction(width, height, depth,
-                 reinterpret_cast<const uint8_t*>(input), inputRowPitch, inputDepthPitch,
-                 reinterpret_cast<uint8_t*>(locked.pBits), locked.Pitch, 0);
+    d3d9FormatInfo.loadFunction(width, height, depth,
+                                reinterpret_cast<const uint8_t*>(input), inputRowPitch, inputDepthPitch,
+                                reinterpret_cast<uint8_t*>(locked.pBits), locked.Pitch, 0);
 
     unlock();
 }
@@ -459,9 +462,9 @@ void Image9::copy(GLint xoffset, GLint yoffset, GLint zoffset, GLint x, GLint y,
 
     if (colorbuffer)
     {
-        renderTarget = RenderTarget9::makeRenderTarget9(colorbuffer->getRenderTarget());
+        renderTarget = d3d9::GetAttachmentRenderTarget(colorbuffer);
     }
-    
+
     if (renderTarget)
     {
         surface = renderTarget->getSurface();
@@ -478,7 +481,7 @@ void Image9::copy(GLint xoffset, GLint yoffset, GLint zoffset, GLint x, GLint y,
     IDirect3DSurface9 *renderTargetData = NULL;
     D3DSURFACE_DESC description;
     surface->GetDesc(&description);
-    
+
     HRESULT result = device->CreateOffscreenPlainSurface(description.Width, description.Height, description.Format, D3DPOOL_SYSTEMMEM, &renderTargetData, NULL);
 
     if (FAILED(result))
@@ -514,7 +517,7 @@ void Image9::copy(GLint xoffset, GLint yoffset, GLint zoffset, GLint x, GLint y,
 
     D3DLOCKED_RECT destLock = {0};
     result = lock(&destLock, &destRect);
-    
+
     if (FAILED(result))
     {
         ERR("Failed to lock the destination surface (rectangle might be invalid).");

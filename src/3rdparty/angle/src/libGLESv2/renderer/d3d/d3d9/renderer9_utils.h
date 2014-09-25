@@ -4,7 +4,7 @@
 // found in the LICENSE file.
 //
 
-// renderer9_utils.h: Conversion functions and other utility routines 
+// renderer9_utils.h: Conversion functions and other utility routines
 // specific to the D3D9 renderer
 
 #ifndef LIBGLESV2_RENDERER_RENDERER9_UTILS_H
@@ -13,8 +13,14 @@
 #include "libGLESv2/angletypes.h"
 #include "libGLESv2/Caps.h"
 
+namespace gl
+{
+class FramebufferAttachment;
+}
+
 namespace rx
 {
+class RenderTarget9;
 
 namespace gl_d3d9
 {
@@ -31,10 +37,16 @@ DWORD ConvertColorMask(bool red, bool green, bool blue, bool alpha);
 D3DTEXTUREFILTERTYPE ConvertMagFilter(GLenum magFilter, float maxAnisotropy);
 void ConvertMinFilter(GLenum minFilter, D3DTEXTUREFILTERTYPE *d3dMinFilter, D3DTEXTUREFILTERTYPE *d3dMipFilter, float maxAnisotropy);
 
+D3DMULTISAMPLE_TYPE GetMultisampleType(GLuint samples);
+
 }
 
 namespace d3d9_gl
 {
+
+GLsizei GetSamplesCount(D3DMULTISAMPLE_TYPE type);
+
+bool IsFormatChannelEquivalent(D3DFORMAT d3dformat, GLenum format);
 
 void GenerateCaps(IDirect3D9 *d3d9, IDirect3DDevice9 *device, D3DDEVTYPE deviceType, UINT adapter, gl::Caps *caps,
                   gl::TextureCapsMap *textureCapsMap, gl::Extensions *extensions);
@@ -43,6 +55,10 @@ void GenerateCaps(IDirect3D9 *d3d9, IDirect3DDevice9 *device, D3DDEVTYPE deviceT
 
 namespace d3d9
 {
+
+GLuint ComputeBlockSize(D3DFORMAT format, GLuint width, GLuint height);
+
+void MakeValidSize(bool isImage, D3DFORMAT format, GLsizei *requestWidth, GLsizei *requestHeight, int *levelOffset);
 
 inline bool isDeviceLostError(HRESULT errorCode)
 {
@@ -57,6 +73,8 @@ inline bool isDeviceLostError(HRESULT errorCode)
         return false;
     }
 }
+
+RenderTarget9 *GetAttachmentRenderTarget(gl::FramebufferAttachment *attachment);
 
 }
 

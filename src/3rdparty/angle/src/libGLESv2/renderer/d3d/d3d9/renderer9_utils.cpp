@@ -1,4 +1,3 @@
-#include "precompiled.h"
 //
 // Copyright (c) 2002-2014 The ANGLE Project Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
@@ -11,9 +10,10 @@
 #include "libGLESv2/renderer/d3d/d3d9/renderer9_utils.h"
 #include "libGLESv2/renderer/d3d/d3d9/formatutils9.h"
 #include "libGLESv2/formatutils.h"
-#include "common/mathutil.h"
-#include "libGLESv2/Context.h"
+#include "libGLESv2/Framebuffer.h"
+#include "libGLESv2/renderer/d3d/d3d9/RenderTarget9.h"
 
+#include "common/mathutil.h"
 #include "common/debug.h"
 
 #include "third_party/systeminfo/SystemInfo.h"
@@ -246,40 +246,55 @@ void ConvertMinFilter(GLenum minFilter, D3DTEXTUREFILTERTYPE *d3dMinFilter, D3DT
     }
 }
 
+D3DMULTISAMPLE_TYPE GetMultisampleType(GLuint samples)
+{
+    return (samples > 1) ? static_cast<D3DMULTISAMPLE_TYPE>(samples) : D3DMULTISAMPLE_NONE;
+}
+
 }
 
 namespace d3d9_gl
 {
+
+GLsizei GetSamplesCount(D3DMULTISAMPLE_TYPE type)
+{
+    return (type != D3DMULTISAMPLE_NONMASKABLE) ? type : 0;
+}
+
+bool IsFormatChannelEquivalent(D3DFORMAT d3dformat, GLenum format)
+{
+    GLenum internalFormat = d3d9::GetD3DFormatInfo(d3dformat).internalFormat;
+    GLenum convertedFormat = gl::GetInternalFormatInfo(internalFormat).format;
+    return convertedFormat == format;
+}
 
 static gl::TextureCaps GenerateTextureFormatCaps(GLenum internalFormat, IDirect3D9 *d3d9, D3DDEVTYPE deviceType,
                                                  UINT adapter, D3DFORMAT adapterFormat)
 {
     gl::TextureCaps textureCaps;
 
-    D3DFORMAT renderFormat = gl_d3d9::GetRenderFormat(internalFormat);
-    if (gl::GetDepthBits(internalFormat) > 0 || gl::GetStencilBits(internalFormat) > 0)
+    const d3d9::TextureFormat &d3dFormatInfo = d3d9::GetTextureFormatInfo(internalFormat);
+    const gl::InternalFormat &formatInfo = gl::GetInternalFormatInfo(internalFormat);
+    if (formatInfo.depthBits > 0 || formatInfo.stencilBits > 0)
     {
-        textureCaps.texturable = SUCCEEDED(d3d9->CheckDeviceFormat(adapter, deviceType, adapterFormat, 0, D3DRTYPE_TEXTURE, renderFormat));
-        textureCaps.filterable = SUCCEEDED(d3d9->CheckDeviceFormat(adapter, deviceType, adapterFormat, D3DUSAGE_QUERY_FILTER, D3DRTYPE_TEXTURE, renderFormat));
-        textureCaps.renderable = SUCCEEDED(d3d9->CheckDeviceFormat(adapter, deviceType, adapterFormat, D3DUSAGE_RENDERTARGET, D3DRTYPE_TEXTURE, renderFormat)) ||
-                                 SUCCEEDED(d3d9->CheckDeviceFormat(adapter, deviceType, adapterFormat, D3DUSAGE_DEPTHSTENCIL, D3DRTYPE_TEXTURE, renderFormat));
+        textureCaps.texturable = SUCCEEDED(d3d9->CheckDeviceFormat(adapter, deviceType, adapterFormat, 0, D3DRTYPE_TEXTURE, d3dFormatInfo.texFormat));
     }
     else
     {
-        D3DFORMAT textureFormat = gl_d3d9::GetTextureFormat(internalFormat);
-        textureCaps.texturable = SUCCEEDED(d3d9->CheckDeviceFormat(adapter, deviceType, adapterFormat, 0, D3DRTYPE_TEXTURE, textureFormat)) &&
-                                 SUCCEEDED(d3d9->CheckDeviceFormat(adapter, deviceType, adapterFormat, 0, D3DRTYPE_CUBETEXTURE, textureFormat));
-        textureCaps.filterable = SUCCEEDED(d3d9->CheckDeviceFormat(adapter, deviceType, adapterFormat, D3DUSAGE_QUERY_FILTER, D3DRTYPE_TEXTURE, textureFormat));
-        textureCaps.renderable = SUCCEEDED(d3d9->CheckDeviceFormat(adapter, deviceType, adapterFormat, D3DUSAGE_RENDERTARGET, D3DRTYPE_TEXTURE, textureFormat)) ||
-                                 SUCCEEDED(d3d9->CheckDeviceFormat(adapter, deviceType, adapterFormat, D3DUSAGE_DEPTHSTENCIL, D3DRTYPE_TEXTURE, textureFormat));
+        textureCaps.texturable = SUCCEEDED(d3d9->CheckDeviceFormat(adapter, deviceType, adapterFormat, 0, D3DRTYPE_TEXTURE, d3dFormatInfo.texFormat)) &&
+                                 SUCCEEDED(d3d9->CheckDeviceFormat(adapter, deviceType, adapterFormat, 0, D3DRTYPE_CUBETEXTURE, d3dFormatInfo.texFormat));
     }
+
+    textureCaps.filterable = SUCCEEDED(d3d9->CheckDeviceFormat(adapter, deviceType, adapterFormat, D3DUSAGE_QUERY_FILTER, D3DRTYPE_TEXTURE, d3dFormatInfo.texFormat));
+    textureCaps.renderable = SUCCEEDED(d3d9->CheckDeviceFormat(adapter, deviceType, adapterFormat, D3DUSAGE_DEPTHSTENCIL, D3DRTYPE_TEXTURE, d3dFormatInfo.renderFormat)) ||
+                             SUCCEEDED(d3d9->CheckDeviceFormat(adapter, deviceType, adapterFormat, D3DUSAGE_RENDERTARGET, D3DRTYPE_TEXTURE, d3dFormatInfo.renderFormat));
 
     textureCaps.sampleCounts.insert(1);
     for (size_t i = D3DMULTISAMPLE_2_SAMPLES; i <= D3DMULTISAMPLE_16_SAMPLES; i++)
     {
         D3DMULTISAMPLE_TYPE multisampleType = D3DMULTISAMPLE_TYPE(i);
 
-        HRESULT result = d3d9->CheckDeviceMultiSampleType(adapter, deviceType, renderFormat, TRUE, multisampleType, NULL);
+        HRESULT result = d3d9->CheckDeviceMultiSampleType(adapter, deviceType, d3dFormatInfo.renderFormat, TRUE, multisampleType, NULL);
         if (SUCCEEDED(result))
         {
             textureCaps.sampleCounts.insert(i);
@@ -302,12 +317,20 @@ void GenerateCaps(IDirect3D9 *d3d9, IDirect3DDevice9 *device, D3DDEVTYPE deviceT
     D3DDISPLAYMODE currentDisplayMode;
     d3d9->GetAdapterDisplayMode(adapter, &currentDisplayMode);
 
+    GLuint maxSamples = 0;
     const gl::FormatSet &allFormats = gl::GetAllSizedInternalFormats();
     for (gl::FormatSet::const_iterator internalFormat = allFormats.begin(); internalFormat != allFormats.end(); ++internalFormat)
     {
         gl::TextureCaps textureCaps = GenerateTextureFormatCaps(*internalFormat, d3d9, deviceType, adapter,
                                                                 currentDisplayMode.Format);
         textureCapsMap->insert(*internalFormat, textureCaps);
+
+        maxSamples = std::max(maxSamples, textureCaps.getMaxSamples());
+
+        if (gl::GetInternalFormatInfo(*internalFormat).compressed)
+        {
+            caps->compressedTextureFormats.push_back(*internalFormat);
+        }
     }
 
     // GL core feature limits
@@ -346,6 +369,77 @@ void GenerateCaps(IDirect3D9 *d3d9, IDirect3DDevice9 *device, D3DDEVTYPE deviceT
     // Wide lines not supported
     caps->minAliasedLineWidth = 1.0f;
     caps->maxAliasedLineWidth = 1.0f;
+
+    // Primitive count limits (unused in ES2)
+    caps->maxElementsIndices = 0;
+    caps->maxElementsVertices = 0;
+
+    // Program and shader binary formats (no supported shader binary formats)
+    caps->programBinaryFormats.push_back(GL_PROGRAM_BINARY_ANGLE);
+
+    // WaitSync is ES3-only, set to zero
+    caps->maxServerWaitTimeout = 0;
+
+    // Vertex shader limits
+    caps->maxVertexAttributes = 16;
+
+    const size_t reservedVertexUniformVectors = 2; // dx_ViewAdjust and dx_DepthRange.
+    const size_t MAX_VERTEX_CONSTANT_VECTORS_D3D9 = 256;
+    caps->maxVertexUniformVectors = MAX_VERTEX_CONSTANT_VECTORS_D3D9 - reservedVertexUniformVectors;
+    caps->maxVertexUniformComponents = caps->maxVertexUniformVectors * 4;
+
+    caps->maxVertexUniformBlocks = 0;
+
+    const size_t MAX_VERTEX_OUTPUT_VECTORS_SM3 = 10;
+    const size_t MAX_VERTEX_OUTPUT_VECTORS_SM2 = 8;
+    caps->maxVertexOutputComponents = ((deviceCaps.VertexShaderVersion >= D3DVS_VERSION(3, 0)) ? MAX_VERTEX_OUTPUT_VECTORS_SM3
+                                                                                               : MAX_VERTEX_OUTPUT_VECTORS_SM2) * 4;
+
+    // Only Direct3D 10 ready devices support all the necessary vertex texture formats.
+    // We test this using D3D9 by checking support for the R16F format.
+    if (deviceCaps.VertexShaderVersion >= D3DVS_VERSION(3, 0) &&
+        SUCCEEDED(d3d9->CheckDeviceFormat(adapter, deviceType, currentDisplayMode.Format,
+                                          D3DUSAGE_QUERY_VERTEXTEXTURE, D3DRTYPE_TEXTURE, D3DFMT_R16F)))
+    {
+        const size_t MAX_TEXTURE_IMAGE_UNITS_VTF_SM3 = 4;
+        caps->maxVertexTextureImageUnits = MAX_TEXTURE_IMAGE_UNITS_VTF_SM3;
+    }
+    else
+    {
+        caps->maxVertexTextureImageUnits = 0;
+    }
+
+    // Fragment shader limits
+    const size_t reservedPixelUniformVectors = 3; // dx_ViewCoords, dx_DepthFront and dx_DepthRange.
+
+    const size_t MAX_PIXEL_CONSTANT_VECTORS_SM3 = 224;
+    const size_t MAX_PIXEL_CONSTANT_VECTORS_SM2 = 32;
+    caps->maxFragmentUniformVectors = ((deviceCaps.PixelShaderVersion >= D3DPS_VERSION(3, 0)) ? MAX_PIXEL_CONSTANT_VECTORS_SM3
+                                                                                              : MAX_PIXEL_CONSTANT_VECTORS_SM2) - reservedPixelUniformVectors;
+    caps->maxFragmentUniformComponents = caps->maxFragmentUniformVectors * 4;
+    caps->maxFragmentUniformBlocks = 0;
+    caps->maxFragmentInputComponents = caps->maxVertexOutputComponents;
+    caps->maxTextureImageUnits = 16;
+    caps->minProgramTexelOffset = 0;
+    caps->maxProgramTexelOffset = 0;
+
+    // Aggregate shader limits (unused in ES2)
+    caps->maxUniformBufferBindings = 0;
+    caps->maxUniformBlockSize = 0;
+    caps->uniformBufferOffsetAlignment = 0;
+    caps->maxCombinedUniformBlocks = 0;
+    caps->maxCombinedVertexUniformComponents = 0;
+    caps->maxCombinedFragmentUniformComponents = 0;
+    caps->maxVaryingComponents = 0;
+
+    // Aggregate shader limits
+    caps->maxVaryingVectors = caps->maxVertexOutputComponents / 4;
+    caps->maxCombinedTextureImageUnits = caps->maxVertexTextureImageUnits + caps->maxTextureImageUnits;
+
+    // Transform feedback limits
+    caps->maxTransformFeedbackInterleavedComponents = 0;
+    caps->maxTransformFeedbackSeparateAttributes = 0;
+    caps->maxTransformFeedbackSeparateComponents = 0;
 
     // GL extension support
     extensions->setTextureExtensionSupport(*textureCapsMap);
@@ -394,6 +488,7 @@ void GenerateCaps(IDirect3D9 *d3d9, IDirect3DDevice9 *device, D3DDEVTYPE deviceT
     extensions->blendMinMax = true;
     extensions->framebufferBlit = true;
     extensions->framebufferMultisample = true;
+    extensions->maxSamples = maxSamples;
     extensions->instancedArrays = deviceCaps.PixelShaderVersion >= D3DPS_VERSION(3, 0);
     extensions->packReverseRowOrder = true;
     extensions->standardDerivatives = (deviceCaps.PS20Caps.Caps & D3DPS20CAPS_GRADIENTINSTRUCTIONS) != 0;
@@ -402,6 +497,44 @@ void GenerateCaps(IDirect3D9 *d3d9, IDirect3DDevice9 *device, D3DDEVTYPE deviceT
     extensions->textureUsage = true;
     extensions->translatedShaderSource = true;
     extensions->colorBufferFloat = false;
+}
+
+}
+
+namespace d3d9
+{
+
+GLuint ComputeBlockSize(D3DFORMAT format, GLuint width, GLuint height)
+{
+    const D3DFormat &d3dFormatInfo = d3d9::GetD3DFormatInfo(format);
+    GLuint numBlocksWide = (width + d3dFormatInfo.blockWidth - 1) / d3dFormatInfo.blockWidth;
+    GLuint numBlocksHight = (height + d3dFormatInfo.blockHeight - 1) / d3dFormatInfo.blockHeight;
+    return (d3dFormatInfo.pixelBytes * numBlocksWide * numBlocksHight);
+}
+
+void MakeValidSize(bool isImage, D3DFORMAT format, GLsizei *requestWidth, GLsizei *requestHeight, int *levelOffset)
+{
+    const D3DFormat &d3dFormatInfo = d3d9::GetD3DFormatInfo(format);
+
+    int upsampleCount = 0;
+    // Don't expand the size of full textures that are at least (blockWidth x blockHeight) already.
+    if (isImage || *requestWidth < static_cast<GLsizei>(d3dFormatInfo.blockWidth) ||
+        *requestHeight < static_cast<GLsizei>(d3dFormatInfo.blockHeight))
+    {
+        while (*requestWidth % d3dFormatInfo.blockWidth != 0 || *requestHeight % d3dFormatInfo.blockHeight != 0)
+        {
+            *requestWidth <<= 1;
+            *requestHeight <<= 1;
+            upsampleCount++;
+        }
+    }
+    *levelOffset = upsampleCount;
+}
+
+RenderTarget9 *GetAttachmentRenderTarget(gl::FramebufferAttachment *attachment)
+{
+    RenderTarget *renderTarget = rx::GetAttachmentRenderTarget(attachment);
+    return RenderTarget9::makeRenderTarget9(renderTarget);
 }
 
 }

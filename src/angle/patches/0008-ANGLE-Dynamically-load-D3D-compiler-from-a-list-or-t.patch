@@ -1,7 +1,7 @@
-From a3196fcfe7dd7aff5e5fa07d1a9bbf2c72fc0b41 Mon Sep 17 00:00:00 2001
+From 4f6dd1f7cdce3340723cc23e0aea27b156fa3497 Mon Sep 17 00:00:00 2001
 From: Andrew Knight <andrew.knight@digia.com>
-Date: Fri, 4 Jul 2014 08:39:54 +0300
-Subject: [PATCH 08/12] ANGLE: Dynamically load D3D compiler from a list or the
+Date: Tue, 16 Sep 2014 23:59:40 +0300
+Subject: [PATCH 08/16] ANGLE: Dynamically load D3D compiler from a list or the
  environment
 
 If the default compiler cannot be found, load it from a list of DLL names,
@@ -11,14 +11,14 @@ QT_D3DCOMPILER_DLL.
 
 Change-Id: I0d7a8a8a36cc571836f8fa59ea14513b9b19c19b
 ---
- .../src/libGLESv2/renderer/d3d/HLSLCompiler.cpp    | 31 +++++++++++++++++++---
- 1 file changed, 28 insertions(+), 3 deletions(-)
+ .../src/libGLESv2/renderer/d3d/HLSLCompiler.cpp    | 27 +++++++++++++++++++---
+ 1 file changed, 24 insertions(+), 3 deletions(-)
 
 diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/HLSLCompiler.cpp b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/HLSLCompiler.cpp
-index 1df6a5e..31942e6 100644
+index eb0dfa5..5715d5f 100644
 --- a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/HLSLCompiler.cpp
 +++ b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/HLSLCompiler.cpp
-@@ -24,6 +24,14 @@ typedef HRESULT (WINAPI *pD3DCompile)(const void *data, SIZE_T data_size, const
+@@ -25,6 +25,10 @@ typedef HRESULT (WINAPI *pD3DCompile)(const void *data, SIZE_T data_size, const
  
  #endif // __MINGW32__ && !D3DCOMPILER_DLL
  
@@ -26,14 +26,10 @@ index 1df6a5e..31942e6 100644
 +#define QT_D3DCOMPILER_DLL D3DCOMPILER_DLL
 +#endif
 +
-+#ifndef LoadLibrary
-+#define LoadLibrary(dll) LoadPackagedLibrary(dll, NULL)
-+#endif
-+
  namespace rx
  {
  
-@@ -54,10 +62,27 @@ bool HLSLCompiler::initialize()
+@@ -59,10 +63,27 @@ bool HLSLCompiler::initialize()
      }
  #endif  // ANGLE_PRELOADED_D3DCOMPILER_MODULE_NAMES
  
@@ -58,8 +54,8 @@ index 1df6a5e..31942e6 100644
      {
 -        // Load the version of the D3DCompiler DLL associated with the Direct3D version ANGLE was built with.
 -        mD3DCompilerModule = LoadLibrary(D3DCOMPILER_DLL);
-+        mD3dCompilerModule = LoadLibrary(compilerDlls[i]);
-+        if (mD3dCompilerModule)
++        mD3DCompilerModule = LoadLibrary(compilerDlls[i]);
++        if (mD3DCompilerModule)
 +            break;
      }
  

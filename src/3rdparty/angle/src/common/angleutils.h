@@ -16,6 +16,7 @@
 #include <string>
 #include <set>
 #include <sstream>
+#include <cstdarg>
 
 // A macro to disallow the copy constructor and operator= functions
 // This must be used in the private: declarations for a class
@@ -23,8 +24,8 @@
   TypeName(const TypeName&);               \
   void operator=(const TypeName&)
 
-template <typename T, unsigned int N>
-inline unsigned int ArraySize(T(&)[N])
+template <typename T, size_t N>
+inline size_t ArraySize(T(&)[N])
 {
     return N;
 }
@@ -130,6 +131,9 @@ inline std::string Str(int i)
     strstr << i;
     return strstr.str();
 }
+
+std::string FormatString(const char *fmt, va_list vararg);
+std::string FormatString(const char *fmt, ...);
 
 #if defined(_MSC_VER) && _MSC_VER < 1900
 #define snprintf _snprintf

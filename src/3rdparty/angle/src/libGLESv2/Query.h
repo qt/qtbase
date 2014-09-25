@@ -9,14 +9,14 @@
 #ifndef LIBGLESV2_QUERY_H_
 #define LIBGLESV2_QUERY_H_
 
-#include "angle_gl.h"
-
+#include "libGLESv2/Error.h"
 #include "common/angleutils.h"
 #include "common/RefCountObject.h"
 
+#include "angle_gl.h"
+
 namespace rx
 {
-class Renderer;
 class QueryImpl;
 }
 
@@ -26,17 +26,16 @@ namespace gl
 class Query : public RefCountObject
 {
   public:
-    Query(rx::Renderer *renderer, GLenum type, GLuint id);
+    Query(rx::QueryImpl *impl, GLuint id);
     virtual ~Query();
 
-    void begin();
-    void end();
+    Error begin();
+    Error end();
 
-    GLuint getResult();
-    GLboolean isResultAvailable();
+    Error getResult(GLuint *params);
+    Error isResultAvailable(GLuint *available);
 
     GLenum getType() const;
-    bool isStarted() const;
 
   private:
     DISALLOW_COPY_AND_ASSIGN(Query);

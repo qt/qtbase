@@ -39,6 +39,7 @@ class Renderbuffer : public RefCountObject
 {
   public:
     Renderbuffer(GLuint id, RenderbufferStorage *newStorage);
+    virtual ~Renderbuffer();
 
     void setStorage(RenderbufferStorage *newStorage);
     RenderbufferStorage *getStorage();
@@ -70,7 +71,6 @@ class RenderbufferStorage
     virtual ~RenderbufferStorage() = 0;
 
     virtual rx::RenderTarget *getRenderTarget();
-    virtual rx::RenderTarget *getDepthStencil();
 
     virtual GLsizei getWidth() const;
     virtual GLsizei getHeight() const;
@@ -83,7 +83,7 @@ class RenderbufferStorage
     virtual bool isTexture() const;
     virtual unsigned int getTextureSerial() const;
 
-    static unsigned int issueSerials(GLuint count);
+    static unsigned int issueSerials(unsigned int count);
 
   protected:
     GLsizei mWidth;
@@ -124,7 +124,7 @@ class DepthStencilbuffer : public RenderbufferStorage
 
     ~DepthStencilbuffer();
 
-    virtual rx::RenderTarget *getDepthStencil();
+    virtual rx::RenderTarget *getRenderTarget();
 
   protected:
     rx::RenderTarget  *mDepthStencil;

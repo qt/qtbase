@@ -1,7 +1,7 @@
-From f506d5b7f03110fd31466ca20e46375f1316ac41 Mon Sep 17 00:00:00 2001
+From 3499339ab768017458d3b5295af3742a0f6015db Mon Sep 17 00:00:00 2001
 From: Andrew Knight <andrew.knight@digia.com>
-Date: Mon, 28 Jul 2014 10:14:09 +0300
-Subject: [PATCH] ANGLE: Add support for querying platform device
+Date: Mon, 22 Sep 2014 23:15:26 +0300
+Subject: [PATCH 13/16] ANGLE: Add support for querying platform device
 
 The EGL_EXT_device_base extension allows for querying the platform
 device of the graphics hardware via eglQueryDisplayAttribEXT().
@@ -20,10 +20,10 @@ Change-Id: Ibdf228d81d6604e56db9dd8597d7cd2983ebc428
  1 file changed, 37 insertions(+), 10 deletions(-)
 
 diff --git a/src/3rdparty/angle/src/libEGL/libEGL.cpp b/src/3rdparty/angle/src/libEGL/libEGL.cpp
-index a08e1ed..c236d52 100644
+index 7ea11c5..c2e0fd6 100644
 --- a/src/3rdparty/angle/src/libEGL/libEGL.cpp
 +++ b/src/3rdparty/angle/src/libEGL/libEGL.cpp
-@@ -15,6 +15,9 @@
+@@ -18,6 +18,9 @@
  #include "libGLESv2/Texture.h"
  #include "libGLESv2/main.h"
  #include "libGLESv2/renderer/SwapChain.h"
@@ -33,7 +33,7 @@ index a08e1ed..c236d52 100644
  
  #include "libEGL/main.h"
  #include "libEGL/Display.h"
-@@ -481,24 +484,48 @@ EGLBoolean __stdcall eglQuerySurfacePointerANGLE(EGLDisplay dpy, EGLSurface surf
+@@ -484,24 +487,48 @@ EGLBoolean __stdcall eglQuerySurfacePointerANGLE(EGLDisplay dpy, EGLSurface surf
      egl::Display *display = static_cast<egl::Display*>(dpy);
      egl::Surface *eglSurface = (egl::Surface*)surface;
  

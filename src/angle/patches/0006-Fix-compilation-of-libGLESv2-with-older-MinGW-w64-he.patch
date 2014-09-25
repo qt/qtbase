@@ -1,7 +1,7 @@
-From 7609185310c081cbe396c993ccc84f2c43674281 Mon Sep 17 00:00:00 2001
+From 2a8568e6f44731df96f6567ffcc59a65ad2b3f29 Mon Sep 17 00:00:00 2001
 From: Kai Koehne <kai.koehne@digia.com>
-Date: Sat, 28 Jun 2014 17:11:04 +0300
-Subject: [PATCH 06/12] Fix compilation of libGLESv2 with older MinGW-w64
+Date: Tue, 16 Sep 2014 23:55:25 +0300
+Subject: [PATCH 06/16] Fix compilation of libGLESv2 with older MinGW-w64
  headers
 
 Fix compilation of libGLESv2 for mingw-headers predating MinGW-w64
@@ -19,12 +19,12 @@ Change-Id: I31272a1a991c4fc0f1611f8fb7510be51d6bb925
  1 file changed, 15 insertions(+)
 
 diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/HLSLCompiler.cpp b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/HLSLCompiler.cpp
-index 499ed52..1df6a5e 100644
+index acbd852..eb0dfa5 100644
 --- a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/HLSLCompiler.cpp
 +++ b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/HLSLCompiler.cpp
-@@ -9,6 +9,21 @@
+@@ -10,6 +10,21 @@
  
- #include <d3dcompiler.h>
+ #include "common/utilities.h"
  
 +#if defined(__MINGW32__) && !defined(D3DCOMPILER_DLL)
 +
