@@ -131,19 +131,31 @@ void QCocoaMenuItem::setMenu(QPlatformMenu *menu)
 {
     if (menu == m_menu)
         return;
-    if (m_menu && COCOA_MENU_ANCESTOR(m_menu) == this)
-        SET_COCOA_MENU_ANCESTOR(m_menu, 0);
+
+    if (m_menu) {
+        if (COCOA_MENU_ANCESTOR(m_menu) == this)
+            SET_COCOA_MENU_ANCESTOR(m_menu, 0);
+        if (m_menu->containingMenuItem() == this)
+            m_menu->setContainingMenuItem(0);
+    }
 
     QCocoaAutoReleasePool pool;
     m_menu = static_cast<QCocoaMenu *>(menu);
     if (m_menu) {
         SET_COCOA_MENU_ANCESTOR(m_menu, this);
+        m_menu->setContainingMenuItem(this);
     } else {
         // we previously had a menu, but no longer
         // clear out our item so the nexy sync() call builds a new one
         [m_native release];
         m_native = nil;
     }
+}
+
+void QCocoaMenuItem::clearMenu(QCocoaMenu *menu)
+{
+    if (menu == m_menu)
+        m_menu = 0;
 }
 
 void QCocoaMenuItem::setVisible(bool isVisible)
