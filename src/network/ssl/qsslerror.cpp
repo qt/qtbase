@@ -305,6 +305,19 @@ QSslCertificate QSslError::certificate() const
     return d->certificate;
 }
 
+/*!
+    Returns the hash value for the \a key, using \a seed to seed the calculation.
+    \since 5.4
+    \relates QHash
+*/
+uint qHash(const QSslError &key, uint seed) Q_DECL_NOTHROW
+{
+    // 2x boost::hash_combine inlined:
+    seed ^= qHash(key.error())       + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+    seed ^= qHash(key.certificate()) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+    return seed;
+}
+
 #ifndef QT_NO_DEBUG_STREAM
 //class QDebug;
 QDebug operator<<(QDebug debug, const QSslError &error)
