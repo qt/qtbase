@@ -501,6 +501,8 @@ QWinRTScreen::QWinRTScreen()
     d->surfaceFormat.setRedBufferSize(8);
     d->surfaceFormat.setGreenBufferSize(8);
     d->surfaceFormat.setBlueBufferSize(8);
+    d->surfaceFormat.setDepthBufferSize(24);
+    d->surfaceFormat.setStencilBufferSize(8);
     d->surfaceFormat.setRenderableType(QSurfaceFormat::OpenGLES);
     d->surfaceFormat.setSamples(1);
     d->surfaceFormat.setSwapBehavior(QSurfaceFormat::DoubleBuffer);
