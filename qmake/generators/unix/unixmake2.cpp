@@ -703,6 +703,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
     }
 
     if (!project->isEmpty("QMAKE_BUNDLE")) {
+        QHash<QString, QString> symlinks;
         ProStringList &alldeps = project->values("ALL_DEPS");
         QString bundle_dir = project->first("DESTDIR") + project->first("QMAKE_BUNDLE") + "/";
         if (!project->first("QMAKE_PKGINFO").isEmpty()) {
@@ -810,13 +811,8 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                 if (!project->isEmpty(vkey)) {
                     QString version = project->first(vkey) + "/" +
                                       project->first("QMAKE_FRAMEWORK_VERSION") + "/";
-                    QString link = Option::fixPathToLocalOS(path + project->first(pkey));
-                    bundledFiles << link;
-                    alldeps << link;
-                    t << link << ": \n\t"
-                      << mkdir_p_asstring(path) << "\n\t"
-                      << "@$(SYMLINK) " << project->first(vkey) + "/Current/" << project->first(pkey)
-                                 << " " << path << endl;
+                    symlinks[Option::fixPathToLocalOS(path + project->first(pkey))] =
+                            project->first(vkey) + "/Current/" + project->first(pkey);
                     path += version;
                 }
                 path += project->first(pkey).toQString();
@@ -841,6 +837,15 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                           << "@$(COPY_FILE) " << src << " " << dst << endl;
                 }
             }
+        }
+        QHash<QString, QString>::ConstIterator symIt = symlinks.constBegin(),
+                                               symEnd = symlinks.constEnd();
+        for (; symIt != symEnd; ++symIt) {
+            bundledFiles << symIt.key();
+            alldeps << symIt.key();
+            t << symIt.key() << ":\n\t"
+              << mkdir_p_asstring(bundle_dir) << "\n\t"
+              << "@$(SYMLINK) " << symIt.value() << " " << bundle_dir << endl;
         }
     }
 
