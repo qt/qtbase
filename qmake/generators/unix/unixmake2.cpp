@@ -706,6 +706,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
         QString bundle_dir = project->first("DESTDIR") + project->first("QMAKE_BUNDLE") + "/";
         if (!project->first("QMAKE_PKGINFO").isEmpty()) {
             ProString pkginfo = escapeFilePath(project->first("QMAKE_PKGINFO"));
+            bundledFiles << pkginfo;
             QString destdir = bundle_dir + "Contents";
             t << pkginfo << ": \n\t";
             if (!destdir.isEmpty())
