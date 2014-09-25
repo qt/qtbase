@@ -24,3 +24,10 @@ QtCore
 
  - Added QEnableSharedFromThis, a class that allows obtaining a
    QSharedPointer for an object already managed by a shared pointer.
+
+
+QtSql
+-----
+
+ - qsql ibase: fix memory corruption due to LONG being 4 bytes in firebird.
+ - QSqlDriver::dbmsType(): New method reports DBMS type. Especially useful when using ODBC.
