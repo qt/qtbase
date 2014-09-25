@@ -70,11 +70,6 @@ inline uint qHash(const QSslError &error, uint seed)
     Q_DECL_NOEXCEPT_EXPR(noexcept(qHash(error)))
 { return (qHash(error.error()) ^ seed); }
 
-// For QSet<QSslCertificate>
-inline uint qHash(const QSslCertificate &certificate, uint seed)
-    Q_DECL_NOEXCEPT_EXPR(noexcept(qHash(certificate)))
-{ return (qHash(certificate.handle()) ^ seed); }
-
 bool QSslSocketPrivate::s_libraryLoaded = true;
 bool QSslSocketPrivate::s_loadRootCertsOnDemand = true;
 bool QSslSocketPrivate::s_loadedCiphersAndCerts = false;

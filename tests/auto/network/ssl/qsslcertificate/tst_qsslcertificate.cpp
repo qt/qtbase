@@ -70,6 +70,7 @@ public slots:
 
 #ifndef QT_NO_SSL
 private slots:
+    void hash();
     void emptyConstructor();
     void constructor_data();
     void constructor();
@@ -163,6 +164,14 @@ void tst_QSslCertificate::cleanupTestCase()
 }
 
 #ifndef QT_NO_SSL
+
+void tst_QSslCertificate::hash()
+{
+    // mostly a compile-only test, to check that qHash(QSslCertificate) is found.
+    QSet<QSslCertificate> certs;
+    certs << QSslCertificate();
+    QCOMPARE(certs.size(), 1);
+}
 
 static QByteArray readFile(const QString &absFilePath)
 {
