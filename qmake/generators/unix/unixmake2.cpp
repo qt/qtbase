@@ -794,7 +794,8 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                     bundledFiles << link;
                     t << link << ": \n\t"
                       << mkdir_p_asstring(path) << "\n\t"
-                      << "@$(SYMLINK) " << version << project->first(pkey) << " " << path << endl;
+                      << "@$(SYMLINK) " << project->first(vkey) + "/Current/" << project->first(pkey)
+                                 << " " << path << endl;
                     path += version;
                 }
                 path += project->first(pkey).toQString();
