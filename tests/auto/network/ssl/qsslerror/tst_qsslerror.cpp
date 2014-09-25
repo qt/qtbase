@@ -43,9 +43,6 @@ class tst_QSslError : public QObject
     Q_OBJECT
 
 public:
-    tst_QSslError();
-    virtual ~tst_QSslError();
-
     static void enterLoop(int secs)
     {
         ++loopLevel;
@@ -64,11 +61,6 @@ public:
         return QTestEventLoop::instance().timeout();
     }
 
-public slots:
-    void initTestCase_data();
-    void init();
-    void cleanup();
-
 #ifndef QT_NO_SSL
 private slots:
     void constructing();
@@ -79,27 +71,6 @@ private:
 };
 
 int tst_QSslError::loopLevel = 0;
-
-tst_QSslError::tst_QSslError()
-{
-}
-
-tst_QSslError::~tst_QSslError()
-{
-
-}
-
-void tst_QSslError::initTestCase_data()
-{
-}
-
-void tst_QSslError::init()
-{
-}
-
-void tst_QSslError::cleanup()
-{
-}
 
 #ifndef QT_NO_SSL
 
