@@ -394,7 +394,8 @@ void QIOSInputContext::scroll(int y)
                 animation = [CABasicAnimation animationWithKeyPath:@"sublayerTransform"];
             }
 
-            animation.fromValue = [NSValue valueWithCATransform3D:rootView.layer.sublayerTransform];
+            CATransform3D currentSublayerTransform = static_cast<CALayer *>([rootView.layer presentationLayer]).sublayerTransform;
+            animation.fromValue = [NSValue valueWithCATransform3D:currentSublayerTransform];
             animation.toValue = [NSValue valueWithCATransform3D:translationTransform];
             [rootView.layer addAnimation:animation forKey:@"AnimateSubLayerTransform"];
             rootView.layer.sublayerTransform = translationTransform;
