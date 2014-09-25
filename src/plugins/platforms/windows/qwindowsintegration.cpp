@@ -354,8 +354,10 @@ QWindowsStaticOpenGLContext *QWindowsStaticOpenGLContext::create()
         if (!ctx) {
             ctx = QOpenGLStaticContext::create(true);
             // If software was explicitly requested but failed, try the regular one.
-            if (!ctx && softwareRequested && QWindowsOpenGLTester::testDesktopGL())
+            if (!ctx && softwareRequested && QWindowsOpenGLTester::testDesktopGL()) {
+                qCWarning(lcQpaGl, "Software OpenGL failed. Falling back to system OpenGL.");
                 ctx = QOpenGLStaticContext::create();
+            }
         }
     }
 #elif defined(QT_OPENGL_ES_2)
