@@ -3583,8 +3583,8 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
                         pixmap = mi.icon.pixmap(pixelMetric(PM_SmallIconSize), mode, QIcon::On);
                     else
                         pixmap = mi.icon.pixmap(pixelMetric(PM_SmallIconSize), mode);
-                    int pixw = pixmap.width();
-                    int pixh = pixmap.height();
+                    const int pixw = pixmap.width() / pixmap.devicePixelRatio();
+                    const int pixh = pixmap.height() / pixmap.devicePixelRatio();
                     QRenderRule iconRule = renderRule(w, opt, PseudoElement_MenuIcon);
                     if (!iconRule.hasGeometry()) {
                         iconRule.geo = new QStyleSheetGeometryData(pixw, pixh, pixw, pixh, -1, -1);
