@@ -35,19 +35,18 @@
 #include "qkmsdevice.h"
 #include "qkmscontext.h"
 #include "qkmswindow.h"
+#include "qkmsintegration.h"
 
-#include <QOpenGLContext>
-
+#include <QtGui/QOpenGLContext>
 #include <QtPlatformSupport/private/qeglconvenience_p.h>
 
 QT_BEGIN_NAMESPACE
 
 QKmsContext::QKmsContext(QOpenGLContext *context, QKmsDevice *device)
-    : QPlatformOpenGLContext()
-    , m_device(device)
+    : m_device(device)
 {
     EGLDisplay display = m_device->eglDisplay();
-    EGLConfig config = q_configFromGLFormat(display, QKmsScreen::tweakFormat(context->format()), true);
+    EGLConfig config = q_configFromGLFormat(display, QKmsScreen::tweakFormat(context->format()));
     m_format = q_glFormatFromConfig(display, config);
 
     //Initialize EGLContext
@@ -57,7 +56,12 @@ QKmsContext::QKmsContext(QOpenGLContext *context, QKmsDevice *device)
     };
 
     eglBindAPI(EGL_OPENGL_ES_API);
-    m_eglContext = eglCreateContext(display, config, 0, contextAttribs);
+
+    EGLContext share = EGL_NO_CONTEXT;
+    if (context->shareContext())
+        share = static_cast<QKmsContext *>(context->shareContext()->handle())->eglContext();
+
+    m_eglContext = eglCreateContext(display, config, share, contextAttribs);
     if (m_eglContext == EGL_NO_CONTEXT) {
         qWarning("QKmsContext::QKmsContext(): eglError: %x, this: %p",
                  eglGetError(), this);
@@ -72,16 +76,19 @@ bool QKmsContext::isValid() const
 
 bool QKmsContext::makeCurrent(QPlatformSurface *surface)
 {
-    Q_ASSERT(surface->surface()->surfaceType() == QSurface::OpenGLSurface);
+    Q_ASSERT(surface->surface()->supportsOpenGL());
 
     EGLDisplay display = m_device->eglDisplay();
+    EGLSurface eglSurface;
 
-    QPlatformWindow *window = static_cast<QPlatformWindow *>(surface);
-    QKmsScreen *screen = static_cast<QKmsScreen *> (QPlatformScreen::platformScreenForWindow(window->window()));
-
-    EGLSurface eglSurface = screen->eglSurface();
-
-    screen->waitForPageFlipComplete();
+    if (surface->surface()->surfaceClass() == QSurface::Window) {
+        QPlatformWindow *window = static_cast<QPlatformWindow *>(surface);
+        QKmsScreen *screen = static_cast<QKmsScreen *>(QPlatformScreen::platformScreenForWindow(window->window()));
+        eglSurface = screen->eglSurface();
+        screen->waitForPageFlipComplete();
+    } else {
+        eglSurface = static_cast<QKmsOffscreenWindow *>(surface)->surface();
+    }
 
     bool ok = eglMakeCurrent(display, eglSurface, eglSurface, m_eglContext);
     if (!ok)

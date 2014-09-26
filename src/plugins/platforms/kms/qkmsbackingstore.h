@@ -56,6 +56,8 @@ public:
     void flush(QWindow *window, const QRegion &region, const QPoint &offset);
     void resize(const QSize &size, const QRegion &staticContents);
 
+    QImage toImage() const Q_DECL_OVERRIDE { return m_image; }
+
 private:
     QOpenGLContext *m_context;
     QImage m_image;

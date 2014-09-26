@@ -36,13 +36,33 @@
 
 #include <qpa/qplatformintegration.h>
 #include <qpa/qplatformnativeinterface.h>
+#include <qpa/qplatformoffscreensurface.h>
 #include <QtPlatformSupport/private/qdevicediscovery_p.h>
+#include <EGL/egl.h>
 
 QT_BEGIN_NAMESPACE
 
 class QKmsScreen;
 class QKmsDevice;
 class QFbVtHandler;
+
+class QKmsOffscreenWindow : public QPlatformOffscreenSurface
+{
+public:
+    QKmsOffscreenWindow(EGLDisplay display, const QSurfaceFormat &format, QOffscreenSurface *offscreenSurface);
+    ~QKmsOffscreenWindow();
+
+    QSurfaceFormat format() const Q_DECL_OVERRIDE { return m_format; }
+    bool isValid() const Q_DECL_OVERRIDE { return m_surface != EGL_NO_SURFACE; }
+
+    EGLSurface surface() const { return m_surface; }
+
+private:
+    QSurfaceFormat m_format;
+    EGLDisplay m_display;
+    EGLSurface m_surface;
+    EGLNativeWindowType m_window;
+};
 
 class QKmsIntegration : public QObject, public QPlatformIntegration
 {
@@ -58,6 +78,7 @@ public:
     QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const Q_DECL_OVERRIDE;
     QPlatformWindow *createPlatformWindow(QWindow *window) const Q_DECL_OVERRIDE;
     QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const Q_DECL_OVERRIDE;
+    QPlatformOffscreenSurface *createPlatformOffscreenSurface(QOffscreenSurface *surface) const Q_DECL_OVERRIDE;
 
     QPlatformFontDatabase *fontDatabase() const Q_DECL_OVERRIDE;
     QAbstractEventDispatcher *createEventDispatcher() const Q_DECL_OVERRIDE;

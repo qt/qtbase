@@ -49,7 +49,6 @@ QKmsBackingStore::QKmsBackingStore(QWindow *window)
     m_context->setFormat(window->requestedFormat());
     m_context->setScreen(window->screen());
     m_context->create();
-    window->setSurfaceType(QSurface::OpenGLSurface);
 }
 
 QKmsBackingStore::~QKmsBackingStore()
