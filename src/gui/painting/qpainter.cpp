@@ -7442,10 +7442,6 @@ start_lengthVariant:
         }
     }
 
-    // no need to do extra work for underlines if we don't paint
-    if (tf & Qt::TextDontPrint)
-        maxUnderlines = 0;
-
     QList<QTextLayout::FormatRange> underlineFormats;
     int length = offset - old_offset;
     if ((hidemnmemonic || showmnemonic) && maxUnderlines > 0) {
@@ -7460,7 +7456,7 @@ start_lengthVariant:
                 --l;
                 if (!l)
                     break;
-                if (*cin != QLatin1Char('&') && !hidemnmemonic) {
+                if (*cin != QLatin1Char('&') && !hidemnmemonic && !(tf & Qt::TextDontPrint)) {
                     QTextLayout::FormatRange range;
                     range.start = cout - cout0;
                     range.length = 1;
