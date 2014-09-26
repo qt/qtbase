@@ -40,6 +40,8 @@
 
 class QIOSWindow;
 
+@class QIOSViewController;
+
 @interface QUIView : UIView
 {
   @public
@@ -50,7 +52,7 @@ class QIOSWindow;
 
   @private
     NSMutableArray *m_accessibleElements;
-}
+};
 
 - (id)initWithQIOSWindow:(QIOSWindow *)window;
 - (void)sendUpdatedExposeEvent;
@@ -59,3 +61,8 @@ class QIOSWindow;
 @interface QUIView (Accessibility)
 - (void)clearAccessibleCache;
 @end
+
+@interface QUIView (QtHelpers)
+- (QIOSViewController*)qtViewController;
+@end
+

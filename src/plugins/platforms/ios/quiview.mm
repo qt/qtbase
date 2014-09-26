@@ -43,6 +43,7 @@
 
 #include "qiosglobal.h"
 #include "qiosintegration.h"
+#include "qiosviewcontroller.h"
 #include "qioswindow.h"
 #include "qiosmenu.h"
 
@@ -365,6 +366,15 @@
         if ([responder isKindOfClass:UIViewController.class])
             return responder;
     }
+    return nil;
+}
+
+- (QIOSViewController*)qtViewController
+{
+    UIViewController *vc = self.viewController;
+    if ([vc isKindOfClass:QIOSViewController.class])
+        return static_cast<QIOSViewController *>(vc);
+
     return nil;
 }
 
