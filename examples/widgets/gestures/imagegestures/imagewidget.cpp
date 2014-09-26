@@ -108,7 +108,7 @@ void ImageWidget::mouseDoubleClickEvent(QMouseEvent *)
 //! [gesture event handler]
 bool ImageWidget::gestureEvent(QGestureEvent *event)
 {
-    qCDebug(lcExample) << "gestureEvent():" << event->gestures().size();
+    qCDebug(lcExample) << "gestureEvent():" << event;
     if (QGesture *swipe = event->gesture(Qt::SwipeGesture))
         swipeTriggered(static_cast<QSwipeGesture *>(swipe));
     else if (QGesture *pan = event->gesture(Qt::PanGesture))
@@ -132,7 +132,7 @@ void ImageWidget::panTriggered(QPanGesture *gesture)
     }
 #endif
     QPointF delta = gesture->delta();
-    qCDebug(lcExample) << "panTriggered():" << delta;
+    qCDebug(lcExample) << "panTriggered():" << gesture;
     horizontalOffset += delta.x();
     verticalOffset += delta.y();
     update();

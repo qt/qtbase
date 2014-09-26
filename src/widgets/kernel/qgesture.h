@@ -315,6 +315,11 @@ private:
     friend class QGestureManager;
 };
 
+#  ifndef QT_NO_DEBUG_STREAM
+Q_WIDGETS_EXPORT QDebug operator<<(QDebug, const QGesture *);
+Q_WIDGETS_EXPORT QDebug operator<<(QDebug, const QGestureEvent *);
+#  endif
+
 QT_END_NAMESPACE
 
 Q_DECLARE_METATYPE(QGesture::GestureCancelPolicy)
