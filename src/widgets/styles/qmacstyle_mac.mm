@@ -1800,7 +1800,8 @@ NSView *QMacStylePrivate::cocoaControl(QCocoaWidget widget, QPoint *offset) cons
     NSView *bv = cocoaControls[widget];
     if (!bv) {
 
-        if (widget.first == QCocoaPopupButton)
+        if (widget.first == QCocoaPopupButton
+            || widget.first == QCocoaPullDownButton)
             bv = [[NSPopUpButton alloc] init];
         else if (widget.first == QCocoaComboBox)
             bv = [[NSComboBox alloc] init];
@@ -1828,6 +1829,11 @@ NSView *QMacStylePrivate::cocoaControl(QCocoaWidget widget, QPoint *offset) cons
             NSButton *bc = (NSButton *)bv;
             bc.buttonType = NSMomentaryPushButton;
             bc.bezelStyle = NSRoundedBezelStyle;
+            break;
+        }
+        case QCocoaPullDownButton: {
+            NSPopUpButton *bc = (NSPopUpButton *)bv;
+            bc.pullsDown = YES;
             break;
         }
         default:
@@ -1872,6 +1878,12 @@ NSView *QMacStylePrivate::cocoaControl(QCocoaWidget widget, QPoint *offset) cons
             *offset = QPoint(7, 5);
         else if (widget == QCocoaWidget(QCocoaPopupButton, QAquaSizeMini))
             *offset = QPoint(2, -1);
+        else if (widget == QCocoaWidget(QCocoaPullDownButton, QAquaSizeLarge))
+            *offset = QPoint(3, -1);
+        else if (widget == QCocoaWidget(QCocoaPullDownButton, QAquaSizeSmall))
+            *offset = QPoint(2, 1);
+        else if (widget == QCocoaWidget(QCocoaPullDownButton, QAquaSizeMini))
+            *offset = QPoint(5, 0);
     }
 
     return bv;
@@ -3802,21 +3814,24 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
             else if (d->pressedButton == opt->styleObject)
                 d->pressedButton = 0;
 
+            bool hasMenu = btn->features & QStyleOptionButton::HasMenu;
             HIThemeButtonDrawInfo bdi;
             d->initHIThemePushButton(btn, w, tds, &bdi);
 
             if (yosemiteOrLater) {
-                // HITheme is not drawing a nice focus frame around buttons.
-                // We'll do it ourselves further down.
-                bdi.adornment &= ~kThemeAdornmentFocus;
+                if (!hasMenu) {
+                    // HITheme is not drawing a nice focus frame around buttons.
+                    // We'll do it ourselves further down.
+                    bdi.adornment &= ~kThemeAdornmentFocus;
 
-                // We can't rely on an animation existing to test for the default look. That means a bit
-                // more logic (notice that the logic is slightly different for the bevel and the label).
-                if (tds == kThemeStateActive
-                    && (btn->features & QStyleOptionButton::DefaultButton
-                        || (btn->features & QStyleOptionButton::AutoDefaultButton
-                            && d->autoDefaultButton == btn->styleObject)))
-                    bdi.adornment |= kThemeAdornmentDefault;
+                    // We can't rely on an animation existing to test for the default look. That means a bit
+                    // more logic (notice that the logic is slightly different for the bevel and the label).
+                    if (tds == kThemeStateActive
+                        && (btn->features & QStyleOptionButton::DefaultButton
+                            || (btn->features & QStyleOptionButton::AutoDefaultButton
+                                && d->autoDefaultButton == btn->styleObject)))
+                        bdi.adornment |= kThemeAdornmentDefault;
+                }
             } else {
                 // the default button animation is paused meanwhile any button
                 // is pressed or an auto-default button is animated instead
@@ -3856,8 +3871,18 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                 newRect.size.width -= QMacStylePrivate::PushButtonRightOffset - 4;
             }
 
-            bool hasMenu = btn->features & QStyleOptionButton::HasMenu;
-            if (hasMenu && bdi.state == kThemeStatePressed && QSysInfo::macVersion() > QSysInfo::MV_10_6)
+            if (hasMenu && yosemiteOrLater && bdi.kind != kThemeBevelButton) {
+                QCocoaWidget w = cocoaWidgetFromHIThemeButtonKind(bdi.kind);
+                QPoint offset;
+                NSPopUpButton *pdb = (NSPopUpButton *)d->cocoaControl(QCocoaWidget(QCocoaPullDownButton, w.second), &offset);
+                [pdb highlight:(bdi.state == kThemeStatePressed)];
+                pdb.enabled = bdi.state != kThemeStateUnavailable && bdi.state != kThemeStateUnavailableInactive;
+                QRect rect = opt->rect;
+                rect.adjust(0, 0, w.second == QAquaSizeSmall ? -4 : w.second == QAquaSizeMini ? -9 : -6, 0);
+                p->translate(offset);
+                d->drawNSViewInRect(pdb, rect, p);
+                p->translate(-offset);
+            } else if (hasMenu && bdi.state == kThemeStatePressed && QSysInfo::macVersion() > QSysInfo::MV_10_6)
                 d->drawColorlessButton(newRect, &bdi, p, opt);
             else
                 HIThemeDrawButton(&newRect, &bdi, cg, kHIThemeOrientationNormal, 0);
@@ -3893,7 +3918,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                 qt_drawFocusRingOnPath(cg, pushButtonFocusRingPath);
             }
 
-            if (hasMenu) {
+            if (hasMenu && (!yosemiteOrLater || bdi.kind == kThemeBevelButton)) {
                 int mbi = proxy()->pixelMetric(QStyle::PM_MenuButtonIndicator, btn, w);
                 QRect ir = btn->rect;
                 int arrowXOffset = 0;
@@ -3947,7 +3972,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
             bool hasIcon = !btn.icon.isNull();
             bool hasText = !btn.text.isEmpty();
 
-            if (QSysInfo::QSysInfo::MacintoshVersion > QSysInfo::MV_10_9) {
+            if (!hasMenu && QSysInfo::QSysInfo::MacintoshVersion > QSysInfo::MV_10_9) {
                 if (tds == kThemeStatePressed
                     || (tds == kThemeStateActive
                         && ((btn.features & QStyleOptionButton::DefaultButton && !d->autoDefaultButton)

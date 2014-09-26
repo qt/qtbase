@@ -134,6 +134,7 @@ enum QCocoaWidgetKind {
     QCocoaCheckBox,
     QCocoaComboBox,     // Editable QComboBox
     QCocoaPopupButton,  // Non-editable QComboBox
+    QCocoaPullDownButton, // QPushButton with menu
     QCocoaPushButton,
     QCocoaRadioButton
 };
