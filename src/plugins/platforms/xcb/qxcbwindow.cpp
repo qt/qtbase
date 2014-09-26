@@ -2106,7 +2106,11 @@ void QXcbWindow::handlePropertyNotifyEvent(const xcb_property_notify_event_t *ev
                     newState = Qt::WindowMinimized;
             }
             free(reply);
+        } else { // _NET_WM_STATE can't change minimized state
+            if (m_lastWindowStateEvent == Qt::WindowMinimized)
+                newState = Qt::WindowMinimized;
         }
+
         if (newState != Qt::WindowMinimized) { // Something else changed, get _NET_WM_STATE.
             const NetWmStates states = netWmStates();
             if ((states & NetWmStateMaximizedHorz) && (states & NetWmStateMaximizedVert))
