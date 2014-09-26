@@ -40,6 +40,13 @@
 
 #include <limits>
 
+#ifdef Q_OS_MAC
+Q_FORWARD_DECLARE_CF_TYPE(CFDate);
+#  ifdef __OBJC__
+Q_FORWARD_DECLARE_OBJC_CLASS(NSDate);
+#  endif
+#endif
+
 QT_BEGIN_NAMESPACE
 
 class QTimeZone;
@@ -294,6 +301,15 @@ public:
     static QDateTime fromMSecsSinceEpoch(qint64 msecs, const QTimeZone &timeZone);
 #endif
     static qint64 currentMSecsSinceEpoch() Q_DECL_NOTHROW;
+
+#if defined(Q_OS_MAC) || defined(Q_QDOC)
+    static QDateTime fromCFDate(CFDateRef date);
+    CFDateRef toCFDate() const Q_DECL_CF_RETURNS_RETAINED;
+#  if defined(__OBJC__) || defined(Q_QDOC)
+    static QDateTime fromNSDate(const NSDate *date);
+    NSDate *toNSDate() const Q_DECL_NS_RETURNS_AUTORELEASED;
+#  endif
+#endif
 
 private:
     friend class QDateTimePrivate;

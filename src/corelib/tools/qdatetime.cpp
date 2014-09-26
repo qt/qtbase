@@ -4197,6 +4197,39 @@ qint64 QDateTime::currentMSecsSinceEpoch() Q_DECL_NOTHROW
 #error "What system is this?"
 #endif
 
+/*! \fn QDateTime QDateTime::fromCFDate(CFDateRef date)
+    \since 5.5
+
+    Constructs a new QDateTime containing a copy of the CFDate \a date.
+
+    \sa toCFDate()
+*/
+
+/*! \fn CFDateRef QDateTime::toCFDate() const
+    \since 5.5
+
+    Creates a CFDate from a QDateTime. The caller owns the CFDate object
+    and is responsible for releasing it.
+
+    \sa fromCFDate()
+*/
+
+/*! \fn QDateTime QDateTime::fromNSDate(const NSDate *date)
+    \since 5.5
+
+    Constructs a new QDateTime containing a copy of the NSDate \a date.
+
+    \sa toNSDate()
+*/
+
+/*! \fn NSDate QDateTime::toNSDate() const
+    \since 5.5
+
+    Creates an NSDate from a QDateTime. The NSDate object is autoreleased.
+
+    \sa fromNSDate()
+*/
+
 /*!
   \since 4.2
 

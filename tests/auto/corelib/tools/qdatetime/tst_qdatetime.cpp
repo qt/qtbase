@@ -145,6 +145,8 @@ private slots:
 
     void invalid() const;
 
+    void macTypes();
+
 private:
     enum { LocalTimeIsUtc = 0, LocalTimeAheadOfUtc = 1, LocalTimeBehindUtc = -1} localTimeType;
     bool europeanTimeZone;
@@ -2979,6 +2981,16 @@ void tst_QDateTime::invalid() const
     QDateTime tzDate = invalidDate.toTimeZone(QTimeZone("Europe/Oslo"));
     QCOMPARE(tzDate.isValid(), false);
     QCOMPARE(tzDate.timeSpec(), Qt::TimeZone);
+}
+
+void tst_QDateTime::macTypes()
+{
+#ifndef Q_OS_MAC
+    QSKIP("This is a Apple-only test");
+#else
+    extern void tst_QDateTime_macTypes(); // in qdatetime_mac.mm
+    tst_QDateTime_macTypes();
+#endif
 }
 
 QTEST_APPLESS_MAIN(tst_QDateTime)

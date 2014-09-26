@@ -11,3 +11,8 @@ win32-msvc|win32-msvc9x {
     QMAKE_CXXFLAGS_RELEASE -= -O1
 }
 DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0
+
+mac {
+    OBJECTIVE_SOURCES += tst_qdatetime_mac.mm
+    LIBS += -framework Foundation
+}
