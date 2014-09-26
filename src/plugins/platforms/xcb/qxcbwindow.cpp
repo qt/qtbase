@@ -2113,10 +2113,10 @@ void QXcbWindow::handlePropertyNotifyEvent(const xcb_property_notify_event_t *ev
 
         if (newState != Qt::WindowMinimized) { // Something else changed, get _NET_WM_STATE.
             const NetWmStates states = netWmStates();
-            if ((states & NetWmStateMaximizedHorz) && (states & NetWmStateMaximizedVert))
-                newState = Qt::WindowMaximized;
-            else if (states & NetWmStateFullScreen)
+            if (states & NetWmStateFullScreen)
                 newState = Qt::WindowFullScreen;
+            else if ((states & NetWmStateMaximizedHorz) && (states & NetWmStateMaximizedVert))
+                newState = Qt::WindowMaximized;
         }
         // Send Window state, compress events in case other flags (modality, etc) are changed.
         if (m_lastWindowStateEvent != newState) {
