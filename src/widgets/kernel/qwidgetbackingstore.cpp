@@ -1135,12 +1135,17 @@ void QWidgetBackingStore::doSync()
         // prevent triggering unnecessary backingstore painting when only the
         // OpenGL content changes. Check if we have such widgets in the special
         // dirty list.
+        QVarLengthArray<QWidget *, 16> paintPending;
         for (int i = 0; i < dirtyRenderToTextureWidgets.count(); ++i) {
             QWidget *w = dirtyRenderToTextureWidgets.at(i);
-            w->d_func()->sendPaintEvent(w->rect());
+            paintPending << w;
             resetWidget(w);
         }
         dirtyRenderToTextureWidgets.clear();
+        for (int i = 0; i < paintPending.count(); ++i) {
+            QWidget *w = paintPending[i];
+            w->d_func()->sendPaintEvent(w->rect());
+        }
 
         // We might have newly exposed areas on the screen if this function was
         // called from sync(QWidget *, QRegion)), so we have to make sure those
