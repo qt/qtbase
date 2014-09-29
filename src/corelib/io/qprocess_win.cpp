@@ -634,7 +634,7 @@ bool QProcessPrivate::drainOutputPipes()
         someReadyReadEmitted |= readyReadEmitted;
         if (!readOperationActive || !readyReadEmitted)
             break;
-        Sleep(100);
+        QThread::yieldCurrentThread();
     }
 
     return someReadyReadEmitted;
