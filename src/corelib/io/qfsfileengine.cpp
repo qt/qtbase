@@ -160,15 +160,9 @@ QFSFileEngine::~QFSFileEngine()
     Q_D(QFSFileEngine);
     if (d->closeFileHandle) {
         if (d->fh) {
-            int ret;
-            do {
-                ret = fclose(d->fh);
-            } while (ret == EOF && errno == EINTR);
+            fclose(d->fh);
         } else if (d->fd != -1) {
-            int ret;
-            do {
-                ret = QT_CLOSE(d->fd);
-            } while (ret == -1 && errno == EINTR);
+            QT_CLOSE(d->fd);
         }
     }
     d->unmapAll();
@@ -365,15 +359,14 @@ bool QFSFileEnginePrivate::closeFdFh()
     // Close the file if we created the handle.
     if (closeFileHandle) {
         int ret;
-        do {
-            if (fh) {
-                // Close buffered file.
-                ret = fclose(fh) != 0 ? -1 : 0;
-            } else {
-                // Close unbuffered file.
-                ret = QT_CLOSE(fd);
-            }
-        } while (ret == -1 && errno == EINTR);
+
+        if (fh) {
+            // Close buffered file.
+            ret = fclose(fh);
+        } else {
+            // Close unbuffered file.
+            ret = QT_CLOSE(fd);
+        }
 
         // We must reset these guys regardless; calling close again after a
         // failed close causes crashes on some systems.

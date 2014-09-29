@@ -211,6 +211,7 @@ bool Uic::write(QIODevice *in)
 #ifdef QT_UIC_JAVA_GENERATOR
         if (language.toLower() != QLatin1String("jambi")) {
             fprintf(stderr, "uic: File is not a 'jambi' form\n");
+            delete ui;
             return false;
         }
         rtn = jwrite (ui);
@@ -221,6 +222,7 @@ bool Uic::write(QIODevice *in)
 #ifdef QT_UIC_CPP_GENERATOR
         if (!language.isEmpty() && language.toLower() != QLatin1String("c++")) {
             fprintf(stderr, "uic: File is not a 'c++' ui file, language=%s\n", qPrintable(language));
+            delete ui;
             return false;
         }
 

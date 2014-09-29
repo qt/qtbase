@@ -703,9 +703,8 @@ bool QCocoaFileDialogHelper::show(Qt::WindowFlags windowFlags, Qt::WindowModalit
 
 void QCocoaFileDialogHelper::createNSOpenSavePanelDelegate()
 {
-    if (mDelegate)
-        return;
     QCocoaAutoReleasePool pool;
+
     const SharedPointerFileDialogOptions &opts = options();
     const QList<QUrl> selectedFiles = opts->initiallySelectedFiles();
     const QUrl directory = mDir.isEmpty() ? opts->initialDirectory() : mDir;
@@ -717,6 +716,7 @@ void QCocoaFileDialogHelper::createNSOpenSavePanelDelegate()
             options:opts
             helper:this];
 
+    [static_cast<QNSOpenSavePanelDelegate *>(mDelegate) release];
     mDelegate = delegate;
 }
 

@@ -44,7 +44,6 @@ QT_BEGIN_NAMESPACE
 
 QNetworkAccessCacheBackend::QNetworkAccessCacheBackend()
     : QNetworkAccessBackend()
-    , device(0)
 {
 }
 
@@ -117,11 +116,6 @@ bool QNetworkAccessCacheBackend::sendCacheContents()
 
 void QNetworkAccessCacheBackend::closeDownstreamChannel()
 {
-    if (operation() == QNetworkAccessManager::GetOperation) {
-        device->close();
-        delete device;
-        device = 0;
-    }
 }
 
 void QNetworkAccessCacheBackend::closeUpstreamChannel()
