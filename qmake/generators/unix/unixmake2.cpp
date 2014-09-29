@@ -859,7 +859,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
     }
 
     t << endl << "all: " << escapeDependencyPath(deps)
-      << valGlue(escapeDependencyPaths(project->values("ALL_DEPS")), " ", " ", "")
+      << valGlue(escapeDependencyPaths(project->values("ALL_DEPS")), " \\\n\t\t", " \\\n\t\t", "")
       << allDeps << endl << endl;
 
     ProString ddir;
