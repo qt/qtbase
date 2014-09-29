@@ -3,5 +3,5 @@ Config: Using QtTest library @INSERT_QT_VERSION_HERE@, Qt @INSERT_QT_VERSION_HER
 PASS   : tst_Crashes::initTestCase()
 FAIL!  : tst_Crashes::crash() Caught unhandled exception
 .\qtestcase.cpp(984) : failure location
-Totals: 1 passed, 1 failed, 0 skipped
+Totals: 1 passed, 1 failed, 0 skipped, 0 blacklisted
 ********* Finished testing of tst_Crashes *********

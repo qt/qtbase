@@ -4,5 +4,5 @@ PASS   : tst_Crashes::initTestCase()
 QFATAL : tst_Crashes::crash() Received signal 11
 FAIL!  : tst_Crashes::crash() Received a fatal error.
    Loc: [Unknown file(0)]
-Totals: 1 passed, 1 failed, 0 skipped
+Totals: 1 passed, 1 failed, 0 skipped, 0 blacklisted
 ********* Finished testing of tst_Crashes *********

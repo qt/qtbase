@@ -1,39 +1,31 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
-** $QT_BEGIN_LICENSE:LGPL$
+** $QT_BEGIN_LICENSE:LGPL21$
 ** Commercial License Usage
 ** Licensees holding valid commercial Qt licenses may use this file in
 ** accordance with the commercial license agreement provided with the
 ** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and Digia.  For licensing terms and
-** conditions see http://qt.digia.com/licensing.  For further information
+** a written agreement between you and Digia. For licensing terms and
+** conditions see http://qt.digia.com/licensing. For further information
 ** use the contact form at http://qt.digia.com/contact-us.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** General Public License version 2.1 or version 3 as published by the Free
+** Software Foundation and appearing in the file LICENSE.LGPLv21 and
+** LICENSE.LGPLv3 included in the packaging of this file. Please review the
+** following information to ensure the GNU Lesser General Public License
+** requirements will be met: https://www.gnu.org/licenses/lgpl.html and
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Digia gives you certain additional
-** rights.  These rights are described in the Digia Qt LGPL Exception
+** rights. These rights are described in the Digia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
-**
 **
 ** $QT_END_LICENSE$
 **
@@ -224,6 +216,7 @@ private slots:
     void moreCustomTypes();
     void movabilityTest();
     void variantInVariant();
+    void userConversion();
 
     void forwardDeclare();
     void debugStream_data();
@@ -249,6 +242,10 @@ private slots:
     void pairElements();
 
     void enums();
+
+    void compareSanity_data();
+    void compareSanity();
+
 private:
     void dataStream_data(QDataStream::Version version);
     void loadQVariantFromDataStream(QDataStream::Version version);
@@ -3312,6 +3309,98 @@ void tst_QVariant::variantInVariant()
     QCOMPARE(qvariant_cast<QVariant>(var9), var1);
 }
 
+struct Convertible {
+    double d;
+    operator int() const { return (int)d; }
+    operator double() const { return d; }
+    operator QString() const { return QString::number(d); }
+};
+
+Q_DECLARE_METATYPE(Convertible);
+
+struct BigConvertible {
+    double d;
+    double dummy;
+    double dummy2;
+    operator int() const { return (int)d; }
+    operator double() const { return d; }
+    operator QString() const { return QString::number(d); }
+};
+
+Q_DECLARE_METATYPE(BigConvertible);
+Q_STATIC_ASSERT(sizeof(BigConvertible) > sizeof(QVariant));
+
+void tst_QVariant::userConversion()
+{
+    {
+        QVERIFY(!(QMetaType::hasRegisteredConverterFunction<int, Convertible>()));
+        QVERIFY(!(QMetaType::hasRegisteredConverterFunction<double, Convertible>()));
+        QVERIFY(!(QMetaType::hasRegisteredConverterFunction<QString, Convertible>()));
+
+        Convertible c = { 123 };
+        QVariant v = qVariantFromValue(c);
+
+        bool ok;
+        v.toInt(&ok);
+        QVERIFY(!ok);
+
+        v.toDouble(&ok);
+        QVERIFY(!ok);
+
+        QString s = v.toString();
+        QVERIFY(s.isEmpty());
+
+        QMetaType::registerConverter<Convertible, int>();
+        QMetaType::registerConverter<Convertible, double>();
+        QMetaType::registerConverter<Convertible, QString>();
+
+        int i = v.toInt(&ok);
+        QVERIFY(ok);
+        QCOMPARE(i, 123);
+
+        double d = v.toDouble(&ok);
+        QVERIFY(ok);
+        QCOMPARE(d, 123.);
+
+        s = v.toString();
+        QCOMPARE(s, QString::fromLatin1("123"));
+    }
+
+    {
+        QVERIFY(!(QMetaType::hasRegisteredConverterFunction<int, BigConvertible>()));
+        QVERIFY(!(QMetaType::hasRegisteredConverterFunction<double, BigConvertible>()));
+        QVERIFY(!(QMetaType::hasRegisteredConverterFunction<QString, BigConvertible>()));
+
+        BigConvertible c = { 123, 0, 0 };
+        QVariant v = qVariantFromValue(c);
+
+        bool ok;
+        v.toInt(&ok);
+        QVERIFY(!ok);
+
+        v.toDouble(&ok);
+        QVERIFY(!ok);
+
+        QString s = v.toString();
+        QVERIFY(s.isEmpty());
+
+        QMetaType::registerConverter<BigConvertible, int>();
+        QMetaType::registerConverter<BigConvertible, double>();
+        QMetaType::registerConverter<BigConvertible, QString>();
+
+        int i = v.toInt(&ok);
+        QVERIFY(ok);
+        QCOMPARE(i, 123);
+
+        double d = v.toDouble(&ok);
+        QVERIFY(ok);
+        QCOMPARE(d, 123.);
+
+        s = v.toString();
+        QCOMPARE(s, QString::fromLatin1("123"));
+    }
+}
+
 class Forward;
 Q_DECLARE_OPAQUE_POINTER(Forward*)
 Q_DECLARE_METATYPE(Forward*)
@@ -4058,6 +4147,32 @@ void tst_QVariant::enums()
     testVariant(EnumTest_Enum3::EnumTest_Enum3_value, &ok);
     QVERIFY(ok);
 #endif
+}
+
+void tst_QVariant::compareSanity_data()
+{
+    QTest::addColumn<QVariant>("value1");
+    QTest::addColumn<QVariant>("value2");
+
+    QTest::newRow( "int <>/== QUrl" ) << QVariant( 97 ) << QVariant(QUrl("a"));
+    QTest::newRow( "int <>/== QChar" ) << QVariant( 97 ) << QVariant(QChar('a'));
+    QTest::newRow( "int <>/== QString" ) << QVariant( 97 ) << QVariant(QString("a"));
+    QTest::newRow( "QUrl <>/== QChar" ) << QVariant(QUrl("a")) << QVariant(QChar('a'));
+    QTest::newRow( "QUrl <>/== QString" ) << QVariant(QUrl("a")) << QVariant(QString("a"));
+    QTest::newRow( "QChar <>/== QString" ) << QVariant(QChar('a')) << QVariant(QString("a"));
+}
+
+void tst_QVariant::compareSanity()
+{
+    QFETCH(QVariant, value1);
+    QFETCH(QVariant, value2);
+
+    if (value1 == value2) {
+        QVERIFY(!(value1 < value2) && !(value1 > value2));
+    } else {
+        QVERIFY(value1 != value2);
+        QVERIFY((value1 < value2) || (value1 > value2));
+    }
 }
 
 QTEST_MAIN(tst_QVariant)

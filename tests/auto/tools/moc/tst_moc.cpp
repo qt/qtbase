@@ -1,40 +1,32 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Copyright (C) 2013 Olivier Goffart <ogoffart@woboq.com>
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
-** $QT_BEGIN_LICENSE:LGPL$
+** $QT_BEGIN_LICENSE:LGPL21$
 ** Commercial License Usage
 ** Licensees holding valid commercial Qt licenses may use this file in
 ** accordance with the commercial license agreement provided with the
 ** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and Digia.  For licensing terms and
-** conditions see http://qt.digia.com/licensing.  For further information
+** a written agreement between you and Digia. For licensing terms and
+** conditions see http://qt.digia.com/licensing. For further information
 ** use the contact form at http://qt.digia.com/contact-us.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** General Public License version 2.1 or version 3 as published by the Free
+** Software Foundation and appearing in the file LICENSE.LGPLv21 and
+** LICENSE.LGPLv3 included in the packaging of this file. Please review the
+** following information to ensure the GNU Lesser General Public License
+** requirements will be met: https://www.gnu.org/licenses/lgpl.html and
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Digia gives you certain additional
-** rights.  These rights are described in the Digia Qt LGPL Exception
+** rights. These rights are described in the Digia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
-**
 **
 ** $QT_END_LICENSE$
 **
@@ -699,8 +691,8 @@ void tst_Moc::warnOnExtraSignalSlotQualifiaction()
     QVERIFY(!mocOut.isEmpty());
     QString mocWarning = QString::fromLocal8Bit(proc.readAllStandardError());
     QCOMPARE(mocWarning, header +
-                QString(":56: Warning: Function declaration Test::badFunctionDeclaration contains extra qualification. Ignoring as signal or slot.\n") +
-                header + QString(":59: Warning: parsemaybe: Function declaration Test::anotherOne contains extra qualification. Ignoring as signal or slot.\n"));
+                QString(":48: Warning: Function declaration Test::badFunctionDeclaration contains extra qualification. Ignoring as signal or slot.\n") +
+                header + QString(":51: Warning: parsemaybe: Function declaration Test::anotherOne contains extra qualification. Ignoring as signal or slot.\n"));
 #else
     QSKIP("Only tested on linux/gcc");
 #endif
@@ -986,7 +978,7 @@ void tst_Moc::warnOnMultipleInheritance()
     QVERIFY(!mocOut.isEmpty());
     QString mocWarning = QString::fromLocal8Bit(proc.readAllStandardError());
     QCOMPARE(mocWarning, header +
-                QString(":56: Warning: Class Bar inherits from two QObject subclasses QWindow and Foo. This is not supported!\n"));
+                QString(":48: Warning: Class Bar inherits from two QObject subclasses QWindow and Foo. This is not supported!\n"));
 #else
     QSKIP("Only tested on linux/gcc");
 #endif
@@ -1049,7 +1041,7 @@ void tst_Moc::forgottenQInterface()
     QVERIFY(!mocOut.isEmpty());
     QString mocWarning = QString::fromLocal8Bit(proc.readAllStandardError());
     QCOMPARE(mocWarning, header +
-                QString(":58: Warning: Class Test implements the interface MyInterface but does not list it in Q_INTERFACES. qobject_cast to MyInterface will not work!\n"));
+                QString(":50: Warning: Class Test implements the interface MyInterface but does not list it in Q_INTERFACES. qobject_cast to MyInterface will not work!\n"));
 #else
     QSKIP("Only tested on linux/gcc");
 #endif
@@ -1365,7 +1357,7 @@ void tst_Moc::warnOnPropertyWithoutREAD()
     QVERIFY(!mocOut.isEmpty());
     QString mocWarning = QString::fromLocal8Bit(proc.readAllStandardError());
     QCOMPARE(mocWarning, header +
-                QString(":49: Warning: Property declaration foo has no READ accessor function or associated MEMBER variable. The property will be invalid.\n"));
+                QString(":41: Warning: Property declaration foo has no READ accessor function or associated MEMBER variable. The property will be invalid.\n"));
 #else
     QSKIP("Only tested on linux/gcc");
 #endif
@@ -1475,8 +1467,8 @@ void tst_Moc::warnOnVirtualSignal()
     QByteArray mocOut = proc.readAllStandardOutput();
     QVERIFY(!mocOut.isEmpty());
     QString mocWarning = QString::fromLocal8Bit(proc.readAllStandardError());
-    QCOMPARE(mocWarning, header + QString(":51: Warning: Signals cannot be declared virtual\n") +
-                         header + QString(":53: Warning: Signals cannot be declared virtual\n"));
+    QCOMPARE(mocWarning, header + QString(":43: Warning: Signals cannot be declared virtual\n") +
+                         header + QString(":45: Warning: Signals cannot be declared virtual\n"));
 #else
     QSKIP("Only tested on linux/gcc");
 #endif
@@ -1609,7 +1601,7 @@ void tst_Moc::notifyError()
     QVERIFY(mocOut.isEmpty());
     QString mocError = QString::fromLocal8Bit(proc.readAllStandardError());
     QCOMPARE(mocError, header +
-        QString(":55: Error: NOTIFY signal 'fooChanged' of property 'foo' does not exist in class ClassWithWrongNOTIFY.\n"));
+        QString(":47: Error: NOTIFY signal 'fooChanged' of property 'foo' does not exist in class ClassWithWrongNOTIFY.\n"));
 #else
     QSKIP("Only tested on linux/gcc");
 #endif
@@ -1845,7 +1837,7 @@ void tst_Moc::warnings_data()
         << QStringList()
         << 0
         << QString("IGNORE_ALL_STDOUT")
-        << QString(":3: Warning: Macro argument mismatch.\n:4: Warning: Macro argument mismatch.");
+        << QString();
 
     QTest::newRow("Class declaration lacks Q_OBJECT macro.")
         << QByteArray("class X : public QObject \n { \n public slots: \n void foo() {} \n };")

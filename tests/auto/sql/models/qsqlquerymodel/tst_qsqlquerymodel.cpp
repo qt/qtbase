@@ -5,35 +5,27 @@
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
-** $QT_BEGIN_LICENSE:LGPL$
+** $QT_BEGIN_LICENSE:LGPL21$
 ** Commercial License Usage
 ** Licensees holding valid commercial Qt licenses may use this file in
 ** accordance with the commercial license agreement provided with the
 ** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and Digia.  For licensing terms and
-** conditions see http://qt.digia.com/licensing.  For further information
+** a written agreement between you and Digia. For licensing terms and
+** conditions see http://qt.digia.com/licensing. For further information
 ** use the contact form at http://qt.digia.com/contact-us.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** General Public License version 2.1 or version 3 as published by the Free
+** Software Foundation and appearing in the file LICENSE.LGPLv21 and
+** LICENSE.LGPLv3 included in the packaging of this file. Please review the
+** following information to ensure the GNU Lesser General Public License
+** requirements will be met: https://www.gnu.org/licenses/lgpl.html and
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Digia gives you certain additional
-** rights.  These rights are described in the Digia Qt LGPL Exception
+** rights. These rights are described in the Digia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
-**
 **
 ** $QT_END_LICENSE$
 **
@@ -158,8 +150,8 @@ void tst_QSqlQueryModel::createTestTables(QSqlDatabase db)
 {
     dropTestTables(db);
     QSqlQuery q(db);
-    QSqlDriverPrivate::DBMSType dbType = tst_Databases::getDatabaseType(db);
-    if (dbType == QSqlDriverPrivate::PostgreSQL)
+    QSqlDriver::DBMSType dbType = tst_Databases::getDatabaseType(db);
+    if (dbType == QSqlDriver::PostgreSQL)
         QVERIFY_SQL( q, exec("set client_min_messages='warning'"));
     QVERIFY_SQL( q, exec("create table " + qTableName("test", __FILE__, db) + "(id integer not null, name varchar(20), title integer, primary key (id))"));
     QVERIFY_SQL( q, exec("create table " + qTableName("test2", __FILE__, db) + "(id integer not null, title varchar(20), primary key (id))"));
@@ -313,13 +305,13 @@ void tst_QSqlQueryModel::insertColumn()
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
-    const QSqlDriverPrivate::DBMSType dbType = tst_Databases::getDatabaseType(db);
+    const QSqlDriver::DBMSType dbType = tst_Databases::getDatabaseType(db);
 
     DBTestModel model;
     model.setQuery(QSqlQuery("select * from " + qTableName("test", __FILE__, db), db));
     model.fetchMore(); // necessary???
 
-    bool isToUpper = (dbType == QSqlDriverPrivate::Interbase) || (dbType == QSqlDriverPrivate::Oracle) || (dbType == QSqlDriverPrivate::DB2);
+    bool isToUpper = (dbType == QSqlDriver::Interbase) || (dbType == QSqlDriver::Oracle) || (dbType == QSqlDriver::DB2);
     const QString idColumn(isToUpper ? "ID" : "id");
     const QString nameColumn(isToUpper ? "NAME" : "name");
     const QString titleColumn(isToUpper ? "TITLE" : "title");
@@ -417,14 +409,14 @@ void tst_QSqlQueryModel::record()
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
-    const QSqlDriverPrivate::DBMSType dbType = tst_Databases::getDatabaseType(db);
+    const QSqlDriver::DBMSType dbType = tst_Databases::getDatabaseType(db);
 
     QSqlQueryModel model;
     model.setQuery(QSqlQuery("select * from " + qTableName("test", __FILE__, db), db));
 
     QSqlRecord rec = model.record();
 
-    bool isToUpper = (dbType == QSqlDriverPrivate::Interbase) || (dbType == QSqlDriverPrivate::Oracle) || (dbType == QSqlDriverPrivate::DB2);
+    bool isToUpper = (dbType == QSqlDriver::Interbase) || (dbType == QSqlDriver::Oracle) || (dbType == QSqlDriver::DB2);
 
     QCOMPARE(rec.count(), 3);
     QCOMPARE(rec.fieldName(0), isToUpper ? QString("ID") : QString("id"));
@@ -448,7 +440,7 @@ void tst_QSqlQueryModel::setHeaderData()
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
-    const QSqlDriverPrivate::DBMSType dbType = tst_Databases::getDatabaseType(db);
+    const QSqlDriver::DBMSType dbType = tst_Databases::getDatabaseType(db);
 
     QSqlQueryModel model;
 
@@ -469,7 +461,7 @@ void tst_QSqlQueryModel::setHeaderData()
     QVERIFY(!model.setHeaderData(7, Qt::Horizontal, "foo", Qt::ToolTipRole));
     QVERIFY(!model.headerData(7, Qt::Horizontal, Qt::ToolTipRole).isValid());
 
-    bool isToUpper = (dbType == QSqlDriverPrivate::Interbase) || (dbType == QSqlDriverPrivate::Oracle) || (dbType == QSqlDriverPrivate::DB2);
+    bool isToUpper = (dbType == QSqlDriver::Interbase) || (dbType == QSqlDriver::Oracle) || (dbType == QSqlDriver::DB2);
     QCOMPARE(model.headerData(0, Qt::Horizontal).toString(), isToUpper ? QString("ID") : QString("id"));
     QCOMPARE(model.headerData(1, Qt::Horizontal).toString(), isToUpper ? QString("NAME") : QString("name"));
     QCOMPARE(model.headerData(2, Qt::Horizontal).toString(), QString("bar"));

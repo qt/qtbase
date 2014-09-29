@@ -4,5 +4,5 @@ PASS   : tst_SingleSkip::initTestCase()
 SKIP   : tst_SingleSkip::myTest() skipping test
    Loc: [tst_singleskip.cpp(56)]
 PASS   : tst_SingleSkip::cleanupTestCase()
-Totals: 2 passed, 0 failed, 1 skipped
+Totals: 2 passed, 0 failed, 1 skipped, 0 blacklisted
 ********* Finished testing of tst_SingleSkip *********

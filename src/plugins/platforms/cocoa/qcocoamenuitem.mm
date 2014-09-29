@@ -100,7 +100,8 @@ QCocoaMenuItem::QCocoaMenuItem() :
     m_role(NoRole),
     m_checked(false),
     m_merged(false),
-    m_tag(0)
+    m_tag(0),
+    m_iconSize(16)
 {
 }
 
@@ -332,7 +333,7 @@ NSMenuItem *QCocoaMenuItem::sync()
     NSImage *img = nil;
     if (!m_icon.isNull()) {
         img = qt_mac_create_nsimage(m_icon);
-        [img setSize:NSMakeSize(16, 16)];
+        [img setSize:NSMakeSize(m_iconSize, m_iconSize)];
     }
     [m_native setImage:img];
     [img release];
@@ -402,4 +403,9 @@ QPlatformMenuItem::MenuRole QCocoaMenuItem::effectiveRole() const
         return m_role;
     else
         return m_detectedRole;
+}
+
+void QCocoaMenuItem::setIconSize(int size)
+{
+    m_iconSize = size;
 }

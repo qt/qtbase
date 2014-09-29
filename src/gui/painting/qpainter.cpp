@@ -1,39 +1,31 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
-** $QT_BEGIN_LICENSE:LGPL$
+** $QT_BEGIN_LICENSE:LGPL21$
 ** Commercial License Usage
 ** Licensees holding valid commercial Qt licenses may use this file in
 ** accordance with the commercial license agreement provided with the
 ** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and Digia.  For licensing terms and
-** conditions see http://qt.digia.com/licensing.  For further information
+** a written agreement between you and Digia. For licensing terms and
+** conditions see http://qt.digia.com/licensing. For further information
 ** use the contact form at http://qt.digia.com/contact-us.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** General Public License version 2.1 or version 3 as published by the Free
+** Software Foundation and appearing in the file LICENSE.LGPLv21 and
+** LICENSE.LGPLv3 included in the packaging of this file. Please review the
+** following information to ensure the GNU Lesser General Public License
+** requirements will be met: https://www.gnu.org/licenses/lgpl.html and
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Digia gives you certain additional
-** rights.  These rights are described in the Digia Qt LGPL Exception
+** rights. These rights are described in the Digia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
-**
 **
 ** $QT_END_LICENSE$
 **
@@ -5616,6 +5608,8 @@ void QPainterPrivate::drawGlyphs(const quint32 *glyphArray, QFixedPoint *positio
         staticTextItem.numGlyphs = glyphCount;
         staticTextItem.glyphs = reinterpret_cast<glyph_t *>(const_cast<glyph_t *>(glyphArray));
         staticTextItem.glyphPositions = positions;
+        // The font property is meaningless, the fontengine must be used directly:
+        staticTextItem.usesRawFont = true;
 
         extended->drawStaticTextItem(&staticTextItem);
     } else {
@@ -7415,8 +7409,6 @@ void qt_format_text(const QFont &fnt, const QRectF &_r,
         tf |= Qt::TextDontPrint;
 
     uint maxUnderlines = 0;
-    int numUnderlines = 0;
-    QVarLengthArray<int, 32> underlinePositions(1);
 
     QFontMetricsF fm(fnt);
     QString text = str;
@@ -7447,10 +7439,13 @@ start_lengthVariant:
         }
     }
 
+    // no need to do extra work for underlines if we don't paint
+    if (tf & Qt::TextDontPrint)
+        maxUnderlines = 0;
+
+    QList<QTextLayout::FormatRange> underlineFormats;
     int length = offset - old_offset;
     if ((hidemnmemonic || showmnemonic) && maxUnderlines > 0) {
-        underlinePositions.resize(maxUnderlines + 1);
-
         QChar *cout = text.data() + old_offset;
         QChar *cout0 = cout;
         QChar *cin = cout;
@@ -7462,8 +7457,13 @@ start_lengthVariant:
                 --l;
                 if (!l)
                     break;
-                if (*cin != QLatin1Char('&') && !hidemnmemonic)
-                    underlinePositions[numUnderlines++] = cout - cout0;
+                if (*cin != QLatin1Char('&') && !hidemnmemonic) {
+                    QTextLayout::FormatRange range;
+                    range.start = cout - cout0;
+                    range.length = 1;
+                    range.format.setFontUnderline(true);
+                    underlineFormats.append(range);
+                }
             } else if (hidemnmemonic && *cin == QLatin1Char('(') && l >= 4 &&
                        cin[1] == QLatin1Char('&') && cin[2] != QLatin1Char('&') &&
                        cin[3] == QLatin1Char(')')) {
@@ -7483,11 +7483,6 @@ start_lengthVariant:
         }
     }
 
-    // no need to do extra work for underlines if we don't paint
-    if (tf & Qt::TextDontPrint)
-        numUnderlines = 0;
-
-    underlinePositions[numUnderlines] = -1;
     qreal height = 0;
     qreal width = 0;
 
@@ -7520,7 +7515,7 @@ start_lengthVariant:
         engine.forceJustification = true;
     QTextLayout textLayout(&engine);
     textLayout.setCacheEnabled(true);
-    textLayout.engine()->underlinePositions = underlinePositions.data();
+    textLayout.setAdditionalFormats(underlineFormats);
 
     if (finalText.isEmpty()) {
         height = fm.height();

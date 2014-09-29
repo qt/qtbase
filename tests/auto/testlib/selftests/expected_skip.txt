@@ -10,5 +10,5 @@ SKIP   : tst_Skip::singleSkip(local 1) skipping one
 QDEBUG : tst_Skip::singleSkip(local 2) this line should only be reached once (true)
 PASS   : tst_Skip::singleSkip(local 2)
 PASS   : tst_Skip::cleanupTestCase()
-Totals: 3 passed, 0 failed, 3 skipped
+Totals: 3 passed, 0 failed, 3 skipped, 0 blacklisted
 ********* Finished testing of tst_Skip *********

@@ -5,35 +5,27 @@
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
-** $QT_BEGIN_LICENSE:LGPL$
+** $QT_BEGIN_LICENSE:LGPL21$
 ** Commercial License Usage
 ** Licensees holding valid commercial Qt licenses may use this file in
 ** accordance with the commercial license agreement provided with the
 ** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and Digia.  For licensing terms and
-** conditions see http://qt.digia.com/licensing.  For further information
+** a written agreement between you and Digia. For licensing terms and
+** conditions see http://qt.digia.com/licensing. For further information
 ** use the contact form at http://qt.digia.com/contact-us.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** General Public License version 2.1 or version 3 as published by the Free
+** Software Foundation and appearing in the file LICENSE.LGPLv21 and
+** LICENSE.LGPLv3 included in the packaging of this file. Please review the
+** following information to ensure the GNU Lesser General Public License
+** requirements will be met: https://www.gnu.org/licenses/lgpl.html and
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Digia gives you certain additional
-** rights.  These rights are described in the Digia Qt LGPL Exception
+** rights. These rights are described in the Digia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
-**
 **
 ** $QT_END_LICENSE$
 **
@@ -61,11 +53,13 @@
 #  if defined(Q_OS_WINCE) || defined(Q_OS_WINRT)
 #    include <winsock2.h>
 #  endif
-#  if defined(Q_OS_WINRT) && !defined(Q_OS_WINPHONE)
-static inline int gethostname(char *name, int len) { qstrcpy(name, "localhost"); return 9; }
-#  endif
 #else
 #include <unistd.h>
+#endif
+#if defined(Q_OS_WINRT)
+   static inline int qgethostname(char *name, int) { qstrcpy(name, "localhost"); return 9; }
+#else
+#  define qgethostname gethostname
 #endif
 
 #define CHECK_DATABASE( db ) \
@@ -87,7 +81,7 @@ static QString qGetHostName()
 
     char hn[257];
 
-    if ( gethostname( hn, 255 ) == 0 ) {
+    if ( qgethostname( hn, 255 ) == 0 ) {
         hn[256] = '\0';
         hostname = QString::fromLatin1( hn );
         hostname.replace( QLatin1Char( '.' ), QLatin1Char( '_' ) );
@@ -105,7 +99,7 @@ inline QString fixupTableName(const QString &tableName, QSqlDatabase db)
     QString tbName = tableName;
     // On Oracle we are limited to 30 character tablenames
     QSqlDriverPrivate *d = static_cast<QSqlDriverPrivate *>(QObjectPrivate::get(db.driver()));
-    if (d && d->dbmsType == QSqlDriverPrivate::Oracle)
+    if (d && d->dbmsType == QSqlDriver::Oracle)
         tbName.truncate(30);
     return tbName;
 }
@@ -391,7 +385,7 @@ public:
         bool wasDropped;
         QSqlQuery q( db );
         QStringList dbtables=db.tables();
-        QSqlDriverPrivate::DBMSType dbType = getDatabaseType(db);
+        QSqlDriver::DBMSType dbType = getDatabaseType(db);
         foreach(const QString &tableName, tableNames)
         {
             wasDropped = true;
@@ -403,7 +397,7 @@ public:
                 foreach(const QString &table2, dbtables.filter(table, Qt::CaseInsensitive)) {
                     if(table2.compare(table.section('.', -1, -1), Qt::CaseInsensitive) == 0) {
                         table=db.driver()->escapeIdentifier(table2, QSqlDriver::TableName);
-                        if (dbType == QSqlDriverPrivate::PostgreSQL)
+                        if (dbType == QSqlDriver::PostgreSQL)
                             wasDropped = q.exec( "drop table " + table + " cascade");
                         else
                             wasDropped = q.exec( "drop table " + table);
@@ -468,26 +462,26 @@ public:
     // blobSize is only used if the db doesn't have a generic blob type
     static QString blobTypeName( QSqlDatabase db, int blobSize = 10000 )
     {
-        const QSqlDriverPrivate::DBMSType dbType = getDatabaseType(db);
-        if (dbType == QSqlDriverPrivate::MySqlServer)
+        const QSqlDriver::DBMSType dbType = getDatabaseType(db);
+        if (dbType == QSqlDriver::MySqlServer)
             return "longblob";
 
-        if (dbType == QSqlDriverPrivate::PostgreSQL)
+        if (dbType == QSqlDriver::PostgreSQL)
             return "bytea";
 
-        if (dbType == QSqlDriverPrivate::Sybase
-                || dbType == QSqlDriverPrivate::MSSqlServer
+        if (dbType == QSqlDriver::Sybase
+                || dbType == QSqlDriver::MSSqlServer
                 || isMSAccess( db ) )
             return "image";
 
-        if (dbType == QSqlDriverPrivate::DB2)
+        if (dbType == QSqlDriver::DB2)
             return QString( "blob(%1)" ).arg( blobSize );
 
-        if (dbType == QSqlDriverPrivate::Interbase)
+        if (dbType == QSqlDriver::Interbase)
             return QString( "blob sub_type 0 segment size 4096" );
 
-        if (dbType == QSqlDriverPrivate::Oracle
-                || dbType == QSqlDriverPrivate::SQLite)
+        if (dbType == QSqlDriver::Oracle
+                || dbType == QSqlDriver::SQLite)
             return "blob";
 
         qDebug() <<  "tst_Databases::blobTypeName: Don't know the blob type for" << dbToString( db );
@@ -497,24 +491,24 @@ public:
 
     static QString dateTimeTypeName(QSqlDatabase db)
     {
-        const QSqlDriverPrivate::DBMSType dbType = tst_Databases::getDatabaseType(db);
-        if (dbType == QSqlDriverPrivate::PostgreSQL)
+        const QSqlDriver::DBMSType dbType = tst_Databases::getDatabaseType(db);
+        if (dbType == QSqlDriver::PostgreSQL)
             return QLatin1String("timestamp");
-        if (dbType == QSqlDriverPrivate::Oracle && getOraVersion(db) >= 9)
+        if (dbType == QSqlDriver::Oracle && getOraVersion(db) >= 9)
             return QLatin1String("timestamp(0)");
         return QLatin1String("datetime");
     }
 
     static QString autoFieldName( QSqlDatabase db )
     {
-        const QSqlDriverPrivate::DBMSType dbType = tst_Databases::getDatabaseType(db);
-        if (dbType == QSqlDriverPrivate::MySqlServer)
+        const QSqlDriver::DBMSType dbType = tst_Databases::getDatabaseType(db);
+        if (dbType == QSqlDriver::MySqlServer)
             return "AUTO_INCREMENT";
-        if (dbType == QSqlDriverPrivate::Sybase || dbType == QSqlDriverPrivate::MSSqlServer)
+        if (dbType == QSqlDriver::Sybase || dbType == QSqlDriver::MSSqlServer)
             return "IDENTITY";
-/*        if (dbType == QSqlDriverPrivate::PostgreSQL)
+/*        if (dbType == QSqlDriver::PostgreSQL)
             return "SERIAL";*/
-//        if (dbType == QSqlDriverPrivate::DB2)
+//        if (dbType == QSqlDriver::DB2)
 //            return "GENERATED BY DEFAULT AS IDENTITY";
 
         return QString();
@@ -544,7 +538,7 @@ public:
         return result.toLocal8Bit();
     }
 
-    static QSqlDriverPrivate::DBMSType getDatabaseType(QSqlDatabase db)
+    static QSqlDriver::DBMSType getDatabaseType(QSqlDatabase db)
     {
         QSqlDriverPrivate *d = static_cast<QSqlDriverPrivate *>(QObjectPrivate::get(db.driver()));
         return d->dbmsType;

@@ -1,39 +1,31 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the tools applications of the Qt Toolkit.
 **
-** $QT_BEGIN_LICENSE:LGPL$
+** $QT_BEGIN_LICENSE:LGPL21$
 ** Commercial License Usage
 ** Licensees holding valid commercial Qt licenses may use this file in
 ** accordance with the commercial license agreement provided with the
 ** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and Digia.  For licensing terms and
-** conditions see http://qt.digia.com/licensing.  For further information
+** a written agreement between you and Digia. For licensing terms and
+** conditions see http://qt.digia.com/licensing. For further information
 ** use the contact form at http://qt.digia.com/contact-us.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** General Public License version 2.1 or version 3 as published by the Free
+** Software Foundation and appearing in the file LICENSE.LGPLv21 and
+** LICENSE.LGPLv3 included in the packaging of this file. Please review the
+** following information to ensure the GNU Lesser General Public License
+** requirements will be met: https://www.gnu.org/licenses/lgpl.html and
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Digia gives you certain additional
-** rights.  These rights are described in the Digia Qt LGPL Exception
+** rights. These rights are described in the Digia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
-**
 **
 ** $QT_END_LICENSE$
 **
@@ -646,6 +638,11 @@ void HelpProjectWriter::writeNode(HelpProject &project, QXmlStreamWriter &writer
 void HelpProjectWriter::generateProject(HelpProject &project)
 {
     const Node *rootNode;
+
+    // Restrict searching only to the local (primary) tree
+    QVector<Tree*> searchOrder = qdb_->searchOrder();
+    qdb_->setLocalSearch();
+
     if (!project.indexRoot.isEmpty())
         rootNode = qdb_->findDocNodeByTitle(project.indexRoot);
     else
@@ -708,7 +705,7 @@ void HelpProjectWriter::generateProject(HelpProject &project)
 
         if (subproject.type == QLatin1String("manual")) {
 
-            const DocNode *indexPage = qdb_->findDocNodeByTitle(subproject.indexTitle);
+            const Node *indexPage = qdb_->findNodeForTarget(subproject.indexTitle, 0);
             if (indexPage) {
                 Text indexBody = indexPage->doc().body();
                 const Atom *atom = indexBody.firstAtom();
@@ -735,7 +732,7 @@ void HelpProjectWriter::generateProject(HelpProject &project)
                             if (sectionStack.top() > 0)
                                 writer.writeEndElement(); // section
 
-                            const DocNode *page = qdb_->findDocNodeByTitle(atom->string());
+                            const Node *page = qdb_->findNodeForTarget(atom->string(), 0);
                             writer.writeStartElement("section");
                             QString indexPath = gen_->fullDocumentLocation(page,
                                                                            Generator::useOutputSubdirs());
@@ -762,7 +759,8 @@ void HelpProjectWriter::generateProject(HelpProject &project)
 
             if (!name.isEmpty()) {
                 writer.writeStartElement("section");
-                QString indexPath = gen_->fullDocumentLocation(qdb_->findDocNodeByTitle(subproject.indexTitle),Generator::useOutputSubdirs());
+                QString indexPath = gen_->fullDocumentLocation(qdb_->findNodeForTarget(subproject.indexTitle, 0),
+                                                               Generator::useOutputSubdirs());
                 writer.writeAttribute("ref", indexPath);
                 writer.writeAttribute("title", subproject.title);
             }
@@ -781,7 +779,7 @@ void HelpProjectWriter::generateProject(HelpProject &project)
                     if (!nextTitle.isEmpty() &&
                             node->links().value(Node::ContentsLink).first.isEmpty()) {
 
-                        DocNode *nextPage = const_cast<DocNode *>(qdb_->findDocNodeByTitle(nextTitle));
+                        const Node *nextPage = qdb_->findNodeForTarget(nextTitle, 0);
 
                         // Write the contents node.
                         writeNode(project, writer, node);
@@ -791,7 +789,7 @@ void HelpProjectWriter::generateProject(HelpProject &project)
                             nextTitle = nextPage->links().value(Node::NextLink).first;
                             if (nextTitle.isEmpty() || visited.contains(nextTitle))
                                 break;
-                            nextPage = const_cast<DocNode *>(qdb_->findDocNodeByTitle(nextTitle));
+                            nextPage = qdb_->findNodeForTarget(nextTitle, 0);
                             visited.insert(nextTitle);
                         }
                         break;
@@ -803,6 +801,9 @@ void HelpProjectWriter::generateProject(HelpProject &project)
                 writer.writeEndElement(); // section
         }
     }
+
+    // Restore original search order
+    qdb_->setSearchOrder(searchOrder);
 
     writer.writeEndElement(); // section
     writer.writeEndElement(); // toc

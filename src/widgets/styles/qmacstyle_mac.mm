@@ -1109,6 +1109,19 @@ static QAquaWidgetSize qt_aqua_guess_size(const QWidget *widg, QSize large, QSiz
 }
 #endif
 
+static void qt_drawFocusRingOnPath(CGContextRef cg, NSBezierPath *focusRingPath)
+{
+    CGContextSaveGState(cg);
+    [NSGraphicsContext setCurrentContext:[NSGraphicsContext
+         graphicsContextWithGraphicsPort:(CGContextRef)cg flipped:NO]];
+    [NSGraphicsContext saveGraphicsState];
+    NSSetFocusRingStyle(NSFocusRingOnly);
+    [focusRingPath setClip]; // Clear clip path to avoid artifacts when rendering the cursor at zero pos
+    [focusRingPath fill];
+    [NSGraphicsContext restoreGraphicsState];
+    CGContextRestoreGState(cg);
+}
+
 QAquaWidgetSize QMacStylePrivate::aquaSizeConstrain(const QStyleOption *option, const QWidget *widg,
                                        QStyle::ContentsType ct, QSize szHint, QSize *insz) const
 {
@@ -1333,7 +1346,7 @@ void QMacStylePrivate::initComboboxBdi(const QStyleOptionComboBox *combo, HIThem
         bdi->adornment = kThemeAdornmentFocus;
     if (combo->activeSubControls & QStyle::SC_ComboBoxArrow)
         bdi->state = kThemeStatePressed;
-    else if (tds == kThemeStateInactive)
+    else if (tds == kThemeStateInactive && QSysInfo::MacintoshVersion <= QSysInfo::MV_10_9)
         bdi->state = kThemeStateActive;
     else
         bdi->state = tds;
@@ -1700,7 +1713,7 @@ void QMacStylePrivate::setAutoDefaultButton(QObject *button) const
 }
 
 QMacStylePrivate::QMacStylePrivate()
-    : mouseDown(false)
+    : mouseDown(false), backingStoreNSView(nil)
 {
     defaultButtonStart = CFAbsoluteTimeGetCurrent();
     memset(&buttonState, 0, sizeof(ButtonState));
@@ -1711,6 +1724,12 @@ QMacStylePrivate::QMacStylePrivate()
         ptrHIShapeGetBounds = reinterpret_cast<PtrHIShapeGetBounds>(library.resolve("HIShapeGetBounds"));
     }
 
+}
+
+QMacStylePrivate::~QMacStylePrivate()
+{
+    Q_FOREACH (NSView *b, buttons)
+        [b release];
 }
 
 ThemeDrawState QMacStylePrivate::getDrawState(QStyle::State flags)
@@ -1730,6 +1749,97 @@ ThemeDrawState QMacStylePrivate::getDrawState(QStyle::State flags)
     return tds;
 }
 
+NSView *QMacStylePrivate::buttonOfKind(ThemeButtonKind kind) const
+{
+    NSView *bv = buttons[kind];
+    if (!bv) {
+        if (kind == kThemePopupButton)
+            bv = [[NSPopUpButton alloc] init];
+        else if (kind == kThemeComboBox)
+            bv = [[NSComboBox alloc] init];
+        else
+            bv = [[NSButton alloc] init];
+
+        switch (kind) {
+        case kThemeArrowButton: {
+            NSButton *bc = (NSButton *)bv;
+            bc.buttonType = NSOnOffButton;
+            bc.bezelStyle = NSDisclosureBezelStyle;
+            break;
+        }
+        case kThemeCheckBox:
+        case kThemeCheckBoxSmall:
+        case kThemeCheckBoxMini: {
+            NSButton *bc = (NSButton *)bv;
+            bc.buttonType = NSSwitchButton;
+            break;
+        }
+        case kThemeRadioButton:
+        case kThemeRadioButtonSmall:
+        case kThemeRadioButtonMini: {
+            NSButton *bc = (NSButton *)bv;
+            bc.buttonType = NSRadioButton;
+            break;
+        }
+        case kThemePushButton:
+        case kThemePushButtonSmall:
+        case kThemePushButtonMini: {
+            NSButton *bc = (NSButton *)bv;
+            bc.buttonType = NSMomentaryPushButton;
+            bc.bezelStyle = NSRoundedBezelStyle;
+            break;
+        }
+        default:
+            break;
+        }
+
+//        if (kind == kThemePushButtonSmall
+//            || kind == kThemePopupButtonSmall
+//            || kind == kThemeCheckBoxSmall
+//            || kind == kThemeRadioButtonSmall)
+//            bc.controlSize = NSSmallControlSize;
+//        else if (kind == kThemePushButtonMini
+//                 || kind == kThemePopupButtonMini
+//                 || kind == kThemeCheckBoxMini
+//                 || kind == kThemeRadioButtonMini)
+//            bc.controlSize = NSMiniControlSize;
+
+        if ([bv isKindOfClass:[NSButton class]]) {
+            NSButton *bc = (NSButton *)bv;
+            bc.title = nil;
+        }
+
+        const_cast<QMacStylePrivate *>(this)->buttons.insert(kind, bv);
+    }
+
+    return bv;
+}
+
+void QMacStylePrivate::drawNSViewInRect(NSView *view, const QRect &qtRect, QPainter *p) const
+{
+    QMacCGContext ctx(p);
+    CGContextSaveGState(ctx);
+
+    [NSGraphicsContext saveGraphicsState];
+    [NSGraphicsContext setCurrentContext:[NSGraphicsContext
+                                          graphicsContextWithGraphicsPort:ctx flipped:YES]];
+
+    CGRect rect = CGRectMake(qtRect.x() + 1, qtRect.y(), qtRect.width(), qtRect.height());
+
+    [backingStoreNSView addSubview:view];
+    view.frame = rect;
+    [view drawRect:rect];
+    [view removeFromSuperviewWithoutNeedingDisplay];
+
+    [NSGraphicsContext restoreGraphicsState];
+    CGContextRestoreGState(ctx);
+}
+
+void QMacStylePrivate::resolveCurrentNSView(QWindow *window)
+{
+    backingStoreNSView = window ? (NSView *)window->winId() : nil;
+}
+
 void QMacStylePrivate::drawColorlessButton(const HIRect &macRect, HIThemeButtonDrawInfo *bdi,
                                            QPainter *p, const QStyleOption *opt) const
 {
@@ -1740,8 +1850,12 @@ void QMacStylePrivate::drawColorlessButton(const HIRect &macRect, HIThemeButtonD
         finalyoff = 0;
 
     const bool combo = opt->type == QStyleOption::SO_ComboBox;
+    const bool editableCombo = bdi->kind == kThemeComboBox
+                               || bdi->kind == kThemeComboBoxSmall
+                               || bdi->kind == kThemeComboBoxMini;
     const bool button = opt->type == QStyleOption::SO_Button;
     const bool pressed = bdi->state == kThemeStatePressed;
+    const bool usingYosemiteOrLater = QSysInfo::MacintoshVersion > QSysInfo::MV_10_9;
 
     if (button && pressed) {
         if (bdi->kind == kThemePushButton) {
@@ -1786,7 +1900,7 @@ void QMacStylePrivate::drawColorlessButton(const HIRect &macRect, HIThemeButtonD
 
         if (!combo && !button && bdi->value == kThemeButtonOff) {
             pm = activePixmap;
-        } else if (combo || button) {
+        } else if (!usingYosemiteOrLater && (combo || button)) {
             QImage image = activePixmap.toImage();
 
             for (int y = 0; y < height; ++y) {
@@ -1810,6 +1924,40 @@ void QMacStylePrivate::drawColorlessButton(const HIRect &macRect, HIThemeButtonD
                     if (pressed)
                         gray *= 0.88;
                     pixel = qRgba(gray, gray, gray, qAlpha(pixel));
+                }
+            }
+            pm = QPixmap::fromImage(image);
+        } else if ((usingYosemiteOrLater && combo && !editableCombo) || button) {
+            NSButton *bc = (NSButton *)buttonOfKind(bdi->kind);
+            [bc highlight:pressed];
+            bc.enabled = bdi->state != kThemeStateUnavailable && bdi->state != kThemeStateUnavailableInactive;
+            bc.state = bdi->value == kThemeButtonOn ? NSOnState :
+                       bdi->value == kThemeButtonMixed ? NSMixedState : NSOffState;
+            p->translate(0, 1);
+            drawNSViewInRect(bc, opt->rect, p);
+            p->translate(0, -1);
+            return;
+        } else if (usingYosemiteOrLater && editableCombo) {
+            QImage image = activePixmap.toImage();
+
+            for (int y = 0; y < height; ++y) {
+                QRgb *scanLine = reinterpret_cast<QRgb *>(image.scanLine(y));
+
+                for (int x = 0; x < width; ++x) {
+                    QRgb &pixel = scanLine[x];
+                    int gray = qRed(pixel); // We know the image is grayscale
+                    int alpha = qAlpha(pixel);
+
+                    if (gray == 128 && alpha == 128) {
+                        pixel = qRgba(255, 255, 255, 255);
+                    } else if (alpha == 0) {
+                        pixel = 0;
+                    } else {
+                        bool belowThreshold = (alpha * gray) / 255 + 255 - alpha < 128;
+                        gray = belowThreshold ? 0 : 2 * gray - 255;
+                        alpha = belowThreshold ? 0 : 2 * alpha - 255;
+                        pixel = qRgba(gray, gray, gray, alpha);
+                    }
                 }
             }
             pm = QPixmap::fromImage(image);
@@ -2861,7 +3009,7 @@ QPixmap QMacStyle::standardPixmap(StandardPixmap standardPixmap, const QStyleOpt
         return QCommonStyle::standardPixmap(standardPixmap, opt, widget);
 
     recursionGuard = true;
-    QIcon icon = standardIcon(standardPixmap, opt, widget);
+    QIcon icon = proxy()->standardIcon(standardPixmap, opt, widget);
     recursionGuard = false;
     int size;
     switch (standardPixmap) {
@@ -2930,6 +3078,9 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
     Q_D(const QMacStyle);
     ThemeDrawState tds = d->getDrawState(opt->state);
     QMacCGContext cg(p);
+    QWindow *window = w && w->window() ? w->window()->windowHandle() :
+                     QStyleHelper::styleObjectWindow(opt->styleObject);
+    const_cast<QMacStylePrivate *>(d)->resolveCurrentNSView(window);
     switch (pe) {
     case PE_IndicatorArrowUp:
     case PE_IndicatorArrowDown:
@@ -3346,6 +3497,9 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
     Q_D(const QMacStyle);
     ThemeDrawState tds = d->getDrawState(opt->state);
     QMacCGContext cg(p);
+    QWindow *window = w && w->window() ? w->window()->windowHandle() :
+                     QStyleHelper::styleObjectWindow(opt->styleObject);
+    const_cast<QMacStylePrivate *>(d)->resolveCurrentNSView(window);
     switch (ce) {
     case CE_HeaderSection:
         if (const QStyleOptionHeader *header = qstyleoption_cast<const QStyleOptionHeader *>(opt)) {
@@ -3558,11 +3712,18 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                 break;
             }
 
+            // No default button pulsating animation on Yosemite,
+            // so we have to do few things differently.
+            const bool yosemiteOrLater = QSysInfo::QSysInfo::MacintoshVersion > QSysInfo::MV_10_9;
+
             // a focused auto-default button within an active window
             // takes precedence over a normal default button
             if (btn->features & QStyleOptionButton::AutoDefaultButton
                     && opt->state & State_Active && opt->state & State_HasFocus) {
-                d->setAutoDefaultButton(opt->styleObject);
+                if (yosemiteOrLater)
+                    d->autoDefaultButton = opt->styleObject;
+                else
+                    d->setAutoDefaultButton(opt->styleObject);
             } else if (d->autoDefaultButton == opt->styleObject) {
                 d->setAutoDefaultButton(0);
             }
@@ -3570,7 +3731,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
             if (!d->autoDefaultButton) {
                 if (btn->features & QStyleOptionButton::DefaultButton && opt->state & State_Active) {
                     d->defaultButton = opt->styleObject;
-                    if (!d->animation(opt->styleObject))
+                    if (!yosemiteOrLater && !d->animation(opt->styleObject))
                         d->startAnimation(new QStyleAnimation(opt->styleObject));
                 } else if (d->defaultButton == opt->styleObject) {
                     if (QStyleAnimation *animation = d->animation(opt->styleObject)) {
@@ -3588,29 +3749,45 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
             else if (d->pressedButton == opt->styleObject)
                 d->pressedButton = 0;
 
-            // the default button animation is paused meanwhile any button
-            // is pressed or an auto-default button is animated instead
-            if (QStyleAnimation *defaultAnimation = d->animation(d->defaultButton)) {
-                if (d->pressedButton || d->autoDefaultButton) {
-                    if (defaultAnimation->state() == QStyleAnimation::Running) {
-                        defaultAnimation->pause();
-                        defaultAnimation->updateTarget();
+            HIThemeButtonDrawInfo bdi;
+            d->initHIThemePushButton(btn, w, tds, &bdi);
+
+            if (yosemiteOrLater) {
+                // HITheme is not drawing a nice focus frame around buttons.
+                // We'll do it ourselves further down.
+                bdi.adornment &= ~kThemeAdornmentFocus;
+
+                // We can't rely on an animation existing to test for the default look. That means a bit
+                // more logic (notice that the logic is slightly different for the bevel and the label).
+                if (tds == kThemeStateActive
+                    && (btn->features & QStyleOptionButton::DefaultButton
+                        || (btn->features & QStyleOptionButton::AutoDefaultButton
+                            && d->autoDefaultButton == btn->styleObject)))
+                    bdi.adornment |= kThemeAdornmentDefault;
+            } else {
+                // the default button animation is paused meanwhile any button
+                // is pressed or an auto-default button is animated instead
+                if (QStyleAnimation *defaultAnimation = d->animation(d->defaultButton)) {
+                    if (d->pressedButton || d->autoDefaultButton) {
+                        if (defaultAnimation->state() == QStyleAnimation::Running) {
+                            defaultAnimation->pause();
+                            defaultAnimation->updateTarget();
+                        }
+                    } else if (defaultAnimation->state() == QStyleAnimation::Paused) {
+                        defaultAnimation->resume();
                     }
-                } else if (defaultAnimation->state() == QStyleAnimation::Paused) {
-                    defaultAnimation->resume();
+                }
+
+                if (!d->pressedButton) {
+                    QStyleAnimation* animation = d->animation(opt->styleObject);
+                    if (animation && animation->state() == QStyleAnimation::Running) {
+                        bdi.adornment |= kThemeAdornmentDefault;
+                        bdi.animation.time.start = d->defaultButtonStart;
+                        bdi.animation.time.current = CFAbsoluteTimeGetCurrent();
+                    }
                 }
             }
 
-            HIThemeButtonDrawInfo bdi;
-            d->initHIThemePushButton(btn, w, tds, &bdi);
-            if (!d->pressedButton) {
-                QStyleAnimation* animation = d->animation(opt->styleObject);
-                if (animation && animation->state() == QStyleAnimation::Running) {
-                    bdi.adornment |= kThemeAdornmentDefault;
-                    bdi.animation.time.start = d->defaultButtonStart;
-                    bdi.animation.time.current = CFAbsoluteTimeGetCurrent();
-                }
-            }
             // Unlike Carbon, we want the button to always be drawn inside its bounds.
             // Therefore, make the button a bit smaller, so that even if it got focus,
             // the focus 'shadow' will be inside.
@@ -3631,6 +3808,37 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                 d->drawColorlessButton(newRect, &bdi, p, opt);
             else
                 HIThemeDrawButton(&newRect, &bdi, cg, kHIThemeOrientationNormal, 0);
+
+            if (yosemiteOrLater && btn->state & State_HasFocus) {
+                CGRect focusRect = newRect;
+                if (bdi.kind == kThemePushButton)
+                    focusRect.size.height += 1; // Another thing HITheme and Cocoa seem to disagree about.
+                else if (bdi.kind == kThemePushButtonMini)
+                    focusRect.size.height = 15; // Our QPushButton sizes are really weird
+
+                if (bdi.adornment & kThemeAdornmentDefault || bdi.state == kThemeStatePressed) {
+                    if (bdi.kind == kThemePushButtonSmall) {
+                        focusRect = CGRectInset(focusRect, -1, 0);
+                    } else if (bdi.kind == kThemePushButtonMini) {
+                        focusRect = CGRectInset(focusRect, 1, 0);
+                    }
+                } else {
+                    if (bdi.kind == kThemePushButton) {
+                        focusRect = CGRectInset(focusRect, 1, 1);
+                    } else if (bdi.kind == kThemePushButtonSmall) {
+                        focusRect = CGRectInset(focusRect, 0, 2);
+                    } else if (bdi.kind == kThemePushButtonMini) {
+                        focusRect = CGRectInset(focusRect, 2, 1);
+                    }
+                }
+
+                NSBezierPath *pushButtonFocusRingPath;
+                if (bdi.kind == kThemeBevelButton)
+                    pushButtonFocusRingPath = [NSBezierPath bezierPathWithRect:focusRect];
+                else
+                    pushButtonFocusRingPath = [NSBezierPath bezierPathWithRoundedRect:focusRect xRadius:4 yRadius:4];
+                qt_drawFocusRingOnPath(cg, pushButtonFocusRingPath);
+            }
 
             if (hasMenu) {
                 int mbi = proxy()->pixelMetric(QStyle::PM_MenuButtonIndicator, btn, w);
@@ -3676,14 +3884,24 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
         }
         break;
     case CE_PushButtonLabel:
-        if (const QStyleOptionButton *btn = qstyleoption_cast<const QStyleOptionButton *>(opt)) {
+        if (const QStyleOptionButton *b = qstyleoption_cast<const QStyleOptionButton *>(opt)) {
+            QStyleOptionButton btn(*b);
             // We really don't want the label to be drawn the same as on
             // windows style if it has an icon and text, then it should be more like a
             // tab. So, cheat a little here. However, if it *is* only an icon
             // the windows style works great, so just use that implementation.
-            bool hasMenu = btn->features & QStyleOptionButton::HasMenu;
-            bool hasIcon = !btn->icon.isNull();
-            bool hasText = !btn->text.isEmpty();
+            bool hasMenu = btn.features & QStyleOptionButton::HasMenu;
+            bool hasIcon = !btn.icon.isNull();
+            bool hasText = !btn.text.isEmpty();
+
+            if (QSysInfo::QSysInfo::MacintoshVersion > QSysInfo::MV_10_9) {
+                if (tds == kThemeStatePressed
+                    || (tds == kThemeStateActive
+                        && ((btn.features & QStyleOptionButton::DefaultButton && !d->autoDefaultButton)
+                            || d->autoDefaultButton == btn.styleObject)))
+                btn.palette.setColor(QPalette::ButtonText, Qt::white);
+            }
+
             if (!hasIcon && !hasMenu) {
                 // ### this is really overly difficult, simplify.
                 // It basically tries to get the right font for "small" and "mini" icons.
@@ -3702,8 +3920,9 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                         break;
                     }
                 }
+
                 if (themeId == kThemePushButtonFont) {
-                    QCommonStyle::drawControl(ce, btn, p, w);
+                    QCommonStyle::drawControl(ce, &btn, p, w);
                 } else {
                     p->save();
                     CGContextSetShouldAntialias(cg, true);
@@ -3711,7 +3930,8 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                     HIThemeTextInfo tti;
                     tti.version = qt_mac_hitheme_version;
                     tti.state = tds;
-                    QColor textColor = btn->palette.buttonText().color();
+                    QColor textColor;
+                    textColor = btn.palette.buttonText().color();
                     CGFloat colorComp[] = { static_cast<CGFloat>(textColor.redF()), static_cast<CGFloat>(textColor.greenF()),
                                           static_cast<CGFloat>(textColor.blueF()), static_cast<CGFloat>(textColor.alphaF()) };
                     CGContextSetFillColorSpace(cg, qt_mac_genericColorSpace());
@@ -3721,9 +3941,9 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                     tti.verticalFlushness = kHIThemeTextVerticalFlushCenter;
                     tti.options = kHIThemeTextBoxOptionNone;
                     tti.truncationPosition = kHIThemeTextTruncationNone;
-                    tti.truncationMaxLines = 1 + btn->text.count(QLatin1Char('\n'));
-                    QCFString buttonText = qt_mac_removeMnemonics(btn->text);
-                    QRect r = btn->rect;
+                    tti.truncationMaxLines = 1 + btn.text.count(QLatin1Char('\n'));
+                    QCFString buttonText = qt_mac_removeMnemonics(btn.text);
+                    QRect r = btn.rect;
                     HIRect bounds = qt_hirectForQRect(r);
                     HIThemeDrawTextBox(buttonText, &bounds, &tti,
                                        cg, kHIThemeOrientationNormal);
@@ -3731,11 +3951,11 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                 }
             } else {
                 if (hasIcon && !hasText) {
-                    QCommonStyle::drawControl(ce, btn, p, w);
+                    QCommonStyle::drawControl(ce, &btn, p, w);
                 } else {
-                    QRect freeContentRect = btn->rect;
+                    QRect freeContentRect = btn.rect;
                     QRect textRect = itemTextRect(
-                        btn->fontMetrics, freeContentRect, Qt::AlignCenter, btn->state & State_Enabled, btn->text);
+                        btn.fontMetrics, freeContentRect, Qt::AlignCenter, btn.state & State_Enabled, btn.text);
                     if (hasMenu) {
                         if (QSysInfo::macVersion() > QSysInfo::MV_10_6)
                             textRect.moveTo(w ? 15 : 11, textRect.top()); // Supports Qt Quick Controls
@@ -3747,21 +3967,21 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                         int contentW = textRect.width();
                         if (hasMenu)
                             contentW += proxy()->pixelMetric(PM_MenuButtonIndicator) + 4;
-                        QIcon::Mode mode = btn->state & State_Enabled ? QIcon::Normal : QIcon::Disabled;
-                        if (mode == QIcon::Normal && btn->state & State_HasFocus)
+                        QIcon::Mode mode = btn.state & State_Enabled ? QIcon::Normal : QIcon::Disabled;
+                        if (mode == QIcon::Normal && btn.state & State_HasFocus)
                             mode = QIcon::Active;
                         // Decide if the icon is should be on or off:
                         QIcon::State state = QIcon::Off;
-                        if (btn->state & State_On)
+                        if (btn.state & State_On)
                             state = QIcon::On;
-                        QPixmap pixmap = btn->icon.pixmap(btn->iconSize, mode, state);
+                        QPixmap pixmap = btn.icon.pixmap(btn.iconSize, mode, state);
                         int pixmapWidth = pixmap.width() / pixmap.devicePixelRatio();
                         int pixmapHeight = pixmap.height() / pixmap.devicePixelRatio();
                         contentW += pixmapWidth + QMacStylePrivate::PushButtonContentPadding;
                         int iconLeftOffset = freeContentRect.x() + (freeContentRect.width() - contentW) / 2;
                         int iconTopOffset = freeContentRect.y() + (freeContentRect.height() - pixmapHeight) / 2;
                         QRect iconDestRect(iconLeftOffset, iconTopOffset, pixmapWidth, pixmapHeight);
-                        QRect visualIconDestRect = visualRect(btn->direction, freeContentRect, iconDestRect);
+                        QRect visualIconDestRect = visualRect(btn.direction, freeContentRect, iconDestRect);
                         proxy()->drawItemPixmap(p, visualIconDestRect, Qt::AlignLeft | Qt::AlignVCenter, pixmap);
                         int newOffset = iconDestRect.x() + iconDestRect.width()
                                         + QMacStylePrivate::PushButtonContentPadding - textRect.x();
@@ -3769,9 +3989,9 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                     }
                     // Draw the text:
                     if (hasText) {
-                        textRect = visualRect(btn->direction, freeContentRect, textRect);
-                        proxy()->drawItemText(p, textRect, Qt::AlignLeft | Qt::AlignVCenter | Qt::TextShowMnemonic, btn->palette,
-                                                   (btn->state & State_Enabled), btn->text, QPalette::ButtonText);
+                        textRect = visualRect(btn.direction, freeContentRect, textRect);
+                        proxy()->drawItemText(p, textRect, Qt::AlignLeft | Qt::AlignVCenter | Qt::TextShowMnemonic, btn.palette,
+                                                   (btn.state & State_Enabled), btn.text, QPalette::ButtonText);
                     }
                 }
             }
@@ -3806,6 +4026,9 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                     return;
                 }
             }
+
+            bool usingYosemiteOrLater = QSysInfo::MacintoshVersion > QSysInfo::MV_10_9;
+
             HIThemeTabDrawInfo tdi;
             tdi.version = 1;
             tdi.style = kThemeTabNonFront;
@@ -3846,10 +4069,13 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
             else
                 tdi.adornment = kHIThemeTabAdornmentNone;
             tdi.kind = kHIThemeTabKindNormal;
-            if (!verticalTabs)
-                tabRect.setY(tabRect.y() - 1);
-            else
-                tabRect.setX(tabRect.x() - 1);
+
+            if (!usingYosemiteOrLater) {
+                if (!verticalTabs)
+                    tabRect.setY(tabRect.y() - 1);
+                else
+                    tabRect.setX(tabRect.x() - 1);
+            }
             QStyleOptionTab::TabPosition tp = tabOpt->position;
             QStyleOptionTab::SelectedPosition sp = tabOpt->selectedPosition;
             if (tabOpt->direction == Qt::RightToLeft && !verticalTabs) {
@@ -3914,18 +4140,21 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
             ThemeTabDirection ttd = getTabDirection(myTab.shape);
             bool verticalTabs = ttd == kThemeTabWest || ttd == kThemeTabEast;
             bool selected = (myTab.state & QStyle::State_Selected);
-            bool usingModernOSX = QSysInfo::MacintoshVersion > QSysInfo::MV_10_6;
+            bool usingLionOrLater = QSysInfo::MacintoshVersion > QSysInfo::MV_10_6;
+            bool usingYosemiteOrLater = QSysInfo::MacintoshVersion > QSysInfo::MV_10_9;
 
-            if (usingModernOSX && selected && !myTab.documentMode)
-                myTab.palette.setColor(QPalette::WindowText, QColor(Qt::white));
+            if (usingLionOrLater && selected && !myTab.documentMode
+                && (!usingYosemiteOrLater || myTab.state & State_Active))
+                myTab.palette.setColor(QPalette::WindowText, Qt::white);
 
             // Check to see if we use have the same as the system font
             // (QComboMenuItem is internal and should never be seen by the
             // outside world, unless they read the source, in which case, it's
             // their own fault).
             bool nonDefaultFont = p->font() != qt_app_fonts_hash()->value("QComboMenuItem");
-            if ((usingModernOSX && selected) || verticalTabs || nonDefaultFont || !tab->icon.isNull()
-                || !myTab.leftButtonSize.isNull() || !myTab.rightButtonSize.isNull()) {
+            bool isSelectedAndNeedsShadow = selected && usingLionOrLater && !usingYosemiteOrLater;
+            if (isSelectedAndNeedsShadow || verticalTabs || nonDefaultFont || !tab->icon.isNull()
+                || !myTab.leftButtonSize.isEmpty() || !myTab.rightButtonSize.isEmpty()) {
                 int heightOffset = 0;
                 if (verticalTabs) {
                     heightOffset = -1;
@@ -3935,7 +4164,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                 }
                 myTab.rect.setHeight(myTab.rect.height() + heightOffset);
 
-                if (myTab.documentMode || (usingModernOSX && selected)) {
+                if (myTab.documentMode || isSelectedAndNeedsShadow) {
                     p->save();
                     rotateTabPainter(p, myTab.shape, myTab.rect);
 
@@ -4075,16 +4304,8 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
         int yOff = proxy()->pixelMetric(PM_FocusFrameVMargin, opt, w);
         NSRect rect = NSMakeRect(xOff+opt->rect.x(), yOff+opt->rect.y(), opt->rect.width() - 2 * xOff,
                                  opt->rect.height() - 2 * yOff);
-        CGContextSaveGState(cg);
-        [NSGraphicsContext setCurrentContext:[NSGraphicsContext
-             graphicsContextWithGraphicsPort:(CGContextRef)cg flipped:NO]];
-        [NSGraphicsContext saveGraphicsState];
-        NSSetFocusRingStyle(NSFocusRingOnly);
         NSBezierPath *focusFramePath = [NSBezierPath bezierPathWithRect:rect];
-        [focusFramePath setClip]; // Clear clip path to avoid artifacts when rendering the cursor at zero pos
-        [focusFramePath fill];
-        [NSGraphicsContext restoreGraphicsState];
-        CGContextRestoreGState(cg);
+        qt_drawFocusRingOnPath(cg, focusFramePath);
         break; }
     case CE_MenuItem:
     case CE_MenuEmptyArea:
@@ -4901,7 +5122,7 @@ QRect QMacStyle::subElementRect(SubElement sr, const QStyleOption *opt,
 
                 QRect closeRect;
                 if (canClose) {
-                    QSize sz = standardIcon(QStyle::SP_TitleBarCloseButton,
+                    QSize sz = proxy()->standardIcon(QStyle::SP_TitleBarCloseButton,
                                             opt, widget).actualSize(QSize(iconSize, iconSize));
                     sz += QSize(buttonMargin, buttonMargin);
                     if (verticalTitleBar)
@@ -4918,7 +5139,7 @@ QRect QMacStyle::subElementRect(SubElement sr, const QStyleOption *opt,
 
                 QRect floatRect;
                 if (canFloat) {
-                    QSize sz = standardIcon(QStyle::SP_TitleBarNormalButton,
+                    QSize sz = proxy()->standardIcon(QStyle::SP_TitleBarNormalButton,
                                             opt, widget).actualSize(QSize(iconSize, iconSize));
                     sz += QSize(buttonMargin, buttonMargin);
                     if (verticalTitleBar)
@@ -4996,6 +5217,9 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
     Q_D(const QMacStyle);
     ThemeDrawState tds = d->getDrawState(opt->state);
     QMacCGContext cg(p);
+    QWindow *window = widget && widget->window() ? widget->window()->windowHandle() :
+                     QStyleHelper::styleObjectWindow(opt->styleObject);
+    const_cast<QMacStylePrivate *>(d)->resolveCurrentNSView(window);
     switch (cc) {
     case CC_Slider:
     case CC_ScrollBar:

@@ -5,5 +5,5 @@ PASS   : tst_BenchlibTickCounter::threeBillionTicks()
 RESULT : tst_BenchlibTickCounter::threeBillionTicks():
      3,000,005,772 CPU ticks per iteration (total: 3,000,005,772, iterations: 1)
 PASS   : tst_BenchlibTickCounter::cleanupTestCase()
-Totals: 3 passed, 0 failed, 0 skipped
+Totals: 3 passed, 0 failed, 0 skipped, 0 blacklisted
 ********* Finished testing of tst_BenchlibTickCounter *********

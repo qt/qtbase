@@ -6,35 +6,27 @@
 **
 ** This file is part of the plugins of the Qt Toolkit.
 **
-** $QT_BEGIN_LICENSE:LGPL$
+** $QT_BEGIN_LICENSE:LGPL21$
 ** Commercial License Usage
 ** Licensees holding valid commercial Qt licenses may use this file in
 ** accordance with the commercial license agreement provided with the
 ** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and Digia.  For licensing terms and
-** conditions see http://qt.digia.com/licensing.  For further information
+** a written agreement between you and Digia. For licensing terms and
+** conditions see http://qt.digia.com/licensing. For further information
 ** use the contact form at http://qt.digia.com/contact-us.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** General Public License version 2.1 or version 3 as published by the Free
+** Software Foundation and appearing in the file LICENSE.LGPLv21 and
+** LICENSE.LGPLv3 included in the packaging of this file. Please review the
+** following information to ensure the GNU Lesser General Public License
+** requirements will be met: https://www.gnu.org/licenses/lgpl.html and
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Digia gives you certain additional
-** rights.  These rights are described in the Digia Qt LGPL Exception
+** rights. These rights are described in the Digia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
-**
 **
 ** $QT_END_LICENSE$
 **
@@ -53,6 +45,7 @@
 #include <qthread.h>
 #include <qinputmethod.h>
 #include <qwindow.h>
+#include <QtCore/private/qjni_p.h>
 
 #include <QTextCharFormat>
 
@@ -61,8 +54,8 @@
 QT_BEGIN_NAMESPACE
 
 static QAndroidInputContext *m_androidInputContext = 0;
-static char const *const QtNativeInputConnectionClassName = "org.qtproject.qt5.android.QtNativeInputConnection";
-static char const *const QtExtractedTextClassName = "org.qtproject.qt5.android.QtExtractedText";
+static char const *const QtNativeInputConnectionClassName = "org/qtproject/qt5/android/QtNativeInputConnection";
+static char const *const QtExtractedTextClassName = "org/qtproject/qt5/android/QtExtractedText";
 static jclass m_extractedTextClass = 0;
 static jmethodID m_classConstructorMethodID = 0;
 static jfieldID m_partialEndOffsetFieldID = 0;
@@ -342,11 +335,7 @@ static JNINativeMethod methods[] = {
 QAndroidInputContext::QAndroidInputContext()
     : QPlatformInputContext(), m_composingTextStart(-1), m_blockUpdateSelection(false),  m_batchEditNestingLevel(0), m_focusObject(0)
 {
-    QtAndroid::AttachedJNIEnv env;
-    if (!env.jniEnv)
-        return;
-
-    jclass clazz = QtAndroid::findClass(QtNativeInputConnectionClassName, env.jniEnv);
+    jclass clazz = QJNIEnvironmentPrivate::findClass(QtNativeInputConnectionClassName);
     if (clazz == NULL) {
         qCritical() << "Native registration unable to find class '"
                     << QtNativeInputConnectionClassName
@@ -354,14 +343,15 @@ QAndroidInputContext::QAndroidInputContext()
         return;
     }
 
-    if (env.jniEnv->RegisterNatives(clazz, methods, sizeof(methods) / sizeof(methods[0])) < 0) {
+    QJNIEnvironmentPrivate env;
+    if (env->RegisterNatives(clazz, methods, sizeof(methods) / sizeof(methods[0])) < 0) {
         qCritical() << "RegisterNatives failed for '"
                     << QtNativeInputConnectionClassName
                     << "'";
         return;
     }
 
-    clazz = QtAndroid::findClass(QtExtractedTextClassName, env.jniEnv);
+    clazz = QJNIEnvironmentPrivate::findClass(QtExtractedTextClassName);
     if (clazz == NULL) {
         qCritical() << "Native registration unable to find class '"
                     << QtExtractedTextClassName
@@ -369,44 +359,44 @@ QAndroidInputContext::QAndroidInputContext()
         return;
     }
 
-    m_extractedTextClass = static_cast<jclass>(env.jniEnv->NewGlobalRef(clazz));
-    m_classConstructorMethodID = env.jniEnv->GetMethodID(m_extractedTextClass, "<init>", "()V");
+    m_extractedTextClass = static_cast<jclass>(env->NewGlobalRef(clazz));
+    m_classConstructorMethodID = env->GetMethodID(m_extractedTextClass, "<init>", "()V");
     if (m_classConstructorMethodID == NULL) {
         qCritical() << "GetMethodID failed";
         return;
     }
 
-    m_partialEndOffsetFieldID = env.jniEnv->GetFieldID(m_extractedTextClass, "partialEndOffset", "I");
+    m_partialEndOffsetFieldID = env->GetFieldID(m_extractedTextClass, "partialEndOffset", "I");
     if (m_partialEndOffsetFieldID == NULL) {
         qCritical() << "Can't find field partialEndOffset";
         return;
     }
 
-    m_partialStartOffsetFieldID = env.jniEnv->GetFieldID(m_extractedTextClass, "partialStartOffset", "I");
+    m_partialStartOffsetFieldID = env->GetFieldID(m_extractedTextClass, "partialStartOffset", "I");
     if (m_partialStartOffsetFieldID == NULL) {
         qCritical() << "Can't find field partialStartOffset";
         return;
     }
 
-    m_selectionEndFieldID = env.jniEnv->GetFieldID(m_extractedTextClass, "selectionEnd", "I");
+    m_selectionEndFieldID = env->GetFieldID(m_extractedTextClass, "selectionEnd", "I");
     if (m_selectionEndFieldID == NULL) {
         qCritical() << "Can't find field selectionEnd";
         return;
     }
 
-    m_selectionStartFieldID = env.jniEnv->GetFieldID(m_extractedTextClass, "selectionStart", "I");
+    m_selectionStartFieldID = env->GetFieldID(m_extractedTextClass, "selectionStart", "I");
     if (m_selectionStartFieldID == NULL) {
         qCritical() << "Can't find field selectionStart";
         return;
     }
 
-    m_startOffsetFieldID = env.jniEnv->GetFieldID(m_extractedTextClass, "startOffset", "I");
+    m_startOffsetFieldID = env->GetFieldID(m_extractedTextClass, "startOffset", "I");
     if (m_startOffsetFieldID == NULL) {
         qCritical() << "Can't find field startOffset";
         return;
     }
 
-    m_textFieldID = env.jniEnv->GetFieldID(m_extractedTextClass, "text", "Ljava/lang/String;");
+    m_textFieldID = env->GetFieldID(m_extractedTextClass, "text", "Ljava/lang/String;");
     if (m_textFieldID == NULL) {
         qCritical() << "Can't find field text";
         return;
@@ -464,7 +454,7 @@ void QAndroidInputContext::commit()
 
 void QAndroidInputContext::updateCursorPosition()
 {
-    QSharedPointer<QInputMethodQueryEvent> query = focusObjectInputMethodQuery();
+    QSharedPointer<QInputMethodQueryEvent> query = focusObjectInputMethodQueryThreadSafe();
     if (!query.isNull() && !m_blockUpdateSelection && !m_batchEditNestingLevel) {
         const int cursorPos = getAbsoluteCursorPosition(query);
         const int composeLength = m_composingText.length();
@@ -497,7 +487,7 @@ void QAndroidInputContext::updateCursorPosition()
 
 void QAndroidInputContext::update(Qt::InputMethodQueries queries)
 {
-    QSharedPointer<QInputMethodQueryEvent> query = focusObjectInputMethodQuery(queries);
+    QSharedPointer<QInputMethodQueryEvent> query = focusObjectInputMethodQueryThreadSafe(queries);
     if (query.isNull())
         return;
 #warning TODO extract the needed data from query
@@ -525,7 +515,7 @@ bool QAndroidInputContext::isAnimating() const
 
 void QAndroidInputContext::showInputPanel()
 {
-    QSharedPointer<QInputMethodQueryEvent> query = focusObjectInputMethodQuery();
+    QSharedPointer<QInputMethodQueryEvent> query = focusObjectInputMethodQueryThreadSafe();
     if (query.isNull())
         return;
 
@@ -581,16 +571,6 @@ void QAndroidInputContext::setFocusObject(QObject *object)
     QPlatformInputContext::setFocusObject(object);
 }
 
-void QAndroidInputContext::sendEvent(QObject *receiver, QInputMethodEvent *event)
-{
-    QCoreApplication::sendEvent(receiver, event);
-}
-
-void QAndroidInputContext::sendEvent(QObject *receiver, QInputMethodQueryEvent *event)
-{
-    QCoreApplication::sendEvent(receiver, event);
-}
-
 jboolean QAndroidInputContext::beginBatchEdit()
 {
     ++m_batchEditNestingLevel;
@@ -616,12 +596,12 @@ jboolean QAndroidInputContext::commitText(const QString &text, jint newCursorPos
 {
     QInputMethodEvent event;
     event.setCommitString(text);
-    sendInputMethodEvent(&event);
+    sendInputMethodEventThreadSafe(&event);
     clear();
 
     // Qt has now put the cursor at the end of the text, corresponding to newCursorPosition == 1
     if (newCursorPosition != 1) {
-        QSharedPointer<QInputMethodQueryEvent> query = focusObjectInputMethodQuery();
+        QSharedPointer<QInputMethodQueryEvent> query = focusObjectInputMethodQueryThreadSafe();
         if (!query.isNull()) {
             QList<QInputMethodEvent::Attribute> attributes;
             const int localPos = query->value(Qt::ImCursorPosition).toInt();
@@ -640,7 +620,7 @@ jboolean QAndroidInputContext::commitText(const QString &text, jint newCursorPos
 
 jboolean QAndroidInputContext::deleteSurroundingText(jint leftLength, jint rightLength)
 {
-    QSharedPointer<QInputMethodQueryEvent> query = focusObjectInputMethodQuery();
+    QSharedPointer<QInputMethodQueryEvent> query = focusObjectInputMethodQueryThreadSafe();
     if (query.isNull())
         return JNI_TRUE;
 
@@ -649,7 +629,7 @@ jboolean QAndroidInputContext::deleteSurroundingText(jint leftLength, jint right
 
     QInputMethodEvent event;
     event.setCommitString(QString(), -leftLength, leftLength+rightLength);
-    sendInputMethodEvent(&event);
+    sendInputMethodEventThreadSafe(&event);
     clear();
 
     return JNI_TRUE;
@@ -658,7 +638,7 @@ jboolean QAndroidInputContext::deleteSurroundingText(jint leftLength, jint right
 // Android docs say the cursor must not move
 jboolean QAndroidInputContext::finishComposingText()
 {
-    QSharedPointer<QInputMethodQueryEvent> query = focusObjectInputMethodQuery();
+    QSharedPointer<QInputMethodQueryEvent> query = focusObjectInputMethodQueryThreadSafe();
     if (query.isNull())
         return JNI_FALSE;
 
@@ -674,7 +654,7 @@ jboolean QAndroidInputContext::finishComposingText()
 
     QInputMethodEvent event(QString(), attributes);
     event.setCommitString(m_composingText);
-    sendInputMethodEvent(&event);
+    sendInputMethodEventThreadSafe(&event);
     clear();
 
     return JNI_TRUE;
@@ -683,7 +663,7 @@ jboolean QAndroidInputContext::finishComposingText()
 jint QAndroidInputContext::getCursorCapsMode(jint /*reqModes*/)
 {
     jint res = 0;
-    QSharedPointer<QInputMethodQueryEvent> query = focusObjectInputMethodQuery();
+    QSharedPointer<QInputMethodQueryEvent> query = focusObjectInputMethodQueryThreadSafe();
     if (query.isNull())
         return res;
 
@@ -706,7 +686,7 @@ const QAndroidInputContext::ExtractedText &QAndroidInputContext::getExtractedTex
     // updateExtractedText(View, int, ExtractedText) whenever you call
     // updateSelection(View, int, int, int, int)."  QTBUG-37980
 
-    QSharedPointer<QInputMethodQueryEvent> query = focusObjectInputMethodQuery();
+    QSharedPointer<QInputMethodQueryEvent> query = focusObjectInputMethodQueryThreadSafe();
     if (query.isNull())
         return m_extractedText;
 
@@ -751,7 +731,7 @@ const QAndroidInputContext::ExtractedText &QAndroidInputContext::getExtractedTex
 
 QString QAndroidInputContext::getSelectedText(jint /*flags*/)
 {
-    QSharedPointer<QInputMethodQueryEvent> query = focusObjectInputMethodQuery();
+    QSharedPointer<QInputMethodQueryEvent> query = focusObjectInputMethodQueryThreadSafe();
     if (query.isNull())
         return QString();
 
@@ -767,7 +747,7 @@ QString QAndroidInputContext::getTextAfterCursor(jint length, jint /*flags*/)
     }
 
     //compatibility code for old controls that do not implement the new API
-    QSharedPointer<QInputMethodQueryEvent> query = focusObjectInputMethodQuery();
+    QSharedPointer<QInputMethodQueryEvent> query = focusObjectInputMethodQueryThreadSafe();
     if (query.isNull())
         return QString();
 
@@ -787,7 +767,7 @@ QString QAndroidInputContext::getTextBeforeCursor(jint length, jint /*flags*/)
     }
 
     //compatibility code for old controls that do not implement the new API
-    QSharedPointer<QInputMethodQueryEvent> query = focusObjectInputMethodQuery();
+    QSharedPointer<QInputMethodQueryEvent> query = focusObjectInputMethodQueryThreadSafe();
     if (query.isNull())
         return QString();
 
@@ -813,7 +793,7 @@ QString QAndroidInputContext::getTextBeforeCursor(jint length, jint /*flags*/)
 
 jboolean QAndroidInputContext::setComposingText(const QString &text, jint newCursorPosition)
 {
-    QSharedPointer<QInputMethodQueryEvent> query = focusObjectInputMethodQuery();
+    QSharedPointer<QInputMethodQueryEvent> query = focusObjectInputMethodQueryThreadSafe();
     if (query.isNull())
         return JNI_FALSE;
 
@@ -836,7 +816,7 @@ jboolean QAndroidInputContext::setComposingText(const QString &text, jint newCur
                                                    QVariant(underlined)));
 
     QInputMethodEvent event(m_composingText, attributes);
-    sendInputMethodEvent(&event);
+    sendInputMethodEventThreadSafe(&event);
 
     updateCursorPosition();
 
@@ -858,7 +838,7 @@ jboolean QAndroidInputContext::setComposingRegion(jint start, jint end)
     if (wasComposing)
         finishComposingText();
 
-    QSharedPointer<QInputMethodQueryEvent> query = focusObjectInputMethodQuery();
+    QSharedPointer<QInputMethodQueryEvent> query = focusObjectInputMethodQueryThreadSafe();
     if (query.isNull())
         return JNI_FALSE;
 
@@ -904,7 +884,7 @@ jboolean QAndroidInputContext::setComposingRegion(jint start, jint end)
 
     QInputMethodEvent event(m_composingText, attributes);
     event.setCommitString(QString(), relativeStart, length);
-    sendInputMethodEvent(&event);
+    sendInputMethodEventThreadSafe(&event);
 
     m_blockUpdateSelection = updateSelectionWasBlocked;
 
@@ -921,7 +901,7 @@ jboolean QAndroidInputContext::setComposingRegion(jint start, jint end)
 
 jboolean QAndroidInputContext::setSelection(jint start, jint end)
 {
-    QSharedPointer<QInputMethodQueryEvent> query = focusObjectInputMethodQuery();
+    QSharedPointer<QInputMethodQueryEvent> query = focusObjectInputMethodQueryThreadSafe();
     if (query.isNull())
         return JNI_FALSE;
 
@@ -953,7 +933,7 @@ jboolean QAndroidInputContext::setSelection(jint start, jint end)
                                                        QVariant()));
     }
     QInputMethodEvent event(m_composingText, attributes);
-    sendInputMethodEvent(&event);
+    sendInputMethodEventThreadSafe(&event);
     updateCursorPosition();
     return JNI_TRUE;
 }
@@ -996,8 +976,10 @@ Q_INVOKABLE QVariant QAndroidInputContext::queryFocusObjectUnsafe(Qt::InputMetho
 
 QVariant QAndroidInputContext::queryFocusObjectThreadSafe(Qt::InputMethodQuery query, QVariant argument)
 {
-    const bool inMainThread = qGuiApp->thread() == QThread::currentThread();
     QVariant retval;
+    if (!qGuiApp)
+        return retval;
+    const bool inMainThread = qGuiApp->thread() == QThread::currentThread();
     if (QAndroidEventDispatcherStopper::stopped() && !inMainThread)
         return retval;
 
@@ -1010,46 +992,54 @@ QVariant QAndroidInputContext::queryFocusObjectThreadSafe(Qt::InputMethodQuery q
     return retval;
 }
 
-QSharedPointer<QInputMethodQueryEvent> QAndroidInputContext::focusObjectInputMethodQuery(Qt::InputMethodQueries queries)
-{
-#warning TODO make qGuiApp->focusObject() thread safe !!!
+QSharedPointer<QInputMethodQueryEvent> QAndroidInputContext::focusObjectInputMethodQueryThreadSafe(Qt::InputMethodQueries queries) {
+    QSharedPointer<QInputMethodQueryEvent> retval;
+    if (!qGuiApp)
+        return QSharedPointer<QInputMethodQueryEvent>();
     const bool inMainThread = qGuiApp->thread() == QThread::currentThread();
     if (QAndroidEventDispatcherStopper::stopped() && !inMainThread)
         return QSharedPointer<QInputMethodQueryEvent>();
+
+    QInputMethodQueryEvent *queryEvent = 0;
+    QMetaObject::invokeMethod(this, "focusObjectInputMethodQueryUnsafe",
+                              inMainThread ? Qt::DirectConnection : Qt::BlockingQueuedConnection,
+                              Q_RETURN_ARG(QInputMethodQueryEvent*, queryEvent),
+                              Q_ARG(Qt::InputMethodQueries, queries));
+
+    return QSharedPointer<QInputMethodQueryEvent>(queryEvent);
+}
+
+QInputMethodQueryEvent *QAndroidInputContext::focusObjectInputMethodQueryUnsafe(Qt::InputMethodQueries queries)
+{
     QObject *focusObject = qGuiApp->focusObject();
     if (!focusObject)
-        return QSharedPointer<QInputMethodQueryEvent>();
+        return 0;
 
-    QSharedPointer<QInputMethodQueryEvent> ret = QSharedPointer<QInputMethodQueryEvent>(new QInputMethodQueryEvent(queries));
-    if (inMainThread) {
-        QCoreApplication::sendEvent(focusObject, ret.data());
-    } else {
-        QMetaObject::invokeMethod(this,
-                                  "sendEvent",
-                                  Qt::BlockingQueuedConnection,
-                                  Q_ARG(QObject*, focusObject),
-                                  Q_ARG(QInputMethodQueryEvent*, ret.data()));
-    }
-
+    QInputMethodQueryEvent *ret = new QInputMethodQueryEvent(queries);
+    QCoreApplication::sendEvent(focusObject, ret);
     return ret;
 }
 
-void QAndroidInputContext::sendInputMethodEvent(QInputMethodEvent *event)
+void QAndroidInputContext::sendInputMethodEventUnsafe(QInputMethodEvent *event)
 {
-#warning TODO make qGuiApp->focusObject() thread safe !!!
     QObject *focusObject = qGuiApp->focusObject();
     if (!focusObject)
         return;
 
-    if (qGuiApp->thread() == QThread::currentThread()) {
-        QCoreApplication::sendEvent(focusObject, event);
-    } else {
-        QMetaObject::invokeMethod(this,
-                                  "sendEvent",
-                                  Qt::BlockingQueuedConnection,
-                                  Q_ARG(QObject*, focusObject),
-                                  Q_ARG(QInputMethodEvent*, event));
-    }
+    QCoreApplication::sendEvent(focusObject, event);
+}
+
+void QAndroidInputContext::sendInputMethodEventThreadSafe(QInputMethodEvent *event)
+{
+    if (!qGuiApp)
+        return;
+    const bool inMainThread = qGuiApp->thread() == QThread::currentThread();
+    if (QAndroidEventDispatcherStopper::stopped() && !inMainThread)
+        return;
+
+    QMetaObject::invokeMethod(this, "sendInputMethodEventUnsafe",
+                              inMainThread ? Qt::DirectConnection : Qt::BlockingQueuedConnection,
+                              Q_ARG(QInputMethodEvent*, event));
 }
 
 QT_END_NAMESPACE

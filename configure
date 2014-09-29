@@ -1,41 +1,33 @@
 #!/bin/sh
 #############################################################################
 ##
-## Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+## Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ## Copyright (C) 2013 Intel Corporation.
 ## Contact: http://www.qt-project.org/legal
 ##
 ## This file is the build configuration utility of the Qt Toolkit.
 ##
-## $QT_BEGIN_LICENSE:LGPL$
+## $QT_BEGIN_LICENSE:LGPL21$
 ## Commercial License Usage
 ## Licensees holding valid commercial Qt licenses may use this file in
 ## accordance with the commercial license agreement provided with the
 ## Software or, alternatively, in accordance with the terms contained in
-## a written agreement between you and Digia.  For licensing terms and
-## conditions see http://qt.digia.com/licensing.  For further information
+## a written agreement between you and Digia. For licensing terms and
+## conditions see http://qt.digia.com/licensing. For further information
 ## use the contact form at http://qt.digia.com/contact-us.
 ##
 ## GNU Lesser General Public License Usage
 ## Alternatively, this file may be used under the terms of the GNU Lesser
-## General Public License version 2.1 as published by the Free Software
-## Foundation and appearing in the file LICENSE.LGPL included in the
-## packaging of this file.  Please review the following information to
-## ensure the GNU Lesser General Public License version 2.1 requirements
-## will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+## General Public License version 2.1 or version 3 as published by the Free
+## Software Foundation and appearing in the file LICENSE.LGPLv21 and
+## LICENSE.LGPLv3 included in the packaging of this file. Please review the
+## following information to ensure the GNU Lesser General Public License
+## requirements will be met: https://www.gnu.org/licenses/lgpl.html and
+## http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 ##
 ## In addition, as a special exception, Digia gives you certain additional
-## rights.  These rights are described in the Digia Qt LGPL Exception
+## rights. These rights are described in the Digia Qt LGPL Exception
 ## version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
-##
-## GNU General Public License Usage
-## Alternatively, this file may be used under the terms of the GNU
-## General Public License version 3.0 as published by the Free Software
-## Foundation and appearing in the file LICENSE.GPL included in the
-## packaging of this file.  Please review the following information to
-## ensure the GNU General Public License version 3.0 requirements will be
-## met: http://www.gnu.org/copyleft/gpl.html.
-##
 ##
 ## $QT_END_LICENSE$
 ##
@@ -195,7 +187,7 @@ expandQMakeConf()
 
 extractQMakeVariables()
 {
-    $AWK '
+    LC_ALL=C $AWK '
 BEGIN {
     values["LITERAL_WHITESPACE"] = " "
     values["LITERAL_DOLLAR"] = "$"
@@ -2820,7 +2812,7 @@ elif [ $COMMERCIAL_USER = "yes" ]; then
         exit 1
     fi
 elif [ $COMMERCIAL_USER = "no" ]; then
-    # Open Source edition - may only be used under the terms of the GPL or LGPL.
+    # Open Source edition - may only be used under the terms of the LGPLv3 or LGPLv21.
     Licensee="Open Source"
     Edition="OpenSource"
     EditionString="Open Source"
@@ -2836,9 +2828,9 @@ if [ "$Edition" = "OpenSource" ]; then
     while true; do
         echo "You are licensed to use this software under the terms of"
         echo "the Lesser GNU General Public License (LGPL) versions 2.1."
-        if [ -f "$relpath/LICENSE.GPL" ]; then
+        if [ -f "$relpath/LICENSE.LGPLv3" ]; then
             echo "You are also licensed to use this software under the terms of"
-            echo "the GNU General Public License (GPL) versions 3."
+            echo "the GNU Lesser General Public License (LGPL) versions 3."
             affix="either"
         else
             affix="the"
@@ -2848,8 +2840,8 @@ if [ "$Edition" = "OpenSource" ]; then
             echo "You have already accepted the terms of the $EditionString license."
             acceptance=yes
         else
-            if [ -f "$relpath/LICENSE.GPL" ]; then
-                echo "Type '3' to view the GNU General Public License version 3."
+            if [ -f "$relpath/LICENSE.LGPLv3" ]; then
+                echo "Type '3' to view the GNU Lesser General Public License version 3."
             fi
             echo "Type 'L' to view the Lesser GNU General Public License version 2.1."
             echo "Type 'yes' to accept this license offer."
@@ -2866,9 +2858,9 @@ if [ "$Edition" = "OpenSource" ]; then
             echo
             exit 1
         elif [ "$acceptance" = "3" ]; then
-            more "$relpath/LICENSE.GPL"
+            more "$relpath/LICENSE.LGPLv3"
         elif [ "$acceptance" = "L" ]; then
-            more "$relpath/LICENSE.LGPL"
+            more "$relpath/LICENSE.LGPLv21"
         fi
     done
 elif [ "$Edition" = "Preview" ]; then
@@ -6631,7 +6623,6 @@ if [ "$CFG_SHARED" = "no" ]; then
     echo "WARNING: Using static linking will disable the use of dynamically"
     echo "loaded plugins. Make sure to import all needed static plugins,"
     echo "or compile needed modules into the library."
-    echo
 fi
 if [ "$CFG_OPENSSL" = "linked" ] && [ "$OPENSSL_LIBS" = "" ]; then
     echo
@@ -6646,13 +6637,14 @@ if [ "$CFG_JOURNALD" = "yes" ] || [ "$CFG_SLOG2" = "yes" ]; then
     echo "If your users intend on developing applications against this build,"
     echo "ensure that the IDEs they use either set QT_LOGGING_TO_CONSOLE to 1"
     echo "or the IDE is able to read the logged output from journald or slog2."
-    echo
 fi
 if [ "$CFG_XKBCOMMON" = "qt" ] && [ "$CFG_XKB_CONFIG_ROOT" = "not found" ]; then
+    echo
     echo "WARNING: Could not find XKB config root, use -xkb-config-root to set a path to "
     echo "XKB configuration data. This is required for keyboard input support."
 fi
 if [ "$CFG_QREAL" = double ] && [ "$CFG_ARCH" = arm ]; then
+    echo
     echo "NOTE: Qt is using double for qreal on this system. This is binary incompatible against Qt 5.1."
     echo "Configure with '-qreal float' to create a build that is binary compatible with 5.1."
 fi

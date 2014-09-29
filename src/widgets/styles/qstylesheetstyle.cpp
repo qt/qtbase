@@ -1,39 +1,31 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtWidgets module of the Qt Toolkit.
 **
-** $QT_BEGIN_LICENSE:LGPL$
+** $QT_BEGIN_LICENSE:LGPL21$
 ** Commercial License Usage
 ** Licensees holding valid commercial Qt licenses may use this file in
 ** accordance with the commercial license agreement provided with the
 ** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and Digia.  For licensing terms and
-** conditions see http://qt.digia.com/licensing.  For further information
+** a written agreement between you and Digia. For licensing terms and
+** conditions see http://qt.digia.com/licensing. For further information
 ** use the contact form at http://qt.digia.com/contact-us.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** General Public License version 2.1 or version 3 as published by the Free
+** Software Foundation and appearing in the file LICENSE.LGPLv21 and
+** LICENSE.LGPLv3 included in the packaging of this file. Please review the
+** following information to ensure the GNU Lesser General Public License
+** requirements will be met: https://www.gnu.org/licenses/lgpl.html and
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Digia gives you certain additional
-** rights.  These rights are described in the Digia Qt LGPL Exception
+** rights. These rights are described in the Digia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
-**
 **
 ** $QT_END_LICENSE$
 **
@@ -1827,7 +1819,7 @@ QRenderRule QStyleSheetStyle::renderRule(const QObject *obj, const QStyleOption 
                 extraClass |= PseudoClass_Frameless;
 #endif // QT_NO_SPINBOX
         } else if (const QStyleOptionGroupBox *gb = qstyleoption_cast<const QStyleOptionGroupBox *>(opt)) {
-            if (gb->features & QStyleOptionFrameV2::Flat)
+            if (gb->features & QStyleOptionFrame::Flat)
                 extraClass |= PseudoClass_Flat;
             if (gb->lineWidth == 0)
                 extraClass |= PseudoClass_Frameless;
@@ -1934,10 +1926,8 @@ QRenderRule QStyleSheetStyle::renderRule(const QObject *obj, const QStyleOption 
         } else if (const QStyleOptionFrame *frm = qstyleoption_cast<const QStyleOptionFrame *>(opt)) {
             if (frm->lineWidth == 0)
                 extraClass |= PseudoClass_Frameless;
-            if (const QStyleOptionFrameV2 *frame2 = qstyleoption_cast<const QStyleOptionFrameV2 *>(opt)) {
-                if (frame2->features & QStyleOptionFrameV2::Flat)
-                    extraClass |= PseudoClass_Flat;
-            }
+            if (frm->features & QStyleOptionFrame::Flat)
+                extraClass |= PseudoClass_Flat;
         }
 #ifndef QT_NO_TOOLBAR
         else if (const QStyleOptionToolBar *tb = qstyleoption_cast<const QStyleOptionToolBar *>(opt)) {
@@ -2045,7 +2035,6 @@ bool QStyleSheetStyle::hasStyleRule(const QObject *obj, int part) const
     }
 
     QString pseudoElement = QLatin1String(knownPseudoElements[part].name);
-    QVector<Declaration> declarations;
     for (int i = 0; i < rules.count(); i++) {
         const Selector& selector = rules.at(i).selectors.at(0);
         if (pseudoElement.compare(selector.pseudoElement(), Qt::CaseInsensitive) == 0) {
@@ -2995,7 +2984,7 @@ void QStyleSheetStyle::drawComplexControl(ComplexControl cc, const QStyleOptionC
             }
 
             frameRect = subControlRect(CC_GroupBox, opt, SC_GroupBoxFrame, w);
-            QStyleOptionFrameV2 frame;
+            QStyleOptionFrame frame;
             frame.QStyleOption::operator=(*gb);
             frame.features = gb->features;
             frame.lineWidth = gb->lineWidth;
@@ -4090,7 +4079,7 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
     case CE_ShapedFrame:
         if (const QStyleOptionFrame *frm = qstyleoption_cast<const QStyleOptionFrame *>(opt)) {
             if (rule.hasNativeBorder()) {
-                QStyleOptionFrameV3 frmOpt(*frm);
+                QStyleOptionFrame frmOpt(*frm);
                 rule.configurePalette(&frmOpt.palette, QPalette::Text, QPalette::Base);
                 frmOpt.rect = rule.borderRect(frmOpt.rect);
                 baseStyle()->drawControl(ce, &frmOpt, p, w);
@@ -4225,10 +4214,8 @@ void QStyleSheetStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *op
     case PE_Frame:
         if (const QStyleOptionFrame *frm = qstyleoption_cast<const QStyleOptionFrame *>(opt)) {
             if (rule.hasNativeBorder()) {
-                QStyleOptionFrameV2 frmOpt(*frm);
+                QStyleOptionFrame frmOpt(*frm);
                 rule.configurePalette(&frmOpt.palette, QPalette::Text, QPalette::Base);
-                if (!qstyleoption_cast<const QStyleOptionFrameV3 *>(opt)) //if it comes from  CE_ShapedFrame, the margins are already sustracted
-                    frmOpt.rect = rule.borderRect(frmOpt.rect);
                 baseStyle()->drawPrimitive(pe, &frmOpt, p, w);
             } else {
                 rule.drawBorder(p, rule.borderRect(opt->rect));

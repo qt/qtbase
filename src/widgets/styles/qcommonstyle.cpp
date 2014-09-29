@@ -1,39 +1,31 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtWidgets module of the Qt Toolkit.
 **
-** $QT_BEGIN_LICENSE:LGPL$
+** $QT_BEGIN_LICENSE:LGPL21$
 ** Commercial License Usage
 ** Licensees holding valid commercial Qt licenses may use this file in
 ** accordance with the commercial license agreement provided with the
 ** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and Digia.  For licensing terms and
-** conditions see http://qt.digia.com/licensing.  For further information
+** a written agreement between you and Digia. For licensing terms and
+** conditions see http://qt.digia.com/licensing. For further information
 ** use the contact form at http://qt.digia.com/contact-us.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** General Public License version 2.1 or version 3 as published by the Free
+** Software Foundation and appearing in the file LICENSE.LGPLv21 and
+** LICENSE.LGPLv3 included in the packaging of this file. Please review the
+** following information to ensure the GNU Lesser General Public License
+** requirements will be met: https://www.gnu.org/licenses/lgpl.html and
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Digia gives you certain additional
-** rights.  These rights are described in the Digia Qt LGPL Exception
+** rights. These rights are described in the Digia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
-**
 **
 ** $QT_END_LICENSE$
 **
@@ -418,8 +410,7 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
 #ifndef QT_NO_GROUPBOX
     case PE_FrameGroupBox:
         if (const QStyleOptionFrame *frame = qstyleoption_cast<const QStyleOptionFrame *>(opt)) {
-            const QStyleOptionFrameV2 *frame2 = qstyleoption_cast<const QStyleOptionFrameV2 *>(opt);
-            if (frame2 && (frame2->features & QStyleOptionFrameV2::Flat)) {
+            if (frame->features & QStyleOptionFrame::Flat) {
                 QRect fr = frame->rect;
                 QPoint p1(fr.x(), fr.y() + 1);
                 QPoint p2(fr.x() + fr.width(), p1.y());
@@ -1139,6 +1130,7 @@ void QCommonStylePrivate::tabLayout(const QStyleOptionTabV3 *opt, const QWidget 
 }
 #endif //QT_NO_TABBAR
 
+#ifndef QT_NO_ANIMATION
 /*! \internal */
 QList<const QObject*> QCommonStylePrivate::animationTargets() const
 {
@@ -1179,6 +1171,7 @@ void QCommonStylePrivate::_q_removeAnimation()
     if (animation)
         animations.remove(animation->parent());
 }
+#endif
 
 /*!
   \reimp
@@ -2232,7 +2225,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
 #endif // QT_NO_ITEMVIEWS
 #ifndef QT_NO_FRAME
     case CE_ShapedFrame:
-        if (const QStyleOptionFrameV3 *f = qstyleoption_cast<const QStyleOptionFrameV3 *>(opt)) {
+        if (const QStyleOptionFrame *f = qstyleoption_cast<const QStyleOptionFrame *>(opt)) {
             int frameShape  = f->frameShape;
             int frameShadow = QFrame::Plain;
             if (f->state & QStyle::State_Sunken) {
@@ -2822,14 +2815,14 @@ QRect QCommonStyle::subElementRect(SubElement sr, const QStyleOption *opt,
         }
         break;
     case SE_FrameContents:
-        if (const QStyleOptionFrameV2 *f = qstyleoption_cast<const QStyleOptionFrameV2 *>(opt)) {
+        if (const QStyleOptionFrame *f = qstyleoption_cast<const QStyleOptionFrame *>(opt)) {
             int fw = proxy()->pixelMetric(PM_DefaultFrameWidth, f, widget);
             r = opt->rect.adjusted(fw, fw, -fw, -fw);
             r = visualRect(opt->direction, opt->rect, r);
         }
         break;
     case SE_ShapedFrameContents:
-        if (const QStyleOptionFrameV3 *f = qstyleoption_cast<const QStyleOptionFrameV3 *>(opt)) {
+        if (const QStyleOptionFrame *f = qstyleoption_cast<const QStyleOptionFrame *>(opt)) {
             int frameShape  = f->frameShape;
             int frameShadow = QFrame::Plain;
             if (f->state & QStyle::State_Sunken) {
@@ -2918,7 +2911,7 @@ QRect QCommonStyle::subElementRect(SubElement sr, const QStyleOption *opt,
 
             QRect closeRect;
             if (canClose) {
-                QSize sz = standardIcon(QStyle::SP_TitleBarCloseButton,
+                QSize sz = proxy()->standardIcon(QStyle::SP_TitleBarCloseButton,
                                         opt, widget).actualSize(QSize(iconSize, iconSize));
                 sz += QSize(buttonMargin, buttonMargin);
                 if (verticalTitleBar)
@@ -2935,7 +2928,7 @@ QRect QCommonStyle::subElementRect(SubElement sr, const QStyleOption *opt,
 
             QRect floatRect;
             if (canFloat) {
-                QSize sz = standardIcon(QStyle::SP_TitleBarNormalButton,
+                QSize sz = proxy()->standardIcon(QStyle::SP_TitleBarNormalButton,
                                         opt, widget).actualSize(QSize(iconSize, iconSize));
                 sz += QSize(buttonMargin, buttonMargin);
                 if (verticalTitleBar)
@@ -3410,9 +3403,9 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
                     || qobject_cast<const QDockWidget *>(widget)
 #endif
                     )
-                    pm = standardIcon(SP_DockWidgetCloseButton, &tool, widget).pixmap(10, 10);
+                    pm = proxy()->standardIcon(SP_DockWidgetCloseButton, &tool, widget).pixmap(10, 10);
                 else
-                    pm = standardIcon(SP_TitleBarCloseButton, &tool, widget).pixmap(10, 10);
+                    pm = proxy()->standardIcon(SP_TitleBarCloseButton, &tool, widget).pixmap(10, 10);
                 tool.rect = ir;
                 tool.state = down ? State_Sunken : State_Raised;
                 proxy()->drawPrimitive(PE_PanelButtonTool, &tool, p, widget);
@@ -3431,7 +3424,7 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
                 ir = proxy()->subControlRect(CC_TitleBar, tb, SC_TitleBarMaxButton, widget);
 
                 down = tb->activeSubControls & SC_TitleBarMaxButton && (opt->state & State_Sunken);
-                pm = standardIcon(SP_TitleBarMaxButton, &tool, widget).pixmap(10, 10);
+                pm = proxy()->standardIcon(SP_TitleBarMaxButton, &tool, widget).pixmap(10, 10);
                 tool.rect = ir;
                 tool.state = down ? State_Sunken : State_Raised;
                 proxy()->drawPrimitive(PE_PanelButtonTool, &tool, p, widget);
@@ -3449,7 +3442,7 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
                     && !(tb->titleBarState & Qt::WindowMinimized)) {
                 ir = proxy()->subControlRect(CC_TitleBar, tb, SC_TitleBarMinButton, widget);
                 down = tb->activeSubControls & SC_TitleBarMinButton && (opt->state & State_Sunken);
-                pm = standardIcon(SP_TitleBarMinButton, &tool, widget).pixmap(10, 10);
+                pm = proxy()->standardIcon(SP_TitleBarMinButton, &tool, widget).pixmap(10, 10);
                 tool.rect = ir;
                 tool.state = down ? State_Sunken : State_Raised;
                 proxy()->drawPrimitive(PE_PanelButtonTool, &tool, p, widget);
@@ -3471,7 +3464,7 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
             if (drawNormalButton) {
                 ir = proxy()->subControlRect(CC_TitleBar, tb, SC_TitleBarNormalButton, widget);
                 down = tb->activeSubControls & SC_TitleBarNormalButton && (opt->state & State_Sunken);
-                pm = standardIcon(SP_TitleBarNormalButton, &tool, widget).pixmap(10, 10);
+                pm = proxy()->standardIcon(SP_TitleBarNormalButton, &tool, widget).pixmap(10, 10);
                 tool.rect = ir;
                 tool.state = down ? State_Sunken : State_Raised;
                 proxy()->drawPrimitive(PE_PanelButtonTool, &tool, p, widget);
@@ -3489,7 +3482,7 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
                     && !(tb->titleBarState & Qt::WindowMinimized)) {
                 ir = proxy()->subControlRect(CC_TitleBar, tb, SC_TitleBarShadeButton, widget);
                 down = (tb->activeSubControls & SC_TitleBarShadeButton && (opt->state & State_Sunken));
-                pm = standardIcon(SP_TitleBarShadeButton, &tool, widget).pixmap(10, 10);
+                pm = proxy()->standardIcon(SP_TitleBarShadeButton, &tool, widget).pixmap(10, 10);
                 tool.rect = ir;
                 tool.state = down ? State_Sunken : State_Raised;
                 proxy()->drawPrimitive(PE_PanelButtonTool, &tool, p, widget);
@@ -3507,7 +3500,7 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
                 ir = proxy()->subControlRect(CC_TitleBar, tb, SC_TitleBarUnshadeButton, widget);
 
                 down = tb->activeSubControls & SC_TitleBarUnshadeButton  && (opt->state & State_Sunken);
-                pm = standardIcon(SP_TitleBarUnshadeButton, &tool, widget).pixmap(10, 10);
+                pm = proxy()->standardIcon(SP_TitleBarUnshadeButton, &tool, widget).pixmap(10, 10);
                 tool.rect = ir;
                 tool.state = down ? State_Sunken : State_Raised;
                 proxy()->drawPrimitive(PE_PanelButtonTool, &tool, p, widget);
@@ -3523,7 +3516,7 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
                 ir = proxy()->subControlRect(CC_TitleBar, tb, SC_TitleBarContextHelpButton, widget);
 
                 down = tb->activeSubControls & SC_TitleBarContextHelpButton  && (opt->state & State_Sunken);
-                pm = standardIcon(SP_TitleBarContextHelpButton, &tool, widget).pixmap(10, 10);
+                pm = proxy()->standardIcon(SP_TitleBarContextHelpButton, &tool, widget).pixmap(10, 10);
                 tool.rect = ir;
                 tool.state = down ? State_Sunken : State_Raised;
                 proxy()->drawPrimitive(PE_PanelButtonTool, &tool, p, widget);
@@ -3540,7 +3533,7 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
                     tb->icon.paint(p, ir);
                 } else {
                     int iconSize = proxy()->pixelMetric(PM_SmallIconSize, tb, widget);
-                    pm = standardIcon(SP_TitleBarMenuButton, &tool, widget).pixmap(iconSize, iconSize);
+                    pm = proxy()->standardIcon(SP_TitleBarMenuButton, &tool, widget).pixmap(iconSize, iconSize);
                     tool.rect = ir;
                     p->save();
                     proxy()->drawItemPixmap(p, ir, Qt::AlignCenter, pm);
@@ -3650,7 +3643,7 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
             QRect textRect = proxy()->subControlRect(CC_GroupBox, opt, SC_GroupBoxLabel, widget);
             QRect checkBoxRect = proxy()->subControlRect(CC_GroupBox, opt, SC_GroupBoxCheckBox, widget);
             if (groupBox->subControls & QStyle::SC_GroupBoxFrame) {
-                QStyleOptionFrameV2 frame;
+                QStyleOptionFrame frame;
                 frame.QStyleOption::operator=(*groupBox);
                 frame.features = groupBox->features;
                 frame.lineWidth = groupBox->lineWidth;
@@ -3727,7 +3720,7 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
                 }
                 btnOpt.rect = proxy()->subControlRect(CC_MdiControls, opt, SC_MdiCloseButton, widget);
                 proxy()->drawPrimitive(PE_PanelButtonCommand, &btnOpt, p, widget);
-                QPixmap pm = standardIcon(SP_TitleBarCloseButton).pixmap(16, 16);
+                QPixmap pm = proxy()->standardIcon(SP_TitleBarCloseButton).pixmap(16, 16);
                 proxy()->drawItemPixmap(p, btnOpt.rect.translated(bsx, bsy), Qt::AlignCenter, pm);
             }
             if (opt->subControls & QStyle::SC_MdiNormalButton) {
@@ -3744,7 +3737,7 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
                 }
                 btnOpt.rect = proxy()->subControlRect(CC_MdiControls, opt, SC_MdiNormalButton, widget);
                 proxy()->drawPrimitive(PE_PanelButtonCommand, &btnOpt, p, widget);
-                QPixmap pm = standardIcon(SP_TitleBarNormalButton).pixmap(16, 16);
+                QPixmap pm = proxy()->standardIcon(SP_TitleBarNormalButton).pixmap(16, 16);
                 proxy()->drawItemPixmap(p, btnOpt.rect.translated(bsx, bsy), Qt::AlignCenter, pm);
             }
             if (opt->subControls & QStyle::SC_MdiMinButton) {
@@ -3761,7 +3754,7 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
                 }
                 btnOpt.rect = proxy()->subControlRect(CC_MdiControls, opt, SC_MdiMinButton, widget);
                 proxy()->drawPrimitive(PE_PanelButtonCommand, &btnOpt, p, widget);
-                QPixmap pm = standardIcon(SP_TitleBarMinButton).pixmap(16, 16);
+                QPixmap pm = proxy()->standardIcon(SP_TitleBarMinButton).pixmap(16, 16);
                 proxy()->drawItemPixmap(p, btnOpt.rect.translated(bsx, bsy), Qt::AlignCenter, pm);
             }
         }
@@ -4241,7 +4234,7 @@ QRect QCommonStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex 
                 }
 
                 int frameWidth = 0;
-                if ((groupBox->features & QStyleOptionFrameV2::Flat) == 0)
+                if ((groupBox->features & QStyleOptionFrame::Flat) == 0)
                     frameWidth = proxy()->pixelMetric(PM_DefaultFrameWidth, groupBox, widget);
                 ret = frameRect.adjusted(frameWidth, frameWidth + topHeight - topMargin,
                                          -frameWidth, -frameWidth);
@@ -4253,7 +4246,7 @@ QRect QCommonStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex 
                 QFontMetrics fontMetrics = groupBox->fontMetrics;
                 int h = fontMetrics.height();
                 int tw = fontMetrics.size(Qt::TextShowMnemonic, groupBox->text + QLatin1Char(' ')).width();
-                int marg = (groupBox->features & QStyleOptionFrameV2::Flat) ? 0 : 8;
+                int marg = (groupBox->features & QStyleOptionFrame::Flat) ? 0 : 8;
                 ret = groupBox->rect.adjusted(marg, 0, -marg, 0);
                 ret.setHeight(h);
 
@@ -4694,6 +4687,9 @@ int QCommonStyle::pixelMetric(PixelMetric m, const QStyleOption *opt, const QWid
         break;
     case PM_SubMenuOverlap:
         ret = -proxy()->pixelMetric(QStyle::PM_MenuPanelWidth, opt, widget);
+        break;
+    case PM_TreeViewIndentation:
+        ret = int(QStyleHelper::dpiScaled(20.));
         break;
     default:
         ret = 0;
@@ -5196,6 +5192,17 @@ int QCommonStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget
     return ret;
 }
 
+static QPixmap cachedPixmapFromXPM(const char * const *xpm)
+{
+    QPixmap result;
+    const QString tag = QString().sprintf("xpm:0x%p", static_cast<const void*>(xpm));
+    if (!QPixmapCache::find(tag, &result)) {
+        result = QPixmap(xpm);
+        QPixmapCache::insert(tag, result);
+    }
+    return result;
+}
+
 /*! \reimp */
 QPixmap QCommonStyle::standardPixmap(StandardPixmap sp, const QStyleOption *option,
                                      const QWidget *widget) const
@@ -5391,13 +5398,13 @@ QPixmap QCommonStyle::standardPixmap(StandardPixmap sp, const QStyleOption *opti
             im = im.convertToFormat(QImage::Format_ARGB32).mirrored(true, false);
             return QPixmap::fromImage(im);
         }
-        return QPixmap(tb_extension_arrow_h_xpm);
+        return cachedPixmapFromXPM(tb_extension_arrow_h_xpm);
     case SP_ToolBarVerticalExtensionButton:
-        return QPixmap(tb_extension_arrow_v_xpm);
+        return cachedPixmapFromXPM(tb_extension_arrow_v_xpm);
     case SP_FileDialogStart:
-        return QPixmap(filedialog_start_xpm);
+        return cachedPixmapFromXPM(filedialog_start_xpm);
     case SP_FileDialogEnd:
-        return QPixmap(filedialog_end_xpm);
+        return cachedPixmapFromXPM(filedialog_end_xpm);
 #endif
 #ifndef QT_NO_IMAGEFORMAT_PNG
     case SP_CommandLink:
@@ -5513,31 +5520,31 @@ QPixmap QCommonStyle::standardPixmap(StandardPixmap sp, const QStyleOption *opti
 #ifndef QT_NO_IMAGEFORMAT_XPM
     switch (sp) {
     case SP_TitleBarMenuButton:
-        return QPixmap(qt_menu_xpm);
+        return cachedPixmapFromXPM(qt_menu_xpm);
     case SP_TitleBarShadeButton:
-        return QPixmap(qt_shade_xpm);
+        return cachedPixmapFromXPM(qt_shade_xpm);
     case SP_TitleBarUnshadeButton:
-        return QPixmap(qt_unshade_xpm);
+        return cachedPixmapFromXPM(qt_unshade_xpm);
     case SP_TitleBarNormalButton:
-        return QPixmap(qt_normalizeup_xpm);
+        return cachedPixmapFromXPM(qt_normalizeup_xpm);
     case SP_TitleBarMinButton:
-        return QPixmap(qt_minimize_xpm);
+        return cachedPixmapFromXPM(qt_minimize_xpm);
     case SP_TitleBarMaxButton:
-        return QPixmap(qt_maximize_xpm);
+        return cachedPixmapFromXPM(qt_maximize_xpm);
     case SP_TitleBarCloseButton:
-        return QPixmap(qt_close_xpm);
+        return cachedPixmapFromXPM(qt_close_xpm);
     case SP_TitleBarContextHelpButton:
-        return QPixmap(qt_help_xpm);
+        return cachedPixmapFromXPM(qt_help_xpm);
     case SP_DockWidgetCloseButton:
-        return QPixmap(dock_widget_close_xpm);
+        return cachedPixmapFromXPM(dock_widget_close_xpm);
     case SP_MessageBoxInformation:
-        return QPixmap(information_xpm);
+        return cachedPixmapFromXPM(information_xpm);
     case SP_MessageBoxWarning:
-        return QPixmap(warning_xpm);
+        return cachedPixmapFromXPM(warning_xpm);
     case SP_MessageBoxCritical:
-        return QPixmap(critical_xpm);
+        return cachedPixmapFromXPM(critical_xpm);
     case SP_MessageBoxQuestion:
-        return QPixmap(question_xpm);
+        return cachedPixmapFromXPM(question_xpm);
     default:
         break;
     }

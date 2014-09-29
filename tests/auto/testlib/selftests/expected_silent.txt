@@ -6,4 +6,4 @@ XPASS  : tst_Silent::xpass() 'true' returned TRUE unexpectedly. (This test shoul
 QFATAL : tst_Silent::messages() This is a fatal error message that should still appear in silent test output
 FAIL!  : tst_Silent::messages() Received a fatal error.
    Loc: [Unknown file(0)]
-Totals: 3 passed, 3 failed, 1 skipped
+Totals: 3 passed, 3 failed, 1 skipped, 0 blacklisted

@@ -22,5 +22,5 @@ PASS   : tst_Xunit::testFunc6()
 XPASS  : tst_Xunit::testFunc7() 'true' returned TRUE unexpectedly. ()
    Loc: [tst_xunit.cpp(110)]
 PASS   : tst_Xunit::cleanupTestCase()
-Totals: 5 passed, 3 failed, 1 skipped
+Totals: 5 passed, 3 failed, 1 skipped, 0 blacklisted
 ********* Finished testing of tst_Xunit *********

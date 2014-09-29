@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the QtWidgets module of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -39,74 +39,39 @@
 **
 ****************************************************************************/
 
-#ifndef QCALENDARTEXTNAVIGATOR_P_H
-#define QCALENDARTEXTNAVIGATOR_P_H
+#import <UIKit/UIKit.h>
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
+#include <QtCore/qstring.h>
 
-#include <QtCore/qobject.h>
-#include <QtCore/qdatetime.h>
-#include <QtCore/qbasictimer.h>
+class QIOSInputContext;
 
-#ifndef QT_NO_CALENDARWIDGET
-
-QT_BEGIN_NAMESPACE
-
-class QLabel;
-class QCalendarDateValidator;
-class QFrame;
-
-class QCalendarTextNavigator: public QObject
+@interface QIOSTextInputResponder : UIResponder <UITextInputTraits, UIKeyInput, UITextInput>
 {
-    Q_OBJECT
-public:
-    QCalendarTextNavigator(QObject *parent = 0)
-        : QObject(parent), m_dateText(0), m_dateFrame(0), m_dateValidator(0), m_widget(0), m_editDelay(1500), m_date(QDate::currentDate()) { }
+  @public
+    QString m_markedText;
+    BOOL m_inSendEventToFocusObject;
 
-    QWidget *widget() const;
-    void setWidget(QWidget *widget);
+  @private
+    QIOSInputContext *m_inputContext;
+}
 
-    int dateEditAcceptDelay() const;
-    void setDateEditAcceptDelay(int delay);
+- (id)initWithInputContext:(QIOSInputContext *)context;
+- (void)notifyInputDelegate:(Qt::InputMethodQueries)updatedProperties;
 
-    QDate date() const;
-    void setDate(const QDate &date);
+@property(readwrite, retain) UIView *inputView;
+@property(readwrite, retain) UIView *inputAccessoryView;
 
-    bool eventFilter(QObject *o, QEvent *e);
-    void timerEvent(QTimerEvent *e);
+// UITextInputTraits
+@property(nonatomic) UITextAutocapitalizationType autocapitalizationType;
+@property(nonatomic) UITextAutocorrectionType autocorrectionType;
+@property(nonatomic) UITextSpellCheckingType spellCheckingType;
+@property(nonatomic) BOOL enablesReturnKeyAutomatically;
+@property(nonatomic) UIKeyboardAppearance keyboardAppearance;
+@property(nonatomic) UIKeyboardType keyboardType;
+@property(nonatomic) UIReturnKeyType returnKeyType;
+@property(nonatomic, getter=isSecureTextEntry) BOOL secureTextEntry;
 
-signals:
-    void dateChanged(const QDate &date);
-    void editingFinished();
+// UITextInput
+@property(nonatomic, assign) id<UITextInputDelegate> inputDelegate;
 
-private:
-    void applyDate();
-    void updateDateLabel();
-    void createDateLabel();
-    void removeDateLabel();
-
-    QLabel *m_dateText;
-    QFrame *m_dateFrame;
-    QBasicTimer m_acceptTimer;
-    QCalendarDateValidator *m_dateValidator;
-    QWidget *m_widget;
-    int m_editDelay;
-
-    QDate m_date;
-};
-
-QT_END_NAMESPACE
-
-#endif // QT_NO_CALENDARWIDGET
-
-#endif
-
+@end

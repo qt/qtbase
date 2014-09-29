@@ -5,35 +5,27 @@
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
-** $QT_BEGIN_LICENSE:LGPL$
+** $QT_BEGIN_LICENSE:LGPL21$
 ** Commercial License Usage
 ** Licensees holding valid commercial Qt licenses may use this file in
 ** accordance with the commercial license agreement provided with the
 ** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and Digia.  For licensing terms and
-** conditions see http://qt.digia.com/licensing.  For further information
+** a written agreement between you and Digia. For licensing terms and
+** conditions see http://qt.digia.com/licensing. For further information
 ** use the contact form at http://qt.digia.com/contact-us.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** General Public License version 2.1 or version 3 as published by the Free
+** Software Foundation and appearing in the file LICENSE.LGPLv21 and
+** LICENSE.LGPLv3 included in the packaging of this file. Please review the
+** following information to ensure the GNU Lesser General Public License
+** requirements will be met: https://www.gnu.org/licenses/lgpl.html and
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Digia gives you certain additional
-** rights.  These rights are described in the Digia Qt LGPL Exception
+** rights. These rights are described in the Digia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
-**
 **
 ** $QT_END_LICENSE$
 **
@@ -800,7 +792,6 @@ QImageData *QImageData::create(uchar *data, int width, int height,  int bpl, QIm
         || INT_MAX/sizeof(uchar *) < uint(height)
         || INT_MAX/uint(depth) < uint(width)
         || bpl <= 0
-        || height <= 0
         || bpl < min_bytes_per_line
         || INT_MAX/uint(bpl) < uint(height))
         return d;                                        // invalid parameter(s)
@@ -2942,6 +2933,8 @@ QImage QImage::mirrored_helper(bool horizontal, bool vertical) const
     result.d->colortable = d->colortable;
     result.d->has_alpha_clut = d->has_alpha_clut;
     result.d->devicePixelRatio = d->devicePixelRatio;
+    result.d->dpmx = d->dpmx;
+    result.d->dpmy = d->dpmy;
 
     do_mirror(result.d, d, horizontal, vertical);
 
@@ -4185,22 +4178,15 @@ QImage QImage::alphaChannel() const
 */
 bool QImage::hasAlphaChannel() const
 {
-    return d && (d->format == Format_ARGB32_Premultiplied
-                 || d->format == Format_ARGB32
-                 || d->format == Format_ARGB8565_Premultiplied
-                 || d->format == Format_ARGB8555_Premultiplied
-                 || d->format == Format_ARGB6666_Premultiplied
-                 || d->format == Format_ARGB4444_Premultiplied
-                 || d->format == Format_RGBA8888
-                 || d->format == Format_RGBA8888_Premultiplied
-                 || d->format == Format_A2BGR30_Premultiplied
-                 || d->format == Format_A2RGB30_Premultiplied
-                 || d->format == Format_Alpha8
-                 || (d->has_alpha_clut && (d->format == Format_Indexed8
-                                           || d->format == Format_Mono
-                                           || d->format == Format_MonoLSB)));
+    if (!d)
+        return false;
+    const QPixelFormat format = pixelFormat();
+    if (format.alphaUsage() == QPixelFormat::UsesAlpha)
+        return true;
+    if (format.colorModel() == QPixelFormat::Indexed)
+        return d->has_alpha_clut;
+    return false;
 }
-
 
 /*!
     \since 4.7
@@ -4688,7 +4674,7 @@ static Q_CONSTEXPR QPixelFormat pixelformats[] = {
         //QImage::Format_Invalid:
         QPixelFormat(),
         //QImage::Format_Mono:
-        QPixelFormat(QPixelFormat::Grayscale,
+        QPixelFormat(QPixelFormat::Indexed,
                         /*RED*/            1,
                         /*GREEN*/          0,
                         /*BLUE*/           0,
@@ -4701,7 +4687,7 @@ static Q_CONSTEXPR QPixelFormat pixelformats[] = {
                         /*INTERPRETATION*/ QPixelFormat::UnsignedByte,
                         /*BYTE ORDER*/     QPixelFormat::CurrentSystemEndian),
         //QImage::Format_MonoLSB:
-        QPixelFormat(QPixelFormat::Grayscale,
+        QPixelFormat(QPixelFormat::Indexed,
                         /*RED*/            1,
                         /*GREEN*/          0,
                         /*BLUE*/           0,
@@ -4813,7 +4799,7 @@ static Q_CONSTEXPR QPixelFormat pixelformats[] = {
                      /*FIFTH*/              0,
                      /*ALPHA*/              6,
                      /*ALPHA USAGE*/       QPixelFormat::UsesAlpha,
-                     /*ALPHA POSITION*/    QPixelFormat::AtBeginning,
+                     /*ALPHA POSITION*/    QPixelFormat::AtEnd,
                      /*PREMULTIPLIED*/     QPixelFormat::Premultiplied,
                      /*INTERPRETATION*/    QPixelFormat::UnsignedInteger,
                      /*BYTE ORDER*/        QPixelFormat::CurrentSystemEndian),
@@ -4878,7 +4864,7 @@ static Q_CONSTEXPR QPixelFormat pixelformats[] = {
                      /*FIFTH*/              0,
                      /*ALPHA*/              4,
                      /*ALPHA USAGE*/       QPixelFormat::UsesAlpha,
-                     /*ALPHA POSITION*/    QPixelFormat::AtBeginning,
+                     /*ALPHA POSITION*/    QPixelFormat::AtEnd,
                      /*PREMULTIPLIED*/     QPixelFormat::Premultiplied,
                      /*INTERPRETATION*/    QPixelFormat::UnsignedShort,
                      /*BYTE ORDER*/        QPixelFormat::CurrentSystemEndian),

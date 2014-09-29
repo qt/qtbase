@@ -1,39 +1,31 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
-** $QT_BEGIN_LICENSE:LGPL$
+** $QT_BEGIN_LICENSE:LGPL21$
 ** Commercial License Usage
 ** Licensees holding valid commercial Qt licenses may use this file in
 ** accordance with the commercial license agreement provided with the
 ** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and Digia.  For licensing terms and
-** conditions see http://qt.digia.com/licensing.  For further information
+** a written agreement between you and Digia. For licensing terms and
+** conditions see http://qt.digia.com/licensing. For further information
 ** use the contact form at http://qt.digia.com/contact-us.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** General Public License version 2.1 or version 3 as published by the Free
+** Software Foundation and appearing in the file LICENSE.LGPLv21 and
+** LICENSE.LGPLv3 included in the packaging of this file. Please review the
+** following information to ensure the GNU Lesser General Public License
+** requirements will be met: https://www.gnu.org/licenses/lgpl.html and
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Digia gives you certain additional
-** rights.  These rights are described in the Digia Qt LGPL Exception
+** rights. These rights are described in the Digia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
-**
 **
 ** $QT_END_LICENSE$
 **
@@ -82,6 +74,7 @@
 #include <qpa/qwindowsysteminterface_p.h>
 #include "private/qwindow_p.h"
 #include "private/qcursor_p.h"
+#include "private/qopenglcontext_p.h"
 
 #include "private/qdnd_p.h"
 #include <qpa/qplatformthemefactory_p.h>
@@ -175,7 +168,9 @@ bool QGuiApplicationPrivate::noGrab = false;
 static qreal fontSmoothingGamma = 1.7;
 
 extern void qRegisterGuiVariant();
+#ifndef QT_NO_ANIMATION
 extern void qRegisterGuiGetInterpolator();
+#endif
 extern void qInitDrawhelperAsm();
 extern void qInitImageConversions();
 
@@ -587,6 +582,7 @@ QGuiApplication::~QGuiApplication()
 #endif //QT_NO_SESSIONMANAGER
 
     clearPalette();
+    QFontDatabase::removeAllApplicationFonts();
 
 #ifndef QT_NO_CURSOR
     d->cursor_list.clear();
@@ -604,7 +600,8 @@ QGuiApplicationPrivate::QGuiApplicationPrivate(int &argc, char **argv, int flags
     : QCoreApplicationPrivate(argc, argv, flags),
       styleHints(0),
       inputMethod(0),
-      lastTouchType(QEvent::TouchEnd)
+      lastTouchType(QEvent::TouchEnd),
+      ownGlobalShareContext(false)
 {
     self = this;
     application_type = QCoreApplicationPrivate::Gui;
@@ -1310,8 +1307,21 @@ void QGuiApplicationPrivate::init()
     // trigger registering of QVariant's GUI types
     qRegisterGuiVariant();
 
+#ifndef QT_NO_ANIMATION
     // trigger registering of animation interpolators
     qRegisterGuiGetInterpolator();
+#endif
+
+    // set a global share context when enabled unless there is already one
+#ifndef QT_NO_OPENGL
+    if (qApp->testAttribute(Qt::AA_ShareOpenGLContexts) && !qt_gl_global_share_context()) {
+        QOpenGLContext *ctx = new QOpenGLContext;
+        ctx->setFormat(QSurfaceFormat::defaultFormat());
+        ctx->create();
+        qt_gl_set_global_share_context(ctx);
+        ownGlobalShareContext = true;
+    }
+#endif
 
     QWindowSystemInterfacePrivate::eventTime.start();
 
@@ -1373,6 +1383,13 @@ QGuiApplicationPrivate::~QGuiApplicationPrivate()
     qt_cleanupFontDatabase();
 
     QPixmapCache::clear();
+
+#ifndef QT_NO_OPENGL
+    if (ownGlobalShareContext) {
+        delete qt_gl_global_share_context();
+        qt_gl_set_global_share_context(0);
+    }
+#endif
 
     delete platform_theme;
     platform_theme = 0;
@@ -1626,10 +1643,6 @@ void QGuiApplicationPrivate::processWindowSystemEvent(QWindowSystemInterfacePriv
         QGuiApplicationPrivate::reportGeometryChange(
                 static_cast<QWindowSystemInterfacePrivate::ScreenGeometryEvent *>(e));
         break;
-    case QWindowSystemInterfacePrivate::ScreenAvailableGeometry:
-        QGuiApplicationPrivate::reportAvailableGeometryChange(
-                static_cast<QWindowSystemInterfacePrivate::ScreenAvailableGeometryEvent *>(e));
-        break;
     case QWindowSystemInterfacePrivate::ScreenLogicalDotsPerInch:
         QGuiApplicationPrivate::reportLogicalDotsPerInchChange(
                 static_cast<QWindowSystemInterfacePrivate::ScreenLogicalDotsPerInchEvent *>(e));
@@ -1696,7 +1709,9 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
         // with the current event, we fake a move-only event that we recurse and process first. This
         // will update the global mouse position and cause the second event to be a button only event.
         QWindowSystemInterfacePrivate::MouseEvent moveEvent(e->window.data(),
-                e->timestamp, e->type, e->localPos, e->globalPos, buttons, e->modifiers);
+                e->timestamp, e->type, e->localPos, e->globalPos, buttons, e->modifiers, e->source);
+        if (e->flags & QWindowSystemInterfacePrivate::WindowSystemEvent::Synthetic)
+            moveEvent.flags |= QWindowSystemInterfacePrivate::WindowSystemEvent::Synthetic;
         processMouseEvent(&moveEvent);
         Q_ASSERT(e->globalPos == QGuiApplicationPrivate::lastCursorPosition);
         // continue with processing mouse button change event
@@ -2256,7 +2271,7 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
                                                                e->timestamp,
                                                                synthIt->pos,
                                                                synthIt->screenPos,
-                                                               Qt::NoButton,
+                                                               buttons & ~Qt::LeftButton,
                                                                e->modifiers,
                                                                Qt::MouseEventSynthesizedByQt);
                 fake.flags |= QWindowSystemInterfacePrivate::WindowSystemEvent::Synthetic;
@@ -2458,7 +2473,9 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
                         QWindowSystemInterfacePrivate::MouseEvent fake(w, e->timestamp,
                                                                        touchPoint.pos(),
                                                                        touchPoint.screenPos(),
-                                                                       b, e->modifiers);
+                                                                       b | (buttons & ~Qt::LeftButton),
+                                                                       e->modifiers,
+                                                                       Qt::MouseEventSynthesizedByQt);
                         fake.flags |= QWindowSystemInterfacePrivate::WindowSystemEvent::Synthetic;
                         processMouseEvent(&fake);
                         break;
@@ -2526,40 +2543,36 @@ void QGuiApplicationPrivate::reportGeometryChange(QWindowSystemInterfacePrivate:
         return;
 
     QScreen *s = e->screen.data();
+
+    bool geometryChanged = e->geometry != s->d_func()->geometry;
     s->d_func()->geometry = e->geometry;
 
-    Qt::ScreenOrientation primaryOrientation = s->primaryOrientation();
-    s->d_func()->updatePrimaryOrientation();
-
-    emit s->geometryChanged(s->geometry());
-    emit s->physicalSizeChanged(s->physicalSize());
-    emit s->physicalDotsPerInchChanged(s->physicalDotsPerInch());
-    emit s->logicalDotsPerInchChanged(s->logicalDotsPerInch());
-    foreach (QScreen* sibling, s->virtualSiblings())
-        emit sibling->virtualGeometryChanged(sibling->virtualGeometry());
-
-    if (s->primaryOrientation() != primaryOrientation)
-        emit s->primaryOrientationChanged(s->primaryOrientation());
-
-    if (s->d_func()->orientation == Qt::PrimaryOrientation)
-        updateFilteredScreenOrientation(s);
-}
-
-void QGuiApplicationPrivate::reportAvailableGeometryChange(
-        QWindowSystemInterfacePrivate::ScreenAvailableGeometryEvent *e)
-{
-    // This operation only makes sense after the QGuiApplication constructor runs
-    if (QCoreApplication::startingUp())
-        return;
-
-    if (!e->screen)
-        return;
-
-    QScreen *s = e->screen.data();
+    bool availableGeometryChanged = e->availableGeometry != s->d_func()->availableGeometry;
     s->d_func()->availableGeometry = e->availableGeometry;
 
-    foreach (QScreen* sibling, s->virtualSiblings())
-        emit sibling->virtualGeometryChanged(sibling->virtualGeometry());
+    if (geometryChanged) {
+        Qt::ScreenOrientation primaryOrientation = s->primaryOrientation();
+        s->d_func()->updatePrimaryOrientation();
+
+        emit s->geometryChanged(s->geometry());
+        emit s->physicalSizeChanged(s->physicalSize());
+        emit s->physicalDotsPerInchChanged(s->physicalDotsPerInch());
+        emit s->logicalDotsPerInchChanged(s->logicalDotsPerInch());
+
+        if (s->primaryOrientation() != primaryOrientation)
+            emit s->primaryOrientationChanged(s->primaryOrientation());
+
+        if (s->d_func()->orientation == Qt::PrimaryOrientation)
+            updateFilteredScreenOrientation(s);
+    }
+
+    if (availableGeometryChanged)
+        emit s->availableGeometryChanged(s->geometry());
+
+    if (geometryChanged || availableGeometryChanged) {
+        foreach (QScreen* sibling, s->virtualSiblings())
+            emit sibling->virtualGeometryChanged(sibling->virtualGeometry());
+    }
 }
 
 void QGuiApplicationPrivate::reportLogicalDotsPerInchChange(QWindowSystemInterfacePrivate::ScreenLogicalDotsPerInchEvent *e)

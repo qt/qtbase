@@ -5,35 +5,27 @@
 **
 ** This file is part of the QtWidgets module of the Qt Toolkit.
 **
-** $QT_BEGIN_LICENSE:LGPL$
+** $QT_BEGIN_LICENSE:LGPL21$
 ** Commercial License Usage
 ** Licensees holding valid commercial Qt licenses may use this file in
 ** accordance with the commercial license agreement provided with the
 ** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and Digia.  For licensing terms and
-** conditions see http://qt.digia.com/licensing.  For further information
+** a written agreement between you and Digia. For licensing terms and
+** conditions see http://qt.digia.com/licensing. For further information
 ** use the contact form at http://qt.digia.com/contact-us.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** General Public License version 2.1 or version 3 as published by the Free
+** Software Foundation and appearing in the file LICENSE.LGPLv21 and
+** LICENSE.LGPLv3 included in the packaging of this file. Please review the
+** following information to ensure the GNU Lesser General Public License
+** requirements will be met: https://www.gnu.org/licenses/lgpl.html and
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Digia gives you certain additional
-** rights.  These rights are described in the Digia Qt LGPL Exception
+** rights. These rights are described in the Digia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
-**
 **
 ** $QT_END_LICENSE$
 **
@@ -143,7 +135,7 @@ void QLineEditPrivate::_q_selectionChanged()
 {
     Q_Q(QLineEdit);
     if (control->preeditAreaText().isEmpty()) {
-        QStyleOptionFrameV2 opt;
+        QStyleOptionFrame opt;
         q->initStyleOption(&opt);
         bool showCursor = control->hasSelectedText() ?
                           q->style()->styleHint(QStyle::SH_BlinkCursorWhenTextSelected, &opt, q):
@@ -202,7 +194,7 @@ void QLineEditPrivate::init(const QString& txt)
     QObject::connect(control, SIGNAL(updateNeeded(QRect)),
             q, SLOT(_q_updateNeeded(QRect)));
 
-    QStyleOptionFrameV2 opt;
+    QStyleOptionFrame opt;
     q->initStyleOption(&opt);
     control->setPasswordCharacter(q->style()->styleHint(QStyle::SH_LineEdit_PasswordCharacter, &opt, q));
     control->setPasswordMaskDelay(q->style()->styleHint(QStyle::SH_LineEdit_PasswordMaskDelay, &opt, q));
@@ -225,7 +217,7 @@ void QLineEditPrivate::init(const QString& txt)
 QRect QLineEditPrivate::adjustedContentsRect() const
 {
     Q_Q(const QLineEdit);
-    QStyleOptionFrameV2 opt;
+    QStyleOptionFrame opt;
     q->initStyleOption(&opt);
     QRect r = q->style()->subElementRect(QStyle::SE_LineEditContents, &opt, q);
     r.setX(r.x() + effectiveLeftTextMargin());
@@ -310,7 +302,6 @@ QLineEditIconButton::QLineEditIconButton(QWidget *parent)
     : QToolButton(parent)
     , m_opacity(0)
 {
-    updateCursor();
     setFocusPolicy(Qt::NoFocus);
 }
 
@@ -334,18 +325,20 @@ void QLineEditIconButton::setOpacity(qreal value)
 {
     if (!qFuzzyCompare(m_opacity, value)) {
         m_opacity = value;
+        updateCursor();
         update();
     }
 }
 
+#ifndef QT_NO_ANIMATION
 void QLineEditIconButton::startOpacityAnimation(qreal endValue)
 {
     QPropertyAnimation *animation = new QPropertyAnimation(this, QByteArrayLiteral("opacity"));
-    connect(animation, &QAbstractAnimation::finished, this, &QLineEditIconButton::updateCursor);
     animation->setDuration(160);
     animation->setEndValue(endValue);
     animation->start(QAbstractAnimation::DeleteWhenStopped);
 }
+#endif
 
 void QLineEditIconButton::updateCursor()
 {
@@ -360,6 +353,7 @@ void QLineEditPrivate::_q_textChanged(const QString &text)
         const int newTextSize = text.size();
         if (!newTextSize || !lastTextSize) {
             lastTextSize = newTextSize;
+#ifndef QT_NO_ANIMATION
             const bool fadeIn = newTextSize > 0;
             foreach (const SideWidgetEntry &e, leadingSideWidgets) {
                 if (e.flags & SideWidgetFadeInWithText)
@@ -369,6 +363,7 @@ void QLineEditPrivate::_q_textChanged(const QString &text)
                 if (e.flags & SideWidgetFadeInWithText)
                    static_cast<QLineEditIconButton *>(e.widget)->animateShow(fadeIn);
             }
+#endif
         }
     }
 }
@@ -392,7 +387,7 @@ QSize QLineEditPrivate::iconSize() const
 QIcon QLineEditPrivate::clearButtonIcon() const
 {
     Q_Q(const QLineEdit);
-    QStyleOptionFrameV2 styleOption;
+    QStyleOptionFrame styleOption;
     q->initStyleOption(&styleOption);
     return QIcon(q->style()->standardPixmap(QStyle::SP_LineEditClearButton, &styleOption, q));
 }

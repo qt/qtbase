@@ -5,35 +5,27 @@
 **
 ** This file is part of the qmake application of the Qt Toolkit.
 **
-** $QT_BEGIN_LICENSE:LGPL$
+** $QT_BEGIN_LICENSE:LGPL21$
 ** Commercial License Usage
 ** Licensees holding valid commercial Qt licenses may use this file in
 ** accordance with the commercial license agreement provided with the
 ** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and Digia.  For licensing terms and
-** conditions see http://qt.digia.com/licensing.  For further information
+** a written agreement between you and Digia. For licensing terms and
+** conditions see http://qt.digia.com/licensing. For further information
 ** use the contact form at http://qt.digia.com/contact-us.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** General Public License version 2.1 or version 3 as published by the Free
+** Software Foundation and appearing in the file LICENSE.LGPLv21 and
+** LICENSE.LGPLv3 included in the packaging of this file. Please review the
+** following information to ensure the GNU Lesser General Public License
+** requirements will be met: https://www.gnu.org/licenses/lgpl.html and
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Digia gives you certain additional
-** rights.  These rights are described in the Digia Qt LGPL Exception
+** rights. These rights are described in the Digia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
-**
 **
 ** $QT_END_LICENSE$
 **
@@ -311,6 +303,18 @@ static QString vcCommandSeparator()
     QLatin1String("&#x000D;&#x000A;if errorlevel 1 goto VCReportError&#x000D;&#x000A;");
     return cmdSep;
 }
+
+static void unknownOptionWarning(const char *tool, const char *option)
+{
+    static bool firstCall = true;
+    warn_msg(WarnLogic, "Could not parse %s option '%s'; added to AdditionalOptions.", tool, option);
+    if (firstCall) {
+        firstCall = false;
+        warn_msg(WarnLogic,
+                 "You can suppress these warnings with CONFIG+=suppress_vcproj_warnings.");
+    }
+}
+
 
 // VCCLCompilerTool -------------------------------------------------
 VCCLCompilerTool::VCCLCompilerTool()
@@ -1148,7 +1152,8 @@ bool VCCLCompilerTool::parseOption(const char* option)
         break;
     }
     if(!found) {
-        warn_msg(WarnLogic, "Could not parse Compiler option: %s, added as AdditionalOption", option);
+        if (!config->suppressUnknownOptionWarnings)
+            unknownOptionWarning("Compiler", option);
         AdditionalOptions += option;
     }
     return true;
@@ -1743,7 +1748,8 @@ bool VCLinkerTool::parseOption(const char* option)
         break;
     }
     if(!found) {
-        warn_msg(WarnLogic, "Could not parse Linker options: %s, added as AdditionalOption", option);
+        if (!config->suppressUnknownOptionWarnings)
+            unknownOptionWarning("Linker", option);
         AdditionalOptions += option;
     }
     return found;
@@ -2408,11 +2414,34 @@ bool VCFilter::addExtraCompiler(const VCFilterFile &info)
 }
 
 // VCProjectSingleConfig --------------------------------------------
-VCFilter& VCProjectSingleConfig::filterForExtraCompiler(const QString &compilerName)
+const VCFilter &VCProjectSingleConfig::filterByName(const QString &name) const
+{
+    if (name == "Root Files")
+        return RootFiles;
+    if (name == "Source Files")
+        return SourceFiles;
+    if (name == "Header Files")
+        return HeaderFiles;
+    if (name == "Generated Files")
+        return GeneratedFiles;
+    if (name == "LexYacc Files")
+        return LexYaccFiles;
+    if (name == "Translation Files")
+        return TranslationFiles;
+    if (name == "Form Files")
+        return FormFiles;
+    if (name == "Resource Files")
+        return ResourceFiles;
+    if (name == "Deployment Files")
+        return DeploymentFiles;
+    return filterForExtraCompiler(name);
+}
+
+const VCFilter &VCProjectSingleConfig::filterForExtraCompiler(const QString &compilerName) const
 {
     for (int i = 0; i < ExtraCompilersFiles.count(); ++i)
         if (ExtraCompilersFiles.at(i).Name == compilerName)
-            return ExtraCompilersFiles[i];
+            return ExtraCompilersFiles.at(i);
 
     static VCFilter nullFilter;
     return nullFilter;
@@ -2879,30 +2908,7 @@ void VCProjectWriter::outputFilter(VCProject &project, XmlOutput &xml, const QSt
     triState parse = unset;
 
     for (int i = 0; i < project.SingleProjects.count(); ++i) {
-        VCFilter filter;
-        const VCProjectSingleConfig &projectSingleConfig = project.SingleProjects.at(i);
-        if (filtername == "RootFiles") {
-            filter = projectSingleConfig.RootFiles;
-        } else if (filtername == "Sources") {
-            filter = projectSingleConfig.SourceFiles;
-        } else if (filtername == "Headers") {
-            filter = projectSingleConfig.HeaderFiles;
-        } else if (filtername == "GeneratedFiles") {
-            filter = projectSingleConfig.GeneratedFiles;
-        } else if (filtername == "LexYaccFiles") {
-            filter = projectSingleConfig.LexYaccFiles;
-        } else if (filtername == "TranslationFiles") {
-            filter = projectSingleConfig.TranslationFiles;
-        } else if (filtername == "FormFiles") {
-            filter = projectSingleConfig.FormFiles;
-        } else if (filtername == "ResourceFiles") {
-            filter = projectSingleConfig.ResourceFiles;
-        } else if (filtername == "DeploymentFiles") {
-            filter = projectSingleConfig.DeploymentFiles;
-        } else {
-            // ExtraCompilers
-            filter = project.SingleProjects[i].filterForExtraCompiler(filtername);
-        }
+        const VCFilter filter = project.SingleProjects.at(i).filterByName(filtername);
 
         // Merge all files in this filter to root tree
         for (int x = 0; x < filter.Files.count(); ++x)
@@ -2941,31 +2947,7 @@ void VCProjectWriter::outputFileConfigs(VCProject &project, XmlOutput &xml, cons
     xml << tag(q_File)
             << attrS(_RelativePath, Option::fixPathToLocalOS(info.file));
     for (int i = 0; i < project.SingleProjects.count(); ++i) {
-        VCFilter filter;
-        const VCProjectSingleConfig &projectSingleConfig = project.SingleProjects.at(i);
-        if (filtername == "RootFiles") {
-            filter = projectSingleConfig.RootFiles;
-        } else if (filtername == "Sources") {
-            filter = projectSingleConfig.SourceFiles;
-        } else if (filtername == "Headers") {
-            filter = projectSingleConfig.HeaderFiles;
-        } else if (filtername == "GeneratedFiles") {
-            filter = projectSingleConfig.GeneratedFiles;
-        } else if (filtername == "LexYaccFiles") {
-            filter = projectSingleConfig.LexYaccFiles;
-        } else if (filtername == "TranslationFiles") {
-            filter = projectSingleConfig.TranslationFiles;
-        } else if (filtername == "FormFiles") {
-            filter = projectSingleConfig.FormFiles;
-        } else if (filtername == "ResourceFiles") {
-            filter = projectSingleConfig.ResourceFiles;
-        } else if (filtername == "DeploymentFiles") {
-            filter = projectSingleConfig.DeploymentFiles;
-        } else {
-            // ExtraCompilers
-            filter = project.SingleProjects[i].filterForExtraCompiler(filtername);
-        }
-
+        VCFilter filter = project.SingleProjects.at(i).filterByName(filtername);
         if (filter.Config) // only if the filter is not empty
             outputFileConfig(filter, xml, info.file);
     }

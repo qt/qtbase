@@ -5,35 +5,27 @@
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
-** $QT_BEGIN_LICENSE:LGPL$
+** $QT_BEGIN_LICENSE:LGPL21$
 ** Commercial License Usage
 ** Licensees holding valid commercial Qt licenses may use this file in
 ** accordance with the commercial license agreement provided with the
 ** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and Digia.  For licensing terms and
-** conditions see http://qt.digia.com/licensing.  For further information
+** a written agreement between you and Digia. For licensing terms and
+** conditions see http://qt.digia.com/licensing. For further information
 ** use the contact form at http://qt.digia.com/contact-us.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** General Public License version 2.1 or version 3 as published by the Free
+** Software Foundation and appearing in the file LICENSE.LGPLv21 and
+** LICENSE.LGPLv3 included in the packaging of this file. Please review the
+** following information to ensure the GNU Lesser General Public License
+** requirements will be met: https://www.gnu.org/licenses/lgpl.html and
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Digia gives you certain additional
-** rights.  These rights are described in the Digia Qt LGPL Exception
+** rights. These rights are described in the Digia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
-**
 **
 ** $QT_END_LICENSE$
 **
@@ -212,6 +204,7 @@ private slots:
     void rowSizeHint();
     void setSortingEnabled();
     void headerHidden();
+    void indentation();
 
     void selection();
     void removeAndInsertExpandedCol0();
@@ -439,7 +432,8 @@ void tst_QTreeView::getSetCheck()
 
     // int QTreeView::indentation()
     // void QTreeView::setIndentation(int)
-    QCOMPARE(obj1.indentation(), 20);
+    const int styledIndentation = obj1.style()->pixelMetric(QStyle::PM_TreeViewIndentation, 0, &obj1);
+    QCOMPARE(obj1.indentation(), styledIndentation);
     obj1.setIndentation(0);
     QCOMPARE(obj1.indentation(), 0);
     obj1.setIndentation(INT_MIN);
@@ -554,7 +548,8 @@ void tst_QTreeView::construction()
     QCOMPARE(view.columnWidth(0), 0);
     QCOMPARE(view.columnWidth(1), 0);
     QVERIFY(view.header());
-    QCOMPARE(view.indentation(), 20);
+    const int styledIndentation = view.style()->pixelMetric(QStyle::PM_TreeViewIndentation, 0, &view);
+    QCOMPARE(view.indentation(), styledIndentation);
     QCOMPARE(view.indexAbove(QModelIndex()), QModelIndex());
     QCOMPARE(view.indexBelow(QModelIndex()), QModelIndex());
     QVERIFY(!view.isAnimated());
@@ -2574,6 +2569,42 @@ void tst_QTreeView::headerHidden()
     view.setHeaderHidden(true);
     QCOMPARE(view.isHeaderHidden(), true);
     QCOMPARE(view.header()->isHidden(), true);
+}
+
+class TestTreeViewStyle : public QProxyStyle
+{
+public:
+    TestTreeViewStyle() : indentation(20) {}
+    int pixelMetric(PixelMetric metric, const QStyleOption *option = 0, const QWidget *widget = 0) const Q_DECL_OVERRIDE
+    {
+        if (metric == QStyle::PM_TreeViewIndentation)
+            return indentation;
+        else
+            return QProxyStyle::pixelMetric(metric, option, widget);
+    }
+    int indentation;
+};
+
+void tst_QTreeView::indentation()
+{
+    TestTreeViewStyle style1;
+    TestTreeViewStyle style2;
+    style1.indentation = 20;
+    style2.indentation = 30;
+
+    QTreeView view;
+    view.setStyle(&style1);
+    QCOMPARE(view.indentation(), style1.indentation);
+    view.setStyle(&style2);
+    QCOMPARE(view.indentation(), style2.indentation);
+    view.setIndentation(70);
+    QCOMPARE(view.indentation(), 70);
+    view.setStyle(&style1);
+    QCOMPARE(view.indentation(), 70);
+    view.resetIndentation();
+    QCOMPARE(view.indentation(), style1.indentation);
+    view.setStyle(&style2);
+    QCOMPARE(view.indentation(), style2.indentation);
 }
 
 // From Task 145199 (crash when column 0 having at least one expanded item is removed and then

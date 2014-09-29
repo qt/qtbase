@@ -1,39 +1,31 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
-** $QT_BEGIN_LICENSE:LGPL$
+** $QT_BEGIN_LICENSE:LGPL21$
 ** Commercial License Usage
 ** Licensees holding valid commercial Qt licenses may use this file in
 ** accordance with the commercial license agreement provided with the
 ** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and Digia.  For licensing terms and
-** conditions see http://qt.digia.com/licensing.  For further information
+** a written agreement between you and Digia. For licensing terms and
+** conditions see http://qt.digia.com/licensing. For further information
 ** use the contact form at http://qt.digia.com/contact-us.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** General Public License version 2.1 or version 3 as published by the Free
+** Software Foundation and appearing in the file LICENSE.LGPLv21 and
+** LICENSE.LGPLv3 included in the packaging of this file. Please review the
+** following information to ensure the GNU Lesser General Public License
+** requirements will be met: https://www.gnu.org/licenses/lgpl.html and
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Digia gives you certain additional
-** rights.  These rights are described in the Digia Qt LGPL Exception
+** rights. These rights are described in the Digia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
-**
 **
 ** $QT_END_LICENSE$
 **
@@ -1255,21 +1247,29 @@ void tst_QTextScriptEngine::thaiWithZWJ()
     QTextLayout layout(s, font);
     QTextEngine *e = layout.engine();
     e->itemize();
-    QCOMPARE(e->layoutData->items.size(), 3);
+    QCOMPARE(e->layoutData->items.size(), 11);
 
     for (int item = 0; item < e->layoutData->items.size(); ++item)
         e->shape(item);
 
-    QCOMPARE(e->layoutData->items[0].num_glyphs, ushort(15)); // Thai: The ZWJ and ZWNJ characters are inherited, so should be part of the thai script
-    QCOMPARE(e->layoutData->items[1].num_glyphs, ushort(1));  // Han: Kanji for tree
-    QCOMPARE(e->layoutData->items[2].num_glyphs, ushort(2));  // Thai: Thai character followed by superscript "a" which is of inherited type
+    QCOMPARE(e->layoutData->items[0].num_glyphs, ushort(7));  // Thai: The ZWJ and ZWNJ characters are inherited, so should be part of the thai script
+    QCOMPARE(e->layoutData->items[1].num_glyphs, ushort(1));  // Common: The smart quotes cannot be handled by thai, so should be a separate item
+    QCOMPARE(e->layoutData->items[2].num_glyphs, ushort(1));  // Thai: Thai character
+    QCOMPARE(e->layoutData->items[3].num_glyphs, ushort(1));  // Common: Ellipsis
+    QCOMPARE(e->layoutData->items[4].num_glyphs, ushort(1));  // Thai: Thai character
+    QCOMPARE(e->layoutData->items[5].num_glyphs, ushort(1));  // Common: Smart quote
+    QCOMPARE(e->layoutData->items[6].num_glyphs, ushort(1));  // Thai: Thai character
+    QCOMPARE(e->layoutData->items[7].num_glyphs, ushort(1));  // Common: \xA0 = non-breaking space. Could be useful to have in thai, but not currently implemented
+    QCOMPARE(e->layoutData->items[8].num_glyphs, ushort(1));  // Thai: Thai character
+    QCOMPARE(e->layoutData->items[9].num_glyphs, ushort(1));  // Japanese: Kanji for tree
+    QCOMPARE(e->layoutData->items[10].num_glyphs, ushort(2)); // Thai: Thai character followed by superscript "a" which is of inherited type
 
     //A quick sanity check - check all the characters are individual clusters
     unsigned short *logClusters = e->layoutData->logClustersPtr;
-    for (int i = 0; i <= 14; i++)
+    for (int i = 0; i < 7; i++)
         QCOMPARE(logClusters[i], ushort(i));
-    QCOMPARE(logClusters[15], ushort(0));
-    QCOMPARE(logClusters[16], ushort(0));
+    for (int i = 0; i < 10; i++)
+        QCOMPARE(logClusters[i+7], ushort(0));
 
     // A thai implementation could either remove the ZWJ and ZWNJ characters, or hide them.
     // The current implementation hides them, so we test for that.

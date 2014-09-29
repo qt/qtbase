@@ -9,5 +9,5 @@ SKIP   : tst_BenchlibCounting::skippingBenchmark() This is a skipping benchmark
 FAIL!  : tst_BenchlibCounting::failingBenchmark() This is a failing benchmark
    Loc: [tst_benchlibcounting.cpp(71)]
 PASS   : tst_BenchlibCounting::cleanupTestCase()
-Totals: 3 passed, 1 failed, 1 skipped
+Totals: 3 passed, 1 failed, 1 skipped, 0 blacklisted
 ********* Finished testing of tst_BenchlibCounting *********

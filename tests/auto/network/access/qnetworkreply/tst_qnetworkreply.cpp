@@ -5,35 +5,27 @@
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
-** $QT_BEGIN_LICENSE:LGPL$
+** $QT_BEGIN_LICENSE:LGPL21$
 ** Commercial License Usage
 ** Licensees holding valid commercial Qt licenses may use this file in
 ** accordance with the commercial license agreement provided with the
 ** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and Digia.  For licensing terms and
-** conditions see http://qt.digia.com/licensing.  For further information
+** a written agreement between you and Digia. For licensing terms and
+** conditions see http://qt.digia.com/licensing. For further information
 ** use the contact form at http://qt.digia.com/contact-us.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** General Public License version 2.1 or version 3 as published by the Free
+** Software Foundation and appearing in the file LICENSE.LGPLv21 and
+** LICENSE.LGPLv3 included in the packaging of this file. Please review the
+** following information to ensure the GNU Lesser General Public License
+** requirements will be met: https://www.gnu.org/licenses/lgpl.html and
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Digia gives you certain additional
-** rights.  These rights are described in the Digia Qt LGPL Exception
+** rights. These rights are described in the Digia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
-**
 **
 ** $QT_END_LICENSE$
 **
@@ -206,6 +198,7 @@ private Q_SLOTS:
     void getFromFileSpecial();
     void getFromFtp_data();
     void getFromFtp();
+    void getFromFtpAfterError();    // QTBUG-40797
     void getFromHttp_data();
     void getFromHttp();
     void getErrors_data();
@@ -218,6 +211,7 @@ private Q_SLOTS:
     void putToFile();
     void putToFtp_data();
     void putToFtp();
+    void putToFtpWithInvalidCredentials();    // QTBUG-40622
     void putToHttp_data();
     void putToHttp();
     void putToHttpSynchronous_data();
@@ -1753,6 +1747,26 @@ void tst_QNetworkReply::getFromFtp()
     QCOMPARE(reply->readAll(), reference.readAll());
 }
 
+void tst_QNetworkReply::getFromFtpAfterError()
+{
+    QNetworkRequest invalidRequest(QUrl("ftp://" + QtNetworkSettings::serverName() + "/qtest/invalid.txt"));
+    QNetworkReplyPtr invalidReply;
+    invalidReply.reset(manager.get(invalidRequest));
+    QSignalSpy spy(invalidReply.data(), SIGNAL(error(QNetworkReply::NetworkError)));
+    QVERIFY(spy.wait());
+    QCOMPARE(invalidReply->error(), QNetworkReply::ContentNotFoundError);
+
+    QFile reference(testDataDir + "/rfc3252.txt");
+    QVERIFY(reference.open(QIODevice::ReadOnly));
+    QNetworkRequest validRequest(QUrl("ftp://" + QtNetworkSettings::serverName() + "/qtest/rfc3252.txt"));
+    QNetworkReplyPtr validReply;
+    RUN_REQUEST(runSimpleRequest(QNetworkAccessManager::GetOperation, validRequest, validReply));
+    QCOMPARE(validReply->url(), validRequest.url());
+    QCOMPARE(validReply->error(), QNetworkReply::NoError);
+    QCOMPARE(validReply->header(QNetworkRequest::ContentLengthHeader).toLongLong(), reference.size());
+    QCOMPARE(validReply->readAll(), reference.readAll());
+}
+
 void tst_QNetworkReply::getFromHttp_data()
 {
     QTest::addColumn<QString>("referenceName");
@@ -2052,6 +2066,28 @@ void tst_QNetworkReply::putToFtp()
     QObject::connect(r, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
     QTestEventLoop::instance().enterLoop(10);
     QObject::disconnect(r, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+}
+
+void tst_QNetworkReply::putToFtpWithInvalidCredentials()
+{
+    QUrl url("ftp://" + QtNetworkSettings::serverName());
+    url.setPath(QString("/qtest/upload/qnetworkaccess-putToFtp-%1-%2")
+                .arg(QTest::currentDataTag())
+                .arg(uniqueExtension));
+    url.setUserName("invalidUser");
+    url.setPassword("InvalidPassword");
+    QNetworkRequest req(url);
+    QNetworkReplyPtr r;
+
+    for (int i = 0; i < 2; i++)
+    {
+        runSimpleRequest(QNetworkAccessManager::PutOperation, req, r, QByteArray());
+
+        QVERIFY(r->isFinished());
+        QCOMPARE(r->url(), url);
+        QCOMPARE(r->error(), QNetworkReply::AuthenticationRequiredError);
+        r->close();
+    }
 }
 
 void tst_QNetworkReply::putToHttp_data()

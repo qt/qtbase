@@ -3,19 +3,19 @@ Config: Using QtTest library @INSERT_QT_VERSION_HERE@, Qt @INSERT_QT_VERSION_HER
 PASS   : tst_TestA::initTestCase()
 PASS   : tst_TestA::slotName()
 PASS   : tst_TestA::cleanupTestCase()
-Totals: 3 passed, 0 failed, 0 skipped
+Totals: 3 passed, 0 failed, 0 skipped, 0 blacklisted
 ********* Finished testing of tst_TestA *********
 ********* Start testing of tst_TestA *********
 Config: Using QtTest library @INSERT_QT_VERSION_HERE@, Qt @INSERT_QT_VERSION_HERE@
 PASS   : tst_TestA::initTestCase()
 PASS   : tst_TestA::slotName()
 PASS   : tst_TestA::cleanupTestCase()
-Totals: 3 passed, 0 failed, 0 skipped
+Totals: 3 passed, 0 failed, 0 skipped, 0 blacklisted
 ********* Finished testing of tst_TestA *********
 ********* Start testing of tst_TestB *********
 Config: Using QtTest library @INSERT_QT_VERSION_HERE@, Qt @INSERT_QT_VERSION_HERE@
 PASS   : tst_TestB::initTestCase()
 PASS   : tst_TestB::slotName()
 PASS   : tst_TestB::cleanupTestCase()
-Totals: 3 passed, 0 failed, 0 skipped
+Totals: 3 passed, 0 failed, 0 skipped, 0 blacklisted
 ********* Finished testing of tst_TestB *********

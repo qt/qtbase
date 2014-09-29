@@ -3,5 +3,5 @@ Config: Using QtTest library @INSERT_QT_VERSION_HERE@, Qt @INSERT_QT_VERSION_HER
 PASS   : tst_Sleep::initTestCase()
 PASS   : tst_Sleep::sleep()
 PASS   : tst_Sleep::cleanupTestCase()
-Totals: 3 passed, 0 failed, 0 skipped
+Totals: 3 passed, 0 failed, 0 skipped, 0 blacklisted
 ********* Finished testing of tst_Sleep *********

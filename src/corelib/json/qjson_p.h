@@ -1,39 +1,31 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
-** $QT_BEGIN_LICENSE:LGPL$
+** $QT_BEGIN_LICENSE:LGPL21$
 ** Commercial License Usage
 ** Licensees holding valid commercial Qt licenses may use this file in
 ** accordance with the commercial license agreement provided with the
 ** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and Digia.  For licensing terms and
-** conditions see http://qt.digia.com/licensing.  For further information
+** a written agreement between you and Digia. For licensing terms and
+** conditions see http://qt.digia.com/licensing. For further information
 ** use the contact form at http://qt.digia.com/contact-us.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** General Public License version 2.1 or version 3 as published by the Free
+** Software Foundation and appearing in the file LICENSE.LGPLv21 and
+** LICENSE.LGPLv3 included in the packaging of this file. Please review the
+** following information to ensure the GNU Lesser General Public License
+** requirements will be met: https://www.gnu.org/licenses/lgpl.html and
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Digia gives you certain additional
-** rights.  These rights are described in the Digia Qt LGPL Exception
+** rights. These rights are described in the Digia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
-**
 **
 ** $QT_END_LICENSE$
 **
@@ -61,8 +53,6 @@
 #include <qstring.h>
 #include <qendian.h>
 #include <qnumeric.h>
-#include <QtCore/qhash.h>
-#include <QtCore/qmutex.h>
 
 #include <limits.h>
 #include <limits>
@@ -354,7 +344,7 @@ public:
         return !memcmp(d->utf16, str.d->utf16, d->length*sizeof(ushort));
     }
     inline bool operator<(const String &other) const;
-    inline bool operator >=(const String &other) const { return other < *this; }
+    inline bool operator >=(const String &other) const { return !(*this < other); }
 
     inline QString toString() const {
 #if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
@@ -414,12 +404,29 @@ public:
             val = d->length - str.d->length;
         return val >= 0;
     }
+    inline bool operator<(const String &str) const
+    {
+        const qle_ushort *uc = (qle_ushort *) str.d->utf16;
+        if (!uc || *uc == 0)
+            return false;
 
+        const uchar *c = (uchar *)d->latin1;
+        const uchar *e = c + qMin((int)d->length, (int)str.d->length);
+
+        while (c < e) {
+            if (*c != *uc)
+                break;
+            ++c;
+            ++uc;
+        }
+        return (c == e ? (int)d->length < (int)str.d->length : *c < *uc);
+
+    }
     inline bool operator ==(const String &str) const {
         return (str == *this);
     }
     inline bool operator >=(const String &str) const {
-        return (str < *this);
+        return !(*this < str);
     }
 
     inline QString toString() const {
@@ -456,7 +463,7 @@ inline bool String::operator <(const String &other) const
         a++,b++;
     if (l==-1)
         return (alen < blen);
-    return (ushort)*a - (ushort)*b;
+    return (ushort)*a < (ushort)*b;
 }
 
 inline bool String::operator<(const Latin1String &str) const
@@ -778,75 +785,6 @@ private:
     Q_DISABLE_COPY(Data)
 };
 
-struct ObjectUndefinedKeys
-{
-    static void insertKey(const QJsonObject *object, int index, const QString &key)
-    {
-        QMutexLocker lock(&mutex);
-        keys()[object][index] = key;
-    }
-    static QString takeKey(const QJsonObject *object, int index)
-    {
-        QMutexLocker lock(&mutex);
-        return keys()[object].take(index);
-    }
-    static void removeKeys(const QJsonObject *object)
-    {
-        QMutexLocker lock(&mutex);
-        keys().remove(object);
-    }
-private:
-    typedef QHash<const QJsonObject*, QHash<int, QString> > KeysHash;
-    static KeysHash &keys()
-    {
-        static KeysHash keys;
-        return keys;
-    }
-   static QBasicMutex mutex;
-};
-
-} // namespace QJsonPrivate
-
-struct QJsonValueRef::UnionHelper
-{
-    static inline QJsonObject *untaggedPointer(QJsonObject *object)
-    {
-        const quintptr Mask = ~quintptr(0) << 2;
-        return reinterpret_cast<QJsonObject*>(quintptr(object) & Mask);
-    }
-    static inline QJsonObject *taggedPointer(QJsonObject *object)
-    {
-        const quintptr Mask = 1;
-        return reinterpret_cast<QJsonObject*>(quintptr(object) | Mask);
-    }
-
-    static void setValueAt(QJsonValueRef *ref, QJsonValue value)
-    {
-        using namespace QJsonPrivate;
-        QJsonObject *object = untaggedPointer(ref->o);
-        if (ref->o != object)
-            object->insert(ObjectUndefinedKeys::takeKey(object, ref->index), value);
-        else
-            object->setValueAt(ref->index, value);
-    }
-
-    static QJsonValue valueAt(const QJsonValueRef *ref)
-    {
-        QJsonObject *object = untaggedPointer(ref->o);
-        if (ref->o != object)
-            return QJsonValue::Undefined;
-        return ref->o->valueAt(ref->index);
-    }
-};
-
-/*!
-    \internal
-    Constructor that creates reference to an undefined value in \a object.
-*/
-inline QJsonValueRef::QJsonValueRef(QJsonObject *object, const QString &key)
-    : o(UnionHelper::taggedPointer(object)), is_object(true), index(qHash(key))
-{
-    QJsonPrivate::ObjectUndefinedKeys::insertKey(object, index, key);
 }
 
 QT_END_NAMESPACE

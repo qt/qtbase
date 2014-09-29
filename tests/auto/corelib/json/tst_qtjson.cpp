@@ -1,39 +1,31 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
-** $QT_BEGIN_LICENSE:LGPL$
+** $QT_BEGIN_LICENSE:LGPL21$
 ** Commercial License Usage
 ** Licensees holding valid commercial Qt licenses may use this file in
 ** accordance with the commercial license agreement provided with the
 ** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and Digia.  For licensing terms and
-** conditions see http://qt.digia.com/licensing.  For further information
+** a written agreement between you and Digia. For licensing terms and
+** conditions see http://qt.digia.com/licensing. For further information
 ** use the contact form at http://qt.digia.com/contact-us.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** General Public License version 2.1 or version 3 as published by the Free
+** Software Foundation and appearing in the file LICENSE.LGPLv21 and
+** LICENSE.LGPLv3 included in the packaging of this file. Please review the
+** following information to ensure the GNU Lesser General Public License
+** requirements will be met: https://www.gnu.org/licenses/lgpl.html and
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Digia gives you certain additional
-** rights.  These rights are described in the Digia Qt LGPL Exception
+** rights. These rights are described in the Digia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
-**
 **
 ** $QT_END_LICENSE$
 **
@@ -92,7 +84,6 @@ private Q_SLOTS:
     void nullObject();
     void constNullObject();
 
-    void undefinedKeys();
     void keySorting();
 
     void undefinedValues();
@@ -149,6 +140,9 @@ private Q_SLOTS:
 
     void arrayInitializerList();
     void objectInitializerList();
+
+    void unicodeKeys();
+    void garbageAtEnd();
 private:
     QString testDataDir;
 };
@@ -723,23 +717,11 @@ void tst_QtJson::testObjectIteration()
     for (QJsonObject::iterator it = object.begin(); it != object.end(); ++it)
         QVERIFY(false);
 
-    object["undefined"];
-    for (QJsonObject::iterator it = object.begin(); it != object.end(); ++it)
-        QVERIFY(false);
-
     const QString property = "kkk";
     object.insert(property, 11);
     object.take(property);
     for (QJsonObject::iterator it = object.begin(); it != object.end(); ++it)
         QVERIFY(false);
-
-    object.insert(property, 11);
-    object["aaa"]; // before "kkk"
-    object["zzz"]; // after "kkk"
-    for (QJsonObject::iterator it = object.begin(); it != object.end(); ++it)
-        QCOMPARE(it.key(), property);
-
-    object = QJsonObject();
 
     for (int i = 0; i < 10; ++i)
         object[QString::number(i)] = (double)i;
@@ -1018,7 +1000,6 @@ void tst_QtJson::nullObject()
     nonNull.insert(QLatin1String("foo"), QLatin1String("bar"));
 
     QCOMPARE(nullObject, QJsonObject());
-    QCOMPARE(nullObject.size(), 0);
     QVERIFY(nullObject != nonNull);
     QVERIFY(nonNull != nullObject);
 
@@ -1036,27 +1017,8 @@ void tst_QtJson::nullObject()
     QCOMPARE(nullObject.keys(), QStringList());
     nullObject.remove("foo");
     QCOMPARE(nullObject, QJsonObject());
-    QCOMPARE(QJsonValue(nullObject["foo"]), QJsonValue(QJsonValue::Undefined));
     QCOMPARE(nullObject.take("foo"), QJsonValue(QJsonValue::Undefined));
     QCOMPARE(nullObject.contains("foo"), false);
-    QCOMPARE(nullObject, QJsonObject());
-    QCOMPARE(nullObject.size(), 0);
-
-    // There is not way to check if internal temporary storage for QJsonValueRef is removed correctly by
-    // remove, take or compaction but at least we should not crash
-    nullObject["foo"];
-    QCOMPARE(nullObject.size(), 0);
-    nullObject.remove("foo");
-    QCOMPARE(nullObject.size(), 0);
-    nullObject["foo"];
-    QCOMPARE(nullObject.size(), 0);
-    nullObject.take("foo");
-    QCOMPARE(nullObject.size(), 0);
-    QString property("foo");
-    for (int i = 0; i < 128; ++i)
-        nullObject[property + QString::number(i)];
-
-    QCOMPARE(nullObject.size(), 0);
 }
 
 void tst_QtJson::constNullObject()
@@ -1074,16 +1036,6 @@ void tst_QtJson::constNullObject()
     QCOMPARE(nullObject, QJsonObject());
     QCOMPARE(nullObject.contains("foo"), false);
     QCOMPARE(nullObject["foo"], QJsonValue(QJsonValue::Undefined));
-}
-
-void tst_QtJson::undefinedKeys()
-{
-    QJsonObject null;
-    QVERIFY(null.keys().isEmpty());
-
-    // check that an internal udefined doesn't show up
-    null["undefined"];
-    QVERIFY(null.keys().isEmpty());
 }
 
 void tst_QtJson::keySorting()
@@ -1220,11 +1172,6 @@ void tst_QtJson::toVariantMap()
     QJsonObject object;
     QVariantMap map = object.toVariantMap();
     QVERIFY(map.isEmpty());
-
-    // check an empty object with an internal undefined
-    QJsonValueRef unused = object["undefined"];
-    Q_UNUSED(unused);
-    QVERIFY(object.toVariantMap().isEmpty());
 
     object.insert("Key", QString("Value"));
     object.insert("null", QJsonValue());
@@ -2427,7 +2374,6 @@ void tst_QtJson::objectEquals_data()
 
     QJsonObject referencedEmpty;
     referencedEmpty["undefined"];
-    QTest::newRow("referenced empty vs default") << referencedEmpty << QJsonObject() << true;
     QTest::newRow("referenced empty vs referenced empty") << referencedEmpty << referencedEmpty << true;
     QTest::newRow("referenced empty vs object") << referencedEmpty << object1 << false;
 
@@ -2440,9 +2386,7 @@ void tst_QtJson::objectEquals_data()
     referencedObject2["zzzzzzzzz"]; // after "property"
     QTest::newRow("referenced object vs default") << referencedObject1 << QJsonObject() << false;
     QTest::newRow("referenced object vs referenced object") << referencedObject1 << referencedObject1 << true;
-    QTest::newRow("referenced object vs object (same)") << referencedObject1 << object1 << true;
     QTest::newRow("referenced object vs object (different)") << referencedObject1 << object3 << false;
-    QTest::newRow("referenced object vs referenced object (same)") << referencedObject1 << referencedObject2 << true;
 }
 
 void tst_QtJson::objectEquals()
@@ -2751,6 +2695,41 @@ void tst_QtJson::objectInitializerList()
         QCOMPARE(QJsonValue(nested[1]), QJsonValue(2.1));
     }
 #endif
+}
+
+void tst_QtJson::unicodeKeys()
+{
+    QByteArray json = "{"
+                      "\"x\\u2090_1\": \"hello_1\","
+                      "\"y\\u2090_2\": \"hello_2\","
+                      "\"T\\u2090_3\": \"hello_3\","
+                      "\"xyz_4\": \"hello_4\","
+                      "\"abc_5\": \"hello_5\""
+                      "}";
+
+    QJsonParseError error;
+    QJsonDocument doc = QJsonDocument::fromJson(json, &error);
+    QVERIFY(error.error == QJsonParseError::NoError);
+    QJsonObject o = doc.object();
+
+    QCOMPARE(o.keys().size(), 5);
+    Q_FOREACH (const QString &key, o.keys()) {
+        QString suffix = key.mid(key.indexOf(QLatin1Char('_')));
+        QCOMPARE(o[key].toString(), QString("hello") + suffix);
+    }
+}
+
+void tst_QtJson::garbageAtEnd()
+{
+    QJsonParseError error;
+    QJsonDocument doc = QJsonDocument::fromJson("{},", &error);
+    QVERIFY(error.error == QJsonParseError::GarbageAtEnd);
+    QVERIFY(error.offset == 2);
+    QVERIFY(doc.isEmpty());
+
+    doc = QJsonDocument::fromJson("{}    ", &error);
+    QVERIFY(error.error == QJsonParseError::NoError);
+    QVERIFY(!doc.isEmpty());
 }
 
 QTEST_MAIN(tst_QtJson)

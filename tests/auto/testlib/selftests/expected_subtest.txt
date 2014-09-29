@@ -46,5 +46,5 @@ FAIL!  : tst_Subtest::test3(data2) Compared values are not the same
 QDEBUG : tst_Subtest::test3(data2) cleanup test3 data2
 QDEBUG : tst_Subtest::cleanupTestCase() cleanupTestCase cleanupTestCase (null)
 PASS   : tst_Subtest::cleanupTestCase()
-Totals: 7 passed, 2 failed, 0 skipped
+Totals: 7 passed, 2 failed, 0 skipped, 0 blacklisted
 ********* Finished testing of tst_Subtest *********

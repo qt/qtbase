@@ -5,35 +5,27 @@
 **
 ** This file is part of the plugins of the Qt Toolkit.
 **
-** $QT_BEGIN_LICENSE:LGPL$
+** $QT_BEGIN_LICENSE:LGPL21$
 ** Commercial License Usage
 ** Licensees holding valid commercial Qt licenses may use this file in
 ** accordance with the commercial license agreement provided with the
 ** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and Digia.  For licensing terms and
-** conditions see http://qt.digia.com/licensing.  For further information
+** a written agreement between you and Digia. For licensing terms and
+** conditions see http://qt.digia.com/licensing. For further information
 ** use the contact form at http://qt.digia.com/contact-us.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** General Public License version 2.1 or version 3 as published by the Free
+** Software Foundation and appearing in the file LICENSE.LGPLv21 and
+** LICENSE.LGPLv3 included in the packaging of this file. Please review the
+** following information to ensure the GNU Lesser General Public License
+** requirements will be met: https://www.gnu.org/licenses/lgpl.html and
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Digia gives you certain additional
-** rights.  These rights are described in the Digia Qt LGPL Exception
+** rights. These rights are described in the Digia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
-**
 **
 ** $QT_END_LICENSE$
 **
@@ -185,6 +177,7 @@ static inline QRect frameGeometry(HWND hwnd, bool topLevel)
 #ifndef Q_OS_WINCE
     if (topLevel) {
         WINDOWPLACEMENT windowPlacement;
+        windowPlacement.length = sizeof(WINDOWPLACEMENT);
         GetWindowPlacement(hwnd, &windowPlacement);
         if (windowPlacement.showCmd == SW_SHOWMINIMIZED)
             return qrectFromRECT(windowPlacement.rcNormalPosition);
@@ -659,7 +652,7 @@ void WindowCreationData::initialize(HWND hwnd, bool frameChange, qreal opacityLe
         } else if (flags & Qt::WindowStaysOnBottomHint) {
             SetWindowPos(hwnd, HWND_BOTTOM, 0, 0, 0, 0, swpFlags);
         } else if (frameChange) { // Force WM_NCCALCSIZE with wParam=1 in case of custom margins.
-            SetWindowPos(hwnd, 0, 0, 0, 0, 0, swpFlags);
+            SetWindowPos(hwnd, HWND_NOTOPMOST, 0, 0, 0, 0, swpFlags);
         }
         if (flags & (Qt::CustomizeWindowHint|Qt::WindowTitleHint)) {
             HMENU systemMenu = GetSystemMenu(hwnd, FALSE);
@@ -769,9 +762,8 @@ void QWindowsGeometryHint::applyToMinMaxInfo(DWORD style, DWORD exStyle, MINMAXI
     const int maximumHeight = qMax(maximumSize.height(), minimumSize.height());
     if (maximumWidth < QWINDOWSIZE_MAX)
         mmi->ptMaxTrackSize.x = maximumWidth + frameWidth;
-    // windows with title bar have an implicit size limit of 112 pixels
     if (maximumHeight < QWINDOWSIZE_MAX)
-        mmi->ptMaxTrackSize.y = qMax(maximumHeight + frameHeight, 112);
+        mmi->ptMaxTrackSize.y = maximumHeight + frameHeight;
     qCDebug(lcQpaWindows).nospace() << '<' << __FUNCTION__
         << " frame=" << margins << ' ' << frameWidth << ',' << frameHeight
         << " out " << *mmi;
@@ -1418,6 +1410,7 @@ void QWindowsWindow::setGeometry_sys(const QRect &rect) const
     bool result = false;
 #ifndef Q_OS_WINCE
     WINDOWPLACEMENT windowPlacement;
+    windowPlacement.length = sizeof(WINDOWPLACEMENT);
     GetWindowPlacement(m_data.hwnd, &windowPlacement);
     // If the window is hidden and in maximized state or minimized, instead of moving the
     // window, set the normal position of the window.
@@ -1970,7 +1963,7 @@ void QWindowsWindow::getSizeHints(MINMAXINFO *mmi) const
             mmi->ptMaxPosition.x = screen->availableGeometry().x();
             mmi->ptMaxPosition.y = screen->availableGeometry().y();
         } else if (!screen){
-            qWarning() << "effectiveScreen() returned a null screen";
+            qWarning() << "window()->screen() returned a null screen";
         }
     }
 

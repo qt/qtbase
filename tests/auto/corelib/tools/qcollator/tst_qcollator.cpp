@@ -1,39 +1,31 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
-** $QT_BEGIN_LICENSE:LGPL$
+** $QT_BEGIN_LICENSE:LGPL21$
 ** Commercial License Usage
 ** Licensees holding valid commercial Qt licenses may use this file in
 ** accordance with the commercial license agreement provided with the
 ** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and Digia.  For licensing terms and
-** conditions see http://qt.digia.com/licensing.  For further information
+** a written agreement between you and Digia. For licensing terms and
+** conditions see http://qt.digia.com/licensing. For further information
 ** use the contact form at http://qt.digia.com/contact-us.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** General Public License version 2.1 or version 3 as published by the Free
+** Software Foundation and appearing in the file LICENSE.LGPLv21 and
+** LICENSE.LGPLv3 included in the packaging of this file. Please review the
+** following information to ensure the GNU Lesser General Public License
+** requirements will be met: https://www.gnu.org/licenses/lgpl.html and
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Digia gives you certain additional
-** rights.  These rights are described in the Digia Qt LGPL Exception
+** rights. These rights are described in the Digia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
-**
 **
 ** $QT_END_LICENSE$
 **
@@ -55,6 +47,8 @@ private Q_SLOTS:
 
     void compare_data();
     void compare();
+
+    void state();
 };
 
 #ifdef Q_COMPILER_RVALUE_REFS
@@ -98,6 +92,7 @@ void tst_QCollator::compare_data()
     QTest::addColumn<QString>("s2");
     QTest::addColumn<int>("result");
     QTest::addColumn<int>("caseInsensitiveResult");
+    QTest::addColumn<bool>("numericMode");
 
     /*
         A few tests below are commented out on the mac. It's unclear why they fail,
@@ -112,57 +107,55 @@ void tst_QCollator::compare_data()
         comparison of Latin-1 values, although I'm not sure. So I
         just test digits to make sure that it's not totally broken.
     */
-    QTest::newRow("english1") << QString("en_US") << QString("5") << QString("4") << 1 << 1;
-    QTest::newRow("english2") << QString("en_US") << QString("4") << QString("6") << -1 << -1;
-    QTest::newRow("english3") << QString("en_US") << QString("5") << QString("6") << -1 << -1;
-    QTest::newRow("english4") << QString("en_US") << QString("a") << QString("b") << -1 << -1;
+    QTest::newRow("english1") << QString("en_US") << QString("5") << QString("4") << 1 << 1 << false;
+    QTest::newRow("english2") << QString("en_US") << QString("4") << QString("6") << -1 << -1 << false;
+    QTest::newRow("english3") << QString("en_US") << QString("5") << QString("6") << -1 << -1 << false;
+    QTest::newRow("english4") << QString("en_US") << QString("a") << QString("b") << -1 << -1 << false;
+    QTest::newRow("english5") << QString("en_US") << QString("test 9") << QString("test 19") << -1 << -1 << true;
+
     /*
         In Swedish, a with ring above (E5) comes before a with
         diaresis (E4), which comes before o diaresis (F6), which
         all come after z.
     */
-#if !defined(Q_OS_WIN) || defined(QT_USE_ICU)
-    QTest::newRow("swedish1") << QString("sv_SE") << QString::fromLatin1("\xe5") << QString::fromLatin1("\xe4") << -1 << -1;
-#endif
-    QTest::newRow("swedish2") << QString("sv_SE") << QString::fromLatin1("\xe4") << QString::fromLatin1("\xf6") << -1 << -1;
-    QTest::newRow("swedish3") << QString("sv_SE") << QString::fromLatin1("\xe5") << QString::fromLatin1("\xf6") << -1 << -1;
-#if !defined(Q_OS_OSX) && (!defined(Q_OS_WIN) || defined(QT_USE_ICU))
-    QTest::newRow("swedish4") << QString("sv_SE") << QString::fromLatin1("z") << QString::fromLatin1("\xe5") << -1 << -1;
-#endif
+    QTest::newRow("swedish1") << QString("sv_SE") << QString::fromLatin1("\xe5") << QString::fromLatin1("\xe4") << -1 << -1 << false;
+    QTest::newRow("swedish2") << QString("sv_SE") << QString::fromLatin1("\xe4") << QString::fromLatin1("\xf6") << -1 << -1 << false;
+    QTest::newRow("swedish3") << QString("sv_SE") << QString::fromLatin1("\xe5") << QString::fromLatin1("\xf6") << -1 << -1 << false;
+    QTest::newRow("swedish4") << QString("sv_SE") << QString::fromLatin1("z") << QString::fromLatin1("\xe5") << -1 << -1 << false;
+    QTest::newRow("swedish5") << QString("sv_SE") << QString("9") << QString("19") << -1 << -1 << true;
 
     /*
         In Norwegian, ae (E6) comes before o with stroke (D8), which
         comes before a with ring above (E5).
     */
-    QTest::newRow("norwegian1") << QString("no_NO") << QString::fromLatin1("\xe6") << QString::fromLatin1("\xd8") << -1 << -1;
-#if !defined(Q_OS_WIN) || defined(QT_USE_ICU)
-#  ifndef Q_OS_OSX
-    QTest::newRow("norwegian2") << QString("no_NO") << QString::fromLatin1("\xd8") << QString::fromLatin1("\xe5") << -1 << -1;
-#  endif
-    QTest::newRow("norwegian3") << QString("no_NO") << QString::fromLatin1("\xe6") << QString::fromLatin1("\xe5") << -1 << -1;
-#endif // !Q_OS_WIN || QT_USE_ICU
+    QTest::newRow("norwegian1") << QString("no_NO") << QString::fromLatin1("\xe6") << QString::fromLatin1("\xd8") << -1 << -1 << false;
+    QTest::newRow("norwegian2") << QString("no_NO") << QString::fromLatin1("\xd8") << QString::fromLatin1("\xe5") << -1 << -1 << false;
+    QTest::newRow("norwegian3") << QString("no_NO") << QString::fromLatin1("\xe6") << QString::fromLatin1("\xe5") << -1 << -1 << false;
+    QTest::newRow("norwegian4") << QString("no_NO") << QString("9") << QString("19") << -1 << -1 << true;
+
     /*
         In German, z comes *after* a with diaresis (E4),
         which comes before o diaresis (F6).
     */
-    QTest::newRow("german1") << QString("de_DE") << QString::fromLatin1("a") << QString::fromLatin1("\xe4") << -1 << -1;
-    QTest::newRow("german2") << QString("de_DE") << QString::fromLatin1("b") << QString::fromLatin1("\xe4") << 1 << 1;
-    QTest::newRow("german3") << QString("de_DE") << QString::fromLatin1("z") << QString::fromLatin1("\xe4") << 1 << 1;
-    QTest::newRow("german4") << QString("de_DE") << QString::fromLatin1("\xe4") << QString::fromLatin1("\xf6") << -1 << -1;
-    QTest::newRow("german5") << QString("de_DE") << QString::fromLatin1("z") << QString::fromLatin1("\xf6") << 1 << 1;
-    QTest::newRow("german6") << QString("de_DE") << QString::fromLatin1("\xc0") << QString::fromLatin1("\xe0") << 1 << 0;
-    QTest::newRow("german7") << QString("de_DE") << QString::fromLatin1("\xd6") << QString::fromLatin1("\xf6") << 1 << 0;
-    QTest::newRow("german8") << QString("de_DE") << QString::fromLatin1("oe") << QString::fromLatin1("\xf6") << 1 << 1;
-    QTest::newRow("german9") << QString("de_DE") << QString("A") << QString("a") << 1 << 0;
+    QTest::newRow("german1") << QString("de_DE") << QString::fromLatin1("a") << QString::fromLatin1("\xe4") << -1 << -1 << false;
+    QTest::newRow("german2") << QString("de_DE") << QString::fromLatin1("b") << QString::fromLatin1("\xe4") << 1 << 1 << false;
+    QTest::newRow("german3") << QString("de_DE") << QString::fromLatin1("z") << QString::fromLatin1("\xe4") << 1 << 1 << false;
+    QTest::newRow("german4") << QString("de_DE") << QString::fromLatin1("\xe4") << QString::fromLatin1("\xf6") << -1 << -1 << false;
+    QTest::newRow("german5") << QString("de_DE") << QString::fromLatin1("z") << QString::fromLatin1("\xf6") << 1 << 1 << false;
+    QTest::newRow("german6") << QString("de_DE") << QString::fromLatin1("\xc0") << QString::fromLatin1("\xe0") << 1 << 0 << false;
+    QTest::newRow("german7") << QString("de_DE") << QString::fromLatin1("\xd6") << QString::fromLatin1("\xf6") << 1 << 0 << false;
+    QTest::newRow("german8") << QString("de_DE") << QString::fromLatin1("oe") << QString::fromLatin1("\xf6") << 1 << 1 << false;
+    QTest::newRow("german9") << QString("de_DE") << QString("A") << QString("a") << 1 << 0 << false;
+    QTest::newRow("german10") << QString("de_DE") << QString("9") << QString("19") << -1 << -1 << true;
 
     /*
         French sorting of e and e with accent
     */
-    QTest::newRow("french1") << QString("fr_FR") << QString::fromLatin1("\xe9") << QString::fromLatin1("e") << 1 << 1;
-    QTest::newRow("french2") << QString("fr_FR") << QString::fromLatin1("\xe9t") << QString::fromLatin1("et") << 1 << 1;
-    QTest::newRow("french3") << QString("fr_FR") << QString::fromLatin1("\xe9") << QString::fromLatin1("d") << 1 << 1;
-    QTest::newRow("french4") << QString("fr_FR") << QString::fromLatin1("\xe9") << QString::fromLatin1("f") << -1 << -1;
-
+    QTest::newRow("french1") << QString("fr_FR") << QString::fromLatin1("\xe9") << QString::fromLatin1("e") << 1 << 1 << false;
+    QTest::newRow("french2") << QString("fr_FR") << QString::fromLatin1("\xe9t") << QString::fromLatin1("et") << 1 << 1 << false;
+    QTest::newRow("french3") << QString("fr_FR") << QString::fromLatin1("\xe9") << QString::fromLatin1("d") << 1 << 1 << false;
+    QTest::newRow("french4") << QString("fr_FR") << QString::fromLatin1("\xe9") << QString::fromLatin1("f") << -1 << -1 << false;
+    QTest::newRow("french5") << QString("fr_FR") << QString("9") << QString("19") << -1 << -1 << true;
 }
 
 
@@ -173,11 +166,40 @@ void tst_QCollator::compare()
     QFETCH(QString, s2);
     QFETCH(int, result);
     QFETCH(int, caseInsensitiveResult);
+    QFETCH(bool, numericMode);
 
     QCollator collator(locale);
+
+    if (numericMode)
+        collator.setNumericMode(true);
+
     QCOMPARE(collator.compare(s1, s2), result);
     collator.setCaseSensitivity(Qt::CaseInsensitive);
     QCOMPARE(collator.compare(s1, s2), caseInsensitiveResult);
+}
+
+
+void tst_QCollator::state()
+{
+    QCollator c;
+    c.setCaseSensitivity(Qt::CaseInsensitive);
+    c.setLocale(QLocale::German);
+
+    c.compare(QString("a"), QString("b"));
+
+    QCOMPARE(c.caseSensitivity(), Qt::CaseInsensitive);
+    QCOMPARE(c.locale(), QLocale(QLocale::German));
+
+    c.setLocale(QLocale::French);
+    c.setNumericMode(true);
+    c.setIgnorePunctuation(true);
+    c.setLocale(QLocale::Norwegian);
+
+    QCOMPARE(c.caseSensitivity(), Qt::CaseInsensitive);
+    QCOMPARE(c.numericMode(), true);
+    QCOMPARE(c.ignorePunctuation(), true);
+    QCOMPARE(c.locale(), QLocale(QLocale::Norwegian));
+
 }
 
 QTEST_APPLESS_MAIN(tst_QCollator)

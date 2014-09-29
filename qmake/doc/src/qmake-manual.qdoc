@@ -657,9 +657,9 @@
     qmake knows about many of these features, which can be accessed via specific
     variables that only take effect on the platforms where they are relevant.
 
-    \section1 Mac OS X
+    \section1 OS X and iOS
 
-    Features specific to this platform include support for creating universal
+    Features specific to these platforms include support for creating universal
     binaries, frameworks and bundles.
 
     \section2 Source and Binary Packages
@@ -681,7 +681,7 @@
 
     qmake is able to automatically generate build
     rules for linking against frameworks in the standard framework directory on
-    Mac OS X, located at \c{/Library/Frameworks/}.
+    OS X, located at \c{/Library/Frameworks/}.
 
     Directories other than the standard framework directory need to be specified
     to the build system, and this is achieved by appending linker options to the
@@ -722,14 +722,14 @@
     and \l{QMAKE_FRAMEWORK_VERSION} variables. By default, the values used for
     these variables are obtained from the \l{TARGET} and \l{VERSION} variables.
 
-    See \l{Qt for Mac OS X - Deployment} for more information about
+    See \l{Qt for OS X - Deployment} for more information about
     deploying applications and libraries.
 
     \section2 Creating and Moving Xcode Projects
 
-    Developers on Mac OS X can take advantage of the qmake support for Xcode
+    Developers on OS X can take advantage of the qmake support for Xcode
     project files, as described in
-    \l{Qt is Mac OS X Native#Development Tools}{Qt is Mac OS X Native},
+    \l{Qt is OS X Native#Development Tools}{Qt is OS X Native},
     by running qmake to generate an Xcode project from an existing qmake project
     file. For example:
 
@@ -1026,7 +1026,7 @@
     See \l{Platform Notes#Visual Studio Manifest Files}{Platform Notes}
     for more information about the options for embedding manifest files.
 
-    The following options take an effect only on Mac OS X:
+    The following options take an effect only on OS X:
 
     \table
     \header \li Option \li Description
@@ -1360,7 +1360,7 @@
     Indicates the header file for creating a precompiled
     header file, to increase the compilation speed of a project.
     Precompiled headers are currently only supported on some platforms
-    (Windows - all MSVC project types, Mac OS X - Xcode, Makefile,
+    (Windows - all MSVC project types, Apple - Xcode, Makefile,
     Unix - gcc 3.3 and up).
 
     \target PWD
@@ -1409,7 +1409,7 @@
     \target QMAKE_BUNDLE_DATA
     \section1 QMAKE_BUNDLE_DATA
 
-    \note This variable is used on Mac OS X only.
+    \note This variable is used on OS X and iOS only.
 
     Specifies the data that will be installed with a library
     bundle, and is often used to specify a collection of header files.
@@ -1431,7 +1431,7 @@
 
     \section1 QMAKE_BUNDLE_EXTENSION
 
-    \note This variable is used on Mac OS X only.
+    \note This variable is used on OS X and iOS only.
 
     Specifies the extension to be used for library bundles.
     This allows frameworks to be created with custom extensions instead of the
@@ -1649,7 +1649,7 @@
 
     \section1 QMAKE_FRAMEWORK_BUNDLE_NAME
 
-    \note This variable is used on Mac OS X only.
+    \note This variable is used on OS X and iOS only.
 
     In a framework project, this variable contains the name to be used for the
     framework that is built.
@@ -1663,9 +1663,9 @@
     \target QMAKE_FRAMEWORK_VERSION
     \section1 QMAKE_FRAMEWORK_VERSION
 
-    \note This variable is used on Mac OS X only.
+    \note This variable is used on OS X and iOS only.
 
-    For projects where the build target is a Mac OS X framework, this variable
+    For projects where the build target is an OS X or iOS framework, this variable
     is used to specify the version number that will be applied to the framework
     that is built.
 
@@ -1739,10 +1739,10 @@
     \target QMAKE_INFO_PLIST
     \section1 QMAKE_INFO_PLIST
 
-    \note This variable is used on Mac OS X platforms only.
+    \note This variable is used on OS X and iOS platforms only.
 
     Specifies the name of the property list file, \c{.plist}, you
-    would like to include in your Mac OS X application bundle.
+    would like to include in your OS X and iOS application bundle.
 
     In the \c{.plist} file, you can define some variables, e.g., @EXECUTABLE@,
     which qmake will replace with the actual executable name. Other variables
@@ -1996,16 +1996,16 @@
 
     \section1 QMAKE_MAC_SDK
 
-    This variable is used on Mac OS X when building universal binaries.
+    This variable is used on OS X when building universal binaries.
 
     \section1 QMAKE_MACOSX_DEPLOYMENT_TARGET
 
-    This variable only takes effect when building on Mac OS X. On that
+    This variable only takes effect when building on OS X. On that
     platform, the variable will be forwarded to the MACOSX_DEPLOYMENT_TARGET
     environment variable, which is interpreted by the compiler or linker.
     For more information, see the
-    \l{Qt for Mac OS X - Deployment#Mac OS X Version Dependencies}{Deploying
-    an Application on Mac OS X} document.
+    \l{Qt for OS X - Deployment#OS X Version Dependencies}{Deploying
+    an Application on OS X} document.
 
     \section1 QMAKE_MAKEFILE
 
@@ -4129,7 +4129,7 @@
         \li nmake
         \li Visual Studio projects (VS 2008 and later)
         \endlist
-    \li Mac OS X
+    \li OS X and iOS
         \list
         \li Makefile
         \li Xcode
@@ -4500,7 +4500,7 @@
     them uses project-specific variables to customize output files.
 
     Platform-specific variables are not described here. For more information,
-    see  \l{Qt for Windows - Deployment} and \l{Qt for Mac OS X}.
+    see  \l{Qt for Windows - Deployment} and \l{Qt for OS X}.
 
     \target Application
     \section1 Building an Application
@@ -4649,7 +4649,7 @@
     \endlist
 
     The target file name for the library is platform-dependent. For example, on
-    X11 and Mac OS X, the library name will be prefixed by \c lib. On Windows,
+    X11, OS X, and iOS, the library name will be prefixed by \c lib. On Windows,
     no prefix is added to the file name.
 
     \target Plugin

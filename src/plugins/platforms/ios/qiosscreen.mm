@@ -238,34 +238,20 @@ QIOSScreen::~QIOSScreen()
 
 void QIOSScreen::updateProperties()
 {
-    bool inPortrait = UIInterfaceOrientationIsPortrait(m_uiWindow.rootViewController.interfaceOrientation);
-    QRect geometry = inPortrait ? fromCGRect(m_uiScreen.bounds).toRect()
-        : QRect(m_uiScreen.bounds.origin.x, m_uiScreen.bounds.origin.y,
-            m_uiScreen.bounds.size.height, m_uiScreen.bounds.size.width);
+    QRect previousGeometry = m_geometry;
+    QRect previousAvailableGeometry = m_availableGeometry;
 
-    if (geometry != m_geometry) {
-        m_geometry = geometry;
+    UIView *rootView = m_uiWindow.rootViewController.view;
 
+    m_geometry = fromCGRect([rootView convertRect:m_uiScreen.bounds fromView:m_uiWindow]).toRect();
+    m_availableGeometry = fromCGRect([rootView convertRect:m_uiScreen.applicationFrame fromView:m_uiWindow]).toRect();
+
+    if (m_geometry != previousGeometry || m_availableGeometry != previousAvailableGeometry) {
         const qreal millimetersPerInch = 25.4;
         m_physicalSize = QSizeF(m_geometry.size()) / m_unscaledDpi * millimetersPerInch;
 
-        QWindowSystemInterface::handleScreenGeometryChange(screen(), m_geometry);
+        QWindowSystemInterface::handleScreenGeometryChange(screen(), m_geometry, m_availableGeometry);
     }
-
-    QRect availableGeometry = geometry;
-
-    CGSize applicationFrameSize = m_uiScreen.applicationFrame.size;
-    int statusBarHeight = geometry.height() - (inPortrait ? applicationFrameSize.height : applicationFrameSize.width);
-
-    availableGeometry.adjust(0, statusBarHeight, 0, 0);
-
-    if (availableGeometry != m_availableGeometry) {
-        m_availableGeometry = availableGeometry;
-        QWindowSystemInterface::handleScreenAvailableGeometryChange(screen(), m_availableGeometry);
-    }
-
-    if (screen())
-        layoutWindows();
 }
 
 void QIOSScreen::updateStatusBarVisibility()
@@ -303,36 +289,6 @@ void QIOSScreen::updateStatusBarVisibility()
             withAnimation:UIStatusBarAnimationNone];
 
         updateProperties();
-    }
-}
-
-void QIOSScreen::layoutWindows()
-{
-    QList<QWindow*> windows = QGuiApplication::topLevelWindows();
-
-    const QRect oldGeometry = screen()->geometry();
-    const QRect oldAvailableGeometry = screen()->availableGeometry();
-    const QRect newGeometry = geometry();
-    const QRect newAvailableGeometry = availableGeometry();
-
-    for (int i = 0; i < windows.size(); ++i) {
-        QWindow *window = windows.at(i);
-
-        if (platformScreenForWindow(window) != this)
-            continue;
-
-        QIOSWindow *platformWindow = static_cast<QIOSWindow *>(window->handle());
-        if (!platformWindow)
-            continue;
-
-        // FIXME: Handle more complex cases of no-state and/or child windows when rotating
-
-        if (window->windowState() & Qt::WindowFullScreen
-                || (window->windowState() & Qt::WindowNoState && window->geometry() == oldGeometry))
-            platformWindow->applyGeometry(newGeometry);
-        else if (window->windowState() & Qt::WindowMaximized
-                || (window->windowState() & Qt::WindowNoState && window->geometry() == oldAvailableGeometry))
-            platformWindow->applyGeometry(newAvailableGeometry);
     }
 }
 

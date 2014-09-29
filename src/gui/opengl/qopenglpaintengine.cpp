@@ -1,39 +1,31 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
-** $QT_BEGIN_LICENSE:LGPL$
+** $QT_BEGIN_LICENSE:LGPL21$
 ** Commercial License Usage
 ** Licensees holding valid commercial Qt licenses may use this file in
 ** accordance with the commercial license agreement provided with the
 ** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and Digia.  For licensing terms and
-** conditions see http://qt.digia.com/licensing.  For further information
+** a written agreement between you and Digia. For licensing terms and
+** conditions see http://qt.digia.com/licensing. For further information
 ** use the contact form at http://qt.digia.com/contact-us.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** General Public License version 2.1 or version 3 as published by the Free
+** Software Foundation and appearing in the file LICENSE.LGPLv21 and
+** LICENSE.LGPLv3 included in the packaging of this file. Please review the
+** following information to ensure the GNU Lesser General Public License
+** requirements will be met: https://www.gnu.org/licenses/lgpl.html and
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Digia gives you certain additional
-** rights.  These rights are described in the Digia Qt LGPL Exception
+** rights. These rights are described in the Digia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
-**
 **
 ** $QT_END_LICENSE$
 **
@@ -501,7 +493,6 @@ void QOpenGL2PaintEngineExPrivate::drawTexture(const QOpenGLRect& dest, const QO
 {
     // Setup for texture drawing
     currentBrush = noBrush;
-    shaderManager->setSrcPixelType(pattern ? QOpenGLEngineShaderManager::PatternSrc : QOpenGLEngineShaderManager::ImageSrc);
 
     if (snapToPixelGrid) {
         snapToPixelGrid = false;
@@ -1367,6 +1358,11 @@ void QOpenGL2PaintEngineEx::drawPixmap(const QRectF& dest, const QPixmap & pixma
     Q_D(QOpenGL2PaintEngineEx);
     QOpenGLContext *ctx = d->ctx;
 
+    // Draw pixmaps that are really images as images since drawImage has
+    // better handling of non-default image formats.
+    if (pixmap.paintEngine()->type() == QPaintEngine::Raster && !pixmap.isQBitmap())
+        return drawImage(dest, pixmap.toImage(), src);
+
     int max_texture_size = ctx->d_func()->maxTextureSize();
     if (pixmap.width() > max_texture_size || pixmap.height() > max_texture_size) {
         QPixmap scaled = pixmap.scaled(max_texture_size, max_texture_size, Qt::KeepAspectRatio);
@@ -1391,6 +1387,8 @@ void QOpenGL2PaintEngineEx::drawPixmap(const QRectF& dest, const QPixmap & pixma
 
     d->updateTextureFilter(GL_TEXTURE_2D, GL_CLAMP_TO_EDGE,
                            state()->renderHints & QPainter::SmoothPixmapTransform, id);
+
+    d->shaderManager->setSrcPixelType(isBitmap ? QOpenGLEngineShaderManager::PatternSrc : QOpenGLEngineShaderManager::ImageSrc);
     d->drawTexture(dest, srcRect, pixmap.size(), isOpaque, isBitmap);
 }
 
@@ -1414,12 +1412,25 @@ void QOpenGL2PaintEngineEx::drawImage(const QRectF& dest, const QImage& image, c
     ensureActive();
     d->transferMode(ImageDrawingMode);
 
-    d->funcs.glActiveTexture(GL_TEXTURE0 + QT_IMAGE_TEXTURE_UNIT);
+    QOpenGLTextureCache::BindOptions bindOption = QOpenGLTextureCache::PremultipliedAlphaBindOption;
+    // Use specialized bind for formats we have specialized shaders for.
+    switch (image.format()) {
+    case QImage::Format_RGBA8888:
+    case QImage::Format_ARGB32:
+        d->shaderManager->setSrcPixelType(QOpenGLEngineShaderManager::NonPremultipliedImageSrc);
+        bindOption = 0;
+        break;
+    default:
+        d->shaderManager->setSrcPixelType(QOpenGLEngineShaderManager::ImageSrc);
+        break;
+    }
 
-    GLuint id = QOpenGLTextureCache::cacheForContext(ctx)->bindTexture(ctx, image);
+    d->funcs.glActiveTexture(GL_TEXTURE0 + QT_IMAGE_TEXTURE_UNIT);
+    GLuint id = QOpenGLTextureCache::cacheForContext(ctx)->bindTexture(ctx, image, bindOption);
 
     d->updateTextureFilter(GL_TEXTURE_2D, GL_CLAMP_TO_EDGE,
                            state()->renderHints & QPainter::SmoothPixmapTransform, id);
+
     d->drawTexture(dest, src, image.size(), !image.hasAlphaChannel());
 }
 
@@ -1466,6 +1477,7 @@ bool QOpenGL2PaintEngineEx::drawTexture(const QRectF &dest, GLuint textureId, co
 
     d->updateTextureFilter(GL_TEXTURE_2D, GL_CLAMP_TO_EDGE,
                            state()->renderHints & QPainter::SmoothPixmapTransform, textureId);
+    d->shaderManager->setSrcPixelType(QOpenGLEngineShaderManager::ImageSrc);
     d->drawTexture(dest, srcRect, size, false);
     return true;
 }

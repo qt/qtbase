@@ -44,10 +44,18 @@
 #import <UIKit/UIGestureRecognizerSubclass.h>
 
 #include "qiosglobal.h"
+#include "qiostextresponder.h"
 #include "qioswindow.h"
 #include "quiview.h"
+
 #include <QGuiApplication>
 #include <QtGui/private/qwindow_p.h>
+
+static QUIView *focusView()
+{
+    return qApp->focusWindow() ?
+        reinterpret_cast<QUIView *>(qApp->focusWindow()->winId()) : 0;
+}
 
 @interface QIOSKeyboardListener : UIGestureRecognizer {
 @public
@@ -57,7 +65,7 @@
     BOOL m_touchPressWhileKeyboardVisible;
     BOOL m_keyboardHiddenByGesture;
     QRectF m_keyboardRect;
-    QRectF m_keyboardEndRect;
+    CGRect m_keyboardEndRect;
     NSTimeInterval m_duration;
     UIViewAnimationCurve m_curve;
     UIViewController *m_viewController;
@@ -131,20 +139,6 @@
     [super dealloc];
 }
 
-- (QRectF) getKeyboardRect:(NSNotification *)notification
-{
-    // For Qt applications we rotate the keyboard rect to align with the screen
-    // orientation (which is the interface orientation of the root view controller).
-    // For hybrid apps we follow native behavior, and return the rect unmodified:
-    CGRect keyboardFrame = [[[notification userInfo] objectForKey:UIKeyboardFrameEndUserInfoKey] CGRectValue];
-    if (isQtApplication()) {
-        UIView *view = m_viewController.view;
-        return fromCGRect(CGRectOffset([view convertRect:keyboardFrame fromView:view.window], 0, -view.bounds.origin.y));
-    } else {
-        return fromCGRect(keyboardFrame);
-    }
-}
-
 - (void) keyboardDidChangeFrame:(NSNotification *)notification
 {
     Q_UNUSED(notification);
@@ -158,11 +152,9 @@
 
 - (void) keyboardWillShow:(NSNotification *)notification
 {
-    if ([QUIView inUpdateKeyboardLayout])
-        return;
     // Note that UIKeyboardWillShowNotification is only sendt when the keyboard is docked.
     m_keyboardVisibleAndDocked = YES;
-    m_keyboardEndRect = [self getKeyboardRect:notification];
+    m_keyboardEndRect = [[[notification userInfo] objectForKey:UIKeyboardFrameEndUserInfoKey] CGRectValue];
     self.enabled = YES;
     if (!m_duration) {
         m_duration = [[notification.userInfo objectForKey:UIKeyboardAnimationDurationUserInfoKey] doubleValue];
@@ -173,11 +165,9 @@
 
 - (void) keyboardWillHide:(NSNotification *)notification
 {
-    if ([QUIView inUpdateKeyboardLayout])
-        return;
     // Note that UIKeyboardWillHideNotification is also sendt when the keyboard is undocked.
     m_keyboardVisibleAndDocked = NO;
-    m_keyboardEndRect = [self getKeyboardRect:notification];
+    m_keyboardEndRect = [[[notification userInfo] objectForKey:UIKeyboardFrameEndUserInfoKey] CGRectValue];
     if (!m_keyboardHiddenByGesture) {
         // Only disable the gesture if the hiding of the keyboard was not caused by it.
         // Otherwise we need to await the final touchEnd callback for doing some clean-up.
@@ -188,14 +178,23 @@
 
 - (void) handleKeyboardRectChanged
 {
-    QRectF rect = m_keyboardEndRect;
-    rect.moveTop(rect.y() + m_viewController.view.bounds.origin.y);
-    if (m_keyboardRect != rect) {
-        m_keyboardRect = rect;
+    // QInputmethod::keyboardRectangle() is documented to be in window coordinates.
+    // If there is no focus window, we return an empty rectangle
+    UIView *view = focusView();
+    QRectF convertedRect = fromCGRect([view convertRect:m_keyboardEndRect fromView:nil]);
+
+    // Set height to zero if keyboard is hidden. Otherwise the rect will not change
+    // when the keyboard hides on a scrolled screen (since the keyboard will already
+    // be at the bottom of the 'screen' in that case)
+    if (!m_keyboardVisibleAndDocked)
+        convertedRect.setHeight(0);
+
+    if (convertedRect != m_keyboardRect) {
+        m_keyboardRect = convertedRect;
         m_context->emitKeyboardRectChanged();
     }
 
-    BOOL visible = m_keyboardEndRect.intersects(fromCGRect([UIScreen mainScreen].bounds));
+    BOOL visible = CGRectIntersectsRect(m_keyboardEndRect, [UIScreen mainScreen].bounds);
     if (m_keyboardVisible != visible) {
         m_keyboardVisible = visible;
         m_context->emitInputPanelVisibleChanged();
@@ -204,10 +203,10 @@
 
 - (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event
 {
-    QPointF p = fromCGPoint([[touches anyObject] locationInView:m_viewController.view]);
-    if (m_keyboardRect.contains(p)) {
+    CGPoint p = [[touches anyObject] locationInView:m_viewController.view.window];
+    if (CGRectContainsPoint(m_keyboardEndRect, p)) {
         m_keyboardHiddenByGesture = YES;
-        m_context->hideInputPanel();
+        m_context->hideVirtualKeyboard();
     }
 
     [super touchesMoved:touches withEvent:event];
@@ -253,11 +252,37 @@
 
 @end
 
+// -------------------------------------------------------------------------
+
+Qt::InputMethodQueries ImeState::update(Qt::InputMethodQueries properties)
+{
+    if (!properties)
+        return 0;
+
+    QInputMethodQueryEvent newState(properties);
+
+    if (qApp && qApp->focusObject())
+        QCoreApplication::sendEvent(qApp->focusObject(), &newState);
+
+    Qt::InputMethodQueries updatedProperties;
+    for (uint i = 0; i < (sizeof(Qt::ImQueryAll) * CHAR_BIT); ++i) {
+        if (Qt::InputMethodQuery property = Qt::InputMethodQuery(int(properties & (1 << i)))) {
+            if (newState.value(property) != currentState.value(property)) {
+                updatedProperties |= property;
+                currentState.setValue(property, newState.value(property));
+            }
+        }
+    }
+
+    return updatedProperties;
+}
+
+// -------------------------------------------------------------------------
+
 QIOSInputContext::QIOSInputContext()
     : QPlatformInputContext()
     , m_keyboardListener([[QIOSKeyboardListener alloc] initWithQIOSInputContext:this])
-    , m_focusView(0)
-    , m_hasPendingHideRequest(false)
+    , m_textResponder(0)
 {
     if (isQtApplication())
         connect(qGuiApp->inputMethod(), &QInputMethod::cursorRectangleChanged, this, &QIOSInputContext::cursorRectangleChanged);
@@ -267,7 +292,7 @@ QIOSInputContext::QIOSInputContext()
 QIOSInputContext::~QIOSInputContext()
 {
     [m_keyboardListener release];
-    [m_focusView release];
+    [m_textResponder release];
 }
 
 QRectF QIOSInputContext::keyboardRect() const
@@ -277,61 +302,22 @@ QRectF QIOSInputContext::keyboardRect() const
 
 void QIOSInputContext::showInputPanel()
 {
-    if (m_keyboardListener->m_keyboardHiddenByGesture) {
-        // We refuse to re-show the keyboard until the touch
-        // sequence that triggered the gesture has ended.
-        return;
-    }
-
-    // Documentation tells that one should call (and recall, if necessary) becomeFirstResponder/resignFirstResponder
-    // to show/hide the keyboard. This is slightly inconvenient, since there exist no API to get the current first
-    // responder. Rather than searching for it from the top, we let the active QIOSWindow tell us which view to use.
-    // Note that Qt will forward keyevents to whichever QObject that needs it, regardless of which UIView the input
-    // actually came from. So in this respect, we're undermining iOS' responder chain.
-    m_hasPendingHideRequest = false;
-    [m_focusView becomeFirstResponder];
+    // No-op, keyboard controlled fully by platform based on focus
 }
 
 void QIOSInputContext::hideInputPanel()
 {
-    // Delay hiding the keyboard for cases where the user is transferring focus between
-    // 'line edits'. In that case the 'line edit' that lost focus will close the input
-    // panel, just to see that the new 'line edit' will open it again:
-    m_hasPendingHideRequest = true;
-    dispatch_async(dispatch_get_main_queue(), ^{
-        if (m_hasPendingHideRequest)
-            [m_focusView resignFirstResponder];
-    });
+    // No-op, keyboard controlled fully by platform based on focus
+}
+
+void QIOSInputContext::hideVirtualKeyboard()
+{
+    static_cast<QWindowPrivate *>(QObjectPrivate::get(qApp->focusWindow()))->clearFocusObject();
 }
 
 bool QIOSInputContext::isInputPanelVisible() const
 {
     return m_keyboardListener->m_keyboardVisible;
-}
-
-void QIOSInputContext::setFocusObject(QObject *focusObject)
-{
-    if (!focusObject || !m_focusView || !m_focusView.isFirstResponder) {
-        scroll(0);
-        return;
-    }
-
-    reset();
-
-    if (m_keyboardListener->m_keyboardVisibleAndDocked)
-        scrollToCursor();
-}
-
-void QIOSInputContext::focusWindowChanged(QWindow *focusWindow)
-{
-    QUIView *view = focusWindow ? reinterpret_cast<QUIView *>(focusWindow->handle()->winId()) : 0;
-    if ([m_focusView isFirstResponder])
-        [view becomeFirstResponder];
-    [m_focusView release];
-    m_focusView = [view retain];
-
-    if (view.window != m_keyboardListener->m_viewController.view)
-        scroll(0);
 }
 
 void QIOSInputContext::cursorRectangleChanged()
@@ -353,7 +339,7 @@ void QIOSInputContext::cursorRectangleChanged()
 
 void QIOSInputContext::scrollToCursor()
 {
-    if (!isQtApplication() || !m_focusView)
+    if (!isQtApplication())
         return;
 
     if (m_keyboardListener->m_touchPressWhileKeyboardVisible) {
@@ -364,13 +350,14 @@ void QIOSInputContext::scrollToCursor()
     }
 
     UIView *view = m_keyboardListener->m_viewController.view;
-    if (view.window != m_focusView.window)
+    if (view.window != focusView().window)
         return;
 
     const int margin = 20;
     QRectF translatedCursorPos = qApp->inputMethod()->cursorRectangle();
-    translatedCursorPos.translate(m_focusView.qwindow->geometry().topLeft());
-    qreal keyboardY = m_keyboardListener->m_keyboardEndRect.y();
+    translatedCursorPos.translate(focusView().qwindow->geometry().topLeft());
+
+    qreal keyboardY = [view convertRect:m_keyboardListener->m_keyboardEndRect fromView:nil].origin.y;
     int statusBarY = qGuiApp->primaryScreen()->availableGeometry().y();
 
     scroll((translatedCursorPos.bottomLeft().y() < keyboardY - margin) ? 0
@@ -379,18 +366,40 @@ void QIOSInputContext::scrollToCursor()
 
 void QIOSInputContext::scroll(int y)
 {
-    // Scroll the view the same way a UIScrollView
-    // works: by changing bounds.origin:
-    UIView *view = m_keyboardListener->m_viewController.view;
-    if (y == view.bounds.origin.y)
+    UIView *rootView = m_keyboardListener->m_viewController.view;
+
+    CATransform3D translationTransform = CATransform3DMakeTranslation(0.0, -y, 0.0);
+    if (CATransform3DEqualToTransform(translationTransform, rootView.layer.sublayerTransform))
         return;
 
-    CGRect newBounds = view.bounds;
-    newBounds.origin.y = y;
     QPointer<QIOSInputContext> self = this;
     [UIView animateWithDuration:m_keyboardListener->m_duration delay:0
         options:(m_keyboardListener->m_curve << 16) | UIViewAnimationOptionBeginFromCurrentState
-        animations:^{ view.bounds = newBounds; }
+        animations:^{
+            // The sublayerTransform property of CALayer is not implicitly animated for a
+            // layer-backed view, even inside a UIView animation block, so we need to set up
+            // an explicit CoreAnimation animation. Since there is no predefined media timing
+            // function that matches the custom keyboard animation curve we cheat by asking
+            // the view for an animation of another property, which will give us an animation
+            // that matches the parameters we passed to [UIView animateWithDuration] above.
+            // The reason we ask for the animation of 'backgroundColor' is that it's a simple
+            // property that will not return a compound animation, like eg. bounds will.
+            NSObject *action = (NSObject*)[rootView actionForLayer:rootView.layer forKey:@"backgroundColor"];
+
+            CABasicAnimation *animation;
+            if ([action isKindOfClass:[CABasicAnimation class]]) {
+                animation = static_cast<CABasicAnimation*>(action);
+                animation.keyPath = @"sublayerTransform"; // Instead of backgroundColor
+            } else {
+                animation = [CABasicAnimation animationWithKeyPath:@"sublayerTransform"];
+            }
+
+            CATransform3D currentSublayerTransform = static_cast<CALayer *>([rootView.layer presentationLayer]).sublayerTransform;
+            animation.fromValue = [NSValue valueWithCATransform3D:currentSublayerTransform];
+            animation.toValue = [NSValue valueWithCATransform3D:translationTransform];
+            [rootView.layer addAnimation:animation forKey:@"AnimateSubLayerTransform"];
+            rootView.layer.sublayerTransform = translationTransform;
+        }
         completion:^(BOOL){
             if (self)
                 [m_keyboardListener handleKeyboardRectChanged];
@@ -398,18 +407,85 @@ void QIOSInputContext::scroll(int y)
     ];
 }
 
-void QIOSInputContext::update(Qt::InputMethodQueries query)
+// -------------------------------------------------------------------------
+
+void QIOSInputContext::setFocusObject(QObject *focusObject)
 {
-    [m_focusView updateInputMethodWithQuery:query];
+    Q_UNUSED(focusObject);
+
+    reset();
+
+    if (m_keyboardListener->m_keyboardVisibleAndDocked)
+        scrollToCursor();
 }
 
+void QIOSInputContext::focusWindowChanged(QWindow *focusWindow)
+{
+    Q_UNUSED(focusWindow);
+
+    reset();
+
+    [m_keyboardListener handleKeyboardRectChanged];
+    if (m_keyboardListener->m_keyboardVisibleAndDocked)
+        scrollToCursor();
+}
+
+/*!
+    Called by the input item to inform the platform input methods when there has been
+    state changes in editor's input method query attributes. When calling the function
+    \a queries parameter has to be used to tell what has changes, which input method
+    can use to make queries for attributes it's interested with QInputMethodQueryEvent.
+*/
+void QIOSInputContext::update(Qt::InputMethodQueries updatedProperties)
+{
+    // Mask for properties that we are interested in and see if any of them changed
+    updatedProperties &= (Qt::ImEnabled | Qt::ImHints | Qt::ImQueryInput | Qt::ImPlatformData);
+
+    Qt::InputMethodQueries changedProperties = m_imeState.update(updatedProperties);
+    if (changedProperties & (Qt::ImEnabled | Qt::ImHints | Qt::ImPlatformData)) {
+        // Changes to enablement or hints require virtual keyboard reconfigure
+        [m_textResponder release];
+        m_textResponder = [[QIOSTextInputResponder alloc] initWithInputContext:this];
+        [m_textResponder reloadInputViews];
+    } else {
+        [m_textResponder notifyInputDelegate:changedProperties];
+    }
+}
+
+/*!
+    Called by the input item to reset the input method state.
+*/
 void QIOSInputContext::reset()
 {
-    [m_focusView reset];
+    update(Qt::ImQueryAll);
+
+    [m_textResponder setMarkedText:@"" selectedRange:NSMakeRange(0, 0)];
+    [m_textResponder notifyInputDelegate:Qt::ImQueryInput];
 }
 
+/*!
+    Commits the word user is currently composing to the editor. The function is
+    mostly needed by the input methods with text prediction features and by the
+    methods where the script used for typing characters is different from the
+    script that actually gets appended to the editor. Any kind of action that
+    interrupts the text composing needs to flush the composing state by calling the
+    commit() function, for example when the cursor is moved elsewhere.
+*/
 void QIOSInputContext::commit()
 {
-    [m_focusView commit];
+    [m_textResponder unmarkText];
+    [m_textResponder notifyInputDelegate:Qt::ImSurroundingText];
 }
 
+// -------------------------------------------------------------------------
+
+@interface QUIView (InputMethods)
+- (void)reloadInputViews;
+@end
+
+@implementation QUIView (InputMethods)
+- (void)reloadInputViews
+{
+    qApp->inputMethod()->reset();
+}
+@end

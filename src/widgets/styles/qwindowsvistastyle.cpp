@@ -1,39 +1,31 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtWidgets module of the Qt Toolkit.
 **
-** $QT_BEGIN_LICENSE:LGPL$
+** $QT_BEGIN_LICENSE:LGPL21$
 ** Commercial License Usage
 ** Licensees holding valid commercial Qt licenses may use this file in
 ** accordance with the commercial license agreement provided with the
 ** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and Digia.  For licensing terms and
-** conditions see http://qt.digia.com/licensing.  For further information
+** a written agreement between you and Digia. For licensing terms and
+** conditions see http://qt.digia.com/licensing. For further information
 ** use the contact form at http://qt.digia.com/contact-us.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** General Public License version 2.1 or version 3 as published by the Free
+** Software Foundation and appearing in the file LICENSE.LGPLv21 and
+** LICENSE.LGPLv3 included in the packaging of this file. Please review the
+** following information to ensure the GNU Lesser General Public License
+** requirements will be met: https://www.gnu.org/licenses/lgpl.html and
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Digia gives you certain additional
-** rights.  These rights are described in the Digia Qt LGPL Exception
+** rights. These rights are described in the Digia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
-**
 **
 ** $QT_END_LICENSE$
 **
@@ -1183,7 +1175,8 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
     case CE_MenuItem:
         if (const QStyleOptionMenuItem *menuitem = qstyleoption_cast<const QStyleOptionMenuItem *>(option)) {
             // windows always has a check column, regardless whether we have an icon or not
-            int checkcol = 25;
+            int checkcol = 25 / QWindowsXPStylePrivate::devicePixelRatio(widget);
+            const int gutterWidth = 3 / QWindowsXPStylePrivate::devicePixelRatio(widget);
             {
                 XPThemeData theme(widget, 0, QWindowsXPStylePrivate::MenuTheme,
                                   MENU_POPUPCHECKBACKGROUND, MBI_HOT);
@@ -1192,7 +1185,7 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
                 themeSize.stateId = 0;
                 const QSize size = themeSize.size() / QWindowsXPStylePrivate::devicePixelRatio(widget);
                 const QMargins margins = themeSize.margins() / QWindowsXPStylePrivate::devicePixelRatio(widget);
-                checkcol = qMax(menuitem->maxIconWidth, int(3 + size.width() + margins.left() + margins.right()));
+                checkcol = qMax(menuitem->maxIconWidth, gutterWidth + size.width() + margins.left() + margins.right());
             }
             QRect rect = option->rect;
 
@@ -1201,7 +1194,7 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
                 checkcol += rect.x();
             QPoint p1 = QStyle::visualPos(option->direction, menuitem->rect, QPoint(checkcol, rect.top()));
             QPoint p2 = QStyle::visualPos(option->direction, menuitem->rect, QPoint(checkcol, rect.bottom()));
-            QRect gutterRect(p1.x(), p1.y(), 3, p2.y() - p1.y() + 1);
+            QRect gutterRect(p1.x(), p1.y(), gutterWidth, p2.y() - p1.y() + 1);
             XPThemeData theme2(widget, painter, QWindowsXPStylePrivate::MenuTheme,
                                MENU_POPUPGUTTER, stateId, gutterRect);
             d->drawBackground(theme2);
@@ -1216,10 +1209,12 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
 
             if (menuitem->menuItemType == QStyleOptionMenuItem::Separator) {
                 int yoff = y-2 + h / 2;
+                const int separatorSize = 6 / QWindowsXPStylePrivate::devicePixelRatio(widget);
                 QPoint p1 = QPoint(x + checkcol, yoff);
-                QPoint p2 = QPoint(x + w + 6 , yoff);
+                QPoint p2 = QPoint(x + w + separatorSize, yoff);
                 stateId = MBI_HOT;
-                QRect subRect(p1.x() + (3 - menuitem->rect.x()), p1.y(), p2.x() - p1.x(), 6);
+                QRect subRect(p1.x() + (gutterWidth - menuitem->rect.x()), p1.y(),
+                              p2.x() - p1.x(), separatorSize);
                 subRect  = QStyle::visualRect(option->direction, option->rect, subRect );
                 XPThemeData theme2(widget, painter,
                                    QWindowsXPStylePrivate::MenuTheme,
@@ -1229,7 +1224,7 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
             }
 
             QRect vCheckRect = visualRect(option->direction, menuitem->rect, QRect(menuitem->rect.x(),
-                                          menuitem->rect.y(), checkcol - (3 + menuitem->rect.x()), menuitem->rect.height()));
+                                          menuitem->rect.y(), checkcol - (gutterWidth + menuitem->rect.x()), menuitem->rect.height()));
 
             if (act) {
                 stateId = dis ? MBI_DISABLED : MBI_HOT;
@@ -1294,7 +1289,7 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
             if (dis)
                 painter->setPen(textColor);
 
-            int xm = windowsItemFrame + checkcol + windowsItemHMargin + (3 - menuitem->rect.x()) - 1;
+            int xm = windowsItemFrame + checkcol + windowsItemHMargin + (gutterWidth - menuitem->rect.x()) - 1;
             int xpos = menuitem->rect.x() + xm;
             QRect textRect(xpos, y + windowsItemVMargin, w - xm - windowsRightBorder - tab + 1, h - 2 * windowsItemVMargin);
             QRect vTextRect = visualRect(option->direction, menuitem->rect, textRect);
@@ -1410,12 +1405,12 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
             QRect titleRect = r;
 
             if (dwOpt->closable) {
-                QSize sz = standardIcon(QStyle::SP_TitleBarCloseButton, dwOpt, widget).actualSize(QSize(10, 10));
+                QSize sz = proxy()->standardIcon(QStyle::SP_TitleBarCloseButton, dwOpt, widget).actualSize(QSize(10, 10));
                 titleRect.adjust(0, 0, -sz.width() - mw - buttonMargin, 0);
             }
 
             if (dwOpt->floatable) {
-                QSize sz = standardIcon(QStyle::SP_TitleBarMaxButton, dwOpt, widget).actualSize(QSize(10, 10));
+                QSize sz = proxy()->standardIcon(QStyle::SP_TitleBarMaxButton, dwOpt, widget).actualSize(QSize(10, 10));
                 titleRect.adjust(0, 0, -sz.width() - mw - buttonMargin, 0);
             }
 

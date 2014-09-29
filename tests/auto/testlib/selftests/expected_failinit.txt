@@ -3,5 +3,5 @@ Config: Using QtTest library @INSERT_QT_VERSION_HERE@, Qt @INSERT_QT_VERSION_HER
 FAIL!  : tst_FailInit::initTestCase() 'false' returned FALSE. ()
    Loc: [tst_failinit.cpp(55)]
 PASS   : tst_FailInit::cleanupTestCase()
-Totals: 1 passed, 1 failed, 0 skipped
+Totals: 1 passed, 1 failed, 0 skipped, 0 blacklisted
 ********* Finished testing of tst_FailInit *********

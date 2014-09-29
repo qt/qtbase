@@ -4,5 +4,5 @@ PASS   : tst_SkipCleanup::initTestCase()
 PASS   : tst_SkipCleanup::aTestFunction()
 SKIP   : tst_SkipCleanup::cleanupTestCase() Skip inside cleanupTestCase.
    Loc: [tst_skipcleanup.cpp(59)]
-Totals: 2 passed, 0 failed, 1 skipped
+Totals: 2 passed, 0 failed, 1 skipped, 0 blacklisted
 ********* Finished testing of tst_SkipCleanup *********

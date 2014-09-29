@@ -5,35 +5,27 @@
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
-** $QT_BEGIN_LICENSE:LGPL$
+** $QT_BEGIN_LICENSE:LGPL21$
 ** Commercial License Usage
 ** Licensees holding valid commercial Qt licenses may use this file in
 ** accordance with the commercial license agreement provided with the
 ** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and Digia.  For licensing terms and
-** conditions see http://qt.digia.com/licensing.  For further information
+** a written agreement between you and Digia. For licensing terms and
+** conditions see http://qt.digia.com/licensing. For further information
 ** use the contact form at http://qt.digia.com/contact-us.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** General Public License version 2.1 or version 3 as published by the Free
+** Software Foundation and appearing in the file LICENSE.LGPLv21 and
+** LICENSE.LGPLv3 included in the packaging of this file. Please review the
+** following information to ensure the GNU Lesser General Public License
+** requirements will be met: https://www.gnu.org/licenses/lgpl.html and
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Digia gives you certain additional
-** rights.  These rights are described in the Digia Qt LGPL Exception
+** rights. These rights are described in the Digia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
-**
 **
 ** $QT_END_LICENSE$
 **
@@ -57,6 +49,7 @@ private slots:
     void lockUnlock();
     void lockOutOtherProcess();
     void lockOutOtherThread();
+    void raceWithOtherThread();
     void waitForLock_data();
     void waitForLock();
     void staleLockFromCrashedProcess_data();
@@ -162,6 +155,25 @@ void tst_QLockFile::lockOutOtherThread()
 
     // Now other thread can acquire lock
     QFuture<QLockFile::LockError> ret2 = QtConcurrent::run<QLockFile::LockError>(tryLockFromThread, fileName);
+    QCOMPARE(ret2.result(), QLockFile::NoError);
+}
+
+static QLockFile::LockError lockFromThread(const QString &fileName)
+{
+    QLockFile lockInThread(fileName);
+    lockInThread.lock();
+    return lockInThread.error();
+}
+
+// QTBUG-38853, best way to trigger it was to add a QThread::sleep(1) in QLockFilePrivate::getLockInfo() after the first readLine.
+// Then (on Windows), the QFile::remove() in unlock() (called by the first thread who got the lock, in the destructor)
+// would fail due to the existing reader on the file. Fixed by checking the return value of QFile::remove() in unlock().
+void tst_QLockFile::raceWithOtherThread()
+{
+    const QString fileName = dir.path() + "/raceWithOtherThread";
+    QFuture<QLockFile::LockError> ret = QtConcurrent::run<QLockFile::LockError>(lockFromThread, fileName);
+    QFuture<QLockFile::LockError> ret2 = QtConcurrent::run<QLockFile::LockError>(lockFromThread, fileName);
+    QCOMPARE(ret.result(), QLockFile::NoError);
     QCOMPARE(ret2.result(), QLockFile::NoError);
 }
 

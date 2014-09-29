@@ -1,39 +1,31 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
 **
-** $QT_BEGIN_LICENSE:LGPL$
+** $QT_BEGIN_LICENSE:LGPL21$
 ** Commercial License Usage
 ** Licensees holding valid commercial Qt licenses may use this file in
 ** accordance with the commercial license agreement provided with the
 ** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and Digia.  For licensing terms and
-** conditions see http://qt.digia.com/licensing.  For further information
+** a written agreement between you and Digia. For licensing terms and
+** conditions see http://qt.digia.com/licensing. For further information
 ** use the contact form at http://qt.digia.com/contact-us.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** General Public License version 2.1 or version 3 as published by the Free
+** Software Foundation and appearing in the file LICENSE.LGPLv21 and
+** LICENSE.LGPLv3 included in the packaging of this file. Please review the
+** following information to ensure the GNU Lesser General Public License
+** requirements will be met: https://www.gnu.org/licenses/lgpl.html and
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Digia gives you certain additional
-** rights.  These rights are described in the Digia Qt LGPL Exception
+** rights. These rights are described in the Digia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
-**
 **
 ** $QT_END_LICENSE$
 **
@@ -164,7 +156,10 @@ void QXcbConnection::xi2SetupDevices()
                 if (bci->num_buttons >= 5) {
                     Atom label4 = bci->labels[3];
                     Atom label5 = bci->labels[4];
-                    if ((!label4 || qatom(label4) == QXcbAtom::ButtonWheelUp) && (!label5 || qatom(label5) == QXcbAtom::ButtonWheelDown))
+                    // Some drivers have no labels on the wheel buttons, some have no label on just one and some have no label on
+                    // button 4 and the wrong one on button 5. So we just check that they are not labelled with unrelated buttons.
+                    if ((!label4 || qatom(label4) == QXcbAtom::ButtonWheelUp || qatom(label4) == QXcbAtom::ButtonWheelDown) &&
+                        (!label5 || qatom(label5) == QXcbAtom::ButtonWheelUp || qatom(label5) == QXcbAtom::ButtonWheelDown))
                         scrollingDevice.legacyOrientations |= Qt::Vertical;
                 }
                 if (bci->num_buttons >= 7) {
@@ -190,17 +185,43 @@ void QXcbConnection::xi2SetupDevices()
         }
         bool isTablet = false;
 #ifndef QT_NO_TABLETEVENT
-        // If we have found the valuators which we expect a tablet to have, assume it's a tablet.
+        // If we have found the valuators which we expect a tablet to have, it might be a tablet.
         if (tabletData.valuatorInfo.contains(QXcbAtom::AbsX) &&
                 tabletData.valuatorInfo.contains(QXcbAtom::AbsY) &&
-                tabletData.valuatorInfo.contains(QXcbAtom::AbsPressure)) {
-            tabletData.deviceId = devices[i].deviceid;
-            tabletData.pointerType = QTabletEvent::Pen;
-            if (QByteArray(devices[i].name).toLower().contains("eraser"))
-                tabletData.pointerType = QTabletEvent::Eraser;
-            m_tabletData.append(tabletData);
+                tabletData.valuatorInfo.contains(QXcbAtom::AbsPressure))
             isTablet = true;
-            qCDebug(lcQpaXInputDevices) << "   it's a tablet with pointer type" << tabletData.pointerType;
+
+        // But we need to be careful not to take the touch and tablet-button devices as tablets.
+        QByteArray name = QByteArray(devices[i].name).toLower();
+        QString dbgType = QLatin1String("UNKNOWN");
+        if (name.contains("eraser")) {
+            isTablet = true;
+            tabletData.pointerType = QTabletEvent::Eraser;
+            dbgType = QLatin1String("eraser");
+        } else if (name.contains("cursor")) {
+            isTablet = true;
+            tabletData.pointerType = QTabletEvent::Cursor;
+            dbgType = QLatin1String("cursor");
+        } else if ((name.contains("pen") || name.contains("stylus")) && isTablet) {
+            tabletData.pointerType = QTabletEvent::Pen;
+            dbgType = QLatin1String("pen");
+        } else if (name.contains("wacom") && isTablet && !name.contains("touch")) {
+            // combined device (evdev) rather than separate pen/eraser (wacom driver)
+            tabletData.pointerType = QTabletEvent::Pen;
+            dbgType = QLatin1String("pen");
+        } else if (name.contains("aiptek") /* && device == QXcbAtom::KEYBOARD */) {
+            // some "Genius" tablets
+            isTablet = true;
+            tabletData.pointerType = QTabletEvent::Pen;
+            dbgType = QLatin1String("pen");
+        } else {
+            isTablet = false;
+        }
+
+        if (isTablet) {
+            tabletData.deviceId = devices[i].deviceid;
+            m_tabletData.append(tabletData);
+            qCDebug(lcQpaXInputDevices) << "   it's a tablet with pointer type" << dbgType;
         }
 #endif // QT_NO_TABLETEVENT
 
@@ -378,6 +399,10 @@ XInput2TouchDeviceData *QXcbConnection::touchDeviceForId(int id)
                 } else if (vci->label == atom(QXcbAtom::RelY)) {
                     hasRelativeCoords = true;
                     dev->size.setHeight((vci->max - vci->min) * 1000.0 / vci->resolution);
+                } else if (vci->label == atom(QXcbAtom::AbsX)) {
+                    dev->size.setHeight((vci->max - vci->min) * 1000.0 / vci->resolution);
+                } else if (vci->label == atom(QXcbAtom::AbsY)) {
+                    dev->size.setWidth((vci->max - vci->min) * 1000.0 / vci->resolution);
                 }
                 break;
             }
@@ -491,6 +516,10 @@ void QXcbConnection::xi2HandleEvent(xcb_ge_event_t *event)
                         if (vci->label == atom(QXcbAtom::RelX)) {
                             nx = valuatorNormalized(value, vci);
                         } else if (vci->label == atom(QXcbAtom::RelY)) {
+                            ny = valuatorNormalized(value, vci);
+                        } else if (vci->label == atom(QXcbAtom::AbsX)) {
+                            nx = valuatorNormalized(value, vci);
+                        } else if (vci->label == atom(QXcbAtom::AbsY)) {
                             ny = valuatorNormalized(value, vci);
                         } else if (vci->label == atom(QXcbAtom::AbsMTPositionX)) {
                             nx = valuatorNormalized(value, vci);

@@ -158,6 +158,7 @@ static void populateRoleMap()
     roleMap[QAccessible::Heading] = @"AXHeading";
     roleMap[QAccessible::Note] = NSAccessibilityGroupRole;
     roleMap[QAccessible::ComplementaryContent] = NSAccessibilityGroupRole;
+    roleMap[QAccessible::Graphic] = NSAccessibilityImageRole;
 }
 
 /*

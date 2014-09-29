@@ -5,5 +5,5 @@ PASS   : tst_Assert::testNumber1()
 QFATAL : tst_Assert::testNumber2() ASSERT: "false" in file tst_assert.cpp, line 66
 FAIL!  : tst_Assert::testNumber2() Received a fatal error.
    Loc: [Unknown file(0)]
-Totals: 2 passed, 1 failed, 0 skipped
+Totals: 2 passed, 1 failed, 0 skipped, 0 blacklisted
 ********* Finished testing of tst_Assert *********

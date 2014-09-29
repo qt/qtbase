@@ -125,7 +125,7 @@
            to author a plugin. This includes avoiding loading our nib for the main
            menu and not taking possession of the native menu bar. When setting this
            attribute to true will also set the AA_DontUseNativeMenuBar attribute
-           to true.
+           to true. It also disables native event filters.
 
     \value AA_DontUseNativeMenuBar All menubars created while this attribute is
            set to true won't be used as a native menubar (e.g, the menubar at
@@ -187,6 +187,11 @@
            variable \e QT_OPENGL_DLL. See the platform-specific pages, for
            instance \l{Qt for Windows}, for more information.  This value has
            been added in Qt 5.4.
+
+    \value AA_ShareOpenGLContexts Enables resource sharing between the OpenGL
+           contexts used by classes like QOpenGLWidget and QQuickWidget. This
+           allows sharing OpenGL resources, like textures, between QOpenGLWidget
+           instances that belong to different top-level windows.
 
     The following values are obsolete:
 

@@ -1,39 +1,31 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
-** $QT_BEGIN_LICENSE:LGPL$
+** $QT_BEGIN_LICENSE:LGPL21$
 ** Commercial License Usage
 ** Licensees holding valid commercial Qt licenses may use this file in
 ** accordance with the commercial license agreement provided with the
 ** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and Digia.  For licensing terms and
-** conditions see http://qt.digia.com/licensing.  For further information
+** a written agreement between you and Digia. For licensing terms and
+** conditions see http://qt.digia.com/licensing. For further information
 ** use the contact form at http://qt.digia.com/contact-us.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** General Public License version 2.1 or version 3 as published by the Free
+** Software Foundation and appearing in the file LICENSE.LGPLv21 and
+** LICENSE.LGPLv3 included in the packaging of this file. Please review the
+** following information to ensure the GNU Lesser General Public License
+** requirements will be met: https://www.gnu.org/licenses/lgpl.html and
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Digia gives you certain additional
-** rights.  These rights are described in the Digia Qt LGPL Exception
+** rights. These rights are described in the Digia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
-**
 **
 ** $QT_END_LICENSE$
 **
@@ -254,13 +246,15 @@ void QEventDispatcherWinRT::registerTimer(int timerId, int interval, Qt::TimerTy
 {
     Q_UNUSED(timerType);
 
+#ifndef QT_NO_DEBUG
     if (timerId < 1 || interval < 0 || !object) {
         qWarning("QEventDispatcherWinRT::registerTimer: invalid arguments");
         return;
     } else if (object->thread() != thread() || thread() != QThread::currentThread()) {
-        qWarning("QObject::startTimer: timers cannot be started from another thread");
+        qWarning("QEventDispatcherWinRT::registerTimer: timers cannot be started from another thread");
         return;
     }
+#endif
 
     Q_D(QEventDispatcherWinRT);
 
@@ -289,14 +283,16 @@ void QEventDispatcherWinRT::registerTimer(int timerId, int interval, Qt::TimerTy
 
 bool QEventDispatcherWinRT::unregisterTimer(int timerId)
 {
+#ifndef QT_NO_DEBUG
     if (timerId < 1) {
         qWarning("QEventDispatcherWinRT::unregisterTimer: invalid argument");
         return false;
     }
     if (thread() != QThread::currentThread()) {
-        qWarning("QObject::killTimer: timers cannot be stopped from another thread");
+        qWarning("QEventDispatcherWinRT::unregisterTimer: timers cannot be stopped from another thread");
         return false;
     }
+#endif
 
     Q_D(QEventDispatcherWinRT);
 
@@ -310,15 +306,17 @@ bool QEventDispatcherWinRT::unregisterTimer(int timerId)
 
 bool QEventDispatcherWinRT::unregisterTimers(QObject *object)
 {
+#ifndef QT_NO_DEBUG
     if (!object) {
         qWarning("QEventDispatcherWinRT::unregisterTimers: invalid argument");
         return false;
     }
     QThread *currentThread = QThread::currentThread();
     if (object->thread() != thread() || thread() != currentThread) {
-        qWarning("QObject::killTimers: timers cannot be stopped from another thread");
+        qWarning("QEventDispatcherWinRT::unregisterTimers: timers cannot be stopped from another thread");
         return false;
     }
+#endif
 
     Q_D(QEventDispatcherWinRT);
     for (QHash<int, WinRTTimerInfo *>::iterator it = d->timerDict.begin(); it != d->timerDict.end();) {

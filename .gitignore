@@ -81,7 +81,6 @@ bin/pixeltool*
 bin/qmake*
 bin/qdoc*
 bin/qt3to4*
-bin/qtdemo*
 bin/qttracereplay*
 bin/rcc*
 bin/uic*

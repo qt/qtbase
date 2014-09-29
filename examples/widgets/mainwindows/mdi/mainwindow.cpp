@@ -95,14 +95,20 @@ void MainWindow::open()
             return;
         }
 
-        MdiChild *child = createMdiChild();
-        if (child->loadFile(fileName)) {
+        if (openFile(fileName))
             statusBar()->showMessage(tr("File loaded"), 2000);
-            child->show();
-        } else {
-            child->close();
-        }
     }
+}
+
+bool MainWindow::openFile(const QString &fileName)
+{
+    MdiChild *child = createMdiChild();
+    const bool succeeded = child->loadFile(fileName);
+    if (succeeded)
+        child->show();
+    else
+        child->close();
+    return succeeded;
 }
 
 void MainWindow::save()

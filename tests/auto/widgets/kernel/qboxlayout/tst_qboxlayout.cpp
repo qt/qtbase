@@ -1,39 +1,31 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
-** $QT_BEGIN_LICENSE:LGPL$
+** $QT_BEGIN_LICENSE:LGPL21$
 ** Commercial License Usage
 ** Licensees holding valid commercial Qt licenses may use this file in
 ** accordance with the commercial license agreement provided with the
 ** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and Digia.  For licensing terms and
-** conditions see http://qt.digia.com/licensing.  For further information
+** a written agreement between you and Digia. For licensing terms and
+** conditions see http://qt.digia.com/licensing. For further information
 ** use the contact form at http://qt.digia.com/contact-us.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** General Public License version 2.1 or version 3 as published by the Free
+** Software Foundation and appearing in the file LICENSE.LGPLv21 and
+** LICENSE.LGPLv3 included in the packaging of this file. Please review the
+** following information to ensure the GNU Lesser General Public License
+** requirements will be met: https://www.gnu.org/licenses/lgpl.html and
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Digia gives you certain additional
-** rights.  These rights are described in the Digia Qt LGPL Exception
+** rights. These rights are described in the Digia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
-**
 **
 ** $QT_END_LICENSE$
 **
@@ -79,6 +71,8 @@ private slots:
 
     void taskQTBUG_7103_minMaxWidthNotRespected();
     void taskQTBUG_27420_takeAtShouldUnparentLayout();
+    void taskQTBUG_40609_addingWidgetToItsOwnLayout();
+    void taskQTBUG_40609_addingLayoutToItself();
     void replaceWidget();
 };
 
@@ -327,6 +321,36 @@ void tst_QBoxLayout::taskQTBUG_27420_takeAtShouldUnparentLayout()
         delete item; // success: a taken item/layout should not be deleted when the old parent is deleted
     else
         QVERIFY(!inner.isNull());
+}
+
+void tst_QBoxLayout::taskQTBUG_40609_addingWidgetToItsOwnLayout(){
+    QWidget widget;
+    widget.setObjectName("347b469225a24a0ef05150a");
+    QVBoxLayout layout(&widget);
+    layout.setObjectName("ef9e2b42298e0e6420105bb");
+
+    QTest::ignoreMessage(QtWarningMsg, "QLayout: Cannot add a null widget to QVBoxLayout/ef9e2b42298e0e6420105bb");
+    layout.addWidget(Q_NULLPTR);
+    QCOMPARE(layout.count(), 0);
+
+    QTest::ignoreMessage(QtWarningMsg, "QLayout: Cannot add parent widget QWidget/347b469225a24a0ef05150a to its child layout QVBoxLayout/ef9e2b42298e0e6420105bb");
+    layout.addWidget(&widget);
+    QCOMPARE(layout.count(), 0);
+}
+
+void tst_QBoxLayout::taskQTBUG_40609_addingLayoutToItself(){
+    QWidget widget;
+    widget.setObjectName("fe44e5cb6c08006597126a");
+    QVBoxLayout layout(&widget);
+    layout.setObjectName("cc751dd0f50f62b05a62da");
+
+    QTest::ignoreMessage(QtWarningMsg, "QLayout: Cannot add a null layout to QVBoxLayout/cc751dd0f50f62b05a62da");
+    layout.addLayout(Q_NULLPTR);
+    QCOMPARE(layout.count(), 0);
+
+    QTest::ignoreMessage(QtWarningMsg, "QLayout: Cannot add layout QVBoxLayout/cc751dd0f50f62b05a62da to itself");
+    layout.addLayout(&layout);
+    QCOMPARE(layout.count(), 0);
 }
 
 struct Descr

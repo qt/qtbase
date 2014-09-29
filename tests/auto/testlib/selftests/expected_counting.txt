@@ -50,5 +50,5 @@ SKIP   : tst_Counting::testSkipInCleanup(skip) Skip in cleanup()
    Loc: [tst_counting.cpp(244)]
 PASS   : tst_Counting::testSkipInCleanup(after)
 PASS   : tst_Counting::cleanupTestCase()
-Totals: 16 passed, 8 failed, 8 skipped
+Totals: 16 passed, 8 failed, 8 skipped, 0 blacklisted
 ********* Finished testing of tst_Counting *********

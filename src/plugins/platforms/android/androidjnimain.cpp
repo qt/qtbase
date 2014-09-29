@@ -1,40 +1,32 @@
 /****************************************************************************
 **
 ** Copyright (C) 2014 BogDan Vatra <bogdan@kde.org>
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
 **
-** $QT_BEGIN_LICENSE:LGPL$
+** $QT_BEGIN_LICENSE:LGPL21$
 ** Commercial License Usage
 ** Licensees holding valid commercial Qt licenses may use this file in
 ** accordance with the commercial license agreement provided with the
 ** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and Digia.  For licensing terms and
-** conditions see http://qt.digia.com/licensing.  For further information
+** a written agreement between you and Digia. For licensing terms and
+** conditions see http://qt.digia.com/licensing. For further information
 ** use the contact form at http://qt.digia.com/contact-us.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** General Public License version 2.1 or version 3 as published by the Free
+** Software Foundation and appearing in the file LICENSE.LGPLv21 and
+** LICENSE.LGPLv3 included in the packaging of this file. Please review the
+** following information to ensure the GNU Lesser General Public License
+** requirements will be met: https://www.gnu.org/licenses/lgpl.html and
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Digia gives you certain additional
-** rights.  These rights are described in the Digia Qt LGPL Exception
+** rights. These rights are described in the Digia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
-**
 **
 ** $QT_END_LICENSE$
 **
@@ -77,7 +69,6 @@ static AAssetManager *m_assetManager = Q_NULLPTR;
 static jobject m_resourcesObj = Q_NULLPTR;
 static jobject m_activityObject = Q_NULLPTR;
 static jmethodID m_createSurfaceMethodID = Q_NULLPTR;
-static jmethodID m_insertNativeViewMethodID = Q_NULLPTR;
 static jmethodID m_setSurfaceGeometryMethodID = Q_NULLPTR;
 static jmethodID m_destroySurfaceMethodID = Q_NULLPTR;
 
@@ -169,14 +160,6 @@ namespace QtAndroid
     JavaVM *javaVM()
     {
         return m_javaVM;
-    }
-
-    jclass findClass(const QString &className, JNIEnv *env)
-    {
-        return static_cast<jclass>(env->CallObjectMethod(m_classLoaderObject,
-                                                         m_loadClassMethodID,
-                                                         env->NewString(reinterpret_cast<const jchar *>(className.constData()),
-                                                                        jsize(className.length()))));
     }
 
     AAssetManager *assetManager()
@@ -353,27 +336,24 @@ namespace QtAndroid
 
     int insertNativeView(jobject view, const QRect &geometry)
     {
-        QJNIEnvironmentPrivate env;
-        if (!env)
-            return 0;
-
         m_surfacesMutex.lock();
         const int surfaceId = m_surfaceId++;
+        m_surfaces[surfaceId] = Q_NULLPTR; // dummy
         m_surfacesMutex.unlock();
 
         jint x = 0, y = 0, w = -1, h = -1;
-        if (!geometry.isNull()) {
-            x = geometry.x();
-            y = geometry.y();
-            w = std::max(geometry.width(), 1);
-            h = std::max(geometry.height(), 1);
-        }
+        if (!geometry.isNull())
+            geometry.getRect(&x, &y, &w, &h);
 
-        env->CallStaticVoidMethod(m_applicationClass,
-                                  m_insertNativeViewMethodID,
-                                  surfaceId,
-                                  view,
-                                  x, y, w, h);
+        QJNIObjectPrivate::callStaticMethod<void>(m_applicationClass,
+                                                  "insertNativeView",
+                                                  "(ILandroid/view/View;IIII)V",
+                                                  surfaceId,
+                                                  view,
+                                                  x,
+                                                  y,
+                                                  qMax(w, 1),
+                                                  qMax(h, 1));
 
         return surfaceId;
     }
@@ -419,6 +399,28 @@ namespace QtAndroid
         env->CallStaticVoidMethod(m_applicationClass,
                                      m_destroySurfaceMethodID,
                                      surfaceId);
+    }
+
+    void bringChildToFront(int surfaceId)
+    {
+        if (surfaceId == -1)
+            return;
+
+        QJNIObjectPrivate::callStaticMethod<void>(m_applicationClass,
+                                                  "bringChildToFront",
+                                                  "(I)V",
+                                                  surfaceId);
+    }
+
+    void bringChildToBack(int surfaceId)
+    {
+        if (surfaceId == -1)
+            return;
+
+        QJNIObjectPrivate::callStaticMethod<void>(m_applicationClass,
+                                                  "bringChildToBack",
+                                                  "(I)V",
+                                                  surfaceId);
     }
 
     bool blockEventLoopsWhenSuspended()
@@ -547,6 +549,9 @@ static void setSurface(JNIEnv *env, jobject /*thiz*/, jint id, jobject jSurface,
 {
     QMutexLocker lock(&m_surfacesMutex);
     const auto &it = m_surfaces.find(id);
+    if (it.value() == Q_NULLPTR) // This should never happen...
+        return;
+
     if (it == m_surfaces.end()) {
         qWarning()<<"Can't find surface" << id;
         return;
@@ -559,6 +564,12 @@ static void setDisplayMetrics(JNIEnv */*env*/, jclass /*clazz*/,
                             jint desktopWidthPixels, jint desktopHeightPixels,
                             jdouble xdpi, jdouble ydpi, jdouble scaledDensity)
 {
+    // Android does not give us the correct screen size for immersive mode, but
+    // the surface does have the right size
+
+    widthPixels = qMax(widthPixels, desktopWidthPixels);
+    heightPixels = qMax(heightPixels, desktopHeightPixels);
+
     m_desktopWidthPixels = desktopWidthPixels;
     m_desktopHeightPixels = desktopHeightPixels;
     m_scaledDensity = scaledDensity;
@@ -573,8 +584,8 @@ static void setDisplayMetrics(JNIEnv */*env*/, jclass /*clazz*/,
     } else {
         m_androidPlatformIntegration->setDisplayMetrics(qRound(double(widthPixels)  / xdpi * 25.4),
                                                         qRound(double(heightPixels) / ydpi * 25.4));
-        m_androidPlatformIntegration->setDesktopSize(desktopWidthPixels, desktopHeightPixels);
         m_androidPlatformIntegration->setScreenSize(widthPixels, heightPixels);
+        m_androidPlatformIntegration->setDesktopSize(desktopWidthPixels, desktopHeightPixels);
     }
 }
 
@@ -720,7 +731,6 @@ static int registerNatives(JNIEnv *env)
     }
 
     GET_AND_CHECK_STATIC_METHOD(m_createSurfaceMethodID, m_applicationClass, "createSurface", "(IZIIIII)V");
-    GET_AND_CHECK_STATIC_METHOD(m_insertNativeViewMethodID, m_applicationClass, "insertNativeView", "(ILandroid/view/View;IIII)V");
     GET_AND_CHECK_STATIC_METHOD(m_setSurfaceGeometryMethodID, m_applicationClass, "setSurfaceGeometry", "(IIIII)V");
     GET_AND_CHECK_STATIC_METHOD(m_destroySurfaceMethodID, m_applicationClass, "destroySurface", "(I)V");
 

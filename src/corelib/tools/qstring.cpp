@@ -1,40 +1,32 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Copyright (C) 2013 Intel Corporation
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
-** $QT_BEGIN_LICENSE:LGPL$
+** $QT_BEGIN_LICENSE:LGPL21$
 ** Commercial License Usage
 ** Licensees holding valid commercial Qt licenses may use this file in
 ** accordance with the commercial license agreement provided with the
 ** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and Digia.  For licensing terms and
-** conditions see http://qt.digia.com/licensing.  For further information
+** a written agreement between you and Digia. For licensing terms and
+** conditions see http://qt.digia.com/licensing. For further information
 ** use the contact form at http://qt.digia.com/contact-us.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** General Public License version 2.1 or version 3 as published by the Free
+** Software Foundation and appearing in the file LICENSE.LGPLv21 and
+** LICENSE.LGPLv3 included in the packaging of this file. Please review the
+** following information to ensure the GNU Lesser General Public License
+** requirements will be met: https://www.gnu.org/licenses/lgpl.html and
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Digia gives you certain additional
-** rights.  These rights are described in the Digia Qt LGPL Exception
+** rights. These rights are described in the Digia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
-**
 **
 ** $QT_END_LICENSE$
 **
@@ -1007,8 +999,7 @@ const QString::Null QString::null = { };
     \endlist
 
     One way to define these preprocessor symbols globally for your
-    application is to add the following entry to your
-    \l{qmake Project Files}{qmake project file}:
+    application is to add the following entry to your \l {Creating Project Files}{qmake project file}:
 
     \snippet code/src_corelib_tools_qstring.cpp 0
 
@@ -1328,9 +1319,6 @@ const QString::Null QString::null = { };
     Returns a copy of the \a str string. The given string is converted
     to Unicode using the fromUtf8() function.
 
-    This constructor is only available if Qt is configured with STL
-    compatibility enabled.
-
     \sa fromLatin1(), fromLocal8Bit(), fromUtf8(), QByteArray::fromStdString()
 */
 
@@ -1363,7 +1351,7 @@ const QString::Null QString::null = { };
     wchar_t is 2 bytes wide (e.g. windows) and in ucs4 on platforms
     where wchar_t is 4 bytes wide (most Unix systems).
 
-    This operator is mostly useful to pass a QString to a function
+    This method is mostly useful to pass a QString to a function
     that accepts a std::wstring object.
 
     \sa utf16(), toLatin1(), toUtf8(), toLocal8Bit()
@@ -6088,7 +6076,7 @@ qulonglong QString::toIntegral_helper(const QChar *data, uint len, bool *ok, int
     base 8 is used; otherwise, base 10 is used.
 
     The string conversion will always happen in the 'C' locale. For locale
-    dependent conversion use QLocale::toLong()
+    dependent conversion use QLocale::toLongLong()
 
     Example:
 
@@ -6117,7 +6105,7 @@ long QString::toLong(bool *ok, int base) const
     base 8 is used; otherwise, base 10 is used.
 
     The string conversion will always happen in the 'C' locale. For locale
-    dependent conversion use QLocale::toULong()
+    dependent conversion use QLocale::toULongLong()
 
     Example:
 
@@ -7761,11 +7749,8 @@ bool QString::isRightToLeft() const
     QString. The Unicode data is converted into 8-bit characters using
     the toUtf8() function.
 
-    This operator is mostly useful to pass a QString to a function
+    This method is mostly useful to pass a QString to a function
     that accepts a std::string object.
-
-    If the QString contains non-Latin1 Unicode characters, using this
-    can lead to loss of information.
 
     \sa toLatin1(), toUtf8(), toLocal8Bit(), QByteArray::toStdString()
 */
@@ -9844,7 +9829,7 @@ long QStringRef::toLong(bool *ok, int base) const
     base 8 is used; otherwise, base 10 is used.
 
     The string conversion will always happen in the 'C' locale. For locale
-    dependent conversion use QLocale::toULong()
+    dependent conversion use QLocale::toULongLong()
 
     \sa QString::toULong()
 

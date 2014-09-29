@@ -5,35 +5,27 @@
 **
 ** This file is part of the QtWidgets module of the Qt Toolkit.
 **
-** $QT_BEGIN_LICENSE:LGPL$
+** $QT_BEGIN_LICENSE:LGPL21$
 ** Commercial License Usage
 ** Licensees holding valid commercial Qt licenses may use this file in
 ** accordance with the commercial license agreement provided with the
 ** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and Digia.  For licensing terms and
-** conditions see http://qt.digia.com/licensing.  For further information
+** a written agreement between you and Digia. For licensing terms and
+** conditions see http://qt.digia.com/licensing. For further information
 ** use the contact form at http://qt.digia.com/contact-us.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** General Public License version 2.1 or version 3 as published by the Free
+** Software Foundation and appearing in the file LICENSE.LGPLv21 and
+** LICENSE.LGPLv3 included in the packaging of this file. Please review the
+** following information to ensure the GNU Lesser General Public License
+** requirements will be met: https://www.gnu.org/licenses/lgpl.html and
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Digia gives you certain additional
-** rights.  These rights are described in the Digia Qt LGPL Exception
+** rights. These rights are described in the Digia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
-**
 **
 ** $QT_END_LICENSE$
 **
@@ -456,15 +448,15 @@ QByteArray QFileDialog::saveState() const
         stream << d->qFileDialogUi->splitter->saveState();
         stream << d->qFileDialogUi->sidebar->urls();
     } else {
-        stream << QByteArray();
-        stream << QList<QUrl>();
+        stream << d->splitterState;
+        stream << d->sidebarUrls;
     }
     stream << history();
     stream << *lastVisitedDir();
     if (d->usingWidgets())
         stream << d->qFileDialogUi->treeView->header()->saveState();
     else
-        stream << QByteArray();
+        stream << d->headerData;
     stream << qint32(viewMode());
     return data;
 }
@@ -485,9 +477,6 @@ bool QFileDialog::restoreState(const QByteArray &state)
     QDataStream stream(&sd, QIODevice::ReadOnly);
     if (stream.atEnd())
         return false;
-    QByteArray splitterState;
-    QByteArray headerData;
-    QList<QUrl> bookmarks;
     QStringList history;
     QUrl currentDirectory;
     qint32 marker;
@@ -499,8 +488,8 @@ bool QFileDialog::restoreState(const QByteArray &state)
     if (marker != QFileDialogMagic || (v != 3 && v != 4))
         return false;
 
-    stream >> splitterState
-           >> bookmarks
+    stream >> d->splitterState
+           >> d->sidebarUrls
            >> history;
     if (v == 3) {
         QString currentDirectoryString;
@@ -509,7 +498,7 @@ bool QFileDialog::restoreState(const QByteArray &state)
     } else {
         stream >> currentDirectory;
     }
-    stream >> headerData
+    stream >> d->headerData
            >> viewMode;
 
     setDirectoryUrl(lastVisitedDir()->isEmpty() ? currentDirectory : *lastVisitedDir());
@@ -518,7 +507,7 @@ bool QFileDialog::restoreState(const QByteArray &state)
     if (!d->usingWidgets())
         return true;
 
-    if (!d->qFileDialogUi->splitter->restoreState(splitterState))
+    if (!d->qFileDialogUi->splitter->restoreState(d->splitterState))
         return false;
     QList<int> list = d->qFileDialogUi->splitter->sizes();
     if (list.count() >= 2 && list.at(0) == 0 && list.at(1) == 0) {
@@ -527,12 +516,12 @@ bool QFileDialog::restoreState(const QByteArray &state)
         d->qFileDialogUi->splitter->setSizes(list);
     }
 
-    d->qFileDialogUi->sidebar->setUrls(bookmarks);
+    d->qFileDialogUi->sidebar->setUrls(d->sidebarUrls);
     while (history.count() > 5)
         history.pop_front();
     setHistory(history);
     QHeaderView *headerView = d->qFileDialogUi->treeView->header();
-    if (!headerView->restoreState(headerData))
+    if (!headerView->restoreState(d->headerData))
         return false;
 
     QList<QAction*> actions = headerView->actions();

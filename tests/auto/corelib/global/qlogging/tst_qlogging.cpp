@@ -6,35 +6,27 @@
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
-** $QT_BEGIN_LICENSE:LGPL$
+** $QT_BEGIN_LICENSE:LGPL21$
 ** Commercial License Usage
 ** Licensees holding valid commercial Qt licenses may use this file in
 ** accordance with the commercial license agreement provided with the
 ** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and Digia.  For licensing terms and
-** conditions see http://qt.digia.com/licensing.  For further information
+** a written agreement between you and Digia. For licensing terms and
+** conditions see http://qt.digia.com/licensing. For further information
 ** use the contact form at http://qt.digia.com/contact-us.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** General Public License version 2.1 or version 3 as published by the Free
+** Software Foundation and appearing in the file LICENSE.LGPLv21 and
+** LICENSE.LGPLv3 included in the packaging of this file. Please review the
+** following information to ensure the GNU Lesser General Public License
+** requirements will be met: https://www.gnu.org/licenses/lgpl.html and
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Digia gives you certain additional
-** rights.  These rights are described in the Digia Qt LGPL Exception
+** rights. These rights are described in the Digia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
-**
 **
 ** $QT_END_LICENSE$
 **
@@ -242,6 +234,19 @@ public:
     int &operator--() { ADD("TestClass1::operator--"); return x; }
     int operator--(int) { ADD("TestClass1::operator--"); return 0; }
 
+    int nested_struct()
+    {
+        struct Nested { void nested() { ADD("TestClass1::nested_struct"); } };
+        Nested().nested();
+        return 0;
+    }
+    int nested_struct_const() const
+    {
+        struct Nested { void nested() { ADD("TestClass1::nested_struct_const"); } };
+        Nested().nested();
+        return 0;
+    }
+
 #ifdef Q_COMPILER_REF_QUALIFIERS
     int lvalue() & { ADD("TestClass1::lvalue"); return 0; }
     int const_lvalue() const & { ADD("TestClass1::const_lvalue"); return 0; }
@@ -307,6 +312,9 @@ public:
             operator++(0);
             operator--();
             operator--(0);
+
+            nested_struct();
+            nested_struct_const();
 
 #ifdef Q_COMPILER_REF_QUALIFIERS
             lvalue();
@@ -678,6 +686,8 @@ void tst_qmessagehandler::cleanupFuncinfo()
 
 //    qDebug() << funcinfo.toLatin1();
     QByteArray result = qCleanupFuncinfo(funcinfo.toLatin1());
+    QEXPECT_FAIL("TestClass1::nested_struct", "Nested function processing is broken", Continue);
+    QEXPECT_FAIL("TestClass1::nested_struct_const", "Nested function processing is broken", Continue);
     QTEST(QString::fromLatin1(result), "expected");
 }
 #endif
@@ -690,15 +700,15 @@ void tst_qmessagehandler::qMessagePattern_data()
 
     // %{file} is tricky because of shadow builds
     QTest::newRow("basic") << "%{type} %{appname} %{line} %{function} %{message}" << true << (QList<QByteArray>()
-            << "debug  52 T::T static constructor"
+            << "debug  44 T::T static constructor"
             //  we can't be sure whether the QT_MESSAGE_PATTERN is already destructed
             << "static destructor"
-            << "debug tst_qlogging 73 MyClass::myFunction from_a_function 34"
-            << "debug tst_qlogging 83 main qDebug"
-            << "warning tst_qlogging 84 main qWarning"
-            << "critical tst_qlogging 85 main qCritical"
-            << "warning tst_qlogging 88 main qDebug with category"
-            << "debug tst_qlogging 92 main qDebug2");
+            << "debug tst_qlogging 65 MyClass::myFunction from_a_function 34"
+            << "debug tst_qlogging 75 main qDebug"
+            << "warning tst_qlogging 76 main qWarning"
+            << "critical tst_qlogging 77 main qCritical"
+            << "warning tst_qlogging 80 main qDebug with category"
+            << "debug tst_qlogging 84 main qDebug2");
 
 
     QTest::newRow("invalid") << "PREFIX: %{unknown} %{message}" << false << (QList<QByteArray>()

@@ -1,39 +1,31 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
-** $QT_BEGIN_LICENSE:LGPL$
+** $QT_BEGIN_LICENSE:LGPL21$
 ** Commercial License Usage
 ** Licensees holding valid commercial Qt licenses may use this file in
 ** accordance with the commercial license agreement provided with the
 ** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and Digia.  For licensing terms and
-** conditions see http://qt.digia.com/licensing.  For further information
+** a written agreement between you and Digia. For licensing terms and
+** conditions see http://qt.digia.com/licensing. For further information
 ** use the contact form at http://qt.digia.com/contact-us.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** General Public License version 2.1 or version 3 as published by the Free
+** Software Foundation and appearing in the file LICENSE.LGPLv21 and
+** LICENSE.LGPLv3 included in the packaging of this file. Please review the
+** following information to ensure the GNU Lesser General Public License
+** requirements will be met: https://www.gnu.org/licenses/lgpl.html and
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Digia gives you certain additional
-** rights.  These rights are described in the Digia Qt LGPL Exception
+** rights. These rights are described in the Digia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
-**
 **
 ** $QT_END_LICENSE$
 **
@@ -956,8 +948,8 @@ bool QCoreApplication::notifyInternal(QObject *receiver, QEvent *event)
   reimplementing this virtual function is just one of them. All five
   approaches are listed below:
   \list 1
-  \li Reimplementing paintEvent(), mousePressEvent() and so
-  on. This is the commonest, easiest and least powerful way.
+  \li Reimplementing \l {QWidget::}{paintEvent()}, \l {QWidget::}{mousePressEvent()} and so
+  on. This is the commonest, easiest, and least powerful way.
 
   \li Reimplementing this function. This is very powerful, providing
   complete control; but only one subclass can be active at a time.
@@ -1154,7 +1146,7 @@ void QCoreApplication::processEvents(QEventLoop::ProcessEventsFlags flags, int m
     main event loop receives events from the window system and
     dispatches these to the application widgets.
 
-    To make your application perform idle processing (i.e. executing a
+    To make your application perform idle processing (by executing a
     special function whenever there are no pending events), use a
     QTimer with 0 timeout. More advanced idle processing schemes can
     be achieved using processEvents().
@@ -1162,11 +1154,11 @@ void QCoreApplication::processEvents(QEventLoop::ProcessEventsFlags flags, int m
     We recommend that you connect clean-up code to the
     \l{QCoreApplication::}{aboutToQuit()} signal, instead of putting it in
     your application's \c{main()} function because on some platforms the
-    QCoreApplication::exec() call may not return. For example, on Windows
+    exec() call may not return. For example, on Windows
     when the user logs off, the system terminates the process after Qt
     closes all top-level windows. Hence, there is no guarantee that the
     application will have time to exit its event loop and execute code at
-    the end of the \c{main()} function after the QCoreApplication::exec()
+    the end of the \c{main()} function after the exec()
     call.
 
     \sa quit(), exit(), processEvents(), QApplication::exec()
@@ -2215,7 +2207,7 @@ QStringList QCoreApplication::arguments()
     using the empty constructor. This saves having to repeat this
     information each time a QSettings object is created.
 
-    On Mac, QSettings uses organizationDomain() as the organization
+    On Mac, QSettings uses \l {QCoreApplication::}{organizationDomain()} as the organization
     if it's not an empty string; otherwise it uses
     organizationName(). On all other platforms, QSettings uses
     organizationName() as the organization.
@@ -2518,10 +2510,10 @@ void QCoreApplication::removeLibraryPath(const QString &path)
     Installs an event filter \a filterObj for all native events
     received by the application in the main thread.
 
-    The event filter \a filterObj receives events via its nativeEventFilter()
+    The event filter \a filterObj receives events via its \l {QAbstractNativeEventFilter::}{nativeEventFilter()}
     function, which is called for all native events received in the main thread.
 
-    The nativeEventFilter() function should return true if the event should
+    The QAbstractNativeEventFilter::nativeEventFilter() function should return true if the event should
     be filtered, (i.e. stopped). It should return false to allow
     normal Qt processing to continue: the native event can then be translated
     into a QEvent and handled by the standard Qt \l{QEvent} {event} filtering,
@@ -2533,6 +2525,9 @@ void QCoreApplication::removeLibraryPath(const QString &path)
     \note The filter function set here receives native messages,
     i.e. MSG or XCB event structs.
 
+    \note Native event filters will be disabled when the application the
+    Qt::AA_MacPluginApplication attribute is set.
+
     For maximum portability, you should always try to use QEvents
     and QObject::installEventFilter() whenever possible.
 
@@ -2542,6 +2537,11 @@ void QCoreApplication::removeLibraryPath(const QString &path)
 */
 void QCoreApplication::installNativeEventFilter(QAbstractNativeEventFilter *filterObj)
 {
+    if (QCoreApplication::testAttribute(Qt::AA_MacPluginApplication)) {
+        qWarning("Native event filters are not applied when the Qt::AA_MacPluginApplication attribute is set");
+        return;
+    }
+
     QAbstractEventDispatcher *eventDispatcher = QAbstractEventDispatcher::instance(QCoreApplicationPrivate::theMainThread);
     if (!filterObj || !eventDispatcher)
         return;
@@ -2657,13 +2657,12 @@ void QCoreApplication::setEventDispatcher(QAbstractEventDispatcher *eventDispatc
 
     \snippet code/src_corelib_kernel_qcoreapplication.cpp 4
 
-    Note that for an application- or module-wide cleanup,
-    qAddPostRoutine() is often not suitable. For example, if the
-    program is split into dynamically loaded modules, the relevant
-    module may be unloaded long before the QCoreApplication destructor is
-    called. In such cases, if using qAddPostRoutine() is still desirable,
-    qRemovePostRoutine() can be used to prevent a routine from being
-    called by the QCoreApplication destructor. For example, if that
+    Note that for an application- or module-wide cleanup, qaddPostRoutine()
+    is often not suitable. For example, if the program is split into dynamically
+    loaded modules, the relevant module may be unloaded long before the
+    QCoreApplication destructor is called. In such cases, if using qaddPostRoutine()
+    is still desirable, qRemovePostRoutine() can be used to prevent a routine
+    from being called by the QCoreApplication destructor. For example, if that
     routine was called before the module was unloaded.
 
     For modules and libraries, using a reference-counted

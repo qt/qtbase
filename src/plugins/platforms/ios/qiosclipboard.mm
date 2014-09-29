@@ -205,6 +205,10 @@ void QIOSClipboard::setMimeData(QMimeData *mimeData, QClipboard::Mode mode)
     Q_ASSERT(supportsMode(mode));
 
     UIPasteboard *pb = [UIPasteboard pasteboardWithQClipboardMode:mode];
+    if (!mimeData) {
+        pb.items = [NSArray array];
+        return;
+    }
     NSMutableDictionary *pbItem = [NSMutableDictionary dictionaryWithCapacity:mimeData->formats().size()];
 
     foreach (const QString &mimeType, mimeData->formats()) {

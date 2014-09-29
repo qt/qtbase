@@ -147,7 +147,7 @@
     The output sent to the debug stream can, of course, be made as simple or as
     complicated as you like. Note that the value returned by this function is
     the QDebug object itself, though this is often obtained by calling the
-    maybeSpace() member function of QDebug that pads out the stream with space
+    \l{QDebug::}{maybeSpace()} member function of QDebug that pads out the stream with space
     characters to make it more readable.
 
     \section1 Further Reading

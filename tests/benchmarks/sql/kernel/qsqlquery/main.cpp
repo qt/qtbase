@@ -1,39 +1,31 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
-** $QT_BEGIN_LICENSE:LGPL$
+** $QT_BEGIN_LICENSE:LGPL21$
 ** Commercial License Usage
 ** Licensees holding valid commercial Qt licenses may use this file in
 ** accordance with the commercial license agreement provided with the
 ** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and Digia.  For licensing terms and
-** conditions see http://qt.digia.com/licensing.  For further information
+** a written agreement between you and Digia. For licensing terms and
+** conditions see http://qt.digia.com/licensing. For further information
 ** use the contact form at http://qt.digia.com/contact-us.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** General Public License version 2.1 or version 3 as published by the Free
+** Software Foundation and appearing in the file LICENSE.LGPLv21 and
+** LICENSE.LGPLv3 included in the packaging of this file. Please review the
+** following information to ensure the GNU Lesser General Public License
+** requirements will be met: https://www.gnu.org/licenses/lgpl.html and
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Digia gives you certain additional
-** rights.  These rights are described in the Digia Qt LGPL Exception
+** rights. These rights are described in the Digia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
-**
 **
 ** $QT_END_LICENSE$
 **
@@ -117,7 +109,7 @@ void tst_QSqlQuery::cleanup()
     QFETCH( QString, dbName );
     QSqlDatabase db = QSqlDatabase::database( dbName );
     CHECK_DATABASE( db );
-    const QSqlDriverPrivate::DBMSType dbType = tst_Databases::getDatabaseType(db);
+    const QSqlDriver::DBMSType dbType = tst_Databases::getDatabaseType(db);
 
     if ( QTest::currentTestFunction() == QLatin1String( "numRowsAffected" )
             || QTest::currentTestFunction() == QLatin1String( "transactions" )
@@ -127,7 +119,7 @@ void tst_QSqlQuery::cleanup()
         populateTestTables( db );
     }
 
-    if (QTest::currentTestFailed() && (dbType == QSqlDriverPrivate::Oracle || db.driverName().startsWith("QODBC"))) {
+    if (QTest::currentTestFailed() && (dbType == QSqlDriver::Oracle || db.driverName().startsWith("QODBC"))) {
         //since Oracle ODBC totally craps out on error, we init again
         db.close();
         db.open();
@@ -146,7 +138,7 @@ void tst_QSqlQuery::generic_data(const QString& engine)
 
 void tst_QSqlQuery::dropTestTables( QSqlDatabase db )
 {
-    QSqlDriverPrivate::DBMSType dbType = tst_Databases::getDatabaseType(db);
+    QSqlDriver::DBMSType dbType = tst_Databases::getDatabaseType(db);
     QStringList tablenames;
     // drop all the table in case a testcase failed
     tablenames <<  qtest
@@ -180,24 +172,24 @@ void tst_QSqlQuery::dropTestTables( QSqlDatabase db )
                << qTableName("test141895", __FILE__, db)
                << qTableName("qtest_oraOCINumber", __FILE__, db);
 
-    if (dbType == QSqlDriverPrivate::PostgreSQL)
+    if (dbType == QSqlDriver::PostgreSQL)
         tablenames << qTableName("task_233829", __FILE__, db);
 
-    if (dbType == QSqlDriverPrivate::SQLite)
+    if (dbType == QSqlDriver::SQLite)
         tablenames << qTableName("record_sqlite", __FILE__, db);
 
-    if (dbType == QSqlDriverPrivate::MSSqlServer || dbType == QSqlDriverPrivate::Oracle)
+    if (dbType == QSqlDriver::MSSqlServer || dbType == QSqlDriver::Oracle)
         tablenames << qTableName("qtest_longstr", __FILE__, db);
 
-    if (dbType == QSqlDriverPrivate::MSSqlServer)
+    if (dbType == QSqlDriver::MSSqlServer)
         db.exec("DROP PROCEDURE " + qTableName("test141895_proc", __FILE__, db));
 
-    if (dbType == QSqlDriverPrivate::MySqlServer)
+    if (dbType == QSqlDriver::MySqlServer)
         db.exec("DROP PROCEDURE IF EXISTS "+qTableName("bug6852_proc", __FILE__, db));
 
     tst_Databases::safeDropTables( db, tablenames );
 
-    if (dbType == QSqlDriverPrivate::Oracle) {
+    if (dbType == QSqlDriver::Oracle) {
         QSqlQuery q( db );
         q.exec("DROP PACKAGE " + qTableName("pkg", __FILE__, db));
     }
@@ -207,20 +199,20 @@ void tst_QSqlQuery::createTestTables( QSqlDatabase db )
 {
     const QString qtestNull = qTableName("qtest_null", __FILE__, db);
     QSqlQuery q( db );
-    QSqlDriverPrivate::DBMSType dbType = tst_Databases::getDatabaseType(db);
-    if (dbType == QSqlDriverPrivate::MySqlServer)
+    QSqlDriver::DBMSType dbType = tst_Databases::getDatabaseType(db);
+    if (dbType == QSqlDriver::MySqlServer)
         // ### stupid workaround until we find a way to hardcode this
         // in the MySQL server startup script
         q.exec( "set table_type=innodb" );
-    else if (dbType == QSqlDriverPrivate::PostgreSQL)
+    else if (dbType == QSqlDriver::PostgreSQL)
         QVERIFY_SQL( q, exec("set client_min_messages='warning'"));
 
-    if (dbType == QSqlDriverPrivate::PostgreSQL)
+    if (dbType == QSqlDriver::PostgreSQL)
         QVERIFY_SQL( q, exec( "create table " + qtest + " (id serial NOT NULL, t_varchar varchar(20), t_char char(20), primary key(id)) WITH OIDS" ) );
     else
         QVERIFY_SQL( q, exec( "create table " + qtest + " (id int "+tst_Databases::autoFieldName(db) +" NOT NULL, t_varchar varchar(20), t_char char(20), primary key(id))" ) );
 
-    if (dbType == QSqlDriverPrivate::MSSqlServer || dbType == QSqlDriverPrivate::Sybase)
+    if (dbType == QSqlDriver::MSSqlServer || dbType == QSqlDriver::Sybase)
         QVERIFY_SQL(q, exec("create table " + qtestNull + " (id int null, t_varchar varchar(20) null)"));
     else
         QVERIFY_SQL(q, exec("create table " + qtestNull + " (id int, t_varchar varchar(20))"));

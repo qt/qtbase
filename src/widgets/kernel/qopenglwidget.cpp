@@ -5,35 +5,27 @@
 **
 ** This file is part of the QtWidgets module of the Qt Toolkit.
 **
-** $QT_BEGIN_LICENSE:LGPL$
+** $QT_BEGIN_LICENSE:LGPL21$
 ** Commercial License Usage
 ** Licensees holding valid commercial Qt licenses may use this file in
 ** accordance with the commercial license agreement provided with the
 ** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and Digia.  For licensing terms and
-** conditions see http://qt.digia.com/licensing.  For further information
+** a written agreement between you and Digia. For licensing terms and
+** conditions see http://qt.digia.com/licensing. For further information
 ** use the contact form at http://qt.digia.com/contact-us.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** General Public License version 2.1 or version 3 as published by the Free
+** Software Foundation and appearing in the file LICENSE.LGPLv21 and
+** LICENSE.LGPLv3 included in the packaging of this file. Please review the
+** following information to ensure the GNU Lesser General Public License
+** requirements will be met: https://www.gnu.org/licenses/lgpl.html and
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Digia gives you certain additional
-** rights.  These rights are described in the Digia Qt LGPL Exception
+** rights. These rights are described in the Digia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
-**
 **
 ** $QT_END_LICENSE$
 **
@@ -244,6 +236,9 @@ QT_BEGIN_NAMESPACE
   contents. Omitting the clear call can lead to significant performance drops on
   such systems.
 
+  \note Avoid calling winId() on a QOpenGLWidget. This function triggers the creation of
+  a native window, resulting in reduced performance and possibly rendering glitches.
+
   \section1 Multisampling
 
   To enable multisampling, set the number of requested samples on the
@@ -296,6 +291,18 @@ QT_BEGIN_NAMESPACE
   This means that all QOpenGLWidgets in the same window can access each other's
   sharable resources, like textures, and there is no need for an extra "global
   share" context, as was the case with QGLWidget.
+
+  To set up sharing between QOpenGLWidget instances belonging to different
+  windows, set the Qt::AA_ShareOpenGLContexts application attribute before
+  instantiating QApplication. This will trigger sharing between all
+  QOpenGLWidget instances without any further steps.
+
+  Creating extra QOpenGLContext instances that share resources like textures
+  with the QOpenGLWidget's context is also possible. Simply pass the pointer
+  returned from context() to QOpenGLContext::setShareContext() before calling
+  QOpenGLContext::create(). The resulting context can also be used on a
+  different thread, allowing threaded generation of textures and asynchronous
+  texture uploads.
 
   Note that QOpenGLWidget expects a standard conformant implementation of
   resource sharing when it comes to the underlying graphics drivers. For
@@ -355,15 +362,20 @@ QT_BEGIN_NAMESPACE
   from the derived class' destructor, since the slot connected to the signal
   will not get invoked when the widget is being destroyed.
 
+  \note When Qt::AA_ShareOpenGLContexts is set, the widget's context never
+  changes, not even when reparenting because the widget's associated texture is
+  guaranteed to be accessible also from the new top-level's context.
+
   Proper cleanup is especially important due to context sharing. Even though
   each QOpenGLWidget's associated context is destroyed together with the
   QOpenGLWidget, the sharable resources in that context, like textures, will
   stay valid until the top-level window, in which the QOpenGLWidget lived, is
-  destroyed. Additionally, some Qt modules may trigger an even wider scope for
-  sharing contexts, potentially leading to keeping the resources in question
-  alive for the entire lifetime of the application. Therefore the safest and
-  most robust is always to perform explicit cleanup for all resources and
-  resource wrappers used in the QOpenGLWidget.
+  destroyed. Additionally, settings like Qt::AA_ShareOpenGLContexts and some Qt
+  modules may trigger an even wider scope for sharing contexts, potentially
+  leading to keeping the resources in question alive for the entire lifetime of
+  the application. Therefore the safest and most robust is always to perform
+  explicit cleanup for all resources and resource wrappers used in the
+  QOpenGLWidget.
 
   \section1 Limitations
 
@@ -388,7 +400,7 @@ QT_BEGIN_NAMESPACE
   \e{OpenGL is a trademark of Silicon Graphics, Inc. in the United States and other
   countries.}
 
-  \sa QOpenGLFunctions, QOpenGLWindow
+  \sa QOpenGLFunctions, QOpenGLWindow, Qt::AA_ShareOpenGLContexts
 */
 
 /*!
@@ -543,8 +555,10 @@ void QOpenGLWidgetPrivate::recreateFbo()
         resolvedFbo = new QOpenGLFramebufferObject(deviceSize);
 
     fbo->bind();
+    context->functions()->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
     paintDevice->setSize(deviceSize);
+    paintDevice->setDevicePixelRatio(q->devicePixelRatio());
 
     emit q->resized();
 }
@@ -569,7 +583,8 @@ void QOpenGLWidgetPrivate::initialize()
 
     // Get our toplevel's context with which we will share in order to make the
     // texture usable by the underlying window's backingstore.
-    QOpenGLContext *shareContext = get(q->window())->shareContext();
+    QWidget *tlw = q->window();
+    QOpenGLContext *shareContext = get(tlw)->shareContext();
     if (!shareContext) {
         qWarning("QOpenGLWidget: Cannot be used without a context shared with the toplevel.");
         return;
@@ -581,6 +596,19 @@ void QOpenGLWidgetPrivate::initialize()
     if (!ctx->create()) {
         qWarning("QOpenGLWidget: Failed to create context");
         return;
+    }
+
+    // Propagate settings that make sense only for the tlw.
+    QSurfaceFormat tlwFormat = tlw->windowHandle()->format();
+    if (requestedFormat.swapInterval() != tlwFormat.swapInterval()) {
+        // Most platforms will pick up the changed swap interval on the next
+        // makeCurrent or swapBuffers.
+        tlwFormat.setSwapInterval(requestedFormat.swapInterval());
+        tlw->windowHandle()->setFormat(tlwFormat);
+    }
+    if (requestedFormat.swapBehavior() != tlwFormat.swapBehavior()) {
+        tlwFormat.setSwapBehavior(requestedFormat.swapBehavior());
+        tlw->windowHandle()->setFormat(tlwFormat);
     }
 
     // The top-level window's surface is not good enough since it causes way too
@@ -1038,6 +1066,8 @@ bool QOpenGLWidget::event(QEvent *e)
     Q_D(QOpenGLWidget);
     switch (e->type()) {
     case QEvent::WindowChangeInternal:
+        if (qGuiApp->testAttribute(Qt::AA_ShareOpenGLContexts))
+            break;
         if (d->initialized)
             d->reset();
         // FALLTHROUGH
@@ -1047,6 +1077,10 @@ bool QOpenGLWidget::event(QEvent *e)
             if (d->initialized)
                 d->recreateFbo();
         }
+        break;
+    case QEvent::ScreenChangeInternal:
+        if (d->initialized && d->paintDevice->devicePixelRatio() != devicePixelRatio())
+            d->recreateFbo();
         break;
     default:
         break;

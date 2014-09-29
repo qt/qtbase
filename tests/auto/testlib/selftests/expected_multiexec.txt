@@ -3,33 +3,33 @@ Config: Using QtTest library @INSERT_QT_VERSION_HERE@, Qt @INSERT_QT_VERSION_HER
 PASS   : tst_Nothing::initTestCase()
 PASS   : tst_Nothing::nothing()
 PASS   : tst_Nothing::cleanupTestCase()
-Totals: 3 passed, 0 failed, 0 skipped
+Totals: 3 passed, 0 failed, 0 skipped, 0 blacklisted
 ********* Finished testing of tst_Nothing *********
 ********* Start testing of tst_Nothing *********
 Config: Using QtTest library @INSERT_QT_VERSION_HERE@, Qt @INSERT_QT_VERSION_HERE@
 PASS   : tst_Nothing::initTestCase()
 PASS   : tst_Nothing::nothing()
 PASS   : tst_Nothing::cleanupTestCase()
-Totals: 3 passed, 0 failed, 0 skipped
+Totals: 3 passed, 0 failed, 0 skipped, 0 blacklisted
 ********* Finished testing of tst_Nothing *********
 ********* Start testing of tst_Nothing *********
 Config: Using QtTest library @INSERT_QT_VERSION_HERE@, Qt @INSERT_QT_VERSION_HERE@
 PASS   : tst_Nothing::initTestCase()
 PASS   : tst_Nothing::nothing()
 PASS   : tst_Nothing::cleanupTestCase()
-Totals: 3 passed, 0 failed, 0 skipped
+Totals: 3 passed, 0 failed, 0 skipped, 0 blacklisted
 ********* Finished testing of tst_Nothing *********
 ********* Start testing of tst_Nothing *********
 Config: Using QtTest library @INSERT_QT_VERSION_HERE@, Qt @INSERT_QT_VERSION_HERE@
 PASS   : tst_Nothing::initTestCase()
 PASS   : tst_Nothing::nothing()
 PASS   : tst_Nothing::cleanupTestCase()
-Totals: 3 passed, 0 failed, 0 skipped
+Totals: 3 passed, 0 failed, 0 skipped, 0 blacklisted
 ********* Finished testing of tst_Nothing *********
 ********* Start testing of tst_Nothing *********
 Config: Using QtTest library @INSERT_QT_VERSION_HERE@, Qt @INSERT_QT_VERSION_HERE@
 PASS   : tst_Nothing::initTestCase()
 PASS   : tst_Nothing::nothing()
 PASS   : tst_Nothing::cleanupTestCase()
-Totals: 3 passed, 0 failed, 0 skipped
+Totals: 3 passed, 0 failed, 0 skipped, 0 blacklisted
 ********* Finished testing of tst_Nothing *********

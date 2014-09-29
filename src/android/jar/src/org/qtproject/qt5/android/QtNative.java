@@ -397,25 +397,6 @@ public class QtNative
         });
     }
 
-    private static boolean isSoftwareKeyboardVisible()
-    {
-        final Semaphore semaphore = new Semaphore(0);
-        final Boolean[] ret = {false};
-        runAction(new Runnable() {
-            @Override
-            public void run() {
-                ret[0] = m_activityDelegate.isSoftwareKeyboardVisible();
-                semaphore.release();
-            }
-        });
-        try {
-            semaphore.acquire();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return ret[0];
-    }
-
     private static void setFullScreen(final boolean fullScreen)
     {
         runAction(new Runnable() {
@@ -552,6 +533,26 @@ public class QtNative
             @Override
             public void run() {
                 m_activityDelegate.setSurfaceGeometry(id, x, y, w, h);
+            }
+        });
+    }
+
+    private static void bringChildToFront(final int id)
+    {
+        runAction(new Runnable() {
+            @Override
+            public void run() {
+                m_activityDelegate.bringChildToFront(id);
+            }
+        });
+    }
+
+    private static void bringChildToBack(final int id)
+    {
+        runAction(new Runnable() {
+            @Override
+            public void run() {
+                m_activityDelegate.bringChildToBack(id);
             }
         });
     }

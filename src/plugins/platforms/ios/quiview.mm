@@ -44,22 +44,12 @@
 #include "qiosglobal.h"
 #include "qiosintegration.h"
 #include "qioswindow.h"
+#include "qiosmenu.h"
 
+#include <QtGui/private/qguiapplication_p.h>
 #include <QtGui/private/qwindow_p.h>
 
-// Include category as an alternative to using -ObjC (Apple QA1490)
-#include "quiview_textinput.mm"
-#include "quiview_accessibility.mm"
-
 @implementation QUIView
-
-@synthesize autocapitalizationType;
-@synthesize autocorrectionType;
-@synthesize enablesReturnKeyAutomatically;
-@synthesize keyboardAppearance;
-@synthesize keyboardType;
-@synthesize returnKeyType;
-@synthesize secureTextEntry;
 
 + (Class)layerClass
 {
@@ -89,7 +79,6 @@
             self.hidden = YES;
 
         self.multipleTouchEnabled = YES;
-        m_inSendEventToFocusObject = NO;
     }
 
     return self;
@@ -146,20 +135,7 @@
     // from what we end up with after applying window constraints.
     QRect requestedGeometry = m_qioswindow->geometry();
 
-    QRect actualGeometry;
-    if (m_qioswindow->window()->isTopLevel()) {
-        UIWindow *uiWindow = self.window;
-        UIView *rootView = uiWindow.rootViewController.view;
-        CGRect rootViewPositionInRelationToRootViewController =
-            [rootView convertRect:uiWindow.bounds fromView:uiWindow];
-
-        actualGeometry = fromCGRect(CGRectOffset([self.superview convertRect:self.frame toView:rootView],
-                                    -rootViewPositionInRelationToRootViewController.origin.x,
-                                    -rootViewPositionInRelationToRootViewController.origin.y
-                                    + rootView.bounds.origin.y)).toRect();
-    } else {
-        actualGeometry = fromCGRect(self.frame).toRect();
-    }
+    QRect actualGeometry = fromCGRect(self.frame).toRect();
 
     // Persist the actual/new geometry so that QWindow::geometry() can
     // be queried on the resize event.
@@ -205,28 +181,71 @@
     QWindowSystemInterface::flushWindowSystemEvents();
 }
 
+// -------------------------------------------------------------------------
+
+- (BOOL)canBecomeFirstResponder
+{
+    return YES;
+}
+
+- (BOOL)becomeFirstResponder
+{
+    if ([super becomeFirstResponder]) {
+        QWindowSystemInterface::handleWindowActivated(m_qioswindow->window());
+        QWindowSystemInterface::flushWindowSystemEvents();
+
+        return YES;
+    }
+
+    return NO;
+}
+
+- (BOOL)resignFirstResponder
+{
+    if ([super resignFirstResponder]) {
+        // We don't want to send window deactivation in case we're in the process
+        // of activating another window. The handleWindowActivated of the activation
+        // will take care of both.
+        dispatch_async(dispatch_get_main_queue (), ^{
+            if (![[UIResponder currentFirstResponder] isKindOfClass:[QUIView class]])
+                QWindowSystemInterface::handleWindowActivated(0);
+                QWindowSystemInterface::flushWindowSystemEvents();
+        });
+
+        return YES;
+    }
+
+    return NO;
+}
+
+// -------------------------------------------------------------------------
+
+
 - (void)updateTouchList:(NSSet *)touches withState:(Qt::TouchPointState)state
 {
-    // We deliver touch events in global coordinates. But global in this respect
-    // means the same coordinate system that we use for describing the geometry
-    // of the top level QWindow we're inside. And that would be the coordinate
-    // system of the superview of the UIView that backs that window:
-    QPlatformWindow *topLevel = m_qioswindow;
-    while (QPlatformWindow *topLevelParent = topLevel->parent())
-        topLevel = topLevelParent;
-    UIView *rootView = reinterpret_cast<UIView *>(topLevel->winId()).superview;
-    CGSize rootViewSize = rootView.frame.size;
-
     foreach (UITouch *uiTouch, m_activeTouches.keys()) {
         QWindowSystemInterface::TouchPoint &touchPoint = m_activeTouches[uiTouch];
         if (![touches containsObject:uiTouch]) {
             touchPoint.state = Qt::TouchPointStationary;
         } else {
             touchPoint.state = state;
+
+            // Touch positions are expected to be in QScreen global coordinates, and
+            // as we already have the QWindow positioned at the right place, we can
+            // just map from the local view position to global coordinates.
+            QPoint localViewPosition = fromCGPoint([uiTouch locationInView:self]).toPoint();
+            QPoint globalScreenPosition = m_qioswindow->mapToGlobal(localViewPosition);
+
+            touchPoint.area = QRectF(globalScreenPosition, QSize(0, 0));
+
+            // FIXME: Do we really need to support QTouchDevice::NormalizedPosition?
+            QSize screenSize = m_qioswindow->screen()->geometry().size();
+            touchPoint.normalPosition = QPointF(globalScreenPosition.x() / screenSize.width(),
+                                                globalScreenPosition.y() / screenSize.height());
+
+            // We don't claim that our touch device supports QTouchDevice::Pressure,
+            // but fill in a meaningfull value in case clients use it anyways.
             touchPoint.pressure = (state == Qt::TouchPointReleased) ? 0.0 : 1.0;
-            QPoint touchPos = fromCGPoint([uiTouch locationInView:rootView]).toPoint();
-            touchPoint.area = QRectF(touchPos, QSize(0, 0));
-            touchPoint.normalPosition = QPointF(touchPos.x() / rootViewSize.width, touchPos.y() / rootViewSize.height);
         }
     }
 }
@@ -319,6 +338,13 @@
     QWindowSystemInterface::flushWindowSystemEvents();
 }
 
+- (id)targetForAction:(SEL)action withSender:(id)sender
+{
+    // Check first if QIOSMenu should handle the action before continuing up the responder chain
+    id target = [QIOSMenu::menuActionTarget() targetForAction:action withSender:sender];
+    return target ? target : [super targetForAction:action withSender:sender];
+}
+
 @end
 
 @implementation UIView (QtHelpers)
@@ -343,3 +369,6 @@
 }
 
 @end
+
+// Include category as an alternative to using -ObjC (Apple QA1490)
+#include "quiview_accessibility.mm"

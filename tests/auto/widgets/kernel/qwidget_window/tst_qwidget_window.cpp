@@ -1,39 +1,31 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
-** $QT_BEGIN_LICENSE:LGPL$
+** $QT_BEGIN_LICENSE:LGPL21$
 ** Commercial License Usage
 ** Licensees holding valid commercial Qt licenses may use this file in
 ** accordance with the commercial license agreement provided with the
 ** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and Digia.  For licensing terms and
-** conditions see http://qt.digia.com/licensing.  For further information
+** a written agreement between you and Digia. For licensing terms and
+** conditions see http://qt.digia.com/licensing. For further information
 ** use the contact form at http://qt.digia.com/contact-us.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** General Public License version 2.1 or version 3 as published by the Free
+** Software Foundation and appearing in the file LICENSE.LGPLv21 and
+** LICENSE.LGPLv3 included in the packaging of this file. Please review the
+** following information to ensure the GNU Lesser General Public License
+** requirements will be met: https://www.gnu.org/licenses/lgpl.html and
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Digia gives you certain additional
-** rights.  These rights are described in the Digia Qt LGPL Exception
+** rights. These rights are described in the Digia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
-**
 **
 ** $QT_END_LICENSE$
 **
@@ -52,6 +44,9 @@
 #include <qlistwidget.h>
 #include <qpushbutton.h>
 #include <qboxlayout.h>
+#include <qtabwidget.h>
+#include <qlabel.h>
+#include <private/qwindow_p.h>
 
 static inline void setFrameless(QWidget *w)
 {
@@ -97,6 +92,9 @@ private slots:
 #endif
 
     void tst_qtbug35600();
+    void tst_updateWinId_QTBUG40681();
+    void tst_recreateWindow_QTBUG40817();
+
 };
 
 void tst_QWidget_window::initTestCase()
@@ -602,6 +600,66 @@ void tst_QWidget_window::tst_qtbug35600()
 
     // QTBUG-35600: program may crash here or on exit
 }
+
+void tst_QWidget_window::tst_updateWinId_QTBUG40681()
+{
+    QWidget w;
+    QVBoxLayout *vl = new QVBoxLayout(&w);
+    QLabel *lbl = new QLabel("HELLO1");
+    lbl->setAttribute(Qt::WA_NativeWindow);
+    lbl->setObjectName("label1");
+    vl->addWidget(lbl);
+    w.setMinimumWidth(200);
+
+    w.show();
+
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
+
+    QCOMPARE(lbl->winId(), lbl->windowHandle()->winId());
+
+     // simulate screen change and notification
+    QWindow *win = w.windowHandle();
+    w.windowHandle()->destroy();
+    lbl->windowHandle()->destroy();
+    w.windowHandle()->create();
+    lbl->windowHandle()->create();
+    QWindowPrivate *p = qt_window_private(win);
+    p->emitScreenChangedRecursion(win->screen());
+
+    QCOMPARE(lbl->winId(), lbl->windowHandle()->winId());
+}
+
+void tst_QWidget_window::tst_recreateWindow_QTBUG40817()
+{
+    QTabWidget tab;
+
+    QWidget *w = new QWidget;
+    tab.addTab(w, "Tab1");
+    QVBoxLayout *vl = new QVBoxLayout(w);
+    QLabel *lbl = new QLabel("HELLO1");
+    lbl->setObjectName("label1");
+    vl->addWidget(lbl);
+    w = new QWidget;
+    tab.addTab(w, "Tab2");
+    vl = new QVBoxLayout(w);
+    lbl = new QLabel("HELLO2");
+    lbl->setAttribute(Qt::WA_NativeWindow);
+    lbl->setObjectName("label2");
+    vl->addWidget(lbl);
+
+    tab.show();
+
+    QVERIFY(QTest::qWaitForWindowExposed(&tab));
+
+    QWindow *win = tab.windowHandle();
+    win->destroy();
+    QWindowPrivate *p = qt_window_private(win);
+    p->create(true);
+    win->show();
+
+    tab.setCurrentIndex(1);
+}
+
 
 QTEST_MAIN(tst_QWidget_window)
 #include "tst_qwidget_window.moc"

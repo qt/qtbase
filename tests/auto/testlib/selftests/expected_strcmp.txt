@@ -29,5 +29,5 @@ FAIL!  : tst_StrCmp::failByteArraySingleChars() Compared values are not the same
    Expected (QByteArray("7")): 37
    Loc: [tst_strcmp.cpp(133)]
 PASS   : tst_StrCmp::cleanupTestCase()
-Totals: 3 passed, 5 failed, 0 skipped
+Totals: 3 passed, 5 failed, 0 skipped, 0 blacklisted
 ********* Finished testing of tst_StrCmp *********

@@ -6,35 +6,27 @@
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
-** $QT_BEGIN_LICENSE:LGPL$
+** $QT_BEGIN_LICENSE:LGPL21$
 ** Commercial License Usage
 ** Licensees holding valid commercial Qt licenses may use this file in
 ** accordance with the commercial license agreement provided with the
 ** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and Digia.  For licensing terms and
-** conditions see http://qt.digia.com/licensing.  For further information
+** a written agreement between you and Digia. For licensing terms and
+** conditions see http://qt.digia.com/licensing. For further information
 ** use the contact form at http://qt.digia.com/contact-us.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** General Public License version 2.1 or version 3 as published by the Free
+** Software Foundation and appearing in the file LICENSE.LGPLv21 and
+** LICENSE.LGPLv3 included in the packaging of this file. Please review the
+** following information to ensure the GNU Lesser General Public License
+** requirements will be met: https://www.gnu.org/licenses/lgpl.html and
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Digia gives you certain additional
-** rights.  These rights are described in the Digia Qt LGPL Exception
+** rights. These rights are described in the Digia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
-**
 **
 ** $QT_END_LICENSE$
 **
@@ -1275,23 +1267,6 @@ static void android_default_message_handler(QtMsgType type,
 static void qDefaultMessageHandler(QtMsgType type, const QMessageLogContext &context,
                                    const QString &buf)
 {
-    // to determine logging destination and marking logging environment variable as deprecated
-    // ### remove when deprecated
-    struct LogDestination {
-        LogDestination(const char *deprecated, bool forceConsole) {
-            const char* replacement = "QT_LOGGING_TO_CONSOLE";
-            bool newEnv = qEnvironmentVariableIsSet(replacement);
-            bool oldEnv = qEnvironmentVariableIsSet(deprecated);
-            if (oldEnv && !newEnv && !forceConsole) {
-                fprintf(stderr, "Warning: Environment variable %s is deprecated, "
-                                "use %s instead.\n", deprecated, replacement);
-                fflush(stderr);
-            }
-            toConsole = newEnv || oldEnv || forceConsole;
-        }
-        bool toConsole;
-    };
-
     QString logMessage = qFormatLogMessage(type, context, buf);
 
 #if defined(Q_OS_WIN) && defined(QT_BUILD_CORE_LIB)
@@ -1301,8 +1276,8 @@ static void qDefaultMessageHandler(QtMsgType type, const QMessageLogContext &con
     }
 #endif // Q_OS_WIN
 
-#if defined(QT_USE_SLOG2)
     static const bool logToConsole = qEnvironmentVariableIsSet("QT_LOGGING_TO_CONSOLE");
+#if defined(QT_USE_SLOG2)
     if (!logToConsole) {
         slog2_default_handler(type, logMessage.toLocal8Bit().constData());
     } else {
@@ -1310,11 +1285,9 @@ static void qDefaultMessageHandler(QtMsgType type, const QMessageLogContext &con
         fflush(stderr);
     }
 #elif defined(QT_USE_JOURNALD) && !defined(QT_BOOTSTRAPPED)
-    // We use isatty to catch the obvious case of someone running something interactively.
-    // We also support environment variables for Qt Creator use, or more complicated cases
+    // We support environment variables for Qt Creator use, or more complicated cases
     // like subprocesses.
-    static const LogDestination logdest("QT_NO_JOURNALD_LOG", isatty(fileno(stdin)));
-    if (Q_LIKELY(!logdest.toConsole)) {
+    if (!logToConsole) {
         // remove trailing \n, systemd appears to want them newline-less
         logMessage.chop(1);
         systemd_default_message_handler(type, context, logMessage);
@@ -1323,8 +1296,7 @@ static void qDefaultMessageHandler(QtMsgType type, const QMessageLogContext &con
         fflush(stderr);
     }
 #elif defined(Q_OS_ANDROID)
-    static const LogDestination logdest("QT_ANDROID_PLAIN_LOG", false);
-    if (!logdest.toConsole) {
+    if (!logToConsole) {
         android_default_message_handler(type, context, logMessage);
     } else {
         fprintf(stderr, "%s", logMessage.toLocal8Bit().constData());
@@ -1334,6 +1306,7 @@ static void qDefaultMessageHandler(QtMsgType type, const QMessageLogContext &con
     fprintf(stderr, "%s", logMessage.toLocal8Bit().constData());
     fflush(stderr);
 #endif
+    Q_UNUSED(logToConsole);
 }
 
 /*!
@@ -1345,12 +1318,9 @@ static void qDefaultMsgHandler(QtMsgType type, const char *buf)
     qDefaultMessageHandler(type, emptyContext, QString::fromLocal8Bit(buf));
 }
 
-#if defined(Q_COMPILER_THREAD_LOCAL) || (defined(Q_CC_MSVC) && !defined(Q_OS_WINCE))
-#if defined(Q_CC_MSVC)
-static __declspec(thread) bool msgHandlerGrabbed = false;
-#else
+#if defined(Q_COMPILER_THREAD_LOCAL)
+
 static thread_local bool msgHandlerGrabbed = false;
-#endif
 
 static bool grabMessageHandler()
 {
@@ -1369,7 +1339,7 @@ static void ungrabMessageHandler()
 #else
 static bool grabMessageHandler() { return true; }
 static void ungrabMessageHandler() { }
-#endif // (Q_COMPILER_THREAD_LOCAL) || ((Q_CC_MSVC) && !(Q_OS_WINCE))
+#endif // (Q_COMPILER_THREAD_LOCAL)
 
 static void qt_message_print(QtMsgType msgType, const QMessageLogContext &context, const QString &message)
 {

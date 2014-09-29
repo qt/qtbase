@@ -366,11 +366,6 @@ public class QtActivityDelegate
         });
     }
 
-    public boolean isSoftwareKeyboardVisible()
-    {
-        return m_keyboardIsVisible;
-    }
-
     String getAppIconSize(Activity a)
     {
         int size = a.getResources().getDimensionPixelSize(android.R.dimen.app_icon_size);
@@ -1030,8 +1025,8 @@ public class QtActivityDelegate
             view.setLayoutParams(new QtLayout.LayoutParams(w, h, x, y));
         }
 
+        view.setId(id);
         m_layout.addView(view);
-        m_layout.bringChildToFront(view);
         m_nativeViews.put(id, view);
     }
 
@@ -1062,9 +1057,11 @@ public class QtActivityDelegate
             surface.setLayoutParams( new QtLayout.LayoutParams(w, h, x, y));
         }
 
-        m_layout.addView(surface);
-        if (onTop)
-            m_layout.bringChildToFront(surface);
+        // Native views are always inserted in the end of the stack (i.e., on top).
+        // All other views are stacked based on the order they are created.
+        final int index = m_layout.getChildCount() - m_nativeViews.size() - 1;
+        m_layout.addView(surface, index < 0 ? 0 : index);
+
         m_surfaces.put(id, surface);
     }
 
@@ -1075,7 +1072,6 @@ public class QtActivityDelegate
         } else if (m_nativeViews.containsKey(id)) {
             View view = m_nativeViews.get(id);
             view.setLayoutParams(new QtLayout.LayoutParams(w, h, x, y));
-            m_layout.bringChildToFront(view);
         } else {
             Log.e(QtNative.QtTAG, "Surface " + id +" not found!");
             return;
@@ -1104,6 +1100,35 @@ public class QtActivityDelegate
             m_dummyView = view;
         } else {
             m_layout.removeView(view);
+        }
+    }
+
+    public void bringChildToFront(int id)
+    {
+        View view = m_surfaces.get(id);
+        if (view != null) {
+            final int index = m_layout.getChildCount() - m_nativeViews.size() - 1;
+            m_layout.moveChild(view, index < 0 ? 0 : index);
+            return;
+        }
+
+        view = m_nativeViews.get(id);
+        if (view != null)
+            m_layout.moveChild(view, -1);
+    }
+
+    public void bringChildToBack(int id)
+    {
+        View view = m_surfaces.get(id);
+        if (view != null) {
+            m_layout.moveChild(view, 0);
+            return;
+        }
+
+        view = m_nativeViews.get(id);
+        if (view != null) {
+            final int index = m_layout.getChildCount() - m_nativeViews.size();
+            m_layout.moveChild(view, index);
         }
     }
 }

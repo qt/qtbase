@@ -52,6 +52,7 @@
 #include "qfontengine_coretext_p.h"
 #include <QtCore/QSettings>
 #include <QtGui/QGuiApplication>
+#include <QtCore/QtEndian>
 
 QT_BEGIN_NAMESPACE
 
@@ -262,6 +263,27 @@ static void getFontDescription(CTFontDescriptorRef font, FontDescription *fd)
     fd->stretch = QFont::Unstretched;
     fd->fixedPitch = false;
 
+    if (QCFType<CTFontRef> tempFont = CTFontCreateWithFontDescriptor(font, 0.0, 0)) {
+        uint length = 0;
+        uint tag = MAKE_TAG('O', 'S', '/', '2');
+        CTFontRef tempFontRef = tempFont;
+        void *userData = reinterpret_cast<void *>(&tempFontRef);
+        if (QCoreTextFontEngine::ct_getSfntTable(userData, tag, 0, &length)) {
+            QVarLengthArray<uchar> os2Table(length);
+            if (length >= 86 && QCoreTextFontEngine::ct_getSfntTable(userData, tag, os2Table.data(), &length)) {
+                quint32 unicodeRange[4] = {
+                        qFromBigEndian<quint32>(os2Table.data() + 42),
+                        qFromBigEndian<quint32>(os2Table.data() + 46),
+                        qFromBigEndian<quint32>(os2Table.data() + 50),
+                        qFromBigEndian<quint32>(os2Table.data() + 54)
+                    };
+                quint32 codePageRange[2] = { qFromBigEndian<quint32>(os2Table.data() + 78),
+                                             qFromBigEndian<quint32>(os2Table.data() + 82) };
+                fd->writingSystems = QPlatformFontDatabase::writingSystemsFromTrueTypeBits(unicodeRange, codePageRange);
+            }
+        }
+    }
+
     if (styles) {
         if (CFNumberRef weightValue = (CFNumberRef) CFDictionaryGetValue(styles, kCTFontWeightTrait)) {
             double normalizedWeight;
@@ -459,6 +481,17 @@ QStringList QCoreTextFontDatabase::fallbacksForFamily(const QString &family, QFo
                             QCFString fallbackFamilyName = (CFStringRef) CTFontDescriptorCopyAttribute(fontFallback, kCTFontFamilyNameAttribute);
                             fallbackList.append(QCFString::toQString(fallbackFamilyName));
                         }
+
+#if defined(Q_OS_OSX)
+                        // Since we are only returning a list of default fonts for the current language, we do not
+                        // cover all unicode completely. This was especially an issue for some of the common script
+                        // symbols such as mathematical symbols, currency or geometric shapes. To minimize the risk
+                        // of missing glyphs, we add Arial Unicode MS as a final fail safe, since this covers most
+                        // of Unicode 2.1.
+                        if (!fallbackList.contains(QStringLiteral("Arial Unicode MS")))
+                            fallbackList.append(QStringLiteral("Arial Unicode MS"));
+#endif
+
                         fallbackLists[family] = fallbackList;
                     }
                 }
@@ -501,6 +534,14 @@ QStringList QCoreTextFontDatabase::fallbacksForFamily(const QString &family, QFo
 
             if (QCoreTextFontEngine::supportsColorGlyphs())
                 fallbackList.append(QLatin1String("Apple Color Emoji"));
+
+            // Since we are only returning a list of default fonts for the current language, we do not
+            // cover all unicode completely. This was especially an issue for some of the common script
+            // symbols such as mathematical symbols, currency or geometric shapes. To minimize the risk
+            // of missing glyphs, we add Arial Unicode MS as a final fail safe, since this covers most
+            // of Unicode 2.1.
+            if (!fallbackList.contains(QStringLiteral("Arial Unicode MS")))
+                fallbackList.append(QStringLiteral("Arial Unicode MS"));
 
             fallbackLists[styleLookupKey.arg(fallbackStyleHint)] = fallbackList;
         }
@@ -768,6 +809,9 @@ QList<int> QCoreTextFontDatabase::standardSizes() const
 
 void QCoreTextFontDatabase::removeApplicationFonts()
 {
+    if (m_applicationFonts.isEmpty())
+        return;
+
     foreach (const QVariant &font, m_applicationFonts) {
 #if HAVE_CORETEXT
         if (&CTFontManagerUnregisterGraphicsFont && &CTFontManagerUnregisterFontsForURL) {
