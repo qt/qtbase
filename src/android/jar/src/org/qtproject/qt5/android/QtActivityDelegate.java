@@ -50,7 +50,6 @@ import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Configuration;
 import android.graphics.drawable.ColorDrawable;
-import android.graphics.Rect;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -76,7 +75,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Method;
-import java.lang.System;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -122,7 +120,6 @@ public class QtActivityDelegate
     private boolean m_quitApp = true;
     private Process m_debuggerProcess = null; // debugger process
     private View m_dummyView = null;
-
     private boolean m_keyboardIsVisible = false;
     public boolean m_backKeyPressedSent = false;
     private long m_showHideTimeStamp = System.nanoTime();
@@ -482,7 +479,7 @@ public class QtActivityDelegate
         return true;
     }
 
-    public void debugLog(String msg)
+    public static void debugLog(String msg)
     {
         Log.i(QtNative.QtTAG, "DEBUGGER: " + msg);
     }
@@ -939,6 +936,12 @@ public class QtActivityDelegate
         m_contextMenuVisible = true;
     }
 
+    public void onCreatePopupMenu(Menu menu)
+    {
+        QtNative.fillContextMenu(menu);
+        m_contextMenuVisible = true;
+    }
+
     public void onContextMenuClosed(Menu menu)
     {
         if (!m_contextMenuVisible)
@@ -949,17 +952,28 @@ public class QtActivityDelegate
 
     public boolean onContextItemSelected(MenuItem item)
     {
+        m_contextMenuVisible = false;
         return QtNative.onContextItemSelected(item.getItemId(), item.isChecked());
     }
 
-    public void openContextMenu()
+    public void openContextMenu(final int x, final int y, final int w, final int h)
     {
         m_layout.postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    m_activity.openContextMenu(m_layout);
+                    if (Build.VERSION.SDK_INT < 11 || w <= 0 || h <= 0) {
+                        m_activity.openContextMenu(m_layout);
+                    } else if (Build.VERSION.SDK_INT < 14) {
+                        m_layout.removeView(m_editText);
+                        m_layout.addView(m_editText, new QtLayout.LayoutParams(w, h, x, y));
+                        QtPopupMenu.getInstance().showMenu(m_editText);
+                    } else {
+                        m_layout.removeView(m_editText);
+                        m_layout.addView(m_editText, new QtLayout.LayoutParams(w, h, x, y));
+                        QtPopupMenu14.getInstance().showMenu(m_editText);
+                    }
                 }
-            }, 10);
+            }, 100);
     }
 
     public void closeContextMenu()

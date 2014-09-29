@@ -38,9 +38,12 @@
 #include "qandroidplatformmenuitem.h"
 
 #include <QMutex>
-#include <QSet>
+#include <QPoint>
 #include <QQueue>
+#include <QRect>
+#include <QSet>
 #include <QWindow>
+#include <QtCore/private/qjnihelpers_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -48,7 +51,7 @@ using namespace QtAndroid;
 
 namespace QtAndroidMenu
 {
-    static QQueue<QAndroidPlatformMenu *> pendingContextMenus;
+    static QList<QAndroidPlatformMenu *> pendingContextMenus;
     static QAndroidPlatformMenu *visibleMenu = 0;
     static QMutex visibleMenuMutex(QMutex::Recursive);
 
@@ -87,21 +90,25 @@ namespace QtAndroidMenu
             env.jniEnv->CallStaticVoidMethod(applicationClass(), openOptionsMenuMethodID);
     }
 
-    void showContextMenu(QAndroidPlatformMenu *menu, JNIEnv *env)
+    void showContextMenu(QAndroidPlatformMenu *menu, const QRect &anchorRect, JNIEnv *env)
     {
         QMutexLocker lock(&visibleMenuMutex);
-        if (visibleMenu) {
-            pendingContextMenus.enqueue(menu);
+        if (QtAndroidPrivate::androidSdkVersion() > 10 &&
+                QtAndroidPrivate::androidSdkVersion() < 14 &&
+                anchorRect.isValid()) {
+            pendingContextMenus.clear();
+        } else if (visibleMenu) {
+            pendingContextMenus.append(visibleMenu);
+        }
+
+        visibleMenu = menu;
+        menu->aboutToShow();
+        if (env) {
+            env->CallStaticVoidMethod(applicationClass(), openContextMenuMethodID, anchorRect.x(), anchorRect.y(), anchorRect.width(), anchorRect.height());
         } else {
-            visibleMenu = menu;
-            menu->aboutToShow();
-            if (env) {
-                env->CallStaticVoidMethod(applicationClass(), openContextMenuMethodID);
-            } else {
-                AttachedJNIEnv aenv;
-                if (aenv.jniEnv)
-                    aenv.jniEnv->CallStaticVoidMethod(applicationClass(), openContextMenuMethodID);
-            }
+            AttachedJNIEnv aenv;
+            if (aenv.jniEnv)
+                aenv.jniEnv->CallStaticVoidMethod(applicationClass(), openContextMenuMethodID, anchorRect.x(), anchorRect.y(), anchorRect.width(), anchorRect.height());
         }
     }
 
@@ -111,7 +118,8 @@ namespace QtAndroidMenu
         if (visibleMenu == menu) {
             AttachedJNIEnv env;
             if (env.jniEnv)
-                env.jniEnv->CallStaticVoidMethod(applicationClass(), openContextMenuMethodID);
+                env.jniEnv->CallStaticVoidMethod(applicationClass(), closeContextMenuMethodID);
+            pendingContextMenus.clear();
         } else {
             pendingContextMenus.removeOne(menu);
         }
@@ -298,7 +306,7 @@ namespace QtAndroidMenu
             QAndroidPlatformMenuItem *item = static_cast<QAndroidPlatformMenuItem *>(menus.front()->menuItemForTag(menuId));
             if (item) {
                 if (item->menu()) {
-                    showContextMenu(item->menu(), env);
+                    showContextMenu(item->menu(), QRect(), env);
                 } else {
                     if (item->isCheckable())
                         item->setChecked(checked);
@@ -308,7 +316,7 @@ namespace QtAndroidMenu
         } else {
             QAndroidPlatformMenu *menu = static_cast<QAndroidPlatformMenu *>(visibleMenuBar->menuForTag(menuId));
             if (menu)
-                showContextMenu(menu, env);
+                showContextMenu(menu, QRect(), env);
         }
 
         return JNI_TRUE;
@@ -333,17 +341,30 @@ namespace QtAndroidMenu
         addAllMenuItemsToMenu(env, menu, visibleMenu);
     }
 
+    static void fillContextMenu(JNIEnv *env, jobject /*thiz*/, jobject menu)
+    {
+        env->CallVoidMethod(menu, clearMenuMethodID);
+        QMutexLocker lock(&visibleMenuMutex);
+        if (!visibleMenu)
+            return;
+
+        addAllMenuItemsToMenu(env, menu, visibleMenu);
+    }
+
     static jboolean onContextItemSelected(JNIEnv *env, jobject /*thiz*/, jint menuId, jboolean checked)
     {
         QMutexLocker lock(&visibleMenuMutex);
         QAndroidPlatformMenuItem * item = static_cast<QAndroidPlatformMenuItem *>(visibleMenu->menuItemForTag(menuId));
         if (item) {
             if (item->menu()) {
-                showContextMenu(item->menu(), env);
+                showContextMenu(item->menu(), QRect(), env);
             } else {
                 if (item->isCheckable())
                     item->setChecked(checked);
                 item->activated();
+                visibleMenu->aboutToHide();
+                visibleMenu = 0;
+                pendingContextMenus.clear();
             }
         }
         return JNI_TRUE;
@@ -354,10 +375,11 @@ namespace QtAndroidMenu
         QMutexLocker lock(&visibleMenuMutex);
         if (!visibleMenu)
             return;
+
         visibleMenu->aboutToHide();
         visibleMenu = 0;
         if (!pendingContextMenus.empty())
-            showContextMenu(pendingContextMenus.dequeue(), env);
+            showContextMenu(pendingContextMenus.takeLast(), QRect(), env);
     }
 
     static JNINativeMethod methods[] = {
@@ -365,6 +387,7 @@ namespace QtAndroidMenu
         {"onOptionsItemSelected", "(IZ)Z", (void *)onOptionsItemSelected},
         {"onOptionsMenuClosed", "(Landroid/view/Menu;)V", (void*)onOptionsMenuClosed},
         {"onCreateContextMenu", "(Landroid/view/ContextMenu;)V", (void *)onCreateContextMenu},
+        {"fillContextMenu", "(Landroid/view/Menu;)V", (void *)fillContextMenu},
         {"onContextItemSelected", "(IZ)Z", (void *)onContextItemSelected},
         {"onContextMenuClosed", "(Landroid/view/Menu;)V", (void*)onContextMenuClosed},
     };
@@ -406,7 +429,7 @@ namespace QtAndroidMenu
             return false;
         }
 
-        GET_AND_CHECK_STATIC_METHOD(openContextMenuMethodID, appClass, "openContextMenu", "()V");
+        GET_AND_CHECK_STATIC_METHOD(openContextMenuMethodID, appClass, "openContextMenu", "(IIII)V");
         GET_AND_CHECK_STATIC_METHOD(closeContextMenuMethodID, appClass, "closeContextMenu", "()V");
         GET_AND_CHECK_STATIC_METHOD(resetOptionsMenuMethodID, appClass, "resetOptionsMenu", "()V");
         GET_AND_CHECK_STATIC_METHOD(openOptionsMenuMethodID, appClass, "openOptionsMenu", "()V");
