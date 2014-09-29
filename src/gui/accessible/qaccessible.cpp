@@ -1991,6 +1991,8 @@ QString QAccessibleTextInterface::textBeforeOffset(int offset, QAccessible::Text
     case QAccessible::NoBoundary:
         // return empty, this function currently only supports single lines, so there can be no line before
         return QString();
+    default:
+        Q_UNREACHABLE();
     }
 
     // keep behavior in sync with QTextCursor::movePosition()!
@@ -2063,6 +2065,8 @@ QString QAccessibleTextInterface::textAfterOffset(int offset, QAccessible::TextB
     case QAccessible::NoBoundary:
         // return empty, this function currently only supports single lines, so there can be no line after
         return QString();
+    default:
+        Q_UNREACHABLE();
     }
 
     // keep behavior in sync with QTextCursor::movePosition()!
@@ -2150,6 +2154,8 @@ QString QAccessibleTextInterface::textAtOffset(int offset, QAccessible::TextBoun
         *startOffset = 0;
         *endOffset = txt.length();
         return txt;
+    default:
+        Q_UNREACHABLE();
     }
 
     // keep behavior in sync with QTextCursor::movePosition()!
