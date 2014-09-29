@@ -59,7 +59,7 @@ public:
     void syncMenuItem(QPlatformMenuItem *menuItem);
     void setEnabled(bool enabled);
     void setVisible(bool visible);
-    void showPopup(const QWindow *parentWindow, QPoint pos, const QPlatformMenuItem *item);
+    void showPopup(const QWindow *parentWindow, const QRect &targetRect, const QPlatformMenuItem *item);
     void dismiss();
 
     void syncSeparatorsCollapsible(bool enable);
