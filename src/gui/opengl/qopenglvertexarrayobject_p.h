@@ -67,13 +67,14 @@ public:
         : GenVertexArrays(Q_NULLPTR)
         , DeleteVertexArrays(Q_NULLPTR)
         , BindVertexArray(Q_NULLPTR)
+        , IsVertexArray(Q_NULLPTR)
     {
         qtInitializeVertexArrayObjectHelper(this, context);
     }
 
     inline bool isValid() const
     {
-        return GenVertexArrays && DeleteVertexArrays && BindVertexArray;
+        return GenVertexArrays && DeleteVertexArrays && BindVertexArray && IsVertexArray;
     }
 
     inline void glGenVertexArrays(GLsizei n, GLuint *arrays) const
@@ -91,6 +92,11 @@ public:
         BindVertexArray(array);
     }
 
+    inline GLboolean glIsVertexArray(GLuint array) const
+    {
+        return IsVertexArray(array);
+    }
+
 private:
     friend void Q_GUI_EXPORT qtInitializeVertexArrayObjectHelper(QOpenGLVertexArrayObjectHelper *helper, QOpenGLContext *context);
 
@@ -98,10 +104,12 @@ private:
     typedef void (QOPENGLF_APIENTRYP qt_GenVertexArrays_t)(GLsizei n, GLuint *arrays);
     typedef void (QOPENGLF_APIENTRYP qt_DeleteVertexArrays_t)(GLsizei n, const GLuint *arrays);
     typedef void (QOPENGLF_APIENTRYP qt_BindVertexArray_t)(GLuint array);
+    typedef GLboolean (QOPENGLF_APIENTRYP qt_IsVertexArray_t)(GLuint array);
 
     qt_GenVertexArrays_t GenVertexArrays;
     qt_DeleteVertexArrays_t DeleteVertexArrays;
     qt_BindVertexArray_t BindVertexArray;
+    qt_IsVertexArray_t IsVertexArray;
 };
 
 QT_END_NAMESPACE

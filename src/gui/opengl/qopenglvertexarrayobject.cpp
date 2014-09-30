@@ -61,6 +61,7 @@ void qtInitializeVertexArrayObjectHelper(QOpenGLVertexArrayObjectHelper *helper,
             helper->GenVertexArrays = ::glGenVertexArrays;
             helper->DeleteVertexArrays = ::glDeleteVertexArrays;
             helper->BindVertexArray = ::glBindVertexArray;
+            helper->IsVertexArray = ::glIsVertexArray;
             tryARB = false;
         } else
 #endif
@@ -68,6 +69,7 @@ void qtInitializeVertexArrayObjectHelper(QOpenGLVertexArrayObjectHelper *helper,
             helper->GenVertexArrays = reinterpret_cast<QOpenGLVertexArrayObjectHelper::qt_GenVertexArrays_t>(context->getProcAddress(QByteArrayLiteral("glGenVertexArraysOES")));
             helper->DeleteVertexArrays = reinterpret_cast<QOpenGLVertexArrayObjectHelper::qt_DeleteVertexArrays_t>(context->getProcAddress(QByteArrayLiteral("glDeleteVertexArraysOES")));
             helper->BindVertexArray = reinterpret_cast<QOpenGLVertexArrayObjectHelper::qt_BindVertexArray_t>(context->getProcAddress(QByteArrayLiteral("glBindVertexArrayOES")));
+            helper->IsVertexArray = reinterpret_cast<QOpenGLVertexArrayObjectHelper::qt_IsVertexArray_t>(context->getProcAddress(QByteArrayLiteral("glIsVertexArrayOES")));
             tryARB = false;
         }
     } else if (context->hasExtension(QByteArrayLiteral("GL_APPLE_vertex_array_object")) &&
@@ -75,6 +77,7 @@ void qtInitializeVertexArrayObjectHelper(QOpenGLVertexArrayObjectHelper *helper,
         helper->GenVertexArrays = reinterpret_cast<QOpenGLVertexArrayObjectHelper::qt_GenVertexArrays_t>(context->getProcAddress(QByteArrayLiteral("glGenVertexArraysAPPLE")));
         helper->DeleteVertexArrays = reinterpret_cast<QOpenGLVertexArrayObjectHelper::qt_DeleteVertexArrays_t>(context->getProcAddress(QByteArrayLiteral("glDeleteVertexArraysAPPLE")));
         helper->BindVertexArray = reinterpret_cast<QOpenGLVertexArrayObjectHelper::qt_BindVertexArray_t>(context->getProcAddress(QByteArrayLiteral("glBindVertexArrayAPPLE")));
+        helper->IsVertexArray = reinterpret_cast<QOpenGLVertexArrayObjectHelper::qt_IsVertexArray_t>(context->getProcAddress(QByteArrayLiteral("glIsVertexArrayAPPLE")));
         tryARB = false;
     }
 
@@ -82,6 +85,7 @@ void qtInitializeVertexArrayObjectHelper(QOpenGLVertexArrayObjectHelper *helper,
         helper->GenVertexArrays = reinterpret_cast<QOpenGLVertexArrayObjectHelper::qt_GenVertexArrays_t>(context->getProcAddress(QByteArrayLiteral("glGenVertexArrays")));
         helper->DeleteVertexArrays = reinterpret_cast<QOpenGLVertexArrayObjectHelper::qt_DeleteVertexArrays_t>(context->getProcAddress(QByteArrayLiteral("glDeleteVertexArrays")));
         helper->BindVertexArray = reinterpret_cast<QOpenGLVertexArrayObjectHelper::qt_BindVertexArray_t>(context->getProcAddress(QByteArrayLiteral("glBindVertexArray")));
+        helper->IsVertexArray = reinterpret_cast<QOpenGLVertexArrayObjectHelper::qt_IsVertexArray_t>(context->getProcAddress(QByteArrayLiteral("glIsVertexArray")));
     }
 }
 
