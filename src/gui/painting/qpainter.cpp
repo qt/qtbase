@@ -1350,14 +1350,7 @@ void QPainterPrivate::updateState(QPainterState *newState)
     and embedded devices supporting the OpenGL 2.0 or OpenGL/ES 2.0
     specification. This includes most graphics chips produced in the
     last couple of years. The engine can be enabled by using QPainter
-    onto a QOpenGLWidget or by passing \c {-graphicssystem opengl} on the
-    command line when the underlying system supports it.
-
-    \li OpenVG - This backend implements the Khronos standard for 2D
-    and Vector Graphics. It is primarily for embedded devices with
-    hardware support for OpenVG.  The engine can be enabled by
-    passing \c {-graphicssystem openvg} on the command line when
-    the underlying system supports it.
+    onto a QOpenGLWidget.
 
     \endlist
 
