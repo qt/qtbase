@@ -1331,6 +1331,12 @@ void Configure::parseCmdLine()
             dictionary[ "ANDROID_NDK_TOOLCHAIN_VERSION" ] = configCmdLine.at(i);
         }
 
+        else if (configCmdLine.at(i) == "-no-android-style-assets") {
+            dictionary[ "ANDROID_STYLE_ASSETS" ] = "no";
+        } else if (configCmdLine.at(i) == "-android-style-assets") {
+            dictionary[ "ANDROID_STYLE_ASSETS" ] = "yes";
+        }
+
         else {
             dictionary[ "DONE" ] = "error";
             cout << "Unknown option " << configCmdLine.at(i) << endl;
@@ -1693,6 +1699,7 @@ void Configure::applySpecSpecifics()
         dictionary[ "REDUCE_RELOCATIONS" ]  = "yes";
         dictionary[ "QT_GETIFADDRS" ]       = "no";
         dictionary[ "QT_XKBCOMMON" ]        = "no";
+        dictionary["ANDROID_STYLE_ASSETS"]  = "yes";
     }
 }
 
@@ -3355,6 +3362,9 @@ void Configure::generateQConfigPri()
         if (dictionary["DIRECTWRITE"] == "yes")
             configStream << " directwrite";
 
+        if (dictionary["ANDROID_STYLE_ASSETS"] == "yes")
+            configStream << " android-style-assets";
+
         // ### For compatibility only, should be removed later.
         configStream << " qpa";
 
@@ -4219,11 +4229,17 @@ bool Configure::showLicense(QString orgLicenseFile)
         return true;
     }
 
+    bool showLgpl2 = true;
     QString licenseFile = orgLicenseFile;
     QString theLicense;
     if (dictionary["EDITION"] == "OpenSource" || dictionary["EDITION"] == "Snapshot") {
-        theLicense = "GNU Lesser General Public License (LGPL) version 2.1"
-                     "\nor the GNU Lesser General Public License (LGPL) version 3";
+        if (platform() != ANDROID || dictionary["ANDROID_STYLE_ASSETS"] == "no") {
+            theLicense = "GNU Lesser General Public License (LGPL) version 2.1"
+                         "\nor the GNU Lesser General Public License (LGPL) version 3";
+        } else {
+            theLicense = "GNU Lesser General Public License (LGPL) version 3";
+            showLgpl2 = false;
+        }
     } else {
         // the first line of the license file tells us which license it is
         QFile file(licenseFile);
@@ -4241,7 +4257,8 @@ bool Configure::showLicense(QString orgLicenseFile)
              << endl;
         if (dictionary["EDITION"] == "OpenSource" || dictionary["EDITION"] == "Snapshot") {
             cout << "Type '3' to view the Lesser GNU General Public License version 3 (LGPLv3)." << endl;
-            cout << "Type 'L' to view the Lesser GNU General Public License version 2.1 (LGPLv2.1)." << endl;
+            if (showLgpl2)
+                cout << "Type 'L' to view the Lesser GNU General Public License version 2.1 (LGPLv2.1)." << endl;
         } else {
             cout << "Type '?' to view the " << theLicense << "." << endl;
         }

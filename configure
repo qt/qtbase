@@ -627,6 +627,7 @@ CFG_PPS=auto
 CFG_QNX_IMF=auto
 CFG_LGMON=auto
 CFG_SYSTEM_PROXIES=no
+CFG_ANDROID_STYLE_ASSETS=yes
 
 # Target architecture
 CFG_ARCH=
@@ -2144,6 +2145,13 @@ while [ "$#" -gt 0 ]; do
     android-toolchain-version)
         CFG_DEFAULT_ANDROID_NDK_TOOLCHAIN_VERSION="$VAL"
         ;;
+    android-style-assets)
+        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
+            CFG_ANDROID_STYLE_ASSETS="$VAL"
+        else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
     l*)  # -lfoo
         if [ "$VAL" = "yes" ]; then
             L_FLAGS="$L_FLAGS -l\"${VAR#l}\""
@@ -2565,6 +2573,14 @@ Android options:
 
     -android-toolchain-version ..... Sets the android toolchain version
                                      (default $CFG_DEFAULT_ANDROID_NDK_TOOLCHAIN_VERSION)
+
+    -no-android-style-assets ....... Do not compile in the code which automatically extracts
+                                     style assets from the run-time device. Setting this will
+                                     make the Android style behave incorrectly, but will enable
+                                     compatibility with the LGPL2.1 license.
+ *  -android-style-assets .......... Compile the code which automatically extracts style assets
+                                     from the run-time device. This option will make the
+                                     Android platform plugin incompatible with the LGPL2.1.
 EOF
 
    exit 0
@@ -2826,11 +2842,20 @@ fi
 
 if [ "$Edition" = "OpenSource" ]; then
     while true; do
-        echo "You are licensed to use this software under the terms of"
-        echo "the Lesser GNU General Public License (LGPL) versions 2.1."
-        echo "You are also licensed to use this software under the terms of"
-        echo "the GNU Lesser General Public License (LGPL) versions 3."
-        affix="either"
+        if [ "$CFG_ANDROID_STYLE_ASSETS" = "no" ] || [ "$XPLATFORM_ANDROID" = "no" ]; then
+            echo "You are licensed to use this software under the terms of"
+            echo "the Lesser GNU General Public License (LGPL) versions 2.1."
+            echo "You are also licensed to use this software under the terms of"
+            echo "the GNU Lesser General Public License (LGPL) versions 3."
+            affix="either"
+            showLGPL2="yes"
+        else
+            echo "You are licensed to use this software under the terms of"
+            echo "the GNU Lesser General Public License (LGPL) versions 3."
+            showLGPL2="no"
+            affix="the"
+        fi
+
         echo
         if [ "$OPT_CONFIRM_LICENSE" = "yes" ]; then
             echo "You have already accepted the terms of the $EditionString license."
@@ -2839,7 +2864,9 @@ if [ "$Edition" = "OpenSource" ]; then
             if [ -f "$relpath/LICENSE.LGPLv3" ]; then
                 echo "Type '3' to view the GNU Lesser General Public License version 3."
             fi
-            echo "Type 'L' to view the Lesser GNU General Public License version 2.1."
+            if [ "$showLGPL2" = "yes" ]; then
+                echo "Type 'L' to view the Lesser GNU General Public License version 2.1."
+            fi
             echo "Type 'yes' to accept this license offer."
             echo "Type 'no' to decline this license offer."
             echo
@@ -2855,7 +2882,7 @@ if [ "$Edition" = "OpenSource" ]; then
             exit 1
         elif [ "$acceptance" = "3" ]; then
             more "$relpath/LICENSE.LGPLv3"
-        elif [ "$acceptance" = "L" ]; then
+        elif [ "$acceptance" = "L" ] && [ "$showLGPL2" = "yes" ]; then
             more "$relpath/LICENSE.LGPLv21"
         fi
     done
@@ -3167,6 +3194,9 @@ if [ "$XPLATFORM_ANDROID" = "yes" ] ; then
     esac
     QMAKE_CONF_COMPILER=$CFG_DEFAULT_ANDROID_NDK_ROOT/toolchains/$ANDROID_NDK_TOOLS_PREFIX-$CFG_DEFAULT_ANDROID_NDK_TOOLCHAIN_VERSION/prebuilt/$CFG_DEFAULT_ANDROID_NDK_HOST/bin/$ANDROID_NDK_TOOLS_PREFIX-g++
     TEST_COMPILER="$QMAKE_CONF_COMPILER --sysroot=$CFG_DEFAULT_ANDROID_NDK_ROOT/platforms/$CFG_DEFAULT_ANDROID_PLATFORM/$ANDROID_PLATFORM_ARCH/"
+    if [ "$CFG_ANDROID_STYLE_ASSETS" = "yes" ]; then
+        QMAKE_CONFIG="$QMAKE_CONFIG android-style-assets"
+    fi
 fi
 
 if [ "$XPLATFORM_SYMBIAN_SBSV2" = "no" ]; then
