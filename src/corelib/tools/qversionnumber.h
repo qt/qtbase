@@ -192,9 +192,19 @@ class QVersionNumber
         }
         void setInlineData(const int *data, int len)
         {
+            dummy = 1 + len * 2;
+#if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
+            for (int i = 0; i < len; ++i)
+                dummy |= quintptr(data[i] & 0xFF) << (8 * (i + 1));
+#elif Q_BYTE_ORDER == Q_BIG_ENDIAN
+            for (int i = 0; i < len; ++i)
+                dummy |= quintptr(data[i] & 0xFF) << (8 * (sizeof(void *) - i - 1));
+#else
+            // the code above is equivalent to:
             setInlineSize(len);
             for (int i = 0; i < len; ++i)
-                inline_segments[InlineSegmentStartIdx + i] = qint8(data[i]);
+                inline_segments[InlineSegmentStartIdx + i] = data[i] & 0xFF;
+#endif
         }
 
         Q_CORE_EXPORT void setVector(int len, int maj, int min, int mic);
