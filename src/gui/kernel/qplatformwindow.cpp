@@ -593,6 +593,36 @@ QRect QPlatformWindow::initialGeometry(const QWindow *w,
 }
 
 /*!
+    Requests an QEvent::UpdateRequest event. The event will be
+    delivered to the QWindow.
+
+    QPlatformWindow subclasses can re-implement this function to
+    provide display refresh synchronized updates. The event
+    should be delivered using QWindowPrivate::deliverUpdateRequest()
+    to not get out of sync with the the internal state of QWindow.
+
+    The default implementation posts an UpdateRequest event to the
+    window after 5 ms. The additional time is there to give the event
+    loop a bit of idle time to gather system events.
+
+*/
+void QPlatformWindow::requestUpdate()
+{
+    static int timeout = -1;
+    if (timeout == -1) {
+        bool ok = false;
+        timeout = qEnvironmentVariableIntValue("QT_QPA_UPDATE_IDLE_TIME", &ok);
+        if (!ok)
+            timeout = 5;
+    }
+
+    QWindow *w = window();
+    QWindowPrivate *wp = (QWindowPrivate *) QObjectPrivate::get(w);
+    Q_ASSERT(wp->updateTimer == 0);
+    wp->updateTimer = w->startTimer(timeout, Qt::PreciseTimer);
+}
+
+/*!
     \class QPlatformWindow
     \since 4.8
     \internal

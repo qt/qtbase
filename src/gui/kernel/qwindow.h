@@ -286,6 +286,8 @@ public Q_SLOTS:
 
     Q_REVISION(1) void alert(int msec);
 
+    Q_REVISION(3) void requestUpdate();
+
 Q_SIGNALS:
     void screenChanged(QScreen *screen);
     void modalityChanged(Qt::WindowModality modality);

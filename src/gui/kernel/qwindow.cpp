@@ -2043,10 +2043,54 @@ bool QWindow::event(QEvent *ev)
         break;
 #endif
 
+    case QEvent::Timer: {
+        Q_D(QWindow);
+        if (static_cast<QTimerEvent *>(ev)->timerId() == d->updateTimer) {
+            killTimer(d->updateTimer);
+            d->updateTimer = 0;
+            d->deliverUpdateRequest();
+        } else {
+            QObject::event(ev);
+        }
+        break;
+    }
+
     default:
         return QObject::event(ev);
     }
     return true;
+}
+
+void QWindowPrivate::deliverUpdateRequest()
+{
+    Q_Q(QWindow);
+    updateRequestPending = false;
+    QEvent request(QEvent::UpdateRequest);
+    QCoreApplication::sendEvent(q, &request);
+}
+
+/*!
+    Schedules a QEvent::UpdateRequest event to be delivered to this window.
+
+    The event is delivered in sync with the display vsync on platforms
+    where this is possible. When driving animations, this function should
+    be called once after drawing has completed.
+
+    Calling this function multiple times will result in a single event
+    being delivered to the window.
+
+    Subclasses of QWindow should reimplement QWindow::event(), intercept
+    the event and call the application's rendering code, then call the
+    base class implementation.
+*/
+
+void QWindow::requestUpdate()
+{
+    Q_D(QWindow);
+    if (d->updateRequestPending || !d->platformWindow)
+        return;
+    d->updateRequestPending = true;
+    d->platformWindow->requestUpdate();
 }
 
 /*!

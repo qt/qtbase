@@ -129,6 +129,7 @@ public:
     static QRect initialGeometry(const QWindow *w,
         const QRect &initialGeometry, int defaultWidth, int defaultHeight);
 
+    virtual void requestUpdate();
 protected:
     static QString formatWindowTitle(const QString &title, const QString &separator);
     QPlatformScreen *screenForGeometry(const QRect &newGeometry) const;
