@@ -5692,21 +5692,18 @@ QString QString::toUpper() const
     Safely builds a formatted string from the format string \a cformat
     and an arbitrary list of arguments.
 
-    The %lc escape sequence expects a unicode character of type ushort
-    (as returned by QChar::unicode()). The %ls escape sequence expects
-    a pointer to a zero-terminated array of unicode characters of type
-    ushort (as returned by QString::utf16()).
+    The format string supports the conversion specifiers, length modifiers,
+    and flags provided by printf() in the standard C++ library. The \a cformat
+    string and \c{%s} arguments must be UTF-8 encoded.
 
-    \note This function expects a UTF-8 string for %s and Latin-1 for
-    the format string.
-
-    The format string supports most of the conversion specifiers
-    provided by printf() in the standard C++ library. It doesn't
-    honor the length modifiers (e.g. \c h for \c short, \c ll for
-    \c{long long}). If you need those, use the standard snprintf()
-    function instead:
-
-    \snippet qstring/main.cpp 63
+    \note The \c{%lc} escape sequence expects a unicode character of type
+    \c char16_t, or \c ushort (as returned by QChar::unicode()).
+    The \c{%ls} escape sequence expects a pointer to a zero-terminated array
+    of unicode characters of type \c char16_t, or ushort (as returned by
+    QString::utf16()). This is at odds with the printf() in the standard C++
+    library, which defines \c {%lc} to print a wchar_t and \c{%ls} to print
+    a \c{wchar_t*}, and might also produce compiler warnings on platforms
+    where the size of \c {wchar_t} is not 16 bits.
 
     \warning We do not recommend using QString::sprintf() in new Qt
     code. Instead, consider using QTextStream or arg(), both of
