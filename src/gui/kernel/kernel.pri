@@ -68,6 +68,7 @@ HEADERS += \
         kernel/qplatformservices.h \
         kernel/qplatformsystemtrayicon.h \
         kernel/qplatformsessionmanager.h \
+        kernel/qplatformhardwarecompositor.h \
         kernel/qpixelformat.h \
         kernel/qpaintdevicewindow.h \
         kernel/qpaintdevicewindow_p.h \
@@ -128,7 +129,8 @@ SOURCES += \
         kernel/qpaintdevicewindow.cpp \
         kernel/qrasterwindow.cpp \
         kernel/qplatformgraphicsbuffer.cpp \
-        kernel/qplatformgraphicsbufferhelper.cpp
+        kernel/qplatformgraphicsbufferhelper.cpp \
+        kernel/qplatformhardwarecompositor.cpp
 
 contains(QT_CONFIG, opengl)|contains(QT_CONFIG, opengles2) {
     HEADERS += \
