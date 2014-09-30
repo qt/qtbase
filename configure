@@ -699,8 +699,8 @@ RPATH_FLAGS=
 W_FLAGS=
 QCONFIG_FLAGS=
 XPLATFORM=              # This seems to be the QMAKESPEC, like "linux-g++"
-XPLATFORM_MAC=no
-XPLATFORM_IOS=no
+XPLATFORM_MAC=no        # Whether target platform is OS X or iOS
+XPLATFORM_IOS=no        # Whether target platform is iOS
 XPLATFORM_ANDROID=no
 XPLATFORM_MINGW=no      # Whether target platform is MinGW (win32-g++*)
 XPLATFORM_QNX=no
@@ -3120,9 +3120,12 @@ if [ "$CFG_FORCEDEBUGINFO" = "yes" ]; then
     QMAKE_CONFIG="$QMAKE_CONFIG force_debug_info"
 fi
 
+if [ "$XPLATFORM_MAC" = "yes" ]; then
+    CFG_PKGCONFIG="no"
+fi
+
 if [ "$XPLATFORM_IOS" = "yes" ]; then
     CFG_RPATH="no"
-    CFG_PKGCONFIG="no"
     CFG_NOBUILD_PARTS="$CFG_NOBUILD_PARTS examples"
     CFG_SHARED="no" # iOS builds should be static to be able to submit to the App Store
     CFG_SKIP_MODULES="$CFG_SKIP_MODULES qtconnectivity qtdoc qtmacextras qtserialport qtwebkit qtwebkit-examples"
