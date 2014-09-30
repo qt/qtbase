@@ -1659,11 +1659,10 @@ QProcess::ProcessState QProcess::state() const
 
 /*!
     \deprecated
-    Sets the environment that QProcess will use when starting a process to the
-    \a environment specified which consists of a list of key=value pairs.
+    Sets the environment that QProcess will pass to the child process.
+    The parameter \a environment is a list of key=value pairs.
 
-    For example, the following code adds the \c{C:\\BIN} directory to the list of
-    executable paths (\c{PATHS}) on Windows:
+    For example, the following code adds the environment variable \c{TMPDIR}:
 
     \snippet qprocess-environment/main.cpp 0
 
@@ -1679,7 +1678,7 @@ void QProcess::setEnvironment(const QStringList &environment)
 
 /*!
     \deprecated
-    Returns the environment that QProcess will use when starting a
+    Returns the environment that QProcess will pass to its child
     process, or an empty QStringList if no environment has been set
     using setEnvironment(). If no environment has been set, the
     environment of the calling process will be used.
@@ -1697,11 +1696,9 @@ QStringList QProcess::environment() const
 
 /*!
     \since 4.6
-    Sets the environment that QProcess will use when starting a process to the
-    \a environment object.
+    Sets the \a environment that QProcess will pass to the child process.
 
-    For example, the following code adds the \c{C:\\BIN} directory to the list of
-    executable paths (\c{PATHS}) on Windows and sets \c{TMPDIR}:
+    For example, the following code adds the environment variable \c{TMPDIR}:
 
     \snippet qprocess-environment/main.cpp 1
 
@@ -1717,7 +1714,7 @@ void QProcess::setProcessEnvironment(const QProcessEnvironment &environment)
 
 /*!
     \since 4.6
-    Returns the environment that QProcess will use when starting a
+    Returns the environment that QProcess will pass to its child
     process, or an empty object if no environment has been set using
     setEnvironment() or setProcessEnvironment(). If no environment has
     been set, the environment of the calling process will be used.
