@@ -61,7 +61,7 @@ class Generator
     Q_DECLARE_TR_FUNCTIONS(QDoc::Generator)
 
 public:
-    enum Passes { Both, Prepare, Generate };
+    enum QDocPass { Neither, Prepare, Generate };
     enum ListType { Generic, Obsolete };
 
     Generator();
@@ -91,9 +91,11 @@ public:
     static bool debugging() { return debugging_; }
     static bool noLinkErrors() { return noLinkErrors_; }
     static bool autolinkErrors() { return autolinkErrors_; }
-    static void setQDocPass(Passes pass) { qdocPass_ = pass; }
-    static bool runPrepareOnly() { return (qdocPass_ == Prepare); }
-    static bool runGenerateOnly() { return (qdocPass_ == Generate); }
+    static void setQDocPass(QDocPass t) { qdocPass_ = t; }
+    static bool preparing() { return (qdocPass_ == Prepare); }
+    static bool generating() { return (qdocPass_ == Generate); }
+    static bool singleExec() { return qdocSingleExec_; }
+    static void setSingleExec() { qdocSingleExec_ = true; }
     static QString defaultModuleName() { return project; }
     static void resetUseOutputSubdirs() { useOutputSubdirs_ = false; }
     static bool useOutputSubdirs() { return useOutputSubdirs_; }
@@ -212,7 +214,8 @@ private:
     static bool noLinkErrors_;
     static bool autolinkErrors_;
     static bool redirectDocumentationToDevNull_;
-    static Passes qdocPass_;
+    static QDocPass qdocPass_;
+    static bool qdocSingleExec_;
     static bool useOutputSubdirs_;
 
     void generateReimplementedFrom(const FunctionNode *func, CodeMarker *marker);
@@ -232,6 +235,7 @@ private:
     bool inTableHeader_;
     bool threeColumnEnumValueTable_;
     bool showInternal_;
+    bool singleExec_;
     int numTableRows_;
     QString link_;
     QString sectionNumber_;

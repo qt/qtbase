@@ -78,7 +78,14 @@ class QDocForest
     bool done() { return (currentIndex_ >= searchOrder().size()); }
     const QVector<Tree*>& searchOrder();
     const QVector<Tree*>& indexSearchOrder();
-    void setSearchOrder();
+    void setSearchOrder(QStringList& t);
+    bool isLoaded(const QString& fn) {
+        foreach (Tree* t, searchOrder()) {
+            if (fn == t->indexFileName())
+                return true;
+        }
+        return false;
+    }
 
     const Node* findNode(const QStringList& path,
                          const Node* relative,
@@ -186,8 +193,11 @@ class QDocForest
         }
     }
 
+    void clearSearchOrder() { searchOrder_.clear(); }
+
   private:
     void newPrimaryTree(const QString& module);
+    void setPrimaryTree(const QString& t);
     NamespaceNode* newIndexTree(const QString& module);
 
   private:
@@ -274,12 +284,10 @@ class QDocDatabase
     void resolveInheritance() { primaryTree()->resolveInheritance(); }
     void resolveQmlInheritance(InnerNode* root);
     void resolveIssues();
+    void resolveStuff();
     void fixInheritance() { primaryTree()->fixInheritance(); }
     void resolveProperties() { primaryTree()->resolveProperties(); }
 
-    void resolveTargets() {
-        primaryTree()->resolveTargets(primaryTreeRoot());
-    }
     void insertTarget(const QString& name,
                       const QString& title,
                       TargetRec::Type type,
@@ -355,18 +363,22 @@ class QDocDatabase
     void clearOpenNamespaces() { openNamespaces_.clear(); }
     void insertOpenNamespace(const QString& path) { openNamespaces_.insert(path); }
     void setShowInternal(bool value) { showInternal_ = value; }
+    void setSingleExec(bool value) { singleExec_ = value; }
+    void processForest();
 
     // Try to make this function private.
     QDocForest& forest() { return forest_; }
     NamespaceNode* primaryTreeRoot() { return forest_.primaryTreeRoot(); }
     void newPrimaryTree(const QString& module) { forest_.newPrimaryTree(module); }
+    void setPrimaryTree(const QString& t) { forest_.setPrimaryTree(t); }
     NamespaceNode* newIndexTree(const QString& module) { return forest_.newIndexTree(module); }
     const QVector<Tree*>& searchOrder() { return forest_.searchOrder(); }
     void setLocalSearch() { forest_.searchOrder_ = QVector<Tree*>(1, primaryTree()); }
     void setSearchOrder(const QVector<Tree*>& searchOrder) { forest_.searchOrder_ = searchOrder; }
-    void setSearchOrder() { forest_.setSearchOrder(); }
+    void setSearchOrder(QStringList& t) { forest_.setSearchOrder(t); }
     void mergeCollections(Node::Type nt, CNMap& cnm, const Node* relative);
     void mergeCollections(CollectionNode* cn);
+    void clearSearchOrder() { forest_.clearSearchOrder(); }
 
  private:
     friend class QDocIndexFiles;
@@ -379,6 +391,7 @@ class QDocDatabase
         return forest_.findNode(path, relative, findFlags, genus);
     }
     void processForest(void (QDocDatabase::*) (InnerNode*));
+    bool isLoaded(const QString& t) { return forest_.isLoaded(t); }
     static void initializeDB();
 
  private:
@@ -394,20 +407,21 @@ class QDocDatabase
     static QDocDatabase*    qdocDB_;
     static NodeMap          typeNodeMap_;
     bool                    showInternal_;
+    bool                    singleExec_;
     QString                 version_;
     QDocForest              forest_;
 
-    NodeMap                 nonCompatClasses_;
-    NodeMap                 mainClasses_;
+    NodeMap                 cppClasses_;
+    NodeMap                 mainClasses_; // MWS: not needed, should be delete
     NodeMap                 compatClasses_;
     NodeMap                 obsoleteClasses_;
     NodeMap                 classesWithObsoleteMembers_;
     NodeMap                 obsoleteQmlTypes_;
     NodeMap                 qmlTypesWithObsoleteMembers_;
     NodeMap                 namespaceIndex_;
-    NodeMap                 serviceClasses_;
+    NodeMap                 serviceClasses_; // MWS: not needed, should be deleted
     NodeMap                 qmlBasicTypes_;
-    NodeMap                 qmlClasses_;
+    NodeMap                 qmlTypes_;
     NodeMapMap              newClassMaps_;
     NodeMapMap              newQmlTypeMaps_;
     NodeMultiMapMap         newSinceMaps_;

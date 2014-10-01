@@ -187,12 +187,22 @@ class Tree
     void addExampleNode(ExampleNode* n) { exampleNodeMap_.insert(n->title(), n); }
     ExampleNodeMap& exampleNodeMap() { return exampleNodeMap_; }
     const Node* checkForCollision(const QString& name);
+    void setIndexFileName(const QString& t) { indexFileName_ = t; }
+
+    bool treeHasBeenAnalyzed() const { return treeHasBeenAnalyzed_; }
+    bool docsHaveBeenGenerated() const { return docsHaveBeenGenerated_; }
+    void setTreeHasBeenAnalyzed() { treeHasBeenAnalyzed_ = true; }
+    void setdocsHaveBeenGenerated() { docsHaveBeenGenerated_ = true; }
 
  public:
     const QString& moduleName() const { return module_; }
+    const QString& indexFileName() const { return indexFileName_; }
 
 private:
+    bool treeHasBeenAnalyzed_;
+    bool docsHaveBeenGenerated_;
     QString module_;
+    QString indexFileName_;
     QDocDatabase* qdb_;
     NamespaceNode root_;
     PropertyMap unresolvedPropertyMap;

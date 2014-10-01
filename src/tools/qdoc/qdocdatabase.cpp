@@ -128,142 +128,54 @@ Tree* QDocForest::nextTree()
  */
 
 /*!
+  Finds the tree for module \a t in the forest and
+  sets the primary tree to be that tree. After the
+  primary tree is set, that tree is removed from the
+  forest.
+
+  \node It gets re-inserted into the forest after the
+  search order is built.
+ */
+void QDocForest::setPrimaryTree(const QString& t)
+{
+    primaryTree_ = findTree(t);
+    forest_.remove(t);
+    if (!primaryTree_)
+        qDebug() << "ERROR: Could not set primary tree to:" << t;
+}
+
+/*!
   If the search order array is empty, create the search order.
   If the search order array is not empty, do nothing.
  */
-void QDocForest::setSearchOrder()
+void QDocForest::setSearchOrder(QStringList& t)
 {
     if (!searchOrder_.isEmpty())
         return;
-    QString primaryName = primaryTree()->moduleName();
-    searchOrder_.clear();
+
+    /* Allocate space for the search order. */
     searchOrder_.reserve(forest_.size()+1);
+    searchOrder_.clear();
     moduleNames_.reserve(forest_.size()+1);
+    moduleNames_.clear();
+
+    /* The primary tree is always first in the search order. */
+    QString primaryName = primaryTree()->moduleName();
     searchOrder_.append(primaryTree_);
     moduleNames_.append(primaryName);
+    forest_.remove(primaryName);
+
     QMap<QString, Tree*>::iterator i;
-    if (primaryName != "QtCore") {
-        i = forest_.find("QtCore");
-        if (i != forest_.end()) {
-            searchOrder_.append(i.value());
-            moduleNames_.append("QtCore");
-            forest_.erase(i);
+    foreach (QString m, t) {
+        if (primaryName != m) {
+            i = forest_.find(m);
+            if (i != forest_.end()) {
+                searchOrder_.append(i.value());
+                moduleNames_.append(m);
+                forest_.remove(m);
+            }
         }
     }
-    if (primaryName != "QtGui") {
-        i = forest_.find("QtGui");
-        if (i != forest_.end()) {
-            searchOrder_.append(i.value());
-            moduleNames_.append("QtGui");
-            forest_.erase(i);
-        }
-    }
-    if (primaryName != "QtNetwork") {
-        i = forest_.find("QtNetwork");
-        if (i != forest_.end()) {
-            searchOrder_.append(i.value());
-            moduleNames_.append("QtNetwork");
-            forest_.erase(i);
-        }
-    }
-    if (primaryName != "QtOpenGL") {
-        i = forest_.find("QtOpenGL");
-        if (i != forest_.end()) {
-            searchOrder_.append(i.value());
-            moduleNames_.append("QtOpenGL");
-            forest_.erase(i);
-        }
-    }
-    if (primaryName != "QtWidgets") {
-        i = forest_.find("QtWidgets");
-        if (i != forest_.end()) {
-            searchOrder_.append(i.value());
-            moduleNames_.append("QtWidgets");
-            forest_.erase(i);
-        }
-    }
-    if (primaryName != "QtSql") {
-        i = forest_.find("QtSql");
-        if (i != forest_.end()) {
-            searchOrder_.append(i.value());
-            moduleNames_.append("QtSql");
-            forest_.erase(i);
-        }
-    }
-    if (primaryName != "QtXml") {
-        i = forest_.find("QtXml");
-        if (i != forest_.end()) {
-            searchOrder_.append(i.value());
-            moduleNames_.append("QtXml");
-            forest_.erase(i);
-        }
-    }
-    if (primaryName != "QtSvg") {
-        i = forest_.find("QtSvg");
-        if (i != forest_.end()) {
-            searchOrder_.append(i.value());
-            moduleNames_.append("QtSvg");
-            forest_.erase(i);
-        }
-    }
-    if (primaryName != "QtDoc") {
-        i = forest_.find("QtDoc");
-        if (i != forest_.end()) {
-            searchOrder_.append(i.value());
-            moduleNames_.append("QtDoc");
-            forest_.erase(i);
-        }
-    }
-    if (primaryName != "QtQuick") {
-        i = forest_.find("QtQuick");
-        if (i != forest_.end()) {
-            searchOrder_.append(i.value());
-            moduleNames_.append("QtQuick");
-            forest_.erase(i);
-        }
-    }
-    if (primaryName != "QtQml") {
-        i = forest_.find("QtQml");
-        if (i != forest_.end()) {
-            searchOrder_.append(i.value());
-            moduleNames_.append("QtQml");
-            forest_.erase(i);
-        }
-    }
-    if (primaryName != "QtPrintSupport") {
-        i = forest_.find("QtPrintSupport");
-        if (i != forest_.end()) {
-            searchOrder_.append(i.value());
-            moduleNames_.append("QtPrintSupport");
-            forest_.erase(i);
-        }
-    }
-    if (primaryName != "QtGraphicalEffects") {
-        i = forest_.find("QtGraphicalEffects");
-        if (i != forest_.end()) {
-            searchOrder_.append(i.value());
-            moduleNames_.append("QtGraphicalEffects");
-            forest_.erase(i);
-        }
-    }
-    if (primaryName != "QtConcurrent") {
-        i = forest_.find("QtConcurrent");
-        if (i != forest_.end()) {
-            searchOrder_.append(i.value());
-            moduleNames_.append("QtConcurrent");
-            forest_.erase(i);
-        }
-    }
-#if 0
-    if (primaryName != "zzz") {
-        i = forest_.find("zzz");
-        if (i != forest_.end()) {
-            searchOrder_.append(i.value());
-            moduleNames_.append("zzz");
-            forest_.erase(i);
-        }
-    }
-#endif
     /*
       If any trees remain in the forest, just add them
       to the search order sequentially, because we don't
@@ -283,15 +195,21 @@ void QDocForest::setSearchOrder()
       Rebuild the forest after constructing the search order.
       It was destroyed during construction of the search order,
       but it is needed for module-specific searches.
+
+      Note that this loop also inserts the primary tree into the
+      forrest. That is a requirement.
      */
     for (int i=0; i<searchOrder_.size(); ++i) {
-        forest_.insert(moduleNames_.at(i).toLower(), searchOrder_.at(i));
+        if (!forest_.contains(moduleNames_.at(i))) {
+            forest_.insert(moduleNames_.at(i), searchOrder_.at(i));
+        }
     }
-
 #if 0
-    qDebug() << "  SEARCH ORDER:";
+    qDebug() << "    SEARCH ORDER:";
     for (int i=0; i<moduleNames_.size(); ++i)
-        qDebug() << "    " << i+1 << "." << moduleNames_.at(i);
+        qDebug() << "      " << i+1 << "." << moduleNames_.at(i);
+    qDebug() << "    FOREST:" << forest_.keys();
+    qDebug() << "SEARCH ORDER:" << moduleNames_;
 #endif
 }
 
@@ -356,6 +274,7 @@ const QVector<Tree*>& QDocForest::indexSearchOrder()
  */
 NamespaceNode* QDocForest::newIndexTree(const QString& module)
 {
+    //qDebug() << "  New index tree:" << module;
     primaryTree_ = new Tree(module, qdb_);
     forest_.insert(module, primaryTree_);
     return primaryTree_->root();
@@ -363,10 +282,11 @@ NamespaceNode* QDocForest::newIndexTree(const QString& module)
 
 /*!
   Create a new Tree for use as the primary tree. This tree
-  will represent the primary module.
+  will represent the primary module. \a module is camel case.
  */
 void QDocForest::newPrimaryTree(const QString& module)
 {
+    //qDebug() << "  New primary tree:" << module;
     primaryTree_ = new Tree(module, qdb_);
 }
 
@@ -445,8 +365,19 @@ NodeMap QDocDatabase::typeNodeMap_;
   constructs the \a forest_ object, which is also a singleton.
   \a showInternal_ is normally false. If it is true, qdoc will
   write documentation for nodes marked \c internal.
+
+  \a singleExec_ is false when qdoc is being used in the standard
+  way of running qdoc twices for each module, first with -prepare
+  and then with -generate. First the -prepare phase is run for
+  each module, then the -generate phase is run for each module.
+
+  When \a singleExec_ is true, qdoc is run only once. During the
+  single execution, qdoc processes the qdocconf files for all the
+  modules sequentially in a loop. Each source file for each module
+  is read exactly once.
  */
-QDocDatabase::QDocDatabase() : showInternal_(false), forest_(this)
+QDocDatabase::QDocDatabase()
+    : showInternal_(false), singleExec_(false), forest_(this)
 {
     // nothing
 }
@@ -809,13 +740,41 @@ QmlClassNode* QDocDatabase::findQmlType(const ImportRec& import, const QString& 
 }
 
 /*!
-  This function calls \a func for each tree in the forest.
+  This function calls a set of functions for each tree in the
+  forest that has not already been analyzed. In this way, when
+  running qdoc in \e singleExec mode, each tree is analyzed in
+  turn, and its classes and types are added to the appropriate
+  node maps.
+ */
+void QDocDatabase::processForest()
+{
+    Tree* t = forest_.firstTree();
+    while (t) {
+        findAllNamespaces(t->root());
+        findAllClasses(t->root());
+        findAllFunctions(t->root());
+        findAllObsoleteThings(t->root());
+        findAllLegaleseTexts(t->root());
+        findAllSince(t->root());
+        t->setTreeHasBeenAnalyzed();
+        t = forest_.nextTree();
+    }
+}
+
+/*!
+  This function calls \a func for each tree in the forest,
+  but only if Tree::treeHasBeenAnalyzed() returns false for
+  the tree. In this way, when running qdoc in \e singleExec
+  mode, each tree is analyzed in turn, and its classes and
+  types are added to the appropriate node maps.
  */
 void QDocDatabase::processForest(void (QDocDatabase::*func) (InnerNode*))
 {
     Tree* t = forest_.firstTree();
     while (t) {
-        (this->*(func))(t->root());
+        if (!t->treeHasBeenAnalyzed()) {
+            (this->*(func))(t->root());
+        }
         t = forest_.nextTree();
     }
 }
@@ -887,7 +846,7 @@ NodeMap& QDocDatabase::getNamespaces()
  */
 NodeMap& QDocDatabase::getServiceClasses()
 {
-    if (nonCompatClasses_.isEmpty() && qmlClasses_.isEmpty())
+    if (cppClasses_.isEmpty() && qmlTypes_.isEmpty())
         processForest(&QDocDatabase::findAllClasses);
     return serviceClasses_;
 }
@@ -899,7 +858,7 @@ NodeMap& QDocDatabase::getServiceClasses()
  */
 NodeMap& QDocDatabase::getQmlBasicTypes()
 {
-    if (nonCompatClasses_.isEmpty() && qmlBasicTypes_.isEmpty())
+    if (cppClasses_.isEmpty() && qmlBasicTypes_.isEmpty())
         processForest(&QDocDatabase::findAllClasses);
     return qmlBasicTypes_;
 }
@@ -911,9 +870,9 @@ NodeMap& QDocDatabase::getQmlBasicTypes()
  */
 NodeMap& QDocDatabase::getQmlTypes()
 {
-    if (nonCompatClasses_.isEmpty() && qmlClasses_.isEmpty())
+    if (cppClasses_.isEmpty() && qmlTypes_.isEmpty())
         processForest(&QDocDatabase::findAllClasses);
-    return qmlClasses_;
+    return qmlTypes_;
 }
 
 /*!
@@ -935,7 +894,7 @@ NodeMap& QDocDatabase::getObsoleteClasses()
  */
 NodeMap& QDocDatabase::getCompatibilityClasses()
 {
-    if (nonCompatClasses_.isEmpty() && qmlClasses_.isEmpty())
+    if (cppClasses_.isEmpty() && qmlTypes_.isEmpty())
         processForest(&QDocDatabase::findAllClasses);
     return compatClasses_;
 }
@@ -950,7 +909,7 @@ NodeMap& QDocDatabase::getCompatibilityClasses()
  */
 NodeMap& QDocDatabase::getMainClasses()
 {
-    if (nonCompatClasses_.isEmpty() && qmlClasses_.isEmpty())
+    if (cppClasses_.isEmpty() && qmlTypes_.isEmpty())
         processForest(&QDocDatabase::findAllClasses);
     return mainClasses_;
 }
@@ -962,9 +921,9 @@ NodeMap& QDocDatabase::getMainClasses()
  */
 NodeMap& QDocDatabase::getCppClasses()
 {
-    if (nonCompatClasses_.isEmpty() && qmlClasses_.isEmpty())
+    if (cppClasses_.isEmpty() && qmlTypes_.isEmpty())
         processForest(&QDocDatabase::findAllClasses);
-    return nonCompatClasses_;
+    return cppClasses_;
 }
 
 /*!
@@ -987,7 +946,7 @@ void QDocDatabase::findAllClasses(InnerNode* node)
                     compatClasses_.insert(className, *c);
                 }
                 else {
-                    nonCompatClasses_.insert(className, *c);
+                    cppClasses_.insert(className, *c);
                     if ((*c)->status() == Node::Main)
                         mainClasses_.insert(className, *c);
                 }
@@ -1000,9 +959,9 @@ void QDocDatabase::findAllClasses(InnerNode* node)
             else if (((*c)->isQmlType() || (*c)->isQmlBasicType())&& !(*c)->doc().isEmpty()) {
                 QString qmlTypeName = (*c)->name();
                 if (qmlTypeName.startsWith(QLatin1String("QML:")))
-                    qmlClasses_.insert(qmlTypeName.mid(4),*c);
+                    qmlTypes_.insert(qmlTypeName.mid(4),*c);
                 else
-                    qmlClasses_.insert(qmlTypeName,*c);
+                    qmlTypes_.insert(qmlTypeName,*c);
 
                 //also add to the QML basic type map
                 if ((*c)->isQmlBasicType())
@@ -1022,7 +981,6 @@ void QDocDatabase::findAllClasses(InnerNode* node)
  */
 NodeMapMap& QDocDatabase::getFunctionIndex()
 {
-    funcIndex_.clear();
     processForest(&QDocDatabase::findAllFunctions);
     return funcIndex_;
 }
@@ -1314,7 +1272,15 @@ const NodeMultiMap& QDocDatabase::getSinceMap(const QString& key)
  */
 void QDocDatabase::resolveIssues() {
     resolveQmlInheritance(primaryTreeRoot());
-    resolveTargets();
+    primaryTree()->resolveTargets(primaryTreeRoot());
+    primaryTree()->resolveCppToQmlLinks();
+}
+
+void QDocDatabase::resolveStuff()
+{
+    primaryTree()->resolveInheritance();
+    resolveQmlInheritance(primaryTreeRoot());
+    //primaryTree()->resolveTargets(primaryTreeRoot());
     primaryTree()->resolveCppToQmlLinks();
 }
 
@@ -1424,10 +1390,18 @@ void QDocDatabase::generateTagFile(const QString& name, Generator* g)
 }
 
 /*!
-  Reads and parses the qdoc index files listed in \a indexFiles.
+  Reads and parses the qdoc index files listed in \a t.
  */
-void QDocDatabase::readIndexes(const QStringList& indexFiles)
+void QDocDatabase::readIndexes(const QStringList& t)
 {
+    QStringList indexFiles;
+    foreach (const QString& f, t) {
+        QString fn = f.mid(f.lastIndexOf(QChar('/'))+1);
+        if (!isLoaded(fn))
+            indexFiles << f;
+        else
+            qDebug() << "This index file is already in memory:" << f;
+    }
     QDocIndexFiles::qdocIndexFiles()->readIndexes(indexFiles);
     QDocIndexFiles::destroyQDocIndexFiles();
 }
@@ -1443,6 +1417,8 @@ void QDocDatabase::generateIndex(const QString& fileName,
                                  Generator* g,
                                  bool generateInternalNodes)
 {
+    QString t = fileName.mid(fileName.lastIndexOf(QChar('/'))+1);
+    primaryTree()->setIndexFileName(t);
     QDocIndexFiles::qdocIndexFiles()->generateIndex(fileName, url, title, g, generateInternalNodes);
     QDocIndexFiles::destroyQDocIndexFiles();
 }

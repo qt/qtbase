@@ -74,7 +74,6 @@ public:
     static CodeParser *parserForHeaderFile(const QString &filePath);
     static CodeParser *parserForSourceFile(const QString &filePath);
     static void setLink(Node* node, Node::LinkType linkType, const QString& arg);
-    static const QString& currentOutputSubdirectory() { return currentSubDir_; }
 
 protected:
     const QSet<QString>& commonMetaCommands();
@@ -89,9 +88,9 @@ protected:
     QDocDatabase* qdb_;
 
 private:
-    static QString currentSubDir_;
     static QList<CodeParser *> parsers;
-    static bool showInternal;
+    static bool showInternal_;
+    static bool singleExec_;
 };
 
 QT_END_NAMESPACE

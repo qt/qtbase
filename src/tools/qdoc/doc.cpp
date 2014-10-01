@@ -2816,18 +2816,6 @@ QString DocParser::slashed(const QString& str)
 #define COMMAND_BRIEF                   Doc::alias("brief")
 #define COMMAND_QMLBRIEF                Doc::alias("qmlbrief")
 
-#if 0
-Doc::Doc(const Location& start_loc,
-         const Location& end_loc,
-         const QString& source,
-         const QSet<QString>& metaCommandSet)
-{
-    priv = new DocPrivate(start_loc,end_loc,source);
-    DocParser parser;
-    parser.parse(source,priv,metaCommandSet,QSet<QString>());
-}
-#endif
-
 /*!
   Parse the qdoc comment \a source. Build up a list of all the topic
   commands found including their arguments.  This constructor is used
@@ -3234,6 +3222,9 @@ void Doc::initialize(const Config& config)
     }
 }
 
+/*!
+  All the heap allocated variables are deleted.
+ */
 void Doc::terminate()
 {
     DocParser::exampleFiles.clear();

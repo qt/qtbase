@@ -98,6 +98,7 @@ QString ConfigStrings::QUOTINGINFORMATION = QStringLiteral("quotinginformation")
 QString ConfigStrings::SCRIPTDIRS = QStringLiteral("scriptdirs");
 QString ConfigStrings::SCRIPTS = QStringLiteral("scripts");
 QString ConfigStrings::SHOWINTERNAL = QStringLiteral("showinternal");
+QString ConfigStrings::SINGLEEXEC = QStringLiteral("singleexec");
 QString ConfigStrings::SOURCEDIRS = QStringLiteral("sourcedirs");
 QString ConfigStrings::SOURCEENCODING = QStringLiteral("sourceencoding");
 QString ConfigStrings::SOURCES = QStringLiteral("sources");
@@ -350,6 +351,10 @@ QString Config::getOutputDir() const
         t = getString(CONFIG_OUTPUTDIR);
     else
         t = overrideOutputDir;
+    if (Generator::singleExec()) {
+        QString project = getString(CONFIG_PROJECT);
+        t += QLatin1Char('/') + project.toLower();
+    }
     if (!Generator::useOutputSubdirs()) {
         t = t.left(t.lastIndexOf('/'));
         QString singleOutputSubdir = getString("HTML.outputsubdir");
@@ -866,6 +871,36 @@ bool Config::isMetaKeyChar(QChar ch)
             || ch == QLatin1Char('{')
             || ch == QLatin1Char('}')
             || ch == QLatin1Char(',');
+}
+
+/*!
+  \a fileName is a master qdocconf file. It contains a list of
+  qdocconf files and nothing else. Read the list and return it.
+ */
+QStringList Config::loadMaster(const QString& fileName)
+{
+    Location location = Location::null;
+    QFile fin(fileName);
+    if (!fin.open(QFile::ReadOnly | QFile::Text)) {
+        if (!Config::installDir.isEmpty()) {
+            int prefix = location.filePath().length() - location.fileName().length();
+            fin.setFileName(Config::installDir + "/" + fileName.right(fileName.length() - prefix));
+        }
+        if (!fin.open(QFile::ReadOnly | QFile::Text))
+            location.fatal(tr("Cannot open master qdocconf file '%1': %2").arg(fileName).arg(fin.errorString()));
+    }
+    QTextStream stream(&fin);
+#ifndef QT_NO_TEXTCODEC
+    stream.setCodec("UTF-8");
+#endif
+    QStringList qdocFiles;
+    QString line = stream.readLine();
+    while (!line.isNull()) {
+        qdocFiles.append(line);
+        line = stream.readLine();
+    }
+    fin.close();
+    return qdocFiles;
 }
 
 /*!

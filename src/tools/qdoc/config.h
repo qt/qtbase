@@ -108,6 +108,7 @@ public:
     QStringList getExampleQdocFiles(const QSet<QString> &excludedDirs, const QSet<QString> &excludedFiles);
     QStringList getExampleImageFiles(const QSet<QString> &excludedDirs, const QSet<QString> &excludedFiles);
 
+    static QStringList loadMaster(const QString& fileName);
     static QStringList getFilesHere(const QString& dir,
                                     const QString& nameFilter,
                                     const Location &location = Location(),
@@ -209,6 +210,7 @@ struct ConfigStrings
     static QString SCRIPTDIRS;
     static QString SCRIPTS;
     static QString SHOWINTERNAL;
+    static QString SINGLEEXEC;
     static QString SOURCEDIRS;
     static QString SOURCEENCODING;
     static QString SOURCES;
@@ -282,6 +284,7 @@ struct ConfigStrings
 #define CONFIG_SCRIPTDIRS ConfigStrings::SCRIPTDIRS
 #define CONFIG_SCRIPTS ConfigStrings::SCRIPTS
 #define CONFIG_SHOWINTERNAL ConfigStrings::SHOWINTERNAL
+#define CONFIG_SINGLEEXEC ConfigStrings::SINGLEEXEC
 #define CONFIG_SOURCEDIRS ConfigStrings::SOURCEDIRS
 #define CONFIG_SOURCEENCODING ConfigStrings::SOURCEENCODING
 #define CONFIG_SOURCES ConfigStrings::SOURCES

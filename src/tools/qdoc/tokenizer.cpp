@@ -511,6 +511,9 @@ void Tokenizer::initialize(const Config &config)
     defines = new QRegExp(d.join('|'));
     falsehoods = new QRegExp(config.getStringList(CONFIG_FALSEHOODS).join('|'));
 
+    /*
+      The keyword hash table is always cleared before any words are inserted.
+     */
     memset(kwordHashTable, 0, sizeof(kwordHashTable));
     for (int i = 0; i < Tok_LastKeyword - Tok_FirstKeyword + 1; i++)
         insertKwordIntoHash(kwords[i], i + 1);
@@ -533,6 +536,11 @@ void Tokenizer::initialize(const Config &config)
     }
 }
 
+/*!
+  The heap allocated variables are freed here. The keyword
+  hash table is not cleared here, but it is cleared in the
+  initialize() function, before any keywords are inserted.
+ */
 void Tokenizer::terminate()
 {
     delete comment;

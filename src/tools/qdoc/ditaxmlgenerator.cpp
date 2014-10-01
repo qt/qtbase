@@ -663,10 +663,10 @@ GuidMap* DitaXmlGenerator::lookupGuidMap(const QString& fileName)
  */
 void DitaXmlGenerator::generateDocs()
 {
-    if (!runPrepareOnly())
+    if (!preparing())
         Generator::generateDocs();
 
-    if (!runGenerateOnly()) {
+    if (!generating()) {
         QString fileBase = project.toLower().simplified().replace(QLatin1Char(' '), QLatin1Char('-'));
         qdb_->generateIndex(outputDir() + QLatin1Char('/') + fileBase + ".index",
                             projectUrl,
@@ -675,7 +675,7 @@ void DitaXmlGenerator::generateDocs()
                             true);
     }
 
-    if (!runPrepareOnly()) {
+    if (!preparing()) {
         writeDitaMap();
         /*
           Generate the XML tag file, if it was requested.

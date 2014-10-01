@@ -65,9 +65,9 @@ QT_BEGIN_NAMESPACE
 #define COMMAND_TITLE                   Doc::alias(QLatin1String("title"))
 #define COMMAND_WRAPPER                 Doc::alias(QLatin1String("wrapper"))
 
-QString CodeParser::currentSubDir_;
 QList<CodeParser *> CodeParser::parsers;
-bool CodeParser::showInternal = false;
+bool CodeParser::showInternal_ = false;
+bool CodeParser::singleExec_ = false;
 
 /*!
   The constructor adds this code parser to the static
@@ -93,7 +93,8 @@ CodeParser::~CodeParser()
  */
 void CodeParser::initializeParser(const Config& config)
 {
-    showInternal = config.getBool(CONFIG_SHOWINTERNAL);
+    showInternal_ = config.getBool(CONFIG_SHOWINTERNAL);
+    singleExec_ = config.getBool(CONFIG_SINGLEEXEC);
 }
 
 /*!
@@ -262,7 +263,7 @@ void CodeParser::processCommonMetaCommand(const Location& location,
         node->setStatus(Node::Preliminary);
     }
     else if (command == COMMAND_INTERNAL) {
-        if (!showInternal) {
+        if (!showInternal_) {
             node->setAccess(Node::Private);
             node->setStatus(Node::Internal);
             if (node->type() == Node::QmlPropertyGroup) {

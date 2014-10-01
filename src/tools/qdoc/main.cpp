@@ -63,7 +63,6 @@
 
 QT_BEGIN_NAMESPACE
 
-
 bool creationTimeBefore(const QFileInfo &fi1, const QFileInfo &fi2)
 {
     return fi1.lastModified() < fi2.lastModified();
@@ -71,6 +70,7 @@ bool creationTimeBefore(const QFileInfo &fi1, const QFileInfo &fi2)
 
 static bool highlighting = false;
 static bool showInternal = false;
+static bool singleExec = false;
 static bool redirectDocumentationToDevNull = false;
 static bool noLinkErrors = false;
 static bool autolinkErrors = false;
@@ -80,14 +80,22 @@ static QStringList dependModules;
 static QStringList indexDirs;
 static QString currentDir;
 static QString prevCurrentDir;
+static QHash<QString,QString> defaults;
+#ifndef QT_NO_TRANSLATION
+typedef QPair<QString, QTranslator*> Translator;
+static QList<Translator> translators;
+#endif
 
-
+/*!
+  Read some XML indexes containing definitions from other
+  documentation sets. \a config contains a variable that
+  lists directories where index files can bge found. It also
+  contains the \c depends variable, which lists the modules
+  that the current module depends on.
+*/
 static void loadIndexFiles(Config& config)
 {
     QDocDatabase* qdb = QDocDatabase::qdocDB();
-    /*
-      Read some XML indexes containing definitions from other documentation sets.
-     */
     QStringList indexFiles;
     QStringList configIndexes = config.getStringList(CONFIG_INDEXES);
     foreach (const QString &index, configIndexes) {
@@ -194,35 +202,17 @@ static void loadIndexFiles(Config& config)
  */
 static void processQdocconfFile(const QString &fileName)
 {
-#ifndef QT_NO_TRANSLATION
-    QList<QTranslator *> translators;
-#endif
-
     /*
       The Config instance represents the configuration data for qdoc.
-      All the other classes are initialized with the config. Here we
+      All the other classes are initialized with the config. Below, we
       initialize the configuration with some default values.
+
+      I don't think the call to translate() does anything here. For one
+      thing, the translators haven't been installed at this point. And
+      I doubt any translator would translate QDoc anyway. But I left it
+      here because it does no harm.
      */
     Config config(QCoreApplication::translate("QDoc", "qdoc"));
-
-    /*
-      The default indent for code is 4.
-      The default value for false is 0.
-      The default supported file extensions are cpp, h, qdoc and qml.
-      The default language is c++.
-      The default output format is html.
-      The default tab size is 8.
-      And those are all the default values for configuration variables.
-     */
-    static QHash<QString,QString> defaults;
-    if (defaults.isEmpty()) {
-        defaults.insert(CONFIG_CODEINDENT, QLatin1String("4"));
-        defaults.insert(CONFIG_FALSEHOODS, QLatin1String("0"));
-        defaults.insert(CONFIG_FILEEXTENSIONS, QLatin1String("*.cpp *.h *.qdoc *.qml"));
-        defaults.insert(CONFIG_LANGUAGE, QLatin1String("Cpp"));
-        defaults.insert(CONFIG_OUTPUTFORMATS, QLatin1String("HTML"));
-        defaults.insert(CONFIG_TABSIZE, QLatin1String("8"));
-    }
 
     QHash<QString,QString>::iterator iter;
     for (iter = defaults.begin(); iter != defaults.end(); ++iter)
@@ -230,6 +220,7 @@ static void processQdocconfFile(const QString &fileName)
 
     config.setStringList(CONFIG_SYNTAXHIGHLIGHTING, QStringList(highlighting ? "true" : "false"));
     config.setStringList(CONFIG_SHOWINTERNAL, QStringList(showInternal ? "true" : "false"));
+    config.setStringList(CONFIG_SINGLEEXEC, QStringList(singleExec ? "true" : "false"));
     config.setStringList(CONFIG_REDIRECTDOCUMENTATIONTODEVNULL, QStringList(redirectDocumentationToDevNull ? "true" : "false"));
     config.setStringList(CONFIG_NOLINKERRORS, QStringList(noLinkErrors ? "true" : "false"));
     config.setStringList(CONFIG_AUTOLINKERRORS, QStringList(autolinkErrors ? "true" : "false"));
@@ -247,8 +238,8 @@ static void processQdocconfFile(const QString &fileName)
     currentDir = QFileInfo(fileName).path();
     Location::initialize(config);
     config.load(fileName);
-    QString project = config.getString(CONFIG_PROJECT).toLower();
-    //qDebug() << "\nStart project:" << project;
+    QString project = config.getString(CONFIG_PROJECT);
+    //qDebug() << "Start project:" << project;
     /*
       Add the defines to the configuration variables.
      */
@@ -261,17 +252,24 @@ static void processQdocconfFile(const QString &fileName)
     if (!currentDir.isEmpty())
         QDir::setCurrent(currentDir);
 
-    QString phase;
-    if (Generator::runPrepareOnly())
-        phase = " in -prepare mode ";
-    else if (Generator::runGenerateOnly())
-        phase = " in -generate mode ";
+    QString phase = " in -";
+    if (Generator::singleExec())
+        phase += "single exec mode, ";
+    else
+        phase += "separate exec mode, ";
+    if (Generator::preparing())
+        phase += "prepare phase ";
+    else if (Generator::generating())
+        phase += "generate phase ";
     QString msg = "Running qdoc for " + config.getString(CONFIG_PROJECT) + phase;
     Location::logToStdErr(msg);
 
     /*
       Initialize all the classes and data structures with the
-      qdoc configuration.
+      qdoc configuration. This is safe to do for each qdocconf
+      file processed, because all the data structures created
+      are either cleared after they have been used, or they
+      are cleared in the terminate() functions below.
      */
     Location::initialize(config);
     Tokenizer::initialize(config);
@@ -282,16 +280,32 @@ static void processQdocconfFile(const QString &fileName)
 
 #ifndef QT_NO_TRANSLATION
     /*
-      Load the language translators, if the configuration specifies any.
+      Load the language translators, if the configuration specifies any,
+      but only if they haven't already been loaded. This works in both
+      -prepare/-generate mode and -singleexec mode.
      */
     QStringList fileNames = config.getStringList(CONFIG_TRANSLATORS);
     QStringList::ConstIterator fn = fileNames.constBegin();
     while (fn != fileNames.constEnd()) {
-        QTranslator *translator = new QTranslator(0);
-        if (!translator->load(*fn))
-            config.lastLocation().error(QCoreApplication::translate("QDoc", "Cannot load translator '%1'").arg(*fn));
-        QCoreApplication::instance()->installTranslator(translator);
-        translators.append(translator);
+        bool found = false;
+        if (!translators.isEmpty()) {
+            for (int i=0; i<translators.size(); ++i) {
+                if (translators.at(i).first == *fn) {
+                    found = true;
+                    break;
+                }
+            }
+        }
+        if (!found) {
+            QTranslator *translator = new QTranslator(0);
+            if (!translator->load(*fn)) {
+                config.lastLocation().error(QCoreApplication::translate("QDoc", "Cannot load translator '%1'").arg(*fn));
+            }
+            else {
+                QCoreApplication::instance()->installTranslator(translator);
+                translators.append(Translator(*fn, translator));
+            }
+        }
         ++fn;
     }
 #endif
@@ -311,175 +325,227 @@ static void processQdocconfFile(const QString &fileName)
       will be stored. The database includes a tree of nodes, which gets
       built as the source files are parsed. The documentation output is
       generated by traversing that tree.
+
+      Note: qdocDB() allocates a new instance only if no instance exists.
+      So it is safe to call qdocDB() any time.
      */
     QDocDatabase* qdb = QDocDatabase::qdocDB();
     qdb->setVersion(config.getString(CONFIG_VERSION));
     qdb->setShowInternal(config.getBool(CONFIG_SHOWINTERNAL));
+    qdb->setSingleExec(config.getBool(CONFIG_SINGLEEXEC));
     /*
       By default, the only output format is HTML.
      */
     QSet<QString> outputFormats = config.getOutputFormats();
     Location outputFormatsLocation = config.lastLocation();
 
-    //if (!Generator::runPrepareOnly())
-    Generator::debug("  loading index files");
-    loadIndexFiles(config);
-    qdb->newPrimaryTree(config.getString(CONFIG_PROJECT));
-    qdb->setSearchOrder();
-    Generator::debug("  done loading index files");
+    qdb->clearSearchOrder();
+    QString p = config.getString(CONFIG_PROJECT).toLower();
+    if (!Generator::singleExec()) {
+        Generator::debug("  loading index files");
+        loadIndexFiles(config);
+        Generator::debug("  done loading index files");
+        qdb->newPrimaryTree(p);
+    }
+    else if (Generator::preparing())
+        qdb->newPrimaryTree(p);
+    else
+        qdb->setPrimaryTree(p);
+
+    dependModules = config.getStringList(CONFIG_DEPENDS);
+    dependModules.removeDuplicates();
+    qdb->setSearchOrder(dependModules);
 
     QSet<QString> excludedDirs;
     QSet<QString> excludedFiles;
-    QStringList headerList;
-    QStringList sourceList;
     QStringList excludedDirsList;
     QStringList excludedFilesList;
 
-    Generator::debug("Reading excludedirs");
-    excludedDirsList = config.getCanonicalPathList(CONFIG_EXCLUDEDIRS);
-    foreach (const QString &excludeDir, excludedDirsList) {
-        QString p = QDir::fromNativeSeparators(excludeDir);
-        QDir tmp(p);
-        if (tmp.exists())
-            excludedDirs.insert(p);
-    }
+    if (!Generator::singleExec() || !Generator::generating()) {
+        QStringList headerList;
+        QStringList sourceList;
 
-    Generator::debug("Reading excludefiles");
-    excludedFilesList = config.getCanonicalPathList(CONFIG_EXCLUDEFILES);
-    foreach (const QString& excludeFile, excludedFilesList) {
-        QString p = QDir::fromNativeSeparators(excludeFile);
-        excludedFiles.insert(p);
-    }
+        Generator::debug("Reading excludedirs");
+        excludedDirsList = config.getCanonicalPathList(CONFIG_EXCLUDEDIRS);
+        foreach (const QString &excludeDir, excludedDirsList) {
+            QString p = QDir::fromNativeSeparators(excludeDir);
+            QDir tmp(p);
+            if (tmp.exists())
+                excludedDirs.insert(p);
+        }
 
-    Generator::debug("Reading headerdirs");
-    headerList = config.getAllFiles(CONFIG_HEADERS,CONFIG_HEADERDIRS,excludedDirs,excludedFiles);
-    QMap<QString,QString> headers;
-    QMultiMap<QString,QString> headerFileNames;
-    for (int i=0; i<headerList.size(); ++i) {
-        if (headerList[i].contains(QString("doc/snippets")))
-            continue;
-        if (headers.contains(headerList[i]))
-            continue;
-        headers.insert(headerList[i],headerList[i]);
-        QString t = headerList[i].mid(headerList[i].lastIndexOf('/')+1);
-        headerFileNames.insert(t,t);
-    }
+        Generator::debug("Reading excludefiles");
+        excludedFilesList = config.getCanonicalPathList(CONFIG_EXCLUDEFILES);
+        foreach (const QString& excludeFile, excludedFilesList) {
+            QString p = QDir::fromNativeSeparators(excludeFile);
+            excludedFiles.insert(p);
+        }
 
-    Generator::debug("Reading sourcedirs");
-    sourceList = config.getAllFiles(CONFIG_SOURCES,CONFIG_SOURCEDIRS,excludedDirs,excludedFiles);
-    QMap<QString,QString> sources;
-    QMultiMap<QString,QString> sourceFileNames;
-    for (int i=0; i<sourceList.size(); ++i) {
-        if (sourceList[i].contains(QString("doc/snippets")))
-            continue;
-        if (sources.contains(sourceList[i]))
-            continue;
-        sources.insert(sourceList[i],sourceList[i]);
-        QString t = sourceList[i].mid(sourceList[i].lastIndexOf('/')+1);
-        sourceFileNames.insert(t,t);
-    }
-    /*
-      Find all the qdoc files in the example dirs, and add
-      them to the source files to be parsed.
-     */
-    Generator::debug("Reading exampledirs");
-    QStringList exampleQdocList = config.getExampleQdocFiles(excludedDirs, excludedFiles);
-    for (int i=0; i<exampleQdocList.size(); ++i) {
-        if (!sources.contains(exampleQdocList[i])) {
-            sources.insert(exampleQdocList[i],exampleQdocList[i]);
-            QString t = exampleQdocList[i].mid(exampleQdocList[i].lastIndexOf('/')+1);
+        Generator::debug("Reading headerdirs");
+        headerList = config.getAllFiles(CONFIG_HEADERS,CONFIG_HEADERDIRS,excludedDirs,excludedFiles);
+        QMap<QString,QString> headers;
+        QMultiMap<QString,QString> headerFileNames;
+        for (int i=0; i<headerList.size(); ++i) {
+            if (headerList[i].contains(QString("doc/snippets")))
+                continue;
+            if (headers.contains(headerList[i]))
+                continue;
+            headers.insert(headerList[i],headerList[i]);
+            QString t = headerList[i].mid(headerList[i].lastIndexOf('/')+1);
+            headerFileNames.insert(t,t);
+        }
+
+        Generator::debug("Reading sourcedirs");
+        sourceList = config.getAllFiles(CONFIG_SOURCES,CONFIG_SOURCEDIRS,excludedDirs,excludedFiles);
+        QMap<QString,QString> sources;
+        QMultiMap<QString,QString> sourceFileNames;
+        for (int i=0; i<sourceList.size(); ++i) {
+            if (sourceList[i].contains(QString("doc/snippets")))
+                continue;
+            if (sources.contains(sourceList[i]))
+                continue;
+            sources.insert(sourceList[i],sourceList[i]);
+            QString t = sourceList[i].mid(sourceList[i].lastIndexOf('/')+1);
             sourceFileNames.insert(t,t);
         }
-    }
-
-    Generator::debug("Adding doc/image dirs found in exampledirs to imagedirs");
-    QSet<QString> exampleImageDirs;
-    QStringList exampleImageList = config.getExampleImageFiles(excludedDirs, excludedFiles);
-    for (int i=0; i<exampleImageList.size(); ++i) {
-        if (exampleImageList[i].contains("doc/images")) {
-            QString t = exampleImageList[i].left(exampleImageList[i].lastIndexOf("doc/images")+10);
-            if (!exampleImageDirs.contains(t)) {
-                exampleImageDirs.insert(t);
+        /*
+          Find all the qdoc files in the example dirs, and add
+          them to the source files to be parsed.
+        */
+        Generator::debug("Reading exampledirs");
+        QStringList exampleQdocList = config.getExampleQdocFiles(excludedDirs, excludedFiles);
+        for (int i=0; i<exampleQdocList.size(); ++i) {
+            if (!sources.contains(exampleQdocList[i])) {
+                sources.insert(exampleQdocList[i],exampleQdocList[i]);
+                QString t = exampleQdocList[i].mid(exampleQdocList[i].lastIndexOf('/')+1);
+                sourceFileNames.insert(t,t);
             }
         }
-    }
-    Generator::augmentImageDirs(exampleImageDirs);
 
-    /*
-      Parse each header file in the set using the appropriate parser and add it
-      to the big tree.
-     */
-    QSet<CodeParser *> usedParsers;
-
-    Generator::debug("Parsing header files");
-    int parsed = 0;
-    QMap<QString,QString>::ConstIterator h = headers.constBegin();
-    while (h != headers.constEnd()) {
-        CodeParser *codeParser = CodeParser::parserForHeaderFile(h.key());
-        if (codeParser) {
-            ++parsed;
-            Generator::debug(QString("Parsing " + h.key()));
-            codeParser->parseHeaderFile(config.location(), h.key());
-            usedParsers.insert(codeParser);
+        Generator::debug("Adding doc/image dirs found in exampledirs to imagedirs");
+        QSet<QString> exampleImageDirs;
+        QStringList exampleImageList = config.getExampleImageFiles(excludedDirs, excludedFiles);
+        for (int i=0; i<exampleImageList.size(); ++i) {
+            if (exampleImageList[i].contains("doc/images")) {
+                QString t = exampleImageList[i].left(exampleImageList[i].lastIndexOf("doc/images")+10);
+                if (!exampleImageDirs.contains(t)) {
+                    exampleImageDirs.insert(t);
+                }
+            }
         }
-        ++h;
-    }
+        Generator::augmentImageDirs(exampleImageDirs);
 
-    foreach (CodeParser *codeParser, usedParsers)
-        codeParser->doneParsingHeaderFiles();
+        /*
+          Parse each header file in the set using the appropriate parser and add it
+          to the big tree.
+        */
+        QSet<CodeParser *> usedParsers;
 
-    usedParsers.clear();
-    qdb->resolveInheritance();
-
-    /*
-      Parse each source text file in the set using the appropriate parser and
-      add it to the big tree.
-     */
-    parsed = 0;
-    Generator::debug("Parsing source files");
-    QMap<QString,QString>::ConstIterator s = sources.constBegin();
-    while (s != sources.constEnd()) {
-        CodeParser *codeParser = CodeParser::parserForSourceFile(s.key());
-        if (codeParser) {
-            ++parsed;
-            Generator::debug(QString("Parsing " + s.key()));
-            codeParser->parseSourceFile(config.location(), s.key());
-            usedParsers.insert(codeParser);
+        Generator::debug("Parsing header files");
+        int parsed = 0;
+        QMap<QString,QString>::ConstIterator h = headers.constBegin();
+        while (h != headers.constEnd()) {
+            CodeParser *codeParser = CodeParser::parserForHeaderFile(h.key());
+            if (codeParser) {
+                ++parsed;
+                Generator::debug(QString("Parsing " + h.key()));
+                codeParser->parseHeaderFile(config.location(), h.key());
+                usedParsers.insert(codeParser);
+            }
+            ++h;
         }
-        ++s;
+
+        foreach (CodeParser *codeParser, usedParsers)
+            codeParser->doneParsingHeaderFiles();
+
+        usedParsers.clear();
+        //qDebug() << "CALL: resolveInheritance()";
+        qdb->resolveInheritance();
+
+        /*
+          Parse each source text file in the set using the appropriate parser and
+          add it to the big tree.
+        */
+        parsed = 0;
+        Generator::debug("Parsing source files");
+        QMap<QString,QString>::ConstIterator s = sources.constBegin();
+        while (s != sources.constEnd()) {
+            CodeParser *codeParser = CodeParser::parserForSourceFile(s.key());
+            if (codeParser) {
+                ++parsed;
+                Generator::debug(QString("Parsing " + s.key()));
+                codeParser->parseSourceFile(config.location(), s.key());
+                usedParsers.insert(codeParser);
+            }
+            ++s;
+        }
+        Generator::debug(QString("Parsing done."));
+
+        foreach (CodeParser *codeParser, usedParsers)
+            codeParser->doneParsingSourceFiles();
+
+        /*
+          Now the primary tree has been built from all the header and
+          source files. Resolve all the class names, function names,
+          targets, URLs, links, and other stuff that needs resolving.
+        */
+        Generator::debug("Resolving stuff prior to generating docs");
+        //qDebug() << "CALL: resolveIssues()";
+        qdb->resolveIssues();
     }
-    Generator::debug(QString("Parsing done."));
+    else {
+        Generator::debug("Reading excludedirs");
+        excludedDirsList = config.getCanonicalPathList(CONFIG_EXCLUDEDIRS);
+        foreach (const QString &excludeDir, excludedDirsList) {
+            QString p = QDir::fromNativeSeparators(excludeDir);
+            QDir tmp(p);
+            if (tmp.exists())
+                excludedDirs.insert(p);
+        }
 
-    foreach (CodeParser *codeParser, usedParsers)
-        codeParser->doneParsingSourceFiles();
+        Generator::debug("Reading excludefiles");
+        excludedFilesList = config.getCanonicalPathList(CONFIG_EXCLUDEFILES);
+        foreach (const QString& excludeFile, excludedFilesList) {
+            QString p = QDir::fromNativeSeparators(excludeFile);
+            excludedFiles.insert(p);
+        }
+
+        Generator::debug("Adding doc/image dirs found in exampledirs to imagedirs");
+        QSet<QString> exampleImageDirs;
+        QStringList exampleImageList = config.getExampleImageFiles(excludedDirs, excludedFiles);
+        for (int i=0; i<exampleImageList.size(); ++i) {
+            if (exampleImageList[i].contains("doc/images")) {
+                QString t = exampleImageList[i].left(exampleImageList[i].lastIndexOf("doc/images")+10);
+                if (!exampleImageDirs.contains(t)) {
+                    exampleImageDirs.insert(t);
+                }
+            }
+        }
+        Generator::augmentImageDirs(exampleImageDirs);
+        qdb->resolveStuff();
+    }
 
     /*
-      Now the big tree has been built from all the header and
-      source files. Resolve all the class names, function names,
-      targets, URLs, links, and other stuff that needs resolving.
-     */
-    Generator::debug("Resolving stuff prior to generating docs");
-    qdb->resolveIssues();
-
-    /*
-      The tree is built and all the stuff that needed resolving
-      has been resolved. Now traverse the tree and generate the
-      documentation output. More than one output format can be
-      requested. The tree is traversed for each one.
+      The primary tree is built and all the stuff that needed
+      resolving has been resolved. Now traverse the tree and
+      generate the documentation output. More than one output
+      format can be requested. The tree is traversed for each
+      one.
      */
     Generator::debug("Generating docs");
+    //qDebug() << "CALL: generateDocs()";
     QSet<QString>::ConstIterator of = outputFormats.constBegin();
     while (of != outputFormats.constEnd()) {
         Generator* generator = Generator::generatorForFormat(*of);
         if (generator == 0)
-            outputFormatsLocation.fatal(QCoreApplication::translate("QDoc", "Unknown output format '%1'").arg(*of));
+            outputFormatsLocation.fatal(QCoreApplication::translate("QDoc",
+                                               "Unknown output format '%1'").arg(*of));
         generator->generateDocs();
         ++of;
     }
 
-
     //Generator::writeOutFileNames();
-    Generator::debug("Shutting down qdoc");
+    Generator::debug("Terminating qdoc classes");
     if (Generator::debugging())
         Generator::stopDebugging(project);
 
@@ -492,17 +558,7 @@ static void processQdocconfFile(const QString &fileName)
     Location::terminate();
     QDir::setCurrent(prevCurrentDir);
 
-#ifndef QT_NO_TRANSLATION
-    qDeleteAll(translators);
-#endif
-#ifdef DEBUG_SHUTDOWN_CRASH
-    qDebug() << "main(): Delete qdoc database";
-#endif
-    QDocDatabase::destroyQdocDB();
-#ifdef DEBUG_SHUTDOWN_CRASH
-    qDebug() << "main(): qdoc database deleted";
-#endif
-    Generator::debug("qdoc finished!");
+    Generator::debug("qdoc classes terminated");
 }
 
 extern Q_CORE_EXPORT QBasicAtomicInt qt_qhash_seed;
@@ -621,12 +677,17 @@ int main(int argc, char **argv)
     logProgressOption.setDescription(QCoreApplication::translate("qdoc", "Log progress on stderr."));
     parser.addOption(logProgressOption);
 
+    QCommandLineOption singleExecOption(QStringList() << QStringLiteral("single-exec"));
+    singleExecOption.setDescription(QCoreApplication::translate("qdoc", "Run qdoc once over all the qdoc conf files."));
+    parser.addOption(singleExecOption);
+
     parser.process(app);
 
     defines += parser.values(defineOption);
     dependModules += parser.values(dependsOption);
     highlighting = parser.isSet(highlightingOption);
     showInternal = parser.isSet(showInternalOption);
+    singleExec = parser.isSet(singleExecOption);
     redirectDocumentationToDevNull = parser.isSet(redirectDocumentationToDevNullOption);
     Config::generateExamples = !parser.isSet(noExamplesOption);
     foreach (const QString &indexDir, parser.values(indexDirOption)) {
@@ -650,21 +711,71 @@ int main(int argc, char **argv)
         Generator::setQDocPass(Generator::Prepare);
     if (parser.isSet(generateOption))
         Generator::setQDocPass(Generator::Generate);
+    if (parser.isSet(singleExecOption))
+        Generator::setSingleExec();
     if (parser.isSet(logProgressOption))
         Location::startLoggingProgress();
 
-    const QStringList qdocFiles = parser.positionalArguments();
+    /*
+      The default indent for code is 4.
+      The default value for false is 0.
+      The default supported file extensions are cpp, h, qdoc and qml.
+      The default language is c++.
+      The default output format is html.
+      The default tab size is 8.
+      And those are all the default values for configuration variables.
+     */
+    if (defaults.isEmpty()) {
+        defaults.insert(CONFIG_CODEINDENT, QLatin1String("4"));
+        defaults.insert(CONFIG_FALSEHOODS, QLatin1String("0"));
+        defaults.insert(CONFIG_FILEEXTENSIONS, QLatin1String("*.cpp *.h *.qdoc *.qml"));
+        defaults.insert(CONFIG_LANGUAGE, QLatin1String("Cpp"));
+        defaults.insert(CONFIG_OUTPUTFORMATS, QLatin1String("HTML"));
+        defaults.insert(CONFIG_TABSIZE, QLatin1String("8"));
+    }
+
+    QStringList qdocFiles = parser.positionalArguments();
     if (qdocFiles.isEmpty())
         parser.showHelp();
 
+    if (singleExec)
+        qdocFiles = Config::loadMaster(qdocFiles.at(0));
+
     /*
-      Main loop.
+      Main loop is now modified to handle single exec mode.
      */
+    if (Generator::singleExec())
+        Generator::setQDocPass(Generator::Prepare);
     foreach (const QString &qf, qdocFiles) {
-        //qDebug() << "PROCESSING:" << qf;
+        dependModules.clear();
         processQdocconfFile(qf);
     }
+    if (Generator::singleExec()) {
+        Generator::setQDocPass(Generator::Generate);
+        QDocDatabase* qdb = QDocDatabase::qdocDB();
+        qdb->processForest();
+        foreach (const QString &qf, qdocFiles) {
+            dependModules.clear();
+            processQdocconfFile(qf);
+        }
+    }
+
+#ifndef QT_NO_TRANSLATION
+    if (!translators.isEmpty()) {
+        for (int i=0; i<translators.size(); ++i) {
+            delete translators.at(i).second;
+        }
+    }
+    translators.clear();
+#endif
+
+#ifdef DEBUG_SHUTDOWN_CRASH
+    qDebug() << "main(): Delete qdoc database";
+#endif
+    QDocDatabase::destroyQdocDB();
+#ifdef DEBUG_SHUTDOWN_CRASH
+    qDebug() << "main(): qdoc database deleted";
+#endif
 
     return EXIT_SUCCESS;
 }
-

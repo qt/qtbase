@@ -564,7 +564,6 @@ void QDocIndexFiles::readIndexSection(const QDomElement& element,
         node->setReconstitutedBrief(briefAttr);
     }
 
-    // zzz
     bool useParent = (element.nodeName() == "namespace" && name.isEmpty());
     if (element.hasChildNodes()) {
         QDomElement child = element.firstChildElement();
@@ -806,11 +805,14 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
         QString fullName = node->fullDocumentName();
         if (fullName != objName)
             writer.writeAttribute("fullname", fullName);
+#if 0
         if (Generator::useOutputSubdirs())
             href = node->outputSubdirectory();
         if (!href.isEmpty())
             href.append(QLatin1Char('/'));
         href.append(gen_->fullDocumentLocation(node));
+#endif
+        href = gen_->fullDocumentLocation(node);
     }
     else
         href = node->name();

@@ -256,7 +256,7 @@ QString Location::canonicalRelativePath(const QString &path)
  */
 void Location::warning(const QString& message, const QString& details) const
 {
-    if (!Generator::runPrepareOnly())
+    if (!Generator::preparing())
         emitMessage(Warning, message, details);
 }
 
@@ -267,7 +267,7 @@ void Location::warning(const QString& message, const QString& details) const
  */
 void Location::error(const QString& message, const QString& details) const
 {
-    if (!Generator::runPrepareOnly())
+    if (!Generator::preparing())
         emitMessage(Error, message, details);
 }
 

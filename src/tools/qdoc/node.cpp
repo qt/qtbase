@@ -218,7 +218,7 @@ Node::Node(Type type, InnerNode *parent, const QString& name)
 {
     if (parent_)
         parent_->addChild(this);
-    outSubDir_ = CodeParser::currentOutputSubdirectory();
+    outSubDir_ = Generator::outputSubdir();
     if (operators_.isEmpty()) {
         operators_.insert("++","inc");
         operators_.insert("--","dec");

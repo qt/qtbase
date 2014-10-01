@@ -66,7 +66,11 @@ QT_BEGIN_NAMESPACE
   be necessary, and it might be removed later.
  */
 Tree::Tree(const QString& module, QDocDatabase* qdb)
-    : module_(module), qdb_(qdb), root_(0, QString())
+    : treeHasBeenAnalyzed_(false),
+      docsHaveBeenGenerated_(false),
+      module_(module),
+      qdb_(qdb),
+      root_(0, QString())
 {
     root_.setModuleName(module_);
     root_.setTree(this);

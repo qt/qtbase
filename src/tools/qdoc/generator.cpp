@@ -92,7 +92,8 @@ bool Generator::debugging_ = false;
 bool Generator::noLinkErrors_ = false;
 bool Generator::autolinkErrors_ = false;
 bool Generator::redirectDocumentationToDevNull_ = false;
-Generator::Passes Generator::qdocPass_ = Both;
+Generator::QDocPass Generator::qdocPass_ = Generator::Neither;
+bool Generator::qdocSingleExec_ = false;
 bool Generator::useOutputSubdirs_ = true;
 
 void Generator::startDebugging(const QString& message)
@@ -134,6 +135,7 @@ Generator::Generator()
       inTableHeader_(false),
       threeColumnEnumValueTable_(true),
       showInternal_(false),
+      singleExec_(false),
       numTableRows_(0)
 {
     qdb_ = QDocDatabase::qdocDB();
@@ -259,7 +261,8 @@ void Generator::writeOutFileNames()
 void Generator::beginSubPage(const InnerNode* node, const QString& fileName)
 {
     QString path = outputDir() + QLatin1Char('/');
-    if (Generator::useOutputSubdirs() && !node->outputSubdirectory().isEmpty())
+    if (Generator::useOutputSubdirs() && !node->outputSubdirectory().isEmpty() &&
+        !outputDir().endsWith(node->outputSubdirectory()))
         path += node->outputSubdirectory() + QLatin1Char('/');
     path += fileName;
 
@@ -1529,7 +1532,7 @@ void Generator::initialize(const Config &config)
 
         QDir dirInfo;
         if (dirInfo.exists(outDir_)) {
-            if (!runGenerateOnly() && Generator::useOutputSubdirs()) {
+            if (!generating() && Generator::useOutputSubdirs()) {
                 if (!Config::removeDirContents(outDir_))
                     config.lastLocation().error(tr("Cannot empty output directory '%1'").arg(outDir_));
             }
@@ -1678,6 +1681,7 @@ void Generator::initializeGenerator(const Config& config)
 {
     config_ = &config;
     showInternal_ = config.getBool(CONFIG_SHOWINTERNAL);
+    singleExec_ = config.getBool(CONFIG_SINGLEEXEC);
 }
 
 bool Generator::matchAhead(const Atom *atom, Atom::Type expectedAtomType)

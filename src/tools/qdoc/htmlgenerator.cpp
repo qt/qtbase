@@ -100,8 +100,10 @@ HtmlGenerator::HtmlGenerator()
  */
 HtmlGenerator::~HtmlGenerator()
 {
-    if (helpProjectWriter)
+    if (helpProjectWriter) {
         delete helpProjectWriter;
+        helpProjectWriter = 0;
+    }
 }
 
 /*!
@@ -130,6 +132,11 @@ void HtmlGenerator::initializeGenerator(const Config &config)
     Generator::initializeGenerator(config);
     obsoleteLinks = config.getBool(CONFIG_OBSOLETELINKS);
     setImageFileExtensions(QStringList() << "png" << "jpg" << "jpeg" << "gif");
+
+    /*
+      The formatting maps are owned by Generator. They are cleared in
+      Generator::terminate().
+     */
     int i = 0;
     while (defaults[i].key) {
         formattingLeftMap().insert(defaults[i].key, defaults[i].left);
@@ -211,7 +218,12 @@ void HtmlGenerator::initializeGenerator(const Config &config)
     // The following line was changed to fix QTBUG-27798
     //codeIndent = config.getInt(CONFIG_CODEINDENT);
 
-    helpProjectWriter = new HelpProjectWriter(config, project.toLower() + ".qhp", this);
+    /*
+      The help file write should be allocated once and only once
+      per qdoc execution.
+     */
+    if (helpProjectWriter == 0)
+        helpProjectWriter = new HelpProjectWriter(config, project.toLower() + ".qhp", this);
 
     // Documentation template handling
     headerScripts = config.getString(HtmlGenerator::format() + Config::dot + CONFIG_HEADERSCRIPTS);
@@ -266,10 +278,10 @@ void HtmlGenerator::generateDocs()
     Node* qflags = qdb_->findClassNode(QStringList("QFlags"));
     if (qflags)
         qflagsHref_ = linkForNode(qflags,0);
-    if (!runPrepareOnly())
+    if (!preparing())
         Generator::generateDocs();
 
-    if (!runGenerateOnly()) {
+    if (!generating()) {
         QString fileBase = project.toLower().simplified().replace(QLatin1Char(' '), QLatin1Char('-'));
         qdb_->generateIndex(outputDir() + QLatin1Char('/') + fileBase + ".index",
                             projectUrl,
@@ -278,7 +290,7 @@ void HtmlGenerator::generateDocs()
                             true);
     }
 
-    if (!runPrepareOnly()) {
+    if (!preparing()) {
         helpProjectWriter->generate();
         generateManifestFiles();
         /*
@@ -2313,7 +2325,7 @@ QString HtmlGenerator::generateListOfAllMemberFile(const InnerNode *inner,
     out() << ", including inherited members.</p>\n";
 
     Section section = sections.first();
-    generateSectionList(section, 0, marker, CodeMarker::Subpage);
+    generateSectionList(section, inner, marker, CodeMarker::Subpage);
 
     generateFooter();
     endSubPage();
@@ -2369,7 +2381,7 @@ QString HtmlGenerator::generateAllQmlMembersFile(QmlClassNode* qml_cn, CodeMarke
                     prefix = keys.at(j).mid(1);
                     prefix = prefix.left(keys.at(j).indexOf("::")+1);
                 }
-                generateQmlItem(nodes[j], qcn, marker, true);
+                generateQmlItem(nodes[j], qml_cn, marker, true);
                 if (nodes[j]->isAttached())
                     out() << " [attached]";
                 //generateSynopsis(nodes[j], qcn, marker, CodeMarker::Subpage, false, &prefix);
@@ -2796,8 +2808,9 @@ void HtmlGenerator::generateCompactList(ListType listType,
             else if (listType == Obsolete) {
                 QString fileName = fileBase(it.value()) + "-obsolete." + fileExtension();
                 QString link;
-                if (useOutputSubdirs())
+                if (useOutputSubdirs()) {
                     link = QString("../" + it.value()->outputSubdirectory() + QLatin1Char('/'));
+                }
                 link += fileName;
                 out() << "<a href=\"" << link << "\">";
             }
@@ -2837,7 +2850,7 @@ void HtmlGenerator::generateFunctionIndex(const Node *relative)
     char currentLetter;
 
     out() << "<ul>\n";
-    NodeMapMap funcIndex = qdb_->getFunctionIndex();
+    NodeMapMap& funcIndex = qdb_->getFunctionIndex();
     QMap<QString, NodeMap >::ConstIterator f = funcIndex.constBegin();
     while (f != funcIndex.constEnd()) {
         out() << "<li>";
@@ -3723,7 +3736,6 @@ QString HtmlGenerator::getAutoLink(const Atom *atom, const Node *relative, const
     return link;
 }
 
-
 /*!
   Construct the link string for the \a node and return it.
   The \a relative node is use to decide the link we are
@@ -3778,7 +3790,10 @@ QString HtmlGenerator::linkForNode(const Node *node, const Node *relative)
     if (node && relative && (node != relative)) {
         if (useOutputSubdirs() && !node->isExternalPage() &&
                node->outputSubdirectory() != relative->outputSubdirectory()) {
-            link.prepend(QString("../" + node->outputSubdirectory() + QLatin1Char('/')));
+            if (link.startsWith(node->outputSubdirectory()))
+                link.prepend(QString("../"));
+            else
+                link.prepend(QString("../" + node->outputSubdirectory() + QLatin1Char('/')));
         }
     }
     return link;
@@ -4507,6 +4522,9 @@ void HtmlGenerator::generateManifestFile(QString manifest, QString element)
   Reads metacontent - additional attributes and tags to apply
   when generating manifest files, read from config. Takes the
   configuration class \a config as a parameter.
+
+  The manifest metacontent map is cleared immediately after
+  the manifest files have been generated.
  */
 void HtmlGenerator::readManifestMetaContent(const Config &config)
 {
