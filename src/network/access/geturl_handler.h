@@ -10,7 +10,6 @@
 #include <ppapi/cpp/url_loader.h>
 #include <ppapi/cpp/url_request_info.h>
 #include <ppapi/utility/completion_callback_factory.h>
-#include <tr1/memory>
 #include <string>
 #include <vector>
 #include "qnetworkreplypepperimpl_p.h"
