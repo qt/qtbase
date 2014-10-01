@@ -5,11 +5,9 @@ QTBASE="$(dirname $0)"
 
 # release/debug build
 OPTIMIZE_VARIANTS="release debug"
-#OPTIMIZE_VARIANTS="release"
 
 # Available toolchains
 TOOLCHAINS="mac_arm_newlib mac_pnacl mac_x86_glibc mac_x86_newlib"
-TOOLCHAINS="mac_x86_glibc"
 
 for OPTIMIZE_VARIANT in $OPTIMIZE_VARIANTS
 do
