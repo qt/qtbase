@@ -707,11 +707,11 @@ bool QVector<T>::operator==(const QVector<T> &v) const
         return true;
     if (d->size != v.d->size)
         return false;
-    T* b = d->begin();
-    T* i = b + d->size;
-    T* j = v.d->end();
-    while (i != b)
-        if (!(*--i == *--j))
+    T* e = d->end();
+    T* i = d->begin();
+    T* vi = v.d->begin();
+    for (; i != e; ++i, ++vi)
+        if (!(*i == *vi))
             return false;
     return true;
 }
