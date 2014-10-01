@@ -75,9 +75,12 @@ enum {
     MSECS_PER_HOUR = 3600000,
     SECS_PER_MIN = 60,
     MSECS_PER_MIN = 60000,
-    TIME_T_MAX = 2145916799,  // int maximum 2037-12-31T23:59:59 UTC
+    TIME_T_MAX_ = 2145916799,  // int maximum 2037-12-31T23:59:59 UTC
     JULIAN_DAY_FOR_EPOCH = 2440588 // result of julianDayFromDate(1970, 1, 1)
 };
+// TIME_T_MAX_: work around header pollution in NaCl's _types.h
+// (defines TIME_T_MAX)
+
 
 /*****************************************************************************
   QDate static helper functions
@@ -2422,7 +2425,7 @@ static bool epochMSecsToLocalTime(qint64 msecs, QDate *localDate, QTime *localTi
         if (daylightStatus)
             *daylightStatus = QDateTimePrivate::StandardTime;
         return true;
-    } else if (msecs > (qint64(TIME_T_MAX) * 1000)) {
+    } else if (msecs > (qint64(TIME_T_MAX_) * 1000)) {
         // Docs state any LocalTime after 2037-12-31 *will* have any Daylight Time applied
         // but this may fall outside the supported time_t range, so need to fake it.
         // Use existing method to fake the conversion, but this is deeply flawed as it may
@@ -2459,7 +2462,7 @@ static qint64 localMSecsToEpochMSecs(qint64 localMsecs,
     QTime tm;
     msecsToTime(localMsecs, &dt, &tm);
 
-    qint64 msecsMax = qint64(TIME_T_MAX) * 1000;
+    qint64 msecsMax = qint64(TIME_T_MAX_) * 1000;
 
     if (localMsecs <= qint64(MSECS_PER_DAY)) {
 
