@@ -6,13 +6,21 @@
 
 int main(int argc, char **argv)
 {
-    // Get target nexe file name from command line
+
+    // Get target nexe file name from command line, or find one
+    // in the cuerrent directory
+    QStringList nexes = QDir().entryList(QStringList() << "*.nexe", QDir::Files);
+    QString nexe;
     if (argc < 2) {
-        qDebug() << "Usage: nacldeployqt app.nexe";
-        return 0;
+        if (nexes.count() == 0) {
+            qDebug() << "Usage: nacldeployqt app.nexe";
+            return 0;
+        }
+        nexe = nexes.at(0);
+    } else {
+        nexe = argv[1];
     }
 
-    QString nexe = argv[1];
     QString appName = nexe;
     appName.chop(QStringLiteral(".nexe").length());
     QString nmf = appName + ".nmf";
