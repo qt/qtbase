@@ -921,9 +921,9 @@ Q_OUTOFLINE_TEMPLATE int QList<T>::lastIndexOf(const T &t, int from) const
 template <typename T>
 Q_OUTOFLINE_TEMPLATE bool QList<T>::contains(const T &t) const
 {
-    Node *b = reinterpret_cast<Node *>(p.begin());
-    Node *i = reinterpret_cast<Node *>(p.end());
-    while (i-- != b)
+    Node *e = reinterpret_cast<Node *>(p.end());
+    Node *i = reinterpret_cast<Node *>(p.begin());
+    for (; i != e; ++i)
         if (i->t() == t)
             return true;
     return false;
@@ -933,9 +933,9 @@ template <typename T>
 Q_OUTOFLINE_TEMPLATE int QList<T>::count(const T &t) const
 {
     int c = 0;
-    Node *b = reinterpret_cast<Node *>(p.begin());
-    Node *i = reinterpret_cast<Node *>(p.end());
-    while (i-- != b)
+    Node *e = reinterpret_cast<Node *>(p.end());
+    Node *i = reinterpret_cast<Node *>(p.begin());
+    for (; i != e; ++i)
         if (i->t() == t)
             ++c;
     return c;
