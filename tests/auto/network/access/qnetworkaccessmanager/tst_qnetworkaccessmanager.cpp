@@ -34,6 +34,7 @@
 #include <QtTest/QtTest>
 
 #include <QtNetwork/QNetworkAccessManager>
+#include <QtNetwork/QNetworkReply>
 #ifndef QT_NO_BEARERMANAGEMENT
 #include <QtNetwork/QNetworkConfigurationManager>
 #endif
@@ -53,6 +54,7 @@ public:
 
 private slots:
     void networkAccessible();
+    void alwaysCacheRequest();
 };
 
 tst_QNetworkAccessManager::tst_QNetworkAccessManager()
@@ -116,6 +118,17 @@ void tst_QNetworkAccessManager::networkAccessible()
         QCOMPARE(manager.networkAccessible(), QNetworkAccessManager::NotAccessible);
     }
 #endif
+}
+
+void tst_QNetworkAccessManager::alwaysCacheRequest()
+{
+    QNetworkAccessManager manager;
+
+    QNetworkRequest req;
+    req.setAttribute(QNetworkRequest::CacheLoadControlAttribute, QNetworkRequest::AlwaysCache);
+    QNetworkReply *reply = manager.get(req);
+    reply->close();
+    delete reply;
 }
 
 QTEST_MAIN(tst_QNetworkAccessManager)

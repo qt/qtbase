@@ -67,7 +67,6 @@ public:
 
 private:
     bool sendCacheContents();
-    QIODevice *device;
 
 };
 

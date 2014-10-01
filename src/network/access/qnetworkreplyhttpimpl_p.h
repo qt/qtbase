@@ -194,6 +194,7 @@ public:
     // upload
     QNonContiguousByteDevice* createUploadByteDevice();
     QSharedPointer<QNonContiguousByteDevice> uploadByteDevice;
+    bool uploadDeviceChoking; // if we couldn't readPointer() any data at the moment
     QIODevice *outgoingData;
     QSharedPointer<QRingBuffer> outgoingDataBuffer;
     void emitReplyUploadProgress(qint64 bytesSent, qint64 bytesTotal); // dup?

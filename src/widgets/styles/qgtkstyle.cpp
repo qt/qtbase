@@ -289,6 +289,7 @@ static QColor mergedColors(const QColor &colorA, const QColor &colorB, int facto
 static GdkColor fromQColor(const QColor &color)
 {
     GdkColor retval;
+    retval.pixel = 0;
     retval.red = color.red() * 255;
     retval.green = color.green() * 255;
     retval.blue = color.blue() * 255;
