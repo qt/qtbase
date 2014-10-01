@@ -66,6 +66,14 @@ template <typename T> struct QListSpecialMethods { };
 template <> struct QListSpecialMethods<QByteArray>;
 
 struct Q_CORE_EXPORT QListData {
+    // tags for tag-dispatching of QList implementations,
+    // based on QList's three different memory layouts:
+    struct NotArrayCompatibleLayout {};
+    struct NotIndirectLayout {};
+    struct ArrayCompatibleLayout   : NotIndirectLayout {};                           // data laid out like a C array
+    struct InlineWithPaddingLayout : NotArrayCompatibleLayout, NotIndirectLayout {}; // data laid out like a C array with padding
+    struct IndirectLayout          : NotArrayCompatibleLayout {};                    // data allocated on the heap
+
     struct Data {
         QtPrivate::RefCount ref;
         int alloc, begin, end;
@@ -99,6 +107,17 @@ struct Q_CORE_EXPORT QListData {
 template <typename T>
 class QList : public QListSpecialMethods<T>
 {
+public:
+    struct MemoryLayout
+        : QtPrivate::if_<
+            QTypeInfo<T>::isStatic || QTypeInfo<T>::isLarge,
+            QListData::IndirectLayout,
+            typename QtPrivate::if_<
+                sizeof(T) == sizeof(void*),
+                QListData::ArrayCompatibleLayout,
+                QListData::InlineWithPaddingLayout
+             >::type>::type {};
+private:
     struct Node { void *v;
 #if defined(Q_CC_BOR)
         Q_INLINE_TEMPLATE T &t();

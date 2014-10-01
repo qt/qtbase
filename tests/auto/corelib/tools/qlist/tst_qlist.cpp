@@ -35,6 +35,17 @@
 #include <QtTest/QtTest>
 #include <QList>
 
+template <typename T, class MemoryLayout>
+class is_qlist_array_memory_layout {
+    struct No { char c; };
+    struct Yes { No n[2]; };
+    Q_STATIC_ASSERT(sizeof(No) != sizeof(Yes));
+    static No check(...);
+    static Yes check(MemoryLayout);
+public:
+    enum { value = sizeof(check(typename QList<T>::MemoryLayout())) == sizeof(Yes) };
+};
+
 struct Movable {
     Movable(char input = 'j')
         : i(input)
@@ -235,6 +246,27 @@ Q_STATIC_ASSERT(!QTypeInfo<Optimal>::isStatic);
 Q_STATIC_ASSERT(QTypeInfo<Optimal>::isComplex);
 Q_STATIC_ASSERT(QTypeInfo<Complex>::isStatic);
 Q_STATIC_ASSERT(QTypeInfo<Complex>::isComplex);
+// iow:
+Q_STATIC_ASSERT(( is_qlist_array_memory_layout<int, QListData::NotIndirectLayout>       ::value));
+Q_STATIC_ASSERT((!is_qlist_array_memory_layout<int, QListData::IndirectLayout>          ::value));
+
+Q_STATIC_ASSERT((!is_qlist_array_memory_layout<Optimal, QListData::InlineWithPaddingLayout> ::value));
+Q_STATIC_ASSERT((!is_qlist_array_memory_layout<Optimal, QListData::NotArrayCompatibleLayout>::value));
+Q_STATIC_ASSERT(( is_qlist_array_memory_layout<Optimal, QListData::NotIndirectLayout>       ::value));
+Q_STATIC_ASSERT(( is_qlist_array_memory_layout<Optimal, QListData::ArrayCompatibleLayout>   ::value));
+Q_STATIC_ASSERT((!is_qlist_array_memory_layout<Optimal, QListData::IndirectLayout>          ::value));
+
+Q_STATIC_ASSERT(( is_qlist_array_memory_layout<Movable, QListData::InlineWithPaddingLayout> ::value));
+Q_STATIC_ASSERT(( is_qlist_array_memory_layout<Movable, QListData::NotArrayCompatibleLayout>::value));
+Q_STATIC_ASSERT(( is_qlist_array_memory_layout<Movable, QListData::NotIndirectLayout>       ::value));
+Q_STATIC_ASSERT((!is_qlist_array_memory_layout<Movable, QListData::ArrayCompatibleLayout>   ::value));
+Q_STATIC_ASSERT((!is_qlist_array_memory_layout<Movable, QListData::IndirectLayout>          ::value));
+
+Q_STATIC_ASSERT((!is_qlist_array_memory_layout<Complex, QListData::InlineWithPaddingLayout> ::value));
+Q_STATIC_ASSERT(( is_qlist_array_memory_layout<Complex, QListData::NotArrayCompatibleLayout>::value));
+Q_STATIC_ASSERT((!is_qlist_array_memory_layout<Complex, QListData::NotIndirectLayout>       ::value));
+Q_STATIC_ASSERT((!is_qlist_array_memory_layout<Complex, QListData::ArrayCompatibleLayout>   ::value));
+Q_STATIC_ASSERT(( is_qlist_array_memory_layout<Complex, QListData::IndirectLayout>          ::value));
 
 class tst_QList : public QObject
 {
