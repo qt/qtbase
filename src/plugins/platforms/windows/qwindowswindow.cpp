@@ -1826,7 +1826,7 @@ static HRGN qRegionToWinRegion(const QRegion &regionDip)
     const int rectCount = rects.size();
     if (rectCount == 1)
         return createRectRegion(QWindowsScaling::mapToNative(regionDip.boundingRect()));
-    HRGN hRegion = createRectRegion(rects.front());
+    HRGN hRegion = createRectRegion(QWindowsScaling::mapToNative(rects.front()));
     for (int i = 1; i < rectCount; ++i)
         addRectToWinRegion(QWindowsScaling::mapToNative(rects.at(i)), &hRegion);
     return hRegion;
