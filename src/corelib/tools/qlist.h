@@ -770,11 +770,10 @@ Q_OUTOFLINE_TEMPLATE bool QList<T>::operator==(const QList<T> &l) const
         return true;
     if (p.size() != l.p.size())
         return false;
-    Node *i = reinterpret_cast<Node *>(p.end());
-    Node *b = reinterpret_cast<Node *>(p.begin());
-    Node *li = reinterpret_cast<Node *>(l.p.end());
-    while (i != b) {
-        --i; --li;
+    Node *i = reinterpret_cast<Node *>(p.begin());
+    Node *e = reinterpret_cast<Node *>(p.end());
+    Node *li = reinterpret_cast<Node *>(l.p.begin());
+    for (; i != e; ++i, ++li) {
         if (!(i->t() == li->t()))
             return false;
     }
