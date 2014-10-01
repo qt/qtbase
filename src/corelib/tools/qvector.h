@@ -791,10 +791,10 @@ int QVector<T>::lastIndexOf(const T &t, int from) const
 template <typename T>
 bool QVector<T>::contains(const T &t) const
 {
-    T* b = d->begin();
-    T* i = d->end();
-    while (i != b)
-        if (*--i == t)
+    T* i = d->begin();
+    T* e = d->end();
+    for (; i != e; ++i)
+        if (*i == t)
             return true;
     return false;
 }
