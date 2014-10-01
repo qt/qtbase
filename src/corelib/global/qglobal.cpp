@@ -86,7 +86,9 @@
 #endif
 
 #ifdef Q_OS_UNIX
-#include <sys/utsname.h>
+#  ifndef Q_OS_NACL
+#    include <sys/utsname.h>
+#  endif
 #include <private/qcore_unix_p.h>
 #endif
 
@@ -2384,6 +2386,8 @@ QString QSysInfo::currentCpuArchitecture()
     case PROCESSOR_ARCHITECTURE_IA64:
         return QStringLiteral("ia64");
     }
+#elif defined(Q_OS_NACL)
+    return buildCpuArchitecture();
 #elif defined(Q_OS_UNIX)
     long ret = -1;
     struct utsname u;
@@ -2523,6 +2527,9 @@ QString QSysInfo::kernelType()
     return QStringLiteral("wince");
 #elif defined(Q_OS_WIN)
     return QStringLiteral("winnt");
+#elif defined(Q_OS_NACL)
+    // Any kernel that chrome runs on
+    return QStringLiteral("");
 #elif defined(Q_OS_UNIX)
     struct utsname u;
     if (uname(&u) == 0)
@@ -2553,6 +2560,8 @@ QString QSysInfo::kernelVersion()
     const OSVERSIONINFO osver = winOsVersion();
     return QString::number(int(osver.dwMajorVersion)) + QLatin1Char('.') + QString::number(int(osver.dwMinorVersion))
             + QLatin1Char('.') + QString::number(int(osver.dwBuildNumber));
+#elif defined(Q_OS_NACL)
+    return QString();
 #else
     struct utsname u;
     if (uname(&u) == 0)
@@ -2625,7 +2634,8 @@ QString QSysInfo::productType()
     return QStringLiteral("osx");
 #elif defined(Q_OS_DARWIN)
     return QStringLiteral("darwin");
-
+#elif defined(Q_OS_NACL)
+    return unknownText();
 #elif defined(USE_ETC_OS_RELEASE) // Q_OS_UNIX
     QUnixOSVersion unixOsVersion;
     findUnixOsVersion(unixOsVersion);
@@ -2756,6 +2766,8 @@ QString QSysInfo::prettyProductName()
     return QLatin1String("Android ") + productVersion();
 #elif defined(Q_OS_BLACKBERRY)
     return QLatin1String("BlackBerry ") + productVersion();
+#elif defined(Q_OS_NACL)
+    return unknownText();
 #elif defined(Q_OS_HAIKU)
     return QLatin1String("Haiku ") + productVersion();
 #elif defined(Q_OS_UNIX)
