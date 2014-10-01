@@ -127,7 +127,7 @@ NACL_CONFIGURE_LINE="$NACL_CONFIGURE_LINE -I $NACL_SDK_ROOT/include -L $NACL_SDK
 # developer build
 NACL_CONFIGURE_LINE="$NACL_CONFIGURE_LINE -developer-build -opensource -confirm-license -nomake examples -nomake tests"
 # misc
-NACL_CONFIGURE_LINE="$NACL_CONFIGURE_LINE -no-sse2 -no-qpa-platform-guard -opengl es2 -skip xmlpatterns -skip qtsvg"
+NACL_CONFIGURE_LINE="$NACL_CONFIGURE_LINE -no-sse2 -no-qpa-platform-guard -opengl es2 -skip xmlpatterns -skip qtsvg -no-warnings-are-errors"
 
 # Newlib is static builds only.
 if [[ $QT_MKSPEC == *newlib* ]]
