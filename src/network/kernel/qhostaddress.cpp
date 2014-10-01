@@ -38,7 +38,9 @@
 #if defined(Q_OS_WIN)
 # include <winsock2.h>
 #else
-# include <netinet/in.h>
+# ifndef Q_OS_NACL_NEWLIB
+#   include <netinet/in.h>
+# endif
 #endif
 #include "qplatformdefs.h"
 #include "qstringlist.h"
@@ -49,6 +51,49 @@
 
 #ifdef QT_LINUXBASE
 #  include <arpa/inet.h>
+#endif
+
+#ifdef Q_OS_NACL_NEWLIB
+
+// Provide some missing definitions to make this file compile
+
+#define	INADDR_ANY		(uint32_t)0x00000000
+#define	INADDR_BROADCAST	(uint32_t)0xffffffff
+#define	INADDR_LOOPBACK		(uint32_t)0x7f000001
+
+struct sockaddr
+{
+    unsigned short    sa_family;    // address family, AF_xxx
+    char              sa_data[14];  // 14 bytes of protocol address
+};
+
+struct in_addr {
+    unsigned long s_addr;          // load with inet_pton()
+};
+
+struct sockaddr_in {
+    short            sin_family;   // e.g. AF_INET, AF_INET6
+    unsigned short   sin_port;     // e.g. htons(3490)
+    struct in_addr   sin_addr;     // see struct in_addr, below
+    char             sin_zero[8];  // zero this if you want to
+};
+
+struct in6_addr {
+    unsigned char   s6_addr[16];   // load with inet_pton()
+};
+
+struct sockaddr_in6 {
+    u_int16_t       sin6_family;   // address family, AF_INET6
+    u_int16_t       sin6_port;     // port number, Network Byte Order
+    u_int32_t       sin6_flowinfo; // IPv6 flow information
+    struct in6_addr sin6_addr;     // IPv6 address
+    u_int32_t       sin6_scope_id; // Scope ID
+};
+
+uint32_t htonl(uint32_t hostlong);
+const int AF_INET = 0;
+const int AF_INET6 = 0;
+
 #endif
 
 QT_BEGIN_NAMESPACE

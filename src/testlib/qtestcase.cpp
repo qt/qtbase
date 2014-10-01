@@ -2546,7 +2546,7 @@ FatalSignalHandler::FatalSignalHandler()
     act.sa_handler = FatalSignalHandler::signal;
 
     // Remove the handler after it is invoked.
-#if !defined(Q_OS_INTEGRITY)
+#if !defined(Q_OS_INTEGRITY) && !defined(Q_OS_NACL_NEWLIB)
     act.sa_flags = SA_RESETHAND;
 #endif
     // Block all fatal signals in our signal handler so we don't try to close
