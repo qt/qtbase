@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -167,8 +167,8 @@ Q_STATIC_ASSERT_X(sizeof(qunicodechar) == 2,
             Q_STATIC_STRING_DATA_HEADER_INITIALIZER(Size), \
             QT_UNICODE_LITERAL(str) }; \
         QStringDataPtr holder = { qstring_literal.data_ptr() }; \
-        const QString s(holder); \
-        return s; \
+        const QString qstring_literal_temp(holder); \
+        return qstring_literal_temp; \
     }()) \
     /**/
 
