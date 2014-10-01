@@ -3,35 +3,48 @@
 # QtBase and configure script location
 QTBASE="$(dirname $0)"
 
+# release/debug build
+OPTIMIZE_VARIANTS="release debug"
+#OPTIMIZE_VARIANTS="release"
+
 # Available toolchains
 TOOLCHAINS="mac_arm_newlib mac_pnacl mac_x86_glibc mac_x86_newlib"
+TOOLCHAINS="mac_x86_glibc"
 
-# Build qtbase
-for TOOLCHAIN in $TOOLCHAINS
+for OPTIMIZE_VARIANT in $OPTIMIZE_VARIANTS
 do
     pushd .
-    cd $TOOLCHAIN
-    make module-qtbase -k
-    popd
-done
+    cd $OPTIMIZE_VARIANT
 
-# build qtbase tests
-for TOOLCHAIN in $TOOLCHAINS
-do
-    mkdir -p $TOOLCHAIN/qtbase/tests/manual/nacl
-    pushd .
-    cd $TOOLCHAIN/qtbase/tests/manual/nacl
-    # path heck
-    ../../../bin/qmake ../../../../../$QTBASE/tests/manual/nacl/nacl.pro -r
-    make
-    popd
-done
+    # Build qtbase
+    for TOOLCHAIN in $TOOLCHAINS
+    do
+        pushd .
+        cd $TOOLCHAIN
+        make module-qtbase -k
+        popd
+    done
 
-# build qtdeclarative (Qt Quick 2)
-for TOOLCHAIN in $TOOLCHAINS
-do
-    pushd .
-    cd $TOOLCHAIN
-    make module-qtdeclarative -k
+    # build qtdeclarative (Qt Quick 2)
+    for TOOLCHAIN in $TOOLCHAINS
+    do
+        pushd .
+        cd $TOOLCHAIN
+        make module-qtdeclarative -k
+        popd
+    done
+
+    # build nacl manual tests in QtBase
+    for TOOLCHAIN in $TOOLCHAINS
+    do
+        mkdir -p $TOOLCHAIN/qtbase/tests/manual/nacl
+        pushd .
+        cd $TOOLCHAIN/qtbase/tests/manual/nacl
+        # path heck
+        ../../../bin/qmake ../../../../../../$QTBASE/tests/manual/nacl/nacl.pro -r
+        make
+        popd
+    done
+
     popd
 done

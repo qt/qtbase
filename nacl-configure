@@ -24,8 +24,12 @@ if [ $# -eq 0 ]
   then
     echo ""
     echo "No arguments supplied. Usage:"
-    echo "\"nacl-configure <tooolchain>\". Toolchain is one of:" 
-    echo "mac_arm_newlib mac_pnacl mac_x86_glibc mac_x86_newlib"
+    echo "\"nacl-configure <tooolchain> [release|debug]"
+    echo "Toolchain is one of:" 
+    echo "    mac_arm_newlib"
+    echo "    mac_pnacl"
+    echo "    mac_x86_glibc"
+    echo "    mac_x86_newlib"
     echo "(replace "mac" with your platform)"
     echo ""
     exit 
@@ -34,10 +38,17 @@ fi
 # QtBase and configure script location:
 QTBASE="$(dirname $0)"
 
-# Argument: Which toolchain?
+# Argument 1: Which toolchain?
 TOOLCHAIN=$1
 # Select 32/64 bit builds for the non-pnacl toolchains. Currently hardcoded to 32.
 BITS=32
+
+# Argument 2: release/debug build
+OPTIMIZE=$2
+if [ -z "$OPTIMIZE" ]; then
+    OPTIMIZE="release"
+fi
+echo "OPTIMIZE: $OPTIMIZE"
 
 # Extract parts from the toolchain
 # PNACL: pnacl|<blank>
@@ -118,10 +129,10 @@ NACL_CONFIGURE_LINE="$NACL_CONFIGURE_LINE -developer-build -opensource -confirm-
 # misc
 NACL_CONFIGURE_LINE="$NACL_CONFIGURE_LINE -no-sse2 -no-qpa-platform-guard -opengl es2 -skip xmlpatterns -skip qtsvg"
 
-# Newlib is static builds only. Debug binaries are large and generally not usable.
+# Newlib is static builds only.
 if [[ $QT_MKSPEC == *newlib* ]]
   then
-    NACL_CONFIGURE_LINE="$NACL_CONFIGURE_LINE -static -release"
+    NACL_CONFIGURE_LINE="$NACL_CONFIGURE_LINE -static"
 fi
 
 # C++11 is broken on pnacl, see Chromium bug 314944 
@@ -129,6 +140,9 @@ if [[ $QT_MKSPEC == *pnacl* ]]
   then
     NACL_CONFIGURE_LINE="$NACL_CONFIGURE_LINE -no-c++11"
 fi
+
+# set release/debug build
+NACL_CONFIGURE_LINE="$NACL_CONFIGURE_LINE -$OPTIMIZE"
 
 # ### WORKAROUND: re-configuring breaks if mkspecs/qconfig.pri is present
 rm qtbase/mkspecs/qconfig.pri

@@ -3,18 +3,37 @@
 # QtBase and configure script location (relative path):
 QTBASE="$(dirname $0)"
 
+# release/debug build
+OPTIMIZE_VARIANTS="release debug"
+
 # Available toolchains
 TOOLCHAINS="mac_arm_newlib mac_pnacl mac_x86_glibc mac_x86_newlib"
+#TOOLCHAINS="mac_x86_glibc"
 
-# Create subdir and configure Qt for each tool chain
-for TOOLCHAIN in $TOOLCHAINS
+# Create subdir for release/debug variant
+for OPTIMIZE_VARIANT in $OPTIMIZE_VARIANTS
 do
-    echo mkdir $TOOLCHAIN
+    echo mkdir $OPTIMIZE_VARIANT
     pushd .
-    mkdir -p $TOOLCHAIN
-    cd $TOOLCHAIN
-    echo ../$QTBASE/nacl-configure $TOOLCHAIN
-    ../$QTBASE/nacl-configure $TOOLCHAIN&
+    mkdir -p $OPTIMIZE_VARIANT
+    cd $OPTIMIZE_VARIANT
+
+    # Create subdir and configure Qt for each tool chain
+    for TOOLCHAIN in $TOOLCHAINS
+    do
+        echo mkdir $TOOLCHAIN
+        pushd .
+        mkdir -p $TOOLCHAIN
+        cd $TOOLCHAIN
+
+        echo "Run configure (async)"
+        echo "CWD is $PWD"
+        echo "RUN    ../../$QTBASE/nacl-configure $TOOLCHAIN $OPTIMIZE_VARIANT"
+
+        ../../$QTBASE/nacl-configure $TOOLCHAIN $OPTIMIZE_VARIANT &
+        popd
+    done
+
     popd
 done
 
