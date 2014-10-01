@@ -54,6 +54,10 @@
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/completion_callback.h"
 
+#ifdef Q_OS_NACL_NEWLIB
+#include "error_handling/error_handling.h"
+#endif
+
 using namespace pp;
 
 QObject *qtScriptableObject;
@@ -78,6 +82,13 @@ QPepperInstance *QPepperInstance::get()
     return g_pepperInstance;
 }
 
+#ifdef Q_OS_NACL_NEWLIB
+void qtExceptionHandler(const char* json) {
+    qDebug() << "CRASH";
+    qDebug() << json;
+}
+#endif
+
 // There is one global app pp::Instance. It corresponds to the
 // html div tag that contains the app.
 bool QPepperInstance::Init(uint32_t argc, const char* argn[], const char* argv[])
@@ -87,6 +98,10 @@ bool QPepperInstance::Init(uint32_t argc, const char* argn[], const char* argv[]
     Q_UNUSED(argv);
 
     qCDebug(QT_PLATFORM_PEPPER_INSTANCE) << "Init argc:" << argc;
+
+#ifdef Q_OS_NACL_NEWLIB
+    EHRequestExceptionsJson(qtExceptionHandler);
+#endif
 
     g_pepperInstance = this;
 

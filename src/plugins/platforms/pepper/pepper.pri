@@ -52,3 +52,8 @@ include($$PWD/../../../platformsupport/eventdispatchers/eventdispatchers.pri)
 INCLUDEPATH += $$PWD/../../../platformsupport/eventdispatchers
 
 LIBS += -lppapi -lppapi_cpp -lppapi_gles2
+
+# TODO make sure nacl-newlib is set
+nacl-newlib {
+    LIBS += -lerror_handling
+}
