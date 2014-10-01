@@ -6,7 +6,6 @@
 
 int main(int argc, char **argv)
 {
-
     // Get target nexe file name from command line, or find one
     // in the cuerrent directory
     QStringList nexes = QDir().entryList(QStringList() << "*.nexe", QDir::Files);
@@ -56,6 +55,7 @@ int main(int argc, char **argv)
     nacldeployqtPath.chop(QStringLiteral("nacldeployqt").length());
     QString qtBaseDir = QDir(nacldeployqtPath + QStringLiteral("../")).canonicalPath(); 
     QString qtLibDir = qtBaseDir + "/lib";
+    QString nmfFileName = appName + ".nmf";
 
     qDebug() << " ";
     qDebug() << "Deploying" << nexe;
@@ -65,7 +65,7 @@ int main(int argc, char **argv)
     
     // create the .nmf manifest file
     QString nmfCommand = QStringLiteral("python ") + createNmf
-                + " -o " + appName + ".nmf"
+                + " -o " + nmfFileName
                 + " -L " + qtLibDir           // Add Qt libs search payh
                 + " -s  . "                   // copy dependencies 
 //                + " --debug-libs"    
@@ -78,6 +78,29 @@ int main(int argc, char **argv)
                 + " -o index.html";
     system(hmtlCommand.toLatin1().constData());
     
+    // NOTE: At this point deployment is done. The following are
+    // development aides and should be switched off / placed behind
+    // a flag at some point.
+
+    // Find the debugger, print startup instructions
+    QString gdb = naclSdkRoot + "/toolchain/mac_x86_glibc/bin/i686-nacl-gdb";
+    qDebug() << "debugger (glibc):";
+    qDebug() << qPrintable("  " + gdb);
+    qDebug() << qPrintable("    target remote localhost:4014");
+    qDebug() << qPrintable("    nacl-manifest " + nmfFileName);
+    qDebug() << "";
+
+    // Find chrome, print startup instructions
+    QString chromeApp = "/Applications/Google\\ Chrome.app/Contents/MacOS/Google\\ Chrome";
+    QString chromeNormalOptions = " --incognito --disable-cache --no-default-browser-check --new-window \"http://localhost:8000\"";
+    QString chromeDebugOptions = chromeNormalOptions + " --enable-nacl-debug --no-sandbox";
+    qDebug() << "chrome:";
+    qDebug() << qPrintable("  " + chromeApp + chromeNormalOptions);
+    qDebug() << qPrintable("chrome (wait for debugger)");
+    qDebug() << qPrintable("  " + chromeApp + chromeDebugOptions);
+    qDebug() << "";
+
+    // Start a HTTP server and serve the app.
     qDebug() << "Serving on localhost:8000";
     system("python -m SimpleHTTPServer");
 }
