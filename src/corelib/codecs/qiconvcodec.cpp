@@ -42,7 +42,9 @@
 #include <errno.h>
 #include <locale.h>
 #include <stdio.h>
+#ifndef Q_OS_NACL
 #include <dlfcn.h>
+#endif
 
 // unistd.h is needed for the _XOPEN_UNIX macro
 #include <unistd.h>
