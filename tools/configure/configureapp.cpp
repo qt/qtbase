@@ -4219,14 +4219,11 @@ bool Configure::showLicense(QString orgLicenseFile)
         return true;
     }
 
-    bool haveLgpl3 = false;
     QString licenseFile = orgLicenseFile;
     QString theLicense;
     if (dictionary["EDITION"] == "OpenSource" || dictionary["EDITION"] == "Snapshot") {
-        haveLgpl3 = QFile::exists(orgLicenseFile + "/LICENSE.LGPLv3");
-        theLicense = "GNU Lesser General Public License (LGPL) version 2.1";
-        if (haveLgpl3)
-            theLicense += "\nor the GNU Lesser General Public License (LGPL) version 3";
+        theLicense = "GNU Lesser General Public License (LGPL) version 2.1"
+                     "\nor the GNU Lesser General Public License (LGPL) version 3";
     } else {
         // the first line of the license file tells us which license it is
         QFile file(licenseFile);
@@ -4243,8 +4240,7 @@ bool Configure::showLicense(QString orgLicenseFile)
              << "the " << theLicense << "." << endl
              << endl;
         if (dictionary["EDITION"] == "OpenSource" || dictionary["EDITION"] == "Snapshot") {
-            if (haveLgpl3)
-                cout << "Type '3' to view the Lesser GNU General Public License version 3 (LGPLv3)." << endl;
+            cout << "Type '3' to view the Lesser GNU General Public License version 3 (LGPLv3)." << endl;
             cout << "Type 'L' to view the Lesser GNU General Public License version 2.1 (LGPLv2.1)." << endl;
         } else {
             cout << "Type '?' to view the " << theLicense << "." << endl;

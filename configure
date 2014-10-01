@@ -2828,13 +2828,9 @@ if [ "$Edition" = "OpenSource" ]; then
     while true; do
         echo "You are licensed to use this software under the terms of"
         echo "the Lesser GNU General Public License (LGPL) versions 2.1."
-        if [ -f "$relpath/LICENSE.LGPLv3" ]; then
-            echo "You are also licensed to use this software under the terms of"
-            echo "the GNU Lesser General Public License (LGPL) versions 3."
-            affix="either"
-        else
-            affix="the"
-        fi
+        echo "You are also licensed to use this software under the terms of"
+        echo "the GNU Lesser General Public License (LGPL) versions 3."
+        affix="either"
         echo
         if [ "$OPT_CONFIRM_LICENSE" = "yes" ]; then
             echo "You have already accepted the terms of the $EditionString license."
