@@ -1,23 +1,40 @@
 #include <qdebug.h>
 #include <qglobal.h>
+#include <qcoreapplication.h>
+#include <qcommandlineparser.h>
 #include <qlibraryinfo.h>
 #include <qdir.h>
 #include <qprocess.h>
 
 int main(int argc, char **argv)
 {
+    // Command line handling
+    QCoreApplication app(argc, argv);
+    QCoreApplication::setApplicationName("nacldeployqt");
+    QCommandLineParser parser;
+    parser.addHelpOption();
+    parser.addPositionalArgument("nexe", "Application nexe file.");
+
+    parser.addOption(QCommandLineOption(QStringList() << "t" << "template",
+                        "Selects a html template. Can be either 'fullscreen' or 'debug'. "
+                        "Omit this option to use the default nacl_sdk template, as created "
+                        "by create_html.py", "template", ""));
+    parser.process(app);
+    const QStringList args = parser.positionalArguments();
+    const QString tmplate = parser.value("template");
+
     // Get target nexe file name from command line, or find one
     // in the cuerrent directory
     QStringList nexes = QDir().entryList(QStringList() << "*.nexe", QDir::Files);
     QString nexe;
-    if (argc < 2) {
+    if (args.count() == 0) {
         if (nexes.count() == 0) {
-            qDebug() << "Usage: nacldeployqt app.nexe";
+            parser.showHelp(0);
             return 0;
         }
         nexe = nexes.at(0);
     } else {
-        nexe = argv[1];
+        nexe = args.at(0);
     }
 
     QString appName = nexe;
@@ -73,10 +90,31 @@ int main(int argc, char **argv)
     
     system(nmfCommand.toLatin1().constData());
 
-    // create html file
-    QString hmtlCommand = QStringLiteral("python ") + createHtml + " " + nmf 
-                + " -o index.html";
-    system(hmtlCommand.toLatin1().constData());
+    // create the inxed.html file. Use a built-in template if specifed,
+    // else use create_html.py
+    if (tmplate.isEmpty()) {
+        QString hmtlCommand = QStringLiteral("python ") + createHtml + " " + nmf
+                    + " -o index.html";
+        system(hmtlCommand.toLatin1().constData());
+    } else {
+        // select template. See the template_*.cpp files.
+        QByteArray html;
+        if (tmplate== "fullscreen") {
+            extern const char * templateFullscreen;
+            html = QByteArray(templateFullscreen);
+        } else if (tmplate== "debug") {
+            extern const char * templateDebug;
+            html = QByteArray(templateDebug);
+        }
+
+        // replace %APPNAME%
+        html.replace("%APPNAME%", appName.toUtf8());
+
+        // write html contents to index.html
+        QFile indexHtml("index.html");
+        indexHtml.open(QIODevice::WriteOnly|QIODevice::Truncate);
+        indexHtml.write(html);
+    }
     
     // NOTE: At this point deployment is done. The following are
     // development aides and should be switched off / placed behind
