@@ -2948,29 +2948,12 @@ bool QXmlSimpleReader::feature(const QString& name, bool *ok) const
          \li If enabled, the original prefixed names
             and attributes used for namespace declarations are
             reported.
-    \row \li \e http://trolltech.com/xml/features/report-whitespace-only-CharData
-         \li true
-         \li Obsolete, use the following string instead.
-            If enabled, CharData that consist of
-            only whitespace characters are reported
-            using QXmlContentHandler::characters(). If disabled, whitespace is silently
-            discarded.
     \row \li \e http://qt-project.org/xml/features/report-whitespace-only-CharData
          \li true
          \li If enabled, CharData that consist of
             only whitespace characters are reported
             using QXmlContentHandler::characters(). If disabled, whitespace is silently
             discarded.
-    \row \li \e http://trolltech.com/xml/features/report-start-end-entity
-         \li false
-         \li Obsolete, use the following string instead.
-            If enabled, the parser reports
-            QXmlContentHandler::startEntity() and
-            QXmlContentHandler::endEntity() events, so character data
-            might be reported in chunks.
-            If disabled, the parser does not report these events, but
-            silently substitutes the entities, and reports the character
-            data in one chunk.
     \row \li \e http://qt-project.org/xml/features/report-start-end-entity
          \li false
          \li If enabled, the parser reports
