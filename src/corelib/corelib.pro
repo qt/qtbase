@@ -57,8 +57,6 @@ mac|darwin {
     LIBS_PRIVATE += -framework Foundation
 }
 
-nacl : LIBS_PRIVATE += -ldl
-
 win32:DEFINES-=QT_NO_CAST_TO_ASCII
 DEFINES += $$MODULE_DEFINES
 
