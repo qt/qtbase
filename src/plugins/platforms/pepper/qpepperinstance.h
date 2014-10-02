@@ -79,6 +79,7 @@ public:
 
     // Instance attribute getters
     QRect geometry();
+    QRect deviceGeometry();
     qreal devicePixelRatio();
 
     // publics:

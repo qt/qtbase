@@ -73,7 +73,7 @@ bool QPepperGLContext::makeCurrent(QPlatformSurface *surface)
     if (m_context.is_null())
         initGl();
 
-    QSize newSize = QPepperInstance::get()->geometry().size();
+    QSize newSize = QPepperInstance::get()->deviceGeometry().size();
     if (newSize != m_currentSize) {
         int32_t result = m_context.ResizeBuffers(newSize.width(), newSize.height());
         if (result < 0) {

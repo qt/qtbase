@@ -192,6 +192,13 @@ QRect QPepperInstance::geometry()
     return toQRect(m_currentGeometry);
 }
 
+QRect QPepperInstance::deviceGeometry()
+{
+    QRect geometry = toQRect(m_currentGeometry);
+    geometry.setSize(geometry.size() * m_currentDevicePixelRatio);
+    return geometry;
+}
+
 qreal QPepperInstance::devicePixelRatio()
 {
     return m_currentDevicePixelRatio;
