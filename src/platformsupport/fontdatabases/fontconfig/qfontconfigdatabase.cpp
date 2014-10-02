@@ -845,6 +845,9 @@ void QFontconfigDatabase::setupFontEngine(QFontEngineFT *engine, const QFontDef 
         FcPatternAdd(pattern,FC_INDEX,value,true);
     }
 
+    if (fontDef.pixelSize > 0.1)
+        FcPatternAddDouble(pattern, FC_PIXEL_SIZE, fontDef.pixelSize);
+
     FcResult result;
 
     FcConfigSubstitute(0, pattern, FcMatchPattern);
