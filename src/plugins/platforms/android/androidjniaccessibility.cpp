@@ -187,18 +187,30 @@ if (!clazz) { \
         //__android_log_print(ANDROID_LOG_FATAL, m_qtTag, m_methodErrorMsg, METHOD_NAME, METHOD_SIGNATURE);
 
 
-    static jstring descriptionForAccessibleObject(JNIEnv *env, jobject /*thiz*/, jint objectId)
+
+    static jstring descriptionForAccessibleObject_helper(JNIEnv *env, QAccessibleInterface *iface)
     {
         QString desc;
-        QAccessibleInterface *iface = interfaceFromId(objectId);
         if (iface && iface->isValid()) {
             desc = iface->text(QAccessible::Name);
             if (desc.isEmpty())
                 desc = iface->text(QAccessible::Description);
+            if (desc.isEmpty()) {
+                desc = iface->text(QAccessible::Value);
+                if (desc.isEmpty()) {
+                    if (QAccessibleValueInterface *valueIface = iface->valueInterface()) {
+                        desc= valueIface->currentValue().toString();
+                    }
+                }
+            }
         }
+        return env->NewString((jchar*) desc.constData(), (jsize) desc.size());
+    }
 
-        jstring jdesc = env->NewString((jchar*) desc.constData(), (jsize) desc.size());
-        return jdesc;
+    static jstring descriptionForAccessibleObject(JNIEnv *env, jobject /*thiz*/, jint objectId)
+    {
+        QAccessibleInterface *iface = interfaceFromId(objectId);
+        return descriptionForAccessibleObject_helper(env, iface);
     }
 
     static bool populateNode(JNIEnv *env, jobject /*thiz*/, jint objectId, jobject node)
@@ -216,11 +228,8 @@ if (!clazz) { \
         const bool hasDecreaseAction = actions.contains(QAccessibleActionInterface::decreaseAction());
 
         // try to fill in the text property, this is what the screen reader reads
-        QString desc = iface->text(QAccessible::Value);
-        if (desc.isEmpty())
-            desc = iface->text(QAccessible::Name);
-        if (desc.isEmpty())
-            desc = iface->text(QAccessible::Description);
+        jstring jdesc = descriptionForAccessibleObject_helper(env, iface);
+
         if (QAccessibleTextInterface *textIface = iface->textInterface()) {
             if (m_setTextSelectionMethodID && textIface->selectionCount() > 0) {
                 int startSelection;
@@ -252,7 +261,6 @@ if (!clazz) { \
             env->CallVoidMethod(node, m_addActionMethodID, (int)8192);    // ACTION_SCROLL_BACKWARD defined in AccessibilityNodeInfo
 
 
-        jstring jdesc = env->NewString((jchar*) desc.constData(), (jsize) desc.size());
         //CALL_METHOD(node, "setText", "(Ljava/lang/CharSequence;)V", jdesc)
         env->CallVoidMethod(node, m_setContentDescriptionMethodID, jdesc);
 
