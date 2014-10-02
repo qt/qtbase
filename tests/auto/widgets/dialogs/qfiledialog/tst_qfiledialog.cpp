@@ -509,10 +509,20 @@ void tst_QFiledialog::completer()
     QCOMPARE(model->index(fd.directory().path()), model->index(startPath));
 
     if (input.isEmpty()) {
-        QModelIndex r = model->index(model->rootPath());
-        QVERIFY(model->rowCount(r) > 0);
-        QModelIndex idx = model->index(0, 0, r);
-        input = idx.data().toString().at(0);
+        // Try to find a suitable directory under root that does not
+        // start with 'C' to avoid issues with completing to "C:" drives on Windows.
+        const QString rootPath = model->rootPath();
+        const QChar rootPathFirstChar = rootPath.at(0).toLower();
+        QModelIndex rootIndex = model->index(rootPath);
+        const int rowCount = model->rowCount(rootIndex);
+        QVERIFY(rowCount > 0);
+        for (int row = 0; row < rowCount && input.isEmpty(); ++row) {
+            const QString name = model->index(row, 0, rootIndex).data().toString();
+            const QChar firstChar = name.at(0);
+            if (firstChar.isLetter() && firstChar.toLower() != rootPathFirstChar)
+                input = firstChar;
+        }
+        QVERIFY2(!input.isEmpty(), "Unable to find a suitable input directory");
     }
 
     // press 'keys' for the input
