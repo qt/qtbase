@@ -88,6 +88,7 @@ void QEglFSIntegration::initialize()
 
 void QEglFSIntegration::destroy()
 {
+    QEGLPlatformIntegration::destroy();
     QEglFSHooks::hooks()->platformDestroy();
 }
 

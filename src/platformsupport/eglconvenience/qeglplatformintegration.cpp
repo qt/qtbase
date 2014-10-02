@@ -95,15 +95,7 @@ QEGLPlatformIntegration::QEGLPlatformIntegration()
 
 QEGLPlatformIntegration::~QEGLPlatformIntegration()
 {
-    foreach (QWindow *w, qGuiApp->topLevelWindows())
-        w->destroy();
 
-    delete m_screen;
-
-    if (m_display != EGL_NO_DISPLAY)
-        eglTerminate(m_display);
-
-    destroy();
 }
 
 void QEGLPlatformIntegration::initialize()
@@ -126,7 +118,13 @@ void QEGLPlatformIntegration::initialize()
 
 void QEGLPlatformIntegration::destroy()
 {
+    foreach (QWindow *w, qGuiApp->topLevelWindows())
+        w->destroy();
 
+    delete m_screen;
+
+    if (m_display != EGL_NO_DISPLAY)
+        eglTerminate(m_display);
 }
 
 QAbstractEventDispatcher *QEGLPlatformIntegration::createEventDispatcher() const

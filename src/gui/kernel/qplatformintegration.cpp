@@ -324,6 +324,16 @@ void QPlatformIntegration::initialize()
 }
 
 /*!
+  Called before the platform integration is deleted. Useful when cleanup relies on virtual
+  functions.
+
+  \since 5.5
+*/
+void QPlatformIntegration::destroy()
+{
+}
+
+/*!
   Returns the platforms input context.
 
   The default implementation returns 0, implying no input method support.

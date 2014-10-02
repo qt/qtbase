@@ -1391,6 +1391,8 @@ QGuiApplicationPrivate::~QGuiApplicationPrivate()
     }
 #endif
 
+    platform_integration->destroy();
+
     delete platform_theme;
     platform_theme = 0;
     delete platform_integration;
