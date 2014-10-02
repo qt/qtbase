@@ -351,8 +351,10 @@ QByteArray QIconvCodec::convertFromUnicode(const QChar *uc, int len, ConverterSt
         iconv_t cd = createIconv_t(0, UTF16);
         if (cd != reinterpret_cast<iconv_t>(-1)) {
             if (!setByteOrder(cd)) {
+#ifndef Q_OS_NACL_NEWLIB
+// ### we're hitting this error case, surpress warning and TODO investigate
                 perror("QIconvCodec::convertFromUnicode: using Latin-1 for conversion, iconv failed for BOM");
-
+#endif
                 iconv_close(cd);
                 cd = reinterpret_cast<iconv_t>(-1);
 
