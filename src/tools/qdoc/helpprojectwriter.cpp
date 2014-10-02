@@ -773,7 +773,7 @@ void HelpProjectWriter::generateProject(HelpProject &project)
             } else {
                 // Find a contents node and navigate from there, using the NextLink values.
                 QSet<QString> visited;
-
+                bool contentsFound = false;
                 foreach (const Node *node, subproject.nodes) {
                     QString nextTitle = node->links().value(Node::NextLink).first;
                     if (!nextTitle.isEmpty() &&
@@ -783,6 +783,7 @@ void HelpProjectWriter::generateProject(HelpProject &project)
 
                         // Write the contents node.
                         writeNode(project, writer, node);
+                        contentsFound = true;
 
                         while (nextPage) {
                             writeNode(project, writer, nextPage);
@@ -794,6 +795,11 @@ void HelpProjectWriter::generateProject(HelpProject &project)
                         }
                         break;
                     }
+                }
+                // No contents/nextpage links found, write all nodes unsorted
+                if (!contentsFound) {
+                    foreach (const Node *node, subproject.nodes)
+                        writeNode(project, writer, node);
                 }
             }
 
