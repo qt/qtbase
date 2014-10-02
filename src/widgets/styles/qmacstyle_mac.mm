@@ -93,6 +93,7 @@
 #include <qmath.h>
 #include <QtWidgets/qgraphicsproxywidget.h>
 #include <QtWidgets/qgraphicsview.h>
+#include <QtCore/qvariant.h>
 #include <private/qstylehelper_p.h>
 #include <private/qstyleanimation_p.h>
 #include <qpa/qplatformfontdatabase.h>
@@ -5813,7 +5814,25 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                     drawToolbarButtonArrow(tb->rect, tds, cg);
                 }
                 if (tb->state & State_On) {
-                    if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_5) {
+                    if (QSysInfo::MacintoshVersion > QSysInfo::MV_MAVERICKS) {
+                        QWindow *window = 0;
+                        if (widget && widget->window())
+                            window = widget->window()->windowHandle();
+                        else if (opt->styleObject)
+                            window = opt->styleObject->property("_q_styleObjectWindow").value<QWindow *>();
+
+                        NSView *view = window ? (NSView *)window->winId() : nil;
+                        bool isKey = false;
+                        if (view)
+                            isKey = [view.window isKeyWindow];
+
+                        QBrush brush(isKey ? QColor(0, 0, 0, 28)
+                                           : QColor(0, 0, 0, 21));
+                        QPainterPath path;
+                        path.addRoundedRect(QRectF(tb->rect.x(), tb->rect.y(), tb->rect.width(), tb->rect.height() + 4), 4, 4);
+                        p->setRenderHint(QPainter::Antialiasing);
+                        p->fillPath(path, brush);
+                    } else if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_5) {
                         static QPixmap pm(QLatin1String(":/qt-project.org/mac/style/images/leopard-unified-toolbar-on.png"));
                         p->setRenderHint(QPainter::SmoothPixmapTransform);
                         QStyleHelper::drawBorderPixmap(pm, p, tb->rect, 2, 2, 2, 2);
