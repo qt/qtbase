@@ -136,7 +136,8 @@ QString QStandardPaths::writableLocation(StandardLocation type)
         const QFile::Permissions wantedPerms = QFile::ReadUser | QFile::WriteUser | QFile::ExeUser
                                                | QFile::ReadOwner | QFile::WriteOwner | QFile::ExeOwner;
         if (file.permissions() != wantedPerms && !file.setPermissions(wantedPerms)) {
-            qWarning("QStandardPaths: wrong permissions on runtime directory %s", qPrintable(xdgRuntimeDir));
+            qWarning("QStandardPaths: could not set correct permissions on runtime directory %s: %s",
+                     qPrintable(xdgRuntimeDir), qPrintable(file.errorString()));
             return QString();
         }
         return xdgRuntimeDir;
