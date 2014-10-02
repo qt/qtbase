@@ -629,6 +629,7 @@ QStringList QGenericUnixTheme::themeNames()
             result.push_back(QLatin1String(QKdeTheme::name));
 #endif
         } else if (desktopEnvironment == QByteArrayLiteral("GNOME") ||
+                desktopEnvironment == QByteArrayLiteral("X-CINNAMON") ||
                 desktopEnvironment == QByteArrayLiteral("UNITY") ||
                 desktopEnvironment == QByteArrayLiteral("MATE") ||
                 desktopEnvironment == QByteArrayLiteral("XFCE") ||
