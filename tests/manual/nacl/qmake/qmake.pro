@@ -15,3 +15,4 @@ INCLUDEPATH += /Users/msorvig/code/qt5-nacl/qtbase/include \
 SOURCES += hello_world.cpp
 
 LIBS +=  -lppapi -lnacl_io
+QT =
