@@ -92,13 +92,10 @@ QT_BEGIN_NAMESPACE
     \reentrant
 
     \brief The QTextInlineObject class represents an inline object in
-    a QTextLayout.
+    a QAbstractTextDocumentLayout and its implementations.
     \inmodule QtGui
 
     \ingroup richtext-processing
-
-    This class is only used if the text layout is used to lay out
-    parts of a QTextDocument.
 
     Normally, you do not need to create a QTextInlineObject. It is
     used by QAbstractTextDocumentLayout to handle inline objects when
@@ -107,8 +104,8 @@ QT_BEGIN_NAMESPACE
     The inline object has various attributes that can be set, for
     example using, setWidth(), setAscent(), and setDescent(). The
     rectangle it occupies is given by rect(), and its direction by
-    isRightToLeft(). Its position in the text layout is given by at(),
-    and its format is given by format().
+    textDirection(). Its position in the text layout is given by
+    textPosition(), and its format is given by format().
 */
 
 /*!
