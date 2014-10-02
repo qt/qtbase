@@ -48,6 +48,13 @@
 #   include "qfunctions_wince.h"    // for _control87
 #endif
 
+#ifdef Q_OS_NACL_NEWLIB
+#    ifndef isascii
+#       define isascii(__c) ((unsigned)(__c)<=0177)
+#       define toascii(__c) ((__c)&0177)
+#    endif
+#endif
+
 #if defined(Q_OS_LINUX) && !defined(__UCLIBC__)
 #    include <fenv.h>
 #endif

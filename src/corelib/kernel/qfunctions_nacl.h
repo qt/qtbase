@@ -84,8 +84,6 @@ int gethostname(char *name, size_t namelen);
 // disabled with a '#ifndef __STRICT_ANSI__' flag.
 // ### find a better way.
 #ifndef Q_OS_PNACL
-#define isascii(__c)	((unsigned)(__c)<=0177)
-#define toascii(__c)	((__c)&0177)
 
 int	_EXFUN(fseeko, (FILE *, _off_t, int));
 off_t	_EXFUN(ftello, ( FILE *));
