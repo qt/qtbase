@@ -136,7 +136,11 @@ extern QString qAppFileName();
 #endif
 int QCoreApplicationPrivate::app_compile_version = 0x050000; //we don't know exactly, but it's at least 5.0.0
 
+#ifdef Q_OS_NACL
+bool QCoreApplicationPrivate::setuidAllowed = true;
+#else
 bool QCoreApplicationPrivate::setuidAllowed = false;
+#endif
 
 #if !defined(Q_OS_WIN)
 #ifdef Q_OS_MAC
