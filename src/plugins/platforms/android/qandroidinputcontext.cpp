@@ -441,10 +441,14 @@ void QAndroidInputContext::reset()
 {
     clear();
     m_batchEditNestingLevel = 0;
-    if (qGuiApp->focusObject())
-        QtAndroidInput::resetSoftwareKeyboard();
-    else
-        QtAndroidInput::hideSoftwareKeyboard();
+    if (qGuiApp->focusObject()) {
+        QSharedPointer<QInputMethodQueryEvent> query = focusObjectInputMethodQueryThreadSafe(Qt::ImEnabled);
+        if (!query.isNull() && query->value(Qt::ImEnabled).toBool()) {
+            QtAndroidInput::resetSoftwareKeyboard();
+            return;
+        }
+    }
+    QtAndroidInput::hideSoftwareKeyboard();
 }
 
 void QAndroidInputContext::commit()
