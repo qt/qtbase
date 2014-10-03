@@ -80,7 +80,8 @@ public:
         SRGBFrameBuffer         = 0x00020000,
         MapBuffer               = 0x00040000,
         GeometryShaders         = 0x00080000,
-        MapBufferRange          = 0x00100000
+        MapBufferRange          = 0x00100000,
+        Sized8Formats           = 0x00200000
     };
     Q_DECLARE_FLAGS(OpenGLExtensions, OpenGLExtension)
 

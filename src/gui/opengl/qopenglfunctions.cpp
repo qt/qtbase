@@ -385,7 +385,8 @@ static int qt_gl_resolve_extensions()
                 | QOpenGLExtensions::ElementIndexUint
                 | QOpenGLExtensions::MapBufferRange
                 | QOpenGLExtensions::FramebufferBlit
-                | QOpenGLExtensions::FramebufferMultisample;
+                | QOpenGLExtensions::FramebufferMultisample
+                | QOpenGLExtensions::Sized8Formats;
         } else {
             // Recognize features by extension name.
             if (extensionMatcher.match("GL_OES_packed_depth_stencil"))
@@ -400,6 +401,8 @@ static int qt_gl_resolve_extensions()
                 extensions |= QOpenGLExtensions::FramebufferBlit;
             if (extensionMatcher.match("GL_NV_framebuffer_multisample"))
                 extensions |= QOpenGLExtensions::FramebufferMultisample;
+            if (extensionMatcher.match("GL_OES_rgb8_rgba8"))
+                extensions |= QOpenGLExtensions::Sized8Formats;
         }
 
         if (extensionMatcher.match("GL_OES_mapbuffer"))
@@ -419,9 +422,10 @@ static int qt_gl_resolve_extensions()
             extensions |= QOpenGLExtensions::GenerateMipmap;
 
         if (format.majorVersion() >= 3 || extensionMatcher.match("GL_ARB_framebuffer_object")) {
-            extensions |= QOpenGLExtensions::FramebufferMultisample |
-                QOpenGLExtensions::FramebufferBlit |
-                QOpenGLExtensions::PackedDepthStencil;
+            extensions |= QOpenGLExtensions::FramebufferMultisample
+                | QOpenGLExtensions::FramebufferBlit
+                | QOpenGLExtensions::PackedDepthStencil
+                | QOpenGLExtensions::Sized8Formats;
         } else {
             // Recognize features by extension name.
             if (extensionMatcher.match("GL_EXT_framebuffer_multisample"))

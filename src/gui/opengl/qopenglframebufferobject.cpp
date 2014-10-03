@@ -452,13 +452,7 @@ void QOpenGLFramebufferObjectPrivate::init(QOpenGLFramebufferObject *, const QSi
     if (!funcs.hasOpenGLExtension(QOpenGLExtensions::FramebufferMultisample)
             || !funcs.hasOpenGLExtension(QOpenGLExtensions::FramebufferBlit)) {
         samples = 0;
-    }
-
-    // On GLES 2.0 multisampled framebuffers are available through vendor-specific extensions
-    const bool msaaES2 = ctx->isOpenGLES() && (ctx->hasExtension("GL_ANGLE_framebuffer_multisample")
-                                               || ctx->hasExtension("GL_NV_framebuffer_multisample"));
-
-    if (!ctx->isOpenGLES() || msaaES2) {
+    } else if (!ctx->isOpenGLES() || ctx->format().majorVersion() >= 3) {
         GLint maxSamples;
         funcs.glGetIntegerv(GL_MAX_SAMPLES, &maxSamples);
         samples = qBound(0, int(samples), int(maxSamples));
@@ -483,11 +477,15 @@ void QOpenGLFramebufferObjectPrivate::init(QOpenGLFramebufferObject *, const QSi
         initTexture(texture_target, internal_format, size, mipmap);
     } else {
         GLenum storageFormat = internal_format;
+        // ES requires a sized format. The older desktop extension does not. Correct the format on ES.
+        if (ctx->isOpenGLES() && internal_format == GL_RGBA) {
 #ifdef GL_RGBA8_OES
-        // Correct the internal format used by the render buffer when using ES with extensions
-        if (msaaES2 && internal_format == GL_RGBA)
-            storageFormat = GL_RGBA8_OES;
+            if (funcs.hasOpenGLExtension(QOpenGLExtensions::Sized8Formats))
+                storageFormat = GL_RGBA8_OES;
+            else
 #endif
+                storageFormat = GL_RGBA4;
+        }
 
         mipmap = false;
         funcs.glGenRenderbuffers(1, &color_buffer);
