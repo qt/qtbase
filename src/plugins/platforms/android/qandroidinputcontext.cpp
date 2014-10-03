@@ -38,6 +38,7 @@
 #include "androidjnimain.h"
 #include "androidjniinput.h"
 #include "qandroideventdispatcher.h"
+#include "androiddeadlockprotector.h"
 #include <QDebug>
 #include <qevent.h>
 #include <qguiapplication.h>
@@ -998,6 +999,9 @@ QVariant QAndroidInputContext::queryFocusObjectThreadSafe(Qt::InputMethodQuery q
     const bool inMainThread = qGuiApp->thread() == QThread::currentThread();
     if (QAndroidEventDispatcherStopper::stopped() && !inMainThread)
         return retval;
+    AndroidDeadlockProtector protector;
+    if (!inMainThread && !protector.acquire())
+        return retval;
 
     QMetaObject::invokeMethod(this, "queryFocusObjectUnsafe",
                               inMainThread ? Qt::DirectConnection : Qt::BlockingQueuedConnection,
@@ -1014,6 +1018,9 @@ QSharedPointer<QInputMethodQueryEvent> QAndroidInputContext::focusObjectInputMet
         return QSharedPointer<QInputMethodQueryEvent>();
     const bool inMainThread = qGuiApp->thread() == QThread::currentThread();
     if (QAndroidEventDispatcherStopper::stopped() && !inMainThread)
+        return QSharedPointer<QInputMethodQueryEvent>();
+    AndroidDeadlockProtector protector;
+    if (!inMainThread && !protector.acquire())
         return QSharedPointer<QInputMethodQueryEvent>();
 
     QInputMethodQueryEvent *queryEvent = 0;
@@ -1052,7 +1059,9 @@ void QAndroidInputContext::sendInputMethodEventThreadSafe(QInputMethodEvent *eve
     const bool inMainThread = qGuiApp->thread() == QThread::currentThread();
     if (QAndroidEventDispatcherStopper::stopped() && !inMainThread)
         return;
-
+    AndroidDeadlockProtector protector;
+    if (!inMainThread && !protector.acquire())
+        return;
     QMetaObject::invokeMethod(this, "sendInputMethodEventUnsafe",
                               inMainThread ? Qt::DirectConnection : Qt::BlockingQueuedConnection,
                               Q_ARG(QInputMethodEvent*, event));
