@@ -1888,7 +1888,7 @@ NSView *QMacStylePrivate::cocoaControl(QCocoaWidget widget, QPoint *offset) cons
     return bv;
 }
 
-void QMacStylePrivate::drawNSViewInRect(NSView *view, const QRect &qtRect, QPainter *p) const
+void QMacStylePrivate::drawNSViewInRect(NSView *view, const QRect &qtRect, QPainter *p, QCocoaDrawRectBlock drawRectBlock) const
 {
     QMacCGContext ctx(p);
     CGContextSaveGState(ctx);
@@ -1901,7 +1901,10 @@ void QMacStylePrivate::drawNSViewInRect(NSView *view, const QRect &qtRect, QPain
 
     [backingStoreNSView addSubview:view];
     view.frame = rect;
-    [view drawRect:rect];
+    if (drawRectBlock)
+        drawRectBlock(rect, (CGContextRef)ctx);
+    else
+        [view drawRect:rect];
     [view removeFromSuperviewWithoutNeedingDisplay];
 
     [NSGraphicsContext restoreGraphicsState];
