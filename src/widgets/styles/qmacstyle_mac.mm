@@ -1897,11 +1897,11 @@ void QMacStylePrivate::drawNSViewInRect(NSView *view, const QRect &qtRect, QPain
     [NSGraphicsContext setCurrentContext:[NSGraphicsContext
                                           graphicsContextWithGraphicsPort:ctx flipped:YES]];
 
-    CGRect rect = CGRectMake(qtRect.x() + 1, qtRect.y(), qtRect.width(), qtRect.height());
+    NSRect rect = NSMakeRect(qtRect.x() + 1, qtRect.y(), qtRect.width(), qtRect.height());
 
     [backingStoreNSView addSubview:view];
-    view.frame = NSRectFromCGRect(rect);
-    [view drawRect:NSRectFromCGRect(rect)];
+    view.frame = rect;
+    [view drawRect:rect];
     [view removeFromSuperviewWithoutNeedingDisplay];
 
     [NSGraphicsContext restoreGraphicsState];
