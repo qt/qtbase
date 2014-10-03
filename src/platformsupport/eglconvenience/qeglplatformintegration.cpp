@@ -193,7 +193,7 @@ enum ResourceType {
     EglContext,
     EglConfig,
     NativeDisplay,
-    Display
+    XlibDisplay
 };
 
 static int resourceType(const QByteArray &key)
@@ -236,7 +236,7 @@ void *QEGLPlatformIntegration::nativeResourceForScreen(const QByteArray &resourc
     void *result = 0;
 
     switch (resourceType(resource)) {
-    case Display:
+    case XlibDisplay:
         // Play nice when using the x11 hooks: Be compatible with xcb that allows querying
         // the X Display pointer, which is nothing but our native display.
         result = reinterpret_cast<void*>(nativeDisplay());
