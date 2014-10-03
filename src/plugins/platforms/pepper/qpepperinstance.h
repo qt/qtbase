@@ -73,10 +73,6 @@ public:
     virtual bool HandleDocumentLoad(const pp::URLLoader& url_loader);
     virtual void HandleMessage(const pp::Var& var_message);
 
-    // Interface for QPepperCompositor:
-    void flush(const QRegion &region);
-    void waitForFlushed();
-
     // Instance attribute getters
     QRect geometry();
     QRect deviceGeometry();
