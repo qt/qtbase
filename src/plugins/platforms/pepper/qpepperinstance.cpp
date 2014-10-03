@@ -242,3 +242,32 @@ void QPepperInstance::startQt()
     extern void qGuiAppInit();
     qGuiAppInit();
 }
+
+void QPepperInstance::drawTestImage()
+{
+    Size devicePixelSize = toPPSize(deviceGeometry().size());
+
+    // Create new graphics context and frame buffer.
+    Graphics2D * m_context2D = new Graphics2D(this, devicePixelSize, false);
+    if (!g_pepperInstance->BindGraphics(*m_context2D)) {
+        qWarning("Couldn't bind the device context\n");
+    }
+
+    ImageData *m_imageData2D = new ImageData(this, PP_IMAGEDATAFORMAT_BGRA_PREMUL,
+                                  devicePixelSize, true);
+
+    QImage *m_frameBuffer = new QImage(reinterpret_cast<uchar *>(m_imageData2D->data()),
+                           devicePixelSize.width(),
+                           devicePixelSize.height(),
+                           m_imageData2D->stride(), QImage::Format_ARGB32_Premultiplied);
+
+    m_frameBuffer->setDevicePixelRatio(m_currentDevicePixelRatio);
+    m_frameBuffer->fill(Qt::red);
+    m_context2D->PaintImageData(*m_imageData2D, pp::Point(0,0), toPPRect(deviceGeometry()));
+    m_context2D->Flush(m_callbackFactory.NewCallback(&QPepperInstance::flushCompletedCallback));
+}
+
+void QPepperInstance::flushCompletedCallback(int32_t)
+{
+
+}

@@ -89,6 +89,9 @@ public:
     void startQt();
     void windowSystemEventsFlushCallback(int32_t);
 
+    void drawTestImage();
+    void flushCompletedCallback(int32_t);
+
     QPepperIntegration *m_pepperIntegraton;
 
     bool m_qtStarted;
