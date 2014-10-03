@@ -612,10 +612,10 @@ public:
     { return p + data.wrect.topLeft(); }
 
     inline QRect mapToWS(const QRect &r) const
-    { QRect rr(r); rr.translate(-data.wrect.topLeft()); return rr; }
+    { return r.translated(-data.wrect.topLeft()); }
 
     inline QRect mapFromWS(const QRect &r) const
-    { QRect rr(r); rr.translate(data.wrect.topLeft()); return rr; }
+    { return r.translated(data.wrect.topLeft()); }
 
     QOpenGLContext *shareContext() const;
 
