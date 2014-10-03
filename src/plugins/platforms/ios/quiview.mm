@@ -208,9 +208,10 @@
         // of activating another window. The handleWindowActivated of the activation
         // will take care of both.
         dispatch_async(dispatch_get_main_queue (), ^{
-            if (![[UIResponder currentFirstResponder] isKindOfClass:[QUIView class]])
+            if (![[UIResponder currentFirstResponder] isKindOfClass:[QUIView class]]) {
                 QWindowSystemInterface::handleWindowActivated(0);
                 QWindowSystemInterface::flushWindowSystemEvents();
+            }
         });
 
         return YES;
