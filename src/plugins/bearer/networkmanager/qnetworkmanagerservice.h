@@ -101,10 +101,10 @@ typedef enum
 #define NM_DBUS_PATH_ACCESS_POINT           NM_DBUS_PATH "/AccessPoint"
 #define NM_DBUS_INTERFACE_ACCESS_POINT      NM_DBUS_INTERFACE ".AccessPoint"
 
-#define NM_DBUS_PATH_SETTINGS               "/org/freedesktop/NetworkManagerSettings"
+#define NM_DBUS_PATH_SETTINGS               "/org/freedesktop/NetworkManager/Settings"
 
-#define NM_DBUS_IFACE_SETTINGS_CONNECTION   "org.freedesktop.NetworkManagerSettings.Connection"
-#define NM_DBUS_IFACE_SETTINGS              "org.freedesktop.NetworkManagerSettings"
+#define NM_DBUS_IFACE_SETTINGS_CONNECTION   "org.freedesktop.NetworkManager.Settings.Connection"
+#define NM_DBUS_IFACE_SETTINGS              "org.freedesktop.NetworkManager.Settings"
 #define NM_DBUS_INTERFACE_ACTIVE_CONNECTION NM_DBUS_INTERFACE ".Connection.Active"
 #define NM_DBUS_INTERFACE_IP4_CONFIG        NM_DBUS_INTERFACE ".IP4Config"
 

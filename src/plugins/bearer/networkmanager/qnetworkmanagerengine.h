@@ -122,7 +122,8 @@ private:
     QHash<QString, QNetworkManagerConnectionActive *> activeConnections;
     QList<QNetworkManagerSettingsConnection *> connections;
     QList<QNetworkManagerInterfaceAccessPoint *> accessPoints;
-    QList<QNetworkManagerInterfaceAccessPoint *> configuredAccessPoints;
+
+    QMap<QString,QString> configuredAccessPoints; //ap, settings path
 };
 
 QT_END_NAMESPACE

@@ -56,8 +56,8 @@ QT_BEGIN_NAMESPACE
 QNetworkManagerEngine::QNetworkManagerEngine(QObject *parent)
 :   QBearerEngineImpl(parent),
     interface(new QNetworkManagerInterface(this)),
-    systemSettings(new QNetworkManagerSettings(NM_DBUS_SERVICE_SYSTEM_SETTINGS, this)),
-    userSettings(new QNetworkManagerSettings(NM_DBUS_SERVICE_USER_SETTINGS, this))
+    systemSettings(new QNetworkManagerSettings(NM_DBUS_SERVICE, this)),
+    userSettings(new QNetworkManagerSettings(NM_DBUS_SERVICE, this))
 {
     if (!interface->isValid())
         return;
@@ -107,27 +107,33 @@ void QNetworkManagerEngine::initialize()
     }
 
     // Get connections.
+
     foreach (const QDBusObjectPath &settingsPath, systemSettings->listConnections()) {
         locker.unlock();
-        newConnection(settingsPath, systemSettings);
+        if (!hasIdentifier(settingsPath.path()))
+            newConnection(settingsPath, systemSettings);
         locker.relock();
     }
+
     foreach (const QDBusObjectPath &settingsPath, userSettings->listConnections()) {
         locker.unlock();
-        newConnection(settingsPath, userSettings);
+        if (!hasIdentifier(settingsPath.path()))
+            newConnection(settingsPath, userSettings);
         locker.relock();
     }
 
     // Get active connections.
     foreach (const QDBusObjectPath &acPath, interface->activeConnections()) {
         QNetworkManagerConnectionActive *activeConnection =
-            new QNetworkManagerConnectionActive(acPath.path());
+            new QNetworkManagerConnectionActive(acPath.path(),this);
+
         activeConnections.insert(acPath.path(), activeConnection);
 
         activeConnection->setConnections();
         connect(activeConnection, SIGNAL(propertiesChanged(QString,QMap<QString,QVariant>)),
                 this, SLOT(activeConnectionPropertiesChanged(QString,QMap<QString,QVariant>)));
     }
+    Q_EMIT updateCompleted();
 }
 
 bool QNetworkManagerEngine::networkManagerAvailable() const
@@ -144,8 +150,7 @@ QString QNetworkManagerEngine::getInterfaceFromId(const QString &id)
     foreach (const QDBusObjectPath &acPath, interface->activeConnections()) {
         QNetworkManagerConnectionActive activeConnection(acPath.path());
 
-        const QString identifier = QString::number(qHash(activeConnection.serviceName() + ' ' +
-                                                         activeConnection.connection().path()));
+        const QString identifier = activeConnection.connection().path();
 
         if (id == identifier) {
             QList<QDBusObjectPath> devices = activeConnection.devices();
@@ -161,24 +166,11 @@ QString QNetworkManagerEngine::getInterfaceFromId(const QString &id)
     return QString();
 }
 
+
 bool QNetworkManagerEngine::hasIdentifier(const QString &id)
 {
     QMutexLocker locker(&mutex);
-
-    if (connectionFromId(id))
-        return true;
-
-    for (int i = 0; i < accessPoints.count(); ++i) {
-        QNetworkManagerInterfaceAccessPoint *accessPoint = accessPoints.at(i);
-
-        const QString identifier =
-            QString::number(qHash(accessPoint->connectionInterface()->path()));
-
-        if (id == identifier)
-            return true;
-    }
-
-    return false;
+    return accessPointConfigurations.contains(id);
 }
 
 void QNetworkManagerEngine::connectToId(const QString &id)
@@ -214,20 +206,31 @@ void QNetworkManagerEngine::connectToId(const QString &id)
 
     const QString service = connection->connectionInterface()->service();
     const QString settingsPath = connection->connectionInterface()->path();
+    QString specificPath = configuredAccessPoints.key(settingsPath);
+
+    if (specificPath.isEmpty())
+        specificPath = "/";
 
     interface->activateConnection(service, QDBusObjectPath(settingsPath),
-                                  QDBusObjectPath(dbusDevicePath), QDBusObjectPath("/"));
+                                  QDBusObjectPath(dbusDevicePath), QDBusObjectPath(specificPath));
 }
 
 void QNetworkManagerEngine::disconnectFromId(const QString &id)
 {
     QMutexLocker locker(&mutex);
 
+    QNetworkManagerSettingsConnection *connection = connectionFromId(id);
+    QNmSettingsMap map = connection->getSettings();
+    bool connectionAutoconnect = map.value("connection").value("autoconnect",true).toBool(); //if not present is true !!
+    if (connectionAutoconnect) { //autoconnect connections will simply be reconnected by nm
+        emit connectionError(id, QBearerEngineImpl::OperationNotSupported);
+        return;
+    }
+
     foreach (const QDBusObjectPath &acPath, interface->activeConnections()) {
         QNetworkManagerConnectionActive activeConnection(acPath.path());
 
-        const QString identifier = QString::number(qHash(activeConnection.serviceName() + ' ' +
-                                                         activeConnection.connection().path()));
+        const QString identifier = activeConnection.connection().path();
 
         if (id == identifier && accessPointConfigurations.contains(id)) {
             interface->deactivateConnection(acPath);
@@ -244,9 +247,8 @@ void QNetworkManagerEngine::requestUpdate()
 void QNetworkManagerEngine::interfacePropertiesChanged(const QString &path,
                                                        const QMap<QString, QVariant> &properties)
 {
-    QMutexLocker locker(&mutex);
-
     Q_UNUSED(path)
+    QMutexLocker locker(&mutex);
 
     QMapIterator<QString, QVariant> i(properties);
     while (i.hasNext()) {
@@ -269,7 +271,7 @@ void QNetworkManagerEngine::interfacePropertiesChanged(const QString &path,
                 QNetworkManagerConnectionActive *activeConnection =
                     this->activeConnections.value(acPath.path());
                 if (!activeConnection) {
-                    activeConnection = new QNetworkManagerConnectionActive(acPath.path());
+                    activeConnection = new QNetworkManagerConnectionActive(acPath.path(),this);
                     this->activeConnections.insert(acPath.path(), activeConnection);
 
                     activeConnection->setConnections();
@@ -277,8 +279,7 @@ void QNetworkManagerEngine::interfacePropertiesChanged(const QString &path,
                             this, SLOT(activeConnectionPropertiesChanged(QString,QMap<QString,QVariant>)));
                 }
 
-                const QString id = QString::number(qHash(activeConnection->serviceName() + ' ' +
-                                                         activeConnection->connection().path()));
+                const QString id = activeConnection->connection().path();
 
                 identifiers.removeOne(id);
 
@@ -335,8 +336,7 @@ void QNetworkManagerEngine::activeConnectionPropertiesChanged(const QString &pat
     if (!activeConnection)
         return;
 
-    const QString id = QString::number(qHash(activeConnection->serviceName() + ' ' +
-                                             activeConnection->connection().path()));
+    const QString id = activeConnection->connection().path();
 
     QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.value(id);
     if (ptr) {
@@ -367,7 +367,7 @@ void QNetworkManagerEngine::deviceAdded(const QDBusObjectPath &path)
     QNetworkManagerInterfaceDevice device(path.path());
     if (device.deviceType() == DEVICE_TYPE_802_11_WIRELESS) {
         QNetworkManagerInterfaceDeviceWireless *wirelessDevice =
-            new QNetworkManagerInterfaceDeviceWireless(device.connectionInterface()->path());
+            new QNetworkManagerInterfaceDeviceWireless(device.connectionInterface()->path(),this);
 
         wirelessDevice->setConnections();
         connect(wirelessDevice, SIGNAL(accessPointAdded(QString,QDBusObjectPath)),
@@ -377,8 +377,9 @@ void QNetworkManagerEngine::deviceAdded(const QDBusObjectPath &path)
         connect(wirelessDevice, SIGNAL(propertiesChanged(QString,QMap<QString,QVariant>)),
                 this, SLOT(devicePropertiesChanged(QString,QMap<QString,QVariant>)));
 
-        foreach (const QDBusObjectPath &apPath, wirelessDevice->getAccessPoints())
+        foreach (const QDBusObjectPath &apPath, wirelessDevice->getAccessPoints()) {
             newAccessPoint(QString(), apPath);
+        }
 
         mutex.lock();
         wirelessDevices.insert(path.path(), wirelessDevice);
@@ -406,7 +407,7 @@ void QNetworkManagerEngine::newConnection(const QDBusObjectPath &path,
 
     QNetworkManagerSettingsConnection *connection =
         new QNetworkManagerSettingsConnection(settings->connectionInterface()->service(),
-                                              path.path());
+                                              path.path(),this);
     connections.append(connection);
 
     connect(connection, SIGNAL(removed(QString)), this, SLOT(removeConnection(QString)));
@@ -423,14 +424,13 @@ void QNetworkManagerEngine::newConnection(const QDBusObjectPath &path,
     foreach (const QDBusObjectPath &acPath, interface->activeConnections()) {
         QNetworkManagerConnectionActive activeConnection(acPath.path());
 
-        if (activeConnection.serviceName() == service &&
+        if (activeConnection.defaultRoute() &&
             activeConnection.connection().path() == settingsPath &&
             activeConnection.state() == 2) {
             cpPriv->state |= QNetworkConfiguration::Active;
             break;
         }
     }
-
     QNetworkConfigurationPrivatePointer ptr(cpPriv);
     accessPointConfigurations.insert(ptr->id, ptr);
 
@@ -451,8 +451,7 @@ void QNetworkManagerEngine::removeConnection(const QString &path)
 
     connections.removeAll(connection);
 
-    const QString id = QString::number(qHash(connection->connectionInterface()->service() + ' ' +
-                                             connection->connectionInterface()->path()));
+    const QString id = connection->connectionInterface()->path();
 
     QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.take(id);
 
@@ -480,8 +479,7 @@ void QNetworkManagerEngine::updateConnection(const QNmSettingsMap &settings)
     foreach (const QDBusObjectPath &acPath, interface->activeConnections()) {
         QNetworkManagerConnectionActive activeConnection(acPath.path());
 
-        if (activeConnection.serviceName() == service &&
-            activeConnection.connection().path() == settingsPath &&
+        if (activeConnection.connection().path() == settingsPath &&
             activeConnection.state() == NM_ACTIVE_CONNECTION_STATE_ACTIVATED) {
             cpPriv->state |= QNetworkConfiguration::Active;
             break;
@@ -508,14 +506,15 @@ void QNetworkManagerEngine::activationFinished(QDBusPendingCallWatcher *watcher)
 {
     QMutexLocker locker(&mutex);
 
+    watcher->deleteLater();
+
     QDBusPendingReply<QDBusObjectPath> reply(*watcher);
     if (!reply.isError()) {
         QDBusObjectPath result = reply.value();
 
         QNetworkManagerConnectionActive activeConnection(result.path());
 
-        const QString id = QString::number(qHash(activeConnection.serviceName() + ' ' +
-                                                 activeConnection.connection().path()));
+        const QString id = activeConnection.connection().path();
 
         QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.value(id);
         if (ptr) {
@@ -542,7 +541,7 @@ void QNetworkManagerEngine::newAccessPoint(const QString &path, const QDBusObjec
     Q_UNUSED(path)
 
     QNetworkManagerInterfaceAccessPoint *accessPoint =
-        new QNetworkManagerInterfaceAccessPoint(objectPath.path());
+        new QNetworkManagerInterfaceAccessPoint(objectPath.path(),this);
     accessPoints.append(accessPoint);
 
     accessPoint->setConnections();
@@ -565,7 +564,7 @@ void QNetworkManagerEngine::newAccessPoint(const QString &path, const QDBusObjec
             if (accessPoint->ssid() == connection->getSsid()) {
                 const QString service = connection->connectionInterface()->service();
                 const QString settingsPath = connection->connectionInterface()->path();
-                const QString connectionId = QString::number(qHash(service + ' ' + settingsPath));
+                const QString connectionId = settingsPath;
 
                 QNetworkConfigurationPrivatePointer ptr =
                     accessPointConfigurations.value(connectionId);
@@ -585,7 +584,7 @@ void QNetworkManagerEngine::newAccessPoint(const QString &path, const QDBusObjec
 
     ptr->name = accessPoint->ssid();
     ptr->isValid = true;
-    ptr->id = QString::number(qHash(objectPath.path()));
+    ptr->id = objectPath.path();
     ptr->type = QNetworkConfiguration::InternetAccessPoint;
     if(accessPoint->flags() == NM_802_11_AP_FLAGS_PRIVACY) {
         ptr->purpose = QNetworkConfiguration::PrivatePurpose;
@@ -614,17 +613,16 @@ void QNetworkManagerEngine::removeAccessPoint(const QString &path,
         if (accessPoint->connectionInterface()->path() == objectPath.path()) {
             accessPoints.removeOne(accessPoint);
 
-            if (configuredAccessPoints.contains(accessPoint)) {
+            if (configuredAccessPoints.contains(accessPoint->connectionInterface()->path())) {
                 // find connection and change state to Defined
-                configuredAccessPoints.removeOne(accessPoint);
+                configuredAccessPoints.remove(accessPoint->connectionInterface()->path());
                 for (int i = 0; i < connections.count(); ++i) {
                     QNetworkManagerSettingsConnection *connection = connections.at(i);
 
                     if (accessPoint->ssid() == connection->getSsid()) {
                         const QString service = connection->connectionInterface()->service();
                         const QString settingsPath = connection->connectionInterface()->path();
-                        const QString connectionId =
-                            QString::number(qHash(service + ' ' + settingsPath));
+                        const QString connectionId = settingsPath;
 
                         QNetworkConfigurationPrivatePointer ptr =
                             accessPointConfigurations.value(connectionId);
@@ -640,7 +638,7 @@ void QNetworkManagerEngine::removeAccessPoint(const QString &path,
                 }
             } else {
                 QNetworkConfigurationPrivatePointer ptr =
-                    accessPointConfigurations.take(QString::number(qHash(objectPath.path())));
+                    accessPointConfigurations.take(objectPath.path());
 
                 if (ptr) {
                     locker.unlock();
@@ -673,7 +671,7 @@ void QNetworkManagerEngine::updateAccessPoint(const QMap<QString, QVariant> &map
         if (accessPoint->ssid() == connection->getSsid()) {
             const QString service = connection->connectionInterface()->service();
             const QString settingsPath = connection->connectionInterface()->path();
-            const QString connectionId = QString::number(qHash(service + ' ' + settingsPath));
+            const QString connectionId = settingsPath;
 
             QNetworkConfigurationPrivatePointer ptr =
                 accessPointConfigurations.value(connectionId);
@@ -692,10 +690,12 @@ QNetworkConfigurationPrivate *QNetworkManagerEngine::parseConnection(const QStri
                                                                      const QString &settingsPath,
                                                                      const QNmSettingsMap &map)
 {
+    Q_UNUSED(service);
     QNetworkConfigurationPrivate *cpPriv = new QNetworkConfigurationPrivate;
     cpPriv->name = map.value("connection").value("id").toString();
+
     cpPriv->isValid = true;
-    cpPriv->id = QString::number(qHash(service + ' ' + settingsPath));
+    cpPriv->id = settingsPath;
     cpPriv->type = QNetworkConfiguration::InternetAccessPoint;
 
     cpPriv->purpose = QNetworkConfiguration::PublicPurpose;
@@ -730,13 +730,13 @@ QNetworkConfigurationPrivate *QNetworkManagerEngine::parseConnection(const QStri
             cpPriv->purpose = QNetworkConfiguration::PublicPurpose;
         }
         for (int i = 0; i < accessPoints.count(); ++i) {
-            if (connectionSsid == accessPoints.at(i)->ssid()) {
+            if (connectionSsid == accessPoints.at(i)->ssid()
+                    && map.value("802-11-wireless").value("seen-bssids").toStringList().contains(accessPoints.at(i)->hwAddress())) {
                 cpPriv->state |= QNetworkConfiguration::Discovered;
-                if (!configuredAccessPoints.contains(accessPoints.at(i))) {
-                    configuredAccessPoints.append(accessPoints.at(i));
+                if (!configuredAccessPoints.contains(accessPoints.at(i)->connectionInterface()->path())) {
+                    configuredAccessPoints.insert(accessPoints.at(i)->connectionInterface()->path(),settingsPath);
 
-                    const QString accessPointId =
-                        QString::number(qHash(accessPoints.at(i)->connectionInterface()->path()));
+                    const QString accessPointId = accessPoints.at(i)->connectionInterface()->path();
                     QNetworkConfigurationPrivatePointer ptr =
                         accessPointConfigurations.take(accessPointId);
 
@@ -765,7 +765,7 @@ QNetworkManagerSettingsConnection *QNetworkManagerEngine::connectionFromId(const
         const QString service = connection->connectionInterface()->service();
         const QString settingsPath = connection->connectionInterface()->path();
 
-        const QString identifier = QString::number(qHash(service + ' ' + settingsPath));
+        const QString identifier = settingsPath;
 
         if (id == identifier)
             return connection;
@@ -789,8 +789,7 @@ QNetworkSession::State QNetworkManagerEngine::sessionStateForId(const QString &i
     foreach (const QString &acPath, activeConnections.keys()) {
         QNetworkManagerConnectionActive *activeConnection = activeConnections.value(acPath);
 
-        const QString identifier = QString::number(qHash(activeConnection->serviceName() + ' ' +
-                                                         activeConnection->connection().path()));
+        const QString identifier = activeConnection->connection().path();
 
         if (id == identifier) {
             switch (activeConnection->state()) {
@@ -884,7 +883,8 @@ quint64 QNetworkManagerEngine::startTime(const QString &id)
 QNetworkConfigurationManager::Capabilities QNetworkManagerEngine::capabilities() const
 {
     return QNetworkConfigurationManager::ForcedRoaming |
-           QNetworkConfigurationManager::CanStartAndStopInterfaces;
+            QNetworkConfigurationManager::DataStatistics |
+            QNetworkConfigurationManager::CanStartAndStopInterfaces;
 }
 
 QNetworkSessionPrivate *QNetworkManagerEngine::createSessionBackend()
