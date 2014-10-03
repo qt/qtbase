@@ -76,7 +76,7 @@ void QPaintDeviceWindow::update(const QRect &rect)
 {
     Q_D(QPaintDeviceWindow);
     d->dirtyRegion += rect;
-    d->triggerUpdate();
+    requestUpdate();
 }
 
 /*!
@@ -89,7 +89,7 @@ void QPaintDeviceWindow::update(const QRegion &region)
 {
     Q_D(QPaintDeviceWindow);
     d->dirtyRegion += region;
-    d->triggerUpdate();
+    requestUpdate();
 }
 
 /*!
@@ -179,7 +179,6 @@ bool QPaintDeviceWindow::event(QEvent *event)
     Q_D(QPaintDeviceWindow);
 
     if (event->type() == QEvent::UpdateRequest) {
-        d->paintEventSent = false;
         if (handle()) // platform window may be gone when the window is closed during app exit
             d->handleUpdateEvent();
         return true;

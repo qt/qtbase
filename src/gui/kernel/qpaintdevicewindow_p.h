@@ -46,8 +46,6 @@ class Q_GUI_EXPORT QPaintDeviceWindowPrivate : public QWindowPrivate
     Q_DECLARE_PUBLIC(QPaintDeviceWindow)
 
 public:
-    QPaintDeviceWindowPrivate() : paintEventSent(false) { }
-
     virtual void beginPaint(const QRegion &region)
     {
         Q_UNUSED(region);
@@ -82,15 +80,6 @@ public:
         return true;
     }
 
-    void triggerUpdate()
-    {
-        Q_Q(QPaintDeviceWindow);
-        if (!paintEventSent) {
-            QCoreApplication::postEvent(q, new QEvent(QEvent::UpdateRequest));
-            paintEventSent = true;
-        }
-    }
-
     void doFlush(const QRegion &region)
     {
         QRegion toFlush = region;
@@ -113,7 +102,6 @@ public:
 
 private:
     QRegion dirtyRegion;
-    bool paintEventSent;
 };
 
 
