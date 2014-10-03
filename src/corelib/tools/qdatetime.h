@@ -36,7 +36,7 @@
 
 #include <QtCore/qstring.h>
 #include <QtCore/qnamespace.h>
-#include <QtCore/qsharedpointer.h>
+#include <QtCore/qshareddata.h>
 
 #include <limits>
 
