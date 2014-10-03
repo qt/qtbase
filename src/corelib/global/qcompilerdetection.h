@@ -730,8 +730,6 @@
        /* C++11 features supported in GCC 4.4: */
 #      define Q_COMPILER_AUTO_FUNCTION
 #      define Q_COMPILER_AUTO_TYPE
-#      define Q_COMPILER_DEFAULT_MEMBERS
-#      define Q_COMPILER_DELETE_MEMBERS
 #      define Q_COMPILER_EXTERN_TEMPLATES
 #      define Q_COMPILER_UNIFORM_INIT
 #      define Q_COMPILER_UNICODE_STRINGS
@@ -748,6 +746,11 @@
 #      define Q_COMPILER_CLASS_ENUM
 #    endif
 #    if (__GNUC__ * 100 + __GNUC_MINOR__) >= 406
+       /* Pre-4.6 compilers implement a non-final snapshot of N2346, hence default and delete
+        * functions are supported only if they are public. Starting from 4.6, GCC handles
+        * final version - the access modifier is not relevant. */
+#      define Q_COMPILER_DEFAULT_MEMBERS
+#      define Q_COMPILER_DELETE_MEMBERS
        /* C++11 features supported in GCC 4.6: */
 #      define Q_COMPILER_CONSTEXPR
 #      define Q_COMPILER_NULLPTR
