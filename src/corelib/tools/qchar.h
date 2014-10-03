@@ -379,19 +379,19 @@ public:
     inline UnicodeVersion unicodeVersion() const { return QChar::unicodeVersion(ucs); }
 
 #if QT_DEPRECATED_SINCE(5, 0)
-    QT_DEPRECATED inline char toAscii() const { return toLatin1(); }
+    QT_DEPRECATED Q_DECL_CONSTEXPR inline char toAscii() const { return toLatin1(); }
 #endif
-    inline char toLatin1() const;
+    Q_DECL_CONSTEXPR inline char toLatin1() const;
     Q_DECL_CONSTEXPR inline ushort unicode() const { return ucs; }
     inline ushort &unicode() { return ucs; }
 
 #if QT_DEPRECATED_SINCE(5, 0)
-    QT_DEPRECATED static inline QChar fromAscii(char c)
+    QT_DEPRECATED static Q_DECL_CONSTEXPR inline QChar fromAscii(char c)
     { return fromLatin1(c); }
 #endif
-    static inline QChar fromLatin1(char c);
+    Q_DECL_CONSTEXPR static inline QChar fromLatin1(char c);
 
-    inline bool isNull() const { return ucs == 0; }
+    Q_DECL_CONSTEXPR inline bool isNull() const { return ucs == 0; }
 
     inline bool isPrint() const { return QChar::isPrint(ucs); }
     inline bool isSpace() const { return QChar::isSpace(ucs); }
@@ -406,41 +406,50 @@ public:
     inline bool isUpper() const { return QChar::isUpper(ucs); }
     inline bool isTitleCase() const { return QChar::isTitleCase(ucs); }
 
-    inline bool isNonCharacter() const { return QChar::isNonCharacter(ucs); }
-    inline bool isHighSurrogate() const { return QChar::isHighSurrogate(ucs); }
-    inline bool isLowSurrogate() const { return QChar::isLowSurrogate(ucs); }
-    inline bool isSurrogate() const { return QChar::isSurrogate(ucs); }
+    Q_DECL_CONSTEXPR inline bool isNonCharacter() const { return QChar::isNonCharacter(ucs); }
+    Q_DECL_CONSTEXPR inline bool isHighSurrogate() const { return QChar::isHighSurrogate(ucs); }
+    Q_DECL_CONSTEXPR inline bool isLowSurrogate() const { return QChar::isLowSurrogate(ucs); }
+    Q_DECL_CONSTEXPR inline bool isSurrogate() const { return QChar::isSurrogate(ucs); }
 
-    inline uchar cell() const { return uchar(ucs & 0xff); }
-    inline uchar row() const { return uchar((ucs>>8)&0xff); }
+    Q_DECL_CONSTEXPR inline uchar cell() const { return uchar(ucs & 0xff); }
+    Q_DECL_CONSTEXPR inline uchar row() const { return uchar((ucs>>8)&0xff); }
     inline void setCell(uchar cell);
     inline void setRow(uchar row);
 
-    static inline bool isNonCharacter(uint ucs4) {
+    static Q_DECL_CONSTEXPR inline bool isNonCharacter(uint ucs4)
+    {
         return ucs4 >= 0xfdd0 && (ucs4 <= 0xfdef || (ucs4 & 0xfffe) == 0xfffe);
     }
-    static inline bool isHighSurrogate(uint ucs4) {
+    static Q_DECL_CONSTEXPR inline bool isHighSurrogate(uint ucs4)
+    {
         return ((ucs4 & 0xfffffc00) == 0xd800);
     }
-    static inline bool isLowSurrogate(uint ucs4) {
+    static Q_DECL_CONSTEXPR inline bool isLowSurrogate(uint ucs4)
+    {
         return ((ucs4 & 0xfffffc00) == 0xdc00);
     }
-    static inline bool isSurrogate(uint ucs4) {
+    static Q_DECL_CONSTEXPR inline bool isSurrogate(uint ucs4)
+    {
         return (ucs4 - 0xd800u < 2048u);
     }
-    static inline bool requiresSurrogates(uint ucs4) {
+    static Q_DECL_CONSTEXPR inline bool requiresSurrogates(uint ucs4)
+    {
         return (ucs4 >= 0x10000);
     }
-    static inline uint surrogateToUcs4(ushort high, ushort low) {
+    static Q_DECL_CONSTEXPR inline uint surrogateToUcs4(ushort high, ushort low)
+    {
         return (uint(high)<<10) + low - 0x35fdc00;
     }
-    static inline uint surrogateToUcs4(QChar high, QChar low) {
-        return surrogateToUcs4(high.unicode(), low.unicode());
+    static Q_DECL_CONSTEXPR inline uint surrogateToUcs4(QChar high, QChar low)
+    {
+        return surrogateToUcs4(high.ucs, low.ucs);
     }
-    static inline ushort highSurrogate(uint ucs4) {
+    static Q_DECL_CONSTEXPR inline ushort highSurrogate(uint ucs4)
+    {
         return ushort((ucs4>>10) + 0xd7c0);
     }
-    static inline ushort lowSurrogate(uint ucs4) {
+    static Q_DECL_CONSTEXPR inline ushort lowSurrogate(uint ucs4)
+    {
         return ushort(ucs4%0x400 + 0xdc00);
     }
 
@@ -494,15 +503,15 @@ private:
     QChar(uchar c);
 #endif
 
-    friend bool operator==(QChar, QChar);
-    friend bool operator< (QChar, QChar);
+    friend Q_DECL_CONSTEXPR bool operator==(QChar, QChar);
+    friend Q_DECL_CONSTEXPR bool operator< (QChar, QChar);
     ushort ucs;
 };
 
 Q_DECLARE_TYPEINFO(QChar, Q_MOVABLE_TYPE);
 
-inline char QChar::toLatin1() const { return ucs > 0xff ? '\0' : char(ucs); }
-inline QChar QChar::fromLatin1(char c) { return QChar(ushort(uchar(c))); }
+Q_DECL_CONSTEXPR inline char QChar::toLatin1() const { return ucs > 0xff ? '\0' : char(ucs); }
+Q_DECL_CONSTEXPR inline QChar QChar::fromLatin1(char c) { return QChar(ushort(uchar(c))); }
 
 inline void QChar::setCell(uchar acell)
 { ucs = ushort((ucs & 0xff00) + acell); }
@@ -537,13 +546,13 @@ inline bool QChar::isUpper(uint ucs4)
 inline bool QChar::isTitleCase(uint ucs4)
 { return ucs4 > 127 && QChar::category(ucs4) == Letter_Titlecase; }
 
-inline bool operator==(QChar c1, QChar c2) { return c1.ucs == c2.ucs; }
-inline bool operator< (QChar c1, QChar c2) { return c1.ucs <  c2.ucs; }
+Q_DECL_CONSTEXPR inline bool operator==(QChar c1, QChar c2) { return c1.ucs == c2.ucs; }
+Q_DECL_CONSTEXPR inline bool operator< (QChar c1, QChar c2) { return c1.ucs <  c2.ucs; }
 
-inline bool operator!=(QChar c1, QChar c2) { return !operator==(c1, c2); }
-inline bool operator>=(QChar c1, QChar c2) { return !operator< (c1, c2); }
-inline bool operator> (QChar c1, QChar c2) { return  operator< (c2, c1); }
-inline bool operator<=(QChar c1, QChar c2) { return !operator< (c2, c1); }
+Q_DECL_CONSTEXPR inline bool operator!=(QChar c1, QChar c2) { return !operator==(c1, c2); }
+Q_DECL_CONSTEXPR inline bool operator>=(QChar c1, QChar c2) { return !operator< (c1, c2); }
+Q_DECL_CONSTEXPR inline bool operator> (QChar c1, QChar c2) { return  operator< (c2, c1); }
+Q_DECL_CONSTEXPR inline bool operator<=(QChar c1, QChar c2) { return !operator< (c2, c1); }
 
 #ifndef QT_NO_DATASTREAM
 Q_CORE_EXPORT QDataStream &operator<<(QDataStream &, QChar);
