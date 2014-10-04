@@ -3674,6 +3674,17 @@ bool QHeaderViewPrivate::read(QDataStream &in)
     QVector<int> visualIndicesIn;
     QVector<int> logicalIndicesIn;
     QHash<int, int> hiddenSectionSizeIn;
+    bool movableSectionsIn;
+    bool clickableSectionsIn;
+    bool highlightSelectedIn;
+    bool stretchLastSectionIn;
+    bool cascadingResizingIn;
+    int stretchSectionsIn;
+    int contentsSectionsIn;
+    int defaultSectionSizeIn;
+    int minimumSectionSizeIn;
+    QVector<SectionItem> sectionItemsIn;
+
 
     in >> orient;
     in >> order;
@@ -3695,6 +3706,37 @@ bool QHeaderViewPrivate::read(QDataStream &in)
     if (in.status() != QDataStream::Ok || lengthIn < 0)
         return false;
 
+    in >> movableSectionsIn;
+    in >> clickableSectionsIn;
+    in >> highlightSelectedIn;
+    in >> stretchLastSectionIn;
+    in >> cascadingResizingIn;
+    in >> stretchSectionsIn;
+    in >> contentsSectionsIn;
+    in >> defaultSectionSizeIn;
+    in >> minimumSectionSizeIn;
+
+    in >> align;
+
+    in >> global;
+
+    in >> sectionItemsIn;
+    // In Qt4 we had a vector of spans where one span could hold information on more sections.
+    // Now we have an itemvector where one items contains information about one section
+    // For backward compatibility with Qt4 we do the following
+    QVector<SectionItem> newSectionItems;
+    for (int u = 0; u < sectionItemsIn.count(); ++u) {
+        int count = sectionItemsIn.at(u).tmpDataStreamSectionCount;
+        for (int n = 0; n < count; ++n)
+            newSectionItems.append(sectionItemsIn[u]);
+    }
+
+    int sectionItemsLengthTotal = 0;
+    foreach (const SectionItem& section, sectionItemsIn)
+        sectionItemsLengthTotal += section.size;
+    if (sectionItemsLengthTotal != lengthIn)
+        return false;
+
     orientation = static_cast<Qt::Orientation>(orient);
     sortIndicatorOrder = static_cast<Qt::SortOrder>(order);
     sortIndicatorSection = sortIndicatorSectionIn;
@@ -3704,32 +3746,19 @@ bool QHeaderViewPrivate::read(QDataStream &in)
     hiddenSectionSize = hiddenSectionSizeIn;
     length = lengthIn;
 
-    in >> movableSections;
-    in >> clickableSections;
-    in >> highlightSelected;
-    in >> stretchLastSection;
-    in >> cascadingResizing;
-    in >> stretchSections;
-    in >> contentsSections;
-    in >> defaultSectionSize;
-    in >> minimumSectionSize;
+    movableSections = movableSectionsIn;
+    clickableSections = clickableSectionsIn;
+    highlightSelected = highlightSelectedIn;
+    stretchLastSection = stretchLastSectionIn;
+    cascadingResizing = cascadingResizingIn;
+    stretchSections = stretchSectionsIn;
+    contentsSections = contentsSectionsIn;
+    defaultSectionSize = defaultSectionSizeIn;
+    minimumSectionSize = minimumSectionSizeIn;
 
-    in >> align;
     defaultAlignment = Qt::Alignment(align);
+    globalResizeMode = static_cast<QHeaderView::ResizeMode>(global);
 
-    in >> global;
-    globalResizeMode = (QHeaderView::ResizeMode)global;
-
-    in >> sectionItems;
-    // In Qt4 we had a vector of spans where one span could hold information on more sections.
-    // Now we have an itemvector where one items contains information about one section
-    // For backward compatibility with Qt4 we do the following
-    QVector<SectionItem> newSectionItems;
-    for (int u = 0; u < sectionItems.count(); ++u) {
-        int count = sectionItems.at(u).tmpDataStreamSectionCount;
-        for (int n = 0; n < count; ++n)
-            newSectionItems.append(sectionItems[u]);
-    }
     sectionItems = newSectionItems;
     setHiddenSectionsFromBitVector(sectionHidden);
     recalcSectionStartPos();
