@@ -94,7 +94,7 @@ template <typename T> struct QAtomicOps : QBasicAtomicOps<sizeof(T)>
 
 #if defined(Q_CC_GNU)
 
-#if defined(_MIPS_ARCH_MIPS1) || (defined(__mips) && __mips - 0 == 1)
+#if defined(_MIPS_ARCH_MIPS1) || (!defined(Q_CC_CLANG) && defined(__mips) && __mips - 0 == 1)
 # error "Sorry, the MIPS1 architecture is not supported"
 # error "please set '-march=' to your architecture (e.g., -march=mips32)"
 #endif
