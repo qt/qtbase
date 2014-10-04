@@ -683,7 +683,7 @@ QList<QSslCertificate> QSslCertificatePrivate::certificatesFromDer(const QByteAr
 #endif
     int size = der.size();
 
-    while (count == -1 || certificates.size() < count) {
+    while (size > 0 && (count == -1 || certificates.size() < count)) {
         if (X509 *x509 = q_d2i_X509(0, &data, size)) {
             certificates << QSslCertificate_from_X509(x509);
             q_X509_free(x509);
