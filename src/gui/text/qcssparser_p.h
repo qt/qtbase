@@ -555,45 +555,6 @@ struct Q_GUI_EXPORT Selector
     QString pseudoElement() const;
 };
 
-struct StyleRule;
-struct MediaRule;
-struct PageRule;
-struct ImportRule;
-
-struct Q_GUI_EXPORT ValueExtractor
-{
-    ValueExtractor(const QVector<Declaration> &declarations, const QPalette & = QPalette());
-
-    bool extractFont(QFont *font, int *fontSizeAdjustment);
-    bool extractBackground(QBrush *, QString *, Repeat *, Qt::Alignment *, QCss::Origin *, QCss::Attachment *,
-                           QCss::Origin *);
-    bool extractGeometry(int *w, int *h, int *minw, int *minh, int *maxw, int *maxh);
-    bool extractPosition(int *l, int *t, int *r, int *b, QCss::Origin *, Qt::Alignment *,
-                         QCss::PositionMode *, Qt::Alignment *);
-    bool extractBox(int *margins, int *paddings, int *spacing = 0);
-    bool extractBorder(int *borders, QBrush *colors, BorderStyle *Styles, QSize *radii);
-    bool extractOutline(int *borders, QBrush *colors, BorderStyle *Styles, QSize *radii, int *offsets);
-    bool extractPalette(QBrush *fg, QBrush *sfg, QBrush *sbg, QBrush *abg);
-    int  extractStyleFeatures();
-    bool extractImage(QIcon *icon, Qt::Alignment *a, QSize *size);
-
-    int lengthValue(const Declaration &decl);
-
-private:
-    void extractFont();
-    void borderValue(const Declaration &decl, int *width, QCss::BorderStyle *style, QBrush *color);
-    LengthData lengthValue(const Value& v);
-    void lengthValues(const Declaration &decl, int *m);
-    QSize sizeValue(const Declaration &decl);
-    void sizeValues(const Declaration &decl, QSize *radii);
-
-    QVector<Declaration> declarations;
-    QFont f;
-    int adjustment;
-    int fontExtracted;
-    QPalette pal;
-};
-
 struct StyleRule
 {
     StyleRule() : order(0) { }
@@ -827,6 +788,40 @@ public:
     int errorIndex;
     bool hasEscapeSequences;
     QString sourcePath;
+};
+
+struct Q_GUI_EXPORT ValueExtractor
+{
+    ValueExtractor(const QVector<Declaration> &declarations, const QPalette & = QPalette());
+
+    bool extractFont(QFont *font, int *fontSizeAdjustment);
+    bool extractBackground(QBrush *, QString *, Repeat *, Qt::Alignment *, QCss::Origin *, QCss::Attachment *,
+                           QCss::Origin *);
+    bool extractGeometry(int *w, int *h, int *minw, int *minh, int *maxw, int *maxh);
+    bool extractPosition(int *l, int *t, int *r, int *b, QCss::Origin *, Qt::Alignment *,
+                         QCss::PositionMode *, Qt::Alignment *);
+    bool extractBox(int *margins, int *paddings, int *spacing = 0);
+    bool extractBorder(int *borders, QBrush *colors, BorderStyle *Styles, QSize *radii);
+    bool extractOutline(int *borders, QBrush *colors, BorderStyle *Styles, QSize *radii, int *offsets);
+    bool extractPalette(QBrush *fg, QBrush *sfg, QBrush *sbg, QBrush *abg);
+    int  extractStyleFeatures();
+    bool extractImage(QIcon *icon, Qt::Alignment *a, QSize *size);
+
+    int lengthValue(const Declaration &decl);
+
+private:
+    void extractFont();
+    void borderValue(const Declaration &decl, int *width, QCss::BorderStyle *style, QBrush *color);
+    LengthData lengthValue(const Value& v);
+    void lengthValues(const Declaration &decl, int *m);
+    QSize sizeValue(const Declaration &decl);
+    void sizeValues(const Declaration &decl, QSize *radii);
+
+    QVector<Declaration> declarations;
+    QFont f;
+    int adjustment;
+    int fontExtracted;
+    QPalette pal;
 };
 
 } // namespace QCss
