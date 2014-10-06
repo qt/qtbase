@@ -903,7 +903,7 @@ QList<int> QXcbKeyboard::possibleKeys(const QKeyEvent *event) const
             Qt::KeyboardModifiers mods = modifiers & ~neededMods;
             qtKey = keysymToQtKey(sym, mods, lookupString(kb_state, event->nativeScanCode()));
 
-            if (qtKey == baseQtKey)
+            if (qtKey == baseQtKey || qtKey == 0)
                 continue;
 
             result += (qtKey + mods);
