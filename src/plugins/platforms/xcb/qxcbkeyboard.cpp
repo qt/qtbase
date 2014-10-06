@@ -841,8 +841,8 @@ QList<int> QXcbKeyboard::possibleKeys(const QKeyEvent *event) const
     xkb_layout_index_t baseLayout = xkb_state_serialize_layout(xkb_state, XKB_STATE_LAYOUT_DEPRESSED);
     xkb_layout_index_t latchedLayout = xkb_state_serialize_layout(xkb_state, XKB_STATE_LAYOUT_LATCHED);
     xkb_layout_index_t lockedLayout = xkb_state_serialize_layout(xkb_state, XKB_STATE_LAYOUT_LOCKED);
-    xkb_mod_index_t latchedMods = xkb_state_serialize_mods(xkb_state, XKB_STATE_MODS_LATCHED);
-    xkb_mod_index_t lockedMods = xkb_state_serialize_mods(xkb_state, XKB_STATE_MODS_LOCKED);
+    xkb_mod_mask_t latchedMods = xkb_state_serialize_mods(xkb_state, XKB_STATE_MODS_LATCHED);
+    xkb_mod_mask_t lockedMods = xkb_state_serialize_mods(xkb_state, XKB_STATE_MODS_LOCKED);
 
     xkb_state_update_mask(kb_state, 0, latchedMods, lockedMods,
                                     baseLayout, latchedLayout, lockedLayout);
