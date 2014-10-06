@@ -124,6 +124,7 @@ bool QGtk2Dialog::show(Qt::WindowFlags flags, Qt::WindowModality modality, QWind
     }
 
     gtk_widget_show(gtkWidget);
+    gdk_window_focus(gtkWidget->window, 0);
     return true;
 }
 
