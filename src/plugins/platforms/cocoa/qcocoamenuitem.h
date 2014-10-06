@@ -94,6 +94,7 @@ public:
     inline bool isSeparator() const { return m_isSeparator; }
 
     QCocoaMenu *menu() const { return m_menu; }
+    void clearMenu(QCocoaMenu *menu);
     MenuRole effectiveRole() const;
 
 private:

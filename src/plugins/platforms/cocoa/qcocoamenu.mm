@@ -222,7 +222,8 @@ QCocoaMenu::QCocoaMenu() :
     m_enabled(true),
     m_visible(true),
     m_tag(0),
-    m_menuBar(0)
+    m_menuBar(0),
+    m_containingMenuItem(0)
 {
     m_delegate = [[QCocoaMenuDelegate alloc] initWithMenu:this];
     m_nativeItem = [[NSMenuItem alloc] initWithTitle:@"" action:nil keyEquivalent:@""];
@@ -238,6 +239,10 @@ QCocoaMenu::~QCocoaMenu()
         if (COCOA_MENU_ANCESTOR(item) == this)
             SET_COCOA_MENU_ANCESTOR(item, 0);
     }
+
+    if (m_containingMenuItem)
+        m_containingMenuItem->clearMenu(this);
+
     QCocoaAutoReleasePool pool;
     [m_nativeItem setSubmenu:nil];
     [m_nativeMenu release];
@@ -566,6 +571,16 @@ void QCocoaMenu::setMenuBar(QCocoaMenuBar *menuBar)
 QCocoaMenuBar *QCocoaMenu::menuBar() const
 {
     return m_menuBar;
+}
+
+void QCocoaMenu::setContainingMenuItem(QCocoaMenuItem *menuItem)
+{
+    m_containingMenuItem = menuItem;
+}
+
+QCocoaMenuItem *QCocoaMenu::containingMenuItem() const
+{
+    return m_containingMenuItem;
 }
 
 QT_END_NAMESPACE
