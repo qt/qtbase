@@ -1746,12 +1746,13 @@ qreal QCocoaWindow::devicePixelRatio() const
 {
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
     if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_7) {
-        NSWindow* window = [m_contentView window];
-        if (window) {
-          return qreal([window backingScaleFactor]);
-        } else {
-          return 1.0;
-        }
+        // The documented way to observe the relationship between device-independent
+        // and device pixels is to use one for the convertToBacking functions. Other
+        // methods such as [NSWindow backingScaleFacor] might not give the correct
+        // result, for example if setWantsBestResolutionOpenGLSurface is not set or
+        // or ignored by the OpenGL driver.
+        NSSize backingSize = [m_contentView convertSizeToBacking:NSMakeSize(1.0, 1.0)];
+        return backingSize.height;
     } else
 #endif
     {
