@@ -3144,7 +3144,7 @@ if [ "$CFG_FORCEDEBUGINFO" = "yes" ]; then
 fi
 
 if [ "$XPLATFORM_MAC" = "yes" ]; then
-    CFG_PKGCONFIG="no"
+    [ "$CFG_PKGCONFIG" = "auto" ] && CFG_PKGCONFIG="no"
 fi
 
 if [ "$XPLATFORM_IOS" = "yes" ]; then
