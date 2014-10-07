@@ -306,8 +306,6 @@ UnixMakefileGenerator::init()
         }
         if(!bundle.isEmpty()) {
             project->values("QMAKE_BUNDLE") = ProStringList(bundle);
-            project->values("ALL_DEPS") += project->first("QMAKE_PKGINFO");
-            project->values("ALL_DEPS") += project->first("QMAKE_BUNDLE_RESOURCE_FILE");
         } else {
             project->values("QMAKE_BUNDLE").clear();
             project->values("QMAKE_BUNDLE_LOCATION").clear();

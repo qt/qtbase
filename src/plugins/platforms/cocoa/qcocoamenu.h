@@ -86,6 +86,10 @@ public:
     QList<QCocoaMenuItem *> merged() const;
     void setMenuBar(QCocoaMenuBar *menuBar);
     QCocoaMenuBar *menuBar() const;
+
+    void setContainingMenuItem(QCocoaMenuItem *menuItem);
+    QCocoaMenuItem *containingMenuItem() const;
+
 private:
     QCocoaMenuItem *itemOrNull(int index) const;
     void insertNative(QCocoaMenuItem *item, QCocoaMenuItem *beforeItem);
@@ -98,6 +102,7 @@ private:
     bool m_visible;
     quintptr m_tag;
     QCocoaMenuBar *m_menuBar;
+    QCocoaMenuItem *m_containingMenuItem;
 };
 
 QT_END_NAMESPACE

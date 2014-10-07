@@ -133,11 +133,16 @@ contains(CONFIG, plugin) {
     CMAKE_PLUGIN_NAME = $$PLUGIN_CLASS_NAME
 
     win32 {
-        isEmpty(CMAKE_STATIC_TYPE): CMAKE_PlUGIN_EXT = .dll
-        else: CMAKE_PlUGIN_EXT = .lib
-
-        CMAKE_PLUGIN_LOCATION_RELEASE = $$PLUGIN_TYPE/$${TARGET}$${CMAKE_PlUGIN_EXT}
-        CMAKE_PLUGIN_LOCATION_DEBUG = $$PLUGIN_TYPE/$${TARGET}d$${CMAKE_PlUGIN_EXT}
+        isEmpty(CMAKE_STATIC_TYPE) {
+            CMAKE_PLUGIN_LOCATION_RELEASE = $$PLUGIN_TYPE/$${TARGET}.dll
+            CMAKE_PLUGIN_LOCATION_DEBUG = $$PLUGIN_TYPE/$${TARGET}d.dll
+        } else:mingw {
+            CMAKE_PLUGIN_LOCATION_RELEASE = $$PLUGIN_TYPE/lib$${TARGET}.a
+            CMAKE_PLUGIN_LOCATION_DEBUG = $$PLUGIN_TYPE/lib$${TARGET}d.a
+        } else {                         # MSVC static
+            CMAKE_PLUGIN_LOCATION_RELEASE = $$PLUGIN_TYPE/$${TARGET}.lib
+            CMAKE_PLUGIN_LOCATION_DEBUG = $$PLUGIN_TYPE/$${TARGET}d.lib
+        }
     } else {
         mac {
             isEmpty(CMAKE_STATIC_TYPE): CMAKE_PlUGIN_EXT = .dylib

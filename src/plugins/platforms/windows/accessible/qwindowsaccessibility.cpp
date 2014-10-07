@@ -151,7 +151,7 @@ void QWindowsAccessibility::notifyAccessibilityUpdate(QAccessibleEvent *event)
     // An event has to be associated with a window,
     // so find the first parent that is a widget and that has a WId
     QAccessibleInterface *iface = event->accessibleInterface();
-    if (!iface) // ### This should not happen, maybe make it an assert.
+    if (!iface || !iface->isValid())
         return;
     QWindow *window = QWindowsAccessibility::windowHelper(iface);
 

@@ -159,8 +159,8 @@ Q_STATIC_ASSERT_X(sizeof(qunicodechar) == 2,
             Q_STATIC_STRING_DATA_HEADER_INITIALIZER(Size), \
             QT_UNICODE_LITERAL(str) }; \
         QStringDataPtr holder = { qstring_literal.data_ptr() }; \
-        const QString s(holder); \
-        return s; \
+        const QString qstring_literal_temp(holder); \
+        return qstring_literal_temp; \
     }()) \
     /**/
 

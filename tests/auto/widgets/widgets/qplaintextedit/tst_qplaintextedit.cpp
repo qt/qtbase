@@ -147,6 +147,7 @@ private slots:
     void findWithRegExpReturnsFalseIfNoMoreResults();
 #endif
     void layoutAfterMultiLineRemove();
+    void undoCommandRemovesAndReinsertsBlock();
 
 private:
     void createSelection();
@@ -1602,6 +1603,30 @@ void tst_QPlainTextEdit::layoutAfterMultiLineRemove()
     curs.movePosition(QTextCursor::EndOfLine);
 
     QCOMPARE(curs.blockNumber(), 3);
+}
+
+void tst_QPlainTextEdit::undoCommandRemovesAndReinsertsBlock()
+{
+    ed->setVisible(true);
+    ed->setPlainText(QStringLiteral("line1\nline2"));
+    QCOMPARE(ed->document()->blockCount(), 2);
+
+    QTextCursor cursor = ed->textCursor();
+    cursor.movePosition(QTextCursor::Start);
+    cursor.movePosition(QTextCursor::NextBlock, QTextCursor::KeepAnchor);
+    cursor.insertText(QStringLiteral("\n"));
+    QCOMPARE(ed->document()->blockCount(), 2);
+
+    ed->undo();
+    QCOMPARE(ed->document()->blockCount(), 2);
+
+    QTextBlock block;
+    for (block = ed->document()->begin(); block != ed->document()->end(); block = block.next()) {
+        QVERIFY(block.isValid());
+        QCOMPARE(block.length(), 6);
+        QVERIFY(block.layout()->lineForTextPosition(0).isValid());
+    }
+
 }
 
 QTEST_MAIN(tst_QPlainTextEdit)
