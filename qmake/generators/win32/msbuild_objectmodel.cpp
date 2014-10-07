@@ -341,7 +341,8 @@ static QStringList unquote(const QStringList &values)
 }
 
 // Tree file generation ---------------------------------------------
-void XTreeNode::generateXML(XmlOutput &xml, XmlOutput &xmlFilter, const QString &tagName, VCProject &tool, const QString &filter) {
+void XTreeNode::generateXML(XmlOutput &xml, XmlOutput &xmlFilter, const QString &tagName,
+                            VCProject &tool, const QString &filter, const QString &filterId) {
 
     if (children.size()) {
         // Filter
@@ -362,38 +363,39 @@ void XTreeNode::generateXML(XmlOutput &xml, XmlOutput &xmlFilter, const QString 
             if ((*it)->children.size())
             {
                 if ( !tempFilterName.isEmpty() )
-                    (*it)->generateXML(xml, xmlFilter, it.key(), tool, tempFilterName);
+                    (*it)->generateXML(xml, xmlFilter, it.key(), tool, tempFilterName, filterId);
                 else
-                    (*it)->generateXML(xml, xmlFilter, it.key(), tool, filter);
+                    (*it)->generateXML(xml, xmlFilter, it.key(), tool, filter, filterId);
             }
         // Second round, do leafs
         for (it = children.constBegin(); it != end; ++it)
             if (!(*it)->children.size())
             {
                 if ( !tempFilterName.isEmpty() )
-                    (*it)->generateXML(xml, xmlFilter, it.key(), tool, tempFilterName);
+                    (*it)->generateXML(xml, xmlFilter, it.key(), tool, tempFilterName, filterId);
                 else
-                    (*it)->generateXML(xml, xmlFilter, it.key(), tool, filter);
+                    (*it)->generateXML(xml, xmlFilter, it.key(), tool, filter, filterId);
             }
     } else {
         // Leaf
         xml << tag(_ItemGroup);
         xmlFilter << tag(_ItemGroup);
-        VCXProjectWriter::outputFileConfigs(tool, xml, xmlFilter, info, filter);
+        VCXProjectWriter::outputFileConfigs(tool, xml, xmlFilter, info, filter, filterId);
         xmlFilter << closetag();
         xml << closetag();
     }
 }
 
 // Flat file generation ---------------------------------------------
-void XFlatNode::generateXML(XmlOutput &xml, XmlOutput &xmlFilter, const QString &/*tagName*/, VCProject &tool, const QString &filter) {
+void XFlatNode::generateXML(XmlOutput &xml, XmlOutput &xmlFilter, const QString &/*tagName*/,
+                            VCProject &tool, const QString &filter, const QString &filterId) {
     if (children.size()) {
         ChildrenMapFlat::ConstIterator it = children.constBegin();
         ChildrenMapFlat::ConstIterator end = children.constEnd();
         xml << tag(_ItemGroup);
         xmlFilter << tag(_ItemGroup);
         for (; it != end; ++it) {
-            VCXProjectWriter::outputFileConfigs(tool, xml, xmlFilter, (*it), filter);
+            VCXProjectWriter::outputFileConfigs(tool, xml, xmlFilter, (*it), filter, filterId);
         }
         xml << closetag();
         xmlFilter << closetag();
@@ -1836,19 +1838,21 @@ void VCXProjectWriter::outputFilter(VCProject &project, XmlOutput &xml, XmlOutpu
     if (!root->hasElements())
         return;
 
-    root->generateXML(xml, xmlFilter, "", project, filtername); // output root tree
+    root->generateXML(xml, xmlFilter, "", project, filtername, filtername); // output root tree
 }
 
 // Output all configurations (by filtername) for a file (by info)
 // A filters config output is in VCFilter.outputFileConfig()
-void VCXProjectWriter::outputFileConfigs(VCProject &project, XmlOutput &xml, XmlOutput &xmlFilter, const VCFilterFile &info, const QString &filtername)
+void VCXProjectWriter::outputFileConfigs(VCProject &project, XmlOutput &xml, XmlOutput &xmlFilter,
+                                         const VCFilterFile &info, const QString &filtername,
+                                         const QString &filterId)
 {
     // We need to check if the file has any custom build step.
     // If there is one then it has to be included with "CustomBuild Include"
     bool hasCustomBuildStep = false;
     QVarLengthArray<OutputFilterData> data(project.SingleProjects.count());
     for (int i = 0; i < project.SingleProjects.count(); ++i) {
-        data[i].filter = project.SingleProjects.at(i).filterByName(filtername);
+        data[i].filter = project.SingleProjects.at(i).filterByName(filterId);
         if (!data[i].filter.Config) // only if the filter is not empty
             continue;
         VCFilter &filter = data[i].filter;
@@ -1869,7 +1873,7 @@ void VCXProjectWriter::outputFileConfigs(VCProject &project, XmlOutput &xml, Xml
 
     bool fileAdded = false;
     for (int i = 0; i < project.SingleProjects.count(); ++i) {
-        const VCFilter &filter = project.SingleProjects.at(i).filterByName(filtername);
+        const VCFilter &filter = project.SingleProjects.at(i).filterByName(filterId);
         if (!filter.Config) // only if the filter is not empty
             continue;
         if (outputFileConfig(&data[i], xml, xmlFilter, info.file, fileAdded,
