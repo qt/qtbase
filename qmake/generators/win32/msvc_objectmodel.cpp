@@ -2521,14 +2521,14 @@ void VCProjectWriter::write(XmlOutput &xml, VCProjectSingleConfig &tool)
     // XML output functionality
     VCProject tempProj;
     tempProj.SingleProjects += tool;
-    outputFilter(tempProj, xml, "Sources");
-    outputFilter(tempProj, xml, "Headers");
-    outputFilter(tempProj, xml, "GeneratedFiles");
-    outputFilter(tempProj, xml, "LexYaccFiles");
-    outputFilter(tempProj, xml, "TranslationFiles");
-    outputFilter(tempProj, xml, "FormFiles");
-    outputFilter(tempProj, xml, "ResourceFiles");
-    outputFilter(tempProj, xml, "DeploymentFiles");
+    outputFilter(tempProj, xml, "Source Files");
+    outputFilter(tempProj, xml, "Header Files");
+    outputFilter(tempProj, xml, "Generated Files");
+    outputFilter(tempProj, xml, "LexYacc Files");
+    outputFilter(tempProj, xml, "Translation Files");
+    outputFilter(tempProj, xml, "Form Files");
+    outputFilter(tempProj, xml, "Resource Files");
+    outputFilter(tempProj, xml, "Deployment Files");
 
     QSet<QString> extraCompilersInProject;
     for (int i = 0; i < tool.ExtraCompilersFiles.count(); ++i) {
@@ -2542,7 +2542,7 @@ void VCProjectWriter::write(XmlOutput &xml, VCProjectSingleConfig &tool)
     for (int x = 0; x < tempProj.ExtraCompilers.count(); ++x) {
         outputFilter(tempProj, xml, tempProj.ExtraCompilers.at(x));
     }
-    outputFilter(tempProj, xml, "RootFiles");
+    outputFilter(tempProj, xml, "Root Files");
     xml     << closetag(q_Files)
             << tag(_Globals)
                 << data(); // No "/>" end tag
@@ -2574,18 +2574,18 @@ void VCProjectWriter::write(XmlOutput &xml, VCProject &tool)
         write(xml, tool.SingleProjects.at(i).Configuration);
     xml     << closetag(_Configurations)
             << tag(q_Files);
-    outputFilter(tool, xml, "Sources");
-    outputFilter(tool, xml, "Headers");
-    outputFilter(tool, xml, "GeneratedFiles");
-    outputFilter(tool, xml, "LexYaccFiles");
-    outputFilter(tool, xml, "TranslationFiles");
-    outputFilter(tool, xml, "FormFiles");
-    outputFilter(tool, xml, "ResourceFiles");
-    outputFilter(tool, xml, "DeploymentFiles");
+    outputFilter(tool, xml, "Source Files");
+    outputFilter(tool, xml, "Header Files");
+    outputFilter(tool, xml, "Generated Files");
+    outputFilter(tool, xml, "LexYacc Files");
+    outputFilter(tool, xml, "Translation Files");
+    outputFilter(tool, xml, "Form Files");
+    outputFilter(tool, xml, "Resource Files");
+    outputFilter(tool, xml, "Deployment Files");
     for (int x = 0; x < tool.ExtraCompilers.count(); ++x) {
         outputFilter(tool, xml, tool.ExtraCompilers.at(x));
     }
-    outputFilter(tool, xml, "RootFiles");
+    outputFilter(tool, xml, "Root Files");
     xml     << closetag(q_Files)
             << tag(_Globals)
             << data(); // No "/>" end tag
