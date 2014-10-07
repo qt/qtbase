@@ -718,6 +718,9 @@ void tst_QDom::ownerDocument()
         OWNERDOCUMENT_IMPORTNODE_TEST( QDomEntityReference,         doc2.createEntityReference( "foo" ) );
         OWNERDOCUMENT_IMPORTNODE_TEST( QDomProcessingInstruction,   doc2.createProcessingInstruction( "foo", "bar" ) );
         OWNERDOCUMENT_IMPORTNODE_TEST( QDomText,                    doc2.createTextNode( "foo" ) );
+
+        // QTBUG-12927
+        QVERIFY(doc2.importNode(QDomNode(), deep).isNull());
     }
 }
 
