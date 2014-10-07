@@ -35,6 +35,7 @@
 #define QIOSTHEME_H
 
 #include <QtCore/QHash>
+#include <QtGui/QPalette>
 #include <qpa/qplatformtheme.h>
 
 QT_BEGIN_NAMESPACE
@@ -45,6 +46,7 @@ public:
     QIOSTheme();
     ~QIOSTheme();
 
+    const QPalette *palette(Palette type = SystemPalette) const Q_DECL_OVERRIDE;
     QVariant themeHint(ThemeHint hint) const;
 
     QPlatformMenuItem* createPlatformMenuItem() const Q_DECL_OVERRIDE;
@@ -56,6 +58,7 @@ public:
 
 private:
     mutable QHash<QPlatformTheme::Font, QFont *> m_fonts;
+    QPalette m_systemPalette;
 };
 
 QT_END_NAMESPACE
