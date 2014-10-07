@@ -67,10 +67,6 @@ QNetworkManagerEngine::QNetworkManagerEngine(QObject *parent)
             this, SLOT(deviceAdded(QDBusObjectPath)));
     connect(interface, SIGNAL(deviceRemoved(QDBusObjectPath)),
             this, SLOT(deviceRemoved(QDBusObjectPath)));
-#if 0
-    connect(interface, SIGNAL(stateChanged(QString,quint32)),
-            this, SIGNAL(configurationsChanged()));
-#endif
     connect(interface, SIGNAL(activationFinished(QDBusPendingCallWatcher*)),
             this, SLOT(activationFinished(QDBusPendingCallWatcher*)));
     connect(interface, SIGNAL(propertiesChanged(QString,QMap<QString,QVariant>)),
@@ -586,7 +582,7 @@ void QNetworkManagerEngine::newAccessPoint(const QString &path, const QDBusObjec
     ptr->isValid = true;
     ptr->id = objectPath.path();
     ptr->type = QNetworkConfiguration::InternetAccessPoint;
-    if(accessPoint->flags() == NM_802_11_AP_FLAGS_PRIVACY) {
+    if (accessPoint->flags() == NM_802_11_AP_FLAGS_PRIVACY) {
         ptr->purpose = QNetworkConfiguration::PrivatePurpose;
     } else {
         ptr->purpose = QNetworkConfiguration::PublicPurpose;
@@ -724,7 +720,7 @@ QNetworkConfigurationPrivate *QNetworkManagerEngine::parseConnection(const QStri
 
         const QString connectionSsid = map.value("802-11-wireless").value("ssid").toString();
         const QString connectionSecurity = map.value("802-11-wireless").value("security").toString();
-        if(!connectionSecurity.isEmpty()) {
+        if (!connectionSecurity.isEmpty()) {
             cpPriv->purpose = QNetworkConfiguration::PrivatePurpose;
         } else {
             cpPriv->purpose = QNetworkConfiguration::PublicPurpose;
@@ -749,9 +745,34 @@ QNetworkConfigurationPrivate *QNetworkManagerEngine::parseConnection(const QStri
                 break;
             }
         }
-    } else if (connectionType == "gsm") {
-        cpPriv->bearerType = QNetworkConfiguration::Bearer2G;
-    } else if (connectionType == "cdma") {
+    } else if (connectionType == QLatin1String("gsm")) {
+
+        foreach (const QDBusObjectPath &devicePath, interface->getDevices()) {
+            QNetworkManagerInterfaceDevice device(devicePath.path());
+
+            if (device.deviceType() == DEVICE_TYPE_GSM) {
+                QNetworkManagerInterfaceDeviceModem deviceModem(device.connectionInterface()->path(),this);
+                switch (deviceModem.currentCapabilities()) {
+                case 2:
+                    cpPriv->bearerType = QNetworkConfiguration::Bearer2G;
+                    break;
+                case 4:
+                    cpPriv->bearerType = QNetworkConfiguration::Bearer3G;
+                    break;
+                case 8:
+                    cpPriv->bearerType = QNetworkConfiguration::Bearer4G;
+                    break;
+                default:
+                    cpPriv->bearerType = QNetworkConfiguration::BearerUnknown;
+                    break;
+                };
+            }
+        }
+
+        cpPriv->purpose = QNetworkConfiguration::PrivatePurpose;
+        cpPriv->state |= QNetworkConfiguration::Discovered;
+    } else if (connectionType == QLatin1String("cdma")) {
+        cpPriv->purpose = QNetworkConfiguration::PrivatePurpose;
         cpPriv->bearerType = QNetworkConfiguration::BearerCDMA2000;
     }
 

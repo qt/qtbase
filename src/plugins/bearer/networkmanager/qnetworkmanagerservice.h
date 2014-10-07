@@ -98,6 +98,7 @@ typedef enum
 #define NM_DBUS_INTERFACE_DEVICE            NM_DBUS_INTERFACE ".Device"
 #define NM_DBUS_INTERFACE_DEVICE_WIRED      NM_DBUS_INTERFACE_DEVICE ".Wired"
 #define NM_DBUS_INTERFACE_DEVICE_WIRELESS   NM_DBUS_INTERFACE_DEVICE ".Wireless"
+#define NM_DBUS_INTERFACE_DEVICE_MODEM      NM_DBUS_INTERFACE_DEVICE ".Modem"
 #define NM_DBUS_PATH_ACCESS_POINT           NM_DBUS_PATH "/AccessPoint"
 #define NM_DBUS_INTERFACE_ACCESS_POINT      NM_DBUS_INTERFACE ".AccessPoint"
 
@@ -328,6 +329,42 @@ private:
     QNetworkManagerInterfaceDeviceWirelessPrivate *d;
     QNmDBusHelper *nmDBusHelper;
 };
+
+class QNetworkManagerInterfaceDeviceModemPrivate;
+class QNetworkManagerInterfaceDeviceModem : public QObject
+{
+    Q_OBJECT
+
+public:
+
+    enum ModemCapability {
+        None = 0x0,
+        Pots = 0x1,
+        Cmda_Edvo = 0x2,
+        Gsm_Umts = 0x4,
+        Lte = 0x08
+       };
+
+    explicit QNetworkManagerInterfaceDeviceModem(const QString &ifaceDevicePath,
+                                                    QObject *parent = 0);
+    ~QNetworkManagerInterfaceDeviceModem();
+
+    QDBusObjectPath path() const;
+    QDBusInterface *connectionInterface() const;
+
+    bool setConnections();
+    bool isValid();
+
+    quint32 modemCapabilities() const;
+    quint32 currentCapabilities() const;
+
+Q_SIGNALS:
+    void propertiesChanged( const QString &, QMap<QString,QVariant>);
+private:
+    QNetworkManagerInterfaceDeviceModemPrivate *d;
+    QNmDBusHelper *nmDBusHelper;
+};
+
 
 class QNetworkManagerSettingsPrivate;
 class QNetworkManagerSettings : public QObject

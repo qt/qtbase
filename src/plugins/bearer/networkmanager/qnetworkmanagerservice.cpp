@@ -568,6 +568,81 @@ quint32 QNetworkManagerInterfaceDeviceWireless::wirelessCapabilities() const
     return d->connectionInterface->property("WirelelessCapabilities").toUInt();
 }
 
+class QNetworkManagerInterfaceDeviceModemPrivate
+{
+public:
+    QDBusInterface *connectionInterface;
+    QString path;
+    bool valid;
+};
+
+QNetworkManagerInterfaceDeviceModem::QNetworkManagerInterfaceDeviceModem(const QString &ifaceDevicePath, QObject *parent)
+    : QObject(parent), nmDBusHelper(0)
+{
+    d = new QNetworkManagerInterfaceDeviceModemPrivate();
+    d->path = ifaceDevicePath;
+    d->connectionInterface = new QDBusInterface(QLatin1String(NM_DBUS_SERVICE),
+                                                d->path,
+                                                QLatin1String(NM_DBUS_INTERFACE_DEVICE_MODEM),
+                                                QDBusConnection::systemBus(), parent);
+    if (!d->connectionInterface->isValid()) {
+        d->valid = false;
+        return;
+    }
+    d->valid = true;
+}
+
+QNetworkManagerInterfaceDeviceModem::~QNetworkManagerInterfaceDeviceModem()
+{
+    delete d->connectionInterface;
+    delete d;
+}
+
+bool QNetworkManagerInterfaceDeviceModem::isValid()
+{
+
+    return d->valid;
+}
+
+bool QNetworkManagerInterfaceDeviceModem::setConnections()
+{
+    if (!isValid() )
+        return false;
+
+    bool allOk = false;
+
+    delete nmDBusHelper;
+    nmDBusHelper = new QNmDBusHelper(this);
+    connect(nmDBusHelper, SIGNAL(pathForPropertiesChanged(QString,QMap<QString,QVariant>)),
+            this,SIGNAL(propertiesChanged(QString,QMap<QString,QVariant>)));
+    if (QDBusConnection::systemBus().connect(QLatin1String(NM_DBUS_SERVICE),
+                              d->path,
+                              QLatin1String(NM_DBUS_INTERFACE_DEVICE_MODEM),
+                              QLatin1String("PropertiesChanged"),
+                              nmDBusHelper,SLOT(slotDevicePropertiesChanged(QMap<QString,QVariant>))) )  {
+        allOk = true;
+    }
+    return allOk;
+}
+
+QDBusInterface *QNetworkManagerInterfaceDeviceModem::connectionInterface() const
+{
+    return d->connectionInterface;
+}
+
+quint32 QNetworkManagerInterfaceDeviceModem::modemCapabilities() const
+{
+    return d->connectionInterface->property("ModemCapabilities").toUInt();
+}
+
+quint32 QNetworkManagerInterfaceDeviceModem::currentCapabilities() const
+{
+    return d->connectionInterface->property("CurrentCapabilities").toUInt();
+}
+
+
+
+
 class QNetworkManagerSettingsPrivate
 {
 public:
