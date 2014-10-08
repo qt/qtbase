@@ -166,11 +166,11 @@ bool QSpiApplicationAdaptor::eventFilter(QObject *target, QEvent *event)
             de.modifiers |= 1 << ATSPI_MODIFIER_META;
 
 #ifdef KEYBOARD_DEBUG
-        qDebug() << QStringLiteral("Key event text:") << event->type() << de.text
-                 << QStringLiteral("native virtual key:") << de.id
-                 << QStringLiteral("hardware code/scancode:") << de.hardwareCode
-                 << QStringLiteral("modifiers:") << de.modifiers
-                 << QStringLiteral("text:") << de.text;
+        qDebug() << "Key event text:" << event->type() << de.text
+                 << "native virtual key:" << de.id
+                 << "hardware code/scancode:" << de.hardwareCode
+                 << "modifiers:" << de.modifiers
+                 << "text:" << de.text;
 #endif
 
         QDBusMessage m = QDBusMessage::createMethodCall(QStringLiteral("org.a11y.atspi.Registry"),
@@ -202,7 +202,7 @@ QKeyEvent* QSpiApplicationAdaptor::copyKeyEvent(QKeyEvent* old)
 void QSpiApplicationAdaptor::notifyKeyboardListenerCallback(const QDBusMessage& message)
 {
     if (!keyEvents.length()) {
-        qWarning() << QStringLiteral("QSpiApplication::notifyKeyboardListenerCallback with no queued key called");
+        qWarning("QSpiApplication::notifyKeyboardListenerCallback with no queued key called");
         return;
     }
     Q_ASSERT(message.arguments().length() == 1);
@@ -218,7 +218,7 @@ void QSpiApplicationAdaptor::notifyKeyboardListenerCallback(const QDBusMessage& 
 
 void QSpiApplicationAdaptor::notifyKeyboardListenerError(const QDBusError& error, const QDBusMessage& /*message*/)
 {
-    qWarning() << QStringLiteral("QSpiApplication::keyEventError ") << error.name() << error.message();
+    qWarning() << "QSpiApplication::keyEventError " << error.name() << error.message();
     while (!keyEvents.isEmpty()) {
         QPair<QPointer<QObject>, QKeyEvent*> event = keyEvents.dequeue();
         if (event.first)

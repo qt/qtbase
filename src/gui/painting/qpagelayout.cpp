@@ -974,7 +974,7 @@ QDebug operator<<(QDebug dbg, const QPageLayout &layout)
                        .arg(units);
         dbg.nospace() << output;
     } else {
-        dbg.nospace() << QStringLiteral("QPageLayout()");
+        dbg.nospace() << "QPageLayout()";
     }
     return dbg.space();
 }

@@ -1863,7 +1863,7 @@ QDebug operator<<(QDebug dbg, const QPageSize &pageSize)
                        .arg(pageSize.id());
         dbg.nospace() << output;
     } else {
-        dbg.nospace() << QStringLiteral("QPageSize()");
+        dbg.nospace() << "QPageSize()";
     }
     return dbg.space();
 }
