@@ -90,10 +90,6 @@ struct sockaddr_in6 {
     u_int32_t       sin6_scope_id; // Scope ID
 };
 
-uint32_t htonl(uint32_t hostlong);
-const int AF_INET = 0;
-const int AF_INET6 = 0;
-
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -505,7 +501,7 @@ QHostAddress::QHostAddress(const QString &address)
 QHostAddress::QHostAddress(const struct sockaddr *sockaddr)
     : d(new QHostAddressPrivate)
 {
-#ifndef Q_OS_WINRT
+#if !defined(Q_OS_WINRT) && !defined(Q_OS_NACL)
     if (sockaddr->sa_family == AF_INET)
         setAddress(htonl(((const sockaddr_in *)sockaddr)->sin_addr.s_addr));
     else if (sockaddr->sa_family == AF_INET6)
@@ -679,7 +675,7 @@ bool QHostAddress::setAddress(const QString &address)
 */
 void QHostAddress::setAddress(const struct sockaddr *sockaddr)
 {
-#ifndef Q_OS_WINRT
+#if !defined(Q_OS_WINRT) && !defined(Q_OS_NACL)
     clear();
     if (sockaddr->sa_family == AF_INET)
         setAddress(htonl(((const sockaddr_in *)sockaddr)->sin_addr.s_addr));
