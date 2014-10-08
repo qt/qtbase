@@ -130,7 +130,7 @@ QByteArray QGenericUnixServices::desktopEnvironment() const
 
 bool QGenericUnixServices::openUrl(const QUrl &url)
 {
-    if (url.scheme() == QStringLiteral("mailto"))
+    if (url.scheme() == QLatin1String("mailto"))
         return openDocument(url);
 
     if (m_webBrowser.isEmpty() && !detectWebBrowser(desktopEnvironment(), true, &m_webBrowser)) {

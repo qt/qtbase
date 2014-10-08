@@ -853,7 +853,7 @@ static bool addFontToDatabase(const QString &familyName, uchar charSet,
                               int type)
 {
     // the "@family" fonts are just the same as "family". Ignore them.
-    if (familyName.isEmpty() || familyName.at(0) == QLatin1Char('@') || familyName.startsWith(QStringLiteral("WST_")))
+    if (familyName.isEmpty() || familyName.at(0) == QLatin1Char('@') || familyName.startsWith(QLatin1String("WST_")))
         return false;
 
     static const int SMOOTH_SCALABLE = 0xffff;
@@ -918,7 +918,7 @@ static bool addFontToDatabase(const QString &familyName, uchar charSet,
         // display Thai text by default. As a temporary work around, we special case Segoe UI
         // and remove the Thai script from its list of supported writing systems.
         if (writingSystems.supported(QFontDatabase::Thai) &&
-                familyName == QStringLiteral("Segoe UI"))
+                familyName == QLatin1String("Segoe UI"))
             writingSystems.setSupported(QFontDatabase::Thai, false);
     } else {
         const QFontDatabase::WritingSystem ws = writingSystemFromCharSet(charSet);
@@ -1591,7 +1591,7 @@ LOGFONT QWindowsFontDatabase::fontDefToLOGFONT(const QFontDef &request)
         && (request.style == QFont::StyleItalic || (-lf.lfHeight > 18 && -lf.lfHeight != 24))) {
         fam = QStringLiteral("Arial"); // MS Sans Serif has bearing problems in italic, and does not scale
     }
-    if (fam == QStringLiteral("Courier") && !(request.styleStrategy & QFont::PreferBitmap))
+    if (fam == QLatin1String("Courier") && !(request.styleStrategy & QFont::PreferBitmap))
         fam = QStringLiteral("Courier New");
 
     memcpy(lf.lfFaceName, fam.utf16(), sizeof(wchar_t) * qMin(fam.length() + 1, 32));  // 32 = Windows hard-coded
@@ -1703,18 +1703,18 @@ QFontEngine *QWindowsFontDatabase::createEngine(const QFontDef &request,
     if (rawMode) {                        // will choose a stock font
         int f = SYSTEM_FONT;
         const QString fam = request.family.toLower();
-        if (fam == QStringLiteral("default") || fam == QStringLiteral("system"))
+        if (fam == QLatin1String("default") || fam == QLatin1String("system"))
             f = SYSTEM_FONT;
 #ifndef Q_OS_WINCE
-        else if (fam == QStringLiteral("system_fixed"))
+        else if (fam == QLatin1String("system_fixed"))
             f = SYSTEM_FIXED_FONT;
-        else if (fam == QStringLiteral("ansi_fixed"))
+        else if (fam == QLatin1String("ansi_fixed"))
             f = ANSI_FIXED_FONT;
-        else if (fam == QStringLiteral("ansi_var"))
+        else if (fam == QLatin1String("ansi_var"))
             f = ANSI_VAR_FONT;
-        else if (fam == QStringLiteral("device_default"))
+        else if (fam == QLatin1String("device_default"))
             f = DEVICE_DEFAULT_FONT;
-        else if (fam == QStringLiteral("oem_fixed"))
+        else if (fam == QLatin1String("oem_fixed"))
             f = OEM_FIXED_FONT;
 #endif
         else if (fam.at(0) == QLatin1Char('#'))
@@ -1835,7 +1835,7 @@ QFont QWindowsFontDatabase::systemDefaultFont()
     GetObject(GetStockObject(DEFAULT_GUI_FONT), sizeof(lf), &lf);
     QFont systemFont =  QWindowsFontDatabase::LOGFONT_to_QFont(lf);
     // "MS Shell Dlg 2" is the correct system font >= Win2k
-    if (systemFont.family() == QStringLiteral("MS Shell Dlg"))
+    if (systemFont.family() == QLatin1String("MS Shell Dlg"))
         systemFont.setFamily(QStringLiteral("MS Shell Dlg 2"));
     qCDebug(lcQpaFonts) << __FUNCTION__ << systemFont;
     return systemFont;

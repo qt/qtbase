@@ -332,7 +332,7 @@ void QConnmanEngine::serviceStateChanged(const QString &state)
     QConnmanServiceInterface *service = qobject_cast<QConnmanServiceInterface *>(sender());
     configurationChange(service);
 
-    if (state == QStringLiteral("failure")) {
+    if (state == QLatin1String("failure")) {
         emit connectionError(service->path(), ConnectError);
     }
 }
@@ -516,7 +516,7 @@ void QConnmanEngine::addServiceConfiguration(const QString &servicePath)
         cpPriv->id = servicePath;
         cpPriv->type = QNetworkConfiguration::InternetAccessPoint;
 
-        if (service->security() == QStringLiteral("none")) {
+        if (service->security() == QLatin1String("none")) {
             cpPriv->purpose = QNetworkConfiguration::PublicPurpose;
         } else {
             cpPriv->purpose = QNetworkConfiguration::PrivatePurpose;

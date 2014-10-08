@@ -234,11 +234,11 @@ void QKdeThemePrivate::refresh()
     const QVariant toolbarStyleValue = readKdeSetting(QStringLiteral("Toolbar style/ToolButtonStyle"), kdeDirs, kdeSettings);
     if (toolbarStyleValue.isValid()) {
         const QString toolBarStyle = toolbarStyleValue.toString();
-        if (toolBarStyle == QStringLiteral("TextBesideIcon"))
+        if (toolBarStyle == QLatin1String("TextBesideIcon"))
             toolButtonStyle =  Qt::ToolButtonTextBesideIcon;
-        else if (toolBarStyle == QStringLiteral("TextOnly"))
+        else if (toolBarStyle == QLatin1String("TextOnly"))
             toolButtonStyle = Qt::ToolButtonTextOnly;
-        else if (toolBarStyle == QStringLiteral("TextUnderIcon"))
+        else if (toolBarStyle == QLatin1String("TextUnderIcon"))
             toolButtonStyle = Qt::ToolButtonTextUnderIcon;
     }
 
@@ -640,7 +640,7 @@ QStringList QGenericUnixTheme::themeNames()
             result.push_back(QLatin1String(QGnomeTheme::name));
         }
         const QString session = QString::fromLocal8Bit(qgetenv("DESKTOP_SESSION"));
-        if (!session.isEmpty() && session != QStringLiteral("default") && !result.contains(session))
+        if (!session.isEmpty() && session != QLatin1String("default") && !result.contains(session))
             result.push_back(session);
     } // desktopSettingsAware
     if (result.isEmpty())

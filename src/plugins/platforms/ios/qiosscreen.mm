@@ -187,8 +187,8 @@ QIOSScreen::QIOSScreen(UIScreen *screen)
     if (screen == [UIScreen mainScreen]) {
         QString deviceIdentifier = deviceModelIdentifier();
 
-        if (deviceIdentifier == QStringLiteral("iPhone2,1") /* iPhone 3GS */
-            || deviceIdentifier == QStringLiteral("iPod3,1") /* iPod touch 3G */) {
+        if (deviceIdentifier == QLatin1String("iPhone2,1") /* iPhone 3GS */
+            || deviceIdentifier == QLatin1String("iPod3,1") /* iPod touch 3G */) {
             m_depth = 18;
         } else {
             m_depth = 24;

@@ -4439,7 +4439,7 @@ void HtmlGenerator::generateManifestFile(QString manifest, QString element)
                     continue;
                 if (tag.at(0) == '-')
                     continue;
-                if (tag == QStringLiteral("qt"))
+                if (tag == QLatin1String("qt"))
                     continue;
                 if (tag.startsWith("example"))
                     continue;

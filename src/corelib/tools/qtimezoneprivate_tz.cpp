@@ -940,9 +940,9 @@ QByteArray QTzTimeZonePrivate::systemTimeZoneId() const
             QString line;
             while (ianaId.isEmpty() && !ts.atEnd() && ts.status() == QTextStream::Ok) {
                 line = ts.readLine();
-                if (line.left(5) == QStringLiteral("ZONE=")) {
+                if (line.startsWith(QLatin1String("ZONE="))) {
                     ianaId = line.mid(6, line.size() - 7).toUtf8();
-                } else if (line.left(9) == QStringLiteral("TIMEZONE=")) {
+                } else if (line.startsWith(QLatin1String("TIMEZONE="))) {
                     ianaId = line.mid(10, line.size() - 11).toUtf8();
                 }
             }

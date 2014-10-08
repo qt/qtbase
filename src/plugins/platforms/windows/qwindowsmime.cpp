@@ -761,7 +761,7 @@ bool QWindowsMimeURI::convertFromMime(const FORMATETC &formatetc, const QMimeDat
 
 bool QWindowsMimeURI::canConvertToMime(const QString &mimeType, IDataObject *pDataObj) const
 {
-    return mimeType == QStringLiteral("text/uri-list")
+    return mimeType == QLatin1String("text/uri-list")
            && (canGetData(CF_HDROP, pDataObj) || canGetData(CF_INETURL_W, pDataObj) || canGetData(CF_INETURL, pDataObj));
 }
 
@@ -776,7 +776,7 @@ QString QWindowsMimeURI::mimeForFormat(const FORMATETC &formatetc) const
 QVector<FORMATETC> QWindowsMimeURI::formatsForMime(const QString &mimeType, const QMimeData *mimeData) const
 {
     QVector<FORMATETC> formatics;
-    if (mimeType == QStringLiteral("text/uri-list")) {
+    if (mimeType == QLatin1String("text/uri-list")) {
         if (canConvertFromMime(setCf(CF_HDROP), mimeData))
             formatics += setCf(CF_HDROP);
         if (canConvertFromMime(setCf(CF_INETURL_W), mimeData))
@@ -789,7 +789,7 @@ QVector<FORMATETC> QWindowsMimeURI::formatsForMime(const QString &mimeType, cons
 
 QVariant QWindowsMimeURI::convertToMime(const QString &mimeType, LPDATAOBJECT pDataObj, QVariant::Type preferredType) const
 {
-    if (mimeType == QStringLiteral("text/uri-list")) {
+    if (mimeType == QLatin1String("text/uri-list")) {
         if (canGetData(CF_HDROP, pDataObj)) {
             QByteArray texturi;
             QList<QVariant> urls;
@@ -862,7 +862,7 @@ QWindowsMimeHtml::QWindowsMimeHtml()
 QVector<FORMATETC> QWindowsMimeHtml::formatsForMime(const QString &mimeType, const QMimeData *mimeData) const
 {
     QVector<FORMATETC> formatetcs;
-    if (mimeType == QStringLiteral("text/html") && (!mimeData->html().isEmpty()))
+    if (mimeType == QLatin1String("text/html") && (!mimeData->html().isEmpty()))
         formatetcs += setCf(CF_HTML);
     return formatetcs;
 }
@@ -876,7 +876,7 @@ QString QWindowsMimeHtml::mimeForFormat(const FORMATETC &formatetc) const
 
 bool QWindowsMimeHtml::canConvertToMime(const QString &mimeType, IDataObject *pDataObj) const
 {
-    return mimeType == QStringLiteral("text/html") && canGetData(CF_HTML, pDataObj);
+    return mimeType == QLatin1String("text/html") && canGetData(CF_HTML, pDataObj);
 }
 
 
@@ -998,7 +998,7 @@ QWindowsMimeImage::QWindowsMimeImage()
 QVector<FORMATETC> QWindowsMimeImage::formatsForMime(const QString &mimeType, const QMimeData *mimeData) const
 {
     QVector<FORMATETC> formatetcs;
-    if (mimeData->hasImage() && mimeType == QStringLiteral("application/x-qt-image")) {
+    if (mimeData->hasImage() && mimeType == QLatin1String("application/x-qt-image")) {
         //add DIBV5 if image has alpha channel
         QImage image = qvariant_cast<QImage>(mimeData->imageData());
         if (!image.isNull() && image.hasAlphaChannel())
@@ -1018,7 +1018,7 @@ QString QWindowsMimeImage::mimeForFormat(const FORMATETC &formatetc) const
 
 bool QWindowsMimeImage::canConvertToMime(const QString &mimeType, IDataObject *pDataObj) const
 {
-    if ((mimeType == QStringLiteral("application/x-qt-image")) &&
+    if (mimeType == QLatin1String("application/x-qt-image") &&
         (canGetData(CF_DIB, pDataObj) || canGetData(CF_PNG, pDataObj)))
         return true;
     return false;
@@ -1158,7 +1158,7 @@ bool QBuiltInMimes::convertFromMime(const FORMATETC &formatetc, const QMimeData 
 {
     if (canConvertFromMime(formatetc, mimeData)) {
         QByteArray data;
-        if (outFormats.value(getCf(formatetc)) == QStringLiteral("text/html")) {
+        if (outFormats.value(getCf(formatetc)) == QLatin1String("text/html")) {
             // text/html is in wide chars on windows (compatible with mozillia)
             QString html = mimeData->html();
             // same code as in the text converter up above
@@ -1224,7 +1224,7 @@ QVariant QBuiltInMimes::convertToMime(const QString &mimeType, IDataObject *pDat
 #ifdef QMIME_DEBUG
             qDebug("QBuiltInMimes::convertToMime()");
 #endif
-            if (mimeType == QStringLiteral("text/html") && preferredType == QVariant::String) {
+            if (mimeType == QLatin1String("text/html") && preferredType == QVariant::String) {
                 // text/html is in wide chars on windows (compatible with Mozilla)
                 val = QString::fromWCharArray((const wchar_t *)data.data());
             } else {

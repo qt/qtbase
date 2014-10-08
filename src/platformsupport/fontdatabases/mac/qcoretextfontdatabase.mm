@@ -201,7 +201,7 @@ void QCoreTextFontDatabase::populateFontDatabase()
         QString familyName = QCFString::toQString(familyNameRef);
 
         // Don't populate internal fonts
-        if (familyName.startsWith(QLatin1Char('.')) || familyName == QStringLiteral("LastResort"))
+        if (familyName.startsWith(QLatin1Char('.')) || familyName == QLatin1String("LastResort"))
             continue;
 
         QPlatformFontDatabase::registerFontFamily(familyName);

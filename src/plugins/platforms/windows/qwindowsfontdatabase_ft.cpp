@@ -122,7 +122,7 @@ static bool addFontToDatabase(const QString &familyName, uchar charSet,
     typedef QPair<QString, QStringList> FontKey;
 
     // the "@family" fonts are just the same as "family". Ignore them.
-    if (familyName.isEmpty() || familyName.at(0) == QLatin1Char('@') || familyName.startsWith(QStringLiteral("WST_")))
+    if (familyName.isEmpty() || familyName.at(0) == QLatin1Char('@') || familyName.startsWith(QLatin1String("WST_")))
         return false;
 
     const int separatorPos = familyName.indexOf(QStringLiteral("::"));
@@ -181,7 +181,7 @@ static bool addFontToDatabase(const QString &familyName, uchar charSet,
         // display Thai text by default. As a temporary work around, we special case Segoe UI
         // and remove the Thai script from its list of supported writing systems.
         if (writingSystems.supported(QFontDatabase::Thai) &&
-                faceName == QStringLiteral("Segoe UI"))
+                faceName == QLatin1String("Segoe UI"))
             writingSystems.setSupported(QFontDatabase::Thai, false);
     } else {
         const QFontDatabase::WritingSystem ws = writingSystemFromCharSet(charSet);

@@ -46,7 +46,7 @@ class QAndroidBearerEnginePlugin : public QBearerEnginePlugin
 public:
     QBearerEngine *create(const QString &key) const Q_DECL_OVERRIDE
     {
-        return (key == QStringLiteral("android")) ? new QAndroidBearerEngine() : 0;
+        return (key == QLatin1String("android")) ? new QAndroidBearerEngine() : 0;
     }
 };
 

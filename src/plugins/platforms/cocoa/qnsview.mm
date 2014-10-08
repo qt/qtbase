@@ -301,7 +301,7 @@ static NSString *_q_NSWindowDidChangeOcclusionStateNotification = nil;
 
     // For widgets we need to do a bit of trickery as the window
     // to activate is the window of the top-level widget.
-    if (m_window->metaObject()->className() == QStringLiteral("QWidgetWindow")) {
+    if (qstrcmp(m_window->metaObject()->className(), "QWidgetWindow") == 0) {
         while (focusWindow->parent()) {
             focusWindow = focusWindow->parent();
         }

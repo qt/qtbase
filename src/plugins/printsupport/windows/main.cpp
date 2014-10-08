@@ -50,7 +50,7 @@ public:
 
 QPlatformPrinterSupport *QWindowsPrinterSupportPlugin::create(const QString &key)
 {
-    if (key.compare(key, QStringLiteral("windowsprintsupport"), Qt::CaseInsensitive) == 0)
+    if (key.compare(key, QLatin1String("windowsprintsupport"), Qt::CaseInsensitive) == 0)
         return new QWindowsPrinterSupport;
     return 0;
 }

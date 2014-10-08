@@ -104,7 +104,7 @@ public:
 
 QPlatformIntegration *QWindowsIntegrationPlugin::create(const QString& system, const QStringList& paramList, int &, char **)
 {
-    if (system.compare(system, QStringLiteral("windows"), Qt::CaseInsensitive) == 0)
+    if (system.compare(system, QLatin1String("windows"), Qt::CaseInsensitive) == 0)
         return new QWindowsGdiIntegration(paramList);
     return 0;
 }

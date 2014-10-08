@@ -935,7 +935,7 @@ QDataStream &operator>>(QDataStream &ds, QTimeZone &tz)
 {
     QString ianaId;
     ds >> ianaId;
-    if (ianaId == QStringLiteral("OffsetFromUtc")) {
+    if (ianaId == QLatin1String("OffsetFromUtc")) {
         int utcOffset;
         QString name;
         QString abbreviation;

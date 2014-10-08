@@ -2640,8 +2640,8 @@ void QTest::ignoreMessage(QtMsgType type, const QRegularExpression &messagePatte
 #ifdef Q_OS_WIN
 static inline bool isWindowsBuildDirectory(const QString &dirName)
 {
-    return dirName.compare(QStringLiteral("Debug"), Qt::CaseInsensitive) == 0
-           || dirName.compare(QStringLiteral("Release"), Qt::CaseInsensitive) == 0;
+    return dirName.compare(QLatin1String("Debug"), Qt::CaseInsensitive) == 0
+           || dirName.compare(QLatin1String("Release"), Qt::CaseInsensitive) == 0;
 }
 #endif
 

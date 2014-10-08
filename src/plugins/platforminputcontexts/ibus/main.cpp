@@ -52,7 +52,7 @@ QIBusPlatformInputContext *QIbusPlatformInputContextPlugin::create(const QString
 {
     Q_UNUSED(paramList);
 
-    if (system.compare(system, QStringLiteral("ibus"), Qt::CaseInsensitive) == 0) {
+    if (system.compare(system, QLatin1String("ibus"), Qt::CaseInsensitive) == 0) {
         qDBusRegisterMetaType<QIBusSerializable>();
         qDBusRegisterMetaType<QIBusAttribute>();
         qDBusRegisterMetaType<QIBusAttributeList>();
