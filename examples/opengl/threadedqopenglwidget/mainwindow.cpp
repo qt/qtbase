@@ -43,6 +43,7 @@
 
 MainWindow::MainWindow()
 {
+    setMinimumSize(800, 400);
     GLWidget *glwidget1 = new GLWidget(this);
     glwidget1->resize(400, 400);
 
