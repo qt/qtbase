@@ -49,45 +49,23 @@ class First
 {
 public:
     First() { 
-//        QLoggingCategory::setFilterRules(QStringLiteral("qt.platform.pepper.*=true")); 
+//        QLoggingCategory::setFilterRules(QStringLiteral("qt.platform.pepper.instance=true")); 
     }
 };
 First first;
 
 void app_init(const QStringList &arguments)
 {
-    qDebug() << "app_init 1";
-
-    qDebug() << "app_init 2";
-
-    QScreen *screen = QGuiApplication::primaryScreen();
-
-    qDebug() << "app_init 3";
-    QRect screenGeometry = screen->availableGeometry();
-
-    qDebug() << "app_init 4" << screenGeometry;
-
     QSurfaceFormat format;
     format.setDepthBufferSize(16);
-//    if (QGuiApplication::arguments().contains(QStringLiteral("--multisample")))
-//        format.setSamples(4);
-    
-    qDebug() << "app_init 5";
-
-    QPoint center = QPoint(screenGeometry.center().x(), screenGeometry.top() + 80);
-    QSize windowSize(400, 320);
-    int delta = 40;
-    
-    qDebug() << "app_init 6";
+    // format.setSamples(4);
 
     QSharedPointer<Renderer> rendererA(new Renderer(format));
 
     HelloWindow *windowA = new HelloWindow(rendererA);
-//    windowA->setGeometry(QRect(center, windowSize).translated(-windowSize.width() - delta / 2, 0));
     windowA->setTitle(QStringLiteral("Thread A - Context A"));
-    windowA->setVisible(true);
+    windowA->show();
     windows.prepend(windowA);
-    qDebug() << "app_init 7";
 }
 
 void app_exit()
