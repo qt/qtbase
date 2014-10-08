@@ -100,7 +100,6 @@ public:
     pp::ImageData *m_imageData2D;
     QImage *m_frameBuffer;
     bool m_inFlush;
-    qint32 m_windowId;
     pp::CompletionCallbackFactory<QPepperInstance> m_callbackFactory;
 };
 

@@ -112,14 +112,9 @@ bool QPepperInstance::Init(uint32_t argc, const char* argn[], const char* argv[]
     extern void *qtPepperInstance; // qglobal.h
     qtPepperInstance = this;
 
-    m_windowId = 0;
-
     // arguments is argc key - value pairs.
     for (unsigned int i = 0; i < argc; ++i) {
-        qDebug() << "arg" << argn[i] << argv[i];
-        if (qstrcmp(argn[i], "qt_window_id") == 0) {
-            m_windowId = QByteArray(argv[i]).toInt();
-        }
+        qCDebug(QT_PLATFORM_PEPPER_INSTANCE) << "arg" << argn[i] << argv[i];
     }
 
     RequestInputEvents(PP_INPUTEVENT_CLASS_MOUSE | PP_INPUTEVENT_CLASS_WHEEL | PP_INPUTEVENT_CLASS_KEYBOARD);
