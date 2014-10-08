@@ -6,6 +6,16 @@
 #include <qdir.h>
 #include <qprocess.h>
 
+
+void runCommand(const QString &command)
+{
+    QByteArray c = command.toLatin1();
+    // qDebug() << "RUN" << c;
+
+    // This is a host tool, which means no QProcess. Use 'system':
+    system(c.constData());
+}
+
 int main(int argc, char **argv)
 {
     // Command line handling
@@ -19,9 +29,19 @@ int main(int argc, char **argv)
                         "Selects a html template. Can be either 'fullscreen' or 'debug'. "
                         "Omit this option to use the default nacl_sdk template, as created "
                         "by create_html.py", "template", ""));
+
+    parser.addOption(QCommandLineOption(QStringList() << "p" << "print", "Print Chrome and debugging help."));
+    parser.addOption(QCommandLineOption(QStringList() << "r" << "run", "Run the application in Chrome."));
+    parser.addOption(QCommandLineOption(QStringList() << "d" << "debug", "Debug the application in Chrome."));
+
     parser.process(app);
     const QStringList args = parser.positionalArguments();
     const QString tmplate = parser.value("template");
+    const bool print = parser.isSet("print");
+    bool run = parser.isSet("run");
+    const bool debug = parser.isSet("debug");
+    if (run && debug) // "--debug" takes priority over "run"
+        run = false;
 
     // Get target nexe file name from command line, or find one
     // in the cuerrent directory
@@ -65,7 +85,7 @@ int main(int argc, char **argv)
         qDebug() << "create_html.py not found at" << createHtml;
         return 0;
     }
-    
+
     // Get the lib dir for this Qt install
     // Use argv[0]: path/to/qtbase/bin/nacldeployqt -> path/to/qtbase/lib
     QString nacldeployqtPath = argv[0];
@@ -79,7 +99,7 @@ int main(int argc, char **argv)
     qDebug() << "Using SDK" << naclSdkRoot;
     qDebug() << "Qt libs in" << qtLibDir;
     qDebug() << " ";
-    
+
     // create the .nmf manifest file
     QString nmfCommand = QStringLiteral("python ") + createNmf
                 + " -o " + nmfFileName
@@ -115,30 +135,53 @@ int main(int argc, char **argv)
         indexHtml.open(QIODevice::WriteOnly|QIODevice::Truncate);
         indexHtml.write(html);
     }
-    
+
     // NOTE: At this point deployment is done. The following are
-    // development aides and should be switched off / placed behind
-    // a flag at some point.
+    // development aides for running or debugging the app.
 
     // Find the debugger, print startup instructions
     QString gdb = naclSdkRoot + "/toolchain/mac_x86_glibc/bin/i686-nacl-gdb";
-    qDebug() << "debugger (glibc):";
-    qDebug() << qPrintable("  " + gdb);
-    qDebug() << qPrintable("    target remote localhost:4014");
-    qDebug() << qPrintable("    nacl-manifest " + nmfFileName);
-    qDebug() << "";
+    QString nmfPath = QDir(nmfFileName).canonicalPath();
+    QString gdbOptions = " -eval-command='nacl-manifest " + nmfPath + "'";
+
+    if (print) {
+        qDebug() << "debugger";
+        qDebug() << qPrintable("  " + gdb);
+        qDebug() << qPrintable("    target remote localhost:4014");
+        qDebug() << qPrintable("    nacl-manifest " + nmfFileName);
+        qDebug() << "";
+    }
 
     // Find chrome, print startup instructions
     QString chromeApp = "/Applications/Google\\ Chrome.app/Contents/MacOS/Google\\ Chrome";
     QString chromeNormalOptions = " --incognito --disable-cache --no-default-browser-check --new-window \"http://localhost:8000\"";
     QString chromeDebugOptions = chromeNormalOptions + " --enable-nacl-debug --no-sandbox";
-    qDebug() << "chrome:";
-    qDebug() << qPrintable("  " + chromeApp + chromeNormalOptions);
-    qDebug() << qPrintable("chrome (wait for debugger)");
-    qDebug() << qPrintable("  " + chromeApp + chromeDebugOptions);
-    qDebug() << "";
+    if (print) {
+        qDebug() << "chrome:";
+        qDebug() << qPrintable("  " + chromeApp + chromeNormalOptions);
+        qDebug() << qPrintable("chrome (wait for debugger)");
+        qDebug() << qPrintable("  " + chromeApp + chromeDebugOptions);
+        qDebug() << "";
+    }
+
+    // Start Chrome with proper options
+    if (run)
+        runCommand(chromeApp + chromeNormalOptions + " &");
+    else if (debug)
+        runCommand(chromeApp + chromeDebugOptions + " &");
+
+    // Start debugger
+    if (debug) {
+        // print help string, then lanch gdb.
+        QString gdbCommand = "echo Connect to Chrome: target remote localhost:4014;\n\n"
+                         + gdb + gdbOptions;
+        // tell osascript to tell Terminal to tell gdb to debug the App.
+        QString terminal = R"STR(osascript -e 'tell application "Terminal" to do script "'"SCRIPT"'" ')STR";
+        terminal.replace("SCRIPT", gdbCommand);
+        runCommand(terminal);
+    }
 
     // Start a HTTP server and serve the app.
     qDebug() << "Serving on localhost:8000";
-    system("python -m SimpleHTTPServer");
+    runCommand("python -m SimpleHTTPServer");
 }
