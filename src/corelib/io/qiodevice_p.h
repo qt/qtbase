@@ -209,10 +209,6 @@ public:
     QIODevicePrivateLinearBuffer buffer;
     qint64 pos;
     qint64 devicePos;
-    // these three are for fast position updates during read, avoiding isSequential test
-    qint64 seqDumpPos;
-    qint64 *pPos;
-    qint64 *pDevicePos;
     bool baseReadLineDataCalled;
     bool firstRead;
 

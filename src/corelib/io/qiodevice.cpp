@@ -117,8 +117,7 @@ void debugBinaryString(const char *data, qint64 maxlen)
  */
 QIODevicePrivate::QIODevicePrivate()
     : openMode(QIODevice::NotOpen), buffer(QIODEVICE_BUFFERSIZE),
-      pos(0), devicePos(0), seqDumpPos(0)
-       , pPos(&pos), pDevicePos(&devicePos)
+      pos(0), devicePos(0)
        , baseReadLineDataCalled(false)
        , firstRead(true)
        , accessMode(Unset)
@@ -566,7 +565,6 @@ void QIODevice::close()
     d->openMode = NotOpen;
     d->errorString.clear();
     d->pos = 0;
-    d->seqDumpPos = 0;
     d->buffer.clear();
     d->firstRead = true;
 }
@@ -755,11 +753,14 @@ qint64 QIODevice::read(char *data, qint64 maxSize)
            this, data, int(maxSize), int(d->pos), int(d->buffer.size()));
 #endif
 
+    const bool sequential = d->isSequential();
+
     // Short circuit for getChar()
     if (maxSize == 1) {
         int chint;
         while ((chint = d->buffer.getChar()) != -1) {
-            ++(*d->pPos);
+            if (!sequential)
+                ++d->pos;
 
             char c = char(uchar(chint));
             if (c == '\r' && (d->openMode & Text))
@@ -784,7 +785,8 @@ qint64 QIODevice::read(char *data, qint64 maxSize)
         // Try reading from the buffer.
         qint64 bufferReadChunkSize = d->buffer.read(data, maxSize);
         if (bufferReadChunkSize > 0) {
-            *d->pPos += bufferReadChunkSize;
+            if (!sequential)
+                d->pos += bufferReadChunkSize;
             readSoFar += bufferReadChunkSize;
             data += bufferReadChunkSize;
             maxSize -= bufferReadChunkSize;
@@ -798,17 +800,13 @@ qint64 QIODevice::read(char *data, qint64 maxSize)
                 // for fast pos updates.
                 CHECK_READABLE(read, qint64(-1));
                 d->firstRead = false;
-                if (d->isSequential()) {
-                    d->pPos = &d->seqDumpPos;
-                    d->pDevicePos = &d->seqDumpPos;
-                }
             }
         }
 
         if (maxSize > 0 && !deviceAtEof) {
             qint64 readFromDevice = 0;
             // Make sure the device is positioned correctly.
-            if (d->pos == d->devicePos || d->isSequential() || seek(d->pos)) {
+            if (sequential || d->pos == d->devicePos || seek(d->pos)) {
                 madeBufferReadsOnly = false; // fix readData attempt
                 if (maxSize >= QIODEVICE_BUFFERSIZE || (d->openMode & Unbuffered)) {
                     // Read big chunk directly to output buffer
@@ -822,8 +820,10 @@ qint64 QIODevice::read(char *data, qint64 maxSize)
                         readSoFar += readFromDevice;
                         data += readFromDevice;
                         maxSize -= readFromDevice;
-                        *d->pPos += readFromDevice;
-                        *d->pDevicePos += readFromDevice;
+                        if (!sequential) {
+                            d->pos += readFromDevice;
+                            d->devicePos += readFromDevice;
+                        }
                     }
                 } else {
                     const int bytesToBuffer = QIODEVICE_BUFFERSIZE;
@@ -832,7 +832,8 @@ qint64 QIODevice::read(char *data, qint64 maxSize)
                     deviceAtEof = (readFromDevice != bytesToBuffer);
                     d->buffer.chop(bytesToBuffer - qMax(0, int(readFromDevice)));
                     if (readFromDevice > 0) {
-                        *d->pDevicePos += readFromDevice;
+                        if (!sequential)
+                            d->devicePos += readFromDevice;
 #if defined QIODEVICE_DEBUG
                         printf("%p \treading %d from device into buffer\n", this,
                                int(readFromDevice));
@@ -1414,7 +1415,8 @@ qint64 QIODevicePrivate::peek(char *data, qint64 maxSize)
         return readBytes;
 
     buffer.ungetBlock(data, readBytes);
-    *pPos -= readBytes;
+    if (!isSequential())
+        pos -= readBytes;
     return readBytes;
 }
 
@@ -1429,7 +1431,8 @@ QByteArray QIODevicePrivate::peek(qint64 maxSize)
         return result;
 
     buffer.ungetBlock(result.constData(), result.size());
-    *pPos -= result.size();
+    if (!isSequential())
+        pos -= result.size();
     return result;
 }
 

@@ -37,7 +37,7 @@ QT_BEGIN_NAMESPACE
 
 // Only add to the end, and bump version if you do.
 quintptr Q_CORE_EXPORT qtHookData[] = {
-    1, // hook data version
+    2, // hook data version
     QHooks::LastHookIndex, // size of qtHookData
     QT_VERSION,
 
