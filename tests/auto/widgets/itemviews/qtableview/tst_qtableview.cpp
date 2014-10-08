@@ -125,6 +125,9 @@ private slots:
     void selectColumn_data();
     void selectColumn();
 
+    void selectall_data();
+    void selectall();
+
     void visualRect_data();
     void visualRect();
 
@@ -1888,6 +1891,162 @@ void tst_QTableView::selectColumn()
     QCOMPARE(view.selectionModel()->selectedIndexes().count(), selectedItems);
     for (int i = 0; selectedItems > 0 && i < columnCount; ++i)
         QCOMPARE(view.selectionModel()->selectedIndexes().at(i).column(), column);
+}
+
+void tst_QTableView::selectall_data()
+{
+    QTest::addColumn<int>("rowCount");
+    QTest::addColumn<int>("columnCount");
+    QTest::addColumn<int>("row");
+    QTest::addColumn<int>("column");
+    QTest::addColumn<int>("rowSpan");
+    QTest::addColumn<int>("columnSpan");
+    QTest::addColumn<int>("hideRow");
+    QTest::addColumn<int>("hideColumn");
+    QTest::addColumn<int>("moveRowFrom");
+    QTest::addColumn<int>("moveRowTo");
+    QTest::addColumn<int>("moveColumnFrom");
+    QTest::addColumn<int>("moveColumnTo");
+    QTest::addColumn<int>("rowHeight");
+    QTest::addColumn<int>("columnWidth");
+    QTest::addColumn<int>("selectedCount"); // ### make this more detailed
+
+    QTest::newRow("no span, no hidden, no moved")
+      << 10 << 10                          // dim
+      << -1 << -1                          // pos
+      << 1 << 1                            // span
+      << -1 << -1                          // hide
+      << -1 << -1                          // move row
+      << -1 << -1                          // move col
+      << 40 << 40                          // cell size
+      << 100;                              // selected count
+
+    QTest::newRow("row span, no hidden, no moved")
+      << 10 << 10                          // dim
+      << 1 << 1                            // pos
+      << 2 << 1                            // span
+      << -1 << -1                          // hide
+      << -1 << -1                          // move row
+      << -1 << -1                          // move col
+      << 40 << 40                          // cell size
+      << 99;                               // selected count
+
+    QTest::newRow("col span, no hidden, no moved")
+      << 10 << 10                          // dim
+      << 1 << 1                            // pos
+      << 1 << 2                            // span
+      << -1 << -1                          // hide
+      << -1 << -1                          // move row
+      << -1 << -1                          // move col
+      << 40 << 40                          // cell size
+      << 99;                               // selected count
+
+    QTest::newRow("no span, row hidden, no moved")
+      << 10 << 10                          // dim
+      << -1 << -1                          // pos
+      << 1 << 1                            // span
+      << 1 << -1                           // hide
+      << -1 << -1                          // move row
+      << -1 << -1                          // move col
+      << 40 << 40                          // cell size
+      << 90;                               // selected count
+
+    QTest::newRow("no span, col hidden, no moved")
+      << 10 << 10                          // dim
+      << -1 << -1                          // pos
+      << 1 << 1                            // span
+      << -1 << 1                           // hide
+      << -1 << -1                          // move row
+      << -1 << -1                          // move col
+      << 40 << 40                          // cell size
+      << 90;                               // selected count
+
+    QTest::newRow("no span, no hidden, row moved")
+      << 10 << 10                          // dim
+      << -1 << -1                          // pos
+      << 1 << 1                            // span
+      << -1 << -1                          // hide
+      << 1 << 3                            // move row
+      << -1 << -1                          // move col
+      << 40 << 40                          // cell size
+      << 100;                              // selected count
+
+    QTest::newRow("no span, no hidden, col moved")
+      << 10 << 10                          // dim
+      << -1 << -1                          // pos
+      << 1 << 1                            // span
+      << -1 << -1                          // hide
+      << -1 << -1                          // move row
+      << 1 << 3                            // move col
+      << 40 << 40                          // cell size
+      << 100;                              // selected count
+}
+
+void QTest__keySequence(QWidget* widget, QKeySequence ks)
+{
+    for (int i=0; i<ks.count(); ++i)
+    {
+        Qt::Key key = Qt::Key(ks[i] & ~Qt::KeyboardModifierMask);
+        Qt::KeyboardModifiers modifiers = Qt::KeyboardModifiers(ks[i] & Qt::KeyboardModifierMask);
+        QTest::keyClick(widget, key, modifiers);
+    }
+}
+
+void tst_QTableView::selectall()
+{
+    QFETCH(int, rowCount);
+    QFETCH(int, columnCount);
+    QFETCH(int, row);
+    QFETCH(int, column);
+    QFETCH(int, rowSpan);
+    QFETCH(int, columnSpan);
+    QFETCH(int, hideRow);
+    QFETCH(int, hideColumn);
+    QFETCH(int, moveRowFrom);
+    QFETCH(int, moveRowTo);
+    QFETCH(int, moveColumnFrom);
+    QFETCH(int, moveColumnTo);
+    QFETCH(int, rowHeight);
+    QFETCH(int, columnWidth);
+    QFETCH(int, selectedCount);
+
+    QtTestTableModel model(rowCount, columnCount);
+
+    QtTestTableView view;
+    view.show();
+    view.setModel(&model);
+
+    view.setSpan(row, column, rowSpan, columnSpan);
+
+    view.hideRow(hideRow);
+    view.hideColumn(hideColumn);
+
+    view.verticalHeader()->moveSection(moveRowFrom, moveRowTo);
+    view.horizontalHeader()->moveSection(moveColumnFrom, moveColumnTo);
+
+    for (int r = 0; r < rowCount; ++r)
+        view.setRowHeight(r, rowHeight);
+    for (int c = 0; c < columnCount; ++c)
+        view.setColumnWidth(c, columnWidth);
+
+    // try slot first
+    view.clearSelection();
+    QCOMPARE(view.selectedIndexes().count(), 0);
+    view.selectAll();
+    QCOMPARE(view.selectedIndexes().count(), selectedCount);
+
+    // try by key sequence
+    view.clearSelection();
+    QCOMPARE(view.selectedIndexes().count(), 0);
+    QTest__keySequence(&view, QKeySequence(QKeySequence::SelectAll));
+    QCOMPARE(view.selectedIndexes().count(), selectedCount);
+
+    // check again with no selection mode
+    view.clearSelection();
+    view.setSelectionMode(QAbstractItemView::NoSelection);
+    QCOMPARE(view.selectedIndexes().count(), 0);
+    QTest__keySequence(&view, QKeySequence(QKeySequence::SelectAll));
+    QCOMPARE(view.selectedIndexes().count(), 0);
 }
 
 void tst_QTableView::visualRect_data()

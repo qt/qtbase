@@ -2409,12 +2409,11 @@ void QAbstractItemView::keyPressEvent(QKeyEvent *event)
         }
         break;
 #endif
-    case Qt::Key_A:
-        if (event->modifiers() & Qt::ControlModifier) {
+    default: {
+       if (event == QKeySequence::SelectAll && selectionMode() != NoSelection) {
             selectAll();
             break;
         }
-    default: {
 #ifdef Q_WS_MAC
         if (event->key() == Qt::Key_O && event->modifiers() & Qt::ControlModifier && currentIndex().isValid()) {
             emit activated(currentIndex());
