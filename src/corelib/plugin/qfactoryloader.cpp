@@ -290,11 +290,15 @@ void QFactoryLoader::refreshAll()
     }
 }
 
+// avoid duplicate QStringLiteral data:
+static inline QString metaDataKeyLiteral() { return QStringLiteral("MetaData"); }
+static inline QString keysKeyLiteral() { return QStringLiteral("Keys"); }
+
 QMultiMap<int, QString> QFactoryLoader::keyMap() const
 {
     QMultiMap<int, QString> result;
-    const QString metaDataKey = QStringLiteral("MetaData");
-    const QString keysKey = QStringLiteral("Keys");
+    const QString metaDataKey = metaDataKeyLiteral();
+    const QString keysKey = keysKeyLiteral();
     const QList<QJsonObject> metaDataList = metaData();
     for (int i = 0; i < metaDataList.size(); ++i) {
         const QJsonObject metaData = metaDataList.at(i).value(metaDataKey).toObject();
@@ -308,8 +312,8 @@ QMultiMap<int, QString> QFactoryLoader::keyMap() const
 
 int QFactoryLoader::indexOf(const QString &needle) const
 {
-    const QString metaDataKey = QStringLiteral("MetaData");
-    const QString keysKey = QStringLiteral("Keys");
+    const QString metaDataKey = metaDataKeyLiteral();
+    const QString keysKey = keysKeyLiteral();
     const QList<QJsonObject> metaDataList = metaData();
     for (int i = 0; i < metaDataList.size(); ++i) {
         const QJsonObject metaData = metaDataList.at(i).value(metaDataKey).toObject();
