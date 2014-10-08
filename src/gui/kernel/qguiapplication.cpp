@@ -1201,7 +1201,7 @@ void QGuiApplicationPrivate::eventDispatcherReady()
 static bool runningUnderDebugger()
 {
     const QFileInfo parentProcExe(QStringLiteral("/proc/") + QString::number(getppid()) + QStringLiteral("/exe"));
-    return parentProcExe.isSymLink() && parentProcExe.symLinkTarget().endsWith(QStringLiteral("/gdb"));
+    return parentProcExe.isSymLink() && parentProcExe.symLinkTarget().endsWith(QLatin1String("/gdb"));
 }
 #endif
 

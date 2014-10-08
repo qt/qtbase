@@ -88,12 +88,12 @@ QT_BEGIN_NAMESPACE
 
 static bool isPseudoFs(const QString &mountDir, const QByteArray &type)
 {
-    if (mountDir.startsWith(QStringLiteral("/dev"))
-        || mountDir.startsWith(QStringLiteral("/proc"))
-        || mountDir.startsWith(QStringLiteral("/run"))
-        || mountDir.startsWith(QStringLiteral("/sys"))
-        || mountDir.startsWith(QStringLiteral("/var/run"))
-        || mountDir.startsWith(QStringLiteral("/var/lock"))) {
+    if (mountDir.startsWith(QLatin1String("/dev"))
+        || mountDir.startsWith(QLatin1String("/proc"))
+        || mountDir.startsWith(QLatin1String("/run"))
+        || mountDir.startsWith(QLatin1String("/sys"))
+        || mountDir.startsWith(QLatin1String("/var/run"))
+        || mountDir.startsWith(QLatin1String("/var/lock"))) {
         return true;
     }
 #if defined(Q_OS_LINUX)

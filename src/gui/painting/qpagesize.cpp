@@ -396,9 +396,9 @@ static QPageSize::PageSizeId qt_idForPpdKey(const QString &ppdKey, QSize *match 
         return QPageSize::Custom;
     QString key = ppdKey;
     // Remove any Rotated or Tranverse modifiers
-    if (key.endsWith(QStringLiteral("Rotated")))
+    if (key.endsWith(QLatin1String("Rotated")))
         key.chop(7);
-    else if (key.endsWith(QStringLiteral(".Transverse")))
+    else if (key.endsWith(QLatin1String(".Transverse")))
         key.chop(11);
     for (int i = 0; i <= int(QPageSize::LastPageSize); ++i) {
         if (QLatin1String(qt_pageSizes[i].mediaOption) == key) {

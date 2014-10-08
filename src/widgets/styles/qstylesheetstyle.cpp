@@ -2485,7 +2485,7 @@ void QStyleSheetStyle::setProperties(QWidget *w)
         QSet<const QString> propertySet;
         for (int i = decls.count() - 1; i >= 0; --i) {
             const QString property = decls.at(i).d->property;
-            if (!property.startsWith(QStringLiteral("qproperty-"), Qt::CaseInsensitive))
+            if (!property.startsWith(QLatin1String("qproperty-"), Qt::CaseInsensitive))
                 continue;
             if (!propertySet.contains(property)) {
                 propertySet.insert(property);

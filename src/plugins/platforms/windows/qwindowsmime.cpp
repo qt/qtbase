@@ -611,7 +611,7 @@ bool QWindowsMimeText::convertFromMime(const FORMATETC &formatetc, const QMimeDa
 
 bool QWindowsMimeText::canConvertToMime(const QString &mimeType, IDataObject *pDataObj) const
 {
-    return mimeType.startsWith(QStringLiteral("text/plain"))
+    return mimeType.startsWith(QLatin1String("text/plain"))
            && (canGetData(CF_UNICODETEXT, pDataObj)
            || canGetData(CF_TEXT, pDataObj));
 }
@@ -628,7 +628,7 @@ QString QWindowsMimeText::mimeForFormat(const FORMATETC &formatetc) const
 QVector<FORMATETC> QWindowsMimeText::formatsForMime(const QString &mimeType, const QMimeData *mimeData) const
 {
     QVector<FORMATETC> formatics;
-    if (mimeType.startsWith(QStringLiteral("text/plain")) && mimeData->hasText()) {
+    if (mimeType.startsWith(QLatin1String("text/plain")) && mimeData->hasText()) {
         formatics += setCf(CF_UNICODETEXT);
         formatics += setCf(CF_TEXT);
     }
