@@ -100,7 +100,8 @@ bool QPepperInstance::Init(uint32_t argc, const char* argn[], const char* argv[]
     qCDebug(QT_PLATFORM_PEPPER_INSTANCE) << "Init argc:" << argc;
 
 #ifdef Q_OS_NACL_NEWLIB
-    EHRequestExceptionsJson(qtExceptionHandler);
+    // Comment in next line to enable the exception/crash handler.
+    // EHRequestExceptionsJson(qtExceptionHandler);
 #endif
 
     g_pepperInstance = this;
