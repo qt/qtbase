@@ -1,6 +1,6 @@
 TEMPLATE = app
 
-TARGET = buttontester
+TARGET = mousebuttons
 TEMPLATE = app
 
 SOURCES += \
