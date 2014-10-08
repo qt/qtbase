@@ -444,7 +444,7 @@ bool QSslCertificatePrivate::parseExtension(const QByteArray &data, QSslCertific
     QAsn1Element val;
     bool supported = true;
     QVariant value;
-    if (oid == QByteArrayLiteral("1.3.6.1.5.5.7.1.1")) {
+    if (oid == "1.3.6.1.5.5.7.1.1") {
         // authorityInfoAccess
         if (!val.read(valElem.value()) || val.type() != QAsn1Element::SequenceType)
             return false;
@@ -463,12 +463,12 @@ bool QSslCertificatePrivate::parseExtension(const QByteArray &data, QSslCertific
             }
         }
         value = result;
-    } else if (oid == QByteArrayLiteral("2.5.29.14")) {
+    } else if (oid == "2.5.29.14") {
         // subjectKeyIdentifier
         if (!val.read(valElem.value()) || val.type() != QAsn1Element::OctetStringType)
             return false;
         value = colonSeparatedHex(val.value()).toUpper();
-    } else if (oid == QByteArrayLiteral("2.5.29.19")) {
+    } else if (oid == "2.5.29.19") {
         // basicConstraints
         if (!val.read(valElem.value()) || val.type() != QAsn1Element::SequenceType)
             return false;
@@ -488,7 +488,7 @@ bool QSslCertificatePrivate::parseExtension(const QByteArray &data, QSslCertific
                 return false;
         }
         value = result;
-    } else if (oid == QByteArrayLiteral("2.5.29.35")) {
+    } else if (oid == "2.5.29.35") {
         // authorityKeyIdentifier
         if (!val.read(valElem.value()) || val.type() != QAsn1Element::SequenceType)
             return false;

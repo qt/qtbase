@@ -58,7 +58,7 @@ int QWindowsScaling::determineUiScaleFactor()
         return 1;
     const QByteArray envDevicePixelRatioEnv = qgetenv(devicePixelRatioEnvVar);
     // Auto: Suggest a scale factor by checking monitor resolution.
-    if (envDevicePixelRatioEnv == QByteArrayLiteral("auto")) {
+    if (envDevicePixelRatioEnv == "auto") {
         const int maxResolution = QWindowsScreen::maxMonitorHorizResolution();
         return maxResolution > 180 ? maxResolution / 96 : 1;
     }

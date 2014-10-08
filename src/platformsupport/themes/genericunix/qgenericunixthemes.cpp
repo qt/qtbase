@@ -624,16 +624,16 @@ QStringList QGenericUnixTheme::themeNames()
     QStringList result;
     if (QGuiApplication::desktopSettingsAware()) {
         const QByteArray desktopEnvironment = QGuiApplicationPrivate::platformIntegration()->services()->desktopEnvironment();
-        if (desktopEnvironment == QByteArrayLiteral("KDE")) {
+        if (desktopEnvironment == "KDE") {
 #ifndef QT_NO_SETTINGS
             result.push_back(QLatin1String(QKdeTheme::name));
 #endif
-        } else if (desktopEnvironment == QByteArrayLiteral("GNOME") ||
-                desktopEnvironment == QByteArrayLiteral("X-CINNAMON") ||
-                desktopEnvironment == QByteArrayLiteral("UNITY") ||
-                desktopEnvironment == QByteArrayLiteral("MATE") ||
-                desktopEnvironment == QByteArrayLiteral("XFCE") ||
-                desktopEnvironment == QByteArrayLiteral("LXDE")) { // Gtk-based desktops
+        } else if (desktopEnvironment == "GNOME" ||
+                desktopEnvironment == "X-CINNAMON" ||
+                desktopEnvironment == "UNITY" ||
+                desktopEnvironment == "MATE" ||
+                desktopEnvironment == "XFCE" ||
+                desktopEnvironment == "LXDE") { // Gtk-based desktops
             // prefer the GTK2 theme implementation with native dialogs etc.
             result.push_back(QStringLiteral("gtk2"));
             // fallback to the generic Gnome theme if loading the GTK2 theme fails

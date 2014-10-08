@@ -127,7 +127,7 @@ void QQnxButtonEventNotifier::updateButtonStates()
     for (int buttonId = bid_minus; buttonId < ButtonCount; ++buttonId) {
         // Extract the new button state
         QByteArray key = m_buttonKeys.at(buttonId);
-        ButtonState newState = (fields.value(key) == QByteArrayLiteral("b_up") ? ButtonUp : ButtonDown);
+        ButtonState newState = (fields.value(key) == "b_up" ? ButtonUp : ButtonDown);
 
         // If state has changed, update our state and inject a keypress event
         if (m_state[buttonId] != newState) {

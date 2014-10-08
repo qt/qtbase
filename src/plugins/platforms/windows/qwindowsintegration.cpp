@@ -336,9 +336,9 @@ QWindowsStaticOpenGLContext *QWindowsStaticOpenGLContext::create()
 
 #if defined(QT_OPENGL_DYNAMIC)
     const QByteArray requested = qgetenv("QT_OPENGL"); // angle, desktop, software
-    const bool angleRequested = QCoreApplication::testAttribute(Qt::AA_UseOpenGLES) || requested == QByteArrayLiteral("angle");
-    const bool desktopRequested = QCoreApplication::testAttribute(Qt::AA_UseDesktopOpenGL) || requested == QByteArrayLiteral("desktop");
-    const bool softwareRequested = QCoreApplication::testAttribute(Qt::AA_UseSoftwareOpenGL) || requested == QByteArrayLiteral("software");
+    const bool angleRequested = QCoreApplication::testAttribute(Qt::AA_UseOpenGLES) || requested == "angle";
+    const bool desktopRequested = QCoreApplication::testAttribute(Qt::AA_UseDesktopOpenGL) || requested == "desktop";
+    const bool softwareRequested = QCoreApplication::testAttribute(Qt::AA_UseSoftwareOpenGL) || requested == "software";
 
     // If ANGLE is requested, use it, don't try anything else.
     if (angleRequested) {
