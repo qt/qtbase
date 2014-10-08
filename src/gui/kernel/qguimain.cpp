@@ -69,13 +69,15 @@ void Q_GUI_EXPORT qGuiRegisterAppFunctions(QAppInitFunction appInitFunction, QAp
     g_appExit = appExitFunction;
 }
 
+
+int g_argc = 0;
+char *g_argv = 0;
+
 void qGuiStartup()
 {
     qCDebug(QT_GUI_MAIN) << "qGuiStartup";
 
-    int argc = 0;
-    char *argv = 0;
-    g_guiApplcation = new QGuiApplication(argc, &argv);
+    g_guiApplcation = new QGuiApplication(g_argc, &g_argv);
 }
 
 void qGuiAppInit()
