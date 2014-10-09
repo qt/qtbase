@@ -2980,6 +2980,8 @@ static void copyActionToPlatformItem(const QAction *action, QPlatformMenuItem* i
             QStyleOption opt;
             item->setIconSize(qApp->style()->pixelMetric(QStyle::PM_SmallIconSize, &opt, 0));
         }
+    } else {
+        item->setIcon(QIcon());
     }
     item->setVisible(action->isVisible());
     item->setShortcut(action->shortcut());
