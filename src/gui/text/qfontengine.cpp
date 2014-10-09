@@ -787,12 +787,11 @@ QImage QFontEngine::alphaRGBMapForGlyph(glyph_t glyph, QFixed /*subPixelPosition
     QImage alphaMask = alphaMapForGlyph(glyph, t);
     QImage rgbMask(alphaMask.width(), alphaMask.height(), QImage::Format_RGB32);
 
-    QVector<QRgb> colorTable = alphaMask.colorTable();
     for (int y=0; y<alphaMask.height(); ++y) {
         uint *dst = (uint *) rgbMask.scanLine(y);
         uchar *src = (uchar *) alphaMask.scanLine(y);
         for (int x=0; x<alphaMask.width(); ++x) {
-            int val = qAlpha(colorTable.at(src[x]));
+            int val = src[x];
             dst[x] = qRgb(val, val, val);
         }
     }
