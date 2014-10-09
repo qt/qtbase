@@ -442,28 +442,22 @@ void TableGenerator::parseKeySequence(char *line)
 void TableGenerator::printComposeTable() const
 {
 #ifdef DEBUG_GENERATOR
+# ifndef QT_NO_DEBUG_STREAM
     if (m_composeTable.isEmpty())
         return;
 
-    QString output;
-    QComposeTableElement elem;
-    QString comma = QStringLiteral(",");
-    int tableSize = m_composeTable.size();
+    QDebug ds = qDebug() << "output:\n";
+    ds.nospace();
+    const int tableSize = m_composeTable.size();
     for (int i = 0; i < tableSize; ++i) {
-        elem = m_composeTable.at(i);
-        output.append(QLatin1String("{ {"));
+        const QComposeTableElement &elem = m_composeTable.at(i);
+        ds << "{ {";
         for (int j = 0; j < QT_KEYSEQUENCE_MAX_LEN; j++) {
-            output.append(QString(QLatin1String("0x%1, ")).arg(QString::number(elem.keys[j],16)));
+            ds << hex << showbase << elem.keys[j] << ", ";
         }
-        // take care of the trailing comma
-        if (i == tableSize - 1)
-            comma = QStringLiteral("");
-        output.append(QString(QLatin1String("}, 0x%1, \"\" }%2 // %3 \n"))
-                      .arg(QString::number(elem.value,16))
-                      .arg(comma)
-                      .arg(elem.comment));
+        ds << "}, " << hex << showbase << elem.value << ", \"\" }, // " << elem.comment << " \n";
     }
-    qDebug() << "output: \n" << output;
+# endif
 #endif
 }
 
