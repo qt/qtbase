@@ -1102,9 +1102,9 @@ static QAquaWidgetSize qt_aqua_guess_size(const QWidget *widg, QSize large, QSiz
 static void qt_drawFocusRingOnPath(CGContextRef cg, NSBezierPath *focusRingPath)
 {
     CGContextSaveGState(cg);
+    [NSGraphicsContext saveGraphicsState];
     [NSGraphicsContext setCurrentContext:[NSGraphicsContext
          graphicsContextWithGraphicsPort:(CGContextRef)cg flipped:NO]];
-    [NSGraphicsContext saveGraphicsState];
     NSSetFocusRingStyle(NSFocusRingOnly);
     [focusRingPath setClip]; // Clear clip path to avoid artifacts when rendering the cursor at zero pos
     [focusRingPath fill];
