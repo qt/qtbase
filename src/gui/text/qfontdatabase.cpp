@@ -1144,7 +1144,10 @@ static int match(int script, const QFontDef &request,
 
     load(family_name, script);
 
-    const size_t writingSystem = std::find(scriptForWritingSystem, scriptForWritingSystem + QFontDatabase::WritingSystemsCount, script) - scriptForWritingSystem;
+    size_t writingSystem = std::find(scriptForWritingSystem, scriptForWritingSystem +
+            QFontDatabase::WritingSystemsCount, script) - scriptForWritingSystem;
+    if (writingSystem >= QFontDatabase::WritingSystemsCount)
+        writingSystem = QFontDatabase::Any;
 
     QFontDatabasePrivate *db = privateDb();
     for (int x = 0; x < db->count; ++x) {
