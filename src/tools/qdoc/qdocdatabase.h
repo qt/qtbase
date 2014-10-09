@@ -194,6 +194,13 @@ class QDocForest
     }
 
     void clearSearchOrder() { searchOrder_.clear(); }
+    void clearLinkCounts()
+    {
+        foreach (Tree* t, searchOrder())
+            t->clearLinkCount();
+    }
+    void printLinkCounts(const QString& project);
+    QString getLinkCounts(QStringList& strings, QVector<int>& counts);
 
   private:
     void newPrimaryTree(const QString& module);
@@ -379,6 +386,12 @@ class QDocDatabase
     void mergeCollections(Node::Type nt, CNMap& cnm, const Node* relative);
     void mergeCollections(CollectionNode* cn);
     void clearSearchOrder() { forest_.clearSearchOrder(); }
+    void incrementLinkCount(const Node* t) { t->tree()->incrementLinkCount(); }
+    void clearLinkCounts() { forest_.clearLinkCounts(); }
+    void printLinkCounts(const QString& t) { forest_.printLinkCounts(t); }
+    QString getLinkCounts(QStringList& strings, QVector<int>& counts) {
+        return forest_.getLinkCounts(strings, counts);
+    }
 
  private:
     friend class QDocIndexFiles;

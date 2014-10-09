@@ -286,6 +286,15 @@ void Location::fatal(const QString& message, const QString& details) const
 }
 
 /*!
+  Writes \a message and \a detals to stderr as a formatted
+  report message.
+ */
+void Location::report(const QString& message, const QString& details) const
+{
+    emitMessage(Report, message, details);
+}
+
+/*!
   Gets several parameters from the \a config, including
   tab size, program name, and a regular expression that
   appears to be used for matching certain error messages
@@ -371,7 +380,8 @@ void Location::emitMessage(MessageType type,
         result.prepend(tr(": error: "));
     else if (type == Warning)
         result.prepend(tr(": warning: "));
-    result.prepend(toString());
+    if (type != Report)
+        result.prepend(toString());
     fprintf(stderr, "%s\n", result.toLatin1().data());
     fflush(stderr);
 }

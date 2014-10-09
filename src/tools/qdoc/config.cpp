@@ -119,6 +119,7 @@ QString ConfigStrings::FILEEXTENSIONS = QStringLiteral("fileextensions");
 QString ConfigStrings::IMAGEEXTENSIONS = QStringLiteral("imageextensions");
 QString ConfigStrings::QMLONLY = QStringLiteral("qmlonly");
 QString ConfigStrings::QMLTYPESPAGE = QStringLiteral("qmltypespage");
+QString ConfigStrings::WRITEQAPAGES = QStringLiteral("writeqapages");
 
 /*!
   An entry in a stack, where each entry is a list

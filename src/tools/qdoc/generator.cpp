@@ -64,7 +64,7 @@ QString Generator::outSubdir_;
 QStringList Generator::outFileNames_;
 QSet<QString> Generator::outputFormats;
 QHash<QString, QString> Generator::outputPrefixes;
-QString Generator::project;
+QString Generator::project_;
 QStringList Generator::scriptDirs;
 QStringList Generator::scriptFiles;
 QString Generator::sinceTitles[] =
@@ -94,6 +94,7 @@ bool Generator::autolinkErrors_ = false;
 bool Generator::redirectDocumentationToDevNull_ = false;
 Generator::QDocPass Generator::qdocPass_ = Generator::Neither;
 bool Generator::qdocSingleExec_ = false;
+bool Generator::qdocWriteQaPages_ = false;
 bool Generator::useOutputSubdirs_ = true;
 
 void Generator::startDebugging(const QString& message)
@@ -317,7 +318,7 @@ QString Generator::fileBase(const Node *node) const
         if (node->isExample() || node->isExampleFile()) {
             QString modPrefix(node->moduleName());
             if (modPrefix.isEmpty()) {
-                modPrefix = project;
+                modPrefix = project_;
             }
             base.prepend(modPrefix.toLower() + QLatin1Char('-'));
         }
@@ -1646,7 +1647,7 @@ void Generator::initialize(const Config &config)
         ++n;
     }
 
-    project = config.getString(CONFIG_PROJECT);
+    project_ = config.getString(CONFIG_PROJECT);
 
     QStringList prefixes = config.getStringList(CONFIG_OUTPUTPREFIXES);
     if (!prefixes.isEmpty()) {

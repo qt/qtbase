@@ -197,10 +197,14 @@ class Tree
  public:
     const QString& moduleName() const { return module_; }
     const QString& indexFileName() const { return indexFileName_; }
+    void incrementLinkCount() { --linkCount_; }
+    void clearLinkCount() { linkCount_ = 0; }
+    int linkCount() const { return linkCount_; }
 
 private:
     bool treeHasBeenAnalyzed_;
     bool docsHaveBeenGenerated_;
+    int linkCount_;
     QString module_;
     QString indexFileName_;
     QDocDatabase* qdb_;

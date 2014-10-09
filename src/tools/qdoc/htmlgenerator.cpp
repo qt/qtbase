@@ -280,6 +280,8 @@ void HtmlGenerator::generateDocs()
         qflagsHref_ = linkForNode(qflags,0);
     if (!preparing())
         Generator::generateDocs();
+    if (Generator::generating() && Generator::writeQaPages())
+        generateQAPage();
 
     if (!generating()) {
         QString fileBase = project.toLower().simplified().replace(QLatin1Char(' '), QLatin1Char('-'));
@@ -298,6 +300,46 @@ void HtmlGenerator::generateDocs()
         */
         qdb_->generateTagFile(tagFile_, this);
     }
+}
+
+/*!
+  Output the module's Quality Assurance page.
+ */
+void HtmlGenerator::generateQAPage()
+{
+    NamespaceNode* node = qdb_->primaryTreeRoot();
+    beginSubPage(node, "aaa-" + defaultModuleName().toLower() + "-qa-page.html");
+    CodeMarker* marker = CodeMarker::markerForFileName(node->location().filePath());
+    QString title = "Quality Assurance Page for " + defaultModuleName();
+    QString t = "Quality assurance information for checking the " + defaultModuleName() + " documentation.";
+    generateHeader(title, node, marker);
+    generateTitle(title, Text() << t, LargeSubTitle, node, marker);
+
+    QStringList strings;
+    QVector<int> counts;
+    QString depends = qdb_->getLinkCounts(strings, counts);
+    if (!strings.isEmpty()) {
+        t = "Intermodule Link Counts";
+        QString ref = registerRef(t);
+        out() << "<a name=\"" << ref << "\"></a>" << divNavTop << '\n';
+        out() << "<h2 id=\"" << ref << "\">" << protectEnc(t) << "</h2>\n";
+        out() << "<table class=\"valuelist\"><tr valign=\"top\" "
+              << "class=\"even\"><th class=\"tblConst\">Destination Module</th>"
+              << "<th class=\"tblval\">Link Count</th></tr>\n";
+        for (int i = 0; i< strings.size(); ++i) {
+            out() << "<tr><td class=\"topAlign\"><tt>" << strings.at(i)
+                  << "</tt></td><td class=\"topAlign\"><tt>" << counts.at(i)
+                  << "</tt></td></tr>\n";
+        }
+        out() << "</table>\n";
+        t = "The Optimal \"depends\" Variable";
+        out() << "<h2>" << protectEnc(t) << "</h2>\n";
+        t = "Consider replacing the depends variable in " + defaultModuleName().toLower() +
+            ".qdocconf with this one, if the two are not identical:";
+        out() << "<p>" << protectEnc(t) << "</p>\n";
+        out() << "<p>" << protectEnc(depends) << "</p>\n";
+    }
+    endSubPage();
 }
 
 /*!
@@ -3676,6 +3718,9 @@ QString HtmlGenerator::getLink(const Atom *atom, const Node *relative, const Nod
     if (!(*node))
         return QString();
 
+    if (Generator::writeQaPages())
+        qdb_->incrementLinkCount(*node);
+
     QString url = (*node)->url();
     if (!url.isEmpty()) {
         if (ref.isEmpty())
@@ -3719,6 +3764,9 @@ QString HtmlGenerator::getAutoLink(const Atom *atom, const Node *relative, const
     *node = qdb_->findNodeForAtom(atom, relative, ref);
     if (!(*node))
         return QString();
+
+    if (Generator::writeQaPages())
+        qdb_->incrementLinkCount(*node);
 
     QString url = (*node)->url();
     if (!url.isEmpty()) {

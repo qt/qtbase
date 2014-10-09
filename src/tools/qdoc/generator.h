@@ -95,8 +95,10 @@ public:
     static bool preparing() { return (qdocPass_ == Prepare); }
     static bool generating() { return (qdocPass_ == Generate); }
     static bool singleExec() { return qdocSingleExec_; }
+    static bool writeQaPages() { return qdocWriteQaPages_; }
     static void setSingleExec() { qdocSingleExec_ = true; }
-    static QString defaultModuleName() { return project; }
+    static void setWriteQaPages() { qdocWriteQaPages_ = true; }
+    static QString defaultModuleName() { return project_; }
     static void resetUseOutputSubdirs() { useOutputSubdirs_ = false; }
     static bool useOutputSubdirs() { return useOutputSubdirs_; }
 
@@ -105,6 +107,7 @@ protected:
     virtual void endSubPage();
     virtual QString fileBase(const Node* node) const;
     virtual QString fileExtension() const = 0;
+    virtual void generateQAPage() { }
     virtual void generateAlsoList(const Node *node, CodeMarker *marker);
     virtual int generateAtom(const Atom *atom, const Node *relative, CodeMarker *marker);
     virtual void generateBody(const Node *node, CodeMarker *marker);
@@ -200,7 +203,7 @@ private:
     static QStringList imageDirs;
     static QStringList imageFiles;
     static QMap<QString, QStringList> imgFileExts;
-    static QString project;
+    static QString project_;
     static QString outDir_;
     static QString outSubdir_;
     static QStringList outFileNames_;
@@ -216,6 +219,7 @@ private:
     static bool redirectDocumentationToDevNull_;
     static QDocPass qdocPass_;
     static bool qdocSingleExec_;
+    static bool qdocWriteQaPages_;
     static bool useOutputSubdirs_;
 
     void generateReimplementedFrom(const FunctionNode *func, CodeMarker *marker);

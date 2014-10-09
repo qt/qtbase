@@ -274,7 +274,6 @@ const QVector<Tree*>& QDocForest::indexSearchOrder()
  */
 NamespaceNode* QDocForest::newIndexTree(const QString& module)
 {
-    //qDebug() << "  New index tree:" << module;
     primaryTree_ = new Tree(module, qdb_);
     forest_.insert(module, primaryTree_);
     return primaryTree_->root();
@@ -286,7 +285,6 @@ NamespaceNode* QDocForest::newIndexTree(const QString& module)
  */
 void QDocForest::newPrimaryTree(const QString& module)
 {
-    //qDebug() << "  New primary tree:" << module;
     primaryTree_ = new Tree(module, qdb_);
 }
 
@@ -349,6 +347,61 @@ void QDocForest::mergeCollectionMaps(Node::Type nt, CNMultiMap& cnmm)
             }
         }
     }
+}
+
+/*!
+  Print the list of module names ordered according
+  to how many successful searches each tree had.
+ */
+void QDocForest::printLinkCounts(const QString& project)
+{
+    Location::null.report(QString("%1: Link Counts").arg(project));
+    QMultiMap<int, QString> m;
+    foreach (Tree* t, searchOrder()) {
+        if (t->linkCount() < 0)
+            m.insert(t->linkCount(), t->moduleName());
+    }
+    QString depends = "depends                 +=";
+    QString module = project.toLower();
+    QMultiMap<int, QString>::iterator i = m.begin();
+    while (i != m.end()) {
+        QString line = "  " + i.value();
+        if (i.value() != module)
+            depends += " " + i.value();
+        int pad = 30 - line.length();
+        for (int k=0; k<pad; ++k)
+            line += " ";
+        line += "%1";
+        Location::null.report(line.arg(-(i.key())));
+        ++i;
+    }
+    Location::null.report("Optimal depends variable:");
+    Location::null.report(depends);
+}
+
+/*!
+  Print the list of module names ordered according
+  to how many successful searches each tree had.
+ */
+QString QDocForest::getLinkCounts(QStringList& strings, QVector<int>& counts)
+{
+    QMultiMap<int, QString> m;
+    foreach (Tree* t, searchOrder()) {
+        if (t->linkCount() < 0)
+            m.insert(t->linkCount(), t->moduleName());
+    }
+    QString depends = "depends                 +=";
+    QString module = Generator::defaultModuleName().toLower();
+    QMultiMap<int, QString>::iterator i = m.begin();
+    while (i != m.end()) {
+        if (i.value() != module) {
+            counts.append(-(i.key()));
+            strings.append(i.value());
+            depends += " " + i.value();
+        }
+        ++i;
+    }
+    return depends;
 }
 
 /*! \class QDocDatabase

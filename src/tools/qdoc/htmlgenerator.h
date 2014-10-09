@@ -89,6 +89,7 @@ public:
     static QString sinceTitle(int i) { return sinceTitles[i]; }
 
 protected:
+    virtual void generateQAPage();
     virtual int generateAtom(const Atom *atom,
                              const Node *relative,
                              CodeMarker *marker);

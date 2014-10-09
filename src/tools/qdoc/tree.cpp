@@ -68,6 +68,7 @@ QT_BEGIN_NAMESPACE
 Tree::Tree(const QString& module, QDocDatabase* qdb)
     : treeHasBeenAnalyzed_(false),
       docsHaveBeenGenerated_(false),
+      linkCount_(0),
       module_(module),
       qdb_(qdb),
       root_(0, QString())

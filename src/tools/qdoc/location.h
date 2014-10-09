@@ -81,6 +81,8 @@ public:
                const QString& details = QString()) const;
     void fatal(const QString& message,
                const QString& details = QString()) const;
+    void report(const QString& message,
+                const QString& details = QString()) const;
 
     static const Location null;
 
@@ -94,7 +96,7 @@ public:
     static QString canonicalRelativePath(const QString &path);
 
 private:
-    enum MessageType { Warning, Error };
+    enum MessageType { Warning, Error, Report };
 
     struct StackEntry
     {

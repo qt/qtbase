@@ -71,6 +71,7 @@ bool creationTimeBefore(const QFileInfo &fi1, const QFileInfo &fi2)
 static bool highlighting = false;
 static bool showInternal = false;
 static bool singleExec = false;
+static bool writeQaPages = false;
 static bool redirectDocumentationToDevNull = false;
 static bool noLinkErrors = false;
 static bool autolinkErrors = false;
@@ -221,6 +222,7 @@ static void processQdocconfFile(const QString &fileName)
     config.setStringList(CONFIG_SYNTAXHIGHLIGHTING, QStringList(highlighting ? "true" : "false"));
     config.setStringList(CONFIG_SHOWINTERNAL, QStringList(showInternal ? "true" : "false"));
     config.setStringList(CONFIG_SINGLEEXEC, QStringList(singleExec ? "true" : "false"));
+    config.setStringList(CONFIG_WRITEQAPAGES, QStringList(writeQaPages ? "true" : "false"));
     config.setStringList(CONFIG_REDIRECTDOCUMENTATIONTODEVNULL, QStringList(redirectDocumentationToDevNull ? "true" : "false"));
     config.setStringList(CONFIG_NOLINKERRORS, QStringList(noLinkErrors ? "true" : "false"));
     config.setStringList(CONFIG_AUTOLINKERRORS, QStringList(autolinkErrors ? "true" : "false"));
@@ -459,7 +461,6 @@ static void processQdocconfFile(const QString &fileName)
             codeParser->doneParsingHeaderFiles();
 
         usedParsers.clear();
-        //qDebug() << "CALL: resolveInheritance()";
         qdb->resolveInheritance();
 
         /*
@@ -490,7 +491,6 @@ static void processQdocconfFile(const QString &fileName)
           targets, URLs, links, and other stuff that needs resolving.
         */
         Generator::debug("Resolving stuff prior to generating docs");
-        //qDebug() << "CALL: resolveIssues()";
         qdb->resolveIssues();
     }
     else {
@@ -533,7 +533,6 @@ static void processQdocconfFile(const QString &fileName)
       one.
      */
     Generator::debug("Generating docs");
-    //qDebug() << "CALL: generateDocs()";
     QSet<QString>::ConstIterator of = outputFormats.constBegin();
     while (of != outputFormats.constEnd()) {
         Generator* generator = Generator::generatorForFormat(*of);
@@ -543,8 +542,12 @@ static void processQdocconfFile(const QString &fileName)
         generator->generateDocs();
         ++of;
     }
+#if 0
+    if (Generator::generating() && Generator::writeQaPages())
+        qdb->printLinkCounts(project);
+#endif
+    qdb->clearLinkCounts();
 
-    //Generator::writeOutFileNames();
     Generator::debug("Terminating qdoc classes");
     if (Generator::debugging())
         Generator::stopDebugging(project);
@@ -681,6 +684,10 @@ int main(int argc, char **argv)
     singleExecOption.setDescription(QCoreApplication::translate("qdoc", "Run qdoc once over all the qdoc conf files."));
     parser.addOption(singleExecOption);
 
+    QCommandLineOption writeQaPagesOption(QStringList() << QStringLiteral("write-qa-pages"));
+    writeQaPagesOption.setDescription(QCoreApplication::translate("qdoc", "Write QA pages."));
+    parser.addOption(writeQaPagesOption);
+
     parser.process(app);
 
     defines += parser.values(defineOption);
@@ -688,6 +695,7 @@ int main(int argc, char **argv)
     highlighting = parser.isSet(highlightingOption);
     showInternal = parser.isSet(showInternalOption);
     singleExec = parser.isSet(singleExecOption);
+    writeQaPages = parser.isSet(writeQaPagesOption);
     redirectDocumentationToDevNull = parser.isSet(redirectDocumentationToDevNullOption);
     Config::generateExamples = !parser.isSet(noExamplesOption);
     foreach (const QString &indexDir, parser.values(indexDirOption)) {
@@ -713,6 +721,8 @@ int main(int argc, char **argv)
         Generator::setQDocPass(Generator::Generate);
     if (parser.isSet(singleExecOption))
         Generator::setSingleExec();
+    if (parser.isSet(writeQaPagesOption))
+        Generator::setWriteQaPages();
     if (parser.isSet(logProgressOption))
         Location::startLoggingProgress();
 

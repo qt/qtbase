@@ -231,6 +231,7 @@ struct ConfigStrings
     static QString IMAGEEXTENSIONS;
     static QString QMLONLY;
     static QString QMLTYPESPAGE;
+    static QString WRITEQAPAGES;
 };
 
 #define CONFIG_ALIAS ConfigStrings::ALIAS
@@ -305,6 +306,7 @@ struct ConfigStrings
 #define CONFIG_IMAGEEXTENSIONS ConfigStrings::IMAGEEXTENSIONS
 #define CONFIG_QMLONLY ConfigStrings::QMLONLY
 #define CONFIG_QMLTYPESPAGE ConfigStrings::QMLTYPESPAGE
+#define CONFIG_WRITEQAPAGES ConfigStrings::WRITEQAPAGES
 
 QT_END_NAMESPACE
 
