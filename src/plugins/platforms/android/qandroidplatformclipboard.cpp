@@ -44,10 +44,10 @@ QAndroidPlatformClipboard::QAndroidPlatformClipboard()
 
 QMimeData *QAndroidPlatformClipboard::mimeData(QClipboard::Mode mode)
 {
-    if (QClipboard::Clipboard != mode || !QtAndroidClipboard::hasClipboardText())
-        return 0;
-
-    m_mimeData.setText(QtAndroidClipboard::clipboardText());
+    Q_ASSERT(supportsMode(mode));
+    m_mimeData.setText(QtAndroidClipboard::hasClipboardText()
+                       ? QtAndroidClipboard::clipboardText()
+                       : QString());
     return &m_mimeData;
 }
 
