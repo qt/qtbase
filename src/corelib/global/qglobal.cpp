@@ -2519,7 +2519,9 @@ QString QSysInfo::productVersion()
     // fall through
 
 // Android and Blackberry should not fall through to the Unix code
-#elif defined(Q_OS_ANDROID)
+#elif defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_NO_SDK)
+    return QJNIObjectPrivate::getStaticObjectField("android/os/Build$VERSION", "RELEASE", "Ljava/lang/String;").toString();
+#elif defined(Q_OS_ANDROID) // Q_OS_ANDROID_NO_SDK
     // TBD
 #elif defined(Q_OS_BLACKBERRY)
     deviceinfo_details_t *deviceInfo;
