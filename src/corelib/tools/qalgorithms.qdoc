@@ -144,7 +144,7 @@
 
     QList and QVector's non-const iterator types are random access iterators.
 
-    \section1 Qt and the STL algorithms
+    \section1 Qt and the STL Algorithms
 
     Historically, Qt used to provide functions which were direct equivalents of
     many STL algorithmic functions. Starting with Qt 5.0, you are instead

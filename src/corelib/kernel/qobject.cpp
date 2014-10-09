@@ -678,7 +678,7 @@ void QMetaCallEvent::placeMetaCall(QObject *object)
     will remain in the old thread when moveToThread() is called.
 
     \target No copy constructor
-    \section1 No copy constructor or assignment operator
+    \section1 No Copy Constructor or Assignment Operator
 
     QObject has neither a copy constructor nor an assignment operator.
     This is by design. Actually, they are declared, but in a
@@ -723,7 +723,7 @@ void QMetaCallEvent::placeMetaCall(QObject *object)
     and both standard Qt widgets and user-created forms can be given dynamic
     properties.
 
-    \section1 Internationalization (i18n)
+    \section1 Internationalization (I18n)
 
     All QObject subclasses support Qt's translation features, making it possible
     to translate an application's user interface into different languages.
@@ -1465,14 +1465,14 @@ void QObject::moveToThread(QThread *targetThread)
     }
 
     QThreadData *currentData = QThreadData::current();
-    QThreadData *targetData = targetThread ? QThreadData::get2(targetThread) : new QThreadData(0);
+    QThreadData *targetData = targetThread ? QThreadData::get2(targetThread) : Q_NULLPTR;
     if (d->threadData->thread == 0 && currentData == targetData) {
         // one exception to the rule: we allow moving objects with no thread affinity to the current thread
         currentData = d->threadData;
     } else if (d->threadData != currentData) {
         qWarning("QObject::moveToThread: Current thread (%p) is not the object's thread (%p).\n"
                  "Cannot move to target thread (%p)\n",
-                 currentData->thread, d->threadData->thread, targetData->thread);
+                 currentData->thread, d->threadData->thread, targetData ? targetData->thread : Q_NULLPTR);
 
 #ifdef Q_OS_MAC
         qWarning("On Mac OS X, you might be loading two sets of Qt binaries into the same process. "
@@ -1485,6 +1485,9 @@ void QObject::moveToThread(QThread *targetThread)
 
     // prepare to move
     d->moveToThread_helper();
+
+    if (!targetData)
+        targetData = new QThreadData(0);
 
     QOrderedMutexLocker locker(&currentData->postEventList.mutex,
                                &targetData->postEventList.mutex);

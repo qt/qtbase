@@ -97,7 +97,7 @@ bool CeSdkHandler::parse()
         return false;
     }
 
-    return m_list.size() > 0 ? true : false;
+    return m_list.size() > 0;
 }
 
 QString CeSdkHandler::fixPaths(QString path) const

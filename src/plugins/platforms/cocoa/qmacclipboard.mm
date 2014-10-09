@@ -308,7 +308,7 @@ QMacPasteboard::setMimeData(QMimeData *mime_src)
                 // Hack: The Rtf handler converts incoming Rtf to Html. We do
                 // not want to convert outgoing Html to Rtf but instead keep
                 // posting it as Html. Skip the Rtf handler here.
-                if (c->convertorName() == QStringLiteral("Rtf"))
+                if (c->convertorName() == QLatin1String("Rtf"))
                     continue;
                 QString flavor(c->flavorFor(mimeType));
                 if (!flavor.isEmpty()) {

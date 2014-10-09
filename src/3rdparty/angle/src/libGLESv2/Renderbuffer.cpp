@@ -1,4 +1,3 @@
-#include "precompiled.h"
 //
 // Copyright (c) 2002-2012 The ANGLE Project Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
@@ -10,13 +9,13 @@
 // objects and related functionality. [OpenGL ES 2.0.24] section 4.4.3 page 108.
 
 #include "libGLESv2/Renderbuffer.h"
-#include "libGLESv2/renderer/RenderTarget.h"
-
 #include "libGLESv2/Texture.h"
-#include "libGLESv2/renderer/Renderer.h"
-#include "common/utilities.h"
 #include "libGLESv2/formatutils.h"
 #include "libGLESv2/FramebufferAttachment.h"
+#include "libGLESv2/renderer/Renderer.h"
+#include "libGLESv2/renderer/RenderTarget.h"
+
+#include "common/utilities.h"
 
 namespace gl
 {
@@ -27,6 +26,11 @@ Renderbuffer::Renderbuffer(GLuint id, RenderbufferStorage *newStorage)
     mStorage(newStorage)
 {
     ASSERT(mStorage);
+}
+
+Renderbuffer::~Renderbuffer()
+{
+    SafeDelete(mStorage);
 }
 
 void Renderbuffer::setStorage(RenderbufferStorage *newStorage)
@@ -75,32 +79,32 @@ GLsizei Renderbuffer::getSamples() const
 
 GLuint Renderbuffer::getRedSize() const
 {
-    return gl::GetRedBits(getActualFormat());
+    return GetInternalFormatInfo(getActualFormat()).redBits;
 }
 
 GLuint Renderbuffer::getGreenSize() const
 {
-    return gl::GetGreenBits(getActualFormat());
+    return GetInternalFormatInfo(getActualFormat()).greenBits;
 }
 
 GLuint Renderbuffer::getBlueSize() const
 {
-    return gl::GetBlueBits(getActualFormat());
+    return GetInternalFormatInfo(getActualFormat()).blueBits;
 }
 
 GLuint Renderbuffer::getAlphaSize() const
 {
-    return gl::GetAlphaBits(getActualFormat());
+    return GetInternalFormatInfo(getActualFormat()).alphaBits;
 }
 
 GLuint Renderbuffer::getDepthSize() const
 {
-    return gl::GetDepthBits(getActualFormat());
+    return GetInternalFormatInfo(getActualFormat()).depthBits;
 }
 
 GLuint Renderbuffer::getStencilSize() const
 {
-    return gl::GetStencilBits(getActualFormat());
+    return GetInternalFormatInfo(getActualFormat()).stencilBits;
 }
 
 RenderbufferStorage::RenderbufferStorage() : mSerial(issueSerials(1))
@@ -117,11 +121,6 @@ RenderbufferStorage::~RenderbufferStorage()
 }
 
 rx::RenderTarget *RenderbufferStorage::getRenderTarget()
-{
-    return NULL;
-}
-
-rx::RenderTarget *RenderbufferStorage::getDepthStencil()
 {
     return NULL;
 }
@@ -156,7 +155,7 @@ unsigned int RenderbufferStorage::getSerial() const
     return mSerial;
 }
 
-unsigned int RenderbufferStorage::issueSerials(GLuint count)
+unsigned int RenderbufferStorage::issueSerials(unsigned int count)
 {
     unsigned int firstSerial = mCurrentSerial;
     mCurrentSerial += count;
@@ -247,7 +246,7 @@ DepthStencilbuffer::~DepthStencilbuffer()
     }
 }
 
-rx::RenderTarget *DepthStencilbuffer::getDepthStencil()
+rx::RenderTarget *DepthStencilbuffer::getRenderTarget()
 {
     return mDepthStencil;
 }

@@ -302,8 +302,9 @@ static int unpackControlTypes(QSizePolicy::ControlTypes controls, QSizePolicy::C
     applications, which may not be yours and hence not available for
     you to recompile. The Qt Plugin system makes it possible to create
     styles as plugins. Styles created as plugins are loaded as shared
-    objects at runtime by Qt itself. Please refer to the \l{plugins-howto.html}{Qt Plugin} documentation for more
-    information on how to go about creating a style plugin.
+    objects at runtime by Qt itself. Please refer to the \l{How to Create Qt Plugins}{Qt Plugin}
+    documentation for more information on how to go about creating a style
+    plugin.
 
     Compile your plugin and put it into Qt's \c plugins/styles
     directory. We now have a pluggable style that Qt can load

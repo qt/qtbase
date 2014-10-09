@@ -1892,26 +1892,23 @@ void QMessageBox::aboutQt(QWidget *parent, const QString &title)
         "<p>Qt licensed under our commercial license agreement is appropriate "
         "for development of proprietary/commercial software where you do not "
         "want to share any source code with third parties or otherwise cannot "
-        "comply with the terms of the GNU LGPL version 2.1 or GNU GPL version "
-        "3.0.</p>"
+        "comply with the terms of the GNU LGPL version 3 or GNU LGPL version 2.1.</p>"
+        "<p>Qt licensed under the GNU LGPL version 3 is appropriate for the "
+        "development of Qt applications provided you can comply with the terms "
+        "and conditions of the GNU LGPL version 3.</p>"
         "<p>Qt licensed under the GNU LGPL version 2.1 is appropriate for the "
         "development of Qt applications provided you can comply with the terms "
         "and conditions of the GNU LGPL version 2.1.</p>"
-        "<p>Qt licensed under the GNU General Public License version 3.0 is "
-        "appropriate for the development of Qt applications where you wish to "
-        "use such applications in combination with software subject to the "
-        "terms of the GNU GPL version 3.0 or where you are otherwise willing "
-        "to comply with the terms of the GNU GPL version 3.0.</p>"
-        "<p>Please see <a href=\"http://qt.digia.com/Product/Licensing/\">qt.digia.com/Product/Licensing</a> "
+        "<p>Please see <a href=\"http://%2/\">%2</a> "
         "for an overview of Qt licensing.</p>"
-        "<p>Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies) and other "
+        "<p>Copyright (C) %1 Digia Plc and/or its subsidiary(-ies) and other "
         "contributors.</p>"
         "<p>Qt and the Qt logo are trademarks of Digia Plc and/or its subsidiary(-ies).</p>"
-        "<p>Qt is developed as an open source project on "
-        "<a href=\"http://qt-project.org/\">qt-project.org</a>.</p>"
-        "<p>Qt is a Digia product. See <a href=\"http://qt.digia.com/\">qt.digia.com</a> "
+        "<p>Qt is a Digia product developed as an open source project. See <a href=\"http://%3/\">%3</a> "
         "for more information.</p>"
-        );
+        ).arg(QStringLiteral("2014"),
+              QStringLiteral("qt.io/licensing"),
+              QStringLiteral("qt.io"));
     QMessageBox *msgBox = new QMessageBox(parent);
     msgBox->setAttribute(Qt::WA_DeleteOnClose);
     msgBox->setWindowTitle(title.isEmpty() ? tr("About Qt") : title);

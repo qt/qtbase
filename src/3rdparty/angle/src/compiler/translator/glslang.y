@@ -209,38 +209,7 @@ identifier
 variable_identifier
     : IDENTIFIER {
         // The symbol table search was done in the lexical phase
-        const TSymbol *symbol = $1.symbol;
-        const TVariable *variable = 0;
-
-        if (!symbol)
-        {
-            context->error(@1, "undeclared identifier", $1.string->c_str());
-            context->recover();
-        }
-        else if (!symbol->isVariable())
-        {
-            context->error(@1, "variable expected", $1.string->c_str());
-            context->recover();
-        }
-        else
-        {
-            variable = static_cast<const TVariable*>(symbol);
-
-            if (context->symbolTable.findBuiltIn(variable->getName(), context->shaderVersion) &&
-                !variable->getExtension().empty() &&
-                context->extensionErrorCheck(@1, variable->getExtension()))
-            {
-                context->recover();
-            }
-        }
-
-        if (!variable)
-        {
-            TType type(EbtFloat, EbpUndefined);
-            TVariable *fakeVariable = new TVariable($1.string, type);
-            context->symbolTable.declare(fakeVariable);
-            variable = fakeVariable;
-        }
+        const TVariable *variable = context->getNamedVariable(@1, $1.string, $1.symbol);
 
         if (variable->getType().getQualifier() == EvqConst)
         {
@@ -816,9 +785,10 @@ declaration
         context->symbolTable.pop();
     }
     | init_declarator_list SEMICOLON {
-        if ($1.intermAggregate)
-            $1.intermAggregate->setOp(EOpDeclaration);
-        $$ = $1.intermAggregate;
+        TIntermAggregate *aggNode = $1.intermAggregate;
+        if (aggNode && aggNode->getOp() == EOpNull)
+            aggNode->setOp(EOpDeclaration);
+        $$ = aggNode;
     }
     | PRECISION precision_qualifier type_specifier_no_prec SEMICOLON {
         if (($2 == EbpHigh) && (context->shaderType == GL_FRAGMENT_SHADER) && !context->fragmentPrecisionHigh) {
@@ -1102,22 +1072,8 @@ single_declaration
         $$.intermAggregate = context->parseSingleInitDeclaration($$.type, @2, *$2.string, @3, $4);
     }
     | INVARIANT IDENTIFIER {
-        VERTEX_ONLY("invariant declaration", @1);
-        if (context->globalErrorCheck(@1, context->symbolTable.atGlobalLevel(), "invariant varying"))
-            context->recover();
-        $$.type.setBasic(EbtInvariant, EvqInvariantVaryingOut, @2);
-        if (!$2.symbol)
-        {
-            context->error(@2, "undeclared identifier declared as invariant", $2.string->c_str());
-            context->recover();
-            
-            $$.intermAggregate = 0;
-        }
-        else
-        {
-            TIntermSymbol *symbol = context->intermediate.addSymbol(0, *$2.string, TType($$.type), @2);
-            $$.intermAggregate = context->intermediate.makeAggregate(symbol, @2);
-        }
+        // $$.type is not used in invariant declarations.
+        $$.intermAggregate = context->parseInvariantDeclaration(@1, @2, $2.string, $2.symbol);
     }
     ;
 

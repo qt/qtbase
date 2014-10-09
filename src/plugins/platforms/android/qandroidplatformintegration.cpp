@@ -164,9 +164,9 @@ QAndroidPlatformIntegration::QAndroidPlatformIntegration(const QStringList &para
 bool QAndroidPlatformIntegration::needsBasicRenderloopWorkaround()
 {
     static bool needsWorkaround =
-            QtAndroid::deviceName().compare(QStringLiteral("samsung SM-T211"), Qt::CaseInsensitive) == 0
-            || QtAndroid::deviceName().compare(QStringLiteral("samsung SM-T210"), Qt::CaseInsensitive) == 0
-            || QtAndroid::deviceName().compare(QStringLiteral("samsung SM-T215"), Qt::CaseInsensitive) == 0;
+            QtAndroid::deviceName().compare(QLatin1String("samsung SM-T211"), Qt::CaseInsensitive) == 0
+            || QtAndroid::deviceName().compare(QLatin1String("samsung SM-T210"), Qt::CaseInsensitive) == 0
+            || QtAndroid::deviceName().compare(QLatin1String("samsung SM-T215"), Qt::CaseInsensitive) == 0;
     return needsWorkaround;
 }
 

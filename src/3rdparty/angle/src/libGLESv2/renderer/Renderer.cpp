@@ -1,4 +1,3 @@
-#include "precompiled.h"
 //
 // Copyright (c) 2012-2014 The ANGLE Project Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
@@ -7,12 +6,10 @@
 
 // Renderer.cpp: Implements EGL dependencies for creating and destroying Renderer instances.
 
-#include <EGL/eglext.h>
 #include "libGLESv2/main.h"
 #include "libGLESv2/Program.h"
 #include "libGLESv2/renderer/Renderer.h"
 #include "common/utilities.h"
-#include "third_party/trace_event/trace_event.h"
 #include "libGLESv2/Shader.h"
 
 #if defined (ANGLE_ENABLE_D3D9)
@@ -23,10 +20,16 @@
 #include "libGLESv2/renderer/d3d/d3d11/Renderer11.h"
 #endif // ANGLE_ENABLE_D3D11
 
+#if defined (ANGLE_TEST_CONFIG)
+#define ANGLE_DEFAULT_D3D11 1
+#endif
+
 #if !defined(ANGLE_DEFAULT_D3D11)
 // Enables use of the Direct3D 11 API for a default display, when available
 #define ANGLE_DEFAULT_D3D11 0
 #endif
+
+#include <EGL/eglext.h>
 
 namespace rx
 {
@@ -40,7 +43,6 @@ Renderer::Renderer(egl::Display *display)
 
 Renderer::~Renderer()
 {
-    gl::Shader::releaseCompiler();
 }
 
 const gl::Caps &Renderer::getRendererCaps() const

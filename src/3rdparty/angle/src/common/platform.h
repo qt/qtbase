@@ -52,6 +52,9 @@
 
 #   if defined(ANGLE_ENABLE_D3D9) || defined(ANGLE_ENABLE_PERF)
 #       include <d3d9.h>
+#      if !defined(COMPILER_IMPLEMENTATION)
+#       include <d3dcompiler.h>
+#      endif
 #   endif
 
 #   if defined(ANGLE_ENABLE_D3D11)
@@ -61,16 +64,25 @@
 #       include <dxgi.h>
 #      if _MSC_VER >= 1700
 #       include <dxgi1_2.h>
+#      endif
+#      if !defined(COMPILER_IMPLEMENTATION)
 #       include <d3dcompiler.h>
+#      endif
+#      if defined(__MINGW32__)
+typedef enum D3D11_MAP_FLAG
+{
+    D3D11_MAP_FLAG_DO_NOT_WAIT = 0x100000L
+} D3D11_MAP_FLAG;
+typedef struct D3D11_QUERY_DATA_SO_STATISTICS
+{
+    UINT64 NumPrimitivesWritten;
+    UINT64 PrimitivesStorageNeeded;
+} D3D11_QUERY_DATA_SO_STATISTICS;
 #      endif
 #   endif
 
 #   undef near
 #   undef far
-#   undef NEAR
-#   define NEAR
-#   undef FAR
-#   define FAR
 #endif
 
 #endif // COMMON_PLATFORM_H_

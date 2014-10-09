@@ -429,26 +429,18 @@ void tst_QFiledialog::completer_data()
     QTest::addColumn<QString>("input");
     QTest::addColumn<int>("expected");
 
-    QTest::newRow("r, 10")   << "" << "r"   << 10;
-    QTest::newRow("x, 0")    << "" << "x"   << 0;
-    QTest::newRow("../, -1") << "" << "../" << -1;
+    const QString rootPath = QDir::rootPath();
 
-    QTest::newRow("goto root")     << QString()        << QDir::rootPath() << -1;
-    QTest::newRow("start at root") << QDir::rootPath() << QString()        << -1;
+    QTest::newRow("r, 10")   << QString() << "r"   << 10;
+    QTest::newRow("x, 0")    << QString() << "x"   << 0;
+    QTest::newRow("../, -1") << QString() << "../" << -1;
 
-    QDir root = QDir::root();
-    QStringList list = root.entryList();
-    QString folder;
-    for (int i = 0; i < list.count(); ++i) {
-        if (list[i].at(0) == QChar('.'))
-            continue;
-        QFileInfo info(QDir::rootPath() + list[i]);
-        if (info.isDir()) {
-            folder = QDir::rootPath() + list[i];
-            break;
-        }
-    }
+    QTest::newRow("goto root")     << QString()        << rootPath << -1;
+    QTest::newRow("start at root") << rootPath << QString()        << -1;
 
+    QFileInfoList list = QDir::root().entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot);
+    QVERIFY(!list.isEmpty());
+    const QString folder = list.first().absoluteFilePath();
     QTest::newRow("start at one below root r") << folder << "r" << -1;
     QTest::newRow("start at one below root ../") << folder << "../" << -1;
 }
@@ -457,27 +449,35 @@ void tst_QFiledialog::completer()
 {
     typedef QSharedPointer<QTemporaryFile> TemporaryFilePtr;
 
+#ifdef Q_OS_WIN
+    static const Qt::CaseSensitivity caseSensitivity = Qt::CaseInsensitive;
+#else
+    static const Qt::CaseSensitivity caseSensitivity = Qt::CaseSensitive;
+#endif
+
     QFETCH(QString, input);
     QFETCH(QString, startPath);
     QFETCH(int, expected);
 
-    QTemporaryDir tempDir;
-    QVERIFY(tempDir.isValid());
-
-    const QString tempPath = tempDir.path();
-    startPath = startPath.isEmpty() ? tempPath : QDir::cleanPath(startPath);
-
     // make temp dir and files
+    QScopedPointer<QTemporaryDir> tempDir;
     QList<TemporaryFilePtr> files;
-    QT_TRY {
-    for (int i = 0; i < 10; ++i) {
-        TemporaryFilePtr file(new QTemporaryFile(tempPath + QStringLiteral("/rXXXXXX")));
-        QVERIFY(file->open());
-        files.append(file);
+
+    if (startPath.isEmpty()) {
+        tempDir.reset(new QTemporaryDir);
+        QVERIFY(tempDir->isValid());
+        startPath = tempDir->path();
+        for (int i = 0; i < 10; ++i) {
+            TemporaryFilePtr file(new QTemporaryFile(startPath + QStringLiteral("/rXXXXXX")));
+            QVERIFY(file->open());
+            files.append(file);
+        }
     }
 
     // ### flesh this out more
-    QNonNativeFileDialog fd(0,QString("Test it"),startPath);
+    QNonNativeFileDialog fd(0, QLatin1String(QTest::currentTestFunction())
+                            + QStringLiteral(" \"") + QLatin1String(QTest::currentDataTag())
+                            + QLatin1Char('"'), startPath);
     fd.setOptions(QFileDialog::DontUseNativeDialog);
     fd.show();
     QVERIFY(QTest::qWaitForWindowExposed(&fd));
@@ -509,10 +509,20 @@ void tst_QFiledialog::completer()
     QCOMPARE(model->index(fd.directory().path()), model->index(startPath));
 
     if (input.isEmpty()) {
-        QModelIndex r = model->index(model->rootPath());
-        QVERIFY(model->rowCount(r) > 0);
-        QModelIndex idx = model->index(0, 0, r);
-        input = idx.data().toString().at(0);
+        // Try to find a suitable directory under root that does not
+        // start with 'C' to avoid issues with completing to "C:" drives on Windows.
+        const QString rootPath = model->rootPath();
+        const QChar rootPathFirstChar = rootPath.at(0).toLower();
+        QModelIndex rootIndex = model->index(rootPath);
+        const int rowCount = model->rowCount(rootIndex);
+        QVERIFY(rowCount > 0);
+        for (int row = 0; row < rowCount && input.isEmpty(); ++row) {
+            const QString name = model->index(row, 0, rootIndex).data().toString();
+            const QChar firstChar = name.at(0);
+            if (firstChar.isLetter() && firstChar.toLower() != rootPathFirstChar)
+                input = firstChar;
+        }
+        QVERIFY2(!input.isEmpty(), "Unable to find a suitable input directory");
     }
 
     // press 'keys' for the input
@@ -525,7 +535,7 @@ void tst_QFiledialog::completer()
         if (!fullPath.endsWith(QLatin1Char('/')))
             fullPath.append(QLatin1Char('/'));
         fullPath.append(input);
-        if (input.startsWith(QDir::rootPath())) {
+        if (input.startsWith(QDir::rootPath(), caseSensitivity)) {
             fullPath = input;
             input.clear();
         }
@@ -536,29 +546,13 @@ void tst_QFiledialog::completer()
         expected = 0;
         if (input.startsWith(".."))
             input.clear();
-        for (int ii = 0; ii < expectedFiles.count(); ++ii) {
-#if defined(Q_OS_WIN)
-            if (expectedFiles.at(ii).startsWith(input,Qt::CaseInsensitive))
-#else
-            if (expectedFiles.at(ii).startsWith(input))
-#endif
+        foreach (const QString &expectedFile, expectedFiles) {
+            if (expectedFile.startsWith(input, caseSensitivity))
                 ++expected;
         }
     }
 
-    QTest::qWait(1000);
-    if (cModel->rowCount() != expected) {
-        for (int i = 0; i < cModel->rowCount(); ++i) {
-            QString file = cModel->index(i, 0).data().toString();
-            expectedFiles.removeAll(file);
-        }
-        //qDebug() << expectedFiles;
-    }
-
     QTRY_COMPARE(cModel->rowCount(), expected);
-    } QT_CATCH(...) {
-        QT_RETHROW;
-    }
 }
 
 void tst_QFiledialog::completer_up()

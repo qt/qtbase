@@ -17,6 +17,8 @@
 namespace gl
 {
 
+typedef std::set<GLuint> SupportedSampleSet;
+
 struct TextureCaps
 {
     TextureCaps();
@@ -30,7 +32,14 @@ struct TextureCaps
     // Support for being used as a framebuffer attachment or renderbuffer format
     bool renderable;
 
-    std::set<GLuint> sampleCounts;
+    SupportedSampleSet sampleCounts;
+
+    // Get the maximum number of samples supported
+    GLuint getMaxSamples() const;
+
+    // Get the number of supported samples that is at least as many as requested.  Returns 0 if
+    // there are no sample counts available
+    GLuint getNearestSamples(GLuint requestedSamples) const;
 };
 
 class TextureCapsMap
@@ -68,6 +77,7 @@ struct Extensions
     // GL_OES_texture_float, GL_OES_texture_float_linear
     // GL_EXT_texture_rg
     // GL_EXT_texture_compression_dxt1, GL_ANGLE_texture_compression_dxt3, GL_ANGLE_texture_compression_dxt5
+    // GL_EXT_sRGB
     // GL_ANGLE_depth_texture
     // GL_EXT_color_buffer_float
     void setTextureExtensionSupport(const TextureCapsMap &textureCaps);
@@ -166,6 +176,7 @@ struct Extensions
 
     // GL_ANGLE_framebuffer_multisample
     bool framebufferMultisample;
+    GLuint maxSamples;
 
     // GL_ANGLE_instanced_arrays
     bool instancedArrays;
@@ -215,6 +226,46 @@ struct Caps
     GLfloat minAliasedLineWidth;
     GLfloat maxAliasedLineWidth;
 
+    // Table 6.29, implementation dependent values (cont.)
+    GLuint maxElementsIndices;
+    GLuint maxElementsVertices;
+    std::vector<GLenum> compressedTextureFormats;
+    std::vector<GLenum> programBinaryFormats;
+    std::vector<GLenum> shaderBinaryFormats;
+    GLuint64 maxServerWaitTimeout;
+
+    // Table 6.31, implementation dependent vertex shader limits
+    GLuint maxVertexAttributes;
+    GLuint maxVertexUniformComponents;
+    GLuint maxVertexUniformVectors;
+    GLuint maxVertexUniformBlocks;
+    GLuint maxVertexOutputComponents;
+    GLuint maxVertexTextureImageUnits;
+
+    // Table 6.32, implementation dependent fragment shader limits
+    GLuint maxFragmentUniformComponents;
+    GLuint maxFragmentUniformVectors;
+    GLuint maxFragmentUniformBlocks;
+    GLuint maxFragmentInputComponents;
+    GLuint maxTextureImageUnits;
+    GLint minProgramTexelOffset;
+    GLint maxProgramTexelOffset;
+
+    // Table 6.33, implementation dependent aggregate shader limits
+    GLuint maxUniformBufferBindings;
+    GLuint64 maxUniformBlockSize;
+    GLuint uniformBufferOffsetAlignment;
+    GLuint maxCombinedUniformBlocks;
+    GLuint64 maxCombinedVertexUniformComponents;
+    GLuint64 maxCombinedFragmentUniformComponents;
+    GLuint maxVaryingComponents;
+    GLuint maxVaryingVectors;
+    GLuint maxCombinedTextureImageUnits;
+
+    // Table 6.34, implementation dependent transform feedback limits
+    GLuint maxTransformFeedbackInterleavedComponents;
+    GLuint maxTransformFeedbackSeparateAttributes;
+    GLuint maxTransformFeedbackSeparateComponents;
 };
 
 }

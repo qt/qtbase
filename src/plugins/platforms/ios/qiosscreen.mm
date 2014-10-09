@@ -187,8 +187,8 @@ QIOSScreen::QIOSScreen(UIScreen *screen)
     if (screen == [UIScreen mainScreen]) {
         QString deviceIdentifier = deviceModelIdentifier();
 
-        if (deviceIdentifier == QStringLiteral("iPhone2,1") /* iPhone 3GS */
-            || deviceIdentifier == QStringLiteral("iPod3,1") /* iPod touch 3G */) {
+        if (deviceIdentifier == QLatin1String("iPhone2,1") /* iPhone 3GS */
+            || deviceIdentifier == QLatin1String("iPod3,1") /* iPod touch 3G */) {
             m_depth = 18;
         } else {
             m_depth = 24;
@@ -225,8 +225,6 @@ QIOSScreen::QIOSScreen(UIScreen *screen)
         }
     }
 
-    connect(qGuiApp, &QGuiApplication::focusWindowChanged, this, &QIOSScreen::updateStatusBarVisibility);
-
     updateProperties();
 }
 
@@ -251,44 +249,6 @@ void QIOSScreen::updateProperties()
         m_physicalSize = QSizeF(m_geometry.size()) / m_unscaledDpi * millimetersPerInch;
 
         QWindowSystemInterface::handleScreenGeometryChange(screen(), m_geometry, m_availableGeometry);
-    }
-}
-
-void QIOSScreen::updateStatusBarVisibility()
-{
-    if (!isQtApplication())
-        return;
-
-    QWindow *focusWindow = QGuiApplication::focusWindow();
-
-    // If we don't have a focus window we leave the status
-    // bar as is, so that the user can activate a new window
-    // with the same window state without the status bar jumping
-    // back and forth.
-    if (!focusWindow)
-        return;
-
-    UIView *view = reinterpret_cast<UIView *>(focusWindow->handle()->winId());
-    QIOSViewController *viewController = static_cast<QIOSViewController *>(view.viewController);
-
-    bool currentStatusBarVisibility = [UIApplication sharedApplication].statusBarHidden;
-    if (viewController.prefersStatusBarHidden == currentStatusBarVisibility)
-        return;
-
-#if QT_IOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__IPHONE_7_0)
-    if (QSysInfo::MacintoshVersion >= QSysInfo::MV_IOS_7_0) {
-        [viewController setNeedsStatusBarAppearanceUpdate];
-        dispatch_async(dispatch_get_main_queue(), ^{
-            updateProperties();
-        });
-    } else
-#endif
-    {
-        [[UIApplication sharedApplication]
-            setStatusBarHidden:[viewController prefersStatusBarHidden]
-            withAnimation:UIStatusBarAnimationNone];
-
-        updateProperties();
     }
 }
 

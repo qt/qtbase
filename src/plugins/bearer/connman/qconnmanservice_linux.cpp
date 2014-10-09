@@ -338,7 +338,7 @@ void QConnmanServiceInterface::connectNotify(const QMetaMethod &signal)
 void QConnmanServiceInterface::changedProperty(const QString &name, const QDBusVariant &value)
 {
     propertiesCacheMap[name] = value.variant();
-    if (name == QStringLiteral("State"))
+    if (name == QLatin1String("State"))
         Q_EMIT stateChanged(value.variant().toString());
 }
 

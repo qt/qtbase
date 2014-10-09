@@ -1,4 +1,3 @@
-#include "precompiled.h"
 //
 // Copyright (c) 2002-2013 The ANGLE Project Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
@@ -93,13 +92,9 @@ GLuint ResourceManager::createShader(GLenum type)
 {
     GLuint handle = mProgramShaderHandleAllocator.allocate();
 
-    if (type == GL_VERTEX_SHADER)
+    if (type == GL_VERTEX_SHADER || type == GL_FRAGMENT_SHADER)
     {
-        mShaderMap[handle] = new VertexShader(this, mRenderer, handle);
-    }
-    else if (type == GL_FRAGMENT_SHADER)
-    {
-        mShaderMap[handle] = new FragmentShader(this, mRenderer, handle);
+        mShaderMap[handle] = new Shader(this, mRenderer->createShader(type), type, handle);
     }
     else UNREACHABLE();
 
@@ -151,7 +146,9 @@ GLuint ResourceManager::createFenceSync()
 {
     GLuint handle = mFenceSyncHandleAllocator.allocate();
 
-    mFenceSyncMap[handle] = new FenceSync(mRenderer, handle);
+    FenceSync *fenceSync = new FenceSync(mRenderer, handle);
+    fenceSync->addRef();
+    mFenceSyncMap[handle] = fenceSync;
 
     return handle;
 }
@@ -369,27 +366,27 @@ void ResourceManager::checkBufferAllocation(unsigned int buffer)
     }
 }
 
-void ResourceManager::checkTextureAllocation(GLuint texture, TextureType type)
+void ResourceManager::checkTextureAllocation(GLuint texture, GLenum type)
 {
     if (!getTexture(texture) && texture != 0)
     {
         Texture *textureObject;
 
-        if (type == TEXTURE_2D)
+        if (type == GL_TEXTURE_2D)
         {
-            textureObject = new Texture2D(mRenderer->createTexture2D(), texture);
+            textureObject = new Texture2D(mRenderer->createTexture(GL_TEXTURE_2D), texture);
         }
-        else if (type == TEXTURE_CUBE)
+        else if (type == GL_TEXTURE_CUBE_MAP)
         {
-            textureObject = new TextureCubeMap(mRenderer->createTextureCube(), texture);
+            textureObject = new TextureCubeMap(mRenderer->createTexture(GL_TEXTURE_CUBE_MAP), texture);
         }
-        else if (type == TEXTURE_3D)
+        else if (type == GL_TEXTURE_3D)
         {
-            textureObject = new Texture3D(mRenderer->createTexture3D(), texture);
+            textureObject = new Texture3D(mRenderer->createTexture(GL_TEXTURE_3D), texture);
         }
-        else if (type == TEXTURE_2D_ARRAY)
+        else if (type == GL_TEXTURE_2D_ARRAY)
         {
-            textureObject = new Texture2DArray(mRenderer->createTexture2DArray(), texture);
+            textureObject = new Texture2DArray(mRenderer->createTexture(GL_TEXTURE_2D_ARRAY), texture);
         }
         else
         {

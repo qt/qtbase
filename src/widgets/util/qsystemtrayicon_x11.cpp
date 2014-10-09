@@ -326,7 +326,7 @@ bool QSystemTrayIconPrivate::isSystemTrayAvailable_sys()
 
     // no QPlatformSystemTrayIcon so fall back to default xcb platform behavior
     const QString platform = QGuiApplication::platformName();
-    if (platform.compare(QStringLiteral("xcb"), Qt::CaseInsensitive) == 0)
+    if (platform.compare(QLatin1String("xcb"), Qt::CaseInsensitive) == 0)
        return locateSystemTray();
     return false;
 }

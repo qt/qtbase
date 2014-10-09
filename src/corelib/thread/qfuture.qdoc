@@ -89,7 +89,7 @@
 
 /*! \fn QFuture::QFuture()
 
-    Constructs an empty future.
+    Constructs an empty, canceled future.
 */
 
 /*! \fn QFuture::QFuture(const QFuture &other)

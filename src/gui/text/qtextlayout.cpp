@@ -92,13 +92,10 @@ QT_BEGIN_NAMESPACE
     \reentrant
 
     \brief The QTextInlineObject class represents an inline object in
-    a QTextLayout.
+    a QAbstractTextDocumentLayout and its implementations.
     \inmodule QtGui
 
     \ingroup richtext-processing
-
-    This class is only used if the text layout is used to lay out
-    parts of a QTextDocument.
 
     Normally, you do not need to create a QTextInlineObject. It is
     used by QAbstractTextDocumentLayout to handle inline objects when
@@ -107,8 +104,8 @@ QT_BEGIN_NAMESPACE
     The inline object has various attributes that can be set, for
     example using, setWidth(), setAscent(), and setDescent(). The
     rectangle it occupies is given by rect(), and its direction by
-    isRightToLeft(). Its position in the text layout is given by at(),
-    and its format is given by format().
+    textDirection(). Its position in the text layout is given by
+    textPosition(), and its format is given by format().
 */
 
 /*!
@@ -2030,11 +2027,38 @@ static void setPenAndDrawBackground(QPainter *p, const QPen &defaultPen, const Q
 }
 
 #if !defined(QT_NO_RAWFONT)
-static QGlyphRun glyphRunWithInfo(QFontEngine *fontEngine, const QGlyphLayout &glyphLayout,
-                                  const QPointF &pos, const QGlyphRun::GlyphRunFlags &flags,
-                                  const QFixed &selectionX, const QFixed &selectionWidth)
+static QGlyphRun glyphRunWithInfo(QFontEngine *fontEngine,
+                                  const QGlyphLayout &glyphLayout,
+                                  const QPointF &pos,
+                                  const QGlyphRun::GlyphRunFlags &flags,
+                                  const QFixed &selectionX,
+                                  const QFixed &selectionWidth,
+                                  int glyphsStart,
+                                  int glyphsEnd,
+                                  unsigned short *logClusters,
+                                  int textPosition,
+                                  int textLength)
 {
+    Q_ASSERT(logClusters != 0);
+
     QGlyphRun glyphRun;
+
+    QGlyphRunPrivate *d = QGlyphRunPrivate::get(glyphRun);
+
+    int rangeStart = textPosition;
+    while (*logClusters != glyphsStart && rangeStart < textPosition + textLength) {
+        ++logClusters;
+        ++rangeStart;
+    }
+
+    int rangeEnd = rangeStart;
+    while (*logClusters != glyphsEnd && rangeEnd < textPosition + textLength) {
+        ++logClusters;
+        ++rangeEnd;
+    }
+
+    d->textRangeStart = rangeStart;
+    d->textRangeEnd = rangeEnd;
 
     // Make a font for this particular engine
     QRawFont font;
@@ -2222,7 +2246,16 @@ QList<QGlyphRun> QTextLine::glyphRuns(int from, int length) const
                         subFlags |= QGlyphRun::SplitLigature;
 
                     glyphRuns.append(glyphRunWithInfo(multiFontEngine->engine(which),
-                                                      subLayout, pos, subFlags, x, width));
+                                                      subLayout,
+                                                      pos,
+                                                      subFlags,
+                                                      x,
+                                                      width,
+                                                      glyphsStart + start,
+                                                      glyphsStart + end,
+                                                      logClusters,
+                                                      iterator.itemStart,
+                                                      iterator.itemLength));
                     for (int i = 0; i < subLayout.numGlyphs; ++i)
                         pos.rx() += subLayout.advances[i].toReal();
 
@@ -2241,14 +2274,32 @@ QList<QGlyphRun> QTextLine::glyphRuns(int from, int length) const
                     subFlags |= QGlyphRun::SplitLigature;
 
                 QGlyphRun glyphRun = glyphRunWithInfo(multiFontEngine->engine(which),
-                                                      subLayout, pos, subFlags, x, width);
+                                                      subLayout,
+                                                      pos,
+                                                      subFlags,
+                                                      x,
+                                                      width,
+                                                      glyphsStart + start,
+                                                      glyphsStart + end,
+                                                      logClusters,
+                                                      iterator.itemStart,
+                                                      iterator.itemLength);
                 if (!glyphRun.isEmpty())
                     glyphRuns.append(glyphRun);
             } else {
                 if (startsInsideLigature || endsInsideLigature)
                     flags |= QGlyphRun::SplitLigature;
-                QGlyphRun glyphRun = glyphRunWithInfo(mainFontEngine, glyphLayout, pos, flags, x,
-                                                      width);
+                QGlyphRun glyphRun = glyphRunWithInfo(mainFontEngine,
+                                                      glyphLayout,
+                                                      pos,
+                                                      flags,
+                                                      x,
+                                                      width,
+                                                      glyphsStart,
+                                                      glyphsEnd,
+                                                      logClusters,
+                                                      iterator.itemStart,
+                                                      iterator.itemLength);
                 if (!glyphRun.isEmpty())
                     glyphRuns.append(glyphRun);
             }

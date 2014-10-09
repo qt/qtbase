@@ -93,6 +93,7 @@
 #include <qmath.h>
 #include <QtWidgets/qgraphicsproxywidget.h>
 #include <QtWidgets/qgraphicsview.h>
+#include <QtCore/qvariant.h>
 #include <private/qstylehelper_p.h>
 #include <private/qstyleanimation_p.h>
 #include <qpa/qplatformfontdatabase.h>
@@ -1728,7 +1729,7 @@ QMacStylePrivate::QMacStylePrivate()
 
 QMacStylePrivate::~QMacStylePrivate()
 {
-    Q_FOREACH (NSView *b, buttons)
+    Q_FOREACH (NSView *b, cocoaControls)
         [b release];
 }
 
@@ -1749,41 +1750,92 @@ ThemeDrawState QMacStylePrivate::getDrawState(QStyle::State flags)
     return tds;
 }
 
-NSView *QMacStylePrivate::buttonOfKind(ThemeButtonKind kind) const
+static QCocoaWidget cocoaWidgetFromHIThemeButtonKind(ThemeButtonKind kind)
 {
-    NSView *bv = buttons[kind];
+    QCocoaWidget w;
+
+    switch (kind) {
+    case kThemePopupButton:
+    case kThemePopupButtonSmall:
+    case kThemePopupButtonMini:
+        w.first = QCocoaPopupButton;
+        break;
+    case kThemeComboBox:
+        w.first = QCocoaComboBox;
+        break;
+    case kThemeArrowButton:
+        w.first = QCocoaArrowButton;
+        break;
+    case kThemeCheckBox:
+    case kThemeCheckBoxSmall:
+    case kThemeCheckBoxMini:
+        w.first = QCocoaCheckBox;
+        break;
+    case kThemeRadioButton:
+    case kThemeRadioButtonSmall:
+    case kThemeRadioButtonMini:
+        w.first = QCocoaRadioButton;
+        break;
+    case kThemePushButton:
+    case kThemePushButtonSmall:
+    case kThemePushButtonMini:
+        w.first = QCocoaPushButton;
+        break;
+    default:
+        break;
+    }
+
+    switch (kind) {
+    case kThemePushButtonSmall:
+    case kThemePopupButtonSmall:
+    case kThemeCheckBoxSmall:
+    case kThemeRadioButtonSmall:
+        w.second = QAquaSizeSmall;
+        break;
+    case kThemePushButtonMini:
+    case kThemePopupButtonMini:
+    case kThemeCheckBoxMini:
+    case kThemeRadioButtonMini:
+        w.second = QAquaSizeMini;
+        break;
+    default:
+        w.second = QAquaSizeLarge;
+        break;
+    }
+
+    return w;
+}
+
+NSView *QMacStylePrivate::cocoaControl(QCocoaWidget widget, QPoint *offset) const
+{
+    NSView *bv = cocoaControls[widget];
     if (!bv) {
-        if (kind == kThemePopupButton)
+
+        if (widget.first == QCocoaPopupButton)
             bv = [[NSPopUpButton alloc] init];
-        else if (kind == kThemeComboBox)
+        else if (widget.first == QCocoaComboBox)
             bv = [[NSComboBox alloc] init];
         else
             bv = [[NSButton alloc] init];
 
-        switch (kind) {
-        case kThemeArrowButton: {
+        switch (widget.first) {
+        case QCocoaArrowButton: {
             NSButton *bc = (NSButton *)bv;
             bc.buttonType = NSOnOffButton;
             bc.bezelStyle = NSDisclosureBezelStyle;
             break;
         }
-        case kThemeCheckBox:
-        case kThemeCheckBoxSmall:
-        case kThemeCheckBoxMini: {
+        case QCocoaCheckBox: {
             NSButton *bc = (NSButton *)bv;
             bc.buttonType = NSSwitchButton;
             break;
         }
-        case kThemeRadioButton:
-        case kThemeRadioButtonSmall:
-        case kThemeRadioButtonMini: {
+        case QCocoaRadioButton: {
             NSButton *bc = (NSButton *)bv;
             bc.buttonType = NSRadioButton;
             break;
         }
-        case kThemePushButton:
-        case kThemePushButtonSmall:
-        case kThemePushButtonMini: {
+        case QCocoaPushButton: {
             NSButton *bc = (NSButton *)bv;
             bc.buttonType = NSMomentaryPushButton;
             bc.bezelStyle = NSRoundedBezelStyle;
@@ -1793,23 +1845,44 @@ NSView *QMacStylePrivate::buttonOfKind(ThemeButtonKind kind) const
             break;
         }
 
-//        if (kind == kThemePushButtonSmall
-//            || kind == kThemePopupButtonSmall
-//            || kind == kThemeCheckBoxSmall
-//            || kind == kThemeRadioButtonSmall)
-//            bc.controlSize = NSSmallControlSize;
-//        else if (kind == kThemePushButtonMini
-//                 || kind == kThemePopupButtonMini
-//                 || kind == kThemeCheckBoxMini
-//                 || kind == kThemeRadioButtonMini)
-//            bc.controlSize = NSMiniControlSize;
-
         if ([bv isKindOfClass:[NSButton class]]) {
             NSButton *bc = (NSButton *)bv;
             bc.title = nil;
         }
 
-        const_cast<QMacStylePrivate *>(this)->buttons.insert(kind, bv);
+        if ([bv isKindOfClass:[NSControl class]]) {
+            NSCell *bcell = [(NSControl *)bv cell];
+            switch (widget.second) {
+            case QAquaSizeSmall:
+                bcell.controlSize = NSSmallControlSize;
+                break;
+            case QAquaSizeMini:
+                bcell.controlSize = NSMiniControlSize;
+                break;
+            default:
+                break;
+            }
+        }
+
+        const_cast<QMacStylePrivate *>(this)->cocoaControls.insert(widget, bv);
+    }
+
+    if (offset) {
+        if (widget == QCocoaWidget(QCocoaRadioButton, QAquaSizeLarge))
+            offset->setY(2);
+        else if (widget == QCocoaWidget(QCocoaRadioButton, QAquaSizeSmall))
+            *offset = QPoint(-1, 2);
+        else if (widget == QCocoaWidget(QCocoaRadioButton, QAquaSizeMini))
+            offset->setY(2);
+        else if (widget == QCocoaWidget(QCocoaPopupButton, QAquaSizeSmall)
+                 || widget == QCocoaWidget(QCocoaCheckBox, QAquaSizeLarge))
+            offset->setY(1);
+        else if (widget == QCocoaWidget(QCocoaCheckBox, QAquaSizeSmall))
+            offset->setX(-1);
+        else if (widget == QCocoaWidget(QCocoaCheckBox, QAquaSizeMini))
+            *offset = QPoint(7, 5);
+        else if (widget == QCocoaWidget(QCocoaPopupButton, QAquaSizeMini))
+            *offset = QPoint(2, -1);
     }
 
     return bv;
@@ -1827,8 +1900,8 @@ void QMacStylePrivate::drawNSViewInRect(NSView *view, const QRect &qtRect, QPain
     CGRect rect = CGRectMake(qtRect.x() + 1, qtRect.y(), qtRect.width(), qtRect.height());
 
     [backingStoreNSView addSubview:view];
-    view.frame = rect;
-    [view drawRect:rect];
+    view.frame = NSRectFromCGRect(rect);
+    [view drawRect:NSRectFromCGRect(rect)];
     [view removeFromSuperviewWithoutNeedingDisplay];
 
     [NSGraphicsContext restoreGraphicsState];
@@ -1928,14 +2001,20 @@ void QMacStylePrivate::drawColorlessButton(const HIRect &macRect, HIThemeButtonD
             }
             pm = QPixmap::fromImage(image);
         } else if ((usingYosemiteOrLater && combo && !editableCombo) || button) {
-            NSButton *bc = (NSButton *)buttonOfKind(bdi->kind);
+            QPoint offset;
+            NSButton *bc = (NSButton *)cocoaControl(cocoaWidgetFromHIThemeButtonKind(bdi->kind), &offset);
             [bc highlight:pressed];
             bc.enabled = bdi->state != kThemeStateUnavailable && bdi->state != kThemeStateUnavailableInactive;
+            bc.allowsMixedState = YES;
             bc.state = bdi->value == kThemeButtonOn ? NSOnState :
                        bdi->value == kThemeButtonMixed ? NSMixedState : NSOffState;
-            p->translate(0, 1);
-            drawNSViewInRect(bc, opt->rect, p);
-            p->translate(0, -1);
+            // The view frame may differ from what we pass to HITheme
+            QRect rect = opt->rect;
+            if (bdi->kind == kThemePopupButtonMini)
+                rect.adjust(0, 0, -5, 0);
+            p->translate(offset);
+            drawNSViewInRect(bc, rect, p);
+            p->translate(-offset);
             return;
         } else if (usingYosemiteOrLater && editableCombo) {
             QImage image = activePixmap.toImage();
@@ -3834,9 +3913,9 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
 
                 NSBezierPath *pushButtonFocusRingPath;
                 if (bdi.kind == kThemeBevelButton)
-                    pushButtonFocusRingPath = [NSBezierPath bezierPathWithRect:focusRect];
+                    pushButtonFocusRingPath = [NSBezierPath bezierPathWithRect:NSRectFromCGRect(focusRect)];
                 else
-                    pushButtonFocusRingPath = [NSBezierPath bezierPathWithRoundedRect:focusRect xRadius:4 yRadius:4];
+                    pushButtonFocusRingPath = [NSBezierPath bezierPathWithRoundedRect:NSRectFromCGRect(focusRect) xRadius:4 yRadius:4];
                 qt_drawFocusRingOnPath(cg, pushButtonFocusRingPath);
             }
 
@@ -5761,7 +5840,25 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                     drawToolbarButtonArrow(tb->rect, tds, cg);
                 }
                 if (tb->state & State_On) {
-                    if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_5) {
+                    if (QSysInfo::MacintoshVersion > QSysInfo::MV_MAVERICKS) {
+                        QWindow *window = 0;
+                        if (widget && widget->window())
+                            window = widget->window()->windowHandle();
+                        else if (opt->styleObject)
+                            window = opt->styleObject->property("_q_styleObjectWindow").value<QWindow *>();
+
+                        NSView *view = window ? (NSView *)window->winId() : nil;
+                        bool isKey = false;
+                        if (view)
+                            isKey = [view.window isKeyWindow];
+
+                        QBrush brush(isKey ? QColor(0, 0, 0, 28)
+                                           : QColor(0, 0, 0, 21));
+                        QPainterPath path;
+                        path.addRoundedRect(QRectF(tb->rect.x(), tb->rect.y(), tb->rect.width(), tb->rect.height() + 4), 4, 4);
+                        p->setRenderHint(QPainter::Antialiasing);
+                        p->fillPath(path, brush);
+                    } else if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_5) {
                         static QPixmap pm(QLatin1String(":/qt-project.org/mac/style/images/leopard-unified-toolbar-on.png"));
                         p->setRenderHint(QPainter::SmoothPixmapTransform);
                         QStyleHelper::drawBorderPixmap(pm, p, tb->rect, 2, 2, 2, 2);

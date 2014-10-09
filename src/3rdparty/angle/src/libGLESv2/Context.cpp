@@ -1,4 +1,3 @@
-#include "precompiled.h"
 //
 // Copyright (c) 2002-2014 The ANGLE Project Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
@@ -12,6 +11,7 @@
 
 #include "libGLESv2/main.h"
 #include "common/utilities.h"
+#include "common/platform.h"
 #include "libGLESv2/formatutils.h"
 #include "libGLESv2/Buffer.h"
 #include "libGLESv2/Fence.h"
@@ -24,7 +24,6 @@
 #include "libGLESv2/Texture.h"
 #include "libGLESv2/ResourceManager.h"
 #include "libGLESv2/renderer/d3d/IndexDataManager.h"
-#include "libGLESv2/renderer/RenderTarget.h"
 #include "libGLESv2/renderer/Renderer.h"
 #include "libGLESv2/VertexArray.h"
 #include "libGLESv2/Sampler.h"
@@ -33,8 +32,8 @@
 
 #include "libEGL/Surface.h"
 
-#undef near
-#undef far
+#include <sstream>
+#include <iterator>
 
 namespace gl
 {
@@ -45,6 +44,7 @@ Context::Context(int clientVersion, const gl::Context *shareContext, rx::Rendere
     ASSERT(robustAccess == false);   // Unimplemented
 
     initCaps(clientVersion);
+    mState.initialize(mCaps, clientVersion);
 
     mClientVersion = clientVersion;
 
@@ -66,16 +66,26 @@ Context::Context(int clientVersion, const gl::Context *shareContext, rx::Rendere
     // In order that access to these initial textures not be lost, they are treated as texture
     // objects all of whose names are 0.
 
-    mTexture2DZero.set(new Texture2D(mRenderer->createTexture2D(), 0));
-    mTextureCubeMapZero.set(new TextureCubeMap(mRenderer->createTextureCube(), 0));
-    mTexture3DZero.set(new Texture3D(mRenderer->createTexture3D(), 0));
-    mTexture2DArrayZero.set(new Texture2DArray(mRenderer->createTexture2DArray(), 0));
+    mZeroTextures[GL_TEXTURE_2D].set(new Texture2D(mRenderer->createTexture(GL_TEXTURE_2D), 0));
+    bindTexture(GL_TEXTURE_2D, 0);
+
+    mZeroTextures[GL_TEXTURE_CUBE_MAP].set(new TextureCubeMap(mRenderer->createTexture(GL_TEXTURE_CUBE_MAP), 0));
+    bindTexture(GL_TEXTURE_CUBE_MAP, 0);
+
+    if (mClientVersion >= 3)
+    {
+        // TODO: These could also be enabled via extension
+        mZeroTextures[GL_TEXTURE_3D].set(new Texture3D(mRenderer->createTexture(GL_TEXTURE_3D), 0));
+        bindTexture(GL_TEXTURE_3D, 0);
+
+        mZeroTextures[GL_TEXTURE_2D_ARRAY].set(new Texture2DArray(mRenderer->createTexture(GL_TEXTURE_2D_ARRAY), 0));
+        bindTexture(GL_TEXTURE_2D_ARRAY, 0);
+    }
 
     bindVertexArray(0);
     bindArrayBuffer(0);
     bindElementArrayBuffer(0);
-    bindTextureCubeMap(0);
-    bindTexture2D(0);
+
     bindReadFramebuffer(0);
     bindDrawFramebuffer(0);
     bindRenderbuffer(0);
@@ -101,22 +111,14 @@ Context::Context(int clientVersion, const gl::Context *shareContext, rx::Rendere
     // In the initial state, a default transform feedback object is bound and treated as
     // a transform feedback object with a name of zero. That object is bound any time
     // BindTransformFeedback is called with id of zero
-    mTransformFeedbackZero.set(new TransformFeedback(0));
+    mTransformFeedbackZero.set(new TransformFeedback(mRenderer->createTransformFeedback(), 0));
     bindTransformFeedback(0);
-
-    mInvalidEnum = false;
-    mInvalidValue = false;
-    mInvalidOperation = false;
-    mOutOfMemory = false;
-    mInvalidFramebufferOperation = false;
 
     mHasBeenCurrent = false;
     mContextLost = false;
     mResetStatus = GL_NO_ERROR;
     mResetStrategy = (notifyResets ? GL_LOSE_CONTEXT_ON_RESET_EXT : GL_NO_RESET_NOTIFICATION_EXT);
     mRobustAccess = robustAccess;
-
-    mNumCompressedTextureFormats = 0;
 
     mState.setContext(this);
 }
@@ -161,15 +163,17 @@ Context::~Context()
         deleteTransformFeedback(mTransformFeedbackMap.begin()->first);
     }
 
-    for (int type = 0; type < TEXTURE_TYPE_COUNT; type++)
+    for (TextureMap::iterator i = mIncompleteTextures.begin(); i != mIncompleteTextures.end(); i++)
     {
-        mIncompleteTextures[type].set(NULL);
+        i->second.set(NULL);
     }
+    mIncompleteTextures.clear();
 
-    mTexture2DZero.set(NULL);
-    mTextureCubeMapZero.set(NULL);
-    mTexture3DZero.set(NULL);
-    mTexture2DArrayZero.set(NULL);
+    for (TextureMap::iterator i = mZeroTextures.begin(); i != mZeroTextures.end(); i++)
+    {
+        i->second.set(NULL);
+    }
+    mZeroTextures.clear();
 
     mResourceManager->release();
 }
@@ -178,23 +182,6 @@ void Context::makeCurrent(egl::Surface *surface)
 {
     if (!mHasBeenCurrent)
     {
-        mMajorShaderModel = mRenderer->getMajorShaderModel();
-        mSupportsVertexTexture = mRenderer->getVertexTextureSupport();
-
-        mNumCompressedTextureFormats = 0;
-        if (mExtensions.textureCompressionDXT1)
-        {
-            mNumCompressedTextureFormats += 2;
-        }
-        if (mExtensions.textureCompressionDXT3)
-        {
-            mNumCompressedTextureFormats += 1;
-        }
-        if (mExtensions.textureCompressionDXT5)
-        {
-            mNumCompressedTextureFormats += 1;
-        }
-
         initRendererString();
         initExtensionStrings();
 
@@ -287,7 +274,7 @@ GLuint Context::createSampler()
 GLuint Context::createTransformFeedback()
 {
     GLuint handle = mTransformFeedbackAllocator.allocate();
-    TransformFeedback *transformFeedback = new TransformFeedback(handle);
+    TransformFeedback *transformFeedback = new TransformFeedback(mRenderer->createTransformFeedback(), handle);
     transformFeedback->addRef();
     mTransformFeedbackMap[handle] = transformFeedback;
     return handle;
@@ -528,32 +515,11 @@ void Context::bindElementArrayBuffer(unsigned int buffer)
     mState.getVertexArray()->setElementArrayBuffer(getBuffer(buffer));
 }
 
-void Context::bindTexture2D(GLuint texture)
+void Context::bindTexture(GLenum target, GLuint texture)
 {
-    mResourceManager->checkTextureAllocation(texture, TEXTURE_2D);
+    mResourceManager->checkTextureAllocation(texture, target);
 
-    mState.setSamplerTexture(TEXTURE_2D, getTexture(texture));
-}
-
-void Context::bindTextureCubeMap(GLuint texture)
-{
-    mResourceManager->checkTextureAllocation(texture, TEXTURE_CUBE);
-
-    mState.setSamplerTexture(TEXTURE_CUBE, getTexture(texture));
-}
-
-void Context::bindTexture3D(GLuint texture)
-{
-    mResourceManager->checkTextureAllocation(texture, TEXTURE_3D);
-
-    mState.setSamplerTexture(TEXTURE_3D, getTexture(texture));
-}
-
-void Context::bindTexture2DArray(GLuint texture)
-{
-    mResourceManager->checkTextureAllocation(texture, TEXTURE_2D_ARRAY);
-
-    mState.setSamplerTexture(TEXTURE_2D_ARRAY, getTexture(texture));
+    mState.setSamplerTexture(target, getTexture(texture));
 }
 
 void Context::bindReadFramebuffer(GLuint framebuffer)
@@ -596,7 +562,7 @@ void Context::bindVertexArray(GLuint vertexArray)
 
 void Context::bindSampler(GLuint textureUnit, GLuint sampler)
 {
-    ASSERT(textureUnit < IMPLEMENTATION_MAX_COMBINED_TEXTURE_IMAGE_UNITS); // TODO: Update for backend-determined array size
+    ASSERT(textureUnit < mCaps.maxCombinedTextureImageUnits);
     mResourceManager->checkSamplerAllocation(sampler);
 
     mState.setSamplerBinding(textureUnit, getSampler(sampler));
@@ -678,7 +644,7 @@ void Context::linkProgram(GLuint program)
 {
     Program *programObject = mResourceManager->getProgram(program);
 
-    bool linked = programObject->link();
+    bool linked = programObject->link(getCaps());
 
     // if the current program was relinked successfully we
     // need to install the new executables
@@ -688,11 +654,11 @@ void Context::linkProgram(GLuint program)
     }
 }
 
-void Context::setProgramBinary(GLuint program, const void *binary, GLint length)
+void Context::setProgramBinary(GLuint program, GLenum binaryFormat, const void *binary, GLint length)
 {
     Program *programObject = mResourceManager->getProgram(program);
 
-    bool loaded = programObject->setProgramBinary(binary, length);
+    bool loaded = programObject->setProgramBinary(binaryFormat, binary, length);
 
     // if the current program was reloaded successfully we
     // need to install the new executables
@@ -708,26 +674,35 @@ void Context::bindTransformFeedback(GLuint transformFeedback)
     mState.setTransformFeedbackBinding(getTransformFeedback(transformFeedback));
 }
 
-void Context::beginQuery(GLenum target, GLuint query)
+Error Context::beginQuery(GLenum target, GLuint query)
 {
     Query *queryObject = getQuery(query, true, target);
     ASSERT(queryObject);
 
-    // set query as active for specified target
+    // begin query
+    Error error = queryObject->begin();
+    if (error.isError())
+    {
+        return error;
+    }
+
+    // set query as active for specified target only if begin succeeded
     mState.setActiveQuery(target, queryObject);
 
-    // begin query
-    queryObject->begin();
+    return Error(GL_NO_ERROR);
 }
 
-void Context::endQuery(GLenum target)
+Error Context::endQuery(GLenum target)
 {
     Query *queryObject = mState.getActiveQuery(target);
     ASSERT(queryObject);
 
-    queryObject->end();
+    gl::Error error = queryObject->end();
 
+    // Always unbind the query, even if there was an error. This may delete the query object.
     mState.setActiveQuery(target, NULL);
+
+    return error;
 }
 
 void Context::setFramebufferZero(Framebuffer *buffer)
@@ -755,15 +730,16 @@ void Context::setRenderbufferStorage(GLsizei width, GLsizei height, GLenum inter
 
     RenderbufferStorage *renderbuffer = NULL;
 
-    if (GetDepthBits(internalformat) > 0 && GetStencilBits(internalformat) > 0)
+    const InternalFormat &formatInfo = GetInternalFormatInfo(internalformat);
+    if (formatInfo.depthBits > 0 && formatInfo.stencilBits > 0)
     {
         renderbuffer = new gl::DepthStencilbuffer(mRenderer, width, height, samples);
     }
-    else if (GetDepthBits(internalformat) > 0)
+    else if (formatInfo.depthBits > 0)
     {
         renderbuffer = new gl::Depthbuffer(mRenderer, width, height, samples);
     }
-    else if (GetStencilBits(internalformat) > 0)
+    else if (formatInfo.stencilBits > 0)
     {
         renderbuffer = new gl::Stencilbuffer(mRenderer, width, height, samples);
     }
@@ -815,7 +791,7 @@ Query *Context::getQuery(unsigned int handle, bool create, GLenum type)
     {
         if (!query->second && create)
         {
-            query->second = new Query(mRenderer, type, handle);
+            query->second = new Query(mRenderer->createQuery(type), handle);
             query->second->addRef();
         }
         return query->second;
@@ -841,36 +817,29 @@ Texture *Context::getTargetTexture(GLenum target) const
 
 Texture2D *Context::getTexture2D() const
 {
-    return static_cast<Texture2D*>(getSamplerTexture(mState.getActiveSampler(), TEXTURE_2D));
+    return static_cast<Texture2D*>(getSamplerTexture(mState.getActiveSampler(), GL_TEXTURE_2D));
 }
 
 TextureCubeMap *Context::getTextureCubeMap() const
 {
-    return static_cast<TextureCubeMap*>(getSamplerTexture(mState.getActiveSampler(), TEXTURE_CUBE));
+    return static_cast<TextureCubeMap*>(getSamplerTexture(mState.getActiveSampler(), GL_TEXTURE_CUBE_MAP));
 }
 
 Texture3D *Context::getTexture3D() const
 {
-    return static_cast<Texture3D*>(getSamplerTexture(mState.getActiveSampler(), TEXTURE_3D));
+    return static_cast<Texture3D*>(getSamplerTexture(mState.getActiveSampler(), GL_TEXTURE_3D));
 }
 
 Texture2DArray *Context::getTexture2DArray() const
 {
-    return static_cast<Texture2DArray*>(getSamplerTexture(mState.getActiveSampler(), TEXTURE_2D_ARRAY));
+    return static_cast<Texture2DArray*>(getSamplerTexture(mState.getActiveSampler(), GL_TEXTURE_2D_ARRAY));
 }
 
-Texture *Context::getSamplerTexture(unsigned int sampler, TextureType type) const
+Texture *Context::getSamplerTexture(unsigned int sampler, GLenum type) const
 {
     if (mState.getSamplerTextureId(sampler, type) == 0)
     {
-        switch (type)
-        {
-          default: UNREACHABLE();
-          case TEXTURE_2D:       return mTexture2DZero.get();
-          case TEXTURE_CUBE:     return mTextureCubeMapZero.get();
-          case TEXTURE_3D:       return mTexture3DZero.get();
-          case TEXTURE_2D_ARRAY: return mTexture2DArrayZero.get();
-        }
+        return mZeroTextures.at(type).get();
     }
     else
     {
@@ -921,45 +890,39 @@ void Context::getIntegerv(GLenum pname, GLint *params)
 
     switch (pname)
     {
-      case GL_MAX_VERTEX_ATTRIBS:                       *params = gl::MAX_VERTEX_ATTRIBS;                               break;
-      case GL_MAX_VERTEX_UNIFORM_VECTORS:               *params = mRenderer->getMaxVertexUniformVectors();              break;
-      case GL_MAX_VERTEX_UNIFORM_COMPONENTS:            *params = mRenderer->getMaxVertexUniformVectors() * 4;          break;
-      case GL_MAX_VARYING_VECTORS:                      *params = mRenderer->getMaxVaryingVectors();                    break;
-      case GL_MAX_VARYING_COMPONENTS:                   *params = mRenderer->getMaxVaryingVectors() * 4;                break;
-      case GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS:         *params = mRenderer->getMaxCombinedTextureImageUnits();         break;
-      case GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS:           *params = mRenderer->getMaxVertexTextureImageUnits();           break;
-      case GL_MAX_TEXTURE_IMAGE_UNITS:                  *params = gl::MAX_TEXTURE_IMAGE_UNITS;                          break;
-      case GL_MAX_FRAGMENT_UNIFORM_VECTORS:             *params = mRenderer->getMaxFragmentUniformVectors();            break;
-      case GL_MAX_FRAGMENT_UNIFORM_COMPONENTS:          *params = mRenderer->getMaxFragmentUniformVectors() * 4;        break;
+      case GL_MAX_VERTEX_ATTRIBS:                       *params = mCaps.maxVertexAttributes;                            break;
+      case GL_MAX_VERTEX_UNIFORM_VECTORS:               *params = mCaps.maxVertexUniformVectors;                        break;
+      case GL_MAX_VERTEX_UNIFORM_COMPONENTS:            *params = mCaps.maxVertexUniformComponents;                     break;
+      case GL_MAX_VARYING_VECTORS:                      *params = mCaps.maxVaryingVectors;                              break;
+      case GL_MAX_VARYING_COMPONENTS:                   *params = mCaps.maxVertexOutputComponents;                      break;
+      case GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS:         *params = mCaps.maxCombinedTextureImageUnits;                   break;
+      case GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS:           *params = mCaps.maxVertexTextureImageUnits;                     break;
+      case GL_MAX_TEXTURE_IMAGE_UNITS:                  *params = mCaps.maxTextureImageUnits;                           break;
+      case GL_MAX_FRAGMENT_UNIFORM_VECTORS:             *params = mCaps.maxFragmentUniformVectors;                      break;
+      case GL_MAX_FRAGMENT_UNIFORM_COMPONENTS:          *params = mCaps.maxFragmentInputComponents;                     break;
       case GL_MAX_RENDERBUFFER_SIZE:                    *params = mCaps.maxRenderbufferSize;                            break;
       case GL_MAX_COLOR_ATTACHMENTS_EXT:                *params = mCaps.maxColorAttachments;                            break;
       case GL_MAX_DRAW_BUFFERS_EXT:                     *params = mCaps.maxDrawBuffers;                                 break;
-      case GL_NUM_SHADER_BINARY_FORMATS:                *params = 0;                                                    break;
-      case GL_SHADER_BINARY_FORMATS:                    /* no shader binary formats are supported */                    break;
       //case GL_FRAMEBUFFER_BINDING:                    // now equivalent to GL_DRAW_FRAMEBUFFER_BINDING_ANGLE
       case GL_SUBPIXEL_BITS:                            *params = 4;                                                    break;
       case GL_MAX_TEXTURE_SIZE:                         *params = mCaps.max2DTextureSize;                               break;
       case GL_MAX_CUBE_MAP_TEXTURE_SIZE:                *params = mCaps.maxCubeMapTextureSize;                          break;
       case GL_MAX_3D_TEXTURE_SIZE:                      *params = mCaps.max3DTextureSize;                               break;
       case GL_MAX_ARRAY_TEXTURE_LAYERS:                 *params = mCaps.maxArrayTextureLayers;                          break;
-      case GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT:          *params = getUniformBufferOffsetAlignment();                    break;
-      case GL_MAX_UNIFORM_BUFFER_BINDINGS:              *params = getMaximumCombinedUniformBufferBindings();            break;
-      case GL_MAX_VERTEX_UNIFORM_BLOCKS:                *params = mRenderer->getMaxVertexShaderUniformBuffers();        break;
-      case GL_MAX_FRAGMENT_UNIFORM_BLOCKS:              *params = mRenderer->getMaxFragmentShaderUniformBuffers();      break;
-      case GL_MAX_COMBINED_UNIFORM_BLOCKS:              *params = getMaximumCombinedUniformBufferBindings();            break;
+      case GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT:          *params = mCaps.uniformBufferOffsetAlignment;                   break;
+      case GL_MAX_UNIFORM_BUFFER_BINDINGS:              *params = mCaps.maxUniformBufferBindings;                       break;
+      case GL_MAX_VERTEX_UNIFORM_BLOCKS:                *params = mCaps.maxVertexUniformBlocks;                         break;
+      case GL_MAX_FRAGMENT_UNIFORM_BLOCKS:              *params = mCaps.maxFragmentUniformBlocks;                       break;
+      case GL_MAX_COMBINED_UNIFORM_BLOCKS:              *params = mCaps.maxCombinedTextureImageUnits;                   break;
       case GL_MAJOR_VERSION:                            *params = mClientVersion;                                       break;
       case GL_MINOR_VERSION:                            *params = 0;                                                    break;
-      case GL_MAX_ELEMENTS_INDICES:                     *params = mRenderer->getMaxRecommendedElementsIndices();        break;
-      case GL_MAX_ELEMENTS_VERTICES:                    *params = mRenderer->getMaxRecommendedElementsVertices();       break;
-      case GL_MAX_TRANSFORM_FEEDBACK_INTERLEAVED_COMPONENTS: *params = mRenderer->getMaxTransformFeedbackInterleavedComponents(); break;
-      case GL_MAX_TRANSFORM_FEEDBACK_SEPARATE_ATTRIBS:       *params = mRenderer->getMaxTransformFeedbackBuffers();               break;
-      case GL_MAX_TRANSFORM_FEEDBACK_SEPARATE_COMPONENTS:    *params = mRenderer->getMaxTransformFeedbackSeparateComponents();    break;
-      case GL_NUM_COMPRESSED_TEXTURE_FORMATS:
-        params[0] = mNumCompressedTextureFormats;
-        break;
-      case GL_MAX_SAMPLES_ANGLE:
-        *params = static_cast<GLint>(getMaxSupportedSamples());
-        break;
+      case GL_MAX_ELEMENTS_INDICES:                     *params = mCaps.maxElementsIndices;                             break;
+      case GL_MAX_ELEMENTS_VERTICES:                    *params = mCaps.maxElementsVertices;                            break;
+      case GL_MAX_TRANSFORM_FEEDBACK_INTERLEAVED_COMPONENTS: *params = mCaps.maxTransformFeedbackInterleavedComponents; break;
+      case GL_MAX_TRANSFORM_FEEDBACK_SEPARATE_ATTRIBS:       *params = mCaps.maxTransformFeedbackSeparateAttributes;    break;
+      case GL_MAX_TRANSFORM_FEEDBACK_SEPARATE_COMPONENTS:    *params = mCaps.maxTransformFeedbackSeparateComponents;    break;
+      case GL_NUM_COMPRESSED_TEXTURE_FORMATS:           *params = mCaps.compressedTextureFormats.size();                break;
+      case GL_MAX_SAMPLES_ANGLE:                        *params = mExtensions.maxSamples;                               break;
       case GL_IMPLEMENTATION_COLOR_READ_TYPE:
       case GL_IMPLEMENTATION_COLOR_READ_FORMAT:
         {
@@ -978,30 +941,22 @@ void Context::getIntegerv(GLenum pname, GLint *params)
         }
         break;
       case GL_COMPRESSED_TEXTURE_FORMATS:
-        {
-            if (mExtensions.textureCompressionDXT1)
-            {
-                *params++ = GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
-                *params++ = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
-            }
-            if (mExtensions.textureCompressionDXT3)
-            {
-                *params++ = GL_COMPRESSED_RGBA_S3TC_DXT3_ANGLE;
-            }
-            if (mExtensions.textureCompressionDXT5)
-            {
-                *params++ = GL_COMPRESSED_RGBA_S3TC_DXT5_ANGLE;
-            }
-        }
+        std::copy(mCaps.compressedTextureFormats.begin(), mCaps.compressedTextureFormats.end(), params);
         break;
       case GL_RESET_NOTIFICATION_STRATEGY_EXT:
         *params = mResetStrategy;
         break;
-      case GL_NUM_PROGRAM_BINARY_FORMATS_OES:
-        *params = 1;
+      case GL_NUM_SHADER_BINARY_FORMATS:
+        *params = mCaps.shaderBinaryFormats.size();
         break;
-      case GL_PROGRAM_BINARY_FORMATS_OES:
-        *params = GL_PROGRAM_BINARY_ANGLE;
+      case GL_SHADER_BINARY_FORMATS:
+        std::copy(mCaps.shaderBinaryFormats.begin(), mCaps.shaderBinaryFormats.end(), params);
+        break;
+      case GL_NUM_PROGRAM_BINARY_FORMATS:
+        *params = mCaps.programBinaryFormats.size();
+        break;
+      case GL_PROGRAM_BINARY_FORMATS:
+        std::copy(mCaps.programBinaryFormats.begin(), mCaps.programBinaryFormats.end(), params);
         break;
       case GL_NUM_EXTENSIONS:
         *params = static_cast<GLint>(mExtensionStrings.size());
@@ -1022,25 +977,16 @@ void Context::getInteger64v(GLenum pname, GLint64 *params)
         *params = mCaps.maxElementIndex;
         break;
       case GL_MAX_UNIFORM_BLOCK_SIZE:
-        *params = static_cast<GLint64>(mRenderer->getMaxUniformBufferSize());
+        *params = mCaps.maxUniformBlockSize;
         break;
       case GL_MAX_COMBINED_VERTEX_UNIFORM_COMPONENTS:
-        {
-            GLint64 uniformBufferComponents = static_cast<GLint64>(mRenderer->getMaxVertexShaderUniformBuffers()) * static_cast<GLint64>(mRenderer->getMaxUniformBufferSize() / 4);
-            GLint64 defaultBufferComponents = static_cast<GLint64>(mRenderer->getMaxVertexUniformVectors() * 4);
-            *params = uniformBufferComponents + defaultBufferComponents;
-        }
+        *params = mCaps.maxCombinedVertexUniformComponents;
         break;
       case GL_MAX_COMBINED_FRAGMENT_UNIFORM_COMPONENTS:
-        {
-            GLint64 uniformBufferComponents = static_cast<GLint64>(mRenderer->getMaxFragmentShaderUniformBuffers()) * static_cast<GLint64>(mRenderer->getMaxUniformBufferSize() / 4);
-            GLint64 defaultBufferComponents = static_cast<GLint64>(mRenderer->getMaxVertexUniformVectors() * 4);
-            *params = uniformBufferComponents + defaultBufferComponents;
-        }
+        *params = mCaps.maxCombinedFragmentUniformComponents;
         break;
       case GL_MAX_SERVER_WAIT_TIMEOUT:
-        // We do not wait for server fence objects internally, so report a max timeout of zero.
-        *params = 0;
+        *params = mCaps.maxServerWaitTimeout;
         break;
       default:
         UNREACHABLE();
@@ -1087,13 +1033,19 @@ bool Context::getQueryParameterInfo(GLenum pname, GLenum *type, unsigned int *nu
       case GL_COMPRESSED_TEXTURE_FORMATS:
         {
             *type = GL_INT;
-            *numParams = mNumCompressedTextureFormats;
+            *numParams = mCaps.compressedTextureFormats.size();
+        }
+        return true;
+      case GL_PROGRAM_BINARY_FORMATS_OES:
+        {
+            *type = GL_INT;
+            *numParams = mCaps.programBinaryFormats.size();
         }
         return true;
       case GL_SHADER_BINARY_FORMATS:
         {
             *type = GL_INT;
-            *numParams = 0;
+            *numParams = mCaps.shaderBinaryFormats.size();
         }
         return true;
       case GL_MAX_VERTEX_ATTRIBS:
@@ -1162,7 +1114,6 @@ bool Context::getQueryParameterInfo(GLenum pname, GLenum *type, unsigned int *nu
       case GL_TEXTURE_BINDING_CUBE_MAP:
       case GL_RESET_NOTIFICATION_STRATEGY_EXT:
       case GL_NUM_PROGRAM_BINARY_FORMATS_OES:
-      case GL_PROGRAM_BINARY_FORMATS_OES:
         {
             *type = GL_INT;
             *numParams = 1;
@@ -1360,28 +1311,29 @@ bool Context::getIndexedQueryParameterInfo(GLenum target, GLenum *type, unsigned
 
 // Applies the render target surface, depth stencil surface, viewport rectangle and
 // scissor rectangle to the renderer
-bool Context::applyRenderTarget(GLenum drawMode, bool ignoreViewport)
+Error Context::applyRenderTarget(GLenum drawMode, bool ignoreViewport)
 {
     Framebuffer *framebufferObject = mState.getDrawFramebuffer();
     ASSERT(framebufferObject && framebufferObject->completeness() == GL_FRAMEBUFFER_COMPLETE);
 
-    mRenderer->applyRenderTarget(framebufferObject);
+    gl::Error error = mRenderer->applyRenderTarget(framebufferObject);
+    if (error.isError())
+    {
+        return error;
+    }
 
     float nearZ, farZ;
     mState.getDepthRange(&nearZ, &farZ);
-    if (!mRenderer->setViewport(mState.getViewport(), nearZ, farZ, drawMode, mState.getRasterizerState().frontFace,
-                                ignoreViewport))
-    {
-        return false;
-    }
+    mRenderer->setViewport(mState.getViewport(), nearZ, farZ, drawMode, mState.getRasterizerState().frontFace,
+                           ignoreViewport);
 
     mRenderer->setScissorRectangle(mState.getScissor(), mState.isScissorTestEnabled());
 
-    return true;
+    return gl::Error(GL_NO_ERROR);
 }
 
 // Applies the fixed-function state (culling, depth test, alpha blending, stenciling, etc) to the Direct3D 9 device
-void Context::applyState(GLenum drawMode)
+Error Context::applyState(GLenum drawMode)
 {
     Framebuffer *framebufferObject = mState.getDrawFramebuffer();
     int samples = framebufferObject->getSamples();
@@ -1390,7 +1342,11 @@ void Context::applyState(GLenum drawMode)
     rasterizer.pointDrawMode = (drawMode == GL_POINTS);
     rasterizer.multiSample = (samples != 0);
 
-    mRenderer->setRasterizerState(rasterizer);
+    Error error = mRenderer->setRasterizerState(rasterizer);
+    if (error.isError())
+    {
+        return error;
+    }
 
     unsigned int mask = 0;
     if (mState.isSampleCoverageEnabled())
@@ -1400,7 +1356,6 @@ void Context::applyState(GLenum drawMode)
         mState.getSampleCoverageParams(&coverageValue, &coverageInvert);
         if (coverageValue != 0)
         {
-
             float threshold = 0.5f;
 
             for (int i = 0; i < samples; ++i)
@@ -1424,117 +1379,185 @@ void Context::applyState(GLenum drawMode)
     {
         mask = 0xFFFFFFFF;
     }
-    mRenderer->setBlendState(framebufferObject, mState.getBlendState(), mState.getBlendColor(), mask);
+    error = mRenderer->setBlendState(framebufferObject, mState.getBlendState(), mState.getBlendColor(), mask);
+    if (error.isError())
+    {
+        return error;
+    }
 
-    mRenderer->setDepthStencilState(mState.getDepthStencilState(), mState.getStencilRef(), mState.getStencilBackRef(),
-                                    rasterizer.frontFace == GL_CCW);
+    error = mRenderer->setDepthStencilState(mState.getDepthStencilState(), mState.getStencilRef(), mState.getStencilBackRef(),
+                                            rasterizer.frontFace == GL_CCW);
+    if (error.isError())
+    {
+        return error;
+    }
+
+    return Error(GL_NO_ERROR);
 }
 
 // Applies the shaders and shader constants to the Direct3D 9 device
-void Context::applyShaders(ProgramBinary *programBinary, bool transformFeedbackActive)
+Error Context::applyShaders(ProgramBinary *programBinary, bool transformFeedbackActive)
 {
     const VertexAttribute *vertexAttributes = mState.getVertexArray()->getVertexAttributes();
 
-    VertexFormat inputLayout[gl::MAX_VERTEX_ATTRIBS];
+    VertexFormat inputLayout[MAX_VERTEX_ATTRIBS];
     VertexFormat::GetInputLayout(inputLayout, programBinary, vertexAttributes, mState.getVertexAttribCurrentValues());
 
     const Framebuffer *fbo = mState.getDrawFramebuffer();
 
-    mRenderer->applyShaders(programBinary, inputLayout, fbo, mState.getRasterizerState().rasterizerDiscard, transformFeedbackActive);
+    Error error = mRenderer->applyShaders(programBinary, inputLayout, fbo, mState.getRasterizerState().rasterizerDiscard, transformFeedbackActive);
+    if (error.isError())
+    {
+        return error;
+    }
 
-    programBinary->applyUniforms();
+    return programBinary->applyUniforms();
 }
 
-size_t Context::getCurrentTexturesAndSamplerStates(ProgramBinary *programBinary, SamplerType type, Texture **outTextures,
-                                                   TextureType *outTextureTypes, SamplerState *outSamplers)
+Error Context::generateSwizzles(ProgramBinary *programBinary, SamplerType type)
 {
     size_t samplerRange = programBinary->getUsedSamplerRange(type);
+
     for (size_t i = 0; i < samplerRange; i++)
     {
-        outTextureTypes[i] = programBinary->getSamplerTextureType(type, i);
-        GLint textureUnit = programBinary->getSamplerMapping(type, i);   // OpenGL texture image unit index
+        GLenum textureType = programBinary->getSamplerTextureType(type, i);
+        GLint textureUnit = programBinary->getSamplerMapping(type, i, getCaps());
         if (textureUnit != -1)
         {
-            outTextures[i] = getSamplerTexture(textureUnit, outTextureTypes[i]);
-            outTextures[i]->getSamplerStateWithNativeOffset(&outSamplers[i]);
-            Sampler *samplerObject = mState.getSampler(textureUnit);
-            if (samplerObject)
+            Texture* texture = getSamplerTexture(textureUnit, textureType);
+            if (texture->getSamplerState().swizzleRequired())
             {
-                samplerObject->getState(&outSamplers[i]);
+                Error error = mRenderer->generateSwizzle(texture);
+                if (error.isError())
+                {
+                    return error;
+                }
             }
         }
-        else
-        {
-            outTextures[i] = NULL;
-        }
     }
 
-    return samplerRange;
+    return Error(GL_NO_ERROR);
 }
 
-void Context::generateSwizzles(Texture *textures[], size_t count)
+Error Context::generateSwizzles(ProgramBinary *programBinary)
 {
-    for (size_t i = 0; i < count; i++)
+    Error error = generateSwizzles(programBinary, SAMPLER_VERTEX);
+    if (error.isError())
     {
-        if (textures[i] && textures[i]->getSamplerState().swizzleRequired())
-        {
-            mRenderer->generateSwizzle(textures[i]);
-        }
+        return error;
     }
+
+    error = generateSwizzles(programBinary, SAMPLER_PIXEL);
+    if (error.isError())
+    {
+        return error;
+    }
+
+    return Error(GL_NO_ERROR);
 }
 
 // For each Direct3D sampler of either the pixel or vertex stage,
 // looks up the corresponding OpenGL texture image unit and texture type,
 // and sets the texture and its addressing/filtering state (or NULL when inactive).
-void Context::applyTextures(SamplerType shaderType, Texture *textures[], TextureType *textureTypes, SamplerState *samplers,
-                            size_t textureCount, const FramebufferTextureSerialArray& framebufferSerials,
-                            size_t framebufferSerialCount)
+Error Context::applyTextures(ProgramBinary *programBinary, SamplerType shaderType,
+                             const FramebufferTextureSerialArray &framebufferSerials, size_t framebufferSerialCount)
 {
-    // Range of Direct3D samplers of given sampler type
-    size_t samplerCount = (shaderType == SAMPLER_PIXEL) ? MAX_TEXTURE_IMAGE_UNITS
-                                                        : mRenderer->getMaxVertexTextureImageUnits();
-
-    for (size_t samplerIndex = 0; samplerIndex < textureCount; samplerIndex++)
+    size_t samplerRange = programBinary->getUsedSamplerRange(shaderType);
+    for (size_t samplerIndex = 0; samplerIndex < samplerRange; samplerIndex++)
     {
-        Texture *texture = textures[samplerIndex];
-        const SamplerState &sampler = samplers[samplerIndex];
-        TextureType textureType = textureTypes[samplerIndex];
-
-        if (texture)
+        GLenum textureType = programBinary->getSamplerTextureType(shaderType, samplerIndex);
+        GLint textureUnit = programBinary->getSamplerMapping(shaderType, samplerIndex, getCaps());
+        if (textureUnit != -1)
         {
+            SamplerState sampler;
+            Texture* texture = getSamplerTexture(textureUnit, textureType);
+            texture->getSamplerStateWithNativeOffset(&sampler);
+
+            Sampler *samplerObject = mState.getSampler(textureUnit);
+            if (samplerObject)
+            {
+                samplerObject->getState(&sampler);
+            }
+
             // TODO: std::binary_search may become unavailable using older versions of GCC
-            if (texture->isSamplerComplete(sampler) &&
+            if (texture->isSamplerComplete(sampler, mTextureCaps, mExtensions, mClientVersion) &&
                 !std::binary_search(framebufferSerials.begin(), framebufferSerials.begin() + framebufferSerialCount, texture->getTextureSerial()))
             {
-                mRenderer->setSamplerState(shaderType, samplerIndex, sampler);
-                mRenderer->setTexture(shaderType, samplerIndex, texture);
-                texture->resetDirty();
+                Error error = mRenderer->setSamplerState(shaderType, samplerIndex, sampler);
+                if (error.isError())
+                {
+                    return error;
+                }
+
+                error = mRenderer->setTexture(shaderType, samplerIndex, texture);
+                if (error.isError())
+                {
+                    return error;
+                }
             }
             else
             {
+                // Texture is not sampler complete or it is in use by the framebuffer.  Bind the incomplete texture.
                 Texture *incompleteTexture = getIncompleteTexture(textureType);
-                mRenderer->setTexture(shaderType, samplerIndex, incompleteTexture);
-                incompleteTexture->resetDirty();
+                gl::Error error = mRenderer->setTexture(shaderType, samplerIndex, incompleteTexture);
+                if (error.isError())
+                {
+                    return error;
+                }
             }
         }
         else
         {
-            mRenderer->setTexture(shaderType, samplerIndex, NULL);
+            // No texture bound to this slot even though it is used by the shader, bind a NULL texture
+            Error error = mRenderer->setTexture(shaderType, samplerIndex, NULL);
+            if (error.isError())
+            {
+                return error;
+            }
         }
     }
 
-    for (size_t samplerIndex = textureCount; samplerIndex < samplerCount; samplerIndex++)
+    // Set all the remaining textures to NULL
+    size_t samplerCount = (shaderType == SAMPLER_PIXEL) ? mCaps.maxTextureImageUnits
+                                                        : mCaps.maxVertexTextureImageUnits;
+    for (size_t samplerIndex = samplerRange; samplerIndex < samplerCount; samplerIndex++)
     {
-        mRenderer->setTexture(shaderType, samplerIndex, NULL);
+        Error error = mRenderer->setTexture(shaderType, samplerIndex, NULL);
+        if (error.isError())
+        {
+            return error;
+        }
     }
+
+    return Error(GL_NO_ERROR);
 }
 
-bool Context::applyUniformBuffers()
+Error Context::applyTextures(ProgramBinary *programBinary)
+{
+    FramebufferTextureSerialArray framebufferSerials;
+    size_t framebufferSerialCount = getBoundFramebufferTextureSerials(&framebufferSerials);
+
+    Error error = applyTextures(programBinary, SAMPLER_VERTEX, framebufferSerials, framebufferSerialCount);
+    if (error.isError())
+    {
+        return error;
+    }
+
+    error = applyTextures(programBinary, SAMPLER_PIXEL, framebufferSerials, framebufferSerialCount);
+    if (error.isError())
+    {
+        return error;
+    }
+
+    return Error(GL_NO_ERROR);
+}
+
+Error Context::applyUniformBuffers()
 {
     Program *programObject = getProgram(mState.getCurrentProgramId());
     ProgramBinary *programBinary = programObject->getProgramBinary();
 
-    std::vector<gl::Buffer*> boundBuffers;
+    std::vector<Buffer*> boundBuffers;
 
     for (unsigned int uniformBlockIndex = 0; uniformBlockIndex < programBinary->getActiveUniformBlockCount(); uniformBlockIndex++)
     {
@@ -1543,7 +1566,7 @@ bool Context::applyUniformBuffers()
         if (mState.getIndexedUniformBuffer(blockBinding)->id() == 0)
         {
             // undefined behaviour
-            return false;
+            return gl::Error(GL_INVALID_OPERATION, "It is undefined behaviour to have a used but unbound uniform buffer.");
         }
         else
         {
@@ -1553,7 +1576,7 @@ bool Context::applyUniformBuffers()
         }
     }
 
-    return programBinary->applyUniformBuffers(boundBuffers);
+    return programBinary->applyUniformBuffers(boundBuffers, getCaps());
 }
 
 bool Context::applyTransformFeedbackBuffers()
@@ -1589,28 +1612,25 @@ void Context::markTransformFeedbackUsage()
     }
 }
 
-void Context::clear(GLbitfield mask)
+Error Context::clear(GLbitfield mask)
 {
     if (mState.isRasterizerDiscardEnabled())
     {
-        return;
+        return Error(GL_NO_ERROR);
     }
 
     ClearParameters clearParams = mState.getClearParameters(mask);
 
-    if (!applyRenderTarget(GL_TRIANGLES, true))   // Clips the clear to the scissor rectangle but not the viewport
-    {
-        return;
-    }
+    applyRenderTarget(GL_TRIANGLES, true);   // Clips the clear to the scissor rectangle but not the viewport
 
-    mRenderer->clear(clearParams, mState.getDrawFramebuffer());
+    return mRenderer->clear(clearParams, mState.getDrawFramebuffer());
 }
 
-void Context::clearBufferfv(GLenum buffer, int drawbuffer, const float *values)
+Error Context::clearBufferfv(GLenum buffer, int drawbuffer, const float *values)
 {
     if (mState.isRasterizerDiscardEnabled())
     {
-        return;
+        return Error(GL_NO_ERROR);
     }
 
     // glClearBufferfv can be called to clear the color buffer or depth buffer
@@ -1632,19 +1652,16 @@ void Context::clearBufferfv(GLenum buffer, int drawbuffer, const float *values)
         clearParams.depthClearValue = values[0];
     }
 
-    if (!applyRenderTarget(GL_TRIANGLES, true))   // Clips the clear to the scissor rectangle but not the viewport
-    {
-        return;
-    }
+    applyRenderTarget(GL_TRIANGLES, true);   // Clips the clear to the scissor rectangle but not the viewport
 
-    mRenderer->clear(clearParams, mState.getDrawFramebuffer());
+    return mRenderer->clear(clearParams, mState.getDrawFramebuffer());
 }
 
-void Context::clearBufferuiv(GLenum buffer, int drawbuffer, const unsigned int *values)
+Error Context::clearBufferuiv(GLenum buffer, int drawbuffer, const unsigned int *values)
 {
     if (mState.isRasterizerDiscardEnabled())
     {
-        return;
+        return Error(GL_NO_ERROR);
     }
 
     // glClearBufferuv can only be called to clear a color buffer
@@ -1656,19 +1673,16 @@ void Context::clearBufferuiv(GLenum buffer, int drawbuffer, const unsigned int *
     clearParams.colorUIClearValue = ColorUI(values[0], values[1], values[2], values[3]);
     clearParams.colorClearType = GL_UNSIGNED_INT;
 
-    if (!applyRenderTarget(GL_TRIANGLES, true))   // Clips the clear to the scissor rectangle but not the viewport
-    {
-        return;
-    }
+    applyRenderTarget(GL_TRIANGLES, true);   // Clips the clear to the scissor rectangle but not the viewport
 
-    mRenderer->clear(clearParams, mState.getDrawFramebuffer());
+    return mRenderer->clear(clearParams, mState.getDrawFramebuffer());
 }
 
-void Context::clearBufferiv(GLenum buffer, int drawbuffer, const int *values)
+Error Context::clearBufferiv(GLenum buffer, int drawbuffer, const int *values)
 {
     if (mState.isRasterizerDiscardEnabled())
     {
-        return;
+        return Error(GL_NO_ERROR);
     }
 
     // glClearBufferfv can be called to clear the color buffer or stencil buffer
@@ -1690,19 +1704,16 @@ void Context::clearBufferiv(GLenum buffer, int drawbuffer, const int *values)
         clearParams.stencilClearValue = values[1];
     }
 
-    if (!applyRenderTarget(GL_TRIANGLES, true))   // Clips the clear to the scissor rectangle but not the viewport
-    {
-        return;
-    }
+    applyRenderTarget(GL_TRIANGLES, true);   // Clips the clear to the scissor rectangle but not the viewport
 
-    mRenderer->clear(clearParams, mState.getDrawFramebuffer());
+    return mRenderer->clear(clearParams, mState.getDrawFramebuffer());
 }
 
-void Context::clearBufferfi(GLenum buffer, int drawbuffer, float depth, int stencil)
+Error Context::clearBufferfi(GLenum buffer, int drawbuffer, float depth, int stencil)
 {
     if (mState.isRasterizerDiscardEnabled())
     {
-        return;
+        return Error(GL_NO_ERROR);
     }
 
     // glClearBufferfi can only be called to clear a depth stencil buffer
@@ -1712,135 +1723,145 @@ void Context::clearBufferfi(GLenum buffer, int drawbuffer, float depth, int sten
     clearParams.clearStencil = true;
     clearParams.stencilClearValue = stencil;
 
-    if (!applyRenderTarget(GL_TRIANGLES, true))   // Clips the clear to the scissor rectangle but not the viewport
-    {
-        return;
-    }
+    applyRenderTarget(GL_TRIANGLES, true);   // Clips the clear to the scissor rectangle but not the viewport
 
-    mRenderer->clear(clearParams, mState.getDrawFramebuffer());
+    return mRenderer->clear(clearParams, mState.getDrawFramebuffer());
 }
 
-void Context::readPixels(GLint x, GLint y, GLsizei width, GLsizei height,
-                         GLenum format, GLenum type, GLsizei *bufSize, void* pixels)
+Error Context::readPixels(GLint x, GLint y, GLsizei width, GLsizei height,
+                          GLenum format, GLenum type, GLsizei *bufSize, void* pixels)
 {
-    gl::Framebuffer *framebuffer = mState.getReadFramebuffer();
+    Framebuffer *framebuffer = mState.getReadFramebuffer();
 
-    bool isSized = IsSizedInternalFormat(format);
-    GLenum sizedInternalFormat = (isSized ? format : GetSizedInternalFormat(format, type));
-    GLuint outputPitch = GetRowPitch(sizedInternalFormat, type, width, mState.getPackAlignment());
+    GLenum sizedInternalFormat = GetSizedInternalFormat(format, type);
+    const InternalFormat &sizedFormatInfo = GetInternalFormatInfo(sizedInternalFormat);
+    GLuint outputPitch = sizedFormatInfo.computeRowPitch(type, width, mState.getPackAlignment());
 
-    mRenderer->readPixels(framebuffer, x, y, width, height, format, type, outputPitch, mState.getPackState(), pixels);
+    return mRenderer->readPixels(framebuffer, x, y, width, height, format, type, outputPitch, mState.getPackState(),
+                                 reinterpret_cast<uint8_t*>(pixels));
 }
 
-void Context::drawArrays(GLenum mode, GLint first, GLsizei count, GLsizei instances)
+Error Context::drawArrays(GLenum mode, GLint first, GLsizei count, GLsizei instances)
 {
     ASSERT(mState.getCurrentProgramId() != 0);
 
     ProgramBinary *programBinary = mState.getCurrentProgramBinary();
     programBinary->updateSamplerMapping();
 
-    Texture *vsTextures[IMPLEMENTATION_MAX_VERTEX_TEXTURE_IMAGE_UNITS];
-    TextureType vsTextureTypes[IMPLEMENTATION_MAX_VERTEX_TEXTURE_IMAGE_UNITS];
-    SamplerState vsSamplers[IMPLEMENTATION_MAX_VERTEX_TEXTURE_IMAGE_UNITS];
-    size_t vsTextureCount = getCurrentTexturesAndSamplerStates(programBinary, SAMPLER_VERTEX, vsTextures, vsTextureTypes, vsSamplers);
-
-    Texture *psTextures[MAX_TEXTURE_IMAGE_UNITS];
-    TextureType psTextureTypes[MAX_TEXTURE_IMAGE_UNITS];
-    SamplerState psSamplers[MAX_TEXTURE_IMAGE_UNITS];
-    size_t psTextureCount = getCurrentTexturesAndSamplerStates(programBinary, SAMPLER_PIXEL, psTextures, psTextureTypes, psSamplers);
-
-    generateSwizzles(vsTextures, vsTextureCount);
-    generateSwizzles(psTextures, psTextureCount);
+    Error error = generateSwizzles(programBinary);
+    if (error.isError())
+    {
+        return error;
+    }
 
     if (!mRenderer->applyPrimitiveType(mode, count))
     {
-        return;
+        return Error(GL_NO_ERROR);
     }
 
-    if (!applyRenderTarget(mode, false))
+    error = applyRenderTarget(mode, false);
+    if (error.isError())
     {
-        return;
+        return error;
     }
 
-    applyState(mode);
-
-    GLenum err = mRenderer->applyVertexBuffer(programBinary, mState.getVertexArray()->getVertexAttributes(), mState.getVertexAttribCurrentValues(), first, count, instances);
-    if (err != GL_NO_ERROR)
+    error = applyState(mode);
+    if (error.isError())
     {
-        return gl::error(err);
+        return error;
+    }
+
+    error = mRenderer->applyVertexBuffer(programBinary, mState.getVertexArray()->getVertexAttributes(), mState.getVertexAttribCurrentValues(), first, count, instances);
+    if (error.isError())
+    {
+        return error;
     }
 
     bool transformFeedbackActive = applyTransformFeedbackBuffers();
 
-    applyShaders(programBinary, transformFeedbackActive);
-
-    FramebufferTextureSerialArray frameBufferSerials;
-    size_t framebufferSerialCount = getBoundFramebufferTextureSerials(&frameBufferSerials);
-
-    applyTextures(SAMPLER_VERTEX, vsTextures, vsTextureTypes, vsSamplers, vsTextureCount, frameBufferSerials, framebufferSerialCount);
-    applyTextures(SAMPLER_PIXEL, psTextures, psTextureTypes, psSamplers, psTextureCount, frameBufferSerials, framebufferSerialCount);
-
-    if (!applyUniformBuffers())
+    error = applyShaders(programBinary, transformFeedbackActive);
+    if (error.isError())
     {
-        return;
+        return error;
+    }
+
+    error = applyTextures(programBinary);
+    if (error.isError())
+    {
+        return error;
+    }
+
+    error = applyUniformBuffers();
+    if (error.isError())
+    {
+        return error;
     }
 
     if (!skipDraw(mode))
     {
-        mRenderer->drawArrays(mode, count, instances, transformFeedbackActive);
+        error = mRenderer->drawArrays(mode, count, instances, transformFeedbackActive);
+        if (error.isError())
+        {
+            return error;
+        }
 
         if (transformFeedbackActive)
         {
             markTransformFeedbackUsage();
         }
     }
+
+    return gl::Error(GL_NO_ERROR);
 }
 
-void Context::drawElements(GLenum mode, GLsizei count, GLenum type, const GLvoid *indices, GLsizei instances)
+Error Context::drawElements(GLenum mode, GLsizei count, GLenum type,
+                            const GLvoid *indices, GLsizei instances,
+                            const rx::RangeUI &indexRange)
 {
     ASSERT(mState.getCurrentProgramId() != 0);
 
     ProgramBinary *programBinary = mState.getCurrentProgramBinary();
     programBinary->updateSamplerMapping();
 
-    Texture *vsTextures[IMPLEMENTATION_MAX_VERTEX_TEXTURE_IMAGE_UNITS];
-    TextureType vsTextureTypes[IMPLEMENTATION_MAX_VERTEX_TEXTURE_IMAGE_UNITS];
-    SamplerState vsSamplers[IMPLEMENTATION_MAX_VERTEX_TEXTURE_IMAGE_UNITS];
-    size_t vsTextureCount = getCurrentTexturesAndSamplerStates(programBinary, SAMPLER_VERTEX, vsTextures, vsTextureTypes, vsSamplers);
-
-    Texture *psTextures[MAX_TEXTURE_IMAGE_UNITS];
-    TextureType psTextureTypes[MAX_TEXTURE_IMAGE_UNITS];
-    SamplerState psSamplers[MAX_TEXTURE_IMAGE_UNITS];
-    size_t psTextureCount = getCurrentTexturesAndSamplerStates(programBinary, SAMPLER_PIXEL, psTextures, psTextureTypes, psSamplers);
-
-    generateSwizzles(vsTextures, vsTextureCount);
-    generateSwizzles(psTextures, psTextureCount);
+    Error error = generateSwizzles(programBinary);
+    if (error.isError())
+    {
+        return error;
+    }
 
     if (!mRenderer->applyPrimitiveType(mode, count))
     {
-        return;
+        return Error(GL_NO_ERROR);
     }
 
-    if (!applyRenderTarget(mode, false))
+    error = applyRenderTarget(mode, false);
+    if (error.isError())
     {
-        return;
+        return error;
     }
 
-    applyState(mode);
+    error = applyState(mode);
+    if (error.isError())
+    {
+        return error;
+    }
 
     VertexArray *vao = mState.getVertexArray();
     rx::TranslatedIndexData indexInfo;
-    GLenum err = mRenderer->applyIndexBuffer(indices, vao->getElementArrayBuffer(), count, mode, type, &indexInfo);
-    if (err != GL_NO_ERROR)
+    indexInfo.indexRange = indexRange;
+    error = mRenderer->applyIndexBuffer(indices, vao->getElementArrayBuffer(), count, mode, type, &indexInfo);
+    if (error.isError())
     {
-        return gl::error(err);
+        return error;
     }
 
-    GLsizei vertexCount = indexInfo.maxIndex - indexInfo.minIndex + 1;
-    err = mRenderer->applyVertexBuffer(programBinary, vao->getVertexAttributes(), mState.getVertexAttribCurrentValues(), indexInfo.minIndex, vertexCount, instances);
-    if (err != GL_NO_ERROR)
+    GLsizei vertexCount = indexInfo.indexRange.length() + 1;
+    error = mRenderer->applyVertexBuffer(programBinary, vao->getVertexAttributes(),
+                                         mState.getVertexAttribCurrentValues(),
+                                         indexInfo.indexRange.start, vertexCount, instances);
+    if (error.isError())
     {
-        return gl::error(err);
+        return error;
     }
 
     bool transformFeedbackActive = applyTransformFeedbackBuffers();
@@ -1848,23 +1869,34 @@ void Context::drawElements(GLenum mode, GLsizei count, GLenum type, const GLvoid
     // layer.
     ASSERT(!transformFeedbackActive);
 
-    applyShaders(programBinary, transformFeedbackActive);
-
-    FramebufferTextureSerialArray frameBufferSerials;
-    size_t framebufferSerialCount = getBoundFramebufferTextureSerials(&frameBufferSerials);
-
-    applyTextures(SAMPLER_VERTEX, vsTextures, vsTextureTypes, vsSamplers, vsTextureCount, frameBufferSerials, framebufferSerialCount);
-    applyTextures(SAMPLER_PIXEL, psTextures, psTextureTypes, psSamplers, psTextureCount, frameBufferSerials, framebufferSerialCount);
-
-    if (!applyUniformBuffers())
+    error = applyShaders(programBinary, transformFeedbackActive);
+    if (error.isError())
     {
-        return;
+        return error;
+    }
+
+    error = applyTextures(programBinary);
+    if (error.isError())
+    {
+        return error;
+    }
+
+    error = applyUniformBuffers();
+    if (error.isError())
+    {
+        return error;
     }
 
     if (!skipDraw(mode))
     {
-        mRenderer->drawElements(mode, count, type, indices, vao->getElementArrayBuffer(), indexInfo, instances);
+        error = mRenderer->drawElements(mode, count, type, indices, vao->getElementArrayBuffer(), indexInfo, instances);
+        if (error.isError())
+        {
+            return error;
+        }
     }
+
+    return Error(GL_NO_ERROR);
 }
 
 // Implements glFlush when block is false, glFinish when block is true
@@ -1873,71 +1905,28 @@ void Context::sync(bool block)
     mRenderer->sync(block);
 }
 
-void Context::recordInvalidEnum()
+void Context::recordError(const Error &error)
 {
-    mInvalidEnum = true;
-}
-
-void Context::recordInvalidValue()
-{
-    mInvalidValue = true;
-}
-
-void Context::recordInvalidOperation()
-{
-    mInvalidOperation = true;
-}
-
-void Context::recordOutOfMemory()
-{
-    mOutOfMemory = true;
-}
-
-void Context::recordInvalidFramebufferOperation()
-{
-    mInvalidFramebufferOperation = true;
+    if (error.isError())
+    {
+        mErrors.insert(error.getCode());
+    }
 }
 
 // Get one of the recorded errors and clear its flag, if any.
 // [OpenGL ES 2.0.24] section 2.5 page 13.
 GLenum Context::getError()
 {
-    if (mInvalidEnum)
+    if (mErrors.empty())
     {
-        mInvalidEnum = false;
-
-        return GL_INVALID_ENUM;
+        return GL_NO_ERROR;
     }
-
-    if (mInvalidValue)
+    else
     {
-        mInvalidValue = false;
-
-        return GL_INVALID_VALUE;
+        GLenum error = *mErrors.begin();
+        mErrors.erase(mErrors.begin());
+        return error;
     }
-
-    if (mInvalidOperation)
-    {
-        mInvalidOperation = false;
-
-        return GL_INVALID_OPERATION;
-    }
-
-    if (mOutOfMemory)
-    {
-        mOutOfMemory = false;
-
-        return GL_OUT_OF_MEMORY;
-    }
-
-    if (mInvalidFramebufferOperation)
-    {
-        mInvalidFramebufferOperation = false;
-
-        return GL_INVALID_FRAMEBUFFER_OPERATION;
-    }
-
-    return GL_NO_ERROR;
 }
 
 GLenum Context::getResetStatus()
@@ -1989,53 +1978,6 @@ const Extensions &Context::getExtensions() const
     return mExtensions;
 }
 
-int Context::getMajorShaderModel() const
-{
-    return mMajorShaderModel;
-}
-
-unsigned int Context::getMaximumCombinedTextureImageUnits() const
-{
-    return mRenderer->getMaxCombinedTextureImageUnits();
-}
-
-unsigned int Context::getMaximumCombinedUniformBufferBindings() const
-{
-    return mRenderer->getMaxVertexShaderUniformBuffers() +
-           mRenderer->getMaxFragmentShaderUniformBuffers();
-}
-
-int Context::getMaxSupportedSamples() const
-{
-    return mRenderer->getMaxSupportedSamples();
-}
-
-GLsizei Context::getMaxSupportedFormatSamples(GLenum internalFormat) const
-{
-    return mRenderer->getMaxSupportedFormatSamples(internalFormat);
-}
-
-GLsizei Context::getNumSampleCounts(GLenum internalFormat) const
-{
-    return mRenderer->getNumSampleCounts(internalFormat);
-}
-
-void Context::getSampleCounts(GLenum internalFormat, GLsizei bufSize, GLint *params) const
-{
-    mRenderer->getSampleCounts(internalFormat, bufSize, params);
-}
-
-unsigned int Context::getMaxTransformFeedbackBufferBindings() const
-{
-    return mRenderer->getMaxTransformFeedbackBuffers();
-}
-
-GLintptr Context::getUniformBufferOffsetAlignment() const
-{
-    // setting a large alignment forces uniform buffers to bind with zero offset
-    return static_cast<GLintptr>(std::numeric_limits<GLint>::max());
-}
-
 void Context::getCurrentReadFormatType(GLenum *internalFormat, GLenum *format, GLenum *type)
 {
     Framebuffer *framebuffer = mState.getReadFramebuffer();
@@ -2044,9 +1986,12 @@ void Context::getCurrentReadFormatType(GLenum *internalFormat, GLenum *format, G
     FramebufferAttachment *attachment = framebuffer->getReadColorbuffer();
     ASSERT(attachment);
 
-    *internalFormat = attachment->getActualFormat();
-    *format = gl::GetFormat(attachment->getActualFormat());
-    *type = gl::GetType(attachment->getActualFormat());
+    GLenum actualFormat = attachment->getActualFormat();
+    const InternalFormat &actualFormatInfo = GetInternalFormatInfo(actualFormat);
+
+    *internalFormat = actualFormat;
+    *format = actualFormatInfo.format;
+    *type = actualFormatInfo.type;
 }
 
 void Context::detachTexture(GLuint texture)
@@ -2127,32 +2072,31 @@ void Context::detachSampler(GLuint sampler)
     mState.detachSampler(sampler);
 }
 
-Texture *Context::getIncompleteTexture(TextureType type)
+Texture *Context::getIncompleteTexture(GLenum type)
 {
-    Texture *t = mIncompleteTextures[type].get();
-
-    if (t == NULL)
+    if (mIncompleteTextures.find(type) == mIncompleteTextures.end())
     {
         const GLubyte color[] = { 0, 0, 0, 255 };
         const PixelUnpackState incompleteUnpackState(1);
 
+        Texture* t = NULL;
         switch (type)
         {
           default:
             UNREACHABLE();
             // default falls through to TEXTURE_2D
 
-          case TEXTURE_2D:
+          case GL_TEXTURE_2D:
             {
-                Texture2D *incomplete2d = new Texture2D(mRenderer->createTexture2D(), Texture::INCOMPLETE_TEXTURE_ID);
+                Texture2D *incomplete2d = new Texture2D(mRenderer->createTexture(GL_TEXTURE_2D), Texture::INCOMPLETE_TEXTURE_ID);
                 incomplete2d->setImage(0, 1, 1, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE, incompleteUnpackState, color);
                 t = incomplete2d;
             }
             break;
 
-          case TEXTURE_CUBE:
+          case GL_TEXTURE_CUBE_MAP:
             {
-              TextureCubeMap *incompleteCube = new TextureCubeMap(mRenderer->createTextureCube(), Texture::INCOMPLETE_TEXTURE_ID);
+              TextureCubeMap *incompleteCube = new TextureCubeMap(mRenderer->createTexture(GL_TEXTURE_CUBE_MAP), Texture::INCOMPLETE_TEXTURE_ID);
 
               incompleteCube->setImagePosX(0, 1, 1, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE, incompleteUnpackState, color);
               incompleteCube->setImageNegX(0, 1, 1, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE, incompleteUnpackState, color);
@@ -2165,18 +2109,18 @@ Texture *Context::getIncompleteTexture(TextureType type)
             }
             break;
 
-          case TEXTURE_3D:
+          case GL_TEXTURE_3D:
             {
-                Texture3D *incomplete3d = new Texture3D(mRenderer->createTexture3D(), Texture::INCOMPLETE_TEXTURE_ID);
+                Texture3D *incomplete3d = new Texture3D(mRenderer->createTexture(GL_TEXTURE_3D), Texture::INCOMPLETE_TEXTURE_ID);
                 incomplete3d->setImage(0, 1, 1, 1, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE, incompleteUnpackState, color);
 
                 t = incomplete3d;
             }
             break;
 
-          case TEXTURE_2D_ARRAY:
+          case GL_TEXTURE_2D_ARRAY:
             {
-                Texture2DArray *incomplete2darray = new Texture2DArray(mRenderer->createTexture2DArray(), Texture::INCOMPLETE_TEXTURE_ID);
+                Texture2DArray *incomplete2darray = new Texture2DArray(mRenderer->createTexture(GL_TEXTURE_2D_ARRAY), Texture::INCOMPLETE_TEXTURE_ID);
                 incomplete2darray->setImage(0, 1, 1, 1, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE, incompleteUnpackState, color);
 
                 t = incomplete2darray;
@@ -2187,7 +2131,7 @@ Texture *Context::getIncompleteTexture(TextureType type)
         mIncompleteTextures[type].set(t);
     }
 
-    return t;
+    return mIncompleteTextures[type].get();
 }
 
 bool Context::skipDraw(GLenum drawMode)
@@ -2359,14 +2303,16 @@ size_t Context::getBoundFramebufferTextureSerials(FramebufferTextureSerialArray 
         FramebufferAttachment *attachment = drawFramebuffer->getColorbuffer(i);
         if (attachment && attachment->isTexture())
         {
-            (*outSerialArray)[serialCount++] = attachment->getTextureSerial();
+            Texture *texture = attachment->getTexture();
+            (*outSerialArray)[serialCount++] = texture->getTextureSerial();
         }
     }
 
     FramebufferAttachment *depthStencilAttachment = drawFramebuffer->getDepthOrStencilbuffer();
     if (depthStencilAttachment && depthStencilAttachment->isTexture())
     {
-        (*outSerialArray)[serialCount++] = depthStencilAttachment->getTextureSerial();
+        Texture *depthStencilTexture = depthStencilAttachment->getTexture();
+        (*outSerialArray)[serialCount++] = depthStencilTexture->getTextureSerial();
     }
 
     std::sort(outSerialArray->begin(), outSerialArray->begin() + serialCount);
@@ -2396,114 +2342,19 @@ void Context::blitFramebuffer(GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1
         blitDepth = true;
     }
 
-    gl::Rectangle srcRect(srcX0, srcY0, srcX1 - srcX0, srcY1 - srcY0);
-    gl::Rectangle dstRect(dstX0, dstY0, dstX1 - dstX0, dstY1 - dstY0);
+    Rectangle srcRect(srcX0, srcY0, srcX1 - srcX0, srcY1 - srcY0);
+    Rectangle dstRect(dstX0, dstY0, dstX1 - dstX0, dstY1 - dstY0);
     if (blitRenderTarget || blitDepth || blitStencil)
     {
-        const gl::Rectangle *scissor = mState.isScissorTestEnabled() ? &mState.getScissor() : NULL;
+        const Rectangle *scissor = mState.isScissorTestEnabled() ? &mState.getScissor() : NULL;
         mRenderer->blitRect(readFramebuffer, srcRect, drawFramebuffer, dstRect, scissor,
                             blitRenderTarget, blitDepth, blitStencil, filter);
     }
 }
 
-void Context::invalidateFrameBuffer(GLenum target, GLsizei numAttachments, const GLenum* attachments,
-                                    GLint x, GLint y, GLsizei width, GLsizei height)
+void Context::releaseShaderCompiler()
 {
-    Framebuffer *frameBuffer = NULL;
-    switch (target)
-    {
-      case GL_FRAMEBUFFER:
-      case GL_DRAW_FRAMEBUFFER:
-        frameBuffer = mState.getDrawFramebuffer();
-        break;
-      case GL_READ_FRAMEBUFFER:
-        frameBuffer = mState.getReadFramebuffer();
-        break;
-      default:
-        UNREACHABLE();
-    }
-
-    if (frameBuffer && frameBuffer->completeness() == GL_FRAMEBUFFER_COMPLETE)
-    {
-        for (int i = 0; i < numAttachments; ++i)
-        {
-            rx::RenderTarget *renderTarget = NULL;
-
-            if (attachments[i] >= GL_COLOR_ATTACHMENT0 && attachments[i] <= GL_COLOR_ATTACHMENT15)
-            {
-                gl::FramebufferAttachment *attachment = frameBuffer->getColorbuffer(attachments[i] - GL_COLOR_ATTACHMENT0);
-                if (attachment)
-                {
-                    renderTarget = attachment->getRenderTarget();
-                }
-            }
-            else if (attachments[i] == GL_COLOR)
-            {
-                 gl::FramebufferAttachment *attachment = frameBuffer->getColorbuffer(0);
-                 if (attachment)
-                 {
-                     renderTarget = attachment->getRenderTarget();
-                 }
-            }
-            else
-            {
-                gl::FramebufferAttachment *attachment = NULL;
-                switch (attachments[i])
-                {
-                  case GL_DEPTH_ATTACHMENT:
-                  case GL_DEPTH:
-                    attachment = frameBuffer->getDepthbuffer();
-                    break;
-                  case GL_STENCIL_ATTACHMENT:
-                  case GL_STENCIL:
-                    attachment = frameBuffer->getStencilbuffer();
-                    break;
-                  case GL_DEPTH_STENCIL_ATTACHMENT:
-                    attachment = frameBuffer->getDepthOrStencilbuffer();
-                    break;
-                  default:
-                    UNREACHABLE();
-                }
-
-                if (attachment)
-                {
-                    renderTarget = attachment->getDepthStencil();
-                }
-            }
-
-            if (renderTarget)
-            {
-                renderTarget->invalidate(x, y, width, height);
-            }
-        }
-    }
-}
-
-bool Context::hasMappedBuffer(GLenum target) const
-{
-    if (target == GL_ARRAY_BUFFER)
-    {
-        for (unsigned int attribIndex = 0; attribIndex < gl::MAX_VERTEX_ATTRIBS; attribIndex++)
-        {
-            const gl::VertexAttribute &vertexAttrib = mState.getVertexAttribState(attribIndex);
-            gl::Buffer *boundBuffer = vertexAttrib.buffer.get();
-            if (vertexAttrib.enabled && boundBuffer && boundBuffer->isMapped())
-            {
-                return true;
-            }
-        }
-    }
-    else if (target == GL_ELEMENT_ARRAY_BUFFER)
-    {
-        Buffer *elementBuffer = mState.getTargetBuffer(target);
-        return (elementBuffer && elementBuffer->isMapped());
-    }
-    else if (target == GL_TRANSFORM_FEEDBACK_BUFFER)
-    {
-        UNIMPLEMENTED();
-    }
-    else UNREACHABLE();
-    return false;
+    mRenderer->releaseShaderCompiler();
 }
 
 void Context::initCaps(GLuint clientVersion)
@@ -2524,20 +2375,45 @@ void Context::initCaps(GLuint clientVersion)
         //mExtensions.sRGB = false;
     }
 
+    // Apply implementation limits
+    mCaps.maxVertexAttributes = std::min<GLuint>(mCaps.maxVertexAttributes, MAX_VERTEX_ATTRIBS);
+    mCaps.maxVertexUniformBlocks = std::min<GLuint>(mCaps.maxVertexUniformBlocks, IMPLEMENTATION_MAX_VERTEX_SHADER_UNIFORM_BUFFERS);
+    mCaps.maxVertexOutputComponents = std::min<GLuint>(mCaps.maxVertexOutputComponents, IMPLEMENTATION_MAX_VARYING_VECTORS * 4);
+
+    mCaps.maxFragmentInputComponents = std::min<GLuint>(mCaps.maxFragmentInputComponents, IMPLEMENTATION_MAX_VARYING_VECTORS * 4);
+
+    GLuint maxSamples = 0;
+    mCaps.compressedTextureFormats.clear();
+
     const TextureCapsMap &rendererFormats = mRenderer->getRendererTextureCaps();
     for (TextureCapsMap::const_iterator i = rendererFormats.begin(); i != rendererFormats.end(); i++)
     {
         GLenum format = i->first;
         TextureCaps formatCaps = i->second;
 
-        if (formatCaps.texturable && IsValidInternalFormat(format, mExtensions, clientVersion))
+        const InternalFormat &formatInfo = GetInternalFormatInfo(format);
+
+        // Update the format caps based on the client version and extensions
+        formatCaps.texturable = formatInfo.textureSupport(clientVersion, mExtensions);
+        formatCaps.renderable = formatInfo.renderSupport(clientVersion, mExtensions);
+        formatCaps.filterable = formatInfo.filterSupport(clientVersion, mExtensions);
+
+        // OpenGL ES does not support multisampling with integer formats
+        if (!formatInfo.renderSupport || formatInfo.componentType == GL_INT || formatInfo.componentType == GL_UNSIGNED_INT)
         {
-            // Update the format caps based on the client version and extensions
-            formatCaps.renderable = IsRenderingSupported(format, mExtensions, clientVersion);
-            formatCaps.filterable = IsFilteringSupported(format, mExtensions, clientVersion);
-            mTextureCaps.insert(format, formatCaps);
+            formatCaps.sampleCounts.clear();
         }
+        maxSamples = std::max(maxSamples, formatCaps.getMaxSamples());
+
+        if (formatCaps.texturable && formatInfo.compressed)
+        {
+            mCaps.compressedTextureFormats.push_back(format);
+        }
+
+        mTextureCaps.insert(format, formatCaps);
     }
+
+    mExtensions.maxSamples = maxSamples;
 }
 
 }

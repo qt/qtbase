@@ -66,9 +66,6 @@ public:
 
     void updateProperties();
 
-public slots:
-    void updateStatusBarVisibility();
-
 private:
     UIScreen *m_uiScreen;
     UIWindow *m_uiWindow;

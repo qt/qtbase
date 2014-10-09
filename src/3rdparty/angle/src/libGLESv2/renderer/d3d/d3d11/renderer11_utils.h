@@ -13,8 +13,16 @@
 #include "libGLESv2/angletypes.h"
 #include "libGLESv2/Caps.h"
 
+#include <vector>
+
+namespace gl
+{
+class FramebufferAttachment;
+}
+
 namespace rx
 {
+class RenderTarget11;
 
 namespace gl_d3d11
 {
@@ -46,6 +54,8 @@ void GenerateCaps(ID3D11Device *device, gl::Caps *caps, gl::TextureCapsMap *text
 
 namespace d3d11
 {
+
+void MakeValidSize(bool isImage, DXGI_FORMAT format, GLsizei *requestWidth, GLsizei *requestHeight, int *levelOffset);
 
 void GenerateInitialTextureData(GLint internalFormat, GLuint width, GLuint height, GLuint depth,
                                 GLuint mipLevels, std::vector<D3D11_SUBRESOURCE_DATA> *outSubresourceData,
@@ -165,6 +175,8 @@ inline void SetBufferData(ID3D11DeviceContext *context, ID3D11Buffer *constantBu
 
     context->Unmap(constantBuffer, 0);
 }
+
+RenderTarget11 *GetAttachmentRenderTarget(gl::FramebufferAttachment *attachment);
 
 }
 

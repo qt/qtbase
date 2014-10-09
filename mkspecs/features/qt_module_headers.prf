@@ -12,7 +12,7 @@
 load(qt_build_paths)
 
 !build_pass:git_build {
-    qtPrepareTool(QMAKE_SYNCQT, syncqt)
+    qtPrepareTool(QMAKE_SYNCQT, syncqt, , system)
     minimal_syncqt {
         QMAKE_SYNCQT += -minimal $$QMAKE_SYNCQT_OPTIONS
     } else {

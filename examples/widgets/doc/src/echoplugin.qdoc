@@ -192,7 +192,7 @@
     the platform. By convention the target should have the same name
     as the plugin (set with Q_EXPORT_PLUGIN2)
 
-    \section1 Further reading and examples
+    \section1 Further Reading and Examples
 
     The \l {qtplugin-defining-plugins}{Defining Plugins} page presents an overview of the macros needed to
     create plugins.

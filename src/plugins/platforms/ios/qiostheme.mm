@@ -60,12 +60,22 @@ QT_BEGIN_NAMESPACE
 const char *QIOSTheme::name = "ios";
 
 QIOSTheme::QIOSTheme()
+    : m_systemPalette(*QPlatformTheme::palette(QPlatformTheme::SystemPalette))
 {
+    m_systemPalette.setBrush(QPalette::Highlight, QColor(204, 221, 237));
+    m_systemPalette.setBrush(QPalette::HighlightedText, Qt::black);
 }
 
 QIOSTheme::~QIOSTheme()
 {
     qDeleteAll(m_fonts);
+}
+
+const QPalette *QIOSTheme::palette(QPlatformTheme::Palette type) const
+{
+    if (type == QPlatformTheme::SystemPalette)
+        return &m_systemPalette;
+    return 0;
 }
 
 QPlatformMenuItem* QIOSTheme::createPlatformMenuItem() const

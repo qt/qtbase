@@ -43,6 +43,7 @@
 #include <QVBoxLayout>
 #include <QWizard>
 #include <QTreeWidget>
+#include <QScreen>
 
 Q_DECLARE_METATYPE(QWizard::WizardButton);
 
@@ -148,6 +149,7 @@ void tst_QWizard::init()
 
 void tst_QWizard::cleanup()
 {
+    QVERIFY(QApplication::topLevelWidgets().isEmpty());
 }
 
 void tst_QWizard::buttonText()
@@ -975,9 +977,17 @@ void tst_QWizard::setOption_IgnoreSubTitles()
 #if defined(Q_OS_WINCE)
     QSKIP("Skipped because of limited resources and potential crash. (Task: 166824)");
 #endif
+    const QRect availableGeometry = QGuiApplication::primaryScreen()->availableGeometry();
+    const int kPixels = (availableGeometry.width() + 500) / 1000;
+    const int frame = 50 * kPixels;
+    const int size = 400 * kPixels;
     QWizard wizard1;
+#ifdef Q_OS_WIN
+    wizard1.setWizardStyle(QWizard::ClassicStyle); // Avoid Vista style focus animations, etc.
+#endif
     wizard1.setButtonLayout(QList<QWizard::WizardButton>() << QWizard::CancelButton);
-    wizard1.resize(500, 500);
+    wizard1.resize(size, size);
+    wizard1.move(availableGeometry.left() + frame, availableGeometry.top() + frame);
     QVERIFY(!wizard1.testOption(QWizard::IgnoreSubTitles));
     QWizardPage *page11 = new QWizardPage;
     page11->setTitle("Page X");
@@ -990,8 +1000,12 @@ void tst_QWizard::setOption_IgnoreSubTitles()
     wizard1.addPage(page12);
 
     QWizard wizard2;
+#ifdef Q_OS_WIN
+    wizard2.setWizardStyle(QWizard::ClassicStyle); // Avoid Vista style focus animations, etc.
+#endif
     wizard2.setButtonLayout(QList<QWizard::WizardButton>() << QWizard::CancelButton);
-    wizard2.resize(500, 500);
+    wizard2.resize(size, size);
+    wizard2.move(availableGeometry.left() + 2 * frame + size, availableGeometry.top() + frame);
     wizard2.setOption(QWizard::IgnoreSubTitles, true);
     QWizardPage *page21 = new QWizardPage;
     page21->setTitle("Page X");
@@ -1005,6 +1019,7 @@ void tst_QWizard::setOption_IgnoreSubTitles()
 
     wizard1.show();
     wizard2.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&wizard2));
 
     // Check that subtitles are shown when they should (i.e.,
     // they're set and IgnoreSubTitles is off).
@@ -1019,24 +1034,24 @@ void tst_QWizard::setOption_IgnoreSubTitles()
 
     QImage i12 = grabWidget(&wizard1);
     QImage i22 = grabWidget(&wizard2);
-    QVERIFY(i12 == i22);
-    QVERIFY(i21 == i22);
+    QCOMPARE(i12, i22);
+    QCOMPARE(i21, i22);
 
     wizard1.back();
     wizard2.back();
 
     QImage i13 = grabWidget(&wizard1);
     QImage i23 = grabWidget(&wizard2);
-    QVERIFY(i13 == i11);
-    QVERIFY(i23 == i21);
+    QCOMPARE(i13, i11);
+    QCOMPARE(i23, i21);
 
     wizard1.setOption(QWizard::IgnoreSubTitles, true);
     wizard2.setOption(QWizard::IgnoreSubTitles, false);
 
     QImage i14 = grabWidget(&wizard1);
     QImage i24 = grabWidget(&wizard2);
-    QVERIFY(i14 == i21);
-    QVERIFY(i24 == i11);
+    QCOMPARE(i14, i21);
+    QCOMPARE(i24, i11);
 
     // Check the impact of subtitles on the rest of the layout, by
     // using a subtitle that looks empty (but that isn't). In
@@ -1060,7 +1075,7 @@ void tst_QWizard::setOption_IgnoreSubTitles()
             QImage i2 = grabWidget(&wizard1);
 
             if (j == 0 || wizard1.wizardStyle() == QWizard::MacStyle) {
-                QVERIFY(i1 == i2);
+                QCOMPARE(i1, i2);
             } else {
                 QVERIFY(i1 != i2);
             }
@@ -2411,9 +2426,9 @@ void tst_QWizard::sideWidget()
 
     wizard.setSideWidget(0);
     QVERIFY(wizard.sideWidget() == 0);
-    QWidget *w1 = new QWidget(&wizard);
-    wizard.setSideWidget(w1);
-    QVERIFY(wizard.sideWidget() == w1);
+    QScopedPointer<QWidget> w1(new QWidget(&wizard));
+    wizard.setSideWidget(w1.data());
+    QCOMPARE(wizard.sideWidget(), w1.data());
     QWidget *w2 = new QWidget(&wizard);
     wizard.setSideWidget(w2);
     QVERIFY(wizard.sideWidget() == w2);

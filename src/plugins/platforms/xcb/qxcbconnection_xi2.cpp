@@ -361,8 +361,10 @@ XInput2TouchDeviceData *QXcbConnection::touchDeviceForId(int id)
         QTouchDevice::Capabilities caps = 0;
         dev = new XInput2TouchDeviceData;
         dev->xiDeviceInfo = XIQueryDevice(static_cast<Display *>(m_xlib_display), id, &nrDevices);
-        if (nrDevices <= 0)
+        if (nrDevices <= 0) {
+            delete dev;
             return 0;
+        }
         int type = -1;
         int maxTouchPoints = 1;
         bool hasRelativeCoords = false;

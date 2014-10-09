@@ -48,7 +48,7 @@ public:
 
 QPlatformIntegration *QWindowsDirect2DIntegrationPlugin::create(const QString& system, const QStringList& paramList)
 {
-    if (system.compare(system, QStringLiteral("direct2d"), Qt::CaseInsensitive) == 0)
+    if (system.compare(system, QLatin1String("direct2d"), Qt::CaseInsensitive) == 0)
         return QWindowsDirect2DIntegration::create(paramList);
     return 0;
 }

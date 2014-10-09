@@ -149,6 +149,7 @@ bool QFseventsFileSystemWatcherEngine::checkDir(DirsByName::iterator &it)
         }
         if (dirChanged)
             emit emitDirectoryChanged(info.origPath, false);
+        ++it;
     }
 
     return needsRestart;

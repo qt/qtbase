@@ -2485,7 +2485,7 @@ void QStyleSheetStyle::setProperties(QWidget *w)
         QSet<const QString> propertySet;
         for (int i = decls.count() - 1; i >= 0; --i) {
             const QString property = decls.at(i).d->property;
-            if (!property.startsWith(QStringLiteral("qproperty-"), Qt::CaseInsensitive))
+            if (!property.startsWith(QLatin1String("qproperty-"), Qt::CaseInsensitive))
                 continue;
             if (!propertySet.contains(property)) {
                 propertySet.insert(property);
@@ -3573,8 +3573,8 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
                         pixmap = mi.icon.pixmap(pixelMetric(PM_SmallIconSize), mode, QIcon::On);
                     else
                         pixmap = mi.icon.pixmap(pixelMetric(PM_SmallIconSize), mode);
-                    int pixw = pixmap.width();
-                    int pixh = pixmap.height();
+                    const int pixw = pixmap.width() / pixmap.devicePixelRatio();
+                    const int pixh = pixmap.height() / pixmap.devicePixelRatio();
                     QRenderRule iconRule = renderRule(w, opt, PseudoElement_MenuIcon);
                     if (!iconRule.hasGeometry()) {
                         iconRule.geo = new QStyleSheetGeometryData(pixw, pixh, pixw, pixh, -1, -1);

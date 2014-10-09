@@ -2188,7 +2188,7 @@ void QWidgetTextControlPrivate::editFocusEvent(QEvent *e)
             setBlinkingCursorEnabled(false);
     }
 
-    hasEditFocus = e->type() == QEvent::EnterEditFocus ? true : false;
+    hasEditFocus = e->type() == QEvent::EnterEditFocus;
 }
 #endif
 

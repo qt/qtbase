@@ -83,7 +83,7 @@ QT_BEGIN_NAMESPACE
     \l {QNetworkSession}{session} is \l {QNetworkSession::open()}{opened}. Not all platforms
     support the concept of a user choice configuration.
 
-    \section1 Configuration states
+    \section1 Configuration States
 
     The list of available configurations can be obtained via
     QNetworkConfigurationManager::allConfigurations(). A configuration can have

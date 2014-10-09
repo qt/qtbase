@@ -30,6 +30,9 @@ class Renderer;
 
 struct TranslatedAttribute
 {
+    TranslatedAttribute() : active(false), attribute(NULL), currentValueType(GL_NONE),
+                            offset(0), stride(0), vertexBuffer(NULL), storage(NULL),
+                            serial(0), divisor(0) {};
     bool active;
 
     const gl::VertexAttribute *attribute;
@@ -49,11 +52,33 @@ class VertexDataManager
     VertexDataManager(rx::Renderer *renderer);
     virtual ~VertexDataManager();
 
-    GLenum prepareVertexData(const gl::VertexAttribute attribs[], const gl::VertexAttribCurrentValueData currentValues[],
-                             gl::ProgramBinary *programBinary, GLint start, GLsizei count, TranslatedAttribute *outAttribs, GLsizei instances);
+    gl::Error prepareVertexData(const gl::VertexAttribute attribs[], const gl::VertexAttribCurrentValueData currentValues[],
+                                gl::ProgramBinary *programBinary, GLint start, GLsizei count, TranslatedAttribute *outAttribs, GLsizei instances);
 
   private:
     DISALLOW_COPY_AND_ASSIGN(VertexDataManager);
+
+    gl::Error reserveSpaceForAttrib(const gl::VertexAttribute &attrib,
+                                    const gl::VertexAttribCurrentValueData &currentValue,
+                                    GLsizei count,
+                                    GLsizei instances) const;
+
+    void invalidateMatchingStaticData(const gl::VertexAttribute &attrib,
+                                      const gl::VertexAttribCurrentValueData &currentValue) const;
+
+    gl::Error storeAttribute(const gl::VertexAttribute &attrib,
+                             const gl::VertexAttribCurrentValueData &currentValue,
+                             TranslatedAttribute *translated,
+                             GLint start,
+                             GLsizei count,
+                             GLsizei instances);
+
+    gl::Error storeCurrentValue(const gl::VertexAttribute &attrib,
+                                const gl::VertexAttribCurrentValueData &currentValue,
+                                TranslatedAttribute *translated,
+                                gl::VertexAttribCurrentValueData *cachedValue,
+                                size_t *cachedOffset,
+                                StreamingVertexBufferInterface *buffer);
 
     rx::Renderer *const mRenderer;
 

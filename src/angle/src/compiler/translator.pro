@@ -16,11 +16,11 @@ BISON_SOURCES = $$ANGLE_DIR/src/compiler/translator/glslang.y
 HEADERS += \
     $$ANGLE_DIR/include/GLSLANG/ResourceLimits.h \
     $$ANGLE_DIR/include/GLSLANG/ShaderLang.h \
+    $$ANGLE_DIR/include/GLSLANG/ShaderVars.h \
     $$ANGLE_DIR/src/common/angleutils.h \
     $$ANGLE_DIR/src/common/blocklayout.h \
     $$ANGLE_DIR/src/common/debug.h \
     $$ANGLE_DIR/src/common/platform.h \
-    $$ANGLE_DIR/src/common/shadervars.h \
     $$ANGLE_DIR/src/common/tls.h \
     $$ANGLE_DIR/src/common/utilities.h \
     $$ANGLE_DIR/src/compiler/translator/BaseTypes.h \
@@ -46,7 +46,7 @@ HEADERS += \
     $$ANGLE_DIR/src/compiler/translator/InitializeParseContext.h \
     $$ANGLE_DIR/src/compiler/translator/InitializeVariables.h \
     $$ANGLE_DIR/src/compiler/translator/intermediate.h \
-    $$ANGLE_DIR/src/compiler/translator/localintermediate.h \
+    $$ANGLE_DIR/src/compiler/translator/IntermNode.h \
     $$ANGLE_DIR/src/compiler/translator/LoopInfo.h \
     $$ANGLE_DIR/src/compiler/translator/MMap.h \
     $$ANGLE_DIR/src/compiler/translator/NodeSearch.h \
@@ -59,6 +59,7 @@ HEADERS += \
     $$ANGLE_DIR/src/compiler/translator/PoolAlloc.h \
     $$ANGLE_DIR/src/compiler/translator/Pragma.h \
     $$ANGLE_DIR/src/compiler/translator/QualifierAlive.h \
+    $$ANGLE_DIR/src/compiler/translator/RegenerateStructNames.h \
     $$ANGLE_DIR/src/compiler/translator/RemoveTree.h \
     $$ANGLE_DIR/src/compiler/translator/RenameFunction.h \
     $$ANGLE_DIR/src/compiler/translator/RewriteElseBlocks.h \
@@ -108,6 +109,7 @@ SOURCES += \
     $$ANGLE_DIR/src/compiler/translator/InitializeParseContext.cpp \
     $$ANGLE_DIR/src/compiler/translator/InitializeVariables.cpp \
     $$ANGLE_DIR/src/compiler/translator/Intermediate.cpp \
+    $$ANGLE_DIR/src/compiler/translator/IntermNode.cpp \
     $$ANGLE_DIR/src/compiler/translator/intermOut.cpp \
     $$ANGLE_DIR/src/compiler/translator/IntermTraverse.cpp \
     $$ANGLE_DIR/src/compiler/translator/LoopInfo.cpp \
@@ -119,11 +121,13 @@ SOURCES += \
     $$ANGLE_DIR/src/compiler/translator/ParseContext.cpp \
     $$ANGLE_DIR/src/compiler/translator/PoolAlloc.cpp \
     $$ANGLE_DIR/src/compiler/translator/QualifierAlive.cpp \
+    $$ANGLE_DIR/src/compiler/translator/RegenerateStructNames.cpp \
     $$ANGLE_DIR/src/compiler/translator/RemoveTree.cpp \
     $$ANGLE_DIR/src/compiler/translator/RewriteElseBlocks.cpp \
     $$ANGLE_DIR/src/compiler/translator/ScalarizeVecAndMatConstructorArgs.cpp \
     $$ANGLE_DIR/src/compiler/translator/SearchSymbol.cpp \
     $$ANGLE_DIR/src/compiler/translator/ShaderLang.cpp \
+    $$ANGLE_DIR/src/compiler/translator/ShaderVars.cpp \
     $$ANGLE_DIR/src/compiler/translator/StructureHLSL.cpp \
     $$ANGLE_DIR/src/compiler/translator/SymbolTable.cpp \
     $$ANGLE_DIR/src/compiler/translator/timing/RestrictFragmentShaderTiming.cpp \

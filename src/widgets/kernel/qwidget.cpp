@@ -10526,6 +10526,22 @@ void QWidgetPrivate::setParent_sys(QWidget *newparent, Qt::WindowFlags f)
     if (wasCreated && !(f & Qt::Window) && (oldFlags & Qt::Window) && !q->testAttribute(Qt::WA_NativeWindow)) {
         if (extra && extra->hasWindowContainer)
             QWindowContainer::toplevelAboutToBeDestroyed(q);
+
+        QWindow *newParentWindow = newparent->windowHandle();
+        if (!newParentWindow)
+            if (QWidget *npw = newparent->nativeParentWidget())
+                newParentWindow = npw->windowHandle();
+
+        Q_FOREACH (QObject *child, q->windowHandle()->children()) {
+            QWindow *childWindow = qobject_cast<QWindow *>(child);
+            if (!childWindow)
+                continue;
+
+            QWidgetWindow *childWW = qobject_cast<QWidgetWindow *>(childWindow);
+            QWidget *childWidget = childWW ? childWW->widget() : 0;
+            if (!childWW || (childWidget && childWidget->testAttribute(Qt::WA_NativeWindow)))
+                childWindow->setParent(newParentWindow);
+        }
         q->destroy();
     }
 

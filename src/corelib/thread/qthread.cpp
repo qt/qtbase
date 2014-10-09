@@ -213,7 +213,7 @@ QThreadPrivate::~QThreadPrivate()
     \note Care must be taken when interacting with objects across different
     threads. See \l{Synchronizing Threads} for details.
 
-    \section1 Managing threads
+    \section1 Managing Threads
 
     QThread will notifiy you via a signal when the thread is
     started() and finished(), or you can use isFinished() and

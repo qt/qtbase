@@ -935,7 +935,7 @@ QDataStream &operator>>(QDataStream &ds, QTimeZone &tz)
 {
     QString ianaId;
     ds >> ianaId;
-    if (ianaId == QStringLiteral("OffsetFromUtc")) {
+    if (ianaId == QLatin1String("OffsetFromUtc")) {
         int utcOffset;
         QString name;
         QString abbreviation;
@@ -954,7 +954,7 @@ QDataStream &operator>>(QDataStream &ds, QTimeZone &tz)
 QDebug operator<<(QDebug dbg, const QTimeZone &tz)
 {
     //TODO Include backend and data version details?
-    dbg.nospace() << QStringLiteral("QTimeZone(") << qPrintable(QString::fromUtf8(tz.id())) << ')';
+    dbg.nospace() << "QTimeZone(" << QString::fromUtf8(tz.id()) << ')';
     return dbg.space();
 }
 #endif

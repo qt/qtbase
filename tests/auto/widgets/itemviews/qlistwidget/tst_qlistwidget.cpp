@@ -1080,7 +1080,7 @@ public:
 
     bool isEditingState(QListWidgetItem *item) {
         Q_UNUSED(item);
-        return (QListWidget::state() == QListWidget::EditingState ? true : false);
+        return QListWidget::state() == QListWidget::EditingState;
     }
 };
 

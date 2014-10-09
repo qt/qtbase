@@ -1,14 +1,15 @@
-#include "precompiled.h"
+//
+// Copyright 2014 The ANGLE Project Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+//
+
 #include "libGLESv2/renderer/d3d/HLSLCompiler.h"
 #include "libGLESv2/Program.h"
 #include "libGLESv2/main.h"
 
 #include "common/utilities.h"
 #include "common/platform.h"
-
-#include "third_party/trace_event/trace_event.h"
-
-#include <d3dcompiler.h>
 
 #if defined(__MINGW32__) && !defined(D3DCOMPILER_DLL)
 
@@ -29,10 +30,6 @@ typedef HRESULT (WINAPI *pD3DCompile)(const void *data, SIZE_T data_size, const 
 #define QT_D3DCOMPILER_DLL D3DCOMPILER_DLL
 #endif
 
-#ifndef LoadLibrary
-#define LoadLibrary(dll) LoadPackagedLibrary(dll, NULL)
-#endif
-
 namespace rx
 {
 
@@ -49,7 +46,6 @@ HLSLCompiler::~HLSLCompiler()
 
 bool HLSLCompiler::initialize()
 {
-    TRACE_EVENT0("gpu", "initializeCompiler");
 #if !defined(ANGLE_PLATFORM_WINRT)
 #if defined(ANGLE_PRELOADED_D3DCOMPILER_MODULE_NAMES)
     // Find a D3DCompiler module that had already been loaded based on a predefined list of versions.
@@ -153,14 +149,11 @@ ShaderBlob *HLSLCompiler::compileToBinary(gl::InfoLog &infoLog, const char *hlsl
                 return gl::error(GL_OUT_OF_MEMORY, (ShaderBlob*)NULL);
             }
 
-            infoLog.append("Warning: D3D shader compilation failed with ");
-            infoLog.append(flagNames[i]);
-            infoLog.append(" flags.");
+            infoLog.append("Warning: D3D shader compilation failed with %s flags.", flagNames[i]);
+
             if (i + 1 < attempts)
             {
-                infoLog.append(" Retrying with ");
-                infoLog.append(flagNames[i + 1]);
-                infoLog.append(".\n");
+                infoLog.append(" Retrying with %s.\n", flagNames[i + 1]);
             }
         }
     }

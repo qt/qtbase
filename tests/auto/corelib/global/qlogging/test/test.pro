@@ -5,5 +5,6 @@ TARGET = ../tst_qlogging
 QT = core testlib
 SOURCES = ../tst_qlogging.cpp
 
+DEFINES += QT_MESSAGELOGCONTEXT
 TEST_HELPER_INSTALLS = ../app/app
 DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

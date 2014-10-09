@@ -79,4 +79,9 @@
     against. Unlike QPA however, source compatibility is guaranteed.
 
     \sa QXcbWindowFunctions
+
+    \section1 API Reference
+    \list
+    \li \l{Qt Platform Headers C++ Classes}{C++ Classes}
+    \endlist
  */

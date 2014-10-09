@@ -671,8 +671,8 @@ void QWindowsCEStyle::drawControl(ControlElement element, const QStyleOption *op
                     pixmap = menuitem->icon.pixmap(pixelMetric(PM_SmallIconSize), mode, QIcon::On);
                 else
                     pixmap = menuitem->icon.pixmap(pixelMetric(PM_SmallIconSize), mode);
-                int pixw = pixmap.width();
-                int pixh = pixmap.height();
+                const int pixw = pixmap.width() / pixmap.devicePixelRatio();
+                const int pixh = pixmap.height() / pixmap.devicePixelRatio();
                 if (act && !dis && !checked)
                     qDrawPlainRect(painter, vCheckRect,  menuitem->palette.button().color(), 1,
                                     &menuitem->palette.brush(QPalette::Button));

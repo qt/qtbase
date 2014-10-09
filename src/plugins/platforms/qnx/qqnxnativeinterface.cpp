@@ -107,9 +107,9 @@ void QQnxNativeInterface::setWindowProperty(QPlatformWindow *window, const QStri
 {
     QQnxWindow *qnxWindow = static_cast<QQnxWindow*>(window);
 
-    if (name == QStringLiteral("mmRendererWindowName")) {
+    if (name == QLatin1String("mmRendererWindowName")) {
         qnxWindow->setMMRendererWindowName(value.toString());
-    } else if (name == QStringLiteral("qnxWindowGroup")) {
+    } else if (name == QLatin1String("qnxWindowGroup")) {
         if (value.isNull())
             qnxWindow->joinWindowGroup(QByteArray());
         else if (value.canConvert<QByteArray>())

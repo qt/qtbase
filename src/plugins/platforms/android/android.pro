@@ -50,7 +50,6 @@ SOURCES += $$PWD/androidplatformplugin.cpp \
            $$PWD/qandroidplatformbackingstore.cpp \
            $$PWD/qandroidplatformopenglcontext.cpp \
            $$PWD/qandroidplatformforeignwindow.cpp \
-           $$PWD/extract.cpp \
            $$PWD/qandroideventdispatcher.cpp
 
 HEADERS += $$PWD/qandroidplatformintegration.h \
@@ -79,6 +78,9 @@ HEADERS += $$PWD/qandroidplatformintegration.h \
            $$PWD/qandroidplatformopenglcontext.h \
            $$PWD/qandroidplatformforeignwindow.h \
            $$PWD/qandroideventdispatcher.h
+
+android-style-assets: SOURCES += $$PWD/extract.cpp
+else: SOURCES += $$PWD/extract-dummy.cpp
 
 #Non-standard install directory, QTBUG-29859
 DESTDIR = $$DESTDIR/android

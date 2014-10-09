@@ -277,9 +277,9 @@ public:
 
     static QPrint::DuplexMode ppdChoiceToDuplexMode(const QByteArray &choice)
     {
-        if (choice == QByteArrayLiteral("DuplexTumble"))
+        if (choice == "DuplexTumble")
             return QPrint::DuplexShortSide;
-        else if (choice == QByteArrayLiteral("DuplexNoTumble"))
+        else if (choice == "DuplexNoTumble")
             return QPrint::DuplexLongSide;
         else // None or SimplexTumble or SimplexNoTumble
             return QPrint::DuplexNone;

@@ -61,7 +61,7 @@ void QStorageInfoPrivate::initRootPath()
     QString path = QDir::toNativeSeparators(rootPath);
     rootPath.clear();
 
-    if (path.startsWith(QStringLiteral("\\\\?\\")))
+    if (path.startsWith(QLatin1String("\\\\?\\")))
         path.remove(0, 4);
     if (path.length() < 2 || path.at(1) != QLatin1Char(':'))
         return;

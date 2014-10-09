@@ -1957,7 +1957,8 @@ QString QAccessibleTextInterface::textBeforeOffset(int offset, QAccessible::Text
     if (txt.isEmpty() || offset <= 0 || offset > txt.length())
         return QString();
 
-    QTextBoundaryFinder::BoundaryType type;
+    // type initialized just to silence a compiler warning [-Werror=maybe-uninitialized]
+    QTextBoundaryFinder::BoundaryType type = QTextBoundaryFinder::Grapheme;
     switch (boundaryType) {
     case QAccessible::CharBoundary:
         type = QTextBoundaryFinder::Grapheme;
@@ -1975,6 +1976,8 @@ QString QAccessibleTextInterface::textBeforeOffset(int offset, QAccessible::Text
     case QAccessible::NoBoundary:
         // return empty, this function currently only supports single lines, so there can be no line before
         return QString();
+    default:
+        Q_UNREACHABLE();
     }
 
     // keep behavior in sync with QTextCursor::movePosition()!
@@ -2028,7 +2031,8 @@ QString QAccessibleTextInterface::textAfterOffset(int offset, QAccessible::TextB
     if (txt.isEmpty() || offset < 0 || offset >= txt.length())
         return QString();
 
-    QTextBoundaryFinder::BoundaryType type;
+    // type initialized just to silence a compiler warning [-Werror=maybe-uninitialized]
+    QTextBoundaryFinder::BoundaryType type = QTextBoundaryFinder::Grapheme;
     switch (boundaryType) {
     case QAccessible::CharBoundary:
         type = QTextBoundaryFinder::Grapheme;
@@ -2046,6 +2050,8 @@ QString QAccessibleTextInterface::textAfterOffset(int offset, QAccessible::TextB
     case QAccessible::NoBoundary:
         // return empty, this function currently only supports single lines, so there can be no line after
         return QString();
+    default:
+        Q_UNREACHABLE();
     }
 
     // keep behavior in sync with QTextCursor::movePosition()!
@@ -2113,7 +2119,8 @@ QString QAccessibleTextInterface::textAtOffset(int offset, QAccessible::TextBoun
     if (offset == txt.length() && boundaryType == QAccessible::CharBoundary)
         return QString();
 
-    QTextBoundaryFinder::BoundaryType type;
+    // type initialized just to silence a compiler warning [-Werror=maybe-uninitialized]
+    QTextBoundaryFinder::BoundaryType type = QTextBoundaryFinder::Grapheme;
     switch (boundaryType) {
     case QAccessible::CharBoundary:
         type = QTextBoundaryFinder::Grapheme;
@@ -2132,6 +2139,8 @@ QString QAccessibleTextInterface::textAtOffset(int offset, QAccessible::TextBoun
         *startOffset = 0;
         *endOffset = txt.length();
         return txt;
+    default:
+        Q_UNREACHABLE();
     }
 
     // keep behavior in sync with QTextCursor::movePosition()!

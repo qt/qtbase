@@ -1,4 +1,3 @@
-#include "precompiled.h"
 //
 // Copyright (c) 2013 The ANGLE Project Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
@@ -11,15 +10,15 @@
 //
 
 #include "libGLESv2/renderer/d3d/d3d11/PixelTransfer11.h"
-#include "libGLESv2/formatutils.h"
-#include "libGLESv2/Texture.h"
-#include "libGLESv2/Buffer.h"
 #include "libGLESv2/renderer/d3d/d3d11/Renderer11.h"
 #include "libGLESv2/renderer/d3d/d3d11/renderer11_utils.h"
 #include "libGLESv2/renderer/d3d/d3d11/formatutils11.h"
 #include "libGLESv2/renderer/d3d/d3d11/Buffer11.h"
 #include "libGLESv2/renderer/d3d/d3d11/TextureStorage11.h"
 #include "libGLESv2/renderer/d3d/d3d11/RenderTarget11.h"
+#include "libGLESv2/formatutils.h"
+#include "libGLESv2/Texture.h"
+#include "libGLESv2/Buffer.h"
 #include "libGLESv2/Context.h"
 
 // Precompiled shaders
@@ -125,7 +124,7 @@ void PixelTransfer11::setBufferToTextureCopyParams(const gl::Box &destArea, cons
     float texelCenterX = 0.5f / static_cast<float>(destSize.width - 1);
     float texelCenterY = 0.5f / static_cast<float>(destSize.height - 1);
 
-    unsigned int bytesPerPixel = gl::GetPixelBytes(internalFormat);
+    unsigned int bytesPerPixel = gl::GetInternalFormatInfo(internalFormat).pixelBytes;
     unsigned int alignmentBytes = static_cast<unsigned int>(unpack.alignment);
     unsigned int alignmentPixels = (alignmentBytes <= bytesPerPixel ? 1 : alignmentBytes / bytesPerPixel);
 
@@ -160,10 +159,11 @@ bool PixelTransfer11::copyBufferToTexture(const gl::PixelUnpackState &unpack, un
 
     // The SRV must be in the proper read format, which may be different from the destination format
     // EG: for half float data, we can load full precision floats with implicit conversion
-    GLenum unsizedFormat = gl::GetFormat(destinationFormat);
-    GLenum sourceFormat = gl::GetSizedInternalFormat(unsizedFormat, sourcePixelsType);
+    GLenum unsizedFormat = gl::GetInternalFormatInfo(destinationFormat).format;
+    GLenum sourceFormat = gl::GetFormatTypeInfo(unsizedFormat, sourcePixelsType).internalFormat;
 
-    DXGI_FORMAT srvFormat = gl_d3d11::GetSRVFormat(sourceFormat);
+    const d3d11::TextureFormat &sourceFormatInfo = d3d11::GetTextureFormatInfo(sourceFormat);
+    DXGI_FORMAT srvFormat = sourceFormatInfo.srvFormat;
     ASSERT(srvFormat != DXGI_FORMAT_UNKNOWN);
     Buffer11 *bufferStorage11 = Buffer11::makeBuffer11(sourceBuffer.getImplementation());
     ID3D11ShaderResourceView *bufferSRV = bufferStorage11->getSRV(srvFormat);
@@ -239,8 +239,7 @@ void PixelTransfer11::buildShaderMap()
 
 ID3D11PixelShader *PixelTransfer11::findBufferToTexturePS(GLenum internalFormat) const
 {
-    GLenum componentType = gl::GetComponentType(internalFormat);
-
+    GLenum componentType = gl::GetInternalFormatInfo(internalFormat).componentType;
     if (componentType == GL_SIGNED_NORMALIZED || componentType == GL_UNSIGNED_NORMALIZED)
     {
         componentType = GL_FLOAT;

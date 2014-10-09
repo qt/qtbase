@@ -196,7 +196,7 @@ static void rfcDateImpl(const QString &s, QDate *dd = 0, QTime *dt = 0, int *utc
                 min = rex.cap(5).toInt();
                 sec = rex.cap(6).toInt();
             }
-            positiveOffset = (rex.cap(7) == QStringLiteral("+"));
+            positiveOffset = (rex.cap(7) == QLatin1String("+"));
             hourOffset = rex.cap(8).toInt();
             minOffset = rex.cap(9).toInt();
         }
@@ -217,7 +217,7 @@ static void rfcDateImpl(const QString &s, QDate *dd = 0, QTime *dt = 0, int *utc
                     min = rex.cap(4).toInt();
                     sec = rex.cap(5).toInt();
                 }
-                positiveOffset = (rex.cap(7) == QStringLiteral("+"));
+                positiveOffset = (rex.cap(7) == QLatin1String("+"));
                 hourOffset = rex.cap(8).toInt();
                 minOffset = rex.cap(9).toInt();
             }

@@ -49,18 +49,6 @@
 
 QT_BEGIN_NAMESPACE
 
-
-#if 0
-#ifndef GL_ARB_vertex_buffer_object
-typedef ptrdiff_t GLintptrARB;
-typedef ptrdiff_t GLsizeiptrARB;
-#endif
-#endif
-
-#ifndef GL_VERSION_2_0
-typedef char GLchar;
-#endif
-
 class QOpenGLExtensionsPrivate;
 
 class Q_GUI_EXPORT QOpenGLExtensions : public QOpenGLFunctions
@@ -92,7 +80,8 @@ public:
         SRGBFrameBuffer         = 0x00020000,
         MapBuffer               = 0x00040000,
         GeometryShaders         = 0x00080000,
-        MapBufferRange          = 0x00100000
+        MapBufferRange          = 0x00100000,
+        Sized8Formats           = 0x00200000
     };
     Q_DECLARE_FLAGS(OpenGLExtensions, OpenGLExtension)
 

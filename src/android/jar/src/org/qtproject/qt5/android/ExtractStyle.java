@@ -761,6 +761,9 @@ public class ExtractStyle {
     private JSONObject getJsonChunkInfo(int[] chunkData) throws JSONException
     {
         JSONObject jsonRect = new JSONObject();
+        if (chunkData == null)
+            return jsonRect;
+
         jsonRect.put("xdivs", getJsonArray(chunkData, 3, chunkData[0]));
         jsonRect.put("ydivs", getJsonArray(chunkData, 3 + chunkData[0], chunkData[1]));
         jsonRect.put("colors", getJsonArray(chunkData, 3 + chunkData[0] + chunkData[1], chunkData[2]));

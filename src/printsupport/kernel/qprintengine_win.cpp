@@ -1414,6 +1414,9 @@ QVariant QWin32PrintEngine::property(PrintEnginePropertyKey key) const
         value.setValue(d->m_pageLayout);
         break;
 
+    case PPK_CustomBase:
+        break;
+
     // No default so that compiler will complain if new keys added and not handled in this engine
     }
     return value;

@@ -11,5 +11,3 @@ qtHaveModule(opengl): QT += opengl
 mac {
     LIBS += -framework Security
 }
-
-!mac:!win32:CONFIG+=insignificant_test # QTBUG-25298

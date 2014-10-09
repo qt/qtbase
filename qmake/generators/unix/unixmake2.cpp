@@ -430,6 +430,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
             }
         }
     }
+    QString allDeps;
     if (!project->values("QMAKE_APP_FLAG").isEmpty() || project->first("TEMPLATE") == "aux") {
         QString destdir = project->first("DESTDIR").toQString();
         if(!project->isEmpty("QMAKE_BUNDLE")) {
@@ -490,8 +491,6 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                 deps.prepend(incr_target_dir + " ");
                 incr_deps = "$(OBJECTS)";
             }
-            t << "all: " << escapeDependencyPath(deps) <<  " " << valGlue(escapeDependencyPaths(project->values("ALL_DEPS")),""," "," ") <<  "$(TARGET)"
-              << endl << endl;
 
             //real target
             t << var("TARGET") << ": " << var("PRE_TARGETDEPS") << " " << incr_deps << " " << target_deps
@@ -505,9 +504,6 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                 t << "\n\t" << var("QMAKE_POST_LINK");
             t << endl << endl;
         } else {
-            t << "all: " << escapeDependencyPath(deps) <<  " " << valGlue(escapeDependencyPaths(project->values("ALL_DEPS")),""," "," ") <<  "$(TARGET)"
-              << endl << endl;
-
             t << "$(TARGET): " << var("PRE_TARGETDEPS") << " $(OBJECTS) "
               << target_deps << " " << var("POST_TARGETDEPS") << "\n\t";
             if (project->first("TEMPLATE") != "aux") {
@@ -521,6 +517,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
             }
             t << endl << endl;
         }
+        allDeps = " $(TARGET)";
     } else if(!project->isActiveConfig("staticlib")) {
         QString destdir = unescapeFilePath(project->first("DESTDIR").toQString()), incr_deps;
         if(!project->isEmpty("QMAKE_BUNDLE")) {
@@ -580,19 +577,15 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                 incr_deps = "$(OBJECTS)";
             }
 
-            t << "all:  " << escapeDependencyPath(deps) << " " << valGlue(escapeDependencyPaths(project->values("ALL_DEPS")),""," "," ")
-              << " " << destdir << "$(TARGET)\n\n";
-
             //real target
             t << destdir << "$(TARGET): " << var("PRE_TARGETDEPS") << " "
               << incr_deps << " $(SUBLIBS) " << target_deps << " " << var("POST_TARGETDEPS");
         } else {
-            t << "all: " << escapeDependencyPath(deps) << " " << valGlue(escapeDependencyPaths(project->values("ALL_DEPS")),""," "," ") << " " <<
-                destdir << "$(TARGET)\n\n";
             t << destdir << "$(TARGET): " << var("PRE_TARGETDEPS")
               << " $(OBJECTS) $(SUBLIBS) $(OBJCOMP) " << target_deps
               << " " << var("POST_TARGETDEPS");
         }
+        allDeps = ' ' + destdir + "$(TARGET)";
         if(!destdir.isEmpty())
             t << "\n\t" << mkdir_p_asstring(destdir, false);
         if(!project->isEmpty("QMAKE_PRE_LINK"))
@@ -695,9 +688,9 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
         }
     } else {
         QString destdir = project->first("DESTDIR").toQString();
-        t << "all: " << escapeDependencyPath(deps) << " " << valGlue(escapeDependencyPaths(project->values("ALL_DEPS")),""," "," ") << destdir << "$(TARGET) "
-          << varGlue("QMAKE_AR_SUBLIBS", destdir, " " + destdir, "") << "\n\n"
-          << "staticlib: " << destdir << "$(TARGET)\n\n";
+        allDeps = ' ' + destdir + "$(TARGET)"
+                  + varGlue("QMAKE_AR_SUBLIBS", ' ' + destdir, ' ' + destdir, "");
+        t << "staticlib: " << destdir << "$(TARGET)\n\n";
         if(project->isEmpty("QMAKE_AR_SUBLIBS")) {
             t << destdir << "$(TARGET): " << var("PRE_TARGETDEPS")
               << " $(OBJECTS) $(OBJCOMP) " << var("POST_TARGETDEPS") << "\n\t";
@@ -763,85 +756,111 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
               << "@$(QMAKE) -prl " << buildArgs() << " " << project->projectFile() << endl;
     }
 
-    if(!project->first("QMAKE_PKGINFO").isEmpty()) {
-        ProString pkginfo = escapeFilePath(project->first("QMAKE_PKGINFO"));
-        QString destdir = project->first("DESTDIR") + project->first("QMAKE_BUNDLE") + "/Contents";
-        t << pkginfo << ": \n\t";
-        if(!destdir.isEmpty())
-            t << mkdir_p_asstring(destdir) << "\n\t";
-        t << "@$(DEL_FILE) " << pkginfo << "\n\t"
-          << "@echo \"APPL"
-          << (project->isEmpty("QMAKE_PKGINFO_TYPEINFO") ? QString::fromLatin1("????") : project->first("QMAKE_PKGINFO_TYPEINFO").left(4))
-          << "\" >" << pkginfo << endl;
-    }
-    if(!project->first("QMAKE_BUNDLE_RESOURCE_FILE").isEmpty()) {
-        ProString resources = escapeFilePath(project->first("QMAKE_BUNDLE_RESOURCE_FILE"));
-        bundledFiles << resources;
-        QString destdir = project->first("DESTDIR") + project->first("QMAKE_BUNDLE") + "/Contents/Resources";
-        t << resources << ": \n\t";
-        t << mkdir_p_asstring(destdir) << "\n\t";
-        t << "@touch " << resources << "\n\t\n";
-    }
-    if(!project->isEmpty("QMAKE_BUNDLE")) {
-        //copy the plist
-        QString info_plist = escapeFilePath(fileFixify(project->first("QMAKE_INFO_PLIST").toQString())),
-            info_plist_out = escapeFilePath(project->first("QMAKE_INFO_PLIST_OUT").toQString());
-        if (info_plist.isEmpty())
-            info_plist = specdir() + QDir::separator() + "Info.plist." + project->first("TEMPLATE");
-        bundledFiles << info_plist_out;
-        QString destdir = info_plist_out.section(Option::dir_sep, 0, -2);
-        t << info_plist_out << ": \n\t";
-        if(!destdir.isEmpty())
-            t << mkdir_p_asstring(destdir, false) << "\n\t";
-        ProStringList commonSedArgs;
-        if (!project->values("VERSION").isEmpty())
-            commonSedArgs << "-e \"s,@SHORT_VERSION@," << project->first("VER_MAJ") << "." << project->first("VER_MIN") << ",g\" ";
-        commonSedArgs << "-e \"s,@TYPEINFO@,"<< (project->isEmpty("QMAKE_PKGINFO_TYPEINFO") ?
-                   QString::fromLatin1("????") : project->first("QMAKE_PKGINFO_TYPEINFO").left(4)) << ",g\" ";
-        if(project->first("TEMPLATE") == "app") {
-            QString icon = fileFixify(var("ICON"));
-            QString bundlePrefix = project->first("QMAKE_TARGET_BUNDLE_PREFIX").toQString();
-            if (bundlePrefix.isEmpty())
-                bundlePrefix = "com.yourcompany";
-            if (bundlePrefix.endsWith("."))
-                bundlePrefix.chop(1);
-            QString bundleIdentifier =  bundlePrefix + "." + var("QMAKE_BUNDLE");
-            if (bundleIdentifier.endsWith(".app"))
-                bundleIdentifier.chop(4);
-            t << "@$(DEL_FILE) " << info_plist_out << "\n\t"
-              << "@sed ";
-            foreach (const ProString &arg, commonSedArgs)
-                t << arg;
-            t << "-e \"s,@ICON@," << icon.section(Option::dir_sep, -1) << ",g\" "
-              << "-e \"s,@BUNDLEIDENTIFIER@," << bundleIdentifier << ",g\" "
-              << "-e \"s,@EXECUTABLE@," << var("QMAKE_ORIG_TARGET") << ",g\" "
-              << "-e \"s,@TYPEINFO@,"<< (project->isEmpty("QMAKE_PKGINFO_TYPEINFO") ?
-                         QString::fromLatin1("????") : project->first("QMAKE_PKGINFO_TYPEINFO").left(4)) << ",g\" "
-              << "" << info_plist << " >" << info_plist_out << endl;
-            //copy the icon
-            if(!project->isEmpty("ICON")) {
-                QString dir = project->first("DESTDIR") + project->first("QMAKE_BUNDLE") + "/Contents/Resources/";
-                const QString icon_path = escapeFilePath(dir + icon.section(Option::dir_sep, -1));
-                bundledFiles << icon_path;
-                t << icon_path << ": " << icon << "\n\t"
-                  << mkdir_p_asstring(dir) << "\n\t"
-                  << "@$(DEL_FILE) " << icon_path << "\n\t"
-                  << "@$(COPY_FILE) " << escapeFilePath(icon) << " " << icon_path << endl;
-            }
-        } else {
-            t << "@$(DEL_FILE) " << info_plist_out << "\n\t"
-              << "@sed ";
-            foreach (const ProString &arg, commonSedArgs)
-                t << arg;
-            t << "-e \"s,@LIBRARY@," << var("QMAKE_ORIG_TARGET") << ",g\" "
-              << "-e \"s,@TYPEINFO@,"
-              << (project->isEmpty("QMAKE_PKGINFO_TYPEINFO") ?
-                  QString::fromLatin1("????") : project->first("QMAKE_PKGINFO_TYPEINFO").left(4)) << ",g\" "
-              << "" << info_plist << " >" << info_plist_out << endl;
+    if (!project->isEmpty("QMAKE_BUNDLE")) {
+        QHash<QString, QString> symlinks;
+        ProStringList &alldeps = project->values("ALL_DEPS");
+        QString bundle_dir = project->first("DESTDIR") + project->first("QMAKE_BUNDLE") + "/";
+        if (!project->first("QMAKE_PKGINFO").isEmpty()) {
+            ProString pkginfo = escapeFilePath(project->first("QMAKE_PKGINFO"));
+            bundledFiles << pkginfo;
+            alldeps << pkginfo;
+            QString destdir = bundle_dir + "Contents";
+            t << pkginfo << ": \n\t";
+            if (!destdir.isEmpty())
+                t << mkdir_p_asstring(destdir) << "\n\t";
+            t << "@$(DEL_FILE) " << pkginfo << "\n\t"
+              << "@echo \"APPL"
+              << (project->isEmpty("QMAKE_PKGINFO_TYPEINFO")
+                  ? QString::fromLatin1("????") : project->first("QMAKE_PKGINFO_TYPEINFO").left(4))
+              << "\" >" << pkginfo << endl;
         }
+        if (!project->first("QMAKE_BUNDLE_RESOURCE_FILE").isEmpty()) {
+            ProString resources = escapeFilePath(project->first("QMAKE_BUNDLE_RESOURCE_FILE"));
+            bundledFiles << resources;
+            alldeps << resources;
+            QString destdir = bundle_dir + "Contents/Resources";
+            t << resources << ": \n\t";
+            t << mkdir_p_asstring(destdir) << "\n\t";
+            t << "@touch " << resources << "\n\t\n";
+        }
+        //copy the plist
+        while (!project->isActiveConfig("no_plist")) {  // 'while' just to be able to 'break'
+            QString info_plist = escapeFilePath(fileFixify(project->first("QMAKE_INFO_PLIST").toQString()));
+            if (info_plist.isEmpty())
+                info_plist = specdir() + QDir::separator() + "Info.plist." + project->first("TEMPLATE");
+            if (!exists(Option::fixPathToLocalOS(info_plist))) {
+                warn_msg(WarnLogic, "Could not resolve Info.plist: '%s'. Check if QMAKE_INFO_PLIST points to a valid file.",
+                         info_plist.toLatin1().constData());
+                break;
+            }
+            bool isApp = (project->first("TEMPLATE") == "app");
+            QString info_plist_out = escapeFilePath(
+                    bundle_dir + (isApp ? "Contents/Info.plist"
+                                        : "Versions/" + project->first("QMAKE_FRAMEWORK_VERSION")
+                                          + "/Resources/Info.plist"));
+            bundledFiles << info_plist_out;
+            alldeps << info_plist_out;
+            QString destdir = info_plist_out.section(Option::dir_sep, 0, -2);
+            t << info_plist_out << ": \n\t";
+            if (!destdir.isEmpty())
+                t << mkdir_p_asstring(destdir, false) << "\n\t";
+            ProStringList commonSedArgs;
+            if (!project->values("VERSION").isEmpty()) {
+                commonSedArgs << "-e \"s,@SHORT_VERSION@," << project->first("VER_MAJ") << "."
+                                                           << project->first("VER_MIN") << ",g\" ";
+                commonSedArgs << "-e \"s,@FULL_VERSION@," << project->first("VER_MAJ") << "."
+                                                          << project->first("VER_MIN") << "."
+                                                          << project->first("VER_PAT") << ",g\" ";
+            }
+            commonSedArgs << "-e \"s,@TYPEINFO@,"<< (project->isEmpty("QMAKE_PKGINFO_TYPEINFO") ?
+                       QString::fromLatin1("????") : project->first("QMAKE_PKGINFO_TYPEINFO").left(4)) << ",g\" ";
+            if (isApp) {
+                QString icon = fileFixify(var("ICON"));
+                QString bundlePrefix = project->first("QMAKE_TARGET_BUNDLE_PREFIX").toQString();
+                if (bundlePrefix.isEmpty())
+                    bundlePrefix = "com.yourcompany";
+                if (bundlePrefix.endsWith("."))
+                    bundlePrefix.chop(1);
+                QString bundleIdentifier =  bundlePrefix + "." + var("QMAKE_BUNDLE");
+                if (bundleIdentifier.endsWith(".app"))
+                    bundleIdentifier.chop(4);
+                t << "@$(DEL_FILE) " << info_plist_out << "\n\t"
+                  << "@sed ";
+                foreach (const ProString &arg, commonSedArgs)
+                    t << arg;
+                t << "-e \"s,@ICON@," << icon.section(Option::dir_sep, -1) << ",g\" "
+                  << "-e \"s,@BUNDLEIDENTIFIER@," << bundleIdentifier << ",g\" "
+                  << "-e \"s,@EXECUTABLE@," << var("QMAKE_ORIG_TARGET") << ",g\" "
+                  << "-e \"s,@TYPEINFO@,"<< (project->isEmpty("QMAKE_PKGINFO_TYPEINFO") ?
+                             QString::fromLatin1("????") : project->first("QMAKE_PKGINFO_TYPEINFO").left(4)) << ",g\" "
+                  << "" << info_plist << " >" << info_plist_out << endl;
+                //copy the icon
+                if (!project->isEmpty("ICON")) {
+                    QString dir = bundle_dir + "Contents/Resources/";
+                    const QString icon_path = escapeFilePath(dir + icon.section(Option::dir_sep, -1));
+                    bundledFiles << icon_path;
+                    alldeps << icon_path;
+                    t << icon_path << ": " << icon << "\n\t"
+                      << mkdir_p_asstring(dir) << "\n\t"
+                      << "@$(DEL_FILE) " << icon_path << "\n\t"
+                      << "@$(COPY_FILE) " << escapeFilePath(icon) << " " << icon_path << endl;
+                }
+            } else {
+                symlinks[bundle_dir + "Resources"] = "Versions/Current/Resources";
+                t << "@$(DEL_FILE) " << info_plist_out << "\n\t"
+                  << "@sed ";
+                foreach (const ProString &arg, commonSedArgs)
+                    t << arg;
+                t << "-e \"s,@LIBRARY@," << var("QMAKE_ORIG_TARGET") << ",g\" "
+                  << "-e \"s,@TYPEINFO@,"
+                  << (project->isEmpty("QMAKE_PKGINFO_TYPEINFO") ?
+                      QString::fromLatin1("????") : project->first("QMAKE_PKGINFO_TYPEINFO").left(4)) << ",g\" "
+                  << "" << info_plist << " >" << info_plist_out << endl;
+            }
+            break;
+        } // project->isActiveConfig("no_plist")
         //copy other data
         if(!project->isEmpty("QMAKE_BUNDLE_DATA")) {
-            QString bundle_dir = project->first("DESTDIR") + project->first("QMAKE_BUNDLE") + "/";
             const ProStringList &bundle_data = project->values("QMAKE_BUNDLE_DATA");
             for(int i = 0; i < bundle_data.count(); i++) {
                 const ProStringList &files = project->values(ProKey(bundle_data[i] + ".files"));
@@ -851,11 +870,12 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                 if (!project->isEmpty(vkey)) {
                     QString version = project->first(vkey) + "/" +
                                       project->first("QMAKE_FRAMEWORK_VERSION") + "/";
-                    QString link = Option::fixPathToLocalOS(path + project->first(pkey));
-                    bundledFiles << link;
-                    t << link << ": \n\t"
-                      << mkdir_p_asstring(path) << "\n\t"
-                      << "@$(SYMLINK) " << version << project->first(pkey) << " " << path << endl;
+                    ProString name = project->first(pkey);
+                    int pos = name.indexOf('/');
+                    if (pos > 0)
+                        name = name.mid(0, pos);
+                    symlinks[Option::fixPathToLocalOS(path + name)] =
+                            project->first(vkey) + "/Current/" + name;
                     path += version;
                 }
                 path += project->first(pkey).toQString();
@@ -868,6 +888,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                     src = escapeFilePath(src);
                     const QString dst = escapeFilePath(path + Option::dir_sep + fileInfo(fn).fileName());
                     bundledFiles << dst;
+                    alldeps << dst;
                     t << dst << ": " << src << "\n\t"
                       << mkdir_p_asstring(path) << "\n\t";
                     QFileInfo fi(fileInfo(fn));
@@ -880,7 +901,20 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                 }
             }
         }
+        QHash<QString, QString>::ConstIterator symIt = symlinks.constBegin(),
+                                               symEnd = symlinks.constEnd();
+        for (; symIt != symEnd; ++symIt) {
+            bundledFiles << symIt.key();
+            alldeps << symIt.key();
+            t << symIt.key() << ":\n\t"
+              << mkdir_p_asstring(bundle_dir) << "\n\t"
+              << "@$(SYMLINK) " << symIt.value() << " " << bundle_dir << endl;
+        }
     }
+
+    t << endl << "all: " << escapeDependencyPath(deps)
+      << valGlue(escapeDependencyPaths(project->values("ALL_DEPS")), " \\\n\t\t", " \\\n\t\t", "")
+      << allDeps << endl << endl;
 
     t << "dist: distdir FORCE\n\t";
     t << "(cd `dirname $(DISTDIR)` && $(TAR) $(DISTNAME).tar $(DISTNAME) && $(COMPRESS) $(DISTNAME).tar)"
@@ -1314,44 +1348,6 @@ void UnixMakefileGenerator::init2()
         ProString MD_flag(project->values("QMAKE_CFLAGS_ISYSTEM").isEmpty() ? "-MD" : "-MMD");
         project->values("QMAKE_CFLAGS") += MD_flag;
         project->values("QMAKE_CXXFLAGS") += MD_flag;
-    }
-
-    if(!project->isEmpty("QMAKE_BUNDLE")) {
-        QString plist = fileFixify(project->first("QMAKE_INFO_PLIST").toQString(), qmake_getpwd());
-        if(plist.isEmpty())
-            plist = specdir() + QDir::separator() + "Info.plist." + project->first("TEMPLATE");
-        if(exists(Option::fixPathToLocalOS(plist))) {
-            project->values("QMAKE_INFO_PLIST_OUT").append(project->first("DESTDIR") +
-                                                                project->first("QMAKE_BUNDLE") +
-                                                                "/Contents/Info.plist");
-            project->values("ALL_DEPS") += project->first("QMAKE_INFO_PLIST_OUT");
-            if(!project->isEmpty("ICON") && project->first("TEMPLATE") == "app")
-                project->values("ALL_DEPS") += project->first("DESTDIR") +
-                                                    project->first("QMAKE_BUNDLE") +
-                                                    "/Contents/Resources/" + project->first("ICON").toQString().section('/', -1);
-            if(!project->isEmpty("QMAKE_BUNDLE_DATA")) {
-                QString bundle_dir = project->first("DESTDIR") + project->first("QMAKE_BUNDLE") + "/";
-                ProStringList &alldeps = project->values("ALL_DEPS");
-                const ProStringList &bundle_data = project->values("QMAKE_BUNDLE_DATA");
-                for(int i = 0; i < bundle_data.count(); i++) {
-                    const ProStringList &files = project->values(ProKey(bundle_data[i] + ".files"));
-                    QString path = bundle_dir;
-                    const ProKey vkey(bundle_data[i] + ".version");
-                    const ProKey pkey(bundle_data[i] + ".path");
-                    if (!project->isEmpty(vkey)) {
-                        alldeps += Option::fixPathToLocalOS(path + Option::dir_sep + project->first(pkey));
-                        path += project->first(vkey) + "/" +
-                                project->first("QMAKE_FRAMEWORK_VERSION") + "/";
-                    }
-                    path += project->first(pkey);
-                    path = Option::fixPathToLocalOS(path);
-                    for(int file = 0; file < files.count(); file++)
-                        alldeps += path + Option::dir_sep + fileInfo(files[file].toQString()).fileName();
-                }
-            }
-        } else {
-            warn_msg(WarnLogic, "Could not resolve Info.plist: '%s'. Check if QMAKE_INFO_PLIST points to a valid file.", plist.toLatin1().constData());
-        }
     }
 }
 

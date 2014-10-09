@@ -92,7 +92,7 @@
     If the spacing is negative, the items will overlap to some extent.
 
 
-    \section1 Known issues
+    \section1 Known Issues
     There are some features that QGraphicsAnchorLayout currently does not support.
     This might change in the future, so avoid using these features if you want to
     avoid any future regressions in behaviour:

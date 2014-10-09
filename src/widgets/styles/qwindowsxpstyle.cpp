@@ -2246,8 +2246,8 @@ void QWindowsXPStyle::drawControl(ControlElement element, const QStyleOption *op
                 QPixmap pixmap = checked ?
                                  menuitem->icon.pixmap(proxy()->pixelMetric(PM_SmallIconSize, option, widget), mode, QIcon::On) :
                                  menuitem->icon.pixmap(proxy()->pixelMetric(PM_SmallIconSize, option, widget), mode);
-                int pixw = pixmap.width();
-                int pixh = pixmap.height();
+                const int pixw = pixmap.width() / pixmap.devicePixelRatio();
+                const int pixh = pixmap.height() / pixmap.devicePixelRatio();
                 QRect iconRect(0, 0, pixw, pixh);
                 iconRect.moveCenter(QRect(xpos, y, checkcol, h).center());
                 QRect vIconRect = visualRect(option->direction, option->rect, iconRect);

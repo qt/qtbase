@@ -347,7 +347,8 @@ void SimpleCascader::rearrange(QList<QWidget *> &widgets, const QRect &domain) c
     options.initFrom(widgets.at(0));
     int titleBarHeight = widgets.at(0)->style()->pixelMetric(QStyle::PM_TitleBarHeight, &options, widgets.at(0));
     const QFontMetrics fontMetrics = QFontMetrics(QApplication::font("QMdiSubWindowTitleBar"));
-    const int dy = qMax(titleBarHeight - (titleBarHeight - fontMetrics.height()) / 2, 1);
+    const int dy = qMax(titleBarHeight - (titleBarHeight - fontMetrics.height()) / 2, 1)
+        + widgets.at(0)->style()->pixelMetric(QStyle::PM_FocusFrameVMargin, 0, widgets.at(0));
 
     const int n = widgets.size();
     const int nrows = qMax((domain.height() - (topOffset + bottomOffset)) / dy, 1);
@@ -1465,7 +1466,7 @@ QMdiSubWindow *QMdiAreaPrivate::nextVisibleSubWindow(int increaseFactor, QMdiAre
 
     // Find the index for the current sub-window in the given activation order
     const int indexToCurrent = subWindows.indexOf(current);
-    const bool increasing = increaseFactor > 0 ? true : false;
+    const bool increasing = increaseFactor > 0;
 
     // and use that index + increseFactor as a candidate.
     int index = -1;
@@ -2552,7 +2553,7 @@ bool QMdiArea::eventFilter(QObject *object, QEvent *event)
         if (!area)
             return QAbstractScrollArea::eventFilter(object, event);
 
-        const bool keyPress = (event->type() == QEvent::KeyPress) ? true : false;
+        const bool keyPress = (event->type() == QEvent::KeyPress);
 
         // 1) Ctrl-Tab once -> activate the previously active window.
         // 2) Ctrl-Tab (Tab, Tab, ...) -> iterate through all windows (activateNextSubWindow()).

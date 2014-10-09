@@ -64,6 +64,7 @@ private slots:
     void elidedMultiLengthF();
     void inFontUcs4();
     void lineWidth();
+    void mnemonicTextWidth();
 };
 
 tst_QFontMetrics::tst_QFontMetrics()
@@ -331,5 +332,16 @@ void tst_QFontMetrics::lineWidth()
     QVERIFY(smallFontMetrics.lineWidth() < bigFontMetrics.lineWidth());
 }
 
+void tst_QFontMetrics::mnemonicTextWidth()
+{
+    // QTBUG-41593
+    QFont f;
+    QFontMetrics fm(f);
+    const QString f1  = "File";
+    const QString f2  = "&File";
+
+    QCOMPARE(fm.size(Qt::TextShowMnemonic, f1), fm.size(Qt::TextShowMnemonic, f2));
+    QCOMPARE(fm.size(Qt::TextHideMnemonic, f1), fm.size(Qt::TextHideMnemonic, f2));
+}
 QTEST_MAIN(tst_QFontMetrics)
 #include "tst_qfontmetrics.moc"

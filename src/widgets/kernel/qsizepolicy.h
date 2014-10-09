@@ -85,7 +85,6 @@ public:
 
     QSizePolicy() : data(0) { }
 
-    // ### Qt 5: merge these two constructors (with type == DefaultType)
     QSizePolicy(Policy horizontal, Policy vertical, ControlType type = DefaultType)
         : data(0) {
         bits.horPolicy = horizontal;

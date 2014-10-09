@@ -848,8 +848,10 @@ QList<int> QXcbKeyboard::possibleKeys(const QKeyEvent *event) const
                                     baseLayout, latchedLayout, lockedLayout);
 
     xkb_keysym_t sym = xkb_state_key_get_one_sym(kb_state, event->nativeScanCode());
-    if (sym == XKB_KEY_NoSymbol)
+    if (sym == XKB_KEY_NoSymbol) {
+        xkb_state_unref(kb_state);
         return QList<int>();
+    }
 
     QList<int> result;
     int baseQtKey = keysymToQtKey(sym, modifiers, lookupString(kb_state, event->nativeScanCode()));

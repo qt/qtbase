@@ -90,7 +90,7 @@ QT_BEGIN_NAMESPACE
 
     \tableofcontents
 
-    \section1 Adding strings
+    \section1 Adding Strings
 
     Strings can be added to a list using the \l
     {QList::append()}{append()}, \l
@@ -99,7 +99,7 @@ QT_BEGIN_NAMESPACE
 
     \snippet qstringlist/main.cpp 0
 
-    \section1 Iterating over the strings
+    \section1 Iterating Over the Strings
 
     To iterate over a list, you can either use index positions or
     QList's Java-style and STL-style iterator types:
@@ -121,7 +121,7 @@ QT_BEGIN_NAMESPACE
     QMutableStringListIterator class which is a type definition for
     QMutableListIterator<QString>.
 
-    \section1 Manipulating the strings
+    \section1 Manipulating the Strings
 
     QStringList provides several functions allowing you to manipulate
     the contents of a list. You can concatenate all the strings in a

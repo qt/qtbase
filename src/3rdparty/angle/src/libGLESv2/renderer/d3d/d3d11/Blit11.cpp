@@ -1,4 +1,3 @@
-#include "precompiled.h"
 //
 // Copyright (c) 2013 The ANGLE Project Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
@@ -7,12 +6,12 @@
 
 // Blit11.cpp: Texture copy utility class.
 
-#include "libGLESv2/main.h"
-#include "libGLESv2/formatutils.h"
 #include "libGLESv2/renderer/d3d/d3d11/Blit11.h"
 #include "libGLESv2/renderer/d3d/d3d11/Renderer11.h"
 #include "libGLESv2/renderer/d3d/d3d11/renderer11_utils.h"
 #include "libGLESv2/renderer/d3d/d3d11/formatutils11.h"
+#include "libGLESv2/main.h"
+#include "libGLESv2/formatutils.h"
 
 #include "libGLESv2/renderer/d3d/d3d11/shaders/compiled/passthrough2dvs.h"
 #include "libGLESv2/renderer/d3d/d3d11/shaders/compiled/passthroughdepth2dps.h"
@@ -315,7 +314,6 @@ Blit11::Blit11(rx::Renderer11 *renderer)
         result = device->CreateGeometryShader(g_GS_Passthrough3D, ArraySize(g_GS_Passthrough3D), NULL, &mQuad3DGS);
         ASSERT(SUCCEEDED(result));
         d3d11::SetDebugName(mQuad3DGS, "Renderer11 copy 3D texture geometry shader");
-
     }
 
     buildShaderMap();
@@ -373,18 +371,20 @@ static inline unsigned int GetSwizzleIndex(GLenum swizzle)
     return colorIndex;
 }
 
-bool Blit11::swizzleTexture(ID3D11ShaderResourceView *source, ID3D11RenderTargetView *dest, const gl::Extents &size,
-                            GLenum swizzleRed, GLenum swizzleGreen, GLenum swizzleBlue, GLenum swizzleAlpha)
+gl::Error Blit11::swizzleTexture(ID3D11ShaderResourceView *source, ID3D11RenderTargetView *dest, const gl::Extents &size,
+                                 GLenum swizzleRed, GLenum swizzleGreen, GLenum swizzleBlue, GLenum swizzleAlpha)
 {
     HRESULT result;
     ID3D11DeviceContext *deviceContext = mRenderer->getDeviceContext();
 
     D3D11_SHADER_RESOURCE_VIEW_DESC sourceSRVDesc;
     source->GetDesc(&sourceSRVDesc);
-    GLenum sourceInternalFormat = d3d11_gl::GetInternalFormat(sourceSRVDesc.Format);
+
+    const d3d11::DXGIFormat &dxgiFormatInfo = d3d11::GetDXGIFormatInfo(sourceSRVDesc.Format);
+    const gl::InternalFormat &sourceFormatInfo = gl::GetInternalFormatInfo(dxgiFormatInfo.internalFormat);
 
     GLenum shaderType = GL_NONE;
-    switch (gl::GetComponentType(sourceInternalFormat))
+    switch (sourceFormatInfo.componentType)
     {
       case GL_UNSIGNED_NORMALIZED:
       case GL_SIGNED_NORMALIZED:
@@ -410,7 +410,7 @@ bool Blit11::swizzleTexture(ID3D11ShaderResourceView *source, ID3D11RenderTarget
     if (i == mSwizzleShaderMap.end())
     {
         UNREACHABLE();
-        return false;
+        return gl::Error(GL_INVALID_OPERATION, "Internal error, missing swizzle shader.");
     }
 
     const Shader &shader = i->second;
@@ -420,8 +420,7 @@ bool Blit11::swizzleTexture(ID3D11ShaderResourceView *source, ID3D11RenderTarget
     result = deviceContext->Map(mVertexBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
     if (FAILED(result))
     {
-        ERR("Failed to map vertex buffer for texture swizzle, HRESULT: 0x%X.", result);
-        return false;
+        return gl::Error(GL_OUT_OF_MEMORY, "Failed to map internal vertex buffer for swizzle, HRESULT: 0x%X.", result);
     }
 
     UINT stride = 0;
@@ -438,8 +437,7 @@ bool Blit11::swizzleTexture(ID3D11ShaderResourceView *source, ID3D11RenderTarget
     result = deviceContext->Map(mSwizzleCB, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
     if (FAILED(result))
     {
-        ERR("Failed to map constant buffer for texture swizzle, HRESULT: 0x%X.", result);
-        return false;
+        return gl::Error(GL_OUT_OF_MEMORY, "Failed to map internal constant buffer for swizzle, HRESULT: 0x%X.", result);
     }
 
     unsigned int *swizzleIndices = reinterpret_cast<unsigned int*>(mappedResource.pData);
@@ -506,7 +504,7 @@ bool Blit11::swizzleTexture(ID3D11ShaderResourceView *source, ID3D11RenderTarget
 
     mRenderer->markAllStateDirty();
 
-    return true;
+    return gl::Error(GL_NO_ERROR);
 }
 
 bool Blit11::copyTexture(ID3D11ShaderResourceView *source, const gl::Box &sourceArea, const gl::Extents &sourceSize,
@@ -520,11 +518,13 @@ bool Blit11::copyTexture(ID3D11ShaderResourceView *source, const gl::Box &source
     // be GL_XXXX_INTEGER but it does not tell us if it is signed or unsigned.
     D3D11_SHADER_RESOURCE_VIEW_DESC sourceSRVDesc;
     source->GetDesc(&sourceSRVDesc);
-    GLenum sourceInternalFormat = d3d11_gl::GetInternalFormat(sourceSRVDesc.Format);
+
+    const d3d11::DXGIFormat &dxgiFormatInfo = d3d11::GetDXGIFormatInfo(sourceSRVDesc.Format);
+    const gl::InternalFormat &internalFormatInfo = gl::GetInternalFormatInfo(dxgiFormatInfo.internalFormat);
 
     BlitParameters parameters = { 0 };
     parameters.mDestinationFormat = destFormat;
-    parameters.mSignedInteger = gl::GetComponentType(sourceInternalFormat) == GL_INT;
+    parameters.mSignedInteger = (internalFormatInfo.componentType == GL_INT);
     parameters.m3DBlit = sourceArea.depth > 1;
 
     BlitShaderMap::const_iterator i = mBlitShaderMap.find(parameters);
@@ -770,18 +770,19 @@ bool Blit11::copyDepthStencil(ID3D11Resource *source, unsigned int sourceSubreso
     DXGI_FORMAT format = GetTextureFormat(source);
     ASSERT(format == GetTextureFormat(dest));
 
-    unsigned int pixelSize = d3d11::GetFormatPixelBytes(format);
+    const d3d11::DXGIFormat &dxgiFormatInfo = d3d11::GetDXGIFormatInfo(format);
+    unsigned int pixelSize = dxgiFormatInfo.pixelBytes;
     unsigned int copyOffset = 0;
     unsigned int copySize = pixelSize;
     if (stencilOnly)
     {
-        copyOffset = d3d11::GetStencilOffset(format) / 8;
-        copySize = d3d11::GetStencilBits(format) / 8;
+        copyOffset = dxgiFormatInfo.depthBits / 8;
+        copySize = dxgiFormatInfo.stencilBits / 8;
 
         // It would be expensive to have non-byte sized stencil sizes since it would
         // require reading from the destination, currently there aren't any though.
-        ASSERT(d3d11::GetStencilBits(format)   % 8 == 0 &&
-               d3d11::GetStencilOffset(format) % 8 == 0);
+        ASSERT(dxgiFormatInfo.stencilBits % 8 == 0 &&
+               dxgiFormatInfo.depthBits   % 8 == 0);
     }
 
     D3D11_MAPPED_SUBRESOURCE sourceMapping, destMapping;
@@ -995,18 +996,17 @@ void Blit11::buildShaderMap()
     add2DBlitShaderToMap(GL_RG_INTEGER,      true,  d3d11::CompilePS(device, g_PS_PassthroughRG2DI,      "Blit11 2D RG I pixel shader"           ));
     add2DBlitShaderToMap(GL_RED_INTEGER,     false, d3d11::CompilePS(device, g_PS_PassthroughR2DUI,      "Blit11 2D R UI pixel shader"           ));
     add2DBlitShaderToMap(GL_RED_INTEGER,     true,  d3d11::CompilePS(device, g_PS_PassthroughR2DI,       "Blit11 2D R I pixel shader"            ));
-
     add3DBlitShaderToMap(GL_RGBA,            false, d3d11::CompilePS(device, g_PS_PassthroughRGBA3D,     "Blit11 3D RGBA pixel shader"           ));
     add3DBlitShaderToMap(GL_RGBA_INTEGER,    false, d3d11::CompilePS(device, g_PS_PassthroughRGBA3DUI,   "Blit11 3D UI RGBA pixel shader"        ));
     add3DBlitShaderToMap(GL_RGBA_INTEGER,    true,  d3d11::CompilePS(device, g_PS_PassthroughRGBA3DI,    "Blit11 3D I RGBA pixel shader"         ));
     add3DBlitShaderToMap(GL_BGRA_EXT,        false, d3d11::CompilePS(device, g_PS_PassthroughRGBA3D,     "Blit11 3D BGRA pixel shader"           ));
     add3DBlitShaderToMap(GL_RGB,             false, d3d11::CompilePS(device, g_PS_PassthroughRGB3D,      "Blit11 3D RGB pixel shader"            ));
+    add3DBlitShaderToMap(GL_RG,              false, d3d11::CompilePS(device, g_PS_PassthroughRG3D,       "Blit11 3D RG pixel shader"             ));
     add3DBlitShaderToMap(GL_RGB_INTEGER,     false, d3d11::CompilePS(device, g_PS_PassthroughRGB3DUI,    "Blit11 3D RGB UI pixel shader"         ));
     add3DBlitShaderToMap(GL_RGB_INTEGER,     true,  d3d11::CompilePS(device, g_PS_PassthroughRGB3DI,     "Blit11 3D RGB I pixel shader"          ));
-    add3DBlitShaderToMap(GL_RG,              false, d3d11::CompilePS(device, g_PS_PassthroughRG3D,       "Blit11 3D RG pixel shader"             ));
+    add3DBlitShaderToMap(GL_RED,             false, d3d11::CompilePS(device, g_PS_PassthroughR3D,        "Blit11 3D R pixel shader"              ));
     add3DBlitShaderToMap(GL_RG_INTEGER,      false, d3d11::CompilePS(device, g_PS_PassthroughRG3DUI,     "Blit11 3D RG UI pixel shader"          ));
     add3DBlitShaderToMap(GL_RG_INTEGER,      true,  d3d11::CompilePS(device, g_PS_PassthroughRG3DI,      "Blit11 3D RG I pixel shader"           ));
-    add3DBlitShaderToMap(GL_RED,             false, d3d11::CompilePS(device, g_PS_PassthroughR3D,        "Blit11 3D R pixel shader"              ));
     add3DBlitShaderToMap(GL_RED_INTEGER,     false, d3d11::CompilePS(device, g_PS_PassthroughR3DUI,      "Blit11 3D R UI pixel shader"           ));
     add3DBlitShaderToMap(GL_RED_INTEGER,     true,  d3d11::CompilePS(device, g_PS_PassthroughR3DI,       "Blit11 3D R I pixel shader"            ));
     add3DBlitShaderToMap(GL_ALPHA,           false, d3d11::CompilePS(device, g_PS_PassthroughRGBA3D,     "Blit11 3D alpha pixel shader"          ));

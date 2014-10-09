@@ -52,7 +52,7 @@ QComposeInputContext *QComposePlatformInputContextPlugin::create(const QString &
 {
     Q_UNUSED(paramList);
 
-    if (system.compare(system, QStringLiteral("compose"), Qt::CaseInsensitive) == 0)
+    if (system.compare(system, QLatin1String("compose"), Qt::CaseInsensitive) == 0)
         return new QComposeInputContext;
     return 0;
 }

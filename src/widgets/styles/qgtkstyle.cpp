@@ -289,6 +289,7 @@ static QColor mergedColors(const QColor &colorA, const QColor &colorB, int facto
 static GdkColor fromQColor(const QColor &color)
 {
     GdkColor retval;
+    retval.pixel = 0;
     retval.red = color.red() * 255;
     retval.green = color.green() * 255;
     retval.blue = color.blue() * 255;
@@ -3235,8 +3236,8 @@ void QGtkStyle::drawControl(ControlElement element,
                 else
                     pixmap = menuItem->icon.pixmap(iconSize, mode);
 
-                int pixw = pixmap.width();
-                int pixh = pixmap.height();
+                const int pixw = pixmap.width() / pixmap.devicePixelRatio();
+                const int pixh = pixmap.height() / pixmap.devicePixelRatio();
                 QRect pmr(0, 0, pixw, pixh);
                 pmr.moveCenter(vCheckRect.center() - QPoint(0, 1));
                 painter->setPen(menuItem->palette.text().color());

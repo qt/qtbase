@@ -58,7 +58,7 @@ QStringList QCupsPrinterSupportPlugin::keys() const
 
 QPlatformPrinterSupport *QCupsPrinterSupportPlugin::create(const QString &key)
 {
-    if (key.compare(key, QStringLiteral("cupsprintersupport"), Qt::CaseInsensitive) == 0)
+    if (key.compare(key, QLatin1String("cupsprintersupport"), Qt::CaseInsensitive) == 0)
         return new QCupsPrinterSupport;
     return 0;
 }

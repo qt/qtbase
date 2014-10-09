@@ -37,14 +37,29 @@
 
 QT_BEGIN_NAMESPACE
 
+#ifndef DRM_CAP_CURSOR_WIDTH
+#define DRM_CAP_CURSOR_WIDTH 0x8
+#endif
+
+#ifndef DRM_CAP_CURSOR_HEIGHT
+#define DRM_CAP_CURSOR_HEIGHT 0x9
+#endif
+
 QKmsCursor::QKmsCursor(QKmsScreen *screen)
     : m_screen(screen),
       m_graphicsBufferManager(screen->device()->gbmDevice()),
-      m_cursorBufferObject(gbm_bo_create(m_graphicsBufferManager, 64, 64, GBM_FORMAT_ARGB8888,
-                                         GBM_BO_USE_CURSOR_64X64|GBM_BO_USE_WRITE)),
       m_cursorImage(new QPlatformCursorImage(0, 0, 0, 0, 0, 0)),
-      m_moved(false)
+      m_moved(false),
+      m_cursorSize(64, 64)
 {
+    uint64_t value = 0;
+    if (!drmGetCap(m_screen->device()->fd(), DRM_CAP_CURSOR_WIDTH, &value))
+        m_cursorSize.setWidth(value);
+    if (!drmGetCap(m_screen->device()->fd(), DRM_CAP_CURSOR_HEIGHT, &value))
+        m_cursorSize.setHeight(value);
+
+    m_cursorBufferObject = gbm_bo_create(m_graphicsBufferManager, m_cursorSize.width(), m_cursorSize.height(),
+                                         GBM_FORMAT_ARGB8888, GBM_BO_USE_CURSOR_64X64 | GBM_BO_USE_WRITE);
 }
 
 QKmsCursor::~QKmsCursor()
@@ -81,16 +96,17 @@ void QKmsCursor::changeCursor(QCursor *windowCursor, QWindow *window)
                            windowCursor->hotSpot().y());
     }
 
-    if ((m_cursorImage->image()->width() > 64) || (m_cursorImage->image()->width() > 64))
-        qWarning("Warning: cursor larger than 64x64; only 64x64 pixels will be shown.");
+    if (m_cursorImage->image()->width() > m_cursorSize.width() || m_cursorImage->image()->width() > m_cursorSize.height())
+        qWarning("cursor larger than %dx%d, cursor truncated", m_cursorSize.width(), m_cursorSize.height());
 
-    QImage cursorImage = m_cursorImage->image()->
-            convertToFormat(QImage::Format_ARGB32).copy(0, 0, 64, 64);
+    QImage cursorImage = m_cursorImage->image()->convertToFormat(QImage::Format_ARGB32)
+        .copy(0, 0, m_cursorSize.width(), m_cursorSize.height());
     gbm_bo_write(m_cursorBufferObject, cursorImage.constBits(), cursorImage.byteCount());
 
     quint32 handle = gbm_bo_get_handle(m_cursorBufferObject).u32;
     int status = drmModeSetCursor(m_screen->device()->fd(),
-                                  m_screen->crtcId(), handle, 64, 64);
+                                  m_screen->crtcId(), handle,
+                                  m_cursorSize.width(), m_cursorSize.height());
 
     if (status) {
         qWarning("failed to set cursor: %d", status);

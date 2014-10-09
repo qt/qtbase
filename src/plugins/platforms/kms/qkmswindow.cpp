@@ -58,4 +58,9 @@ void QKmsWindow::setGeometry(const QRect &rect)
     QPlatformWindow::setGeometry(fullscreenRect);
 }
 
+QSurfaceFormat QKmsWindow::format() const
+{
+    return static_cast<QKmsScreen *>(m_screen)->surfaceFormat();
+}
+
 QT_END_NAMESPACE

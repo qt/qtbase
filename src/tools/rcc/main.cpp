@@ -182,9 +182,9 @@ int runRcc(int argc, char *argv[])
     if (parser.isSet(binaryOption))
         library.setFormat(RCCResourceLibrary::Binary);
     if (parser.isSet(passOption)) {
-        if (parser.value(passOption) == QStringLiteral("1"))
+        if (parser.value(passOption) == QLatin1String("1"))
             library.setFormat(RCCResourceLibrary::Pass1);
-        else if (parser.value(passOption) == QStringLiteral("2"))
+        else if (parser.value(passOption) == QLatin1String("2"))
             library.setFormat(RCCResourceLibrary::Pass2);
         else
             errorMsg = QLatin1String("Pass number must be 1 or 2");

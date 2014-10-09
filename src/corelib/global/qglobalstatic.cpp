@@ -84,7 +84,7 @@
     whether the type has already been destroyed, to avoid the
     use-after-destruction problem (see QGlobalStatic::isDestroyed()).
 
-    \section1 Constructor and destructor
+    \section1 Constructor and Destructor
 
     For Q_GLOBAL_STATIC, the type \c Type must be publicly
     default-constructible and publicly destructible. For
@@ -156,7 +156,7 @@
 
     This macro will work, but it will add unnecessary overhead.
 
-    \section1 Reentrancy, thread-safety, deadlocks, and exception-safety on construction
+    \section1 Reentrancy, Thread-safety, Deadlocks, and Exception-safety on Construction
 
     The Q_GLOBAL_STATIC macro creates an object that initializes itself on
     first use in a thread-safe manner: if multiple threads attempt to
@@ -224,7 +224,7 @@
         \li the object was always created on the heap.
     \endlist
 
-    \section1 Implementation details
+    \section1 Implementation Details
 
     Q_GLOBAL_STATIC is implemented by creating a QBasicAtomicInt called the \c
     guard and a free, inline function called \c innerFunction. The guard

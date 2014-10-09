@@ -9,8 +9,6 @@
 #ifndef LIBEGL_MAIN_H_
 #define LIBEGL_MAIN_H_
 
-#undef EGLAPI
-#define EGLAPI
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
 

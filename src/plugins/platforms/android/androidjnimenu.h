@@ -43,12 +43,14 @@ class QAndroidPlatformMenuBar;
 class QAndroidPlatformMenu;
 class QAndroidPlatformMenuItem;
 class QWindow;
+class QRect;
+class QPoint;
 
 namespace QtAndroidMenu
 {
     // Menu support
     void openOptionsMenu();
-    void showContextMenu(QAndroidPlatformMenu *menu, JNIEnv *env = 0);
+    void showContextMenu(QAndroidPlatformMenu *menu, const QRect &anchorRect, JNIEnv *env = 0);
     void hideContextMenu(QAndroidPlatformMenu *menu);
     void syncMenu(QAndroidPlatformMenu *menu);
     void androidPlatformMenuDestroyed(QAndroidPlatformMenu *menu);

@@ -3989,7 +3989,7 @@ QWindowStateChangeEvent::~QWindowStateChangeEvent()
     This makes it possible for sibling widgets to handle touch events independently while making
     sure that the sequence of QTouchEvents is always correct.
 
-    \section1 Mouse Events and Touch Event synthesizing
+    \section1 Mouse Events and Touch Event Synthesizing
 
     QTouchEvent delivery is independent from that of QMouseEvent. The application flags
     Qt::AA_SynthesizeTouchForUnhandledMouseEvents and Qt::AA_SynthesizeMouseForUnhandledTouchEvents

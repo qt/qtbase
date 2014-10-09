@@ -394,6 +394,11 @@ void GLWidget::paintGL()
     }
     m_fAngle += 1.0f;
     ++m_frames;
+
+    // When requested, follow the ideal way to animate: Rely on
+    // blocking swap and just schedule updates continuously.
+    if (!m_mainWindow->timerEnabled())
+        update();
 }
 
 void GLWidget::createBubbles(int number)

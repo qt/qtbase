@@ -48,6 +48,7 @@ extern "C" {
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
 #include <QtGui/qopengl.h>
+#include <QtGui/qsurfaceformat.h>
 #include <QtCore/qloggingcategory.h>
 
 #include <qpa/qplatformscreen.h>
@@ -87,6 +88,8 @@ public:
 
     static QSurfaceFormat tweakFormat(const QSurfaceFormat &format);
 
+    QSurfaceFormat surfaceFormat() const { return m_surfaceFormat; }
+
 private:
     void performPageFlip();
     void initializeScreenMode(const drmModeRes *resources, const drmModeConnector *connector);
@@ -111,6 +114,7 @@ private:
     EGLSurface m_eglWindowSurface;
 
     bool m_modeSet;
+    QSurfaceFormat m_surfaceFormat;
 };
 
 QT_END_NAMESPACE

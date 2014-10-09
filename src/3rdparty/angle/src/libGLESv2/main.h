@@ -10,8 +10,8 @@
 #define LIBGLESV2_MAIN_H_
 
 #include "common/debug.h"
-#undef EGLAPI
-#define EGLAPI
+
+#include <GLES2/gl2.h>
 #include <EGL/egl.h>
 
 #ifndef Sleep

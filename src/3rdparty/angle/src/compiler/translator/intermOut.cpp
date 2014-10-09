@@ -4,7 +4,7 @@
 // found in the LICENSE file.
 //
 
-#include "compiler/translator/localintermediate.h"
+#include "compiler/translator/Intermediate.h"
 #include "compiler/translator/SymbolTable.h"
 
 namespace
@@ -342,6 +342,7 @@ bool TOutputTraverser::visitAggregate(Visit visit, TIntermAggregate *node)
       case EOpMul:           out << "component-wise multiply"; break;
 
       case EOpDeclaration:   out << "Declaration: ";   break;
+      case EOpInvariantDeclaration: out << "Invariant Declaration: "; break;
 
       default:
         out.prefix(EPrefixError);

@@ -190,7 +190,7 @@ bool QDesktopServices::openUrl(const QUrl &url)
         qWarning("%s: The platform plugin does not support services.", Q_FUNC_INFO);
         return false;
     }
-    return url.scheme() == QStringLiteral("file") ?
+    return url.scheme() == QLatin1String("file") ?
            platformServices->openDocument(url) : platformServices->openUrl(url);
 }
 

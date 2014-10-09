@@ -107,7 +107,7 @@ QT_BEGIN_NAMESPACE
     QOpenGLDebugLogger supports both these modes of operation. Refer to the
     following sections to find out the differences between them.
 
-    \section1 Creating an OpenGL debug context
+    \section1 Creating an OpenGL Debug Context
 
     For efficiency reasons, OpenGL implementations are allowed not to create
     any debug output at all, unless the OpenGL context is a debug context. In order
@@ -134,7 +134,7 @@ QT_BEGIN_NAMESPACE
     version, as it relies on the availability of the \c{GL_KHR_debug} extension
     (see below).
 
-    \section1 Creating and initializing a QOpenGLDebugLogger
+    \section1 Creating and Initializing a QOpenGLDebugLogger
 
     QOpenGLDebugLogger is a simple QObject-derived class. Just like all QObject
     subclasses, you create an instance (and optionally specify a parent
@@ -163,7 +163,7 @@ QT_BEGIN_NAMESPACE
     where \c{ctx} is a valid QOpenGLContext. If the extension is not available,
     initialize() will return false.
 
-    \section1 Reading the internal OpenGL debug log
+    \section1 Reading the Internal OpenGL Debug Log
 
     OpenGL implementations keep an internal log of debug messages. Messages
     stored in this log can be retrieved by using the loggedMessages() function:
@@ -237,7 +237,7 @@ QT_BEGIN_NAMESPACE
     OpenGL log), it is important to always check if it contains any message
     after calling startLogging().
 
-    \section1 Inserting messages in the debug log
+    \section1 Inserting Messages in the Debug Log
 
     It is possible for applications and libraries to insert custom messages in
     the debug log, for instance for marking a group of related OpenGL commands
@@ -262,7 +262,7 @@ QT_BEGIN_NAMESPACE
     this length by calling the maximumMessageLength() method; messages longer
     than the limit will automatically get truncated.
 
-    \section1 Controlling the debug output
+    \section1 Controlling the Debug Output
 
     QOpenGLDebugMessage is also able to apply filters to the debug messages, and
     therefore limit the amount of messages logged. You can enable or disable

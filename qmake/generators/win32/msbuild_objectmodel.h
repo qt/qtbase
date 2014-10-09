@@ -56,7 +56,8 @@ public:
     }
     virtual void addElement(const QString &filepath, const VCFilterFile &allInfo) = 0;
     virtual void removeElements()= 0;
-    virtual void generateXML(XmlOutput &xml, XmlOutput &xmlFilter, const QString &tagName, VCProject &tool, const QString &filter) = 0;
+    virtual void generateXML(XmlOutput &xml, XmlOutput &xmlFilter, const QString &tagName,
+                             VCProject &tool, const QString &filter, const QString &filterId) = 0;
     virtual bool hasElements() = 0;
 };
 
@@ -106,7 +107,8 @@ public:
         children.clear();
     }
 
-    void generateXML(XmlOutput &xml, XmlOutput &xmlFilter, const QString &tagName, VCProject &tool, const QString &filter);
+    void generateXML(XmlOutput &xml, XmlOutput &xmlFilter, const QString &tagName, VCProject &tool,
+                     const QString &filter, const QString &filterId);
     bool hasElements() {
         return children.size() != 0;
     }
@@ -146,7 +148,8 @@ public:
         children.clear();
     }
 
-    void generateXML(XmlOutput &xml, XmlOutput &xmlFilter, const QString &tagName, VCProject &proj, const QString &filter);
+    void generateXML(XmlOutput &xml, XmlOutput &xmlFilter, const QString &tagName, VCProject &proj,
+                     const QString &filter, const QString &filterId);
     bool hasElements() {
         return children.size() != 0;
     }
@@ -171,10 +174,17 @@ public:
     void write(XmlOutput &, VCFilter &);
 
 private:
+    struct OutputFilterData
+    {
+        VCFilter filter;
+        VCFilterFile info;
+        bool inBuild;
+    };
+
     static void addFilters(VCProject &project, XmlOutput &xmlFilter, const QString &filterName);
     static void outputFilter(VCProject &project, XmlOutput &xml, XmlOutput &xmlFilter, const QString &filtername);
-    static void outputFileConfigs(VCProject &project, XmlOutput &xml, XmlOutput &xmlFilter, const VCFilterFile &info, const QString &filtername);
-    static bool outputFileConfig(VCFilter filter, XmlOutput &xml, XmlOutput &xmlFilter, const QString &filename, bool fileAdded);
+    static void outputFileConfigs(VCProject &project, XmlOutput &xml, XmlOutput &xmlFilter, const VCFilterFile &info, const QString &filtername, const QString &filterId);
+    static bool outputFileConfig(OutputFilterData *d, XmlOutput &xml, XmlOutput &xmlFilter, const QString &filename, bool fileAdded, bool hasCustomBuildStep);
     static void outputFileConfig(XmlOutput &xml, XmlOutput &xmlFilter, const QString &fileName, const QString &filterName);
     static QString generateCondition(const VCConfiguration &config);
 

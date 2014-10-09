@@ -236,11 +236,11 @@ void QKdeThemePrivate::refresh()
     const QVariant toolbarStyleValue = readKdeSetting(QStringLiteral("Toolbar style/ToolButtonStyle"), kdeDirs, kdeSettings);
     if (toolbarStyleValue.isValid()) {
         const QString toolBarStyle = toolbarStyleValue.toString();
-        if (toolBarStyle == QStringLiteral("TextBesideIcon"))
+        if (toolBarStyle == QLatin1String("TextBesideIcon"))
             toolButtonStyle =  Qt::ToolButtonTextBesideIcon;
-        else if (toolBarStyle == QStringLiteral("TextOnly"))
+        else if (toolBarStyle == QLatin1String("TextOnly"))
             toolButtonStyle = Qt::ToolButtonTextOnly;
-        else if (toolBarStyle == QStringLiteral("TextUnderIcon"))
+        else if (toolBarStyle == QLatin1String("TextUnderIcon"))
             toolButtonStyle = Qt::ToolButtonTextUnderIcon;
     }
 
@@ -632,22 +632,23 @@ QStringList QGenericUnixTheme::themeNames()
     QStringList result;
     if (QGuiApplication::desktopSettingsAware()) {
         const QByteArray desktopEnvironment = QGuiApplicationPrivate::platformIntegration()->services()->desktopEnvironment();
-        if (desktopEnvironment == QByteArrayLiteral("KDE")) {
+        if (desktopEnvironment == "KDE") {
 #ifndef QT_NO_SETTINGS
             result.push_back(QLatin1String(QKdeTheme::name));
 #endif
-        } else if (desktopEnvironment == QByteArrayLiteral("GNOME") ||
-                desktopEnvironment == QByteArrayLiteral("UNITY") ||
-                desktopEnvironment == QByteArrayLiteral("MATE") ||
-                desktopEnvironment == QByteArrayLiteral("XFCE") ||
-                desktopEnvironment == QByteArrayLiteral("LXDE")) { // Gtk-based desktops
+        } else if (desktopEnvironment == "GNOME" ||
+                desktopEnvironment == "X-CINNAMON" ||
+                desktopEnvironment == "UNITY" ||
+                desktopEnvironment == "MATE" ||
+                desktopEnvironment == "XFCE" ||
+                desktopEnvironment == "LXDE") { // Gtk-based desktops
             // prefer the GTK2 theme implementation with native dialogs etc.
             result.push_back(QStringLiteral("gtk2"));
             // fallback to the generic Gnome theme if loading the GTK2 theme fails
             result.push_back(QLatin1String(QGnomeTheme::name));
         }
         const QString session = QString::fromLocal8Bit(qgetenv("DESKTOP_SESSION"));
-        if (!session.isEmpty() && session != QStringLiteral("default") && !result.contains(session))
+        if (!session.isEmpty() && session != QLatin1String("default") && !result.contains(session))
             result.push_back(session);
     } // desktopSettingsAware
     if (result.isEmpty())

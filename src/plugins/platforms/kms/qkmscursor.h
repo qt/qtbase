@@ -58,6 +58,7 @@ private:
     gbm_bo *m_cursorBufferObject;
     QPlatformCursorImage *m_cursorImage;
     bool m_moved;
+    QSize m_cursorSize;
 };
 
 QT_END_NAMESPACE

@@ -146,7 +146,7 @@ static inline bool launchMail(const QUrl &url)
 bool QWindowsServices::openUrl(const QUrl &url)
 {
     const QString scheme = url.scheme();
-    if (scheme == QStringLiteral("mailto") && launchMail(url))
+    if (scheme == QLatin1String("mailto") && launchMail(url))
         return true;
     return shellExecute(url);
 }

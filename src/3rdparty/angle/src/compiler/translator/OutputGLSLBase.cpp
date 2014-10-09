@@ -81,9 +81,10 @@ void TOutputGLSLBase::writeVariableType(const TType &type)
 {
     TInfoSinkBase &out = objSink();
     TQualifier qualifier = type.getQualifier();
-    // TODO(alokp): Validate qualifier for variable declarations.
     if (qualifier != EvqTemporary && qualifier != EvqGlobal)
+    {
         out << type.getQualifierString() << " ";
+    }
     // Declare the struct if we have not done so already.
     if (type.getBasicType() == EbtStruct && !structDeclared(type.getStruct()))
     {
@@ -648,6 +649,17 @@ bool TOutputGLSLBase::visitAggregate(Visit visit, TIntermAggregate *node)
             mDeclaringVariables = false;
         }
         break;
+      case EOpInvariantDeclaration: {
+            // Invariant declaration.
+            ASSERT(visit == PreVisit);
+            const TIntermSequence *sequence = node->getSequence();
+            ASSERT(sequence && sequence->size() == 1);
+            const TIntermSymbol *symbol = sequence->front()->getAsSymbolNode();
+            ASSERT(symbol);
+            out << "invariant " << symbol->getSymbol() << ";";
+            visitChildren = false;
+            break;
+        }
       case EOpConstructFloat:
         writeTriplet(visit, "float(", NULL, ")");
         break;

@@ -48,10 +48,13 @@
 #include <QtPlatformSupport/private/qgenericunixeventdispatcher_p.h>
 #include <QtPlatformSupport/private/qgenericunixfontdatabase_p.h>
 #include <QtPlatformSupport/private/qfbvthandler_p.h>
+#include <QtPlatformSupport/private/qeglconvenience_p.h>
 
 #include <QtGui/private/qguiapplication_p.h>
 #include <QtGui/QOpenGLContext>
 #include <QtGui/QScreen>
+#include <QtGui/QOffscreenSurface>
+#include <qpa/qplatformoffscreensurface.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -116,6 +119,7 @@ bool QKmsIntegration::hasCapability(QPlatformIntegration::Capability cap) const
     case ThreadedPixmaps: return true;
     case OpenGL: return true;
     case ThreadedOpenGL: return false;
+    case RasterGLSurface: return true;
     default: return QPlatformIntegration::hasCapability(cap);
     }
 }
@@ -136,6 +140,44 @@ QPlatformWindow *QKmsIntegration::createPlatformWindow(QWindow *window) const
 QPlatformBackingStore *QKmsIntegration::createPlatformBackingStore(QWindow *window) const
 {
     return new QKmsBackingStore(window);
+}
+
+// Neither a pbuffer nor a hidden QWindow is suitable. Just use an additional, small gbm surface.
+QKmsOffscreenWindow::QKmsOffscreenWindow(EGLDisplay display, const QSurfaceFormat &format, QOffscreenSurface *offscreenSurface)
+    : QPlatformOffscreenSurface(offscreenSurface)
+    , m_format(format)
+    , m_display(display)
+    , m_surface(EGL_NO_SURFACE)
+    , m_window(0)
+{
+    QKmsScreen *screen = static_cast<QKmsScreen *>(offscreenSurface->screen()->handle());
+    m_window = gbm_surface_create(screen->device()->gbmDevice(),
+                                  10, 10,
+                                  GBM_FORMAT_XRGB8888,
+                                  GBM_BO_USE_RENDERING);
+    if (!m_window) {
+        qWarning("QKmsOffscreenWindow: Failed to create native window");
+        return;
+    }
+
+    EGLConfig config = q_configFromGLFormat(m_display, m_format);
+    m_surface = eglCreateWindowSurface(m_display, config, m_window, 0);
+    if (m_surface != EGL_NO_SURFACE)
+        m_format = q_glFormatFromConfig(m_display, config);
+}
+
+QKmsOffscreenWindow::~QKmsOffscreenWindow()
+{
+    if (m_surface != EGL_NO_SURFACE)
+        eglDestroySurface(m_display, m_surface);
+    if (m_window)
+        gbm_surface_destroy((gbm_surface *) m_window);
+}
+
+QPlatformOffscreenSurface *QKmsIntegration::createPlatformOffscreenSurface(QOffscreenSurface *surface) const
+{
+    QKmsScreen *screen = static_cast<QKmsScreen *>(surface->screen()->handle());
+    return new QKmsOffscreenWindow(screen->device()->eglDisplay(), QKmsScreen::tweakFormat(surface->format()), surface);
 }
 
 QPlatformFontDatabase *QKmsIntegration::fontDatabase() const

@@ -468,7 +468,7 @@ void **QListData::erase(void **xi)
     value that might not be in the valid range, check that it is less
     than the value returned by size() but \e not less than 0.
 
-    \section1 More members
+    \section1 More Members
 
     If T is a QByteArray, this class has a couple more members that can be
     used. See the documentation for QByteArrayList for more information.

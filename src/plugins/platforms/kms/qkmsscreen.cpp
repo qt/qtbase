@@ -170,10 +170,11 @@ QSurfaceFormat QKmsScreen::tweakFormat(const QSurfaceFormat &format)
 void QKmsScreen::initializeWithFormat(const QSurfaceFormat &format)
 {
     EGLDisplay display = m_device->eglDisplay();
-    EGLConfig config = q_configFromGLFormat(display, tweakFormat(format), true);
+    EGLConfig config = q_configFromGLFormat(display, tweakFormat(format));
 
     m_eglWindowSurface = eglCreateWindowSurface(display, config, (EGLNativeWindowType)m_gbmSurface, NULL);
     qCDebug(lcQpaScreen) << "created window surface";
+    m_surfaceFormat = q_glFormatFromConfig(display, config);
 }
 
 void QKmsScreen::swapBuffers()

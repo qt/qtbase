@@ -54,6 +54,7 @@ MainWindow::MainWindow()
     : m_nextX(1), m_nextY(1)
 {
     GLWidget *glwidget = new GLWidget(this, true, qRgb(20, 20, 50));
+    m_glWidgets << glwidget;
     QLabel *label = new QLabel(this);
     m_timer = new QTimer(this);
     QSlider *slider = new QSlider(this);
@@ -67,12 +68,19 @@ MainWindow::MainWindow()
                                "Note that on most systems the swap will block to wait for vsync\n"
                                "and therefore an interval < 16 ms will likely lead to a 60 FPS update rate.");
     QGroupBox *updateGroupBox = new QGroupBox(this);
+    QCheckBox *timerBased = new QCheckBox("Use timer", this);
+    timerBased->setChecked(true);
+    timerBased->setToolTip("Toggles using a timer to trigger update().\n"
+                           "When not set, each paintGL() schedules the next update immediately,\n"
+                           "expecting the blocking swap to throttle the thread.\n"
+                           "This shows how unnecessary the timer is in most cases.");
     QCheckBox *transparent = new QCheckBox("Transparent background", this);
     transparent->setToolTip("Toggles Qt::WA_AlwaysStackOnTop and transparent clear color for glClear().\n"
                             "Note how the button on top stacks incorrectly when enabling this.");
     QHBoxLayout *updateLayout = new QHBoxLayout;
     updateLayout->addWidget(updateLabel);
     updateLayout->addWidget(updateInterval);
+    updateLayout->addWidget(timerBased);
     updateLayout->addWidget(transparent);
     updateGroupBox->setLayout(updateLayout);
 
@@ -123,6 +131,8 @@ MainWindow::MainWindow()
     connect(transparent, &QCheckBox::toggled, glwidget, &GLWidget::setTransparent);
 
     connect(updateInterval, SIGNAL(valueChanged(int)), this, SLOT(updateIntervalChanged(int)));
+    connect(timerBased, &QCheckBox::toggled, this, &MainWindow::timerUsageChanged);
+    connect(timerBased, &QCheckBox::toggled, updateInterval, &QWidget::setEnabled);
 
     m_timer->start();
 }
@@ -130,7 +140,8 @@ MainWindow::MainWindow()
 void MainWindow::updateIntervalChanged(int value)
 {
     m_timer->setInterval(value);
-    m_timer->start();
+    if (m_timer->isActive())
+        m_timer->start();
 }
 
 void MainWindow::addNew()
@@ -138,6 +149,7 @@ void MainWindow::addNew()
     if (m_nextY == 4)
         return;
     GLWidget *w = new GLWidget(this, false, qRgb(qrand() % 256, qrand() % 256, qrand() % 256));
+    m_glWidgets << w;
     connect(m_timer, SIGNAL(timeout()), w, SLOT(update()));
     m_layout->addWidget(w, m_nextY, m_nextX, 1, 1);
     if (m_nextX == 3) {
@@ -145,5 +157,16 @@ void MainWindow::addNew()
         ++m_nextY;
     } else {
         ++m_nextX;
+    }
+}
+
+void MainWindow::timerUsageChanged(bool enabled)
+{
+    if (enabled) {
+        m_timer->start();
+    } else {
+        m_timer->stop();
+        foreach (QOpenGLWidget *w, m_glWidgets)
+            w->update();
     }
 }

@@ -3254,7 +3254,7 @@ bool QWizard::nativeEvent(const QByteArray &eventType, void *message, long *resu
 {
 #if !defined(QT_NO_STYLE_WINDOWSVISTA)
     Q_D(QWizard);
-    if (d->isVistaThemeEnabled() && eventType == QByteArrayLiteral("windows_generic_MSG")) {
+    if (d->isVistaThemeEnabled() && eventType == "windows_generic_MSG") {
         MSG *windowsMessage = static_cast<MSG *>(message);
         const bool winEventResult = d->vistaHelper->handleWinEvent(windowsMessage, result);
         if (QVistaHelper::vistaState() != d->vistaState) {

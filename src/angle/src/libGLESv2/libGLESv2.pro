@@ -29,14 +29,14 @@ HEADERS += \
     $$ANGLE_DIR/src/libGLESv2/Buffer.h \
     $$ANGLE_DIR/src/libGLESv2/Caps.h \
     $$ANGLE_DIR/src/libGLESv2/Context.h \
-    $$ANGLE_DIR/src/libGLESv2/DynamicHLSL.h \
+    $$ANGLE_DIR/src/libGLESv2/Error.h \
     $$ANGLE_DIR/src/libGLESv2/Fence.h \
     $$ANGLE_DIR/src/libGLESv2/formatutils.h \
     $$ANGLE_DIR/src/libGLESv2/Framebuffer.h \
     $$ANGLE_DIR/src/libGLESv2/FramebufferAttachment.h \
     $$ANGLE_DIR/src/libGLESv2/HandleAllocator.h \
+    $$ANGLE_DIR/src/libGLESv2/ImageIndex.h \
     $$ANGLE_DIR/src/libGLESv2/main.h \
-    $$ANGLE_DIR/src/libGLESv2/precompiled.h \
     $$ANGLE_DIR/src/libGLESv2/Program.h \
     $$ANGLE_DIR/src/libGLESv2/ProgramBinary.h \
     $$ANGLE_DIR/src/libGLESv2/Query.h \
@@ -46,13 +46,17 @@ HEADERS += \
     $$ANGLE_DIR/src/libGLESv2/renderer/copyimage.h \
     $$ANGLE_DIR/src/libGLESv2/renderer/copyvertex.h \
     $$ANGLE_DIR/src/libGLESv2/renderer/d3d/BufferD3D.h \
+    $$ANGLE_DIR/src/libGLESv2/renderer/d3d/DynamicHLSL.h \
     $$ANGLE_DIR/src/libGLESv2/renderer/d3d/HLSLCompiler.h \
     $$ANGLE_DIR/src/libGLESv2/renderer/d3d/ImageD3D.h \
     $$ANGLE_DIR/src/libGLESv2/renderer/d3d/IndexBuffer.h \
     $$ANGLE_DIR/src/libGLESv2/renderer/d3d/IndexDataManager.h \
     $$ANGLE_DIR/src/libGLESv2/renderer/d3d/MemoryBuffer.h \
+    $$ANGLE_DIR/src/libGLESv2/renderer/d3d/ProgramD3D.h \
+    $$ANGLE_DIR/src/libGLESv2/renderer/d3d/ShaderD3D.h \
     $$ANGLE_DIR/src/libGLESv2/renderer/d3d/TextureD3D.h \
     $$ANGLE_DIR/src/libGLESv2/renderer/d3d/TextureStorage.h \
+    $$ANGLE_DIR/src/libGLESv2/renderer/d3d/TransformFeedbackD3D.h \
     $$ANGLE_DIR/src/libGLESv2/renderer/d3d/VertexArrayImpl.h \
     $$ANGLE_DIR/src/libGLESv2/renderer/d3d/VertexBuffer.h \
     $$ANGLE_DIR/src/libGLESv2/renderer/d3d/vertexconversion.h \
@@ -63,12 +67,15 @@ HEADERS += \
     $$ANGLE_DIR/src/libGLESv2/renderer/imageformats.h \
     $$ANGLE_DIR/src/libGLESv2/renderer/IndexCacheRange.h \
     $$ANGLE_DIR/src/libGLESv2/renderer/loadimage.h \
+    $$ANGLE_DIR/src/libGLESv2/renderer/ProgramImpl.h \
     $$ANGLE_DIR/src/libGLESv2/renderer/QueryImpl.h \
     $$ANGLE_DIR/src/libGLESv2/renderer/Renderer.h \
     $$ANGLE_DIR/src/libGLESv2/renderer/RenderTarget.h \
     $$ANGLE_DIR/src/libGLESv2/renderer/ShaderExecutable.h \
+    $$ANGLE_DIR/src/libGLESv2/renderer/ShaderImpl.h \
     $$ANGLE_DIR/src/libGLESv2/renderer/SwapChain.h \
     $$ANGLE_DIR/src/libGLESv2/renderer/TextureImpl.h \
+    $$ANGLE_DIR/src/libGLESv2/renderer/TextureFeedbackImpl.h \
     $$ANGLE_DIR/src/libGLESv2/renderer/VertexDeclarationCache.h \
     $$ANGLE_DIR/src/libGLESv2/resource.h \
     $$ANGLE_DIR/src/libGLESv2/ResourceManager.h \
@@ -95,13 +102,14 @@ SOURCES += \
     $$ANGLE_DIR/src/libGLESv2/Buffer.cpp \
     $$ANGLE_DIR/src/libGLESv2/Caps.cpp \
     $$ANGLE_DIR/src/libGLESv2/Context.cpp \
-    $$ANGLE_DIR/src/libGLESv2/DynamicHLSL.cpp \
+    $$ANGLE_DIR/src/libGLESv2/Error.cpp \
     $$ANGLE_DIR/src/libGLESv2/Fence.cpp \
     $$ANGLE_DIR/src/libGLESv2/Float16ToFloat32.cpp \
     $$ANGLE_DIR/src/libGLESv2/Framebuffer.cpp \
     $$ANGLE_DIR/src/libGLESv2/FramebufferAttachment.cpp \
     $$ANGLE_DIR/src/libGLESv2/formatutils.cpp \
     $$ANGLE_DIR/src/libGLESv2/HandleAllocator.cpp \
+    $$ANGLE_DIR/src/libGLESv2/ImageIndex.cpp \
     $$ANGLE_DIR/src/libGLESv2/libGLESv2.cpp \
     $$ANGLE_DIR/src/libGLESv2/main.cpp \
     $$ANGLE_DIR/src/libGLESv2/Program.cpp \
@@ -121,7 +129,6 @@ SOURCES += \
     $$ANGLE_DIR/src/libGLESv2/validationES3.cpp \
     $$ANGLE_DIR/src/libGLESv2/VertexArray.cpp \
     $$ANGLE_DIR/src/libGLESv2/VertexAttribute.cpp \
-    $$ANGLE_DIR/src/libGLESv2/precompiled.cpp \
     $$ANGLE_DIR/src/libGLESv2/renderer/copyimage.cpp \
     $$ANGLE_DIR/src/libGLESv2/renderer/loadimage.cpp \
     $$ANGLE_DIR/src/libGLESv2/renderer/loadimageSSE2.cpp \
@@ -129,13 +136,17 @@ SOURCES += \
     $$ANGLE_DIR/src/libGLESv2/renderer/IndexRangeCache.cpp \
     $$ANGLE_DIR/src/libGLESv2/renderer/Renderer.cpp \
     $$ANGLE_DIR/src/libGLESv2/renderer/d3d/BufferD3D.cpp \
+    $$ANGLE_DIR/src/libGLESv2/renderer/d3d/DynamicHLSL.cpp \
     $$ANGLE_DIR/src/libGLESv2/renderer/d3d/HLSLCompiler.cpp \
     $$ANGLE_DIR/src/libGLESv2/renderer/d3d/ImageD3D.cpp \
     $$ANGLE_DIR/src/libGLESv2/renderer/d3d/IndexBuffer.cpp \
     $$ANGLE_DIR/src/libGLESv2/renderer/d3d/IndexDataManager.cpp \
     $$ANGLE_DIR/src/libGLESv2/renderer/d3d/MemoryBuffer.cpp \
+    $$ANGLE_DIR/src/libGLESv2/renderer/d3d/ProgramD3D.cpp \
+    $$ANGLE_DIR/src/libGLESv2/renderer/d3d/ShaderD3D.cpp \
     $$ANGLE_DIR/src/libGLESv2/renderer/d3d/TextureD3D.cpp \
     $$ANGLE_DIR/src/libGLESv2/renderer/d3d/TextureStorage.cpp \
+    $$ANGLE_DIR/src/libGLESv2/renderer/d3d/TransformFeedbackD3D.cpp \
     $$ANGLE_DIR/src/libGLESv2/renderer/d3d/VertexBuffer.cpp \
     $$ANGLE_DIR/src/libGLESv2/renderer/d3d/VertexDataManager.cpp
 

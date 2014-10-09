@@ -10,10 +10,11 @@
 #ifndef COMMON_BLOCKLAYOUT_H_
 #define COMMON_BLOCKLAYOUT_H_
 
+#include <cstddef>
 #include <vector>
+
 #include "angle_gl.h"
 #include <GLSLANG/ShaderLang.h>
-#include <cstddef>
 
 namespace sh
 {
@@ -48,9 +49,7 @@ class BlockLayoutEncoder
   public:
     BlockLayoutEncoder();
 
-    void encodeInterfaceBlockFields(const std::vector<InterfaceBlockField> &fields);
-    BlockMemberInfo encodeInterfaceBlockField(const InterfaceBlockField &field);
-    void encodeType(GLenum type, unsigned int arraySize, bool isRowMajorMatrix);
+    BlockMemberInfo encodeType(GLenum type, unsigned int arraySize, bool isRowMajorMatrix);
 
     size_t getBlockSize() const { return mCurrentOffset * BytesPerComponent; }
     size_t getCurrentRegister() const { return mCurrentOffset / ComponentsPerRegister; }

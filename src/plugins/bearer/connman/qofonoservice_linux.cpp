@@ -290,7 +290,7 @@ QVariantMap &QOfonoDataConnectionManagerInterface::getProperties()
 void QOfonoDataConnectionManagerInterface::propertyChanged(const QString &name, const QDBusVariant &value)
 {
     propertiesMap[name] = value.variant();
-    if (name == QStringLiteral("RoamingAllowed"))
+    if (name == QLatin1String("RoamingAllowed"))
         Q_EMIT roamingAllowedChanged(value.variant().toBool());
 }
 

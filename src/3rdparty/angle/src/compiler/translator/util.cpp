@@ -9,7 +9,6 @@
 #include <limits>
 
 #include "compiler/preprocessor/numeric_lex.h"
-#include "common/shadervars.h"
 #include "common/utilities.h"
 
 bool atof_clamp(const char *str, float *value)
@@ -269,6 +268,8 @@ InterpolationType GetInterpolationType(TQualifier qualifier)
       case EvqFragmentIn:
       case EvqVaryingIn:
       case EvqVaryingOut:
+      case EvqInvariantVaryingIn:
+      case EvqInvariantVaryingOut:
         return INTERPOLATION_SMOOTH;
 
       case EvqCentroidIn:
@@ -281,7 +282,7 @@ InterpolationType GetInterpolationType(TQualifier qualifier)
 }
 
 template <typename VarT>
-void GetVariableTraverser<VarT>::traverse(const TType &type, const TString &name)
+void GetVariableTraverser::traverse(const TType &type, const TString &name, std::vector<VarT> *output)
 {
     const TStructure *structure = type.getStruct();
 
@@ -296,61 +297,27 @@ void GetVariableTraverser<VarT>::traverse(const TType &type, const TString &name
     }
     else
     {
+        // Note: this enum value is not exposed outside ANGLE
         variable.type = GL_STRUCT_ANGLEX;
-
-        mOutputStack.push(&variable.fields);
+        variable.structName = structure->name().c_str();
 
         const TFieldList &fields = structure->fields();
 
         for (size_t fieldIndex = 0; fieldIndex < fields.size(); fieldIndex++)
         {
             TField *field = fields[fieldIndex];
-            traverse(*field->type(), field->name());
+            traverse(*field->type(), field->name(), &variable.fields);
         }
-
-        mOutputStack.pop();
     }
 
     visitVariable(&variable);
 
-    ASSERT(!mOutputStack.empty());
-    mOutputStack.top()->push_back(variable);
-}
-
-template <typename VarT>
-GetVariableTraverser<VarT>::GetVariableTraverser(std::vector<VarT> *output)
-{
     ASSERT(output);
-    mOutputStack.push(output);
+    output->push_back(variable);
 }
 
-template class GetVariableTraverser<Uniform>;
-template class GetVariableTraverser<Varying>;
-template class GetVariableTraverser<InterfaceBlockField>;
-
-GetInterfaceBlockFieldTraverser::GetInterfaceBlockFieldTraverser(std::vector<InterfaceBlockField> *output, bool isRowMajorMatrix)
-    : GetVariableTraverser(output),
-      mIsRowMajorMatrix(isRowMajorMatrix)
-{
-}
-
-void GetInterfaceBlockFieldTraverser::visitVariable(InterfaceBlockField *newField)
-{
-    if (gl::IsMatrixType(newField->type))
-    {
-        newField->isRowMajorMatrix = mIsRowMajorMatrix;
-    }
-}
-
-BlockLayoutType GetBlockLayoutType(TLayoutBlockStorage blockStorage)
-{
-    switch (blockStorage)
-    {
-      case EbsPacked:         return BLOCKLAYOUT_PACKED;
-      case EbsShared:         return BLOCKLAYOUT_SHARED;
-      case EbsStd140:         return BLOCKLAYOUT_STANDARD;
-      default: UNREACHABLE(); return BLOCKLAYOUT_SHARED;
-    }
-}
+template void GetVariableTraverser::traverse(const TType &, const TString &, std::vector<Uniform> *);
+template void GetVariableTraverser::traverse(const TType &, const TString &, std::vector<Varying> *);
+template void GetVariableTraverser::traverse(const TType &, const TString &, std::vector<InterfaceBlockField> *);
 
 }

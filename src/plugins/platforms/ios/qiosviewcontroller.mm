@@ -147,6 +147,13 @@
 #endif
 
         self.changingOrientation = NO;
+
+        // Status bar may be initially hidden at startup through Info.plist
+        self.prefersStatusBarHidden = infoPlistValue(@"UIStatusBarHidden", false);
+
+        QObject::connect(qApp, &QGuiApplication::focusWindowChanged, [self]() {
+            [self updateProperties];
+        });
     }
 
     return self;
@@ -172,6 +179,49 @@
     [[NSNotificationCenter defaultCenter] removeObserver:self name:nil object:nil];
     [super viewDidUnload];
 }
+
+// -------------------------------------------------------------------------
+
+- (void)updateProperties
+{
+    if (!isQtApplication())
+        return;
+
+    QWindow *focusWindow = QGuiApplication::focusWindow();
+
+    // If we don't have a focus window we leave the statusbar
+    // as is, so that the user can activate a new window with
+    // the same window state without the status bar jumping
+    // back and forth.
+    if (!focusWindow)
+        return;
+
+    // We only care about changes to focusWindow that involves our screen
+    if (!focusWindow->screen() || focusWindow->screen()->handle() != m_screen)
+        return;
+
+    // All decisions are based on the the top level window
+    focusWindow = qt_window_private(focusWindow)->topLevelWindow();
+
+    bool currentStatusBarVisibility = self.prefersStatusBarHidden;
+    self.prefersStatusBarHidden = focusWindow->windowState() == Qt::WindowFullScreen;
+    if (self.prefersStatusBarHidden != currentStatusBarVisibility) {
+#if QT_IOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__IPHONE_7_0)
+        if (QSysInfo::MacintoshVersion >= QSysInfo::MV_IOS_7_0) {
+            [self setNeedsStatusBarAppearanceUpdate];
+        } else
+#endif
+        {
+            [[UIApplication sharedApplication]
+                setStatusBarHidden:self.prefersStatusBarHidden
+                withAnimation:UIStatusBarAnimationNone];
+        }
+
+        [self.view setNeedsLayout];
+    }
+}
+
+// -------------------------------------------------------------------------
 
 -(BOOL)shouldAutorotate
 {
@@ -260,18 +310,6 @@
     // an appropriate style, and/or expose Qt APIs to control the style.
 }
 #endif
-
-- (BOOL)prefersStatusBarHidden
-{
-    static bool hiddenFromPlist = infoPlistValue(@"UIStatusBarHidden", false);
-    if (hiddenFromPlist)
-        return YES;
-    QWindow *focusWindow = QGuiApplication::focusWindow();
-    if (!focusWindow)
-        return [UIApplication sharedApplication].statusBarHidden;
-
-    return qt_window_private(focusWindow)->topLevelWindow()->windowState() == Qt::WindowFullScreen;
-}
 
 @end
 

@@ -639,29 +639,29 @@ void Generator::generateFunctions(const QList<FunctionDef>& list, const char *fu
         unsigned char flags = type;
         if (f.access == FunctionDef::Private) {
             flags |= AccessPrivate;
-            comment.append(QByteArrayLiteral("Private"));
+            comment.append("Private");
         } else if (f.access == FunctionDef::Public) {
             flags |= AccessPublic;
-            comment.append(QByteArrayLiteral("Public"));
+            comment.append("Public");
         } else if (f.access == FunctionDef::Protected) {
             flags |= AccessProtected;
-            comment.append(QByteArrayLiteral("Protected"));
+            comment.append("Protected");
         }
         if (f.isCompat) {
             flags |= MethodCompatibility;
-            comment.append(QByteArrayLiteral(" | MethodCompatibility"));
+            comment.append(" | MethodCompatibility");
         }
         if (f.wasCloned) {
             flags |= MethodCloned;
-            comment.append(QByteArrayLiteral(" | MethodCloned"));
+            comment.append(" | MethodCloned");
         }
         if (f.isScriptable) {
             flags |= MethodScriptable;
-            comment.append(QByteArrayLiteral(" | isScriptable"));
+            comment.append(" | isScriptable");
         }
         if (f.revision > 0) {
             flags |= MethodRevisioned;
-            comment.append(QByteArrayLiteral(" | MethodRevisioned"));
+            comment.append(" | MethodRevisioned");
         }
 
         int argc = f.arguments.count();

@@ -149,7 +149,7 @@ QT_BEGIN_NAMESPACE
 
   \endlist
 
-  \section1 OpenGL function calls, headers and QOpenGLFunctions
+  \section1 OpenGL Function Calls, Headers and QOpenGLFunctions
 
   When making OpenGL function calls, it is strongly recommended to avoid calling
   the functions directly. Instead, prefer using QOpenGLFunctions (when making
@@ -177,7 +177,7 @@ QT_BEGIN_NAMESPACE
   feasible. This means that constants and function pointer typedefs from ARB,
   EXT, OES extensions are automatically available.
 
-  \section1 Code examples
+  \section1 Code Examples
 
   To get started, the simplest QOpenGLWidget subclass could like like the following:
 
@@ -282,7 +282,7 @@ QT_BEGIN_NAMESPACE
   fully controlled by the thread, e.g. an additional framebuffer object, and
   blitting to the QOpenGLWidget's framebuffer at a suitable time.
 
-  \section1 Context sharing
+  \section1 Context Sharing
 
   When multiple QOpenGLWidgets are added as children to the same top-level
   widget, their contexts will share with each other. This does not apply for
@@ -311,7 +311,7 @@ QT_BEGIN_NAMESPACE
   created later. Some other drivers may behave in unexpected ways when trying to
   utilize shared resources between different threads.
 
-  \section1 Resource initialization and cleanup
+  \section1 Resource Initialization and Cleanup
 
   The QOpenGLWidget's associated OpenGL context is guaranteed to be current
   whenever initializeGL() and paintGL() are invoked. Do not attempt to create

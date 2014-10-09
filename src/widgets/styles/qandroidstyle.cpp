@@ -624,8 +624,6 @@ QRect QAndroidStyle::subElementRect(SubElement subElement,
                                     const QStyleOption *option,
                                     const QWidget *widget) const
 {
-    if (subElement == SE_LineEditContents) // fix spinbox display problem
-        return QFusionStyle::subElementRect(subElement, option, widget);
     const ItemType itemType = qtControl(subElement);
     AndroidControlsHash::const_iterator it = itemType != QC_UnknownType
                                              ? m_androidControlsHash.find(itemType)

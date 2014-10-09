@@ -4328,7 +4328,7 @@
     This tutorial teaches you the basics of qmake. The other topics in this
     manual contain more detailed information about using qmake.
 
-    \section1 Starting off Simple
+    \section1 Starting Off Simple
 
     Let's assume that you have just finished a basic implementation of
     your application, and you have created the following files:

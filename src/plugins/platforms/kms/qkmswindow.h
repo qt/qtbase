@@ -45,7 +45,8 @@ class QKmsWindow : public QPlatformWindow
 public:
     QKmsWindow(QWindow *window);
 
-    void setGeometry(const QRect &rect);
+    void setGeometry(const QRect &rect) Q_DECL_OVERRIDE;
+    QSurfaceFormat format() const Q_DECL_OVERRIDE;
 
 private:
     QPlatformScreen *m_screen;

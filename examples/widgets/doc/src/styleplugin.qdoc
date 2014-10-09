@@ -123,7 +123,7 @@
     styles folder under stylewindow because this is a path in which Qt
     will search for style plugins.
 
-    \section1 Related articles and examples
+    \section1 Related Articles and Examples
 
     In addition to the plugin \l{How to Create Qt Plugins}{overview
     document}, we have other examples and articles that concern

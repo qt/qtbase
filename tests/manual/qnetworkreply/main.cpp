@@ -381,8 +381,7 @@ void tst_qnetworkreply::spdy()
 
     QFETCH(QByteArray, expectedProtocol);
 
-    bool expectedSpdyUsed = (expectedProtocol == QSslConfiguration::NextProtocolSpdy3_0)
-            ? true : false;
+    bool expectedSpdyUsed = (expectedProtocol == QSslConfiguration::NextProtocolSpdy3_0);
     QCOMPARE(reply->attribute(QNetworkRequest::SpdyWasUsedAttribute).toBool(), expectedSpdyUsed);
 
     QCOMPARE(metaDataChangedSpy.count(), 1);

@@ -1,4 +1,3 @@
-#include "precompiled.h"
 //
 // Copyright (c) 2012 The ANGLE Project Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
@@ -7,11 +6,11 @@
 
 // VertexDeclarationCache.cpp: Implements a helper class to construct and cache vertex declarations.
 
+#include "libGLESv2/renderer/d3d/d3d9/VertexDeclarationCache.h"
+#include "libGLESv2/renderer/d3d/d3d9/VertexBuffer9.h"
+#include "libGLESv2/renderer/d3d/d3d9/formatutils9.h"
 #include "libGLESv2/ProgramBinary.h"
 #include "libGLESv2/VertexAttribute.h"
-#include "libGLESv2/renderer/d3d/d3d9/VertexBuffer9.h"
-#include "libGLESv2/renderer/d3d/d3d9/VertexDeclarationCache.h"
-#include "libGLESv2/renderer/d3d/d3d9/formatutils9.h"
 
 namespace rx
 {
@@ -41,12 +40,26 @@ VertexDeclarationCache::~VertexDeclarationCache()
     }
 }
 
-GLenum VertexDeclarationCache::applyDeclaration(IDirect3DDevice9 *device, TranslatedAttribute attributes[], gl::ProgramBinary *programBinary, GLsizei instances, GLsizei *repeatDraw)
+gl::Error VertexDeclarationCache::applyDeclaration(IDirect3DDevice9 *device, TranslatedAttribute attributes[], gl::ProgramBinary *programBinary, GLsizei instances, GLsizei *repeatDraw)
 {
     *repeatDraw = 1;
 
     int indexedAttribute = gl::MAX_VERTEX_ATTRIBS;
     int instancedAttribute = gl::MAX_VERTEX_ATTRIBS;
+
+    if (instances == 0)
+    {
+        for (int i = 0; i < gl::MAX_VERTEX_ATTRIBS; ++i)
+        {
+            if (attributes[i].divisor != 0)
+            {
+                // If a divisor is set, it still applies even if an instanced draw was not used, so treat
+                // as a single-instance draw.
+                instances = 1;
+                break;
+            }
+        }
+    }
 
     if (instances > 0)
     {
@@ -68,11 +81,13 @@ GLenum VertexDeclarationCache::applyDeclaration(IDirect3DDevice9 *device, Transl
             }
         }
 
-        if (indexedAttribute == gl::MAX_VERTEX_ATTRIBS)
-        {
-            return GL_INVALID_OPERATION;
-        }
+        // The validation layer checks that there is at least one active attribute with a zero divisor as per
+        // the GL_ANGLE_instanced_arrays spec.
+        ASSERT(indexedAttribute != gl::MAX_VERTEX_ATTRIBS);
     }
+
+    D3DCAPS9 caps;
+    device->GetDeviceCaps(&caps);
 
     D3DVERTEXELEMENT9 elements[gl::MAX_VERTEX_ATTRIBS + 1];
     D3DVERTEXELEMENT9 *element = &elements[0];
@@ -133,10 +148,11 @@ GLenum VertexDeclarationCache::applyDeclaration(IDirect3DDevice9 *device, Transl
             }
 
             gl::VertexFormat vertexFormat(*attributes[i].attribute, GL_FLOAT);
+            const d3d9::VertexFormat &d3d9VertexInfo = d3d9::GetVertexFormatInfo(caps.DeclTypes, vertexFormat);
 
             element->Stream = stream;
             element->Offset = 0;
-            element->Type = d3d9::GetNativeVertexFormat(vertexFormat);
+            element->Type = d3d9VertexInfo.nativeFormat;
             element->Method = D3DDECLMETHOD_DEFAULT;
             element->Usage = D3DDECLUSAGE_TEXCOORD;
             element->UsageIndex = programBinary->getSemanticIndex(i);
@@ -172,7 +188,7 @@ GLenum VertexDeclarationCache::applyDeclaration(IDirect3DDevice9 *device, Transl
                 mLastSetVDecl = entry->vertexDeclaration;
             }
 
-            return GL_NO_ERROR;
+            return gl::Error(GL_NO_ERROR);
         }
     }
 
@@ -194,12 +210,17 @@ GLenum VertexDeclarationCache::applyDeclaration(IDirect3DDevice9 *device, Transl
     }
 
     memcpy(lastCache->cachedElements, elements, (element - elements) * sizeof(D3DVERTEXELEMENT9));
-    device->CreateVertexDeclaration(elements, &lastCache->vertexDeclaration);
+    HRESULT result = device->CreateVertexDeclaration(elements, &lastCache->vertexDeclaration);
+    if (FAILED(result))
+    {
+        return gl::Error(GL_OUT_OF_MEMORY, "Failed to create internal vertex declaration, result: 0x%X.", result);
+    }
+
     device->SetVertexDeclaration(lastCache->vertexDeclaration);
     mLastSetVDecl = lastCache->vertexDeclaration;
     lastCache->lruCount = ++mMaxLru;
 
-    return GL_NO_ERROR;
+    return gl::Error(GL_NO_ERROR);
 }
 
 void VertexDeclarationCache::markStateDirty()

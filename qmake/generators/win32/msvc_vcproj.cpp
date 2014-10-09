@@ -1346,7 +1346,6 @@ void VcprojGenerator::initDeploymentTool()
         if (conf.WinRT) {
             vcProject.DeploymentFiles.Project = this;
             vcProject.DeploymentFiles.Config = &(vcProject.Configuration);
-            vcProject.DeploymentFiles.CustomBuild = none;
         }
     }
 }
@@ -1385,7 +1384,6 @@ void VcprojGenerator::initRootFiles()
 
     vcProject.RootFiles.Project = this;
     vcProject.RootFiles.Config = &(vcProject.Configuration);
-    vcProject.RootFiles.CustomBuild = none;
 }
 
 void VcprojGenerator::initSourceFiles()
@@ -1398,7 +1396,6 @@ void VcprojGenerator::initSourceFiles()
 
     vcProject.SourceFiles.Project = this;
     vcProject.SourceFiles.Config = &(vcProject.Configuration);
-    vcProject.SourceFiles.CustomBuild = none;
 }
 
 void VcprojGenerator::initHeaderFiles()
@@ -1450,7 +1447,6 @@ void VcprojGenerator::initLexYaccFiles()
 
     vcProject.LexYaccFiles.Project = this;
     vcProject.LexYaccFiles.Config = &(vcProject.Configuration);
-    vcProject.LexYaccFiles.CustomBuild = lexyacc;
 }
 
 void VcprojGenerator::initTranslationFiles()
@@ -1464,7 +1460,6 @@ void VcprojGenerator::initTranslationFiles()
 
     vcProject.TranslationFiles.Project = this;
     vcProject.TranslationFiles.Config = &(vcProject.Configuration);
-    vcProject.TranslationFiles.CustomBuild = none;
 }
 
 void VcprojGenerator::initFormFiles()
@@ -1476,7 +1471,6 @@ void VcprojGenerator::initFormFiles()
     vcProject.FormFiles.addFiles(project->values("FORMS"));
     vcProject.FormFiles.Project = this;
     vcProject.FormFiles.Config = &(vcProject.Configuration);
-    vcProject.FormFiles.CustomBuild = none;
 }
 
 void VcprojGenerator::initResourceFiles()
@@ -1526,7 +1520,6 @@ void VcprojGenerator::initResourceFiles()
 
     vcProject.ResourceFiles.Project = this;
     vcProject.ResourceFiles.Config = &(vcProject.Configuration);
-    vcProject.ResourceFiles.CustomBuild = none;
 }
 
 void VcprojGenerator::initExtraCompilerOutputs()
@@ -1603,7 +1596,6 @@ void VcprojGenerator::initExtraCompilerOutputs()
         }
         extraCompile.Project = this;
         extraCompile.Config = &(vcProject.Configuration);
-        extraCompile.CustomBuild = none;
 
         vcProject.ExtraCompilersFiles.append(extraCompile);
     }

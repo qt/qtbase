@@ -43,6 +43,7 @@
 
 #include "qiosglobal.h"
 #include "qiosintegration.h"
+#include "qiosviewcontroller.h"
 #include "qioswindow.h"
 #include "qiosmenu.h"
 
@@ -207,9 +208,10 @@
         // of activating another window. The handleWindowActivated of the activation
         // will take care of both.
         dispatch_async(dispatch_get_main_queue (), ^{
-            if (![[UIResponder currentFirstResponder] isKindOfClass:[QUIView class]])
+            if (![[UIResponder currentFirstResponder] isKindOfClass:[QUIView class]]) {
                 QWindowSystemInterface::handleWindowActivated(0);
                 QWindowSystemInterface::flushWindowSystemEvents();
+            }
         });
 
         return YES;
@@ -365,6 +367,15 @@
         if ([responder isKindOfClass:UIViewController.class])
             return responder;
     }
+    return nil;
+}
+
+- (QIOSViewController*)qtViewController
+{
+    UIViewController *vc = self.viewController;
+    if ([vc isKindOfClass:QIOSViewController.class])
+        return static_cast<QIOSViewController *>(vc);
+
     return nil;
 }
 

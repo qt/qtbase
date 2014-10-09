@@ -119,7 +119,6 @@ void QIOSWindow::setVisible(bool visible)
 
     if (visible) {
         requestActivateWindow();
-        static_cast<QIOSScreen *>(screen())->updateStatusBarVisibility();
     } else {
         // Activate top-most visible QWindow:
         NSArray *subviews = m_view.viewController.view.subviews;
@@ -202,7 +201,7 @@ void QIOSWindow::setWindowState(Qt::WindowState state)
     qt_window_private(window())->windowState = state;
 
     if (window()->isTopLevel() && window()->isVisible() && window()->isActive())
-        static_cast<QIOSScreen *>(screen())->updateStatusBarVisibility();
+        [m_view.qtViewController updateProperties];
 
     switch (state) {
     case Qt::WindowNoState:

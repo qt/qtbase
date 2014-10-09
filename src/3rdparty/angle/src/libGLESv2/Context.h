@@ -10,6 +10,16 @@
 #ifndef LIBGLESV2_CONTEXT_H_
 #define LIBGLESV2_CONTEXT_H_
 
+#include "common/angleutils.h"
+#include "common/RefCountObject.h"
+#include "libGLESv2/Caps.h"
+#include "libGLESv2/Error.h"
+#include "libGLESv2/HandleAllocator.h"
+#include "libGLESv2/angletypes.h"
+#include "libGLESv2/Constants.h"
+#include "libGLESv2/VertexAttribute.h"
+#include "libGLESv2/State.h"
+
 #include "angle_gl.h"
 
 #include <string>
@@ -17,15 +27,6 @@
 #include <map>
 #include <unordered_map>
 #include <array>
-
-#include "common/angleutils.h"
-#include "common/RefCountObject.h"
-#include "libGLESv2/Caps.h"
-#include "libGLESv2/HandleAllocator.h"
-#include "libGLESv2/angletypes.h"
-#include "libGLESv2/Constants.h"
-#include "libGLESv2/VertexAttribute.h"
-#include "libGLESv2/State.h"
 
 namespace rx
 {
@@ -114,10 +115,7 @@ class Context
 
     void bindArrayBuffer(GLuint buffer);
     void bindElementArrayBuffer(GLuint buffer);
-    void bindTexture2D(GLuint texture);
-    void bindTextureCubeMap(GLuint texture);
-    void bindTexture3D(GLuint texture);
-    void bindTexture2DArray(GLuint texture);
+    void bindTexture(GLenum target, GLuint texture);
     void bindReadFramebuffer(GLuint framebuffer);
     void bindDrawFramebuffer(GLuint framebuffer);
     void bindRenderbuffer(GLuint renderbuffer);
@@ -133,11 +131,11 @@ class Context
     void bindPixelUnpackBuffer(GLuint buffer);
     void useProgram(GLuint program);
     void linkProgram(GLuint program);
-    void setProgramBinary(GLuint program, const void *binary, GLint length);
+    void setProgramBinary(GLuint program, GLenum binaryFormat, const void *binary, GLint length);
     void bindTransformFeedback(GLuint transformFeedback);
 
-    void beginQuery(GLenum target, GLuint query);
-    void endQuery(GLenum target);
+    Error beginQuery(GLenum target, GLuint query);
+    Error endQuery(GLenum target);
 
     void setFramebufferZero(Framebuffer *framebuffer);
 
@@ -169,7 +167,7 @@ class Context
     Texture3D *getTexture3D() const;
     Texture2DArray *getTexture2DArray() const;
 
-    Texture *getSamplerTexture(unsigned int sampler, TextureType type) const;
+    Texture *getSamplerTexture(unsigned int sampler, GLenum type) const;
 
     bool isSampler(GLuint samplerName) const;
 
@@ -184,22 +182,20 @@ class Context
     bool getQueryParameterInfo(GLenum pname, GLenum *type, unsigned int *numParams);
     bool getIndexedQueryParameterInfo(GLenum target, GLenum *type, unsigned int *numParams);
 
-    void clear(GLbitfield mask);
-    void clearBufferfv(GLenum buffer, int drawbuffer, const float *values);
-    void clearBufferuiv(GLenum buffer, int drawbuffer, const unsigned int *values);
-    void clearBufferiv(GLenum buffer, int drawbuffer, const int *values);
-    void clearBufferfi(GLenum buffer, int drawbuffer, float depth, int stencil);
+    Error clear(GLbitfield mask);
+    Error clearBufferfv(GLenum buffer, int drawbuffer, const float *values);
+    Error clearBufferuiv(GLenum buffer, int drawbuffer, const unsigned int *values);
+    Error clearBufferiv(GLenum buffer, int drawbuffer, const int *values);
+    Error clearBufferfi(GLenum buffer, int drawbuffer, float depth, int stencil);
 
-    void readPixels(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, GLsizei *bufSize, void* pixels);
-    void drawArrays(GLenum mode, GLint first, GLsizei count, GLsizei instances);
-    void drawElements(GLenum mode, GLsizei count, GLenum type, const GLvoid *indices, GLsizei instances);
+    Error readPixels(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, GLsizei *bufSize, void* pixels);
+    Error drawArrays(GLenum mode, GLint first, GLsizei count, GLsizei instances);
+    Error drawElements(GLenum mode, GLsizei count, GLenum type,
+                       const GLvoid *indices, GLsizei instances,
+                       const rx::RangeUI &indexRange);
     void sync(bool block);   // flush/finish
 
-    void recordInvalidEnum();
-    void recordInvalidValue();
-    void recordInvalidOperation();
-    void recordOutOfMemory();
-    void recordInvalidFramebufferOperation();
+    void recordError(const Error &error);
 
     GLenum getError();
     GLenum getResetStatus();
@@ -211,15 +207,6 @@ class Context
     const TextureCapsMap &getTextureCaps() const;
     const Extensions &getExtensions() const;
 
-    int getMajorShaderModel() const;
-    unsigned int getMaximumCombinedTextureImageUnits() const;
-    unsigned int getMaximumCombinedUniformBufferBindings() const;
-    GLsizei getMaxSupportedSamples() const;
-    GLsizei getMaxSupportedFormatSamples(GLenum internalFormat) const;
-    GLsizei getNumSampleCounts(GLenum internalFormat) const;
-    void getSampleCounts(GLenum internalFormat, GLsizei bufSize, GLint *params) const;
-    unsigned int getMaxTransformFeedbackBufferBindings() const;
-    GLintptr getUniformBufferOffsetAlignment() const;
     const std::string &getRendererString() const;
 
     const std::string &getExtensionString() const;
@@ -231,15 +218,12 @@ class Context
     void blitFramebuffer(GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1, GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1,
                          GLbitfield mask, GLenum filter);
 
-    void invalidateFrameBuffer(GLenum target, GLsizei numAttachments, const GLenum* attachments,
-                               GLint x, GLint y, GLsizei width, GLsizei height);
-
-    bool hasMappedBuffer(GLenum target) const;
-
     rx::Renderer *getRenderer() { return mRenderer; }
 
     State &getState() { return mState; }
     const State &getState() const { return mState; }
+
+    void releaseShaderCompiler();
 
   private:
     DISALLOW_COPY_AND_ASSIGN(Context);
@@ -247,13 +231,13 @@ class Context
     // TODO: std::array may become unavailable using older versions of GCC
     typedef std::array<unsigned int, IMPLEMENTATION_MAX_FRAMEBUFFER_ATTACHMENTS> FramebufferTextureSerialArray;
 
-    bool applyRenderTarget(GLenum drawMode, bool ignoreViewport);
-    void applyState(GLenum drawMode);
-    void applyShaders(ProgramBinary *programBinary, bool transformFeedbackActive);
-    void applyTextures(SamplerType shaderType, Texture *textures[], TextureType *textureTypes, SamplerState *samplers,
-                       size_t textureCount, const FramebufferTextureSerialArray& framebufferSerials,
-                       size_t framebufferSerialCount);
-    bool applyUniformBuffers();
+    Error applyRenderTarget(GLenum drawMode, bool ignoreViewport);
+    Error applyState(GLenum drawMode);
+    Error applyShaders(ProgramBinary *programBinary, bool transformFeedbackActive);
+    Error applyTextures(ProgramBinary *programBinary, SamplerType shaderType, const FramebufferTextureSerialArray &framebufferSerials,
+                        size_t framebufferSerialCount);
+    Error applyTextures(ProgramBinary *programBinary);
+    Error applyUniformBuffers();
     bool applyTransformFeedbackBuffers();
     void markTransformFeedbackUsage();
 
@@ -265,10 +249,10 @@ class Context
     void detachTransformFeedback(GLuint transformFeedback);
     void detachSampler(GLuint sampler);
 
-    void generateSwizzles(Texture *textures[], size_t count);
-    size_t getCurrentTexturesAndSamplerStates(ProgramBinary *programBinary, SamplerType type, Texture **outTextures,
-                                              TextureType *outTextureTypes, SamplerState *outSamplers);
-    Texture *getIncompleteTexture(TextureType type);
+    Error generateSwizzles(ProgramBinary *programBinary, SamplerType type);
+    Error generateSwizzles(ProgramBinary *programBinary);
+
+    Texture *getIncompleteTexture(GLenum type);
 
     bool skipDraw(GLenum drawMode);
 
@@ -289,10 +273,9 @@ class Context
 
     int mClientVersion;
 
-    BindingPointer<Texture2D> mTexture2DZero;
-    BindingPointer<TextureCubeMap> mTextureCubeMapZero;
-    BindingPointer<Texture3D> mTexture3DZero;
-    BindingPointer<Texture2DArray> mTexture2DArrayZero;
+    typedef std::map< GLenum, BindingPointer<Texture> > TextureMap;
+    TextureMap mZeroTextures;
+    TextureMap mIncompleteTextures;
 
     typedef std::unordered_map<GLuint, Framebuffer*> FramebufferMap;
     FramebufferMap mFramebufferMap;
@@ -319,14 +302,9 @@ class Context
     std::string mExtensionString;
     std::vector<std::string> mExtensionStrings;
 
-    BindingPointer<Texture> mIncompleteTextures[TEXTURE_TYPE_COUNT];
-
     // Recorded errors
-    bool mInvalidEnum;
-    bool mInvalidValue;
-    bool mInvalidOperation;
-    bool mOutOfMemory;
-    bool mInvalidFramebufferOperation;
+    typedef std::set<GLenum> ErrorSet;
+    ErrorSet mErrors;
 
     // Current/lost context flags
     bool mHasBeenCurrent;
@@ -334,10 +312,6 @@ class Context
     GLenum mResetStatus;
     GLenum mResetStrategy;
     bool mRobustAccess;
-
-    int mMajorShaderModel;
-    bool mSupportsVertexTexture;
-    int mNumCompressedTextureFormats;
 
     ResourceManager *mResourceManager;
 };

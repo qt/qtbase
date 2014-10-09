@@ -11,6 +11,7 @@
 
 #include "libGLESv2/constants.h"
 #include "common/RefCountObject.h"
+#include <float.h>
 
 namespace gl
 {
@@ -18,17 +19,6 @@ class Buffer;
 class ProgramBinary;
 struct VertexAttribute;
 struct VertexAttribCurrentValueData;
-
-enum TextureType
-{
-    TEXTURE_2D,
-    TEXTURE_CUBE,
-    TEXTURE_3D,
-    TEXTURE_2D_ARRAY,
-
-    TEXTURE_TYPE_COUNT,
-    TEXTURE_UNKNOWN
-};
 
 enum SamplerType
 {

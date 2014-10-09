@@ -1,7 +1,7 @@
-From be5e9dcf8a4cb23368b30f743082630bdccc7376 Mon Sep 17 00:00:00 2001
+From 7ff7dd46f54e23ae309887366bf477de9c33005b Mon Sep 17 00:00:00 2001
 From: Andrew Knight <andrew.knight@digia.com>
-Date: Tue, 5 Aug 2014 09:31:32 +0300
-Subject: [PATCH 09/12] ANGLE: Support WinRT
+Date: Wed, 17 Sep 2014 00:58:29 +0300
+Subject: [PATCH 09/16] ANGLE: Support WinRT
 
 This enables EGL for WinRT's native types, and adjusts some codepaths
 to accommodate differences between desktop Windows and WinRT.
@@ -23,21 +23,21 @@ Reviewed-by: Friedemann Kleint <Friedemann.Kleint@digia.com>
  src/3rdparty/angle/src/libEGL/Display.cpp          |  13 +-
  src/3rdparty/angle/src/libEGL/Display.h            |   6 +-
  src/3rdparty/angle/src/libEGL/Surface.cpp          | 185 ++++++++++++++++++++-
- src/3rdparty/angle/src/libEGL/Surface.h            |  39 ++++-
+ src/3rdparty/angle/src/libEGL/Surface.h            |  37 ++++-
  src/3rdparty/angle/src/libEGL/libEGL.cpp           |   8 +-
  src/3rdparty/angle/src/libEGL/main.cpp             |  21 +++
  src/3rdparty/angle/src/libGLESv2/main.cpp          |  20 +++
  src/3rdparty/angle/src/libGLESv2/main.h            |   4 +
  .../angle/src/libGLESv2/renderer/Renderer.h        |   2 +-
  .../angle/src/libGLESv2/renderer/SwapChain.h       |  15 +-
- .../src/libGLESv2/renderer/d3d/HLSLCompiler.cpp    |  12 +-
+ .../src/libGLESv2/renderer/d3d/HLSLCompiler.cpp    |  11 +-
  .../libGLESv2/renderer/d3d/d3d11/Renderer11.cpp    |  13 +-
  .../src/libGLESv2/renderer/d3d/d3d11/Renderer11.h  |   4 +-
- .../libGLESv2/renderer/d3d/d3d11/SwapChain11.cpp   |  76 +++++++--
+ .../libGLESv2/renderer/d3d/d3d11/SwapChain11.cpp   |  73 ++++++--
  .../src/libGLESv2/renderer/d3d/d3d11/SwapChain11.h |   6 +-
  .../src/libGLESv2/renderer/d3d/d3d9/SwapChain9.cpp |   2 +-
  .../src/libGLESv2/renderer/d3d/d3d9/SwapChain9.h   |   2 +-
- 22 files changed, 486 insertions(+), 49 deletions(-)
+ 22 files changed, 481 insertions(+), 48 deletions(-)
 
 diff --git a/src/3rdparty/angle/include/EGL/eglplatform.h b/src/3rdparty/angle/include/EGL/eglplatform.h
 index 3ab8844..ea9f577 100644
@@ -61,7 +61,7 @@ index 3ab8844..ea9f577 100644
  #define WIN32_LEAN_AND_MEAN 1
  #endif
 diff --git a/src/3rdparty/angle/src/common/platform.h b/src/3rdparty/angle/src/common/platform.h
-index aa0b985..e16e7ac 100644
+index d07297d..387ba41 100644
 --- a/src/3rdparty/angle/src/common/platform.h
 +++ b/src/3rdparty/angle/src/common/platform.h
 @@ -11,6 +11,9 @@
@@ -240,10 +240,10 @@ index 405f119..4b8e325 100644
      DWORD pathLen = GetTempPathA(sizeof(path) / sizeof(path[0]), path);
      if (pathLen == 0)
 diff --git a/src/3rdparty/angle/src/libEGL/Display.cpp b/src/3rdparty/angle/src/libEGL/Display.cpp
-index a87bfe8..7cd83c3 100644
+index aaebdb3..ba09631 100644
 --- a/src/3rdparty/angle/src/libEGL/Display.cpp
 +++ b/src/3rdparty/angle/src/libEGL/Display.cpp
-@@ -57,6 +57,10 @@ Display::Display(EGLNativeDisplayType displayId, EGLint displayType)
+@@ -56,6 +56,10 @@ Display::Display(EGLNativeDisplayType displayId, EGLint displayType)
        mRequestedDisplayType(displayType),
        mRenderer(NULL)
  {
@@ -254,7 +254,7 @@ index a87bfe8..7cd83c3 100644
  }
  
  Display::~Display()
-@@ -69,6 +73,11 @@ Display::~Display()
+@@ -68,6 +72,11 @@ Display::~Display()
      {
          displays->erase(iter);
      }
@@ -266,7 +266,7 @@ index a87bfe8..7cd83c3 100644
  }
  
  bool Display::initialize()
-@@ -193,7 +202,7 @@ bool Display::getConfigAttrib(EGLConfig config, EGLint attribute, EGLint *value)
+@@ -192,7 +201,7 @@ bool Display::getConfigAttrib(EGLConfig config, EGLint attribute, EGLint *value)
  
  
  
@@ -275,7 +275,7 @@ index a87bfe8..7cd83c3 100644
  {
      const Config *configuration = mConfigSet.get(config);
      EGLint postSubBufferSupported = EGL_FALSE;
-@@ -494,7 +503,7 @@ bool Display::isValidSurface(egl::Surface *surface)
+@@ -493,7 +502,7 @@ bool Display::isValidSurface(egl::Surface *surface)
      return mSurfaceSet.find(surface) != mSurfaceSet.end();
  }
  
@@ -630,7 +630,7 @@ index 13b0f20..fa79961 100644
 +
  }
 diff --git a/src/3rdparty/angle/src/libEGL/Surface.h b/src/3rdparty/angle/src/libEGL/Surface.h
-index 3caf620..ebffce8 100644
+index 24c66b7..ebffce8fe 100644
 --- a/src/3rdparty/angle/src/libEGL/Surface.h
 +++ b/src/3rdparty/angle/src/libEGL/Surface.h
 @@ -15,6 +15,20 @@
@@ -700,9 +700,8 @@ index 3caf620..ebffce8 100644
      EGLint mSwapInterval;
      EGLint mPostSubBufferSupported;
      EGLint mFixedSize;
--    
 +    EGLint mSwapFlags;
-+
+ 
      bool mSwapIntervalDirty;
      gl::Texture2D *mTexture;
 +#if defined(ANGLE_PLATFORM_WINRT)
@@ -717,10 +716,10 @@ index 3caf620..ebffce8 100644
  }
  
 diff --git a/src/3rdparty/angle/src/libEGL/libEGL.cpp b/src/3rdparty/angle/src/libEGL/libEGL.cpp
-index 23df448..a08e1ed 100644
+index 7ce2b93..7ea11c5 100644
 --- a/src/3rdparty/angle/src/libEGL/libEGL.cpp
 +++ b/src/3rdparty/angle/src/libEGL/libEGL.cpp
-@@ -10,6 +10,7 @@
+@@ -13,6 +13,7 @@
  
  #include "common/debug.h"
  #include "common/version.h"
@@ -728,7 +727,7 @@ index 23df448..a08e1ed 100644
  #include "libGLESv2/Context.h"
  #include "libGLESv2/Texture.h"
  #include "libGLESv2/main.h"
-@@ -117,12 +118,13 @@ EGLDisplay __stdcall eglGetPlatformDisplayEXT(EGLenum platform, void *native_dis
+@@ -120,12 +121,13 @@ EGLDisplay __stdcall eglGetPlatformDisplayEXT(EGLenum platform, void *native_dis
      }
  
      EGLNativeDisplayType displayId = static_cast<EGLNativeDisplayType>(native_display);
@@ -743,7 +742,7 @@ index 23df448..a08e1ed 100644
  
      EGLint requestedDisplayType = EGL_PLATFORM_ANGLE_TYPE_DEFAULT_ANGLE;
      if (attrib_list)
-@@ -324,14 +326,16 @@ EGLSurface __stdcall eglCreateWindowSurface(EGLDisplay dpy, EGLConfig config, EG
+@@ -327,14 +329,16 @@ EGLSurface __stdcall eglCreateWindowSurface(EGLDisplay dpy, EGLConfig config, EG
          return EGL_NO_SURFACE;
      }
  
@@ -762,7 +761,7 @@ index 23df448..a08e1ed 100644
  
  EGLSurface __stdcall eglCreatePbufferSurface(EGLDisplay dpy, EGLConfig config, const EGLint *attrib_list)
 diff --git a/src/3rdparty/angle/src/libEGL/main.cpp b/src/3rdparty/angle/src/libEGL/main.cpp
-index 8a1baef..5788af7 100644
+index 8a1baef..e74737e 100644
 --- a/src/3rdparty/angle/src/libEGL/main.cpp
 +++ b/src/3rdparty/angle/src/libEGL/main.cpp
 @@ -11,6 +11,9 @@
@@ -812,22 +811,21 @@ index 8a1baef..5788af7 100644
              currentTLS = CreateTLSIndex();
              if (currentTLS == TLS_OUT_OF_INDEXES)
              {
-@@ -91,8 +110,10 @@ extern "C" BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, LPVOID reserved
+@@ -86,7 +105,9 @@ extern "C" BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, LPVOID reserved
          break;
-       case DLL_PROCESS_DETACH:
+       case DLL_THREAD_DETACH:
          {
 +#if !defined(ANGLE_PLATFORM_WINRT)
              egl::DeallocateCurrent();
-             DestroyTLSIndex(currentTLS);
 +#endif
          }
          break;
-       default:
+       case DLL_PROCESS_DETACH:
 diff --git a/src/3rdparty/angle/src/libGLESv2/main.cpp b/src/3rdparty/angle/src/libGLESv2/main.cpp
-index 5a45ec3..8820700 100644
+index 1c577bc..51447e2 100644
 --- a/src/3rdparty/angle/src/libGLESv2/main.cpp
 +++ b/src/3rdparty/angle/src/libGLESv2/main.cpp
-@@ -12,6 +12,9 @@
+@@ -11,6 +11,9 @@
  
  #include "common/tls.h"
  
@@ -837,7 +835,7 @@ index 5a45ec3..8820700 100644
  static TLSIndex currentTLS = TLS_OUT_OF_INDEXES;
  
  namespace gl
-@@ -19,6 +22,12 @@ namespace gl
+@@ -18,6 +21,12 @@ namespace gl
  
  Current *AllocateCurrent()
  {
@@ -850,7 +848,7 @@ index 5a45ec3..8820700 100644
      ASSERT(currentTLS != TLS_OUT_OF_INDEXES);
      if (currentTLS == TLS_OUT_OF_INDEXES)
      {
-@@ -40,6 +49,12 @@ Current *AllocateCurrent()
+@@ -39,6 +48,12 @@ Current *AllocateCurrent()
  
  void DeallocateCurrent()
  {
@@ -863,7 +861,7 @@ index 5a45ec3..8820700 100644
      Current *current = reinterpret_cast<Current*>(GetTLSValue(currentTLS));
      SafeDelete(current);
      SetTLSValue(currentTLS, NULL);
-@@ -55,6 +70,9 @@ extern "C" BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, LPVOID reserved
+@@ -54,6 +69,9 @@ extern "C" BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, LPVOID reserved
      {
        case DLL_PROCESS_ATTACH:
          {
@@ -873,7 +871,7 @@ index 5a45ec3..8820700 100644
              currentTLS = CreateTLSIndex();
              if (currentTLS == TLS_OUT_OF_INDEXES)
              {
-@@ -74,8 +92,10 @@ extern "C" BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, LPVOID reserved
+@@ -73,8 +91,10 @@ extern "C" BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, LPVOID reserved
          break;
        case DLL_PROCESS_DETACH:
          {
@@ -885,11 +883,11 @@ index 5a45ec3..8820700 100644
          break;
        default:
 diff --git a/src/3rdparty/angle/src/libGLESv2/main.h b/src/3rdparty/angle/src/libGLESv2/main.h
-index c117039..df28ea4 100644
+index 684c302..c30ad33 100644
 --- a/src/3rdparty/angle/src/libGLESv2/main.h
 +++ b/src/3rdparty/angle/src/libGLESv2/main.h
 @@ -14,6 +14,10 @@
- #define EGLAPI
+ #include <GLES2/gl2.h>
  #include <EGL/egl.h>
  
 +#ifndef Sleep
@@ -900,31 +898,28 @@ index c117039..df28ea4 100644
  {
  class Display;
 diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/Renderer.h b/src/3rdparty/angle/src/libGLESv2/renderer/Renderer.h
-index be3ba29..f1e0fd2 100644
+index 7adbea2..b224974 100644
 --- a/src/3rdparty/angle/src/libGLESv2/renderer/Renderer.h
 +++ b/src/3rdparty/angle/src/libGLESv2/renderer/Renderer.h
-@@ -106,7 +106,7 @@ class Renderer
+@@ -107,7 +107,7 @@ class Renderer
  
      virtual void sync(bool block) = 0;
  
 -    virtual SwapChain *createSwapChain(HWND window, HANDLE shareHandle, GLenum backBufferFormat, GLenum depthBufferFormat) = 0;
 +    virtual SwapChain *createSwapChain(EGLNativeWindowType window, HANDLE shareHandle, GLenum backBufferFormat, GLenum depthBufferFormat) = 0;
  
-     virtual void generateSwizzle(gl::Texture *texture) = 0;
-     virtual void setSamplerState(gl::SamplerType type, int index, const gl::SamplerState &sampler) = 0;
+     virtual gl::Error generateSwizzle(gl::Texture *texture) = 0;
+     virtual gl::Error setSamplerState(gl::SamplerType type, int index, const gl::SamplerState &sampler) = 0;
 diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/SwapChain.h b/src/3rdparty/angle/src/libGLESv2/renderer/SwapChain.h
-index f09f19b..77546f8 100644
+index 12be9b3..1ec702f 100644
 --- a/src/3rdparty/angle/src/libGLESv2/renderer/SwapChain.h
 +++ b/src/3rdparty/angle/src/libGLESv2/renderer/SwapChain.h
-@@ -10,6 +10,7 @@
- #ifndef LIBGLESV2_RENDERER_SWAPCHAIN_H_
- #define LIBGLESV2_RENDERER_SWAPCHAIN_H_
+@@ -15,14 +15,23 @@
  
+ #include <GLES2/gl2.h>
+ #include <EGL/egl.h>
 +#include <EGL/eglplatform.h>
- #include "common/angleutils.h"
  
- #if !defined(ANGLE_FORCE_VSYNC_OFF)
-@@ -19,10 +20,18 @@
  namespace rx
  {
  
@@ -961,37 +956,30 @@ index f09f19b..77546f8 100644
      const GLenum mDepthBufferFormat;
  
 diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/HLSLCompiler.cpp b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/HLSLCompiler.cpp
-index 31942e6..e3b88d5 100644
+index 5715d5f..d013197 100644
 --- a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/HLSLCompiler.cpp
 +++ b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/HLSLCompiler.cpp
-@@ -4,6 +4,7 @@
+@@ -9,6 +9,7 @@
  #include "libGLESv2/main.h"
  
  #include "common/utilities.h"
 +#include "common/platform.h"
  
- #include "third_party/trace_event/trace_event.h"
+ #if defined(__MINGW32__) && !defined(D3DCOMPILER_DLL)
  
-@@ -49,6 +50,7 @@ HLSLCompiler::~HLSLCompiler()
+@@ -45,11 +46,7 @@ HLSLCompiler::~HLSLCompiler()
+ 
  bool HLSLCompiler::initialize()
  {
-     TRACE_EVENT0("gpu", "initializeCompiler");
-+#if !defined(ANGLE_PLATFORM_WINRT)
+-<<<<<<< HEAD
+-    TRACE_EVENT0("gpu", "initializeCompiler");
+-=======
+ #if !defined(ANGLE_PLATFORM_WINRT)
+->>>>>>> 429814a... ANGLE: remove event tracing
  #if defined(ANGLE_PRELOADED_D3DCOMPILER_MODULE_NAMES)
      // Find a D3DCompiler module that had already been loaded based on a predefined list of versions.
      static const char *d3dCompilerNames[] = ANGLE_PRELOADED_D3DCOMPILER_MODULE_NAMES;
-@@ -80,8 +82,8 @@ bool HLSLCompiler::initialize()
-     // Load the first available known compiler DLL
-     for (int i = 0; compilerDlls[i]; ++i)
-     {
--        mD3dCompilerModule = LoadLibrary(compilerDlls[i]);
--        if (mD3dCompilerModule)
-+        mD3DCompilerModule = LoadLibrary(compilerDlls[i]);
-+        if (mD3DCompilerModule)
-             break;
-     }
- 
-@@ -93,7 +95,9 @@ bool HLSLCompiler::initialize()
+@@ -94,7 +91,9 @@ bool HLSLCompiler::initialize()
  
      mD3DCompileFunc = reinterpret_cast<CompileFuncPtr>(GetProcAddress(mD3DCompilerModule, "D3DCompile"));
      ASSERT(mD3DCompileFunc);
@@ -1002,7 +990,7 @@ index 31942e6..e3b88d5 100644
      return mD3DCompileFunc != NULL;
  }
  
-@@ -110,7 +114,9 @@ void HLSLCompiler::release()
+@@ -111,7 +110,9 @@ void HLSLCompiler::release()
  ShaderBlob *HLSLCompiler::compileToBinary(gl::InfoLog &infoLog, const char *hlsl, const char *profile,
                                            const UINT optimizationFlags[], const char *flagNames[], int attempts) const
  {
@@ -1013,18 +1001,18 @@ index 31942e6..e3b88d5 100644
      if (!hlsl)
      {
 diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/Renderer11.cpp b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/Renderer11.cpp
-index a48a2cd..36d9a8f 100644
+index ed880c3..0bb7489 100644
 --- a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/Renderer11.cpp
 +++ b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/Renderer11.cpp
-@@ -9,6 +9,7 @@
+@@ -6,6 +6,7 @@
  
- #include "libGLESv2/main.h"
- #include "common/utilities.h"
+ // Renderer11.cpp: Implements a back-end specific class for the D3D11 renderer.
+ 
 +#include "common/platform.h"
+ #include "libGLESv2/main.h"
  #include "libGLESv2/Buffer.h"
  #include "libGLESv2/FramebufferAttachment.h"
- #include "libGLESv2/ProgramBinary.h"
-@@ -129,6 +130,7 @@ EGLint Renderer11::initialize()
+@@ -135,6 +136,7 @@ EGLint Renderer11::initialize()
          return EGL_NOT_INITIALIZED;
      }
  
@@ -1032,7 +1020,7 @@ index a48a2cd..36d9a8f 100644
      mDxgiModule = LoadLibrary(TEXT("dxgi.dll"));
      mD3d11Module = LoadLibrary(TEXT("d3d11.dll"));
  
-@@ -147,6 +149,7 @@ EGLint Renderer11::initialize()
+@@ -153,6 +155,7 @@ EGLint Renderer11::initialize()
          ERR("Could not retrieve D3D11CreateDevice address - aborting!\n");
          return EGL_NOT_INITIALIZED;
      }
@@ -1040,7 +1028,7 @@ index a48a2cd..36d9a8f 100644
  
      D3D_FEATURE_LEVEL featureLevels[] =
      {
-@@ -201,7 +204,7 @@ EGLint Renderer11::initialize()
+@@ -207,7 +210,7 @@ EGLint Renderer11::initialize()
          }
      }
  
@@ -1049,7 +1037,7 @@ index a48a2cd..36d9a8f 100644
      // In order to create a swap chain for an HWND owned by another process, DXGI 1.2 is required.
      // The easiest way to check is to query for a IDXGIDevice2.
      bool requireDXGI1_2 = false;
-@@ -231,8 +234,12 @@ EGLint Renderer11::initialize()
+@@ -237,8 +240,12 @@ EGLint Renderer11::initialize()
      }
  #endif
  
@@ -1063,7 +1051,7 @@ index a48a2cd..36d9a8f 100644
  
      if (FAILED(result))
      {
-@@ -413,7 +420,7 @@ void Renderer11::sync(bool block)
+@@ -408,7 +415,7 @@ void Renderer11::sync(bool block)
      }
  }
  
@@ -1073,7 +1061,7 @@ index a48a2cd..36d9a8f 100644
      return new rx::SwapChain11(this, window, shareHandle, backBufferFormat, depthBufferFormat);
  }
 diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/Renderer11.h b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/Renderer11.h
-index 73a3fc2..618972d 100644
+index d309f14..b86f5e5 100644
 --- a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/Renderer11.h
 +++ b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/Renderer11.h
 @@ -57,7 +57,7 @@ class Renderer11 : public Renderer
@@ -1083,9 +1071,9 @@ index 73a3fc2..618972d 100644
 -    virtual SwapChain *createSwapChain(HWND window, HANDLE shareHandle, GLenum backBufferFormat, GLenum depthBufferFormat);
 +    virtual SwapChain *createSwapChain(EGLNativeWindowType window, HANDLE shareHandle, GLenum backBufferFormat, GLenum depthBufferFormat);
  
-     virtual void generateSwizzle(gl::Texture *texture);
-     virtual void setSamplerState(gl::SamplerType type, int index, const gl::SamplerState &sampler);
-@@ -238,7 +238,7 @@ class Renderer11 : public Renderer
+     virtual gl::Error generateSwizzle(gl::Texture *texture);
+     virtual gl::Error setSamplerState(gl::SamplerType type, int index, const gl::SamplerState &sampler);
+@@ -222,7 +222,7 @@ class Renderer11 : public Renderer
  
      HMODULE mD3d11Module;
      HMODULE mDxgiModule;
@@ -1095,17 +1083,17 @@ index 73a3fc2..618972d 100644
  
      HLSLCompiler mCompiler;
 diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/SwapChain11.cpp b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/SwapChain11.cpp
-index 98166f0..0341df1 100644
+index 50dae4e..787c511 100644
 --- a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/SwapChain11.cpp
 +++ b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/SwapChain11.cpp
-@@ -9,6 +9,7 @@
+@@ -6,6 +6,7 @@
  
- #include "libGLESv2/renderer/d3d/d3d11/SwapChain11.h"
+ // SwapChain11.cpp: Implements a back-end specific class for the D3D11 swap chain.
  
 +#include "common/platform.h"
+ #include "libGLESv2/renderer/d3d/d3d11/SwapChain11.h"
  #include "libGLESv2/renderer/d3d/d3d11/renderer11_utils.h"
  #include "libGLESv2/renderer/d3d/d3d11/formatutils11.h"
- #include "libGLESv2/renderer/d3d/d3d11/Renderer11.h"
 @@ -18,7 +19,7 @@
  namespace rx
  {
@@ -1124,14 +1112,14 @@ index 98166f0..0341df1 100644
      mSwapInterval = 0;
      mAppCreatedShareHandle = mShareHandle != NULL;
      mPassThroughResourcesInit = false;
-@@ -91,6 +94,7 @@ EGLint SwapChain11::resetOffscreenTexture(int backbufferWidth, int backbufferHei
-     ASSERT(backbufferWidth >= 1);
+@@ -92,6 +95,7 @@ EGLint SwapChain11::resetOffscreenTexture(int backbufferWidth, int backbufferHei
      ASSERT(backbufferHeight >= 1);
  
-+#if !defined(ANGLE_PLATFORM_WINRT)
      // Preserve the render target content
++#if !defined(ANGLE_PLATFORM_WINRT)
      ID3D11Texture2D *previousOffscreenTexture = mOffscreenTexture;
      if (previousOffscreenTexture)
+     {
 @@ -99,6 +103,7 @@ EGLint SwapChain11::resetOffscreenTexture(int backbufferWidth, int backbufferHei
      }
      const int previousWidth = mWidth;
@@ -1140,7 +1128,7 @@ index 98166f0..0341df1 100644
  
      releaseOffscreenTexture();
  
-@@ -277,7 +282,12 @@ EGLint SwapChain11::resetOffscreenTexture(int backbufferWidth, int backbufferHei
+@@ -281,7 +286,12 @@ EGLint SwapChain11::resetOffscreenTexture(int backbufferWidth, int backbufferHei
  
      mWidth = backbufferWidth;
      mHeight = backbufferHeight;
@@ -1153,7 +1141,7 @@ index 98166f0..0341df1 100644
      if (previousOffscreenTexture != NULL)
      {
          D3D11_BOX sourceBox = {0};
-@@ -296,9 +306,10 @@ EGLint SwapChain11::resetOffscreenTexture(int backbufferWidth, int backbufferHei
+@@ -300,9 +310,10 @@ EGLint SwapChain11::resetOffscreenTexture(int backbufferWidth, int backbufferHei
  
          if (mSwapChain)
          {
@@ -1165,7 +1153,7 @@ index 98166f0..0341df1 100644
  
      return EGL_SUCCESS;
  }
-@@ -325,8 +336,15 @@ EGLint SwapChain11::resize(EGLint backbufferWidth, EGLint backbufferHeight)
+@@ -329,8 +340,15 @@ EGLint SwapChain11::resize(EGLint backbufferWidth, EGLint backbufferHeight)
      SafeRelease(mBackBufferRTView);
  
      // Resize swap chain
@@ -1176,31 +1164,29 @@ index 98166f0..0341df1 100644
 +#else
 +    const int bufferCount = 2;
 +#endif
-     DXGI_FORMAT backbufferDXGIFormat = gl_d3d11::GetTexFormat(mBackBufferFormat);
--    HRESULT result = mSwapChain->ResizeBuffers(1, backbufferWidth, backbufferHeight, backbufferDXGIFormat, 0);
-+    result = mSwapChain->ResizeBuffers(bufferCount, backbufferWidth, backbufferHeight, backbufferDXGIFormat, 0);
+     const d3d11::TextureFormat &backbufferFormatInfo = d3d11::GetTextureFormatInfo(mBackBufferFormat);
+-    HRESULT result = mSwapChain->ResizeBuffers(1, backbufferWidth, backbufferHeight, backbufferFormatInfo.texFormat, 0);
++    result = mSwapChain->ResizeBuffers(bufferCount, backbufferWidth, backbufferHeight, backbufferFormatInfo.texFormat, 0);
  
      if (FAILED(result))
      {
-@@ -342,7 +360,7 @@ EGLint SwapChain11::resize(EGLint backbufferWidth, EGLint backbufferHeight)
+@@ -346,6 +364,7 @@ EGLint SwapChain11::resize(EGLint backbufferWidth, EGLint backbufferHeight)
              return EGL_BAD_ALLOC;
          }
      }
--
 +#endif
+ 
      result = mSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&mBackBufferTexture);
      ASSERT(SUCCEEDED(result));
-     if (SUCCEEDED(result))
-@@ -392,7 +410,7 @@ EGLint SwapChain11::reset(int backbufferWidth, int backbufferHeight, EGLint swap
-     if (mWindow)
-     {
+@@ -399,6 +418,7 @@ EGLint SwapChain11::reset(int backbufferWidth, int backbufferHeight, EGLint swap
+ 
          IDXGIFactory *factory = mRenderer->getDxgiFactory();
--
+ 
 +#if !defined(ANGLE_PLATFORM_WINRT)
          DXGI_SWAP_CHAIN_DESC swapChainDesc = {0};
          swapChainDesc.BufferDesc.Width = backbufferWidth;
          swapChainDesc.BufferDesc.Height = backbufferHeight;
-@@ -411,6 +429,37 @@ EGLint SwapChain11::reset(int backbufferWidth, int backbufferHeight, EGLint swap
+@@ -417,7 +437,37 @@ EGLint SwapChain11::reset(int backbufferWidth, int backbufferHeight, EGLint swap
          swapChainDesc.Flags = 0;
  
          HRESULT result = factory->CreateSwapChain(device, &swapChainDesc, &mSwapChain);
@@ -1212,7 +1198,7 @@ index 98166f0..0341df1 100644
 +        DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {0};
 +        swapChainDesc.Width = 0;
 +        swapChainDesc.Height = 0;
-+        swapChainDesc.Format = gl_d3d11::GetTexFormat(mBackBufferFormat);
++        swapChainDesc.Format = backbufferFormatInfo.texFormat;
 +        swapChainDesc.SampleDesc.Count = 1;
 +        swapChainDesc.SampleDesc.Quality = 0;
 +        swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
@@ -1226,7 +1212,7 @@ index 98166f0..0341df1 100644
 +        swapChainDesc.BufferCount = 1;
 +        swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
 +#endif
-+
+ 
 +        IDXGISwapChain1 *swapChain;
 +        result = factory2->CreateSwapChainForCoreWindow(device, mWindow, &swapChainDesc, NULL, &swapChain);
 +        mSwapChain = swapChain;
@@ -1235,10 +1221,10 @@ index 98166f0..0341df1 100644
 +        mViewportWidth = swapChainDesc.Width;
 +        mViewportHeight = swapChainDesc.Height;
 +#endif
- 
          if (FAILED(result))
          {
-@@ -507,7 +556,7 @@ void SwapChain11::initPassThroughResources()
+             ERR("Could not create additional swap chains or offscreen surfaces: %08lX", result);
+@@ -513,7 +563,7 @@ void SwapChain11::initPassThroughResources()
  }
  
  // parameters should be validated/clamped by caller
@@ -1247,7 +1233,7 @@ index 98166f0..0341df1 100644
  {
      if (!mSwapChain)
      {
-@@ -538,10 +587,13 @@ EGLint SwapChain11::swapRect(EGLint x, EGLint y, EGLint width, EGLint height)
+@@ -544,10 +594,13 @@ EGLint SwapChain11::swapRect(EGLint x, EGLint y, EGLint width, EGLint height)
      float u2 = (x + width) / float(mWidth);
      float v2 = (y + height) / float(mHeight);
  
@@ -1265,7 +1251,7 @@ index 98166f0..0341df1 100644
  
      deviceContext->Unmap(mQuadVB, 0);
  
-@@ -571,8 +623,8 @@ EGLint SwapChain11::swapRect(EGLint x, EGLint y, EGLint width, EGLint height)
+@@ -577,8 +630,8 @@ EGLint SwapChain11::swapRect(EGLint x, EGLint y, EGLint width, EGLint height)
      D3D11_VIEWPORT viewport;
      viewport.TopLeftX = 0;
      viewport.TopLeftY = 0;
@@ -1306,10 +1292,10 @@ index fb0afd7..b30b785 100644
      unsigned int mSwapInterval;
      bool mPassThroughResourcesInit;
 diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d9/SwapChain9.cpp b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d9/SwapChain9.cpp
-index 4a17acf..c6567b6 100644
+index f702b79..0aeaabb 100644
 --- a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d9/SwapChain9.cpp
 +++ b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d9/SwapChain9.cpp
-@@ -236,7 +236,7 @@ EGLint SwapChain9::reset(int backbufferWidth, int backbufferHeight, EGLint swapI
+@@ -238,7 +238,7 @@ EGLint SwapChain9::reset(int backbufferWidth, int backbufferHeight, EGLint swapI
  }
  
  // parameters should be validated/clamped by caller

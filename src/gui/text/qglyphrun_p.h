@@ -63,6 +63,8 @@ public:
         , glyphIndexDataSize(0)
         , glyphPositionData(glyphPositions.constData())
         , glyphPositionDataSize(0)
+        , textRangeStart(-1)
+        , textRangeEnd(-1)
     {
     }
 
@@ -77,6 +79,8 @@ public:
       , glyphIndexDataSize(other.glyphIndexDataSize)
       , glyphPositionData(other.glyphPositionData)
       , glyphPositionDataSize(other.glyphPositionDataSize)
+      , textRangeStart(other.textRangeStart)
+      , textRangeEnd(other.textRangeEnd)
     {
     }
 
@@ -92,6 +96,9 @@ public:
 
     const QPointF *glyphPositionData;
     int glyphPositionDataSize;
+
+    int textRangeStart;
+    int textRangeEnd;
 
     static QGlyphRunPrivate *get(const QGlyphRun &glyphRun)
     {

@@ -457,8 +457,8 @@ QFixed QWindowsFontEngineDirectWrite::ascent() const
 QFixed QWindowsFontEngineDirectWrite::descent() const
 {
     return fontDef.styleStrategy & QFont::ForceIntegerMetrics
-           ? (m_descent - 1).round()
-           : (m_descent - 1);
+           ? m_descent.round()
+           : m_descent;
 }
 
 QFixed QWindowsFontEngineDirectWrite::leading() const

@@ -325,7 +325,7 @@ QXmlStreamEntityResolver *QXmlStreamReader::entityResolver() const
   namespace prefixes, you can turn off namespace processing completely
   with the \l namespaceProcessing property.
 
-  \section1 Incremental parsing
+  \section1 Incremental Parsing
 
   QXmlStreamReader is an incremental parser. It can handle the case
   where the document can't be parsed all at once because it arrives in
@@ -349,7 +349,7 @@ QXmlStreamEntityResolver *QXmlStreamReader::entityResolver() const
   stream reader using addData(). Then you call your custom parsing
   function that reads the XML events from the reader.
 
-  \section1 Performance and memory consumption
+  \section1 Performance and Memory Consumption
 
   QXmlStreamReader is memory-conservative by design, since it doesn't
   store the entire XML document tree in memory, but only the current

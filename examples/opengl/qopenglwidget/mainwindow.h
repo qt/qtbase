@@ -45,6 +45,8 @@
 #include <QTimer>
 #include <QGridLayout>
 
+QT_FORWARD_DECLARE_CLASS(QOpenGLWidget)
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -52,15 +54,18 @@ class MainWindow : public QMainWindow
 public:
     MainWindow();
     void addNew();
+    bool timerEnabled() const { return m_timer->isActive(); }
 
 private slots:
     void updateIntervalChanged(int value);
+    void timerUsageChanged(bool enabled);
 
 private:
     QTimer *m_timer;
     QGridLayout *m_layout;
     int m_nextX;
     int m_nextY;
+    QVector<QOpenGLWidget *> m_glWidgets;
 };
 
 #endif

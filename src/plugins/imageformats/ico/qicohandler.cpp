@@ -163,7 +163,7 @@ static bool writeIconDirEntry(QIODevice *iodev, const ICONDIRENTRY &iconEntry)
         qToLittleEndian<quint16>(iconEntry.wBitCount, &tmp[6]);
         qToLittleEndian<quint32>(iconEntry.dwBytesInRes, &tmp[8]);
         qToLittleEndian<quint32>(iconEntry.dwImageOffset, &tmp[12]);
-        return (iodev->write((char*)tmp,  ICONDIRENTRY_SIZE) == ICONDIRENTRY_SIZE) ? true : false;
+        return iodev->write((char*)tmp, ICONDIRENTRY_SIZE) == ICONDIRENTRY_SIZE;
     }
 
     return false;
@@ -190,7 +190,7 @@ static bool writeIconDir(QIODevice *iodev, const ICONDIR &iconDir)
         qToLittleEndian(iconDir.idReserved, tmp);
         qToLittleEndian(iconDir.idType, &tmp[2]);
         qToLittleEndian(iconDir.idCount, &tmp[4]);
-        return (iodev->write((char*)tmp,  6) == 6) ? true : false;
+        return iodev->write((char*)tmp, 6) == 6;
     }
     return false;
 }
@@ -233,7 +233,7 @@ static bool writeBMPInfoHeader(QIODevice *iodev, const BMP_INFOHDR &header)
         qToLittleEndian<quint32>(header.biClrUsed, &tmp[32]);
         qToLittleEndian<quint32>(header.biClrImportant, &tmp[36]);
 
-        return (iodev->write((char*)tmp, BMP_INFOHDR_SIZE) == BMP_INFOHDR_SIZE) ? true : false;
+        return iodev->write((char*)tmp, BMP_INFOHDR_SIZE) == BMP_INFOHDR_SIZE;
     }
     return false;
 }
@@ -881,7 +881,7 @@ bool QtIcoHandler::jumpToImage(int imageNumber)
         m_currentIconIndex = imageNumber;
     }
 
-    return (imageNumber < imageCount()) ? true : false;
+    return imageNumber < imageCount();
 }
 
 /*! \reimp

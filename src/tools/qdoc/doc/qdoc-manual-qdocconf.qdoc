@@ -1126,7 +1126,7 @@
     erroneous documentation due to non-standard C++ constructs.
 
     \target Cpp.ignoredirectives-variable
-    \section1  Cpp.ignoredirectives
+    \section1 Cpp.ignoredirectives
     The \c Cpp.ignoredirectives variable makes QDoc ignore the
     specified non-standard constructs, within C++ source code.
 
@@ -1177,7 +1177,7 @@
     See also \l Cpp.ignoretokens.
 
     \target Cpp.ignoretokens-variable
-    \section1  Cpp.ignoretokens
+    \section1 Cpp.ignoretokens
 
     The \c Cpp.ignoretokens variable makes QDoc ignore the specified
     non-standard constructs, within C++ source code.

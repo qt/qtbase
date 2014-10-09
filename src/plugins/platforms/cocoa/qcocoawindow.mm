@@ -82,6 +82,32 @@ static bool isMouseEvent(NSEvent *ev)
     }
 }
 
+static void selectNextKeyWindow(NSWindow *currentKeyWindow)
+{
+    if (!currentKeyWindow)
+        return;
+
+    const QCocoaAutoReleasePool pool;
+
+    if ([[NSApplication sharedApplication] keyWindow] != currentKeyWindow)
+        return;//currentKeyWindow is not a key window actually.
+
+    NSArray *const windows = [[NSApplication sharedApplication] windows];
+    bool startLookup = false;
+    for (NSWindow *candidate in [windows reverseObjectEnumerator]) {
+        if (!startLookup) {
+            if (candidate == currentKeyWindow)
+                startLookup = true;
+        } else {
+            if ([candidate isVisible] && [candidate canBecomeKeyWindow]) {
+                [candidate makeKeyWindow];
+                break;
+            }
+        }
+    }
+}
+
+
 @interface NSWindow (CocoaWindowCategory)
 - (NSRect) legacyConvertRectFromScreen:(NSRect) rect;
 @end
@@ -591,6 +617,9 @@ void QCocoaWindow::hide(bool becauseOfAncestor)
 
     foreach (QCocoaWindow *childWindow, m_childWindows)
         childWindow->hide(true);
+
+    if (window()->transientParent() && m_nsWindow == [[NSApplication sharedApplication] keyWindow])
+        selectNextKeyWindow(m_nsWindow); // Otherwise, Cocoa can do it wrong.
 
     [m_nsWindow orderOut:nil];
 }
@@ -1456,7 +1485,11 @@ void QCocoaWindow::setNSWindow(QCocoaNSWindow *window)
 {
     if (window.contentView != m_contentView) {
         [m_contentView setPostsFrameChangedNotifications: NO];
+        [m_contentView retain];
+        if (m_contentView.superview) // m_contentView comes from another NSWindow
+            [m_contentView removeFromSuperview];
         [window setContentView:m_contentView];
+        [m_contentView release];
         [m_contentView setPostsFrameChangedNotifications: YES];
     }
 }
@@ -1713,12 +1746,13 @@ qreal QCocoaWindow::devicePixelRatio() const
 {
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
     if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_7) {
-        NSWindow* window = [m_contentView window];
-        if (window) {
-          return qreal([window backingScaleFactor]);
-        } else {
-          return 1.0;
-        }
+        // The documented way to observe the relationship between device-independent
+        // and device pixels is to use one for the convertToBacking functions. Other
+        // methods such as [NSWindow backingScaleFacor] might not give the correct
+        // result, for example if setWantsBestResolutionOpenGLSurface is not set or
+        // or ignored by the OpenGL driver.
+        NSSize backingSize = [m_contentView convertSizeToBacking:NSMakeSize(1.0, 1.0)];
+        return backingSize.height;
     } else
 #endif
     {

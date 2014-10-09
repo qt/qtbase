@@ -596,8 +596,16 @@ void QBrush::detach(Qt::BrushStyle newStyle)
     case Qt::RadialGradientPattern:
     case Qt::ConicalGradientPattern:
         x.reset(new QGradientBrushData);
-        static_cast<QGradientBrushData *>(x.data())->gradient =
-            static_cast<QGradientBrushData *>(d.data())->gradient;
+        switch (d->style) {
+        case Qt::LinearGradientPattern:
+        case Qt::RadialGradientPattern:
+        case Qt::ConicalGradientPattern:
+            static_cast<QGradientBrushData *>(x.data())->gradient =
+                    static_cast<QGradientBrushData *>(d.data())->gradient;
+            break;
+        default:
+            break;
+        }
         break;
     default:
         x.reset(new QBrushData);

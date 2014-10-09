@@ -50,7 +50,7 @@ public:
 
 QBearerEngine *QBBEnginePlugin::create(const QString &key) const
 {
-    if (key == QStringLiteral("blackberry"))
+    if (key == QLatin1String("blackberry"))
         return new QBBEngine;
 
     return 0;

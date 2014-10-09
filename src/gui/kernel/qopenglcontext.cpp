@@ -297,7 +297,7 @@ QOpenGLContext *qt_gl_global_share_context()
     For an example of how to use QOpenGLContext see the
     \l{OpenGL Window Example}{OpenGL Window} example.
 
-    \section1 Thread affinity
+    \section1 Thread Affinity
 
     QOpenGLContext can be moved to a different thread with moveToThread(). Do
     not call makeCurrent() from a different thread than the one to which the
@@ -305,7 +305,7 @@ QOpenGLContext *qt_gl_global_share_context()
     and against one surface at a time, and a thread only has one context
     current at a time.
 
-    \section1 Context resource sharing
+    \section1 Context Resource Sharing
 
     Resources, such as framebuffer objects, textures, and vertex buffer objects
     can be shared between contexts.  Use setShareContext() before calling
@@ -317,7 +317,7 @@ QOpenGLContext *qt_gl_global_share_context()
     the share group. A non-sharing context has a share group consisting of a
     single context.
 
-    \section1 Default framebuffer
+    \section1 Default Framebuffer
 
     On certain platforms, a framebuffer other than 0 might be the default frame
     buffer depending on the current surface. Instead of calling

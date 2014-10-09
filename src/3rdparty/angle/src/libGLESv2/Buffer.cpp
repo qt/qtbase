@@ -1,4 +1,3 @@
-#include "precompiled.h"
 //
 // Copyright (c) 2002-2014 The ANGLE Project Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
@@ -31,59 +30,99 @@ Buffer::Buffer(rx::BufferImpl *impl, GLuint id)
 
 Buffer::~Buffer()
 {
-    delete mBuffer;
+    SafeDelete(mBuffer);
 }
 
-void Buffer::bufferData(const void *data, GLsizeiptr size, GLenum usage)
+Error Buffer::bufferData(const void *data, GLsizeiptr size, GLenum usage)
 {
+    gl::Error error = mBuffer->setData(data, size, usage);
+    if (error.isError())
+    {
+        return error;
+    }
+
+    mIndexRangeCache.clear();
     mUsage = usage;
     mSize = size;
-    mBuffer->setData(data, size, usage);
+
+    return error;
 }
 
-void Buffer::bufferSubData(const void *data, GLsizeiptr size, GLintptr offset)
+Error Buffer::bufferSubData(const void *data, GLsizeiptr size, GLintptr offset)
 {
-    mBuffer->setSubData(data, size, offset);
+    gl::Error error = mBuffer->setSubData(data, size, offset);
+    if (error.isError())
+    {
+        return error;
+    }
+
+    mIndexRangeCache.invalidateRange(offset, size);
+
+    return error;
 }
 
-void Buffer::copyBufferSubData(Buffer* source, GLintptr sourceOffset, GLintptr destOffset, GLsizeiptr size)
+Error Buffer::copyBufferSubData(Buffer* source, GLintptr sourceOffset, GLintptr destOffset, GLsizeiptr size)
 {
-    mBuffer->copySubData(source->getImplementation(), size, sourceOffset, destOffset);
+    gl::Error error = mBuffer->copySubData(source->getImplementation(), sourceOffset, destOffset, size);
+    if (error.isError())
+    {
+        return error;
+    }
+
+    mIndexRangeCache.invalidateRange(destOffset, size);
+
+    return error;
 }
 
-GLvoid *Buffer::mapRange(GLintptr offset, GLsizeiptr length, GLbitfield access)
+Error Buffer::mapRange(GLintptr offset, GLsizeiptr length, GLbitfield access)
 {
     ASSERT(!mMapped);
     ASSERT(offset + length <= mSize);
 
-    void *dataPointer = mBuffer->map(offset, length, access);
+    Error error = mBuffer->map(offset, length, access, &mMapPointer);
+    if (error.isError())
+    {
+        mMapPointer = NULL;
+        return error;
+    }
 
     mMapped = GL_TRUE;
-    mMapPointer = static_cast<GLvoid*>(static_cast<GLubyte*>(dataPointer));
     mMapOffset = static_cast<GLint64>(offset);
     mMapLength = static_cast<GLint64>(length);
     mAccessFlags = static_cast<GLint>(access);
 
-    return mMapPointer;
+    if ((access & GL_MAP_WRITE_BIT) > 0)
+    {
+        mIndexRangeCache.invalidateRange(offset, length);
+    }
+
+    return error;
 }
 
-void Buffer::unmap()
+Error Buffer::unmap()
 {
     ASSERT(mMapped);
 
-    mBuffer->unmap();
+    Error error = mBuffer->unmap();
+    if (error.isError())
+    {
+        return error;
+    }
 
     mMapped = GL_FALSE;
     mMapPointer = NULL;
     mMapOffset = 0;
     mMapLength = 0;
     mAccessFlags = 0;
+
+    return error;
 }
 
 void Buffer::markTransformFeedbackUsage()
 {
     // TODO: Only used by the DX11 backend. Refactor to a more appropriate place.
     mBuffer->markTransformFeedbackUsage();
+    mIndexRangeCache.clear();
 }
 
 }

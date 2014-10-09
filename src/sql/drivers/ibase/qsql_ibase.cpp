@@ -1679,7 +1679,7 @@ QSqlRecord QIBaseDriver::record(const QString& tablename) const
             f.setLength(q.value(2).toInt());
             f.setPrecision(0);
         }
-        f.setRequired(q.value(5).toInt() > 0 ? true : false);
+        f.setRequired(q.value(5).toInt() > 0);
         f.setSqlType(type);
 
         rec.append(f);
