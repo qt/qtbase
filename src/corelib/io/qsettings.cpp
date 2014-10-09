@@ -3121,6 +3121,10 @@ bool QSettings::isWritable() const
 void QSettings::setValue(const QString &key, const QVariant &value)
 {
     Q_D(QSettings);
+    if (key.isEmpty()) {
+        qWarning("QSettings::setValue: Empty key passed");
+        return;
+    }
     QString k = d->actualKey(key);
     d->set(k, value);
     d->requestUpdate();
@@ -3253,6 +3257,10 @@ bool QSettings::event(QEvent *event)
 QVariant QSettings::value(const QString &key, const QVariant &defaultValue) const
 {
     Q_D(const QSettings);
+    if (key.isEmpty()) {
+        qWarning("QSettings::value: Empty key passed");
+        return QVariant();
+    }
     QVariant result = defaultValue;
     QString k = d->actualKey(key);
     d->get(k, &result);
