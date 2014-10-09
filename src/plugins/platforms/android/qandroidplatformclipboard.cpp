@@ -53,10 +53,8 @@ QMimeData *QAndroidPlatformClipboard::mimeData(QClipboard::Mode mode)
 
 void QAndroidPlatformClipboard::setMimeData(QMimeData *data, QClipboard::Mode mode)
 {
-    if (!data || !data->hasText() || QClipboard::Clipboard != mode)
-        return;
-
-    QtAndroidClipboard::setClipboardText(data->text());
+    Q_ASSERT(supportsMode(mode));
+    QtAndroidClipboard::setClipboardText(data != 0 && data->hasText() ? data->text() : QString());
 }
 
 bool QAndroidPlatformClipboard::supportsMode(QClipboard::Mode mode) const
