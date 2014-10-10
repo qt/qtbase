@@ -176,6 +176,7 @@ void QPepperIntegration::setPepperInstance(QPepperInstance *instance)
 {
     m_pepperInstance = instance;
 
+#if 0
     // Set up C++ <-> Javascript messaging.
     m_javascriptBridge = new QPepperJavascriptBridge(m_pepperInstance);
     connect(m_javascriptBridge, SIGNAL(evalFunctionReply(const QByteArray&, const QString&)),
@@ -184,6 +185,7 @@ void QPepperIntegration::setPepperInstance(QPepperInstance *instance)
     // Inject helper javascript into the web page:
     m_javascriptBridge->evalFile(":/qpepperplatformplugin/qpepperhelpers.js");
     m_javascriptBridge->evalFile(":/qpepperplatformplugin/qpepperfileaccess.js");
+#endif
 }
 
 QPepperInstance *QPepperIntegration::pepperInstance() const
