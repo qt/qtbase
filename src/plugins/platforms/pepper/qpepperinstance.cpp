@@ -89,6 +89,13 @@ void qtExceptionHandler(const char* json) {
 }
 #endif
 
+// Message handler for redirecting Qt debug output to the web page.
+void qtMessageHandler(QtMsgType, const QMessageLogContext &context, const QString &message)
+{
+   QByteArray bytes = context.category + message.toLatin1() + "\n";
+   QPepperInstance::get()->PostMessage(pp::Var(bytes.constData()));
+}
+
 // There is one global app pp::Instance. It corresponds to the
 // html div tag that contains the app.
 bool QPepperInstance::Init(uint32_t argc, const char* argn[], const char* argv[])
@@ -112,7 +119,22 @@ bool QPepperInstance::Init(uint32_t argc, const char* argn[], const char* argv[]
     extern void *qtPepperInstance; // qglobal.h
     qtPepperInstance = this;
 
-    // arguments is argc key - value pairs.
+    if (false) {
+        // Optinally redirect debug and logging output to the web page following the conventions
+        // used in the nacl_sdk examples: presence of 'ps_stdout="/dev/tty"' attributes
+        // signales that the web page can handle debug output. This has a couple of drawbacks:
+        // 1) debug utput sent before installing the message handler still goes to Chrome
+        //    standard output.
+        // 2) It reserves the postMessage functionality for debug output, this may conflict
+        //    with other use cases.
+        // 3) It's really slow.
+        for (unsigned int i = 0; i < argc; ++i) {
+            if (qstrcmp(argn[i], "ps_stdout") && qstrcmp(argv[i], "/dev/tty"))
+                qInstallMessageHandler(qtMessageHandler);
+        }
+    }
+
+    // Log the arguemnt key/value pairs.
     for (unsigned int i = 0; i < argc; ++i) {
         qCDebug(QT_PLATFORM_PEPPER_INSTANCE) << "arg" << argn[i] << argv[i];
     }
