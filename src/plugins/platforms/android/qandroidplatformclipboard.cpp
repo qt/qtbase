@@ -55,7 +55,8 @@ void QAndroidPlatformClipboard::setMimeData(QMimeData *data, QClipboard::Mode mo
 {
     Q_ASSERT(supportsMode(mode));
     QtAndroidClipboard::setClipboardText(data != 0 && data->hasText() ? data->text() : QString());
-    delete data;
+    if (data != 0)
+        data->deleteLater();
 }
 
 bool QAndroidPlatformClipboard::supportsMode(QClipboard::Mode mode) const
