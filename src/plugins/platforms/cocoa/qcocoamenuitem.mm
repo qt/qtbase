@@ -256,8 +256,8 @@ NSMenuItem *QCocoaMenuItem::sync()
             if (depth == 3 || !menubar)
                 break; // Menu item too deep in the hierarchy, or not connected to any menubar
 
-            m_detectedRole = detectMenuRole(m_text);
-            switch (m_detectedRole) {
+            MenuRole newDetectedRole = detectMenuRole(m_text);
+            switch (newDetectedRole) {
             case QPlatformMenuItem::AboutRole:
                 if (m_text.indexOf(QRegExp(QString::fromLatin1("qt$"), Qt::CaseInsensitive)) == -1)
                     mergeItem = [loader aboutMenuItem];
@@ -271,12 +271,15 @@ NSMenuItem *QCocoaMenuItem::sync()
                 mergeItem = [loader quitMenuItem];
                 break;
             default:
-                if (m_detectedRole >= CutRole && m_detectedRole < RoleCount && menubar)
-                    mergeItem = menubar->itemForRole(m_detectedRole);
+                if (newDetectedRole >= CutRole && newDetectedRole < RoleCount && menubar)
+                    mergeItem = menubar->itemForRole(newDetectedRole);
                 if (!m_text.isEmpty())
                     m_textSynced = true;
                 break;
             }
+
+            m_detectedRole = newDetectedRole;
+
             break;
         }
 
