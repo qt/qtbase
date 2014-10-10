@@ -384,12 +384,15 @@ bool QNativeSocketEnginePrivate::nativeConnect(const QHostAddress &addr, quint16
         sockAddrIPv6.sin6_port = htons(port);
 
         QString scopeid = addr.scopeId();
-        bool ok;
-        sockAddrIPv6.sin6_scope_id = scopeid.toInt(&ok);
+
+        if (!scopeid.isEmpty()) {
+            bool ok;
+            sockAddrIPv6.sin6_scope_id = scopeid.toInt(&ok);
 #ifndef QT_NO_IPV6IFNAME
-        if (!ok)
-            sockAddrIPv6.sin6_scope_id = ::if_nametoindex(scopeid.toLatin1());
+            if (!ok)
+                sockAddrIPv6.sin6_scope_id = ::if_nametoindex(scopeid.toLatin1());
 #endif
+        }
         Q_IPV6ADDR ip6 = addr.toIPv6Address();
         memcpy(&sockAddrIPv6.sin6_addr.s6_addr, &ip6, sizeof(ip6));
 
@@ -498,11 +501,16 @@ bool QNativeSocketEnginePrivate::nativeBind(const QHostAddress &address, quint16
         memset(&sockAddrIPv6, 0, sizeof(sockAddrIPv6));
         sockAddrIPv6.sin6_family = AF_INET6;
         sockAddrIPv6.sin6_port = htons(port);
+        QString scopeid = address.scopeId();
+
+        if (!scopeid.isEmpty()) {
+            bool ok;
+            sockAddrIPv6.sin6_scope_id = scopeid.toInt(&ok);
 #ifndef QT_NO_IPV6IFNAME
-        sockAddrIPv6.sin6_scope_id = ::if_nametoindex(address.scopeId().toLatin1().data());
-#else
-        sockAddrIPv6.sin6_scope_id = address.scopeId().toInt();
+            if (!ok)
+                sockAddrIPv6.sin6_scope_id = ::if_nametoindex(scopeid.toLatin1());
 #endif
+        }
         Q_IPV6ADDR tmp = address.toIPv6Address();
         memcpy(&sockAddrIPv6.sin6_addr.s6_addr, &tmp, sizeof(tmp));
         sockAddrSize = sizeof(sockAddrIPv6);
@@ -917,12 +925,15 @@ qint64 QNativeSocketEnginePrivate::nativeSendDatagram(const char *data, qint64 l
         Q_IPV6ADDR tmp = host.toIPv6Address();
         memcpy(&sockAddrIPv6.sin6_addr.s6_addr, &tmp, sizeof(tmp));
         QString scopeid = host.scopeId();
-        bool ok;
-        sockAddrIPv6.sin6_scope_id = scopeid.toInt(&ok);
+
+        if (!scopeid.isEmpty()) {
+            bool ok;
+            sockAddrIPv6.sin6_scope_id = scopeid.toInt(&ok);
 #ifndef QT_NO_IPV6IFNAME
-        if (!ok)
-            sockAddrIPv6.sin6_scope_id = ::if_nametoindex(scopeid.toLatin1());
+            if (!ok)
+                sockAddrIPv6.sin6_scope_id = ::if_nametoindex(scopeid.toLatin1());
 #endif
+        }
         sockAddrSize = sizeof(sockAddrIPv6);
         sockAddrPtr = (struct sockaddr *)&sockAddrIPv6;
     } else if (host.protocol() == QAbstractSocket::IPv4Protocol) {
