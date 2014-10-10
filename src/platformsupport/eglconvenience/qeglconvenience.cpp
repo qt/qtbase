@@ -487,6 +487,11 @@ QSizeF q_physicalScreenSizeFromFb(int framebufferDevice, const QSize &screenSize
 
         size.setWidth(w <= 0 ? screenResolution.width() * Q_MM_PER_INCH / defaultPhysicalDpi : qreal(w));
         size.setHeight(h <= 0 ? screenResolution.height() * Q_MM_PER_INCH / defaultPhysicalDpi : qreal(h));
+
+        if (w <= 0 || h <= 0)
+            qWarning("Unable to query physical screen size, defaulting to %d dpi.\n"
+                     "To override, set QT_QPA_EGLFS_PHYSICAL_WIDTH "
+                     "and QT_QPA_EGLFS_PHYSICAL_HEIGHT (in millimeters).", defaultPhysicalDpi);
     }
 
     return size;
