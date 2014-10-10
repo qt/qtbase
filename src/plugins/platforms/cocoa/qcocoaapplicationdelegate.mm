@@ -396,7 +396,7 @@ static void cleanupCocoaApplicationDelegate()
      */
     QWindowSystemInterface::handleApplicationStateChanged(Qt::ApplicationActive, true /*forcePropagate*/);
 
-    return NO;
+    return YES;
 }
 
 - (void)setReflectionDelegate:(NSObject <NSApplicationDelegate> *)oldDelegate
