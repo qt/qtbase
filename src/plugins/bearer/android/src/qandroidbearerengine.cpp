@@ -166,10 +166,7 @@ QNetworkSession::State QAndroidBearerEngine::sessionStateForId(const QString &id
     const QMutexLocker configLocker(&ptr->mutex);
     // Don't re-order...
     if ((ptr->state & QNetworkConfiguration::Active) == QNetworkConfiguration::Active) {
-        return (m_connectivityManager->isActiveNetworkMetered()
-                || m_connectivityManager->getActiveNetworkInfo().isRoaming())
-                ? QNetworkSession::Roaming
-                : QNetworkSession::Connected;
+        return QNetworkSession::Connected;
     } else if ((ptr->state & QNetworkConfiguration::Discovered) == QNetworkConfiguration::Discovered) {
         return QNetworkSession::Disconnected;
     } else if ((ptr->state & QNetworkConfiguration::Defined) == QNetworkConfiguration::Defined) {
@@ -267,6 +264,10 @@ void QAndroidBearerEngine::updateConfigurations()
         QMutexLocker locker(&mutex);
         QStringList oldKeys = accessPointConfigurations.keys();
 
+        QList<QNetworkInterface> interfaces = QNetworkInterface::allInterfaces();
+        if (interfaces.isEmpty())
+            interfaces = QNetworkInterface::allInterfaces();
+
         // Create a configuration for each of the main types (WiFi, Mobile, Bluetooth, WiMax, Ethernet)
         foreach (const AndroidNetworkInfo &netInfo, m_connectivityManager->getAllNetworkInfo()) {
 
@@ -279,14 +280,13 @@ void QAndroidBearerEngine::updateConfigurations()
 
             QNetworkConfiguration::BearerType bearerType = getBearerType(netInfo);
 
-            QNetworkConfiguration::StateFlag state;
             QString interfaceName;
+            QNetworkConfiguration::StateFlag state = QNetworkConfiguration::Defined;
             if (netInfo.isAvailable()) {
                 if (netInfo.isConnected()) {
-                    state = QNetworkConfiguration::Active;
                     // Attempt to map an interface to this configuration
-                    const QList<QNetworkInterface> &interfaces = QNetworkInterface::allInterfaces();
-                    foreach (const QNetworkInterface &interface, interfaces) {
+                    while (!interfaces.isEmpty()) {
+                        QNetworkInterface interface = interfaces.takeFirst();
                         // ignore loopback interface
                         if (!interface.isValid())
                             continue;
@@ -297,22 +297,17 @@ void QAndroidBearerEngine::updateConfigurations()
                         // look for an active interface...
                         if (interface.flags() & QNetworkInterface::IsRunning
                                 && !interface.addressEntries().isEmpty()) {
-                            interfaceName = interface.humanReadableName();
-                            if (interfaceName.isEmpty())
-                                interfaceName = interface.name();
+                            state = QNetworkConfiguration::Active;
+                            interfaceName = interface.name();
+                            break;
                         }
                     }
-                } else if (netInfo.isConnectedOrConnecting()) {
-                    state = QNetworkConfiguration::Undefined;
-                } else {
-                    state = QNetworkConfiguration::Discovered;
                 }
-            } else {
-                state = QNetworkConfiguration::Defined;
             }
 
-            const uint identifier = qHash(QLatin1String("android:") + name);
-            const QString id = QString::number(identifier);
+            const QString key = QString(QLatin1String("android:%1:%2")).arg(name).arg(interfaceName);
+            const QString id = QString::number(qHash(key));
+            m_configurationInterface[id] = interfaceName;
 
             oldKeys.removeAll(id);
             if (accessPointConfigurations.contains(id)) {
@@ -347,12 +342,6 @@ void QAndroidBearerEngine::updateConfigurations()
                         ptr->state = state;
                         changed = true;
                     }
-
-                    QString &oldIfName = m_configurationInterface[id];
-                    if (oldIfName != interfaceName) {
-                        oldIfName = interfaceName;
-                        changed = true;
-                    }
                 } // Unlock configuration
 
                 if (changed) {
@@ -369,8 +358,6 @@ void QAndroidBearerEngine::updateConfigurations()
                 ptr->type = QNetworkConfiguration::InternetAccessPoint;
                 ptr->bearerType = bearerType;
                 accessPointConfigurations.insert(id, ptr);
-                m_configurationInterface.insert(id, interfaceName);
-
                 locker.unlock();
                 Q_EMIT configurationAdded(ptr);
                 locker.relock();
