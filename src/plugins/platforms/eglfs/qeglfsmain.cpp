@@ -55,4 +55,4 @@ QPlatformIntegration* QEglFSIntegrationPlugin::create(const QString& system, con
 
 QT_END_NAMESPACE
 
-#include "main.moc"
+#include "qeglfsmain.moc"

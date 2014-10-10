@@ -43,7 +43,7 @@ QEglFSScreen::QEglFSScreen(EGLDisplay dpy)
       m_surface(EGL_NO_SURFACE),
       m_cursor(0)
 {
-    m_cursor = QEglFSHooks::hooks()->createCursor(this);
+    m_cursor = qt_egl_device_integration()->createCursor(this);
 }
 
 QEglFSScreen::~QEglFSScreen()
@@ -53,37 +53,37 @@ QEglFSScreen::~QEglFSScreen()
 
 QRect QEglFSScreen::geometry() const
 {
-    return QRect(QPoint(0, 0), QEglFSHooks::hooks()->screenSize());
+    return QRect(QPoint(0, 0), qt_egl_device_integration()->screenSize());
 }
 
 int QEglFSScreen::depth() const
 {
-    return QEglFSHooks::hooks()->screenDepth();
+    return qt_egl_device_integration()->screenDepth();
 }
 
 QImage::Format QEglFSScreen::format() const
 {
-    return QEglFSHooks::hooks()->screenFormat();
+    return qt_egl_device_integration()->screenFormat();
 }
 
 QSizeF QEglFSScreen::physicalSize() const
 {
-    return QEglFSHooks::hooks()->physicalScreenSize();
+    return qt_egl_device_integration()->physicalScreenSize();
 }
 
 QDpi QEglFSScreen::logicalDpi() const
 {
-    return QEglFSHooks::hooks()->logicalDpi();
+    return qt_egl_device_integration()->logicalDpi();
 }
 
 Qt::ScreenOrientation QEglFSScreen::nativeOrientation() const
 {
-    return QEglFSHooks::hooks()->nativeOrientation();
+    return qt_egl_device_integration()->nativeOrientation();
 }
 
 Qt::ScreenOrientation QEglFSScreen::orientation() const
 {
-    return QEglFSHooks::hooks()->orientation();
+    return qt_egl_device_integration()->orientation();
 }
 
 QPlatformCursor *QEglFSScreen::cursor() const

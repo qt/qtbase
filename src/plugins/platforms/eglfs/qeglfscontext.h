@@ -36,10 +36,11 @@
 
 #include <QtPlatformSupport/private/qeglplatformcontext_p.h>
 #include <QtCore/QVariant>
+#include "qeglfsglobal.h"
 
 QT_BEGIN_NAMESPACE
 
-class QEglFSContext : public QEGLPlatformContext
+class Q_EGLFS_EXPORT QEglFSContext : public QEGLPlatformContext
 {
 public:
     QEglFSContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share, EGLDisplay display,

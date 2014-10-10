@@ -93,7 +93,7 @@ void QEglFSWindow::create()
     QWindowSystemInterface::handleExposeEvent(window(), QRect(QPoint(0, 0), geometry().size()));
 
     EGLDisplay display = static_cast<QEglFSScreen *>(screen)->display();
-    QSurfaceFormat platformFormat = QEglFSHooks::hooks()->surfaceFormatFor(window()->requestedFormat());
+    QSurfaceFormat platformFormat = qt_egl_device_integration()->surfaceFormatFor(window()->requestedFormat());
     m_config = QEglFSIntegration::chooseConfig(display, platformFormat);
     m_format = q_glFormatFromConfig(display, m_config, platformFormat);
 
@@ -140,7 +140,7 @@ void QEglFSWindow::invalidateSurface()
         eglDestroySurface(display, m_surface);
         m_surface = EGL_NO_SURFACE;
     }
-    QEglFSHooks::hooks()->destroyNativeWindow(m_window);
+    qt_egl_device_integration()->destroyNativeWindow(m_window);
     m_window = 0;
 }
 
@@ -148,7 +148,7 @@ void QEglFSWindow::resetSurface()
 {
     QEglFSScreen *nativeScreen = static_cast<QEglFSScreen *>(screen());
     EGLDisplay display = nativeScreen->display();
-    m_window = QEglFSHooks::hooks()->createNativeWindow(this, nativeScreen->geometry().size(), m_format);
+    m_window = qt_egl_device_integration()->createNativeWindow(this, nativeScreen->geometry().size(), m_format);
     m_surface = eglCreateWindowSurface(display, m_config, m_window, NULL);
     if (m_surface == EGL_NO_SURFACE) {
         EGLint error = eglGetError();

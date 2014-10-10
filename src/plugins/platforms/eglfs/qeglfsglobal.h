@@ -31,20 +31,15 @@
 **
 ****************************************************************************/
 
-#ifndef QEGLFSHOOKS_H
-#define QEGLFSHOOKS_H
+#ifndef QEGLFSGLOBAL_H
+#define QEGLFSGLOBAL_H
 
-#include "qeglfsdeviceintegration.h"
-#include "qeglfsglobal.h"
+#include <qglobal.h>
 
-QT_BEGIN_NAMESPACE
+#ifdef QT_BUILD_EGL_DEVICE_LIB
+#define Q_EGLFS_EXPORT Q_DECL_EXPORT
+#else
+#define Q_EGLFS_EXPORT Q_DECL_IMPORT
+#endif
 
-class QEglFSHooks : public QEGLDeviceIntegration
-{
-};
-
-Q_EGLFS_EXPORT QEGLDeviceIntegration *qt_egl_device_integration();
-
-QT_END_NAMESPACE
-
-#endif // QEGLFSHOOKS_H
+#endif

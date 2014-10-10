@@ -3,7 +3,7 @@
 ** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the qmake spec of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -39,31 +39,20 @@
 **
 ****************************************************************************/
 
-#ifndef QEGLFSOFFSCREENWINDOW_H
-#define QEGLFSOFFSCREENWINDOW_H
-
-#include <EGL/egl.h>
-#include <qpa/qplatformoffscreensurface.h>
-#include "qeglfsglobal.h"
+#include "qeglfsdeviceintegration.h"
+#include "qeglfskmsintegration.h"
 
 QT_BEGIN_NAMESPACE
 
-class Q_EGLFS_EXPORT QEglFSOffscreenWindow : public QPlatformOffscreenSurface
+class QEglFSKmsIntegrationPlugin : public QEGLDeviceIntegrationPlugin
 {
+    Q_OBJECT
+    Q_PLUGIN_METADATA(IID QEGLDeviceIntegrationFactoryInterface_iid FILE "eglfs_kms.json")
+
 public:
-    QEglFSOffscreenWindow(EGLDisplay display, const QSurfaceFormat &format, QOffscreenSurface *offscreenSurface);
-    ~QEglFSOffscreenWindow();
-
-    QSurfaceFormat format() const Q_DECL_OVERRIDE { return m_format; }
-    bool isValid() const Q_DECL_OVERRIDE { return m_surface != EGL_NO_SURFACE; }
-
-private:
-    QSurfaceFormat m_format;
-    EGLDisplay m_display;
-    EGLSurface m_surface;
-    EGLNativeWindowType m_window;
+    QEGLDeviceIntegration *create() Q_DECL_OVERRIDE { return new QEglFSKmsIntegration; }
 };
 
 QT_END_NAMESPACE
 
-#endif // QEGLFSOFFSCREENWINDOW_H
+#include "qeglfskmsmain.moc"

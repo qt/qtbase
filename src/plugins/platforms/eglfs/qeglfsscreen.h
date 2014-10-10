@@ -34,10 +34,8 @@
 #ifndef QEGLFSSCREEN_H
 #define QEGLFSSCREEN_H
 
+#include "qeglfsglobal.h"
 #include <QtPlatformSupport/private/qeglplatformscreen_p.h>
-
-#include <QtCore/QTextStream>
-
 #include <EGL/egl.h>
 
 QT_BEGIN_NAMESPACE
@@ -45,7 +43,7 @@ QT_BEGIN_NAMESPACE
 class QEglFSWindow;
 class QOpenGLContext;
 
-class QEglFSScreen : public QEGLPlatformScreen
+class Q_EGLFS_EXPORT QEglFSScreen : public QEGLPlatformScreen
 {
 public:
     QEglFSScreen(EGLDisplay display);

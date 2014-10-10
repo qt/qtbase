@@ -71,7 +71,7 @@ QEglFSIntegration::QEglFSIntegration()
 bool QEglFSIntegration::hasCapability(QPlatformIntegration::Capability cap) const
 {
     // We assume that devices will have more and not less capabilities
-    if (QEglFSHooks::hooks() && QEglFSHooks::hooks()->hasCapability(cap))
+    if (qt_egl_device_integration()->hasCapability(cap))
         return true;
 
     return QEGLPlatformIntegration::hasCapability(cap);
@@ -84,26 +84,29 @@ void QEglFSIntegration::addScreen(QPlatformScreen *screen)
 
 void QEglFSIntegration::initialize()
 {
-    QEglFSHooks::hooks()->platformInit();
+    qt_egl_device_integration()->platformInit();
 
     QEGLPlatformIntegration::initialize();
 
     if (!mDisableInputHandlers)
         createInputHandlers();
 
-    QEglFSHooks::hooks()->screenInit();
+    if (qt_egl_device_integration()->usesDefaultScreen())
+        addScreen(new QEglFSScreen(display()));
+    else
+        qt_egl_device_integration()->screenInit();
 }
 
 void QEglFSIntegration::destroy()
 {
-    QEglFSHooks::hooks()->screenDestroy();
+    qt_egl_device_integration()->screenDestroy();
     QEGLPlatformIntegration::destroy();
-    QEglFSHooks::hooks()->platformDestroy();
+    qt_egl_device_integration()->platformDestroy();
 }
 
 EGLNativeDisplayType QEglFSIntegration::nativeDisplay() const
 {
-    return QEglFSHooks::hooks()->platformDisplay();
+    return qt_egl_device_integration()->platformDisplay();
 }
 
 QEGLPlatformWindow *QEglFSIntegration::createWindow(QWindow *window) const
@@ -117,7 +120,7 @@ QEGLPlatformContext *QEglFSIntegration::createContext(const QSurfaceFormat &form
                                                       QVariant *nativeHandle) const
 {
     QEglFSContext *ctx;
-    QSurfaceFormat adjustedFormat = QEglFSHooks::hooks()->surfaceFormatFor(format);
+    QSurfaceFormat adjustedFormat = qt_egl_device_integration()->surfaceFormatFor(format);
     if (!nativeHandle || nativeHandle->isNull()) {
         EGLConfig config = QEglFSIntegration::chooseConfig(display, adjustedFormat);
         ctx = new QEglFSContext(adjustedFormat, shareContext, display, &config, QVariant());
@@ -132,8 +135,8 @@ QPlatformOffscreenSurface *QEglFSIntegration::createOffscreenSurface(EGLDisplay 
                                                                      const QSurfaceFormat &format,
                                                                      QOffscreenSurface *surface) const
 {
-    QSurfaceFormat fmt = QEglFSHooks::hooks()->surfaceFormatFor(format);
-    if (QEglFSHooks::hooks()->supportsPBuffers())
+    QSurfaceFormat fmt = qt_egl_device_integration()->surfaceFormatFor(format);
+    if (qt_egl_device_integration()->supportsPBuffers())
         return new QEGLPbuffer(display, fmt, surface);
     else
         return new QEglFSOffscreenWindow(display, fmt, surface);
@@ -145,23 +148,15 @@ EGLConfig QEglFSIntegration::chooseConfig(EGLDisplay display, const QSurfaceForm
 {
     class Chooser : public QEglConfigChooser {
     public:
-        Chooser(EGLDisplay display, QEglFSHooks *hooks)
-            : QEglConfigChooser(display)
-            , m_hooks(hooks)
-        {
+        Chooser(EGLDisplay display)
+            : QEglConfigChooser(display) { }
+        bool filterConfig(EGLConfig config) const Q_DECL_OVERRIDE {
+            return qt_egl_device_integration()->filterConfig(display(), config)
+                    && QEglConfigChooser::filterConfig(config);
         }
-
-    protected:
-        bool filterConfig(EGLConfig config) const Q_DECL_OVERRIDE
-        {
-            return m_hooks->filterConfig(display(), config) && QEglConfigChooser::filterConfig(config);
-        }
-
-    private:
-        QEglFSHooks *m_hooks;
     };
 
-    Chooser chooser(display, QEglFSHooks::hooks());
+    Chooser chooser(display);
     chooser.setSurfaceFormat(format);
     return chooser.chooseConfig();
 }

@@ -3,7 +3,7 @@
 ** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the qmake spec of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qeglfshooks.h"
+#include "qeglfskmsintegration.h"
 #include "qeglfsintegration.h"
 #include "qeglfsscreen.h"
 
@@ -70,7 +70,7 @@
 
 #define ARRAY_LENGTH(a) (sizeof (a) / sizeof (a)[0])
 
-QT_USE_NAMESPACE
+QT_BEGIN_NAMESPACE
 
 Q_LOGGING_CATEGORY(qLcEglfsKmsDebug, "qt.qpa.eglfs.kms")
 
@@ -100,6 +100,7 @@ class QEglFSKmsDevice
 {
     Q_DISABLE_COPY(QEglFSKmsDevice)
 
+    QEglFSKmsIntegration *m_integration;
     QString m_path;
     int m_dri_fd;
     gbm_device *m_gbm_device;
@@ -116,7 +117,7 @@ class QEglFSKmsDevice
                                 unsigned int tv_usec,
                                 void *user_data);
 public:
-    QEglFSKmsDevice(const QString &path);
+    QEglFSKmsDevice(QEglFSKmsIntegration *integration, const QString &path);
 
     bool open();
     void close();
@@ -131,6 +132,7 @@ public:
 
 class QEglFSKmsScreen : public QEglFSScreen
 {
+    QEglFSKmsIntegration *m_integration;
     QEglFSKmsDevice *m_device;
     gbm_surface *m_gbm_surface;
 
@@ -151,7 +153,10 @@ class QEglFSKmsScreen : public QEglFSScreen
     static QMutex m_waitForFlipMutex;
 
 public:
-    QEglFSKmsScreen(QEglFSKmsDevice *device, QEglFSKmsOutput output, QPoint position);
+    QEglFSKmsScreen(QEglFSKmsIntegration *integration,
+                    QEglFSKmsDevice *device,
+                    QEglFSKmsOutput output,
+                    QPoint position);
     ~QEglFSKmsScreen();
 
     QRect geometry() const Q_DECL_OVERRIDE;
@@ -219,51 +224,13 @@ private:
     } m_cursorAtlas;
 };
 
-class QEglKmsHooks : public QEglFSHooks
-{
-public:
-    QEglKmsHooks();
-
-    void platformInit() Q_DECL_OVERRIDE;
-    void platformDestroy() Q_DECL_OVERRIDE;
-    EGLNativeDisplayType platformDisplay() const Q_DECL_OVERRIDE;
-    void screenInit() Q_DECL_OVERRIDE;
-    QSurfaceFormat surfaceFormatFor(const QSurfaceFormat &inputFormat) const Q_DECL_OVERRIDE;
-    EGLNativeWindowType createNativeWindow(QPlatformWindow *platformWindow,
-                                           const QSize &size,
-                                           const QSurfaceFormat &format) Q_DECL_OVERRIDE;
-    EGLNativeWindowType createNativeOffscreenWindow(const QSurfaceFormat &format) Q_DECL_OVERRIDE;
-    void destroyNativeWindow(EGLNativeWindowType window) Q_DECL_OVERRIDE;
-    bool hasCapability(QPlatformIntegration::Capability cap) const Q_DECL_OVERRIDE;
-    QPlatformCursor *createCursor(QPlatformScreen *screen) const Q_DECL_OVERRIDE;
-    void waitForVSync(QPlatformSurface *surface) const Q_DECL_OVERRIDE;
-    void presentBuffer(QPlatformSurface *surface) Q_DECL_OVERRIDE;
-    bool supportsPBuffers() const Q_DECL_OVERRIDE;
-
-    bool hwCursor() const;
-    QMap<QString, QVariantMap> outputSettings() const;
-
-private:
-    void loadConfig();
-
-    QEglFSKmsDevice *m_device;
-
-    bool m_hwCursor;
-    bool m_pbuffers;
-    QString m_devicePath;
-    QMap<QString, QVariantMap> m_outputSettings;
-};
-
-static QEglKmsHooks kms_hooks;
-QEglFSHooks *platformHooks = &kms_hooks;
-
-QEglKmsHooks::QEglKmsHooks()
+QEglFSKmsIntegration::QEglFSKmsIntegration()
     : m_device(Q_NULLPTR)
     , m_hwCursor(true)
     , m_pbuffers(false)
 {}
 
-void QEglKmsHooks::platformInit()
+void QEglFSKmsIntegration::platformInit()
 {
     loadConfig();
 
@@ -283,30 +250,35 @@ void QEglKmsHooks::platformInit()
         qCDebug(qLcEglfsKmsDebug) << "Using" << m_devicePath;
     }
 
-    m_device = new QEglFSKmsDevice(m_devicePath);
+    m_device = new QEglFSKmsDevice(this, m_devicePath);
     if (!m_device->open())
         qFatal("Could not open device %s - aborting!", qPrintable(m_devicePath));
 }
 
-void QEglKmsHooks::platformDestroy()
+void QEglFSKmsIntegration::platformDestroy()
 {
     m_device->close();
     delete m_device;
     m_device = Q_NULLPTR;
 }
 
-EGLNativeDisplayType QEglKmsHooks::platformDisplay() const
+EGLNativeDisplayType QEglFSKmsIntegration::platformDisplay() const
 {
     Q_ASSERT(m_device);
     return reinterpret_cast<EGLNativeDisplayType>(m_device->device());
 }
 
-void QEglKmsHooks::screenInit()
+bool QEglFSKmsIntegration::usesDefaultScreen()
+{
+    return false;
+}
+
+void QEglFSKmsIntegration::screenInit()
 {
     m_device->createScreens();
 }
 
-QSurfaceFormat QEglKmsHooks::surfaceFormatFor(const QSurfaceFormat &inputFormat) const
+QSurfaceFormat QEglFSKmsIntegration::surfaceFormatFor(const QSurfaceFormat &inputFormat) const
 {
     QSurfaceFormat format(inputFormat);
     format.setRenderableType(QSurfaceFormat::OpenGLES);
@@ -317,7 +289,7 @@ QSurfaceFormat QEglKmsHooks::surfaceFormatFor(const QSurfaceFormat &inputFormat)
     return format;
 }
 
-EGLNativeWindowType QEglKmsHooks::createNativeWindow(QPlatformWindow *platformWindow,
+EGLNativeWindowType QEglFSKmsIntegration::createNativeWindow(QPlatformWindow *platformWindow,
                                                      const QSize &size,
                                                      const QSurfaceFormat &format)
 {
@@ -333,7 +305,7 @@ EGLNativeWindowType QEglKmsHooks::createNativeWindow(QPlatformWindow *platformWi
     return reinterpret_cast<EGLNativeWindowType>(screen->createSurface());
 }
 
-EGLNativeWindowType QEglKmsHooks::createNativeOffscreenWindow(const QSurfaceFormat &format)
+EGLNativeWindowType QEglFSKmsIntegration::createNativeOffscreenWindow(const QSurfaceFormat &format)
 {
     Q_UNUSED(format);
     Q_ASSERT(m_device);
@@ -347,13 +319,13 @@ EGLNativeWindowType QEglKmsHooks::createNativeOffscreenWindow(const QSurfaceForm
     return reinterpret_cast<EGLNativeWindowType>(surface);
 }
 
-void QEglKmsHooks::destroyNativeWindow(EGLNativeWindowType window)
+void QEglFSKmsIntegration::destroyNativeWindow(EGLNativeWindowType window)
 {
     gbm_surface *surface = reinterpret_cast<gbm_surface *>(window);
     gbm_surface_destroy(surface);
 }
 
-bool QEglKmsHooks::hasCapability(QPlatformIntegration::Capability cap) const
+bool QEglFSKmsIntegration::hasCapability(QPlatformIntegration::Capability cap) const
 {
     switch (cap) {
     case QPlatformIntegration::ThreadedPixmaps:
@@ -365,7 +337,7 @@ bool QEglKmsHooks::hasCapability(QPlatformIntegration::Capability cap) const
     }
 }
 
-QPlatformCursor *QEglKmsHooks::createCursor(QPlatformScreen *screen) const
+QPlatformCursor *QEglFSKmsIntegration::createCursor(QPlatformScreen *screen) const
 {
     if (m_hwCursor)
         return Q_NULLPTR;
@@ -373,7 +345,7 @@ QPlatformCursor *QEglKmsHooks::createCursor(QPlatformScreen *screen) const
         return new QEGLPlatformCursor(screen);
 }
 
-void QEglKmsHooks::waitForVSync(QPlatformSurface *surface) const
+void QEglFSKmsIntegration::waitForVSync(QPlatformSurface *surface) const
 {
     QWindow *window = static_cast<QWindow *>(surface->surface());
     QEglFSKmsScreen *screen = static_cast<QEglFSKmsScreen *>(window->screen()->handle());
@@ -381,7 +353,7 @@ void QEglKmsHooks::waitForVSync(QPlatformSurface *surface) const
     screen->waitForFlip();
 }
 
-void QEglKmsHooks::presentBuffer(QPlatformSurface *surface)
+void QEglFSKmsIntegration::presentBuffer(QPlatformSurface *surface)
 {
     QWindow *window = static_cast<QWindow *>(surface->surface());
     QEglFSKmsScreen *screen = static_cast<QEglFSKmsScreen *>(window->screen()->handle());
@@ -389,22 +361,22 @@ void QEglKmsHooks::presentBuffer(QPlatformSurface *surface)
     screen->flip();
 }
 
-bool QEglKmsHooks::supportsPBuffers() const
+bool QEglFSKmsIntegration::supportsPBuffers() const
 {
     return m_pbuffers;
 }
 
-bool QEglKmsHooks::hwCursor() const
+bool QEglFSKmsIntegration::hwCursor() const
 {
     return m_hwCursor;
 }
 
-QMap<QString, QVariantMap> QEglKmsHooks::outputSettings() const
+QMap<QString, QVariantMap> QEglFSKmsIntegration::outputSettings() const
 {
     return m_outputSettings;
 }
 
-void QEglKmsHooks::loadConfig()
+void QEglFSKmsIntegration::loadConfig()
 {
     static QByteArray json = qgetenv("QT_QPA_EGLFS_KMS_CONFIG");
     if (json.isEmpty())
@@ -640,8 +612,12 @@ QEglFSKmsScreen::FrameBuffer *QEglFSKmsScreen::framebufferForBufferObject(gbm_bo
 
 }
 
-QEglFSKmsScreen::QEglFSKmsScreen(QEglFSKmsDevice *device, QEglFSKmsOutput output, QPoint position)
+QEglFSKmsScreen::QEglFSKmsScreen(QEglFSKmsIntegration *integration,
+                                 QEglFSKmsDevice *device,
+                                 QEglFSKmsOutput output,
+                                 QPoint position)
     : QEglFSScreen(eglGetDisplay(reinterpret_cast<EGLNativeDisplayType>(device->device())))
+    , m_integration(integration)
     , m_device(device)
     , m_gbm_surface(Q_NULLPTR)
     , m_gbm_bo_current(Q_NULLPTR)
@@ -709,7 +685,7 @@ QString QEglFSKmsScreen::name() const
 
 QPlatformCursor *QEglFSKmsScreen::cursor() const
 {
-    if (kms_hooks.hwCursor()) {
+    if (m_integration->hwCursor()) {
         if (m_cursor.isNull()) {
             QEglFSKmsScreen *that = const_cast<QEglFSKmsScreen *>(this);
             that->m_cursor.reset(new QEglFSKmsCursor(that));
@@ -942,7 +918,7 @@ QEglFSKmsScreen *QEglFSKmsDevice::screenForConnector(drmModeResPtr resources, dr
     QSize configurationSize;
     drmModeModeInfo configurationModeline;
 
-    const QString mode = kms_hooks.outputSettings().value(connectorName).value("mode", "preferred").toString().toLower();
+    const QString mode = m_integration->outputSettings().value(connectorName).value("mode", "preferred").toString().toLower();
     if (mode == "off") {
         configuration = OutputConfigOff;
     } else if (mode == "preferred") {
@@ -1063,7 +1039,7 @@ QEglFSKmsScreen *QEglFSKmsDevice::screenForConnector(drmModeResPtr resources, dr
     m_crtc_allocator |= (1 << output.crtc_id);
     m_connector_allocator |= (1 << output.connector_id);
 
-    return new QEglFSKmsScreen(this, output, pos);
+    return new QEglFSKmsScreen(m_integration, this, output, pos);
 }
 
 void QEglFSKmsDevice::pageFlipHandler(int fd, unsigned int sequence, unsigned int tv_sec, unsigned int tv_usec, void *user_data)
@@ -1077,8 +1053,9 @@ void QEglFSKmsDevice::pageFlipHandler(int fd, unsigned int sequence, unsigned in
     screen->flipFinished();
 }
 
-QEglFSKmsDevice::QEglFSKmsDevice(const QString &path)
-    : m_path(path)
+QEglFSKmsDevice::QEglFSKmsDevice(QEglFSKmsIntegration *integration, const QString &path)
+    : m_integration(integration)
+    , m_path(path)
     , m_dri_fd(-1)
     , m_gbm_device(Q_NULLPTR)
     , m_crtc_allocator(0)
@@ -1173,4 +1150,6 @@ void QEglFSKmsDevice::handleDrmEvent()
     drmHandleEvent(m_dri_fd, &drmEvent);
 }
 
-#include "qeglfshooks_kms.moc"
+QT_END_NAMESPACE
+
+#include "qeglfskmsintegration.moc"

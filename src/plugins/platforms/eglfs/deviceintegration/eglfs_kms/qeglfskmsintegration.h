@@ -39,31 +39,52 @@
 **
 ****************************************************************************/
 
-#ifndef QEGLFSOFFSCREENWINDOW_H
-#define QEGLFSOFFSCREENWINDOW_H
+#ifndef QEGLFSKMSINTEGRATION_H
+#define QEGLFSKMSINTEGRATION_H
 
-#include <EGL/egl.h>
-#include <qpa/qplatformoffscreensurface.h>
-#include "qeglfsglobal.h"
+#include "qeglfsdeviceintegration.h"
+#include <QMap>
+#include <QVariant>
 
 QT_BEGIN_NAMESPACE
 
-class Q_EGLFS_EXPORT QEglFSOffscreenWindow : public QPlatformOffscreenSurface
+class QEglFSKmsDevice;
+
+class QEglFSKmsIntegration : public QEGLDeviceIntegration
 {
 public:
-    QEglFSOffscreenWindow(EGLDisplay display, const QSurfaceFormat &format, QOffscreenSurface *offscreenSurface);
-    ~QEglFSOffscreenWindow();
+    QEglFSKmsIntegration();
 
-    QSurfaceFormat format() const Q_DECL_OVERRIDE { return m_format; }
-    bool isValid() const Q_DECL_OVERRIDE { return m_surface != EGL_NO_SURFACE; }
+    void platformInit() Q_DECL_OVERRIDE;
+    void platformDestroy() Q_DECL_OVERRIDE;
+    EGLNativeDisplayType platformDisplay() const Q_DECL_OVERRIDE;
+    bool usesDefaultScreen() Q_DECL_OVERRIDE;
+    void screenInit() Q_DECL_OVERRIDE;
+    QSurfaceFormat surfaceFormatFor(const QSurfaceFormat &inputFormat) const Q_DECL_OVERRIDE;
+    EGLNativeWindowType createNativeWindow(QPlatformWindow *platformWindow,
+                                           const QSize &size,
+                                           const QSurfaceFormat &format) Q_DECL_OVERRIDE;
+    EGLNativeWindowType createNativeOffscreenWindow(const QSurfaceFormat &format) Q_DECL_OVERRIDE;
+    void destroyNativeWindow(EGLNativeWindowType window) Q_DECL_OVERRIDE;
+    bool hasCapability(QPlatformIntegration::Capability cap) const Q_DECL_OVERRIDE;
+    QPlatformCursor *createCursor(QPlatformScreen *screen) const Q_DECL_OVERRIDE;
+    void waitForVSync(QPlatformSurface *surface) const Q_DECL_OVERRIDE;
+    void presentBuffer(QPlatformSurface *surface) Q_DECL_OVERRIDE;
+    bool supportsPBuffers() const Q_DECL_OVERRIDE;
+
+    bool hwCursor() const;
+    QMap<QString, QVariantMap> outputSettings() const;
 
 private:
-    QSurfaceFormat m_format;
-    EGLDisplay m_display;
-    EGLSurface m_surface;
-    EGLNativeWindowType m_window;
+    void loadConfig();
+
+    QEglFSKmsDevice *m_device;
+    bool m_hwCursor;
+    bool m_pbuffers;
+    QString m_devicePath;
+    QMap<QString, QVariantMap> m_outputSettings;
 };
 
 QT_END_NAMESPACE
 
-#endif // QEGLFSOFFSCREENWINDOW_H
+#endif

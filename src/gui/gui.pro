@@ -13,7 +13,8 @@ MODULE_PLUGIN_TYPES = \
     platforminputcontexts \
     generic \
     iconengines \
-    imageformats
+    imageformats \
+    egldeviceintegrations
 
 # This is here only because the platform plugin is no module, obviously.
 win32:contains(QT_CONFIG, angle)|contains(QT_CONFIG, dynamicgl) {

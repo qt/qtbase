@@ -60,11 +60,11 @@ EGLSurface QEglFSContext::eglSurfaceForPlatformSurface(QPlatformSurface *surface
 
 EGLSurface QEglFSContext::createTemporaryOffscreenSurface()
 {
-    if (QEglFSHooks::hooks()->supportsPBuffers())
+    if (qt_egl_device_integration()->supportsPBuffers())
         return QEGLPlatformContext::createTemporaryOffscreenSurface();
 
     if (!m_tempWindow) {
-        m_tempWindow = QEglFSHooks::hooks()->createNativeOffscreenWindow(format());
+        m_tempWindow = qt_egl_device_integration()->createNativeOffscreenWindow(format());
         if (!m_tempWindow) {
             qWarning("QEglFSContext: Failed to create temporary native window");
             return EGL_NO_SURFACE;
@@ -76,11 +76,11 @@ EGLSurface QEglFSContext::createTemporaryOffscreenSurface()
 
 void QEglFSContext::destroyTemporaryOffscreenSurface(EGLSurface surface)
 {
-    if (QEglFSHooks::hooks()->supportsPBuffers()) {
+    if (qt_egl_device_integration()->supportsPBuffers()) {
         QEGLPlatformContext::destroyTemporaryOffscreenSurface(surface);
     } else {
         eglDestroySurface(eglDisplay(), surface);
-        QEglFSHooks::hooks()->destroyNativeWindow(m_tempWindow);
+        qt_egl_device_integration()->destroyNativeWindow(m_tempWindow);
         m_tempWindow = 0;
     }
 }
@@ -94,9 +94,9 @@ void QEglFSContext::swapBuffers(QPlatformSurface *surface)
             cursor->paintOnScreen();
     }
 
-    QEglFSHooks::hooks()->waitForVSync(surface);
+    qt_egl_device_integration()->waitForVSync(surface);
     QEGLPlatformContext::swapBuffers(surface);
-    QEglFSHooks::hooks()->presentBuffer(surface);
+    qt_egl_device_integration()->presentBuffer(surface);
 }
 
 QT_END_NAMESPACE

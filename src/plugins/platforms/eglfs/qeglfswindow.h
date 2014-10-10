@@ -36,12 +36,12 @@
 
 #include "qeglfsintegration.h"
 #include "qeglfsscreen.h"
-
+#include "qeglfsglobal.h"
 #include <QtPlatformSupport/private/qeglplatformwindow_p.h>
 
 QT_BEGIN_NAMESPACE
 
-class QEglFSWindow : public QEGLPlatformWindow
+class Q_EGLFS_EXPORT QEglFSWindow : public QEGLPlatformWindow
 {
 public:
     QEglFSWindow(QWindow *w);

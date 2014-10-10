@@ -37,10 +37,11 @@
 #include <QtPlatformSupport/private/qeglplatformintegration_p.h>
 #include <qpa/qplatformscreen.h>
 #include <EGL/egl.h>
+#include "qeglfsglobal.h"
 
 QT_BEGIN_NAMESPACE
 
-class QEglFSIntegration : public QEGLPlatformIntegration
+class Q_EGLFS_EXPORT QEglFSIntegration : public QEGLPlatformIntegration
 {
 public:
     QEglFSIntegration();
