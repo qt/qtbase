@@ -303,7 +303,7 @@ EGLConfig QEglConfigChooser::chooseConfig()
     } while (q_reduceConfigAttributes(&configureAttributes));
 
     if (!cfg)
-        qWarning("Cant find EGLConfig, returning null config");
+        qWarning("Cannot find EGLConfig, returning null config");
     return cfg;
 }
 

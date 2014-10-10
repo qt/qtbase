@@ -31,7 +31,10 @@
 **
 ****************************************************************************/
 
+#include <QLoggingCategory>
 #include "qxlibeglintegration_p.h"
+
+Q_LOGGING_CATEGORY(lcXlibEglDebug, "qt.egl.xlib.debug")
 
 VisualID QXlibEglIntegration::getCompatibleVisualId(Display *display, EGLDisplay eglDisplay, EGLConfig config)
 {
@@ -87,31 +90,26 @@ VisualID QXlibEglIntegration::getCompatibleVisualId(Display *display, EGLDisplay
             // configs. In such a case we have to fall back to XGetVisualInfo.
             if (!visualMatchesConfig) {
                 visualId = 0;
-#ifdef QT_DEBUG_X11_VISUAL_SELECTION
-                qWarning("Warning: EGL suggested using X Visual ID %d (%d %d %d depth %d) for EGL config %d (%d %d %d %d), but this is incompatible",
-                         (int)visualId, visualRedSize, visualGreenSize, visualBlueSize, chosenVisualInfo->depth,
-                         configId, configRedSize, configGreenSize, configBlueSize, configAlphaSize);
-#endif
+                qCWarning(lcXlibEglDebug,
+                          "EGL suggested using X Visual ID %d (%d %d %d depth %d) for EGL config %d"
+                          "(%d %d %d %d), but this is incompatible",
+                          (int)visualId, visualRedSize, visualGreenSize, visualBlueSize, chosenVisualInfo->depth,
+                          configId, configRedSize, configGreenSize, configBlueSize, configAlphaSize);
             }
         } else {
-            qWarning("Warning: EGL suggested using X Visual ID %d for EGL config %d, but that isn't a valid ID",
-                     (int)visualId, configId);
+            qCWarning(lcXlibEglDebug, "EGL suggested using X Visual ID %d for EGL config %d, but that isn't a valid ID",
+                      (int)visualId, configId);
             visualId = 0;
         }
         XFree(chosenVisualInfo);
     }
-#ifdef QT_DEBUG_X11_VISUAL_SELECTION
     else
-        qDebug("EGL did not suggest a VisualID (EGL_NATIVE_VISUAL_ID was zero) for EGLConfig %d", configId);
-#endif
+        qCDebug(lcXlibEglDebug, "EGL did not suggest a VisualID (EGL_NATIVE_VISUAL_ID was zero) for EGLConfig %d", configId);
 
     if (visualId) {
-#ifdef QT_DEBUG_X11_VISUAL_SELECTION
-        if (configAlphaSize > 0)
-            qDebug("Using ARGB Visual ID %d provided by EGL for config %d", (int)visualId, configId);
-        else
-            qDebug("Using Opaque Visual ID %d provided by EGL for config %d", (int)visualId, configId);
-#endif
+        qCDebug(lcXlibEglDebug, configAlphaSize > 0
+                ? "Using ARGB Visual ID %d provided by EGL for config %d"
+                : "Using Opaque Visual ID %d provided by EGL for config %d", (int)visualId, configId);
         return visualId;
     }
 
@@ -143,9 +141,7 @@ VisualID QXlibEglIntegration::getCompatibleVisualId(Display *display, EGLDisplay
     }
 
     if (visualId) {
-#ifdef QT_DEBUG_X11_VISUAL_SELECTION
-        qDebug("Using Visual ID %d provided by XGetVisualInfo for EGL config %d", (int)visualId, configId);
-#endif
+        qCDebug(lcXlibEglDebug, "Using Visual ID %d provided by XGetVisualInfo for EGL config %d", (int)visualId, configId);
         return visualId;
     }
 

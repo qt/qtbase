@@ -177,7 +177,7 @@ void QEGLPlatformContext::init(const QSurfaceFormat &format, QPlatformOpenGLCont
     }
 
     if (m_eglContext == EGL_NO_CONTEXT) {
-        qWarning("QEGLPlatformContext::init: eglError: %x, this: %p \n", eglGetError(), this);
+        qWarning("QEGLPlatformContext: Failed to create context: %x", eglGetError());
         return;
     }
 
@@ -357,7 +357,7 @@ bool QEGLPlatformContext::makeCurrent(QPlatformSurface *surface)
             eglSwapInterval(eglDisplay(), m_swapInterval);
         }
     } else {
-        qWarning("QEGLPlatformContext::makeCurrent: eglError: %x, this: %p \n", eglGetError(), this);
+        qWarning("QEGLPlatformContext: eglMakeCurrent failed: %x", eglGetError());
     }
 
     return ok;
@@ -376,7 +376,7 @@ void QEGLPlatformContext::doneCurrent()
     eglBindAPI(m_api);
     bool ok = eglMakeCurrent(m_eglDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
     if (!ok)
-        qWarning("QEGLPlatformContext::doneCurrent(): eglError: %d, this: %p \n", eglGetError(), this);
+        qWarning("QEGLPlatformContext: eglMakeCurrent failed: %x", eglGetError());
 }
 
 void QEGLPlatformContext::swapBuffers(QPlatformSurface *surface)
@@ -385,7 +385,7 @@ void QEGLPlatformContext::swapBuffers(QPlatformSurface *surface)
     EGLSurface eglSurface = eglSurfaceForPlatformSurface(surface);
     bool ok = eglSwapBuffers(m_eglDisplay, eglSurface);
     if (!ok)
-        qWarning("QEGLPlatformContext::swapBuffers(): eglError: %d, this: %p \n", eglGetError(), this);
+        qWarning("QEGLPlatformContext: eglSwapBuffers failed: %x", eglGetError());
 }
 
 void (*QEGLPlatformContext::getProcAddress(const QByteArray &procName)) ()

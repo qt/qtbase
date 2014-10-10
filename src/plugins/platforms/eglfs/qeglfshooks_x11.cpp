@@ -265,7 +265,7 @@ QSize QEglFSX11Hooks::screenSize() const
             m_screenSize = QSize(env.at(0).toInt(), env.at(1).toInt());
         } else {
             m_screenSize = QSize(640, 480);
-            qDebug("EGLFS_X11_SIZE not set, falling back to 640x480");
+            qWarning("EGLFS_X11_SIZE not set, falling back to 640x480");
         }
     }
     return m_screenSize;

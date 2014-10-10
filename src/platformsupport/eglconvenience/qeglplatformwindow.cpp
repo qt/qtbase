@@ -122,7 +122,7 @@ WId QEGLPlatformWindow::winId() const
 void QEGLPlatformWindow::setOpacity(qreal)
 {
     if (!isRaster())
-        qWarning("eglfs: Cannot set opacity for non-raster windows");
+        qWarning("QEGLPlatformWindow: Cannot set opacity for non-raster windows");
 
     // Nothing to do here. The opacity is stored in the QWindow.
 }
