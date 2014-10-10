@@ -734,10 +734,7 @@ void QWin32PrintEnginePrivate::strokePath_dev(const QPainterPath &path, const QC
     else if (pen.joinStyle() == Qt::RoundJoin)
         joinStyle = PS_JOIN_ROUND;
 
-    bool cosmetic = qt_pen_is_cosmetic(pen, q->state->renderHints());
-
-    HPEN pen = ExtCreatePen((cosmetic ? PS_COSMETIC : PS_GEOMETRIC)
-                            | PS_SOLID | capStyle | joinStyle,
+    HPEN pen = ExtCreatePen(PS_GEOMETRIC | PS_SOLID | capStyle | joinStyle,
                             (penWidth == 0) ? 1 : penWidth, &brush, 0, 0);
 
     HGDIOBJ old_pen = SelectObject(hdc, pen);
