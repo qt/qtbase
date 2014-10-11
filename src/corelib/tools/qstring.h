@@ -534,11 +534,11 @@ public:
         return fromLocal8Bit_helper(str, (str && size == -1) ? int(strlen(str)) : size);
     }
     static inline QString fromLatin1(const QByteArray &str)
-    { return fromLatin1(str.data(), qstrnlen(str.constData(), str.size())); }
+    { return str.isNull() ? QString() : fromLatin1(str.data(), qstrnlen(str.constData(), str.size())); }
     static inline QString fromUtf8(const QByteArray &str)
-    { return fromUtf8(str.data(), qstrnlen(str.constData(), str.size())); }
+    { return str.isNull() ? QString() : fromUtf8(str.data(), qstrnlen(str.constData(), str.size())); }
     static inline QString fromLocal8Bit(const QByteArray &str)
-    { return fromLocal8Bit(str.data(), qstrnlen(str.constData(), str.size())); }
+    { return str.isNull() ? QString() : fromLocal8Bit(str.data(), qstrnlen(str.constData(), str.size())); }
     static QString fromUtf16(const ushort *, int size = -1);
     static QString fromUcs4(const uint *, int size = -1);
     static QString fromRawData(const QChar *, int size);

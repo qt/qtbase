@@ -183,6 +183,7 @@ private slots:
     void fromLocal8Bit();
     void local8Bit_data();
     void local8Bit();
+    void nullFromLocal8Bit();
     void fromLatin1Roundtrip_data();
     void fromLatin1Roundtrip();
     void toLatin1Roundtrip_data();
@@ -3697,6 +3698,12 @@ void tst_QString::nullFromUtf8()
     a = QString::fromUtf8("");
     QVERIFY(!a.isNull());
     QVERIFY(a.isEmpty());
+    a = QString::fromUtf8(QByteArray());
+    QVERIFY(a.isNull());
+    QVERIFY(a.isEmpty());
+    a = QString::fromUtf8(QByteArray(""));
+    QVERIFY(!a.isNull());
+    QVERIFY(a.isEmpty());
 }
 
 void tst_QString::fromLocal8Bit_data()
@@ -3777,6 +3784,23 @@ void tst_QString::local8Bit()
     QFETCH(QByteArray, result);
 
     QCOMPARE(local8Bit.toLocal8Bit(), QByteArray(result));
+}
+
+void tst_QString::nullFromLocal8Bit()
+{
+    QString a;
+    a = QString::fromLocal8Bit(0);
+    QVERIFY(a.isNull());
+    QVERIFY(a.isEmpty());
+    a = QString::fromLocal8Bit("");
+    QVERIFY(!a.isNull());
+    QVERIFY(a.isEmpty());
+    a = QString::fromLocal8Bit(QByteArray());
+    QVERIFY(a.isNull());
+    QVERIFY(a.isEmpty());
+    a = QString::fromLocal8Bit(QByteArray(""));
+    QVERIFY(!a.isNull());
+    QVERIFY(a.isEmpty());
 }
 
 void tst_QString::stringRef_local8Bit_data()
@@ -3945,6 +3969,12 @@ void tst_QString::fromLatin1()
     a = QString::fromLatin1( "" );
     QVERIFY( !a.isNull() );
     QVERIFY( a.isEmpty() );
+    a = QString::fromLatin1(QByteArray());
+    QVERIFY(a.isNull());
+    QVERIFY(a.isEmpty());
+    a = QString::fromLatin1(QByteArray(""));
+    QVERIFY(!a.isNull());
+    QVERIFY(a.isEmpty());
 
     a = QString::fromLatin1(0, 0);
     QVERIFY(a.isNull());
