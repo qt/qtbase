@@ -373,9 +373,19 @@ static QString qGetStringData(SQLHANDLE hStmt, int column, int colSize, bool uni
                             colSize*sizeof(SQLTCHAR),
                             &lengthIndicator);
             if (r == SQL_SUCCESS || r == SQL_SUCCESS_WITH_INFO) {
-                if (lengthIndicator == SQL_NULL_DATA || lengthIndicator == SQL_NO_TOTAL) {
+                if (lengthIndicator == SQL_NULL_DATA) {
                     fieldVal.clear();
                     break;
+                }
+                // starting with ODBC Native Client 2012, SQL_NO_TOTAL is returned
+                // instead of the length (which sometimes was wrong in older versions)
+                // see link for more info: http://msdn.microsoft.com/en-us/library/jj219209.aspx
+                // if length indicator equals SQL_NO_TOTAL, indicating that
+                // more data can be fetched, but size not known, collect data
+                // and fetch next block
+                if (lengthIndicator == SQL_NO_TOTAL) {
+                    fieldVal += fromSQLTCHAR(buf, colSize);
+                    continue;
                 }
                 // if SQL_SUCCESS_WITH_INFO is returned, indicating that
                 // more data can be fetched, the length indicator does NOT
