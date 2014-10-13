@@ -175,10 +175,14 @@ public:
     inline void ungetChar(char c) {
         --head;
         if (head < 0) {
-            buffers.prepend(QByteArray());
+            if (bufferSize != 0) {
+                buffers.prepend(QByteArray());
+                ++tailBuffer;
+            } else {
+                tail = basicBlockSize;
+            }
             buffers.first().resize(basicBlockSize);
             head = basicBlockSize - 1;
-            ++tailBuffer;
         }
         buffers.first()[head] = c;
         ++bufferSize;
