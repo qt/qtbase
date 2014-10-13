@@ -3,7 +3,7 @@
 ** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the plugins module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL21$
 ** Commercial License Usage
@@ -31,32 +31,32 @@
 **
 ****************************************************************************/
 
-
-#include "qtslib.h"
-
+#include "qtslib_p.h"
 
 #include <QSocketNotifier>
 #include <QStringList>
 #include <QPoint>
+#include <QLoggingCategory>
+
 #include <qpa/qwindowsysteminterface.h>
 
 #include <errno.h>
 #include <tslib.h>
 
-#include <qdebug.h>
-
 QT_BEGIN_NAMESPACE
 
+Q_LOGGING_CATEGORY(qLcTsLib, "qt.qpa.input")
+
 QTsLibMouseHandler::QTsLibMouseHandler(const QString &key,
-                                                 const QString &specification)
+                                       const QString &specification)
     : m_notify(0), m_x(0), m_y(0), m_pressed(0), m_rawMode(false)
 {
-    qDebug() << "QTsLibMouseHandler" << key << specification;
+    qCDebug(qLcTsLib) << "Initializing tslib plugin" << key << specification;
     setObjectName(QLatin1String("TSLib Mouse Handler"));
 
     QByteArray device = qgetenv("TSLIB_TSDEVICE");
 
-    if (specification.startsWith("/dev/"))
+    if (specification.startsWith(QStringLiteral("/dev/")))
         device = specification.toLocal8Bit();
 
     if (device.isEmpty())
@@ -69,26 +69,25 @@ QTsLibMouseHandler::QTsLibMouseHandler(const QString &key,
     }
 
     if (ts_config(m_dev))
-        perror("Error configuring\n");
+        qErrnoWarning(errno, "ts_config() failed");
 
-    m_rawMode =  !key.compare(QLatin1String("TslibRaw"), Qt::CaseInsensitive);
+    m_rawMode = !key.compare(QLatin1String("TslibRaw"), Qt::CaseInsensitive);
 
     int fd = ts_fd(m_dev);
     if (fd >= 0) {
+        qCDebug(qLcTsLib) << "tslib device is" << device;
         m_notify = new QSocketNotifier(fd, QSocketNotifier::Read, this);
         connect(m_notify, SIGNAL(activated(int)), this, SLOT(readMouseData()));
     } else {
-        qWarning("Cannot open mouse input device '%s': %s", device.constData(), strerror(errno));
+        qErrnoWarning(errno, "tslib: Cannot open input device %s", device.constData());
     }
 }
-
 
 QTsLibMouseHandler::~QTsLibMouseHandler()
 {
     if (m_dev)
         ts_close(m_dev);
 }
-
 
 static bool get_sample(struct tsdev *dev, struct ts_sample *sample, bool rawMode)
 {
@@ -97,7 +96,6 @@ static bool get_sample(struct tsdev *dev, struct ts_sample *sample, bool rawMode
     else
         return (ts_read(dev, sample, 1) == 1);
 }
-
 
 void QTsLibMouseHandler::readMouseData()
 {
@@ -122,8 +120,6 @@ void QTsLibMouseHandler::readMouseData()
                 continue;
         }
         QPoint pos(x, y);
-
-        //printf("handleMouseEvent %d %d %d %ld\n", m_x, m_y, pressed, sample.tv.tv_usec);
 
         QWindowSystemInterface::handleMouseEvent(0, pos, pos, pressed ? Qt::LeftButton : Qt::NoButton);
 

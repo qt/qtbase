@@ -3,7 +3,7 @@
 ** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the plugins module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL21$
 ** Commercial License Usage
@@ -34,13 +34,13 @@
 #ifndef QTSLIB_H
 #define QTSLIB_H
 
-#include <qobject.h>
-//#include <Qt>
+#include <QObject>
+
+struct tsdev;
 
 QT_BEGIN_NAMESPACE
 
 class QSocketNotifier;
-struct tsdev;
 
 class QTsLibMouseHandler : public QObject
 {

@@ -32,7 +32,7 @@
 ****************************************************************************/
 
 #include <QtGui/qgenericplugin.h>
-#include "qtslib.h"
+#include <QtPlatformSupport/private/qtslib_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -42,21 +42,16 @@ class QTsLibPlugin : public QGenericPlugin
     Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QGenericPluginFactoryInterface" FILE "tslib.json")
 
 public:
-    QTsLibPlugin();
-
     QObject* create(const QString &key, const QString &specification);
 };
 
-QTsLibPlugin::QTsLibPlugin()
-    : QGenericPlugin()
-{
-}
-
 QObject* QTsLibPlugin::create(const QString &key,
-                                                 const QString &specification)
+                              const QString &specification)
 {
-    if (!key.compare(QLatin1String("Tslib"), Qt::CaseInsensitive) || !key.compare(QLatin1String("TslibRaw"), Qt::CaseInsensitive))
+    if (!key.compare(QLatin1String("Tslib"), Qt::CaseInsensitive)
+        || !key.compare(QLatin1String("TslibRaw"), Qt::CaseInsensitive))
         return new QTsLibMouseHandler(key, specification);
+
     return 0;
 }
 

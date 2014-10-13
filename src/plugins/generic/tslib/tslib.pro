@@ -5,12 +5,9 @@ PLUGIN_EXTENDS = -
 PLUGIN_CLASS_NAME = QTsLibPlugin
 load(qt_plugin)
 
-HEADERS	= qtslib.h
+SOURCES = main.cpp
 
-SOURCES	= main.cpp \
-	qtslib.cpp
-
-QT += gui-private
+QT += gui-private platformsupport-private
 
 LIBS += -lts
 
