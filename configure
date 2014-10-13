@@ -654,7 +654,7 @@ CFG_KMS=auto
 CFG_LIBUDEV=auto
 CFG_OBSOLETE_WAYLAND=no
 CFG_EVDEV=auto
-CFG_TSLIB=no
+CFG_TSLIB=auto
 CFG_NIS=auto
 CFG_CUPS=auto
 CFG_ICONV=auto
@@ -2473,6 +2473,9 @@ Additional options:
 
     -no-evdev .......... Do not compile support for evdev.
  *  -evdev ............. Compile support for evdev.
+
+    -no-tslib .......... Do not compile support for tslib.
+ *  -tslib ............. Compile support for tslib.
 
     -no-icu ............ Do not compile support for ICU libraries.
  +  -icu ............... Compile support for ICU libraries.
@@ -5003,6 +5006,9 @@ if [ "$CFG_TSLIB" != "no" ]; then
         CFG_TSLIB=no
     fi
 fi
+if [ "$CFG_TSLIB" = "no" ]; then
+    QMakeVar add DEFINES QT_NO_TSLIB
+fi
 
 # Check we actually have X11 :-)
 if compileTest x11/xlib "XLib"; then
@@ -6212,6 +6218,7 @@ QMakeVar set sql-plugins "$SQL_PLUGINS"
 [ "$CFG_OPENSSL" = "linked" ]&& QCONFIG_FLAGS="$QCONFIG_FLAGS QT_LINKED_OPENSSL"
 
 [ "$CFG_SM" = "no" ]         && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_SESSIONMANAGER"
+[ "$CFG_TSLIB" = "no" ]      && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_TSLIB"
 [ "$CFG_XCURSOR" = "no" ]    && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_XCURSOR"
 [ "$CFG_XFIXES" = "no" ]     && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_XFIXES"
 [ "$CFG_FONTCONFIG" = "no" ] && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_FONTCONFIG"
@@ -6689,6 +6696,7 @@ report_support "    PostgreSQL ..........." "$CFG_SQL_psql" plugin "plugin" yes 
 report_support "    SQLite 2 ............." "$CFG_SQL_sqlite2" plugin "plugin" yes "built into QtSql"
 report_support_plugin "    SQLite ..............." "$CFG_SQL_sqlite" "$CFG_SQLITE" QtSql
 report_support "    TDS .................." "$CFG_SQL_tds" plugin "plugin" yes "built into QtSql"
+report_support "  tslib .................." "$CFG_TSLIB"
 report_support "  udev ..................." "$CFG_LIBUDEV"
 report_support "  xkbcommon .............." "$CFG_XKBCOMMON" system "system library" qt "bundled copy, XKB config root: $CFG_XKB_CONFIG_ROOT"
 report_support "  zlib ..................." "$CFG_ZLIB" system "system library" yes "bundled copy"
