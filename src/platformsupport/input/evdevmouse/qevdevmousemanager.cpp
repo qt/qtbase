@@ -36,15 +36,12 @@
 #include <QStringList>
 #include <QGuiApplication>
 #include <QScreen>
+#include <QLoggingCategory>
 #include <qpa/qwindowsysteminterface.h>
 
-//#define QT_QPA_MOUSEMANAGER_DEBUG
-
-#ifdef QT_QPA_MOUSEMANAGER_DEBUG
-#include <QDebug>
-#endif
-
 QT_BEGIN_NAMESPACE
+
+Q_DECLARE_LOGGING_CATEGORY(qLcEvdevMouse)
 
 QEvdevMouseManager::QEvdevMouseManager(const QString &key, const QString &specification, QObject *parent)
     : QObject(parent), m_x(0), m_y(0), m_xoffset(0), m_yoffset(0)
@@ -79,10 +76,7 @@ QEvdevMouseManager::QEvdevMouseManager(const QString &key, const QString &specif
         addMouse(device);
 
     if (devices.isEmpty()) {
-#ifdef QT_QPA_MOUSEMANAGER_DEBUG
-        qWarning() << "Use device discovery";
-#endif
-
+        qCDebug(qLcEvdevMouse) << "evdevmouse: Using device discovery";
         m_deviceDiscovery = QDeviceDiscovery::create(QDeviceDiscovery::Device_Mouse | QDeviceDiscovery::Device_Touchpad, this);
         if (m_deviceDiscovery) {
             // scan and add already connected keyboards
@@ -130,28 +124,17 @@ void QEvdevMouseManager::handleMouseEvent(int x, int y, bool abs, Qt::MouseButto
     // Cannot track the keyboard modifiers ourselves here. Instead, report the
     // modifiers from the last key event that has been seen by QGuiApplication.
     QWindowSystemInterface::handleMouseEvent(0, pos, pos, buttons, QGuiApplication::keyboardModifiers());
-
-#ifdef QT_QPA_MOUSEMANAGER_DEBUG
-    qDebug("mouse event %d %d %d", pos.x(), pos.y(), int(buttons));
-#endif
 }
 
 void QEvdevMouseManager::handleWheelEvent(int delta, Qt::Orientation orientation)
 {
     QPoint pos(m_x + m_xoffset, m_y + m_yoffset);
     QWindowSystemInterface::handleWheelEvent(0, pos, pos, delta, orientation, QGuiApplication::keyboardModifiers());
-
-#ifdef QT_QPA_MOUSEMANAGER_DEBUG
-    qDebug("mouse wheel event %dx%d %d %d", pos.x(), pos.y(), delta, int(orientation));
-#endif
 }
 
 void QEvdevMouseManager::addMouse(const QString &deviceNode)
 {
-#ifdef QT_QPA_MOUSEMANAGER_DEBUG
-    qWarning() << "Adding mouse at" << deviceNode;
-#endif
-
+    qCDebug(qLcEvdevMouse) << "Adding mouse at" << deviceNode;
     QEvdevMouseHandler *handler;
     handler = QEvdevMouseHandler::create(deviceNode, m_spec);
     if (handler) {
@@ -159,16 +142,14 @@ void QEvdevMouseManager::addMouse(const QString &deviceNode)
         connect(handler, SIGNAL(handleWheelEvent(int,Qt::Orientation)), this, SLOT(handleWheelEvent(int,Qt::Orientation)));
         m_mice.insert(deviceNode, handler);
     } else {
-        qWarning("Failed to open mouse");
+        qWarning("evdevmouse: Failed to open mouse device %s", qPrintable(deviceNode));
     }
 }
 
 void QEvdevMouseManager::removeMouse(const QString &deviceNode)
 {
     if (m_mice.contains(deviceNode)) {
-#ifdef QT_QPA_MOUSEMANAGER_DEBUG
-        qWarning() << "Removing mouse at" << deviceNode;
-#endif
+        qCDebug(qLcEvdevMouse) << "Removing mouse at" << deviceNode;
         QEvdevMouseHandler *handler = m_mice.value(deviceNode);
         m_mice.remove(deviceNode);
         delete handler;

@@ -37,19 +37,17 @@
 
 #include <QSocketNotifier>
 #include <QStringList>
-#include <qpa/qwindowsysteminterface.h>
 #include <QCoreApplication>
+#include <QLoggingCategory>
+#include <qpa/qwindowsysteminterface.h>
 #include <private/qcore_unix_p.h>
 
 #include <linux/input.h>
 
-//#define QT_QPA_KEYMAP_DEBUG
-
-#ifdef QT_QPA_KEYMAP_DEBUG
-#include <qdebug.h>
-#endif
-
 QT_BEGIN_NAMESPACE
+
+Q_LOGGING_CATEGORY(qLcEvdevKey, "qt.qpa.input")
+Q_LOGGING_CATEGORY(qLcEvdevKeyMap, "qt.qpa.input.keymap")
 
 // simple builtin US keymap
 #include "qevdevkeyboard_defaultmap_p.h"
@@ -60,9 +58,7 @@ QEvdevKeyboardHandler::QEvdevKeyboardHandler(const QString &device, int fd, bool
       m_no_zap(disableZap), m_do_compose(enableCompose),
       m_keymap(0), m_keymap_size(0), m_keycompose(0), m_keycompose_size(0)
 {
-#ifdef QT_QPA_KEYMAP_DEBUG
-    qWarning() << "Create keyboard handler with for device" << device;
-#endif
+    qCDebug(qLcEvdevKey) << "Create keyboard handler with for device" << device;
 
     setObjectName(QLatin1String("LinuxInput Keyboard Handler"));
 
@@ -89,9 +85,7 @@ QEvdevKeyboardHandler *QEvdevKeyboardHandler::create(const QString &device,
                                                      const QString &specification,
                                                      const QString &defaultKeymapFile)
 {
-#ifdef QT_QPA_KEYMAP_DEBUG
-    qWarning() << "Try to create keyboard handler for" << device << specification;
-#endif
+    qCDebug(qLcEvdevKey) << "Try to create keyboard handler for" << device << specification;
 
     QString keymapFile = defaultKeymapFile;
     int repeatDelay = 400;
@@ -116,9 +110,7 @@ QEvdevKeyboardHandler *QEvdevKeyboardHandler::create(const QString &device,
             grab = arg.mid(5).toInt();
     }
 
-#ifdef QT_QPA_KEYMAP_DEBUG
-    qWarning() << "Opening keyboard at" << device;
-#endif
+    qCDebug(qLcEvdevKey) << "Opening keyboard at" << device;
 
     int fd;
     fd = qt_safe_open(device.toLocal8Bit().constData(), O_RDONLY | O_NDELAY, 0);
@@ -138,9 +130,7 @@ QEvdevKeyboardHandler *QEvdevKeyboardHandler::create(const QString &device,
 
 void QEvdevKeyboardHandler::switchLed(int led, bool state)
 {
-#ifdef QT_QPA_KEYMAP_DEBUG
-    qWarning() << "switchLed" << led << state;
-#endif
+    qCDebug(qLcEvdevKey) << "switchLed" << led << state;
 
     struct ::input_event led_ie;
     ::gettimeofday(&led_ie.time, 0);
@@ -153,10 +143,6 @@ void QEvdevKeyboardHandler::switchLed(int led, bool state)
 
 void QEvdevKeyboardHandler::readKeycode()
 {
-#ifdef QT_QPA_KEYMAP_DEBUG
-    qWarning() << "Read new keycode on" << m_device;
-#endif
-
     struct ::input_event buffer[32];
     int n = 0;
 
@@ -164,11 +150,11 @@ void QEvdevKeyboardHandler::readKeycode()
         int result = qt_safe_read(m_fd, reinterpret_cast<char *>(buffer) + n, sizeof(buffer) - n);
 
         if (result == 0) {
-            qWarning("Got EOF from the input device.");
+            qWarning("evdevkeyboard: Got EOF from the input device");
             return;
         } else if (result < 0) {
             if (errno != EINTR && errno != EAGAIN) {
-                qWarning("Could not read from input device: %s", strerror(errno));
+                qErrnoWarning(errno, "evdevkeyboard: Could not read from input device");
                 return;
             }
         } else {
@@ -249,21 +235,17 @@ QEvdevKeyboardHandler::KeycodeAction QEvdevKeyboardHandler::processKeycode(quint
     if (m_locks[0] /*CapsLock*/ && map_withmod && (map_withmod->flags & QEvdevKeyboardMap::IsLetter))
         modifiers ^= QEvdevKeyboardMap::ModShift;
 
-#ifdef QT_QPA_KEYMAP_DEBUG
-    qWarning("Processing key event: keycode=%3d, modifiers=%02x pressed=%d, autorepeat=%d  |  plain=%d, withmod=%d, size=%d", \
-             keycode, modifiers, pressed ? 1 : 0, autorepeat ? 1 : 0, \
-             map_plain ? map_plain - m_keymap : -1, \
-             map_withmod ? map_withmod - m_keymap : -1, \
-             m_keymap_size);
-#endif
+    qCDebug(qLcEvdevKeyMap, "Processing key event: keycode=%3d, modifiers=%02x pressed=%d, autorepeat=%d  |  plain=%d, withmod=%d, size=%d",
+            keycode, modifiers, pressed ? 1 : 0, autorepeat ? 1 : 0,
+            int(map_plain ? map_plain - m_keymap : -1),
+            int(map_withmod ? map_withmod - m_keymap : -1),
+            m_keymap_size);
 
     const QEvdevKeyboardMap::Mapping *it = map_withmod ? map_withmod : map_plain;
 
     if (!it) {
-#ifdef QT_QPA_KEYMAP_DEBUG
         // we couldn't even find a plain mapping
-        qWarning("Could not find a suitable mapping for keycode: %3d, modifiers: %02x", keycode, modifiers);
-#endif
+        qCDebug(qLcEvdevKeyMap, "Could not find a suitable mapping for keycode: %3d, modifiers: %02x", keycode, modifiers);
         return result;
     }
 
@@ -397,9 +379,7 @@ QEvdevKeyboardHandler::KeycodeAction QEvdevKeyboardHandler::processKeycode(quint
         }
 
         if (!skip) {
-#ifdef QT_QPA_KEYMAP_DEBUG
-            qWarning("Processing: uni=%04x, qt=%08x, qtmod=%08x", unicode, qtcode & ~modmask, (qtcode & modmask));
-#endif
+            qCDebug(qLcEvdevKeyMap, "Processing: uni=%04x, qt=%08x, qtmod=%08x", unicode, qtcode & ~modmask, (qtcode & modmask));
             //If NumLockOff and keypad key pressed remap event sent
             if (!m_locks[1] &&
                  (qtcode & Qt::KeypadModifier) &&
@@ -457,9 +437,7 @@ QEvdevKeyboardHandler::KeycodeAction QEvdevKeyboardHandler::processKeycode(quint
 
 void QEvdevKeyboardHandler::unloadKeymap()
 {
-#ifdef QT_QPA_KEYMAP_DEBUG
-    qWarning() << "Unload current keymap and restore built-in";
-#endif
+    qCDebug(qLcEvdevKey) << "Unload current keymap and restore built-in";
 
     if (m_keymap && m_keymap != s_keymap_default)
         delete [] m_keymap;
@@ -481,7 +459,7 @@ void QEvdevKeyboardHandler::unloadKeymap()
     quint16 ledbits[1];
     memset(ledbits, 0, sizeof(ledbits));
     if (::ioctl(m_fd, EVIOCGLED(sizeof(ledbits)), ledbits) < 0) {
-        qWarning("Failed to query led states. Settings numlock & capslock off");
+        qWarning("evdevkeyboard: Failed to query led states");
         switchLed(LED_NUML,false);
         switchLed(LED_CAPSL, false);
         switchLed(LED_SCROLLL,false);
@@ -495,17 +473,13 @@ void QEvdevKeyboardHandler::unloadKeymap()
         //Scrollock
         if ((ledbits[0]&0x04) > 0)
             m_locks[2] = 1;
-#ifdef QT_QPA_KEYMAP_DEBUG
-        qWarning("numlock=%d , capslock=%d, scrolllock=%d",m_locks[1],m_locks[0],m_locks[2]);
-#endif
+        qCDebug(qLcEvdevKey, "numlock=%d , capslock=%d, scrolllock=%d", m_locks[1], m_locks[0], m_locks[2]);
     }
 }
 
 bool QEvdevKeyboardHandler::loadKeymap(const QString &file)
 {
-#ifdef QT_QPA_KEYMAP_DEBUG
-    qWarning() << "Load keymap" << file;
-#endif
+    qCDebug(qLcEvdevKey) << "Loading keymap" << file;
 
     QFile f(file);
 
@@ -529,7 +503,7 @@ bool QEvdevKeyboardHandler::loadKeymap(const QString &file)
     ds >> qmap_magic >> qmap_version >> qmap_keymap_size >> qmap_keycompose_size;
 
     if (ds.status() != QDataStream::Ok || qmap_magic != QEvdevKeyboardMap::FileMagic || qmap_version != 1 || qmap_keymap_size == 0) {
-        qWarning("'%s' is ot a valid.qmap keymap file.", qPrintable(file));
+        qWarning("'%s' is not a valid .qmap keymap file", qPrintable(file));
         return false;
     }
 

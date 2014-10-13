@@ -38,6 +38,7 @@
 #include <QPoint>
 #include <QGuiApplication>
 #include <QScreen>
+#include <QLoggingCategory>
 #include <qpa/qwindowsysteminterface.h>
 
 #include <qplatformdefs.h>
@@ -48,19 +49,15 @@
 #include <linux/kd.h>
 #include <linux/input.h>
 
-#include <qdebug.h>
-
-//#define QT_QPA_MOUSE_HANDLER_DEBUG
-
 #define TEST_BIT(array, bit)    (array[bit/8] & (1<<(bit%8)))
 
 QT_BEGIN_NAMESPACE
 
+Q_LOGGING_CATEGORY(qLcEvdevMouse, "qt.qpa.input")
+
 QEvdevMouseHandler *QEvdevMouseHandler::create(const QString &device, const QString &specification)
 {
-#ifdef QT_QPA_MOUSE_HANDLER_DEBUG
-    qWarning() << "Try to create mouse handler for" << device << specification;
-#endif
+    qCDebug(qLcEvdevMouse) << "create mouse handler for" << device << specification;
 
     bool compression = true;
     int jitterLimit = 0;
@@ -85,7 +82,7 @@ QEvdevMouseHandler *QEvdevMouseHandler::create(const QString &device, const QStr
         ::ioctl(fd, EVIOCGRAB, grab);
         return new QEvdevMouseHandler(device, fd, abs, compression, jitterLimit);
     } else {
-        qWarning("Cannot open mouse input device '%s': %s", qPrintable(device), strerror(errno));
+        qErrnoWarning(errno, "Cannot open mouse input device %s", qPrintable(device));
         return 0;
     }
 }
@@ -148,12 +145,10 @@ bool QEvdevMouseHandler::getHardwareMaximum()
     m_hardwareScalerX = static_cast<qreal>(m_hardwareWidth) / (g.right() - g.left());
     m_hardwareScalerY = static_cast<qreal>(m_hardwareHeight) / (g.bottom() - g.top());
 
-#ifdef QT_QPA_MOUSE_HANDLER_DEBUG
-    qDebug() << "Absolute pointing device";
-    qDebug() << "hardware max x" << m_hardwareWidth;
-    qDebug() << "hardware max y" << m_hardwareHeight;
-    qDebug() << "hardware scalers x" << m_hardwareScalerX << "y" << m_hardwareScalerY;
-#endif
+    qCDebug(qLcEvdevMouse) << "Absolute pointing device"
+                           << "hardware max x" << m_hardwareWidth
+                           << "hardware max y" << m_hardwareHeight
+                           << "hardware scalers x" << m_hardwareScalerX << "y" << m_hardwareScalerY;
 
     return true;
 }
@@ -194,11 +189,11 @@ void QEvdevMouseHandler::readMouseData()
         int result = QT_READ(m_fd, reinterpret_cast<char *>(buffer) + n, sizeof(buffer) - n);
 
         if (result == 0) {
-            qWarning("Got EOF from the input device.");
+            qWarning("evdevmouse: Got EOF from the input device");
             return;
         } else if (result < 0) {
             if (errno != EINTR && errno != EAGAIN) {
-                qWarning("Could not read from input device: %s", strerror(errno));
+                qErrnoWarning(errno, "evdevmouse: Could not read from input device");
                 return;
             }
         } else {
@@ -212,7 +207,6 @@ void QEvdevMouseHandler::readMouseData()
 
     for (int i = 0; i < n; ++i) {
         struct ::input_event *data = &buffer[i];
-        //qDebug() << ">>" << hex << data->type << data->code << dec << data->value;
         if (data->type == EV_ABS) {
             // Touchpads: store the absolute position for now, will calculate a relative one later.
             if (data->code == ABS_X && m_x != data->value) {

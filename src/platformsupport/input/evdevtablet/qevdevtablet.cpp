@@ -36,12 +36,14 @@
 #include <QStringList>
 #include <QSocketNotifier>
 #include <QGuiApplication>
-#include <QDebug>
+#include <QLoggingCategory>
 #include <QtCore/private/qcore_unix_p.h>
 #include <QtPlatformSupport/private/qdevicediscovery_p.h>
 #include <linux/input.h>
 
 QT_BEGIN_NAMESPACE
+
+Q_LOGGING_CATEGORY(qLcEvdevTablet, "qt.qpa.input")
 
 class QEvdevTabletData
 {
@@ -87,28 +89,28 @@ bool QEvdevTabletData::queryLimits()
     if (ok) {
         minValues.x = absInfo.minimum;
         maxValues.x = absInfo.maximum;
-        qDebug("evdevtablet: min X: %d max X: %d", minValues.x, maxValues.x);
+        qCDebug(qLcEvdevTablet, "evdevtablet: min X: %d max X: %d", minValues.x, maxValues.x);
     }
     ok &= ioctl(fd, EVIOCGABS(ABS_Y), &absInfo) >= 0;
     if (ok) {
         minValues.y = absInfo.minimum;
         maxValues.y = absInfo.maximum;
-        qDebug("evdevtablet: min Y: %d max Y: %d", minValues.y, maxValues.y);
+        qCDebug(qLcEvdevTablet, "evdevtablet: min Y: %d max Y: %d", minValues.y, maxValues.y);
     }
     if (ioctl(fd, EVIOCGABS(ABS_PRESSURE), &absInfo) >= 0) {
         minValues.p = absInfo.minimum;
         maxValues.p = absInfo.maximum;
-        qDebug("evdevtablet: min pressure: %d max pressure: %d", minValues.p, maxValues.p);
+        qCDebug(qLcEvdevTablet, "evdevtablet: min pressure: %d max pressure: %d", minValues.p, maxValues.p);
     }
     if (ioctl(fd, EVIOCGABS(ABS_DISTANCE), &absInfo) >= 0) {
         minValues.d = absInfo.minimum;
         maxValues.d = absInfo.maximum;
-        qDebug("evdevtablet: min distance: %d max distance: %d", minValues.d, maxValues.d);
+        qCDebug(qLcEvdevTablet, "evdevtablet: min distance: %d max distance: %d", minValues.d, maxValues.d);
     }
     char name[128];
     if (ioctl(fd, EVIOCGNAME(sizeof(name) - 1), name) >= 0) {
         devName = QString::fromLocal8Bit(name);
-        qDebug("evdevtablet: device name: %s", name);
+        qCDebug(qLcEvdevTablet, "evdevtablet: device name: %s", name);
     }
     return ok;
 }
@@ -232,7 +234,7 @@ QEvdevTabletHandler::QEvdevTabletHandler(const QString &spec, QObject *parent)
         }
     }
     if (!dev.isEmpty()) {
-        qDebug("evdevtablet: using %s", qPrintable(dev));
+        qCDebug(qLcEvdevTablet, "evdevtablet: using %s", qPrintable(dev));
         d->fd = QT_OPEN(dev.toLocal8Bit().constData(), O_RDONLY | O_NDELAY, 0);
         if (d->fd >= 0) {
             d->testGrab();
