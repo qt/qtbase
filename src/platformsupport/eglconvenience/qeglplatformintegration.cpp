@@ -50,6 +50,10 @@
 #include <QtPlatformSupport/private/qevdevtouch_p.h>
 #endif
 
+#if !defined(QT_NO_TSLIB) && (!defined(Q_OS_ANDROID) || defined(Q_OS_ANDROID_NO_SDK))
+#include <QtPlatformSupport/private/qtslib_p.h>
+#endif
+
 #include <QtPlatformHeaders/qeglfsfunctions.h>
 
 #include "qeglplatformintegration_p.h"
@@ -351,7 +355,13 @@ void QEGLPlatformIntegration::createInputHandlers()
         if (cursor)
             cursor->setMouseDeviceDiscovery(mouseMgr->deviceDiscovery());
     }
-    new QEvdevTouchScreenHandlerThread(QString() /* spec */, this);
+#ifndef QT_NO_TSLIB
+    const bool useTslib = qEnvironmentVariableIntValue("QT_QPA_EGLFS_TSLIB");
+    if (useTslib)
+        new QTsLibMouseHandler(QLatin1String("TsLib"), QString() /* spec */);
+    else
+#endif // QT_NO_TSLIB
+        new QEvdevTouchScreenHandlerThread(QString() /* spec */, this);
 #endif
 }
 

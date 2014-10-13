@@ -45,8 +45,9 @@ class QSocketNotifier;
 class QTsLibMouseHandler : public QObject
 {
     Q_OBJECT
+
 public:
-    QTsLibMouseHandler(const QString &key, const QString &specification);
+    QTsLibMouseHandler(const QString &key, const QString &specification, QObject *parent = 0);
     ~QTsLibMouseHandler();
 
 private slots:

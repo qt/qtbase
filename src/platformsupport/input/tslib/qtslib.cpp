@@ -48,8 +48,10 @@ QT_BEGIN_NAMESPACE
 Q_LOGGING_CATEGORY(qLcTsLib, "qt.qpa.input")
 
 QTsLibMouseHandler::QTsLibMouseHandler(const QString &key,
-                                       const QString &specification)
-    : m_notify(0), m_x(0), m_y(0), m_pressed(0), m_rawMode(false)
+                                       const QString &specification,
+                                       QObject *parent)
+    : QObject(parent),
+    m_notify(0), m_x(0), m_y(0), m_pressed(0), m_rawMode(false)
 {
     qCDebug(qLcTsLib) << "Initializing tslib plugin" << key << specification;
     setObjectName(QLatin1String("TSLib Mouse Handler"));
