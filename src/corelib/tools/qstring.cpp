@@ -9020,7 +9020,7 @@ QStringRef QStringRef::right(int n) const
 {
     if (uint(n) >= uint(m_size))
         return *this;
-    return QStringRef(m_string, n + m_position, m_size - n);
+    return QStringRef(m_string, m_size - n + m_position, n);
 }
 
 /*!

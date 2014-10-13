@@ -4419,7 +4419,7 @@ QDateTime QDateTime::fromString(const QString& string, Qt::DateFormat format)
         if (size == 10)
             return QDateTime(date);
 
-        isoString = isoString.right(11);
+        isoString = isoString.right(isoString.length() - 11);
         int offset = 0;
         // Check end of string for Time Zone definition, either Z for UTC or [+-]HH:MM for Offset
         if (isoString.endsWith(QLatin1Char('Z'))) {
