@@ -519,6 +519,10 @@ bool QAndroidInputContext::isAnimating() const
 
 void QAndroidInputContext::showInputPanel()
 {
+    if (QGuiApplication::applicationState() != Qt::ApplicationActive) {
+        connect(qGuiApp, SIGNAL(applicationStateChanged(Qt::ApplicationState)), this, SLOT(showInputPanelLater(Qt::ApplicationState)));
+        return;
+    }
     QSharedPointer<QInputMethodQueryEvent> query = focusObjectInputMethodQueryThreadSafe();
     if (query.isNull())
         return;
@@ -539,6 +543,14 @@ void QAndroidInputContext::showInputPanel()
                                          rect.width(),
                                          rect.height(),
                                          query->value(Qt::ImHints).toUInt());
+}
+
+void QAndroidInputContext::showInputPanelLater(Qt::ApplicationState state)
+{
+    if (state != Qt::ApplicationActive)
+        return;
+    disconnect(qGuiApp, SIGNAL(applicationStateChanged(Qt::ApplicationState)), this, SLOT(showInputPanelLater(Qt::ApplicationState)));
+    showInputPanel();
 }
 
 void QAndroidInputContext::hideInputPanel()
