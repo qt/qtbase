@@ -2439,7 +2439,7 @@ bool QComboBoxPrivate::showNativePopup()
             offset = QPoint(-1, 7);
         else if (q->testAttribute(Qt::WA_MacMiniSize))
             offset = QPoint(-2, 6);
-        menu->showPopup(tlw, tlw->mapFromGlobal(q->mapToGlobal(offset)), currentItem);
+        menu->showPopup(tlw, QRect(tlw->mapFromGlobal(q->mapToGlobal(offset)), QSize()), currentItem);
         menu->deleteLater();
         Q_FOREACH (QPlatformMenuItem *item, items)
             item->deleteLater();
