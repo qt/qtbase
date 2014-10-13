@@ -64,6 +64,12 @@ QT_BEGIN_NAMESPACE
     typically use a pixel buffer (pbuffer). If the platform doesn't implement or support
     offscreen surfaces, QOffscreenSurface will use an invisible QWindow internally.
 
+    \note Due to the fact that QOffscreenSurface is backed by a QWindow on some platforms,
+    cross-platform applications must ensure that create() is only called on the main (GUI)
+    thread. The QOffscreenSurface is then safe to be used with
+    \l{QOpenGLContext::makeCurrent()}{makeCurrent()} on other threads, but the
+    initialization and destruction must always happen on the main (GUI) thread.
+
     \note In order to create an offscreen surface that is guaranteed to be compatible with
     a given context and window, make sure to set the format to the context's or the
     window's actual format, that is, the QSurfaceFormat returned from
@@ -151,6 +157,8 @@ QOffscreenSurface::SurfaceType QOffscreenSurface::surfaceType() const
     into an actual native surface.
 
     Call destroy() to free the platform resources if necessary.
+
+    \note Some platforms require this function to be called on the main (GUI) thread.
 
     \sa destroy()
 */
