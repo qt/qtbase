@@ -1578,7 +1578,7 @@ void qErrnoWarning(int code, const char *msg, ...)
     The default \a pattern is "%{if-category}%{category}: %{endif}%{message}".
 
     The \a pattern can also be changed at runtime by setting the QT_MESSAGE_PATTERN
-    environment variable; if both qSetMessagePattern() is called and QT_MESSAGE_PATTERN is
+    environment variable; if both \l qSetMessagePattern() is called and QT_MESSAGE_PATTERN is
     set, the environment variable takes precedence.
 
     Custom message handlers can use qFormatLogMessage() to take \a pattern into account.
