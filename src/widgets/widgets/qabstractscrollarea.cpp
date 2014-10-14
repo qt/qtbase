@@ -609,6 +609,9 @@ void QAbstractScrollArea::setViewport(QWidget *widget)
 #endif
 #endif
         d->layoutChildren();
+#ifndef QT_NO_OPENGL
+        QWidgetPrivate::get(d->viewport)->initializeViewportFramebuffer();
+#endif
         if (isVisible())
             d->viewport->show();
         setupViewport(widget);

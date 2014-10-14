@@ -1994,6 +1994,8 @@ bool QOpenGL2PaintEngineEx::begin(QPaintDevice *pdev)
     d->ctx = QOpenGLContext::currentContext();
     d->ctx->d_func()->active_engine = this;
 
+    d->device->beginPaint();
+
     d->funcs.initializeOpenGLFunctions();
 
     for (int i = 0; i < QT_GL_VERTEX_ARRAY_TRACKED_COUNT; ++i)
@@ -2043,6 +2045,8 @@ bool QOpenGL2PaintEngineEx::begin(QPaintDevice *pdev)
 bool QOpenGL2PaintEngineEx::end()
 {
     Q_D(QOpenGL2PaintEngineEx);
+
+    d->device->endPaint();
 
     QOpenGLContext *ctx = d->ctx;
     d->funcs.glUseProgram(0);

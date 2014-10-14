@@ -351,13 +351,38 @@ bool QOpenGLPaintDevice::paintFlipped() const
 }
 
 /*!
+  This virtual method is called when starting to paint.
+
+  The default implementation does nothing.
+
+  \sa endPaint()
+ */
+void QOpenGLPaintDevice::beginPaint()
+{
+}
+
+/*!
     This virtual method is provided as a callback to allow re-binding a target
     frame buffer object or context when different QOpenGLPaintDevice instances
     are issuing draw calls alternately.
 
-    QPainter::beginNativePainting will also trigger this method.
+    \l{QPainter::beginNativePainting()}{beginNativePainting()} will also trigger
+    this method.
+
+    The default implementation does nothing.
 */
 void QOpenGLPaintDevice::ensureActiveTarget()
+{
+}
+
+/*!
+  This virtual method is called when the painting has finished.
+
+  The default implementation does nothing.
+
+  \sa beginPaint()
+*/
+void QOpenGLPaintDevice::endPaint()
 {
 }
 

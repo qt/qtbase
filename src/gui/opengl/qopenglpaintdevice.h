@@ -73,7 +73,9 @@ public:
     void setPaintFlipped(bool flipped);
     bool paintFlipped() const;
 
+    virtual void beginPaint();
     virtual void ensureActiveTarget();
+    virtual void endPaint();
 
 protected:
     int metric(QPaintDevice::PaintDeviceMetric metric) const;
