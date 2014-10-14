@@ -608,9 +608,9 @@ qint64 QFileDevice::size() const
 }
 
 /*!
-    Sets the file size (in bytes) \a sz. Returns \c true if the file if the
+    Sets the file size (in bytes) \a sz. Returns \c true if the
     resize succeeds; false otherwise. If \a sz is larger than the file
-    currently is the new bytes will be set to 0, if \a sz is smaller the
+    currently is, the new bytes will be set to 0; if \a sz is smaller, the
     file is simply truncated.
 
     \sa size()
