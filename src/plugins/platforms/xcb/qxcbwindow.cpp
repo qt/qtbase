@@ -1687,9 +1687,9 @@ void QXcbWindow::handleConfigureNotifyEvent(const xcb_configure_notify_event_t *
     QPlatformWindow::setGeometry(rect);
     QWindowSystemInterface::handleGeometryChange(window(), rect);
 
-    if (!m_screen->availableGeometry().intersects(rect)) {
+    if (!m_screen->geometry().intersects(rect)) {
         Q_FOREACH (QPlatformScreen* screen, m_screen->virtualSiblings()) {
-            if (screen->availableGeometry().intersects(rect)) {
+            if (screen->geometry().intersects(rect)) {
                 m_screen = static_cast<QXcbScreen*>(screen);
                 QWindowSystemInterface::handleWindowScreenChanged(window(), m_screen->QPlatformScreen::screen());
                 break;
