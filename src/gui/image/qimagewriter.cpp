@@ -434,13 +434,16 @@ QString QImageWriter::fileName() const
 }
 
 /*!
-    This is an image format specific function that sets the quality
-    level of the image to \a quality. For image formats that do not
-    support setting the quality, this value is ignored.
+    Sets the quality setting of the image format to \a quality.
 
-    The value range of \a quality depends on the image format. For
-    example, the "jpeg" format supports a quality range from 0 (low
-    quality, high compression) to 100 (high quality, low compression).
+    Some image formats, in particular lossy ones, entail a tradeoff between a)
+    visual quality of the resulting image, and b) encoding execution time and
+    compression level. This function sets the level of that tradeoff for image
+    formats that support it. For other formats, this value is ignored.
+
+    The value range of \a quality depends on the image format. For example,
+    the "jpeg" format supports a quality range from 0 (low visual quality, high
+    compression) to 100 (high visual quality, low compression).
 
     \sa quality()
 */
@@ -450,7 +453,7 @@ void QImageWriter::setQuality(int quality)
 }
 
 /*!
-    Returns the quality level of the image.
+    Returns the quality setting of the image format.
 
     \sa setQuality()
 */
