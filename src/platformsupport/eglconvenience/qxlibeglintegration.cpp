@@ -90,15 +90,15 @@ VisualID QXlibEglIntegration::getCompatibleVisualId(Display *display, EGLDisplay
             // configs. In such a case we have to fall back to XGetVisualInfo.
             if (!visualMatchesConfig) {
                 visualId = 0;
-                qCWarning(lcXlibEglDebug,
-                          "EGL suggested using X Visual ID %d (%d %d %d depth %d) for EGL config %d"
-                          "(%d %d %d %d), but this is incompatible",
-                          (int)visualId, visualRedSize, visualGreenSize, visualBlueSize, chosenVisualInfo->depth,
-                          configId, configRedSize, configGreenSize, configBlueSize, configAlphaSize);
+                qCDebug(lcXlibEglDebug,
+                        "EGL suggested using X Visual ID %d (%d %d %d depth %d) for EGL config %d"
+                        "(%d %d %d %d), but this is incompatible",
+                        (int)visualId, visualRedSize, visualGreenSize, visualBlueSize, chosenVisualInfo->depth,
+                        configId, configRedSize, configGreenSize, configBlueSize, configAlphaSize);
             }
         } else {
-            qCWarning(lcXlibEglDebug, "EGL suggested using X Visual ID %d for EGL config %d, but that isn't a valid ID",
-                      (int)visualId, configId);
+            qCDebug(lcXlibEglDebug, "EGL suggested using X Visual ID %d for EGL config %d, but that isn't a valid ID",
+                    (int)visualId, configId);
             visualId = 0;
         }
         XFree(chosenVisualInfo);
