@@ -88,8 +88,9 @@ static NSString *const kSelectorPrefix = @"_qtMenuItem_";
 
 - (id)targetForAction:(SEL)action withSender:(id)sender
 {
+    Q_UNUSED(sender);
     BOOL containsPrefix = ([NSStringFromSelector(action) rangeOfString:kSelectorPrefix].location != NSNotFound);
-    return (containsPrefix && [sender isKindOfClass:[UIMenuController class]]) ? self : 0;
+    return containsPrefix ? self : 0;
 }
 
 - (NSMethodSignature *)methodSignatureForSelector:(SEL)selector
