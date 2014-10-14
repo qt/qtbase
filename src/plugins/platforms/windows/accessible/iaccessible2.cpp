@@ -121,7 +121,7 @@ AccessibleRelation::AccessibleRelation(const QList<QAccessibleInterface *> &targ
 HRESULT STDMETHODCALLTYPE AccessibleRelation::QueryInterface(REFIID id, LPVOID *iface)
 {
     *iface = 0;
-    if (id == IID_IUnknown)
+    if (id == IID_IUnknown || id == IID_IAccessibleRelation)
         *iface = (IUnknown*)this;
 
     if (*iface) {
