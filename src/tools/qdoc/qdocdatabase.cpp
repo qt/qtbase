@@ -1253,11 +1253,11 @@ void QDocDatabase::findAllSince(InnerNode* node)
                     nsmap.value().insert(name,(*child));
                 }
             }
-            // Recursively find child nodes with since commands.
-            if ((*child)->isInnerNode()) {
-                findAllSince(static_cast<InnerNode *>(*child));
-            }
         }
+        // Recursively find child nodes with since commands.
+        if ((*child)->isInnerNode())
+            findAllSince(static_cast<InnerNode *>(*child));
+
         ++child;
     }
 }
