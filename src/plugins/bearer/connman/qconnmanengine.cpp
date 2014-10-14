@@ -442,7 +442,7 @@ QNetworkConfiguration::BearerType QConnmanEngine::ofonoTechToBearerType(const QS
         } else if (currentTechnology == QLatin1String("hspa")) {
             return QNetworkConfiguration::BearerHSPA;
         } else if (currentTechnology == QLatin1String("lte")) {
-            return QNetworkConfiguration::BearerWiMAX; //not exact
+            return QNetworkConfiguration::BearerLTE;
         }
     }
     return QNetworkConfiguration::BearerUnknown;
