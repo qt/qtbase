@@ -340,11 +340,16 @@
     QWindowSystemInterface::flushWindowSystemEvents();
 }
 
-- (id)targetForAction:(SEL)action withSender:(id)sender
+- (BOOL)canPerformAction:(SEL)action withSender:(id)sender
 {
     // Check first if QIOSMenu should handle the action before continuing up the responder chain
-    id target = [QIOSMenu::menuActionTarget() targetForAction:action withSender:sender];
-    return target ? target : [super targetForAction:action withSender:sender];
+    return [QIOSMenu::menuActionTarget() targetForAction:action withSender:sender] != 0;
+}
+
+- (id)forwardingTargetForSelector:(SEL)selector
+{
+    Q_UNUSED(selector)
+    return QIOSMenu::menuActionTarget();
 }
 
 @end
