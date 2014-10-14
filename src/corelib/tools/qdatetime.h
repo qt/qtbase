@@ -58,6 +58,8 @@ public:
         DateFormat = 0,
         StandaloneFormat
     };
+private:
+    QDate(qint64 julianDay) : jd(julianDay) {}
 public:
     QDate() { jd = nullJd(); }
     QDate(int y, int m, int d);
@@ -114,7 +116,7 @@ QT_DEPRECATED inline bool setYMD(int y, int m, int d)
     static bool isLeapYear(int year);
 
     static inline QDate fromJulianDay(qint64 jd)
-    { QDate d; if (jd >= minJd() && jd <= maxJd()) d.jd = jd; return d; }
+    { return jd >= minJd() && jd <= maxJd() ? QDate(jd) : QDate() ; }
     inline qint64 toJulianDay() const { return jd; }
 
 private:
@@ -136,6 +138,11 @@ Q_DECLARE_TYPEINFO(QDate, Q_MOVABLE_TYPE);
 
 class Q_CORE_EXPORT QTime
 {
+    QTime(int ms) : mds(ms)
+#if defined(Q_OS_WINCE)
+        , startTick(NullTime)
+#endif
+    {}
 public:
     QTime(): mds(NullTime)
 #if defined(Q_OS_WINCE)
@@ -169,7 +176,7 @@ public:
     bool operator>(const QTime &other) const { return mds > other.mds; }
     bool operator>=(const QTime &other) const { return mds >= other.mds; }
 
-    static inline QTime fromMSecsSinceStartOfDay(int msecs) { QTime t; t.mds = msecs; return t; }
+    static inline QTime fromMSecsSinceStartOfDay(int msecs) { return QTime(msecs); }
     inline int msecsSinceStartOfDay() const { return mds == NullTime ? 0 : mds; }
 
     static QTime currentTime();
