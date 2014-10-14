@@ -45,6 +45,7 @@
 #include <QtGui/private/qguiapplication_p.h>
 #include <QtGui/private/qopenglextensions_p.h>
 #include <QtGui/private/qfont_p.h>
+#include <QtGui/private/qopenglpaintdevice_p.h>
 #include <QtWidgets/private/qwidget_p.h>
 
 QT_BEGIN_NAMESPACE
@@ -454,15 +455,24 @@ QT_BEGIN_NAMESPACE
     due to resizing the widget.
 */
 
+class QOpenGLWidgetPaintDevicePrivate : public QOpenGLPaintDevicePrivate
+{
+public:
+    QOpenGLWidgetPaintDevicePrivate(QOpenGLWidget *widget)
+        : QOpenGLPaintDevicePrivate(QSize()),
+          w(widget) { }
+
+    void beginPaint() Q_DECL_OVERRIDE;
+
+    QOpenGLWidget *w;
+};
+
 class QOpenGLWidgetPaintDevice : public QOpenGLPaintDevice
 {
 public:
-    QOpenGLWidgetPaintDevice(QOpenGLWidget *widget) : w(widget) { }
-    void beginPaint() Q_DECL_OVERRIDE;
+    QOpenGLWidgetPaintDevice(QOpenGLWidget *widget)
+        : QOpenGLPaintDevice(new QOpenGLWidgetPaintDevicePrivate(widget)) { }
     void ensureActiveTarget() Q_DECL_OVERRIDE;
-
-private:
-    QOpenGLWidget *w;
 };
 
 class QOpenGLWidgetPrivate : public QWidgetPrivate
@@ -518,7 +528,7 @@ public:
     bool flushPending;
 };
 
-void QOpenGLWidgetPaintDevice::beginPaint()
+void QOpenGLWidgetPaintDevicePrivate::beginPaint()
 {
     // NB! autoFillBackground is and must be false by default. Otherwise we would clear on
     // every QPainter begin() which is not desirable. This is only for legacy use cases,
@@ -539,19 +549,20 @@ void QOpenGLWidgetPaintDevice::beginPaint()
 
 void QOpenGLWidgetPaintDevice::ensureActiveTarget()
 {
-    QOpenGLWidgetPrivate *d = static_cast<QOpenGLWidgetPrivate *>(QWidgetPrivate::get(w));
-    if (!d->initialized)
+    QOpenGLWidgetPaintDevicePrivate *d = static_cast<QOpenGLWidgetPaintDevicePrivate *>(d_ptr.data());
+    QOpenGLWidgetPrivate *wd = static_cast<QOpenGLWidgetPrivate *>(QWidgetPrivate::get(d->w));
+    if (!wd->initialized)
         return;
 
-    if (QOpenGLContext::currentContext() != d->context)
-        w->makeCurrent();
+    if (QOpenGLContext::currentContext() != wd->context)
+        d->w->makeCurrent();
     else
-        d->fbo->bind();
+        wd->fbo->bind();
 
     // When used as a viewport, drawing is done via opening a QPainter on the widget
     // without going through paintEvent(). We will have to make sure a glFlush() is done
     // before the texture is accessed also in this case.
-    d->flushPending = true;
+    wd->flushPending = true;
 }
 
 GLuint QOpenGLWidgetPrivate::textureId() const

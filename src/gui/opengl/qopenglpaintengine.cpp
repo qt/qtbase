@@ -59,6 +59,7 @@
 #include "qopenglgradientcache_p.h"
 #include "qopengltexturecache_p.h"
 #include "qopenglpaintengine_p.h"
+#include "qopenglpaintdevice_p.h"
 
 #include <string.h> //for memcpy
 #include <qmath.h>
@@ -1994,7 +1995,7 @@ bool QOpenGL2PaintEngineEx::begin(QPaintDevice *pdev)
     d->ctx = QOpenGLContext::currentContext();
     d->ctx->d_func()->active_engine = this;
 
-    d->device->beginPaint();
+    QOpenGLPaintDevicePrivate::get(d->device)->beginPaint();
 
     d->funcs.initializeOpenGLFunctions();
 
@@ -2046,7 +2047,7 @@ bool QOpenGL2PaintEngineEx::end()
 {
     Q_D(QOpenGL2PaintEngineEx);
 
-    d->device->endPaint();
+    QOpenGLPaintDevicePrivate::get(d->device)->endPaint();
 
     QOpenGLContext *ctx = d->ctx;
     d->funcs.glUseProgram(0);
