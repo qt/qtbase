@@ -814,22 +814,26 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
             }
             commonSedArgs << "-e \"s,@TYPEINFO@,"<< (project->isEmpty("QMAKE_PKGINFO_TYPEINFO") ?
                        QString::fromLatin1("????") : project->first("QMAKE_PKGINFO_TYPEINFO").left(4)) << ",g\" ";
+
+            QString bundlePrefix = project->first("QMAKE_TARGET_BUNDLE_PREFIX").toQString();
+            if (bundlePrefix.isEmpty())
+                bundlePrefix = "com.yourcompany";
+            if (bundlePrefix.endsWith("."))
+                bundlePrefix.chop(1);
+            QString bundleIdentifier =  bundlePrefix + "." + var("QMAKE_BUNDLE");
+            if (bundleIdentifier.endsWith(".app"))
+                bundleIdentifier.chop(4);
+            if (bundleIdentifier.endsWith(".framework"))
+                bundleIdentifier.chop(10);
+            commonSedArgs << "-e \"s,@BUNDLEIDENTIFIER@," << bundleIdentifier << ",g\" ";
+
             if (isApp) {
                 QString icon = fileFixify(var("ICON"));
-                QString bundlePrefix = project->first("QMAKE_TARGET_BUNDLE_PREFIX").toQString();
-                if (bundlePrefix.isEmpty())
-                    bundlePrefix = "com.yourcompany";
-                if (bundlePrefix.endsWith("."))
-                    bundlePrefix.chop(1);
-                QString bundleIdentifier =  bundlePrefix + "." + var("QMAKE_BUNDLE");
-                if (bundleIdentifier.endsWith(".app"))
-                    bundleIdentifier.chop(4);
                 t << "@$(DEL_FILE) " << info_plist_out << "\n\t"
                   << "@sed ";
                 foreach (const ProString &arg, commonSedArgs)
                     t << arg;
                 t << "-e \"s,@ICON@," << icon.section(Option::dir_sep, -1) << ",g\" "
-                  << "-e \"s,@BUNDLEIDENTIFIER@," << bundleIdentifier << ",g\" "
                   << "-e \"s,@EXECUTABLE@," << var("QMAKE_ORIG_TARGET") << ",g\" "
                   << "-e \"s,@TYPEINFO@,"<< (project->isEmpty("QMAKE_PKGINFO_TYPEINFO") ?
                              QString::fromLatin1("????") : project->first("QMAKE_PKGINFO_TYPEINFO").left(4)) << ",g\" "
