@@ -1956,11 +1956,13 @@ bool VCXProjectWriter::outputFileConfig(OutputFilterData *d, XmlOutput &xml, Xml
             }
 
             if ( !filter.CompilerTool.PrecompiledHeaderThrough.isEmpty() ) {
-
                 xml << tag("PrecompiledHeaderFile")
                     << attrTag("Condition", condition)
-                    << valueTag(filter.CompilerTool.PrecompiledHeaderThrough)
-                    << tag("PrecompiledHeader")
+                    << valueTag(filter.CompilerTool.PrecompiledHeaderThrough);
+            }
+
+            if (filter.CompilerTool.UsePrecompiledHeader != pchUnset) {
+                xml << tag("PrecompiledHeader")
                     << attrTag("Condition", condition)
                     << valueTag(toString(filter.CompilerTool.UsePrecompiledHeader));
             }
