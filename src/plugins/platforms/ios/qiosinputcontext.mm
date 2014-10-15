@@ -399,6 +399,8 @@ void QIOSInputContext::scroll(int y)
             animation.toValue = [NSValue valueWithCATransform3D:translationTransform];
             [rootView.layer addAnimation:animation forKey:@"AnimateSubLayerTransform"];
             rootView.layer.sublayerTransform = translationTransform;
+
+            [rootView.qtViewController updateProperties];
         }
         completion:^(BOOL){
             if (self)
