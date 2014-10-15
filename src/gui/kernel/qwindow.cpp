@@ -2299,7 +2299,7 @@ QWindow *QWindow::fromWinId(WId id)
 /*!
     Causes an alert to be shown for \a msec miliseconds. If \a msec is \c 0 (the
     default), then the alert is shown indefinitely until the window becomes
-    active again.
+    active again. This function has no effect on an active window.
 
     In alert state, the window indicates that it demands attention, for example by
     flashing or bouncing the taskbar entry.
@@ -2310,7 +2310,7 @@ QWindow *QWindow::fromWinId(WId id)
 void QWindow::alert(int msec)
 {
     Q_D(QWindow);
-    if (!d->platformWindow || d->platformWindow->isAlertState())
+    if (!d->platformWindow || d->platformWindow->isAlertState() || isActive())
         return;
     d->platformWindow->setAlertState(true);
     if (d->platformWindow->isAlertState() && msec)
