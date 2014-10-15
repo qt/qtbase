@@ -66,6 +66,8 @@ public:
 
     void raise() { raiseOrLower(true); }
     void lower() { raiseOrLower(false); }
+
+    bool shouldAutoActivateWindow() const;
     void requestActivateWindow();
 
     qreal devicePixelRatio() const;

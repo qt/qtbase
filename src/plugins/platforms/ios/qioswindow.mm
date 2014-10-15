@@ -117,22 +117,37 @@ void QIOSWindow::setVisible(bool visible)
         return;
     }
 
-    if (visible) {
+    if (visible && shouldAutoActivateWindow()) {
         requestActivateWindow();
-    } else {
-        // Activate top-most visible QWindow:
+    } else if (!visible && qGuiApp->focusWindow() == window()) {
+        // Our window was active/focus window but now hidden, so relinquish
+        // focus to the next possible window in the stack.
         NSArray *subviews = m_view.viewController.view.subviews;
         for (int i = int(subviews.count) - 1; i >= 0; --i) {
             UIView *view = [subviews objectAtIndex:i];
-            if (!view.hidden) {
-                QWindow *w = view.qwindow;
-                if (w && w->isTopLevel()) {
-                    static_cast<QIOSWindow *>(w->handle())->requestActivateWindow();
-                    break;
-                }
-            }
+            if (view.hidden)
+                continue;
+
+            QWindow *w = view.qwindow;
+            if (!w || !w->isTopLevel())
+                continue;
+
+            QIOSWindow *iosWindow = static_cast<QIOSWindow *>(w->handle());
+            if (!iosWindow->shouldAutoActivateWindow())
+                continue;
+
+            iosWindow->requestActivateWindow();
+            break;
         }
     }
+}
+
+bool QIOSWindow::shouldAutoActivateWindow() const
+{
+    // We don't want to do automatic window activation for popup windows
+    // (including Tool, ToolTip and SplashScreen windows), unless they
+    // are standalone (no parent/transient parent), and hence not active.
+    return !(window()->type() & Qt::Popup) || !window()->isActive();
 }
 
 void QIOSWindow::setOpacity(qreal level)

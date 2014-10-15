@@ -271,7 +271,7 @@
         m_activeTouches[touch].id = m_nextTouchId++;
     }
 
-    if (m_activeTouches.size() == 1) {
+    if (m_qioswindow->shouldAutoActivateWindow() && m_activeTouches.size() == 1) {
         QPlatformWindow *topLevel = m_qioswindow;
         while (QPlatformWindow *p = topLevel->parent())
             topLevel = p;
