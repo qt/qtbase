@@ -159,15 +159,15 @@ void QPepperInstance::DidChangeView(const View &view)
     m_currentGeometry = geometry;
     m_currentDevicePixelRatio = view.GetDeviceScale();
 
-    if (m_pepperIntegraton)
-        m_pepperIntegraton->resizeScreen(toQSize(m_currentGeometry.size()), m_currentDevicePixelRatio);
-
     // Start Qt on the first DidChangeView. This means we have a "screen" while
     // the application creates the root window etc, which makes life easier.
     if (!m_qtStarted) {
         startQt();
         m_qtStarted = true;
+    }  else {
+        m_pepperIntegraton->resizeScreen(toQSize(m_currentGeometry.size()), m_currentDevicePixelRatio);
     }
+
     m_pepperIntegraton->processEvents();
 }
 

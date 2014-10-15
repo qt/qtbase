@@ -216,7 +216,8 @@ bool QPepperIntegration::wantsOpenGLGraphics() const
 void QPepperIntegration::resizeScreen(QSize size, qreal devicePixelRatio)
 {
     // Set the frame buffer on the compositor
-    m_compositor->beginResize(size, devicePixelRatio);
+    if (m_compositor)
+        m_compositor->beginResize(size, devicePixelRatio);
 
     // Send the screen geometry change to Qt, resize windows.
     QRect screenRect(QPoint(0, 0), size);
@@ -231,7 +232,8 @@ void QPepperIntegration::resizeScreen(QSize size, qreal devicePixelRatio)
         m_pepperEventDispatcher->processEvents();
 
     // End resize and composit.
-    m_compositor->endResize();
+    if (m_compositor)
+        m_compositor->endResize();
 }
 
 void QPepperIntegration::getWindowAt(const QPoint & point, QWindow **window)
