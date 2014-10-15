@@ -53,6 +53,7 @@ void MainWindow::toggleVisible()
         m_window->setTransientParent(windowHandle());
         m_window->setMinimumSize(QSize(200, 100));
         m_window->setTitle("Transient Window");
+        m_window->setFlags(Qt::Dialog);
     }
     m_window->setVisible(!m_window->isVisible());
 }
