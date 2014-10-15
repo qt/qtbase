@@ -58,6 +58,8 @@
 #include "qsslcipher_p.h"
 #include "qsslkey_p.h"
 #include "qsslellipticcurve.h"
+#include "qsslpresharedkeyauthenticator.h"
+#include "qsslpresharedkeyauthenticator_p.h"
 
 #include <QtCore/qdatetime.h>
 #include <QtCore/qdebug.h>
@@ -71,6 +73,8 @@
 #include <QtCore/qurl.h>
 #include <QtCore/qvarlengtharray.h>
 #include <QLibrary> // for loading the security lib for the CA store
+
+#include <string.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -88,6 +92,10 @@ QT_BEGIN_NAMESPACE
 bool QSslSocketPrivate::s_libraryLoaded = false;
 bool QSslSocketPrivate::s_loadedCiphersAndCerts = false;
 bool QSslSocketPrivate::s_loadRootCertsOnDemand = false;
+
+#if OPENSSL_VERSION_NUMBER >= 0x10001000L
+int QSslSocketBackendPrivate::s_indexForSSLExtraData = -1;
+#endif
 
 /* \internal
 
@@ -181,6 +189,18 @@ static unsigned long id_function()
 {
     return (quintptr)QThread::currentThreadId();
 }
+
+#if OPENSSL_VERSION_NUMBER >= 0x10001000L && !defined(OPENSSL_NO_PSK)
+static unsigned int q_ssl_psk_client_callback(SSL *ssl,
+                                              const char *hint,
+                                              char *identity, unsigned int max_identity_len,
+                                              unsigned char *psk, unsigned int max_psk_len)
+{
+    QSslSocketBackendPrivate *d = reinterpret_cast<QSslSocketBackendPrivate *>(q_SSL_get_ex_data(ssl, QSslSocketBackendPrivate::s_indexForSSLExtraData));
+    Q_ASSERT(d);
+    return d->tlsPskClientCallback(hint, identity, max_identity_len, psk, max_psk_len);
+}
+#endif
 } // extern "C"
 
 QSslSocketBackendPrivate::QSslSocketBackendPrivate()
@@ -390,6 +410,18 @@ bool QSslSocketBackendPrivate::initSslContext()
     else
         q_SSL_set_accept_state(ssl);
 
+#if OPENSSL_VERSION_NUMBER >= 0x10001000L
+    // Save a pointer to this object into the SSL structure.
+    if (q_SSLeay() >= 0x10001000L)
+        q_SSL_set_ex_data(ssl, s_indexForSSLExtraData, this);
+#endif
+
+#if OPENSSL_VERSION_NUMBER >= 0x10001000L && !defined(OPENSSL_NO_PSK)
+    // Set the client callback for PSK
+    if (q_SSLeay() >= 0x10001000L && mode == QSslSocket::SslClientMode)
+        q_SSL_set_psk_client_callback(ssl, &q_ssl_psk_client_callback);
+#endif
+
     return true;
 }
 
@@ -442,6 +474,11 @@ bool QSslSocketPrivate::ensureLibraryLoaded()
             return false;
         q_SSL_load_error_strings();
         q_OpenSSL_add_all_algorithms();
+
+#if OPENSSL_VERSION_NUMBER >= 0x10001000L
+        if (q_SSLeay() >= 0x10001000L)
+            QSslSocketBackendPrivate::s_indexForSSLExtraData = q_SSL_get_ex_new_index(0L, NULL, NULL, NULL, NULL);
+#endif
 
         // Initialize OpenSSL's random seed.
         if (!q_RAND_status()) {
@@ -1260,6 +1297,37 @@ bool QSslSocketBackendPrivate::checkSslErrors()
         return false;
     }
     return true;
+}
+
+unsigned int QSslSocketBackendPrivate::tlsPskClientCallback(const char *hint,
+                                                            char *identity, unsigned int max_identity_len,
+                                                            unsigned char *psk, unsigned int max_psk_len)
+{
+    QSslPreSharedKeyAuthenticator authenticator;
+
+    // Fill in some read-only fields (for the user)
+    if (hint)
+        authenticator.d->identityHint = QByteArray::fromRawData(hint, int(::strlen(hint))); // it's NUL terminated, but do not include the NUL
+
+    authenticator.d->maximumIdentityLength = int(max_identity_len) - 1; // needs to be NUL terminated
+    authenticator.d->maximumPreSharedKeyLength = int(max_psk_len);
+
+    // Let the client provide the remaining bits...
+    Q_Q(QSslSocket);
+    emit q->preSharedKeyAuthenticationRequired(&authenticator);
+
+    // No PSK set? Return now to make the handshake fail
+    if (authenticator.preSharedKey().isEmpty())
+        return 0;
+
+    // Copy data back into OpenSSL
+    const int identityLength = qMin(authenticator.identity().length(), authenticator.maximumIdentityLength());
+    ::memcpy(identity, authenticator.identity().constData(), identityLength);
+    identity[identityLength] = 0;
+
+    const int pskLength = qMin(authenticator.preSharedKey().length(), authenticator.maximumPreSharedKeyLength());
+    ::memcpy(psk, authenticator.preSharedKey().constData(), pskLength);
+    return pskLength;
 }
 
 #ifdef Q_OS_WIN

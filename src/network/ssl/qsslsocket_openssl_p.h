@@ -114,6 +114,9 @@ public:
     BIO *writeBio;
     SSL_SESSION *session;
     QList<QPair<int, int> > errorList;
+#if OPENSSL_VERSION_NUMBER >= 0x10001000L
+    static int s_indexForSSLExtraData; // index used in SSL_get_ex_data to get the matching QSslSocketBackendPrivate
+#endif
 
     // Platform specific functions
     void startClientEncryption() Q_DECL_OVERRIDE;
@@ -126,6 +129,7 @@ public:
     QSsl::SslProtocol sessionProtocol() const Q_DECL_OVERRIDE;
     void continueHandshake() Q_DECL_OVERRIDE;
     bool checkSslErrors();
+    unsigned int tlsPskClientCallback(const char *hint, char *identity, unsigned int max_identity_len, unsigned char *psk, unsigned int max_psk_len);
 #ifdef Q_OS_WIN
     void fetchCaRootForCert(const QSslCertificate &cert);
     void _q_caRootLoaded(QSslCertificate,QSslCertificate);

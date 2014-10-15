@@ -52,6 +52,7 @@ class QSslCipher;
 class QSslCertificate;
 class QSslConfiguration;
 class QSslEllipticCurve;
+class QSslPreSharedKeyAuthenticator;
 
 class QSslSocketPrivate;
 class Q_NETWORK_EXPORT QSslSocket : public QTcpSocket
@@ -199,6 +200,7 @@ Q_SIGNALS:
     void sslErrors(const QList<QSslError> &errors);
     void modeChanged(QSslSocket::SslMode newMode);
     void encryptedBytesWritten(qint64 totalBytes);
+    void preSharedKeyAuthenticationRequired(QSslPreSharedKeyAuthenticator *authenticator);
 
 protected:
     qint64 readData(char *data, qint64 maxlen) Q_DECL_OVERRIDE;

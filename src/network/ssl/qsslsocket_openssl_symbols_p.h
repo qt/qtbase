@@ -374,6 +374,15 @@ int q_SSL_set_session(SSL *to, SSL_SESSION *session);
 void q_SSL_SESSION_free(SSL_SESSION *ses);
 SSL_SESSION *q_SSL_get1_session(SSL *ssl);
 SSL_SESSION *q_SSL_get_session(const SSL *ssl);
+#if OPENSSL_VERSION_NUMBER >= 0x10001000L
+int q_SSL_get_ex_new_index(long argl, void *argp, CRYPTO_EX_new *new_func, CRYPTO_EX_dup *dup_func, CRYPTO_EX_free *free_func);
+int q_SSL_set_ex_data(SSL *ssl, int idx, void *arg);
+void *q_SSL_get_ex_data(const SSL *ssl, int idx);
+#endif
+#ifndef OPENSSL_NO_PSK
+typedef unsigned int (*q_psk_client_callback_t)(SSL *ssl, const char *hint, char *identity, unsigned int max_identity_len, unsigned char *psk, unsigned int max_psk_len);
+void q_SSL_set_psk_client_callback(SSL *ssl, q_psk_client_callback_t callback);
+#endif // OPENSSL_NO_PSK
 #if OPENSSL_VERSION_NUMBER >= 0x10000000L
 const SSL_METHOD *q_SSLv2_client_method();
 const SSL_METHOD *q_SSLv3_client_method();

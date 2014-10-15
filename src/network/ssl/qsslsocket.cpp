@@ -281,6 +281,28 @@
     \sa peerVerifyError()
 */
 
+/*!
+    \fn void QSslSocket::preSharedKeyAuthenticationRequired(QSslPreSharedKeyAuthenticator *authenticator)
+    \since 5.5
+
+    QSslSocket emits this signal when it negotiates a PSK ciphersuite, and
+    therefore a PSK authentication is then required.
+
+    When using PSK, the client must send to the server a valid identity and a
+    valid pre shared key, in order for the SSL handshake to continue.
+    Applications can provide this information in a slot connected to this
+    signal, by filling in the passed \a authenticator object according to their
+    needs.
+
+    \note Ignoring this signal, or failing to provide the required credentials,
+    will cause the handshake to fail, and therefore the connection to be aborted.
+
+    \note The \a authenticator object is owned by the socket and must not be
+    deleted by the application.
+
+    \sa QSslPreSharedKeyAuthenticator
+*/
+
 #include "qssl_p.h"
 #include "qsslsocket.h"
 #include "qsslcipher.h"

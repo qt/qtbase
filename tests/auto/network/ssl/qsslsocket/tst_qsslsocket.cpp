@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Governikus GmbH & Co. KG.
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -41,6 +42,7 @@
 #include <QtNetwork/qsslkey.h>
 #include <QtNetwork/qsslsocket.h>
 #include <QtNetwork/qtcpserver.h>
+#include <QtNetwork/qsslpresharedkeyauthenticator.h>
 #include <QtTest/QtTest>
 
 #include <QNetworkProxy>
@@ -81,6 +83,15 @@ typedef QSharedPointer<QSslSocket> QSslSocketPtr;
 #define QSSLSOCKET_CERTUNTRUSTED_WORKAROUND
 #endif
 
+// Use this cipher to force PSK key sharing.
+// Also, it's a cipher w/o auth, to check that we emit the signals warning
+// about the identity of the peer.
+static const QString PSK_CIPHER_WITHOUT_AUTH = QStringLiteral("PSK-AES256-CBC-SHA");
+static const quint16 PSK_SERVER_PORT = 4433;
+static const QByteArray PSK_CLIENT_PRESHAREDKEY = QByteArrayLiteral("\x1a\x2b\x3c\x4d\x5e\x6f");
+static const QByteArray PSK_SERVER_IDENTITY_HINT = QByteArrayLiteral("QtTestServerHint");
+static const QByteArray PSK_CLIENT_IDENTITY = QByteArrayLiteral("Client_identity");
+
 class tst_QSslSocket : public QObject
 {
     Q_OBJECT
@@ -104,6 +115,19 @@ public:
 
 #ifndef QT_NO_SSL
     QSslSocketPtr newSocket();
+
+#ifndef QT_NO_OPENSSL
+    enum PskConnectTestType {
+        PskConnectDoNotHandlePsk,
+        PskConnectEmptyCredentials,
+        PskConnectWrongCredentials,
+        PskConnectWrongIdentity,
+        PskConnectWrongPreSharedKey,
+        PskConnectRightCredentialsPeerVerifyFailure,
+        PskConnectRightCredentialsVerifyPeer,
+        PskConnectRightCredentialsDoNotVerifyPeer,
+    };
+#endif
 #endif
 
 public slots:
@@ -199,6 +223,11 @@ private slots:
     void ecdhServer();
     void setEmptyDefaultConfiguration(); // this test should be last
 
+#ifndef QT_NO_OPENSSL
+    void simplePskConnect_data();
+    void simplePskConnect();
+#endif
+
     static void exitLoop()
     {
         // Safe exit - if we aren't in an event loop, don't
@@ -231,6 +260,12 @@ private:
     static int loopLevel;
 };
 
+#ifndef QT_NO_SSL
+#ifndef QT_NO_OPENSSL
+Q_DECLARE_METATYPE(tst_QSslSocket::PskConnectTestType)
+#endif
+#endif
+
 int tst_QSslSocket::loopLevel = 0;
 
 tst_QSslSocket::tst_QSslSocket()
@@ -240,6 +275,11 @@ tst_QSslSocket::tst_QSslSocket()
     qRegisterMetaType<QSslError>("QSslError");
     qRegisterMetaType<QAbstractSocket::SocketState>("QAbstractSocket::SocketState");
     qRegisterMetaType<QAbstractSocket::SocketError>("QAbstractSocket::SocketError");
+
+#ifndef QT_NO_OPENSSL
+    qRegisterMetaType<QSslPreSharedKeyAuthenticator *>();
+    qRegisterMetaType<tst_QSslSocket::PskConnectTestType>();
+#endif
 #endif
 }
 
@@ -2761,6 +2801,320 @@ void tst_QSslSocket::setEmptyDefaultConfiguration() // this test should be last,
     if (setProxy && socket->waitForEncrypted(4000))
         QSKIP("Skipping flaky test - See QTBUG-29941");
 }
+
+#ifndef QT_NO_OPENSSL
+class PskProvider : public QObject
+{
+    Q_OBJECT
+
+public:
+    explicit PskProvider(QObject *parent = 0)
+        : QObject(parent)
+    {
+    }
+
+    void setIdentity(const QByteArray &identity)
+    {
+        m_identity = identity;
+    }
+
+    void setPreSharedKey(const QByteArray &psk)
+    {
+        m_psk = psk;
+    }
+
+public slots:
+    void providePsk(QSslPreSharedKeyAuthenticator *authenticator)
+    {
+        QVERIFY(authenticator);
+        QCOMPARE(authenticator->identityHint(), PSK_SERVER_IDENTITY_HINT);
+        QVERIFY(authenticator->maximumIdentityLength() > 0);
+        QVERIFY(authenticator->maximumPreSharedKeyLength() > 0);
+
+        if (!m_identity.isEmpty()) {
+            authenticator->setIdentity(m_identity);
+            QCOMPARE(authenticator->identity(), m_identity);
+        }
+
+        if (!m_psk.isEmpty()) {
+            authenticator->setPreSharedKey(m_psk);
+            QCOMPARE(authenticator->preSharedKey(), m_psk);
+        }
+    }
+
+private:
+    QByteArray m_identity;
+    QByteArray m_psk;
+};
+
+void tst_QSslSocket::simplePskConnect_data()
+{
+    QTest::addColumn<PskConnectTestType>("pskTestType");
+    QTest::newRow("PskConnectDoNotHandlePsk") << PskConnectDoNotHandlePsk;
+    QTest::newRow("PskConnectEmptyCredentials") << PskConnectEmptyCredentials;
+    QTest::newRow("PskConnectWrongCredentials") << PskConnectWrongCredentials;
+    QTest::newRow("PskConnectWrongIdentity") << PskConnectWrongIdentity;
+    QTest::newRow("PskConnectWrongPreSharedKey") << PskConnectWrongPreSharedKey;
+    QTest::newRow("PskConnectRightCredentialsPeerVerifyFailure") << PskConnectRightCredentialsPeerVerifyFailure;
+    QTest::newRow("PskConnectRightCredentialsVerifyPeer") << PskConnectRightCredentialsVerifyPeer;
+    QTest::newRow("PskConnectRightCredentialsDoNotVerifyPeer") << PskConnectRightCredentialsDoNotVerifyPeer;
+}
+
+void tst_QSslSocket::simplePskConnect()
+{
+    QFETCH(PskConnectTestType, pskTestType);
+    QSKIP("This test requires change 1f8cab2c3bcd91335684c95afa95ae71e00a94e4 on the network test server, QTQAINFRA-917");
+
+    if (!QSslSocket::supportsSsl())
+        QSKIP("No SSL support");
+
+    bool pskCipherFound = false;
+    const QList<QSslCipher> supportedCiphers = QSslSocket::supportedCiphers();
+    foreach (const QSslCipher &cipher, supportedCiphers) {
+        if (cipher.name() == PSK_CIPHER_WITHOUT_AUTH) {
+            pskCipherFound = true;
+            break;
+        }
+    }
+
+    if (!pskCipherFound)
+        QSKIP("SSL implementation does not support the necessary PSK cipher(s)");
+
+    QFETCH_GLOBAL(bool, setProxy);
+    if (setProxy)
+        QSKIP("This test must not be going through a proxy");
+
+    QSslSocket socket;
+    this->socket = &socket;
+
+    QSignalSpy connectedSpy(&socket, SIGNAL(connected()));
+    QVERIFY(connectedSpy.isValid());
+
+    QSignalSpy hostFoundSpy(&socket, SIGNAL(hostFound()));
+    QVERIFY(hostFoundSpy.isValid());
+
+    QSignalSpy disconnectedSpy(&socket, SIGNAL(disconnected()));
+    QVERIFY(disconnectedSpy.isValid());
+
+    QSignalSpy connectionEncryptedSpy(&socket, SIGNAL(encrypted()));
+    QVERIFY(connectionEncryptedSpy.isValid());
+
+    QSignalSpy sslErrorsSpy(&socket, SIGNAL(sslErrors(QList<QSslError>)));
+    QVERIFY(sslErrorsSpy.isValid());
+
+    QSignalSpy socketErrorsSpy(&socket, SIGNAL(error(QAbstractSocket::SocketError)));
+    QVERIFY(socketErrorsSpy.isValid());
+
+    QSignalSpy peerVerifyErrorSpy(&socket, SIGNAL(peerVerifyError(QSslError)));
+    QVERIFY(peerVerifyErrorSpy.isValid());
+
+    QSignalSpy pskAuthenticationRequiredSpy(&socket, SIGNAL(preSharedKeyAuthenticationRequired(QSslPreSharedKeyAuthenticator*)));
+    QVERIFY(pskAuthenticationRequiredSpy.isValid());
+
+    connect(&socket, SIGNAL(connected()), this, SLOT(exitLoop()));
+    connect(&socket, SIGNAL(disconnected()), this, SLOT(exitLoop()));
+    connect(&socket, SIGNAL(modeChanged(QSslSocket::SslMode)), this, SLOT(exitLoop()));
+    connect(&socket, SIGNAL(encrypted()), this, SLOT(exitLoop()));
+    connect(&socket, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(exitLoop()));
+    connect(&socket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(exitLoop()));
+    connect(&socket, SIGNAL(peerVerifyError(QSslError)), this, SLOT(exitLoop()));
+    connect(&socket, SIGNAL(stateChanged(QAbstractSocket::SocketState)), this, SLOT(exitLoop()));
+
+    // force a PSK cipher w/o auth
+    socket.setCiphers(PSK_CIPHER_WITHOUT_AUTH);
+
+    PskProvider provider;
+
+    switch (pskTestType) {
+    case PskConnectDoNotHandlePsk:
+        // don't connect to the provider
+        break;
+
+    case PskConnectEmptyCredentials:
+        // connect to the psk provider, but don't actually provide any PSK nor identity
+        connect(&socket, SIGNAL(preSharedKeyAuthenticationRequired(QSslPreSharedKeyAuthenticator*)), &provider, SLOT(providePsk(QSslPreSharedKeyAuthenticator*)));
+        break;
+
+    case PskConnectWrongCredentials:
+        // provide totally wrong credentials
+        provider.setIdentity(PSK_CLIENT_IDENTITY.left(PSK_CLIENT_IDENTITY.length() - 1));
+        provider.setPreSharedKey(PSK_CLIENT_PRESHAREDKEY.left(PSK_CLIENT_PRESHAREDKEY.length() - 1));
+        connect(&socket, SIGNAL(preSharedKeyAuthenticationRequired(QSslPreSharedKeyAuthenticator*)), &provider, SLOT(providePsk(QSslPreSharedKeyAuthenticator*)));
+        break;
+
+    case PskConnectWrongIdentity:
+        // right PSK, wrong identity
+        provider.setIdentity(PSK_CLIENT_IDENTITY.left(PSK_CLIENT_IDENTITY.length() - 1));
+        provider.setPreSharedKey(PSK_CLIENT_PRESHAREDKEY);
+        connect(&socket, SIGNAL(preSharedKeyAuthenticationRequired(QSslPreSharedKeyAuthenticator*)), &provider, SLOT(providePsk(QSslPreSharedKeyAuthenticator*)));
+        break;
+
+    case PskConnectWrongPreSharedKey:
+        // right identity, wrong PSK
+        provider.setIdentity(PSK_CLIENT_IDENTITY);
+        provider.setPreSharedKey(PSK_CLIENT_PRESHAREDKEY.left(PSK_CLIENT_PRESHAREDKEY.length() - 1));
+        connect(&socket, SIGNAL(preSharedKeyAuthenticationRequired(QSslPreSharedKeyAuthenticator*)), &provider, SLOT(providePsk(QSslPreSharedKeyAuthenticator*)));
+        break;
+
+    case PskConnectRightCredentialsPeerVerifyFailure:
+        // right identity, right PSK, but since we can't verify the other peer, we'll fail
+        provider.setIdentity(PSK_CLIENT_IDENTITY);
+        provider.setPreSharedKey(PSK_CLIENT_PRESHAREDKEY);
+        connect(&socket, SIGNAL(preSharedKeyAuthenticationRequired(QSslPreSharedKeyAuthenticator*)), &provider, SLOT(providePsk(QSslPreSharedKeyAuthenticator*)));
+        break;
+
+    case PskConnectRightCredentialsVerifyPeer:
+        // right identity, right PSK, verify the peer (but ignore the failure) and establish the connection
+        provider.setIdentity(PSK_CLIENT_IDENTITY);
+        provider.setPreSharedKey(PSK_CLIENT_PRESHAREDKEY);
+        connect(&socket, SIGNAL(preSharedKeyAuthenticationRequired(QSslPreSharedKeyAuthenticator*)), &provider, SLOT(providePsk(QSslPreSharedKeyAuthenticator*)));
+        connect(&socket, SIGNAL(peerVerifyError(QSslError)), this, SLOT(ignoreErrorSlot()));
+        break;
+
+    case PskConnectRightCredentialsDoNotVerifyPeer:
+        // right identity, right PSK, do not verify the peer and establish the connection
+        provider.setIdentity(PSK_CLIENT_IDENTITY);
+        provider.setPreSharedKey(PSK_CLIENT_PRESHAREDKEY);
+        connect(&socket, SIGNAL(preSharedKeyAuthenticationRequired(QSslPreSharedKeyAuthenticator*)), &provider, SLOT(providePsk(QSslPreSharedKeyAuthenticator*)));
+        socket.setPeerVerifyMode(QSslSocket::VerifyNone);
+        break;
+    }
+
+    // check the peer verification mode
+    switch (pskTestType) {
+    case PskConnectDoNotHandlePsk:
+    case PskConnectEmptyCredentials:
+    case PskConnectWrongCredentials:
+    case PskConnectWrongIdentity:
+    case PskConnectWrongPreSharedKey:
+    case PskConnectRightCredentialsPeerVerifyFailure:
+    case PskConnectRightCredentialsVerifyPeer:
+        QCOMPARE(socket.peerVerifyMode(), QSslSocket::AutoVerifyPeer);
+        break;
+
+    case PskConnectRightCredentialsDoNotVerifyPeer:
+        QCOMPARE(socket.peerVerifyMode(), QSslSocket::VerifyNone);
+        break;
+    }
+
+    // Start connecting
+    socket.connectToHost(QtNetworkSettings::serverName(), PSK_SERVER_PORT);
+    QCOMPARE(socket.state(), QAbstractSocket::HostLookupState);
+    enterLoop(10);
+
+    // Entered connecting state
+    QCOMPARE(socket.state(), QAbstractSocket::ConnectingState);
+    QCOMPARE(connectedSpy.count(), 0);
+    QCOMPARE(hostFoundSpy.count(), 1);
+    QCOMPARE(disconnectedSpy.count(), 0);
+    enterLoop(10);
+
+    // Entered connected state
+    QCOMPARE(socket.state(), QAbstractSocket::ConnectedState);
+    QCOMPARE(socket.mode(), QSslSocket::UnencryptedMode);
+    QVERIFY(!socket.isEncrypted());
+    QCOMPARE(connectedSpy.count(), 1);
+    QCOMPARE(hostFoundSpy.count(), 1);
+    QCOMPARE(disconnectedSpy.count(), 0);
+
+    // Enter encrypted mode
+    socket.startClientEncryption();
+    QCOMPARE(socket.mode(), QSslSocket::SslClientMode);
+    QVERIFY(!socket.isEncrypted());
+    QCOMPARE(connectionEncryptedSpy.count(), 0);
+    QCOMPARE(sslErrorsSpy.count(), 0);
+    QCOMPARE(peerVerifyErrorSpy.count(), 0);
+
+    // Start handshake.
+    enterLoop(10);
+
+    // We must get the PSK signal in all cases
+    QCOMPARE(pskAuthenticationRequiredSpy.count(), 1);
+
+    switch (pskTestType) {
+    case PskConnectDoNotHandlePsk:
+    case PskConnectEmptyCredentials:
+    case PskConnectWrongCredentials:
+    case PskConnectWrongIdentity:
+    case PskConnectWrongPreSharedKey:
+        // Handshake failure
+        QCOMPARE(socketErrorsSpy.count(), 1);
+        QCOMPARE(qvariant_cast<QAbstractSocket::SocketError>(socketErrorsSpy.at(0).at(0)), QAbstractSocket::SslHandshakeFailedError);
+        QCOMPARE(sslErrorsSpy.count(), 0);
+        QCOMPARE(peerVerifyErrorSpy.count(), 0);
+        QCOMPARE(connectionEncryptedSpy.count(), 0);
+        QVERIFY(!socket.isEncrypted());
+        break;
+
+    case PskConnectRightCredentialsPeerVerifyFailure:
+        // Peer verification failure
+        QCOMPARE(socketErrorsSpy.count(), 1);
+        QCOMPARE(qvariant_cast<QAbstractSocket::SocketError>(socketErrorsSpy.at(0).at(0)), QAbstractSocket::SslHandshakeFailedError);
+        QCOMPARE(sslErrorsSpy.count(), 1);
+        QCOMPARE(peerVerifyErrorSpy.count(), 1);
+        QCOMPARE(connectionEncryptedSpy.count(), 0);
+        QVERIFY(!socket.isEncrypted());
+        break;
+
+    case PskConnectRightCredentialsVerifyPeer:
+        // Peer verification failure, but ignore it and keep connecting
+        QCOMPARE(socketErrorsSpy.count(), 0);
+        QCOMPARE(sslErrorsSpy.count(), 1);
+        QCOMPARE(peerVerifyErrorSpy.count(), 1);
+        QCOMPARE(connectionEncryptedSpy.count(), 1);
+        QVERIFY(socket.isEncrypted());
+        QCOMPARE(socket.state(), QAbstractSocket::ConnectedState);
+        break;
+
+    case PskConnectRightCredentialsDoNotVerifyPeer:
+        // No peer verification => no failure
+        QCOMPARE(socketErrorsSpy.count(), 0);
+        QCOMPARE(sslErrorsSpy.count(), 0);
+        QCOMPARE(peerVerifyErrorSpy.count(), 0);
+        QCOMPARE(connectionEncryptedSpy.count(), 1);
+        QVERIFY(socket.isEncrypted());
+        QCOMPARE(socket.state(), QAbstractSocket::ConnectedState);
+        break;
+    }
+
+    // check writing
+    switch (pskTestType) {
+    case PskConnectDoNotHandlePsk:
+    case PskConnectEmptyCredentials:
+    case PskConnectWrongCredentials:
+    case PskConnectWrongIdentity:
+    case PskConnectWrongPreSharedKey:
+    case PskConnectRightCredentialsPeerVerifyFailure:
+        break;
+
+    case PskConnectRightCredentialsVerifyPeer:
+    case PskConnectRightCredentialsDoNotVerifyPeer:
+        socket.write("Hello from Qt TLS/PSK!");
+        QVERIFY(socket.waitForBytesWritten());
+        break;
+    }
+
+    // disconnect
+    switch (pskTestType) {
+    case PskConnectDoNotHandlePsk:
+    case PskConnectEmptyCredentials:
+    case PskConnectWrongCredentials:
+    case PskConnectWrongIdentity:
+    case PskConnectWrongPreSharedKey:
+    case PskConnectRightCredentialsPeerVerifyFailure:
+        break;
+
+    case PskConnectRightCredentialsVerifyPeer:
+    case PskConnectRightCredentialsDoNotVerifyPeer:
+        socket.disconnectFromHost();
+        enterLoop(10);
+        break;
+    }
+
+    QCOMPARE(socket.state(), QAbstractSocket::UnconnectedState);
+    QCOMPARE(disconnectedSpy.count(), 1);
+}
+#endif // QT_NO_OPENSSL
 
 #endif // QT_NO_SSL
 

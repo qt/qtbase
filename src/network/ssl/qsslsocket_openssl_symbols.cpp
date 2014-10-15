@@ -290,6 +290,14 @@ DEFINEFUNC2(int, SSL_set_session, SSL* to, to, SSL_SESSION *session, session, re
 DEFINEFUNC(void, SSL_SESSION_free, SSL_SESSION *ses, ses, return, DUMMYARG)
 DEFINEFUNC(SSL_SESSION*, SSL_get1_session, SSL *ssl, ssl, return 0, return)
 DEFINEFUNC(SSL_SESSION*, SSL_get_session, const SSL *ssl, ssl, return 0, return)
+#if OPENSSL_VERSION_NUMBER >= 0x10001000L
+DEFINEFUNC5(int, SSL_get_ex_new_index, long argl, argl, void *argp, argp, CRYPTO_EX_new *new_func, new_func, CRYPTO_EX_dup *dup_func, dup_func, CRYPTO_EX_free *free_func, free_func, return -1, return)
+DEFINEFUNC3(int, SSL_set_ex_data, SSL *ssl, ssl, int idx, idx, void *arg, arg, return 0, return)
+DEFINEFUNC2(void *, SSL_get_ex_data, const SSL *ssl, ssl, int idx, idx, return NULL, return)
+#endif
+#if OPENSSL_VERSION_NUMBER >= 0x10001000L && !defined(OPENSSL_NO_PSK)
+DEFINEFUNC2(void, SSL_set_psk_client_callback, SSL* ssl, ssl, q_psk_client_callback_t callback, callback, return, DUMMYARG)
+#endif
 #if OPENSSL_VERSION_NUMBER >= 0x10000000L
 #ifndef OPENSSL_NO_SSL2
 DEFINEFUNC(const SSL_METHOD *, SSLv2_client_method, DUMMYARG, DUMMYARG, return 0, return)
@@ -854,6 +862,14 @@ bool q_resolveOpenSslSymbols()
     RESOLVEFUNC(SSL_SESSION_free)
     RESOLVEFUNC(SSL_get1_session)
     RESOLVEFUNC(SSL_get_session)
+#if OPENSSL_VERSION_NUMBER >= 0x10001000L
+    RESOLVEFUNC(SSL_get_ex_new_index)
+    RESOLVEFUNC(SSL_set_ex_data)
+    RESOLVEFUNC(SSL_get_ex_data)
+#endif
+#if OPENSSL_VERSION_NUMBER >= 0x10001000L && !defined(OPENSSL_NO_PSK)
+    RESOLVEFUNC(SSL_set_psk_client_callback)
+#endif
     RESOLVEFUNC(SSL_write)
 #ifndef OPENSSL_NO_SSL2
     RESOLVEFUNC(SSLv2_client_method)
