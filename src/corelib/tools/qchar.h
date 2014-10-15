@@ -493,6 +493,9 @@ private:
     QChar(char c);
     QChar(uchar c);
 #endif
+
+    friend bool operator==(QChar, QChar);
+    friend bool operator< (QChar, QChar);
     ushort ucs;
 };
 
@@ -534,12 +537,13 @@ inline bool QChar::isUpper(uint ucs4)
 inline bool QChar::isTitleCase(uint ucs4)
 { return ucs4 > 127 && QChar::category(ucs4) == Letter_Titlecase; }
 
-inline bool operator==(QChar c1, QChar c2) { return c1.unicode() == c2.unicode(); }
-inline bool operator!=(QChar c1, QChar c2) { return c1.unicode() != c2.unicode(); }
-inline bool operator<=(QChar c1, QChar c2) { return c1.unicode() <= c2.unicode(); }
-inline bool operator>=(QChar c1, QChar c2) { return c1.unicode() >= c2.unicode(); }
-inline bool operator<(QChar c1, QChar c2) { return c1.unicode() < c2.unicode(); }
-inline bool operator>(QChar c1, QChar c2) { return c1.unicode() > c2.unicode(); }
+inline bool operator==(QChar c1, QChar c2) { return c1.ucs == c2.ucs; }
+inline bool operator< (QChar c1, QChar c2) { return c1.ucs <  c2.ucs; }
+
+inline bool operator!=(QChar c1, QChar c2) { return !operator==(c1, c2); }
+inline bool operator>=(QChar c1, QChar c2) { return !operator< (c1, c2); }
+inline bool operator> (QChar c1, QChar c2) { return  operator< (c2, c1); }
+inline bool operator<=(QChar c1, QChar c2) { return !operator< (c2, c1); }
 
 #ifndef QT_NO_DATASTREAM
 Q_CORE_EXPORT QDataStream &operator<<(QDataStream &, QChar);

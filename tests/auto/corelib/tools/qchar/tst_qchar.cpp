@@ -47,6 +47,8 @@ public slots:
     void init();
     void cleanup();
 private slots:
+    void operators_data();
+    void operators();
     void toUpper();
     void toLower();
     void toTitle();
@@ -97,6 +99,33 @@ void tst_QChar::cleanup()
 #if defined(Q_OS_WINCE)
     delete app;
 #endif
+}
+
+void tst_QChar::operators_data()
+{
+    QTest::addColumn<QChar>("lhs");
+    QTest::addColumn<QChar>("rhs");
+
+    for (int i = 0; i < 3; ++i) {
+        for (int j = 0; j < 3; ++j)
+            QTest::newRow(qPrintable(QString().sprintf("'\\%d' (op) '\\%d'", i, j)))
+                    << QChar(ushort(i)) << QChar(ushort(j));
+    }
+}
+
+void tst_QChar::operators()
+{
+    QFETCH(QChar, lhs);
+    QFETCH(QChar, rhs);
+
+#define CHECK(op) QCOMPARE((lhs op rhs), (lhs.unicode() op rhs.unicode()))
+    CHECK(==);
+    CHECK(!=);
+    CHECK(< );
+    CHECK(> );
+    CHECK(<=);
+    CHECK(>=);
+#undef CHECK
 }
 
 void tst_QChar::toUpper()
