@@ -759,6 +759,50 @@ static CTFontUIFontType fontTypeFromTheme(QPlatformTheme::Font f)
     }
 }
 
+static CTFontDescriptorRef fontDescriptorFromTheme(QPlatformTheme::Font f)
+{
+#ifdef Q_OS_IOS
+    if (QSysInfo::MacintoshVersion >= QSysInfo::MV_IOS_7_0) {
+        // Use Dynamic Type to resolve theme fonts if possible, to get
+        // correct font sizes and style based on user configuration.
+        NSString *textStyle = 0;
+        switch (f) {
+        case QPlatformTheme::TitleBarFont:
+        case QPlatformTheme::HeaderViewFont:
+            textStyle = UIFontTextStyleHeadline;
+            break;
+        case QPlatformTheme::MdiSubWindowTitleFont:
+            textStyle = UIFontTextStyleSubheadline;
+            break;
+        case QPlatformTheme::TipLabelFont:
+        case QPlatformTheme::SmallFont:
+            textStyle = UIFontTextStyleFootnote;
+            break;
+        case QPlatformTheme::MiniFont:
+            textStyle = UIFontTextStyleCaption2;
+            break;
+        case QPlatformTheme::FixedFont:
+            // Fall back to regular code path, as iOS doesn't provide
+            // an appropriate text style for this theme font.
+            break;
+        default:
+            textStyle = UIFontTextStyleBody;
+            break;
+        }
+
+        if (textStyle) {
+            UIFontDescriptor *desc = [UIFontDescriptor preferredFontDescriptorWithTextStyle:textStyle];
+            return static_cast<CTFontDescriptorRef>(CFBridgingRetain(desc));
+        }
+    }
+#endif // Q_OS_IOS
+
+    // OSX default case and iOS fallback case
+    CTFontUIFontType fontType = fontTypeFromTheme(f);
+    QCFType<CTFontRef> ctFont = CTFontCreateUIFontForLanguage(fontType, 0.0, NULL);
+    return CTFontCopyFontDescriptor(ctFont);
+}
+
 const QHash<QPlatformTheme::Font, QFont *> &QCoreTextFontDatabase::themeFonts() const
 {
     if (m_themeFonts.isEmpty()) {
@@ -773,11 +817,7 @@ const QHash<QPlatformTheme::Font, QFont *> &QCoreTextFontDatabase::themeFonts() 
 
 QFont *QCoreTextFontDatabase::themeFont(QPlatformTheme::Font f) const
 {
-    CTFontUIFontType fontType = fontTypeFromTheme(f);
-
-    QCFType<CTFontRef> ctFont = CTFontCreateUIFontForLanguage(fontType, 0.0, NULL);
-    CTFontDescriptorRef fontDesc = CTFontCopyFontDescriptor(ctFont);
-
+    CTFontDescriptorRef fontDesc = fontDescriptorFromTheme(f);
     FontDescription fd;
     getFontDescription(fontDesc, &fd);
     m_systemFontDescriptors.insert(fontDesc);
