@@ -653,10 +653,7 @@ HFONT QVistaHelper::getCaptionFont(HANDLE hTheme)
 {
     LOGFONT lf = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, { 0 } };
 
-    if (!hTheme)
-        pGetThemeSysFont(hTheme, WIZ_TMT_CAPTIONFONT, &lf);
-    else
-    {
+    if (!hTheme || FAILED(pGetThemeSysFont(hTheme, WIZ_TMT_CAPTIONFONT, &lf))) {
         NONCLIENTMETRICS ncm;
         ncm.cbSize = sizeof(NONCLIENTMETRICS);
         SystemParametersInfo(SPI_GETNONCLIENTMETRICS, sizeof(NONCLIENTMETRICS), &ncm, false);
