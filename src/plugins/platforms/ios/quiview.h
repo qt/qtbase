@@ -62,7 +62,9 @@ class QIOSWindow;
 - (void)clearAccessibleCache;
 @end
 
-@interface QUIView (QtHelpers)
+@interface UIView (QtHelpers)
+- (QWindow *)qwindow;
+- (UIViewController *)viewController;
 - (QIOSViewController*)qtViewController;
 @end
 

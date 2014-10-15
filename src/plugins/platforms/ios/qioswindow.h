@@ -42,11 +42,6 @@
 class QIOSContext;
 class QIOSWindow;
 
-@interface UIView (QIOS)
-@property(readonly) QWindow *qwindow;
-@property(readonly) UIViewController *viewController;
-@end
-
 QT_BEGIN_NAMESPACE
 
 @class QUIView;
