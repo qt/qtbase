@@ -77,6 +77,10 @@ void qGuiStartup()
 {
     qCDebug(QT_GUI_MAIN) << "qGuiStartup";
 
+#ifdef Q_OS_NACL_NEWLIB
+    // Make sure the fonts resource is included for static builds.
+    Q_INIT_RESOURCE(naclfonts);
+#endif
     g_guiApplcation = new QGuiApplication(g_argc, &g_argv);
 }
 
