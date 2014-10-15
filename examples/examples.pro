@@ -2,18 +2,15 @@ TEMPLATE      = subdirs
 CONFIG += no_docs_target
 
 SUBDIRS = \
+    corelib \
     dbus \
     embedded \
     gui \
-    ipc \
-    json \
     network \
     qpa \
     qtconcurrent \
     qtestlib \
     sql \
-    threads \
-    tools \
     touch \
     widgets \
     xml

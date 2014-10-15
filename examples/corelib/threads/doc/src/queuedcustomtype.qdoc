@@ -1,0 +1,166 @@
+/****************************************************************************
+**
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Contact: http://www.qt-project.org/legal
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** Commercial License Usage
+** Licensees holding valid commercial Qt licenses may use this file in
+** accordance with the commercial license agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and Digia.  For licensing terms and
+** conditions see http://qt.digia.com/licensing.  For further information
+** use the contact form at http://qt.digia.com/contact-us.
+**
+** GNU Free Documentation License Usage
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of
+** this file.  Please review the following information to ensure
+** the GNU Free Documentation License version 1.3 requirements
+** will be met: http://www.gnu.org/copyleft/fdl.html.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+    \example threads/queuedcustomtype
+    \title Queued Custom Type Example
+    \brief Demonstrates multi-thread programming using Qt
+    \ingroup qtconcurrent-mtexamples
+
+    \brief The Queued Custom Type example shows how to send custom types between
+    threads with queued signals and slots.
+
+    \image queuedcustomtype-example.png
+
+    Contents:
+
+    \tableofcontents
+
+    \section1 Overview
+
+    In the \l{Custom Type Example}, we showed how to integrate custom types with
+    the meta-object system, enabling them to be stored in QVariant objects, written
+    out in debugging information and used in signal-slot communication.
+
+    In this example, we create a new value class, \c Block, and register it
+    with the meta-object system to enable us to send instances of it between
+    threads using queued signals and slots.
+
+    \section1 The Block Class
+
+    The \c Block class is similar to the \c Message class described in the
+    \l{Custom Type Example}. It provides the default constructor, copy
+    constructor and destructor in the public section of the class that the
+    meta-object system requires. It describes a colored rectangle.
+
+    \snippet threads/queuedcustomtype/block.h custom type definition and meta-type declaration
+
+    We will still need to register it with the meta-object system at
+    run-time by calling the qRegisterMetaType() template function before
+    we make any signal-slot connections that use this type.
+    Even though we do not intend to use the type with QVariant in this example,
+    it is good practice to also declare the new type with Q_DECLARE_METATYPE().
+
+    The implementation of the \c Block class is trivial, so we avoid quoting
+    it here.
+
+    \section1 The Window Class
+
+    We define a simple \c Window class with a public slot that accepts a
+    \c Block object. The rest of the class is concerned with managing the
+    user interface and handling images.
+
+    \snippet threads/queuedcustomtype/window.h Window class definition
+
+    The \c Window class also contains a worker thread, provided by a
+    \c RenderThread object. This will emit signals to send \c Block objects
+    to the window's \c addBlock(Block) slot.
+
+    The parts of the \c Window class that are most relevant are the constructor
+    and the \c addBlock(Block) slot.
+
+    The constructor creates a thread for rendering images, sets up a user
+    interface containing a label and two push buttons that are connected to
+    slots in the same class.
+
+    \snippet threads/queuedcustomtype/window.cpp Window constructor start
+    \snippet threads/queuedcustomtype/window.cpp set up widgets and connections
+    \snippet threads/queuedcustomtype/window.cpp connecting signal with custom type
+
+    In the last of these connections, we connect a signal in the
+    \c RenderThread object to the \c addBlock(Block) slot in the window.
+
+    \dots
+    \snippet threads/queuedcustomtype/window.cpp Window constructor finish
+
+    The rest of the constructor simply sets up the layout of the window.
+
+    The \c addBlock(Block) slot receives blocks from the rendering thread via
+    the signal-slot connection set up in the constructor:
+
+    \snippet threads/queuedcustomtype/window.cpp Adding blocks to the display
+
+    We simply paint these onto the label as they arrive.
+
+    \section1 The RenderThread Class
+
+    The \c RenderThread class processes an image, creating \c Block objects
+    and using the \c sendBlock(Block) signal to send them to other components
+    in the example.
+
+    \snippet threads/queuedcustomtype/renderthread.h RenderThread class definition
+
+    The constructor and destructor are not quoted here. These take care of
+    setting up the thread's internal state and cleaning up when it is destroyed.
+
+    Processing is started with the \c processImage() function, which calls the
+    \c RenderThread class's reimplementation of the QThread::run() function:
+
+    \snippet threads/queuedcustomtype/renderthread.cpp processing the image (start)
+
+    Ignoring the details of the way the image is processed, we see that the
+    signal containing a block is emitted in the usual way:
+
+    \dots
+    \snippet threads/queuedcustomtype/renderthread.cpp processing the image (finish)
+
+    Each signal that is emitted will be queued and delivered later to the
+    window's \c addBlock(Block) slot.
+
+    \section1 Registering the Type
+
+    In the example's \c{main()} function, we perform the registration of the
+    \c Block class as a custom type with the meta-object system by calling the
+    qRegisterMetaType() template function:
+
+    \snippet threads/queuedcustomtype/main.cpp main function
+
+    This call is placed here to ensure that the type is registered before any
+    signal-slot connections are made that use it.
+
+    The rest of the \c{main()} function is concerned with setting a seed for
+    the pseudo-random number generator, creating and showing the window, and
+    setting a default image. See the source code for the implementation of the
+    \c createImage() function.
+
+    \section1 Further Reading
+
+    This example showed how a custom type can be registered with the
+    meta-object system so that it can be used with signal-slot connections
+    between threads. For ordinary communication involving direct signals and
+    slots, it is enough to simply declare the type in the way described in the
+    \l{Custom Type Example}.
+
+    In practice, both the Q_DECLARE_METATYPE() macro and the qRegisterMetaType()
+    template function can be used to register custom types, but
+    qRegisterMetaType() is only required if you need to perform signal-slot
+    communication or need to create and destroy objects of the custom type
+    at run-time.
+
+    More information on using custom types with Qt can be found in the
+    \l{Creating Custom Qt Types} document.
+*/

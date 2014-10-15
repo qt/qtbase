@@ -255,7 +255,12 @@ manifestmeta.ios.tags                  = ios
 # add a generic thumbnail image to examples that do not have any images in their documentation
 manifestmeta.thumbnail.attributes  = "imageUrl:qthelp\://org.qt-project.qtdoc.$QT_VERSION_TAG/qtdoc/images/qt-codesample.png"
 
-manifestmeta.thumbnail.names    =      "QtConcurrent/Map Example" \
+manifestmeta.thumbnail.names    =      "QtCore/Contiguous Cache Example" \
+                                       "QtCore/Custom Type Example" \
+                                       "QtCore/JSON Save Game Example" \
+                                       "QtCore/Semaphores Example" \
+                                       "QtCore/Wait Conditions Example" \
+                                       "QtConcurrent/Map Example" \
                                        "QtConcurrent/QtConcurrent Word Count Example" \
                                        "QtConcurrent/Run Function Example" \
                                        "QtGui/Raster Window Example" \
