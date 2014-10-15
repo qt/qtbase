@@ -1661,10 +1661,34 @@ void QMacStylePrivate::getSliderInfo(QStyle::ComplexControl cc, const QStyleOpti
             tdi->kind = kThemeSmallSlider;
         break;
     }
+
+    bool usePlainKnob = slider->tickPosition == QSlider::NoTicks
+            || slider->tickPosition == QSlider::TicksBothSides;
+
     tdi->bounds = qt_hirectForQRect(slider->rect);
-    tdi->min = slider->minimum;
-    tdi->max = slider->maximum;
-    tdi->value = slider->sliderPosition;
+    if (isScrollbar || QSysInfo::MacintoshVersion <= QSysInfo::MV_10_9) {
+        tdi->min = slider->minimum;
+        tdi->max = slider->maximum;
+        tdi->value = slider->sliderPosition;
+    } else {
+        // Fix min and max positions. HITheme seems confused when it comes to rendering
+        // a slider at those positions. We give it a hand by extending and offsetting
+        // the slider range accordingly. See also comment for CC_Slider in drawComplexControl()
+        tdi->min = 0;
+        if (slider->orientation == Qt::Horizontal)
+            tdi->max = 10 * slider->rect.width();
+        else
+            tdi->max = 10 * slider->rect.height();
+
+        if (usePlainKnob || slider->orientation == Qt::Horizontal) {
+            int endsCorrection = usePlainKnob ? 25 : 10;
+            tdi->value = (tdi->max + 2 * endsCorrection) * (slider->sliderPosition - slider->minimum)
+                    / (slider->maximum - slider->minimum) - endsCorrection;
+        } else {
+            tdi->value = (tdi->max + 30) * (slider->sliderPosition - slider->minimum)
+                       / (slider->maximum - slider->minimum) - 20;
+        }
+    }
     tdi->attributes = kThemeTrackShowThumb;
     if (slider->upsideDown)
         tdi->attributes |= kThemeTrackRightToLeft;
@@ -1681,7 +1705,7 @@ void QMacStylePrivate::getSliderInfo(QStyle::ComplexControl cc, const QStyleOpti
     // Tiger broke reverse scroll bars so put them back and "fake it"
     if (isScrollbar && (tdi->attributes & kThemeTrackRightToLeft)) {
         tdi->attributes &= ~kThemeTrackRightToLeft;
-        tdi->value = tdi->max - slider->sliderPosition;
+        tdi->value = tdi->max - tdi->value;
     }
 
     tdi->enableState = (slider->state & QStyle::State_Enabled) ? kThemeTrackActive
@@ -1689,7 +1713,7 @@ void QMacStylePrivate::getSliderInfo(QStyle::ComplexControl cc, const QStyleOpti
     if (!isScrollbar) {
         if (slider->state & QStyle::QStyle::State_HasFocus)
             tdi->attributes |= kThemeTrackHasFocus;
-        if (slider->tickPosition == QSlider::NoTicks || slider->tickPosition == QSlider::TicksBothSides)
+        if (usePlainKnob)
             tdi->trackInfo.slider.thumbDir = kThemeThumbPlain;
         else if (slider->tickPosition == QSlider::TicksAbove)
             tdi->trackInfo.slider.thumbDir = kThemeThumbUpward;
@@ -1815,6 +1839,12 @@ NSView *QMacStylePrivate::cocoaControl(QCocoaWidget widget, QPoint *offset) cons
             bv = [[NSPopUpButton alloc] init];
         else if (widget.first == QCocoaComboBox)
             bv = [[NSComboBox alloc] init];
+        else if (widget.first == QCocoaHorizontalSlider)
+            bv = [[NSSlider alloc] init];
+        else if (widget.first == QCocoaVerticalSlider)
+            // Cocoa sets the orientation from the view's frame
+            // at construction time, and it cannot be changed later.
+            bv = [[NSSlider alloc] initWithFrame:NSMakeRect(0, 0, 10, 100)];
         else
             bv = [[NSButton alloc] init];
 
@@ -5315,6 +5345,7 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                         // because on Tiger I only "fake" the reverse stuff.
                         bool reverseHorizontal = (slider->direction == Qt::RightToLeft
                                                   && slider->orientation == Qt::Horizontal);
+
                         if ((reverseHorizontal
                              && slider->activeSubControls == SC_ScrollBarAddLine)
                             || (!reverseHorizontal
@@ -5364,6 +5395,9 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                 if (!(slider->subControls & SC_SliderGroove))
                     tdi.attributes |= kThemeTrackHideTrack;
             }
+
+            const bool usingYosemiteOrLater = QSysInfo::MacintoshVersion > QSysInfo::MV_10_9;
+            const bool isHorizontal = slider->orientation == Qt::Horizontal;
 
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
             if (cc == CC_ScrollBar && proxy()->styleHint(SH_ScrollBar_Transient, opt, widget)) {
@@ -5449,8 +5483,6 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                     }
                 }
 
-                const bool isHorizontal = slider->orientation == Qt::Horizontal;
-
                 CGContextSaveGState(cg);
                 [NSGraphicsContext saveGraphicsState];
 
@@ -5535,9 +5567,86 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
             {
                 d->stopAnimation(opt->styleObject);
 
-                HIThemeDrawTrack(&tdi, tracking ? 0 : &macRect, cg,
-                                 kHIThemeOrientationNormal);
+                if (usingYosemiteOrLater && cc == CC_Slider) {
+                    // Fix min and max positions. (See also getSliderInfo()
+                    // for the slider values adjustments.)
+                    // HITheme seems to have forgotten how to render
+                    // a slide at those positions, leaving a gap between
+                    // the knob and the ends of the track.
+                    // We fix this by rendering the track first, and then
+                    // the knob on top. However, in order to not clip the
+                    // knob, we reduce the the drawing rect for the track.
+                    HIRect bounds = tdi.bounds;
+                    if (isHorizontal) {
+                        tdi.bounds.size.width -= 2;
+                        tdi.bounds.origin.x += 1;
+                        if (tdi.trackInfo.slider.thumbDir == kThemeThumbDownward)
+                            tdi.bounds.origin.y -= 2;
+                        else if (tdi.trackInfo.slider.thumbDir == kThemeThumbUpward)
+                            tdi.bounds.origin.y += 3;
+                    } else {
+                        tdi.bounds.size.height -= 2;
+                        tdi.bounds.origin.y += 1;
+                        if (tdi.trackInfo.slider.thumbDir == kThemeThumbDownward) // pointing right
+                            tdi.bounds.origin.x -= 4;
+                        else if (tdi.trackInfo.slider.thumbDir == kThemeThumbUpward) // pointing left
+                            tdi.bounds.origin.x += 2;
+                    }
+
+                    // Yosemite demands its blue progress track when no tickmarks are present
+                    if (!(slider->subControls & SC_SliderTickmarks)) {
+                        QCocoaWidgetKind sliderKind = slider->orientation == Qt::Horizontal ? QCocoaHorizontalSlider : QCocoaVerticalSlider;
+                        NSSlider *sl = (NSSlider *)d->cocoaControl(QCocoaWidget(sliderKind, QAquaSizeLarge), 0);
+                        sl.minValue = slider->minimum;
+                        sl.maxValue = slider->maximum;
+                        sl.intValue = slider->sliderValue;
+                        sl.enabled = slider->state & QStyle::State_Enabled;
+                        d->drawNSViewInRect(sl, opt->rect, p, ^(NSRect rect, CGContextRef ctx) {
+                                                if (slider->upsideDown) {
+                                                    if (isHorizontal) {
+                                                        CGContextTranslateCTM(ctx, rect.size.width, 0);
+                                                        CGContextScaleCTM(ctx, -1, 1);
+                                                    }
+                                                } else if (!isHorizontal) {
+                                                    CGContextTranslateCTM(ctx, 0, rect.size.height);
+                                                    CGContextScaleCTM(ctx, 1, -1);
+                                                }
+                                                [sl.cell drawBarInside:tdi.bounds flipped:NO];
+                                                // No need to restore the CTM later, the context has been saved
+                                                // and will be restored at the end of drawNSViewInRect()
+                                            });
+                        tdi.attributes |= kThemeTrackHideTrack;
+                    } else {
+                        tdi.attributes &= ~(kThemeTrackShowThumb | kThemeTrackHasFocus);
+                        HIThemeDrawTrack(&tdi, tracking ? 0 : &macRect, cg,
+                                         kHIThemeOrientationNormal);
+                        tdi.attributes |= kThemeTrackHideTrack | kThemeTrackShowThumb;
+                    }
+
+                    tdi.bounds = bounds;
+                }
+
                 if (cc == CC_Slider && slider->subControls & SC_SliderTickmarks) {
+
+                    HIRect bounds;
+                    if (usingYosemiteOrLater) {
+                        // As part of fixing the min and max positions,
+                        // we need to adjust the tickmarks as well
+                        bounds = tdi.bounds;
+                        if (slider->orientation == Qt::Horizontal) {
+                            tdi.bounds.size.width += 2;
+                            tdi.bounds.origin.x -= 1;
+                                if (tdi.trackInfo.slider.thumbDir == kThemeThumbUpward)
+                                    tdi.bounds.origin.y -= 2;
+                        } else {
+                            tdi.bounds.size.height += 3;
+                            tdi.bounds.origin.y -= 3;
+                            tdi.bounds.origin.y += 1;
+                            if (tdi.trackInfo.slider.thumbDir == kThemeThumbUpward) // pointing left
+                                tdi.bounds.origin.x -= 2;
+                        }
+                    }
+
                     if (qt_mac_is_metal(widget)) {
                         if (tdi.enableState == kThemeTrackInactive)
                             tdi.enableState = kThemeTrackActive;  // Looks more Cocoa-like
@@ -5559,16 +5668,37 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                                                   cg,
                                                   kHIThemeOrientationNormal);
                         tdi.trackInfo.slider.thumbDir = kThemeThumbUpward;
+                        if (usingYosemiteOrLater) {
+                            if (slider->orientation == Qt::Vertical)
+                                tdi.bounds.origin.x -= 2;
+                        }
                         HIThemeDrawTrackTickMarks(&tdi, numMarks,
                                                   cg,
                                                    kHIThemeOrientationNormal);
+                        // Reset to plain thumb to be drawn further down
+                        tdi.trackInfo.slider.thumbDir = kThemeThumbPlain;
                     } else {
                         HIThemeDrawTrackTickMarks(&tdi, numMarks,
                                                   cg,
                                                   kHIThemeOrientationNormal);
+                    }
 
+                    if (usingYosemiteOrLater)
+                        tdi.bounds = bounds;
+                }
+
+                if (usingYosemiteOrLater && cc == CC_Slider) {
+                    // Still as part of fixing the min and max positions,
+                    // we also adjust the knob position. We can do this
+                    // because it's rendered separately from the track.
+                    if (slider->orientation == Qt::Vertical) {
+                        if (tdi.trackInfo.slider.thumbDir == kThemeThumbDownward) // pointing right
+                            tdi.bounds.origin.x -= 2;
                     }
                 }
+
+                HIThemeDrawTrack(&tdi, tracking ? 0 : &macRect, cg,
+                                 kHIThemeOrientationNormal);
             }
         }
         break;

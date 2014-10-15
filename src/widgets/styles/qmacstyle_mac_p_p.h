@@ -127,7 +127,9 @@ enum QCocoaWidgetKind {
     QCocoaComboBox,     // Editable QComboBox
     QCocoaPopupButton,  // Non-editable QComboBox
     QCocoaPushButton,
-    QCocoaRadioButton
+    QCocoaRadioButton,
+    QCocoaHorizontalSlider,
+    QCocoaVerticalSlider
 };
 
 typedef QPair<QCocoaWidgetKind, QAquaWidgetSize> QCocoaWidget;
