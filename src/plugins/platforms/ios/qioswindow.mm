@@ -280,7 +280,7 @@ void QIOSWindow::raiseOrLower(bool raise)
 
 void QIOSWindow::updateWindowLevel()
 {
-    Qt::WindowType type = windowType();
+    Qt::WindowType type = window()->type();
 
     if (type == Qt::ToolTip)
         m_windowLevel = 120;
