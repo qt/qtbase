@@ -59,7 +59,7 @@ Q_CORE_EXPORT QDataStream& operator<<(QDataStream &out, const QVersionNumber &ve
 Q_CORE_EXPORT QDataStream& operator>>(QDataStream &in, QVersionNumber &version);
 #endif
 
-class Q_CORE_EXPORT QVersionNumber
+class QVersionNumber
 {
 public:
     inline QVersionNumber() Q_DECL_NOTHROW
@@ -150,17 +150,17 @@ public:
     inline int segmentCount() const Q_DECL_NOTHROW Q_REQUIRED_RESULT
     { return m_segments.size(); }
 
-    bool isPrefixOf(const QVersionNumber &other) const Q_DECL_NOTHROW Q_REQUIRED_RESULT;
+    Q_CORE_EXPORT bool isPrefixOf(const QVersionNumber &other) const Q_DECL_NOTHROW Q_REQUIRED_RESULT;
 
-    static int compare(const QVersionNumber &v1, const QVersionNumber &v2) Q_DECL_NOTHROW Q_REQUIRED_RESULT;
+    Q_CORE_EXPORT static int compare(const QVersionNumber &v1, const QVersionNumber &v2) Q_DECL_NOTHROW Q_REQUIRED_RESULT;
 
-    static Q_DECL_PURE_FUNCTION QVersionNumber commonPrefix(const QVersionNumber &v1, const QVersionNumber &v2) Q_REQUIRED_RESULT;
+    Q_CORE_EXPORT static Q_DECL_PURE_FUNCTION QVersionNumber commonPrefix(const QVersionNumber &v1, const QVersionNumber &v2) Q_REQUIRED_RESULT;
 
-    QString toString() const Q_REQUIRED_RESULT;
-    static Q_DECL_PURE_FUNCTION QVersionNumber fromString(const QString &string, int *suffixIndex = 0) Q_REQUIRED_RESULT;
+    Q_CORE_EXPORT QString toString() const Q_REQUIRED_RESULT;
+    Q_CORE_EXPORT static Q_DECL_PURE_FUNCTION QVersionNumber fromString(const QString &string, int *suffixIndex = 0) Q_REQUIRED_RESULT;
 
 private:
-    static QVersionNumber normalizedImpl(QVector<int> &segs) Q_REQUIRED_RESULT;
+    Q_CORE_EXPORT static QVersionNumber normalizedImpl(QVector<int> &segs) Q_REQUIRED_RESULT;
 
 #ifndef QT_NO_DATASTREAM
     friend Q_CORE_EXPORT QDataStream& operator>>(QDataStream &in, QVersionNumber &version);
