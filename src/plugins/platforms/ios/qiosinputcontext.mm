@@ -443,6 +443,15 @@ void QIOSInputContext::update(Qt::InputMethodQueries updatedProperties)
     // Mask for properties that we are interested in and see if any of them changed
     updatedProperties &= (Qt::ImEnabled | Qt::ImHints | Qt::ImQueryInput | Qt::ImPlatformData);
 
+    if (updatedProperties & Qt::ImEnabled) {
+        // Switching on and off input-methods needs a re-fresh of hints and platform
+        // data when we turn them on again, as the IM state we have may have been
+        // invalidated when IM was switched off. We could defer this until we know
+        // if IM was turned on, to limit the extra query parameters, but for simplicity
+        // we always do the update.
+        updatedProperties |= (Qt::ImHints | Qt::ImPlatformData);
+    }
+
     Qt::InputMethodQueries changedProperties = m_imeState.update(updatedProperties);
     if (changedProperties & (Qt::ImEnabled | Qt::ImHints | Qt::ImPlatformData)) {
         // Changes to enablement or hints require virtual keyboard reconfigure
