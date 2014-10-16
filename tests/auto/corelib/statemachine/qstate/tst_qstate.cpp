@@ -76,35 +76,35 @@ void tst_QState::assignProperty()
 {
     QStateMachine machine;
 
-    QObject *object = new QObject();
-    object->setProperty("fooBar", 10);
+    QObject object;
+    object.setProperty("fooBar", 10);
 
     QState *s1 = new QState(&machine);
-    s1->assignProperty(object, "fooBar", 20);
+    s1->assignProperty(&object, "fooBar", 20);
 
     machine.setInitialState(s1);
     machine.start();
     QCoreApplication::processEvents();
 
-    QCOMPARE(object->property("fooBar").toInt(), 20);
+    QCOMPARE(object.property("fooBar").toInt(), 20);
 }
 
 void tst_QState::assignPropertyTwice()
 {
     QStateMachine machine;
 
-    QObject *object = new QObject();
-    object->setProperty("fooBar", 10);
+    QObject object;
+    object.setProperty("fooBar", 10);
 
     QState *s1 = new QState(&machine);
-    s1->assignProperty(object, "fooBar", 20);
-    s1->assignProperty(object, "fooBar", 30);
+    s1->assignProperty(&object, "fooBar", 20);
+    s1->assignProperty(&object, "fooBar", 30);
 
     machine.setInitialState(s1);
     machine.start();
     QCoreApplication::processEvents();
 
-    QCOMPARE(object->property("fooBar").toInt(), 30);
+    QCOMPARE(object.property("fooBar").toInt(), 30);
 }
 
 class EventTestTransition: public QAbstractTransition
