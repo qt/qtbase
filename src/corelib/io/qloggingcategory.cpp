@@ -61,13 +61,15 @@ static void setBoolLane(QBasicAtomicInt *atomic, bool enable, int shift)
     \brief The QLoggingCategory class represents a category, or 'area' in the
     logging infrastructure.
 
-    QLoggingCategory represents a certain logging category - identified
-    by a string - at runtime. Whether a category should be actually logged or
-    not can be checked with the \l isEnabled() methods.
+    QLoggingCategory represents a certain logging category - identified by a
+    string - at runtime. A category can be configured to enable or disable
+    logging of messages per message type. Whether a message type is enabled or
+    not can be checked with the \l isDebugEnabled(), \l isWarningEnabled(), and
+    \l isCriticalEnabled() methods.
 
     All objects are meant to be configured by a common registry (see also
     \l{Configuring Categories}). Different objects can also represent the same
-    category. It's therefore not recommended to export objects across module
+    category. It is therefore not recommended to export objects across module
     boundaries, nor to manipulate the objects directly, nor to inherit from
     QLoggingCategory.
 
@@ -110,8 +112,9 @@ static void setBoolLane(QBasicAtomicInt *atomic, bool enable, int shift)
 
     \section2 Logging Rules
 
-    Logging rules allow to enable or disable logging for categories in a flexible
-    way. Rules are specified in text, where every line must have the format
+    Logging rules allow logging for categories to be enabled or disabled in a
+    flexible way. Rules are specified in text, where every line must have the
+    format
 
     \code
     <category>[.<type>] = true|false
@@ -120,12 +123,12 @@ static void setBoolLane(QBasicAtomicInt *atomic, bool enable, int shift)
     \c <category> is the name of the category, potentially with \c{*} as a
     wildcard symbol as the first or last character (or at both positions).
     The optional \c <type> must be either \c debug, \c warning, or \c critical.
-    Lines that do not fit to his scheme are ignored.
+    Lines that do not fit this scheme are ignored.
 
     Rules are evaluated in text order, from first to last. That is, if two rules
     apply to a category/type, the rule that comes later is applied.
 
-    Rules can be set via \l setFilterRules(). Since Qt 5.3 logging rules can also
+    Rules can be set via \l setFilterRules(). Since Qt 5.3, logging rules can also
     be set in the \c QT_LOGGING_RULES environment variable, and
     are automatically loaded from the \c [Rules] section of a logging
     configuration file. Such configuration files are looked up in the QtProject
@@ -168,13 +171,13 @@ static void setBoolLane(QBasicAtomicInt *atomic, bool enable, int shift)
 
     \section2 Installing a Custom Filter
 
-    As a lower-level alternative to the text rules you can also implement a
+    As a lower-level alternative to the text rules, you can also implement a
     custom filter via \l installFilter(). All filter rules are ignored in this
     case.
 
     \section1 Printing the Category
 
-    Use the \c %{category} place holder to print the category in the default
+    Use the \c %{category} placeholder to print the category in the default
     message handler:
 
     \snippet qloggingcategory/main.cpp 3
