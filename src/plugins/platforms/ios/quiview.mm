@@ -191,33 +191,57 @@
 
 - (BOOL)becomeFirstResponder
 {
-    if ([super becomeFirstResponder]) {
-        QWindowSystemInterface::handleWindowActivated(m_qioswindow->window());
-        QWindowSystemInterface::flushWindowSystemEvents();
+    FirstResponderCandidate firstResponderCandidate(self);
 
-        return YES;
+    qImDebug() << "win:" << m_qioswindow->window() << "self:" << self
+        << "first:" << [UIResponder currentFirstResponder];
+
+    if (![super becomeFirstResponder]) {
+        qImDebug() << m_qioswindow->window()
+            << "was not allowed to become first responder";
+        return NO;
     }
 
-    return NO;
+    qImDebug() << m_qioswindow->window() << "became first responder";
+
+    if (qGuiApp->focusWindow() != m_qioswindow->window()) {
+        QWindowSystemInterface::handleWindowActivated(m_qioswindow->window());
+        QWindowSystemInterface::flushWindowSystemEvents();
+    } else {
+        qImDebug() << m_qioswindow->window()
+            << "already active, not sending window activation";
+    }
+
+    return YES;
+}
+
+- (BOOL)responderShouldTriggerWindowDeactivation:(UIResponder *)responder
+{
+    // We don't want to send window deactivation in case the resign
+    // was a result of another Qt window becoming first responder.
+    if ([responder isKindOfClass:[QUIView class]])
+        return NO;
+
+    return YES;
 }
 
 - (BOOL)resignFirstResponder
 {
-    if ([super resignFirstResponder]) {
-        // We don't want to send window deactivation in case we're in the process
-        // of activating another window. The handleWindowActivated of the activation
-        // will take care of both.
-        dispatch_async(dispatch_get_main_queue (), ^{
-            if (![[UIResponder currentFirstResponder] isKindOfClass:[QUIView class]]) {
-                QWindowSystemInterface::handleWindowActivated(0);
-                QWindowSystemInterface::flushWindowSystemEvents();
-            }
-        });
+    qImDebug() << "win:" << m_qioswindow->window() << "self:" << self
+        << "first:" << [UIResponder currentFirstResponder];
 
-        return YES;
+    if (![super resignFirstResponder])
+        return NO;
+
+    qImDebug() << m_qioswindow->window() << "resigned first responder";
+
+    UIResponder *newResponder = FirstResponderCandidate::currentCandidate();
+    if ([self responderShouldTriggerWindowDeactivation:newResponder]) {
+        QWindowSystemInterface::handleWindowActivated(0);
+        QWindowSystemInterface::flushWindowSystemEvents();
     }
 
-    return NO;
+    return YES;
 }
 
 // -------------------------------------------------------------------------

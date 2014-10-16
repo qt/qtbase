@@ -168,5 +168,12 @@ int infoPlistValue(NSString* key, int defaultValue)
 }
 @end
 
+FirstResponderCandidate::FirstResponderCandidate(UIResponder *responder)
+    : QScopedValueRollback<UIResponder *>(s_firstResponderCandidate, responder)
+{
+}
+
+UIResponder *FirstResponderCandidate::s_firstResponderCandidate = 0;
+
 QT_END_NAMESPACE
 
