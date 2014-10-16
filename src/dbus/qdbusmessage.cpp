@@ -605,6 +605,10 @@ QString QDBusMessage::signature() const
 */
 bool QDBusMessage::isReplyRequired() const
 {
+    // Only method calls can have replies
+    if (d_ptr->type != DBUS_MESSAGE_TYPE_METHOD_CALL)
+        return false;
+
     if (!d_ptr->msg)
         return d_ptr->localMessage; // if it's a local message, reply is required
     return !q_dbus_message_get_no_reply(d_ptr->msg);
