@@ -245,7 +245,7 @@ void QEglKmsHooks::platformDestroy()
 EGLNativeDisplayType QEglKmsHooks::platformDisplay() const
 {
     Q_ASSERT(m_device);
-    return static_cast<EGLNativeDisplayType>(m_device->device());
+    return reinterpret_cast<EGLNativeDisplayType>(m_device->device());
 }
 
 void QEglKmsHooks::screenInit()
