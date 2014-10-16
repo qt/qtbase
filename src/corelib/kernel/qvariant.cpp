@@ -3632,11 +3632,13 @@ QSequentialIterable::const_iterator::const_iterator(const const_iterator &other)
 QSequentialIterable::const_iterator&
 QSequentialIterable::const_iterator::operator=(const const_iterator &other)
 {
-    if (!m_impl.equal(other.m_impl)) {
-        m_impl = other.m_impl;
-        ref = other.ref;
+    other.ref->ref();
+    if (!ref->deref()) {
+        m_impl.destroyIter();
+        delete ref;
     }
-    ref->ref();
+    m_impl = other.m_impl;
+    ref = other.ref;
     return *this;
 }
 
@@ -3941,11 +3943,13 @@ QAssociativeIterable::const_iterator::const_iterator(const const_iterator &other
 QAssociativeIterable::const_iterator&
 QAssociativeIterable::const_iterator::operator=(const const_iterator &other)
 {
-    if (!m_impl.equal(other.m_impl)) {
-        m_impl = other.m_impl;
-        ref = other.ref;
+    other.ref->ref();
+    if (!ref->deref()) {
+        m_impl.destroyIter();
+        delete ref;
     }
-    ref->ref();
+    m_impl = other.m_impl;
+    ref = other.ref;
     return *this;
 }
 
