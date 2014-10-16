@@ -63,10 +63,18 @@ void QPepperFontDatabase::populateFontDatabase()
     // Load font file from resources. Currently
     // all fonts needs to be bundled with the nexe
     // as Qt resources.
-    QByteArray fontFileName = ":/fonts/Vera.ttf";
-    QFile theFont(fontFileName);
-    theFont.open(QIODevice::ReadOnly);
-    QBasicFontDatabase::addTTFile(theFont.readAll(), fontFileName);
+    QStringList fontFileNames = QStringList() << ":/fonts/Vera.ttf"
+                                              << ":/fonts/DejaVuSans.ttf";
+
+    foreach (const QString &fontFileName, fontFileNames) {
+        QFile theFont(fontFileName);
+        if (!theFont.open(QIODevice::ReadOnly)) {
+            qDebug() << "could not open font file" << fontFileName;
+            break;
+        }
+
+        QBasicFontDatabase::addTTFile(theFont.readAll(), fontFileName.toLatin1());
+    }
 #endif
 }
 
