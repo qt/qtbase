@@ -886,25 +886,25 @@ void tst_qmessagehandler::formatLogMessage_data()
 #define BA QByteArrayLiteral
 
     QTest::newRow("basic") << "%{type} %{file} %{line} %{function} %{message}"
-                           << "debug main.cpp 1 func msg\n"
+                           << "debug main.cpp 1 func msg"
                            << QtDebugMsg << BA("main.cpp") << 1 << BA("func") << BA("") << "msg";
 
     // test the if conditions
     QString format = "[%{if-debug}D%{endif}%{if-warning}W%{endif}%{if-critical}C%{endif}%{if-fatal}F%{endif}] %{if-category}%{category}: %{endif}%{message}";
     QTest::newRow("if-debug")
-            << format << "[D] msg\n"
+            << format << "[D] msg"
             << QtDebugMsg << BA("") << 0 << BA("func") << QByteArray() << "msg";
     QTest::newRow("if_warning")
-            << format << "[W] msg\n"
+            << format << "[W] msg"
             << QtWarningMsg << BA("") << 0 << BA("func") << QByteArray() << "msg";
     QTest::newRow("if_critical")
-            << format << "[C] msg\n"
+            << format << "[C] msg"
             << QtCriticalMsg << BA("") << 0 << BA("func") << QByteArray() << "msg";
     QTest::newRow("if_fatal")
-            << format << "[F] msg\n"
+            << format << "[F] msg"
             << QtFatalMsg << BA("") << 0 << BA("func") << QByteArray() << "msg";
     QTest::newRow("if_cat")
-            << format << "[F] cat: msg\n"
+            << format << "[F] cat: msg"
             << QtFatalMsg << BA("") << 0 << BA("func") << BA("cat") << "msg";
 }
 

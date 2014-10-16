@@ -1101,13 +1101,8 @@ QString qFormatLogMessage(QtMsgType type, const QMessageLogContext &context, con
     if (!pattern) {
         // after destruction of static QMessagePattern instance
         message.append(str);
-        message.append(QLatin1Char('\n'));
         return message;
     }
-
-    // don't print anything if pattern was empty
-    if (pattern->tokens[0] == 0)
-        return message;
 
     bool skip = false;
 
@@ -1227,7 +1222,6 @@ QString qFormatLogMessage(QtMsgType type, const QMessageLogContext &context, con
             message.append(QLatin1String(token));
         }
     }
-    message.append(QLatin1Char('\n'));
     return message;
 }
 
@@ -1289,7 +1283,7 @@ static void android_default_message_handler(QtMsgType type,
     case QtFatalMsg: priority = ANDROID_LOG_FATAL; break;
     };
 
-    __android_log_print(priority, "Qt", "%s:%d (%s): %s",
+    __android_log_print(priority, "Qt", "%s:%d (%s): %s\n",
                         context.file, context.line,
                         context.function, qPrintable(message));
 }
@@ -1303,16 +1297,21 @@ static void qDefaultMessageHandler(QtMsgType type, const QMessageLogContext &con
 {
     QString logMessage = qFormatLogMessage(type, context, buf);
 
+    // print nothing if message pattern didn't apply / was empty.
+    // (still print empty lines, e.g. because message itself was empty)
+    if (logMessage.isNull())
+        return;
+
     if (!qt_logging_to_console()) {
 #if defined(Q_OS_WIN)
+        logMessage.append(QLatin1Char('\n'));
         OutputDebugString(reinterpret_cast<const wchar_t *>(logMessage.utf16()));
         return;
 #elif defined(QT_USE_SLOG2)
+        logMessage.append(QLatin1Char('\n'));
         slog2_default_handler(type, logMessage.toLocal8Bit().constData());
         return;
 #elif defined(QT_USE_JOURNALD) && !defined(QT_BOOTSTRAPPED)
-        // remove trailing \n, systemd appears to want them newline-less
-        logMessage.chop(1);
         systemd_default_message_handler(type, context, logMessage);
         return;
 #elif defined(Q_OS_ANDROID)
@@ -1320,7 +1319,7 @@ static void qDefaultMessageHandler(QtMsgType type, const QMessageLogContext &con
         return;
 #endif
     }
-    fprintf(stderr, "%s", logMessage.toLocal8Bit().constData());
+    fprintf(stderr, "%s\n", logMessage.toLocal8Bit().constData());
     fflush(stderr);
 }
 
