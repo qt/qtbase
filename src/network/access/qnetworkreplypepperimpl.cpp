@@ -43,104 +43,179 @@
 
 #include "QtCore/qdatetime.h"
 #include <QtCore/QCoreApplication>
+#include <QtCore/QThread>
 #include <QDebug>
 #include <qglobal.h>
 #include <cstring>
 
-#include "geturl_handler.h"
+#include "ppapi/cpp/message_loop.h"
 
 using namespace pp;
 
 QT_BEGIN_NAMESPACE
 
-QNetworkReplyPepperImplPrivate::QNetworkReplyPepperImplPrivate(QNetworkReplyPepperImpl *q)
-    : QNetworkReplyPrivate()
-    ,dataPosition(0)
-{
+Q_LOGGING_CATEGORY(QT_PLATFORM_PEPPER_NETWORK, "qt.platform.pepper.network")
 
-}
-
-QNetworkReplyPepperImpl::~QNetworkReplyPepperImpl()
-{
-}
-
-void pepperLoadData(void *context)
-{
-    reinterpret_cast<QNetworkReplyPepperImpl *>(context)->loadData();
-}
-
-void QNetworkReplyPepperImpl::loadData()
-{
-    Q_D(QNetworkReplyPepperImpl);
-
-    extern void *qtPepperInstance; // qglobal.cpp
-
-    // in order to simplify development and start from known-good code I'm
-    // using the GetUrlHandler from the photo naclports example here.
-    GetURLHandler* handler = GetURLHandler::Create(reinterpret_cast<pp::Instance *>(qtPepperInstance),
-                                                   std::string(url().toString().toLatin1()),
-                                                   d);
-    handler->Start();
-}
-
-void QNetworkReplyPepperImpl::didCompleteIO(int32_t result)
-{
-    Q_D(QNetworkReplyPepperImpl);
-    //qDebug() << "didCompleteIO" << result;
-}
+const int ReadBufferSize = 32768;
+extern void *qtPepperInstance; // extern pp::instance pointer set by the pepper platform plugin
 
 QNetworkReplyPepperImpl::QNetworkReplyPepperImpl(QObject *parent, const QNetworkRequest &req, const QNetworkAccessManager::Operation op)
     : QNetworkReply(*new QNetworkReplyPepperImplPrivate(this), parent)
+    , m_instance(reinterpret_cast<pp::Instance*>(qtPepperInstance))
+    , m_urlRequest(m_instance)
+    , m_urlLoader(m_instance)
+    , callbackFactory(this)
 {
-    QNetworkReplyPepperImplPrivate *d = (QNetworkReplyPepperImplPrivate*) d_func();
+    Q_D(QNetworkReplyPepperImpl);
+    qCDebug(QT_PLATFORM_PEPPER_NETWORK) << "Construct QNetworkReplyPepperImpl for url" << req.url();
 
+    // QNetworkReply bookkeeping
     setRequest(req);
     setUrl(req.url());
     setOperation(op);
 
-    qDebug() << "NetworkReplyPepperImpl::loading" << req.url();
-
-    // Block and load data. At the time of writing ppapi
-    // does not support calling the API on secondary threads,
-    // schedule the call on the pepper thread and wait.
-    //QMutexLocker lock(&d->mutex);
-    //qtRunOnPepperThread(pepperLoadData, this);
-    //d->dataReady.wait(&d->mutex);
-    pepperLoadData(this);
-
-    qDebug() << "NetworkReplyPepperImpl::loaded" <<req.url() << d->data.count();
-
-    setFinished(true);
-    QNetworkReply::open(QIODevice::ReadOnly);
-
-    if (d->state == PP_OK && d->data.count() > 0) {
-        //qDebug() << "QNetworkReplyPepperImpl::got file";
-
-        //setHeader(QNetworkRequest::LastModifiedHeader, fi.lastModified());
-        setHeader(QNetworkRequest::ContentLengthHeader, d->data.count());
-
-        QMetaObject::invokeMethod(this, "metaDataChanged", Qt::QueuedConnection);
-        QMetaObject::invokeMethod(this, "downloadProgress", Qt::QueuedConnection,
-            Q_ARG(qint64, d->data.count()), Q_ARG(qint64, d->data.count()));
-        QMetaObject::invokeMethod(this, "readyRead", Qt::QueuedConnection);
-        QMetaObject::invokeMethod(this, "finished", Qt::QueuedConnection);
-    } else {
-        //qDebug() << "QNetworkReplyPepperImpl error";
-
-        QString msg = QCoreApplication::translate("QNetworkAccessPepperBackend", "Error opening %1")
-                .arg(d->url.toString());
-        setError(QNetworkReply::ContentNotFoundError, msg);
-        QMetaObject::invokeMethod(this, "error", Qt::QueuedConnection,
-            Q_ARG(QNetworkReply::NetworkError, QNetworkReply::ContentNotFoundError));
-        QMetaObject::invokeMethod(this, "finished", Qt::QueuedConnection);
+    // Handle error conditions
+    if (!qtPepperInstance) {
+        qCWarning(QT_PLATFORM_PEPPER_NETWORK) << "pepper platform plugin is not started; network operations will fail";
+        fail();
+        return;
     }
+    if (pp::MessageLoop::GetCurrent().is_null()) {
+        qCWarning(QT_PLATFORM_PEPPER_NETWORK) << "no pp::MessageLoop for the current thread; network operations will fail";
+        fail();
+        return;
+    }
+
+    // Configure and open the pepper url request.
+    m_urlRequest.SetURL(d->url.toString().toStdString());
+    m_urlRequest.SetMethod("GET");
+    m_urlRequest.SetRecordDownloadProgress(true);
+    pp::CompletionCallback openCallback = callbackFactory.NewCallback(&QNetworkReplyPepperImpl::onOpen);
+    m_urlLoader.Open(m_urlRequest, openCallback);
+}
+
+QNetworkReplyPepperImpl::~QNetworkReplyPepperImpl()
+{
+
+}
+
+void QNetworkReplyPepperImpl::onOpen(int32_t result)
+{
+    Q_D(QNetworkReplyPepperImpl);
+    qCDebug(QT_PLATFORM_PEPPER_NETWORK) << "onOpen" << d->url << result;
+
+    if (result != PP_OK) {
+        fail();
+        return;
+    }
+
+    // Get status
+    pp::URLResponseInfo response = m_urlLoader.GetResponseInfo();
+    int httpCode = response.GetStatusCode();
+    int64_t sofar = 0;
+    int64_t total = 0;
+    m_urlLoader.GetDownloadProgress(&sofar, &total);
+    m_urlRequest.SetRecordDownloadProgress(false);
+
+    qCDebug(QT_PLATFORM_PEPPER_NETWORK) << "onOpen" << d->url << "callback result" << result
+                                        << "http status" << httpCode << "download size" << total;
+
+    // The current buffer implementation is designed to hold the entire data downlod
+    // in memory. This can be optimized for less memory usage by dropping data
+    // read off the QNetworkReply.
+    d->buffer.reserve(total);
+    d->buffer.resize(ReadBufferSize);
+
+    // Start reading data bytes
+    read();
+}
+
+void QNetworkReplyPepperImpl::read()
+{
+    Q_D(QNetworkReplyPepperImpl);
+    qCDebug(QT_PLATFORM_PEPPER_NETWORK) << "read()" << d->url;
+
+    pp::CompletionCallback readCallback = callbackFactory.NewCallback(&QNetworkReplyPepperImpl::onRead);
+    int32_t result = PP_OK;
+    do {
+        char * buffer = d->buffer.data() + d->writeOffset;
+        result = m_urlLoader.ReadResponseBody(buffer, ReadBufferSize, readCallback);
+
+      // Handle streaming data directly. Note that we *don't* want to call
+      // OnRead here, since in the case of result > 0 it will schedule
+      // another call to this function. If the network is very fast, we could
+      // end up with a deeply recursive stack.
+      if (result > 0) {
+          qCDebug(QT_PLATFORM_PEPPER_NETWORK) << "read byes" << result;
+          appendData(result);
+      }
+    } while (result > 0);
+
+    if (result != PP_OK_COMPLETIONPENDING) {
+      // Either we reached the end of the stream (result == PP_OK) or there was
+      // an error. We want OnRead to get called no matter what to handle
+      // that case, whether the error is synchronous or asynchronous. If the
+      // result code *is* COMPLETIONPENDING, our callback will be called
+      // asynchronously.
+      readCallback.Run(result);
+    }
+}
+
+void QNetworkReplyPepperImpl::onRead(int32_t result)
+{
+    Q_D(QNetworkReplyPepperImpl);
+    qCDebug(QT_PLATFORM_PEPPER_NETWORK) << "onRead" << d->url << result;
+
+    if (result == PP_OK) {
+        qCDebug(QT_PLATFORM_PEPPER_NETWORK) << "finished" << d->url << d->writeOffset;
+        setFinished(true);
+        QNetworkReply::open(QIODevice::ReadOnly); // ### ???
+        setHeader(QNetworkRequest::ContentLengthHeader, d->writeOffset);
+        QMetaObject::invokeMethod(this, "finished", Qt::QueuedConnection);
+    } else if (result > 0) {
+        // The URLLoader just filled "result" number of bytes into our buffer.
+        // Save them and perform another read.
+        appendData(result);
+        read();
+    } else {
+        // A read error occurred.
+        fail();
+    }
+}
+
+void QNetworkReplyPepperImpl::appendData(int32_t size)
+{
+    Q_D(QNetworkReplyPepperImpl);
+    qCDebug(QT_PLATFORM_PEPPER_NETWORK) << "buffering" << size << "bytes";
+
+    // Adjust buffer size and offset
+    d->writeOffset += size;
+    d->buffer.resize(d->buffer.size() + size);
+
+    QMetaObject::invokeMethod(this, "downloadProgress", Qt::QueuedConnection,
+        Q_ARG(qint64, d->writeOffset), Q_ARG(qint64, d->writeOffset));
+    QMetaObject::invokeMethod(this, "readyRead", Qt::QueuedConnection);
+}
+
+void QNetworkReplyPepperImpl::fail()
+{
+    Q_D(QNetworkReplyPepperImpl);
+    qCDebug(QT_PLATFORM_PEPPER_NETWORK) << "fail" << d->url;
+
+    QString msg = QCoreApplication::translate("QNetworkAccessPepperBackend", "Error opening %1")
+            .arg(d->url.toString());
+    setError(QNetworkReply::ContentNotFoundError, msg);
+    QMetaObject::invokeMethod(this, "error", Qt::QueuedConnection,
+        Q_ARG(QNetworkReply::NetworkError, QNetworkReply::ContentNotFoundError));
+    QMetaObject::invokeMethod(this, "finished", Qt::QueuedConnection);
 }
 
 void QNetworkReplyPepperImpl::close()
 {
     Q_D(QNetworkReplyPepperImpl);
-    QNetworkReply::close();
+    qCDebug(QT_PLATFORM_PEPPER_NETWORK) << "close";
 
+    QNetworkReply::close();
 }
 
 void QNetworkReplyPepperImpl::abort()
@@ -152,20 +227,19 @@ void QNetworkReplyPepperImpl::abort()
 qint64 QNetworkReplyPepperImpl::bytesAvailable() const
 {
     Q_D(const QNetworkReplyPepperImpl);
-    quint64 available = QNetworkReply::bytesAvailable() + d->data.count() - d->dataPosition;
-    //qDebug() << "QNetworkReplyPepperImpl::bytesAvailable" << available;
+    quint64 available = QNetworkReply::bytesAvailable() + d->writeOffset - d->readOffset;
     return available;
 }
 
 bool QNetworkReplyPepperImpl::isSequential () const
 {
-    return true;
+    return false;
 }
 
 qint64 QNetworkReplyPepperImpl::size() const
 {
     Q_D(const QNetworkReplyPepperImpl);
-    return d->data.count();
+    return d->writeOffset;
 }
 
 /*!
@@ -175,20 +249,25 @@ qint64 QNetworkReplyPepperImpl::readData(char *data, qint64 maxlen)
 {
     Q_D(QNetworkReplyPepperImpl);
 
-    qint64 available = d->data.count() - d->dataPosition;
+    qint64 available = d->writeOffset - d->readOffset;
 
     if (available <= 0)
         return -1;
 
     qint64 toRead = qMin(maxlen, available);
-    std::memcpy(data, d->data.constData() + d->dataPosition, toRead);
-    d->dataPosition += toRead;
-
-    //qDebug() << "QNetworkReplyPepperImpl::readData" << toRead;
+    std::memcpy(data, d->buffer.constData() + d->readOffset, toRead);
+    d->readOffset += toRead;
 
     return toRead;
 }
 
+QNetworkReplyPepperImplPrivate::QNetworkReplyPepperImplPrivate(QNetworkReplyPepperImpl *q)
+    : QNetworkReplyPrivate()
+    , readOffset(0)
+    , writeOffset(0)
+{
+
+}
 
 QT_END_NAMESPACE
 

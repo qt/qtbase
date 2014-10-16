@@ -79,11 +79,9 @@ SOURCES += \
 
 # A QNAM backend for NaCl
 nacl {
-    HEADERS +=  access/qnetworkreplypepperimpl_p.h \
-                access/geturl_handler.h
+    HEADERS +=  access/qnetworkreplypepperimpl_p.h
 
-    SOURCES +=  access/qnetworkreplypepperimpl.cpp \
-                access/geturl_handler.cc
+    SOURCES +=  access/qnetworkreplypepperimpl.cpp
 }
 
 mac: LIBS_PRIVATE += -framework Security

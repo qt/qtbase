@@ -60,10 +60,20 @@
 #include <QtCore/QMutex>
 #include <QtCore/QByteArray>
 #include <QtCore/QBuffer>
+#include <QtCore/qloggingcategory.h>
 
 #include <qplatformdefs.h>
 
+#include "ppapi/cpp/completion_callback.h"
+#include "ppapi/cpp/instance.h"
+#include "ppapi/cpp/url_loader.h"
+#include "ppapi/cpp/url_request_info.h"
+#include "ppapi/cpp/url_response_info.h"
+#include "ppapi/utility/completion_callback_factory.h"
+
 QT_BEGIN_NAMESPACE
+
+Q_DECLARE_LOGGING_CATEGORY(QT_PLATFORM_PEPPER_NETWORK)
 
 class QNetworkReplyPepperImplPrivate;
 class QNetworkReplyPepperImpl: public QNetworkReply
@@ -73,8 +83,12 @@ public:
     QNetworkReplyPepperImpl(QObject *parent, const QNetworkRequest &req, const QNetworkAccessManager::Operation op);
     ~QNetworkReplyPepperImpl();
 
-    void loadData();
-    void didCompleteIO(int32_t result);
+    // pepper url loader data callback and driver functions
+    void onOpen(int32_t result);
+    void read();
+    void onRead(int32_t result);
+    void appendData(int32_t size);
+    void fail();
 
     virtual void abort();
 
@@ -87,19 +101,22 @@ public:
     virtual qint64 readData(char *data, qint64 maxlen);
 
     Q_DECLARE_PRIVATE(QNetworkReplyPepperImpl)
+private:
+    pp::Instance* m_instance;
+    pp::URLRequestInfo m_urlRequest;
+    pp::URLLoader m_urlLoader;
+    pp::CompletionCallbackFactory<QNetworkReplyPepperImpl> callbackFactory;
 };
 
 class QNetworkReplyPepperImplPrivate: public QNetworkReplyPrivate
 {
 public:
     QNetworkReplyPepperImplPrivate(QNetworkReplyPepperImpl * q);
-    QByteArray data;
-    quint64 dataPosition;
-    int state; // 0:(PP_OK), PP_ERROR_FILENOTFOUND
-    QWaitCondition dataReady;
-    QMutex mutex;
 
-// ###    pp::URLLoader loader;
+    QByteArray buffer;
+    quint64 readOffset;
+    quint64 writeOffset;
+    int state; // 0:(PP_OK), PP_ERROR_FILENOTFOUND
 
     Q_DECLARE_PUBLIC(QNetworkReplyPepperImpl)
 };
