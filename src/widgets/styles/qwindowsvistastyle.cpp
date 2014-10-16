@@ -2285,7 +2285,7 @@ int QWindowsVistaStyle::pixelMetric(PixelMetric metric, const QStyleOption *opti
     if (!QWindowsVistaStylePrivate::useVista())
         return QWindowsStyle::pixelMetric(metric, option, widget);
 
-    int ret = QWindowsStylePrivate::fixedPixelMetric(metric);
+    int ret = QWindowsVistaStylePrivate::fixedPixelMetric(metric);
     if (ret != QWindowsStylePrivate::InvalidMetric)
         return int(QStyleHelper::dpiScaled(ret));
 
