@@ -2112,7 +2112,8 @@ void tst_QSharedPointer::qvariantCast()
     // Intentionally does not compile.
 //     QWeakPointer<int> sop = qWeakPointerFromVariant<int>(v);
 
-    QWeakPointer<QFile> tracking = new QFile;
+    QFile file;
+    QWeakPointer<QFile> tracking = &file;
     tracking.data()->setObjectName("A test name");
     v = QVariant::fromValue(tracking);
 
