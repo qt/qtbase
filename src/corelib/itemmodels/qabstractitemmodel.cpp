@@ -3375,7 +3375,7 @@ Qt::ItemFlags QAbstractTableModel::flags(const QModelIndex &index) const
     QAbstractItemModel, it is not suitable for use with tree views; you will
     need to subclass QAbstractItemModel if you want to provide a model for
     that purpose. If you need to use a number of list models to manage data,
-    it may be more appropriate to subclass QAbstractTableModel class instead.
+    it may be more appropriate to subclass QAbstractTableModel instead.
 
     Simple models can be created by subclassing this class and implementing
     the minimum number of required functions. For example, we could implement
@@ -3399,7 +3399,7 @@ Qt::ItemFlags QAbstractTableModel::flags(const QModelIndex &index) const
     default ones provided by the roleNames() function, you must override it.
 
     For editable list models, you must also provide an implementation of
-    setData(), implement the flags() function so that it returns a value
+    setData(), and implement the flags() function so that it returns a value
     containing \l{Qt::ItemFlags}{Qt::ItemIsEditable}.
 
     Note that QAbstractListModel provides a default implementation of
