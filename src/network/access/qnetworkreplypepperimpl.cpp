@@ -171,7 +171,7 @@ void QNetworkReplyPepperImpl::onRead(int32_t result)
         setFinished(true);
         QNetworkReply::open(QIODevice::ReadOnly); // ### ???
         setHeader(QNetworkRequest::ContentLengthHeader, d->writeOffset);
-        QMetaObject::invokeMethod(this, "finished", Qt::QueuedConnection);
+        QMetaObject::invokeMethod(this, "finished");
     } else if (result > 0) {
         // The URLLoader just filled "result" number of bytes into our buffer.
         // Save them and perform another read.
@@ -192,9 +192,9 @@ void QNetworkReplyPepperImpl::appendData(int32_t size)
     d->writeOffset += size;
     d->buffer.resize(d->buffer.size() + size);
 
-    QMetaObject::invokeMethod(this, "downloadProgress", Qt::QueuedConnection,
+    QMetaObject::invokeMethod(this, "downloadProgress",
         Q_ARG(qint64, d->writeOffset), Q_ARG(qint64, d->writeOffset));
-    QMetaObject::invokeMethod(this, "readyRead", Qt::QueuedConnection);
+    QMetaObject::invokeMethod(this, "readyRead");
 }
 
 void QNetworkReplyPepperImpl::fail()
@@ -205,9 +205,9 @@ void QNetworkReplyPepperImpl::fail()
     QString msg = QCoreApplication::translate("QNetworkAccessPepperBackend", "Error opening %1")
             .arg(d->url.toString());
     setError(QNetworkReply::ContentNotFoundError, msg);
-    QMetaObject::invokeMethod(this, "error", Qt::QueuedConnection,
+    QMetaObject::invokeMethod(this, "error",
         Q_ARG(QNetworkReply::NetworkError, QNetworkReply::ContentNotFoundError));
-    QMetaObject::invokeMethod(this, "finished", Qt::QueuedConnection);
+    QMetaObject::invokeMethod(this, "finished");
 }
 
 void QNetworkReplyPepperImpl::close()
