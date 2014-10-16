@@ -46,6 +46,8 @@
 
 QT_BEGIN_NAMESPACE
 
+Q_LOGGING_CATEGORY(lcQpaInputMethods, "qt.qpa.input.methods");
+
 bool isQtApplication()
 {
     // Returns \c true if the plugin is in full control of the whole application. This means

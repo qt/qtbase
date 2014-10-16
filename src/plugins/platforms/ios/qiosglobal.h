@@ -41,6 +41,16 @@
 
 QT_BEGIN_NAMESPACE
 
+Q_DECLARE_LOGGING_CATEGORY(lcQpaInputMethods);
+
+#if !defined(QT_NO_DEBUG)
+#define qImDebug(...) \
+    for (bool qt_category_enabled = lcQpaInputMethods().isDebugEnabled(); qt_category_enabled; qt_category_enabled = false) \
+        QMessageLogger(QT_MESSAGELOG_FILE, QT_MESSAGELOG_LINE, QT_MESSAGELOG_FUNC, lcQpaInputMethods().categoryName()).debug(__VA_ARGS__)
+#else
+#define qImDebug() QT_NO_QDEBUG_MACRO()
+#endif
+
 class QPlatformScreen;
 
 bool isQtApplication();
