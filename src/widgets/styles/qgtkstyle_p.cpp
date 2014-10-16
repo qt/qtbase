@@ -701,10 +701,12 @@ GtkWidget* QGtkStylePrivate::getTextColorWidget() const
 void QGtkStylePrivate::setupGtkWidget(GtkWidget* widget)
 {
     if (Q_GTK_IS_WIDGET(widget)) {
-        static GtkWidget* protoLayout = 0;
+        GtkWidget *protoLayout = gtkWidgetMap()->value("GtkContainer");
         if (!protoLayout) {
             protoLayout = QGtkStylePrivate::gtk_fixed_new();
             QGtkStylePrivate::gtk_container_add((GtkContainer*)(gtkWidgetMap()->value("GtkWindow")), protoLayout);
+            QHashableLatin1Literal widgetPath = QHashableLatin1Literal::fromData(strdup("GtkContainer"));
+            gtkWidgetMap()->insert(widgetPath, protoLayout);
         }
         Q_ASSERT(protoLayout);
 
