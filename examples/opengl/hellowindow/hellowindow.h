@@ -90,12 +90,14 @@ private:
     int m_currentWindow;
 
     QMutex m_windowLock;
+
+    QColor m_backgroundColor;
 };
 
 class HelloWindow : public QWindow
 {
 public:
-    explicit HelloWindow(const QSharedPointer<Renderer> &renderer);
+    explicit HelloWindow(const QSharedPointer<Renderer> &renderer, QScreen *screen = 0);
 
     QColor color() const;
     void updateColor();

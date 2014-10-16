@@ -56,9 +56,14 @@ Renderer::Renderer(const QSurfaceFormat &format, Renderer *share, QScreen *scree
     if (share)
         m_context->setShareContext(share->m_context);
     m_context->create();
+
+    m_backgroundColor = QColor::fromRgbF(0.1f, 0.1f, 0.2f, 1.0f);
+    m_backgroundColor.setRed(qrand() % 64);
+    m_backgroundColor.setGreen(qrand() % 128);
+    m_backgroundColor.setBlue(qrand() % 256);
 }
 
-HelloWindow::HelloWindow(const QSharedPointer<Renderer> &renderer)
+HelloWindow::HelloWindow(const QSharedPointer<Renderer> &renderer, QScreen *screen)
     : m_colorIndex(0), m_renderer(renderer)
 {
     setSurfaceType(QWindow::OpenGLSurface);
@@ -67,6 +72,8 @@ HelloWindow::HelloWindow(const QSharedPointer<Renderer> &renderer)
     setGeometry(QRect(10, 10, 640, 480));
 
     setFormat(renderer->format());
+    if (screen)
+        setScreen(screen);
 
     create();
 
@@ -147,7 +154,7 @@ void Renderer::render()
     f->glViewport(0, 0, viewSize.width() * surface->devicePixelRatio(), viewSize.height() * surface->devicePixelRatio());
     f->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    f->glClearColor(0.1f, 0.1f, 0.2f, 1.0f);
+    f->glClearColor(m_backgroundColor.redF(), m_backgroundColor.greenF(), m_backgroundColor.blueF(), m_backgroundColor.alphaF());
     f->glFrontFace(GL_CW);
     f->glCullFace(GL_FRONT);
     f->glEnable(GL_CULL_FACE);
@@ -180,8 +187,13 @@ void Renderer::render()
     QTimer::singleShot(0, this, SLOT(render()));
 }
 
+Q_GLOBAL_STATIC(QMutex, initMutex)
+
 void Renderer::initialize()
 {
+    // Threaded shader compilation can confuse some drivers. Avoid it.
+    QMutexLocker lock(initMutex());
+
     QOpenGLShader *vshader = new QOpenGLShader(QOpenGLShader::Vertex, this);
     vshader->compileSourceCode(
         "attribute highp vec4 vertex;"
