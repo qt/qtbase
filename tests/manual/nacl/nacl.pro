@@ -4,6 +4,7 @@ SUBDIRS = \
     qmake \                         # build a standard ppapi "hello world" example with qmake.
     qtcore \                        # simple QtCore usage (qstring).
     resources \                     # test the qrc resources system
+    urlload \                       # test url loading
     prototype_main \                # qt_main app startup prototype.
     prototype_openglfucntions \     # resolving opengl functions prototyping.
     prototype_libppapimain \        # call PpapiPluginMain from a shared library.
