@@ -653,9 +653,10 @@ Q_AUTOTEST_EXPORT QByteArray qCleanupFuncinfo(QByteArray info)
 
     int pos;
 
-    // skip trailing [with XXX] for templates (gcc)
+    // Skip trailing [with XXX] for templates (gcc), but make
+    // sure to not affect Objective-C message names.
     pos = info.size() - 1;
-    if (info.endsWith(']')) {
+    if (info.endsWith(']') && !(info.startsWith('+') || info.startsWith('-'))) {
         while (--pos) {
             if (info.at(pos) == '[')
                 info.truncate(pos);
