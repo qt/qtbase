@@ -16,6 +16,32 @@ void runCommand(const QString &command)
     system(c.constData());
 }
 
+static bool copyRecursively(const QString &srcFilePath,
+                            const QString &tgtFilePath)
+{
+    QFileInfo srcFileInfo(srcFilePath);
+    if (srcFileInfo.isDir()) {
+        QDir targetDir(tgtFilePath);
+        targetDir.cdUp();
+        if (!targetDir.mkdir(QFileInfo(tgtFilePath).fileName()))
+            return false;
+        QDir sourceDir(srcFilePath);
+        QStringList fileNames = sourceDir.entryList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot | QDir::Hidden | QDir::System);
+        foreach (const QString &fileName, fileNames) {
+            const QString newSrcFilePath
+                    = srcFilePath + QLatin1Char('/') + fileName;
+            const QString newTgtFilePath
+                    = tgtFilePath + QLatin1Char('/') + fileName;
+            if (!copyRecursively(newSrcFilePath, newTgtFilePath))
+                return false;
+        }
+    } else {
+        if (!QFile::copy(srcFilePath, tgtFilePath))
+            return false;
+    }
+    return true;
+}
+
 int main(int argc, char **argv)
 {
     // Command line handling
@@ -30,6 +56,8 @@ int main(int argc, char **argv)
                         "Omit this option to use the default nacl_sdk template, as created "
                         "by create_html.py", "template", ""));
 
+    parser.addOption(QCommandLineOption(QStringList() << "q" << "quick", "Deploy Qt Quick imports"));
+
     parser.addOption(QCommandLineOption(QStringList() << "p" << "print", "Print Chrome and debugging help."));
     parser.addOption(QCommandLineOption(QStringList() << "r" << "run", "Run the application in Chrome."));
     parser.addOption(QCommandLineOption(QStringList() << "d" << "debug", "Debug the application in Chrome."));
@@ -37,6 +65,7 @@ int main(int argc, char **argv)
     parser.process(app);
     const QStringList args = parser.positionalArguments();
     const QString tmplate = parser.value("template");
+    const bool quickImports = parser.isSet("quick");
     const bool print = parser.isSet("print");
     bool run = parser.isSet("run");
     const bool debug = parser.isSet("debug");
@@ -92,6 +121,8 @@ int main(int argc, char **argv)
     nacldeployqtPath.chop(QStringLiteral("nacldeployqt").length());
     QString qtBaseDir = QDir(nacldeployqtPath + QStringLiteral("../")).canonicalPath(); 
     QString qtLibDir = qtBaseDir + "/lib";
+    QString qtBinDir = qtBaseDir + "/bin";
+    QString qtImportsDir = qtBaseDir + "/qml";
     QString nmfFileName = appName + ".nmf";
 
     qDebug() << " ";
@@ -99,6 +130,24 @@ int main(int argc, char **argv)
     qDebug() << "Using SDK" << naclSdkRoot;
     qDebug() << "Qt libs in" << qtLibDir;
     qDebug() << " ";
+
+    // Deply Qt Quick imports
+    if (quickImports) {
+        // TODO: At some pont use qmlimportscanner to select imports in use.
+        // For now simply deploy all imports.
+        QStringList imports = QDir(qtImportsDir).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
+
+        QString targetBase = "qml";
+        QDir().mkpath(targetBase);
+
+        foreach (const QString &import, imports) {
+            QString source = qtImportsDir + "/" + import;
+            QString target = targetBase + "/" + import;
+
+            // TODO: Skip the binaries for static builds; they will be built into the main nexe
+            copyRecursively(source, target);
+        }
+    }
 
     // create the .nmf manifest file
     QString nmfCommand = QStringLiteral("python ") + createNmf
