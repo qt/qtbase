@@ -152,6 +152,9 @@
     if (state.disabled)
         traits |= UIAccessibilityTraitNotEnabled;
 
+    if (state.searchEdit)
+        traits |= UIAccessibilityTraitSearchField;
+
     if (iface->role() == QAccessible::Button)
         traits |= UIAccessibilityTraitButton;
 

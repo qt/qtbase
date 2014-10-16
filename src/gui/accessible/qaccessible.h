@@ -185,6 +185,8 @@ public:
         quint64 selectableText : 1;
         quint64 supportsAutoCompletion : 1;
 
+        quint64 searchEdit : 1;
+
         // quint64 horizontal : 1;
         // quint64 vertical : 1;
         // quint64 invalidEntry : 1;
