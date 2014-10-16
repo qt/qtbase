@@ -103,7 +103,7 @@ int main(int argc, char **argv)
         return 0;
     }
 
-    // Get deployment scripts:
+    // Get the location of the deployment scripts in the nacl sdk:
     QString createNmf = naclSdkRoot + "/tools/create_nmf.py";
     if (!QFile(createNmf).exists()) {
         qDebug() << "create_nmf.py not found at" << createNmf;
@@ -159,7 +159,7 @@ int main(int argc, char **argv)
     
     system(nmfCommand.toLatin1().constData());
 
-    // create the inxed.html file. Use a built-in template if specifed,
+    // create the index.html file. Use a built-in template if specifed,
     // else use create_html.py
     if (tmplate.isEmpty()) {
         QString hmtlCommand = QStringLiteral("python ") + createHtml + " " + nmf
@@ -219,7 +219,7 @@ int main(int argc, char **argv)
     else if (debug)
         runCommand(chromeApp + chromeDebugOptions + " &");
 
-    // Start debugger
+    // Start the debugger
     if (debug) {
         // print help string, then lanch gdb.
         QString gdbCommand = "echo Connect to Chrome: target remote localhost:4014;\n\n"
