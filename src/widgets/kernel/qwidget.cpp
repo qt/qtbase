@@ -6545,10 +6545,15 @@ void QWidget::clearFocus()
 
     QWidget *w = this;
     while (w) {
+        // Just like setFocus(), we update (clear) the focus_child of our parents
         if (w->d_func()->focus_child == this)
             w->d_func()->focus_child = 0;
         w = w->parentWidget();
     }
+    // Since focus_child is the basis for the top level QWidgetWindow's focusObject()
+    // we need to report this change to the rest of Qt, but we match setFocus() and
+    // do it at the end of the function.
+
 #ifndef QT_NO_GRAPHICSVIEW
     QWExtra *topData = d_func()->extra;
     if (topData && topData->proxyWidget)
@@ -6569,11 +6574,15 @@ void QWidget::clearFocus()
             QAccessible::updateAccessibility(&event);
 #endif
         }
+    }
 
-        if (QTLWExtra *extra = window()->d_func()->maybeTopData()) {
-            if (extra->window)
-                emit extra->window->focusObjectChanged(extra->window->focusObject());
-        }
+    // Since we've unconditionally cleared the focus_child of our parents, we need
+    // to report this to the rest of Qt. Note that the focus_child is not the same
+    // thing as the application's focusWidget, which is why this piece of code is
+    // not inside the hasFocus() block above.
+    if (QTLWExtra *extra = window()->d_func()->maybeTopData()) {
+        if (extra->window)
+            emit extra->window->focusObjectChanged(extra->window->focusObject());
     }
 }
 
