@@ -6,3 +6,4 @@ DEPENDPATH += .
 SOURCES += hello_world.cpp
 
 LIBS +=  -lppapi -lnacl_io
+QT = core
