@@ -182,6 +182,7 @@ int main(int argc, char **argv)
     }
 
     // Start a HTTP server and serve the app.
-    qDebug() << "Serving on localhost:8000";
-    runCommand("python -m SimpleHTTPServer");
+    if (run || debug) {
+        runCommand("python -m SimpleHTTPServer");
+    }
 }
