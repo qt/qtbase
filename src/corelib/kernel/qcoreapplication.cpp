@@ -64,6 +64,11 @@
 #include <private/qhooks_p.h>
 
 #ifndef QT_NO_QOBJECT
+
+#if defined(Q_OS_NACL)
+#include "qcorepeppereventdispatcher_p.h"
+#endif
+
 #if defined(Q_OS_UNIX)
 #  if defined(Q_OS_BLACKBERRY)
 #    include "qeventdispatcher_blackberry_p.h"
@@ -511,7 +516,9 @@ void QCoreApplicationPrivate::createEventDispatcher()
 {
     Q_Q(QCoreApplication);
 #if defined(Q_OS_UNIX)
-#  if defined(Q_OS_BLACKBERRY)
+#  if defined(Q_OS_NACL)
+    eventDispatcher = new QCorePepperEventDispatcher(q);
+#  elif defined(Q_OS_BLACKBERRY)
     eventDispatcher = new QEventDispatcherBlackberry(q);
 #  else
 #  if !defined(QT_NO_GLIB)

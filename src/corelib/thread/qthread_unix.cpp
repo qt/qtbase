@@ -37,6 +37,10 @@
 
 #include <private/qcoreapplication_p.h>
 
+#if defined(Q_OS_NACL)
+#include <private/qcorepeppereventdispatcher_p.h>
+#endif
+
 #if defined(Q_OS_BLACKBERRY)
 #  include <private/qeventdispatcher_blackberry_p.h>
 #else
@@ -249,7 +253,10 @@ typedef void*(*QtThreadCallback)(void*);
 
 void QThreadPrivate::createEventDispatcher(QThreadData *data)
 {
-#if defined(Q_OS_BLACKBERRY)
+
+#if defined(Q_OS_NACL)
+    data->eventDispatcher.storeRelease(new QCorePepperEventDispatcher);
+#elif defined(Q_OS_BLACKBERRY)
     data->eventDispatcher.storeRelease(new QEventDispatcherBlackberry);
 #else
 #if !defined(QT_NO_GLIB)
