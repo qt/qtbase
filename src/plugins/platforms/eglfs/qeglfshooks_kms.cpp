@@ -412,8 +412,7 @@ void QEglFSKmsCursor::changeCursor(QCursor *windowCursor, QWindow *window)
     gbm_bo_write(m_bo, cursorImage.constBits(), cursorImage.byteCount());
 
     uint32_t handle = gbm_bo_get_handle(m_bo).u32;
-    QPoint hot = m_cursorImage.hotspot();
-    int status = drmModeSetCursor2(m_screen->device()->fd(), m_screen->output().crtc_id, handle, 64, 64, hot.x(), hot.y());
+    int status = drmModeSetCursor(m_screen->device()->fd(), m_screen->output().crtc_id, handle, 64, 64);
     if (status != 0)
         qWarning("Could not set cursor: %d", status);
 }
@@ -515,7 +514,7 @@ QEglFSKmsScreen::FrameBuffer *QEglFSKmsScreen::framebufferForBufferObject(gbm_bo
 }
 
 QEglFSKmsScreen::QEglFSKmsScreen(QEglFSKmsDevice *device, QEglFSKmsOutput output, QPoint position)
-    : QEglFSScreen(eglGetDisplay(device->device()))
+    : QEglFSScreen(eglGetDisplay(reinterpret_cast<EGLNativeDisplayType>(device->device())))
     , m_device(device)
     , m_gbm_surface(Q_NULLPTR)
     , m_gbm_bo_current(Q_NULLPTR)
