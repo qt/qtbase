@@ -222,10 +222,8 @@ public:
     mutable QPointer<QFocusFrame> focusWidget;
     CFAbsoluteTime defaultButtonStart;
     bool mouseDown;
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
     void* receiver;
     void *nsscroller;
-#endif
     void *indicatorBranchButtonCell;
     NSView *backingStoreNSView;
     QHash<QCocoaWidget, NSView *> cocoaControls;
