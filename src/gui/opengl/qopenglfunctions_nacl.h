@@ -1,576 +1,55 @@
 /****************************************************************************
 **
-** Copyright (C) 2015 The Qt Company Ltd.
-** Contact: http://www.qt.io/licensing/
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
+** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
-** $QT_BEGIN_LICENSE:LGPL21$
+** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
 ** Licensees holding valid commercial Qt licenses may use this file in
 ** accordance with the commercial license agreement provided with the
 ** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see http://www.qt.io/terms-conditions. For further
-** information use the contact form at http://www.qt.io/contact-us.
+** a written agreement between you and Digia.  For licensing terms and
+** conditions see http://qt.digia.com/licensing.  For further information
+** use the contact form at http://qt.digia.com/contact-us.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 or version 3 as published by the Free
-** Software Foundation and appearing in the file LICENSE.LGPLv21 and
-** LICENSE.LGPLv3 included in the packaging of this file. Please review the
-** following information to ensure the GNU Lesser General Public License
-** requirements will be met: https://www.gnu.org/licenses/lgpl.html and
-** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** As a special exception, The Qt Company gives you certain additional
-** rights. These rights are described in The Qt Company LGPL Exception
+** In addition, as a special exception, Digia gives you certain additional
+** rights.  These rights are described in the Digia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 3.0 as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 3.0 requirements will be
+** met: http://www.gnu.org/copyleft/gpl.html.
+**
 **
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
 
-#ifndef QOPENGLFUNCTIONS_H
-#define QOPENGLFUNCTIONS_H
 
-#include <QtCore/qglobal.h>
+//
+// Note! this header is designed to be directly included from
+// qglfunctions.h and should not be used on its own.
+//
 
-#ifndef QT_NO_OPENGL
-
-#ifdef __GLEW_H__
-#if defined(Q_CC_GNU)
-#warning qopenglfunctions.h is not compatible with GLEW, GLEW defines will be undefined
-#warning To use GLEW with Qt, do not include <qopengl.h> or <QOpenGLFunctions> after glew.h
-#endif
-#endif
-
-#include <QtGui/qopengl.h>
-#include <QtGui/qopenglcontext.h>
-
-//#define Q_ENABLE_OPENGL_FUNCTIONS_DEBUG
-
-#ifdef Q_ENABLE_OPENGL_FUNCTIONS_DEBUG
-#include <stdio.h>
-#define Q_OPENGL_FUNCTIONS_DEBUG \
-    GLenum error = glGetError(); \
-    if (error != GL_NO_ERROR) { \
-        unsigned clamped = qMin(unsigned(error - GL_INVALID_ENUM), 4U); \
-        const char *errors[] = { "GL_INVALID_ENUM", "GL_INVALID_VALUE", "GL_INVALID_OPERATION", "Unknown" }; \
-        printf("GL error at %s:%d: %s\n", __FILE__, __LINE__, errors[clamped]); \
-        int *value = 0; \
-        *value = 0; \
-    }
-#else
-#define Q_OPENGL_FUNCTIONS_DEBUG
-#endif
-
-QT_BEGIN_NAMESPACE
-
-struct QOpenGLFunctionsPrivate;
-
-// Undefine any macros from GLEW, qopenglextensions_p.h, etc that
-// may interfere with the definition of QOpenGLFunctions.
-#undef glBindTexture
-#undef glBlendFunc
-#undef glClear
-#undef glClearColor
-#undef glClearStencil
-#undef glColorMask
-#undef glCopyTexImage2D
-#undef glCopyTexSubImage2D
-#undef glCullFace
-#undef glDeleteTextures
-#undef glDepthFunc
-#undef glDepthMask
-#undef glDisable
-#undef glDrawArrays
-#undef glDrawElements
-#undef glEnable
-#undef glFinish
-#undef glFlush
-#undef glFrontFace
-#undef glGenTextures
-#undef glGetBooleanv
-#undef glGetError
-#undef glGetFloatv
-#undef glGetIntegerv
-#undef glGetString
-#undef glGetTexParameterfv
-#undef glGetTexParameteriv
-#undef glHint
-#undef glIsEnabled
-#undef glIsTexture
-#undef glLineWidth
-#undef glPixelStorei
-#undef glPolygonOffset
-#undef glReadPixels
-#undef glScissor
-#undef glStencilFunc
-#undef glStencilMask
-#undef glStencilOp
-#undef glTexImage2D
-#undef glTexParameterf
-#undef glTexParameterfv
-#undef glTexParameteri
-#undef glTexParameteriv
-#undef glTexSubImage2D
-#undef glViewport
-
-#undef glActiveTexture
-#undef glAttachShader
-#undef glBindAttribLocation
-#undef glBindBuffer
-#undef glBindFramebuffer
-#undef glBindRenderbuffer
-#undef glBlendColor
-#undef glBlendEquation
-#undef glBlendEquationSeparate
-#undef glBlendFuncSeparate
-#undef glBufferData
-#undef glBufferSubData
-#undef glCheckFramebufferStatus
-#undef glClearDepthf
-#undef glCompileShader
-#undef glCompressedTexImage2D
-#undef glCompressedTexSubImage2D
-#undef glCreateProgram
-#undef glCreateShader
-#undef glDeleteBuffers
-#undef glDeleteFramebuffers
-#undef glDeleteProgram
-#undef glDeleteRenderbuffers
-#undef glDeleteShader
-#undef glDepthRangef
-#undef glDetachShader
-#undef glDisableVertexAttribArray
-#undef glEnableVertexAttribArray
-#undef glFramebufferRenderbuffer
-#undef glFramebufferTexture2D
-#undef glGenBuffers
-#undef glGenerateMipmap
-#undef glGenFramebuffers
-#undef glGenRenderbuffers
-#undef glGetActiveAttrib
-#undef glGetActiveUniform
-#undef glGetAttachedShaders
-#undef glGetAttribLocation
-#undef glGetBufferParameteriv
-#undef glGetFramebufferAttachmentParameteriv
-#undef glGetProgramiv
-#undef glGetProgramInfoLog
-#undef glGetRenderbufferParameteriv
-#undef glGetShaderiv
-#undef glGetShaderInfoLog
-#undef glGetShaderPrecisionFormat
-#undef glGetShaderSource
-#undef glGetUniformfv
-#undef glGetUniformiv
-#undef glGetUniformLocation
-#undef glGetVertexAttribfv
-#undef glGetVertexAttribiv
-#undef glGetVertexAttribPointerv
-#undef glIsBuffer
-#undef glIsFramebuffer
-#undef glIsProgram
-#undef glIsRenderbuffer
-#undef glIsShader
-#undef glLinkProgram
-#undef glReleaseShaderCompiler
-#undef glRenderbufferStorage
-#undef glSampleCoverage
-#undef glShaderBinary
-#undef glShaderSource
-#undef glStencilFuncSeparate
-#undef glStencilMaskSeparate
-#undef glStencilOpSeparate
-#undef glUniform1f
-#undef glUniform1fv
-#undef glUniform1i
-#undef glUniform1iv
-#undef glUniform2f
-#undef glUniform2fv
-#undef glUniform2i
-#undef glUniform2iv
-#undef glUniform3f
-#undef glUniform3fv
-#undef glUniform3i
-#undef glUniform3iv
-#undef glUniform4f
-#undef glUniform4fv
-#undef glUniform4i
-#undef glUniform4iv
-#undef glUniformMatrix2fv
-#undef glUniformMatrix3fv
-#undef glUniformMatrix4fv
-#undef glUseProgram
-#undef glValidateProgram
-#undef glVertexAttrib1f
-#undef glVertexAttrib1fv
-#undef glVertexAttrib2f
-#undef glVertexAttrib2fv
-#undef glVertexAttrib3f
-#undef glVertexAttrib3fv
-#undef glVertexAttrib4f
-#undef glVertexAttrib4fv
-#undef glVertexAttribPointer
-
-#undef glTexLevelParameteriv
-
-class Q_GUI_EXPORT QOpenGLFunctions
-{
-public:
-    QOpenGLFunctions();
-    explicit QOpenGLFunctions(QOpenGLContext *context);
-    ~QOpenGLFunctions() {}
-
-    enum OpenGLFeature
-    {
-        Multitexture          = 0x0001,
-        Shaders               = 0x0002,
-        Buffers               = 0x0004,
-        Framebuffers          = 0x0008,
-        BlendColor            = 0x0010,
-        BlendEquation         = 0x0020,
-        BlendEquationSeparate = 0x0040,
-        BlendFuncSeparate     = 0x0080,
-        BlendSubtract         = 0x0100,
-        CompressedTextures    = 0x0200,
-        Multisample           = 0x0400,
-        StencilSeparate       = 0x0800,
-        NPOTTextures          = 0x1000,
-        NPOTTextureRepeat     = 0x2000,
-        FixedFunctionPipeline = 0x4000,
-        TextureRGFormats      = 0x8000
-    };
-    Q_DECLARE_FLAGS(OpenGLFeatures, OpenGLFeature)
-
-    QOpenGLFunctions::OpenGLFeatures openGLFeatures() const;
-    bool hasOpenGLFeature(QOpenGLFunctions::OpenGLFeature feature) const;
-
-    void initializeOpenGLFunctions();
-
-#if QT_DEPRECATED_SINCE(5, 0)
-    QT_DEPRECATED void initializeGLFunctions() { initializeOpenGLFunctions(); }
-#endif
-
-    // GLES2 + OpenGL1 common subset
-    void glBindTexture(GLenum target, GLuint texture);
-    void glBlendFunc(GLenum sfactor, GLenum dfactor);
-    void glClear(GLbitfield mask);
-    void glClearColor(GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha);
-    void glClearStencil(GLint s);
-    void glColorMask(GLboolean red, GLboolean green, GLboolean blue, GLboolean alpha);
-    void glCopyTexImage2D(GLenum target, GLint level, GLenum internalformat, GLint x, GLint y, GLsizei width, GLsizei height, GLint border);
-    void glCopyTexSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint x, GLint y, GLsizei width, GLsizei height);
-    void glCullFace(GLenum mode);
-    void glDeleteTextures(GLsizei n, const GLuint* textures);
-    void glDepthFunc(GLenum func);
-    void glDepthMask(GLboolean flag);
-    void glDisable(GLenum cap);
-    void glDrawArrays(GLenum mode, GLint first, GLsizei count);
-    void glDrawElements(GLenum mode, GLsizei count, GLenum type, const GLvoid* indices);
-    void glEnable(GLenum cap);
-    void glFinish();
-    void glFlush();
-    void glFrontFace(GLenum mode);
-    void glGenTextures(GLsizei n, GLuint* textures);
-    void glGetBooleanv(GLenum pname, GLboolean* params);
-    GLenum glGetError();
-    void glGetFloatv(GLenum pname, GLfloat* params);
-    void glGetIntegerv(GLenum pname, GLint* params);
-    const GLubyte *glGetString(GLenum name);
-    void glGetTexParameterfv(GLenum target, GLenum pname, GLfloat* params);
-    void glGetTexParameteriv(GLenum target, GLenum pname, GLint* params);
-    void glHint(GLenum target, GLenum mode);
-    GLboolean glIsEnabled(GLenum cap);
-    GLboolean glIsTexture(GLuint texture);
-    void glLineWidth(GLfloat width);
-    void glPixelStorei(GLenum pname, GLint param);
-    void glPolygonOffset(GLfloat factor, GLfloat units);
-    void glReadPixels(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, GLvoid* pixels);
-    void glScissor(GLint x, GLint y, GLsizei width, GLsizei height);
-    void glStencilFunc(GLenum func, GLint ref, GLuint mask);
-    void glStencilMask(GLuint mask);
-    void glStencilOp(GLenum fail, GLenum zfail, GLenum zpass);
-    void glTexImage2D(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const GLvoid* pixels);
-    void glTexParameterf(GLenum target, GLenum pname, GLfloat param);
-    void glTexParameterfv(GLenum target, GLenum pname, const GLfloat* params);
-    void glTexParameteri(GLenum target, GLenum pname, GLint param);
-    void glTexParameteriv(GLenum target, GLenum pname, const GLint* params);
-    void glTexSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, const GLvoid* pixels);
-    void glViewport(GLint x, GLint y, GLsizei width, GLsizei height);
-
-    // GL(ES)2
-    void glActiveTexture(GLenum texture);
-    void glAttachShader(GLuint program, GLuint shader);
-    void glBindAttribLocation(GLuint program, GLuint index, const char* name);
-    void glBindBuffer(GLenum target, GLuint buffer);
-    void glBindFramebuffer(GLenum target, GLuint framebuffer);
-    void glBindRenderbuffer(GLenum target, GLuint renderbuffer);
-    void glBlendColor(GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha);
-    void glBlendEquation(GLenum mode);
-    void glBlendEquationSeparate(GLenum modeRGB, GLenum modeAlpha);
-    void glBlendFuncSeparate(GLenum srcRGB, GLenum dstRGB, GLenum srcAlpha, GLenum dstAlpha);
-    void glBufferData(GLenum target, qopengl_GLsizeiptr size, const void* data, GLenum usage);
-    void glBufferSubData(GLenum target, qopengl_GLintptr offset, qopengl_GLsizeiptr size, const void* data);
-    GLenum glCheckFramebufferStatus(GLenum target);
-    void glClearDepthf(GLclampf depth);
-    void glCompileShader(GLuint shader);
-    void glCompressedTexImage2D(GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLint border, GLsizei imageSize, const void* data);
-    void glCompressedTexSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLsizei imageSize, const void* data);
-    GLuint glCreateProgram();
-    GLuint glCreateShader(GLenum type);
-    void glDeleteBuffers(GLsizei n, const GLuint* buffers);
-    void glDeleteFramebuffers(GLsizei n, const GLuint* framebuffers);
-    void glDeleteProgram(GLuint program);
-    void glDeleteRenderbuffers(GLsizei n, const GLuint* renderbuffers);
-    void glDeleteShader(GLuint shader);
-    void glDepthRangef(GLclampf zNear, GLclampf zFar);
-    void glDetachShader(GLuint program, GLuint shader);
-    void glDisableVertexAttribArray(GLuint index);
-    void glEnableVertexAttribArray(GLuint index);
-    void glFramebufferRenderbuffer(GLenum target, GLenum attachment, GLenum renderbuffertarget, GLuint renderbuffer);
-    void glFramebufferTexture2D(GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level);
-    void glGenBuffers(GLsizei n, GLuint* buffers);
-    void glGenerateMipmap(GLenum target);
-    void glGenFramebuffers(GLsizei n, GLuint* framebuffers);
-    void glGenRenderbuffers(GLsizei n, GLuint* renderbuffers);
-    void glGetActiveAttrib(GLuint program, GLuint index, GLsizei bufsize, GLsizei* length, GLint* size, GLenum* type, char* name);
-    void glGetActiveUniform(GLuint program, GLuint index, GLsizei bufsize, GLsizei* length, GLint* size, GLenum* type, char* name);
-    void glGetAttachedShaders(GLuint program, GLsizei maxcount, GLsizei* count, GLuint* shaders);
-    GLint glGetAttribLocation(GLuint program, const char* name);
-    void glGetBufferParameteriv(GLenum target, GLenum pname, GLint* params);
-    void glGetFramebufferAttachmentParameteriv(GLenum target, GLenum attachment, GLenum pname, GLint* params);
-    void glGetProgramiv(GLuint program, GLenum pname, GLint* params);
-    void glGetProgramInfoLog(GLuint program, GLsizei bufsize, GLsizei* length, char* infolog);
-    void glGetRenderbufferParameteriv(GLenum target, GLenum pname, GLint* params);
-    void glGetShaderiv(GLuint shader, GLenum pname, GLint* params);
-    void glGetShaderInfoLog(GLuint shader, GLsizei bufsize, GLsizei* length, char* infolog);
-    void glGetShaderPrecisionFormat(GLenum shadertype, GLenum precisiontype, GLint* range, GLint* precision);
-    void glGetShaderSource(GLuint shader, GLsizei bufsize, GLsizei* length, char* source);
-    void glGetUniformfv(GLuint program, GLint location, GLfloat* params);
-    void glGetUniformiv(GLuint program, GLint location, GLint* params);
-    GLint glGetUniformLocation(GLuint program, const char* name);
-    void glGetVertexAttribfv(GLuint index, GLenum pname, GLfloat* params);
-    void glGetVertexAttribiv(GLuint index, GLenum pname, GLint* params);
-    void glGetVertexAttribPointerv(GLuint index, GLenum pname, void** pointer);
-    GLboolean glIsBuffer(GLuint buffer);
-    GLboolean glIsFramebuffer(GLuint framebuffer);
-    GLboolean glIsProgram(GLuint program);
-    GLboolean glIsRenderbuffer(GLuint renderbuffer);
-    GLboolean glIsShader(GLuint shader);
-    void glLinkProgram(GLuint program);
-    void glReleaseShaderCompiler();
-    void glRenderbufferStorage(GLenum target, GLenum internalformat, GLsizei width, GLsizei height);
-    void glSampleCoverage(GLclampf value, GLboolean invert);
-    void glShaderBinary(GLint n, const GLuint* shaders, GLenum binaryformat, const void* binary, GLint length);
-    void glShaderSource(GLuint shader, GLsizei count, const char** string, const GLint* length);
-    void glStencilFuncSeparate(GLenum face, GLenum func, GLint ref, GLuint mask);
-    void glStencilMaskSeparate(GLenum face, GLuint mask);
-    void glStencilOpSeparate(GLenum face, GLenum fail, GLenum zfail, GLenum zpass);
-    void glUniform1f(GLint location, GLfloat x);
-    void glUniform1fv(GLint location, GLsizei count, const GLfloat* v);
-    void glUniform1i(GLint location, GLint x);
-    void glUniform1iv(GLint location, GLsizei count, const GLint* v);
-    void glUniform2f(GLint location, GLfloat x, GLfloat y);
-    void glUniform2fv(GLint location, GLsizei count, const GLfloat* v);
-    void glUniform2i(GLint location, GLint x, GLint y);
-    void glUniform2iv(GLint location, GLsizei count, const GLint* v);
-    void glUniform3f(GLint location, GLfloat x, GLfloat y, GLfloat z);
-    void glUniform3fv(GLint location, GLsizei count, const GLfloat* v);
-    void glUniform3i(GLint location, GLint x, GLint y, GLint z);
-    void glUniform3iv(GLint location, GLsizei count, const GLint* v);
-    void glUniform4f(GLint location, GLfloat x, GLfloat y, GLfloat z, GLfloat w);
-    void glUniform4fv(GLint location, GLsizei count, const GLfloat* v);
-    void glUniform4i(GLint location, GLint x, GLint y, GLint z, GLint w);
-    void glUniform4iv(GLint location, GLsizei count, const GLint* v);
-    void glUniformMatrix2fv(GLint location, GLsizei count, GLboolean transpose, const GLfloat* value);
-    void glUniformMatrix3fv(GLint location, GLsizei count, GLboolean transpose, const GLfloat* value);
-    void glUniformMatrix4fv(GLint location, GLsizei count, GLboolean transpose, const GLfloat* value);
-    void glUseProgram(GLuint program);
-    void glValidateProgram(GLuint program);
-    void glVertexAttrib1f(GLuint indx, GLfloat x);
-    void glVertexAttrib1fv(GLuint indx, const GLfloat* values);
-    void glVertexAttrib2f(GLuint indx, GLfloat x, GLfloat y);
-    void glVertexAttrib2fv(GLuint indx, const GLfloat* values);
-    void glVertexAttrib3f(GLuint indx, GLfloat x, GLfloat y, GLfloat z);
-    void glVertexAttrib3fv(GLuint indx, const GLfloat* values);
-    void glVertexAttrib4f(GLuint indx, GLfloat x, GLfloat y, GLfloat z, GLfloat w);
-    void glVertexAttrib4fv(GLuint indx, const GLfloat* values);
-    void glVertexAttribPointer(GLuint indx, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const void* ptr);
-
-protected:
-    QOpenGLFunctionsPrivate *d_ptr;
-    static bool isInitialized(const QOpenGLFunctionsPrivate *d) { return d != 0; }
-};
-
-Q_DECLARE_OPERATORS_FOR_FLAGS(QOpenGLFunctions::OpenGLFeatures)
-
-struct QOpenGLFunctionsPrivate
-{
-    QOpenGLFunctionsPrivate(QOpenGLContext *ctx);
-
-    void (QOPENGLF_APIENTRYP BindTexture)(GLenum target, GLuint texture);
-    void (QOPENGLF_APIENTRYP BlendFunc)(GLenum sfactor, GLenum dfactor);
-    void (QOPENGLF_APIENTRYP Clear)(GLbitfield mask);
-    void (QOPENGLF_APIENTRYP ClearColor)(GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha);
-    void (QOPENGLF_APIENTRYP ClearDepthf)(GLclampf depth);
-    void (QOPENGLF_APIENTRYP ClearStencil)(GLint s);
-    void (QOPENGLF_APIENTRYP ColorMask)(GLboolean red, GLboolean green, GLboolean blue, GLboolean alpha);
-    void (QOPENGLF_APIENTRYP CopyTexImage2D)(GLenum target, GLint level, GLenum internalformat, GLint x, GLint y, GLsizei width, GLsizei height, GLint border);
-    void (QOPENGLF_APIENTRYP CopyTexSubImage2D)(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint x, GLint y, GLsizei width, GLsizei height);
-    void (QOPENGLF_APIENTRYP CullFace)(GLenum mode);
-    void (QOPENGLF_APIENTRYP DeleteTextures)(GLsizei n, const GLuint* textures);
-    void (QOPENGLF_APIENTRYP DepthFunc)(GLenum func);
-    void (QOPENGLF_APIENTRYP DepthMask)(GLboolean flag);
-    void (QOPENGLF_APIENTRYP DepthRangef)(GLclampf nearVal, GLclampf farVal);
-    void (QOPENGLF_APIENTRYP Disable)(GLenum cap);
-    void (QOPENGLF_APIENTRYP DrawArrays)(GLenum mode, GLint first, GLsizei count);
-    void (QOPENGLF_APIENTRYP DrawElements)(GLenum mode, GLsizei count, GLenum type, const GLvoid* indices);
-    void (QOPENGLF_APIENTRYP Enable)(GLenum cap);
-    void (QOPENGLF_APIENTRYP Finish)();
-    void (QOPENGLF_APIENTRYP Flush)();
-    void (QOPENGLF_APIENTRYP FrontFace)(GLenum mode);
-    void (QOPENGLF_APIENTRYP GenTextures)(GLsizei n, GLuint* textures);
-    void (QOPENGLF_APIENTRYP GetBooleanv)(GLenum pname, GLboolean* params);
-    GLenum (QOPENGLF_APIENTRYP GetError)();
-    void (QOPENGLF_APIENTRYP GetFloatv)(GLenum pname, GLfloat* params);
-    void (QOPENGLF_APIENTRYP GetIntegerv)(GLenum pname, GLint* params);
-    const GLubyte * (QOPENGLF_APIENTRYP GetString)(GLenum name);
-    void (QOPENGLF_APIENTRYP GetTexParameterfv)(GLenum target, GLenum pname, GLfloat* params);
-    void (QOPENGLF_APIENTRYP GetTexParameteriv)(GLenum target, GLenum pname, GLint* params);
-    void (QOPENGLF_APIENTRYP Hint)(GLenum target, GLenum mode);
-    GLboolean (QOPENGLF_APIENTRYP IsEnabled)(GLenum cap);
-    GLboolean (QOPENGLF_APIENTRYP IsTexture)(GLuint texture);
-    void (QOPENGLF_APIENTRYP LineWidth)(GLfloat width);
-    void (QOPENGLF_APIENTRYP PixelStorei)(GLenum pname, GLint param);
-    void (QOPENGLF_APIENTRYP PolygonOffset)(GLfloat factor, GLfloat units);
-    void (QOPENGLF_APIENTRYP ReadPixels)(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, GLvoid* pixels);
-    void (QOPENGLF_APIENTRYP Scissor)(GLint x, GLint y, GLsizei width, GLsizei height);
-    void (QOPENGLF_APIENTRYP StencilFunc)(GLenum func, GLint ref, GLuint mask);
-    void (QOPENGLF_APIENTRYP StencilMask)(GLuint mask);
-    void (QOPENGLF_APIENTRYP StencilOp)(GLenum fail, GLenum zfail, GLenum zpass);
-    void (QOPENGLF_APIENTRYP TexImage2D)(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const GLvoid* pixels);
-    void (QOPENGLF_APIENTRYP TexParameterf)(GLenum target, GLenum pname, GLfloat param);
-    void (QOPENGLF_APIENTRYP TexParameterfv)(GLenum target, GLenum pname, const GLfloat* params);
-    void (QOPENGLF_APIENTRYP TexParameteri)(GLenum target, GLenum pname, GLint param);
-    void (QOPENGLF_APIENTRYP TexParameteriv)(GLenum target, GLenum pname, const GLint* params);
-    void (QOPENGLF_APIENTRYP TexSubImage2D)(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, const GLvoid* pixels);
-    void (QOPENGLF_APIENTRYP Viewport)(GLint x, GLint y, GLsizei width, GLsizei height);
-
-    void (QOPENGLF_APIENTRYP ActiveTexture)(GLenum texture);
-    void (QOPENGLF_APIENTRYP AttachShader)(GLuint program, GLuint shader);
-    void (QOPENGLF_APIENTRYP BindAttribLocation)(GLuint program, GLuint index, const char* name);
-    void (QOPENGLF_APIENTRYP BindBuffer)(GLenum target, GLuint buffer);
-    void (QOPENGLF_APIENTRYP BindFramebuffer)(GLenum target, GLuint framebuffer);
-    void (QOPENGLF_APIENTRYP BindRenderbuffer)(GLenum target, GLuint renderbuffer);
-    void (QOPENGLF_APIENTRYP BlendColor)(GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha);
-    void (QOPENGLF_APIENTRYP BlendEquation)(GLenum mode);
-    void (QOPENGLF_APIENTRYP BlendEquationSeparate)(GLenum modeRGB, GLenum modeAlpha);
-    void (QOPENGLF_APIENTRYP BlendFuncSeparate)(GLenum srcRGB, GLenum dstRGB, GLenum srcAlpha, GLenum dstAlpha);
-    void (QOPENGLF_APIENTRYP BufferData)(GLenum target, qopengl_GLsizeiptr size, const void* data, GLenum usage);
-    void (QOPENGLF_APIENTRYP BufferSubData)(GLenum target, qopengl_GLintptr offset, qopengl_GLsizeiptr size, const void* data);
-    GLenum (QOPENGLF_APIENTRYP CheckFramebufferStatus)(GLenum target);
-    void (QOPENGLF_APIENTRYP CompileShader)(GLuint shader);
-    void (QOPENGLF_APIENTRYP CompressedTexImage2D)(GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLint border, GLsizei imageSize, const void* data);
-    void (QOPENGLF_APIENTRYP CompressedTexSubImage2D)(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLsizei imageSize, const void* data);
-    GLuint (QOPENGLF_APIENTRYP CreateProgram)();
-    GLuint (QOPENGLF_APIENTRYP CreateShader)(GLenum type);
-    void (QOPENGLF_APIENTRYP DeleteBuffers)(GLsizei n, const GLuint* buffers);
-    void (QOPENGLF_APIENTRYP DeleteFramebuffers)(GLsizei n, const GLuint* framebuffers);
-    void (QOPENGLF_APIENTRYP DeleteProgram)(GLuint program);
-    void (QOPENGLF_APIENTRYP DeleteRenderbuffers)(GLsizei n, const GLuint* renderbuffers);
-    void (QOPENGLF_APIENTRYP DeleteShader)(GLuint shader);
-    void (QOPENGLF_APIENTRYP DetachShader)(GLuint program, GLuint shader);
-    void (QOPENGLF_APIENTRYP DisableVertexAttribArray)(GLuint index);
-    void (QOPENGLF_APIENTRYP EnableVertexAttribArray)(GLuint index);
-    void (QOPENGLF_APIENTRYP FramebufferRenderbuffer)(GLenum target, GLenum attachment, GLenum renderbuffertarget, GLuint renderbuffer);
-    void (QOPENGLF_APIENTRYP FramebufferTexture2D)(GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level);
-    void (QOPENGLF_APIENTRYP GenBuffers)(GLsizei n, GLuint* buffers);
-    void (QOPENGLF_APIENTRYP GenerateMipmap)(GLenum target);
-    void (QOPENGLF_APIENTRYP GenFramebuffers)(GLsizei n, GLuint* framebuffers);
-    void (QOPENGLF_APIENTRYP GenRenderbuffers)(GLsizei n, GLuint* renderbuffers);
-    void (QOPENGLF_APIENTRYP GetActiveAttrib)(GLuint program, GLuint index, GLsizei bufsize, GLsizei* length, GLint* size, GLenum* type, char* name);
-    void (QOPENGLF_APIENTRYP GetActiveUniform)(GLuint program, GLuint index, GLsizei bufsize, GLsizei* length, GLint* size, GLenum* type, char* name);
-    void (QOPENGLF_APIENTRYP GetAttachedShaders)(GLuint program, GLsizei maxcount, GLsizei* count, GLuint* shaders);
-    GLint (QOPENGLF_APIENTRYP GetAttribLocation)(GLuint program, const char* name);
-    void (QOPENGLF_APIENTRYP GetBufferParameteriv)(GLenum target, GLenum pname, GLint* params);
-    void (QOPENGLF_APIENTRYP GetFramebufferAttachmentParameteriv)(GLenum target, GLenum attachment, GLenum pname, GLint* params);
-    void (QOPENGLF_APIENTRYP GetProgramiv)(GLuint program, GLenum pname, GLint* params);
-    void (QOPENGLF_APIENTRYP GetProgramInfoLog)(GLuint program, GLsizei bufsize, GLsizei* length, char* infolog);
-    void (QOPENGLF_APIENTRYP GetRenderbufferParameteriv)(GLenum target, GLenum pname, GLint* params);
-    void (QOPENGLF_APIENTRYP GetShaderiv)(GLuint shader, GLenum pname, GLint* params);
-    void (QOPENGLF_APIENTRYP GetShaderInfoLog)(GLuint shader, GLsizei bufsize, GLsizei* length, char* infolog);
-    void (QOPENGLF_APIENTRYP GetShaderPrecisionFormat)(GLenum shadertype, GLenum precisiontype, GLint* range, GLint* precision);
-    void (QOPENGLF_APIENTRYP GetShaderSource)(GLuint shader, GLsizei bufsize, GLsizei* length, char* source);
-    void (QOPENGLF_APIENTRYP GetUniformfv)(GLuint program, GLint location, GLfloat* params);
-    void (QOPENGLF_APIENTRYP GetUniformiv)(GLuint program, GLint location, GLint* params);
-    GLint (QOPENGLF_APIENTRYP GetUniformLocation)(GLuint program, const char* name);
-    void (QOPENGLF_APIENTRYP GetVertexAttribfv)(GLuint index, GLenum pname, GLfloat* params);
-    void (QOPENGLF_APIENTRYP GetVertexAttribiv)(GLuint index, GLenum pname, GLint* params);
-    void (QOPENGLF_APIENTRYP GetVertexAttribPointerv)(GLuint index, GLenum pname, void** pointer);
-    GLboolean (QOPENGLF_APIENTRYP IsBuffer)(GLuint buffer);
-    GLboolean (QOPENGLF_APIENTRYP IsFramebuffer)(GLuint framebuffer);
-    GLboolean (QOPENGLF_APIENTRYP IsProgram)(GLuint program);
-    GLboolean (QOPENGLF_APIENTRYP IsRenderbuffer)(GLuint renderbuffer);
-    GLboolean (QOPENGLF_APIENTRYP IsShader)(GLuint shader);
-    void (QOPENGLF_APIENTRYP LinkProgram)(GLuint program);
-    void (QOPENGLF_APIENTRYP ReleaseShaderCompiler)();
-    void (QOPENGLF_APIENTRYP RenderbufferStorage)(GLenum target, GLenum internalformat, GLsizei width, GLsizei height);
-    void (QOPENGLF_APIENTRYP SampleCoverage)(GLclampf value, GLboolean invert);
-    void (QOPENGLF_APIENTRYP ShaderBinary)(GLint n, const GLuint* shaders, GLenum binaryformat, const void* binary, GLint length);
-    void (QOPENGLF_APIENTRYP ShaderSource)(GLuint shader, GLsizei count, const char** string, const GLint* length);
-    void (QOPENGLF_APIENTRYP StencilFuncSeparate)(GLenum face, GLenum func, GLint ref, GLuint mask);
-    void (QOPENGLF_APIENTRYP StencilMaskSeparate)(GLenum face, GLuint mask);
-    void (QOPENGLF_APIENTRYP StencilOpSeparate)(GLenum face, GLenum fail, GLenum zfail, GLenum zpass);
-    void (QOPENGLF_APIENTRYP Uniform1f)(GLint location, GLfloat x);
-    void (QOPENGLF_APIENTRYP Uniform1fv)(GLint location, GLsizei count, const GLfloat* v);
-    void (QOPENGLF_APIENTRYP Uniform1i)(GLint location, GLint x);
-    void (QOPENGLF_APIENTRYP Uniform1iv)(GLint location, GLsizei count, const GLint* v);
-    void (QOPENGLF_APIENTRYP Uniform2f)(GLint location, GLfloat x, GLfloat y);
-    void (QOPENGLF_APIENTRYP Uniform2fv)(GLint location, GLsizei count, const GLfloat* v);
-    void (QOPENGLF_APIENTRYP Uniform2i)(GLint location, GLint x, GLint y);
-    void (QOPENGLF_APIENTRYP Uniform2iv)(GLint location, GLsizei count, const GLint* v);
-    void (QOPENGLF_APIENTRYP Uniform3f)(GLint location, GLfloat x, GLfloat y, GLfloat z);
-    void (QOPENGLF_APIENTRYP Uniform3fv)(GLint location, GLsizei count, const GLfloat* v);
-    void (QOPENGLF_APIENTRYP Uniform3i)(GLint location, GLint x, GLint y, GLint z);
-    void (QOPENGLF_APIENTRYP Uniform3iv)(GLint location, GLsizei count, const GLint* v);
-    void (QOPENGLF_APIENTRYP Uniform4f)(GLint location, GLfloat x, GLfloat y, GLfloat z, GLfloat w);
-    void (QOPENGLF_APIENTRYP Uniform4fv)(GLint location, GLsizei count, const GLfloat* v);
-    void (QOPENGLF_APIENTRYP Uniform4i)(GLint location, GLint x, GLint y, GLint z, GLint w);
-    void (QOPENGLF_APIENTRYP Uniform4iv)(GLint location, GLsizei count, const GLint* v);
-    void (QOPENGLF_APIENTRYP UniformMatrix2fv)(GLint location, GLsizei count, GLboolean transpose, const GLfloat* value);
-    void (QOPENGLF_APIENTRYP UniformMatrix3fv)(GLint location, GLsizei count, GLboolean transpose, const GLfloat* value);
-    void (QOPENGLF_APIENTRYP UniformMatrix4fv)(GLint location, GLsizei count, GLboolean transpose, const GLfloat* value);
-    void (QOPENGLF_APIENTRYP UseProgram)(GLuint program);
-    void (QOPENGLF_APIENTRYP ValidateProgram)(GLuint program);
-    void (QOPENGLF_APIENTRYP VertexAttrib1f)(GLuint indx, GLfloat x);
-    void (QOPENGLF_APIENTRYP VertexAttrib1fv)(GLuint indx, const GLfloat* values);
-    void (QOPENGLF_APIENTRYP VertexAttrib2f)(GLuint indx, GLfloat x, GLfloat y);
-    void (QOPENGLF_APIENTRYP VertexAttrib2fv)(GLuint indx, const GLfloat* values);
-    void (QOPENGLF_APIENTRYP VertexAttrib3f)(GLuint indx, GLfloat x, GLfloat y, GLfloat z);
-    void (QOPENGLF_APIENTRYP VertexAttrib3fv)(GLuint indx, const GLfloat* values);
-    void (QOPENGLF_APIENTRYP VertexAttrib4f)(GLuint indx, GLfloat x, GLfloat y, GLfloat z, GLfloat w);
-    void (QOPENGLF_APIENTRYP VertexAttrib4fv)(GLuint indx, const GLfloat* values);
-    void (QOPENGLF_APIENTRYP VertexAttribPointer)(GLuint indx, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const void* ptr);
-
-    // Special non-ES OpenGL variants, not to be called directly
-#ifndef QT_OPENGL_ES_2
-    void (QOPENGLF_APIENTRYP ClearDepth)(GLdouble depth);
-    void (QOPENGLF_APIENTRYP DepthRange)(GLdouble zNear, GLdouble zFar);
-#endif
-};
-
-// GLES2 + OpenGL1 common subset
-
-#ifdef Q_OS_NACL
-#include "qopenglfunctions_nacl.h"
-#else
 inline void QOpenGLFunctions::glBindTexture(GLenum target, GLuint texture)
 {
+// TODO: remove ifdef and only have "GLES2"
 #ifdef QT_OPENGL_ES_2
-    ::glBindTexture(target, texture);
+    ::GLES2BindTexture(target, texture);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->BindTexture(target, texture);
@@ -581,7 +60,7 @@ inline void QOpenGLFunctions::glBindTexture(GLenum target, GLuint texture)
 inline void QOpenGLFunctions::glBlendFunc(GLenum sfactor, GLenum dfactor)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glBlendFunc(sfactor, dfactor);
+    ::GLES2BlendFunc(sfactor, dfactor);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->BlendFunc(sfactor, dfactor);
@@ -592,7 +71,7 @@ inline void QOpenGLFunctions::glBlendFunc(GLenum sfactor, GLenum dfactor)
 inline void QOpenGLFunctions::glClear(GLbitfield mask)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glClear(mask);
+    ::GLES2Clear(mask);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->Clear(mask);
@@ -603,7 +82,7 @@ inline void QOpenGLFunctions::glClear(GLbitfield mask)
 inline void QOpenGLFunctions::glClearColor(GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glClearColor(red, green, blue, alpha);
+    ::GLES2ClearColor(red, green, blue, alpha);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->ClearColor(red, green, blue, alpha);
@@ -614,7 +93,7 @@ inline void QOpenGLFunctions::glClearColor(GLclampf red, GLclampf green, GLclamp
 inline void QOpenGLFunctions::glClearStencil(GLint s)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glClearStencil(s);
+    ::GLES2ClearStencil(s);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->ClearStencil(s);
@@ -625,7 +104,7 @@ inline void QOpenGLFunctions::glClearStencil(GLint s)
 inline void QOpenGLFunctions::glColorMask(GLboolean red, GLboolean green, GLboolean blue, GLboolean alpha)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glColorMask(red, green, blue, alpha);
+    ::GLES2ColorMask(red, green, blue, alpha);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->ColorMask(red, green, blue, alpha);
@@ -636,7 +115,7 @@ inline void QOpenGLFunctions::glColorMask(GLboolean red, GLboolean green, GLbool
 inline void QOpenGLFunctions::glCopyTexImage2D(GLenum target, GLint level, GLenum internalformat, GLint x, GLint y, GLsizei width, GLsizei height, GLint border)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glCopyTexImage2D(target, level, internalformat, x, y, width,height, border);
+    ::GLES2CopyTexImage2D(target, level, internalformat, x, y, width,height, border);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->CopyTexImage2D(target, level, internalformat, x, y, width,height, border);
@@ -647,7 +126,7 @@ inline void QOpenGLFunctions::glCopyTexImage2D(GLenum target, GLint level, GLenu
 inline void QOpenGLFunctions::glCopyTexSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint x, GLint y, GLsizei width, GLsizei height)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glCopyTexSubImage2D(target, level, xoffset, yoffset, x, y, width, height);
+    ::GLES2CopyTexSubImage2D(target, level, xoffset, yoffset, x, y, width, height);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->CopyTexSubImage2D(target, level, xoffset, yoffset, x, y, width, height);
@@ -658,7 +137,7 @@ inline void QOpenGLFunctions::glCopyTexSubImage2D(GLenum target, GLint level, GL
 inline void QOpenGLFunctions::glCullFace(GLenum mode)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glCullFace(mode);
+    ::GLES2CullFace(mode);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->CullFace(mode);
@@ -669,7 +148,7 @@ inline void QOpenGLFunctions::glCullFace(GLenum mode)
 inline void QOpenGLFunctions::glDeleteTextures(GLsizei n, const GLuint* textures)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glDeleteTextures(n, textures);
+    ::GLES2DeleteTextures(n, textures);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->DeleteTextures(n, textures);
@@ -680,7 +159,7 @@ inline void QOpenGLFunctions::glDeleteTextures(GLsizei n, const GLuint* textures
 inline void QOpenGLFunctions::glDepthFunc(GLenum func)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glDepthFunc(func);
+    ::GLES2DepthFunc(func);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->DepthFunc(func);
@@ -691,7 +170,7 @@ inline void QOpenGLFunctions::glDepthFunc(GLenum func)
 inline void QOpenGLFunctions::glDepthMask(GLboolean flag)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glDepthMask(flag);
+    ::GLES2DepthMask(flag);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->DepthMask(flag);
@@ -702,7 +181,7 @@ inline void QOpenGLFunctions::glDepthMask(GLboolean flag)
 inline void QOpenGLFunctions::glDisable(GLenum cap)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glDisable(cap);
+    ::GLES2Disable(cap);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->Disable(cap);
@@ -713,7 +192,7 @@ inline void QOpenGLFunctions::glDisable(GLenum cap)
 inline void QOpenGLFunctions::glDrawArrays(GLenum mode, GLint first, GLsizei count)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glDrawArrays(mode, first, count);
+    ::GLES2DrawArrays(mode, first, count);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->DrawArrays(mode, first, count);
@@ -724,7 +203,7 @@ inline void QOpenGLFunctions::glDrawArrays(GLenum mode, GLint first, GLsizei cou
 inline void QOpenGLFunctions::glDrawElements(GLenum mode, GLsizei count, GLenum type, const GLvoid* indices)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glDrawElements(mode, count, type, indices);
+    ::GLES2DrawElements(mode, count, type, indices);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->DrawElements(mode, count, type, indices);
@@ -735,7 +214,7 @@ inline void QOpenGLFunctions::glDrawElements(GLenum mode, GLsizei count, GLenum 
 inline void QOpenGLFunctions::glEnable(GLenum cap)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glEnable(cap);
+    ::GLES2Enable(cap);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->Enable(cap);
@@ -746,7 +225,7 @@ inline void QOpenGLFunctions::glEnable(GLenum cap)
 inline void QOpenGLFunctions::glFinish()
 {
 #ifdef QT_OPENGL_ES_2
-    ::glFinish();
+    ::GLES2Finish();
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->Finish();
@@ -757,7 +236,7 @@ inline void QOpenGLFunctions::glFinish()
 inline void QOpenGLFunctions::glFlush()
 {
 #ifdef QT_OPENGL_ES_2
-    ::glFlush();
+    ::GLES2Flush();
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->Flush();
@@ -768,7 +247,7 @@ inline void QOpenGLFunctions::glFlush()
 inline void QOpenGLFunctions::glFrontFace(GLenum mode)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glFrontFace(mode);
+    ::GLES2FrontFace(mode);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->FrontFace(mode);
@@ -779,7 +258,7 @@ inline void QOpenGLFunctions::glFrontFace(GLenum mode)
 inline void QOpenGLFunctions::glGenTextures(GLsizei n, GLuint* textures)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glGenTextures(n, textures);
+    ::GLES2GenTextures(n, textures);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->GenTextures(n, textures);
@@ -790,7 +269,7 @@ inline void QOpenGLFunctions::glGenTextures(GLsizei n, GLuint* textures)
 inline void QOpenGLFunctions::glGetBooleanv(GLenum pname, GLboolean* params)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glGetBooleanv(pname, params);
+    ::GLES2GetBooleanv(pname, params);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->GetBooleanv(pname, params);
@@ -801,7 +280,7 @@ inline void QOpenGLFunctions::glGetBooleanv(GLenum pname, GLboolean* params)
 inline GLenum QOpenGLFunctions::glGetError()
 {
 #ifdef QT_OPENGL_ES_2
-    GLenum result = ::glGetError();
+    GLenum result = ::GLES2GetError();
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     GLenum result = d_ptr->GetError();
@@ -812,7 +291,7 @@ inline GLenum QOpenGLFunctions::glGetError()
 inline void QOpenGLFunctions::glGetFloatv(GLenum pname, GLfloat* params)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glGetFloatv(pname, params);
+    ::GLES2GetFloatv(pname, params);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->GetFloatv(pname, params);
@@ -823,7 +302,7 @@ inline void QOpenGLFunctions::glGetFloatv(GLenum pname, GLfloat* params)
 inline void QOpenGLFunctions::glGetIntegerv(GLenum pname, GLint* params)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glGetIntegerv(pname, params);
+    ::GLES2GetIntegerv(pname, params);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->GetIntegerv(pname, params);
@@ -834,7 +313,7 @@ inline void QOpenGLFunctions::glGetIntegerv(GLenum pname, GLint* params)
 inline const GLubyte *QOpenGLFunctions::glGetString(GLenum name)
 {
 #ifdef QT_OPENGL_ES_2
-    const GLubyte *result = ::glGetString(name);
+    const GLubyte *result = ::GLES2GetString(name);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     const GLubyte *result = d_ptr->GetString(name);
@@ -846,7 +325,7 @@ inline const GLubyte *QOpenGLFunctions::glGetString(GLenum name)
 inline void QOpenGLFunctions::glGetTexParameterfv(GLenum target, GLenum pname, GLfloat* params)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glGetTexParameterfv(target, pname, params);
+    ::GLES2GetTexParameterfv(target, pname, params);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->GetTexParameterfv(target, pname, params);
@@ -857,7 +336,7 @@ inline void QOpenGLFunctions::glGetTexParameterfv(GLenum target, GLenum pname, G
 inline void QOpenGLFunctions::glGetTexParameteriv(GLenum target, GLenum pname, GLint* params)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glGetTexParameteriv(target, pname, params);
+    ::GLES2GetTexParameteriv(target, pname, params);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->GetTexParameteriv(target, pname, params);
@@ -868,7 +347,7 @@ inline void QOpenGLFunctions::glGetTexParameteriv(GLenum target, GLenum pname, G
 inline void QOpenGLFunctions::glHint(GLenum target, GLenum mode)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glHint(target, mode);
+    ::GLES2Hint(target, mode);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->Hint(target, mode);
@@ -879,7 +358,7 @@ inline void QOpenGLFunctions::glHint(GLenum target, GLenum mode)
 inline GLboolean QOpenGLFunctions::glIsEnabled(GLenum cap)
 {
 #ifdef QT_OPENGL_ES_2
-    GLboolean result = ::glIsEnabled(cap);
+    GLboolean result = ::GLES2IsEnabled(cap);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     GLboolean result = d_ptr->IsEnabled(cap);
@@ -891,7 +370,7 @@ inline GLboolean QOpenGLFunctions::glIsEnabled(GLenum cap)
 inline GLboolean QOpenGLFunctions::glIsTexture(GLuint texture)
 {
 #ifdef QT_OPENGL_ES_2
-    GLboolean result = ::glIsTexture(texture);
+    GLboolean result = ::GLES2IsTexture(texture);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     GLboolean result = d_ptr->IsTexture(texture);
@@ -903,7 +382,7 @@ inline GLboolean QOpenGLFunctions::glIsTexture(GLuint texture)
 inline void QOpenGLFunctions::glLineWidth(GLfloat width)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glLineWidth(width);
+    ::GLES2LineWidth(width);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->LineWidth(width);
@@ -914,7 +393,7 @@ inline void QOpenGLFunctions::glLineWidth(GLfloat width)
 inline void QOpenGLFunctions::glPixelStorei(GLenum pname, GLint param)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glPixelStorei(pname, param);
+    ::GLES2PixelStorei(pname, param);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->PixelStorei(pname, param);
@@ -925,7 +404,7 @@ inline void QOpenGLFunctions::glPixelStorei(GLenum pname, GLint param)
 inline void QOpenGLFunctions::glPolygonOffset(GLfloat factor, GLfloat units)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glPolygonOffset(factor, units);
+    ::GLES2PolygonOffset(factor, units);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->PolygonOffset(factor, units);
@@ -936,7 +415,7 @@ inline void QOpenGLFunctions::glPolygonOffset(GLfloat factor, GLfloat units)
 inline void QOpenGLFunctions::glReadPixels(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, GLvoid* pixels)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glReadPixels(x, y, width, height, format, type, pixels);
+    ::GLES2ReadPixels(x, y, width, height, format, type, pixels);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->ReadPixels(x, y, width, height, format, type, pixels);
@@ -947,7 +426,7 @@ inline void QOpenGLFunctions::glReadPixels(GLint x, GLint y, GLsizei width, GLsi
 inline void QOpenGLFunctions::glScissor(GLint x, GLint y, GLsizei width, GLsizei height)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glScissor(x, y, width, height);
+    ::GLES2Scissor(x, y, width, height);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->Scissor(x, y, width, height);
@@ -958,7 +437,7 @@ inline void QOpenGLFunctions::glScissor(GLint x, GLint y, GLsizei width, GLsizei
 inline void QOpenGLFunctions::glStencilFunc(GLenum func, GLint ref, GLuint mask)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glStencilFunc(func, ref, mask);
+    ::GLES2StencilFunc(func, ref, mask);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->StencilFunc(func, ref, mask);
@@ -969,7 +448,7 @@ inline void QOpenGLFunctions::glStencilFunc(GLenum func, GLint ref, GLuint mask)
 inline void QOpenGLFunctions::glStencilMask(GLuint mask)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glStencilMask(mask);
+    ::GLES2StencilMask(mask);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->StencilMask(mask);
@@ -980,7 +459,7 @@ inline void QOpenGLFunctions::glStencilMask(GLuint mask)
 inline void QOpenGLFunctions::glStencilOp(GLenum fail, GLenum zfail, GLenum zpass)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glStencilOp(fail, zfail, zpass);
+    ::GLES2StencilOp(fail, zfail, zpass);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->StencilOp(fail, zfail, zpass);
@@ -991,7 +470,7 @@ inline void QOpenGLFunctions::glStencilOp(GLenum fail, GLenum zfail, GLenum zpas
 inline void QOpenGLFunctions::glTexImage2D(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const GLvoid* pixels)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glTexImage2D(target, level, internalformat, width,height, border, format, type, pixels);
+    ::GLES2TexImage2D(target, level, internalformat, width,height, border, format, type, pixels);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->TexImage2D(target, level, internalformat, width,height, border, format, type, pixels);
@@ -1002,7 +481,7 @@ inline void QOpenGLFunctions::glTexImage2D(GLenum target, GLint level, GLint int
 inline void QOpenGLFunctions::glTexParameterf(GLenum target, GLenum pname, GLfloat param)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glTexParameterf(target, pname, param);
+    ::GLES2TexParameterf(target, pname, param);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->TexParameterf(target, pname, param);
@@ -1013,7 +492,7 @@ inline void QOpenGLFunctions::glTexParameterf(GLenum target, GLenum pname, GLflo
 inline void QOpenGLFunctions::glTexParameterfv(GLenum target, GLenum pname, const GLfloat* params)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glTexParameterfv(target, pname, params);
+    ::GLES2TexParameterfv(target, pname, params);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->TexParameterfv(target, pname, params);
@@ -1024,7 +503,7 @@ inline void QOpenGLFunctions::glTexParameterfv(GLenum target, GLenum pname, cons
 inline void QOpenGLFunctions::glTexParameteri(GLenum target, GLenum pname, GLint param)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glTexParameteri(target, pname, param);
+    ::GLES2TexParameteri(target, pname, param);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->TexParameteri(target, pname, param);
@@ -1035,7 +514,7 @@ inline void QOpenGLFunctions::glTexParameteri(GLenum target, GLenum pname, GLint
 inline void QOpenGLFunctions::glTexParameteriv(GLenum target, GLenum pname, const GLint* params)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glTexParameteriv(target, pname, params);
+    ::GLES2TexParameteriv(target, pname, params);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->TexParameteriv(target, pname, params);
@@ -1046,7 +525,7 @@ inline void QOpenGLFunctions::glTexParameteriv(GLenum target, GLenum pname, cons
 inline void QOpenGLFunctions::glTexSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, const GLvoid* pixels)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glTexSubImage2D(target, level, xoffset, yoffset, width, height, format, type, pixels);
+    ::GLES2TexSubImage2D(target, level, xoffset, yoffset, width, height, format, type, pixels);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->TexSubImage2D(target, level, xoffset, yoffset, width, height, format, type, pixels);
@@ -1057,7 +536,7 @@ inline void QOpenGLFunctions::glTexSubImage2D(GLenum target, GLint level, GLint 
 inline void QOpenGLFunctions::glViewport(GLint x, GLint y, GLsizei width, GLsizei height)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glViewport(x, y, width, height);
+    ::GLES2Viewport(x, y, width, height);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->Viewport(x, y, width, height);
@@ -1070,7 +549,7 @@ inline void QOpenGLFunctions::glViewport(GLint x, GLint y, GLsizei width, GLsize
 inline void QOpenGLFunctions::glActiveTexture(GLenum texture)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glActiveTexture(texture);
+    ::GLES2ActiveTexture(texture);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->ActiveTexture(texture);
@@ -1081,7 +560,7 @@ inline void QOpenGLFunctions::glActiveTexture(GLenum texture)
 inline void QOpenGLFunctions::glAttachShader(GLuint program, GLuint shader)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glAttachShader(program, shader);
+    ::GLES2AttachShader(program, shader);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->AttachShader(program, shader);
@@ -1092,7 +571,7 @@ inline void QOpenGLFunctions::glAttachShader(GLuint program, GLuint shader)
 inline void QOpenGLFunctions::glBindAttribLocation(GLuint program, GLuint index, const char* name)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glBindAttribLocation(program, index, name);
+    ::GLES2BindAttribLocation(program, index, name);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->BindAttribLocation(program, index, name);
@@ -1103,7 +582,7 @@ inline void QOpenGLFunctions::glBindAttribLocation(GLuint program, GLuint index,
 inline void QOpenGLFunctions::glBindBuffer(GLenum target, GLuint buffer)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glBindBuffer(target, buffer);
+    ::GLES2BindBuffer(target, buffer);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->BindBuffer(target, buffer);
@@ -1116,7 +595,7 @@ inline void QOpenGLFunctions::glBindFramebuffer(GLenum target, GLuint framebuffe
     if (framebuffer == 0)
         framebuffer = QOpenGLContext::currentContext()->defaultFramebufferObject();
 #ifdef QT_OPENGL_ES_2
-    ::glBindFramebuffer(target, framebuffer);
+    ::GLES2BindFramebuffer(target, framebuffer);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->BindFramebuffer(target, framebuffer);
@@ -1127,7 +606,7 @@ inline void QOpenGLFunctions::glBindFramebuffer(GLenum target, GLuint framebuffe
 inline void QOpenGLFunctions::glBindRenderbuffer(GLenum target, GLuint renderbuffer)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glBindRenderbuffer(target, renderbuffer);
+    ::GLES2BindRenderbuffer(target, renderbuffer);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->BindRenderbuffer(target, renderbuffer);
@@ -1138,7 +617,7 @@ inline void QOpenGLFunctions::glBindRenderbuffer(GLenum target, GLuint renderbuf
 inline void QOpenGLFunctions::glBlendColor(GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glBlendColor(red, green, blue, alpha);
+    ::GLES2BlendColor(red, green, blue, alpha);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->BlendColor(red, green, blue, alpha);
@@ -1149,7 +628,7 @@ inline void QOpenGLFunctions::glBlendColor(GLclampf red, GLclampf green, GLclamp
 inline void QOpenGLFunctions::glBlendEquation(GLenum mode)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glBlendEquation(mode);
+    ::GLES2BlendEquation(mode);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->BlendEquation(mode);
@@ -1160,7 +639,7 @@ inline void QOpenGLFunctions::glBlendEquation(GLenum mode)
 inline void QOpenGLFunctions::glBlendEquationSeparate(GLenum modeRGB, GLenum modeAlpha)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glBlendEquationSeparate(modeRGB, modeAlpha);
+    ::GLES2BlendEquationSeparate(modeRGB, modeAlpha);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->BlendEquationSeparate(modeRGB, modeAlpha);
@@ -1171,7 +650,7 @@ inline void QOpenGLFunctions::glBlendEquationSeparate(GLenum modeRGB, GLenum mod
 inline void QOpenGLFunctions::glBlendFuncSeparate(GLenum srcRGB, GLenum dstRGB, GLenum srcAlpha, GLenum dstAlpha)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glBlendFuncSeparate(srcRGB, dstRGB, srcAlpha, dstAlpha);
+    ::GLES2BlendFuncSeparate(srcRGB, dstRGB, srcAlpha, dstAlpha);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->BlendFuncSeparate(srcRGB, dstRGB, srcAlpha, dstAlpha);
@@ -1182,7 +661,7 @@ inline void QOpenGLFunctions::glBlendFuncSeparate(GLenum srcRGB, GLenum dstRGB, 
 inline void QOpenGLFunctions::glBufferData(GLenum target, qopengl_GLsizeiptr size, const void* data, GLenum usage)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glBufferData(target, size, data, usage);
+    ::GLES2BufferData(target, size, data, usage);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->BufferData(target, size, data, usage);
@@ -1193,7 +672,7 @@ inline void QOpenGLFunctions::glBufferData(GLenum target, qopengl_GLsizeiptr siz
 inline void QOpenGLFunctions::glBufferSubData(GLenum target, qopengl_GLintptr offset, qopengl_GLsizeiptr size, const void* data)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glBufferSubData(target, offset, size, data);
+    ::GLES2BufferSubData(target, offset, size, data);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->BufferSubData(target, offset, size, data);
@@ -1204,7 +683,7 @@ inline void QOpenGLFunctions::glBufferSubData(GLenum target, qopengl_GLintptr of
 inline GLenum QOpenGLFunctions::glCheckFramebufferStatus(GLenum target)
 {
 #ifdef QT_OPENGL_ES_2
-    GLenum result = ::glCheckFramebufferStatus(target);
+    GLenum result = ::GLES2CheckFramebufferStatus(target);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     GLenum result = d_ptr->CheckFramebufferStatus(target);
@@ -1219,7 +698,7 @@ inline void QOpenGLFunctions::glClearDepthf(GLclampf depth)
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->ClearDepthf(depth);
 #else
-    ::glClearDepthf(depth);
+    ::GLES2ClearDepthf(depth);
 #endif
     Q_OPENGL_FUNCTIONS_DEBUG
 }
@@ -1227,7 +706,7 @@ inline void QOpenGLFunctions::glClearDepthf(GLclampf depth)
 inline void QOpenGLFunctions::glCompileShader(GLuint shader)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glCompileShader(shader);
+    ::GLES2CompileShader(shader);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->CompileShader(shader);
@@ -1238,7 +717,7 @@ inline void QOpenGLFunctions::glCompileShader(GLuint shader)
 inline void QOpenGLFunctions::glCompressedTexImage2D(GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLint border, GLsizei imageSize, const void* data)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glCompressedTexImage2D(target, level, internalformat, width, height, border, imageSize, data);
+    ::GLES2CompressedTexImage2D(target, level, internalformat, width, height, border, imageSize, data);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->CompressedTexImage2D(target, level, internalformat, width, height, border, imageSize, data);
@@ -1249,7 +728,7 @@ inline void QOpenGLFunctions::glCompressedTexImage2D(GLenum target, GLint level,
 inline void QOpenGLFunctions::glCompressedTexSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLsizei imageSize, const void* data)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glCompressedTexSubImage2D(target, level, xoffset, yoffset, width, height, format, imageSize, data);
+    ::GLES2CompressedTexSubImage2D(target, level, xoffset, yoffset, width, height, format, imageSize, data);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->CompressedTexSubImage2D(target, level, xoffset, yoffset, width, height, format, imageSize, data);
@@ -1260,7 +739,7 @@ inline void QOpenGLFunctions::glCompressedTexSubImage2D(GLenum target, GLint lev
 inline GLuint QOpenGLFunctions::glCreateProgram()
 {
 #ifdef QT_OPENGL_ES_2
-    GLuint result = ::glCreateProgram();
+    GLuint result = ::GLES2CreateProgram();
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     GLuint result = d_ptr->CreateProgram();
@@ -1272,7 +751,7 @@ inline GLuint QOpenGLFunctions::glCreateProgram()
 inline GLuint QOpenGLFunctions::glCreateShader(GLenum type)
 {
 #ifdef QT_OPENGL_ES_2
-    GLuint result = ::glCreateShader(type);
+    GLuint result = ::GLES2CreateShader(type);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     GLuint result = d_ptr->CreateShader(type);
@@ -1284,7 +763,7 @@ inline GLuint QOpenGLFunctions::glCreateShader(GLenum type)
 inline void QOpenGLFunctions::glDeleteBuffers(GLsizei n, const GLuint* buffers)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glDeleteBuffers(n, buffers);
+    ::GLES2DeleteBuffers(n, buffers);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->DeleteBuffers(n, buffers);
@@ -1295,7 +774,7 @@ inline void QOpenGLFunctions::glDeleteBuffers(GLsizei n, const GLuint* buffers)
 inline void QOpenGLFunctions::glDeleteFramebuffers(GLsizei n, const GLuint* framebuffers)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glDeleteFramebuffers(n, framebuffers);
+    ::GLES2DeleteFramebuffers(n, framebuffers);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->DeleteFramebuffers(n, framebuffers);
@@ -1306,7 +785,7 @@ inline void QOpenGLFunctions::glDeleteFramebuffers(GLsizei n, const GLuint* fram
 inline void QOpenGLFunctions::glDeleteProgram(GLuint program)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glDeleteProgram(program);
+    ::GLES2DeleteProgram(program);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->DeleteProgram(program);
@@ -1317,7 +796,7 @@ inline void QOpenGLFunctions::glDeleteProgram(GLuint program)
 inline void QOpenGLFunctions::glDeleteRenderbuffers(GLsizei n, const GLuint* renderbuffers)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glDeleteRenderbuffers(n, renderbuffers);
+    ::GLES2DeleteRenderbuffers(n, renderbuffers);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->DeleteRenderbuffers(n, renderbuffers);
@@ -1328,7 +807,7 @@ inline void QOpenGLFunctions::glDeleteRenderbuffers(GLsizei n, const GLuint* ren
 inline void QOpenGLFunctions::glDeleteShader(GLuint shader)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glDeleteShader(shader);
+    ::GLES2DeleteShader(shader);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->DeleteShader(shader);
@@ -1342,7 +821,7 @@ inline void QOpenGLFunctions::glDepthRangef(GLclampf zNear, GLclampf zFar)
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->DepthRangef(zNear, zFar);
 #else
-    ::glDepthRangef(zNear, zFar);
+    ::GLES2DepthRangef(zNear, zFar);
 #endif
     Q_OPENGL_FUNCTIONS_DEBUG
 }
@@ -1350,7 +829,7 @@ inline void QOpenGLFunctions::glDepthRangef(GLclampf zNear, GLclampf zFar)
 inline void QOpenGLFunctions::glDetachShader(GLuint program, GLuint shader)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glDetachShader(program, shader);
+    ::GLES2DetachShader(program, shader);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->DetachShader(program, shader);
@@ -1361,7 +840,7 @@ inline void QOpenGLFunctions::glDetachShader(GLuint program, GLuint shader)
 inline void QOpenGLFunctions::glDisableVertexAttribArray(GLuint index)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glDisableVertexAttribArray(index);
+    ::GLES2DisableVertexAttribArray(index);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->DisableVertexAttribArray(index);
@@ -1372,7 +851,7 @@ inline void QOpenGLFunctions::glDisableVertexAttribArray(GLuint index)
 inline void QOpenGLFunctions::glEnableVertexAttribArray(GLuint index)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glEnableVertexAttribArray(index);
+    ::GLES2EnableVertexAttribArray(index);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->EnableVertexAttribArray(index);
@@ -1383,7 +862,7 @@ inline void QOpenGLFunctions::glEnableVertexAttribArray(GLuint index)
 inline void QOpenGLFunctions::glFramebufferRenderbuffer(GLenum target, GLenum attachment, GLenum renderbuffertarget, GLuint renderbuffer)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glFramebufferRenderbuffer(target, attachment, renderbuffertarget, renderbuffer);
+    ::GLES2FramebufferRenderbuffer(target, attachment, renderbuffertarget, renderbuffer);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->FramebufferRenderbuffer(target, attachment, renderbuffertarget, renderbuffer);
@@ -1394,7 +873,7 @@ inline void QOpenGLFunctions::glFramebufferRenderbuffer(GLenum target, GLenum at
 inline void QOpenGLFunctions::glFramebufferTexture2D(GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glFramebufferTexture2D(target, attachment, textarget, texture, level);
+    ::GLES2FramebufferTexture2D(target, attachment, textarget, texture, level);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->FramebufferTexture2D(target, attachment, textarget, texture, level);
@@ -1405,7 +884,7 @@ inline void QOpenGLFunctions::glFramebufferTexture2D(GLenum target, GLenum attac
 inline void QOpenGLFunctions::glGenBuffers(GLsizei n, GLuint* buffers)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glGenBuffers(n, buffers);
+    ::GLES2GenBuffers(n, buffers);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->GenBuffers(n, buffers);
@@ -1416,7 +895,7 @@ inline void QOpenGLFunctions::glGenBuffers(GLsizei n, GLuint* buffers)
 inline void QOpenGLFunctions::glGenerateMipmap(GLenum target)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glGenerateMipmap(target);
+    ::GLES2GenerateMipmap(target);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->GenerateMipmap(target);
@@ -1427,7 +906,7 @@ inline void QOpenGLFunctions::glGenerateMipmap(GLenum target)
 inline void QOpenGLFunctions::glGenFramebuffers(GLsizei n, GLuint* framebuffers)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glGenFramebuffers(n, framebuffers);
+    ::GLES2GenFramebuffers(n, framebuffers);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->GenFramebuffers(n, framebuffers);
@@ -1438,7 +917,7 @@ inline void QOpenGLFunctions::glGenFramebuffers(GLsizei n, GLuint* framebuffers)
 inline void QOpenGLFunctions::glGenRenderbuffers(GLsizei n, GLuint* renderbuffers)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glGenRenderbuffers(n, renderbuffers);
+    ::GLES2GenRenderbuffers(n, renderbuffers);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->GenRenderbuffers(n, renderbuffers);
@@ -1449,7 +928,7 @@ inline void QOpenGLFunctions::glGenRenderbuffers(GLsizei n, GLuint* renderbuffer
 inline void QOpenGLFunctions::glGetActiveAttrib(GLuint program, GLuint index, GLsizei bufsize, GLsizei* length, GLint* size, GLenum* type, char* name)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glGetActiveAttrib(program, index, bufsize, length, size, type, name);
+    ::GLES2GetActiveAttrib(program, index, bufsize, length, size, type, name);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->GetActiveAttrib(program, index, bufsize, length, size, type, name);
@@ -1460,7 +939,7 @@ inline void QOpenGLFunctions::glGetActiveAttrib(GLuint program, GLuint index, GL
 inline void QOpenGLFunctions::glGetActiveUniform(GLuint program, GLuint index, GLsizei bufsize, GLsizei* length, GLint* size, GLenum* type, char* name)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glGetActiveUniform(program, index, bufsize, length, size, type, name);
+    ::GLES2GetActiveUniform(program, index, bufsize, length, size, type, name);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->GetActiveUniform(program, index, bufsize, length, size, type, name);
@@ -1471,7 +950,7 @@ inline void QOpenGLFunctions::glGetActiveUniform(GLuint program, GLuint index, G
 inline void QOpenGLFunctions::glGetAttachedShaders(GLuint program, GLsizei maxcount, GLsizei* count, GLuint* shaders)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glGetAttachedShaders(program, maxcount, count, shaders);
+    ::GLES2GetAttachedShaders(program, maxcount, count, shaders);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->GetAttachedShaders(program, maxcount, count, shaders);
@@ -1482,7 +961,7 @@ inline void QOpenGLFunctions::glGetAttachedShaders(GLuint program, GLsizei maxco
 inline GLint QOpenGLFunctions::glGetAttribLocation(GLuint program, const char* name)
 {
 #ifdef QT_OPENGL_ES_2
-    GLint result = ::glGetAttribLocation(program, name);
+    GLint result = ::GLES2GetAttribLocation(program, name);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     GLint result = d_ptr->GetAttribLocation(program, name);
@@ -1494,7 +973,7 @@ inline GLint QOpenGLFunctions::glGetAttribLocation(GLuint program, const char* n
 inline void QOpenGLFunctions::glGetBufferParameteriv(GLenum target, GLenum pname, GLint* params)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glGetBufferParameteriv(target, pname, params);
+    ::GLES2GetBufferParameteriv(target, pname, params);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->GetBufferParameteriv(target, pname, params);
@@ -1505,7 +984,7 @@ inline void QOpenGLFunctions::glGetBufferParameteriv(GLenum target, GLenum pname
 inline void QOpenGLFunctions::glGetFramebufferAttachmentParameteriv(GLenum target, GLenum attachment, GLenum pname, GLint* params)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glGetFramebufferAttachmentParameteriv(target, attachment, pname, params);
+    ::GLES2GetFramebufferAttachmentParameteriv(target, attachment, pname, params);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->GetFramebufferAttachmentParameteriv(target, attachment, pname, params);
@@ -1516,7 +995,7 @@ inline void QOpenGLFunctions::glGetFramebufferAttachmentParameteriv(GLenum targe
 inline void QOpenGLFunctions::glGetProgramiv(GLuint program, GLenum pname, GLint* params)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glGetProgramiv(program, pname, params);
+    ::GLES2GetProgramiv(program, pname, params);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->GetProgramiv(program, pname, params);
@@ -1527,7 +1006,7 @@ inline void QOpenGLFunctions::glGetProgramiv(GLuint program, GLenum pname, GLint
 inline void QOpenGLFunctions::glGetProgramInfoLog(GLuint program, GLsizei bufsize, GLsizei* length, char* infolog)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glGetProgramInfoLog(program, bufsize, length, infolog);
+    ::GLES2GetProgramInfoLog(program, bufsize, length, infolog);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->GetProgramInfoLog(program, bufsize, length, infolog);
@@ -1538,7 +1017,7 @@ inline void QOpenGLFunctions::glGetProgramInfoLog(GLuint program, GLsizei bufsiz
 inline void QOpenGLFunctions::glGetRenderbufferParameteriv(GLenum target, GLenum pname, GLint* params)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glGetRenderbufferParameteriv(target, pname, params);
+    ::GLES2GetRenderbufferParameteriv(target, pname, params);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->GetRenderbufferParameteriv(target, pname, params);
@@ -1549,7 +1028,7 @@ inline void QOpenGLFunctions::glGetRenderbufferParameteriv(GLenum target, GLenum
 inline void QOpenGLFunctions::glGetShaderiv(GLuint shader, GLenum pname, GLint* params)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glGetShaderiv(shader, pname, params);
+    ::GLES2GetShaderiv(shader, pname, params);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->GetShaderiv(shader, pname, params);
@@ -1560,7 +1039,7 @@ inline void QOpenGLFunctions::glGetShaderiv(GLuint shader, GLenum pname, GLint* 
 inline void QOpenGLFunctions::glGetShaderInfoLog(GLuint shader, GLsizei bufsize, GLsizei* length, char* infolog)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glGetShaderInfoLog(shader, bufsize, length, infolog);
+    ::GLES2GetShaderInfoLog(shader, bufsize, length, infolog);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->GetShaderInfoLog(shader, bufsize, length, infolog);
@@ -1571,7 +1050,7 @@ inline void QOpenGLFunctions::glGetShaderInfoLog(GLuint shader, GLsizei bufsize,
 inline void QOpenGLFunctions::glGetShaderPrecisionFormat(GLenum shadertype, GLenum precisiontype, GLint* range, GLint* precision)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glGetShaderPrecisionFormat(shadertype, precisiontype, range, precision);
+    ::GLES2GetShaderPrecisionFormat(shadertype, precisiontype, range, precision);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->GetShaderPrecisionFormat(shadertype, precisiontype, range, precision);
@@ -1582,7 +1061,7 @@ inline void QOpenGLFunctions::glGetShaderPrecisionFormat(GLenum shadertype, GLen
 inline void QOpenGLFunctions::glGetShaderSource(GLuint shader, GLsizei bufsize, GLsizei* length, char* source)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glGetShaderSource(shader, bufsize, length, source);
+    ::GLES2GetShaderSource(shader, bufsize, length, source);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->GetShaderSource(shader, bufsize, length, source);
@@ -1593,7 +1072,7 @@ inline void QOpenGLFunctions::glGetShaderSource(GLuint shader, GLsizei bufsize, 
 inline void QOpenGLFunctions::glGetUniformfv(GLuint program, GLint location, GLfloat* params)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glGetUniformfv(program, location, params);
+    ::GLES2GetUniformfv(program, location, params);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->GetUniformfv(program, location, params);
@@ -1604,7 +1083,7 @@ inline void QOpenGLFunctions::glGetUniformfv(GLuint program, GLint location, GLf
 inline void QOpenGLFunctions::glGetUniformiv(GLuint program, GLint location, GLint* params)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glGetUniformiv(program, location, params);
+    ::GLES2GetUniformiv(program, location, params);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->GetUniformiv(program, location, params);
@@ -1615,7 +1094,7 @@ inline void QOpenGLFunctions::glGetUniformiv(GLuint program, GLint location, GLi
 inline GLint QOpenGLFunctions::glGetUniformLocation(GLuint program, const char* name)
 {
 #ifdef QT_OPENGL_ES_2
-    GLint result = ::glGetUniformLocation(program, name);
+    GLint result = ::GLES2GetUniformLocation(program, name);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     GLint result = d_ptr->GetUniformLocation(program, name);
@@ -1627,7 +1106,7 @@ inline GLint QOpenGLFunctions::glGetUniformLocation(GLuint program, const char* 
 inline void QOpenGLFunctions::glGetVertexAttribfv(GLuint index, GLenum pname, GLfloat* params)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glGetVertexAttribfv(index, pname, params);
+    ::GLES2GetVertexAttribfv(index, pname, params);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->GetVertexAttribfv(index, pname, params);
@@ -1638,7 +1117,7 @@ inline void QOpenGLFunctions::glGetVertexAttribfv(GLuint index, GLenum pname, GL
 inline void QOpenGLFunctions::glGetVertexAttribiv(GLuint index, GLenum pname, GLint* params)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glGetVertexAttribiv(index, pname, params);
+    ::GLES2GetVertexAttribiv(index, pname, params);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->GetVertexAttribiv(index, pname, params);
@@ -1649,7 +1128,7 @@ inline void QOpenGLFunctions::glGetVertexAttribiv(GLuint index, GLenum pname, GL
 inline void QOpenGLFunctions::glGetVertexAttribPointerv(GLuint index, GLenum pname, void** pointer)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glGetVertexAttribPointerv(index, pname, pointer);
+    ::GLES2GetVertexAttribPointerv(index, pname, pointer);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->GetVertexAttribPointerv(index, pname, pointer);
@@ -1660,7 +1139,7 @@ inline void QOpenGLFunctions::glGetVertexAttribPointerv(GLuint index, GLenum pna
 inline GLboolean QOpenGLFunctions::glIsBuffer(GLuint buffer)
 {
 #ifdef QT_OPENGL_ES_2
-    GLboolean result = ::glIsBuffer(buffer);
+    GLboolean result = ::GLES2IsBuffer(buffer);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     GLboolean result = d_ptr->IsBuffer(buffer);
@@ -1672,7 +1151,7 @@ inline GLboolean QOpenGLFunctions::glIsBuffer(GLuint buffer)
 inline GLboolean QOpenGLFunctions::glIsFramebuffer(GLuint framebuffer)
 {
 #ifdef QT_OPENGL_ES_2
-    GLboolean result = ::glIsFramebuffer(framebuffer);
+    GLboolean result = ::GLES2IsFramebuffer(framebuffer);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     GLboolean result = d_ptr->IsFramebuffer(framebuffer);
@@ -1684,7 +1163,7 @@ inline GLboolean QOpenGLFunctions::glIsFramebuffer(GLuint framebuffer)
 inline GLboolean QOpenGLFunctions::glIsProgram(GLuint program)
 {
 #ifdef QT_OPENGL_ES_2
-    GLboolean result = ::glIsProgram(program);
+    GLboolean result = ::GLES2IsProgram(program);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     GLboolean result = d_ptr->IsProgram(program);
@@ -1696,7 +1175,7 @@ inline GLboolean QOpenGLFunctions::glIsProgram(GLuint program)
 inline GLboolean QOpenGLFunctions::glIsRenderbuffer(GLuint renderbuffer)
 {
 #ifdef QT_OPENGL_ES_2
-    GLboolean result = ::glIsRenderbuffer(renderbuffer);
+    GLboolean result = ::GLES2IsRenderbuffer(renderbuffer);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     GLboolean result = d_ptr->IsRenderbuffer(renderbuffer);
@@ -1708,7 +1187,7 @@ inline GLboolean QOpenGLFunctions::glIsRenderbuffer(GLuint renderbuffer)
 inline GLboolean QOpenGLFunctions::glIsShader(GLuint shader)
 {
 #ifdef QT_OPENGL_ES_2
-    GLboolean result = ::glIsShader(shader);
+    GLboolean result = ::GLES2IsShader(shader);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     GLboolean result = d_ptr->IsShader(shader);
@@ -1720,7 +1199,7 @@ inline GLboolean QOpenGLFunctions::glIsShader(GLuint shader)
 inline void QOpenGLFunctions::glLinkProgram(GLuint program)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glLinkProgram(program);
+    ::GLES2LinkProgram(program);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->LinkProgram(program);
@@ -1731,7 +1210,7 @@ inline void QOpenGLFunctions::glLinkProgram(GLuint program)
 inline void QOpenGLFunctions::glReleaseShaderCompiler()
 {
 #ifdef QT_OPENGL_ES_2
-    ::glReleaseShaderCompiler();
+    ::GLES2ReleaseShaderCompiler();
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->ReleaseShaderCompiler();
@@ -1742,7 +1221,7 @@ inline void QOpenGLFunctions::glReleaseShaderCompiler()
 inline void QOpenGLFunctions::glRenderbufferStorage(GLenum target, GLenum internalformat, GLsizei width, GLsizei height)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glRenderbufferStorage(target, internalformat, width, height);
+    ::GLES2RenderbufferStorage(target, internalformat, width, height);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->RenderbufferStorage(target, internalformat, width, height);
@@ -1753,7 +1232,7 @@ inline void QOpenGLFunctions::glRenderbufferStorage(GLenum target, GLenum intern
 inline void QOpenGLFunctions::glSampleCoverage(GLclampf value, GLboolean invert)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glSampleCoverage(value, invert);
+    ::GLES2SampleCoverage(value, invert);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->SampleCoverage(value, invert);
@@ -1764,7 +1243,7 @@ inline void QOpenGLFunctions::glSampleCoverage(GLclampf value, GLboolean invert)
 inline void QOpenGLFunctions::glShaderBinary(GLint n, const GLuint* shaders, GLenum binaryformat, const void* binary, GLint length)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glShaderBinary(n, shaders, binaryformat, binary, length);
+    ::GLES2ShaderBinary(n, shaders, binaryformat, binary, length);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->ShaderBinary(n, shaders, binaryformat, binary, length);
@@ -1775,7 +1254,7 @@ inline void QOpenGLFunctions::glShaderBinary(GLint n, const GLuint* shaders, GLe
 inline void QOpenGLFunctions::glShaderSource(GLuint shader, GLsizei count, const char** string, const GLint* length)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glShaderSource(shader, count, string, length);
+    ::GLES2ShaderSource(shader, count, string, length);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->ShaderSource(shader, count, string, length);
@@ -1786,7 +1265,7 @@ inline void QOpenGLFunctions::glShaderSource(GLuint shader, GLsizei count, const
 inline void QOpenGLFunctions::glStencilFuncSeparate(GLenum face, GLenum func, GLint ref, GLuint mask)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glStencilFuncSeparate(face, func, ref, mask);
+    ::GLES2StencilFuncSeparate(face, func, ref, mask);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->StencilFuncSeparate(face, func, ref, mask);
@@ -1797,7 +1276,7 @@ inline void QOpenGLFunctions::glStencilFuncSeparate(GLenum face, GLenum func, GL
 inline void QOpenGLFunctions::glStencilMaskSeparate(GLenum face, GLuint mask)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glStencilMaskSeparate(face, mask);
+    ::GLES2StencilMaskSeparate(face, mask);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->StencilMaskSeparate(face, mask);
@@ -1808,7 +1287,7 @@ inline void QOpenGLFunctions::glStencilMaskSeparate(GLenum face, GLuint mask)
 inline void QOpenGLFunctions::glStencilOpSeparate(GLenum face, GLenum fail, GLenum zfail, GLenum zpass)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glStencilOpSeparate(face, fail, zfail, zpass);
+    ::GLES2StencilOpSeparate(face, fail, zfail, zpass);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->StencilOpSeparate(face, fail, zfail, zpass);
@@ -1819,7 +1298,7 @@ inline void QOpenGLFunctions::glStencilOpSeparate(GLenum face, GLenum fail, GLen
 inline void QOpenGLFunctions::glUniform1f(GLint location, GLfloat x)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glUniform1f(location, x);
+    ::GLES2Uniform1f(location, x);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->Uniform1f(location, x);
@@ -1830,7 +1309,7 @@ inline void QOpenGLFunctions::glUniform1f(GLint location, GLfloat x)
 inline void QOpenGLFunctions::glUniform1fv(GLint location, GLsizei count, const GLfloat* v)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glUniform1fv(location, count, v);
+    ::GLES2Uniform1fv(location, count, v);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->Uniform1fv(location, count, v);
@@ -1841,7 +1320,7 @@ inline void QOpenGLFunctions::glUniform1fv(GLint location, GLsizei count, const 
 inline void QOpenGLFunctions::glUniform1i(GLint location, GLint x)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glUniform1i(location, x);
+    ::GLES2Uniform1i(location, x);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->Uniform1i(location, x);
@@ -1852,7 +1331,7 @@ inline void QOpenGLFunctions::glUniform1i(GLint location, GLint x)
 inline void QOpenGLFunctions::glUniform1iv(GLint location, GLsizei count, const GLint* v)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glUniform1iv(location, count, v);
+    ::GLES2Uniform1iv(location, count, v);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->Uniform1iv(location, count, v);
@@ -1863,7 +1342,7 @@ inline void QOpenGLFunctions::glUniform1iv(GLint location, GLsizei count, const 
 inline void QOpenGLFunctions::glUniform2f(GLint location, GLfloat x, GLfloat y)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glUniform2f(location, x, y);
+    ::GLES2Uniform2f(location, x, y);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->Uniform2f(location, x, y);
@@ -1874,7 +1353,7 @@ inline void QOpenGLFunctions::glUniform2f(GLint location, GLfloat x, GLfloat y)
 inline void QOpenGLFunctions::glUniform2fv(GLint location, GLsizei count, const GLfloat* v)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glUniform2fv(location, count, v);
+    ::GLES2Uniform2fv(location, count, v);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->Uniform2fv(location, count, v);
@@ -1885,7 +1364,7 @@ inline void QOpenGLFunctions::glUniform2fv(GLint location, GLsizei count, const 
 inline void QOpenGLFunctions::glUniform2i(GLint location, GLint x, GLint y)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glUniform2i(location, x, y);
+    ::GLES2Uniform2i(location, x, y);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->Uniform2i(location, x, y);
@@ -1896,7 +1375,7 @@ inline void QOpenGLFunctions::glUniform2i(GLint location, GLint x, GLint y)
 inline void QOpenGLFunctions::glUniform2iv(GLint location, GLsizei count, const GLint* v)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glUniform2iv(location, count, v);
+    ::GLES2Uniform2iv(location, count, v);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->Uniform2iv(location, count, v);
@@ -1907,7 +1386,7 @@ inline void QOpenGLFunctions::glUniform2iv(GLint location, GLsizei count, const 
 inline void QOpenGLFunctions::glUniform3f(GLint location, GLfloat x, GLfloat y, GLfloat z)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glUniform3f(location, x, y, z);
+    ::GLES2Uniform3f(location, x, y, z);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->Uniform3f(location, x, y, z);
@@ -1918,7 +1397,7 @@ inline void QOpenGLFunctions::glUniform3f(GLint location, GLfloat x, GLfloat y, 
 inline void QOpenGLFunctions::glUniform3fv(GLint location, GLsizei count, const GLfloat* v)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glUniform3fv(location, count, v);
+    ::GLES2Uniform3fv(location, count, v);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->Uniform3fv(location, count, v);
@@ -1929,7 +1408,7 @@ inline void QOpenGLFunctions::glUniform3fv(GLint location, GLsizei count, const 
 inline void QOpenGLFunctions::glUniform3i(GLint location, GLint x, GLint y, GLint z)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glUniform3i(location, x, y, z);
+    ::GLES2Uniform3i(location, x, y, z);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->Uniform3i(location, x, y, z);
@@ -1940,7 +1419,7 @@ inline void QOpenGLFunctions::glUniform3i(GLint location, GLint x, GLint y, GLin
 inline void QOpenGLFunctions::glUniform3iv(GLint location, GLsizei count, const GLint* v)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glUniform3iv(location, count, v);
+    ::GLES2Uniform3iv(location, count, v);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->Uniform3iv(location, count, v);
@@ -1951,7 +1430,7 @@ inline void QOpenGLFunctions::glUniform3iv(GLint location, GLsizei count, const 
 inline void QOpenGLFunctions::glUniform4f(GLint location, GLfloat x, GLfloat y, GLfloat z, GLfloat w)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glUniform4f(location, x, y, z, w);
+    ::GLES2Uniform4f(location, x, y, z, w);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->Uniform4f(location, x, y, z, w);
@@ -1962,7 +1441,7 @@ inline void QOpenGLFunctions::glUniform4f(GLint location, GLfloat x, GLfloat y, 
 inline void QOpenGLFunctions::glUniform4fv(GLint location, GLsizei count, const GLfloat* v)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glUniform4fv(location, count, v);
+    ::GLES2Uniform4fv(location, count, v);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->Uniform4fv(location, count, v);
@@ -1973,7 +1452,7 @@ inline void QOpenGLFunctions::glUniform4fv(GLint location, GLsizei count, const 
 inline void QOpenGLFunctions::glUniform4i(GLint location, GLint x, GLint y, GLint z, GLint w)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glUniform4i(location, x, y, z, w);
+    ::GLES2Uniform4i(location, x, y, z, w);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->Uniform4i(location, x, y, z, w);
@@ -1984,7 +1463,7 @@ inline void QOpenGLFunctions::glUniform4i(GLint location, GLint x, GLint y, GLin
 inline void QOpenGLFunctions::glUniform4iv(GLint location, GLsizei count, const GLint* v)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glUniform4iv(location, count, v);
+    ::GLES2Uniform4iv(location, count, v);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->Uniform4iv(location, count, v);
@@ -1995,7 +1474,7 @@ inline void QOpenGLFunctions::glUniform4iv(GLint location, GLsizei count, const 
 inline void QOpenGLFunctions::glUniformMatrix2fv(GLint location, GLsizei count, GLboolean transpose, const GLfloat* value)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glUniformMatrix2fv(location, count, transpose, value);
+    ::GLES2UniformMatrix2fv(location, count, transpose, value);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->UniformMatrix2fv(location, count, transpose, value);
@@ -2006,7 +1485,7 @@ inline void QOpenGLFunctions::glUniformMatrix2fv(GLint location, GLsizei count, 
 inline void QOpenGLFunctions::glUniformMatrix3fv(GLint location, GLsizei count, GLboolean transpose, const GLfloat* value)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glUniformMatrix3fv(location, count, transpose, value);
+    ::GLES2UniformMatrix3fv(location, count, transpose, value);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->UniformMatrix3fv(location, count, transpose, value);
@@ -2017,7 +1496,7 @@ inline void QOpenGLFunctions::glUniformMatrix3fv(GLint location, GLsizei count, 
 inline void QOpenGLFunctions::glUniformMatrix4fv(GLint location, GLsizei count, GLboolean transpose, const GLfloat* value)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glUniformMatrix4fv(location, count, transpose, value);
+    ::GLES2UniformMatrix4fv(location, count, transpose, value);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->UniformMatrix4fv(location, count, transpose, value);
@@ -2028,7 +1507,7 @@ inline void QOpenGLFunctions::glUniformMatrix4fv(GLint location, GLsizei count, 
 inline void QOpenGLFunctions::glUseProgram(GLuint program)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glUseProgram(program);
+    ::GLES2UseProgram(program);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->UseProgram(program);
@@ -2039,7 +1518,7 @@ inline void QOpenGLFunctions::glUseProgram(GLuint program)
 inline void QOpenGLFunctions::glValidateProgram(GLuint program)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glValidateProgram(program);
+    ::GLES2ValidateProgram(program);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->ValidateProgram(program);
@@ -2050,7 +1529,7 @@ inline void QOpenGLFunctions::glValidateProgram(GLuint program)
 inline void QOpenGLFunctions::glVertexAttrib1f(GLuint indx, GLfloat x)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glVertexAttrib1f(indx, x);
+    ::GLES2VertexAttrib1f(indx, x);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->VertexAttrib1f(indx, x);
@@ -2061,7 +1540,7 @@ inline void QOpenGLFunctions::glVertexAttrib1f(GLuint indx, GLfloat x)
 inline void QOpenGLFunctions::glVertexAttrib1fv(GLuint indx, const GLfloat* values)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glVertexAttrib1fv(indx, values);
+    ::GLES2VertexAttrib1fv(indx, values);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->VertexAttrib1fv(indx, values);
@@ -2072,7 +1551,7 @@ inline void QOpenGLFunctions::glVertexAttrib1fv(GLuint indx, const GLfloat* valu
 inline void QOpenGLFunctions::glVertexAttrib2f(GLuint indx, GLfloat x, GLfloat y)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glVertexAttrib2f(indx, x, y);
+    ::GLES2VertexAttrib2f(indx, x, y);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->VertexAttrib2f(indx, x, y);
@@ -2083,7 +1562,7 @@ inline void QOpenGLFunctions::glVertexAttrib2f(GLuint indx, GLfloat x, GLfloat y
 inline void QOpenGLFunctions::glVertexAttrib2fv(GLuint indx, const GLfloat* values)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glVertexAttrib2fv(indx, values);
+    ::GLES2VertexAttrib2fv(indx, values);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->VertexAttrib2fv(indx, values);
@@ -2094,7 +1573,7 @@ inline void QOpenGLFunctions::glVertexAttrib2fv(GLuint indx, const GLfloat* valu
 inline void QOpenGLFunctions::glVertexAttrib3f(GLuint indx, GLfloat x, GLfloat y, GLfloat z)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glVertexAttrib3f(indx, x, y, z);
+    ::GLES2VertexAttrib3f(indx, x, y, z);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->VertexAttrib3f(indx, x, y, z);
@@ -2105,7 +1584,7 @@ inline void QOpenGLFunctions::glVertexAttrib3f(GLuint indx, GLfloat x, GLfloat y
 inline void QOpenGLFunctions::glVertexAttrib3fv(GLuint indx, const GLfloat* values)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glVertexAttrib3fv(indx, values);
+    ::GLES2VertexAttrib3fv(indx, values);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->VertexAttrib3fv(indx, values);
@@ -2116,7 +1595,7 @@ inline void QOpenGLFunctions::glVertexAttrib3fv(GLuint indx, const GLfloat* valu
 inline void QOpenGLFunctions::glVertexAttrib4f(GLuint indx, GLfloat x, GLfloat y, GLfloat z, GLfloat w)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glVertexAttrib4f(indx, x, y, z, w);
+    ::GLES2VertexAttrib4f(indx, x, y, z, w);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->VertexAttrib4f(indx, x, y, z, w);
@@ -2127,7 +1606,7 @@ inline void QOpenGLFunctions::glVertexAttrib4f(GLuint indx, GLfloat x, GLfloat y
 inline void QOpenGLFunctions::glVertexAttrib4fv(GLuint indx, const GLfloat* values)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glVertexAttrib4fv(indx, values);
+    ::GLES2VertexAttrib4fv(indx, values);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->VertexAttrib4fv(indx, values);
@@ -2138,18 +1617,10 @@ inline void QOpenGLFunctions::glVertexAttrib4fv(GLuint indx, const GLfloat* valu
 inline void QOpenGLFunctions::glVertexAttribPointer(GLuint indx, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const void* ptr)
 {
 #ifdef QT_OPENGL_ES_2
-    ::glVertexAttribPointer(indx, size, type, normalized, stride, ptr);
+    ::GLES2VertexAttribPointer(indx, size, type, normalized, stride, ptr);
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->VertexAttribPointer(indx, size, type, normalized, stride, ptr);
 #endif
     Q_OPENGL_FUNCTIONS_DEBUG
 }
-
-#endif // Q_OS_NACL
-
-QT_END_NAMESPACE
-
-#endif // QT_NO_OPENGL
-
-#endif
