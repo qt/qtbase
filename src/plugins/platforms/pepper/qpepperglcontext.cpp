@@ -134,6 +134,8 @@ QSurfaceFormat QPepperGLContext::format() const
 
     QSurfaceFormat format;
     format.setSwapBehavior(QSurfaceFormat::DoubleBuffer);
+    format.setDepthBufferSize(24);
+    format.setStencilBufferSize(8);
     return format;
 }
 
@@ -150,6 +152,7 @@ bool QPepperGLContext::initGl()
     const int32_t attrib_list[] = {
       PP_GRAPHICS3DATTRIB_ALPHA_SIZE, 8,
       PP_GRAPHICS3DATTRIB_DEPTH_SIZE, 24,
+      PP_GRAPHICS3DATTRIB_STENCIL_SIZE, 8,
       PP_GRAPHICS3DATTRIB_WIDTH, m_currentSize.width(),
       PP_GRAPHICS3DATTRIB_HEIGHT, m_currentSize.height(),
       PP_GRAPHICS3DATTRIB_NONE
