@@ -441,7 +441,7 @@ QTextCodec::ConverterState::~ConverterState()
             an empty list. For example, "ISO-8859-1" has "latin1",
             "CP819", "IBM819", and "iso-ir-100" as aliases.
 
-    \row \li mibEnum()
+    \row \li \l{QTextCodec::mibEnum()}{mibEnum()}
          \li Return the MIB enum for the encoding if it is listed in
             the \l{IANA character-sets encoding file}.
 
@@ -704,7 +704,7 @@ QTextCodec* QTextCodec::codecForLocale()
     \fn int QTextCodec::mibEnum() const
 
     Subclasses of QTextCodec must reimplement this function. It
-    returns the MIBenum (see \l{IANA character-sets encoding file}
+    returns the \l{QTextCodec::mibEnum()}{MIBenum} (see \l{IANA character-sets encoding file}
     for more information). It is important that each QTextCodec
     subclass returns the correct unique value for this function.
 */
@@ -733,7 +733,7 @@ QList<QByteArray> QTextCodec::aliases() const
     \a state can be 0, in which case the conversion is stateless and
     default conversion rules should be used. If state is not 0, the
     codec should save the state after the conversion in \a state, and
-    adjust the remainingChars and invalidChars members of the struct.
+    adjust the \c remainingChars and \c invalidChars members of the struct.
 */
 
 /*!
@@ -749,7 +749,7 @@ QList<QByteArray> QTextCodec::aliases() const
     \a state can be 0 in which case the conversion is stateless and
     default conversion rules should be used. If state is not 0, the
     codec should save the state after the conversion in \a state, and
-    adjust the remainingChars and invalidChars members of the struct.
+    adjust the \c remainingChars and \c invalidChars members of the struct.
 */
 
 /*!
