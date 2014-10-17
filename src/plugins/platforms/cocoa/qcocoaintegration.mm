@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -144,15 +144,8 @@ void QCocoaScreen::updateGeometry()
 
 qreal QCocoaScreen::devicePixelRatio() const
 {
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
-    if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_7) {
-        NSScreen * screen = osScreen();
-        return qreal(screen ? [screen backingScaleFactor] : 1.0);
-    } else
-#endif
-    {
-        return 1.0;
-    }
+    NSScreen * screen = osScreen();
+    return qreal(screen ? [screen backingScaleFactor] : 1.0);
 }
 
 QWindow *QCocoaScreen::topLevelAt(const QPoint &point) const

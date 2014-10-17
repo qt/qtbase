@@ -408,10 +408,6 @@ static NSString *_q_NSWindowDidChangeOcclusionStateNotification = nil;
         Qt::WindowState newState = notificationName == NSWindowDidMiniaturizeNotification ?
                     Qt::WindowMinimized : Qt::WindowNoState;
         [self notifyWindowStateChanged:newState];
-        // NSWindowDidOrderOnScreenAndFinishAnimatingNotification is private API, and not
-        // emitted in 10.6, so we bring back the old behavior for that case alone.
-        if (newState == Qt::WindowNoState && QSysInfo::QSysInfo::MacintoshVersion == QSysInfo::MV_10_6)
-            m_platformWindow->exposeWindow();
     } else if ([notificationName isEqualToString: @"NSWindowDidOrderOffScreenNotification"]) {
         m_platformWindow->obscureWindow();
     } else if ([notificationName isEqualToString: @"NSWindowDidOrderOnScreenAndFinishAnimatingNotification"]) {
@@ -442,19 +438,11 @@ static NSString *_q_NSWindowDidChangeOcclusionStateNotification = nil;
                 m_platformWindow->updateExposedGeometry();
             }
         }
-    } else {
-
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
-    if (QSysInfo::QSysInfo::MacintoshVersion >= QSysInfo::MV_10_7) {
-        if (notificationName == NSWindowDidEnterFullScreenNotification
-            || notificationName == NSWindowDidExitFullScreenNotification) {
-            Qt::WindowState newState = notificationName == NSWindowDidEnterFullScreenNotification ?
-                        Qt::WindowFullScreen : Qt::WindowNoState;
-            [self notifyWindowStateChanged:newState];
-        }
-    }
-#endif
-
+    } else if (notificationName == NSWindowDidEnterFullScreenNotification
+               || notificationName == NSWindowDidExitFullScreenNotification) {
+        Qt::WindowState newState = notificationName == NSWindowDidEnterFullScreenNotification ?
+                                   Qt::WindowFullScreen : Qt::WindowNoState;
+        [self notifyWindowStateChanged:newState];
     }
 }
 
@@ -656,16 +644,8 @@ static NSString *_q_NSWindowDidChangeOcclusionStateNotification = nil;
 
     NSWindow *window = [self window];
     NSPoint nsWindowPoint;
-    // Use convertRectToScreen if available (added in 10.7).
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
-    if ([window respondsToSelector:@selector(convertRectFromScreen:)]) {
-        NSRect windowRect = [window convertRectFromScreen:NSMakeRect(mouseLocation.x, mouseLocation.y, 1, 1)];
-        nsWindowPoint = windowRect.origin;                    // NSWindow coordinates
-    } else
-#endif
-    {
-        nsWindowPoint = [window convertScreenToBase:mouseLocation];                    // NSWindow coordinates
-    }
+    NSRect windowRect = [window convertRectFromScreen:NSMakeRect(mouseLocation.x, mouseLocation.y, 1, 1)];
+    nsWindowPoint = windowRect.origin;                    // NSWindow coordinates
     NSPoint nsViewPoint = [self convertPoint: nsWindowPoint fromView: nil]; // NSView/QWindow coordinates
     *qtWindowPoint = QPointF(nsViewPoint.x, nsViewPoint.y);                     // NSView/QWindow coordinates
 
@@ -1296,18 +1276,8 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
         // It looks like 1/4 degrees per pixel behaves most native.
         // (NB: Qt expects the unit for delta to be 8 per degree):
         const int pixelsToDegrees = 2; // 8 * 1/4
-
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
-        if ([theEvent respondsToSelector:@selector(scrollingDeltaX)]) {
-            angleDelta.setX([theEvent scrollingDeltaX] * pixelsToDegrees);
-            angleDelta.setY([theEvent scrollingDeltaY] * pixelsToDegrees);
-        } else
-#endif
-        {
-            angleDelta.setX([theEvent deviceDeltaX] * pixelsToDegrees);
-            angleDelta.setY([theEvent deviceDeltaY] * pixelsToDegrees);
-        }
-
+        angleDelta.setX([theEvent scrollingDeltaX] * pixelsToDegrees);
+        angleDelta.setY([theEvent scrollingDeltaY] * pixelsToDegrees);
     } else {
         // carbonEventKind == kEventMouseWheelMoved
         // Remove acceleration, and use either -120 or 120 as delta:
@@ -1316,20 +1286,16 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
     }
 
     QPoint pixelDelta;
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
-    if ([theEvent respondsToSelector:@selector(scrollingDeltaX)]) {
-        if ([theEvent hasPreciseScrollingDeltas]) {
-            pixelDelta.setX([theEvent scrollingDeltaX]);
-            pixelDelta.setY([theEvent scrollingDeltaY]);
-        } else {
-            // docs: "In the case of !hasPreciseScrollingDeltas, multiply the delta with the line width."
-            // scrollingDeltaX seems to return a minimum value of 0.1 in this case, map that to two pixels.
-            const CGFloat lineWithEstimate = 20.0;
-            pixelDelta.setX([theEvent scrollingDeltaX] * lineWithEstimate);
-            pixelDelta.setY([theEvent scrollingDeltaY] * lineWithEstimate);
-        }
+    if ([theEvent hasPreciseScrollingDeltas]) {
+        pixelDelta.setX([theEvent scrollingDeltaX]);
+        pixelDelta.setY([theEvent scrollingDeltaY]);
+    } else {
+        // docs: "In the case of !hasPreciseScrollingDeltas, multiply the delta with the line width."
+        // scrollingDeltaX seems to return a minimum value of 0.1 in this case, map that to two pixels.
+        const CGFloat lineWithEstimate = 20.0;
+        pixelDelta.setX([theEvent scrollingDeltaX] * lineWithEstimate);
+        pixelDelta.setY([theEvent scrollingDeltaY] * lineWithEstimate);
     }
-#endif
 
     QPointF qt_windowPoint;
     QPointF qt_screenPoint;
@@ -1337,44 +1303,36 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
     NSTimeInterval timestamp = [theEvent timestamp];
     ulong qt_timestamp = timestamp * 1000;
 
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
-    if ([theEvent respondsToSelector:@selector(scrollingDeltaX)]) {
-        // Prevent keyboard modifier state from changing during scroll event streams.
-        // A two-finger trackpad flick generates a stream of scroll events. We want
-        // the keyboard modifier state to be the state at the beginning of the
-        // flick in order to avoid changing the interpretation of the events
-        // mid-stream. One example of this happening would be when pressing cmd
-        // after scrolling in Qt Creator: not taking the phase into account causes
-        // the end of the event stream to be interpreted as font size changes.
-        NSEventPhase momentumPhase = [theEvent momentumPhase];
-        if (momentumPhase == NSEventPhaseNone) {
-            currentWheelModifiers = [QNSView convertKeyModifiers:[theEvent modifierFlags]];
-        }
+    // Prevent keyboard modifier state from changing during scroll event streams.
+    // A two-finger trackpad flick generates a stream of scroll events. We want
+    // the keyboard modifier state to be the state at the beginning of the
+    // flick in order to avoid changing the interpretation of the events
+    // mid-stream. One example of this happening would be when pressing cmd
+    // after scrolling in Qt Creator: not taking the phase into account causes
+    // the end of the event stream to be interpreted as font size changes.
+    NSEventPhase momentumPhase = [theEvent momentumPhase];
+    if (momentumPhase == NSEventPhaseNone) {
+        currentWheelModifiers = [QNSView convertKeyModifiers:[theEvent modifierFlags]];
+    }
 
-        NSEventPhase phase = [theEvent phase];
-        Qt::ScrollPhase ph = Qt::ScrollUpdate;
+    NSEventPhase phase = [theEvent phase];
+    Qt::ScrollPhase ph = Qt::ScrollUpdate;
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_8
-        if (QSysInfo::QSysInfo::MacintoshVersion >= QSysInfo::MV_10_8) {
-            // On 10.8 and above, MayBegin is likely to happen.  We treat it the same as an actual begin.
-            if (phase == NSEventPhaseMayBegin)
-                ph = Qt::ScrollBegin;
-        } else
+    if (QSysInfo::QSysInfo::MacintoshVersion >= QSysInfo::MV_10_8) {
+        // On 10.8 and above, MayBegin is likely to happen.  We treat it the same as an actual begin.
+        if (phase == NSEventPhaseMayBegin)
+            ph = Qt::ScrollBegin;
+    } else
 #endif
         if (phase == NSEventPhaseBegan) {
             // On 10.7, MayBegin will not happen, so Began is the actual beginning.
             ph = Qt::ScrollBegin;
         }
-        if (phase == NSEventPhaseEnded || phase == NSEventPhaseCancelled) {
-            ph = Qt::ScrollEnd;
-        }
-
-        QWindowSystemInterface::handleWheelEvent(m_window, qt_timestamp, qt_windowPoint, qt_screenPoint, pixelDelta, angleDelta, currentWheelModifiers, ph);
-    } else
-#endif
-    {
-        QWindowSystemInterface::handleWheelEvent(m_window, qt_timestamp, qt_windowPoint, qt_screenPoint, pixelDelta, angleDelta,
-                                                 [QNSView convertKeyModifiers:[theEvent modifierFlags]]);
+    if (phase == NSEventPhaseEnded || phase == NSEventPhaseCancelled) {
+        ph = Qt::ScrollEnd;
     }
+
+    QWindowSystemInterface::handleWheelEvent(m_window, qt_timestamp, qt_windowPoint, qt_screenPoint, pixelDelta, angleDelta, currentWheelModifiers, ph);
 }
 #endif //QT_NO_WHEELEVENT
 
