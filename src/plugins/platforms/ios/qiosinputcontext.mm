@@ -322,7 +322,7 @@ bool QIOSInputContext::isInputPanelVisible() const
 
 void QIOSInputContext::cursorRectangleChanged()
 {
-    if (!m_keyboardListener->m_keyboardVisibleAndDocked)
+    if (!m_keyboardListener->m_keyboardVisibleAndDocked || !qApp->focusObject())
         return;
 
     // Check if the cursor has changed position inside the input item. Since
