@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -61,8 +61,6 @@ extern "C" { // Otherwise it won't find CWKeychain* symbols at link time
 
 #include <net/if.h>
 #include <ifaddrs.h>
-
-#if QT_MAC_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_7, __IPHONE_NA)
 
 @interface QT_MANGLE_NAMESPACE(QNSListener) : NSObject
 {
@@ -886,7 +884,3 @@ quint64 QCoreWlanEngine::getBytes(const QString &interfaceName, bool b)
 }
 
 QT_END_NAMESPACE
-
-#else // QT_MAC_PLATFORM_SDK_EQUAL_OR_ABOVE
-#include "qcorewlanengine_10_6.mm"
-#endif
