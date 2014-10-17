@@ -204,9 +204,9 @@ public:
 
     void setAutoDefaultButton(QObject *button) const;
 
-    NSView *cocoaControl(QCocoaWidget widget, QPoint *offset) const;
+    NSView *cocoaControl(QCocoaWidget widget) const;
 
-    void drawNSViewInRect(NSView *view, const QRect &rect, QPainter *p, QCocoaDrawRectBlock drawRectBlock = nil) const;
+    void drawNSViewInRect(QCocoaWidget widget, NSView *view, const QRect &rect, QPainter *p, QCocoaDrawRectBlock drawRectBlock = nil) const;
     void resolveCurrentNSView(QWindow *window);
 
 public:

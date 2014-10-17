@@ -1830,7 +1830,7 @@ static QCocoaWidget cocoaWidgetFromHIThemeButtonKind(ThemeButtonKind kind)
     return w;
 }
 
-NSView *QMacStylePrivate::cocoaControl(QCocoaWidget widget, QPoint *offset) const
+NSView *QMacStylePrivate::cocoaControl(QCocoaWidget widget) const
 {
     NSView *bv = cocoaControls[widget];
     if (!bv) {
@@ -1903,35 +1903,36 @@ NSView *QMacStylePrivate::cocoaControl(QCocoaWidget widget, QPoint *offset) cons
         const_cast<QMacStylePrivate *>(this)->cocoaControls.insert(widget, bv);
     }
 
-    if (offset) {
-        if (widget == QCocoaWidget(QCocoaRadioButton, QAquaSizeLarge))
-            offset->setY(2);
-        else if (widget == QCocoaWidget(QCocoaRadioButton, QAquaSizeSmall))
-            *offset = QPoint(-1, 2);
-        else if (widget == QCocoaWidget(QCocoaRadioButton, QAquaSizeMini))
-            offset->setY(2);
-        else if (widget == QCocoaWidget(QCocoaPopupButton, QAquaSizeSmall)
-                 || widget == QCocoaWidget(QCocoaCheckBox, QAquaSizeLarge))
-            offset->setY(1);
-        else if (widget == QCocoaWidget(QCocoaCheckBox, QAquaSizeSmall))
-            offset->setX(-1);
-        else if (widget == QCocoaWidget(QCocoaCheckBox, QAquaSizeMini))
-            *offset = QPoint(7, 5);
-        else if (widget == QCocoaWidget(QCocoaPopupButton, QAquaSizeMini))
-            *offset = QPoint(2, -1);
-        else if (widget == QCocoaWidget(QCocoaPullDownButton, QAquaSizeLarge))
-            *offset = QPoint(3, -1);
-        else if (widget == QCocoaWidget(QCocoaPullDownButton, QAquaSizeSmall))
-            *offset = QPoint(2, 1);
-        else if (widget == QCocoaWidget(QCocoaPullDownButton, QAquaSizeMini))
-            *offset = QPoint(5, 0);
-    }
-
     return bv;
 }
 
-void QMacStylePrivate::drawNSViewInRect(NSView *view, const QRect &qtRect, QPainter *p, QCocoaDrawRectBlock drawRectBlock) const
+void QMacStylePrivate::drawNSViewInRect(QCocoaWidget widget, NSView *view, const QRect &qtRect, QPainter *p, QCocoaDrawRectBlock drawRectBlock) const
 {
+    QPoint offset;
+    if (widget == QCocoaWidget(QCocoaRadioButton, QAquaSizeLarge))
+        offset.setY(2);
+    else if (widget == QCocoaWidget(QCocoaRadioButton, QAquaSizeSmall))
+        offset = QPoint(-1, 2);
+    else if (widget == QCocoaWidget(QCocoaRadioButton, QAquaSizeMini))
+        offset.setY(2);
+    else if (widget == QCocoaWidget(QCocoaPopupButton, QAquaSizeSmall)
+             || widget == QCocoaWidget(QCocoaCheckBox, QAquaSizeLarge))
+        offset.setY(1);
+    else if (widget == QCocoaWidget(QCocoaCheckBox, QAquaSizeSmall))
+        offset.setX(-1);
+    else if (widget == QCocoaWidget(QCocoaCheckBox, QAquaSizeMini))
+        offset = QPoint(7, 5);
+    else if (widget == QCocoaWidget(QCocoaPopupButton, QAquaSizeMini))
+        offset = QPoint(2, -1);
+    else if (widget == QCocoaWidget(QCocoaPullDownButton, QAquaSizeLarge))
+        offset = QPoint(3, -1);
+    else if (widget == QCocoaWidget(QCocoaPullDownButton, QAquaSizeSmall))
+        offset = QPoint(2, 1);
+    else if (widget == QCocoaWidget(QCocoaPullDownButton, QAquaSizeMini))
+        offset = QPoint(5, 0);
+
+    p->translate(offset);
+
     QMacCGContext ctx(p);
     CGContextSaveGState(ctx);
 
@@ -1951,6 +1952,8 @@ void QMacStylePrivate::drawNSViewInRect(NSView *view, const QRect &qtRect, QPain
 
     [NSGraphicsContext restoreGraphicsState];
     CGContextRestoreGState(ctx);
+
+    p->translate(-offset);
 }
 
 void QMacStylePrivate::resolveCurrentNSView(QWindow *window)
@@ -2046,8 +2049,8 @@ void QMacStylePrivate::drawColorlessButton(const HIRect &macRect, HIThemeButtonD
             }
             pm = QPixmap::fromImage(image);
         } else if ((usingYosemiteOrLater && combo && !editableCombo) || button) {
-            QPoint offset;
-            NSButton *bc = (NSButton *)cocoaControl(cocoaWidgetFromHIThemeButtonKind(bdi->kind), &offset);
+            QCocoaWidget cw = cocoaWidgetFromHIThemeButtonKind(bdi->kind);
+            NSButton *bc = (NSButton *)cocoaControl(cw);
             [bc highlight:pressed];
             bc.enabled = bdi->state != kThemeStateUnavailable && bdi->state != kThemeStateUnavailableInactive;
             bc.allowsMixedState = YES;
@@ -2057,9 +2060,7 @@ void QMacStylePrivate::drawColorlessButton(const HIRect &macRect, HIThemeButtonD
             QRect rect = opt->rect;
             if (bdi->kind == kThemePopupButtonMini)
                 rect.adjust(0, 0, -5, 0);
-            p->translate(offset);
-            drawNSViewInRect(bc, rect, p);
-            p->translate(-offset);
+            drawNSViewInRect(cw, bc, rect, p);
             return;
         } else if (usingYosemiteOrLater && editableCombo) {
             QImage image = activePixmap.toImage();
@@ -3919,15 +3920,14 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
 
             if (hasMenu && yosemiteOrLater && bdi.kind != kThemeBevelButton) {
                 QCocoaWidget w = cocoaWidgetFromHIThemeButtonKind(bdi.kind);
+                w.first = QCocoaPullDownButton;
                 QPoint offset;
-                NSPopUpButton *pdb = (NSPopUpButton *)d->cocoaControl(QCocoaWidget(QCocoaPullDownButton, w.second), &offset);
+                NSPopUpButton *pdb = (NSPopUpButton *)d->cocoaControl(w);
                 [pdb highlight:(bdi.state == kThemeStatePressed)];
                 pdb.enabled = bdi.state != kThemeStateUnavailable && bdi.state != kThemeStateUnavailableInactive;
                 QRect rect = opt->rect;
                 rect.adjust(0, 0, w.second == QAquaSizeSmall ? -4 : w.second == QAquaSizeMini ? -9 : -6, 0);
-                p->translate(offset);
-                d->drawNSViewInRect(pdb, rect, p);
-                p->translate(-offset);
+                d->drawNSViewInRect(w, pdb, rect, p);
             } else if (hasMenu && bdi.state == kThemeStatePressed && QSysInfo::macVersion() > QSysInfo::MV_10_6)
                 d->drawColorlessButton(newRect, &bdi, p, opt);
             else
@@ -5621,12 +5621,13 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                     // Yosemite demands its blue progress track when no tickmarks are present
                     if (!(slider->subControls & SC_SliderTickmarks)) {
                         QCocoaWidgetKind sliderKind = slider->orientation == Qt::Horizontal ? QCocoaHorizontalSlider : QCocoaVerticalSlider;
-                        NSSlider *sl = (NSSlider *)d->cocoaControl(QCocoaWidget(sliderKind, QAquaSizeLarge), 0);
+                        QCocoaWidget cw = QCocoaWidget(sliderKind, QAquaSizeLarge);
+                        NSSlider *sl = (NSSlider *)d->cocoaControl(cw);
                         sl.minValue = slider->minimum;
                         sl.maxValue = slider->maximum;
                         sl.intValue = slider->sliderValue;
                         sl.enabled = slider->state & QStyle::State_Enabled;
-                        d->drawNSViewInRect(sl, opt->rect, p, ^(NSRect rect, CGContextRef ctx) {
+                        d->drawNSViewInRect(cw, sl, opt->rect, p, ^(NSRect rect, CGContextRef ctx) {
                                                 if (slider->upsideDown) {
                                                     if (isHorizontal) {
                                                         CGContextTranslateCTM(ctx, rect.size.width, 0);
