@@ -14,7 +14,7 @@ class First
 public:
     First() {
         // Enable spesific logging here
-        QLoggingCategory::setFilterRules(QStringLiteral("qt.platform.pepper.network*=true"));
+        QLoggingCategory::setFilterRules(QStringLiteral("qt.platform.pepper.*=true"));
     }
 };
 First first;
@@ -132,15 +132,45 @@ void fireAndForgetRequest(const QString &url)
     urlLoader->load();
 }
 
-QNetworkAccessManager *qnam;
-void qnamRequest(const QString &url)
+class NetworkRequestHandler : public QObject
 {
-    QNetworkRequest request;
-    request.setUrl(QUrl(url));
-//    request.setRawHeader("User-Agent", "MyOwnBrowser 1.0");
+    Q_OBJECT
+    QNetworkReply *reply;
+    QNetworkAccessManager *qnam;
 
-    QNetworkReply *reply = qnam->get(request);
-}
+public:
+    NetworkRequestHandler(const QString &url)
+    {
+        qnam = new QNetworkAccessManager;
+        QNetworkRequest request;
+        request.setUrl(QUrl(url));
+        reply = qnam->get(request);
+        connect(reply, SIGNAL(readyRead()), this, SLOT(readyRead()));
+        connect(reply, SIGNAL(finished()), this, SLOT(finised()));
+    }
+private slots:
+    void readyRead()
+    {
+        qDebug() << "QNetworkReply ready read";
+    }
+
+    void finised()
+    {
+        QByteArray contents = reply->readAll();
+        qDebug() << "QNetworkReply reply finished with" << contents.count() << "bytes";
+    }
+
+};
+
+class ThreadedNetworkRequestHandler : public QObject
+{
+    Q_OBJECT
+public slots:
+    void doWork() {
+        qDebug() << "workerthread doWork";
+        new NetworkRequestHandler("urlload.nmf");
+    }
+};
 
 // App-provided init and exit functions:
 void app_init(const QStringList &arguments)
@@ -149,15 +179,27 @@ void app_init(const QStringList &arguments)
 
     window = new QWindow();
     window->show();
-    
+
+// Direct URLLoader usage
 //    fireAndForgetRequest("urlload.nmf"); // small file
 //    fireAndForgetRequest("http://localhost:8000/urlload.nmf"); // full url
 //    fireAndForgetRequest("urlload.nexe"); // large file
 //    fireAndForgetRequest("foobar2000"); // missing file
 
-    qnam = new QNetworkAccessManager;
-    qnamRequest("urlload.nmf");
-    qnamRequest("urlload.nexe");
+// Main thread QNetworkAccessManager usage
+//    new NetworkRequestHandler("urlload.nmf");
+
+// Worker thread QNetworkAccessManager usage
+    QThread *workerThread = new QThread();
+    ThreadedNetworkRequestHandler *worker = new ThreadedNetworkRequestHandler;
+    worker->moveToThread(workerThread);
+    QMetaObject::invokeMethod(worker, "doWork", Qt::QueuedConnection);
+    workerThread->start();
+
+//   (app_init should return at this point, so we can't block and wait here.)
+//    workerThread->quit();
+//    workerThread->wait();
+//    delete workerThread;
 }
 
 void app_exit()
@@ -169,3 +211,5 @@ void app_exit()
 // Register functions with Qt. The type of register function
 // selects the QApplicaiton type.
 Q_GUI_MAIN(app_init, app_exit);
+
+#include "main.moc"
