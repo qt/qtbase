@@ -119,11 +119,15 @@ void QNetworkReplyPepperImpl::onOpen(int32_t result)
 
     qCDebug(QT_PLATFORM_PEPPER_NETWORK) << "onOpen" << d->url << "callback result" << result
                                         << "http status" << httpCode << "download size" << total;
+    if (httpCode != 200) {
+        fail();
+        return;
+    }
 
     // The current buffer implementation is designed to hold the entire data downlod
     // in memory. This can be optimized for less memory usage by dropping data
     // read off the QNetworkReply.
-    d->buffer.reserve(total);
+    d->buffer.reserve(qMax(total, int64_t(0)));
     d->buffer.resize(ReadBufferSize);
 
     // Start reading data bytes
