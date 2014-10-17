@@ -58,6 +58,14 @@
 #include <xf86drmMode.h>
 #include <gbm.h>
 
+#ifndef DRM_CAP_CURSOR_WIDTH
+#define DRM_CAP_CURSOR_WIDTH 0x8
+#endif
+
+#ifndef DRM_CAP_CURSOR_HEIGHT
+#define DRM_CAP_CURSOR_HEIGHT 0x9
+#endif
+
 QT_USE_NAMESPACE
 
 struct QEglFSKmsOutput {
@@ -173,6 +181,7 @@ private:
     void initCursorAtlas();
 
     QEglFSKmsScreen *m_screen;
+    QSize m_cursorSize;
     gbm_bo *m_bo;
     QPoint m_pos;
     QPlatformCursorImage m_cursorImage;
@@ -340,11 +349,20 @@ bool QEglKmsHooks::supportsPBuffers() const
 
 QEglFSKmsCursor::QEglFSKmsCursor(QEglFSKmsScreen *screen)
     : m_screen(screen)
-    , m_bo(gbm_bo_create(m_screen->device()->device(), 64, 64, GBM_FORMAT_ARGB8888,
-                         GBM_BO_USE_CURSOR_64X64 | GBM_BO_USE_WRITE))
+    , m_cursorSize(64, 64) // 64x64 is the old standard size, we now try to query the real size below
+    , m_bo(Q_NULLPTR)
     , m_cursorImage(0, 0, 0, 0, 0, 0)
     , m_visible(true)
 {
+    uint64_t width, height;
+    if ((drmGetCap(m_screen->device()->fd(), DRM_CAP_CURSOR_WIDTH, &width) == 0)
+        && (drmGetCap(m_screen->device()->fd(), DRM_CAP_CURSOR_HEIGHT, &height) == 0)) {
+        m_cursorSize.setWidth(width);
+        m_cursorSize.setHeight(height);
+    }
+
+    m_bo = gbm_bo_create(m_screen->device()->device(), m_cursorSize.width(), m_cursorSize.height(),
+                         GBM_FORMAT_ARGB8888, GBM_BO_USE_CURSOR_64X64 | GBM_BO_USE_WRITE);
     if (!m_bo) {
         qWarning("Could not create buffer for cursor!");
     } else {
@@ -398,10 +416,10 @@ void QEglFSKmsCursor::changeCursor(QCursor *windowCursor, QWindow *window)
                           hotSpot.y());
     }
 
-    if (m_cursorImage.image()->width() > 64 || m_cursorImage.image()->height() > 64)
-        qWarning("Cursor larger than 64x64, cursor will be clipped.");
+    if (m_cursorImage.image()->width() > m_cursorSize.width() || m_cursorImage.image()->height() > m_cursorSize.height())
+        qWarning("Cursor larger than %dx%d, cursor will be clipped.", m_cursorSize.width(), m_cursorSize.height());
 
-    QImage cursorImage(64, 64, QImage::Format_ARGB32);
+    QImage cursorImage(m_cursorSize, QImage::Format_ARGB32);
     cursorImage.fill(Qt::transparent);
 
     QPainter painter;
@@ -412,7 +430,8 @@ void QEglFSKmsCursor::changeCursor(QCursor *windowCursor, QWindow *window)
     gbm_bo_write(m_bo, cursorImage.constBits(), cursorImage.byteCount());
 
     uint32_t handle = gbm_bo_get_handle(m_bo).u32;
-    int status = drmModeSetCursor(m_screen->device()->fd(), m_screen->output().crtc_id, handle, 64, 64);
+    int status = drmModeSetCursor(m_screen->device()->fd(), m_screen->output().crtc_id, handle,
+                                  m_cursorSize.width(), m_cursorSize.height());
     if (status != 0)
         qWarning("Could not set cursor: %d", status);
 }
