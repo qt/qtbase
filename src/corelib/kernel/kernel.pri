@@ -130,6 +130,7 @@ nacl {
     HEADERS += \
         kernel/qfunctions_nacl.h \
         kernel/qcorepeppereventdispatcher_p.h
+    LIBS += -lppapi -lppapi_cpp
 }
 
 unix|integrity {
