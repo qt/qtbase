@@ -75,7 +75,6 @@ public:
 
     bool m_isVisible;
     bool m_trackInstanceSize;
-    bool m_useCompositor;
 private:
     QPepperIntegration *m_pepperIntegration;
     QPepperCompositor *m_compositor;

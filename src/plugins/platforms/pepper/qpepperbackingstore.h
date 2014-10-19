@@ -45,6 +45,10 @@
 #include "qpepperplatformwindow.h"
 #include <qpa/qplatformbackingstore.h>
 
+#include <ppapi/cpp/graphics_2d.h>
+#include <ppapi/cpp/image_data.h>
+#include <ppapi/utility/completion_callback_factory.h>
+
 QT_BEGIN_NAMESPACE
 
 Q_DECLARE_LOGGING_CATEGORY(QT_PLATFORM_PEPPER_BACKINGSTORE)
@@ -65,13 +69,19 @@ public:
     void setFrameBuffer(QImage *frameBuffer);
     void setPepperInstance(QPepperInstance *instance);
 
+    void flushCompletedCallback(int32_t);
+
     bool m_isInPaint;
+    bool m_isInFlush;
 private:
     QSize m_size;
     QPepperPlatformWindow *m_PepperWindow;
     QPepperCompositor *m_compositor;
+    pp::Graphics2D *m_context2D;
+    pp::ImageData *m_imageData2D;
     QImage *m_frameBuffer;
     bool m_ownsFrameBuffer;
+    pp::CompletionCallbackFactory<QPepperBackingStore> m_callbackFactory;
 };
 
 QT_END_NAMESPACE

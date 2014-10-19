@@ -47,6 +47,7 @@
 #include <qpa/qplatformscreen.h>
 
 #include "qpepperscreen.h"
+#include "qpepperplatformwindow.h"
 #include "qpepperglcontext.h"
 #include "qpepperinstance.h"
 #include "qpeppereventdispatcher.h"
@@ -57,6 +58,7 @@ class QPlatformFontDatabase;
 class QPepperFontDatabase;
 class QPepperCompositor;
 class QPepperJavascriptBridge;
+class QPepperPlatformWindow;
 class QAbstractEventDispatcher;
 class QPepperIntegration : public QObject, public QPlatformIntegration
 {
@@ -103,7 +105,7 @@ public:
     mutable QPepperEventDispatcher *m_pepperEventDispatcher;
     QPepperJavascriptBridge *m_javascriptBridge;
 
-    mutable bool useOpenglToplevel;
+    mutable QPepperPlatformWindow *m_topLevelWindow;
     mutable QPepperFontDatabase *m_fontDatabase;
 
 };

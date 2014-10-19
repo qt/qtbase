@@ -78,13 +78,14 @@ QPepperIntegration::QPepperIntegration()
     screenAdded(m_screen);
 
     m_pepperInstance = 0;
-    m_compositor = new QPepperCompositor();
+    m_compositor = 0;
     m_eventTranslator = new PepperEventTranslator();
     QObject::connect(m_eventTranslator, SIGNAL(getWindowAt(QPoint,QWindow**)), this, SLOT(getWindowAt(QPoint,QWindow**)));
     QObject::connect(m_eventTranslator, SIGNAL(getKeyWindow(QWindow**)), this, SLOT(getKeyWindow(QWindow**)));
 
     m_pepperEventDispatcher = 0;
     m_javascriptBridge = 0;
+    m_topLevelWindow = 0;
     m_fontDatabase = 0;
 }
 
@@ -103,17 +104,12 @@ bool QPepperIntegration::hasOpenGL() const
     return true;
 }
 
-#ifndef Q_OS_NACL
-QPlatformOpenGLContext *QPepperIntegration::createPlatformOpenGLContext(QOpenGLContext *context) const
-{
-    return new QPepperGLContext();
-}
-#endif
-
 QPlatformWindow *QPepperIntegration::createPlatformWindow(QWindow *window) const
 {
     QPepperPlatformWindow *platformWindow = new QPepperPlatformWindow(window);
-    useOpenglToplevel = (window->surfaceType() == QSurface::OpenGLSurface);
+    if (m_topLevelWindow == 0)
+        m_topLevelWindow = platformWindow;
+
     return platformWindow;
 }
 
@@ -210,7 +206,7 @@ void QPepperIntegration::processEvents()
 
 bool QPepperIntegration::wantsOpenGLGraphics() const
 {
-    return useOpenglToplevel;
+    return (m_topLevelWindow->window()->surfaceType() == QSurface::OpenGLSurface);
 }
 
 void QPepperIntegration::resizeScreen(QSize size, qreal devicePixelRatio)
@@ -238,12 +234,18 @@ void QPepperIntegration::resizeScreen(QSize size, qreal devicePixelRatio)
 
 void QPepperIntegration::getWindowAt(const QPoint & point, QWindow **window)
 {
-    *window = m_compositor->windowAt(point);
+    if (m_compositor)
+        *window = m_compositor->windowAt(point);
+    else
+        *window = m_topLevelWindow->window();
 }
 
 void QPepperIntegration::getKeyWindow(QWindow **window)
 {
-    *window = m_compositor->keyWindow();
+    if (m_compositor)
+        *window = m_compositor->keyWindow();
+    else
+        *window = m_topLevelWindow->window();
 }
 
 void QPepperIntegration::handleMessage(const QByteArray &tag, const QString &message)
@@ -251,5 +253,3 @@ void QPepperIntegration::handleMessage(const QByteArray &tag, const QString &mes
     Q_UNUSED(tag)
     Q_UNUSED(message)
 }
-
-

@@ -58,20 +58,19 @@ QPepperPlatformWindow::QPepperPlatformWindow(QWindow *window)
     qCDebug(QT_PLATFORM_PEPPER_WINDOW) << "Create QPepperPlatformWindow for" << window;
 
     m_pepperIntegration = QPepperIntegration::getPepperIntegration();
-    m_compositor = m_pepperIntegration->pepperCompositor();
-    m_useCompositor = (window->surfaceType() == QSurface::RasterSurface);
+
+    m_compositor = 0;
 
     // Set window state (fullscreen windows resize here)
     setWindowState(window->windowState());
 
-    if (m_useCompositor)
+    if (m_compositor)
         m_compositor->addRasterWindow(this->window());
-
 }
 
 QPepperPlatformWindow::~QPepperPlatformWindow()
 {
-    if (m_useCompositor)
+    if (m_compositor)
         m_compositor->removeWindow(this->window());
 }
 
@@ -89,7 +88,7 @@ void QPepperPlatformWindow::setVisible(bool visible)
                                               QRect());
     QPepperInstance::get()->scheduleWindowSystemEventsFlush();
 
-    if (m_useCompositor)
+    if (m_compositor)
         m_compositor->setVisible(this->window(), visible);
 }
 
@@ -117,7 +116,7 @@ void QPepperPlatformWindow::raise()
 {
     qCDebug(QT_PLATFORM_PEPPER_WINDOW) << "raise";
 
-    if (m_useCompositor)
+    if (m_compositor)
         m_compositor->raise(this->window());
 }
 
@@ -125,7 +124,7 @@ void QPepperPlatformWindow::lower()
 {
     qCDebug(QT_PLATFORM_PEPPER_WINDOW) << "lower";
 
-    if (m_useCompositor)
+    if (m_compositor)
         m_compositor->lower(this->window());
 }
 
@@ -142,7 +141,7 @@ void QPepperPlatformWindow::setParent(const QPlatformWindow *parent)
 {
     qCDebug(QT_PLATFORM_PEPPER_WINDOW) << "QPepperPlatformWindow::setParent" << parent;
 
-    if (m_useCompositor)
+    if (m_compositor)
         m_compositor->setParent(this->window(), parent->window());
 }
 
