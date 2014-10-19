@@ -22,8 +22,10 @@ qt:!isEmpty(QT_CONFIG) {
         contains(QT_CONFIG, c++11) {
             CONFIG += c++11
         } else: c++11 {
-            warning("Qt was not built with C++11 enabled, disabling feature")
-            CONFIG -= c++11
+#
+#   Disabled: we want to build nacldeployqt (a host tool) with C++11 even if C++11 is not enabled for the target.
+#            warning("Qt was not built with C++11 enabled, disabling feature")
+#            CONFIG -= c++11
         }
 
         !c++11 {
