@@ -53,6 +53,7 @@ QPepperEventDispatcher::QPepperEventDispatcher(QObject *parent)
 ,m_completionCallbackFactory(this)
 {
     qCDebug(QT_PLATFORM_PEPPER_EVENTDISPATHCER) << "QPepperEventDispatcher()";
+    messageLoop = pp::MessageLoop::GetCurrent();
 }
 
 QPepperEventDispatcher::~QPepperEventDispatcher()
@@ -130,6 +131,12 @@ void QPepperEventDispatcher::flush()
     QUnixEventDispatcherQPA::flush();
 }
 
+void QPepperEventDispatcher::wakeup()
+{
+    qCDebug(QT_PLATFORM_PEPPER_EVENTDISPATHCER) << "QPepperEventDispatcher::wakeup";
+    scheduleProcessEvents();
+}
+
 void QPepperEventDispatcher::startTimer(PepperTimerInfo info)
 {
     qCDebug(QT_PLATFORM_PEPPER_EVENTDISPATHCER) << "startTimer" << info.timerId;
@@ -187,3 +194,23 @@ void QPepperEventDispatcher::timerCallback(int32_t timerSerial)
     // one serial number per callback, we are done with this one.
     m_activeTimerIds.remove(timerSerial);
 }
+
+void QPepperEventDispatcher::scheduleProcessEvents()
+{
+    qCDebug(QT_PLATFORM_PEPPER_EVENTDISPATHCER) << "scheduleProcessEvents";
+    pp::CompletionCallback processEvents =
+        m_completionCallbackFactory.NewCallback(&QPepperEventDispatcher::processEventsCallback);
+    int32_t result = messageLoop.PostWork(processEvents);
+    if (result != PP_OK)
+        qCDebug(QT_PLATFORM_PEPPER_EVENTDISPATHCER) << "scheduleProcessEvents PostWork error" << result;
+}
+
+void QPepperEventDispatcher::processEventsCallback(int32_t status)
+{
+    Q_UNUSED(status);
+    qCDebug(QT_PLATFORM_PEPPER_EVENTDISPATHCER) << "processEvents";
+
+    processEvents();
+}
+
+

@@ -48,6 +48,7 @@
 
 #include "../platformsupport/eventdispatchers/qunixeventdispatcher_qpa_p.h"
 #include <ppapi/utility/completion_callback_factory.h>
+#include <ppapi/cpp/message_loop.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -68,6 +69,7 @@ public:
     bool hasPendingEvents();
 
     void flush();
+    void wakeup();
 private:
     struct PepperTimerInfo {
 
@@ -82,12 +84,15 @@ private:
 
     void startTimer(PepperTimerInfo info);
     void timerCallback(int32_t timerSerial);
+    void scheduleProcessEvents();
+    void processEventsCallback(int32_t status);
 
     int m_currentTimerSerial;
     QHash<int, int> m_activeTimerIds; // timer serial -> Qt timer id
     QHash<int, int> m_activeTimerSerials; // Qt timer id -> timer serial
     QMultiHash<QObject *, int> m_activeObjectTimers; // QObject * -> Qt timer id
     QHash<int, PepperTimerInfo> m_timerDetails;
+    pp::MessageLoop messageLoop;
     pp::CompletionCallbackFactory<QPepperEventDispatcher> m_completionCallbackFactory;
 };
 
