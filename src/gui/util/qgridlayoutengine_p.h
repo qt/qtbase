@@ -295,6 +295,7 @@ public:
 
     virtual QLayoutPolicy::Policy sizePolicy(Qt::Orientation orientation) const = 0;
     virtual QSizeF sizeHint(Qt::SizeHint which, const QSizeF &constraint) const = 0;
+    virtual bool isIgnored() const { return false; }
 
     virtual void setGeometry(const QRectF &rect) = 0;
     /*
