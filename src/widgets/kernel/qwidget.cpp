@@ -1362,11 +1362,11 @@ void q_createNativeChildrenAndSetParent(const QWidget *parentWidget)
                     if (!childWidget->internalWinId())
                         childWidget->winId();
                     if (childWidget->windowHandle()) {
-                        QWindow *parentWindow = childWidget->nativeParentWidget()->windowHandle();
-                        if (childWidget->isWindow())
-                            childWidget->windowHandle()->setTransientParent(parentWindow);
-                        else
-                            childWidget->windowHandle()->setParent(parentWindow);
+                        if (childWidget->isWindow()) {
+                            childWidget->windowHandle()->setTransientParent(parentWidget->window()->windowHandle());
+                        } else {
+                            childWidget->windowHandle()->setParent(childWidget->nativeParentWidget()->windowHandle());
+                        }
                     }
                 } else {
                     q_createNativeChildrenAndSetParent(childWidget);
