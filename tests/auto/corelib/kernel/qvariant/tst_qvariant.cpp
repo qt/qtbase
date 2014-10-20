@@ -3798,11 +3798,10 @@ struct ContainerAPI<Container, QByteArray>
     }
 };
 
-// We have no built-in defines to check the stdlib features.
-// #define TEST_FORWARD_LIST
-
-#ifdef TEST_FORWARD_LIST
-#include <forward_list>
+#ifdef __has_include
+# if __has_include(<forward_list>)
+# define TEST_FORWARD_LIST
+# include <forward_list>
 
 Q_DECLARE_SEQUENTIAL_CONTAINER_METATYPE(std::forward_list)
 
@@ -3856,7 +3855,8 @@ struct ContainerAPI<std::forward_list<QString> >
         return variant == value;
     }
 };
-#endif
+# endif // __has_include(<forward_list>)
+#endif // __has_include
 
 template<typename Container>
 struct KeyGetter
