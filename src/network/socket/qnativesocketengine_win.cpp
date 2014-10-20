@@ -1140,7 +1140,7 @@ bool QNativeSocketEnginePrivate::nativeHasPendingDatagrams() const
     int err = WSAGetLastError();
     if (ret == SOCKET_ERROR && err !=  WSAEMSGSIZE) {
         WS_ERROR_DEBUG(err);
-        if (err == WSAECONNRESET) {
+        if (err == WSAECONNRESET || err == WSAENETRESET) {
             // Discard error message to prevent QAbstractSocket from
             // getting this message repeatedly after reenabling the
             // notifiers.
