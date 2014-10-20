@@ -5828,6 +5828,10 @@ bool QStyleSheetStyle::event(QEvent *e)
 
 void QStyleSheetStyle::updateStyleSheetFont(QWidget* w) const
 {
+    // Qt's fontDialog relies on the font of the sample edit for its selection,
+    // we should never override it.
+    if (w->objectName() == QLatin1String("qt_fontDialog_sampleEdit"))
+        return;
     QWidget *container = containerWidget(w);
     QRenderRule rule = renderRule(container, PseudoElement_None,
             PseudoClass_Active | PseudoClass_Enabled | extendedPseudoClass(container));

@@ -8,14 +8,13 @@ linux: CONFIG += insignificant_test
 SOURCES += \
     tst_qglyphrun.cpp
 
-android {
-    RESOURCES += \
-        testdata.qrc
-}
 
 wince* {
     additionalFiles.files = test.ttf
-    additionalFiles.path = .
+    additionalFiles.path = ../../../shared/resources/
     DEPLOYMENT += additionalFiles
+} else {
+    RESOURCES += \
+        testdata.qrc
 }
 

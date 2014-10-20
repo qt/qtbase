@@ -7,6 +7,8 @@ QT += core-private gui-private
 
 SOURCES  += tst_qfontdialog.cpp
 
+RESOURCES += testfonts.qrc
+
 mac {
 #    ### fixme
 #    OBJECTIVE_SOURCES += tst_qfontdialog_mac_helpers.mm
