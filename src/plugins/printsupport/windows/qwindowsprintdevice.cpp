@@ -271,7 +271,7 @@ QMarginsF QWindowsPrintDevice::printableMargins(const QPageSize &pageSize,
         const qreal rightMargin = physicalWidth - leftMargin - printableWidth;
         const qreal bottomMargin = physicalHeight - topMargin - printableHeight;
         margins = QMarginsF(leftMargin, topMargin, rightMargin, bottomMargin);
-        ReleaseDC(NULL, pDC);
+        DeleteDC(pDC);
     }
     return margins;
 }
