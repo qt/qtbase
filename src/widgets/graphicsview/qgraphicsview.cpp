@@ -765,7 +765,7 @@ void QGraphicsViewPrivate::updateRubberBand(const QMouseEvent *event)
     }
             // Set the new selection area
     QPainterPath selectionArea;
-    selectionArea.addPolygon(mapToScene(rubberBandRect));
+    selectionArea.addPolygon(q->mapToScene(rubberBandRect));
     selectionArea.closeSubpath();
     if (scene)
         scene->setSelectionArea(selectionArea, rubberBandSelectionMode, q->viewportTransform());
