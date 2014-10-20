@@ -214,6 +214,8 @@ public:
     QAbstractItemView *itemView() const;
     void setItemView(QAbstractItemView *itemView);
     int spacing() const;
+    int topMargin() const;
+    int bottomMargin() const { return topMargin(); }
     void updateTopBottomMargin();
 
     QTimer blockMouseReleaseTimer;
