@@ -196,6 +196,7 @@ void tst_QTextCodec::fromUnicode_data()
     QTest::newRow("windows-1257") << "windows-1257" << true;
     QTest::newRow("windows-1258") << "windows-1258" << true;
 
+    QTest::newRow("Apple Roman") << "Apple Roman" << true;
     QTest::newRow("macintosh") << "macintosh" << true;
     //QTest::newRow("WINSAMI2") << "WINSAMI2" << true;
     QTest::newRow("TIS-620") << "TIS-620" << true;
