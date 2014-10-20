@@ -42,8 +42,6 @@
 #include <math.h>
 #include <QGuiApplication>
 
-const int bubbleNum = 8;
-
 GLWidget::GLWidget(QWidget *parent)
     : QOpenGLWidget(parent)
 {
