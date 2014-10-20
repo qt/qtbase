@@ -647,7 +647,8 @@ public class ExtractStyle {
             GradientDrawable.Orientation orientation=(Orientation) gradientStateClass.getField("mOrientation").get(obj);
             json.put("orientation",orientation.name());
             int [] intArray=(int[]) gradientStateClass.getField("mColors").get(obj);
-            json.put("colors",getJsonArray(intArray, 0, intArray.length));
+            if (intArray != null)
+                json.put("colors",getJsonArray(intArray, 0, intArray.length));
             json.put("positions",getJsonArray((float[]) gradientStateClass.getField("mPositions").get(obj)));
             json.put("strokeWidth",gradientStateClass.getField("mStrokeWidth").getInt(obj));
             json.put("strokeDashWidth",gradientStateClass.getField("mStrokeDashWidth").getFloat(obj));
@@ -1210,9 +1211,17 @@ public class ExtractStyle {
                     json.put("TextView_drawableEnd", getDrawable(a.getDrawable(attr), styleName + "_TextView_drawableEnd", null));
                 else if (attr == TextView_drawablePadding)
                     json.put("TextView_drawablePadding", a.getDimensionPixelSize(attr, 0));
-                else if (attr == TextView_textCursorDrawable)
-                    json.put("TextView_textCursorDrawable", getDrawable(m_context.getResources().getDrawable(a.getResourceId(attr, 0)), styleName + "_TextView_textCursorDrawable", null));
-                else if (attr == TextView_maxLines)
+                else if (attr == TextView_textCursorDrawable) {
+                    try {
+                        json.put("TextView_textCursorDrawable", getDrawable(a.getDrawable(attr), styleName + "_TextView_textCursorDrawable", null));
+                    } catch (Exception e_) {
+                        try {
+                            json.put("TextView_textCursorDrawable", getDrawable(m_context.getResources().getDrawable(a.getResourceId(attr, 0)), styleName + "_TextView_textCursorDrawable", null));
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }else if (attr == TextView_maxLines)
                     json.put("TextView_maxLines", a.getInt(attr, -1));
                 else if (attr == TextView_maxHeight)
                     json.put("TextView_maxHeight", a.getDimensionPixelSize(attr, -1));
@@ -1300,13 +1309,37 @@ public class ExtractStyle {
                     json.put("TextView_imeActionId", a.getInt(attr,0));
                 else if (attr == TextView_privateImeOptions)
                     json.put("TextView_privateImeOptions", a.getString(attr));
-                else if (attr == TextView_textSelectHandleLeft && styleName.equals("textViewStyle"))
-                    json.put("TextView_textSelectHandleLeft", getDrawable(m_context.getResources().getDrawable(a.getResourceId(attr, 0)), styleName + "_TextView_textSelectHandleLeft", null));
-                else if (attr == TextView_textSelectHandleRight  && styleName.equals("textViewStyle"))
-                    json.put("TextView_textSelectHandleRight", getDrawable(m_context.getResources().getDrawable(a.getResourceId(attr, 0)), styleName + "_TextView_textSelectHandleRight", null));
-                else if (attr == TextView_textSelectHandle  && styleName.equals("textViewStyle"))
-                    json.put("TextView_textSelectHandle", getDrawable(m_context.getResources().getDrawable(a.getResourceId(attr, 0)), styleName + "_TextView_textSelectHandle", null));
-                else if (attr == TextView_textIsSelectable)
+                else if (attr == TextView_textSelectHandleLeft && styleName.equals("textViewStyle")) {
+                    try {
+                        json.put("TextView_textSelectHandleLeft", getDrawable(a.getDrawable(attr), styleName + "_TextView_textSelectHandleLeft", null));
+                    } catch (Exception _e) {
+                        try {
+                            json.put("TextView_textSelectHandleLeft", getDrawable(m_context.getResources().getDrawable(a.getResourceId(attr, 0)), styleName + "_TextView_textSelectHandleLeft", null));
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                } else if (attr == TextView_textSelectHandleRight  && styleName.equals("textViewStyle")) {
+                    try {
+                        json.put("TextView_textSelectHandleRight", getDrawable(a.getDrawable(attr), styleName + "_TextView_textSelectHandleRight", null));
+                    } catch (Exception _e) {
+                        try {
+                            json.put("TextView_textSelectHandleRight", getDrawable(m_context.getResources().getDrawable(a.getResourceId(attr, 0)), styleName + "_TextView_textSelectHandleRight", null));
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                } else if (attr == TextView_textSelectHandle  && styleName.equals("textViewStyle")) {
+                    try {
+                        json.put("TextView_textSelectHandle", getDrawable(a.getDrawable(attr), styleName + "_TextView_textSelectHandle", null));
+                    } catch (Exception _e) {
+                        try {
+                            json.put("TextView_textSelectHandle", getDrawable(m_context.getResources().getDrawable(a.getResourceId(attr, 0)), styleName + "_TextView_textSelectHandle", null));
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                } else if (attr == TextView_textIsSelectable)
                     json.put("TextView_textIsSelectable", a.getBoolean(attr, false));
                 else if (attr == TextView_textAllCaps)
                     allCaps = a.getBoolean(attr, false);
