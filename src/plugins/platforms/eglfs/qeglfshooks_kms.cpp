@@ -49,6 +49,7 @@
 #include <QtCore/QJsonDocument>
 #include <QtCore/QJsonObject>
 #include <QtCore/QJsonArray>
+#include <QtCore/QLoggingCategory>
 #include <QtGui/qpa/qplatformwindow.h>
 #include <QtGui/qpa/qplatformcursor.h>
 #include <QtGui/QPainter>
@@ -67,6 +68,8 @@
 #endif
 
 QT_USE_NAMESPACE
+
+Q_LOGGING_CATEGORY(qLcEglfsKmsDebug, "qt.qpa.eglfs.kms")
 
 struct QEglFSKmsOutput {
     uint32_t conn_id;
@@ -234,11 +237,13 @@ void QEglKmsHooks::platformInit()
 {
     QDeviceDiscovery *d = QDeviceDiscovery::create(QDeviceDiscovery::Device_VideoMask);
     QStringList devices = d->scanConnectedDevices();
+    qCDebug(qLcEglfsKmsDebug) << "Found the following video devices:" << devices;
     d->deleteLater();
 
     if (devices.isEmpty())
         qFatal("Could not find DRM device!");
 
+    qCDebug(qLcEglfsKmsDebug) << "Using" << devices.first();
     m_device = new QEglFSKmsDevice(devices.first());
     if (!m_device->open())
         qFatal("DRM device required, aborting");
@@ -294,6 +299,7 @@ EGLNativeWindowType QEglKmsHooks::createNativeOffscreenWindow(const QSurfaceForm
     Q_UNUSED(format);
     Q_ASSERT(m_device);
 
+    qCDebug(qLcEglfsKmsDebug) << "Creating native off screen window";
     gbm_surface *surface = gbm_surface_create(m_device->device(),
                                               1, 1,
                                               GBM_FORMAT_XRGB8888,
@@ -459,6 +465,8 @@ void QEglFSKmsCursor::initCursorAtlas()
     if (json.isEmpty())
         json = ":/cursor.json";
 
+    qCDebug(qLcEglfsKmsDebug) << "Initializing cursor atlas from" << json;
+
     QFile file(QString::fromUtf8(json));
     if (!file.open(QFile::ReadOnly)) {
         drmModeSetCursor(m_screen->device()->fd(), m_screen->output().crtc_id, 0, 0, 0);
@@ -600,12 +608,14 @@ QPlatformCursor *QEglFSKmsScreen::cursor() const
 
 gbm_surface *QEglFSKmsScreen::createSurface()
 {
-    if (!m_gbm_surface)
+    if (!m_gbm_surface) {
+        qCDebug(qLcEglfsKmsDebug) << "Creating window for screen" << geometry();
         m_gbm_surface = gbm_surface_create(m_device->device(),
                                            geometry().width(),
                                            geometry().height(),
                                            GBM_FORMAT_XRGB8888,
                                            GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING);
+    }
     return m_gbm_surface;
 }
 
@@ -782,6 +792,7 @@ bool QEglFSKmsDevice::setup_kms()
 
     drmModeFreeResources(resources);
 
+    qCDebug(qLcEglfsKmsDebug) << "Found" << m_validOutputs.size() << "outputs";
     return m_validOutputs.size() > 0;
 }
 
@@ -808,12 +819,15 @@ bool QEglFSKmsDevice::open()
     Q_ASSERT(m_dri_fd == -1);
     Q_ASSERT(m_gbm_device == Q_NULLPTR);
 
+    qCDebug(qLcEglfsKmsDebug) << "Opening device" << m_path;
     m_dri_fd = qt_safe_open(m_path.toLocal8Bit().constData(), O_RDWR | O_CLOEXEC);
     if (m_dri_fd == -1) {
         qErrnoWarning("Could not open DRM device %s", qPrintable(m_path));
         return false;
     }
 
+    qCDebug(qLcEglfsKmsDebug) << "Creating GBM device for file descriptor" << m_dri_fd
+                              << "obtained from" << m_path;
     m_gbm_device = gbm_create_device(m_dri_fd);
     if (!m_gbm_device) {
         qErrnoWarning("Could not create GBM device");
@@ -840,8 +854,10 @@ void QEglFSKmsDevice::close()
 
 void QEglFSKmsDevice::createScreens()
 {
-    if (!setup_kms())
+    if (!setup_kms()) {
+        qCDebug(qLcEglfsKmsDebug) << "KMS setup failed!";
         return;
+    }
 
     QEglFSIntegration *integration = static_cast<QEglFSIntegration *>(QGuiApplicationPrivate::platformIntegration());
     QPoint pos;
