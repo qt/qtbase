@@ -93,35 +93,35 @@ private Q_SLOTS:
                                     const QMap<QString, QVariant> &properties);
     void activeConnectionPropertiesChanged(const QString &path,
                                            const QMap<QString, QVariant> &properties);
-    void devicePropertiesChanged(const QString &path,
-                                 const QMap<QString, QVariant> &properties);
+    void devicePropertiesChanged(const QString &path, quint32);
 
     void deviceAdded(const QDBusObjectPath &path);
     void deviceRemoved(const QDBusObjectPath &path);
 
     void newConnection(const QDBusObjectPath &path, QNetworkManagerSettings *settings = 0);
     void removeConnection(const QString &path);
-    void updateConnection(const QNmSettingsMap &settings);
+    void updateConnection();
     void activationFinished(QDBusPendingCallWatcher *watcher);
+    void deviceConnectionsChanged(const QStringList &activeConnectionsList);
 
-    void newAccessPoint(const QString &path, const QDBusObjectPath &objectPath);
-    void removeAccessPoint(const QString &path, const QDBusObjectPath &objectPath);
+    void newAccessPoint(const QString &path);
+    void removeAccessPoint(const QString &path);
     void updateAccessPoint(const QMap<QString, QVariant> &map);
+    void scanFinished();
 
 private:
-    QNetworkConfigurationPrivate *parseConnection(const QString &service,
-                                                  const QString &settingsPath,
+    QNetworkConfigurationPrivate *parseConnection(const QString &settingsPath,
                                                   const QNmSettingsMap &map);
     QNetworkManagerSettingsConnection *connectionFromId(const QString &id) const;
 
-private:
-    QNetworkManagerInterface *interface;
+    QNetworkManagerInterface *managerInterface;
     QNetworkManagerSettings *systemSettings;
     QNetworkManagerSettings *userSettings;
     QHash<QString, QNetworkManagerInterfaceDeviceWireless *> wirelessDevices;
     QHash<QString, QNetworkManagerConnectionActive *> activeConnections;
     QList<QNetworkManagerSettingsConnection *> connections;
     QList<QNetworkManagerInterfaceAccessPoint *> accessPoints;
+    QHash<QString, QNetworkManagerInterfaceDevice *> interfaceDevices;
 
     QMap<QString,QString> configuredAccessPoints; //ap, settings path
 };

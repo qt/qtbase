@@ -64,31 +64,32 @@
 typedef enum NMDeviceType
 {
     DEVICE_TYPE_UNKNOWN = 0,
-    DEVICE_TYPE_802_3_ETHERNET,
-    DEVICE_TYPE_802_11_WIRELESS,
-    DEVICE_TYPE_GSM,
-    DEVICE_TYPE_CDMA
+    DEVICE_TYPE_ETHERNET,
+    DEVICE_TYPE_WIFI,
+    DEVICE_TYPE_MODEM = 8
 } NMDeviceType;
 
 typedef enum
 {
     NM_DEVICE_STATE_UNKNOWN = 0,
-    NM_DEVICE_STATE_UNMANAGED,
-    NM_DEVICE_STATE_UNAVAILABLE,
-    NM_DEVICE_STATE_DISCONNECTED,
-    NM_DEVICE_STATE_PREPARE,
-    NM_DEVICE_STATE_CONFIG,
-    NM_DEVICE_STATE_NEED_AUTH,
-    NM_DEVICE_STATE_IP_CONFIG,
-    NM_DEVICE_STATE_ACTIVATED,
-    NM_DEVICE_STATE_FAILED
+    NM_DEVICE_STATE_UNMANAGED = 10,
+    NM_DEVICE_STATE_UNAVAILABLE = 20,
+    NM_DEVICE_STATE_DISCONNECTED = 30,
+    NM_DEVICE_STATE_PREPARE = 40,
+    NM_DEVICE_STATE_CONFIG = 50,
+    NM_DEVICE_STATE_NEED_AUTH = 60,
+    NM_DEVICE_STATE_IP_CONFIG = 70,
+    NM_DEVICE_STATE_ACTIVATED = 100,
+    NM_DEVICE_STATE_DEACTIVATING = 110,
+    NM_DEVICE_STATE_FAILED = 120
 } NMDeviceState;
 
 typedef enum
 {
     NM_ACTIVE_CONNECTION_STATE_UNKNOWN = 0,
     NM_ACTIVE_CONNECTION_STATE_ACTIVATING,
-    NM_ACTIVE_CONNECTION_STATE_ACTIVATED
+    NM_ACTIVE_CONNECTION_STATE_ACTIVATED,
+    NM_ACTIVE_CONNECTION_STATE_DEACTIVATED
 } NMActiveConnectionState;
 
 #define NM_DBUS_SERVICE                     "org.freedesktop.NetworkManager"
@@ -257,7 +258,8 @@ public:
 
 Q_SIGNALS:
     void stateChanged(const QString &, quint32);
-
+    void propertiesChanged(const QString &, QMap<QString,QVariant>);
+    void connectionsChanged(QStringList);
 private:
     QNetworkManagerInterfaceDevicePrivate *d;
     QNmDBusHelper *nmDBusHelper;
@@ -321,10 +323,14 @@ public:
     bool setConnections();
     bool isValid();
 
+    void requestScan();
 Q_SIGNALS:
     void propertiesChanged( const QString &, QMap<QString,QVariant>);
-    void accessPointAdded(const QString &,QDBusObjectPath);
-    void accessPointRemoved(const QString &,QDBusObjectPath);
+    void accessPointAdded(const QString &);
+    void accessPointRemoved(const QString &);
+    void scanDone();
+private Q_SLOTS:
+    void scanIsDone();
 private:
     QNetworkManagerInterfaceDeviceWirelessPrivate *d;
     QNmDBusHelper *nmDBusHelper;
@@ -378,6 +384,7 @@ public:
 
     QDBusInterface  *connectionInterface() const;
     QList <QDBusObjectPath> listConnections();
+    QString getConnectionByUuid(const QString &uuid);
     bool setConnections();
     bool isValid();
 
@@ -412,7 +419,7 @@ public:
 
 Q_SIGNALS:
 
-    void updated(const QNmSettingsMap &settings);
+    void updated();
     void removed(const QString &path);
 
 private:
