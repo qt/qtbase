@@ -253,9 +253,10 @@ static QTextCodec *setupLocaleMapper()
 // textCodecsMutex need to be locked to enter this function
 static void setup()
 {
-    QCoreGlobalData *globalData = QCoreGlobalData::instance();
-    if (!globalData->allCodecs.isEmpty())
+    static bool initialized = false;
+    if (initialized)
         return;
+    initialized = true;
 
 #if !defined(QT_NO_CODECS) && !defined(QT_BOOTSTRAPPED)
     (void)new QTsciiCodec;
@@ -465,7 +466,11 @@ QTextCodec::QTextCodec()
 {
     QMutexLocker locker(textCodecsMutex());
 
-    QCoreGlobalData::instance()->allCodecs.prepend(this);
+    QCoreGlobalData *globalInstance = QCoreGlobalData::instance();
+    if (globalInstance->allCodecs.isEmpty())
+        setup();
+
+    globalInstance->allCodecs.prepend(this);
 }
 
 
