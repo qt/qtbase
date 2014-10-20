@@ -1452,7 +1452,8 @@ qreal QFont::letterSpacing() const
 
     Letter spacing changes the default spacing between individual
     letters in the font.  The spacing between the letters can be
-    made smaller as well as larger.
+    made smaller as well as larger either in percentage of the
+    character width or in pixels, depending on the selected spacing type.
 
     \sa letterSpacing(), letterSpacingType(), setWordSpacing()
 */
