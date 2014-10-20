@@ -9663,6 +9663,10 @@ QVariant QWidget::inputMethodQuery(Qt::InputMethodQuery query) const
     is set, the input method may change its visual components to reflect
     that only numbers can be entered.
 
+    \warning Some widgets require certain flags in order to work as
+    intended. To set a flag, do \c{w->setInputMethodHints(w->inputMethodHints()|f)}
+    instead of \c{w->setInputMethodHints(f)}.
+
     \note The flags are only hints, so the particular input method
           implementation is free to ignore them. If you want to be
           sure that a certain type of characters are entered,
