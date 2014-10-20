@@ -503,7 +503,7 @@ QTextCodec *QTextCodec::codecForName(const QByteArray &name)
     QCoreGlobalData *globalData = QCoreGlobalData::instance();
     if (!globalData)
         return 0;
-        setup();
+    setup();
 
 #ifndef QT_USE_ICU
     QTextCodecCache *cache = &globalData->codecCache;
