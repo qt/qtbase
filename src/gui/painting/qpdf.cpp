@@ -1347,6 +1347,8 @@ void QPdfEngine::setPen()
     int pdfJoinStyle = 0;
     switch(d->pen.joinStyle()) {
     case Qt::MiterJoin:
+    case Qt::SvgMiterJoin:
+        *d->currentPage << d->pen.miterLimit() << "M ";
         pdfJoinStyle = 0;
         break;
     case Qt::BevelJoin:
