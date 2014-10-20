@@ -837,6 +837,7 @@ void QAbstractItemView::setItemDelegate(QAbstractItemDelegate *delegate)
     }
     d->itemDelegate = delegate;
     viewport()->update();
+    d->doDelayedItemsLayout();
 }
 
 /*!
