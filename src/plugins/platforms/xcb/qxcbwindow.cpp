@@ -251,6 +251,27 @@ QXcbWindow::QXcbWindow(QWindow *window)
         m_window = window->winId();
 }
 
+#ifdef Q_COMPILER_CLASS_ENUM
+enum : quint32 {
+#else
+enum {
+#endif
+    baseEventMask
+        = XCB_EVENT_MASK_EXPOSURE | XCB_EVENT_MASK_STRUCTURE_NOTIFY
+            | XCB_EVENT_MASK_PROPERTY_CHANGE | XCB_EVENT_MASK_FOCUS_CHANGE,
+
+    defaultEventMask = baseEventMask
+            | XCB_EVENT_MASK_KEY_PRESS | XCB_EVENT_MASK_KEY_RELEASE
+            | XCB_EVENT_MASK_BUTTON_PRESS | XCB_EVENT_MASK_BUTTON_RELEASE
+            | XCB_EVENT_MASK_BUTTON_MOTION | XCB_EVENT_MASK_ENTER_WINDOW | XCB_EVENT_MASK_LEAVE_WINDOW
+            | XCB_EVENT_MASK_POINTER_MOTION,
+
+    transparentForInputEventMask = baseEventMask
+            | XCB_EVENT_MASK_VISIBILITY_CHANGE | XCB_EVENT_MASK_RESIZE_REDIRECT
+            | XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT
+            | XCB_EVENT_MASK_COLOR_MAP_CHANGE | XCB_EVENT_MASK_OWNER_GRAB_BUTTON
+};
+
 void QXcbWindow::create()
 {
     destroy();
@@ -285,18 +306,7 @@ void QXcbWindow::create()
         // XCB_CW_SAVE_UNDER
         type == Qt::Popup || type == Qt::Tool || type == Qt::SplashScreen || type == Qt::ToolTip || type == Qt::Drawer,
         // XCB_CW_EVENT_MASK
-        XCB_EVENT_MASK_EXPOSURE
-        | XCB_EVENT_MASK_STRUCTURE_NOTIFY
-        | XCB_EVENT_MASK_KEY_PRESS
-        | XCB_EVENT_MASK_KEY_RELEASE
-        | XCB_EVENT_MASK_BUTTON_PRESS
-        | XCB_EVENT_MASK_BUTTON_RELEASE
-        | XCB_EVENT_MASK_BUTTON_MOTION
-        | XCB_EVENT_MASK_ENTER_WINDOW
-        | XCB_EVENT_MASK_LEAVE_WINDOW
-        | XCB_EVENT_MASK_POINTER_MOTION
-        | XCB_EVENT_MASK_PROPERTY_CHANGE
-        | XCB_EVENT_MASK_FOCUS_CHANGE
+        defaultEventMask
     };
 
     // Parameters to XCreateWindow() are frame corner + inner size.
@@ -985,14 +995,15 @@ void QXcbWindow::setWindowFlags(Qt::WindowFlags flags)
     if (type == Qt::Popup)
         flags |= Qt::X11BypassWindowManagerHint;
 
-    if (flags & Qt::WindowTransparentForInput) {
-        uint32_t mask = XCB_EVENT_MASK_EXPOSURE | XCB_EVENT_MASK_VISIBILITY_CHANGE
-                 | XCB_EVENT_MASK_STRUCTURE_NOTIFY | XCB_EVENT_MASK_RESIZE_REDIRECT
-                | XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY | XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT
-                | XCB_EVENT_MASK_FOCUS_CHANGE  | XCB_EVENT_MASK_PROPERTY_CHANGE
-                | XCB_EVENT_MASK_COLOR_MAP_CHANGE | XCB_EVENT_MASK_OWNER_GRAB_BUTTON;
-        xcb_change_window_attributes(xcb_connection(), xcb_window(), XCB_CW_EVENT_MASK, &mask);
-    }
+    const quint32 mask = XCB_CW_OVERRIDE_REDIRECT | XCB_CW_EVENT_MASK;
+    const quint32 values[] = {
+         // XCB_CW_OVERRIDE_REDIRECT
+         (flags & Qt::BypassWindowManagerHint) ? 1u : 0,
+         // XCB_CW_EVENT_MASK
+         (flags & Qt::WindowTransparentForInput) ? transparentForInputEventMask : defaultEventMask
+     };
+
+    xcb_change_window_attributes(xcb_connection(), xcb_window(), mask, values);
 
     setNetWmWindowFlags(flags);
     setMotifWindowFlags(flags);

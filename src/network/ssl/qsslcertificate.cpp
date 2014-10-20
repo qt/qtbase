@@ -662,7 +662,13 @@ QByteArray QSslCertificatePrivate::subjectInfoToString(QSslCertificate::SubjectI
     return str;
 }
 
+/*!
+    \fn uint qHash(const QSslCertificate &key, uint seed)
 
+    Returns the hash value for the \a key, using \a seed to seed the calculation.
+    \since 5.4
+    \relates QHash
+*/
 
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug debug, const QSslCertificate &certificate)

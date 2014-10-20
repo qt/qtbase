@@ -80,38 +80,22 @@ static QString toDotEncodedClassName(const char *className)
     return QString::fromLatin1(className).replace(QLatin1Char('/'), QLatin1Char('.'));
 }
 
-static jclass getCachedClass(const QString &classDotEnc)
+static jclass getCachedClass(const QString &classDotEnc, bool *isCached = 0)
 {
     QHash<QString, jclass>::iterator it = cachedClasses->find(classDotEnc);
+    const bool found = (it != cachedClasses->end());
 
-    if (it == cachedClasses->end())
-        return 0;
+    if (isCached != 0)
+        *isCached = found;
 
-    return it.value();
+    return found ? it.value() : 0;
 }
 
-static jclass findClass(const char *className, JNIEnv *env)
+static jclass loadClassDotEnc(const QString &classDotEnc, JNIEnv *env)
 {
-    const QString &classDotEnc = toDotEncodedClassName(className);
-    jclass clazz = getCachedClass(classDotEnc);
-    if (clazz != 0)
-        return clazz;
-
-    jclass fclazz = env->FindClass(className);
-    if (!exceptionCheckAndClear(env)) {
-        clazz = static_cast<jclass>(env->NewGlobalRef(fclazz));
-        env->DeleteLocalRef(fclazz);
-    }
-
-    cachedClasses->insert(classDotEnc, clazz);
-    return clazz;
-}
-
-static jclass loadClass(const char *className, JNIEnv *env)
-{
-    const QString &classDotEnc = toDotEncodedClassName(className);
-    jclass clazz = getCachedClass(classDotEnc);
-    if (clazz != 0)
+    bool isCached = false;
+    jclass clazz = getCachedClass(classDotEnc, &isCached);
+    if (clazz != 0 || isCached)
         return clazz;
 
     QJNIObjectPrivate classLoader = QtAndroidPrivate::classLoader();
@@ -128,6 +112,11 @@ static jclass loadClass(const char *className, JNIEnv *env)
 
     cachedClasses->insert(classDotEnc, clazz);
     return clazz;
+}
+
+inline static jclass loadClass(const char *className, JNIEnv *env)
+{
+    return loadClassDotEnc(toDotEncodedClassName(className), env);
 }
 
 typedef QHash<QString, jmethodID> JMethodIDHash;
@@ -224,12 +213,28 @@ JNIEnv *QJNIEnvironmentPrivate::operator->()
 
 jclass QJNIEnvironmentPrivate::findClass(const char *className, JNIEnv *env)
 {
-    jclass clazz = 0;
-    if (env != 0)
-        clazz = ::findClass(className, env);
+    const QString &classDotEnc = toDotEncodedClassName(className);
+    bool isCached = false;
+    jclass clazz = getCachedClass(classDotEnc, &isCached);
 
-    if (clazz == 0)
-        clazz = loadClass(className, QJNIEnvironmentPrivate());
+    const bool found = (clazz != 0) || (clazz == 0 && isCached);
+
+    if (found)
+        return clazz;
+
+    if (env != 0) { // We got an env. pointer (We expect this to be the right env. and call FindClass())
+        jclass fclazz = env->FindClass(className);
+        if (!exceptionCheckAndClear(env)) {
+            clazz = static_cast<jclass>(env->NewGlobalRef(fclazz));
+            env->DeleteLocalRef(fclazz);
+        }
+
+        if (clazz != 0)
+            cachedClasses->insert(classDotEnc, clazz);
+    }
+
+    if (clazz == 0) // We didn't get an env. pointer or we got one with the WRONG class loader...
+        clazz = loadClassDotEnc(classDotEnc, QJNIEnvironmentPrivate());
 
     return clazz;
 }

@@ -636,6 +636,9 @@ void QToolButton::setMenu(QMenu* menu)
 {
     Q_D(QToolButton);
 
+    if (d->menuAction == (menu ? menu->menuAction() : 0))
+        return;
+
     if (d->menuAction)
         removeAction(d->menuAction);
 

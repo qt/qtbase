@@ -38,6 +38,7 @@
 #include "androidjnimain.h"
 #include "androidjniinput.h"
 #include "qandroideventdispatcher.h"
+#include "androiddeadlockprotector.h"
 #include <QDebug>
 #include <qevent.h>
 #include <qguiapplication.h>
@@ -519,6 +520,10 @@ bool QAndroidInputContext::isAnimating() const
 
 void QAndroidInputContext::showInputPanel()
 {
+    if (QGuiApplication::applicationState() != Qt::ApplicationActive) {
+        connect(qGuiApp, SIGNAL(applicationStateChanged(Qt::ApplicationState)), this, SLOT(showInputPanelLater(Qt::ApplicationState)));
+        return;
+    }
     QSharedPointer<QInputMethodQueryEvent> query = focusObjectInputMethodQueryThreadSafe();
     if (query.isNull())
         return;
@@ -539,6 +544,14 @@ void QAndroidInputContext::showInputPanel()
                                          rect.width(),
                                          rect.height(),
                                          query->value(Qt::ImHints).toUInt());
+}
+
+void QAndroidInputContext::showInputPanelLater(Qt::ApplicationState state)
+{
+    if (state != Qt::ApplicationActive)
+        return;
+    disconnect(qGuiApp, SIGNAL(applicationStateChanged(Qt::ApplicationState)), this, SLOT(showInputPanelLater(Qt::ApplicationState)));
+    showInputPanel();
 }
 
 void QAndroidInputContext::hideInputPanel()
@@ -642,12 +655,12 @@ jboolean QAndroidInputContext::deleteSurroundingText(jint leftLength, jint right
 // Android docs say the cursor must not move
 jboolean QAndroidInputContext::finishComposingText()
 {
+    if (m_composingText.isEmpty())
+        return JNI_TRUE; // not composing
+
     QSharedPointer<QInputMethodQueryEvent> query = focusObjectInputMethodQueryThreadSafe();
     if (query.isNull())
         return JNI_FALSE;
-
-    if (m_composingText.isEmpty())
-        return JNI_TRUE; // not composing
 
     const int blockPos = getBlockPosition(query);
     const int localCursorPos = m_composingCursor - blockPos;
@@ -986,6 +999,9 @@ QVariant QAndroidInputContext::queryFocusObjectThreadSafe(Qt::InputMethodQuery q
     const bool inMainThread = qGuiApp->thread() == QThread::currentThread();
     if (QAndroidEventDispatcherStopper::stopped() && !inMainThread)
         return retval;
+    AndroidDeadlockProtector protector;
+    if (!inMainThread && !protector.acquire())
+        return retval;
 
     QMetaObject::invokeMethod(this, "queryFocusObjectUnsafe",
                               inMainThread ? Qt::DirectConnection : Qt::BlockingQueuedConnection,
@@ -1002,6 +1018,9 @@ QSharedPointer<QInputMethodQueryEvent> QAndroidInputContext::focusObjectInputMet
         return QSharedPointer<QInputMethodQueryEvent>();
     const bool inMainThread = qGuiApp->thread() == QThread::currentThread();
     if (QAndroidEventDispatcherStopper::stopped() && !inMainThread)
+        return QSharedPointer<QInputMethodQueryEvent>();
+    AndroidDeadlockProtector protector;
+    if (!inMainThread && !protector.acquire())
         return QSharedPointer<QInputMethodQueryEvent>();
 
     QInputMethodQueryEvent *queryEvent = 0;
@@ -1040,7 +1059,9 @@ void QAndroidInputContext::sendInputMethodEventThreadSafe(QInputMethodEvent *eve
     const bool inMainThread = qGuiApp->thread() == QThread::currentThread();
     if (QAndroidEventDispatcherStopper::stopped() && !inMainThread)
         return;
-
+    AndroidDeadlockProtector protector;
+    if (!inMainThread && !protector.acquire())
+        return;
     QMetaObject::invokeMethod(this, "sendInputMethodEventUnsafe",
                               inMainThread ? Qt::DirectConnection : Qt::BlockingQueuedConnection,
                               Q_ARG(QInputMethodEvent*, event));

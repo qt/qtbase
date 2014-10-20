@@ -102,6 +102,8 @@ private:
 };
 Q_DECLARE_SHARED(QSslError)
 
+Q_NETWORK_EXPORT uint qHash(const QSslError &key, uint seed = 0) Q_DECL_NOTHROW;
+
 #ifndef QT_NO_DEBUG_STREAM
 class QDebug;
 Q_NETWORK_EXPORT QDebug operator<<(QDebug debug, const QSslError &error);

@@ -1,0 +1,370 @@
+/****************************************************************************
+**
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Contact: http://www.qt-project.org/legal
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** Commercial License Usage
+** Licensees holding valid commercial Qt licenses may use this file in
+** accordance with the commercial license agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and Digia.  For licensing terms and
+** conditions see http://qt.digia.com/licensing.  For further information
+** use the contact form at http://qt.digia.com/contact-us.
+**
+** GNU Free Documentation License Usage
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of
+** this file.  Please review the following information to ensure
+** the GNU Free Documentation License version 1.3 requirements
+** will be met: http://www.gnu.org/copyleft/fdl.html.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+    \example threads/mandelbrot
+    \title Mandelbrot Example
+    \ingroup qtconcurrent-mtexamples
+
+    \brief The Mandelbrot example demonstrates multi-thread programming
+    using Qt. It shows how to use a worker thread to
+    perform heavy computations without blocking the main thread's
+    event loop.
+
+    \image mandelbrot-example.png Screenshot of the Mandelbrot example
+
+    The heavy computation here is the Mandelbrot set, probably the
+    world's most famous fractal. These days, while sophisticated
+    programs such as \l{http://xaos.sourceforge.net/}{XaoS} that provide real-time zooming in the
+    Mandelbrot set, the standard Mandelbrot algorithm is just slow
+    enough for our purposes.
+
+    In real life, the approach described here is applicable to a
+    large set of problems, including synchronous network I/O and
+    database access, where the user interface must remain responsive
+    while some heavy operation is taking place. The \l
+    {Blocking Fortune Client Example} shows the same principle at
+    work in a TCP client.
+
+    The Mandelbrot application supports zooming and scrolling using
+    the mouse or the keyboard. To avoid freezing the main thread's
+    event loop (and, as a consequence, the application's user
+    interface), we put all the fractal computation in a separate
+    worker thread. The thread emits a signal when it is done
+    rendering the fractal.
+
+    During the time where the worker thread is recomputing the
+    fractal to reflect the new zoom factor position, the main thread
+    simply scales the previously rendered pixmap to provide immediate
+    feedback. The result doesn't look as good as what the worker
+    thread eventually ends up providing, but at least it makes the
+    application more responsive. The sequence of screenshots below
+    shows the original image, the scaled image, and the rerendered
+    image.
+
+    \table
+    \row
+    \li \inlineimage mandelbrot_zoom1.png
+    \li \inlineimage mandelbrot_zoom2.png
+    \li \inlineimage mandelbrot_zoom3.png
+    \endtable
+
+    Similarly, when the user scrolls, the previous pixmap is scrolled
+    immediately, revealing unpainted areas beyond the edge of the
+    pixmap, while the image is rendered by the worker thread.
+
+    \table
+    \row
+    \li \inlineimage mandelbrot_scroll1.png
+    \li \inlineimage mandelbrot_scroll2.png
+    \li \inlineimage mandelbrot_scroll3.png
+    \endtable
+
+    The application consists of two classes:
+
+    \list
+    \li \c RenderThread is a QThread subclass that renders
+       the Mandelbrot set.
+    \li \c MandelbrotWidget is a QWidget subclass that shows the
+       Mandelbrot set on screen and lets the user zoom and scroll.
+    \endlist
+
+    If you are not already familiar with Qt's thread support, we
+    recommend that you start by reading the \l{Thread Support in Qt}
+    overview.
+
+    \section1 RenderThread Class Definition
+
+    We'll start with the definition of the \c RenderThread class:
+
+    \snippet threads/mandelbrot/renderthread.h 0
+
+    The class inherits QThread so that it gains the ability to run in
+    a separate thread. Apart from the constructor and destructor, \c
+    render() is the only public function. Whenever the thread is done
+    rendering an image, it emits the \c renderedImage() signal.
+
+    The protected \c run() function is reimplemented from QThread. It
+    is automatically called when the thread is started.
+
+    In the \c private section, we have a QMutex, a QWaitCondition,
+    and a few other data members. The mutex protects the other data
+    member.
+
+    \section1 RenderThread Class Implementation
+
+    \snippet threads/mandelbrot/renderthread.cpp 0
+
+    In the constructor, we initialize the \c restart and \c abort
+    variables to \c false. These variables control the flow of the \c
+    run() function.
+
+    We also initialize the \c colormap array, which contains a series
+    of RGB colors.
+
+    \snippet threads/mandelbrot/renderthread.cpp 1
+
+    The destructor can be called at any point while the thread is
+    active. We set \c abort to \c true to tell \c run() to stop
+    running as soon as possible. We also call
+    QWaitCondition::wakeOne() to wake up the thread if it's sleeping.
+    (As we will see when we review \c run(), the thread is put to
+    sleep when it has nothing to do.)
+
+    The important thing to notice here is that \c run() is executed
+    in its own thread (the worker thread), whereas the \c
+    RenderThread constructor and destructor (as well as the \c
+    render() function) are called by the thread that created the
+    worker thread. Therefore, we need a mutex to protect accesses to
+    the \c abort and \c condition variables, which might be accessed
+    at any time by \c run().
+
+    At the end of the destructor, we call QThread::wait() to wait
+    until \c run() has exited before the base class destructor is
+    invoked.
+
+    \snippet threads/mandelbrot/renderthread.cpp 2
+
+    The \c render() function is called by the \c MandelbrotWidget
+    whenever it needs to generate a new image of the Mandelbrot set.
+    The \c centerX, \c centerY, and \c scaleFactor parameters specify
+    the portion of the fractal to render; \c resultSize specifies the
+    size of the resulting QImage.
+
+    The function stores the parameters in member variables. If the
+    thread isn't already running, it starts it; otherwise, it sets \c
+    restart to \c true (telling \c run() to stop any unfinished
+    computation and start again with the new parameters) and wakes up
+    the thread, which might be sleeping.
+
+    \snippet threads/mandelbrot/renderthread.cpp 3
+
+    \c run() is quite a big function, so we'll break it down into
+    parts.
+
+    The function body is an infinite loop which starts by storing the
+    rendering parameters in local variables. As usual, we protect
+    accesses to the member variables using the class's mutex. Storing
+    the member variables in local variables allows us to minimize the
+    amout of code that needs to be protected by a mutex. This ensures
+    that the main thread will never have to block for too long when
+    it needs to access \c{RenderThread}'s member variables (e.g., in
+    \c render()).
+
+    The \c forever keyword is, like \c foreach, a Qt pseudo-keyword.
+
+    \snippet threads/mandelbrot/renderthread.cpp 4
+    \snippet threads/mandelbrot/renderthread.cpp 5
+    \snippet threads/mandelbrot/renderthread.cpp 6
+    \snippet threads/mandelbrot/renderthread.cpp 7
+
+    Then comes the core of the algorithm. Instead of trying to create
+    a perfect Mandelbrot set image, we do multiple passes and
+    generate more and more precise (and computationally expensive)
+    approximations of the fractal.
+
+    If we discover inside the loop that \c restart has been set to \c
+    true (by \c render()), we break out of the loop immediately, so
+    that the control quickly returns to the very top of the outer
+    loop (the \c forever loop) and we fetch the new rendering
+    parameters. Similarly, if we discover that \c abort has been set
+    to \c true (by the \c RenderThread destructor), we return from
+    the function immediately, terminating the thread.
+
+    The core algorithm is beyond the scope of this tutorial.
+
+    \snippet threads/mandelbrot/renderthread.cpp 8
+    \snippet threads/mandelbrot/renderthread.cpp 9
+
+    Once we're done with all the iterations, we call
+    QWaitCondition::wait() to put the thread to sleep by calling,
+    unless \c restart is \c true. There's no use in keeping a worker
+    thread looping indefinitely while there's nothing to do.
+
+    \snippet threads/mandelbrot/renderthread.cpp 10
+
+    The \c rgbFromWaveLength() function is a helper function that
+    converts a wave length to a RGB value compatible with 32-bit
+    \l{QImage}s. It is called from the constructor to initialize the
+    \c colormap array with pleasing colors.
+
+    \section1 MandelbrotWidget Class Definition
+
+    The \c MandelbrotWidget class uses \c RenderThread to draw the
+    Mandelbrot set on screen. Here's the class definition:
+
+    \snippet threads/mandelbrot/mandelbrotwidget.h 0
+
+    The widget reimplements many event handlers from QWidget. In
+    addition, it has an \c updatePixmap() slot that we'll connect to
+    the worker thread's \c renderedImage() signal to update the
+    display whenever we receive new data from the thread.
+
+    Among the private variables, we have \c thread of type \c
+    RenderThread and \c pixmap, which contains the last rendered
+    image.
+
+    \section1 MandelbrotWidget Class Implementation
+
+    \snippet threads/mandelbrot/mandelbrotwidget.cpp 0
+
+    The implementation starts with a few contants that we'll need
+    later on.
+
+    \snippet threads/mandelbrot/mandelbrotwidget.cpp 1
+
+    The interesting part of the constructor is the
+    qRegisterMetaType() and QObject::connect() calls. Let's start
+    with the \l{QObject::connect()}{connect()} call.
+
+    Although it looks like a standard signal-slot connection between
+    two \l{QObject}s, because the signal is emitted in a different
+    thread than the receiver lives in, the connection is effectively a
+    \l{Qt::QueuedConnection}{queued connection}. These connections are
+    asynchronous (i.e., non-blocking), meaning that the slot will be
+    called at some point after the \c emit statement. What's more, the
+    slot will be invoked in the thread in which the receiver lives.
+    Here, the signal is emitted in the worker thread, and the slot is
+    executed in the GUI thread when control returns to the event loop.
+
+    With queued connections, Qt must store a copy of the arguments
+    that were passed to the signal so that it can pass them to the
+    slot later on. Qt knows how to take of copy of many C++ and Qt
+    types, but QImage isn't one of them. We must therefore call the
+    template function qRegisterMetaType() before we can use QImage
+    as parameter in queued connections.
+
+    \snippet threads/mandelbrot/mandelbrotwidget.cpp 2
+    \snippet threads/mandelbrot/mandelbrotwidget.cpp 3
+    \snippet threads/mandelbrot/mandelbrotwidget.cpp 4
+
+    In \l{QWidget::paintEvent()}{paintEvent()}, we start by filling
+    the background with black. If we have nothing yet to paint (\c
+    pixmap is null), we print a message on the widget asking the user
+    to be patient and return from the function immediately.
+
+    \snippet threads/mandelbrot/mandelbrotwidget.cpp 5
+    \snippet threads/mandelbrot/mandelbrotwidget.cpp 6
+    \snippet threads/mandelbrot/mandelbrotwidget.cpp 7
+    \snippet threads/mandelbrot/mandelbrotwidget.cpp 8
+
+    If the pixmap has the right scale factor, we draw the pixmap directly onto
+    the widget. Otherwise, we scale and translate the \l{Coordinate
+    System}{coordinate system} before we draw the pixmap. By reverse mapping
+    the widget's rectangle using the scaled painter matrix, we also make sure
+    that only the exposed areas of the pixmap are drawn. The calls to
+    QPainter::save() and QPainter::restore() make sure that any painting
+    performed afterwards uses the standard coordinate system.
+
+    \snippet threads/mandelbrot/mandelbrotwidget.cpp 9
+
+    At the end of the paint event handler, we draw a text string and
+    a semi-transparent rectangle on top of the fractal.
+
+    \snippet threads/mandelbrot/mandelbrotwidget.cpp 10
+
+    Whenever the user resizes the widget, we call \c render() to
+    start generating a new image, with the same \c centerX, \c
+    centerY, and \c curScale parameters but with the new widget size.
+
+    Notice that we rely on \c resizeEvent() being automatically
+    called by Qt when the widget is shown the first time to generate
+    the image the very first time.
+
+    \snippet threads/mandelbrot/mandelbrotwidget.cpp 11
+
+    The key press event handler provides a few keyboard bindings for
+    the benefit of users who don't have a mouse. The \c zoom() and \c
+    scroll() functions will be covered later.
+
+    \snippet threads/mandelbrot/mandelbrotwidget.cpp 12
+
+    The wheel event handler is reimplemented to make the mouse wheel
+    control the zoom level. QWheelEvent::delta() returns the angle of
+    the wheel mouse movement, in eights of a degree. For most mice,
+    one wheel step corresponds to 15 degrees. We find out how many
+    mouse steps we have and determine the zoom factor in consequence.
+    For example, if we have two wheel steps in the positive direction
+    (i.e., +30 degrees), the zoom factor becomes \c ZoomInFactor
+    to the second power, i.e. 0.8 * 0.8 = 0.64.
+
+    \snippet threads/mandelbrot/mandelbrotwidget.cpp 13
+
+    When the user presses the left mouse button, we store the mouse
+    pointer position in \c lastDragPos.
+
+    \snippet threads/mandelbrot/mandelbrotwidget.cpp 14
+
+    When the user moves the mouse pointer while the left mouse button
+    is pressed, we adjust \c pixmapOffset to paint the pixmap at a
+    shifted position and call QWidget::update() to force a repaint.
+
+    \snippet threads/mandelbrot/mandelbrotwidget.cpp 15
+
+    When the left mouse button is released, we update \c pixmapOffset
+    just like we did on a mouse move and we reset \c lastDragPos to a
+    default value. Then, we call \c scroll() to render a new image
+    for the new position. (Adjusting \c pixmapOffset isn't sufficient
+    because areas revealed when dragging the pixmap are drawn in
+    black.)
+
+    \snippet threads/mandelbrot/mandelbrotwidget.cpp 16
+
+    The \c updatePixmap() slot is invoked when the worker thread has
+    finished rendering an image. We start by checking whether a drag
+    is in effect and do nothing in that case. In the normal case, we
+    store the image in \c pixmap and reinitialize some of the other
+    members. At the end, we call QWidget::update() to refresh the
+    display.
+
+    At this point, you might wonder why we use a QImage for the
+    parameter and a QPixmap for the data member. Why not stick to one
+    type? The reason is that QImage is the only class that supports
+    direct pixel manipulation, which we need in the worker thread. On
+    the other hand, before an image can be drawn on screen, it must
+    be converted into a pixmap. It's better to do the conversion once
+    and for all here, rather than in \c paintEvent().
+
+    \snippet threads/mandelbrot/mandelbrotwidget.cpp 17
+
+    In \c zoom(), we recompute \c curScale. Then we call
+    QWidget::update() to draw a scaled pixmap, and we ask the worker
+    thread to render a new image corresponding to the new \c curScale
+    value.
+
+    \snippet threads/mandelbrot/mandelbrotwidget.cpp 18
+
+    \c scroll() is similar to \c zoom(), except that the affected
+    parameters are \c centerX and \c centerY.
+
+    \section1 The main() Function
+
+    The application's multithreaded nature has no impact on its \c
+    main() function, which is as simple as usual:
+
+    \snippet threads/mandelbrot/main.cpp 0
+*/

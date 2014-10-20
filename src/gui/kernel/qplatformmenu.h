@@ -108,11 +108,6 @@ public:
     virtual void setFont(const QFont &font) { Q_UNUSED(font); }
     virtual void setMenuType(MenuType type) { Q_UNUSED(type); }
 
-    virtual void showPopup(const QWindow *parentWindow, QPoint pos, const QPlatformMenuItem *item)
-    {
-        showPopup(parentWindow, QRect(pos, QSize()), item);
-    }
-
     virtual void showPopup(const QWindow *parentWindow, const QRect &targetRect, const QPlatformMenuItem *item)
     {
         Q_UNUSED(parentWindow);

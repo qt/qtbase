@@ -62,6 +62,17 @@ bool QSslCertificate::operator==(const QSslCertificate &other) const
     return false;
 }
 
+uint qHash(const QSslCertificate &key, uint seed) Q_DECL_NOTHROW
+{
+    if (X509 * const x509 = key.d->x509) {
+        (void)q_X509_cmp(x509, x509); // populate x509->sha1_hash
+                                      // (if someone knows a better way...)
+        return qHashBits(x509->sha1_hash, SHA_DIGEST_LENGTH, seed);
+    } else {
+        return seed;
+    }
+}
+
 bool QSslCertificate::isNull() const
 {
     return d->null;
@@ -683,7 +694,7 @@ QList<QSslCertificate> QSslCertificatePrivate::certificatesFromDer(const QByteAr
 #endif
     int size = der.size();
 
-    while (count == -1 || certificates.size() < count) {
+    while (size > 0 && (count == -1 || certificates.size() < count)) {
         if (X509 *x509 = q_d2i_X509(0, &data, size)) {
             certificates << QSslCertificate_from_X509(x509);
             q_X509_free(x509);

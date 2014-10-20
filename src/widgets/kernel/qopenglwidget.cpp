@@ -45,6 +45,7 @@
 #include <QtGui/private/qguiapplication_p.h>
 #include <QtGui/private/qopenglextensions_p.h>
 #include <QtGui/private/qfont_p.h>
+#include <QtGui/private/qopenglpaintdevice_p.h>
 #include <QtWidgets/private/qwidget_p.h>
 
 QT_BEGIN_NAMESPACE
@@ -239,6 +240,28 @@ QT_BEGIN_NAMESPACE
   \note Avoid calling winId() on a QOpenGLWidget. This function triggers the creation of
   a native window, resulting in reduced performance and possibly rendering glitches.
 
+  \section1 Differences to QGLWidget
+
+  Besides the main conceptual difference of being backed by a framebuffer object, there
+  are a number of smaller, internal differences between QOpenGLWidget and the older
+  QGLWidget:
+
+  \list
+
+  \li OpenGL state when invoking paintGL(). QOpenGLWidget sets up the viewport via
+  glViewport(). It does not perform any clearing.
+
+  \li Clearing when starting to paint via QPainter. Unlike regular widgets, QGLWidget
+  defaulted to a value of \c true for
+  \l{QWidget::autoFillBackground()}{autoFillBackground}. It then performed clearing to the
+  palette's background color every time QPainter::begin() was used. QOpenGLWidget does not
+  follow this: \l{QWidget::autoFillBackground()}{autoFillBackground} defaults to false,
+  like for any other widget. The only exception is when being used as a viewport for other
+  widgets like QGraphicsView. In such a case autoFillBackground will be automatically set
+  to true to ensure compatibility with QGLWidget-based viewports.
+
+  \endlist
+
   \section1 Multisampling
 
   To enable multisampling, set the number of requested samples on the
@@ -432,14 +455,24 @@ QT_BEGIN_NAMESPACE
     due to resizing the widget.
 */
 
+class QOpenGLWidgetPaintDevicePrivate : public QOpenGLPaintDevicePrivate
+{
+public:
+    QOpenGLWidgetPaintDevicePrivate(QOpenGLWidget *widget)
+        : QOpenGLPaintDevicePrivate(QSize()),
+          w(widget) { }
+
+    void beginPaint() Q_DECL_OVERRIDE;
+
+    QOpenGLWidget *w;
+};
+
 class QOpenGLWidgetPaintDevice : public QOpenGLPaintDevice
 {
 public:
-    QOpenGLWidgetPaintDevice(QOpenGLWidget *widget) : w(widget) { }
+    QOpenGLWidgetPaintDevice(QOpenGLWidget *widget)
+        : QOpenGLPaintDevice(new QOpenGLWidgetPaintDevicePrivate(widget)) { }
     void ensureActiveTarget() Q_DECL_OVERRIDE;
-
-private:
-    QOpenGLWidget *w;
 };
 
 class QOpenGLWidgetPrivate : public QWidgetPrivate
@@ -454,7 +487,8 @@ public:
           initialized(false),
           fakeHidden(false),
           paintDevice(0),
-          inBackingStorePaint(false)
+          inBackingStorePaint(false),
+          flushPending(false)
     {
         requestedFormat = QSurfaceFormat::defaultFormat();
     }
@@ -478,6 +512,7 @@ public:
     void endBackingStorePainting() Q_DECL_OVERRIDE { inBackingStorePaint = false; }
     void beginCompose() Q_DECL_OVERRIDE;
     void endCompose() Q_DECL_OVERRIDE;
+    void initializeViewportFramebuffer() Q_DECL_OVERRIDE;
     void resizeViewportFramebuffer() Q_DECL_OVERRIDE;
     void resolveSamples() Q_DECL_OVERRIDE;
 
@@ -490,22 +525,54 @@ public:
     QOpenGLPaintDevice *paintDevice;
     bool inBackingStorePaint;
     QSurfaceFormat requestedFormat;
+    bool flushPending;
 };
+
+void QOpenGLWidgetPaintDevicePrivate::beginPaint()
+{
+    // NB! autoFillBackground is and must be false by default. Otherwise we would clear on
+    // every QPainter begin() which is not desirable. This is only for legacy use cases,
+    // like using QOpenGLWidget as the viewport of a graphics view, that expect clearing
+    // with the palette's background color.
+    if (w->autoFillBackground()) {
+        QOpenGLFunctions *f = QOpenGLContext::currentContext()->functions();
+        if (w->testAttribute(Qt::WA_TranslucentBackground)) {
+            f->glClearColor(0, 0, 0, 0);
+        } else {
+            QColor c = w->palette().brush(w->backgroundRole()).color();
+            float alpha = c.alphaF();
+            f->glClearColor(c.redF() * alpha, c.greenF() * alpha, c.blueF() * alpha, alpha);
+        }
+        f->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+    }
+}
 
 void QOpenGLWidgetPaintDevice::ensureActiveTarget()
 {
-    QOpenGLWidgetPrivate *d = static_cast<QOpenGLWidgetPrivate *>(QWidgetPrivate::get(w));
-    if (!d->initialized)
+    QOpenGLWidgetPaintDevicePrivate *d = static_cast<QOpenGLWidgetPaintDevicePrivate *>(d_ptr.data());
+    QOpenGLWidgetPrivate *wd = static_cast<QOpenGLWidgetPrivate *>(QWidgetPrivate::get(d->w));
+    if (!wd->initialized)
         return;
 
-    if (QOpenGLContext::currentContext() != d->context)
-        w->makeCurrent();
+    if (QOpenGLContext::currentContext() != wd->context)
+        d->w->makeCurrent();
     else
-        d->fbo->bind();
+        wd->fbo->bind();
+
+    // When used as a viewport, drawing is done via opening a QPainter on the widget
+    // without going through paintEvent(). We will have to make sure a glFlush() is done
+    // before the texture is accessed also in this case.
+    wd->flushPending = true;
 }
 
 GLuint QOpenGLWidgetPrivate::textureId() const
 {
+    Q_Q(const QOpenGLWidget);
+    if (!q->isWindow() && q->internalWinId()) {
+        qWarning() << "QOpenGLWidget cannot be used as a native child widget."
+                   << "Consider setting Qt::AA_DontCreateNativeWidgetAncestors and Siblings.";
+        return 0;
+    }
     return resolvedFbo ? resolvedFbo->texture() : (fbo ? fbo->texture() : 0);
 }
 
@@ -566,6 +633,11 @@ void QOpenGLWidgetPrivate::recreateFbo()
 void QOpenGLWidgetPrivate::beginCompose()
 {
     Q_Q(QOpenGLWidget);
+    if (flushPending) {
+        flushPending = false;
+        q->makeCurrent();
+        context->functions()->glFlush();
+    }
     emit q->aboutToCompose();
 }
 
@@ -647,9 +719,10 @@ void QOpenGLWidgetPrivate::invokeUserPaint()
 {
     Q_Q(QOpenGLWidget);
     QOpenGLFunctions *f = QOpenGLContext::currentContext()->functions();
-    f->glViewport(0, 0, q->width() * q->devicePixelRatio(), q->height() * q->devicePixelRatio());
 
+    f->glViewport(0, 0, q->width() * q->devicePixelRatio(), q->height() * q->devicePixelRatio());
     q->paintGL();
+    f->glFlush();
 }
 
 void QOpenGLWidgetPrivate::render()
@@ -661,7 +734,6 @@ void QOpenGLWidgetPrivate::render()
 
     q->makeCurrent();
     invokeUserPaint();
-    context->functions()->glFlush();
 }
 
 extern Q_GUI_EXPORT QImage qt_gl_read_framebuffer(const QSize &size, bool alpha_format, bool include_alpha);
@@ -678,6 +750,14 @@ QImage QOpenGLWidgetPrivate::grabFramebuffer()
     QImage res = qt_gl_read_framebuffer(q->size() * q->devicePixelRatio(), false, false);
 
     return res;
+}
+
+void QOpenGLWidgetPrivate::initializeViewportFramebuffer()
+{
+    Q_Q(QOpenGLWidget);
+    // Legacy behavior for compatibility with QGLWidget when used as a graphics view
+    // viewport: enable clearing on each painter begin.
+    q->setAutoFillBackground(true);
 }
 
 void QOpenGLWidgetPrivate::resizeViewportFramebuffer()
@@ -923,7 +1003,6 @@ void QOpenGLWidget::resizeEvent(QResizeEvent *e)
     d->recreateFbo();
     resizeGL(width(), height());
     d->invokeUserPaint();
-    d->context->functions()->glFlush();
     d->resolveSamples();
 }
 

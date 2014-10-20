@@ -420,12 +420,10 @@ static NSString *_q_NSWindowDidChangeOcclusionStateNotification = nil;
 #pragma clang diagnostic ignored "-Wobjc-method-access"
         enum { NSWindowOcclusionStateVisible = 1UL << 1 };
 #endif
-        // Older versions managed in -[QNSView viewDidMoveToWindow].
-        // Support QWidgetAction in NSMenu. Mavericks only sends this notification.
-        // Ideally we should support this in Qt as well, in order to disable animations
-        // when the window is occluded.
         if ((NSUInteger)[self.window occlusionState] & NSWindowOcclusionStateVisible)
             m_platformWindow->exposeWindow();
+        else
+            m_platformWindow->obscureWindow();
 #if MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_9
 #pragma clang diagnostic pop
 #endif

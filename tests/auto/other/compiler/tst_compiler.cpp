@@ -784,12 +784,19 @@ void tst_Compiler::cxx11_default_members()
 #ifndef Q_COMPILER_DEFAULT_MEMBERS
     QSKIP("Compiler does not support C++11 feature");
 #else
-    struct DefaultMembers
+    class DefaultMembers
     {
+    protected:
         DefaultMembers() = default;
+    public:
         DefaultMembers(int) {}
     };
-    DefaultMembers dm;
+    class DefaultMembersChild: public DefaultMembers
+    {
+    public:
+        DefaultMembersChild():DefaultMembers() {};
+    };
+    DefaultMembersChild dm;
     Q_UNUSED(dm);
 #endif
 }
@@ -799,9 +806,11 @@ void tst_Compiler::cxx11_delete_members()
 #ifndef Q_COMPILER_DELETE_MEMBERS
     QSKIP("Compiler does not support C++11 feature");
 #else
-    struct DeleteMembers
+    class DeleteMembers
     {
+    protected:
         DeleteMembers() = delete;
+    public:
         DeleteMembers(const DeleteMembers &) = delete;
         ~DeleteMembers() = delete;
     };

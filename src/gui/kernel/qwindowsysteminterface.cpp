@@ -201,9 +201,13 @@ bool QWindowSystemInterface::tryHandleShortcutEvent(QWindow *w, ulong timestamp,
 #ifndef QT_NO_SHORTCUT
     QGuiApplicationPrivate::modifier_buttons = mods;
 
+    QObject *focus = w->focusObject();
+    if (!focus)
+        focus = w;
+
     QKeyEvent qevent(QEvent::ShortcutOverride, k, mods, text, autorep, count);
     qevent.setTimestamp(timestamp);
-    return QGuiApplicationPrivate::instance()->shortcutMap.tryShortcutEvent(w, &qevent);
+    return QGuiApplicationPrivate::instance()->shortcutMap.tryShortcutEvent(focus, &qevent);
 #else
     Q_UNUSED(w)
     Q_UNUSED(timestamp)
@@ -231,9 +235,13 @@ bool QWindowSystemInterface::tryHandleExtendedShortcutEvent(QWindow *w, ulong ti
 #ifndef QT_NO_SHORTCUT
     QGuiApplicationPrivate::modifier_buttons = mods;
 
+    QObject *focus = w->focusObject();
+    if (!focus)
+        focus = w;
+
     QKeyEvent qevent(QEvent::ShortcutOverride, k, mods, nativeScanCode, nativeVirtualKey, nativeModifiers, text, autorep, count);
     qevent.setTimestamp(timestamp);
-    return QGuiApplicationPrivate::instance()->shortcutMap.tryShortcutEvent(w, &qevent);
+    return QGuiApplicationPrivate::instance()->shortcutMap.tryShortcutEvent(focus, &qevent);
 #else
     Q_UNUSED(w)
     Q_UNUSED(timestamp)

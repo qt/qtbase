@@ -639,7 +639,6 @@ void QEventDispatcherWin32::createInternalHwnd()
 {
     Q_D(QEventDispatcherWin32);
 
-    Q_ASSERT(!d->internalHwnd);
     if (d->internalHwnd)
         return;
     d->internalHwnd = qt_create_internal_window(this);
@@ -664,9 +663,6 @@ void QEventDispatcherWin32::createInternalHwnd()
     // start all normal timers
     for (int i = 0; i < d->timerVec.count(); ++i)
         d->registerTimer(d->timerVec.at(i));
-
-    // trigger a call to sendPostedEvents()
-    wakeUp();
 }
 
 QEventDispatcherWin32::QEventDispatcherWin32(QObject *parent)
@@ -686,8 +682,10 @@ bool QEventDispatcherWin32::processEvents(QEventLoop::ProcessEventsFlags flags)
 {
     Q_D(QEventDispatcherWin32);
 
-    if (!d->internalHwnd)
+    if (!d->internalHwnd) {
         createInternalHwnd();
+        wakeUp(); // trigger a call to sendPostedEvents()
+    }
 
     d->interrupt = false;
     emit awake();

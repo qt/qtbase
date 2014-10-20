@@ -126,11 +126,16 @@ enum QCocoaWidgetKind {
     QCocoaCheckBox,
     QCocoaComboBox,     // Editable QComboBox
     QCocoaPopupButton,  // Non-editable QComboBox
+    QCocoaPullDownButton, // QPushButton with menu
     QCocoaPushButton,
-    QCocoaRadioButton
+    QCocoaRadioButton,
+    QCocoaHorizontalSlider,
+    QCocoaVerticalSlider
 };
 
 typedef QPair<QCocoaWidgetKind, QAquaWidgetSize> QCocoaWidget;
+
+typedef void (^QCocoaDrawRectBlock)(NSRect, CGContextRef);
 
 #define SIZE(large, small, mini) \
     (controlSize == QAquaSizeLarge ? (large) : controlSize == QAquaSizeSmall ? (small) : (mini))
@@ -201,7 +206,7 @@ public:
 
     NSView *cocoaControl(QCocoaWidget widget, QPoint *offset) const;
 
-    void drawNSViewInRect(NSView *view, const QRect &rect, QPainter *p) const;
+    void drawNSViewInRect(NSView *view, const QRect &rect, QPainter *p, QCocoaDrawRectBlock drawRectBlock = nil) const;
     void resolveCurrentNSView(QWindow *window);
 
 public:

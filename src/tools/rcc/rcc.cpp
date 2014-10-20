@@ -610,11 +610,18 @@ bool RCCResourceLibrary::addFile(const QString &alias, const RCCFileInfo &file)
     const QString filename = nodes.at(nodes.size()-1);
     RCCFileInfo *s = new RCCFileInfo(file);
     s->m_parent = parent;
-    if (parent->m_children.contains(filename)) {
-        foreach (const QString &fileName, m_fileNames)
-            qWarning("%s: Warning: potential duplicate alias detected: '%s'",
-                     qPrintable(fileName), qPrintable(filename));
+    typedef QHash<QString, RCCFileInfo*>::const_iterator ChildConstIterator;
+    const ChildConstIterator cbegin = parent->m_children.constFind(filename);
+    const ChildConstIterator cend = parent->m_children.constEnd();
+    for (ChildConstIterator it = cbegin; it != cend; ++it) {
+        if (it.key() == filename && it.value()->m_language == s->m_language &&
+            it.value()->m_country == s->m_country) {
+            foreach (const QString &name, m_fileNames)
+                qWarning("%s: Warning: potential duplicate alias detected: '%s'",
+                qPrintable(name), qPrintable(filename));
+            break;
         }
+    }
     parent->m_children.insertMulti(filename, s);
     return true;
 }

@@ -45,33 +45,15 @@
 
 QT_BEGIN_NAMESPACE
 
-// Returns \c true iff a sufficiently recent valgrind is available.
+// Returns \c true if valgrind is available.
 bool QBenchmarkValgrindUtils::haveValgrind()
 {
 #ifdef NVALGRIND
     return false;
 #else
     QProcess process;
-    QStringList args;
-    args << QLatin1String("--version");
-    process.start(QLatin1String("valgrind"), args);
-    if (!process.waitForFinished(-1))
-        return false;
-    const QByteArray out = process.readAllStandardOutput();
-    QRegExp rx(QLatin1String("^valgrind-([0-9]+).([0-9]+).[0-9]+"));
-    if (rx.indexIn(QLatin1String(out.data())) == -1)
-        return false;
-    bool ok;
-    const int major = rx.cap(1).toInt(&ok);
-    if (!ok)
-        return false;
-    const int minor = rx.cap(2).toInt(&ok);
-    if (!ok)
-        return false;
-//    return (major > 3 || (major == 3 && minor >= 3)); // v >= 3.3 for --callgrind-out-file option
-    Q_UNUSED(major);
-    Q_UNUSED(minor);
-    return true; // skip version restriction for now
+    process.start(QLatin1String("valgrind"), QStringList(QLatin1String("--version")));
+    return process.waitForStarted() && process.waitForFinished(-1);
 #endif
 }
 

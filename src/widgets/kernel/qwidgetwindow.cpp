@@ -73,8 +73,10 @@ public:
 
     void clearFocusObject()
     {
-        if (QApplicationPrivate::focus_widget)
-            QApplicationPrivate::focus_widget->clearFocus();
+        Q_Q(QWidgetWindow);
+        QWidget *widget = q->widget();
+        if (widget && widget->focusWidget())
+            widget->focusWidget()->clearFocus();
     }
 
 };

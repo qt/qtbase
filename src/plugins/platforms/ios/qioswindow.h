@@ -42,11 +42,6 @@
 class QIOSContext;
 class QIOSWindow;
 
-@interface UIView (QIOS)
-@property(readonly) QWindow *qwindow;
-@property(readonly) UIViewController *viewController;
-@end
-
 QT_BEGIN_NAMESPACE
 
 @class QUIView;
@@ -71,6 +66,8 @@ public:
 
     void raise() { raiseOrLower(true); }
     void lower() { raiseOrLower(false); }
+
+    bool shouldAutoActivateWindow() const;
     void requestActivateWindow();
 
     qreal devicePixelRatio() const;
@@ -94,9 +91,6 @@ private:
     void raiseOrLower(bool raise);
     void updateWindowLevel();
     bool blockedByModal();
-
-    inline Qt::WindowType windowType() { return static_cast<Qt::WindowType>(int(window()->flags() & Qt::WindowType_Mask)); }
-    inline bool windowIsPopup() { return windowType() & Qt::Popup & ~Qt::Window; }
 
     friend class QIOSScreen;
 };

@@ -2597,8 +2597,7 @@ QRegion QPainter::clipRegion() const
 extern QPainterPath qt_regionToPath(const QRegion &region);
 
 /*!
-    Returns the currently clip as a path. Note that the clip path is
-    given in logical coordinates.
+    Returns the current clip path in logical coordinates.
 
     \warning QPainter does not store the combined clip explicitly as
     this is handled by the underlying QPaintEngine, so the path is

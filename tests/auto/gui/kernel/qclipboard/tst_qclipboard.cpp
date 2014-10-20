@@ -340,8 +340,10 @@ void tst_QClipboard::setMimeData()
     data->setText("foo");
 
     QGuiApplication::clipboard()->setMimeData(data, QClipboard::Clipboard);
-    QGuiApplication::clipboard()->setMimeData(data, QClipboard::Selection);
-    QGuiApplication::clipboard()->setMimeData(data, QClipboard::FindBuffer);
+    if (QGuiApplication::clipboard()->supportsSelection())
+        QGuiApplication::clipboard()->setMimeData(data, QClipboard::Selection);
+    if (QGuiApplication::clipboard()->supportsFindBuffer())
+        QGuiApplication::clipboard()->setMimeData(data, QClipboard::FindBuffer);
 
     QSignalSpy spySelection(QGuiApplication::clipboard(), SIGNAL(selectionChanged()));
     QSignalSpy spyData(QGuiApplication::clipboard(), SIGNAL(dataChanged()));
@@ -373,8 +375,10 @@ void tst_QClipboard::setMimeData()
     data->setText("foo");
 
     QGuiApplication::clipboard()->setMimeData(data, QClipboard::Clipboard);
-    QGuiApplication::clipboard()->setMimeData(data, QClipboard::Selection);
-    QGuiApplication::clipboard()->setMimeData(data, QClipboard::FindBuffer);
+    if (QGuiApplication::clipboard()->supportsSelection())
+        QGuiApplication::clipboard()->setMimeData(data, QClipboard::Selection);
+    if (QGuiApplication::clipboard()->supportsFindBuffer())
+        QGuiApplication::clipboard()->setMimeData(data, QClipboard::FindBuffer);
 
     QMimeData *newData = new QMimeData;
     newData->setText("bar");
@@ -385,8 +389,10 @@ void tst_QClipboard::setMimeData()
     spyFindBuffer.clear();
 
     QGuiApplication::clipboard()->setMimeData(newData, QClipboard::Clipboard);
-    QGuiApplication::clipboard()->setMimeData(newData, QClipboard::Selection); // used to crash on X11
-    QGuiApplication::clipboard()->setMimeData(newData, QClipboard::FindBuffer);
+    if (QGuiApplication::clipboard()->supportsSelection())
+        QGuiApplication::clipboard()->setMimeData(newData, QClipboard::Selection); // used to crash on X11
+    if (QGuiApplication::clipboard()->supportsFindBuffer())
+        QGuiApplication::clipboard()->setMimeData(newData, QClipboard::FindBuffer);
 
     if (QGuiApplication::clipboard()->supportsSelection())
         QCOMPARE(spySelection.count(), 1);

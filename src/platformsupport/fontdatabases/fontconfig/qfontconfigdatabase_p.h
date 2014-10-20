@@ -50,6 +50,8 @@
 
 QT_BEGIN_NAMESPACE
 
+class QFontEngineFT;
+
 class QFontconfigDatabase : public QBasicFontDatabase
 {
 public:
@@ -61,6 +63,9 @@ public:
     QStringList addApplicationFont(const QByteArray &fontData, const QString &fileName);
     QString resolveFontFamilyAlias(const QString &family) const;
     QFont defaultFont() const;
+
+private:
+    void setupFontEngine(QFontEngineFT *engine, const QFontDef &fontDef) const;
 };
 
 QT_END_NAMESPACE

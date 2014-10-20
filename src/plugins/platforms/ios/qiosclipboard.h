@@ -36,6 +36,7 @@
 
 #import <UIKit/UIKit.h>
 
+#include <QMimeData>
 #include <qpa/qplatformclipboard.h>
 
 @class QUIClipboard;
@@ -46,6 +47,8 @@ class QIOSClipboard : public QPlatformClipboard
 {
 public:
     QIOSClipboard();
+    ~QIOSClipboard();
+
     QMimeData *mimeData(QClipboard::Mode mode = QClipboard::Clipboard) Q_DECL_OVERRIDE;
     void setMimeData(QMimeData *mimeData, QClipboard::Mode mode = QClipboard::Clipboard) Q_DECL_OVERRIDE;
     bool supportsMode(QClipboard::Mode mode) const Q_DECL_OVERRIDE;
@@ -53,6 +56,7 @@ public:
 
 private:
     QUIClipboard *m_clipboard;
+    QMap<QClipboard::Mode, QMimeData *> m_mimeData;
 };
 
 QT_END_NAMESPACE

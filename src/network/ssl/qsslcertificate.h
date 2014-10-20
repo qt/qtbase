@@ -59,6 +59,10 @@ class QSslKey;
 class QSslCertificateExtension;
 class QStringList;
 
+class QSslCertificate;
+// qHash is a friend, but we can't use default arguments for friends (§8.3.6.4)
+Q_NETWORK_EXPORT uint qHash(const QSslCertificate &key, uint seed = 0) Q_DECL_NOTHROW;
+
 class QSslCertificatePrivate;
 class Q_NETWORK_EXPORT QSslCertificate
 {
@@ -145,6 +149,8 @@ private:
     QExplicitlySharedDataPointer<QSslCertificatePrivate> d;
     friend class QSslCertificatePrivate;
     friend class QSslSocketBackendPrivate;
+
+    friend Q_NETWORK_EXPORT uint qHash(const QSslCertificate &key, uint seed) Q_DECL_NOTHROW;
 };
 Q_DECLARE_SHARED(QSslCertificate)
 

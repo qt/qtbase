@@ -6543,10 +6543,15 @@ void QWidget::clearFocus()
 
     QWidget *w = this;
     while (w) {
+        // Just like setFocus(), we update (clear) the focus_child of our parents
         if (w->d_func()->focus_child == this)
             w->d_func()->focus_child = 0;
         w = w->parentWidget();
     }
+    // Since focus_child is the basis for the top level QWidgetWindow's focusObject()
+    // we need to report this change to the rest of Qt, but we match setFocus() and
+    // do it at the end of the function.
+
 #ifndef QT_NO_GRAPHICSVIEW
     QWExtra *topData = d_func()->extra;
     if (topData && topData->proxyWidget)
@@ -6567,11 +6572,15 @@ void QWidget::clearFocus()
             QAccessible::updateAccessibility(&event);
 #endif
         }
+    }
 
-        if (QTLWExtra *extra = window()->d_func()->maybeTopData()) {
-            if (extra->window)
-                emit extra->window->focusObjectChanged(extra->window->focusObject());
-        }
+    // Since we've unconditionally cleared the focus_child of our parents, we need
+    // to report this to the rest of Qt. Note that the focus_child is not the same
+    // thing as the application's focusWidget, which is why this piece of code is
+    // not inside the hasFocus() block above.
+    if (QTLWExtra *extra = window()->d_func()->maybeTopData()) {
+        if (extra->window)
+            emit extra->window->focusObjectChanged(extra->window->focusObject());
     }
 }
 
@@ -9686,7 +9695,8 @@ void QWidget::setInputMethodHints(Qt::InputMethodHints hints)
     if (d->imHints == hints)
         return;
     d->imHints = hints;
-    qApp->inputMethod()->update(Qt::ImHints);
+    if (this == qApp->focusObject())
+        qApp->inputMethod()->update(Qt::ImHints);
 #endif //QT_NO_IM
 }
 
@@ -11029,7 +11039,7 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
             d->createTLSysExtra();
 #ifndef QT_NO_IM
         QWidget *focusWidget = d->effectiveFocusWidget();
-        if (on && !internalWinId() && hasFocus()
+        if (on && !internalWinId() && this == qApp->focusObject()
             && focusWidget->testAttribute(Qt::WA_InputMethodEnabled)) {
             qApp->inputMethod()->commit();
             qApp->inputMethod()->update(Qt::ImEnabled);
@@ -11038,7 +11048,7 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
             parentWidget()->d_func()->enforceNativeChildren();
         if (on && !internalWinId() && testAttribute(Qt::WA_WState_Created))
             d->createWinId();
-        if (isEnabled() && focusWidget->isEnabled()
+        if (isEnabled() && focusWidget->isEnabled() && this == qApp->focusObject()
             && focusWidget->testAttribute(Qt::WA_InputMethodEnabled)) {
             qApp->inputMethod()->update(Qt::ImEnabled);
         }
@@ -11564,7 +11574,8 @@ void QWidget::setShortcutAutoRepeat(int id, bool enable)
 void QWidget::updateMicroFocus()
 {
     // updating everything since this is currently called for any kind of state change
-    qApp->inputMethod()->update(Qt::ImQueryAll);
+    if (this == qApp->focusObject())
+        qApp->inputMethod()->update(Qt::ImQueryAll);
 }
 
 /*!

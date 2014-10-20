@@ -398,9 +398,11 @@ void QLoggingRegistry::defaultCategoryFilter(QLoggingCategory *cat)
     // hard-wired implementation of
     //   qt.*.debug=false
     //   qt.debug=false
-    char c;
-    if (!memcmp(cat->categoryName(), "qt", 2) && (!(c = cat->categoryName()[2]) || c == '.'))
-        debug = false;
+    if (const char *categoryName = cat->categoryName()) {
+        // == "qt" or startsWith("qt.")
+        if (strcmp(categoryName, "qt") == 0 || strncmp(categoryName, "qt.", 3) == 0)
+            debug = false;
+    }
 
     QString categoryName = QLatin1String(cat->categoryName());
     foreach (const QLoggingRule &item, reg->rules) {

@@ -327,5 +327,5 @@ void tst_QMimeData::setUrls() const
     QCOMPARE(mimeData.hasText(), false);
 }
 
-QTEST_MAIN(tst_QMimeData)
+QTEST_APPLESS_MAIN(tst_QMimeData)
 #include "tst_qmimedata.moc"

@@ -841,8 +841,8 @@ QList<int> QXcbKeyboard::possibleKeys(const QKeyEvent *event) const
     xkb_layout_index_t baseLayout = xkb_state_serialize_layout(xkb_state, XKB_STATE_LAYOUT_DEPRESSED);
     xkb_layout_index_t latchedLayout = xkb_state_serialize_layout(xkb_state, XKB_STATE_LAYOUT_LATCHED);
     xkb_layout_index_t lockedLayout = xkb_state_serialize_layout(xkb_state, XKB_STATE_LAYOUT_LOCKED);
-    xkb_mod_index_t latchedMods = xkb_state_serialize_mods(xkb_state, XKB_STATE_MODS_LATCHED);
-    xkb_mod_index_t lockedMods = xkb_state_serialize_mods(xkb_state, XKB_STATE_MODS_LOCKED);
+    xkb_mod_mask_t latchedMods = xkb_state_serialize_mods(xkb_state, XKB_STATE_MODS_LATCHED);
+    xkb_mod_mask_t lockedMods = xkb_state_serialize_mods(xkb_state, XKB_STATE_MODS_LOCKED);
 
     xkb_state_update_mask(kb_state, 0, latchedMods, lockedMods,
                                     baseLayout, latchedLayout, lockedLayout);
@@ -860,6 +860,10 @@ QList<int> QXcbKeyboard::possibleKeys(const QKeyEvent *event) const
     xkb_mod_index_t shiftMod = xkb_keymap_mod_get_index(xkb_keymap, "Shift");
     xkb_mod_index_t altMod = xkb_keymap_mod_get_index(xkb_keymap, "Alt");
     xkb_mod_index_t controlMod = xkb_keymap_mod_get_index(xkb_keymap, "Control");
+
+    Q_ASSERT(shiftMod < 32);
+    Q_ASSERT(altMod < 32);
+    Q_ASSERT(controlMod < 32);
 
     xkb_mod_mask_t depressed;
     struct xkb_keymap *fallback_keymap = 0;
@@ -903,7 +907,7 @@ QList<int> QXcbKeyboard::possibleKeys(const QKeyEvent *event) const
             Qt::KeyboardModifiers mods = modifiers & ~neededMods;
             qtKey = keysymToQtKey(sym, mods, lookupString(kb_state, event->nativeScanCode()));
 
-            if (qtKey == baseQtKey)
+            if (qtKey == baseQtKey || qtKey == 0)
                 continue;
 
             result += (qtKey + mods);

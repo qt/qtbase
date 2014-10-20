@@ -64,6 +64,7 @@ public:
 #ifndef QT_NO_SSL
 private slots:
     void constructing();
+    void hash();
 #endif
 
 private:
@@ -77,6 +78,14 @@ int tst_QSslError::loopLevel = 0;
 void tst_QSslError::constructing()
 {
     QSslError error;
+}
+
+void tst_QSslError::hash()
+{
+    // mostly a compile-only test, to check that qHash(QSslError) is found
+    QSet<QSslError> errors;
+    errors << QSslError();
+    QCOMPARE(errors.size(), 1);
 }
 
 #endif // QT_NO_SSL

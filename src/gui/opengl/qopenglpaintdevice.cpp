@@ -35,6 +35,7 @@
 #include <qpaintengine.h>
 #include <qthreadstorage.h>
 
+#include <private/qopenglpaintdevice_p.h>
 #include <private/qobject_p.h>
 #include <private/qopenglcontext_p.h>
 #include <private/qopenglframebufferobject_p.h>
@@ -98,23 +99,6 @@ QT_BEGIN_NAMESPACE
 
 */
 
-class QOpenGLPaintDevicePrivate
-{
-public:
-    QOpenGLPaintDevicePrivate(const QSize &size);
-
-    QSize size;
-    QOpenGLContext *ctx;
-
-    qreal dpmx;
-    qreal dpmy;
-    qreal devicePixelRatio;
-
-    bool flipped;
-
-    QPaintEngine *engine;
-};
-
 /*!
     Constructs a QOpenGLPaintDevice.
 
@@ -148,6 +132,14 @@ QOpenGLPaintDevice::QOpenGLPaintDevice(const QSize &size)
 */
 QOpenGLPaintDevice::QOpenGLPaintDevice(int width, int height)
     : d_ptr(new QOpenGLPaintDevicePrivate(QSize(width, height)))
+{
+}
+
+/*!
+    \internal
+ */
+QOpenGLPaintDevice::QOpenGLPaintDevice(QOpenGLPaintDevicePrivate *dd)
+    : d_ptr(dd)
 {
 }
 
@@ -355,7 +347,10 @@ bool QOpenGLPaintDevice::paintFlipped() const
     frame buffer object or context when different QOpenGLPaintDevice instances
     are issuing draw calls alternately.
 
-    QPainter::beginNativePainting will also trigger this method.
+    \l{QPainter::beginNativePainting()}{beginNativePainting()} will also trigger
+    this method.
+
+    The default implementation does nothing.
 */
 void QOpenGLPaintDevice::ensureActiveTarget()
 {

@@ -1870,9 +1870,9 @@ void tst_QStringRef::right()
     QStringRef ref = originalString.rightRef(originalString.size() - 1);
     QCOMPARE(ref.toString(), QLatin1String("OrginalString"));
 
-    QCOMPARE(ref.right(ref.size() - 6).toString(), QLatin1String("String"));
+    QCOMPARE(ref.right(6).toString(), QLatin1String("String"));
     QCOMPARE(ref.right(ref.size()).toString(), QLatin1String("OrginalString"));
-    QCOMPARE(ref.right(0).toString(), QLatin1String("OrginalString"));
+    QCOMPARE(ref.right(0).toString(), QLatin1String(""));
 
     QStringRef nullRef;
     QVERIFY(nullRef.isNull());

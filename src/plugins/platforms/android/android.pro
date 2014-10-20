@@ -26,6 +26,7 @@ INCLUDEPATH += \
     $$QT_SOURCE_TREE/src/3rdparty/android
 
 SOURCES += $$PWD/androidplatformplugin.cpp \
+           $$PWD/androiddeadlockprotector.cpp \
            $$PWD/androidjnimain.cpp \
            $$PWD/androidjniaccessibility.cpp \
            $$PWD/androidjniinput.cpp \
@@ -53,6 +54,7 @@ SOURCES += $$PWD/androidplatformplugin.cpp \
            $$PWD/qandroideventdispatcher.cpp
 
 HEADERS += $$PWD/qandroidplatformintegration.h \
+           $$PWD/androidandroiddeadlockprotector.h \
            $$PWD/androidjnimain.h \
            $$PWD/androidjniaccessibility.h \
            $$PWD/androidjniinput.h \

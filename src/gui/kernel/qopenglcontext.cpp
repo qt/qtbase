@@ -350,16 +350,6 @@ QOpenGLContext *QOpenGLContextPrivate::setCurrentContext(QOpenGLContext *context
     return previous;
 }
 
-void QOpenGLContextPrivate::setGlobalShareContext(QOpenGLContext *context)
-{
-    qt_gl_set_global_share_context(context);
-}
-
-QOpenGLContext *QOpenGLContextPrivate::globalShareContext()
-{
-    return qt_gl_global_share_context();
-}
-
 int QOpenGLContextPrivate::maxTextureSize()
 {
     if (max_texture_size != -1)

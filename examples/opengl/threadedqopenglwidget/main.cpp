@@ -40,9 +40,18 @@
 
 #include <QApplication>
 #include <QMainWindow>
+#include <QDesktopWidget>
 #include <QSurfaceFormat>
+#include <QOpenGLContext>
 #include "mainwindow.h"
 #include "glwidget.h"
+
+static QString getGlString(QOpenGLFunctions *functions, GLenum name)
+{
+    if (const GLubyte *p = functions->glGetString(name))
+        return QString::fromLatin1(reinterpret_cast<const char *>(p));
+    return QString();
+}
 
 int main( int argc, char ** argv )
 {
@@ -54,20 +63,38 @@ int main( int argc, char ** argv )
 
     // Two top-level windows with two QOpenGLWidget children in each.
     // The rendering for the four QOpenGLWidgets happens on four separate threads.
-    MainWindow mw1;
-    mw1.setMinimumSize(800, 400);
-    mw1.show();
 
+    GLWidget topLevelGlWidget;
+    QPoint pos = QApplication::desktop()->availableGeometry(&topLevelGlWidget).topLeft() + QPoint(200, 200);
+    topLevelGlWidget.setWindowTitle(QStringLiteral("Threaded QOpenGLWidget example top level"));
+    topLevelGlWidget.resize(200, 200);
+    topLevelGlWidget.move(pos);
+    topLevelGlWidget.show();
+
+    const QString glInfo = getGlString(topLevelGlWidget.context()->functions(), GL_VENDOR)
+        + QLatin1Char('/') + getGlString(topLevelGlWidget.context()->functions(), GL_RENDERER);
+
+    const bool supportsThreading = !glInfo.contains(QLatin1String("nouveau"), Qt::CaseInsensitive)
+        && !glInfo.contains(QLatin1String("ANGLE"), Qt::CaseInsensitive);
+
+    const QString toolTip = supportsThreading ? glInfo : glInfo + QStringLiteral("\ndoes not support threaded OpenGL.");
+    topLevelGlWidget.setToolTip(toolTip);
+
+    QScopedPointer<MainWindow> mw1;
     QScopedPointer<MainWindow> mw2;
-    if (!QApplication::arguments().contains(QStringLiteral("--single"))) {
+    if (supportsThreading && !QApplication::arguments().contains(QStringLiteral("--single"))) {
+        pos += QPoint(100, 100);
+        mw1.reset(new MainWindow);
+        mw1->setToolTip(toolTip);
+        mw1->move(pos);
+        mw1->setWindowTitle(QStringLiteral("Threaded QOpenGLWidget example #1"));
+        mw1->show();
+        pos += QPoint(100, 100);
         mw2.reset(new MainWindow);
-        mw2->setMinimumSize(800, 400);
+        mw2->setToolTip(toolTip);
+        mw2->move(pos);
+        mw2->setWindowTitle(QStringLiteral("Threaded QOpenGLWidget example #2"));
         mw2->show();
-
-        // And a top-level.
-        GLWidget *bonus = new GLWidget(0);
-        bonus->resize(200, 200);
-        bonus->show();
     }
 
     return a.exec();

@@ -61,7 +61,7 @@ QT_BEGIN_NAMESPACE
 
 class QFSFileEnginePrivate;
 
-class Q_AUTOTEST_EXPORT QFSFileEngine : public QAbstractFileEngine
+class Q_CORE_EXPORT QFSFileEngine : public QAbstractFileEngine
 {
     Q_DECLARE_PRIVATE(QFSFileEngine)
 public:

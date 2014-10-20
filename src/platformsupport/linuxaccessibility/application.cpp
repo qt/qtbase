@@ -197,7 +197,9 @@ bool QSpiApplicationAdaptor::eventFilter(QObject *target, QEvent *event)
 
 QKeyEvent* QSpiApplicationAdaptor::copyKeyEvent(QKeyEvent* old)
 {
-    return new QKeyEvent(old->type(), old->key(), old->modifiers(), old->text(), old->isAutoRepeat(), old->count());
+    return new QKeyEvent(old->type(), old->key(), old->modifiers(),
+                         old->nativeScanCode(), old->nativeVirtualKey(), old->nativeModifiers(),
+                         old->text(), old->isAutoRepeat(), old->count());
 }
 
 void QSpiApplicationAdaptor::notifyKeyboardListenerCallback(const QDBusMessage& message)

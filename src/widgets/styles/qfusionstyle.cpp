@@ -3099,7 +3099,8 @@ int QFusionStyle::pixelMetric(PixelMetric metric, const QStyleOption *option, co
         val = 2;
         break;
     case PM_SubMenuOverlap:
-        return -1; // Do not dpi-scale because the value is magic
+        val = -1;
+        break;
     case PM_DockWidgetHandleExtent:
     case PM_SplitterWidth:
         val = 4;

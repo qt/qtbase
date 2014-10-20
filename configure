@@ -6551,10 +6551,10 @@ echo "   Configure summary"
 echo
 if [ "$XPLATFORM" = "$PLATFORM" ]; then
     # the missing space before $CFG_FEATURES is intentional
-    echo "Build type:    $PLATFORM ($CFG_ARCH, CPU features:${CFG_CPUFEATURES- none detected})"
+    echo "Build type:    $PLATFORM ($CFG_ARCH, CPU features:${CFG_CPUFEATURES:- none detected})"
 else
-    echo "Building on:   $PLATFORM ($CFG_HOST_ARCH, CPU features:${CFG_HOST_CPUFEATURES- none detected})"
-    echo "Building for:  $XPLATFORM ($CFG_ARCH, CPU features:${CFG_CPUFEATURES- none detected})"
+    echo "Building on:   $PLATFORM ($CFG_HOST_ARCH, CPU features:${CFG_HOST_CPUFEATURES:- none detected})"
+    echo "Building for:  $XPLATFORM ($CFG_ARCH, CPU features:${CFG_CPUFEATURES:- none detected})"
 fi
 
 

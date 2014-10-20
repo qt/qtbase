@@ -100,7 +100,7 @@ class GLWidget : public QOpenGLWidget
 {
     Q_OBJECT
 public:
-    GLWidget(QWidget *parent);
+    explicit GLWidget(QWidget *parent = 0);
     ~GLWidget();
 
 protected:

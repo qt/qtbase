@@ -118,6 +118,7 @@ private slots:
     void testUpdateRequestEvent();
     void testThreadSafety();
     void testEmptyData();
+    void testEmptyKey();
     void testResourceFiles();
     void testRegistryShortRootNames();
     void trailingWhitespace();
@@ -2023,6 +2024,16 @@ void tst_QSettings::testEmptyData()
         QVERIFY(settings.status() == QSettings::NoError);
     }
     QFile::remove(filename);
+}
+
+void tst_QSettings::testEmptyKey()
+{
+    QSettings settings;
+    QTest::ignoreMessage(QtWarningMsg, "QSettings::value: Empty key passed");
+    const QVariant value = settings.value(QString());
+    QCOMPARE(value, QVariant());
+    QTest::ignoreMessage(QtWarningMsg, "QSettings::setValue: Empty key passed");
+    settings.setValue(QString(), value);
 }
 
 void tst_QSettings::testResourceFiles()

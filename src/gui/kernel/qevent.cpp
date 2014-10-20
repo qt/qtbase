@@ -897,12 +897,11 @@ QWheelEvent::QWheelEvent(const QPointF &pos, const QPointF& globalPos,
     when keys are pressed or released.
 
     A key event contains a special accept flag that indicates whether
-    the receiver will handle the key event. You should call ignore()
-    if the key press or release event is not handled by your widget.
-    A key event is propagated up the parent widget chain until a
-    widget accepts it with accept() or an event filter consumes it.
-    Key events for multimedia keys are ignored by default. You should
-    call accept() if your widget handles those events.
+    the receiver will handle the key event. This flag is set by default,
+    so there is no need to call accept() when acting on a key event.
+    Calling ignore() on a key event will propagate it to the parent widget.
+    The event is propagated up the parent widget chain until a widget
+    accepts it or an event filter consumes it.
 
     The QWidget::setEnable() function can be used to enable or disable
     mouse and keyboard events for a widget.

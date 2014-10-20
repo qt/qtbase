@@ -66,7 +66,8 @@ class QFileSystemMetaData
 {
 public:
     QFileSystemMetaData()
-        : knownFlagsMask(0)
+        : knownFlagsMask(0),
+          size_(-1)
     {
     }
 

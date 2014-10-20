@@ -641,6 +641,8 @@ public:
         }
     }
     static void sendComposeStatus(QWidget *w, bool end);
+    // Called on setViewport().
+    virtual void initializeViewportFramebuffer() { }
     // When using a QOpenGLWidget as viewport with QAbstractScrollArea, resize events are
     // filtered away from the widget. This is fine for QGLWidget but bad for QOpenGLWidget
     // since the fbo must be resized. We need an alternative way to notify.

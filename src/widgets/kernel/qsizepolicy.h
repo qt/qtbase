@@ -150,6 +150,10 @@ private:
         quint32 data;
     };
 };
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+// Can't add in Qt 5, as QList<QSizePolicy> would be BiC:
+Q_DECLARE_TYPEINFO(QSizePolicy, Q_PRIMITIVE_TYPE);
+#endif
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QSizePolicy::ControlTypes)
 

@@ -442,7 +442,7 @@ void TableGenerator::parseKeySequence(char *line)
 void TableGenerator::printComposeTable() const
 {
 #ifdef DEBUG_GENERATOR
-    if (composeTable().isEmpty())
+    if (m_composeTable.isEmpty())
         return;
 
     QString output;

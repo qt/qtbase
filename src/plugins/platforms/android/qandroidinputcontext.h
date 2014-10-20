@@ -112,6 +112,9 @@ public:
 public slots:
     void updateCursorPosition();
 
+private slots:
+    void showInputPanelLater(Qt::ApplicationState);
+
 private:
     void sendInputMethodEventThreadSafe(QInputMethodEvent *event);
     Q_INVOKABLE void sendInputMethodEventUnsafe(QInputMethodEvent *event);

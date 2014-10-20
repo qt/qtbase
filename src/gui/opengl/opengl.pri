@@ -11,6 +11,7 @@ contains(QT_CONFIG, opengl)|contains(QT_CONFIG, opengles2) {
                opengl/qopenglframebufferobject.h  \
                opengl/qopenglframebufferobject_p.h  \
                opengl/qopenglpaintdevice.h \
+               opengl/qopenglpaintdevice_p.h \
                opengl/qopenglbuffer.h \
                opengl/qopenglshaderprogram.h \
                opengl/qopenglextensions_p.h \

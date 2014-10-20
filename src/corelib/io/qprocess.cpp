@@ -538,6 +538,13 @@ void QProcessPrivate::Channel::clear()
     setWorkingDirectory(). By default, processes are run in the
     current working directory of the calling process.
 
+    The positioning and the screen Z-order of windows belonging to
+    GUI applications started with QProcess are controlled by
+    the underlying windowing system. For Qt 5 applications, the
+    positioning can be specified using the \c{-qwindowgeometry}
+    command line option; X11 applications generally accept a
+    \c{-geometry} command line option.
+
     \note On QNX, setting the working directory may cause all
     application threads, with the exception of the QProcess caller
     thread, to temporarily freeze during the spawning process,

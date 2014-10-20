@@ -43,6 +43,7 @@
 #include "qandroidplatformwindow.h"
 #include "androidjnimain.h"
 #include "androidjnimenu.h"
+#include "androiddeadlockprotector.h"
 
 #include <android/bitmap.h>
 #include <android/native_window_jni.h>
@@ -299,6 +300,9 @@ void QAndroidPlatformScreen::doRedraw()
     QMutexLocker lock(&m_surfaceMutex);
     if (m_id == -1 && m_rasterSurfaces) {
         m_id = QtAndroid::createSurface(this, m_availableGeometry, true, m_depth);
+        AndroidDeadlockProtector protector;
+        if (!protector.acquire())
+            return;
         m_surfaceWaitCondition.wait(&m_surfaceMutex);
     }
 

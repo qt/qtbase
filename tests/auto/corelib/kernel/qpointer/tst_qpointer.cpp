@@ -345,7 +345,8 @@ void tst_QPointer::threadSafety()
 
 void tst_QPointer::qvariantCast()
 {
-    QPointer<QFile> tracking = new QFile;
+    QFile file;
+    QPointer<QFile> tracking = &file;
     tracking->setObjectName("A test name");
     QVariant v = QVariant::fromValue(tracking);
 

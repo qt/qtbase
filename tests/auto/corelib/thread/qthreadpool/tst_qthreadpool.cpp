@@ -906,11 +906,12 @@ void tst_QThreadPool::waitForDone()
 
 void tst_QThreadPool::waitForDoneTimeout()
 {
+    QMutex mutex;
     class BlockedTask : public QRunnable
     {
     public:
-      QMutex mutex;
-      BlockedTask() { setAutoDelete(false); }
+      QMutex &mutex;
+      explicit BlockedTask(QMutex &m) : mutex(m) {}
 
       void run()
         {
@@ -922,11 +923,10 @@ void tst_QThreadPool::waitForDoneTimeout()
 
     QThreadPool threadPool;
 
-    BlockedTask *task = new BlockedTask;
-    task->mutex.lock();
-    threadPool.start(task);
+    mutex.lock();
+    threadPool.start(new BlockedTask(mutex));
     QVERIFY(!threadPool.waitForDone(100));
-    task->mutex.unlock();
+    mutex.unlock();
     QVERIFY(threadPool.waitForDone(400));
 }
 

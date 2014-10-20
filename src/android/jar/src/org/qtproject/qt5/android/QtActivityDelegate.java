@@ -1090,8 +1090,6 @@ public class QtActivityDelegate
             Log.e(QtNative.QtTAG, "Surface " + id +" not found!");
             return;
         }
-
-        m_layout.requestLayout();
     }
 
     public void destroySurface(int id) {

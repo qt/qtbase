@@ -670,6 +670,22 @@ void tst_qmessagehandler::cleanupFuncinfo_data()
     QTest::newRow("gcc_39")
         << "int TestClass1::operator>(int)"
         << "TestClass1::operator>";
+
+    QTest::newRow("objc_1")
+        << "-[SomeClass someMethod:withArguments:]"
+        << "-[SomeClass someMethod:withArguments:]";
+
+    QTest::newRow("objc_2")
+        << "+[SomeClass withClassMethod:withArguments:]"
+        << "+[SomeClass withClassMethod:withArguments:]";
+
+    QTest::newRow("objc_3")
+        << "-[SomeClass someMethodWithoutArguments]"
+        << "-[SomeClass someMethodWithoutArguments]";
+
+    QTest::newRow("objc_4")
+        << "__31-[SomeClass someMethodSchedulingBlock]_block_invoke"
+        << "__31-[SomeClass someMethodSchedulingBlock]_block_invoke";
 }
 #endif
 

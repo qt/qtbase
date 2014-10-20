@@ -322,7 +322,7 @@ bool QIOSInputContext::isInputPanelVisible() const
 
 void QIOSInputContext::cursorRectangleChanged()
 {
-    if (!m_keyboardListener->m_keyboardVisibleAndDocked)
+    if (!m_keyboardListener->m_keyboardVisibleAndDocked || !qApp->focusObject())
         return;
 
     // Check if the cursor has changed position inside the input item. Since
@@ -399,6 +399,8 @@ void QIOSInputContext::scroll(int y)
             animation.toValue = [NSValue valueWithCATransform3D:translationTransform];
             [rootView.layer addAnimation:animation forKey:@"AnimateSubLayerTransform"];
             rootView.layer.sublayerTransform = translationTransform;
+
+            [rootView.qtViewController updateProperties];
         }
         completion:^(BOOL){
             if (self)

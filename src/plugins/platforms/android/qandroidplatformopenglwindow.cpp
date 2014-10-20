@@ -37,6 +37,7 @@
 #include "qandroidplatformscreen.h"
 #include "androidjnimain.h"
 #include "qandroideventdispatcher.h"
+#include "androiddeadlockprotector.h"
 
 #include <QSurfaceFormat>
 #include <QtGui/private/qwindow_p.h>
@@ -120,6 +121,10 @@ EGLSurface QAndroidPlatformOpenGLWindow::eglSurface(EGLConfig config)
     QMutexLocker lock(&m_surfaceMutex);
 
     if (m_nativeSurfaceId == -1) {
+        AndroidDeadlockProtector protector;
+        if (!protector.acquire())
+            return m_eglSurface;
+
         const bool windowStaysOnTop = bool(window()->flags() & Qt::WindowStaysOnTopHint);
         m_nativeSurfaceId = QtAndroid::createSurface(this, geometry(), windowStaysOnTop, 32);
         m_surfaceWaitCondition.wait(&m_surfaceMutex);
