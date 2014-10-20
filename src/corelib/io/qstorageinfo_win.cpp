@@ -114,12 +114,12 @@ void QStorageInfoPrivate::doStat()
     if (rootPath.isEmpty())
         return;
 
-    retreiveVolumeInfo();
+    retrieveVolumeInfo();
     device = getDevice(rootPath);
-    retreiveDiskFreeSpace();
+    retrieveDiskFreeSpace();
 }
 
-void QStorageInfoPrivate::retreiveVolumeInfo()
+void QStorageInfoPrivate::retrieveVolumeInfo()
 {
     const UINT oldmode = ::SetErrorMode(SEM_FAILCRITICALERRORS | SEM_NOOPENFILEERRORBOX);
 
@@ -151,7 +151,7 @@ void QStorageInfoPrivate::retreiveVolumeInfo()
     ::SetErrorMode(oldmode);
 }
 
-void QStorageInfoPrivate::retreiveDiskFreeSpace()
+void QStorageInfoPrivate::retrieveDiskFreeSpace()
 {
     const UINT oldmode = ::SetErrorMode(SEM_FAILCRITICALERRORS | SEM_NOOPENFILEERRORBOX);
 

@@ -73,14 +73,14 @@ public:
 
 protected:
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
-    void retreiveVolumeInfo();
-    void retreiveDiskFreeSpace();
+    void retrieveVolumeInfo();
+    void retrieveDiskFreeSpace();
 #elif defined(Q_OS_MAC)
     void retrievePosixInfo();
     void retrieveUrlProperties(bool initRootPath = false);
     void retrieveLabel();
 #elif defined(Q_OS_UNIX)
-    void retreiveVolumeInfo();
+    void retrieveVolumeInfo();
 #endif
 
 public:

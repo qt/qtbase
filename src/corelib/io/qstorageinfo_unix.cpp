@@ -402,11 +402,11 @@ void QStorageInfoPrivate::doStat()
     if (rootPath.isEmpty())
         return;
 
-    retreiveVolumeInfo();
+    retrieveVolumeInfo();
     name = retrieveLabel(device);
 }
 
-void QStorageInfoPrivate::retreiveVolumeInfo()
+void QStorageInfoPrivate::retrieveVolumeInfo()
 {
     QT_STATFSBUF statfs_buf;
     int result;
