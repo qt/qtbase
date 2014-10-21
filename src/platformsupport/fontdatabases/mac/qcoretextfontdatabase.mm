@@ -294,10 +294,16 @@ static void getFontDescription(CTFontDescriptorRef font, FontDescription *fd)
                     fd->weight = QFont::Bold;
                 else if (normalizedWeight >= 0.3)
                     fd->weight = QFont::DemiBold;
+                else if (normalizedWeight >= 0.2)
+                    fd->weight = qt_mediumFontWeight;
                 else if (normalizedWeight == 0.0)
                     fd->weight = QFont::Normal;
                 else if (normalizedWeight <= -0.4)
                     fd->weight = QFont::Light;
+                else if (normalizedWeight <= -0.6)
+                    fd->weight = qt_extralightFontWeight;
+                else if (normalizedWeight <= -0.8)
+                    fd->weight = qt_thinFontWeight;
             }
         }
         if (CFNumberRef italic = (CFNumberRef) CFDictionaryGetValue(styles, kCTFontSlantTrait)) {

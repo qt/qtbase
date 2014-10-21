@@ -78,6 +78,10 @@ enum HB_Compat_Error {
 typedef void (*qt_destroy_func_t) (void *user_data);
 typedef bool (*qt_get_font_table_func_t) (void *user_data, uint tag, uchar *buffer, uint *length);
 
+const QFont::Weight qt_mediumFontWeight = static_cast<QFont::Weight>(57);
+const QFont::Weight qt_extralightFontWeight = static_cast<QFont::Weight>(12);
+const QFont::Weight qt_thinFontWeight = static_cast<QFont::Weight>(0);
+
 class Q_GUI_EXPORT QFontEngine
 {
 public:

@@ -85,10 +85,11 @@ static int getFontWeight(const QString &weightString)
     QString s = weightString.toLower();
 
     // Test in decreasing order of commonness
-    if (s == QLatin1String("medium") ||
-        s == QLatin1String("normal")
+    if (s == QLatin1String("normal")
         || s.compare(QCoreApplication::translate("QFontDatabase", "Normal"), Qt::CaseInsensitive) == 0)
         return QFont::Normal;
+    if (s == QLatin1String("medium"))
+        return qt_mediumFontWeight;
     if (s == QLatin1String("bold")
         || s.compare(QCoreApplication::translate("QFontDatabase", "Bold"), Qt::CaseInsensitive) == 0)
         return QFont::Bold;
@@ -100,6 +101,10 @@ static int getFontWeight(const QString &weightString)
         return QFont::Black;
     if (s == QLatin1String("light"))
         return QFont::Light;
+    if (s == QLatin1String("thin"))
+        return qt_thinFontWeight;
+    if (s == QLatin1String("extralight"))
+        return qt_extralightFontWeight;
 
     if (s.contains(QLatin1String("bold"))
         || s.contains(QCoreApplication::translate("QFontDatabase", "Bold"), Qt::CaseInsensitive)) {
