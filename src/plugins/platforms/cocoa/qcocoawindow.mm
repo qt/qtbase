@@ -1009,9 +1009,12 @@ void QCocoaWindow::raise()
             [parentNSWindow addChildWindow:m_nsWindow ordered:NSWindowAbove];
         } else {
             [m_nsWindow orderFront: m_nsWindow];
-            ProcessSerialNumber psn;
-            GetCurrentProcess(&psn);
-            SetFrontProcessWithOptions(&psn, kSetFrontProcessFrontWindowOnly);
+            static bool raiseProcess = qt_mac_resolveOption(true, "QT_MAC_SET_RAISE_PROCESS");
+            if (raiseProcess) {
+                ProcessSerialNumber psn;
+                GetCurrentProcess(&psn);
+                SetFrontProcessWithOptions(&psn, kSetFrontProcessFrontWindowOnly);
+            }
         }
     }
 }
