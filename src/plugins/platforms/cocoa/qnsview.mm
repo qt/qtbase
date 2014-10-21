@@ -1822,6 +1822,19 @@ static QPoint mapWindowCoordinates(QWindow *source, QWindow *target, QPoint poin
     return NO;
 }
 
+- (BOOL)wantsPeriodicDraggingUpdates
+{
+    // From the documentation:
+    //
+    // "If the destination returns NO, these messages are sent only when the mouse moves
+    //  or a modifier flag changes. Otherwise the destination gets the default behavior,
+    //  where it receives periodic dragging-updated messages even if nothing changes."
+    //
+    // We do not want these constant drag update events while mouse is stationary,
+    // since we do all animations (autoscroll) with timers.
+    return NO;
+}
+
 - (NSDragOperation)draggingEntered:(id <NSDraggingInfo>)sender
 {
     return [self handleDrag : sender];
