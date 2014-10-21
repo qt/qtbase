@@ -242,6 +242,7 @@ private slots:
     void style();
     void sorting_data();
     void sorting();
+    void insertionOrder();
     void changedSignal_data();
     void changedSignal();
     void stickyFocus_data();
@@ -3631,6 +3632,42 @@ void tst_QGraphicsScene::sorting()
              << c_2_2 << c_2_1_1 << c_2_1 << c_2
              << c_1_2 << c_1_1_1 << c_1_1 << c_1
              << t_1);
+}
+
+void tst_QGraphicsScene::insertionOrder()
+{
+    QGraphicsScene scene;
+    const int numItems = 5;
+    QList<QGraphicsItem*> items;
+
+    for (int i = 0; i < numItems; ++i) {
+        QGraphicsRectItem* item = new QGraphicsRectItem(i * 20, i * 20, 200, 200);
+        item->setData(0, i);
+        items.append(item);
+        scene.addItem(item);
+    }
+
+    {
+        QList<QGraphicsItem*> itemList = scene.items();
+        QCOMPARE(itemList.count(), numItems);
+        for (int i = 0; i < itemList.count(); ++i) {
+            QCOMPARE(numItems-1-i, itemList.at(i)->data(0).toInt());
+        }
+    }
+
+    for (int i = 0; i < items.size(); ++i)
+    {
+        scene.removeItem(items.at(i));
+        scene.addItem(items.at(i));
+    }
+
+    {
+        QList<QGraphicsItem*> itemList = scene.items();
+        QCOMPARE(itemList.count(), numItems);
+        for (int i = 0; i < itemList.count(); ++i) {
+            QCOMPARE(numItems-1-i, itemList.at(i)->data(0).toInt());
+        }
+    }
 }
 
 class ChangedListener : public QObject
