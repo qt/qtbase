@@ -405,6 +405,21 @@ QString VcprojGenerator::retrievePlatformToolSet() const
     }
 }
 
+bool VcprojGenerator::isStandardSuffix(const QString &suffix) const
+{
+    if (!project->values("QMAKE_APP_FLAG").isEmpty()) {
+        if (suffix.compare("exe", Qt::CaseInsensitive) == 0)
+            return true;
+    } else if (project->isActiveConfig("shared")) {
+        if (suffix.compare("dll", Qt::CaseInsensitive) == 0)
+            return true;
+    } else {
+        if (suffix.compare("lib", Qt::CaseInsensitive) == 0)
+            return true;
+    }
+    return false;
+}
+
 ProStringList VcprojGenerator::collectDependencies(QMakeProject *proj, QHash<QString, QString> &projLookup,
                                                    QHash<QString, QString> &projGuids,
                                                    QHash<VcsolutionDepend *, QStringList> &extraSubdirs,
@@ -993,12 +1008,12 @@ void VcprojGenerator::initConfiguration()
     if (conf.CompilerVersion >= NET2010) {
         conf.PlatformToolSet = retrievePlatformToolSet();
 
-        // The target name could have been changed.
-        conf.PrimaryOutput = project->first("TARGET").toQString();
-        if (!conf.PrimaryOutput.isEmpty() && project->first("TEMPLATE") == "vclib"
-                && project->isActiveConfig("shared")) {
-            conf.PrimaryOutput.append(project->first("TARGET_VERSION_EXT").toQString());
-        }
+        const QFileInfo targetInfo = fileInfo(project->first("MSVCPROJ_TARGET").toQString());
+        conf.PrimaryOutput = targetInfo.completeBaseName();
+
+        const QString targetSuffix = targetInfo.suffix();
+        if (!isStandardSuffix(targetSuffix))
+            conf.PrimaryOutputExtension = '.' + targetSuffix;
     }
 
     if (conf.CompilerVersion >= NET2012) {

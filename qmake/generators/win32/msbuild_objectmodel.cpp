@@ -474,7 +474,11 @@ void VCXProjectWriter::write(XmlOutput &xml, VCProjectSingleConfig &tool)
             << attrTag("Condition", condition)
             << valueTag(tool.Configuration.PrimaryOutput);
     }
-
+    if (!tool.Configuration.PrimaryOutputExtension.isEmpty()) {
+        xml<< tag("TargetExt")
+            << attrTag("Condition", condition)
+            << valueTag(tool.Configuration.PrimaryOutputExtension);
+    }
     if ( tool.Configuration.linker.IgnoreImportLibrary != unset) {
         xml<< tag("IgnoreImportLibrary")
             << attrTag("Condition", condition)
@@ -696,7 +700,11 @@ void VCXProjectWriter::write(XmlOutput &xml, VCProject &tool)
                 << attrTag("Condition", condition)
                 << valueTag(config.PrimaryOutput);
         }
-
+        if (!config.PrimaryOutputExtension.isEmpty()) {
+            xml << tag("TargetExt")
+                << attrTag("Condition", condition)
+                << valueTag(config.PrimaryOutputExtension);
+        }
         if (config.linker.IgnoreImportLibrary != unset) {
             xml << tag("IgnoreImportLibrary")
                 << attrTag("Condition", condition)
