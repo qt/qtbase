@@ -1106,15 +1106,6 @@ bool QLayout::activate()
                 ms.setWidth(mw->minimumSize().width());
             if (heightSet)
                 ms.setHeight(mw->minimumSize().height());
-            if ((!heightSet || !widthSet) && hasHeightForWidth()) {
-                int h = minimumHeightForWidth(ms.width());
-                if (h > ms.height()) {
-                    if (!heightSet)
-                        ms.setHeight(0);
-                    if (!widthSet)
-                        ms.setWidth(0);
-                }
-            }
             mw->setMinimumSize(ms);
         } else if (!widthSet || !heightSet) {
             QSize ms = mw->minimumSize();
