@@ -362,7 +362,10 @@ static NSString *_q_NSWindowDidChangeOcclusionStateNotification = nil;
     if (!m_platformWindow->m_inConstructor) {
         QWindowSystemInterface::handleGeometryChange(m_window, geometry);
         m_platformWindow->updateExposedGeometry();
-        QWindowSystemInterface::flushWindowSystemEvents();
+        // Guard against processing window system events during QWindow::setGeometry
+        // calles, which Qt and Qt applications do not excpect.
+        if (!m_platformWindow->m_inSetGeometry)
+            QWindowSystemInterface::flushWindowSystemEvents();
     }
 }
 
