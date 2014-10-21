@@ -12250,6 +12250,17 @@ QPaintEngine *QWidget::paintEngine() const
 */
 QPoint QWidget::mapToGlobal(const QPoint &pos) const
 {
+#ifndef QT_NO_GRAPHICSVIEW
+    Q_D(const QWidget);
+    if (d->extra && d->extra->proxyWidget) {
+        const QList <QGraphicsView *> views = d->extra->proxyWidget->scene()->views();
+        if (!views.isEmpty()) {
+            const QPointF scenePos = d->extra->proxyWidget->mapToScene(pos);
+            const QPoint viewPortPos = views.first()->mapFromScene(scenePos);
+            return views.first()->viewport()->mapToGlobal(viewPortPos);
+        }
+    }
+#endif // !QT_NO_GRAPHICSVIEW
     int x = pos.x(), y = pos.y();
     const QWidget *w = this;
     while (w) {
@@ -12274,6 +12285,17 @@ QPoint QWidget::mapToGlobal(const QPoint &pos) const
 */
 QPoint QWidget::mapFromGlobal(const QPoint &pos) const
 {
+#ifndef QT_NO_GRAPHICSVIEW
+    Q_D(const QWidget);
+    if (d->extra && d->extra->proxyWidget) {
+        const QList <QGraphicsView *> views = d->extra->proxyWidget->scene()->views();
+        if (!views.isEmpty()) {
+            const QPoint viewPortPos = views.first()->viewport()->mapFromGlobal(pos);
+            const QPointF scenePos = views.first()->mapToScene(viewPortPos);
+            return d->extra->proxyWidget->mapFromScene(scenePos).toPoint();
+        }
+    }
+#endif // !QT_NO_GRAPHICSVIEW
     int x = pos.x(), y = pos.y();
     const QWidget *w = this;
     while (w) {
