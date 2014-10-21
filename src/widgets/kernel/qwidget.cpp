@@ -5352,7 +5352,10 @@ void QWidgetPrivate::render_helper(QPainter *painter, const QPoint &targetOffset
         if (size.isNull())
             return;
 
-        QPixmap pixmap(size);
+        const qreal pixmapDevicePixelRatio = qreal(painter->device()->devicePixelRatio());
+        QPixmap pixmap(size * pixmapDevicePixelRatio);
+        pixmap.setDevicePixelRatio(pixmapDevicePixelRatio);
+
         if (!(renderFlags & QWidget::DrawWindowBackground) || !isOpaque)
             pixmap.fill(Qt::transparent);
         q->render(&pixmap, QPoint(), toBePainted, renderFlags);
