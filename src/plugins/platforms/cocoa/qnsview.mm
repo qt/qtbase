@@ -721,6 +721,10 @@ static NSString *_q_NSWindowDidChangeOcclusionStateNotification = nil;
 - (void)handleFrameStrutMouseEvent:(NSEvent *)theEvent
 {
     // get m_buttons in sync
+    // Don't send frme strut events if we are in the middle of a mouse drag.
+    if (m_buttons != Qt::NoButton)
+        return;
+
     NSEventType ty = [theEvent type];
     switch (ty) {
     case NSLeftMouseDown:
