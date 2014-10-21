@@ -171,6 +171,10 @@ bool QLibraryPrivate::load_sys()
         dlFlags |= RTLD_LOCAL;
     }
 #endif
+#if defined(RTLD_DEEPBIND)
+    if (loadHints & QLibrary::DeepBindHint)
+        dlFlags |= RTLD_DEEPBIND;
+#endif
 
     // Provide access to RTLD_NODELETE flag on Unix
     // From GNU documentation on RTLD_NODELETE:

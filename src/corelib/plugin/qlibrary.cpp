@@ -168,6 +168,11 @@ QT_BEGIN_NAMESPACE
     Prevents the library from being unloaded from the address space if close()
     is called. The library's static variables are not reinitialized if open()
     is called at a later time.
+    \value DeepBindHint
+    Instructs the linker to prefer definitions in the loaded library
+    over exported definitions in the loading application when resolving
+    external symbols in the loaded library. This option is only supported
+    on Linux.
 
     \sa loadHints
 */

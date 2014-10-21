@@ -53,7 +53,8 @@ public:
         ResolveAllSymbolsHint = 0x01,
         ExportExternalSymbolsHint = 0x02,
         LoadArchiveMemberHint = 0x04,
-        PreventUnloadHint = 0x08
+        PreventUnloadHint = 0x08,
+        DeepBindHint = 0x10
     };
     Q_DECLARE_FLAGS(LoadHints, LoadHint)
 
