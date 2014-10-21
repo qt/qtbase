@@ -216,11 +216,6 @@ static inline void clearFontUnlocked()
     QGuiApplicationPrivate::app_font = 0;
 }
 
-static inline bool isPopupWindow(const QWindow *w)
-{
-    return (w->flags() & Qt::WindowType_Mask) == Qt::Popup;
-}
-
 // Geometry specification for top level windows following the convention of the
 // -geometry command line arguments in X11 (see XParseGeometry).
 struct QWindowGeometrySpecification
@@ -672,7 +667,7 @@ static void updateBlockedStatusRecursion(QWindow *window, bool shouldBeBlocked)
 void QGuiApplicationPrivate::updateBlockedStatus(QWindow *window)
 {
     bool shouldBeBlocked = false;
-    if (!isPopupWindow(window) && !self->modalWindowList.isEmpty())
+    if (!QWindowPrivate::get(window)->isPopup() && !self->modalWindowList.isEmpty())
         shouldBeBlocked = self->isWindowBlocked(window);
     updateBlockedStatusRecursion(window, shouldBeBlocked);
 }
@@ -682,7 +677,7 @@ void QGuiApplicationPrivate::showModalWindow(QWindow *modal)
     self->modalWindowList.prepend(modal);
 
     // Send leave for currently entered window if it should be blocked
-    if (currentMouseWindow && !isPopupWindow(currentMouseWindow)) {
+    if (currentMouseWindow && !QWindowPrivate::get(currentMouseWindow)->isPopup()) {
         bool shouldBeBlocked = self->isWindowBlocked(currentMouseWindow);
         if (shouldBeBlocked) {
             // Remove the new window from modalWindowList temporarily so leave can go through

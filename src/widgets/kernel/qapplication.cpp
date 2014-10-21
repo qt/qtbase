@@ -64,6 +64,7 @@
 #include <QtWidgets/qgraphicsproxywidget.h>
 #include <QtGui/qstylehints.h>
 #include <QtGui/qinputmethod.h>
+#include <QtGui/private/qwindow_p.h>
 #include <qpa/qplatformtheme.h>
 #ifndef QT_NO_WHATSTHIS
 #include <QtWidgets/QWhatsThis>
@@ -2489,7 +2490,7 @@ bool QApplicationPrivate::isWindowBlocked(QWindow *window, QWindow **blockingWin
     }
     QWidget *popupWidget = QApplication::activePopupWidget();
     QWindow *popupWindow = popupWidget ? popupWidget->windowHandle() : 0;
-    if (popupWindow == window) {
+    if (popupWindow == window || (!popupWindow && QWindowPrivate::get(window)->isPopup())) {
         *blockingWindow = 0;
         return false;
     }

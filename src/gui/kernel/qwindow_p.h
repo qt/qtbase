@@ -137,6 +137,10 @@ public:
 
     virtual void clearFocusObject();
 
+    bool isPopup() const { return (windowFlags & Qt::WindowType_Mask) == Qt::Popup; }
+
+    static QWindowPrivate *get(QWindow *window) { return window->d_func(); }
+
     QWindow::SurfaceType surfaceType;
     Qt::WindowFlags windowFlags;
     QWindow *parentWindow;

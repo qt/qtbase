@@ -403,6 +403,7 @@ void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
             QGuiApplicationPrivate::setMouseEventSource(&e, QGuiApplicationPrivate::mouseEventSource(event));
             e.setTimestamp(event->timestamp());
             QApplicationPrivate::sendMouseEvent(receiver, &e, alien, m_widget, &qt_button_down, qt_last_mouse_receiver);
+            qt_last_mouse_receiver = receiver;
         } else {
             // close disabled popups when a mouse button is pressed or released
             switch (event->type()) {
