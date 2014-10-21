@@ -75,7 +75,7 @@ public:
     #elif defined(Q_OS_MAC)
         // HFS+ does not support sparse files, so we limit file size for the test
         // on Mac OS.
-        maxSizeBits = 32; // 4 GiB
+        maxSizeBits = 24; // 16 MiB
     #else
         maxSizeBits = 24; // 16 MiB
     #endif
