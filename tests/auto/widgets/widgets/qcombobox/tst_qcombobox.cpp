@@ -160,6 +160,7 @@ private slots:
     void task_QTBUG_31146_popupCompletion();
     void keyboardSelection();
     void setCustomModelAndView();
+    void updateDelegateOnEditableChange();
 };
 
 class MyAbstractItemDelegate : public QAbstractItemDelegate
@@ -3047,6 +3048,33 @@ void tst_QComboBox::keyboardSelection()
 
     QTest::keyClick(&comboBox, Qt::Key_O, Qt::NoModifier, keyboardInterval);
     QCOMPARE(comboBox.currentText(), list.at(1));
+}
+
+void tst_QComboBox::updateDelegateOnEditableChange()
+{
+
+    QComboBox box;
+    box.addItem(QStringLiteral("Foo"));
+    box.addItem(QStringLiteral("Bar"));
+    box.setEditable(false);
+
+    QComboBoxPrivate *d = static_cast<QComboBoxPrivate *>(QComboBoxPrivate::get(&box));
+
+    {
+        bool menuDelegateBefore = qobject_cast<QComboMenuDelegate *>(box.itemDelegate()) != 0;
+        d->updateDelegate();
+        bool menuDelegateAfter = qobject_cast<QComboMenuDelegate *>(box.itemDelegate()) != 0;
+        QCOMPARE(menuDelegateAfter, menuDelegateBefore);
+    }
+
+    box.setEditable(true);
+
+    {
+        bool menuDelegateBefore = qobject_cast<QComboMenuDelegate *>(box.itemDelegate()) != 0;
+        d->updateDelegate();
+        bool menuDelegateAfter = qobject_cast<QComboMenuDelegate *>(box.itemDelegate()) != 0;
+        QCOMPARE(menuDelegateAfter, menuDelegateBefore);
+    }
 }
 
 QTEST_MAIN(tst_QComboBox)

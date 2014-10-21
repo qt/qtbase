@@ -1704,8 +1704,6 @@ void QComboBox::setEditable(bool editable)
     if (isEditable() == editable)
         return;
 
-    d->updateDelegate();
-
     QStyleOptionComboBox opt;
     initStyleOption(&opt);
     if (editable) {
@@ -1726,6 +1724,7 @@ void QComboBox::setEditable(bool editable)
         d->lineEdit = 0;
     }
 
+    d->updateDelegate();
     d->updateFocusPolicy();
 
     d->viewContainer()->updateTopBottomMargin();
