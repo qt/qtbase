@@ -45,7 +45,7 @@
 #include <QtCore/qfileinfo.h>
 #include <QtCore/qvarlengtharray.h>
 
-#include <Windows.h>
+#include <qt_windows.h>
 
 QT_BEGIN_NAMESPACE
 
