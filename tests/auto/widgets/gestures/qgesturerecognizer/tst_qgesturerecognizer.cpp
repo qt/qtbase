@@ -268,6 +268,7 @@ void tst_QGestureRecognizer::pinchGesture()
 
 enum SwipeSubTest {
     SwipeLineSubTest,
+    SwipeChangeDirectionSubTest,
 };
 
 void tst_QGestureRecognizer::swipeGesture_data()
@@ -275,6 +276,7 @@ void tst_QGestureRecognizer::swipeGesture_data()
     QTest::addColumn<int>("swipeSubTest");
     QTest::addColumn<bool>("gestureExpected");
     QTest::newRow("Line") << int(SwipeLineSubTest) << true;
+    QTest::newRow("ChangeDirection") << int(SwipeChangeDirectionSubTest) << false;
 }
 
 void tst_QGestureRecognizer::swipeGesture()
@@ -310,6 +312,10 @@ void tst_QGestureRecognizer::swipeGesture()
     switch (swipeSubTest) {
     case SwipeLineSubTest:
         linearSequence(5, moveDelta, swipeSequence, points, &widget);
+        break;
+    case SwipeChangeDirectionSubTest:
+        linearSequence(5, moveDelta, swipeSequence, points, &widget);
+        linearSequence(3, QPoint(-moveDelta.x(), moveDelta.y()), swipeSequence, points, &widget);
         break;
     }
 
