@@ -2109,6 +2109,21 @@ namespace QtPrivate {
     };
 }
 
+namespace QtMetaTypePrivate {
+inline Q_DECL_CONSTEXPR bool isBuiltinSequentialType(int typeId)
+{
+    return typeId == qMetaTypeId<QStringList>()
+            || typeId == qMetaTypeId<QByteArrayList>()
+            || typeId == qMetaTypeId<QVariantList>();
+}
+
+inline Q_DECL_CONSTEXPR bool isBuiltinAssociativeType(int typeId)
+{
+    return typeId == qMetaTypeId<QVariantHash>()
+            || typeId == qMetaTypeId<QVariantMap>();
+}
+} // QtMetaTypePrivate
+
 QT_END_NAMESPACE
 
 #endif // QMETATYPE_H
