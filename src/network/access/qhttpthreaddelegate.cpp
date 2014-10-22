@@ -328,6 +328,16 @@ void QHttpThreadDelegate::startRequest()
 
         // cache the QHttpNetworkConnection corresponding to this cache key
         connections.localData()->addEntry(cacheKey, httpConnection);
+    } else {
+        if (httpRequest.withCredentials()) {
+            QNetworkAuthenticationCredential credential = authenticationManager->fetchCachedCredentials(httpRequest.url(), 0);
+            if (!credential.user.isEmpty() && !credential.password.isEmpty()) {
+                QAuthenticator auth;
+                auth.setUser(credential.user);
+                auth.setPassword(credential.password);
+                httpConnection->d_func()->copyCredentials(-1, &auth, false);
+            }
+        }
     }
 
 

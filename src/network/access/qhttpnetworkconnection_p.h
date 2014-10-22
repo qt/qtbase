@@ -79,6 +79,7 @@ QT_BEGIN_NAMESPACE
 
 class QHttpNetworkRequest;
 class QHttpNetworkReply;
+class QHttpThreadDelegate;
 class QByteArray;
 class QHostInfo;
 
@@ -148,6 +149,7 @@ public:
 private:
     Q_DECLARE_PRIVATE(QHttpNetworkConnection)
     Q_DISABLE_COPY(QHttpNetworkConnection)
+    friend class QHttpThreadDelegate;
     friend class QHttpNetworkReply;
     friend class QHttpNetworkReplyPrivate;
     friend class QHttpNetworkConnectionChannel;
