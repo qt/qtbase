@@ -44,6 +44,7 @@
 #include "qiosglobal.h"
 #include "qiosintegration.h"
 #include "qiosviewcontroller.h"
+#include "qiostextresponder.h"
 #include "qioswindow.h"
 #include "qiosmenu.h"
 
@@ -221,6 +222,15 @@
     // was a result of another Qt window becoming first responder.
     if ([responder isKindOfClass:[QUIView class]])
         return NO;
+
+    // Nor do we want to deactivate the Qt window if the new responder
+    // is temporarily handling text input on behalf of a Qt window.
+    if ([responder isKindOfClass:[QIOSTextInputResponder class]]) {
+        while ((responder = [responder nextResponder])) {
+            if ([responder isKindOfClass:[QUIView class]])
+                return NO;
+        }
+    }
 
     return YES;
 }

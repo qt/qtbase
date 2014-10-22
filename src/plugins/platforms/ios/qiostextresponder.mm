@@ -218,10 +218,60 @@
     [super dealloc];
 }
 
-- (BOOL)isFirstResponder
+- (BOOL)canBecomeFirstResponder
 {
     return YES;
 }
+
+- (BOOL)becomeFirstResponder
+{
+    FirstResponderCandidate firstResponderCandidate(self);
+
+    qImDebug() << "self:" << self << "first:" << [UIResponder currentFirstResponder];
+
+    if (![super becomeFirstResponder]) {
+        qImDebug() << self << "was not allowed to become first responder";
+        return NO;
+    }
+
+    qImDebug() << self << "became first responder";
+
+    return YES;
+}
+
+- (BOOL)resignFirstResponder
+{
+    qImDebug() << "self:" << self << "first:" << [UIResponder currentFirstResponder];
+
+    // Don't allow activation events of the window that we're doing text on behalf on
+    // to steal responder.
+    if (FirstResponderCandidate::currentCandidate() == [self nextResponder]) {
+        qImDebug() << "not allowing parent window to steal responder";
+        return NO;
+    }
+
+    if (![super resignFirstResponder])
+        return NO;
+
+    qImDebug() << self << "resigned first responder";
+
+    // Dismissing the keyboard will trigger resignFirstResponder, but so will
+    // a regular responder transfer to another window. In the former case, iOS
+    // will set the new first-responder to our next-responder, and in the latter
+    // case we'll have an active responder candidate.
+    if ([UIResponder currentFirstResponder] == [self nextResponder]) {
+        // We have resigned the keyboard, and transferred back to the parent view, so unset focus object
+        Q_ASSERT(!FirstResponderCandidate::currentCandidate());
+        qImDebug() << "keyboard was closed, clearing focus object";
+        m_inputContext->clearCurrentFocusObject();
+    } else {
+        // We've lost responder status because another window was made active
+        Q_ASSERT(FirstResponderCandidate::currentCandidate());
+    }
+
+    return YES;
+}
+
 
 - (UIResponder*)nextResponder
 {
@@ -577,7 +627,7 @@
 
         Qt::InputMethodHints imeHints = static_cast<Qt::InputMethodHints>([self imValue:Qt::ImHints].toUInt());
         if (!(imeHints & Qt::ImhMultiLine))
-            m_inputContext->hideVirtualKeyboard();
+            [self resignFirstResponder];
 
         return;
     }

@@ -44,6 +44,7 @@
 #import <UIKit/UIGestureRecognizerSubclass.h>
 
 #include "qiosglobal.h"
+#include "qiosintegration.h"
 #include "qiostextresponder.h"
 #include "qioswindow.h"
 #include "quiview.h"
@@ -206,7 +207,10 @@ static QUIView *focusView()
     CGPoint p = [[touches anyObject] locationInView:m_viewController.view.window];
     if (CGRectContainsPoint(m_keyboardEndRect, p)) {
         m_keyboardHiddenByGesture = YES;
-        m_context->hideVirtualKeyboard();
+
+        UIResponder *firstResponder = [UIResponder currentFirstResponder];
+        Q_ASSERT([firstResponder isKindOfClass:[QIOSTextInputResponder class]]);
+        [firstResponder resignFirstResponder];
     }
 
     [super touchesMoved:touches withEvent:event];
@@ -279,10 +283,16 @@ Qt::InputMethodQueries ImeState::update(Qt::InputMethodQueries properties)
 
 // -------------------------------------------------------------------------
 
+QIOSInputContext *QIOSInputContext::instance()
+{
+    return static_cast<QIOSInputContext *>(QIOSIntegration::instance()->inputContext());
+}
+
 QIOSInputContext::QIOSInputContext()
     : QPlatformInputContext()
     , m_keyboardListener([[QIOSKeyboardListener alloc] initWithQIOSInputContext:this])
     , m_textResponder(0)
+    , m_isReloadingInputViewsFromUpdate(false)
 {
     if (isQtApplication())
         connect(qGuiApp->inputMethod(), &QInputMethod::cursorRectangleChanged, this, &QIOSInputContext::cursorRectangleChanged);
@@ -310,9 +320,10 @@ void QIOSInputContext::hideInputPanel()
     // No-op, keyboard controlled fully by platform based on focus
 }
 
-void QIOSInputContext::hideVirtualKeyboard()
+void QIOSInputContext::clearCurrentFocusObject()
 {
-    static_cast<QWindowPrivate *>(QObjectPrivate::get(qApp->focusWindow()))->clearFocusObject();
+    if (QWindow *focusWindow = qApp->focusWindow())
+        static_cast<QWindowPrivate *>(QObjectPrivate::get(focusWindow))->clearFocusObject();
 }
 
 bool QIOSInputContext::isInputPanelVisible() const
@@ -452,12 +463,24 @@ void QIOSInputContext::update(Qt::InputMethodQueries updatedProperties)
         updatedProperties |= (Qt::ImHints | Qt::ImPlatformData);
     }
 
+    qImDebug() << "fw =" << qApp->focusWindow() << "fo =" << qApp->focusObject();
+
     Qt::InputMethodQueries changedProperties = m_imeState.update(updatedProperties);
     if (changedProperties & (Qt::ImEnabled | Qt::ImHints | Qt::ImPlatformData)) {
         // Changes to enablement or hints require virtual keyboard reconfigure
-        [m_textResponder release];
-        m_textResponder = [[QIOSTextInputResponder alloc] initWithInputContext:this];
-        [m_textResponder reloadInputViews];
+
+        qImDebug() << "changed IM properties" << changedProperties << "require keyboard reconfigure";
+
+        if (inputMethodAccepted()) {
+            qImDebug() << "replacing text responder with new text responder";
+            [m_textResponder autorelease];
+            m_textResponder = [[QIOSTextInputResponder alloc] initWithInputContext:this];
+            [m_textResponder becomeFirstResponder];
+        } else {
+            qImDebug() << "IM not enabled, reloading input views";
+            QScopedValueRollback<bool> recursionGuard(m_isReloadingInputViewsFromUpdate, true);
+            [[UIResponder currentFirstResponder] reloadInputViews];
+        }
     } else {
         [m_textResponder notifyInputDelegate:changedProperties];
     }
@@ -497,6 +520,12 @@ void QIOSInputContext::commit()
 @implementation QUIView (InputMethods)
 - (void)reloadInputViews
 {
-    qApp->inputMethod()->reset();
+    if (QIOSInputContext::instance()->isReloadingInputViewsFromUpdate()) {
+        qImDebug() << "preventing recursion by reloading super";
+        [super reloadInputViews];
+    } else {
+        qImDebug() << "reseting input methods";
+        qApp->inputMethod()->reset();
+    }
 }
 @end

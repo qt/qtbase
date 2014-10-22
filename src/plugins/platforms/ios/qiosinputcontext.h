@@ -65,7 +65,8 @@ public:
 
     void showInputPanel();
     void hideInputPanel();
-    void hideVirtualKeyboard();
+
+    void clearCurrentFocusObject();
 
     bool isInputPanelVisible() const;
     void setFocusObject(QObject *object);
@@ -81,10 +82,15 @@ public:
 
     const ImeState &imeState() { return m_imeState; };
 
+    bool isReloadingInputViewsFromUpdate() const { return m_isReloadingInputViewsFromUpdate; }
+
+    static QIOSInputContext *instance();
+
 private:
     QIOSKeyboardListener *m_keyboardListener;
     QIOSTextInputResponder *m_textResponder;
     ImeState m_imeState;
+    bool m_isReloadingInputViewsFromUpdate;
 };
 
 QT_END_NAMESPACE
