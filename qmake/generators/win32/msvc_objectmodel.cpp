@@ -2397,7 +2397,11 @@ bool VCFilter::addExtraCompiler(const VCFilterFile &info)
         if (!CustomBuildTool.Description.isEmpty())
             CustomBuildTool.Description += ", ";
         CustomBuildTool.Description += cmd_name;
+        // Execute custom build steps in an environment variable scope to prevent unwanted
+        // side effects for downstream build steps
+        CustomBuildTool.CommandLine += QLatin1String("setlocal");
         CustomBuildTool.CommandLine += VCToolBase::fixCommandLine(cmd.trimmed());
+        CustomBuildTool.CommandLine += QLatin1String("endlocal");
         int space = cmd.indexOf(' ');
         QFileInfo finf(cmd.left(space));
         if (CustomBuildTool.ToolPath.isEmpty())
