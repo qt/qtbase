@@ -46,11 +46,14 @@
 #include "qiosglobal.h"
 #include "qiosintegration.h"
 #include "qiostextresponder.h"
+#include "qiosviewcontroller.h"
 #include "qioswindow.h"
 #include "quiview.h"
 
 #include <QGuiApplication>
 #include <QtGui/private/qwindow_p.h>
+
+// -------------------------------------------------------------------------
 
 static QUIView *focusView()
 {
@@ -58,13 +61,13 @@ static QUIView *focusView()
         reinterpret_cast<QUIView *>(qApp->focusWindow()->winId()) : 0;
 }
 
-@interface QIOSKeyboardListener : UIGestureRecognizer {
+// -------------------------------------------------------------------------
+
+@interface QIOSKeyboardListener : UIGestureRecognizer <UIGestureRecognizerDelegate> {
 @public
     QIOSInputContext *m_context;
     BOOL m_keyboardVisible;
     BOOL m_keyboardVisibleAndDocked;
-    BOOL m_touchPressWhileKeyboardVisible;
-    BOOL m_keyboardHiddenByGesture;
     QRectF m_keyboardRect;
     CGRect m_keyboardEndRect;
     NSTimeInterval m_duration;
@@ -77,13 +80,11 @@ static QUIView *focusView()
 
 - (id)initWithQIOSInputContext:(QIOSInputContext *)context
 {
-    self = [super initWithTarget:self action:@selector(gestureTriggered)];
+    self = [super initWithTarget:self action:@selector(gestureStateChanged:)];
     if (self) {
         m_context = context;
         m_keyboardVisible = NO;
         m_keyboardVisibleAndDocked = NO;
-        m_touchPressWhileKeyboardVisible = NO;
-        m_keyboardHiddenByGesture = NO;
         m_duration = 0;
         m_curve = UIViewAnimationCurveEaseOut;
         m_viewController = 0;
@@ -99,10 +100,9 @@ static QUIView *focusView()
             Q_ASSERT(m_viewController);
 
             // Attach 'hide keyboard' gesture to the window, but keep it disabled when the
-            // keyboard is not visible. Note that we never trigger the gesture the way it is intended
-            // since we don't want to cancel touch events and interrupt flicking etc. Instead we use
-            // the gesture framework more as an event filter and hide the keyboard silently.
+            // keyboard is not visible.
             self.enabled = NO;
+            self.cancelsTouchesInView = NO;
             self.delaysTouchesEnded = NO;
             [m_viewController.view.window addGestureRecognizer:self];
         }
@@ -156,11 +156,19 @@ static QUIView *focusView()
     // Note that UIKeyboardWillShowNotification is only sendt when the keyboard is docked.
     m_keyboardVisibleAndDocked = YES;
     m_keyboardEndRect = [[[notification userInfo] objectForKey:UIKeyboardFrameEndUserInfoKey] CGRectValue];
-    self.enabled = YES;
+
     if (!m_duration) {
         m_duration = [[notification.userInfo objectForKey:UIKeyboardAnimationDurationUserInfoKey] doubleValue];
         m_curve = UIViewAnimationCurve([[notification.userInfo objectForKey:UIKeyboardAnimationCurveUserInfoKey] integerValue]);
     }
+
+    UIResponder *firstResponder = [UIResponder currentFirstResponder];
+    if (![firstResponder isKindOfClass:[QIOSTextInputResponder class]])
+        return;
+
+    // Enable hide-keyboard gesture
+    self.enabled = YES;
+
     m_context->scrollToCursor();
 }
 
@@ -169,7 +177,7 @@ static QUIView *focusView()
     // Note that UIKeyboardWillHideNotification is also sendt when the keyboard is undocked.
     m_keyboardVisibleAndDocked = NO;
     m_keyboardEndRect = [[[notification userInfo] objectForKey:UIKeyboardFrameEndUserInfoKey] CGRectValue];
-    if (!m_keyboardHiddenByGesture) {
+    if (self.state != UIGestureRecognizerStateBegan) {
         // Only disable the gesture if the hiding of the keyboard was not caused by it.
         // Otherwise we need to await the final touchEnd callback for doing some clean-up.
         self.enabled = NO;
@@ -202,54 +210,81 @@ static QUIView *focusView()
     }
 }
 
-- (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event
-{
-    CGPoint p = [[touches anyObject] locationInView:m_viewController.view.window];
-    if (CGRectContainsPoint(m_keyboardEndRect, p)) {
-        m_keyboardHiddenByGesture = YES;
-
-        UIResponder *firstResponder = [UIResponder currentFirstResponder];
-        Q_ASSERT([firstResponder isKindOfClass:[QIOSTextInputResponder class]]);
-        [firstResponder resignFirstResponder];
-    }
-
-    [super touchesMoved:touches withEvent:event];
-}
+// -------------------------------------------------------------------------
 
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
 {
-    Q_ASSERT(m_keyboardVisibleAndDocked);
-    m_touchPressWhileKeyboardVisible = YES;
     [super touchesBegan:touches withEvent:event];
+
+    Q_ASSERT(m_keyboardVisibleAndDocked);
+
+    if ([touches count] != 1)
+        self.state = UIGestureRecognizerStateFailed;
+}
+
+- (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event
+{
+    [super touchesMoved:touches withEvent:event];
+
+    if (self.state != UIGestureRecognizerStatePossible)
+        return;
+
+    CGPoint touchPoint = [[touches anyObject] locationInView:m_viewController.view.window];
+    if (CGRectContainsPoint(m_keyboardEndRect, touchPoint))
+        self.state = UIGestureRecognizerStateBegan;
 }
 
 - (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
 {
-    m_touchPressWhileKeyboardVisible = NO;
-    [self performSelectorOnMainThread:@selector(touchesEndedPostDelivery) withObject:nil waitUntilDone:NO];
     [super touchesEnded:touches withEvent:event];
+
+    [self touchesEndedOrCancelled];
 }
 
 - (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event
 {
-    m_touchPressWhileKeyboardVisible = NO;
-    [self performSelectorOnMainThread:@selector(touchesEndedPostDelivery) withObject:nil waitUntilDone:NO];
     [super touchesCancelled:touches withEvent:event];
+
+    [self touchesEndedOrCancelled];
 }
 
-- (void)touchesEndedPostDelivery
+- (void)touchesEndedOrCancelled
 {
-    // Do some clean-up _after_ touchEnd has been delivered to QUIView
-    m_keyboardHiddenByGesture = NO;
+    // Defer final state change until next runloop iteration, so that Qt
+    // has a chance to process the final touch events first, before we eg.
+    // scroll the view.
+    dispatch_async(dispatch_get_main_queue (), ^{
+        // iOS will transition from began to changed by itself
+        Q_ASSERT(self.state != UIGestureRecognizerStateBegan);
+
+        if (self.state == UIGestureRecognizerStateChanged)
+            self.state = UIGestureRecognizerStateEnded;
+        else
+            self.state = UIGestureRecognizerStateFailed;
+    });
+}
+
+- (void)gestureStateChanged:(id)sender
+{
+    Q_UNUSED(sender);
+
+    if (self.state == UIGestureRecognizerStateBegan) {
+        qImDebug() << "hide keyboard gesture was triggered";
+        UIResponder *firstResponder = [UIResponder currentFirstResponder];
+        Q_ASSERT([firstResponder isKindOfClass:[QIOSTextInputResponder class]]);
+        [firstResponder resignFirstResponder];
+    }
+}
+
+- (void)reset
+{
+    [super reset];
+
     if (!m_keyboardVisibleAndDocked) {
+        qImDebug() << "keyboard was hidden, disabling hide-keyboard gesture";
         self.enabled = NO;
-        if (qApp->focusObject()) {
-            // UI Controls are told to gain focus on touch release. So when the 'hide keyboard' gesture
-            // finishes, the final touch end can trigger a control to gain focus. This is in conflict with
-            // the gesture, so we clear focus once more as a work-around.
-            static_cast<QWindowPrivate *>(QObjectPrivate::get(qApp->focusWindow()))->clearFocusObject();
-        }
     } else {
+        qImDebug() << "gesture completed without triggering, scrolling view to cursor";
         m_context->scrollToCursor();
     }
 }
@@ -353,10 +388,10 @@ void QIOSInputContext::scrollToCursor()
     if (!isQtApplication())
         return;
 
-    if (m_keyboardListener->m_touchPressWhileKeyboardVisible) {
-        // Don't scroll to the cursor if the user is touching the screen. This
-        // interferes with selection and the 'hide keyboard' gesture. Instead
-        // we update scrolling upon touchEnd.
+    if (m_keyboardListener.state == UIGestureRecognizerStatePossible && m_keyboardListener.numberOfTouches == 1) {
+        // Don't scroll to the cursor if the user is touching the screen and possibly
+        // trying to trigger the hide-keyboard gesture.
+        qImDebug() << "preventing scrolling to cursor as we're still waiting for a possible gesture";
         return;
     }
 
@@ -426,6 +461,18 @@ void QIOSInputContext::setFocusObject(QObject *focusObject)
 {
     Q_UNUSED(focusObject);
 
+    qImDebug() << "new focus object =" << focusObject;
+
+    if (m_keyboardListener.state == UIGestureRecognizerStateChanged) {
+        // A new focus object may be set as part of delivering touch events to
+        // application during the hide-keyboard gesture, but we don't want that
+        // to result in a new object getting focus and bringing the keyboard up
+        // again.
+        qImDebug() << "clearing focus object" << focusObject << "as hide-keyboard gesture is active";
+        clearCurrentFocusObject();
+        return;
+    }
+
     reset();
 
     if (m_keyboardListener->m_keyboardVisibleAndDocked)
@@ -435,6 +482,8 @@ void QIOSInputContext::setFocusObject(QObject *focusObject)
 void QIOSInputContext::focusWindowChanged(QWindow *focusWindow)
 {
     Q_UNUSED(focusWindow);
+
+    qImDebug() << "new focus window =" << focusWindow;
 
     reset();
 
