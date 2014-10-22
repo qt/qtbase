@@ -543,14 +543,36 @@ void QWidgetWindow::handleKeyEvent(QKeyEvent *event)
     QGuiApplication::sendSpontaneousEvent(receiver, event);
 }
 
-void QWidgetWindow::updateGeometry()
+bool QWidgetWindow::updateSize()
 {
+    bool changed = false;
     if (m_widget->testAttribute(Qt::WA_OutsideWSRange))
-        return;
+        return changed;
+    if (m_widget->data->crect.size() != geometry().size()) {
+        changed = true;
+        m_widget->data->crect.setSize(geometry().size());
+    }
 
+    updateMargins();
+    return changed;
+}
+
+bool QWidgetWindow::updatePos()
+{
+    bool changed = false;
+    if (m_widget->testAttribute(Qt::WA_OutsideWSRange))
+        return changed;
+    if (m_widget->data->crect.topLeft() != geometry().topLeft()) {
+        changed = true;
+        m_widget->data->crect.moveTopLeft(geometry().topLeft());
+    }
+    updateMargins();
+    return changed;
+}
+
+void QWidgetWindow::updateMargins()
+{
     const QMargins margins = frameMargins();
-
-    m_widget->data->crect = geometry();
     QTLWExtra *te = m_widget->d_func()->topData();
     te->posIncludesFrame= false;
     te->frameStrut.setCoords(margins.left(), margins.top(), margins.right(), margins.bottom());
@@ -609,24 +631,25 @@ void QWidgetWindow::updateNormalGeometry()
 
 void QWidgetWindow::handleMoveEvent(QMoveEvent *event)
 {
-    updateGeometry();
-    QGuiApplication::sendSpontaneousEvent(m_widget, event);
+    if (updatePos())
+        QGuiApplication::sendSpontaneousEvent(m_widget, event);
 }
 
 void QWidgetWindow::handleResizeEvent(QResizeEvent *event)
 {
     QSize oldSize = m_widget->data->crect.size();
 
-    updateGeometry();
-    QGuiApplication::sendSpontaneousEvent(m_widget, event);
+    if (updateSize()) {
+        QGuiApplication::sendSpontaneousEvent(m_widget, event);
 
-    if (m_widget->d_func()->paintOnScreen()) {
-        QRegion updateRegion(geometry());
-        if (m_widget->testAttribute(Qt::WA_StaticContents))
-            updateRegion -= QRect(0, 0, oldSize.width(), oldSize.height());
-        m_widget->d_func()->syncBackingStore(updateRegion);
-    } else {
-        m_widget->d_func()->syncBackingStore();
+        if (m_widget->d_func()->paintOnScreen()) {
+            QRegion updateRegion(geometry());
+            if (m_widget->testAttribute(Qt::WA_StaticContents))
+                updateRegion -= QRect(0, 0, oldSize.width(), oldSize.height());
+            m_widget->d_func()->syncBackingStore(updateRegion);
+        } else {
+            m_widget->d_func()->syncBackingStore();
+        }
     }
 }
 

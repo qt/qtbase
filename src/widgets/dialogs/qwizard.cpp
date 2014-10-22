@@ -2571,6 +2571,14 @@ void QWizard::setWizardStyle(WizardStyle style)
         d->disableUpdates();
         d->wizStyle = style;
         d->updateButtonTexts();
+#if !defined(QT_NO_STYLE_WINDOWSVISTA)
+        if (aeroStyleChange) {
+            //Send a resizeevent since the antiflicker widget probably needs a new size
+            //because of the backbutton in the window title
+            QResizeEvent ev(geometry().size(), geometry().size());
+            QApplication::sendEvent(this, &ev);
+        }
+#endif
         d->updateLayout();
         updateGeometry();
         d->enableUpdates();

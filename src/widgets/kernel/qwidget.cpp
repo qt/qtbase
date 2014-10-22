@@ -7155,10 +7155,7 @@ void QWidgetPrivate::setGeometry_sys(int x, int y, int w, int h, bool isMove)
             }
         }
 
-        // generate a move event for QWidgets without window handles. QWidgets with native
-        // window handles already receive a move event from
-        // QGuiApplicationPrivate::processGeometryChangeEvent.
-        if (isMove && (!q->windowHandle() || q->testAttribute(Qt::WA_DontShowOnScreen))) {
+        if (isMove) {
             QMoveEvent e(q->pos(), oldPos);
             QApplication::sendEvent(q, &e);
         }

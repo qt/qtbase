@@ -95,6 +95,8 @@ private slots:
     void tst_updateWinId_QTBUG40681();
     void tst_recreateWindow_QTBUG40817();
 
+    void tst_resize_count();
+    void tst_move_count();
 };
 
 void tst_QWidget_window::initTestCase()
@@ -660,6 +662,105 @@ void tst_QWidget_window::tst_recreateWindow_QTBUG40817()
     tab.setCurrentIndex(1);
 }
 
+class ResizeWidget : public QWidget
+{
+Q_OBJECT
+public:
+    ResizeWidget(QWidget *parent = 0)
+        : QWidget(parent)
+        , resizeCount(0)
+    { }
+
+    int resizeCount;
+
+protected:
+    void resizeEvent(QResizeEvent *) Q_DECL_OVERRIDE
+    {
+        resizeCount++;
+    }
+};
+
+void tst_QWidget_window::tst_resize_count()
+{
+    {
+        ResizeWidget resize;
+        resize.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&resize));
+        QCOMPARE(resize.resizeCount, 1);
+        resize.resizeCount = 0;
+        QSize size = resize.size();
+        size.rwidth() += 10;
+        resize.resize(size);
+        QGuiApplication::sync();
+        QTRY_COMPARE(resize.resizeCount, 1);
+
+        resize.resizeCount = 0;
+
+        ResizeWidget child(&resize);
+        child.resize(200,200);
+        child.winId();
+        child.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&child));
+        QGuiApplication::sync();
+        QTRY_COMPARE(child.resizeCount, 1);
+        child.resizeCount = 0;
+        size = child.size();
+        size.rwidth() += 10;
+        child.resize(size);
+        QGuiApplication::sync();
+        QCOMPARE(resize.resizeCount, 0);
+        QCOMPARE(child.resizeCount, 1);
+    }
+    {
+        ResizeWidget parent;
+        ResizeWidget child(&parent);
+        child.resize(200,200);
+        child.winId();
+        parent.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&parent));
+        parent.resizeCount = 0;
+        QGuiApplication::sync();
+        QTRY_COMPARE(child.resizeCount, 1);
+        child.resizeCount = 0;
+        QSize size = child.size();
+        size.rwidth() += 10;
+        child.resize(size);
+        QGuiApplication::sync();
+        QCOMPARE(parent.resizeCount, 0);
+        QCOMPARE(child.resizeCount, 1);
+    }
+
+}
+
+class MoveWidget : public QWidget
+{
+Q_OBJECT
+public:
+    MoveWidget(QWidget *parent = 0)
+        : QWidget(parent)
+        , moveCount(0)
+    { }
+
+    void moveEvent(QMoveEvent *) Q_DECL_OVERRIDE
+    {
+        moveCount++;
+    }
+
+    int moveCount;
+};
+
+void tst_QWidget_window::tst_move_count()
+{
+    MoveWidget move;
+    move.move(500,500);
+    move.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&move));
+    QTRY_VERIFY(move.moveCount >= 1);
+    move.moveCount = 0;
+
+    move.move(220,250);
+    QTRY_VERIFY(move.moveCount >= 1);
+}
 
 QTEST_MAIN(tst_QWidget_window)
 #include "tst_qwidget_window.moc"
