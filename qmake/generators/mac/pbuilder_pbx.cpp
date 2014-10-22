@@ -1107,9 +1107,12 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
           << "\t\t\t" << writeSettings("shellScript", fixForOutput("cp -r $BUILT_PRODUCTS_DIR/$FULL_PRODUCT_NAME " + escapeFilePath(destDir))) << ";\n"
           << "\t\t};\n";
     }
+    bool copyBundleResources = project->isActiveConfig("app_bundle") && project->first("TEMPLATE") == "app";
+    ProStringList bundle_resources_files;
     // Copy Bundle Data
     if (!project->isEmpty("QMAKE_BUNDLE_DATA")) {
         ProStringList bundle_file_refs;
+        bool ios = project->isActiveConfig("ios");
 
         //all bundle data
         const ProStringList &bundle_data = project->values("QMAKE_BUNDLE_DATA");
@@ -1137,21 +1140,27 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
                   << "\t\t};\n";
             }
 
-            QString phase_key = keyFor("QMAKE_PBX_BUNDLE_COPY." + bundle_data[i]);
-            if (!project->isEmpty(ProKey(bundle_data[i] + ".version"))) {
-                //###
-            }
+            if (copyBundleResources && ((ios && path.isEmpty())
+                                        || (!ios && path == QLatin1String("Contents/Resources")))) {
+                foreach (const ProString &s, bundle_files)
+                    bundle_resources_files << s;
+            } else {
+                QString phase_key = keyFor("QMAKE_PBX_BUNDLE_COPY." + bundle_data[i]);
+                if (!project->isEmpty(ProKey(bundle_data[i] + ".version"))) {
+                    //###
+                }
 
-            project->values("QMAKE_PBX_BUILDPHASES").append(phase_key);
-            t << "\t\t" << phase_key << " = {\n"
-              << "\t\t\t" << writeSettings("name", "Copy '" + bundle_data[i] + "' Files to Bundle") << ";\n"
-              << "\t\t\t" << writeSettings("buildActionMask", "2147483647", SettingsNoQuote) << ";\n"
-              << "\t\t\t" << writeSettings("dstPath", escapeFilePath(path)) << ";\n"
-              << "\t\t\t" << writeSettings("dstSubfolderSpec", "1", SettingsNoQuote) << ";\n"
-              << "\t\t\t" << writeSettings("files", bundle_files, SettingsAsList, 4) << ";\n"
-              << "\t\t\t" << writeSettings("isa", "PBXCopyFilesBuildPhase", SettingsNoQuote) << ";\n"
-              << "\t\t\t" << writeSettings("runOnlyForDeploymentPostprocessing", "0", SettingsNoQuote) << ";\n"
-              << "\t\t};\n";
+                project->values("QMAKE_PBX_BUILDPHASES").append(phase_key);
+                t << "\t\t" << phase_key << " = {\n"
+                  << "\t\t\t" << writeSettings("name", "Copy '" + bundle_data[i] + "' Files to Bundle") << ";\n"
+                  << "\t\t\t" << writeSettings("buildActionMask", "2147483647", SettingsNoQuote) << ";\n"
+                  << "\t\t\t" << writeSettings("dstPath", escapeFilePath(path)) << ";\n"
+                  << "\t\t\t" << writeSettings("dstSubfolderSpec", "1", SettingsNoQuote) << ";\n"
+                  << "\t\t\t" << writeSettings("isa", "PBXCopyFilesBuildPhase", SettingsNoQuote) << ";\n"
+                  << "\t\t\t" << writeSettings("files", bundle_files, SettingsAsList, 4) << ";\n"
+                  << "\t\t\t" << writeSettings("runOnlyForDeploymentPostprocessing", "0", SettingsNoQuote) << ";\n"
+                  << "\t\t};\n";
+            }
         }
 
         QString bundle_data_key = keyFor("QMAKE_PBX_BUNDLE_DATA");
@@ -1166,8 +1175,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
 
     // Copy bundle resources. Optimizes resources, and puts them into the Resources
     // subdirectory on OSX, but doesn't support paths.
-    if (project->isActiveConfig("app_bundle") && project->first("TEMPLATE") == "app") {
-        ProStringList bundle_resources_files;
+    if (copyBundleResources) {
         if (!project->isEmpty("ICON")) {
             ProString icon = project->first("ICON");
             if (icon.length() >= 2 && (icon.at(0) == '"' || icon.at(0) == '\'') && icon.endsWith(icon.at(0)))
