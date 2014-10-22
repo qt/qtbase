@@ -43,6 +43,7 @@
 #include "qeglfsintegration.h"
 #include "qeglfsscreen.h"
 
+#include <QtPlatformSupport/private/qeglplatformcursor_p.h>
 #include <QtPlatformSupport/private/qdevicediscovery_p.h>
 #include <QtCore/private/qcore_unix_p.h>
 #include <QtCore/QScopedPointer>
@@ -67,17 +68,32 @@
 #define DRM_CAP_CURSOR_HEIGHT 0x9
 #endif
 
+#define ARRAY_LENGTH(a) (sizeof (a) / sizeof (a)[0])
+
 QT_USE_NAMESPACE
 
 Q_LOGGING_CATEGORY(qLcEglfsKmsDebug, "qt.qpa.eglfs.kms")
 
+class QEglFSKmsCursor;
+class QEglFSKmsScreen;
+
+enum OutputConfiguration {
+    OutputConfigOff,
+    OutputConfigPreferred,
+    OutputConfigCurrent,
+    OutputConfigMode,
+    OutputConfigModeline
+};
+
 struct QEglFSKmsOutput {
-    uint32_t conn_id;
+    QString name;
+    uint32_t connector_id;
     uint32_t crtc_id;
     QSizeF physical_size;
-    drmModeModeInfo mode;
+    int mode; // index of selected mode in list below
     bool mode_set;
-    drmModeCrtc *saved_crtc;
+    drmModeCrtcPtr saved_crtc;
+    QList<drmModeModeInfo> modes;
 };
 
 class QEglFSKmsDevice
@@ -88,9 +104,12 @@ class QEglFSKmsDevice
     int m_dri_fd;
     gbm_device *m_gbm_device;
 
-    QList<QEglFSKmsOutput> m_validOutputs;
+    quint32 m_crtc_allocator;
+    quint32 m_connector_allocator;
 
-    bool setup_kms();
+    int crtcForConnector(drmModeResPtr resources, drmModeConnectorPtr connector);
+    QEglFSKmsScreen *screenForConnector(drmModeResPtr resources, drmModeConnectorPtr connector, QPoint pos);
+
     static void pageFlipHandler(int fd,
                                 unsigned int sequence,
                                 unsigned int tv_sec,
@@ -110,7 +129,6 @@ public:
     void handleDrmEvent();
 };
 
-class QEglFSKmsCursor;
 class QEglFSKmsScreen : public QEglFSScreen
 {
     QEglFSKmsDevice *m_device;
@@ -118,8 +136,6 @@ class QEglFSKmsScreen : public QEglFSScreen
 
     gbm_bo *m_gbm_bo_current;
     gbm_bo *m_gbm_bo_next;
-
-    bool m_mode_set;
 
     QEglFSKmsOutput m_output;
     QPoint m_pos;
@@ -146,6 +162,8 @@ public:
     QDpi logicalDpi() const Q_DECL_OVERRIDE;
     Qt::ScreenOrientation nativeOrientation() const Q_DECL_OVERRIDE;
     Qt::ScreenOrientation orientation() const Q_DECL_OVERRIDE;
+
+    QString name() const Q_DECL_OVERRIDE;
 
     QPlatformCursor *cursor() const Q_DECL_OVERRIDE;
 
@@ -222,8 +240,18 @@ public:
     void presentBuffer(QPlatformSurface *surface) Q_DECL_OVERRIDE;
     bool supportsPBuffers() const Q_DECL_OVERRIDE;
 
+    bool hwCursor() const;
+    QMap<QString, QVariantMap> outputSettings() const;
+
 private:
+    void loadConfig();
+
     QEglFSKmsDevice *m_device;
+
+    bool m_hwCursor;
+    bool m_pbuffers;
+    QString m_devicePath;
+    QMap<QString, QVariantMap> m_outputSettings;
 };
 
 static QEglKmsHooks kms_hooks;
@@ -231,22 +259,33 @@ QEglFSHooks *platformHooks = &kms_hooks;
 
 QEglKmsHooks::QEglKmsHooks()
     : m_device(Q_NULLPTR)
+    , m_hwCursor(true)
+    , m_pbuffers(false)
 {}
 
 void QEglKmsHooks::platformInit()
 {
-    QDeviceDiscovery *d = QDeviceDiscovery::create(QDeviceDiscovery::Device_VideoMask);
-    QStringList devices = d->scanConnectedDevices();
-    qCDebug(qLcEglfsKmsDebug) << "Found the following video devices:" << devices;
-    d->deleteLater();
+    loadConfig();
 
-    if (devices.isEmpty())
-        qFatal("Could not find DRM device!");
+    if (!m_devicePath.isEmpty()) {
+        qCDebug(qLcEglfsKmsDebug) << "Using DRM device" << m_devicePath << "specified in config file";
+    } else {
 
-    qCDebug(qLcEglfsKmsDebug) << "Using" << devices.first();
-    m_device = new QEglFSKmsDevice(devices.first());
+        QDeviceDiscovery *d = QDeviceDiscovery::create(QDeviceDiscovery::Device_VideoMask);
+        QStringList devices = d->scanConnectedDevices();
+        qCDebug(qLcEglfsKmsDebug) << "Found the following video devices:" << devices;
+        d->deleteLater();
+
+        if (devices.isEmpty())
+            qFatal("Could not find DRM device!");
+
+        m_devicePath = devices.first();
+        qCDebug(qLcEglfsKmsDebug) << "Using" << m_devicePath;
+    }
+
+    m_device = new QEglFSKmsDevice(m_devicePath);
     if (!m_device->open())
-        qFatal("DRM device required, aborting");
+        qFatal("Could not open device %s - aborting!", qPrintable(m_devicePath));
 }
 
 void QEglKmsHooks::platformDestroy()
@@ -328,8 +367,10 @@ bool QEglKmsHooks::hasCapability(QPlatformIntegration::Capability cap) const
 
 QPlatformCursor *QEglKmsHooks::createCursor(QPlatformScreen *screen) const
 {
-    Q_UNUSED(screen);
-    return Q_NULLPTR;
+    if (m_hwCursor)
+        return Q_NULLPTR;
+    else
+        return new QEGLPlatformCursor(screen);
 }
 
 void QEglKmsHooks::waitForVSync(QPlatformSurface *surface) const
@@ -350,7 +391,66 @@ void QEglKmsHooks::presentBuffer(QPlatformSurface *surface)
 
 bool QEglKmsHooks::supportsPBuffers() const
 {
-    return false;
+    return m_pbuffers;
+}
+
+bool QEglKmsHooks::hwCursor() const
+{
+    return m_hwCursor;
+}
+
+QMap<QString, QVariantMap> QEglKmsHooks::outputSettings() const
+{
+    return m_outputSettings;
+}
+
+void QEglKmsHooks::loadConfig()
+{
+    static QByteArray json = qgetenv("QT_QPA_EGLFS_KMS_CONFIG");
+    if (json.isEmpty())
+        return;
+
+    qCDebug(qLcEglfsKmsDebug) << "Loading KMS setup from" << json;
+
+    QFile file(QString::fromUtf8(json));
+    if (!file.open(QFile::ReadOnly)) {
+        qCDebug(qLcEglfsKmsDebug) << "Could not open config file"
+                                  << json << "for reading";
+        return;
+    }
+
+    QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
+    if (!doc.isObject()) {
+        qCDebug(qLcEglfsKmsDebug) << "Invalid config file" << json
+                                  << "- no top-level JSON object";
+        return;
+    }
+
+    QJsonObject object = doc.object();
+
+    m_hwCursor = object.value("hwcursor").toBool(m_hwCursor);
+    m_pbuffers = object.value("pbuffers").toBool(m_pbuffers);
+    m_devicePath = object.value("device").toString();
+
+    QJsonArray outputs = object.value("outputs").toArray();
+    for (int i = 0; i < outputs.size(); i++) {
+        QVariantMap outputSettings = outputs.at(i).toObject().toVariantMap();
+
+        if (outputSettings.contains("name")) {
+            QString name = outputSettings.value("name").toString();
+
+            if (m_outputSettings.contains(name)) {
+                qCDebug(qLcEglfsKmsDebug) << "Output" << name << "configured multiple times!";
+            }
+
+            m_outputSettings.insert(name, outputSettings);
+        }
+    }
+
+    qCDebug(qLcEglfsKmsDebug) << "Configuration:\n"
+                              << "\thwcursor:" << m_hwCursor << "\n"
+                              << "\tpbuffers:" << m_pbuffers << "\n"
+                              << "\toutputs:" << m_outputSettings;
 }
 
 QEglFSKmsCursor::QEglFSKmsCursor(QEglFSKmsScreen *screen)
@@ -548,7 +648,7 @@ QEglFSKmsScreen::QEglFSKmsScreen(QEglFSKmsDevice *device, QEglFSKmsOutput output
     , m_gbm_bo_next(Q_NULLPTR)
     , m_output(output)
     , m_pos(position)
-    , m_cursor(new QEglFSKmsCursor(this))
+    , m_cursor(Q_NULLPTR)
 {
 }
 
@@ -559,9 +659,10 @@ QEglFSKmsScreen::~QEglFSKmsScreen()
 
 QRect QEglFSKmsScreen::geometry() const
 {
+    const int mode = m_output.mode;
     return QRect(m_pos.x(), m_pos.y(),
-                 m_output.mode.hdisplay,
-                 m_output.mode.vdisplay);
+                 m_output.modes[mode].hdisplay,
+                 m_output.modes[mode].vdisplay);
 }
 
 int QEglFSKmsScreen::depth() const
@@ -601,15 +702,29 @@ Qt::ScreenOrientation QEglFSKmsScreen::orientation() const
     return Qt::PrimaryOrientation;
 }
 
+QString QEglFSKmsScreen::name() const
+{
+    return m_output.name;
+}
+
 QPlatformCursor *QEglFSKmsScreen::cursor() const
 {
-    return m_cursor.data();
+    if (kms_hooks.hwCursor()) {
+        if (m_cursor.isNull()) {
+            QEglFSKmsScreen *that = const_cast<QEglFSKmsScreen *>(this);
+            that->m_cursor.reset(new QEglFSKmsCursor(that));
+        }
+
+        return m_cursor.data();
+    } else {
+        return QEglFSScreen::cursor();
+    }
 }
 
 gbm_surface *QEglFSKmsScreen::createSurface()
 {
     if (!m_gbm_surface) {
-        qCDebug(qLcEglfsKmsDebug) << "Creating window for screen" << geometry();
+        qCDebug(qLcEglfsKmsDebug) << "Creating window for screen" << name();
         m_gbm_surface = gbm_surface_create(m_device->device(),
                                            geometry().width(),
                                            geometry().height(),
@@ -663,19 +778,18 @@ void QEglFSKmsScreen::flip()
 
     FrameBuffer *fb = framebufferForBufferObject(m_gbm_bo_next);
 
-    if (!m_mode_set) {
-        m_output.saved_crtc = drmModeGetCrtc(m_device->fd(), m_output.crtc_id);
+    if (!m_output.mode_set) {
         int ret = drmModeSetCrtc(m_device->fd(),
                                  m_output.crtc_id,
                                  fb->fb,
                                  0, 0,
-                                 &m_output.conn_id, 1,
-                                 &m_output.mode);
-        if (ret) {
+                                 &m_output.connector_id, 1,
+                                 &m_output.modes[m_output.mode]);
+
+        if (ret)
             qErrnoWarning("Could not set DRM mode!");
-        } else {
-            m_mode_set = true;
-        }
+        else
+            m_output.mode_set = true;
     }
 
     int ret = drmModePageFlip(m_device->fd(),
@@ -702,98 +816,254 @@ void QEglFSKmsScreen::flipFinished()
 
 void QEglFSKmsScreen::restoreMode()
 {
-    if (m_mode_set && m_output.saved_crtc) {
+    if (m_output.mode_set && m_output.saved_crtc) {
         drmModeSetCrtc(m_device->fd(),
                        m_output.saved_crtc->crtc_id,
                        m_output.saved_crtc->buffer_id,
                        0, 0,
-                       &m_output.conn_id, 1,
+                       &m_output.connector_id, 1,
                        &m_output.saved_crtc->mode);
+
         drmModeFreeCrtc(m_output.saved_crtc);
         m_output.saved_crtc = Q_NULLPTR;
-        m_mode_set = false;
+
+        m_output.mode_set = false;
     }
 }
 
-static QList<drmModeConnector *> findConnectors(int dri_fd, drmModeRes *resources)
+int QEglFSKmsDevice::crtcForConnector(drmModeResPtr resources, drmModeConnectorPtr connector)
 {
-    QList<drmModeConnector *> connectors;
-
-    for (int i = 0; i < resources->count_connectors; i++) {
-        drmModeConnector *connector = drmModeGetConnector(dri_fd, resources->connectors[i]);
-        if (!connector)
-            continue;
-
-        if (connector->connection == DRM_MODE_CONNECTED && connector->count_modes > 0) {
-            connectors.append(connector);
-            continue;
-        }
-
-        drmModeFreeConnector(connector);
-    }
-
-    return connectors;
-}
-
-static drmModeEncoder *findEncoder(int dri_fd, drmModeRes *resources, uint32_t encoder_id)
-{
-    for (int i = 0; i < resources->count_encoders; i++) {
-        drmModeEncoder *encoder = drmModeGetEncoder(dri_fd, resources->encoders[i]);
-
-        if (!encoder)
-            continue;
-
-        if (encoder->encoder_id == encoder_id)
-            return encoder;
-
-        drmModeFreeEncoder(encoder);
-    }
-
-    return Q_NULLPTR;
-}
-
-bool QEglFSKmsDevice::setup_kms()
-{
-    drmModeRes *resources = drmModeGetResources(m_dri_fd);
-    if (!resources) {
-       qWarning("drmModeGetResources failed");
-       return false;
-    }
-
-    QList<drmModeConnector *> connectors = findConnectors(m_dri_fd, resources);
-    if (connectors.isEmpty()) {
-        qWarning("No currently active connectors found");
-        return false;
-    }
-
-    while (!connectors.isEmpty()) {
-        drmModeConnector *connector = connectors.takeFirst();
-        drmModeEncoder *encoder = findEncoder(m_dri_fd, resources, connector->encoder_id);
-
+    for (int i = 0; i < connector->count_encoders; i++) {
+        drmModeEncoderPtr encoder = drmModeGetEncoder(m_dri_fd, connector->encoders[i]);
         if (!encoder) {
-            drmModeFreeConnector(connector);
+            qWarning("Failed to get encoder");
             continue;
         }
 
-        QEglFSKmsOutput output = {
-            connector->connector_id,
-            encoder->crtc_id,
-            QSizeF(connector->mmWidth, connector->mmHeight),
-            connector->modes[0],
-            false,
-            Q_NULLPTR
-        };
-
+        quint32 possibleCrtcs = encoder->possible_crtcs;
         drmModeFreeEncoder(encoder);
-        drmModeFreeConnector(connector);
 
-        m_validOutputs.append(output);
+        for (int j = 0; j < resources->count_crtcs; j++) {
+            bool isPossible = possibleCrtcs & (1 << j);
+            bool isAvailable = !(m_crtc_allocator & 1 << resources->crtcs[j]);
+
+            if (isPossible && isAvailable)
+                return j;
+        }
     }
 
-    drmModeFreeResources(resources);
+    return -1;
+}
 
-    qCDebug(qLcEglfsKmsDebug) << "Found" << m_validOutputs.size() << "outputs";
-    return m_validOutputs.size() > 0;
+static const char * const connector_type_names[] = {
+    "None",
+    "VGA",
+    "DVI",
+    "DVI",
+    "DVI",
+    "Composite",
+    "TV",
+    "LVDS",
+    "CTV",
+    "DIN",
+    "DP",
+    "HDMI",
+    "HDMI",
+    "TV",
+    "eDP",
+};
+
+static QString nameForConnector(const drmModeConnectorPtr connector)
+{
+    QString connectorName = "UNKNOWN";
+
+    if (connector->connector_type < ARRAY_LENGTH(connector_type_names))
+        connectorName = connector_type_names[connector->connector_type];
+
+    connectorName += QString::number(connector->connector_type_id);
+
+    return connectorName;
+}
+
+static bool parseModeline(const QString &s, drmModeModeInfoPtr mode)
+{
+    char hsync[16];
+    char vsync[16];
+    float fclock;
+
+    mode->type = DRM_MODE_TYPE_USERDEF;
+    mode->hskew = 0;
+    mode->vscan = 0;
+    mode->vrefresh = 0;
+    mode->flags = 0;
+
+    if (sscanf(qPrintable(s), "%f %hd %hd %hd %hd %hd %hd %hd %hd %15s %15s",
+               &fclock,
+               &mode->hdisplay,
+               &mode->hsync_start,
+               &mode->hsync_end,
+               &mode->htotal,
+               &mode->vdisplay,
+               &mode->vsync_start,
+               &mode->vsync_end,
+               &mode->vtotal, hsync, vsync) != 11)
+        return false;
+
+    mode->clock = fclock * 1000;
+
+    if (strcmp(hsync, "+hsync") == 0)
+        mode->flags |= DRM_MODE_FLAG_PHSYNC;
+    else if (strcmp(hsync, "-hsync") == 0)
+        mode->flags |= DRM_MODE_FLAG_NHSYNC;
+    else
+        return false;
+
+    if (strcmp(vsync, "+vsync") == 0)
+        mode->flags |= DRM_MODE_FLAG_PVSYNC;
+    else if (strcmp(vsync, "-vsync") == 0)
+        mode->flags |= DRM_MODE_FLAG_NVSYNC;
+    else
+        return false;
+
+    return true;
+}
+
+QEglFSKmsScreen *QEglFSKmsDevice::screenForConnector(drmModeResPtr resources, drmModeConnectorPtr connector, QPoint pos)
+{
+    const QString connectorName = nameForConnector(connector);
+
+    const int crtc = crtcForConnector(resources, connector);
+    if (crtc < 0) {
+        qWarning() << "No usable crtc/encoder pair for connector" << connectorName;
+        return Q_NULLPTR;
+    }
+
+    OutputConfiguration configuration;
+    QSize configurationSize;
+    drmModeModeInfo configurationModeline;
+
+    const QString mode = kms_hooks.outputSettings().value(connectorName).value("mode", "preferred").toString().toLower();
+    if (mode == "off") {
+        configuration = OutputConfigOff;
+    } else if (mode == "preferred") {
+        configuration = OutputConfigPreferred;
+    } else if (mode == "current") {
+        configuration = OutputConfigCurrent;
+    } else if (sscanf(qPrintable(mode), "%dx%d", &configurationSize.rwidth(), &configurationSize.rheight()) == 2) {
+        configuration = OutputConfigMode;
+    } else if (parseModeline(mode, &configurationModeline)) {
+        configuration = OutputConfigModeline;
+    } else {
+        qWarning("Invalid mode \"%s\" for output %s", qPrintable(mode), qPrintable(connectorName));
+        configuration = OutputConfigPreferred;
+    }
+
+    const uint32_t crtc_id = resources->crtcs[crtc];
+
+    if (configuration == OutputConfigOff) {
+        qCDebug(qLcEglfsKmsDebug) << "Turning off output" << connectorName;
+        drmModeSetCrtc(m_dri_fd, crtc_id, 0, 0, 0, 0, 0, Q_NULLPTR);
+        return Q_NULLPTR;
+    }
+
+    // Get the current mode on the current crtc
+    drmModeModeInfo crtc_mode;
+    memset(&crtc_mode, 0, sizeof crtc_mode);
+    if (drmModeEncoderPtr encoder = drmModeGetEncoder(m_dri_fd, connector->connector_id)) {
+        drmModeCrtcPtr crtc = drmModeGetCrtc(m_dri_fd, encoder->crtc_id);
+        drmModeFreeEncoder(encoder);
+
+        if (!crtc)
+            return Q_NULLPTR;
+
+        if (crtc->mode_valid)
+            crtc_mode = crtc->mode;
+
+        drmModeFreeCrtc(crtc);
+    }
+
+    QList<drmModeModeInfo> modes;
+    qCDebug(qLcEglfsKmsDebug) << connectorName << "mode count:" << connector->count_modes;
+    for (int i = 0; i < connector->count_modes; i++) {
+        const drmModeModeInfo &mode = connector->modes[i];
+        qCDebug(qLcEglfsKmsDebug) << "mode" << i << mode.hdisplay << "x" << mode.vdisplay
+                                  << "@" << mode.vrefresh << "hz";
+        modes << connector->modes[i];
+    }
+
+    int preferred = -1;
+    int current = -1;
+    int configured = -1;
+    int best = -1;
+
+    for (int i = modes.size() - 1; i >= 0; i--) {
+        const drmModeModeInfo &m = modes.at(i);
+
+        if (configuration == OutputConfigMode &&
+                m.hdisplay == configurationSize.width() &&
+                m.vdisplay == configurationSize.height()) {
+            configured = i;
+        }
+
+        if (!memcmp(&crtc_mode, &m, sizeof m))
+            current = i;
+
+        if (m.type & DRM_MODE_TYPE_PREFERRED)
+            preferred = i;
+
+        best = i;
+    }
+
+    if (configuration == OutputConfigModeline) {
+        modes << configurationModeline;
+        configured = modes.size() - 1;
+    }
+
+    if (current < 0 && crtc_mode.clock != 0) {
+        modes << crtc_mode;
+        current = mode.size() - 1;
+    }
+
+    if (configuration == OutputConfigCurrent)
+        configured = current;
+
+    int selected_mode = -1;
+
+    if (configured >= 0)
+        selected_mode = configured;
+    else if (preferred >= 0)
+        selected_mode = preferred;
+    else if (current >= 0)
+        selected_mode = current;
+    else if (best >= 0)
+        selected_mode = best;
+
+    if (selected_mode < 0) {
+        qWarning() << "No modes available for output" << connectorName;
+        return Q_NULLPTR;
+    } else {
+        int width = modes[selected_mode].hdisplay;
+        int height = modes[selected_mode].vdisplay;
+        int refresh = modes[selected_mode].vrefresh;
+        qCDebug(qLcEglfsKmsDebug) << "Selected mode" << selected_mode << ":" << width << "x" << height
+                                  << "@" << refresh << "hz for output" << connectorName;
+    }
+
+    QEglFSKmsOutput output = {
+        connectorName,
+        connector->connector_id,
+        crtc_id,
+        QSizeF(connector->mmWidth, connector->mmHeight),
+        selected_mode,
+        false,
+        drmModeGetCrtc(m_dri_fd, crtc_id),
+        modes
+    };
+
+    m_crtc_allocator |= (1 << output.crtc_id);
+    m_connector_allocator |= (1 << output.connector_id);
+
+    return new QEglFSKmsScreen(this, output, pos);
 }
 
 void QEglFSKmsDevice::pageFlipHandler(int fd, unsigned int sequence, unsigned int tv_sec, unsigned int tv_usec, void *user_data)
@@ -811,6 +1081,8 @@ QEglFSKmsDevice::QEglFSKmsDevice(const QString &path)
     : m_path(path)
     , m_dri_fd(-1)
     , m_gbm_device(Q_NULLPTR)
+    , m_crtc_allocator(0)
+    , m_connector_allocator(0)
 {
 }
 
@@ -854,17 +1126,30 @@ void QEglFSKmsDevice::close()
 
 void QEglFSKmsDevice::createScreens()
 {
-    if (!setup_kms()) {
-        qCDebug(qLcEglfsKmsDebug) << "KMS setup failed!";
+    drmModeResPtr resources = drmModeGetResources(m_dri_fd);
+    if (!resources) {
+        qWarning("drmModeGetResources failed");
         return;
     }
 
+    QPoint pos(0, 0);
     QEglFSIntegration *integration = static_cast<QEglFSIntegration *>(QGuiApplicationPrivate::platformIntegration());
-    QPoint pos;
-    foreach (const QEglFSKmsOutput &output, m_validOutputs) {
-        integration->addScreen(new QEglFSKmsScreen(this, output, pos));
-        pos.rx() += output.mode.hdisplay;
+
+    for (int i = 0; i < resources->count_connectors; i++) {
+        drmModeConnectorPtr connector = drmModeGetConnector(m_dri_fd, resources->connectors[i]);
+        if (!connector)
+            continue;
+
+        QEglFSKmsScreen *screen = screenForConnector(resources, connector, pos);
+        if (screen) {
+            integration->addScreen(screen);
+            pos.rx() += screen->geometry().width();
+        }
+
+        drmModeFreeConnector(connector);
     }
+
+    drmModeFreeResources(resources);
 }
 
 gbm_device *QEglFSKmsDevice::device() const
