@@ -283,7 +283,7 @@ QGestureRecognizer::Result QSwipeGestureRecognizer::recognize(QGesture *state,
     case QEvent::TouchBegin: {
         d->velocityValue = 1;
         d->time.start();
-        d->started = true;
+        d->state = QSwipeGesturePrivate::Started;
         result = QGestureRecognizer::MayBeGesture;
         break;
     }
@@ -297,9 +297,10 @@ QGestureRecognizer::Result QSwipeGestureRecognizer::recognize(QGesture *state,
     }
     case QEvent::TouchUpdate: {
         const QTouchEvent *ev = static_cast<const QTouchEvent *>(event);
-        if (!d->started)
+        if (d->state == QSwipeGesturePrivate::NoGesture)
             result = QGestureRecognizer::CancelGesture;
         else if (ev->touchPoints().size() == 3) {
+            d->state = QSwipeGesturePrivate::ThreePointsReached;
             QTouchEvent::TouchPoint p1 = ev->touchPoints().at(0);
             QTouchEvent::TouchPoint p2 = ev->touchPoints().at(1);
             QTouchEvent::TouchPoint p3 = ev->touchPoints().at(2);
@@ -354,12 +355,18 @@ QGestureRecognizer::Result QSwipeGestureRecognizer::recognize(QGesture *state,
         } else if (ev->touchPoints().size() > 3) {
             result = QGestureRecognizer::CancelGesture;
         } else { // less than 3 touch points
-            if (d->started && (ev->touchPointStates() & Qt::TouchPointPressed))
-                result = QGestureRecognizer::CancelGesture;
-            else if (d->started)
-                result = QGestureRecognizer::Ignore;
-            else
+            switch (d->state) {
+            case QSwipeGesturePrivate::NoGesture:
                 result = QGestureRecognizer::MayBeGesture;
+                break;
+            case QSwipeGesturePrivate::Started:
+                result = QGestureRecognizer::Ignore;
+                break;
+            case QSwipeGesturePrivate::ThreePointsReached:
+                result = (ev->touchPointStates() & Qt::TouchPointPressed)
+                    ? QGestureRecognizer::CancelGesture : QGestureRecognizer::Ignore;
+                break;
+            }
         }
         break;
     }
@@ -378,7 +385,7 @@ void QSwipeGestureRecognizer::reset(QGesture *state)
     d->swipeAngle = 0;
 
     d->lastPositions[0] = d->lastPositions[1] = d->lastPositions[2] = QPoint();
-    d->started = false;
+    d->state = QSwipeGesturePrivate::NoGesture;
     d->velocityValue = 0;
     d->time.invalidate();
 
