@@ -152,11 +152,8 @@ QModelIndex QIdentityProxyModel::index(int row, int column, const QModelIndex& p
 {
     Q_ASSERT(parent.isValid() ? parent.model() == this : true);
     Q_D(const QIdentityProxyModel);
-    if (!hasIndex(row, column, parent))
-        return QModelIndex();
     const QModelIndex sourceParent = mapToSource(parent);
     const QModelIndex sourceIndex = d->model->index(row, column, sourceParent);
-    Q_ASSERT(sourceIndex.isValid());
     return mapFromSource(sourceIndex);
 }
 
