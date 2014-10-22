@@ -49,15 +49,15 @@
 #include <QtGui/private/qfontengine_p.h>
 #include <QtCore/QSharedPointer>
 
-class QWindowsFontEngineData;
-
-struct IDWriteFont ;
-struct IDWriteFontFace ;
-struct IDWriteFactory ;
-struct IDWriteBitmapRenderTarget ;
-struct IDWriteGdiInterop ;
+struct IDWriteFont;
+struct IDWriteFontFace;
+struct IDWriteFactory;
+struct IDWriteBitmapRenderTarget;
+struct IDWriteGdiInterop;
 
 QT_BEGIN_NAMESPACE
+
+class QWindowsFontEngineData;
 
 class QWindowsFontEngineDirectWrite : public QFontEngine
 {
