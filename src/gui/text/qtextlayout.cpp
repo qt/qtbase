@@ -2559,6 +2559,10 @@ qreal QTextLine::cursorToX(int *cursorPos, Edge edge) const
     }
     else
         itm = eng->findItem(pos);
+    if (itm < 0) {
+        *cursorPos = 0;
+        return x.toReal();
+    }
     eng->shapeLine(line);
 
     const QScriptItem *si = &eng->layoutData->items[itm];
