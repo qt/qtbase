@@ -137,6 +137,7 @@ private slots:
 #endif
     void addToolbarAfterShow();
     void centralWidgetSize();
+    void fixedSizeCentralWidget();
     void dockWidgetSize();
     void QTBUG2774_stylechange();
     void QTBUG15080_restoreState();
@@ -1735,6 +1736,50 @@ void tst_QMainWindow::centralWidgetSize()
 
     mainWindow.show();
     QTRY_COMPARE(widget.size(), widget.sizeHint());
+}
+
+void tst_QMainWindow::fixedSizeCentralWidget()
+{
+    // QTBUG-40410: dock widgets does not get all the available space when
+    // central widget is fixed size
+    QMainWindow mainWindow;
+    mainWindow.setCorner(Qt::TopLeftCorner, Qt::LeftDockWidgetArea);
+
+    MyWidget widget;
+    widget.setFixedSize(100,100);
+    mainWindow.setCentralWidget(&widget);
+
+    QDockWidget dock("D1");
+    QWidget *child = new MyWidget;
+    dock.setWidget(child);
+    mainWindow.addDockWidget(Qt::TopDockWidgetArea, &dock);
+
+    QDockWidget dock2("D2");
+    dock2.setWidget(new MyWidget);
+    mainWindow.addDockWidget(Qt::LeftDockWidgetArea, &dock2);
+
+    QSize sizeH = mainWindow.sizeHint();
+    QSize mwSize = QSize(sizeH.width(), sizeH.height() * 2);
+    mainWindow.resize(mwSize);
+    mainWindow.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&mainWindow));
+    if (mainWindow.height() < mwSize.height())
+        QSKIP("The screen is too small for this test");
+
+    // first, check that we get more than the size hint when we have more space
+    QTRY_VERIFY(child->height() > child->sizeHint().height());
+    int childHeight = child->height();
+
+    if (qGuiApp->styleHints()->showIsFullScreen())
+        QSKIP("The platform is auto maximizing, so we cannot resize the window");
+
+    // then, check that we get nothing when there is no space
+    mainWindow.resize(100,100);
+    QTRY_COMPARE(child->height(), 0);
+
+    // finally verify that we get the space back when we resize to the old size
+    mainWindow.resize(mwSize);
+    QTRY_COMPARE(child->height(), childHeight);
 }
 
 void tst_QMainWindow::dockWidgetSize()
