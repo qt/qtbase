@@ -361,8 +361,12 @@ static NSString *_q_NSWindowDidChangeOcclusionStateNotification = nil;
     // Send a geometry change event to Qt, if it's ready to handle events
     if (!m_platformWindow->m_inConstructor) {
         QWindowSystemInterface::handleGeometryChange(m_window, geometry);
-        m_platformWindow->updateExposedGeometry();
-        QWindowSystemInterface::flushWindowSystemEvents();
+        // Do not send incorrect exposes in case the window is not even visible yet.
+        // We might get here as a result of a resize() from QWidget's show(), for instance.
+        if (m_platformWindow->window()->isVisible()) {
+            m_platformWindow->updateExposedGeometry();
+            QWindowSystemInterface::flushWindowSystemEvents();
+        }
     }
 }
 
