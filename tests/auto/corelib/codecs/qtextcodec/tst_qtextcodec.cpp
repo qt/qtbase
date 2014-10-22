@@ -197,10 +197,8 @@ void tst_QTextCodec::fromUnicode_data()
     QTest::newRow("windows-1258") << "windows-1258" << true;
 
     QTest::newRow("Apple Roman") << "Apple Roman" << true;
-    QTest::newRow("macintosh") << "macintosh" << true;
     //QTest::newRow("WINSAMI2") << "WINSAMI2" << true;
     QTest::newRow("TIS-620") << "TIS-620" << true;
-//    QTest::newRow("hp-roman8") << "hp-roman8" << true;
     QTest::newRow("SJIS") << "SJIS" << false;
 
     // all codecs from documentation
@@ -210,20 +208,17 @@ void tst_QTextCodec::fromUnicode_data()
     QTest::newRow("windows-949") << "windows-949" << false;
     QTest::newRow("EUC-JP") << "EUC-JP" << false;
     QTest::newRow("EUC-KR") << "EUC-KR" << false;
-    //QTest::newRow("GB18030-0") << "GB18030-0" << false; // only GB18030 works
     QTest::newRow("GB18030") << "GB18030" << false;
+    QTest::newRow("HP-ROMAN8") << "HP-ROMAN8" << false;
     QTest::newRow("IBM 850") << "IBM 850" << false;
     QTest::newRow("IBM 866") << "IBM 866" << false;
     QTest::newRow("IBM 874") << "IBM 874" << false;
     QTest::newRow("ISO 2022-JP") << "ISO 2022-JP" << false;
     //ISO 8859-1 to 10 and  ISO 8859-13 to 16 tested previously
     // Iscii-Bng, Dev, Gjr, Knd, Mlm, Ori, Pnj, Tlg, and Tml  tested in Iscii test
-    //QTest::newRow("JIS X 0201") << "JIS X 0201" << false; // actually not there
-    //QTest::newRow("JIS X 0208") << "JIS X 0208" << false; // actually not there
     QTest::newRow("KOI8-R") << "KOI8-R" << false;
     QTest::newRow("KOI8-U") << "KOI8-U" << false;
-    //QTest::newRow("MuleLao-1") << "MuleLao-1" << false; //only on x11
-    QTest::newRow("ROMAN8") << "ROMAN8" << false;
+    QTest::newRow("Macintosh") << "Macintosh" << true;
     QTest::newRow("Shift-JIS") << "Shift-JIS" << false;
     QTest::newRow("TIS-620") << "TIS-620" << false;
     QTest::newRow("TSCII") << "TSCII" << false;
