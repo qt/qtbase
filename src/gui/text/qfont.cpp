@@ -1033,10 +1033,14 @@ int QFont::weight() const
 
     This enum contains the predefined font weights:
 
+    \value Thin 0
+    \value ExtraLight 12
     \value Light 25
     \value Normal 50
+    \value Medium 57
     \value DemiBold 63
     \value Bold 75
+    \value ExtraBold 81
     \value Black 87
 */
 
@@ -1063,7 +1067,7 @@ void QFont::setWeight(int weight)
     \fn bool QFont::bold() const
 
     Returns \c true if weight() is a value greater than
-   \l{Weight}{QFont::Normal}; otherwise returns \c false.
+   \l{Weight}{QFont::Medium}; otherwise returns \c false.
 
     \sa weight(), setBold(), QFontInfo::bold()
 */

@@ -57,6 +57,7 @@
 #include <private/qgtk2painter_p.h>
 #include <private/qapplication_p.h>
 #include <private/qiconloader_p.h>
+#include <qpa/qplatformfontdatabase.h>
 
 #include <QtWidgets/QMenu>
 #include <QtWidgets/QStyle>
@@ -823,17 +824,8 @@ QFont QGtkStylePrivate::getThemeFont()
         if (!family.isEmpty())
             font.setFamily(family);
 
-        int weight = pango_font_description_get_weight(gtk_font);
-        if (weight >= PANGO_WEIGHT_HEAVY)
-            font.setWeight(QFont::Black);
-        else if (weight >= PANGO_WEIGHT_BOLD)
-            font.setWeight(QFont::Bold);
-        else if (weight >= PANGO_WEIGHT_SEMIBOLD)
-            font.setWeight(QFont::DemiBold);
-        else if (weight >= PANGO_WEIGHT_NORMAL)
-            font.setWeight(QFont::Normal);
-        else
-            font.setWeight(QFont::Light);
+        const int weight = pango_font_description_get_weight(gtk_font);
+        font.setWeight(QPlatformFontDatabase::weightFromInteger(weight));
 
         PangoStyle fontstyle = pango_font_description_get_style(gtk_font);
         if (fontstyle == PANGO_STYLE_ITALIC)

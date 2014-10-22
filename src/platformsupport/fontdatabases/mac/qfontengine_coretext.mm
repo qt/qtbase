@@ -41,6 +41,7 @@
 
 #include "qfontengine_coretext_p.h"
 
+#include <qpa/qplatformfontdatabase.h>
 #include <QtCore/qendian.h>
 #include <QtCore/qsettings.h>
 
@@ -66,6 +67,29 @@ bool QCoreTextFontEngine::ct_getSfntTable(void *user_data, uint tag, uchar *buff
     return true;
 }
 
+QFont::Weight QCoreTextFontEngine::qtWeightFromCFWeight(float value)
+{
+    if (value >= 0.62)
+        return QFont::Black;
+    if (value >= 0.5)
+        return QFont::ExtraBold;
+    if (value >= 0.4)
+        return QFont::Bold;
+    if (value >= 0.3)
+        return QFont::DemiBold;
+    if (value >= 0.2)
+        return QFont::Medium;
+    if (value == 0.0)
+        return QFont::Normal;
+    if (value <= -0.4)
+        return QFont::Light;
+    if (value <= -0.6)
+        return QFont::ExtraLight;
+    if (value <= -0.8)
+        return QFont::Thin;
+    return QFont::Normal;
+}
+
 static void loadAdvancesForGlyphs(CTFontRef ctfont,
                                   QVarLengthArray<CGGlyph> &cgGlyphs,
                                   QGlyphLayout *glyphs, int len,
@@ -88,6 +112,16 @@ static void loadAdvancesForGlyphs(CTFontRef ctfont,
     }
 }
 
+static float getTraitValue(CFDictionaryRef allTraits, CFStringRef trait)
+{
+    if (CFDictionaryContainsKey(allTraits, trait)) {
+        CFNumberRef traitNum = (CFNumberRef) CFDictionaryGetValue(allTraits, trait);
+        float v = 0;
+        CFNumberGetValue(traitNum, kCFNumberFloatType, &v);
+        return v;
+    }
+    return 0;
+}
 
 int QCoreTextFontEngine::antialiasingThreshold = 0;
 QFontEngine::GlyphFormat QCoreTextFontEngine::defaultGlyphFormat = QFontEngine::Format_A32;
@@ -129,34 +163,6 @@ QCoreTextFontEngine::~QCoreTextFontEngine()
     CFRelease(ctfont);
 }
 
-static QFont::Weight weightFromInteger(int weight)
-{
-    if (weight < 400)
-        return QFont::Light;
-    else if (weight < 600)
-        return QFont::Normal;
-    else if (weight < 700)
-        return QFont::DemiBold;
-    else if (weight < 800)
-        return QFont::Bold;
-    else
-        return QFont::Black;
-}
-
-int getTraitValue(CFDictionaryRef allTraits, CFStringRef trait)
-{
-    if (CFDictionaryContainsKey(allTraits, trait)) {
-        CFNumberRef traitNum = (CFNumberRef) CFDictionaryGetValue(allTraits, trait);
-        float v = 0;
-        CFNumberGetValue(traitNum, kCFNumberFloatType, &v);
-        // the value we get from CFNumberRef is from -1.0 to 1.0
-        int value = v * 500 + 500;
-        return value;
-    }
-
-    return 0;
-}
-
 void QCoreTextFontEngine::init()
 {
     Q_ASSERT(ctfont != NULL);
@@ -182,8 +188,8 @@ void QCoreTextFontEngine::init()
         fontDef.style = QFont::StyleItalic;
 
     CFDictionaryRef allTraits = CTFontCopyTraits(ctfont);
-    fontDef.weight = weightFromInteger(getTraitValue(allTraits, kCTFontWeightTrait));
-    int slant = getTraitValue(allTraits, kCTFontSlantTrait);
+    fontDef.weight = QCoreTextFontEngine::qtWeightFromCFWeight(getTraitValue(allTraits, kCTFontWeightTrait));
+    int slant = static_cast<int>(getTraitValue(allTraits, kCTFontSlantTrait) * 500 + 500);
     if (slant > 500 && !(traits & kCTFontItalicTrait))
         fontDef.style = QFont::StyleOblique;
     CFRelease(allTraits);

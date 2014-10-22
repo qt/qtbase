@@ -618,20 +618,6 @@ QDebug operator<<(QDebug d, const QFontDef &def)
     return d;
 }
 
-// convert 0 ~ 1000 integer to QFont::Weight
-static inline QFont::Weight weightFromInteger(long weight)
-{
-    if (weight < 400)
-        return QFont::Light;
-    if (weight < 600)
-        return QFont::Normal;
-    if (weight < 700)
-        return QFont::DemiBold;
-    if (weight < 800)
-        return QFont::Bold;
-    return QFont::Black;
-}
-
 static inline QFontDatabase::WritingSystem writingSystemFromCharSet(uchar charSet)
 {
     switch (charSet) {
@@ -865,7 +851,7 @@ static bool addFontToDatabase(const QString &familyName, uchar charSet,
     const int size = scalable ? SMOOTH_SCALABLE : tm->tmHeight;
     const QFont::Style style = tm->tmItalic ? QFont::StyleItalic : QFont::StyleNormal;
     const bool antialias = false;
-    const QFont::Weight weight = weightFromInteger(tm->tmWeight);
+    const QFont::Weight weight = QPlatformFontDatabase::weightFromInteger(tm->tmWeight);
     const QFont::Stretch stretch = QFont::Unstretched;
 
 #ifndef QT_NO_DEBUG_OUTPUT
@@ -1253,7 +1239,7 @@ QFontEngine *QWindowsFontDatabase::fontEngine(const QByteArray &fontData, qreal 
             else
                 fontEngine->fontDef.style = QFont::StyleNormal;
 
-            fontEngine->fontDef.weight = weightFromInteger(qFromBigEndian<quint16>(os2Table->weightClass));
+            fontEngine->fontDef.weight = QPlatformFontDatabase::weightFromInteger(qFromBigEndian<quint16>(os2Table->weightClass));
         }
     }
 
@@ -1854,7 +1840,7 @@ QFont QWindowsFontDatabase::LOGFONT_to_QFont(const LOGFONT& logFont, int vertica
     QFont qFont(QString::fromWCharArray(logFont.lfFaceName));
     qFont.setItalic(logFont.lfItalic);
     if (logFont.lfWeight != FW_DONTCARE)
-        qFont.setWeight(weightFromInteger(logFont.lfWeight));
+        qFont.setWeight(QPlatformFontDatabase::weightFromInteger(logFont.lfWeight));
     const qreal logFontHeight = qAbs(logFont.lfHeight);
     qFont.setPointSizeF(logFontHeight * 72.0 / qreal(verticalDPI_In));
     qFont.setUnderline(logFont.lfUnderline);

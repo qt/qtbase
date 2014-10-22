@@ -281,41 +281,26 @@ QStringList QBasicFontDatabase::addTTFile(const QByteArray &fontData, const QByt
             if (supportedWritingSystems)
                 *supportedWritingSystems = writingSystems;
 
-            if (os2->usWeightClass == 0)
-                ;
-            else if (os2->usWeightClass < 150)
-                weight = qt_thinFontWeight;
-            else if (os2->usWeightClass < 250)
-                weight = qt_extralightFontWeight;
-            else if (os2->usWeightClass < 350)
-                weight = QFont::Light;
-            else if (os2->usWeightClass < 450)
-                weight = QFont::Normal;
-            else if (os2->usWeightClass < 550)
-                    weight = qt_mediumFontWeight;
-            else if (os2->usWeightClass < 650)
-                weight = QFont::DemiBold;
-            else if (os2->usWeightClass < 750)
-                weight = QFont::Bold;
-            else if (os2->usWeightClass < 1000)
-                weight = QFont::Black;
-
-            if (os2->panose[2] >= 2) {
+            if (os2->usWeightClass) {
+                weight = QPlatformFontDatabase::weightFromInteger(os2->usWeightClass);
+            } else if (os2->panose[2]) {
                 int w = os2->panose[2];
                 if (w <= 1)
-                    weight = qt_thinFontWeight;
+                    weight = QFont::Thin;
                 else if (w <= 2)
-                    weight = qt_extralightFontWeight;
+                    weight = QFont::ExtraLight;
                 else if (w <= 3)
                     weight = QFont::Light;
                 else if (w <= 5)
                     weight = QFont::Normal;
                 else if (w <= 6)
-                    weight = qt_mediumFontWeight;
+                    weight = QFont::Medium;
                 else if (w <= 7)
                     weight = QFont::DemiBold;
                 else if (w <= 8)
                     weight = QFont::Bold;
+                else if (w <= 9)
+                    weight = QFont::ExtraBold;
                 else if (w <= 10)
                     weight = QFont::Black;
             }

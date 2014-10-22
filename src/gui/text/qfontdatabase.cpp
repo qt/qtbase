@@ -90,22 +90,29 @@ static int getFontWeight(const QString &weightString)
     // order of "expense".
     //
     // A simple string test is the cheapest, so let's do that first.
-    if (s == QLatin1String("normal"))
+    // Test in decreasing order of commonness
+    if (s == QLatin1String("normal") || s == QLatin1String("regular"))
         return QFont::Normal;
-    if (s == QLatin1String("medium"))
-        return qt_mediumFontWeight;
     if (s == QLatin1String("bold"))
         return QFont::Bold;
-    if (s == QLatin1String("demibold") || s == QLatin1String("demi bold"))
+    if (s == QLatin1String("semibold") || s == QLatin1String("semi bold")
+            || s == QLatin1String("demibold") || s == QLatin1String("demi bold"))
         return QFont::DemiBold;
+    if (s == QLatin1String("medium"))
+        return QFont::Medium;
     if (s == QLatin1String("black"))
         return QFont::Black;
     if (s == QLatin1String("light"))
         return QFont::Light;
     if (s == QLatin1String("thin"))
-        return qt_thinFontWeight;
-    if (s == QLatin1String("extralight"))
-        return qt_extralightFontWeight;
+        return QFont::Thin;
+    const QStringRef s2 = s.midRef(2);
+    if (s.startsWith(QLatin1String("ex")) || s.startsWith(QLatin1String("ul"))) {
+            if (s2 == QLatin1String("tralight") || s == QLatin1String("tra light"))
+                return QFont::ExtraLight;
+            if (s2 == QLatin1String("trabold") || s2 == QLatin1String("tra bold"))
+                return QFont::ExtraBold;
+    }
 
     // Next up, let's see if contains() matches: slightly more expensive, but
     // still fast enough.
@@ -123,47 +130,44 @@ static int getFontWeight(const QString &weightString)
     // These are (very) slow compared to simple string ops, so we do these last.
     // As using translated values for such things is not very common, this should
     // not be too bad.
-    QString translatedNormal = QCoreApplication::translate("QFontDatabase", "Normal").toLower();
-    if (s == translatedNormal)
+    if (s.compare(QCoreApplication::translate("QFontDatabase", "Normal", "The Normal or Regular font weight"), Qt::CaseInsensitive) == 0)
         return QFont::Normal;
-    QString translatedBold = QCoreApplication::translate("QFontDatabase", "Bold").toLower();
+    const QString translatedBold = QCoreApplication::translate("QFontDatabase", "Bold").toLower();
     if (s == translatedBold)
         return QFont::Bold;
-    QString translatedDemiBold = QCoreApplication::translate("QFontDatabase", "Demi Bold").toLower();
-    if (s == translatedDemiBold)
+    if (s.compare(QCoreApplication::translate("QFontDatabase", "Demi Bold"), Qt::CaseInsensitive) == 0)
         return QFont::DemiBold;
-    QString translatedBlack = QCoreApplication::translate("QFontDatabase", "Black").toLower();
-    if (s == translatedBlack)
+    if (s.compare(QCoreApplication::translate("QFontDatabase", "Medium", "The Medium font weight"), Qt::CaseInsensitive) == 0)
+        return QFont::Medium;
+    if (s.compare(QCoreApplication::translate("QFontDatabase", "Black"), Qt::CaseInsensitive) == 0)
         return QFont::Black;
+    const QString translatedLight = QCoreApplication::translate("QFontDatabase", "Light").toLower();
+    if (s == translatedLight)
+        return QFont::Light;
+    if (s.compare(QCoreApplication::translate("QFontDatabase", "Thin"), Qt::CaseInsensitive) == 0)
+        return QFont::Thin;
+    if (s.compare(QCoreApplication::translate("QFontDatabase", "Extra Light"), Qt::CaseInsensitive) == 0)
+        return QFont::ExtraLight;
+    if (s.compare(QCoreApplication::translate("QFontDatabase", "Extra Bold"), Qt::CaseInsensitive) == 0)
+        return QFont::ExtraBold;
 
     // And now the contains() checks for the translated strings.
+    const QString translatedExtra = QCoreApplication::translate("QFontDatabase", "Extra").toLower();
     if (s.contains(translatedBold)) {
         QString translatedDemi = QCoreApplication::translate("QFontDatabase", "Demi").toLower();
-        if (s == translatedDemi)
+        if (s .contains(translatedDemi))
             return QFont::DemiBold;
+        if (s.contains(translatedExtra))
+            return QFont::ExtraBold;
         return QFont::Bold;
     }
 
-    QString translatedLight = QCoreApplication::translate("QFontDatabase", "Light").toLower();
-    if (s == translatedLight || s.contains(translatedLight))
+    if (s.contains(translatedLight)) {
+        if (s.contains(translatedExtra))
+            return QFont::ExtraLight;
         return QFont::Light;
-
+    }
     return QFont::Normal;
-}
-
-// convert 0 ~ 1000 integer to QFont::Weight
-QFont::Weight weightFromInteger(int weight)
-{
-    if (weight < 400)
-        return QFont::Light;
-    else if (weight < 600)
-        return QFont::Normal;
-    else if (weight < 700)
-        return QFont::DemiBold;
-    else if (weight < 800)
-        return QFont::Bold;
-    else
-        return QFont::Black;
 }
 
 struct QtFontEncoding

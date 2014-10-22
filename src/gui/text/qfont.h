@@ -86,12 +86,17 @@ public:
         PreferFullHinting           = 3
     };
 
+    // Mapping OpenType weight value.
     enum Weight {
-        Light    = 25,
-        Normal   = 50,
-        DemiBold = 63,
-        Bold     = 75,
-        Black    = 87
+        Thin     = 0,    // 100
+        ExtraLight = 12, // 200
+        Light    = 25,   // 300
+        Normal   = 50,   // 400
+        Medium   = 57,   // 500
+        DemiBold = 63,   // 600
+        Bold     = 75,   // 700
+        ExtraBold = 81,  // 800
+        Black    = 87    // 900
     };
 
     enum Style {
@@ -313,7 +318,7 @@ Q_DECLARE_SHARED(QFont)
 Q_GUI_EXPORT uint qHash(const QFont &font, uint seed = 0) Q_DECL_NOTHROW;
 
 inline bool QFont::bold() const
-{ return weight() > Normal; }
+{ return weight() > Medium; }
 
 
 inline void QFont::setBold(bool enable)

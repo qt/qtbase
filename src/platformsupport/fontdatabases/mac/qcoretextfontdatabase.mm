@@ -286,25 +286,9 @@ static void getFontDescription(CTFontDescriptorRef font, FontDescription *fd)
 
     if (styles) {
         if (CFNumberRef weightValue = (CFNumberRef) CFDictionaryGetValue(styles, kCTFontWeightTrait)) {
-            double normalizedWeight;
-            if (CFNumberGetValue(weightValue, kCFNumberDoubleType, &normalizedWeight)) {
-                if (normalizedWeight >= 0.62)
-                    fd->weight = QFont::Black;
-                else if (normalizedWeight >= 0.4)
-                    fd->weight = QFont::Bold;
-                else if (normalizedWeight >= 0.3)
-                    fd->weight = QFont::DemiBold;
-                else if (normalizedWeight >= 0.2)
-                    fd->weight = qt_mediumFontWeight;
-                else if (normalizedWeight == 0.0)
-                    fd->weight = QFont::Normal;
-                else if (normalizedWeight <= -0.4)
-                    fd->weight = QFont::Light;
-                else if (normalizedWeight <= -0.6)
-                    fd->weight = qt_extralightFontWeight;
-                else if (normalizedWeight <= -0.8)
-                    fd->weight = qt_thinFontWeight;
-            }
+            float normalizedWeight;
+            if (CFNumberGetValue(weightValue, kCFNumberFloatType, &normalizedWeight))
+                fd->weight = QCoreTextFontEngine::qtWeightFromCFWeight(normalizedWeight);
         }
         if (CFNumberRef italic = (CFNumberRef) CFDictionaryGetValue(styles, kCTFontSlantTrait)) {
             double d;

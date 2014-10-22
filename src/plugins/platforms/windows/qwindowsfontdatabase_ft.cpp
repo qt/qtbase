@@ -52,20 +52,6 @@
 
 QT_BEGIN_NAMESPACE
 
-// convert 0 ~ 1000 integer to QFont::Weight
-static inline QFont::Weight weightFromInteger(long weight)
-{
-    if (weight < 400)
-        return QFont::Light;
-    if (weight < 600)
-        return QFont::Normal;
-    if (weight < 700)
-        return QFont::DemiBold;
-    if (weight < 800)
-        return QFont::Bold;
-    return QFont::Black;
-}
-
 static inline QFontDatabase::WritingSystem writingSystemFromCharSet(uchar charSet)
 {
     switch (charSet) {
@@ -139,7 +125,7 @@ static bool addFontToDatabase(const QString &familyName, uchar charSet,
     const int size = scalable ? SMOOTH_SCALABLE : tm->tmHeight;
     const QFont::Style style = tm->tmItalic ? QFont::StyleItalic : QFont::StyleNormal;
     const bool antialias = false;
-    const QFont::Weight weight = weightFromInteger(tm->tmWeight);
+    const QFont::Weight weight = QPlatformFontDatabase::weightFromInteger(tm->tmWeight);
     const QFont::Stretch stretch = QFont::Unstretched;
 
 #ifndef QT_NO_DEBUG_OUTPUT

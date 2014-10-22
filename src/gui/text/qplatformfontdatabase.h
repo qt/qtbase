@@ -110,6 +110,7 @@ public:
 
     // helper
     static QSupportedWritingSystems writingSystemsFromTrueTypeBits(quint32 unicodeRange[4], quint32 codePageRange[2]);
+    static QFont::Weight weightFromInteger(int weight);
 
     //callback
     static void registerQPF2Font(const QByteArray &dataArray, void *handle);

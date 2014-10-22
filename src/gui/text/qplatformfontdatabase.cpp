@@ -599,6 +599,34 @@ QSupportedWritingSystems QPlatformFontDatabase::writingSystemsFromTrueTypeBits(q
 }
 
 /*!
+    Helper function that returns the Qt font weight matching a given opentype integer value.
+
+    \since 5.5
+*/
+
+// convert 0 ~ 1000 integer to QFont::Weight
+QFont::Weight QPlatformFontDatabase::weightFromInteger(int weight)
+{
+    if (weight < 150)
+        return QFont::Thin;
+    if (weight < 250)
+        return QFont::ExtraLight;
+    if (weight < 350)
+        return QFont::Light;
+    if (weight < 450)
+        return QFont::Normal;
+    if (weight < 550)
+        return QFont::Medium;
+    if (weight < 650)
+        return QFont::DemiBold;
+    if (weight < 750)
+        return QFont::Bold;
+    if (weight < 850)
+        return QFont::ExtraBold;
+    return QFont::Black;
+}
+
+/*!
     Helper function that register the \a alias for the \a familyName.
 
     \since 5.2

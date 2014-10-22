@@ -76,18 +76,24 @@ static inline int weightFromFcWeight(int fcweight)
     // FC_WEIGHT_DEMIBOLD and QFont::DemiBold) we map one to the other but other values map
     // to intermediate Qt weights.
 
-    if (fcweight < 0)
-        return 0;
+    if (fcweight <= FC_WEIGHT_THIN)
+        return QFont::Thin;
+    if (fcweight <= FC_WEIGHT_ULTRALIGHT)
+        return mapToQtWeightForRange(fcweight, FC_WEIGHT_THIN, FC_WEIGHT_ULTRALIGHT, QFont::Thin, QFont::ExtraLight);
     if (fcweight <= FC_WEIGHT_LIGHT)
-        return mapToQtWeightForRange(fcweight, 0, FC_WEIGHT_LIGHT, 0, QFont::Light);
+        return mapToQtWeightForRange(fcweight, FC_WEIGHT_ULTRALIGHT, FC_WEIGHT_LIGHT, QFont::ExtraLight, QFont::Light);
     if (fcweight <= FC_WEIGHT_NORMAL)
         return mapToQtWeightForRange(fcweight, FC_WEIGHT_LIGHT, FC_WEIGHT_NORMAL, QFont::Light, QFont::Normal);
+    if (fcweight <= FC_WEIGHT_MEDIUM)
+        return mapToQtWeightForRange(fcweight, FC_WEIGHT_NORMAL, FC_WEIGHT_MEDIUM, QFont::Normal, QFont::Medium);
     if (fcweight <= FC_WEIGHT_DEMIBOLD)
-        return mapToQtWeightForRange(fcweight, FC_WEIGHT_NORMAL, FC_WEIGHT_DEMIBOLD, QFont::Normal, QFont::DemiBold);
+        return mapToQtWeightForRange(fcweight, FC_WEIGHT_MEDIUM, FC_WEIGHT_DEMIBOLD, QFont::Medium, QFont::DemiBold);
     if (fcweight <= FC_WEIGHT_BOLD)
         return mapToQtWeightForRange(fcweight, FC_WEIGHT_DEMIBOLD, FC_WEIGHT_BOLD, QFont::DemiBold, QFont::Bold);
+    if (fcweight <= FC_WEIGHT_ULTRABOLD)
+        return mapToQtWeightForRange(fcweight, FC_WEIGHT_BOLD, FC_WEIGHT_ULTRABOLD, QFont::Bold, QFont::ExtraBold);
     if (fcweight <= FC_WEIGHT_BLACK)
-        return mapToQtWeightForRange(fcweight, FC_WEIGHT_BOLD, FC_WEIGHT_BLACK, QFont::Bold, QFont::Black);
+        return mapToQtWeightForRange(fcweight, FC_WEIGHT_ULTRABOLD, FC_WEIGHT_BLACK, QFont::ExtraBold, QFont::Black);
     if (fcweight <= FC_WEIGHT_ULTRABLACK)
         return mapToQtWeightForRange(fcweight, FC_WEIGHT_BLACK, FC_WEIGHT_ULTRABLACK, QFont::Black, maxWeight);
     return maxWeight;

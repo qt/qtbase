@@ -209,31 +209,7 @@ void QWinRTFontDatabase::populateFamily(const QString &familyName)
             }
         }
 
-        QFont::Weight weight;
-        switch (font->GetWeight()) {
-        case DWRITE_FONT_WEIGHT_THIN:
-        case DWRITE_FONT_WEIGHT_EXTRA_LIGHT:
-        case DWRITE_FONT_WEIGHT_LIGHT:
-        case DWRITE_FONT_WEIGHT_SEMI_LIGHT:
-            weight = QFont::Light;
-            break;
-        default:
-        case DWRITE_FONT_WEIGHT_NORMAL:
-        case DWRITE_FONT_WEIGHT_MEDIUM:
-            weight = QFont::Normal;
-            break;
-        case DWRITE_FONT_WEIGHT_DEMI_BOLD:
-            weight = QFont::DemiBold;
-            break;
-        case DWRITE_FONT_WEIGHT_BOLD:
-        case DWRITE_FONT_WEIGHT_EXTRA_BOLD:
-            weight = QFont::Bold;
-            break;
-        case DWRITE_FONT_WEIGHT_BLACK:
-        case DWRITE_FONT_WEIGHT_EXTRA_BLACK:
-            weight = QFont::Black;
-            break;
-        }
+        QFont::Weight weight = QPlatformFontDatabase::weightFromInteger(font->GetWeight());
 
         QFont::Style style;
         switch (font->GetStyle()) {
