@@ -2022,7 +2022,8 @@ QString Configure::locateFile(const QString &fileName) const
     if (file.endsWith(".h")) {
         static const QStringList headerPaths =
             Environment::headerPaths(Environment::compilerFromQMakeSpec(dictionary[QStringLiteral("QMAKESPEC")]));
-        pathList = headerPaths;
+        pathList = qmakeIncludes;
+        pathList += headerPaths;
     } else if (file.endsWith(".lib") ||  file.endsWith(".a")) {
         static const QStringList libPaths =
             Environment::libraryPaths(Environment::compilerFromQMakeSpec(dictionary[QStringLiteral("QMAKESPEC")]));
