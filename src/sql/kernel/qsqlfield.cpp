@@ -509,21 +509,24 @@ bool QSqlField::isValid() const
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug dbg, const QSqlField &f)
 {
-    dbg.nospace() << "QSqlField(" << f.name() << ", " << QMetaType::typeName(f.type());
+    QDebugStateSaver saver(dbg);
+    dbg.nospace();
+    dbg << "QSqlField(" << f.name() << ", " << QMetaType::typeName(f.type());
     if (f.length() >= 0)
-        dbg.nospace() << ", length: " << f.length();
+        dbg << ", length: " << f.length();
     if (f.precision() >= 0)
-        dbg.nospace() << ", precision: " << f.precision();
+        dbg << ", precision: " << f.precision();
     if (f.requiredStatus() != QSqlField::Unknown)
-        dbg.nospace() << ", required: "
-                      << (f.requiredStatus() == QSqlField::Required ? "yes" : "no");
-    dbg.nospace() << ", generated: " << (f.isGenerated() ? "yes" : "no");
+        dbg << ", required: "
+            << (f.requiredStatus() == QSqlField::Required ? "yes" : "no");
+    dbg  << ", generated: " << (f.isGenerated() ? "yes" : "no");
     if (f.typeID() >= 0)
-        dbg.nospace() << ", typeID: " << f.typeID();
+        dbg << ", typeID: " << f.typeID();
     if (!f.defaultValue().isNull())
-        dbg.nospace() << ", auto-value: \"" << f.defaultValue() << '\"';
-    dbg.nospace() << ')';
-    return dbg.space();
+        dbg << ", defaultValue: \"" << f.defaultValue() << '\"';
+    dbg << ", autoValue: " << f.isAutoValue()
+        << ", readOnly: " << f.isReadOnly() << ')';
+    return dbg;
 }
 #endif
 

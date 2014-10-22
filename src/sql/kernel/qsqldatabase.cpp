@@ -1503,15 +1503,18 @@ QSql::NumericalPrecisionPolicy QSqlDatabase::numericalPrecisionPolicy() const
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug dbg, const QSqlDatabase &d)
 {
+    QDebugStateSaver saver(dbg);
+    dbg.nospace();
+    dbg.noquote();
     if (!d.isValid()) {
-        dbg.nospace() << "QSqlDatabase(invalid)";
-        return dbg.space();
+        dbg << "QSqlDatabase(invalid)";
+        return dbg;
     }
 
-    dbg.nospace() << "QSqlDatabase(driver=\"" << d.driverName() << "\", database=\""
-                  << d.databaseName() << "\", host=\"" << d.hostName() << "\", port=" << d.port()
-                  << ", user=\"" << d.userName() << "\", open=" << d.isOpen() << ")";
-    return dbg.space();
+    dbg << "QSqlDatabase(driver=\"" << d.driverName() << "\", database=\""
+        << d.databaseName() << "\", host=\"" << d.hostName() << "\", port=" << d.port()
+        << ", user=\"" << d.userName() << "\", open=" << d.isOpen() << ')';
+    return dbg;
 }
 #endif
 
