@@ -235,8 +235,10 @@ static QVariant qtValue(CFPropertyListRef cfvalue)
             int i;
             qint64 ll;
 
-            if (CFNumberGetValue(cfnumber, kCFNumberIntType, &i))
+            if (CFNumberGetType(cfnumber) == kCFNumberIntType) {
+                CFNumberGetValue(cfnumber, kCFNumberIntType, &i);
                 return i;
+            }
             CFNumberGetValue(cfnumber, kCFNumberLongLongType, &ll);
             return ll;
         }
