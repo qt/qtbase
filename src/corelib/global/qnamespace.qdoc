@@ -190,7 +190,8 @@
     \value AA_ShareOpenGLContexts Enables resource sharing between the OpenGL
            contexts used by classes like QOpenGLWidget and QQuickWidget. This
            allows sharing OpenGL resources, like textures, between QOpenGLWidget
-           instances that belong to different top-level windows.
+           instances that belong to different top-level windows. This value has
+           been added in Qt 5.4.
 
     The following values are obsolete:
 
