@@ -4093,14 +4093,16 @@ QObjectUserData* QObject::userData(uint id) const
 
 
 #ifndef QT_NO_DEBUG_STREAM
-QDebug operator<<(QDebug dbg, const QObject *o) {
+QDebug operator<<(QDebug dbg, const QObject *o)
+{
+    QDebugStateSaver saver(dbg);
     if (!o)
-        return dbg << "QObject(0x0) ";
+        return dbg << "QObject(0x0)";
     dbg.nospace() << o->metaObject()->className() << '(' << (void *)o;
     if (!o->objectName().isEmpty())
         dbg << ", name = " << o->objectName();
     dbg << ')';
-    return dbg.space();
+    return dbg;
 }
 #endif
 
