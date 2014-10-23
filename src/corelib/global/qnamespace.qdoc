@@ -182,7 +182,7 @@
            \l{http://www.mesa3d.org/llvmpipe.html}{Mesa llvmpipe}, providing
            OpenGL 2.1. The value may have no effect if no such OpenGL
            implementation is available. The default name of this library is
-           QtSoftwareOpenGL.dll and can be overridden by setting the environment
+           opengl32sw.dll and can be overridden by setting the environment
            variable \e QT_OPENGL_DLL. See the platform-specific pages, for
            instance \l{Qt for Windows}, for more information.  This value has
            been added in Qt 5.4.
