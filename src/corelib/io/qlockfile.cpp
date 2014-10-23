@@ -287,7 +287,7 @@ bool QLockFilePrivate::getLockInfo(qint64 *pid, QString *hostname, QString *appn
     appNameLine.chop(1);
     QByteArray hostNameLine = reader.readLine();
     hostNameLine.chop(1);
-    if (pidLine.isEmpty() || appNameLine.isEmpty())
+    if (pidLine.isEmpty())
         return false;
 
     qint64 thePid = pidLine.toLongLong();
