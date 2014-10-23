@@ -236,17 +236,39 @@ static QString qWarnODBCHandle(int handleType, SQLHANDLE handle, int *nativeCode
     return result;
 }
 
+static QString qODBCWarn(const SQLHANDLE hStmt, const SQLHANDLE envHandle = 0,
+                         const SQLHANDLE pDbC = 0, int *nativeCode = 0)
+{
+    QString result;
+    if (envHandle)
+        result += qWarnODBCHandle(SQL_HANDLE_ENV, envHandle, nativeCode);
+    if (pDbC) {
+        const QString dMessage = qWarnODBCHandle(SQL_HANDLE_DBC, pDbC, nativeCode);
+        if (!dMessage.isEmpty()) {
+            if (!result.isEmpty())
+                result += QLatin1Char(' ');
+            result += dMessage;
+        }
+    }
+    if (hStmt) {
+        const QString hMessage = qWarnODBCHandle(SQL_HANDLE_STMT, hStmt, nativeCode);
+        if (!hMessage.isEmpty()) {
+            if (!result.isEmpty())
+                result += QLatin1Char(' ');
+            result += hMessage;
+        }
+    }
+    return result;
+}
+
 static QString qODBCWarn(const QODBCPrivate* odbc, int *nativeCode = 0)
 {
-    return QString(qWarnODBCHandle(SQL_HANDLE_ENV, odbc->dpEnv()) + QLatin1Char(' ')
-             + qWarnODBCHandle(SQL_HANDLE_DBC, odbc->dpDbc()) + QLatin1Char(' ')
-             + qWarnODBCHandle(SQL_HANDLE_STMT, odbc->hStmt, nativeCode)).simplified();
+    return qODBCWarn(odbc->hStmt, odbc->dpEnv(), odbc->dpDbc(), nativeCode);
 }
 
 static QString qODBCWarn(const QODBCDriverPrivate* odbc, int *nativeCode = 0)
 {
-    return QString(qWarnODBCHandle(SQL_HANDLE_ENV, odbc->hEnv) + QLatin1Char(' ')
-             + qWarnODBCHandle(SQL_HANDLE_DBC, odbc->hDbc, nativeCode)).simplified();
+    return qODBCWarn(0, odbc->hEnv, odbc->hDbc, nativeCode);
 }
 
 static void qSqlWarning(const QString& message, const QODBCPrivate* odbc)
@@ -257,6 +279,11 @@ static void qSqlWarning(const QString& message, const QODBCPrivate* odbc)
 static void qSqlWarning(const QString &message, const QODBCDriverPrivate *odbc)
 {
     qWarning() << message << "\tError:" << qODBCWarn(odbc);
+}
+
+static void qSqlWarning(const QString &message, const SQLHANDLE hStmt)
+{
+    qWarning() << message << "\tError:" << qODBCWarn(hStmt);
 }
 
 static QSqlError qMakeError(const QString& err, QSqlError::ErrorType type, const QODBCPrivate* p)
@@ -274,10 +301,8 @@ static QSqlError qMakeError(const QString& err, QSqlError::ErrorType type,
     return QSqlError(QLatin1String("QODBC3: ") + err, qODBCWarn(p), type, nativeCode);
 }
 
-template<class T>
-static QVariant::Type qDecodeODBCType(SQLSMALLINT sqltype, const T* p, bool isSigned = true)
+static QVariant::Type qDecodeODBCType(SQLSMALLINT sqltype, bool isSigned = true)
 {
-    Q_UNUSED(p);
     QVariant::Type type = QVariant::Invalid;
     switch (sqltype) {
     case SQL_DECIMAL:
@@ -554,6 +579,8 @@ static QVariant qGetBigIntData(SQLHANDLE hStmt, int column, bool isSigned = true
         return quint64(lngbuf);
 }
 
+static QSqlField qMakeFieldInfo(const SQLHANDLE hStmt, int i, QString *errorMessage);
+
 // creates a QSqlField from a valid hStmt generated
 // by SQLColumns. The hStmt has to point to a valid position.
 static QSqlField qMakeFieldInfo(const SQLHANDLE hStmt, const QODBCDriverPrivate* p)
@@ -578,6 +605,15 @@ static QSqlField qMakeFieldInfo(const SQLHANDLE hStmt, const QODBCDriverPrivate*
 
 static QSqlField qMakeFieldInfo(const QODBCPrivate* p, int i )
 {
+    QString errorMessage;
+    const QSqlField result = qMakeFieldInfo(p->hStmt, i, &errorMessage);
+    if (!errorMessage.isEmpty())
+        qSqlWarning(errorMessage, p);
+    return result;
+}
+
+static QSqlField qMakeFieldInfo(const SQLHANDLE hStmt, int i, QString *errorMessage)
+{
     SQLSMALLINT colNameLen;
     SQLSMALLINT colType;
     SQLULEN colSize;
@@ -585,7 +621,8 @@ static QSqlField qMakeFieldInfo(const QODBCPrivate* p, int i )
     SQLSMALLINT nullable;
     SQLRETURN r = SQL_ERROR;
     QVarLengthArray<SQLTCHAR> colName(COLNAMESIZE);
-    r = SQLDescribeCol(p->hStmt,
+    errorMessage->clear();
+    r = SQLDescribeCol(hStmt,
                         i+1,
                         colName.data(),
                         (SQLSMALLINT)COLNAMESIZE,
@@ -596,12 +633,12 @@ static QSqlField qMakeFieldInfo(const QODBCPrivate* p, int i )
                         &nullable);
 
     if (r != SQL_SUCCESS) {
-        qSqlWarning(QString::fromLatin1("qMakeField: Unable to describe column %1").arg(i), p);
+        *errorMessage = QStringLiteral("qMakeField: Unable to describe column ") + QString::number(i);
         return QSqlField();
     }
 
     SQLLEN unsignedFlag = SQL_FALSE;
-    r = SQLColAttribute (p->hStmt,
+    r = SQLColAttribute (hStmt,
                          i + 1,
                          SQL_DESC_UNSIGNED,
                          0,
@@ -609,12 +646,13 @@ static QSqlField qMakeFieldInfo(const QODBCPrivate* p, int i )
                          0,
                          &unsignedFlag);
     if (r != SQL_SUCCESS) {
-        qSqlWarning(QString::fromLatin1("qMakeField: Unable to get column attributes for column %1").arg(i), p);
+        qSqlWarning(QStringLiteral("qMakeField: Unable to get column attributes for column ")
+                    + QString::number(i), hStmt);
     }
 
     const QString qColName(fromSQLTCHAR(colName, colNameLen));
     // nullable can be SQL_NO_NULLS, SQL_NULLABLE or SQL_NULLABLE_UNKNOWN
-    QVariant::Type type = qDecodeODBCType(colType, p, unsignedFlag == SQL_FALSE);
+    QVariant::Type type = qDecodeODBCType(colType, unsignedFlag == SQL_FALSE);
     QSqlField f(qColName, type);
     f.setSqlType(colType);
     f.setLength(colSize == 0 ? -1 : int(colSize));
