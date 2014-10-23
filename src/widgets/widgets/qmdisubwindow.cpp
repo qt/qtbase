@@ -3058,6 +3058,9 @@ void QMdiSubWindow::leaveEvent(QEvent * /*leaveEvent*/)
 
 /*!
     \reimp
+
+    \warning When maximizing or restoring a subwindow, the resulting call to this function
+    may have an invalid QResizeEvent::oldSize().
 */
 void QMdiSubWindow::resizeEvent(QResizeEvent *resizeEvent)
 {
