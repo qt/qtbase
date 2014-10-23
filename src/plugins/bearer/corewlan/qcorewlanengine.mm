@@ -544,18 +544,42 @@ void QCoreWlanEngine::disconnectFromId(const QString &id)
     QMutexLocker locker(&mutex);
 
     QString interfaceString = getInterfaceFromId(id);
+    if (interfaceString.isEmpty()) {
+        locker.unlock();
+        emit connectionError(id, DisconnectionError);
+        return;
+    }
     NSAutoreleasePool *autoreleasepool = [[NSAutoreleasePool alloc] init];
 
     CWInterface *wifiInterface =
         [CWInterface interfaceWithName: QCFString::toNSString(interfaceString)];
+    disconnectedInterfaceString = interfaceString;
 
     [wifiInterface disassociate];
-    if (wifiInterface.serviceActive) {
-        locker.unlock();
-        emit connectionError(id, DisconnectionError);
-        locker.relock();
-    }
+
+    QTimer::singleShot(1000, this,SLOT(checkDisconnect()));
     [autoreleasepool release];
+}
+
+void QCoreWlanEngine::checkDisconnect()
+{
+    QMutexLocker locker(&mutex);
+    if (!disconnectedInterfaceString.isEmpty()) {
+        NSAutoreleasePool *autoreleasepool = [[NSAutoreleasePool alloc] init];
+
+        CWInterface *wifiInterface =
+                [CWInterface interfaceWithName: QCFString::toNSString(disconnectedInterfaceString)];
+
+        const QString networkSsid = QCFString::toQString([wifiInterface ssid]);
+        if (!networkSsid.isEmpty()) {
+            const QString id = QString::number(qHash(QLatin1String("corewlan:") + networkSsid));
+            locker.unlock();
+            emit connectionError(id, DisconnectionError);
+            locker.relock();
+        }
+        [autoreleasepool release];
+        disconnectedInterfaceString.clear();
+    }
 }
 
 void QCoreWlanEngine::requestUpdate()
