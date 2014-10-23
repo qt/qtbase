@@ -265,28 +265,29 @@ public class QtActivityDelegate
             }
 
             if (Build.VERSION.SDK_INT > 10 && (inputHints & ImhHiddenText) != 0)
-                inputType |= 0x10;
+                inputType |= 0x10 /* TYPE_NUMBER_VARIATION_PASSWORD */;
         } else if ((inputHints & ImhDialableCharactersOnly) != 0) {
             inputType = android.text.InputType.TYPE_CLASS_PHONE;
         } else if ((inputHints & (ImhDate | ImhTime)) != 0) {
             inputType = android.text.InputType.TYPE_CLASS_DATETIME;
-            if ((inputHints & ImhDate) != 0)
-                inputType |= android.text.InputType.TYPE_DATETIME_VARIATION_DATE;
-            if ((inputHints & ImhTime) != 0)
-                inputType |= android.text.InputType.TYPE_DATETIME_VARIATION_TIME;
+            if ((inputHints & (ImhDate | ImhTime)) != (ImhDate | ImhTime)) {
+                if ((inputHints & ImhDate) != 0)
+                    inputType |= android.text.InputType.TYPE_DATETIME_VARIATION_DATE;
+                if ((inputHints & ImhTime) != 0)
+                    inputType |= android.text.InputType.TYPE_DATETIME_VARIATION_TIME;
+            } // else {  TYPE_DATETIME_VARIATION_NORMAL(0) }
         } else { // CLASS_TEXT
-            if ((inputHints & ImhHiddenText) != 0) {
+            if ((inputHints & (ImhEmailCharactersOnly | ImhUrlCharactersOnly)) != 0) {
+                if ((inputHints & ImhUrlCharactersOnly) != 0) {
+                    inputType |= android.text.InputType.TYPE_TEXT_VARIATION_URI;
+                    imeOptions = android.view.inputmethod.EditorInfo.IME_ACTION_GO;
+                } else if ((inputHints & ImhEmailCharactersOnly) != 0) {
+                    inputType |= android.text.InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS;
+                }
+            } else if ((inputHints & ImhHiddenText) != 0) {
                 inputType |= android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD;
-            } else if ((inputHints & (ImhNoAutoUppercase | ImhNoPredictiveText | ImhSensitiveData)) != 0) {
+            } else if ((inputHints & ImhSensitiveData) != 0) {
                 inputType |= android.text.InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD;
-            }
-
-            if ((inputHints & ImhEmailCharactersOnly) != 0)
-                inputType |= android.text.InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS;
-
-            if ((inputHints & ImhUrlCharactersOnly) != 0) {
-                inputType |= android.text.InputType.TYPE_TEXT_VARIATION_URI;
-                imeOptions = android.view.inputmethod.EditorInfo.IME_ACTION_GO;
             }
 
             if ((inputHints & ImhMultiLine) != 0)
@@ -300,8 +301,10 @@ public class QtActivityDelegate
                 inputType |= android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES;
             }
 
-            if ((inputHints & ImhNoPredictiveText) != 0 || (inputHints & ImhSensitiveData) != 0)
+            if ((inputHints & ImhNoPredictiveText) != 0 || (inputHints & ImhSensitiveData) != 0
+                || (inputHints & ImhHiddenText) != 0) {
                 inputType |= android.text.InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS;
+            }
         }
 
         if ((inputHints & ImhMultiLine) != 0)
