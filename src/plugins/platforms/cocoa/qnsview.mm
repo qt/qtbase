@@ -736,6 +736,12 @@ static NSString *_q_NSWindowDidChangeOcclusionStateNotification = nil;
     case NSRightMouseDown:
         m_frameStrutButtons |= Qt::RightButton;
         break;
+    case NSLeftMouseDragged:
+        m_frameStrutButtons |= Qt::LeftButton;
+        break;
+    case NSRightMouseDragged:
+        m_frameStrutButtons |= Qt::RightButton;
+        break;
     case NSRightMouseUp:
         m_frameStrutButtons &= ~Qt::RightButton;
         break;
