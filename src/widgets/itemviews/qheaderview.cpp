@@ -2371,7 +2371,7 @@ void QHeaderView::mouseMoveEvent(QMouseEvent *e)
 {
     Q_D(QHeaderView);
     int pos = d->orientation == Qt::Horizontal ? e->x() : e->y();
-    if (pos < 0)
+    if (pos < 0 && d->state != QHeaderViewPrivate::SelectSections)
         return;
     if (e->buttons() == Qt::NoButton) {
 #if !defined(Q_WS_MAC)
@@ -2430,7 +2430,9 @@ void QHeaderView::mouseMoveEvent(QMouseEvent *e)
             return;
         }
         case QHeaderViewPrivate::SelectSections: {
-            int logical = logicalIndexAt(pos);
+            int logical = logicalIndexAt(qMax(-d->offset, pos));
+            if (logical == -1 && pos > 0)
+                logical = d->lastVisibleVisualIndex();
             if (logical == d->pressed)
                 return; // nothing to do
             else if (d->pressed != -1)
