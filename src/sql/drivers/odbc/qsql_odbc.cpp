@@ -579,6 +579,19 @@ static QVariant qGetBigIntData(SQLHANDLE hStmt, int column, bool isSigned = true
         return quint64(lngbuf);
 }
 
+static bool isAutoValue(const SQLHANDLE hStmt, int column)
+{
+    SQLLEN nNumericAttribute = 0; // Check for auto-increment
+    const SQLRETURN r = ::SQLColAttribute(hStmt, column + 1, SQL_DESC_AUTO_UNIQUE_VALUE,
+                                          0, 0, 0, &nNumericAttribute);
+    if (r != SQL_SUCCESS && r != SQL_SUCCESS_WITH_INFO) {
+        qSqlWarning(QStringLiteral("qMakeField: Unable to get autovalue attribute for column ")
+                    + QString::number(column), hStmt);
+        return false;
+    }
+    return nNumericAttribute != SQL_FALSE;
+}
+
 static QSqlField qMakeFieldInfo(const SQLHANDLE hStmt, int i, QString *errorMessage);
 
 // creates a QSqlField from a valid hStmt generated
@@ -662,6 +675,7 @@ static QSqlField qMakeFieldInfo(const SQLHANDLE hStmt, int i, QString *errorMess
     else if (nullable == SQL_NULLABLE)
         f.setRequired(false);
     // else we don't know
+    f.setAutoValue(isAutoValue(hStmt, i));
     return f;
 }
 
