@@ -31,3 +31,15 @@ QtSql
 
  - qsql ibase: fix memory corruption due to LONG being 4 bytes in firebird.
  - QSqlDriver::dbmsType(): New method reports DBMS type. Especially useful when using ODBC.
+
+****************************************************************************
+*                      Platform Specific Changes                           *
+****************************************************************************
+
+OS X
+----
+
+ - OS X 10.6 is no longer supported.
+ - OS X 10.10 is now supported.
+ - QMacStyle has been updated with better OS 10.10 support.
+ - The Qt binary packages are now configured with C++11 enabled.
