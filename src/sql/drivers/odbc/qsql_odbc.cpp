@@ -357,7 +357,7 @@ static QString qGetStringData(SQLHANDLE hStmt, int column, int colSize, bool uni
                         0,
                         &lengthIndicator);
         if ((r == SQL_SUCCESS || r == SQL_SUCCESS_WITH_INFO) && lengthIndicator > 0)
-            colSize = lengthIndicator/sizeof(SQLTCHAR) + 1;
+            colSize = int(lengthIndicator / sizeof(SQLTCHAR) + 1);
         QVarLengthArray<SQLTCHAR> buf(colSize);
         memset(buf.data(), 0, colSize*sizeof(SQLTCHAR));
         while (true) {
@@ -377,7 +377,7 @@ static QString qGetStringData(SQLHANDLE hStmt, int column, int colSize, bool uni
                 // contain the number of bytes returned - it contains the
                 // total number of bytes that CAN be fetched
                 // colSize-1: remove 0 termination when there is more data to fetch
-                int rSize = (r == SQL_SUCCESS_WITH_INFO) ? colSize : lengthIndicator/sizeof(SQLTCHAR);
+                int rSize = (r == SQL_SUCCESS_WITH_INFO) ? colSize : int(lengthIndicator / sizeof(SQLTCHAR));
                     fieldVal += fromSQLTCHAR(buf, rSize);
                 if (lengthIndicator < SQLLEN(colSize*sizeof(SQLTCHAR))) {
                     // workaround for Drivermanagers that don't return SQL_NO_DATA
@@ -2048,7 +2048,7 @@ void QODBCDriverPrivate::checkDBMS()
     r = SQLGetInfo(hDbc,
                    SQL_DBMS_NAME,
                    serverString.data(),
-                   serverString.size() * sizeof(SQLTCHAR),
+                   SQLSMALLINT(serverString.size() * sizeof(SQLTCHAR)),
                    &t);
     if (r == SQL_SUCCESS || r == SQL_SUCCESS_WITH_INFO) {
         const QString serverType = fromSQLTCHAR(serverString, t / sizeof(SQLTCHAR));
@@ -2066,7 +2066,7 @@ void QODBCDriverPrivate::checkDBMS()
     r = SQLGetInfo(hDbc,
                    SQL_DRIVER_NAME,
                    serverString.data(),
-                   serverString.size() * sizeof(SQLTCHAR),
+                   SQLSMALLINT(serverString.size() * sizeof(SQLTCHAR)),
                    &t);
     if (r == SQL_SUCCESS || r == SQL_SUCCESS_WITH_INFO) {
         const QString serverType = fromSQLTCHAR(serverString, t / sizeof(SQLTCHAR));
@@ -2092,7 +2092,7 @@ void QODBCDriverPrivate::checkHasMultiResults()
     SQLRETURN r = SQLGetInfo(hDbc,
                              SQL_MULT_RESULT_SETS,
                              driverResponse.data(),
-                             driverResponse.size() * sizeof(SQLTCHAR),
+                             SQLSMALLINT(driverResponse.size() * sizeof(SQLTCHAR)),
                              &length);
     if (r == SQL_SUCCESS || r == SQL_SUCCESS_WITH_INFO)
         hasMultiResultSets = fromSQLTCHAR(driverResponse, length/sizeof(SQLTCHAR)).startsWith(QLatin1Char('Y'));
