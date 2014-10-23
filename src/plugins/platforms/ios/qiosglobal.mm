@@ -152,6 +152,22 @@ int infoPlistValue(NSString* key, int defaultValue)
 @implementation QtFirstResponderEvent
 @end
 
+
+@implementation UIView (QtFirstResponder)
+- (UIView*)qt_findFirstResponder
+{
+    if ([self isFirstResponder])
+        return self;
+
+    for (UIView *subview in self.subviews) {
+        if (UIView *firstResponder = [subview qt_findFirstResponder])
+            return firstResponder;
+    }
+
+    return nil;
+}
+@end
+
 @implementation UIResponder (QtFirstResponder)
 
 +(id)currentFirstResponder
@@ -164,7 +180,11 @@ int infoPlistValue(NSString* key, int defaultValue)
 - (void)qt_findFirstResponder:(id)sender event:(QtFirstResponderEvent *)event
 {
     Q_UNUSED(sender);
-    event.firstResponder = self;
+
+    if ([self isKindOfClass:[UIView class]])
+        event.firstResponder = [static_cast<UIView *>(self) qt_findFirstResponder];
+    else
+        event.firstResponder = [self isFirstResponder] ? self : nil;
 }
 @end
 
