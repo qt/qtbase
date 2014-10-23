@@ -1811,7 +1811,7 @@ void QCocoaWindow::updateExposedGeometry()
     if (!isWindowExposable())
         return;
 
-    if (m_exposedGeometry == geometry() && m_exposedDevicePixelRatio == devicePixelRatio())
+    if (m_exposedGeometry.size() == geometry().size() && m_exposedDevicePixelRatio == devicePixelRatio())
         return;
 
     m_isExposed = true;
