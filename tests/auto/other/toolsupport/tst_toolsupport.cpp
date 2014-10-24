@@ -110,6 +110,14 @@ void tst_toolsupport::offsets_data()
         data << 0 << 0;
     }
 
+#ifdef Q_OS_LINUX
+    if (sizeof(void *) == 8) {
+        QTestData &data = QTest::newRow("QFilePrivate::fileName")
+                << pmm_to_offsetof(&QFilePrivate::fileName);
+        data << -1 << 272;
+    }
+#endif
+
     {
 #ifdef Q_OS_WIN
         QTest::newRow("QDateTimePrivate::m_msecs")
