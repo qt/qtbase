@@ -63,6 +63,7 @@ public:
 
     ~QXcbKeyboard();
 
+    void initialize();
     void selectEvents();
 
     void handleKeyPressEvent(const xcb_key_press_event_t *event);

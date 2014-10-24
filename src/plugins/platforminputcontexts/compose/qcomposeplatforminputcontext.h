@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -36,24 +36,24 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
 #ifndef QCOMPOSEPLATFORMINPUTCONTEXT_H
 #define QCOMPOSEPLATFORMINPUTCONTEXT_H
 
+#include <QtCore/QLoggingCategory>
+
 #include <qpa/qplatforminputcontext.h>
 
-#include <QtCore/QList>
-
-#include "generator/qtablegenerator.h"
+#include <xkbcommon/xkbcommon-compose.h>
 
 QT_BEGIN_NAMESPACE
+
+Q_DECLARE_LOGGING_CATEGORY(lcXkbCompose)
 
 class QEvent;
 
 class QComposeInputContext : public QPlatformInputContext
 {
     Q_OBJECT
-
 public:
     QComposeInputContext();
     ~QComposeInputContext();
@@ -62,21 +62,22 @@ public:
     void setFocusObject(QObject *object) override;
     void reset() override;
     void update(Qt::InputMethodQueries) override;
+
     bool filterEvent(const QEvent *event) override;
 
+    // This invokable is called from QXkbCommon::setXkbContext().
+    Q_INVOKABLE void setXkbContext(struct xkb_context *context) { m_XkbContext = context; }
+
 protected:
-    void clearComposeBuffer();
-    bool ignoreKey(int keyval) const;
-    bool composeKey(int keyval) const;
-    bool checkComposeTable();
-    void commitText(uint character) const;
+    void ensureInitialized();
 
 private:
-    QObject *m_focusObject;
-    QVector<QComposeTableElement> m_composeTable;
-    uint m_composeBuffer[QT_KEYSEQUENCE_MAX_LEN];
-    TableGenerator::TableState m_tableState;
-    bool m_compositionTableInitialized;
+    bool m_initialized = false;
+    xkb_context *m_context = nullptr;
+    xkb_compose_table *m_composeTable = nullptr;
+    xkb_compose_state *m_composeState = nullptr;
+    QObject *m_focusObject = nullptr;
+    struct xkb_context *m_XkbContext = nullptr;
 };
 
 QT_END_NAMESPACE

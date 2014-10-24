@@ -64,7 +64,9 @@ QT_BEGIN_NAMESPACE
 
 Q_DECLARE_LOGGING_CATEGORY(lcXkbcommon)
 
+class QEvent;
 class QKeyEvent;
+class QPlatformInputContext;
 
 class QXkbCommon
 {
@@ -98,6 +100,8 @@ public:
     static bool isKeypad(xkb_keysym_t sym) {
         return sym >= XKB_KEY_KP_Space && sym <= XKB_KEY_KP_9;
     }
+
+    static void setXkbContext(QPlatformInputContext *inputContext, struct xkb_context *context);
 
     struct XKBStateDeleter {
         void operator()(struct xkb_state *state) const { return xkb_state_unref(state); }

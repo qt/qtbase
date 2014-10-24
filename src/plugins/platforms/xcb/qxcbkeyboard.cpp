@@ -565,6 +565,12 @@ QXcbKeyboard::~QXcbKeyboard()
         xcb_key_symbols_free(m_key_symbols);
 }
 
+void QXcbKeyboard::initialize()
+{
+    auto inputContext = QGuiApplicationPrivate::platformIntegration()->inputContext();
+    QXkbCommon::setXkbContext(inputContext, m_xkbContext.get());
+}
+
 void QXcbKeyboard::selectEvents()
 {
 #if QT_CONFIG(xkb)

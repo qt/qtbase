@@ -41,7 +41,12 @@
 
 #include <private/qmakearray_p.h>
 
+#include <QtCore/QMetaMethod>
 #include <QtGui/QKeyEvent>
+#include <QtGui/private/qguiapplication_p.h>
+
+#include <qpa/qplatforminputcontext.h>
+#include <qpa/qplatformintegration.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -792,6 +797,32 @@ xkb_keysym_t QXkbCommon::lookupLatinKeysym(xkb_state *state, xkb_keycode_t keyco
     }
 
     return sym;
+}
+
+void QXkbCommon::setXkbContext(QPlatformInputContext *inputContext, struct xkb_context *context)
+{
+    if (!inputContext || !context)
+        return;
+
+    const char *const inputContextClassName = "QComposeInputContext";
+    const char *const normalizedSignature = "setXkbContext(xkb_context*)";
+
+    if (inputContext->objectName() != QLatin1String(inputContextClassName))
+        return;
+
+    static const QMetaMethod setXkbContext = [&]() {
+        int methodIndex = inputContext->metaObject()->indexOfMethod(normalizedSignature);
+        QMetaMethod method = inputContext->metaObject()->method(methodIndex);
+        Q_ASSERT(method.isValid());
+        if (!method.isValid())
+            qCWarning(lcXkbcommon) << normalizedSignature << "not found on" << inputContextClassName;
+        return method;
+    }();
+
+    if (!setXkbContext.isValid())
+        return;
+
+    setXkbContext.invoke(inputContext, Qt::DirectConnection, Q_ARG(struct xkb_context*, context));
 }
 
 QT_END_NAMESPACE
