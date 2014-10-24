@@ -262,8 +262,11 @@ inline static bool waitForWindowExposed(QWindow *window, int timeout = 1000)
 
 void QSplashScreen::finish(QWidget *mainWin)
 {
-    if (mainWin && mainWin->windowHandle())
+    if (mainWin) {
+        if (!mainWin->windowHandle())
+            mainWin->createWinId();
         waitForWindowExposed(mainWin->windowHandle());
+    }
     close();
 }
 
