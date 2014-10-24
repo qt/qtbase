@@ -195,8 +195,8 @@ macx-xcode {
     QMAKE_MAC_XCODE_SETTINGS += arch_iphoneos arch_iphonesimulator
     unset(QMAKE_XCODE_ARCHS)
 } else {
-# Be more specific about which architecture we're targeting
-    equals(QT_ARCH, arm): \
+    # Be more specific about which architecture we're targeting
+    contains(QT_ARCH, arm.*): \
         actual_archs = $$QMAKE_IOS_DEVICE_ARCHS
     else: \
         actual_archs = $$QMAKE_IOS_SIMULATOR_ARCHS
