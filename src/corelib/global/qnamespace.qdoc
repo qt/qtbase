@@ -2803,11 +2803,11 @@
 
     This enum type describes the state of a gesture.
 
+    \value NoGesture        No gesture has been detected.
     \value GestureStarted   A continuous gesture has started.
     \value GestureUpdated   A gesture continues.
     \value GestureFinished  A gesture has finished.
     \value GestureCanceled  A gesture was canceled.
-    \omitvalue NoGesture
 
     \sa QGesture
 */
