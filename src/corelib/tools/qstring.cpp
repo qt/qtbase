@@ -6339,8 +6339,7 @@ ushort QString::toUShort(bool *ok, int base) const
 
     \snippet qstring/main.cpp 66
 
-    Various string formats for floating point numbers can be converted
-    to double values:
+    \warning The QString content may only contain valid numerical characters which includes the plus/minus sign, the characters g and e used in scientific notation, and the decimal point. Including the unit or additional characters leads to a conversion error.
 
     \snippet qstring/main.cpp 67
 
@@ -6349,7 +6348,7 @@ ushort QString::toUShort(bool *ok, int base) const
 
     \snippet qstring/main.cpp 68
 
-    For historic reasons, this function does not handle
+    For historical reasons, this function does not handle
     thousands group separators. If you need to convert such numbers,
     use QLocale::toDouble().
 
