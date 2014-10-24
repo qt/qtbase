@@ -41,10 +41,8 @@
 #ifndef BUTTONTESTER_H
 #define BUTTONTESTER_H
 
-#include <QtWidgets>
 #include <QTextEdit>
 #include <QString>
-#include <QDebug>
 #include <QMouseEvent>
 #include <QWheelEvent>
 

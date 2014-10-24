@@ -41,6 +41,8 @@
 
 #include "buttontester.h"
 
+#include <QDebug>
+
 void ButtonTester::mousePressEvent(QMouseEvent *e)
 {
     int j = ButtonTester::buttonByNumber (e->button());
