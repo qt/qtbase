@@ -127,6 +127,9 @@ static void updateItem(QTreeWidgetItem *item, const QNetworkConfiguration &confi
 
 void BearerMonitor::configurationAdded(const QNetworkConfiguration &config, QTreeWidgetItem *parent)
 {
+    if (!config.isValid())
+        return;
+
     QTreeWidgetItem *item = new QTreeWidgetItem;
     updateItem(item, config);
 
