@@ -288,8 +288,6 @@ void QScanThread::getUserConfigurations()
     for (NSString *ifName in wifiInterfaces) {
 
         CWInterface *wifiInterface = [CWInterface interfaceWithName: ifName];
-        if (!wifiInterface.powerOn)
-            continue;
 
         NSString *nsInterfaceName = wifiInterface.ssid;
 // add user configured system networks
@@ -311,6 +309,21 @@ void QScanThread::getUserConfigurations()
             CFRelease(airportPlist);
         }
 
+        // remembered networks
+        CWConfiguration *userConfig = [wifiInterface configuration];
+        NSOrderedSet *networkProfiles = [userConfig networkProfiles];
+        NSEnumerator *enumerator = [networkProfiles objectEnumerator];
+        CWNetworkProfile *wProfile;
+        while ((wProfile = [enumerator nextObject])) {
+            QString networkName = QCFString::toQString([wProfile ssid]);
+
+            if (!userProfiles.contains(networkName)) {
+                QMap<QString,QString> map;
+                map.insert(networkName, QCFString::toQString(nsInterfaceName));
+                userProfiles.insert(networkName, map);
+            }
+        }
+
         // 802.1X user profiles
         QString userProfilePath = QDir::homePath() + "/Library/Preferences/com.apple.eap.profiles.plist";
         NSDictionary* eapDict = [[[NSDictionary alloc] initWithContentsOfFile: QCFString::toNSString(userProfilePath)] autorelease];
@@ -330,14 +343,14 @@ void QScanThread::getUserConfigurations()
                         [itemKey getObjects:objects andKeys:keys];
                         QString networkName;
                         QString ssid;
-                        for(int i = 0; i < dictSize; i++) {
+                        for (int i = 0; i < dictSize; i++) {
                             if([nameStr isEqualToString:keys[i]]) {
                                 networkName = QCFString::toQString(objects[i]);
                             }
-                            if([networkSsidStr isEqualToString:keys[i]]) {
+                            if ([networkSsidStr isEqualToString:keys[i]]) {
                                 ssid = QCFString::toQString(objects[i]);
                             }
-                            if(!userProfiles.contains(networkName)
+                            if (!userProfiles.contains(networkName)
                                 && !ssid.isEmpty()) {
                                 QMap<QString,QString> map;
                                 map.insert(ssid, QCFString::toQString(nsInterfaceName));
