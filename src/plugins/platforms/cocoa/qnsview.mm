@@ -437,9 +437,9 @@ static NSString *_q_NSWindowDidChangeOcclusionStateNotification = nil;
         if (m_window) {
             NSUInteger screenIndex = [[NSScreen screens] indexOfObject:self.window.screen];
             if (screenIndex != NSNotFound) {
-                m_platformWindow->updateExposedGeometry();
                 QCocoaScreen *cocoaScreen = QCocoaIntegration::instance()->screenAtIndex(screenIndex);
                 QWindowSystemInterface::handleWindowScreenChanged(m_window, cocoaScreen->screen());
+                m_platformWindow->updateExposedGeometry();
             }
         }
     } else {
