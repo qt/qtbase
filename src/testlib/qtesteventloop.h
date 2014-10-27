@@ -40,6 +40,7 @@
 #include <QtCore/qeventloop.h>
 #include <QtCore/qobject.h>
 #include <QtCore/qpointer.h>
+#include <QtCore/qthread.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -101,6 +102,12 @@ inline void QTestEventLoop::enterLoopMSecs(int ms)
 
 inline void QTestEventLoop::exitLoop()
 {
+    if (thread() != QThread::currentThread())
+    {
+        QMetaObject::invokeMethod(this, "exitLoop", Qt::QueuedConnection);
+        return;
+    }
+
     if (timerId != -1)
         killTimer(timerId);
     timerId = -1;
