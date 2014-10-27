@@ -2611,7 +2611,14 @@ struct QAccessibleActionStrings
         decreaseAction(QStringLiteral(QT_TRANSLATE_NOOP("QAccessibleActionInterface", "Decrease"))),
         showMenuAction(QStringLiteral(QT_TRANSLATE_NOOP("QAccessibleActionInterface", "ShowMenu"))),
         setFocusAction(QStringLiteral(QT_TRANSLATE_NOOP("QAccessibleActionInterface", "SetFocus"))),
-        toggleAction(QStringLiteral(QT_TRANSLATE_NOOP("QAccessibleActionInterface", "Toggle"))) {}
+        toggleAction(QStringLiteral(QT_TRANSLATE_NOOP("QAccessibleActionInterface", "Toggle"))),
+        scrollLeftAction(QStringLiteral(QT_TRANSLATE_NOOP("QAccessibleActionInterface", "Scroll Left"))),
+        scrollRightAction(QStringLiteral(QT_TRANSLATE_NOOP("QAccessibleActionInterface", "Scroll Right"))),
+        scrollUpAction(QStringLiteral(QT_TRANSLATE_NOOP("QAccessibleActionInterface", "Scroll Up"))),
+        scrollDownAction(QStringLiteral(QT_TRANSLATE_NOOP("QAccessibleActionInterface", "Scroll Down"))),
+        previousPageAction(QStringLiteral(QT_TRANSLATE_NOOP("QAccessibleActionInterface", "Previous Page"))),
+        nextPageAction(QStringLiteral(QT_TRANSLATE_NOOP("QAccessibleActionInterface", "Next Page")))
+    {}
 
     const QString pressAction;
     const QString increaseAction;
@@ -2619,6 +2626,12 @@ struct QAccessibleActionStrings
     const QString showMenuAction;
     const QString setFocusAction;
     const QString toggleAction;
+    const QString scrollLeftAction;
+    const QString scrollRightAction;
+    const QString scrollUpAction;
+    const QString scrollDownAction;
+    const QString previousPageAction;
+    const QString nextPageAction;
 
     QString localizedDescription(const QString &actionName)
     {
@@ -2634,6 +2647,20 @@ struct QAccessibleActionStrings
             return QAccessibleActionInterface::tr("Sets the focus");
         else if (actionName == toggleAction)
             return QAccessibleActionInterface::tr("Toggles the state");
+        else if (actionName == scrollLeftAction)
+            return QAccessibleActionInterface::tr("Scrolls to the left");
+        else if (actionName == scrollRightAction)
+            return QAccessibleActionInterface::tr("Scrolls to the right");
+        else if (actionName == scrollUpAction)
+            return QAccessibleActionInterface::tr("Scrolls up");
+        else if (actionName == scrollDownAction)
+            return QAccessibleActionInterface::tr("Scrolls down");
+        else if (actionName == previousPageAction)
+            return QAccessibleActionInterface::tr("Goes back a page");
+        else if (actionName == nextPageAction)
+            return QAccessibleActionInterface::tr("Goes to the next page");
+
+
         return QString();
     }
 };
@@ -2702,6 +2729,60 @@ const QString &QAccessibleActionInterface::setFocusAction()
 const QString &QAccessibleActionInterface::toggleAction()
 {
     return accessibleActionStrings()->toggleAction;
+}
+
+/*!
+    Returns the name of the scroll left default action.
+    \sa actionNames(), localizedActionName()
+  */
+const QString &QAccessibleActionInterface::scrollLeftAction()
+{
+    return accessibleActionStrings()->scrollLeftAction;
+}
+
+/*!
+    Returns the name of the scroll right default action.
+    \sa actionNames(), localizedActionName()
+  */
+const QString &QAccessibleActionInterface::scrollRightAction()
+{
+    return accessibleActionStrings()->scrollRightAction;
+}
+
+/*!
+    Returns the name of the scroll up default action.
+    \sa actionNames(), localizedActionName()
+  */
+const QString &QAccessibleActionInterface::scrollUpAction()
+{
+    return accessibleActionStrings()->scrollUpAction;
+}
+
+/*!
+    Returns the name of the scroll down default action.
+    \sa actionNames(), localizedActionName()
+  */
+const QString &QAccessibleActionInterface::scrollDownAction()
+{
+    return accessibleActionStrings()->scrollDownAction;
+}
+
+/*!
+    Returns the name of the previous page default action.
+    \sa actionNames(), localizedActionName()
+  */
+const QString &QAccessibleActionInterface::previousPageAction()
+{
+    return accessibleActionStrings()->previousPageAction;
+}
+
+/*!
+    Returns the name of the next page default action.
+    \sa actionNames(), localizedActionName()
+  */
+const QString &QAccessibleActionInterface::nextPageAction()
+{
+    return accessibleActionStrings()->nextPageAction;
 }
 
 /*! \internal */

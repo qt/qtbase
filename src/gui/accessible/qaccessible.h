@@ -635,6 +635,12 @@ public:
     static const QString &showMenuAction();
     static const QString &setFocusAction();
     static const QString &toggleAction();
+    static const QString &scrollLeftAction();
+    static const QString &scrollRightAction();
+    static const QString &scrollUpAction();
+    static const QString &scrollDownAction();
+    static const QString &nextPageAction();
+    static const QString &previousPageAction();
 };
 
 class Q_GUI_EXPORT QAccessibleImageInterface

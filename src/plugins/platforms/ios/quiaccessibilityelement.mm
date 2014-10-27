@@ -193,4 +193,33 @@
         action->doAction(QAccessibleActionInterface::decreaseAction());
 }
 
+- (BOOL) accessibilityScroll : (UIAccessibilityScrollDirection) direction
+{
+    QAccessibleInterface *iface = QAccessible::accessibleInterface(self.axid);
+    QAccessibleActionInterface *action = iface->actionInterface();
+    if (!action)
+        return NO;
+    switch (direction) {
+    case UIAccessibilityScrollDirectionRight:
+        action->doAction(QAccessibleActionInterface::scrollRightAction());
+        return YES;
+    case UIAccessibilityScrollDirectionLeft:
+        action->doAction(QAccessibleActionInterface::scrollLeftAction());
+        return YES;
+    case UIAccessibilityScrollDirectionUp:
+        action->doAction(QAccessibleActionInterface::scrollUpAction());
+        return YES;
+    case UIAccessibilityScrollDirectionDown:
+        action->doAction(QAccessibleActionInterface::scrollDownAction());
+        return YES;
+    case UIAccessibilityScrollDirectionNext:
+        action->doAction(QAccessibleActionInterface::nextPageAction());
+        return YES;
+    case UIAccessibilityScrollDirectionPrevious:
+        action->doAction(QAccessibleActionInterface::previousPageAction());
+        return YES;
+    }
+    return NO;
+}
+
 @end
