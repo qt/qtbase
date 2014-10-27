@@ -2247,6 +2247,9 @@ QSize QCalendarWidget::minimumSizeHint() const
     w *= cols;
     w = qMax(headerSize.width(), w);
     h = (h * rows) + headerSize.height();
+    QMargins cm = contentsMargins();
+    w += cm.left() + cm.right();
+    h += cm.top() + cm.bottom();
     d->cachedSizeHint = QSize(w, h);
     return d->cachedSizeHint;
 }

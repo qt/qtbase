@@ -245,7 +245,7 @@ void QNetworkReplyNSURLConnectionImpl::readyReadOutgoingData()
     Q_UNUSED(connection)
 
     QNetworkReply::NetworkError qtError = QNetworkReply::UnknownNetworkError;
-    if ([error domain] == NSURLErrorDomain) {
+    if ([[error domain] isEqualToString:NSURLErrorDomain]) {
         switch ([error code]) {
         case NSURLErrorTimedOut: qtError = QNetworkReply::TimeoutError; break;
         case NSURLErrorUnsupportedURL: qtError = QNetworkReply::ProtocolUnknownError; break;
@@ -260,6 +260,7 @@ void QNetworkReplyNSURLConnectionImpl::readyReadOutgoingData()
     }
 
     replyprivate->setError(qtError, QString::fromNSString([error localizedDescription]));
+    replyprivate->setFinished();
 }
 
 - (void)connection:(NSURLConnection*)connection didReceiveResponse:(NSURLResponse*)aResponse

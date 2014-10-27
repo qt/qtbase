@@ -392,6 +392,7 @@ public:
 
     static bool resolveSymbols();
     static bool useXP(bool update = false);
+    static QRect scrollBarGripperBounds(QStyle::State flags, const QWidget *widget, XPThemeData *theme);
 
     bool isTransparent(XPThemeData &themeData);
     QRegion region(XPThemeData &themeData);

@@ -166,6 +166,7 @@ QT_BEGIN_NAMESPACE
     \value playsSound              The object produces sound when interacted with.
     \value pressed                 The object is pressed.
     \value readOnly                The object can usually be edited, but is explicitly set to read-only.
+    \value searchEdit              The object is a line edit that is the input for search queries.
     \value selectable              The object is selectable.
     \value selectableText          The object has text which can be selected. This is different from selectable which refers to the object's children.
     \value selected                The object is selected, this is independent of text selection.

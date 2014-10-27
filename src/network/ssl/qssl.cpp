@@ -119,12 +119,12 @@ QT_BEGIN_NAMESPACE
     a TLS 1.0 Client Hello, enabling TLSv1_0 and SSLv3 connections.
     On the server side, this will enable both SSLv3 and TLSv1_0 connections.
     \value SecureProtocols The default option, using protocols known to be secure;
-    currently behaves like TlsV1SslV3.
+    currently behaves similar to TlsV1Ssl3 except denying SSLv3 connections that does
+    not upgrade to TLS.
 
-    \note most servers using SSL understand both versions (2 and 3),
-    but it is recommended to use the latest version only for security
-    reasons. However, SSL and TLS are not compatible with each other:
-    if you get unexpected handshake failures, verify that you chose
+    \note most servers understand both SSL and TLS, but it is recommended to use
+    TLS only for security reasons. However, SSL and TLS are not compatible with
+    each other: if you get unexpected handshake failures, verify that you chose
     the correct setting for your protocol.
 */
 

@@ -206,6 +206,13 @@ QAbstractFileEngine *QFilePrivate::engine() const
     directory usually is not writable, but it is still possible to
     create files in it.
 
+    Qt's understanding of file permissions is limited, which affects especially
+    the \l QFile::setPermissions() function. On Windows, Qt will set only the
+    legacy read-only flag, and that only when none of the Write* flags are
+    passed. Qt does not manipulate access control lists (ACLs), which makes this
+    function mostly useless for NTFS volumes. It may still be of use for USB
+    sticks that use VFAT file systems. POSIX ACLs are not manipulated, either.
+
     \sa QTextStream, QDataStream, QFileInfo, QDir, {The Qt Resource System}
 */
 
@@ -1063,8 +1070,11 @@ QFile::permissions(const QString &fileName)
 
 /*!
     Sets the permissions for the file to the \a permissions specified.
-    Returns \c true if successful, or false if the permissions cannot be
+    Returns \c true if successful, or \c false if the permissions cannot be
     modified.
+
+    \warning This function does not manipulate ACLs, which may limit its
+    effectiveness.
 
     \sa permissions(), setFileName()
 */

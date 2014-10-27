@@ -1137,6 +1137,10 @@ QVariant QGraphicsWidget::itemChange(GraphicsItemChange change, const QVariant &
                 setAttribute(Qt::WA_Resized, false);
             }
         }
+
+        // layout size hint only changes if an item changes from/to explicitly hidden state
+        if (value.toBool() || d->explicitlyHidden)
+            updateGeometry();
         break;
     case ItemVisibleHasChanged:
         if (!value.toBool()) {

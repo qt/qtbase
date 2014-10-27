@@ -51,17 +51,19 @@ class QNmDBusHelper: public QObject, protected QDBusContext
 
  public slots:
     void deviceStateChanged(quint32);
-    void slotAccessPointAdded( QDBusObjectPath );
-    void slotAccessPointRemoved( QDBusObjectPath );
-    void slotPropertiesChanged( QMap<QString,QVariant>);
+    void slotAccessPointAdded(QDBusObjectPath);
+    void slotAccessPointRemoved(QDBusObjectPath);
+    void slotPropertiesChanged(QMap<QString,QVariant>);
     void slotSettingsRemoved();
+    void activeConnectionPropertiesChanged(QMap<QString,QVariant>);
 
 Q_SIGNALS:
     void pathForStateChanged(const QString &, quint32);
-    void pathForAccessPointAdded(const QString &,  QDBusObjectPath );
-    void pathForAccessPointRemoved(const QString &,  QDBusObjectPath );
+    void pathForAccessPointAdded(const QString &);
+    void pathForAccessPointRemoved(const QString &);
     void pathForPropertiesChanged(const QString &, QMap<QString,QVariant>);
     void pathForSettingsRemoved(const QString &);
+    void pathForConnectionsChanged(const QStringList &pathsList);
 };
 
 QT_END_NAMESPACE

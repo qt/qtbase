@@ -55,6 +55,7 @@
 #include <qmainwindow.h>
 #include <qdockwidget.h>
 #include <qtoolbar.h>
+#include <qtoolbutton.h>
 #include <QtGui/qpaintengine.h>
 #include <QtGui/qbackingstore.h>
 #include <QtGui/qguiapplication.h>
@@ -268,6 +269,7 @@ private slots:
     void winIdChangeEvent();
     void persistentWinId();
     void showNativeChild();
+    void transientParent();
     void qobject_castInDestroyedSlot();
 
     void showHideEvent_data();
@@ -3990,6 +3992,21 @@ void tst_QWidget::persistentWinId()
 
     w3->setParent(w2);
     QCOMPARE(w3->winId(), winId3);
+}
+
+void tst_QWidget::transientParent()
+{
+    QWidget topLevel;
+    topLevel.setGeometry(QRect(m_availableTopLeft + QPoint(100, 100), m_testWidgetSize));
+    topLevel.setWindowTitle(__FUNCTION__);
+    QWidget *child = new QWidget(&topLevel);
+    QMenu *menu = new QMenu(child); // QTBUG-41898: Use top level as transient parent for native widgets as well.
+    QToolButton *toolButton = new QToolButton(child);
+    toolButton->setMenu(menu);
+    toolButton->winId();
+    topLevel.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&topLevel));
+    QCOMPARE(menu->windowHandle()->transientParent(), topLevel.windowHandle());
 }
 
 void tst_QWidget::showNativeChild()

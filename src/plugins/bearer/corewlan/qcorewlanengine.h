@@ -83,6 +83,7 @@ public:
 private Q_SLOTS:
     void doRequestUpdate();
     void networksChanged();
+    void checkDisconnect();
 
 private:
     bool isWifiReady(const QString &dev);
@@ -95,6 +96,7 @@ private:
     QScanThread *scanThread;
 
     quint64 getBytes(const QString &interfaceName,bool b);
+    QString disconnectedInterfaceString;
 
 protected:
     void startNetworkChangeLoop();

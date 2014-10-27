@@ -91,9 +91,10 @@ static int getFontWeight(const QString &weightString)
     // order of "expense".
     //
     // A simple string test is the cheapest, so let's do that first.
-    if (s == QLatin1String("medium") ||
-        s == QLatin1String("normal"))
+    if (s == QLatin1String("normal"))
         return QFont::Normal;
+    if (s == QLatin1String("medium"))
+        return qt_mediumFontWeight;
     if (s == QLatin1String("bold"))
         return QFont::Bold;
     if (s == QLatin1String("demibold") || s == QLatin1String("demi bold"))
@@ -102,6 +103,10 @@ static int getFontWeight(const QString &weightString)
         return QFont::Black;
     if (s == QLatin1String("light"))
         return QFont::Light;
+    if (s == QLatin1String("thin"))
+        return qt_thinFontWeight;
+    if (s == QLatin1String("extralight"))
+        return qt_extralightFontWeight;
 
     // Next up, let's see if contains() matches: slightly more expensive, but
     // still fast enough.

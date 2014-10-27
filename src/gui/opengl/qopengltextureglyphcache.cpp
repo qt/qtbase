@@ -240,7 +240,7 @@ void QOpenGLTextureGlyphCache::resizeTextureData(int width, int height)
     QOpenGLShaderProgram *blitProgram = 0;
     if (pex == 0) {
         if (m_blitProgram == 0) {
-            m_blitProgram = new QOpenGLShaderProgram(ctx);
+            m_blitProgram = new QOpenGLShaderProgram;
             const bool isCoreProfile = ctx->format().profile() == QSurfaceFormat::CoreProfile;
 
             {
@@ -443,6 +443,9 @@ void QOpenGLTextureGlyphCache::clear()
     if (m_textureResource)
         m_textureResource->free();
     m_textureResource = 0;
+
+    delete m_blitProgram;
+    m_blitProgram = 0;
 
     m_w = 0;
     m_h = 0;

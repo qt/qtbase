@@ -223,6 +223,7 @@ QIconTheme::QIconTheme(const QString &themeName)
         // Parent themes provide fallbacks for missing icons
         m_parents = indexReader.value(
                 QLatin1String("Icon Theme/Inherits")).toStringList();
+        m_parents.removeAll(QString());
 
         // Ensure a default platform fallback for all themes
         if (m_parents.isEmpty()) {

@@ -1062,6 +1062,7 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph,
                  (format == Format_A8 ? (info.width + 3) & ~3 : info.width * 4));
     glyph_buffer_size = pitch * info.height;
     glyph_buffer = new uchar[glyph_buffer_size];
+    memset(glyph_buffer, 0, glyph_buffer_size);
 
     if (slot->format == FT_GLYPH_FORMAT_OUTLINE) {
         FT_Bitmap bitmap;

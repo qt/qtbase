@@ -4047,26 +4047,28 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
            }
 
            if (!dwOpt->title.isEmpty()) {
-               QRect r = opt->rect;
+               QRect r = subElementRect(SE_DockWidgetTitleBarText, opt, w);
                if (dwOpt->verticalTitleBar) {
                    QSize s = r.size();
                    s.transpose();
                    r.setSize(s);
-
                    p->save();
                    p->translate(r.left(), r.top() + r.width());
                    p->rotate(-90);
                    p->translate(-r.left(), -r.top());
                 }
+                r = subRule.contentsRect(r);
 
                 Qt::Alignment alignment = 0;
                 if (subRule.hasPosition())
                     alignment = subRule.position()->textAlignment;
                 if (alignment == 0)
                     alignment = Qt::AlignLeft;
-                drawItemText(p, subRule.contentsRect(opt->rect),
+
+                QString titleText = p->fontMetrics().elidedText(dwOpt->title, Qt::ElideRight, r.width());
+                drawItemText(p, r,
                              alignment | Qt::TextShowMnemonic, dwOpt->palette,
-                             dwOpt->state & State_Enabled, dwOpt->title,
+                             dwOpt->state & State_Enabled, titleText,
                              QPalette::WindowText);
 
                 if (dwOpt->verticalTitleBar)
@@ -5826,6 +5828,10 @@ bool QStyleSheetStyle::event(QEvent *e)
 
 void QStyleSheetStyle::updateStyleSheetFont(QWidget* w) const
 {
+    // Qt's fontDialog relies on the font of the sample edit for its selection,
+    // we should never override it.
+    if (w->objectName() == QLatin1String("qt_fontDialog_sampleEdit"))
+        return;
     QWidget *container = containerWidget(w);
     QRenderRule rule = renderRule(container, PseudoElement_None,
             PseudoClass_Active | PseudoClass_Enabled | extendedPseudoClass(container));

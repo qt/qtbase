@@ -341,10 +341,10 @@ QGestureRecognizer::Result QSwipeGestureRecognizer::recognize(QGesture *state,
                 if (d->horizontalDirection == QSwipeGesture::NoDirection)
                     d->horizontalDirection = horizontal;
                 if (d->verticalDirection != vertical || d->horizontalDirection != horizontal) {
-                    // the user has changed the direction!
                     result = QGestureRecognizer::CancelGesture;
+                } else {
+                    result = QGestureRecognizer::TriggerGesture;
                 }
-                result = QGestureRecognizer::TriggerGesture;
             } else {
                 if (q->state() != Qt::NoGesture)
                     result = QGestureRecognizer::TriggerGesture;

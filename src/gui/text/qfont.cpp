@@ -1014,8 +1014,8 @@ void QFont::setStyle(Style style)
 }
 
 /*!
-    Returns the weight of the font which is one of the enumerated
-    values from \l{QFont::Weight}.
+    Returns the weight of the font, using the same scale as the
+    \l{QFont::Weight} enumeration.
 
     \sa setWeight(), Weight, QFontInfo
 */
@@ -1028,8 +1028,8 @@ int QFont::weight() const
     \enum QFont::Weight
 
     Qt uses a weighting scale from 0 to 99 similar to, but not the
-    same as, the scales used in Windows or CSS. A weight of 0 is
-    ultralight, whilst 99 will be extremely black.
+    same as, the scales used in Windows or CSS. A weight of 0 will be
+    thin, whilst 99 will be extremely black.
 
     This enum contains the predefined font weights:
 
@@ -1041,8 +1041,8 @@ int QFont::weight() const
 */
 
 /*!
-    Sets the weight the font to \a weight, which should be a value
-    from the \l QFont::Weight enumeration.
+    Sets the weight of the font to \a weight, using the scale defined by
+    \l QFont::Weight enumeration.
 
     \sa weight(), QFontInfo
 */

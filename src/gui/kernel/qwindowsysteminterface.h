@@ -208,8 +208,8 @@ public:
     // For event dispatcher implementations
     static bool sendWindowSystemEvents(QEventLoop::ProcessEventsFlags flags);
     static void setSynchronousWindowsSystemEvents(bool enable);
-    static void flushWindowSystemEvents();
-    static void deferredFlushWindowSystemEvents();
+    static void flushWindowSystemEvents(QEventLoop::ProcessEventsFlags flags = QEventLoop::AllEvents);
+    static void deferredFlushWindowSystemEvents(QEventLoop::ProcessEventsFlags flags);
     static int windowSystemEventsQueued();
 };
 

@@ -35,6 +35,7 @@
 
 #include <qvariant.h>
 #include <qbitarray.h>
+#include <qbytearraylist.h>
 #include <qdatetime.h>
 #include <qmap.h>
 #include <qiodevice.h>
@@ -208,6 +209,7 @@ private slots:
     void convertBoolToByteArray_data() const;
     void convertByteArrayToBool() const;
     void convertByteArrayToBool_data() const;
+    void convertIterables() const;
     void toIntFromQString() const;
     void toIntFromDouble() const;
     void setValue();
@@ -2836,6 +2838,49 @@ void tst_QVariant::convertByteArrayToBool_data() const
     QTest::newRow("true")
         << true
         << QByteArray("true");
+}
+
+void tst_QVariant::convertIterables() const
+{
+    {
+        QStringList list;
+        list.append("Hello");
+        QCOMPARE(QVariant::fromValue(list).value<QVariantList>().count(), list.count());
+    }
+    {
+        QByteArrayList list;
+        list.append("Hello");
+        QCOMPARE(QVariant::fromValue(list).value<QVariantList>().count(), list.count());
+    }
+    {
+        QVariantList list;
+        list.append("World");
+        QCOMPARE(QVariant::fromValue(list).value<QVariantList>().count(), list.count());
+    }
+    {
+        QMap<QString, int> map;
+        map.insert("3", 4);
+        QCOMPARE(QVariant::fromValue(map).value<QVariantHash>().count(), map.count());
+        QCOMPARE(QVariant::fromValue(map).value<QVariantMap>().count(), map.count());
+    }
+    {
+        QVariantMap map;
+        map.insert("3", 4);
+        QCOMPARE(QVariant::fromValue(map).value<QVariantHash>().count(), map.count());
+        QCOMPARE(QVariant::fromValue(map).value<QVariantMap>().count(), map.count());
+    }
+    {
+        QHash<QString, int> hash;
+        hash.insert("3", 4);
+        QCOMPARE(QVariant::fromValue(hash).value<QVariantHash>().count(), hash.count());
+        QCOMPARE(QVariant::fromValue(hash).value<QVariantMap>().count(), hash.count());
+    }
+    {
+        QVariantHash hash;
+        hash.insert("3", 4);
+        QCOMPARE(QVariant::fromValue(hash).value<QVariantHash>().count(), hash.count());
+        QCOMPARE(QVariant::fromValue(hash).value<QVariantMap>().count(), hash.count());
+    }
 }
 
 /*!

@@ -1607,6 +1607,13 @@ void QWidgetLineControl::processKeyEvent(QKeyEvent* event)
 
     if (event->key() == Qt::Key_Enter || event->key() == Qt::Key_Return) {
         if (hasAcceptableInput() || fixup()) {
+
+            QInputMethod *inputMethod = QApplication::inputMethod();
+            inputMethod->commit();
+            QWidget *lineEdit = qobject_cast<QWidget *>(parent());
+            if (!(lineEdit && lineEdit->inputMethodHints() & Qt::ImhMultiLine))
+                inputMethod->hide();
+
             emit accepted();
             emit editingFinished();
         }

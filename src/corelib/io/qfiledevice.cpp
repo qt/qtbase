@@ -648,8 +648,11 @@ QFile::Permissions QFileDevice::permissions() const
 
 /*!
     Sets the permissions for the file to the \a permissions specified.
-    Returns \c true if successful, or false if the permissions cannot be
+    Returns \c true if successful, or \c false if the permissions cannot be
     modified.
+
+    \warning This function does not manipulate ACLs, which may limit its
+    effectiveness.
 
     \sa permissions()
 */

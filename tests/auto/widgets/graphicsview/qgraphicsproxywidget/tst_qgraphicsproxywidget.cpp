@@ -174,6 +174,7 @@ private slots:
     void clickFocus();
     void windowFrameMargins();
     void QTBUG_6986_sendMouseEventToAlienWidget();
+    void mapToGlobal();
 };
 
 // Subclass that exposes the protected functions.
@@ -3657,6 +3658,33 @@ void tst_QGraphicsProxyWidget::QTBUG_6986_sendMouseEventToAlienWidget()
     QCursor::setPos(view.mapToGlobal(view.mapFromScene(scene.topButton->boundingRect().center())));
     QTest::mouseClick(view.viewport(), Qt::LeftButton, 0, view.mapFromScene(scene.topButton->scenePos()));
     QTRY_COMPARE(scene.hoverButton->hoverLeaveReceived, true);
+}
+
+void tst_QGraphicsProxyWidget::mapToGlobal() // QTBUG-41135
+{
+    const QRect availableGeometry = QGuiApplication::primaryScreen()->availableGeometry();
+    const QSize size = availableGeometry.size() / 5;
+    QGraphicsScene scene;
+    QGraphicsView view(&scene);
+    view.setWindowTitle(QTest::currentTestFunction());
+    view.resize(size);
+    view.move(availableGeometry.bottomRight() - QPoint(size.width(), size.height()) - QPoint(100, 100));
+    QWidget *embeddedWidget = new QWidget;
+    embeddedWidget->setFixedSize(size / 2);
+    scene.addWidget(embeddedWidget);
+    QApplication::setActiveWindow(&view);
+    view.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
+    const QPoint embeddedCenter = embeddedWidget->geometry().center();
+    const QPoint embeddedCenterGlobal = embeddedWidget->mapToGlobal(embeddedCenter);
+    QCOMPARE(embeddedWidget->mapFromGlobal(embeddedCenterGlobal), embeddedCenter);
+    // This should be equivalent to the view center give or take rounding
+    // errors due to odd window margins
+    const QPoint viewCenter = view.geometry().center();
+    QVERIFY2((viewCenter - embeddedCenterGlobal).manhattanLength() <= 2,
+             qPrintable(QStringLiteral("%1, %2 != %3, %4")
+                        .arg(viewCenter.x()).arg(viewCenter.y())
+                        .arg(embeddedCenterGlobal.x()).arg(embeddedCenterGlobal.y())));
 }
 
 QTEST_MAIN(tst_QGraphicsProxyWidget)

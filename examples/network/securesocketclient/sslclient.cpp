@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the examples of the Qt Toolkit.
@@ -46,6 +46,7 @@
 #include <QtWidgets/QScrollBar>
 #include <QtWidgets/QStyle>
 #include <QtWidgets/QToolButton>
+#include <QtWidgets/QMessageBox>
 #include <QtNetwork/QSslCipher>
 
 SslClient::SslClient(QWidget *parent)
@@ -96,6 +97,8 @@ void SslClient::secureConnect()
                 this, SLOT(socketStateChanged(QAbstractSocket::SocketState)));
         connect(socket, SIGNAL(encrypted()),
                 this, SLOT(socketEncrypted()));
+        connect(socket, SIGNAL(error(QAbstractSocket::SocketError)),
+                this, SLOT(socketError(QAbstractSocket::SocketError)));
         connect(socket, SIGNAL(sslErrors(QList<QSslError>)),
                 this, SLOT(sslErrors(QList<QSslError>)));
         connect(socket, SIGNAL(readyRead()),
@@ -118,8 +121,6 @@ void SslClient::socketStateChanged(QAbstractSocket::SocketState state)
         form->cipherLabel->setText(tr("<none>"));
         if (padLock)
             padLock->hide();
-        socket->deleteLater();
-        socket = 0;
     }
 }
 
@@ -178,6 +179,11 @@ void SslClient::sendData()
     appendString(input + '\n');
     socket->write(input.toUtf8() + "\r\n");
     form->sessionInput->clear();
+}
+
+void SslClient::socketError(QAbstractSocket::SocketError error)
+{
+    QMessageBox::critical(this, tr("Connection error"), socket->errorString());
 }
 
 void SslClient::sslErrors(const QList<QSslError> &errors)

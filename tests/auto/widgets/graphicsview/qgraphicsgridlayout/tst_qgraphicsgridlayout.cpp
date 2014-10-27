@@ -124,6 +124,7 @@ private slots:
     void heightForWidthWithSpanning();
     void stretchAndHeightForWidth();
     void testDefaultAlignment();
+    void hiddenItems();
 };
 
 class RectWidget : public QGraphicsWidget
@@ -3485,6 +3486,94 @@ void tst_QGraphicsGridLayout::testDefaultAlignment()
     QCOMPARE(w->geometry(), QRectF(0,0,50,50));
     QCOMPARE(w2->geometry(), QRectF(0,50,100,100));
 }
+
+static RectWidget *addWidget(QGraphicsGridLayout *grid, int row, int column)
+{
+    RectWidget *w = new RectWidget;
+    w->setPreferredSize(20, 20);
+    grid->addItem(w, row, column);
+    return w;
+}
+
+static void setVisible(bool visible, QGraphicsWidget **widgets)
+{
+    for (int i = 0; i < 3; ++i)
+        if (widgets[i]) widgets[i]->setVisible(visible);
+}
+
+static void setRetainSizeWhenHidden(bool retainSize, QGraphicsWidget **widgets)
+{
+    QSizePolicy sp = widgets[0]->sizePolicy();
+    sp.setRetainSizeWhenHidden(retainSize);
+    for (int i = 0; i < 3; ++i)
+        if (widgets[i]) widgets[i]->setSizePolicy(sp);
+}
+
+void tst_QGraphicsGridLayout::hiddenItems()
+{
+    QGraphicsWidget *widget = new QGraphicsWidget;
+    QGraphicsGridLayout *layout = new QGraphicsGridLayout(widget);
+    layout->setContentsMargins(0, 0, 0, 0);
+    layout->setSpacing(2);
+
+    // Create a 3x3 layout
+    addWidget(layout, 0, 0);
+    RectWidget *w01 = addWidget(layout, 0, 1);
+    addWidget(layout, 0, 2);
+    RectWidget *w10 = addWidget(layout, 1, 0);
+    RectWidget *w11 = addWidget(layout, 1, 1);
+    RectWidget *w12 = addWidget(layout, 1, 2);
+    addWidget(layout, 2, 0);
+    RectWidget *w21 = addWidget(layout, 2, 1);
+    addWidget(layout, 2, 2);
+
+    QGraphicsWidget *middleColumn[] = {w01, w11, w21 };
+    QGraphicsWidget *topTwoOfMiddleColumn[] = {w01, w11, 0 };
+
+    // hide and show middle column
+    QCOMPARE(layout->preferredWidth(), qreal(64));
+    setVisible(false, middleColumn);   // hide middle column
+    QCOMPARE(layout->preferredWidth(), qreal(42));
+    setVisible(true, middleColumn);    // show middle column
+    QCOMPARE(layout->preferredWidth(), qreal(64));
+    setRetainSizeWhenHidden(true, middleColumn);
+    QCOMPARE(layout->preferredWidth(), qreal(64));
+    setVisible(false, middleColumn);   // hide middle column
+    QCOMPARE(layout->preferredWidth(), qreal(64));
+    setRetainSizeWhenHidden(false, middleColumn);
+    QCOMPARE(layout->preferredWidth(), qreal(42));
+    setVisible(true, middleColumn);
+    QCOMPARE(layout->preferredWidth(), qreal(64));
+
+    // Hide only two items, => column should not collapse
+    setVisible(false, topTwoOfMiddleColumn);
+    QCOMPARE(layout->preferredWidth(), qreal(64));
+
+
+    QGraphicsWidget *middleRow[] = {w10, w11, w12 };
+    QGraphicsWidget *leftMostTwoOfMiddleRow[] = {w10, w11, 0 };
+
+    // hide and show middle row
+    QCOMPARE(layout->preferredHeight(), qreal(64));
+    setVisible(false, middleRow);
+    QCOMPARE(layout->preferredHeight(), qreal(42));
+    setVisible(true, middleRow);
+    QCOMPARE(layout->preferredHeight(), qreal(64));
+    setRetainSizeWhenHidden(true, middleColumn);
+    QCOMPARE(layout->preferredHeight(), qreal(64));
+    setVisible(false, middleRow);
+    QCOMPARE(layout->preferredHeight(), qreal(64));
+    setRetainSizeWhenHidden(false, middleRow);
+    QCOMPARE(layout->preferredHeight(), qreal(42));
+    setVisible(true, middleRow);
+    QCOMPARE(layout->preferredHeight(), qreal(64));
+
+    // Hide only two items => row should not collapse
+    setVisible(false, leftMostTwoOfMiddleRow);
+    QCOMPARE(layout->preferredHeight(), qreal(64));
+
+}
+
 QTEST_MAIN(tst_QGraphicsGridLayout)
 #include "tst_qgraphicsgridlayout.moc"
 

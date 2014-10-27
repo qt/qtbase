@@ -1088,7 +1088,7 @@ void tst_QSslSocket::protocolServerSide_data()
 #endif
     QTest::newRow("ssl3-tls1.0") << QSsl::SslV3 << QSsl::TlsV1_0 << false;
     QTest::newRow("ssl3-tls1ssl3") << QSsl::SslV3 << QSsl::TlsV1SslV3 << true;
-    QTest::newRow("ssl3-secure") << QSsl::SslV3 << QSsl::SecureProtocols << true;
+    QTest::newRow("ssl3-secure") << QSsl::SslV3 << QSsl::SecureProtocols << false;
 #ifndef OPENSSL_NO_SSL2
     QTest::newRow("ssl3-any") << QSsl::SslV3 << QSsl::AnyProtocol << false; // we won't set a SNI header here because we connect to a
                                                                             // numerical IP, so OpenSSL will send a SSL 2 handshake
@@ -1120,7 +1120,7 @@ void tst_QSslSocket::protocolServerSide_data()
 #ifndef OPENSSL_NO_SSL2
     QTest::newRow("secure-ssl2") << QSsl::SecureProtocols << QSsl::SslV2 << false;
 #endif
-    QTest::newRow("secure-ssl3") << QSsl::SecureProtocols << QSsl::SslV3 << true;
+    QTest::newRow("secure-ssl3") << QSsl::SecureProtocols << QSsl::SslV3 << false;
     QTest::newRow("secure-tls1.0") << QSsl::SecureProtocols << QSsl::TlsV1_0 << true;
     QTest::newRow("secure-tls1ssl3") << QSsl::SecureProtocols << QSsl::TlsV1SslV3 << true;
     QTest::newRow("secure-any") << QSsl::SecureProtocols << QSsl::AnyProtocol << true;
@@ -2300,28 +2300,28 @@ void tst_QSslSocket::sslOptions()
 #ifdef SSL_OP_NO_COMPRESSION
     QCOMPARE(QSslSocketBackendPrivate::setupOpenSslOptions(QSsl::SecureProtocols,
                                                            QSslConfigurationPrivate::defaultSslOptions),
-             long(SSL_OP_ALL|SSL_OP_NO_SSLv2|SSL_OP_NO_COMPRESSION));
+             long(SSL_OP_ALL|SSL_OP_NO_SSLv2|SSL_OP_NO_SSLv3|SSL_OP_NO_COMPRESSION));
 #else
     QCOMPARE(QSslSocketBackendPrivate::setupOpenSslOptions(QSsl::SecureProtocols,
                                                            QSslConfigurationPrivate::defaultSslOptions),
-             long(SSL_OP_ALL|SSL_OP_NO_SSLv2));
+             long(SSL_OP_ALL|SSL_OP_NO_SSLv2|SSL_OP_NO_SSLv3));
 #endif
 
     QCOMPARE(QSslSocketBackendPrivate::setupOpenSslOptions(QSsl::SecureProtocols,
                                                            QSsl::SslOptionDisableEmptyFragments
                                                            |QSsl::SslOptionDisableLegacyRenegotiation),
-             long(SSL_OP_ALL|SSL_OP_NO_SSLv2));
+             long(SSL_OP_ALL|SSL_OP_NO_SSLv2|SSL_OP_NO_SSLv3));
 
 #ifdef SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION
     QCOMPARE(QSslSocketBackendPrivate::setupOpenSslOptions(QSsl::SecureProtocols,
                                                            QSsl::SslOptionDisableEmptyFragments),
-             long((SSL_OP_ALL|SSL_OP_NO_SSLv2|SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION)));
+             long((SSL_OP_ALL|SSL_OP_NO_SSLv2|SSL_OP_NO_SSLv3|SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION)));
 #endif
 
 #ifdef SSL_OP_DONT_INSERT_EMPTY_FRAGMENTS
     QCOMPARE(QSslSocketBackendPrivate::setupOpenSslOptions(QSsl::SecureProtocols,
                                                            QSsl::SslOptionDisableLegacyRenegotiation),
-             long((SSL_OP_ALL|SSL_OP_NO_SSLv2) & ~SSL_OP_DONT_INSERT_EMPTY_FRAGMENTS));
+             long((SSL_OP_ALL|SSL_OP_NO_SSLv2|SSL_OP_NO_SSLv3) & ~SSL_OP_DONT_INSERT_EMPTY_FRAGMENTS));
 #endif
 
 #ifdef SSL_OP_NO_TICKET
@@ -2329,7 +2329,7 @@ void tst_QSslSocket::sslOptions()
                                                            QSsl::SslOptionDisableEmptyFragments
                                                            |QSsl::SslOptionDisableLegacyRenegotiation
                                                            |QSsl::SslOptionDisableSessionTickets),
-             long((SSL_OP_ALL|SSL_OP_NO_SSLv2|SSL_OP_NO_TICKET)));
+             long((SSL_OP_ALL|SSL_OP_NO_SSLv2|SSL_OP_NO_SSLv3|SSL_OP_NO_TICKET)));
 #endif
 
 #ifdef SSL_OP_NO_TICKET
@@ -2339,7 +2339,7 @@ void tst_QSslSocket::sslOptions()
                                                            |QSsl::SslOptionDisableLegacyRenegotiation
                                                            |QSsl::SslOptionDisableSessionTickets
                                                            |QSsl::SslOptionDisableCompression),
-             long((SSL_OP_ALL|SSL_OP_NO_SSLv2|SSL_OP_NO_TICKET|SSL_OP_NO_COMPRESSION)));
+             long((SSL_OP_ALL|SSL_OP_NO_SSLv2|SSL_OP_NO_SSLv3|SSL_OP_NO_TICKET|SSL_OP_NO_COMPRESSION)));
 #endif
 #endif
 }

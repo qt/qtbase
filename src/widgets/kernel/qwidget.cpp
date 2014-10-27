@@ -1360,11 +1360,11 @@ void q_createNativeChildrenAndSetParent(const QWidget *parentWidget)
                     if (!childWidget->internalWinId())
                         childWidget->winId();
                     if (childWidget->windowHandle()) {
-                        QWindow *parentWindow = childWidget->nativeParentWidget()->windowHandle();
-                        if (childWidget->isWindow())
-                            childWidget->windowHandle()->setTransientParent(parentWindow);
-                        else
-                            childWidget->windowHandle()->setParent(parentWindow);
+                        if (childWidget->isWindow()) {
+                            childWidget->windowHandle()->setTransientParent(parentWidget->window()->windowHandle());
+                        } else {
+                            childWidget->windowHandle()->setParent(childWidget->nativeParentWidget()->windowHandle());
+                        }
                     }
                 } else {
                     q_createNativeChildrenAndSetParent(childWidget);
@@ -1401,10 +1401,8 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
             win->setProperty(propertyName, q->property(propertyName));
     }
 
-#ifdef Q_OS_OSX
     if (q->testAttribute(Qt::WA_ShowWithoutActivating))
         win->setProperty("_q_showWithoutActivating", QVariant(true));
-#endif
     win->setFlags(data.window_flags);
     fixPosIncludesFrame();
     if (q->testAttribute(Qt::WA_Moved)
@@ -9663,6 +9661,10 @@ QVariant QWidget::inputMethodQuery(Qt::InputMethodQuery query) const
     is set, the input method may change its visual components to reflect
     that only numbers can be entered.
 
+    \warning Some widgets require certain flags in order to work as
+    intended. To set a flag, do \c{w->setInputMethodHints(w->inputMethodHints()|f)}
+    instead of \c{w->setInputMethodHints(f)}.
+
     \note The flags are only hints, so the particular input method
           implementation is free to ignore them. If you want to be
           sure that a certain type of characters are entered,
@@ -12250,6 +12252,17 @@ QPaintEngine *QWidget::paintEngine() const
 */
 QPoint QWidget::mapToGlobal(const QPoint &pos) const
 {
+#ifndef QT_NO_GRAPHICSVIEW
+    Q_D(const QWidget);
+    if (d->extra && d->extra->proxyWidget) {
+        const QList <QGraphicsView *> views = d->extra->proxyWidget->scene()->views();
+        if (!views.isEmpty()) {
+            const QPointF scenePos = d->extra->proxyWidget->mapToScene(pos);
+            const QPoint viewPortPos = views.first()->mapFromScene(scenePos);
+            return views.first()->viewport()->mapToGlobal(viewPortPos);
+        }
+    }
+#endif // !QT_NO_GRAPHICSVIEW
     int x = pos.x(), y = pos.y();
     const QWidget *w = this;
     while (w) {
@@ -12274,6 +12287,17 @@ QPoint QWidget::mapToGlobal(const QPoint &pos) const
 */
 QPoint QWidget::mapFromGlobal(const QPoint &pos) const
 {
+#ifndef QT_NO_GRAPHICSVIEW
+    Q_D(const QWidget);
+    if (d->extra && d->extra->proxyWidget) {
+        const QList <QGraphicsView *> views = d->extra->proxyWidget->scene()->views();
+        if (!views.isEmpty()) {
+            const QPoint viewPortPos = views.first()->viewport()->mapFromGlobal(pos);
+            const QPointF scenePos = views.first()->mapToScene(viewPortPos);
+            return d->extra->proxyWidget->mapFromScene(scenePos).toPoint();
+        }
+    }
+#endif // !QT_NO_GRAPHICSVIEW
     int x = pos.x(), y = pos.y();
     const QWidget *w = this;
     while (w) {

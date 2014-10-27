@@ -1,5 +1,5 @@
 <RCC>
     <qresource prefix="/">
-        <file>test.ttf</file>
+        <file alias="test.ttf">../../../shared/resources/test.ttf</file>
     </qresource>
 </RCC>

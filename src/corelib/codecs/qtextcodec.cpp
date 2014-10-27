@@ -346,13 +346,13 @@ QTextCodec::ConverterState::~ConverterState()
     The supported encodings are:
 
     \list
-    \li Apple Roman
     \li \l{Big5 Text Codec}{Big5}
     \li \l{Big5-HKSCS Text Codec}{Big5-HKSCS}
     \li CP949
     \li \l{EUC-JP Text Codec}{EUC-JP}
     \li \l{EUC-KR Text Codec}{EUC-KR}
-    \li \l{GBK Text Codec}{GB18030-0}
+    \li \l{GBK Text Codec}{GB18030}
+    \li HP-ROMAN8
     \li IBM 850
     \li IBM 866
     \li IBM 874
@@ -360,10 +360,9 @@ QTextCodec::ConverterState::~ConverterState()
     \li ISO 8859-1 to 10
     \li ISO 8859-13 to 16
     \li Iscii-Bng, Dev, Gjr, Knd, Mlm, Ori, Pnj, Tlg, and Tml
-    \li JIS X 0201
-    \li JIS X 0208
     \li KOI8-R
     \li KOI8-U
+    \li Macintosh
     \li \l{Shift-JIS Text Codec}{Shift-JIS}
     \li TIS-620
     \li \l{TSCII Text Codec}{TSCII}

@@ -135,6 +135,7 @@
         defaultAttributes = [[NSArray alloc] initWithObjects:
         NSAccessibilityRoleAttribute,
         NSAccessibilityRoleDescriptionAttribute,
+        NSAccessibilitySubroleAttribute,
         NSAccessibilityChildrenAttribute,
         NSAccessibilityFocusedAttribute,
         NSAccessibilityParentAttribute,
@@ -221,6 +222,8 @@
 
     if ([attribute isEqualToString:NSAccessibilityRoleAttribute]) {
         return role;
+    } else if ([attribute isEqualToString:NSAccessibilitySubroleAttribute]) {
+        return QCocoaAccessible::macSubrole(iface);
     } else if ([attribute isEqualToString:NSAccessibilityRoleDescriptionAttribute]) {
         return NSAccessibilityRoleDescription(role, nil);
     } else if ([attribute isEqualToString:NSAccessibilityChildrenAttribute]) {

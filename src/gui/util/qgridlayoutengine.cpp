@@ -1289,7 +1289,7 @@ void QGridLayoutEngine::fillRowData(QGridLayoutRowData *rowData,
             if (rowIsIdenticalToPrevious && item != itemAt(row - 1, column, orientation))
                 rowIsIdenticalToPrevious = false;
 
-            if (item)
+            if (item && !item->isIgnored())
                 rowIsEmpty = false;
         }
 

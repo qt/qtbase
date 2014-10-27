@@ -2529,6 +2529,20 @@ void QWindowsXPStyle::drawControl(ControlElement element, const QStyleOption *op
     d->drawBackground(theme);
 }
 
+QRect QWindowsXPStylePrivate::scrollBarGripperBounds(QStyle::State flags, const QWidget *widget, XPThemeData *theme)
+{
+    const bool horizontal = flags & QStyle::State_Horizontal;
+    const QMargins contentsMargin = theme->margins(theme->rect, TMT_SIZINGMARGINS)
+                                    / QWindowsStylePrivate::devicePixelRatio(widget);
+    theme->partId = horizontal ? SBP_GRIPPERHORZ : SBP_GRIPPERVERT;
+    const QSize size = theme->size() / QWindowsStylePrivate::devicePixelRatio(widget);
+
+    const int hSpace = theme->rect.width() - size.width();
+    const int vSpace = theme->rect.height() - size.height();
+    const bool sufficientSpace = horizontal && hSpace > (contentsMargin.left() + contentsMargin.right())
+        || vSpace > contentsMargin.top() + contentsMargin.bottom();
+    return sufficientSpace ? QRect(theme->rect.topLeft() + QPoint(hSpace, vSpace) / 2, size) : QRect();
+}
 
 /*!
     \reimp
@@ -2754,24 +2768,7 @@ void QWindowsXPStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
                     theme.stateId = stateId;
                     d->drawBackground(theme);
 
-                    // Calculate rect of gripper
-                    const int swidth = theme.rect.width();
-                    const int sheight = theme.rect.height();
-
-                    const QMargins contentsMargin = theme.margins(theme.rect, TMT_SIZINGMARGINS)
-                                                    / QWindowsStylePrivate::devicePixelRatio(widget);
-
-                    theme.partId = flags & State_Horizontal ? SBP_GRIPPERHORZ : SBP_GRIPPERVERT;
-                    const QSize size = theme.size() / QWindowsStylePrivate::devicePixelRatio(widget);
-                    QPoint gripperBoundsPos(0, 0);
-                    if ((flags & State_Horizontal
-                         && swidth - contentsMargin.left() - contentsMargin.right() > size.width())
-                        || sheight - contentsMargin.top() - contentsMargin.bottom() > size.height()) {
-                        gripperBoundsPos = QPoint(theme.rect.left() + (swidth - size.width()) / 2,
-                                                  theme.rect.top() + (sheight - size.height()) /2);
-                    }
-                    const QRect gripperBounds(gripperBoundsPos, size);
-
+                    const QRect gripperBounds = QWindowsXPStylePrivate::scrollBarGripperBounds(flags, widget, &theme);
                     // Draw gripper if there is enough space
                     if (!gripperBounds.isEmpty()) {
                         p->save();

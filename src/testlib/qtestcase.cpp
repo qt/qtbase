@@ -2367,6 +2367,7 @@ static LONG WINAPI windowsFaultHandler(struct _EXCEPTION_POINTERS *exInfo)
 static void initEnvironment()
 {
     qputenv("QT_LOGGING_TO_CONSOLE", "1");
+    qputenv("QT_QTESTLIB_RUNNING", "1");
 }
 
 /*!

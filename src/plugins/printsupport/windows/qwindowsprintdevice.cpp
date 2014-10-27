@@ -271,7 +271,7 @@ QMarginsF QWindowsPrintDevice::printableMargins(const QPageSize &pageSize,
         const qreal rightMargin = physicalWidth - leftMargin - printableWidth;
         const qreal bottomMargin = physicalHeight - topMargin - printableHeight;
         margins = QMarginsF(leftMargin, topMargin, rightMargin, bottomMargin);
-        ReleaseDC(NULL, pDC);
+        DeleteDC(pDC);
     }
     return margins;
 }
@@ -280,11 +280,11 @@ void QWindowsPrintDevice::loadResolutions() const
 {
     DWORD resCount = DeviceCapabilities((LPWSTR)m_id.utf16(), NULL, DC_ENUMRESOLUTIONS, NULL, NULL);
     if (int(resCount) > 0) {
-        QScopedArrayPointer<LONG> resolutions(new LONG[resCount*sizeof(LONG)]);
+        QScopedArrayPointer<LONG> resolutions(new LONG[resCount*2]);
         // Get the details and match the default paper size
         if (DeviceCapabilities((LPWSTR)m_id.utf16(), NULL, DC_ENUMRESOLUTIONS, (LPWSTR)resolutions.data(), NULL) == resCount) {
-            for (int i = 0; i < int(resCount); ++i)
-                m_resolutions.append(resolutions[i]);
+            for (int i = 0; i < int(resCount * 2); i += 2)
+                m_resolutions.append(resolutions[i+1]);
         }
     }
     m_haveResolutions = true;
@@ -378,6 +378,7 @@ void QWindowsPrintDevice::loadDuplexModes() const
     DWORD duplex = DeviceCapabilities((LPWSTR)m_id.utf16(), NULL, DC_DUPLEX, NULL, NULL);
     if (int(duplex) == 1) {
         // TODO Assume if duplex flag supports both modes
+        m_duplexModes.append(QPrint::DuplexAuto);
         m_duplexModes.append(QPrint::DuplexLongSide);
         m_duplexModes.append(QPrint::DuplexShortSide);
     }

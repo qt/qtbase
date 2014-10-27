@@ -877,15 +877,22 @@ QString QImageReader::fileName() const
 /*!
     \since 4.2
 
-    This is an image format specific function that sets the quality
-    level of the image to \a quality. For image formats that do not
-    support setting the quality, this value is ignored.
+    Sets the quality setting of the image format to \a quality.
 
-    The value range of \a quality depends on the image format. For
-    example, the "jpeg" format supports a quality range from 0 (low
-    quality, high compression) to 100 (high quality, low compression).
+    Some image formats, in particular lossy ones, entail a tradeoff between a)
+    visual quality of the resulting image, and b) decoding execution time.
+    This function sets the level of that tradeoff for image formats that
+    support it.
 
-    \sa quality()
+    In case of scaled image reading, the quality setting may also influence the
+    tradeoff level between visual quality and execution speed of the scaling
+    algorithm.
+
+    The value range of \a quality depends on the image format. For example,
+    the "jpeg" format supports a quality range from 0 (low visual quality) to
+    100 (high visual quality).
+
+    \sa quality() setScaledSize()
 */
 void QImageReader::setQuality(int quality)
 {
@@ -895,7 +902,7 @@ void QImageReader::setQuality(int quality)
 /*!
     \since 4.2
 
-    Returns the quality level of the image.
+    Returns the quality setting of the image format.
 
     \sa setQuality()
 */

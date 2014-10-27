@@ -91,7 +91,7 @@ public:
         CursorSuppressed // Cursor suppressed by touch interaction (Windows 8).
     };
 
-    QWindowsCursor() {}
+    QWindowsCursor();
 
     void changeCursor(QCursor * widgetCursor, QWindow * widget) Q_DECL_OVERRIDE;
     QPoint pos() const Q_DECL_OVERRIDE;

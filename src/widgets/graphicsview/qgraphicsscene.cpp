@@ -392,7 +392,7 @@ void QGraphicsScenePrivate::_q_emitUpdated()
 */
 void QGraphicsScenePrivate::registerTopLevelItem(QGraphicsItem *item)
 {
-    item->d_ptr->ensureSequentialSiblingIndex();
+    ensureSequentialTopLevelSiblingIndexes();
     needSortTopLevelItems = true; // ### maybe false
     item->d_ptr->siblingIndex = topLevelItems.size();
     topLevelItems.append(item);

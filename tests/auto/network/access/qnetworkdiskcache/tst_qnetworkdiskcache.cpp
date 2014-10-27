@@ -55,6 +55,7 @@ public slots:
     void init();
     void cleanup();
     void accessAfterRemoveReadyReadSlot();
+    void setCookieHeaderMetaDataChangedSlot();
 
 private slots:
     void qnetworkdiskcache_data();
@@ -68,6 +69,7 @@ private slots:
     void metaData();
     void remove();
     void accessAfterRemove(); // QTBUG-17400
+    void setCookieHeader(); // QTBUG-41514
     void setCacheDirectory_data();
     void setCacheDirectory();
     void updateMetaData();
@@ -86,8 +88,9 @@ private slots:
 
 private:
     QTemporaryDir tempDir;
-    QUrl url; // used by accessAfterRemove()
+    QUrl url; // used by accessAfterRemove(), setCookieHeader()
     QNetworkDiskCache *diskCache; // used by accessAfterRemove()
+    QNetworkAccessManager *manager; // used by setCookieHeader()
 };
 
 // FIXME same as in tst_qnetworkreply.cpp .. could be unified
@@ -401,6 +404,40 @@ void tst_QNetworkDiskCache::accessAfterRemove() // QTBUG-17400
 void tst_QNetworkDiskCache::accessAfterRemoveReadyReadSlot()
 {
     diskCache->remove(url); // this used to cause a crash later on
+}
+
+void tst_QNetworkDiskCache::setCookieHeader() // QTBUG-41514
+{
+    SubQNetworkDiskCache *cache = new SubQNetworkDiskCache();
+    url = QUrl("http://www.foo.com/cookieTest.html");
+    QNetworkCacheMetaData metaData;
+    metaData.setUrl(url);
+
+    QNetworkCacheMetaData::RawHeaderList headers;
+    headers.append(QNetworkCacheMetaData::RawHeader("Set-Cookie", "aaa=bbb"));
+    metaData.setRawHeaders(headers);
+    metaData.setSaveToDisk(true);
+    cache->setupWithOne(tempDir.path(), url, metaData);
+
+    manager = new QNetworkAccessManager();
+    manager->setCache(cache);
+
+    QNetworkRequest request(url);
+    QNetworkReply  *reply = manager->get(request);
+    connect(reply, SIGNAL(metaDataChanged()), this, SLOT(setCookieHeaderMetaDataChangedSlot()));
+    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+
+    QTestEventLoop::instance().enterLoop(5);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+
+    reply->deleteLater();
+    manager->deleteLater();
+}
+
+void tst_QNetworkDiskCache::setCookieHeaderMetaDataChangedSlot()
+{
+    QList<QNetworkCookie> actualCookieJar = manager->cookieJar()->cookiesForUrl(url);
+    QVERIFY(!actualCookieJar.empty());
 }
 
 void tst_QNetworkDiskCache::setCacheDirectory_data()
