@@ -3717,7 +3717,6 @@ QString HtmlGenerator::getLink(const Atom *atom, const Node *relative, const Nod
     *node = qdb_->findNodeForAtom(atom, relative, ref);
     if (!(*node))
         return QString();
-
     if (Generator::writeQaPages())
         qdb_->incrementLinkCount(*node);
 
@@ -3838,10 +3837,12 @@ QString HtmlGenerator::linkForNode(const Node *node, const Node *relative)
     if (node && relative && (node != relative)) {
         if (useOutputSubdirs() && !node->isExternalPage() &&
                node->outputSubdirectory() != relative->outputSubdirectory()) {
-            if (link.startsWith(node->outputSubdirectory()))
+            if (link.startsWith(QString(node->outputSubdirectory() + QLatin1Char('/')))) {
                 link.prepend(QString("../"));
-            else
+            }
+            else {
                 link.prepend(QString("../" + node->outputSubdirectory() + QLatin1Char('/')));
+            }
         }
     }
     return link;
