@@ -1996,6 +1996,10 @@ void tst_QTextCodec::codecForHtml_data()
         "auto; word-spacing: 0px; -webkit-text-size-adjust: auto; -webkit-text-stroke-width: 0px; display: inline !important; float: "
         "none;\">&#x37b</span>\000";
     QTest::newRow("greek text UTF-8") << html << 106 << 106;
+
+    html = "<!DOCTYPE html><html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=unicode\">"
+            "<head/><body><p>bla</p></body></html>"; // QTBUG-41998, ICU will return UTF-16.
+    QTest::newRow("legacy unicode UTF-8") << html << 106 << 106;
 }
 
 void tst_QTextCodec::codecForHtml()

@@ -1049,7 +1049,10 @@ QTextCodec *QTextCodec::codecForHtml(const QByteArray &ba, QTextCodec *defaultCo
                 while (++pos2 < header.size()) {
                     char ch = header.at(pos2);
                     if (ch == '\"' || ch == '\'' || ch == '>') {
-                        c = QTextCodec::codecForName(header.mid(pos, pos2 - pos));
+                        QByteArray name = header.mid(pos, pos2 - pos);
+                        if (name == "unicode") // QTBUG-41998, ICU will return UTF-16.
+                            name = QByteArrayLiteral("UTF-8");
+                        c = QTextCodec::codecForName(name);
                         return c ? c : defaultCodec;
                     }
                 }
