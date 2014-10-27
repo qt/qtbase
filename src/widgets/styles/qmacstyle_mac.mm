@@ -4075,7 +4075,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
             comboCopy.direction = Qt::LeftToRight;
             if (opt->state & QStyle::State_Small)
                 comboCopy.rect.translate(0, w ? (QSysInfo::macVersion() > QSysInfo::MV_10_8 ? 0 : -1) : -2); // Supports Qt Quick Controls
-            else if (QSysInfo::macVersion() > QSysInfo::MV_10_8)
+            else if (QSysInfo::macVersion() == QSysInfo::MV_10_9)
                 comboCopy.rect.translate(0, 1);
             QCommonStyle::drawControl(CE_ComboBoxLabel, &comboCopy, p, w);
         }
@@ -5738,10 +5738,13 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
         if (const QStyleOptionComboBox *combo = qstyleoption_cast<const QStyleOptionComboBox *>(opt)){
             HIThemeButtonDrawInfo bdi;
             d->initComboboxBdi(combo, &bdi, widget, d->getDrawState(opt->state));
+            HIRect rect = qt_hirectForQRect(combo->rect);
+            if (combo->editable && QSysInfo::MacintoshVersion > QSysInfo::MV_10_9)
+                rect.origin.y += tds == kThemeStateInactive ? 1 : 2;
             if (tds != kThemeStateInactive)
-                QMacStylePrivate::drawCombobox(qt_hirectForQRect(combo->rect), bdi, p);
+                QMacStylePrivate::drawCombobox(rect, bdi, p);
             else
-                d->drawColorlessButton(qt_hirectForQRect(combo->rect), &bdi, p, opt);
+                d->drawColorlessButton(rect, &bdi, p, opt);
         }
         break;
     case CC_TitleBar:
