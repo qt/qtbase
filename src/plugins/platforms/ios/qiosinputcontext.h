@@ -82,6 +82,7 @@ public:
     void commit();
 
     const ImeState &imeState() { return m_imeState; };
+    bool inputMethodAccepted() const;
 
     bool isReloadingInputViewsFromUpdate() const { return m_isReloadingInputViewsFromUpdate; }
 

@@ -486,6 +486,26 @@ void QIOSInputContext::update(Qt::InputMethodQueries updatedProperties)
     }
 }
 
+bool QIOSInputContext::inputMethodAccepted() const
+{
+    // The IM enablement state is based on the last call to update()
+    bool lastKnownImEnablementState = m_imeState.currentState.value(Qt::ImEnabled).toBool();
+
+#if !defined(QT_NO_DEBUG)
+    // QPlatformInputContext keeps a cached value of the current IM enablement state that is
+    // updated by QGuiApplication when the current focus object changes, or by QInputMethod's
+    // update() function. If the focus object changes, but the change is not propagated as
+    // a signal to QGuiApplication due to bugs in the widget/graphicsview/qml stack, we'll
+    // end up with a stale value for QPlatformInputContext::inputMethodAccepted(). To be on
+    // the safe side we always use our own cached value to decide if IM is enabled, and try
+    // to detect the case where the two values are out of sync.
+    if (lastKnownImEnablementState != QPlatformInputContext::inputMethodAccepted())
+        qWarning("QPlatformInputContext::inputMethodAccepted() does not match actual focus object IM enablement!");
+#endif
+
+    return lastKnownImEnablementState;
+}
+
 /*!
     Called by the input item to reset the input method state.
 */
