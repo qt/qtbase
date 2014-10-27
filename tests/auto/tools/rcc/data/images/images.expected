@@ -116,6 +116,7 @@ bool qUnregisterResourceData(int, const unsigned char *, const unsigned char *, 
 }
 #endif
 
+int QT_RCC_MANGLE_NAMESPACE(qInitResources)();
 int QT_RCC_MANGLE_NAMESPACE(qInitResources)()
 {
     QT_RCC_PREPEND_NAMESPACE(qRegisterResourceData)
@@ -123,6 +124,7 @@ int QT_RCC_MANGLE_NAMESPACE(qInitResources)()
     return 1;
 }
 
+int QT_RCC_MANGLE_NAMESPACE(qCleanupResources)();
 int QT_RCC_MANGLE_NAMESPACE(qCleanupResources)()
 {
     QT_RCC_PREPEND_NAMESPACE(qUnregisterResourceData)

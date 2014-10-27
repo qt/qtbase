@@ -214,6 +214,8 @@ public:
     QAbstractItemView *itemView() const;
     void setItemView(QAbstractItemView *itemView);
     int spacing() const;
+    int topMargin() const;
+    int bottomMargin() const { return topMargin(); }
     void updateTopBottomMargin();
 
     QTimer blockMouseReleaseTimer;
@@ -252,7 +254,7 @@ private:
     friend class QComboBox;
 };
 
-class QComboMenuDelegate : public QAbstractItemDelegate
+class Q_AUTOTEST_EXPORT QComboMenuDelegate : public QAbstractItemDelegate
 { Q_OBJECT
 public:
     QComboMenuDelegate(QObject *parent, QComboBox *cmb) : QAbstractItemDelegate(parent), mCombo(cmb) {}
@@ -281,7 +283,7 @@ private:
 // Note that this class is intentionally not using QStyledItemDelegate
 // Vista does not use the new theme for combo boxes and there might
 // be other side effects from using the new class
-class QComboBoxDelegate : public QItemDelegate
+class Q_AUTOTEST_EXPORT QComboBoxDelegate : public QItemDelegate
 { Q_OBJECT
 public:
     QComboBoxDelegate(QObject *parent, QComboBox *cmb) : QItemDelegate(parent), mCombo(cmb) {}

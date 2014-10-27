@@ -1057,6 +1057,12 @@ bool RCCResourceLibrary::writeInitializer()
 
         QByteArray initResources = "qInitResources";
         initResources += initName;
+
+        // Work around -Wmissing-declarations warnings.
+        writeString("int ");
+        writeMangleNamespaceFunction(initResources);
+        writeString("();\n");
+
         writeString("int ");
         writeMangleNamespaceFunction(initResources);
         writeString("()\n{\n");
@@ -1073,6 +1079,12 @@ bool RCCResourceLibrary::writeInitializer()
         //cleanup
         QByteArray cleanResources = "qCleanupResources";
         cleanResources += initName;
+
+        // Work around -Wmissing-declarations warnings.
+        writeString("int ");
+        writeMangleNamespaceFunction(cleanResources);
+        writeString("();\n");
+
         writeString("int ");
         writeMangleNamespaceFunction(cleanResources);
         writeString("()\n{\n");

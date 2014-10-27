@@ -259,10 +259,16 @@ static void __attribute__((noinline, noreturn)) user_main_trampoline()
     NSArray *arguments = [[NSProcessInfo processInfo] arguments];
     int argc = arguments.count;
     char **argv = new char*[argc];
+
     for (int i = 0; i < argc; ++i) {
         NSString *arg = [arguments objectAtIndex:i];
-        argv[i] = reinterpret_cast<char *>(malloc([arg lengthOfBytesUsingEncoding:[NSString defaultCStringEncoding]]));
-        strcpy(argv[i], [arg cStringUsingEncoding:[NSString defaultCStringEncoding]]);
+
+        NSStringEncoding cStringEncoding = [NSString defaultCStringEncoding];
+        unsigned int bufferSize = [arg lengthOfBytesUsingEncoding:cStringEncoding] + 1;
+        argv[i] = reinterpret_cast<char *>(malloc(bufferSize));
+
+        if (![arg getCString:argv[i] maxLength:bufferSize encoding:cStringEncoding])
+            qFatal("Could not convert argv[%d] to C string", i);
     }
 
     int exitCode = qtmn(argc, argv);

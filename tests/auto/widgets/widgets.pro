@@ -8,3 +8,4 @@ SUBDIRS=\
     styles \
     util \
     widgets \
+    gestures \

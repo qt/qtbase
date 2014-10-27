@@ -39,9 +39,11 @@ QT_BEGIN_NAMESPACE
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug dbg, const QSqlError &s)
 {
-    dbg.nospace() << "QSqlError(" << s.nativeErrorCode() << ", " << s.driverText() <<
-                     ", " << s.databaseText() << ')';
-    return dbg.space();
+    QDebugStateSaver saver(dbg);
+    dbg.nospace();
+    dbg << "QSqlError(" << s.nativeErrorCode() << ", " << s.driverText()
+        << ", " << s.databaseText() << ')';
+    return dbg;
 }
 #endif
 

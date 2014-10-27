@@ -887,6 +887,7 @@ public:
     QString                 ConfigurationName;
     QString                 OutputDirectory;
     QString                 PrimaryOutput;
+    QString                 PrimaryOutputExtension;
     QString                 ProgramDatabase;
     QString                 PlatformToolSet;
     triState                RegisterOutput;

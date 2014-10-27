@@ -736,7 +736,7 @@ namespace QtPrivate {
     {
         static QVariantList invoke(const QVariant &v)
         {
-            if (v.userType() == qMetaTypeId<QStringList>() || v.userType() == qMetaTypeId<QByteArrayList>() || QMetaType::hasRegisteredConverterFunction(v.userType(), qMetaTypeId<QtMetaTypePrivate::QSequentialIterableImpl>())) {
+            if (QtMetaTypePrivate::isBuiltinSequentialType(v.userType()) || QMetaType::hasRegisteredConverterFunction(v.userType(), qMetaTypeId<QtMetaTypePrivate::QSequentialIterableImpl>())) {
                 QSequentialIterable iter = QVariantValueHelperInterface<QSequentialIterable>::invoke(v);
                 QVariantList l;
                 l.reserve(iter.size());
@@ -752,7 +752,7 @@ namespace QtPrivate {
     {
         static QVariantHash invoke(const QVariant &v)
         {
-            if (QMetaType::hasRegisteredConverterFunction(v.userType(), qMetaTypeId<QtMetaTypePrivate::QAssociativeIterableImpl>())) {
+            if (QtMetaTypePrivate::isBuiltinAssociativeType(v.userType()) || QMetaType::hasRegisteredConverterFunction(v.userType(), qMetaTypeId<QtMetaTypePrivate::QAssociativeIterableImpl>())) {
                 QAssociativeIterable iter = QVariantValueHelperInterface<QAssociativeIterable>::invoke(v);
                 QVariantHash l;
                 l.reserve(iter.size());
@@ -768,7 +768,7 @@ namespace QtPrivate {
     {
         static QVariantMap invoke(const QVariant &v)
         {
-            if (QMetaType::hasRegisteredConverterFunction(v.userType(), qMetaTypeId<QtMetaTypePrivate::QAssociativeIterableImpl>())) {
+            if (QtMetaTypePrivate::isBuiltinAssociativeType(v.userType()) || QMetaType::hasRegisteredConverterFunction(v.userType(), qMetaTypeId<QtMetaTypePrivate::QAssociativeIterableImpl>())) {
                 QAssociativeIterable iter = QVariantValueHelperInterface<QAssociativeIterable>::invoke(v);
                 QVariantMap l;
                 for (QAssociativeIterable::const_iterator it = iter.begin(), end = iter.end(); it != end; ++it)

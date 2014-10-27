@@ -1347,6 +1347,8 @@ void QPdfEngine::setPen()
     int pdfJoinStyle = 0;
     switch(d->pen.joinStyle()) {
     case Qt::MiterJoin:
+    case Qt::SvgMiterJoin:
+        *d->currentPage << d->pen.miterLimit() << "M ";
         pdfJoinStyle = 0;
         break;
     case Qt::BevelJoin:
@@ -2081,8 +2083,10 @@ int QPdfEnginePrivate::writeImage(const QByteArray &data, int width, int height,
     }
     if (maskObject > 0)
         xprintf("/Mask %d 0 R\n", maskObject);
-    if (softMaskObject > 0)
+    if (softMaskObject > 0) {
         xprintf("/SMask %d 0 R\n", softMaskObject);
+        xprintf("/Decode [1 0 1 0 1 0]\n");
+    }
 
     int lenobj = requestObject();
     xprintf("/Length %d 0 R\n", lenobj);

@@ -1086,6 +1086,11 @@ void QTranslatorPrivate::clear()
     \a disambiguation). If none is found, also tries (\a context, \a
     sourceText, ""). If that still fails, returns a null string.
 
+    \note Incomplete translations may result in unexpected behavior:
+    If no translation for (\a context, \a sourceText, "")
+    is provided, the method might in this case actually return a
+    translation for a different \a disambiguation.
+
     If \a n is not -1, it is used to choose an appropriate form for
     the translation (e.g. "%n file found" vs. "%n files found").
 

@@ -1756,26 +1756,8 @@ void QWindowsVistaStyle::drawComplexControl(ComplexControl control, const QStyle
                     theme.stateId = stateId;
                     d->drawBackground(theme);
 
-                    // Calculate rect of gripper
-                    const int swidth = theme.rect.width();
-                    const int sheight = theme.rect.height();
-
-                    const QMargins contentsMargin = theme.margins(theme.rect, TMT_SIZINGMARGINS)
-                                                    / QWindowsXPStylePrivate::devicePixelRatio(widget);
-
-                    theme.partId = flags & State_Horizontal ? SBP_GRIPPERHORZ : SBP_GRIPPERVERT;
-                    const QSize size = theme.size() / QWindowsXPStylePrivate::devicePixelRatio(widget);
-
                     if (QSysInfo::WindowsVersion < QSysInfo::WV_WINDOWS8) {
-                        QPoint gripperBoundsPos(0, 0);
-                        if ((flags & State_Horizontal
-                             && swidth - contentsMargin.left() - contentsMargin.right() > size.width())
-                            || sheight - contentsMargin.top() - contentsMargin.bottom() > size.height()) {
-                            gripperBoundsPos = QPoint(theme.rect.left() + (swidth - size.width()) / 2,
-                                                      theme.rect.top() + (sheight - size.height()) / 2);
-                        }
-                        const QRect gripperBounds(gripperBoundsPos, size);
-
+                        const QRect gripperBounds = QWindowsXPStylePrivate::scrollBarGripperBounds(flags, widget, &theme);
                         // Draw gripper if there is enough space
                         if (!gripperBounds.isEmpty() && flags & State_Enabled) {
                             painter->save();
@@ -2285,7 +2267,7 @@ int QWindowsVistaStyle::pixelMetric(PixelMetric metric, const QStyleOption *opti
     if (!QWindowsVistaStylePrivate::useVista())
         return QWindowsStyle::pixelMetric(metric, option, widget);
 
-    int ret = QWindowsStylePrivate::fixedPixelMetric(metric);
+    int ret = QWindowsVistaStylePrivate::fixedPixelMetric(metric);
     if (ret != QWindowsStylePrivate::InvalidMetric)
         return int(QStyleHelper::dpiScaled(ret));
 

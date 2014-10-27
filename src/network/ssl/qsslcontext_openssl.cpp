@@ -139,8 +139,11 @@ init_context:
     case QSsl::SslV3:
         sslContext->ctx = q_SSL_CTX_new(client ? q_SSLv3_client_method() : q_SSLv3_server_method());
         break;
-    case QSsl::SecureProtocols: // SslV2 will be disabled below
-    case QSsl::TlsV1SslV3: // SslV2 will be disabled below
+    case QSsl::SecureProtocols:
+        // SSLv2 and SSLv3 will be disabled by SSL options
+        // But we need q_SSLv23_server_method() otherwise AnyProtocol will be unable to connect on Win32.
+    case QSsl::TlsV1SslV3:
+        // SSLv2 will will be disabled by SSL options
     case QSsl::AnyProtocol:
     default:
         sslContext->ctx = q_SSL_CTX_new(client ? q_SSLv23_client_method() : q_SSLv23_server_method());

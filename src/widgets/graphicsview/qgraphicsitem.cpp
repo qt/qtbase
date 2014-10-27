@@ -797,7 +797,7 @@ static QPainterPath qt_graphicsItem_shapeFromPath(const QPainterPath &path, cons
     // if we pass a value of 0.0 to QPainterPathStroker::setWidth()
     const qreal penWidthZero = qreal(0.00000001);
 
-    if (path == QPainterPath())
+    if (path == QPainterPath() || pen == Qt::NoPen)
         return path;
     QPainterPathStroker ps;
     ps.setCapStyle(pen.capStyle());

@@ -479,9 +479,9 @@ void QComboBoxPrivateContainer::updateScrollers()
         view->verticalScrollBar()->minimum() < view->verticalScrollBar()->maximum()) {
 
         bool needTop = view->verticalScrollBar()->value()
-                       > (view->verticalScrollBar()->minimum() + spacing());
+                       > (view->verticalScrollBar()->minimum() + topMargin());
         bool needBottom = view->verticalScrollBar()->value()
-                          < (view->verticalScrollBar()->maximum() - spacing()*2);
+                          < (view->verticalScrollBar()->maximum() - bottomMargin() - topMargin());
         if (needTop)
             top->show();
         else
@@ -572,13 +572,27 @@ void QComboBoxPrivateContainer::setItemView(QAbstractItemView *itemView)
 }
 
 /*!
+    Returns the top/bottom vertical margin of the view.
+*/
+int QComboBoxPrivateContainer::topMargin() const
+{
+    if (const QListView *lview = qobject_cast<const QListView*>(view))
+        return lview->spacing();
+#ifndef QT_NO_TABLEVIEW
+    if (const QTableView *tview = qobject_cast<const QTableView*>(view))
+        return tview->showGrid() ? 1 : 0;
+#endif
+    return 0;
+}
+
+/*!
     Returns the spacing between the items in the view.
 */
 int QComboBoxPrivateContainer::spacing() const
 {
     QListView *lview = qobject_cast<QListView*>(view);
     if (lview)
-        return lview->spacing();
+        return 2 * lview->spacing(); // QListView::spacing is the padding around the item.
 #ifndef QT_NO_TABLEVIEW
     QTableView *tview = qobject_cast<QTableView*>(view);
     if (tview)
@@ -1690,8 +1704,6 @@ void QComboBox::setEditable(bool editable)
     if (isEditable() == editable)
         return;
 
-    d->updateDelegate();
-
     QStyleOptionComboBox opt;
     initStyleOption(&opt);
     if (editable) {
@@ -1712,6 +1724,7 @@ void QComboBox::setEditable(bool editable)
         d->lineEdit = 0;
     }
 
+    d->updateDelegate();
     d->updateFocusPolicy();
 
     d->viewContainer()->updateTopBottomMargin();
@@ -2528,7 +2541,7 @@ void QComboBox::showPopup()
                 QModelIndex idx = d->model->index(i, d->modelColumn, parent);
                 if (!idx.isValid())
                     continue;
-                listHeight += view()->visualRect(idx).height() + container->spacing();
+                listHeight += view()->visualRect(idx).height();
 #ifndef QT_NO_TREEVIEW
                 if (d->model->hasChildren(idx) && treeView && treeView->isExpanded(idx))
                     toCheck.push(idx);
@@ -2540,12 +2553,14 @@ void QComboBox::showPopup()
                 }
             }
         }
+        if (count > 1)
+            listHeight += (count - 1) * container->spacing();
         listRect.setHeight(listHeight);
     }
 
     {
         // add the spacing for the grid on the top and the bottom;
-        int heightMargin = 2*container->spacing();
+        int heightMargin = container->topMargin()  + container->bottomMargin();
 
         // add the frame of the container
         int marginTop, marginBottom;

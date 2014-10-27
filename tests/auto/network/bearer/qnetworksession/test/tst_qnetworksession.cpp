@@ -271,7 +271,11 @@ void tst_QNetworkSession::sessionProperties()
                                                  << QLatin1String("WCDMA")
                                                  << QLatin1String("HSPA")
                                                  << QLatin1String("Bluetooth")
-                                                 << QLatin1String("WiMAX");
+                                                 << QLatin1String("WiMAX")
+                                                 << QLatin1String("BearerEVDO")
+                                                 << QLatin1String("BearerLTE")
+                                                 << QLatin1String("Bearer3G")
+                                                 << QLatin1String("Bearer4G");
 
     if (!configuration.isValid()) {
         QVERIFY(configuration.bearerTypeName().isEmpty());
@@ -1022,7 +1026,11 @@ QNetworkConfiguration suitableConfiguration(QString bearerType, QNetworkConfigur
             if (config.bearerTypeName() != "2G" &&
                 config.bearerTypeName() != "CDMA2000" &&
                 config.bearerTypeName() != "WCDMA" &&
-                config.bearerTypeName() != "HSPA") {
+                config.bearerTypeName() != "HSPA" &&
+                config.bearerTypeName() != "EVDO" &&
+                config.bearerTypeName() != "LTE" &&
+                config.bearerTypeName() != "3G" &&
+                config.bearerTypeName() != "4G") {
                 // qDebug() << "Dumping config because bearer mismatches (cellular): " << config.name();
                 discoveredConfigs.removeOne(config);
             }

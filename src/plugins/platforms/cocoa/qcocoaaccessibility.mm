@@ -162,7 +162,7 @@ static void populateRoleMap()
 }
 
 /*
-    Returns a Mac accessibility role for the given interface, or
+    Returns a Cocoa accessibility role for the given interface, or
     NSAccessibilityUnknownRole if no role mapping is found.
 */
 NSString *macRole(QAccessibleInterface *interface)
@@ -190,13 +190,24 @@ NSString *macRole(QAccessibleInterface *interface)
 }
 
 /*
-    Mac accessibility supports ignoring elements, which means that
+    Returns a Cocoa sub role for the given interface.
+*/
+NSString *macSubrole(QAccessibleInterface *interface)
+{
+    QAccessible::State s = interface->state();
+    if (s.searchEdit)
+        return NSAccessibilitySearchFieldSubrole;
+    return nil;
+}
+
+/*
+    Cocoa accessibility supports ignoring elements, which means that
     the elements are still present in the accessibility tree but is
     not used by the screen reader.
 */
 bool shouldBeIgnored(QAccessibleInterface *interface)
 {
-    // Mac accessibility does not have an attribute that corresponds to the Invisible/Offscreen
+    // Cocoa accessibility does not have an attribute that corresponds to the Invisible/Offscreen
     // state. Ignore interfaces with those flags set.
     const QAccessible::State state = interface->state();
     if (state.invisible ||

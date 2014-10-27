@@ -137,6 +137,7 @@ private:
                                       const ProStringList &allDependencies = ProStringList());
     QUuid increaseUUID(const QUuid &id);
     QString retrievePlatformToolSet() const;
+    bool isStandardSuffix(const QString &suffix) const;
     friend class VCFilter;
 };
 

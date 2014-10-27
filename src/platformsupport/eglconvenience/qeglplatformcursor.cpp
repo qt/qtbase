@@ -267,7 +267,7 @@ void QEGLPlatformCursorUpdater::update(const QPoint &pos, const QRegion &rgn)
 {
     m_active = false;
     QWindowSystemInterface::handleExposeEvent(m_screen->topLevelAt(pos), rgn);
-    QWindowSystemInterface::flushWindowSystemEvents();
+    QWindowSystemInterface::flushWindowSystemEvents(QEventLoop::ExcludeUserInputEvents);
 }
 
 void QEGLPlatformCursorUpdater::scheduleUpdate(const QPoint &pos, const QRegion &rgn)

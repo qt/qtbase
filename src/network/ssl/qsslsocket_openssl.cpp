@@ -280,8 +280,10 @@ int q_X509Callback(int ok, X509_STORE_CTX *ctx)
 long QSslSocketBackendPrivate::setupOpenSslOptions(QSsl::SslProtocol protocol, QSsl::SslOptions sslOptions)
 {
     long options;
-    if (protocol == QSsl::TlsV1SslV3 || protocol == QSsl::SecureProtocols)
+    if (protocol == QSsl::TlsV1SslV3)
         options = SSL_OP_ALL|SSL_OP_NO_SSLv2;
+    else if (protocol == QSsl::SecureProtocols)
+        options = SSL_OP_ALL|SSL_OP_NO_SSLv2|SSL_OP_NO_SSLv3;
     else
         options = SSL_OP_ALL;
 

@@ -6025,8 +6025,10 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                         p->fillPath(path, brush);
                     } else if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_5) {
                         static QPixmap pm(QLatin1String(":/qt-project.org/mac/style/images/leopard-unified-toolbar-on.png"));
+                        p->save();
                         p->setRenderHint(QPainter::SmoothPixmapTransform);
                         QStyleHelper::drawBorderPixmap(pm, p, tb->rect, 2, 2, 2, 2);
+                        p->restore();
                     } else {
                         QPen oldPen = p->pen();
                         p->setPen(QColor(0, 0, 0, 0x3a));

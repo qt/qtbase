@@ -36,6 +36,7 @@
 
 
 #include <qapplication.h>
+#include <qfontdatabase.h>
 #include <qfontinfo.h>
 #include <qtimer.h>
 #include <qmainwindow.h>
@@ -70,6 +71,10 @@ private slots:
     void setFont();
     void task256466_wrongStyle();
     void setNonStandardFontSize();
+#ifndef QT_NO_STYLE_STYLESHEET
+    void qtbug_41513_stylesheetStyle();
+#endif
+
 
 private:
     void runSlotWithFailsafeTimer(const char *member);
@@ -201,6 +206,31 @@ void tst_QFontDialog::setNonStandardFontSize()
 {
     runSlotWithFailsafeTimer(SLOT(testNonStandardFontSize()));
 }
+#ifndef QT_NO_STYLE_STYLESHEET
+static const QString offendingStyleSheet = QStringLiteral("* { font-family: \"QtBidiTestFont\"; }");
+
+void tst_QFontDialog::qtbug_41513_stylesheetStyle()
+{
+    if (QFontDatabase::addApplicationFont(QFINDTESTDATA("test.ttf")) < 0)
+        QSKIP("Test fonts not found.");
+    if (QFontDatabase::addApplicationFont(QFINDTESTDATA("testfont.ttf")) < 0)
+        QSKIP("Test fonts not found.");
+    QFont testFont = QFont(QStringLiteral("QtsSpecialTestFont"));
+    qApp->setStyleSheet(offendingStyleSheet);
+    bool accepted = false;
+    QTimer::singleShot(2000, this, SLOT(postKeyReturn()));
+    QFont resultFont = QFontDialog::getFont(&accepted, testFont,
+        QApplication::activeWindow(),
+        QLatin1String("QFontDialog - Stylesheet Test"),
+        QFontDialog::DontUseNativeDialog);
+    QVERIFY(accepted);
+
+    QCOMPARE(resultFont, testFont);
+
+    // reset stylesheet
+    qApp->setStyleSheet(QString());
+}
+#endif // QT_NO_STYLE_STYLESHEET
 
 void tst_QFontDialog::testNonStandardFontSize()
 {

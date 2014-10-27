@@ -67,6 +67,8 @@ private slots:
     void showPrevNext();
 
     void firstDayOfWeek();
+
+    void contentsMargins();
 };
 
 // Testing get/set functions
@@ -389,6 +391,14 @@ void tst_QCalendarWidget::firstDayOfWeek()
     QCOMPARE(calendar.locale(), germanLocale);
     QCOMPARE(parent->locale(), hausaLocale);
     QCOMPARE(calendar.firstDayOfWeek(), germanLocale.firstDayOfWeek());
+}
+
+void tst_QCalendarWidget::contentsMargins()
+{
+    QCalendarWidget calendar1;
+    QCalendarWidget calendar2;
+    calendar2.setContentsMargins(10, 5, 20, 30);
+    QCOMPARE(calendar1.minimumSizeHint() + QSize(30, 35), calendar2.minimumSizeHint());
 }
 
 QTEST_MAIN(tst_QCalendarWidget)

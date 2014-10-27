@@ -82,6 +82,10 @@ public:
         return q_layoutItem->effectiveSizeHint(which, constraint);
     }
 
+    bool isHidden() const;
+
+    virtual bool isIgnored() const Q_DECL_OVERRIDE;
+
     virtual void setGeometry(const QRectF &rect) Q_DECL_OVERRIDE
     {
          q_layoutItem->setGeometry(rect);

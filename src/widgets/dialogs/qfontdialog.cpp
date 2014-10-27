@@ -322,6 +322,7 @@ void QFontDialogPrivate::init()
 
     familyList->setFocus();
     retranslateStrings();
+    sampleEdit->setObjectName(QLatin1String("qt_fontDialog_sampleEdit"));
 }
 
 /*!

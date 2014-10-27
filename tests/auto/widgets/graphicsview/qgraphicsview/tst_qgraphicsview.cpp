@@ -160,6 +160,7 @@ private slots:
     void dragMode_scrollHand();
     void dragMode_rubberBand();
     void rubberBandSelectionMode();
+    void rotated_rubberBand();
     void backgroundBrush();
     void foregroundBrush();
     void matrix();
@@ -933,6 +934,48 @@ void tst_QGraphicsView::rubberBandSelectionMode()
     sendMouseMove(view.viewport(), view.viewport()->rect().bottomRight(),
                   Qt::LeftButton, Qt::LeftButton);
     QCOMPARE(scene.selectedItems(), QList<QGraphicsItem *>() << rect);
+}
+
+void tst_QGraphicsView::rotated_rubberBand()
+{
+    QWidget toplevel;
+    setFrameless(&toplevel);
+
+    QGraphicsScene scene;
+    const int dim = 3;
+    for (int i = 0; i < dim; i++) {
+        for (int j = 0; j < dim; j ++) {
+            QGraphicsRectItem *rect = new QGraphicsRectItem(i * 20, j * 20, 10, 10);
+            rect->setFlag(QGraphicsItem::ItemIsSelectable);
+            rect->setData(0, (i == j));
+            scene.addItem(rect);
+        }
+    }
+
+    QGraphicsView view(&scene, &toplevel);
+    QCOMPARE(view.rubberBandSelectionMode(), Qt::IntersectsItemShape);
+    view.setDragMode(QGraphicsView::RubberBandDrag);
+    view.resize(120, 120);
+    view.rotate(45);
+    toplevel.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&toplevel));
+
+    // Disable mouse tracking to prevent the window system from sending mouse
+    // move events to the viewport while we are synthesizing events. If
+    // QGraphicsView gets a mouse move event with no buttons down, it'll
+    // terminate the rubber band.
+    view.viewport()->setMouseTracking(false);
+
+    QCOMPARE(scene.selectedItems(), QList<QGraphicsItem *>());
+    int midWidth = view.viewport()->width() / 2;
+    sendMousePress(view.viewport(), QPoint(midWidth - 2, 0), Qt::LeftButton);
+    sendMouseMove(view.viewport(), QPoint(midWidth + 2, view.viewport()->height()),
+                  Qt::LeftButton, Qt::LeftButton);
+    QCOMPARE(scene.selectedItems().count(), dim);
+    foreach (const QGraphicsItem *item, scene.items()) {
+        QCOMPARE(item->isSelected(), item->data(0).toBool());
+    }
+    sendMouseRelease(view.viewport(), QPoint(), Qt::LeftButton);
 }
 
 void tst_QGraphicsView::backgroundBrush()

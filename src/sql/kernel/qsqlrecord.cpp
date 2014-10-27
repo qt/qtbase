@@ -509,9 +509,16 @@ void QSqlRecord::detach()
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug dbg, const QSqlRecord &r)
 {
-    dbg << "QSqlRecord(" << r.count() << ')';
-    for (int i = 0; i < r.count(); ++i)
-        dbg << '\n' << QString::fromLatin1("%1:").arg(i, 2) << r.field(i) << r.value(i).toString();
+    QDebugStateSaver saver(dbg);
+    dbg.nospace();
+    const int count = r.count();
+    dbg << "QSqlRecord(" << count << ')';
+    for (int i = 0; i < count; ++i) {
+        dbg.nospace();
+        dbg << '\n' << qSetFieldWidth(2) << right << i << left << qSetFieldWidth(0) << ':';
+        dbg.space();
+        dbg << r.field(i) << r.value(i).toString();
+    }
     return dbg;
 }
 #endif

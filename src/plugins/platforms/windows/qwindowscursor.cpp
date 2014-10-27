@@ -48,6 +48,13 @@
 #include <QtCore/QDebug>
 #include <QtCore/QScopedArrayPointer>
 
+static void initResources()
+{
+#if !defined (Q_OS_WINCE) && !defined (QT_NO_IMAGEFORMAT_PNG)
+    Q_INIT_RESOURCE(cursors);
+#endif
+}
+
 QT_BEGIN_NAMESPACE
 
 Q_GUI_EXPORT HBITMAP qt_pixmapToWinHBITMAP(const QPixmap &p, int hbitmapFormat = 0);
@@ -566,6 +573,11 @@ QWindowsWindowCursor QWindowsCursor::pixmapWindowCursor(const QCursor &c)
     if (it == m_cursorCache.end())
         it = m_cursorCache.insert(cacheKey, QWindowsWindowCursor(c));
     return it.value();
+}
+
+QWindowsCursor::QWindowsCursor()
+{
+    initResources();
 }
 
 /*!

@@ -159,11 +159,10 @@
 
     \value AA_UseHighDpiPixmaps Make QIcon::pixmap() generate high-dpi pixmaps
            that can be larger than the requested size. Such pixmaps will have
-           devicePixelRatio set to a value higher than 1.
-
-           After setting this attribute application code that uses pixmap
-           sizes in layout geometry calculations should typically divide by
-           QPixmap::devicePixelRatio() to get device-independent layout geometry.
+           devicePixelRatio set to a value higher than 1. After setting this
+           attribute application code that uses pixmap sizes in layout geometry
+           calculations should typically divide by QPixmap::devicePixelRatio()
+           to get device-independent layout geometry.
 
     \value AA_ForceRasterWidgets Make top-level widgets use pure raster surfaces,
            and do not support non-native GL-based child widgets.
@@ -183,7 +182,7 @@
            \l{http://www.mesa3d.org/llvmpipe.html}{Mesa llvmpipe}, providing
            OpenGL 2.1. The value may have no effect if no such OpenGL
            implementation is available. The default name of this library is
-           QtSoftwareOpenGL.dll and can be overridden by setting the environment
+           opengl32sw.dll and can be overridden by setting the environment
            variable \e QT_OPENGL_DLL. See the platform-specific pages, for
            instance \l{Qt for Windows}, for more information.  This value has
            been added in Qt 5.4.
@@ -191,7 +190,8 @@
     \value AA_ShareOpenGLContexts Enables resource sharing between the OpenGL
            contexts used by classes like QOpenGLWidget and QQuickWidget. This
            allows sharing OpenGL resources, like textures, between QOpenGLWidget
-           instances that belong to different top-level windows.
+           instances that belong to different top-level windows. This value has
+           been added in Qt 5.4.
 
     The following values are obsolete:
 

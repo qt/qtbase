@@ -391,6 +391,9 @@ void QCocoaPrintDevice::loadDuplexModes() const
     // If still no result, or not added in PPD, then add None
     if (m_duplexModes.size() == 0 || !m_duplexModes.contains(QPrint::DuplexNone))
         m_duplexModes.append(QPrint::DuplexNone);
+    // If have both modes, then can support DuplexAuto
+    if (m_duplexModes.contains(QPrint::DuplexLongSide) && m_duplexModes.contains(QPrint::DuplexShortSide))
+        m_duplexModes.append(QPrint::DuplexAuto);
     m_haveDuplexModes = true;
 }
 

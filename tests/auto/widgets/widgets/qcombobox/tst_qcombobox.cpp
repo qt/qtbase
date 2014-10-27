@@ -152,6 +152,7 @@ private slots:
     void resetModel();
     void keyBoardNavigationWithMouse();
     void task_QTBUG_1071_changingFocusEmitsActivated();
+    void maxVisibleItems_data();
     void maxVisibleItems();
     void task_QTBUG_10491_currentIndexAndModelColumn();
     void highlightedSignal();
@@ -159,6 +160,7 @@ private slots:
     void task_QTBUG_31146_popupCompletion();
     void keyboardSelection();
     void setCustomModelAndView();
+    void updateDelegateOnEditableChange();
 };
 
 class MyAbstractItemDelegate : public QAbstractItemDelegate
@@ -2749,8 +2751,18 @@ void tst_QComboBox::task_QTBUG_1071_changingFocusEmitsActivated()
     QTRY_COMPARE(spy.count(), 1);
 }
 
+void tst_QComboBox::maxVisibleItems_data()
+{
+    QTest::addColumn<int>("spacing");
+    QTest::newRow("Default")  << -1;
+    QTest::newRow("No spacing") << 0;
+    QTest::newRow("20")  << -1;
+}
+
 void tst_QComboBox::maxVisibleItems()
 {
+    QFETCH(int, spacing);
+
     QComboBox comboBox;
     QCOMPARE(comboBox.maxVisibleItems(), 10); //default value.
 
@@ -2771,15 +2783,18 @@ void tst_QComboBox::maxVisibleItems()
     QTRY_VERIFY(comboBox.view());
     QTRY_VERIFY(comboBox.view()->isVisible());
 
-    QAbstractItemView *v = comboBox.view();
-    int itemHeight = v->visualRect(v->model()->index(0,0)).height();
-    QListView *lv = qobject_cast<QListView*>(v);
-    if (lv)
-        itemHeight += lv->spacing();
+    QListView *listView = qobject_cast<QListView*>(comboBox.view());
+    QVERIFY(listView);
+    if (spacing >= 0)
+        listView->setSpacing(spacing);
+
+    const int itemHeight = listView->visualRect(listView->model()->index(0,0)).height()
+        + 2 * listView->spacing();
+
     QStyleOptionComboBox opt;
     opt.initFrom(&comboBox);
     if (!comboBox.style()->styleHint(QStyle::SH_ComboBox_Popup, &opt))
-        QCOMPARE(v->viewport()->height(), itemHeight * comboBox.maxVisibleItems());
+        QCOMPARE(listView->viewport()->height(), itemHeight * comboBox.maxVisibleItems());
 }
 
 void tst_QComboBox::task_QTBUG_10491_currentIndexAndModelColumn()
@@ -3033,6 +3048,33 @@ void tst_QComboBox::keyboardSelection()
 
     QTest::keyClick(&comboBox, Qt::Key_O, Qt::NoModifier, keyboardInterval);
     QCOMPARE(comboBox.currentText(), list.at(1));
+}
+
+void tst_QComboBox::updateDelegateOnEditableChange()
+{
+
+    QComboBox box;
+    box.addItem(QStringLiteral("Foo"));
+    box.addItem(QStringLiteral("Bar"));
+    box.setEditable(false);
+
+    QComboBoxPrivate *d = static_cast<QComboBoxPrivate *>(QComboBoxPrivate::get(&box));
+
+    {
+        bool menuDelegateBefore = qobject_cast<QComboMenuDelegate *>(box.itemDelegate()) != 0;
+        d->updateDelegate();
+        bool menuDelegateAfter = qobject_cast<QComboMenuDelegate *>(box.itemDelegate()) != 0;
+        QCOMPARE(menuDelegateAfter, menuDelegateBefore);
+    }
+
+    box.setEditable(true);
+
+    {
+        bool menuDelegateBefore = qobject_cast<QComboMenuDelegate *>(box.itemDelegate()) != 0;
+        d->updateDelegate();
+        bool menuDelegateAfter = qobject_cast<QComboMenuDelegate *>(box.itemDelegate()) != 0;
+        QCOMPARE(menuDelegateAfter, menuDelegateBefore);
+    }
 }
 
 QTEST_MAIN(tst_QComboBox)

@@ -56,6 +56,8 @@ public:
     virtual void reset() { m_resetCallCount++; }
     virtual void commit() {
         m_commitCallCount++;
+        if (m_commitString.isEmpty())
+            return;
         QInputMethodEvent commitEvent;
         commitEvent.setCommitString(m_commitString);
         if (qGuiApp->focusObject())

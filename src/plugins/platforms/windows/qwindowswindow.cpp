@@ -1149,6 +1149,13 @@ void QWindowsWindow::updateTransientParent() const
 #endif // !Q_OS_WINCE
 }
 
+static inline bool testShowWithoutActivating(const QWindow *window)
+{
+    // QWidget-attribute Qt::WA_ShowWithoutActivating .
+    const QVariant showWithoutActivating = window->property("_q_showWithoutActivating");
+    return showWithoutActivating.isValid() && showWithoutActivating.toBool();
+}
+
 // partially from QWidgetPrivate::show_sys()
 void QWindowsWindow::show_sys() const
 {
@@ -1180,7 +1187,7 @@ void QWindowsWindow::show_sys() const
             } // Qt::WindowMaximized
         } // !Qt::WindowMinimized
     }
-    if (type == Qt::Popup || type == Qt::ToolTip || type == Qt::Tool)
+    if (type == Qt::Popup || type == Qt::ToolTip || type == Qt::Tool || testShowWithoutActivating(w))
         sm = SW_SHOWNOACTIVATE;
 
     if (w->windowState() & Qt::WindowMaximized)

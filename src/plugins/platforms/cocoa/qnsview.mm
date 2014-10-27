@@ -361,8 +361,12 @@ static NSString *_q_NSWindowDidChangeOcclusionStateNotification = nil;
     // Send a geometry change event to Qt, if it's ready to handle events
     if (!m_platformWindow->m_inConstructor) {
         QWindowSystemInterface::handleGeometryChange(m_window, geometry);
-        m_platformWindow->updateExposedGeometry();
-        QWindowSystemInterface::flushWindowSystemEvents();
+        // Do not send incorrect exposes in case the window is not even visible yet.
+        // We might get here as a result of a resize() from QWidget's show(), for instance.
+        if (m_platformWindow->window()->isVisible()) {
+            m_platformWindow->updateExposedGeometry();
+            QWindowSystemInterface::flushWindowSystemEvents();
+        }
     }
 }
 
@@ -420,10 +424,12 @@ static NSString *_q_NSWindowDidChangeOcclusionStateNotification = nil;
 #pragma clang diagnostic ignored "-Wobjc-method-access"
         enum { NSWindowOcclusionStateVisible = 1UL << 1 };
 #endif
+        // Older versions managed in -[QNSView viewDidMoveToWindow].
+        // Support QWidgetAction in NSMenu. Mavericks only sends this notification.
+        // Ideally we should support this in Qt as well, in order to disable animations
+        // when the window is occluded.
         if ((NSUInteger)[self.window occlusionState] & NSWindowOcclusionStateVisible)
             m_platformWindow->exposeWindow();
-        else
-            m_platformWindow->obscureWindow();
 #if MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_9
 #pragma clang diagnostic pop
 #endif
@@ -686,7 +692,23 @@ static NSString *_q_NSWindowDidChangeOcclusionStateNotification = nil;
             m_platformWindow->m_forwardWindow = 0;
     }
 
-    [targetView convertFromScreen:[NSEvent mouseLocation] toWindowPoint:&qtWindowPoint andScreenPoint:&qtScreenPoint];
+    NSPoint globalPos = [NSEvent mouseLocation];
+
+    if ([self.window parentWindow]
+        && (theEvent.type == NSLeftMouseDragged || theEvent.type == NSLeftMouseUp)) {
+        // QToolBar can be implemented as a child window on top of its main window
+        // (with a borderless NSWindow). If an option "unified toolbar" set on the main window,
+        // it's possible to drag such a window using this toolbar.
+        // While handling mouse drag events, QToolBar moves the window (QWidget::move).
+        // In such a combination [NSEvent mouseLocation] is very different from the
+        // real event location and as a result a window will move chaotically.
+        NSPoint winPoint = [theEvent locationInWindow];
+        NSRect tmpRect = NSMakeRect(winPoint.x, winPoint.y, 1., 1.);
+        tmpRect = [[theEvent window] convertRectToScreen:tmpRect];
+        globalPos = tmpRect.origin;
+    }
+
+    [targetView convertFromScreen:globalPos toWindowPoint:&qtWindowPoint andScreenPoint:&qtScreenPoint];
     ulong timestamp = [theEvent timestamp] * 1000;
 
     QCocoaDrag* nativeDrag = QCocoaIntegration::instance()->drag();
@@ -699,6 +721,10 @@ static NSString *_q_NSWindowDidChangeOcclusionStateNotification = nil;
 - (void)handleFrameStrutMouseEvent:(NSEvent *)theEvent
 {
     // get m_buttons in sync
+    // Don't send frme strut events if we are in the middle of a mouse drag.
+    if (m_buttons != Qt::NoButton)
+        return;
+
     NSEventType ty = [theEvent type];
     switch (ty) {
     case NSLeftMouseDown:
@@ -708,6 +734,12 @@ static NSString *_q_NSWindowDidChangeOcclusionStateNotification = nil;
          m_frameStrutButtons &= ~Qt::LeftButton;
          break;
     case NSRightMouseDown:
+        m_frameStrutButtons |= Qt::RightButton;
+        break;
+    case NSLeftMouseDragged:
+        m_frameStrutButtons |= Qt::LeftButton;
+        break;
+    case NSRightMouseDragged:
         m_frameStrutButtons |= Qt::RightButton;
         break;
     case NSRightMouseUp:
@@ -1337,10 +1369,6 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
         }
 
         QWindowSystemInterface::handleWheelEvent(m_window, qt_timestamp, qt_windowPoint, qt_screenPoint, pixelDelta, angleDelta, currentWheelModifiers, ph);
-
-        if (momentumPhase == NSEventPhaseEnded || momentumPhase == NSEventPhaseCancelled || momentumPhase == NSEventPhaseNone) {
-            currentWheelModifiers = Qt::NoModifier;
-        }
     } else
 #endif
     {
@@ -1803,6 +1831,19 @@ static QPoint mapWindowCoordinates(QWindow *source, QWindow *target, QPoint poin
 
 - (BOOL) ignoreModifierKeysWhileDragging
 {
+    return NO;
+}
+
+- (BOOL)wantsPeriodicDraggingUpdates
+{
+    // From the documentation:
+    //
+    // "If the destination returns NO, these messages are sent only when the mouse moves
+    //  or a modifier flag changes. Otherwise the destination gets the default behavior,
+    //  where it receives periodic dragging-updated messages even if nothing changes."
+    //
+    // We do not want these constant drag update events while mouse is stationary,
+    // since we do all animations (autoscroll) with timers.
     return NO;
 }
 

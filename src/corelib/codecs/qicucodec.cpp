@@ -445,6 +445,8 @@ QTextCodec *QIcuCodec::codecForNameUnlocked(const char *name)
     // backwards compatibility with Qt 4.x
     if (!qstrcmp(name, "CP949"))
         name = "windows-949";
+    else if (!qstrcmp(name, "Apple Roman"))
+        name = "macintosh";
     // these are broken data in ICU 4.4, and can't be resolved even though they are aliases to tis-620
     if (!qstrcmp(name, "windows-874-2000")
         || !qstrcmp(name, "windows-874")

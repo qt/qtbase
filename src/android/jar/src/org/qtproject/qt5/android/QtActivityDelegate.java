@@ -55,6 +55,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.ResultReceiver;
 import android.text.method.MetaKeyKeyListener;
+import android.util.Base64;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.TypedValue;
@@ -658,6 +659,22 @@ public class QtActivityDelegate
                     qmljsdebugger = "port:3768";
                 }
                 m_applicationParameters += "\t-qmljsdebugger=" + qmljsdebugger;
+            }
+
+            if (extras.containsKey("extraenvvars")) {
+                try {
+                    m_environmentVariables += "\t" + new String(Base64.decode(extras.getString("extraenvvars"), Base64.DEFAULT), "UTF-8");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
+            if (extras.containsKey("extraappparams")) {
+                try {
+                    m_applicationParameters += "\t" + new String(Base64.decode(extras.getString("extraappparams"), Base64.DEFAULT), "UTF-8");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
 
             if (null == m_surfaces)

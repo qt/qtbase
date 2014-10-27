@@ -699,7 +699,7 @@ void QCocoaWindow::setVisible(bool visible)
         exposeWindow();
 
         if (m_nsWindow) {
-            QWindowSystemInterface::flushWindowSystemEvents();
+            QWindowSystemInterface::flushWindowSystemEvents(QEventLoop::ExcludeUserInputEvents);
 
             // setWindowState might have been called while the window was hidden and
             // will not change the NSWindow state in that case. Sync up here:
@@ -1009,9 +1009,12 @@ void QCocoaWindow::raise()
             [parentNSWindow addChildWindow:m_nsWindow ordered:NSWindowAbove];
         } else {
             [m_nsWindow orderFront: m_nsWindow];
-            ProcessSerialNumber psn;
-            GetCurrentProcess(&psn);
-            SetFrontProcessWithOptions(&psn, kSetFrontProcessFrontWindowOnly);
+            static bool raiseProcess = qt_mac_resolveOption(true, "QT_MAC_SET_RAISE_PROCESS");
+            if (raiseProcess) {
+                ProcessSerialNumber psn;
+                GetCurrentProcess(&psn);
+                SetFrontProcessWithOptions(&psn, kSetFrontProcessFrontWindowOnly);
+            }
         }
     }
 }
