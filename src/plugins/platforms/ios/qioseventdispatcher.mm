@@ -241,11 +241,11 @@ enum SetJumpResult
     kJumpedFromUserMainTrampoline,
 };
 
-// We define qt_main so that user_main_trampoline() will not cause
+// We define qtmn so that user_main_trampoline() will not cause
 // missing symbols in the case of hybrid applications that don't
-// user our main wrapper. Since the symbol is weak, it will not
+// use our main wrapper. Since the symbol is weak, it will not
 // get used or cause a clash in the normal Qt application usecase,
-// where we rename main to qt_main.
+// where we rename main to qtmn before linking.
 extern "C" int __attribute__((weak)) qtmn(int argc, char *argv[])
 {
     Q_UNUSED(argc);
