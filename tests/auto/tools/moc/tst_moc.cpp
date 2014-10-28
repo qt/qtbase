@@ -573,6 +573,7 @@ private slots:
     void relatedMetaObjectsNameConflict_data();
     void relatedMetaObjectsNameConflict();
     void strignLiteralsInMacroExtension();
+    void veryLongStringData();
 
 signals:
     void sigWithUnsignedArg(unsigned foo);
@@ -3307,6 +3308,75 @@ void tst_Moc::strignLiteralsInMacroExtension()
 
     QCOMPARE(mobj->classInfo(4).name(), "fooString");
     QCOMPARE(mobj->classInfo(4).value(), "fooLiteral");
+}
+
+class VeryLongStringData : public QObject
+{
+    Q_OBJECT
+
+    #define repeat2(V) V V
+    #define repeat4(V) repeat2(V) repeat2(V)
+    #define repeat8(V) repeat4(V) repeat4(V)
+    #define repeat16(V) repeat8(V) repeat8(V)
+    #define repeat32(V) repeat16(V) repeat16(V)
+    #define repeat64(V) repeat32(V) repeat32(V)
+    #define repeat128(V) repeat64(V) repeat64(V)
+    #define repeat256(V) repeat128(V) repeat128(V)
+    #define repeat512(V) repeat256(V) repeat256(V)
+    #define repeat1024(V) repeat512(V) repeat512(V)
+    #define repeat2048(V) repeat1024(V) repeat1024(V)
+    #define repeat4096(V) repeat2048(V) repeat2048(V)
+    #define repeat8192(V) repeat4096(V) repeat4096(V)
+    #define repeat16384(V) repeat8192(V) repeat8192(V)
+    #define repeat32768(V) repeat16384(V) repeat16384(V)
+    #define repeat65534(V) repeat32768(V) repeat16384(V) repeat8192(V) repeat4096(V) repeat2048(V) repeat1024(V) repeat512(V) repeat256(V) repeat128(V) repeat64(V) repeat32(V) repeat16(V) repeat8(V) repeat4(V) repeat2(V)
+
+    Q_CLASSINFO(repeat65534("n"), repeat65534("i"))
+    Q_CLASSINFO(repeat65534("e"), repeat65534("r"))
+    Q_CLASSINFO(repeat32768("o"), repeat32768("b"))
+    Q_CLASSINFO(":", ")")
+
+    #undef repeat2
+    #undef repeat4
+    #undef repeat8
+    #undef repeat16
+    #undef repeat32
+    #undef repeat64
+    #undef repeat128
+    #undef repeat256
+    #undef repeat512
+    #undef repeat1024
+    #undef repeat2048
+    #undef repeat4096
+    #undef repeat8192
+    #undef repeat16384
+    #undef repeat32768
+    #undef repeat65534
+};
+
+void tst_Moc::veryLongStringData()
+{
+    const QMetaObject *mobj = &VeryLongStringData::staticMetaObject;
+    QCOMPARE(mobj->classInfoCount(), 4);
+
+    strlen(0);
+    QCOMPARE(mobj->classInfo(0).name()[0], 'n');
+    QCOMPARE(mobj->classInfo(0).value()[0], 'i');
+    QCOMPARE(mobj->classInfo(1).name()[0], 'e');
+    QCOMPARE(mobj->classInfo(1).value()[0], 'r');
+    QCOMPARE(mobj->classInfo(2).name()[0], 'o');
+    QCOMPARE(mobj->classInfo(2).value()[0], 'b');
+    QCOMPARE(mobj->classInfo(3).name()[0], ':');
+    QCOMPARE(mobj->classInfo(3).value()[0], ')');
+
+    QCOMPARE(strlen(mobj->classInfo(0).name()), static_cast<size_t>(65534));
+    QCOMPARE(strlen(mobj->classInfo(0).value()), static_cast<size_t>(65534));
+    QCOMPARE(strlen(mobj->classInfo(1).name()), static_cast<size_t>(65534));
+    QCOMPARE(strlen(mobj->classInfo(1).value()), static_cast<size_t>(65534));
+    QCOMPARE(strlen(mobj->classInfo(2).name()), static_cast<size_t>(32768));
+    QCOMPARE(strlen(mobj->classInfo(2).value()), static_cast<size_t>(32768));
+    QCOMPARE(strlen(mobj->classInfo(3).name()), static_cast<size_t>(1));
+    QCOMPARE(strlen(mobj->classInfo(3).value()), static_cast<size_t>(1));
 }
 
 QTEST_MAIN(tst_Moc)

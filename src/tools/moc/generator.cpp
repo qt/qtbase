@@ -230,13 +230,23 @@ void Generator::generateCode()
 //
 // Build stringdata struct
 //
+    const int constCharArraySizeLimit = 65535;
     fprintf(out, "struct qt_meta_stringdata_%s_t {\n", qualifiedClassNameIdentifier.constData());
     fprintf(out, "    QByteArrayData data[%d];\n", strings.size());
     {
-        int len = 0;
-        for (int i = 0; i < strings.size(); ++i)
-            len += strings.at(i).length() + 1;
-        fprintf(out, "    char stringdata[%d];\n", len);
+        int stringDataLength = 0;
+        int stringDataCounter = 0;
+        for (int i = 0; i < strings.size(); ++i) {
+            int thisLength = strings.at(i).length() + 1;
+            stringDataLength += thisLength;
+            if (stringDataLength / constCharArraySizeLimit) {
+                // save previous stringdata and start computing the next one.
+                fprintf(out, "    char stringdata%d[%d];\n", stringDataCounter++, stringDataLength - thisLength);
+                stringDataLength = thisLength;
+            }
+        }
+        fprintf(out, "    char stringdata%d[%d];\n", stringDataCounter, stringDataLength);
+
     }
     fprintf(out, "};\n");
 
@@ -247,7 +257,7 @@ void Generator::generateCode()
     // QByteArrayData::data() implementation returning simply "this + offset".
     fprintf(out, "#define QT_MOC_LITERAL(idx, ofs, len) \\\n"
             "    Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \\\n"
-            "    qptrdiff(offsetof(qt_meta_stringdata_%s_t, stringdata) + ofs \\\n"
+            "    qptrdiff(offsetof(qt_meta_stringdata_%s_t, stringdata0) + ofs \\\n"
             "        - idx * sizeof(QByteArrayData)) \\\n"
             "    )\n",
             qualifiedClassNameIdentifier.constData());
@@ -282,9 +292,18 @@ void Generator::generateCode()
     fprintf(out, "    \"");
     int col = 0;
     int len = 0;
+    int stringDataLength = 0;
     for (int i = 0; i < strings.size(); ++i) {
         QByteArray s = strings.at(i);
         len = s.length();
+        stringDataLength += len + 1;
+        if (stringDataLength >= constCharArraySizeLimit) {
+            fprintf(out, "\",\n    \"");
+            stringDataLength = len + 1;
+            col = 0;
+        } else if (i)
+            fputs("\\0", out); // add \0 at the end of each string
+
         if (col && col + len >= 72) {
             fprintf(out, "\"\n    \"");
             col = 0;
@@ -309,9 +328,6 @@ void Generator::generateCode()
             idx += spanLen;
             col += spanLen;
         }
-
-        if (i != strings.size() - 1) // skip the last \0 the c++ will add it for us
-            fputs("\\0", out);
         col += len + 2;
     }
 
@@ -546,7 +562,7 @@ void Generator::generateCode()
 //
     fprintf(out, "\nvoid *%s::qt_metacast(const char *_clname)\n{\n", cdef->qualified.constData());
     fprintf(out, "    if (!_clname) return Q_NULLPTR;\n");
-    fprintf(out, "    if (!strcmp(_clname, qt_meta_stringdata_%s.stringdata))\n"
+    fprintf(out, "    if (!strcmp(_clname, qt_meta_stringdata_%s.stringdata0))\n"
                   "        return static_cast<void*>(const_cast< %s*>(this));\n",
             qualifiedClassNameIdentifier.constData(), cdef->classname.constData());
     for (int i = 1; i < cdef->superclassList.size(); ++i) { // for all superclasses but the first one
