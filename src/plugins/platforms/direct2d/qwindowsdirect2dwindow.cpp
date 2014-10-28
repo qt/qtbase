@@ -199,12 +199,13 @@ void QWindowsDirect2DWindow::setupSwapChain()
 
 void QWindowsDirect2DWindow::resizeSwapChain(const QSize &size)
 {
-    if (!m_swapChain)
-        return;
-
     m_pixmap.reset();
     m_bitmap.reset();
     m_deviceContext->SetTarget(Q_NULLPTR);
+    m_needsFullFlush = true;
+
+    if (!m_swapChain)
+        return;
 
     HRESULT hr = m_swapChain->ResizeBuffers(0,
                                             size.width(), size.height(),
@@ -212,8 +213,6 @@ void QWindowsDirect2DWindow::resizeSwapChain(const QSize &size)
                                             0);
     if (FAILED(hr))
         qWarning("%s: Could not resize swap chain: %#x", __FUNCTION__, hr);
-
-    m_needsFullFlush = true;
 }
 
 QSharedPointer<QWindowsDirect2DBitmap> QWindowsDirect2DWindow::copyBackBuffer() const
