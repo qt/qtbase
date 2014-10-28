@@ -171,12 +171,10 @@ bool QLocalServerPrivate::listen(const QString &requestedServerName)
         if (socketOptions & QLocalServer::OtherAccessOption)
             mode |= S_IRWXO;
 
-        if (mode) {
-            if (::chmod(tempPath.toLatin1(), mode) == -1) {
-                setError(QLatin1String("QLocalServer::listen"));
-                closeServer();
-                return false;
-            }
+        if (::chmod(tempPath.toLatin1(), mode) == -1) {
+            setError(QLatin1String("QLocalServer::listen"));
+            closeServer();
+            return false;
         }
 
         if (::rename(tempPath.toLatin1(), fullServerName.toLatin1()) == -1) {
