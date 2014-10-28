@@ -51,12 +51,9 @@ public:
 
     QPaintDevice *paintDevice();
     void flush(QWindow *widget, const QRegion &region, const QPoint &offset);
-#ifndef QT_NO_OPENGL
-    QImage toImage() const Q_DECL_OVERRIDE;
-#endif
+    QImage toImage() const;
     void resize (const QSize &size, const QRegion &);
     bool scroll(const QRegion &area, int dx, int dy);
-    CGImageRef getBackingStoreCGImage();
     qreal getBackingStoreDevicePixelRatio();
 
 private:
