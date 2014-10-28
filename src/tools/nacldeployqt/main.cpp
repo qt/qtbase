@@ -64,7 +64,7 @@ int main(int argc, char **argv)
 
     parser.process(app);
     const QStringList args = parser.positionalArguments();
-    const QString tmplate = parser.value("template");
+    QString tmplate = parser.value("template");
     const bool quickImports = parser.isSet("quick");
     const bool print = parser.isSet("print");
     bool run = parser.isSet("run");
@@ -85,6 +85,8 @@ int main(int argc, char **argv)
     } else {
         binary = args.at(0);
     }
+
+    bool isPNaCl = binary.endsWith(".bc");
 
     QString appName = binary;
     appName.replace(".nexe", "");
@@ -159,7 +161,7 @@ int main(int argc, char **argv)
 
     // On PNaCl, the output from "make" is a bitcode .bc file. Create
     // a .pexe suitable for distribution using "pnacl-finalize".
-    if (binary.endsWith(".bc")) {
+    if (isPNaCl) {
         finalBinary.replace(".bc", ".pexe");
         QString finalizeCommand = pnaclFinalize + " -o " + finalBinary + " " + binary;
         runCommand(finalizeCommand);
@@ -177,8 +179,12 @@ int main(int argc, char **argv)
     runCommand(nmfCommand.toLatin1().constData());
 
     // create the index.html file. Use a built-in template if specified,
-    // else use create_html.py
-    if (tmplate.isEmpty()) {
+    // else use create_html.py. For PNaCl always use a templace since
+    // create_html generates nacl-only html.
+    if (isPNaCl)
+        tmplate = "debug";
+
+    if (!isPNaCl && tmplate.isEmpty()) {
         QString hmtlCommand = QStringLiteral("python ") + createHtml + " " + nmf
                     + " -o index.html";
         runCommand(hmtlCommand.toLatin1().constData());
@@ -193,8 +199,9 @@ int main(int argc, char **argv)
             html = QByteArray(templateDebug);
         }
 
-        // replace %APPNAME%
+        // instantiate template
         html.replace("%APPNAME%", appName.toUtf8());
+        html.replace("%APPTYPE%", isPNaCl ? "application/x-pnacl" : "application/x-nacl");
 
         // write html contents to index.html
         QFile indexHtml("index.html");

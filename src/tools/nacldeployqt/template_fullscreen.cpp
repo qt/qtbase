@@ -18,7 +18,7 @@ const char * templateFullscreen = R"STRING_DELIMITER(
 </style>
 
 <body>
-    <embed id="nacl_module" name="%APPNAME%" src="%APPNAME%.nmf" type="application/x-nacl"´>
+    <embed id="nacl_module" name="%APPNAME%" src="%APPNAME%.nmf" type="%APPTYPE%"´>
 </body>
 
 </html>

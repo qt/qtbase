@@ -8,7 +8,7 @@ const char * templateDebug = R"STRING_DELIMITER(
 <head>
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="-1">
-  <title>index</title>
+  <title>%APPNAME%</title>
 
 </head>
 <body>
@@ -16,8 +16,8 @@ const char * templateDebug = R"STRING_DELIMITER(
   <p>Status: <code id="status">Loading</code></p>
 
   <div id="listener">
-    <embed id="nacl_module" name="index" src="window_opengl.nmf"
-           type="application/x-nacl" ps_stdout="/dev/tty" ps_stderr="/dev/tty"
+    <embed id="nacl_module" name="%APPNAME%" src="%APPNAME%.nmf"
+           type="%APPTYPE%" ps_stdout="/dev/tty" ps_stderr="/dev/tty"
            width=640 height=480 />
   </div>
 
