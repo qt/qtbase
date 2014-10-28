@@ -69,7 +69,11 @@ win32 {
                 # at configure time, use that as a somewhat arbitray test condition.
                 # better way?: QTDIR_build|!contains(IN_PWD, ^$$[QT_HOST_PREFIX/get].*)
                 contains(QT_CONFIG, "qpa") {
-                    TARGET_EXT = .nexe
+                    pnacl {
+                        TARGET_EXT = .bc
+                    } else {
+                        TARGET_EXT = .nexe
+                    }
                     TARGET=$${TARGET}$${TARGET_EXT}
                 }
             } else {
