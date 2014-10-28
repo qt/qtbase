@@ -392,6 +392,11 @@ class QDocDatabase
     QString getLinkCounts(QStringList& strings, QVector<int>& counts) {
         return forest_.getLinkCounts(strings, counts);
     }
+    QString getNewLinkTarget(const Node* t, const QString& fileName, QString& text) {
+        return primaryTree()->getNewLinkTarget(t, fileName, text);
+    }
+    TargetList* getTargetList(const QString& t) { return primaryTree()->getTargetList(t); }
+    QStringList getTargetListKeys() { return primaryTree()->getTargetListKeys(); }
 
  private:
     friend class QDocIndexFiles;

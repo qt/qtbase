@@ -107,6 +107,8 @@ QT_BEGIN_NAMESPACE
   \value ListItemLeft
   \value ListItemRight
   \value ListRight
+  \value NavAutoLink
+  \value NavLink
   \value Nop
   \value Note
   \value ParaLeft
@@ -193,6 +195,8 @@ static const struct {
     { "ListItemLeft", Atom::ListItemLeft },
     { "ListItemRight", Atom::ListItemRight },
     { "ListRight", Atom::ListRight },
+    { "NavAutoLink", Atom::NavAutoLink },
+    { "NavLink", Atom::NavLink },
     { "Nop", Atom::Nop },
     { "NoteLeft", Atom::NoteLeft },
     { "NoteRight", Atom::NoteRight },

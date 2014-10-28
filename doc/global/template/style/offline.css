@@ -62,6 +62,11 @@ a:link {
     text-align: left;
 }
 
+a.qa-mark:target:before {
+    content: "***";
+    color: #ff0000;
+}
+
 a:hover {
     color: #44a51c;
     text-align: left;

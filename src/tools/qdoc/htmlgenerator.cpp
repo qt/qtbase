@@ -327,7 +327,10 @@ void HtmlGenerator::generateQAPage()
               << "class=\"even\"><th class=\"tblConst\">Destination Module</th>"
               << "<th class=\"tblval\">Link Count</th></tr>\n";
         for (int i = 0; i< strings.size(); ++i) {
-            out() << "<tr><td class=\"topAlign\"><tt>" << strings.at(i)
+            QString fileName = generateLinksToLinksPage(strings.at(i), marker);
+            out() << "<tr><td class=\"topAlign\"><tt>"
+                  << "<a href=\"" << fileName << "\">"
+                  << strings.at(i) << "</a>"
                   << "</tt></td><td class=\"topAlign\"><tt>" << counts.at(i)
                   << "</tt></td></tr>\n";
         }
@@ -339,7 +342,39 @@ void HtmlGenerator::generateQAPage()
         out() << "<p>" << protectEnc(t) << "</p>\n";
         out() << "<p>" << protectEnc(depends) << "</p>\n";
     }
+    generateFooter();
     endSubPage();
+}
+
+/*!
+ */
+QString HtmlGenerator::generateLinksToLinksPage(const QString& module, CodeMarker* marker)
+{
+    NamespaceNode* node = qdb_->primaryTreeRoot();
+    QString fileName = "aaa-links-to-" + module + ".html";
+    beginSubPage(node, fileName);
+    QString title = "Links from " + defaultModuleName() + " to " + module;
+    generateHeader(title, node, marker);
+    generateTitle(title, Text(), SmallSubTitle, node, marker);
+    out() << "<p>This is the complete list of links from " << defaultModuleName()
+          << " to " << module << ".  ";
+    out() << "Click on a link to go directly to the actual link in the docs.  ";
+    out() << "Then click on that link to check whether it goes to the correct place.</p>\n";
+    TargetList* tlist = qdb_->getTargetList(module);
+    if (tlist) {
+        out() << "<table class=\"alignedsummary\">\n";
+        foreach (TargetLoc* t, *tlist) {
+            // e.g.: <a name="link-8421"></a><a href="layout.html">Layout Management</a>
+            out() << "<tr><td class=\"memItemLeft leftAlign topAlign\">";
+            out() << "<a href=\"" << t->fileName_ << "#" << t->target_ << "\">";
+            out() << t->text_ << "</a>";
+            out() << "</td></tr>\n";
+        }
+        out() << "</table>\n";
+    }
+    generateFooter();
+    endSubPage();
+    return fileName;
 }
 
 /*!
@@ -360,6 +395,7 @@ int HtmlGenerator::generateAtom(const Atom *atom, const Node *relative, CodeMark
     case Atom::AbstractRight:
         break;
     case Atom::AutoLink:
+    case Atom::NavAutoLink:
         if (!inLink_ && !inContents_ && !inSectionHeading_) {
             const Node *node = 0;
             QString link = getAutoLink(atom, relative, &node);
@@ -374,6 +410,11 @@ int HtmlGenerator::generateAtom(const Atom *atom, const Node *relative, CodeMark
             if (link.isEmpty())
                 out() << protectEnc(atom->string());
             else {
+                if (Generator::writeQaPages() && node && (atom->type() != Atom::NavAutoLink)) {
+                    QString text = atom->string();
+                    QString target = qdb_->getNewLinkTarget(node, outFileName(), text);
+                    out() << "<a id=\"" << Doc::canonicalTitle(target) << "\" class=\"qa-mark\"></a>";
+                }
                 beginLink(link, node, relative);
                 generateLink(atom, marker);
                 endLink();
@@ -856,6 +897,7 @@ int HtmlGenerator::generateAtom(const Atom *atom, const Node *relative, CodeMark
         out() << "<br/>";
         break;
     case Atom::Link:
+    case Atom::NavLink:
     {
         inObsoleteLink = false;
         const Node *node = 0;
@@ -864,6 +906,17 @@ int HtmlGenerator::generateAtom(const Atom *atom, const Node *relative, CodeMark
             relative->doc().location().warning(tr("Can't link to '%1'").arg(atom->string()));
         }
         else {
+            if (Generator::writeQaPages() && node && (atom->type() != Atom::NavLink)) {
+                QString text = atom->next()->next()->string();
+                QString target = qdb_->getNewLinkTarget(node, outFileName(), text);
+                out() << "<a id=\"" << Doc::canonicalTitle(target) << "\" class=\"qa-mark\"></a>";
+            }
+            /*
+              mws saw this on 17/10/2014.
+              Is this correct? Setting node to 0 means the
+              following test always fails. Did we decide to
+              no longer warn about linking to obsolete things?
+             */
             node = 0;
             if (node && node->status() == Node::Obsolete) {
                 if ((relative->parent() != node) && !relative->isObsolete()) {
@@ -1698,11 +1751,11 @@ void HtmlGenerator::generateNavigationBar(const QString &title,
         return;
     if (!homepage.isEmpty())
         navigationbar << Atom(Atom::ListItemLeft)
-                    << Atom(Atom::AutoLink, homepage)
+                    << Atom(Atom::NavAutoLink, homepage)
                     << Atom(Atom::ListItemRight);
     if (!landingpage.isEmpty() && landingpage != title)
         navigationbar << Atom(Atom::ListItemLeft)
-                    << Atom(Atom::AutoLink, landingpage)
+                    << Atom(Atom::NavAutoLink, landingpage)
                     << Atom(Atom::ListItemRight);
 
     if (node->isClass()) {
@@ -1711,7 +1764,7 @@ void HtmlGenerator::generateNavigationBar(const QString &title,
 
         if (!cppclassespage.isEmpty())
             navigationbar << Atom(Atom::ListItemLeft)
-                        << Atom(Atom::Link, cppclassespage)
+                        << Atom(Atom::NavLink, cppclassespage)
                         << Atom(Atom::FormattingLeft, ATOM_FORMATTING_LINK)
                         << Atom(Atom::String, QLatin1String("C++ Classes"))
                         << Atom(Atom::FormattingRight, ATOM_FORMATTING_LINK)
@@ -1725,7 +1778,7 @@ void HtmlGenerator::generateNavigationBar(const QString &title,
     else if (node->isQmlType() || node->isQmlBasicType()) {
         if (!qmltypespage.isEmpty())
             navigationbar << Atom(Atom::ListItemLeft)
-                          << Atom(Atom::Link, qmltypespage)
+                          << Atom(Atom::NavLink, qmltypespage)
                           << Atom(Atom::FormattingLeft, ATOM_FORMATTING_LINK)
                           << Atom(Atom::String, QLatin1String("QML Types"))
                           << Atom(Atom::FormattingRight, ATOM_FORMATTING_LINK)
@@ -1737,7 +1790,7 @@ void HtmlGenerator::generateNavigationBar(const QString &title,
     else {
         if (node->isExampleFile()) {
             navigationbar << Atom(Atom::ListItemLeft)
-                          << Atom(Atom::Link, node->parent()->name())
+                          << Atom(Atom::NavLink, node->parent()->name())
                           << Atom(Atom::FormattingLeft, ATOM_FORMATTING_LINK)
                           << Atom(Atom::String, node->parent()->title())
                           << Atom(Atom::FormattingRight, ATOM_FORMATTING_LINK)
@@ -3711,36 +3764,7 @@ QString HtmlGenerator::getLink(const Atom *atom, const Node *relative, const Nod
         if (t.startsWith("mailto:"))
             return t;
     }
-
-    QString ref;
-
-    *node = qdb_->findNodeForAtom(atom, relative, ref);
-    if (!(*node))
-        return QString();
-    if (Generator::writeQaPages())
-        qdb_->incrementLinkCount(*node);
-
-    QString url = (*node)->url();
-    if (!url.isEmpty()) {
-        if (ref.isEmpty())
-            return url;
-        int hashtag = url.lastIndexOf(QChar('#'));
-        if (hashtag != -1)
-            url.truncate(hashtag);
-        return url + "#" + ref;
-    }
-    /*
-      Given that *node is not null, we now cconstruct a link
-      to the page that *node represents, and then if we found
-      a target on that page, we connect the target to the link
-      with '#'.
-    */
-    QString link = linkForNode(*node, relative);
-    if (*node && (*node)->subType() == Node::Image)
-        link = "images/used-in-examples/" + link;
-    if (!ref.isEmpty())
-        link += QLatin1Char('#') + ref;
-    return link;
+    return getAutoLink(atom, relative, node);
 }
 
 /*!
@@ -3758,28 +3782,25 @@ QString HtmlGenerator::getLink(const Atom *atom, const Node *relative, const Nod
 QString HtmlGenerator::getAutoLink(const Atom *atom, const Node *relative, const Node** node)
 {
     QString ref;
-    QString link;
 
     *node = qdb_->findNodeForAtom(atom, relative, ref);
     if (!(*node))
         return QString();
 
-    if (Generator::writeQaPages())
-        qdb_->incrementLinkCount(*node);
-
-    QString url = (*node)->url();
-    if (!url.isEmpty()) {
-        if (ref.isEmpty())
-            return url;
-        int hashtag = url.lastIndexOf(QChar('#'));
-        if (hashtag != -1)
-            url.truncate(hashtag);
-        return url + "#" + ref;
+    QString link = (*node)->url();
+    if (link.isEmpty()) {
+        link = linkForNode(*node, relative);
+        if ((*node)->subType() == Node::Image)
+            link = "images/used-in-examples/" + link;
+        if (!ref.isEmpty())
+            link += QLatin1Char('#') + ref;
     }
-
-    link = linkForNode(*node, relative);
-    if (!ref.isEmpty())
-        link += QLatin1Char('#') + ref;
+    else if (!ref.isEmpty()) {
+        int hashtag = link.lastIndexOf(QChar('#'));
+        if (hashtag != -1)
+            link.truncate(hashtag);
+        link += "#" + ref;
+    }
     return link;
 }
 

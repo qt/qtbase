@@ -43,6 +43,11 @@ links
 -----------
 */
 
+a.qa-mark:target:before {
+    content: "***";
+    color: #ff0000;
+}
+
 .flags {
     text-decoration: none;
     text-height: 24px;

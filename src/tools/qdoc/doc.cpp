@@ -1991,7 +1991,7 @@ void DocParser::append(const QString &string)
     Atom::Type lastType = priv->text.lastAtom()->type();
     if ((lastType == Atom::Code) && priv->text.lastAtom()->string().endsWith(QLatin1String("\n\n")))
         priv->text.lastAtom()->chopString();
-    priv->text << Atom(string);
+    priv->text << Atom(string); // The Atom type is Link.
 }
 
 void DocParser::append(Atom::Type type, const QString& p1, const QString& p2)
@@ -2008,7 +2008,7 @@ void DocParser::append(const QString& p1, const QString& p2)
     if ((lastType == Atom::Code) && priv->text.lastAtom()->string().endsWith(QLatin1String("\n\n")))
         priv->text.lastAtom()->chopString();
     if (p2.isEmpty())
-        priv->text << Atom(p1);
+        priv->text << Atom(p1); // The Atom type is Link.
     else
         priv->text << LinkAtom(p1, p2);
 }

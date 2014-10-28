@@ -71,10 +71,14 @@ Tree::Tree(const QString& module, QDocDatabase* qdb)
       linkCount_(0),
       module_(module),
       qdb_(qdb),
-      root_(0, QString())
+      root_(0, QString()),
+      targetListMap_(0)
 {
     root_.setModuleName(module_);
     root_.setTree(this);
+    if (Generator::writeQaPages()) {
+        targetListMap_ = new TargetListMap;
+    }
 }
 
 /*!
@@ -100,6 +104,18 @@ Tree::~Tree()
     }
     nodesByTargetRef_.clear();
     nodesByTargetTitle_.clear();
+    if (Generator::writeQaPages() && targetListMap_) {
+        TargetListMap::iterator i = targetListMap_->begin();
+        while (i != targetListMap_->end()) {
+            TargetList* tlist = i.value();
+            if (tlist) {
+                foreach (TargetLoc* tloc, *tlist)
+                    delete tloc;
+            }
+            delete tlist;
+            ++i;
+        }
+    }
 }
 
 /* API members */
@@ -1397,6 +1413,47 @@ const Node* Tree::findFunctionNode(const QString& target, const Node* relative, 
 const Node* Tree::checkForCollision(const QString& name)
 {
     return findNode(QStringList(name), 0, 0, Node::DontCare);
+}
+
+/*!
+  Generate a target of the form link-nnn, where the nnn is
+  the current link count for this tree. This target string
+  is returned. It will be output as an HTML anchor just before
+  an HTML link to the node \a t.
+
+  The node \a t
+ */
+QString Tree::getNewLinkTarget(const Node* t, const QString& fileName, QString& text)
+{
+    QString target;
+    if (t) {
+        Tree* tree = t->tree();
+        incrementLinkCount();
+        if (tree != this)
+            tree->incrementLinkCount();
+        target = QString("qa-target-%1").arg(-(linkCount()));
+        QString moduleName = tree->moduleName();
+        TargetLoc* tloc = new TargetLoc(target, fileName, text);
+        TargetList* tList = 0;
+        TargetListMap::iterator i = targetListMap_->find(moduleName);
+        if (i == targetListMap_->end()) {
+            tList = new TargetList;
+            i = targetListMap_->insert(moduleName, tList);
+        }
+        else
+            tList = i.value();
+        tList->append(tloc);
+    }
+    return target;
+}
+
+/*!
+  Look up the target list for the specified \a module
+  and return a pointer to it.
+ */
+TargetList* Tree::getTargetList(const QString& module)
+{
+    return targetListMap_->value(module);
 }
 
 QT_END_NAMESPACE

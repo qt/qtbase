@@ -57,7 +57,7 @@ public:
         BriefRight,
         C,
         CaptionLeft,
-        CaptionRight,           // 10
+        CaptionRight,
         Code,
         CodeBad,
         CodeNew,
@@ -67,7 +67,7 @@ public:
         DivLeft,
         DivRight,
         EndQmlText,
-        FootnoteLeft,           // 20
+        FootnoteLeft,
         FootnoteRight,
         FormatElse,
         FormatEndif,
@@ -77,7 +77,7 @@ public:
         GeneratedList,
         GuidLink,
         HR,
-        Image,                  // 30
+        Image,
         ImageText,
         ImportantLeft,
         ImportantRight,
@@ -87,7 +87,7 @@ public:
         LegaleseLeft,
         LegaleseRight,
         LineBreak,
-        Link,                   // 40
+        Link,
         LinkNode,
         ListLeft,
         ListItemNumber,
@@ -96,8 +96,10 @@ public:
         ListItemLeft,
         ListItemRight,
         ListRight,
+        NavAutoLink,
+        NavLink,
         Nop,
-        NoteLeft,               // 50
+        NoteLeft,
         NoteRight,
         ParaLeft,
         ParaRight,
@@ -107,7 +109,7 @@ public:
         QuotationRight,
         RawString,
         SectionLeft,
-        SectionRight,           // 60
+        SectionRight,
         SectionHeadingLeft,
         SectionHeadingRight,
         SidebarLeft,
@@ -117,7 +119,7 @@ public:
         SnippetIdentifier,
         SnippetLocation,
         String,
-        TableLeft,              // 70
+        TableLeft,
         TableRight,
         TableHeaderLeft,
         TableHeaderRight,
@@ -127,7 +129,7 @@ public:
         TableItemRight,
         TableOfContents,
         Target,
-        UnhandledFormat,        // 80
+        UnhandledFormat,
         UnknownCommand,
         Last = UnknownCommand
     };

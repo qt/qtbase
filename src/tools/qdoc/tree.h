@@ -67,10 +67,22 @@ struct TargetRec
     Type type_;
 };
 
+struct TargetLoc
+{
+  public:
+  TargetLoc(const QString& t, const QString& fileName, const QString& text)
+  : target_(t), fileName_(fileName), text_(text) { }
+    QString target_;
+    QString fileName_;
+    QString text_;
+};
+
 typedef QMultiMap<QString, TargetRec*> TargetMap;
 typedef QMultiMap<QString, DocNode*> DocNodeMultiMap;
 typedef QMap<QString, QmlClassNode*> QmlTypeMap;
 typedef QMultiMap<QString, const ExampleNode*> ExampleNodeMap;
+typedef QVector<TargetLoc*> TargetList;
+typedef QMap<QString, TargetList*> TargetListMap;
 
 class Tree
 {
@@ -193,18 +205,21 @@ class Tree
     bool docsHaveBeenGenerated() const { return docsHaveBeenGenerated_; }
     void setTreeHasBeenAnalyzed() { treeHasBeenAnalyzed_ = true; }
     void setdocsHaveBeenGenerated() { docsHaveBeenGenerated_ = true; }
+    QString getNewLinkTarget(const Node* t, const QString& fileName, QString& text);
+    TargetList* getTargetList(const QString& module);
+    QStringList getTargetListKeys() { return targetListMap_->keys(); }
 
  public:
     const QString& moduleName() const { return module_; }
     const QString& indexFileName() const { return indexFileName_; }
-    void incrementLinkCount() { --linkCount_; }
+    long incrementLinkCount() { return --linkCount_; }
     void clearLinkCount() { linkCount_ = 0; }
-    int linkCount() const { return linkCount_; }
+    long linkCount() const { return linkCount_; }
 
 private:
     bool treeHasBeenAnalyzed_;
     bool docsHaveBeenGenerated_;
-    int linkCount_;
+    long linkCount_;
     QString module_;
     QString indexFileName_;
     QDocDatabase* qdb_;
@@ -218,6 +233,7 @@ private:
     CNMap                   qmlModules_;
     QmlTypeMap              qmlTypeMap_;
     ExampleNodeMap          exampleNodeMap_;
+    TargetListMap*          targetListMap_;
 };
 
 QT_END_NAMESPACE
