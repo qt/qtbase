@@ -125,7 +125,8 @@ public:
         m_pageLayout(QPageLayout(QPageSize(QPageSize::A4), QPageLayout::Portrait, QMarginsF(0, 0, 0, 0))),
         num_copies(1),
         printToFile(false),
-        reinit(false)
+        reinit(false),
+        embed_fonts(true)
     {
     }
 
@@ -216,6 +217,7 @@ public:
     uint has_pen : 1;
     uint has_brush : 1;
     uint has_custom_paper_size : 1;
+    uint embed_fonts : 1;
 
     uint txop;
 

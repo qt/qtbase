@@ -1103,9 +1103,7 @@ void tst_QPrinter::fontEmbedding()
 {
     // fontEmbeddingEnabled() / setFontEmbeddingEnabled() / PPK_FontEmbedding
     // PdfFormat: Supported, default true
-    // NativeFormat, Cups: Supported, default true
-    // NativeFormat, Win: Unsupported, always false
-    // NativeFormat, Mac: Unsupported, always false
+    // NativeFormat: Supported, default true
 
     QPrinter pdf;
     pdf.setOutputFormat(QPrinter::PdfFormat);
@@ -1116,25 +1114,17 @@ void tst_QPrinter::fontEmbedding()
     QPrinter native;
     if (native.outputFormat() == QPrinter::NativeFormat) {
         // Test default
-#if defined Q_OS_MAC || defined Q_OS_WIN
-        QCOMPARE(native.fontEmbeddingEnabled(), false);
-#else
         QCOMPARE(native.fontEmbeddingEnabled(), true);
-#endif // Q_OS_MAC || Q_OS_WIN
 
         // Test set/get
-        bool expected = true;
-        native.setFontEmbeddingEnabled(expected);
-#if defined Q_OS_MAC || defined Q_OS_WIN
-        expected = false;
-#endif // Q_OS_MAC || Q_OS_WIN
-        QCOMPARE(native.fontEmbeddingEnabled(), expected);
+        native.setFontEmbeddingEnabled(true);
+        QCOMPARE(native.fontEmbeddingEnabled(), true);
 
         // Test value preservation
         native.setOutputFormat(QPrinter::PdfFormat);
-        QCOMPARE(native.fontEmbeddingEnabled(), expected);
+        QCOMPARE(native.fontEmbeddingEnabled(), true);
         native.setOutputFormat(QPrinter::NativeFormat);
-        QCOMPARE(native.fontEmbeddingEnabled(), expected);
+        QCOMPARE(native.fontEmbeddingEnabled(), true);
     } else {
         QSKIP("No printers installed, cannot test NativeFormat, please install printers to test");
     }

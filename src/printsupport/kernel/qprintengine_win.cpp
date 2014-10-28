@@ -269,7 +269,8 @@ void QWin32PrintEngine::drawTextItem(const QPointF &p, const QTextItem &textItem
     bool fallBack = state->pen().brush().style() != Qt::SolidPattern
                     || qAlpha(brushColor) != 0xff
                     || d->txop >= QTransform::TxProject
-                    || ti.fontEngine->type() != QFontEngine::Win;
+                    || ti.fontEngine->type() != QFontEngine::Win
+                    || !d->embed_fonts;
 
     if (!fallBack) {
         const QVariantMap userData = ti.fontEngine->userData().toMap();
@@ -1001,8 +1002,6 @@ void QWin32PrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &
     // The following keys are settings that are unsupported by the Windows PrintEngine
     case PPK_CustomBase:
         break;
-    case PPK_FontEmbedding:
-        break;
     case PPK_PageOrder:
         break;
     case PPK_PrinterProgram:
@@ -1011,6 +1010,10 @@ void QWin32PrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &
         break;
 
     // The following keys are properties and settings that are supported by the Windows PrintEngine
+    case PPK_FontEmbedding:
+        d->embed_fonts = value.toBool();
+        break;
+
     case PPK_CollateCopies:
         {
             if (!d->devMode)
@@ -1282,9 +1285,6 @@ QVariant QWin32PrintEngine::property(PrintEnginePropertyKey key) const
 
     // The following keys are settings that are unsupported by the Windows PrintEngine
     // Return sensible default values to ensure consistent behavior across platforms
-    case PPK_FontEmbedding:
-        value = false;
-        break;
     case PPK_PageOrder:
         value = QPrinter::FirstPageFirst;
         break;
@@ -1296,6 +1296,10 @@ QVariant QWin32PrintEngine::property(PrintEnginePropertyKey key) const
         break;
 
     // The following keys are properties and settings that are supported by the Windows PrintEngine
+    case PPK_FontEmbedding:
+        value = d->embed_fonts;
+        break;
+
     case PPK_CollateCopies:
         value = d->devMode->dmCollate == DMCOLLATE_TRUE;
         break;
