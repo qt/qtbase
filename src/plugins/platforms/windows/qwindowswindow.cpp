@@ -1783,6 +1783,43 @@ void QWindowsWindow::propagateSizeHints()
     qCDebug(lcQpaWindows) << __FUNCTION__ << this << window();
 }
 
+bool QWindowsWindow::handleGeometryChanging(MSG *message) const
+{
+#ifndef Q_OS_WINCE
+    QWindow *qWin = window();
+    if (!qWin->isTopLevel())
+        return false;
+    WINDOWPOS *windowPos = reinterpret_cast<WINDOWPOS *>(message->lParam);
+    if ((windowPos->flags & (SWP_NOCOPYBITS | SWP_NOSIZE)))
+        return false;
+    const QMargins marginsDp = frameMarginsDp();
+    const QRect suggestedFrameGeometryDp(windowPos->x, windowPos->y,
+                                         windowPos->cx, windowPos->cy);
+    const qreal factor = QWindowsScaling::factor();
+    const QRect suggestedGeometryDp = suggestedFrameGeometryDp - marginsDp;
+    const QRectF suggestedGeometry = QRectF(QPointF(suggestedGeometryDp.topLeft()) / factor,
+                                            QSizeF(suggestedGeometryDp.size()) / factor);
+    const QRectF correctedGeometryF =
+        qt_window_private(qWin)->closestAcceptableGeometry(suggestedGeometry);
+    if (!correctedGeometryF.isValid())
+        return false;
+    const QRect correctedFrameGeometryDp
+        = QRectF(correctedGeometryF.topLeft() * factor,
+                 correctedGeometryF.size() * factor).toRect()
+          + marginsDp;
+    if (correctedFrameGeometryDp == suggestedFrameGeometryDp)
+        return false;
+    windowPos->x = correctedFrameGeometryDp.left();
+    windowPos->y = correctedFrameGeometryDp.top();
+    windowPos->cx = correctedFrameGeometryDp.width();
+    windowPos->cy = correctedFrameGeometryDp.height();
+    return true;
+#else // !Q_OS_WINCE
+    Q_UNUSED(message)
+    return false;
+#endif
+}
+
 QMargins QWindowsWindow::frameMarginsDp() const
 {
     // Frames are invalidated by style changes (window state, flags).

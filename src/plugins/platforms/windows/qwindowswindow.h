@@ -183,6 +183,7 @@ public:
     void windowEvent(QEvent *event);
 
     void propagateSizeHints() Q_DECL_OVERRIDE;
+    bool handleGeometryChanging(MSG *message) const;
     QMargins frameMarginsDp() const;
     QMargins frameMargins() const Q_DECL_OVERRIDE { return frameMarginsDp() / QWindowsScaling::factor(); }
 

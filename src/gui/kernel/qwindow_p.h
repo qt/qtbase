@@ -132,6 +132,7 @@ public:
     void emitScreenChangedRecursion(QScreen *newScreen);
 
     virtual void clearFocusObject();
+    virtual QRectF closestAcceptableGeometry(const QRectF &rect) const;
 
     QWindow::SurfaceType surfaceType;
     Qt::WindowFlags windowFlags;

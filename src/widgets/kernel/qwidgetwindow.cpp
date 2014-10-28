@@ -33,6 +33,7 @@
 
 #include "private/qwindow_p.h"
 #include "qwidgetwindow_p.h"
+#include "qlayout.h"
 
 #include "private/qwidget_p.h"
 #include "private/qapplication_p.h"
@@ -79,7 +80,37 @@ public:
             widget->focusWidget()->clearFocus();
     }
 
+    QRectF closestAcceptableGeometry(const QRectF &rect) const Q_DECL_OVERRIDE;
 };
+
+QRectF QWidgetWindowPrivate::closestAcceptableGeometry(const QRectF &rect) const
+{
+    Q_Q(const QWidgetWindow);
+    const QWidget *widget = q->widget();
+    if (!widget->isWindow() || !widget->hasHeightForWidth())
+        return QRect();
+    const QSize oldSize = rect.size().toSize();
+    const QSize newSize = QLayout::closestAcceptableSize(widget, oldSize);
+    if (newSize == oldSize)
+        return QRectF();
+    const int dw = newSize.width() - oldSize.width();
+    const int dh = newSize.height() - oldSize.height();
+    QRectF result = rect;
+    const QRectF currentGeometry(widget->geometry());
+    const qreal topOffset = result.top() - currentGeometry.top();
+    const qreal bottomOffset = result.bottom() - currentGeometry.bottom();
+    if (qAbs(topOffset) > qAbs(bottomOffset))
+        result.setTop(result.top() - dh); // top edge drag
+    else
+        result.setBottom(result.bottom() + dh); // bottom edge drag
+    const qreal leftOffset = result.left() - currentGeometry.left();
+    const qreal rightOffset = result.right() - currentGeometry.right();
+    if (qAbs(leftOffset) > qAbs(rightOffset))
+        result.setLeft(result.left() - dw); // left edge drag
+    else
+        result.setRight(result.right() + dw); // right edge drag
+    return result;
+}
 
 QWidgetWindow::QWidgetWindow(QWidget *widget)
     : QWindow(*new QWidgetWindowPrivate(), 0)

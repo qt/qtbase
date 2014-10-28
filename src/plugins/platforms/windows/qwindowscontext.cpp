@@ -995,6 +995,8 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
         return QWindowsGeometryHint::handleCalculateSize(platformWindow->customMargins(), msg, result);
     case QtWindows::NonClientHitTest:
         return platformWindow->handleNonClientHitTest(QPoint(msg.pt.x, msg.pt.y), result);
+    case QtWindows::GeometryChangingEvent:
+        return platformWindow->QWindowsWindow::handleGeometryChanging(&msg);
 #endif // !Q_OS_WINCE
     case QtWindows::ExposeEvent:
         return platformWindow->handleWmPaint(hwnd, message, wParam, lParam);
