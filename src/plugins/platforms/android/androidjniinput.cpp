@@ -638,6 +638,25 @@ namespace QtAndroidInput
         }
     }
 
+    static Qt::KeyboardModifiers mapAndroidModifiers(jint modifiers)
+    {
+        Qt::KeyboardModifiers qmodifiers;
+
+        if (modifiers & 0x00000001) // META_SHIFT_ON
+            qmodifiers |= Qt::ShiftModifier;
+
+        if (modifiers & 0x00000002) // META_ALT_ON
+            qmodifiers |= Qt::AltModifier;
+
+        if (modifiers & 0x00000004) // META_SYM_ON
+            qmodifiers |= Qt::MetaModifier;
+
+        if (modifiers & 0x00001000) // META_CTRL_ON
+            qmodifiers |= Qt::ControlModifier;
+
+        return qmodifiers;
+    }
+
     // maps 0 to the empty string, and anything else to a single-character string
     static inline QString toString(jint unicode)
     {
@@ -646,40 +665,20 @@ namespace QtAndroidInput
 
     static void keyDown(JNIEnv */*env*/, jobject /*thiz*/, jint key, jint unicode, jint modifier)
     {
-        Qt::KeyboardModifiers modifiers;
-        if (modifier & 1)
-            modifiers |= Qt::ShiftModifier;
-
-        if (modifier & 2)
-            modifiers |= Qt::AltModifier;
-
-        if (modifier & 4)
-            modifiers |= Qt::MetaModifier;
-
         QWindowSystemInterface::handleKeyEvent(0,
                                                QEvent::KeyPress,
                                                mapAndroidKey(key),
-                                               modifiers,
+                                               mapAndroidModifiers(modifier),
                                                toString(unicode),
                                                false);
     }
 
     static void keyUp(JNIEnv */*env*/, jobject /*thiz*/, jint key, jint unicode, jint modifier)
     {
-        Qt::KeyboardModifiers modifiers;
-        if (modifier & 1)
-            modifiers |= Qt::ShiftModifier;
-
-        if (modifier & 2)
-            modifiers |= Qt::AltModifier;
-
-        if (modifier & 4)
-            modifiers |= Qt::MetaModifier;
-
         QWindowSystemInterface::handleKeyEvent(0,
                                                QEvent::KeyRelease,
                                                mapAndroidKey(key),
-                                               modifiers,
+                                               mapAndroidModifiers(modifier),
                                                toString(unicode),
                                                false);
     }
