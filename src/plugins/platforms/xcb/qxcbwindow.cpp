@@ -2380,13 +2380,10 @@ void QXcbWindow::setAlertState(bool enabled)
 {
     if (m_alertState == enabled)
         return;
-    const NetWmStates oldState = netWmStates();
+
     m_alertState = enabled;
-    if (enabled) {
-        setNetWmStates(oldState | NetWmStateDemandsAttention);
-    } else {
-        setNetWmStates(oldState & ~NetWmStateDemandsAttention);
-    }
+
+    changeNetWmState(enabled, atom(QXcbAtom::_NET_WM_STATE_DEMANDS_ATTENTION));
 }
 
 bool QXcbWindow::needsSync() const
