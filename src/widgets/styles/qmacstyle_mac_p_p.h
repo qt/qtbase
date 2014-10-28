@@ -206,7 +206,7 @@ public:
 
     NSView *cocoaControl(QCocoaWidget widget) const;
 
-    void drawNSViewInRect(QCocoaWidget widget, NSView *view, const QRect &rect, QPainter *p, QCocoaDrawRectBlock drawRectBlock = nil) const;
+    void drawNSViewInRect(QCocoaWidget widget, NSView *view, const QRect &rect, QPainter *p, bool isQWidget = true, QCocoaDrawRectBlock drawRectBlock = nil) const;
     void resolveCurrentNSView(QWindow *window);
 
 public:

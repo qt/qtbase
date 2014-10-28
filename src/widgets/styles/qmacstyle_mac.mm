@@ -1897,7 +1897,7 @@ NSView *QMacStylePrivate::cocoaControl(QCocoaWidget widget) const
     return bv;
 }
 
-void QMacStylePrivate::drawNSViewInRect(QCocoaWidget widget, NSView *view, const QRect &qtRect, QPainter *p, QCocoaDrawRectBlock drawRectBlock) const
+void QMacStylePrivate::drawNSViewInRect(QCocoaWidget widget, NSView *view, const QRect &qtRect, QPainter *p, bool isQWidget, QCocoaDrawRectBlock drawRectBlock) const
 {
     QPoint offset;
     if (widget == QCocoaWidget(QCocoaRadioButton, QAquaSizeLarge))
@@ -1916,16 +1916,15 @@ void QMacStylePrivate::drawNSViewInRect(QCocoaWidget widget, NSView *view, const
     else if (widget == QCocoaWidget(QCocoaPopupButton, QAquaSizeMini))
         offset = QPoint(2, -1);
     else if (widget == QCocoaWidget(QCocoaPullDownButton, QAquaSizeLarge))
-        offset = QPoint(3, -1);
+        offset = isQWidget ? QPoint(3, -1) : QPoint(-1, -3);
     else if (widget == QCocoaWidget(QCocoaPullDownButton, QAquaSizeSmall))
         offset = QPoint(2, 1);
     else if (widget == QCocoaWidget(QCocoaPullDownButton, QAquaSizeMini))
         offset = QPoint(5, 0);
 
-    p->translate(offset);
-
     QMacCGContext ctx(p);
     CGContextSaveGState(ctx);
+    CGContextTranslateCTM(ctx, offset.x(), offset.y());
 
     [NSGraphicsContext saveGraphicsState];
     [NSGraphicsContext setCurrentContext:[NSGraphicsContext
@@ -1943,8 +1942,6 @@ void QMacStylePrivate::drawNSViewInRect(QCocoaWidget widget, NSView *view, const
 
     [NSGraphicsContext restoreGraphicsState];
     CGContextRestoreGState(ctx);
-
-    p->translate(-offset);
 }
 
 void QMacStylePrivate::resolveCurrentNSView(QWindow *window)
@@ -3883,15 +3880,14 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
             }
 
             if (hasMenu && yosemiteOrLater && bdi.kind != kThemeBevelButton) {
-                QCocoaWidget w = cocoaWidgetFromHIThemeButtonKind(bdi.kind);
-                w.first = QCocoaPullDownButton;
-                QPoint offset;
-                NSPopUpButton *pdb = (NSPopUpButton *)d->cocoaControl(w);
+                QCocoaWidget cw = cocoaWidgetFromHIThemeButtonKind(bdi.kind);
+                cw.first = QCocoaPullDownButton;
+                NSPopUpButton *pdb = (NSPopUpButton *)d->cocoaControl(cw);
                 [pdb highlight:(bdi.state == kThemeStatePressed)];
                 pdb.enabled = bdi.state != kThemeStateUnavailable && bdi.state != kThemeStateUnavailableInactive;
                 QRect rect = opt->rect;
-                rect.adjust(0, 0, w.second == QAquaSizeSmall ? -4 : w.second == QAquaSizeMini ? -9 : -6, 0);
-                d->drawNSViewInRect(w, pdb, rect, p);
+                rect.adjust(0, 0, cw.second == QAquaSizeSmall ? -4 : cw.second == QAquaSizeMini ? -9 : -6, 0);
+                d->drawNSViewInRect(cw, pdb, rect, p, w != 0);
             } else if (hasMenu && bdi.state == kThemeStatePressed)
                 d->drawColorlessButton(newRect, &bdi, p, opt);
             else
@@ -4074,7 +4070,8 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
             QStyleOptionComboBox comboCopy = *cb;
             comboCopy.direction = Qt::LeftToRight;
             if (opt->state & QStyle::State_Small)
-                comboCopy.rect.translate(0, w ? (QSysInfo::macVersion() > QSysInfo::MV_10_8 ? 0 : -1) : -2); // Supports Qt Quick Controls
+                comboCopy.rect.translate(0, w ? (QSysInfo::macVersion() > QSysInfo::MV_10_8 ? 0 : -1) :
+                                                (QSysInfo::macVersion() > QSysInfo::MV_10_9 ? 0 : -2)); // Supports Qt Quick Controls
             else if (QSysInfo::macVersion() == QSysInfo::MV_10_9)
                 comboCopy.rect.translate(0, 1);
             QCommonStyle::drawControl(CE_ComboBoxLabel, &comboCopy, p, w);
@@ -5563,7 +5560,7 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                         sl.maxValue = slider->maximum;
                         sl.intValue = slider->sliderValue;
                         sl.enabled = slider->state & QStyle::State_Enabled;
-                        d->drawNSViewInRect(cw, sl, opt->rect, p, ^(NSRect rect, CGContextRef ctx) {
+                        d->drawNSViewInRect(cw, sl, opt->rect, p, widget != 0, ^(NSRect rect, CGContextRef ctx) {
                                                 if (slider->upsideDown) {
                                                     if (isHorizontal) {
                                                         CGContextTranslateCTM(ctx, rect.size.width, 0);
