@@ -90,13 +90,14 @@ bool QLocalServerPrivate::listen(const QString &requestedServerName)
 
     // Check any of the flags
     if (socketOptions & QLocalServer::WorldAccessOption) {
-        tempDir.reset(new QTemporaryDir(fullServerName));
+        QFileInfo serverNameFileInfo(fullServerName);
+        tempDir.reset(new QTemporaryDir(serverNameFileInfo.absolutePath() + QLatin1Char('/')));
         if (!tempDir->isValid()) {
             setError(QLatin1String("QLocalServer::listen"));
             return false;
         }
         tempPath = tempDir->path();
-        tempPath += QLatin1Char('/') + requestedServerName;
+        tempPath += QLatin1String("/s");
     }
 
     // create the unix socket
