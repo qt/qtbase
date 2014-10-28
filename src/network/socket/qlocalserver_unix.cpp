@@ -124,13 +124,6 @@ bool QLocalServerPrivate::listen(const QString &requestedServerName)
         }
         ::memcpy(addr.sun_path, tempPath.toLatin1().data(),
                  tempPath.toLatin1().size() + 1);
-
-        if (-1 == ::fchmod(listenSocket, 0)) {
-            setError(QLatin1String("QLocalServer::listen"));
-            closeServer();
-            return false;
-        }
-
     } else {
         ::memcpy(addr.sun_path, fullServerName.toLatin1().data(),
                  fullServerName.toLatin1().size() + 1);
