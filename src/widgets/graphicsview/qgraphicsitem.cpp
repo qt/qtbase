@@ -4487,7 +4487,7 @@ void QGraphicsItem::resetTransform()
     Use
 
     \code
-    setRotation(rotation() + angle);
+    item->setTransform(QTransform().rotate(angle), true);
     \endcode
 
     instead.
