@@ -53,6 +53,6 @@ INCLUDEPATH += $$PWD/../../../platformsupport/eventdispatchers
 
 LIBS += -lppapi -lppapi_cpp -lppapi_gles2
 
-nacl-newlib {
+!pnacl:nacl-newlib {
     LIBS += -lerror_handling
 }
