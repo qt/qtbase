@@ -300,8 +300,11 @@ Qt::InputMethodQueries ImeState::update(Qt::InputMethodQueries properties)
 
     QInputMethodQueryEvent newState(properties);
 
-    if (qApp && qApp->focusObject())
-        QCoreApplication::sendEvent(qApp->focusObject(), &newState);
+    // Update the focus object that the new state is based on
+    focusObject = qApp ? qApp->focusObject() : 0;
+
+    if (focusObject)
+        QCoreApplication::sendEvent(focusObject, &newState);
 
     Qt::InputMethodQueries updatedProperties;
     for (uint i = 0; i < (sizeof(Qt::ImQueryAll) * CHAR_BIT); ++i) {
@@ -348,11 +351,23 @@ QRectF QIOSInputContext::keyboardRect() const
 void QIOSInputContext::showInputPanel()
 {
     // No-op, keyboard controlled fully by platform based on focus
+    qImDebug() << "can't show virtual keyboard without a focus object, ignoring";
 }
 
 void QIOSInputContext::hideInputPanel()
 {
-    // No-op, keyboard controlled fully by platform based on focus
+    if (![m_textResponder isFirstResponder]) {
+        qImDebug() << "QIOSTextInputResponder is not first responder, ignoring";
+        return;
+    }
+
+    if (qGuiApp->focusObject() != m_imeState.focusObject) {
+        qImDebug() << "current focus object does not match IM state, likely hiding from focusOut event, so ignoring";
+        return;
+    }
+
+    qImDebug() << "hiding VKB as requested by QInputMethod::hide()";
+    [m_textResponder resignFirstResponder];
 }
 
 void QIOSInputContext::clearCurrentFocusObject()
