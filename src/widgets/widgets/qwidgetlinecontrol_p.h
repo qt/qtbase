@@ -228,8 +228,10 @@ public:
     }
     void setText(const QString &txt)
     {
+#ifndef QT_NO_IM
         if (composeMode())
             qApp->inputMethod()->reset();
+#endif
         internalSetText(txt, -1, false);
     }
     void commitPreedit();

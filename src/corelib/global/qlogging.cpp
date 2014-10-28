@@ -1379,7 +1379,7 @@ static void qt_message_print(QtMsgType msgType, const QMessageLogContext &contex
         }
         ungrabMessageHandler();
     } else {
-        fprintf(stderr, "%s", message.toLocal8Bit().constData());
+        fprintf(stderr, "%s\n", message.toLocal8Bit().constData());
     }
 }
 
