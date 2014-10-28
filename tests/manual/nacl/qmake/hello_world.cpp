@@ -67,8 +67,9 @@ static PP_Bool Instance_DidCreate(PP_Instance instance,
                                   uint32_t argc,
                                   const char* argn[],
                                   const char* argv[]) {
+  puts("Hello World from Instance_DidCreate");
   ppb_messaging_interface->PostMessage(instance, 
-                                       CStrToVar("Hello a World (GLIBC)"));
+                                       CStrToVar("Hello World from Instance_DidCreate"));
   return PP_TRUE;
 }
 
