@@ -173,9 +173,13 @@
     m_inSendEventToFocusObject = NO;
     m_inputContext = inputContext;
 
+    QVariantMap platformData = [self imValue:Qt::ImPlatformData].toMap();
     Qt::InputMethodHints hints = Qt::InputMethodHints([self imValue:Qt::ImHints].toUInt());
 
-    self.returnKeyType = (hints & Qt::ImhMultiLine) ? UIReturnKeyDefault : UIReturnKeyDone;
+    self.returnKeyType = platformData.value(kImePlatformDataReturnKeyType).isValid() ?
+        UIReturnKeyType(platformData.value(kImePlatformDataReturnKeyType).toInt()) :
+        (hints & Qt::ImhMultiLine) ? UIReturnKeyDefault : UIReturnKeyDone;
+
     self.secureTextEntry = BOOL(hints & Qt::ImhHiddenText);
     self.autocorrectionType = (hints & Qt::ImhNoPredictiveText) ?
                 UITextAutocorrectionTypeNo : UITextAutocorrectionTypeDefault;
@@ -202,7 +206,6 @@
     else
         self.keyboardType = UIKeyboardTypeDefault;
 
-    QVariantMap platformData = [self imValue:Qt::ImPlatformData].toMap();
     if (UIView *inputView = static_cast<UIView *>(platformData.value(kImePlatformDataInputView).value<void *>()))
         self.inputView = [[[WrapperView alloc] initWithView:inputView] autorelease];
     if (UIView *accessoryView = static_cast<UIView *>(platformData.value(kImePlatformDataInputAccessoryView).value<void *>()))
@@ -625,8 +628,7 @@
         [self sendEventToFocusObject:press];
         [self sendEventToFocusObject:release];
 
-        Qt::InputMethodHints imeHints = static_cast<Qt::InputMethodHints>([self imValue:Qt::ImHints].toUInt());
-        if (!(imeHints & Qt::ImhMultiLine))
+        if (self.returnKeyType == UIReturnKeyDone)
             [self resignFirstResponder];
 
         return;

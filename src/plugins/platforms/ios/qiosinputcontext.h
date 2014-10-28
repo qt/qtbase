@@ -42,6 +42,7 @@
 
 const char kImePlatformDataInputView[] = "inputView";
 const char kImePlatformDataInputAccessoryView[] = "inputAccessoryView";
+const char kImePlatformDataReturnKeyType[] = "returnKeyType";
 
 QT_BEGIN_NAMESPACE
 
