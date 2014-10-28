@@ -160,30 +160,30 @@ bool QLocalServerPrivate::listen(const QString &requestedServerName)
     }
 
     if (socketOptions & QLocalServer::WorldAccessOption) {
-            mode_t mode = 000;
+        mode_t mode = 000;
 
-            if (socketOptions & QLocalServer::UserAccessOption) {
-                mode |= S_IRWXU;
-            }
-            if (socketOptions & QLocalServer::GroupAccessOption) {
-                mode |= S_IRWXG;
-            }
-            if (socketOptions & QLocalServer::OtherAccessOption) {
-                mode |= S_IRWXO;
-            }
+        if (socketOptions & QLocalServer::UserAccessOption)
+            mode |= S_IRWXU;
 
-            if (mode) {
-                if (-1 == ::chmod(tempPath.toLatin1(), mode)) {
-                    setError(QLatin1String("QLocalServer::listen"));
-                    closeServer();
-                    return false;
-                }
-            }
-            if (-1 == ::rename(tempPath.toLatin1(), fullServerName.toLatin1())){
+        if (socketOptions & QLocalServer::GroupAccessOption)
+            mode |= S_IRWXG;
+
+        if (socketOptions & QLocalServer::OtherAccessOption)
+            mode |= S_IRWXO;
+
+        if (mode) {
+            if (::chmod(tempPath.toLatin1(), mode) == -1) {
                 setError(QLatin1String("QLocalServer::listen"));
                 closeServer();
                 return false;
             }
+        }
+
+        if (::rename(tempPath.toLatin1(), fullServerName.toLatin1()) == -1) {
+            setError(QLatin1String("QLocalServer::listen"));
+            closeServer();
+            return false;
+        }
     }
 
     Q_ASSERT(!socketNotifier);
