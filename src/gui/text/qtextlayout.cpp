@@ -2256,8 +2256,10 @@ QList<QGlyphRun> QTextLine::glyphRuns(int from, int length) const
                                                       logClusters,
                                                       iterator.itemStart,
                                                       iterator.itemLength));
-                    for (int i = 0; i < subLayout.numGlyphs; ++i)
-                        pos.rx() += subLayout.advances[i].toReal();
+                    for (int i = 0; i < subLayout.numGlyphs; ++i) {
+                        QFixed justification = QFixed::fromFixed(subLayout.justifications[i].space_18d6);
+                        pos.rx() += (subLayout.advances[i] + justification).toReal();
+                    }
 
                     if (rtl)
                         end = start;
