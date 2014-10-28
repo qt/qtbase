@@ -209,6 +209,8 @@ macx-xcode {
     else: \
         VALID_ARCHS = $$QMAKE_IOS_SIMULATOR_ARCHS
 
+    single_arch: VALID_ARCHS = $$first(VALID_ARCHS)
+
     ACTIVE_ARCHS = $(filter $(EXPORT_VALID_ARCHS), $(ARCHS))
     ARCH_ARGS = $(foreach arch, $(if $(EXPORT_ACTIVE_ARCHS), $(EXPORT_ACTIVE_ARCHS), $(EXPORT_VALID_ARCHS)), -arch $(arch))
 
