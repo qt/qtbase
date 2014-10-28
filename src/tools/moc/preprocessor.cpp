@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
-** Copyright (C) 2013 Olivier Goffart <ogoffart@woboq.org>
+** Copyright (C) 2014 Olivier Goffart <ogoffart@woboq.org>
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the tools applications of the Qt Toolkit.
@@ -1093,10 +1093,6 @@ void Preprocessor::preprocess(const QByteArray &filename, Symbols &preprocessed)
                 if (macro.symbols.first().token == PP_HASHHASH ||
                     macro.symbols.last().token == PP_HASHHASH) {
                     error("'##' cannot appear at either end of a macro expansion");
-                }
-                if (macro.symbols.last().token == HASH ||
-                    macro.symbols.last().token == PP_HASH) {
-                    error("'#' is not followed by a macro parameter");
                 }
             }
             macros.insert(name, macro);

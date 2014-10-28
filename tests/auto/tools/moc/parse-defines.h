@@ -77,6 +77,8 @@
 #define DEFINE_CMDLINE_SIGNAL void cmdlineSignal(const QMap<int, int> &i)
 #endif
 
+#define HASH_SIGN #
+
 PD_BEGIN_NAMESPACE
 
 class DEFINE_CMDLINE_EMPTY PD_CLASSNAME DEFINE_CMDLINE_EMPTY
