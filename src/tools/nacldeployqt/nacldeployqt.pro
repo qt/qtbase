@@ -7,3 +7,4 @@ SOURCES += \
     main.cpp \
 
 load(qt_tool)
+CONFIG += c++11
