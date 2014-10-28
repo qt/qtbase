@@ -49,7 +49,7 @@ int main(int argc, char **argv)
     QCoreApplication::setApplicationName("nacldeployqt");
     QCommandLineParser parser;
     parser.addHelpOption();
-    parser.addPositionalArgument("nexe", "Application nexe file.");
+    parser.addPositionalArgument("binary", "Application binary file (.nexe or .bc)");
 
     parser.addOption(QCommandLineOption(QStringList() << "t" << "template",
                         "Selects a html template. Can be either 'fullscreen' or 'debug'. "
@@ -72,26 +72,27 @@ int main(int argc, char **argv)
     if (run && debug) // "--debug" takes priority over "run"
         run = false;
 
-    // Get target nexe file name from command line, or find one
-    // in the cuerrent directory
-    QStringList nexes = QDir().entryList(QStringList() << "*.nexe", QDir::Files);
-    QString nexe;
+    // Get target binary file name from command line, or find one
+    // in the currrent directory
+    QStringList binaries = QDir().entryList(QStringList() << "*.nexe" << "*.bc", QDir::Files);
+    QString binary;
     if (args.count() == 0) {
-        if (nexes.count() == 0) {
+        if (binaries.count() == 0) {
             parser.showHelp(0);
             return 0;
         }
-        nexe = nexes.at(0);
+        binary = binaries.at(0);
     } else {
-        nexe = args.at(0);
+        binary = args.at(0);
     }
 
-    QString appName = nexe;
-    appName.chop(QStringLiteral(".nexe").length());
+    QString appName = binary;
+    appName.replace(".nexe", "");
+    appName.replace(".bc", "");
     QString nmf = appName + ".nmf";
     
-    if (!QFile(nexe).exists()) {
-        qDebug() << "File not found" << nexe;
+    if (!QFile(binary).exists()) {
+        qDebug() << "File not found" << binary;
         return 0;
     }
     
@@ -114,6 +115,11 @@ int main(int argc, char **argv)
         qDebug() << "create_html.py not found at" << createHtml;
         return 0;
     }
+    QString pnaclFinalize = naclSdkRoot + "/toolchain/mac_pnacl/bin/pnacl-finalize";
+    if (!QFile(pnaclFinalize).exists()) {
+        qDebug() << "pnacl-finalize not found at" << pnaclFinalize;
+        return 0;
+    }
 
     // Get the lib dir for this Qt install
     // Use argv[0]: path/to/qtbase/bin/nacldeployqt -> path/to/qtbase/lib
@@ -126,7 +132,7 @@ int main(int argc, char **argv)
     QString nmfFileName = appName + ".nmf";
 
     qDebug() << " ";
-    qDebug() << "Deploying" << nexe;
+    qDebug() << "Deploying" << binary;
     qDebug() << "Using SDK" << naclSdkRoot;
     qDebug() << "Qt libs in" << qtLibDir;
     qDebug() << " ";
@@ -149,22 +155,33 @@ int main(int argc, char **argv)
         }
     }
 
+    QString finalBinary = binary;
+
+    // On PNaCl, the output from "make" is a bitcode .bc file. Create
+    // a .pexe suitable for distribution using "pnacl-finalize".
+    if (binary.endsWith(".bc")) {
+        finalBinary.replace(".bc", ".pexe");
+        QString finalizeCommand = pnaclFinalize + " -o " + finalBinary + " " + binary;
+        runCommand(finalizeCommand);
+    }
+
     // create the .nmf manifest file
     QString nmfCommand = QStringLiteral("python ") + createNmf
                 + " -o " + nmfFileName
                 + " -L " + qtLibDir           // Add Qt libs search payh
                 + " -s  . "                   // copy dependencies 
 //                + " --debug-libs"    
-                + " " + nexe;
+                + " " + finalBinary
+                + " " + (debug ? binary : QString("")); // deploy .bc when debugging (adds a "pnacl-debug" section to the nmf)
     
-    system(nmfCommand.toLatin1().constData());
+    runCommand(nmfCommand.toLatin1().constData());
 
-    // create the index.html file. Use a built-in template if specifed,
+    // create the index.html file. Use a built-in template if specified,
     // else use create_html.py
     if (tmplate.isEmpty()) {
         QString hmtlCommand = QStringLiteral("python ") + createHtml + " " + nmf
                     + " -o index.html";
-        system(hmtlCommand.toLatin1().constData());
+        runCommand(hmtlCommand.toLatin1().constData());
     } else {
         // select template. See the template_*.cpp files.
         QByteArray html;
@@ -223,7 +240,7 @@ int main(int argc, char **argv)
     if (debug) {
         // print help string, then lanch gdb.
         QString gdbCommand = "echo Connect to Chrome: target remote localhost:4014;\n\n"
-                         + gdb + gdbOptions;
+                           + gdb + gdbOptions;
         // tell osascript to tell Terminal to tell gdb to debug the App.
         QString terminal = R"STR(osascript -e 'tell application "Terminal" to do script "'"SCRIPT"'" ')STR";
         terminal.replace("SCRIPT", gdbCommand);
