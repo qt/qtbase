@@ -107,6 +107,8 @@ QT_BEGIN_NAMESPACE
     possibly with a different version of OpenSSL.
 */
 
+#ifndef QT_LINKED_OPENSSL
+
 namespace {
 void qsslSocketUnresolvedSymbolWarning(const char *functionName)
 {
@@ -118,6 +120,8 @@ void qsslSocketCannotResolveSymbolWarning(const char *functionName)
     qWarning("QSslSocket: cannot resolve %s", functionName);
 }
 }
+
+#endif // QT_LINKED_OPENSSL
 
 #ifdef SSLEAY_MACROS
 DEFINEFUNC3(void *, ASN1_dup, i2d_of_void *a, a, d2i_of_void *b, b, char *c, c, return 0, return)
