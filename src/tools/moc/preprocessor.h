@@ -57,7 +57,7 @@ typedef SubArray MacroName;
 #endif
 typedef QHash<MacroName, Macro> Macros;
 
-class QIODevice;
+class QFile;
 
 class Preprocessor : public Parser
 {
@@ -67,7 +67,7 @@ public:
     QList<QByteArray> frameworks;
     QSet<QByteArray> preprocessedIncludes;
     Macros macros;
-    Symbols preprocessed(const QByteArray &filename, QIODevice *device);
+    Symbols preprocessed(const QByteArray &filename, QFile *device);
 
     void parseDefineArguments(Macro *m);
 
