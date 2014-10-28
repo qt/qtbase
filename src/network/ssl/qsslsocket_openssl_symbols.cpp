@@ -63,6 +63,9 @@
 #if defined(Q_OS_LINUX) && !defined(Q_OS_ANDROID)
 #include <link.h>
 #endif
+#ifdef Q_OS_DARWIN
+#include "private/qcore_mac_p.h"
+#endif
 
 #include <algorithm>
 
@@ -452,6 +455,15 @@ static QStringList libraryPathList()
 #  ifdef Q_OS_DARWIN
     paths = QString::fromLatin1(qgetenv("DYLD_LIBRARY_PATH"))
             .split(QLatin1Char(':'), QString::SkipEmptyParts);
+
+    // search in .app/Contents/Frameworks
+    UInt32 packageType;
+    CFBundleGetPackageInfo(CFBundleGetMainBundle(), &packageType, NULL);
+    if (packageType == FOUR_CHAR_CODE('APPL')) {
+        QUrl bundleUrl = QUrl::fromCFURL(QCFType<CFURLRef>(CFBundleCopyBundleURL(CFBundleGetMainBundle())));
+        QUrl frameworksUrl = QUrl::fromCFURL(QCFType<CFURLRef>(CFBundleCopyPrivateFrameworksURL(CFBundleGetMainBundle())));
+        paths << bundleUrl.resolved(frameworksUrl).path();
+    }
 #  else
     paths = QString::fromLatin1(qgetenv("LD_LIBRARY_PATH"))
             .split(QLatin1Char(':'), QString::SkipEmptyParts);
@@ -601,7 +613,13 @@ static QPair<QLibrary*, QLibrary*> loadOpenSsl()
     }
 #endif
 
+#ifndef Q_OS_DARWIN
     // second attempt: find the development files libssl.so and libcrypto.so
+    //
+    // disabled on OS X/iOS:
+    //  OS X's /usr/lib/libssl.dylib, /usr/lib/libcrypto.dylib will be picked up in the third
+    //    attempt, _after_ <bundle>/Contents/Frameworks has been searched.
+    //  iOS does not ship a system libssl.dylib, libcrypto.dylib in the first place.
     libssl->setFileNameAndVersion(QLatin1String("ssl"), -1);
     libcrypto->setFileNameAndVersion(QLatin1String("crypto"), -1);
     if (libcrypto->load() && libssl->load()) {
@@ -611,6 +629,7 @@ static QPair<QLibrary*, QLibrary*> loadOpenSsl()
         libssl->unload();
         libcrypto->unload();
     }
+#endif
 
     // third attempt: loop on the most common library paths and find libssl
     QStringList sslList = findAllLibSsl();
