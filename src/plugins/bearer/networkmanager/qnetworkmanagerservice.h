@@ -56,7 +56,6 @@
 #include <QtDBus/QDBusObjectPath>
 #include <QtDBus/QDBusContext>
 #include <QMap>
-#include "qnmdbushelper.h"
 
 #ifndef QT_NO_DBUS
 
@@ -89,7 +88,7 @@ typedef enum
     NM_ACTIVE_CONNECTION_STATE_UNKNOWN = 0,
     NM_ACTIVE_CONNECTION_STATE_ACTIVATING,
     NM_ACTIVE_CONNECTION_STATE_ACTIVATED,
-    NM_ACTIVE_CONNECTION_STATE_DEACTIVATED
+    NM_ACTIVE_CONNECTION_STATE_DEACTIVATED = 4
 } NMActiveConnectionState;
 
 #define NM_DBUS_SERVICE                     "org.freedesktop.NetworkManager"
@@ -135,12 +134,23 @@ class QNetworkManagerInterface : public QObject
     Q_OBJECT
 
 public:
+    typedef enum
+    {
+        NM_STATE_UNKNOWN = 0,
+        NM_STATE_ASLEEP = 10,
+        NM_STATE_DISCONNECTED = 20,
+        NM_STATE_DISCONNECTING = 30,
+        NM_STATE_CONNECTING = 40,
+        NM_STATE_CONNECTED_LOCAL = 50,
+        NM_STATE_CONNECTED_SITE = 60,
+        NM_STATE_CONNECTED_GLOBAL = 70
+    } NMState;
 
     QNetworkManagerInterface(QObject *parent = 0);
     ~QNetworkManagerInterface();
 
-    QList <QDBusObjectPath> getDevices() const;
-    void activateConnection(const QString &serviceName, QDBusObjectPath connection, QDBusObjectPath device, QDBusObjectPath specificObject);
+    QList <QDBusObjectPath> getDevices();
+    void activateConnection(QDBusObjectPath connection,QDBusObjectPath device, QDBusObjectPath specificObject);
     void deactivateConnection(QDBusObjectPath connectionPath) const;
 
     QDBusObjectPath path() const;
@@ -149,21 +159,28 @@ public:
     bool wirelessEnabled() const;
     bool wirelessHardwareEnabled() const;
     QList <QDBusObjectPath> activeConnections() const;
-    quint32 state();
+    NMState state();
+    QString version() const;
     bool setConnections();
     bool isValid();
 
 Q_SIGNALS:
     void deviceAdded(QDBusObjectPath);
     void deviceRemoved(QDBusObjectPath);
-    void propertiesChanged( const QString &, QMap<QString,QVariant>);
-    void stateChanged(const QString&, quint32);
+    void propertiesChanged(QMap<QString,QVariant>);
+    void stateChanged(quint32);
     void activationFinished(QDBusPendingCallWatcher*);
+    void propertiesReady();
+    void devicesListReady();
 
 private Q_SLOTS:
+    void propertiesSwap(QMap<QString,QVariant>);
+
 private:
     QNetworkManagerInterfacePrivate *d;
-    QNmDBusHelper *nmDBusHelper;
+    QVariantMap propertyMap;
+    QList<QDBusObjectPath> devicesPathList;
+
 };
 
 class QNetworkManagerInterfaceAccessPointPrivate;
@@ -228,11 +245,14 @@ public:
 
 Q_SIGNALS:
     void propertiesChanged(QMap <QString,QVariant>);
-    void propertiesChanged( const QString &, QMap<QString,QVariant>);
+    void propertiesReady();
+
+private Q_SLOTS:
+    void propertiesSwap(QMap<QString,QVariant>);
+
 private:
     QNetworkManagerInterfaceAccessPointPrivate *d;
-    QNmDBusHelper *nmDBusHelper;
-
+    QVariantMap propertyMap;
 };
 
 class QNetworkManagerInterfaceDevicePrivate;
@@ -258,11 +278,14 @@ public:
 
 Q_SIGNALS:
     void stateChanged(const QString &, quint32);
-    void propertiesChanged(const QString &, QMap<QString,QVariant>);
+    void propertiesChanged(QMap<QString,QVariant>);
     void connectionsChanged(QStringList);
+    void propertiesReady();
+private Q_SLOTS:
+    void propertiesSwap(QMap<QString,QVariant>);
 private:
     QNetworkManagerInterfaceDevicePrivate *d;
-    QNmDBusHelper *nmDBusHelper;
+    QVariantMap propertyMap;
 };
 
 class QNetworkManagerInterfaceDeviceWiredPrivate;
@@ -284,10 +307,15 @@ public:
     bool isValid();
 
 Q_SIGNALS:
-    void propertiesChanged( const QString &, QMap<QString,QVariant>);
+    void propertiesChanged(QMap<QString,QVariant>);
+    void propertiesReady();
+
+private Q_SLOTS:
+    void propertiesSwap(QMap<QString,QVariant>);
+
 private:
     QNetworkManagerInterfaceDeviceWiredPrivate *d;
-    QNmDBusHelper *nmDBusHelper;
+    QVariantMap propertyMap;
 };
 
 class QNetworkManagerInterfaceDeviceWirelessPrivate;
@@ -325,15 +353,24 @@ public:
 
     void requestScan();
 Q_SIGNALS:
-    void propertiesChanged( const QString &, QMap<QString,QVariant>);
+    void propertiesChanged(QMap<QString,QVariant>);
     void accessPointAdded(const QString &);
     void accessPointRemoved(const QString &);
     void scanDone();
+    void propertiesReady();
+    void accessPointsReady();
+
 private Q_SLOTS:
     void scanIsDone();
+    void propertiesSwap(QMap<QString,QVariant>);
+
+    void slotAccessPointAdded(QDBusObjectPath);
+    void slotAccessPointRemoved(QDBusObjectPath);
+
 private:
     QNetworkManagerInterfaceDeviceWirelessPrivate *d;
-    QNmDBusHelper *nmDBusHelper;
+    QVariantMap propertyMap;
+    QList <QDBusObjectPath> accessPointsList;
 };
 
 class QNetworkManagerInterfaceDeviceModemPrivate;
@@ -350,6 +387,7 @@ public:
         Gsm_Umts = 0x4,
         Lte = 0x08
        };
+    Q_DECLARE_FLAGS(ModemCapabilities, ModemCapability)
 
     explicit QNetworkManagerInterfaceDeviceModem(const QString &ifaceDevicePath,
                                                     QObject *parent = 0);
@@ -361,16 +399,22 @@ public:
     bool setConnections();
     bool isValid();
 
-    quint32 modemCapabilities() const;
-    quint32 currentCapabilities() const;
+    ModemCapabilities modemCapabilities() const;
+    ModemCapabilities currentCapabilities() const;
 
 Q_SIGNALS:
-    void propertiesChanged( const QString &, QMap<QString,QVariant>);
+    void propertiesChanged(QMap<QString,QVariant>);
+    void propertiesReady();
+
+private Q_SLOTS:
+    void propertiesSwap(QMap<QString,QVariant>);
+
 private:
     QNetworkManagerInterfaceDeviceModemPrivate *d;
-    QNmDBusHelper *nmDBusHelper;
+    QVariantMap propertyMap;
 };
 
+Q_DECLARE_OPERATORS_FOR_FLAGS(QNetworkManagerInterfaceDeviceModem::ModemCapabilities)
 
 class QNetworkManagerSettingsPrivate;
 class QNetworkManagerSettings : public QObject
@@ -390,8 +434,10 @@ public:
 
 Q_SIGNALS:
     void newConnection(QDBusObjectPath);
+    void connectionsListReady();
 private:
     QNetworkManagerSettingsPrivate *d;
+    QList <QDBusObjectPath> connectionsList;
 };
 
 class QNetworkManagerSettingsConnectionPrivate;
@@ -418,12 +464,14 @@ public:
     bool isValid();
 
 Q_SIGNALS:
-
     void updated();
     void removed(const QString &path);
+    void settingsReady();
+
+private Q_SLOTS:
+    void slotSettingsRemoved();
 
 private:
-    QNmDBusHelper *nmDBusHelper;
     QNetworkManagerSettingsConnectionPrivate *d;
 };
 
@@ -444,7 +492,6 @@ public:
     ~ QNetworkManagerConnectionActive();
 
     QDBusInterface  *connectionInterface() const;
-    QString serviceName() const;
     QDBusObjectPath connection() const;
     QDBusObjectPath specificObject() const;
     QList<QDBusObjectPath> devices() const;
@@ -455,11 +502,15 @@ public:
 
 
 Q_SIGNALS:
-    void propertiesChanged(QList<QDBusObjectPath>);
-    void propertiesChanged( const QString &, QMap<QString,QVariant>);
+    void propertiesChanged(QMap<QString,QVariant>);
+    void propertiesReady();
+
+private Q_SLOTS:
+    void propertiesSwap(QMap<QString,QVariant>);
+
 private:
     QNetworkManagerConnectionActivePrivate *d;
-    QNmDBusHelper *nmDBusHelper;
+    QVariantMap propertyMap;
 };
 
 class QNetworkManagerIp4ConfigPrivate;
