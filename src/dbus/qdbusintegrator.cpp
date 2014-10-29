@@ -1017,7 +1017,7 @@ extern bool qDBusInitThreads();
 
 QDBusConnectionPrivate::QDBusConnectionPrivate(QObject *p)
     : QObject(p), ref(1), capabilities(0), mode(InvalidMode), connection(0), server(0), busService(0),
-      watchAndTimeoutLock(QMutex::Recursive),
+      watchAndTimeoutLock(QMutex::Recursive), dispatchLock(QMutex::Recursive),
       rootNode(QString(QLatin1Char('/'))),
       anonymousAuthenticationAllowed(false)
 {
@@ -1266,7 +1266,10 @@ void QDBusConnectionPrivate::relaySignal(QObject *obj, const QMetaObject *mo, in
     //qDBusDebug() << "Emitting signal" << message;
     //qDBusDebug() << "for paths:";
     q_dbus_message_set_no_reply(msg, true); // the reply would not be delivered to anything
-    huntAndEmit(connection, msg, obj, rootNode, isScriptable, isAdaptor);
+    {
+        QDBusDispatchLocker locker(HuntAndEmitAction, this);
+        huntAndEmit(connection, msg, obj, rootNode, isScriptable, isAdaptor);
+    }
     q_dbus_message_unref(msg);
 }
 
@@ -1923,7 +1926,11 @@ int QDBusConnectionPrivate::send(const QDBusMessage& message)
 
     qDBusDebug() << this << "sending message (no reply):" << message;
     checkThread();
-    bool isOk = q_dbus_connection_send(connection, msg, 0);
+    bool isOk;
+    {
+        QDBusDispatchLocker locker(SendMessageAction, this);
+        isOk = q_dbus_connection_send(connection, msg, 0);
+    }
     int serial = 0;
     if (isOk)
         serial = q_dbus_message_get_serial(msg);
@@ -1955,7 +1962,11 @@ QDBusMessage QDBusConnectionPrivate::sendWithReply(const QDBusMessage &message,
 
         qDBusDebug() << this << "sending message (blocking):" << message;
         QDBusErrorInternal error;
-        DBusMessage *reply = q_dbus_connection_send_with_reply_and_block(connection, msg, timeout, error);
+        DBusMessage *reply;
+        {
+            QDBusDispatchLocker locker(SendWithReplyAndBlockAction, this);
+            reply = q_dbus_connection_send_with_reply_and_block(connection, msg, timeout, error);
+        }
 
         q_dbus_message_unref(msg);
 
