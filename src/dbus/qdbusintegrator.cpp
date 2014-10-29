@@ -1179,41 +1179,29 @@ void QDBusConnectionPrivate::doDispatch()
 
 void QDBusConnectionPrivate::socketRead(int fd)
 {
-    QVarLengthArray<DBusWatch *, 2> pendingWatches;
-
-    {
-        QDBusDispatchLocker locker(SocketReadAction, this);
-        WatcherHash::ConstIterator it = watchers.constFind(fd);
-        while (it != watchers.constEnd() && it.key() == fd) {
-            if (it->watch && it->read && it->read->isEnabled())
-                pendingWatches.append(it.value().watch);
-            ++it;
+    QDBusDispatchLocker locker(SocketReadAction, this);
+    WatcherHash::ConstIterator it = watchers.constFind(fd);
+    while (it != watchers.constEnd() && it.key() == fd) {
+        if (it->watch && it->read && it->read->isEnabled()) {
+            if (!q_dbus_watch_handle(it.value().watch, DBUS_WATCH_READABLE))
+                qDebug("OUT OF MEM");
         }
+        ++it;
     }
-
-    for (int i = 0; i < pendingWatches.size(); ++i)
-        if (!q_dbus_watch_handle(pendingWatches[i], DBUS_WATCH_READABLE))
-            qDebug("OUT OF MEM");
     doDispatch();
 }
 
 void QDBusConnectionPrivate::socketWrite(int fd)
 {
-    QVarLengthArray<DBusWatch *, 2> pendingWatches;
-
-    {
-        QDBusDispatchLocker locker(SocketWriteAction, this);
-        WatcherHash::ConstIterator it = watchers.constFind(fd);
-        while (it != watchers.constEnd() && it.key() == fd) {
-            if (it->watch && it->write && it->write->isEnabled())
-                pendingWatches.append(it.value().watch);
-            ++it;
+    QDBusDispatchLocker locker(SocketWriteAction, this);
+    WatcherHash::ConstIterator it = watchers.constFind(fd);
+    while (it != watchers.constEnd() && it.key() == fd) {
+        if (it->watch && it->write && it->write->isEnabled()) {
+            if (!q_dbus_watch_handle(it.value().watch, DBUS_WATCH_WRITABLE))
+                qDebug("OUT OF MEM");
         }
+        ++it;
     }
-
-    for (int i = 0; i < pendingWatches.size(); ++i)
-        if (!q_dbus_watch_handle(pendingWatches[i], DBUS_WATCH_WRITABLE))
-            qDebug("OUT OF MEM");
 }
 
 void QDBusConnectionPrivate::objectDestroyed(QObject *obj)
