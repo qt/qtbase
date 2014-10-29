@@ -468,11 +468,11 @@ bool QCocoaPrintDevice::openPpdFile()
     CFURLRef ppdURL = NULL;
     char ppdPath[MAXPATHLEN];
     if (PMPrinterCopyDescriptionURL(m_printer, kPMPPDDescriptionType, &ppdURL) == noErr
-        && ppdURL != NULL
-        && CFURLGetFileSystemRepresentation(ppdURL, true, (UInt8*)ppdPath, sizeof(ppdPath))) {
-        m_ppd = ppdOpenFile(ppdPath);
+        && ppdURL != NULL) {
+        if (CFURLGetFileSystemRepresentation(ppdURL, true, (UInt8*)ppdPath, sizeof(ppdPath)))
+            m_ppd = ppdOpenFile(ppdPath);
+        CFRelease(ppdURL);
     }
-    CFRelease(ppdURL);
     return m_ppd ? true : false;
 }
 
