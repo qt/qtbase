@@ -75,6 +75,11 @@ public slots:
         return m_conn.isConnected();
     }
 
+    Q_NOREPLY void requestSync(const QString &seq)
+    {
+        emit syncReceived(seq);
+    }
+
     void emitSignal(const QString& interface, const QString& name, const QDBusVariant& parameter)
     {
         if (interface.endsWith('2'))
@@ -126,10 +131,14 @@ public slots:
         valueSpy.clear();
     }
 
+signals:
+    Q_SCRIPTABLE void syncReceived(const QString &sequence);
+
 private slots:
-    void handleConnection(const QDBusConnection& con)
+    void handleConnection(QDBusConnection con)
     {
         m_conn = con;
+        con.registerObject(objectPath, this, QDBusConnection::ExportScriptableSignals);
     }
 
 private:
