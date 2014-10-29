@@ -66,6 +66,7 @@ protected:
     void processRcFileVar();
     virtual QString getLibTarget();
     static QString cQuoted(const QString &str);
+    virtual QString getManifestFileForRcFile() const;
 };
 
 inline Win32MakefileGenerator::~Win32MakefileGenerator()

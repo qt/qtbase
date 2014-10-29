@@ -66,6 +66,11 @@ QString MingwMakefileGenerator::getLibTarget()
     return QString("lib" + project->first("TARGET") + project->first("TARGET_VERSION_EXT") + ".a");
 }
 
+QString MingwMakefileGenerator::getManifestFileForRcFile() const
+{
+    return project->first("QMAKE_MANIFEST").toQString();
+}
+
 bool MingwMakefileGenerator::findLibraries()
 {
     QList<QMakeLocalFileName> dirs;

@@ -368,7 +368,8 @@ void Win32MakefileGenerator::processRcFileVar()
     if (Option::qmake_mode == Option::QMAKE_GENERATE_NOTHING)
         return;
 
-    if (((!project->values("VERSION").isEmpty() || !project->values("RC_ICONS").isEmpty())
+    const QString manifestFile = getManifestFileForRcFile();
+    if (((!project->values("VERSION").isEmpty() || !project->values("RC_ICONS").isEmpty() || !manifestFile.isEmpty())
         && project->values("RC_FILE").isEmpty()
         && project->values("RES_FILE").isEmpty()
         && !project->isActiveConfig("no_generated_target_info")
@@ -412,13 +413,21 @@ void Win32MakefileGenerator::processRcFileVar()
         ts << "# if defined(UNDER_CE)\n";
         ts << "#  include <winbase.h>\n";
         ts << "# else\n";
-        ts << "#  include <winver.h>\n";
+        ts << "#  include <windows.h>\n";
         ts << "# endif\n";
         ts << endl;
         if (!rcIcons.isEmpty()) {
             for (int i = 0; i < rcIcons.size(); ++i)
                 ts << QString("IDI_ICON%1\tICON\tDISCARDABLE\t%2").arg(i + 1).arg(cQuoted(rcIcons[i])) << endl;
             ts << endl;
+        }
+        if (!manifestFile.isEmpty()) {
+            QString manifestResourceId;
+            if (project->first("TEMPLATE") == "lib")
+                manifestResourceId = QStringLiteral("ISOLATIONAWARE_MANIFEST_RESOURCE_ID");
+            else
+                manifestResourceId = QStringLiteral("CREATEPROCESS_MANIFEST_RESOURCE_ID");
+            ts << manifestResourceId << " RT_MANIFEST \"" << manifestFile << "\"\n";
         }
         ts << "VS_VERSION_INFO VERSIONINFO\n";
         ts << "\tFILEVERSION " << QString(versionString).replace(".", ",") << endl;
@@ -892,6 +901,11 @@ QString Win32MakefileGenerator::cQuoted(const QString &str)
     ret.prepend(QLatin1Char('"'));
     ret.append(QLatin1Char('"'));
     return ret;
+}
+
+QString Win32MakefileGenerator::getManifestFileForRcFile() const
+{
+    return QString();
 }
 
 QT_END_NAMESPACE

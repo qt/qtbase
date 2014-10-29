@@ -46,6 +46,7 @@ public:
 protected:
     QString escapeDependencyPath(const QString &path) const;
     QString getLibTarget();
+    virtual QString getManifestFileForRcFile() const;
     bool writeMakefile(QTextStream &);
     void init();
 private:
