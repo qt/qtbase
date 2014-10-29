@@ -290,24 +290,18 @@ public:
     QStringList serverConnectionNames;
 
     ConnectionMode mode;
-
-    // members accessed in unlocked mode (except for deletion)
-    // connection and server provide their own locking mechanisms
-    // busService doesn't have state to be changed
-    DBusConnection *connection;
-    DBusServer *server;
     QDBusConnectionInterface *busService;
 
-    // watchers and timeouts are accessed from any thread
-    // but the corresponding timer and QSocketNotifier must be handled
-    // only in the object's thread
-    QMutex watchAndTimeoutLock;
+    // the dispatch lock protects everything related to the DBusConnection or DBusServer
+    // including the timeouts and watches
+    QMutex dispatchLock;
+    DBusConnection *connection;
+    DBusServer *server;
     WatcherHash watchers;
     TimeoutHash timeouts;
     PendingTimeoutList timeoutsPendingAdd;
 
-    // members accessed through a lock
-    QMutex dispatchLock;
+    // the master lock protects our own internal state
     QReadWriteLock lock;
     QDBusError lastError;
 

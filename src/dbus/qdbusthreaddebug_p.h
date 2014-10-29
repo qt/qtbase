@@ -207,13 +207,6 @@ struct QDBusDispatchLocker: QDBusMutexLocker
     { }
 };
 
-struct QDBusWatchAndTimeoutLocker: QDBusMutexLocker
-{
-    inline QDBusWatchAndTimeoutLocker(ThreadAction a, QDBusConnectionPrivate *s)
-        : QDBusMutexLocker(a, s, &s->watchAndTimeoutLock)
-    { }
-};
-
 #if QDBUS_THREAD_DEBUG
 # define SEM_ACQUIRE(action, sem)                                       \
     do {                                                                \
