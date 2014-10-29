@@ -25,6 +25,10 @@ QtCore
  - Added QEnableSharedFromThis, a class that allows obtaining a
    QSharedPointer for an object already managed by a shared pointer.
 
+QtGui
+-----
+
+ - QImageReader now automatically rotates JPEG images according to Exif orientation
 
 QtSql
 -----
