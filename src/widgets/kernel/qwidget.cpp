@@ -1405,6 +1405,8 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
 
     if (q->testAttribute(Qt::WA_ShowWithoutActivating))
         win->setProperty("_q_showWithoutActivating", QVariant(true));
+    if (q->testAttribute(Qt::WA_MacAlwaysShowToolWindow))
+        win->setProperty("_q_macAlwaysShowToolWindow", QVariant::fromValue(QVariant(true)));
     win->setFlags(data.window_flags);
     fixPosIncludesFrame();
     if (q->testAttribute(Qt::WA_Moved)

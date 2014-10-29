@@ -1400,7 +1400,11 @@ QCocoaNSWindow * QCocoaWindow::createNSWindow()
         if ((type & Qt::Popup) == Qt::Popup)
             [window setHasShadow:YES];
 
-        [window setHidesOnDeactivate:(type & Qt::Tool) == Qt::Tool];
+        // Qt::Tool windows hide on app deactivation, unless Qt::WA_MacAlwaysShowToolWindow is set.
+        QVariant showWithoutActivating = QPlatformWindow::window()->property("_q_macAlwaysShowToolWindow");
+        bool shouldHideOnDeactivate = ((type & Qt::Tool) == Qt::Tool) &&
+                                      !(showWithoutActivating.isValid() && showWithoutActivating.toBool());
+        [window setHidesOnDeactivate: shouldHideOnDeactivate];
 
         // Make popup windows show on the same desktop as the parent full-screen window.
         [window setCollectionBehavior:NSWindowCollectionBehaviorFullScreenAuxiliary];
