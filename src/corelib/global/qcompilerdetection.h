@@ -581,7 +581,7 @@
 #      define Q_COMPILER_ALIGNAS
 #      define Q_COMPILER_ALIGNOF
 #    endif
-#    if 0 /* not implemented in clang yet */
+#    if __has_feature(cxx_atomic) && __has_include(<atomic>)
 #     define Q_COMPILER_ATOMICS
 #    endif
 #    if __has_feature(cxx_attributes)
@@ -880,6 +880,8 @@
 #  undef Q_COMPILER_INITIALIZER_LISTS
 #  undef Q_COMPILER_RVALUE_REFS
 #  undef Q_COMPILER_REF_QUALIFIERS
+// Also disable <atomic>, since it's clearly not there
+#  undef Q_COMPILER_ATOMICS
 # endif
 # if defined(_LIBCPP_VERSION)
 // libc++ uses __has_feature(cxx_atomic), so disable the feature if the compiler
