@@ -1,4 +1,7 @@
-equals(MAKEFILE_GENERATOR, UNIX) {
+QMAKE_MAKE = $$(MAKE)
+!isEmpty(QMAKE_MAKE) {
+    # We were called recursively. Use the right make, as MAKEFLAGS may be set as well.
+} else:equals(MAKEFILE_GENERATOR, UNIX) {
     QMAKE_MAKE = make
 } else:equals(MAKEFILE_GENERATOR, MINGW) {
     !equals(QMAKE_HOST.os, Windows): \

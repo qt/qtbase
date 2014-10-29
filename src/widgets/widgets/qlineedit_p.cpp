@@ -47,8 +47,8 @@
 #ifndef QT_NO_IM
 #include "qinputmethod.h"
 #include "qlist.h"
-#include <qpropertyanimation.h>
 #endif
+#include <qpropertyanimation.h>
 
 QT_BEGIN_NAMESPACE
 
