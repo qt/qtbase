@@ -191,6 +191,16 @@ public class QtNative
         }
     }
 
+    private static void runQtOnUiThread(final long id)
+    {
+        runAction(new Runnable() {
+            @Override
+            public void run() {
+                QtNative.onAndroidUiThread(id);
+            }
+        });
+    }
+
     public static boolean startApplication(String params,
                                            String environment,
                                            String mainLibrary,
@@ -618,4 +628,6 @@ public class QtNative
 
     // activity methods
     public static native void onActivityResult(int requestCode, int resultCode, Intent data);
+
+    public static native void onAndroidUiThread(long id);
 }
