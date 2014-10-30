@@ -373,6 +373,7 @@ QJsonValue &QJsonValue::operator =(const QJsonValue &other)
         \li
             \list
                 \li QMetaType::QVariantMap
+                \li QMetaType::QVariantHash
             \endlist
         \li QJsonValue::Object
     \endtable
@@ -402,6 +403,8 @@ QJsonValue QJsonValue::fromVariant(const QVariant &variant)
         return QJsonValue(QJsonArray::fromVariantList(variant.toList()));
     case QVariant::Map:
         return QJsonValue(QJsonObject::fromVariantMap(variant.toMap()));
+    case QVariant::Hash:
+        return QJsonValue(QJsonObject::fromVariantHash(variant.toHash()));
     default:
         break;
     }

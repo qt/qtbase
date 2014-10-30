@@ -192,7 +192,7 @@ QJsonObject &QJsonObject::operator =(const QJsonObject &other)
     The keys in \a map will be used as the keys in the JSON object,
     and the QVariant values will be converted to JSON values.
 
-    \sa toVariantMap(), QJsonValue::fromVariant()
+    \sa fromVariantHash(), toVariantMap(), QJsonValue::fromVariant()
  */
 QJsonObject QJsonObject::fromVariantMap(const QVariantMap &map)
 {
@@ -208,6 +208,8 @@ QJsonObject QJsonObject::fromVariantMap(const QVariantMap &map)
     Converts this object to a QVariantMap.
 
     Returns the created map.
+
+    \sa toVariantHash()
  */
 QVariantMap QJsonObject::toVariantMap() const
 {
@@ -219,6 +221,45 @@ QVariantMap QJsonObject::toVariantMap() const
         }
     }
     return map;
+}
+
+/*!
+    Converts the variant hash \a hash to a QJsonObject.
+    \since 5.5
+
+    The keys in \a hash will be used as the keys in the JSON object,
+    and the QVariant values will be converted to JSON values.
+
+    \sa fromVariantMap(), toVariantHash(), QJsonValue::fromVariant()
+ */
+QJsonObject QJsonObject::fromVariantHash(const QVariantHash &hash)
+{
+    // ### this is implemented the trivial way, not the most efficient way
+
+    QJsonObject object;
+    for (QVariantHash::const_iterator it = hash.constBegin(); it != hash.constEnd(); ++it)
+        object.insert(it.key(), QJsonValue::fromVariant(it.value()));
+    return object;
+}
+
+/*!
+    Converts this object to a QVariantHash.
+    \since 5.5
+
+    Returns the created hash.
+
+    \sa toVariantMap()
+ */
+QVariantHash QJsonObject::toVariantHash() const
+{
+    QVariantHash hash;
+    if (o) {
+        for (uint i = 0; i < o->length; ++i) {
+            QJsonPrivate::Entry *e = o->entryAt(i);
+            hash.insert(e->key(), QJsonValue(d, o, e->value).toVariant());
+        }
+    }
+    return hash;
 }
 
 /*!

@@ -46,6 +46,8 @@ QT_BEGIN_NAMESPACE
 class QDebug;
 template <class Key, class T> class QMap;
 typedef QMap<QString, QVariant> QVariantMap;
+template <class Key, class T> class QHash;
+typedef QHash<QString, QVariant> QVariantHash;
 
 class Q_CORE_EXPORT QJsonObject
 {
@@ -68,6 +70,8 @@ public:
 
     static QJsonObject fromVariantMap(const QVariantMap &map);
     QVariantMap toVariantMap() const;
+    static QJsonObject fromVariantHash(const QVariantHash &map);
+    QVariantHash toVariantHash() const;
 
     QStringList keys() const;
     int size() const;

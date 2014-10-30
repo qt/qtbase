@@ -90,7 +90,9 @@ private Q_SLOTS:
 
     void fromVariant();
     void fromVariantMap();
+    void fromVariantHash();
     void toVariantMap();
+    void toVariantHash();
     void toVariantList();
 
     void toJson();
@@ -1165,6 +1167,17 @@ void tst_QtJson::fromVariantMap()
     QCOMPARE(array.at(3).toString(), QLatin1String("foo"));
 }
 
+void tst_QtJson::fromVariantHash()
+{
+    QVariantHash map;
+    map.insert(QLatin1String("key1"), QLatin1String("value1"));
+    map.insert(QLatin1String("key2"), QLatin1String("value2"));
+    QJsonObject object = QJsonObject::fromVariantHash(map);
+    QCOMPARE(object.size(), 2);
+    QCOMPARE(object.value(QLatin1String("key1")), QJsonValue(QLatin1String("value1")));
+    QCOMPARE(object.value(QLatin1String("key2")), QJsonValue(QLatin1String("value2")));
+}
+
 void tst_QtJson::toVariantMap()
 {
     QCOMPARE(QMetaType::Type(QJsonValue(QJsonObject()).toVariant().type()), QMetaType::QVariantMap); // QTBUG-32524
@@ -1189,6 +1202,35 @@ void tst_QtJson::toVariantMap()
     QCOMPARE(map.value("null"), QVariant());
     QCOMPARE(map.value("Array").type(), QVariant::List);
     QVariantList list = map.value("Array").toList();
+    QCOMPARE(list.size(), 4);
+    QCOMPARE(list.at(0), QVariant(true));
+    QCOMPARE(list.at(1), QVariant(999.));
+    QCOMPARE(list.at(2), QVariant(QLatin1String("string")));
+    QCOMPARE(list.at(3), QVariant());
+}
+
+void tst_QtJson::toVariantHash()
+{
+    QJsonObject object;
+    QVariantHash hash = object.toVariantHash();
+    QVERIFY(hash.isEmpty());
+
+    object.insert("Key", QString("Value"));
+    object.insert("null", QJsonValue());
+    QJsonArray array;
+    array.append(true);
+    array.append(999.);
+    array.append(QLatin1String("string"));
+    array.append(QJsonValue());
+    object.insert("Array", array);
+
+    hash = object.toVariantHash();
+
+    QCOMPARE(hash.size(), 3);
+    QCOMPARE(hash.value("Key"), QVariant(QString("Value")));
+    QCOMPARE(hash.value("null"), QVariant());
+    QCOMPARE(hash.value("Array").type(), QVariant::List);
+    QVariantList list = hash.value("Array").toList();
     QCOMPARE(list.size(), 4);
     QCOMPARE(list.at(0), QVariant(true));
     QCOMPARE(list.at(1), QVariant(999.));
