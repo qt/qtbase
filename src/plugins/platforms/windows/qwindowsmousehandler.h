@@ -51,6 +51,8 @@ class QWindowsMouseHandler
 public:
     QWindowsMouseHandler();
 
+    QTouchDevice *touchDevice() const { return m_touchDevice; }
+
     bool translateMouseEvent(QWindow *widget, HWND hwnd,
                              QtWindows::WindowsEventType t, MSG msg,
                              LRESULT *result);
