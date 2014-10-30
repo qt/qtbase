@@ -716,8 +716,6 @@ void QWin32PrintEnginePrivate::fillPath_dev(const QPainterPath &path, const QCol
 
 void QWin32PrintEnginePrivate::strokePath_dev(const QPainterPath &path, const QColor &color, qreal penWidth)
 {
-    Q_Q(QWin32PrintEngine);
-
     composeGdiPath(path);
     LOGBRUSH brush;
     brush.lbStyle = BS_SOLID;
