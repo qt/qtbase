@@ -236,8 +236,10 @@ void QPepperIntegration::getWindowAt(const QPoint & point, QWindow **window)
 {
     if (m_compositor)
         *window = m_compositor->windowAt(point);
-    else
+    else if (m_topLevelWindow)
         *window = m_topLevelWindow->window();
+    else
+        *window = 0;
 }
 
 void QPepperIntegration::getKeyWindow(QWindow **window)
