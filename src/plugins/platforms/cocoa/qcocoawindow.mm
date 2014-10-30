@@ -1754,6 +1754,11 @@ void QCocoaWindow::updateExposedGeometry()
     if (!m_geometryUpdateExposeAllowed)
         return;
 
+    // Do not send incorrect exposes in case the window is not even visible yet.
+    // We might get here as a result of a resize() from QWidget's show(), for instance.
+    if (!window()->isVisible())
+        return;
+
     if (!isWindowExposable())
         return;
 
