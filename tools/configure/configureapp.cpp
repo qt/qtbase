@@ -3302,13 +3302,9 @@ void Configure::generateQDevicePri()
             deviceStream << entry << "\n";
     }
     if (dictionary.contains("ANDROID_SDK_ROOT") && dictionary.contains("ANDROID_NDK_ROOT")) {
-        QString android_platform(dictionary.contains("ANDROID_PLATFORM")
-                  ? dictionary["ANDROID_PLATFORM"]
-                  : QString("android-9"));
         deviceStream << "android_install {" << endl;
         deviceStream << "    DEFAULT_ANDROID_SDK_ROOT = " << formatPath(dictionary["ANDROID_SDK_ROOT"]) << endl;
         deviceStream << "    DEFAULT_ANDROID_NDK_ROOT = " << formatPath(dictionary["ANDROID_NDK_ROOT"]) << endl;
-        deviceStream << "    DEFAULT_ANDROID_PLATFORM = " << android_platform << endl;
         if (QSysInfo::WordSize == 64)
             deviceStream << "    DEFAULT_ANDROID_NDK_HOST = windows-x86_64" << endl;
         else
@@ -3319,6 +3315,15 @@ void Configure::generateQDevicePri()
         QString android_tc_vers(dictionary.contains("ANDROID_NDK_TOOLCHAIN_VERSION")
                   ? dictionary["ANDROID_NDK_TOOLCHAIN_VERSION"]
                   : QString("4.9"));
+
+        bool targetIs64Bit = android_arch == QString("arm64-v8a")
+                             || android_arch == QString("x86_64")
+                             || android_arch == QString("mips64");
+        QString android_platform(dictionary.contains("ANDROID_PLATFORM")
+                                 ? dictionary["ANDROID_PLATFORM"]
+                                 : (targetIs64Bit ? QString("android-21") : QString("android-9")));
+
+        deviceStream << "    DEFAULT_ANDROID_PLATFORM = " << android_platform << endl;
         deviceStream << "    DEFAULT_ANDROID_TARGET_ARCH = " << android_arch << endl;
         deviceStream << "    DEFAULT_ANDROID_NDK_TOOLCHAIN_VERSION = " << android_tc_vers << endl;
         deviceStream << "}" << endl;
