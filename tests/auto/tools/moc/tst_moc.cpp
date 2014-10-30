@@ -572,6 +572,7 @@ private slots:
     void relatedMetaObjectsInGadget();
     void relatedMetaObjectsNameConflict_data();
     void relatedMetaObjectsNameConflict();
+    void strignLiteralsInMacroExtension();
 
 signals:
     void sigWithUnsignedArg(unsigned foo);
@@ -3267,6 +3268,45 @@ void tst_Moc::relatedMetaObjectsNameConflict()
 
     // check if no additional metaobjects ara specified
     QCOMPARE(dependency.size(), relatedMetaObjects.size());
+}
+
+class StringLiteralsInMacroExtension: public QObject
+{
+    Q_OBJECT
+#define Macro(F) F " " F
+    Q_CLASSINFO(Macro("String"), Macro("Literal"))
+#undef Macro
+
+#define Macro(F) F
+    Q_CLASSINFO("String" Macro("!"), "Literal" Macro("!"))
+    Q_CLASSINFO(Macro("!") "String", Macro("!") "Literal")
+#undef Macro
+
+#define Macro "foo"
+    Q_CLASSINFO("String" Macro, "Literal" Macro)
+    Q_CLASSINFO(Macro "String", Macro "Literal")
+#undef Macro
+};
+
+void tst_Moc::strignLiteralsInMacroExtension()
+{
+    const QMetaObject *mobj = &StringLiteralsInMacroExtension::staticMetaObject;
+    QCOMPARE(mobj->classInfoCount(), 5);
+
+    QCOMPARE(mobj->classInfo(0).name(), "String String");
+    QCOMPARE(mobj->classInfo(0).value(), "Literal Literal");
+
+    QCOMPARE(mobj->classInfo(1).name(), "String!");
+    QCOMPARE(mobj->classInfo(1).value(), "Literal!");
+
+    QCOMPARE(mobj->classInfo(2).name(), "!String");
+    QCOMPARE(mobj->classInfo(2).value(), "!Literal");
+
+    QCOMPARE(mobj->classInfo(3).name(), "Stringfoo");
+    QCOMPARE(mobj->classInfo(3).value(), "Literalfoo");
+
+    QCOMPARE(mobj->classInfo(4).name(), "fooString");
+    QCOMPARE(mobj->classInfo(4).value(), "fooLiteral");
 }
 
 QTEST_MAIN(tst_Moc)

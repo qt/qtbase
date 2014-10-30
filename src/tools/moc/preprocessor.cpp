@@ -972,6 +972,36 @@ static QByteArray readOrMapFile(QFile *file)
     return rawInput ? QByteArray::fromRawData(rawInput, size) : file->readAll();
 }
 
+static void mergeStringLiterals(Symbols *_symbols)
+{
+    Symbols &symbols = *_symbols;
+    for (Symbols::iterator i = symbols.begin(); i != symbols.end(); ++i) {
+        if (i->token == STRING_LITERAL) {
+            Symbols::Iterator mergeSymbol = i;
+            int literalsLength = mergeSymbol->len;
+            while (++i != symbols.end() && i->token == STRING_LITERAL)
+                literalsLength += i->len - 2; // no quotes
+
+            if (literalsLength != mergeSymbol->len) {
+                QByteArray mergeSymbolOriginalLexem = mergeSymbol->unquotedLexem();
+                QByteArray &mergeSymbolLexem = mergeSymbol->lex;
+                mergeSymbolLexem.resize(0);
+                mergeSymbolLexem.reserve(literalsLength);
+                mergeSymbolLexem.append('"');
+                mergeSymbolLexem.append(mergeSymbolOriginalLexem);
+                for (Symbols::const_iterator j = mergeSymbol + 1; j != i; ++j)
+                    mergeSymbolLexem.append(j->lex.constData() + j->from + 1, j->len - 2); // append j->unquotedLexem()
+                mergeSymbolLexem.append('"');
+                mergeSymbol->len = mergeSymbol->lex.length();
+                mergeSymbol->from = 0;
+                i = symbols.erase(mergeSymbol + 1, i);
+            }
+            if (i == symbols.end())
+                break;
+        }
+    }
+}
+
 void Preprocessor::preprocess(const QByteArray &filename, Symbols &preprocessed)
 {
     currentFilenames.push(filename);
@@ -1190,6 +1220,7 @@ Symbols Preprocessor::preprocessed(const QByteArray &filename, QFile *file)
     // phase 3: preprocess conditions and substitute macros
     Symbols result;
     preprocess(filename, result);
+    mergeStringLiterals(&result);
 
 #if 0
     for (int j = 0; j < result.size(); ++j)
