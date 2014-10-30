@@ -2540,7 +2540,7 @@ QRect QWindowsXPStylePrivate::scrollBarGripperBounds(QStyle::State flags, const 
 
     const int hSpace = theme->rect.width() - size.width();
     const int vSpace = theme->rect.height() - size.height();
-    const bool sufficientSpace = horizontal && hSpace > (contentsMargin.left() + contentsMargin.right())
+    const bool sufficientSpace = (horizontal && hSpace > (contentsMargin.left() + contentsMargin.right()))
         || vSpace > contentsMargin.top() + contentsMargin.bottom();
     return sufficientSpace ? QRect(theme->rect.topLeft() + QPoint(hSpace, vSpace) / 2, size) : QRect();
 }
