@@ -44,10 +44,6 @@
 
 QT_BEGIN_NAMESPACE
 
-QPanGestureRecognizer::QPanGestureRecognizer()
-{
-}
-
 QGesture *QPanGestureRecognizer::create(QObject *target)
 {
     if (target && target->isWidgetType()) {
@@ -60,6 +56,15 @@ QGesture *QPanGestureRecognizer::create(QObject *target)
 #endif
     }
     return new QPanGesture;
+}
+
+static QPointF panOffset(const QList<QTouchEvent::TouchPoint> &touchPoints, int maxCount)
+{
+    QPointF result;
+    const int count = qMin(touchPoints.size(), maxCount);
+    for (int p = 0; p < count; ++p)
+        result += touchPoints.at(p).pos() - touchPoints.at(p).startPos();
+    return result / qreal(count);
 }
 
 QGestureRecognizer::Result QPanGestureRecognizer::recognize(QGesture *state,
@@ -76,18 +81,15 @@ QGestureRecognizer::Result QPanGestureRecognizer::recognize(QGesture *state,
         result = QGestureRecognizer::MayBeGesture;
         QTouchEvent::TouchPoint p = ev->touchPoints().at(0);
         d->lastOffset = d->offset = QPointF();
+        d->pointCount = m_pointCount;
         break;
     }
     case QEvent::TouchEnd: {
         if (q->state() != Qt::NoGesture) {
             const QTouchEvent *ev = static_cast<const QTouchEvent *>(event);
-            if (ev->touchPoints().size() == 2) {
-                QTouchEvent::TouchPoint p1 = ev->touchPoints().at(0);
-                QTouchEvent::TouchPoint p2 = ev->touchPoints().at(1);
+            if (ev->touchPoints().size() == d->pointCount) {
                 d->lastOffset = d->offset;
-                d->offset =
-                        QPointF(p1.pos().x() - p1.startPos().x() + p2.pos().x() - p2.startPos().x(),
-                              p1.pos().y() - p1.startPos().y() + p2.pos().y() - p2.startPos().y()) / 2;
+                d->offset = panOffset(ev->touchPoints(), d->pointCount);
             }
             result = QGestureRecognizer::FinishGesture;
         } else {
@@ -97,16 +99,12 @@ QGestureRecognizer::Result QPanGestureRecognizer::recognize(QGesture *state,
     }
     case QEvent::TouchUpdate: {
         const QTouchEvent *ev = static_cast<const QTouchEvent *>(event);
-        if (ev->touchPoints().size() >= 2) {
-            QTouchEvent::TouchPoint p1 = ev->touchPoints().at(0);
-            QTouchEvent::TouchPoint p2 = ev->touchPoints().at(1);
+        if (ev->touchPoints().size() >= d->pointCount) {
             d->lastOffset = d->offset;
-            d->offset =
-                    QPointF(p1.pos().x() - p1.startPos().x() + p2.pos().x() - p2.startPos().x(),
-                          p1.pos().y() - p1.startPos().y() + p2.pos().y() - p2.startPos().y()) / 2;
+            d->offset = panOffset(ev->touchPoints(), d->pointCount);
             if (d->offset.x() > 10  || d->offset.y() > 10 ||
                 d->offset.x() < -10 || d->offset.y() < -10) {
-                q->setHotSpot(p1.startScreenPos());
+                q->setHotSpot(ev->touchPoints().first().startScreenPos());
                 result = QGestureRecognizer::TriggerGesture;
             } else {
                 result = QGestureRecognizer::MayBeGesture;

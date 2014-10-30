@@ -63,6 +63,24 @@
 
 QT_BEGIN_NAMESPACE
 
+static inline int panTouchPoints()
+{
+    // Override by environment variable for testing.
+    static const char panTouchPointVariable[] = "QT_PAN_TOUCHPOINTS";
+    if (qEnvironmentVariableIsSet(panTouchPointVariable)) {
+        bool ok;
+        const int result = qgetenv(panTouchPointVariable).toInt(&ok);
+        if (ok && result >= 1)
+            return result;
+        qWarning() << "Ignoring invalid value of " << panTouchPointVariable;
+    }
+    // Pan should use 1 finger on a touch screen and 2 fingers on touch pads etc.
+    // where 1 finger movements are used for mouse event synthetization. For now,
+    // default to 2 until all classes inheriting QScrollArea are fixed to handle it
+    // correctly.
+    return 2;
+}
+
 QGestureManager::QGestureManager(QObject *parent)
     : QObject(parent), state(NotGesture), m_lastCustomGestureId(Qt::CustomGesture)
 {
@@ -73,7 +91,7 @@ QGestureManager::QGestureManager(QObject *parent)
     registerGestureRecognizer(new QMacPinchGestureRecognizer);
     registerGestureRecognizer(new QMacPanGestureRecognizer);
 #else
-    registerGestureRecognizer(new QPanGestureRecognizer);
+    registerGestureRecognizer(new QPanGestureRecognizer(panTouchPoints()));
     registerGestureRecognizer(new QPinchGestureRecognizer);
     registerGestureRecognizer(new QSwipeGestureRecognizer);
     registerGestureRecognizer(new QTapGestureRecognizer);
