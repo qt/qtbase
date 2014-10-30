@@ -784,7 +784,7 @@ CFG_DEFAULT_ANDROID_NDK_ROOT=$ANDROID_NDK_ROOT
 CFG_DEFAULT_ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT
 CFG_DEFAULT_ANDROID_PLATFORM=android-9
 CFG_DEFAULT_ANDROID_TARGET_ARCH=armeabi-v7a
-CFG_DEFAULT_ANDROID_NDK_TOOLCHAIN_VERSION=4.8
+CFG_DEFAULT_ANDROID_NDK_TOOLCHAIN_VERSION=4.9
 CFG_DEFAULT_ANDROID_NDK_HOST=$ANDROID_NDK_HOST
 
 #-------------------------------------------------------------------------------
@@ -2598,7 +2598,8 @@ Android options:
     -android-ndk-host .............. Sets the android NDK host (linux-x86, linux-x86_64, etc.)
                                      (default \$ANDROID_NDK_HOST)
 
-    -android-arch .................. Sets the android architecture (armeabi, armeabi-v7a, x86, mips)
+    -android-arch .................. Sets the android architecture (armeabi, armeabi-v7a, x86, mips,
+                                     arm64-v8a, x86_64, mips64)
                                      (default $CFG_DEFAULT_ANDROID_TARGET_ARCH)
 
     -android-toolchain-version ..... Sets the android toolchain version
@@ -3202,27 +3203,46 @@ QMAKE_CONF_COMPILER=`getXQMakeConf QMAKE_CXX`
 TEST_COMPILER=$QMAKE_CONF_COMPILER
 
 if [ "$XPLATFORM_ANDROID" = "yes" ] ; then
+    ANDROID_NDK_TOOLCHAIN_PREFIX=
     ANDROID_NDK_TOOLS_PREFIX=
     ANDROID_PLATFORM_ARCH=
     case $CFG_DEFAULT_ANDROID_TARGET_ARCH in
         armeabi*)
             ANDROID_NDK_TOOLS_PREFIX=arm-linux-androideabi
+            ANDROID_NDK_TOOLCHAIN_PREFIX=arm-linux-androideabi
             ANDROID_PLATFORM_ARCH=arch-arm
             ;;
         x86)
-            ANDROID_NDK_TOOLS_PREFIX=x86
+            ANDROID_NDK_TOOLS_PREFIX=i686-linux-android
+            ANDROID_NDK_TOOLCHAIN_PREFIX=x86
             ANDROID_PLATFORM_ARCH=arch-x86
             ;;
         mips)
             ANDROID_NDK_TOOLS_PREFIX=mipsel-linux-android
+            ANDROID_NDK_TOOLCHAIN_PREFIX=mipsel-linux-android
             ANDROID_PLATFORM_ARCH=arch-mips
+            ;;
+        arm64-v8a)
+            ANDROID_NDK_TOOLS_PREFIX=aarch64-linux-android
+            ANDROID_NDK_TOOLCHAIN_PREFIX=aarch64-linux-android
+            ANDROID_PLATFORM_ARCH=arch-arm64
+            ;;
+        mips64)
+            ANDROID_NDK_TOOLS_PREFIX=mips64el-linux-android
+            ANDROID_NDK_TOOLCHAIN_PREFIX=mips64el-linux-android
+            ANDROID_PLATFORM_ARCH=arch-mips64
+            ;;
+        x86_64)
+            ANDROID_NDK_TOOLS_PREFIX=x86_64-linux-android
+            ANDROID_NDK_TOOLCHAIN_PREFIX=x86_64
+            ANDROID_PLATFORM_ARCH=arch-x86_64
             ;;
         *)
             echo "ERROR: Unknown android arch $CFG_DEFAULT_ANDROID_TARGET_ARCH"
             exit 1
             ;;
     esac
-    QMAKE_CONF_COMPILER=$CFG_DEFAULT_ANDROID_NDK_ROOT/toolchains/$ANDROID_NDK_TOOLS_PREFIX-$CFG_DEFAULT_ANDROID_NDK_TOOLCHAIN_VERSION/prebuilt/$CFG_DEFAULT_ANDROID_NDK_HOST/bin/$ANDROID_NDK_TOOLS_PREFIX-g++
+    QMAKE_CONF_COMPILER=$CFG_DEFAULT_ANDROID_NDK_ROOT/toolchains/$ANDROID_NDK_TOOLCHAIN_PREFIX-$CFG_DEFAULT_ANDROID_NDK_TOOLCHAIN_VERSION/prebuilt/$CFG_DEFAULT_ANDROID_NDK_HOST/bin/$ANDROID_NDK_TOOLS_PREFIX-g++
     TEST_COMPILER="$QMAKE_CONF_COMPILER --sysroot=$CFG_DEFAULT_ANDROID_NDK_ROOT/platforms/$CFG_DEFAULT_ANDROID_PLATFORM/$ANDROID_PLATFORM_ARCH/"
     if [ "$CFG_ANDROID_STYLE_ASSETS" = "yes" ]; then
         QMAKE_CONFIG="$QMAKE_CONFIG android-style-assets"
