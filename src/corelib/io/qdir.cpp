@@ -2271,6 +2271,8 @@ QStringList QDir::nameFiltersFromString(const QString &nameFilter)
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug debug, QDir::Filters filters)
 {
+    QDebugStateSaver save(debug);
+    debug.resetFormat();
     QStringList flags;
     if (filters == QDir::NoFilter) {
         flags << QLatin1String("NoFilter");
@@ -2291,12 +2293,14 @@ QDebug operator<<(QDebug debug, QDir::Filters filters)
         if (filters & QDir::System) flags << QLatin1String("System");
         if (filters & QDir::CaseSensitive) flags << QLatin1String("CaseSensitive");
     }
-    debug << "QDir::Filters(" << qPrintable(flags.join(QLatin1Char('|'))) << ')';
+    debug.noquote() << "QDir::Filters(" << flags.join(QLatin1Char('|')) << ')';
     return debug;
 }
 
 static QDebug operator<<(QDebug debug, QDir::SortFlags sorting)
 {
+    QDebugStateSaver save(debug);
+    debug.resetFormat();
     if (sorting == QDir::NoSort) {
         debug << "QDir::SortFlags(NoSort)";
     } else {
@@ -2312,24 +2316,23 @@ static QDebug operator<<(QDebug debug, QDir::SortFlags sorting)
         if (sorting & QDir::IgnoreCase) flags << QLatin1String("IgnoreCase");
         if (sorting & QDir::LocaleAware) flags << QLatin1String("LocaleAware");
         if (sorting & QDir::Type) flags << QLatin1String("Type");
-        debug << "QDir::SortFlags(" << qPrintable(type)
-              << '|'
-              << qPrintable(flags.join(QLatin1Char('|'))) << ')';
+        debug.noquote() << "QDir::SortFlags(" << type << '|' << flags.join(QLatin1Char('|')) << ')';
     }
     return debug;
 }
 
 QDebug operator<<(QDebug debug, const QDir &dir)
 {
-    debug.maybeSpace() << "QDir(" << dir.path()
-                       << ", nameFilters = {"
-                       << qPrintable(dir.nameFilters().join(QLatin1Char(',')))
-                       << "}, "
-                       << dir.sorting()
-                       << ','
-                       << dir.filter()
-                       << ')';
-    return debug.space();
+    QDebugStateSaver save(debug);
+    debug.resetFormat();
+    debug << "QDir(" << dir.path() << ", nameFilters = {"
+          << dir.nameFilters().join(QLatin1Char(','))
+          << "}, "
+          << dir.sorting()
+          << ','
+          << dir.filter()
+          << ')';
+    return debug;
 }
 #endif // QT_NO_DEBUG_STREAM
 
