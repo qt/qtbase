@@ -81,6 +81,7 @@ private slots:
     void readLineMaxlen_data();
     void readLineMaxlen();
     void readLinesFromBufferCRCR();
+    void readLineOverload();
 
     // all
     void readAllFromDevice_data();
@@ -593,6 +594,63 @@ void tst_QTextStream::readLinesFromBufferCRCR()
     }
 }
 
+class ErrorDevice : public QIODevice
+{
+protected:
+    qint64 readData(char *data, qint64 maxlen) Q_DECL_OVERRIDE
+    {
+        Q_UNUSED(data)
+        Q_UNUSED(maxlen)
+        return -1;
+    }
+
+    qint64 writeData(const char *data, qint64 len) Q_DECL_OVERRIDE
+    {
+        Q_UNUSED(data)
+        Q_UNUSED(len)
+        return -1;
+    }
+};
+
+void tst_QTextStream::readLineOverload()
+{
+    QByteArray data = "1\n2\n3";
+
+    QTextStream ts(&data);
+    QString line;
+
+    ts.readLine(&line);
+    QCOMPARE(line, QStringLiteral("1"));
+
+    ts.readLine(Q_NULLPTR, 0); // read the second line, but don't store it
+
+    ts.readLine(&line);
+    QCOMPARE(line, QStringLiteral("3"));
+
+    QVERIFY(!ts.readLine(&line));
+    QVERIFY(line.isEmpty());
+
+    QFile file(m_rfc3261FilePath);
+    QVERIFY(file.open(QFile::ReadOnly));
+
+    ts.setDevice(&file);
+    line.reserve(1);
+    int maxLineCapacity = line.capacity();
+
+    while (ts.readLine(&line)) {
+        QVERIFY(line.capacity() >= maxLineCapacity);
+        maxLineCapacity = line.capacity();
+    }
+
+    line = "Test string";
+    ErrorDevice errorDevice;
+    QVERIFY(errorDevice.open(QIODevice::ReadOnly));
+    ts.setDevice(&errorDevice);
+
+    QVERIFY(!ts.readLine(&line));
+    QVERIFY(line.isEmpty());
+}
+
 // ------------------------------------------------------------------------------
 void tst_QTextStream::readLineFromString_data()
 {
@@ -912,13 +970,28 @@ void tst_QTextStream::lineCount()
 }
 
 // ------------------------------------------------------------------------------
+struct CompareIndicesForArray
+{
+    int *array;
+    CompareIndicesForArray(int *array) : array(array) {}
+    bool operator() (const int i1, const int i2)
+    {
+        return array[i1] < array[i2];
+    }
+};
+
 void tst_QTextStream::performance()
 {
     // Phase #1 - test speed of reading a huge text file with QFile.
     QTime stopWatch;
 
-    int elapsed1 = 0;
-    int elapsed2 = 0;
+    const int N = 3;
+    const char * readMethods[N] = {
+        "QFile::readLine()",
+        "QTextStream::readLine()",
+        "QTextStream::readLine(QString *)"
+    };
+    int elapsed[N] = {0, 0, 0};
 
         stopWatch.restart();
         int nlines1 = 0;
@@ -930,7 +1003,7 @@ void tst_QTextStream::performance()
             file.readLine();
         }
 
-        elapsed1 += stopWatch.elapsed();
+        elapsed[0] = stopWatch.elapsed();
         stopWatch.restart();
 
         int nlines2 = 0;
@@ -943,20 +1016,38 @@ void tst_QTextStream::performance()
             stream.readLine();
         }
 
-        elapsed2 += stopWatch.elapsed();
+        elapsed[1] = stopWatch.elapsed();
+        stopWatch.restart();
+
+        int nlines3 = 0;
+        QFile file3(m_rfc3261FilePath);
+        QVERIFY(file3.open(QFile::ReadOnly));
+
+        QTextStream stream2(&file3);
+        QString line;
+        while (stream2.readLine(&line))
+            ++nlines3;
+
+        elapsed[2] = stopWatch.elapsed();
+
         QCOMPARE(nlines1, nlines2);
+        QCOMPARE(nlines2, nlines3);
 
-    qDebug("QFile used %.2f seconds to read the file",
-           elapsed1 / 1000.0);
+    for (int i = 0; i < N; i++) {
+        qDebug("%s used %.3f seconds to read the file", readMethods[i],
+               elapsed[i] / 1000.0);
+    }
 
-    qDebug("QTextStream used %.2f seconds to read the file",
-           elapsed2 / 1000.0);
-    if (elapsed2 > elapsed1) {
-        qDebug("QFile is %.2fx faster than QTextStream",
-               double(elapsed2) / double(elapsed1));
-    } else {
-        qDebug("QTextStream is %.2fx faster than QFile",
-               double(elapsed1) / double(elapsed2));
+    int idx[N] = {0, 1, 2};
+    std::sort(idx, idx + N, CompareIndicesForArray(elapsed));
+
+    for (int i = 0; i < N-1; i++) {
+        int i1 = idx[i];
+        int i2 = idx[i+1];
+        qDebug("Reading by %s is %.2fx faster than by %s",
+               readMethods[i1],
+               double(elapsed[i2]) / double(elapsed[i1]),
+               readMethods[i2]);
     }
 }
 

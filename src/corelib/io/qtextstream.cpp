@@ -1581,17 +1581,60 @@ QString QTextStream::readAll()
 */
 QString QTextStream::readLine(qint64 maxlen)
 {
+    QString line;
+
+    readLine(&line, maxlen);
+    return line;
+}
+
+/*!
+    \since 5.5
+
+    Reads one line of text from the stream into \a line.
+    If \a line is 0, the read line is not stored.
+
+    The maximum allowed line length is set to \a maxlen. If
+    the stream contains lines longer than this, then the lines will be
+    split after \a maxlen characters and returned in parts.
+
+    If \a maxlen is 0, the lines can be of any length.
+
+    The resulting line has no trailing end-of-line characters ("\\n"
+    or "\\r\\n"), so calling QString::trimmed() can be unnecessary.
+
+    If \a line has sufficient capacity for the data that is about to be
+    read, this function may not need to allocate new memory. Because of
+    this, it can be faster than the other readLine() overload.
+
+    Returns \c false if the stream has read to the end of the file or
+    an error has occurred; otherwise returns \c true. The contents in
+    \a line before the call are discarded in any case.
+
+    \sa readAll(), QIODevice::readLine()
+*/
+bool QTextStream::readLine(QString *line, qint64 maxlen)
+{
     Q_D(QTextStream);
-    CHECK_VALID_STREAM(QString());
+    // keep in sync with CHECK_VALID_STREAM
+    if (!d->string && !d->device) {
+        qWarning("QTextStream: No device");
+        if (line && !line->isNull())
+            line->resize(0);
+        return false;
+    }
 
     const QChar *readPtr;
     int length;
-    if (!d->scan(&readPtr, &length, int(maxlen), QTextStreamPrivate::EndOfLine))
-        return QString();
+    if (!d->scan(&readPtr, &length, int(maxlen), QTextStreamPrivate::EndOfLine)) {
+        if (line && !line->isNull())
+            line->resize(0);
+        return false;
+    }
 
-    QString tmp = QString(readPtr, length);
+    if (Q_LIKELY(line))
+        line->setUnicode(readPtr, length);
     d->consumeLastToken();
-    return tmp;
+    return true;
 }
 
 /*!
