@@ -676,23 +676,7 @@ static NSString *_q_NSWindowDidChangeOcclusionStateNotification = nil;
             m_platformWindow->m_forwardWindow = 0;
     }
 
-    NSPoint globalPos = [NSEvent mouseLocation];
-
-    if ([self.window parentWindow]
-        && (theEvent.type == NSLeftMouseDragged || theEvent.type == NSLeftMouseUp)) {
-        // QToolBar can be implemented as a child window on top of its main window
-        // (with a borderless NSWindow). If an option "unified toolbar" set on the main window,
-        // it's possible to drag such a window using this toolbar.
-        // While handling mouse drag events, QToolBar moves the window (QWidget::move).
-        // In such a combination [NSEvent mouseLocation] is very different from the
-        // real event location and as a result a window will move chaotically.
-        NSPoint winPoint = [theEvent locationInWindow];
-        NSRect tmpRect = NSMakeRect(winPoint.x, winPoint.y, 1., 1.);
-        tmpRect = [[theEvent window] convertRectToScreen:tmpRect];
-        globalPos = tmpRect.origin;
-    }
-
-    [targetView convertFromScreen:globalPos toWindowPoint:&qtWindowPoint andScreenPoint:&qtScreenPoint];
+    [targetView convertFromScreen:[NSEvent mouseLocation] toWindowPoint:&qtWindowPoint andScreenPoint:&qtScreenPoint];
     ulong timestamp = [theEvent timestamp] * 1000;
 
     QCocoaDrag* nativeDrag = QCocoaIntegration::instance()->drag();
