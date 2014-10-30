@@ -471,6 +471,7 @@ public:
 
     QXcbEventReader *eventReader() const { return m_reader; }
 
+    bool canGrab() const { return m_canGrabServer; }
 protected:
     bool event(QEvent *e) Q_DECL_OVERRIDE;
 

@@ -1639,8 +1639,6 @@ QPlatformSurface *QWindow::surfaceHandle() const
 bool QWindow::setKeyboardGrabEnabled(bool grab)
 {
     Q_D(QWindow);
-    if (grab && QGuiApplicationPrivate::noGrab)
-        return false;
     if (d->platformWindow)
         return d->platformWindow->setKeyboardGrabEnabled(grab);
     return false;
@@ -1658,8 +1656,6 @@ bool QWindow::setKeyboardGrabEnabled(bool grab)
 bool QWindow::setMouseGrabEnabled(bool grab)
 {
     Q_D(QWindow);
-    if (grab && QGuiApplicationPrivate::noGrab)
-        return false;
     if (d->platformWindow)
         return d->platformWindow->setMouseGrabEnabled(grab);
     return false;

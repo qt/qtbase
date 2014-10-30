@@ -2170,6 +2170,9 @@ void QXcbWindow::updateSyncRequestCounter()
 
 bool QXcbWindow::setKeyboardGrabEnabled(bool grab)
 {
+    if (grab && !connection()->canGrab())
+        return false;
+
     if (!grab) {
         xcb_ungrab_keyboard(xcb_connection(), XCB_TIME_CURRENT_TIME);
         return true;
@@ -2185,6 +2188,9 @@ bool QXcbWindow::setKeyboardGrabEnabled(bool grab)
 
 bool QXcbWindow::setMouseGrabEnabled(bool grab)
 {
+    if (grab && !connection()->canGrab())
+        return false;
+
     if (!grab) {
         xcb_ungrab_pointer(xcb_connection(), XCB_TIME_CURRENT_TIME);
         return true;
