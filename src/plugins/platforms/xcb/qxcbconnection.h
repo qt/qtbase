@@ -324,6 +324,7 @@ private:
 class QXcbWindowEventListener
 {
 public:
+    virtual ~QXcbWindowEventListener() {}
     virtual bool handleGenericEvent(xcb_generic_event_t *, long *) { return false; }
 
     virtual void handleExposeEvent(const xcb_expose_event_t *) {}
