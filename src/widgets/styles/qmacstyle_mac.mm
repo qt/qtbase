@@ -1921,6 +1921,8 @@ void QMacStylePrivate::drawNSViewInRect(QCocoaWidget widget, NSView *view, const
         offset = QPoint(2, 1);
     else if (widget == QCocoaWidget(QCocoaPullDownButton, QAquaSizeMini))
         offset = QPoint(5, 0);
+    else if (widget == QCocoaWidget(QCocoaComboBox, QAquaSizeLarge))
+        offset = QPoint(3, 0);
 
     QMacCGContext ctx(p);
     CGContextSaveGState(ctx);
@@ -5733,14 +5735,20 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
         break;
     case CC_ComboBox:
         if (const QStyleOptionComboBox *combo = qstyleoption_cast<const QStyleOptionComboBox *>(opt)){
+            const bool usingYosemiteOrLater = QSysInfo::MacintoshVersion > QSysInfo::MV_10_9;
             HIThemeButtonDrawInfo bdi;
-            d->initComboboxBdi(combo, &bdi, widget, d->getDrawState(opt->state));
+            d->initComboboxBdi(combo, &bdi, widget, tds);
             HIRect rect = qt_hirectForQRect(combo->rect);
-            if (combo->editable && QSysInfo::MacintoshVersion > QSysInfo::MV_10_9)
+            if (combo->editable && usingYosemiteOrLater)
                 rect.origin.y += tds == kThemeStateInactive ? 1 : 2;
             if (tds != kThemeStateInactive)
                 QMacStylePrivate::drawCombobox(rect, bdi, p);
-            else
+            else if (!widget && combo->editable && usingYosemiteOrLater) {
+                QCocoaWidget cw = cocoaWidgetFromHIThemeButtonKind(bdi.kind);
+                NSView *cb = d->cocoaControl(cw);
+                QRect r = combo->rect.adjusted(3, 0, 0, 0);
+                d->drawNSViewInRect(cw, cb, r, p, widget != 0);
+            } else
                 d->drawColorlessButton(rect, &bdi, p, opt);
         }
         break;
@@ -6278,6 +6286,8 @@ QRect QMacStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex *op
             switch (sc) {
             case SC_ComboBoxEditField:{
                 ret = QMacStylePrivate::comboboxEditBounds(combo->rect, bdi);
+                if (QSysInfo::MacintoshVersion > QSysInfo::MV_10_9)
+                    ret.setHeight(ret.height() - 1);
                 break; }
             case SC_ComboBoxArrow:{
                 ret = QMacStylePrivate::comboboxEditBounds(combo->rect, bdi);
@@ -6715,10 +6725,13 @@ QSize QMacStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
         sz.rwidth() += 10;
         sz.rheight() += 10;
         return sz;
-    case CT_ComboBox:
+    case CT_ComboBox: {
         sz.rwidth() += 50;
-        sz.rheight() += 2;
+        const QStyleOptionComboBox *cb = qstyleoption_cast<const QStyleOptionComboBox *>(opt);
+        if (QSysInfo::MacintoshVersion < QSysInfo::MV_10_10 || (cb && !cb->editable))
+            sz.rheight() += 2;
         break;
+    }
     case CT_Menu: {
         QStyleHintReturnMask menuMask;
         QStyleOption myOption = *opt;
