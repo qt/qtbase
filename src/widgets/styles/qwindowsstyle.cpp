@@ -1821,6 +1821,20 @@ void QWindowsStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPai
         }
         return;
 #endif // QT_NO_DOCKWIDGET
+#ifndef QT_NO_COMBOBOX
+    case CE_ComboBoxLabel:
+        if (const QStyleOptionComboBox *cb = qstyleoption_cast<const QStyleOptionComboBox *>(opt)) {
+            if (cb->state & State_HasFocus) {
+                p->setPen(cb->palette.highlightedText().color());
+                p->setBackground(cb->palette.highlight());
+            } else {
+                p->setPen(cb->palette.text().color());
+                p->setBackground(cb->palette.background());
+            }
+        }
+        QCommonStyle::drawControl(ce, opt, p, widget);
+        break;
+#endif // QT_NO_COMBOBOX
     default:
         QCommonStyle::drawControl(ce, opt, p, widget);
     }
