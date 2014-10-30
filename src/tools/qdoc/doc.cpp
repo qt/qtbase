@@ -1690,12 +1690,15 @@ void DocParser::insertTarget(const QString &target, bool keyword)
     }
     else {
         targetMap_.insert(target, location());
-        append(Atom::Target, target);
         priv->constructExtra();
-        if (keyword)
+        if (keyword) {
+            append(Atom::Keyword, target);
             priv->extra->keywords_.append(priv->text.lastAtom());
-        else
+        }
+        else {
+            append(Atom::Target, target);
             priv->extra->targets_.append(priv->text.lastAtom());
+        }
     }
 }
 

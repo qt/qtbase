@@ -271,6 +271,20 @@ QString HtmlGenerator::format()
 }
 
 /*!
+  Generate targets for any \keyword commands that were seen
+  in the qdoc comment for the \a node.
+ */
+void HtmlGenerator::generateKeywordAnchors(const Node* node)
+{
+    if (!node->doc().isEmpty()) {
+        const QList<Atom*>& keywords = node->doc().keywords();
+        foreach (Atom* a, keywords) {
+            out() << "<a name=\"" << Doc::canonicalTitle(a->string()) << "\"></a>";
+        }
+    }
+}
+
+/*!
   Traverses the current tree generating all the HTML documentation.
  */
 void HtmlGenerator::generateDocs()
@@ -1229,6 +1243,8 @@ int HtmlGenerator::generateAtom(const Atom *atom, const Node *relative, CodeMark
         break;
     case Atom::TableOfContents:
         break;
+    case Atom::Keyword:
+        break;
     case Atom::Target:
         out() << "<a name=\"" << Doc::canonicalTitle(atom->string()) << "\"></a>";
         break;
@@ -1276,8 +1292,10 @@ void HtmlGenerator::generateClassLikeNode(InnerNode* inner, CodeMarker* marker)
         subtitleText << "(" << Atom(Atom::AutoLink, fullTitle) << ")" << Atom(Atom::LineBreak);
 
     generateHeader(title, inner, marker);
+
     sections = marker->sections(inner, CodeMarker::Summary, CodeMarker::Okay);
     generateTableOfContents(inner,marker,&sections);
+    generateKeywordAnchors(inner);
     generateTitle(title, subtitleText, SmallSubTitle, inner, marker);
     generateBrief(inner, marker);
     generateRequisites(inner, marker);
@@ -1450,6 +1468,7 @@ void HtmlGenerator::generateQmlTypePage(QmlClassNode* qcn, CodeMarker* marker)
     QList<Section> sections = marker->qmlSections(qcn, CodeMarker::Summary);
     generateTableOfContents(qcn, marker, &sections);
     marker = CodeMarker::markerForLanguage(QLatin1String("QML"));
+    generateKeywordAnchors(qcn);
     generateTitle(htmlTitle, Text() << qcn->subTitle(), subTitleSize, qcn, marker);
     generateBrief(qcn, marker);
     generateQmlRequisites(qcn, marker);
@@ -1521,6 +1540,7 @@ void HtmlGenerator::generateQmlBasicTypePage(QmlBasicTypeNode* qbtn, CodeMarker*
     generateHeader(htmlTitle, qbtn, marker);
     QList<Section> sections = marker->sections(qbtn, CodeMarker::Summary, CodeMarker::Okay);
     generateTableOfContents(qbtn,marker,&sections);
+    generateKeywordAnchors(qbtn);
     generateTitle(htmlTitle,
                   Text() << qbtn->subTitle(),
                   subTitleSize,
@@ -1567,6 +1587,7 @@ void HtmlGenerator::generateDocNode(DocNode* dn, CodeMarker* marker)
         (dn->name() != QString("qtexamplesandtutorials.html")))
         generateTableOfContents(dn,marker,0);
 
+    generateKeywordAnchors(dn);
     generateTitle(fullTitle,
                   Text() << dn->subTitle(),
                   subTitleSize,
@@ -1651,6 +1672,7 @@ void HtmlGenerator::generateCollectionNode(CollectionNode* cn, CodeMarker* marke
 
     generateHeader(fullTitle, cn, marker);
     generateTableOfContents(cn,marker,0);
+    generateKeywordAnchors(cn);
     generateTitle(fullTitle, Text() << cn->subTitle(), subTitleSize, cn, marker);
 
     if (cn->isModule()) {
@@ -3901,6 +3923,7 @@ void HtmlGenerator::generateDetailedMember(const Node *node,
     generateMacRef(node, marker);
 #endif
     generateExtractionMark(node, MemberMark);
+    generateKeywordAnchors(node);
     QString nodeRef = refForNode(node);
     if (node->type() == Node::Enum
             && (enume = static_cast<const EnumNode *>(node))->flagsType()) {
@@ -4137,6 +4160,7 @@ void HtmlGenerator::generateDetailedQmlMember(Node *node,
     generateMacRef(node, marker);
 #endif
     generateExtractionMark(node, MemberMark);
+    generateKeywordAnchors(node);
     out() << "<div class=\"qmlitem\">";
     QString nodeRef = refForNode(node);
     if (node->type() == Node::QmlPropertyGroup) {

@@ -105,6 +105,7 @@ protected:
 
     void generateManifestFile(QString manifest, QString element);
     void readManifestMetaContent(const Config &config);
+    void generateKeywordAnchors(const Node* node);
 
 private:
     enum SubTitleSize { SmallSubTitle, LargeSubTitle };

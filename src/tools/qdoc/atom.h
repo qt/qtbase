@@ -84,6 +84,7 @@ public:
         InlineImage,
         JavaScript,
         EndJavaScript,
+        Keyword,
         LegaleseLeft,
         LegaleseRight,
         LineBreak,

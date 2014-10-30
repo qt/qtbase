@@ -1135,7 +1135,7 @@ QString Tree::refForAtom(const Atom* atom)
     if (atom) {
         if (atom->type() == Atom::SectionLeft)
             return Doc::canonicalTitle(Text::sectionHeading(atom).toString());
-        if (atom->type() == Atom::Target)
+        if ((atom->type() == Atom::Target) || (atom->type() == Atom::Keyword))
             return Doc::canonicalTitle(atom->string());
     }
     return QString();
