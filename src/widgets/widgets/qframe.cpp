@@ -202,6 +202,49 @@ QFrame::QFrame(QFramePrivate &dd, QWidget* parent, Qt::WindowFlags f)
     d->init();
 }
 
+/*!
+    \since 5.5
+
+    Initializes \a option with the values from this QFrame. This method is
+    useful for subclasses when they need a QStyleOptionFrame but don't want to
+    fill in all the information themselves.
+
+    \sa QStyleOption::initFrom()
+*/
+void QFrame::initStyleOption(QStyleOptionFrame *option) const
+{
+    if (!option)
+        return;
+
+    Q_D(const QFrame);
+    option->initFrom(this);
+
+    int frameShape  = d->frameStyle & QFrame::Shape_Mask;
+    int frameShadow = d->frameStyle & QFrame::Shadow_Mask;
+    option->frameShape = Shape(int(option->frameShape) | frameShape);
+    option->rect = frameRect();
+    switch (frameShape) {
+        case QFrame::Box:
+        case QFrame::HLine:
+        case QFrame::VLine:
+        case QFrame::StyledPanel:
+        case QFrame::Panel:
+            option->lineWidth = d->lineWidth;
+            option->midLineWidth = d->midLineWidth;
+            break;
+        default:
+            // most frame styles do not handle customized line and midline widths
+            // (see updateFrameWidth()).
+            option->lineWidth = d->frameWidth;
+            break;
+    }
+
+    if (frameShadow == Sunken)
+        option->state |= QStyle::State_Sunken;
+    else if (frameShadow == Raised)
+        option->state |= QStyle::State_Raised;
+}
+
 
 /*!
   Destroys the frame.
@@ -362,10 +405,7 @@ void QFramePrivate::updateStyledFrameWidths()
 {
     Q_Q(const QFrame);
     QStyleOptionFrame opt;
-    opt.initFrom(q);
-    opt.lineWidth = lineWidth;
-    opt.midLineWidth = midLineWidth;
-    opt.frameShape = QFrame::Shape(frameStyle & QFrame::Shape_Mask);
+    q->initStyleOption(&opt);
 
     QRect cr = q->style()->subElementRect(QStyle::SE_ShapedFrameContents, &opt, q);
     leftFrameWidth = cr.left() - opt.rect.left();
@@ -472,34 +512,8 @@ void QFrame::paintEvent(QPaintEvent *)
  */
 void QFrame::drawFrame(QPainter *p)
 {
-    Q_D(QFrame);
     QStyleOptionFrame opt;
-    opt.init(this);
-    int frameShape  = d->frameStyle & QFrame::Shape_Mask;
-    int frameShadow = d->frameStyle & QFrame::Shadow_Mask;
-    opt.frameShape = Shape(int(opt.frameShape) | frameShape);
-    opt.rect = frameRect();
-    switch (frameShape) {
-        case QFrame::Box:
-        case QFrame::HLine:
-        case QFrame::VLine:
-        case QFrame::StyledPanel:
-        case QFrame::Panel:
-            opt.lineWidth = d->lineWidth;
-            opt.midLineWidth = d->midLineWidth;
-            break;
-        default:
-            // most frame styles do not handle customized line and midline widths
-            // (see updateFrameWidth()).
-            opt.lineWidth = d->frameWidth;
-            break;
-    }
-
-    if (frameShadow == Sunken)
-        opt.state |= QStyle::State_Sunken;
-    else if (frameShadow == Raised)
-        opt.state |= QStyle::State_Raised;
-
+    initStyleOption(&opt);
     style()->drawControl(QStyle::CE_ShapedFrame, &opt, p, this);
 }
 

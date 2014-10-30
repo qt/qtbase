@@ -34,12 +34,15 @@
 
 #include <QTest>
 #include <QFrame>
+#include <QStyleOptionFrame>
 
 class tst_QFrame : public QObject
 {
     Q_OBJECT
 private slots:
     void testDefaults();
+    void testInitStyleOption_data();
+    void testInitStyleOption();
 };
 
 Q_DECLARE_METATYPE(QFrame::Shape)
@@ -53,6 +56,85 @@ void tst_QFrame::testDefaults()
     QCOMPARE(frame.frameStyle(), int(QFrame::Box | QFrame::Plain));
     frame.setFrameStyle(QFrame::Box); // no shadow specified!
     QCOMPARE(frame.frameStyle(), int(QFrame::Box));
+}
+
+class Frame : public QFrame
+{
+public:
+    using QFrame::initStyleOption;
+};
+
+void tst_QFrame::testInitStyleOption_data()
+{
+    QTest::addColumn<QString>("basename");
+    QTest::addColumn<int>("lineWidth");
+    QTest::addColumn<int>("midLineWidth");
+    QTest::addColumn<QFrame::Shape>("shape");
+    QTest::addColumn<QFrame::Shadow>("shadow");
+
+    for (int lineWidth = 0; lineWidth < 3; ++lineWidth) {
+        for (int midLineWidth = 0; midLineWidth < 3; ++midLineWidth) {
+            QTest::newRow(qPrintable(QStringLiteral("box_noshadow_%1_%2").arg(lineWidth).arg(midLineWidth)))
+                    << "box_noshadow" << lineWidth << midLineWidth << QFrame::Box << (QFrame::Shadow)0;
+            QTest::newRow(qPrintable(QStringLiteral("box_plain_%1_%2").arg(lineWidth).arg(midLineWidth)))
+                    << "box_plain" << lineWidth << midLineWidth << QFrame::Box << QFrame::Plain;
+            QTest::newRow(qPrintable(QStringLiteral("box_raised_%1_%2").arg(lineWidth).arg(midLineWidth)))
+                    << "box_raised" << lineWidth << midLineWidth << QFrame::Box << QFrame::Raised;
+            QTest::newRow(qPrintable(QStringLiteral("box_sunken_%1_%2").arg(lineWidth).arg(midLineWidth)))
+                    << "box_sunken" << lineWidth << midLineWidth << QFrame::Box << QFrame::Sunken;
+
+            QTest::newRow(qPrintable(QStringLiteral("winpanel_noshadow_%1_%2").arg(lineWidth).arg(midLineWidth)))
+                    << "winpanel_noshadow" << lineWidth << midLineWidth << QFrame::WinPanel << (QFrame::Shadow)0;
+            QTest::newRow(qPrintable(QStringLiteral("winpanel_plain_%1_%2").arg(lineWidth).arg(midLineWidth)))
+                    << "winpanel_plain" << lineWidth << midLineWidth << QFrame::WinPanel << QFrame::Plain;
+            QTest::newRow(qPrintable(QStringLiteral("winpanel_raised_%1_%2").arg(lineWidth).arg(midLineWidth)))
+                    << "winpanel_raised" << lineWidth << midLineWidth << QFrame::WinPanel << QFrame::Raised;
+            QTest::newRow(qPrintable(QStringLiteral("winpanel_sunken_%1_%2").arg(lineWidth).arg(midLineWidth)))
+                    << "winpanel_sunken" << lineWidth << midLineWidth << QFrame::WinPanel << QFrame::Sunken;
+        }
+    }
+}
+
+void tst_QFrame::testInitStyleOption()
+{
+    QFETCH(QString, basename);
+    QFETCH(int, lineWidth);
+    QFETCH(int, midLineWidth);
+    QFETCH(QFrame::Shape, shape);
+    QFETCH(QFrame::Shadow, shadow);
+
+    Frame frame;
+    frame.setFrameStyle(shape | shadow);
+    frame.setLineWidth(lineWidth);
+    frame.setMidLineWidth(midLineWidth);
+    frame.resize(16, 16);
+
+    QStyleOptionFrame styleOption;
+    frame.initStyleOption(&styleOption);
+
+    switch (shape) {
+    case QFrame::Box:
+    case QFrame::Panel:
+    case QFrame::StyledPanel:
+    case QFrame::HLine:
+    case QFrame::VLine:
+        QCOMPARE(styleOption.lineWidth, lineWidth);
+        QCOMPARE(styleOption.midLineWidth, midLineWidth);
+        break;
+
+    case QFrame::NoFrame:
+    case QFrame::WinPanel:
+        QCOMPARE(styleOption.lineWidth, frame.frameWidth());
+        QCOMPARE(styleOption.midLineWidth, 0);
+        break;
+    }
+
+    QCOMPARE(styleOption.features, QStyleOptionFrame::None);
+    QCOMPARE(styleOption.frameShape, shape);
+    if (shadow == QFrame::Sunken)
+        QVERIFY(styleOption.state & QStyle::State_Sunken);
+    else if (shadow == QFrame::Raised)
+        QVERIFY(styleOption.state & QStyle::State_Raised);
 }
 
 QTEST_MAIN(tst_QFrame)

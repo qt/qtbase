@@ -40,6 +40,7 @@ QT_BEGIN_NAMESPACE
 
 
 class QFramePrivate;
+class QStyleOptionFrame;
 
 class Q_WIDGETS_EXPORT QFrame : public QWidget
 {
@@ -107,6 +108,7 @@ protected:
 
 protected:
     QFrame(QFramePrivate &dd, QWidget* parent = 0, Qt::WindowFlags f = 0);
+    void initStyleOption(QStyleOptionFrame *option) const;
 
 private:
     Q_DISABLE_COPY(QFrame)
