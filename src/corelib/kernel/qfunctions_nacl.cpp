@@ -150,6 +150,11 @@ int open64(const char *, int, ...)
     return 0;
 }
 
+long pathconf(const char *, int)
+{
+    return 0;
+}
+
 int access(const char *, int)
 {
     return 0;
