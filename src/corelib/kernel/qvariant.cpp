@@ -201,6 +201,12 @@ static qlonglong qConvertToNumber(const QVariant::Private *d, bool *ok)
         return v_cast<QByteArray>(d)->toLongLong(ok);
     case QVariant::Bool:
         return qlonglong(d->data.b);
+#ifndef QT_BOOTSTRAPPED
+    case QMetaType::QJsonValue:
+        if (!v_cast<QJsonValue>(d)->isDouble())
+            break;
+        // no break
+#endif
     case QVariant::Double:
     case QVariant::Int:
     case QMetaType::Char:
@@ -209,7 +215,6 @@ static qlonglong qConvertToNumber(const QVariant::Private *d, bool *ok)
     case QMetaType::Long:
     case QMetaType::Float:
     case QMetaType::LongLong:
-    case QMetaType::QJsonValue:
         return qMetaTypeNumber(d);
     case QVariant::ULongLong:
     case QVariant::UInt:
@@ -271,6 +276,12 @@ static qulonglong qConvertToUnsignedNumber(const QVariant::Private *d, bool *ok)
         return v_cast<QByteArray>(d)->toULongLong(ok);
     case QVariant::Bool:
         return qulonglong(d->data.b);
+#ifndef QT_BOOTSTRAPPED
+    case QMetaType::QJsonValue:
+        if (!v_cast<QJsonValue>(d)->isDouble())
+            break;
+        // no break
+#endif
     case QVariant::Double:
     case QVariant::Int:
     case QMetaType::Char:
@@ -279,7 +290,6 @@ static qulonglong qConvertToUnsignedNumber(const QVariant::Private *d, bool *ok)
     case QMetaType::Long:
     case QMetaType::Float:
     case QMetaType::LongLong:
-    case QMetaType::QJsonValue:
         return qulonglong(qMetaTypeNumber(d));
     case QVariant::ULongLong:
     case QVariant::UInt:
@@ -413,7 +423,10 @@ static bool convert(const QVariant::Private *d, int t, void *result, bool *ok)
             *str = v_cast<QUrl>(d)->toString();
             break;
         case QMetaType::QJsonValue:
-            *str = v_cast<QJsonValue>(d)->toString();
+            if (v_cast<QJsonValue>(d)->isString())
+                *str = v_cast<QJsonValue>(d)->toString();
+            else if (!v_cast<QJsonValue>(d)->isNull())
+                return false;
             break;
 #endif
         case QVariant::Uuid:
@@ -657,7 +670,9 @@ static bool convert(const QVariant::Private *d, int t, void *result, bool *ok)
             break;
 #ifndef QT_BOOTSTRAPPED
         case QMetaType::QJsonValue:
-            *b = v_cast<QJsonValue>(d)->toBool();
+            *b = v_cast<QJsonValue>(d)->toBool(false);
+            if (!v_cast<QJsonValue>(d)->isBool())
+                return false;
             break;
 #endif
         default:
@@ -698,7 +713,9 @@ static bool convert(const QVariant::Private *d, int t, void *result, bool *ok)
             break;
 #ifndef QT_BOOTSTRAPPED
         case QMetaType::QJsonValue:
-            *f = v_cast<QJsonValue>(d)->toDouble();
+            *f = v_cast<QJsonValue>(d)->toDouble(0.0);
+            if (!v_cast<QJsonValue>(d)->isDouble())
+                return false;
             break;
 #endif
         default:
@@ -739,7 +756,9 @@ static bool convert(const QVariant::Private *d, int t, void *result, bool *ok)
             break;
 #ifndef QT_BOOTSTRAPPED
         case QMetaType::QJsonValue:
-            *f = v_cast<QJsonValue>(d)->toDouble();
+            *f = v_cast<QJsonValue>(d)->toDouble(0.0);
+            if (!v_cast<QJsonValue>(d)->isDouble())
+                return false;
             break;
 #endif
         default:
@@ -757,6 +776,14 @@ static bool convert(const QVariant::Private *d, int t, void *result, bool *ok)
         } else if (qstrcmp(QMetaType::typeName(d->type), "QList<QVariant>") == 0) {
             *static_cast<QVariantList *>(result) =
                 *static_cast<QList<QVariant> *>(d->data.shared->ptr);
+#ifndef QT_BOOTSTRAPPED
+        } else if (d->type == QMetaType::QJsonValue) {
+            if (!v_cast<QJsonValue>(d)->isArray())
+                return false;
+            *static_cast<QVariantList *>(result) = v_cast<QJsonValue>(d)->toArray().toVariantList();
+        } else if (d->type == QMetaType::QJsonArray) {
+            *static_cast<QVariantList *>(result) = v_cast<QJsonArray>(d)->toVariantList();
+#endif
         } else {
             return false;
         }
@@ -765,6 +792,14 @@ static bool convert(const QVariant::Private *d, int t, void *result, bool *ok)
         if (qstrcmp(QMetaType::typeName(d->type), "QMap<QString, QVariant>") == 0) {
             *static_cast<QVariantMap *>(result) =
                 *static_cast<QMap<QString, QVariant> *>(d->data.shared->ptr);
+#ifndef QT_BOOTSTRAPPED
+        } else if (d->type == QMetaType::QJsonValue) {
+            if (!v_cast<QJsonValue>(d)->isObject())
+                return false;
+            *static_cast<QVariantMap *>(result) = v_cast<QJsonValue>(d)->toObject().toVariantMap();
+        } else if (d->type == QMetaType::QJsonObject) {
+            *static_cast<QVariantMap *>(result) = v_cast<QJsonObject>(d)->toVariantMap();
+#endif
         } else {
             return false;
         }
@@ -773,6 +808,14 @@ static bool convert(const QVariant::Private *d, int t, void *result, bool *ok)
         if (qstrcmp(QMetaType::typeName(d->type), "QHash<QString, QVariant>") == 0) {
             *static_cast<QVariantHash *>(result) =
                 *static_cast<QHash<QString, QVariant> *>(d->data.shared->ptr);
+#ifndef QT_BOOTSTRAPPED
+        } else if (d->type == QMetaType::QJsonValue) {
+            if (!v_cast<QJsonValue>(d)->isObject())
+                return false;
+            *static_cast<QVariantHash *>(result) = v_cast<QJsonValue>(d)->toObject().toVariantHash();
+        } else if (d->type == QMetaType::QJsonObject) {
+            *static_cast<QVariantHash *>(result) = v_cast<QJsonObject>(d)->toVariantHash();
+#endif
         } else {
             return false;
         }
@@ -2924,11 +2967,18 @@ bool QVariant::canConvert(int targetTypeId) const
         case QMetaType::Char:
         case QMetaType::SChar:
         case QMetaType::Short:
+        case QMetaType::QVariantList:
+        case QMetaType::QVariantMap:
+        case QMetaType::QVariantHash:
             return true;
         default:
             return false;
         }
     }
+    if (currentType == QMetaType::QJsonArray)
+        return targetTypeId == QMetaType::QVariantList;
+    if (currentType == QMetaType::QJsonObject)
+        return targetTypeId == QMetaType::QVariantMap || targetTypeId == QMetaType::QVariantHash;
 
     // FIXME It should be LastCoreType intead of Uuid
     if (currentType > int(QMetaType::QUuid) || targetTypeId > int(QMetaType::QUuid)) {

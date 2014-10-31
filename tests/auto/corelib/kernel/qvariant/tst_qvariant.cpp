@@ -470,7 +470,13 @@ void tst_QVariant::canConvert_data()
         << var << N << N << Y << N << Y << N << N << N << N << Y << N << N << Y << N << N << N << Y << N << N << N << N << N << N << N << N << N << Y << N << N << Y << Y;
     var = QVariant::fromValue<QJsonValue>(QJsonValue(QStringLiteral("hello")));
     QTest::newRow("JsonValue")
-        << var << N << N << Y << N << N << N << N << N << N << Y << N << N << Y << N << N << N << Y << N << N << N << N << N << N << N << N << N << Y << N << N << Y << Y;
+        << var << N << N << Y << N << N << N << N << N << N << Y << N << N << Y << N << N << Y << Y << Y << N << N << N << N << N << N << N << N << Y << N << N << Y << Y;
+    var = QVariant::fromValue<QJsonArray>(QJsonArray());
+    QTest::newRow("JsonArray")
+        << var << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << Y << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N;
+    var = QVariant::fromValue<QJsonObject>(QJsonObject());
+    QTest::newRow("JsonObject")
+        << var << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << Y << N << N << N << N << N << N << N << N << N << N << N << N << N;
 
 #undef N
 #undef Y
@@ -526,7 +532,8 @@ void tst_QVariant::toInt_data()
     bytearray[2] = '0';
     bytearray[3] = '0';
     QTest::newRow( "QByteArray2" ) << QVariant( bytearray ) << 4500 << true;
-    QTest::newRow("QJsonValue") << QVariant(QJsonValue(321)) << 321 << true;
+    QTest::newRow("int-QJsonValue") << QVariant(QJsonValue(321)) << 321 << true;
+    QTest::newRow("undefined-QJsonValue") << QVariant(QJsonValue(QJsonValue::Undefined)) << 0 << false;
 }
 
 void tst_QVariant::toInt()
@@ -573,7 +580,8 @@ void tst_QVariant::toUInt_data()
     bytearray[2] = '2';
     bytearray[3] = '1';
     QTest::newRow( "QByteArray" ) << QVariant( bytearray ) << (uint)4321 << true;
-    QTest::newRow("QJsonValue") << QVariant(QJsonValue(321)) << (uint)321 << true;
+    QTest::newRow("int-QJsonValue") << QVariant(QJsonValue(321)) << (uint)321 << true;
+    QTest::newRow("null-QJsonValue") << QVariant(QJsonValue(QJsonValue::Null)) << (uint)0 << false;
 }
 
 void tst_QVariant::toUInt()
@@ -824,7 +832,8 @@ void tst_QVariant::toDouble_data()
     bytearray[2] = '.';
     bytearray[3] = '1';
     QTest::newRow( "bytearray" ) << QVariant( bytearray ) << 32.1 << true;
-    QTest::newRow("QJsonValue") << QVariant(QJsonValue(32.1)) << 32.1 << true;
+    QTest::newRow("double-QJsonValue") << QVariant(QJsonValue(32.1)) << 32.1 << true;
+    QTest::newRow("null-QJsonValue") << QVariant(QJsonValue(QJsonValue::Null)) << 0.0 << false;
 }
 
 void tst_QVariant::toDouble()
@@ -852,7 +861,8 @@ void tst_QVariant::toFloat_data()
     bytearray[2] = '.';
     bytearray[3] = '1';
     QTest::newRow("QByteArray") << QVariant(bytearray) << float(32.1) << true;
-    QTest::newRow("QJsonValue") << QVariant(QJsonValue(32.1)) << float(32.1) << true;
+    QTest::newRow("double-QJsonValue") << QVariant(QJsonValue(32.1)) << float(32.1) << true;
+    QTest::newRow("undefined-QJsonValue") << QVariant(QJsonValue(QJsonValue::Undefined)) << float(0.0) << false;
 }
 
 void tst_QVariant::toFloat()
@@ -891,7 +901,8 @@ void tst_QVariant::toLongLong_data()
     bytearray[2] = '0';
     bytearray[3] = '0';
     QTest::newRow( "QByteArray" ) << QVariant( bytearray ) << (qlonglong) 3200 << true;
-    QTest::newRow("QJsonValue") << QVariant(QJsonValue(321)) << (qlonglong)321 << true;
+    QTest::newRow("int-QJsonValue") << QVariant(QJsonValue(321)) << (qlonglong)321 << true;
+    QTest::newRow("string-QJsonValue") << QVariant(QJsonValue(QString("string"))) << (qlonglong)0 << false;
 
     qint64 value64 = (Q_INT64_C(12) << 35) + 8;
     QTest::newRow("qint64") << QVariant::fromValue(value64) << qlonglong(value64) << true;
@@ -947,7 +958,8 @@ void tst_QVariant::toULongLong_data()
     bytearray[2] = '0';
     bytearray[3] = '1';
     QTest::newRow( "QByteArray" ) << QVariant( bytearray ) << (qulonglong) 3201 << true;
-    QTest::newRow("QJsonValue") << QVariant(QJsonValue(321)) << (qulonglong)321 << true;
+    QTest::newRow("int-QJsonValue") << QVariant(QJsonValue(321)) << (qulonglong)321 << true;
+    QTest::newRow("bool-QJsonValue") << QVariant(QJsonValue(true)) << (qulonglong)0 << false;
 
     quint64 value64 = (Q_INT64_C(12) << 35) + 8;
     QTest::newRow("qint64") << QVariant::fromValue(value64) << qulonglong(value64) << true;
@@ -1024,6 +1036,7 @@ void tst_QVariant::toString_data()
     QTest::newRow( "llong" ) << QVariant( (qlonglong)Q_INT64_C(123456789012) ) <<
         QString( "123456789012" );
     QTest::newRow("QJsonValue") << QVariant(QJsonValue(QString("hello"))) << QString("hello");
+    QTest::newRow("QJsonValue(Null)") << QVariant(QJsonValue(QJsonValue::Null)) << QString();
 }
 
 void tst_QVariant::toString()
