@@ -192,7 +192,7 @@ int main(int argc, char **argv)
     // create the index.html file. Use a built-in template if specified,
     // else use create_html.py. For PNaCl always use a templace since
     // create_html generates nacl-only html.
-    if (isPNaCl)
+    if (isPNaCl && tmplate.isEmpty())
         tmplate = "debug";
 
     if (!isPNaCl && tmplate.isEmpty()) {
