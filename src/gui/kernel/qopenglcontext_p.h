@@ -203,6 +203,7 @@ public:
         , workaround_brokenTexSubImage(false)
         , workaround_missingPrecisionQualifiers(false)
         , active_engine(0)
+        , qgl_current_fbo_invalid(false)
     {
         requestedFormat = QSurfaceFormat::defaultFormat();
     }
@@ -236,6 +237,8 @@ public:
     bool workaround_missingPrecisionQualifiers;
 
     QPaintEngineEx *active_engine;
+
+    bool qgl_current_fbo_invalid;
 
     QVariant nativeHandle;
 

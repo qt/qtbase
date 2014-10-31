@@ -344,6 +344,8 @@ void QGLPixelBuffer::updateDynamicTexture(GLuint texture_id) const
 
     QOpenGLExtensions extensions(ctx->contextHandle());
 
+    ctx->d_ptr->refreshCurrentFbo();
+
     if (d->blit_fbo) {
         QOpenGLFramebufferObject::blitFramebuffer(d->blit_fbo, d->fbo);
         extensions.glBindFramebuffer(GL_READ_FRAMEBUFFER, d->blit_fbo->handle());

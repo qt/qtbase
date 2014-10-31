@@ -469,6 +469,8 @@ void QOpenGLFramebufferObjectPrivate::init(QOpenGLFramebufferObject *, const QSi
     funcs.glGenFramebuffers(1, &fbo);
     funcs.glBindFramebuffer(GL_FRAMEBUFFER, fbo);
 
+    QOpenGLContextPrivate::get(ctx)->qgl_current_fbo_invalid = true;
+
     GLuint color_buffer = 0;
 
     QT_CHECK_GLERROR();
@@ -997,7 +999,11 @@ bool QOpenGLFramebufferObject::bind()
     if (current->shareGroup() != d->fbo_guard->group())
         qWarning("QOpenGLFramebufferObject::bind() called from incompatible context");
 #endif
+
     d->funcs.glBindFramebuffer(GL_FRAMEBUFFER, d->fbo());
+
+    QOpenGLContextPrivate::get(current)->qgl_current_fbo_invalid = true;
+
     if (d->texture_guard || d->format.samples() != 0)
         d->valid = d->checkFramebufferStatus(current);
     else
@@ -1029,8 +1035,11 @@ bool QOpenGLFramebufferObject::release()
         qWarning("QOpenGLFramebufferObject::release() called from incompatible context");
 #endif
 
-    if (current)
+    if (current) {
         d->funcs.glBindFramebuffer(GL_FRAMEBUFFER, current->defaultFramebufferObject());
+
+        QOpenGLContextPrivate::get(current)->qgl_current_fbo_invalid = true;
+    }
 
     return true;
 }
@@ -1272,8 +1281,10 @@ bool QOpenGLFramebufferObject::bindDefault()
 {
     QOpenGLContext *ctx = const_cast<QOpenGLContext *>(QOpenGLContext::currentContext());
 
-    if (ctx)
+    if (ctx) {
         ctx->functions()->glBindFramebuffer(GL_FRAMEBUFFER, ctx->defaultFramebufferObject());
+        QOpenGLContextPrivate::get(ctx)->qgl_current_fbo_invalid = true;
+    }
 #ifdef QT_DEBUG
     else
         qWarning("QOpenGLFramebufferObject::bindDefault() called without current context.");
@@ -1342,6 +1353,7 @@ void QOpenGLFramebufferObject::setAttachment(QOpenGLFramebufferObject::Attachmen
         qWarning("QOpenGLFramebufferObject::setAttachment() called from incompatible context");
 #endif
     d->funcs.glBindFramebuffer(GL_FRAMEBUFFER, d->fbo());
+    QOpenGLContextPrivate::get(current)->qgl_current_fbo_invalid = true;
     d->initAttachments(current, attachment);
 }
 

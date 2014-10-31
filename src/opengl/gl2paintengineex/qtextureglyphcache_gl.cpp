@@ -167,6 +167,8 @@ void QGLTextureGlyphCache::resizeTextureData(int width, int height)
     // ### the QTextureGlyphCache API needs to be reworked to allow
     // ### resizeTextureData to fail
 
+    ctx->d_ptr->refreshCurrentFbo();
+
     funcs->glBindFramebuffer(GL_FRAMEBUFFER, m_textureResource->m_fbo);
 
     GLuint tmp_texture;
