@@ -589,6 +589,7 @@ static NSString *_q_NSWindowDidChangeOcclusionStateNotification = nil;
     CGContextRestoreGState(cgContext);
     CGImageRelease(cleanImg);
     CGImageRelease(subMask);
+    CGImageRelease(bsCGImage);
 
     [self invalidateWindowShadowIfNeeded];
 }
