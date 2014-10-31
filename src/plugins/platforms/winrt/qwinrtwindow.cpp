@@ -40,6 +40,14 @@
 #include <QtGui/QWindow>
 #include <QtGui/QOpenGLContext>
 
+#include <qfunctions_winrt.h>
+#include <windows.ui.viewmanagement.h>
+#include <wrl.h>
+
+using namespace ABI::Windows::UI::ViewManagement;
+using namespace Microsoft::WRL;
+using namespace Microsoft::WRL::Wrappers;
+
 QT_BEGIN_NAMESPACE
 
 QWinRTWindow::QWinRTWindow(QWindow *window)
@@ -48,6 +56,7 @@ QWinRTWindow::QWinRTWindow(QWindow *window)
 {
     setWindowFlags(window->flags());
     setWindowState(window->windowState());
+    setWindowTitle(window->title());
     handleContentOrientationChange(window->contentOrientation());
     setGeometry(window->geometry());
 }
@@ -92,6 +101,24 @@ void QWinRTWindow::setVisible(bool visible)
         m_screen->addWindow(window());
     else
         m_screen->removeWindow(window());
+}
+
+void QWinRTWindow::setWindowTitle(const QString &title)
+{
+    ComPtr<IApplicationViewStatics2> statics;
+    HRESULT hr;
+
+    hr = RoGetActivationFactory(HString::MakeReference(RuntimeClass_Windows_UI_ViewManagement_ApplicationView).Get(),
+                              IID_PPV_ARGS(&statics));
+    RETURN_VOID_IF_FAILED("Could not get ApplicationViewStatics");
+
+    ComPtr<IApplicationView> view;
+    hr = statics->GetForCurrentView(&view);
+    RETURN_VOID_IF_FAILED("Could not access currentView");
+
+    HStringReference str(reinterpret_cast<LPCWSTR>(title.utf16()), title.length());
+    hr = view->put_Title(str.Get());
+    RETURN_VOID_IF_FAILED("Unable to set window title");
 }
 
 void QWinRTWindow::raise()
