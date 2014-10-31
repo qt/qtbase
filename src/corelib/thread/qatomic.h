@@ -40,11 +40,8 @@
 
 QT_BEGIN_NAMESPACE
 
-
-#if defined(__GNUC__) && (__GNUC__ * 100 + __GNUC_MINOR__ >= 406) && !defined(Q_CC_INTEL)
-# pragma GCC diagnostic push
-# pragma GCC diagnostic ignored "-Wextra"
-#endif
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_GCC("-Wextra")
 
 // High-level atomic integer operations
 template <typename T>
@@ -214,9 +211,7 @@ public:
 #endif
 };
 
-#if defined(__GNUC__) && (__GNUC__ * 100 + __GNUC_MINOR__ >= 406) && !defined(Q_CC_INTEL)
-# pragma GCC diagnostic pop
-#endif
+QT_WARNING_POP
 
 #ifdef QT_BASIC_ATOMIC_HAS_CONSTRUCTORS
 #  undef QT_BASIC_ATOMIC_HAS_CONSTRUCTORS

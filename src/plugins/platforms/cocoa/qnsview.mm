@@ -416,8 +416,8 @@ static NSString *_q_NSWindowDidChangeOcclusionStateNotification = nil;
                && [notificationName isEqualToString:_q_NSWindowDidChangeOcclusionStateNotification]) {
 #if MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_9
 // ### HACK Remove the enum declaration, the warning disabling and the cast further down once 10.8 is unsupported
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wobjc-method-access"
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_CLANG("-Wobjc-method-access")
         enum { NSWindowOcclusionStateVisible = 1UL << 1 };
 #endif
         if ((NSUInteger)[self.window occlusionState] & NSWindowOcclusionStateVisible) {
@@ -432,7 +432,7 @@ static NSString *_q_NSWindowDidChangeOcclusionStateNotification = nil;
                 m_platformWindow->obscureWindow();
         }
 #if MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_9
-#pragma clang diagnostic pop
+QT_WARNING_POP
 #endif
     } else if (notificationName == NSWindowDidChangeScreenNotification) {
         if (m_window) {

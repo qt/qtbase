@@ -208,7 +208,7 @@ int qt_wince_SetErrorMode(int);
 bool qt_wince__chmod(const char *file, int mode);
 bool qt_wince__wchmod(const wchar_t *file, int mode);
 
-#pragma warning(disable: 4273)
+QT_WARNING_DISABLE_MSVC(4273)
 HANDLE qt_wince_CreateFileA(LPCSTR, DWORD, DWORD, LPSECURITY_ATTRIBUTES, DWORD, DWORD, HANDLE);
 
 // Printer ----------------------------------------------------------

@@ -124,9 +124,7 @@ inline void qt_bitmapblit16_sse_template(QRasterBuffer *rasterBuffer,
     const int destStride = rasterBuffer->bytesPerLine() / sizeof(quint16);
 
     const __m64 c64 = _mm_set1_pi16(c);
-#ifdef Q_CC_MSVC
-#  pragma warning(disable: 4309) // truncation of constant value
-#endif
+QT_WARNING_DISABLE_MSVC(4309) // truncation of constant value
     const __m64 maskmask1 = _mm_set_pi16(0x1010, 0x2020, 0x4040, 0x8080);
     const __m64 maskadd1 = _mm_set_pi16(0x7070, 0x6060, 0x4040, 0x0000);
 

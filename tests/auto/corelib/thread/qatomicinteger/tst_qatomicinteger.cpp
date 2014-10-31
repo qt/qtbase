@@ -94,13 +94,9 @@
 #  define QATOMIC_TEST_NOT_SUPPORTED
 #endif
 
-#if defined(Q_CC_GNU) && !defined(Q_CC_INTEL)
-#  pragma GCC diagnostic ignored "-Wtype-limits"
-#  pragma GCC diagnostic ignored "-Wsign-compare"
-#endif
-#if defined(Q_CC_CLANG) && !defined(Q_CC_INTEL)
-#  pragma clang diagnostic ignored "-Wtautological-constant-out-of-range-compare"
-#endif
+QT_WARNING_DISABLE_GCC("-Wtype-limits")
+QT_WARNING_DISABLE_GCC("-Wsign-compare")
+QT_WARNING_DISABLE_CLANG("-Wtautological-constant-out-of-range-compare")
 
 typedef signed char schar;
 

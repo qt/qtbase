@@ -116,6 +116,8 @@ Cpp.ignoretokens        += \
                           QT_END_NAMESPACE \
                           QT_FASTCALL \
                           QT_MUTEX_LOCK_NOEXCEPT \
+                          QT_WARNING_PUSH \
+                          QT_WARNING_POP \
                           QT_WIDGET_PLUGIN_EXPORT \
                           QWEBKIT_EXPORT
 
@@ -144,4 +146,8 @@ Cpp.ignoredirectives    += \
                           Q_PRIVATE_PROPERTY \
                           QT_FORWARD_DECLARE_CLASS \
                           Q_DECLARE_HANDLE \
-                          Q_REVISION
+                          Q_REVISION \
+                          QT_WARNING_DISABLE_CLANG \
+                          QT_WARNING_DISABLE_GCC \
+                          QT_WARNING_DISABLE_INTEL \
+                          QT_WARNING_DISABLE_MSVC
