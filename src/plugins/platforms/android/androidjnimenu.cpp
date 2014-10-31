@@ -44,6 +44,7 @@
 #include <QSet>
 #include <QWindow>
 #include <QtCore/private/qjnihelpers_p.h>
+#include <QtCore/private/qjni_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -61,9 +62,6 @@ namespace QtAndroidMenu
     static QMutex menuBarMutex(QMutex::Recursive);
 
     static jmethodID openContextMenuMethodID = 0;
-    static jmethodID closeContextMenuMethodID = 0;
-    static jmethodID resetOptionsMenuMethodID = 0;
-    static jmethodID openOptionsMenuMethodID = 0;
 
     static jmethodID clearMenuMethodID = 0;
     static jmethodID addMenuItemMethodID = 0;
@@ -78,16 +76,12 @@ namespace QtAndroidMenu
 
     void resetMenuBar()
     {
-        AttachedJNIEnv env;
-        if (env.jniEnv)
-            env.jniEnv->CallStaticVoidMethod(applicationClass(), resetOptionsMenuMethodID);
+        QJNIObjectPrivate::callStaticMethod<void>(applicationClass(), "resetOptionsMenu");
     }
 
     void openOptionsMenu()
     {
-        AttachedJNIEnv env;
-        if (env.jniEnv)
-            env.jniEnv->CallStaticVoidMethod(applicationClass(), openOptionsMenuMethodID);
+        QJNIObjectPrivate::callStaticMethod<void>(applicationClass(), "openOptionsMenu");
     }
 
     void showContextMenu(QAndroidPlatformMenu *menu, const QRect &anchorRect, JNIEnv *env)
@@ -103,22 +97,14 @@ namespace QtAndroidMenu
 
         visibleMenu = menu;
         menu->aboutToShow();
-        if (env) {
-            env->CallStaticVoidMethod(applicationClass(), openContextMenuMethodID, anchorRect.x(), anchorRect.y(), anchorRect.width(), anchorRect.height());
-        } else {
-            AttachedJNIEnv aenv;
-            if (aenv.jniEnv)
-                aenv.jniEnv->CallStaticVoidMethod(applicationClass(), openContextMenuMethodID, anchorRect.x(), anchorRect.y(), anchorRect.width(), anchorRect.height());
-        }
+        env->CallStaticVoidMethod(applicationClass(), openContextMenuMethodID, anchorRect.x(), anchorRect.y(), anchorRect.width(), anchorRect.height());
     }
 
     void hideContextMenu(QAndroidPlatformMenu *menu)
     {
         QMutexLocker lock(&visibleMenuMutex);
         if (visibleMenu == menu) {
-            AttachedJNIEnv env;
-            if (env.jniEnv)
-                env.jniEnv->CallStaticVoidMethod(applicationClass(), closeContextMenuMethodID);
+            QJNIObjectPrivate::callStaticMethod<void>(applicationClass(), "closeContextMenu");
             pendingContextMenus.clear();
         } else {
             pendingContextMenus.removeOne(menu);
@@ -430,9 +416,6 @@ namespace QtAndroidMenu
         }
 
         GET_AND_CHECK_STATIC_METHOD(openContextMenuMethodID, appClass, "openContextMenu", "(IIII)V");
-        GET_AND_CHECK_STATIC_METHOD(closeContextMenuMethodID, appClass, "closeContextMenu", "()V");
-        GET_AND_CHECK_STATIC_METHOD(resetOptionsMenuMethodID, appClass, "resetOptionsMenu", "()V");
-        GET_AND_CHECK_STATIC_METHOD(openOptionsMenuMethodID, appClass, "openOptionsMenu", "()V");
 
         jclass clazz;
         FIND_AND_CHECK_CLASS("android/view/Menu");
