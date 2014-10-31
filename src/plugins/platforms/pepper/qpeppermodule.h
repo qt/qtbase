@@ -12,7 +12,7 @@ public:
     QtModule();
     ~QtModule();
     virtual bool Init();
-    virtual pp::Instance* CreateInstance(PP_Instance instance);
+    virtual pp::Instance* CreateInstance(PP_Instance ppInstance);
     static pp::Core* core();
 private:
 };

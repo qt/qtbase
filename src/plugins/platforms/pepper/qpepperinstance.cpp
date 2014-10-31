@@ -113,12 +113,6 @@ bool QPepperInstance::Init(uint32_t argc, const char* argn[], const char* argv[]
 
     g_pepperInstance = this;
 
-    // QtNetwork requires access to the instance, but does not normally
-    // depend on QtGui or the platform plugin. Set a global pointer
-    // to the instance to allow access.
-    extern void *qtPepperInstance; // qglobal.h
-    qtPepperInstance = this;
-
     if (false) {
         // Optinally redirect debug and logging output to the web page following the conventions
         // used in the nacl_sdk examples: presence of 'ps_stdout="/dev/tty"' attributes

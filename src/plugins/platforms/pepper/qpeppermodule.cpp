@@ -9,6 +9,8 @@
 #include <ppapi/c/ppp.h>
 
 static pp::Core *g_core = 0;
+extern void *qtPepperInstance; // QtCore
+extern void *qtPepperModule; // QtCore
 
 QtModule::QtModule()
 {
@@ -23,14 +25,15 @@ QtModule::~QtModule()
 bool QtModule::Init()
 {
     g_core = Module::core();
-//    bool glOk = glInitializePPAPI(get_browser_interface()) == GL_TRUE;
-
     return true;
 }
 
-pp::Instance* QtModule::CreateInstance(PP_Instance instance)
+pp::Instance* QtModule::CreateInstance(PP_Instance ppInstance)
 {
-    return new QPepperInstance(instance);
+    QPepperInstance *instance = new QPepperInstance(ppInstance);
+    // Grant non-platform plugin parts of Qt access to the instance.
+    qtPepperInstance = instance;
+    return instance;
 }
 
 pp::Core *QtModule::core()
@@ -42,8 +45,9 @@ pp::Core *QtModule::core()
 // will subsequently create a QPepperInstance.
 namespace pp {
     PP_EXPORT Module* CreateModule() {
-        return new QtModule();
+        QtModule *module = new QtModule();
+        // Grant non-platform plugin parts of Qt access to the module.
+        qtPepperModule = module;
+        return module;
     }
 }
-
-

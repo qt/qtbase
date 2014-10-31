@@ -207,10 +207,10 @@ int pselect(int nfds, fd_set * readfds, fd_set * writefds, fd_set * errorfds, co
     return 0;
 }
 
-#ifdef Q_OS_NACL
-// The Pepper networking API requires access to a global instance object.
+// Several Qt components (such at the QtCore event dispatcher and networking) 
+// may require access to the application global module and instance objects.
 // Following the Qt architechture, this object is owned by the platform
-// plugin. Add a global pointer here to give QtNetwork access. The pointer
-// is set during pepper platform plugin initialization.
+// plugin. Add global pointers here, which are are set during pepper 
+// platform plugin initialization.
 Q_CORE_EXPORT void *qtPepperInstance = 0;
-#endif
+Q_CORE_EXPORT void *qtPepperModule = 0;
