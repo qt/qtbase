@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -26,10 +26,10 @@
 ****************************************************************************/
 
 /*!
-    \example codecs
-    \title Codecs Example
+    \example tools/codecs
+    \title Text Codecs Example
 
-    The Codecs example demonstrates the principles behind importing and exporting text
+    The Text Codecs example demonstrates the principles behind importing and exporting text
     using codecs to ensure that characters are encoded properly, avoiding loss of data
     and retaining the correct symbols used in various scripts.
 

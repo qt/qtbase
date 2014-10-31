@@ -240,7 +240,7 @@ bool QFileDevice::isSequential() const
   Returns the file handle of the file.
 
   This is a small positive integer, suitable for use with C library
-  functions such as fdopen() and fcntl(). On systems that use file
+  functions such as \c fdopen() and \c fcntl(). On systems that use file
   descriptors for sockets (i.e. Unix systems, but not Windows) the handle
   can be used with QSocketNotifier as well.
 
@@ -389,9 +389,9 @@ bool QFileDevice::atEnd() const
     return false.
 
     Seeking beyond the end of a file:
-    If the position is beyond the end of a file, then seek() shall not
+    If the position is beyond the end of a file, then seek() will not
     immediately extend the file. If a write is performed at this position,
-    then the file shall be extended. The content of the file between the
+    then the file will be extended. The content of the file between the
     previous end of file and the newly written data is UNDEFINED and
     varies between platforms and file systems.
 */

@@ -588,11 +588,11 @@ QString QStandardPaths::displayName(StandardLocation type)
   GenericCacheLocation, CacheLocation.
   Other locations are not affected.
 
-  On Unix, XDG_DATA_HOME is set to ~/.qttest/share, XDG_CONFIG_HOME is
-  set to ~/.qttest/config, and XDG_CACHE_HOME is set to ~/.qttest/cache.
+  On Unix, \c XDG_DATA_HOME is set to \e ~/.qttest/share, \c XDG_CONFIG_HOME is
+  set to \e ~/.qttest/config, and \c XDG_CACHE_HOME is set to \e ~/.qttest/cache.
 
-  On Mac, data goes to "~/.qttest/Application Support", cache goes to
-  ~/.qttest/Cache, and config goes to ~/.qttest/Preferences.
+  On OS X, data goes to \e ~/.qttest/Application Support, cache goes to
+  \e ~/.qttest/Cache, and config goes to \e ~/.qttest/Preferences.
 
   On Windows, everything goes to a "qttest" directory under Application Data.
 */

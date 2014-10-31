@@ -180,7 +180,7 @@ void QTemporaryDirPrivate::create(const QString &templateName)
     \snippet code/src_corelib_io_qtemporarydir.cpp 0
 
     It is very important to test that the temporary directory could be
-    created, using isValid(). Do not use exists(), since a default-constructed
+    created, using isValid(). Do not use \l {QDir::exists()}{exists()}, since a default-constructed
     QDir represents the current directory, which exists.
 
     The path to the temporary dir can be found by calling path().

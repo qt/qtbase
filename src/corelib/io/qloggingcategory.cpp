@@ -149,10 +149,10 @@ static void setBoolLane(QBasicAtomicInt *atomic, bool enable, int shift)
 
     Order of evaluation:
     \list
-    \li Rules from QtProject/qtlogging.ini
-    \li Rules set by \l setFilterRules()
-    \li Rules from file in \c QT_LOGGING_CONF
-    \li Rules from environment variable QT_LOGGING_RULES
+    \li QtProject/qtlogging.ini
+    \li \l setFilterRules()
+    \li \c QT_LOGGING_CONF
+    \li \c QT_LOGGING_RULES
     \endlist
 
     The \c QtProject/qtlogging.ini file is looked up in all directories returned
