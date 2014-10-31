@@ -11,3 +11,4 @@ SUBDIRS = \
     window_raster \                 # QWindow with raster graphics.
     window_opengl \                 # QWindow with OpenGL graphics.
     window_qtquick \                # QQuickWindow
+    window_qmlapplicationengine \   # QQmlApplicationEngine
