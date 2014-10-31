@@ -77,8 +77,8 @@ struct Properties {
     ushort upperCaseSpecial;
     ushort titleCaseSpecial;
     ushort caseFoldSpecial;
-    ushort unicodeVersion ;
-    ushort nfQuickCheck ;
+    ushort unicodeVersion;
+    ushort nfQuickCheck;
     ushort graphemeBreakClass;
     ushort wordBreakClass;
     ushort sentenceBreakClass;
