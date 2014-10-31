@@ -43,7 +43,7 @@
 #include <qlocale.h>
 #include <qdebug.h>
 #include <qjsondocument.h>
-
+#include <quuid.h>
 
 #include <limits.h>
 #include <float.h>
@@ -1435,6 +1435,13 @@ void tst_QVariant::operator_eq_eq_data()
     QTest::newRow("invalidConversion") << QVariant(QString("bubu")) << QVariant(0) << false;
     QTest::newRow("invalidConversionR") << QVariant(0) << QVariant(QString("bubu")) << false;
     // ### many other combinations missing
+
+    {
+        // QUuid can convert to QString, but not the opposite
+        QUuid uuid(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+        QTest::newRow("uuidstring") << QVariant(uuid) << QVariant(uuid.toString()) << true;
+        QTest::newRow("stringuuid") << QVariant(uuid.toString()) << QVariant(uuid) << true;
+    }
 
     {
         QMap<QString, QVariant> map1;

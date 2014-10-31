@@ -3161,8 +3161,15 @@ bool QVariant::cmp(const QVariant &v) const
             else
                 return toLongLong() == v.toLongLong();
         }
-        if (!v2.canConvert(v1.d.type) || !v2.convert(v1.d.type))
-            return false;
+        if (v2.canConvert(v1.d.type)) {
+            if (!v2.convert(v1.d.type))
+                return false;
+        } else {
+            // try the opposite conversion, it might work
+            qSwap(v1, v2);
+            if (!v2.convert(v1.d.type))
+                return false;
+        }
     }
     if (v1.d.type >= QMetaType::User) {
         int result;
