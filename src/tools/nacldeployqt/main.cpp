@@ -57,6 +57,7 @@ int main(int argc, char **argv)
                         "by create_html.py", "template", ""));
 
     parser.addOption(QCommandLineOption(QStringList() << "q" << "quick", "Deploy Qt Quick imports"));
+    parser.addOption(QCommandLineOption(QStringList() << "o" << "out", "Specify an output directory", "outDir", "."));
 
     parser.addOption(QCommandLineOption(QStringList() << "p" << "print", "Print Chrome and debugging help."));
     parser.addOption(QCommandLineOption(QStringList() << "r" << "run", "Run the application in Chrome."));
@@ -66,11 +67,17 @@ int main(int argc, char **argv)
     const QStringList args = parser.positionalArguments();
     QString tmplate = parser.value("template");
     const bool quickImports = parser.isSet("quick");
+    QString outDir = parser.value("out");
     const bool print = parser.isSet("print");
     bool run = parser.isSet("run");
     const bool debug = parser.isSet("debug");
     if (run && debug) // "--debug" takes priority over "run"
         run = false;
+
+    // outDir should end with "/" and exist on disk.
+    if (!outDir.endsWith("/"))
+        outDir.append("/");
+    QDir().mkpath(outDir);
 
     // Get target binary file name from command line, or find one
     // in the currrent directory
@@ -132,11 +139,13 @@ int main(int argc, char **argv)
     QString qtBinDir = qtBaseDir + "/bin";
     QString qtImportsDir = qtBaseDir + "/qml";
     QString nmfFileName = appName + ".nmf";
+    QString nmfFilePath = outDir + nmfFileName;
 
     qDebug() << " ";
     qDebug() << "Deploying" << binary;
     qDebug() << "Using SDK" << naclSdkRoot;
     qDebug() << "Qt libs in" << qtLibDir;
+    qDebug() << "Output directory:" << QDir(outDir).canonicalPath();
     qDebug() << " ";
 
     // Deply Qt Quick imports
@@ -145,7 +154,7 @@ int main(int argc, char **argv)
         // For now simply deploy all imports.
         QStringList imports = QDir(qtImportsDir).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
 
-        QString targetBase = "qml";
+        QString targetBase = outDir + "qml";
         QDir().mkpath(targetBase);
 
         foreach (const QString &import, imports) {
@@ -163,17 +172,19 @@ int main(int argc, char **argv)
     // a .pexe suitable for distribution using "pnacl-finalize".
     if (isPNaCl) {
         finalBinary.replace(".bc", ".pexe");
-        QString finalizeCommand = pnaclFinalize + " -o " + finalBinary + " " + binary;
+        QString finalizeCommand = pnaclFinalize + " -o " + outDir + finalBinary + " " + binary;
         runCommand(finalizeCommand);
     }
 
+    const QString finalBinaryPath = outDir + finalBinary;
+
     // create the .nmf manifest file
     QString nmfCommand = QStringLiteral("python ") + createNmf
-                + " -o " + nmfFileName
+                + " -o " + nmfFilePath
                 + " -L " + qtLibDir           // Add Qt libs search payh
                 + " -s  . "                   // copy dependencies 
 //                + " --debug-libs"    
-                + " " + finalBinary
+                + " " + finalBinaryPath
                 + " " + (debug ? binary : QString("")); // deploy .bc when debugging (adds a "pnacl-debug" section to the nmf)
     
     runCommand(nmfCommand.toLatin1().constData());
@@ -185,8 +196,9 @@ int main(int argc, char **argv)
         tmplate = "debug";
 
     if (!isPNaCl && tmplate.isEmpty()) {
+        QString outFile = outDir + "index.html";
         QString hmtlCommand = QStringLiteral("python ") + createHtml + " " + nmf
-                    + " -o index.html";
+                    + " -o " + outFile;
         runCommand(hmtlCommand.toLatin1().constData());
     } else {
         // select template. See the template_*.cpp files.
@@ -204,7 +216,7 @@ int main(int argc, char **argv)
         html.replace("%APPTYPE%", isPNaCl ? "application/x-pnacl" : "application/x-nacl");
 
         // write html contents to index.html
-        QFile indexHtml("index.html");
+        QFile indexHtml(outDir + "index.html");
         indexHtml.open(QIODevice::WriteOnly|QIODevice::Truncate);
         indexHtml.write(html);
     }
@@ -214,14 +226,14 @@ int main(int argc, char **argv)
 
     // Find the debugger, print startup instructions
     QString gdb = naclSdkRoot + "/toolchain/mac_x86_glibc/bin/i686-nacl-gdb";
-    QString nmfPath = QDir(nmfFileName).canonicalPath();
+    QString nmfPath = QDir(nmfFilePath).canonicalPath();
     QString gdbOptions = " -eval-command='nacl-manifest " + nmfPath + "'";
 
     if (print) {
         qDebug() << "debugger";
         qDebug() << qPrintable("  " + gdb);
         qDebug() << qPrintable("    target remote localhost:4014");
-        qDebug() << qPrintable("    nacl-manifest " + nmfFileName);
+        qDebug() << qPrintable("    nacl-manifest " + nmfFilePath);
         qDebug() << "";
     }
 
