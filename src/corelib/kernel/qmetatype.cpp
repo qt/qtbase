@@ -1982,8 +1982,27 @@ public:
     MetaObject(const int type)
         : m_type(type)
     {}
+
+    template<typename T, bool IsAcceptedType = DefinedTypesFilter::Acceptor<T>::IsAccepted>
+    struct MetaObjectImpl
+    {
+        static const QMetaObject *MetaObject(int /*type*/)
+        { return QtPrivate::MetaObjectForType<T>::value(); }
+    };
     template<typename T>
-    const QMetaObject *delegate(const T*) { return QtPrivate::MetaObjectForType<T>::value(); }
+    struct MetaObjectImpl<T, /* IsAcceptedType = */ false>
+    {
+        static const QMetaObject *MetaObject(int type) {
+            if (QModulesPrivate::QTypeModuleInfo<T>::IsGui)
+                return Q_LIKELY(qMetaTypeGuiHelper) ? qMetaTypeGuiHelper[type - QMetaType::FirstGuiType].metaObject : 0;
+            if (QModulesPrivate::QTypeModuleInfo<T>::IsWidget)
+                return Q_LIKELY(qMetaTypeWidgetsHelper) ? qMetaTypeWidgetsHelper[type - QMetaType::FirstWidgetsType].metaObject : 0;
+            return 0;
+        }
+    };
+
+    template <typename T>
+    const QMetaObject *delegate(const T *) { return MetaObjectImpl<T>::MetaObject(m_type); }
     const QMetaObject *delegate(const void*) { return 0; }
     const QMetaObject *delegate(const QMetaTypeSwitcher::UnknownType*) { return 0; }
     const QMetaObject *delegate(const QMetaTypeSwitcher::NotBuiltinType*) { return customMetaObject(m_type); }
