@@ -3318,7 +3318,7 @@ void Configure::generateQDevicePri()
                   : QString("armeabi-v7a"));
         QString android_tc_vers(dictionary.contains("ANDROID_NDK_TOOLCHAIN_VERSION")
                   ? dictionary["ANDROID_NDK_TOOLCHAIN_VERSION"]
-                  : QString("4.8"));
+                  : QString("4.9"));
         deviceStream << "    DEFAULT_ANDROID_TARGET_ARCH = " << android_arch << endl;
         deviceStream << "    DEFAULT_ANDROID_NDK_TOOLCHAIN_VERSION = " << android_tc_vers << endl;
         deviceStream << "}" << endl;
