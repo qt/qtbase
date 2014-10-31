@@ -44,6 +44,8 @@
 
 QT_BEGIN_NAMESPACE
 
+Q_LOGGING_CATEGORY(QT_QTHREAD, "qt.qthread");
+
 /*
   QThreadData
 */
@@ -490,6 +492,7 @@ uint QThread::stackSize() const
 int QThread::exec()
 {
     Q_D(QThread);
+    qCDebug(QT_QTHREAD) << "exec()" << this;
     QMutexLocker locker(&d->mutex);
     d->data->quitNow = false;
     if (d->exited) {
@@ -504,6 +507,7 @@ int QThread::exec()
     locker.relock();
     d->exited = false;
     d->returnCode = -1;
+    qCDebug(QT_QTHREAD) << "exec() return" << this;
     return returnCode;
 }
 
@@ -531,6 +535,8 @@ int QThread::exec()
 void QThread::exit(int returnCode)
 {
     Q_D(QThread);
+    qCDebug(QT_QTHREAD) << "exit()" << this << returnCode;
+
     QMutexLocker locker(&d->mutex);
     d->exited = true;
     d->returnCode = returnCode;

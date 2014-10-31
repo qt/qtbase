@@ -530,6 +530,9 @@ static bool calculateUnixPriority(int priority, int *sched_policy, int *sched_pr
 void QThread::start(Priority priority)
 {
     Q_D(QThread);
+
+    qCDebug(QT_QTHREAD) << "start()" << this;
+
     QMutexLocker locker(&d->mutex);
 
     if (d->isInFinish)

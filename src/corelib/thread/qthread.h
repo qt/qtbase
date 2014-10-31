@@ -35,11 +35,13 @@
 #define QTHREAD_H
 
 #include <QtCore/qobject.h>
+#include <QtCore/qloggingcategory.h>
 
 #include <limits.h>
 
 QT_BEGIN_NAMESPACE
 
+Q_DECLARE_LOGGING_CATEGORY(QT_QTHREAD);
 
 class QThreadData;
 class QThreadPrivate;
