@@ -114,8 +114,6 @@ QT_FOR_EACH_STATIC_WIDGETS_CLASS(QT_DECLARE_WIDGETS_MODULE_TYPES_ITER)
 class QMetaTypeInterface
 {
 public:
-    QMetaType::Creator creator;
-    QMetaType::Deleter deleter;
     QMetaType::SaveOperator saveOp;
     QMetaType::LoadOperator loadOp;
     QMetaType::Constructor constructor;
@@ -148,8 +146,6 @@ public:
 
 #define QT_METATYPE_INTERFACE_INIT_IMPL(Type, DATASTREAM_DELEGATE) \
 { \
-    /*creator*/(QtMetaTypePrivate::QMetaTypeFunctionHelper<Type, QtMetaTypePrivate::TypeDefinition<Type>::IsAvailable>::Create), \
-    /*deleter*/(QtMetaTypePrivate::QMetaTypeFunctionHelper<Type, QtMetaTypePrivate::TypeDefinition<Type>::IsAvailable>::Delete), \
     DATASTREAM_DELEGATE(Type) \
     /*constructor*/(QtMetaTypePrivate::QMetaTypeFunctionHelper<Type, QtMetaTypePrivate::TypeDefinition<Type>::IsAvailable>::Construct), \
     /*destructor*/(QtMetaTypePrivate::QMetaTypeFunctionHelper<Type, QtMetaTypePrivate::TypeDefinition<Type>::IsAvailable>::Destruct), \
@@ -173,8 +169,6 @@ public:
 #define QT_METATYPE_INTERFACE_INIT_NO_DATASTREAM(Type) QT_METATYPE_INTERFACE_INIT_IMPL(Type, QT_METATYPE_INTERFACE_INIT_EMPTY_DATASTREAM_IMPL)
 #define QT_METATYPE_INTERFACE_INIT_EMPTY() \
 { \
-    /*creator*/ 0, \
-    /*deleter*/ 0, \
     QT_METATYPE_INTERFACE_INIT_EMPTY_DATASTREAM_IMPL(void) \
     /*constructor*/ 0, \
     /*destructor*/ 0, \

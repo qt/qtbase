@@ -471,6 +471,11 @@ public:
                             int size,
                             QMetaType::TypeFlags flags,
                             const QMetaObject *metaObject);
+    static int registerNormalizedType(const QT_PREPEND_NAMESPACE(QByteArray) &normalizedTypeName, Destructor destructor,
+                            Constructor constructor,
+                            int size,
+                            QMetaType::TypeFlags flags,
+                            const QMetaObject *metaObject);
     static int registerTypedef(const char *typeName, int aliasId);
     static int registerNormalizedTypedef(const QT_PREPEND_NAMESPACE(QByteArray) &normalizedTypeName, int aliasId);
     static int type(const char *typeName);
@@ -668,8 +673,8 @@ public:
     static void unregisterConverterFunction(int from, int to);
 private:
 
-    Creator m_creator;
-    Deleter m_deleter;
+    Creator m_creator_unused;
+    Deleter m_deleter_unused;
     SaveOperator m_saveOp;
     LoadOperator m_loadOp;
     Constructor m_constructor;
@@ -1618,8 +1623,6 @@ int qRegisterNormalizedMetaType(const QT_PREPEND_NAMESPACE(QByteArray) &normaliz
         flags |= QMetaType::WasDeclaredAsMetaType;
 
     const int id = QMetaType::registerNormalizedType(normalizedTypeName,
-                                   QtMetaTypePrivate::QMetaTypeFunctionHelper<T>::Delete,
-                                   QtMetaTypePrivate::QMetaTypeFunctionHelper<T>::Create,
                                    QtMetaTypePrivate::QMetaTypeFunctionHelper<T>::Destruct,
                                    QtMetaTypePrivate::QMetaTypeFunctionHelper<T>::Construct,
                                    int(sizeof(T)),
@@ -1988,8 +1991,8 @@ inline QMetaType::QMetaType(const ExtensionFlag extensionFlags, const QMetaTypeI
                             uint theTypeFlags,
                             int typeId,
                             const QMetaObject *_metaObject)
-    : m_creator(creator)
-    , m_deleter(deleter)
+    : m_creator_unused(creator)
+    , m_deleter_unused(deleter)
     , m_saveOp(saveOp)
     , m_loadOp(loadOp)
     , m_constructor(constructor)
@@ -2023,16 +2026,14 @@ inline bool QMetaType::isRegistered() const
 
 inline void *QMetaType::create(const void *copy) const
 {
-    if (Q_UNLIKELY(isExtended(CreateEx)))
-        return createExtended(copy);
-    return m_creator(copy);
+    // ### TODO Qt6 remove the extension
+    return createExtended(copy);
 }
 
 inline void QMetaType::destroy(void *data) const
 {
-    if (Q_UNLIKELY(isExtended(DestroyEx)))
-        return destroyExtended(data);
-    m_deleter(data);
+    // ### TODO Qt6 remove the extension
+    destroyExtended(data);
 }
 
 inline void *QMetaType::construct(void *where, const void *copy) const
