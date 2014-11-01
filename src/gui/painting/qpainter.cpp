@@ -3429,8 +3429,7 @@ void QPainter::drawPath(const QPainterPath &path)
     \fn void QPainter::drawLine(int x1, int y1, int x2, int y2)
     \overload
 
-    Draws a line from (\a x1, \a y1) to (\a x2, \a y2) and sets the
-    current pen position to (\a x2, \a y2).
+    Draws a line from (\a x1, \a y1) to (\a x2, \a y2).
 */
 
 /*!
