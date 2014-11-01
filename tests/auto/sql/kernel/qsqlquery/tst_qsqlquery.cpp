@@ -3864,21 +3864,25 @@ void tst_QSqlQuery::aggregateFunctionTypes()
         QCOMPARE(q.value(0).toDouble(), 2.5);
         QCOMPARE(q.record().field(0).type(), QVariant::Double);
 
-        // PSQL does not have support for the round() function
-        if (dbType != QSqlDriver::PostgreSQL) {
-            QVERIFY_SQL(q, exec("SELECT ROUND(id, 1) FROM " + tableName + " WHERE id=1.5"));
-            QVERIFY(q.next());
-            QCOMPARE(q.value(0).toDouble(), 1.5);
-            QCOMPARE(q.record().field(0).type(), QVariant::Double);
+        QString field = "id";
 
-            QVERIFY_SQL(q, exec("SELECT ROUND(id, 0) FROM " + tableName + " WHERE id=2.5"));
-            QVERIFY(q.next());
-            if (dbType == QSqlDriver::MySqlServer)
-                QCOMPARE(q.value(0).toDouble(), 2.0);
-            else
-                QCOMPARE(q.value(0).toDouble(), 3.0);
-            QCOMPARE(q.record().field(0).type(), QVariant::Double);
+        // PSQL does not have the round() function with real type
+        if (dbType == QSqlDriver::PostgreSQL) {
+            field += "::NUMERIC";
         }
+
+        QVERIFY_SQL(q, exec("SELECT ROUND(" + field + ", 1) FROM " + tableName + " WHERE id=1.5"));
+        QVERIFY(q.next());
+        QCOMPARE(q.value(0).toDouble(), 1.5);
+        QCOMPARE(q.record().field(0).type(), QVariant::Double);
+
+        QVERIFY_SQL(q, exec("SELECT ROUND(" + field + ", 0) FROM " + tableName + " WHERE id=2.5"));
+        QVERIFY(q.next());
+        if (dbType == QSqlDriver::MySqlServer)
+            QCOMPARE(q.value(0).toDouble(), 2.0);
+        else
+            QCOMPARE(q.value(0).toDouble(), 3.0);
+        QCOMPARE(q.record().field(0).type(), QVariant::Double);
     }
     {
         const QString tableName(qTableName("stringFunctions", __FILE__, db));
