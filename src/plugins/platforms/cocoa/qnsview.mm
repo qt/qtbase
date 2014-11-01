@@ -608,7 +608,7 @@ QT_WARNING_POP
 
 - (BOOL)becomeFirstResponder
 {
-    if (m_window->flags() & Qt::WindowTransparentForInput)
+    if (m_window && (m_window->flags() & Qt::WindowTransparentForInput) )
         return NO;
     if (!m_platformWindow->windowIsPopupType())
         QWindowSystemInterface::handleWindowActivated([self topLevelWindow]);
@@ -619,7 +619,7 @@ QT_WARNING_POP
 {
     if (m_platformWindow->shouldRefuseKeyWindowAndFirstResponder())
         return NO;
-    if (m_window->flags() & Qt::WindowTransparentForInput)
+    if (m_window && (m_window->flags() & Qt::WindowTransparentForInput) )
         return NO;
     if ((m_window->flags() & Qt::ToolTip) == Qt::ToolTip)
         return NO;
@@ -629,7 +629,7 @@ QT_WARNING_POP
 - (BOOL)acceptsFirstMouse:(NSEvent *)theEvent
 {
     Q_UNUSED(theEvent)
-    if (m_window->flags() & Qt::WindowTransparentForInput)
+    if (m_window && (m_window->flags() & Qt::WindowTransparentForInput) )
         return NO;
     return YES;
 }
@@ -768,7 +768,7 @@ QT_WARNING_POP
 
 - (void)mouseDown:(NSEvent *)theEvent
 {
-    if (m_window->flags() & Qt::WindowTransparentForInput)
+    if (m_window && (m_window->flags() & Qt::WindowTransparentForInput) )
         return [super mouseDown:theEvent];
     m_sendUpAsRightButton = false;
 
@@ -819,7 +819,7 @@ QT_WARNING_POP
 
 - (void)mouseDragged:(NSEvent *)theEvent
 {
-    if (m_window->flags() & Qt::WindowTransparentForInput)
+    if (m_window && (m_window->flags() & Qt::WindowTransparentForInput) )
         return [super mouseDragged:theEvent];
     if (!(m_buttons & (m_sendUpAsRightButton ? Qt::RightButton : Qt::LeftButton)))
         qWarning("QNSView mouseDragged: Internal mouse button tracking invalid (missing Qt::LeftButton)");
@@ -828,7 +828,7 @@ QT_WARNING_POP
 
 - (void)mouseUp:(NSEvent *)theEvent
 {
-    if (m_window->flags() & Qt::WindowTransparentForInput)
+    if (m_window && (m_window->flags() & Qt::WindowTransparentForInput) )
         return [super mouseUp:theEvent];
     if (m_sendUpAsRightButton) {
         m_buttons &= ~Qt::RightButton;
@@ -884,7 +884,7 @@ QT_WARNING_POP
 
 - (void)mouseMovedImpl:(NSEvent *)theEvent
 {
-    if (m_window->flags() & Qt::WindowTransparentForInput)
+    if (m_window && (m_window->flags() & Qt::WindowTransparentForInput) )
         return;
 
     QPointF windowPoint;
@@ -917,7 +917,7 @@ QT_WARNING_POP
     Q_UNUSED(theEvent)
     m_platformWindow->m_windowUnderMouse = true;
 
-    if (m_window->flags() & Qt::WindowTransparentForInput)
+    if (m_window && (m_window->flags() & Qt::WindowTransparentForInput) )
         return;
 
     // Top-level windows generate enter events for sub-windows.
@@ -936,7 +936,7 @@ QT_WARNING_POP
     Q_UNUSED(theEvent);
     m_platformWindow->m_windowUnderMouse = false;
 
-    if (m_window->flags() & Qt::WindowTransparentForInput)
+    if (m_window && (m_window->flags() & Qt::WindowTransparentForInput) )
         return;
 
     // Top-level windows generate leave events for sub-windows.
@@ -949,7 +949,7 @@ QT_WARNING_POP
 
 - (void)rightMouseDown:(NSEvent *)theEvent
 {
-    if (m_window->flags() & Qt::WindowTransparentForInput)
+    if (m_window && (m_window->flags() & Qt::WindowTransparentForInput) )
         return [super rightMouseDown:theEvent];
     m_buttons |= Qt::RightButton;
     m_sendUpAsRightButton = true;
@@ -958,7 +958,7 @@ QT_WARNING_POP
 
 - (void)rightMouseDragged:(NSEvent *)theEvent
 {
-    if (m_window->flags() & Qt::WindowTransparentForInput)
+    if (m_window && (m_window->flags() & Qt::WindowTransparentForInput) )
         return [super rightMouseDragged:theEvent];
     if (!(m_buttons & Qt::RightButton))
         qWarning("QNSView rightMouseDragged: Internal mouse button tracking invalid (missing Qt::RightButton)");
@@ -967,7 +967,7 @@ QT_WARNING_POP
 
 - (void)rightMouseUp:(NSEvent *)theEvent
 {
-    if (m_window->flags() & Qt::WindowTransparentForInput)
+    if (m_window && (m_window->flags() & Qt::WindowTransparentForInput) )
         return [super rightMouseUp:theEvent];
     m_buttons &= ~Qt::RightButton;
     m_sendUpAsRightButton = false;
@@ -976,7 +976,7 @@ QT_WARNING_POP
 
 - (void)otherMouseDown:(NSEvent *)theEvent
 {
-    if (m_window->flags() & Qt::WindowTransparentForInput)
+    if (m_window && (m_window->flags() & Qt::WindowTransparentForInput) )
         return [super otherMouseDown:theEvent];
     m_buttons |= cocoaButton2QtButton([theEvent buttonNumber]);
     [self handleMouseEvent:theEvent];
@@ -984,7 +984,7 @@ QT_WARNING_POP
 
 - (void)otherMouseDragged:(NSEvent *)theEvent
 {
-    if (m_window->flags() & Qt::WindowTransparentForInput)
+    if (m_window && (m_window->flags() & Qt::WindowTransparentForInput) )
         return [super otherMouseDragged:theEvent];
     if (!(m_buttons & ~(Qt::LeftButton | Qt::RightButton)))
         qWarning("QNSView otherMouseDragged: Internal mouse button tracking invalid (missing Qt::MiddleButton or Qt::ExtraButton*)");
@@ -993,7 +993,7 @@ QT_WARNING_POP
 
 - (void)otherMouseUp:(NSEvent *)theEvent
 {
-    if (m_window->flags() & Qt::WindowTransparentForInput)
+    if (m_window && (m_window->flags() & Qt::WindowTransparentForInput) )
         return [super otherMouseUp:theEvent];
     m_buttons &= ~cocoaButton2QtButton([theEvent buttonNumber]);
     [self handleMouseEvent:theEvent];
@@ -1072,7 +1072,7 @@ Q_GLOBAL_STATIC(QCocoaTabletDeviceDataHash, tabletDeviceDataHash)
 
 - (void)tabletPoint: (NSEvent *)theEvent
 {
-    if (m_window->flags() & Qt::WindowTransparentForInput)
+    if (m_window && (m_window->flags() & Qt::WindowTransparentForInput) )
         return [super tabletPoint:theEvent];
 
     [self handleTabletEvent: theEvent];
@@ -1120,7 +1120,7 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
 
 - (void)tabletProximity: (NSEvent *)theEvent
 {
-    if (m_window->flags() & Qt::WindowTransparentForInput)
+    if (m_window && (m_window->flags() & Qt::WindowTransparentForInput) )
         return [super tabletProximity:theEvent];
 
     ulong timestamp = [theEvent timestamp] * 1000;
@@ -1292,7 +1292,7 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
 #ifndef QT_NO_WHEELEVENT
 - (void)scrollWheel:(NSEvent *)theEvent
 {
-    if (m_window->flags() & Qt::WindowTransparentForInput)
+    if (m_window && (m_window->flags() & Qt::WindowTransparentForInput) )
         return [super scrollWheel:theEvent];
 
     QPoint angleDelta;
@@ -1465,14 +1465,14 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
 
 - (void)keyDown:(NSEvent *)nsevent
 {
-    if (m_window->flags() & Qt::WindowTransparentForInput)
+    if (m_window && (m_window->flags() & Qt::WindowTransparentForInput) )
         return [super keyDown:nsevent];
     [self handleKeyEvent:nsevent eventType:int(QEvent::KeyPress)];
 }
 
 - (void)keyUp:(NSEvent *)nsevent
 {
-    if (m_window->flags() & Qt::WindowTransparentForInput)
+    if (m_window && (m_window->flags() & Qt::WindowTransparentForInput) )
         return [super keyUp:nsevent];
     [self handleKeyEvent:nsevent eventType:int(QEvent::KeyRelease)];
 }
