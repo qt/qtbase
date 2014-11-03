@@ -186,8 +186,10 @@ int QEventDispatcherUNIXPrivate::doSelect(QEventLoop::ProcessEventsFlags flags, 
             FD_ZERO(&sn_vec[2].select_fds);
         }
 
+#ifndef Q_OS_NACL
         int wakeUpFd = initThreadWakeUp();
         highest = qMax(highest, wakeUpFd);
+#endif
 
         nsel = q->select(highest + 1,
                          &sn_vec[0].select_fds,
