@@ -13,3 +13,5 @@ SUBDIRS = \
     window_qtquick \                # QQuickWindow
     window_qmlapplicationengine \   # QQmlApplicationEngine
     window_shadereffects \          # Shaders!
+    window_controls \               # (some) Qt Quick Controls
+
