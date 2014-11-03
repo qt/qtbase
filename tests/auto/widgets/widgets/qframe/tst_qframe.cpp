@@ -35,6 +35,9 @@
 #include <QTest>
 #include <QFrame>
 #include <QStyleOptionFrame>
+#include <QPixmap>
+#include <QStyle>
+#include <QStyleFactory>
 
 class tst_QFrame : public QObject
 {
@@ -43,6 +46,8 @@ private slots:
     void testDefaults();
     void testInitStyleOption_data();
     void testInitStyleOption();
+    void testPainting_data();
+    void testPainting();
 };
 
 Q_DECLARE_METATYPE(QFrame::Shape)
@@ -58,13 +63,7 @@ void tst_QFrame::testDefaults()
     QCOMPARE(frame.frameStyle(), int(QFrame::Box));
 }
 
-class Frame : public QFrame
-{
-public:
-    using QFrame::initStyleOption;
-};
-
-void tst_QFrame::testInitStyleOption_data()
+static void provideFrameData()
 {
     QTest::addColumn<QString>("basename");
     QTest::addColumn<int>("lineWidth");
@@ -93,6 +92,17 @@ void tst_QFrame::testInitStyleOption_data()
                     << "winpanel_sunken" << lineWidth << midLineWidth << QFrame::WinPanel << QFrame::Sunken;
         }
     }
+}
+
+class Frame : public QFrame
+{
+public:
+    using QFrame::initStyleOption;
+};
+
+void tst_QFrame::testInitStyleOption_data()
+{
+    provideFrameData();
 }
 
 void tst_QFrame::testInitStyleOption()
@@ -135,6 +145,39 @@ void tst_QFrame::testInitStyleOption()
         QVERIFY(styleOption.state & QStyle::State_Sunken);
     else if (shadow == QFrame::Raised)
         QVERIFY(styleOption.state & QStyle::State_Raised);
+}
+
+QT_BEGIN_NAMESPACE
+Q_GUI_EXPORT QPalette qt_fusionPalette();
+QT_END_NAMESPACE
+
+void tst_QFrame::testPainting_data()
+{
+    provideFrameData();
+}
+
+void tst_QFrame::testPainting()
+{
+    QFETCH(QString, basename);
+    QFETCH(int, lineWidth);
+    QFETCH(int, midLineWidth);
+    QFETCH(QFrame::Shape, shape);
+    QFETCH(QFrame::Shadow, shadow);
+
+    QFrame frame;
+    frame.setStyle(QStyleFactory::create(QStringLiteral("fusion")));
+    frame.setPalette(qt_fusionPalette());
+    frame.setFrameStyle(shape | shadow);
+    frame.setLineWidth(lineWidth);
+    frame.setMidLineWidth(midLineWidth);
+    frame.resize(16, 16);
+
+    const QPixmap pixmap = frame.grab();
+
+    const QString referenceFilePath = QFINDTESTDATA(QStringLiteral("images/%1_%2_%3.png").arg(basename).arg(lineWidth).arg(midLineWidth));
+    const QPixmap referencePixmap(referenceFilePath);
+    QVERIFY2(!referencePixmap.isNull(), qPrintable(QStringLiteral("Could not load reference pixmap %1").arg(referenceFilePath)));
+    QCOMPARE(pixmap, referencePixmap);
 }
 
 QTEST_MAIN(tst_QFrame)
