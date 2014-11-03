@@ -23,7 +23,8 @@ static bool copyRecursively(const QString &srcFilePath,
     if (srcFileInfo.isDir()) {
         QDir targetDir(tgtFilePath);
         targetDir.cdUp();
-        if (!targetDir.mkdir(QFileInfo(tgtFilePath).fileName()))
+        targetDir.mkdir(QFileInfo(tgtFilePath).fileName());
+        if (!targetDir.exists())
             return false;
         QDir sourceDir(srcFilePath);
         QStringList fileNames = sourceDir.entryList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot | QDir::Hidden | QDir::System);
