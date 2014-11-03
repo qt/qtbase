@@ -50,6 +50,11 @@ if [ -z "$OPTIMIZE" ]; then
 fi
 echo "OPTIMIZE: $OPTIMIZE"
 
+# set up for passing the rest of the args to configure
+shift
+shift
+ARG_REST=$@
+
 # Extract parts from the toolchain
 # PNACL: pnacl|<blank>
 # ARCH : x86|arm
@@ -143,6 +148,9 @@ fi
 
 # set release/debug build
 NACL_CONFIGURE_LINE="$NACL_CONFIGURE_LINE -$OPTIMIZE"
+
+# add extra arguments
+NACL_CONFIGURE_LINE="$NACL_CONFIGURE_LINE $ARG_REST"
 
 # ### WORKAROUND: re-configuring breaks if mkspecs/qconfig.pri is present
 rm qtbase/mkspecs/qconfig.pri
