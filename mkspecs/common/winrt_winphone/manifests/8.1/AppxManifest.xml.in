@@ -34,7 +34,7 @@
             <m2:ShowOn Tile=\"square150x150Logo\" />
           </m2:ShowNameOnTiles>
         </m2:DefaultTile>
-        <m2:SplashScreen Image=\"$${WINRT_MANIFEST.logo_splash}\" />
+        <m2:SplashScreen Image=\"$${WINRT_MANIFEST.logo_splash}\" />$${WINRT_MANIFEST.rotation_preference}
       </m2:VisualElements>
     </Application>
   </Applications>$${WINRT_MANIFEST.capabilities}$${WINRT_MANIFEST.dependencies}

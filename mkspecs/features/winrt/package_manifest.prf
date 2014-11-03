@@ -24,6 +24,7 @@
 # WINRT_MANIFEST.logo_medium: Medium logo image file. Default provided by the mkspec.
 # WINRT_MANIFEST.logo_large: Large logo image file. Default provided by the mkspec.
 # WINRT_MANIFEST.splash_screen: Splash screen image file. Default provided by the mkspec.
+# WINRT_MANIFEST.rotation_preference: Orientation specification. Default is empty. (portrait, landscape, landscapeFlipped)
 # WINRT_MANIFEST.iconic_tile_icon: Image file for the "iconic" tile template icon. Default provided by the mkspec.
 # WINRT_MANIFEST.iconic_tile_small: Image file for the small "iconic" tile template logo. Default provided by the mkspec.
 # WINRT_MANIFEST.default_language: Specifies the default language of the application
@@ -86,6 +87,20 @@
     isEmpty(WINRT_MANIFEST.background): WINRT_MANIFEST.background = green
     isEmpty(WINRT_MANIFEST.foreground): WINRT_MANIFEST.foreground = light
     isEmpty(WINRT_MANIFEST.default_language): WINRT_MANIFEST.default_language = en
+
+    INDENT = "$$escape_expand(\\r\\n)        "
+
+    VS_XML_NAMESPACE = "m2"
+    winphone: VS_XML_NAMESPACE = "m3"
+    WINRT_MANIFEST.rotation_preference = $$unique(WINRT_MANIFEST.rotation_preference)
+    !isEmpty(WINRT_MANIFEST.rotation_preference) {
+        MANIFEST_ROTATION += "<$${VS_XML_NAMESPACE}:InitialRotationPreference>"
+        for(ROTATION, WINRT_MANIFEST.rotation_preference): \
+            MANIFEST_ROTATION += "  <$${VS_XML_NAMESPACE}:Rotation Preference=\"$$ROTATION\" />"
+        MANIFEST_ROTATION += "</$${VS_XML_NAMESPACE}:InitialRotationPreference>"
+
+        WINRT_MANIFEST.rotation_preference = $$join(MANIFEST_ROTATION, $$INDENT, $$INDENT)
+    }
 
     INDENT = "$$escape_expand(\\r\\n)  "
 
