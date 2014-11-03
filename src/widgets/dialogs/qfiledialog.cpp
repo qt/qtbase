@@ -510,7 +510,7 @@ bool QFileDialog::restoreState(const QByteArray &state)
     if (!d->qFileDialogUi->splitter->restoreState(d->splitterState))
         return false;
     QList<int> list = d->qFileDialogUi->splitter->sizes();
-    if (list.count() >= 2 && list.at(0) == 0 && list.at(1) == 0) {
+    if (list.count() >= 2 && (list.at(0) == 0 || list.at(1) == 0)) {
         for (int i = 0; i < list.count(); ++i)
             list[i] = d->qFileDialogUi->splitter->widget(i)->sizeHint().width();
         d->qFileDialogUi->splitter->setSizes(list);
