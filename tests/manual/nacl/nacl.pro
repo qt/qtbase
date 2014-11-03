@@ -12,3 +12,4 @@ SUBDIRS = \
     window_opengl \                 # QWindow with OpenGL graphics.
     window_qtquick \                # QQuickWindow
     window_qmlapplicationengine \   # QQmlApplicationEngine
+    window_shadereffects \          # Shaders!

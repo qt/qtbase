@@ -1,0 +1,61 @@
+/****************************************************************************
+**
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
+** Contact: http://www.qt-project.org/legal
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** Commercial License Usage
+** Licensees holding valid commercial Qt licenses may use this file in
+** accordance with the commercial license agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and Digia.  For licensing terms and
+** conditions see http://qt.digia.com/licensing.  For further information
+** use the contact form at http://qt.digia.com/contact-us.
+**
+** GNU Free Documentation License Usage
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of
+** this file.  Please review the following information to ensure
+** the GNU Free Documentation License version 1.3 requirements
+** will be met: http://www.gnu.org/copyleft/fdl.html.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+/*!
+    \title Qt Quick Examples - Shader Effects
+    \example shadereffects
+    \image qml-shadereffects-example.png
+    \brief This is a shader effects example.
+    \ingroup qtquickexamples
+
+    This example demonstrates a couple of visual effects that you can perform
+    with shaders in Qt Quick. For more information, visit
+    \l{Important Concepts In Qt Quick - Graphical Effects}
+
+    \include examples-run.qdocinc
+
+    \section1 Using ShaderEffect
+
+    The \l ShaderEffect type typically operates on other types, using a
+    \l ShaderEffectSource:
+    \snippet shadereffects/shadereffects.qml source
+
+    In the above snippet, \c theItem is the ID of a complex QML object in the
+    file.
+
+    ShaderEffects can use this ShaderEffectSource as a texture in their fragment
+    shader:
+    \snippet shadereffects/shadereffects.qml fragment
+
+    You can use any custom property on the ShaderEffect in your shader. This
+    makes animated shader code very easy:
+    \snippet shadereffects/shadereffects.qml properties
+
+    ShaderEffects can also have a custom vertext shader. Setting the mesh
+    property on ShaderEffect provides more vertices for you to manipulate,
+    enabling more effects.
+    \snippet shadereffects/shadereffects.qml vertex
+*/
