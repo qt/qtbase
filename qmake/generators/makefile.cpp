@@ -1168,30 +1168,16 @@ MakefileGenerator::writeObj(QTextStream &t, const char *src)
         t << escapeDependencyPath(dstf) << ": " << escapeDependencyPath(srcf)
           << " " << escapeDependencyPaths(findDependencies(srcf)).join(" \\\n\t\t");
 
-        ProKey comp, cimp;
+        ProKey comp;
         for(QStringList::Iterator cppit = Option::cpp_ext.begin(); cppit != Option::cpp_ext.end(); ++cppit) {
             if((*sit).endsWith((*cppit))) {
                 comp = "QMAKE_RUN_CXX";
-                cimp = "QMAKE_RUN_CXX_IMP";
                 break;
             }
         }
-        if(comp.isEmpty()) {
+        if (comp.isEmpty())
             comp = "QMAKE_RUN_CC";
-            cimp = "QMAKE_RUN_CC_IMP";
-        }
-        bool use_implicit_rule = !project->isEmpty(cimp);
-        use_implicit_rule = false;
-        if(use_implicit_rule) {
-            if(!project->isEmpty("OBJECTS_DIR")) {
-                use_implicit_rule = false;
-            } else {
-                int dot = (*sit).lastIndexOf('.');
-                if(dot == -1 || ((*sit).left(dot) + Option::obj_ext != (*oit)))
-                    use_implicit_rule = false;
-            }
-        }
-        if (!use_implicit_rule && !project->isEmpty(comp)) {
+        if (!project->isEmpty(comp)) {
             QString p = var(comp);
             p.replace(stringSrc, escapeFilePath(srcf));
             p.replace(stringObj, escapeFilePath(dstf));
