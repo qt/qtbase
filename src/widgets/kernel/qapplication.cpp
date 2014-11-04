@@ -4172,11 +4172,13 @@ void QApplicationPrivate::giveFocusAccordingToFocusPolicy(QWidget *widget, QEven
 {
     const bool setFocusOnRelease = QGuiApplication::styleHints()->setFocusOnTouchRelease();
     Qt::FocusPolicy focusPolicy = Qt::ClickFocus;
+    static QPointer<QWidget> focusedWidgetOnTouchBegin = 0;
 
     switch (event->type()) {
         case QEvent::MouseButtonPress:
         case QEvent::MouseButtonDblClick:
         case QEvent::TouchBegin:
+            focusedWidgetOnTouchBegin = QApplication::focusWidget();
             if (setFocusOnRelease)
                 return;
             break;
@@ -4184,6 +4186,11 @@ void QApplicationPrivate::giveFocusAccordingToFocusPolicy(QWidget *widget, QEven
         case QEvent::TouchEnd:
             if (!setFocusOnRelease)
                 return;
+            if (focusedWidgetOnTouchBegin != QApplication::focusWidget()) {
+                // Focus widget was changed while delivering press/move events.
+                // To not interfere with application logic, we leave focus as-is
+                return;
+            }
             break;
         case QEvent::Wheel:
             focusPolicy = Qt::WheelFocus;
