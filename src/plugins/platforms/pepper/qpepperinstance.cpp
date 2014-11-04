@@ -165,9 +165,13 @@ void QPepperInstance::DidChangeView(const View &view)
     m_pepperIntegraton->processEvents();
 }
 
-void QPepperInstance::DidChangeFocus(bool has_focus)
+void QPepperInstance::DidChangeFocus(bool hasFucus)
 {
-    Q_UNUSED(has_focus);
+    qCDebug(QT_PLATFORM_PEPPER_INSTANCE) << "DidChangeFocus" << hasFucus;
+
+    QWindow *fucusWindow = (hasFucus &&  m_pepperIntegraton && m_pepperIntegraton->m_topLevelWindow)
+                         ? m_pepperIntegraton->m_topLevelWindow->window() : 0;
+    QWindowSystemInterface::handleWindowActivated(fucusWindow, Qt::ActiveWindowFocusReason);
 }
 
 bool QPepperInstance::HandleInputEvent(const pp::InputEvent& event)

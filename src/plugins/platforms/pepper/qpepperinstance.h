@@ -46,7 +46,7 @@ public:
     // pp::Instance virtuals:
     virtual bool Init(uint32_t argc, const char* argn[], const char* argv[]);
     virtual void DidChangeView(const pp::View &view);
-    virtual void DidChangeFocus(bool has_focus);
+    virtual void DidChangeFocus(bool hasFucus);
     virtual bool HandleInputEvent(const pp::InputEvent& event);
     virtual bool HandleDocumentLoad(const pp::URLLoader& url_loader);
     virtual void HandleMessage(const pp::Var& var_message);
