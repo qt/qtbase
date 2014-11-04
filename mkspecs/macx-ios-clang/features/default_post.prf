@@ -205,18 +205,21 @@ macx-xcode {
 } else {
     # Be more specific about which architecture we're targeting
     contains(QT_ARCH, arm.*): \
-        actual_archs = $$QMAKE_IOS_DEVICE_ARCHS
+        VALID_ARCHS = $$QMAKE_IOS_DEVICE_ARCHS
     else: \
-        actual_archs = $$QMAKE_IOS_SIMULATOR_ARCHS
+        VALID_ARCHS = $$QMAKE_IOS_SIMULATOR_ARCHS
 
-    for(arch, actual_archs): \
-        arch_flags += -arch $$arch
+    ACTIVE_ARCHS = $(filter $(EXPORT_VALID_ARCHS), $(ARCHS))
+    ARCH_ARGS = $(foreach arch, $(if $(EXPORT_ACTIVE_ARCHS), $(EXPORT_ACTIVE_ARCHS), $(EXPORT_VALID_ARCHS)), -arch $(arch))
+
+    QMAKE_EXTRA_VARIABLES += VALID_ARCHS ACTIVE_ARCHS ARCH_ARGS
+
+    arch_flags = $(EXPORT_ARCH_ARGS)
 
     QMAKE_CFLAGS           += $$arch_flags
     QMAKE_CXXFLAGS         += $$arch_flags
     QMAKE_OBJECTIVE_CFLAGS += $$arch_flags
     QMAKE_LFLAGS           += $$arch_flags
 }
-unset(actual_archs)
 
 load(default_post)
