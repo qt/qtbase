@@ -366,7 +366,8 @@ void QNetworkSessionPrivateImpl::networkConfigurationsChanged()
     else
         updateStateFromActiveConfig();
 
-    startTime = engine->startTime(activeConfig.identifier());
+    if (engine)
+        startTime = engine->startTime(activeConfig.identifier());
 }
 
 void QNetworkSessionPrivateImpl::configurationChanged(QNetworkConfigurationPrivatePointer config)
