@@ -219,7 +219,7 @@
 
 // other x86 intrinsics
 #if defined(Q_PROCESSOR_X86) && ((defined(Q_CC_GNU) && (__GNUC__ * 100 + __GNUC_MINOR__ >= 404)) \
-    || (defined(Q_CC_CLANG) && (__clang_major__ * 100 + __clang_minor__ >= 208)) \
+    || (defined(Q_CC_CLANG) && (Q_CC_CLANG >= 208)) \
     || defined(Q_CC_INTEL))
 #  define QT_COMPILER_SUPPORTS_X86INTRIN
 #  ifdef Q_CC_INTEL

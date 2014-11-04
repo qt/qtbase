@@ -152,7 +152,26 @@
 #    endif
 #  elif defined(__clang__)
 /* Clang also masquerades as GCC */
-#    define Q_CC_CLANG
+#    if defined(__apple_build_version__)
+#      /* http://en.wikipedia.org/wiki/Xcode#Toolchain_Versions */
+#      if __apple_build_version__ >= 600051
+#        define Q_CC_CLANG 305
+#      elif __apple_build_version__ >= 503038
+#        define Q_CC_CLANG 304
+#      elif __apple_build_version__ >= 500275
+#        define Q_CC_CLANG 303
+#      elif __apple_build_version__ >= 425024
+#        define Q_CC_CLANG 302
+#      elif __apple_build_version__ >= 318045
+#        define Q_CC_CLANG 301
+#      elif __apple_build_version__ >= 211101
+#        define Q_CC_CLANG 300
+#      else
+#        error "Unknown Apple Clang version"
+#      endif
+#    else
+#      define Q_CC_CLANG ((__clang_major__ * 100) + __clang_minor__)
+#    endif
 #    define Q_ASSUME_IMPL(expr)  if (expr){} else __builtin_unreachable()
 #    define Q_UNREACHABLE_IMPL() __builtin_unreachable()
 #    if !defined(__has_extension)
@@ -566,7 +585,7 @@
 #  endif
 
 // Variadic macros are supported for gnu++98, c++11, c99 ... since 2.9
-#  if ((__clang_major__ * 100) + __clang_minor__) >= 209
+#  if Q_CC_CLANG >= 209
 #    if !defined(__STRICT_ANSI__) || defined(__GXX_EXPERIMENTAL_CXX0X__) \
       || (defined(__cplusplus) && (__cplusplus >= 201103L)) \
       || (defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L))
@@ -668,7 +687,7 @@
 #      define Q_COMPILER_VARIADIC_TEMPLATES
 #    endif
     /* Features that have no __has_feature() check */
-#    if ((__clang_major__ * 100) + __clang_minor__) >= 209 /* since clang 2.9 */
+#    if Q_CC_CLANG >= 209 /* since clang 2.9 */
 #      define Q_COMPILER_EXTERN_TEMPLATES
 #    endif
 #  endif
