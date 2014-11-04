@@ -612,6 +612,21 @@ void QGL2PaintEngineExPrivate::resetGLState()
 #endif
 }
 
+bool QGL2PaintEngineExPrivate::resetOpenGLContextActiveEngine()
+{
+    QOpenGLContext *guiGlContext = ctx->contextHandle();
+    QOpenGLContextPrivate *guiGlContextPrivate =
+        guiGlContext ? QOpenGLContextPrivate::get(guiGlContext) : 0;
+
+    if (guiGlContextPrivate && guiGlContextPrivate->active_engine) {
+        ctx->d_func()->refreshCurrentFbo();
+        guiGlContextPrivate->active_engine = 0;
+        return true;
+    }
+
+    return false;
+}
+
 void QGL2PaintEngineEx::endNativePainting()
 {
     Q_D(QGL2PaintEngineEx);
@@ -2015,6 +2030,8 @@ bool QGL2PaintEngineEx::begin(QPaintDevice *pdev)
     d->ctx = d->device->context();
     d->ctx->d_ptr->active_engine = this;
 
+    d->resetOpenGLContextActiveEngine();
+
     const QSize sz = d->device->size();
     d->width = sz.width();
     d->height = sz.height();
@@ -2080,6 +2097,8 @@ bool QGL2PaintEngineEx::end()
 
     ctx->d_ptr->active_engine = 0;
 
+    d->resetOpenGLContextActiveEngine();
+
     d->resetGLState();
 
     delete d->shaderManager;
@@ -2105,7 +2124,7 @@ void QGL2PaintEngineEx::ensureActive()
     Q_D(QGL2PaintEngineEx);
     QGLContext *ctx = d->ctx;
 
-    if (isActive() && ctx->d_ptr->active_engine != this) {
+    if (isActive() && (ctx->d_ptr->active_engine != this || d->resetOpenGLContextActiveEngine())) {
         ctx->d_ptr->active_engine = this;
         d->needsSync = true;
     }
