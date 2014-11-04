@@ -112,7 +112,8 @@ QString QOfonoManagerInterface::currentModem()
     QStringList modems = getModems();
     foreach (const QString &modem, modems) {
         QOfonoModemInterface device(modem);
-        if (device.isPowered() && device.isOnline())
+        if (device.isPowered() && device.isOnline()
+                && device.interfaces().contains(QStringLiteral("org.ofono.NetworkRegistration")))
         return modem;
     }
     return QString();
@@ -167,6 +168,12 @@ bool QOfonoModemInterface::isOnline()
 {
     QVariant var = getProperty(QStringLiteral("Online"));
     return qdbus_cast<bool>(var);
+}
+
+QStringList QOfonoModemInterface::interfaces()
+{
+    const QVariant var = getProperty(QStringLiteral("Interfaces"));
+    return var.toStringList();
 }
 
 QVariantMap QOfonoModemInterface::getProperties()

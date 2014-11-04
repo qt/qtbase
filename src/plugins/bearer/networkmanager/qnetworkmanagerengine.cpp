@@ -58,9 +58,7 @@ QNetworkManagerEngine::QNetworkManagerEngine(QObject *parent)
 :   QBearerEngineImpl(parent),
     managerInterface(new QNetworkManagerInterface(this)),
     systemSettings(new QNetworkManagerSettings(NM_DBUS_SERVICE, this)),
-    ofonoManager(new QOfonoManagerInterface(this)),
-    ofonoNetwork(0),
-    ofonoContextManager(0)
+    ofonoManager(new QOfonoManagerInterface(this))
 {
 
     if (!managerInterface->isValid())
@@ -97,16 +95,22 @@ QNetworkManagerEngine::~QNetworkManagerEngine()
     interfaceDevices.clear();
 
     connectionInterfaces.clear();
+
+    qDeleteAll(ofonoContextManagers);
+    ofonoContextManagers.clear();
 }
 
 void QNetworkManagerEngine::initialize()
 {
     QMutexLocker locker(&mutex);
 
-    connect(ofonoManager,SIGNAL(modemChanged()),this,SLOT(changedModem()));
-    ofonoNetwork = new QOfonoNetworkRegistrationInterface(ofonoManager->currentModem(),this);
-    ofonoContextManager = new QOfonoDataConnectionManagerInterface(ofonoManager->currentModem(),this);
-
+    if (ofonoManager->isValid()) {
+        Q_FOREACH (const QString &modem, ofonoManager->getModems()) {
+            QOfonoDataConnectionManagerInterface *ofonoContextManager
+                    = new QOfonoDataConnectionManagerInterface(modem,this);
+            ofonoContextManagers.insert(modem, ofonoContextManager);
+        }
+    }
     // Get current list of access points.
     foreach (const QDBusObjectPath &devicePath, managerInterface->getDevices()) {
         locker.unlock();
@@ -746,11 +750,14 @@ QNetworkConfigurationPrivate *QNetworkManagerEngine::parseConnection(const QStri
             }
         }
     } else if (connectionType == QLatin1String("gsm")) {
-        cpPriv->bearerType = currentBearerType();
+
+        const QString contextPath = map.value("connection").value("id").toString();
+        cpPriv->name = contextName(contextPath);
+        cpPriv->bearerType = currentBearerType(contextPath);
+
         if (map.value("connection").contains("timestamp")) {
             cpPriv->state |= QNetworkConfiguration::Discovered;
         }
-        cpPriv->name = contextName(map.value("connection").value("id").toString());
     }
 
     return cpPriv;
@@ -889,34 +896,32 @@ QNetworkConfigurationPrivatePointer QNetworkManagerEngine::defaultConfiguration(
     return QNetworkConfigurationPrivatePointer();
 }
 
-void QNetworkManagerEngine::changedModem()
+QNetworkConfiguration::BearerType QNetworkManagerEngine::currentBearerType(const QString &id)
 {
-    if (ofonoNetwork)
-        delete ofonoNetwork;
+    if (ofonoManager->isValid()) {
+        QString contextPart = id.section('/', -1);
 
-    ofonoNetwork = new QOfonoNetworkRegistrationInterface(ofonoManager->currentModem(),this);
+        QHashIterator<QString, QOfonoDataConnectionManagerInterface*> i(ofonoContextManagers);
+        while (i.hasNext()) {
+            i.next();
+            QString contextPath = i.key() +"/"+contextPart;
+            if (i.value()->contexts().contains(contextPath)) {
 
-    if (ofonoContextManager)
-        delete ofonoContextManager;
-    ofonoContextManager = new QOfonoDataConnectionManagerInterface(ofonoManager->currentModem(),this);
-}
-
-QNetworkConfiguration::BearerType QNetworkManagerEngine::currentBearerType()
-{
-    if (ofonoContextManager) {
-        QString bearer = ofonoContextManager->bearer();
-        if (bearer == QLatin1String("gsm")) {
-            return QNetworkConfiguration::Bearer2G;
-        } else if (bearer == QLatin1String("edge")) {
-            return QNetworkConfiguration::Bearer2G;
-        } else if (bearer == QLatin1String("umts")) {
-            return QNetworkConfiguration::BearerWCDMA;
-        } else if (bearer == QLatin1String("hspa")
-                   || bearer == QLatin1String("hsdpa")
-                   || bearer == QLatin1String("hsupa")) {
-            return QNetworkConfiguration::BearerHSPA;
-        } else if (bearer == QLatin1String("lte")) {
-            return QNetworkConfiguration::BearerLTE;
+                QString bearer = i.value()->bearer();
+                if (bearer == QStringLiteral("gsm")) {
+                    return QNetworkConfiguration::Bearer2G;
+                } else if (bearer == QStringLiteral("edge")) {
+                    return QNetworkConfiguration::Bearer2G;
+                } else if (bearer == QStringLiteral("umts")) {
+                    return QNetworkConfiguration::BearerWCDMA;
+                } else if (bearer == QStringLiteral("hspa")
+                           || bearer == QStringLiteral("hsdpa")
+                           || bearer == QStringLiteral("hsupa")) {
+                    return QNetworkConfiguration::BearerHSPA;
+                } else if (bearer == QStringLiteral("lte")) {
+                    return QNetworkConfiguration::BearerLTE;
+                }
+            }
         }
     }
     return QNetworkConfiguration::BearerUnknown;
@@ -924,13 +929,16 @@ QNetworkConfiguration::BearerType QNetworkManagerEngine::currentBearerType()
 
 QString QNetworkManagerEngine::contextName(const QString &path)
 {
-    if (ofonoContextManager) {
+    if (ofonoManager->isValid()) {
         QString contextPart = path.section('/', -1);
-
-        Q_FOREACH (const QString &oContext, ofonoContextManager->contexts()) {
-            if (oContext.contains(contextPart)) {
-                QOfonoConnectionContextInterface contextInterface(oContext,this);
-                return contextInterface.name();
+        QHashIterator<QString, QOfonoDataConnectionManagerInterface*> i(ofonoContextManagers);
+        while (i.hasNext()) {
+            i.next();
+            Q_FOREACH (const QString &oContext, i.value()->contexts()) {
+                if (oContext.contains(contextPart)) {
+                    QOfonoConnectionContextInterface contextInterface(oContext,this);
+                    return contextInterface.name();
+                }
             }
         }
     }

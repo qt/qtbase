@@ -106,7 +106,6 @@ private Q_SLOTS:
     void newAccessPoint(const QString &path);
     void removeAccessPoint(const QString &path);
     void scanFinished();
-    void changedModem();
 
 private:
     QNetworkConfigurationPrivate *parseConnection(const QString &settingsPath,
@@ -125,9 +124,8 @@ private:
     QHash<QString,QString> connectionInterfaces; // ac, interface
 
     QOfonoManagerInterface *ofonoManager;
-    QOfonoNetworkRegistrationInterface *ofonoNetwork;
-    QOfonoDataConnectionManagerInterface *ofonoContextManager;
-    QNetworkConfiguration::BearerType currentBearerType();
+    QHash <QString, QOfonoDataConnectionManagerInterface *> ofonoContextManagers;
+    QNetworkConfiguration::BearerType currentBearerType(const QString &id);
     QString contextName(const QString &path);
 
 };

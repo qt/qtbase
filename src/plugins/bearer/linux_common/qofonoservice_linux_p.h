@@ -115,6 +115,7 @@ public:
 
     bool isPowered();
     bool isOnline();
+    QStringList interfaces();
 private:
     QVariantMap getProperties();
     QVariantMap propertiesMap;
