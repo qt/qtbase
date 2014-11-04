@@ -140,11 +140,6 @@ static int unixCheckClockType()
 #endif
 }
 
-static inline qint64 fractionAdjustment()
-{
-    return 1000*1000ull;
-}
-
 bool QElapsedTimer::isMonotonic() Q_DECL_NOTHROW
 {
     return clockType() == MonotonicClock;
@@ -196,7 +191,7 @@ static qint64 elapsedAndRestart(qint64 sec, qint64 frac,
     do_gettime(nowsec, nowfrac);
     sec = *nowsec - sec;
     frac = *nowfrac - frac;
-    return sec * Q_INT64_C(1000) + frac / fractionAdjustment();
+    return (sec * Q_INT64_C(1000000000) + frac) / Q_INT64_C(1000000);
 }
 
 void QElapsedTimer::start() Q_DECL_NOTHROW
@@ -220,20 +215,19 @@ qint64 QElapsedTimer::nsecsElapsed() const Q_DECL_NOTHROW
 
 qint64 QElapsedTimer::elapsed() const Q_DECL_NOTHROW
 {
-    qint64 sec, frac;
-    return elapsedAndRestart(t1, t2, &sec, &frac);
+    return nsecsElapsed() / Q_INT64_C(1000000);
 }
 
 qint64 QElapsedTimer::msecsSinceReference() const Q_DECL_NOTHROW
 {
-    return t1 * Q_INT64_C(1000) + t2 / fractionAdjustment();
+    return t1 * Q_INT64_C(1000) + t2 / Q_INT64_C(1000000);
 }
 
 qint64 QElapsedTimer::msecsTo(const QElapsedTimer &other) const Q_DECL_NOTHROW
 {
     qint64 secs = other.t1 - t1;
     qint64 fraction = other.t2 - t2;
-    return secs * Q_INT64_C(1000) + fraction / fractionAdjustment();
+    return (secs * Q_INT64_C(1000000000) + fraction) / Q_INT64_C(1000000);
 }
 
 qint64 QElapsedTimer::secsTo(const QElapsedTimer &other) const Q_DECL_NOTHROW
