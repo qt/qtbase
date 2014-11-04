@@ -21,6 +21,7 @@
 #include "qpepperhelpers.h"
 #include "qpepperintegration.h"
 #include "qpepperinstance.h"
+#include "qpeppercursor.h"
 
 #include <qdebug.h>
 
@@ -31,9 +32,11 @@ QT_BEGIN_NAMESPACE
 // Windows can then be show "fullscreen" and occupy the
 // entire tag.
 QPepperScreen::QPepperScreen()
-: m_depth(32), m_format(QImage::Format_ARGB32_Premultiplied)
+: m_depth(32)
+, m_format(QImage::Format_ARGB32_Premultiplied)
+, m_cursor(new QPepperCursor)
 {
-//    qDebug() << "QPepperScreen::QPepperScreen()";
+
 }
 
 QRect QPepperScreen::geometry() const
@@ -45,6 +48,11 @@ QRect QPepperScreen::geometry() const
 qreal QPepperScreen::devicePixelRatio() const
 {
     return QPepperInstance::get()->devicePixelRatio();
+}
+
+QPlatformCursor *QPepperScreen::cursor() const
+{
+    return m_cursor.data();
 }
 
 void QPepperScreen::resizeMaximizedWindows()

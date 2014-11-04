@@ -17,30 +17,23 @@
 **
 ****************************************************************************/
 
-#ifndef QPEPPERSCREEN_H
-#define QPEPPERSCREEN_H
+#ifndef QPEPPERCURSOR_H
+#define QPEPPERCURSOR_H
 
-#include <QtCore/qscopedpointer.h>
-#include <qpa/qplatformscreen.h>
+#include <QtCore/qloggingcategory.h>
+#include <qpa/qplatformcursor.h>
 
 QT_BEGIN_NAMESPACE
 
-class QPlatformCursor;
-class QPepperScreen : public QPlatformScreen
+Q_DECLARE_LOGGING_CATEGORY(QT_PLATFORM_PEPPER_CURSOR);
+
+class QPepperCursor : public QPlatformCursor
 {
 public:
-    QPepperScreen();
-    QRect geometry() const;
-    int depth() const { return m_depth; }
-    QImage::Format format() const { return m_format; }
-    qreal devicePixelRatio() const;
-    QPlatformCursor *cursor() const;
-    void resizeMaximizedWindows();
-
-public:
-    int m_depth;
-    QImage::Format m_format;
-    QScopedPointer<QPlatformCursor> m_cursor;
+    QPepperCursor();
+    ~QPepperCursor();
+    void changeCursor(QCursor *cursor, QWindow *window);
+private:
 };
 
 QT_END_NAMESPACE
