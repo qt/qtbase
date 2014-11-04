@@ -218,7 +218,7 @@
 #endif
 
 // other x86 intrinsics
-#if defined(Q_PROCESSOR_X86) && ((defined(Q_CC_GNU) && (__GNUC__ * 100 + __GNUC_MINOR__ >= 404)) \
+#if defined(Q_PROCESSOR_X86) && ((defined(Q_CC_GNU) && (Q_CC_GNU >= 404)) \
     || (defined(Q_CC_CLANG) && (Q_CC_CLANG >= 208)) \
     || defined(Q_CC_INTEL))
 #  define QT_COMPILER_SUPPORTS_X86INTRIN
@@ -332,7 +332,7 @@ static __forceinline unsigned long _bit_scan_forward(uint val)
     _BitScanForward(&result, val);
     return result;
 }
-#  elif (defined(Q_CC_CLANG) || (defined(Q_CC_GNU) && __GNUC__ * 100 + __GNUC_MINOR__ < 405)) \
+#  elif (defined(Q_CC_CLANG) || (defined(Q_CC_GNU) && Q_CC_GNU < 405)) \
     && !defined(Q_CC_INTEL)
 // Clang is missing the intrinsic for _bit_scan_reverse
 // GCC only added it in version 4.5

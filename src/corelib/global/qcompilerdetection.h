@@ -137,7 +137,7 @@
 #  endif
 
 #elif defined(__GNUC__)
-#  define Q_CC_GNU
+#  define Q_CC_GNU          (__GNUC__ * 100 + __GNUC_MINOR__)
 #  define Q_C_CALLBACKS
 #  if defined(__MINGW32__)
 #    define Q_CC_MINGW
@@ -187,7 +187,7 @@
 #    endif
 #  else
 /* Plain GCC */
-#    if (__GNUC__ * 100 + __GNUC_MINOR__) >= 405
+#    if Q_CC_GNU >= 405
 #      define Q_ASSUME_IMPL(expr)  if (expr){} else __builtin_unreachable()
 #      define Q_UNREACHABLE_IMPL() __builtin_unreachable()
 #      define Q_DECL_DEPRECATED_X(text) __attribute__ ((__deprecated__(text)))
@@ -221,7 +221,7 @@
 #      define QT_NO_ARM_EABI
 #    endif
 #  endif
-#  if (__GNUC__ * 100 + __GNUC_MINOR__) >= 403 && !defined(Q_CC_CLANG)
+#  if Q_CC_GNU >= 403 && !defined(Q_CC_CLANG)
 #      define Q_ALLOC_SIZE(x) __attribute__((alloc_size(x)))
 #  endif
 
@@ -728,7 +728,7 @@
 #if defined(Q_CC_GNU) && !defined(Q_CC_INTEL) && !defined(Q_CC_CLANG)
 #  define Q_COMPILER_RESTRICTED_VLA
 #  define Q_COMPILER_THREADSAFE_STATICS
-#  if (__GNUC__ * 100 + __GNUC_MINOR__) >= 403
+#  if Q_CC_GNU >= 403
 //   GCC supports binary literals in C, C++98 and C++11 modes
 #    define Q_COMPILER_BINARY_LITERALS
 #  endif
@@ -739,13 +739,13 @@
 #    define Q_COMPILER_VARIADIC_MACROS
 #  endif
 #  if defined(__GXX_EXPERIMENTAL_CXX0X__) || __cplusplus >= 201103L
-#    if (__GNUC__ * 100 + __GNUC_MINOR__) >= 403
+#    if Q_CC_GNU >= 403
        /* C++11 features supported in GCC 4.3: */
 #      define Q_COMPILER_DECLTYPE
 #      define Q_COMPILER_RVALUE_REFS
 #      define Q_COMPILER_STATIC_ASSERT
 #    endif
-#    if (__GNUC__ * 100 + __GNUC_MINOR__) >= 404
+#    if Q_CC_GNU >= 404
        /* C++11 features supported in GCC 4.4: */
 #      define Q_COMPILER_AUTO_FUNCTION
 #      define Q_COMPILER_AUTO_TYPE
@@ -754,7 +754,7 @@
 #      define Q_COMPILER_UNICODE_STRINGS
 #      define Q_COMPILER_VARIADIC_TEMPLATES
 #    endif
-#    if (__GNUC__ * 100 + __GNUC_MINOR__) >= 405
+#    if Q_CC_GNU >= 405
        /* C++11 features supported in GCC 4.5: */
 #      define Q_COMPILER_EXPLICIT_CONVERSIONS
        /* GCC 4.4 implements initializer_list but does not define typedefs required
@@ -764,7 +764,7 @@
 #      define Q_COMPILER_RAW_STRINGS
 #      define Q_COMPILER_CLASS_ENUM
 #    endif
-#    if (__GNUC__ * 100 + __GNUC_MINOR__) >= 406
+#    if Q_CC_GNU >= 406
        /* Pre-4.6 compilers implement a non-final snapshot of N2346, hence default and delete
         * functions are supported only if they are public. Starting from 4.6, GCC handles
         * final version - the access modifier is not relevant. */
@@ -776,7 +776,7 @@
 #      define Q_COMPILER_UNRESTRICTED_UNIONS
 #      define Q_COMPILER_RANGE_FOR
 #    endif
-#    if (__GNUC__ * 100 + __GNUC_MINOR__) >= 407
+#    if Q_CC_GNU >= 407
        /* GCC 4.4 implemented <atomic> and std::atomic using its old intrinsics.
         * However, the implementation is incomplete for most platforms until GCC 4.7:
         * instead, std::atomic would use an external lock. Since we need an std::atomic
@@ -792,20 +792,20 @@
 #      define Q_COMPILER_TEMPLATE_ALIAS
 #      define Q_COMPILER_UDL
 #    endif
-#    if (__GNUC__ * 100 + __GNUC_MINOR__) >= 408
+#    if Q_CC_GNU >= 408
 #      define Q_COMPILER_ATTRIBUTES
 #      define Q_COMPILER_ALIGNAS
 #      define Q_COMPILER_ALIGNOF
 #      define Q_COMPILER_INHERITING_CONSTRUCTORS
 #      define Q_COMPILER_THREAD_LOCAL
-#      if (__GNUC__ * 100 + __GNUC_MINOR__) > 408 || __GNUC_PATCHLEVEL__ >= 1
+#      if Q_CC_GNU > 408 || __GNUC_PATCHLEVEL__ >= 1
 #         define Q_COMPILER_REF_QUALIFIERS
 #      endif
 #    endif
      /* C++11 features are complete as of GCC 4.8.1 */
 #  endif
 #  if __cplusplus > 201103L
-#    if (__GNUC__ * 100 + __GNUC_MINOR__) >= 409
+#    if Q_CC_GNU >= 409
      /* C++1y features in GCC 4.9 - deprecated, do not update this list */
 //#    define Q_COMPILER_BINARY_LITERALS   // already supported since GCC 4.3 as an extension
 #      define Q_COMPILER_LAMBDA_CAPTURES
