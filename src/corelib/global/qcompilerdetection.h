@@ -78,7 +78,7 @@
 #  define Q_NO_USING_KEYWORD
 
 #elif defined(_MSC_VER)
-#  define Q_CC_MSVC
+#  define Q_CC_MSVC (_MSC_VER)
 #  define Q_CC_MSVC_NET
 #  define Q_OUTOFLINE_TEMPLATE inline
 #  if _MSC_VER < 1600
@@ -144,7 +144,7 @@
 #  endif
 #  if defined(__INTEL_COMPILER)
 /* Intel C++ also masquerades as GCC */
-#    define Q_CC_INTEL
+#    define Q_CC_INTEL      (__INTEL_COMPILER)
 #    define Q_ASSUME_IMPL(expr)  __assume(expr)
 #    define Q_UNREACHABLE_IMPL() __builtin_unreachable()
 #    if __INTEL_COMPILER >= 1300 && !defined(__APPLE__)
@@ -327,7 +327,7 @@
 
 /* Using the `using' keyword avoids Intel C++ for Linux warnings */
 #  elif defined(__INTEL_COMPILER)
-#    define Q_CC_INTEL
+#    define Q_CC_INTEL      (__INTEL_COMPILER)
 
 /* Uses CFront, make sure to read the manual how to tweak templates. */
 #  elif defined(__ghs)
