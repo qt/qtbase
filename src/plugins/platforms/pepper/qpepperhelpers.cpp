@@ -39,6 +39,16 @@ pp::Size toPPSize(const QSize &size)
     return pp::Size(size.width(), size.height());
 }
 
+QPointF toQPointF(pp::FloatPoint point)
+{
+    return QPointF(point.x(), point.y());
+}
+
+pp::FloatPoint toPPFloatPoint(QPointF point)
+{
+    return pp::FloatPoint(point.x(), point.y());
+}
+
 ThreadSafeRefCount::ThreadSafeRefCount()
    : ref(0) { }
 

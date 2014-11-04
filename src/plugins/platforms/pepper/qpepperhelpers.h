@@ -20,14 +20,18 @@
 #ifndef QPEPPERHELPERS_H
 #define QPEPPERHELPERS_H
 
-#include <ppapi/cpp/rect.h>
 #include <QRect>
 #include <QAtomicInt>
+
+#include <ppapi/cpp/rect.h>
+#include <ppapi/cpp/point.h>
 
 pp::Rect toPPRect(const QRect rect);
 QRect toQRect(pp::Rect rect);
 QSize toQSize(pp::Size size);
 pp::Size toPPSize(const QSize &size);
+QPointF toQPointF(pp::FloatPoint point);
+pp::FloatPoint toPPFloatPoint(QPointF point);
 
 // QAtomic-based ref count for the callback factory.
 class ThreadSafeRefCount
