@@ -1423,27 +1423,29 @@ const Node* Tree::checkForCollision(const QString& name)
 
   The node \a t
  */
-QString Tree::getNewLinkTarget(const Node* t, const QString& fileName, QString& text)
+QString Tree::getNewLinkTarget(const Node* t, const QString& fileName, QString& text, bool broken)
 {
-    QString target;
-    if (t) {
+    QString moduleName;
+    if (t && !broken) {
         Tree* tree = t->tree();
-        incrementLinkCount();
         if (tree != this)
             tree->incrementLinkCount();
-        target = QString("qa-target-%1").arg(-(linkCount()));
-        QString moduleName = tree->moduleName();
-        TargetLoc* tloc = new TargetLoc(target, fileName, text);
-        TargetList* tList = 0;
-        TargetListMap::iterator i = targetListMap_->find(moduleName);
-        if (i == targetListMap_->end()) {
-            tList = new TargetList;
-            i = targetListMap_->insert(moduleName, tList);
-        }
-        else
-            tList = i.value();
-        tList->append(tloc);
+        moduleName = tree->moduleName();
     }
+    else
+        moduleName = "broken";
+    incrementLinkCount();
+    QString target = QString("qa-target-%1").arg(-(linkCount()));
+    TargetLoc* tloc = new TargetLoc(target, fileName, text, broken);
+    TargetList* tList = 0;
+    TargetListMap::iterator i = targetListMap_->find(moduleName);
+    if (i == targetListMap_->end()) {
+        tList = new TargetList;
+        i = targetListMap_->insert(moduleName, tList);
+    }
+    else
+        tList = i.value();
+    tList->append(tloc);
     return target;
 }
 

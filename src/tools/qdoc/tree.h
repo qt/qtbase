@@ -70,11 +70,12 @@ struct TargetRec
 struct TargetLoc
 {
   public:
-  TargetLoc(const QString& t, const QString& fileName, const QString& text)
-  : target_(t), fileName_(fileName), text_(text) { }
+  TargetLoc(const QString& t, const QString& fileName, const QString& text, bool broken = false)
+  : target_(t), fileName_(fileName), text_(text), broken_(broken) { }
     QString target_;
     QString fileName_;
     QString text_;
+    bool    broken_;
 };
 
 typedef QMultiMap<QString, TargetRec*> TargetMap;
@@ -205,7 +206,7 @@ class Tree
     bool docsHaveBeenGenerated() const { return docsHaveBeenGenerated_; }
     void setTreeHasBeenAnalyzed() { treeHasBeenAnalyzed_ = true; }
     void setdocsHaveBeenGenerated() { docsHaveBeenGenerated_ = true; }
-    QString getNewLinkTarget(const Node* t, const QString& fileName, QString& text);
+    QString getNewLinkTarget(const Node* t, const QString& fileName, QString& text, bool broken);
     TargetList* getTargetList(const QString& module);
     QStringList getTargetListKeys() { return targetListMap_->keys(); }
 

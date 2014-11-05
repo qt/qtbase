@@ -91,6 +91,7 @@ public:
 protected:
     virtual void generateQAPage();
     QString generateLinksToLinksPage(const QString& module, CodeMarker* marker);
+    QString generateLinksToBrokenLinksPage(CodeMarker* marker, int& count);
     virtual int generateAtom(const Atom *atom,
                              const Node *relative,
                              CodeMarker *marker);
