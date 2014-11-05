@@ -791,7 +791,6 @@ QVariant QWindowsMimeURI::convertToMime(const QString &mimeType, LPDATAOBJECT pD
 {
     if (mimeType == QLatin1String("text/uri-list")) {
         if (canGetData(CF_HDROP, pDataObj)) {
-            QByteArray texturi;
             QList<QVariant> urls;
 
             QByteArray data = getData(CF_HDROP, pDataObj);
@@ -1354,7 +1353,7 @@ bool QLastResortMimes::canConvertToMime(const QString &mimeType, IDataObject *pD
         int cf = RegisterClipboardFormat(reinterpret_cast<const wchar_t *> (clipFormat.utf16()));
         return canGetData(cf, pDataObj);
     } else if (formats.keys(mimeType).isEmpty()) {
-        // if it is not in there then register it an see if we can get it
+        // if it is not in there then register it and see if we can get it
         int cf = QWindowsMime::registerMimeType(mimeType);
         return canGetData(cf, pDataObj);
     } else {
