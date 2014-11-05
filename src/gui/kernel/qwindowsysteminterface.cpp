@@ -287,7 +287,7 @@ void QWindowSystemInterface::handleKeyEvent(QWindow *w, QEvent::Type t, int k, Q
 
 void QWindowSystemInterface::handleKeyEvent(QWindow *tlw, ulong timestamp, QEvent::Type t, int k, Qt::KeyboardModifiers mods, const QString & text, bool autorep, ushort count)
 {
-    if (t == QEvent::KeyPress && QWindowSystemInterface::tryHandleShortcutEvent(tlw, timestamp, k, mods, text))
+    if (t == QEvent::KeyPress && tlw && QWindowSystemInterface::tryHandleShortcutEvent(tlw, timestamp, k, mods, text))
             return;
 
     QWindowSystemInterfacePrivate::KeyEvent * e =
