@@ -268,8 +268,11 @@
         qImDebug() << "keyboard was closed, clearing focus object";
         m_inputContext->clearCurrentFocusObject();
     } else {
-        // We've lost responder status because another window was made active
-        Q_ASSERT(FirstResponderCandidate::currentCandidate());
+        // We've lost responder status because another Qt window was made active,
+        // another QIOSTextResponder was made first-responder, another UIView was
+        // made first-responder, or the first-responder was cleared globally. In
+        // either of these cases we don't have to do anything.
+        qImDebug() << "lost first responder, but not clearing focus object";
     }
 
     return YES;
