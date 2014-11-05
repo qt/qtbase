@@ -1,0 +1,28 @@
+<RCC>
+    <qresource prefix="/">
+        <file>main.qml</file>
+        <file>content/AboutDialog.qml</file>
+        <file>content/ChildWindow.qml</file>
+        <file>content/Controls.qml</file>
+        <file>content/ImageViewer.qml</file>
+        <file>content/ModelView.qml</file>
+        <file>content/Layouts.qml</file>
+        <file>content/Styles.qml</file>
+        <file>images/document-open.png</file>
+        <file>images/document-open@2x.png</file>
+        <file>images/document-save-as.png</file>
+        <file>images/document-save-as@2x.png</file>
+        <file>images/folder_new.png</file>
+        <file>images/tab.png</file>
+        <file>images/tab_selected.png</file>
+        <file>images/window-new.png</file>
+        <file>images/window-new@2x.png</file>
+        <file>images/bubble.png</file>
+        <file>images/button-pressed.png</file>
+        <file>images/button.png</file>
+        <file>images/progress-background.png</file>
+        <file>images/progress-fill.png</file>
+        <file>images/textfield.png</file>
+        <file>images/slider-handle.png</file>
+    </qresource>
+</RCC>

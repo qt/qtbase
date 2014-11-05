@@ -14,4 +14,4 @@ SUBDIRS = \
     window_qmlapplicationengine \   # QQmlApplicationEngine
     window_shadereffects \          # Shaders!
     window_controls \               # (some) Qt Quick Controls
-
+    window_controls_gallery \       # Qt Quick Gallery example
