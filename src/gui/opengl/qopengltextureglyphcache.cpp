@@ -82,10 +82,12 @@ QOpenGLTextureGlyphCache::~QOpenGLTextureGlyphCache()
     clear();
 }
 
+#if !defined(QT_OPENGL_ES_2)
 static inline bool isCoreProfile()
 {
     return QOpenGLContext::currentContext()->format().profile() == QSurfaceFormat::CoreProfile;
 }
+#endif
 
 void QOpenGLTextureGlyphCache::createTextureData(int width, int height)
 {
