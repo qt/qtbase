@@ -4230,8 +4230,9 @@ bool QApplicationPrivate::shouldSetFocus(QWidget *w, Qt::FocusPolicy policy)
     return true;
 }
 
-void QApplicationPrivate::updateTouchPointsForWidget(QWidget *widget, QTouchEvent *touchEvent)
+bool QApplicationPrivate::updateTouchPointsForWidget(QWidget *widget, QTouchEvent *touchEvent)
 {
+    bool containsPress = false;
     for (int i = 0; i < touchEvent->touchPoints().count(); ++i) {
         QTouchEvent::TouchPoint &touchPoint = touchEvent->_touchPoints[i];
 
@@ -4244,7 +4245,11 @@ void QApplicationPrivate::updateTouchPointsForWidget(QWidget *widget, QTouchEven
         touchPoint.d->rect = rect;
         touchPoint.d->startPos = widget->mapFromGlobal(touchPoint.startScreenPos().toPoint()) + delta;
         touchPoint.d->lastPos = widget->mapFromGlobal(touchPoint.lastScreenPos().toPoint()) + delta;
+
+        if (touchPoint.state() == Qt::TouchPointPressed)
+            containsPress = true;
     }
+    return containsPress;
 }
 
 void QApplicationPrivate::initializeMultitouch()
@@ -4391,10 +4396,13 @@ bool QApplicationPrivate::translateRawTouchEvent(QWidget *window,
                                QApplication::keyboardModifiers(),
                                it.value().first,
                                it.value().second);
-        updateTouchPointsForWidget(widget, &touchEvent);
+        bool containsPress = updateTouchPointsForWidget(widget, &touchEvent);
         touchEvent.setTimestamp(timestamp);
         touchEvent.setWindow(window->windowHandle());
         touchEvent.setTarget(widget);
+
+        if (containsPress)
+            widget->setAttribute(Qt::WA_WState_AcceptedTouchBeginEvent);
 
         switch (touchEvent.type()) {
         case QEvent::TouchBegin:

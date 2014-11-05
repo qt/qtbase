@@ -275,7 +275,7 @@ public:
     QPixmap *ignore_cursor;
 #endif
 
-    static void updateTouchPointsForWidget(QWidget *widget, QTouchEvent *touchEvent);
+    static bool updateTouchPointsForWidget(QWidget *widget, QTouchEvent *touchEvent);
     void initializeMultitouch();
     void initializeMultitouch_sys();
     void cleanupMultitouch();
