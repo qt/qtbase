@@ -114,6 +114,7 @@ QSurfaceFormat QPepperGLContext::format() const
     format.setSwapBehavior(QSurfaceFormat::DoubleBuffer);
     format.setDepthBufferSize(24);
     format.setStencilBufferSize(8);
+    format.setRenderableType(QSurfaceFormat::OpenGLES);
     return format;
 }
 

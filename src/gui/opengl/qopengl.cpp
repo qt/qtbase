@@ -61,6 +61,12 @@ QOpenGLExtensionMatcher::QOpenGLExtensionMatcher()
     QOpenGLFunctions *funcs = ctx->functions();
     const char *extensionStr = 0;
 
+#ifdef Q_OS_NACL
+    // As long as QPepperGLContext::getProcAddress is not implemented
+    // this function needs to return "no extentinons".
+    return;
+#endif
+
     if (ctx->isOpenGLES() || ctx->format().majorVersion() < 3)
         extensionStr = reinterpret_cast<const char *>(funcs->glGetString(GL_EXTENSIONS));
 
