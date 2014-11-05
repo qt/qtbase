@@ -18,6 +18,7 @@
 ****************************************************************************/
 
 #include "qpeppereventtranslator.h"
+#include "qpepperhelpers.h"
 
 #include <ppapi/cpp/point.h>
 #include <ppapi/cpp/var.h>
@@ -103,12 +104,16 @@ bool PepperEventTranslator::processWheelEvent(const pp::WheelInputEvent &event)
 
     QPoint localPoint = window ? currentMouseGlobalPos - window->position() : currentMouseGlobalPos;
 
-    QPoint pixelDelta(event.GetTicks().x(), event.GetTicks().y());
-    // ### scaling factor of 30 determined by testing on a MacBook. We should do something
-    // smarter here, like accumulating pixel deltas and then send a large angle delta.
-    QPoint angleDelta = pixelDelta * 30;
+    if (event.GetScrollByPage()) {
+        qWarning("PepperEventTranslator::processWheelEvent: ScrollByPage not implemented.");
+    } else {
+        QPointF delta = toQPointF(event.GetDelta()); // delta is in (device independent) pixels
+        const qreal wheelDegreesPerTick = 1;
+        const qreal qtTickUnit = (1.0/8.0); // tick unit is "eighths of a degree"
+        QPointF ticks = toQPointF(event.GetDelta()) * wheelDegreesPerTick / qtTickUnit;
+        QWindowSystemInterface::handleWheelEvent(window, localPoint, currentMouseGlobalPos, delta.toPoint(), ticks.toPoint());
+    }
 
-    QWindowSystemInterface::handleWheelEvent(window, localPoint, currentMouseGlobalPos, pixelDelta, angleDelta);
     return true;
 }
 
