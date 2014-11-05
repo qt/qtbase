@@ -1452,6 +1452,7 @@ QWindowsMime * QWindowsMimeConverter::converterToMime(const QString &mimeType, I
 
 QStringList QWindowsMimeConverter::allMimesForFormats(IDataObject *pDataObj) const
 {
+    qCDebug(lcQpaMime) << "QWindowsMime::allMimesForFormats()";
     ensureInitialized();
     QStringList formats;
     LPENUMFORMATETC FAR fmtenum;
@@ -1461,10 +1462,9 @@ QStringList QWindowsMimeConverter::allMimesForFormats(IDataObject *pDataObj) con
         FORMATETC fmtetc;
         while (S_OK == fmtenum->Next(1, &fmtetc, 0)) {
 #if defined(QMIME_DEBUG)
-            qDebug("QWindowsMime::allMimesForFormats()");
             wchar_t buf[256] = {0};
             GetClipboardFormatName(fmtetc.cfFormat, buf, 255);
-            qDebug("CF = %d : %s", fmtetc.cfFormat, QString::fromWCharArray(buf));
+            qDebug("CF = %d : %s", fmtetc.cfFormat, qPrintable(QString::fromWCharArray(buf)));
 #endif
             for (int i= m_mimes.size() - 1; i >= 0; --i) {
                 QString format = m_mimes.at(i)->mimeForFormat(fmtetc);
@@ -1478,7 +1478,7 @@ QStringList QWindowsMimeConverter::allMimesForFormats(IDataObject *pDataObj) con
         }
         fmtenum->Release();
     }
-    qCDebug(lcQpaMime) << __FUNCTION__ << pDataObj << formats;
+    qCDebug(lcQpaMime) << pDataObj << formats;
     return formats;
 }
 
