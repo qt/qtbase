@@ -106,3 +106,9 @@ if (event->mimeData()->hasColor()) {
     ...
 }
 //! [7]
+
+
+//! [8]
+application/x-qt-windows-mime;value="FileContents";index=0
+application/x-qt-windows-mime;value="FileContents";index=1
+//! [8]

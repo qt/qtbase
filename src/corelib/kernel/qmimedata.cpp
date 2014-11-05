@@ -286,6 +286,11 @@ QVariant QMimeDataPrivate::retrieveTypedData(const QString &format, QVariant::Ty
     The \c value declaration of each format describes the way in which the
     data is encoded.
 
+    In some cases (e.g. dropping multiple email attachments), multiple data
+    values are available. They can be accessed by adding an \c index value:
+
+    \snippet code/src_corelib_kernel_qmimedata.cpp 8
+
     On Windows, the MIME format does not always map directly to the
     clipboard formats. Qt provides QWinMime to map clipboard
     formats to open-standard MIME formats. Similarly, the

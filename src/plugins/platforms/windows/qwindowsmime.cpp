@@ -343,10 +343,11 @@ static bool setData(const QByteArray &data, STGMEDIUM *pmedium)
     return true;
 }
 
-static QByteArray getData(int cf, IDataObject *pDataObj)
+static QByteArray getData(int cf, IDataObject *pDataObj, int lindex = -1)
 {
     QByteArray data;
     FORMATETC formatetc = setCf(cf);
+    formatetc.lindex = lindex;
     STGMEDIUM s;
     if (pDataObj->GetData(&formatetc, &s) == S_OK) {
         DWORD * val = (DWORD*)GlobalLock(s.hGlobal);
@@ -1339,16 +1340,29 @@ static bool isCustomMimeType(const QString &mimeType)
     return mimeType.startsWith(QLatin1String(x_qt_windows_mime), Qt::CaseInsensitive);
 }
 
-static QString customMimeType(const QString &mimeType)
+static QString customMimeType(const QString &mimeType, int *lindex = 0)
 {
     int len = sizeof(x_qt_windows_mime) - 1;
-    int n = mimeType.lastIndexOf(QLatin1Char('\"'))-len;
-    return mimeType.mid(len, n);
+    int n = mimeType.lastIndexOf(QLatin1Char('\"')) - len;
+    QString ret = mimeType.mid(len, n);
+
+    const int beginPos = mimeType.indexOf(QLatin1String(";index="));
+    if (beginPos > -1) {
+        const int endPos = mimeType.indexOf(QLatin1Char(';'), beginPos + 1);
+        const int indexStartPos = beginPos + 7;
+        if (lindex)
+            *lindex = mimeType.midRef(indexStartPos, endPos == -1 ? endPos : endPos - indexStartPos).toInt();
+    } else {
+        if (lindex)
+            *lindex = -1;
+    }
+    return ret;
 }
 
 bool QLastResortMimes::canConvertToMime(const QString &mimeType, IDataObject *pDataObj) const
 {
     if (isCustomMimeType(mimeType)) {
+        // MSDN documentation for QueryGetData says only -1 is supported, so ignore lindex here.
         QString clipFormat = customMimeType(mimeType);
         int cf = RegisterClipboardFormat(reinterpret_cast<const wchar_t *> (clipFormat.utf16()));
         return canGetData(cf, pDataObj);
@@ -1369,9 +1383,10 @@ QVariant QLastResortMimes::convertToMime(const QString &mimeType, IDataObject *p
     if (canConvertToMime(mimeType, pDataObj)) {
         QByteArray data;
         if (isCustomMimeType(mimeType)) {
-            QString clipFormat = customMimeType(mimeType);
+            int lindex;
+            QString clipFormat = customMimeType(mimeType, &lindex);
             int cf = RegisterClipboardFormat(reinterpret_cast<const wchar_t *> (clipFormat.utf16()));
-            data = getData(cf, pDataObj);
+            data = getData(cf, pDataObj, lindex);
         } else if (formats.keys(mimeType).isEmpty()) {
             int cf = QWindowsMime::registerMimeType(mimeType);
             data = getData(cf, pDataObj);
