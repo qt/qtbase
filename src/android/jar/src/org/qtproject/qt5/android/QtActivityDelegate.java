@@ -80,6 +80,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.InputStreamReader;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -126,6 +127,7 @@ public class QtActivityDelegate
     private boolean m_quitApp = true;
     private Process m_debuggerProcess = null; // debugger process
     private View m_dummyView = null;
+    private View m_accView = null;
     private boolean m_keyboardIsVisible = false;
     public boolean m_backKeyPressedSent = false;
     private long m_showHideTimeStamp = System.nanoTime();
@@ -1178,10 +1180,48 @@ public class QtActivityDelegate
 
         // Native views are always inserted in the end of the stack (i.e., on top).
         // All other views are stacked based on the order they are created.
-        final int index = getSurfaceCount();
-        m_layout.addView(surface, index);
+        final int surfaceCount = getSurfaceCount();
+        m_layout.addView(surface, surfaceCount);
 
         m_surfaces.put(id, surface);
+
+        // Initialize Accessibility
+        // The accessibility code depends on android API level 16, so dynamically resolve it
+        if (android.os.Build.VERSION.SDK_INT >= 16) {
+            if (m_accView == null) {
+                try {
+                    View accView = new View(m_activity);
+                    accView.setId(View.NO_ID);
+
+                    // ### Keep this for debugging for a while. It allows us to visually see that our View
+                    // ### is on top of the surface(s)
+                    // ColorDrawable color = new ColorDrawable(0x80ff8080);    //0xAARRGGBB
+                    // accView.setBackground(color);
+
+                    final String a11yDelegateClassName = "org.qtproject.qt5.android.accessibility.QtAccessibilityDelegate";
+                    Class<?> qtDelegateClass = Class.forName(a11yDelegateClassName);
+                    Constructor constructor = qtDelegateClass.getConstructor(Class.forName("android.view.View"));
+                    Object accessibilityDelegate = constructor.newInstance(accView);
+
+                    Class a11yDelegateClass = Class.forName("android.view.View$AccessibilityDelegate");
+                    Method setDelegateMethod = accView.getClass().getMethod("setAccessibilityDelegate", a11yDelegateClass);
+                    setDelegateMethod.invoke(accView, accessibilityDelegate);
+
+                    // if all is fine, add it to the layout
+                    m_layout.addView(accView, surfaceCount + 1,
+                                     new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+
+                    m_accView = accView;
+                } catch (ClassNotFoundException e) {
+                    // Class not found is fine since we are compatible with Android API < 16, but the function will
+                    // only be available with that API level.
+                } catch (Exception e) {
+                    // Unknown exception means something went wrong.
+                    Log.w("Qt A11y", "Unknown exception: " + e.toString());
+                }
+            }
+        }
+
     }
 
     public void setSurfaceGeometry(int id, int x, int y, int w, int h) {
@@ -1224,7 +1264,6 @@ public class QtActivityDelegate
     {
         return m_surfaces.size();
     }
-
 
     public void bringChildToFront(int id)
     {

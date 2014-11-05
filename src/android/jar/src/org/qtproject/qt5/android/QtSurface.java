@@ -88,26 +88,6 @@ public class QtSurface extends SurfaceView implements SurfaceHolder.Callback
     public void surfaceCreated(SurfaceHolder holder)
     {
         QtNative.setSurface(getId(), holder.getSurface(), getWidth(), getHeight());
-        // Initialize Accessibility
-        // The accessibility code depends on android API level 16, so dynamically resolve it
-        if (android.os.Build.VERSION.SDK_INT >= 16) {
-            try {
-                final String a11yDelegateClassName = "org.qtproject.qt5.android.accessibility.QtAccessibilityDelegate";
-                Class<?> qtDelegateClass = Class.forName(a11yDelegateClassName);
-                Constructor constructor = qtDelegateClass.getConstructor(Class.forName("android.view.View"));
-                m_accessibilityDelegate = constructor.newInstance(this);
-
-                Class a11yDelegateClass = Class.forName("android.view.View$AccessibilityDelegate");
-                Method setDelegateMethod = this.getClass().getMethod("setAccessibilityDelegate", a11yDelegateClass);
-                setDelegateMethod.invoke(this, m_accessibilityDelegate);
-            } catch (ClassNotFoundException e) {
-                // Class not found is fine since we are compatible with Android API < 16, but the function will
-                // only be available with that API level.
-            } catch (Exception e) {
-                // Unknown exception means something went wrong.
-                Log.w("Qt A11y", "Unknown exception: " + e.toString());
-            }
-        }
     }
 
     @Override
