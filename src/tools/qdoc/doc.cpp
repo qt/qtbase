@@ -2324,7 +2324,10 @@ QString DocParser::getBracedArgument(bool verbatim)
                 }
                 break;
             default:
-                arg += in[pos];
+                if (in[pos].isSpace() && !verbatim)
+                    arg += QChar(' ');
+                else
+                    arg += in[pos];
                 pos++;
             }
         }
