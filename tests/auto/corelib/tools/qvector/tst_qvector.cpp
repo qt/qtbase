@@ -575,6 +575,18 @@ void tst_QVector::append() const
         QCOMPARE(v.last(), SimpleValue<T>::at(0));
     }
 #endif
+    {
+        QVector<int> v;
+        v << 1 << 2 << 3;
+        QVector<int> x;
+        x << 4 << 5 << 6;
+        v.append(x);
+
+        QVector<int> combined;
+        combined << 1 << 2 << 3 << 4 << 5 << 6;
+
+        QCOMPARE(v, combined);
+    }
 }
 
 void tst_QVector::appendInt() const

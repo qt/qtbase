@@ -128,6 +128,7 @@ public:
     T &operator[](int i);
     const T &operator[](int i) const;
     void append(const T &t);
+    inline void append(const QVector<T> &l) { *this += l; }
     void prepend(const T &t);
     void insert(int i, const T &t);
     void insert(int i, int n, const T &t);
