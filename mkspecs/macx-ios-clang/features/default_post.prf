@@ -201,7 +201,7 @@ macx-xcode {
     arch_iphonesimulator.value = $$QMAKE_IOS_SIMULATOR_ARCHS
 
     QMAKE_MAC_XCODE_SETTINGS += arch_iphoneos arch_iphonesimulator
-    unset(QMAKE_XCODE_ARCHS)
+    QMAKE_XCODE_ARCHS = $$QMAKE_IOS_DEVICE_ARCHS $$QMAKE_IOS_SIMULATOR_ARCHS
 } else {
     # Be more specific about which architecture we're targeting
     contains(QT_ARCH, arm.*): \

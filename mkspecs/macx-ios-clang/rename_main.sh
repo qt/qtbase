@@ -41,10 +41,14 @@
 ##
 #############################################################################
 
-if [ $# -eq 0 ]; then
-    echo "usage: $0 <path to object files>"
+if [ $# -ne 2 ]; then
+    echo "$0: wrong number of arguments for internal tool used by iOS mkspec"
 else
-    for f in $(find $1 -name '*.o'); do
+    arch_paths=""
+    for a in $2; do
+        arch_paths="$arch_paths $1/$a"
+    done
+    for f in $(find $arch_paths -name '*.o'); do
         # Skip object files without the _main symbol
         nm $f 2>/dev/null | grep -q 'T _main$' || continue
 
