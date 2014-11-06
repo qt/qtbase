@@ -985,9 +985,9 @@ bool qSharedBuild() Q_DECL_NOTHROW
     \li \l ByteOrder specifies whether the platform is big-endian or
        little-endian.
     \li \l WindowsVersion specifies the version of the Windows operating
-       system on which the application is run (Windows only)
+       system on which the application is run.
     \li \l MacintoshVersion specifies the version of the Macintosh
-       operating system on which the application is run (Mac only).
+       operating system on which the application is run.
     \endlist
 
     Some constants are defined only on certain platforms. You can use
@@ -1010,7 +1010,7 @@ bool qSharedBuild() Q_DECL_NOTHROW
 /*!
     \variable QSysInfo::WindowsVersion
     \brief the version of the Windows operating system on which the
-           application is run (Windows only)
+           application is run.
 */
 
 /*!
@@ -1018,19 +1018,22 @@ bool qSharedBuild() Q_DECL_NOTHROW
     \since 4.4
 
     Returns the version of the Windows operating system on which the
-    application is run (Windows only).
+    application is run, or WV_None if the operating system is not
+    Windows.
 */
 
 /*!
     \variable QSysInfo::MacintoshVersion
     \brief the version of the Macintosh operating system on which
-           the application is run (Mac only).
+           the application is run.
 */
 
 /*!
     \fn QSysInfo::MacVersion QSysInfo::macVersion()
 
-    Returns the version of Darwin (OS X or iOS) on which the application is run.
+    Returns the version of Darwin (OS X or iOS) on which the
+    application is run, or MV_None if the operating system
+    is not a version of Darwin.
 */
 
 /*!
@@ -1093,6 +1096,8 @@ bool qSharedBuild() Q_DECL_NOTHROW
     \value WV_NT_based  NT-based version of Windows
     \value WV_CE_based  CE-based version of Windows
 
+    \value WV_None Operating system other than Windows.
+
     \sa MacVersion
 */
 
@@ -1139,6 +1144,8 @@ bool qSharedBuild() Q_DECL_NOTHROW
     \value MV_IOS_7_0  iOS 7.0
     \value MV_IOS_7_1  iOS 7.1
     \value MV_IOS_8_0  iOS 8.0
+
+    \value MV_None     Not a Darwin operating system
 
     \sa WinVersion
 */

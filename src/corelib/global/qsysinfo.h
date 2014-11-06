@@ -72,8 +72,9 @@ public:
 #  endif
     };
 #endif
-#if defined(Q_OS_WIN) || defined(Q_OS_CYGWIN)
     enum WinVersion {
+        WV_None     = 0x0000,
+
         WV_32s      = 0x0001,
         WV_95       = 0x0002,
         WV_98       = 0x0003,
@@ -107,14 +108,18 @@ public:
         WV_CE_6     = 0x0400,
         WV_CE_based = 0x0f00
     };
+#if defined(Q_OS_WIN) || defined(Q_OS_CYGWIN)
     static const WinVersion WindowsVersion;
     static WinVersion windowsVersion();
-
+#else
+    static const WinVersion WindowsVersion = WV_None;
+    static WinVersion windowsVersion() { return WV_None; }
 #endif
-#ifdef Q_OS_MAC
-#  define Q_MV_OSX(major, minor) (major == 10 ? minor + 2 : (major == 9 ? 1 : 0))
-#  define Q_MV_IOS(major, minor) (QSysInfo::MV_IOS | major << 4 | minor)
+
+#define Q_MV_OSX(major, minor) (major == 10 ? minor + 2 : (major == 9 ? 1 : 0))
+#define Q_MV_IOS(major, minor) (QSysInfo::MV_IOS | major << 4 | minor)
     enum MacVersion {
+        MV_None    = 0xffff,
         MV_Unknown = 0x0000,
 
         /* version */
@@ -155,8 +160,12 @@ public:
         MV_IOS_7_1 = Q_MV_IOS(7, 1),
         MV_IOS_8_0 = Q_MV_IOS(8, 0)
     };
+#if defined(Q_OS_MAC)
     static const MacVersion MacintoshVersion;
     static MacVersion macVersion();
+#else
+    static const MacVersion MacintoshVersion = MV_None;
+    static MacVersion macVersion() { return MV_None; }
 #endif
 
     static QString buildCpuArchitecture();
