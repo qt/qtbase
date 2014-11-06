@@ -1029,6 +1029,21 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
     if (!project->isEmpty("QMAKE_PRE_LINK")) {
         QString phase_key = keyFor("QMAKE_PBX_PRELINK_BUILDPHASE");
         project->values("QMAKE_PBX_BUILDPHASES").append(phase_key);
+
+        ProStringList inputPaths;
+        ProStringList outputPaths;
+        const ProStringList &archs = project->values("QMAKE_XCODE_ARCHS");
+        if (!archs.isEmpty()) {
+            for (int i = 0; i < archs.size(); ++i) {
+                const ProString &arch = archs.at(i);
+                inputPaths << "$(OBJECT_FILE_DIR_$(CURRENT_VARIANT))/" + arch + "/";
+                outputPaths << "$(LINK_FILE_LIST_$(CURRENT_VARIANT)_" + arch + ")";
+            }
+        } else {
+            inputPaths << "$(OBJECT_FILE_DIR_$(CURRENT_VARIANT))/$(CURRENT_ARCH)/";
+            outputPaths << "$(LINK_FILE_LIST_$(CURRENT_VARIANT)_$(CURRENT_ARCH))";
+        }
+
         t << "\t\t" << phase_key << " = {\n"
           << "\t\t\t" << writeSettings("buildActionMask", "2147483647", SettingsNoQuote) << ";\n"
           << "\t\t\t" << writeSettings("files", ProStringList(), SettingsAsList, 4) << ";\n"
@@ -1036,8 +1051,8 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
           // resolved dependenices, so we have to ensure that this phase is run after the
           // compilation phase, and before the link phase. Making the phase depend on the
           // object file directory, and "write" to the list of files to link achieves that.
-          << "\t\t\t" << writeSettings("inputPaths", ProStringList("$(OBJECT_FILE_DIR_$(CURRENT_VARIANT))/$(CURRENT_ARCH)/"), SettingsAsList, 4) << ";\n"
-          << "\t\t\t" << writeSettings("outputPaths", ProStringList("$(LINK_FILE_LIST_$(CURRENT_VARIANT)_$(CURRENT_ARCH))"), SettingsAsList, 4) << ";\n"
+          << "\t\t\t" << writeSettings("inputPaths", inputPaths, SettingsAsList, 4) << ";\n"
+          << "\t\t\t" << writeSettings("outputPaths", outputPaths, SettingsAsList, 4) << ";\n"
           << "\t\t\t" << writeSettings("isa", "PBXShellScriptBuildPhase", SettingsNoQuote) << ";\n"
           << "\t\t\t" << writeSettings("runOnlyForDeploymentPostprocessing", "0", SettingsNoQuote) << ";\n"
           << "\t\t\t" << writeSettings("name", "Qt Prelink") << ";\n"
