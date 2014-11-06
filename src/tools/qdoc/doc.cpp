@@ -1611,12 +1611,14 @@ void DocParser::parse(const QString& source,
                     QString word = in.mid(startPos, pos - startPos);
                     // is word a C++ symbol or an English word?
                     if ((numInternalUppercase >= 1 && numLowercase >= 2)
-                            || numStrangeSymbols >= 1) {
-                        append(Atom::AutoLink, word);
+                            || numStrangeSymbols > 0) {
+                        if (word.startsWith(QString("__")))
+                            appendWord(word);
+                        else
+                            append(Atom::AutoLink, word);
                     }
-                    else {
+                    else
                         appendWord(word);
-                    }
                 }
             }
         }
