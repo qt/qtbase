@@ -1084,7 +1084,6 @@ void tst_QItemDelegate::decoration()
 void tst_QItemDelegate::editorEvent_data()
 {
     QTest::addColumn<QRect>("rect");
-    QTest::addColumn<QString>("text");
     QTest::addColumn<int>("checkState");
     QTest::addColumn<int>("flags");
     QTest::addColumn<bool>("inCheck");
@@ -1093,16 +1092,17 @@ void tst_QItemDelegate::editorEvent_data()
     QTest::addColumn<bool>("edited");
     QTest::addColumn<int>("expectedCheckState");
 
-    QTest::newRow("unchecked, checkable, release")
-        << QRect(0, 0, 20, 20)
-        << QString("foo")
-        << (int)(Qt::Unchecked)
-        << (int)(Qt::ItemIsEditable
+    const int defaultFlags = (int)(Qt::ItemIsEditable
             |Qt::ItemIsSelectable
             |Qt::ItemIsUserCheckable
             |Qt::ItemIsEnabled
             |Qt::ItemIsDragEnabled
-            |Qt::ItemIsDropEnabled)
+            |Qt::ItemIsDropEnabled);
+
+    QTest::newRow("unchecked, checkable, release")
+        << QRect(0, 0, 20, 20)
+        << (int)(Qt::Unchecked)
+        << defaultFlags
         << true
         << (int)(QEvent::MouseButtonRelease)
         << (int)(Qt::LeftButton)
@@ -1111,14 +1111,8 @@ void tst_QItemDelegate::editorEvent_data()
 
     QTest::newRow("checked, checkable, release")
         << QRect(0, 0, 20, 20)
-        << QString("foo")
         << (int)(Qt::Checked)
-        << (int)(Qt::ItemIsEditable
-            |Qt::ItemIsSelectable
-            |Qt::ItemIsUserCheckable
-            |Qt::ItemIsEnabled
-            |Qt::ItemIsDragEnabled
-            |Qt::ItemIsDropEnabled)
+        << defaultFlags
         << true
         << (int)(QEvent::MouseButtonRelease)
         << (int)(Qt::LeftButton)
@@ -1127,14 +1121,8 @@ void tst_QItemDelegate::editorEvent_data()
 
     QTest::newRow("unchecked, checkable, release")
         << QRect(0, 0, 20, 20)
-        << QString("foo")
         << (int)(Qt::Unchecked)
-        << (int)(Qt::ItemIsEditable
-            |Qt::ItemIsSelectable
-            |Qt::ItemIsUserCheckable
-            |Qt::ItemIsEnabled
-            |Qt::ItemIsDragEnabled
-            |Qt::ItemIsDropEnabled)
+        << defaultFlags
         << true
         << (int)(QEvent::MouseButtonRelease)
         << (int)(Qt::LeftButton)
@@ -1143,14 +1131,8 @@ void tst_QItemDelegate::editorEvent_data()
 
     QTest::newRow("unchecked, checkable, release, right button")
         << QRect(0, 0, 20, 20)
-        << QString("foo")
         << (int)(Qt::Unchecked)
-        << (int)(Qt::ItemIsEditable
-            |Qt::ItemIsSelectable
-            |Qt::ItemIsUserCheckable
-            |Qt::ItemIsEnabled
-            |Qt::ItemIsDragEnabled
-            |Qt::ItemIsDropEnabled)
+        << defaultFlags
         << true
         << (int)(QEvent::MouseButtonRelease)
         << (int)(Qt::RightButton)
@@ -1159,14 +1141,8 @@ void tst_QItemDelegate::editorEvent_data()
 
     QTest::newRow("unchecked, checkable, release outside")
         << QRect(0, 0, 20, 20)
-        << QString("foo")
         << (int)(Qt::Unchecked)
-        << (int)(Qt::ItemIsEditable
-            |Qt::ItemIsSelectable
-            |Qt::ItemIsUserCheckable
-            |Qt::ItemIsEnabled
-            |Qt::ItemIsDragEnabled
-            |Qt::ItemIsDropEnabled)
+        << defaultFlags
         << false
         << (int)(QEvent::MouseButtonRelease)
         << (int)(Qt::LeftButton)
@@ -1175,14 +1151,8 @@ void tst_QItemDelegate::editorEvent_data()
 
     QTest::newRow("unchecked, checkable, dblclick")
         << QRect(0, 0, 20, 20)
-        << QString("foo")
         << (int)(Qt::Unchecked)
-        << (int)(Qt::ItemIsEditable
-            |Qt::ItemIsSelectable
-            |Qt::ItemIsUserCheckable
-            |Qt::ItemIsEnabled
-            |Qt::ItemIsDragEnabled
-            |Qt::ItemIsDropEnabled)
+        << defaultFlags
         << true
         << (int)(QEvent::MouseButtonDblClick)
         << (int)(Qt::LeftButton)
@@ -1191,15 +1161,8 @@ void tst_QItemDelegate::editorEvent_data()
 
     QTest::newRow("unchecked, tristate, release")
         << QRect(0, 0, 20, 20)
-        << QString("foo")
         << (int)(Qt::Unchecked)
-        << (int)(Qt::ItemIsEditable
-            |Qt::ItemIsSelectable
-            |Qt::ItemIsUserCheckable
-            |Qt::ItemIsTristate
-            |Qt::ItemIsEnabled
-            |Qt::ItemIsDragEnabled
-            |Qt::ItemIsDropEnabled)
+        << (int)(defaultFlags | Qt::ItemIsTristate)
         << true
         << (int)(QEvent::MouseButtonRelease)
         << (int)(Qt::LeftButton)
@@ -1208,15 +1171,8 @@ void tst_QItemDelegate::editorEvent_data()
 
     QTest::newRow("partially checked, tristate, release")
         << QRect(0, 0, 20, 20)
-        << QString("foo")
         << (int)(Qt::PartiallyChecked)
-        << (int)(Qt::ItemIsEditable
-            |Qt::ItemIsSelectable
-            |Qt::ItemIsUserCheckable
-            |Qt::ItemIsTristate
-            |Qt::ItemIsEnabled
-            |Qt::ItemIsDragEnabled
-            |Qt::ItemIsDropEnabled)
+        << (int)(defaultFlags | Qt::ItemIsTristate)
         << true
         << (int)(QEvent::MouseButtonRelease)
         << (int)(Qt::LeftButton)
@@ -1225,15 +1181,8 @@ void tst_QItemDelegate::editorEvent_data()
 
     QTest::newRow("checked, tristate, release")
         << QRect(0, 0, 20, 20)
-        << QString("foo")
         << (int)(Qt::Checked)
-        << (int)(Qt::ItemIsEditable
-            |Qt::ItemIsSelectable
-            |Qt::ItemIsUserCheckable
-            |Qt::ItemIsTristate
-            |Qt::ItemIsEnabled
-            |Qt::ItemIsDragEnabled
-            |Qt::ItemIsDropEnabled)
+        << (int)(defaultFlags | Qt::ItemIsTristate)
         << true
         << (int)(QEvent::MouseButtonRelease)
         << (int)(Qt::LeftButton)
@@ -1244,7 +1193,6 @@ void tst_QItemDelegate::editorEvent_data()
 void tst_QItemDelegate::editorEvent()
 {
     QFETCH(QRect, rect);
-    QFETCH(QString, text);
     QFETCH(int, checkState);
     QFETCH(int, flags);
     QFETCH(bool, inCheck);
@@ -1258,7 +1206,7 @@ void tst_QItemDelegate::editorEvent()
     QVERIFY(index.isValid());
 
     QStandardItem *item = model.itemFromIndex(index);
-    item->setText(text);
+    item->setText("foo");
     item->setCheckState((Qt::CheckState)checkState);
     item->setFlags((Qt::ItemFlags)flags);
 
