@@ -1898,12 +1898,9 @@ void HtmlGenerator::generateRequisites(InnerNode *inner, CodeMarker *marker)
     //add the includes to the map
     if (!inner->includes().isEmpty()) {
         text.clear();
-        text << formattingRightMap()[ATOM_FORMATTING_BOLD]
-             << formattingLeftMap()[ATOM_FORMATTING_TELETYPE]
-             << highlightedCode(indent(codeIndent,
+        text << highlightedCode(indent(codeIndent,
                                        marker->markedUpIncludes(inner->includes())),
-                                       inner)
-             << formattingRightMap()[ATOM_FORMATTING_TELETYPE];
+                                       inner);
         requisites.insert(headerText, text);
     }
 
@@ -1938,9 +1935,7 @@ void HtmlGenerator::generateRequisites(InnerNode *inner, CodeMarker *marker)
             ModuleNode* moduleNode = qdb_->findModule(inner->moduleName());
             if (moduleNode && !moduleNode->qtVariable().isEmpty()) {
                 text.clear();
-                text << Atom(Atom::FormattingLeft, ATOM_FORMATTING_TELETYPE)
-                     << "QT += " + moduleNode->qtVariable()
-                     << Atom(Atom::FormattingRight, ATOM_FORMATTING_TELETYPE);
+                text << "QT += " + moduleNode->qtVariable();
                 requisites.insert(qtVariableText, text);
             }
         }
@@ -2053,10 +2048,7 @@ void HtmlGenerator::generateQmlRequisites(QmlClassNode *qcn, CodeMarker *marker)
     else
         qmlModuleVersion = qcn->qmlModuleVersion();
     text.clear();
-    text << formattingRightMap()[ATOM_FORMATTING_BOLD]
-         << formattingLeftMap()[ATOM_FORMATTING_TELETYPE]
-         << "import " + qcn->qmlModuleName() + " " + qmlModuleVersion
-         << formattingRightMap()[ATOM_FORMATTING_TELETYPE];
+    text << "import " + qcn->qmlModuleName() + " " + qmlModuleVersion;
     requisites.insert(importText, text);
 
     //add the since and project into the map
