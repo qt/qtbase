@@ -97,10 +97,16 @@ public:
 class QCocoaIntegration : public QPlatformIntegration
 {
 public:
-    QCocoaIntegration();
+    enum Option {
+        UseFreeTypeFontEngine = 0x1
+    };
+    Q_DECLARE_FLAGS(Options, Option)
+
+    QCocoaIntegration(const QStringList &paramList);
     ~QCocoaIntegration();
 
     static QCocoaIntegration *instance();
+    Options options() const;
 
     bool hasCapability(QPlatformIntegration::Capability cap) const Q_DECL_OVERRIDE;
     QPlatformWindow *createPlatformWindow(QWindow *window) const Q_DECL_OVERRIDE;
@@ -141,6 +147,7 @@ public:
     void setApplicationIcon(const QIcon &icon) const Q_DECL_OVERRIDE;
 private:
     static QCocoaIntegration *mInstance;
+    Options mOptions;
 
     QScopedPointer<QCoreTextFontDatabase> mFontDb;
 
@@ -159,6 +166,8 @@ private:
     QHash<QWindow *, NSToolbar *> mToolbars;
     QList<QCocoaWindow *> m_popupWindowStack;
 };
+
+Q_DECLARE_OPERATORS_FOR_FLAGS(QCocoaIntegration::Options)
 
 QT_END_NAMESPACE
 

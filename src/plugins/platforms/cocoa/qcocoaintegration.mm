@@ -244,10 +244,25 @@ QPixmap QCocoaScreen::grabWindow(WId window, int x, int y, int width, int height
     return windowPixmap;
 }
 
+static QCocoaIntegration::Options parseOptions(const QStringList &paramList)
+{
+    QCocoaIntegration::Options options;
+    foreach (const QString &param, paramList) {
+#ifndef QT_NO_FREETYPE
+        if (param == QLatin1String("fontengine=freetype"))
+            options |= QCocoaIntegration::UseFreeTypeFontEngine;
+        else
+#endif
+            qWarning() << "Unknown option" << param;
+    }
+    return options;
+}
+
 QCocoaIntegration *QCocoaIntegration::mInstance = 0;
 
-QCocoaIntegration::QCocoaIntegration()
-    : mFontDb(new QCoreTextFontDatabase())
+QCocoaIntegration::QCocoaIntegration(const QStringList &paramList)
+    : mOptions(parseOptions(paramList))
+    , mFontDb(new QCoreTextFontDatabase(mOptions.testFlag(UseFreeTypeFontEngine)))
 #ifndef QT_NO_ACCESSIBILITY
     , mAccessibility(new QCocoaAccessibility)
 #endif
@@ -343,6 +358,11 @@ QCocoaIntegration::~QCocoaIntegration()
 QCocoaIntegration *QCocoaIntegration::instance()
 {
     return mInstance;
+}
+
+QCocoaIntegration::Options QCocoaIntegration::options() const
+{
+    return mOptions;
 }
 
 /*!
