@@ -953,6 +953,15 @@ QNetworkSessionPrivate *QNetworkManagerEngine::createSessionBackend()
 
 QNetworkConfigurationPrivatePointer QNetworkManagerEngine::defaultConfiguration()
 {
+    QHashIterator<QString, QNetworkManagerConnectionActive*> i(activeConnectionsList);
+    while (i.hasNext()) {
+        i.next();
+        QNetworkManagerConnectionActive *activeConnection = i.value();
+        if ((activeConnection->defaultRoute() || activeConnection->default6Route())) {
+            return accessPointConfigurations.value(activeConnection->connection().path());
+        }
+    }
+
     return QNetworkConfigurationPrivatePointer();
 }
 

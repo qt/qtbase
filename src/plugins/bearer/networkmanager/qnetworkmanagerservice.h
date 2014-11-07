@@ -499,6 +499,7 @@ public:
     QStringList devices() const;
     quint32 state() const;
     bool defaultRoute() const;
+    bool default6Route() const;
     bool setConnections();
     bool isValid();
 

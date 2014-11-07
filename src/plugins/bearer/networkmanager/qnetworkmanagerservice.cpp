@@ -1282,6 +1282,13 @@ bool QNetworkManagerConnectionActive::defaultRoute() const
     return false;
 }
 
+bool QNetworkManagerConnectionActive::default6Route() const
+{
+    if (propertyMap.contains("Default6"))
+        return propertyMap.value("Default6").toBool();
+    return false;
+}
+
 void QNetworkManagerConnectionActive::propertiesSwap(QMap<QString,QVariant> map)
 {
     QMapIterator<QString, QVariant> i(map);
