@@ -730,33 +730,37 @@ bool RCCResourceLibrary::output(QIODevice &outDevice, QIODevice &tempDevice, QIO
 {
     m_errorDevice = &errorDevice;
 
-    const char pattern[] = { 'Q', 'R', 'C', '_', 'D', 'A', 'T', 'A' };
     if (m_format == Pass2) {
-        char c;
-        for (int i = 0; i < 8; ) {
-            if (!tempDevice.getChar(&c)) {
-                m_errorDevice->write("No data signature found\n");
-                return false;
+        const char pattern[] = { 'Q', 'R', 'C', '_', 'D', 'A', 'T', 'A' };
+        bool foundSignature = false;
+
+        while (true) {
+            char c;
+            for (int i = 0; i < 8; ) {
+                if (!tempDevice.getChar(&c)) {
+                    if (foundSignature)
+                        return true;
+                    m_errorDevice->write("No data signature found\n");
+                    return false;
+                }
+                if (c == pattern[i]) {
+                    ++i;
+                } else {
+                    for (int k = 0; k < i; ++k)
+                        outDevice.putChar(pattern[k]);
+                    outDevice.putChar(c);
+                    i = 0;
+                }
             }
-            if (c == pattern[i]) {
-                ++i;
-            } else {
-                for (int k = 0; k < i; ++k)
-                    outDevice.putChar(pattern[k]);
-                outDevice.putChar(c);
-                i = 0;
-            }
+
+            m_outDevice = &outDevice;
+            quint64 start = outDevice.pos();
+            writeDataBlobs();
+            quint64 len = outDevice.pos() - start;
+
+            tempDevice.seek(tempDevice.pos() + len - 8);
+            foundSignature = true;
         }
-
-        m_outDevice = &outDevice;
-        quint64 start = outDevice.pos();
-        writeDataBlobs();
-        quint64 len = outDevice.pos() - start;
-
-        tempDevice.seek(tempDevice.pos() + len - 8);
-        outDevice.write(tempDevice.readAll());
-
-        return true;
     }
 
     //write out
