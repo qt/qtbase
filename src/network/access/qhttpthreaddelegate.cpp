@@ -371,6 +371,8 @@ void QHttpThreadDelegate::startRequest()
 #ifndef QT_NO_SSL
         connect(httpReply,SIGNAL(encrypted()), this, SLOT(encryptedSlot()));
         connect(httpReply,SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(sslErrorsSlot(QList<QSslError>)));
+        connect(httpReply,SIGNAL(preSharedKeyAuthenticationRequired(QSslPreSharedKeyAuthenticator*)),
+                this, SLOT(preSharedKeyAuthenticationRequiredSlot(QSslPreSharedKeyAuthenticator*)));
 #endif
 
         // In the asynchronous HTTP case we can just forward those signals
@@ -674,6 +676,14 @@ void QHttpThreadDelegate::sslErrorsSlot(const QList<QSslError> &errors)
         httpReply->ignoreSslErrors();
     if (!specificErrors.isEmpty())
         httpReply->ignoreSslErrors(specificErrors);
+}
+
+void QHttpThreadDelegate::preSharedKeyAuthenticationRequiredSlot(QSslPreSharedKeyAuthenticator *authenticator)
+{
+    if (!httpReply)
+        return;
+
+    emit preSharedKeyAuthenticationRequired(authenticator);
 }
 #endif
 

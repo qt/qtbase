@@ -147,6 +147,9 @@ void QHttpNetworkConnectionChannel::init()
         QObject::connect(sslSocket, SIGNAL(sslErrors(QList<QSslError>)),
                          this, SLOT(_q_sslErrors(QList<QSslError>)),
                          Qt::DirectConnection);
+        QObject::connect(sslSocket, SIGNAL(preSharedKeyAuthenticationRequired(QSslPreSharedKeyAuthenticator*)),
+                         this, SLOT(_q_preSharedKeyAuthenticationRequired(QSslPreSharedKeyAuthenticator*)),
+                         Qt::DirectConnection);
         QObject::connect(sslSocket, SIGNAL(encryptedBytesWritten(qint64)),
                          this, SLOT(_q_encryptedBytesWritten(qint64)),
                          Qt::DirectConnection);
@@ -1032,6 +1035,29 @@ void QHttpNetworkConnectionChannel::_q_sslErrors(const QList<QSslError> &errors)
         }
     }
 #endif // QT_NO_SSL
+    connection->d_func()->resumeConnection();
+}
+
+void QHttpNetworkConnectionChannel::_q_preSharedKeyAuthenticationRequired(QSslPreSharedKeyAuthenticator *authenticator)
+{
+    connection->d_func()->pauseConnection();
+
+    if (pendingEncrypt && !reply)
+        connection->d_func()->dequeueRequest(socket);
+
+    if (connection->connectionType() == QHttpNetworkConnection::ConnectionTypeHTTP) {
+        if (reply)
+            emit reply->preSharedKeyAuthenticationRequired(authenticator);
+    } else {
+        QList<HttpMessagePair> spdyPairs = spdyRequestsToSend.values();
+        for (int a = 0; a < spdyPairs.count(); ++a) {
+            // emit SSL errors for all replies
+            QHttpNetworkReply *currentReply = spdyPairs.at(a).second;
+            Q_ASSERT(currentReply);
+            emit currentReply->preSharedKeyAuthenticationRequired(authenticator);
+        }
+    }
+
     connection->d_func()->resumeConnection();
 }
 

@@ -131,6 +131,7 @@ signals:
     void encrypted();
     void sslErrors(const QList<QSslError> &, bool *, QList<QSslError> *);
     void sslConfigurationChanged(const QSslConfiguration);
+    void preSharedKeyAuthenticationRequired(QSslPreSharedKeyAuthenticator *);
 #endif
     void downloadMetaData(QList<QPair<QByteArray,QByteArray> >, int, QString, bool,
                           QSharedPointer<char>, qint64, bool);
@@ -161,6 +162,7 @@ protected slots:
 #ifndef QT_NO_SSL
     void encryptedSlot();
     void sslErrorsSlot(const QList<QSslError> &errors);
+    void preSharedKeyAuthenticationRequiredSlot(QSslPreSharedKeyAuthenticator *authenticator);
 #endif
 
     void synchronousAuthenticationRequiredSlot(const QHttpNetworkRequest &request, QAuthenticator *);

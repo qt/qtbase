@@ -844,6 +844,9 @@ void QNetworkReplyHttpImplPrivate::postRequest()
         QObject::connect(delegate, SIGNAL(sslErrors(QList<QSslError>,bool*,QList<QSslError>*)),
                 q, SLOT(replySslErrors(QList<QSslError>,bool*,QList<QSslError>*)),
                 Qt::BlockingQueuedConnection);
+        QObject::connect(delegate, SIGNAL(preSharedKeyAuthenticationRequired(QSslPreSharedKeyAuthenticator*)),
+                         q, SLOT(replyPreSharedKeyAuthenticationRequiredSlot(QSslPreSharedKeyAuthenticator*)),
+                         Qt::BlockingQueuedConnection);
 #endif
         // This signal we will use to start the request.
         QObject::connect(q, SIGNAL(startHttpRequest()), delegate, SLOT(startRequest()));
@@ -1262,6 +1265,12 @@ void QNetworkReplyHttpImplPrivate::replySslConfigurationChanged(const QSslConfig
 {
     // Receiving the used SSL configuration from the HTTP thread
     this->sslConfiguration = sslConfiguration;
+}
+
+void QNetworkReplyHttpImplPrivate::replyPreSharedKeyAuthenticationRequiredSlot(QSslPreSharedKeyAuthenticator *authenticator)
+{
+    Q_Q(QNetworkReplyHttpImpl);
+    emit q->preSharedKeyAuthenticationRequired(authenticator);
 }
 #endif
 

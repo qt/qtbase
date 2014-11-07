@@ -138,6 +138,7 @@ public:
 Q_SIGNALS:
     void encrypted();
     void sslErrors(const QList<QSslError> &errors);
+    void preSharedKeyAuthenticationRequired(QSslPreSharedKeyAuthenticator *authenticator);
 #endif
 
 Q_SIGNALS:

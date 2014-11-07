@@ -49,6 +49,7 @@ class QVariant;
 class QAuthenticator;
 class QSslConfiguration;
 class QSslError;
+class QSslPreSharedKeyAuthenticator;
 
 class QNetworkReplyPrivate;
 class Q_NETWORK_EXPORT QNetworkReply: public QIODevice
@@ -150,6 +151,7 @@ Q_SIGNALS:
 #ifndef QT_NO_SSL
     void encrypted();
     void sslErrors(const QList<QSslError> &errors);
+    void preSharedKeyAuthenticationRequired(QSslPreSharedKeyAuthenticator *authenticator);
 #endif
 
     void uploadProgress(qint64 bytesSent, qint64 bytesTotal);

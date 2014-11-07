@@ -189,6 +189,7 @@ public:
 #ifndef QT_NO_SSL
     void _q_encrypted(); // start sending request (https)
     void _q_sslErrors(const QList<QSslError> &errors); // ssl errors from the socket
+    void _q_preSharedKeyAuthenticationRequired(QSslPreSharedKeyAuthenticator*); // tls-psk auth necessary
     void _q_encryptedBytesWritten(qint64 bytes); // proceed sending
 #endif
 
