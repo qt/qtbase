@@ -42,6 +42,23 @@
 #include <QtCore/QAbstractEventDispatcher>
 #include <QtCore/qt_windows.h>
 
+// Convenience macros for handling HRESULT values
+#define RETURN_IF_FAILED(msg, ret) \
+    if (FAILED(hr)) { \
+        qErrnoWarning(hr, msg); \
+        ret; \
+    }
+
+#define RETURN_HR_IF_FAILED(msg) RETURN_IF_FAILED(msg, return hr)
+#define RETURN_OK_IF_FAILED(msg) RETURN_IF_FAILED(msg, return S_OK)
+#define RETURN_FALSE_IF_FAILED(msg) RETURN_IF_FAILED(msg, return false)
+#define RETURN_VOID_IF_FAILED(msg) RETURN_IF_FAILED(msg, return)
+
+#define Q_ASSERT_SUCCEEDED(hr) \
+    Q_ASSERT_X(SUCCEEDED(hr), Q_FUNC_INFO, qPrintable(qt_error_string(hr)));
+
+#ifdef Q_OS_WINRT
+
 QT_BEGIN_NAMESPACE
 
 #ifdef QT_BUILD_CORE_LIB
@@ -49,7 +66,6 @@ QT_BEGIN_NAMESPACE
 
 QT_END_NAMESPACE
 
-#ifdef Q_OS_WINRT
 
 // Environment ------------------------------------------------------
 errno_t qt_winrt_getenv_s(size_t*, char*, size_t, const char*);
@@ -115,24 +131,6 @@ generate_inline_return_func4(getenv_s, errno_t, size_t *, char *, size_t, const 
 generate_inline_return_func2(_putenv_s, errno_t, const char *, const char *)
 generate_inline_return_func0(tzset, void)
 generate_inline_return_func0(_tzset, void)
-
-#endif // Q_OS_WINRT
-
-// Convenience macros for handling HRESULT values
-#define RETURN_IF_FAILED(msg, ret) \
-    if (FAILED(hr)) { \
-        qErrnoWarning(hr, msg); \
-        ret; \
-    }
-
-#define RETURN_HR_IF_FAILED(msg) RETURN_IF_FAILED(msg, return hr)
-#define RETURN_OK_IF_FAILED(msg) RETURN_IF_FAILED(msg, return S_OK)
-#define RETURN_FALSE_IF_FAILED(msg) RETURN_IF_FAILED(msg, return false)
-#define RETURN_VOID_IF_FAILED(msg) RETURN_IF_FAILED(msg, return)
-
-#define Q_ASSERT_SUCCEEDED(hr) \
-    Q_ASSERT_X(SUCCEEDED(hr), Q_FUNC_INFO, qPrintable(qt_error_string(hr)));
-
 
 namespace Microsoft { namespace WRL { template <typename T> class ComPtr; } }
 
@@ -206,6 +204,8 @@ static inline HRESULT await(const Microsoft::WRL::ComPtr<T> &asyncOp, U *results
 }
 
 } // QWinRTFunctions
+
+#endif // Q_OS_WINRT
 
 #endif // Q_OS_WIN
 
