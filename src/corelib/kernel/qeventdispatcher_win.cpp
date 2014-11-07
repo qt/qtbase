@@ -434,9 +434,10 @@ static inline UINT inputTimerMask()
 
 LRESULT QT_WIN_CALLBACK qt_GetMessageHook(int code, WPARAM wp, LPARAM lp)
 {
+    QEventDispatcherWin32 *q = qobject_cast<QEventDispatcherWin32 *>(QAbstractEventDispatcher::instance());
+    Q_ASSERT(q != 0);
+
     if (wp == PM_REMOVE) {
-        QEventDispatcherWin32 *q = qobject_cast<QEventDispatcherWin32 *>(QAbstractEventDispatcher::instance());
-        Q_ASSERT(q != 0);
         if (q) {
             MSG *msg = (MSG *) lp;
             QEventDispatcherWin32Private *d = q->d_func();
@@ -472,7 +473,7 @@ LRESULT QT_WIN_CALLBACK qt_GetMessageHook(int code, WPARAM wp, LPARAM lp)
 #ifdef Q_OS_WINCE
     return 0;
 #else
-    return CallNextHookEx(0, code, wp, lp);
+    return q->d_func()->getMessageHook ? CallNextHookEx(0, code, wp, lp) : 0;
 #endif
 }
 
@@ -643,15 +644,7 @@ void QEventDispatcherWin32::createInternalHwnd()
         return;
     d->internalHwnd = qt_create_internal_window(this);
 
-#ifndef Q_OS_WINCE
-    // setup GetMessage hook needed to drive our posted events
-    d->getMessageHook = SetWindowsHookEx(WH_GETMESSAGE, (HOOKPROC) qt_GetMessageHook, NULL, GetCurrentThreadId());
-    if (!d->getMessageHook) {
-        int errorCode = GetLastError();
-        qFatal("Qt: INTERNAL ERROR: failed to install GetMessage hook: %d, %s",
-               errorCode, qPrintable(qt_error_string(errorCode)));
-    }
-#endif
+    installMessageHook();
 
     // register all socket notifiers
     QList<int> sockets = (d->sn_read.keys().toSet()
@@ -663,6 +656,35 @@ void QEventDispatcherWin32::createInternalHwnd()
     // start all normal timers
     for (int i = 0; i < d->timerVec.count(); ++i)
         d->registerTimer(d->timerVec.at(i));
+}
+
+void QEventDispatcherWin32::installMessageHook()
+{
+    Q_D(QEventDispatcherWin32);
+
+    if (d->getMessageHook)
+        return;
+
+#ifndef Q_OS_WINCE
+    // setup GetMessage hook needed to drive our posted events
+    d->getMessageHook = SetWindowsHookEx(WH_GETMESSAGE, (HOOKPROC) qt_GetMessageHook, NULL, GetCurrentThreadId());
+    if (!d->getMessageHook) {
+        int errorCode = GetLastError();
+        qFatal("Qt: INTERNAL ERROR: failed to install GetMessage hook: %d, %s",
+               errorCode, qPrintable(qt_error_string(errorCode)));
+    }
+#endif
+}
+
+void QEventDispatcherWin32::uninstallMessageHook()
+{
+    Q_D(QEventDispatcherWin32);
+
+#ifndef Q_OS_WINCE
+    if (d->getMessageHook)
+        UnhookWindowsHookEx(d->getMessageHook);
+#endif
+    d->getMessageHook = 0;
 }
 
 QEventDispatcherWin32::QEventDispatcherWin32(QObject *parent)
@@ -750,10 +772,9 @@ bool QEventDispatcherWin32::processEvents(QEventLoop::ProcessEventsFlags flags)
                 }
             }
             if (haveMessage) {
-#ifdef Q_OS_WINCE
                 // WinCE doesn't support hooks at all, so we have to call this by hand :(
-                (void) qt_GetMessageHook(0, PM_REMOVE, (LPARAM) &msg);
-#endif
+                if (!d->getMessageHook)
+                    (void) qt_GetMessageHook(0, PM_REMOVE, (LPARAM) &msg);
 
                 if (d->internalHwnd == msg.hwnd && msg.message == WM_QT_SENDPOSTEDEVENTS) {
                     if (seenWM_QT_SENDPOSTEDEVENTS) {
@@ -1134,11 +1155,7 @@ void QEventDispatcherWin32::closingDown()
     d->timerVec.clear();
     d->timerDict.clear();
 
-#ifndef Q_OS_WINCE
-    if (d->getMessageHook)
-        UnhookWindowsHookEx(d->getMessageHook);
-    d->getMessageHook = 0;
-#endif
+    uninstallMessageHook();
 }
 
 bool QEventDispatcherWin32::event(QEvent *e)
