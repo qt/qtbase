@@ -804,10 +804,8 @@ static bool addGlyphToPath(glyph_t glyph, const QFixedPoint &position, HDC hdc,
         uint format = GGO_METRICS;
         if (ttf)
             format |= GGO_GLYPH_INDEX;
-        int res = GetGlyphOutline(hdc, glyph, format, &gMetric, 0, 0, &mat);
-        if (res == GDI_ERROR) {
+        if (GetGlyphOutline(hdc, glyph, format, &gMetric, 0, 0, &mat) == GDI_ERROR)
             return false;
-        }
         // #### obey scale
         *metric = glyph_metrics_t(gMetric.gmptGlyphOrigin.x, -gMetric.gmptGlyphOrigin.y,
                                   (int)gMetric.gmBlackBoxX, (int)gMetric.gmBlackBoxY,
