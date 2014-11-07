@@ -10511,8 +10511,9 @@ void QWidgetPrivate::setParent_sys(QWidget *newparent, Qt::WindowFlags f)
             QWidget *parentWithWindow =
                 newparent ? (newparent->windowHandle() ? newparent : newparent->nativeParentWidget()) : 0;
             if (parentWithWindow) {
-                if (f & Qt::Window) {
-                    q->windowHandle()->setTransientParent(parentWithWindow->windowHandle());
+                QWidget *topLevel = parentWithWindow->window();
+                if ((f & Qt::Window) && topLevel && topLevel->windowHandle()) {
+                    q->windowHandle()->setTransientParent(topLevel->windowHandle());
                     q->windowHandle()->setParent(0);
                 } else {
                     q->windowHandle()->setTransientParent(0);
