@@ -285,21 +285,6 @@
         reinterpret_cast<QUIView *>(qApp->focusWindow()->handle()->winId()) : 0;
 }
 
-/*!
-    iOS uses [UIResponder(Internal) _requiresKeyboardWhenFirstResponder] to check if the
-    current responder should bring up the keyboard, which in turn checks if the responder
-    supports the UIKeyInput protocol. By dynamically reporting our protocol conformance
-    we can control the keyboard visibility depending on whether or not we have a focus
-    object with IME enabled.
-*/
-- (BOOL)conformsToProtocol:(Protocol *)protocol
-{
-    if (protocol == @protocol(UIKeyInput))
-        return m_inputContext->inputMethodAccepted();
-
-    return [super conformsToProtocol:protocol];
-}
-
 // -------------------------------------------------------------------------
 
 - (void)notifyInputDelegate:(Qt::InputMethodQueries)updatedProperties

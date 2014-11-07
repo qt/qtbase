@@ -330,7 +330,6 @@ QIOSInputContext::QIOSInputContext()
     : QPlatformInputContext()
     , m_keyboardListener([[QIOSKeyboardListener alloc] initWithQIOSInputContext:this])
     , m_textResponder(0)
-    , m_isReloadingInputViewsFromUpdate(false)
 {
     if (isQtApplication())
         connect(qGuiApp->inputMethod(), &QInputMethod::cursorRectangleChanged, this, &QIOSInputContext::cursorRectangleChanged);
@@ -540,10 +539,11 @@ void QIOSInputContext::update(Qt::InputMethodQueries updatedProperties)
             [m_textResponder autorelease];
             m_textResponder = [[QIOSTextInputResponder alloc] initWithInputContext:this];
             [m_textResponder becomeFirstResponder];
+        } else if ([UIResponder currentFirstResponder] == m_textResponder) {
+            qImDebug() << "IM not enabled, resigning text responder as first responder";
+            [m_textResponder resignFirstResponder];
         } else {
-            qImDebug() << "IM not enabled, reloading input views";
-            QScopedValueRollback<bool> recursionGuard(m_isReloadingInputViewsFromUpdate, true);
-            [[UIResponder currentFirstResponder] reloadInputViews];
+            qImDebug() << "IM not enabled. Text responder not first responder. Nothing to do";
         }
     } else {
         [m_textResponder notifyInputDelegate:changedProperties];
@@ -594,22 +594,3 @@ void QIOSInputContext::commit()
     [m_textResponder unmarkText];
     [m_textResponder notifyInputDelegate:Qt::ImSurroundingText];
 }
-
-// -------------------------------------------------------------------------
-
-@interface QUIView (InputMethods)
-- (void)reloadInputViews;
-@end
-
-@implementation QUIView (InputMethods)
-- (void)reloadInputViews
-{
-    if (QIOSInputContext::instance()->isReloadingInputViewsFromUpdate()) {
-        qImDebug() << "preventing recursion by reloading super";
-        [super reloadInputViews];
-    } else {
-        qImDebug() << "reseting input methods";
-        qApp->inputMethod()->reset();
-    }
-}
-@end
