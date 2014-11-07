@@ -403,6 +403,7 @@
 #include "qdebug.h"
 #include "qhash.h"
 #include "qdir.h"         // for QDir::fromNativeSeparators
+#include "qdatastream.h"
 #include "qtldurl_p.h"
 #include "private/qipaddress_p.h"
 #include "qurlquery.h"
