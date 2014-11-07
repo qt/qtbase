@@ -1882,6 +1882,9 @@ bool QAbstractSocket::setSocketDescriptor(qintptr socketDescriptor, SocketState 
     \since 4.6
     Sets the given \a option to the value described by \a value.
 
+    \note On Windows Runtime, QAbstractSocket::KeepAliveOption must be set
+    before the socket is connected.
+
     \sa socketOption()
 */
 void QAbstractSocket::setSocketOption(QAbstractSocket::SocketOption option, const QVariant &value)

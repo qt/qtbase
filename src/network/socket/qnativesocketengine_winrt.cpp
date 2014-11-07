@@ -998,7 +998,8 @@ bool QNativeSocketEnginePrivate::setOption(QAbstractSocketEngine::SocketOption o
         return true;
     }
     case QAbstractSocketEngine::KeepAliveOption: {
-        if (socketType == QAbstractSocket::UdpSocket)
+        if (socketType == QAbstractSocket::UdpSocket
+                || socketState != QAbstractSocket::UnconnectedState)
             return false;
 
         boolean keepAlive = v;
