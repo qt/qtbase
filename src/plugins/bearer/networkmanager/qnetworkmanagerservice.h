@@ -305,10 +305,12 @@ public:
     bool carrier() const;
     bool setConnections();
     bool isValid();
+    QStringList availableConnections();
 
 Q_SIGNALS:
     void propertiesChanged(QMap<QString,QVariant>);
     void propertiesReady();
+    void carrierChanged(bool);
 
 private Q_SLOTS:
     void propertiesSwap(QMap<QString,QVariant>);
@@ -494,7 +496,7 @@ public:
     QDBusInterface  *connectionInterface() const;
     QDBusObjectPath connection() const;
     QDBusObjectPath specificObject() const;
-    QList<QDBusObjectPath> devices() const;
+    QStringList devices() const;
     quint32 state() const;
     bool defaultRoute() const;
     bool setConnections();

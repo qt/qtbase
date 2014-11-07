@@ -609,12 +609,32 @@ bool QNetworkManagerInterfaceDeviceWired::carrier() const
     return false;
 }
 
+QStringList QNetworkManagerInterfaceDeviceWired::availableConnections()
+{
+    QStringList list;
+    if (propertyMap.contains("AvailableConnections")) {
+        const QDBusArgument &dbusArgs = propertyMap.value("Carrier").value<QDBusArgument>();
+        QDBusObjectPath path;
+        dbusArgs.beginArray();
+        while (!dbusArgs.atEnd()) {
+            dbusArgs >> path;
+            list << path.path();
+        }
+        dbusArgs.endArray();
+    }
+
+    return list;
+}
+
 void QNetworkManagerInterfaceDeviceWired::propertiesSwap(QMap<QString,QVariant> map)
 {
     QMapIterator<QString, QVariant> i(map);
     while (i.hasNext()) {
         i.next();
         propertyMap.insert(i.key(),i.value());
+        if (i.key() == QStringLiteral("Carrier")) {
+            Q_EMIT carrierChanged(i.value().toBool());
+        }
     }
     Q_EMIT propertiesChanged(map);
 }
@@ -1231,24 +1251,20 @@ QDBusObjectPath QNetworkManagerConnectionActive::specificObject() const
     return QDBusObjectPath();
 }
 
-QList<QDBusObjectPath> QNetworkManagerConnectionActive::devices() const
+QStringList QNetworkManagerConnectionActive::devices() const
 {
+    QStringList list;
     if (propertyMap.contains("Devices")) {
         const QDBusArgument &dbusArgs = propertyMap.value("Devices").value<QDBusArgument>();
         QDBusObjectPath path;
-        QList <QDBusObjectPath> list;
 
         dbusArgs.beginArray();
         while (!dbusArgs.atEnd()) {
             dbusArgs >> path;
-            list.append(path);
+            list.append(path.path());
         }
         dbusArgs.endArray();
-
-        return list;
     }
-    QList<QDBusObjectPath> list;
-    list << QDBusObjectPath();
     return list;
 }
 

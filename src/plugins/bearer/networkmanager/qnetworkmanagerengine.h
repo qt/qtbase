@@ -107,6 +107,8 @@ private Q_SLOTS:
     void removeAccessPoint(const QString &path);
     void scanFinished();
 
+    void wiredCarrierChanged(bool);
+
 private:
     QNetworkConfigurationPrivate *parseConnection(const QString &settingsPath,
                                                   const QNmSettingsMap &map);
@@ -114,7 +116,9 @@ private:
 
     QNetworkManagerInterface *managerInterface;
     QNetworkManagerSettings *systemSettings;
+    QHash<QString, QNetworkManagerInterfaceDeviceWired *> wiredDevices;
     QHash<QString, QNetworkManagerInterfaceDeviceWireless *> wirelessDevices;
+
     QHash<QString, QNetworkManagerConnectionActive *> activeConnectionsList;
     QList<QNetworkManagerSettingsConnection *> connections;
     QList<QNetworkManagerInterfaceAccessPoint *> accessPoints;
