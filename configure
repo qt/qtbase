@@ -1409,7 +1409,8 @@ while [ "$#" -gt 0 ]; do
         fi
         ;;
     feature-*)
-            FEATURE=`echo $VAR | sed 's,^[^-]*-\([^-]*\),\1,' | tr 'abcdefghijklmnopqrstuvwxyz-' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ_'`
+        FEATURE=`echo $VAR | sed 's,^[^-]*-\([^-]*\),\1,' | tr 'abcdefghijklmnopqrstuvwxyz-' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ_'`
+        if grep "^Feature: *${FEATURE} *\$" "$relpath"/src/corelib/global/qfeatures.txt >/dev/null 2>&1; then
             if [ "$VAL" = "no" ]; then
                 QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_$FEATURE"
             elif [ "$VAL" = "yes" ] || [ "$VAL" = "unknown" ]; then
@@ -1417,6 +1418,10 @@ while [ "$#" -gt 0 ]; do
             else
                 UNKNOWN_OPT=yes
             fi
+        else
+            echo "ERROR: Unknown feature $FEATURE"
+            UNKNOWN_OPT=yes
+        fi
         ;;
     shared)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
