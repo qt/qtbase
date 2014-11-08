@@ -3863,28 +3863,31 @@ QString QString::section(const QString &sep, int start, int end, SectionFlags fl
 {
     QStringList sections = split(sep, KeepEmptyParts,
                                  (flags & SectionCaseInsensitiveSeps) ? Qt::CaseInsensitive : Qt::CaseSensitive);
-    if (sections.isEmpty())
-        return QString();
+    const int sectionsSize = sections.size();
+
     if (!(flags & SectionSkipEmpty)) {
         if (start < 0)
-            start += sections.count();
+            start += sectionsSize;
         if (end < 0)
-            end += sections.count();
+            end += sectionsSize;
     } else {
         int skip = 0;
-        for (int k=0; k<sections.size(); ++k) {
+        for (int k = 0; k < sectionsSize; ++k) {
             if (sections.at(k).isEmpty())
                 skip++;
         }
         if (start < 0)
-            start += sections.count() - skip;
+            start += sectionsSize - skip;
         if (end < 0)
-            end += sections.count() - skip;
+            end += sectionsSize - skip;
     }
+    if (start >= sectionsSize || end < 0 || start > end)
+        return QString();
+
     int x = 0;
     QString ret;
     int first_i = start, last_i = end;
-    for (int i = 0; x <= end && i < sections.size(); ++i) {
+    for (int i = 0; x <= end && i < sectionsSize; ++i) {
         QString section = sections.at(i);
         const bool empty = section.isEmpty();
         if (x >= start) {
@@ -3892,16 +3895,16 @@ QString QString::section(const QString &sep, int start, int end, SectionFlags fl
                 first_i = i;
             if(x == end)
                 last_i = i;
-            if(x > start)
+            if (x > start && i > 0)
                 ret += sep;
             ret += section;
         }
         if (!empty || !(flags & SectionSkipEmpty))
             x++;
     }
-    if((flags & SectionIncludeLeadingSep) && first_i)
+    if ((flags & SectionIncludeLeadingSep) && first_i > 0)
         ret.prepend(sep);
-    if((flags & SectionIncludeTrailingSep) && last_i < sections.size()-1)
+    if ((flags & SectionIncludeTrailingSep) && last_i < sectionsSize - 1)
         ret += sep;
     return ret;
 }
@@ -3919,15 +3922,32 @@ static QString extractSections(const QList<qt_section_chunk> &sections,
                                int end,
                                QString::SectionFlags flags)
 {
-    if (start < 0)
-        start += sections.count();
-    if (end < 0)
-        end += sections.count();
+    const int sectionsSize = sections.size();
+
+    if (!(flags & QString::SectionSkipEmpty)) {
+        if (start < 0)
+            start += sectionsSize;
+        if (end < 0)
+            end += sectionsSize;
+    } else {
+        int skip = 0;
+        for (int k = 0; k < sectionsSize; ++k) {
+            const qt_section_chunk &section = sections.at(k);
+            if (section.length == section.string.length())
+                skip++;
+        }
+        if (start < 0)
+            start += sectionsSize - skip;
+        if (end < 0)
+            end += sectionsSize - skip;
+    }
+    if (start >= sectionsSize || end < 0 || start > end)
+        return QString();
 
     QString ret;
     int x = 0;
     int first_i = start, last_i = end;
-    for (int i = 0; x <= end && i < sections.size(); ++i) {
+    for (int i = 0; x <= end && i < sectionsSize; ++i) {
         const qt_section_chunk &section = sections.at(i);
         const bool empty = (section.length == section.string.length());
         if (x >= start) {
@@ -3944,12 +3964,13 @@ static QString extractSections(const QList<qt_section_chunk> &sections,
             x++;
     }
 
-    if ((flags & QString::SectionIncludeLeadingSep) && first_i < sections.size()) {
+    if ((flags & QString::SectionIncludeLeadingSep) && first_i >= 0) {
         const qt_section_chunk &section = sections.at(first_i);
         ret.prepend(section.string.left(section.length));
     }
 
-    if ((flags & QString::SectionIncludeTrailingSep) && last_i+1 <= sections.size()-1) {
+    if ((flags & QString::SectionIncludeTrailingSep)
+        && last_i < sectionsSize - 1) {
         const qt_section_chunk &section = sections.at(last_i+1);
         ret += section.string.left(section.length);
     }
