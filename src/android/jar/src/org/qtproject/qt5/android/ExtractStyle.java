@@ -1544,6 +1544,11 @@ public class ExtractStyle {
             json.put("Switch_switchPadding", a.getDimensionPixelSize(getField(styleableClass, "Switch_switchPadding"), 0));
             json.put("Switch_thumbTextPadding", a.getDimensionPixelSize(getField(styleableClass, "Switch_thumbTextPadding"), 0));
 
+            if (Build.VERSION.SDK_INT >= 21) {
+                json.put("Switch_showText", a.getBoolean(getField(styleableClass, "Switch_showText"), true));
+                json.put("Switch_splitTrack", a.getBoolean(getField(styleableClass, "Switch_splitTrack"), false));
+            }
+
             a.recycle();
             jsonWriter.name(styleName).value(json);
         } catch (Exception e) {
