@@ -67,6 +67,7 @@ import android.graphics.NinePatch;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.graphics.PorterDuff;
 import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ClipDrawable;
@@ -820,8 +821,27 @@ public class ExtractStyle {
             bmp = (Bitmap) drawable;
         else
         {
-            if (drawable instanceof BitmapDrawable)
-                bmp = ((BitmapDrawable)drawable).getBitmap();
+            if (drawable instanceof BitmapDrawable) {
+                BitmapDrawable bitmapDrawable = (BitmapDrawable)drawable;
+                bmp = bitmapDrawable.getBitmap();
+                try {
+                    json.put("gravity", bitmapDrawable.getGravity());
+                    json.put("tileModeX", bitmapDrawable.getTileModeX());
+                    json.put("tileModeY", bitmapDrawable.getTileModeY());
+                    if (Build.VERSION.SDK_INT >= 18) {
+                        json.put("antialias", (Boolean) BitmapDrawable.class.getMethod("hasAntiAlias").invoke(bitmapDrawable));
+                        json.put("mipMap", (Boolean) BitmapDrawable.class.getMethod("hasMipMap").invoke(bitmapDrawable));
+                    }
+                    if (Build.VERSION.SDK_INT >= 21) {
+                        json.put("tintMode", (PorterDuff.Mode) BitmapDrawable.class.getMethod("getTintMode").invoke(bitmapDrawable));
+                        ColorStateList tintList = (ColorStateList) BitmapDrawable.class.getMethod("getTint").invoke(bitmapDrawable);
+                        if (tintList != null)
+                            json.put("tintList", getColorStateList(tintList));
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
             else
             {
                 if (drawable instanceof ScaleDrawable)
