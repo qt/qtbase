@@ -61,11 +61,6 @@ QOpenGLExtensionMatcher::QOpenGLExtensionMatcher()
     QOpenGLFunctions *funcs = ctx->functions();
     const char *extensionStr = 0;
 
-#ifdef Q_OS_NACL
-    // As long as QPepperGLContext::getProcAddress is not implemented
-    // this function needs to return "no extentinons".
-    return;
-#endif
 
     if (ctx->isOpenGLES() || ctx->format().majorVersion() < 3)
         extensionStr = reinterpret_cast<const char *>(funcs->glGetString(GL_EXTENSIONS));
@@ -73,6 +68,19 @@ QOpenGLExtensionMatcher::QOpenGLExtensionMatcher()
     if (extensionStr) {
         QByteArray ba(extensionStr);
         QList<QByteArray> extensions = ba.split(' ');
+
+#ifdef Q_OS_NACL
+        // As long as QPepperGLContext::getProcAddress is not implemented
+        // this function needs to be careful with wich extentions it
+        // returns.
+        QList<QByteArray> filteredExtentions;
+        foreach(const QByteArray &extension, extensions) {
+            // GL_OES_packed_depth_stencil needed for the scene graph
+            if (extension == "GL_OES_packed_depth_stencil")
+                filteredExtentions.append(extension);
+        }
+        extensions = filteredExtentions;
+#endif
         m_extensions = extensions.toSet();
     } else {
 #ifdef QT_OPENGL_3
