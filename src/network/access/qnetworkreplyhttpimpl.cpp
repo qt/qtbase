@@ -1399,6 +1399,9 @@ QNetworkCacheMetaData QNetworkReplyHttpImplPrivate::fetchCacheMetaData(const QNe
         if (hop_by_hop)
             continue;
 
+        if (header == "set-cookie")
+            continue;
+
         // for 4.6.0, we were planning to not store the date header in the
         // cached resource; through that we planned to reduce the number
         // of writes to disk when using a QNetworkDiskCache (i.e. don't
