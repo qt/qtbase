@@ -38,6 +38,7 @@
 #include "qwidget.h"
 #include "qabstractscrollarea.h"
 #include <qgraphicssceneevent.h>
+#include <QtGui/QTouchDevice>
 #include "qdebug.h"
 
 #ifndef QT_NO_GESTURES
@@ -67,8 +68,26 @@ static QPointF panOffset(const QList<QTouchEvent::TouchPoint> &touchPoints, int 
     return result / qreal(count);
 }
 
+// ### fixme: Remove this
+// Use single finger pan to scroll QPlainTextEdit/QTextEdit
+// by changing the number of pan points to 1 for these classes.
+// This used to be Qt 4's behavior on Windows which was achieved using native
+// Windows gesture recognizers for these classes.
+// The other classes inheriting QScrollArea still use standard 2 finger pan.
+// In the long run, they should also use single finger pan to
+// scroll on touch screens, however, this requires a distinct Tap&Hold-followed-by-pan
+// type gesture to avoid clashes with item view selection and DnD.
+
+static inline int panTouchPoints(const QTouchEvent *event, const QObject *object,
+                                 int defaultTouchPoints)
+{
+    return event->device()->type() == QTouchDevice::TouchScreen && object && object->parent()
+        && (object->parent()->inherits("QPlainTextEdit") || object->parent()->inherits("QTextEdit"))
+        ? 1 : defaultTouchPoints;
+}
+
 QGestureRecognizer::Result QPanGestureRecognizer::recognize(QGesture *state,
-                                                            QObject *,
+                                                            QObject *object,
                                                             QEvent *event)
 {
     QPanGesture *q = static_cast<QPanGesture *>(state);
@@ -81,7 +100,7 @@ QGestureRecognizer::Result QPanGestureRecognizer::recognize(QGesture *state,
         result = QGestureRecognizer::MayBeGesture;
         QTouchEvent::TouchPoint p = ev->touchPoints().at(0);
         d->lastOffset = d->offset = QPointF();
-        d->pointCount = m_pointCount;
+        d->pointCount = panTouchPoints(ev, object, m_pointCount);
         break;
     }
     case QEvent::TouchEnd: {
