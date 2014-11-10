@@ -36,7 +36,7 @@
 
 #include <QtCore/qnamespace.h>
 #include <QtGui/qsurfaceformat.h>
-
+#include <QtCore/qmetatype.h>
 #include <QtCore/qsize.h>
 
 QT_BEGIN_NAMESPACE
@@ -81,5 +81,7 @@ protected:
 };
 
 QT_END_NAMESPACE
+
+Q_DECLARE_METATYPE(QSurface*)
 
 #endif //QSURFACE_H
