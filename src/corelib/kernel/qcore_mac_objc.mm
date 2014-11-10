@@ -42,6 +42,8 @@
 
 #include <private/qcore_mac_p.h>
 
+#include <qdebug.h>
+
 #ifdef Q_OS_IOS
 #import <UIKit/UIKit.h>
 #endif
@@ -60,6 +62,38 @@ QString QCFString::toQString(const NSString *nsstr)
 {
     return toQString(reinterpret_cast<CFStringRef>(nsstr));
 }
+
+// -------------------------------------------------------------------------
+
+QDebug operator<<(QDebug dbg, const NSObject *nsObject)
+{
+    return dbg << (nsObject ? nsObject.description.UTF8String : "NSObject(0x0)");
+}
+
+QDebug operator<<(QDebug dbg, CFStringRef stringRef)
+{
+    if (!stringRef)
+        return dbg << "CFStringRef(0x0)";
+
+    if (const UniChar *chars = CFStringGetCharactersPtr(stringRef))
+        dbg << QString::fromRawData(reinterpret_cast<const QChar *>(chars), CFStringGetLength(stringRef));
+    else
+        dbg << QString::fromCFString(stringRef);
+
+    return dbg;
+}
+
+// Prevents breaking the ODR in case we introduce support for more types
+// later on, and lets the user override our default QDebug operators.
+#define QT_DECLARE_WEAK_QDEBUG_OPERATOR_FOR_CF_TYPE(CFType) \
+    __attribute__((weak)) Q_DECLARE_QDEBUG_OPERATOR_FOR_CF_TYPE(CFType)
+
+QT_FOR_EACH_CORE_FOUNDATION_TYPE(QT_DECLARE_WEAK_QDEBUG_OPERATOR_FOR_CF_TYPE);
+QT_FOR_EACH_MUTABLE_CORE_FOUNDATION_TYPE(QT_DECLARE_WEAK_QDEBUG_OPERATOR_FOR_CF_TYPE);
+QT_FOR_EACH_CORE_GRAPHICS_TYPE(QT_DECLARE_WEAK_QDEBUG_OPERATOR_FOR_CF_TYPE);
+QT_FOR_EACH_MUTABLE_CORE_GRAPHICS_TYPE(QT_DECLARE_WEAK_QDEBUG_OPERATOR_FOR_CF_TYPE);
+
+// -------------------------------------------------------------------------
 
 QAppleOperatingSystemVersion qt_apple_os_version()
 {

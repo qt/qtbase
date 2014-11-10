@@ -281,6 +281,82 @@ inline QDebug operator<<(QDebug debug, const QFlags<T> &flags)
     return debug;
 }
 
+#ifdef Q_OS_MAC
+
+// We provide QDebug stream operators for commonly used Core Foundation
+// and Core Graphics types, as well as NSObject. Additional CF/CG types
+// may be added by the user, using Q_DECLARE_QDEBUG_OPERATOR_FOR_CF_TYPE.
+
+#define QT_FOR_EACH_CORE_FOUNDATION_TYPE(F) \
+    F(CFArray) \
+    F(CFURL) \
+    F(CFData) \
+    F(CFNumber) \
+    F(CFDictionary) \
+    F(CFLocale) \
+    F(CFDate) \
+    F(CFBoolean) \
+    F(CFTimeZone) \
+
+#define QT_FOR_EACH_MUTABLE_CORE_FOUNDATION_TYPE(F) \
+    F(CFError) \
+    F(CFBundle) \
+
+#define QT_FOR_EACH_CORE_GRAPHICS_TYPE(F) \
+    F(CGPath) \
+
+#define QT_FOR_EACH_MUTABLE_CORE_GRAPHICS_TYPE(F) \
+    F(CGColorSpace) \
+    F(CGImage) \
+    F(CGFont) \
+    F(CGColor) \
+
+#define QT_FORWARD_DECLARE_CF_TYPE(type) Q_FORWARD_DECLARE_CF_TYPE(type);
+#define QT_FORWARD_DECLARE_MUTABLE_CF_TYPE(type) Q_FORWARD_DECLARE_MUTABLE_CF_TYPE(type);
+#define QT_FORWARD_DECLARE_CG_TYPE(type) typedef const struct type *type ## Ref;
+#define QT_FORWARD_DECLARE_MUTABLE_CG_TYPE(type) typedef struct type *type ## Ref;
+
+QT_END_NAMESPACE
+Q_FORWARD_DECLARE_CF_TYPE(CFString);
+Q_FORWARD_DECLARE_OBJC_CLASS(NSObject);
+QT_FOR_EACH_CORE_FOUNDATION_TYPE(QT_FORWARD_DECLARE_CF_TYPE);
+QT_FOR_EACH_MUTABLE_CORE_FOUNDATION_TYPE(QT_FORWARD_DECLARE_MUTABLE_CF_TYPE);
+QT_FOR_EACH_CORE_GRAPHICS_TYPE(QT_FORWARD_DECLARE_CG_TYPE);
+QT_FOR_EACH_MUTABLE_CORE_GRAPHICS_TYPE(QT_FORWARD_DECLARE_MUTABLE_CG_TYPE);
+QT_BEGIN_NAMESPACE
+
+#define QT_FORWARD_DECLARE_QDEBUG_OPERATOR_FOR_CF_TYPE(CFType) \
+    Q_CORE_EXPORT QDebug operator<<(QDebug, CFType##Ref);
+
+#define Q_DECLARE_QDEBUG_OPERATOR_FOR_CF_TYPE(CFType) \
+    QDebug operator<<(QDebug debug, CFType##Ref ref) \
+    { \
+        if (!ref) \
+            return debug << QT_STRINGIFY(CFType) "Ref(0x0)"; \
+        if (CFStringRef description = CFCopyDescription(ref)) { \
+            QDebugStateSaver saver(debug); \
+            debug.noquote() << description; \
+            CFRelease(description); \
+        } \
+        return debug; \
+    }
+
+// Defined in qcore_mac_objc.mm
+Q_CORE_EXPORT QDebug operator<<(QDebug, const NSObject *);
+Q_CORE_EXPORT QDebug operator<<(QDebug, CFStringRef);
+
+QT_FOR_EACH_CORE_FOUNDATION_TYPE(QT_FORWARD_DECLARE_QDEBUG_OPERATOR_FOR_CF_TYPE);
+QT_FOR_EACH_MUTABLE_CORE_FOUNDATION_TYPE(QT_FORWARD_DECLARE_QDEBUG_OPERATOR_FOR_CF_TYPE);
+QT_FOR_EACH_CORE_GRAPHICS_TYPE(QT_FORWARD_DECLARE_QDEBUG_OPERATOR_FOR_CF_TYPE);
+QT_FOR_EACH_MUTABLE_CORE_GRAPHICS_TYPE(QT_FORWARD_DECLARE_QDEBUG_OPERATOR_FOR_CF_TYPE);
+
+#undef QT_FORWARD_DECLARE_CF_TYPE
+#undef QT_FORWARD_DECLARE_MUTABLE_CF_TYPE
+#undef QT_FORWARD_DECLARE_CG_TYPE
+#undef QT_FORWARD_DECLARE_MUTABLE_CG_TYPE
+
+#endif // Q_OS_MAC
+
 QT_END_NAMESPACE
 
 #endif // QDEBUG_H
