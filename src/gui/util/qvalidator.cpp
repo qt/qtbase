@@ -1013,7 +1013,7 @@ QValidator::State QRegularExpressionValidator::validate(QString &input, int &pos
     const QRegularExpressionMatch m = d->usedRe.match(input, 0, QRegularExpression::PartialPreferCompleteMatch);
     if (m.hasMatch()) {
         return Acceptable;
-    } else if (m.hasPartialMatch()) {
+    } else if (input.isEmpty() || m.hasPartialMatch()) {
         return Intermediate;
     } else {
         pos = input.size();

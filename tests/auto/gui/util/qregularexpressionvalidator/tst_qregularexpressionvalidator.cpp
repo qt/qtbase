@@ -74,6 +74,9 @@ void tst_QRegularExpressionValidator::validate_data()
     QTest::newRow("data14") << QRegularExpression("\\w\\d\\d") << QString("E5") << QValidator::Intermediate;
     QTest::newRow("data15") << QRegularExpression("\\w\\d\\d") << QString("+9") << QValidator::Invalid;
 
+    QTest::newRow("emptystr1") << QRegularExpression("[T][e][s][t]") << QString("") << QValidator::Intermediate;
+    QTest::newRow("emptystr2") << QRegularExpression("[T][e][s][t]") << QString() << QValidator::Intermediate;
+
     QTest::newRow("empty01") << QRegularExpression() << QString() << QValidator::Acceptable;
     QTest::newRow("empty02") << QRegularExpression() << QString("test") << QValidator::Acceptable;
 }
