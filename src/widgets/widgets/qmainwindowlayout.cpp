@@ -68,7 +68,7 @@
 
 QT_BEGIN_NAMESPACE
 
-#ifndef QT_NO_DOCKWIDGET
+#ifdef QT_NO_DOCKWIDGET
 extern QMainWindowLayout *qt_mainwindow_layout(const QMainWindow *window);
 #endif
 

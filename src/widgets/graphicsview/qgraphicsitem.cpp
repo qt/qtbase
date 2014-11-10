@@ -1968,8 +1968,10 @@ QGraphicsItem::CacheMode QGraphicsItem::cacheMode() const
     Caching can speed up rendering if your item spends a significant time
     redrawing itself. In some cases the cache can also slow down rendering, in
     particular when the item spends less time redrawing than QGraphicsItem
-    spends redrawing from the cache. When enabled, the item's paint() function
-    will be called only once for each call to update(); for any subsequent
+    spends redrawing from the cache.
+
+    When caching is enabled, an item's paint() function will generally draw into an
+    offscreen pixmap cache; for any subsequent
     repaint requests, the Graphics View framework will redraw from the
     cache. This approach works particularly well with QGLWidget, which stores
     all the cache as OpenGL textures.
@@ -1979,6 +1981,12 @@ QGraphicsItem::CacheMode QGraphicsItem::cacheMode() const
 
     You can read more about the different cache modes in the CacheMode
     documentation.
+
+    \note Enabling caching does not imply that the item's paint() function will be
+    called only in response to an explicit update() call. For instance, under
+    memory pressure, Qt may decide to drop some of the cache information;
+    in such cases an item's paint() function will be called even if there
+    was no update() call (that is, exactly as if there were no caching enabled).
 
     \sa CacheMode, QPixmapCache::setCacheLimit()
 */
@@ -5336,6 +5344,16 @@ void QGraphicsItem::setBoundingRegionGranularity(qreal granularity)
     a non-zero width.
 
     All painting is done in local coordinates.
+
+    \note It is mandatory that an item will always redraw itself in the exact
+    same way, unless update() was called; otherwise visual artifacts may
+    occur. In other words, two subsequent calls to paint() must always produce
+    the same output, unless update() was called between them.
+
+    \note Enabling caching for an item does not guarantee that paint()
+    will be invoked only once by the Graphics View framework,
+    even without any explicit call to update(). See the documentation of
+    setCacheMode() for more details.
 
     \sa setCacheMode(), QPen::width(), {Item Coordinates}, ItemUsesExtendedStyleOption
 */

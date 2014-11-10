@@ -108,7 +108,9 @@ private slots:
 
 private:
     void repaintWindow();
-    void updateGeometry();
+    bool updateSize();
+    bool updatePos();
+    void updateMargins();
     void updateNormalGeometry();
 
     enum FocusWidgets {

@@ -483,3 +483,15 @@
     \externalpage http://qt-project.org/doc/qtcreator/creator-developing-winrt.html
     \title Qt Creator: Connecting Windows Runtime Devices
 */
+/*!
+    \externalpage http://qt-project.org/doc/qtcreator/creator-clang-codemodel.html
+    \title Qt Creator: Parsing C++ Files
+*/
+/*!
+    \externalpage http://qt-project.org/doc/qtcreator/creator-quick-ui-forms.html
+    \title Qt Creator: Qt Quick UI Forms
+*/
+/*!
+    \externalpage http://qt-project.org/doc/qtcreator/creator-clang-static-analyzer.html
+    \title Qt Creator: Using Clang Static Analyzer
+*/

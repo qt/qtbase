@@ -519,7 +519,7 @@ QBasicAtomicInt qt_cpu_features = Q_BASIC_ATOMIC_INITIALIZER(0);
 void qDetectCpuFeatures()
 {
 #if defined(Q_CC_GNU) && !defined(Q_CC_CLANG) && !defined(Q_CC_INTEL)
-# if (__GNUC__ * 100 + __GNUC_MINOR__) < 403
+# if Q_CC_GNU < 403
     // GCC 4.2 (at least the one that comes with Apple's XCode, on Mac) is
     // known to be broken beyond repair in dealing with the inline assembly
     // above. It will generate bad code that could corrupt important registers

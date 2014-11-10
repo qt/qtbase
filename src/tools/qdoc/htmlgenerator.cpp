@@ -4301,8 +4301,6 @@ void HtmlGenerator::generateManifestFile(QString manifest, QString element)
         return;
     QString fileName = manifest +"-manifest.xml";
     QFile file(outputDir() + QLatin1Char('/') + fileName);
-    if (!file.open(QFile::WriteOnly | QFile::Text))
-        return ;
     bool demos = false;
     if (manifest == "demos")
         demos = true;
@@ -4323,7 +4321,7 @@ void HtmlGenerator::generateManifestFile(QString manifest, QString element)
         }
         ++i;
     }
-    if (!proceed)
+    if (!proceed || !file.open(QFile::WriteOnly | QFile::Text))
         return;
 
     QXmlStreamWriter writer(&file);

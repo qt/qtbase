@@ -186,31 +186,37 @@ public:
 private:
     friend class QAndroidJniObject;
 
-    QJNIObjectPrivate(const char *className, const char *sig, va_list args);
-    QJNIObjectPrivate(jclass clazz, const char *sig, va_list args);
+    struct QVaListPrivate { operator va_list &() const { return m_args; } va_list &m_args; };
+
+    QJNIObjectPrivate(const char *className, const char *sig, const QVaListPrivate &args);
+    QJNIObjectPrivate(jclass clazz, const char *sig, const QVaListPrivate &args);
 
     template <typename T>
-    T callMethod(const char *methodName,
-                 const char *sig,
-                 va_list args) const;
-    QJNIObjectPrivate callObjectMethod(const char *methodName,
-                                       const char *sig,
-                                       va_list args) const;
+    T callMethodV(const char *methodName,
+                   const char *sig,
+                   va_list args) const;
+    QJNIObjectPrivate callObjectMethodV(const char *methodName,
+                                        const char *sig,
+                                        va_list args) const;
     template <typename T>
-    static T callStaticMethod(const char *className,
-                              const char *methodName,
-                              const char *sig, va_list args);
+    static T callStaticMethodV(const char *className,
+                               const char *methodName,
+                               const char *sig,
+                               va_list args);
     template <typename T>
-    static T callStaticMethod(jclass clazz,
-                              const char *methodName,
-                              const char *sig, va_list args);
-    static QJNIObjectPrivate callStaticObjectMethod(const char *className,
-                                                    const char *methodName,
-                                                    const char *sig, va_list args);
+    static T callStaticMethodV(jclass clazz,
+                               const char *methodName,
+                               const char *sig,
+                               va_list args);
+    static QJNIObjectPrivate callStaticObjectMethodV(const char *className,
+                                                     const char *methodName,
+                                                     const char *sig,
+                                                     va_list args);
 
-    static QJNIObjectPrivate callStaticObjectMethod(jclass clazz,
-                                                    const char *methodName,
-                                                    const char *sig, va_list args);
+    static QJNIObjectPrivate callStaticObjectMethodV(jclass clazz,
+                                                     const char *methodName,
+                                                     const char *sig,
+                                                     va_list args);
 
     bool isSameObject(jobject obj) const;
     bool isSameObject(const QJNIObjectPrivate &other) const;

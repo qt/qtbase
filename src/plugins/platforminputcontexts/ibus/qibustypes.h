@@ -36,6 +36,7 @@
 #include <qvector.h>
 #include <qevent.h>
 #include <QDBusArgument>
+#include <QTextCharFormat>
 
 QT_BEGIN_NAMESPACE
 
@@ -70,7 +71,7 @@ public:
     QIBusAttribute();
     ~QIBusAttribute();
 
-    QTextFormat format() const;
+    QTextCharFormat format() const;
 
     Type type;
     quint32 value;

@@ -44,31 +44,49 @@
 
 QT_BEGIN_NAMESPACE
 
-static QString resolve2xFile(const QString &fileName, qreal targetDevicePixelRatio)
+static QString resolveFileName(QString fileName, QUrl *url, qreal targetDevicePixelRatio)
 {
+    // We might use the fileName for loading if url loading fails
+    // try to make sure it is a valid file path.
+    // Also, QFile{Info}::exists works only on filepaths (not urls)
+
+    if (url->isValid()) {
+      if (url->scheme() == QLatin1Literal("qrc")) {
+        fileName = fileName.right(fileName.length() - 3);
+      }
+      else if (url->scheme() == QLatin1Literal("file")) {
+        fileName = url->toLocalFile();
+      }
+    }
+
     if (targetDevicePixelRatio <= 1.0)
         return fileName;
 
-    int dotIndex = fileName.lastIndexOf(QLatin1Char('.'));
+    // try to find a 2x version
+
+    const int dotIndex = fileName.lastIndexOf(QLatin1Char('.'));
     if (dotIndex != -1) {
         QString at2xfileName = fileName;
         at2xfileName.insert(dotIndex, QStringLiteral("@2x"));
-        if (QFile::exists(at2xfileName))
-            return at2xfileName;
+        if (QFile::exists(at2xfileName))  {
+            fileName = at2xfileName;
+            *url = QUrl(fileName);
+        }
     }
+
     return fileName;
 }
 
-static QPixmap getPixmap(QTextDocument *doc, const QTextImageFormat &format)
+
+static QPixmap getPixmap(QTextDocument *doc, const QTextImageFormat &format, const qreal devicePixelRatio = 1.0)
 {
     QPixmap pm;
 
     QString name = format.name();
-    if (name.startsWith(QLatin1String(":/"))) // auto-detect resources
+    if (name.startsWith(QLatin1String(":/"))) // auto-detect resources and convert them to url
         name.prepend(QLatin1String("qrc"));
-    QPaintDevice *pdev = doc->documentLayout()->paintDevice();
-    name = resolve2xFile(name, pdev ? pdev->devicePixelRatio() : qApp->devicePixelRatio());
     QUrl url = QUrl(name);
+    name = resolveFileName(name, &url, devicePixelRatio);
     const QVariant data = doc->resource(QTextDocument::ImageResource, url);
     if (data.type() == QVariant::Pixmap || data.type() == QVariant::Image) {
         pm = qvariant_cast<QPixmap>(data);
@@ -77,19 +95,18 @@ static QPixmap getPixmap(QTextDocument *doc, const QTextImageFormat &format)
     }
 
     if (pm.isNull()) {
-        QString context;
 #if 0
+        QString context;
         // ### Qt5
         QTextBrowser *browser = qobject_cast<QTextBrowser *>(doc->parent());
         if (browser)
             context = browser->source().toString();
 #endif
+        // try direct loading
         QImage img;
-        if (img.isNull()) { // try direct loading
-            name = format.name(); // remove qrc:/ prefix again
-            if (name.isEmpty() || !img.load(name))
-                return QPixmap(QLatin1String(":/qt-project.org/styles/commonstyle/images/file-16.png"));
-        }
+        if (name.isEmpty() || !img.load(name))
+            return QPixmap(QLatin1String(":/qt-project.org/styles/commonstyle/images/file-16.png"));
+
         pm = QPixmap::fromImage(img);
         doc->addResource(QTextDocument::ImageResource, url, pm);
     }
@@ -142,16 +159,15 @@ static QSize getPixmapSize(QTextDocument *doc, const QTextImageFormat &format)
     return size;
 }
 
-static QImage getImage(QTextDocument *doc, const QTextImageFormat &format)
+static QImage getImage(QTextDocument *doc, const QTextImageFormat &format, const qreal devicePixelRatio = 1.0)
 {
     QImage image;
 
     QString name = format.name();
     if (name.startsWith(QLatin1String(":/"))) // auto-detect resources
         name.prepend(QLatin1String("qrc"));
-    QPaintDevice *pdev = doc->documentLayout()->paintDevice();
-    name = resolve2xFile(name, pdev ? pdev->devicePixelRatio() : qApp->devicePixelRatio());
     QUrl url = QUrl(name);
+    name = resolveFileName(name, &url, devicePixelRatio);
     const QVariant data = doc->resource(QTextDocument::ImageResource, url);
     if (data.type() == QVariant::Image) {
         image = qvariant_cast<QImage>(data);
@@ -160,19 +176,18 @@ static QImage getImage(QTextDocument *doc, const QTextImageFormat &format)
     }
 
     if (image.isNull()) {
-        QString context;
-
 #if 0
+        QString context;
         // ### Qt5
         QTextBrowser *browser = qobject_cast<QTextBrowser *>(doc->parent());
         if (browser)
             context = browser->source().toString();
 #endif
-        if (image.isNull()) { // try direct loading
-            name = format.name(); // remove qrc:/ prefix again
-            if (name.isEmpty() || !image.load(name))
-                return QImage(QLatin1String(":/qt-project.org/styles/commonstyle/images/file-16.png"));
-        }
+        // try direct loading
+
+        if (name.isEmpty() || !image.load(name))
+            return QImage(QLatin1String(":/qt-project.org/styles/commonstyle/images/file-16.png"));
+
         doc->addResource(QTextDocument::ImageResource, url, image);
     }
 
@@ -241,10 +256,10 @@ void QTextImageHandler::drawObject(QPainter *p, const QRectF &rect, QTextDocumen
         const QTextImageFormat imageFormat = format.toImageFormat();
 
     if (QCoreApplication::instance()->thread() != QThread::currentThread()) {
-        const QImage image = getImage(doc, imageFormat);
+        const QImage image = getImage(doc, imageFormat, p->device()->devicePixelRatio());
         p->drawImage(rect, image, image.rect());
     } else {
-        const QPixmap pixmap = getPixmap(doc, imageFormat);
+        const QPixmap pixmap = getPixmap(doc, imageFormat, p->device()->devicePixelRatio());
         p->drawPixmap(rect, pixmap, pixmap.rect());
     }
 }

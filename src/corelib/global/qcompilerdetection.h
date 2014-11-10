@@ -78,7 +78,7 @@
 #  define Q_NO_USING_KEYWORD
 
 #elif defined(_MSC_VER)
-#  define Q_CC_MSVC
+#  define Q_CC_MSVC (_MSC_VER)
 #  define Q_CC_MSVC_NET
 #  define Q_OUTOFLINE_TEMPLATE inline
 #  if _MSC_VER < 1600
@@ -137,14 +137,14 @@
 #  endif
 
 #elif defined(__GNUC__)
-#  define Q_CC_GNU
+#  define Q_CC_GNU          (__GNUC__ * 100 + __GNUC_MINOR__)
 #  define Q_C_CALLBACKS
 #  if defined(__MINGW32__)
 #    define Q_CC_MINGW
 #  endif
 #  if defined(__INTEL_COMPILER)
 /* Intel C++ also masquerades as GCC */
-#    define Q_CC_INTEL
+#    define Q_CC_INTEL      (__INTEL_COMPILER)
 #    define Q_ASSUME_IMPL(expr)  __assume(expr)
 #    define Q_UNREACHABLE_IMPL() __builtin_unreachable()
 #    if __INTEL_COMPILER >= 1300 && !defined(__APPLE__)
@@ -152,7 +152,26 @@
 #    endif
 #  elif defined(__clang__)
 /* Clang also masquerades as GCC */
-#    define Q_CC_CLANG
+#    if defined(__apple_build_version__)
+#      /* http://en.wikipedia.org/wiki/Xcode#Toolchain_Versions */
+#      if __apple_build_version__ >= 600051
+#        define Q_CC_CLANG 305
+#      elif __apple_build_version__ >= 503038
+#        define Q_CC_CLANG 304
+#      elif __apple_build_version__ >= 500275
+#        define Q_CC_CLANG 303
+#      elif __apple_build_version__ >= 425024
+#        define Q_CC_CLANG 302
+#      elif __apple_build_version__ >= 318045
+#        define Q_CC_CLANG 301
+#      elif __apple_build_version__ >= 211101
+#        define Q_CC_CLANG 300
+#      else
+#        error "Unknown Apple Clang version"
+#      endif
+#    else
+#      define Q_CC_CLANG ((__clang_major__ * 100) + __clang_minor__)
+#    endif
 #    define Q_ASSUME_IMPL(expr)  if (expr){} else __builtin_unreachable()
 #    define Q_UNREACHABLE_IMPL() __builtin_unreachable()
 #    if !defined(__has_extension)
@@ -168,7 +187,7 @@
 #    endif
 #  else
 /* Plain GCC */
-#    if (__GNUC__ * 100 + __GNUC_MINOR__) >= 405
+#    if Q_CC_GNU >= 405
 #      define Q_ASSUME_IMPL(expr)  if (expr){} else __builtin_unreachable()
 #      define Q_UNREACHABLE_IMPL() __builtin_unreachable()
 #      define Q_DECL_DEPRECATED_X(text) __attribute__ ((__deprecated__(text)))
@@ -202,7 +221,7 @@
 #      define QT_NO_ARM_EABI
 #    endif
 #  endif
-#  if (__GNUC__ * 100 + __GNUC_MINOR__) >= 403 && !defined(Q_CC_CLANG)
+#  if Q_CC_GNU >= 403 && !defined(Q_CC_CLANG)
 #      define Q_ALLOC_SIZE(x) __attribute__((alloc_size(x)))
 #  endif
 
@@ -308,7 +327,7 @@
 
 /* Using the `using' keyword avoids Intel C++ for Linux warnings */
 #  elif defined(__INTEL_COMPILER)
-#    define Q_CC_INTEL
+#    define Q_CC_INTEL      (__INTEL_COMPILER)
 
 /* Uses CFront, make sure to read the manual how to tweak templates. */
 #  elif defined(__ghs)
@@ -566,7 +585,7 @@
 #  endif
 
 // Variadic macros are supported for gnu++98, c++11, c99 ... since 2.9
-#  if ((__clang_major__ * 100) + __clang_minor__) >= 209
+#  if Q_CC_CLANG >= 209
 #    if !defined(__STRICT_ANSI__) || defined(__GXX_EXPERIMENTAL_CXX0X__) \
       || (defined(__cplusplus) && (__cplusplus >= 201103L)) \
       || (defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L))
@@ -668,7 +687,7 @@
 #      define Q_COMPILER_VARIADIC_TEMPLATES
 #    endif
     /* Features that have no __has_feature() check */
-#    if ((__clang_major__ * 100) + __clang_minor__) >= 209 /* since clang 2.9 */
+#    if Q_CC_CLANG >= 209 /* since clang 2.9 */
 #      define Q_COMPILER_EXTERN_TEMPLATES
 #    endif
 #  endif
@@ -709,7 +728,7 @@
 #if defined(Q_CC_GNU) && !defined(Q_CC_INTEL) && !defined(Q_CC_CLANG)
 #  define Q_COMPILER_RESTRICTED_VLA
 #  define Q_COMPILER_THREADSAFE_STATICS
-#  if (__GNUC__ * 100 + __GNUC_MINOR__) >= 403
+#  if Q_CC_GNU >= 403
 //   GCC supports binary literals in C, C++98 and C++11 modes
 #    define Q_COMPILER_BINARY_LITERALS
 #  endif
@@ -720,13 +739,13 @@
 #    define Q_COMPILER_VARIADIC_MACROS
 #  endif
 #  if defined(__GXX_EXPERIMENTAL_CXX0X__) || __cplusplus >= 201103L
-#    if (__GNUC__ * 100 + __GNUC_MINOR__) >= 403
+#    if Q_CC_GNU >= 403
        /* C++11 features supported in GCC 4.3: */
 #      define Q_COMPILER_DECLTYPE
 #      define Q_COMPILER_RVALUE_REFS
 #      define Q_COMPILER_STATIC_ASSERT
 #    endif
-#    if (__GNUC__ * 100 + __GNUC_MINOR__) >= 404
+#    if Q_CC_GNU >= 404
        /* C++11 features supported in GCC 4.4: */
 #      define Q_COMPILER_AUTO_FUNCTION
 #      define Q_COMPILER_AUTO_TYPE
@@ -735,7 +754,7 @@
 #      define Q_COMPILER_UNICODE_STRINGS
 #      define Q_COMPILER_VARIADIC_TEMPLATES
 #    endif
-#    if (__GNUC__ * 100 + __GNUC_MINOR__) >= 405
+#    if Q_CC_GNU >= 405
        /* C++11 features supported in GCC 4.5: */
 #      define Q_COMPILER_EXPLICIT_CONVERSIONS
        /* GCC 4.4 implements initializer_list but does not define typedefs required
@@ -745,7 +764,7 @@
 #      define Q_COMPILER_RAW_STRINGS
 #      define Q_COMPILER_CLASS_ENUM
 #    endif
-#    if (__GNUC__ * 100 + __GNUC_MINOR__) >= 406
+#    if Q_CC_GNU >= 406
        /* Pre-4.6 compilers implement a non-final snapshot of N2346, hence default and delete
         * functions are supported only if they are public. Starting from 4.6, GCC handles
         * final version - the access modifier is not relevant. */
@@ -757,7 +776,7 @@
 #      define Q_COMPILER_UNRESTRICTED_UNIONS
 #      define Q_COMPILER_RANGE_FOR
 #    endif
-#    if (__GNUC__ * 100 + __GNUC_MINOR__) >= 407
+#    if Q_CC_GNU >= 407
        /* GCC 4.4 implemented <atomic> and std::atomic using its old intrinsics.
         * However, the implementation is incomplete for most platforms until GCC 4.7:
         * instead, std::atomic would use an external lock. Since we need an std::atomic
@@ -773,20 +792,20 @@
 #      define Q_COMPILER_TEMPLATE_ALIAS
 #      define Q_COMPILER_UDL
 #    endif
-#    if (__GNUC__ * 100 + __GNUC_MINOR__) >= 408
+#    if Q_CC_GNU >= 408
 #      define Q_COMPILER_ATTRIBUTES
 #      define Q_COMPILER_ALIGNAS
 #      define Q_COMPILER_ALIGNOF
 #      define Q_COMPILER_INHERITING_CONSTRUCTORS
 #      define Q_COMPILER_THREAD_LOCAL
-#      if (__GNUC__ * 100 + __GNUC_MINOR__) > 408 || __GNUC_PATCHLEVEL__ >= 1
+#      if Q_CC_GNU > 408 || __GNUC_PATCHLEVEL__ >= 1
 #         define Q_COMPILER_REF_QUALIFIERS
 #      endif
 #    endif
      /* C++11 features are complete as of GCC 4.8.1 */
 #  endif
 #  if __cplusplus > 201103L
-#    if (__GNUC__ * 100 + __GNUC_MINOR__) >= 409
+#    if Q_CC_GNU >= 409
      /* C++1y features in GCC 4.9 - deprecated, do not update this list */
 //#    define Q_COMPILER_BINARY_LITERALS   // already supported since GCC 4.3 as an extension
 #      define Q_COMPILER_LAMBDA_CAPTURES

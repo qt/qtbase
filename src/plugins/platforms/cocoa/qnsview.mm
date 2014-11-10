@@ -361,12 +361,11 @@ static NSString *_q_NSWindowDidChangeOcclusionStateNotification = nil;
     // Send a geometry change event to Qt, if it's ready to handle events
     if (!m_platformWindow->m_inConstructor) {
         QWindowSystemInterface::handleGeometryChange(m_window, geometry);
-        // Do not send incorrect exposes in case the window is not even visible yet.
-        // We might get here as a result of a resize() from QWidget's show(), for instance.
-        if (m_platformWindow->window()->isVisible()) {
-            m_platformWindow->updateExposedGeometry();
+        m_platformWindow->updateExposedGeometry();
+        // Guard against processing window system events during QWindow::setGeometry
+        // calles, which Qt and Qt applications do not excpect.
+        if (!m_platformWindow->m_inSetGeometry)
             QWindowSystemInterface::flushWindowSystemEvents();
-        }
     }
 }
 
@@ -603,7 +602,8 @@ static NSString *_q_NSWindowDidChangeOcclusionStateNotification = nil;
 {
     if (m_window->flags() & Qt::WindowTransparentForInput)
         return NO;
-    QWindowSystemInterface::handleWindowActivated([self topLevelWindow]);
+    if (!m_platformWindow->windowIsPopupType())
+        QWindowSystemInterface::handleWindowActivated([self topLevelWindow]);
     return YES;
 }
 
@@ -662,6 +662,19 @@ static NSString *_q_NSWindowDidChangeOcclusionStateNotification = nil;
     m_frameStrutButtons = Qt::NoButton;
 }
 
+- (NSPoint) screenMousePoint:(NSEvent *)theEvent
+{
+    NSPoint screenPoint;
+    if (theEvent) {
+        NSPoint windowPoint = [theEvent locationInWindow];
+        NSRect screenRect = [[theEvent window] convertRectToScreen:NSMakeRect(windowPoint.x, windowPoint.y, 1, 1)];
+        screenPoint = screenRect.origin;
+    } else {
+        screenPoint = [NSEvent mouseLocation];
+    }
+    return screenPoint;
+}
+
 - (void)handleMouseEvent:(NSEvent *)theEvent
 {
     [self handleTabletEvent: theEvent];
@@ -676,23 +689,7 @@ static NSString *_q_NSWindowDidChangeOcclusionStateNotification = nil;
             m_platformWindow->m_forwardWindow = 0;
     }
 
-    NSPoint globalPos = [NSEvent mouseLocation];
-
-    if ([self.window parentWindow]
-        && (theEvent.type == NSLeftMouseDragged || theEvent.type == NSLeftMouseUp)) {
-        // QToolBar can be implemented as a child window on top of its main window
-        // (with a borderless NSWindow). If an option "unified toolbar" set on the main window,
-        // it's possible to drag such a window using this toolbar.
-        // While handling mouse drag events, QToolBar moves the window (QWidget::move).
-        // In such a combination [NSEvent mouseLocation] is very different from the
-        // real event location and as a result a window will move chaotically.
-        NSPoint winPoint = [theEvent locationInWindow];
-        NSRect tmpRect = NSMakeRect(winPoint.x, winPoint.y, 1., 1.);
-        tmpRect = [[theEvent window] convertRectToScreen:tmpRect];
-        globalPos = tmpRect.origin;
-    }
-
-    [targetView convertFromScreen:globalPos toWindowPoint:&qtWindowPoint andScreenPoint:&qtScreenPoint];
+    [targetView convertFromScreen:[self screenMousePoint:theEvent] toWindowPoint:&qtWindowPoint andScreenPoint:&qtScreenPoint];
     ulong timestamp = [theEvent timestamp] * 1000;
 
     QCocoaDrag* nativeDrag = QCocoaIntegration::instance()->drag();
@@ -865,7 +862,7 @@ static NSString *_q_NSWindowDidChangeOcclusionStateNotification = nil;
 
     QPointF windowPoint;
     QPointF screenPoint;
-    [self convertFromScreen:[NSEvent mouseLocation] toWindowPoint:&windowPoint andScreenPoint:&screenPoint];
+    [self convertFromScreen:[self screenMousePoint:theEvent] toWindowPoint:&windowPoint andScreenPoint:&screenPoint];
     QWindow *childWindow = m_platformWindow->childWindowAt(windowPoint.toPoint());
 
     // Top-level windows generate enter-leave events for sub-windows.

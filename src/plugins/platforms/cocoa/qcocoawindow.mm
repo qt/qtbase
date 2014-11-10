@@ -381,6 +381,7 @@ QCocoaWindow::QCocoaWindow(QWindow *tlw)
     , m_windowUnderMouse(false)
     , m_inConstructor(true)
     , m_inSetVisible(false)
+    , m_inSetGeometry(false)
 #ifndef QT_NO_OPENGL
     , m_glContext(0)
 #endif
@@ -470,6 +471,8 @@ QSurfaceFormat QCocoaWindow::format() const
 
 void QCocoaWindow::setGeometry(const QRect &rectIn)
 {
+    QBoolBlocker inSetGeometry(m_inSetGeometry, true);
+
     QRect rect = rectIn;
     // This means it is a call from QWindow::setFramePosition() and
     // the coordinates include the frame (size is still the contents rectangle).
@@ -1752,6 +1755,11 @@ void QCocoaWindow::updateExposedGeometry()
     // updateExposedGeometry is not allowed to send the initial expose. If you want
     // that call exposeWindow();
     if (!m_geometryUpdateExposeAllowed)
+        return;
+
+    // Do not send incorrect exposes in case the window is not even visible yet.
+    // We might get here as a result of a resize() from QWidget's show(), for instance.
+    if (!window()->isVisible())
         return;
 
     if (!isWindowExposable())

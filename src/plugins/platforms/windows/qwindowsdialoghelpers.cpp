@@ -1224,16 +1224,21 @@ void QWindowsNativeFileDialogBase::setNameFilters(const QStringList &filters)
     QScopedArrayPointer<WCHAR> buffer(new WCHAR[totalStringLength + 2 * size]);
     QScopedArrayPointer<COMDLG_FILTERSPEC> comFilterSpec(new COMDLG_FILTERSPEC[size]);
 
-    const QString matchesAll = QStringLiteral(" (*)");
     WCHAR *ptr = buffer.data();
     // Split filter specification as 'Texts (*.txt[;] *.doc)'
     // into description and filters specification as '*.txt;*.doc'
 
     for (int i = 0; i < size; ++i) {
-        // Display glitch (CLSID only): 'All files (*)' shows up as 'All files (*) (*)'
+        // Display glitch (CLSID only): Any filter not filtering on suffix (such as
+        // '*', 'a.*') will be duplicated in combo: 'All files (*) (*)',
+        // 'AAA files (a.*) (a.*)'
         QString description = specs[i].description;
-        if (!m_hideFiltersDetails && description.endsWith(matchesAll))
-            description.truncate(description.size() - matchesAll.size());
+        const QString &filter = specs[i].filter;
+        if (!m_hideFiltersDetails && !filter.startsWith(QLatin1String("*."))) {
+            const int pos = description.lastIndexOf(QLatin1Char('('));
+            if (pos > 0)
+                description.truncate(pos);
+        }
         // Add to buffer.
         comFilterSpec[i].pszName = ptr;
         ptr += description.toWCharArray(ptr);

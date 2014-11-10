@@ -317,11 +317,16 @@ static bool rootLevelRunLoopIntegration()
 }
 
 #if defined(Q_PROCESSOR_X86)
-#  define SET_STACK_POINTER "mov %0, %%esp"
 #  define FUNCTION_CALL_ALIGNMENT 16
+#  if defined(Q_PROCESSOR_X86_32)
+#    define SET_STACK_POINTER "mov %0, %%esp"
+#  elif defined(Q_PROCESSOR_X86_64)
+#    define SET_STACK_POINTER "movq %0, %%rsp"
+#  endif
 #elif defined(Q_PROCESSOR_ARM)
-#  define SET_STACK_POINTER "mov sp, %0"
+#  // Valid for both 32 and 64-bit ARM
 #  define FUNCTION_CALL_ALIGNMENT 4
+#  define SET_STACK_POINTER "mov sp, %0"
 #else
 #  error "Unknown processor family"
 #endif

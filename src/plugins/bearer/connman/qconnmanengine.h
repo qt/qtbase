@@ -48,7 +48,7 @@
 #include "../qbearerengine_impl.h"
 
 #include "qconnmanservice_linux_p.h"
-#include "qofonoservice_linux_p.h"
+#include "../linux_common/qofonoservice_linux_p.h"
 
 #include <QMap>
 #include <QVariant>
