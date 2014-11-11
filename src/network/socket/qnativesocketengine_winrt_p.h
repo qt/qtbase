@@ -55,6 +55,12 @@ QT_BEGIN_NAMESPACE
 
 class QNativeSocketEnginePrivate;
 
+struct WinRtDatagram {
+    QByteArray data;
+    int port;
+    QHostAddress address;
+};
+
 class Q_AUTOTEST_EXPORT QNativeSocketEngine : public QAbstractSocketEngine
 {
     Q_OBJECT
@@ -197,7 +203,8 @@ private:
     Microsoft::WRL::ComPtr<ABI::Windows::Foundation::IAsyncAction> connectOp;
     QBuffer readBytes;
     QMutex readMutex;
-    QList<ABI::Windows::Networking::Sockets::IDatagramSocketMessageReceivedEventArgs *> pendingDatagrams;
+
+    QList<WinRtDatagram> pendingDatagrams;
     QList<ABI::Windows::Networking::Sockets::IStreamSocket *> pendingConnections;
     QList<ABI::Windows::Networking::Sockets::IStreamSocket *> currentConnections;
     QEventLoop eventLoop;
