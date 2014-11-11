@@ -27,10 +27,13 @@
 
 QT_BEGIN_NAMESPACE
 
-// Qt running on NaCl/pepper has one "screen", which
-// corresponds to the <div> rag that contains the application.
-// Windows can then be show "fullscreen" and occupy the
-// entire tag.
+// Qt running on NaCl/pepper has one screen, which corresponds to the <embed> element
+// that contains the application instance. Geometry is reported to the instance via
+// DidChangeView. Instance geometry has a position, which is the position of the <embed>
+// element on the page. Screen geometry always has a position of (0, 0). Screen size
+// is equal to instance size. Pepper event geometry is in screen coordinates: relative
+// to then top-left (0,0). Top-level windows are positioned in screen geometry as usual.
+
 QPepperScreen::QPepperScreen()
 : m_depth(32)
 , m_format(QImage::Format_ARGB32_Premultiplied)
@@ -41,8 +44,7 @@ QPepperScreen::QPepperScreen()
 
 QRect QPepperScreen::geometry() const
 {
-    // Note that the pepper instance geometry usually has a non-zero postion.
-    return QPepperInstance::get()->geometry();
+    return QRect(QPoint(), QPepperInstance::get()->geometry().size());
 }
 
 qreal QPepperScreen::devicePixelRatio() const
