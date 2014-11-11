@@ -252,10 +252,6 @@ void MingwMakefileGenerator::init()
 
     ProStringList &configs = project->values("CONFIG");
 
-    if(project->isActiveConfig("qt_dll"))
-        if(configs.indexOf("qt") == -1)
-            configs.append("qt");
-
     if (project->isActiveConfig("dll")) {
         QString destDir = "";
         if(!project->first("DESTDIR").isEmpty())
