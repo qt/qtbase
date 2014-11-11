@@ -3055,8 +3055,10 @@ void QMenu::actionEvent(QActionEvent *e)
             delete menuItem;
         } else if (e->type() == QEvent::ActionChanged) {
             QPlatformMenuItem *menuItem = d->platformMenu->menuItemForTag(reinterpret_cast<quintptr>(e->action()));
-            copyActionToPlatformItem(e->action(), menuItem);
-            d->platformMenu->syncMenuItem(menuItem);
+            if (menuItem) {
+                copyActionToPlatformItem(e->action(), menuItem);
+                d->platformMenu->syncMenuItem(menuItem);
+            }
         }
 
         d->platformMenu->syncSeparatorsCollapsible(d->collapsibleSeparators);

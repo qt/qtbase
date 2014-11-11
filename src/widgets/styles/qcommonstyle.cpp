@@ -1114,7 +1114,7 @@ void QCommonStylePrivate::tabLayout(const QStyleOptionTabV3 *opt, const QWidget 
                         (opt->state & QStyle::State_Enabled) ? QIcon::Normal : QIcon::Disabled,
                         (opt->state & QStyle::State_Selected) ? QIcon::On : QIcon::Off  );
         // High-dpi icons do not need adjustmet; make sure tabIconSize is not larger than iconSize
-        tabIconSize = QSize(qMin(tabIconSize.width(), iconSize.width()), qMin(tabIconSize.height(), iconSize.width()));
+        tabIconSize = QSize(qMin(tabIconSize.width(), iconSize.width()), qMin(tabIconSize.height(), iconSize.height()));
 
         *iconRect = QRect(tr.left(), tr.center().y() - tabIconSize.height() / 2,
                     tabIconSize.width(), tabIconSize .height());

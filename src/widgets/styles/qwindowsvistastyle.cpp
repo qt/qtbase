@@ -1473,7 +1473,11 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
             break;
         }
 #endif // QT_NO_ITEMVIEWS
-
+#ifndef QT_NO_COMBOBOX
+    case CE_ComboBoxLabel:
+        QCommonStyle::drawControl(element, option, painter, widget);
+        break;
+#endif // QT_NO_COMBOBOX
     default:
         QWindowsXPStyle::drawControl(element, option, painter, widget);
         break;

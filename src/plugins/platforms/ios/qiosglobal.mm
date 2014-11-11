@@ -127,15 +127,6 @@ UIDeviceOrientation fromQtScreenOrientation(Qt::ScreenOrientation qtOrientation)
     return uiOrientation;
 }
 
-QRect fromPortraitToPrimary(const QRect &rect, QPlatformScreen *screen)
-{
-    // UIScreen is always in portrait. Use this function to convert CGRects
-    // aligned with UIScreen into whatever is the current orientation of QScreen.
-    QRect geometry = screen->geometry();
-    return geometry.width() < geometry.height() ? rect
-        : QRect(rect.y(), geometry.height() - rect.width() - rect.x(), rect.height(), rect.width());
-}
-
 int infoPlistValue(NSString* key, int defaultValue)
 {
     static NSBundle *bundle = [NSBundle mainBundle];

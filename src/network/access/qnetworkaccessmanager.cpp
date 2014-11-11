@@ -1135,7 +1135,12 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
     if (!d->networkSessionStrongRef && (d->initializeSession || !d->networkConfiguration.identifier().isEmpty())) {
         QNetworkConfigurationManager manager;
         if (!d->networkConfiguration.identifier().isEmpty()) {
-            d->createSession(d->networkConfiguration);
+            if ((d->networkConfiguration.state() & QNetworkConfiguration::Defined)
+                    && d->networkConfiguration != manager.defaultConfiguration())
+                d->createSession(manager.defaultConfiguration());
+            else
+                d->createSession(d->networkConfiguration);
+
         } else {
             if (manager.capabilities() & QNetworkConfigurationManager::NetworkSessionRequired)
                 d->createSession(manager.defaultConfiguration());
@@ -1590,6 +1595,11 @@ void QNetworkAccessManagerPrivate::_q_onlineStateChanged(bool isOnline)
     if (customNetworkConfiguration) {
         online = (networkConfiguration.state() & QNetworkConfiguration::Active);
     } else {
+        if (isOnline && online != isOnline) {
+            networkSessionStrongRef.clear();
+            networkSessionWeakRef.clear();
+        }
+
         online = isOnline;
     }
 }

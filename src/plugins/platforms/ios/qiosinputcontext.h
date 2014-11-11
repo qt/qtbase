@@ -51,9 +51,10 @@ QT_BEGIN_NAMESPACE
 
 struct ImeState
 {
-    ImeState() : currentState(0) {}
+    ImeState() : currentState(0), focusObject(0) {}
     Qt::InputMethodQueries update(Qt::InputMethodQueries properties);
     QInputMethodQueryEvent currentState;
+    QObject *focusObject;
 };
 
 class QIOSInputContext : public QPlatformInputContext
@@ -82,6 +83,7 @@ public:
     void commit();
 
     const ImeState &imeState() { return m_imeState; };
+    bool inputMethodAccepted() const;
 
     bool isReloadingInputViewsFromUpdate() const { return m_isReloadingInputViewsFromUpdate; }
 

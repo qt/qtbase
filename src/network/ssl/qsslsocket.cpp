@@ -1908,18 +1908,14 @@ qint64 QSslSocket::readData(char *data, qint64 maxlen)
 
     if (d->mode == UnencryptedMode && !d->autoStartHandshake) {
         readBytes = d->plainSocket->read(data, maxlen);
-    } else {
-        int bytesToRead = qMin<int>(maxlen, d->buffer.size());
-        readBytes = d->buffer.read(data, bytesToRead);
-    }
-
 #ifdef QSSLSOCKET_DEBUG
-    qDebug() << "QSslSocket::readData(" << (void *)data << ',' << maxlen << ") ==" << readBytes;
+        qDebug() << "QSslSocket::readData(" << (void *)data << ',' << maxlen << ") =="
+                 << readBytes;
 #endif
-
-    // possibly trigger another transmit() to decrypt more data from the socket
-    if (d->buffer.isEmpty() && d->plainSocket->bytesAvailable()) {
-        QMetaObject::invokeMethod(this, "_q_flushReadBuffer", Qt::QueuedConnection);
+    } else {
+        // possibly trigger another transmit() to decrypt more data from the socket
+        if (d->plainSocket->bytesAvailable())
+            QMetaObject::invokeMethod(this, "_q_flushReadBuffer", Qt::QueuedConnection);
     }
 
     return readBytes;

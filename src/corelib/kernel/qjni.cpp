@@ -311,7 +311,7 @@ QJNIObjectPrivate::QJNIObjectPrivate(const char *className, const char *sig, ...
     }
 }
 
-QJNIObjectPrivate::QJNIObjectPrivate(const char *className, const char *sig, va_list args)
+QJNIObjectPrivate::QJNIObjectPrivate(const char *className, const char *sig, const QVaListPrivate &args)
     : d(new QJNIObjectData())
 {
     QJNIEnvironmentPrivate env;
@@ -369,7 +369,7 @@ QJNIObjectPrivate::QJNIObjectPrivate(jclass clazz, const char *sig, ...)
     }
 }
 
-QJNIObjectPrivate::QJNIObjectPrivate(jclass clazz, const char *sig, va_list args)
+QJNIObjectPrivate::QJNIObjectPrivate(jclass clazz, const char *sig, const QVaListPrivate &args)
     : d(new QJNIObjectData())
 {
     QJNIEnvironmentPrivate env;
@@ -402,7 +402,7 @@ QJNIObjectPrivate::QJNIObjectPrivate(jobject obj)
 }
 
 template <>
-void QJNIObjectPrivate::callMethod<void>(const char *methodName, const char *sig, va_list args) const
+void QJNIObjectPrivate::callMethodV<void>(const char *methodName, const char *sig, va_list args) const
 {
     QJNIEnvironmentPrivate env;
     jmethodID id = getCachedMethodID(env, d->m_jclass, methodName, sig);
@@ -416,12 +416,12 @@ void QJNIObjectPrivate::callMethod<void>(const char *methodName, const char *sig
 {
     va_list args;
     va_start(args, sig);
-    callMethod<void>(methodName, sig, args);
+    callMethodV<void>(methodName, sig, args);
     va_end(args);
 }
 
 template <>
-jboolean QJNIObjectPrivate::callMethod<jboolean>(const char *methodName, const char *sig, va_list args) const
+jboolean QJNIObjectPrivate::callMethodV<jboolean>(const char *methodName, const char *sig, va_list args) const
 {
     QJNIEnvironmentPrivate env;
     jboolean res = 0;
@@ -437,13 +437,13 @@ jboolean QJNIObjectPrivate::callMethod<jboolean>(const char *methodName, const c
 {
     va_list args;
     va_start(args, sig);
-    jboolean res = callMethod<jboolean>(methodName, sig, args);
+    jboolean res = callMethodV<jboolean>(methodName, sig, args);
     va_end(args);
     return res;
 }
 
 template <>
-jbyte QJNIObjectPrivate::callMethod<jbyte>(const char *methodName, const char *sig, va_list args) const
+jbyte QJNIObjectPrivate::callMethodV<jbyte>(const char *methodName, const char *sig, va_list args) const
 {
     QJNIEnvironmentPrivate env;
     jbyte res = 0;
@@ -459,13 +459,13 @@ jbyte QJNIObjectPrivate::callMethod<jbyte>(const char *methodName, const char *s
 {
     va_list args;
     va_start(args, sig);
-    jbyte res = callMethod<jbyte>(methodName, sig, args);
+    jbyte res = callMethodV<jbyte>(methodName, sig, args);
     va_end(args);
     return res;
 }
 
 template <>
-jchar QJNIObjectPrivate::callMethod<jchar>(const char *methodName, const char *sig, va_list args) const
+jchar QJNIObjectPrivate::callMethodV<jchar>(const char *methodName, const char *sig, va_list args) const
 {
     QJNIEnvironmentPrivate env;
     jchar res = 0;
@@ -481,13 +481,13 @@ jchar QJNIObjectPrivate::callMethod<jchar>(const char *methodName, const char *s
 {
     va_list args;
     va_start(args, sig);
-    jchar res = callMethod<jchar>(methodName, sig, args);
+    jchar res = callMethodV<jchar>(methodName, sig, args);
     va_end(args);
     return res;
 }
 
 template <>
-jshort QJNIObjectPrivate::callMethod<jshort>(const char *methodName, const char *sig, va_list args) const
+jshort QJNIObjectPrivate::callMethodV<jshort>(const char *methodName, const char *sig, va_list args) const
 {
     QJNIEnvironmentPrivate env;
     jshort res = 0;
@@ -503,13 +503,13 @@ jshort QJNIObjectPrivate::callMethod<jshort>(const char *methodName, const char 
 {
     va_list args;
     va_start(args, sig);
-    jshort res = callMethod<jshort>(methodName, sig, args);
+    jshort res = callMethodV<jshort>(methodName, sig, args);
     va_end(args);
     return res;
 }
 
 template <>
-jint QJNIObjectPrivate::callMethod<jint>(const char *methodName, const char *sig, va_list args) const
+jint QJNIObjectPrivate::callMethodV<jint>(const char *methodName, const char *sig, va_list args) const
 {
     QJNIEnvironmentPrivate env;
     jint res = 0;
@@ -525,13 +525,13 @@ jint QJNIObjectPrivate::callMethod<jint>(const char *methodName, const char *sig
 {
     va_list args;
     va_start(args, sig);
-    jint res = callMethod<jint>(methodName, sig, args);
+    jint res = callMethodV<jint>(methodName, sig, args);
     va_end(args);
     return res;
 }
 
 template <>
-jlong QJNIObjectPrivate::callMethod<jlong>(const char *methodName, const char *sig, va_list args) const
+jlong QJNIObjectPrivate::callMethodV<jlong>(const char *methodName, const char *sig, va_list args) const
 {
     QJNIEnvironmentPrivate env;
     jlong res = 0;
@@ -547,13 +547,13 @@ jlong QJNIObjectPrivate::callMethod<jlong>(const char *methodName, const char *s
 {
     va_list args;
     va_start(args, sig);
-    jlong res = callMethod<jlong>(methodName, sig, args);
+    jlong res = callMethodV<jlong>(methodName, sig, args);
     va_end(args);
     return res;
 }
 
 template <>
-jfloat QJNIObjectPrivate::callMethod<jfloat>(const char *methodName, const char *sig, va_list args) const
+jfloat QJNIObjectPrivate::callMethodV<jfloat>(const char *methodName, const char *sig, va_list args) const
 {
     QJNIEnvironmentPrivate env;
     jfloat res = 0.f;
@@ -569,13 +569,13 @@ jfloat QJNIObjectPrivate::callMethod<jfloat>(const char *methodName, const char 
 {
     va_list args;
     va_start(args, sig);
-    jfloat res = callMethod<jfloat>(methodName, sig, args);
+    jfloat res = callMethodV<jfloat>(methodName, sig, args);
     va_end(args);
     return res;
 }
 
 template <>
-jdouble QJNIObjectPrivate::callMethod<jdouble>(const char *methodName, const char *sig, va_list args) const
+jdouble QJNIObjectPrivate::callMethodV<jdouble>(const char *methodName, const char *sig, va_list args) const
 {
     QJNIEnvironmentPrivate env;
     jdouble res = 0.;
@@ -591,7 +591,7 @@ jdouble QJNIObjectPrivate::callMethod<jdouble>(const char *methodName, const cha
 {
     va_list args;
     va_start(args, sig);
-    jdouble res = callMethod<jdouble>(methodName, sig, args);
+    jdouble res = callMethodV<jdouble>(methodName, sig, args);
     va_end(args);
     return res;
 }
@@ -651,10 +651,10 @@ jdouble QJNIObjectPrivate::callMethod<jdouble>(const char *methodName) const
 }
 
 template <>
-void QJNIObjectPrivate::callStaticMethod<void>(const char *className,
-                                               const char *methodName,
-                                               const char *sig,
-                                               va_list args)
+void QJNIObjectPrivate::callStaticMethodV<void>(const char *className,
+                                                const char *methodName,
+                                                const char *sig,
+                                                va_list args)
 {
     QJNIEnvironmentPrivate env;
     jclass clazz = loadClass(className, env);
@@ -674,15 +674,15 @@ void QJNIObjectPrivate::callStaticMethod<void>(const char *className,
 {
     va_list args;
     va_start(args, sig);
-    callStaticMethod<void>(className, methodName, sig, args);
+    callStaticMethodV<void>(className, methodName, sig, args);
     va_end(args);
 }
 
 template <>
-void QJNIObjectPrivate::callStaticMethod<void>(jclass clazz,
-                                               const char *methodName,
-                                               const char *sig,
-                                               va_list args)
+void QJNIObjectPrivate::callStaticMethodV<void>(jclass clazz,
+                                                const char *methodName,
+                                                const char *sig,
+                                                va_list args)
 {
     QJNIEnvironmentPrivate env;
     jmethodID id = getCachedMethodID(env, clazz, methodName, sig, true);
@@ -699,15 +699,15 @@ void QJNIObjectPrivate::callStaticMethod<void>(jclass clazz,
 {
     va_list args;
     va_start(args, sig);
-    callStaticMethod<void>(clazz, methodName, sig, args);
+    callStaticMethodV<void>(clazz, methodName, sig, args);
     va_end(args);
 }
 
 template <>
-jboolean QJNIObjectPrivate::callStaticMethod<jboolean>(const char *className,
-                                                       const char *methodName,
-                                                       const char *sig,
-                                                       va_list args)
+jboolean QJNIObjectPrivate::callStaticMethodV<jboolean>(const char *className,
+                                                        const char *methodName,
+                                                        const char *sig,
+                                                        va_list args)
 {
     QJNIEnvironmentPrivate env;
     jboolean res = 0;
@@ -730,16 +730,16 @@ jboolean QJNIObjectPrivate::callStaticMethod<jboolean>(const char *className,
 {
     va_list args;
     va_start(args, sig);
-    jboolean res = callStaticMethod<jboolean>(className, methodName, sig, args);
+    jboolean res = callStaticMethodV<jboolean>(className, methodName, sig, args);
     va_end(args);
     return res;
 }
 
 template <>
-jboolean QJNIObjectPrivate::callStaticMethod<jboolean>(jclass clazz,
-                                                       const char *methodName,
-                                                       const char *sig,
-                                                       va_list args)
+jboolean QJNIObjectPrivate::callStaticMethodV<jboolean>(jclass clazz,
+                                                        const char *methodName,
+                                                        const char *sig,
+                                                        va_list args)
 {
     QJNIEnvironmentPrivate env;
     jboolean res = 0;
@@ -759,16 +759,16 @@ jboolean QJNIObjectPrivate::callStaticMethod<jboolean>(jclass clazz,
 {
     va_list args;
     va_start(args, sig);
-    jboolean res = callStaticMethod<jboolean>(clazz, methodName, sig, args);
+    jboolean res = callStaticMethodV<jboolean>(clazz, methodName, sig, args);
     va_end(args);
     return res;
 }
 
 template <>
-jbyte QJNIObjectPrivate::callStaticMethod<jbyte>(const char *className,
-                                                 const char *methodName,
-                                                 const char *sig,
-                                                 va_list args)
+jbyte QJNIObjectPrivate::callStaticMethodV<jbyte>(const char *className,
+                                                  const char *methodName,
+                                                  const char *sig,
+                                                  va_list args)
 {
     QJNIEnvironmentPrivate env;
     jbyte res = 0;
@@ -791,16 +791,16 @@ jbyte QJNIObjectPrivate::callStaticMethod<jbyte>(const char *className,
 {
     va_list args;
     va_start(args, sig);
-    jbyte res = callStaticMethod<jbyte>(className, methodName, sig, args);
+    jbyte res = callStaticMethodV<jbyte>(className, methodName, sig, args);
     va_end(args);
     return res;
 }
 
 template <>
-jbyte QJNIObjectPrivate::callStaticMethod<jbyte>(jclass clazz,
-                                                 const char *methodName,
-                                                 const char *sig,
-                                                 va_list args)
+jbyte QJNIObjectPrivate::callStaticMethodV<jbyte>(jclass clazz,
+                                                  const char *methodName,
+                                                  const char *sig,
+                                                  va_list args)
 {
     QJNIEnvironmentPrivate env;
     jbyte res = 0;
@@ -820,16 +820,16 @@ jbyte QJNIObjectPrivate::callStaticMethod<jbyte>(jclass clazz,
 {
     va_list args;
     va_start(args, sig);
-    jbyte res = callStaticMethod<jbyte>(clazz, methodName, sig, args);
+    jbyte res = callStaticMethodV<jbyte>(clazz, methodName, sig, args);
     va_end(args);
     return res;
 }
 
 template <>
-jchar QJNIObjectPrivate::callStaticMethod<jchar>(const char *className,
-                                                 const char *methodName,
-                                                 const char *sig,
-                                                 va_list args)
+jchar QJNIObjectPrivate::callStaticMethodV<jchar>(const char *className,
+                                                  const char *methodName,
+                                                  const char *sig,
+                                                  va_list args)
 {
     QJNIEnvironmentPrivate env;
     jchar res = 0;
@@ -852,16 +852,16 @@ jchar QJNIObjectPrivate::callStaticMethod<jchar>(const char *className,
 {
     va_list args;
     va_start(args, sig);
-    jchar res = callStaticMethod<jchar>(className, methodName, sig, args);
+    jchar res = callStaticMethodV<jchar>(className, methodName, sig, args);
     va_end(args);
     return res;
 }
 
 template <>
-jchar QJNIObjectPrivate::callStaticMethod<jchar>(jclass clazz,
-                                                 const char *methodName,
-                                                 const char *sig,
-                                                 va_list args)
+jchar QJNIObjectPrivate::callStaticMethodV<jchar>(jclass clazz,
+                                                  const char *methodName,
+                                                  const char *sig,
+                                                  va_list args)
 {
     QJNIEnvironmentPrivate env;
     jchar res = 0;
@@ -881,16 +881,16 @@ jchar QJNIObjectPrivate::callStaticMethod<jchar>(jclass clazz,
 {
     va_list args;
     va_start(args, sig);
-    jchar res = callStaticMethod<jchar>(clazz, methodName, sig, args);
+    jchar res = callStaticMethodV<jchar>(clazz, methodName, sig, args);
     va_end(args);
     return res;
 }
 
 template <>
-jshort QJNIObjectPrivate::callStaticMethod<jshort>(const char *className,
-                                                   const char *methodName,
-                                                   const char *sig,
-                                                   va_list args)
+jshort QJNIObjectPrivate::callStaticMethodV<jshort>(const char *className,
+                                                    const char *methodName,
+                                                    const char *sig,
+                                                    va_list args)
 {
     QJNIEnvironmentPrivate env;
     jshort res = 0;
@@ -913,16 +913,16 @@ jshort QJNIObjectPrivate::callStaticMethod<jshort>(const char *className,
 {
     va_list args;
     va_start(args, sig);
-    jshort res = callStaticMethod<jshort>(className, methodName, sig, args);
+    jshort res = callStaticMethodV<jshort>(className, methodName, sig, args);
     va_end(args);
     return res;
 }
 
 template <>
-jshort QJNIObjectPrivate::callStaticMethod<jshort>(jclass clazz,
-                                                   const char *methodName,
-                                                   const char *sig,
-                                                   va_list args)
+jshort QJNIObjectPrivate::callStaticMethodV<jshort>(jclass clazz,
+                                                    const char *methodName,
+                                                    const char *sig,
+                                                    va_list args)
 {
     QJNIEnvironmentPrivate env;
     jshort res = 0;
@@ -942,16 +942,16 @@ jshort QJNIObjectPrivate::callStaticMethod<jshort>(jclass clazz,
 {
     va_list args;
     va_start(args, sig);
-    jshort res = callStaticMethod<jshort>(clazz, methodName, sig, args);
+    jshort res = callStaticMethodV<jshort>(clazz, methodName, sig, args);
     va_end(args);
     return res;
 }
 
 template <>
-jint QJNIObjectPrivate::callStaticMethod<jint>(const char *className,
-                                               const char *methodName,
-                                               const char *sig,
-                                               va_list args)
+jint QJNIObjectPrivate::callStaticMethodV<jint>(const char *className,
+                                                const char *methodName,
+                                                const char *sig,
+                                                va_list args)
 {
     QJNIEnvironmentPrivate env;
     jint res = 0;
@@ -974,16 +974,16 @@ jint QJNIObjectPrivate::callStaticMethod<jint>(const char *className,
 {
     va_list args;
     va_start(args, sig);
-    jint res = callStaticMethod<jint>(className, methodName, sig, args);
+    jint res = callStaticMethodV<jint>(className, methodName, sig, args);
     va_end(args);
     return res;
 }
 
 template <>
-jint QJNIObjectPrivate::callStaticMethod<jint>(jclass clazz,
-                                               const char *methodName,
-                                               const char *sig,
-                                               va_list args)
+jint QJNIObjectPrivate::callStaticMethodV<jint>(jclass clazz,
+                                                const char *methodName,
+                                                const char *sig,
+                                                va_list args)
 {
     QJNIEnvironmentPrivate env;
     jint res = 0;
@@ -1003,16 +1003,16 @@ jint QJNIObjectPrivate::callStaticMethod<jint>(jclass clazz,
 {
     va_list args;
     va_start(args, sig);
-    jint res = callStaticMethod<jint>(clazz, methodName, sig, args);
+    jint res = callStaticMethodV<jint>(clazz, methodName, sig, args);
     va_end(args);
     return res;
 }
 
 template <>
-jlong QJNIObjectPrivate::callStaticMethod<jlong>(const char *className,
-                                                 const char *methodName,
-                                                 const char *sig,
-                                                 va_list args)
+jlong QJNIObjectPrivate::callStaticMethodV<jlong>(const char *className,
+                                                  const char *methodName,
+                                                  const char *sig,
+                                                  va_list args)
 {
     QJNIEnvironmentPrivate env;
     jlong res = 0;
@@ -1035,16 +1035,16 @@ jlong QJNIObjectPrivate::callStaticMethod<jlong>(const char *className,
 {
     va_list args;
     va_start(args, sig);
-    jlong res = callStaticMethod<jlong>(className, methodName, sig, args);
+    jlong res = callStaticMethodV<jlong>(className, methodName, sig, args);
     va_end(args);
     return res;
 }
 
 template <>
-jlong QJNIObjectPrivate::callStaticMethod<jlong>(jclass clazz,
-                                                 const char *methodName,
-                                                 const char *sig,
-                                                 va_list args)
+jlong QJNIObjectPrivate::callStaticMethodV<jlong>(jclass clazz,
+                                                  const char *methodName,
+                                                  const char *sig,
+                                                  va_list args)
 {
     QJNIEnvironmentPrivate env;
     jlong res = 0;
@@ -1064,16 +1064,16 @@ jlong QJNIObjectPrivate::callStaticMethod<jlong>(jclass clazz,
 {
     va_list args;
     va_start(args, sig);
-    jlong res = callStaticMethod<jlong>(clazz, methodName, sig, args);
+    jlong res = callStaticMethodV<jlong>(clazz, methodName, sig, args);
     va_end(args);
     return res;
 }
 
 template <>
-jfloat QJNIObjectPrivate::callStaticMethod<jfloat>(const char *className,
-                                                   const char *methodName,
-                                                   const char *sig,
-                                                   va_list args)
+jfloat QJNIObjectPrivate::callStaticMethodV<jfloat>(const char *className,
+                                                    const char *methodName,
+                                                    const char *sig,
+                                                    va_list args)
 {
     QJNIEnvironmentPrivate env;
     jfloat res = 0.f;
@@ -1096,16 +1096,16 @@ jfloat QJNIObjectPrivate::callStaticMethod<jfloat>(const char *className,
 {
     va_list args;
     va_start(args, sig);
-    jfloat res = callStaticMethod<jfloat>(className, methodName, sig, args);
+    jfloat res = callStaticMethodV<jfloat>(className, methodName, sig, args);
     va_end(args);
     return res;
 }
 
 template <>
-jfloat QJNIObjectPrivate::callStaticMethod<jfloat>(jclass clazz,
-                                                   const char *methodName,
-                                                   const char *sig,
-                                                   va_list args)
+jfloat QJNIObjectPrivate::callStaticMethodV<jfloat>(jclass clazz,
+                                                    const char *methodName,
+                                                    const char *sig,
+                                                    va_list args)
 {
     QJNIEnvironmentPrivate env;
     jfloat res = 0.f;
@@ -1125,16 +1125,16 @@ jfloat QJNIObjectPrivate::callStaticMethod<jfloat>(jclass clazz,
 {
     va_list args;
     va_start(args, sig);
-    jfloat res = callStaticMethod<jfloat>(clazz, methodName, sig, args);
+    jfloat res = callStaticMethodV<jfloat>(clazz, methodName, sig, args);
     va_end(args);
     return res;
 }
 
 template <>
-jdouble QJNIObjectPrivate::callStaticMethod<jdouble>(const char *className,
-                                                     const char *methodName,
-                                                     const char *sig,
-                                                     va_list args)
+jdouble QJNIObjectPrivate::callStaticMethodV<jdouble>(const char *className,
+                                                      const char *methodName,
+                                                      const char *sig,
+                                                      va_list args)
 {
     QJNIEnvironmentPrivate env;
     jdouble res = 0.;
@@ -1157,16 +1157,16 @@ jdouble QJNIObjectPrivate::callStaticMethod<jdouble>(const char *className,
 {
     va_list args;
     va_start(args, sig);
-    jdouble res = callStaticMethod<jdouble>(className, methodName, sig, args);
+    jdouble res = callStaticMethodV<jdouble>(className, methodName, sig, args);
     va_end(args);
     return res;
 }
 
 template <>
-jdouble QJNIObjectPrivate::callStaticMethod<jdouble>(jclass clazz,
-                                                     const char *methodName,
-                                                     const char *sig,
-                                                     va_list args)
+jdouble QJNIObjectPrivate::callStaticMethodV<jdouble>(jclass clazz,
+                                                      const char *methodName,
+                                                      const char *sig,
+                                                      va_list args)
 {
     QJNIEnvironmentPrivate env;
     jdouble res = 0.;
@@ -1186,7 +1186,7 @@ jdouble QJNIObjectPrivate::callStaticMethod<jdouble>(jclass clazz,
 {
     va_list args;
     va_start(args, sig);
-    jdouble res = callStaticMethod<jdouble>(clazz, methodName, sig, args);
+    jdouble res = callStaticMethodV<jdouble>(clazz, methodName, sig, args);
     va_end(args);
     return res;
 }
@@ -1299,9 +1299,9 @@ jdouble QJNIObjectPrivate::callStaticMethod<jdouble>(jclass clazz, const char *m
     return callStaticMethod<jdouble>(clazz, methodName, "()D");
 }
 
-QJNIObjectPrivate QJNIObjectPrivate::callObjectMethod(const char *methodName,
-                                                      const char *sig,
-                                                      va_list args) const
+QJNIObjectPrivate QJNIObjectPrivate::callObjectMethodV(const char *methodName,
+                                                       const char *sig,
+                                                       va_list args) const
 {
     QJNIEnvironmentPrivate env;
     jobject res = 0;
@@ -1323,7 +1323,7 @@ QJNIObjectPrivate QJNIObjectPrivate::callObjectMethod(const char *methodName,
 {
     va_list args;
     va_start(args, sig);
-    QJNIObjectPrivate res = callObjectMethod(methodName, sig, args);
+    QJNIObjectPrivate res = callObjectMethodV(methodName, sig, args);
     va_end(args);
     return res;
 }
@@ -1376,10 +1376,10 @@ QJNIObjectPrivate QJNIObjectPrivate::callObjectMethod<jdoubleArray>(const char *
     return callObjectMethod(methodName, "()[D");
 }
 
-QJNIObjectPrivate QJNIObjectPrivate::callStaticObjectMethod(const char *className,
-                                                            const char *methodName,
-                                                            const char *sig,
-                                                            va_list args)
+QJNIObjectPrivate QJNIObjectPrivate::callStaticObjectMethodV(const char *className,
+                                                             const char *methodName,
+                                                             const char *sig,
+                                                             va_list args)
 {
     QJNIEnvironmentPrivate env;
     jobject res = 0;
@@ -1405,15 +1405,15 @@ QJNIObjectPrivate QJNIObjectPrivate::callStaticObjectMethod(const char *classNam
 {
     va_list args;
     va_start(args, sig);
-    QJNIObjectPrivate res = callStaticObjectMethod(className, methodName, sig, args);
+    QJNIObjectPrivate res = callStaticObjectMethodV(className, methodName, sig, args);
     va_end(args);
     return res;
 }
 
-QJNIObjectPrivate QJNIObjectPrivate::callStaticObjectMethod(jclass clazz,
-                                                            const char *methodName,
-                                                            const char *sig,
-                                                            va_list args)
+QJNIObjectPrivate QJNIObjectPrivate::callStaticObjectMethodV(jclass clazz,
+                                                             const char *methodName,
+                                                             const char *sig,
+                                                             va_list args)
 {
     QJNIEnvironmentPrivate env;
     jobject res = 0;
@@ -1436,7 +1436,7 @@ QJNIObjectPrivate QJNIObjectPrivate::callStaticObjectMethod(jclass clazz,
 {
     va_list args;
     va_start(args, sig);
-    QJNIObjectPrivate res = callStaticObjectMethod(clazz, methodName, sig, args);
+    QJNIObjectPrivate res = callStaticObjectMethodV(clazz, methodName, sig, args);
     va_end(args);
     return res;
 }

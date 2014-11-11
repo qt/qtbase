@@ -84,14 +84,7 @@ class QLibraryInfoPrivate
 {
 public:
     static QSettings *findConfiguration();
-#ifndef QT_BOOTSTRAPPED
-    static void cleanup()
-    {
-        QLibrarySettings *ls = qt_library_settings();
-        if (ls)
-            ls->settings.reset(0);
-    }
-#else
+#ifdef QT_BOOTSTRAPPED
     static bool haveGroup(QLibraryInfo::PathGroup group)
     {
         QLibrarySettings *ls = qt_library_settings();
@@ -114,7 +107,6 @@ QLibrarySettings::QLibrarySettings()
     : settings(QLibraryInfoPrivate::findConfiguration())
 {
 #ifndef QT_BOOTSTRAPPED
-    qAddPostRoutine(QLibraryInfoPrivate::cleanup);
     bool haveEffectivePaths;
     bool havePaths;
 #endif

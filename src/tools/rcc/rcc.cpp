@@ -893,6 +893,8 @@ bool RCCResourceLibrary::writeDataBlobs()
     if (m_format == C_Code)
         writeString("\n};\n\n");
     else if (m_format == Pass1) {
+        if (offset < 8)
+            offset = 8;
         writeString("\nstatic const unsigned char qt_resource_data[");
         writeByteArray(QByteArray::number(offset));
         writeString("] = { 'Q', 'R', 'C', '_', 'D', 'A', 'T', 'A' };\n\n");

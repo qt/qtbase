@@ -87,9 +87,9 @@
     ARM is bi-endian, detect using __ARMEL__ or __ARMEB__, falling back to
     auto-detection implemented below.
 */
-#if defined(__arm__) || defined(__TARGET_ARCH_ARM) || defined(_M_ARM) || defined(__arm64__)
+#if defined(__arm__) || defined(__TARGET_ARCH_ARM) || defined(_M_ARM) || defined(__aarch64__)
 #  define Q_PROCESSOR_ARM
-#  if defined(__arm64__)
+#  if defined(__aarch64__)
 #    define Q_PROCESSOR_ARM_64
 #  else
 #    define Q_PROCESSOR_ARM_32
