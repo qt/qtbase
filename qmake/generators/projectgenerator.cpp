@@ -55,17 +55,14 @@ QString project_builtin_regx() //calculate the builtin regular expression..
     return ret;
 }
 
-ProjectGenerator::ProjectGenerator() : MakefileGenerator(), init_flag(false)
+ProjectGenerator::ProjectGenerator() : MakefileGenerator()
 {
 }
 
 void
 ProjectGenerator::init()
 {
-    if(init_flag)
-        return;
     int file_count = 0;
-    init_flag = true;
     verifyCompilers();
 
     project->loadSpec();

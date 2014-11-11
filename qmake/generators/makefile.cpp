@@ -131,7 +131,7 @@ bool MakefileGenerator::mkdir(const QString &in_path) const
 
 // ** base makefile generator
 MakefileGenerator::MakefileGenerator() :
-    init_opath_already(false), init_already(false), no_io(false), project(0)
+    no_io(false), project(0)
 {
 }
 
@@ -167,10 +167,7 @@ MakefileGenerator::verifyCompilers()
 void
 MakefileGenerator::initOutPaths()
 {
-    if(init_opath_already)
-        return;
     verifyCompilers();
-    init_opath_already = true;
     ProValueMap &v = project->variables();
     //for shadow builds
     if(!v.contains("QMAKE_ABSOLUTE_SOURCE_PATH")) {
@@ -413,10 +410,7 @@ void
 MakefileGenerator::init()
 {
     initOutPaths();
-    if(init_already)
-        return;
     verifyCompilers();
-    init_already = true;
 
     ProValueMap &v = project->variables();
 

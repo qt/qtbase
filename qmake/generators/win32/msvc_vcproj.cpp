@@ -208,7 +208,6 @@ const char _slnExtSections[]    = "\n\tGlobalSection(ExtensibilityGlobals) = pos
 
 VcprojGenerator::VcprojGenerator()
     : Win32MakefileGenerator(),
-      init_flag(false),
       is64Bit(false),
       projectWriter(0)
 {
@@ -767,9 +766,6 @@ bool VcprojGenerator::hasBuiltinCompiler(const QString &file)
 
 void VcprojGenerator::init()
 {
-    if (init_flag)
-        return;
-    init_flag = true;
     is64Bit = (project->first("QMAKE_TARGET.arch") == "x86_64");
     projectWriter = createProjectWriter();
 

@@ -45,10 +45,6 @@ QT_BEGIN_NAMESPACE
 void
 UnixMakefileGenerator::init()
 {
-    if(init_flag)
-        return;
-    init_flag = true;
-
     if(project->isEmpty("QMAKE_EXTENSION_SHLIB")) {
         if(project->isEmpty("QMAKE_CYGWIN_SHLIB")) {
             project->values("QMAKE_EXTENSION_SHLIB").append("so");

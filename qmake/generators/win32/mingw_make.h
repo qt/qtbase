@@ -63,7 +63,6 @@ private:
 
     virtual bool findLibraries();
 
-    bool init_flag;
     QString objectsLinkLine;
     QString quote;
 };

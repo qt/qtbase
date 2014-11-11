@@ -44,7 +44,7 @@
 
 QT_BEGIN_NAMESPACE
 
-UnixMakefileGenerator::UnixMakefileGenerator() : MakefileGenerator(), init_flag(false), include_deps(false)
+UnixMakefileGenerator::UnixMakefileGenerator() : MakefileGenerator(), include_deps(false)
 {
 
 }

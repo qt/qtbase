@@ -44,7 +44,7 @@
 
 QT_BEGIN_NAMESPACE
 
-MingwMakefileGenerator::MingwMakefileGenerator() : Win32MakefileGenerator(), init_flag(false)
+MingwMakefileGenerator::MingwMakefileGenerator() : Win32MakefileGenerator()
 {
     if (isWindowsShell())
         quote = "\"";
@@ -218,10 +218,6 @@ void MingwMakefileGenerator::writeMingwParts(QTextStream &t)
 
 void MingwMakefileGenerator::init()
 {
-    if(init_flag)
-        return;
-    init_flag = true;
-
     /* this should probably not be here, but I'm using it to wrap the .t files */
     if(project->first("TEMPLATE") == "app")
         project->values("QMAKE_APP_FLAG").append("1");

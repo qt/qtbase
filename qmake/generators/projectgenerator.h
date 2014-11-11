@@ -40,7 +40,6 @@ QT_BEGIN_NAMESPACE
 
 class ProjectGenerator : public MakefileGenerator
 {
-    bool init_flag;
     bool addFile(QString);
     bool addConfig(const QString &, bool add=true);
     QString getWritableVar(const char *, bool fixPath=true);

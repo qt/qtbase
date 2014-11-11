@@ -40,7 +40,7 @@ QT_BEGIN_NAMESPACE
 
 class UnixMakefileGenerator : public MakefileGenerator
 {
-    bool init_flag, include_deps;
+    bool include_deps;
     QString libtoolFileName(bool fixify=true);
     void writeLibtoolFile();     // for libtool
     void writePrlFile(QTextStream &);

@@ -40,7 +40,6 @@ QT_BEGIN_NAMESPACE
 
 class NmakeMakefileGenerator : public Win32MakefileGenerator
 {
-    bool init_flag;
     void writeNmakeParts(QTextStream &);
     bool writeMakefile(QTextStream &);
     void writeImplicitRulesPart(QTextStream &t);

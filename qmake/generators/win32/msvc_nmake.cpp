@@ -56,7 +56,7 @@ static QString nmakePathList(const QStringList &list)
             .replace('#', QStringLiteral("^#")).replace('$', QStringLiteral("$$"));
 }
 
-NmakeMakefileGenerator::NmakeMakefileGenerator() : Win32MakefileGenerator(), init_flag(false), usePCH(false)
+NmakeMakefileGenerator::NmakeMakefileGenerator() : Win32MakefileGenerator(), usePCH(false)
 {
 
 }
@@ -335,10 +335,6 @@ QString NmakeMakefileGenerator::var(const ProKey &value) const
 
 void NmakeMakefileGenerator::init()
 {
-    if(init_flag)
-        return;
-    init_flag = true;
-
     /* this should probably not be here, but I'm using it to wrap the .t files */
     if(project->first("TEMPLATE") == "app")
         project->values("QMAKE_APP_FLAG").append("1");
