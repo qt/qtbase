@@ -180,6 +180,16 @@ public:
         { doAutoScroll(); }
 };
 
+class GeometriesTestView : public QTableView
+{
+    Q_OBJECT
+public:
+    GeometriesTestView() : QTableView(), updateGeometriesCalled(false) {}
+    bool updateGeometriesCalled;
+protected slots:
+    void updateGeometries() Q_DECL_OVERRIDE { updateGeometriesCalled = true; QTableView::updateGeometries(); }
+};
+
 class tst_QAbstractItemView : public QObject
 {
     Q_OBJECT
@@ -241,6 +251,7 @@ private slots:
     void testFocusPolicy();
     void QTBUG31411_noSelection();
     void QTBUG39324_settingSameInstanceOfIndexWidget();
+    void sizeHintChangeTriggersLayout();
 };
 
 class MyAbstractItemDelegate : public QAbstractItemDelegate
@@ -248,7 +259,7 @@ class MyAbstractItemDelegate : public QAbstractItemDelegate
 public:
     MyAbstractItemDelegate() : QAbstractItemDelegate() { calledVirtualDtor = false; }
     void paint(QPainter *, const QStyleOptionViewItem &, const QModelIndex &) const {}
-    QSize sizeHint(const QStyleOptionViewItem &, const QModelIndex &) const { return QSize(); }
+    QSize sizeHint(const QStyleOptionViewItem &, const QModelIndex &) const { return size; }
     QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem &, const QModelIndex &) const
     {
         openedEditor = new QWidget(parent);
@@ -259,9 +270,10 @@ public:
         calledVirtualDtor = true;
         editor->deleteLater();
     }
-
+    void changeSize() { size = QSize(50, 50); emit sizeHintChanged(QModelIndex()); }
     mutable bool calledVirtualDtor;
     mutable QWidget *openedEditor;
+    QSize size;
 };
 
 // Testing get/set functions
@@ -723,6 +735,34 @@ void tst_QAbstractItemView::columnDelegate()
     QWidget *w = view.indexWidget(index);
     QVERIFY(w);
     QCOMPARE(w->metaObject()->className(), "QWidget");
+}
+
+void tst_QAbstractItemView::sizeHintChangeTriggersLayout()
+{
+    QStandardItemModel model(4, 4);
+    MyAbstractItemDelegate delegate;
+    MyAbstractItemDelegate rowDelegate;
+    MyAbstractItemDelegate columnDelegate;
+
+    GeometriesTestView view;
+    view.setModel(&model);
+    view.setItemDelegate(&delegate);
+    view.setItemDelegateForRow(1, &rowDelegate);
+    view.setItemDelegateForColumn(2, &columnDelegate);
+    view.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
+    view.updateGeometriesCalled = false;
+    delegate.changeSize();
+    QCoreApplication::sendPostedEvents();
+    QVERIFY(view.updateGeometriesCalled);
+    view.updateGeometriesCalled = false;
+    rowDelegate.changeSize();
+    QCoreApplication::sendPostedEvents();
+    QVERIFY(view.updateGeometriesCalled);
+    view.updateGeometriesCalled = false;
+    columnDelegate.changeSize();
+    QCoreApplication::sendPostedEvents();
+    QVERIFY(view.updateGeometriesCalled);
 }
 
 void tst_QAbstractItemView::selectAll()
