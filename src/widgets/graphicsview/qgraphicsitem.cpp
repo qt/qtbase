@@ -2447,7 +2447,12 @@ void QGraphicsItemPrivate::setVisibleHelper(bool newVisible, bool explicitly,
     Items are visible by default; it is unnecessary to call
     setVisible() on a new item.
 
-    \sa isVisible(), show(), hide()
+    \note An item with opacity set to 0 will still be considered visible,
+    although it will be treated like an invisible item: mouse events will pass
+    through it, it will not be included in the items returned by
+    QGraphicsView::items(), and so on. However, the item will retain the focus.
+
+    \sa isVisible(), show(), hide(), setOpacity()
 */
 void QGraphicsItem::setVisible(bool visible)
 {
@@ -2715,7 +2720,11 @@ qreal QGraphicsItem::effectiveOpacity() const
     with the parent: ItemIgnoresParentOpacity and
     ItemDoesntPropagateOpacityToChildren.
 
-    \sa opacity(), effectiveOpacity()
+    \note Setting the opacity of an item to 0 will not make the item invisible
+    (according to isVisible()), but the item will be treated like an invisible
+    one. See the documentation of setVisible() for more information.
+
+    \sa opacity(), effectiveOpacity(), setVisible()
 */
 void QGraphicsItem::setOpacity(qreal opacity)
 {
