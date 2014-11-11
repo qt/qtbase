@@ -1076,7 +1076,7 @@ void QItemSelectionModelPrivate::_q_layoutChanged(const QList<QPersistentModelIn
     If you omit the QItemSelectionModel::Current command, a new current
     selection will be created, and the previous one added to the whole
     selection. All functions operate on both layers; for example,
-    selectedItems() will return items from both layers.
+    \l {QTableWidget::selectedItems()}{selecteditems()} will return items from both layers.
 
     \sa {Model/View Programming}, QAbstractItemModel, {Chart Example}
 */
