@@ -427,12 +427,14 @@ QVariant QXcbIntegration::styleHint(QPlatformIntegration::StyleHint hint) const
     case QPlatformIntegration::StartDragTime:
     case QPlatformIntegration::KeyboardAutoRepeatRate:
     case QPlatformIntegration::PasswordMaskDelay:
-    case QPlatformIntegration::FontSmoothingGamma:
     case QPlatformIntegration::StartDragVelocity:
     case QPlatformIntegration::UseRtlExtensions:
     case QPlatformIntegration::PasswordMaskCharacter:
         // TODO using various xcb, gnome or KDE settings
         break; // Not implemented, use defaults
+    case QPlatformIntegration::FontSmoothingGamma:
+        // Match Qt 4.8 text rendering, and rendering of other X11 toolkits.
+        return qreal(1.0);
     case QPlatformIntegration::StartDragDistance: {
         // The default (in QPlatformTheme::defaultThemeHint) is 10 pixels, but
         // on a high-resolution screen it makes sense to increase it.
