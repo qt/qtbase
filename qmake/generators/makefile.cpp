@@ -167,7 +167,6 @@ MakefileGenerator::verifyCompilers()
 void
 MakefileGenerator::initOutPaths()
 {
-    verifyCompilers();
     ProValueMap &v = project->variables();
     //for shadow builds
     if(!v.contains("QMAKE_ABSOLUTE_SOURCE_PATH")) {
@@ -409,8 +408,8 @@ MakefileGenerator::initCompiler(const MakefileGenerator::Compiler &comp)
 void
 MakefileGenerator::init()
 {
-    initOutPaths();
     verifyCompilers();
+    initOutPaths();
 
     ProValueMap &v = project->variables();
 
