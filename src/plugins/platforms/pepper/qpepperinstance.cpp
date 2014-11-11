@@ -151,11 +151,12 @@ void QPepperInstance::DidChangeView(const View &view)
                                          << view.GetDeviceScale();
 
     Rect geometry = view.GetRect();
-    if (geometry.size() == m_currentGeometry.size())
+    float devicePixelRatio = view.GetDeviceScale();
+    if (geometry.size() == m_currentGeometry.size() && devicePixelRatio == m_currentDevicePixelRatio)
         return;
 
     m_currentGeometry = geometry;
-    m_currentDevicePixelRatio = view.GetDeviceScale();
+    m_currentDevicePixelRatio = devicePixelRatio;
 
     // Start Qt on the first DidChangeView. This means we have a "screen" while
     // the application creates the root window etc, which makes life easier.
