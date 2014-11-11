@@ -782,10 +782,8 @@ void tst_QItemDelegate::dateTimeEditor()
     widget.setFocus();
     widget.editItem(item2);
 
-    QTestEventLoop::instance().enterLoop(1);
-
+    QTRY_VERIFY(widget.viewport()->findChild<QDateEdit *>());
     QDateEdit *dateEditor = widget.viewport()->findChild<QDateEdit *>();
-    QVERIFY(dateEditor);
     QCOMPARE(dateEditor->date(), date);
     dateEditor->setDate(date.addDays(60));
 
