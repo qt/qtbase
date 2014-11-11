@@ -1423,7 +1423,11 @@ const Node* Tree::checkForCollision(const QString& name)
 
   The node \a t
  */
-QString Tree::getNewLinkTarget(const Node* t, const QString& fileName, QString& text, bool broken)
+QString Tree::getNewLinkTarget(const Node* locNode,
+                               const Node* t,
+                               const QString& fileName,
+                               QString& text,
+                               bool broken)
 {
     QString moduleName;
     if (t && !broken) {
@@ -1436,7 +1440,7 @@ QString Tree::getNewLinkTarget(const Node* t, const QString& fileName, QString& 
         moduleName = "broken";
     incrementLinkCount();
     QString target = QString("qa-target-%1").arg(-(linkCount()));
-    TargetLoc* tloc = new TargetLoc(target, fileName, text, broken);
+    TargetLoc* tloc = new TargetLoc(locNode, target, fileName, text, broken);
     TargetList* tList = 0;
     TargetListMap::iterator i = targetListMap_->find(moduleName);
     if (i == targetListMap_->end()) {

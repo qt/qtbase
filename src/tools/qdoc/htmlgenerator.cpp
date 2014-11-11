@@ -386,19 +386,24 @@ QString HtmlGenerator::generateLinksToLinksPage(const QString& module, CodeMarke
     QString title = "Links from " + defaultModuleName() + " to " + module;
     generateHeader(title, node, marker);
     generateTitle(title, Text(), SmallSubTitle, node, marker);
-    out() << "<p>This is the complete list of links from " << defaultModuleName()
+    out() << "<p>This is a list of links from " << defaultModuleName()
           << " to " << module << ".  ";
-    out() << "Click on a link to go directly to the actual link in the docs.  ";
-    out() << "Then click on that link to check whether it goes to the correct place.</p>\n";
+    out() << "Click on a link to go to the location of the link. The link is marked ";
+    out() << "with red asterisks. ";
+    out() << "Click on the marked link to see if it goes to the right place.</p>\n";
     TargetList* tlist = qdb_->getTargetList(module);
     if (tlist) {
-        out() << "<table class=\"alignedsummary\">\n";
+        out() << "<table class=\"valuelist\"><tr valign=\"top\" class=\"odd\"><th class=\"tblConst\">Link to  link...</th><th class=\"tblval\">In file...</th><th class=\"tbldscr\">Somewhere after line number...</th></tr>\n";
         foreach (TargetLoc* t, *tlist) {
             // e.g.: <a name="link-8421"></a><a href="layout.html">Layout Management</a>
-            out() << "<tr><td class=\"memItemLeft leftAlign topAlign\">";
+            out() << "<tr><td class=\"topAlign\">";
             out() << "<a href=\"" << t->fileName_ << "#" << t->target_ << "\">";
-            out() << t->text_ << "</a>";
-            out() << "</td></tr>\n";
+            out() << t->text_ << "</a></td>";
+            out() << "<td class=\"topAlign\">";
+            QString f = t->loc_->doc().location().filePath();
+            out() << f << "</td>";
+            out() << "<td class=\"topAlign\">";
+            out() << t->loc_->doc().location().lineNo() << "</td></tr>\n";
         }
         out() << "</table>\n";
     }
@@ -424,19 +429,23 @@ QString HtmlGenerator::generateLinksToBrokenLinksPage(CodeMarker* marker, int& c
         count = tlist->size();
         fileName = "aaa-links-to-broken-links.html";
         beginSubPage(node, fileName);
-        QString title = "Links from " + defaultModuleName() + " that go nowhere";
+        QString title = "Broken links in " + defaultModuleName();
         generateHeader(title, node, marker);
         generateTitle(title, Text(), SmallSubTitle, node, marker);
-        out() << "<p>This is the complete list of broken links in " << defaultModuleName() << ".  ";
-        out() << "Click on a link to go directly to the actual link in the docs.  ";
-        out() << "The target for the link could not be found.</p>\n";
-        out() << "<table class=\"alignedsummary\">\n";
+        out() << "<p>This is a list of broken links in " << defaultModuleName() << ".  ";
+        out() << "Click on a link to go to the broken link.  ";
+        out() << "The link's target could not be found.</p>\n";
+        out() << "<table class=\"valuelist\"><tr valign=\"top\" class=\"odd\"><th class=\"tblConst\">Link to broken link...</th><th class=\"tblval\">In file...</th><th class=\"tbldscr\">Somewhere after line number...</th></tr>\n";
         foreach (TargetLoc* t, *tlist) {
             // e.g.: <a name="link-8421"></a><a href="layout.html">Layout Management</a>
-            out() << "<tr><td class=\"memItemLeft leftAlign topAlign\">";
+            out() << "<tr><td class=\"topAlign\">";
             out() << "<a href=\"" << t->fileName_ << "#" << t->target_ << "\">";
-            out() << t->text_ << "</a>";
-            out() << "</td></tr>\n";
+            out() << t->text_ << "</a></td>";
+            out() << "<td class=\"topAlign\">";
+            QString f = t->loc_->doc().location().filePath();
+            out() << f << "</td>";
+            out() << "<td class=\"topAlign\">";
+            out() << t->loc_->doc().location().lineNo() << "</td></tr>\n";
         }
         out() << "</table>\n";
         generateFooter();
@@ -481,7 +490,7 @@ int HtmlGenerator::generateAtom(const Atom *atom, const Node *relative, CodeMark
             else {
                 if (Generator::writeQaPages() && node && (atom->type() != Atom::NavAutoLink)) {
                     QString text = atom->string();
-                    QString target = qdb_->getNewLinkTarget(node, outFileName(), text);
+                    QString target = qdb_->getNewLinkTarget(relative, node, outFileName(), text);
                     out() << "<a id=\"" << Doc::canonicalTitle(target) << "\" class=\"qa-mark\"></a>";
                 }
                 beginLink(link, node, relative);
@@ -975,14 +984,14 @@ int HtmlGenerator::generateAtom(const Atom *atom, const Node *relative, CodeMark
             relative->doc().location().warning(tr("Can't link to '%1'").arg(atom->string()));
             if (Generator::writeQaPages() && (atom->type() != Atom::NavAutoLink)) {
                 QString text = atom->next()->next()->string();
-                QString target = qdb_->getNewLinkTarget(node, outFileName(), text, true);
+                QString target = qdb_->getNewLinkTarget(relative, node, outFileName(), text, true);
                 out() << "<a id=\"" << Doc::canonicalTitle(target) << "\" class=\"qa-mark\"></a>";
             }
         }
         else {
             if (Generator::writeQaPages() && node && (atom->type() != Atom::NavLink)) {
                 QString text = atom->next()->next()->string();
-                QString target = qdb_->getNewLinkTarget(node, outFileName(), text);
+                QString target = qdb_->getNewLinkTarget(relative, node, outFileName(), text);
                 out() << "<a id=\"" << Doc::canonicalTitle(target) << "\" class=\"qa-mark\"></a>";
             }
             /*

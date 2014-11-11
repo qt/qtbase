@@ -392,8 +392,12 @@ class QDocDatabase
     QString getLinkCounts(QStringList& strings, QVector<int>& counts) {
         return forest_.getLinkCounts(strings, counts);
     }
-    QString getNewLinkTarget(const Node* t, const QString& fileName, QString& text, bool broken = false) {
-        return primaryTree()->getNewLinkTarget(t, fileName, text, broken);
+    QString getNewLinkTarget(const Node* locNode,
+                             const Node* t,
+                             const QString& fileName,
+                             QString& text,
+                             bool broken = false) {
+        return primaryTree()->getNewLinkTarget(locNode, t, fileName, text, broken);
     }
     TargetList* getTargetList(const QString& t) { return primaryTree()->getTargetList(t); }
     QStringList getTargetListKeys() { return primaryTree()->getTargetListKeys(); }
