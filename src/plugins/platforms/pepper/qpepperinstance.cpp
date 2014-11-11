@@ -128,9 +128,13 @@ bool QPepperInstance::Init(uint32_t argc, const char* argn[], const char* argv[]
         }
     }
 
-    // Log the arguemnt key/value pairs.
+    // Place argument key/value pairs in the process environment. (NaCl/pepper does
+    // not support environment variables, Qt emulates via qputenv and getenv.)
     for (unsigned int i = 0; i < argc; ++i) {
-        qCDebug(QT_PLATFORM_PEPPER_INSTANCE) << "arg" << argn[i] << argv[i];
+        QByteArray name = QByteArray(argn[i]).toUpper(); // html forces lowercase.
+        QByteArray value = argv[i];
+        qputenv(name.constData(), value);
+        qCDebug(QT_PLATFORM_PEPPER_INSTANCE) << "setting environment variable" << name << "=" << value;
     }
 
     RequestInputEvents(PP_INPUTEVENT_CLASS_MOUSE | PP_INPUTEVENT_CLASS_WHEEL | PP_INPUTEVENT_CLASS_KEYBOARD);
