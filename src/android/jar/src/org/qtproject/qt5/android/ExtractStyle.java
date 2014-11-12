@@ -96,7 +96,7 @@ public class ExtractStyle {
     native static int[] extractNativeChunkInfo20(long nativeChunk);
 
 
-    Class<?> styleableClass = getStylableClass();
+    Class<?> styleableClass = getClass("android.R$styleable");
     final int[] EMPTY_STATE_SET = {};
     final int[] ENABLED_STATE_SET = {android.R.attr.state_enabled};
     final int[] FOCUSED_STATE_SET = {android.R.attr.state_focused};
@@ -387,10 +387,21 @@ public class ExtractStyle {
         return null;
     }
 
-    private Class<?> getStylableClass() {
+    private Class<?> getClass(String className) {
         try {
-            return Class.forName("android.R$styleable");
+            return Class.forName(className);
         } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    Field getAccessibleField(Class<?> clazz, String fieldName) {
+        try {
+            Field f = clazz.getDeclaredField(fieldName);
+            f.setAccessible(true);
+            return f;
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return null;
@@ -683,27 +694,13 @@ public class ExtractStyle {
             json.put("type", "rotate");
             Object obj = drawable.getConstantState();
             Class<?> rotateStateClass = obj.getClass();
-            Field f = rotateStateClass.getDeclaredField("mDrawable");
-            f.setAccessible(true);
-            json.put("drawable", getDrawable(f.get(obj), filename, null));
-            f = rotateStateClass.getDeclaredField("mPivotX");
-            f.setAccessible(true);
-            json.put("pivotX", f.getFloat(obj));
-            f = rotateStateClass.getDeclaredField("mPivotXRel");
-            f.setAccessible(true);
-            json.put("pivotXRel", f.getBoolean(obj));
-            f = rotateStateClass.getDeclaredField("mPivotY");
-            f.setAccessible(true);
-            json.put("pivotY", f.getFloat(obj));
-            f = rotateStateClass.getDeclaredField("mPivotYRel");
-            f.setAccessible(true);
-            json.put("pivotYRel", f.getBoolean(obj));
-            f = rotateStateClass.getDeclaredField("mFromDegrees");
-            f.setAccessible(true);
-            json.put("fromDegrees", f.getFloat(obj));
-            f = rotateStateClass.getDeclaredField("mToDegrees");
-            f.setAccessible(true);
-            json.put("toDegrees", f.getFloat(obj));
+            json.put("drawable", getDrawable(getAccessibleField(rotateStateClass, "mDrawable").get(obj), filename, null));
+            json.put("pivotX", getAccessibleField(rotateStateClass, "mPivotX").getFloat(obj));
+            json.put("pivotXRel", getAccessibleField(rotateStateClass, "mPivotXRel").getBoolean(obj));
+            json.put("pivotY", getAccessibleField(rotateStateClass, "mPivotY").getFloat(obj));
+            json.put("pivotYRel", getAccessibleField(rotateStateClass, "mPivotYRel").getBoolean(obj));
+            json.put("fromDegrees", getAccessibleField(rotateStateClass, "mFromDegrees").getFloat(obj));
+            json.put("toDegrees", getAccessibleField(rotateStateClass, "mToDegrees").getFloat(obj));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -774,22 +771,14 @@ public class ExtractStyle {
 
     private JSONObject findPatchesMarings(Drawable d) throws JSONException, NoSuchFieldException, IllegalAccessException
     {
-        Field mNinePatch = ((NinePatchDrawable)d).getClass().getDeclaredField("mNinePatch");
-        mNinePatch.setAccessible(true);
-        NinePatch np = (NinePatch) mNinePatch.get(d);
+        NinePatch np = (NinePatch) getAccessibleField(NinePatchDrawable.class, "mNinePatch").get(d);
         if (Build.VERSION.SDK_INT < 19)
-        {
-            Field mChunk = np.getClass().getDeclaredField("mChunk");
-            mChunk.setAccessible(true);
-            return getJsonChunkInfo(extractChunkInfo((byte[]) mChunk.get(np)));
-        }
+            return getJsonChunkInfo(extractChunkInfo((byte[]) getAccessibleField(np.getClass(), "mChunk").get(np)));
         else
         {
-            Field mNativeChunk = np.getClass().getDeclaredField("mNativeChunk");
-            mNativeChunk.setAccessible(true);
             if (Build.VERSION.SDK_INT > 19)
-                return getJsonChunkInfo(extractNativeChunkInfo20(mNativeChunk.getLong(np)));
-            return getJsonChunkInfo(extractNativeChunkInfo(mNativeChunk.getInt(np)));
+                return getJsonChunkInfo(extractNativeChunkInfo20(getAccessibleField(np.getClass(), "mNativeChunk").getLong(np)));
+            return getJsonChunkInfo(extractNativeChunkInfo(getAccessibleField(np.getClass(), "mNativeChunk").getInt(np)));
         }
     }
 
@@ -873,9 +862,7 @@ public class ExtractStyle {
                     try {
                         json.put("type", "clipDrawable");
                         Drawable.ConstantState dcs = ((ClipDrawable)drawable).getConstantState();
-                        Field f = dcs.getClass().getDeclaredField("mDrawable");
-                        f.setAccessible(true);
-                        json.put("drawable", getDrawable(f.get(dcs), filename, null));
+                        json.put("drawable", getDrawable(getAccessibleField(dcs.getClass(), "mDrawable").get(dcs), filename, null));
                         if (null != padding)
                             json.put("padding", getJsonRect(padding));
                         else {
@@ -913,14 +900,10 @@ public class ExtractStyle {
                 {
                     try {
                         InsetDrawable d = (InsetDrawable)drawable;
-                        Field mInsetState = d.getClass().getDeclaredField("mInsetState");
-                        mInsetState.setAccessible(true);
-                        Object mInsetStateObject = mInsetState.get(drawable);
-                        Field mDrawable = mInsetStateObject.getClass().getDeclaredField("mDrawable");
-                        mDrawable.setAccessible(true);
+                        Object mInsetStateObject = getAccessibleField(InsetDrawable.class, "mInsetState").get(d);
                         Rect _padding = new Rect();
                         boolean hasPadding = d.getPadding(_padding);
-                        return getDrawable(mDrawable.get(mInsetStateObject), filename, hasPadding ? _padding : null);
+                        return getDrawable(getAccessibleField(mInsetStateObject.getClass(), "mDrawable").get(mInsetStateObject), filename, hasPadding ? _padding : null);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
