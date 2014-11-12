@@ -8,6 +8,7 @@ SUBDIRS = \
     prototype_main \                # qt_main app startup prototype.
     prototype_openglfucntions \     # resolving opengl functions prototyping.
     prototype_libppapimain \        # call PpapiPluginMain from a shared library.
+    worker_thread \                 # Test the Qt event dispatcher on a worker thread.
     window_raster \                 # QWindow with raster graphics.
     window_opengl \                 # QWindow with OpenGL graphics.
     window_qtquick \                # QQuickWindow
