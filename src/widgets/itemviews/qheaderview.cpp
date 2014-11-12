@@ -1550,7 +1550,7 @@ int QHeaderView::minimumSectionSize() const
     Q_D(const QHeaderView);
     if (d->minimumSectionSize == -1) {
         QSize strut = QApplication::globalStrut();
-        int margin = style()->pixelMetric(QStyle::PM_HeaderMargin, 0, this);
+        int margin = 2 * style()->pixelMetric(QStyle::PM_HeaderMargin, 0, this);
         if (d->orientation == Qt::Horizontal)
             return qMax(strut.width(), (fontMetrics().maxWidth() + margin));
         return qMax(strut.height(), (fontMetrics().height() + margin));
@@ -2663,7 +2663,14 @@ void QHeaderView::paintSection(QPainter *painter, const QRect &rect, int logical
     opt.iconAlignment = Qt::AlignVCenter;
     opt.text = d->model->headerData(logicalIndex, d->orientation,
                                     Qt::DisplayRole).toString();
-    const int margin = 2 * style()->pixelMetric(QStyle::PM_HeaderMargin, 0, this);
+
+    int margin = 2 * style()->pixelMetric(QStyle::PM_HeaderMargin, 0, this);
+
+    const Qt::Alignment headerArrowAlignment = static_cast<Qt::Alignment>(style()->styleHint(QStyle::SH_Header_ArrowAlignment, 0, this));
+    const bool isHeaderArrowOnTheSide = headerArrowAlignment & Qt::AlignVCenter;
+    if (isSortIndicatorShown() && sortIndicatorSection() == logicalIndex && isHeaderArrowOnTheSide)
+        margin += style()->pixelMetric(QStyle::PM_HeaderMarkSize, 0, this);
+
     if (d->textElideMode != Qt::ElideNone)
         opt.text = opt.fontMetrics.elidedText(opt.text, d->textElideMode , rect.width() - margin);
 
