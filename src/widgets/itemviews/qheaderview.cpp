@@ -1515,6 +1515,11 @@ void QHeaderView::setCascadingSectionResizes(bool enable)
     This property only affects sections that have \l Interactive or \l Fixed
     as their resize mode.
 
+    By default, the value of this property is style dependent.
+    Thus, when the style changes, this property updates from it.
+    Calling setDefaultSectionSize() stops the updates, calling
+    resetDefaultSectionSize() will restore default behavior.
+
     \sa setSectionResizeMode(), minimumSectionSize
 */
 int QHeaderView::defaultSectionSize() const
@@ -1529,6 +1534,15 @@ void QHeaderView::setDefaultSectionSize(int size)
     if (size < 0 || size > maxSizeSection)
         return;
     d->setDefaultSectionSize(size);
+}
+
+void QHeaderView::resetDefaultSectionSize()
+{
+    Q_D(QHeaderView);
+    if (d->customDefaultSectionSize) {
+        d->updateDefaultSectionSizeFromStyle();
+        d->customDefaultSectionSize = false;
+    }
 }
 
 /*!
@@ -2209,6 +2223,10 @@ bool QHeaderView::event(QEvent *e)
             resizeSections();
         }
         break; }
+    case QEvent::StyleChange:
+        if (!d->customDefaultSectionSize)
+            d->updateDefaultSectionSizeFromStyle();
+        break;
     default:
         break;
     }
@@ -3465,6 +3483,7 @@ void QHeaderViewPrivate::setDefaultSectionSize(int size)
     executePostedLayout();
     invalidateCachedSizeHint();
     defaultSectionSize = size;
+    customDefaultSectionSize = true;
     if (state == QHeaderViewPrivate::ResizeSection)
         preventCursorChangeInSetOffset = true;
     for (int i = 0; i < sectionItems.count(); ++i) {
@@ -3483,6 +3502,17 @@ void QHeaderViewPrivate::setDefaultSectionSize(int size)
     if (hasAutoResizeSections())
         doDelayedResizeSections();
     viewport->update();
+}
+
+void QHeaderViewPrivate::updateDefaultSectionSizeFromStyle()
+{
+    Q_Q(QHeaderView);
+    if (orientation == Qt::Horizontal) {
+        defaultSectionSize = q->style()->pixelMetric(QStyle::PM_HeaderDefaultSectionSizeHorizontal, 0, q);
+    } else {
+        defaultSectionSize = qMax(q->minimumSectionSize(),
+                                  q->style()->pixelMetric(QStyle::PM_HeaderDefaultSectionSizeVertical, 0, q));
+    }
 }
 
 void QHeaderViewPrivate::recalcSectionStartPos() const // linear (but fast)
@@ -3632,6 +3662,7 @@ void QHeaderViewPrivate::write(QDataStream &out) const
 
     out << sectionItems;
     out << resizeContentsPrecision;
+    out << customDefaultSectionSize;
 }
 
 bool QHeaderViewPrivate::read(QDataStream &in)
@@ -3707,6 +3738,14 @@ bool QHeaderViewPrivate::read(QDataStream &in)
     in >> tmpint;
     if (in.status() == QDataStream::Ok)  // we haven't read past end
         resizeContentsPrecision = tmpint;
+
+    bool tmpbool;
+    in >> tmpbool;
+    if (in.status() == QDataStream::Ok) {  // we haven't read past end
+        customDefaultSectionSize = tmpbool;
+        if (!customDefaultSectionSize)
+            updateDefaultSectionSizeFromStyle();
+    }
 
     return true;
 }

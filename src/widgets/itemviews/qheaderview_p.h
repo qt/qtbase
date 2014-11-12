@@ -84,6 +84,7 @@ public:
           cascadingResizing(false),
           resizeRecursionBlock(false),
           allowUserMoveOfSection0(true), // will be false for QTreeView and true for QTableView
+          customDefaultSectionSize(false),
           stretchSections(0),
           contentsSections(0),
           minimumSectionSize(-1),
@@ -155,8 +156,7 @@ public:
 
     inline void setDefaultValues(Qt::Orientation o) {
         orientation = o;
-        defaultSectionSize = (o == Qt::Horizontal ? 100
-                              : qMax(q_func()->minimumSectionSize(), 30));
+        updateDefaultSectionSizeFromStyle();
         defaultAlignment = (o == Qt::Horizontal
                             ? Qt::Alignment(Qt::AlignCenter)
                             : Qt::AlignLeft|Qt::AlignVCenter);
@@ -275,6 +275,7 @@ public:
     bool cascadingResizing;
     bool resizeRecursionBlock;
     bool allowUserMoveOfSection0;
+    bool customDefaultSectionSize;
     int stretchSections;
     int contentsSections;
     int defaultSectionSize;
@@ -321,6 +322,7 @@ public:
     void removeSectionsFromSectionItems(int start, int end);
     void resizeSectionItem(int visualIndex, int oldSize, int newSize);
     void setDefaultSectionSize(int size);
+    void updateDefaultSectionSizeFromStyle();
     void recalcSectionStartPos() const; // not really const
 
     inline int headerLength() const { // for debugging

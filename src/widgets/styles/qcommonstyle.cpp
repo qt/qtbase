@@ -4592,6 +4592,12 @@ int QCommonStyle::pixelMetric(PixelMetric m, const QStyleOption *opt, const QWid
     case PM_HeaderGripMargin:
         ret = int(QStyleHelper::dpiScaled(4.));
         break;
+    case PM_HeaderDefaultSectionSizeHorizontal:
+        ret = int(QStyleHelper::dpiScaled(100.));
+        break;
+    case PM_HeaderDefaultSectionSizeVertical:
+        ret = int(QStyleHelper::dpiScaled(30.));
+        break;
     case PM_TabBarScrollButtonWidth:
         ret = int(QStyleHelper::dpiScaled(16.));
         break;

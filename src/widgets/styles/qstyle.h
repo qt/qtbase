@@ -550,6 +550,9 @@ public:
         PM_SubMenuOverlap,
         PM_TreeViewIndentation,
 
+        PM_HeaderDefaultSectionSizeHorizontal,
+        PM_HeaderDefaultSectionSizeVertical,
+
         // do not add any values below/greater than this
         PM_CustomBase = 0xf0000000
     };

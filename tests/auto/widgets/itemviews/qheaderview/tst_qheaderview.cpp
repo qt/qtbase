@@ -176,6 +176,7 @@ private slots:
     void moveSectionAndRemove();
     void saveRestore();
     void defaultSectionSizeTest();
+    void defaultSectionSizeTestStyles();
 
     void defaultAlignment_data();
     void defaultAlignment();
@@ -1679,6 +1680,41 @@ void tst_QHeaderView::defaultSectionSizeTest()
     QVERIFY(hv->sectionSize(2) == 0); // section is hidden. It should not be resized.
 }
 
+class TestHeaderViewStyle : public QProxyStyle
+{
+public:
+    TestHeaderViewStyle() : horizontalSectionSize(100) {}
+    int pixelMetric(PixelMetric metric, const QStyleOption *option = 0, const QWidget *widget = 0) const Q_DECL_OVERRIDE
+    {
+        if (metric == QStyle::PM_HeaderDefaultSectionSizeHorizontal)
+            return horizontalSectionSize;
+        else
+            return QProxyStyle::pixelMetric(metric, option, widget);
+    }
+    int horizontalSectionSize;
+};
+
+void tst_QHeaderView::defaultSectionSizeTestStyles()
+{
+    TestHeaderViewStyle style1;
+    TestHeaderViewStyle style2;
+    style1.horizontalSectionSize = 100;
+    style2.horizontalSectionSize = 200;
+
+    QHeaderView hv(Qt::Horizontal);
+    hv.setStyle(&style1);
+    QCOMPARE(hv.defaultSectionSize(), style1.horizontalSectionSize);
+    hv.setStyle(&style2);
+    QCOMPARE(hv.defaultSectionSize(), style2.horizontalSectionSize);
+    hv.setDefaultSectionSize(70);
+    QCOMPARE(hv.defaultSectionSize(), 70);
+    hv.setStyle(&style1);
+    QCOMPARE(hv.defaultSectionSize(), 70);
+    hv.resetDefaultSectionSize();
+    QCOMPARE(hv.defaultSectionSize(), style1.horizontalSectionSize);
+    hv.setStyle(&style2);
+    QCOMPARE(hv.defaultSectionSize(), style2.horizontalSectionSize);
+}
 
 void tst_QHeaderView::defaultAlignment_data()
 {

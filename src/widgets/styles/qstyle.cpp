@@ -1472,6 +1472,11 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
     \value PM_TreeViewIndentation The indentation of items in a tree view.
            This enum value has been introduced in Qt 5.4.
 
+    \value PM_HeaderDefaultSectionSizeHorizontal The default size of sections
+           in a horizontal header. This enum value has been introduced in Qt 5.5.
+    \value PM_HeaderDefaultSectionSizeVertical The default size of sections
+           in a vertical header. This enum value has been introduced in Qt 5.5.
+
     \value PM_CustomBase Base value for custom pixel metrics.  Custom
     values must be greater than this value.
 
