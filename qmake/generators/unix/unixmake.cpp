@@ -53,9 +53,6 @@ UnixMakefileGenerator::init()
         }
     }
 
-    if(!project->isEmpty("QMAKE_FAILED_REQUIREMENTS")) /* no point */
-        return;
-
     ProStringList &configs = project->values("CONFIG");
     if(project->isEmpty("ICON") && !project->isEmpty("RC_FILE"))
         project->values("ICON") = project->values("RC_FILE");
