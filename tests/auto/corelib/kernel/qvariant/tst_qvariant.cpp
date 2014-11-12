@@ -46,6 +46,7 @@
 
 
 #include <limits.h>
+#include <float.h>
 
 #include <QLinkedList>
 #include <QRegularExpression>
@@ -213,7 +214,10 @@ private slots:
     void toIntFromQString() const;
     void toIntFromDouble() const;
     void setValue();
+    void fpStringRoundtrip_data() const;
+    void fpStringRoundtrip() const;
 
+    void numericalConvert_data();
     void numericalConvert();
     void moreCustomTypes();
     void movabilityTest();
@@ -985,7 +989,7 @@ void tst_QVariant::toByteArray_data()
     QTest::newRow( "int" ) << QVariant( -123 ) << QByteArray( "-123" );
     QTest::newRow( "uint" ) << QVariant( (uint)123 ) << QByteArray( "123" );
     QTest::newRow( "double" ) << QVariant( 123.456 ) << QByteArray( "123.456" );
-    QTest::newRow( "float" ) << QVariant( 123.456f ) << QByteArray( "123.456" );
+    QTest::newRow( "float" ) << QVariant( 123.456f ) << QByteArray( "123.456001" );
     QTest::newRow( "longlong" ) << QVariant( (qlonglong)34 ) << QByteArray( "34" );
     QTest::newRow( "ulonglong" ) << QVariant( (qulonglong)34 ) << QByteArray( "34" );
 }
@@ -1011,7 +1015,7 @@ void tst_QVariant::toString_data()
     QTest::newRow( "int" ) << QVariant( -123 ) << QString( "-123" );
     QTest::newRow( "uint" ) << QVariant( (uint)123 ) << QString( "123" );
     QTest::newRow( "double" ) << QVariant( 123.456 ) << QString( "123.456" );
-    QTest::newRow( "float" ) << QVariant( 123.456f ) << QString( "123.456" );
+    QTest::newRow( "float" ) << QVariant( 123.456f ) << QString( "123.456001" );
     QTest::newRow( "bool" ) << QVariant( true ) << QString( "true" );
     QTest::newRow( "qdate" ) << QVariant( QDate( 2002, 1, 1 ) ) << QString( "2002-01-01" );
     QTest::newRow( "qtime" ) << QVariant( QTime( 12, 34, 56 ) ) << QString( "12:34:56" );
@@ -1367,12 +1371,12 @@ void tst_QVariant::operator_eq_eq_data()
     QVariant mUIntQString(QString("42"));
 
     QVariant mDouble(42.11);
-    QVariant mDoubleString(QByteArray("42.11"));
-    QVariant mDoubleQString(QString("42.11"));
+    QVariant mDoubleString(QByteArray("42.109999999999999"));
+    QVariant mDoubleQString(QString("42.109999999999999"));
 
     QVariant mFloat(42.11f);
-    QVariant mFloatString(QByteArray("42.11"));
-    QVariant mFloatQString(QString("42.11"));
+    QVariant mFloatString(QByteArray("42.1100006"));
+    QVariant mFloatQString(QString("42.1100006"));
 
     QVariant mLongLong((qlonglong)-42);
     QVariant mLongLongString(QByteArray("-42"));
@@ -2945,41 +2949,72 @@ void tst_QVariant::setValue()
     QVERIFY( v2.isDetached() );
 }
 
+void tst_QVariant::fpStringRoundtrip_data() const
+{
+    QTest::addColumn<QVariant>("number");
+
+    QTest::newRow("float") << QVariant(1 + FLT_EPSILON);
+    QTest::newRow("double") << QVariant(1 + DBL_EPSILON);
+}
+
+void tst_QVariant::fpStringRoundtrip() const
+{
+    QFETCH(QVariant, number);
+
+    QVariant converted = number;
+    QVERIFY(converted.convert(QVariant::String));
+    QVERIFY(converted.convert(number.type()));
+    QCOMPARE(converted, number);
+
+    converted = number;
+    QVERIFY(converted.convert(QVariant::ByteArray));
+    QVERIFY(converted.convert(number.type()));
+    QCOMPARE(converted, number);
+}
+
+void tst_QVariant::numericalConvert_data()
+{
+    QTest::addColumn<QVariant>("v");
+    QTest::addColumn<bool>("isInteger");
+    QTest::newRow("float") << QVariant(float(5.3)) << false;
+    QTest::newRow("double") << QVariant(double(5.3)) << false;
+    QTest::newRow("qreal") << QVariant(qreal(5.3)) << false;
+    QTest::newRow("int") << QVariant(int(5)) << true;
+    QTest::newRow("uint") << QVariant(uint(5)) << true;
+    QTest::newRow("short") << QVariant(short(5)) << true;
+    QTest::newRow("longlong") << QVariant(quint64(5)) << true;
+    QTest::newRow("long") << QVariant::fromValue(long(5)) << true;
+    QTest::newRow("stringint") << QVariant(QString::fromLatin1("5")) << true;
+    QTest::newRow("string") << QVariant(QString::fromLatin1("5.30000019")) << false;
+}
+
 void tst_QVariant::numericalConvert()
 {
 #if defined(Q_OS_LINUX) && defined(Q_CC_GNU) && !defined(__x86_64__)
     QSKIP("Known to fail due to a GCC bug on at least Ubuntu 10.04 32-bit - check QTBUG-8959");
 #endif
-    QVariant vfloat(float(5.3));
-    QVariant vdouble(double(5.3));
-    QVariant vreal(qreal(5.3));
-    QVariant vint(int(5));
-    QVariant vuint(uint(5));
-    QVariant vshort(short(5));
-    QVariant vlonglong(quint64(5));
-    QVariant vlong = QVariant::fromValue(long(5));
-    QVariant vstringint(QString::fromLatin1("5"));
-    QVariant vstring(QString::fromLatin1("5.3"));
+    QFETCH(QVariant, v);
+    QFETCH(bool, isInteger);
+    double num = isInteger ? 5 : 5.3;
 
-    QVector<QVariant *> vect;
-    vect << &vfloat << &vdouble << &vreal << &vint << &vuint << &vshort<< &vlonglong << &vlong << &vstringint << &vstring;
-
-    for(int i = 0; i < vect.size(); i++) {
-        double num = 5.3;
-        if (i >= 3 && i <= 8)
-            num = 5;
-        QVariant *v = vect.at(i);
-        QCOMPARE(v->toFloat() , float(num));
-        QCOMPARE(float(v->toReal()) , float(num));
-        QCOMPARE(float(v->toDouble()) , float(num));
-        if (i != 9) {
-            QCOMPARE(v->toInt() , int(num));
-            QCOMPARE(v->toUInt() , uint(num));
-            QCOMPARE(v->toULongLong() , quint64(num));
-            QCOMPARE(v->value<ulong>() , ulong(num));
-            QCOMPARE(v->value<ushort>() , ushort(num));
-        }
-        QCOMPARE(v->toString() , QString::number(num));
+    QCOMPARE(v.toFloat() , float(num));
+    QCOMPARE(float(v.toReal()) , float(num));
+    QCOMPARE(float(v.toDouble()) , float(num));
+    if (isInteger) {
+        QCOMPARE(v.toInt() , int(num));
+        QCOMPARE(v.toUInt() , uint(num));
+        QCOMPARE(v.toULongLong() , quint64(num));
+        QCOMPARE(v.value<ulong>() , ulong(num));
+        QCOMPARE(v.value<ushort>() , ushort(num));
+    }
+    switch (v.userType())
+    {
+    case QVariant::Double:
+        QCOMPARE(v.toString() , QString::number(num, 'g', DBL_MANT_DIG * log10(2.) + 2));
+        break;
+    case QMetaType::Float:
+        QCOMPARE(v.toString() , QString::number(float(num), 'g', FLT_MANT_DIG * log10(2.) + 2));
+        break;
     }
 }
 
@@ -3214,8 +3249,8 @@ void tst_QVariant::moreCustomTypes()
     QCOMPARE(MyNotMovable::count, 0);
 
     {
-        PLAY_WITH_VARIANT(12.12, false, "12.12", 12.12, true);
-        PLAY_WITH_VARIANT(12.12f, false, "12.12", 12.12f, true);
+        PLAY_WITH_VARIANT(12.12, false, "12.119999999999999", 12.12, true);
+        PLAY_WITH_VARIANT(12.12f, false, "12.1199999", 12.12f, true);
         PLAY_WITH_VARIANT('a', false, "a", 'a', true);
         PLAY_WITH_VARIANT((unsigned char)('a'), false, "a", 'a', true);
         PLAY_WITH_VARIANT( quint8(12), false, "\xc", 12, true);

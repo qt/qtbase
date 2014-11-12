@@ -69,12 +69,17 @@
 
 QT_BEGIN_NAMESPACE
 
-#ifndef DBL_DIG
-#  define DBL_DIG 10
+#ifndef DBL_MANT_DIG
+#  define DBL_MANT_DIG  53
 #endif
-#ifndef FLT_DIG
-#  define FLT_DIG 6
+#ifndef FLT_MANT_DIG
+#  define FLT_MANT_DIG  24
 #endif
+
+const int log10_2_10000 = 30103;    // log10(2) * 100000
+// same as C++11 std::numeric_limits<T>::max_digits10
+const int max_digits10_double = (DBL_MANT_DIG * log10_2_10000) / 100000 + 2;
+const int max_digits10_float = (FLT_MANT_DIG * log10_2_10000) / 100000 + 2;
 
 namespace {
 class HandlersManager
@@ -355,10 +360,10 @@ static bool convert(const QVariant::Private *d, int t, void *result, bool *ok)
             *str = QString::number(qMetaTypeUNumber(d));
             break;
         case QMetaType::Float:
-            *str = QString::number(d->data.f, 'g', FLT_DIG);
+            *str = QString::number(d->data.f, 'g', max_digits10_float);
             break;
         case QVariant::Double:
-            *str = QString::number(d->data.d, 'g', DBL_DIG);
+            *str = QString::number(d->data.d, 'g', max_digits10_double);
             break;
 #if !defined(QT_NO_DATESTRING)
         case QVariant::Date:
@@ -535,10 +540,10 @@ static bool convert(const QVariant::Private *d, int t, void *result, bool *ok)
             *ba = v_cast<QString>(d)->toUtf8();
             break;
         case QVariant::Double:
-            *ba = QByteArray::number(d->data.d, 'g', DBL_DIG);
+            *ba = QByteArray::number(d->data.d, 'g', max_digits10_double);
             break;
         case QMetaType::Float:
-            *ba = QByteArray::number(d->data.f, 'g', FLT_DIG);
+            *ba = QByteArray::number(d->data.f, 'g', max_digits10_float);
             break;
         case QMetaType::Char:
         case QMetaType::SChar:
