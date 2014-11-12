@@ -151,7 +151,7 @@ QByteArray QHttpNetworkRequestPrivate::header(const QHttpNetworkRequest &request
     }
     if (request.d->operation == QHttpNetworkRequest::Post) {
         // add content type, if not set in the request
-        if (request.headerField("content-type").isEmpty()) {
+        if (request.headerField("content-type").isEmpty() && ((request.d->uploadByteDevice && request.d->uploadByteDevice->size() > 0) || request.d->url.hasQuery())) {
             //Content-Type is mandatory. We can't say anything about the encoding, but x-www-form-urlencoded is the most likely to work.
             //This warning indicates a bug in application code not setting a required header.
             //Note that if using QHttpMultipart, the content-type is set in QNetworkAccessManagerPrivate::prepareMultipart already
