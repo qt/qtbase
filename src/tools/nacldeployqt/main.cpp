@@ -210,9 +210,15 @@ int main(int argc, char **argv)
         } else if (tmplate== "debug") {
             extern const char * templateDebug;
             html = QByteArray(templateDebug);
+        } else if (tmplate== "windowed") {
+            extern const char * templateWindowed;
+            html = QByteArray(templateWindowed);
         }
 
-        // instantiate template
+        // instantiate template. Order matters, LOADERSCRIPT should be
+        // replaced first.
+        extern const char * loaderScript;
+        html.replace("%LOADERSCRIPT%", QByteArray(loaderScript));
         html.replace("%APPNAME%", appName.toUtf8());
         html.replace("%APPTYPE%", isPNaCl ? "application/x-pnacl" : "application/x-nacl");
 

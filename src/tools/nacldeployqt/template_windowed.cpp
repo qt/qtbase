@@ -1,8 +1,8 @@
-const char * templateFullscreen = R"STRING_DELIMITER( 
+const char * templateWindowed = R"STRING_DELIMITER( 
 
 <!DOCTYPE html>
 
-<!-- "fullscreen" template for Qt on NaCl -->
+<!-- "windowed" template for Qt on NaCl -->
 
 <html>
 
@@ -13,8 +13,8 @@ const char * templateFullscreen = R"STRING_DELIMITER(
 </head>
 
 <style>
-    body { margin:0; overflow:hidden;}
-    embed { height:100vh; width:100vw; }
+    embed { width:640px; height:480px; display:block; margin: auto; }
+    H2 { text-align: center; }
 </style>
 
 <script>
@@ -22,6 +22,7 @@ const char * templateFullscreen = R"STRING_DELIMITER(
 </script>
 
 <body>
+<h2>%APPNAME%</h2>
 </body>
 
 </html>
