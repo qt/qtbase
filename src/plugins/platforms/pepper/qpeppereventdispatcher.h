@@ -38,16 +38,16 @@ public:
     explicit QPepperEventDispatcher(QObject *parent = 0);
     ~QPepperEventDispatcher();
 
-    void registerTimer(int timerId, int interval, Qt::TimerType timerType, QObject *object);
-    bool unregisterTimer(int timerId);
-    bool unregisterTimers(QObject *object);
+    void registerTimer(int timerId, int interval, Qt::TimerType timerType, QObject *object) Q_DECL_OVERRIDE;
+    bool unregisterTimer(int timerId) Q_DECL_OVERRIDE;
+    bool unregisterTimers(QObject *object) Q_DECL_OVERRIDE;
 
-    bool processEvents(QEventLoop::ProcessEventsFlags flags = QEventLoop::EventLoopExec);
+    bool processEvents(QEventLoop::ProcessEventsFlags flags = QEventLoop::EventLoopExec) Q_DECL_OVERRIDE;
 
-    bool hasPendingEvents();
+    bool hasPendingEvents() Q_DECL_OVERRIDE;
 
-    void flush();
-    void wakeUp();
+    void flush() Q_DECL_OVERRIDE;
+    void wakeUp() Q_DECL_OVERRIDE;
 private:
     struct PepperTimerInfo {
 
