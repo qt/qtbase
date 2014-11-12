@@ -553,7 +553,9 @@ void QFusionStyle::drawPrimitive(PrimitiveElement elem,
                 arrow = colorizedImage(QLatin1String(":/qt-project.org/styles/commonstyle/images/fusion_arrow.png"), arrowColor);
             } else if (header->sortIndicator & QStyleOptionHeader::SortDown) {
                 arrow = colorizedImage(QLatin1String(":/qt-project.org/styles/commonstyle/images/fusion_arrow.png"), arrowColor, 180);
-            } if (!arrow.isNull()) {
+            }
+
+            if (!arrow.isNull()) {
                 r.setSize(QSize(arrow.width()/2, arrow.height()/2));
                 r.moveCenter(header->rect.center());
                 painter->drawPixmap(r.translated(offset), arrow);
