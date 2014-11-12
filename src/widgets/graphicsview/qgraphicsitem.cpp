@@ -9791,6 +9791,7 @@ QVariant QGraphicsPixmapItem::extension(const QVariant &variant) const
     using textWidth().
 
     \note In order to align HTML text in the center, the item's text width must be set.
+    Otherwise, you can call adjustSize() after setting the item's text.
 
     \image graphicsview-textitem.png
 
