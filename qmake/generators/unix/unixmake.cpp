@@ -281,19 +281,19 @@ UnixMakefileGenerator::init()
             if(project->isActiveConfig("plugin")) {
                 if(!project->isEmpty("QMAKE_PLUGIN_BUNDLE_NAME"))
                     bundle = unescapeFilePath(project->first("QMAKE_PLUGIN_BUNDLE_NAME"));
-                if(!project->isEmpty("QMAKE_BUNDLE_EXTENSION") && !bundle.endsWith(project->first("QMAKE_BUNDLE_EXTENSION")))
+                if (project->isEmpty("QMAKE_BUNDLE_EXTENSION"))
+                    project->values("QMAKE_BUNDLE_EXTENSION").append(".plugin");
+                if (!bundle.endsWith(project->first("QMAKE_BUNDLE_EXTENSION")))
                     bundle += project->first("QMAKE_BUNDLE_EXTENSION");
-                else if(!bundle.endsWith(".plugin"))
-                    bundle += ".plugin";
                 if(project->isEmpty("QMAKE_BUNDLE_LOCATION"))
                     project->values("QMAKE_BUNDLE_LOCATION").append("Contents/MacOS");
             } else {
                 if(!project->isEmpty("QMAKE_FRAMEWORK_BUNDLE_NAME"))
                     bundle = unescapeFilePath(project->first("QMAKE_FRAMEWORK_BUNDLE_NAME"));
-                if(!project->isEmpty("QMAKE_BUNDLE_EXTENSION") && !bundle.endsWith(project->first("QMAKE_BUNDLE_EXTENSION")))
+                if (project->isEmpty("QMAKE_BUNDLE_EXTENSION"))
+                    project->values("QMAKE_BUNDLE_EXTENSION").append(".framework");
+                if (!bundle.endsWith(project->first("QMAKE_BUNDLE_EXTENSION")))
                     bundle += project->first("QMAKE_BUNDLE_EXTENSION");
-                else if(!bundle.endsWith(".framework"))
-                    bundle += ".framework";
             }
         }
         if(!bundle.isEmpty()) {
