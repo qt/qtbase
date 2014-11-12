@@ -794,7 +794,41 @@ void VcprojGenerator::init()
     }
 
     MakefileGenerator::init();
-    initOld();           // Currently calling old DSP code to set variables. CLEAN UP!
+
+    // $$QMAKE.. -> $$MSVCPROJ.. -------------------------------------
+    const ProStringList &incs = project->values("INCLUDEPATH");
+    for (ProStringList::ConstIterator incit = incs.begin(); incit != incs.end(); ++incit) {
+        QString inc = (*incit).toQString();
+        if (!inc.startsWith('"') && !inc.endsWith('"'))
+            inc = QString("\"%1\"").arg(inc); // Quote all paths if not quoted already
+        project->values("MSVCPROJ_INCPATH").append("-I" + inc);
+    }
+
+    QString dest = Option::fixPathToTargetOS(project->first("TARGET").toQString()) + project->first("TARGET_EXT");
+    project->values("MSVCPROJ_TARGET") = ProStringList(dest);
+
+    // DLL COPY ------------------------------------------------------
+    if (project->isActiveConfig("dll") && !project->values("DLLDESTDIR").isEmpty()) {
+        const ProStringList &dlldirs = project->values("DLLDESTDIR");
+        QString copydll("");
+        ProStringList::ConstIterator dlldir;
+        for (dlldir = dlldirs.begin(); dlldir != dlldirs.end(); ++dlldir) {
+            if (!copydll.isEmpty())
+                copydll += " && ";
+            copydll += "copy  \"$(TargetPath)\" \"" + *dlldir + "\"";
+        }
+
+        QString deststr("Copy " + dest + " to ");
+        for (dlldir = dlldirs.begin(); dlldir != dlldirs.end();) {
+            deststr += *dlldir;
+            ++dlldir;
+            if (dlldir != dlldirs.end())
+                deststr += ", ";
+        }
+
+        project->values("MSVCPROJ_COPY_DLL").append(copydll);
+        project->values("MSVCPROJ_COPY_DLL_DESC").append(deststr);
+    }
 
 #if 0
     // Verbose output if "-d -d"...
@@ -1605,44 +1639,6 @@ void VcprojGenerator::initExtraCompilerOutputs()
         extraCompile.Config = &(vcProject.Configuration);
 
         vcProject.ExtraCompilersFiles.append(extraCompile);
-    }
-}
-
-void VcprojGenerator::initOld()
-{
-    // $$QMAKE.. -> $$MSVCPROJ.. -------------------------------------
-    const ProStringList &incs = project->values("INCLUDEPATH");
-    for (ProStringList::ConstIterator incit = incs.begin(); incit != incs.end(); ++incit) {
-        QString inc = (*incit).toQString();
-        if (!inc.startsWith('"') && !inc.endsWith('"'))
-            inc = QString("\"%1\"").arg(inc); // Quote all paths if not quoted already
-        project->values("MSVCPROJ_INCPATH").append("-I" + inc);
-    }
-
-    QString dest = Option::fixPathToTargetOS(project->first("TARGET").toQString()) + project->first("TARGET_EXT");
-    project->values("MSVCPROJ_TARGET") = ProStringList(dest);
-
-    // DLL COPY ------------------------------------------------------
-    if(project->isActiveConfig("dll") && !project->values("DLLDESTDIR").isEmpty()) {
-        const ProStringList &dlldirs = project->values("DLLDESTDIR");
-        QString copydll("");
-        ProStringList::ConstIterator dlldir;
-        for(dlldir = dlldirs.begin(); dlldir != dlldirs.end(); ++dlldir) {
-            if(!copydll.isEmpty())
-                copydll += " && ";
-            copydll += "copy  \"$(TargetPath)\" \"" + *dlldir + "\"";
-        }
-
-        QString deststr("Copy " + dest + " to ");
-        for(dlldir = dlldirs.begin(); dlldir != dlldirs.end();) {
-            deststr += *dlldir;
-            ++dlldir;
-            if(dlldir != dlldirs.end())
-                deststr += ", ";
-        }
-
-        project->values("MSVCPROJ_COPY_DLL").append(copydll);
-        project->values("MSVCPROJ_COPY_DLL_DESC").append(deststr);
     }
 }
 

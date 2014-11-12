@@ -85,7 +85,6 @@ protected:
 
     virtual bool openOutput(QFile &file, const QString &build) const;
 
-    void initOld();
     virtual void initProject();
     void initConfiguration();
     void initCompilerTool();
