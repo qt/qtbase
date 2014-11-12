@@ -796,6 +796,13 @@ void VcprojGenerator::init()
     MakefileGenerator::init();
     initOld();           // Currently calling old DSP code to set variables. CLEAN UP!
 
+#if 0
+    // Verbose output if "-d -d"...
+    qDebug("Generator: MSVC.NET: List of current variables:");
+    for (ProValueMap::ConstIterator it = project->variables().begin(); it != project->variables().end(); ++it)
+        qDebug("Generator: MSVC.NET: %s => %s", qPrintable(it.key().toQString()), qPrintable(it.value().join(" | ")));
+#endif
+
     // Figure out what we're trying to build
     if(project->first("TEMPLATE") == "vcapp") {
         projectTarget = Application;
@@ -1637,9 +1644,6 @@ void VcprojGenerator::initOld()
         project->values("MSVCPROJ_COPY_DLL").append(copydll);
         project->values("MSVCPROJ_COPY_DLL_DESC").append(deststr);
     }
-
-    // Verbose output if "-d -d"...
-    outputVariables();
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -1686,15 +1690,6 @@ bool VcprojGenerator::openOutput(QFile &file, const QString &/*build*/) const
         file.setFileName(outdir + outputName + ext);
     }
     return Win32MakefileGenerator::openOutput(file, QString());
-}
-
-void VcprojGenerator::outputVariables()
-{
-#if 0
-    qDebug("Generator: MSVC.NET: List of current variables:");
-    for (ProValueMap::ConstIterator it = project->variables().begin(); it != project->variables().end(); ++it)
-        qDebug("Generator: MSVC.NET: %s => %s", qPrintable(it.key().toQString()), qPrintable(it.value().join(" | ")));
-#endif
 }
 
 QT_END_NAMESPACE

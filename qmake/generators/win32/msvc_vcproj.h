@@ -84,7 +84,6 @@ protected:
     virtual bool mergeBuildProject(MakefileGenerator *other);
 
     virtual bool openOutput(QFile &file, const QString &build) const;
-    virtual void outputVariables();
 
     void initOld();
     virtual void initProject();
