@@ -88,6 +88,7 @@ private:
     void endContextComposition();
 
     const DWORD m_WM_MSIME_MOUSE;
+    static HIMC m_defaultContext;
     CompositionContext m_compositionContext;
     bool m_endCompositionRecursionGuard;
 };
