@@ -2826,7 +2826,8 @@ bool QOpenGLTexture::hasFeature(Feature feature)
 
         case ImmutableStorage:
             supported = f.version() >= qMakePair(4, 2)
-                    || ctx->hasExtension(QByteArrayLiteral("GL_ARB_texture_storage"));
+                    || ctx->hasExtension(QByteArrayLiteral("GL_ARB_texture_storage"))
+                    || ctx->hasExtension(QByteArrayLiteral("GL_EXT_texture_storage"));
             break;
 
         case TextureCubeMapArrays:
@@ -2873,9 +2874,6 @@ bool QOpenGLTexture::hasFeature(Feature feature)
 
         case MaxFeatureFlag:
             break;
-
-        default:
-            break;
         }
     }
 
@@ -2883,21 +2881,59 @@ bool QOpenGLTexture::hasFeature(Feature feature)
 #endif
     {
         switch (feature) {
-        case Texture3D:
-            supported = ctx->hasExtension(QByteArrayLiteral("GL_OES_texture_3D"));
+        case ImmutableStorage:
+            supported = f.version() >= qMakePair(3, 0)
+                    || ctx->hasExtension(QByteArrayLiteral("EXT_texture_storage"));
             break;
+
+        case ImmutableMultisampleStorage:
+            supported = f.version() >= qMakePair(3, 1);
+            break;
+
+        case TextureRectangle:
+            break;
+
+        case TextureArrays:
+            supported = f.version() >= qMakePair(3, 0);
+            break;
+
+        case Texture3D:
+            supported = f.version() >= qMakePair(3, 0)
+                    || ctx->hasExtension(QByteArrayLiteral("GL_OES_texture_3D"));
+            break;
+
+        case TextureMultisample:
+            supported = f.version() >= qMakePair(3, 1);
+            break;
+
+        case TextureBuffer:
+            break;
+
+        case TextureCubeMapArrays:
+            break;
+
+        case Swizzle:
+            supported = f.version() >= qMakePair(3, 0);
+            break;
+
+        case StencilTexturing:
+            break;
+
         case AnisotropicFiltering:
             supported = ctx->hasExtension(QByteArrayLiteral("GL_EXT_texture_filter_anisotropic"));
             break;
+
         case NPOTTextures:
         case NPOTTextureRepeat:
-            supported = f.version() >= qMakePair(3,0);
-            if (!supported) {
-                supported = ctx->hasExtension(QByteArrayLiteral("GL_OES_texture_npot"));
-                if (!supported)
-                    supported = ctx->hasExtension(QByteArrayLiteral("GL_ARB_texture_non_power_of_two"));
-            }
-        default:
+            supported = f.version() >= qMakePair(3,0)
+                    || ctx->hasExtension(QByteArrayLiteral("GL_OES_texture_npot"))
+                    || ctx->hasExtension(QByteArrayLiteral("GL_ARB_texture_non_power_of_two"));
+            break;
+
+        case Texture1D:
+            break;
+
+        case MaxFeatureFlag:
             break;
         }
     }
