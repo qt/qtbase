@@ -109,7 +109,7 @@ void QPepperEventDispatcher::flush()
     QUnixEventDispatcherQPA::flush();
 }
 
-void QPepperEventDispatcher::wakeup()
+void QPepperEventDispatcher::wakeUp()
 {
     qCDebug(QT_PLATFORM_PEPPER_EVENTDISPATHCER) << "QPepperEventDispatcher::wakeup";
     scheduleProcessEvents();

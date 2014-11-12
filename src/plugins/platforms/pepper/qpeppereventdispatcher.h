@@ -47,7 +47,7 @@ public:
     bool hasPendingEvents();
 
     void flush();
-    void wakeup();
+    void wakeUp();
 private:
     struct PepperTimerInfo {
 
