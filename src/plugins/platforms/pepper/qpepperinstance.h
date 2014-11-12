@@ -55,6 +55,7 @@ public:
     QRect geometry();
     QRect deviceGeometry();
     qreal devicePixelRatio();
+    qreal cssScale();
 
     // publics:
     void scheduleWindowSystemEventsFlush();
@@ -72,7 +73,9 @@ public:
 
     pp::Var m_console;
     pp::Rect m_currentGeometry;
-    float m_currentDevicePixelRatio;
+    qreal m_currentCssScale;
+    qreal m_currentDeviceScale;
+    qreal m_currentDevicePixelRatio;
 
     pp::Graphics2D *m_context2D;
     pp::ImageData *m_imageData2D;

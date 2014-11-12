@@ -19,6 +19,7 @@
 
 #include "qpeppereventtranslator.h"
 #include "qpepperhelpers.h"
+#include "qpepperinstance.h"
 
 #include <ppapi/cpp/point.h>
 #include <ppapi/cpp/var.h>
@@ -69,8 +70,7 @@ bool PepperEventTranslator::processEvent(const pp::InputEvent& event)
 
 bool PepperEventTranslator::processMouseEvent(const pp::MouseInputEvent &event, PP_InputEvent_Type eventType)
 {
-    //qDebug() << "processMouseEvent" << event.GetPosition().x() << event.GetPosition().y();
-    QPoint point(event.GetPosition().x(), event.GetPosition().y());
+    QPoint point = toQPointF(event.GetPosition()) / QPepperInstance::get()->cssScale();
     currentMouseGlobalPos = point;
     //Qt::MouseButton button = translatePepperMouseButton(event.button);
     Qt::MouseButtons modifiers = translatePepperMouseModifiers(event.GetModifiers());

@@ -143,20 +143,33 @@ bool QPepperInstance::Init(uint32_t argc, const char* argn[], const char* argv[]
 }
 
 // DidchangeView is called on div tag geometry or configuration change, for
-// example if the pixel scalng changes. This is also where we start Qt.
+// example if the pixel scaling changes. This is also where Qt is started.
 void QPepperInstance::DidChangeView(const View &view)
 {
-
-    qCDebug(QT_PLATFORM_PEPPER_INSTANCE) << "DidChangeView" << view.GetRect().width() << view.GetRect().height()
-                                         << view.GetDeviceScale();
-
     Rect geometry = view.GetRect();
-    float devicePixelRatio = view.GetDeviceScale();
+    // Compute the effective devicePixelRatio. DeviceScale is related
+    // to the hardware and is often an integer. CSSScale is the is the
+    // zoom factor and is often a real number.
+    // NOTE: This leads to non-integer devicePixelRatios. We might want
+    // add an option to not factor in CSSScale.
+    qreal deviceScale = view.GetDeviceScale();
+    qreal cssScale = view.GetCSSScale();
+    qreal devicePixelRatio = deviceScale * cssScale;
+
+    qCDebug(QT_PLATFORM_PEPPER_INSTANCE) << "DidChangeView" << toQRect(geometry)
+                                         << "DeviceScale" << deviceScale
+                                         << "CSSScale" << cssScale
+                                         << "devicePixelRatio" << devicePixelRatio;
+
     if (geometry.size() == m_currentGeometry.size() && devicePixelRatio == m_currentDevicePixelRatio)
         return;
 
     m_currentGeometry = geometry;
+    m_currentDeviceScale = deviceScale;
+    m_currentCssScale = cssScale;
     m_currentDevicePixelRatio = devicePixelRatio;
+
+    qDebug() << this->geometry() << this->deviceGeometry();
 
     // Start Qt on the first DidChangeView. This means we have a "screen" while
     // the application creates the root window etc, which makes life easier.
@@ -164,7 +177,7 @@ void QPepperInstance::DidChangeView(const View &view)
         startQt();
         m_qtStarted = true;
     }  else {
-        m_pepperIntegraton->resizeScreen(toQSize(m_currentGeometry.size()), m_currentDevicePixelRatio);
+        m_pepperIntegraton->resizeScreen(this->geometry().size(), m_currentDevicePixelRatio);
     }
 
     m_pepperIntegraton->processEvents();
@@ -212,19 +225,24 @@ void QPepperInstance::HandleMessage(const Var& var_message)
 
 QRect QPepperInstance::geometry()
 {
-    return toQRect(m_currentGeometry);
+    QRect r = toQRect(m_currentGeometry);
+    return QRect(r.topLeft(), r.size() / m_currentCssScale);
 }
 
 QRect QPepperInstance::deviceGeometry()
 {
-    QRect geometry = toQRect(m_currentGeometry);
-    geometry.setSize(geometry.size() * m_currentDevicePixelRatio);
-    return geometry;
+    QRect r = toQRect(m_currentGeometry);
+    return QRect(r.topLeft(), r.size() * m_currentDeviceScale);
 }
 
 qreal QPepperInstance::devicePixelRatio()
 {
     return m_currentDevicePixelRatio;
+}
+
+qreal QPepperInstance::cssScale()
+{
+    return m_currentCssScale;
 }
 
 // From time to time it's useful to flush and empty the posted

@@ -32,6 +32,8 @@ QSize toQSize(pp::Size size);
 pp::Size toPPSize(const QSize &size);
 QPointF toQPointF(pp::FloatPoint point);
 pp::FloatPoint toPPFloatPoint(QPointF point);
+QPoint toQPointF(pp::Point point);
+pp::Point toPPFloatPoint(QPoint point);
 
 // QAtomic-based ref count for the callback factory.
 class ThreadSafeRefCount

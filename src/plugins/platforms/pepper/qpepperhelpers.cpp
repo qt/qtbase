@@ -49,6 +49,16 @@ pp::FloatPoint toPPFloatPoint(QPointF point)
     return pp::FloatPoint(point.x(), point.y());
 }
 
+QPoint toQPointF(pp::Point point)
+{
+    return QPoint(point.x(), point.y());
+}
+
+pp::Point toPPPoint(QPoint point)
+{
+    return pp::Point(point.x(), point.y());
+}
+
 ThreadSafeRefCount::ThreadSafeRefCount()
    : ref(0) { }
 
