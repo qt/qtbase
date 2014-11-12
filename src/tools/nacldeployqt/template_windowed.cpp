@@ -13,7 +13,7 @@ const char * templateWindowed = R"STRING_DELIMITER(
 </head>
 
 <style>
-    embed { width:640px; height:480px; display:block; margin: auto; }
+    embed { width:640px; height:480px; display:block; margin: auto; box-shadow: 0 0 1em #888888; }
     H2 { text-align: center; }
 </style>
 
