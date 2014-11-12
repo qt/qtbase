@@ -95,8 +95,8 @@ public class ExtractStyle {
     native static int[] extractChunkInfo20(byte[] chunkData);
     native static int[] extractNativeChunkInfo20(long nativeChunk);
 
-
     Class<?> styleableClass = getClass("android.R$styleable");
+    Class<?> rippleDrawableClass = getClass("android.graphics.drawable.RippleDrawable");
     final int[] EMPTY_STATE_SET = {};
     final int[] ENABLED_STATE_SET = {android.R.attr.state_enabled};
     final int[] FOCUSED_STATE_SET = {android.R.attr.state_focused};
@@ -794,8 +794,27 @@ public class ExtractStyle {
     }
     private HashMap<String, DrawableCache> m_drawableCache = new HashMap<String, DrawableCache>();
 
+    private JSONObject getRippleDrawable(Object drawable, String filename, Rect padding)
+    {
+        JSONObject json = getLayerDrawable(drawable, filename);
+        JSONObject ripple =  new JSONObject();
+        try {
+            final Object mState = getAccessibleField(rippleDrawableClass, "mState").get(drawable);
+            ripple.put("mask", getDrawable((Drawable)getAccessibleField(rippleDrawableClass, "mMask").get(drawable), filename, padding));
+            ripple.put("maxRadius", getAccessibleField(mState.getClass(), "mMaxRadius").getInt(mState));
+            ripple.put("color", getColorStateList((ColorStateList)getAccessibleField(mState.getClass(), "mColor").get(mState)));
+            json.put("ripple", ripple);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return json;
+    }
+
     public JSONObject getDrawable(Object drawable, String filename, Rect padding)
     {
+        if (drawable == null)
+            return null;
+
         DrawableCache dc = m_drawableCache.get(filename);
         if (dc != null)
         {
@@ -833,6 +852,9 @@ public class ExtractStyle {
             }
             else
             {
+
+                if (rippleDrawableClass != null && rippleDrawableClass.isInstance(drawable))
+                    return getRippleDrawable(drawable, filename, padding);
                 if (drawable instanceof ScaleDrawable)
                 {
                     return getDrawable(((ScaleDrawable)drawable).getDrawable(), filename, null);
