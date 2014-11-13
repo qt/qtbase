@@ -248,7 +248,7 @@ bool QMimeDatabasePrivate::inherits(const QString &mime, const QString &parent)
     \endcode
     On a typical Unix system, this will be /usr/share/mime/packages/, but it is also
     possible to extend the list of directories by setting the environment variable
-    XDG_DATA_DIRS. For instance adding /opt/myapp/share to XDG_DATA_DIRS will result
+    \c XDG_DATA_DIRS. For instance adding /opt/myapp/share to \c XDG_DATA_DIRS will result
     in /opt/myapp/share/mime/packages/ being searched for MIME definitions.
 
     Here is an example of MIME XML:
@@ -575,7 +575,7 @@ QMimeType QMimeDatabase::mimeTypeForFileNameAndData(const QString &fileName, con
 
     This can be useful for showing all MIME types to the user, for instance
     in a MIME type editor. Do not use unless really necessary in other cases
-    though, prefer using the mimeTypeFor* methods for performance reasons.
+    though, prefer using the  \l {mimeTypeForData()}{mimeTypeForXxx()} methods for performance reasons.
 */
 QList<QMimeType> QMimeDatabase::allMimeTypes() const
 {
