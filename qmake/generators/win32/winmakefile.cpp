@@ -518,7 +518,7 @@ void Win32MakefileGenerator::processRcFileVar()
         if (!project->values("OBJECTS_DIR").isEmpty()) {
             QString resDestDir;
             if (project->isActiveConfig("staticlib"))
-                resDestDir = fileInfo(project->first("DESTDIR").toQString()).absoluteFilePath();
+                resDestDir = project->first("DESTDIR").toQString();
             else
                 resDestDir = project->first("OBJECTS_DIR").toQString();
             resDestDir.append(Option::dir_sep);
