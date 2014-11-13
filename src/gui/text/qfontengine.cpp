@@ -2037,7 +2037,7 @@ void QFontEngineMultiBasicImpl::loadEngine(int at)
     request.family = fallbackFamilies.at(at-1);
     engines[at] = QFontDatabase::findFont(script,
                                           /*fontprivate = */0,
-                                          request, /*multi = */false, true);
+                                          request, /*multi = */false);
     Q_ASSERT(engines[at]);
     engines[at]->ref.ref();
     engines[at]->fontDef = request;
