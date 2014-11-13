@@ -633,10 +633,10 @@ void Win32MakefileGenerator::writeStandardParts(QTextStream &t)
     writeLibsPart(t);
 
     t << "QMAKE         = " << var("QMAKE_QMAKE") << endl;
-    t << "IDC           = " << (project->isEmpty("QMAKE_IDC") ? QString("idc") :
-                              Option::fixPathToTargetOS(var("QMAKE_IDC"), false)) << endl;
-    t << "IDL           = " << (project->isEmpty("QMAKE_IDL") ? QString("midl") :
-                              Option::fixPathToTargetOS(var("QMAKE_IDL"), false)) << endl;
+    t << "IDC           = " << (project->isEmpty("QMAKE_IDC") ? QString("idc") : var("QMAKE_IDC"))
+                            << endl;
+    t << "IDL           = " << (project->isEmpty("QMAKE_IDL") ? QString("midl") : var("QMAKE_IDL"))
+                            << endl;
     t << "ZIP           = " << var("QMAKE_ZIP") << endl;
     t << "DEF_FILE      = " << varList("DEF_FILE") << endl;
     t << "RES_FILE      = " << varList("RES_FILE") << endl; // Not on mingw, can't see why not though...

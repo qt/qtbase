@@ -730,8 +730,8 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
             debug_msg(1, "pbuilder: Creating file: %s", mkfile.toLatin1().constData());
             QTextStream mkt(&mkf);
             writeHeader(mkt);
-            mkt << "MOC       = " << Option::fixPathToTargetOS(var("QMAKE_MOC")) << endl;
-            mkt << "UIC       = " << Option::fixPathToTargetOS(var("QMAKE_UIC")) << endl;
+            mkt << "MOC       = " << var("QMAKE_MOC") << endl;
+            mkt << "UIC       = " << var("QMAKE_UIC") << endl;
             mkt << "LEX       = " << var("QMAKE_LEX") << endl;
             mkt << "LEXFLAGS  = " << var("QMAKE_LEXFLAGS") << endl;
             mkt << "YACC      = " << var("QMAKE_YACC") << endl;
