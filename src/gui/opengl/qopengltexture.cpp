@@ -412,13 +412,45 @@ static bool isSizedTextureFormat(QOpenGLTexture::TextureFormat internalFormat)
     return false;
 }
 
+static bool isTextureTargetMultisample(QOpenGLTexture::Target target)
+{
+    switch (target) {
+    case QOpenGLTexture::Target1D:
+    case QOpenGLTexture::Target1DArray:
+    case QOpenGLTexture::Target2D:
+    case QOpenGLTexture::Target2DArray:
+    case QOpenGLTexture::Target3D:
+    case QOpenGLTexture::TargetCubeMap:
+    case QOpenGLTexture::TargetCubeMapArray:
+        return false;
+
+    case QOpenGLTexture::Target2DMultisample:
+    case QOpenGLTexture::Target2DMultisampleArray:
+        return true;
+
+    case QOpenGLTexture::TargetRectangle:
+    case QOpenGLTexture::TargetBuffer:
+        return false;
+    }
+
+    Q_UNREACHABLE();
+    return false;
+}
+
 void QOpenGLTexturePrivate::allocateStorage(QOpenGLTexture::PixelFormat pixelFormat, QOpenGLTexture::PixelType pixelType)
 {
     // Resolve the actual number of mipmap levels we can use
     mipLevels = evaluateMipLevels();
 
     // Use immutable storage whenever possible, falling back to mutable
-    if (features.testFlag(QOpenGLTexture::ImmutableStorage) && isSizedTextureFormat(format))
+    // Note that if multisample textures are not supported at all, we'll still fail into
+    // the mutable storage allocation
+    const bool useImmutableStorage = isSizedTextureFormat(format)
+            && (isTextureTargetMultisample(target)
+                ? features.testFlag(QOpenGLTexture::ImmutableMultisampleStorage)
+                : features.testFlag(QOpenGLTexture::ImmutableStorage));
+
+    if (useImmutableStorage)
         allocateImmutableStorage();
     else
         allocateMutableStorage(pixelFormat, pixelType);
@@ -1028,7 +1060,7 @@ void QOpenGLTexturePrivate::allocateImmutableStorage()
         break;
 
     case QOpenGLTexture::Target2DMultisample:
-        if (features.testFlag(QOpenGLTexture::TextureMultisample)) {
+        if (features.testFlag(QOpenGLTexture::ImmutableMultisampleStorage)) {
             texFuncs->glTextureStorage2DMultisample(textureId, target, bindingTarget, samples, format,
                                                     dimensions[0], dimensions[1],
                                                     fixedSamplePositions);
@@ -1039,7 +1071,7 @@ void QOpenGLTexturePrivate::allocateImmutableStorage()
         break;
 
     case QOpenGLTexture::Target2DMultisampleArray:
-        if (features.testFlag(QOpenGLTexture::TextureMultisample)
+        if (features.testFlag(QOpenGLTexture::ImmutableMultisampleStorage)
                 && features.testFlag(QOpenGLTexture::TextureArrays)) {
             texFuncs->glTextureStorage3DMultisample(textureId, target, bindingTarget, samples, format,
                                                     dimensions[0], dimensions[1], layers,
