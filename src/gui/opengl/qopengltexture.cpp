@@ -384,6 +384,16 @@ static bool isSizedTextureFormat(QOpenGLTexture::TextureFormat internalFormat)
     case QOpenGLTexture::SRGB_Alpha_DXT3:
     case QOpenGLTexture::SRGB_Alpha_DXT5:
     case QOpenGLTexture::SRGB_BP_UNorm:
+    case QOpenGLTexture::R11_EAC_UNorm:
+    case QOpenGLTexture::R11_EAC_SNorm:
+    case QOpenGLTexture::RG11_EAC_UNorm:
+    case QOpenGLTexture::RG11_EAC_SNorm:
+    case QOpenGLTexture::RGB8_ETC2:
+    case QOpenGLTexture::SRGB8_ETC2:
+    case QOpenGLTexture::RGB8_PunchThrough_Alpha1_ETC2:
+    case QOpenGLTexture::SRGB8_PunchThrough_Alpha1_ETC2:
+    case QOpenGLTexture::RGBA8_ETC2_EAC:
+    case QOpenGLTexture::SRGB8_Alpha8_ETC2_EAC:
         return true;
 
     case QOpenGLTexture::DepthFormat:
@@ -510,6 +520,24 @@ static QOpenGLTexture::PixelFormat pixelFormatCompatibleWithInternalFormat(QOpen
     case QOpenGLTexture::SRGB_BP_UNorm:
         return QOpenGLTexture::RGBA;
 
+    case QOpenGLTexture::R11_EAC_UNorm:
+    case QOpenGLTexture::R11_EAC_SNorm:
+        return QOpenGLTexture::Red;
+
+    case QOpenGLTexture::RG11_EAC_UNorm:
+    case QOpenGLTexture::RG11_EAC_SNorm:
+        return QOpenGLTexture::RG;
+
+    case QOpenGLTexture::RGB8_ETC2:
+    case QOpenGLTexture::SRGB8_ETC2:
+    case QOpenGLTexture::RGB8_PunchThrough_Alpha1_ETC2:
+    case QOpenGLTexture::SRGB8_PunchThrough_Alpha1_ETC2:
+        return QOpenGLTexture::RGB;
+
+    case QOpenGLTexture::RGBA8_ETC2_EAC:
+    case QOpenGLTexture::SRGB8_Alpha8_ETC2_EAC:
+        return QOpenGLTexture::RGBA;
+
     case QOpenGLTexture::DepthFormat:
         return QOpenGLTexture::Depth;
 
@@ -627,6 +655,16 @@ static QOpenGLTexture::PixelType pixelTypeCompatibleWithInternalFormat(QOpenGLTe
     case QOpenGLTexture::SRGB_Alpha_DXT3:
     case QOpenGLTexture::SRGB_Alpha_DXT5:
     case QOpenGLTexture::SRGB_BP_UNorm:
+    case QOpenGLTexture::R11_EAC_UNorm:
+    case QOpenGLTexture::R11_EAC_SNorm:
+    case QOpenGLTexture::RG11_EAC_UNorm:
+    case QOpenGLTexture::RG11_EAC_SNorm:
+    case QOpenGLTexture::RGB8_ETC2:
+    case QOpenGLTexture::SRGB8_ETC2:
+    case QOpenGLTexture::RGB8_PunchThrough_Alpha1_ETC2:
+    case QOpenGLTexture::SRGB8_PunchThrough_Alpha1_ETC2:
+    case QOpenGLTexture::RGBA8_ETC2_EAC:
+    case QOpenGLTexture::SRGB8_Alpha8_ETC2_EAC:
         return QOpenGLTexture::UInt8;
 
     case QOpenGLTexture::DepthFormat:
@@ -1630,6 +1668,16 @@ QOpenGLTexture *QOpenGLTexturePrivate::createTextureView(QOpenGLTexture::Target 
     \value RGB_BP_UNSIGNED_FLOAT Equivalent to GL_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT_ARB
     \value RGB_BP_SIGNED_FLOAT Equivalent to GL_COMPRESSED_RGB_BPTC_SIGNED_FLOAT_ARB
     \value RGB_BP_UNorm Equivalent to GL_COMPRESSED_RGBA_BPTC_UNORM_ARB
+    \value R11_EAC_UNorm Equivalent to GL_COMPRESSED_R11_EAC
+    \value R11_EAC_SNorm Equivalent to GL_COMPRESSED_SIGNED_R11_EAC
+    \value RG11_EAC_UNorm Equivalent to GL_COMPRESSED_RG11_EAC
+    \value RG11_EAC_SNorm Equivalent to GL_COMPRESSED_SIGNED_RG11_EAC
+    \value RGB8_ETC2 Equivalent to GL_COMPRESSED_RGB8_ETC2
+    \value SRGB8_ETC2 Equivalent to GL_COMPRESSED_SRGB8_ETC2
+    \value RGB8_PunchThrough_Alpha1_ETC2 Equivalent to GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2
+    \value SRGB8_PunchThrough_Alpha1_ETC2 Equivalent to GL_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2
+    \value RGBA8_ETC2_EAC Equivalent to GL_COMPRESSED_RGBA8_ETC2_EAC
+    \value SRGB8_Alpha8_ETC2_EAC Equivalent to GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC
 
     \value SRGB8 Equivalent to GL_SRGB8
     \value SRGB8_Alpha8 Equivalent to GL_SRGB8_ALPHA8
@@ -2155,6 +2203,16 @@ void QOpenGLTexture::setFormat(TextureFormat format)
         d->formatClass = FormatClass_S3TC_DXT5_RGBA;
         break;
 
+    case QOpenGLTexture::R11_EAC_UNorm:
+    case QOpenGLTexture::R11_EAC_SNorm:
+    case QOpenGLTexture::RG11_EAC_UNorm:
+    case QOpenGLTexture::RG11_EAC_SNorm:
+    case QOpenGLTexture::RGB8_ETC2:
+    case QOpenGLTexture::SRGB8_ETC2:
+    case QOpenGLTexture::RGB8_PunchThrough_Alpha1_ETC2:
+    case QOpenGLTexture::SRGB8_PunchThrough_Alpha1_ETC2:
+    case QOpenGLTexture::RGBA8_ETC2_EAC:
+    case QOpenGLTexture::SRGB8_Alpha8_ETC2_EAC:
     case RG3B2:
     case R5G6B5:
     case RGB5A1:
