@@ -1250,11 +1250,19 @@ void tst_QItemDelegate::enterKey_data()
     QTest::addColumn<bool>("expectedFocus");
 
     QTest::newRow("lineedit enter") << LineEdit << int(Qt::Key_Enter) << false;
+    QTest::newRow("lineedit return") << LineEdit << int(Qt::Key_Return) << false;
+    QTest::newRow("lineedit tab") << LineEdit << int(Qt::Key_Tab) << false;
+    QTest::newRow("lineedit backtab") << LineEdit << int(Qt::Key_Backtab) << false;
+
     QTest::newRow("textedit enter") << TextEdit << int(Qt::Key_Enter) << true;
+    QTest::newRow("textedit return") << TextEdit << int(Qt::Key_Return) << true;
+    QTest::newRow("textedit tab") << TextEdit << int(Qt::Key_Tab) << true;
+    QTest::newRow("textedit backtab") << TextEdit << int(Qt::Key_Backtab) << false;
+
     QTest::newRow("plaintextedit enter") << PlainTextEdit << int(Qt::Key_Enter) << true;
     QTest::newRow("plaintextedit return") << PlainTextEdit << int(Qt::Key_Return) << true;
-    QTest::newRow("plaintextedit tab") << PlainTextEdit << int(Qt::Key_Tab) << false;
-    QTest::newRow("lineedit tab") << LineEdit << int(Qt::Key_Tab) << false;
+    QTest::newRow("plaintextedit tab") << PlainTextEdit << int(Qt::Key_Tab) << true;
+    QTest::newRow("plaintextedit backtab") << PlainTextEdit << int(Qt::Key_Backtab) << false;
 }
 
 void tst_QItemDelegate::enterKey()
@@ -1312,10 +1320,11 @@ void tst_QItemDelegate::enterKey()
     QTest::keyClick(editor, Qt::Key(key));
     QApplication::processEvents();
 
-    // The line edit has already been destroyed, so avoid that case.
-    if (widget == TextEdit || widget == PlainTextEdit) {
+    if (expectedFocus) {
         QVERIFY(!editor.isNull());
-        QCOMPARE(editor && editor->hasFocus(), expectedFocus);
+        QVERIFY(editor->hasFocus());
+    } else {
+        QTRY_VERIFY(editor.isNull()); // editor deletion happens via deleteLater
     }
 }
 

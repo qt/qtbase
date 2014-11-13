@@ -420,6 +420,29 @@ QAbstractItemDelegatePrivate::QAbstractItemDelegatePrivate()
 {
 }
 
+static bool editorHandlesKeyEvent(QWidget *editor, const QKeyEvent *event)
+{
+#ifndef QT_NO_TEXTEDIT
+    // do not filter enter / return / tab / backtab for QTextEdit or QPlainTextEdit
+    if (qobject_cast<QTextEdit *>(editor) || qobject_cast<QPlainTextEdit *>(editor)) {
+        switch (event->key()) {
+        case Qt::Key_Tab:
+        case Qt::Key_Backtab:
+        case Qt::Key_Enter:
+        case Qt::Key_Return:
+            return true;
+
+        default:
+            break;
+        }
+    }
+#endif // QT_NO_TEXTEDIT
+
+    Q_UNUSED(editor);
+    Q_UNUSED(event);
+    return false;
+}
+
 bool QAbstractItemDelegatePrivate::editorEventFilter(QObject *object, QEvent *event)
 {
     Q_Q(QAbstractItemDelegate);
@@ -428,7 +451,11 @@ bool QAbstractItemDelegatePrivate::editorEventFilter(QObject *object, QEvent *ev
     if (!editor)
         return false;
     if (event->type() == QEvent::KeyPress) {
-        switch (static_cast<QKeyEvent *>(event)->key()) {
+        QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
+        if (editorHandlesKeyEvent(editor, keyEvent))
+            return false;
+
+        switch (keyEvent->key()) {
         case Qt::Key_Tab:
             if (tryFixup(editor)) {
                 emit q->commitData(editor);
@@ -443,10 +470,6 @@ bool QAbstractItemDelegatePrivate::editorEventFilter(QObject *object, QEvent *ev
             return true;
         case Qt::Key_Enter:
         case Qt::Key_Return:
-#ifndef QT_NO_TEXTEDIT
-            if (qobject_cast<QTextEdit *>(editor) || qobject_cast<QPlainTextEdit *>(editor))
-                return false; // don't filter enter key events for QTextEdit or QPlainTextEdit
-#endif // QT_NO_TEXTEDIT
             // We want the editor to be able to process the key press
             // before committing the data (e.g. so it can do
             // validation/fixup of the input).

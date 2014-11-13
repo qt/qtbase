@@ -34,13 +34,18 @@
 #include <QStandardItemModel>
 #include <QLineEdit>
 #include <QComboBox>
+#include <QTextEdit>
+#include <QVBoxLayout>
 #include <QTest>
 #include <QSignalSpy>
+#include <QMetaType>
 
 class tst_QDataWidgetMapper: public QObject
 {
     Q_OBJECT
 private slots:
+    void initTestCase();
+
     void setModel();
     void navigate();
     void addMapping();
@@ -50,7 +55,11 @@ private slots:
     void mappedWidgetAt();
 
     void comboBox();
+
+    void textEditDoesntChangeFocusOnTab_qtbug3305();
 };
+
+Q_DECLARE_METATYPE(QAbstractItemDelegate::EndEditHint)
 
 static QStandardItemModel *testModel(QObject *parent = 0)
 {
@@ -62,6 +71,11 @@ static QStandardItemModel *testModel(QObject *parent = 0)
     }
 
     return model;
+}
+
+void tst_QDataWidgetMapper::initTestCase()
+{
+    qRegisterMetaType<QAbstractItemDelegate::EndEditHint>();
 }
 
 void tst_QDataWidgetMapper::setModel()
@@ -401,6 +415,64 @@ void tst_QDataWidgetMapper::mappedWidgetAt()
 
     QCOMPARE(mapper.mappedWidgetAt(2), (QWidget*)0);
     QCOMPARE(mapper.mappedWidgetAt(4242), static_cast<QWidget *>(&lineEdit2));
+}
+
+void tst_QDataWidgetMapper::textEditDoesntChangeFocusOnTab_qtbug3305()
+{
+    QDataWidgetMapper mapper;
+    QAbstractItemModel *model = testModel(&mapper);
+    mapper.setModel(model);
+
+    QSignalSpy closeEditorSpy(mapper.itemDelegate(), SIGNAL(closeEditor(QWidget*,QAbstractItemDelegate::EndEditHint)));
+    QVERIFY(closeEditorSpy.isValid());
+
+    QWidget container;
+    container.setLayout(new QVBoxLayout);
+
+    QLineEdit *lineEdit = new QLineEdit;
+    mapper.addMapping(lineEdit, 0);
+    container.layout()->addWidget(lineEdit);
+
+    QTextEdit *textEdit = new QTextEdit;
+    mapper.addMapping(textEdit, 1);
+    container.layout()->addWidget(textEdit);
+
+    lineEdit->setFocus();
+
+    container.show();
+
+    QApplication::setActiveWindow(&container);
+    QVERIFY(QTest::qWaitForWindowActive(&container));
+
+    int closeEditorSpyCount = 0;
+    const QString textEditContents = textEdit->toPlainText();
+
+    QCOMPARE(closeEditorSpy.count(), closeEditorSpyCount);
+    QVERIFY(lineEdit->hasFocus());
+    QVERIFY(!textEdit->hasFocus());
+
+    // this will generate a closeEditor for the tab key, and another for the focus out
+    QTest::keyClick(QApplication::focusWidget(), Qt::Key_Tab);
+    closeEditorSpyCount += 2;
+    QTRY_COMPARE(closeEditorSpy.count(), closeEditorSpyCount);
+
+    QTRY_VERIFY(textEdit->hasFocus());
+    QVERIFY(!lineEdit->hasFocus());
+
+    // now that the text edit is focused, a tab keypress will insert a tab, not change focus
+    QTest::keyClick(QApplication::focusWidget(), Qt::Key_Tab);
+    QTRY_COMPARE(closeEditorSpy.count(), closeEditorSpyCount);
+
+    QVERIFY(!lineEdit->hasFocus());
+    QVERIFY(textEdit->hasFocus());
+    QCOMPARE(textEdit->toPlainText(), QLatin1Char('\t') + textEditContents);
+
+    // now give focus back to the line edit and check closeEditor gets emitted
+    lineEdit->setFocus();
+    QTRY_VERIFY(lineEdit->hasFocus());
+    QVERIFY(!textEdit->hasFocus());
+    ++closeEditorSpyCount;
+    QCOMPARE(closeEditorSpy.count(), closeEditorSpyCount);
 }
 
 QTEST_MAIN(tst_QDataWidgetMapper)
