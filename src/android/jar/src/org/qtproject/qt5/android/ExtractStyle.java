@@ -49,6 +49,7 @@ import java.io.OutputStreamWriter;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -97,6 +98,8 @@ public class ExtractStyle {
 
     Class<?> styleableClass = getClass("android.R$styleable");
     Class<?> rippleDrawableClass = getClass("android.graphics.drawable.RippleDrawable");
+    Class<?> animatedStateListDrawableClass = getClass("android.graphics.drawable.AnimatedStateListDrawable");
+
     final int[] EMPTY_STATE_SET = {};
     final int[] ENABLED_STATE_SET = {android.R.attr.state_enabled};
     final int[] FOCUSED_STATE_SET = {android.R.attr.state_focused};
@@ -631,10 +634,9 @@ public class ExtractStyle {
                 JSONObject stateJson = new JSONObject();
                 final Drawable d =  (Drawable) StateListDrawable.class.getMethod("getStateDrawable", Integer.TYPE).invoke(stateList, i);
                 final int [] states = (int[]) StateListDrawable.class.getMethod("getStateSet", Integer.TYPE).invoke(stateList, i);
-                if (states == null)
-                    continue;
-                stateJson.put("states", getStatesList(states));
-                stateJson.put("drawable", getDrawable(d, filename+"__"+getStatesName(states), null));
+                if (states != null)
+                    stateJson.put("states", getStatesList(states));
+                stateJson.put("drawable", getDrawable(d, filename+"__" + (states != null ? getStatesName(states) : ("state_pos_" + i)), null));
                 array.put(stateJson);
             }
             json.put("type", "stateslist");
@@ -810,6 +812,67 @@ public class ExtractStyle {
         return json;
     }
 
+    private HashMap<Long, Long> getStateTransitions(Object sa) throws Exception
+    {
+        HashMap<Long, Long> transitions = new HashMap<Long, Long>();
+        final int sz = getAccessibleField(sa.getClass(), "mSize").getInt(sa);
+        long[] keys = (long[]) getAccessibleField(sa.getClass(), "mKeys").get(sa);
+        long[] values = (long[]) getAccessibleField(sa.getClass(), "mValues").get(sa);
+        for (int i = 0; i < sz; i++) {
+            transitions.put(keys[i], values[i]);
+        }
+        return transitions;
+    }
+
+    private HashMap<Integer, Integer> getStateIds(Object sa) throws Exception
+    {
+        HashMap<Integer, Integer> states = new HashMap<Integer, Integer>();
+        final int sz = getAccessibleField(sa.getClass(), "mSize").getInt(sa);
+        int[] keys = (int[]) getAccessibleField(sa.getClass(), "mKeys").get(sa);
+        int[] values = (int[]) getAccessibleField(sa.getClass(), "mValues").get(sa);
+        for (int i = 0; i < sz; i++) {
+            states.put(keys[i], values[i]);
+        }
+        return states;
+    }
+
+    private int findStateIndex(int id, HashMap<Integer, Integer> stateIds)
+    {
+        for (Map.Entry<Integer, Integer> s : stateIds.entrySet()) {
+            if (id == s.getValue())
+                return s.getKey();
+        }
+        return -1;
+    }
+
+    private JSONObject getAnimatedStateListDrawable(Object drawable, String filename)
+    {
+        JSONObject json = getStateListDrawable(drawable, filename);
+        try {
+            Object state = getAccessibleField(animatedStateListDrawableClass, "mState").get(drawable);
+
+            HashMap<Integer, Integer> stateIds = getStateIds(getAccessibleField(state.getClass(), "mStateIds").get(state));
+            HashMap<Long, Long> transitions = getStateTransitions(getAccessibleField(state.getClass(), "mTransitions").get(state));
+
+            for (Map.Entry<Long, Long> t : transitions.entrySet()) {
+                final int toState = findStateIndex(t.getKey().intValue(), stateIds);
+                final int fromState = findStateIndex((int) (t.getKey() >> 32), stateIds);
+
+                JSONObject transition = new JSONObject();
+                transition.put("from", fromState);
+                transition.put("to", toState);
+                transition.put("reverse", (t.getValue() >> 32) != 0);
+
+                JSONArray stateslist = json.getJSONArray("stateslist");
+                JSONObject stateobj = stateslist.getJSONObject(t.getValue().intValue());
+                stateobj.put("transition", transition);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return json;
+    }
+
     public JSONObject getDrawable(Object drawable, String filename, Rect padding)
     {
         if (drawable == null)
@@ -855,6 +918,10 @@ public class ExtractStyle {
 
                 if (rippleDrawableClass != null && rippleDrawableClass.isInstance(drawable))
                     return getRippleDrawable(drawable, filename, padding);
+
+                if (animatedStateListDrawableClass != null && animatedStateListDrawableClass.isInstance(drawable))
+                    return getAnimatedStateListDrawable(drawable, filename);
+
                 if (drawable instanceof ScaleDrawable)
                 {
                     return getDrawable(((ScaleDrawable)drawable).getDrawable(), filename, null);
