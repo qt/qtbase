@@ -431,59 +431,167 @@ static QOpenGLTexture::PixelFormat pixelFormatCompatibleWithInternalFormat(QOpen
         return QOpenGLTexture::NoSourceFormat;
 
     case QOpenGLTexture::R8_UNorm:
+        return QOpenGLTexture::Red;
+
     case QOpenGLTexture::RG8_UNorm:
+        return QOpenGLTexture::RG;
+
     case QOpenGLTexture::RGB8_UNorm:
+        return QOpenGLTexture::RGB;
+
     case QOpenGLTexture::RGBA8_UNorm:
+        return QOpenGLTexture::RGBA;
+
     case QOpenGLTexture::R16_UNorm:
+        return QOpenGLTexture::Red;
+
     case QOpenGLTexture::RG16_UNorm:
+        return QOpenGLTexture::RG;
+
     case QOpenGLTexture::RGB16_UNorm:
+        return QOpenGLTexture::RGB;
+
     case QOpenGLTexture::RGBA16_UNorm:
+        return QOpenGLTexture::RGBA;
+
     case QOpenGLTexture::R8_SNorm:
+        return QOpenGLTexture::Red;
+
     case QOpenGLTexture::RG8_SNorm:
+        return QOpenGLTexture::RG;
+
     case QOpenGLTexture::RGB8_SNorm:
+        return QOpenGLTexture::RGB;
+
     case QOpenGLTexture::RGBA8_SNorm:
+        return QOpenGLTexture::RGBA;
+
     case QOpenGLTexture::R16_SNorm:
+        return QOpenGLTexture::Red;
+
     case QOpenGLTexture::RG16_SNorm:
+        return QOpenGLTexture::RG;
+
     case QOpenGLTexture::RGB16_SNorm:
+        return QOpenGLTexture::RGB;
+
     case QOpenGLTexture::RGBA16_SNorm:
+        return QOpenGLTexture::RGBA;
+
     case QOpenGLTexture::R8U:
+        return QOpenGLTexture::Red_Integer;
+
     case QOpenGLTexture::RG8U:
+        return QOpenGLTexture::RG_Integer;
+
     case QOpenGLTexture::RGB8U:
+        return QOpenGLTexture::RGB_Integer;
+
     case QOpenGLTexture::RGBA8U:
+        return QOpenGLTexture::RGBA_Integer;
+
     case QOpenGLTexture::R16U:
+        return QOpenGLTexture::Red_Integer;
+
     case QOpenGLTexture::RG16U:
+        return QOpenGLTexture::RG_Integer;
+
     case QOpenGLTexture::RGB16U:
+        return QOpenGLTexture::RGB_Integer;
+
     case QOpenGLTexture::RGBA16U:
+        return QOpenGLTexture::RGBA_Integer;
+
     case QOpenGLTexture::R32U:
+        return QOpenGLTexture::Red_Integer;
+
     case QOpenGLTexture::RG32U:
+        return QOpenGLTexture::RG_Integer;
+
     case QOpenGLTexture::RGB32U:
+        return QOpenGLTexture::RGB_Integer;
+
     case QOpenGLTexture::RGBA32U:
+        return QOpenGLTexture::RGBA_Integer;
+
     case QOpenGLTexture::R8I:
+        return QOpenGLTexture::Red_Integer;
+
     case QOpenGLTexture::RG8I:
+        return QOpenGLTexture::RG_Integer;
+
     case QOpenGLTexture::RGB8I:
+        return QOpenGLTexture::RGB_Integer;
+
     case QOpenGLTexture::RGBA8I:
+        return QOpenGLTexture::RGBA_Integer;
+
     case QOpenGLTexture::R16I:
+        return QOpenGLTexture::Red_Integer;
+
     case QOpenGLTexture::RG16I:
+        return QOpenGLTexture::RG_Integer;
+
     case QOpenGLTexture::RGB16I:
+        return QOpenGLTexture::RGB_Integer;
+
     case QOpenGLTexture::RGBA16I:
+        return QOpenGLTexture::RGBA_Integer;
+
     case QOpenGLTexture::R32I:
+        return QOpenGLTexture::Red_Integer;
+
     case QOpenGLTexture::RG32I:
+        return QOpenGLTexture::RG_Integer;
+
     case QOpenGLTexture::RGB32I:
+        return QOpenGLTexture::RGB_Integer;
+
     case QOpenGLTexture::RGBA32I:
+        return QOpenGLTexture::RGBA_Integer;
+
     case QOpenGLTexture::R16F:
+        return QOpenGLTexture::Red;
+
     case QOpenGLTexture::RG16F:
+        return QOpenGLTexture::RG;
+
     case QOpenGLTexture::RGB16F:
+        return QOpenGLTexture::RGB;
+
     case QOpenGLTexture::RGBA16F:
+        return QOpenGLTexture::RGBA;
+
     case QOpenGLTexture::R32F:
+        return QOpenGLTexture::Red;
+
     case QOpenGLTexture::RG32F:
+        return QOpenGLTexture::RG;
+
     case QOpenGLTexture::RGB32F:
+        return QOpenGLTexture::RGB;
+
     case QOpenGLTexture::RGBA32F:
+        return QOpenGLTexture::RGBA;
+
     case QOpenGLTexture::RGB9E5:
+        return QOpenGLTexture::RGB;
+
     case QOpenGLTexture::RG11B10F:
+        return QOpenGLTexture::RGB;
+
     case QOpenGLTexture::RG3B2:
+        return QOpenGLTexture::RGB;
+
     case QOpenGLTexture::R5G6B5:
+        return QOpenGLTexture::RGB;
+
     case QOpenGLTexture::RGB5A1:
+        return QOpenGLTexture::RGBA;
+
     case QOpenGLTexture::RGBA4:
+        return QOpenGLTexture::RGBA;
+
     case QOpenGLTexture::RGB10A2:
         return QOpenGLTexture::RGBA;
 
@@ -530,9 +638,11 @@ static QOpenGLTexture::PixelFormat pixelFormatCompatibleWithInternalFormat(QOpen
 
     case QOpenGLTexture::RGB8_ETC2:
     case QOpenGLTexture::SRGB8_ETC2:
+        return QOpenGLTexture::RGB;
+
     case QOpenGLTexture::RGB8_PunchThrough_Alpha1_ETC2:
     case QOpenGLTexture::SRGB8_PunchThrough_Alpha1_ETC2:
-        return QOpenGLTexture::RGB;
+        return QOpenGLTexture::RGBA;
 
     case QOpenGLTexture::RGBA8_ETC2_EAC:
     case QOpenGLTexture::SRGB8_Alpha8_ETC2_EAC:
@@ -573,6 +683,8 @@ static QOpenGLTexture::PixelType pixelTypeCompatibleWithInternalFormat(QOpenGLTe
     case QOpenGLTexture::RG16_UNorm:
     case QOpenGLTexture::RGB16_UNorm:
     case QOpenGLTexture::RGBA16_UNorm:
+        return QOpenGLTexture::UInt8;
+
     case QOpenGLTexture::R8_SNorm:
     case QOpenGLTexture::RG8_SNorm:
     case QOpenGLTexture::RGB8_SNorm:
@@ -581,6 +693,8 @@ static QOpenGLTexture::PixelType pixelTypeCompatibleWithInternalFormat(QOpenGLTe
     case QOpenGLTexture::RG16_SNorm:
     case QOpenGLTexture::RGB16_SNorm:
     case QOpenGLTexture::RGBA16_SNorm:
+        return QOpenGLTexture::Int8;
+
     case QOpenGLTexture::R8U:
     case QOpenGLTexture::RG8U:
     case QOpenGLTexture::RGB8U:
@@ -593,6 +707,8 @@ static QOpenGLTexture::PixelType pixelTypeCompatibleWithInternalFormat(QOpenGLTe
     case QOpenGLTexture::RG32U:
     case QOpenGLTexture::RGB32U:
     case QOpenGLTexture::RGBA32U:
+        return QOpenGLTexture::UInt8;
+
     case QOpenGLTexture::R8I:
     case QOpenGLTexture::RG8I:
     case QOpenGLTexture::RGB8I:
@@ -605,28 +721,50 @@ static QOpenGLTexture::PixelType pixelTypeCompatibleWithInternalFormat(QOpenGLTe
     case QOpenGLTexture::RG32I:
     case QOpenGLTexture::RGB32I:
     case QOpenGLTexture::RGBA32I:
+        return QOpenGLTexture::Int8;
+
     case QOpenGLTexture::R16F:
     case QOpenGLTexture::RG16F:
     case QOpenGLTexture::RGB16F:
     case QOpenGLTexture::RGBA16F:
+        return QOpenGLTexture::Float16;
+
     case QOpenGLTexture::R32F:
     case QOpenGLTexture::RG32F:
     case QOpenGLTexture::RGB32F:
     case QOpenGLTexture::RGBA32F:
+        return QOpenGLTexture::Float32;
+
     case QOpenGLTexture::RGB9E5:
+        return QOpenGLTexture::UInt16_RGB5A1_Rev;
+
     case QOpenGLTexture::RG11B10F:
+        return QOpenGLTexture::UInt32_RG11B10F;
+
     case QOpenGLTexture::RG3B2:
+        return QOpenGLTexture::UInt8_RG3B2;
+
     case QOpenGLTexture::R5G6B5:
+        return QOpenGLTexture::UInt16_R5G6B5;
+
     case QOpenGLTexture::RGB5A1:
+        return QOpenGLTexture::UInt16_RGB5A1;
+
     case QOpenGLTexture::RGBA4:
+        return QOpenGLTexture::UInt16_RGBA4;
+
     case QOpenGLTexture::RGB10A2:
-        return QOpenGLTexture::UInt8;
+        return QOpenGLTexture::UInt32_RGB10A2;
 
     case QOpenGLTexture::D16:
+        return QOpenGLTexture::UInt16;
+
     case QOpenGLTexture::D24:
     case QOpenGLTexture::D32:
+        return QOpenGLTexture::UInt32;
+
     case QOpenGLTexture::D32F:
-        return QOpenGLTexture::UInt8;
+        return QOpenGLTexture::Float32;
 
     case QOpenGLTexture::D24S8:
         return QOpenGLTexture::UInt32_D24S8;
