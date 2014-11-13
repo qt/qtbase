@@ -750,29 +750,8 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
             mkt << endl;
             mkt << "DEL_FILE  = " << var("QMAKE_DEL_FILE") << endl;
             mkt << "MOVE      = " << var("QMAKE_MOVE") << endl << endl;
-            mkt << "PARSERS =";
-            if(!project->isEmpty("YACCSOURCES")) {
-                const ProStringList &yaccs = project->values("YACCSOURCES");
-                for (ProStringList::ConstIterator yit = yaccs.begin(); yit != yaccs.end(); ++yit) {
-                    QFileInfo fi(fileInfo((*yit).toQString()));
-                    mkt << " " << fi.path() << Option::dir_sep << fi.baseName()
-                        << Option::yacc_mod << Option::cpp_ext.first();
-                }
-            }
-            if(!project->isEmpty("LEXSOURCES")) {
-                const ProStringList &lexs = project->values("LEXSOURCES");
-                for (ProStringList::ConstIterator lit = lexs.begin(); lit != lexs.end(); ++lit) {
-                    QFileInfo fi(fileInfo((*lit).toQString()));
-                    mkt << " " << fi.path() << Option::dir_sep << fi.baseName()
-                        << Option::lex_mod << Option::cpp_ext.first();
-                }
-            }
-            mkt << "\n";
-            mkt << "preprocess: $(PARSERS) compilers\n";
-            mkt << "clean preprocess_clean: parser_clean compiler_clean\n\n";
-            mkt << "parser_clean:\n";
-            if(!project->isEmpty("YACCSOURCES") || !project->isEmpty("LEXSOURCES"))
-                mkt << "\t-rm -f $(PARSERS)\n";
+            mkt << "preprocess: compilers\n";
+            mkt << "clean preprocess_clean: compiler_clean\n\n";
             writeExtraTargets(mkt);
             if(!project->isEmpty("QMAKE_EXTRA_COMPILERS")) {
                 mkt << "compilers:";
