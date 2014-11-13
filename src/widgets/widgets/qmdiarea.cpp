@@ -1511,7 +1511,7 @@ void QMdiAreaPrivate::highlightNextSubWindow(int increaseFactor)
 
 #ifndef QT_NO_RUBBERBAND
     if (!rubberBand) {
-        rubberBand = new QRubberBand(QRubberBand::Rectangle, viewport);
+        rubberBand = new QRubberBand(QRubberBand::Rectangle, q);
         // For accessibility to identify this special widget.
         rubberBand->setObjectName(QLatin1String("qt_rubberband"));
         rubberBand->setWindowFlags(rubberBand->windowFlags() | Qt::WindowStaysOnTopHint);
@@ -1526,6 +1526,20 @@ void QMdiAreaPrivate::highlightNextSubWindow(int increaseFactor)
 
     indexToHighlighted = childWindows.indexOf(highlight);
     Q_ASSERT(indexToHighlighted >= 0);
+}
+
+void QMdiAreaPrivate::showRubberBandFor(QMdiSubWindow *subWindow)
+{
+    if (!subWindow || !rubberBand)
+        return;
+
+    if (viewMode == QMdiArea::TabbedView)
+        rubberBand->setGeometry(tabBar->tabRect(childWindows.indexOf(subWindow)));
+    else
+        rubberBand->setGeometry(subWindow->geometry());
+
+    rubberBand->raise();
+    rubberBand->show();
 }
 
 /*!

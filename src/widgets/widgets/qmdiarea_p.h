@@ -248,14 +248,7 @@ public:
     }
 
 #ifndef QT_NO_RUBBERBAND
-    inline void showRubberBandFor(QMdiSubWindow *subWindow)
-    {
-        if (!subWindow || !rubberBand)
-            return;
-        rubberBand->setGeometry(subWindow->geometry());
-        rubberBand->raise();
-        rubberBand->show();
-    }
+    void showRubberBandFor(QMdiSubWindow *subWindow);
 
     inline void hideRubberBand()
     {
