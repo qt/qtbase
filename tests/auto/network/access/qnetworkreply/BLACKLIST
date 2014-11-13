@@ -7,3 +7,4 @@ osx
 [SslHandshakeFailedError]
 osx
 [httpAbort]
+[backgroundRequestInterruption:ftp, bg, nobg]
