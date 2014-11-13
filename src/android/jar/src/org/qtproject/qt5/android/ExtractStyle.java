@@ -99,6 +99,7 @@ public class ExtractStyle {
     Class<?> styleableClass = getClass("android.R$styleable");
     Class<?> rippleDrawableClass = getClass("android.graphics.drawable.RippleDrawable");
     Class<?> animatedStateListDrawableClass = getClass("android.graphics.drawable.AnimatedStateListDrawable");
+    Class<?> vectorDrawableClass = getClass("android.graphics.drawable.VectorDrawable");
 
     final int[] EMPTY_STATE_SET = {};
     final int[] ENABLED_STATE_SET = {android.R.attr.state_enabled};
@@ -408,6 +409,24 @@ public class ExtractStyle {
             e.printStackTrace();
         }
         return null;
+    }
+
+    Field tryGetAccessibleField(Class<?> clazz, String fieldName) {
+        if (clazz == null)
+            return null;
+
+        try {
+            Field f = clazz.getDeclaredField(fieldName);
+            f.setAccessible(true);
+            return f;
+        } catch (Exception e) {
+            for (Class<?> c : clazz.getInterfaces()) {
+                Field f = tryGetAccessibleField(c, fieldName);
+                if (f != null)
+                    return f;
+            }
+        }
+        return tryGetAccessibleField(clazz.getSuperclass(), fieldName);
     }
 
     int getField(Class<?> clazz, String fieldName)
@@ -873,6 +892,95 @@ public class ExtractStyle {
         return json;
     }
 
+    private JSONObject getVPath(Object path) throws Exception
+    {
+        JSONObject json = new JSONObject();
+        final Class<?> pathClass = path.getClass();
+        json.put("type", "path");
+        json.put("name", tryGetAccessibleField(pathClass, "mPathName").get(path));
+        Object[] mNodes = (Object[]) tryGetAccessibleField(pathClass, "mNodes").get(path);
+        JSONArray nodes = new JSONArray();
+        for (Object n: mNodes) {
+            JSONObject node = new JSONObject();
+            node.put("type", String.valueOf(getAccessibleField(n.getClass(), "mType").getChar(n)));
+            node.put("params", getJsonArray((float[])getAccessibleField(n.getClass(), "mParams").get(n)));
+            nodes.put(node);
+        }
+        json.put("nodes", nodes);
+        json.put("isClip", (Boolean) pathClass.getMethod("isClipPath").invoke(path));
+
+        if (tryGetAccessibleField(pathClass, "mStrokeColor") == null)
+            return json; // not VFullPath
+
+        json.put("strokeColor", getAccessibleField(pathClass, "mStrokeColor").getInt(path));
+        json.put("strokeWidth", getAccessibleField(pathClass, "mStrokeWidth").getFloat(path));
+        json.put("fillColor", getAccessibleField(pathClass, "mFillColor").getInt(path));
+        json.put("strokeAlpha", getAccessibleField(pathClass, "mStrokeAlpha").getFloat(path));
+        json.put("fillRule", getAccessibleField(pathClass, "mFillRule").getInt(path));
+        json.put("fillAlpha", getAccessibleField(pathClass, "mFillAlpha").getFloat(path));
+        json.put("trimPathStart", getAccessibleField(pathClass, "mTrimPathStart").getFloat(path));
+        json.put("trimPathEnd", getAccessibleField(pathClass, "mTrimPathEnd").getFloat(path));
+        json.put("trimPathOffset", getAccessibleField(pathClass, "mTrimPathOffset").getFloat(path));
+        json.put("strokeLineCap", (Paint.Cap) getAccessibleField(pathClass, "mStrokeLineCap").get(path));
+        json.put("strokeLineJoin", (Paint.Join) getAccessibleField(pathClass, "mStrokeLineJoin").get(path));
+        json.put("strokeMiterlimit", getAccessibleField(pathClass, "mStrokeMiterlimit").getFloat(path));
+        return json;
+    }
+
+    @SuppressWarnings("unchecked")
+    private JSONObject getVGroup(Object group) throws Exception
+    {
+        JSONObject json = new JSONObject();
+        json.put("type", "group");
+        final Class<?> groupClass = group.getClass();
+        json.put("name", getAccessibleField(groupClass, "mGroupName").get(group));
+        json.put("rotate", getAccessibleField(groupClass, "mRotate").getFloat(group));
+        json.put("pivotX", getAccessibleField(groupClass, "mPivotX").getFloat(group));
+        json.put("pivotY", getAccessibleField(groupClass, "mPivotY").getFloat(group));
+        json.put("scaleX", getAccessibleField(groupClass, "mScaleX").getFloat(group));
+        json.put("scaleY", getAccessibleField(groupClass, "mScaleY").getFloat(group));
+        json.put("translateX", getAccessibleField(groupClass, "mTranslateX").getFloat(group));
+        json.put("translateY", getAccessibleField(groupClass, "mTranslateY").getFloat(group));
+
+        ArrayList<Object> mChildren = (ArrayList<Object>) getAccessibleField(groupClass, "mChildren").get(group);
+        JSONArray children = new JSONArray();
+        for (Object c: mChildren) {
+            if (groupClass.isInstance(c))
+                children.put(getVGroup(c));
+            else
+                children.put(getVPath(c));
+        }
+        json.put("children", children);
+        return json;
+    }
+
+    private JSONObject getVectorDrawable(Object drawable, String filename, Rect padding)
+    {
+        JSONObject json = new JSONObject();
+        try {
+            json.put("type", "vector");
+            final Object state = getAccessibleField(vectorDrawableClass, "mVectorState").get(drawable);
+            final Class<?> stateClass = state.getClass();
+            final ColorStateList mTint = (ColorStateList) getAccessibleField(stateClass, "mTint").get(state);
+            if (mTint != null) {
+                json.put("tintList", getColorStateList(mTint));
+                json.put("tintMode", (PorterDuff.Mode) getAccessibleField(stateClass, "mTintMode").get(state));
+            }
+            final Object mVPathRenderer = getAccessibleField(stateClass, "mVPathRenderer").get(state);
+            final Class<?> VPathRendererClass = mVPathRenderer.getClass();
+            json.put("baseWidth", getAccessibleField(VPathRendererClass, "mBaseWidth").getFloat(mVPathRenderer));
+            json.put("baseHeight", getAccessibleField(VPathRendererClass, "mBaseHeight").getFloat(mVPathRenderer));
+            json.put("viewportWidth", getAccessibleField(VPathRendererClass, "mViewportWidth").getFloat(mVPathRenderer));
+            json.put("viewportHeight", getAccessibleField(VPathRendererClass, "mViewportHeight").getFloat(mVPathRenderer));
+            json.put("rootAlpha", getAccessibleField(VPathRendererClass, "mRootAlpha").getInt(mVPathRenderer));
+            json.put("rootName", getAccessibleField(VPathRendererClass, "mRootName").get(mVPathRenderer));
+            json.put("rootGroup", getVGroup(getAccessibleField(mVPathRenderer.getClass(), "mRootGroup").get(mVPathRenderer)));
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+        return json;
+    }
+
     public JSONObject getDrawable(Object drawable, String filename, Rect padding)
     {
         if (drawable == null)
@@ -921,6 +1029,9 @@ public class ExtractStyle {
 
                 if (animatedStateListDrawableClass != null && animatedStateListDrawableClass.isInstance(drawable))
                     return getAnimatedStateListDrawable(drawable, filename);
+
+                if (vectorDrawableClass != null && vectorDrawableClass.isInstance(drawable))
+                    return getVectorDrawable(drawable, filename, padding);
 
                 if (drawable instanceof ScaleDrawable)
                 {
