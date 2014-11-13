@@ -167,7 +167,7 @@ UnixMakefileGenerator::writeSubTargets(QTextStream &t, QList<MakefileGenerator::
 void
 UnixMakefileGenerator::writeMakeParts(QTextStream &t)
 {
-    QString deps = fileFixify(Option::output.fileName()), target_deps, prl;
+    QString deps = fileFixify(Option::output.fileName()), target_deps;
     bool do_incremental = (project->isActiveConfig("incremental") &&
                            !project->values("QMAKE_INCREMENTAL").isEmpty() &&
                            (!project->values("QMAKE_APP_FLAG").isEmpty() ||

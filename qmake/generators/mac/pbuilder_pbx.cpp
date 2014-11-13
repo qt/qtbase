@@ -950,7 +950,6 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
                             libdirs += path;
                     }
                     library = fileFixify(library);
-                    QString filetype = xcodeFiletypeForFilename(library);
                     QString key = keyFor(library);
                     if (!project->values("QMAKE_PBX_LIBRARIES").contains(key)) {
                         bool is_frmwrk = (library.endsWith(".framework"));
@@ -1224,8 +1223,6 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
         } else {
             t << "\t\t\t" << writeSettings("explicitFileType", "compiled.mach-o.executable") << ";\n";
         }
-        QString app = (!project->isEmpty("DESTDIR") ? project->first("DESTDIR") + project->first("QMAKE_ORIG_TARGET") :
-                       qmake_getpwd()) + Option::dir_sep + targ;
         t << "\t\t\t" << writeSettings("path", escapeFilePath(targ)) << ";\n";
     } else {
         ProString lib = project->first("QMAKE_ORIG_TARGET");

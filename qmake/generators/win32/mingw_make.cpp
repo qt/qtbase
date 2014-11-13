@@ -250,8 +250,6 @@ void MingwMakefileGenerator::init()
         project->values("QMAKE_LIBS") += escapeFilePaths(project->values("RES_FILE"));
     }
 
-    ProStringList &configs = project->values("CONFIG");
-
     if (project->isActiveConfig("dll")) {
         QString destDir = "";
         if(!project->first("DESTDIR").isEmpty())
