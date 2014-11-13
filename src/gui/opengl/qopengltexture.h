@@ -330,6 +330,28 @@ public:
         DirectionR = 0x8072  // GL_TEXTURE_WRAP_R
     };
 
+    // Features
+    enum Feature {
+        ImmutableStorage            = 0x00000001,
+        ImmutableMultisampleStorage = 0x00000002,
+        TextureRectangle            = 0x00000004,
+        TextureArrays               = 0x00000008,
+        Texture3D                   = 0x00000010,
+        TextureMultisample          = 0x00000020,
+        TextureBuffer               = 0x00000040,
+        TextureCubeMapArrays        = 0x00000080,
+        Swizzle                     = 0x00000100,
+        StencilTexturing            = 0x00000200,
+        AnisotropicFiltering        = 0x00000400,
+        NPOTTextures                = 0x00000800,
+        NPOTTextureRepeat           = 0x00001000,
+        Texture1D                   = 0x00002000,
+#ifndef Q_QDOC
+        MaxFeatureFlag              = 0x00004000
+#endif
+    };
+    Q_DECLARE_FLAGS(Features, Feature)
+
     explicit QOpenGLTexture(Target target);
     explicit QOpenGLTexture(const QImage& image, MipMapGeneration genMipMaps = GenerateMipMaps);
     ~QOpenGLTexture();
@@ -432,28 +454,6 @@ public:
 
     // Helpful overloads for setData
     void setData(const QImage& image, MipMapGeneration genMipMaps = GenerateMipMaps);
-
-    // Features
-    enum Feature {
-        ImmutableStorage            = 0x00000001,
-        ImmutableMultisampleStorage = 0x00000002,
-        TextureRectangle            = 0x00000004,
-        TextureArrays               = 0x00000008,
-        Texture3D                   = 0x00000010,
-        TextureMultisample          = 0x00000020,
-        TextureBuffer               = 0x00000040,
-        TextureCubeMapArrays        = 0x00000080,
-        Swizzle                     = 0x00000100,
-        StencilTexturing            = 0x00000200,
-        AnisotropicFiltering        = 0x00000400,
-        NPOTTextures                = 0x00000800,
-        NPOTTextureRepeat           = 0x00001000,
-        Texture1D                   = 0x00002000,
-#ifndef Q_QDOC
-        MaxFeatureFlag              = 0x00004000
-#endif
-    };
-    Q_DECLARE_FLAGS(Features, Feature)
 
     static bool hasFeature(Feature feature);
 
