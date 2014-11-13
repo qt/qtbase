@@ -963,7 +963,8 @@ void QWindowsXPStylePrivate::drawBackgroundThruNativeBuffer(XPThemeData &themeDa
 
     QImage img;
     if (!haveCachedPixmap) { // If the pixmap is not cached, generate it! -------------------------
-        buffer(w, h); // Ensure a buffer of at least (w, h) in size
+        if (!buffer(w, h)) // Ensure a buffer of at least (w, h) in size
+            return;
         HDC dc = bufferHDC();
 
         // Clear the buffer
