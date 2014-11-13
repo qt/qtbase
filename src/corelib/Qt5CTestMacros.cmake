@@ -55,6 +55,7 @@ foreach(module ${CMAKE_MODULES_UNDER_TEST})
 endforeach()
 
 macro(expect_pass _dir)
+  cmake_parse_arguments(_ARGS "" "BINARY" "" ${ARGN})
   string(REPLACE "(" "_" testname "${_dir}")
   string(REPLACE ")" "_" testname "${testname}")
   add_test(${testname} ${CMAKE_CTEST_COMMAND}
@@ -66,6 +67,7 @@ macro(expect_pass _dir)
     --build-makeprogram ${CMAKE_MAKE_PROGRAM}
     --build-project ${_dir}
     --build-options "-DCMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}" ${BUILD_OPTIONS_LIST}
+    --test-command ${_ARGS_BINARY}
   )
 endmacro()
 

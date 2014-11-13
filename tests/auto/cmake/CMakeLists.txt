@@ -74,6 +74,7 @@ if (NOT WIN32 OR (WIN32 AND NOT CMAKE_VERSION VERSION_LESS 2.8.11))
     # Broken on windows on earlier CMake versions.
     # http://public.kitware.com/Bug/view.php?id=13392
     expect_pass(test_add_resources_delayed_file)
+    expect_pass(test_add_binary_resources_delayed_file BINARY test_add_binary_resources_delayed_file)
 endif()
 expect_pass(test_private_includes)
 expect_pass(test_testlib_definitions)
