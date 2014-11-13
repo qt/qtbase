@@ -996,8 +996,6 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
         }
         t << "-$(DEL_FILE) " << precomp_files.join(' ') << "\n\t";
     }
-    if(!project->isEmpty("IMAGES"))
-        t << varGlue("QMAKE_IMAGE_COLLECTION", "\t-$(DEL_FILE) ", " ", "") << "\n\t";
     if(src_incremental)
         t << "-$(DEL_FILE) $(INCREMENTAL_OBJECTS)\n\t";
     t << varGlue("QMAKE_CLEAN","-$(DEL_FILE) "," ","\n\t")

@@ -278,10 +278,6 @@ QString NmakeMakefileGenerator::defaultInstall(const QString &t)
 QStringList &NmakeMakefileGenerator::findDependencies(const QString &file)
 {
     QStringList &aList = MakefileGenerator::findDependencies(file);
-    // Note: The QMAKE_IMAGE_COLLECTION file have all images
-    // as dependency, so don't add precompiled header then
-    if (file == project->first("QMAKE_IMAGE_COLLECTION"))
-        return aList;
     for(QStringList::Iterator it = Option::cpp_ext.begin(); it != Option::cpp_ext.end(); ++it) {
         if(file.endsWith(*it)) {
             if(!precompObj.isEmpty() && !aList.contains(precompObj))

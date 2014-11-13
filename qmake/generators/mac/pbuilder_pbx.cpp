@@ -750,7 +750,6 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
             mkt << endl;
             mkt << "DEL_FILE  = " << var("QMAKE_DEL_FILE") << endl;
             mkt << "MOVE      = " << var("QMAKE_MOVE") << endl << endl;
-            mkt << "IMAGES = " << varList("QMAKE_IMAGE_COLLECTION") << endl;
             mkt << "PARSERS =";
             if(!project->isEmpty("YACCSOURCES")) {
                 const ProStringList &yaccs = project->values("YACCSOURCES");

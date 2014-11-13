@@ -378,10 +378,7 @@ QStringList
 &UnixMakefileGenerator::findDependencies(const QString &file)
 {
     QStringList &ret = MakefileGenerator::findDependencies(file);
-    // Note: The QMAKE_IMAGE_COLLECTION file have all images
-    // as dependency, so don't add precompiled header then
-    if(doPrecompiledHeaders() && !project->isEmpty("PRECOMPILED_HEADER")
-       && file != project->first("QMAKE_IMAGE_COLLECTION")) {
+    if (doPrecompiledHeaders() && !project->isEmpty("PRECOMPILED_HEADER")) {
         QString header_prefix;
         if(!project->isEmpty("PRECOMPILED_DIR"))
             header_prefix = project->first("PRECOMPILED_DIR").toQString();

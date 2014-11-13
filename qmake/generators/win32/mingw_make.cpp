@@ -420,10 +420,7 @@ void MingwMakefileGenerator::writeRcFilePart(QTextStream &t)
 QStringList &MingwMakefileGenerator::findDependencies(const QString &file)
 {
     QStringList &aList = MakefileGenerator::findDependencies(file);
-    // Note: The QMAKE_IMAGE_COLLECTION file have all images
-    // as dependency, so don't add precompiled header then
-    if (file == project->first("QMAKE_IMAGE_COLLECTION")
-        || preCompHeaderOut.isEmpty())
+    if (preCompHeaderOut.isEmpty())
         return aList;
     for (QStringList::Iterator it = Option::c_ext.begin(); it != Option::c_ext.end(); ++it) {
         if (file.endsWith(*it)) {

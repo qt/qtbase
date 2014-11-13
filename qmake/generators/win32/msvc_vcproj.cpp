@@ -1430,7 +1430,6 @@ void VcprojGenerator::initGeneratedFiles()
     vcProject.GeneratedFiles.addFiles(project->values("IDLSOURCES"));
     if (project->values("RC_FILE").isEmpty())
         vcProject.GeneratedFiles.addFiles(project->values("RES_FILE"));
-    vcProject.GeneratedFiles.addFiles(project->values("QMAKE_IMAGE_COLLECTION"));   // compat
     if(!extraCompilerOutputs.isEmpty())
         vcProject.GeneratedFiles.addFiles(extraCompilerOutputs.keys());
 
@@ -1520,7 +1519,6 @@ void VcprojGenerator::initResourceFiles()
     // You may look again --------------------------------------------
 
     vcProject.ResourceFiles.addFiles(project->values("RESOURCES"));
-    vcProject.ResourceFiles.addFiles(project->values("IMAGES"));
 
     vcProject.ResourceFiles.Project = this;
     vcProject.ResourceFiles.Config = &(vcProject.Configuration);
@@ -1534,9 +1532,7 @@ void VcprojGenerator::initExtraCompilerOutputs()
                  << "GENERATED_SOURCES"
                  << "HEADERS"
                  << "IDLSOURCES"
-                 << "IMAGES"
                  << "LEXSOURCES"
-                 << "QMAKE_IMAGE_COLLECTION"
                  << "RC_FILE"
                  << "RESOURCES"
                  << "RES_FILE"
