@@ -206,7 +206,6 @@ private slots:
     void enabledPropagation();
     void ignoreKeyEventsWhenDisabled_QTBUG27417();
     void properTabHandlingWhenDisabled_QTBUG27417();
-    void popupEnterLeave();
 #ifndef QT_NO_DRAGANDDROP
     void acceptDropsPropagation();
 #endif
@@ -4999,51 +4998,6 @@ bool verifyColor(QWidget &child, const QRegion &region, const QColor &color, uns
         }
     }
     return true;
-}
-
-void tst_QWidget::popupEnterLeave()
-{
-    QWidget parent;
-    parent.setWindowFlags(Qt::FramelessWindowHint);
-    parent.setGeometry(10, 10, 200, 100);
-
-    ColorWidget alien(&parent, Qt::Widget, Qt::black);
-    alien.setGeometry(0, 0, 10, 10);
-    alien.show();
-
-    parent.show();
-
-    QVERIFY(QTest::qWaitForWindowExposed(&parent));
-
-    QWindowSystemInterface::handleMouseEvent(parent.windowHandle(), QPointF(5, 5), QPointF(), Qt::LeftButton, Qt::NoModifier);
-    QTest::qWait(100);
-    QWindowSystemInterface::handleMouseEvent(parent.windowHandle(), QPointF(5, 5), QPointF(), Qt::NoButton, Qt::NoModifier);
-    QTest::qWait(100);
-
-    QStringList wordList;
-    wordList << "alpha" << "omega" << "omicron" << "zeta";
-
-    QLineEdit popup(&parent);
-
-    QCompleter completer(wordList);
-    completer.setCaseSensitivity(Qt::CaseInsensitive);
-    popup.setCompleter(&completer);
-    popup.setWindowFlags(Qt::Popup);
-    popup.setGeometry(20, 20, 80, 20);
-
-    popup.show();
-
-    QVERIFY(QTest::qWaitForWindowExposed(&popup));
-
-    QTest::qWait(100);
-
-    QWindowSystemInterface::handleMouseEvent(popup.windowHandle(), QPointF(-5, -5), QPointF(), Qt::LeftButton, Qt::NoModifier);
-    QTest::qWait(100);
-    QWindowSystemInterface::handleMouseEvent(popup.windowHandle(), QPointF(-5, -5), QPointF(), Qt::NoButton, Qt::NoModifier);
-    QTest::qWait(100);
-
-    QTest::qWait(1000);
-    QVERIFY(!popup.underMouse());
 }
 
 void tst_QWidget::moveChild_data()
