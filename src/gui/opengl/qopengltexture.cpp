@@ -2751,7 +2751,7 @@ void QOpenGLTexture::setData(int mipLevel, int layer, CubeMapFace cubeFace,
     Q_ASSERT(d->textureId);
     if (!isStorageAllocated()) {
         qWarning("Cannot set data on a texture that does not have storage allocated.\n"
-                 "To do so call allocate() before this function");
+                 "To do so call allocateStorage() before this function");
         return;
     }
     d->setData(mipLevel, layer, cubeFace, sourceFormat, sourceType, data, options);
@@ -2809,7 +2809,7 @@ void QOpenGLTexture::setData(int mipLevel, int layer, CubeMapFace cubeFace,
     Q_ASSERT(d->textureId);
     if (!isStorageAllocated()) {
         qWarning("Cannot set data on a texture that does not have storage allocated.\n"
-                 "To do so call allocate() before this function");
+                 "To do so call allocateStorage() before this function");
         return;
     }
     d->setData(mipLevel, layer, cubeFace, sourceFormat, sourceType, data, options);
@@ -2901,7 +2901,7 @@ void QOpenGLTexture::setCompressedData(int mipLevel, int layer, CubeMapFace cube
     Q_ASSERT(d->textureId);
     if (!isStorageAllocated()) {
         qWarning("Cannot set data on a texture that does not have storage allocated.\n"
-                 "To do so call allocate() before this function");
+                 "To do so call allocateStorage() before this function");
         return;
     }
     d->setCompressedData(mipLevel, layer, cubeFace, dataSize, data, options);
@@ -2952,7 +2952,7 @@ void QOpenGLTexture::setCompressedData(int mipLevel, int layer, CubeMapFace cube
     Q_ASSERT(d->textureId);
     if (!isStorageAllocated()) {
         qWarning("Cannot set data on a texture that does not have storage allocated.\n"
-                 "To do so call allocate() before this function");
+                 "To do so call allocateStorage() before this function");
         return;
     }
     d->setCompressedData(mipLevel, layer, cubeFace, dataSize, data, options);
