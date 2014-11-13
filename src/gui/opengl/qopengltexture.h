@@ -88,29 +88,6 @@ public:
         DontResetTextureUnit
     };
 
-    explicit QOpenGLTexture(Target target);
-    explicit QOpenGLTexture(const QImage& image, MipMapGeneration genMipMaps = GenerateMipMaps);
-    ~QOpenGLTexture();
-
-    Target target() const;
-
-    // Creation and destruction
-    bool create();
-    void destroy();
-    bool isCreated() const;
-    GLuint textureId() const;
-
-    // Binding and releasing
-    void bind();
-    void bind(uint unit, TextureUnitReset reset = DontResetTextureUnit);
-    void release();
-    void release(uint unit, TextureUnitReset reset = DontResetTextureUnit);
-
-    bool isBound() const;
-    bool isBound(uint unit);
-    static GLuint boundTextureId(BindingTarget target);
-    static GLuint boundTextureId(uint unit, BindingTarget target);
-
     enum TextureFormat {
         NoFormat               = 0,         // GL_NONE
 
@@ -254,32 +231,6 @@ public:
     };
 #endif
 
-    // Storage allocation
-    void setFormat(TextureFormat format);
-    TextureFormat format() const;
-    void setSize(int width, int height = 1, int depth = 1);
-    int width() const;
-    int height() const;
-    int depth() const;
-    void setMipLevels(int levels);
-    int mipLevels() const;
-    int maximumMipLevels() const;
-    void setLayers(int layers);
-    int layers() const;
-    int faces() const;
-    void setSamples(int samples);
-    int samples() const;
-    void setFixedSamplePositions(bool fixed);
-    bool isFixedSamplePositions() const;
-    void allocateStorage();
-    bool isStorageAllocated() const;
-
-    QOpenGLTexture *createTextureView(Target target,
-                                      TextureFormat viewFormat,
-                                      int minimumMipmapLevel, int maximumMipmapLevel,
-                                      int minimumLayer, int maximumLayer) const;
-    bool isTextureView() const;
-
     enum CubeMapFace {
         CubeMapPositiveX = 0x8515,  // GL_TEXTURE_CUBE_MAP_POSITIVE_X
         CubeMapNegativeX = 0x8516,  // GL_TEXTURE_CUBE_MAP_NEGATIVE_X
@@ -339,6 +290,84 @@ public:
         UInt32_D24S8       = 0x84FA,    // GL_UNSIGNED_INT_24_8
         Float32_D32_UInt32_S8_X24 = 0x8DAD // GL_FLOAT_32_UNSIGNED_INT_24_8_REV
     };
+
+    enum SwizzleComponent {
+        SwizzleRed   = 0x8E42,  // GL_TEXTURE_SWIZZLE_R
+        SwizzleGreen = 0x8E43,  // GL_TEXTURE_SWIZZLE_G
+        SwizzleBlue  = 0x8E44,  // GL_TEXTURE_SWIZZLE_B
+        SwizzleAlpha = 0x8E45   // GL_TEXTURE_SWIZZLE_A
+    };
+
+    enum SwizzleValue {
+        RedValue   = 0x1903, // GL_RED
+        GreenValue = 0x1904, // GL_GREEN
+        BlueValue  = 0x1905, // GL_BLUE
+        AlphaValue = 0x1906, // GL_ALPHA
+        ZeroValue  = 0,      // GL_ZERO
+        OneValue   = 1       // GL_ONE
+    };
+
+    enum WrapMode {
+        Repeat         = 0x2901, // GL_REPEAT
+        MirroredRepeat = 0x8370, // GL_MIRRORED_REPEAT
+        ClampToEdge    = 0x812F, // GL_CLAMP_TO_EDGE
+        ClampToBorder  = 0x812D  // GL_CLAMP_TO_BORDER
+    };
+
+    enum CoordinateDirection {
+        DirectionS = 0x2802, // GL_TEXTURE_WRAP_S
+        DirectionT = 0x2803, // GL_TEXTURE_WRAP_T
+        DirectionR = 0x8072  // GL_TEXTURE_WRAP_R
+    };
+
+    explicit QOpenGLTexture(Target target);
+    explicit QOpenGLTexture(const QImage& image, MipMapGeneration genMipMaps = GenerateMipMaps);
+    ~QOpenGLTexture();
+
+    Target target() const;
+
+    // Creation and destruction
+    bool create();
+    void destroy();
+    bool isCreated() const;
+    GLuint textureId() const;
+
+    // Binding and releasing
+    void bind();
+    void bind(uint unit, TextureUnitReset reset = DontResetTextureUnit);
+    void release();
+    void release(uint unit, TextureUnitReset reset = DontResetTextureUnit);
+
+    bool isBound() const;
+    bool isBound(uint unit);
+    static GLuint boundTextureId(BindingTarget target);
+    static GLuint boundTextureId(uint unit, BindingTarget target);
+
+    // Storage allocation
+    void setFormat(TextureFormat format);
+    TextureFormat format() const;
+    void setSize(int width, int height = 1, int depth = 1);
+    int width() const;
+    int height() const;
+    int depth() const;
+    void setMipLevels(int levels);
+    int mipLevels() const;
+    int maximumMipLevels() const;
+    void setLayers(int layers);
+    int layers() const;
+    int faces() const;
+    void setSamples(int samples);
+    int samples() const;
+    void setFixedSamplePositions(bool fixed);
+    bool isFixedSamplePositions() const;
+    void allocateStorage();
+    bool isStorageAllocated() const;
+
+    QOpenGLTexture *createTextureView(Target target,
+                                      TextureFormat viewFormat,
+                                      int minimumMipmapLevel, int maximumMipmapLevel,
+                                      int minimumLayer, int maximumLayer) const;
+    bool isTextureView() const;
 
     // Pixel transfer
     // ### Qt 6: remove the non-const void * overloads
@@ -431,22 +460,6 @@ public:
     void generateMipMaps();
     void generateMipMaps(int baseLevel, bool resetBaseLevel = true);
 
-    enum SwizzleComponent {
-        SwizzleRed   = 0x8E42,  // GL_TEXTURE_SWIZZLE_R
-        SwizzleGreen = 0x8E43,  // GL_TEXTURE_SWIZZLE_G
-        SwizzleBlue  = 0x8E44,  // GL_TEXTURE_SWIZZLE_B
-        SwizzleAlpha = 0x8E45   // GL_TEXTURE_SWIZZLE_A
-    };
-
-    enum SwizzleValue {
-        RedValue   = 0x1903, // GL_RED
-        GreenValue = 0x1904, // GL_GREEN
-        BlueValue  = 0x1905, // GL_BLUE
-        AlphaValue = 0x1906, // GL_ALPHA
-        ZeroValue  = 0,      // GL_ZERO
-        OneValue   = 1       // GL_ONE
-    };
-
     void setSwizzleMask(SwizzleComponent component, SwizzleValue value);
     void setSwizzleMask(SwizzleValue r, SwizzleValue g,
                         SwizzleValue b, SwizzleValue a);
@@ -479,19 +492,6 @@ public:
     QPair<Filter, Filter> minMagFilters() const;
     void setMaximumAnisotropy(float anisotropy);
     float maximumAnisotropy() const;
-
-    enum WrapMode {
-        Repeat         = 0x2901, // GL_REPEAT
-        MirroredRepeat = 0x8370, // GL_MIRRORED_REPEAT
-        ClampToEdge    = 0x812F, // GL_CLAMP_TO_EDGE
-        ClampToBorder  = 0x812D  // GL_CLAMP_TO_BORDER
-    };
-
-    enum CoordinateDirection {
-        DirectionS = 0x2802, // GL_TEXTURE_WRAP_S
-        DirectionT = 0x2803, // GL_TEXTURE_WRAP_T
-        DirectionR = 0x8072  // GL_TEXTURE_WRAP_R
-    };
 
     void setWrapMode(WrapMode mode);
     void setWrapMode(CoordinateDirection direction, WrapMode mode);
