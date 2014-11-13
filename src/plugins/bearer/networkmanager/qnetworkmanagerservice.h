@@ -369,6 +369,8 @@ private Q_SLOTS:
     void slotAccessPointAdded(QDBusObjectPath);
     void slotAccessPointRemoved(QDBusObjectPath);
 
+    void accessPointsFinished(QDBusPendingCallWatcher *watcher);
+
 private:
     QNetworkManagerInterfaceDeviceWirelessPrivate *d;
     QVariantMap propertyMap;

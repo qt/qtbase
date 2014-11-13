@@ -109,6 +109,12 @@ private Q_SLOTS:
 
     void wiredCarrierChanged(bool);
 
+    void nmRegistered(const QString &serviceName = QString());
+    void nmUnRegistered(const QString &serviceName = QString());
+
+    void ofonoRegistered(const QString &serviceName = QString());
+    void ofonoUnRegistered(const QString &serviceName = QString());
+
 private:
     QNetworkConfigurationPrivate *parseConnection(const QString &settingsPath,
                                                   const QNmSettingsMap &map);
@@ -132,6 +138,13 @@ private:
     QNetworkConfiguration::BearerType currentBearerType(const QString &id);
     QString contextName(const QString &path);
 
+    bool isConnectionActive(const QString &settingsPath);
+    QDBusServiceWatcher *ofonoWatcher;
+    QDBusServiceWatcher *nmWatcher;
+
+    bool isActiveContext(const QString &contextPath);
+    bool nmAvailable;
+    void setupConfigurations();
 };
 
 QT_END_NAMESPACE

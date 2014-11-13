@@ -153,6 +153,7 @@ public:
     ~QOfonoDataConnectionManagerInterface();
 
     QStringList contexts();
+    PathPropertiesList contextsWithProperties();
     bool roamingAllowed();
     QVariant getProperty(const QString &);
     QString bearer();
@@ -162,6 +163,7 @@ private:
     QVariantMap getProperties();
     QVariantMap propertiesMap;
     QStringList contextList;
+    PathPropertiesList contextListProperties;
 private slots:
     void propertyChanged(const QString &, const QDBusVariant &value);
 };

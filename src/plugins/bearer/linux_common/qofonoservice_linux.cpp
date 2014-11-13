@@ -269,6 +269,18 @@ QStringList QOfonoDataConnectionManagerInterface::contexts()
     return contextList;
 }
 
+PathPropertiesList QOfonoDataConnectionManagerInterface::contextsWithProperties()
+{
+    if (contextListProperties.isEmpty()) {
+        QDBusPendingReply<PathPropertiesList > reply = call(QLatin1String("GetContexts"));
+        reply.waitForFinished();
+        if (!reply.isError()) {
+            contextListProperties = reply.value();
+        }
+    }
+    return contextListProperties;
+}
+
 bool QOfonoDataConnectionManagerInterface::roamingAllowed()
 {
     QVariant var = getProperty(QStringLiteral("RoamingAllowed"));

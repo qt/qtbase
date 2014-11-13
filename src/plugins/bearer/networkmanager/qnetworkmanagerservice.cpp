@@ -688,6 +688,15 @@ QNetworkManagerInterfaceDeviceWireless::QNetworkManagerInterfaceDeviceWireless(c
                                   QLatin1String(NM_DBUS_INTERFACE_DEVICE_WIRELESS),
                                   QLatin1String("PropertiesChanged"),
                                   this,SLOT(propertiesSwap(QMap<QString,QVariant>)));
+
+    QDBusPendingReply<QList<QDBusObjectPath> > reply
+            = d->connectionInterface->asyncCall(QLatin1String("GetAccessPoints"));
+
+    QDBusPendingCallWatcher *callWatcher = new QDBusPendingCallWatcher(reply);
+    connect(callWatcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
+                     this, SLOT(accessPointsFinished(QDBusPendingCallWatcher*)));
+
+
     d->valid = true;
 }
 
@@ -747,6 +756,19 @@ bool QNetworkManagerInterfaceDeviceWireless::setConnections()
         allOk = false;
     }
     return allOk;
+}
+
+void QNetworkManagerInterfaceDeviceWireless::accessPointsFinished(QDBusPendingCallWatcher *watcher)
+{
+    QDBusPendingReply<QList<QDBusObjectPath> > reply(*watcher);
+    watcher->deleteLater();
+    if (!reply.isError()) {
+        accessPointsList = reply.value();
+    }
+
+    for (int i = 0; i < accessPointsList.size(); i++) {
+        Q_EMIT accessPointAdded(accessPointsList.at(i).path());
+    }
 }
 
 QDBusInterface *QNetworkManagerInterfaceDeviceWireless::connectionInterface() const
