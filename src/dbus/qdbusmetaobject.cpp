@@ -123,17 +123,6 @@ QDBusMetaObjectGenerator::QDBusMetaObjectGenerator(const QString &interfaceName,
 static int registerComplexDBusType(const char *typeName)
 {
     struct QDBusRawTypeHandler {
-        static void destroy(void *)
-        {
-            qFatal("Cannot destroy placeholder type QDBusRawType");
-        }
-
-        static void *create(const void *)
-        {
-            qFatal("Cannot create placeholder type QDBusRawType");
-            return 0;
-        }
-
         static void destruct(void *)
         {
             qFatal("Cannot destruct placeholder type QDBusRawType");
@@ -146,8 +135,7 @@ static int registerComplexDBusType(const char *typeName)
         }
     };
 
-    return QMetaType::registerNormalizedType(typeName, QDBusRawTypeHandler::destroy,
-                                             QDBusRawTypeHandler::create,
+    return QMetaType::registerNormalizedType(typeName,
                                              QDBusRawTypeHandler::destruct,
                                              QDBusRawTypeHandler::construct,
                                              sizeof(void *),
