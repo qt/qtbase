@@ -361,6 +361,7 @@ public:
     void setFixedSamplePositions(bool fixed);
     bool isFixedSamplePositions() const;
     void allocateStorage();
+    void allocateStorage(PixelFormat pixelFormat, PixelType pixelType);
     bool isStorageAllocated() const;
 
     QOpenGLTexture *createTextureView(Target target,

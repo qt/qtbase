@@ -294,16 +294,124 @@ int QOpenGLTexturePrivate::evaluateMipLevels() const
     }
 }
 
-void QOpenGLTexturePrivate::allocateStorage()
+static bool isSizedTextureFormat(QOpenGLTexture::TextureFormat internalFormat)
+{
+    switch (internalFormat) {
+    case QOpenGLTexture::NoFormat:
+        return false;
+
+    case QOpenGLTexture::R8_UNorm:
+    case QOpenGLTexture::RG8_UNorm:
+    case QOpenGLTexture::RGB8_UNorm:
+    case QOpenGLTexture::RGBA8_UNorm:
+    case QOpenGLTexture::R16_UNorm:
+    case QOpenGLTexture::RG16_UNorm:
+    case QOpenGLTexture::RGB16_UNorm:
+    case QOpenGLTexture::RGBA16_UNorm:
+    case QOpenGLTexture::R8_SNorm:
+    case QOpenGLTexture::RG8_SNorm:
+    case QOpenGLTexture::RGB8_SNorm:
+    case QOpenGLTexture::RGBA8_SNorm:
+    case QOpenGLTexture::R16_SNorm:
+    case QOpenGLTexture::RG16_SNorm:
+    case QOpenGLTexture::RGB16_SNorm:
+    case QOpenGLTexture::RGBA16_SNorm:
+    case QOpenGLTexture::R8U:
+    case QOpenGLTexture::RG8U:
+    case QOpenGLTexture::RGB8U:
+    case QOpenGLTexture::RGBA8U:
+    case QOpenGLTexture::R16U:
+    case QOpenGLTexture::RG16U:
+    case QOpenGLTexture::RGB16U:
+    case QOpenGLTexture::RGBA16U:
+    case QOpenGLTexture::R32U:
+    case QOpenGLTexture::RG32U:
+    case QOpenGLTexture::RGB32U:
+    case QOpenGLTexture::RGBA32U:
+    case QOpenGLTexture::R8I:
+    case QOpenGLTexture::RG8I:
+    case QOpenGLTexture::RGB8I:
+    case QOpenGLTexture::RGBA8I:
+    case QOpenGLTexture::R16I:
+    case QOpenGLTexture::RG16I:
+    case QOpenGLTexture::RGB16I:
+    case QOpenGLTexture::RGBA16I:
+    case QOpenGLTexture::R32I:
+    case QOpenGLTexture::RG32I:
+    case QOpenGLTexture::RGB32I:
+    case QOpenGLTexture::RGBA32I:
+    case QOpenGLTexture::R16F:
+    case QOpenGLTexture::RG16F:
+    case QOpenGLTexture::RGB16F:
+    case QOpenGLTexture::RGBA16F:
+    case QOpenGLTexture::R32F:
+    case QOpenGLTexture::RG32F:
+    case QOpenGLTexture::RGB32F:
+    case QOpenGLTexture::RGBA32F:
+    case QOpenGLTexture::RGB9E5:
+    case QOpenGLTexture::RG11B10F:
+    case QOpenGLTexture::RG3B2:
+    case QOpenGLTexture::R5G6B5:
+    case QOpenGLTexture::RGB5A1:
+    case QOpenGLTexture::RGBA4:
+    case QOpenGLTexture::RGB10A2:
+
+    case QOpenGLTexture::D16:
+    case QOpenGLTexture::D24:
+    case QOpenGLTexture::D32:
+    case QOpenGLTexture::D32F:
+
+    case QOpenGLTexture::D24S8:
+    case QOpenGLTexture::D32FS8X24:
+
+    case QOpenGLTexture::S8:
+
+    case QOpenGLTexture::RGB_DXT1:
+    case QOpenGLTexture::RGBA_DXT1:
+    case QOpenGLTexture::RGBA_DXT3:
+    case QOpenGLTexture::RGBA_DXT5:
+    case QOpenGLTexture::R_ATI1N_UNorm:
+    case QOpenGLTexture::R_ATI1N_SNorm:
+    case QOpenGLTexture::RG_ATI2N_UNorm:
+    case QOpenGLTexture::RG_ATI2N_SNorm:
+    case QOpenGLTexture::RGB_BP_UNSIGNED_FLOAT:
+    case QOpenGLTexture::RGB_BP_SIGNED_FLOAT:
+    case QOpenGLTexture::RGB_BP_UNorm:
+    case QOpenGLTexture::SRGB8:
+    case QOpenGLTexture::SRGB8_Alpha8:
+    case QOpenGLTexture::SRGB_DXT1:
+    case QOpenGLTexture::SRGB_Alpha_DXT1:
+    case QOpenGLTexture::SRGB_Alpha_DXT3:
+    case QOpenGLTexture::SRGB_Alpha_DXT5:
+    case QOpenGLTexture::SRGB_BP_UNorm:
+        return true;
+
+    case QOpenGLTexture::DepthFormat:
+    case QOpenGLTexture::AlphaFormat:
+
+    case QOpenGLTexture::RGBFormat:
+    case QOpenGLTexture::RGBAFormat:
+
+    case QOpenGLTexture::LuminanceFormat:
+
+    case QOpenGLTexture::LuminanceAlphaFormat:
+        return false;
+    }
+
+    Q_UNREACHABLE();
+    return false;
+}
+
+void QOpenGLTexturePrivate::allocateStorage(QOpenGLTexture::PixelFormat pixelFormat, QOpenGLTexture::PixelType pixelType)
 {
     // Resolve the actual number of mipmap levels we can use
     mipLevels = evaluateMipLevels();
 
-    // Use immutable storage whenever possible, falling back to mutable when not available
-    if (features.testFlag(QOpenGLTexture::ImmutableStorage))
+    // Use immutable storage whenever possible, falling back to mutable
+    if (features.testFlag(QOpenGLTexture::ImmutableStorage) && isSizedTextureFormat(format))
         allocateImmutableStorage();
     else
-        allocateMutableStorage();
+        allocateMutableStorage(pixelFormat, pixelType);
 }
 
 static QOpenGLTexture::PixelFormat pixelFormatCompatibleWithInternalFormat(QOpenGLTexture::TextureFormat internalFormat)
@@ -534,11 +642,8 @@ static QOpenGLTexture::PixelType pixelTypeCompatibleWithInternalFormat(QOpenGLTe
     return QOpenGLTexture::NoPixelType;
 }
 
-void QOpenGLTexturePrivate::allocateMutableStorage()
+void QOpenGLTexturePrivate::allocateMutableStorage(QOpenGLTexture::PixelFormat pixelFormat, QOpenGLTexture::PixelType pixelType)
 {
-    const QOpenGLTexture::PixelFormat pixelFormat = pixelFormatCompatibleWithInternalFormat(format);
-    const QOpenGLTexture::PixelType pixelType = pixelTypeCompatibleWithInternalFormat(format);
-
     switch (target) {
     case QOpenGLTexture::TargetBuffer:
         // Buffer textures get their storage from an external OpenGL buffer
@@ -2436,14 +2541,55 @@ bool QOpenGLTexture::isFixedSamplePositions() const
     Once storage has been allocated for the texture then pixel data
     can be uploaded via one of the setData() overloads.
 
+    \note If immutable texture storage is not available,
+    then a default pixel format and pixel type will be used to
+    create the mutable storage. You can use the other
+    allocateStorage() overload to specify exactly the pixel format
+    and the pixel type to use when allocating mutable storage;
+    this is particulary useful under certain OpenGL ES implementations
+    (notably, OpenGL ES 2), where the pixel format and the pixel type
+    used at allocation time must perfectly match the format
+    and the type passed to any subsequent setData() call.
+
     \sa isStorageAllocated(), setData()
 */
 void QOpenGLTexture::allocateStorage()
 {
     Q_D(QOpenGLTexture);
     if (d->create()) {
-        d->allocateStorage();
+        const QOpenGLTexture::PixelFormat pixelFormat = pixelFormatCompatibleWithInternalFormat(d->format);
+        const QOpenGLTexture::PixelType pixelType = pixelTypeCompatibleWithInternalFormat(d->format);
+        d->allocateStorage(pixelFormat, pixelType);
     }
+}
+
+/*!
+    \since 5.5
+
+    Allocates server-side storage for this texture object taking
+    into account, the format, dimensions, mipmap levels, array
+    layers and cubemap faces.
+
+    Once storage has been allocated it is no longer possible to change
+    these properties.
+
+    If supported QOpenGLTexture makes use of immutable texture
+    storage. However, if immutable texture storage is not available,
+    then the specified \a pixelFormat and \a pixelType will be used
+    to allocate mutable storage; note that in certain OpenGL implementations
+    (notably, OpenGL ES 2) they must perfectly match the format
+    and the type passed to any subsequent setData() call.
+
+    Once storage has been allocated for the texture then pixel data
+    can be uploaded via one of the setData() overloads.
+
+    \sa isStorageAllocated(), setData()
+*/
+void QOpenGLTexture::allocateStorage(QOpenGLTexture::PixelFormat pixelFormat, QOpenGLTexture::PixelType pixelType)
+{
+    Q_D(QOpenGLTexture);
+    if (d->create())
+        d->allocateStorage(pixelFormat, pixelType);
 }
 
 /*!
@@ -2670,7 +2816,7 @@ void QOpenGLTexture::setData(const QImage& image, MipMapGeneration genMipMaps)
 
     setSize(image.width(), image.height());
     setMipLevels(genMipMaps == GenerateMipMaps ? maximumMipLevels() : 1);
-    allocateStorage();
+    allocateStorage(QOpenGLTexture::RGBA, QOpenGLTexture::UInt8);
 
     // Upload pixel data and generate mipmaps
     QImage glImage = image.convertToFormat(QImage::Format_RGBA8888);

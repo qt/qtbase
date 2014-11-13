@@ -87,8 +87,8 @@ public:
     bool isBound() const;
     bool isBound(uint unit) const;
 
-    void allocateStorage();
-    void allocateMutableStorage();
+    void allocateStorage(QOpenGLTexture::PixelFormat pixelFormat, QOpenGLTexture::PixelType pixelType);
+    void allocateMutableStorage(QOpenGLTexture::PixelFormat pixelFormat, QOpenGLTexture::PixelType pixelType);
     void allocateImmutableStorage();
     void setData(int mipLevel, int layer, QOpenGLTexture::CubeMapFace cubeFace,
                  QOpenGLTexture::PixelFormat sourceFormat, QOpenGLTexture::PixelType sourceType,
