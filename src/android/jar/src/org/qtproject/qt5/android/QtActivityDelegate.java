@@ -1179,8 +1179,8 @@ public class QtActivityDelegate
 
         // Native views are always inserted in the end of the stack (i.e., on top).
         // All other views are stacked based on the order they are created.
-        final int index = m_layout.getChildCount() - m_nativeViews.size() - 1;
-        m_layout.addView(surface, index < 0 ? 0 : index);
+        final int index = getSurfaceCount();
+        m_layout.addView(surface, index);
 
         m_surfaces.put(id, surface);
     }
@@ -1221,12 +1221,19 @@ public class QtActivityDelegate
         }
     }
 
+    public int getSurfaceCount()
+    {
+        return m_surfaces.size();
+    }
+
+
     public void bringChildToFront(int id)
     {
         View view = m_surfaces.get(id);
         if (view != null) {
-            final int index = m_layout.getChildCount() - m_nativeViews.size() - 1;
-            m_layout.moveChild(view, index < 0 ? 0 : index);
+            final int surfaceCount = getSurfaceCount();
+            if (surfaceCount > 0)
+                m_layout.moveChild(view, surfaceCount - 1);
             return;
         }
 
@@ -1245,7 +1252,7 @@ public class QtActivityDelegate
 
         view = m_nativeViews.get(id);
         if (view != null) {
-            final int index = m_layout.getChildCount() - m_nativeViews.size();
+            final int index = getSurfaceCount();
             m_layout.moveChild(view, index);
         }
     }
