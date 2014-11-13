@@ -193,7 +193,6 @@ protected:
 
     //subclasses can use these to query information about how the generator was "run"
     QString buildArgs();
-    QString fixifySpecdir(const QString &spec, const QString &outdir);
 
     virtual QStringList &findDependencies(const QString &file);
     virtual bool doDepends() const { return Option::mkfile::do_deps; }

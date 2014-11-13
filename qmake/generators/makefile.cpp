@@ -2216,13 +2216,6 @@ MakefileGenerator::writeDefaultVariables(QTextStream &t)
     t << "MOVE          = " << var("QMAKE_MOVE") << endl;
 }
 
-QString MakefileGenerator::fixifySpecdir(const QString &spec, const QString &outdir)
-{
-    if (QFileInfo(spec).isAbsolute())
-        return fileFixify(spec, outdir);
-    return spec;
-}
-
 QString MakefileGenerator::buildArgs()
 {
     QString ret;
