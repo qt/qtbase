@@ -1100,7 +1100,6 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
     if (!project->isEmpty("DESTDIR")) {
         QString phase_key = keyFor("QMAKE_PBX_TARGET_COPY_PHASE");
         QString destDir = project->first("DESTDIR").toQString();
-        destDir = fixForOutput(destDir);
         destDir = fileInfo(Option::fixPathToLocalOS(destDir)).absoluteFilePath();
         project->values("QMAKE_PBX_BUILDPHASES").append(phase_key);
         t << "\t\t" << phase_key << " = {\n"
