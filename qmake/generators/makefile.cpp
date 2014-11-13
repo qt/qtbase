@@ -1190,11 +1190,13 @@ MakefileGenerator::writeObj(QTextStream &t, const char *src)
 QString
 MakefileGenerator::filePrefixRoot(const QString &root, const QString &path)
 {
-    QString ret(root + path);
+    QString ret(path);
     if(path.length() > 2 && path[1] == ':') //c:\foo
-        ret = QString(path.mid(0, 2) + root + path.mid(2));
-    while(ret.endsWith("\\"))
-        ret = ret.left(ret.length()-1);
+        ret.insert(2, root);
+    else
+        ret.prepend(root);
+    while (ret.endsWith('\\'))
+        ret.chop(1);
     return ret;
 }
 
