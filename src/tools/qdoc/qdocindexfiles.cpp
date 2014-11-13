@@ -980,6 +980,7 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
             if (!brief.isEmpty())
                 writer.writeAttribute("brief", brief);
         }
+        break;
     case Node::QmlModule:
         {
             const QmlModuleNode* qmn = static_cast<const QmlModuleNode*>(node);
