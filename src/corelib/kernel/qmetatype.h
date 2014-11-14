@@ -714,18 +714,6 @@ ConverterFunctor<From, To, UnaryFunction>::~ConverterFunctor()
 namespace QtMetaTypePrivate {
 template <typename T, bool Accepted = true>
 struct QMetaTypeFunctionHelper {
-    static void Delete(void *t)
-    {
-        delete static_cast<T*>(t);
-    }
-
-    static void *Create(const void *t)
-    {
-        if (t)
-            return new T(*static_cast<const T*>(t));
-        return new T();
-    }
-
     static void Destruct(void *t)
     {
         Q_UNUSED(t) // Silence MSVC that warns for POD types.
@@ -753,8 +741,6 @@ struct QMetaTypeFunctionHelper {
 
 template <typename T>
 struct QMetaTypeFunctionHelper<T, /* Accepted */ false> {
-    static void Delete(void *) {}
-    static void *Create(const void *) { return 0; }
     static void Destruct(void *) {}
     static void *Construct(void *, const void *) { return 0; }
 #ifndef QT_NO_DATASTREAM
