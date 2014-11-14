@@ -30,9 +30,12 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include <QtGui/QtGui>
-#include <QtWidgets/QtWidgets>
-#include <QtTest/QtTest>
+#include <QDataWidgetMapper>
+#include <QStandardItemModel>
+#include <QLineEdit>
+#include <QComboBox>
+#include <QTest>
+#include <QSignalSpy>
 
 class tst_QDataWidgetMapper: public QObject
 {
