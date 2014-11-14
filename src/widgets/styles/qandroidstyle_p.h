@@ -124,7 +124,6 @@ public:
         static AndroidDrawable *fromMap(const QVariantMap &drawable, ItemType itemType);
         static QMargins extractMargins(const QVariantMap &value);
         virtual void setPaddingLeftToSizeWidth();
-        QPixmap img() const;
     protected:
         ItemType m_itemType;
         QMargins m_padding;
@@ -149,7 +148,6 @@ public:
         virtual void draw(QPainter *painter,const QStyleOption *opt) const;
         virtual QSize size() const;
 
-        QPixmap img() const;
     protected:
         QString m_filePath;
         mutable QString m_hashKey;
@@ -223,7 +221,6 @@ public:
         static int extractState(const QVariantMap &value);
         virtual void setPaddingLeftToSizeWidth();
         QSize sizeImage(const QStyleOption *opt) const;
-        QPixmap img(const QStyleOption *opt) const;
     private:
         typedef QPair<int, const AndroidDrawable *> StateType;
         QList<StateType> m_states;
@@ -263,6 +260,7 @@ public:
                                        const QSize &contentsSize,
                                        const QWidget *w) const;
         virtual QMargins padding();
+        virtual QSize size(const QStyleOption *option);
     protected:
         virtual const AndroidDrawable * backgroundDrawable() const;
         const AndroidDrawable *m_background;
@@ -276,8 +274,8 @@ public:
         AndroidCompoundButtonControl(const QVariantMap &control, ItemType itemType);
         virtual ~AndroidCompoundButtonControl();
         virtual void drawControl(const QStyleOption *opt, QPainter *p, const QWidget *w);
-        QSize sizeCheckBox(const QStyleOption *opt) const;
-        QPixmap imgCheckBox(const QStyleOption *opt) const;
+        virtual QMargins padding();
+        virtual QSize size(const QStyleOption *option);
     protected:
         virtual const AndroidDrawable * backgroundDrawable() const;
         const AndroidDrawable *m_button;

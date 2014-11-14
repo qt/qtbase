@@ -244,6 +244,10 @@ QAndroidStyle::ItemType QAndroidStyle::qtControl(QStyle::PrimitiveElement primit
     case QStyle::PE_FrameLineEdit:
         return QC_EditText;
 
+    case QStyle::PE_IndicatorViewItemCheck:
+    case QStyle::PE_IndicatorCheckBox:
+        return QC_Checkbox;
+
     case QStyle::PE_FrameWindow:
     case QStyle::PE_Widget:
     case QStyle::PE_Frame:
@@ -357,37 +361,8 @@ void QAndroidStyle::drawControl(QStyle::ControlElement element,
             }
             break;
         default:
-            break;
-        }
-    } else if (element == CE_ItemViewItem) {
-        const QStyleOptionViewItem *vopt = qstyleoption_cast<const QStyleOptionViewItem *>(opt);
-        if (vopt && vopt->features & QStyleOptionViewItem::HasCheckIndicator) {
-            p->save();
-            p->setClipRect(opt->rect);
-
-            QRect checkRect = proxy()->subElementRect(SE_ItemViewItemCheckIndicator, vopt, w);
-
-            // draw the background
-            proxy()->drawPrimitive(PE_PanelItemViewItem, opt, p, w);
-
-            // draw the check mark
-            QStyleOptionViewItem option(*vopt);
-            option.rect = checkRect;
-            option.state = option.state & ~QStyle::State_HasFocus;
-
-            switch (vopt->checkState) {
-            case Qt::Unchecked:
-                option.state |= QStyle::State_Off;
-                break;
-            default:
-                option.state |= QStyle::State_On;
-                break;
-            }
-            QPixmap pixmap = checkBoxControl->imgCheckBox(&option);
-            p->drawPixmap(checkRect, pixmap);
-            p->restore();
-        } else {
             QFusionStyle::drawControl(element, opt, p, w);
+            break;
         }
     } else {
         QFusionStyle::drawControl(element, opt, p, w);
@@ -532,7 +507,7 @@ QRect QAndroidStyle::subControlRect(ComplexControl cc,
         case CC_GroupBox: {
             if (const QStyleOptionGroupBox *groupBox = qstyleoption_cast<const QStyleOptionGroupBox *>(opt)) {
                 QSize textSize = opt->fontMetrics.boundingRect(groupBox->text).size() + QSize(2, 2);
-                QSize checkBoxSize = checkBoxControl->sizeCheckBox(opt);
+                QSize checkBoxSize = checkBoxControl->size(opt);
                 int indicatorWidth = checkBoxSize.width();
                 int indicatorHeight = checkBoxSize.height();
                 QRect checkBoxRect;
@@ -589,9 +564,9 @@ int QAndroidStyle::pixelMetric(PixelMetric metric, const QStyleOption *option,
     case PM_ScrollBarExtent:
         return 0;
     case PM_IndicatorWidth:
-        return checkBoxControl->sizeCheckBox(option).width();
+        return checkBoxControl->size(option).width();
     case PM_IndicatorHeight:
-        return checkBoxControl->sizeCheckBox(option).height();
+        return checkBoxControl->size(option).height();
     default:
         return QFusionStyle::pixelMetric(metric, option, widget);
     }
@@ -608,7 +583,7 @@ QSize QAndroidStyle::sizeFromContents(ContentsType ct,
         if (const QStyleOptionHeader *hdr = qstyleoption_cast<const QStyleOptionHeader *>(opt)) {
             bool nullIcon = hdr->icon.isNull();
             int margin = pixelMetric(QStyle::PM_HeaderMargin, hdr, w);
-            int iconSize = nullIcon ? 0 : checkBoxControl->sizeCheckBox(opt).width();
+            int iconSize = nullIcon ? 0 : checkBoxControl->size(opt).width();
             QSize txt;
 /*
  * These next 4 lines are a bad hack to fix a bug in case a QStyleSheet is applied at QApplication level.
@@ -642,7 +617,7 @@ QSize QAndroidStyle::sizeFromContents(ContentsType ct,
     if (ct == CT_GroupBox) {
         if (const QStyleOptionGroupBox *groupBox = qstyleoption_cast<const QStyleOptionGroupBox *>(opt)) {
             QSize textSize = opt->fontMetrics.boundingRect(groupBox->text).size() + QSize(2, 2);
-            QSize checkBoxSize = checkBoxControl->sizeCheckBox(opt);
+            QSize checkBoxSize = checkBoxControl->size(opt);
             int indicatorWidth = checkBoxSize.width();
             int indicatorHeight = checkBoxSize.height();
             QRect checkBoxRect;
@@ -738,13 +713,6 @@ QSize QAndroidStyle::AndroidDrawable::size() const
 
     return QSize();
 }
-QPixmap QAndroidStyle::AndroidDrawable::img() const
-{
-    if (type() == Image || type() == NinePatch)
-        return static_cast<const QAndroidStyle::AndroidImageDrawable *>(this)->img();
-
-    return QPixmap();
-}
 
 QAndroidStyle::AndroidDrawable * QAndroidStyle::AndroidDrawable::fromMap(const QVariantMap &drawable,
                                                                          ItemType itemType)
@@ -810,19 +778,7 @@ void QAndroidStyle::AndroidImageDrawable::draw(QPainter *painter, const QStyleOp
         QPixmapCache::insert(m_hashKey, pm);
     }
 
-    painter->drawPixmap(opt->rect.x(), (opt->rect.height() - pm.height()) / 2, pm);
-}
-QPixmap QAndroidStyle::AndroidImageDrawable::img() const
-{
-    if (m_hashKey.isEmpty())
-        m_hashKey = QFileInfo(m_filePath).fileName();
-
-    QPixmap pm;
-    if (!QPixmapCache::find(m_hashKey, &pm)) {
-        pm.load(m_filePath);
-        QPixmapCache::insert(m_hashKey, pm);
-    }
-    return pm;
+    painter->drawPixmap(opt->rect.x(), opt->rect.y() + (opt->rect.height() - pm.height()) / 2, pm);
 }
 
 QSize QAndroidStyle::AndroidImageDrawable::size() const
@@ -1220,14 +1176,6 @@ QSize QAndroidStyle::AndroidStateDrawable::sizeImage(const QStyleOption *opt) co
         s = drawable->size();
     return s;
 }
-QPixmap QAndroidStyle::AndroidStateDrawable::img(const QStyleOption *opt) const
-{
-    QPixmap pm;
-    const AndroidDrawable *drawable = bestAndroidStateMatch(opt);
-    if (drawable)
-        pm = drawable->img();
-    return pm;
-}
 
 const QAndroidStyle::AndroidDrawable * QAndroidStyle::AndroidStateDrawable::bestAndroidStateMatch(const QStyleOption *opt) const
 {
@@ -1507,7 +1455,6 @@ QRect QAndroidStyle::AndroidControl::subElementRect(QStyle::SubElement /* subEle
         return visualRect(option->direction, option->rect, r);
     }
     return option->rect;
-
 }
 
 QRect QAndroidStyle::AndroidControl::subControlRect(const QStyleOptionComplex *option,
@@ -1552,6 +1499,16 @@ QMargins QAndroidStyle::AndroidControl::padding()
     return QMargins();
 }
 
+QSize QAndroidStyle::AndroidControl::size(const QStyleOption *option)
+{
+    if (const AndroidDrawable *drawable = backgroundDrawable()) {
+        if (drawable->type() == State)
+            drawable = static_cast<const AndroidStateDrawable *>(backgroundDrawable())->bestAndroidStateMatch(option);
+        return drawable->size();
+    }
+    return QSize();
+}
+
 const QAndroidStyle::AndroidDrawable *QAndroidStyle::AndroidControl::backgroundDrawable() const
 {
     return m_background;
@@ -1562,11 +1519,12 @@ QAndroidStyle::AndroidCompoundButtonControl::AndroidCompoundButtonControl(const 
     : AndroidControl(control, itemType)
 {
     QVariantMap::const_iterator it = control.find(QLatin1String("CompoundButton_button"));
-    if (it != control.end())
+    if (it != control.end()) {
         m_button = AndroidDrawable::fromMap(it.value().toMap(), itemType);
-    else
+        const_cast<AndroidDrawable *>(m_button)->setPaddingLeftToSizeWidth();
+    } else {
         m_button = 0;
-    const_cast<AndroidDrawable *>(m_button)->setPaddingLeftToSizeWidth();
+    }
 }
 
 QAndroidStyle::AndroidCompoundButtonControl::~AndroidCompoundButtonControl()
@@ -1582,16 +1540,24 @@ void QAndroidStyle::AndroidCompoundButtonControl::drawControl(const QStyleOption
     if (m_button)
         m_button->draw(p, opt);
 }
-QSize QAndroidStyle::AndroidCompoundButtonControl::sizeCheckBox(const QStyleOption *opt) const
+
+QMargins QAndroidStyle::AndroidCompoundButtonControl::padding()
 {
-    const AndroidDrawable *drawable = m_button;
-    return static_cast<const QAndroidStyle::AndroidStateDrawable *>(drawable)->sizeImage(opt);
+    if (m_button)
+        return m_button->padding();
+    return AndroidControl::padding();
 }
-QPixmap QAndroidStyle::AndroidCompoundButtonControl::imgCheckBox(const QStyleOption *opt) const
+
+QSize QAndroidStyle::AndroidCompoundButtonControl::size(const QStyleOption *option)
 {
-    const AndroidDrawable *drawable = m_button;
-    return static_cast<const QAndroidStyle::AndroidStateDrawable *>(drawable)->img(opt);
+    if (m_button) {
+        if (m_button->type() == State)
+            return static_cast<const AndroidStateDrawable *>(m_button)->bestAndroidStateMatch(option)->size();
+        return m_button->size();
+    }
+    return AndroidControl::size(option);
 }
+
 const QAndroidStyle::AndroidDrawable * QAndroidStyle::AndroidCompoundButtonControl::backgroundDrawable() const
 {
     return m_background ? m_background : m_button;
