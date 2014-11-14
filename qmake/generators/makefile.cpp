@@ -1435,7 +1435,7 @@ MakefileGenerator::varGlue(const ProKey &var, const QString &before, const QStri
 }
 
 QString
-MakefileGenerator::fileVarGlue(const ProKey &var, const QString &before, const QString &glue, const QString &after) const
+MakefileGenerator::fixFileVarGlue(const ProKey &var, const QString &before, const QString &glue, const QString &after) const
 {
     ProStringList varList;
     foreach (const ProString &val, project->values(var))
@@ -2561,12 +2561,12 @@ MakefileGenerator::writeSubTargets(QTextStream &t, QList<MakefileGenerator::SubT
             t << varGlue("DISTCLEAN_DEPS"," "," ","");
         t << " FORCE\n";
         if(suffix == "clean") {
-            t << fileVarGlue("QMAKE_CLEAN", "\t-$(DEL_FILE) ", "\n\t-$(DEL_FILE) ", "\n");
+            t << fixFileVarGlue("QMAKE_CLEAN", "\t-$(DEL_FILE) ", "\n\t-$(DEL_FILE) ", "\n");
         } else if(suffix == "distclean") {
             QString ofile = Option::fixPathToTargetOS(fileFixify(Option::output.fileName()));
             if(!ofile.isEmpty())
                 t << "\t-$(DEL_FILE) " << ofile << endl;
-            t << fileVarGlue("QMAKE_DISTCLEAN", "\t-$(DEL_FILE) ", " ", "\n");
+            t << fixFileVarGlue("QMAKE_DISTCLEAN", "\t-$(DEL_FILE) ", " ", "\n");
         }
     }
 

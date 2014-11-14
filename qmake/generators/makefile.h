@@ -219,8 +219,8 @@ protected:
     //for retrieving values and lists of values
     virtual QString var(const ProKey &var) const;
     QString varGlue(const ProKey &var, const QString &before, const QString &glue, const QString &after) const;
-    QString fileVarGlue(const ProKey &var, const QString &before, const QString &glue, const QString &after) const;
     QString varList(const ProKey &var) const;
+    QString fixFileVarGlue(const ProKey &var, const QString &before, const QString &glue, const QString &after) const;
     QString val(const ProStringList &varList) const;
     QString val(const QStringList &varList) const;
     QString valGlue(const QStringList &varList, const QString &before, const QString &glue, const QString &after) const;
