@@ -27,6 +27,7 @@
 
 /*!
     \group animation
+    \brief Provides an easy way for creating animated GUIs.
     \title Animation Framework
 
     This page lists classes belonging to \l{Qt Core}'s
@@ -46,7 +47,7 @@
     \keyword Animation
 
     The animation framework aims to provide an easy way for creating animated
-    and smooth GUI's. By animating Qt properties, the framework provides great
+    and smooth GUIs. By animating Qt properties, the framework provides great
     freedom for animating widgets and other \l{QObject}s. The framework can
     also be used with the Graphics View framework. Many of the concepts
     available in the animation framework are also available in \l{Qt Quick},
