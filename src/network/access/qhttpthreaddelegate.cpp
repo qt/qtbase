@@ -644,6 +644,7 @@ void QHttpThreadDelegate::encryptedSlot()
     if (!httpReply)
         return;
 
+    emit sslConfigurationChanged(httpReply->sslConfiguration());
     emit encrypted();
 }
 
