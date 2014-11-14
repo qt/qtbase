@@ -37,6 +37,10 @@
 #include <qcoreapplication.h>
 #include <qhash.h>
 #include <qvector.h>
+#include <qdebug.h>
+#if defined(Q_OS_WIN) && !defined(QT_BOOTSTRAPPED) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
+#  include <qt_windows.h>
+#endif
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -209,7 +213,10 @@ QStringList QCommandLineParserPrivate::aliases(const QString &optionName) const
     platforms. These applications may not use the standard output or error channels
     since the output is either discarded or not accessible.
 
-    For such GUI applications, it is recommended to display help texts and error messages
+    On Windows, QCommandLineParser uses message boxes to display usage information
+    and errors if no console window can be obtained.
+
+    For other platforms, it is recommended to display help texts and error messages
     using a QMessageBox. To preserve the formatting of the help text, rich text
     with \c <pre> elements should be used:
 
@@ -219,36 +226,20 @@ QStringList QCommandLineParserPrivate::aliases(const QString &optionName) const
     case CommandLineOk:
         break;
     case CommandLineError:
-#ifdef Q_OS_WIN
         QMessageBox::warning(0, QGuiApplication::applicationDisplayName(),
                              "<html><head/><body><h2>" + errorMessage + "</h2><pre>"
                              + parser.helpText() + "</pre></body></html>");
-#else
-        fputs(qPrintable(errorMessage), stderr);
-        fputs("\n\n", stderr);
-        fputs(qPrintable(parser.helpText()), stderr);
-#endif
         return 1;
     case CommandLineVersionRequested:
-#ifdef Q_OS_WIN
         QMessageBox::information(0, QGuiApplication::applicationDisplayName(),
                                  QGuiApplication::applicationDisplayName() + ' '
                                  + QCoreApplication::applicationVersion());
-#else
-        printf("%s %s\n", QGuiApplication::applicationDisplayName(),
-               qPrintable(QCoreApplication::applicationVersion()));
-#endif
         return 0;
     case CommandLineHelpRequested:
-#ifdef Q_OS_WIN
         QMessageBox::warning(0, QGuiApplication::applicationDisplayName(),
                              "<html><head/><body><pre>"
                              + parser.helpText() + "</pre></body></html>");
         return 0;
-#else
-        parser.showHelp();
-        Q_UNREACHABLE();
-#endif
     }
     \endcode
 
@@ -489,6 +480,41 @@ QString QCommandLineParser::errorText() const
     return QString();
 }
 
+enum MessageType { UsageMessage, ErrorMessage };
+
+#if defined(Q_OS_WIN) && !defined(QT_BOOTSTRAPPED) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
+// Return whether to use a message box. Use handles if a console can be obtained
+// or we are run with redirected handles (for example, by QProcess).
+static inline bool displayMessageBox()
+{
+    if (GetConsoleWindow())
+        return false;
+    STARTUPINFO startupInfo;
+    startupInfo.cb = sizeof(STARTUPINFO);
+    GetStartupInfo(&startupInfo);
+    return !(startupInfo.dwFlags & STARTF_USESTDHANDLES);
+}
+#endif // Q_OS_WIN && !QT_BOOTSTRAPPED && !Q_OS_WIN && !Q_OS_WINRT
+
+static void showParserMessage(const QString &message, MessageType type)
+{
+#if defined(Q_OS_WIN) && !defined(QT_BOOTSTRAPPED) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
+    if (displayMessageBox()) {
+        const UINT flags = MB_OK | MB_TOPMOST | MB_SETFOREGROUND
+            | (type == UsageMessage ? MB_ICONINFORMATION : MB_ICONERROR);
+        QString title;
+        if (QCoreApplication::instance())
+            title = QCoreApplication::instance()->property("applicationDisplayName").toString();
+        if (title.isEmpty())
+            title = QCoreApplication::applicationName();
+        MessageBoxW(0, reinterpret_cast<const wchar_t *>(message.utf16()),
+                    reinterpret_cast<const wchar_t *>(title.utf16()), flags);
+        return;
+    }
+#endif // Q_OS_WIN && !QT_BOOTSTRAPPED && !Q_OS_WIN && !Q_OS_WINRT
+    fputs(qPrintable(message), type == UsageMessage ? stdout : stderr);
+}
+
 /*!
     Processes the command line \a arguments.
 
@@ -505,7 +531,7 @@ QString QCommandLineParser::errorText() const
 void QCommandLineParser::process(const QStringList &arguments)
 {
     if (!d->parse(arguments)) {
-        fprintf(stderr, "%s\n", qPrintable(errorText()));
+        showParserMessage(errorText() + QLatin1Char('\n'), ErrorMessage);
         ::exit(EXIT_FAILURE);
     }
 
@@ -911,7 +937,9 @@ QStringList QCommandLineParser::unknownOptionNames() const
 */
 Q_NORETURN void QCommandLineParser::showVersion()
 {
-    fprintf(stdout, "%s %s\n", qPrintable(QCoreApplication::applicationName()), qPrintable(QCoreApplication::applicationVersion()));
+    showParserMessage(QCoreApplication::applicationName() + QLatin1Char(' ')
+                      + QCoreApplication::applicationVersion() + QLatin1Char('\n'),
+                      UsageMessage);
     ::exit(EXIT_SUCCESS);
 }
 
@@ -928,7 +956,7 @@ Q_NORETURN void QCommandLineParser::showVersion()
 */
 Q_NORETURN void QCommandLineParser::showHelp(int exitCode)
 {
-    fprintf(stdout, "%s", qPrintable(d->helpText()));
+    showParserMessage(d->helpText(), UsageMessage);
     ::exit(exitCode);
 }
 

@@ -82,14 +82,7 @@ int main(int argc, char *argv[])
                         "qt.examples.imagegestures.debug=true\n");
     commandLineParser.setApplicationDescription(description);
 
-    if (!commandLineParser.parse(QCoreApplication::arguments())) {
-        showHelp(commandLineParser, commandLineParser.errorText());
-        return -1;
-    }
-    if (commandLineParser.isSet(helpOption)) {
-        showHelp(commandLineParser);
-        return 0;
-    }
+    commandLineParser.process(QCoreApplication::arguments());
 
     QStringList arguments = commandLineParser.positionalArguments();
     if (!arguments.isEmpty() && !QFileInfo(arguments.front()).isDir()) {
