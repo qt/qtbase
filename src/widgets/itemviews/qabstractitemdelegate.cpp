@@ -42,7 +42,17 @@
 #include <qevent.h>
 #include <qstring.h>
 #include <qdebug.h>
+#include <qlineedit.h>
+#include <qtextedit.h>
+#include <qplaintextedit.h>
+#include <qapplication.h>
 #include <private/qtextengine_p.h>
+#include <private/qabstractitemdelegate_p.h>
+
+#include <qpa/qplatformintegration.h>
+#include <qpa/qplatformdrag.h>
+#include <private/qguiapplication_p.h>
+#include <private/qdnd_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -165,7 +175,7 @@ QT_BEGIN_NAMESPACE
     Creates a new abstract item delegate with the given \a parent.
 */
 QAbstractItemDelegate::QAbstractItemDelegate(QObject *parent)
-    : QObject(parent)
+    : QObject(*new QAbstractItemDelegatePrivate, parent)
 {
 
 }
@@ -405,6 +415,112 @@ QVector<int> QAbstractItemDelegate::paintingRoles() const
     return QVector<int>();
 }
 
+QAbstractItemDelegatePrivate::QAbstractItemDelegatePrivate()
+    : QObjectPrivate()
+{
+}
+
+bool QAbstractItemDelegatePrivate::editorEventFilter(QObject *object, QEvent *event)
+{
+    Q_Q(QAbstractItemDelegate);
+
+    QWidget *editor = qobject_cast<QWidget*>(object);
+    if (!editor)
+        return false;
+    if (event->type() == QEvent::KeyPress) {
+        switch (static_cast<QKeyEvent *>(event)->key()) {
+        case Qt::Key_Tab:
+            if (tryFixup(editor)) {
+                emit q->commitData(editor);
+                emit q->closeEditor(editor, QAbstractItemDelegate::EditNextItem);
+            }
+            return true;
+        case Qt::Key_Backtab:
+            if (tryFixup(editor)) {
+                emit q->commitData(editor);
+                emit q->closeEditor(editor, QAbstractItemDelegate::EditPreviousItem);
+            }
+            return true;
+        case Qt::Key_Enter:
+        case Qt::Key_Return:
+#ifndef QT_NO_TEXTEDIT
+            if (qobject_cast<QTextEdit *>(editor) || qobject_cast<QPlainTextEdit *>(editor))
+                return false; // don't filter enter key events for QTextEdit or QPlainTextEdit
+#endif // QT_NO_TEXTEDIT
+            // We want the editor to be able to process the key press
+            // before committing the data (e.g. so it can do
+            // validation/fixup of the input).
+            if (!tryFixup(editor))
+                return true;
+
+            QMetaObject::invokeMethod(q, "_q_commitDataAndCloseEditor",
+                                      Qt::QueuedConnection, Q_ARG(QWidget*, editor));
+            return false;
+        case Qt::Key_Escape:
+            // don't commit data
+            emit q->closeEditor(editor, QAbstractItemDelegate::RevertModelCache);
+            return true;
+        default:
+            return false;
+        }
+    } else if (event->type() == QEvent::FocusOut || (event->type() == QEvent::Hide && editor->isWindow())) {
+        //the Hide event will take care of he editors that are in fact complete dialogs
+        if (!editor->isActiveWindow() || (QApplication::focusWidget() != editor)) {
+            QWidget *w = QApplication::focusWidget();
+            while (w) { // don't worry about focus changes internally in the editor
+                if (w == editor)
+                    return false;
+                w = w->parentWidget();
+            }
+#ifndef QT_NO_DRAGANDDROP
+            // The window may lose focus during an drag operation.
+            // i.e when dragging involves the taskbar on Windows.
+            QPlatformDrag *platformDrag = QGuiApplicationPrivate::instance()->platformIntegration()->drag();
+            if (platformDrag && platformDrag->currentDrag()) {
+                return false;
+            }
+#endif
+            if (tryFixup(editor))
+                emit q->commitData(editor);
+
+            emit q->closeEditor(editor, QAbstractItemDelegate::NoHint);
+        }
+    } else if (event->type() == QEvent::ShortcutOverride) {
+        if (static_cast<QKeyEvent*>(event)->key() == Qt::Key_Escape) {
+            event->accept();
+            return true;
+        }
+    }
+    return false;
+}
+
+bool QAbstractItemDelegatePrivate::tryFixup(QWidget *editor)
+{
+#ifndef QT_NO_LINEEDIT
+    if (QLineEdit *e = qobject_cast<QLineEdit*>(editor)) {
+        if (!e->hasAcceptableInput()) {
+            if (const QValidator *validator = e->validator()) {
+                QString text = e->text();
+                validator->fixup(text);
+                e->setText(text);
+            }
+            return e->hasAcceptableInput();
+        }
+    }
+#endif // QT_NO_LINEEDIT
+
+    return true;
+}
+
+void QAbstractItemDelegatePrivate::_q_commitDataAndCloseEditor(QWidget *editor)
+{
+    Q_Q(QAbstractItemDelegate);
+    emit q->commitData(editor);
+    emit q->closeEditor(editor, QAbstractItemDelegate::SubmitModelCache);
+}
+
 QT_END_NAMESPACE
+
+#include "moc_qabstractitemdelegate.cpp"
 
 #endif // QT_NO_ITEMVIEWS

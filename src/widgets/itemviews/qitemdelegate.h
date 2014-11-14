@@ -117,8 +117,6 @@ protected:
 private:
     Q_DECLARE_PRIVATE(QItemDelegate)
     Q_DISABLE_COPY(QItemDelegate)
-
-    Q_PRIVATE_SLOT(d_func(), void _q_commitDataAndCloseEditor(QWidget*))
 };
 
 #endif // QT_NO_ITEMVIEWS

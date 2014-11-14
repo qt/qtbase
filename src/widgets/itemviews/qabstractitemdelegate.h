@@ -47,6 +47,7 @@ class QModelIndex;
 class QAbstractItemModel;
 class QAbstractItemView;
 class QHelpEvent;
+class QAbstractItemDelegatePrivate;
 
 class Q_WIDGETS_EXPORT QAbstractItemDelegate : public QObject
 {
@@ -114,7 +115,9 @@ Q_SIGNALS:
 protected:
     QAbstractItemDelegate(QObjectPrivate &, QObject *parent = 0);
 private:
+    Q_DECLARE_PRIVATE(QAbstractItemDelegate)
     Q_DISABLE_COPY(QAbstractItemDelegate)
+    Q_PRIVATE_SLOT(d_func(), void _q_commitDataAndCloseEditor(QWidget*))
 };
 
 #endif // QT_NO_ITEMVIEWS
