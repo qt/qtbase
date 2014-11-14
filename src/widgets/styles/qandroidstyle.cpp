@@ -1648,7 +1648,6 @@ QRect QAndroidStyle::AndroidProgressBarControl::subElementRect(QStyle::SubElemen
         p |= QRect(padding.left(), padding.top(), padding.right() - padding.left(), padding.bottom() - padding.top());
         padding = m_progressDrawable->padding();
         p |= QRect(padding.left(), padding.top(), padding.right() - padding.left(), padding.bottom() - padding.top());
-
         QRect r = option->rect.adjusted(p.left(), p.top(), -p.right(), -p.bottom());
 
         if (horizontal) {
@@ -1731,15 +1730,15 @@ void QAndroidStyle::AndroidSeekBarControl::drawControl(const QStyleOption *optio
         if (drawable->type() == State)
             drawable = static_cast<const QAndroidStyle::AndroidStateDrawable *>(m_seekBarThumb)->bestAndroidStateMatch(option);
         QStyleOption copy(*option);
-        copy.rect.setY((copy.rect.height() - m_minSize.height()) / 2);
-        copy.rect.setHeight(m_minSize.height());
+        copy.rect.setHeight(m_progressDrawable->size().height());
         copy.rect.setWidth(copy.rect.width() - drawable->size().width());
-        copy.rect.translate(drawable->size().width() / 2, 0);
+        const int yTranslate = abs(drawable->size().height() - copy.rect.height()) / 2;
+        copy.rect.translate(drawable->size().width() / 2, yTranslate);
         m_progressDrawable->draw(p, &copy);
         if (styleOption->orientation == Qt::Vertical)
             qCritical() << "Vertical slider are not supported";
-        int pos = copy.rect.width()*factor - drawable->size().width() / 2;
-        copy.rect.translate(pos, 0);
+        int pos = copy.rect.width() * factor - drawable->size().width() / 2;
+        copy.rect.translate(pos, -yTranslate);
         copy.rect.setSize(drawable->size());
         m_seekBarThumb->draw(p, &copy);
     }
