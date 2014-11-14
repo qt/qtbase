@@ -11,9 +11,6 @@
 #include "common/debug.h"
 #include "common/tls.h"
 
-#if defined(ANGLE_PLATFORM_WINRT)
-__declspec(thread)
-#endif
 static TLSIndex currentTLS = TLS_OUT_OF_INDEXES;
 
 namespace egl
@@ -21,12 +18,6 @@ namespace egl
 
 Current *AllocateCurrent()
 {
-#if defined(ANGLE_PLATFORM_WINRT)
-    if (currentTLS == TLS_OUT_OF_INDEXES)
-    {
-        currentTLS = CreateTLSIndex();
-    }
-#endif
     ASSERT(currentTLS != TLS_OUT_OF_INDEXES);
     if (currentTLS == TLS_OUT_OF_INDEXES)
     {
@@ -51,12 +42,6 @@ Current *AllocateCurrent()
 
 void DeallocateCurrent()
 {
-#if defined(ANGLE_PLATFORM_WINRT)
-    if (currentTLS == TLS_OUT_OF_INDEXES)
-    {
-        return;
-    }
-#endif
     Current *current = reinterpret_cast<Current*>(GetTLSValue(currentTLS));
     SafeDelete(current);
     SetTLSValue(currentTLS, NULL);
@@ -72,7 +57,7 @@ extern "C" BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, LPVOID reserved
     {
       case DLL_PROCESS_ATTACH:
         {
-#if defined(ANGLE_ENABLE_TRACE)
+#if defined(ANGLE_ENABLE_DEBUG_TRACE)
             FILE *debug = fopen(TRACE_OUTPUT_FILE, "rt");
 
             if (debug)
@@ -87,15 +72,15 @@ extern "C" BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, LPVOID reserved
             }
 #endif
 
-#if defined(ANGLE_PLATFORM_WINRT) // On WinRT, don't handle TLS from DllMain
-            return DisableThreadLibraryCalls(instance);
-#endif
-
             currentTLS = CreateTLSIndex();
             if (currentTLS == TLS_OUT_OF_INDEXES)
             {
                 return FALSE;
             }
+
+#ifdef ANGLE_ENABLE_DEBUG_ANNOTATIONS
+            gl::InitializeDebugAnnotations();
+#endif
         }
         // Fall through to initialize index
       case DLL_THREAD_ATTACH:
@@ -105,15 +90,17 @@ extern "C" BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, LPVOID reserved
         break;
       case DLL_THREAD_DETACH:
         {
-#if !defined(ANGLE_PLATFORM_WINRT)
             egl::DeallocateCurrent();
-#endif
         }
         break;
       case DLL_PROCESS_DETACH:
         {
             egl::DeallocateCurrent();
             DestroyTLSIndex(currentTLS);
+
+#ifdef ANGLE_ENABLE_DEBUG_ANNOTATIONS
+            gl::UninitializeDebugAnnotations();
+#endif
         }
         break;
       default:
@@ -143,11 +130,11 @@ Current *GetCurrentData()
 #endif
 }
 
-void setCurrentError(EGLint error)
+void recordError(const Error &error)
 {
     Current *current = GetCurrentData();
 
-    current->error = error;
+    current->error = error.getCode();
 }
 
 EGLint getCurrentError()
@@ -211,11 +198,6 @@ EGLSurface getCurrentReadSurface()
     Current *current = GetCurrentData();
 
     return current->readSurface;
-}
-
-void error(EGLint errorCode)
-{
-    egl::setCurrentError(errorCode);
 }
 
 }

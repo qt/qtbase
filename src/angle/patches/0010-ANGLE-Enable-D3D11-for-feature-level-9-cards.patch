@@ -1,6 +1,6 @@
-From 0e8aa60332e17f284804dc1b89a9db5795a92ecb Mon Sep 17 00:00:00 2001
-From: Andrew Knight <andrew.knight@digia.com>
-Date: Wed, 17 Sep 2014 21:17:39 +0300
+From 829bf86c57357d3c8ec598b92fcfdb1849e84075 Mon Sep 17 00:00:00 2001
+From: Andrew Knight <andrew.knight@theqtcompany.com>
+Date: Tue, 11 Nov 2014 17:11:54 +0200
 Subject: [PATCH 10/16] ANGLE: Enable D3D11 for feature level 9 cards
 
 Enable use of ANGLE on lower-end hardware, such as Surface RT and
@@ -8,23 +8,32 @@ Windows Phone 8.
 
 Change-Id: Ice536802e4eedc1d264abd0dd65960638fce59e4
 ---
- src/3rdparty/angle/src/libGLESv2/angletypes.cpp    |   4 +-
- .../src/libGLESv2/renderer/d3d/d3d11/Blit11.cpp    |  73 +++----
+ src/3rdparty/angle/src/libGLESv2/angletypes.cpp    |   6 +-
+ .../src/libGLESv2/renderer/d3d/d3d11/Blit11.cpp    |  69 ++++---
  .../src/libGLESv2/renderer/d3d/d3d11/Buffer11.cpp  |   4 +-
- .../src/libGLESv2/renderer/d3d/d3d11/Clear11.cpp   |   8 +-
- .../renderer/d3d/d3d11/PixelTransfer11.cpp         |   7 +-
- .../libGLESv2/renderer/d3d/d3d11/Renderer11.cpp    | 209 +++++++++++++--------
+ .../src/libGLESv2/renderer/d3d/d3d11/Clear11.cpp   |   7 +-
+ .../renderer/d3d/d3d11/PixelTransfer11.cpp         |   9 +-
+ .../libGLESv2/renderer/d3d/d3d11/Renderer11.cpp    | 226 +++++++++++++--------
  .../src/libGLESv2/renderer/d3d/d3d11/Renderer11.h  |   1 +
- .../renderer/d3d/d3d11/TextureStorage11.cpp        |   2 +-
+ .../renderer/d3d/d3d11/TextureStorage11.cpp        |   4 +-
  .../libGLESv2/renderer/d3d/d3d11/formatutils11.cpp |   4 +-
  .../renderer/d3d/d3d11/renderer11_utils.cpp        |   2 +-
- 10 files changed, 190 insertions(+), 124 deletions(-)
+ 10 files changed, 208 insertions(+), 124 deletions(-)
 
 diff --git a/src/3rdparty/angle/src/libGLESv2/angletypes.cpp b/src/3rdparty/angle/src/libGLESv2/angletypes.cpp
-index 06618d5..bb6425d 100644
+index 6fd02e0..5a0cfc5 100644
 --- a/src/3rdparty/angle/src/libGLESv2/angletypes.cpp
 +++ b/src/3rdparty/angle/src/libGLESv2/angletypes.cpp
-@@ -22,8 +22,8 @@ SamplerState::SamplerState()
+@@ -12,6 +12,8 @@
+ #include "libGLESv2/State.h"
+ #include "libGLESv2/VertexArray.h"
+ 
++#include <float.h>
++
+ namespace gl
+ {
+ 
+@@ -24,8 +26,8 @@ SamplerState::SamplerState()
        maxAnisotropy(1.0f),
        baseLevel(0),
        maxLevel(1000),
@@ -36,28 +45,28 @@ index 06618d5..bb6425d 100644
        compareFunc(GL_LEQUAL),
        swizzleRed(GL_RED),
 diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/Blit11.cpp b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/Blit11.cpp
-index 72820a4..d43e65e 100644
+index 91e7552..06aea9b 100644
 --- a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/Blit11.cpp
 +++ b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/Blit11.cpp
-@@ -209,7 +209,7 @@ Blit11::Blit11(rx::Renderer11 *renderer)
+@@ -209,7 +209,7 @@ Blit11::Blit11(Renderer11 *renderer)
      pointSamplerDesc.BorderColor[2] = 0.0f;
      pointSamplerDesc.BorderColor[3] = 0.0f;
      pointSamplerDesc.MinLOD = 0.0f;
 -    pointSamplerDesc.MaxLOD = 0.0f;
-+    pointSamplerDesc.MaxLOD = mRenderer->isLevel9() ? FLT_MAX : 0.0f;
++    pointSamplerDesc.MaxLOD = mRenderer->isLevel9() ? D3D11_FLOAT32_MAX : 0.0f;
  
      result = device->CreateSamplerState(&pointSamplerDesc, &mPointSampler);
      ASSERT(SUCCEEDED(result));
-@@ -228,7 +228,7 @@ Blit11::Blit11(rx::Renderer11 *renderer)
+@@ -228,7 +228,7 @@ Blit11::Blit11(Renderer11 *renderer)
      linearSamplerDesc.BorderColor[2] = 0.0f;
      linearSamplerDesc.BorderColor[3] = 0.0f;
      linearSamplerDesc.MinLOD = 0.0f;
 -    linearSamplerDesc.MaxLOD = 0.0f;
-+    linearSamplerDesc.MaxLOD = mRenderer->isLevel9() ? FLT_MAX : 0.0f;
++    linearSamplerDesc.MaxLOD = mRenderer->isLevel9() ? D3D11_FLOAT32_MAX : 0.0f;
  
      result = device->CreateSamplerState(&linearSamplerDesc, &mLinearSampler);
      ASSERT(SUCCEEDED(result));
-@@ -290,28 +290,31 @@ Blit11::Blit11(rx::Renderer11 *renderer)
+@@ -290,28 +290,31 @@ Blit11::Blit11(Renderer11 *renderer)
      ASSERT(SUCCEEDED(result));
      d3d11::SetDebugName(mQuad2DVS, "Blit11 2D vertex shader");
  
@@ -76,14 +85,14 @@ index 72820a4..d43e65e 100644
 -    result = device->CreateInputLayout(quad3DLayout, ArraySize(quad3DLayout), g_VS_Passthrough3D, ArraySize(g_VS_Passthrough3D), &mQuad3DIL);
 -    ASSERT(SUCCEEDED(result));
 -    d3d11::SetDebugName(mQuad3DIL, "Blit11 3D input layout");
+-
+-    result = device->CreateVertexShader(g_VS_Passthrough3D, ArraySize(g_VS_Passthrough3D), NULL, &mQuad3DVS);
+-    ASSERT(SUCCEEDED(result));
+-    d3d11::SetDebugName(mQuad3DVS, "Blit11 3D vertex shader");
 +        result = device->CreatePixelShader(g_PS_PassthroughDepth2D, ArraySize(g_PS_PassthroughDepth2D), NULL, &mDepthPS);
 +        ASSERT(SUCCEEDED(result));
 +        d3d11::SetDebugName(mDepthPS, "Blit11 2D depth pixel shader");
  
--    result = device->CreateVertexShader(g_VS_Passthrough3D, ArraySize(g_VS_Passthrough3D), NULL, &mQuad3DVS);
--    ASSERT(SUCCEEDED(result));
--    d3d11::SetDebugName(mQuad3DVS, "Blit11 3D vertex shader");
--
 -    result = device->CreateGeometryShader(g_GS_Passthrough3D, ArraySize(g_GS_Passthrough3D), NULL, &mQuad3DGS);
 -    ASSERT(SUCCEEDED(result));
 -    d3d11::SetDebugName(mQuad3DGS, "Renderer11 copy 3D texture geometry shader");
@@ -109,7 +118,7 @@ index 72820a4..d43e65e 100644
  
      buildShaderMap();
  
-@@ -972,40 +975,44 @@ void Blit11::buildShaderMap()
+@@ -970,22 +973,27 @@ void Blit11::buildShaderMap()
      ID3D11Device *device = mRenderer->getDevice();
  
      add2DBlitShaderToMap(GL_RGBA,            false, d3d11::CompilePS(device, g_PS_PassthroughRGBA2D,     "Blit11 2D RGBA pixel shader"           ));
@@ -145,19 +154,7 @@ index 72820a4..d43e65e 100644
      add3DBlitShaderToMap(GL_RGBA,            false, d3d11::CompilePS(device, g_PS_PassthroughRGBA3D,     "Blit11 3D RGBA pixel shader"           ));
      add3DBlitShaderToMap(GL_RGBA_INTEGER,    false, d3d11::CompilePS(device, g_PS_PassthroughRGBA3DUI,   "Blit11 3D UI RGBA pixel shader"        ));
      add3DBlitShaderToMap(GL_RGBA_INTEGER,    true,  d3d11::CompilePS(device, g_PS_PassthroughRGBA3DI,    "Blit11 3D I RGBA pixel shader"         ));
-     add3DBlitShaderToMap(GL_BGRA_EXT,        false, d3d11::CompilePS(device, g_PS_PassthroughRGBA3D,     "Blit11 3D BGRA pixel shader"           ));
-     add3DBlitShaderToMap(GL_RGB,             false, d3d11::CompilePS(device, g_PS_PassthroughRGB3D,      "Blit11 3D RGB pixel shader"            ));
-+    add3DBlitShaderToMap(GL_RG,              false, d3d11::CompilePS(device, g_PS_PassthroughRG3D,       "Blit11 3D RG pixel shader"             ));
-     add3DBlitShaderToMap(GL_RGB_INTEGER,     false, d3d11::CompilePS(device, g_PS_PassthroughRGB3DUI,    "Blit11 3D RGB UI pixel shader"         ));
-     add3DBlitShaderToMap(GL_RGB_INTEGER,     true,  d3d11::CompilePS(device, g_PS_PassthroughRGB3DI,     "Blit11 3D RGB I pixel shader"          ));
--    add3DBlitShaderToMap(GL_RG,              false, d3d11::CompilePS(device, g_PS_PassthroughRG3D,       "Blit11 3D RG pixel shader"             ));
-+    add3DBlitShaderToMap(GL_RED,             false, d3d11::CompilePS(device, g_PS_PassthroughR3D,        "Blit11 3D R pixel shader"              ));
-     add3DBlitShaderToMap(GL_RG_INTEGER,      false, d3d11::CompilePS(device, g_PS_PassthroughRG3DUI,     "Blit11 3D RG UI pixel shader"          ));
-     add3DBlitShaderToMap(GL_RG_INTEGER,      true,  d3d11::CompilePS(device, g_PS_PassthroughRG3DI,      "Blit11 3D RG I pixel shader"           ));
--    add3DBlitShaderToMap(GL_RED,             false, d3d11::CompilePS(device, g_PS_PassthroughR3D,        "Blit11 3D R pixel shader"              ));
-     add3DBlitShaderToMap(GL_RED_INTEGER,     false, d3d11::CompilePS(device, g_PS_PassthroughR3DUI,      "Blit11 3D R UI pixel shader"           ));
-     add3DBlitShaderToMap(GL_RED_INTEGER,     true,  d3d11::CompilePS(device, g_PS_PassthroughR3DI,       "Blit11 3D R I pixel shader"            ));
-     add3DBlitShaderToMap(GL_ALPHA,           false, d3d11::CompilePS(device, g_PS_PassthroughRGBA3D,     "Blit11 3D alpha pixel shader"          ));
+@@ -1003,7 +1011,6 @@ void Blit11::buildShaderMap()
      add3DBlitShaderToMap(GL_LUMINANCE,       false, d3d11::CompilePS(device, g_PS_PassthroughLum3D,      "Blit11 3D luminance pixel shader"      ));
      add3DBlitShaderToMap(GL_LUMINANCE_ALPHA, false, d3d11::CompilePS(device, g_PS_PassthroughLumAlpha3D, "Blit11 3D luminance alpha pixel shader"));
  
@@ -166,22 +163,22 @@ index 72820a4..d43e65e 100644
      addSwizzleShaderToMap(GL_INT,          D3D_SRV_DIMENSION_TEXTURE2D,      d3d11::CompilePS(device, g_PS_SwizzleI2D,       "Blit11 2D I swizzle pixel shader" ));
  
 diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/Buffer11.cpp b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/Buffer11.cpp
-index 43ce5ba..ecd4d46 100644
+index 2d5fa3c..5aab379 100644
 --- a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/Buffer11.cpp
 +++ b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/Buffer11.cpp
-@@ -747,7 +747,9 @@ void Buffer11::NativeBuffer11::fillBufferDesc(D3D11_BUFFER_DESC* bufferDesc, Ren
+@@ -753,7 +753,9 @@ void Buffer11::NativeBuffer11::fillBufferDesc(D3D11_BUFFER_DESC* bufferDesc, Ren
  
        case BUFFER_USAGE_VERTEX_OR_TRANSFORM_FEEDBACK:
          bufferDesc->Usage = D3D11_USAGE_DEFAULT;
 -        bufferDesc->BindFlags = D3D11_BIND_VERTEX_BUFFER | D3D11_BIND_STREAM_OUTPUT;
 +        bufferDesc->BindFlags = D3D11_BIND_VERTEX_BUFFER;
-+        if (!static_cast<Renderer11 *>(renderer)->isLevel9())
++        if (!renderer->isLevel9())
 +            bufferDesc->BindFlags |= D3D11_BIND_STREAM_OUTPUT;
          bufferDesc->CPUAccessFlags = 0;
          break;
  
 diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/Clear11.cpp b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/Clear11.cpp
-index 5caa427..765d34f 100644
+index 4630762..7185a05 100644
 --- a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/Clear11.cpp
 +++ b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/Clear11.cpp
 @@ -104,7 +104,7 @@ Clear11::Clear11(Renderer11 *renderer)
@@ -189,11 +186,11 @@ index 5caa427..765d34f 100644
      rsDesc.DepthBiasClamp = 0.0f;
      rsDesc.SlopeScaledDepthBias = 0.0f;
 -    rsDesc.DepthClipEnable = FALSE;
-+    rsDesc.DepthClipEnable = mRenderer->isLevel9();
++    rsDesc.DepthClipEnable = renderer->isLevel9();
      rsDesc.ScissorEnable = FALSE;
      rsDesc.MultisampleEnable = FALSE;
      rsDesc.AntialiasedLineEnable = FALSE;
-@@ -114,6 +114,12 @@ Clear11::Clear11(Renderer11 *renderer)
+@@ -114,6 +114,11 @@ Clear11::Clear11(Renderer11 *renderer)
      d3d11::SetDebugName(mRasterizerState, "Clear11 masked clear rasterizer state");
  
      mFloatClearShader = CreateClearShader(device, DXGI_FORMAT_R32G32B32A32_FLOAT, g_VS_ClearFloat, g_PS_ClearFloat);
@@ -202,53 +199,63 @@ index 5caa427..765d34f 100644
 +        memset(&mIntClearShader, 0, sizeof(ClearShader));
 +        return;
 +    }
-+
      mUintClearShader  = CreateClearShader(device, DXGI_FORMAT_R32G32B32A32_UINT,  g_VS_ClearUint,  g_PS_ClearUint );
      mIntClearShader   = CreateClearShader(device, DXGI_FORMAT_R32G32B32A32_SINT,  g_VS_ClearSint,  g_PS_ClearSint );
  }
 diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/PixelTransfer11.cpp b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/PixelTransfer11.cpp
-index edaafec..a4e84f9 100644
+index a4072d8..6a3d347 100644
 --- a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/PixelTransfer11.cpp
 +++ b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/PixelTransfer11.cpp
-@@ -88,13 +88,16 @@ PixelTransfer11::PixelTransfer11(Renderer11 *renderer)
-     ASSERT(SUCCEEDED(result));
-     d3d11::SetDebugName(mParamsConstantBuffer, "PixelTransfer11 constant buffer");
+@@ -133,10 +133,13 @@ gl::Error PixelTransfer11::loadResources()
+         return gl::Error(GL_OUT_OF_MEMORY, "Failed to create internal buffer to texture vertex shader.");
+     }
  
-+    StructZero(&mParamsData);
-+
-     // init shaders
-+    if (mRenderer->isLevel9())
-+        return;
-+
-     mBufferToTextureVS = d3d11::CompileVS(device, g_VS_BufferToTexture, "BufferToTexture VS");
-     mBufferToTextureGS = d3d11::CompileGS(device, g_GS_BufferToTexture, "BufferToTexture GS");
+-    mBufferToTextureGS = d3d11::CompileGS(device, g_GS_BufferToTexture, "BufferToTexture GS");
+-    if (!mBufferToTextureGS)
++    if (!mRenderer->isLevel9())
+     {
+-        return gl::Error(GL_OUT_OF_MEMORY, "Failed to create internal buffer to texture geometry shader.");
++        mBufferToTextureGS = d3d11::CompileGS(device, g_GS_BufferToTexture, "BufferToTexture GS");
++        if (!mBufferToTextureGS)
++        {
++            return gl::Error(GL_OUT_OF_MEMORY, "Failed to create internal buffer to texture geometry shader.");
++        }
+     }
  
-     buildShaderMap();
--
--    StructZero(&mParamsData);
- }
- 
- PixelTransfer11::~PixelTransfer11()
+     gl::Error error = buildShaderMap();
 diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/Renderer11.cpp b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/Renderer11.cpp
-index 0bb7489..b4b26a8 100644
+index ffc6cc9..f6ba930 100644
 --- a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/Renderer11.cpp
 +++ b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/Renderer11.cpp
-@@ -162,6 +162,11 @@ EGLint Renderer11::initialize()
-         D3D_FEATURE_LEVEL_11_0,
-         D3D_FEATURE_LEVEL_10_1,
-         D3D_FEATURE_LEVEL_10_0,
-+#if !defined(ANGLE_ENABLE_D3D9)
-+        D3D_FEATURE_LEVEL_9_3,
-+        D3D_FEATURE_LEVEL_9_2,
-+        D3D_FEATURE_LEVEL_9_1,
-+#endif
-     };
+@@ -153,6 +153,24 @@ Renderer11::Renderer11(egl::Display *display, EGLNativeDisplayType hDc, const eg
+         }
+     }
  
-     D3D_DRIVER_TYPE driverType = D3D_DRIVER_TYPE_HARDWARE;
-@@ -1112,6 +1117,84 @@ gl::Error Renderer11::drawElements(GLenum mode, GLsizei count, GLenum type, cons
++#if !defined(ANGLE_ENABLE_D3D9)
++    if (requestedMajorVersion == EGL_DONT_CARE || requestedMajorVersion >= 9)
++    {
++        if (requestedMinorVersion == EGL_DONT_CARE || requestedMinorVersion >= 3)
++        {
++            mAvailableFeatureLevels.push_back(D3D_FEATURE_LEVEL_9_3);
++        }
++        if (requestedMinorVersion == EGL_DONT_CARE || requestedMinorVersion >= 2)
++        {
++            mAvailableFeatureLevels.push_back(D3D_FEATURE_LEVEL_9_2);
++        }
++        if (requestedMinorVersion == EGL_DONT_CARE || requestedMinorVersion >= 1)
++        {
++            mAvailableFeatureLevels.push_back(D3D_FEATURE_LEVEL_9_1);
++        }
++    }
++#endif
++
+     mDriverType = (attributes.get(EGL_PLATFORM_ANGLE_USE_WARP_ANGLE, EGL_FALSE) == EGL_TRUE) ? D3D_DRIVER_TYPE_WARP
+                                                                                              : D3D_DRIVER_TYPE_HARDWARE;
+ }
+@@ -1170,6 +1188,83 @@ gl::Error Renderer11::drawElements(GLenum mode, GLsizei count, GLenum type, cons
+         return gl::Error(GL_NO_ERROR);
      }
  }
- 
 +template<typename T>
 +static void fillLineLoopIndices(GLenum type, GLsizei count, const GLvoid *indices, T *data)
 +{
@@ -326,12 +333,11 @@ index 0bb7489..b4b26a8 100644
 +      default: UNREACHABLE();
 +    }
 +}
-+
+ 
  gl::Error Renderer11::drawLineLoop(GLsizei count, GLenum type, const GLvoid *indices, int minIndex, gl::Buffer *elementArrayBuffer)
  {
-     // Get the raw indices for an indexed draw
-@@ -1123,10 +1206,13 @@ gl::Error Renderer11::drawLineLoop(GLsizei count, GLenum type, const GLvoid *ind
-         indices = static_cast<const GLubyte*>(storage->getData()) + offset;
+@@ -1189,10 +1284,13 @@ gl::Error Renderer11::drawLineLoop(GLsizei count, GLenum type, const GLvoid *ind
+         indices = bufferData + offset;
      }
  
 +    // TODO: some level 9 hardware supports 32-bit indices; test and store support instead
@@ -345,7 +351,7 @@ index 0bb7489..b4b26a8 100644
          if (error.isError())
          {
              SafeDelete(mLineLoopIB);
-@@ -1137,7 +1223,8 @@ gl::Error Renderer11::drawLineLoop(GLsizei count, GLenum type, const GLvoid *ind
+@@ -1203,7 +1301,8 @@ gl::Error Renderer11::drawLineLoop(GLsizei count, GLenum type, const GLvoid *ind
      // Checked by Renderer11::applyPrimitiveType
      ASSERT(count >= 0);
  
@@ -355,7 +361,7 @@ index 0bb7489..b4b26a8 100644
      {
          return gl::Error(GL_OUT_OF_MEMORY, "Failed to create a 32-bit looping index buffer for GL_LINE_LOOP, too many indices required.");
      }
-@@ -1157,42 +1244,12 @@ gl::Error Renderer11::drawLineLoop(GLsizei count, GLenum type, const GLvoid *ind
+@@ -1223,42 +1322,12 @@ gl::Error Renderer11::drawLineLoop(GLsizei count, GLenum type, const GLvoid *ind
          return error;
      }
  
@@ -402,8 +408,8 @@ index 0bb7489..b4b26a8 100644
      error = mLineLoopIB->unmapBuffer();
      if (error.isError())
      {
-@@ -1227,10 +1284,12 @@ gl::Error Renderer11::drawTriangleFan(GLsizei count, GLenum type, const GLvoid *
-         indices = static_cast<const GLubyte*>(storage->getData()) + offset;
+@@ -1300,10 +1369,12 @@ gl::Error Renderer11::drawTriangleFan(GLsizei count, GLenum type, const GLvoid *
+         indices = bufferData + offset;
      }
  
 +    const int indexType = isLevel9() ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT;
@@ -416,7 +422,7 @@ index 0bb7489..b4b26a8 100644
          if (error.isError())
          {
              SafeDelete(mTriangleFanIB);
-@@ -1243,13 +1302,14 @@ gl::Error Renderer11::drawTriangleFan(GLsizei count, GLenum type, const GLvoid *
+@@ -1316,13 +1387,14 @@ gl::Error Renderer11::drawTriangleFan(GLsizei count, GLenum type, const GLvoid *
  
      const unsigned int numTris = count - 2;
  
@@ -434,7 +440,7 @@ index 0bb7489..b4b26a8 100644
      if (error.isError())
      {
          return error;
-@@ -1263,45 +1323,12 @@ gl::Error Renderer11::drawTriangleFan(GLsizei count, GLenum type, const GLvoid *
+@@ -1336,45 +1408,12 @@ gl::Error Renderer11::drawTriangleFan(GLsizei count, GLenum type, const GLvoid *
          return error;
      }
  
@@ -485,7 +491,7 @@ index 0bb7489..b4b26a8 100644
  
      error = mTriangleFanIB->unmapBuffer();
      if (error.isError())
-@@ -1549,7 +1576,7 @@ gl::Error Renderer11::applyUniforms(const gl::ProgramBinary &programBinary)
+@@ -1634,7 +1673,7 @@ gl::Error Renderer11::applyUniforms(const ProgramImpl &program, const std::vecto
      }
  
      // needed for the point sprite geometry shader
@@ -494,19 +500,7 @@ index 0bb7489..b4b26a8 100644
      {
          mDeviceContext->GSSetConstantBuffers(0, 1, &mDriverConstantBufferPS);
          mCurrentGeometryConstantBuffer = mDriverConstantBufferPS;
-@@ -1711,6 +1738,11 @@ bool Renderer11::testDeviceResettable()
-         D3D_FEATURE_LEVEL_11_0,
-         D3D_FEATURE_LEVEL_10_1,
-         D3D_FEATURE_LEVEL_10_0,
-+#if !defined(ANGLE_ENABLE_D3D9)
-+        D3D_FEATURE_LEVEL_9_3,
-+        D3D_FEATURE_LEVEL_9_2,
-+        D3D_FEATURE_LEVEL_9_1,
-+#endif
-     };
- 
-     ID3D11Device* dummyDevice;
-@@ -1862,7 +1894,10 @@ int Renderer11::getMajorShaderModel() const
+@@ -1938,7 +1977,10 @@ int Renderer11::getMajorShaderModel() const
      {
        case D3D_FEATURE_LEVEL_11_0: return D3D11_SHADER_MAJOR_VERSION;   // 5
        case D3D_FEATURE_LEVEL_10_1: return D3D10_1_SHADER_MAJOR_VERSION; // 4
@@ -518,7 +512,7 @@ index 0bb7489..b4b26a8 100644
        default: UNREACHABLE();      return 0;
      }
  }
-@@ -1873,7 +1908,10 @@ int Renderer11::getMinorShaderModel() const
+@@ -1949,7 +1991,10 @@ int Renderer11::getMinorShaderModel() const
      {
        case D3D_FEATURE_LEVEL_11_0: return D3D11_SHADER_MINOR_VERSION;   // 0
        case D3D_FEATURE_LEVEL_10_1: return D3D10_1_SHADER_MINOR_VERSION; // 1
@@ -530,49 +524,81 @@ index 0bb7489..b4b26a8 100644
        default: UNREACHABLE();      return 0;
      }
  }
-@@ -2387,6 +2425,15 @@ ShaderExecutable *Renderer11::compileToExecutable(gl::InfoLog &infoLog, const ch
-       case D3D_FEATURE_LEVEL_10_0:
-         profileVersion = "4_0";
+@@ -2455,6 +2500,7 @@ gl::Error Renderer11::compileToExecutable(gl::InfoLog &infoLog, const std::strin
+ 
+     unsigned int profileMajorVersion = 0;
+     unsigned int profileMinorVersion = 0;
++    const char *profileSuffix = NULL;
+     switch (mFeatureLevel)
+     {
+       case D3D_FEATURE_LEVEL_11_0:
+@@ -2469,12 +2515,30 @@ gl::Error Renderer11::compileToExecutable(gl::InfoLog &infoLog, const std::strin
+         profileMajorVersion = 4;
+         profileMinorVersion = 0;
          break;
 +      case D3D_FEATURE_LEVEL_9_3:
-+        profileVersion = "4_0_level_9_3";
++        profileMajorVersion = 4;
++        profileMinorVersion = 0;
++        profileSuffix = "_level_9_3";
 +        break;
 +      case D3D_FEATURE_LEVEL_9_2:
-+        profileVersion = "4_0_level_9_2";
++        profileMajorVersion = 4;
++        profileMinorVersion = 0;
++        profileSuffix = "_level_9_2";
 +        break;
 +      case D3D_FEATURE_LEVEL_9_1:
-+        profileVersion = "4_0_level_9_1";
++        profileMajorVersion = 4;
++        profileMinorVersion = 0;
++        profileSuffix = "_level_9_1";
 +        break;
++      break;
        default:
          UNREACHABLE();
-         return NULL;
+         return gl::Error(GL_INVALID_OPERATION);
+     }
+ 
+     std::string profile = FormatString("%s_%u_%u", profileType, profileMajorVersion, profileMinorVersion);
++    if (profileSuffix)
++        profile += profileSuffix;
+ 
+     UINT flags = D3DCOMPILE_OPTIMIZATION_LEVEL2;
+ 
 diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/Renderer11.h b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/Renderer11.h
-index b86f5e5..2a53fa1 100644
+index c789cae..d44bd2f 100644
 --- a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/Renderer11.h
 +++ b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/Renderer11.h
-@@ -184,6 +184,7 @@ class Renderer11 : public Renderer
+@@ -188,6 +188,7 @@ class Renderer11 : public RendererD3D
      ID3D11Device *getDevice() { return mDevice; }
      ID3D11DeviceContext *getDeviceContext() { return mDeviceContext; };
-     IDXGIFactory *getDxgiFactory() { return mDxgiFactory; };
+     DXGIFactory *getDxgiFactory() { return mDxgiFactory; };
 +    bool isLevel9() { return mFeatureLevel <= D3D_FEATURE_LEVEL_9_3; }
  
      Blit11 *getBlitter() { return mBlit; }
  
 diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/TextureStorage11.cpp b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/TextureStorage11.cpp
-index 3f0cd5b..91e7147 100644
+index 4287918..74af27e 100644
 --- a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/TextureStorage11.cpp
 +++ b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/TextureStorage11.cpp
-@@ -472,7 +472,7 @@ TextureStorage11_2D::TextureStorage11_2D(Renderer *renderer, GLenum internalform
+@@ -744,7 +744,7 @@ gl::Error TextureStorage11_2D::getResource(ID3D11Resource **outResource)
          D3D11_TEXTURE2D_DESC desc;
-         desc.Width = width;      // Compressed texture size constraints?
-         desc.Height = height;
--        desc.MipLevels = ((levels > 0) ? (mTopLevel + levels) : 0);
-+        desc.MipLevels = desc.MipLevels = mRenderer->isLevel9() ? 1 : ((levels > 0) ? (mTopLevel + levels) : 0);
+         desc.Width = mTextureWidth;      // Compressed texture size constraints?
+         desc.Height = mTextureHeight;
+-        desc.MipLevels = mMipLevels;
++        desc.MipLevels = mRenderer->isLevel9() ? 1 : mMipLevels;
          desc.ArraySize = 1;
          desc.Format = mTextureFormat;
          desc.SampleDesc.Count = 1;
+@@ -863,7 +863,7 @@ gl::Error TextureStorage11_2D::createSRV(int baseLevel, int mipLevels, DXGI_FORM
+     srvDesc.Format = format;
+     srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+     srvDesc.Texture2D.MostDetailedMip = mTopLevel + baseLevel;
+-    srvDesc.Texture2D.MipLevels = mipLevels;
++    srvDesc.Texture2D.MipLevels = mRenderer->isLevel9() ? -1 : mipLevels;
+ 
+     ID3D11Device *device = mRenderer->getDevice();
+     HRESULT result = device->CreateShaderResourceView(texture, &srvDesc, outSRV);
 diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/formatutils11.cpp b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/formatutils11.cpp
-index 1ea916d..c078287 100644
+index 1ea916d..90a879e 100644
 --- a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/formatutils11.cpp
 +++ b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/formatutils11.cpp
 @@ -557,7 +557,7 @@ D3D11LoadFunctionMap BuildD3D11LoadFunctionMap()
@@ -589,15 +615,15 @@ index 1ea916d..c078287 100644
      // From GL_EXT_texture_storage
      //                           | GL internal format     | D3D11 texture format          | D3D11 SRV format                    | D3D11 RTV format              | D3D11 DSV format               |
 -    InsertD3D11FormatInfo(&map, GL_ALPHA8_EXT,             DXGI_FORMAT_A8_UNORM,           DXGI_FORMAT_A8_UNORM,                 DXGI_FORMAT_A8_UNORM,           DXGI_FORMAT_UNKNOWN           );
-+    InsertD3D11FormatInfo(&map, GL_ALPHA8_EXT,             DXGI_FORMAT_R8G8B8A8_UNORM,     DXGI_FORMAT_R8G8B8A8_UNORM,           DXGI_FORMAT_R8G8B8A8_UNORM,           DXGI_FORMAT_UNKNOWN           );
++    InsertD3D11FormatInfo(&map, GL_ALPHA8_EXT,             DXGI_FORMAT_R8G8B8A8_UNORM,     DXGI_FORMAT_R8G8B8A8_UNORM,           DXGI_FORMAT_R8G8B8A8_UNORM,     DXGI_FORMAT_UNKNOWN           );
      InsertD3D11FormatInfo(&map, GL_LUMINANCE8_EXT,         DXGI_FORMAT_R8G8B8A8_UNORM,     DXGI_FORMAT_R8G8B8A8_UNORM,           DXGI_FORMAT_R8G8B8A8_UNORM,     DXGI_FORMAT_UNKNOWN           );
      InsertD3D11FormatInfo(&map, GL_ALPHA32F_EXT,           DXGI_FORMAT_R32G32B32A32_FLOAT, DXGI_FORMAT_R32G32B32A32_FLOAT,       DXGI_FORMAT_R32G32B32A32_FLOAT, DXGI_FORMAT_UNKNOWN           );
      InsertD3D11FormatInfo(&map, GL_LUMINANCE32F_EXT,       DXGI_FORMAT_R32G32B32A32_FLOAT, DXGI_FORMAT_R32G32B32A32_FLOAT,       DXGI_FORMAT_R32G32B32A32_FLOAT, DXGI_FORMAT_UNKNOWN           );
 diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/renderer11_utils.cpp b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/renderer11_utils.cpp
-index b1867fb..06a22eb 100644
+index 9ffc32e..cbfe557 100644
 --- a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/renderer11_utils.cpp
 +++ b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/renderer11_utils.cpp
-@@ -283,7 +283,7 @@ static bool GetNPOTTextureSupport(D3D_FEATURE_LEVEL featureLevel)
+@@ -284,7 +284,7 @@ static bool GetNPOTTextureSupport(D3D_FEATURE_LEVEL featureLevel)
          // From http://msdn.microsoft.com/en-us/library/windows/desktop/ff476876.aspx
        case D3D_FEATURE_LEVEL_9_3:
        case D3D_FEATURE_LEVEL_9_2:
@@ -607,5 +633,5 @@ index b1867fb..06a22eb 100644
        default: UNREACHABLE();      return false;
      }
 -- 
-1.9.0.msysgit.0
+1.9.4.msysgit.1
 

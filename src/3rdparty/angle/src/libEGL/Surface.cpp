@@ -22,23 +22,19 @@
 #include "libEGL/main.h"
 #include "libEGL/Display.h"
 
-#if defined(ANGLE_PLATFORM_WINRT)
-#  include "wrl.h"
-#  include "windows.graphics.display.h"
-#  include "windows.ui.core.h"
-using namespace ABI::Windows::Graphics::Display;
-using namespace ABI::Windows::Foundation;
-using namespace ABI::Windows::UI::Core;
-using namespace Microsoft::WRL;
-#endif
+#include "common/NativeWindow.h"
+
+//TODO(jmadill): phase this out
+#include "libGLESv2/renderer/d3d/RendererD3D.h"
 
 namespace egl
 {
 
-Surface::Surface(Display *display, const Config *config, EGLNativeWindowType window, EGLint fixedSize, EGLint width, EGLint height, EGLint postSubBufferSupported)
-    : mDisplay(display), mConfig(config), mWindow(window), mPostSubBufferSupported(postSubBufferSupported)
+Surface::Surface(Display *display, const Config *config, EGLNativeWindowType window, EGLint fixedSize, EGLint width, EGLint height, EGLint postSubBufferSupported) 
+    : mDisplay(display), mConfig(config), mNativeWindow(window, display->getDisplayId()), mPostSubBufferSupported(postSubBufferSupported)
 {
-    mRenderer = mDisplay->getRenderer();
+    //TODO(jmadill): MANGLE refactor. (note, can't call makeRendererD3D because of dll export issues)
+    mRenderer = static_cast<rx::RendererD3D*>(mDisplay->getRenderer());
     mSwapChain = NULL;
     mShareHandle = NULL;
     mTexture = NULL;
@@ -51,27 +47,19 @@ Surface::Surface(Display *display, const Config *config, EGLNativeWindowType win
     mSwapInterval = -1;
     mWidth = width;
     mHeight = height;
+    mFixedWidth = mWidth;
+    mFixedHeight = mHeight;
     setSwapInterval(1);
     mFixedSize = fixedSize;
-    mSwapFlags = rx::SWAP_NORMAL;
-#if defined(ANGLE_PLATFORM_WINRT)
-    if (mWindow)
-        mWindow->AddRef();
-    mScaleFactor = 1.0;
-    mSizeToken.value = 0;
-    mDpiToken.value = 0;
-#   if WINAPI_FAMILY==WINAPI_FAMILY_PHONE_APP
-    mOrientationToken.value = 0;
-#   endif
-#endif
 
     subclassWindow();
 }
 
 Surface::Surface(Display *display, const Config *config, HANDLE shareHandle, EGLint width, EGLint height, EGLenum textureFormat, EGLenum textureType)
-    : mDisplay(display), mWindow(NULL), mConfig(config), mShareHandle(shareHandle), mWidth(width), mHeight(height), mPostSubBufferSupported(EGL_FALSE)
+    : mDisplay(display), mNativeWindow(NULL, NULL), mConfig(config), mShareHandle(shareHandle), mWidth(width), mHeight(height), mPostSubBufferSupported(EGL_FALSE)
 {
-    mRenderer = mDisplay->getRenderer();
+    //TODO(jmadill): MANGLE refactor. (note, can't call makeRendererD3D because of dll export issues)
+    mRenderer = static_cast<rx::RendererD3D*>(mDisplay->getRenderer());
     mSwapChain = NULL;
     mWindowSubclassed = false;
     mTexture = NULL;
@@ -85,90 +73,33 @@ Surface::Surface(Display *display, const Config *config, HANDLE shareHandle, EGL
     setSwapInterval(1);
     // This constructor is for offscreen surfaces, which are always fixed-size.
     mFixedSize = EGL_TRUE;
-    mSwapFlags = rx::SWAP_NORMAL;
-#if defined(ANGLE_PLATFORM_WINRT)
-    mScaleFactor = 1.0;
-    mSizeToken.value = 0;
-    mDpiToken.value = 0;
-#   if WINAPI_FAMILY==WINAPI_FAMILY_PHONE_APP
-    mOrientationToken.value = 0;
-#   endif
-#endif
+    mFixedWidth = mWidth;
+    mFixedHeight = mHeight;
 }
 
 Surface::~Surface()
 {
-#if defined(ANGLE_PLATFORM_WINRT)
-    if (mSizeToken.value) {
-        ComPtr<ICoreWindow> coreWindow;
-        HRESULT hr = mWindow->QueryInterface(coreWindow.GetAddressOf());
-        ASSERT(SUCCEEDED(hr));
-
-        hr = coreWindow->remove_SizeChanged(mSizeToken);
-        ASSERT(SUCCEEDED(hr));
-    }
-    if (mDpiToken.value) {
-        ComPtr<IDisplayInformation> displayInformation;
-        HRESULT hr = mDisplay->getDisplayId()->QueryInterface(displayInformation.GetAddressOf());
-        ASSERT(SUCCEEDED(hr));
-
-        hr = displayInformation->remove_DpiChanged(mDpiToken);
-        ASSERT(SUCCEEDED(hr));
-    }
-#   if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
-    if (mOrientationToken.value) {
-        ComPtr<IDisplayInformation> displayInformation;
-        HRESULT hr = mDisplay->getDisplayId()->QueryInterface(displayInformation.GetAddressOf());
-        ASSERT(SUCCEEDED(hr));
-
-        hr = displayInformation->remove_OrientationChanged(mOrientationToken);
-        ASSERT(SUCCEEDED(hr));
-    }
-#   endif
-#endif
     unsubclassWindow();
     release();
 }
 
-bool Surface::initialize()
+Error Surface::initialize()
 {
-#if defined(ANGLE_PLATFORM_WINRT)
-    if (!mFixedSize) {
-        HRESULT hr;
-        ComPtr<IDisplayInformation> displayInformation;
-        hr = mDisplay->getDisplayId()->QueryInterface(displayInformation.GetAddressOf());
-        ASSERT(SUCCEEDED(hr));
-        onDpiChanged(displayInformation.Get(), 0);
-        hr = displayInformation->add_DpiChanged(Callback<ITypedEventHandler<DisplayInformation *, IInspectable *>>(this, &Surface::onDpiChanged).Get(),
-                                                &mDpiToken);
-        ASSERT(SUCCEEDED(hr));
-
-#   if WINAPI_FAMILY==WINAPI_FAMILY_PHONE_APP
-        onOrientationChanged(displayInformation.Get(), 0);
-        hr = displayInformation->add_OrientationChanged(Callback<ITypedEventHandler<DisplayInformation *, IInspectable *>>(this, &Surface::onOrientationChanged).Get(),
-                                                        &mOrientationToken);
-        ASSERT(SUCCEEDED(hr));
-#   endif
-
-        ComPtr<ICoreWindow> coreWindow;
-        hr = mWindow->QueryInterface(coreWindow.GetAddressOf());
-        ASSERT(SUCCEEDED(hr));
-
-        Rect rect;
-        hr = coreWindow->get_Bounds(&rect);
-        ASSERT(SUCCEEDED(hr));
-        mWidth = rect.Width * mScaleFactor;
-        mHeight = rect.Height * mScaleFactor;
-        hr = coreWindow->add_SizeChanged(Callback<ITypedEventHandler<CoreWindow *, WindowSizeChangedEventArgs *>>(this, &Surface::onSizeChanged).Get(),
-                                         &mSizeToken);
-        ASSERT(SUCCEEDED(hr));
+    if (mNativeWindow.getNativeWindow())
+    {
+        if (!mNativeWindow.initialize())
+        {
+            return Error(EGL_BAD_SURFACE);
+        }
     }
-#endif
 
-    if (!resetSwapChain())
-      return false;
+    Error error = resetSwapChain();
+    if (error.isError())
+    {
+        return error;
+    }
 
-    return true;
+    return Error(EGL_SUCCESS);
 }
 
 void Surface::release()
@@ -181,85 +112,80 @@ void Surface::release()
         mTexture->releaseTexImage();
         mTexture = NULL;
     }
-
-#if defined(ANGLE_PLATFORM_WINRT)
-    if (mWindow)
-        mWindow->Release();
-#endif
 }
 
-bool Surface::resetSwapChain()
+Error Surface::resetSwapChain()
 {
     ASSERT(!mSwapChain);
 
     int width;
     int height;
 
-#if !defined(ANGLE_PLATFORM_WINRT)
     if (!mFixedSize)
     {
         RECT windowRect;
-        if (!GetClientRect(getWindowHandle(), &windowRect))
+        if (!mNativeWindow.getClientRect(&windowRect))
         {
             ASSERT(false);
 
-            ERR("Could not retrieve the window dimensions");
-            return error(EGL_BAD_SURFACE, false);
+            return Error(EGL_BAD_SURFACE, "Could not retrieve the window dimensions");
         }
 
         width = windowRect.right - windowRect.left;
         height = windowRect.bottom - windowRect.top;
     }
     else
-#endif
     {
         // non-window surface - size is determined at creation
         width = mWidth;
         height = mHeight;
     }
 
-    mSwapChain = mRenderer->createSwapChain(mWindow, mShareHandle,
+    mSwapChain = mRenderer->createSwapChain(mNativeWindow, mShareHandle,
                                             mConfig->mRenderTargetFormat,
                                             mConfig->mDepthStencilFormat);
     if (!mSwapChain)
     {
-        return error(EGL_BAD_ALLOC, false);
+        return Error(EGL_BAD_ALLOC);
     }
 
-    if (!resetSwapChain(width, height))
+    Error error = resetSwapChain(width, height);
+    if (error.isError())
     {
-        delete mSwapChain;
-        mSwapChain = NULL;
-        return false;
+        SafeDelete(mSwapChain);
+        return error;
     }
 
-    return true;
+    return Error(EGL_SUCCESS);
 }
 
-bool Surface::resizeSwapChain(int backbufferWidth, int backbufferHeight)
+Error Surface::resizeSwapChain(int backbufferWidth, int backbufferHeight)
 {
-    ASSERT(backbufferWidth >= 0 && backbufferHeight >= 0);
     ASSERT(mSwapChain);
 
-    EGLint status = mSwapChain->resize(std::max(1, backbufferWidth), std::max(1, backbufferHeight));
+#if !defined(ANGLE_ENABLE_WINDOWS_STORE)
+    backbufferWidth = std::max(1, backbufferWidth);
+    backbufferHeight = std::max(1, backbufferHeight);
+#endif
+    EGLint status = mSwapChain->resize(backbufferWidth, backbufferHeight);
 
     if (status == EGL_CONTEXT_LOST)
     {
         mDisplay->notifyDeviceLost();
-        return false;
+        return Error(status);
     }
     else if (status != EGL_SUCCESS)
     {
-        return error(status, false);
+        return Error(status);
     }
 
     mWidth = backbufferWidth;
     mHeight = backbufferHeight;
 
-    return true;
+    return Error(EGL_SUCCESS);
 }
 
-bool Surface::resetSwapChain(int backbufferWidth, int backbufferHeight)
+Error Surface::resetSwapChain(int backbufferWidth, int backbufferHeight)
 {
     ASSERT(backbufferWidth >= 0 && backbufferHeight >= 0);
     ASSERT(mSwapChain);
@@ -269,69 +195,71 @@ bool Surface::resetSwapChain(int backbufferWidth, int backbufferHeight)
     if (status == EGL_CONTEXT_LOST)
     {
         mRenderer->notifyDeviceLost();
-        return false;
+        return Error(status);
     }
     else if (status != EGL_SUCCESS)
     {
-        return error(status, false);
+        return Error(status);
     }
 
     mWidth = backbufferWidth;
     mHeight = backbufferHeight;
     mSwapIntervalDirty = false;
 
-    return true;
+    return Error(EGL_SUCCESS);
 }
 
-bool Surface::swapRect(EGLint x, EGLint y, EGLint width, EGLint height)
+Error Surface::swapRect(EGLint x, EGLint y, EGLint width, EGLint height)
 {
     if (!mSwapChain)
     {
-        return true;
+        return Error(EGL_SUCCESS);
     }
 
-    if (x + width > mWidth)
+    if (x + width > abs(mWidth))
     {
-        width = mWidth - x;
+        width = abs(mWidth) - x;
     }
 
-    if (y + height > mHeight)
+    if (y + height > abs(mHeight))
     {
-        height = mHeight - y;
+        height = abs(mHeight) - y;
     }
 
     if (width == 0 || height == 0)
     {
-        return true;
+        return Error(EGL_SUCCESS);
     }
 
-    EGLint status = mSwapChain->swapRect(x, y, width, height, mSwapFlags);
+    ASSERT(width > 0);
+    ASSERT(height > 0);
+
+    EGLint status = mSwapChain->swapRect(x, y, width, height);
 
     if (status == EGL_CONTEXT_LOST)
     {
         mRenderer->notifyDeviceLost();
-        return false;
+        return Error(status);
     }
     else if (status != EGL_SUCCESS)
     {
-        return error(status, false);
+        return Error(status);
     }
 
     checkForOutOfDateSwapChain();
 
-    return true;
+    return Error(EGL_SUCCESS);
 }
 
 EGLNativeWindowType Surface::getWindowHandle()
 {
-    return mWindow;
+    return mNativeWindow.getNativeWindow();
 }
 
-
+#if !defined(ANGLE_ENABLE_WINDOWS_STORE)
 #define kSurfaceProperty _TEXT("Egl::SurfaceOwner")
 #define kParentWndProc _TEXT("Egl::SurfaceParentWndProc")
 
-#if !defined(ANGLE_PLATFORM_WINRT)
 static LRESULT CALLBACK SurfaceWindowProc(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam)
 {
   if (message == WM_SIZE)
@@ -349,45 +277,50 @@ static LRESULT CALLBACK SurfaceWindowProc(HWND hwnd, UINT message, WPARAM wparam
 
 void Surface::subclassWindow()
 {
-#if !defined(ANGLE_PLATFORM_WINRT)
-    if (!mWindow)
+#if !defined(ANGLE_ENABLE_WINDOWS_STORE)
+    HWND window = mNativeWindow.getNativeWindow();
+    if (!window)
     {
         return;
     }
 
     DWORD processId;
-    DWORD threadId = GetWindowThreadProcessId(mWindow, &processId);
+    DWORD threadId = GetWindowThreadProcessId(window, &processId);
     if (processId != GetCurrentProcessId() || threadId != GetCurrentThreadId())
     {
         return;
     }
 
     SetLastError(0);
-    LONG_PTR oldWndProc = SetWindowLongPtr(mWindow, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(SurfaceWindowProc));
+    LONG_PTR oldWndProc = SetWindowLongPtr(window, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(SurfaceWindowProc));
     if(oldWndProc == 0 && GetLastError() != ERROR_SUCCESS)
     {
         mWindowSubclassed = false;
         return;
     }
 
-    SetProp(mWindow, kSurfaceProperty, reinterpret_cast<HANDLE>(this));
-    SetProp(mWindow, kParentWndProc, reinterpret_cast<HANDLE>(oldWndProc));
+    SetProp(window, kSurfaceProperty, reinterpret_cast<HANDLE>(this));
+    SetProp(window, kParentWndProc, reinterpret_cast<HANDLE>(oldWndProc));
     mWindowSubclassed = true;
-#else
-    mWindowSubclassed = false;
 #endif
 }
 
 void Surface::unsubclassWindow()
 {
-#if !defined(ANGLE_PLATFORM_WINRT)
     if(!mWindowSubclassed)
     {
         return;
     }
 
+#if !defined(ANGLE_ENABLE_WINDOWS_STORE)
+    HWND window = mNativeWindow.getNativeWindow();
+    if (!window)
+    {
+        return;
+    }
+
     // un-subclass
-    LONG_PTR parentWndFunc = reinterpret_cast<LONG_PTR>(GetProp(mWindow, kParentWndProc));
+    LONG_PTR parentWndFunc = reinterpret_cast<LONG_PTR>(GetProp(window, kParentWndProc));
 
     // Check the windowproc is still SurfaceWindowProc.
     // If this assert fails, then it is likely the application has subclassed the
@@ -396,29 +329,28 @@ void Surface::unsubclassWindow()
     // EGL context, or to unsubclass before destroying the EGL context.
     if(parentWndFunc)
     {
-        LONG_PTR prevWndFunc = SetWindowLongPtr(mWindow, GWLP_WNDPROC, parentWndFunc);
+        LONG_PTR prevWndFunc = SetWindowLongPtr(window, GWLP_WNDPROC, parentWndFunc);
         UNUSED_ASSERTION_VARIABLE(prevWndFunc);
         ASSERT(prevWndFunc == reinterpret_cast<LONG_PTR>(SurfaceWindowProc));
     }
 
-    RemoveProp(mWindow, kSurfaceProperty);
-    RemoveProp(mWindow, kParentWndProc);
-    mWindowSubclassed = false;
+    RemoveProp(window, kSurfaceProperty);
+    RemoveProp(window, kParentWndProc);
 #endif
+    mWindowSubclassed = false;
 }
 
 bool Surface::checkForOutOfDateSwapChain()
 {
+    RECT client;
     int clientWidth = getWidth();
     int clientHeight = getHeight();
     bool sizeDirty = false;
-#if !defined(ANGLE_PLATFORM_WINRT)
-    if (!mFixedSize && !IsIconic(getWindowHandle()))
+    if (!mFixedSize && !mNativeWindow.isIconic())
     {
-        RECT client;
         // The window is automatically resized to 150x22 when it's minimized, but the swapchain shouldn't be resized
         // because that's not a useful size to render to.
-        if (!GetClientRect(getWindowHandle(), &client))
+        if (!mNativeWindow.getClientRect(&client))
         {
             ASSERT(false);
             return false;
@@ -429,7 +361,13 @@ bool Surface::checkForOutOfDateSwapChain()
         clientHeight = client.bottom - client.top;
         sizeDirty = clientWidth != getWidth() || clientHeight != getHeight();
     }
-#endif
+
+    if (mFixedSize && (mWidth != mFixedWidth || mHeight != mFixedHeight))
+    {
+        clientWidth = mFixedWidth;
+        clientHeight = mFixedHeight;
+        sizeDirty = true;
+    }
 
     bool wasDirty = (mSwapIntervalDirty || sizeDirty);
 
@@ -455,17 +393,17 @@ bool Surface::checkForOutOfDateSwapChain()
     return false;
 }
 
-bool Surface::swap()
+Error Surface::swap()
 {
-    return swapRect(0, 0, mWidth, mHeight);
+    return swapRect(0, 0, abs(mWidth), abs(mHeight));
 }
 
-bool Surface::postSubBuffer(EGLint x, EGLint y, EGLint width, EGLint height)
+Error Surface::postSubBuffer(EGLint x, EGLint y, EGLint width, EGLint height)
 {
     if (!mPostSubBufferSupported)
     {
         // Spec is not clear about how this should be handled.
-        return true;
+        return Error(EGL_SUCCESS);
     }
 
     return swapRect(x, y, width, height);
@@ -550,77 +488,18 @@ EGLint Surface::isFixedSize() const
     return mFixedSize;
 }
 
+void Surface::setFixedWidth(EGLint width)
+{
+    mFixedWidth = width;
+}
+
+void Surface::setFixedHeight(EGLint height)
+{
+    mFixedHeight = height;
+}
+
 EGLenum Surface::getFormat() const
 {
     return mConfig->mRenderTargetFormat;
 }
-
-#if defined(ANGLE_PLATFORM_WINRT)
-
-HRESULT Surface::onSizeChanged(ICoreWindow *, IWindowSizeChangedEventArgs *args)
-{
-    HRESULT hr;
-    Size size;
-    hr = args->get_Size(&size);
-    ASSERT(SUCCEEDED(hr));
-
-    resizeSwapChain(std::floor(size.Width * mScaleFactor + 0.5),
-                    std::floor(size.Height * mScaleFactor + 0.5));
-
-    if (static_cast<egl::Surface*>(getCurrentDrawSurface()) == this)
-    {
-        glMakeCurrent(glGetCurrentContext(), static_cast<egl::Display*>(getCurrentDisplay()), this);
-    }
-
-    return S_OK;
-}
-
-HRESULT Surface::onDpiChanged(IDisplayInformation *displayInformation, IInspectable *)
-{
-    HRESULT hr;
-#   if WINAPI_FAMILY==WINAPI_FAMILY_PHONE_APP
-    ComPtr<IDisplayInformation2> displayInformation2;
-    hr = displayInformation->QueryInterface(displayInformation2.GetAddressOf());
-    ASSERT(SUCCEEDED(hr));
-
-    hr = displayInformation2->get_RawPixelsPerViewPixel(&mScaleFactor);
-    ASSERT(SUCCEEDED(hr));
-#   else
-    ResolutionScale resolutionScale;
-    hr = displayInformation->get_ResolutionScale(&resolutionScale);
-    ASSERT(SUCCEEDED(hr));
-
-    mScaleFactor = double(resolutionScale) / 100.0;
-#   endif
-    return S_OK;
-}
-
-#   if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
-HRESULT Surface::onOrientationChanged(IDisplayInformation *displayInformation, IInspectable *)
-{
-    HRESULT hr;
-    DisplayOrientations orientation;
-    hr = displayInformation->get_CurrentOrientation(&orientation);
-    ASSERT(SUCCEEDED(hr));
-    switch (orientation) {
-    default:
-    case DisplayOrientations_Portrait:
-        mSwapFlags = rx::SWAP_NORMAL;
-        break;
-    case DisplayOrientations_Landscape:
-        mSwapFlags = rx::SWAP_ROTATE_90;
-        break;
-    case DisplayOrientations_LandscapeFlipped:
-        mSwapFlags = rx::SWAP_ROTATE_270;
-        break;
-    case DisplayOrientations_PortraitFlipped:
-        mSwapFlags = rx::SWAP_ROTATE_180;
-        break;
-    }
-    return S_OK;
-}
-#   endif
-
-#endif
-
 }

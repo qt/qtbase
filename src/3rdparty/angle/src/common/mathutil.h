@@ -109,7 +109,7 @@ inline unsigned int unorm(float x)
 
 inline bool supportsSSE2()
 {
-#ifdef ANGLE_PLATFORM_WINDOWS
+#if defined(ANGLE_PLATFORM_WINDOWS) && !defined(_M_ARM)
     static bool checked = false;
     static bool supports = false;
 
@@ -118,7 +118,6 @@ inline bool supportsSSE2()
         return supports;
     }
 
-#if defined(_M_IX86) || defined(_M_AMD64) // ARM doesn't provide __cpuid()
     int info[4];
     __cpuid(info, 0);
 
@@ -128,7 +127,6 @@ inline bool supportsSSE2()
 
         supports = (info[3] >> 26) & 1;
     }
-#endif
 
     checked = true;
 

@@ -11,23 +11,12 @@
 #ifndef LIBEGL_SURFACE_H_
 #define LIBEGL_SURFACE_H_
 
+#include "libEGL/Error.h"
+
 #include <EGL/egl.h>
 
 #include "common/angleutils.h"
-
-#if defined(ANGLE_PLATFORM_WINRT)
-#include <EventToken.h>
-namespace ABI { namespace Windows {
-    namespace UI { namespace Core {
-        struct ICoreWindow;
-        struct IWindowSizeChangedEventArgs;
-    } }
-    namespace Graphics { namespace Display {
-        struct IDisplayInformation;
-    } }
-} }
-struct IInspectable;
-#endif
+#include "common/NativeWindow.h"
 
 namespace gl
 {
@@ -35,8 +24,8 @@ class Texture2D;
 }
 namespace rx
 {
-class Renderer;
 class SwapChain;
+class RendererD3D; //TODO(jmadill): remove this
 }
 
 namespace egl
@@ -52,13 +41,13 @@ class Surface
 
     virtual ~Surface();
 
-    bool initialize();
+    Error initialize();
     void release();
-    bool resetSwapChain();
+    Error resetSwapChain();
 
     EGLNativeWindowType getWindowHandle();
-    bool swap();
-    bool postSubBuffer(EGLint x, EGLint y, EGLint width, EGLint height);
+    Error swap();
+    Error postSubBuffer(EGLint x, EGLint y, EGLint width, EGLint height);
 
     virtual EGLint isPostSubBufferSupported() const;
 
@@ -81,35 +70,31 @@ class Surface
     virtual gl::Texture2D *getBoundTexture() const;
 
     EGLint isFixedSize() const;
+    void setFixedWidth(EGLint width);
+    void setFixedHeight(EGLint height);
 
-private:
+  private:
     DISALLOW_COPY_AND_ASSIGN(Surface);
 
-#if defined(ANGLE_PLATFORM_WINRT)
-    HRESULT onSizeChanged(ABI::Windows::UI::Core::ICoreWindow *, ABI::Windows::UI::Core::IWindowSizeChangedEventArgs *);
-    HRESULT onDpiChanged(ABI::Windows::Graphics::Display::IDisplayInformation *, IInspectable *);
-#   if WINAPI_FAMILY==WINAPI_FAMILY_PHONE_APP
-    HRESULT onOrientationChanged(ABI::Windows::Graphics::Display::IDisplayInformation *, IInspectable *);
-#   endif
-#endif
-
     Display *const mDisplay;
-    rx::Renderer *mRenderer;
+    rx::RendererD3D *mRenderer;
 
     HANDLE mShareHandle;
     rx::SwapChain *mSwapChain;
 
     void subclassWindow();
     void unsubclassWindow();
-    bool resizeSwapChain(int backbufferWidth, int backbufferHeight);
-    bool resetSwapChain(int backbufferWidth, int backbufferHeight);
-    bool swapRect(EGLint x, EGLint y, EGLint width, EGLint height);
+    Error resizeSwapChain(int backbufferWidth, int backbufferHeight);
+    Error resetSwapChain(int backbufferWidth, int backbufferHeight);
+    Error swapRect(EGLint x, EGLint y, EGLint width, EGLint height);
 
-    const EGLNativeWindowType mWindow;            // Window that the surface is created for.
+    rx::NativeWindow mNativeWindow;   // Handler for the Window that the surface is created for.
     bool mWindowSubclassed;        // Indicates whether we successfully subclassed mWindow for WM_RESIZE hooking
     const egl::Config *mConfig;    // EGL config surface was created with
     EGLint mHeight;                // Height of surface
     EGLint mWidth;                 // Width of surface
+    EGLint mFixedHeight;         // Pending height of the surface
+    EGLint mFixedWidth;          // Pending width of the surface
 //  EGLint horizontalResolution;   // Horizontal dot pitch
 //  EGLint verticalResolution;     // Vertical dot pitch
 //  EGLBoolean largestPBuffer;     // If true, create largest pbuffer possible
@@ -126,18 +111,9 @@ private:
     EGLint mSwapInterval;
     EGLint mPostSubBufferSupported;
     EGLint mFixedSize;
-    EGLint mSwapFlags;
 
     bool mSwapIntervalDirty;
     gl::Texture2D *mTexture;
-#if defined(ANGLE_PLATFORM_WINRT)
-    double mScaleFactor;
-    EventRegistrationToken mSizeToken;
-    EventRegistrationToken mDpiToken;
-#   if WINAPI_FAMILY==WINAPI_FAMILY_PHONE_APP
-    EventRegistrationToken mOrientationToken;
-#   endif
-#endif
 };
 }
 

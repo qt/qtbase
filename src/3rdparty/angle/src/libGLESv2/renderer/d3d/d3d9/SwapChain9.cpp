@@ -11,12 +11,15 @@
 #include "libGLESv2/renderer/d3d/d3d9/formatutils9.h"
 #include "libGLESv2/renderer/d3d/d3d9/Renderer9.h"
 
+#include "common/features.h"
+
 namespace rx
 {
 
-SwapChain9::SwapChain9(Renderer9 *renderer, HWND window, HANDLE shareHandle,
+SwapChain9::SwapChain9(Renderer9 *renderer, NativeWindow nativeWindow, HANDLE shareHandle,
                        GLenum backBufferFormat, GLenum depthBufferFormat)
-    : mRenderer(renderer), SwapChain(window, shareHandle, backBufferFormat, depthBufferFormat)
+    : mRenderer(renderer),
+      SwapChain(nativeWindow, shareHandle, backBufferFormat, depthBufferFormat)
 {
     mSwapChain = NULL;
     mBackBuffer = NULL;
@@ -41,7 +44,7 @@ void SwapChain9::release()
     SafeRelease(mRenderTarget);
     SafeRelease(mOffscreenTexture);
 
-    if (mWindow)
+    if (mNativeWindow.getNativeWindow())
     {
         mShareHandle = NULL;
     }
@@ -49,7 +52,7 @@ void SwapChain9::release()
 
 static DWORD convertInterval(EGLint interval)
 {
-#ifdef ANGLE_FORCE_VSYNC_OFF
+#if ANGLE_VSYNC == ANGLE_DISABLED
     return D3DPRESENT_INTERVAL_IMMEDIATE;
 #else
     switch(interval)
@@ -95,7 +98,7 @@ EGLint SwapChain9::reset(int backbufferWidth, int backbufferHeight, EGLint swapI
     SafeRelease(mDepthStencil);
 
     HANDLE *pShareHandle = NULL;
-    if (!mWindow && mRenderer->getShareHandleSupport())
+    if (!mNativeWindow.getNativeWindow() && mRenderer->getShareHandleSupport())
     {
         pShareHandle = &mShareHandle;
     }
@@ -152,7 +155,8 @@ EGLint SwapChain9::reset(int backbufferWidth, int backbufferHeight, EGLint swapI
 
     const d3d9::TextureFormat &depthBufferd3dFormatInfo = d3d9::GetTextureFormatInfo(mDepthBufferFormat);
 
-    if (mWindow)
+    EGLNativeWindowType window = mNativeWindow.getNativeWindow();
+    if (window)
     {
         D3DPRESENT_PARAMETERS presentParameters = {0};
         presentParameters.AutoDepthStencilFormat = depthBufferd3dFormatInfo.renderFormat;
@@ -160,7 +164,7 @@ EGLint SwapChain9::reset(int backbufferWidth, int backbufferHeight, EGLint swapI
         presentParameters.BackBufferFormat = backBufferd3dFormatInfo.renderFormat;
         presentParameters.EnableAutoDepthStencil = FALSE;
         presentParameters.Flags = 0;
-        presentParameters.hDeviceWindow = mWindow;
+        presentParameters.hDeviceWindow = window;
         presentParameters.MultiSampleQuality = 0;                  // FIXME: Unimplemented
         presentParameters.MultiSampleType = D3DMULTISAMPLE_NONE;   // FIXME: Unimplemented
         presentParameters.PresentationInterval = convertInterval(swapInterval);
@@ -203,7 +207,7 @@ EGLint SwapChain9::reset(int backbufferWidth, int backbufferHeight, EGLint swapI
 
         result = mSwapChain->GetBackBuffer(0, D3DBACKBUFFER_TYPE_MONO, &mBackBuffer);
         ASSERT(SUCCEEDED(result));
-        InvalidateRect(mWindow, NULL, FALSE);
+        InvalidateRect(window, NULL, FALSE);
     }
 
     if (mDepthBufferFormat != GL_NONE)
@@ -238,7 +242,7 @@ EGLint SwapChain9::reset(int backbufferWidth, int backbufferHeight, EGLint swapI
 }
 
 // parameters should be validated/clamped by caller
-EGLint SwapChain9::swapRect(EGLint x, EGLint y, EGLint width, EGLint height, EGLint)
+EGLint SwapChain9::swapRect(EGLint x, EGLint y, EGLint width, EGLint height)
 {
     if (!mSwapChain)
     {
@@ -379,8 +383,8 @@ IDirect3DTexture9 *SwapChain9::getOffscreenTexture()
 
 SwapChain9 *SwapChain9::makeSwapChain9(SwapChain *swapChain)
 {
-    ASSERT(HAS_DYNAMIC_TYPE(rx::SwapChain9*, swapChain));
-    return static_cast<rx::SwapChain9*>(swapChain);
+    ASSERT(HAS_DYNAMIC_TYPE(SwapChain9*, swapChain));
+    return static_cast<SwapChain9*>(swapChain);
 }
 
 void SwapChain9::recreate()

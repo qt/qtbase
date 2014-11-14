@@ -32,6 +32,7 @@ class Texture;
 class Renderbuffer;
 class Sampler;
 class FenceSync;
+struct Data;
 
 class ResourceManager
 {
@@ -43,7 +44,7 @@ class ResourceManager
     void release();
 
     GLuint createBuffer();
-    GLuint createShader(GLenum type);
+    GLuint createShader(const gl::Data &data, GLenum type);
     GLuint createProgram();
     GLuint createTexture();
     GLuint createRenderbuffer();
@@ -60,7 +61,7 @@ class ResourceManager
 
     Buffer *getBuffer(GLuint handle);
     Shader *getShader(GLuint handle);
-    Program *getProgram(GLuint handle);
+    Program *getProgram(GLuint handle) const;
     Texture *getTexture(GLuint handle);
     Renderbuffer *getRenderbuffer(GLuint handle);
     Sampler *getSampler(GLuint handle);
@@ -78,8 +79,8 @@ class ResourceManager
   private:
     DISALLOW_COPY_AND_ASSIGN(ResourceManager);
 
-    std::size_t mRefCount;
     rx::Renderer *mRenderer;
+    std::size_t mRefCount;
 
     typedef std::unordered_map<GLuint, Buffer*> BufferMap;
     BufferMap mBufferMap;

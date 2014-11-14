@@ -46,10 +46,16 @@ const size_t g_shaderSize[] =
 
 namespace rx
 {
-Blit9::Blit9(rx::Renderer9 *renderer)
-  : mRenderer(renderer), mQuadVertexBuffer(NULL), mQuadVertexDeclaration(NULL), mSavedStateBlock(NULL), mSavedRenderTarget(NULL), mSavedDepthStencil(NULL)
+
+Blit9::Blit9(Renderer9 *renderer)
+    : mRenderer(renderer),
+      mGeometryLoaded(false),
+      mQuadVertexBuffer(NULL),
+      mQuadVertexDeclaration(NULL),
+      mSavedStateBlock(NULL),
+      mSavedRenderTarget(NULL),
+      mSavedDepthStencil(NULL)
 {
-    initGeometry();
     memset(mCompiledShaders, 0, sizeof(mCompiledShaders));
 }
 
@@ -65,8 +71,13 @@ Blit9::~Blit9()
     }
 }
 
-void Blit9::initGeometry()
+gl::Error Blit9::initialize()
 {
+    if (mGeometryLoaded)
+    {
+        return gl::Error(GL_NO_ERROR);
+    }
+
     static const float quad[] =
     {
         -1, -1,
@@ -82,7 +93,7 @@ void Blit9::initGeometry()
     if (FAILED(result))
     {
         ASSERT(result == D3DERR_OUTOFVIDEOMEMORY || result == E_OUTOFMEMORY);
-        return gl::error(GL_OUT_OF_MEMORY);
+        return gl::Error(GL_OUT_OF_MEMORY, "Failed to create internal blit vertex shader, result: 0x%X.", result);
     }
 
     void *lockPtr = NULL;
@@ -91,7 +102,8 @@ void Blit9::initGeometry()
     if (FAILED(result) || lockPtr == NULL)
     {
         ASSERT(result == D3DERR_OUTOFVIDEOMEMORY || result == E_OUTOFMEMORY);
-        return gl::error(GL_OUT_OF_MEMORY);
+        SafeRelease(mQuadVertexBuffer);
+        return gl::Error(GL_OUT_OF_MEMORY, "Failed to lock internal blit vertex shader, result: 0x%X.", result);
     }
 
     memcpy(lockPtr, quad, sizeof(quad));
@@ -108,14 +120,18 @@ void Blit9::initGeometry()
     if (FAILED(result))
     {
         ASSERT(result == D3DERR_OUTOFVIDEOMEMORY || result == E_OUTOFMEMORY);
-        return gl::error(GL_OUT_OF_MEMORY);
+        SafeRelease(mQuadVertexBuffer);
+        return gl::Error(GL_OUT_OF_MEMORY, "Failed to lock internal blit vertex declaration, result: 0x%X.", result);
     }
+
+    mGeometryLoaded = true;
+    return gl::Error(GL_NO_ERROR);
 }
 
 template <class D3DShaderType>
-bool Blit9::setShader(ShaderId source, const char *profile,
-                     D3DShaderType *(rx::Renderer9::*createShader)(const DWORD *, size_t length),
-                     HRESULT (WINAPI IDirect3DDevice9::*setShader)(D3DShaderType*))
+gl::Error Blit9::setShader(ShaderId source, const char *profile,
+                           gl::Error (Renderer9::*createShader)(const DWORD *, size_t length, D3DShaderType **outShader),
+                           HRESULT (WINAPI IDirect3DDevice9::*setShader)(D3DShaderType*))
 {
     IDirect3DDevice9 *device = mRenderer->getDevice();
 
@@ -130,35 +146,32 @@ bool Blit9::setShader(ShaderId source, const char *profile,
         const BYTE* shaderCode = g_shaderCode[source];
         size_t shaderSize = g_shaderSize[source];
 
-        shader = (mRenderer->*createShader)(reinterpret_cast<const DWORD*>(shaderCode), shaderSize);
-        if (!shader)
+        gl::Error error = (mRenderer->*createShader)(reinterpret_cast<const DWORD*>(shaderCode), shaderSize, &shader);
+        if (error.isError())
         {
-            ERR("Failed to create shader for blit operation");
-            return false;
+            return error;
         }
 
         mCompiledShaders[source] = shader;
     }
 
     HRESULT hr = (device->*setShader)(shader);
-
     if (FAILED(hr))
     {
-        ERR("Failed to set shader for blit operation");
-        return false;
+        return gl::Error(GL_OUT_OF_MEMORY, "Failed to set shader for blit operation, result: 0x%X.", hr);
     }
 
-    return true;
+    return gl::Error(GL_NO_ERROR);
 }
 
-bool Blit9::setVertexShader(ShaderId shader)
+gl::Error Blit9::setVertexShader(ShaderId shader)
 {
-    return setShader<IDirect3DVertexShader9>(shader, "vs_2_0", &rx::Renderer9::createVertexShader, &IDirect3DDevice9::SetVertexShader);
+    return setShader<IDirect3DVertexShader9>(shader, "vs_2_0", &Renderer9::createVertexShader, &IDirect3DDevice9::SetVertexShader);
 }
 
-bool Blit9::setPixelShader(ShaderId shader)
+gl::Error Blit9::setPixelShader(ShaderId shader)
 {
-    return setShader<IDirect3DPixelShader9>(shader, "ps_2_0", &rx::Renderer9::createPixelShader, &IDirect3DDevice9::SetPixelShader);
+    return setShader<IDirect3DPixelShader9>(shader, "ps_2_0", &Renderer9::createPixelShader, &IDirect3DDevice9::SetPixelShader);
 }
 
 RECT Blit9::getSurfaceRect(IDirect3DSurface9 *surface) const
@@ -175,12 +188,19 @@ RECT Blit9::getSurfaceRect(IDirect3DSurface9 *surface) const
     return rect;
 }
 
-bool Blit9::boxFilter(IDirect3DSurface9 *source, IDirect3DSurface9 *dest)
+gl::Error Blit9::boxFilter(IDirect3DSurface9 *source, IDirect3DSurface9 *dest)
 {
-    IDirect3DTexture9 *texture = copySurfaceToTexture(source, getSurfaceRect(source));
-    if (!texture)
+    gl::Error error = initialize();
+    if (error.isError())
     {
-        return false;
+        return error;
+    }
+
+    IDirect3DTexture9 *texture = NULL;
+    error = copySurfaceToTexture(source, getSurfaceRect(source), &texture);
+    if (error.isError())
+    {
+        return error;
     }
 
     IDirect3DDevice9 *device = mRenderer->getDevice();
@@ -205,87 +225,90 @@ bool Blit9::boxFilter(IDirect3DSurface9 *source, IDirect3DSurface9 *dest)
 
     restoreState();
 
-    return true;
+    return gl::Error(GL_NO_ERROR);
 }
 
-bool Blit9::copy2D(gl::Framebuffer *framebuffer, const RECT &sourceRect, GLenum destFormat, GLint xoffset, GLint yoffset, TextureStorage *storage, GLint level)
+gl::Error Blit9::copy2D(gl::Framebuffer *framebuffer, const RECT &sourceRect, GLenum destFormat, GLint xoffset, GLint yoffset, TextureStorage *storage, GLint level)
 {
-    RenderTarget9 *renderTarget = NULL;
-    IDirect3DSurface9 *source = NULL;
+    gl::Error error = initialize();
+    if (error.isError())
+    {
+        return error;
+    }
+
     gl::FramebufferAttachment *colorbuffer = framebuffer->getColorbuffer(0);
+    ASSERT(colorbuffer);
 
-    if (colorbuffer)
+    RenderTarget9 *renderTarget9 = NULL;
+    error = d3d9::GetAttachmentRenderTarget(colorbuffer, &renderTarget9);
+    if (error.isError())
     {
-        renderTarget = d3d9::GetAttachmentRenderTarget(colorbuffer);
+        return error;
     }
+    ASSERT(renderTarget9);
 
-    if (renderTarget)
-    {
-        source = renderTarget->getSurface();
-    }
+    IDirect3DSurface9 *source = renderTarget9->getSurface();
+    ASSERT(source);
 
-    if (!source)
-    {
-        ERR("Failed to retrieve the render target.");
-        return gl::error(GL_OUT_OF_MEMORY, false);
-    }
-
+    IDirect3DSurface9 *destSurface = NULL;
     TextureStorage9_2D *storage9 = TextureStorage9_2D::makeTextureStorage9_2D(storage);
-    IDirect3DSurface9 *destSurface = storage9->getSurfaceLevel(level, true);
-    bool result = false;
-
-    if (destSurface)
+    error = storage9->getSurfaceLevel(level, true, &destSurface);
+    if (error.isError())
     {
-        result = copy(source, sourceRect, destFormat, xoffset, yoffset, destSurface);
-        SafeRelease(destSurface);
+        return error;
     }
+    ASSERT(destSurface);
 
+    gl::Error result = copy(source, sourceRect, destFormat, xoffset, yoffset, destSurface);
+
+    SafeRelease(destSurface);
     SafeRelease(source);
+
     return result;
 }
 
-bool Blit9::copyCube(gl::Framebuffer *framebuffer, const RECT &sourceRect, GLenum destFormat, GLint xoffset, GLint yoffset, TextureStorage *storage, GLenum target, GLint level)
+gl::Error Blit9::copyCube(gl::Framebuffer *framebuffer, const RECT &sourceRect, GLenum destFormat, GLint xoffset, GLint yoffset, TextureStorage *storage, GLenum target, GLint level)
 {
-    RenderTarget9 *renderTarget = NULL;
-    IDirect3DSurface9 *source = NULL;
+    gl::Error error = initialize();
+    if (error.isError())
+    {
+        return error;
+    }
+
     gl::FramebufferAttachment *colorbuffer = framebuffer->getColorbuffer(0);
+    ASSERT(colorbuffer);
 
-    if (colorbuffer)
+    RenderTarget9 *renderTarget9 = NULL;
+    error = d3d9::GetAttachmentRenderTarget(colorbuffer, &renderTarget9);
+    if (error.isError())
     {
-        renderTarget = d3d9::GetAttachmentRenderTarget(colorbuffer);
+        return error;
     }
+    ASSERT(renderTarget9);
 
-    if (renderTarget)
-    {
-        source = renderTarget->getSurface();
-    }
+    IDirect3DSurface9 *source = renderTarget9->getSurface();
+    ASSERT(source);
 
-    if (!source)
-    {
-        ERR("Failed to retrieve the render target.");
-        return gl::error(GL_OUT_OF_MEMORY, false);
-    }
-
+    IDirect3DSurface9 *destSurface = NULL;
     TextureStorage9_Cube *storage9 = TextureStorage9_Cube::makeTextureStorage9_Cube(storage);
-    IDirect3DSurface9 *destSurface = storage9->getCubeMapSurface(target, level, true);
-    bool result = false;
-
-    if (destSurface)
+    error = storage9->getCubeMapSurface(target, level, true, &destSurface);
+    if (error.isError())
     {
-        result = copy(source, sourceRect, destFormat, xoffset, yoffset, destSurface);
-        SafeRelease(destSurface);
+        return error;
     }
+    ASSERT(destSurface);
 
+    gl::Error result = copy(source, sourceRect, destFormat, xoffset, yoffset, destSurface);
+
+    SafeRelease(destSurface);
     SafeRelease(source);
+
     return result;
 }
 
-bool Blit9::copy(IDirect3DSurface9 *source, const RECT &sourceRect, GLenum destFormat, GLint xoffset, GLint yoffset, IDirect3DSurface9 *dest)
+gl::Error Blit9::copy(IDirect3DSurface9 *source, const RECT &sourceRect, GLenum destFormat, GLint xoffset, GLint yoffset, IDirect3DSurface9 *dest)
 {
-    if (!dest)
-    {
-        return false;
-    }
+    ASSERT(source != NULL && dest != NULL);
 
     IDirect3DDevice9 *device = mRenderer->getDevice();
 
@@ -303,22 +326,30 @@ bool Blit9::copy(IDirect3DSurface9 *source, const RECT &sourceRect, GLenum destF
         if (FAILED(result))
         {
             ASSERT(result == D3DERR_OUTOFVIDEOMEMORY || result == E_OUTOFMEMORY);
-            return gl::error(GL_OUT_OF_MEMORY, false);
+            return gl::Error(GL_OUT_OF_MEMORY, "Failed to blit between textures, StretchRect result: 0x%X.", result);
         }
+
+        return gl::Error(GL_NO_ERROR);
     }
     else
     {
         return formatConvert(source, sourceRect, destFormat, xoffset, yoffset, dest);
     }
-    return true;
 }
 
-bool Blit9::formatConvert(IDirect3DSurface9 *source, const RECT &sourceRect, GLenum destFormat, GLint xoffset, GLint yoffset, IDirect3DSurface9 *dest)
+gl::Error Blit9::formatConvert(IDirect3DSurface9 *source, const RECT &sourceRect, GLenum destFormat, GLint xoffset, GLint yoffset, IDirect3DSurface9 *dest)
 {
-    IDirect3DTexture9 *texture = copySurfaceToTexture(source, sourceRect);
-    if (!texture)
+    gl::Error error = initialize();
+    if (error.isError())
     {
-        return false;
+        return error;
+    }
+
+    IDirect3DTexture9 *texture = NULL;
+    error = copySurfaceToTexture(source, sourceRect, &texture);
+    if (error.isError())
+    {
+        return error;
     }
 
     IDirect3DDevice9 *device = mRenderer->getDevice();
@@ -331,7 +362,9 @@ bool Blit9::formatConvert(IDirect3DSurface9 *source, const RECT &sourceRect, GLe
     setViewport(sourceRect, xoffset, yoffset);
 
     setCommonBlitState();
-    if (setFormatConvertShaders(destFormat))
+
+    error = setFormatConvertShaders(destFormat);
+    if (!error.isError())
     {
         render();
     }
@@ -340,12 +373,16 @@ bool Blit9::formatConvert(IDirect3DSurface9 *source, const RECT &sourceRect, GLe
 
     restoreState();
 
-    return true;
+    return error;
 }
 
-bool Blit9::setFormatConvertShaders(GLenum destFormat)
+gl::Error Blit9::setFormatConvertShaders(GLenum destFormat)
 {
-    bool okay = setVertexShader(SHADER_VS_STANDARD);
+    gl::Error error = setVertexShader(SHADER_VS_STANDARD);
+    if (error.isError())
+    {
+        return error;
+    }
 
     switch (destFormat)
     {
@@ -356,18 +393,18 @@ bool Blit9::setFormatConvertShaders(GLenum destFormat)
       case GL_RG_EXT:
       case GL_RED_EXT:
       case GL_ALPHA:
-        okay = okay && setPixelShader(SHADER_PS_COMPONENTMASK);
+        error = setPixelShader(SHADER_PS_COMPONENTMASK);
         break;
 
       case GL_LUMINANCE:
       case GL_LUMINANCE_ALPHA:
-        okay = okay && setPixelShader(SHADER_PS_LUMINANCE);
+        error = setPixelShader(SHADER_PS_LUMINANCE);
         break;
     }
 
-    if (!okay)
+    if (error.isError())
     {
-        return false;
+        return error;
     }
 
     enum { X = 0, Y = 1, Z = 2, W = 3 };
@@ -463,15 +500,12 @@ bool Blit9::setFormatConvertShaders(GLenum destFormat)
 
     mRenderer->getDevice()->SetPixelShaderConstantF(0, psConst, 2);
 
-    return true;
+    return gl::Error(GL_NO_ERROR);
 }
 
-IDirect3DTexture9 *Blit9::copySurfaceToTexture(IDirect3DSurface9 *surface, const RECT &sourceRect)
+gl::Error Blit9::copySurfaceToTexture(IDirect3DSurface9 *surface, const RECT &sourceRect, IDirect3DTexture9 **outTexture)
 {
-    if (!surface)
-    {
-        return NULL;
-    }
+    ASSERT(surface);
 
     IDirect3DDevice9 *device = mRenderer->getDevice();
 
@@ -485,7 +519,7 @@ IDirect3DTexture9 *Blit9::copySurfaceToTexture(IDirect3DSurface9 *surface, const
     if (FAILED(result))
     {
         ASSERT(result == D3DERR_OUTOFVIDEOMEMORY || result == E_OUTOFMEMORY);
-        return gl::error(GL_OUT_OF_MEMORY, (IDirect3DTexture9*)NULL);
+        return gl::Error(GL_OUT_OF_MEMORY, "Failed to allocate internal texture for blit, result: 0x%X.", result);
     }
 
     IDirect3DSurface9 *textureSurface;
@@ -495,7 +529,7 @@ IDirect3DTexture9 *Blit9::copySurfaceToTexture(IDirect3DSurface9 *surface, const
     {
         ASSERT(result == D3DERR_OUTOFVIDEOMEMORY || result == E_OUTOFMEMORY);
         SafeRelease(texture);
-        return gl::error(GL_OUT_OF_MEMORY, (IDirect3DTexture9*)NULL);
+        return gl::Error(GL_OUT_OF_MEMORY, "Failed to query surface of internal blit texture, result: 0x%X.", result);
     }
 
     mRenderer->endScene();
@@ -507,10 +541,11 @@ IDirect3DTexture9 *Blit9::copySurfaceToTexture(IDirect3DSurface9 *surface, const
     {
         ASSERT(result == D3DERR_OUTOFVIDEOMEMORY || result == E_OUTOFMEMORY);
         SafeRelease(texture);
-        return gl::error(GL_OUT_OF_MEMORY, (IDirect3DTexture9*)NULL);
+        return gl::Error(GL_OUT_OF_MEMORY, "Failed to copy between internal blit textures, result: 0x%X.", result);
     }
 
-    return texture;
+    *outTexture = texture;
+    return gl::Error(GL_NO_ERROR);
 }
 
 void Blit9::setViewport(const RECT &sourceRect, GLint xoffset, GLint yoffset)

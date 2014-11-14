@@ -20,7 +20,7 @@ class Renderer9;
 class Buffer9 : public BufferD3D
 {
   public:
-    Buffer9(rx::Renderer9 *renderer);
+    Buffer9(Renderer9 *renderer);
     virtual ~Buffer9();
 
     static Buffer9 *makeBuffer9(BufferImpl *buffer);
@@ -28,11 +28,11 @@ class Buffer9 : public BufferD3D
     // BufferD3D implementation
     virtual size_t getSize() const { return mSize; }
     virtual bool supportsDirectBinding() const { return false; }
-    virtual Renderer* getRenderer();
+    RendererD3D *getRenderer() override;
 
     // BufferImpl implementation
     virtual gl::Error setData(const void* data, size_t size, GLenum usage);
-    virtual void *getData();
+    gl::Error getData(const uint8_t **outData) override;
     virtual gl::Error setSubData(const void* data, size_t size, size_t offset);
     virtual gl::Error copySubData(BufferImpl* source, GLintptr sourceOffset, GLintptr destOffset, GLsizeiptr size);
     virtual gl::Error map(size_t offset, size_t length, GLbitfield access, GLvoid **mapPtr);
@@ -42,7 +42,7 @@ class Buffer9 : public BufferD3D
   private:
     DISALLOW_COPY_AND_ASSIGN(Buffer9);
 
-    rx::Renderer9 *mRenderer;
+    Renderer9 *mRenderer;
     MemoryBuffer mMemory;
     size_t mSize;
 };

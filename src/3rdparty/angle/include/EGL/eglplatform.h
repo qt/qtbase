@@ -67,23 +67,22 @@
  * implementations.
  */
 
-#if defined(WINAPI_FAMILY) && (WINAPI_FAMILY==WINAPI_FAMILY_PC_APP || WINAPI_FAMILY==WINAPI_FAMILY_PHONE_APP) /* Windows Runtime */
-
-struct IUnknown;
-
-typedef IUnknown *EGLNativeDisplayType;
-typedef void     *EGLNativePixmapType;
-typedef IUnknown *EGLNativeWindowType;
-
-#elif defined(_WIN32) || defined(__VC32__) && !defined(__CYGWIN__) && !defined(__SCITECH_SNAP__) /* Win32 and WinCE */
+#if defined(_WIN32) || defined(__VC32__) && !defined(__CYGWIN__) && !defined(__SCITECH_SNAP__) /* Win32 and WinCE */
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN 1
 #endif
 #include <windows.h>
 
-typedef HDC     EGLNativeDisplayType;
 typedef HBITMAP EGLNativePixmapType;
+
+#if defined(WINAPI_FAMILY) && (WINAPI_FAMILY == WINAPI_FAMILY_PC_APP || WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP) /* Windows Store */
+#include <inspectable.h>
+typedef IInspectable* EGLNativeDisplayType;
+typedef IInspectable* EGLNativeWindowType;
+#else
+typedef HDC     EGLNativeDisplayType;
 typedef HWND    EGLNativeWindowType;
+#endif
 
 #elif defined(__WINSCW__) || defined(__SYMBIAN32__)  /* Symbian */
 

@@ -10,13 +10,14 @@
 #include "libGLESv2/renderer/d3d/d3d11/Renderer11.h"
 #include "libGLESv2/renderer/d3d/d3d11/renderer11_utils.h"
 #include "libGLESv2/main.h"
+#include "common/utilities.h"
 
 #include <GLES2/gl2ext.h>
 
 namespace rx
 {
 
-Query11::Query11(rx::Renderer11 *renderer, GLenum type)
+Query11::Query11(Renderer11 *renderer, GLenum type)
     : QueryImpl(type),
       mResult(0),
       mQueryFinished(false),

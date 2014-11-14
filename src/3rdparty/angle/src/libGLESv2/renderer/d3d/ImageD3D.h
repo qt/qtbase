@@ -17,6 +17,8 @@
 namespace gl
 {
 class Framebuffer;
+struct ImageIndex;
+struct Box;
 }
 
 namespace rx
@@ -33,14 +35,11 @@ class ImageD3D : public Image
 
     virtual bool isDirty() const = 0;
 
-    virtual void setManagedSurface2D(TextureStorage *storage, int level) {};
-    virtual void setManagedSurfaceCube(TextureStorage *storage, int face, int level) {};
-    virtual void setManagedSurface3D(TextureStorage *storage, int level) {};
-    virtual void setManagedSurface2DArray(TextureStorage *storage, int layer, int level) {};
-    virtual bool copyToStorage2D(TextureStorage *storage, int level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height) = 0;
-    virtual bool copyToStorageCube(TextureStorage *storage, int face, int level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height) = 0;
-    virtual bool copyToStorage3D(TextureStorage *storage, int level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth) = 0;
-    virtual bool copyToStorage2DArray(TextureStorage *storage, int level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height) = 0;
+    virtual gl::Error setManagedSurface2D(TextureStorage *storage, int level) { return gl::Error(GL_NO_ERROR); };
+    virtual gl::Error setManagedSurfaceCube(TextureStorage *storage, int face, int level) { return gl::Error(GL_NO_ERROR); };
+    virtual gl::Error setManagedSurface3D(TextureStorage *storage, int level) { return gl::Error(GL_NO_ERROR); };
+    virtual gl::Error setManagedSurface2DArray(TextureStorage *storage, int layer, int level) { return gl::Error(GL_NO_ERROR); };
+    virtual gl::Error copyToStorage(TextureStorage *storage, const gl::ImageIndex &index, const gl::Box &region) = 0;
 
   private:
     DISALLOW_COPY_AND_ASSIGN(ImageD3D);

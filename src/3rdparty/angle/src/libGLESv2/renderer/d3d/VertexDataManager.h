@@ -16,8 +16,9 @@
 
 namespace gl
 {
-struct VertexAttribute;
 class ProgramBinary;
+class State;
+struct VertexAttribute;
 struct VertexAttribCurrentValueData;
 }
 
@@ -26,7 +27,7 @@ namespace rx
 class BufferD3D;
 class StreamingVertexBufferInterface;
 class VertexBuffer;
-class Renderer;
+class RendererD3D;
 
 struct TranslatedAttribute
 {
@@ -49,11 +50,11 @@ struct TranslatedAttribute
 class VertexDataManager
 {
   public:
-    VertexDataManager(rx::Renderer *renderer);
+    VertexDataManager(RendererD3D *renderer);
     virtual ~VertexDataManager();
 
-    gl::Error prepareVertexData(const gl::VertexAttribute attribs[], const gl::VertexAttribCurrentValueData currentValues[],
-                                gl::ProgramBinary *programBinary, GLint start, GLsizei count, TranslatedAttribute *outAttribs, GLsizei instances);
+    gl::Error prepareVertexData(const gl::State &state, GLint start, GLsizei count,
+                                TranslatedAttribute *outAttribs, GLsizei instances);
 
   private:
     DISALLOW_COPY_AND_ASSIGN(VertexDataManager);
@@ -80,7 +81,7 @@ class VertexDataManager
                                 size_t *cachedOffset,
                                 StreamingVertexBufferInterface *buffer);
 
-    rx::Renderer *const mRenderer;
+    RendererD3D *const mRenderer;
 
     StreamingVertexBufferInterface *mStreamingBuffer;
 

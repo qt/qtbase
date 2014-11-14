@@ -238,7 +238,7 @@ EGLAPI EGLContext EGLAPIENTRY eglGetCurrentContext (void);
 #ifndef EGL_VERSION_1_5
 #define EGL_VERSION_1_5 1
 typedef void *EGLSync;
-typedef khronos_intptr_t EGLAttrib;
+typedef intptr_t EGLAttrib;
 typedef khronos_utime_nanoseconds_t EGLTime;
 #define EGL_CONTEXT_MAJOR_VERSION         0x3098
 #define EGL_CONTEXT_MINOR_VERSION         0x30FB

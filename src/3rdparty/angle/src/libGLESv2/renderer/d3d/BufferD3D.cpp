@@ -9,7 +9,6 @@
 #include "libGLESv2/renderer/d3d/BufferD3D.h"
 #include "libGLESv2/renderer/d3d/VertexBuffer.h"
 #include "libGLESv2/renderer/d3d/IndexBuffer.h"
-#include "libGLESv2/renderer/Renderer.h"
 #include "libGLESv2/main.h"
 
 namespace rx
@@ -37,6 +36,13 @@ BufferD3D *BufferD3D::makeBufferD3D(BufferImpl *buffer)
     return static_cast<BufferD3D*>(buffer);
 }
 
+BufferD3D *BufferD3D::makeFromBuffer(gl::Buffer *buffer)
+{
+    BufferImpl *impl = buffer->getImplementation();
+    ASSERT(impl);
+    return makeBufferD3D(impl);
+}
+
 void BufferD3D::updateSerial()
 {
     mSerial = mNextSerial++;
@@ -46,11 +52,11 @@ void BufferD3D::initializeStaticData()
 {
     if (!mStaticVertexBuffer)
     {
-        mStaticVertexBuffer = new rx::StaticVertexBufferInterface(getRenderer());
+        mStaticVertexBuffer = new StaticVertexBufferInterface(getRenderer());
     }
     if (!mStaticIndexBuffer)
     {
-        mStaticIndexBuffer = new rx::StaticIndexBufferInterface(getRenderer());
+        mStaticIndexBuffer = new StaticIndexBufferInterface(getRenderer());
     }
 }
 
