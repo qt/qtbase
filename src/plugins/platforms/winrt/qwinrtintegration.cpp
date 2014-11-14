@@ -110,7 +110,7 @@ QPlatformBackingStore *QWinRTIntegration::createPlatformBackingStore(QWindow *wi
 QPlatformOpenGLContext *QWinRTIntegration::createPlatformOpenGLContext(QOpenGLContext *context) const
 {
     QWinRTScreen *screen = static_cast<QWinRTScreen *>(context->screen()->handle());
-    return new QWinRTEGLContext(context->format(), context->handle(), screen->eglDisplay(), screen->eglSurface());
+    return new QWinRTEGLContext(context->format(), context->handle(), screen->eglDisplay(), screen->eglSurface(), screen->eglConfig());
 }
 
 QPlatformFontDatabase *QWinRTIntegration::fontDatabase() const

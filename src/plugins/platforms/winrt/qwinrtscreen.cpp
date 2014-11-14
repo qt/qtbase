@@ -33,6 +33,11 @@
 
 #include "qwinrtscreen.h"
 
+#define EGL_EGLEXT_PROTOTYPES
+#include <EGL/eglext.h>
+#include <d3d11.h>
+#include <dxgi1_2.h>
+
 #include "qwinrtbackingstore.h"
 #include "qwinrtinputcontext.h"
 #include "qwinrtcursor.h"
@@ -452,6 +457,7 @@ public:
 
     EGLDisplay eglDisplay;
     EGLSurface eglSurface;
+    EGLConfig eglConfig;
 
     QHash<CoreApplicationCallbackRemover, EventRegistrationToken> applicationTokens;
     QHash<CoreWindowCallbackRemover, EventRegistrationToken> windowTokens;
@@ -575,7 +581,36 @@ QWinRTScreen::QWinRTScreen()
     if (!eglInitialize(d->eglDisplay, NULL, NULL))
         qCritical("Failed to initialize EGL: 0x%x", eglGetError());
 
-    d->eglSurface = eglCreateWindowSurface(d->eglDisplay, q_configFromGLFormat(d->eglDisplay, d->surfaceFormat), d->coreWindow.Get(), NULL);
+    // Check that the device properly supports depth/stencil rendering, and disable them if not
+    ComPtr<ID3D11Device> d3dDevice;
+    const EGLBoolean ok = eglQuerySurfacePointerANGLE(d->eglDisplay, EGL_NO_SURFACE, EGL_DEVICE_EXT, (void **)d3dDevice.GetAddressOf());
+    if (ok && d3dDevice) {
+        ComPtr<IDXGIDevice> dxgiDevice;
+        hr = d3dDevice.As(&dxgiDevice);
+        if (SUCCEEDED(hr)) {
+            ComPtr<IDXGIAdapter> dxgiAdapter;
+            hr = dxgiDevice->GetAdapter(&dxgiAdapter);
+            if (SUCCEEDED(hr)) {
+                ComPtr<IDXGIAdapter2> dxgiAdapter2;
+                hr = dxgiAdapter.As(&dxgiAdapter2);
+                if (SUCCEEDED(hr)) {
+                    DXGI_ADAPTER_DESC2 desc;
+                    hr = dxgiAdapter2->GetDesc2(&desc);
+                    if (SUCCEEDED(hr)) {
+                        // The following GPUs do not render properly with depth/stencil
+                        if ((desc.VendorId == 0x4d4f4351 && desc.DeviceId == 0x32303032)) { // Qualcomm Adreno 225
+                            d->surfaceFormat.setDepthBufferSize(-1);
+                            d->surfaceFormat.setStencilBufferSize(-1);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    d->eglConfig = q_configFromGLFormat(d->eglDisplay, d->surfaceFormat);
+    d->surfaceFormat = q_glFormatFromConfig(d->eglDisplay, d->eglConfig, d->surfaceFormat);
+    d->eglSurface = eglCreateWindowSurface(d->eglDisplay, d->eglConfig, d->coreWindow.Get(), NULL);
     if (d->eglSurface == EGL_NO_SURFACE)
         qCritical("Failed to create EGL window surface: 0x%x", eglGetError());
 }
@@ -704,6 +739,12 @@ EGLSurface QWinRTScreen::eglSurface() const
 {
     Q_D(const QWinRTScreen);
     return d->eglSurface;
+}
+
+EGLConfig QWinRTScreen::eglConfig() const
+{
+    Q_D(const QWinRTScreen);
+    return d->eglConfig;
 }
 
 QWindow *QWinRTScreen::topWindow() const

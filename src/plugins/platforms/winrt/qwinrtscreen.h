@@ -109,6 +109,7 @@ public:
     ABI::Windows::UI::Core::ICoreWindow *coreWindow() const;
     EGLDisplay eglDisplay() const; // To opengl context
     EGLSurface eglSurface() const; // To window
+    EGLConfig eglConfig() const;
 
 private:
     void handleExpose();
