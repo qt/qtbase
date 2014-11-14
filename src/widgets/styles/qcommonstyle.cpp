@@ -4907,8 +4907,11 @@ int QCommonStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget
 
 
     case SH_TabBar_Alignment:
-    case SH_Header_ArrowAlignment:
         ret = Qt::AlignLeft;
+        break;
+
+    case SH_Header_ArrowAlignment:
+        ret = Qt::AlignRight | Qt::AlignVCenter;
         break;
 
     case SH_TitleBar_AutoRaise:
