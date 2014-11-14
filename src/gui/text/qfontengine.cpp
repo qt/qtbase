@@ -373,8 +373,6 @@ bool QFontEngine::supportsScript(QChar::Script script) const
                 if (!ret && script_tag_2 != HB_OT_TAG_DEFAULT_SCRIPT)
                     ret = hb_ot_layout_table_find_script(face, HB_OT_TAG_GSUB, HB_OT_TAG_DEFAULT_SCRIPT, &script_index);
             }
-
-            hb_face_destroy(face);
         }
         return ret;
     }
