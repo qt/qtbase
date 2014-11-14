@@ -1203,9 +1203,23 @@ Q_GUI_EXPORT QImage qt_gl_read_framebuffer(const QSize &size, bool alpha_format,
     If used together with QOpenGLPaintDevice, \a flipped should be the opposite of the value
     of QOpenGLPaintDevice::paintFlipped().
 
-    Will try to return a premultiplied ARBG32 or RGB32 image. Since 5.2 it will fall back to
-    a premultiplied RGBA8888 or RGBx8888 image when reading to ARGB32 is not supported. Since 5.4 an
-    A2BGR30 image is returned if the internal format is RGB10_A2.
+    The returned image has a format of premultiplied ARGB32 or RGB32. The latter is used
+    only when internalTextureFormat() is set to \c GL_RGB.
+
+    If the rendering in the framebuffer was not done with premultiplied alpha in mind,
+    create a wrapper QImage with a non-premultiplied format. This is necessary before
+    performing operations like QImage::save() because otherwise the image data would get
+    unpremultiplied, even though it was not premultiplied in the first place. To create
+    such a wrapper without performing a copy of the pixel data, do the following:
+
+    \code
+    QImage fboImage(fbo.toImage());
+    QImage image(fboImage.constBits(), fboImage.width(), fboImage.height(), QImage::Format_ARGB32);
+    \endcode
+
+    Since Qt 5.2 the function will fall back to premultiplied RGBA8888 or RGBx8888 when
+    reading to (A)RGB32 is not supported. Since 5.4 an A2BGR30 image is returned if the
+    internal format is RGB10_A2.
 
     For multisampled framebuffer objects the samples are resolved using the
     \c{GL_EXT_framebuffer_blit} extension. If the extension is not available, the contents
