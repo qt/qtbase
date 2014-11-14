@@ -376,9 +376,6 @@ private:
     static ItemType qtControl(QStyle::SubElement subElement);
     static ItemType qtControl(const QString &android);
 
-    static void setPaletteColor(const QVariantMap &object,
-                                QPalette &palette,
-                                QPalette::ColorRole role);
 private:
     typedef QHash<int, AndroidControl *> AndroidControlsHash;
     AndroidControlsHash m_androidControlsHash;
