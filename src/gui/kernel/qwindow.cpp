@@ -404,6 +404,11 @@ void QWindowPrivate::create(bool recursive)
                     window->d_func()->platformWindow->setParent(platformWindow);
             }
         }
+
+        if (platformWindow) {
+            QPlatformSurfaceEvent e(QPlatformSurfaceEvent::SurfaceCreated);
+            QGuiApplication::sendEvent(q, &e);
+        }
     }
 }
 
@@ -1590,6 +1595,10 @@ void QWindow::destroy()
     bool wasVisible = isVisible();
 
     setVisible(false);
+
+    QPlatformSurfaceEvent e(QPlatformSurfaceEvent::SurfaceAboutToBeDestroyed);
+    QGuiApplication::sendEvent(this, &e);
+
     delete d->platformWindow;
     d->resizeEventPending = true;
     d->receivedExpose = false;

@@ -410,6 +410,23 @@ protected:
     QRegion rgn;
 };
 
+class Q_GUI_EXPORT QPlatformSurfaceEvent : public QEvent
+{
+public:
+    enum SurfaceEventType {
+        SurfaceCreated,
+        SurfaceAboutToBeDestroyed
+    };
+
+    explicit QPlatformSurfaceEvent(SurfaceEventType surfaceEventType);
+    ~QPlatformSurfaceEvent();
+
+    inline SurfaceEventType surfaceEventType() const { return m_surfaceEventType; }
+
+protected:
+    SurfaceEventType m_surfaceEventType;
+};
+
 class Q_GUI_EXPORT QResizeEvent : public QEvent
 {
 public:

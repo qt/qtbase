@@ -275,6 +275,8 @@ public:
         WindowChangeInternal = 215,             // internal for QQuickWidget
         ScreenChangeInternal = 216,
 
+        PlatformSurface = 217,                  // Platform surface created or about to be destroyed
+
         // 512 reserved for Qt Jambi's MetaCall event
         // 513 reserved for Qt Jambi's DeleteOnMainThread event
 

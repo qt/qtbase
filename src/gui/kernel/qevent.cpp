@@ -1324,6 +1324,55 @@ QExposeEvent::~QExposeEvent()
 }
 
 /*!
+    \class QPlatformSurfaceEvent
+    \since 5.5
+    \brief The QPlatformSurfaceEvent class is used to notify about native platform surface events.
+    \inmodule QtGui
+
+    \ingroup events
+
+    Platform window events are synchronously sent to windows and offscreen surfaces when their
+    underlying native surfaces are created or are about to be destroyed.
+
+    Applications can respond to these events to know when the underlying platform
+    surface exists.
+*/
+
+/*!
+    \enum QPlatformSurfaceEvent::SurfaceEventType
+
+    This enum describes the type of platform surface event. The possible types are:
+
+    \value SurfaceCreated               The underlying native surface has been created
+    \value SurfaceAboutToBeDestroyed    The underlying native surface will be destroyed immediately after this event
+
+    The \c SurfaceAboutToBeDestroyed event type is useful as a means of stopping rendering to
+    a platform window before it is destroyed.
+*/
+
+/*!
+    \fn QPlatformSurfaceEvent::SurfaceEventType QPlatformSurfaceEvent::surfaceEventType() const
+
+    Returns the specific type of platform surface event.
+*/
+
+/*!
+    Constructs a platform surface event for the given \a surfaceEventType.
+*/
+QPlatformSurfaceEvent::QPlatformSurfaceEvent(SurfaceEventType surfaceEventType)
+    : QEvent(PlatformSurface)
+    , m_surfaceEventType(surfaceEventType)
+{
+}
+
+/*!
+  \internal
+*/
+QPlatformSurfaceEvent::~QPlatformSurfaceEvent()
+{
+}
+
+/*!
     \fn const QRegion &QExposeEvent::region() const
 
     Returns the window area that has been exposed. The region is given in local coordinates.
