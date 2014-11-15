@@ -1,30 +1,30 @@
 CONFIG(release, debug|release) {
     # We need fat object files when creating static libraries on some platforms
     # so the linker will know to load a particular object from the library
-    # in the first place. With GCC, we have -ffat-lto-objects. MSVC
-    # seems to work just fine. For other compilers, we disable LTCG
+    # in the first place. On others, we have special ar and nm to create the symbol
+    # tables so the linker will know  better. For other compilers, we disable LTCG
     # for static libraries.
     msvc {
         # Nothing to do
-    } else: gcc {
-        !clang:!intel_icc {
-            static|fat-lto {
-                QMAKE_CFLAGS_LTCG   += -ffat-lto-objects
-                QMAKE_CXXFLAGS_LTCG += -ffat-lto-objects
-            } else {
-                QMAKE_CFLAGS_LTCG   += -fno-fat-lto-objects
-                QMAKE_CXXFLAGS_LTCG += -fno-fat-lto-objects
-            }
-            greaterThan(QMAKE_HOST.cpu_count, 1) {
-                # Override LTO number of jobs
-                QMAKE_LFLAGS_LTCG -= -flto
-                QMAKE_LFLAGS_LTCG += -flto=$$QMAKE_HOST.cpu_count
-            }
-        } else: static {
+    } else {
+        !isEmpty(QMAKE_AR_LTCG): QMAKE_AR = $$QMAKE_AR_LTCG
+        !isEmpty(QMAKE_NM_LTCG): QMAKE_NM = $$QMAKE_NM_LTCG
+
+        equals(QMAKE_RANLIB_LTCG, true): QMAKE_RANLIB =
+        else: !isEmpty(QMAKE_RANLIB_LTCG): QMAKE_RANLIB = $$QMAKE_RANLIB_LTCG
+
+        static:isEmpty(QMAKE_AR_LTCG):isEmpty(QMAKE_RANLIB_LTCG) {
+            # We don't know how to create symbol tables for static libs with this
+            # compiler, so disable LTCG
             QMAKE_CFLAGS_LTCG =
             QMAKE_CXXFLAGS_LTCG =
             QMAKE_LFLAGS_LTCG =
         }
+    }
+
+    fat-lto {
+        QMAKE_CFLAGS_LTCG += $$QMAKE_CFLAGS_LTCG_FATOBJECTS
+        QMAKE_CXXFLAGS_LTCG += $$QMAKE_CXXFLAGS_LTCG_FATOBJECTS
     }
 
     load(link_ltcg)

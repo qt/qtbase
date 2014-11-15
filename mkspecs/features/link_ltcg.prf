@@ -1,4 +1,9 @@
 gcc {
+    !clang:!intel_icc:greaterThan(QMAKE_HOST.cpu_count, 1) {
+        # Override LTO number of jobs
+        QMAKE_LFLAGS_LTCG ~= s/^-flto$/-flto=$$QMAKE_HOST.cpu_count/
+    }
+
     # When doing link-time code generation, we need to pass the compiler
     # flags during linking the stage too. This file is processed after
     # default_post.prf, so the QMAKE_CXXFLAGS already contains
