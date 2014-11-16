@@ -51,8 +51,8 @@ public:
 
     Q_DECL_CONSTEXPR inline int width() const;
     Q_DECL_CONSTEXPR inline int height() const;
-    inline void setWidth(int w);
-    inline void setHeight(int h);
+    Q_DECL_RELAXED_CONSTEXPR inline void setWidth(int w);
+    Q_DECL_RELAXED_CONSTEXPR inline void setHeight(int h);
     void transpose();
     Q_DECL_CONSTEXPR inline QSize transposed() const;
 
@@ -64,12 +64,12 @@ public:
     Q_DECL_CONSTEXPR inline QSize expandedTo(const QSize &) const;
     Q_DECL_CONSTEXPR inline QSize boundedTo(const QSize &) const;
 
-    inline int &rwidth();
-    inline int &rheight();
+    Q_DECL_RELAXED_CONSTEXPR inline int &rwidth();
+    Q_DECL_RELAXED_CONSTEXPR inline int &rheight();
 
-    inline QSize &operator+=(const QSize &);
-    inline QSize &operator-=(const QSize &);
-    inline QSize &operator*=(qreal c);
+    Q_DECL_RELAXED_CONSTEXPR inline QSize &operator+=(const QSize &);
+    Q_DECL_RELAXED_CONSTEXPR inline QSize &operator-=(const QSize &);
+    Q_DECL_RELAXED_CONSTEXPR inline QSize &operator*=(qreal c);
     inline QSize &operator/=(qreal c);
 
     friend inline Q_DECL_CONSTEXPR bool operator==(const QSize &, const QSize &);
@@ -119,10 +119,10 @@ Q_DECL_CONSTEXPR inline int QSize::width() const
 Q_DECL_CONSTEXPR inline int QSize::height() const
 { return ht; }
 
-inline void QSize::setWidth(int w)
+Q_DECL_RELAXED_CONSTEXPR inline void QSize::setWidth(int w)
 { wd = w; }
 
-inline void QSize::setHeight(int h)
+Q_DECL_RELAXED_CONSTEXPR inline void QSize::setHeight(int h)
 { ht = h; }
 
 Q_DECL_CONSTEXPR inline QSize QSize::transposed() const
@@ -137,19 +137,19 @@ inline void QSize::scale(const QSize &s, Qt::AspectRatioMode mode)
 inline QSize QSize::scaled(int w, int h, Qt::AspectRatioMode mode) const
 { return scaled(QSize(w, h), mode); }
 
-inline int &QSize::rwidth()
+Q_DECL_RELAXED_CONSTEXPR inline int &QSize::rwidth()
 { return wd; }
 
-inline int &QSize::rheight()
+Q_DECL_RELAXED_CONSTEXPR inline int &QSize::rheight()
 { return ht; }
 
-inline QSize &QSize::operator+=(const QSize &s)
+Q_DECL_RELAXED_CONSTEXPR inline QSize &QSize::operator+=(const QSize &s)
 { wd+=s.wd; ht+=s.ht; return *this; }
 
-inline QSize &QSize::operator-=(const QSize &s)
+Q_DECL_RELAXED_CONSTEXPR inline QSize &QSize::operator-=(const QSize &s)
 { wd-=s.wd; ht-=s.ht; return *this; }
 
-inline QSize &QSize::operator*=(qreal c)
+Q_DECL_RELAXED_CONSTEXPR inline QSize &QSize::operator*=(qreal c)
 { wd = qRound(wd*c); ht = qRound(ht*c); return *this; }
 
 Q_DECL_CONSTEXPR inline bool operator==(const QSize &s1, const QSize &s2)
@@ -211,8 +211,8 @@ public:
 
     Q_DECL_CONSTEXPR inline qreal width() const;
     Q_DECL_CONSTEXPR inline qreal height() const;
-    inline void setWidth(qreal w);
-    inline void setHeight(qreal h);
+    Q_DECL_RELAXED_CONSTEXPR inline void setWidth(qreal w);
+    Q_DECL_RELAXED_CONSTEXPR inline void setHeight(qreal h);
     void transpose();
     Q_DECL_CONSTEXPR inline QSizeF transposed() const;
 
@@ -224,12 +224,12 @@ public:
     Q_DECL_CONSTEXPR inline QSizeF expandedTo(const QSizeF &) const;
     Q_DECL_CONSTEXPR inline QSizeF boundedTo(const QSizeF &) const;
 
-    inline qreal &rwidth();
-    inline qreal &rheight();
+    Q_DECL_RELAXED_CONSTEXPR inline qreal &rwidth();
+    Q_DECL_RELAXED_CONSTEXPR inline qreal &rheight();
 
-    inline QSizeF &operator+=(const QSizeF &);
-    inline QSizeF &operator-=(const QSizeF &);
-    inline QSizeF &operator*=(qreal c);
+    Q_DECL_RELAXED_CONSTEXPR inline QSizeF &operator+=(const QSizeF &);
+    Q_DECL_RELAXED_CONSTEXPR inline QSizeF &operator-=(const QSizeF &);
+    Q_DECL_RELAXED_CONSTEXPR inline QSizeF &operator*=(qreal c);
     inline QSizeF &operator/=(qreal c);
 
     friend Q_DECL_CONSTEXPR inline bool operator==(const QSizeF &, const QSizeF &);
@@ -284,10 +284,10 @@ Q_DECL_CONSTEXPR inline qreal QSizeF::width() const
 Q_DECL_CONSTEXPR inline qreal QSizeF::height() const
 { return ht; }
 
-inline void QSizeF::setWidth(qreal w)
+Q_DECL_RELAXED_CONSTEXPR inline void QSizeF::setWidth(qreal w)
 { wd = w; }
 
-inline void QSizeF::setHeight(qreal h)
+Q_DECL_RELAXED_CONSTEXPR inline void QSizeF::setHeight(qreal h)
 { ht = h; }
 
 Q_DECL_CONSTEXPR inline QSizeF QSizeF::transposed() const
@@ -302,19 +302,19 @@ inline void QSizeF::scale(const QSizeF &s, Qt::AspectRatioMode mode)
 inline QSizeF QSizeF::scaled(qreal w, qreal h, Qt::AspectRatioMode mode) const
 { return scaled(QSizeF(w, h), mode); }
 
-inline qreal &QSizeF::rwidth()
+Q_DECL_RELAXED_CONSTEXPR inline qreal &QSizeF::rwidth()
 { return wd; }
 
-inline qreal &QSizeF::rheight()
+Q_DECL_RELAXED_CONSTEXPR inline qreal &QSizeF::rheight()
 { return ht; }
 
-inline QSizeF &QSizeF::operator+=(const QSizeF &s)
+Q_DECL_RELAXED_CONSTEXPR inline QSizeF &QSizeF::operator+=(const QSizeF &s)
 { wd += s.wd; ht += s.ht; return *this; }
 
-inline QSizeF &QSizeF::operator-=(const QSizeF &s)
+Q_DECL_RELAXED_CONSTEXPR inline QSizeF &QSizeF::operator-=(const QSizeF &s)
 { wd -= s.wd; ht -= s.ht; return *this; }
 
-inline QSizeF &QSizeF::operator*=(qreal c)
+Q_DECL_RELAXED_CONSTEXPR inline QSizeF &QSizeF::operator*=(qreal c)
 { wd *= c; ht *= c; return *this; }
 
 Q_DECL_CONSTEXPR inline bool operator==(const QSizeF &s1, const QSizeF &s2)
