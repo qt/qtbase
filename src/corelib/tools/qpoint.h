@@ -49,22 +49,22 @@ public:
 
     Q_DECL_CONSTEXPR inline int x() const;
     Q_DECL_CONSTEXPR inline int y() const;
-    inline void setX(int x);
-    inline void setY(int y);
+    Q_DECL_RELAXED_CONSTEXPR inline void setX(int x);
+    Q_DECL_RELAXED_CONSTEXPR inline void setY(int y);
 
     Q_DECL_CONSTEXPR inline int manhattanLength() const;
 
-    inline int &rx();
-    inline int &ry();
+    Q_DECL_RELAXED_CONSTEXPR inline int &rx();
+    Q_DECL_RELAXED_CONSTEXPR inline int &ry();
 
-    inline QPoint &operator+=(const QPoint &p);
-    inline QPoint &operator-=(const QPoint &p);
+    Q_DECL_RELAXED_CONSTEXPR inline QPoint &operator+=(const QPoint &p);
+    Q_DECL_RELAXED_CONSTEXPR inline QPoint &operator-=(const QPoint &p);
 
-    inline QPoint &operator*=(float factor);
-    inline QPoint &operator*=(double factor);
-    inline QPoint &operator*=(int factor);
+    Q_DECL_RELAXED_CONSTEXPR inline QPoint &operator*=(float factor);
+    Q_DECL_RELAXED_CONSTEXPR inline QPoint &operator*=(double factor);
+    Q_DECL_RELAXED_CONSTEXPR inline QPoint &operator*=(int factor);
 
-    inline QPoint &operator/=(qreal divisor);
+    Q_DECL_RELAXED_CONSTEXPR inline QPoint &operator/=(qreal divisor);
 
     Q_DECL_CONSTEXPR static inline int dotProduct(const QPoint &p1, const QPoint &p2)
     { return p1.xp * p2.xp + p1.yp * p2.yp; }
@@ -116,34 +116,34 @@ Q_DECL_CONSTEXPR inline int QPoint::x() const
 Q_DECL_CONSTEXPR inline int QPoint::y() const
 { return yp; }
 
-inline void QPoint::setX(int xpos)
+Q_DECL_RELAXED_CONSTEXPR inline void QPoint::setX(int xpos)
 { xp = xpos; }
 
-inline void QPoint::setY(int ypos)
+Q_DECL_RELAXED_CONSTEXPR inline void QPoint::setY(int ypos)
 { yp = ypos; }
 
 inline int Q_DECL_CONSTEXPR QPoint::manhattanLength() const
 { return qAbs(x())+qAbs(y()); }
 
-inline int &QPoint::rx()
+Q_DECL_RELAXED_CONSTEXPR inline int &QPoint::rx()
 { return xp; }
 
-inline int &QPoint::ry()
+Q_DECL_RELAXED_CONSTEXPR inline int &QPoint::ry()
 { return yp; }
 
-inline QPoint &QPoint::operator+=(const QPoint &p)
+Q_DECL_RELAXED_CONSTEXPR inline QPoint &QPoint::operator+=(const QPoint &p)
 { xp+=p.xp; yp+=p.yp; return *this; }
 
-inline QPoint &QPoint::operator-=(const QPoint &p)
+Q_DECL_RELAXED_CONSTEXPR inline QPoint &QPoint::operator-=(const QPoint &p)
 { xp-=p.xp; yp-=p.yp; return *this; }
 
-inline QPoint &QPoint::operator*=(float factor)
+Q_DECL_RELAXED_CONSTEXPR inline QPoint &QPoint::operator*=(float factor)
 { xp = qRound(xp*factor); yp = qRound(yp*factor); return *this; }
 
-inline QPoint &QPoint::operator*=(double factor)
+Q_DECL_RELAXED_CONSTEXPR inline QPoint &QPoint::operator*=(double factor)
 { xp = qRound(xp*factor); yp = qRound(yp*factor); return *this; }
 
-inline QPoint &QPoint::operator*=(int factor)
+Q_DECL_RELAXED_CONSTEXPR inline QPoint &QPoint::operator*=(int factor)
 { xp = xp*factor; yp = yp*factor; return *this; }
 
 Q_DECL_CONSTEXPR inline bool operator==(const QPoint &p1, const QPoint &p2)
@@ -182,7 +182,7 @@ Q_DECL_CONSTEXPR inline const QPoint operator+(const QPoint &p)
 Q_DECL_CONSTEXPR inline const QPoint operator-(const QPoint &p)
 { return QPoint(-p.xp, -p.yp); }
 
-inline QPoint &QPoint::operator/=(qreal c)
+Q_DECL_RELAXED_CONSTEXPR inline QPoint &QPoint::operator/=(qreal c)
 {
     xp = qRound(xp/c);
     yp = qRound(yp/c);
@@ -215,16 +215,16 @@ public:
 
     Q_DECL_CONSTEXPR inline qreal x() const;
     Q_DECL_CONSTEXPR inline qreal y() const;
-    inline void setX(qreal x);
-    inline void setY(qreal y);
+    Q_DECL_RELAXED_CONSTEXPR inline void setX(qreal x);
+    Q_DECL_RELAXED_CONSTEXPR inline void setY(qreal y);
 
-    inline qreal &rx();
-    inline qreal &ry();
+    Q_DECL_RELAXED_CONSTEXPR inline qreal &rx();
+    Q_DECL_RELAXED_CONSTEXPR inline qreal &ry();
 
-    inline QPointF &operator+=(const QPointF &p);
-    inline QPointF &operator-=(const QPointF &p);
-    inline QPointF &operator*=(qreal c);
-    inline QPointF &operator/=(qreal c);
+    Q_DECL_RELAXED_CONSTEXPR inline QPointF &operator+=(const QPointF &p);
+    Q_DECL_RELAXED_CONSTEXPR inline QPointF &operator-=(const QPointF &p);
+    Q_DECL_RELAXED_CONSTEXPR inline QPointF &operator*=(qreal c);
+    Q_DECL_RELAXED_CONSTEXPR inline QPointF &operator/=(qreal c);
 
     Q_DECL_CONSTEXPR static inline qreal dotProduct(const QPointF &p1, const QPointF &p2)
     { return p1.xp * p2.xp + p1.yp * p2.yp; }
@@ -289,39 +289,39 @@ Q_DECL_CONSTEXPR inline qreal QPointF::y() const
     return yp;
 }
 
-inline void QPointF::setX(qreal xpos)
+Q_DECL_RELAXED_CONSTEXPR inline void QPointF::setX(qreal xpos)
 {
     xp = xpos;
 }
 
-inline void QPointF::setY(qreal ypos)
+Q_DECL_RELAXED_CONSTEXPR inline void QPointF::setY(qreal ypos)
 {
     yp = ypos;
 }
 
-inline qreal &QPointF::rx()
+Q_DECL_RELAXED_CONSTEXPR inline qreal &QPointF::rx()
 {
     return xp;
 }
 
-inline qreal &QPointF::ry()
+Q_DECL_RELAXED_CONSTEXPR inline qreal &QPointF::ry()
 {
     return yp;
 }
 
-inline QPointF &QPointF::operator+=(const QPointF &p)
+Q_DECL_RELAXED_CONSTEXPR inline QPointF &QPointF::operator+=(const QPointF &p)
 {
     xp+=p.xp;
     yp+=p.yp;
     return *this;
 }
 
-inline QPointF &QPointF::operator-=(const QPointF &p)
+Q_DECL_RELAXED_CONSTEXPR inline QPointF &QPointF::operator-=(const QPointF &p)
 {
     xp-=p.xp; yp-=p.yp; return *this;
 }
 
-inline QPointF &QPointF::operator*=(qreal c)
+Q_DECL_RELAXED_CONSTEXPR inline QPointF &QPointF::operator*=(qreal c)
 {
     xp*=c; yp*=c; return *this;
 }
@@ -366,7 +366,7 @@ Q_DECL_CONSTEXPR inline const QPointF operator-(const QPointF &p)
     return QPointF(-p.xp, -p.yp);
 }
 
-inline QPointF &QPointF::operator/=(qreal divisor)
+Q_DECL_RELAXED_CONSTEXPR inline QPointF &QPointF::operator/=(qreal divisor)
 {
     xp/=divisor;
     yp/=divisor;
