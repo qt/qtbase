@@ -95,6 +95,7 @@ private slots:
     void changeFilter();
     void changeSourceData_data();
     void changeSourceData();
+    void changeSourceDataKeepsStableSorting_qtbug1548();
     void sortFilterRole();
     void selectionFilteredOut();
     void match_data();
@@ -2007,6 +2008,79 @@ void tst_QSortFilterProxyModel::changeSourceData()
         QModelIndex index = proxy.index(i, 0, QModelIndex());
         QCOMPARE(proxy.data(index, Qt::DisplayRole).toString(), proxyItems.at(i));
     }
+}
+
+// Checks that the model is a table, and that each and every row is like this:
+// i-th row:   ( rows.at(i), i )
+static void checkSortedTableModel(const QAbstractItemModel *model, const QStringList &rows)
+{
+    QCOMPARE(model->rowCount(), rows.length());
+    QCOMPARE(model->columnCount(), 2);
+
+    for (int row = 0; row < model->rowCount(); ++row) {
+        const QString column0 = model->index(row, 0).data().toString();
+        const int column1 = model->index(row, 1).data().toString().toInt();
+
+        QCOMPARE(column0, rows.at(row));
+        QCOMPARE(column1, row);
+    }
+}
+
+void tst_QSortFilterProxyModel::changeSourceDataKeepsStableSorting_qtbug1548()
+{
+    // Check that emitting dataChanged from the source model
+    // for a change of a role which is not the sorting role
+    // doesn't alter the sorting. In this case, we sort on the DisplayRole,
+    // and play with other roles.
+
+    static const QStringList rows
+            = QStringList() << "a" << "b" << "b" << "b" << "c" << "c" << "x";
+
+    // Build a table of pairs (string, #row) in each row
+    QStandardItemModel model(0, 2);
+
+    for (int rowNumber = 0; rowNumber < rows.length(); ++rowNumber) {
+        QStandardItem *column0 = new QStandardItem(rows.at(rowNumber));
+        column0->setCheckable(true);
+        column0->setCheckState(Qt::Unchecked);
+
+        QStandardItem *column1 = new QStandardItem(QString::number(rowNumber));
+
+        const QList<QStandardItem *> row
+                = QList<QStandardItem *>() << column0 << column1;
+
+        model.appendRow(row);
+    }
+
+    checkSortedTableModel(&model, rows);
+
+    // Build the proxy model
+    QSortFilterProxyModel proxy;
+    proxy.setSourceModel(&model);
+    proxy.setDynamicSortFilter(true);
+    proxy.sort(0);
+
+    // The proxy is now sorted by the first column, check that the sorting
+    // * is correct (the input is already sorted, so it must not have changed)
+    // * was stable (by looking at the second column)
+    checkSortedTableModel(&model, rows);
+
+    // Change the check status of an item. That must not break the stable sorting
+    // changes the middle "b"
+    model.item(2)->setCheckState(Qt::Checked);
+    checkSortedTableModel(&model, rows);
+
+    // changes the starting "a"
+    model.item(0)->setCheckState(Qt::Checked);
+    checkSortedTableModel(&model, rows);
+
+    // change the background color of the first "c"
+    model.item(4)->setBackground(Qt::red);
+    checkSortedTableModel(&model, rows);
+
+    // change the background color of the second "c"
+    model.item(5)->setBackground(Qt::red);
+    checkSortedTableModel(&model, rows);
 }
 
 void tst_QSortFilterProxyModel::sortFilterRole()
