@@ -52,13 +52,13 @@ struct QPair
     template <typename TT1, typename TT2>
     Q_DECL_CONSTEXPR QPair(const QPair<TT1, TT2> &p) : first(p.first), second(p.second) {}
     template <typename TT1, typename TT2>
-    QPair &operator=(const QPair<TT1, TT2> &p)
+    Q_DECL_RELAXED_CONSTEXPR QPair &operator=(const QPair<TT1, TT2> &p)
     { first = p.first; second = p.second; return *this; }
 #ifdef Q_COMPILER_RVALUE_REFS
     template <typename TT1, typename TT2>
     Q_DECL_CONSTEXPR QPair(QPair<TT1, TT2> &&p) : first(std::move(p.first)), second(std::move(p.second)) {}
     template <typename TT1, typename TT2>
-    QPair &operator=(QPair<TT1, TT2> &&p)
+    Q_DECL_RELAXED_CONSTEXPR QPair &operator=(QPair<TT1, TT2> &&p)
     { first = std::move(p.first); second = std::move(p.second); return *this; }
 #endif
 
