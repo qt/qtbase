@@ -152,29 +152,29 @@ public:
     QFontEngineQPF2(const QFontDef &def, const QByteArray &data);
     ~QFontEngineQPF2();
 
-    FaceId faceId() const { return face_id; }
-    bool getSfntTableData(uint tag, uchar *buffer, uint *length) const;
+    FaceId faceId() const Q_DECL_OVERRIDE { return face_id; }
+    bool getSfntTableData(uint tag, uchar *buffer, uint *length) const Q_DECL_OVERRIDE;
 
-    virtual glyph_t glyphIndex(uint ucs4) const;
-    bool stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs, ShaperFlags flags) const;
-    void recalcAdvances(QGlyphLayout *, ShaperFlags) const;
+    virtual glyph_t glyphIndex(uint ucs4) const Q_DECL_OVERRIDE;
+    bool stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs, ShaperFlags flags) const Q_DECL_OVERRIDE;
+    void recalcAdvances(QGlyphLayout *, ShaperFlags) const Q_DECL_OVERRIDE;
 
-    void addOutlineToPath(qreal x, qreal y, const QGlyphLayout &glyphs, QPainterPath *path, QTextItem::RenderFlags flags);
-    QImage alphaMapForGlyph(glyph_t t);
+    void addOutlineToPath(qreal x, qreal y, const QGlyphLayout &glyphs, QPainterPath *path, QTextItem::RenderFlags flags) Q_DECL_OVERRIDE;
+    QImage alphaMapForGlyph(glyph_t t) Q_DECL_OVERRIDE;
 
-    glyph_metrics_t boundingBox(const QGlyphLayout &glyphs);
-    glyph_metrics_t boundingBox(glyph_t glyph);
+    glyph_metrics_t boundingBox(const QGlyphLayout &glyphs) Q_DECL_OVERRIDE;
+    glyph_metrics_t boundingBox(glyph_t glyph) Q_DECL_OVERRIDE;
 
-    QFixed ascent() const;
-    QFixed descent() const;
-    QFixed leading() const;
-    qreal maxCharWidth() const;
-    qreal minLeftBearing() const;
-    qreal minRightBearing() const;
-    QFixed underlinePosition() const;
-    QFixed lineThickness() const;
+    QFixed ascent() const Q_DECL_OVERRIDE;
+    QFixed descent() const Q_DECL_OVERRIDE;
+    QFixed leading() const Q_DECL_OVERRIDE;
+    qreal maxCharWidth() const Q_DECL_OVERRIDE;
+    qreal minLeftBearing() const Q_DECL_OVERRIDE;
+    qreal minRightBearing() const Q_DECL_OVERRIDE;
+    QFixed underlinePosition() const Q_DECL_OVERRIDE;
+    QFixed lineThickness() const Q_DECL_OVERRIDE;
 
-    virtual int glyphCount() const { return glyphMapEntries; }
+    virtual int glyphCount() const Q_DECL_OVERRIDE { return glyphMapEntries; }
 
     bool isValid() const;
 

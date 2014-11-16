@@ -90,7 +90,7 @@ public:
         : QMetaCallEvent(0, id, 0, sender, -1), connection(c), message(msg), metaTypes(types), flags(f)
         { }
 
-    void placeMetaCall(QObject *object)
+    void placeMetaCall(QObject *object) Q_DECL_OVERRIDE
     {
         QDBusConnectionPrivate::d(connection)->deliverCall(object, flags, message, metaTypes, id());
     }
@@ -113,7 +113,7 @@ public:
         { }
     ~QDBusActivateObjectEvent();
 
-    void placeMetaCall(QObject *);
+    void placeMetaCall(QObject *) Q_DECL_OVERRIDE;
 
 private:
     QDBusConnection connection; // just for refcounting

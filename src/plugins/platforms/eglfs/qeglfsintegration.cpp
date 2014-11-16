@@ -152,7 +152,7 @@ EGLConfig QEglFSIntegration::chooseConfig(EGLDisplay display, const QSurfaceForm
         }
 
     protected:
-        bool filterConfig(EGLConfig config) const
+        bool filterConfig(EGLConfig config) const Q_DECL_OVERRIDE
         {
             return m_hooks->filterConfig(display(), config) && QEglConfigChooser::filterConfig(config);
         }

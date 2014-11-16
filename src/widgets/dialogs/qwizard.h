@@ -161,8 +161,8 @@ public:
     void setDefaultProperty(const char *className, const char *property,
                             const char *changedSignal);
 
-    void setVisible(bool visible);
-    QSize sizeHint() const;
+    void setVisible(bool visible) Q_DECL_OVERRIDE;
+    QSize sizeHint() const Q_DECL_OVERRIDE;
 
 Q_SIGNALS:
     void currentIdChanged(int id);
@@ -177,13 +177,13 @@ public Q_SLOTS:
     void restart();
 
 protected:
-    bool event(QEvent *event);
-    void resizeEvent(QResizeEvent *event);
-    void paintEvent(QPaintEvent *event);
+    bool event(QEvent *event) Q_DECL_OVERRIDE;
+    void resizeEvent(QResizeEvent *event) Q_DECL_OVERRIDE;
+    void paintEvent(QPaintEvent *event) Q_DECL_OVERRIDE;
 #ifdef Q_OS_WIN
     bool nativeEvent(const QByteArray &eventType, void * message, long * result);
 #endif
-    void done(int result);
+    void done(int result) Q_DECL_OVERRIDE;
     virtual void initializePage(int id);
     virtual void cleanupPage(int id);
 

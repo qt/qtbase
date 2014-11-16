@@ -53,21 +53,21 @@ public:
     explicit QScrollBar(Qt::Orientation, QWidget *parent=0);
     ~QScrollBar();
 
-    QSize sizeHint() const;
-    bool event(QEvent *event);
+    QSize sizeHint() const Q_DECL_OVERRIDE;
+    bool event(QEvent *event) Q_DECL_OVERRIDE;
 
 protected:
 #ifndef QT_NO_WHEELEVENT
-    void wheelEvent(QWheelEvent *);
+    void wheelEvent(QWheelEvent *) Q_DECL_OVERRIDE;
 #endif
-    void paintEvent(QPaintEvent *);
-    void mousePressEvent(QMouseEvent *);
-    void mouseReleaseEvent(QMouseEvent *);
-    void mouseMoveEvent(QMouseEvent *);
-    void hideEvent(QHideEvent*);
-    void sliderChange(SliderChange change);
+    void paintEvent(QPaintEvent *) Q_DECL_OVERRIDE;
+    void mousePressEvent(QMouseEvent *) Q_DECL_OVERRIDE;
+    void mouseReleaseEvent(QMouseEvent *) Q_DECL_OVERRIDE;
+    void mouseMoveEvent(QMouseEvent *) Q_DECL_OVERRIDE;
+    void hideEvent(QHideEvent*) Q_DECL_OVERRIDE;
+    void sliderChange(SliderChange change) Q_DECL_OVERRIDE;
 #ifndef QT_NO_CONTEXTMENU
-    void contextMenuEvent(QContextMenuEvent *);
+    void contextMenuEvent(QContextMenuEvent *) Q_DECL_OVERRIDE;
 #endif
     void initStyleOption(QStyleOptionSlider *option) const;
 

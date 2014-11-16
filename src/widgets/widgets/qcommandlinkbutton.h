@@ -58,11 +58,11 @@ public:
     void setDescription(const QString &description);
 
 protected:
-    QSize sizeHint() const;
-    int heightForWidth(int) const;
-    QSize minimumSizeHint() const;
-    bool event(QEvent *e);
-    void paintEvent(QPaintEvent *);
+    QSize sizeHint() const Q_DECL_OVERRIDE;
+    int heightForWidth(int) const Q_DECL_OVERRIDE;
+    QSize minimumSizeHint() const Q_DECL_OVERRIDE;
+    bool event(QEvent *e) Q_DECL_OVERRIDE;
+    void paintEvent(QPaintEvent *) Q_DECL_OVERRIDE;
 
 private:
     Q_DISABLE_COPY(QCommandLinkButton)

@@ -1303,8 +1303,8 @@ QAbstractTransition *QStateMachinePrivate::createInitialTransition() const
             : QAbstractTransition()
         { setTargetStates(targets); }
     protected:
-        virtual bool eventTest(QEvent *) { return true; }
-        virtual void onTransition(QEvent *) {}
+        virtual bool eventTest(QEvent *) Q_DECL_OVERRIDE { return true; }
+        virtual void onTransition(QEvent *) Q_DECL_OVERRIDE {}
     };
 
     QState *root = rootState();
@@ -1629,8 +1629,8 @@ public:
         : QAbstractTransition()
     { setTargetState(target); }
 protected:
-    void onTransition(QEvent *) { deleteLater(); }
-    bool eventTest(QEvent *) { return true; }
+    void onTransition(QEvent *) Q_DECL_OVERRIDE { deleteLater(); }
+    bool eventTest(QEvent *) Q_DECL_OVERRIDE { return true; }
 };
 
 } // namespace

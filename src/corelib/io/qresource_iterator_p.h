@@ -57,10 +57,10 @@ public:
     QResourceFileEngineIterator(QDir::Filters filters, const QStringList &filterNames);
     ~QResourceFileEngineIterator();
 
-    QString next();
-    bool hasNext() const;
+    QString next() Q_DECL_OVERRIDE;
+    bool hasNext() const Q_DECL_OVERRIDE;
 
-    QString currentFileName() const;
+    QString currentFileName() const Q_DECL_OVERRIDE;
 
 private:
     mutable QStringList entries;

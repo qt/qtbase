@@ -157,9 +157,9 @@ class Q_GUI_EXPORT QImageTextureGlyphCache : public QTextureGlyphCache
 public:
     QImageTextureGlyphCache(QFontEngine::GlyphFormat format, const QTransform &matrix)
         : QTextureGlyphCache(format, matrix) { }
-    virtual void createTextureData(int width, int height);
-    virtual void resizeTextureData(int width, int height);
-    virtual void fillTexture(const Coord &c, glyph_t glyph, QFixed subPixelPosition);
+    virtual void createTextureData(int width, int height) Q_DECL_OVERRIDE;
+    virtual void resizeTextureData(int width, int height) Q_DECL_OVERRIDE;
+    virtual void fillTexture(const Coord &c, glyph_t glyph, QFixed subPixelPosition) Q_DECL_OVERRIDE;
 
     inline const QImage &image() const { return m_image; }
 

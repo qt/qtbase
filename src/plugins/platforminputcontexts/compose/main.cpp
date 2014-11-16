@@ -45,7 +45,7 @@ class QComposePlatformInputContextPlugin : public QPlatformInputContextPlugin
     Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QPlatformInputContextFactoryInterface" FILE "compose.json")
 
 public:
-    QComposeInputContext *create(const QString &, const QStringList &);
+    QComposeInputContext *create(const QString &, const QStringList &) Q_DECL_OVERRIDE;
 };
 
 QComposeInputContext *QComposePlatformInputContextPlugin::create(const QString &system, const QStringList &paramList)

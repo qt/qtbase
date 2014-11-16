@@ -59,10 +59,10 @@ public:
     QFbBackingStore(QWindow *window);
     ~QFbBackingStore();
 
-    virtual QPaintDevice *paintDevice() { return &mImage; }
-    virtual void flush(QWindow *window, const QRegion &region, const QPoint &offset);
+    virtual QPaintDevice *paintDevice() Q_DECL_OVERRIDE { return &mImage; }
+    virtual void flush(QWindow *window, const QRegion &region, const QPoint &offset) Q_DECL_OVERRIDE;
 
-    virtual void resize(const QSize &size, const QRegion &region);
+    virtual void resize(const QSize &size, const QRegion &region) Q_DECL_OVERRIDE;
 
     const QImage image() { return mImage; }
 

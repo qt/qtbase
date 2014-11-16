@@ -103,13 +103,13 @@ public:
     QPalette palette;
     uint inheritedPaletteResolveMask;
     void setPalette_helper(const QPalette &palette);
-    void resolvePalette(uint inheritedMask);
+    void resolvePalette(uint inheritedMask) Q_DECL_OVERRIDE;
     void updatePalette(const QPalette &palette);
     QPalette naturalWidgetPalette() const;
     QFont font;
     uint inheritedFontResolveMask;
     void setFont_helper(const QFont &font);
-    void resolveFont(uint inheritedMask);
+    void resolveFont(uint inheritedMask) Q_DECL_OVERRIDE;
     void updateFont(const QFont &font);
     QFont naturalWidgetFont() const;
 
@@ -124,13 +124,13 @@ public:
     bool hasDecoration() const;
 
     // Private Properties
-    qreal width() const;
-    void setWidth(qreal);
-    void resetWidth();
+    qreal width() const Q_DECL_OVERRIDE;
+    void setWidth(qreal) Q_DECL_OVERRIDE;
+    void resetWidth() Q_DECL_OVERRIDE;
 
-    qreal height() const;
-    void setHeight(qreal);
-    void resetHeight();
+    qreal height() const Q_DECL_OVERRIDE;
+    void setHeight(qreal) Q_DECL_OVERRIDE;
+    void resetHeight() Q_DECL_OVERRIDE;
     void setGeometryFromSetPos();
 
     // State

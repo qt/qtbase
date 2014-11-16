@@ -89,7 +89,7 @@ public:
     {
     public:
         TextEdit(QWidget *parent=0) : QTextEdit(parent) { }
-        void contextMenuEvent(QContextMenuEvent * e)
+        void contextMenuEvent(QContextMenuEvent * e) Q_DECL_OVERRIDE
         {
 #ifndef QT_NO_CONTEXTMENU
             QMenu *menu = createStandardContextMenu();
@@ -167,7 +167,7 @@ public:
     void setLabel(DetailButtonLabel lbl)
     { setText(label(lbl)); }
 
-    QSize sizeHint() const
+    QSize sizeHint() const Q_DECL_OVERRIDE
     {
         ensurePolished();
         QStyleOptionButton opt;
@@ -256,9 +256,9 @@ public:
     QByteArray signalToDisconnectOnClose;
     QSharedPointer<QMessageDialogOptions> options;
 private:
-    void initHelper(QPlatformDialogHelper *);
-    void helperPrepareShow(QPlatformDialogHelper *);
-    void helperDone(QDialog::DialogCode, QPlatformDialogHelper *);
+    void initHelper(QPlatformDialogHelper *) Q_DECL_OVERRIDE;
+    void helperPrepareShow(QPlatformDialogHelper *) Q_DECL_OVERRIDE;
+    void helperDone(QDialog::DialogCode, QPlatformDialogHelper *) Q_DECL_OVERRIDE;
 };
 
 void QMessageBoxPrivate::init(const QString &title, const QString &text)

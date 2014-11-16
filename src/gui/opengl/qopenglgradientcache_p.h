@@ -77,8 +77,8 @@ public:
     GLuint getBuffer(const QGradient &gradient, qreal opacity);
     inline int paletteSize() const { return 1024; }
 
-    void invalidateResource();
-    void freeResource(QOpenGLContext *ctx);
+    void invalidateResource() Q_DECL_OVERRIDE;
+    void freeResource(QOpenGLContext *ctx) Q_DECL_OVERRIDE;
 
 private:
     inline int maxCacheSize() const { return 60; }

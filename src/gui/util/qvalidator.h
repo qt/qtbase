@@ -90,8 +90,8 @@ public:
     QIntValidator(int bottom, int top, QObject *parent = 0);
     ~QIntValidator();
 
-    QValidator::State validate(QString &, int &) const;
-    void fixup(QString &input) const;
+    QValidator::State validate(QString &, int &) const Q_DECL_OVERRIDE;
+    void fixup(QString &input) const Q_DECL_OVERRIDE;
 
     void setBottom(int);
     void setTop(int);
@@ -132,7 +132,7 @@ public:
         StandardNotation,
         ScientificNotation
     };
-    QValidator::State validate(QString &, int &) const;
+    QValidator::State validate(QString &, int &) const Q_DECL_OVERRIDE;
 
     virtual void setRange(double bottom, double top, int decimals = 0);
     void setBottom(double);
@@ -171,7 +171,7 @@ public:
     explicit QRegExpValidator(const QRegExp& rx, QObject *parent = 0);
     ~QRegExpValidator();
 
-    virtual QValidator::State validate(QString& input, int& pos) const;
+    virtual QValidator::State validate(QString& input, int& pos) const Q_DECL_OVERRIDE;
 
     void setRegExp(const QRegExp& rx);
     const QRegExp& regExp() const { return r; }

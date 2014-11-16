@@ -1243,7 +1243,7 @@ class QMainWindowTabBar : public QTabBar
 public:
     QMainWindowTabBar(QWidget *parent);
 protected:
-    bool event(QEvent *e);
+    bool event(QEvent *e) Q_DECL_OVERRIDE;
 };
 
 QMainWindowTabBar::QMainWindowTabBar(QWidget *parent)

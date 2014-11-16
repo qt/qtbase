@@ -55,10 +55,10 @@ class QGenericUnixServices : public QPlatformServices
 public:
     QGenericUnixServices() {}
 
-    QByteArray desktopEnvironment() const;
+    QByteArray desktopEnvironment() const Q_DECL_OVERRIDE;
 
-    virtual bool openUrl(const QUrl &url);
-    virtual bool openDocument(const QUrl &url);
+    virtual bool openUrl(const QUrl &url) Q_DECL_OVERRIDE;
+    virtual bool openDocument(const QUrl &url) Q_DECL_OVERRIDE;
 
 private:
     QString m_webBrowser;

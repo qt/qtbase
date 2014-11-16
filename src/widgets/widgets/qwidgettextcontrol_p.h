@@ -242,9 +242,9 @@ public:
     bool findNextPrevAnchor(const QTextCursor& from, bool next, QTextCursor& newAnchor);
 
 protected:
-    virtual void timerEvent(QTimerEvent *e);
+    virtual void timerEvent(QTimerEvent *e) Q_DECL_OVERRIDE;
 
-    virtual bool event(QEvent *e);
+    virtual bool event(QEvent *e) Q_DECL_OVERRIDE;
 
 private:
     Q_DISABLE_COPY(QWidgetTextControl)
@@ -280,9 +280,9 @@ class QTextEditMimeData : public QMimeData
 public:
     inline QTextEditMimeData(const QTextDocumentFragment &aFragment) : fragment(aFragment) {}
 
-    virtual QStringList formats() const;
+    virtual QStringList formats() const Q_DECL_OVERRIDE;
 protected:
-    virtual QVariant retrieveData(const QString &mimeType, QVariant::Type type) const;
+    virtual QVariant retrieveData(const QString &mimeType, QVariant::Type type) const Q_DECL_OVERRIDE;
 private:
     void setup() const;
 

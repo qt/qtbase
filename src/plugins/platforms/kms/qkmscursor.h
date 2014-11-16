@@ -49,8 +49,8 @@ public:
     QKmsCursor(QKmsScreen *screen);
     ~QKmsCursor();
 
-    void pointerEvent(const QMouseEvent &event);
-    void changeCursor(QCursor *windowCursor, QWindow *window);
+    void pointerEvent(const QMouseEvent &event) Q_DECL_OVERRIDE;
+    void changeCursor(QCursor *windowCursor, QWindow *window) Q_DECL_OVERRIDE;
 
 private:
     QKmsScreen *m_screen;

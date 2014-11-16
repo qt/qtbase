@@ -101,8 +101,8 @@ public:
     explicit QEventDispatcherUNIX(QObject *parent = 0);
     ~QEventDispatcherUNIX();
 
-    bool processEvents(QEventLoop::ProcessEventsFlags flags);
-    bool hasPendingEvents();
+    bool processEvents(QEventLoop::ProcessEventsFlags flags) Q_DECL_OVERRIDE;
+    bool hasPendingEvents() Q_DECL_OVERRIDE;
 
     void registerSocketNotifier(QSocketNotifier *notifier) FINAL_EXCEPT_BLACKBERRY;
     void unregisterSocketNotifier(QSocketNotifier *notifier) FINAL_EXCEPT_BLACKBERRY;
@@ -116,7 +116,7 @@ public:
 
     void wakeUp() FINAL_EXCEPT_BLACKBERRY;
     void interrupt() Q_DECL_FINAL;
-    void flush();
+    void flush() Q_DECL_OVERRIDE;
 
 protected:
     QEventDispatcherUNIX(QEventDispatcherUNIXPrivate &dd, QObject *parent = 0);

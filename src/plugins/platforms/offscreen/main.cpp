@@ -42,7 +42,7 @@ class QOffscreenIntegrationPlugin : public QPlatformIntegrationPlugin
     Q_OBJECT
     Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QPA.QPlatformIntegrationFactoryInterface.5.2" FILE "offscreen.json")
 public:
-    QPlatformIntegration *create(const QString&, const QStringList&);
+    QPlatformIntegration *create(const QString&, const QStringList&) Q_DECL_OVERRIDE;
 };
 
 QPlatformIntegration *QOffscreenIntegrationPlugin::create(const QString& system, const QStringList& paramList)

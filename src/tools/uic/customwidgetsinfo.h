@@ -48,10 +48,10 @@ class CustomWidgetsInfo : public TreeWalker
 public:
     CustomWidgetsInfo();
 
-    void acceptUI(DomUI *node);
+    void acceptUI(DomUI *node) Q_DECL_OVERRIDE;
 
-    void acceptCustomWidgets(DomCustomWidgets *node);
-    void acceptCustomWidget(DomCustomWidget *node);
+    void acceptCustomWidgets(DomCustomWidgets *node) Q_DECL_OVERRIDE;
+    void acceptCustomWidget(DomCustomWidget *node) Q_DECL_OVERRIDE;
 
     inline QStringList customWidgets() const
     { return m_customWidgets.keys(); }

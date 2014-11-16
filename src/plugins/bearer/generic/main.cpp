@@ -50,7 +50,7 @@ public:
     QGenericEnginePlugin();
     ~QGenericEnginePlugin();
 
-    QBearerEngine *create(const QString &key) const;
+    QBearerEngine *create(const QString &key) const Q_DECL_OVERRIDE;
 };
 
 QGenericEnginePlugin::QGenericEnginePlugin()

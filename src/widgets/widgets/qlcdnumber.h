@@ -81,7 +81,7 @@ public:
     double value() const;
     int intValue() const;
 
-    QSize sizeHint() const;
+    QSize sizeHint() const Q_DECL_OVERRIDE;
 
 public Q_SLOTS:
     void display(const QString &str);
@@ -97,8 +97,8 @@ Q_SIGNALS:
     void overflow();
 
 protected:
-    bool event(QEvent *e);
-    void paintEvent(QPaintEvent *);
+    bool event(QEvent *e) Q_DECL_OVERRIDE;
+    void paintEvent(QPaintEvent *) Q_DECL_OVERRIDE;
 
 public:
 

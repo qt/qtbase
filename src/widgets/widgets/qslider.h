@@ -66,8 +66,8 @@ public:
 
     ~QSlider();
 
-    QSize sizeHint() const;
-    QSize minimumSizeHint() const;
+    QSize sizeHint() const Q_DECL_OVERRIDE;
+    QSize minimumSizeHint() const Q_DECL_OVERRIDE;
 
     void setTickPosition(TickPosition position);
     TickPosition tickPosition() const;
@@ -75,13 +75,13 @@ public:
     void setTickInterval(int ti);
     int tickInterval() const;
 
-    bool event(QEvent *event);
+    bool event(QEvent *event) Q_DECL_OVERRIDE;
 
 protected:
-    void paintEvent(QPaintEvent *ev);
-    void mousePressEvent(QMouseEvent *ev);
-    void mouseReleaseEvent(QMouseEvent *ev);
-    void mouseMoveEvent(QMouseEvent *ev);
+    void paintEvent(QPaintEvent *ev) Q_DECL_OVERRIDE;
+    void mousePressEvent(QMouseEvent *ev) Q_DECL_OVERRIDE;
+    void mouseReleaseEvent(QMouseEvent *ev) Q_DECL_OVERRIDE;
+    void mouseMoveEvent(QMouseEvent *ev) Q_DECL_OVERRIDE;
     void initStyleOption(QStyleOptionSlider *option) const;
 
 

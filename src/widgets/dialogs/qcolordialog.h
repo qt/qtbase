@@ -82,7 +82,7 @@ public:
 #endif
     void open(QObject *receiver, const char *member);
 
-    void setVisible(bool visible);
+    void setVisible(bool visible) Q_DECL_OVERRIDE;
 
     static QColor getColor(const QColor &initial = Qt::white,
                            QWidget *parent = 0,
@@ -103,8 +103,8 @@ Q_SIGNALS:
     void colorSelected(const QColor &color);
 
 protected:
-    void changeEvent(QEvent *event);
-    void done(int result);
+    void changeEvent(QEvent *event) Q_DECL_OVERRIDE;
+    void done(int result) Q_DECL_OVERRIDE;
 
 private:
     Q_DISABLE_COPY(QColorDialog)

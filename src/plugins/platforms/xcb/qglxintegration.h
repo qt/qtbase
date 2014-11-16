@@ -54,14 +54,14 @@ public:
                 const QVariant &nativeHandle);
     ~QGLXContext();
 
-    bool makeCurrent(QPlatformSurface *surface);
-    void doneCurrent();
-    void swapBuffers(QPlatformSurface *surface);
-    void (*getProcAddress(const QByteArray &procName)) ();
+    bool makeCurrent(QPlatformSurface *surface) Q_DECL_OVERRIDE;
+    void doneCurrent() Q_DECL_OVERRIDE;
+    void swapBuffers(QPlatformSurface *surface) Q_DECL_OVERRIDE;
+    void (*getProcAddress(const QByteArray &procName)) () Q_DECL_OVERRIDE;
 
-    QSurfaceFormat format() const;
-    bool isSharing() const;
-    bool isValid() const;
+    QSurfaceFormat format() const Q_DECL_OVERRIDE;
+    bool isSharing() const Q_DECL_OVERRIDE;
+    bool isValid() const Q_DECL_OVERRIDE;
 
     GLXContext glxContext() const { return m_context; }
     GLXFBConfig glxConfig() const { return m_config; }
@@ -94,8 +94,8 @@ public:
     explicit QGLXPbuffer(QOffscreenSurface *offscreenSurface);
     ~QGLXPbuffer();
 
-    QSurfaceFormat format() const { return m_format; }
-    bool isValid() const { return m_pbuffer != 0; }
+    QSurfaceFormat format() const Q_DECL_OVERRIDE { return m_format; }
+    bool isValid() const Q_DECL_OVERRIDE { return m_pbuffer != 0; }
 
     GLXPbuffer pbuffer() const { return m_pbuffer; }
 

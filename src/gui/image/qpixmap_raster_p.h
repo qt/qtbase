@@ -56,28 +56,28 @@ public:
     QRasterPlatformPixmap(PixelType type);
     ~QRasterPlatformPixmap();
 
-    QPlatformPixmap *createCompatiblePlatformPixmap() const;
+    QPlatformPixmap *createCompatiblePlatformPixmap() const Q_DECL_OVERRIDE;
 
-    void resize(int width, int height);
-    bool fromData(const uchar *buffer, uint len, const char *format, Qt::ImageConversionFlags flags);
-    void fromImage(const QImage &image, Qt::ImageConversionFlags flags);
-    void fromImageInPlace(QImage &image, Qt::ImageConversionFlags flags);
-    void fromImageReader(QImageReader *imageReader, Qt::ImageConversionFlags flags);
+    void resize(int width, int height) Q_DECL_OVERRIDE;
+    bool fromData(const uchar *buffer, uint len, const char *format, Qt::ImageConversionFlags flags) Q_DECL_OVERRIDE;
+    void fromImage(const QImage &image, Qt::ImageConversionFlags flags) Q_DECL_OVERRIDE;
+    void fromImageInPlace(QImage &image, Qt::ImageConversionFlags flags) Q_DECL_OVERRIDE;
+    void fromImageReader(QImageReader *imageReader, Qt::ImageConversionFlags flags) Q_DECL_OVERRIDE;
 
-    void copy(const QPlatformPixmap *data, const QRect &rect);
-    bool scroll(int dx, int dy, const QRect &rect);
-    void fill(const QColor &color);
-    bool hasAlphaChannel() const;
-    QImage toImage() const;
-    QImage toImage(const QRect &rect) const;
-    QPaintEngine* paintEngine() const;
-    QImage* buffer();
-    qreal devicePixelRatio() const;
-    void setDevicePixelRatio(qreal scaleFactor);
+    void copy(const QPlatformPixmap *data, const QRect &rect) Q_DECL_OVERRIDE;
+    bool scroll(int dx, int dy, const QRect &rect) Q_DECL_OVERRIDE;
+    void fill(const QColor &color) Q_DECL_OVERRIDE;
+    bool hasAlphaChannel() const Q_DECL_OVERRIDE;
+    QImage toImage() const Q_DECL_OVERRIDE;
+    QImage toImage(const QRect &rect) const Q_DECL_OVERRIDE;
+    QPaintEngine* paintEngine() const Q_DECL_OVERRIDE;
+    QImage* buffer() Q_DECL_OVERRIDE;
+    qreal devicePixelRatio() const Q_DECL_OVERRIDE;
+    void setDevicePixelRatio(qreal scaleFactor) Q_DECL_OVERRIDE;
 
 
 protected:
-    int metric(QPaintDevice::PaintDeviceMetric metric) const;
+    int metric(QPaintDevice::PaintDeviceMetric metric) const Q_DECL_OVERRIDE;
     void createPixmapForImage(QImage &sourceImage, Qt::ImageConversionFlags flags, bool inPlace);
     void setImage(const QImage &image);
     QImage image;

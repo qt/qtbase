@@ -106,8 +106,8 @@ Q_SIGNALS:
     void NameLost(const QString &);
     void NameOwnerChanged(const QString &, const QString &, const QString &);
 protected:
-    void connectNotify(const QMetaMethod &);
-    void disconnectNotify(const QMetaMethod &);
+    void connectNotify(const QMetaMethod &) Q_DECL_OVERRIDE;
+    void disconnectNotify(const QMetaMethod &) Q_DECL_OVERRIDE;
 #endif
 };
 

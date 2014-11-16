@@ -59,9 +59,9 @@ public:
 
     ~QGridLayout();
 
-    QSize sizeHint() const;
-    QSize minimumSize() const;
-    QSize maximumSize() const;
+    QSize sizeHint() const Q_DECL_OVERRIDE;
+    QSize minimumSize() const Q_DECL_OVERRIDE;
+    QSize maximumSize() const Q_DECL_OVERRIDE;
 
     void setHorizontalSpacing(int spacing);
     int horizontalSpacing() const;
@@ -85,12 +85,12 @@ public:
 
     QRect cellRect(int row, int column) const;
 
-    bool hasHeightForWidth() const;
-    int heightForWidth(int) const;
-    int minimumHeightForWidth(int) const;
+    bool hasHeightForWidth() const Q_DECL_OVERRIDE;
+    int heightForWidth(int) const Q_DECL_OVERRIDE;
+    int minimumHeightForWidth(int) const Q_DECL_OVERRIDE;
 
-    Qt::Orientations expandingDirections() const;
-    void invalidate();
+    Qt::Orientations expandingDirections() const Q_DECL_OVERRIDE;
+    void invalidate() Q_DECL_OVERRIDE;
 
     inline void addWidget(QWidget *w) { QLayout::addWidget(w); }
     void addWidget(QWidget *, int row, int column, Qt::Alignment = 0);
@@ -101,11 +101,11 @@ public:
     void setOriginCorner(Qt::Corner);
     Qt::Corner originCorner() const;
 
-    QLayoutItem *itemAt(int index) const;
+    QLayoutItem *itemAt(int index) const Q_DECL_OVERRIDE;
     QLayoutItem *itemAtPosition(int row, int column) const;
-    QLayoutItem *takeAt(int index);
-    int count() const;
-    void setGeometry(const QRect&);
+    QLayoutItem *takeAt(int index) Q_DECL_OVERRIDE;
+    int count() const Q_DECL_OVERRIDE;
+    void setGeometry(const QRect&) Q_DECL_OVERRIDE;
 
     void addItem(QLayoutItem *item, int row, int column, int rowSpan = 1, int columnSpan = 1, Qt::Alignment = 0);
 
@@ -113,7 +113,7 @@ public:
     void getItemPosition(int idx, int *row, int *column, int *rowSpan, int *columnSpan) const;
 
 protected:
-    void addItem(QLayoutItem *);
+    void addItem(QLayoutItem *) Q_DECL_OVERRIDE;
 
 private:
     Q_DISABLE_COPY(QGridLayout)

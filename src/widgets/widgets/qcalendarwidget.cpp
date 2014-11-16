@@ -104,11 +104,11 @@ class QCalendarDayValidator : public QCalendarDateSectionValidator
 
 public:
     QCalendarDayValidator();
-    virtual Section handleKey(int key);
-    virtual QDate applyToDate(const QDate &date) const;
-    virtual void setDate(const QDate &date);
-    virtual QString text() const;
-    virtual QString text(const QDate &date, int repeat) const;
+    virtual Section handleKey(int key) Q_DECL_OVERRIDE;
+    virtual QDate applyToDate(const QDate &date) const Q_DECL_OVERRIDE;
+    virtual void setDate(const QDate &date) Q_DECL_OVERRIDE;
+    virtual QString text() const Q_DECL_OVERRIDE;
+    virtual QString text(const QDate &date, int repeat) const Q_DECL_OVERRIDE;
 private:
     int m_pos;
     int m_day;
@@ -220,11 +220,11 @@ class QCalendarMonthValidator : public QCalendarDateSectionValidator
 
 public:
     QCalendarMonthValidator();
-    virtual Section handleKey(int key);
-    virtual QDate applyToDate(const QDate &date) const;
-    virtual void setDate(const QDate &date);
-    virtual QString text() const;
-    virtual QString text(const QDate &date, int repeat) const;
+    virtual Section handleKey(int key) Q_DECL_OVERRIDE;
+    virtual QDate applyToDate(const QDate &date) const Q_DECL_OVERRIDE;
+    virtual void setDate(const QDate &date) Q_DECL_OVERRIDE;
+    virtual QString text() const Q_DECL_OVERRIDE;
+    virtual QString text(const QDate &date, int repeat) const Q_DECL_OVERRIDE;
 private:
     int m_pos;
     int m_month;
@@ -337,11 +337,11 @@ class QCalendarYearValidator : public QCalendarDateSectionValidator
 
 public:
     QCalendarYearValidator();
-    virtual Section handleKey(int key);
-    virtual QDate applyToDate(const QDate &date) const;
-    virtual void setDate(const QDate &date);
-    virtual QString text() const;
-    virtual QString text(const QDate &date, int repeat) const;
+    virtual Section handleKey(int key) Q_DECL_OVERRIDE;
+    virtual QDate applyToDate(const QDate &date) const Q_DECL_OVERRIDE;
+    virtual void setDate(const QDate &date) Q_DECL_OVERRIDE;
+    virtual QString text() const Q_DECL_OVERRIDE;
+    virtual QString text(const QDate &date, int repeat) const Q_DECL_OVERRIDE;
 private:
     int pow10(int n);
     int m_pos;
@@ -683,8 +683,8 @@ public:
     QDate date() const;
     void setDate(const QDate &date);
 
-    bool eventFilter(QObject *o, QEvent *e);
-    void timerEvent(QTimerEvent *e);
+    bool eventFilter(QObject *o, QEvent *e) Q_DECL_OVERRIDE;
+    void timerEvent(QTimerEvent *e) Q_DECL_OVERRIDE;
 
 signals:
     void dateChanged(const QDate &date);
@@ -853,32 +853,32 @@ class QCalendarModel : public QAbstractTableModel
 public:
     QCalendarModel(QObject *parent = 0);
 
-    int rowCount(const QModelIndex &) const
+    int rowCount(const QModelIndex &) const Q_DECL_OVERRIDE
         { return RowCount + m_firstRow; }
-    int columnCount(const QModelIndex &) const
+    int columnCount(const QModelIndex &) const Q_DECL_OVERRIDE
         { return ColumnCount + m_firstColumn; }
-    QVariant data(const QModelIndex &index, int role) const;
-    Qt::ItemFlags flags(const QModelIndex &index) const;
+    QVariant data(const QModelIndex &index, int role) const Q_DECL_OVERRIDE;
+    Qt::ItemFlags flags(const QModelIndex &index) const Q_DECL_OVERRIDE;
 
-    bool insertRows(int row, int count, const QModelIndex &parent = QModelIndex())
+    bool insertRows(int row, int count, const QModelIndex &parent = QModelIndex()) Q_DECL_OVERRIDE
     {
         beginInsertRows(parent, row, row + count - 1);
         endInsertRows();
         return true;
     }
-    bool insertColumns(int column, int count, const QModelIndex &parent = QModelIndex())
+    bool insertColumns(int column, int count, const QModelIndex &parent = QModelIndex()) Q_DECL_OVERRIDE
     {
         beginInsertColumns(parent, column, column + count - 1);
         endInsertColumns();
         return true;
     }
-    bool removeRows(int row, int count, const QModelIndex &parent = QModelIndex())
+    bool removeRows(int row, int count, const QModelIndex &parent = QModelIndex()) Q_DECL_OVERRIDE
     {
         beginRemoveRows(parent, row, row + count - 1);
         endRemoveRows();
         return true;
     }
-    bool removeColumns(int column, int count, const QModelIndex &parent = QModelIndex())
+    bool removeColumns(int column, int count, const QModelIndex &parent = QModelIndex()) Q_DECL_OVERRIDE
     {
         beginRemoveColumns(parent, column, column + count - 1);
         endRemoveColumns();
@@ -939,7 +939,7 @@ public:
 
     void internalUpdate() { updateGeometries(); }
     void setReadOnly(bool enable);
-    virtual void keyboardSearch(const QString & search) { Q_UNUSED(search) }
+    virtual void keyboardSearch(const QString & search) Q_DECL_OVERRIDE { Q_UNUSED(search) }
 
 signals:
     void showDate(const QDate &date);
@@ -947,16 +947,16 @@ signals:
     void clicked(const QDate &date);
     void editingFinished();
 protected:
-    QModelIndex moveCursor(CursorAction cursorAction, Qt::KeyboardModifiers modifiers);
-    void mouseDoubleClickEvent(QMouseEvent *event);
-    void mousePressEvent(QMouseEvent *event);
-    void mouseMoveEvent(QMouseEvent *event);
-    void mouseReleaseEvent(QMouseEvent *event);
+    QModelIndex moveCursor(CursorAction cursorAction, Qt::KeyboardModifiers modifiers) Q_DECL_OVERRIDE;
+    void mouseDoubleClickEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
+    void mousePressEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
+    void mouseMoveEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
+    void mouseReleaseEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
 #ifndef QT_NO_WHEELEVENT
-    void wheelEvent(QWheelEvent *event);
+    void wheelEvent(QWheelEvent *event) Q_DECL_OVERRIDE;
 #endif
-    void keyPressEvent(QKeyEvent *event);
-    bool event(QEvent *event);
+    void keyPressEvent(QKeyEvent *event) Q_DECL_OVERRIDE;
+    bool event(QEvent *event) Q_DECL_OVERRIDE;
 
     QDate handleMouseEvent(QMouseEvent *event);
 public:
@@ -1555,7 +1555,7 @@ public:
         : QItemDelegate(parent), calendarWidgetPrivate(w)
             { }
     virtual void paint(QPainter *painter, const QStyleOptionViewItem &option,
-                const QModelIndex &index) const;
+                const QModelIndex &index) const Q_DECL_OVERRIDE;
     void paintCell(QPainter *painter, const QRect &rect, const QDate &date) const;
 
 private:
@@ -1571,7 +1571,7 @@ public:
         : QToolButton(parent)
           {  }
 protected:
-    void paintEvent(QPaintEvent *e)
+    void paintEvent(QPaintEvent *e) Q_DECL_OVERRIDE
     {
         Q_UNUSED(e)
 
@@ -1599,7 +1599,7 @@ class QPrevNextCalButton : public QToolButton
 public:
     QPrevNextCalButton(QWidget *parent) : QToolButton(parent) {}
 protected:
-    void paintEvent(QPaintEvent *) {
+    void paintEvent(QPaintEvent *) Q_DECL_OVERRIDE {
         QStylePainter painter(this);
         QStyleOptionToolButton opt;
         initStyleOption(&opt);

@@ -59,15 +59,15 @@ public:
                         EGLConfig *config = 0, const QVariant &nativeHandle = QVariant());
     ~QEGLPlatformContext();
 
-    void initialize();
-    bool makeCurrent(QPlatformSurface *surface);
-    void doneCurrent();
-    void swapBuffers(QPlatformSurface *surface);
-    void (*getProcAddress(const QByteArray &procName)) ();
+    void initialize() Q_DECL_OVERRIDE;
+    bool makeCurrent(QPlatformSurface *surface) Q_DECL_OVERRIDE;
+    void doneCurrent() Q_DECL_OVERRIDE;
+    void swapBuffers(QPlatformSurface *surface) Q_DECL_OVERRIDE;
+    void (*getProcAddress(const QByteArray &procName)) () Q_DECL_OVERRIDE;
 
-    QSurfaceFormat format() const;
-    bool isSharing() const { return m_shareContext != EGL_NO_CONTEXT; }
-    bool isValid() const { return m_eglContext != EGL_NO_CONTEXT; }
+    QSurfaceFormat format() const Q_DECL_OVERRIDE;
+    bool isSharing() const Q_DECL_OVERRIDE { return m_shareContext != EGL_NO_CONTEXT; }
+    bool isValid() const Q_DECL_OVERRIDE { return m_eglContext != EGL_NO_CONTEXT; }
 
     EGLContext eglContext() const;
     EGLDisplay eglDisplay() const;

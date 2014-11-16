@@ -66,7 +66,7 @@ public:
     inline int pageNumber() const
     { return pageNum; }
 
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *item, QWidget *widget);
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *item, QWidget *widget) Q_DECL_OVERRIDE;
 
 private:
     int pageNum;
@@ -152,7 +152,7 @@ signals:
     void resized();
 
 protected:
-    void resizeEvent(QResizeEvent* e)
+    void resizeEvent(QResizeEvent* e) Q_DECL_OVERRIDE
     {
         {
             const QSignalBlocker blocker(verticalScrollBar()); // Don't change page, QTBUG-14517
@@ -161,7 +161,7 @@ protected:
         emit resized();
     }
 
-    void showEvent(QShowEvent* e)
+    void showEvent(QShowEvent* e) Q_DECL_OVERRIDE
     {
         QGraphicsView::showEvent(e);
         emit resized();

@@ -63,7 +63,7 @@ public:
 
     QObject *target() const;
 
-    int duration() const;
+    int duration() const Q_DECL_OVERRIDE;
     void setDuration(int duration);
 
     int delay() const;
@@ -89,7 +89,7 @@ public Q_SLOTS:
 
 protected:
     virtual bool isUpdateNeeded() const;
-    virtual void updateCurrentTime(int time);
+    virtual void updateCurrentTime(int time) Q_DECL_OVERRIDE;
 
 private:
     int _delay;
@@ -113,7 +113,7 @@ public:
     void setSpeed(int speed);
 
 protected:
-    bool isUpdateNeeded() const;
+    bool isUpdateNeeded() const Q_DECL_OVERRIDE;
 
 private:
     int _speed;
@@ -136,7 +136,7 @@ public:
     qreal currentValue() const;
 
 protected:
-    bool isUpdateNeeded() const;
+    bool isUpdateNeeded() const Q_DECL_OVERRIDE;
 
 private:
     qreal _start;
@@ -162,7 +162,7 @@ public:
     QImage currentImage() const;
 
 protected:
-    virtual void updateCurrentTime(int time);
+    virtual void updateCurrentTime(int time) Q_DECL_OVERRIDE;
 
 private:
     Type _type;
@@ -186,7 +186,7 @@ public:
     void setActive(bool active);
 
 private slots:
-    void updateCurrentTime(int time);
+    void updateCurrentTime(int time) Q_DECL_OVERRIDE;
 
 private:
     Mode _mode;

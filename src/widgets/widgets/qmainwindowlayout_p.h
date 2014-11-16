@@ -151,7 +151,7 @@ public:
     void setDockOptions(QMainWindow::DockOptions opts);
     bool usesHIToolBar(QToolBar *toolbar) const;
 
-    void timerEvent(QTimerEvent *e);
+    void timerEvent(QTimerEvent *e) Q_DECL_OVERRIDE;
 
     // status bar
 
@@ -249,17 +249,17 @@ public:
 
     // QLayout interface
 
-    void addItem(QLayoutItem *item);
-    void setGeometry(const QRect &r);
-    QLayoutItem *itemAt(int index) const;
-    QLayoutItem *takeAt(int index);
-    int count() const;
+    void addItem(QLayoutItem *item) Q_DECL_OVERRIDE;
+    void setGeometry(const QRect &r) Q_DECL_OVERRIDE;
+    QLayoutItem *itemAt(int index) const Q_DECL_OVERRIDE;
+    QLayoutItem *takeAt(int index) Q_DECL_OVERRIDE;
+    int count() const Q_DECL_OVERRIDE;
 
-    QSize sizeHint() const;
-    QSize minimumSize() const;
+    QSize sizeHint() const Q_DECL_OVERRIDE;
+    QSize minimumSize() const Q_DECL_OVERRIDE;
     mutable QSize szHint;
     mutable QSize minSize;
-    void invalidate();
+    void invalidate() Q_DECL_OVERRIDE;
 
     // animations
 

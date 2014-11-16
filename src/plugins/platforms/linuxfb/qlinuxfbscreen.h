@@ -51,7 +51,7 @@ public:
     bool initialize();
 
 public slots:
-    QRegion doRedraw();
+    QRegion doRedraw() Q_DECL_OVERRIDE;
 
 private:
     QStringList mArgs;

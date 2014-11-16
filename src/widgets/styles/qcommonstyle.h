@@ -49,40 +49,40 @@ public:
     ~QCommonStyle();
 
     void drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPainter *p,
-                       const QWidget *w = 0) const;
+                       const QWidget *w = 0) const Q_DECL_OVERRIDE;
     void drawControl(ControlElement element, const QStyleOption *opt, QPainter *p,
-                     const QWidget *w = 0) const;
-    QRect subElementRect(SubElement r, const QStyleOption *opt, const QWidget *widget = 0) const;
+                     const QWidget *w = 0) const Q_DECL_OVERRIDE;
+    QRect subElementRect(SubElement r, const QStyleOption *opt, const QWidget *widget = 0) const Q_DECL_OVERRIDE;
     void drawComplexControl(ComplexControl cc, const QStyleOptionComplex *opt, QPainter *p,
-                            const QWidget *w = 0) const;
+                            const QWidget *w = 0) const Q_DECL_OVERRIDE;
     SubControl hitTestComplexControl(ComplexControl cc, const QStyleOptionComplex *opt,
-                                     const QPoint &pt, const QWidget *w = 0) const;
+                                     const QPoint &pt, const QWidget *w = 0) const Q_DECL_OVERRIDE;
     QRect subControlRect(ComplexControl cc, const QStyleOptionComplex *opt, SubControl sc,
-                         const QWidget *w = 0) const;
+                         const QWidget *w = 0) const Q_DECL_OVERRIDE;
     QSize sizeFromContents(ContentsType ct, const QStyleOption *opt,
-                           const QSize &contentsSize, const QWidget *widget = 0) const;
+                           const QSize &contentsSize, const QWidget *widget = 0) const Q_DECL_OVERRIDE;
 
-    int pixelMetric(PixelMetric m, const QStyleOption *opt = 0, const QWidget *widget = 0) const;
+    int pixelMetric(PixelMetric m, const QStyleOption *opt = 0, const QWidget *widget = 0) const Q_DECL_OVERRIDE;
 
     int styleHint(StyleHint sh, const QStyleOption *opt = 0, const QWidget *w = 0,
-                  QStyleHintReturn *shret = 0) const;
+                  QStyleHintReturn *shret = 0) const Q_DECL_OVERRIDE;
 
     QIcon standardIcon(StandardPixmap standardIcon, const QStyleOption *opt = 0,
-                       const QWidget *widget = 0) const;
+                       const QWidget *widget = 0) const Q_DECL_OVERRIDE;
     QPixmap standardPixmap(StandardPixmap sp, const QStyleOption *opt = 0,
-                           const QWidget *widget = 0) const;
+                           const QWidget *widget = 0) const Q_DECL_OVERRIDE;
 
     QPixmap generatedIconPixmap(QIcon::Mode iconMode, const QPixmap &pixmap,
-                                const QStyleOption *opt) const;
+                                const QStyleOption *opt) const Q_DECL_OVERRIDE;
     int layoutSpacing(QSizePolicy::ControlType control1, QSizePolicy::ControlType control2,
                       Qt::Orientation orientation, const QStyleOption *option = 0,
-                      const QWidget *widget = 0) const;
+                      const QWidget *widget = 0) const Q_DECL_OVERRIDE;
 
-    void polish(QPalette &);
-    void polish(QApplication *app);
-    void polish(QWidget *widget);
-    void unpolish(QWidget *widget);
-    void unpolish(QApplication *application);
+    void polish(QPalette &) Q_DECL_OVERRIDE;
+    void polish(QApplication *app) Q_DECL_OVERRIDE;
+    void polish(QWidget *widget) Q_DECL_OVERRIDE;
+    void unpolish(QWidget *widget) Q_DECL_OVERRIDE;
+    void unpolish(QApplication *application) Q_DECL_OVERRIDE;
 
 protected:
     QCommonStyle(QCommonStylePrivate &dd);

@@ -67,7 +67,7 @@ class QAccessibleTextWidget : public QAccessibleWidget,
 public:
     QAccessibleTextWidget(QWidget *o, QAccessible::Role r = QAccessible::EditableText, const QString &name = QString());
 
-    QAccessible::State state() const;
+    QAccessible::State state() const Q_DECL_OVERRIDE;
 
     // QAccessibleTextInterface
     //  selection
@@ -89,7 +89,7 @@ public:
                             int *startOffset, int *endOffset) const Q_DECL_OVERRIDE;
     QString textAtOffset(int offset, QAccessible::TextBoundaryType boundaryType,
                          int *startOffset, int *endOffset) const Q_DECL_OVERRIDE;
-    int characterCount() const;
+    int characterCount() const Q_DECL_OVERRIDE;
 
     // character <-> geometry
     QRect characterRect(int offset) const Q_DECL_OVERRIDE;

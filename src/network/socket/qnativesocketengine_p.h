@@ -105,42 +105,42 @@ public:
     QNativeSocketEngine(QObject *parent = 0);
     ~QNativeSocketEngine();
 
-    bool initialize(QAbstractSocket::SocketType type, QAbstractSocket::NetworkLayerProtocol protocol = QAbstractSocket::IPv4Protocol);
-    bool initialize(qintptr socketDescriptor, QAbstractSocket::SocketState socketState = QAbstractSocket::ConnectedState);
+    bool initialize(QAbstractSocket::SocketType type, QAbstractSocket::NetworkLayerProtocol protocol = QAbstractSocket::IPv4Protocol) Q_DECL_OVERRIDE;
+    bool initialize(qintptr socketDescriptor, QAbstractSocket::SocketState socketState = QAbstractSocket::ConnectedState) Q_DECL_OVERRIDE;
 
-    qintptr socketDescriptor() const;
+    qintptr socketDescriptor() const Q_DECL_OVERRIDE;
 
-    bool isValid() const;
+    bool isValid() const Q_DECL_OVERRIDE;
 
-    bool connectToHost(const QHostAddress &address, quint16 port);
-    bool connectToHostByName(const QString &name, quint16 port);
-    bool bind(const QHostAddress &address, quint16 port);
-    bool listen();
-    int accept();
-    void close();
+    bool connectToHost(const QHostAddress &address, quint16 port) Q_DECL_OVERRIDE;
+    bool connectToHostByName(const QString &name, quint16 port) Q_DECL_OVERRIDE;
+    bool bind(const QHostAddress &address, quint16 port) Q_DECL_OVERRIDE;
+    bool listen() Q_DECL_OVERRIDE;
+    int accept() Q_DECL_OVERRIDE;
+    void close() Q_DECL_OVERRIDE;
 
 #ifndef QT_NO_NETWORKINTERFACE
     bool joinMulticastGroup(const QHostAddress &groupAddress,
-                            const QNetworkInterface &iface);
+                            const QNetworkInterface &iface) Q_DECL_OVERRIDE;
     bool leaveMulticastGroup(const QHostAddress &groupAddress,
-                             const QNetworkInterface &iface);
-    QNetworkInterface multicastInterface() const;
-    bool setMulticastInterface(const QNetworkInterface &iface);
+                             const QNetworkInterface &iface) Q_DECL_OVERRIDE;
+    QNetworkInterface multicastInterface() const Q_DECL_OVERRIDE;
+    bool setMulticastInterface(const QNetworkInterface &iface) Q_DECL_OVERRIDE;
 #endif
 
-    qint64 bytesAvailable() const;
+    qint64 bytesAvailable() const Q_DECL_OVERRIDE;
 
-    qint64 read(char *data, qint64 maxlen);
-    qint64 write(const char *data, qint64 len);
+    qint64 read(char *data, qint64 maxlen) Q_DECL_OVERRIDE;
+    qint64 write(const char *data, qint64 len) Q_DECL_OVERRIDE;
 
     qint64 readDatagram(char *data, qint64 maxlen, QHostAddress *addr = 0,
-                            quint16 *port = 0);
+                            quint16 *port = 0) Q_DECL_OVERRIDE;
     qint64 writeDatagram(const char *data, qint64 len, const QHostAddress &addr,
-                             quint16 port);
-    bool hasPendingDatagrams() const;
-    qint64 pendingDatagramSize() const;
+                             quint16 port) Q_DECL_OVERRIDE;
+    bool hasPendingDatagrams() const Q_DECL_OVERRIDE;
+    qint64 pendingDatagramSize() const Q_DECL_OVERRIDE;
 
-    qint64 bytesToWrite() const;
+    qint64 bytesToWrite() const Q_DECL_OVERRIDE;
 
     qint64 receiveBufferSize() const;
     void setReceiveBufferSize(qint64 bufferSize);
@@ -148,21 +148,21 @@ public:
     qint64 sendBufferSize() const;
     void setSendBufferSize(qint64 bufferSize);
 
-    int option(SocketOption option) const;
-    bool setOption(SocketOption option, int value);
+    int option(SocketOption option) const Q_DECL_OVERRIDE;
+    bool setOption(SocketOption option, int value) Q_DECL_OVERRIDE;
 
-    bool waitForRead(int msecs = 30000, bool *timedOut = 0);
-    bool waitForWrite(int msecs = 30000, bool *timedOut = 0);
+    bool waitForRead(int msecs = 30000, bool *timedOut = 0) Q_DECL_OVERRIDE;
+    bool waitForWrite(int msecs = 30000, bool *timedOut = 0) Q_DECL_OVERRIDE;
     bool waitForReadOrWrite(bool *readyToRead, bool *readyToWrite,
                             bool checkRead, bool checkWrite,
-                            int msecs = 30000, bool *timedOut = 0);
+                            int msecs = 30000, bool *timedOut = 0) Q_DECL_OVERRIDE;
 
-    bool isReadNotificationEnabled() const;
-    void setReadNotificationEnabled(bool enable);
-    bool isWriteNotificationEnabled() const;
-    void setWriteNotificationEnabled(bool enable);
-    bool isExceptionNotificationEnabled() const;
-    void setExceptionNotificationEnabled(bool enable);
+    bool isReadNotificationEnabled() const Q_DECL_OVERRIDE;
+    void setReadNotificationEnabled(bool enable) Q_DECL_OVERRIDE;
+    bool isWriteNotificationEnabled() const Q_DECL_OVERRIDE;
+    void setWriteNotificationEnabled(bool enable) Q_DECL_OVERRIDE;
+    bool isExceptionNotificationEnabled() const Q_DECL_OVERRIDE;
+    void setExceptionNotificationEnabled(bool enable) Q_DECL_OVERRIDE;
 
 public Q_SLOTS:
     // non-virtual override;

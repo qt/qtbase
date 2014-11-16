@@ -116,7 +116,7 @@ public:
     ~QTipLabel();
     static QTipLabel *instance;
 
-    bool eventFilter(QObject *, QEvent *);
+    bool eventFilter(QObject *, QEvent *) Q_DECL_OVERRIDE;
 
     QBasicTimer hideTimer, expireTimer;
 
@@ -132,10 +132,10 @@ public:
 
     static int getTipScreen(const QPoint &pos, QWidget *w);
 protected:
-    void timerEvent(QTimerEvent *e);
-    void paintEvent(QPaintEvent *e);
-    void mouseMoveEvent(QMouseEvent *e);
-    void resizeEvent(QResizeEvent *e);
+    void timerEvent(QTimerEvent *e) Q_DECL_OVERRIDE;
+    void paintEvent(QPaintEvent *e) Q_DECL_OVERRIDE;
+    void mouseMoveEvent(QMouseEvent *e) Q_DECL_OVERRIDE;
+    void resizeEvent(QResizeEvent *e) Q_DECL_OVERRIDE;
 
 #ifndef QT_NO_STYLE_STYLESHEET
 public slots:

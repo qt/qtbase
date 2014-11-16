@@ -293,12 +293,12 @@ public Q_SLOTS:
 #endif
 
 protected:
-    bool event(QEvent *e);
-    void resizeEvent(QResizeEvent *event);
-    void showEvent(QShowEvent *event);
-    void closeEvent(QCloseEvent *event);
-    void keyPressEvent(QKeyEvent *event);
-    void changeEvent(QEvent *event);
+    bool event(QEvent *e) Q_DECL_OVERRIDE;
+    void resizeEvent(QResizeEvent *event) Q_DECL_OVERRIDE;
+    void showEvent(QShowEvent *event) Q_DECL_OVERRIDE;
+    void closeEvent(QCloseEvent *event) Q_DECL_OVERRIDE;
+    void keyPressEvent(QKeyEvent *event) Q_DECL_OVERRIDE;
+    void changeEvent(QEvent *event) Q_DECL_OVERRIDE;
 
 private:
     Q_PRIVATE_SLOT(d_func(), void _q_buttonClicked(QAbstractButton *))

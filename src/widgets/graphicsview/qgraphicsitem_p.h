@@ -699,11 +699,11 @@ public:
         return info->widget->rect();
     }
 
-    QRectF boundingRect(Qt::CoordinateSystem system) const;
-    void draw(QPainter *);
+    QRectF boundingRect(Qt::CoordinateSystem system) const Q_DECL_OVERRIDE;
+    void draw(QPainter *) Q_DECL_OVERRIDE;
     QPixmap pixmap(Qt::CoordinateSystem system,
                    QPoint *offset,
-                   QGraphicsEffect::PixmapPadMode mode) const;
+                   QGraphicsEffect::PixmapPadMode mode) const Q_DECL_OVERRIDE;
     QRect paddedEffectRect(Qt::CoordinateSystem system, QGraphicsEffect::PixmapPadMode mode, const QRectF &sourceRect, bool *unpadded = 0) const;
 
     QGraphicsItem *item;

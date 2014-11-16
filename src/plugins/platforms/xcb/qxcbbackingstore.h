@@ -50,18 +50,18 @@ public:
     QXcbBackingStore(QWindow *widget);
     ~QXcbBackingStore();
 
-    QPaintDevice *paintDevice();
-    void flush(QWindow *window, const QRegion &region, const QPoint &offset);
+    QPaintDevice *paintDevice() Q_DECL_OVERRIDE;
+    void flush(QWindow *window, const QRegion &region, const QPoint &offset) Q_DECL_OVERRIDE;
 #ifndef QT_NO_OPENGL
     void composeAndFlush(QWindow *window, const QRegion &region, const QPoint &offset,
                          QPlatformTextureList *textures, QOpenGLContext *context,
-                         bool translucentBackground);
+                         bool translucentBackground) Q_DECL_OVERRIDE;
 #endif
-    QImage toImage() const;
-    void resize(const QSize &size, const QRegion &staticContents);
-    bool scroll(const QRegion &area, int dx, int dy);
+    QImage toImage() const Q_DECL_OVERRIDE;
+    void resize(const QSize &size, const QRegion &staticContents) Q_DECL_OVERRIDE;
+    bool scroll(const QRegion &area, int dx, int dy) Q_DECL_OVERRIDE;
 
-    void beginPaint(const QRegion &);
+    void beginPaint(const QRegion &) Q_DECL_OVERRIDE;
 
 private:
     QXcbShmImage *m_image;

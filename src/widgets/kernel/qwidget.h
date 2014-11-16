@@ -203,7 +203,7 @@ public:
     explicit QWidget(QWidget* parent = 0, Qt::WindowFlags f = 0);
     ~QWidget();
 
-    int devType() const;
+    int devType() const Q_DECL_OVERRIDE;
 
     WId winId() const;
     void createWinId(); // internal, going away
@@ -568,7 +568,7 @@ public:
     void setAttribute(Qt::WidgetAttribute, bool on = true);
     inline bool testAttribute(Qt::WidgetAttribute) const;
 
-    QPaintEngine *paintEngine() const;
+    QPaintEngine *paintEngine() const Q_DECL_OVERRIDE;
 
     void ensurePolished() const;
 
@@ -598,7 +598,7 @@ Q_SIGNALS:
 
 protected:
     // Event handlers
-    bool event(QEvent *);
+    bool event(QEvent *) Q_DECL_OVERRIDE;
     virtual void mousePressEvent(QMouseEvent *);
     virtual void mouseReleaseEvent(QMouseEvent *);
     virtual void mouseDoubleClickEvent(QMouseEvent *);
@@ -640,10 +640,10 @@ protected:
     // Misc. protected functions
     virtual void changeEvent(QEvent *);
 
-    int metric(PaintDeviceMetric) const;
-    void initPainter(QPainter *painter) const;
-    QPaintDevice *redirected(QPoint *offset) const;
-    QPainter *sharedPainter() const;
+    int metric(PaintDeviceMetric) const Q_DECL_OVERRIDE;
+    void initPainter(QPainter *painter) const Q_DECL_OVERRIDE;
+    QPaintDevice *redirected(QPoint *offset) const Q_DECL_OVERRIDE;
+    QPainter *sharedPainter() const Q_DECL_OVERRIDE;
 
     virtual void inputMethodEvent(QInputMethodEvent *);
 public:

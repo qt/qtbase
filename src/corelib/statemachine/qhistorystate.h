@@ -77,10 +77,10 @@ Q_SIGNALS:
     );
 
 protected:
-    void onEntry(QEvent *event);
-    void onExit(QEvent *event);
+    void onEntry(QEvent *event) Q_DECL_OVERRIDE;
+    void onExit(QEvent *event) Q_DECL_OVERRIDE;
 
-    bool event(QEvent *e);
+    bool event(QEvent *e) Q_DECL_OVERRIDE;
 
 private:
     Q_DISABLE_COPY(QHistoryState)

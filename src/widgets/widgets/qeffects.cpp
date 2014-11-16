@@ -64,10 +64,10 @@ public:
     void run(int time);
 
 protected:
-    void paintEvent(QPaintEvent* e);
-    void closeEvent(QCloseEvent*);
+    void paintEvent(QPaintEvent* e) Q_DECL_OVERRIDE;
+    void closeEvent(QCloseEvent*) Q_DECL_OVERRIDE;
     void alphaBlend();
-    bool eventFilter(QObject *, QEvent *);
+    bool eventFilter(QObject *, QEvent *) Q_DECL_OVERRIDE;
 
 protected slots:
     void render();
@@ -341,8 +341,8 @@ public:
     void run(int time);
 
 protected:
-    void paintEvent(QPaintEvent*);
-    void closeEvent(QCloseEvent*);
+    void paintEvent(QPaintEvent*) Q_DECL_OVERRIDE;
+    void closeEvent(QCloseEvent*) Q_DECL_OVERRIDE;
 
 private slots:
     void scroll();

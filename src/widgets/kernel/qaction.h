@@ -170,7 +170,7 @@ public:
 #endif
 
 protected:
-    bool event(QEvent *);
+    bool event(QEvent *) Q_DECL_OVERRIDE;
     QAction(QActionPrivate &dd, QObject *parent);
 
 public Q_SLOTS:

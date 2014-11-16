@@ -44,7 +44,7 @@ class QEvdevKeyboardPlugin : public QGenericPlugin
 public:
     QEvdevKeyboardPlugin();
 
-    QObject* create(const QString &key, const QString &specification);
+    QObject* create(const QString &key, const QString &specification) Q_DECL_OVERRIDE;
 };
 
 QEvdevKeyboardPlugin::QEvdevKeyboardPlugin()

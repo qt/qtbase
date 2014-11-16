@@ -54,19 +54,19 @@ public:
     explicit QSqlQueryModel(QObject *parent = 0);
     virtual ~QSqlQueryModel();
 
-    int rowCount(const QModelIndex &parent = QModelIndex()) const;
-    int columnCount(const QModelIndex &parent = QModelIndex()) const;
+    int rowCount(const QModelIndex &parent = QModelIndex()) const Q_DECL_OVERRIDE;
+    int columnCount(const QModelIndex &parent = QModelIndex()) const Q_DECL_OVERRIDE;
     QSqlRecord record(int row) const;
     QSqlRecord record() const;
 
-    QVariant data(const QModelIndex &item, int role = Qt::DisplayRole) const;
+    QVariant data(const QModelIndex &item, int role = Qt::DisplayRole) const Q_DECL_OVERRIDE;
     QVariant headerData(int section, Qt::Orientation orientation,
-                        int role = Qt::DisplayRole) const;
+                        int role = Qt::DisplayRole) const Q_DECL_OVERRIDE;
     bool setHeaderData(int section, Qt::Orientation orientation, const QVariant &value,
-                       int role = Qt::EditRole);
+                       int role = Qt::EditRole) Q_DECL_OVERRIDE;
 
-    bool insertColumns(int column, int count, const QModelIndex &parent = QModelIndex());
-    bool removeColumns(int column, int count, const QModelIndex &parent = QModelIndex());
+    bool insertColumns(int column, int count, const QModelIndex &parent = QModelIndex()) Q_DECL_OVERRIDE;
+    bool removeColumns(int column, int count, const QModelIndex &parent = QModelIndex()) Q_DECL_OVERRIDE;
 
     void setQuery(const QSqlQuery &query);
     void setQuery(const QString &query, const QSqlDatabase &db = QSqlDatabase());
@@ -76,8 +76,8 @@ public:
 
     QSqlError lastError() const;
 
-    void fetchMore(const QModelIndex &parent = QModelIndex());
-    bool canFetchMore(const QModelIndex &parent = QModelIndex()) const;
+    void fetchMore(const QModelIndex &parent = QModelIndex()) Q_DECL_OVERRIDE;
+    bool canFetchMore(const QModelIndex &parent = QModelIndex()) const Q_DECL_OVERRIDE;
 
 protected:
     void beginInsertRows(const QModelIndex &parent, int first, int last);

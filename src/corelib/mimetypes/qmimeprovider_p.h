@@ -86,17 +86,17 @@ public:
     QMimeBinaryProvider(QMimeDatabasePrivate *db);
     virtual ~QMimeBinaryProvider();
 
-    virtual bool isValid();
-    virtual QMimeType mimeTypeForName(const QString &name);
-    virtual QStringList findByFileName(const QString &fileName, QString *foundSuffix);
-    virtual QStringList parents(const QString &mime);
-    virtual QString resolveAlias(const QString &name);
-    virtual QStringList listAliases(const QString &name);
-    virtual QMimeType findByMagic(const QByteArray &data, int *accuracyPtr);
-    virtual QList<QMimeType> allMimeTypes();
-    virtual void loadMimeTypePrivate(QMimeTypePrivate &);
-    virtual void loadIcon(QMimeTypePrivate &);
-    virtual void loadGenericIcon(QMimeTypePrivate &);
+    virtual bool isValid() Q_DECL_OVERRIDE;
+    virtual QMimeType mimeTypeForName(const QString &name) Q_DECL_OVERRIDE;
+    virtual QStringList findByFileName(const QString &fileName, QString *foundSuffix) Q_DECL_OVERRIDE;
+    virtual QStringList parents(const QString &mime) Q_DECL_OVERRIDE;
+    virtual QString resolveAlias(const QString &name) Q_DECL_OVERRIDE;
+    virtual QStringList listAliases(const QString &name) Q_DECL_OVERRIDE;
+    virtual QMimeType findByMagic(const QByteArray &data, int *accuracyPtr) Q_DECL_OVERRIDE;
+    virtual QList<QMimeType> allMimeTypes() Q_DECL_OVERRIDE;
+    virtual void loadMimeTypePrivate(QMimeTypePrivate &) Q_DECL_OVERRIDE;
+    virtual void loadIcon(QMimeTypePrivate &) Q_DECL_OVERRIDE;
+    virtual void loadGenericIcon(QMimeTypePrivate &) Q_DECL_OVERRIDE;
 
 private:
     struct CacheFile;
@@ -128,14 +128,14 @@ class QMimeXMLProvider : public QMimeProviderBase
 public:
     QMimeXMLProvider(QMimeDatabasePrivate *db);
 
-    virtual bool isValid();
-    virtual QMimeType mimeTypeForName(const QString &name);
-    virtual QStringList findByFileName(const QString &fileName, QString *foundSuffix);
-    virtual QStringList parents(const QString &mime);
-    virtual QString resolveAlias(const QString &name);
-    virtual QStringList listAliases(const QString &name);
-    virtual QMimeType findByMagic(const QByteArray &data, int *accuracyPtr);
-    virtual QList<QMimeType> allMimeTypes();
+    virtual bool isValid() Q_DECL_OVERRIDE;
+    virtual QMimeType mimeTypeForName(const QString &name) Q_DECL_OVERRIDE;
+    virtual QStringList findByFileName(const QString &fileName, QString *foundSuffix) Q_DECL_OVERRIDE;
+    virtual QStringList parents(const QString &mime) Q_DECL_OVERRIDE;
+    virtual QString resolveAlias(const QString &name) Q_DECL_OVERRIDE;
+    virtual QStringList listAliases(const QString &name) Q_DECL_OVERRIDE;
+    virtual QMimeType findByMagic(const QByteArray &data, int *accuracyPtr) Q_DECL_OVERRIDE;
+    virtual QList<QMimeType> allMimeTypes() Q_DECL_OVERRIDE;
 
     bool load(const QString &fileName, QString *errorMessage);
 

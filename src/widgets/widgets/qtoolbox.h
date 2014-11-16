@@ -89,11 +89,11 @@ Q_SIGNALS:
     void currentChanged(int index);
 
 protected:
-    bool event(QEvent *e);
+    bool event(QEvent *e) Q_DECL_OVERRIDE;
     virtual void itemInserted(int index);
     virtual void itemRemoved(int index);
-    void showEvent(QShowEvent *e);
-    void changeEvent(QEvent *);
+    void showEvent(QShowEvent *e) Q_DECL_OVERRIDE;
+    void changeEvent(QEvent *) Q_DECL_OVERRIDE;
 
 
 private:

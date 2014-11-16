@@ -67,12 +67,12 @@ public:
     { resize(s.width(), s.height()); }
 
 protected:
-    bool event(QEvent *e);
-    void paintEvent(QPaintEvent *);
-    void changeEvent(QEvent *);
-    void showEvent(QShowEvent *);
-    void resizeEvent(QResizeEvent *);
-    void moveEvent(QMoveEvent *);
+    bool event(QEvent *e) Q_DECL_OVERRIDE;
+    void paintEvent(QPaintEvent *) Q_DECL_OVERRIDE;
+    void changeEvent(QEvent *) Q_DECL_OVERRIDE;
+    void showEvent(QShowEvent *) Q_DECL_OVERRIDE;
+    void resizeEvent(QResizeEvent *) Q_DECL_OVERRIDE;
+    void moveEvent(QMoveEvent *) Q_DECL_OVERRIDE;
     void initStyleOption(QStyleOptionRubberBand *option) const;
 
 private:

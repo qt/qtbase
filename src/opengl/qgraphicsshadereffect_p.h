@@ -69,7 +69,7 @@ public:
     void setPixelShaderFragment(const QByteArray& code);
 
 protected:
-    void draw(QPainter *painter);
+    void draw(QPainter *painter) Q_DECL_OVERRIDE;
     void setUniformsDirty();
     virtual void setUniforms(QGLShaderProgram *program);
 

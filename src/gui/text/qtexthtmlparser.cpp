@@ -1713,14 +1713,14 @@ public:
     inline QTextHtmlStyleSelector(const QTextHtmlParser *parser)
         : parser(parser) { nameCaseSensitivity = Qt::CaseInsensitive; }
 
-    virtual QStringList nodeNames(NodePtr node) const;
-    virtual QString attribute(NodePtr node, const QString &name) const;
-    virtual bool hasAttributes(NodePtr node) const;
-    virtual bool isNullNode(NodePtr node) const;
-    virtual NodePtr parentNode(NodePtr node) const;
-    virtual NodePtr previousSiblingNode(NodePtr node) const;
-    virtual NodePtr duplicateNode(NodePtr node) const;
-    virtual void freeNode(NodePtr node) const;
+    virtual QStringList nodeNames(NodePtr node) const Q_DECL_OVERRIDE;
+    virtual QString attribute(NodePtr node, const QString &name) const Q_DECL_OVERRIDE;
+    virtual bool hasAttributes(NodePtr node) const Q_DECL_OVERRIDE;
+    virtual bool isNullNode(NodePtr node) const Q_DECL_OVERRIDE;
+    virtual NodePtr parentNode(NodePtr node) const Q_DECL_OVERRIDE;
+    virtual NodePtr previousSiblingNode(NodePtr node) const Q_DECL_OVERRIDE;
+    virtual NodePtr duplicateNode(NodePtr node) const Q_DECL_OVERRIDE;
+    virtual void freeNode(NodePtr node) const Q_DECL_OVERRIDE;
 
 private:
     const QTextHtmlParser *parser;

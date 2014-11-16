@@ -76,8 +76,8 @@ public:
     void setCurrentAnimation(int index, bool intermediate = false);
     void activateCurrentAnimation(bool intermediate = false);
 
-    void animationInsertedAt(int index);
-    void animationRemoved(int index, QAbstractAnimation *anim);
+    void animationInsertedAt(int index) Q_DECL_OVERRIDE;
+    void animationRemoved(int index, QAbstractAnimation *anim) Q_DECL_OVERRIDE;
 
     bool atEnd() const;
 

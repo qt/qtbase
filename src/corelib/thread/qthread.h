@@ -89,7 +89,7 @@ public:
     QAbstractEventDispatcher *eventDispatcher() const;
     void setEventDispatcher(QAbstractEventDispatcher *eventDispatcher);
 
-    bool event(QEvent *event);
+    bool event(QEvent *event) Q_DECL_OVERRIDE;
 
 public Q_SLOTS:
     void start(Priority = InheritPriority);

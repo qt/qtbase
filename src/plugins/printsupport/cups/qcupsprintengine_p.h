@@ -68,8 +68,8 @@ public:
     virtual ~QCupsPrintEngine();
 
     // reimplementations QPdfPrintEngine
-    void setProperty(PrintEnginePropertyKey key, const QVariant &value);
-    QVariant property(PrintEnginePropertyKey key) const;
+    void setProperty(PrintEnginePropertyKey key, const QVariant &value) Q_DECL_OVERRIDE;
+    QVariant property(PrintEnginePropertyKey key) const Q_DECL_OVERRIDE;
     // end reimplementations QPdfPrintEngine
 
 private:
@@ -83,8 +83,8 @@ public:
     QCupsPrintEnginePrivate(QPrinter::PrinterMode m);
     ~QCupsPrintEnginePrivate();
 
-    bool openPrintDevice();
-    void closePrintDevice();
+    bool openPrintDevice() Q_DECL_OVERRIDE;
+    void closePrintDevice() Q_DECL_OVERRIDE;
 
 private:
     Q_DISABLE_COPY(QCupsPrintEnginePrivate)

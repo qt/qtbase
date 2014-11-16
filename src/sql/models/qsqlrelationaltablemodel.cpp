@@ -150,7 +150,7 @@ class QRelatedTableModel : public QSqlTableModel
 {
 public:
     QRelatedTableModel(QRelation *rel, QObject *parent = 0, QSqlDatabase db = QSqlDatabase());
-    bool select();
+    bool select() Q_DECL_OVERRIDE;
 private:
     bool firstSelect;
     QRelation *relation;
@@ -262,12 +262,12 @@ public:
     {}
     QString fullyQualifiedFieldName(const QString &tableName, const QString &fieldName) const;
 
-    int nameToIndex(const QString &name) const;
+    int nameToIndex(const QString &name) const Q_DECL_OVERRIDE;
     mutable QVector<QRelation> relations;
     QSqlRecord baseRec; // the record without relations
     void clearChanges();
-    void clearCache();
-    void revertCachedRow(int row);
+    void clearCache() Q_DECL_OVERRIDE;
+    void revertCachedRow(int row) Q_DECL_OVERRIDE;
 
     void translateFieldNames(QSqlRecord &values) const;
     QSqlRelationalTableModel::JoinMode joinMode;

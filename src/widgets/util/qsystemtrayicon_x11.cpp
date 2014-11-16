@@ -74,12 +74,12 @@ public:
     QRect globalGeometry() const;
 
 protected:
-    virtual void mousePressEvent(QMouseEvent *ev);
-    virtual void mouseDoubleClickEvent(QMouseEvent *ev);
-    virtual bool event(QEvent *);
-    virtual void paintEvent(QPaintEvent *);
-    virtual void resizeEvent(QResizeEvent *);
-    virtual void moveEvent(QMoveEvent *);
+    virtual void mousePressEvent(QMouseEvent *ev) Q_DECL_OVERRIDE;
+    virtual void mouseDoubleClickEvent(QMouseEvent *ev) Q_DECL_OVERRIDE;
+    virtual bool event(QEvent *) Q_DECL_OVERRIDE;
+    virtual void paintEvent(QPaintEvent *) Q_DECL_OVERRIDE;
+    virtual void resizeEvent(QResizeEvent *) Q_DECL_OVERRIDE;
+    virtual void moveEvent(QMoveEvent *) Q_DECL_OVERRIDE;
 
 private slots:
     void systemTrayWindowChanged(QScreen *screen);

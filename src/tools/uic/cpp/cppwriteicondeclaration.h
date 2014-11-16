@@ -51,9 +51,9 @@ class WriteIconDeclaration : public TreeWalker
 public:
     WriteIconDeclaration(Uic *uic);
 
-    void acceptUI(DomUI *node);
-    void acceptImages(DomImages *images);
-    void acceptImage(DomImage *image);
+    void acceptUI(DomUI *node) Q_DECL_OVERRIDE;
+    void acceptImages(DomImages *images) Q_DECL_OVERRIDE;
+    void acceptImage(DomImage *image) Q_DECL_OVERRIDE;
 
 private:
     Driver *driver;

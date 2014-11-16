@@ -48,20 +48,20 @@ public:
     PlainCodeMarker();
     ~PlainCodeMarker();
 
-    bool recognizeCode( const QString& code );
-    bool recognizeExtension( const QString& ext );
-    bool recognizeLanguage( const QString& lang );
-    Atom::Type atomType() const;
-    QString markedUpCode( const QString& code, const Node *relative, const Location &location );
+    bool recognizeCode( const QString& code ) Q_DECL_OVERRIDE;
+    bool recognizeExtension( const QString& ext ) Q_DECL_OVERRIDE;
+    bool recognizeLanguage( const QString& lang ) Q_DECL_OVERRIDE;
+    Atom::Type atomType() const Q_DECL_OVERRIDE;
+    QString markedUpCode( const QString& code, const Node *relative, const Location &location ) Q_DECL_OVERRIDE;
     QString markedUpSynopsis( const Node *node, const Node *relative,
-                              SynopsisStyle style );
-    QString markedUpName( const Node *node );
-    QString markedUpFullName( const Node *node, const Node *relative );
-    QString markedUpEnumValue(const QString &enumValue, const Node *relative);
-    QString markedUpIncludes( const QStringList& includes );
-    QString functionBeginRegExp( const QString& funcName );
-    QString functionEndRegExp( const QString& funcName );
-    QList<Section> sections(const InnerNode *innerNode, SynopsisStyle style, Status status);
+                              SynopsisStyle style ) Q_DECL_OVERRIDE;
+    QString markedUpName( const Node *node ) Q_DECL_OVERRIDE;
+    QString markedUpFullName( const Node *node, const Node *relative ) Q_DECL_OVERRIDE;
+    QString markedUpEnumValue(const QString &enumValue, const Node *relative) Q_DECL_OVERRIDE;
+    QString markedUpIncludes( const QStringList& includes ) Q_DECL_OVERRIDE;
+    QString functionBeginRegExp( const QString& funcName ) Q_DECL_OVERRIDE;
+    QString functionEndRegExp( const QString& funcName ) Q_DECL_OVERRIDE;
+    QList<Section> sections(const InnerNode *innerNode, SynopsisStyle style, Status status) Q_DECL_OVERRIDE;
 };
 
 QT_END_NAMESPACE

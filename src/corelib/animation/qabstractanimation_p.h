@@ -110,7 +110,7 @@ class QDefaultAnimationDriver : public QAnimationDriver
     Q_OBJECT
 public:
     QDefaultAnimationDriver(QUnifiedTimer *timer);
-    void timerEvent(QTimerEvent *e);
+    void timerEvent(QTimerEvent *e) Q_DECL_OVERRIDE;
 
 private Q_SLOTS:
     void startTimer();
@@ -190,7 +190,7 @@ public:
     qint64 elapsed() const;
 
 protected:
-    void timerEvent(QTimerEvent *);
+    void timerEvent(QTimerEvent *) Q_DECL_OVERRIDE;
 
 private Q_SLOTS:
     void startTimers();
@@ -259,11 +259,11 @@ public:
     */
     static void updateAnimationTimer();
 
-    void restartAnimationTimer();
-    void updateAnimationsTime(qint64 delta);
+    void restartAnimationTimer() Q_DECL_OVERRIDE;
+    void updateAnimationsTime(qint64 delta) Q_DECL_OVERRIDE;
 
     //useful for profiling/debugging
-    int runningAnimationCount() { return animations.count(); }
+    int runningAnimationCount() Q_DECL_OVERRIDE { return animations.count(); }
 
 private Q_SLOTS:
     void startAnimations();

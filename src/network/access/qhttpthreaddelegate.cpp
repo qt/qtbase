@@ -187,7 +187,7 @@ public:
         setShareable(true);
     }
 
-    virtual void dispose()
+    virtual void dispose() Q_DECL_OVERRIDE
     {
 #if 0  // sample code; do this right with the API
         Q_ASSERT(!isWorking());

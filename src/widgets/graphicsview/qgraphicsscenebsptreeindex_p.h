@@ -71,25 +71,25 @@ public:
     QGraphicsSceneBspTreeIndex(QGraphicsScene *scene = 0);
     ~QGraphicsSceneBspTreeIndex();
 
-    QList<QGraphicsItem *> estimateItems(const QRectF &rect, Qt::SortOrder order) const;
-    QList<QGraphicsItem *> estimateTopLevelItems(const QRectF &rect, Qt::SortOrder order) const;
-    QList<QGraphicsItem *> items(Qt::SortOrder order = Qt::DescendingOrder) const;
+    QList<QGraphicsItem *> estimateItems(const QRectF &rect, Qt::SortOrder order) const Q_DECL_OVERRIDE;
+    QList<QGraphicsItem *> estimateTopLevelItems(const QRectF &rect, Qt::SortOrder order) const Q_DECL_OVERRIDE;
+    QList<QGraphicsItem *> items(Qt::SortOrder order = Qt::DescendingOrder) const Q_DECL_OVERRIDE;
 
     int bspTreeDepth() const;
     void setBspTreeDepth(int depth);
 
 protected Q_SLOTS:
-    void updateSceneRect(const QRectF &rect);
+    void updateSceneRect(const QRectF &rect) Q_DECL_OVERRIDE;
 
 protected:
-    bool event(QEvent *event);
-    void clear();
+    bool event(QEvent *event) Q_DECL_OVERRIDE;
+    void clear() Q_DECL_OVERRIDE;
 
-    void addItem(QGraphicsItem *item);
-    void removeItem(QGraphicsItem *item);
-    void prepareBoundingRectChange(const QGraphicsItem *item);
+    void addItem(QGraphicsItem *item) Q_DECL_OVERRIDE;
+    void removeItem(QGraphicsItem *item) Q_DECL_OVERRIDE;
+    void prepareBoundingRectChange(const QGraphicsItem *item) Q_DECL_OVERRIDE;
 
-    void itemChange(const QGraphicsItem *item, QGraphicsItem::GraphicsItemChange change, const void *const value);
+    void itemChange(const QGraphicsItem *item, QGraphicsItem::GraphicsItemChange change, const void *const value) Q_DECL_OVERRIDE;
 
 private :
     Q_DECLARE_PRIVATE(QGraphicsSceneBspTreeIndex)

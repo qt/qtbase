@@ -61,9 +61,9 @@ public:
     virtual QRect drawCursor(QPainter &painter);
 
     // input methods
-    virtual void pointerEvent(const QMouseEvent &event);
+    virtual void pointerEvent(const QMouseEvent &event) Q_DECL_OVERRIDE;
 #ifndef QT_NO_CURSOR
-    virtual void changeCursor(QCursor *widgetCursor, QWindow *window);
+    virtual void changeCursor(QCursor *widgetCursor, QWindow *window) Q_DECL_OVERRIDE;
 #endif
 
     virtual void setDirty();

@@ -116,15 +116,15 @@ public:
     QList<QPair<int, int> > errorList;
 
     // Platform specific functions
-    void startClientEncryption();
-    void startServerEncryption();
-    void transmit();
+    void startClientEncryption() Q_DECL_OVERRIDE;
+    void startServerEncryption() Q_DECL_OVERRIDE;
+    void transmit() Q_DECL_OVERRIDE;
     bool startHandshake();
-    void disconnectFromHost();
-    void disconnected();
-    QSslCipher sessionCipher() const;
-    QSsl::SslProtocol sessionProtocol() const;
-    void continueHandshake();
+    void disconnectFromHost() Q_DECL_OVERRIDE;
+    void disconnected() Q_DECL_OVERRIDE;
+    QSslCipher sessionCipher() const Q_DECL_OVERRIDE;
+    QSsl::SslProtocol sessionProtocol() const Q_DECL_OVERRIDE;
+    void continueHandshake() Q_DECL_OVERRIDE;
     bool checkSslErrors();
 #ifdef Q_OS_WIN
     void fetchCaRootForCert(const QSslCertificate &cert);

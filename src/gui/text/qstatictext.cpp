@@ -431,7 +431,7 @@ namespace {
         {
         }
 
-        virtual void updateState(const QPaintEngineState &newState)
+        virtual void updateState(const QPaintEngineState &newState) Q_DECL_OVERRIDE
         {
             if (newState.state() & QPaintEngine::DirtyPen
                 && newState.pen().color() != m_currentColor) {
@@ -440,7 +440,7 @@ namespace {
             }
         }
 
-        virtual void drawTextItem(const QPointF &position, const QTextItem &textItem)
+        virtual void drawTextItem(const QPointF &position, const QTextItem &textItem) Q_DECL_OVERRIDE
         {
             const QTextItemInt &ti = static_cast<const QTextItemInt &>(textItem);
 
@@ -482,15 +482,15 @@ namespace {
             m_items.append(currentItem);
         }
 
-        virtual void drawPolygon(const QPointF *, int , PolygonDrawMode )
+        virtual void drawPolygon(const QPointF *, int , PolygonDrawMode ) Q_DECL_OVERRIDE
         {
             /* intentionally empty */
         }
 
-        virtual bool begin(QPaintDevice *)  { return true; }
-        virtual bool end() { return true; }
-        virtual void drawPixmap(const QRectF &, const QPixmap &, const QRectF &) {}
-        virtual Type type() const
+        virtual bool begin(QPaintDevice *) Q_DECL_OVERRIDE  { return true; }
+        virtual bool end() Q_DECL_OVERRIDE { return true; }
+        virtual void drawPixmap(const QRectF &, const QPixmap &, const QRectF &) Q_DECL_OVERRIDE {}
+        virtual Type type() const Q_DECL_OVERRIDE
         {
             return User;
         }
@@ -541,7 +541,7 @@ namespace {
             delete m_paintEngine;
         }
 
-        int metric(PaintDeviceMetric m) const
+        int metric(PaintDeviceMetric m) const Q_DECL_OVERRIDE
         {
             int val;
             switch (m) {
@@ -575,7 +575,7 @@ namespace {
             return val;
         }
 
-        virtual QPaintEngine *paintEngine() const
+        virtual QPaintEngine *paintEngine() const Q_DECL_OVERRIDE
         {
             return m_paintEngine;
         }

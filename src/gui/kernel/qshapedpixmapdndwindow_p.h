@@ -66,7 +66,7 @@ public:
     void updateGeometry();
 
 protected:
-    void exposeEvent(QExposeEvent *);
+    void exposeEvent(QExposeEvent *) Q_DECL_OVERRIDE;
 
 private:
     QBackingStore *m_backingStore;

@@ -190,7 +190,7 @@ public:
         : d(_d), ignoreUpdate(false), skip(0)
     { }
 
-    int duration() const
+    int duration() const Q_DECL_OVERRIDE
     {
         return -1;
     }
@@ -206,7 +206,7 @@ public:
     }
 
 protected:
-    void updateCurrentTime(int /*currentTime*/)
+    void updateCurrentTime(int /*currentTime*/) Q_DECL_OVERRIDE
    {
         if (!ignoreUpdate) {
             if (++skip >= d->frameRateSkip()) {

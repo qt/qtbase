@@ -295,7 +295,7 @@ class QXcbEventReader : public QThread
 public:
     QXcbEventReader(QXcbConnection *connection);
 
-    void run();
+    void run() Q_DECL_OVERRIDE;
 
     QXcbEventArray *lock();
     void unlock();

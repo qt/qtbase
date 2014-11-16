@@ -77,8 +77,8 @@ public:
     Qt::Alignment alignment() const;
     void setAlignment(Qt::Alignment alignment);
 
-    QSize sizeHint() const;
-    QSize minimumSizeHint() const;
+    QSize sizeHint() const Q_DECL_OVERRIDE;
+    QSize minimumSizeHint() const Q_DECL_OVERRIDE;
 
     Qt::Orientation orientation() const;
 
@@ -103,8 +103,8 @@ Q_SIGNALS:
     void valueChanged(int value);
 
 protected:
-    bool event(QEvent *e);
-    void paintEvent(QPaintEvent *);
+    bool event(QEvent *e) Q_DECL_OVERRIDE;
+    void paintEvent(QPaintEvent *) Q_DECL_OVERRIDE;
     void initStyleOption(QStyleOptionProgressBar *option) const;
 
 private:

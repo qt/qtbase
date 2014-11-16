@@ -419,9 +419,9 @@ public:
     explicit QAbstractTableModel(QObject *parent = 0);
     ~QAbstractTableModel();
 
-    QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const;
+    QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const Q_DECL_OVERRIDE;
     bool dropMimeData(const QMimeData *data, Qt::DropAction action,
-                      int row, int column, const QModelIndex &parent);
+                      int row, int column, const QModelIndex &parent) Q_DECL_OVERRIDE;
 
     Qt::ItemFlags flags(const QModelIndex &index) const Q_DECL_OVERRIDE;
 
@@ -438,8 +438,8 @@ protected:
 
 private:
     Q_DISABLE_COPY(QAbstractTableModel)
-    QModelIndex parent(const QModelIndex &child) const;
-    bool hasChildren(const QModelIndex &parent) const;
+    QModelIndex parent(const QModelIndex &child) const Q_DECL_OVERRIDE;
+    bool hasChildren(const QModelIndex &parent) const Q_DECL_OVERRIDE;
 };
 
 class Q_CORE_EXPORT QAbstractListModel : public QAbstractItemModel
@@ -450,9 +450,9 @@ public:
     explicit QAbstractListModel(QObject *parent = 0);
     ~QAbstractListModel();
 
-    QModelIndex index(int row, int column = 0, const QModelIndex &parent = QModelIndex()) const;
+    QModelIndex index(int row, int column = 0, const QModelIndex &parent = QModelIndex()) const Q_DECL_OVERRIDE;
     bool dropMimeData(const QMimeData *data, Qt::DropAction action,
-                      int row, int column, const QModelIndex &parent);
+                      int row, int column, const QModelIndex &parent) Q_DECL_OVERRIDE;
 
     Qt::ItemFlags flags(const QModelIndex &index) const Q_DECL_OVERRIDE;
 
@@ -469,9 +469,9 @@ protected:
 
 private:
     Q_DISABLE_COPY(QAbstractListModel)
-    QModelIndex parent(const QModelIndex &child) const;
-    int columnCount(const QModelIndex &parent) const;
-    bool hasChildren(const QModelIndex &parent) const;
+    QModelIndex parent(const QModelIndex &child) const Q_DECL_OVERRIDE;
+    int columnCount(const QModelIndex &parent) const Q_DECL_OVERRIDE;
+    bool hasChildren(const QModelIndex &parent) const Q_DECL_OVERRIDE;
 };
 
 // inline implementations

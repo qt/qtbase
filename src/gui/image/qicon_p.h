@@ -104,18 +104,18 @@ public:
     QPixmapIconEngine();
     QPixmapIconEngine(const QPixmapIconEngine &);
     ~QPixmapIconEngine();
-    void paint(QPainter *painter, const QRect &rect, QIcon::Mode mode, QIcon::State state);
-    QPixmap pixmap(const QSize &size, QIcon::Mode mode, QIcon::State state);
+    void paint(QPainter *painter, const QRect &rect, QIcon::Mode mode, QIcon::State state) Q_DECL_OVERRIDE;
+    QPixmap pixmap(const QSize &size, QIcon::Mode mode, QIcon::State state) Q_DECL_OVERRIDE;
     QPixmapIconEngineEntry *bestMatch(const QSize &size, QIcon::Mode mode, QIcon::State state, bool sizeOnly);
-    QSize actualSize(const QSize &size, QIcon::Mode mode, QIcon::State state);
-    void addPixmap(const QPixmap &pixmap, QIcon::Mode mode, QIcon::State state);
-    void addFile(const QString &fileName, const QSize &size, QIcon::Mode mode, QIcon::State state);
+    QSize actualSize(const QSize &size, QIcon::Mode mode, QIcon::State state) Q_DECL_OVERRIDE;
+    void addPixmap(const QPixmap &pixmap, QIcon::Mode mode, QIcon::State state) Q_DECL_OVERRIDE;
+    void addFile(const QString &fileName, const QSize &size, QIcon::Mode mode, QIcon::State state) Q_DECL_OVERRIDE;
 
-    QString key() const;
-    QIconEngine *clone() const;
-    bool read(QDataStream &in);
-    bool write(QDataStream &out) const;
-    void virtual_hook(int id, void *data);
+    QString key() const Q_DECL_OVERRIDE;
+    QIconEngine *clone() const Q_DECL_OVERRIDE;
+    bool read(QDataStream &in) Q_DECL_OVERRIDE;
+    bool write(QDataStream &out) const Q_DECL_OVERRIDE;
+    void virtual_hook(int id, void *data) Q_DECL_OVERRIDE;
 
 private:
     QPixmapIconEngineEntry *tryMatch(const QSize &size, QIcon::Mode mode, QIcon::State state);

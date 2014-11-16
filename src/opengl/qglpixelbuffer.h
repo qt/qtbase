@@ -75,14 +75,14 @@ public:
     Qt::HANDLE handle() const;
     QImage toImage() const;
 
-    QPaintEngine *paintEngine() const;
+    QPaintEngine *paintEngine() const Q_DECL_OVERRIDE;
     QGLFormat format() const;
 
     static bool hasOpenGLPbuffers();
 
 protected:
-    int metric(PaintDeviceMetric metric) const;
-    int devType() const { return QInternal::Pbuffer; }
+    int metric(PaintDeviceMetric metric) const Q_DECL_OVERRIDE;
+    int devType() const Q_DECL_OVERRIDE { return QInternal::Pbuffer; }
 
 private:
     Q_DISABLE_COPY(QGLPixelBuffer)

@@ -117,9 +117,9 @@ public:
     ~QXcbDropData();
 
 protected:
-    bool hasFormat_sys(const QString &mimeType) const;
-    QStringList formats_sys() const;
-    QVariant retrieveData_sys(const QString &mimeType, QVariant::Type type) const;
+    bool hasFormat_sys(const QString &mimeType) const Q_DECL_OVERRIDE;
+    QStringList formats_sys() const Q_DECL_OVERRIDE;
+    QVariant retrieveData_sys(const QString &mimeType, QVariant::Type type) const Q_DECL_OVERRIDE;
 
     QVariant xdndObtainData(const QByteArray &format, QVariant::Type requestedType) const;
 

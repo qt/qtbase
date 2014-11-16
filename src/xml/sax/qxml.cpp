@@ -434,11 +434,11 @@ public:
     {
     }
 
-    int columnNumber() const
+    int columnNumber() const Q_DECL_OVERRIDE
     {
         return (reader->d_ptr->columnNr == -1 ? -1 : reader->d_ptr->columnNr + 1);
     }
-    int lineNumber() const
+    int lineNumber() const Q_DECL_OVERRIDE
     {
         return (reader->d_ptr->lineNr == -1 ? -1 : reader->d_ptr->lineNr + 1);
     }

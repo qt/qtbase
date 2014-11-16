@@ -54,7 +54,7 @@ public:
     {
     }
 
-    EGLSurface eglSurfaceForPlatformSurface(QPlatformSurface *surface)
+    EGLSurface eglSurfaceForPlatformSurface(QPlatformSurface *surface) Q_DECL_OVERRIDE
     {
         QMinimalEglWindow *window = static_cast<QMinimalEglWindow *>(surface);
         QMinimalEglScreen *screen = static_cast<QMinimalEglScreen *>(window->screen());

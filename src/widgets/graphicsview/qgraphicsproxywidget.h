@@ -55,63 +55,63 @@ public:
 
     QRectF subWidgetRect(const QWidget *widget) const;
 
-    void setGeometry(const QRectF &rect);
+    void setGeometry(const QRectF &rect) Q_DECL_OVERRIDE;
 
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) Q_DECL_OVERRIDE;
 
     enum {
         Type = 12
     };
-    int type() const;
+    int type() const Q_DECL_OVERRIDE;
 
     QGraphicsProxyWidget *createProxyForChildWidget(QWidget *child);
 
 protected:
-    QVariant itemChange(GraphicsItemChange change, const QVariant &value);
+    QVariant itemChange(GraphicsItemChange change, const QVariant &value) Q_DECL_OVERRIDE;
 
-    bool event(QEvent *event);
-    bool eventFilter(QObject *object, QEvent *event);
+    bool event(QEvent *event) Q_DECL_OVERRIDE;
+    bool eventFilter(QObject *object, QEvent *event) Q_DECL_OVERRIDE;
 
-    void showEvent(QShowEvent *event);
-    void hideEvent(QHideEvent *event);
+    void showEvent(QShowEvent *event) Q_DECL_OVERRIDE;
+    void hideEvent(QHideEvent *event) Q_DECL_OVERRIDE;
 
 #ifndef QT_NO_CONTEXTMENU
-    void contextMenuEvent(QGraphicsSceneContextMenuEvent *event);
+    void contextMenuEvent(QGraphicsSceneContextMenuEvent *event) Q_DECL_OVERRIDE;
 #endif
 
 #ifndef QT_NO_DRAGANDDROP
-    void dragEnterEvent(QGraphicsSceneDragDropEvent *event);
-    void dragLeaveEvent(QGraphicsSceneDragDropEvent *event);
-    void dragMoveEvent(QGraphicsSceneDragDropEvent *event);
-    void dropEvent(QGraphicsSceneDragDropEvent *event);
+    void dragEnterEvent(QGraphicsSceneDragDropEvent *event) Q_DECL_OVERRIDE;
+    void dragLeaveEvent(QGraphicsSceneDragDropEvent *event) Q_DECL_OVERRIDE;
+    void dragMoveEvent(QGraphicsSceneDragDropEvent *event) Q_DECL_OVERRIDE;
+    void dropEvent(QGraphicsSceneDragDropEvent *event) Q_DECL_OVERRIDE;
 #endif
 
-    void hoverEnterEvent(QGraphicsSceneHoverEvent *event);
-    void hoverLeaveEvent(QGraphicsSceneHoverEvent *event);
-    void hoverMoveEvent(QGraphicsSceneHoverEvent *event);
-    void grabMouseEvent(QEvent *event);
-    void ungrabMouseEvent(QEvent *event);
+    void hoverEnterEvent(QGraphicsSceneHoverEvent *event) Q_DECL_OVERRIDE;
+    void hoverLeaveEvent(QGraphicsSceneHoverEvent *event) Q_DECL_OVERRIDE;
+    void hoverMoveEvent(QGraphicsSceneHoverEvent *event) Q_DECL_OVERRIDE;
+    void grabMouseEvent(QEvent *event) Q_DECL_OVERRIDE;
+    void ungrabMouseEvent(QEvent *event) Q_DECL_OVERRIDE;
 
-    void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
-    void mousePressEvent(QGraphicsSceneMouseEvent *event);
-    void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
-    void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event);
+    void mouseMoveEvent(QGraphicsSceneMouseEvent *event) Q_DECL_OVERRIDE;
+    void mousePressEvent(QGraphicsSceneMouseEvent *event) Q_DECL_OVERRIDE;
+    void mouseReleaseEvent(QGraphicsSceneMouseEvent *event) Q_DECL_OVERRIDE;
+    void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event) Q_DECL_OVERRIDE;
 #ifndef QT_NO_WHEELEVENT
-    void wheelEvent(QGraphicsSceneWheelEvent *event);
+    void wheelEvent(QGraphicsSceneWheelEvent *event) Q_DECL_OVERRIDE;
 #endif
 
-    void keyPressEvent(QKeyEvent *event);
-    void keyReleaseEvent(QKeyEvent *event);
+    void keyPressEvent(QKeyEvent *event) Q_DECL_OVERRIDE;
+    void keyReleaseEvent(QKeyEvent *event) Q_DECL_OVERRIDE;
 
-    void focusInEvent(QFocusEvent *event);
-    void focusOutEvent(QFocusEvent *event);
-    bool focusNextPrevChild(bool next);
+    void focusInEvent(QFocusEvent *event) Q_DECL_OVERRIDE;
+    void focusOutEvent(QFocusEvent *event) Q_DECL_OVERRIDE;
+    bool focusNextPrevChild(bool next) Q_DECL_OVERRIDE;
 
-    QVariant inputMethodQuery(Qt::InputMethodQuery query) const;
-    void inputMethodEvent(QInputMethodEvent *event);
+    QVariant inputMethodQuery(Qt::InputMethodQuery query) const Q_DECL_OVERRIDE;
+    void inputMethodEvent(QInputMethodEvent *event) Q_DECL_OVERRIDE;
 
-    QSizeF sizeHint(Qt::SizeHint which, const QSizeF &constraint = QSizeF()) const;
-    void resizeEvent(QGraphicsSceneResizeEvent *event);
+    QSizeF sizeHint(Qt::SizeHint which, const QSizeF &constraint = QSizeF()) const Q_DECL_OVERRIDE;
+    void resizeEvent(QGraphicsSceneResizeEvent *event) Q_DECL_OVERRIDE;
 
 protected Q_SLOTS:
     QGraphicsProxyWidget *newProxyWidget(const QWidget *);

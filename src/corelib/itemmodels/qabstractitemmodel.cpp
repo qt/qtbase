@@ -468,12 +468,12 @@ class QEmptyItemModel : public QAbstractItemModel
 {
 public:
     explicit QEmptyItemModel(QObject *parent = 0) : QAbstractItemModel(parent) {}
-    QModelIndex index(int, int, const QModelIndex &) const { return QModelIndex(); }
-    QModelIndex parent(const QModelIndex &) const { return QModelIndex(); }
-    int rowCount(const QModelIndex &) const { return 0; }
-    int columnCount(const QModelIndex &) const { return 0; }
-    bool hasChildren(const QModelIndex &) const { return false; }
-    QVariant data(const QModelIndex &, int) const { return QVariant(); }
+    QModelIndex index(int, int, const QModelIndex &) const Q_DECL_OVERRIDE { return QModelIndex(); }
+    QModelIndex parent(const QModelIndex &) const Q_DECL_OVERRIDE { return QModelIndex(); }
+    int rowCount(const QModelIndex &) const Q_DECL_OVERRIDE { return 0; }
+    int columnCount(const QModelIndex &) const Q_DECL_OVERRIDE { return 0; }
+    bool hasChildren(const QModelIndex &) const Q_DECL_OVERRIDE { return false; }
+    QVariant data(const QModelIndex &, int) const Q_DECL_OVERRIDE { return QVariant(); }
 };
 
 Q_GLOBAL_STATIC(QEmptyItemModel, qEmptyModel)

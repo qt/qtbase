@@ -285,16 +285,16 @@ public:
     void init();
 
     // Reimplemented from QDomNodePrivate
-    QDomNodePrivate* cloneNode(bool deep = true);
-    QDomNodePrivate* insertBefore(QDomNodePrivate* newChild, QDomNodePrivate* refChild);
-    QDomNodePrivate* insertAfter(QDomNodePrivate* newChild, QDomNodePrivate* refChild);
-    QDomNodePrivate* replaceChild(QDomNodePrivate* newChild, QDomNodePrivate* oldChild);
-    QDomNodePrivate* removeChild(QDomNodePrivate* oldChild);
-    QDomNodePrivate* appendChild(QDomNodePrivate* newChild);
+    QDomNodePrivate* cloneNode(bool deep = true) Q_DECL_OVERRIDE;
+    QDomNodePrivate* insertBefore(QDomNodePrivate* newChild, QDomNodePrivate* refChild) Q_DECL_OVERRIDE;
+    QDomNodePrivate* insertAfter(QDomNodePrivate* newChild, QDomNodePrivate* refChild) Q_DECL_OVERRIDE;
+    QDomNodePrivate* replaceChild(QDomNodePrivate* newChild, QDomNodePrivate* oldChild) Q_DECL_OVERRIDE;
+    QDomNodePrivate* removeChild(QDomNodePrivate* oldChild) Q_DECL_OVERRIDE;
+    QDomNodePrivate* appendChild(QDomNodePrivate* newChild) Q_DECL_OVERRIDE;
 
-    QDomNode::NodeType nodeType() const { return QDomNode::DocumentTypeNode; }
+    QDomNode::NodeType nodeType() const Q_DECL_OVERRIDE { return QDomNode::DocumentTypeNode; }
 
-    void save(QTextStream& s, int, int) const;
+    void save(QTextStream& s, int, int) const Q_DECL_OVERRIDE;
 
     // Variables
     QDomNamedNodeMapPrivate* entities;
@@ -311,8 +311,8 @@ public:
     QDomDocumentFragmentPrivate(QDomNodePrivate* n, bool deep);
 
     // Reimplemented from QDomNodePrivate
-    virtual QDomNodePrivate* cloneNode(bool deep = true);
-    QDomNode::NodeType nodeType() const { return QDomNode::DocumentFragmentNode; }
+    virtual QDomNodePrivate* cloneNode(bool deep = true) Q_DECL_OVERRIDE;
+    QDomNode::NodeType nodeType() const Q_DECL_OVERRIDE { return QDomNode::DocumentFragmentNode; }
 };
 
 class QDomCharacterDataPrivate : public QDomNodePrivate
@@ -329,8 +329,8 @@ public:
     void replaceData(unsigned long offset, unsigned long count, const QString& arg);
 
     // Reimplemented from QDomNodePrivate
-    QDomNode::NodeType nodeType() const { return QDomNode::CharacterDataNode; }
-    QDomNodePrivate* cloneNode(bool deep = true);
+    QDomNode::NodeType nodeType() const Q_DECL_OVERRIDE { return QDomNode::CharacterDataNode; }
+    QDomNodePrivate* cloneNode(bool deep = true) Q_DECL_OVERRIDE;
 };
 
 class QDomTextPrivate : public QDomCharacterDataPrivate
@@ -342,9 +342,9 @@ public:
     QDomTextPrivate* splitText(int offset);
 
     // Reimplemented from QDomNodePrivate
-    QDomNodePrivate* cloneNode(bool deep = true);
-    QDomNode::NodeType nodeType() const { return QDomNode::TextNode; }
-    virtual void save(QTextStream& s, int, int) const;
+    QDomNodePrivate* cloneNode(bool deep = true) Q_DECL_OVERRIDE;
+    QDomNode::NodeType nodeType() const Q_DECL_OVERRIDE { return QDomNode::TextNode; }
+    virtual void save(QTextStream& s, int, int) const Q_DECL_OVERRIDE;
 };
 
 class QDomAttrPrivate : public QDomNodePrivate
@@ -357,10 +357,10 @@ public:
     bool specified() const;
 
     // Reimplemented from QDomNodePrivate
-    void setNodeValue(const QString& v);
-    QDomNodePrivate* cloneNode(bool deep = true);
-    QDomNode::NodeType nodeType() const { return QDomNode::AttributeNode; }
-    virtual void save(QTextStream& s, int, int) const;
+    void setNodeValue(const QString& v) Q_DECL_OVERRIDE;
+    QDomNodePrivate* cloneNode(bool deep = true) Q_DECL_OVERRIDE;
+    QDomNode::NodeType nodeType() const Q_DECL_OVERRIDE { return QDomNode::AttributeNode; }
+    virtual void save(QTextStream& s, int, int) const Q_DECL_OVERRIDE;
 
     // Variables
     bool m_specified;
@@ -392,9 +392,9 @@ public:
     // Reimplemented from QDomNodePrivate
     QDomNamedNodeMapPrivate* attributes() { return m_attr; }
     bool hasAttributes() { return (m_attr->length() > 0); }
-    QDomNode::NodeType nodeType() const { return QDomNode::ElementNode; }
-    QDomNodePrivate* cloneNode(bool deep = true);
-    virtual void save(QTextStream& s, int, int) const;
+    QDomNode::NodeType nodeType() const Q_DECL_OVERRIDE { return QDomNode::ElementNode; }
+    QDomNodePrivate* cloneNode(bool deep = true) Q_DECL_OVERRIDE;
+    virtual void save(QTextStream& s, int, int) const Q_DECL_OVERRIDE;
 
     // Variables
     QDomNamedNodeMapPrivate* m_attr;
@@ -408,9 +408,9 @@ public:
     QDomCommentPrivate(QDomCommentPrivate* n, bool deep);
 
     // Reimplemented from QDomNodePrivate
-    QDomNodePrivate* cloneNode(bool deep = true);
-    QDomNode::NodeType nodeType() const { return QDomNode::CommentNode; }
-    virtual void save(QTextStream& s, int, int) const;
+    QDomNodePrivate* cloneNode(bool deep = true) Q_DECL_OVERRIDE;
+    QDomNode::NodeType nodeType() const Q_DECL_OVERRIDE { return QDomNode::CommentNode; }
+    virtual void save(QTextStream& s, int, int) const Q_DECL_OVERRIDE;
 };
 
 class QDomCDATASectionPrivate : public QDomTextPrivate
@@ -420,9 +420,9 @@ public:
     QDomCDATASectionPrivate(QDomCDATASectionPrivate* n, bool deep);
 
     // Reimplemented from QDomNodePrivate
-    QDomNodePrivate* cloneNode(bool deep = true);
-    QDomNode::NodeType nodeType() const { return QDomNode::CDATASectionNode; }
-    virtual void save(QTextStream& s, int, int) const;
+    QDomNodePrivate* cloneNode(bool deep = true) Q_DECL_OVERRIDE;
+    QDomNode::NodeType nodeType() const Q_DECL_OVERRIDE { return QDomNode::CDATASectionNode; }
+    virtual void save(QTextStream& s, int, int) const Q_DECL_OVERRIDE;
 };
 
 class QDomNotationPrivate : public QDomNodePrivate
@@ -433,9 +433,9 @@ public:
     QDomNotationPrivate(QDomNotationPrivate* n, bool deep);
 
     // Reimplemented from QDomNodePrivate
-    QDomNodePrivate* cloneNode(bool deep = true);
-    QDomNode::NodeType nodeType() const { return QDomNode::NotationNode; }
-    virtual void save(QTextStream& s, int, int) const;
+    QDomNodePrivate* cloneNode(bool deep = true) Q_DECL_OVERRIDE;
+    QDomNode::NodeType nodeType() const Q_DECL_OVERRIDE { return QDomNode::NotationNode; }
+    virtual void save(QTextStream& s, int, int) const Q_DECL_OVERRIDE;
 
     // Variables
     QString m_sys;
@@ -450,9 +450,9 @@ public:
     QDomEntityPrivate(QDomEntityPrivate* n, bool deep);
 
     // Reimplemented from QDomNodePrivate
-    QDomNodePrivate* cloneNode(bool deep = true);
-    QDomNode::NodeType nodeType() const { return QDomNode::EntityNode; }
-    virtual void save(QTextStream& s, int, int) const;
+    QDomNodePrivate* cloneNode(bool deep = true) Q_DECL_OVERRIDE;
+    QDomNode::NodeType nodeType() const Q_DECL_OVERRIDE { return QDomNode::EntityNode; }
+    virtual void save(QTextStream& s, int, int) const Q_DECL_OVERRIDE;
 
     // Variables
     QString m_sys;
@@ -467,9 +467,9 @@ public:
     QDomEntityReferencePrivate(QDomNodePrivate* n, bool deep);
 
     // Reimplemented from QDomNodePrivate
-    QDomNodePrivate* cloneNode(bool deep = true);
-    QDomNode::NodeType nodeType() const { return QDomNode::EntityReferenceNode; }
-    virtual void save(QTextStream& s, int, int) const;
+    QDomNodePrivate* cloneNode(bool deep = true) Q_DECL_OVERRIDE;
+    QDomNode::NodeType nodeType() const Q_DECL_OVERRIDE { return QDomNode::EntityReferenceNode; }
+    virtual void save(QTextStream& s, int, int) const Q_DECL_OVERRIDE;
 };
 
 class QDomProcessingInstructionPrivate : public QDomNodePrivate
@@ -480,9 +480,9 @@ public:
     QDomProcessingInstructionPrivate(QDomProcessingInstructionPrivate* n, bool deep);
 
     // Reimplemented from QDomNodePrivate
-    QDomNodePrivate* cloneNode(bool deep = true);
-    QDomNode::NodeType nodeType() const { return QDomNode::ProcessingInstructionNode; }
-    virtual void save(QTextStream& s, int, int) const;
+    QDomNodePrivate* cloneNode(bool deep = true) Q_DECL_OVERRIDE;
+    QDomNode::NodeType nodeType() const Q_DECL_OVERRIDE { return QDomNode::ProcessingInstructionNode; }
+    virtual void save(QTextStream& s, int, int) const Q_DECL_OVERRIDE;
 };
 
 class QDomDocumentPrivate : public QDomNodePrivate
@@ -517,9 +517,9 @@ public:
     QDomNodePrivate* importNode(const QDomNodePrivate* importedNode, bool deep);
 
     // Reimplemented from QDomNodePrivate
-    QDomNodePrivate* cloneNode(bool deep = true);
-    QDomNode::NodeType nodeType() const { return QDomNode::DocumentNode; }
-    void clear();
+    QDomNodePrivate* cloneNode(bool deep = true) Q_DECL_OVERRIDE;
+    QDomNode::NodeType nodeType() const Q_DECL_OVERRIDE { return QDomNode::DocumentNode; }
+    void clear() Q_DECL_OVERRIDE;
 
     // Variables
     QExplicitlySharedDataPointer<QDomImplementationPrivate> impl;
@@ -570,32 +570,32 @@ public:
     ~QDomHandler();
 
     // content handler
-    bool endDocument();
-    bool startElement(const QString& nsURI, const QString& localName, const QString& qName, const QXmlAttributes& atts);
-    bool endElement(const QString& nsURI, const QString& localName, const QString& qName);
-    bool characters(const QString& ch);
-    bool processingInstruction(const QString& target, const QString& data);
-    bool skippedEntity(const QString& name);
+    bool endDocument() Q_DECL_OVERRIDE;
+    bool startElement(const QString& nsURI, const QString& localName, const QString& qName, const QXmlAttributes& atts) Q_DECL_OVERRIDE;
+    bool endElement(const QString& nsURI, const QString& localName, const QString& qName) Q_DECL_OVERRIDE;
+    bool characters(const QString& ch) Q_DECL_OVERRIDE;
+    bool processingInstruction(const QString& target, const QString& data) Q_DECL_OVERRIDE;
+    bool skippedEntity(const QString& name) Q_DECL_OVERRIDE;
 
     // error handler
-    bool fatalError(const QXmlParseException& exception);
+    bool fatalError(const QXmlParseException& exception) Q_DECL_OVERRIDE;
 
     // lexical handler
-    bool startCDATA();
-    bool endCDATA();
-    bool startEntity(const QString &);
-    bool endEntity(const QString &);
-    bool startDTD(const QString& name, const QString& publicId, const QString& systemId);
-    bool comment(const QString& ch);
+    bool startCDATA() Q_DECL_OVERRIDE;
+    bool endCDATA() Q_DECL_OVERRIDE;
+    bool startEntity(const QString &) Q_DECL_OVERRIDE;
+    bool endEntity(const QString &) Q_DECL_OVERRIDE;
+    bool startDTD(const QString& name, const QString& publicId, const QString& systemId) Q_DECL_OVERRIDE;
+    bool comment(const QString& ch) Q_DECL_OVERRIDE;
 
     // decl handler
-    bool externalEntityDecl(const QString &name, const QString &publicId, const QString &systemId) ;
+    bool externalEntityDecl(const QString &name, const QString &publicId, const QString &systemId) Q_DECL_OVERRIDE ;
 
     // DTD handler
-    bool notationDecl(const QString & name, const QString & publicId, const QString & systemId);
-    bool unparsedEntityDecl(const QString &name, const QString &publicId, const QString &systemId, const QString &notationName) ;
+    bool notationDecl(const QString & name, const QString & publicId, const QString & systemId) Q_DECL_OVERRIDE;
+    bool unparsedEntityDecl(const QString &name, const QString &publicId, const QString &systemId, const QString &notationName) Q_DECL_OVERRIDE ;
 
-    void setDocumentLocator(QXmlLocator *locator);
+    void setDocumentLocator(QXmlLocator *locator) Q_DECL_OVERRIDE;
 
     QString errorMsg;
     int errorLine;

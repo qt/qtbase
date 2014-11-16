@@ -61,7 +61,7 @@ public:
     void unregister();
     void maybeRegister();
 
-    virtual void callOnTransition(QEvent *e);
+    virtual void callOnTransition(QEvent *e) Q_DECL_OVERRIDE;
 
     const QObject *sender;
     QByteArray signal;

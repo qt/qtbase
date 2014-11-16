@@ -100,16 +100,16 @@ public:
     QGraphicsLayoutItem *itemAt(int row, int column) const;
 
     // inherited from QGraphicsLayout
-    int count() const;
-    QGraphicsLayoutItem *itemAt(int index) const;
-    void removeAt(int index);
+    int count() const Q_DECL_OVERRIDE;
+    QGraphicsLayoutItem *itemAt(int index) const Q_DECL_OVERRIDE;
+    void removeAt(int index) Q_DECL_OVERRIDE;
     void removeItem(QGraphicsLayoutItem *item);
 
-    void invalidate();
+    void invalidate() Q_DECL_OVERRIDE;
 
     // inherited from QGraphicsLayoutItem
-    void setGeometry(const QRectF &rect);
-    QSizeF sizeHint(Qt::SizeHint which, const QSizeF &constraint = QSizeF()) const;
+    void setGeometry(const QRectF &rect) Q_DECL_OVERRIDE;
+    QSizeF sizeHint(Qt::SizeHint which, const QSizeF &constraint = QSizeF()) const Q_DECL_OVERRIDE;
 
     // ####
     //QRect cellRect(int row, int column, int rowSpan = 1, int columnSpan = 1) const;

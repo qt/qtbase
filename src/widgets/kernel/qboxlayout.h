@@ -67,7 +67,7 @@ public:
     void addWidget(QWidget *, int stretch = 0, Qt::Alignment alignment = 0);
     void addLayout(QLayout *layout, int stretch = 0);
     void addStrut(int);
-    void addItem(QLayoutItem *);
+    void addItem(QLayoutItem *) Q_DECL_OVERRIDE;
 
     void insertSpacing(int index, int size);
     void insertStretch(int index, int stretch = 0);
@@ -84,20 +84,20 @@ public:
     void setStretch(int index, int stretch);
     int stretch(int index) const;
 
-    QSize sizeHint() const;
-    QSize minimumSize() const;
-    QSize maximumSize() const;
+    QSize sizeHint() const Q_DECL_OVERRIDE;
+    QSize minimumSize() const Q_DECL_OVERRIDE;
+    QSize maximumSize() const Q_DECL_OVERRIDE;
 
-    bool hasHeightForWidth() const;
-    int heightForWidth(int) const;
-    int minimumHeightForWidth(int) const;
+    bool hasHeightForWidth() const Q_DECL_OVERRIDE;
+    int heightForWidth(int) const Q_DECL_OVERRIDE;
+    int minimumHeightForWidth(int) const Q_DECL_OVERRIDE;
 
-    Qt::Orientations expandingDirections() const;
-    void invalidate();
-    QLayoutItem *itemAt(int) const;
-    QLayoutItem *takeAt(int);
-    int count() const;
-    void setGeometry(const QRect&);
+    Qt::Orientations expandingDirections() const Q_DECL_OVERRIDE;
+    void invalidate() Q_DECL_OVERRIDE;
+    QLayoutItem *itemAt(int) const Q_DECL_OVERRIDE;
+    QLayoutItem *takeAt(int) Q_DECL_OVERRIDE;
+    int count() const Q_DECL_OVERRIDE;
+    void setGeometry(const QRect&) Q_DECL_OVERRIDE;
 
 private:
     Q_DISABLE_COPY(QBoxLayout)

@@ -119,7 +119,7 @@ public:
     void setupPrinter() const;
 
 protected:
-    void showEvent(QShowEvent* event);
+    void showEvent(QShowEvent* event) Q_DECL_OVERRIDE;
 
 private:
     friend class QUnixPrintWidgetPrivate;
@@ -205,7 +205,7 @@ public:
     void setupPrinter();
     void updateWidgets();
 
-    virtual void setTabs(const QList<QWidget*> &tabs);
+    virtual void setTabs(const QList<QWidget*> &tabs) Q_DECL_OVERRIDE;
 
     Ui::QPrintSettingsOutput options;
     QUnixPrintWidget *top;

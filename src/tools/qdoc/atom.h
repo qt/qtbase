@@ -215,12 +215,12 @@ class LinkAtom : public Atom
     LinkAtom(Atom* previous, const LinkAtom& t);
     virtual ~LinkAtom() { }
 
-    virtual bool isLinkAtom() const { return true; }
-    virtual Node::Genus genus() const { return genus_; }
-    virtual bool specifiesDomain() const { return (domain_ != 0); }
-    virtual Tree* domain() const { return domain_; }
-    virtual Node::Type goal() const { return goal_; }
-    virtual const QString& error() { return error_; }
+    virtual bool isLinkAtom() const Q_DECL_OVERRIDE { return true; }
+    virtual Node::Genus genus() const Q_DECL_OVERRIDE { return genus_; }
+    virtual bool specifiesDomain() const Q_DECL_OVERRIDE { return (domain_ != 0); }
+    virtual Tree* domain() const Q_DECL_OVERRIDE { return domain_; }
+    virtual Node::Type goal() const Q_DECL_OVERRIDE { return goal_; }
+    virtual const QString& error() Q_DECL_OVERRIDE { return error_; }
 
  protected:
     Node::Genus genus_;

@@ -60,8 +60,8 @@ public:
     void setModifierMask(Qt::KeyboardModifiers modifiers);
 
 protected:
-    void onTransition(QEvent *event);
-    bool eventTest(QEvent *event);
+    void onTransition(QEvent *event) Q_DECL_OVERRIDE;
+    bool eventTest(QEvent *event) Q_DECL_OVERRIDE;
 
 private:
     Q_DISABLE_COPY(QKeyEventTransition)

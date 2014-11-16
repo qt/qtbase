@@ -277,7 +277,7 @@ public:
 private:
     void increaseCost(uint cost);
     void decreaseCost(uint cost);
-    void timerEvent(QTimerEvent *event);
+    void timerEvent(QTimerEvent *event) Q_DECL_OVERRIDE;
 
     static const uint min_cost;
     uint total_cost, max_cost;

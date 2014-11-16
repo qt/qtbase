@@ -66,8 +66,8 @@ public:
     explicit QToolButton(QWidget * parent=0);
     ~QToolButton();
 
-    QSize sizeHint() const;
-    QSize minimumSizeHint() const;
+    QSize sizeHint() const Q_DECL_OVERRIDE;
+    QSize minimumSizeHint() const Q_DECL_OVERRIDE;
 
     Qt::ToolButtonStyle toolButtonStyle() const;
 
@@ -98,19 +98,19 @@ Q_SIGNALS:
     void triggered(QAction *);
 
 protected:
-    bool event(QEvent *e);
-    void mousePressEvent(QMouseEvent *);
-    void mouseReleaseEvent(QMouseEvent *);
-    void paintEvent(QPaintEvent *);
-    void actionEvent(QActionEvent *);
+    bool event(QEvent *e) Q_DECL_OVERRIDE;
+    void mousePressEvent(QMouseEvent *) Q_DECL_OVERRIDE;
+    void mouseReleaseEvent(QMouseEvent *) Q_DECL_OVERRIDE;
+    void paintEvent(QPaintEvent *) Q_DECL_OVERRIDE;
+    void actionEvent(QActionEvent *) Q_DECL_OVERRIDE;
 
-    void enterEvent(QEvent *);
-    void leaveEvent(QEvent *);
-    void timerEvent(QTimerEvent *);
-    void changeEvent(QEvent *);
+    void enterEvent(QEvent *) Q_DECL_OVERRIDE;
+    void leaveEvent(QEvent *) Q_DECL_OVERRIDE;
+    void timerEvent(QTimerEvent *) Q_DECL_OVERRIDE;
+    void changeEvent(QEvent *) Q_DECL_OVERRIDE;
 
-    bool hitButton(const QPoint &pos) const;
-    void nextCheckState();
+    bool hitButton(const QPoint &pos) const Q_DECL_OVERRIDE;
+    void nextCheckState() Q_DECL_OVERRIDE;
     void initStyleOption(QStyleOptionToolButton *option) const;
 
 private:

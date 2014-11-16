@@ -62,10 +62,10 @@ public:
     QPicturePaintEngine();
     ~QPicturePaintEngine();
 
-    bool begin(QPaintDevice *pdev);
-    bool end();
+    bool begin(QPaintDevice *pdev) Q_DECL_OVERRIDE;
+    bool end() Q_DECL_OVERRIDE;
 
-    void updateState(const QPaintEngineState &state);
+    void updateState(const QPaintEngineState &state) Q_DECL_OVERRIDE;
 
     void updatePen(const QPen &pen);
     void updateBrush(const QBrush &brush);
@@ -80,9 +80,9 @@ public:
     void updateClipEnabled(bool enabled);
     void updateOpacity(qreal opacity);
 
-    void drawEllipse(const QRectF &rect);
-    void drawPath(const QPainterPath &path);
-    void drawPolygon(const QPointF *points, int numPoints, PolygonDrawMode mode);
+    void drawEllipse(const QRectF &rect) Q_DECL_OVERRIDE;
+    void drawPath(const QPainterPath &path) Q_DECL_OVERRIDE;
+    void drawPolygon(const QPointF *points, int numPoints, PolygonDrawMode mode) Q_DECL_OVERRIDE;
 #ifdef Q_NO_USING_KEYWORD
     inline void drawPolygon(const QPoint *points, int pointCount, PolygonDrawMode mode)
         { QPaintEngine::drawPolygon(points, pointCount, mode); }
@@ -90,13 +90,13 @@ public:
     using QPaintEngine::drawPolygon;
 #endif
 
-    void drawPixmap(const QRectF &r, const QPixmap &pm, const QRectF &sr);
-    void drawTiledPixmap(const QRectF &r, const QPixmap &pixmap, const QPointF &s);
+    void drawPixmap(const QRectF &r, const QPixmap &pm, const QRectF &sr) Q_DECL_OVERRIDE;
+    void drawTiledPixmap(const QRectF &r, const QPixmap &pixmap, const QPointF &s) Q_DECL_OVERRIDE;
     void drawImage(const QRectF &r, const QImage &image, const QRectF &sr,
-                   Qt::ImageConversionFlags flags = Qt::AutoColor);
-    void drawTextItem(const QPointF &p, const QTextItem &ti);
+                   Qt::ImageConversionFlags flags = Qt::AutoColor) Q_DECL_OVERRIDE;
+    void drawTextItem(const QPointF &p, const QTextItem &ti) Q_DECL_OVERRIDE;
 
-    Type type() const { return Picture; }
+    Type type() const Q_DECL_OVERRIDE { return Picture; }
 
 protected:
     QPicturePaintEngine(QPaintEnginePrivate &dptr);

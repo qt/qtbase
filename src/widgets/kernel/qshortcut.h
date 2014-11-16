@@ -84,7 +84,7 @@ Q_SIGNALS:
     void activatedAmbiguously();
 
 protected:
-    bool event(QEvent *e);
+    bool event(QEvent *e) Q_DECL_OVERRIDE;
 };
 
 #endif // QT_NO_SHORTCUT

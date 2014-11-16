@@ -316,7 +316,7 @@ public:
     QTreeWidgetItem *itemAbove(const QTreeWidgetItem *item) const;
     QTreeWidgetItem *itemBelow(const QTreeWidgetItem *item) const;
 
-    void setSelectionModel(QItemSelectionModel *selectionModel);
+    void setSelectionModel(QItemSelectionModel *selectionModel) Q_DECL_OVERRIDE;
 
 public Q_SLOTS:
     void scrollToItem(const QTreeWidgetItem *item,
@@ -338,7 +338,7 @@ Q_SIGNALS:
     void itemSelectionChanged();
 
 protected:
-    bool event(QEvent *e);
+    bool event(QEvent *e) Q_DECL_OVERRIDE;
     virtual QStringList mimeTypes() const;
     virtual QMimeData *mimeData(const QList<QTreeWidgetItem*> items) const;
     virtual bool dropMimeData(QTreeWidgetItem *parent, int index,
@@ -348,10 +348,10 @@ protected:
 
     QModelIndex indexFromItem(QTreeWidgetItem *item, int column = 0) const;
     QTreeWidgetItem *itemFromIndex(const QModelIndex &index) const;
-    void dropEvent(QDropEvent *event);
+    void dropEvent(QDropEvent *event) Q_DECL_OVERRIDE;
 
 private:
-    void setModel(QAbstractItemModel *model);
+    void setModel(QAbstractItemModel *model) Q_DECL_OVERRIDE;
 
     Q_DECLARE_PRIVATE(QTreeWidget)
     Q_DISABLE_COPY(QTreeWidget)

@@ -121,8 +121,8 @@ public:
     QCompleter *completer() const;
 #endif
 
-    QSize sizeHint() const;
-    QSize minimumSizeHint() const;
+    QSize sizeHint() const Q_DECL_OVERRIDE;
+    QSize minimumSizeHint() const Q_DECL_OVERRIDE;
 
     int cursorPosition() const;
     void setCursorPosition(int);
@@ -204,30 +204,30 @@ Q_SIGNALS:
     void selectionChanged();
 
 protected:
-    void mousePressEvent(QMouseEvent *);
-    void mouseMoveEvent(QMouseEvent *);
-    void mouseReleaseEvent(QMouseEvent *);
-    void mouseDoubleClickEvent(QMouseEvent *);
-    void keyPressEvent(QKeyEvent *);
-    void focusInEvent(QFocusEvent *);
-    void focusOutEvent(QFocusEvent *);
-    void paintEvent(QPaintEvent *);
+    void mousePressEvent(QMouseEvent *) Q_DECL_OVERRIDE;
+    void mouseMoveEvent(QMouseEvent *) Q_DECL_OVERRIDE;
+    void mouseReleaseEvent(QMouseEvent *) Q_DECL_OVERRIDE;
+    void mouseDoubleClickEvent(QMouseEvent *) Q_DECL_OVERRIDE;
+    void keyPressEvent(QKeyEvent *) Q_DECL_OVERRIDE;
+    void focusInEvent(QFocusEvent *) Q_DECL_OVERRIDE;
+    void focusOutEvent(QFocusEvent *) Q_DECL_OVERRIDE;
+    void paintEvent(QPaintEvent *) Q_DECL_OVERRIDE;
 #ifndef QT_NO_DRAGANDDROP
-    void dragEnterEvent(QDragEnterEvent *);
-    void dragMoveEvent(QDragMoveEvent *e);
-    void dragLeaveEvent(QDragLeaveEvent *e);
-    void dropEvent(QDropEvent *);
+    void dragEnterEvent(QDragEnterEvent *) Q_DECL_OVERRIDE;
+    void dragMoveEvent(QDragMoveEvent *e) Q_DECL_OVERRIDE;
+    void dragLeaveEvent(QDragLeaveEvent *e) Q_DECL_OVERRIDE;
+    void dropEvent(QDropEvent *) Q_DECL_OVERRIDE;
 #endif
-    void changeEvent(QEvent *);
+    void changeEvent(QEvent *) Q_DECL_OVERRIDE;
 #ifndef QT_NO_CONTEXTMENU
-    void contextMenuEvent(QContextMenuEvent *);
+    void contextMenuEvent(QContextMenuEvent *) Q_DECL_OVERRIDE;
 #endif
 
-    void inputMethodEvent(QInputMethodEvent *);
+    void inputMethodEvent(QInputMethodEvent *) Q_DECL_OVERRIDE;
     void initStyleOption(QStyleOptionFrame *option) const;
 public:
-    QVariant inputMethodQuery(Qt::InputMethodQuery) const;
-    bool event(QEvent *);
+    QVariant inputMethodQuery(Qt::InputMethodQuery) const Q_DECL_OVERRIDE;
+    bool event(QEvent *) Q_DECL_OVERRIDE;
 protected:
     QRect cursorRect() const;
 

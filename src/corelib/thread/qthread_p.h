@@ -305,7 +305,7 @@ public:
     void init();
 
 private:
-    void run();
+    void run() Q_DECL_OVERRIDE;
 };
 
 QT_END_NAMESPACE

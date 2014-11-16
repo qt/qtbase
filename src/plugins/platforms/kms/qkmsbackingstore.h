@@ -49,12 +49,12 @@ public:
     QKmsBackingStore(QWindow *window);
     ~QKmsBackingStore();
 
-    QPaintDevice *paintDevice();
+    QPaintDevice *paintDevice() Q_DECL_OVERRIDE;
 
-    void beginPaint(const QRegion &);
+    void beginPaint(const QRegion &) Q_DECL_OVERRIDE;
 
-    void flush(QWindow *window, const QRegion &region, const QPoint &offset);
-    void resize(const QSize &size, const QRegion &staticContents);
+    void flush(QWindow *window, const QRegion &region, const QPoint &offset) Q_DECL_OVERRIDE;
+    void resize(const QSize &size, const QRegion &staticContents) Q_DECL_OVERRIDE;
 
     QImage toImage() const Q_DECL_OVERRIDE { return m_image; }
 

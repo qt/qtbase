@@ -141,12 +141,12 @@ public:
     static QWhatsThat *instance;
 
 protected:
-    void showEvent(QShowEvent *e);
-    void mousePressEvent(QMouseEvent*);
-    void mouseReleaseEvent(QMouseEvent*);
-    void mouseMoveEvent(QMouseEvent*);
-    void keyPressEvent(QKeyEvent*);
-    void paintEvent(QPaintEvent*);
+    void showEvent(QShowEvent *e) Q_DECL_OVERRIDE;
+    void mousePressEvent(QMouseEvent*) Q_DECL_OVERRIDE;
+    void mouseReleaseEvent(QMouseEvent*) Q_DECL_OVERRIDE;
+    void mouseMoveEvent(QMouseEvent*) Q_DECL_OVERRIDE;
+    void keyPressEvent(QKeyEvent*) Q_DECL_OVERRIDE;
+    void paintEvent(QPaintEvent*) Q_DECL_OVERRIDE;
 
 private:
     QPointer<QWidget>widget;
@@ -361,7 +361,7 @@ class QWhatsThisPrivate : public QObject
     QWhatsThisPrivate();
     ~QWhatsThisPrivate();
     static QWhatsThisPrivate *instance;
-    bool eventFilter(QObject *, QEvent *);
+    bool eventFilter(QObject *, QEvent *) Q_DECL_OVERRIDE;
     QPointer<QAction> action;
     static void say(QWidget *, const QString &, int x = 0, int y = 0);
     static void notifyToplevels(QEvent *e);

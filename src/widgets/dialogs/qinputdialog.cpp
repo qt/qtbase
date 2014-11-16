@@ -111,7 +111,7 @@ private slots:
     void notifyTextChanged() { emit textChanged(hasAcceptableInput()); }
 
 private:
-    void keyPressEvent(QKeyEvent *event) {
+    void keyPressEvent(QKeyEvent *event) Q_DECL_OVERRIDE {
         if ((event->key() == Qt::Key_Return || event->key() == Qt::Key_Enter) && !hasAcceptableInput()) {
 #ifndef QT_NO_PROPERTIES
             setProperty("value", property("value"));
@@ -122,7 +122,7 @@ private:
         notifyTextChanged();
     }
 
-    void mousePressEvent(QMouseEvent *event) {
+    void mousePressEvent(QMouseEvent *event) Q_DECL_OVERRIDE {
         QSpinBox::mousePressEvent(event);
         notifyTextChanged();
     }
@@ -146,7 +146,7 @@ private slots:
     void notifyTextChanged() { emit textChanged(hasAcceptableInput()); }
 
 private:
-    void keyPressEvent(QKeyEvent *event) {
+    void keyPressEvent(QKeyEvent *event) Q_DECL_OVERRIDE {
         if ((event->key() == Qt::Key_Return || event->key() == Qt::Key_Enter) && !hasAcceptableInput()) {
 #ifndef QT_NO_PROPERTIES
             setProperty("value", property("value"));
@@ -157,7 +157,7 @@ private:
         notifyTextChanged();
     }
 
-    void mousePressEvent(QMouseEvent *event) {
+    void mousePressEvent(QMouseEvent *event) Q_DECL_OVERRIDE {
         QDoubleSpinBox::mousePressEvent(event);
         notifyTextChanged();
     }

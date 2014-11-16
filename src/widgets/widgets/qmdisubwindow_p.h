@@ -260,7 +260,7 @@ public:
     void setFocusWidget();
     bool restoreFocus();
     void storeFocusWidget();
-    void setWindowFlags(Qt::WindowFlags windowFlags);
+    void setWindowFlags(Qt::WindowFlags windowFlags) Q_DECL_OVERRIDE;
     void setVisible(WindowStateAction, bool visible = true);
 #ifndef QT_NO_ACTION
     void setEnabled(WindowStateAction, bool enable = true);

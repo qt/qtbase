@@ -99,7 +99,7 @@ protected:
 
     virtual void onTransition(QEvent *event) = 0;
 
-    bool event(QEvent *e);
+    bool event(QEvent *e) Q_DECL_OVERRIDE;
 
 protected:
     QAbstractTransition(QAbstractTransitionPrivate &dd, QState *parent);

@@ -71,45 +71,45 @@ public:
     QXcbWindow(QWindow *window);
     ~QXcbWindow();
 
-    void setGeometry(const QRect &rect);
+    void setGeometry(const QRect &rect) Q_DECL_OVERRIDE;
 
-    QMargins frameMargins() const;
+    QMargins frameMargins() const Q_DECL_OVERRIDE;
 
-    void setVisible(bool visible);
-    void setWindowFlags(Qt::WindowFlags flags);
-    void setWindowState(Qt::WindowState state);
-    WId winId() const;
-    void setParent(const QPlatformWindow *window);
+    void setVisible(bool visible) Q_DECL_OVERRIDE;
+    void setWindowFlags(Qt::WindowFlags flags) Q_DECL_OVERRIDE;
+    void setWindowState(Qt::WindowState state) Q_DECL_OVERRIDE;
+    WId winId() const Q_DECL_OVERRIDE;
+    void setParent(const QPlatformWindow *window) Q_DECL_OVERRIDE;
 
-    bool isExposed() const;
-    bool isEmbedded(const QPlatformWindow *parentWindow) const;
-    QPoint mapToGlobal(const QPoint &pos) const;
-    QPoint mapFromGlobal(const QPoint &pos) const;
+    bool isExposed() const Q_DECL_OVERRIDE;
+    bool isEmbedded(const QPlatformWindow *parentWindow) const Q_DECL_OVERRIDE;
+    QPoint mapToGlobal(const QPoint &pos) const Q_DECL_OVERRIDE;
+    QPoint mapFromGlobal(const QPoint &pos) const Q_DECL_OVERRIDE;
 
-    void setWindowTitle(const QString &title);
-    void setWindowIcon(const QIcon &icon);
-    void raise();
-    void lower();
-    void propagateSizeHints();
+    void setWindowTitle(const QString &title) Q_DECL_OVERRIDE;
+    void setWindowIcon(const QIcon &icon) Q_DECL_OVERRIDE;
+    void raise() Q_DECL_OVERRIDE;
+    void lower() Q_DECL_OVERRIDE;
+    void propagateSizeHints() Q_DECL_OVERRIDE;
 
-    void requestActivateWindow();
+    void requestActivateWindow() Q_DECL_OVERRIDE;
 
-    bool setKeyboardGrabEnabled(bool grab);
-    bool setMouseGrabEnabled(bool grab);
+    bool setKeyboardGrabEnabled(bool grab) Q_DECL_OVERRIDE;
+    bool setMouseGrabEnabled(bool grab) Q_DECL_OVERRIDE;
 
     void setCursor(xcb_cursor_t cursor);
 
-    QSurfaceFormat format() const;
+    QSurfaceFormat format() const Q_DECL_OVERRIDE;
 
-    void windowEvent(QEvent *event);
+    void windowEvent(QEvent *event) Q_DECL_OVERRIDE;
 
-    bool startSystemResize(const QPoint &pos, Qt::Corner corner);
+    bool startSystemResize(const QPoint &pos, Qt::Corner corner) Q_DECL_OVERRIDE;
 
-    void setOpacity(qreal level);
-    void setMask(const QRegion &region);
+    void setOpacity(qreal level) Q_DECL_OVERRIDE;
+    void setMask(const QRegion &region) Q_DECL_OVERRIDE;
 
-    void setAlertState(bool enabled);
-    bool isAlertState() const { return m_alertState; }
+    void setAlertState(bool enabled) Q_DECL_OVERRIDE;
+    bool isAlertState() const Q_DECL_OVERRIDE { return m_alertState; }
 
     xcb_window_t xcb_window() const { return m_window; }
     uint depth() const { return m_depth; }
@@ -152,7 +152,7 @@ public:
     void postSyncWindowRequest();
     void clearSyncWindowRequest() { m_pendingSyncRequest = 0; }
 
-    qreal devicePixelRatio() const;
+    qreal devicePixelRatio() const Q_DECL_OVERRIDE;
 
 public Q_SLOTS:
     void updateSyncRequestCounter();

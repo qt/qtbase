@@ -60,8 +60,8 @@ public:
 class Q_CORE_EXPORT QUnhandledException : public QException
 {
 public:
-    void raise() const;
-    QUnhandledException *clone() const;
+    void raise() const Q_DECL_OVERRIDE;
+    QUnhandledException *clone() const Q_DECL_OVERRIDE;
 };
 
 namespace QtPrivate {

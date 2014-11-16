@@ -63,8 +63,8 @@ public:
     QMdiSubWindow(QWidget *parent = 0, Qt::WindowFlags flags = 0);
     ~QMdiSubWindow();
 
-    QSize sizeHint() const;
-    QSize minimumSizeHint() const;
+    QSize sizeHint() const Q_DECL_OVERRIDE;
+    QSize minimumSizeHint() const Q_DECL_OVERRIDE;
 
     void setWidget(QWidget *widget);
     QWidget *widget() const;
@@ -101,28 +101,28 @@ public Q_SLOTS:
     void showShaded();
 
 protected:
-    bool eventFilter(QObject *object, QEvent *event);
-    bool event(QEvent *event);
-    void showEvent(QShowEvent *showEvent);
-    void hideEvent(QHideEvent *hideEvent);
-    void changeEvent(QEvent *changeEvent);
-    void closeEvent(QCloseEvent *closeEvent);
-    void leaveEvent(QEvent *leaveEvent);
-    void resizeEvent(QResizeEvent *resizeEvent);
-    void timerEvent(QTimerEvent *timerEvent);
-    void moveEvent(QMoveEvent *moveEvent);
-    void paintEvent(QPaintEvent *paintEvent);
-    void mousePressEvent(QMouseEvent *mouseEvent);
-    void mouseDoubleClickEvent(QMouseEvent *mouseEvent);
-    void mouseReleaseEvent(QMouseEvent *mouseEvent);
-    void mouseMoveEvent(QMouseEvent *mouseEvent);
-    void keyPressEvent(QKeyEvent *keyEvent);
+    bool eventFilter(QObject *object, QEvent *event) Q_DECL_OVERRIDE;
+    bool event(QEvent *event) Q_DECL_OVERRIDE;
+    void showEvent(QShowEvent *showEvent) Q_DECL_OVERRIDE;
+    void hideEvent(QHideEvent *hideEvent) Q_DECL_OVERRIDE;
+    void changeEvent(QEvent *changeEvent) Q_DECL_OVERRIDE;
+    void closeEvent(QCloseEvent *closeEvent) Q_DECL_OVERRIDE;
+    void leaveEvent(QEvent *leaveEvent) Q_DECL_OVERRIDE;
+    void resizeEvent(QResizeEvent *resizeEvent) Q_DECL_OVERRIDE;
+    void timerEvent(QTimerEvent *timerEvent) Q_DECL_OVERRIDE;
+    void moveEvent(QMoveEvent *moveEvent) Q_DECL_OVERRIDE;
+    void paintEvent(QPaintEvent *paintEvent) Q_DECL_OVERRIDE;
+    void mousePressEvent(QMouseEvent *mouseEvent) Q_DECL_OVERRIDE;
+    void mouseDoubleClickEvent(QMouseEvent *mouseEvent) Q_DECL_OVERRIDE;
+    void mouseReleaseEvent(QMouseEvent *mouseEvent) Q_DECL_OVERRIDE;
+    void mouseMoveEvent(QMouseEvent *mouseEvent) Q_DECL_OVERRIDE;
+    void keyPressEvent(QKeyEvent *keyEvent) Q_DECL_OVERRIDE;
 #ifndef QT_NO_CONTEXTMENU
-    void contextMenuEvent(QContextMenuEvent *contextMenuEvent);
+    void contextMenuEvent(QContextMenuEvent *contextMenuEvent) Q_DECL_OVERRIDE;
 #endif
-    void focusInEvent(QFocusEvent *focusInEvent);
-    void focusOutEvent(QFocusEvent *focusOutEvent);
-    void childEvent(QChildEvent *childEvent);
+    void focusInEvent(QFocusEvent *focusInEvent) Q_DECL_OVERRIDE;
+    void focusOutEvent(QFocusEvent *focusOutEvent) Q_DECL_OVERRIDE;
+    void childEvent(QChildEvent *childEvent) Q_DECL_OVERRIDE;
 
 private:
     Q_DISABLE_COPY(QMdiSubWindow)

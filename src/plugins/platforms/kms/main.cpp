@@ -41,7 +41,7 @@ class QKmsIntegrationPlugin : public QPlatformIntegrationPlugin
     Q_OBJECT
     Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QPA.QPlatformIntegrationFactoryInterface.5.2" FILE "kms.json")
 public:
-    QPlatformIntegration *create(const QString&, const QStringList&);
+    QPlatformIntegration *create(const QString&, const QStringList&) Q_DECL_OVERRIDE;
 };
 
 QPlatformIntegration *QKmsIntegrationPlugin::create(const QString& system, const QStringList& paramList)

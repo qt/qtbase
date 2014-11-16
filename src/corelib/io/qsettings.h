@@ -177,7 +177,7 @@ public:
 
 protected:
 #ifndef QT_NO_QOBJECT
-    bool event(QEvent *event);
+    bool event(QEvent *event) Q_DECL_OVERRIDE;
 #endif
 
 private:

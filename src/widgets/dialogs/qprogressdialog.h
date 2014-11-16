@@ -77,7 +77,7 @@ public:
 
     int value() const;
 
-    QSize sizeHint() const;
+    QSize sizeHint() const Q_DECL_OVERRIDE;
 
     QString labelText() const;
     int minimumDuration() const;
@@ -111,10 +111,10 @@ Q_SIGNALS:
     void canceled();
 
 protected:
-    void resizeEvent(QResizeEvent *event);
-    void closeEvent(QCloseEvent *event);
-    void changeEvent(QEvent *event);
-    void showEvent(QShowEvent *event);
+    void resizeEvent(QResizeEvent *event) Q_DECL_OVERRIDE;
+    void closeEvent(QCloseEvent *event) Q_DECL_OVERRIDE;
+    void changeEvent(QEvent *event) Q_DECL_OVERRIDE;
+    void showEvent(QShowEvent *event) Q_DECL_OVERRIDE;
 
 protected Q_SLOTS:
     void forceShow();

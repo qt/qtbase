@@ -176,7 +176,7 @@ public:
     void print(QPagedPaintDevice *printer) const;
 
     int blockCount() const;
-    QVariant inputMethodQuery(Qt::InputMethodQuery property) const;
+    QVariant inputMethodQuery(Qt::InputMethodQuery property) const Q_DECL_OVERRIDE;
     Q_INVOKABLE QVariant inputMethodQuery(Qt::InputMethodQuery query, QVariant argument) const;
 
 public Q_SLOTS:
@@ -218,43 +218,43 @@ Q_SIGNALS:
     void modificationChanged(bool);
 
 protected:
-    virtual bool event(QEvent *e);
-    virtual void timerEvent(QTimerEvent *e);
-    virtual void keyPressEvent(QKeyEvent *e);
-    virtual void keyReleaseEvent(QKeyEvent *e);
-    virtual void resizeEvent(QResizeEvent *e);
-    virtual void paintEvent(QPaintEvent *e);
-    virtual void mousePressEvent(QMouseEvent *e);
-    virtual void mouseMoveEvent(QMouseEvent *e);
-    virtual void mouseReleaseEvent(QMouseEvent *e);
-    virtual void mouseDoubleClickEvent(QMouseEvent *e);
-    virtual bool focusNextPrevChild(bool next);
+    virtual bool event(QEvent *e) Q_DECL_OVERRIDE;
+    virtual void timerEvent(QTimerEvent *e) Q_DECL_OVERRIDE;
+    virtual void keyPressEvent(QKeyEvent *e) Q_DECL_OVERRIDE;
+    virtual void keyReleaseEvent(QKeyEvent *e) Q_DECL_OVERRIDE;
+    virtual void resizeEvent(QResizeEvent *e) Q_DECL_OVERRIDE;
+    virtual void paintEvent(QPaintEvent *e) Q_DECL_OVERRIDE;
+    virtual void mousePressEvent(QMouseEvent *e) Q_DECL_OVERRIDE;
+    virtual void mouseMoveEvent(QMouseEvent *e) Q_DECL_OVERRIDE;
+    virtual void mouseReleaseEvent(QMouseEvent *e) Q_DECL_OVERRIDE;
+    virtual void mouseDoubleClickEvent(QMouseEvent *e) Q_DECL_OVERRIDE;
+    virtual bool focusNextPrevChild(bool next) Q_DECL_OVERRIDE;
 #ifndef QT_NO_CONTEXTMENU
-    virtual void contextMenuEvent(QContextMenuEvent *e);
+    virtual void contextMenuEvent(QContextMenuEvent *e) Q_DECL_OVERRIDE;
 #endif
 #ifndef QT_NO_DRAGANDDROP
-    virtual void dragEnterEvent(QDragEnterEvent *e);
-    virtual void dragLeaveEvent(QDragLeaveEvent *e);
-    virtual void dragMoveEvent(QDragMoveEvent *e);
-    virtual void dropEvent(QDropEvent *e);
+    virtual void dragEnterEvent(QDragEnterEvent *e) Q_DECL_OVERRIDE;
+    virtual void dragLeaveEvent(QDragLeaveEvent *e) Q_DECL_OVERRIDE;
+    virtual void dragMoveEvent(QDragMoveEvent *e) Q_DECL_OVERRIDE;
+    virtual void dropEvent(QDropEvent *e) Q_DECL_OVERRIDE;
 #endif
-    virtual void focusInEvent(QFocusEvent *e);
-    virtual void focusOutEvent(QFocusEvent *e);
-    virtual void showEvent(QShowEvent *);
-    virtual void changeEvent(QEvent *e);
+    virtual void focusInEvent(QFocusEvent *e) Q_DECL_OVERRIDE;
+    virtual void focusOutEvent(QFocusEvent *e) Q_DECL_OVERRIDE;
+    virtual void showEvent(QShowEvent *) Q_DECL_OVERRIDE;
+    virtual void changeEvent(QEvent *e) Q_DECL_OVERRIDE;
 #ifndef QT_NO_WHEELEVENT
-    virtual void wheelEvent(QWheelEvent *e);
+    virtual void wheelEvent(QWheelEvent *e) Q_DECL_OVERRIDE;
 #endif
 
     virtual QMimeData *createMimeDataFromSelection() const;
     virtual bool canInsertFromMimeData(const QMimeData *source) const;
     virtual void insertFromMimeData(const QMimeData *source);
 
-    virtual void inputMethodEvent(QInputMethodEvent *);
+    virtual void inputMethodEvent(QInputMethodEvent *) Q_DECL_OVERRIDE;
 
     QPlainTextEdit(QPlainTextEditPrivate &dd, QWidget *parent);
 
-    virtual void scrollContentsBy(int dx, int dy);
+    virtual void scrollContentsBy(int dx, int dy) Q_DECL_OVERRIDE;
     virtual void doSetTextCursor(const QTextCursor &cursor);
 
     QTextBlock firstVisibleBlock() const;
@@ -287,14 +287,14 @@ public:
     QPlainTextDocumentLayout(QTextDocument *document);
     ~QPlainTextDocumentLayout();
 
-    void draw(QPainter *, const PaintContext &);
-    int hitTest(const QPointF &, Qt::HitTestAccuracy ) const;
+    void draw(QPainter *, const PaintContext &) Q_DECL_OVERRIDE;
+    int hitTest(const QPointF &, Qt::HitTestAccuracy ) const Q_DECL_OVERRIDE;
 
-    int pageCount() const;
-    QSizeF documentSize() const;
+    int pageCount() const Q_DECL_OVERRIDE;
+    QSizeF documentSize() const Q_DECL_OVERRIDE;
 
-    QRectF frameBoundingRect(QTextFrame *) const;
-    QRectF blockBoundingRect(const QTextBlock &block) const;
+    QRectF frameBoundingRect(QTextFrame *) const Q_DECL_OVERRIDE;
+    QRectF blockBoundingRect(const QTextBlock &block) const Q_DECL_OVERRIDE;
 
     void ensureBlockLayout(const QTextBlock &block) const;
 
@@ -304,7 +304,7 @@ public:
     void requestUpdate();
 
 protected:
-    void documentChanged(int from, int /*charsRemoved*/, int charsAdded);
+    void documentChanged(int from, int /*charsRemoved*/, int charsAdded) Q_DECL_OVERRIDE;
 
 
 private:

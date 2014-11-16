@@ -110,47 +110,47 @@ struct WriteInitialization : public TreeWalker
 //
 // widgets
 //
-    void acceptUI(DomUI *node);
-    void acceptWidget(DomWidget *node);
-    void acceptWidgetScripts(const DomScripts &, DomWidget *node, const  DomWidgets &childWidgets);
+    void acceptUI(DomUI *node) Q_DECL_OVERRIDE;
+    void acceptWidget(DomWidget *node) Q_DECL_OVERRIDE;
+    void acceptWidgetScripts(const DomScripts &, DomWidget *node, const  DomWidgets &childWidgets) Q_DECL_OVERRIDE;
 
-    void acceptLayout(DomLayout *node);
-    void acceptSpacer(DomSpacer *node);
-    void acceptLayoutItem(DomLayoutItem *node);
+    void acceptLayout(DomLayout *node) Q_DECL_OVERRIDE;
+    void acceptSpacer(DomSpacer *node) Q_DECL_OVERRIDE;
+    void acceptLayoutItem(DomLayoutItem *node) Q_DECL_OVERRIDE;
 
 //
 // actions
 //
-    void acceptActionGroup(DomActionGroup *node);
-    void acceptAction(DomAction *node);
-    void acceptActionRef(DomActionRef *node);
+    void acceptActionGroup(DomActionGroup *node) Q_DECL_OVERRIDE;
+    void acceptAction(DomAction *node) Q_DECL_OVERRIDE;
+    void acceptActionRef(DomActionRef *node) Q_DECL_OVERRIDE;
 
 //
 // tab stops
 //
-    void acceptTabStops(DomTabStops *tabStops);
+    void acceptTabStops(DomTabStops *tabStops) Q_DECL_OVERRIDE;
 
 //
 // custom widgets
 //
-    void acceptCustomWidgets(DomCustomWidgets *node);
-    void acceptCustomWidget(DomCustomWidget *node);
+    void acceptCustomWidgets(DomCustomWidgets *node) Q_DECL_OVERRIDE;
+    void acceptCustomWidget(DomCustomWidget *node) Q_DECL_OVERRIDE;
 
 //
 // layout defaults/functions
 //
-    void acceptLayoutDefault(DomLayoutDefault *node)   { m_LayoutDefaultHandler.acceptLayoutDefault(node); }
-    void acceptLayoutFunction(DomLayoutFunction *node) { m_LayoutDefaultHandler.acceptLayoutFunction(node); }
+    void acceptLayoutDefault(DomLayoutDefault *node) Q_DECL_OVERRIDE   { m_LayoutDefaultHandler.acceptLayoutDefault(node); }
+    void acceptLayoutFunction(DomLayoutFunction *node) Q_DECL_OVERRIDE { m_LayoutDefaultHandler.acceptLayoutFunction(node); }
 
 //
 // signal/slot connections
 //
-    void acceptConnection(DomConnection *connection);
+    void acceptConnection(DomConnection *connection) Q_DECL_OVERRIDE;
 
 //
 // images
 //
-    void acceptImage(DomImage *image);
+    void acceptImage(DomImage *image) Q_DECL_OVERRIDE;
 
     enum {
         Use43UiFile = 0,

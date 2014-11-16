@@ -140,10 +140,10 @@ public:
 
     bool isValid() const;
 
-    qint64 bytesAvailable() const;
-    qint64 bytesToWrite() const;
+    qint64 bytesAvailable() const Q_DECL_OVERRIDE;
+    qint64 bytesToWrite() const Q_DECL_OVERRIDE;
 
-    bool canReadLine() const;
+    bool canReadLine() const Q_DECL_OVERRIDE;
 
     quint16 localPort() const;
     QHostAddress localAddress() const;
@@ -168,15 +168,15 @@ public:
     SocketError error() const;
 
     // from QIODevice
-    void close();
-    bool isSequential() const;
-    bool atEnd() const;
+    void close() Q_DECL_OVERRIDE;
+    bool isSequential() const Q_DECL_OVERRIDE;
+    bool atEnd() const Q_DECL_OVERRIDE;
     bool flush();
 
     // for synchronous access
     virtual bool waitForConnected(int msecs = 30000);
-    bool waitForReadyRead(int msecs = 30000);
-    bool waitForBytesWritten(int msecs = 30000);
+    bool waitForReadyRead(int msecs = 30000) Q_DECL_OVERRIDE;
+    bool waitForBytesWritten(int msecs = 30000) Q_DECL_OVERRIDE;
     virtual bool waitForDisconnected(int msecs = 30000);
 
 #ifndef QT_NO_NETWORKPROXY
@@ -195,9 +195,9 @@ Q_SIGNALS:
 #endif
 
 protected:
-    qint64 readData(char *data, qint64 maxlen);
-    qint64 readLineData(char *data, qint64 maxlen);
-    qint64 writeData(const char *data, qint64 len);
+    qint64 readData(char *data, qint64 maxlen) Q_DECL_OVERRIDE;
+    qint64 readLineData(char *data, qint64 maxlen) Q_DECL_OVERRIDE;
+    qint64 writeData(const char *data, qint64 len) Q_DECL_OVERRIDE;
 
     void setSocketState(SocketState state);
     void setSocketError(SocketError socketError);

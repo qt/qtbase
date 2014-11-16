@@ -153,12 +153,12 @@ struct QGLFunctionsPrivateEx : public QGLFunctionsPrivate, public QOpenGLSharedR
         delete funcs;
     }
 
-    void invalidateResource()
+    void invalidateResource() Q_DECL_OVERRIDE
     {
         m_features = -1;
     }
 
-    void freeResource(QOpenGLContext *)
+    void freeResource(QOpenGLContext *) Q_DECL_OVERRIDE
     {
         // no gl resources to free
     }

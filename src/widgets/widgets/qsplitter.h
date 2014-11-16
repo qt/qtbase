@@ -77,8 +77,8 @@ public:
     bool opaqueResize() const;
     void refresh();
 
-    QSize sizeHint() const;
-    QSize minimumSizeHint() const;
+    QSize sizeHint() const Q_DECL_OVERRIDE;
+    QSize minimumSizeHint() const Q_DECL_OVERRIDE;
 
     QList<int> sizes() const;
     void setSizes(const QList<int> &list);
@@ -104,12 +104,12 @@ Q_SIGNALS:
 protected:
     virtual QSplitterHandle *createHandle();
 
-    void childEvent(QChildEvent *);
+    void childEvent(QChildEvent *) Q_DECL_OVERRIDE;
 
-    bool event(QEvent *);
-    void resizeEvent(QResizeEvent *);
+    bool event(QEvent *) Q_DECL_OVERRIDE;
+    void resizeEvent(QResizeEvent *) Q_DECL_OVERRIDE;
 
-    void changeEvent(QEvent *);
+    void changeEvent(QEvent *) Q_DECL_OVERRIDE;
     void moveSplitter(int pos, int index);
     void setRubberBand(int position);
     int closestLegalPosition(int, int);
@@ -138,15 +138,15 @@ public:
     bool opaqueResize() const;
     QSplitter *splitter() const;
 
-    QSize sizeHint() const;
+    QSize sizeHint() const Q_DECL_OVERRIDE;
 
 protected:
-    void paintEvent(QPaintEvent *);
-    void mouseMoveEvent(QMouseEvent *);
-    void mousePressEvent(QMouseEvent *);
-    void mouseReleaseEvent(QMouseEvent *);
-    void resizeEvent(QResizeEvent *);
-    bool event(QEvent *);
+    void paintEvent(QPaintEvent *) Q_DECL_OVERRIDE;
+    void mouseMoveEvent(QMouseEvent *) Q_DECL_OVERRIDE;
+    void mousePressEvent(QMouseEvent *) Q_DECL_OVERRIDE;
+    void mouseReleaseEvent(QMouseEvent *) Q_DECL_OVERRIDE;
+    void resizeEvent(QResizeEvent *) Q_DECL_OVERRIDE;
+    bool event(QEvent *) Q_DECL_OVERRIDE;
 
     void moveSplitter(int p);
     int closestLegalPosition(int p);

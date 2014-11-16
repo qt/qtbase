@@ -50,13 +50,13 @@ struct WriteDeclaration : public TreeWalker
 {
     WriteDeclaration(Uic *uic, bool activateScripts);
 
-    void acceptUI(DomUI *node);
-    void acceptWidget(DomWidget *node);
-    void acceptSpacer(DomSpacer *node);
-    void acceptLayout(DomLayout *node);
-    void acceptActionGroup(DomActionGroup *node);
-    void acceptAction(DomAction *node);
-    void acceptButtonGroup(const DomButtonGroup *buttonGroup);
+    void acceptUI(DomUI *node) Q_DECL_OVERRIDE;
+    void acceptWidget(DomWidget *node) Q_DECL_OVERRIDE;
+    void acceptSpacer(DomSpacer *node) Q_DECL_OVERRIDE;
+    void acceptLayout(DomLayout *node) Q_DECL_OVERRIDE;
+    void acceptActionGroup(DomActionGroup *node) Q_DECL_OVERRIDE;
+    void acceptAction(DomAction *node) Q_DECL_OVERRIDE;
+    void acceptButtonGroup(const DomButtonGroup *buttonGroup) Q_DECL_OVERRIDE;
 
 private:
     Uic *m_uic;

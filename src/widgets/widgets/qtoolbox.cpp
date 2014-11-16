@@ -65,12 +65,12 @@ public:
     inline void setSelected(bool b) { selected = b; update(); }
     inline void setIndex(int newIndex) { indexInPage = newIndex; }
 
-    QSize sizeHint() const;
-    QSize minimumSizeHint() const;
+    QSize sizeHint() const Q_DECL_OVERRIDE;
+    QSize minimumSizeHint() const Q_DECL_OVERRIDE;
 
 protected:
     void initStyleOption(QStyleOptionToolBox *opt) const;
-    void paintEvent(QPaintEvent *);
+    void paintEvent(QPaintEvent *) Q_DECL_OVERRIDE;
 
 private:
     bool selected;

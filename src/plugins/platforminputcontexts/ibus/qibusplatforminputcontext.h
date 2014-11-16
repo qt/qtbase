@@ -47,13 +47,13 @@ public:
     QIBusPlatformInputContext();
     ~QIBusPlatformInputContext();
 
-    bool isValid() const;
-    void setFocusObject(QObject *object);
+    bool isValid() const Q_DECL_OVERRIDE;
+    void setFocusObject(QObject *object) Q_DECL_OVERRIDE;
 
-    void invokeAction(QInputMethod::Action a, int x);
-    void reset();
-    void commit();
-    void update(Qt::InputMethodQueries);
+    void invokeAction(QInputMethod::Action a, int x) Q_DECL_OVERRIDE;
+    void reset() Q_DECL_OVERRIDE;
+    void commit() Q_DECL_OVERRIDE;
+    void update(Qt::InputMethodQueries) Q_DECL_OVERRIDE;
 
     Q_INVOKABLE bool x11FilterEvent(uint keyval, uint keycode, uint state, bool press);
 

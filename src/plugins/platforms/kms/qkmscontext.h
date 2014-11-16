@@ -48,14 +48,14 @@ class QKmsContext : public QPlatformOpenGLContext
 public:
     QKmsContext(QOpenGLContext *context, QKmsDevice *device);
 
-    bool makeCurrent(QPlatformSurface *surface);
-    void doneCurrent();
-    void swapBuffers(QPlatformSurface *surface);
-    void (*getProcAddress(const QByteArray &procName)) ();
+    bool makeCurrent(QPlatformSurface *surface) Q_DECL_OVERRIDE;
+    void doneCurrent() Q_DECL_OVERRIDE;
+    void swapBuffers(QPlatformSurface *surface) Q_DECL_OVERRIDE;
+    void (*getProcAddress(const QByteArray &procName)) () Q_DECL_OVERRIDE;
 
-    bool isValid() const;
+    bool isValid() const Q_DECL_OVERRIDE;
 
-    QSurfaceFormat format() const;
+    QSurfaceFormat format() const Q_DECL_OVERRIDE;
 
     EGLContext eglContext() const;
 

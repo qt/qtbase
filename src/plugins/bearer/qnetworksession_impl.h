@@ -71,31 +71,31 @@ public:
     //that the state is immediately updated (w/o actually opening
     //a session). Also this function should take care of
     //notification hooks to discover future state changes.
-    void syncStateWithInterface();
+    void syncStateWithInterface() Q_DECL_OVERRIDE;
 
 #ifndef QT_NO_NETWORKINTERFACE
-    QNetworkInterface currentInterface() const;
+    QNetworkInterface currentInterface() const Q_DECL_OVERRIDE;
 #endif
-    QVariant sessionProperty(const QString& key) const;
-    void setSessionProperty(const QString& key, const QVariant& value);
+    QVariant sessionProperty(const QString& key) const Q_DECL_OVERRIDE;
+    void setSessionProperty(const QString& key, const QVariant& value) Q_DECL_OVERRIDE;
 
-    void open();
-    void close();
-    void stop();
-    void migrate();
-    void accept();
-    void ignore();
-    void reject();
+    void open() Q_DECL_OVERRIDE;
+    void close() Q_DECL_OVERRIDE;
+    void stop() Q_DECL_OVERRIDE;
+    void migrate() Q_DECL_OVERRIDE;
+    void accept() Q_DECL_OVERRIDE;
+    void ignore() Q_DECL_OVERRIDE;
+    void reject() Q_DECL_OVERRIDE;
 
-    QString errorString() const; //must return translated string
-    QNetworkSession::SessionError error() const;
+    QString errorString() const Q_DECL_OVERRIDE; //must return translated string
+    QNetworkSession::SessionError error() const Q_DECL_OVERRIDE;
 
-    quint64 bytesWritten() const;
-    quint64 bytesReceived() const;
-    quint64 activeTime() const;
+    quint64 bytesWritten() const Q_DECL_OVERRIDE;
+    quint64 bytesReceived() const Q_DECL_OVERRIDE;
+    quint64 activeTime() const Q_DECL_OVERRIDE;
 
-    QNetworkSession::UsagePolicies usagePolicies() const;
-    void setUsagePolicies(QNetworkSession::UsagePolicies);
+    QNetworkSession::UsagePolicies usagePolicies() const Q_DECL_OVERRIDE;
+    void setUsagePolicies(QNetworkSession::UsagePolicies) Q_DECL_OVERRIDE;
 
 private Q_SLOTS:
     void networkConfigurationsChanged();

@@ -118,19 +118,19 @@ public:
     QWidget *labelForField(QLayout *field) const;
 
     // reimplemented from QLayout
-    void addItem(QLayoutItem *item);
-    QLayoutItem *itemAt(int index) const;
-    QLayoutItem *takeAt(int index);
+    void addItem(QLayoutItem *item) Q_DECL_OVERRIDE;
+    QLayoutItem *itemAt(int index) const Q_DECL_OVERRIDE;
+    QLayoutItem *takeAt(int index) Q_DECL_OVERRIDE;
 
-    void setGeometry(const QRect &rect);
-    QSize minimumSize() const;
-    QSize sizeHint() const;
-    void invalidate();
+    void setGeometry(const QRect &rect) Q_DECL_OVERRIDE;
+    QSize minimumSize() const Q_DECL_OVERRIDE;
+    QSize sizeHint() const Q_DECL_OVERRIDE;
+    void invalidate() Q_DECL_OVERRIDE;
 
-    bool hasHeightForWidth() const;
-    int heightForWidth(int width) const;
-    Qt::Orientations expandingDirections() const;
-    int count() const;
+    bool hasHeightForWidth() const Q_DECL_OVERRIDE;
+    int heightForWidth(int width) const Q_DECL_OVERRIDE;
+    Qt::Orientations expandingDirections() const Q_DECL_OVERRIDE;
+    int count() const Q_DECL_OVERRIDE;
 
     int rowCount() const;
 

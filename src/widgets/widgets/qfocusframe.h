@@ -53,10 +53,10 @@ public:
     QWidget *widget() const;
 
 protected:
-    bool event(QEvent *e);
+    bool event(QEvent *e) Q_DECL_OVERRIDE;
 
-    bool eventFilter(QObject *, QEvent *);
-    void paintEvent(QPaintEvent *);
+    bool eventFilter(QObject *, QEvent *) Q_DECL_OVERRIDE;
+    void paintEvent(QPaintEvent *) Q_DECL_OVERRIDE;
     void initStyleOption(QStyleOption *option) const;
 
 private:

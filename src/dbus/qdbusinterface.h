@@ -55,9 +55,9 @@ public:
                    QObject *parent = 0);
     ~QDBusInterface();
 
-    virtual const QMetaObject *metaObject() const;
-    virtual void *qt_metacast(const char *);
-    virtual int qt_metacall(QMetaObject::Call, int, void **);
+    virtual const QMetaObject *metaObject() const Q_DECL_OVERRIDE;
+    virtual void *qt_metacast(const char *) Q_DECL_OVERRIDE;
+    virtual int qt_metacall(QMetaObject::Call, int, void **) Q_DECL_OVERRIDE;
 
 private:
     Q_DECLARE_PRIVATE(QDBusInterface)

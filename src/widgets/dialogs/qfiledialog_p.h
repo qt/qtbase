@@ -243,7 +243,7 @@ public:
     // setVisible_sys returns true if it ends up showing a native
     // dialog. Returning false means that a non-native dialog must be
     // used instead.
-    bool canBeNativeDialog() const;
+    bool canBeNativeDialog() const Q_DECL_OVERRIDE;
     inline bool usingWidgets() const;
 
     void setDirectory_sys(const QUrl &directory);
@@ -273,9 +273,9 @@ public:
     ~QFileDialogPrivate();
 
 private:
-    virtual void initHelper(QPlatformDialogHelper *);
-    virtual void helperPrepareShow(QPlatformDialogHelper *);
-    virtual void helperDone(QDialog::DialogCode, QPlatformDialogHelper *);
+    virtual void initHelper(QPlatformDialogHelper *) Q_DECL_OVERRIDE;
+    virtual void helperPrepareShow(QPlatformDialogHelper *) Q_DECL_OVERRIDE;
+    virtual void helperDone(QDialog::DialogCode, QPlatformDialogHelper *) Q_DECL_OVERRIDE;
 
     Q_DISABLE_COPY(QFileDialogPrivate)
 };
@@ -285,7 +285,7 @@ class QFileDialogLineEdit : public QLineEdit
 public:
     QFileDialogLineEdit(QWidget *parent = 0) : QLineEdit(parent), d_ptr(0){}
     void setFileDialogPrivate(QFileDialogPrivate *d_pointer) {d_ptr = d_pointer; }
-    void keyPressEvent(QKeyEvent *e);
+    void keyPressEvent(QKeyEvent *e) Q_DECL_OVERRIDE;
     bool hideOnEsc;
 private:
     QFileDialogPrivate *d_ptr;
@@ -296,10 +296,10 @@ class QFileDialogComboBox : public QComboBox
 public:
     QFileDialogComboBox(QWidget *parent = 0) : QComboBox(parent), urlModel(0) {}
     void setFileDialogPrivate(QFileDialogPrivate *d_pointer);
-    void showPopup();
+    void showPopup() Q_DECL_OVERRIDE;
     void setHistory(const QStringList &paths);
     QStringList history() const { return m_history; }
-    void paintEvent(QPaintEvent *);
+    void paintEvent(QPaintEvent *) Q_DECL_OVERRIDE;
 
 private:
     QUrlModel *urlModel;
@@ -312,9 +312,9 @@ class QFileDialogListView : public QListView
 public:
     QFileDialogListView(QWidget *parent = 0);
     void setFileDialogPrivate(QFileDialogPrivate *d_pointer);
-    QSize sizeHint() const;
+    QSize sizeHint() const Q_DECL_OVERRIDE;
 protected:
-    void keyPressEvent(QKeyEvent *e);
+    void keyPressEvent(QKeyEvent *e) Q_DECL_OVERRIDE;
 private:
     QFileDialogPrivate *d_ptr;
 };
@@ -324,10 +324,10 @@ class QFileDialogTreeView : public QTreeView
 public:
     QFileDialogTreeView(QWidget *parent);
     void setFileDialogPrivate(QFileDialogPrivate *d_pointer);
-    QSize sizeHint() const;
+    QSize sizeHint() const Q_DECL_OVERRIDE;
 
 protected:
-    void keyPressEvent(QKeyEvent *e);
+    void keyPressEvent(QKeyEvent *e) Q_DECL_OVERRIDE;
 private:
     QFileDialogPrivate *d_ptr;
 };

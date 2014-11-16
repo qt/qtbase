@@ -86,19 +86,19 @@ public:
     FileError error() const;
     void unsetError();
 
-    virtual void close();
+    virtual void close() Q_DECL_OVERRIDE;
 
-    bool isSequential() const;
+    bool isSequential() const Q_DECL_OVERRIDE;
 
     int handle() const;
     virtual QString fileName() const;
 
-    qint64 pos() const;
-    bool seek(qint64 offset);
-    bool atEnd() const;
+    qint64 pos() const Q_DECL_OVERRIDE;
+    bool seek(qint64 offset) Q_DECL_OVERRIDE;
+    bool atEnd() const Q_DECL_OVERRIDE;
     bool flush();
 
-    qint64 size() const;
+    qint64 size() const Q_DECL_OVERRIDE;
 
     virtual bool resize(qint64 sz);
     virtual Permissions permissions() const;
@@ -122,9 +122,9 @@ protected:
     QFileDevice(QFileDevicePrivate &dd, QObject *parent = 0);
 #endif
 
-    qint64 readData(char *data, qint64 maxlen);
-    qint64 writeData(const char *data, qint64 len);
-    qint64 readLineData(char *data, qint64 maxlen);
+    qint64 readData(char *data, qint64 maxlen) Q_DECL_OVERRIDE;
+    qint64 writeData(const char *data, qint64 len) Q_DECL_OVERRIDE;
+    qint64 readLineData(char *data, qint64 maxlen) Q_DECL_OVERRIDE;
 
 private:
     Q_DISABLE_COPY(QFileDevice)

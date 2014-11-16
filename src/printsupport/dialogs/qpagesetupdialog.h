@@ -58,7 +58,7 @@ public:
 #if defined(Q_OS_MAC) || defined(Q_OS_WIN)
     virtual void setVisible(bool visible);
 #endif
-    virtual int exec();
+    virtual int exec() Q_DECL_OVERRIDE;
 
 #ifdef Q_NO_USING_KEYWORD
 #ifndef Q_QDOC
@@ -69,7 +69,7 @@ public:
 #endif
     void open(QObject *receiver, const char *member);
 
-    void done(int result);
+    void done(int result) Q_DECL_OVERRIDE;
 
     QPrinter *printer();
 };

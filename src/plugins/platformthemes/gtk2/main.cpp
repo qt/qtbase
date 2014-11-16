@@ -42,7 +42,7 @@ class QGtk2ThemePlugin : public QPlatformThemePlugin
    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QPA.QPlatformThemeFactoryInterface.5.1" FILE "gtk2.json")
 
 public:
-    QPlatformTheme *create(const QString &key, const QStringList &params);
+    QPlatformTheme *create(const QString &key, const QStringList &params) Q_DECL_OVERRIDE;
 };
 
 QPlatformTheme *QGtk2ThemePlugin::create(const QString &key, const QStringList &params)

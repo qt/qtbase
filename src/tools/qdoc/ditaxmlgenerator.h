@@ -290,11 +290,11 @@ public:
     DitaXmlGenerator();
     ~DitaXmlGenerator();
 
-    virtual void initializeGenerator(const Config& config);
-    virtual void terminateGenerator();
-    virtual QString format();
-    virtual bool canHandleFormat(const QString& format);
-    virtual void generateDocs();
+    virtual void initializeGenerator(const Config& config) Q_DECL_OVERRIDE;
+    virtual void terminateGenerator() Q_DECL_OVERRIDE;
+    virtual QString format() Q_DECL_OVERRIDE;
+    virtual bool canHandleFormat(const QString& format) Q_DECL_OVERRIDE;
+    virtual void generateDocs() Q_DECL_OVERRIDE;
 
     QString protectEnc(const QString& string);
     static QString protect(const QString& string, const QString& encoding = "ISO-8859-1");
@@ -304,12 +304,12 @@ public:
 protected:
     virtual int generateAtom(const Atom* atom,
                              const Node* relative,
-                             CodeMarker* marker);
-    virtual void generateClassLikeNode(InnerNode* inner, CodeMarker* marker);
-    virtual void generateQmlBasicTypePage(QmlBasicTypeNode* qbtn, CodeMarker* marker);
-    virtual void generateDocNode(DocNode* dn, CodeMarker* marker);
-    virtual void generateCollectionNode(CollectionNode* cn, CodeMarker* marker);
-    virtual QString fileExtension() const;
+                             CodeMarker* marker) Q_DECL_OVERRIDE;
+    virtual void generateClassLikeNode(InnerNode* inner, CodeMarker* marker) Q_DECL_OVERRIDE;
+    virtual void generateQmlBasicTypePage(QmlBasicTypeNode* qbtn, CodeMarker* marker) Q_DECL_OVERRIDE;
+    virtual void generateDocNode(DocNode* dn, CodeMarker* marker) Q_DECL_OVERRIDE;
+    virtual void generateCollectionNode(CollectionNode* cn, CodeMarker* marker) Q_DECL_OVERRIDE;
+    virtual QString fileExtension() const Q_DECL_OVERRIDE;
     virtual QString guidForNode(const Node* node);
     virtual QString linkForNode(const Node* node, const Node* relative);
 
@@ -394,8 +394,8 @@ private:
     void generateDetailedQmlMember(Node* node,
                                    const InnerNode* relative,
                                    CodeMarker* marker);
-    void generateQmlInherits(QmlClassNode* qcn, CodeMarker* marker);
-    void generateQmlInheritedBy(const QmlClassNode* qcn, CodeMarker* marker);
+    void generateQmlInherits(QmlClassNode* qcn, CodeMarker* marker) Q_DECL_OVERRIDE;
+    void generateQmlInheritedBy(const QmlClassNode* qcn, CodeMarker* marker) Q_DECL_OVERRIDE;
     void generateQmlInstantiates(QmlClassNode* qcn, CodeMarker* marker);
     void generateInstantiatedBy(ClassNode* cn, CodeMarker* marker);
     void generateQmlModuleDef(QmlClassNode* qcn);
@@ -420,7 +420,7 @@ private:
     QString getAutoLink(const Atom *atom, const Node *relative, const Node** node);
 
     QString registerRef(const QString& ref);
-    virtual QString fileBase(const Node *node) const;
+    virtual QString fileBase(const Node *node) const Q_DECL_OVERRIDE;
     QString fileName(const Node *node);
     static int hOffset(const Node *node);
     static bool isThreeColumnEnumValueTable(const Atom *atom);
@@ -434,9 +434,9 @@ private:
     QString lookupGuid(QString text);
     QString lookupGuid(const QString& fileName, const QString& text);
     GuidMap* lookupGuidMap(const QString& fileName);
-    virtual void beginSubPage(const InnerNode* node, const QString& fileName);
-    virtual void endSubPage();
-    virtual void generateInnerNode(InnerNode* node);
+    virtual void beginSubPage(const InnerNode* node, const QString& fileName) Q_DECL_OVERRIDE;
+    virtual void endSubPage() Q_DECL_OVERRIDE;
+    virtual void generateInnerNode(InnerNode* node) Q_DECL_OVERRIDE;
     QXmlStreamWriter& xmlWriter();
     void writeApiDesc(const Node* node, CodeMarker* marker, const QString& title);
     void addLink(const QString& href, const QStringRef& text, DitaTag t = DT_xref);

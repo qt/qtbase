@@ -907,10 +907,10 @@ public:
     inline QRect deviceRect() const
     { return m_widget->window()->rect(); }
 
-    QRectF boundingRect(Qt::CoordinateSystem system) const;
-    void draw(QPainter *p);
+    QRectF boundingRect(Qt::CoordinateSystem system) const Q_DECL_OVERRIDE;
+    void draw(QPainter *p) Q_DECL_OVERRIDE;
     QPixmap pixmap(Qt::CoordinateSystem system, QPoint *offset,
-                   QGraphicsEffect::PixmapPadMode mode) const;
+                   QGraphicsEffect::PixmapPadMode mode) const Q_DECL_OVERRIDE;
 
     QWidget *m_widget;
     QWidgetPaintContext *context;

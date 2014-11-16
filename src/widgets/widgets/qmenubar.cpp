@@ -69,8 +69,8 @@ class QMenuBarExtension : public QToolButton
 public:
     explicit QMenuBarExtension(QWidget *parent);
 
-    QSize sizeHint() const;
-    void paintEvent(QPaintEvent *);
+    QSize sizeHint() const Q_DECL_OVERRIDE;
+    void paintEvent(QPaintEvent *) Q_DECL_OVERRIDE;
 };
 
 QMenuBarExtension::QMenuBarExtension(QWidget *parent)

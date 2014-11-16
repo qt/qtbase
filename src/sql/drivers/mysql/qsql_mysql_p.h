@@ -75,26 +75,26 @@ public:
     explicit QMYSQLResult(const QMYSQLDriver* db);
     ~QMYSQLResult();
 
-    QVariant handle() const;
+    QVariant handle() const Q_DECL_OVERRIDE;
 protected:
     void cleanup();
-    bool fetch(int i);
-    bool fetchNext();
-    bool fetchLast();
-    bool fetchFirst();
-    QVariant data(int field);
-    bool isNull(int field);
-    bool reset (const QString& query);
-    int size();
-    int numRowsAffected();
-    QVariant lastInsertId() const;
-    QSqlRecord record() const;
-    void virtual_hook(int id, void *data);
-    bool nextResult();
+    bool fetch(int i) Q_DECL_OVERRIDE;
+    bool fetchNext() Q_DECL_OVERRIDE;
+    bool fetchLast() Q_DECL_OVERRIDE;
+    bool fetchFirst() Q_DECL_OVERRIDE;
+    QVariant data(int field) Q_DECL_OVERRIDE;
+    bool isNull(int field) Q_DECL_OVERRIDE;
+    bool reset (const QString& query) Q_DECL_OVERRIDE;
+    int size() Q_DECL_OVERRIDE;
+    int numRowsAffected() Q_DECL_OVERRIDE;
+    QVariant lastInsertId() const Q_DECL_OVERRIDE;
+    QSqlRecord record() const Q_DECL_OVERRIDE;
+    void virtual_hook(int id, void *data) Q_DECL_OVERRIDE;
+    bool nextResult() Q_DECL_OVERRIDE;
 
 #if MYSQL_VERSION_ID >= 40108
-    bool prepare(const QString& stmt);
-    bool exec();
+    bool prepare(const QString& stmt) Q_DECL_OVERRIDE;
+    bool exec() Q_DECL_OVERRIDE;
 #endif
 private:
     QMYSQLResultPrivate* d;
@@ -109,29 +109,29 @@ public:
     explicit QMYSQLDriver(QObject *parent=0);
     explicit QMYSQLDriver(MYSQL *con, QObject * parent=0);
     ~QMYSQLDriver();
-    bool hasFeature(DriverFeature f) const;
+    bool hasFeature(DriverFeature f) const Q_DECL_OVERRIDE;
     bool open(const QString & db,
                const QString & user,
                const QString & password,
                const QString & host,
                int port,
-               const QString& connOpts);
-    void close();
-    QSqlResult *createResult() const;
-    QStringList tables(QSql::TableType) const;
-    QSqlIndex primaryIndex(const QString& tablename) const;
-    QSqlRecord record(const QString& tablename) const;
+               const QString& connOpts) Q_DECL_OVERRIDE;
+    void close() Q_DECL_OVERRIDE;
+    QSqlResult *createResult() const Q_DECL_OVERRIDE;
+    QStringList tables(QSql::TableType) const Q_DECL_OVERRIDE;
+    QSqlIndex primaryIndex(const QString& tablename) const Q_DECL_OVERRIDE;
+    QSqlRecord record(const QString& tablename) const Q_DECL_OVERRIDE;
     QString formatValue(const QSqlField &field,
-                                     bool trimStrings) const;
-    QVariant handle() const;
-    QString escapeIdentifier(const QString &identifier, IdentifierType type) const;
+                                     bool trimStrings) const Q_DECL_OVERRIDE;
+    QVariant handle() const Q_DECL_OVERRIDE;
+    QString escapeIdentifier(const QString &identifier, IdentifierType type) const Q_DECL_OVERRIDE;
 
-    bool isIdentifierEscaped(const QString &identifier, IdentifierType type) const;
+    bool isIdentifierEscaped(const QString &identifier, IdentifierType type) const Q_DECL_OVERRIDE;
 
 protected:
-    bool beginTransaction();
-    bool commitTransaction();
-    bool rollbackTransaction();
+    bool beginTransaction() Q_DECL_OVERRIDE;
+    bool commitTransaction() Q_DECL_OVERRIDE;
+    bool rollbackTransaction() Q_DECL_OVERRIDE;
 private:
     void init();
 };

@@ -72,7 +72,7 @@ public:
     ZoomMode zoomMode() const;
     int currentPage() const;
     int pageCount() const;
-    void setVisible(bool visible);
+    void setVisible(bool visible) Q_DECL_OVERRIDE;
 
 public Q_SLOTS:
     void print();

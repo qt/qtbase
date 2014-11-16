@@ -54,16 +54,16 @@ class QBenchmarkPerfEventsMeasurer : public QBenchmarkMeasurerBase
 public:
     QBenchmarkPerfEventsMeasurer();
     ~QBenchmarkPerfEventsMeasurer();
-    virtual void init();
-    virtual void start();
-    virtual qint64 checkpoint();
-    virtual qint64 stop();
-    virtual bool isMeasurementAccepted(qint64 measurement);
-    virtual int adjustIterationCount(int suggestion);
-    virtual int adjustMedianCount(int suggestion);
-    virtual bool repeatCount() { return 1; }
-    virtual bool needsWarmupIteration() { return true; }
-    virtual QTest::QBenchmarkMetric metricType();
+    virtual void init() Q_DECL_OVERRIDE;
+    virtual void start() Q_DECL_OVERRIDE;
+    virtual qint64 checkpoint() Q_DECL_OVERRIDE;
+    virtual qint64 stop() Q_DECL_OVERRIDE;
+    virtual bool isMeasurementAccepted(qint64 measurement) Q_DECL_OVERRIDE;
+    virtual int adjustIterationCount(int suggestion) Q_DECL_OVERRIDE;
+    virtual int adjustMedianCount(int suggestion) Q_DECL_OVERRIDE;
+    virtual bool repeatCount() Q_DECL_OVERRIDE { return 1; }
+    virtual bool needsWarmupIteration() Q_DECL_OVERRIDE { return true; }
+    virtual QTest::QBenchmarkMetric metricType() Q_DECL_OVERRIDE;
 
     static bool isAvailable();
     static QTest::QBenchmarkMetric metricForEvent(quint32 type, quint64 event_id);

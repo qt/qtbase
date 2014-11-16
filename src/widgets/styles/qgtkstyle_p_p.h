@@ -228,7 +228,7 @@ public:
     {}
 private:
     QGtkStylePrivate* stylePrivate;
-    bool eventFilter(QObject *obj, QEvent *e);
+    bool eventFilter(QObject *obj, QEvent *e) Q_DECL_OVERRIDE;
 };
 
 typedef enum {

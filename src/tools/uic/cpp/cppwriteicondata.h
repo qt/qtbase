@@ -52,9 +52,9 @@ class WriteIconData : public TreeWalker
 public:
     WriteIconData(Uic *uic);
 
-    void acceptUI(DomUI *node);
-    void acceptImages(DomImages *images);
-    void acceptImage(DomImage *image);
+    void acceptUI(DomUI *node) Q_DECL_OVERRIDE;
+    void acceptImages(DomImages *images) Q_DECL_OVERRIDE;
+    void acceptImage(DomImage *image) Q_DECL_OVERRIDE;
 
     static void writeImage(QTextStream &output, const QString &indent,
                            bool limitXPM_LineLength, const DomImage *image);

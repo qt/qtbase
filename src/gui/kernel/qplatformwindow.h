@@ -72,7 +72,7 @@ public:
 
     QPlatformScreen *screen() const;
 
-    virtual QSurfaceFormat format() const;
+    virtual QSurfaceFormat format() const Q_DECL_OVERRIDE;
 
     virtual void setGeometry(const QRect &rect);
     virtual QRect geometry() const;

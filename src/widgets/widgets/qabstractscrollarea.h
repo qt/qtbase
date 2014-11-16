@@ -84,9 +84,9 @@ public:
     void setViewport(QWidget *widget);
     QSize maximumViewportSize() const;
 
-    QSize minimumSizeHint() const;
+    QSize minimumSizeHint() const Q_DECL_OVERRIDE;
 
-    QSize sizeHint() const;
+    QSize sizeHint() const Q_DECL_OVERRIDE;
 
     virtual void setupViewport(QWidget *viewport);
 
@@ -98,30 +98,30 @@ protected:
     void setViewportMargins(int left, int top, int right, int bottom);
     void setViewportMargins(const QMargins &margins);
 
-    bool eventFilter(QObject *, QEvent *);
-    bool event(QEvent *);
+    bool eventFilter(QObject *, QEvent *) Q_DECL_OVERRIDE;
+    bool event(QEvent *) Q_DECL_OVERRIDE;
     virtual bool viewportEvent(QEvent *);
 
-    void resizeEvent(QResizeEvent *);
-    void paintEvent(QPaintEvent *);
-    void mousePressEvent(QMouseEvent *);
-    void mouseReleaseEvent(QMouseEvent *);
-    void mouseDoubleClickEvent(QMouseEvent *);
-    void mouseMoveEvent(QMouseEvent *);
+    void resizeEvent(QResizeEvent *) Q_DECL_OVERRIDE;
+    void paintEvent(QPaintEvent *) Q_DECL_OVERRIDE;
+    void mousePressEvent(QMouseEvent *) Q_DECL_OVERRIDE;
+    void mouseReleaseEvent(QMouseEvent *) Q_DECL_OVERRIDE;
+    void mouseDoubleClickEvent(QMouseEvent *) Q_DECL_OVERRIDE;
+    void mouseMoveEvent(QMouseEvent *) Q_DECL_OVERRIDE;
 #ifndef QT_NO_WHEELEVENT
-    void wheelEvent(QWheelEvent *);
+    void wheelEvent(QWheelEvent *) Q_DECL_OVERRIDE;
 #endif
 #ifndef QT_NO_CONTEXTMENU
-    void contextMenuEvent(QContextMenuEvent *);
+    void contextMenuEvent(QContextMenuEvent *) Q_DECL_OVERRIDE;
 #endif
 #ifndef QT_NO_DRAGANDDROP
-    void dragEnterEvent(QDragEnterEvent *);
-    void dragMoveEvent(QDragMoveEvent *);
-    void dragLeaveEvent(QDragLeaveEvent *);
-    void dropEvent(QDropEvent *);
+    void dragEnterEvent(QDragEnterEvent *) Q_DECL_OVERRIDE;
+    void dragMoveEvent(QDragMoveEvent *) Q_DECL_OVERRIDE;
+    void dragLeaveEvent(QDragLeaveEvent *) Q_DECL_OVERRIDE;
+    void dropEvent(QDropEvent *) Q_DECL_OVERRIDE;
 #endif
 
-    void keyPressEvent(QKeyEvent *);
+    void keyPressEvent(QKeyEvent *) Q_DECL_OVERRIDE;
 
     virtual void scrollContentsBy(int dx, int dy);
 

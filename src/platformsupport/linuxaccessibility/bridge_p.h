@@ -66,7 +66,7 @@ public:
 
     virtual ~QSpiAccessibleBridge();
 
-    virtual void notifyAccessibilityUpdate(QAccessibleEvent *event);
+    virtual void notifyAccessibilityUpdate(QAccessibleEvent *event) Q_DECL_OVERRIDE;
     QDBusConnection dBusConnection() const;
 
 public Q_SLOTS:

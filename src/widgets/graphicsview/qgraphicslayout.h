@@ -52,12 +52,12 @@ public:
     ~QGraphicsLayout();
 
     void setContentsMargins(qreal left, qreal top, qreal right, qreal bottom);
-    void getContentsMargins(qreal *left, qreal *top, qreal *right, qreal *bottom) const;
+    void getContentsMargins(qreal *left, qreal *top, qreal *right, qreal *bottom) const Q_DECL_OVERRIDE;
 
     void activate();
     bool isActivated() const;
     virtual void invalidate();
-    virtual void updateGeometry();
+    virtual void updateGeometry() Q_DECL_OVERRIDE;
 
     virtual void widgetEvent(QEvent *e);
 

@@ -73,14 +73,14 @@ Q_SIGNALS:
     void messageChanged(const QString &text);
 
 protected:
-    void showEvent(QShowEvent *);
-    void paintEvent(QPaintEvent *);
-    void resizeEvent(QResizeEvent *);
+    void showEvent(QShowEvent *) Q_DECL_OVERRIDE;
+    void paintEvent(QPaintEvent *) Q_DECL_OVERRIDE;
+    void resizeEvent(QResizeEvent *) Q_DECL_OVERRIDE;
 
     // ### Qt 6: consider making reformat() and hideOrShow() private
     void reformat();
     void hideOrShow();
-    bool event(QEvent *);
+    bool event(QEvent *) Q_DECL_OVERRIDE;
 
 private:
     Q_DISABLE_COPY(QStatusBar)

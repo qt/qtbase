@@ -63,22 +63,22 @@ public:
     QGifHandler();
     ~QGifHandler();
 
-    bool canRead() const;
-    bool read(QImage *image);
-    bool write(const QImage &image);
+    bool canRead() const Q_DECL_OVERRIDE;
+    bool read(QImage *image) Q_DECL_OVERRIDE;
+    bool write(const QImage &image) Q_DECL_OVERRIDE;
 
-    QByteArray name() const;
+    QByteArray name() const Q_DECL_OVERRIDE;
 
     static bool canRead(QIODevice *device);
 
-    QVariant option(ImageOption option) const;
-    void setOption(ImageOption option, const QVariant &value);
-    bool supportsOption(ImageOption option) const;
+    QVariant option(ImageOption option) const Q_DECL_OVERRIDE;
+    void setOption(ImageOption option, const QVariant &value) Q_DECL_OVERRIDE;
+    bool supportsOption(ImageOption option) const Q_DECL_OVERRIDE;
 
-    int imageCount() const;
-    int loopCount() const;
-    int nextImageDelay() const;
-    int currentImageNumber() const;
+    int imageCount() const Q_DECL_OVERRIDE;
+    int loopCount() const Q_DECL_OVERRIDE;
+    int nextImageDelay() const Q_DECL_OVERRIDE;
+    int currentImageNumber() const Q_DECL_OVERRIDE;
 
 private:
     bool imageIsComing() const;

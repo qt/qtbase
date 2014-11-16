@@ -109,7 +109,7 @@ public:
         , requestName(name)
         , nameserver(nameserver)
     { }
-    void run();
+    void run() Q_DECL_OVERRIDE;
 
 signals:
     void finished(const QDnsLookupReply &reply);

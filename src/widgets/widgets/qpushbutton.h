@@ -57,8 +57,8 @@ public:
     QPushButton(const QIcon& icon, const QString &text, QWidget *parent=0);
     ~QPushButton();
 
-    QSize sizeHint() const;
-    QSize minimumSizeHint() const;
+    QSize sizeHint() const Q_DECL_OVERRIDE;
+    QSize minimumSizeHint() const Q_DECL_OVERRIDE;
 
     bool autoDefault() const;
     void setAutoDefault(bool);
@@ -79,14 +79,14 @@ public Q_SLOTS:
 #endif
 
 protected:
-    bool event(QEvent *e);
+    bool event(QEvent *e) Q_DECL_OVERRIDE;
 #ifdef Q_WS_MAC
     bool hitButton(const QPoint &pos) const;
 #endif // Q_WS_MAC
-    void paintEvent(QPaintEvent *);
-    void keyPressEvent(QKeyEvent *);
-    void focusInEvent(QFocusEvent *);
-    void focusOutEvent(QFocusEvent *);
+    void paintEvent(QPaintEvent *) Q_DECL_OVERRIDE;
+    void keyPressEvent(QKeyEvent *) Q_DECL_OVERRIDE;
+    void focusInEvent(QFocusEvent *) Q_DECL_OVERRIDE;
+    void focusOutEvent(QFocusEvent *) Q_DECL_OVERRIDE;
     void initStyleOption(QStyleOptionButton *option) const;
     QPushButton(QPushButtonPrivate &dd, QWidget* parent = 0);
 

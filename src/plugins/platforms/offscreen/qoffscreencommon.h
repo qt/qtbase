@@ -51,12 +51,12 @@ class QOffscreenScreen : public QPlatformScreen
 public:
     QOffscreenScreen();
 
-    QRect geometry() const { return m_geometry; }
-    int depth() const { return 32; }
-    QImage::Format format() const { return QImage::Format_RGB32; }
-    QPlatformCursor *cursor() const { return m_cursor.data(); }
+    QRect geometry() const Q_DECL_OVERRIDE { return m_geometry; }
+    int depth() const Q_DECL_OVERRIDE { return 32; }
+    QImage::Format format() const Q_DECL_OVERRIDE { return QImage::Format_RGB32; }
+    QPlatformCursor *cursor() const Q_DECL_OVERRIDE { return m_cursor.data(); }
 
-    QPixmap grabWindow(WId window, int x, int y, int width, int height) const;
+    QPixmap grabWindow(WId window, int x, int y, int width, int height) const Q_DECL_OVERRIDE;
 
     static QPlatformWindow *windowContainingCursor;
 
@@ -69,8 +69,8 @@ public:
 class QOffscreenDrag : public QPlatformDrag
 {
 public:
-    QMimeData *platformDropData() { return 0; }
-    Qt::DropAction drag(QDrag *) { return Qt::IgnoreAction; }
+    QMimeData *platformDropData() Q_DECL_OVERRIDE { return 0; }
+    Qt::DropAction drag(QDrag *) Q_DECL_OVERRIDE { return Qt::IgnoreAction; }
 };
 #endif
 
@@ -80,10 +80,10 @@ public:
     QOffscreenBackingStore(QWindow *window);
     ~QOffscreenBackingStore();
 
-    QPaintDevice *paintDevice();
-    void flush(QWindow *window, const QRegion &region, const QPoint &offset);
-    void resize(const QSize &size, const QRegion &staticContents);
-    bool scroll(const QRegion &area, int dx, int dy);
+    QPaintDevice *paintDevice() Q_DECL_OVERRIDE;
+    void flush(QWindow *window, const QRegion &region, const QPoint &offset) Q_DECL_OVERRIDE;
+    void resize(const QSize &size, const QRegion &staticContents) Q_DECL_OVERRIDE;
+    bool scroll(const QRegion &area, int dx, int dy) Q_DECL_OVERRIDE;
 
     QPixmap grabWindow(WId window, const QRect &rect) const;
 

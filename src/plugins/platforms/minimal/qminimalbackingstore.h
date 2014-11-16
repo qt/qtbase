@@ -46,9 +46,9 @@ public:
     QMinimalBackingStore(QWindow *window);
     ~QMinimalBackingStore();
 
-    QPaintDevice *paintDevice();
-    void flush(QWindow *window, const QRegion &region, const QPoint &offset);
-    void resize(const QSize &size, const QRegion &staticContents);
+    QPaintDevice *paintDevice() Q_DECL_OVERRIDE;
+    void flush(QWindow *window, const QRegion &region, const QPoint &offset) Q_DECL_OVERRIDE;
+    void resize(const QSize &size, const QRegion &staticContents) Q_DECL_OVERRIDE;
 
 private:
     QImage mImage;

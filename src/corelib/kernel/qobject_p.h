@@ -414,9 +414,9 @@ struct Q_CORE_EXPORT QDynamicMetaObjectData
 
 struct Q_CORE_EXPORT QAbstractDynamicMetaObject : public QDynamicMetaObjectData, public QMetaObject
 {
-    virtual QAbstractDynamicMetaObject *toDynamicMetaObject(QObject *) { return this; }
+    virtual QAbstractDynamicMetaObject *toDynamicMetaObject(QObject *) Q_DECL_OVERRIDE { return this; }
     virtual int createProperty(const char *, const char *) { return -1; }
-    virtual int metaCall(QObject *, QMetaObject::Call c, int _id, void **a)
+    virtual int metaCall(QObject *, QMetaObject::Call c, int _id, void **a) Q_DECL_OVERRIDE
     { return metaCall(c, _id, a); }
     virtual int metaCall(QMetaObject::Call, int _id, void **) { return _id; } // Compat overload
 };

@@ -47,13 +47,13 @@ public:
     QMinimalEglBackingStore(QWindow *window);
     ~QMinimalEglBackingStore();
 
-    QPaintDevice *paintDevice();
+    QPaintDevice *paintDevice() Q_DECL_OVERRIDE;
 
-    void beginPaint(const QRegion &);
-    void endPaint();
+    void beginPaint(const QRegion &) Q_DECL_OVERRIDE;
+    void endPaint() Q_DECL_OVERRIDE;
 
-    void flush(QWindow *window, const QRegion &region, const QPoint &offset);
-    void resize(const QSize &size, const QRegion &staticContents);
+    void flush(QWindow *window, const QRegion &region, const QPoint &offset) Q_DECL_OVERRIDE;
+    void resize(const QSize &size, const QRegion &staticContents) Q_DECL_OVERRIDE;
 
 private:
     QOpenGLContext *m_context;

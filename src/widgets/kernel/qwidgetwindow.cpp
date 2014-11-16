@@ -63,7 +63,7 @@ class QWidgetWindowPrivate : public QWindowPrivate
 {
     Q_DECLARE_PUBLIC(QWidgetWindow)
 public:
-    QWindow *eventReceiver() {
+    QWindow *eventReceiver() Q_DECL_OVERRIDE {
         Q_Q(QWidgetWindow);
         QWindow *w = q;
         while (w->parent() && qobject_cast<QWidgetWindow *>(w) && qobject_cast<QWidgetWindow *>(w->parent())) {
@@ -72,7 +72,7 @@ public:
         return w;
     }
 
-    void clearFocusObject()
+    void clearFocusObject() Q_DECL_OVERRIDE
     {
         Q_Q(QWidgetWindow);
         QWidget *widget = q->widget();

@@ -55,14 +55,14 @@ class QFontEngineFT;
 class QFontconfigDatabase : public QBasicFontDatabase
 {
 public:
-    void populateFontDatabase();
-    QFontEngineMulti *fontEngineMulti(QFontEngine *fontEngine, QChar::Script script);
-    QFontEngine *fontEngine(const QFontDef &fontDef, void *handle);
-    QFontEngine *fontEngine(const QByteArray &fontData, qreal pixelSize, QFont::HintingPreference hintingPreference);
-    QStringList fallbacksForFamily(const QString &family, QFont::Style style, QFont::StyleHint styleHint, QChar::Script script) const;
-    QStringList addApplicationFont(const QByteArray &fontData, const QString &fileName);
-    QString resolveFontFamilyAlias(const QString &family) const;
-    QFont defaultFont() const;
+    void populateFontDatabase() Q_DECL_OVERRIDE;
+    QFontEngineMulti *fontEngineMulti(QFontEngine *fontEngine, QChar::Script script) Q_DECL_OVERRIDE;
+    QFontEngine *fontEngine(const QFontDef &fontDef, void *handle) Q_DECL_OVERRIDE;
+    QFontEngine *fontEngine(const QByteArray &fontData, qreal pixelSize, QFont::HintingPreference hintingPreference) Q_DECL_OVERRIDE;
+    QStringList fallbacksForFamily(const QString &family, QFont::Style style, QFont::StyleHint styleHint, QChar::Script script) const Q_DECL_OVERRIDE;
+    QStringList addApplicationFont(const QByteArray &fontData, const QString &fileName) Q_DECL_OVERRIDE;
+    QString resolveFontFamilyAlias(const QString &family) const Q_DECL_OVERRIDE;
+    QFont defaultFont() const Q_DECL_OVERRIDE;
 
 private:
     void setupFontEngine(QFontEngineFT *engine, const QFontDef &fontDef) const;

@@ -79,7 +79,7 @@ Q_SIGNALS:
     void screenCountChanged(int);
 
 protected:
-    void resizeEvent(QResizeEvent *e);
+    void resizeEvent(QResizeEvent *e) Q_DECL_OVERRIDE;
 
 private:
     Q_DISABLE_COPY(QDesktopWidget)

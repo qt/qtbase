@@ -84,7 +84,7 @@ public:
         int row = QListView::currentIndex().row();
         return row < 0 ? QString() : model()->stringList().at(row);
     }
-    void currentChanged(const QModelIndex &current, const QModelIndex &previous) {
+    void currentChanged(const QModelIndex &current, const QModelIndex &previous) Q_DECL_OVERRIDE {
         QListView::currentChanged(current, previous);
         if (current.isValid())
             emit highlighted(current.row());

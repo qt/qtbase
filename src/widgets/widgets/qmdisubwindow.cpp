@@ -362,18 +362,18 @@ class ControlLabel : public QWidget
 public:
     ControlLabel(QMdiSubWindow *subWindow, QWidget *parent = 0);
 
-    QSize sizeHint() const;
+    QSize sizeHint() const Q_DECL_OVERRIDE;
 
 signals:
     void _q_clicked();
     void _q_doubleClicked();
 
 protected:
-    bool event(QEvent *event);
-    void paintEvent(QPaintEvent *paintEvent);
-    void mousePressEvent(QMouseEvent *mouseEvent);
-    void mouseDoubleClickEvent(QMouseEvent *mouseEvent);
-    void mouseReleaseEvent(QMouseEvent *mouseEvent);
+    bool event(QEvent *event) Q_DECL_OVERRIDE;
+    void paintEvent(QPaintEvent *paintEvent) Q_DECL_OVERRIDE;
+    void mousePressEvent(QMouseEvent *mouseEvent) Q_DECL_OVERRIDE;
+    void mouseDoubleClickEvent(QMouseEvent *mouseEvent) Q_DECL_OVERRIDE;
+    void mouseReleaseEvent(QMouseEvent *mouseEvent) Q_DECL_OVERRIDE;
 
 private:
     QPixmap label;
@@ -488,7 +488,7 @@ class ControllerWidget : public QWidget
     Q_OBJECT
 public:
     ControllerWidget(QMdiSubWindow *subWindow, QWidget *parent = 0);
-    QSize sizeHint() const;
+    QSize sizeHint() const Q_DECL_OVERRIDE;
     void setControlVisible(QMdiSubWindowPrivate::WindowStateAction action, bool visible);
     inline bool hasVisibleControls() const
     {
@@ -503,12 +503,12 @@ signals:
     void _q_close();
 
 protected:
-    void paintEvent(QPaintEvent *event);
-    void mousePressEvent(QMouseEvent *event);
-    void mouseReleaseEvent(QMouseEvent *event);
-    void mouseMoveEvent(QMouseEvent *event);
-    void leaveEvent(QEvent *event);
-    bool event(QEvent *event);
+    void paintEvent(QPaintEvent *event) Q_DECL_OVERRIDE;
+    void mousePressEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
+    void mouseReleaseEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
+    void mouseMoveEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
+    void leaveEvent(QEvent *event) Q_DECL_OVERRIDE;
+    bool event(QEvent *event) Q_DECL_OVERRIDE;
 
 private:
     QStyle::SubControl activeControl;

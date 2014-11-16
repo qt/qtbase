@@ -73,7 +73,7 @@ public:
         setMinimumWidth(previewWidget->minimumWidth());
     }
 
-    void resizeEvent(QResizeEvent * event){
+    void resizeEvent(QResizeEvent * event) Q_DECL_OVERRIDE{
         if (!previewWidget)
             return;
         previewWidget->resize(
@@ -89,36 +89,36 @@ public:
         QAbstractScrollArea::resizeEvent(event);
     }
 
-    QRect visualRect(const QModelIndex &) const
+    QRect visualRect(const QModelIndex &) const Q_DECL_OVERRIDE
     {
         return QRect();
     }
-    void scrollTo(const QModelIndex &, ScrollHint)
+    void scrollTo(const QModelIndex &, ScrollHint) Q_DECL_OVERRIDE
     {
     }
-    QModelIndex indexAt(const QPoint &) const
-    {
-        return QModelIndex();
-    }
-    QModelIndex moveCursor(CursorAction, Qt::KeyboardModifiers)
+    QModelIndex indexAt(const QPoint &) const Q_DECL_OVERRIDE
     {
         return QModelIndex();
     }
-    int horizontalOffset () const {
+    QModelIndex moveCursor(CursorAction, Qt::KeyboardModifiers) Q_DECL_OVERRIDE
+    {
+        return QModelIndex();
+    }
+    int horizontalOffset () const Q_DECL_OVERRIDE {
         return 0;
     }
-    int verticalOffset () const {
+    int verticalOffset () const Q_DECL_OVERRIDE {
         return 0;
     }
-    QRegion visualRegionForSelection(const QItemSelection &) const
+    QRegion visualRegionForSelection(const QItemSelection &) const Q_DECL_OVERRIDE
     {
         return QRegion();
     }
-    bool isIndexHidden(const QModelIndex &) const
+    bool isIndexHidden(const QModelIndex &) const Q_DECL_OVERRIDE
     {
         return false;
     }
-    void setSelection(const QRect &, QItemSelectionModel::SelectionFlags)
+    void setSelection(const QRect &, QItemSelectionModel::SelectionFlags) Q_DECL_OVERRIDE
     {
     }
 private:
@@ -146,7 +146,7 @@ public:
     void _q_gripMoved(int offset);
     void _q_changeCurrentColumn();
     void _q_clicked(const QModelIndex &index);
-    void _q_columnsInserted(const QModelIndex &parent, int start, int end);
+    void _q_columnsInserted(const QModelIndex &parent, int start, int end) Q_DECL_OVERRIDE;
 
     QList<QAbstractItemView*> columns;
     QVector<int> columnSizes; // used during init and corner moving
@@ -171,7 +171,7 @@ public:
 
     void paint(QPainter *painter,
                const QStyleOptionViewItem &option,
-               const QModelIndex &index) const;
+               const QModelIndex &index) const Q_DECL_OVERRIDE;
 };
 #endif // QT_NO_QCOLUMNVIEW
 

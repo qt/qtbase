@@ -63,7 +63,7 @@ public:
     Qt::Alignment alignment() const;
     void setAlignment(int alignment);
 
-    QSize minimumSizeHint() const;
+    QSize minimumSizeHint() const Q_DECL_OVERRIDE;
 
     bool isFlat() const;
     void setFlat(bool flat);
@@ -79,15 +79,15 @@ Q_SIGNALS:
     void toggled(bool);
 
 protected:
-    bool event(QEvent *event);
-    void childEvent(QChildEvent *event);
-    void resizeEvent(QResizeEvent *event);
-    void paintEvent(QPaintEvent *event);
-    void focusInEvent(QFocusEvent *event);
-    void changeEvent(QEvent *event);
-    void mousePressEvent(QMouseEvent *event);
-    void mouseMoveEvent(QMouseEvent *event);
-    void mouseReleaseEvent(QMouseEvent *event);
+    bool event(QEvent *event) Q_DECL_OVERRIDE;
+    void childEvent(QChildEvent *event) Q_DECL_OVERRIDE;
+    void resizeEvent(QResizeEvent *event) Q_DECL_OVERRIDE;
+    void paintEvent(QPaintEvent *event) Q_DECL_OVERRIDE;
+    void focusInEvent(QFocusEvent *event) Q_DECL_OVERRIDE;
+    void changeEvent(QEvent *event) Q_DECL_OVERRIDE;
+    void mousePressEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
+    void mouseMoveEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
+    void mouseReleaseEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
     void initStyleOption(QStyleOptionGroupBox *option) const;
 
 

@@ -108,10 +108,10 @@ public:
     QApplicationPrivate(int &argc, char **argv, int flags);
     ~QApplicationPrivate();
 
-    virtual void notifyLayoutDirectionChange();
-    virtual void notifyActiveWindowChange(QWindow *);
+    virtual void notifyLayoutDirectionChange() Q_DECL_OVERRIDE;
+    virtual void notifyActiveWindowChange(QWindow *) Q_DECL_OVERRIDE;
 
-    virtual bool shouldQuit();
+    virtual bool shouldQuit() Q_DECL_OVERRIDE;
     bool tryCloseAllWindows() Q_DECL_OVERRIDE;
 
 #if defined(Q_WS_X11)
@@ -127,7 +127,7 @@ public:
     static QString desktopStyleKey();
 
 
-    void createEventDispatcher();
+    void createEventDispatcher() Q_DECL_OVERRIDE;
     static void dispatchEnterLeave(QWidget *enter, QWidget *leave, const QPointF &globalPosF);
 
     void notifyWindowIconChanged() Q_DECL_OVERRIDE;
@@ -189,9 +189,9 @@ public:
     static QPalette *set_pal;
 
 protected:
-    void notifyThemeChanged();
+    void notifyThemeChanged() Q_DECL_OVERRIDE;
 #ifndef QT_NO_DRAGANDDROP
-    void notifyDragStarted(const QDrag *);
+    void notifyDragStarted(const QDrag *) Q_DECL_OVERRIDE;
 #endif // QT_NO_DRAGANDDROP
 
 public:
@@ -290,7 +290,7 @@ public:
                                        ulong timestamp);
     static void translateTouchCancel(QTouchDevice *device, ulong timestamp);
 
-    QPixmap applyQIconStyleHelper(QIcon::Mode mode, const QPixmap& base) const;
+    QPixmap applyQIconStyleHelper(QIcon::Mode mode, const QPixmap& base) const Q_DECL_OVERRIDE;
 private:
     static QApplicationPrivate *self;
     static bool tryCloseAllWidgetWindows(QWindowList *processedWindows);

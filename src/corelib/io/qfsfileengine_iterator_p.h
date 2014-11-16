@@ -62,11 +62,11 @@ public:
     QFSFileEngineIterator(QDir::Filters filters, const QStringList &filterNames);
     ~QFSFileEngineIterator();
 
-    QString next();
-    bool hasNext() const;
+    QString next() Q_DECL_OVERRIDE;
+    bool hasNext() const Q_DECL_OVERRIDE;
 
-    QString currentFileName() const;
-    QFileInfo currentFileInfo() const;
+    QString currentFileName() const Q_DECL_OVERRIDE;
+    QFileInfo currentFileInfo() const Q_DECL_OVERRIDE;
 
 private:
     void advance() const;

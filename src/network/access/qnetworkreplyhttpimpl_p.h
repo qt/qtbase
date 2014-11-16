@@ -78,14 +78,14 @@ public:
     QNetworkReplyHttpImpl(QNetworkAccessManager* const, const QNetworkRequest&, QNetworkAccessManager::Operation&, QIODevice* outgoingData);
     virtual ~QNetworkReplyHttpImpl();
 
-    void close();
-    void abort();
-    qint64 bytesAvailable() const;
-    bool isSequential () const;
-    qint64 size() const;
-    qint64 readData(char*, qint64);
-    void setReadBufferSize(qint64 size);
-    bool canReadLine () const;
+    void close() Q_DECL_OVERRIDE;
+    void abort() Q_DECL_OVERRIDE;
+    qint64 bytesAvailable() const Q_DECL_OVERRIDE;
+    bool isSequential () const Q_DECL_OVERRIDE;
+    qint64 size() const Q_DECL_OVERRIDE;
+    qint64 readData(char*, qint64) Q_DECL_OVERRIDE;
+    void setReadBufferSize(qint64 size) Q_DECL_OVERRIDE;
+    bool canReadLine () const Q_DECL_OVERRIDE;
 
     Q_DECLARE_PRIVATE(QNetworkReplyHttpImpl)
     Q_PRIVATE_SLOT(d_func(), void _q_startOperation())
@@ -129,10 +129,10 @@ public:
 
 #ifndef QT_NO_SSL
 protected:
-    void ignoreSslErrors();
-    void ignoreSslErrorsImplementation(const QList<QSslError> &errors);
-    void setSslConfigurationImplementation(const QSslConfiguration &configuration);
-    void sslConfigurationImplementation(QSslConfiguration &configuration) const;
+    void ignoreSslErrors() Q_DECL_OVERRIDE;
+    void ignoreSslErrorsImplementation(const QList<QSslError> &errors) Q_DECL_OVERRIDE;
+    void setSslConfigurationImplementation(const QSslConfiguration &configuration) Q_DECL_OVERRIDE;
+    void sslConfigurationImplementation(QSslConfiguration &configuration) const Q_DECL_OVERRIDE;
 #endif
 
 signals:

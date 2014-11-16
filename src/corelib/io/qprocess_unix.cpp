@@ -165,7 +165,7 @@ public:
     QProcessManager();
     ~QProcessManager();
 
-    void run();
+    void run() Q_DECL_OVERRIDE;
     void catchDeadChildren();
     void add(pid_t pid, QProcess *process);
     void remove(QProcess *process);

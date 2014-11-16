@@ -146,7 +146,7 @@ class QHostInfoRunnable : public QRunnable
 {
 public:
     QHostInfoRunnable (QString hn, int i);
-    void run();
+    void run() Q_DECL_OVERRIDE;
 
     QString toBeLookedUp;
     int id;
@@ -177,7 +177,7 @@ public:
     QHostInfoLookupManager();
     ~QHostInfoLookupManager();
 
-    void clear();
+    void clear() Q_DECL_OVERRIDE;
     void work();
 
     // called from QHostInfo

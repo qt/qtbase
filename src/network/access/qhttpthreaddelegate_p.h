@@ -202,7 +202,7 @@ public:
     {
     }
 
-    const char* readPointer(qint64 maximumLength, qint64 &len)
+    const char* readPointer(qint64 maximumLength, qint64 &len) Q_DECL_OVERRIDE
     {
         if (m_amount > 0) {
             len = m_amount;
@@ -222,7 +222,7 @@ public:
         return 0;
     }
 
-    bool advanceReadPointer(qint64 a)
+    bool advanceReadPointer(qint64 a) Q_DECL_OVERRIDE
     {
         if (m_data == 0)
             return false;
@@ -238,7 +238,7 @@ public:
         return true;
     }
 
-    bool atEnd()
+    bool atEnd() Q_DECL_OVERRIDE
     {
         if (m_amount > 0)
             return false;
@@ -246,7 +246,7 @@ public:
             return m_atEnd;
     }
 
-    bool reset()
+    bool reset() Q_DECL_OVERRIDE
     {
         m_amount = 0;
         m_data = 0;
@@ -257,7 +257,7 @@ public:
         return b;
     }
 
-    qint64 size()
+    qint64 size() Q_DECL_OVERRIDE
     {
         return m_size;
     }

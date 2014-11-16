@@ -102,37 +102,37 @@ public:
     QGL2PaintEngineEx();
     ~QGL2PaintEngineEx();
 
-    bool begin(QPaintDevice *device);
+    bool begin(QPaintDevice *device) Q_DECL_OVERRIDE;
     void ensureActive();
-    bool end();
+    bool end() Q_DECL_OVERRIDE;
 
-    virtual void clipEnabledChanged();
-    virtual void penChanged();
-    virtual void brushChanged();
-    virtual void brushOriginChanged();
-    virtual void opacityChanged();
-    virtual void compositionModeChanged();
-    virtual void renderHintsChanged();
-    virtual void transformChanged();
+    virtual void clipEnabledChanged() Q_DECL_OVERRIDE;
+    virtual void penChanged() Q_DECL_OVERRIDE;
+    virtual void brushChanged() Q_DECL_OVERRIDE;
+    virtual void brushOriginChanged() Q_DECL_OVERRIDE;
+    virtual void opacityChanged() Q_DECL_OVERRIDE;
+    virtual void compositionModeChanged() Q_DECL_OVERRIDE;
+    virtual void renderHintsChanged() Q_DECL_OVERRIDE;
+    virtual void transformChanged() Q_DECL_OVERRIDE;
 
-    virtual void drawPixmap(const QRectF &r, const QPixmap &pm, const QRectF &sr);
+    virtual void drawPixmap(const QRectF &r, const QPixmap &pm, const QRectF &sr) Q_DECL_OVERRIDE;
     virtual void drawPixmapFragments(const QPainter::PixmapFragment *fragments, int fragmentCount, const QPixmap &pixmap,
-                                     QPainter::PixmapFragmentHints hints);
+                                     QPainter::PixmapFragmentHints hints) Q_DECL_OVERRIDE;
     virtual void drawImage(const QRectF &r, const QImage &pm, const QRectF &sr,
-                           Qt::ImageConversionFlags flags = Qt::AutoColor);
-    virtual void drawTextItem(const QPointF &p, const QTextItem &textItem);
-    virtual void fill(const QVectorPath &path, const QBrush &brush);
-    virtual void stroke(const QVectorPath &path, const QPen &pen);
-    virtual void clip(const QVectorPath &path, Qt::ClipOperation op);
+                           Qt::ImageConversionFlags flags = Qt::AutoColor) Q_DECL_OVERRIDE;
+    virtual void drawTextItem(const QPointF &p, const QTextItem &textItem) Q_DECL_OVERRIDE;
+    virtual void fill(const QVectorPath &path, const QBrush &brush) Q_DECL_OVERRIDE;
+    virtual void stroke(const QVectorPath &path, const QPen &pen) Q_DECL_OVERRIDE;
+    virtual void clip(const QVectorPath &path, Qt::ClipOperation op) Q_DECL_OVERRIDE;
 
-    virtual void drawStaticTextItem(QStaticTextItem *textItem);
+    virtual void drawStaticTextItem(QStaticTextItem *textItem) Q_DECL_OVERRIDE;
 
     bool drawTexture(const QRectF &r, GLuint textureId, const QSize &size, const QRectF &sr);
 
-    Type type() const { return OpenGL2; }
+    Type type() const Q_DECL_OVERRIDE { return OpenGL2; }
 
-    virtual void setState(QPainterState *s);
-    virtual QPainterState *createState(QPainterState *orig) const;
+    virtual void setState(QPainterState *s) Q_DECL_OVERRIDE;
+    virtual QPainterState *createState(QPainterState *orig) const Q_DECL_OVERRIDE;
     inline QGL2PaintEngineState *state() {
         return static_cast<QGL2PaintEngineState *>(QPaintEngineEx::state());
     }
@@ -140,16 +140,16 @@ public:
         return static_cast<const QGL2PaintEngineState *>(QPaintEngineEx::state());
     }
 
-    void beginNativePainting();
-    void endNativePainting();
+    void beginNativePainting() Q_DECL_OVERRIDE;
+    void endNativePainting() Q_DECL_OVERRIDE;
 
     void invalidateState();
 
     void setRenderTextActive(bool);
 
     bool isNativePaintingActive() const;
-    bool requiresPretransformedGlyphPositions(QFontEngine *, const QTransform &) const { return false; }
-    bool shouldDrawCachedGlyphs(QFontEngine *, const QTransform &) const;
+    bool requiresPretransformedGlyphPositions(QFontEngine *, const QTransform &) const Q_DECL_OVERRIDE { return false; }
+    bool shouldDrawCachedGlyphs(QFontEngine *, const QTransform &) const Q_DECL_OVERRIDE;
 
     void setTranslateZ(GLfloat z);
 
@@ -238,7 +238,7 @@ public:
     void updateClipScissorTest();
     void setScissor(const QRect &rect);
     void regenerateClip();
-    void systemStateChanged();
+    void systemStateChanged() Q_DECL_OVERRIDE;
 
 
     static QGLEngineShaderManager* shaderManagerForEngine(QGL2PaintEngineEx *engine) { return engine->d_func()->shaderManager; }

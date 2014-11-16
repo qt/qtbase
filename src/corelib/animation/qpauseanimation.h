@@ -52,12 +52,12 @@ public:
     QPauseAnimation(int msecs, QObject *parent = 0);
     ~QPauseAnimation();
 
-    int duration() const;
+    int duration() const Q_DECL_OVERRIDE;
     void setDuration(int msecs);
 
 protected:
-    bool event(QEvent *e);
-    void updateCurrentTime(int);
+    bool event(QEvent *e) Q_DECL_OVERRIDE;
+    void updateCurrentTime(int) Q_DECL_OVERRIDE;
 
 private:
     Q_DISABLE_COPY(QPauseAnimation)

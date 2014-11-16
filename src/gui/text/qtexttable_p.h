@@ -58,8 +58,8 @@ public:
     ~QTextTablePrivate();
 
     static QTextTable *createTable(QTextDocumentPrivate *, int pos, int rows, int cols, const QTextTableFormat &tableFormat);
-    void fragmentAdded(QChar type, uint fragment);
-    void fragmentRemoved(QChar type, uint fragment);
+    void fragmentAdded(QChar type, uint fragment) Q_DECL_OVERRIDE;
+    void fragmentRemoved(QChar type, uint fragment) Q_DECL_OVERRIDE;
 
     void update() const;
 

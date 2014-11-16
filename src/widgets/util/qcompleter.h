@@ -136,8 +136,8 @@ public:
     virtual QStringList splitPath(const QString &path) const;
 
 protected:
-    bool eventFilter(QObject *o, QEvent *e);
-    bool event(QEvent *);
+    bool eventFilter(QObject *o, QEvent *e) Q_DECL_OVERRIDE;
+    bool event(QEvent *) Q_DECL_OVERRIDE;
 
 Q_SIGNALS:
     void activated(const QString &text);

@@ -253,8 +253,8 @@ private:
     QString getNameOwnerNoCache(const QString &service);
 
 protected:
-    void customEvent(QEvent *e);
-    void timerEvent(QTimerEvent *e);
+    void customEvent(QEvent *e) Q_DECL_OVERRIDE;
+    void timerEvent(QTimerEvent *e) Q_DECL_OVERRIDE;
 
 public slots:
     // public slots

@@ -148,7 +148,7 @@ Q_SIGNALS:
     );
 
 protected:
-    void timerEvent(QTimerEvent *);
+    void timerEvent(QTimerEvent *) Q_DECL_OVERRIDE;
 
 private:
     Q_DISABLE_COPY(QTimer)

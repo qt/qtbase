@@ -46,9 +46,9 @@ public:
         EglContext
     };
 
-    void *nativeResourceForWindow(const QByteArray &resourceString, QWindow *window);
+    void *nativeResourceForWindow(const QByteArray &resourceString, QWindow *window) Q_DECL_OVERRIDE;
 
-    NativeResourceForContextFunction nativeResourceFunctionForContext(const QByteArray &resource);
+    NativeResourceForContextFunction nativeResourceFunctionForContext(const QByteArray &resource) Q_DECL_OVERRIDE;
 
     void *eglDisplayForWindow(QWindow *window);
     void *eglContextForWindow(QWindow *window);

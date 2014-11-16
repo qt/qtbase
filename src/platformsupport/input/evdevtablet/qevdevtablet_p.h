@@ -73,7 +73,7 @@ class QEvdevTabletHandlerThread : public QThread
 public:
     explicit QEvdevTabletHandlerThread(const QString &spec, QObject *parent = 0);
     ~QEvdevTabletHandlerThread();
-    void run();
+    void run() Q_DECL_OVERRIDE;
     QEvdevTabletHandler *handler() { return m_handler; }
 
 private:

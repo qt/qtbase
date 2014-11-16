@@ -489,7 +489,7 @@ struct BezierEase : public QEasingCurveFunction
         }
     }
 
-    QEasingCurveFunction *copy() const
+    QEasingCurveFunction *copy() const Q_DECL_OVERRIDE
     {
         BezierEase *rv = new BezierEase();
         rv->_t = _t;
@@ -525,7 +525,7 @@ struct BezierEase : public QEasingCurveFunction
         return newT;
     }
 
-    qreal value(qreal x)
+    qreal value(qreal x) Q_DECL_OVERRIDE
     {
         Q_ASSERT(_bezierCurves.count() % 3 == 0);
 
@@ -819,7 +819,7 @@ struct TCBEase : public BezierEase
         : BezierEase(QEasingCurve::TCBSpline)
     { }
 
-    qreal value(qreal x)
+    qreal value(qreal x) Q_DECL_OVERRIDE
     {
         Q_ASSERT(_bezierCurves.count() % 3 == 0);
 
@@ -839,7 +839,7 @@ struct ElasticEase : public QEasingCurveFunction
         : QEasingCurveFunction(type, qreal(0.3), qreal(1.0))
     { }
 
-    QEasingCurveFunction *copy() const
+    QEasingCurveFunction *copy() const Q_DECL_OVERRIDE
     {
         ElasticEase *rv = new ElasticEase(_t);
         rv->_p = _p;
@@ -849,7 +849,7 @@ struct ElasticEase : public QEasingCurveFunction
         return rv;
     }
 
-    qreal value(qreal t)
+    qreal value(qreal t) Q_DECL_OVERRIDE
     {
         qreal p = (_p < 0) ? qreal(0.3) : _p;
         qreal a = (_a < 0) ? qreal(1.0) : _a;
@@ -874,7 +874,7 @@ struct BounceEase : public QEasingCurveFunction
         : QEasingCurveFunction(type, qreal(0.3), qreal(1.0))
     { }
 
-    QEasingCurveFunction *copy() const
+    QEasingCurveFunction *copy() const Q_DECL_OVERRIDE
     {
         BounceEase *rv = new BounceEase(_t);
         rv->_a = _a;
@@ -883,7 +883,7 @@ struct BounceEase : public QEasingCurveFunction
         return rv;
     }
 
-    qreal value(qreal t)
+    qreal value(qreal t) Q_DECL_OVERRIDE
     {
         qreal a = (_a < 0) ? qreal(1.0) : _a;
         switch(_t) {
@@ -907,7 +907,7 @@ struct BackEase : public QEasingCurveFunction
         : QEasingCurveFunction(type, qreal(0.3), qreal(1.0), qreal(1.70158))
     { }
 
-    QEasingCurveFunction *copy() const
+    QEasingCurveFunction *copy() const Q_DECL_OVERRIDE
     {
         BackEase *rv = new BackEase(_t);
         rv->_o = _o;
@@ -916,7 +916,7 @@ struct BackEase : public QEasingCurveFunction
         return rv;
     }
 
-    qreal value(qreal t)
+    qreal value(qreal t) Q_DECL_OVERRIDE
     {
         qreal o = (_o < 0) ? qreal(1.70158) : _o;
         switch(_t) {

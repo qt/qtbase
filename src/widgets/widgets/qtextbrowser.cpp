@@ -129,7 +129,7 @@ public:
     void setSource(const QUrl &url);
 
     // re-imlemented from QTextEditPrivate
-    virtual QUrl resolveUrl(const QUrl &url) const;
+    virtual QUrl resolveUrl(const QUrl &url) const Q_DECL_OVERRIDE;
     inline QUrl resolveUrl(const QString &url) const
     { return resolveUrl(QUrl(url)); }
 

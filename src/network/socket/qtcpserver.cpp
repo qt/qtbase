@@ -134,8 +134,8 @@ public:
 #endif
 
     // from QAbstractSocketEngineReceiver
-    void readNotification();
-    void closeNotification() { readNotification(); }
+    void readNotification() Q_DECL_OVERRIDE;
+    void closeNotification() Q_DECL_OVERRIDE { readNotification(); }
     inline void writeNotification() {}
     inline void exceptionNotification() {}
     inline void connectionNotification() {}

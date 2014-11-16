@@ -152,10 +152,10 @@ public:
 #endif
     void open(QObject *receiver, const char *member);
 
-    QSize minimumSizeHint() const;
-    QSize sizeHint() const;
+    QSize minimumSizeHint() const Q_DECL_OVERRIDE;
+    QSize sizeHint() const Q_DECL_OVERRIDE;
 
-    void setVisible(bool visible);
+    void setVisible(bool visible) Q_DECL_OVERRIDE;
 
     static QString getText(QWidget *parent, const QString &title, const QString &label,
                            QLineEdit::EchoMode echo = QLineEdit::Normal,
@@ -195,7 +195,7 @@ Q_SIGNALS:
     void doubleValueSelected(double value);
 
 public:
-    void done(int result);
+    void done(int result) Q_DECL_OVERRIDE;
 
 private:
     Q_DISABLE_COPY(QInputDialog)

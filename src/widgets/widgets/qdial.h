@@ -66,23 +66,23 @@ public:
     qreal notchTarget() const;
     bool notchesVisible() const;
 
-    QSize sizeHint() const;
-    QSize minimumSizeHint() const;
+    QSize sizeHint() const Q_DECL_OVERRIDE;
+    QSize minimumSizeHint() const Q_DECL_OVERRIDE;
 
 public Q_SLOTS:
     void setNotchesVisible(bool visible);
     void setWrapping(bool on);
 
 protected:
-    bool event(QEvent *e);
-    void resizeEvent(QResizeEvent *re);
-    void paintEvent(QPaintEvent *pe);
+    bool event(QEvent *e) Q_DECL_OVERRIDE;
+    void resizeEvent(QResizeEvent *re) Q_DECL_OVERRIDE;
+    void paintEvent(QPaintEvent *pe) Q_DECL_OVERRIDE;
 
-    void mousePressEvent(QMouseEvent *me);
-    void mouseReleaseEvent(QMouseEvent *me);
-    void mouseMoveEvent(QMouseEvent *me);
+    void mousePressEvent(QMouseEvent *me) Q_DECL_OVERRIDE;
+    void mouseReleaseEvent(QMouseEvent *me) Q_DECL_OVERRIDE;
+    void mouseMoveEvent(QMouseEvent *me) Q_DECL_OVERRIDE;
 
-    void sliderChange(SliderChange change);
+    void sliderChange(SliderChange change) Q_DECL_OVERRIDE;
     void initStyleOption(QStyleOptionSlider *option) const;
 
 

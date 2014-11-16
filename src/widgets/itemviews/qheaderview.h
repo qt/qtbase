@@ -71,13 +71,13 @@ public:
     explicit QHeaderView(Qt::Orientation orientation, QWidget *parent = 0);
     virtual ~QHeaderView();
 
-    void setModel(QAbstractItemModel *model);
+    void setModel(QAbstractItemModel *model) Q_DECL_OVERRIDE;
 
     Qt::Orientation orientation() const;
     int offset() const;
     int length() const;
-    QSize sizeHint() const;
-    void setVisible(bool v);
+    QSize sizeHint() const Q_DECL_OVERRIDE;
+    void setVisible(bool v) Q_DECL_OVERRIDE;
     int sectionSizeHint(int logicalIndex) const;
 
     int visualIndexAt(int position) const;
@@ -165,7 +165,7 @@ public:
     Qt::Alignment defaultAlignment() const;
     void setDefaultAlignment(Qt::Alignment alignment);
 
-    void doItemsLayout();
+    void doItemsLayout() Q_DECL_OVERRIDE;
     bool sectionsMoved() const;
     bool sectionsHidden() const;
 
@@ -174,7 +174,7 @@ public:
     bool restoreState(const QByteArray &state);
 #endif
 
-    void reset();
+    void reset() Q_DECL_OVERRIDE;
 
 public Q_SLOTS:
     void setOffset(int offset);
@@ -206,36 +206,36 @@ protected:
 
     void initializeSections();
     void initializeSections(int start, int end);
-    void currentChanged(const QModelIndex &current, const QModelIndex &old);
+    void currentChanged(const QModelIndex &current, const QModelIndex &old) Q_DECL_OVERRIDE;
 
-    bool event(QEvent *e);
-    void paintEvent(QPaintEvent *e);
-    void mousePressEvent(QMouseEvent *e);
-    void mouseMoveEvent(QMouseEvent *e);
-    void mouseReleaseEvent(QMouseEvent *e);
-    void mouseDoubleClickEvent(QMouseEvent *e);
-    bool viewportEvent(QEvent *e);
+    bool event(QEvent *e) Q_DECL_OVERRIDE;
+    void paintEvent(QPaintEvent *e) Q_DECL_OVERRIDE;
+    void mousePressEvent(QMouseEvent *e) Q_DECL_OVERRIDE;
+    void mouseMoveEvent(QMouseEvent *e) Q_DECL_OVERRIDE;
+    void mouseReleaseEvent(QMouseEvent *e) Q_DECL_OVERRIDE;
+    void mouseDoubleClickEvent(QMouseEvent *e) Q_DECL_OVERRIDE;
+    bool viewportEvent(QEvent *e) Q_DECL_OVERRIDE;
 
     virtual void paintSection(QPainter *painter, const QRect &rect, int logicalIndex) const;
     virtual QSize sectionSizeFromContents(int logicalIndex) const;
 
-    int horizontalOffset() const;
-    int verticalOffset() const;
-    void updateGeometries();
-    void scrollContentsBy(int dx, int dy);
+    int horizontalOffset() const Q_DECL_OVERRIDE;
+    int verticalOffset() const Q_DECL_OVERRIDE;
+    void updateGeometries() Q_DECL_OVERRIDE;
+    void scrollContentsBy(int dx, int dy) Q_DECL_OVERRIDE;
 
-    void dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles = QVector<int>());
-    void rowsInserted(const QModelIndex &parent, int start, int end);
+    void dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles = QVector<int>()) Q_DECL_OVERRIDE;
+    void rowsInserted(const QModelIndex &parent, int start, int end) Q_DECL_OVERRIDE;
 
-    QRect visualRect(const QModelIndex &index) const;
-    void scrollTo(const QModelIndex &index, ScrollHint hint);
+    QRect visualRect(const QModelIndex &index) const Q_DECL_OVERRIDE;
+    void scrollTo(const QModelIndex &index, ScrollHint hint) Q_DECL_OVERRIDE;
 
-    QModelIndex indexAt(const QPoint &p) const;
-    bool isIndexHidden(const QModelIndex &index) const;
+    QModelIndex indexAt(const QPoint &p) const Q_DECL_OVERRIDE;
+    bool isIndexHidden(const QModelIndex &index) const Q_DECL_OVERRIDE;
 
-    QModelIndex moveCursor(CursorAction, Qt::KeyboardModifiers);
-    void setSelection(const QRect& rect, QItemSelectionModel::SelectionFlags flags);
-    QRegion visualRegionForSelection(const QItemSelection &selection) const;
+    QModelIndex moveCursor(CursorAction, Qt::KeyboardModifiers) Q_DECL_OVERRIDE;
+    void setSelection(const QRect& rect, QItemSelectionModel::SelectionFlags flags) Q_DECL_OVERRIDE;
+    QRegion visualRegionForSelection(const QItemSelection &selection) const Q_DECL_OVERRIDE;
     void initStyleOption(QStyleOptionHeader *option) const;
 
     friend class QTableView;

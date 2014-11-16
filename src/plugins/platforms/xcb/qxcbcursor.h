@@ -70,10 +70,10 @@ public:
     QXcbCursor(QXcbConnection *conn, QXcbScreen *screen);
     ~QXcbCursor();
 #ifndef QT_NO_CURSOR
-    void changeCursor(QCursor *cursor, QWindow *widget);
+    void changeCursor(QCursor *cursor, QWindow *widget) Q_DECL_OVERRIDE;
 #endif
-    QPoint pos() const;
-    void setPos(const QPoint &pos);
+    QPoint pos() const Q_DECL_OVERRIDE;
+    void setPos(const QPoint &pos) Q_DECL_OVERRIDE;
 
     static void queryPointer(QXcbConnection *c, xcb_window_t *rootWin, QPoint *pos, int *keybMask = 0);
 

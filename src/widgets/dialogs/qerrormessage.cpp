@@ -84,8 +84,8 @@ public:
     QErrorMessageTextView(QWidget *parent)
         : QTextEdit(parent) { setReadOnly(true); }
 
-    virtual QSize minimumSizeHint() const;
-    virtual QSize sizeHint() const;
+    virtual QSize minimumSizeHint() const Q_DECL_OVERRIDE;
+    virtual QSize sizeHint() const Q_DECL_OVERRIDE;
 };
 
 QSize QErrorMessageTextView::minimumSizeHint() const

@@ -47,8 +47,8 @@ class DatabaseInfo : public TreeWalker
 public:
     DatabaseInfo();
 
-    void acceptUI(DomUI *node);
-    void acceptWidget(DomWidget *node);
+    void acceptUI(DomUI *node) Q_DECL_OVERRIDE;
+    void acceptWidget(DomWidget *node) Q_DECL_OVERRIDE;
 
     inline QStringList connections() const
     { return m_connections; }

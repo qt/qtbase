@@ -117,30 +117,30 @@ public:
     ~QHttpMultiPartIODevice() {
     }
 
-    virtual bool atEnd() const {
+    virtual bool atEnd() const Q_DECL_OVERRIDE {
         return readPointer == size();
     }
 
-    virtual qint64 bytesAvailable() const {
+    virtual qint64 bytesAvailable() const Q_DECL_OVERRIDE {
         return size() - readPointer;
     }
 
-    virtual void close() {
+    virtual void close() Q_DECL_OVERRIDE {
         readPointer = 0;
         partOffsets.clear();
         deviceSize = -1;
         QIODevice::close();
     }
 
-    virtual qint64 bytesToWrite() const {
+    virtual qint64 bytesToWrite() const Q_DECL_OVERRIDE {
         return 0;
     }
 
-    virtual qint64 size() const;
-    virtual bool isSequential() const;
-    virtual bool reset();
-    virtual qint64 readData(char *data, qint64 maxSize);
-    virtual qint64 writeData(const char *data, qint64 maxSize);
+    virtual qint64 size() const Q_DECL_OVERRIDE;
+    virtual bool isSequential() const Q_DECL_OVERRIDE;
+    virtual bool reset() Q_DECL_OVERRIDE;
+    virtual qint64 readData(char *data, qint64 maxSize) Q_DECL_OVERRIDE;
+    virtual qint64 writeData(const char *data, qint64 maxSize) Q_DECL_OVERRIDE;
 
     QHttpMultiPartPrivate *multiPart;
     qint64 readPointer;

@@ -71,7 +71,7 @@ public:
     // ### Hides open(flags)
     bool open() { return open(QIODevice::ReadWrite); }
 
-    QString fileName() const;
+    QString fileName() const Q_DECL_OVERRIDE;
     QString fileTemplate() const;
     void setFileTemplate(const QString &name);
 #if QT_DEPRECATED_SINCE(5,1)
@@ -85,7 +85,7 @@ public:
     static QTemporaryFile *createNativeFile(QFile &file);
 
 protected:
-    bool open(OpenMode flags);
+    bool open(OpenMode flags) Q_DECL_OVERRIDE;
 
 private:
     friend class QFile;

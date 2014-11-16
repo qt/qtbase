@@ -82,8 +82,8 @@ public:
     QMdiArea(QWidget *parent = 0);
     ~QMdiArea();
 
-    QSize sizeHint() const;
-    QSize minimumSizeHint() const;
+    QSize sizeHint() const Q_DECL_OVERRIDE;
+    QSize minimumSizeHint() const Q_DECL_OVERRIDE;
 
     QMdiSubWindow *currentSubWindow() const;
     QMdiSubWindow *activeSubWindow() const;
@@ -135,18 +135,18 @@ public Q_SLOTS:
     void activatePreviousSubWindow();
 
 protected Q_SLOTS:
-    void setupViewport(QWidget *viewport);
+    void setupViewport(QWidget *viewport) Q_DECL_OVERRIDE;
 
 protected:
-    bool event(QEvent *event);
-    bool eventFilter(QObject *object, QEvent *event);
-    void paintEvent(QPaintEvent *paintEvent);
-    void childEvent(QChildEvent *childEvent);
-    void resizeEvent(QResizeEvent *resizeEvent);
-    void timerEvent(QTimerEvent *timerEvent);
-    void showEvent(QShowEvent *showEvent);
-    bool viewportEvent(QEvent *event);
-    void scrollContentsBy(int dx, int dy);
+    bool event(QEvent *event) Q_DECL_OVERRIDE;
+    bool eventFilter(QObject *object, QEvent *event) Q_DECL_OVERRIDE;
+    void paintEvent(QPaintEvent *paintEvent) Q_DECL_OVERRIDE;
+    void childEvent(QChildEvent *childEvent) Q_DECL_OVERRIDE;
+    void resizeEvent(QResizeEvent *resizeEvent) Q_DECL_OVERRIDE;
+    void timerEvent(QTimerEvent *timerEvent) Q_DECL_OVERRIDE;
+    void showEvent(QShowEvent *showEvent) Q_DECL_OVERRIDE;
+    bool viewportEvent(QEvent *event) Q_DECL_OVERRIDE;
+    void scrollContentsBy(int dx, int dy) Q_DECL_OVERRIDE;
 
 private:
     Q_DISABLE_COPY(QMdiArea)

@@ -180,7 +180,7 @@ public:
     using QDialog::open;
 #endif
     void open(QObject *receiver, const char *member);
-    void setVisible(bool visible);
+    void setVisible(bool visible) Q_DECL_OVERRIDE;
 
 Q_SIGNALS:
     void fileSelected(const QString &file);
@@ -256,9 +256,9 @@ public:
 
 protected:
     QFileDialog(const QFileDialogArgs &args);
-    void done(int result);
-    void accept();
-    void changeEvent(QEvent *e);
+    void done(int result) Q_DECL_OVERRIDE;
+    void accept() Q_DECL_OVERRIDE;
+    void changeEvent(QEvent *e) Q_DECL_OVERRIDE;
 
 private:
     Q_DECLARE_PRIVATE(QFileDialog)

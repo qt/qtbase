@@ -106,10 +106,10 @@ Q_SIGNALS:
     void dockLocationChanged(Qt::DockWidgetArea area);
 
 protected:
-    void changeEvent(QEvent *event);
-    void closeEvent(QCloseEvent *event);
-    void paintEvent(QPaintEvent *event);
-    bool event(QEvent *event);
+    void changeEvent(QEvent *event) Q_DECL_OVERRIDE;
+    void closeEvent(QCloseEvent *event) Q_DECL_OVERRIDE;
+    void paintEvent(QPaintEvent *event) Q_DECL_OVERRIDE;
+    bool event(QEvent *event) Q_DECL_OVERRIDE;
     void initStyleOption(QStyleOptionDockWidget *option) const;
 
 private:

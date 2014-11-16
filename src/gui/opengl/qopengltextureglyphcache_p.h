@@ -74,7 +74,7 @@ public:
 #endif
     }
 
-    void freeResource(QOpenGLContext *context)
+    void freeResource(QOpenGLContext *context) Q_DECL_OVERRIDE
     {
         QOpenGLContext *ctx = context;
 #ifdef QT_GL_TEXTURE_GLYPH_CACHE_DEBUG
@@ -86,7 +86,7 @@ public:
             ctx->functions()->glDeleteTextures(1, &m_texture);
     }
 
-    void invalidateResource()
+    void invalidateResource() Q_DECL_OVERRIDE
     {
         m_texture = 0;
         m_fbo = 0;
@@ -106,12 +106,12 @@ public:
     QOpenGLTextureGlyphCache(QFontEngine::GlyphFormat glyphFormat, const QTransform &matrix);
     ~QOpenGLTextureGlyphCache();
 
-    virtual void createTextureData(int width, int height);
-    virtual void resizeTextureData(int width, int height);
-    virtual void fillTexture(const Coord &c, glyph_t glyph, QFixed subPixelPosition);
-    virtual int glyphPadding() const;
-    virtual int maxTextureWidth() const;
-    virtual int maxTextureHeight() const;
+    virtual void createTextureData(int width, int height) Q_DECL_OVERRIDE;
+    virtual void resizeTextureData(int width, int height) Q_DECL_OVERRIDE;
+    virtual void fillTexture(const Coord &c, glyph_t glyph, QFixed subPixelPosition) Q_DECL_OVERRIDE;
+    virtual int glyphPadding() const Q_DECL_OVERRIDE;
+    virtual int maxTextureWidth() const Q_DECL_OVERRIDE;
+    virtual int maxTextureHeight() const Q_DECL_OVERRIDE;
 
     inline GLuint texture() const {
         QOpenGLTextureGlyphCache *that = const_cast<QOpenGLTextureGlyphCache *>(this);

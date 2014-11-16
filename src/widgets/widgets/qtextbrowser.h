@@ -65,7 +65,7 @@ public:
     QStringList searchPaths() const;
     void setSearchPaths(const QStringList &paths);
 
-    virtual QVariant loadResource(int type, const QUrl &name);
+    virtual QVariant loadResource(int type, const QUrl &name) Q_DECL_OVERRIDE;
 
     bool isBackwardAvailable() const;
     bool isForwardAvailable() const;
@@ -98,14 +98,14 @@ Q_SIGNALS:
     void anchorClicked(const QUrl &);
 
 protected:
-    bool event(QEvent *e);
-    virtual void keyPressEvent(QKeyEvent *ev);
-    virtual void mouseMoveEvent(QMouseEvent *ev);
-    virtual void mousePressEvent(QMouseEvent *ev);
-    virtual void mouseReleaseEvent(QMouseEvent *ev);
-    virtual void focusOutEvent(QFocusEvent *ev);
-    virtual bool focusNextPrevChild(bool next);
-    virtual void paintEvent(QPaintEvent *e);
+    bool event(QEvent *e) Q_DECL_OVERRIDE;
+    virtual void keyPressEvent(QKeyEvent *ev) Q_DECL_OVERRIDE;
+    virtual void mouseMoveEvent(QMouseEvent *ev) Q_DECL_OVERRIDE;
+    virtual void mousePressEvent(QMouseEvent *ev) Q_DECL_OVERRIDE;
+    virtual void mouseReleaseEvent(QMouseEvent *ev) Q_DECL_OVERRIDE;
+    virtual void focusOutEvent(QFocusEvent *ev) Q_DECL_OVERRIDE;
+    virtual bool focusNextPrevChild(bool next) Q_DECL_OVERRIDE;
+    virtual void paintEvent(QPaintEvent *e) Q_DECL_OVERRIDE;
 
 private:
     Q_DISABLE_COPY(QTextBrowser)

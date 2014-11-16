@@ -52,11 +52,11 @@ public:
     QComposeInputContext();
     ~QComposeInputContext();
 
-    bool isValid() const;
-    void setFocusObject(QObject *object);
-    void reset();
-    void update(Qt::InputMethodQueries);
-    bool filterEvent(const QEvent *event);
+    bool isValid() const Q_DECL_OVERRIDE;
+    void setFocusObject(QObject *object) Q_DECL_OVERRIDE;
+    void reset() Q_DECL_OVERRIDE;
+    void update(Qt::InputMethodQueries) Q_DECL_OVERRIDE;
+    bool filterEvent(const QEvent *event) Q_DECL_OVERRIDE;
 
 protected:
     void clearComposeBuffer();

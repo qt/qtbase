@@ -73,20 +73,20 @@ public:
 
     explicit QSslSocket(QObject *parent = 0);
     ~QSslSocket();
-    void resume(); // to continue after proxy authentication required, SSL errors etc.
+    void resume() Q_DECL_OVERRIDE; // to continue after proxy authentication required, SSL errors etc.
 
     // Autostarting the SSL client handshake.
     void connectToHostEncrypted(const QString &hostName, quint16 port, OpenMode mode = ReadWrite, NetworkLayerProtocol protocol = AnyIPProtocol);
     void connectToHostEncrypted(const QString &hostName, quint16 port, const QString &sslPeerName, OpenMode mode = ReadWrite, NetworkLayerProtocol protocol = AnyIPProtocol);
     bool setSocketDescriptor(qintptr socketDescriptor, SocketState state = ConnectedState,
-                             OpenMode openMode = ReadWrite);
+                             OpenMode openMode = ReadWrite) Q_DECL_OVERRIDE;
 
     using QAbstractSocket::connectToHost;
-    void connectToHost(const QString &hostName, quint16 port, OpenMode openMode = ReadWrite, NetworkLayerProtocol protocol = AnyIPProtocol);
-    void disconnectFromHost();
+    void connectToHost(const QString &hostName, quint16 port, OpenMode openMode = ReadWrite, NetworkLayerProtocol protocol = AnyIPProtocol) Q_DECL_OVERRIDE;
+    void disconnectFromHost() Q_DECL_OVERRIDE;
 
-    virtual void setSocketOption(QAbstractSocket::SocketOption option, const QVariant &value);
-    virtual QVariant socketOption(QAbstractSocket::SocketOption option);
+    virtual void setSocketOption(QAbstractSocket::SocketOption option, const QVariant &value) Q_DECL_OVERRIDE;
+    virtual QVariant socketOption(QAbstractSocket::SocketOption option) Q_DECL_OVERRIDE;
 
     SslMode mode() const;
     bool isEncrypted() const;
@@ -104,16 +104,16 @@ public:
     void setPeerVerifyName(const QString &hostName);
 
     // From QIODevice
-    qint64 bytesAvailable() const;
-    qint64 bytesToWrite() const;
-    bool canReadLine() const;
-    void close();
-    bool atEnd() const;
+    qint64 bytesAvailable() const Q_DECL_OVERRIDE;
+    qint64 bytesToWrite() const Q_DECL_OVERRIDE;
+    bool canReadLine() const Q_DECL_OVERRIDE;
+    void close() Q_DECL_OVERRIDE;
+    bool atEnd() const Q_DECL_OVERRIDE;
     bool flush();
     void abort();
 
     // From QAbstractSocket:
-    void setReadBufferSize(qint64 size);
+    void setReadBufferSize(qint64 size) Q_DECL_OVERRIDE;
 
     // Similar to QIODevice's:
     qint64 encryptedBytesAvailable() const;
@@ -172,11 +172,11 @@ public:
     static QList<QSslCertificate> defaultCaCertificates();
     static QList<QSslCertificate> systemCaCertificates();
 
-    bool waitForConnected(int msecs = 30000);
+    bool waitForConnected(int msecs = 30000) Q_DECL_OVERRIDE;
     bool waitForEncrypted(int msecs = 30000);
-    bool waitForReadyRead(int msecs = 30000);
-    bool waitForBytesWritten(int msecs = 30000);
-    bool waitForDisconnected(int msecs = 30000);
+    bool waitForReadyRead(int msecs = 30000) Q_DECL_OVERRIDE;
+    bool waitForBytesWritten(int msecs = 30000) Q_DECL_OVERRIDE;
+    bool waitForDisconnected(int msecs = 30000) Q_DECL_OVERRIDE;
 
     QList<QSslError> sslErrors() const;
 
@@ -201,8 +201,8 @@ Q_SIGNALS:
     void encryptedBytesWritten(qint64 totalBytes);
 
 protected:
-    qint64 readData(char *data, qint64 maxlen);
-    qint64 writeData(const char *data, qint64 len);
+    qint64 readData(char *data, qint64 maxlen) Q_DECL_OVERRIDE;
+    qint64 writeData(const char *data, qint64 len) Q_DECL_OVERRIDE;
 
 private:
     Q_DECLARE_PRIVATE(QSslSocket)

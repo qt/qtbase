@@ -75,8 +75,8 @@ public:
     static QPlatformTheme *createUnixTheme(const QString &name);
     static QStringList themeNames();
 
-    virtual const QFont *font(Font type) const;
-    virtual QVariant themeHint(ThemeHint hint) const;
+    virtual const QFont *font(Font type) const Q_DECL_OVERRIDE;
+    virtual QVariant themeHint(ThemeHint hint) const Q_DECL_OVERRIDE;
 
     static QStringList xdgIconThemePaths();
 
@@ -93,11 +93,11 @@ public:
     QKdeTheme(const QStringList& kdeDirs, int kdeVersion);
 
     static QPlatformTheme *createKdeTheme();
-    virtual QVariant themeHint(ThemeHint hint) const;
+    virtual QVariant themeHint(ThemeHint hint) const Q_DECL_OVERRIDE;
 
-    virtual const QPalette *palette(Palette type = SystemPalette) const;
+    virtual const QPalette *palette(Palette type = SystemPalette) const Q_DECL_OVERRIDE;
 
-    virtual const QFont *font(Font type) const;
+    virtual const QFont *font(Font type) const Q_DECL_OVERRIDE;
 
     static const char *name;
 };
@@ -110,8 +110,8 @@ class QGnomeTheme : public QPlatformTheme
     Q_DECLARE_PRIVATE(QGnomeTheme)
 public:
     QGnomeTheme();
-    virtual QVariant themeHint(ThemeHint hint) const;
-    virtual const QFont *font(Font type) const;
+    virtual QVariant themeHint(ThemeHint hint) const Q_DECL_OVERRIDE;
+    virtual const QFont *font(Font type) const Q_DECL_OVERRIDE;
     QString standardButtonText(int button) const Q_DECL_OVERRIDE;
 
     virtual QString gtkFontName() const;

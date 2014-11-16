@@ -111,7 +111,7 @@ public Q_SLOTS:
 
 protected:
     QAbstractAnimation(QAbstractAnimationPrivate &dd, QObject *parent = 0);
-    bool event(QEvent *event);
+    bool event(QEvent *event) Q_DECL_OVERRIDE;
 
     virtual void updateCurrentTime(int currentTime) = 0;
     virtual void updateState(QAbstractAnimation::State newState, QAbstractAnimation::State oldState);

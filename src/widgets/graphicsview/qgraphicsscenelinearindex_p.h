@@ -65,10 +65,10 @@ public:
     QGraphicsSceneLinearIndex(QGraphicsScene *scene = 0) : QGraphicsSceneIndex(scene), m_numSortedElements(0)
     { }
 
-    QList<QGraphicsItem *> items(Qt::SortOrder order = Qt::DescendingOrder) const
+    QList<QGraphicsItem *> items(Qt::SortOrder order = Qt::DescendingOrder) const Q_DECL_OVERRIDE
     { Q_UNUSED(order); return m_items; }
 
-    virtual QList<QGraphicsItem *> estimateItems(const QRectF &rect, Qt::SortOrder order) const
+    virtual QList<QGraphicsItem *> estimateItems(const QRectF &rect, Qt::SortOrder order) const Q_DECL_OVERRIDE
     {
         Q_UNUSED(rect);
         Q_UNUSED(order);
@@ -76,16 +76,16 @@ public:
     }
 
 protected :
-    virtual void clear()
+    virtual void clear() Q_DECL_OVERRIDE
     {
         m_items.clear();
         m_numSortedElements = 0;
     }
 
-    virtual void addItem(QGraphicsItem *item)
+    virtual void addItem(QGraphicsItem *item) Q_DECL_OVERRIDE
     { m_items << item; }
 
-    virtual void removeItem(QGraphicsItem *item)
+    virtual void removeItem(QGraphicsItem *item) Q_DECL_OVERRIDE
     {
         // Sort m_items if needed
         if (m_numSortedElements < m_items.size())

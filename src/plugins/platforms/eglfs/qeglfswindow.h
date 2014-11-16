@@ -70,7 +70,7 @@ public:
 
     bool hasNativeWindow() const { return m_flags.testFlag(HasNativeWindow); }
 
-    virtual void invalidateSurface();
+    virtual void invalidateSurface() Q_DECL_OVERRIDE;
     virtual void resetSurface();
 
 protected:

@@ -45,7 +45,7 @@ class QMYSQLDriverPlugin : public QSqlDriverPlugin
 public:
     QMYSQLDriverPlugin();
 
-    QSqlDriver* create(const QString &);
+    QSqlDriver* create(const QString &) Q_DECL_OVERRIDE;
 };
 
 QMYSQLDriverPlugin::QMYSQLDriverPlugin()

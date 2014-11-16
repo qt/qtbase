@@ -81,7 +81,7 @@ public:
     virtual void notifyLayoutDirectionChange();
     virtual void notifyActiveWindowChange(QWindow *previous);
 
-    virtual bool shouldQuit();
+    virtual bool shouldQuit() Q_DECL_OVERRIDE;
 
     bool shouldQuitInternal(const QWindowList &processedWindows);
     virtual bool tryCloseAllWindows();

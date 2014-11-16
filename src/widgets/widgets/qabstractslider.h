@@ -122,7 +122,7 @@ Q_SIGNALS:
     void actionTriggered(int action);
 
 protected:
-    bool event(QEvent *e);
+    bool event(QEvent *e) Q_DECL_OVERRIDE;
 
     void setRepeatAction(SliderAction action, int thresholdTime = 500, int repeatTime = 50);
     SliderAction repeatAction() const;
@@ -135,12 +135,12 @@ protected:
     };
     virtual void sliderChange(SliderChange change);
 
-    void keyPressEvent(QKeyEvent *ev);
-    void timerEvent(QTimerEvent *);
+    void keyPressEvent(QKeyEvent *ev) Q_DECL_OVERRIDE;
+    void timerEvent(QTimerEvent *) Q_DECL_OVERRIDE;
 #ifndef QT_NO_WHEELEVENT
-    void wheelEvent(QWheelEvent *e);
+    void wheelEvent(QWheelEvent *e) Q_DECL_OVERRIDE;
 #endif
-    void changeEvent(QEvent *e);
+    void changeEvent(QEvent *e) Q_DECL_OVERRIDE;
 
 
 protected:

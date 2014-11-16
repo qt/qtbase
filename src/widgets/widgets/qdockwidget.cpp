@@ -109,13 +109,13 @@ class QDockWidgetTitleButton : public QAbstractButton
 public:
     QDockWidgetTitleButton(QDockWidget *dockWidget);
 
-    QSize sizeHint() const;
+    QSize sizeHint() const Q_DECL_OVERRIDE;
     inline QSize minimumSizeHint() const
     { return sizeHint(); }
 
-    void enterEvent(QEvent *event);
-    void leaveEvent(QEvent *event);
-    void paintEvent(QPaintEvent *event);
+    void enterEvent(QEvent *event) Q_DECL_OVERRIDE;
+    void leaveEvent(QEvent *event) Q_DECL_OVERRIDE;
+    void paintEvent(QPaintEvent *event) Q_DECL_OVERRIDE;
 };
 
 

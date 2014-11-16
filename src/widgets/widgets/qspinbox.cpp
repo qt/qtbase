@@ -58,10 +58,10 @@ class QSpinBoxPrivate : public QAbstractSpinBoxPrivate
     Q_DECLARE_PUBLIC(QSpinBox)
 public:
     QSpinBoxPrivate();
-    void emitSignals(EmitPolicy ep, const QVariant &);
+    void emitSignals(EmitPolicy ep, const QVariant &) Q_DECL_OVERRIDE;
 
-    virtual QVariant valueFromText(const QString &n) const;
-    virtual QString textFromValue(const QVariant &n) const;
+    virtual QVariant valueFromText(const QString &n) const Q_DECL_OVERRIDE;
+    virtual QString textFromValue(const QVariant &n) const Q_DECL_OVERRIDE;
     QVariant validateAndInterpret(QString &input, int &pos,
                                   QValidator::State &state) const;
 
@@ -79,10 +79,10 @@ class QDoubleSpinBoxPrivate : public QAbstractSpinBoxPrivate
     Q_DECLARE_PUBLIC(QDoubleSpinBox)
 public:
     QDoubleSpinBoxPrivate();
-    void emitSignals(EmitPolicy ep, const QVariant &);
+    void emitSignals(EmitPolicy ep, const QVariant &) Q_DECL_OVERRIDE;
 
-    virtual QVariant valueFromText(const QString &n) const;
-    virtual QString textFromValue(const QVariant &n) const;
+    virtual QVariant valueFromText(const QString &n) const Q_DECL_OVERRIDE;
+    virtual QString textFromValue(const QVariant &n) const Q_DECL_OVERRIDE;
     QVariant validateAndInterpret(QString &input, int &pos,
                                   QValidator::State &state) const;
     double round(double input) const;

@@ -58,8 +58,8 @@ public Q_SLOTS:
     void showMessage(const QString &message, const QString &type);
 
 protected:
-    void done(int);
-    void changeEvent(QEvent *e);
+    void done(int) Q_DECL_OVERRIDE;
+    void changeEvent(QEvent *e) Q_DECL_OVERRIDE;
 
 private:
     Q_DISABLE_COPY(QErrorMessage)

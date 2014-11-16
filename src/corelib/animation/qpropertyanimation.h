@@ -60,9 +60,9 @@ public:
     void setPropertyName(const QByteArray &propertyName);
 
 protected:
-    bool event(QEvent *event);
-    void updateCurrentValue(const QVariant &value);
-    void updateState(QAbstractAnimation::State newState, QAbstractAnimation::State oldState);
+    bool event(QEvent *event) Q_DECL_OVERRIDE;
+    void updateCurrentValue(const QVariant &value) Q_DECL_OVERRIDE;
+    void updateState(QAbstractAnimation::State newState, QAbstractAnimation::State oldState) Q_DECL_OVERRIDE;
 
 private:
     Q_DISABLE_COPY(QPropertyAnimation)

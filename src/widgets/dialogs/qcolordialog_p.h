@@ -109,7 +109,7 @@ public:
     bool handleColorPickingMouseButtonRelease(QMouseEvent *e);
     bool handleColorPickingKeyPress(QKeyEvent *e);
 
-    bool canBeNativeDialog() const;
+    bool canBeNativeDialog() const Q_DECL_OVERRIDE;
 
     QWellArray *custom;
     QWellArray *standard;
@@ -155,8 +155,8 @@ public:
     void mac_nativeDialogModalHelp();
 #endif
 private:
-    virtual void initHelper(QPlatformDialogHelper *h);
-    virtual void helperPrepareShow(QPlatformDialogHelper *h);
+    virtual void initHelper(QPlatformDialogHelper *h) Q_DECL_OVERRIDE;
+    virtual void helperPrepareShow(QPlatformDialogHelper *h) Q_DECL_OVERRIDE;
 };
 
 #endif // QT_NO_COLORDIALOG

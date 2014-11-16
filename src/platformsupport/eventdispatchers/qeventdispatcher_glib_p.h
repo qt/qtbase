@@ -61,7 +61,7 @@ public:
     explicit QPAEventDispatcherGlib(QObject *parent = 0);
     ~QPAEventDispatcherGlib();
 
-    bool processEvents(QEventLoop::ProcessEventsFlags flags);
+    bool processEvents(QEventLoop::ProcessEventsFlags flags) Q_DECL_OVERRIDE;
     QEventLoop::ProcessEventsFlags m_flags;
 };
 

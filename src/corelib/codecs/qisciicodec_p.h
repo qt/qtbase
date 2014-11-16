@@ -58,11 +58,11 @@ public:
 
     static QTextCodec *create(const char *name);
 
-    QByteArray name() const;
-    int mibEnum() const;
+    QByteArray name() const Q_DECL_OVERRIDE;
+    int mibEnum() const Q_DECL_OVERRIDE;
 
-    QString convertToUnicode(const char *, int, ConverterState *) const;
-    QByteArray convertFromUnicode(const QChar *, int, ConverterState *) const;
+    QString convertToUnicode(const char *, int, ConverterState *) const Q_DECL_OVERRIDE;
+    QByteArray convertFromUnicode(const QChar *, int, ConverterState *) const Q_DECL_OVERRIDE;
 
 private:
     int idx;

@@ -128,7 +128,7 @@ public:
     virtual ~QWindow();
 
     void setSurfaceType(SurfaceType surfaceType);
-    SurfaceType surfaceType() const;
+    SurfaceType surfaceType() const Q_DECL_OVERRIDE;
 
     bool isVisible() const;
 
@@ -149,7 +149,7 @@ public:
     void setModality(Qt::WindowModality modality);
 
     void setFormat(const QSurfaceFormat &format);
-    QSurfaceFormat format() const;
+    QSurfaceFormat format() const Q_DECL_OVERRIDE;
     QSurfaceFormat requestedFormat() const;
 
     void setFlags(Qt::WindowFlags flags);
@@ -328,7 +328,7 @@ protected:
     virtual void hideEvent(QHideEvent *);
     // TODO Qt 6 - add closeEvent virtual handler
 
-    virtual bool event(QEvent *);
+    virtual bool event(QEvent *) Q_DECL_OVERRIDE;
     virtual void keyPressEvent(QKeyEvent *);
     virtual void keyReleaseEvent(QKeyEvent *);
     virtual void mousePressEvent(QMouseEvent *);
@@ -348,7 +348,7 @@ protected:
 
 private:
     Q_PRIVATE_SLOT(d_func(), void _q_clearAlert())
-    QPlatformSurface *surfaceHandle() const;
+    QPlatformSurface *surfaceHandle() const Q_DECL_OVERRIDE;
 
     Q_DISABLE_COPY(QWindow)
 

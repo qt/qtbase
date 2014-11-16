@@ -200,7 +200,7 @@ public:
         preparedQueriesEnabled(false)
     { }
 
-    QString fieldSerial(int i) const { return QLatin1Char('$') + QString::number(i + 1); }
+    QString fieldSerial(int i) const Q_DECL_OVERRIDE { return QLatin1Char('$') + QString::number(i + 1); }
     void deallocatePreparedStmt();
     const QPSQLDriverPrivate * privDriver() const
     {

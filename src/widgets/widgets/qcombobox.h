@@ -188,14 +188,14 @@ public:
     QAbstractItemView *view() const;
     void setView(QAbstractItemView *itemView);
 
-    QSize sizeHint() const;
-    QSize minimumSizeHint() const;
+    QSize sizeHint() const Q_DECL_OVERRIDE;
+    QSize minimumSizeHint() const Q_DECL_OVERRIDE;
 
     virtual void showPopup();
     virtual void hidePopup();
 
-    bool event(QEvent *event);
-    QVariant inputMethodQuery(Qt::InputMethodQuery) const;
+    bool event(QEvent *event) Q_DECL_OVERRIDE;
+    QVariant inputMethodQuery(Qt::InputMethodQuery) const Q_DECL_OVERRIDE;
 
 public Q_SLOTS:
     void clear();
@@ -215,22 +215,22 @@ Q_SIGNALS:
     void currentTextChanged(const QString &);
 
 protected:
-    void focusInEvent(QFocusEvent *e);
-    void focusOutEvent(QFocusEvent *e);
-    void changeEvent(QEvent *e);
-    void resizeEvent(QResizeEvent *e);
-    void paintEvent(QPaintEvent *e);
-    void showEvent(QShowEvent *e);
-    void hideEvent(QHideEvent *e);
-    void mousePressEvent(QMouseEvent *e);
-    void mouseReleaseEvent(QMouseEvent *e);
-    void keyPressEvent(QKeyEvent *e);
-    void keyReleaseEvent(QKeyEvent *e);
+    void focusInEvent(QFocusEvent *e) Q_DECL_OVERRIDE;
+    void focusOutEvent(QFocusEvent *e) Q_DECL_OVERRIDE;
+    void changeEvent(QEvent *e) Q_DECL_OVERRIDE;
+    void resizeEvent(QResizeEvent *e) Q_DECL_OVERRIDE;
+    void paintEvent(QPaintEvent *e) Q_DECL_OVERRIDE;
+    void showEvent(QShowEvent *e) Q_DECL_OVERRIDE;
+    void hideEvent(QHideEvent *e) Q_DECL_OVERRIDE;
+    void mousePressEvent(QMouseEvent *e) Q_DECL_OVERRIDE;
+    void mouseReleaseEvent(QMouseEvent *e) Q_DECL_OVERRIDE;
+    void keyPressEvent(QKeyEvent *e) Q_DECL_OVERRIDE;
+    void keyReleaseEvent(QKeyEvent *e) Q_DECL_OVERRIDE;
 #ifndef QT_NO_WHEELEVENT
-    void wheelEvent(QWheelEvent *e);
+    void wheelEvent(QWheelEvent *e) Q_DECL_OVERRIDE;
 #endif
-    void contextMenuEvent(QContextMenuEvent *e);
-    void inputMethodEvent(QInputMethodEvent *);
+    void contextMenuEvent(QContextMenuEvent *e) Q_DECL_OVERRIDE;
+    void inputMethodEvent(QInputMethodEvent *) Q_DECL_OVERRIDE;
     void initStyleOption(QStyleOptionComboBox *option) const;
 
 

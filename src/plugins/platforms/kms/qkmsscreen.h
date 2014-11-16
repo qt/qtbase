@@ -67,11 +67,11 @@ public:
     QKmsScreen(QKmsDevice *device, const drmModeRes *resources, const drmModeConnector *connector);
     ~QKmsScreen();
 
-    QRect geometry() const;
-    int depth() const;
-    QImage::Format format() const;
-    QSizeF physicalSize() const;
-    QPlatformCursor *cursor() const;
+    QRect geometry() const Q_DECL_OVERRIDE;
+    int depth() const Q_DECL_OVERRIDE;
+    QImage::Format format() const Q_DECL_OVERRIDE;
+    QSizeF physicalSize() const Q_DECL_OVERRIDE;
+    QPlatformCursor *cursor() const Q_DECL_OVERRIDE;
 
     quint32 crtcId() const { return m_crtcId; }
     QKmsDevice *device() const;

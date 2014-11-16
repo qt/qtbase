@@ -48,19 +48,19 @@ public:
     explicit QSizeGrip(QWidget *parent);
     ~QSizeGrip();
 
-    QSize sizeHint() const;
-    void setVisible(bool);
+    QSize sizeHint() const Q_DECL_OVERRIDE;
+    void setVisible(bool) Q_DECL_OVERRIDE;
 
 protected:
-    void paintEvent(QPaintEvent *);
-    void mousePressEvent(QMouseEvent *);
-    void mouseMoveEvent(QMouseEvent *);
-    void mouseReleaseEvent(QMouseEvent *mouseEvent);
-    void moveEvent(QMoveEvent *moveEvent);
-    void showEvent(QShowEvent *showEvent);
-    void hideEvent(QHideEvent *hideEvent);
-    bool eventFilter(QObject *, QEvent *);
-    bool event(QEvent *);
+    void paintEvent(QPaintEvent *) Q_DECL_OVERRIDE;
+    void mousePressEvent(QMouseEvent *) Q_DECL_OVERRIDE;
+    void mouseMoveEvent(QMouseEvent *) Q_DECL_OVERRIDE;
+    void mouseReleaseEvent(QMouseEvent *mouseEvent) Q_DECL_OVERRIDE;
+    void moveEvent(QMoveEvent *moveEvent) Q_DECL_OVERRIDE;
+    void showEvent(QShowEvent *showEvent) Q_DECL_OVERRIDE;
+    void hideEvent(QHideEvent *hideEvent) Q_DECL_OVERRIDE;
+    bool eventFilter(QObject *, QEvent *) Q_DECL_OVERRIDE;
+    bool event(QEvent *) Q_DECL_OVERRIDE;
 
 public:
 

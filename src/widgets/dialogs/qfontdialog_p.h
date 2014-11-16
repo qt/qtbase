@@ -135,12 +135,12 @@ public:
     QPointer<QObject> receiverToDisconnectOnClose;
     QByteArray memberToDisconnectOnClose;
 
-    bool canBeNativeDialog() const;
+    bool canBeNativeDialog() const Q_DECL_OVERRIDE;
     void _q_runNativeAppModalPanel();
 
 private:
-    virtual void initHelper(QPlatformDialogHelper *);
-    virtual void helperPrepareShow(QPlatformDialogHelper *);
+    virtual void initHelper(QPlatformDialogHelper *) Q_DECL_OVERRIDE;
+    virtual void helperPrepareShow(QPlatformDialogHelper *) Q_DECL_OVERRIDE;
 };
 
 #endif // QT_NO_FONTDIALOG

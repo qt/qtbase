@@ -57,18 +57,18 @@ public:
     QPauseAnimation *insertPause(int index, int msecs);
 
     QAbstractAnimation *currentAnimation() const;
-    int duration() const;
+    int duration() const Q_DECL_OVERRIDE;
 
 Q_SIGNALS:
     void currentAnimationChanged(QAbstractAnimation *current);
 
 protected:
     QSequentialAnimationGroup(QSequentialAnimationGroupPrivate &dd, QObject *parent);
-    bool event(QEvent *event);
+    bool event(QEvent *event) Q_DECL_OVERRIDE;
 
-    void updateCurrentTime(int);
-    void updateState(QAbstractAnimation::State newState, QAbstractAnimation::State oldState);
-    void updateDirection(QAbstractAnimation::Direction direction);
+    void updateCurrentTime(int) Q_DECL_OVERRIDE;
+    void updateState(QAbstractAnimation::State newState, QAbstractAnimation::State oldState) Q_DECL_OVERRIDE;
+    void updateDirection(QAbstractAnimation::Direction direction) Q_DECL_OVERRIDE;
 
 private:
     Q_DISABLE_COPY(QSequentialAnimationGroup)

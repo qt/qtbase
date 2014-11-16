@@ -270,17 +270,17 @@ public:
     QConfFileSettingsPrivate(const QString &fileName, QSettings::Format format);
     ~QConfFileSettingsPrivate();
 
-    void remove(const QString &key);
-    void set(const QString &key, const QVariant &value);
-    bool get(const QString &key, QVariant *value) const;
+    void remove(const QString &key) Q_DECL_OVERRIDE;
+    void set(const QString &key, const QVariant &value) Q_DECL_OVERRIDE;
+    bool get(const QString &key, QVariant *value) const Q_DECL_OVERRIDE;
 
-    QStringList children(const QString &prefix, ChildSpec spec) const;
+    QStringList children(const QString &prefix, ChildSpec spec) const Q_DECL_OVERRIDE;
 
-    void clear();
-    void sync();
-    void flush();
-    bool isWritable() const;
-    QString fileName() const;
+    void clear() Q_DECL_OVERRIDE;
+    void sync() Q_DECL_OVERRIDE;
+    void flush() Q_DECL_OVERRIDE;
+    bool isWritable() const Q_DECL_OVERRIDE;
+    QString fileName() const Q_DECL_OVERRIDE;
 
     bool readIniFile(const QByteArray &data, UnparsedSettingsMap *unparsedIniSections);
     static bool readIniSection(const QSettingsKey &section, const QByteArray &data,

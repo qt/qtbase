@@ -61,7 +61,7 @@ class QSideBarDelegate : public QStyledItemDelegate
  public:
      QSideBarDelegate(QWidget *parent = 0) : QStyledItemDelegate(parent) {}
      void initStyleOption(QStyleOptionViewItem *option,
-                          const QModelIndex &index) const;
+                          const QModelIndex &index) const Q_DECL_OVERRIDE;
 };
 
 class Q_AUTOTEST_EXPORT QUrlModel : public QStandardItemModel
@@ -76,14 +76,14 @@ public:
 
     QUrlModel(QObject *parent = 0);
 
-    QStringList mimeTypes() const;
-    QMimeData *mimeData(const QModelIndexList &indexes) const;
+    QStringList mimeTypes() const Q_DECL_OVERRIDE;
+    QMimeData *mimeData(const QModelIndexList &indexes) const Q_DECL_OVERRIDE;
 #ifndef QT_NO_DRAGANDDROP
     bool canDrop(QDragEnterEvent *event);
-    bool dropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent);
+    bool dropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent) Q_DECL_OVERRIDE;
 #endif
-    Qt::ItemFlags flags(const QModelIndex &index) const;
-    bool setData(const QModelIndex &index, const QVariant &value, int role=Qt::EditRole);
+    Qt::ItemFlags flags(const QModelIndex &index) const Q_DECL_OVERRIDE;
+    bool setData(const QModelIndex &index, const QVariant &value, int role=Qt::EditRole) Q_DECL_OVERRIDE;
 
     void setUrls(const QList<QUrl> &list);
     void addUrls(const QList<QUrl> &urls, int row = -1, bool move = true);
@@ -116,7 +116,7 @@ public:
     void setModelAndUrls(QFileSystemModel *model, const QList<QUrl> &newUrls);
     ~QSidebar();
 
-    QSize sizeHint() const;
+    QSize sizeHint() const Q_DECL_OVERRIDE;
 
     void setUrls(const QList<QUrl> &list) { urlModel->setUrls(list); }
     void addUrls(const QList<QUrl> &list, int row) { urlModel->addUrls(list, row); }
@@ -125,10 +125,10 @@ public:
     void selectUrl(const QUrl &url);
 
 protected:
-    bool event(QEvent * e);
-    void focusInEvent(QFocusEvent *event);
+    bool event(QEvent * e) Q_DECL_OVERRIDE;
+    void focusInEvent(QFocusEvent *event) Q_DECL_OVERRIDE;
 #ifndef QT_NO_DRAGANDDROP
-    void dragEnterEvent(QDragEnterEvent *event);
+    void dragEnterEvent(QDragEnterEvent *event) Q_DECL_OVERRIDE;
 #endif
 
 private Q_SLOTS:

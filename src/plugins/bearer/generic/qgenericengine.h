@@ -54,24 +54,24 @@ public:
     QGenericEngine(QObject *parent = 0);
     ~QGenericEngine();
 
-    QString getInterfaceFromId(const QString &id);
-    bool hasIdentifier(const QString &id);
+    QString getInterfaceFromId(const QString &id) Q_DECL_OVERRIDE;
+    bool hasIdentifier(const QString &id) Q_DECL_OVERRIDE;
 
-    void connectToId(const QString &id);
-    void disconnectFromId(const QString &id);
+    void connectToId(const QString &id) Q_DECL_OVERRIDE;
+    void disconnectFromId(const QString &id) Q_DECL_OVERRIDE;
 
     Q_INVOKABLE void initialize();
     Q_INVOKABLE void requestUpdate();
 
-    QNetworkSession::State sessionStateForId(const QString &id);
+    QNetworkSession::State sessionStateForId(const QString &id) Q_DECL_OVERRIDE;
 
-    QNetworkConfigurationManager::Capabilities capabilities() const;
+    QNetworkConfigurationManager::Capabilities capabilities() const Q_DECL_OVERRIDE;
 
-    QNetworkSessionPrivate *createSessionBackend();
+    QNetworkSessionPrivate *createSessionBackend() Q_DECL_OVERRIDE;
 
-    QNetworkConfigurationPrivatePointer defaultConfiguration();
+    QNetworkConfigurationPrivatePointer defaultConfiguration() Q_DECL_OVERRIDE;
 
-    bool requiresPolling() const;
+    bool requiresPolling() const Q_DECL_OVERRIDE;
 
 private Q_SLOTS:
     void doRequestUpdate();

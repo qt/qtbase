@@ -873,8 +873,8 @@ public:
     inline QDynamicBufferResourceRoot(const QString &_root) : root(_root), buffer(0) { }
     inline ~QDynamicBufferResourceRoot() { }
     inline const uchar *mappingBuffer() const { return buffer; }
-    virtual QString mappingRoot() const { return root; }
-    virtual ResourceRootType type() const { return Resource_Buffer; }
+    virtual QString mappingRoot() const Q_DECL_OVERRIDE { return root; }
+    virtual ResourceRootType type() const Q_DECL_OVERRIDE { return Resource_Buffer; }
 
     // size == -1 means "unknown"
     bool registerSelf(const uchar *b, int size)
@@ -960,7 +960,7 @@ public:
         }
     }
     QString mappingFile() const { return fileName; }
-    virtual ResourceRootType type() const { return Resource_File; }
+    virtual ResourceRootType type() const Q_DECL_OVERRIDE { return Resource_File; }
 
     bool registerSelf(const QString &f) {
         bool fromMM = false;

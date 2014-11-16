@@ -253,8 +253,8 @@ public Q_SLOTS:
     void clear();
 
 protected:
-    bool event(QEvent *event);
-    bool eventFilter(QObject *watched, QEvent *event);
+    bool event(QEvent *event) Q_DECL_OVERRIDE;
+    bool eventFilter(QObject *watched, QEvent *event) Q_DECL_OVERRIDE;
     virtual void contextMenuEvent(QGraphicsSceneContextMenuEvent *event);
     virtual void dragEnterEvent(QGraphicsSceneDragDropEvent *event);
     virtual void dragMoveEvent(QGraphicsSceneDragDropEvent *event);

@@ -65,15 +65,15 @@ public:
     CppCodeParser();
     ~CppCodeParser();
 
-    virtual void initializeParser(const Config& config);
-    virtual void terminateParser();
-    virtual QString language();
-    virtual QStringList headerFileNameFilter();
-    virtual QStringList sourceFileNameFilter();
-    virtual void parseHeaderFile(const Location& location, const QString& filePath);
-    virtual void parseSourceFile(const Location& location, const QString& filePath);
-    virtual void doneParsingHeaderFiles();
-    virtual void doneParsingSourceFiles();
+    virtual void initializeParser(const Config& config) Q_DECL_OVERRIDE;
+    virtual void terminateParser() Q_DECL_OVERRIDE;
+    virtual QString language() Q_DECL_OVERRIDE;
+    virtual QStringList headerFileNameFilter() Q_DECL_OVERRIDE;
+    virtual QStringList sourceFileNameFilter() Q_DECL_OVERRIDE;
+    virtual void parseHeaderFile(const Location& location, const QString& filePath) Q_DECL_OVERRIDE;
+    virtual void parseSourceFile(const Location& location, const QString& filePath) Q_DECL_OVERRIDE;
+    virtual void doneParsingHeaderFiles() Q_DECL_OVERRIDE;
+    virtual void doneParsingSourceFiles() Q_DECL_OVERRIDE;
 
 protected:
     const QSet<QString>& topicCommands();

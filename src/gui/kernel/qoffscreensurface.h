@@ -54,7 +54,7 @@ public:
     explicit QOffscreenSurface(QScreen *screen = 0);
     virtual ~QOffscreenSurface();
 
-    SurfaceType surfaceType() const;
+    SurfaceType surfaceType() const Q_DECL_OVERRIDE;
 
     void create();
     void destroy();
@@ -62,10 +62,10 @@ public:
     bool isValid() const;
 
     void setFormat(const QSurfaceFormat &format);
-    QSurfaceFormat format() const;
+    QSurfaceFormat format() const Q_DECL_OVERRIDE;
     QSurfaceFormat requestedFormat() const;
 
-    QSize size() const;
+    QSize size() const Q_DECL_OVERRIDE;
 
     QScreen *screen() const;
     void setScreen(QScreen *screen);
@@ -80,7 +80,7 @@ private Q_SLOTS:
 
 private:
 
-    QPlatformSurface *surfaceHandle() const;
+    QPlatformSurface *surfaceHandle() const Q_DECL_OVERRIDE;
 
     Q_DISABLE_COPY(QOffscreenSurface)
 };

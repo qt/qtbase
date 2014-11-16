@@ -78,8 +78,8 @@ public:
     void setHitTestPath(const QPainterPath &path);
 
 protected:
-    bool eventTest(QEvent *event);
-    void onTransition(QEvent *);
+    bool eventTest(QEvent *event) Q_DECL_OVERRIDE;
+    void onTransition(QEvent *) Q_DECL_OVERRIDE;
 
 private:
     Q_DISABLE_COPY(QBasicMouseEventTransition)

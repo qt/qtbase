@@ -102,7 +102,7 @@ class QTornOffMenu : public QMenu
             causedPopup.action = ((QTornOffMenu*)p)->d_func()->causedPopup.action;
             causedStack = ((QTornOffMenu*)p)->d_func()->calcCausedStack();
         }
-        QList<QPointer<QWidget> > calcCausedStack() const { return causedStack; }
+        QList<QPointer<QWidget> > calcCausedStack() const Q_DECL_OVERRIDE { return causedStack; }
         QPointer<QMenu> causedMenu;
         QList<QPointer<QWidget> > causedStack;
     };
@@ -135,7 +135,7 @@ public:
         } else if (act->type() == QEvent::ActionRemoved)
             removeAction(act->action());
     }
-    void actionEvent(QActionEvent *e)
+    void actionEvent(QActionEvent *e) Q_DECL_OVERRIDE
     {
         QMenu::actionEvent(e);
         setFixedSize(sizeHint());

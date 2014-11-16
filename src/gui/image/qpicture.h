@@ -55,7 +55,7 @@ public:
 
     bool isNull() const;
 
-    int devType() const;
+    int devType() const Q_DECL_OVERRIDE;
     uint size() const;
     const char* data() const;
     virtual void setData(const char* data, uint size);
@@ -88,12 +88,12 @@ public:
     static QStringList inputFormatList();
     static QStringList outputFormatList();
 
-    QPaintEngine *paintEngine() const;
+    QPaintEngine *paintEngine() const Q_DECL_OVERRIDE;
 
 protected:
     QPicture(QPicturePrivate &data);
 
-    int metric(PaintDeviceMetric m) const;
+    int metric(PaintDeviceMetric m) const Q_DECL_OVERRIDE;
 
 private:
     bool exec(QPainter *p, QDataStream &ds, int i);

@@ -88,7 +88,7 @@ public:
 #endif
     void open(QObject *receiver, const char *member);
 
-    void setVisible(bool visible);
+    void setVisible(bool visible) Q_DECL_OVERRIDE;
 
     static QFont getFont(bool *ok, QWidget *parent = 0);
     static QFont getFont(bool *ok, const QFont &initial, QWidget *parent = 0, const QString &title = QString(),
@@ -99,9 +99,9 @@ Q_SIGNALS:
     void fontSelected(const QFont &font);
 
 protected:
-    void changeEvent(QEvent *event);
-    void done(int result);
-    bool eventFilter(QObject *object, QEvent *event);
+    void changeEvent(QEvent *event) Q_DECL_OVERRIDE;
+    void done(int result) Q_DECL_OVERRIDE;
+    bool eventFilter(QObject *object, QEvent *event) Q_DECL_OVERRIDE;
 
 private:
     Q_DISABLE_COPY(QFontDialog)

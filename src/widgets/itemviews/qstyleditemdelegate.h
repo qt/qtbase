@@ -57,23 +57,23 @@ public:
 
     // painting
     void paint(QPainter *painter,
-               const QStyleOptionViewItem &option, const QModelIndex &index) const;
+               const QStyleOptionViewItem &option, const QModelIndex &index) const Q_DECL_OVERRIDE;
     QSize sizeHint(const QStyleOptionViewItem &option,
-                   const QModelIndex &index) const;
+                   const QModelIndex &index) const Q_DECL_OVERRIDE;
 
     // editing
     QWidget *createEditor(QWidget *parent,
                           const QStyleOptionViewItem &option,
-                          const QModelIndex &index) const;
+                          const QModelIndex &index) const Q_DECL_OVERRIDE;
 
-    void setEditorData(QWidget *editor, const QModelIndex &index) const;
+    void setEditorData(QWidget *editor, const QModelIndex &index) const Q_DECL_OVERRIDE;
     void setModelData(QWidget *editor,
                       QAbstractItemModel *model,
-                      const QModelIndex &index) const;
+                      const QModelIndex &index) const Q_DECL_OVERRIDE;
 
     void updateEditorGeometry(QWidget *editor,
                               const QStyleOptionViewItem &option,
-                              const QModelIndex &index) const;
+                              const QModelIndex &index) const Q_DECL_OVERRIDE;
 
     // editor factory
     QItemEditorFactory *itemEditorFactory() const;
@@ -85,9 +85,9 @@ protected:
     virtual void initStyleOption(QStyleOptionViewItem *option,
                                 const QModelIndex &index) const;
 
-    bool eventFilter(QObject *object, QEvent *event);
+    bool eventFilter(QObject *object, QEvent *event) Q_DECL_OVERRIDE;
     bool editorEvent(QEvent *event, QAbstractItemModel *model,
-                     const QStyleOptionViewItem &option, const QModelIndex &index);
+                     const QStyleOptionViewItem &option, const QModelIndex &index) Q_DECL_OVERRIDE;
 
 private:
     Q_DECLARE_PRIVATE(QStyledItemDelegate)

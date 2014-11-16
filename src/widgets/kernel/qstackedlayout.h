@@ -72,20 +72,20 @@ public:
     using QLayout::widget;
 #endif
     QWidget *widget(int) const;
-    int count() const;
+    int count() const Q_DECL_OVERRIDE;
 
     StackingMode stackingMode() const;
     void setStackingMode(StackingMode stackingMode);
 
     // abstract virtual functions:
-    void addItem(QLayoutItem *item);
-    QSize sizeHint() const;
-    QSize minimumSize() const;
-    QLayoutItem *itemAt(int) const;
-    QLayoutItem *takeAt(int);
-    void setGeometry(const QRect &rect);
-    bool hasHeightForWidth() const;
-    int heightForWidth(int width) const;
+    void addItem(QLayoutItem *item) Q_DECL_OVERRIDE;
+    QSize sizeHint() const Q_DECL_OVERRIDE;
+    QSize minimumSize() const Q_DECL_OVERRIDE;
+    QLayoutItem *itemAt(int) const Q_DECL_OVERRIDE;
+    QLayoutItem *takeAt(int) Q_DECL_OVERRIDE;
+    void setGeometry(const QRect &rect) Q_DECL_OVERRIDE;
+    bool hasHeightForWidth() const Q_DECL_OVERRIDE;
+    int heightForWidth(int width) const Q_DECL_OVERRIDE;
 
 Q_SIGNALS:
     void widgetRemoved(int index);

@@ -66,12 +66,12 @@ public:
     static QTextCodec *codecForNameUnlocked(const char *name);
     static QTextCodec *codecForMibUnlocked(int mib);
 
-    QString convertToUnicode(const char *, int, ConverterState *) const;
-    QByteArray convertFromUnicode(const QChar *, int, ConverterState *) const;
+    QString convertToUnicode(const char *, int, ConverterState *) const Q_DECL_OVERRIDE;
+    QByteArray convertFromUnicode(const QChar *, int, ConverterState *) const Q_DECL_OVERRIDE;
 
-    QByteArray name() const;
-    QList<QByteArray> aliases() const;
-    int mibEnum() const;
+    QByteArray name() const Q_DECL_OVERRIDE;
+    QList<QByteArray> aliases() const Q_DECL_OVERRIDE;
+    int mibEnum() const Q_DECL_OVERRIDE;
 
 private:
     QIcuCodec(const char *name);

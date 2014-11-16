@@ -1413,7 +1413,7 @@ class QStyleSheetStyleSelector : public StyleSelector
 public:
     QStyleSheetStyleSelector() { }
 
-    QStringList nodeNames(NodePtr node) const
+    QStringList nodeNames(NodePtr node) const Q_DECL_OVERRIDE
     {
         if (isNullNode(node))
             return QStringList();
@@ -1429,7 +1429,7 @@ public:
         } while (metaObject != 0);
         return result;
     }
-    QString attribute(NodePtr node, const QString& name) const
+    QString attribute(NodePtr node, const QString& name) const Q_DECL_OVERRIDE
     {
         if (isNullNode(node))
             return QString();
@@ -1466,7 +1466,7 @@ public:
         cache[name] = valueStr;
         return valueStr;
     }
-    bool nodeNameEquals(NodePtr node, const QString& nodeName) const
+    bool nodeNameEquals(NodePtr node, const QString& nodeName) const Q_DECL_OVERRIDE
     {
         if (isNullNode(node))
             return false;
@@ -1489,19 +1489,19 @@ public:
         } while (metaObject != 0);
         return false;
     }
-    bool hasAttributes(NodePtr) const
+    bool hasAttributes(NodePtr) const Q_DECL_OVERRIDE
     { return true; }
-    QStringList nodeIds(NodePtr node) const
+    QStringList nodeIds(NodePtr node) const Q_DECL_OVERRIDE
     { return isNullNode(node) ? QStringList() : QStringList(OBJECT_PTR(node)->objectName()); }
-    bool isNullNode(NodePtr node) const
+    bool isNullNode(NodePtr node) const Q_DECL_OVERRIDE
     { return node.ptr == 0; }
-    NodePtr parentNode(NodePtr node) const
+    NodePtr parentNode(NodePtr node) const Q_DECL_OVERRIDE
     { NodePtr n; n.ptr = isNullNode(node) ? 0 : parentObject(OBJECT_PTR(node)); return n; }
-    NodePtr previousSiblingNode(NodePtr) const
+    NodePtr previousSiblingNode(NodePtr) const Q_DECL_OVERRIDE
     { NodePtr n; n.ptr = 0; return n; }
-    NodePtr duplicateNode(NodePtr node) const
+    NodePtr duplicateNode(NodePtr node) const Q_DECL_OVERRIDE
     { return node; }
-    void freeNode(NodePtr) const
+    void freeNode(NodePtr) const Q_DECL_OVERRIDE
     { }
 
 private:

@@ -60,9 +60,9 @@ public:
     bool widgetResizable() const;
     void setWidgetResizable(bool resizable);
 
-    QSize sizeHint() const;
+    QSize sizeHint() const Q_DECL_OVERRIDE;
 
-    bool focusNextPrevChild(bool next);
+    bool focusNextPrevChild(bool next) Q_DECL_OVERRIDE;
 
     Qt::Alignment alignment() const;
     void setAlignment(Qt::Alignment);
@@ -72,10 +72,10 @@ public:
 
 protected:
     QScrollArea(QScrollAreaPrivate &dd, QWidget *parent = 0);
-    bool event(QEvent *);
-    bool eventFilter(QObject *, QEvent *);
-    void resizeEvent(QResizeEvent *);
-    void scrollContentsBy(int dx, int dy);
+    bool event(QEvent *) Q_DECL_OVERRIDE;
+    bool eventFilter(QObject *, QEvent *) Q_DECL_OVERRIDE;
+    void resizeEvent(QResizeEvent *) Q_DECL_OVERRIDE;
+    void scrollContentsBy(int dx, int dy) Q_DECL_OVERRIDE;
 
     QSize viewportSizeHint() const Q_DECL_OVERRIDE;
 

@@ -66,7 +66,7 @@ Q_SIGNALS:
     );
 
 protected:
-    bool event(QEvent *);
+    bool event(QEvent *) Q_DECL_OVERRIDE;
 
 private:
     Q_DISABLE_COPY(QSocketNotifier)

@@ -50,29 +50,29 @@ public:
     CppCodeMarker();
     ~CppCodeMarker();
 
-    virtual bool recognizeCode(const QString& code);
-    virtual bool recognizeExtension(const QString& ext);
-    virtual bool recognizeLanguage(const QString& lang);
-    virtual Atom::Type atomType() const;
+    virtual bool recognizeCode(const QString& code) Q_DECL_OVERRIDE;
+    virtual bool recognizeExtension(const QString& ext) Q_DECL_OVERRIDE;
+    virtual bool recognizeLanguage(const QString& lang) Q_DECL_OVERRIDE;
+    virtual Atom::Type atomType() const Q_DECL_OVERRIDE;
     virtual QString markedUpCode(const QString& code,
                                  const Node *relative,
-                                 const Location &location);
+                                 const Location &location) Q_DECL_OVERRIDE;
     virtual QString markedUpSynopsis(const Node *node,
                                      const Node *relative,
-                                     SynopsisStyle style);
-    virtual QString markedUpQmlItem(const Node *node, bool summary);
-    virtual QString markedUpName(const Node *node);
-    virtual QString markedUpFullName(const Node *node, const Node *relative);
-    virtual QString markedUpEnumValue(const QString &enumValue, const Node *relative);
-    virtual QString markedUpIncludes(const QStringList& includes);
-    virtual QString functionBeginRegExp(const QString& funcName);
-    virtual QString functionEndRegExp(const QString& funcName);
+                                     SynopsisStyle style) Q_DECL_OVERRIDE;
+    virtual QString markedUpQmlItem(const Node *node, bool summary) Q_DECL_OVERRIDE;
+    virtual QString markedUpName(const Node *node) Q_DECL_OVERRIDE;
+    virtual QString markedUpFullName(const Node *node, const Node *relative) Q_DECL_OVERRIDE;
+    virtual QString markedUpEnumValue(const QString &enumValue, const Node *relative) Q_DECL_OVERRIDE;
+    virtual QString markedUpIncludes(const QStringList& includes) Q_DECL_OVERRIDE;
+    virtual QString functionBeginRegExp(const QString& funcName) Q_DECL_OVERRIDE;
+    virtual QString functionEndRegExp(const QString& funcName) Q_DECL_OVERRIDE;
     virtual QList<Section> sections(const InnerNode *innerNode,
                                     SynopsisStyle style,
-                                    Status status);
+                                    Status status) Q_DECL_OVERRIDE;
     virtual QList<Section> qmlSections(QmlClassNode* qmlClassNode,
                                        SynopsisStyle style,
-                                       Status status = Okay);
+                                       Status status = Okay) Q_DECL_OVERRIDE;
 
 private:
     QString addMarkUp(const QString& protectedCode,

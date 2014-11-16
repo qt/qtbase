@@ -53,24 +53,24 @@ struct WriteIncludes : public TreeWalker
 {
     WriteIncludes(Uic *uic);
 
-    void acceptUI(DomUI *node);
-    void acceptWidget(DomWidget *node);
-    void acceptLayout(DomLayout *node);
-    void acceptSpacer(DomSpacer *node);
-    void acceptProperty(DomProperty *node);
-    void acceptWidgetScripts(const DomScripts &, DomWidget *, const DomWidgets &);
+    void acceptUI(DomUI *node) Q_DECL_OVERRIDE;
+    void acceptWidget(DomWidget *node) Q_DECL_OVERRIDE;
+    void acceptLayout(DomLayout *node) Q_DECL_OVERRIDE;
+    void acceptSpacer(DomSpacer *node) Q_DECL_OVERRIDE;
+    void acceptProperty(DomProperty *node) Q_DECL_OVERRIDE;
+    void acceptWidgetScripts(const DomScripts &, DomWidget *, const DomWidgets &) Q_DECL_OVERRIDE;
 
 //
 // custom widgets
 //
-    void acceptCustomWidgets(DomCustomWidgets *node);
-    void acceptCustomWidget(DomCustomWidget *node);
+    void acceptCustomWidgets(DomCustomWidgets *node) Q_DECL_OVERRIDE;
+    void acceptCustomWidget(DomCustomWidget *node) Q_DECL_OVERRIDE;
 
 //
 // include hints
 //
-    void acceptIncludes(DomIncludes *node);
-    void acceptInclude(DomInclude *node);
+    void acceptIncludes(DomIncludes *node) Q_DECL_OVERRIDE;
+    void acceptInclude(DomInclude *node) Q_DECL_OVERRIDE;
 
     bool scriptsActivated() const { return m_scriptsActivated; }
 

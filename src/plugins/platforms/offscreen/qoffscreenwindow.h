@@ -47,15 +47,15 @@ public:
     QOffscreenWindow(QWindow *window);
     ~QOffscreenWindow();
 
-    void setGeometry(const QRect &rect);
-    void setWindowState(Qt::WindowState state);
+    void setGeometry(const QRect &rect) Q_DECL_OVERRIDE;
+    void setWindowState(Qt::WindowState state) Q_DECL_OVERRIDE;
 
-    QMargins frameMargins() const;
+    QMargins frameMargins() const Q_DECL_OVERRIDE;
 
-    void setVisible(bool visible);
-    void requestActivateWindow();
+    void setVisible(bool visible) Q_DECL_OVERRIDE;
+    void requestActivateWindow() Q_DECL_OVERRIDE;
 
-    WId winId() const;
+    WId winId() const Q_DECL_OVERRIDE;
 
     static QOffscreenWindow *windowForWinId(WId id);
 

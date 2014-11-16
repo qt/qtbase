@@ -85,7 +85,7 @@ class QEvdevTouchScreenHandlerThread : public QThread
 public:
     explicit QEvdevTouchScreenHandlerThread(const QString &spec, QObject *parent = 0);
     ~QEvdevTouchScreenHandlerThread();
-    void run();
+    void run() Q_DECL_OVERRIDE;
     QEvdevTouchScreenHandler *handler() { return m_handler; }
 
 private:

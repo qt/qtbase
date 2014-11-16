@@ -70,7 +70,7 @@ public:
 
     void setPendingResultsLimit(int limit);
 
-    bool event(QEvent *event);
+    bool event(QEvent *event) Q_DECL_OVERRIDE;
 
 Q_SIGNALS:
     void started();
@@ -92,8 +92,8 @@ public Q_SLOTS:
     void togglePaused();
 
 protected:
-    void connectNotify (const QMetaMethod &signal);
-    void disconnectNotify (const QMetaMethod &signal);
+    void connectNotify (const QMetaMethod &signal) Q_DECL_OVERRIDE;
+    void disconnectNotify (const QMetaMethod &signal) Q_DECL_OVERRIDE;
 
     // called from setFuture() implemented in template sub-classes
     void connectOutputInterface();
@@ -160,8 +160,8 @@ public Q_SLOTS:
 
 private:
     QFuture<T> m_future;
-    const QFutureInterfaceBase &futureInterface() const { return m_future.d; }
-    QFutureInterfaceBase &futureInterface() { return m_future.d; }
+    const QFutureInterfaceBase &futureInterface() const Q_DECL_OVERRIDE { return m_future.d; }
+    QFutureInterfaceBase &futureInterface() Q_DECL_OVERRIDE { return m_future.d; }
 };
 
 template <typename T>
@@ -191,8 +191,8 @@ public:
 
 private:
     QFuture<void> m_future;
-    const QFutureInterfaceBase &futureInterface() const { return m_future.d; }
-    QFutureInterfaceBase &futureInterface() { return m_future.d; }
+    const QFutureInterfaceBase &futureInterface() const Q_DECL_OVERRIDE { return m_future.d; }
+    QFutureInterfaceBase &futureInterface() Q_DECL_OVERRIDE { return m_future.d; }
 };
 
 Q_INLINE_TEMPLATE void QFutureWatcher<void>::setFuture(const QFuture<void> &_future)

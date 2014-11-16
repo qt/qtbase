@@ -53,11 +53,11 @@ public:
     QXcbClipboard(QXcbConnection *connection);
     ~QXcbClipboard();
 
-    QMimeData *mimeData(QClipboard::Mode mode);
-    void setMimeData(QMimeData *data, QClipboard::Mode mode);
+    QMimeData *mimeData(QClipboard::Mode mode) Q_DECL_OVERRIDE;
+    void setMimeData(QMimeData *data, QClipboard::Mode mode) Q_DECL_OVERRIDE;
 
-    bool supportsMode(QClipboard::Mode mode) const;
-    bool ownsMode(QClipboard::Mode mode) const;
+    bool supportsMode(QClipboard::Mode mode) const Q_DECL_OVERRIDE;
+    bool ownsMode(QClipboard::Mode mode) const Q_DECL_OVERRIDE;
 
     QXcbScreen *screen() const { return m_screen; }
 

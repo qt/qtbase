@@ -93,7 +93,7 @@ public:
     qreal zScale() const;
     void setZScale(qreal);
 
-    void applyTo(QMatrix4x4 *matrix) const;
+    void applyTo(QMatrix4x4 *matrix) const Q_DECL_OVERRIDE;
 
 Q_SIGNALS:
     void originChanged();
@@ -129,7 +129,7 @@ public:
     void setAxis(const QVector3D &axis);
     void setAxis(Qt::Axis axis);
 
-    void applyTo(QMatrix4x4 *matrix) const;
+    void applyTo(QMatrix4x4 *matrix) const Q_DECL_OVERRIDE;
 
 Q_SIGNALS:
     void originChanged();

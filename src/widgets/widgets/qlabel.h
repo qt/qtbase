@@ -88,13 +88,13 @@ public:
 
     bool hasScaledContents() const;
     void setScaledContents(bool);
-    QSize sizeHint() const;
-    QSize minimumSizeHint() const;
+    QSize sizeHint() const Q_DECL_OVERRIDE;
+    QSize minimumSizeHint() const Q_DECL_OVERRIDE;
 #ifndef QT_NO_SHORTCUT
     void setBuddy(QWidget *);
     QWidget *buddy() const;
 #endif
-    int heightForWidth(int) const;
+    int heightForWidth(int) const Q_DECL_OVERRIDE;
 
     bool openExternalLinks() const;
     void setOpenExternalLinks(bool open);
@@ -125,17 +125,17 @@ Q_SIGNALS:
     void linkHovered(const QString& link);
 
 protected:
-    bool event(QEvent *e);
-    void keyPressEvent(QKeyEvent *ev);
-    void paintEvent(QPaintEvent *);
-    void changeEvent(QEvent *);
-    void mousePressEvent(QMouseEvent *ev);
-    void mouseMoveEvent(QMouseEvent *ev);
-    void mouseReleaseEvent(QMouseEvent *ev);
-    void contextMenuEvent(QContextMenuEvent *ev);
-    void focusInEvent(QFocusEvent *ev);
-    void focusOutEvent(QFocusEvent *ev);
-    bool focusNextPrevChild(bool next);
+    bool event(QEvent *e) Q_DECL_OVERRIDE;
+    void keyPressEvent(QKeyEvent *ev) Q_DECL_OVERRIDE;
+    void paintEvent(QPaintEvent *) Q_DECL_OVERRIDE;
+    void changeEvent(QEvent *) Q_DECL_OVERRIDE;
+    void mousePressEvent(QMouseEvent *ev) Q_DECL_OVERRIDE;
+    void mouseMoveEvent(QMouseEvent *ev) Q_DECL_OVERRIDE;
+    void mouseReleaseEvent(QMouseEvent *ev) Q_DECL_OVERRIDE;
+    void contextMenuEvent(QContextMenuEvent *ev) Q_DECL_OVERRIDE;
+    void focusInEvent(QFocusEvent *ev) Q_DECL_OVERRIDE;
+    void focusOutEvent(QFocusEvent *ev) Q_DECL_OVERRIDE;
+    bool focusNextPrevChild(bool next) Q_DECL_OVERRIDE;
 
 
 private:

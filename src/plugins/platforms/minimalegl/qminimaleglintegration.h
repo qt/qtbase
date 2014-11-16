@@ -47,17 +47,17 @@ public:
     QMinimalEglIntegration();
     ~QMinimalEglIntegration();
 
-    bool hasCapability(QPlatformIntegration::Capability cap) const;
+    bool hasCapability(QPlatformIntegration::Capability cap) const Q_DECL_OVERRIDE;
 
-    QPlatformWindow *createPlatformWindow(QWindow *window) const;
-    QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const;
-    QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const;
+    QPlatformWindow *createPlatformWindow(QWindow *window) const Q_DECL_OVERRIDE;
+    QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const Q_DECL_OVERRIDE;
+    QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const Q_DECL_OVERRIDE;
 
-    QPlatformFontDatabase *fontDatabase() const;
+    QPlatformFontDatabase *fontDatabase() const Q_DECL_OVERRIDE;
 
-    QAbstractEventDispatcher *createEventDispatcher() const;
+    QAbstractEventDispatcher *createEventDispatcher() const Q_DECL_OVERRIDE;
 
-    QVariant styleHint(QPlatformIntegration::StyleHint hint) const;
+    QVariant styleHint(QPlatformIntegration::StyleHint hint) const Q_DECL_OVERRIDE;
 
 private:
     QPlatformFontDatabase *mFontDb;

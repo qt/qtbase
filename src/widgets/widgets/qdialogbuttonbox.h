@@ -140,8 +140,8 @@ Q_SIGNALS:
     void rejected();
 
 protected:
-    void changeEvent(QEvent *event);
-    bool event(QEvent *event);
+    void changeEvent(QEvent *event) Q_DECL_OVERRIDE;
+    bool event(QEvent *event) Q_DECL_OVERRIDE;
 
 private:
     Q_DISABLE_COPY(QDialogButtonBox)

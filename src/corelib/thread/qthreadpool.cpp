@@ -50,7 +50,7 @@ class QThreadPoolThread : public QThread
 {
 public:
     QThreadPoolThread(QThreadPoolPrivate *manager);
-    void run();
+    void run() Q_DECL_OVERRIDE;
     void registerThreadInactive();
 
     QWaitCondition runnableReady;

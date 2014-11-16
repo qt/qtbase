@@ -69,16 +69,16 @@ class QNetworkReplyImpl: public QNetworkReply
 public:
     QNetworkReplyImpl(QObject *parent = 0);
     ~QNetworkReplyImpl();
-    virtual void abort();
+    virtual void abort() Q_DECL_OVERRIDE;
 
     // reimplemented from QNetworkReply / QIODevice
-    virtual void close();
-    virtual qint64 bytesAvailable() const;
-    virtual void setReadBufferSize(qint64 size);
-    virtual bool canReadLine () const;
+    virtual void close() Q_DECL_OVERRIDE;
+    virtual qint64 bytesAvailable() const Q_DECL_OVERRIDE;
+    virtual void setReadBufferSize(qint64 size) Q_DECL_OVERRIDE;
+    virtual bool canReadLine () const Q_DECL_OVERRIDE;
 
-    virtual qint64 readData(char *data, qint64 maxlen);
-    virtual bool event(QEvent *);
+    virtual qint64 readData(char *data, qint64 maxlen) Q_DECL_OVERRIDE;
+    virtual bool event(QEvent *) Q_DECL_OVERRIDE;
 
     Q_DECLARE_PRIVATE(QNetworkReplyImpl)
     Q_PRIVATE_SLOT(d_func(), void _q_startOperation())
@@ -94,10 +94,10 @@ public:
 
 #ifndef QT_NO_SSL
 protected:
-    void sslConfigurationImplementation(QSslConfiguration &configuration) const;
-    void setSslConfigurationImplementation(const QSslConfiguration &configuration);
-    virtual void ignoreSslErrors();
-    virtual void ignoreSslErrorsImplementation(const QList<QSslError> &errors);
+    void sslConfigurationImplementation(QSslConfiguration &configuration) const Q_DECL_OVERRIDE;
+    void setSslConfigurationImplementation(const QSslConfiguration &configuration) Q_DECL_OVERRIDE;
+    virtual void ignoreSslErrors() Q_DECL_OVERRIDE;
+    virtual void ignoreSslErrorsImplementation(const QList<QSslError> &errors) Q_DECL_OVERRIDE;
 #endif
 };
 
@@ -214,9 +214,9 @@ public:
                           QNetworkAccessManager::Operation op);
     ~QDisabledNetworkReply();
 
-    void abort() { }
+    void abort() Q_DECL_OVERRIDE { }
 protected:
-    qint64 readData(char *, qint64) { return -1; }
+    qint64 readData(char *, qint64) Q_DECL_OVERRIDE { return -1; }
 };
 #endif
 

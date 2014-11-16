@@ -48,17 +48,17 @@ public:
     QOffscreenIntegration();
     ~QOffscreenIntegration();
 
-    bool hasCapability(QPlatformIntegration::Capability cap) const;
+    bool hasCapability(QPlatformIntegration::Capability cap) const Q_DECL_OVERRIDE;
 
-    QPlatformWindow *createPlatformWindow(QWindow *window) const;
-    QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const;
+    QPlatformWindow *createPlatformWindow(QWindow *window) const Q_DECL_OVERRIDE;
+    QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const Q_DECL_OVERRIDE;
 #ifndef QT_NO_DRAGANDDROP
-    QPlatformDrag *drag() const;
+    QPlatformDrag *drag() const Q_DECL_OVERRIDE;
 #endif
-    QPlatformServices *services() const;
+    QPlatformServices *services() const Q_DECL_OVERRIDE;
 
-    QPlatformFontDatabase *fontDatabase() const;
-    QAbstractEventDispatcher *createEventDispatcher() const;
+    QPlatformFontDatabase *fontDatabase() const Q_DECL_OVERRIDE;
+    QAbstractEventDispatcher *createEventDispatcher() const Q_DECL_OVERRIDE;
 
     static QOffscreenIntegration *createOffscreenIntegration();
 

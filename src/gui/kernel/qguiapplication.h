@@ -143,7 +143,7 @@ public:
     static Qt::ApplicationState applicationState();
 
     static int exec();
-    bool notify(QObject *, QEvent *);
+    bool notify(QObject *, QEvent *) Q_DECL_OVERRIDE;
 
 #ifndef QT_NO_SESSIONMANAGER
     // session management
@@ -170,8 +170,8 @@ Q_SIGNALS:
     void paletteChanged(const QPalette &pal);
 
 protected:
-    bool event(QEvent *);
-    bool compressEvent(QEvent *, QObject *receiver, QPostEventList *);
+    bool event(QEvent *) Q_DECL_OVERRIDE;
+    bool compressEvent(QEvent *, QObject *receiver, QPostEventList *) Q_DECL_OVERRIDE;
 
     QGuiApplication(QGuiApplicationPrivate &p);
 

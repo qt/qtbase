@@ -240,7 +240,7 @@ public:
     }
 
 protected:
-    void timerEvent(QTimerEvent *e)
+    void timerEvent(QTimerEvent *e) Q_DECL_OVERRIDE
     {
         if (e->timerId() == pressDelayTimer) {
             if (pressDelayEvent && mouseTarget) {

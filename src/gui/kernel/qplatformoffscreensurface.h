@@ -63,7 +63,7 @@ public:
 
     QPlatformScreen *screen() const;
 
-    virtual QSurfaceFormat format() const;
+    virtual QSurfaceFormat format() const Q_DECL_OVERRIDE;
     virtual bool isValid() const;
 
 protected:

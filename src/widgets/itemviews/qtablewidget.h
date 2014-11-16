@@ -311,7 +311,7 @@ Q_SIGNALS:
     void currentCellChanged(int currentRow, int currentColumn, int previousRow, int previousColumn);
 
 protected:
-    bool event(QEvent *e);
+    bool event(QEvent *e) Q_DECL_OVERRIDE;
     virtual QStringList mimeTypes() const;
     virtual QMimeData *mimeData(const QList<QTableWidgetItem*> items) const;
     virtual bool dropMimeData(int row, int column, const QMimeData *data, Qt::DropAction action);
@@ -320,10 +320,10 @@ protected:
 
     QModelIndex indexFromItem(QTableWidgetItem *item) const;
     QTableWidgetItem *itemFromIndex(const QModelIndex &index) const;
-    void dropEvent(QDropEvent *event);
+    void dropEvent(QDropEvent *event) Q_DECL_OVERRIDE;
 
 private:
-    void setModel(QAbstractItemModel *model);
+    void setModel(QAbstractItemModel *model) Q_DECL_OVERRIDE;
 
     Q_DECLARE_PRIVATE(QTableWidget)
     Q_DISABLE_COPY(QTableWidget)

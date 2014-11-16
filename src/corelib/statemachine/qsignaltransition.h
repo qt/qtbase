@@ -61,10 +61,10 @@ public:
     void setSignal(const QByteArray &signal);
 
 protected:
-    bool eventTest(QEvent *event);
-    void onTransition(QEvent *event);
+    bool eventTest(QEvent *event) Q_DECL_OVERRIDE;
+    void onTransition(QEvent *event) Q_DECL_OVERRIDE;
 
-    bool event(QEvent *e);
+    bool event(QEvent *e) Q_DECL_OVERRIDE;
 
 Q_SIGNALS:
     void senderObjectChanged(
