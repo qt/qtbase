@@ -409,7 +409,7 @@ public:
 #endif
     Q_DECL_CONSTEXPR inline char toLatin1() const Q_DECL_NOTHROW { return ucs > 0xff ? '\0' : char(ucs); }
     Q_DECL_CONSTEXPR inline ushort unicode() const Q_DECL_NOTHROW { return ucs; }
-    inline ushort &unicode() Q_DECL_NOTHROW { return ucs; }
+    Q_DECL_RELAXED_CONSTEXPR inline ushort &unicode() Q_DECL_NOTHROW { return ucs; }
 
 #if QT_DEPRECATED_SINCE(5, 0)
     QT_DEPRECATED static Q_DECL_CONSTEXPR inline QChar fromAscii(char c) Q_DECL_NOTHROW
@@ -439,8 +439,8 @@ public:
 
     Q_DECL_CONSTEXPR inline uchar cell() const Q_DECL_NOTHROW { return uchar(ucs & 0xff); }
     Q_DECL_CONSTEXPR inline uchar row() const Q_DECL_NOTHROW { return uchar((ucs>>8)&0xff); }
-    inline void setCell(uchar acell) Q_DECL_NOTHROW { ucs = ushort((ucs & 0xff00) + acell); }
-    inline void setRow(uchar arow) Q_DECL_NOTHROW { ucs = ushort((ushort(arow)<<8) + (ucs&0xff)); }
+    Q_DECL_RELAXED_CONSTEXPR inline void setCell(uchar acell) Q_DECL_NOTHROW { ucs = ushort((ucs & 0xff00) + acell); }
+    Q_DECL_RELAXED_CONSTEXPR inline void setRow(uchar arow) Q_DECL_NOTHROW { ucs = ushort((ushort(arow)<<8) + (ucs&0xff)); }
 
     static Q_DECL_CONSTEXPR inline bool isNonCharacter(uint ucs4) Q_DECL_NOTHROW
     {
