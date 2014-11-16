@@ -55,19 +55,19 @@ public:
     Q_DECL_CONSTEXPR int right() const;
     Q_DECL_CONSTEXPR int bottom() const;
 
-    void setLeft(int left);
-    void setTop(int top);
-    void setRight(int right);
-    void setBottom(int bottom);
+    Q_DECL_RELAXED_CONSTEXPR void setLeft(int left);
+    Q_DECL_RELAXED_CONSTEXPR void setTop(int top);
+    Q_DECL_RELAXED_CONSTEXPR void setRight(int right);
+    Q_DECL_RELAXED_CONSTEXPR void setBottom(int bottom);
 
-    QMargins &operator+=(const QMargins &margins);
-    QMargins &operator-=(const QMargins &margins);
-    QMargins &operator+=(int);
-    QMargins &operator-=(int);
-    QMargins &operator*=(int);
-    QMargins &operator/=(int);
-    QMargins &operator*=(qreal);
-    QMargins &operator/=(qreal);
+    Q_DECL_RELAXED_CONSTEXPR QMargins &operator+=(const QMargins &margins);
+    Q_DECL_RELAXED_CONSTEXPR QMargins &operator-=(const QMargins &margins);
+    Q_DECL_RELAXED_CONSTEXPR QMargins &operator+=(int);
+    Q_DECL_RELAXED_CONSTEXPR QMargins &operator-=(int);
+    Q_DECL_RELAXED_CONSTEXPR QMargins &operator*=(int);
+    Q_DECL_RELAXED_CONSTEXPR QMargins &operator/=(int);
+    Q_DECL_RELAXED_CONSTEXPR QMargins &operator*=(qreal);
+    Q_DECL_RELAXED_CONSTEXPR QMargins &operator/=(qreal);
 
 private:
     int m_left;
@@ -114,16 +114,16 @@ Q_DECL_CONSTEXPR inline int QMargins::bottom() const
 { return m_bottom; }
 
 
-inline void QMargins::setLeft(int aleft)
+Q_DECL_RELAXED_CONSTEXPR inline void QMargins::setLeft(int aleft)
 { m_left = aleft; }
 
-inline void QMargins::setTop(int atop)
+Q_DECL_RELAXED_CONSTEXPR inline void QMargins::setTop(int atop)
 { m_top = atop; }
 
-inline void QMargins::setRight(int aright)
+Q_DECL_RELAXED_CONSTEXPR inline void QMargins::setRight(int aright)
 { m_right = aright; }
 
-inline void QMargins::setBottom(int abottom)
+Q_DECL_RELAXED_CONSTEXPR inline void QMargins::setBottom(int abottom)
 { m_bottom = abottom; }
 
 Q_DECL_CONSTEXPR inline bool operator==(const QMargins &m1, const QMargins &m2)
@@ -210,17 +210,17 @@ Q_DECL_CONSTEXPR inline QMargins operator/(const QMargins &margins, qreal diviso
                     qRound(margins.right() / divisor), qRound(margins.bottom() / divisor));
 }
 
-inline QMargins &QMargins::operator+=(const QMargins &margins)
+Q_DECL_RELAXED_CONSTEXPR inline QMargins &QMargins::operator+=(const QMargins &margins)
 {
     return *this = *this + margins;
 }
 
-inline QMargins &QMargins::operator-=(const QMargins &margins)
+Q_DECL_RELAXED_CONSTEXPR inline QMargins &QMargins::operator-=(const QMargins &margins)
 {
     return *this = *this - margins;
 }
 
-inline QMargins &QMargins::operator+=(int margin)
+Q_DECL_RELAXED_CONSTEXPR inline QMargins &QMargins::operator+=(int margin)
 {
     m_left += margin;
     m_top += margin;
@@ -229,7 +229,7 @@ inline QMargins &QMargins::operator+=(int margin)
     return *this;
 }
 
-inline QMargins &QMargins::operator-=(int margin)
+Q_DECL_RELAXED_CONSTEXPR inline QMargins &QMargins::operator-=(int margin)
 {
     m_left -= margin;
     m_top -= margin;
@@ -238,22 +238,22 @@ inline QMargins &QMargins::operator-=(int margin)
     return *this;
 }
 
-inline QMargins &QMargins::operator*=(int factor)
+Q_DECL_RELAXED_CONSTEXPR inline QMargins &QMargins::operator*=(int factor)
 {
     return *this = *this * factor;
 }
 
-inline QMargins &QMargins::operator/=(int divisor)
+Q_DECL_RELAXED_CONSTEXPR inline QMargins &QMargins::operator/=(int divisor)
 {
     return *this = *this / divisor;
 }
 
-inline QMargins &QMargins::operator*=(qreal factor)
+Q_DECL_RELAXED_CONSTEXPR inline QMargins &QMargins::operator*=(qreal factor)
 {
     return *this = *this * factor;
 }
 
-inline QMargins &QMargins::operator/=(qreal divisor)
+Q_DECL_RELAXED_CONSTEXPR inline QMargins &QMargins::operator/=(qreal divisor)
 {
     return *this = *this / divisor;
 }
@@ -290,17 +290,17 @@ public:
     Q_DECL_CONSTEXPR qreal right() const;
     Q_DECL_CONSTEXPR qreal bottom() const;
 
-    void setLeft(qreal left);
-    void setTop(qreal top);
-    void setRight(qreal right);
-    void setBottom(qreal bottom);
+    Q_DECL_RELAXED_CONSTEXPR void setLeft(qreal left);
+    Q_DECL_RELAXED_CONSTEXPR void setTop(qreal top);
+    Q_DECL_RELAXED_CONSTEXPR void setRight(qreal right);
+    Q_DECL_RELAXED_CONSTEXPR void setBottom(qreal bottom);
 
-    QMarginsF &operator+=(const QMarginsF &margins);
-    QMarginsF &operator-=(const QMarginsF &margins);
-    QMarginsF &operator+=(qreal addend);
-    QMarginsF &operator-=(qreal subtrahend);
-    QMarginsF &operator*=(qreal factor);
-    QMarginsF &operator/=(qreal divisor);
+    Q_DECL_RELAXED_CONSTEXPR QMarginsF &operator+=(const QMarginsF &margins);
+    Q_DECL_RELAXED_CONSTEXPR QMarginsF &operator-=(const QMarginsF &margins);
+    Q_DECL_RELAXED_CONSTEXPR QMarginsF &operator+=(qreal addend);
+    Q_DECL_RELAXED_CONSTEXPR QMarginsF &operator-=(qreal subtrahend);
+    Q_DECL_RELAXED_CONSTEXPR QMarginsF &operator*=(qreal factor);
+    Q_DECL_RELAXED_CONSTEXPR QMarginsF &operator/=(qreal divisor);
 
     Q_DECL_CONSTEXPR inline QMargins toMargins() const;
 
@@ -350,16 +350,16 @@ Q_DECL_CONSTEXPR inline qreal QMarginsF::bottom() const
 { return m_bottom; }
 
 
-inline void QMarginsF::setLeft(qreal aleft)
+Q_DECL_RELAXED_CONSTEXPR inline void QMarginsF::setLeft(qreal aleft)
 { m_left = aleft; }
 
-inline void QMarginsF::setTop(qreal atop)
+Q_DECL_RELAXED_CONSTEXPR inline void QMarginsF::setTop(qreal atop)
 { m_top = atop; }
 
-inline void QMarginsF::setRight(qreal aright)
+Q_DECL_RELAXED_CONSTEXPR inline void QMarginsF::setRight(qreal aright)
 { m_right = aright; }
 
-inline void QMarginsF::setBottom(qreal abottom)
+Q_DECL_RELAXED_CONSTEXPR inline void QMarginsF::setBottom(qreal abottom)
 { m_bottom = abottom; }
 
 Q_DECL_CONSTEXPR inline bool operator==(const QMarginsF &lhs, const QMarginsF &rhs)
@@ -423,17 +423,17 @@ Q_DECL_CONSTEXPR inline QMarginsF operator/(const QMarginsF &lhs, qreal divisor)
                      lhs.right() / divisor, lhs.bottom() / divisor);
 }
 
-inline QMarginsF &QMarginsF::operator+=(const QMarginsF &margins)
+Q_DECL_RELAXED_CONSTEXPR inline QMarginsF &QMarginsF::operator+=(const QMarginsF &margins)
 {
     return *this = *this + margins;
 }
 
-inline QMarginsF &QMarginsF::operator-=(const QMarginsF &margins)
+Q_DECL_RELAXED_CONSTEXPR inline QMarginsF &QMarginsF::operator-=(const QMarginsF &margins)
 {
     return *this = *this - margins;
 }
 
-inline QMarginsF &QMarginsF::operator+=(qreal addend)
+Q_DECL_RELAXED_CONSTEXPR inline QMarginsF &QMarginsF::operator+=(qreal addend)
 {
     m_left += addend;
     m_top += addend;
@@ -442,7 +442,7 @@ inline QMarginsF &QMarginsF::operator+=(qreal addend)
     return *this;
 }
 
-inline QMarginsF &QMarginsF::operator-=(qreal subtrahend)
+Q_DECL_RELAXED_CONSTEXPR inline QMarginsF &QMarginsF::operator-=(qreal subtrahend)
 {
     m_left -= subtrahend;
     m_top -= subtrahend;
@@ -451,12 +451,12 @@ inline QMarginsF &QMarginsF::operator-=(qreal subtrahend)
     return *this;
 }
 
-inline QMarginsF &QMarginsF::operator*=(qreal factor)
+Q_DECL_RELAXED_CONSTEXPR inline QMarginsF &QMarginsF::operator*=(qreal factor)
 {
     return *this = *this * factor;
 }
 
-inline QMarginsF &QMarginsF::operator/=(qreal divisor)
+Q_DECL_RELAXED_CONSTEXPR inline QMarginsF &QMarginsF::operator/=(qreal divisor)
 {
     return *this = *this / divisor;
 }
