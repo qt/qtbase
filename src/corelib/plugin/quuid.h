@@ -114,21 +114,20 @@ public:
     static QUuid fromRfc4122(const QByteArray &);
     bool isNull() const;
 
-    bool operator==(const QUuid &orig) const
+    Q_DECL_RELAXED_CONSTEXPR bool operator==(const QUuid &orig) const
     {
-        uint i;
         if (data1 != orig.data1 || data2 != orig.data2 ||
              data3 != orig.data3)
             return false;
 
-        for(i = 0; i < 8; i++)
+        for (uint i = 0; i < 8; i++)
             if (data4[i] != orig.data4[i])
                 return false;
 
         return true;
     }
 
-    bool operator!=(const QUuid &orig) const
+    Q_DECL_RELAXED_CONSTEXPR bool operator!=(const QUuid &orig) const
     {
         return !(*this == orig);
     }
@@ -155,24 +154,24 @@ public:
     }
 #endif
 
-    QUuid &operator=(const GUID &guid)
+    Q_DECL_RELAXED_CONSTEXPR QUuid &operator=(const GUID &guid)
     {
         *this = QUuid(guid);
         return *this;
     }
 
-    operator GUID() const
+    Q_DECL_RELAXED_CONSTEXPR operator GUID() const
     {
         GUID guid = { data1, data2, data3, { data4[0], data4[1], data4[2], data4[3], data4[4], data4[5], data4[6], data4[7] } };
         return guid;
     }
 
-    bool operator==(const GUID &guid) const
+    Q_DECL_RELAXED_CONSTEXPR bool operator==(const GUID &guid) const
     {
         return *this == QUuid(guid);
     }
 
-    bool operator!=(const GUID &guid) const
+    Q_DECL_RELAXED_CONSTEXPR bool operator!=(const GUID &guid) const
     {
         return !(*this == guid);
     }
