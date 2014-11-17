@@ -95,7 +95,7 @@ bool QSslKeyPrivate::fromEVP_PKEY(EVP_PKEY *pkey)
         type = QSsl::PrivateKey;
 
         dsa = q_DSA_new();
-        memcpy(rsa, q_EVP_PKEY_get1_DSA(pkey), sizeof(DSA));
+        memcpy(dsa, q_EVP_PKEY_get1_DSA(pkey), sizeof(DSA));
 
         return true;
     }
