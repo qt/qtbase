@@ -48,7 +48,7 @@
 
 - (void)createAccessibleElement:(QAccessibleInterface *)iface
 {
-    if (!iface || iface->state().invisible)
+    if (!iface || iface->state().invisible || (iface->text(QAccessible::Name).isEmpty() && iface->text(QAccessible::Value).isEmpty() && iface->text(QAccessible::Description).isEmpty()))
         return;
     QAccessible::Id accessibleId = QAccessible::uniqueId(iface);
     UIAccessibilityElement *elem = [[QMacAccessibilityElement alloc] initWithId: accessibleId withAccessibilityContainer: self];
