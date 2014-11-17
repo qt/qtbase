@@ -43,3 +43,46 @@ OS X
  - OS X 10.10 is now supported.
  - QMacStyle has been updated with better OS 10.10 support.
  - The Qt binary packages are now configured with C++11 enabled.
+
+Windows
+-------
+
+ - [QTBUG-38259] Changed configure defaults so that Qt5Core does not
+   link against ICU libraries anymore. Pass '-icu' to enable it.
+
+****************************************************************************
+*                          Tools                                           *
+****************************************************************************
+
+configure & build system
+------------------------
+
+ - The -process/-fully-process/-dont-process configure options have been
+   removed due to being unnecessary and counterproductive.
+ - [QTBUG-36955] The -vcproj configure option was removed. Use "qmake -r -tp vc"
+   _after_ building Qt in case you want to use Visual Studio to work on Qt.
+ - [QTBUG-37961] Qt plugins contain version info again.
+ - [QTBUG-39216] Fixed more cases where the Qt build would pick up headers
+   from a pre-existing Qt installation.
+ - [QTBUG-41267] Fixed parallelized (jom) -debug-and-release builds.
+
+qmake
+-----
+
+ - [QTBUG-21910][Unix] Added 'make dist' target for SUBDIRS projects.
+ - [QTBUG-32895][iOS] Fixed structure of bundles. They can be signed now.
+ - [QTBUG-26782][VS] Fixed handling of TARGET_EXT.
+ - [QTBUG-30712][VS] Fixed handling of QMAKE_LIBFLAGS.
+ - [QTBUG-30373][VS] Using different RESOURCES in different build variants
+   no longer produces invalid vcxproj files.
+ - [QTBUG-37520][VS] Made it possible to suppress qmake warnings about
+   unknown compiler options. CONFIG+=suppress_vcproj_warnings.
+ - [QTBUG-37363][MSVC2012+] embed_manifest_exe is now properly supported.
+ - [QTBUG-41504][MSVC2012+] Building DLLs targeting Windows XP is now
+   supported. As a side effect, Windows CE makespecs must not add /ENTRY: to
+   QMAKE_LFLAGS_CONSOLE any more. The flag is hard-coded in console.prf now.
+ - [QTBUG-35318][Xcode] Fixed QMAKE_BUNDLE_DATA's path resolution.
+ - [QTBUG-39527] Fixed qtCompile() when used with jom -jN.
+ - QMAKE_EXTRA_COMPILERS' commands and depend_command are no longer mangled.
+   Use $$shell_path() and $$shell_quote() to prepare the commands correctly.
+ - Added link-time optimization support for Clang, GCC and ICC. CONFIG+=ltgc.
