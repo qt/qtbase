@@ -202,7 +202,7 @@ Symbols Preprocessor::tokenize(const QByteArray& input, int lineNum, Preprocesso
                     data = skipQuote(data);
                     token = STRING_LITERAL;
                     // concatenate multi-line strings for easier
-                    // STRING_LITERAAL handling in moc
+                    // STRING_LITERAL handling in moc
                     if (!Preprocessor::preprocessOnly
                         && !symbols.isEmpty()
                         && symbols.last().token == STRING_LITERAL) {
