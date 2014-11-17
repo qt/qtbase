@@ -950,6 +950,21 @@ MakefileGenerator::processPrlFiles()
     qFatal("MakefileGenerator::processPrlFiles() called!");
 }
 
+static QString
+qv(const ProString &val)
+{
+    return ' ' + QMakeEvaluator::quoteValue(val);
+}
+
+static QString
+qv(const ProStringList &val)
+{
+    QString ret;
+    foreach (const ProString &v, val)
+        ret += qv(v);
+    return ret;
+}
+
 void
 MakefileGenerator::writePrlFile(QTextStream &t)
 {
@@ -960,21 +975,21 @@ MakefileGenerator::writePrlFile(QTextStream &t)
     QString bdir = Option::output_dir;
     if(bdir.isEmpty())
         bdir = qmake_getpwd();
-    t << "QMAKE_PRL_BUILD_DIR = " << bdir << endl;
+    t << "QMAKE_PRL_BUILD_DIR =" << qv(bdir) << endl;
 
-    t << "QMAKE_PRO_INPUT = " << project->projectFile().section('/', -1) << endl;
+    t << "QMAKE_PRO_INPUT =" << qv(project->projectFile().section('/', -1)) << endl;
 
     if(!project->isEmpty("QMAKE_ABSOLUTE_SOURCE_PATH"))
-        t << "QMAKE_PRL_SOURCE_DIR = " << project->first("QMAKE_ABSOLUTE_SOURCE_PATH") << endl;
-    t << "QMAKE_PRL_TARGET = " << target << endl;
+        t << "QMAKE_PRL_SOURCE_DIR =" << qv(project->first("QMAKE_ABSOLUTE_SOURCE_PATH")) << endl;
+    t << "QMAKE_PRL_TARGET =" << qv(target) << endl;
     if(!project->isEmpty("PRL_EXPORT_DEFINES"))
-        t << "QMAKE_PRL_DEFINES = " << project->values("PRL_EXPORT_DEFINES").join(' ') << endl;
+        t << "QMAKE_PRL_DEFINES =" << qv(project->values("PRL_EXPORT_DEFINES")) << endl;
     if(!project->isEmpty("PRL_EXPORT_CFLAGS"))
-        t << "QMAKE_PRL_CFLAGS = " << project->values("PRL_EXPORT_CFLAGS").join(' ') << endl;
+        t << "QMAKE_PRL_CFLAGS =" << qv(project->values("PRL_EXPORT_CFLAGS")) << endl;
     if(!project->isEmpty("PRL_EXPORT_CXXFLAGS"))
-        t << "QMAKE_PRL_CXXFLAGS = " << project->values("PRL_EXPORT_CXXFLAGS").join(' ') << endl;
+        t << "QMAKE_PRL_CXXFLAGS =" << qv(project->values("PRL_EXPORT_CXXFLAGS")) << endl;
     if(!project->isEmpty("CONFIG"))
-        t << "QMAKE_PRL_CONFIG = " << project->values("CONFIG").join(' ') << endl;
+        t << "QMAKE_PRL_CONFIG =" << qv(project->values("CONFIG")) << endl;
     if(!project->isEmpty("TARGET_VERSION_EXT"))
         t << "QMAKE_PRL_VERSION = " << project->first("TARGET_VERSION_EXT") << endl;
     else if(!project->isEmpty("VERSION"))
@@ -987,9 +1002,9 @@ MakefileGenerator::writePrlFile(QTextStream &t)
             libs << "QMAKE_LIBS"; //obvious one
         if(project->isActiveConfig("staticlib"))
             libs << "QMAKE_LIBS_PRIVATE";
-        t << "QMAKE_PRL_LIBS = ";
+        t << "QMAKE_PRL_LIBS =";
         for (ProStringList::Iterator it = libs.begin(); it != libs.end(); ++it)
-            t << project->values((*it).toKey()).join(' ').replace('\\', "\\\\") << " ";
+            t << qv(project->values((*it).toKey()));
         t << endl;
     }
 }
