@@ -60,12 +60,9 @@
     if (!iface)
         return;
 
-    if (iface->childCount() == 0) {
-        [self createAccessibleElement: iface];
-    } else {
-        for (int i = 0; i < iface->childCount(); ++i)
-            [self createAccessibleContainer: iface->child(i)];
-    }
+    [self createAccessibleElement: iface];
+    for (int i = 0; i < iface->childCount(); ++i)
+        [self createAccessibleContainer: iface->child(i)];
 }
 
 - (void)initAccessibility
