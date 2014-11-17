@@ -52,6 +52,7 @@
 
 #   if defined(ANGLE_ENABLE_D3D9)
 #       include <d3d9.h>
+#       include <dxgi.h>
 #      if !defined(COMPILER_IMPLEMENTATION)
 #       include <d3dcompiler.h>
 #      endif

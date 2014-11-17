@@ -54,7 +54,12 @@ public:
     bool getClientRect(LPRECT rect);
     bool isIconic();
 
-    HRESULT createSwapChain(ID3D11Device* device, DXGIFactory* factory,
+#   if defined(ANGLE_ENABLE_D3D11)
+    typedef ID3D11Device Device;
+#else
+    typedef IDirect3DDevice9 Device;
+#endif
+    HRESULT createSwapChain(Device* device, DXGIFactory* factory,
                             DXGI_FORMAT format, UINT width, UINT height,
                             DXGISwapChain** swapChain);
 
