@@ -202,6 +202,11 @@ macx-xcode {
 
     QMAKE_MAC_XCODE_SETTINGS += arch_iphoneos arch_iphonesimulator
     QMAKE_XCODE_ARCHS = $$QMAKE_IOS_DEVICE_ARCHS $$QMAKE_IOS_SIMULATOR_ARCHS
+
+    only_active_arch.name = ONLY_ACTIVE_ARCH
+    only_active_arch.value = YES
+    only_active_arch.build = debug
+    QMAKE_MAC_XCODE_SETTINGS += only_active_arch
 } else {
     # Be more specific about which architecture we're targeting
     contains(QT_ARCH, arm.*): \
