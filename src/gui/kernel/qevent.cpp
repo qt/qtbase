@@ -3603,6 +3603,8 @@ static const char *eventClassName(QEvent::Type t)
         return "QGraphicsSceneEvent";
     case QEvent::Timer:
         return "QTimerEvent";
+    case QEvent::PlatformSurface:
+        return "QPlatformSurfaceEvent";
     default:
         break;
     }
@@ -3860,6 +3862,18 @@ QDebug operator<<(QDebug dbg, const QEvent *e)
         break;
     case QEvent::Timer:
         dbg << "QTimerEvent(id=" << static_cast<const QTimerEvent *>(e)->timerId() << ')';
+        break;
+    case QEvent::PlatformSurface:
+        dbg << "QPlatformSurfaceEvent(surfaceEventType=";
+        switch (static_cast<const QPlatformSurfaceEvent *>(e)->surfaceEventType()) {
+        case QPlatformSurfaceEvent::SurfaceCreated:
+            dbg << "SurfaceCreated";
+            break;
+        case QPlatformSurfaceEvent::SurfaceAboutToBeDestroyed:
+            dbg << "SurfaceAboutToBeDestroyed";
+            break;
+        }
+        dbg << ')';
         break;
     default:
         dbg << eventClassName(type) << '(' << eventTypeName(type) << ", "
