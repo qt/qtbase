@@ -58,7 +58,7 @@ OBJS        = project.obj main.obj ioutils.obj proitems.obj qmakevfs.obj \
               makefiledeps.obj metamakefile.obj xmloutput.obj \
               msvc_nmake.obj msvc_vcproj.obj msvc_vcxproj.obj \
               msvc_objectmodel.obj msbuild_objectmodel.obj registry.obj \
-              gbuild.obj cesdkhandler.obj
+              cesdkhandler.obj
 
 #qt code
 QTOBJS= \

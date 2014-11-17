@@ -412,7 +412,6 @@ QT_BEGIN_INCLUDE_NAMESPACE
 #include "msvc_nmake.h"
 #include "msvc_vcproj.h"
 #include "msvc_vcxproj.h"
-#include "gbuild.h"
 QT_END_INCLUDE_NAMESPACE
 
 MakefileGenerator *
@@ -452,8 +451,6 @@ MetaMakefileGenerator::createMakefileGenerator(QMakeProject *proj, bool noIO)
             mkfile = new VcxprojGenerator;
         else
             mkfile = new NmakeMakefileGenerator;
-    } else if(gen == "GBUILD") {
-        mkfile = new GBuildMakefileGenerator;
     } else {
         fprintf(stderr, "Unknown generator specified: %s\n", gen.toLatin1().constData());
     }

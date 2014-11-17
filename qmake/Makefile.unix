@@ -9,7 +9,7 @@ OBJS=project.o option.o property.o main.o ioutils.o proitems.o \
      mingw_make.o winmakefile.o projectgenerator.o \
      meta.o makefiledeps.o metamakefile.o xmloutput.o pbuilder_pbx.o \
      msvc_vcproj.o msvc_vcxproj.o msvc_nmake.o msvc_objectmodel.o msbuild_objectmodel.o \
-     gbuild.o cesdkhandler.o
+     cesdkhandler.o
 
 #qt code
 QOBJS=qtextcodec.o qutfcodec.o qstring.o qstring_compat.o qstringbuilder.o qtextstream.o qiodevice.o \
@@ -33,7 +33,7 @@ DEPEND_SRC = \
 	   $(QMKGENSRC)/makefiledeps.cpp $(QMKGENSRC)/metamakefile.cpp \
 	   $(QMKGENSRC)/projectgenerator.cpp $(QMKGENSRC)/makefile.cpp \
 	   $(QMKGENSRC)/unix/unixmake.cpp $(QMKGENSRC)/unix/unixmake2.cpp \
-	   $(QMKGENSRC)/mac/pbuilder_pbx.cpp $(QMKGENSRC)/integrity/gbuild.cpp \
+	   $(QMKGENSRC)/mac/pbuilder_pbx.cpp \
 	   $(QMKGENSRC)/win32/winmakefile.cpp \
 	   $(QMKGENSRC)/win32/mingw_make.cpp $(QMKGENSRC)/win32/msvc_nmake.cpp \
 	   $(QMKGENSRC)/win32/cesdkhandler.cpp $(QMKGENSRC)/mac/xmloutput.cpp  \
@@ -207,9 +207,6 @@ cesdkhandler.o: $(QMKSRC)/generators/win32/cesdkhandler.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 pbuilder_pbx.o: $(QMKSRC)/generators/mac/pbuilder_pbx.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $<
-
-gbuild.o: $(QMKSRC)/generators/integrity/gbuild.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 projectgenerator.o: $(QMKSRC)/generators/projectgenerator.cpp
