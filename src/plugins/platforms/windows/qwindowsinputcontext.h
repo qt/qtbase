@@ -62,6 +62,7 @@ public:
     explicit QWindowsInputContext();
     ~QWindowsInputContext();
 
+    bool hasCapability(Capability capability) const Q_DECL_OVERRIDE;
     void reset() Q_DECL_OVERRIDE;
     void update(Qt::InputMethodQueries) Q_DECL_OVERRIDE;
     void invokeAction(QInputMethod::Action, int cursorPosition) Q_DECL_OVERRIDE;

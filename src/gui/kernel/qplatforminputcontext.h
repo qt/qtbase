@@ -55,10 +55,15 @@ class Q_GUI_EXPORT QPlatformInputContext : public QObject
     Q_DECLARE_PRIVATE(QPlatformInputContext)
 
 public:
+    enum Capability {
+        HiddenTextCapability = 0x1
+    };
+
     QPlatformInputContext();
     virtual ~QPlatformInputContext();
 
     virtual bool isValid() const;
+    virtual bool hasCapability(Capability capability) const;
 
     virtual void reset();
     virtual void commit();

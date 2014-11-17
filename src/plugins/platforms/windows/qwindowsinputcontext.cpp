@@ -163,6 +163,21 @@ QWindowsInputContext::~QWindowsInputContext()
 {
 }
 
+bool QWindowsInputContext::hasCapability(Capability capability) const
+{
+    switch (capability) {
+    case QPlatformInputContext::HiddenTextCapability:
+#ifndef Q_OS_WINCE
+        return false; // QTBUG-40691, do not show IME on desktop for password entry fields.
+#else
+        break; // Windows CE: Show software keyboard.
+#endif
+    default:
+        break;
+    }
+    return true;
+}
+
 /*!
     \brief Cancels a composition.
 */
