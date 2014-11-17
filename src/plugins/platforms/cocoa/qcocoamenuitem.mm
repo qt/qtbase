@@ -323,17 +323,22 @@ NSMenuItem *QCocoaMenuItem::sync()
         text += QLatin1String(" (") + accel.toString(QKeySequence::NativeText) + QLatin1String(")");
 
     QString finalString = qt_mac_removeMnemonics(text);
+    bool useAttributedTitle = false;
     // Cocoa Font and title
     if (m_font.resolve()) {
         NSFont *customMenuFont = [NSFont fontWithName:QCFString::toNSString(m_font.family())
                                   size:m_font.pointSize()];
-        NSArray *keys = [NSArray arrayWithObjects:NSFontAttributeName, nil];
-        NSArray *objects = [NSArray arrayWithObjects:customMenuFont, nil];
-        NSDictionary *attributes = [NSDictionary dictionaryWithObjects:objects forKeys:keys];
-        NSAttributedString *str = [[[NSAttributedString alloc] initWithString:QCFString::toNSString(finalString)
-                                 attributes:attributes] autorelease];
-       [m_native setAttributedTitle: str];
-    } else {
+        if (customMenuFont) {
+            NSArray *keys = [NSArray arrayWithObjects:NSFontAttributeName, nil];
+            NSArray *objects = [NSArray arrayWithObjects:customMenuFont, nil];
+            NSDictionary *attributes = [NSDictionary dictionaryWithObjects:objects forKeys:keys];
+            NSAttributedString *str = [[[NSAttributedString alloc] initWithString:QCFString::toNSString(finalString)
+                                     attributes:attributes] autorelease];
+            [m_native setAttributedTitle: str];
+            useAttributedTitle = true;
+        }
+    }
+    if (!useAttributedTitle) {
        [m_native setTitle: QCFString::toNSString(finalString)];
     }
 

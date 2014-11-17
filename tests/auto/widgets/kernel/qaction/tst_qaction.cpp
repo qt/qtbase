@@ -61,6 +61,7 @@ private slots:
     void setText();
     void setIconText_data() { setText_data(); }
     void setIconText();
+    void setUnknownFont();
     void actionEvent();
     void setStandardKeys();
     void alternateShortcuts();
@@ -184,6 +185,15 @@ void tst_QAction::setIconText()
     QCOMPARE(action.text(), textFromIconText);
 }
 
+void tst_QAction::setUnknownFont() // QTBUG-42728
+{
+    QAction action(0);
+    QFont font("DoesNotExist", 11);
+    action.setFont(font);
+
+    QMenu menu;
+    menu.addAction(&action); // should not crash
+}
 
 void tst_QAction::updateState(QActionEvent *e)
 {
