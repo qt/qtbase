@@ -708,6 +708,9 @@ void QBrush::setStyle(Qt::BrushStyle style)
 
 void QBrush::setColor(const QColor &c)
 {
+    if (d->color == c)
+        return;
+
     detach(d->style);
     d->color = c;
 }
