@@ -220,8 +220,9 @@ static qlonglong qConvertToNumber(const QVariant::Private *d, bool *ok)
         return qlonglong(qMetaTypeUNumber(d));
     }
 
-    if (QMetaType::typeFlags(d->type) & QMetaType::IsEnumeration) {
-        switch (QMetaType::sizeOf(d->type)) {
+    QMetaType typeInfo(d->type);
+    if (typeInfo.flags() & QMetaType::IsEnumeration) {
+        switch (typeInfo.sizeOf()) {
         case 1:
             return d->is_shared ? *reinterpret_cast<signed char *>(d->data.shared->ptr) : d->data.sc;
         case 2:
@@ -268,8 +269,9 @@ static qulonglong qConvertToUnsignedNumber(const QVariant::Private *d, bool *ok)
         return qMetaTypeUNumber(d);
     }
 
-    if (QMetaType::typeFlags(d->type) & QMetaType::IsEnumeration) {
-        switch (QMetaType::sizeOf(d->type)) {
+    QMetaType typeInfo(d->type);
+    if (typeInfo.flags() & QMetaType::IsEnumeration) {
+        switch (typeInfo.sizeOf()) {
         case 1:
             return d->is_shared ? *reinterpret_cast<uchar *>(d->data.shared->ptr) : d->data.uc;
         case 2:
