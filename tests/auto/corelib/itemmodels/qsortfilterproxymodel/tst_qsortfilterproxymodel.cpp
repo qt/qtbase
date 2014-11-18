@@ -3586,7 +3586,7 @@ class SignalArgumentChecker : public QObject
     Q_OBJECT
 public:
     SignalArgumentChecker(QAbstractItemModel *model, QAbstractProxyModel *proxy, QObject *parent = 0)
-      : QObject(parent), m_model(model), m_proxy(proxy)
+      : QObject(parent), m_proxy(proxy)
     {
         connect(model, SIGNAL(rowsAboutToBeMoved(QModelIndex,int,int,QModelIndex,int)), SLOT(rowsAboutToBeMoved(QModelIndex,int,int,QModelIndex,int)));
         connect(model, SIGNAL(rowsMoved(QModelIndex,int,int,QModelIndex,int)), SLOT(rowsMoved(QModelIndex,int,int,QModelIndex,int)));
@@ -3636,7 +3636,6 @@ private slots:
     }
 
 private:
-    QAbstractItemModel *m_model;
     QAbstractProxyModel *m_proxy;
     QPersistentModelIndex m_p1PersistentBefore;
     QPersistentModelIndex m_p2PersistentBefore;
