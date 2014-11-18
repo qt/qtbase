@@ -7059,11 +7059,7 @@ fi'`
         echo "export PKG_CONFIG_SYSROOT_DIR=$PKG_CONFIG_SYSROOT_DIR" >> "$outpath/config.status"
     [ -n "$PKG_CONFIG_LIBDIR" ] && \
         echo "export PKG_CONFIG_LIBDIR=$PKG_CONFIG_LIBDIR" >> "$outpath/config.status"
-    echo "if [ \"\$#\" -gt 0 ]; then" >> "$outpath/config.status"
-    echo "  $CONFIG_STATUS \"\$@\"" >> "$outpath/config.status"
-    echo "else" >> "$outpath/config.status"
-    echo "  $CONFIG_STATUS" >> "$outpath/config.status"
-    echo "fi" >> "$outpath/config.status"
+    echo "$CONFIG_STATUS \"\$@\"" >> "$outpath/config.status"
     chmod +x "$outpath/config.status"
 fi
 
