@@ -434,7 +434,7 @@ public:
     {
         QTableView::setModel(model);
         connect(selectionModel(), SIGNAL(currentChanged(QModelIndex,QModelIndex)),
-                     this, SLOT(currentChanged(QModelIndex,QModelIndex)));
+                     this, SLOT(slotCurrentChanged(QModelIndex,QModelIndex)));
         connect(selectionModel(), SIGNAL(selectionChanged(QItemSelection,QItemSelection)),
                      this, SLOT(itemSelectionChanged(QItemSelection,QItemSelection)));
     }
@@ -495,7 +495,7 @@ public:
 
     bool checkSignalOrder;
 public slots:
-    void currentChanged(QModelIndex , QModelIndex ) {
+    void slotCurrentChanged(QModelIndex, QModelIndex) {
         hasCurrentChanged++;
         if (checkSignalOrder)
             QVERIFY(hasCurrentChanged > hasSelectionChanged);
