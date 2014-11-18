@@ -238,6 +238,26 @@ static qlonglong qConvertToNumber(const QVariant::Private *d, bool *ok)
     return Q_INT64_C(0);
 }
 
+static qreal qConvertToRealNumber(const QVariant::Private *d, bool *ok)
+{
+    *ok = true;
+    switch (uint(d->type)) {
+    case QVariant::Double:
+        return qreal(d->data.d);
+    case QMetaType::Float:
+        return qreal(d->data.f);
+    case QVariant::ULongLong:
+    case QVariant::UInt:
+    case QMetaType::UChar:
+    case QMetaType::UShort:
+    case QMetaType::ULong:
+        return qreal(qMetaTypeUNumber(d));
+    default:
+        // includes enum conversion as well as invalid types
+        return qreal(qConvertToNumber(d, ok));
+    }
+}
+
 static qulonglong qConvertToUnsignedNumber(const QVariant::Private *d, bool *ok)
 {
     *ok = true;
@@ -3236,21 +3256,35 @@ static int integralCompare(uint promotedType, const QVariant::Private *d1, const
     return 0;
 }
 
+static int numericCompare(const QVariant::Private *d1, const QVariant::Private *d2)
+{
+    uint promotedType = numericTypePromotion(d1->type, d2->type);
+    if (promotedType != QMetaType::QReal)
+        return integralCompare(promotedType, d1, d2);
+
+    // qreal comparisons
+    bool ok;
+    qreal r1 = qConvertToRealNumber(d1, &ok);
+    Q_ASSERT(ok);
+    qreal r2 = qConvertToRealNumber(d2, &ok);
+    Q_ASSERT(ok);
+    if (qFuzzyCompare(r1, r2))
+        return 0;
+    return r1 < r2 ? -1 : 1;
+}
+
 /*!
     \internal
  */
 bool QVariant::cmp(const QVariant &v) const
 {
+    // try numerics first, with C++ type promotion rules (no conversion)
+    if (qIsNumericType(d.type) && qIsNumericType(v.d.type))
+        return numericCompare(&d, &v.d) == 0;
+
     QVariant v1 = *this;
     QVariant v2 = v;
     if (d.type != v2.d.type) {
-        if (qIsNumericType(d.type) && qIsNumericType(v.d.type)) {
-            uint promotedType = numericTypePromotion(v1.d.type, v2.d.type);
-            if (promotedType == QMetaType::QReal)
-                return qFuzzyCompare(toReal(), v.toReal());
-            else
-                return integralCompare(promotedType, &v1.d, &v2.d) == 0;
-        }
         if (v2.canConvert(v1.d.type)) {
             if (!v2.convert(v1.d.type))
                 return false;
@@ -3274,19 +3308,16 @@ bool QVariant::cmp(const QVariant &v) const
  */
 int QVariant::compare(const QVariant &v) const
 {
+    // try numerics first, with C++ type promotion rules (no conversion)
+    if (qIsNumericType(d.type) && qIsNumericType(v.d.type))
+        return numericCompare(&d, &v.d);
+
+    // check for equality next, as more types implement operator== than operator<
     if (cmp(v))
         return 0;
+
     QVariant v1 = *this;
     QVariant v2 = v;
-
-    // try numerics first, with C++ type promotion rules (no conversion)
-    if (qIsNumericType(v1.d.type) && qIsNumericType(v2.d.type)) {
-        uint promotedType = numericTypePromotion(v1.d.type, v2.d.type);
-        if (promotedType == QMetaType::QReal)
-            return v1.toReal() < v2.toReal() ? -1 : 1;
-        else
-            return integralCompare(promotedType, &v1.d, &v2.d);
-    }
 
     if (v1.d.type != v2.d.type) {
         // if both types differ, try to convert
