@@ -3973,47 +3973,47 @@ void Configure::generateQConfigCpp()
                   << endl
                   << "static const char qt_configure_prefix_path_strs[][12 + 512] = {" << endl
                   << "#ifndef QT_BUILD_QMAKE" << endl
-                  << "    \"qt_prfxpath=" << formatPath(dictionary["QT_SYSROOT_PREFIX"]) << "\"," << endl
-                  << "    \"qt_docspath=" << formatPath(dictionary["QT_SYSROOT_DOCS"]) << "\","  << endl
-                  << "    \"qt_hdrspath=" << formatPath(dictionary["QT_SYSROOT_HEADERS"]) << "\","  << endl
-                  << "    \"qt_libspath=" << formatPath(dictionary["QT_SYSROOT_LIBS"]) << "\","  << endl
-                  << "    \"qt_lbexpath=" << formatPath(dictionary["QT_SYSROOT_LIBEXECS"]) << "\","  << endl
-                  << "    \"qt_binspath=" << formatPath(dictionary["QT_SYSROOT_BINS"]) << "\","  << endl
-                  << "    \"qt_plugpath=" << formatPath(dictionary["QT_SYSROOT_PLUGINS"]) << "\","  << endl
-                  << "    \"qt_impspath=" << formatPath(dictionary["QT_SYSROOT_IMPORTS"]) << "\","  << endl
-                  << "    \"qt_qml2path=" << formatPath(dictionary["QT_SYSROOT_QML"]) << "\","  << endl
-                  << "    \"qt_adatpath=" << formatPath(dictionary["QT_SYSROOT_ARCHDATA"]) << "\","  << endl
-                  << "    \"qt_datapath=" << formatPath(dictionary["QT_SYSROOT_DATA"]) << "\","  << endl
-                  << "    \"qt_trnspath=" << formatPath(dictionary["QT_SYSROOT_TRANSLATIONS"]) << "\"," << endl
-                  << "    \"qt_xmplpath=" << formatPath(dictionary["QT_SYSROOT_EXAMPLES"]) << "\","  << endl
-                  << "    \"qt_tstspath=" << formatPath(dictionary["QT_SYSROOT_TESTS"]) << "\","  << endl
+                  << "    \"qt_prfxpath=" << QDir::cleanPath(dictionary["QT_SYSROOT_PREFIX"]) << "\"," << endl
+                  << "    \"qt_docspath=" << QDir::cleanPath(dictionary["QT_SYSROOT_DOCS"]) << "\","  << endl
+                  << "    \"qt_hdrspath=" << QDir::cleanPath(dictionary["QT_SYSROOT_HEADERS"]) << "\","  << endl
+                  << "    \"qt_libspath=" << QDir::cleanPath(dictionary["QT_SYSROOT_LIBS"]) << "\","  << endl
+                  << "    \"qt_lbexpath=" << QDir::cleanPath(dictionary["QT_SYSROOT_LIBEXECS"]) << "\","  << endl
+                  << "    \"qt_binspath=" << QDir::cleanPath(dictionary["QT_SYSROOT_BINS"]) << "\","  << endl
+                  << "    \"qt_plugpath=" << QDir::cleanPath(dictionary["QT_SYSROOT_PLUGINS"]) << "\","  << endl
+                  << "    \"qt_impspath=" << QDir::cleanPath(dictionary["QT_SYSROOT_IMPORTS"]) << "\","  << endl
+                  << "    \"qt_qml2path=" << QDir::cleanPath(dictionary["QT_SYSROOT_QML"]) << "\","  << endl
+                  << "    \"qt_adatpath=" << QDir::cleanPath(dictionary["QT_SYSROOT_ARCHDATA"]) << "\","  << endl
+                  << "    \"qt_datapath=" << QDir::cleanPath(dictionary["QT_SYSROOT_DATA"]) << "\","  << endl
+                  << "    \"qt_trnspath=" << QDir::cleanPath(dictionary["QT_SYSROOT_TRANSLATIONS"]) << "\"," << endl
+                  << "    \"qt_xmplpath=" << QDir::cleanPath(dictionary["QT_SYSROOT_EXAMPLES"]) << "\","  << endl
+                  << "    \"qt_tstspath=" << QDir::cleanPath(dictionary["QT_SYSROOT_TESTS"]) << "\","  << endl
                   << "#else" << endl
-                  << "    \"qt_prfxpath=" << formatPath(dictionary["QT_INSTALL_PREFIX"]) << "\"," << endl
-                  << "    \"qt_docspath=" << formatPath(dictionary["QT_INSTALL_DOCS"]) << "\","  << endl
-                  << "    \"qt_hdrspath=" << formatPath(dictionary["QT_INSTALL_HEADERS"]) << "\","  << endl
-                  << "    \"qt_libspath=" << formatPath(dictionary["QT_INSTALL_LIBS"]) << "\","  << endl
-                  << "    \"qt_lbexpath=" << formatPath(dictionary["QT_INSTALL_LIBEXECS"]) << "\","  << endl
-                  << "    \"qt_binspath=" << formatPath(dictionary["QT_INSTALL_BINS"]) << "\","  << endl
-                  << "    \"qt_plugpath=" << formatPath(dictionary["QT_INSTALL_PLUGINS"]) << "\","  << endl
-                  << "    \"qt_impspath=" << formatPath(dictionary["QT_INSTALL_IMPORTS"]) << "\","  << endl
-                  << "    \"qt_qml2path=" << formatPath(dictionary["QT_INSTALL_QML"]) << "\","  << endl
-                  << "    \"qt_adatpath=" << formatPath(dictionary["QT_INSTALL_ARCHDATA"]) << "\","  << endl
-                  << "    \"qt_datapath=" << formatPath(dictionary["QT_INSTALL_DATA"]) << "\","  << endl
-                  << "    \"qt_trnspath=" << formatPath(dictionary["QT_INSTALL_TRANSLATIONS"]) << "\"," << endl
-                  << "    \"qt_xmplpath=" << formatPath(dictionary["QT_INSTALL_EXAMPLES"]) << "\","  << endl
-                  << "    \"qt_tstspath=" << formatPath(dictionary["QT_INSTALL_TESTS"]) << "\","  << endl
-                  << "    \"qt_ssrtpath=" << formatPath(dictionary["CFG_SYSROOT"]) << "\"," << endl
-                  << "    \"qt_hpfxpath=" << formatPath(dictionary["QT_HOST_PREFIX"]) << "\"," << endl
-                  << "    \"qt_hbinpath=" << formatPath(dictionary["QT_HOST_BINS"]) << "\"," << endl
-                  << "    \"qt_hlibpath=" << formatPath(dictionary["QT_HOST_LIBS"]) << "\"," << endl
-                  << "    \"qt_hdatpath=" << formatPath(dictionary["QT_HOST_DATA"]) << "\"," << endl
+                  << "    \"qt_prfxpath=" << QDir::cleanPath(dictionary["QT_INSTALL_PREFIX"]) << "\"," << endl
+                  << "    \"qt_docspath=" << QDir::cleanPath(dictionary["QT_INSTALL_DOCS"]) << "\","  << endl
+                  << "    \"qt_hdrspath=" << QDir::cleanPath(dictionary["QT_INSTALL_HEADERS"]) << "\","  << endl
+                  << "    \"qt_libspath=" << QDir::cleanPath(dictionary["QT_INSTALL_LIBS"]) << "\","  << endl
+                  << "    \"qt_lbexpath=" << QDir::cleanPath(dictionary["QT_INSTALL_LIBEXECS"]) << "\","  << endl
+                  << "    \"qt_binspath=" << QDir::cleanPath(dictionary["QT_INSTALL_BINS"]) << "\","  << endl
+                  << "    \"qt_plugpath=" << QDir::cleanPath(dictionary["QT_INSTALL_PLUGINS"]) << "\","  << endl
+                  << "    \"qt_impspath=" << QDir::cleanPath(dictionary["QT_INSTALL_IMPORTS"]) << "\","  << endl
+                  << "    \"qt_qml2path=" << QDir::cleanPath(dictionary["QT_INSTALL_QML"]) << "\","  << endl
+                  << "    \"qt_adatpath=" << QDir::cleanPath(dictionary["QT_INSTALL_ARCHDATA"]) << "\","  << endl
+                  << "    \"qt_datapath=" << QDir::cleanPath(dictionary["QT_INSTALL_DATA"]) << "\","  << endl
+                  << "    \"qt_trnspath=" << QDir::cleanPath(dictionary["QT_INSTALL_TRANSLATIONS"]) << "\"," << endl
+                  << "    \"qt_xmplpath=" << QDir::cleanPath(dictionary["QT_INSTALL_EXAMPLES"]) << "\","  << endl
+                  << "    \"qt_tstspath=" << QDir::cleanPath(dictionary["QT_INSTALL_TESTS"]) << "\","  << endl
+                  << "    \"qt_ssrtpath=" << QDir::cleanPath(dictionary["CFG_SYSROOT"]) << "\"," << endl
+                  << "    \"qt_hpfxpath=" << QDir::cleanPath(dictionary["QT_HOST_PREFIX"]) << "\"," << endl
+                  << "    \"qt_hbinpath=" << QDir::cleanPath(dictionary["QT_HOST_BINS"]) << "\"," << endl
+                  << "    \"qt_hlibpath=" << QDir::cleanPath(dictionary["QT_HOST_LIBS"]) << "\"," << endl
+                  << "    \"qt_hdatpath=" << QDir::cleanPath(dictionary["QT_HOST_DATA"]) << "\"," << endl
                   << "    \"qt_targspec=" << targSpec << "\"," << endl
                   << "    \"qt_hostspec=" << hostSpec << "\"," << endl
                   << "#endif" << endl
                   << "};" << endl;
 
         if ((platform() != WINDOWS) && (platform() != WINDOWS_CE) && (platform() != WINDOWS_RT))
-            tmpStream << "static const char qt_configure_settings_path_str [256 + 12] = \"qt_stngpath=" << formatPath(dictionary["QT_INSTALL_SETTINGS"]) << "\";" << endl;
+            tmpStream << "static const char qt_configure_settings_path_str [256 + 12] = \"qt_stngpath=" << QDir::cleanPath(dictionary["QT_INSTALL_SETTINGS"]) << "\";" << endl;
 
         tmpStream << endl
                   << "#ifdef QT_BUILD_QMAKE\n"
