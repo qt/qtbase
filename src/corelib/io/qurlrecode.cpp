@@ -33,6 +33,7 @@
 
 #include "qurl.h"
 #include "private/qutfcodec_p.h"
+#include "private/qtools_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -197,8 +198,7 @@ static inline ushort decodePercentEncoding(const ushort *input)
 
 static inline ushort encodeNibble(ushort c)
 {
-    static const uchar hexnumbers[] = "0123456789ABCDEF";
-    return hexnumbers[c & 0xf];
+    return ushort(QtMiscUtils::toHexUpper(c));
 }
 
 static void ensureDetached(QString &result, ushort *&output, const ushort *begin, const ushort *input, const ushort *end,

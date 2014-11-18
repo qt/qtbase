@@ -33,6 +33,7 @@
 
 #include "qipaddress_p.h"
 #include "private/qlocale_tools_p.h"
+#include "private/qtools_p.h"
 #include "qvarlengtharray.h"
 
 QT_BEGIN_NAMESPACE
@@ -240,7 +241,7 @@ const QChar *parseIp6(IPv6Address &address, const QChar *begin, const QChar *end
 
 static inline QChar toHex(uchar c)
 {
-    return ushort(c > 9 ? c + 'a' - 0xA : c + '0');
+    return QtMiscUtils::toHexLower(c);
 }
 
 void toString(QString &appendTo, IPv6Address address)

@@ -36,13 +36,12 @@
 #include "qdatastream.h"
 #include "qendian.h"
 #include "qdebug.h"
+#include "private/qtools_p.h"
 
 #ifndef QT_BOOTSTRAPPED
 #include "qcryptographichash.h"
 #endif
 QT_BEGIN_NAMESPACE
-
-static const char digits[] = "0123456789abcdef";
 
 template <class Char, class Integral>
 void _q_toHex(Char *&dst, Integral value)
@@ -52,10 +51,8 @@ void _q_toHex(Char *&dst, Integral value)
     const char* p = reinterpret_cast<const char*>(&value);
 
     for (uint i = 0; i < sizeof(Integral); ++i, dst += 2) {
-        uint j = (p[i] >> 4) & 0xf;
-        dst[0] = Char(digits[j]);
-        j = p[i] & 0xf;
-        dst[1] = Char(digits[j]);
+        dst[0] = Char(QtMiscUtils::toHexLower((p[i] >> 4) & 0xf));
+        dst[1] = Char(QtMiscUtils::toHexLower(p[i] & 0xf));
     }
 }
 

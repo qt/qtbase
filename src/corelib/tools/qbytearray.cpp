@@ -4161,16 +4161,8 @@ QByteArray QByteArray::toHex() const
     char *hexData = hex.data();
     const uchar *data = (const uchar *)d->data();
     for (int i = 0; i < d->size; ++i) {
-        int j = (data[i] >> 4) & 0xf;
-        if (j <= 9)
-            hexData[i*2] = (j + '0');
-         else
-            hexData[i*2] = (j + 'a' - 10);
-        j = data[i] & 0xf;
-        if (j <= 9)
-            hexData[i*2+1] = (j + '0');
-         else
-            hexData[i*2+1] = (j + 'a' - 10);
+        hexData[i*2] = QtMiscUtils::toHexLower(data[i] >> 4);
+        hexData[i*2+1] = QtMiscUtils::toHexLower(data[i] & 0xf);
     }
     return hex;
 }
@@ -4365,12 +4357,6 @@ static inline bool q_strchr(const char str[], char chr)
     return false;
 }
 
-static inline char toHexHelper(char c)
-{
-    static const char hexnumbers[] = "0123456789ABCDEF";
-    return hexnumbers[c & 0xf];
-}
-
 static void q_toPercentEncoding(QByteArray *ba, const char *dontEncode, const char *alsoEncode, char percent)
 {
     if (ba->isEmpty())
@@ -4403,8 +4389,8 @@ static void q_toPercentEncoding(QByteArray *ba, const char *dontEncode, const ch
                 output = ba->data();
             }
             output[length++] = percent;
-            output[length++] = toHexHelper((c & 0xf0) >> 4);
-            output[length++] = toHexHelper(c & 0xf);
+            output[length++] = QtMiscUtils::toHexUpper((c & 0xf0) >> 4);
+            output[length++] = QtMiscUtils::toHexUpper(c & 0xf);
         }
     }
     if (output)

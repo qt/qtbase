@@ -47,6 +47,7 @@
 #include <QtCore/qprocess.h>
 #include <QtCore/qdebug.h>
 #include <QtCore/qlibraryinfo.h>
+#include <QtCore/private/qtools_p.h>
 
 #include <QtTest/private/qtestlog_p.h>
 #include <QtTest/private/qtesttable_p.h>
@@ -83,6 +84,8 @@
 #endif
 
 QT_BEGIN_NAMESPACE
+
+using QtMiscUtils::toHexUpper;
 
 /*!
    \namespace QTest
@@ -2060,12 +2063,6 @@ void *fetchData(QTestData *data, const char *tagName, int typeId)
     return data->data(idx);
 }
 
-static char toHex(ushort value)
-{
-    static const char hexdigits[] = "0123456789ABCDEF";
-    return hexdigits[value & 0xF];
-}
-
 /*!
   \fn char* QTest::toHexRepresentation(const char *ba, int length)
 
@@ -2115,9 +2112,9 @@ char *toHexRepresentation(const char *ba, int length)
     while (true) {
         const char at = ba[i];
 
-        result[o] = toHex(at >> 4);
+        result[o] = toHexUpper(at >> 4);
         ++o;
-        result[o] = toHex(at);
+        result[o] = toHexUpper(at);
 
         ++i;
         ++o;
@@ -2183,10 +2180,10 @@ char *toPrettyUnicode(const ushort *p, int length)
             break;
         default:
             *dst++ = 'u';
-            *dst++ = toHex(*p >> 12);
-            *dst++ = toHex(*p >> 8);
-            *dst++ = toHex(*p >> 4);
-            *dst++ = toHex(*p);
+            *dst++ = toHexUpper(*p >> 12);
+            *dst++ = toHexUpper(*p >> 8);
+            *dst++ = toHexUpper(*p >> 4);
+            *dst++ = toHexUpper(*p);
         }
     }
 

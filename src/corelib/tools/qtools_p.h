@@ -50,6 +50,20 @@
 
 QT_BEGIN_NAMESPACE
 
+namespace QtMiscUtils {
+inline char toHexUpper(uint value)
+{
+    static const char hexdigits[] = "0123456789ABCDEF";
+    return hexdigits[value & 0xF];
+}
+
+inline char toHexLower(uint value)
+{
+    static const char hexdigits[] = "0123456789abcdef";
+    return hexdigits[value & 0xF];
+}
+}
+
 // We typically need an extra bit for qNextPowerOfTwo when determining the next allocation size.
 enum {
     MaxAllocSize = (1 << (std::numeric_limits<int>::digits - 1)) - 1
