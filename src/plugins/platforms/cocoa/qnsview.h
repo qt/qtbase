@@ -74,6 +74,7 @@ Q_FORWARD_DECLARE_OBJC_CLASS(QNSViewMouseMoveHelper);
     NSString *m_inputSource;
     QNSViewMouseMoveHelper *m_mouseMoveHelper;
     bool m_resendKeyEvent;
+    bool m_scrolling;
 }
 
 - (id)init;

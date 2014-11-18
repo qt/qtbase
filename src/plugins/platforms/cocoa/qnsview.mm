@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -160,6 +160,7 @@ static NSString *_q_NSWindowDidChangeOcclusionStateNotification = nil;
         m_inputSource = 0;
         m_mouseMoveHelper = [[QNSViewMouseMoveHelper alloc] initWithView:self];
         m_resendKeyEvent = false;
+        m_scrolling = false;
 
         if (!touchDevice) {
             touchDevice = new QTouchDevice;
@@ -1265,12 +1266,9 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
 {
     if (m_window->flags() & Qt::WindowTransparentForInput)
         return [super scrollWheel:theEvent];
-    const EventRef carbonEvent = (EventRef)[theEvent eventRef];
-    const UInt32 carbonEventKind = carbonEvent ? ::GetEventKind(carbonEvent) : 0;
-    const bool scrollEvent = carbonEventKind == kEventMouseScroll;
 
     QPoint angleDelta;
-    if (scrollEvent) {
+    if ([theEvent hasPreciseScrollingDeltas]) {
         // The mouse device contains pixel scroll wheel support (Mighty Mouse, Trackpad).
         // Since deviceDelta is delivered as pixels rather than degrees, we need to
         // convert from pixels to degrees in a sensible manner.
@@ -1280,7 +1278,6 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
         angleDelta.setX([theEvent scrollingDeltaX] * pixelsToDegrees);
         angleDelta.setY([theEvent scrollingDeltaY] * pixelsToDegrees);
     } else {
-        // carbonEventKind == kEventMouseWheelMoved
         // Remove acceleration, and use either -120 or 120 as delta:
         angleDelta.setX(qBound(-120, int([theEvent deltaX] * 10000), 120));
         angleDelta.setY(qBound(-120, int([theEvent deltaY] * 10000), 120));
@@ -1321,16 +1318,20 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_8
     if (QSysInfo::QSysInfo::MacintoshVersion >= QSysInfo::MV_10_8) {
         // On 10.8 and above, MayBegin is likely to happen.  We treat it the same as an actual begin.
-        if (phase == NSEventPhaseMayBegin)
-            ph = Qt::ScrollBegin;
-    } else
-#endif
-        if (phase == NSEventPhaseBegan) {
-            // On 10.7, MayBegin will not happen, so Began is the actual beginning.
+        if (phase == NSEventPhaseMayBegin) {
+            m_scrolling = true;
             ph = Qt::ScrollBegin;
         }
-    if (phase == NSEventPhaseEnded || phase == NSEventPhaseCancelled) {
+    }
+#endif
+    if (phase == NSEventPhaseBegan) {
+        // If MayBegin did not happen, Began is the actual beginning.
+        if (!m_scrolling)
+            ph = Qt::ScrollBegin;
+        m_scrolling = true;
+    } else if (phase == NSEventPhaseEnded || phase == NSEventPhaseCancelled) {
         ph = Qt::ScrollEnd;
+        m_scrolling = false;
     }
 
     QWindowSystemInterface::handleWheelEvent(m_window, qt_timestamp, qt_windowPoint, qt_screenPoint, pixelDelta, angleDelta, currentWheelModifiers, ph);
