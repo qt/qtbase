@@ -87,7 +87,13 @@ if [ x"$1" = x"-top-level" ]; then
 fi
 
 # later cache the command line in config.status
-OPT_CMDLINE=`echo $@ | sed 's,-v ,,g; s,-v$,,g'`
+OPT_CMDLINE=
+for i in "$@"; do
+    if [ "x$i" != "x-v" ]; then
+        [ -z "${i##* *}" ] && i="'$i'"
+        OPT_CMDLINE="$OPT_CMDLINE $i"
+    fi
+done
 
 # initialize global variables
 QMAKE_SWITCHES=
@@ -7040,7 +7046,7 @@ fi
 # finally save the executed command to another script
 #-------------------------------------------------------------------------------
 if [ `basename $0` != "config.status" ]; then
-    CONFIG_STATUS="$relpath/$relconf $OPT_CMDLINE"
+    CONFIG_STATUS="$relpath/$relconf$OPT_CMDLINE"
 
     # add the system variables
     for varname in $SYSTEM_VARIABLES; do

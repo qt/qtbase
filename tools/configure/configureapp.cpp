@@ -4387,12 +4387,8 @@ void Configure::reloadCmdLine()
         QFile inFile(buildPath + "/configure" + dictionary[ "CUSTOMCONFIG" ] + ".cache");
         if (inFile.open(QFile::ReadOnly)) {
             QTextStream inStream(&inFile);
-            QString buffer;
-            inStream >> buffer;
-            while (buffer.length()) {
-                configCmdLine += buffer;
-                inStream >> buffer;
-            }
+            while (!inStream.atEnd())
+                configCmdLine += inStream.readLine().trimmed();
             inFile.close();
         }
     }
@@ -4405,7 +4401,7 @@ void Configure::saveCmdLine()
         if (outFile.open(QFile::WriteOnly | QFile::Text)) {
             QTextStream outStream(&outFile);
             for (QStringList::Iterator it = configCmdLine.begin(); it != configCmdLine.end(); ++it) {
-                outStream << (*it) << " " << endl;
+                outStream << (*it) << endl;
             }
             outStream.flush();
             outFile.close();
