@@ -141,14 +141,15 @@ void tst_qmake::cleanup()
 void tst_qmake::simple_app()
 {
     QString workDir = base_path + "/testdata/simple_app";
+    QString destDir = workDir + "/dest dir";
 
     QVERIFY( test_compiler.qmake( workDir, "simple_app" ));
     QVERIFY( test_compiler.make( workDir ));
-    QVERIFY( test_compiler.exists( workDir, "simple_app", Exe, "1.0.0" ));
+    QVERIFY( test_compiler.exists( destDir, "simple app", Exe, "1.0.0" ));
     QVERIFY( test_compiler.makeClean( workDir ));
-    QVERIFY( test_compiler.exists( workDir, "simple_app", Exe, "1.0.0" )); // Should still exist after a make clean
+    QVERIFY( test_compiler.exists( destDir, "simple app", Exe, "1.0.0" )); // Should still exist after a make clean
     QVERIFY( test_compiler.makeDistClean( workDir ));
-    QVERIFY( !test_compiler.exists( workDir, "simple_app", Exe, "1.0.0" )); // Should not exist after a make distclean
+    QVERIFY( !test_compiler.exists( destDir, "simple app", Exe, "1.0.0" )); // Should not exist after a make distclean
     QVERIFY( test_compiler.removeMakefile( workDir ) );
 }
 
@@ -156,14 +157,15 @@ void tst_qmake::simple_app_shadowbuild()
 {
     QString workDir = base_path + "/testdata/simple_app";
     QString buildDir = base_path + "/testdata/simple_app_build";
+    QString destDir = buildDir + "/dest dir";
 
     QVERIFY( test_compiler.qmake( workDir, "simple_app", buildDir ));
     QVERIFY( test_compiler.make( buildDir ));
-    QVERIFY( test_compiler.exists( buildDir, "simple_app", Exe, "1.0.0" ));
+    QVERIFY( test_compiler.exists( destDir, "simple app", Exe, "1.0.0" ));
     QVERIFY( test_compiler.makeClean( buildDir ));
-    QVERIFY( test_compiler.exists( buildDir, "simple_app", Exe, "1.0.0" )); // Should still exist after a make clean
+    QVERIFY( test_compiler.exists( destDir, "simple app", Exe, "1.0.0" )); // Should still exist after a make clean
     QVERIFY( test_compiler.makeDistClean( buildDir ));
-    QVERIFY( !test_compiler.exists( buildDir, "simple_app", Exe, "1.0.0" )); // Should not exist after a make distclean
+    QVERIFY( !test_compiler.exists( destDir, "simple app", Exe, "1.0.0" )); // Should not exist after a make distclean
     QVERIFY( test_compiler.removeMakefile( buildDir ) );
 }
 
@@ -171,46 +173,49 @@ void tst_qmake::simple_app_shadowbuild2()
 {
     QString workDir = base_path + "/testdata/simple_app";
     QString buildDir = base_path + "/testdata/simple_app/build";
+    QString destDir = buildDir + "/dest dir";
 
     QVERIFY( test_compiler.qmake( workDir, "simple_app", buildDir ));
     QVERIFY( test_compiler.make( buildDir ));
-    QVERIFY( test_compiler.exists( buildDir, "simple_app", Exe, "1.0.0" ));
+    QVERIFY( test_compiler.exists( destDir, "simple app", Exe, "1.0.0" ));
     QVERIFY( test_compiler.makeClean( buildDir ));
-    QVERIFY( test_compiler.exists( buildDir, "simple_app", Exe, "1.0.0" )); // Should still exist after a make clean
+    QVERIFY( test_compiler.exists( destDir, "simple app", Exe, "1.0.0" )); // Should still exist after a make clean
     QVERIFY( test_compiler.makeDistClean( buildDir ));
-    QVERIFY( !test_compiler.exists( buildDir, "simple_app", Exe, "1.0.0" )); // Should not exist after a make distclean
+    QVERIFY( !test_compiler.exists( destDir, "simple app", Exe, "1.0.0" )); // Should not exist after a make distclean
     QVERIFY( test_compiler.removeMakefile( buildDir ) );
 }
 
 void tst_qmake::simple_dll()
 {
     QString workDir = base_path + "/testdata/simple_dll";
+    QString destDir = workDir + "/dest dir";
 
     QDir D;
     D.remove( workDir + "/Makefile");
     QVERIFY( test_compiler.qmake( workDir, "simple_dll" ));
     QVERIFY( test_compiler.make( workDir ));
-    QVERIFY( test_compiler.exists( workDir, "simple_dll", Dll, "1.0.0" ));
+    QVERIFY( test_compiler.exists( destDir, "simple dll", Dll, "1.0.0" ));
     QVERIFY( test_compiler.makeClean( workDir ));
-    QVERIFY( test_compiler.exists( workDir, "simple_dll", Dll, "1.0.0" )); // Should still exist after a make clean
+    QVERIFY( test_compiler.exists( destDir, "simple dll", Dll, "1.0.0" )); // Should still exist after a make clean
     QVERIFY( test_compiler.makeDistClean( workDir ));
-    QVERIFY( !test_compiler.exists( workDir, "simple_dll", Dll, "1.0.0" )); // Should not exist after a make distclean
+    QVERIFY( !test_compiler.exists( destDir, "simple dll", Dll, "1.0.0" )); // Should not exist after a make distclean
     QVERIFY( test_compiler.removeMakefile( workDir ) );
 }
 
 void tst_qmake::simple_lib()
 {
     QString workDir = base_path + "/testdata/simple_lib";
+    QString destDir = workDir + "/dest dir";
 
     QDir D;
     D.remove( workDir + "/Makefile");
     QVERIFY( test_compiler.qmake( workDir, "simple_lib" ));
     QVERIFY( test_compiler.make( workDir ));
-    QVERIFY( test_compiler.exists( workDir, "simple_lib", Lib, "1.0.0" ));
+    QVERIFY( test_compiler.exists( destDir, "simple lib", Lib, "1.0.0" ));
     QVERIFY( test_compiler.makeClean( workDir ));
-    QVERIFY( test_compiler.exists( workDir, "simple_lib", Lib, "1.0.0" )); // Should still exist after a make clean
+    QVERIFY( test_compiler.exists( destDir, "simple lib", Lib, "1.0.0" )); // Should still exist after a make clean
     QVERIFY( test_compiler.makeDistClean( workDir ));
-    QVERIFY( !test_compiler.exists( workDir, "simple_lib", Lib, "1.0.0" )); // Should not exist after a make distclean
+    QVERIFY( !test_compiler.exists( destDir, "simple lib", Lib, "1.0.0" )); // Should not exist after a make distclean
     QVERIFY( test_compiler.removeMakefile( workDir ) );
 }
 
@@ -223,12 +228,12 @@ void tst_qmake::subdirs()
     D.remove( workDir + "/simple_dll/Makefile");
     QVERIFY( test_compiler.qmake( workDir, "subdirs" ));
     QVERIFY( test_compiler.make( workDir ));
-    QVERIFY( test_compiler.exists( workDir + "/simple_app", "simple_app", Exe, "1.0.0" ));
-    QVERIFY( test_compiler.exists( workDir + "/simple_dll", "simple_dll", Dll, "1.0.0" ));
+    QVERIFY( test_compiler.exists( workDir + "/simple_app/dest dir", "simple app", Exe, "1.0.0" ));
+    QVERIFY( test_compiler.exists( workDir + "/simple_dll/dest dir", "simple dll", Dll, "1.0.0" ));
     QVERIFY( test_compiler.makeClean( workDir ));
     // Should still exist after a make clean
-    QVERIFY( test_compiler.exists( workDir + "/simple_app", "simple_app", Exe, "1.0.0" ));
-    QVERIFY( test_compiler.exists( workDir + "/simple_dll", "simple_dll", Dll, "1.0.0" ));
+    QVERIFY( test_compiler.exists( workDir + "/simple_app/dest dir", "simple app", Exe, "1.0.0" ));
+    QVERIFY( test_compiler.exists( workDir + "/simple_dll/dest dir", "simple dll", Dll, "1.0.0" ));
     // Since subdirs templates do not have a make dist clean, we should clean up ourselves
     // properly
     QVERIFY( test_compiler.makeDistClean( workDir ));
