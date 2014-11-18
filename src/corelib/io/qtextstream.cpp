@@ -812,13 +812,13 @@ inline void QTextStreamPrivate::restoreToSavedConverterState()
 /*!
     \internal
 */
-inline void QTextStreamPrivate::write(const QString &data)
+inline void QTextStreamPrivate::write(const QChar *data, int len)
 {
     if (string) {
         // ### What about seek()??
-        string->append(data);
+        string->append(data, len);
     } else {
-        writeBuffer += data;
+        writeBuffer.append(data, len);
         if (writeBuffer.size() > QTEXTSTREAM_BUFFERSIZE)
             flushWriteBuffer();
     }
@@ -883,7 +883,7 @@ inline void QTextStreamPrivate::ungetChar(QChar ch)
 inline void QTextStreamPrivate::putChar(QChar ch)
 {
     if (params.fieldWidth > 0)
-        putString(QString(ch));
+        putString(&ch, 1);
     else
         write(ch);
 }
@@ -891,45 +891,42 @@ inline void QTextStreamPrivate::putChar(QChar ch)
 /*!
     \internal
 */
-inline void QTextStreamPrivate::putString(const QString &s, bool number)
+inline void QTextStreamPrivate::putString(const QChar *data, int len, bool number)
 {
-    QString tmp = s;
+    QString pad;
+    int padLeft = 0, padRight = 0;
 
     // handle padding
-    int padSize = params.fieldWidth - s.size();
+    int padSize = params.fieldWidth - len;
     if (padSize > 0) {
-        QString pad(padSize, params.padChar);
+        pad = QString(padSize, params.padChar);
         switch (params.fieldAlignment) {
         case QTextStream::AlignLeft:
-            tmp.append(pad);
+            padRight = padSize;
             break;
         case QTextStream::AlignRight:
         case QTextStream::AlignAccountingStyle:
-            tmp.prepend(pad);
+            padLeft = padSize;
             if (params.fieldAlignment == QTextStream::AlignAccountingStyle && number) {
-                const QChar sign = s.size() > 0 ? s.at(0) : QChar();
+                const QChar sign = len > 0 ? data[0] : QChar();
                 if (sign == locale.negativeSign() || sign == locale.positiveSign()) {
-                    QChar *data = tmp.data();
-                    data[padSize] = tmp.at(0);
-                    data[0] = sign;
+                    // write the sign before the padding, then skip it later
+                    write(&sign, 1);
+                    ++data;
+                    --len;
                 }
-           }
+            }
             break;
         case QTextStream::AlignCenter:
-            tmp.prepend(QString(padSize/2, params.padChar));
-            tmp.append(QString(padSize - padSize/2, params.padChar));
+            padLeft = padSize/2;
+            padRight = padSize - padSize/2;
             break;
         }
     }
 
-#if defined (QTEXTSTREAM_DEBUG)
-    QByteArray a = s.toUtf8();
-    QByteArray b = tmp.toUtf8();
-    qDebug("QTextStreamPrivate::putString(\"%s\") calls write(\"%s\")",
-           qt_prettyDebug(a.constData(), a.size(), qMax(16, a.size())).constData(),
-           qt_prettyDebug(b.constData(), b.size(), qMax(16, b.size())).constData());
-#endif
-    write(tmp);
+    write(pad.constData(), padLeft);
+    write(data, len);
+    write(pad.constData(), padRight);
 }
 
 /*!

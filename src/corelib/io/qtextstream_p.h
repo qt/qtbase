@@ -165,9 +165,11 @@ public:
     NumberParsingStatus getNumber(qulonglong *l);
     bool getReal(double *f);
 
-    inline void write(const QString &data);
+    inline void write(const QString &data) { write(data.begin(), data.length()); }
     inline void write(QChar ch);
-    inline void putString(const QString &ch, bool number = false);
+    void write(const QChar *data, int len);
+    inline void putString(const QString &ch, bool number = false) { putString(ch.constData(), ch.length(), number); }
+    void putString(const QChar *data, int len, bool number = false);
     inline void putChar(QChar ch);
     void putNumber(qulonglong number, bool negative);
 
