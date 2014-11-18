@@ -3150,6 +3150,92 @@ static bool qIsFloatingPoint(uint tp)
     return tp == QVariant::Double || tp == QMetaType::Float;
 }
 
+static int normalizeLowerRanks(uint tp)
+{
+    if (tp == QVariant::Bool
+            || tp == QVariant::Char || tp == QMetaType::SChar || tp == QMetaType::UChar
+            || tp == QMetaType::Short || tp == QMetaType::UShort)
+        return QVariant::Int;
+    return tp;
+}
+
+static int normalizeLong(uint tp)
+{
+    const uint IntType = sizeof(long) == sizeof(int) ? QVariant::Int : QVariant::LongLong;
+    const uint UIntType = sizeof(ulong) == sizeof(uint) ? QVariant::UInt : QVariant::ULongLong;
+    return tp == QMetaType::Long ? IntType :
+           tp == QMetaType::ULong ? UIntType : tp;
+}
+
+static int numericTypePromotion(uint t1, uint t2)
+{
+    Q_ASSERT(qIsNumericType(t1));
+    Q_ASSERT(qIsNumericType(t2));
+
+    // C++ integral ranks: (4.13 Integer conversion rank [conv.rank])
+    //   bool < signed char < short < int < long < long long
+    //   unsigneds have the same rank as their signed counterparts
+    // C++ integral promotion rules (4.5 Integral Promotions [conv.prom])
+    // - any type with rank less than int can be converted to int or unsigned int
+    // 5 Expressions [expr] paragraph 9:
+    // - if either operand is double, the other shall be converted to double
+    // -     "       "        float,   "          "         "         float
+    // - if both operands have the same type, no further conversion is needed.
+    // - if both are signed or if both are unsigned, convert to the one with highest rank
+    // - if the unsigned has higher or same rank, convert the signed to the unsigned one
+    // - if the signed can represent all values of the unsigned, convert to the signed
+    // - otherwise, convert to the unsigned corresponding to the rank of the signed
+
+    // floating point: we deviate from the C++ standard by always using qreal
+    if (qIsFloatingPoint(t1) || qIsFloatingPoint(t2))
+        return QMetaType::QReal;
+
+    // integral rules:
+    // for all platforms we support, int can always hold the values of lower-ranked types
+    t1 = normalizeLowerRanks(t1);
+    t2 = normalizeLowerRanks(t2);
+
+    // normalize long / ulong: in all platforms we run, they're either the same as int or as long long
+    t1 = normalizeLong(t1);
+    t2 = normalizeLong(t2);
+
+    // implement the other rules
+    // the four possibilities are Int, UInt, LongLong and ULongLong
+    // if any of the two is ULongLong, then it wins (highest rank, unsigned)
+    // otherwise, if one of the two is LongLong, then the other is either LongLong too or lower-ranked
+    // otherwise, if one of the two is UInt, then the other is either UInt too or Int
+    if (t1 == QVariant::ULongLong || t2 == QVariant::ULongLong)
+        return QVariant::ULongLong;
+    if (t1 == QVariant::LongLong || t2 == QVariant::LongLong)
+        return QVariant::LongLong;
+    if (t1 == QVariant::UInt || t2 == QVariant::UInt)
+        return QVariant::UInt;
+    return QVariant::Int;
+}
+
+static int integralCompare(uint promotedType, const QVariant::Private *d1, const QVariant::Private *d2)
+{
+    // use toLongLong to retrieve the data, it gets us all the bits
+    bool ok;
+    qlonglong l1 = qConvertToNumber(d1, &ok);
+    Q_ASSERT(ok);
+
+    qlonglong l2 = qConvertToNumber(d2, &ok);
+    Q_ASSERT(ok);
+
+    if (promotedType == QVariant::Int)
+        return int(l1) < int(l2) ? -1 : int(l1) == int(l2) ? 0 : 1;
+    if (promotedType == QVariant::UInt)
+        return uint(l1) < uint(l2) ? -1 : uint(l1) == uint(l2) ? 0 : 1;
+    if (promotedType == QVariant::LongLong)
+        return l1 < l2 ? -1 : l1 == l2 ? 0 : 1;
+    if (promotedType == QVariant::ULongLong)
+        return qulonglong(l1) < qulonglong(l2) ? -1 : qulonglong(l1) == qulonglong(l2) ? 0 : 1;
+
+    Q_UNREACHABLE();
+    return 0;
+}
+
 /*!
     \internal
  */
@@ -3159,10 +3245,11 @@ bool QVariant::cmp(const QVariant &v) const
     QVariant v2 = v;
     if (d.type != v2.d.type) {
         if (qIsNumericType(d.type) && qIsNumericType(v.d.type)) {
-            if (qIsFloatingPoint(d.type) || qIsFloatingPoint(v.d.type))
+            uint promotedType = numericTypePromotion(v1.d.type, v2.d.type);
+            if (promotedType == QMetaType::QReal)
                 return qFuzzyCompare(toReal(), v.toReal());
             else
-                return toLongLong() == v.toLongLong();
+                return integralCompare(promotedType, &v1.d, &v2.d) == 0;
         }
         if (v2.canConvert(v1.d.type)) {
             if (!v2.convert(v1.d.type))
@@ -3191,6 +3278,16 @@ int QVariant::compare(const QVariant &v) const
         return 0;
     QVariant v1 = *this;
     QVariant v2 = v;
+
+    // try numerics first, with C++ type promotion rules (no conversion)
+    if (qIsNumericType(v1.d.type) && qIsNumericType(v2.d.type)) {
+        uint promotedType = numericTypePromotion(v1.d.type, v2.d.type);
+        if (promotedType == QMetaType::QReal)
+            return v1.toReal() < v2.toReal() ? -1 : 1;
+        else
+            return integralCompare(promotedType, &v1.d, &v2.d);
+    }
+
     if (v1.d.type != v2.d.type) {
         // if both types differ, try to convert
         if (v2.canConvert(v1.d.type)) {
@@ -3212,17 +3309,15 @@ int QVariant::compare(const QVariant &v) const
             }
             return r;
         }
+
+        // did we end up with two numerics? If so, restart
+        if (qIsNumericType(v1.d.type) && qIsNumericType(v2.d.type))
+            return v1.compare(v2);
     }
     if (v1.d.type >= QMetaType::User) {
         int result;
         if (QMetaType::compare(QT_PREPEND_NAMESPACE(constData(d)), QT_PREPEND_NAMESPACE(constData(v2.d)), d.type, &result))
             return result;
-    }
-    if (qIsNumericType(v1.d.type)) {
-        if (qIsFloatingPoint(v1.d.type))
-            return v1.toReal() < v2.toReal() ? -1 : 1;
-        else
-            return v1.toLongLong() < v2.toLongLong() ? -1 : 1;
     }
     switch (v1.d.type) {
     case QVariant::Date:

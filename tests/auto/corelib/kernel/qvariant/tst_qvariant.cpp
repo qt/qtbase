@@ -170,8 +170,9 @@ private slots:
 
     void operator_eq_eq_data();
     void operator_eq_eq();
-
     void operator_eq_eq_rhs();
+    void compareNumbers_data() const;
+    void compareNumbers() const;
 
     void typeName_data();
     void typeName();
@@ -1589,6 +1590,326 @@ void tst_QVariant::operator_eq_eq_rhs()
 
     QVERIFY(dt == list);
 #endif
+}
+
+void tst_QVariant::compareNumbers_data() const
+{
+    typedef signed char schar;
+    QTest::addColumn<QVariant>("v1");
+    QTest::addColumn<QVariant>("v2");
+    QTest::addColumn<int>("expected");
+
+    // sanity checking: same types
+    QTest::newRow("bool1") << QVariant(false) << QVariant(false) << 0;
+    QTest::newRow("bool2") << QVariant(true) << QVariant(true) << 0;
+    QTest::newRow("bool3") << QVariant(false) << QVariant(true) << -1;
+    QTest::newRow("bool4") << QVariant(true) << QVariant(false) << +1;
+
+    QTest::newRow("char1") << qVariantFromValue(char(0)) << qVariantFromValue(char(0)) << 0;
+    QTest::newRow("char2") << qVariantFromValue(CHAR_MAX) << qVariantFromValue(CHAR_MAX) << 0;
+    QTest::newRow("char3") << qVariantFromValue(CHAR_MIN) << qVariantFromValue(CHAR_MIN) << 0;
+    QTest::newRow("char4") << qVariantFromValue(CHAR_MIN) << qVariantFromValue(CHAR_MAX) << -1;
+    QTest::newRow("char5") << qVariantFromValue(CHAR_MAX) << qVariantFromValue(CHAR_MIN) << +1;
+
+    QTest::newRow("schar1") << qVariantFromValue(schar(0)) << qVariantFromValue(schar(0)) << 0;
+    QTest::newRow("schar2") << qVariantFromValue(SCHAR_MAX) << qVariantFromValue(SCHAR_MAX) << 0;
+    QTest::newRow("schar3") << qVariantFromValue(SCHAR_MIN) << qVariantFromValue(SCHAR_MIN) << 0;
+    QTest::newRow("schar4") << qVariantFromValue(SCHAR_MIN) << qVariantFromValue(SCHAR_MAX) << -1;
+    QTest::newRow("schar5") << qVariantFromValue(SCHAR_MAX) << qVariantFromValue(SCHAR_MIN) << +1;
+
+    QTest::newRow("uchar1") << qVariantFromValue(uchar(0)) << qVariantFromValue(uchar(0)) << 0;
+    QTest::newRow("uchar2") << qVariantFromValue(UCHAR_MAX) << qVariantFromValue(UCHAR_MAX) << 0;
+    QTest::newRow("uchar3") << qVariantFromValue(uchar(0)) << qVariantFromValue(UCHAR_MAX) << -1;
+    QTest::newRow("uchar4") << qVariantFromValue(UCHAR_MAX) << qVariantFromValue(uchar(0)) << +1;
+
+    QTest::newRow("short1") << qVariantFromValue(short(0)) << qVariantFromValue(short(0)) << 0;
+    QTest::newRow("short2") << qVariantFromValue(SHRT_MAX) << qVariantFromValue(SHRT_MAX) << 0;
+    QTest::newRow("short3") << qVariantFromValue(SHRT_MIN) << qVariantFromValue(SHRT_MIN) << 0;
+    QTest::newRow("short4") << qVariantFromValue(SHRT_MIN) << qVariantFromValue(SHRT_MAX) << -1;
+    QTest::newRow("short5") << qVariantFromValue(SHRT_MAX) << qVariantFromValue(SHRT_MIN) << +1;
+
+    QTest::newRow("ushort1") << qVariantFromValue(ushort(0)) << qVariantFromValue(ushort(0)) << 0;
+    QTest::newRow("ushort2") << qVariantFromValue(USHRT_MAX) << qVariantFromValue(USHRT_MAX) << 0;
+    QTest::newRow("ushort3") << qVariantFromValue(ushort(0)) << qVariantFromValue(USHRT_MAX) << -1;
+    QTest::newRow("ushort4") << qVariantFromValue(USHRT_MAX) << qVariantFromValue(ushort(0)) << +1;
+
+    QTest::newRow("int1") << qVariantFromValue(int(0)) << qVariantFromValue(int(0)) << 0;
+    QTest::newRow("int2") << qVariantFromValue(INT_MAX) << qVariantFromValue(INT_MAX) << 0;
+    QTest::newRow("int3") << qVariantFromValue(INT_MIN) << qVariantFromValue(INT_MIN) << 0;
+    QTest::newRow("int4") << qVariantFromValue(INT_MIN) << qVariantFromValue(INT_MAX) << -1;
+    QTest::newRow("int5") << qVariantFromValue(INT_MAX) << qVariantFromValue(INT_MIN) << +1;
+
+    QTest::newRow("uint1") << qVariantFromValue(uint(0)) << qVariantFromValue(uint(0)) << 0;
+    QTest::newRow("uint2") << qVariantFromValue(UINT_MAX) << qVariantFromValue(UINT_MAX) << 0;
+    QTest::newRow("uint3") << qVariantFromValue(uint(0)) << qVariantFromValue(UINT_MAX) << -1;
+    QTest::newRow("uint4") << qVariantFromValue(UINT_MAX) << qVariantFromValue(uint(0)) << +1;
+
+    QTest::newRow("long1") << qVariantFromValue(long(0)) << qVariantFromValue(long(0)) << 0;
+    QTest::newRow("long2") << qVariantFromValue(LONG_MAX) << qVariantFromValue(LONG_MAX) << 0;
+    QTest::newRow("long3") << qVariantFromValue(LONG_MIN) << qVariantFromValue(LONG_MIN) << 0;
+    QTest::newRow("long4") << qVariantFromValue(LONG_MIN) << qVariantFromValue(LONG_MAX) << -1;
+    QTest::newRow("long5") << qVariantFromValue(LONG_MAX) << qVariantFromValue(LONG_MIN) << +1;
+
+    QTest::newRow("ulong1") << qVariantFromValue(ulong(0)) << qVariantFromValue(ulong(0)) << 0;
+    QTest::newRow("ulong2") << qVariantFromValue(ULONG_MAX) << qVariantFromValue(ULONG_MAX) << 0;
+    QTest::newRow("ulong3") << qVariantFromValue(ulong(0)) << qVariantFromValue(ULONG_MAX) << -1;
+    QTest::newRow("ulong4") << qVariantFromValue(ULONG_MAX) << qVariantFromValue(ulong(0)) << +1;
+
+    QTest::newRow("llong1") << qVariantFromValue(qlonglong(0)) << qVariantFromValue(qlonglong(0)) << 0;
+    QTest::newRow("llong2") << qVariantFromValue(LLONG_MAX) << qVariantFromValue(LLONG_MAX) << 0;
+    QTest::newRow("llong3") << qVariantFromValue(LLONG_MIN) << qVariantFromValue(LLONG_MIN) << 0;
+    QTest::newRow("llong4") << qVariantFromValue(LLONG_MIN) << qVariantFromValue(LLONG_MAX) << -1;
+    QTest::newRow("llong5") << qVariantFromValue(LLONG_MAX) << qVariantFromValue(LLONG_MIN) << +1;
+
+    QTest::newRow("ullong1") << qVariantFromValue(qulonglong(0)) << qVariantFromValue(qulonglong(0)) << 0;
+    QTest::newRow("ullong2") << qVariantFromValue(ULLONG_MAX) << qVariantFromValue(ULLONG_MAX) << 0;
+    QTest::newRow("ullong3") << qVariantFromValue(qulonglong(0)) << qVariantFromValue(ULLONG_MAX) << -1;
+    QTest::newRow("ullong4") << qVariantFromValue(ULLONG_MAX) << qVariantFromValue(qulonglong(0)) << +1;
+
+    QTest::newRow("float1") << qVariantFromValue(0.f) << qVariantFromValue(0.f) << 0;
+    QTest::newRow("float2") << qVariantFromValue(-1.f) << qVariantFromValue(0.f) << -1;
+    QTest::newRow("float3") << qVariantFromValue(0.f) << qVariantFromValue(-1.f) << +1;
+    QTest::newRow("float4") << qVariantFromValue(-float(qInf())) << qVariantFromValue(0.f) << -1;
+    QTest::newRow("float5") << qVariantFromValue(0.f) << qVariantFromValue(-float(qInf())) << +1;
+
+    QTest::newRow("double1") << qVariantFromValue(0.) << qVariantFromValue(0.) << 0;
+    QTest::newRow("double2") << qVariantFromValue(-1.) << qVariantFromValue(0.) << -1;
+    QTest::newRow("double3") << qVariantFromValue(0.) << qVariantFromValue(-1.) << +1;
+    QTest::newRow("double4") << qVariantFromValue(-qInf()) << qVariantFromValue(0.) << -1;
+    QTest::newRow("double5") << qVariantFromValue(0.) << qVariantFromValue(-qInf()) << +1;
+
+    // mixed comparisons
+    // fp + fp
+    QTest::newRow("float+double1") << qVariantFromValue(0.f) << qVariantFromValue(0.) << 0;
+    QTest::newRow("float+double2") << qVariantFromValue(-1.f) << qVariantFromValue(0.) << -1;
+    QTest::newRow("float+double3") << qVariantFromValue(0.f) << qVariantFromValue(-1.) << +1;
+    QTest::newRow("float+double4") << qVariantFromValue(-float(qInf())) << qVariantFromValue(0.) << -1;
+    QTest::newRow("float+double5") << qVariantFromValue(0.f) << qVariantFromValue(-qInf()) << +1;
+
+    // fp + int
+    QTest::newRow("float+int1") << qVariantFromValue(0.f) << qVariantFromValue(0) << 0;
+    QTest::newRow("double+int1") << qVariantFromValue(0.) << qVariantFromValue(0) << 0;
+    QTest::newRow("float+int2") << qVariantFromValue(-1.f) << qVariantFromValue(0) << -1;
+    QTest::newRow("double+int2") << qVariantFromValue(-1.) << qVariantFromValue(0) << -1;
+    QTest::newRow("float+int3") << qVariantFromValue(0.f) << qVariantFromValue(-1) << +1;
+    QTest::newRow("double+int3") << qVariantFromValue(0.) << qVariantFromValue(-1) << +1;
+    QTest::newRow("float+int4") << qVariantFromValue(1.5f) << qVariantFromValue(1) << +1;
+    QTest::newRow("double+int4") << qVariantFromValue(1.5) << qVariantFromValue(1) << +1;
+
+    // fp + uint
+    QTest::newRow("float+uint1") << qVariantFromValue(0.f) << qVariantFromValue(0U) << 0;
+    QTest::newRow("double+uint1") << qVariantFromValue(0.) << qVariantFromValue(0U) << 0;
+    QTest::newRow("float+uint2") << qVariantFromValue(-1.f) << qVariantFromValue(0U) << -1;
+    QTest::newRow("double+uint2") << qVariantFromValue(-1.) << qVariantFromValue(0U) << -1;
+    QTest::newRow("float+uint3") << qVariantFromValue(0.f) << qVariantFromValue(1U) << -1;
+    QTest::newRow("double+uint3") << qVariantFromValue(0.) << qVariantFromValue(1U) << -1;
+    QTest::newRow("float+uint4") << qVariantFromValue(1.5f) << qVariantFromValue(1U) << +1;
+    QTest::newRow("double+uint4") << qVariantFromValue(1.5) << qVariantFromValue(1U) << +1;
+
+    // lower ranked + int
+    QTest::newRow("bool+int1") << qVariantFromValue(false) << qVariantFromValue(0) << 0;
+    QTest::newRow("bool+int2") << qVariantFromValue(false) << qVariantFromValue(1) << -1;
+    QTest::newRow("bool+int3") << qVariantFromValue(true) << qVariantFromValue(0) << +1;
+    QTest::newRow("bool+int4") << qVariantFromValue(true) << qVariantFromValue(1) << 0;
+    QTest::newRow("bool+int5") << qVariantFromValue(true) << qVariantFromValue(2) << -1;
+
+    QTest::newRow("char+int1") << qVariantFromValue(char(0)) << qVariantFromValue(0) << 0;
+    QTest::newRow("char+int2") << qVariantFromValue(char(0)) << qVariantFromValue(1) << -1;
+    QTest::newRow("char+int3") << qVariantFromValue(char(1)) << qVariantFromValue(0) << +1;
+    QTest::newRow("char+int4") << qVariantFromValue(char(1)) << qVariantFromValue(1) << 0;
+    if (std::numeric_limits<char>::is_signed) {
+        QTest::newRow("char+int5") << qVariantFromValue(char(-1)) << qVariantFromValue(0) << -1;
+        QTest::newRow("char+int6") << qVariantFromValue(char(-1)) << qVariantFromValue(-1) << 0;
+    }
+
+    QTest::newRow("schar+int1") << qVariantFromValue(schar(0)) << qVariantFromValue(0) << 0;
+    QTest::newRow("schar+int2") << qVariantFromValue(schar(0)) << qVariantFromValue(1) << -1;
+    QTest::newRow("schar+int3") << qVariantFromValue(schar(1)) << qVariantFromValue(0) << +1;
+    QTest::newRow("schar+int4") << qVariantFromValue(schar(1)) << qVariantFromValue(1) << 0;
+    QTest::newRow("schar+int5") << qVariantFromValue(schar(-1)) << qVariantFromValue(0) << -1;
+    QTest::newRow("schar+int6") << qVariantFromValue(schar(-1)) << qVariantFromValue(-1) << 0;
+
+    QTest::newRow("uchar+int1") << qVariantFromValue(uchar(0)) << qVariantFromValue(0) << 0;
+    QTest::newRow("uchar+int2") << qVariantFromValue(uchar(0)) << qVariantFromValue(1) << -1;
+    QTest::newRow("uchar+int3") << qVariantFromValue(uchar(1)) << qVariantFromValue(0) << +1;
+    QTest::newRow("uchar+int4") << qVariantFromValue(uchar(1)) << qVariantFromValue(1) << 0;
+
+    QTest::newRow("short+int1") << qVariantFromValue(short(0)) << qVariantFromValue(0) << 0;
+    QTest::newRow("short+int2") << qVariantFromValue(short(0)) << qVariantFromValue(1) << -1;
+    QTest::newRow("short+int3") << qVariantFromValue(short(1)) << qVariantFromValue(0) << +1;
+    QTest::newRow("short+int4") << qVariantFromValue(short(1)) << qVariantFromValue(1) << 0;
+    QTest::newRow("short+int5") << qVariantFromValue(short(-1)) << qVariantFromValue(0) << -1;
+    QTest::newRow("short+int6") << qVariantFromValue(short(-1)) << qVariantFromValue(-1) << 0;
+
+    QTest::newRow("ushort+int1") << qVariantFromValue(ushort(0)) << qVariantFromValue(0) << 0;
+    QTest::newRow("ushort+int2") << qVariantFromValue(ushort(0)) << qVariantFromValue(1) << -1;
+    QTest::newRow("ushort+int3") << qVariantFromValue(ushort(1)) << qVariantFromValue(0) << +1;
+    QTest::newRow("ushort+int4") << qVariantFromValue(ushort(1)) << qVariantFromValue(1) << 0;
+
+    // lower ranked + uint (without sign change)
+    QTest::newRow("bool+uint1") << qVariantFromValue(false) << qVariantFromValue(0U) << 0;
+    QTest::newRow("bool+uint2") << qVariantFromValue(false) << qVariantFromValue(1U) << -1;
+    QTest::newRow("bool+uint3") << qVariantFromValue(true) << qVariantFromValue(0U) << +1;
+    QTest::newRow("bool+uint4") << qVariantFromValue(true) << qVariantFromValue(1U) << 0;
+    QTest::newRow("bool+uint5") << qVariantFromValue(true) << qVariantFromValue(2U) << -1;
+
+    QTest::newRow("char+uint1") << qVariantFromValue(char(0)) << qVariantFromValue(0U) << 0;
+    QTest::newRow("char+uint2") << qVariantFromValue(char(0)) << qVariantFromValue(1U) << -1;
+    QTest::newRow("char+uint3") << qVariantFromValue(char(1)) << qVariantFromValue(0U) << +1;
+    QTest::newRow("char+uint4") << qVariantFromValue(char(1)) << qVariantFromValue(1U) << 0;
+
+    QTest::newRow("schar+uint1") << qVariantFromValue(schar(0)) << qVariantFromValue(0U) << 0;
+    QTest::newRow("schar+uint2") << qVariantFromValue(schar(0)) << qVariantFromValue(1U) << -1;
+    QTest::newRow("schar+uint3") << qVariantFromValue(schar(1)) << qVariantFromValue(0U) << +1;
+    QTest::newRow("schar+uint4") << qVariantFromValue(schar(1)) << qVariantFromValue(1U) << 0;
+
+    QTest::newRow("uchar+uint1") << qVariantFromValue(uchar(0)) << qVariantFromValue(0U) << 0;
+    QTest::newRow("uchar+uint2") << qVariantFromValue(uchar(0)) << qVariantFromValue(1U) << -1;
+    QTest::newRow("uchar+uint3") << qVariantFromValue(uchar(1)) << qVariantFromValue(0U) << +1;
+    QTest::newRow("uchar+uint4") << qVariantFromValue(uchar(1)) << qVariantFromValue(1U) << 0;
+
+    QTest::newRow("short+uint1") << qVariantFromValue(short(0)) << qVariantFromValue(0U) << 0;
+    QTest::newRow("short+uint2") << qVariantFromValue(short(0)) << qVariantFromValue(1U) << -1;
+    QTest::newRow("short+uint3") << qVariantFromValue(short(1)) << qVariantFromValue(0U) << +1;
+    QTest::newRow("short+uint4") << qVariantFromValue(short(1)) << qVariantFromValue(1U) << 0;
+
+    QTest::newRow("ushort+uint1") << qVariantFromValue(ushort(0)) << qVariantFromValue(0U) << 0;
+    QTest::newRow("ushort+uint2") << qVariantFromValue(ushort(0)) << qVariantFromValue(1U) << -1;
+    QTest::newRow("ushort+uint3") << qVariantFromValue(ushort(1)) << qVariantFromValue(0U) << +1;
+    QTest::newRow("ushort+uint4") << qVariantFromValue(ushort(1)) << qVariantFromValue(1U) << 0;
+
+    // int + qlonglong
+    QTest::newRow("int+qlonglong1") << qVariantFromValue(0) << qVariantFromValue(Q_INT64_C(0)) << 0;
+    QTest::newRow("int+qlonglong2") << qVariantFromValue(1) << qVariantFromValue(Q_INT64_C(0)) << +1;
+    QTest::newRow("int+qlonglong3") << qVariantFromValue(0) << qVariantFromValue(Q_INT64_C(1)) << -1;
+    QTest::newRow("int+qlonglong4") << qVariantFromValue(1) << qVariantFromValue(Q_INT64_C(1)) << 0;
+    QTest::newRow("int+qlonglong5") << qVariantFromValue(0) << qVariantFromValue(Q_INT64_C(-1)) << +1;
+    QTest::newRow("int+qlonglong6") << qVariantFromValue(-1) << qVariantFromValue(Q_INT64_C(0)) << -1;
+    QTest::newRow("int+qlonglong7") << qVariantFromValue(-1) << qVariantFromValue(Q_INT64_C(-1)) << 0;
+
+    // uint + qulonglong
+    QTest::newRow("uint+qulonglong1") << qVariantFromValue(0U) << qVariantFromValue(Q_UINT64_C(0)) << 0;
+    QTest::newRow("uint+qulonglong2") << qVariantFromValue(1U) << qVariantFromValue(Q_UINT64_C(0)) << +1;
+    QTest::newRow("uint+qulonglong3") << qVariantFromValue(0U) << qVariantFromValue(Q_UINT64_C(1)) << -1;
+    QTest::newRow("uint+qulonglong4") << qVariantFromValue(1U) << qVariantFromValue(Q_UINT64_C(1)) << 0;
+
+    // int + uint (without sign change)
+    QTest::newRow("int+uint1") << qVariantFromValue(0) << qVariantFromValue(0U) << 0;
+    QTest::newRow("int+uint2") << qVariantFromValue(1) << qVariantFromValue(0U) << +1;
+    QTest::newRow("int+uint3") << qVariantFromValue(0) << qVariantFromValue(1U) << -1;
+    QTest::newRow("int+uint4") << qVariantFromValue(1) << qVariantFromValue(1U) << 0;
+
+    // uint + qlonglong
+    QTest::newRow("uint+qlonglong1") << qVariantFromValue(0U) << qVariantFromValue(Q_INT64_C(0)) << 0;
+    QTest::newRow("uint+qlonglong2") << qVariantFromValue(1U) << qVariantFromValue(Q_INT64_C(0)) << +1;
+    QTest::newRow("uint+qlonglong3") << qVariantFromValue(0U) << qVariantFromValue(Q_INT64_C(1)) << -1;
+    QTest::newRow("uint+qlonglong4") << qVariantFromValue(1U) << qVariantFromValue(Q_INT64_C(1)) << 0;
+    QTest::newRow("uint+qlonglong5") << qVariantFromValue(0U) << qVariantFromValue(Q_INT64_C(-1)) << +1;
+
+    // boundary conditions
+    QTest::newRow("charmax+intmax") << qVariantFromValue(CHAR_MAX) << qVariantFromValue(INT_MAX) << -1;
+    QTest::newRow("charmax+uintmax") << qVariantFromValue(CHAR_MAX) << qVariantFromValue(UINT_MAX) << -1;
+    QTest::newRow("scharmax+intmax") << qVariantFromValue(SCHAR_MAX) << qVariantFromValue(INT_MAX) << -1;
+    QTest::newRow("scharmax+uintmax") << qVariantFromValue(SCHAR_MAX) << qVariantFromValue(UINT_MAX) << -1;
+    QTest::newRow("ucharmax+intmax") << qVariantFromValue(UCHAR_MAX) << qVariantFromValue(INT_MAX) << -1;
+    QTest::newRow("ucharmax+uintmax") << qVariantFromValue(UCHAR_MAX) << qVariantFromValue(UINT_MAX) << -1;
+    QTest::newRow("shortmax+intmax") << qVariantFromValue(SHRT_MAX) << qVariantFromValue(INT_MAX) << -1;
+    QTest::newRow("shortmax+uintmax") << qVariantFromValue(SHRT_MAX) << qVariantFromValue(UINT_MAX) << -1;
+    QTest::newRow("ushortmax+intmax") << qVariantFromValue(USHRT_MAX) << qVariantFromValue(INT_MAX) << -1;
+    QTest::newRow("ushortmax+uintmax") << qVariantFromValue(USHRT_MAX) << qVariantFromValue(UINT_MAX) << -1;
+
+    QTest::newRow("intmin+qlonglongmin") << qVariantFromValue(INT_MIN) << qVariantFromValue(LLONG_MIN) << +1;
+    QTest::newRow("intmax+uintmax") << qVariantFromValue(INT_MAX) << qVariantFromValue(UINT_MAX) << -1;
+    QTest::newRow("intmax+qlonglongmax") << qVariantFromValue(INT_MAX) << qVariantFromValue(LLONG_MAX) << -1;
+    QTest::newRow("uintmax+qlonglongmax") << qVariantFromValue(UINT_MAX) << qVariantFromValue(LLONG_MAX) << -1;
+    QTest::newRow("intmax+qulonglongmax") << qVariantFromValue(INT_MAX) << qVariantFromValue(ULLONG_MAX) << -1;
+    QTest::newRow("qlonglongmax+qulonglongmax") << qVariantFromValue(LLONG_MAX) << qVariantFromValue(ULLONG_MAX) << -1;
+    QTest::newRow("uintmax+qlonglongmin") << qVariantFromValue(UINT_MAX) << qVariantFromValue(LLONG_MIN) << +1;
+
+    // check for no sign-extension issues
+    QTest::newRow("ushortmax+intzero") << qVariantFromValue(USHRT_MAX) << qVariantFromValue(0) << +1;
+    QTest::newRow("ushortmax+qlonglongzero") << qVariantFromValue(USHRT_MAX) << qVariantFromValue(Q_INT64_C(0)) << +1;
+    QTest::newRow("uintmax+qlonglongzero") << qVariantFromValue(UINT_MAX) << qVariantFromValue(Q_INT64_C(0)) << +1;
+
+    // sign changes
+    // the tests below check that a signed negative number sign-changes to a non-zero unsigned number and that
+    // signed -1 sign-changes to unsigned maximum (all bits set, ~0). This works on two's complement machines
+    // (all that Qt supports), and would also work on one's complement.
+    if (std::numeric_limits<char>::is_signed) {
+        QTest::newRow("signchange-char+uint") << qVariantFromValue(char(-1)) << qVariantFromValue(0U) << +1;
+        QTest::newRow("signchange-char+uintmax") << qVariantFromValue(char(-1)) << qVariantFromValue(UINT_MAX) << 0;
+        QTest::newRow("signchange-charmin+uint") << qVariantFromValue(CHAR_MIN) << qVariantFromValue(0U) << +1;
+        QTest::newRow("signchange-char+qulonglong") << qVariantFromValue(char(-1)) << qVariantFromValue(Q_UINT64_C(0)) << +1;
+        QTest::newRow("signchange-char+qulonglongmax") << qVariantFromValue(char(-1)) << qVariantFromValue(ULLONG_MAX) << 0;
+        QTest::newRow("signchange-charmin+qulonglong") << qVariantFromValue(CHAR_MIN) << qVariantFromValue(Q_UINT64_C(0)) << +1;
+    }
+    QTest::newRow("signchange-schar+uint") << qVariantFromValue(schar(-1)) << qVariantFromValue(0U) << +1;
+    QTest::newRow("signchange-schar+uintmax") << qVariantFromValue(schar(-1)) << qVariantFromValue(UINT_MAX) << 0;
+    QTest::newRow("signchange-scharmin+uint") << qVariantFromValue(SCHAR_MIN) << qVariantFromValue(0U) << +1;
+    QTest::newRow("signchange-schar+qulonglong") << qVariantFromValue(schar(-1)) << qVariantFromValue(Q_UINT64_C(0)) << +1;
+    QTest::newRow("signchange-schar+qulonglongmax") << qVariantFromValue(schar(-1)) << qVariantFromValue(ULLONG_MAX) << 0;
+    QTest::newRow("signchange-scharmin+qulonglong") << qVariantFromValue(SCHAR_MIN) << qVariantFromValue(Q_UINT64_C(0)) << +1;
+    QTest::newRow("signchange-short+uint") << qVariantFromValue(short(-1)) << qVariantFromValue(0U) << +1;
+    QTest::newRow("signchange-short+uintmax") << qVariantFromValue(short(-1)) << qVariantFromValue(UINT_MAX) << 0;
+    QTest::newRow("signchange-shortmin+uint") << qVariantFromValue(SHRT_MIN) << qVariantFromValue(0U) << +1;
+    QTest::newRow("signchange-short+qulonglong") << qVariantFromValue(short(-1)) << qVariantFromValue(Q_UINT64_C(0)) << +1;
+    QTest::newRow("signchange-short+qulonglongmax") << qVariantFromValue(short(-1)) << qVariantFromValue(ULLONG_MAX) << 0;
+    QTest::newRow("signchange-shortmin+qulonglong") << qVariantFromValue(SHRT_MIN) << qVariantFromValue(Q_UINT64_C(0)) << +1;
+    QTest::newRow("signchange-int+uint") << qVariantFromValue(-1) << qVariantFromValue(0U) << +1;
+    QTest::newRow("signchange-int+uintmax") << qVariantFromValue(-1) << qVariantFromValue(UINT_MAX) << 0;
+    QTest::newRow("signchange-intmin+uint") << qVariantFromValue(INT_MIN) << qVariantFromValue(0U) << +1;
+    QTest::newRow("signchange-int+qulonglong") << qVariantFromValue(-1) << qVariantFromValue(Q_UINT64_C(0)) << +1;
+    QTest::newRow("signchange-int+qulonglongmax") << qVariantFromValue(-1) << qVariantFromValue(ULLONG_MAX) << 0;
+    QTest::newRow("signchange-intmin+qulonglong") << qVariantFromValue(INT_MIN) << qVariantFromValue(Q_UINT64_C(0)) << +1;
+    // no qlonglong+uint, since that should promote to qlonglong and then the comparison is signed (tested above)
+    QTest::newRow("signchange-qlonglong+qulonglong") << qVariantFromValue(Q_INT64_C(-1)) << qVariantFromValue(Q_UINT64_C(0)) << +1;
+    QTest::newRow("signchange-qlonglong+qulonglongmax") << qVariantFromValue(Q_INT64_C(-1)) << qVariantFromValue(ULLONG_MAX) << 0;
+    QTest::newRow("signchange-qlonglongmin+qulonglong") << qVariantFromValue(LLONG_MIN) << qVariantFromValue(Q_UINT64_C(0)) << +1;
+}
+
+void tst_QVariant::compareNumbers() const
+{
+    QFETCH(QVariant, v1);
+    QFETCH(QVariant, v2);
+    QFETCH(int, expected);
+
+    if (expected == -1) {
+        QVERIFY(v1 < v2);
+        QVERIFY(v1 <= v2);
+        QVERIFY(!(v1 == v2));
+        QVERIFY(!(v1 > v2));
+        QVERIFY(!(v1 >= v2));
+
+        QVERIFY(!(v2 < v1));
+        QVERIFY(!(v2 <= v1));
+        QVERIFY(!(v2 == v1));
+        QVERIFY(v2 >= v1);
+        QVERIFY(v2 > v1);
+    } else if (expected == 0) {
+        QVERIFY(!(v1 < v2));
+        QVERIFY(v1 <= v2);
+        QCOMPARE(v1, v2);
+        QVERIFY(!(v1 > v2));
+        QVERIFY(v1 >= v2);
+
+        QVERIFY(!(v2 < v1));
+        QVERIFY(v2 <= v1);
+        QCOMPARE(v2, v1);
+        QVERIFY(v2 >= v1);
+        QVERIFY(!(v2 > v1));
+    } else {
+        QVERIFY(!(v1 < v2));
+        QVERIFY(!(v1 <= v2));
+        QVERIFY(!(v1 == v2));
+        QVERIFY(v1 > v2);
+        QVERIFY(v1 >= v2);
+
+        QVERIFY(v2 < v1);
+        QVERIFY(v2 <= v1);
+        QVERIFY(!(v2 == v1));
+        QVERIFY(!(v2 >= v1));
+        QVERIFY(!(v2 > v1));
+    }
 }
 
 void tst_QVariant::typeName_data()

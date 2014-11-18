@@ -63,6 +63,7 @@ template <typename T>
 inline Q_DECL_CONSTEXPR int qMetaTypeId();
 
 // F is a tuple: (QMetaType::TypeName, QMetaType::TypeNameID, RealType)
+// ### Qt6: reorder the types to match the C++ integral type ranking
 #define QT_FOR_EACH_STATIC_PRIMITIVE_TYPE(F)\
     F(Void, 43, void) \
     F(Bool, 1, bool) \
