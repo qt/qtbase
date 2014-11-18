@@ -59,30 +59,39 @@ void tst_QDoubleValidator::validateThouSep_data()
 {
     QTest::addColumn<QString>("localeName");
     QTest::addColumn<QString>("value");
+    QTest::addColumn<bool>("rejectGroupSeparator");
     QTest::addColumn<QValidator::State>("result");
 
-    QTest::newRow("1,000C") << "C" << QString("1,000") << ACC;
-    QTest::newRow("1.000C") << "C" << QString("1.000") << ACC;
+    QTest::newRow("1,000C") << "C" << QString("1,000") << false << ACC;
+    QTest::newRow("1,000.1C") << "C" << QString("1,000.1") << false << ACC;
+    QTest::newRow("1,000.1C_reject") << "C" << QString("1,000.1") << true << INV;
+    QTest::newRow("1.000C") << "C" << QString("1.000") << false << ACC;
 
-    QTest::newRow("1,000de") << "de" << QString("1,000") << ACC;
-    QTest::newRow("1.000de") << "de" << QString("1.000") << ACC;
+    QTest::newRow("1,000de") << "de" << QString("1,000") << false << ACC;
+    QTest::newRow("1.000de") << "de" << QString("1.000") << false << ACC;
 
-    QTest::newRow(".C") << "C" << QString(".") << ITM;
-    QTest::newRow(".de") << "de" << QString(".") << INV;
-    QTest::newRow(",C") << "C" << QString(",") << INV;
-    QTest::newRow(",de") << "de" << QString(",") << ITM;
+    QTest::newRow(".C") << "C" << QString(".") << false << ITM;
+    QTest::newRow(".de") << "de" << QString(".") << false << INV;
+    QTest::newRow("1.000,1de") << "de" << QString("1.000,1") << false << ACC;
+    QTest::newRow("1.000,1de_reject") << "de" << QString("1.000,1") << true << INV;
+    QTest::newRow(",C") << "C" << QString(",") << false << INV;
+    QTest::newRow(",de") << "de" << QString(",") << false << ITM;
 }
 
 void tst_QDoubleValidator::validateThouSep()
 {
     QFETCH(QString, localeName);
     QFETCH(QString, value);
+    QFETCH(bool, rejectGroupSeparator);
     QFETCH(QValidator::State, result);
     int dummy = 0;
 
     QDoubleValidator iv(-10000, 10000, 3, 0);
     iv.setNotation(QDoubleValidator::ScientificNotation);
-    iv.setLocale(QLocale(localeName));
+    QLocale locale(localeName);
+    if (rejectGroupSeparator)
+        locale.setNumberOptions(QLocale::RejectGroupSeparator);
+    iv.setLocale(locale);
 
     QCOMPARE(iv.validate(value, dummy), result);
 }
