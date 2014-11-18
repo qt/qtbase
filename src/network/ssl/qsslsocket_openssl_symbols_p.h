@@ -221,6 +221,10 @@ int q_BIO_read(BIO *a, void *b, int c);
 BIO_METHOD *q_BIO_s_mem();
 int q_BIO_write(BIO *a, const void *b, int c);
 int q_BN_num_bits(const BIGNUM *a);
+#ifndef OPENSSL_NO_EC
+const EC_GROUP* q_EC_KEY_get0_group(const EC_KEY* k);
+int q_EC_GROUP_get_degree(const EC_GROUP* g);
+#endif
 int q_CRYPTO_num_locks();
 void q_CRYPTO_set_locking_callback(void (*a)(int, int, const char *, int));
 void q_CRYPTO_set_id_callback(unsigned long (*a)());
@@ -240,9 +244,15 @@ const EVP_CIPHER *q_EVP_des_ede3_cbc();
 int q_EVP_PKEY_assign(EVP_PKEY *a, int b, char *c);
 Q_AUTOTEST_EXPORT int q_EVP_PKEY_set1_RSA(EVP_PKEY *a, RSA *b);
 int q_EVP_PKEY_set1_DSA(EVP_PKEY *a, DSA *b);
+#ifndef OPENSSL_NO_EC
+int q_EVP_PKEY_set1_EC_KEY(EVP_PKEY *a, EC_KEY *b);
+#endif
 void q_EVP_PKEY_free(EVP_PKEY *a);
 RSA *q_EVP_PKEY_get1_RSA(EVP_PKEY *a);
 DSA *q_EVP_PKEY_get1_DSA(EVP_PKEY *a);
+#ifndef OPENSSL_NO_EC
+EC_KEY *q_EVP_PKEY_get1_EC_KEY(EVP_PKEY *a);
+#endif
 int q_EVP_PKEY_type(int a);
 Q_AUTOTEST_EXPORT EVP_PKEY *q_EVP_PKEY_new();
 int q_i2d_X509(X509 *a, unsigned char **b);
@@ -260,15 +270,28 @@ void *q_PEM_ASN1_read_bio(d2i_of_void *a, const char *b, BIO *c, void **d, pem_p
 #else
 DSA *q_PEM_read_bio_DSAPrivateKey(BIO *a, DSA **b, pem_password_cb *c, void *d);
 RSA *q_PEM_read_bio_RSAPrivateKey(BIO *a, RSA **b, pem_password_cb *c, void *d);
+#ifndef OPENSSL_NO_EC
+EC_KEY *q_PEM_read_bio_ECPrivateKey(BIO *a, EC_KEY **b, pem_password_cb *c, void *d);
+#endif
 int q_PEM_write_bio_DSAPrivateKey(BIO *a, DSA *b, const EVP_CIPHER *c, unsigned char *d,
                                   int e, pem_password_cb *f, void *g);
 int q_PEM_write_bio_RSAPrivateKey(BIO *a, RSA *b, const EVP_CIPHER *c, unsigned char *d,
                                   int e, pem_password_cb *f, void *g);
+#ifndef OPENSSL_NO_EC
+int q_PEM_write_bio_ECPrivateKey(BIO *a, EC_KEY *b, const EVP_CIPHER *c, unsigned char *d,
+                                  int e, pem_password_cb *f, void *g);
+#endif
 #endif
 DSA *q_PEM_read_bio_DSA_PUBKEY(BIO *a, DSA **b, pem_password_cb *c, void *d);
 RSA *q_PEM_read_bio_RSA_PUBKEY(BIO *a, RSA **b, pem_password_cb *c, void *d);
+#ifndef OPENSSL_NO_EC
+EC_KEY *q_PEM_read_bio_EC_PUBKEY(BIO *a, EC_KEY **b, pem_password_cb *c, void *d);
+#endif
 int q_PEM_write_bio_DSA_PUBKEY(BIO *a, DSA *b);
 int q_PEM_write_bio_RSA_PUBKEY(BIO *a, RSA *b);
+#ifndef OPENSSL_NO_EC
+int q_PEM_write_bio_EC_PUBKEY(BIO *a, EC_KEY *b);
+#endif
 void q_RAND_seed(const void *a, int b);
 int q_RAND_status();
 RSA *q_RSA_new();
@@ -433,6 +456,7 @@ BIGNUM *q_BN_bin2bn(const unsigned char *s, int len, BIGNUM *ret);
 
 #ifndef OPENSSL_NO_EC
 // EC Diffie-Hellman support
+EC_KEY *q_EC_KEY_dup(const EC_KEY *src);
 EC_KEY *q_EC_KEY_new_by_curve_name(int nid);
 void q_EC_KEY_free(EC_KEY *ecdh);
 #define q_SSL_CTX_set_tmp_ecdh(ctx, ecdh) q_SSL_CTX_ctrl((ctx), SSL_CTRL_SET_TMP_ECDH, 0, (char *)ecdh)

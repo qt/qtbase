@@ -269,8 +269,12 @@ init_context:
             // take ownership of the RSA/DSA key instance because the QSslKey already has ownership.
             if (configuration.d->privateKey.algorithm() == QSsl::Rsa)
                 q_EVP_PKEY_set1_RSA(sslContext->pkey, reinterpret_cast<RSA *>(configuration.d->privateKey.handle()));
-            else
+            else if (configuration.d->privateKey.algorithm() == QSsl::Dsa)
                 q_EVP_PKEY_set1_DSA(sslContext->pkey, reinterpret_cast<DSA *>(configuration.d->privateKey.handle()));
+#ifndef OPENSSL_NO_EC
+            else if (configuration.d->privateKey.algorithm() == QSsl::Ec)
+                q_EVP_PKEY_set1_EC_KEY(sslContext->pkey, reinterpret_cast<EC_KEY *>(configuration.d->privateKey.handle()));
+#endif
         }
 
         if (!q_SSL_CTX_use_PrivateKey(sslContext->ctx, sslContext->pkey)) {

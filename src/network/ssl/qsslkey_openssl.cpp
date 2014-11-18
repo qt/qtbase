@@ -70,6 +70,13 @@ void QSslKeyPrivate::clear(bool deep)
             q_DSA_free(dsa);
         dsa = 0;
     }
+#ifndef OPENSSL_NO_EC
+    if (ec) {
+       if (deep)
+            q_EC_KEY_free(ec);
+       ec = 0;
+    }
+#endif
     if (opaque) {
         if (deep)
             q_EVP_PKEY_free(opaque);
@@ -99,6 +106,16 @@ bool QSslKeyPrivate::fromEVP_PKEY(EVP_PKEY *pkey)
 
         return true;
     }
+#ifndef OPENSSL_NO_EC
+    else if (pkey->type == EVP_PKEY_EC) {
+        isNull = false;
+        algorithm = QSsl::Ec;
+        type = QSsl::PrivateKey;
+        ec = q_EC_KEY_dup(q_EVP_PKEY_get1_EC_KEY(pkey));
+
+        return true;
+    }
+#endif
     else {
         // Unknown key type. This could be handled as opaque, but then
         // we'd eventually leak memory since we wouldn't be able to free
@@ -138,12 +155,20 @@ void QSslKeyPrivate::decodePem(const QByteArray &pem, const QByteArray &passPhra
             : q_PEM_read_bio_RSAPrivateKey(bio, &rsa, 0, phrase);
         if (rsa && rsa == result)
             isNull = false;
-    } else {
+    } else if (algorithm == QSsl::Dsa) {
         DSA *result = (type == QSsl::PublicKey)
             ? q_PEM_read_bio_DSA_PUBKEY(bio, &dsa, 0, phrase)
             : q_PEM_read_bio_DSAPrivateKey(bio, &dsa, 0, phrase);
         if (dsa && dsa == result)
             isNull = false;
+#ifndef OPENSSL_NO_EC
+    } else if (algorithm == QSsl::Ec) {
+        EC_KEY *result = (type == QSsl::PublicKey)
+            ? q_PEM_read_bio_EC_PUBKEY(bio, &ec, 0, phrase)
+            : q_PEM_read_bio_ECPrivateKey(bio, &ec, 0, phrase);
+        if (ec && ec == result)
+            isNull = false;
+#endif
     }
 
     q_BIO_free(bio);
@@ -154,8 +179,14 @@ int QSslKeyPrivate::length() const
     if (isNull || algorithm == QSsl::Opaque)
         return -1;
 
-    return (algorithm == QSsl::Rsa)
-           ? q_BN_num_bits(rsa->n) : q_BN_num_bits(dsa->p);
+    switch (algorithm) {
+        case QSsl::Rsa: return q_BN_num_bits(rsa->n);
+        case QSsl::Dsa: return q_BN_num_bits(dsa->p);
+#ifndef OPENSSL_NO_EC
+        case QSsl::Ec: return q_EC_GROUP_get_degree(q_EC_KEY_get0_group(ec));
+#endif
+        default: return -1;
+    }
 }
 
 QByteArray QSslKeyPrivate::toPem(const QByteArray &passPhrase) const
@@ -182,7 +213,7 @@ QByteArray QSslKeyPrivate::toPem(const QByteArray &passPhrase) const
                 fail = true;
             }
         }
-    } else {
+    } else if (algorithm == QSsl::Dsa) {
         if (type == QSsl::PublicKey) {
             if (!q_PEM_write_bio_DSA_PUBKEY(bio, dsa))
                 fail = true;
@@ -195,6 +226,23 @@ QByteArray QSslKeyPrivate::toPem(const QByteArray &passPhrase) const
                 fail = true;
             }
         }
+#ifndef OPENSSL_NO_EC
+    } else if (algorithm == QSsl::Ec) {
+        if (type == QSsl::PublicKey) {
+            if (!q_PEM_write_bio_EC_PUBKEY(bio, ec))
+                fail = true;
+        } else {
+            if (!q_PEM_write_bio_ECPrivateKey(
+                    bio, ec,
+                    // ### the cipher should be selectable in the API:
+                    passPhrase.isEmpty() ? (const EVP_CIPHER *)0 : q_EVP_des_ede3_cbc(),
+                    (uchar *)passPhrase.data(), passPhrase.size(), 0, 0)) {
+                fail = true;
+            }
+        }
+#endif
+    } else {
+        fail = true;
     }
 
     QByteArray pem;
@@ -216,6 +264,10 @@ Qt::HANDLE QSslKeyPrivate::handle() const
         return Qt::HANDLE(rsa);
     case QSsl::Dsa:
         return Qt::HANDLE(dsa);
+#ifndef OPENSSL_NO_EC
+    case QSsl::Ec:
+        return Qt::HANDLE(ec);
+#endif
     default:
         return Qt::HANDLE(NULL);
     }

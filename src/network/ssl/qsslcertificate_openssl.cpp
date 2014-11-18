@@ -249,6 +249,12 @@ QSslKey QSslCertificate::publicKey() const
         key.d->dsa = q_EVP_PKEY_get1_DSA(pkey);
         key.d->algorithm = QSsl::Dsa;
         key.d->isNull = false;
+#ifndef OPENSSL_NO_EC
+    } else if (q_EVP_PKEY_type(pkey->type) == EVP_PKEY_EC) {
+        key.d->ec = q_EVP_PKEY_get1_EC_KEY(pkey);
+        key.d->algorithm = QSsl::Ec;
+        key.d->isNull = false;
+#endif
     } else if (q_EVP_PKEY_type(pkey->type) == EVP_PKEY_DH) {
         // DH unsupported
     } else {

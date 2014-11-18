@@ -55,7 +55,8 @@ namespace QSsl {
     enum KeyAlgorithm {
         Opaque,
         Rsa,
-        Dsa
+        Dsa,
+        Ec
     };
 
     enum AlternativeNameEntryType {

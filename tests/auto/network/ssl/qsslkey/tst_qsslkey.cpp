@@ -105,12 +105,13 @@ void tst_QSslKey::initTestCase()
 
     QDir dir(testDataDir + "/keys");
     QFileInfoList fileInfoList = dir.entryInfoList(QDir::Files | QDir::Readable);
-    QRegExp rx(QLatin1String("^(rsa|dsa)-(pub|pri)-(\\d+)\\.(pem|der)$"));
+    QRegExp rx(QLatin1String("^(rsa|dsa|ec)-(pub|pri)-(\\d+)-?\\w*\\.(pem|der)$"));
     foreach (QFileInfo fileInfo, fileInfoList) {
         if (rx.indexIn(fileInfo.fileName()) >= 0)
             keyInfoList << KeyInfo(
                 fileInfo,
-                rx.cap(1) == QLatin1String("rsa") ? QSsl::Rsa : QSsl::Dsa,
+                rx.cap(1) == QLatin1String("rsa") ? QSsl::Rsa :
+                (rx.cap(1) == QLatin1String("dsa") ? QSsl::Dsa : QSsl::Ec),
                 rx.cap(2) == QLatin1String("pub") ? QSsl::PublicKey : QSsl::PrivateKey,
                 rx.cap(3).toInt(),
                 rx.cap(4) == QLatin1String("pem") ? QSsl::Pem : QSsl::Der);
@@ -279,7 +280,8 @@ void tst_QSslKey::toEncryptedPemOrDer_data()
     foreach (KeyInfo keyInfo, keyInfoList) {
         foreach (QString password, passwords) {
             QString testName = QString("%1-%2-%3-%4-%5").arg(keyInfo.fileInfo.fileName())
-                .arg(keyInfo.algorithm == QSsl::Rsa ? "RSA" : "DSA")
+                .arg(keyInfo.algorithm == QSsl::Rsa ? "RSA" :
+                    (keyInfo.algorithm == QSsl::Dsa ? "DSA" : "EC"))
                 .arg(keyInfo.type == QSsl::PrivateKey ? "PrivateKey" : "PublicKey")
                 .arg(keyInfo.format == QSsl::Pem ? "PEM" : "DER")
                 .arg(password);
