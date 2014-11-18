@@ -806,7 +806,7 @@ inline void QTextStreamPrivate::restoreToSavedConverterState()
 /*!
     \internal
 */
-inline void QTextStreamPrivate::write(const QChar *data, int len)
+void QTextStreamPrivate::write(const QChar *data, int len)
 {
     if (string) {
         // ### What about seek()??
@@ -885,7 +885,7 @@ inline void QTextStreamPrivate::putChar(QChar ch)
 /*!
     \internal
 */
-inline void QTextStreamPrivate::putString(const QChar *data, int len, bool number)
+void QTextStreamPrivate::putString(const QChar *data, int len, bool number)
 {
     QString pad;
     int padLeft = 0, padRight = 0;

@@ -30,7 +30,7 @@
     <failure message="failure message" result="fail"/>
   </testcase>
   <testcase result="pass" name="encoding">
-    <!-- message="&quot;Ülrich Ümläut&quot;" type="qdebug" -->
+    <!-- message="&quot;\u00DClrich \u00DCml\u00E4ut&quot;" type="qdebug" -->
   </testcase>
   <testcase result="pass" name="cleanupTestCase"/>
   <system-err>
@@ -46,6 +46,6 @@
 <![CDATA[quotes " text" more text]]>
 <![CDATA[xml close > open < tags < text]]>
 <![CDATA[all > " mixed ]]]><![CDATA[]> up > " in < the ]]]><![CDATA[]> hopes < of triggering "< ]]]><![CDATA[]> bugs]]>
-<![CDATA["Ülrich Ümläut"]]>
+<![CDATA["\u00DClrich \u00DCml\u00E4ut"]]>
   </system-err>
 </testsuite>

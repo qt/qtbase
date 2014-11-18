@@ -52,6 +52,7 @@ private slots:
     void stateSaver() const;
     void veryLongWarningMessage() const;
     void qDebugQChar() const;
+    void qDebugQString() const;
     void qDebugQStringRef() const;
     void qDebugQLatin1String() const;
     void qDebugQByteArray() const;
@@ -344,6 +345,54 @@ void tst_QDebug::qDebugQChar() const
 
 }
 
+void tst_QDebug::qDebugQString() const
+{
+    /* Use a basic string. */
+    {
+        QString file, function;
+        int line = 0;
+        const QString in(QLatin1String("input"));
+        const QStringRef inRef(&in);
+
+        MessageHandlerSetter mhs(myMessageHandler);
+        { qDebug() << inRef; }
+#ifndef QT_NO_MESSAGELOGCONTEXT
+        file = __FILE__; line = __LINE__ - 2; function = Q_FUNC_INFO;
+#endif
+        QCOMPARE(s_msgType, QtDebugMsg);
+        QCOMPARE(s_msg, QString::fromLatin1("\"input\""));
+        QCOMPARE(QString::fromLatin1(s_file), file);
+        QCOMPARE(s_line, line);
+        QCOMPARE(QString::fromLatin1(s_function), function);
+    }
+
+    /* simpler tests from now on */
+    MessageHandlerSetter mhs(myMessageHandler);
+
+    QString string = "Hello";
+    qDebug() << string;
+    QCOMPARE(s_msg, QString("\"Hello\""));
+
+    qDebug().noquote().nospace() << string;
+    QCOMPARE(s_msg, string);
+
+    qDebug().noquote().nospace() << qSetFieldWidth(8) << string;
+    QCOMPARE(s_msg, "   " + string);
+
+    string = QLatin1String("\nSm\xF8rg\xE5sbord\\");
+    qDebug().noquote().nospace() << string;
+    QCOMPARE(s_msg, string);
+
+    qDebug() << string;
+    QCOMPARE(s_msg, QString("\"\\nSm\\u00F8rg\\u00E5sbord\\\\\""));
+
+    // surrogate pairs (including broken pairings)
+    ushort utf16[] = { 0xDC00, 0xD800, 0xDC00, 'x', 0xD800, 0xDC00, 0xD800, 0 };
+    string = QString::fromUtf16(utf16);
+    qDebug() << string;
+    QCOMPARE(s_msg, QString("\"\\uDC00\\U00010000x\\U00010000\\uD800\""));
+}
+
 void tst_QDebug::qDebugQStringRef() const
 {
     /* Use a basic string. */
@@ -403,6 +452,24 @@ void tst_QDebug::qDebugQLatin1String() const
     QCOMPARE(QString::fromLatin1(s_file), file);
     QCOMPARE(s_line, line);
     QCOMPARE(QString::fromLatin1(s_function), function);
+
+    /* simpler tests from now on */
+    QLatin1String string("\"Hello\"");
+    qDebug() << string;
+    QCOMPARE(s_msg, QString("\"\\\"Hello\\\"\""));
+
+    qDebug().noquote().nospace() << string;
+    QCOMPARE(s_msg, QString(string));
+
+    qDebug().noquote().nospace() << qSetFieldWidth(8) << string;
+    QCOMPARE(s_msg, " " + QString(string));
+
+    string = QLatin1String("\nSm\xF8rg\xE5sbord\\");
+    qDebug().noquote().nospace() << string;
+    QCOMPARE(s_msg, QString(string));
+
+    qDebug() << string;
+    QCOMPARE(s_msg, QString("\"\\nSm\\u00F8rg\\u00E5sbord\\\\\""));
 }
 
 void tst_QDebug::qDebugQByteArray() const

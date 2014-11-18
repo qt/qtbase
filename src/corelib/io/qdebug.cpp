@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Intel Corporation.
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -40,8 +41,11 @@
 
 #include "qdebug.h"
 #include <private/qtextstream_p.h>
+#include <private/qtools_p.h>
 
 QT_BEGIN_NAMESPACE
+
+using QtMiscUtils::toHexUpper;
 
 // This file is needed to force compilation of QDebug into the kernel library.
 
@@ -168,6 +172,105 @@ void QDebug::putUcs4(uint ucs4)
     maybeQuote('\'');
 }
 
+template <typename Char>
+static inline void putEscapedString(QTextStreamPrivate *d, const Char *begin, int length)
+{
+    QChar quote(QLatin1Char('"'));
+    d->write(&quote, 1);
+
+    const Char *end = begin + length;
+    for (const Char *p = begin; p != end; ++p) {
+        if (sizeof(Char) == sizeof(QChar)) {
+            int runLength = 0;
+            while (p + runLength != end &&
+                   p[runLength] < 0x7f && p[runLength] >= 0x20 && p[runLength] != '\\' && p[runLength] != '"')
+                ++runLength;
+            if (runLength) {
+                d->write(reinterpret_cast<const QChar *>(p), runLength);
+                p += runLength - 1;
+                continue;
+            }
+        }
+
+        // print as an escape sequence
+        int buflen = 2;
+        ushort buf[sizeof "\\U12345678" - 1];
+        buf[0] = '\\';
+
+        switch (*p) {
+        case '"':
+        case '\\':
+            buf[1] = *p;
+            break;
+        case '\b':
+            buf[1] = 'b';
+            break;
+        case '\f':
+            buf[1] = 'f';
+            break;
+        case '\n':
+            buf[1] = 'n';
+            break;
+        case '\r':
+            buf[1] = 'r';
+            break;
+        case '\t':
+            buf[1] = 't';
+            break;
+        default:
+            if (QChar::isHighSurrogate(*p)) {
+                if ((p + 1) != end && QChar::isLowSurrogate(p[1])) {
+                    // properly-paired surrogates
+                    uint ucs4 = QChar::surrogateToUcs4(*p, p[1]);
+                    ++p;
+                    buf[1] = 'U';
+                    buf[2] = '0'; // toHexUpper(ucs4 >> 32);
+                    buf[3] = '0'; // toHexUpper(ucs4 >> 28);
+                    buf[4] = toHexUpper(ucs4 >> 20);
+                    buf[5] = toHexUpper(ucs4 >> 16);
+                    buf[6] = toHexUpper(ucs4 >> 12);
+                    buf[7] = toHexUpper(ucs4 >> 8);
+                    buf[8] = toHexUpper(ucs4 >> 4);
+                    buf[9] = toHexUpper(ucs4);
+                    buflen = 10;
+                    break;
+                }
+                // improperly-paired surrogates, fall through
+            }
+            buf[1] = 'u';
+            if (sizeof(Char) == 1) {
+                buf[2] = buf[3] = '0';
+            } else {
+                buf[2] = toHexUpper(*p >> 12);
+                buf[3] = toHexUpper(*p >> 8);
+            }
+            buf[4] = toHexUpper(*p >> 4);
+            buf[5] = toHexUpper(*p);
+            buflen = 6;
+        }
+        d->write(reinterpret_cast<QChar *>(buf), buflen);
+    }
+
+    d->write(&quote, 1);
+}
+
+/*!
+    \internal
+    Duplicated from QtTest::toPrettyUnicode().
+*/
+void QDebug::putString(const QChar *begin, size_t length)
+{
+    if (stream->testFlag(Stream::NoQuotes)) {
+        // no quotes, write the string directly too (no pretty-printing)
+        // this respects the QTextStream state, though
+        stream->ts.d_ptr->putString(begin, length);
+    } else {
+        // we'll reset the QTextStream formatting mechanisms, so save the state
+        QDebugStateSaver saver(*this);
+        stream->ts.d_ptr->params.reset();
+        putEscapedString(stream->ts.d_ptr.data(), reinterpret_cast<const ushort *>(begin), length);
+    }
+}
 
 /*!
     \fn QDebug::swap(QDebug &other)

@@ -78,6 +78,7 @@ class Q_CORE_EXPORT QDebug
     } *stream;
 
     void putUcs4(uint ucs4);
+    void putString(const QChar *begin, size_t length);
 public:
     inline QDebug(QIODevice *device) : stream(new Stream(device)) {}
     inline QDebug(QString *string) : stream(new Stream(string)) {}
@@ -118,8 +119,8 @@ public:
     inline QDebug &operator<<(float t) { stream->ts << t; return maybeSpace(); }
     inline QDebug &operator<<(double t) { stream->ts << t; return maybeSpace(); }
     inline QDebug &operator<<(const char* t) { stream->ts << QString::fromUtf8(t); return maybeSpace(); }
-    inline QDebug &operator<<(const QString & t) { maybeQuote(); stream->ts << t; maybeQuote(); return maybeSpace(); }
-    inline QDebug &operator<<(const QStringRef & t) { return operator<<(t.toString()); }
+    inline QDebug &operator<<(const QString & t) { putString(t.constData(), uint(t.length())); return maybeSpace(); }
+    inline QDebug &operator<<(const QStringRef & t) { putString(t.constData(), uint(t.length())); return maybeSpace(); }
     inline QDebug &operator<<(QLatin1String t) { maybeQuote(); stream->ts << t; maybeQuote(); return maybeSpace(); }
     inline QDebug &operator<<(const QByteArray & t) { maybeQuote(); stream->ts << t; maybeQuote(); return maybeSpace(); }
     inline QDebug &operator<<(const void * t) { stream->ts << t; return maybeSpace(); }

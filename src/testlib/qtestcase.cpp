@@ -2146,6 +2146,8 @@ char *toHexRepresentation(const char *ba, int length)
     \internal
     Returns the same QString but with only the ASCII characters still shown;
     everything else is replaced with \c {\uXXXX}.
+
+    Similar to QDebug::putString().
 */
 char *toPrettyUnicode(const ushort *p, int length)
 {
