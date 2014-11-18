@@ -3139,7 +3139,8 @@ bool QVariant::convert(const int type, void *ptr) const
 static bool qIsNumericType(uint tp)
 {
     return (tp >= QVariant::Bool && tp <= QVariant::Double)
-           || (tp >= QMetaType::Long && tp <= QMetaType::Float);
+           || (tp >= QMetaType::Long && tp <= QMetaType::Float)
+           || tp == QMetaType::SChar;
 }
 
 static bool qIsFloatingPoint(uint tp)
