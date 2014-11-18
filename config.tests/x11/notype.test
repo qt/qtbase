@@ -27,7 +27,7 @@ if [ $XPLATFORM = "solaris-g++" -o $XPLATFORM = "hpux-g++" -o $XPLATFORM = "aix-
     NOTYPE=yes
 
     test -d "$OUTDIR/config.tests/x11/notype" || mkdir -p "$OUTDIR/config.tests/x11/notype"
-    "$OUTDIR/bin/qmake" -nocache -spec "$QMKSPEC" "QT_BUILD_TREE=$OUTDIR" "$SRCDIR/config.tests/x11/notype/notypetest.pro" -o "$OUTDIR/config.tests/x11/notype/Makefile" >/dev/null 2>&1
+    "$OUTDIR/bin/qmake" -nocache -spec "$QMKSPEC" "$SRCDIR/config.tests/x11/notype/notypetest.pro" -o "$OUTDIR/config.tests/x11/notype/Makefile" >/dev/null 2>&1
     cd "$OUTDIR/config.tests/x11/notype"
 
     if [ "$VERBOSE" = "yes" ]; then

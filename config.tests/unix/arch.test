@@ -44,7 +44,7 @@ done
 test -d "$OUTDIR/config.tests/arch" || mkdir -p "$OUTDIR/config.tests/arch"
 cd "$OUTDIR/config.tests/arch"
 [ -f Makefile ] && $MAKE distclean >/dev/null 2>&1
-OUTDIR=$OUTDIR "$OUTDIR/bin/qmake" -nocache -spec "$QMKSPEC" "QT_BUILD_TREE=$OUTDIR" "LIBS+=$LFLAGS" "QMAKE_CXXFLAGS+=$CXXFLAGS" "INCLUDEPATH+=$INCLUDEPATH" "CONFIG-=app_bundle" "$SRCDIR/config.tests/arch/arch$PROSUFFIX.pro" >/dev/null 2>&1 || echo "qmake is broken" >&2
+OUTDIR=$OUTDIR "$OUTDIR/bin/qmake" -nocache -spec "$QMKSPEC" "LIBS+=$LFLAGS" "QMAKE_CXXFLAGS+=$CXXFLAGS" "INCLUDEPATH+=$INCLUDEPATH" "CONFIG-=app_bundle" "$SRCDIR/config.tests/arch/arch$PROSUFFIX.pro" >/dev/null 2>&1 || echo "qmake is broken" >&2
 
 
 ARCH=""
