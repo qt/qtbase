@@ -144,6 +144,7 @@ private slots:
 
     void noMapAfterSourceDelete();
     void forwardDropApi();
+    void canDropMimeData();
 
 protected:
     void buildHierarchy(const QStringList &data, QAbstractItemModel *model);
@@ -3909,6 +3910,36 @@ void tst_QSortFilterProxyModel::chainedProxyModelRoleNames()
     QVERIFY(proxy2.roleNames().value(Qt::UserRole + 1) == "custom");
 }
 
+// A source model with ABABAB rows, where only A rows accept drops.
+// It will then be sorted by a QSFPM.
+class DropOnOddRows : public QAbstractListModel
+{
+    Q_OBJECT
+public:
+    DropOnOddRows(QObject *parent = 0) : QAbstractListModel(parent) {}
+
+    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const
+    {
+        if (role == Qt::DisplayRole)
+            return (index.row() % 2 == 0) ? "A" : "B";
+        return QVariant();
+    }
+
+    int rowCount(const QModelIndex &parent = QModelIndex()) const
+    {
+        Q_UNUSED(parent);
+        return 10;
+    }
+
+    bool canDropMimeData(const QMimeData *, Qt::DropAction,
+                         int row, int column, const QModelIndex &parent) const Q_DECL_OVERRIDE
+    {
+        Q_UNUSED(row);
+        Q_UNUSED(column);
+        return parent.row() % 2 == 0;
+    }
+};
+
 class SourceAssertion : public QSortFilterProxyModel
 {
     Q_OBJECT
@@ -3971,6 +4002,31 @@ void tst_QSortFilterProxyModel::forwardDropApi()
     QCOMPARE(model.rowCount(), 1);
     QVERIFY(model.canDropMimeData(0, Qt::CopyAction, 0, 0, QModelIndex()));
     QVERIFY(model.dropMimeData(0, Qt::CopyAction, 0, 0, QModelIndex()));
+}
+
+static QString rowTexts(QAbstractItemModel *model) {
+    QString str;
+    for (int row = 0 ; row < model->rowCount(); ++row)
+        str += model->index(row, 0).data().toString();
+    return str;
+}
+
+void tst_QSortFilterProxyModel::canDropMimeData()
+{
+    // Given a source model which only supports dropping on even rows
+    DropOnOddRows sourceModel;
+    QCOMPARE(rowTexts(&sourceModel), QString("ABABABABAB"));
+
+    // and a proxy model that sorts the rows
+    QSortFilterProxyModel proxy;
+    proxy.setSourceModel(&sourceModel);
+    proxy.sort(0, Qt::AscendingOrder);
+    QCOMPARE(rowTexts(&proxy), QString("AAAAABBBBB"));
+
+    // the proxy should correctly map canDropMimeData to the source model,
+    // i.e. accept drops on the first 5 rows and refuse drops on the next 5.
+    for (int row = 0; row < proxy.rowCount(); ++row)
+        QCOMPARE(proxy.canDropMimeData(0, Qt::CopyAction, -1, -1, proxy.index(row, 0)), row < 5);
 }
 
 QTEST_MAIN(tst_QSortFilterProxyModel)

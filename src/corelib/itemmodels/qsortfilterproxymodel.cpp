@@ -2030,30 +2030,14 @@ Qt::DropActions QSortFilterProxyModel::supportedDropActions() const
     return d->model->supportedDropActions();
 }
 
+// Qt6: remove unnecessary reimplementation
 /*!
   \reimp
 */
 bool QSortFilterProxyModel::dropMimeData(const QMimeData *data, Qt::DropAction action,
                                          int row, int column, const QModelIndex &parent)
 {
-    Q_D(QSortFilterProxyModel);
-    if ((row == -1) && (column == -1))
-        return d->model->dropMimeData(data, action, -1, -1, mapToSource(parent));
-    int source_destination_row = -1;
-    int source_destination_column = -1;
-    QModelIndex source_parent;
-    if (row == rowCount(parent)) {
-        source_parent = mapToSource(parent);
-        source_destination_row = d->model->rowCount(source_parent);
-    } else {
-        QModelIndex proxy_index = index(row, column, parent);
-        QModelIndex source_index = mapToSource(proxy_index);
-        source_destination_row = source_index.row();
-        source_destination_column = source_index.column();
-        source_parent = source_index.parent();
-    }
-    return d->model->dropMimeData(data, action, source_destination_row,
-                                  source_destination_column, source_parent);
+    return QAbstractProxyModel::dropMimeData(data, action, row, column, parent);
 }
 
 /*!
