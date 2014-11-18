@@ -46,6 +46,7 @@
 QT_BEGIN_NAMESPACE
 
 using QtMiscUtils::toHexUpper;
+using QtMiscUtils::fromHex;
 
 // This file is needed to force compilation of QDebug into the kernel library.
 
@@ -173,13 +174,24 @@ void QDebug::putUcs4(uint ucs4)
 }
 
 template <typename Char>
-static inline void putEscapedString(QTextStreamPrivate *d, const Char *begin, int length)
+static inline void putEscapedString(QTextStreamPrivate *d, const Char *begin, int length, bool isUnicode = true)
 {
     QChar quote(QLatin1Char('"'));
     d->write(&quote, 1);
 
+    bool lastWasHexEscape = false;
     const Char *end = begin + length;
     for (const Char *p = begin; p != end; ++p) {
+        // check if we need to insert "" to break an hex escape sequence
+        if (Q_UNLIKELY(lastWasHexEscape)) {
+            if (fromHex(*p) != -1) {
+                // yes, insert it
+                QChar quotes[] = { QLatin1Char('"'), QLatin1Char('"') };
+                d->write(quotes, 2);
+            }
+            lastWasHexEscape = false;
+        }
+
         if (sizeof(Char) == sizeof(QChar)) {
             int runLength = 0;
             while (p + runLength != end &&
@@ -190,6 +202,10 @@ static inline void putEscapedString(QTextStreamPrivate *d, const Char *begin, in
                 p += runLength - 1;
                 continue;
             }
+        } else if (*p < 0x7f && *p >= 0x20 && *p != '\\' && *p != '"') {
+            QChar c = QLatin1Char(*p);
+            d->write(&c, 1);
+            continue;
         }
 
         // print as an escape sequence
@@ -218,6 +234,15 @@ static inline void putEscapedString(QTextStreamPrivate *d, const Char *begin, in
             buf[1] = 't';
             break;
         default:
+            if (!isUnicode) {
+                // print as hex escape
+                buf[1] = 'x';
+                buf[2] = toHexUpper(uchar(*p) >> 4);
+                buf[3] = toHexUpper(uchar(*p));
+                buflen = 4;
+                lastWasHexEscape = true;
+                break;
+            }
             if (QChar::isHighSurrogate(*p)) {
                 if ((p + 1) != end && QChar::isLowSurrogate(p[1])) {
                     // properly-paired surrogates
@@ -269,6 +294,26 @@ void QDebug::putString(const QChar *begin, size_t length)
         QDebugStateSaver saver(*this);
         stream->ts.d_ptr->params.reset();
         putEscapedString(stream->ts.d_ptr.data(), reinterpret_cast<const ushort *>(begin), length);
+    }
+}
+
+/*!
+    \internal
+    Duplicated from QtTest::toPrettyCString().
+*/
+void QDebug::putByteArray(const char *begin, size_t length, Latin1Content content)
+{
+    if (stream->testFlag(Stream::NoQuotes)) {
+        // no quotes, write the string directly too (no pretty-printing)
+        // this respects the QTextStream state, though
+        QString string = content == ContainsLatin1 ? QString::fromLatin1(begin, length) : QString::fromUtf8(begin, length);
+        stream->ts.d_ptr->putString(string);
+    } else {
+        // we'll reset the QTextStream formatting mechanisms, so save the state
+        QDebugStateSaver saver(*this);
+        stream->ts.d_ptr->params.reset();
+        putEscapedString(stream->ts.d_ptr.data(), reinterpret_cast<const uchar *>(begin),
+                         length, content == ContainsLatin1);
     }
 }
 

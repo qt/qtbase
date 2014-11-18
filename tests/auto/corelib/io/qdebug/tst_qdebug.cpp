@@ -490,6 +490,28 @@ void tst_QDebug::qDebugQByteArray() const
     QCOMPARE(QString::fromLatin1(s_file), file);
     QCOMPARE(s_line, line);
     QCOMPARE(QString::fromLatin1(s_function), function);
+
+    /* simpler tests from now on */
+    QByteArray ba = "\"Hello\"";
+    qDebug() << ba;
+    QCOMPARE(s_msg, QString("\"\\\"Hello\\\"\""));
+
+    qDebug().noquote().nospace() << ba;
+    QCOMPARE(s_msg, QString::fromLatin1(ba));
+
+    qDebug().noquote().nospace() << qSetFieldWidth(8) << ba;
+    QCOMPARE(s_msg, " " + QString::fromLatin1(ba));
+
+    ba = "\nSm\xC3\xB8rg\xC3\xA5sbord\\";
+    qDebug().noquote().nospace() << ba;
+    QCOMPARE(s_msg, QString::fromUtf8(ba));
+
+    qDebug() << ba;
+    QCOMPARE(s_msg, QString("\"\\nSm\\xC3\\xB8rg\\xC3\\xA5sbord\\\\\""));
+
+    // ensure that it closes hex escape sequences correctly
+    qDebug() << QByteArray("\377FFFF");
+    QCOMPARE(s_msg, QString("\"\\xFF\"\"FFFF\""));
 }
 
 enum TestEnum {
