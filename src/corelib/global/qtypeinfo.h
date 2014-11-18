@@ -276,12 +276,24 @@ Q_DECLARE_TYPEINFO(double, Q_PRIMITIVE_TYPE);
 Q_DECLARE_TYPEINFO(long double, Q_PRIMITIVE_TYPE);
 #endif
 
+
 #if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
-// We can't do it now because it would break BC on QList<char32_t>
+// ### Qt 6: remove the other branch
+// This was required so that QList<T> for these types allocates out of the array storage
+#  ifdef Q_COMPILER_UNICODE_STRINGS
 Q_DECLARE_TYPEINFO(char16_t, Q_PRIMITIVE_TYPE);
 Q_DECLARE_TYPEINFO(char32_t, Q_PRIMITIVE_TYPE);
+#  endif
 #  if !defined(Q_CC_MSVC) || defined(_NATIVE_WCHAR_T_DEFINED)
 Q_DECLARE_TYPEINFO(wchar_t, Q_PRIMITIVE_TYPE);
+#  endif
+#else
+#  ifdef Q_COMPILER_UNICODE_STRINGS
+Q_DECLARE_TYPEINFO(char16_t, Q_RELOCATABLE_TYPE);
+Q_DECLARE_TYPEINFO(char32_t, Q_RELOCATABLE_TYPE);
+#  endif
+#  if !defined(Q_CC_MSVC) || defined(_NATIVE_WCHAR_T_DEFINED)
+Q_DECLARE_TYPEINFO(wchar_t, Q_RELOCATABLE_TYPE);
 #  endif
 #endif // Qt 6
 
