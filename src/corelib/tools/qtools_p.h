@@ -62,6 +62,17 @@ inline char toHexLower(uint value)
     static const char hexdigits[] = "0123456789abcdef";
     return hexdigits[value & 0xF];
 }
+
+inline int fromHex(uint c)
+{
+    if ((c >= '0') && (c <= '9'))
+        return c - '0';
+    if ((c >= 'A') && (c <= 'F'))
+        return c - 'A' + 10;
+    if ((c >= 'a') && (c <= 'f'))
+        return c - 'a' + 10;
+    return -1;
+}
 }
 
 // We typically need an extra bit for qNextPowerOfTwo when determining the next allocation size.

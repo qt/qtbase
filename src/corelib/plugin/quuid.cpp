@@ -62,15 +62,9 @@ bool _q_fromHex(const Char *&src, Integral &value)
     value = 0;
 
     for (uint i = 0; i < sizeof(Integral) * 2; ++i) {
-        int ch = *src++;
-        int tmp;
-        if (ch >= '0' && ch <= '9')
-            tmp = ch - '0';
-        else if (ch >= 'a' && ch <= 'f')
-            tmp = ch - 'a' + 10;
-        else if (ch >= 'A' && ch <= 'F')
-            tmp = ch - 'A' + 10;
-        else
+        uint ch = *src++;
+        int tmp = QtMiscUtils::fromHex(ch);
+        if (tmp == -1)
             return false;
 
         value = value * 16 + tmp;

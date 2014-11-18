@@ -4125,15 +4125,9 @@ QByteArray QByteArray::fromHex(const QByteArray &hexEncoded)
 
     bool odd_digit = true;
     for (int i = hexEncoded.size() - 1; i >= 0; --i) {
-        int ch = hexEncoded.at(i);
-        int tmp;
-        if (ch >= '0' && ch <= '9')
-            tmp = ch - '0';
-        else if (ch >= 'a' && ch <= 'f')
-            tmp = ch - 'a' + 10;
-        else if (ch >= 'A' && ch <= 'F')
-            tmp = ch - 'A' + 10;
-        else
+        uchar ch = uchar(hexEncoded.at(i));
+        int tmp = QtMiscUtils::fromHex(ch);
+        if (tmp == -1)
             continue;
         if (odd_digit) {
             --result;
