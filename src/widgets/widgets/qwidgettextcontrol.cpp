@@ -1580,8 +1580,10 @@ void QWidgetTextControlPrivate::mousePressEvent(QEvent *e, Qt::MouseButton butto
             cursor.clearSelection();
         }
     }
+    // Do not start selection on a mouse event synthesized from a touch event.
     if (!(button & Qt::LeftButton) ||
-        !((interactionFlags & Qt::TextSelectableByMouse) || (interactionFlags & Qt::TextEditable))) {
+        !((interactionFlags & Qt::TextSelectableByMouse) || (interactionFlags & Qt::TextEditable))
+        || QApplicationPrivate::mouseEventSource(e) != Qt::MouseEventNotSynthesized) {
             e->ignore();
             return;
     }
@@ -1751,6 +1753,11 @@ void QWidgetTextControlPrivate::mouseReleaseEvent(QEvent *e, Qt::MouseButton but
                                             Qt::MouseButtons buttons, const QPoint &globalPos)
 {
     Q_Q(QWidgetTextControl);
+
+    if (QApplicationPrivate::mouseEventSource(e) != Qt::MouseEventNotSynthesized) {
+        setCursorPosition(pos); // Emulate Tap to set cursor for events synthesized from touch.
+        return;
+    }
 
     const QTextCursor oldSelection = cursor;
     if (sendMouseEventToInputContext(

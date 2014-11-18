@@ -168,6 +168,7 @@ public:
     static void setFocusWidget(QWidget *focus, Qt::FocusReason reason);
     static QWidget *focusNextPrevChild_helper(QWidget *toplevel, bool next,
                                               bool *wrappingOccurred = 0);
+    static Qt::MouseEventSource mouseEventSource(const QEvent *e);
 
 #ifndef QT_NO_GRAPHICSVIEW
     // Maintain a list of all scenes to ensure font and palette propagation to
