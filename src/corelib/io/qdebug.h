@@ -76,6 +76,8 @@ class Q_CORE_EXPORT QDebug
         // added in 5.4
         int flags;
     } *stream;
+
+    void putUcs4(uint ucs4);
 public:
     inline QDebug(QIODevice *device) : stream(new Stream(device)) {}
     inline QDebug(QString *string) : stream(new Stream(string)) {}
@@ -98,11 +100,15 @@ public:
     inline QDebug &noquote() { stream->setFlag(Stream::NoQuotes); return *this; }
     inline QDebug &maybeQuote(char c = '"') { if (!(stream->testFlag(Stream::NoQuotes))) stream->ts << c; return *this; }
 
-    inline QDebug &operator<<(QChar t) { maybeQuote('\''); stream->ts << t; maybeQuote('\''); return maybeSpace(); }
+    inline QDebug &operator<<(QChar t) { putUcs4(t.unicode()); return maybeSpace(); }
     inline QDebug &operator<<(bool t) { stream->ts << (t ? "true" : "false"); return maybeSpace(); }
     inline QDebug &operator<<(char t) { stream->ts << t; return maybeSpace(); }
     inline QDebug &operator<<(signed short t) { stream->ts << t; return maybeSpace(); }
     inline QDebug &operator<<(unsigned short t) { stream->ts << t; return maybeSpace(); }
+#ifdef Q_COMPILER_UNICODE_STRINGS
+    inline QDebug &operator<<(char16_t t) { return *this << QChar(t); }
+    inline QDebug &operator<<(char32_t t) { putUcs4(t); return maybeSpace(); }
+#endif
     inline QDebug &operator<<(signed int t) { stream->ts << t; return maybeSpace(); }
     inline QDebug &operator<<(unsigned int t) { stream->ts << t; return maybeSpace(); }
     inline QDebug &operator<<(signed long t) { stream->ts << t; return maybeSpace(); }
@@ -117,6 +123,9 @@ public:
     inline QDebug &operator<<(QLatin1String t) { maybeQuote(); stream->ts << t; maybeQuote(); return maybeSpace(); }
     inline QDebug &operator<<(const QByteArray & t) { maybeQuote(); stream->ts << t; maybeQuote(); return maybeSpace(); }
     inline QDebug &operator<<(const void * t) { stream->ts << t; return maybeSpace(); }
+#ifdef Q_COMPILER_NULLPTR
+    inline QDebug &operator<<(std::nullptr_t) { stream->ts << "(nullptr)"; return maybeSpace(); }
+#endif
     inline QDebug &operator<<(QTextStreamFunction f) {
         stream->ts << f;
         return *this;

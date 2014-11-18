@@ -148,6 +148,28 @@ QDebug::~QDebug()
 }
 
 /*!
+    \internal
+*/
+void QDebug::putUcs4(uint ucs4)
+{
+    maybeQuote('\'');
+    if (ucs4 < 0x20) {
+        stream->ts << hex << "\\x" << ucs4 << reset;
+    } else if (ucs4 < 0x80) {
+        stream->ts << char(ucs4);
+    } else {
+        stream->ts << hex << qSetPadChar(QLatin1Char('0'));
+        if (ucs4 < 0x10000)
+            stream->ts << qSetFieldWidth(4) << "\\u";
+        else
+            stream->ts << qSetFieldWidth(8) << "\\U";
+        stream->ts << ucs4 << reset;
+    }
+    maybeQuote('\'');
+}
+
+
+/*!
     \fn QDebug::swap(QDebug &other)
     \since 5.0
 
