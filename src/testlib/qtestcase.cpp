@@ -2153,7 +2153,7 @@ char *toPrettyUnicode(const ushort *p, int length)
             break;
         }
 
-        if (*p < 0x7f && *p >= 0x20 && *p != '\\') {
+        if (*p < 0x7f && *p >= 0x20 && *p != '\\' && *p != '"') {
             *dst++ = *p;
             continue;
         }
