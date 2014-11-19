@@ -31,8 +31,8 @@
 **
 ****************************************************************************/
 
-#ifndef QEGLCOMPOSITOR_H
-#define QEGLCOMPOSITOR_H
+#ifndef QOPENGLCOMPOSITORBACKINGSTORE_H
+#define QOPENGLCOMPOSITORBACKINGSTORE_H
 
 //
 //  W A R N I N G
@@ -45,39 +45,48 @@
 // We mean it.
 //
 
-#include <QtCore/QTimer>
+#include <qpa/qplatformbackingstore.h>
+#include <QImage>
+#include <QRegion>
 
 QT_BEGIN_NAMESPACE
 
 class QOpenGLContext;
-class QOpenGLTextureBlitter;
-class QEGLPlatformWindow;
+class QPlatformTextureList;
 
-class QEGLCompositor : public QObject
+class QOpenGLCompositorBackingStore : public QPlatformBackingStore
 {
-    Q_OBJECT
-
 public:
-    void schedule(QOpenGLContext *context, QEGLPlatformWindow *window);
+    QOpenGLCompositorBackingStore(QWindow *window);
+    ~QOpenGLCompositorBackingStore();
 
-    static QEGLCompositor *instance();
-    static void destroy();
+    QPaintDevice *paintDevice() Q_DECL_OVERRIDE;
 
-private slots:
-    void renderAll();
+    void beginPaint(const QRegion &region) Q_DECL_OVERRIDE;
+
+    void flush(QWindow *window, const QRegion &region, const QPoint &offset) Q_DECL_OVERRIDE;
+    void resize(const QSize &size, const QRegion &staticContents) Q_DECL_OVERRIDE;
+
+    QImage toImage() const Q_DECL_OVERRIDE;
+    void composeAndFlush(QWindow *window, const QRegion &region, const QPoint &offset,
+                         QPlatformTextureList *textures, QOpenGLContext *context,
+                         bool translucentBackground) Q_DECL_OVERRIDE;
+
+    const QPlatformTextureList *textures() const { return m_textures; }
+
+    void notifyComposited();
 
 private:
-    QEGLCompositor();
-    ~QEGLCompositor();
+    void updateTexture();
 
-    void render(QEGLPlatformWindow *window);
-
-    QOpenGLContext *m_context;
-    QEGLPlatformWindow *m_window;
-    QTimer m_updateTimer;
-    QOpenGLTextureBlitter *m_blitter;
+    QWindow *m_window;
+    QImage m_image;
+    QRegion m_dirty;
+    uint m_bsTexture;
+    QPlatformTextureList *m_textures;
+    QPlatformTextureList *m_lockedWidgetTextures;
 };
 
 QT_END_NAMESPACE
 
-#endif // QEGLCOMPOSITOR_H
+#endif // QOPENGLCOMPOSITORBACKINGSTORE_H

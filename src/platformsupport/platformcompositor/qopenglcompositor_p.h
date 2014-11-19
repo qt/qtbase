@@ -31,8 +31,8 @@
 **
 ****************************************************************************/
 
-#ifndef QEGLPLATFORMBACKINGSTORE_H
-#define QEGLPLATFORMBACKINGSTORE_H
+#ifndef QOPENGLCOMPOSITOR_H
+#define QOPENGLCOMPOSITOR_H
 
 //
 //  W A R N I N G
@@ -45,52 +45,63 @@
 // We mean it.
 //
 
-#include <qpa/qplatformbackingstore.h>
-
-#include <QImage>
-#include <QRegion>
+#include <QtCore/QTimer>
+#include <QtGui/private/qopengltextureblitter_p.h>
 
 QT_BEGIN_NAMESPACE
 
 class QOpenGLContext;
+class QWindow;
 class QPlatformTextureList;
-class QEGLPlatformWindow;
 
-class QEGLPlatformBackingStore : public QPlatformBackingStore
+class QOpenGLCompositorWindow
 {
 public:
-    QEGLPlatformBackingStore(QWindow *window);
-    ~QEGLPlatformBackingStore();
+    virtual QWindow *sourceWindow() const = 0;
+    virtual const QPlatformTextureList *textures() const = 0;
+    virtual void beginCompositing() { }
+    virtual void endCompositing() { }
+};
 
-    QPaintDevice *paintDevice() Q_DECL_OVERRIDE;
+class QOpenGLCompositor : public QObject
+{
+    Q_OBJECT
 
-    void beginPaint(const QRegion &region) Q_DECL_OVERRIDE;
+public:
+    static QOpenGLCompositor *instance();
+    static void destroy();
 
-    void flush(QWindow *window, const QRegion &region, const QPoint &offset) Q_DECL_OVERRIDE;
-    void resize(const QSize &size, const QRegion &staticContents) Q_DECL_OVERRIDE;
+    void setTarget(QOpenGLContext *context, QWindow *window);
+    QOpenGLContext *context() const { return m_context; }
+    QWindow *targetWindow() const { return m_targetWindow; }
 
-    QImage toImage() const Q_DECL_OVERRIDE;
-    void composeAndFlush(QWindow *window, const QRegion &region, const QPoint &offset,
-                         QPlatformTextureList *textures, QOpenGLContext *context,
-                         bool translucentBackground) Q_DECL_OVERRIDE;
+    void update();
 
-    const QPlatformTextureList *textures() const { return m_textures; }
+    QList<QOpenGLCompositorWindow *> windows() const { return m_windows; }
+    void addWindow(QOpenGLCompositorWindow *window);
+    void removeWindow(QOpenGLCompositorWindow *window);
+    void moveToTop(QOpenGLCompositorWindow *window);
+    void changeWindowIndex(QOpenGLCompositorWindow *window, int newIdx);
 
-    virtual void composite(QOpenGLContext *context, QEGLPlatformWindow *window);
+signals:
+    void topWindowChanged(QOpenGLCompositorWindow *window);
 
-    void composited();
+private slots:
+    void renderAll();
 
 private:
-    void updateTexture();
+    QOpenGLCompositor();
+    ~QOpenGLCompositor();
 
-    QEGLPlatformWindow *m_window;
-    QImage m_image;
-    QRegion m_dirty;
-    uint m_bsTexture;
-    QPlatformTextureList *m_textures;
-    QPlatformTextureList *m_lockedWidgetTextures;
+    void render(QOpenGLCompositorWindow *window);
+
+    QOpenGLContext *m_context;
+    QWindow *m_targetWindow;
+    QTimer m_updateTimer;
+    QOpenGLTextureBlitter m_blitter;
+    QList<QOpenGLCompositorWindow *> m_windows;
 };
 
 QT_END_NAMESPACE
 
-#endif // QEGLPLATFORMBACKINGSTORE_H
+#endif // QOPENGLCOMPOSITOR_H

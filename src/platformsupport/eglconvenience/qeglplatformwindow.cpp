@@ -32,9 +32,10 @@
 ****************************************************************************/
 
 #include <qpa/qwindowsysteminterface.h>
+#include <QtPlatformSupport/private/qopenglcompositor_p.h>
+#include <QtPlatformSupport/private/qopenglcompositorbackingstore_p.h>
 
 #include "qeglplatformwindow_p.h"
-#include "qeglplatformbackingstore_p.h"
 #include "qeglplatformscreen_p.h"
 
 QT_BEGIN_NAMESPACE
@@ -47,7 +48,7 @@ QT_BEGIN_NAMESPACE
     \ingroup qpa
 
     Lightweight class providing some basic platform window operations
-    and interfacing with QEGLPlatformBackingStore.
+    and interfacing with QOpenGLCompositorBackingStore.
 
     Almost no QPlatformWindow functions are implemented here. This is
     intentional because different platform plugins may use different
@@ -57,13 +58,15 @@ QT_BEGIN_NAMESPACE
     enforce anything for these functions.
 
     \note Subclasses are responsible for invoking this class'
-    implementation of create(). When using QEGLPlatformScreen, the
-    subclasses of this class are expected to utilize the window stack
-    management functions (addWindow() etc.) provided there.
+    implementation of create() and are expected to utilize the window
+    stack management functions (addWindow() etc.) in
+    QOpenGLCompositor.
  */
 
 QEGLPlatformWindow::QEGLPlatformWindow(QWindow *w)
     : QPlatformWindow(w),
+      m_backingStore(0),
+      m_raster(false),
       m_winId(0)
 {
 }
@@ -100,6 +103,11 @@ bool QEGLPlatformWindow::isRaster() const
     return m_raster || window()->surfaceType() == QSurface::RasterGLSurface;
 }
 
+QWindow *QEGLPlatformWindow::sourceWindow() const
+{
+    return window();
+}
+
 const QPlatformTextureList *QEGLPlatformWindow::textures() const
 {
     if (m_backingStore)
@@ -108,10 +116,10 @@ const QPlatformTextureList *QEGLPlatformWindow::textures() const
     return 0;
 }
 
-void QEGLPlatformWindow::composited()
+void QEGLPlatformWindow::endCompositing()
 {
     if (m_backingStore)
-        m_backingStore->composited();
+        m_backingStore->notifyComposited();
 }
 
 WId QEGLPlatformWindow::winId() const

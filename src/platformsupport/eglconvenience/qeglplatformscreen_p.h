@@ -60,22 +60,9 @@ public:
     QEGLPlatformScreen(EGLDisplay dpy);
     ~QEGLPlatformScreen();
 
-    QList<QEGLPlatformWindow *> windows() const { return m_windows; }
-
-    void addWindow(QEGLPlatformWindow *window);
-    void removeWindow(QEGLPlatformWindow *window);
-    void moveToTop(QEGLPlatformWindow *window);
-    void changeWindowIndex(QEGLPlatformWindow *window, int newIdx);
-
-    virtual void topWindowChanged(QEGLPlatformWindow *window) { Q_UNUSED(window); }
-
     EGLDisplay display() const { return m_dpy; }
 
-    virtual QEGLPlatformWindow *compositingWindow() = 0;
-    virtual QOpenGLContext *compositingContext() = 0;
-
 private:
-    QList<QEGLPlatformWindow *> m_windows;
     EGLDisplay m_dpy;
 };
 

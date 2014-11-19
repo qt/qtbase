@@ -16,16 +16,12 @@ contains(QT_CONFIG,egl) {
                 $$PWD/qeglplatformcursor_p.h \
                 $$PWD/qeglplatformwindow_p.h \
                 $$PWD/qeglplatformscreen_p.h \
-                $$PWD/qeglcompositor_p.h \
-                $$PWD/qeglplatformbackingstore_p.h \
                 $$PWD/qeglplatformintegration_p.h
 
             SOURCES += \
                 $$PWD/qeglplatformcursor.cpp \
                 $$PWD/qeglplatformwindow.cpp \
                 $$PWD/qeglplatformscreen.cpp \
-                $$PWD/qeglcompositor.cpp \
-                $$PWD/qeglplatformbackingstore.cpp \
                 $$PWD/qeglplatformintegration.cpp
         }
     }

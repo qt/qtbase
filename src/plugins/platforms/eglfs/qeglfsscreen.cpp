@@ -41,9 +41,7 @@ QT_BEGIN_NAMESPACE
 QEglFSScreen::QEglFSScreen(EGLDisplay dpy)
     : QEGLPlatformScreen(dpy),
       m_surface(EGL_NO_SURFACE),
-      m_cursor(0),
-      m_rootWindow(0),
-      m_rootContext(0)
+      m_cursor(0)
 {
     m_cursor = QEglFSHooks::hooks()->createCursor(this);
 }

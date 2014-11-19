@@ -46,25 +46,28 @@
 //
 
 #include <qpa/qplatformwindow.h>
+#include <QtPlatformSupport/private/qopenglcompositor_p.h>
 #include <EGL/egl.h>
 
 QT_BEGIN_NAMESPACE
 
-class QEGLPlatformBackingStore;
+class QOpenGLCompositorBackingStore;
 class QPlatformTextureList;
 
-class QEGLPlatformWindow : public QPlatformWindow
+class QEGLPlatformWindow : public QPlatformWindow, public QOpenGLCompositorWindow
 {
 public:
     QEGLPlatformWindow(QWindow *w);
 
     virtual void create();
 
-    QEGLPlatformBackingStore *backingStore() { return m_backingStore; }
-    void setBackingStore(QEGLPlatformBackingStore *backingStore) { m_backingStore = backingStore; }
-    const QPlatformTextureList *textures() const;
-    void composited();
+    QOpenGLCompositorBackingStore *backingStore() { return m_backingStore; }
+    void setBackingStore(QOpenGLCompositorBackingStore *backingStore) { m_backingStore = backingStore; }
     bool isRaster() const;
+
+    QWindow *sourceWindow() const Q_DECL_OVERRIDE;
+    const QPlatformTextureList *textures() const Q_DECL_OVERRIDE;
+    void endCompositing() Q_DECL_OVERRIDE;
 
     WId winId() const Q_DECL_OVERRIDE;
     void setOpacity(qreal opacity) Q_DECL_OVERRIDE;
@@ -72,7 +75,7 @@ public:
     virtual EGLNativeWindowType eglWindow() const = 0;
 
 private:
-    QEGLPlatformBackingStore *m_backingStore;
+    QOpenGLCompositorBackingStore *m_backingStore;
     bool m_raster;
     WId m_winId;
 };

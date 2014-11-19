@@ -43,6 +43,7 @@
 #include <QtPlatformSupport/private/qgenericunixservices_p.h>
 #include <QtPlatformSupport/private/qgenericunixeventdispatcher_p.h>
 #include <QtPlatformSupport/private/qfbvthandler_p.h>
+#include <QtPlatformSupport/private/qopenglcompositorbackingstore_p.h>
 
 #if !defined(QT_NO_EVDEV) && (!defined(Q_OS_ANDROID) || defined(Q_OS_ANDROID_NO_SDK))
 #include <QtPlatformSupport/private/qevdevmousemanager_p.h>
@@ -59,7 +60,6 @@
 #include "qeglplatformintegration_p.h"
 #include "qeglplatformcontext_p.h"
 #include "qeglplatformwindow_p.h"
-#include "qeglplatformbackingstore_p.h"
 #include "qeglplatformscreen_p.h"
 #include "qeglplatformcursor_p.h"
 
@@ -141,7 +141,9 @@ QPlatformFontDatabase *QEGLPlatformIntegration::fontDatabase() const
 
 QPlatformBackingStore *QEGLPlatformIntegration::createPlatformBackingStore(QWindow *window) const
 {
-    return new QEGLPlatformBackingStore(window);
+    QOpenGLCompositorBackingStore *bs = new QOpenGLCompositorBackingStore(window);
+    static_cast<QEGLPlatformWindow *>(window->handle())->setBackingStore(bs);
+    return bs;
 }
 
 QPlatformWindow *QEGLPlatformIntegration::createPlatformWindow(QWindow *window) const
@@ -156,10 +158,9 @@ QPlatformWindow *QEGLPlatformIntegration::createPlatformWindow(QWindow *window) 
 
 QPlatformOpenGLContext *QEGLPlatformIntegration::createPlatformOpenGLContext(QOpenGLContext *context) const
 {
-    QEGLPlatformScreen *screen = static_cast<QEGLPlatformScreen *>(context->screen()->handle());
     // If there is a "root" window into which raster and QOpenGLWidget content is
     // composited, all other contexts must share with its context.
-    QOpenGLContext *compositingContext = screen ? screen->compositingContext() : 0;
+    QOpenGLContext *compositingContext = QOpenGLCompositor::instance()->context();
     QPlatformOpenGLContext *share = compositingContext ? compositingContext->handle() : context->shareHandle();
     QVariant nativeHandle = context->nativeHandle();
     QPlatformOpenGLContext *platformContext = createContext(context->format(),

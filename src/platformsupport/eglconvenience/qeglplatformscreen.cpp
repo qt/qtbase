@@ -31,8 +31,8 @@
 **
 ****************************************************************************/
 
-#include "qeglcompositor_p.h"
 #include "qeglplatformscreen_p.h"
+#include <QtPlatformSupport/private/qopenglcompositor_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -42,19 +42,6 @@ QT_BEGIN_NAMESPACE
     \since 5.2
     \internal
     \ingroup qpa
-
-    This class provides a lightweight base for QPlatformScreen
-    implementations. It covers basic window stack management which is
-    necessary when compositing multiple raster (widget-based) windows
-    together into one single native surface.
-
-    Reimplementing the virtuals are essential when using
-    QEGLPlatformBackingStore. The context and the window returned from
-    these are the ones that are used when compositing the textures
-    generated from the raster (widget) based windows.
-
-    \note It is up to the QEGLPlatformWindow subclasses to use the
-    functions, like addWindow(), removeWindow(), etc., provided here.
  */
 
 QEGLPlatformScreen::QEGLPlatformScreen(EGLDisplay dpy)
@@ -64,39 +51,7 @@ QEGLPlatformScreen::QEGLPlatformScreen(EGLDisplay dpy)
 
 QEGLPlatformScreen::~QEGLPlatformScreen()
 {
-    QEGLCompositor::destroy();
-}
-
-void QEGLPlatformScreen::addWindow(QEGLPlatformWindow *window)
-{
-    if (!m_windows.contains(window)) {
-        m_windows.append(window);
-        topWindowChanged(window);
-    }
-}
-
-void QEGLPlatformScreen::removeWindow(QEGLPlatformWindow *window)
-{
-    m_windows.removeOne(window);
-    if (!m_windows.isEmpty())
-        topWindowChanged(m_windows.last());
-}
-
-void QEGLPlatformScreen::moveToTop(QEGLPlatformWindow *window)
-{
-    m_windows.removeOne(window);
-    m_windows.append(window);
-    topWindowChanged(window);
-}
-
-void QEGLPlatformScreen::changeWindowIndex(QEGLPlatformWindow *window, int newIdx)
-{
-    int idx = m_windows.indexOf(window);
-    if (idx != -1 && idx != newIdx) {
-        m_windows.move(idx, newIdx);
-        if (newIdx == m_windows.size() - 1)
-            topWindowChanged(m_windows.last());
-    }
+    QOpenGLCompositor::destroy();
 }
 
 QT_END_NAMESPACE
