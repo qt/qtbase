@@ -780,6 +780,9 @@ void tst_QMainWindow::contentsMargins()
     mw.show();
     QVERIFY(QTest::qWaitForWindowExposed(&mw));
 
+    QCOMPARE(mw.menuBar()->geometry().left(), contentsMargin);
+    QCOMPARE(mw.menuBar()->geometry().top(), contentsMargin);
+
     QCOMPARE(mw.statusBar()->geometry().left(), contentsMargin);
     QCOMPARE(mw.statusBar()->geometry().bottom() + 1, mw.height() - contentsMargin);
 }

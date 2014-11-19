@@ -576,11 +576,12 @@ void QLayoutPrivate::doResize(const QSize &r)
     int mbh = menuBarHeightForWidth(menubar, r.width());
     QWidget *mw = q->parentWidget();
     QRect rect = mw->testAttribute(Qt::WA_LayoutOnEntireRect) ? mw->rect() : mw->contentsRect();
+    const int mbTop = rect.top();
     rect.setTop(rect.top() + mbh);
     q->setGeometry(rect);
 #ifndef QT_NO_MENUBAR
     if (menubar)
-        menubar->setGeometry(0,0,r.width(), mbh);
+        menubar->setGeometry(rect.left(), mbTop, r.width(), mbh);
 #endif
 }
 
