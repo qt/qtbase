@@ -1728,7 +1728,8 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
         } else if (strcmp(argv[i], "-vb") == 0) {
             QBenchmarkGlobalData::current->verboseOutput = true;
 #ifdef Q_OS_WINRT
-        } else if (strncmp(argv[i], "-ServerName:", 12) == 0) {
+        } else if (strncmp(argv[i], "-ServerName:", 12) == 0 ||
+                   strncmp(argv[i], "-qdevel", 7) == 0) {
             continue;
 #endif
         } else if (argv[i][0] == '-') {
