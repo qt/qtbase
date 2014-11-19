@@ -71,6 +71,13 @@ QStringList QPepperFontDatabase::fallbacksForFamily(const QString &family, QFont
     // qDebug() << "QPepperFontDatabase::fallbacksForFamily" << family;
     QStringList fallbacks = QBasicFontDatabase::fallbacksForFamily(family, style, styleHint, script);
     // qDebug() << "Fallbacks" << fallbacks;
+
+    // Add the vera.ttf font (loaded in populateFontDatabase above) as a falback font
+    // to all other fonts (except itself).
+    const QString veraFontFamily = QStringLiteral("Bitstream Vera Sans");
+    if (family != veraFontFamily)
+        fallbacks.append(veraFontFamily);
+
 #ifdef QT_PEPPER_USE_PEPPER_FONT_ENGINE
     if (fallbacks.isEmpty())
         fallbacks.append("Arial");
