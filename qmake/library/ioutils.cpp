@@ -119,7 +119,7 @@ QString IoUtils::shellQuoteUnix(const QString &arg)
     }; // 0-32 \'"$`<>|;&(){}*?#!~[]
 
     if (!arg.length())
-        return QString::fromLatin1("\"\"");
+        return QString::fromLatin1("''");
 
     QString ret(arg);
     if (hasSpecialChars(ret, iqm)) {
