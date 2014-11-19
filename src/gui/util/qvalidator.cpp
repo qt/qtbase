@@ -316,7 +316,12 @@ void QValidator::fixup(QString &) const
     QIntValidator uses its locale() to interpret the number. For example,
     in Arabic locales, QIntValidator will accept Arabic digits.
 
-    \sa QDoubleValidator, QRegExpValidator, {Line Edits Example}
+    \note The QLocale::NumberOptions set on the locale() also affect the
+    way the number is interpreted. For example, since QLocale::RejectGroupSeparator
+    is not set by default, the validator will accept group separators. It is thus
+    recommended to use QLocale::toInt() to obtain the numeric value.
+
+    \sa QDoubleValidator, QRegExpValidator, QLocale::toInt(), {Line Edits Example}
 */
 
 /*!
@@ -548,7 +553,12 @@ public:
     in the German locale, "1,234" will be accepted as the fractional number
     1.234. In Arabic locales, QDoubleValidator will accept Arabic digits.
 
-    \sa QIntValidator, QRegExpValidator, {Line Edits Example}
+    \note The QLocale::NumberOptions set on the locale() also affect the
+    way the number is interpreted. For example, since QLocale::RejectGroupSeparator
+    is not set by default, the validator will accept group separators. It is thus
+    recommended to use QLocale::toDouble() to obtain the numeric value.
+
+    \sa QIntValidator, QRegExpValidator, QLocale::toDouble(), {Line Edits Example}
 */
 
  /*!
