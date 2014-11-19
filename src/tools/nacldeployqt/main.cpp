@@ -13,7 +13,8 @@ void runCommand(const QString &command)
     // qDebug() << "RUN" << c;
 
     // This is a host tool, which means no QProcess. Use 'system':
-    system(c.constData());
+    int r = system(c.constData());
+    Q_UNUSED(r);
 }
 
 static bool copyRecursively(const QString &srcFilePath,
