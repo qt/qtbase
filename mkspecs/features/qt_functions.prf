@@ -232,11 +232,12 @@ defineTest(qtAddToolEnv) {
             equals(ds, /) {
                 contains($${env}.CONFIG, prepend): infix = \${$$name:+:\$$$name}
                 else: infix =
-                val = "$$name=$$join(value, :)$$infix"
+                val = "$$name=$$shell_quote($$join(value, :))$$infix"
             } else {
                 # Escape closing parens when expanding the variable, otherwise cmd confuses itself.
                 contains($${env}.CONFIG, prepend): infix = ;%$$name:)=^)%
                 else: infix =
+                value ~= s,\\),^),g
                 val = "(set $$name=$$join(value, ;)$$infix) &"
             }
             isEmpty(3): !contains(TEMPLATE, vc.*) {
