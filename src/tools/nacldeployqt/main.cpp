@@ -127,6 +127,8 @@ int main(int argc, char **argv)
         return 0;
     }
     QString pnaclFinalize = naclSdkRoot + "/toolchain/mac_pnacl/bin/pnacl-finalize";
+    if (!QFile(pnaclFinalize).exists())
+        pnaclFinalize = naclSdkRoot + "/toolchain/linux_pnacl/bin/pnacl-finalize";
     if (!QFile(pnaclFinalize).exists()) {
         qDebug() << "pnacl-finalize not found at" << pnaclFinalize;
         return 0;
@@ -234,6 +236,8 @@ int main(int argc, char **argv)
 
     // Find the debugger, print startup instructions
     QString gdb = naclSdkRoot + "/toolchain/mac_x86_glibc/bin/i686-nacl-gdb";
+    if (!QFile(gdb).exists())
+        gdb = naclSdkRoot + "/toolchain/linux_x86_glibc/bin/i686-nacl-gdb";
     QString nmfPath = QDir(nmfFilePath).canonicalPath();
     QString gdbOptions = " -eval-command='nacl-manifest " + nmfPath + "'";
 
