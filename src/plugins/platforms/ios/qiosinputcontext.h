@@ -63,24 +63,26 @@ public:
     QIOSInputContext();
     ~QIOSInputContext();
 
-    QRectF keyboardRect() const;
+    bool isValid() const Q_DECL_OVERRIDE { return true; }
 
-    void showInputPanel();
-    void hideInputPanel();
+    void showInputPanel() Q_DECL_OVERRIDE;
+    void hideInputPanel() Q_DECL_OVERRIDE;
+
+    bool isInputPanelVisible() const Q_DECL_OVERRIDE;
+    QRectF keyboardRect() const Q_DECL_OVERRIDE;
+
+    void update(Qt::InputMethodQueries) Q_DECL_OVERRIDE;
+    void reset() Q_DECL_OVERRIDE;
+    void commit() Q_DECL_OVERRIDE;
 
     void clearCurrentFocusObject();
 
-    bool isInputPanelVisible() const;
-    void setFocusObject(QObject *object);
-
+    void setFocusObject(QObject *object) Q_DECL_OVERRIDE;
     void focusWindowChanged(QWindow *focusWindow);
     void cursorRectangleChanged();
+
     void scrollToCursor();
     void scroll(int y);
-
-    void update(Qt::InputMethodQueries);
-    void reset();
-    void commit();
 
     const ImeState &imeState() { return m_imeState; };
     bool inputMethodAccepted() const;
