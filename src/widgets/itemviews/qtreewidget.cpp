@@ -2153,10 +2153,11 @@ QVariant QTreeWidgetItem::childrenCheckState(int column) const
         default:
             return Qt::PartiallyChecked;
         }
+
+        if (uncheckedChildren && checkedChildren)
+            return Qt::PartiallyChecked;
     }
 
-    if (uncheckedChildren && checkedChildren)
-        return Qt::PartiallyChecked;
     if (uncheckedChildren)
         return Qt::Unchecked;
     else if (checkedChildren)
