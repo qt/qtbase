@@ -50,6 +50,8 @@ import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Configuration;
 import android.graphics.drawable.ColorDrawable;
+import android.net.LocalServerSocket;
+import android.net.LocalSocket;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -79,9 +81,6 @@ import java.io.FileWriter;
 import java.io.InputStreamReader;
 import java.io.IOException;
 import java.lang.reflect.Method;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -496,12 +495,12 @@ public class QtActivityDelegate
 
     private class DebugWaitRunnable implements Runnable {
 
-        public DebugWaitRunnable(int socketPort) throws  IOException {
-            socket = new ServerSocket(socketPort);
+        public DebugWaitRunnable(String pingPongSocket) throws  IOException {
+            socket = new LocalServerSocket(pingPongSocket);
         }
 
         public boolean wasFailure;
-        private ServerSocket socket;
+        private LocalServerSocket socket;
 
         public void run() {
             final int napTime = 200; // milliseconds between file accesses
@@ -509,9 +508,7 @@ public class QtActivityDelegate
             final int maxAttempts = timeOut / napTime;
 
             try {
-                socket.setSoTimeout(timeOut);
-                debugLog("Waiting for debug socket on port: " + socket.getLocalPort());
-                Socket connectionFromClient = socket.accept();
+                LocalSocket connectionFromClient = socket.accept();
                 debugLog("Debug socket accepted");
                 BufferedReader inFromClient =
                         new BufferedReader(new InputStreamReader(connectionFromClient.getInputStream()));
@@ -524,7 +521,7 @@ public class QtActivityDelegate
                     if (!clientData.isEmpty())
                         break;
 
-                    if (socket.isClosed()) {
+                    if (connectionFromClient.isClosed()) {
                         wasFailure = true;
                         break;
                     }
@@ -538,6 +535,14 @@ public class QtActivityDelegate
                 wasFailure = true;
                 Log.e(QtNative.QtTAG,"Can't start debugger" + interruptEx.getMessage());
             }
+        }
+
+        public void shutdown() throws IOException
+        {
+            wasFailure = true;
+            try {
+                socket.close();
+            } catch (IOException ignored) { }
         }
     };
 
@@ -597,17 +602,11 @@ public class QtActivityDelegate
                         String pongFile = extras.getString("pong_file");
                         String gdbserverSocket = extras.getString("gdbserver_socket");
                         String gdbserverCommand = extras.getString("gdbserver_command");
-                        String pingViaSocket = extras.getString("ping_socketport");
+                        String pingSocket = extras.getString("ping_socket");
                         boolean usePing = pingFile != null;
                         boolean usePong = pongFile != null;
                         boolean useSocket = gdbserverSocket != null;
-                        int pingSocket = 0;
-                        if (pingViaSocket != null) {
-                            try {
-                                pingSocket = Integer.parseInt(pingViaSocket);
-                            } catch (NumberFormatException ignored) { }
-                        }
-                        boolean usePingViaSocket = (pingViaSocket != null && pingSocket > 0);
+                        boolean usePingSocket = pingSocket != null;
                         int napTime = 200; // milliseconds between file accesses
                         int timeOut = 30000; // ms until we give up on ping and pong
                         int maxAttempts = timeOut / napTime;
@@ -654,7 +653,7 @@ public class QtActivityDelegate
                             }
 
                             if (i == maxAttempts) {
-                                debugLog("time out when waiting for socket");
+                                debugLog("time out when waiting for debug socket");
                                 return false;
                             }
 
@@ -663,11 +662,23 @@ public class QtActivityDelegate
                             debugLog("socket not used");
                         }
 
-                        if (usePingViaSocket) {
+                        if (usePingSocket) {
                             DebugWaitRunnable runnable = new DebugWaitRunnable(pingSocket);
                             Thread waitThread = new Thread(runnable);
                             waitThread.start();
-                            waitThread.join();
+
+                            int i;
+                            for (i = 0; i < maxAttempts && waitThread.isAlive(); ++i) {
+                                debugLog("Waiting for debug socket connect");
+                                debugLog("go to sleep");
+                                Thread.sleep(napTime);
+                            }
+
+                            if (i == maxAttempts) {
+                                debugLog("time out when waiting for ping socket");
+                                runnable.shutdown();
+                                return false;
+                            }
 
                             if (runnable.wasFailure) {
                                 debugLog("Could not connect to debug client");
