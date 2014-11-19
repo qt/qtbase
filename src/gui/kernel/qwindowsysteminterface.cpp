@@ -314,7 +314,7 @@ void QWindowSystemInterface::handleExtendedKeyEvent(QWindow *tlw, ulong timestam
                                                     ushort count, bool tryShortcutOverride)
 {
     // on OS X we try the shortcut override even earlier and thus shouldn't handle it here
-    if (tryShortcutOverride && type == QEvent::KeyPress && QWindowSystemInterface::tryHandleShortcutEvent(tlw, timestamp, key, modifiers, text))
+    if (tryShortcutOverride && tlw && type == QEvent::KeyPress && QWindowSystemInterface::tryHandleShortcutEvent(tlw, timestamp, key, modifiers, text))
             return;
 
     QWindowSystemInterfacePrivate::KeyEvent * e =
