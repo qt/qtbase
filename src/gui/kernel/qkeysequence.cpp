@@ -664,6 +664,9 @@ static const struct {
     { Qt::Key_Play,  QT_TRANSLATE_NOOP("QShortcut", "Play") },
     { Qt::Key_Zoom,  QT_TRANSLATE_NOOP("QShortcut", "Zoom") },
     { Qt::Key_Exit,  QT_TRANSLATE_NOOP("QShortcut", "Exit") },
+    { Qt::Key_TouchpadToggle,  QT_TRANSLATE_NOOP("QShortcut", "Touchpad Toggle") },
+    { Qt::Key_TouchpadOn,  QT_TRANSLATE_NOOP("QShortcut", "Touchpad On") },
+    { Qt::Key_TouchpadOff,  QT_TRANSLATE_NOOP("QShortcut", "Touchpad Off") },
 
     { 0, 0 }
 };
