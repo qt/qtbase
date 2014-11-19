@@ -42,6 +42,8 @@
 #include <qdesktopwidget.h>
 #include <qaction.h>
 #include <qstyleoption.h>
+#include <QVBoxLayout>
+#include <QLabel>
 #include <qscreen.h>
 
 #include <qobject.h>
@@ -83,6 +85,7 @@ public:
 
 private slots:
     void getSetCheck();
+    void cleanup();
 
     void clear();
     void removeItemAt();
@@ -126,6 +129,8 @@ private slots:
 #endif
     void taskQTBUG11823_crashwithInvisibleActions();
     void closeOnSecondClick();
+    void cornerWidgets_data();
+    void cornerWidgets();
 
 protected slots:
     void onSimpleActivated( QAction*);
@@ -193,6 +198,11 @@ void tst_QMenuBar::onSimpleActivated( QAction* action )
 {
     m_lastSimpleAcceleratorId = action;
     m_simpleActivatedCount++;
+}
+
+void tst_QMenuBar::cleanup()
+{
+    QVERIFY(QApplication::topLevelWidgets().isEmpty());
 }
 
 // Create a simple menu bar and connect its actions to onSimpleActivated().
@@ -1323,6 +1333,76 @@ void tst_QMenuBar::closeOnSecondClick() // QTBUG-32807, menu should close on 2nd
     QTRY_VERIFY(fileMenu->isVisible());
     QTest::mouseClick(menuBar, Qt::LeftButton, 0, center);
     QTRY_VERIFY(!fileMenu->isVisible());
+}
+
+Q_DECLARE_METATYPE(Qt::Corner)
+
+void tst_QMenuBar::cornerWidgets_data()
+{
+    QTest::addColumn<Qt::Corner>("corner");
+    QTest::newRow("left") << Qt::TopLeftCorner;
+    QTest::newRow("right") << Qt::TopRightCorner;
+}
+
+static QByteArray msgComparison(int v1, const char *op, int v2)
+{
+    QString result;
+    QDebug(&result) << v1 << op << v2 << "failed";
+    return result.toLocal8Bit();
+}
+
+void tst_QMenuBar::cornerWidgets()
+{
+    enum { cornerWidgetWidth = 100 };
+
+    QFETCH(Qt::Corner, corner);
+
+#if defined(Q_OS_OSX) || defined(Q_OS_WINCE)
+    QSKIP("Test interferes with native menu bars on this platform");
+#endif
+
+    QWidget widget;
+    const QString dataTag = QLatin1String(QTest::currentDataTag());
+    widget.setWindowTitle(QLatin1String(QTest::currentTestFunction()) + dataTag);
+    QVBoxLayout *layout = new QVBoxLayout(&widget);
+    QMenuBar *menuBar = new QMenuBar(&widget);
+    layout->addWidget(menuBar);
+    QMenu *fileMenu = menuBar->addMenu("File");
+    fileMenu->addAction("Quit");
+    QMenu *editMenu =menuBar->addMenu("Edit");
+    editMenu->addAction("Copy");
+    centerOnScreen(&widget);
+
+    QLabel *cornerLabel = new QLabel(dataTag);
+    cornerLabel->setFixedWidth(cornerWidgetWidth);
+    menuBar->setCornerWidget(cornerLabel, corner);
+    QCOMPARE(menuBar->cornerWidget(corner), cornerLabel);
+    widget.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&widget));
+
+    const QRect fileMenuGeometry = menuBar->actionGeometry(fileMenu->menuAction());
+    const QRect editMenuGeometry = menuBar->actionGeometry(editMenu->menuAction());
+    const int menuBarWidth = menuBar->width();
+    switch (corner) { // QTBUG-36010 , verify corner widget geometry is correct
+    case Qt::TopLeftCorner:
+        QVERIFY2(fileMenuGeometry.left() >= cornerWidgetWidth,
+                 msgComparison(fileMenuGeometry.left(), ">=", cornerWidgetWidth));
+        QVERIFY2(menuBarWidth - editMenuGeometry.right() < cornerWidgetWidth,
+                 msgComparison(menuBarWidth - editMenuGeometry.right(), "<", cornerWidgetWidth));
+        break;
+    case Qt::TopRightCorner:
+        QVERIFY2(fileMenuGeometry.left() < cornerWidgetWidth,
+                 msgComparison(fileMenuGeometry.left(), "<", cornerWidgetWidth));
+        QVERIFY2(menuBarWidth - editMenuGeometry.right() >= cornerWidgetWidth,
+                 msgComparison(menuBarWidth - editMenuGeometry.right(), ">=", cornerWidgetWidth));
+        break;
+    default:
+        break;
+    }
+
+    menuBar->setCornerWidget(0, corner); // Don't crash.
+    QVERIFY(!menuBar->cornerWidget(corner));
+    delete cornerLabel;
 }
 
 QTEST_MAIN(tst_QMenuBar)

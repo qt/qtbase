@@ -1631,9 +1631,8 @@ QSize QMenuBar::sizeHint() const
     int margin = 2*vmargin + 2*fw + spaceBelowMenuBar;
     if(d->leftWidget) {
         QSize sz = d->leftWidget->sizeHint();
-        ret.setWidth(ret.width() + sz.width());
-        if(sz.height() + margin > ret.height())
-            ret.setHeight(sz.height() + margin);
+        sz.rheight() += margin;
+        ret.expandedTo(sz);
     }
     if(d->rightWidget) {
         QSize sz = d->rightWidget->sizeHint();
