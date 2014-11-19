@@ -2042,11 +2042,13 @@ void QPlainTextEdit::mouseMoveEvent(QMouseEvent *e)
     d->sendControlEvent(e);
     if (!(e->buttons() & Qt::LeftButton))
         return;
-    QRect visible = d->viewport->rect();
-    if (visible.contains(pos))
-        d->autoScrollTimer.stop();
-    else if (!d->autoScrollTimer.isActive())
-        d->autoScrollTimer.start(100, this);
+    if (e->source() == Qt::MouseEventNotSynthesized) {
+        const QRect visible = d->viewport->rect();
+        if (visible.contains(pos))
+            d->autoScrollTimer.stop();
+        else if (!d->autoScrollTimer.isActive())
+            d->autoScrollTimer.start(100, this);
+    }
 }
 
 /*! \reimp
@@ -2055,7 +2057,7 @@ void QPlainTextEdit::mouseReleaseEvent(QMouseEvent *e)
 {
     Q_D(QPlainTextEdit);
     d->sendControlEvent(e);
-    if (d->autoScrollTimer.isActive()) {
+    if (e->source() == Qt::MouseEventNotSynthesized && d->autoScrollTimer.isActive()) {
         d->autoScrollTimer.stop();
         d->ensureCursorVisible();
     }
