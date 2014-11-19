@@ -97,6 +97,11 @@ QtCore
 
  - Logging:
    * QT_MESSAGE_PATTERN can include a backtrace using %{backtrace}
+   * QT_MESSAGE_PATTERN can include a timestamp using %{time}. By
+     default, this shows the time in ISO format (YYYY-MM-DDTHH:mm:ss),
+     but a different format string can be specified in the tag (e.g.,
+     %{time YYYYMMDDHHmmsszzz}). If the format is "process", Qt will
+     display the elapsed time since the process started.
    * Added QtMsgType argument to QLoggingCategory constructor and
      Q_LOGGING_CATEGORY macro that controls the default category
      configuration.
