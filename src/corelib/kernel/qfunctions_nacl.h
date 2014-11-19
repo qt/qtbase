@@ -117,7 +117,9 @@ typedef long off64_t;
 off64_t ftello64(void *stream);
 off64_t lseek64(int fildes, off_t offset, int whence);
 int open64(const char *path, int oflag, ...);
+
 long pathconf(const char *, int);
+//long int pathconf (__const char *__path, int __name) __THROW __nonnull ((1));
 
 #ifdef Q_OS_NACL_NEWLIB
 char * getenv(const char *name);
