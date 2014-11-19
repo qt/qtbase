@@ -200,8 +200,13 @@ QOpenGLTextureHelper::QOpenGLTextureHelper(QOpenGLContext *context)
     TexImage2DMultisample = 0;
 
     // OpenGL 4.2
+#ifdef QT_OPENGL_ES_3
+    TexStorage3D = ::glTexStorage3D;
+    TexStorage2D = ::glTexStorage2D;
+#else
     TexStorage3D = 0;
     TexStorage2D = 0;
+#endif
     TexStorage1D = 0;
 
     // OpenGL 4.3
