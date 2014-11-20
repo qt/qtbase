@@ -308,7 +308,7 @@ ProjectGenerator::init()
         for (ProStringList::ConstIterator it2 = tmp.begin(); it2 != tmp.end(); ++it2) {
             ProStringList &inputs = project->values((*it2).toKey());
             for (ProStringList::Iterator input = inputs.begin(); input != inputs.end(); ++input) {
-                QString path = replaceExtraCompilerVariables(tmp_out, (*input).toQString(), QString());
+                QString path = replaceExtraCompilerVariables(tmp_out, (*input).toQString(), QString(), NoShell);
                 path = fixPathToQmake(path).section('/', -1);
                 for(int i = 0; i < var_out.size(); ++i) {
                     ProString v = var_out.at(i);

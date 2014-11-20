@@ -893,7 +893,7 @@ void VcprojGenerator::init()
                             extraCompilerSources[file] += quc.toQString();
                         } else {
                             QString out = Option::fixPathToTargetOS(replaceExtraCompilerVariables(
-                                            compiler_out, file, QString()), false);
+                                            compiler_out, file, QString(), NoShell), false);
                             extraCompilerSources[out] += quc.toQString();
                             extraCompilerOutputs[out] = QStringList(file); // Can only have one
                         }
@@ -1532,7 +1532,8 @@ void VcprojGenerator::initResourceFiles()
         if(!qrc_files.isEmpty()) {
             for (int i = 0; i < qrc_files.count(); ++i) {
                 char buff[256];
-                QString dep_cmd = replaceExtraCompilerVariables(rcc_dep_cmd, qrc_files.at(i).toQString(), "");
+                QString dep_cmd = replaceExtraCompilerVariables(
+                        rcc_dep_cmd, qrc_files.at(i).toQString(), QString(), LocalShell);
 
                 dep_cmd = Option::fixPathToLocalOS(dep_cmd, true, false);
                 if(canExecute(dep_cmd)) {
@@ -1605,16 +1606,16 @@ void VcprojGenerator::initExtraCompilerOutputs()
             QString tmp_out = project->first(ProKey(*it + ".output")).toQString();
             if (project->values(ProKey(*it + ".CONFIG")).indexOf("combine") != -1) {
                 // Combined output, only one file result
-                extraCompile.addFile(
-                    Option::fixPathToTargetOS(replaceExtraCompilerVariables(tmp_out, QString(), QString()), false));
+                extraCompile.addFile(Option::fixPathToTargetOS(
+                        replaceExtraCompilerVariables(tmp_out, QString(), QString(), NoShell), false));
             } else {
                 // One output file per input
                 const ProStringList &tmp_in = project->values(project->first(ProKey(*it + ".input")).toKey());
                 for (int i = 0; i < tmp_in.count(); ++i) {
                     const QString &filename = tmp_in.at(i).toQString();
                     if (extraCompilerSources.contains(filename))
-                        extraCompile.addFile(
-                            Option::fixPathToTargetOS(replaceExtraCompilerVariables(filename, tmp_out, QString()), false));
+                        extraCompile.addFile(Option::fixPathToTargetOS(
+                                replaceExtraCompilerVariables(filename, tmp_out, QString(), NoShell), false));
                 }
             }
         } else {
@@ -1629,8 +1630,8 @@ void VcprojGenerator::initExtraCompilerOutputs()
                     for (int i = 0; i < tmp_in.count(); ++i) {
                         const QString &filename = tmp_in.at(i).toQString();
                         if (extraCompilerSources.contains(filename))
-                            extraCompile.addFile(
-                                Option::fixPathToTargetOS(replaceExtraCompilerVariables(filename, QString(), QString()), false));
+                            extraCompile.addFile(Option::fixPathToTargetOS(
+                                    replaceExtraCompilerVariables(filename, QString(), QString(), NoShell), false));
                     }
                 }
             }
@@ -1650,9 +1651,10 @@ VCProjectWriter *VcprojGenerator::createProjectWriter()
     return new VCProjectWriter;
 }
 
-QString VcprojGenerator::replaceExtraCompilerVariables(const QString &var, const QStringList &in, const QStringList &out)
+QString VcprojGenerator::replaceExtraCompilerVariables(
+        const QString &var, const QStringList &in, const QStringList &out, ReplaceFor forShell)
 {
-    QString ret = MakefileGenerator::replaceExtraCompilerVariables(var, in, out);
+    QString ret = MakefileGenerator::replaceExtraCompilerVariables(var, in, out, forShell);
 
     ProStringList &defines = project->values("VCPROJ_MAKEFILE_DEFINES");
     if(defines.isEmpty())

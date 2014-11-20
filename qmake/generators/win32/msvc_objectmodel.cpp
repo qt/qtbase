@@ -2295,9 +2295,8 @@ bool VCFilter::addExtraCompiler(const VCFilterFile &info)
         QString cmd, cmd_name, out;
         QStringList deps, inputs;
         // Variabel replacement of output name
-        out = Option::fixPathToTargetOS(
-                    Project->replaceExtraCompilerVariables(tmp_out, inFile, QString()),
-                    false);
+        out = Option::fixPathToTargetOS(Project->replaceExtraCompilerVariables(
+                tmp_out, inFile, QString(), MakefileGenerator::NoShell), false);
 
         // If file has built-in compiler, we've swapped the input and output of
         // the command, as we in Visual Studio cannot have a Custom Buildstep on
@@ -2318,9 +2317,8 @@ bool VCFilter::addExtraCompiler(const VCFilterFile &info)
         if (!tmp_dep_cmd.isEmpty()) {
             // Execute dependency command, and add every line as a dep
             char buff[256];
-            QString dep_cmd = Project->replaceExtraCompilerVariables(tmp_dep_cmd,
-                                                                     Option::fixPathToLocalOS(inFile, true, false),
-                                                                     out);
+            QString dep_cmd = Project->replaceExtraCompilerVariables(
+                        tmp_dep_cmd, inFile, out, MakefileGenerator::LocalShell);
             if(Project->canExecute(dep_cmd)) {
                 dep_cmd.prepend(QLatin1String("cd ")
                                 + Project->escapeFilePath(Option::fixPathToLocalOS(Option::output_dir, false))
@@ -2347,7 +2345,8 @@ bool VCFilter::addExtraCompiler(const VCFilterFile &info)
         }
         for (int i = 0; i < deps.count(); ++i)
             deps[i] = Option::fixPathToTargetOS(
-                        Project->replaceExtraCompilerVariables(deps.at(i), inFile, out),
+                        Project->replaceExtraCompilerVariables(
+                                deps.at(i), inFile, out, MakefileGenerator::NoShell),
                         false).trimmed();
         // Command for file
         if (combined) {
@@ -2367,16 +2366,19 @@ bool VCFilter::addExtraCompiler(const VCFilterFile &info)
             // ### join gives path issues with directories containing spaces!
             cmd = Project->replaceExtraCompilerVariables(tmp_cmd,
                                                          inputs.join(' '),
-                                                         out);
+                                                         out,
+                                                         MakefileGenerator::TargetShell);
         } else {
             deps.prepend(inFile); // input file itself too..
             cmd = Project->replaceExtraCompilerVariables(tmp_cmd,
                                                          inFile,
-                                                         out);
+                                                         out,
+                                                         MakefileGenerator::TargetShell);
         }
         // Name for command
         if (!tmp_cmd_name.isEmpty()) {
-            cmd_name = Project->replaceExtraCompilerVariables(tmp_cmd_name, inFile, out);
+            cmd_name = Project->replaceExtraCompilerVariables(
+                    tmp_cmd_name, inFile, out, MakefileGenerator::NoShell);
         } else {
             int space = cmd.indexOf(' ');
             if (space != -1)
