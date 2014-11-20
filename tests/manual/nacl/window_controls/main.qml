@@ -8,7 +8,10 @@ ApplicationWindow {
     Button {
         x: 20
         y: 20
-        text: "Button"
+        text: "Open HN"
+        onClicked: {
+            Qt.openUrlExternally("http://news.ycombinator.com");
+        }
     }
     Calendar {
         x: 20

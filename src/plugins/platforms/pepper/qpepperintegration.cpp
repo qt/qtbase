@@ -24,6 +24,7 @@
 #include "qpepperbackingstore.h"
 #include "qpeppereventdispatcher.h"
 #include "qpeppertheme.h"
+#include "qpepperservices.h"
 
 #include <qpa/qplatformwindow.h>
 #include <qpa/qwindowsysteminterface.h>
@@ -63,6 +64,7 @@ QPepperIntegration::QPepperIntegration()
     m_pepperEventDispatcher = 0;
     m_topLevelWindow = 0;
     m_fontDatabase = 0;
+    m_services = 0;
 }
 
 QPepperIntegration::~QPepperIntegration()
@@ -125,6 +127,13 @@ QPlatformTheme *QPepperIntegration::createPlatformTheme(const QString &name) con
         return new QPepperTheme;
 
     return 0;
+}
+
+QPlatformServices *QPepperIntegration::services() const
+{
+    if (m_services == 0)
+        m_services = new QPepperServices();
+   return m_services;
 }
 
 QVariant QPepperIntegration::styleHint(StyleHint hint) const

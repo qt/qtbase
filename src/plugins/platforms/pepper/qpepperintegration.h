@@ -23,6 +23,7 @@
 #include <qpa/qplatformintegrationplugin.h>
 #include <qpa/qplatformintegration.h>
 #include <qpa/qplatformscreen.h>
+#include <qpa/qplatformservices.h>
 
 #include "qpepperscreen.h"
 #include "qpepperplatformwindow.h"
@@ -37,6 +38,7 @@ class QPepperFontDatabase;
 class QPepperCompositor;
 class QPepperJavascriptBridge;
 class QPepperPlatformWindow;
+class QPepperServices;
 class QAbstractEventDispatcher;
 class QPepperIntegration : public QObject, public QPlatformIntegration
 {
@@ -57,6 +59,8 @@ public:
 
     QStringList themeNames() const;
     QPlatformTheme *createPlatformTheme(const QString &name) const;
+
+    QPlatformServices *services() const;
 
     QVariant styleHint(StyleHint hint) const;
     Qt::WindowState defaultWindowState(Qt::WindowFlags) const;
@@ -84,6 +88,7 @@ public:
 
     mutable QPepperPlatformWindow *m_topLevelWindow;
     mutable QPepperFontDatabase *m_fontDatabase;
+    mutable QPepperServices *m_services;
 
 };
 
