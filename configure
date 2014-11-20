@@ -3964,7 +3964,7 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
 	adjoutpath=`echo "$outpath" | sed 's/ /\\\\\\\\ /g'`
 	adjqmakespec=`echo "$QMAKESPEC" | sed 's/ /\\\\\\\\ /g'`
 
-        echo "BUILD_PATH = $adjoutpath" >> "$mkfile"
+        echo "BUILD_PATH = .." >> "$mkfile"
         echo "SOURCE_PATH = $adjrelpath" >> "$mkfile"
         if [ -e "$relpath/.git" ]; then
             echo 'INC_PATH = $(BUILD_PATH)/include' >> "$mkfile"
