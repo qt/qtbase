@@ -1,13 +1,16 @@
 const char * loaderScript = R"STRING_DELIMITER( 
 
+// Utility function for plitting Url query paramterers
+// ("?Foo=bar&Bar=baz") into key-value pars.
 function decodeQuery() {
     var query = window.location.search.substring(1);
     var vars = query.split('&');
     var keyValues = {}
     for (var i = 0; i < vars.length; i++) {
         // split key/value on the first '='
-        var key = decodeURIComponent(vars[i].split(/=(.+)/ )[0]);
-        var value = decodeURIComponent(vars[i].split(/=(.+)/ )[1]);
+        var parts = vars[i].split(/=(.+)/);
+        var key = decodeURIComponent(parts[0]);
+        var value = decodeURIComponent(parts[1]);
         if (key && key.length > 0)
             keyValues[key] = value;
     }
