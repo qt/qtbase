@@ -156,9 +156,9 @@ testReplace($$relative_path("/fake/trolls", "/fake/path"), "../trolls", "relativ
 testReplace($$relative_path(""), "", "relative_path of empty")
 
 #this test is very rudimentary. the backend function is thoroughly tested in qt creator
-in = "some nasty\" path\\"
-out_cmd = "\"some nasty\"\\^\"\" path\"\\"
-out_sh = "'some nasty\" path\\'"
+in = "some nasty & ugly\" path & thing\\"
+out_cmd = "\"some nasty & ugly\\\" path ^& thing\\\\^\""
+out_sh = "'some nasty & ugly\" path & thing\\'"
 equals(QMAKE_HOST.os, Windows): \
     out = $$out_cmd
 else: \
