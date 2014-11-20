@@ -3885,7 +3885,22 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
         fi
     done
 
-    (cd "$outpath/qmake"; "$MAKE") || exit 2
+    if [ "$OPT_VERBOSE" = yes ]; then
+        # Show the output of make
+        (cd "$outpath/qmake"; "$MAKE") || exit 2
+    else
+        # Hide the output of make
+        # Use bash to print dots, if we have it
+        if $WHICH bash > /dev/null 2>/dev/null; then
+            bash -c 'set -o pipefail
+                cd "$0/qmake"; "$1" | while read line; do
+                    builtin echo -n .
+                done' "$outpath" "$MAKE" || exit 2
+        else
+            (cd "$outpath/qmake"; "$MAKE" -s) || exit 2
+        fi
+        echo "Done."
+    fi
 fi # Build qmake
 
 echo "Running configuration tests..."
