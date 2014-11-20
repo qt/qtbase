@@ -307,8 +307,9 @@ static void resolveTimerAPI()
 }
 
 QEventDispatcherWin32Private::QEventDispatcherWin32Private()
-    : threadId(GetCurrentThreadId()), interrupt(false), internalHwnd(0), getMessageHook(0),
-      serialNumber(0), lastSerialNumber(0), sendPostedEventsWindowsTimerId(0), wakeUps(0)
+    : threadId(GetCurrentThreadId()), interrupt(false), closingDown(false), internalHwnd(0),
+      getMessageHook(0), serialNumber(0), lastSerialNumber(0), sendPostedEventsWindowsTimerId(0),
+      wakeUps(0)
 {
     resolveTimerAPI();
 }
@@ -931,6 +932,11 @@ void QEventDispatcherWin32::registerTimer(int timerId, int interval, Qt::TimerTy
 
     Q_D(QEventDispatcherWin32);
 
+    // exiting ... do not register new timers
+    // (QCoreApplication::closingDown() is set too late to be used here)
+    if (d->closingDown)
+        return;
+
     WinTimerInfo *t = new WinTimerInfo;
     t->dispatcher = this;
     t->timerId  = timerId;
@@ -1154,6 +1160,8 @@ void QEventDispatcherWin32::closingDown()
         d->unregisterTimer(d->timerVec.at(i));
     d->timerVec.clear();
     d->timerDict.clear();
+
+    d->closingDown = true;
 
     uninstallMessageHook();
 }

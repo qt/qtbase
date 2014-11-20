@@ -147,6 +147,7 @@ public:
     DWORD threadId;
 
     bool interrupt;
+    bool closingDown;
 
     // internal window handle used for socketnotifiers/timers/etc
     HWND internalHwnd;
