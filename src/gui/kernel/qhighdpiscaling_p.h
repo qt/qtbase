@@ -53,8 +53,14 @@
 //
 // The functions support creating a logical device-independent
 // coordinate system which is related to the device pixel coordinate
-// through a scaling factor. The scaling factor is set by the
-// QT_HIGHDPI_SCALE_FACTOR environment variable.
+// through a scaling factor.
+//
+// Several scaling factors can be set:
+//   - A process-global scale factor
+//       - the QT_HIGHDPI_SCALE_FACTOR environment variable.
+//       - QHighDpiScaling::setFactor(factor);
+//   - A per-window scale factor
+//       - QHighDpiScaling::setWindowFactor(window, factor);
 //
 // With these functions in use  most of the Qt API will then operate in
 // the device-independent coordinate system. For example, setting
@@ -70,180 +76,183 @@ QT_BEGIN_NAMESPACE
 class Q_GUI_EXPORT QHighDpiScaling {
 public:
     static bool isActive() { return m_active; }
-    static qreal factor()  { return m_factor; }
+    static qreal factor(const QWindow *window = 0);
     static void setFactor(qreal factor);
-
+    static void setWindowFactor(QWindow *window, qreal factor);
 private:
     static qreal m_factor;
     static bool m_active;
+    static bool m_perWindowActive;
 };
 
 // Coordinate system conversion functions:
 // qHighDpiToDeviceIndependentPixels   : from physical(screen/backing) to logical pixels
 // qHighDpiToDevicePixels              : from logical to physical pixels
-inline QRect qHighDpiToDeviceIndependentPixels(const QRect &pixelRect)
+inline QRect qHighDpiToDeviceIndependentPixels(const QRect &pixelRect, const QWindow *window = 0)
 {
-    const qreal scaleFactor = QHighDpiScaling::factor();
+    const qreal scaleFactor = QHighDpiScaling::factor(window);
     return QRect(pixelRect.topLeft() / scaleFactor, pixelRect.size() / scaleFactor);
 }
 
-inline QRect qHighDpiToDevicePixels(const QRect &pointRect)
+inline QRect qHighDpiToDevicePixels(const QRect &pointRect, const QWindow *window = 0)
 {
-    const qreal scaleFactor = QHighDpiScaling::factor();
+    const qreal scaleFactor = QHighDpiScaling::factor(window);
     return QRect(pointRect.topLeft() * scaleFactor, pointRect.size() * scaleFactor);
 }
 
-inline QRectF qHighDpiToDeviceIndependentPixels(const QRectF &pixelRect)
+inline QRectF qHighDpiToDeviceIndependentPixels(const QRectF &pixelRect, const QWindow *window = 0)
 {
-    const qreal scaleFactor = QHighDpiScaling::factor();
+    const qreal scaleFactor = QHighDpiScaling::factor(window);
     return QRectF(pixelRect.topLeft() / scaleFactor, pixelRect.size() / scaleFactor);
 }
 
-inline QRectF qHighDpiToDevicePixels(const QRectF &pointRect)
+inline QRectF qHighDpiToDevicePixels(const QRectF &pointRect, const QWindow *window = 0)
 {
-   const qreal scaleFactor = QHighDpiScaling::factor();
+   const qreal scaleFactor = QHighDpiScaling::factor(window);
    return QRectF(pointRect.topLeft() * scaleFactor, pointRect.size() * scaleFactor);
 }
 
-inline QSize qHighDpiToDeviceIndependentPixels(const QSize &pixelSize)
+inline QSize qHighDpiToDeviceIndependentPixels(const QSize &pixelSize, const QWindow *window = 0)
 {
-    return pixelSize / QHighDpiScaling::factor();
+    return pixelSize / QHighDpiScaling::factor(window);
 }
 
 // For converting minimum/maximum sizes of QWindow, limits to 0..QWINDOWSIZE_MAX
-Q_GUI_EXPORT QSize qHighDpiToDevicePixelsConstrained(const QSize &size);
+Q_GUI_EXPORT QSize qHighDpiToDevicePixelsConstrained(const QSize &size, const QWindow *window = 0);
 
-inline QSize qHighDpiToDevicePixels(const QSize &pointSize)
+inline QSize qHighDpiToDevicePixels(const QSize &pointSize, const QWindow *window = 0)
 {
-    return pointSize * QHighDpiScaling::factor();
+    return pointSize * QHighDpiScaling::factor(window);
 }
 
-inline QSizeF qHighDpiToDeviceIndependentPixels(const QSizeF &pixelSize)
+inline QSizeF qHighDpiToDeviceIndependentPixels(const QSizeF &pixelSize, const QWindow *window = 0)
 {
-    return pixelSize / QHighDpiScaling::factor();
+    return pixelSize / QHighDpiScaling::factor(window);
 }
 
-inline QSizeF qHighDpiToDevicePixels(const QSizeF &pointSize)
+inline QSizeF qHighDpiToDevicePixels(const QSizeF &pointSize, const QWindow *window = 0)
 {
-    return pointSize * QHighDpiScaling::factor();
+    return pointSize * QHighDpiScaling::factor(window);
 }
 
-inline QPoint qHighDpiToDeviceIndependentPixels(const QPoint &pixelPoint)
+inline QPoint qHighDpiToDeviceIndependentPixels(const QPoint &pixelPoint, const QWindow *window = 0)
 {
-    return pixelPoint / QHighDpiScaling::factor();
+    return pixelPoint / QHighDpiScaling::factor(window);
 }
 
-inline QPoint qHighDpiToDevicePixels(const QPoint &pointPoint)
+inline QPoint qHighDpiToDevicePixels(const QPoint &pointPoint, const QWindow *window = 0)
 {
-    return pointPoint * QHighDpiScaling::factor();
+    return pointPoint * QHighDpiScaling::factor(window);
 }
 
-inline QPointF qHighDpiToDeviceIndependentPixels(const QPointF &pixelPoint)
+inline QPointF qHighDpiToDeviceIndependentPixels(const QPointF &pixelPoint, const QWindow *window = 0)
 {
-    return pixelPoint / QHighDpiScaling::factor();
+    return pixelPoint / QHighDpiScaling::factor(window);
 }
 
-inline QPointF qHighDpiToDevicePixels(const QPointF &pointPoint)
+inline QPointF qHighDpiToDevicePixels(const QPointF &pointPoint, const QWindow *window = 0)
 {
-    return pointPoint * QHighDpiScaling::factor();
+    return pointPoint * QHighDpiScaling::factor(window);
 }
 
-inline QMargins qHighDpiToDeviceIndependentPixels(const QMargins &pixelMargins)
+inline QMargins qHighDpiToDeviceIndependentPixels(const QMargins &pixelMargins, const QWindow *window = 0)
 {
-    const qreal scaleFactor = QHighDpiScaling::factor();
+    const qreal scaleFactor = QHighDpiScaling::factor(window);
     return QMargins(pixelMargins.left() / scaleFactor, pixelMargins.top() / scaleFactor,
                     pixelMargins.right() / scaleFactor, pixelMargins.bottom() / scaleFactor);
 }
 
-inline QMargins qHighDpiToDevicePixels(const QMargins &pointMargins)
+inline QMargins qHighDpiToDevicePixels(const QMargins &pointMargins, const QWindow *window = 0)
 {
-    const qreal scaleFactor = QHighDpiScaling::factor();
+    const qreal scaleFactor = QHighDpiScaling::factor(window);
     return QMargins(pointMargins.left() * scaleFactor, pointMargins.top() * scaleFactor,
                     pointMargins.right() * scaleFactor, pointMargins.bottom() * scaleFactor);
 }
 
-inline QRegion qHighDpiToDeviceIndependentPixels(const QRegion &pixelRegion)
+inline QRegion qHighDpiToDeviceIndependentPixels(const QRegion &pixelRegion, const QWindow *window = 0)
 {
     if (!QHighDpiScaling::isActive())
         return pixelRegion;
 
     QRegion pointRegion;
     foreach (const QRect &rect, pixelRegion.rects())
-        pointRegion += qHighDpiToDeviceIndependentPixels(rect);
+        pointRegion += qHighDpiToDeviceIndependentPixels(rect, window);
     return pointRegion;
 }
 
-inline QRegion qHighDpiToDevicePixels(const QRegion &pointRegion)
+inline QRegion qHighDpiToDevicePixels(const QRegion &pointRegion, const QWindow *window = 0)
 {
     if (!QHighDpiScaling::isActive())
         return pointRegion;
 
     QRegion pixelRegon;
     foreach (const QRect &rect, pointRegion.rects())
-        pixelRegon += qHighDpiToDevicePixels(rect);
+        pixelRegon += qHighDpiToDevicePixels(rect, window);
     return pixelRegon;
 }
 
 // Any T that has operator/()
 template <typename T>
-T qHighDpiToDeviceIndependentPixels(const T &pixelValue)
+T qHighDpiToDeviceIndependentPixels(const T &pixelValue, const QWindow *window = 0)
 {
     if (!QHighDpiScaling::isActive())
         return pixelValue;
 
-    return pixelValue / QHighDpiScaling::factor();
+    return pixelValue / QHighDpiScaling::factor(window);
 
 }
 
 // Any T that has operator*()
 template <typename T>
-T qHighDpiToDevicePixels(const T &pointValue)
+T qHighDpiToDevicePixels(const T &pointValue, const QWindow *window = 0)
 {
     if (!QHighDpiScaling::isActive())
         return pointValue;
 
-    return pointValue * QHighDpiScaling::factor();
+    return pointValue * QHighDpiScaling::factor(window);
 }
 
 // Any QVector<T> where T has operator/()
 template <typename T>
-QVector<T> qHighDpiToDeviceIndependentPixels(const QVector<T> &pixelValues)
+QVector<T> qHighDpiToDeviceIndependentPixels(const QVector<T> &pixelValues, const QWindow *window = 0)
 {
     if (!QHighDpiScaling::isActive())
         return pixelValues;
 
     QVector<T> pointValues;
     foreach (const T& pixelValue, pixelValues)
-        pointValues.append(pixelValue / QHighDpiScaling::factor());
+        pointValues.append(pixelValue / QHighDpiScaling::factor(window));
     return pointValues;
 }
 
 // Any QVector<T> where T has operator*()
 template <typename T>
-QVector<T> qHighDpiToDevicePixels(const QVector<T> &pointValues)
+QVector<T> qHighDpiToDevicePixels(const QVector<T> &pointValues, const QWindow *window = 0)
 {
     if (!QHighDpiScaling::isActive())
         return pointValues;
 
     QVector<T> pixelValues;
     foreach (const T& pointValue, pointValues)
-        pixelValues.append(pointValue * QHighDpiScaling::factor());
+        pixelValues.append(pointValue * QHighDpiScaling::factor(window));
     return pixelValues;
 }
 
 
 // Any QPair<T, U> where T and U has operator/()
 template <typename T, typename U>
-QPair<T, U> qHighDpiToDeviceIndependentPixels(const QPair<T, U> &pixelPair)
+QPair<T, U> qHighDpiToDeviceIndependentPixels(const QPair<T, U> &pixelPair, const QWindow *window = 0)
 {
-    return qMakePair(qHighDpiToDeviceIndependentPixels(pixelPair.first), qHighDpiToDeviceIndependentPixels(pixelPair.second));
+    return qMakePair(qHighDpiToDeviceIndependentPixels(pixelPair.first, window),
+                     qHighDpiToDeviceIndependentPixels(pixelPair.second, window));
 }
 
 // Any QPair<T, U> where T and U has operator*()
 template <typename T, typename U>
-QPair<T, U> qHighDpiToDevicePixels(const QPair<T, U> &pointPair)
+QPair<T, U> qHighDpiToDevicePixels(const QPair<T, U> &pointPair, const QWindow *window = 0)
 {
-    return qMakePair(qHighDpiToDevicePixels(pointPair.first), qHighDpiToDevicePixels(pointPair.second));
+    return qMakePair(qHighDpiToDevicePixels(pointPair.first, window),
+                     qHighDpiToDevicePixels(pointPair.second, window));
 }
 
 QT_END_NAMESPACE

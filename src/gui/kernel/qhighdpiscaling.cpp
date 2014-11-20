@@ -74,6 +74,7 @@ static inline qreal initialScaleFactor()
 
 qreal QHighDpiScaling::m_factor = initialScaleFactor();
 bool QHighDpiScaling::m_active = !qFuzzyCompare(QHighDpiScaling::m_factor, qreal(1));
+bool QHighDpiScaling::m_perWindowActive = false;
 
 void QHighDpiScaling::setFactor(qreal factor)
 {
@@ -89,14 +90,31 @@ void QHighDpiScaling::setFactor(qreal factor)
          screen->d_func()->updateHighDpi();
 }
 
-Q_GUI_EXPORT QSize qHighDpiToDevicePixelsConstrained(const QSize &size)
+static const char *scaleFactorProperty = "_q_scaleFactor";
+
+void QHighDpiScaling::setWindowFactor(QWindow *window, qreal factor)
+{
+    m_perWindowActive = true;
+    window->setProperty(scaleFactorProperty, QVariant(factor));
+}
+
+qreal QHighDpiScaling::factor(const QWindow *window)
+{
+    if (m_perWindowActive || window == 0)
+        return m_factor;
+
+    QVariant windowFactor = window->property(scaleFactorProperty);
+    return m_factor * (windowFactor.isValid() ? windowFactor.toReal() : 1);
+}
+
+Q_GUI_EXPORT QSize qHighDpiToDevicePixelsConstrained(const QSize &size, const QWindow *window)
 {
     const int width = size.width();
     const int height = size.height();
     return QSize(width > 0 && width < QWINDOWSIZE_MAX ?
-                 qHighDpiToDevicePixels(width) : width,
+                 qHighDpiToDevicePixels(width, window) : width,
                  height > 0 && height < QWINDOWSIZE_MAX ?
-                 qHighDpiToDevicePixels(height) : height);
+                 qHighDpiToDevicePixels(height, window) : height);
 }
 
 QT_END_NAMESPACE
