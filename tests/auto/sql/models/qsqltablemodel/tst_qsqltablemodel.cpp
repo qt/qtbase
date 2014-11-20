@@ -160,7 +160,7 @@ void tst_QSqlTableModel::dropTestTables()
 {
     for (int i = 0; i < dbs.dbNames.count(); ++i) {
         QSqlDatabase db = QSqlDatabase::database(dbs.dbNames.at(i));
-        QSqlDriver::DBMSType dbType = tst_Databases::getDatabaseType(db);
+        QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
         QSqlQuery q(db);
         if (dbType == QSqlDriver::PostgreSQL)
             QVERIFY_SQL( q, exec("set client_min_messages='warning'"));
@@ -189,7 +189,7 @@ void tst_QSqlTableModel::createTestTables()
 {
     for (int i = 0; i < dbs.dbNames.count(); ++i) {
         QSqlDatabase db = QSqlDatabase::database(dbs.dbNames.at(i));
-        QSqlDriver::DBMSType dbType = tst_Databases::getDatabaseType(db);
+        QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
         QSqlQuery q(db);
 
         QVERIFY_SQL( q, exec("create table " + test + "(id int, name varchar(20), title int)"));
@@ -1699,7 +1699,7 @@ void tst_QSqlTableModel::primaryKeyOrder()
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
-    QSqlDriver::DBMSType dbType = tst_Databases::getDatabaseType(db);
+    QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
 
     QSqlQuery q(db);
 

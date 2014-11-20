@@ -237,11 +237,11 @@ bool QSqlDriver::isOpenError() const
 */
 
 /*!
-    \enum QSqlDriver::DBMSType
+    \enum QSqlDriver::DbmsType
 
     This enum contains DBMS types.
 
-    \value UnknownDBMS
+    \value UnknownDbms
     \value MSSqlServer
     \value MySqlServer
     \value PostgreSQL
@@ -787,7 +787,7 @@ QSql::NumericalPrecisionPolicy QSqlDriver::numericalPrecisionPolicy() const
 
     Returns the current DBMS type for the database connection.
 */
-QSqlDriver::DBMSType QSqlDriver::dbmsType() const
+QSqlDriver::DbmsType QSqlDriver::dbmsType() const
 {
     return d_func()->dbmsType;
 }

@@ -71,7 +71,7 @@ void tst_QSqlDriver::recreateTestTables(QSqlDatabase db)
     QSqlQuery q(db);
     const QString relTEST1(qTableName("relTEST1", __FILE__, db));
 
-    QSqlDriver::DBMSType dbType = tst_Databases::getDatabaseType(db);
+    QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
     if (dbType == QSqlDriver::PostgreSQL)
         QVERIFY_SQL( q, exec("set client_min_messages='warning'"));
 
@@ -122,7 +122,7 @@ void tst_QSqlDriver::record()
     QSqlRecord rec = db.driver()->record(tablename);
     QCOMPARE(rec.count(), 4);
 
-    QSqlDriver::DBMSType dbType = tst_Databases::getDatabaseType(db);
+    QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
     // QTBUG-1363: QSqlField::length() always return -1 when using QODBC3 driver and QSqlDatabase::record()
     if (dbType == QSqlDriver::MSSqlServer && db.driverName().startsWith("QODBC"))
         QCOMPARE(rec.field(1).length(), 20);
@@ -174,7 +174,7 @@ void tst_QSqlDriver::primaryIndex()
     QSqlIndex index = db.driver()->primaryIndex(tablename);
     QCOMPARE(index.count(), 1);
 
-    QSqlDriver::DBMSType dbType = tst_Databases::getDatabaseType(db);
+    QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
     if (dbType == QSqlDriver::Interbase || dbType == QSqlDriver::Oracle || dbType == QSqlDriver::DB2)
         QCOMPARE(index.fieldName(0), QString::fromLatin1("ID"));
     else

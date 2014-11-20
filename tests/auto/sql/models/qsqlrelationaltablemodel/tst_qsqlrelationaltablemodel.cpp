@@ -143,7 +143,7 @@ void tst_QSqlRelationalTableModel::initTestCase()
 {
     foreach (const QString &dbname, dbs.dbNames) {
         QSqlDatabase db=QSqlDatabase::database(dbname);
-        QSqlDriver::DBMSType dbType = tst_Databases::getDatabaseType(db);
+        QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
         if (dbType == QSqlDriver::Interbase) {
             db.exec("SET DIALECT 3");
         } else if (dbType == QSqlDriver::MSSqlServer) {
@@ -238,7 +238,7 @@ void tst_QSqlRelationalTableModel::setData()
     QFETCH_GLOBAL(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
-    const QSqlDriver::DBMSType dbType = tst_Databases::getDatabaseType(db);
+    const QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
 
     // set the values using OnRowChange Strategy
     {
@@ -554,7 +554,7 @@ void tst_QSqlRelationalTableModel::insertWithStrategies()
     QFETCH_GLOBAL(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
-    const QSqlDriver::DBMSType dbType = tst_Databases::getDatabaseType(db);
+    const QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
 
     QSqlRelationalTableModel model(0, db);
 
@@ -746,7 +746,7 @@ void tst_QSqlRelationalTableModel::sort()
     QFETCH_GLOBAL(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
-    const QSqlDriver::DBMSType dbType = tst_Databases::getDatabaseType(db);
+    const QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
 
     QSqlRelationalTableModel model(0, db);
 
@@ -912,7 +912,7 @@ void tst_QSqlRelationalTableModel::clearDisplayValuesCache()
     QFETCH_GLOBAL(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
-    const QSqlDriver::DBMSType dbType = tst_Databases::getDatabaseType(db);
+    const QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
 
     QSqlRelationalTableModel model(0, db);
 
@@ -966,7 +966,7 @@ void tst_QSqlRelationalTableModel::insertRecordDuplicateFieldNames()
     QFETCH_GLOBAL(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
-    const QSqlDriver::DBMSType dbType = tst_Databases::getDatabaseType(db);
+    const QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
 
     QSqlRelationalTableModel model(0, db);
     model.setTable(reltest3);
@@ -1088,7 +1088,7 @@ void tst_QSqlRelationalTableModel::casing()
     QFETCH_GLOBAL(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
-    const QSqlDriver::DBMSType dbType = tst_Databases::getDatabaseType(db);
+    const QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
 
     if (dbType == QSqlDriver::Interbase || dbType == QSqlDriver::SQLite || dbType == QSqlDriver::MSSqlServer)
         QSKIP("The casing test for this database is irrelevant since this database does not treat different cases as separate entities");
@@ -1155,7 +1155,7 @@ void tst_QSqlRelationalTableModel::escapedRelations()
     QFETCH_GLOBAL(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
-    const QSqlDriver::DBMSType dbType = tst_Databases::getDatabaseType(db);
+    const QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
 
     recreateTestTables(db);
 
@@ -1266,7 +1266,7 @@ void tst_QSqlRelationalTableModel::escapedTableName()
     QFETCH_GLOBAL(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
-    const QSqlDriver::DBMSType dbType = tst_Databases::getDatabaseType(db);
+    const QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
 
     // set the values using OnRowChange Strategy with an escaped tablename
     {
@@ -1455,7 +1455,7 @@ void tst_QSqlRelationalTableModel::psqlSchemaTest()
     QFETCH_GLOBAL(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
-    QSqlDriver::DBMSType dbType = tst_Databases::getDatabaseType(db);
+    QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
 
     if (dbType != QSqlDriver::PostgreSQL)
         QSKIP("Postgresql specific test");

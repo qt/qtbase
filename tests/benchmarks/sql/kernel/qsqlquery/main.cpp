@@ -109,7 +109,7 @@ void tst_QSqlQuery::cleanup()
     QFETCH( QString, dbName );
     QSqlDatabase db = QSqlDatabase::database( dbName );
     CHECK_DATABASE( db );
-    const QSqlDriver::DBMSType dbType = tst_Databases::getDatabaseType(db);
+    const QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
 
     if ( QTest::currentTestFunction() == QLatin1String( "numRowsAffected" )
             || QTest::currentTestFunction() == QLatin1String( "transactions" )
@@ -138,7 +138,7 @@ void tst_QSqlQuery::generic_data(const QString& engine)
 
 void tst_QSqlQuery::dropTestTables( QSqlDatabase db )
 {
-    QSqlDriver::DBMSType dbType = tst_Databases::getDatabaseType(db);
+    QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
     QStringList tablenames;
     // drop all the table in case a testcase failed
     tablenames <<  qtest
@@ -199,7 +199,7 @@ void tst_QSqlQuery::createTestTables( QSqlDatabase db )
 {
     const QString qtestNull = qTableName("qtest_null", __FILE__, db);
     QSqlQuery q( db );
-    QSqlDriver::DBMSType dbType = tst_Databases::getDatabaseType(db);
+    QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
     if (dbType == QSqlDriver::MySqlServer)
         // ### stupid workaround until we find a way to hardcode this
         // in the MySQL server startup script
