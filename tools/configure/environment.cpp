@@ -68,16 +68,16 @@ struct CompilerInfo{
     {CC_BORLAND, "Borland C++",                                                    0, "bcc32.exe"},
     {CC_MINGW,   "MinGW (Minimalist GNU for Windows)",                             0, "g++.exe"},
     {CC_INTEL,   "Intel(R) C++ Compiler for 32-bit applications",                  0, "icl.exe"}, // xilink.exe, xilink5.exe, xilink6.exe, xilib.exe
-    {CC_NET2005, "Microsoft (R) 32-bit C/C++ Optimizing Compiler.NET 2005 (8.0)",  "Software\\Microsoft\\VisualStudio\\SxS\\VC7\\8.0", "cl.exe"}, // link.exe, lib.exe
-    {CC_NET2005, "Microsoft (R) 32-bit C/C++ Optimizing Compiler.NET 2005 (8.0)",  "Software\\Wow6432Node\\Microsoft\\VisualStudio\\SxS\\VC7\\8.0", "cl.exe"}, // link.exe, lib.exe
-    {CC_NET2008, "Microsoft (R) 32-bit C/C++ Optimizing Compiler.NET 2008 (9.0)",  "Software\\Microsoft\\VisualStudio\\SxS\\VC7\\9.0", "cl.exe"}, // link.exe, lib.exe
-    {CC_NET2008, "Microsoft (R) 32-bit C/C++ Optimizing Compiler.NET 2008 (9.0)",  "Software\\Wow6432Node\\Microsoft\\VisualStudio\\SxS\\VC7\\9.0", "cl.exe"}, // link.exe, lib.exe
-    {CC_NET2010, "Microsoft (R) 32-bit C/C++ Optimizing Compiler.NET 2010 (10.0)", "Software\\Microsoft\\VisualStudio\\SxS\\VC7\\10.0", "cl.exe"}, // link.exe, lib.exe
-    {CC_NET2010, "Microsoft (R) 32-bit C/C++ Optimizing Compiler.NET 2010 (10.0)", "Software\\Wow6432Node\\Microsoft\\VisualStudio\\SxS\\VC7\\10.0", "cl.exe"}, // link.exe, lib.exe
-    {CC_NET2012, "Microsoft (R) 32-bit C/C++ Optimizing Compiler.NET 2012 (11.0)", "Software\\Microsoft\\VisualStudio\\SxS\\VC7\\11.0", "cl.exe"}, // link.exe, lib.exe
-    {CC_NET2012, "Microsoft (R) 32-bit C/C++ Optimizing Compiler.NET 2012 (11.0)", "Software\\Wow6432Node\\Microsoft\\VisualStudio\\SxS\\VC7\\11.0", "cl.exe"}, // link.exe, lib.exe
-    {CC_NET2013, "Microsoft (R) 32-bit C/C++ Optimizing Compiler.NET 2013 (12.0)", "Software\\Microsoft\\VisualStudio\\SxS\\VC7\\12.0", "cl.exe"}, // link.exe, lib.exe
-    {CC_NET2013, "Microsoft (R) 32-bit C/C++ Optimizing Compiler.NET 2013 (12.0)", "Software\\Wow6432Node\\Microsoft\\VisualStudio\\SxS\\VC7\\12.0", "cl.exe"}, // link.exe, lib.exe
+    {CC_MSVC2005, "Microsoft (R) Visual Studio 2005 C/C++ Compiler (8.0)",         "Software\\Microsoft\\VisualStudio\\SxS\\VC7\\8.0", "cl.exe"}, // link.exe, lib.exe
+    {CC_MSVC2005, "Microsoft (R) Visual Studio 2005 C/C++ Compiler (8.0)",         "Software\\Wow6432Node\\Microsoft\\VisualStudio\\SxS\\VC7\\8.0", "cl.exe"}, // link.exe, lib.exe
+    {CC_MSVC2008, "Microsoft (R) Visual Studio 2008 C/C++ Compiler (9.0)",         "Software\\Microsoft\\VisualStudio\\SxS\\VC7\\9.0", "cl.exe"}, // link.exe, lib.exe
+    {CC_MSVC2008, "Microsoft (R) Visual Studio 2008 C/C++ Compiler (9.0)",         "Software\\Wow6432Node\\Microsoft\\VisualStudio\\SxS\\VC7\\9.0", "cl.exe"}, // link.exe, lib.exe
+    {CC_MSVC2010, "Microsoft (R) Visual Studio 2010 C/C++ Compiler (10.0)",        "Software\\Microsoft\\VisualStudio\\SxS\\VC7\\10.0", "cl.exe"}, // link.exe, lib.exe
+    {CC_MSVC2010, "Microsoft (R) Visual Studio 2010 C/C++ Compiler (10.0)",        "Software\\Wow6432Node\\Microsoft\\VisualStudio\\SxS\\VC7\\10.0", "cl.exe"}, // link.exe, lib.exe
+    {CC_MSVC2012, "Microsoft (R) Visual Studio 2012 C/C++ Compiler (11.0)",        "Software\\Microsoft\\VisualStudio\\SxS\\VC7\\11.0", "cl.exe"}, // link.exe, lib.exe
+    {CC_MSVC2012, "Microsoft (R) Visual Studio 2012 C/C++ Compiler (11.0)",        "Software\\Wow6432Node\\Microsoft\\VisualStudio\\SxS\\VC7\\11.0", "cl.exe"}, // link.exe, lib.exe
+    {CC_MSVC2013, "Microsoft (R) Visual Studio 2013 C/C++ Compiler (12.0)",        "Software\\Microsoft\\VisualStudio\\SxS\\VC7\\12.0", "cl.exe"}, // link.exe, lib.exe
+    {CC_MSVC2013, "Microsoft (R) Visual Studio 2013 C/C++ Compiler (12.0)",        "Software\\Wow6432Node\\Microsoft\\VisualStudio\\SxS\\VC7\\12.0", "cl.exe"}, // link.exe, lib.exe
     {CC_UNKNOWN, "Unknown", 0, 0},
 };
 
@@ -103,19 +103,19 @@ QString Environment::detectQMakeSpec()
 {
     QString spec;
     switch (detectCompiler()) {
-    case CC_NET2013:
+    case CC_MSVC2013:
         spec = "win32-msvc2013";
         break;
-    case CC_NET2012:
+    case CC_MSVC2012:
         spec = "win32-msvc2012";
         break;
-    case CC_NET2010:
+    case CC_MSVC2010:
         spec = "win32-msvc2010";
         break;
-    case CC_NET2008:
+    case CC_MSVC2008:
         spec = "win32-msvc2008";
         break;
-    case CC_NET2005:
+    case CC_MSVC2005:
         spec = "win32-msvc2005";
         break;
     case CC_INTEL:
@@ -137,15 +137,15 @@ QString Environment::detectQMakeSpec()
 Compiler Environment::compilerFromQMakeSpec(const QString &qmakeSpec)
 {
     if (qmakeSpec == QLatin1String("win32-msvc2013"))
-        return CC_NET2013;
+        return CC_MSVC2013;
     if (qmakeSpec == QLatin1String("win32-msvc2012"))
-        return CC_NET2012;
+        return CC_MSVC2012;
     if (qmakeSpec == QLatin1String("win32-msvc2010"))
-        return CC_NET2010;
+        return CC_MSVC2010;
     if (qmakeSpec == QLatin1String("win32-msvc2008"))
-        return CC_NET2008;
+        return CC_MSVC2008;
     if (qmakeSpec == QLatin1String("win32-msvc2005"))
-        return CC_NET2005;
+        return CC_MSVC2005;
     if (qmakeSpec == QLatin1String("win32-icc"))
         return CC_INTEL;
     if (qmakeSpec == QLatin1String("win32-g++"))
