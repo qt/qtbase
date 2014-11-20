@@ -81,7 +81,6 @@ public:
     QPepperCompositor *m_compositor;
     PepperEventTranslator *m_eventTranslator;
     mutable QPepperEventDispatcher *m_pepperEventDispatcher;
-    QPepperJavascriptBridge *m_javascriptBridge;
 
     mutable QPepperPlatformWindow *m_topLevelWindow;
     mutable QPepperFontDatabase *m_fontDatabase;

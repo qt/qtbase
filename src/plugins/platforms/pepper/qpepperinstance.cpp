@@ -45,7 +45,6 @@
 #include "qpepperhelpers.h"
 #include "qpeppermodule.h"
 #include "qpepperintegration.h"
-#include "qpepperjavascriptbridge.h"
 #endif
 
 #include <qpa/qwindowsysteminterface.h>
@@ -212,15 +211,6 @@ bool QPepperInstance::HandleDocumentLoad(const URLLoader& url_loader)
 // "functionName" and will call the corresponding slot on qtScriptableObject.
 void QPepperInstance::HandleMessage(const Var& var_message)
 {
-#if 0
-    if (var_message.is_string()) {
-        QString message = QString::fromUtf8(var_message.AsString().data());
-        QStringList parts = message.split(':');
-        if (parts.count() == 2) {
-            emit m_pepperIntegraton->m_javascriptBridge->evalFunctionReply(parts.at(0).toLocal8Bit(), parts.at(1));
-        }
-     }
-#endif
 }
 
 QRect QPepperInstance::geometry()

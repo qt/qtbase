@@ -24,7 +24,6 @@
 #include "qpepperbackingstore.h"
 #include "qpeppereventdispatcher.h"
 #include "qpeppertheme.h"
-#include "qpepperjavascriptbridge.h"
 
 #include <qpa/qplatformwindow.h>
 #include <qpa/qwindowsysteminterface.h>
@@ -62,7 +61,6 @@ QPepperIntegration::QPepperIntegration()
     QObject::connect(m_eventTranslator, SIGNAL(getKeyWindow(QWindow**)), this, SLOT(getKeyWindow(QWindow**)));
 
     m_pepperEventDispatcher = 0;
-    m_javascriptBridge = 0;
     m_topLevelWindow = 0;
     m_fontDatabase = 0;
 }
@@ -74,7 +72,6 @@ QPepperIntegration::~QPepperIntegration()
     delete m_eventTranslator;
     delete m_fontDatabase;
     delete m_pepperEventDispatcher;
-    delete m_javascriptBridge;
 }
 
 bool QPepperIntegration::hasOpenGL() const
@@ -149,17 +146,6 @@ Qt::WindowState QPepperIntegration::defaultWindowState(Qt::WindowFlags) const
 void QPepperIntegration::setPepperInstance(QPepperInstance *instance)
 {
     m_pepperInstance = instance;
-
-#if 0
-    // Set up C++ <-> Javascript messaging.
-    m_javascriptBridge = new QPepperJavascriptBridge(m_pepperInstance);
-    connect(m_javascriptBridge, SIGNAL(evalFunctionReply(const QByteArray&, const QString&)),
-                                SLOT(handleMessage(const QByteArray&, const QString&)));
-
-    // Inject helper javascript into the web page:
-    m_javascriptBridge->evalFile(":/qpepperplatformplugin/qpepperhelpers.js");
-    m_javascriptBridge->evalFile(":/qpepperplatformplugin/qpepperfileaccess.js");
-#endif
 }
 
 QPepperInstance *QPepperIntegration::pepperInstance() const
