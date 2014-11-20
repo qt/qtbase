@@ -42,15 +42,6 @@
 #include <QtGui>
 #include <QtQml/QQmlApplicationEngine>
 
-class First
-{
-public:
-    First() {
-        QLoggingCategory::setFilterRules(QStringLiteral("qt.platform.pepper.*=true"));
-    }
-};
-First first;
-
 QQmlApplicationEngine *engine;
 
 void app_init(const QStringList &arguments)

@@ -8,16 +8,6 @@
 
 RasterWindow *window;
 
-class First
-{
-public:
-    First() {
-        QLoggingCategory::setFilterRules(QStringLiteral("qt.platform.pepper.*=true"));
-    }
-};
-First first;
-
-
 // App-provided init and exit functions:
 void app_init(const QStringList &arguments)
 {

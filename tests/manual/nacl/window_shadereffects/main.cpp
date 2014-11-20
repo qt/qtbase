@@ -43,15 +43,6 @@
 #include <QtGui/QtGui>
 #include <QtQuick/QtQuick>
 
-class First
-{
-public:
-    First() { 
-//        QLoggingCategory::setFilterRules(QStringLiteral("qt.platform.pepper.*=true")); 
-    }
-};
-First first;
-
 QQuickView *view;
 QQmlFileSelector *fileSelector;
 

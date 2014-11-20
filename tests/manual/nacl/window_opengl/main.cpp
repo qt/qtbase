@@ -45,15 +45,6 @@
 
 QList<QWindow *> windows;
 
-class First
-{
-public:
-    First() { 
-//        QLoggingCategory::setFilterRules(QStringLiteral("qt.platform.pepper.instance=true")); 
-    }
-};
-First first;
-
 void app_init(const QStringList &arguments)
 {
     QSurfaceFormat format;

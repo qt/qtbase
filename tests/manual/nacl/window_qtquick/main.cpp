@@ -41,16 +41,6 @@
 #include <QtGui>
 #include <QtQuick>
 
-class First
-{
-public:
-    First() { 
-        QLoggingCategory::setFilterRules(QStringLiteral("qt.platform.pepper.*=true")); 
-    }
-};
-First first;
-
-
 QQuickView *view;
 
 void app_init(const QStringList &arguments)

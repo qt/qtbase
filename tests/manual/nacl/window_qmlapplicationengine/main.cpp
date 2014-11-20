@@ -41,15 +41,6 @@
 #include <QtGui>
 #include <QtQuick>
 
-class First
-{
-public:
-    First() {
-        QLoggingCategory::setFilterRules(QStringLiteral("qt.*=true"));
-    }
-};
-First first;
-
 QQmlApplicationEngine *engine;
 // QQuickView *view;
 
