@@ -62,55 +62,65 @@ inline QString QDBusMarshaller::currentSignature()
 
 inline void QDBusMarshaller::append(uchar arg)
 {
-    qIterAppend(&iterator, ba, DBUS_TYPE_BYTE, &arg);
+    if (!skipSignature)
+        qIterAppend(&iterator, ba, DBUS_TYPE_BYTE, &arg);
 }
 
 inline void QDBusMarshaller::append(bool arg)
 {
     dbus_bool_t cast = arg;
-    qIterAppend(&iterator, ba, DBUS_TYPE_BOOLEAN, &cast);
+    if (!skipSignature)
+        qIterAppend(&iterator, ba, DBUS_TYPE_BOOLEAN, &cast);
 }
 
 inline void QDBusMarshaller::append(short arg)
 {
-    qIterAppend(&iterator, ba, DBUS_TYPE_INT16, &arg);
+    if (!skipSignature)
+        qIterAppend(&iterator, ba, DBUS_TYPE_INT16, &arg);
 }
 
 inline void QDBusMarshaller::append(ushort arg)
 {
-    qIterAppend(&iterator, ba, DBUS_TYPE_UINT16, &arg);
+    if (!skipSignature)
+        qIterAppend(&iterator, ba, DBUS_TYPE_UINT16, &arg);
 }
 
 inline void QDBusMarshaller::append(int arg)
 {
-    qIterAppend(&iterator, ba, DBUS_TYPE_INT32, &arg);
+    if (!skipSignature)
+        qIterAppend(&iterator, ba, DBUS_TYPE_INT32, &arg);
 }
 
 inline void QDBusMarshaller::append(uint arg)
 {
-    qIterAppend(&iterator, ba, DBUS_TYPE_UINT32, &arg);
+    if (!skipSignature)
+        qIterAppend(&iterator, ba, DBUS_TYPE_UINT32, &arg);
 }
 
 inline void QDBusMarshaller::append(qlonglong arg)
 {
-    qIterAppend(&iterator, ba, DBUS_TYPE_INT64, &arg);
+    if (!skipSignature)
+        qIterAppend(&iterator, ba, DBUS_TYPE_INT64, &arg);
 }
 
 inline void QDBusMarshaller::append(qulonglong arg)
 {
-    qIterAppend(&iterator, ba, DBUS_TYPE_UINT64, &arg);
+    if (!skipSignature)
+        qIterAppend(&iterator, ba, DBUS_TYPE_UINT64, &arg);
 }
 
 inline void QDBusMarshaller::append(double arg)
 {
-    qIterAppend(&iterator, ba, DBUS_TYPE_DOUBLE, &arg);
+    if (!skipSignature)
+        qIterAppend(&iterator, ba, DBUS_TYPE_DOUBLE, &arg);
 }
 
 void QDBusMarshaller::append(const QString &arg)
 {
     QByteArray data = arg.toUtf8();
     const char *cdata = data.constData();
-    qIterAppend(&iterator, ba, DBUS_TYPE_STRING, &cdata);
+    if (!skipSignature)
+        qIterAppend(&iterator, ba, DBUS_TYPE_STRING, &cdata);
 }
 
 inline void QDBusMarshaller::append(const QDBusObjectPath &arg)
@@ -120,7 +130,8 @@ inline void QDBusMarshaller::append(const QDBusObjectPath &arg)
         error(QLatin1String("Invalid object path passed in arguments"));
     } else {
         const char *cdata = data.constData();
-        qIterAppend(&iterator, ba, DBUS_TYPE_OBJECT_PATH, &cdata);
+        if (!skipSignature)
+            qIterAppend(&iterator, ba, DBUS_TYPE_OBJECT_PATH, &cdata);
     }
 }
 
@@ -131,7 +142,8 @@ inline void QDBusMarshaller::append(const QDBusSignature &arg)
         error(QLatin1String("Invalid signature passed in arguments"));
     } else {
         const char *cdata = data.constData();
-        qIterAppend(&iterator, ba, DBUS_TYPE_SIGNATURE, &cdata);
+        if (!skipSignature)
+            qIterAppend(&iterator, ba, DBUS_TYPE_SIGNATURE, &cdata);
     }
 }
 
@@ -141,14 +153,16 @@ inline void QDBusMarshaller::append(const QDBusUnixFileDescriptor &arg)
     if (!ba && fd == -1) {
         error(QLatin1String("Invalid file descriptor passed in arguments"));
     } else {
-        qIterAppend(&iterator, ba, DBUS_TYPE_UNIX_FD, &fd);
+        if (!skipSignature)
+            qIterAppend(&iterator, ba, DBUS_TYPE_UNIX_FD, &fd);
     }
 }
 
 inline void QDBusMarshaller::append(const QByteArray &arg)
 {
     if (ba) {
-        *ba += DBUS_TYPE_ARRAY_AS_STRING DBUS_TYPE_BYTE_AS_STRING;
+        if (!skipSignature)
+            *ba += DBUS_TYPE_ARRAY_AS_STRING DBUS_TYPE_BYTE_AS_STRING;
         return;
     }
 
@@ -163,7 +177,8 @@ inline void QDBusMarshaller::append(const QByteArray &arg)
 inline bool QDBusMarshaller::append(const QDBusVariant &arg)
 {
     if (ba) {
-        *ba += DBUS_TYPE_VARIANT_AS_STRING;
+        if (!skipSignature)
+            *ba += DBUS_TYPE_VARIANT_AS_STRING;
         return true;
     }
 
@@ -206,7 +221,8 @@ inline bool QDBusMarshaller::append(const QDBusVariant &arg)
 inline void QDBusMarshaller::append(const QStringList &arg)
 {
     if (ba) {
-        *ba += DBUS_TYPE_ARRAY_AS_STRING DBUS_TYPE_STRING_AS_STRING;
+        if (!skipSignature)
+            *ba += DBUS_TYPE_ARRAY_AS_STRING DBUS_TYPE_STRING_AS_STRING;
         return;
     }
 
@@ -288,25 +304,30 @@ void QDBusMarshaller::open(QDBusMarshaller &sub, int code, const char *signature
     sub.ba = ba;
     sub.ok = true;
     sub.capabilities = capabilities;
+    sub.skipSignature = skipSignature;
 
-    if (ba)
-        switch (code) {
-        case DBUS_TYPE_ARRAY:
-            *ba += char(code);
-            *ba += signature;
-            // fall through
+    if (ba) {
+        if (!skipSignature) {
+            switch (code) {
+            case DBUS_TYPE_ARRAY:
+                *ba += char(code);
+                *ba += signature;
+                // fall through
 
-        case DBUS_TYPE_DICT_ENTRY:
-            sub.closeCode = 0;
-            break;
+            case DBUS_TYPE_DICT_ENTRY:
+                sub.closeCode = 0;
+                sub.skipSignature = true;
+                break;
 
-        case DBUS_TYPE_STRUCT:
-            *ba += DBUS_STRUCT_BEGIN_CHAR;
-            sub.closeCode = DBUS_STRUCT_END_CHAR;
-            break;
+            case DBUS_TYPE_STRUCT:
+                *ba += DBUS_STRUCT_BEGIN_CHAR;
+                sub.closeCode = DBUS_STRUCT_END_CHAR;
+                break;
+            }
         }
-    else
+    } else {
         q_dbus_message_iter_open_container(&iterator, code, signature, &sub.iterator);
+    }
 }
 
 QDBusMarshaller *QDBusMarshaller::beginCommon(int code, const char *signature)
@@ -338,7 +359,7 @@ QDBusMarshaller *QDBusMarshaller::endCommon()
 void QDBusMarshaller::close()
 {
     if (ba) {
-        if (closeCode)
+        if (!skipSignature && closeCode)
             *ba += closeCode;
     } else if (parent) {
         q_dbus_message_iter_close_container(&parent->iterator, &iterator);

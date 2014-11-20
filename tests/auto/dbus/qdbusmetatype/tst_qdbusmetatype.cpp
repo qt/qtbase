@@ -69,6 +69,19 @@ struct Struct4                  // (ssa(ss)sayasx)
     QStringList m6;
     qlonglong m7;
 };
+struct Struct5                  // a{sa{sv}} - non-standard outer struct is used as a local
+{                               // container, see marshalling operator below.
+    QVariantMap m1;
+    QVariantMap m2;
+    QVariantMap m3;
+};
+struct Struct6                  // av - non-standard outer struct is used as a local container,
+{                               // see marshalling operator below.
+    QVariant v1;
+    QVariant v2;
+    QVariant v3;
+};
+
 
 struct Invalid0 { };            // empty
 struct Invalid1 { };            // s
@@ -84,6 +97,8 @@ Q_DECLARE_METATYPE(Struct2)
 Q_DECLARE_METATYPE(Struct3)
 Q_DECLARE_METATYPE(Struct4)
 Q_DECLARE_METATYPE(StringPair)
+Q_DECLARE_METATYPE(Struct5)
+Q_DECLARE_METATYPE(Struct6)
 
 Q_DECLARE_METATYPE(Invalid0)
 Q_DECLARE_METATYPE(Invalid1)
@@ -141,6 +156,34 @@ QDBusArgument &operator<<(QDBusArgument &arg, const Struct4 &s)
     return arg;
 }
 
+QDBusArgument &operator<<(QDBusArgument &arg, const Struct5 &s)
+{
+    arg.beginMap(qMetaTypeId<QString>(), qMetaTypeId<QVariantMap>());
+
+    arg.beginMapEntry();
+    arg << QStringLiteral("map1") << s.m1;
+    arg.endMapEntry();
+
+    arg.beginMapEntry();
+    arg << QStringLiteral("map2") << s.m2;
+    arg.endMapEntry();
+
+    arg.beginMapEntry();
+    arg << QStringLiteral("map3") << s.m3;
+    arg.endMapEntry();
+
+    arg.endMap();
+    return arg;
+}
+
+QDBusArgument &operator<<(QDBusArgument &arg, const Struct6 &s)
+{
+    arg.beginArray(qMetaTypeId<QDBusVariant>());
+    arg << QDBusVariant(s.v1) << QDBusVariant(s.v2) << QDBusVariant(s.v3);
+    arg.endArray();
+    return arg;
+}
+
 QDBusArgument &operator<<(QDBusArgument &arg, const Invalid0 &)
 {
     return arg;
@@ -194,6 +237,10 @@ const QDBusArgument &operator>>(const QDBusArgument &arg, Struct3 &)
 { return arg; }
 const QDBusArgument &operator>>(const QDBusArgument &arg, Struct4 &)
 { return arg; }
+const QDBusArgument &operator>>(const QDBusArgument &arg, Struct5 &)
+{ return arg; }
+const QDBusArgument &operator>>(const QDBusArgument &arg, Struct6 &)
+{ return arg; }
 const QDBusArgument &operator>>(const QDBusArgument &arg, StringPair &)
 { return arg; }
 const QDBusArgument &operator>>(const QDBusArgument &arg, Invalid0 &)
@@ -220,6 +267,8 @@ void tst_QDBusMetaType::initTestCase()
     qDBusRegisterMetaType<Struct2>();
     qDBusRegisterMetaType<Struct3>();
     qDBusRegisterMetaType<Struct4>();
+    qDBusRegisterMetaType<Struct5>();
+    qDBusRegisterMetaType<Struct6>();
     qDBusRegisterMetaType<StringPair>();
 
     qDBusRegisterMetaType<QList<Struct1> >();
@@ -296,6 +345,10 @@ void tst_QDBusMetaType::dynamicTypes_data()
 
     QTest::newRow("Struct4") << QVariant::Type(qMetaTypeId<Struct4>()) << "(ssa(ss)sayasx)";
     QTest::newRow("QList<Struct4>") << QVariant::Type(qMetaTypeId<QList<Struct4> >()) << "a(ssa(ss)sayasx)";
+
+    QTest::newRow("Struct5") << QVariant::Type(qMetaTypeId<Struct5>()) << "a{sa{sv}}";
+
+    QTest::newRow("Struct6") << QVariant::Type(qMetaTypeId<Struct6>()) << "av";
 
     QTest::newRow("QMap<int,QString>") << QVariant::Type(intStringMap) << "a{is}";
     QTest::newRow("QMap<QString,QString>") << QVariant::Type(stringStringMap) << "a{ss}";
