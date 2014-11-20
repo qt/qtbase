@@ -101,9 +101,19 @@ QFontEngine *QBasicFontDatabase::fontEngine(const QFontDef &fontDef, void *usrPt
     fid.index = fontfile->indexValue;
 
     bool antialias = !(fontDef.styleStrategy & QFont::NoAntialias);
-    QFontEngineFT::GlyphFormat format = antialias? QFontEngineFT::Format_A8 : QFontEngineFT::Format_Mono;
-
     QFontEngineFT *engine = new QFontEngineFT(fontDef);
+    QFontEngineFT::GlyphFormat format = QFontEngineFT::Format_Mono;
+    if (antialias) {
+        QFontEngine::SubpixelAntialiasingType subpixelType = subpixelAntialiasingTypeHint();
+        if (subpixelType == QFontEngine::Subpixel_None || (fontDef.styleStrategy & QFont::NoSubpixelAntialias)) {
+            format = QFontEngineFT::Format_A8;
+            engine->subpixelType = QFontEngine::Subpixel_None;
+        } else {
+            format = QFontEngineFT::Format_A32;
+            engine->subpixelType = subpixelType;
+        }
+    }
+
     if (!engine->init(fid, antialias, format) || engine->invalid()) {
         delete engine;
         engine = 0;

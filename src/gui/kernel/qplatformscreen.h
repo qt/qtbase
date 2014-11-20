@@ -74,6 +74,14 @@ class Q_GUI_EXPORT QPlatformScreen
     Q_DECLARE_PRIVATE(QPlatformScreen)
 
 public:
+    enum SubpixelAntialiasingType { // copied from qfontengine_p.h since we can't include private headers
+        Subpixel_None,
+        Subpixel_RGB,
+        Subpixel_BGR,
+        Subpixel_VRGB,
+        Subpixel_VBGR
+    };
+
     QPlatformScreen();
     virtual ~QPlatformScreen();
 
@@ -107,6 +115,7 @@ public:
     virtual QString name() const { return QString(); }
 
     virtual QPlatformCursor *cursor() const;
+    virtual SubpixelAntialiasingType subpixelAntialiasingTypeHint() const;
 
     static int angleBetween(Qt::ScreenOrientation a, Qt::ScreenOrientation b);
     static QTransform transformBetween(Qt::ScreenOrientation a, Qt::ScreenOrientation b, const QRect &target);

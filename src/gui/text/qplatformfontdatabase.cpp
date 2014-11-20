@@ -34,6 +34,9 @@
 #include "qplatformfontdatabase.h"
 #include <QtGui/private/qfontengine_p.h>
 #include <QtGui/private/qfontengine_qpf2_p.h>
+#include <QtGui/QGuiApplication>
+#include <QtGui/QScreen>
+#include <qpa/qplatformscreen.h>
 #include <QtCore/QLibraryInfo>
 #include <QtCore/QDir>
 
@@ -457,6 +460,15 @@ bool QPlatformFontDatabase::fontsAlwaysScalable() const
     return ret;
 }
 
+QFontEngine::SubpixelAntialiasingType QPlatformFontDatabase::subpixelAntialiasingTypeHint() const
+{
+    static int type = -1;
+    if (type == -1) {
+        if (QScreen *screen = QGuiApplication::primaryScreen())
+            type = screen->handle()->subpixelAntialiasingTypeHint();
+    }
+    return static_cast<QFontEngine::SubpixelAntialiasingType>(type);
+}
 
 // ### copied to tools/makeqpf/qpf2.cpp
 

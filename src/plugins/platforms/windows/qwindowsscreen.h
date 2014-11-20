@@ -100,6 +100,7 @@ public:
     static QWindow *windowAt(const QPoint &point, unsigned flags);
 
     QPixmap grabWindow(WId window, int qX, int qY, int qWidth, int qHeight) const Q_DECL_OVERRIDE;
+    QPlatformScreen::SubpixelAntialiasingType subpixelAntialiasingTypeHint() const Q_DECL_OVERRIDE;
 
     inline void handleChanges(const QWindowsScreenData &newData);
 

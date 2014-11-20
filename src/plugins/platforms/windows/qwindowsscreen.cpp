@@ -39,6 +39,7 @@
 
 #include "qtwindows_additional.h"
 
+#include <QtCore/QSettings>
 #include <QtGui/QPixmap>
 #include <QtGui/QGuiApplication>
 #include <qpa/qwindowsysteminterface.h>
@@ -356,6 +357,37 @@ void QWindowsScreen::handleChanges(const QWindowsScreenData &newData)
         QWindowSystemInterface::handleScreenOrientationChange(screen(),
                                                               newData.orientation);
     }
+}
+
+/*!
+    \brief Queries ClearType settings to check the pixel layout
+*/
+QPlatformScreen::SubpixelAntialiasingType QWindowsScreen::subpixelAntialiasingTypeHint() const
+{
+#if defined(Q_OS_WINCE) || !defined(FT_LCD_FILTER_H) || !defined(FT_CONFIG_OPTION_SUBPIXEL_RENDERING)
+    return QPlatformScreen::Subpixel_None;
+#else
+    QPlatformScreen::SubpixelAntialiasingType type = QPlatformScreen::subpixelAntialiasingTypeHint();
+    if (type == QPlatformScreen::Subpixel_None) {
+        QSettings settings(QLatin1String("HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Avalon.Graphics\\DISPLAY1"), QSettings::NativeFormat);
+        int registryValue = settings.value(QLatin1String("PixelStructure"), -1).toInt();
+        switch (registryValue) {
+        case 0:
+            type = QPlatformScreen::Subpixel_None;
+            break;
+        case 1:
+            type = QPlatformScreen::Subpixel_RGB;
+            break;
+        case 2:
+            type = QPlatformScreen::Subpixel_BGR;
+            break;
+        default:
+            type = QPlatformScreen::Subpixel_None;
+            break;
+        }
+    }
+    return type;
+#endif
 }
 
 /*!

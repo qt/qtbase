@@ -305,6 +305,7 @@ protected:
 private:
     friend class QFontEngineFTRawFont;
     friend class QFontconfigDatabase;
+    friend class QBasicFontDatabase;
     friend class QFontEngineMultiFontConfig;
 
     int loadFlags(QGlyphSet *set, GlyphFormat format, int flags, bool &hsubpixel, int &vfactor) const;

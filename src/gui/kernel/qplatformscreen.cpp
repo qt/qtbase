@@ -393,4 +393,31 @@ QRect QPlatformScreen::mapBetween(Qt::ScreenOrientation a, Qt::ScreenOrientation
     return rect;
 }
 
+/*!
+  Returns a hint about this screen's subpixel layout structure.
+
+  The default implementation queries the \b{QT_SUBPIXEL_AA_TYPE} env variable.
+  This is just a hint because most platforms don't have a way to retrieve the correct value from hardware
+  and instead rely on font configurations.
+*/
+QPlatformScreen::SubpixelAntialiasingType QPlatformScreen::subpixelAntialiasingTypeHint() const
+{
+    static int type = -1;
+    if (type == -1) {
+        QByteArray env = qgetenv("QT_SUBPIXEL_AA_TYPE");
+        if (env == "RGB")
+            type = QPlatformScreen::Subpixel_RGB;
+        else if (env == "BGR")
+            type = QPlatformScreen::Subpixel_BGR;
+        else if (env == "VRGB")
+            type = QPlatformScreen::Subpixel_VRGB;
+        else if (env == "VBGR")
+            type = QPlatformScreen::Subpixel_VBGR;
+        else
+            type = QPlatformScreen::Subpixel_None;
+    }
+
+    return static_cast<QPlatformScreen::SubpixelAntialiasingType>(type);
+}
+
 QT_END_NAMESPACE
