@@ -254,6 +254,23 @@ void QPepperInstance::windowSystemEventsFlushCallback(int32_t)
     QWindowSystemInterface::flushWindowSystemEvents();
 }
 
+void QPepperInstance::postMessage(const QByteArray &message)
+{
+    qCDebug(QT_PLATFORM_PEPPER_INSTANCE) << "postMessage" << message;
+    PostMessage(pp::Var(message.constData()));
+}
+
+// Runs the given script on the containing web page, using
+// the standard Qt message handler provided by nacldeployqt.
+// This function is designed to run "safe" javascript only:
+// running javascript witch contains for example user-provided
+// strings may open up for javascript injection attacks.
+void QPepperInstance::runJavascript(const QByteArray &script)
+{
+    qCDebug(QT_PLATFORM_PEPPER_INSTANCE) << "runJavascript" << script;
+    postMessage("qtEval:" + script);
+}
+
 void QPepperInstance::startQt()
 {
     qCDebug(QT_PLATFORM_PEPPER_INSTANCE) << "startQt";

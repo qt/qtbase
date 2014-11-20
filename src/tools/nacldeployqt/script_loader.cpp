@@ -14,6 +14,31 @@ function decodeQuery() {
     return keyValues;
 }
 
+// Qt message handler
+function handleMessageEvent(messageEvent)
+{
+    // Expect messages to be in the form "tag:message",
+    // and that the tag has a handler installed in the
+    // qtMessageHandlers object.
+    //
+    // As a special case, messages with the "qtEval" tag
+    // are evaluated with eval(). This allows Qt to inject
+    // javscript into the web page, for example to install
+    // message handlers.
+
+    if (this.qtMessageHandlers === undefined)
+        this.qtMessageHandlers = {}
+
+    var parts = messageEvent.data.split(/:(.+)/);
+    var tag = parts[0];
+    var message = parts[1];
+    if (tag == "qtEval") {
+        eval(message)
+    } else {
+        this.qtMessageHandlers[tag](message);
+    }
+}
+
 function createNaClEmbed()
 {
     // Create NaCl <embed> element.
@@ -30,7 +55,13 @@ function createNaClEmbed()
         if (key !== undefined)
             embed.setAttribute(key, query[key])
     }
-    document.body.appendChild(embed);
+
+    // Create container div which handles load and message events
+    var listener = document.createElement("div");
+    listener.addEventListener('message', handleMessageEvent, true);
+    listener.appendChild(embed);
+
+    document.body.appendChild(listener);
 }
 
 document.addEventListener("DOMContentLoaded", createNaClEmbed);

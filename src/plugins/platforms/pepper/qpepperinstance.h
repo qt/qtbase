@@ -59,6 +59,8 @@ public:
 
     // publics:
     void scheduleWindowSystemEventsFlush();
+    void postMessage(const QByteArray &message);
+    void runJavascript(const QByteArray &script);
 
     // privates:
     void startQt();
