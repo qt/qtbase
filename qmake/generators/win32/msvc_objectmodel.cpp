@@ -2347,7 +2347,7 @@ bool VCFilter::addExtraCompiler(const VCFilterFile &info)
             deps[i] = Option::fixPathToTargetOS(
                         Project->replaceExtraCompilerVariables(
                                 deps.at(i), inFile, out, MakefileGenerator::NoShell),
-                        false).trimmed();
+                        false);
         // Command for file
         if (combined) {
             // Add dependencies for each file
