@@ -1977,7 +1977,7 @@ void QListModeViewBase::dragMoveEvent(QDragMoveEvent *event)
                         ? intersectVector.last() : QModelIndex();
     dd->hover = index;
     if (!dd->droppingOnItself(event, index)
-        && dd->canDecode(event)) {
+        && dd->canDrop(event)) {
 
         if (index.isValid() && dd->showDropIndicator) {
             QRect rect = qq->visualRect(index);
@@ -2023,7 +2023,7 @@ void QListModeViewBase::dragMoveEvent(QDragMoveEvent *event)
             }
         }
         dd->viewport->update();
-    } // can decode
+    } // can drop
 
     if (dd->shouldAutoScroll(event->pos()))
         qq->startAutoScroll();
@@ -2757,7 +2757,7 @@ bool QIconModeViewBase::filterDragLeaveEvent(QDragLeaveEvent *e)
 
 bool QIconModeViewBase::filterDragMoveEvent(QDragMoveEvent *e)
 {
-    if (e->source() != qq || !dd->canDecode(e))
+    if (e->source() != qq || !dd->canDrop(e))
         return false;
 
     // ignore by default

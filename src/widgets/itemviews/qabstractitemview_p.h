@@ -164,7 +164,7 @@ public:
 #ifndef QT_NO_DRAGANDDROP
     virtual QAbstractItemView::DropIndicatorPosition position(const QPoint &pos, const QRect &rect, const QModelIndex &idx) const;
 
-    inline bool canDecode(QDropEvent *event) {
+    inline bool canDrop(QDropEvent *event) {
         QModelIndex index;
         int col = -1;
         int row = -1;

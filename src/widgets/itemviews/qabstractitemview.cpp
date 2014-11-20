@@ -1904,7 +1904,7 @@ void QAbstractItemView::dragEnterEvent(QDragEnterEvent *event)
         && (event->source() != this|| !(event->possibleActions() & Qt::MoveAction)))
         return;
 
-    if (d_func()->canDecode(event)) {
+    if (d_func()->canDrop(event)) {
         event->accept();
         setState(DraggingState);
     } else {
@@ -1933,7 +1933,7 @@ void QAbstractItemView::dragMoveEvent(QDragMoveEvent *event)
     QModelIndex index = indexAt(event->pos());
     d->hover = index;
     if (!d->droppingOnItself(event, index)
-        && d->canDecode(event)) {
+        && d->canDrop(event)) {
 
         if (index.isValid() && d->showDropIndicator) {
             QRect rect = visualRect(index);
@@ -1978,7 +1978,7 @@ void QAbstractItemView::dragMoveEvent(QDragMoveEvent *event)
             }
         }
         d->viewport->update();
-    } // can decode
+    } // can drop
 
     if (d->shouldAutoScroll(event->pos()))
         startAutoScroll();
