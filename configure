@@ -1155,7 +1155,7 @@ while [ "$#" -gt 0 ]; do
         fi
         ;;
     force-pkg-config)
-        CFG_PKGCONFIG="force"
+        CFG_PKGCONFIG="yes"
         ;;
     docdir)
         QT_INSTALL_DOCS="$VAL"
@@ -4139,11 +4139,6 @@ fi
 if [ "$CFG_PKGCONFIG" = "no" ]; then
     PKG_CONFIG=
     [ "$OPT_VERBOSE" = "yes" ] && echo "pkg-config support disabled."
-elif [ "$CFG_PKGCONFIG" = "force" ]; then
-    echo >&2 ""
-    echo >&2 "You have asked to use pkg-config. Please make sure you have"
-    echo >&2 "a correctly setup pkg-config environment!"
-    echo >&2 ""
 elif [ -n "$PKG_CONFIG" ]; then
     # found a pkg-config
     if [ "$QT_CROSS_COMPILE" = "yes" ]; then
@@ -4156,16 +4151,13 @@ elif [ -n "$PKG_CONFIG" ]; then
                 fi
                 export PKG_CONFIG_LIBDIR
                 echo >&2 "Note: PKG_CONFIG_LIBDIR automatically set to $PKG_CONFIG_LIBDIR"
-            elif [ "$CFG_PKGCONFIG" = "yes" ]; then
-                echo >&2 "Error: PKG_CONFIG_LIBDIR has not been set. This could mean"
-                echo >&2 "the host's .pc files will be used (even if you set PKG_CONFIG_PATH)."
+            elif [ "$CFG_PKGCONFIG" = "auto" ]; then
+                PKG_CONFIG=
+                echo >&2 "Warning: Disabling pkg-config since PKG_CONFIG_LIBDIR is not set and"
+                echo >&2 "the host's .pc files would be used (even if you set PKG_CONFIG_PATH)."
                 echo >&2 "Set this variable to the directory that contains target .pc files"
                 echo >&2 "for pkg-config to function correctly when cross-compiling or"
-                echo >&2 "use -force-pkg-config to override this test."
-                exit 101
-            else
-                PKG_CONFIG=
-                echo >&2 "Warning: Disabling pkg-config since PKG_CONFIG_LIBDIR is not set."
+                echo >&2 "use -pkg-config to override this test."
             fi
         fi
         if [ -z "$PKG_CONFIG_SYSROOT_DIR" ]; then
@@ -4173,16 +4165,18 @@ elif [ -n "$PKG_CONFIG" ]; then
                 PKG_CONFIG_SYSROOT_DIR=$CFG_SYSROOT
                 export PKG_CONFIG_SYSROOT_DIR
                 echo >&2 "Note: PKG_CONFIG_SYSROOT_DIR automatically set to $PKG_CONFIG_SYSROOT_DIR"
-            elif [ "$CFG_PKGCONFIG" = "yes" ]; then
-                echo >&2 "Error: PKG_CONFIG_SYSROOT_DIR has not been set. Set this variable"
-                echo >&2 "to your sysroot for pkg-config to function correctly when cross-compiling"
-                echo >&2 "or use -force-pkg-config to override this test."
-                exit 101
-            else
+            elif [ "$CFG_PKGCONFIG" = "auto" ]; then
                 PKG_CONFIG=
                 echo >&2 "Warning: Disabling pkg-config since PKG_CONFIG_SYSROOT_DIR is not set."
+                echo >&2 "Set this variable to your sysroot for pkg-config to function correctly when"
+                echo >&2 "cross-compiling or use -pkg-config to override this test."
             fi
         fi
+    fi
+    if [ -n "$PKG_CONFIG" ]; then
+        CFG_PKGCONFIG=yes
+    else
+        CFG_PKGCONFIG=no
     fi
 elif [ "$CFG_PKGCONFIG" = "yes" ]; then
     echo >&2 "Could not detect pkg-config from mkspec or PATH."
@@ -4955,7 +4949,7 @@ if [ "$CFG_DBUS" = "linked" ]; then
     else
         if [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
             echo "The Qt D-Bus module cannot be enabled because libdbus-1 version $MIN_DBUS_1_VERSION was not found."
-            [ -z "$PKG_CONFIG" ] && echo " Use of pkg-config is not enabled, maybe you want to pass -force-pkg-config?"
+            [ -z "$PKG_CONFIG" ] && echo " Use of pkg-config is not enabled, maybe you want to pass -pkg-config?"
             echo " Turn on verbose messaging (-v) to $0 to see the final report."
             echo " If you believe this message is in error you may use the continue"
             echo " switch (-continue) to $0 to continue."
@@ -4995,7 +4989,7 @@ if [ "$CFG_GLIB" != "no" ]; then
     else
         if [ "$CFG_GLIB" = "yes" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
             echo "Glib support cannot be enabled due to functionality tests!"
-            [ -z "$PKG_CONFIG" ] && echo " Use of pkg-config is not enabled, maybe you want to pass -force-pkg-config?"
+            [ -z "$PKG_CONFIG" ] && echo " Use of pkg-config is not enabled, maybe you want to pass -pkg-config?"
             echo " Turn on verbose messaging (-v) to $0 to see the final report."
             echo " If you believe this message is in error you may use the continue"
             echo " switch (-continue) to $0 to continue."
@@ -5023,7 +5017,7 @@ if [ "$CFG_GLIB" = "yes" -a "$CFG_QGTKSTYLE" != "no" ]; then
     else
         if [ "$CFG_QGTKSTYLE" = "yes" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
             echo "GTK theme support cannot be enabled due to functionality tests!"
-            [ -z "$PKG_CONFIG" ] && echo " Use of pkg-config is not enabled, maybe you want to pass -force-pkg-config?"
+            [ -z "$PKG_CONFIG" ] && echo " Use of pkg-config is not enabled, maybe you want to pass -pkg-config?"
             echo " Turn on verbose messaging (-v) to $0 to see the fin  al report."
             echo " If you believe this message is in error you may use the continue"
             echo " switch (-continue) to $0 to continue."
@@ -5068,7 +5062,7 @@ if [ "$CFG_PULSEAUDIO" != "no" ]; then
     else
         if [ "$CFG_PULSEAUDIO" = "yes" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
             echo "PulseAudio support cannot be enabled due to functionality tests!"
-            [ -z "$PKG_CONFIG" ] && echo " Use of pkg-config is not enabled, maybe you want to pass -force-pkg-config?"
+            [ -z "$PKG_CONFIG" ] && echo " Use of pkg-config is not enabled, maybe you want to pass -pkg-config?"
             echo " Turn on verbose messaging (-v) to $0 to see the final report."
             echo " If you believe this message is in error you may use the continue"
             echo " switch (-continue) to $0 to continue."
@@ -5186,7 +5180,7 @@ elif [ "$CFG_OPENGL" = "es2" ]; then
     compileTestWithPkgConfig glesv2 unix/opengles2 "OpenGL ES 2.0" OPENGL_ES2
     if [ $? != "0" ]; then
         echo "The OpenGL ES 2.0 functionality test failed!"
-        [ -z "$PKG_CONFIG" ] && echo " Use of pkg-config is not enabled, maybe you want to pass -force-pkg-config?"
+        [ -z "$PKG_CONFIG" ] && echo " Use of pkg-config is not enabled, maybe you want to pass -pkg-config?"
         echo " You might need to modify the include and library search paths by editing"
         echo " QMAKE_INCDIR_OPENGL_ES2, QMAKE_LIBDIR_OPENGL_ES2 and QMAKE_LIBS_OPENGL_ES2 in"
         echo " ${XQMAKESPEC}."
@@ -5260,7 +5254,7 @@ if [ "$CFG_LIBUDEV" != "no" ]; then
         QT_CONFIG="$QT_CONFIG libudev"
     elif [ "$CFG_LIBUDEV" = "yes" ]; then
         echo "The libudev functionality test failed!"
-        [ -z "$PKG_CONFIG" ] && echo " Use of pkg-config is not enabled, maybe you want to pass -force-pkg-config?"
+        [ -z "$PKG_CONFIG" ] && echo " Use of pkg-config is not enabled, maybe you want to pass -pkg-config?"
         exit 1
     else
         CFG_LIBUDEV=no
@@ -5470,7 +5464,7 @@ if [ "$CFG_XCB" != "no" ]; then
     else
         if [ "$CFG_XCB" != "auto" ]; then
             echo "The test for linking against libxcb failed!"
-            [ -z "$PKG_CONFIG" ] && echo " Use of pkg-config is not enabled, maybe you want to pass -force-pkg-config?"
+            [ -z "$PKG_CONFIG" ] && echo " Use of pkg-config is not enabled, maybe you want to pass -pkg-config?"
             echo " You might need to install dependency packages for libxcb."
             echo " See src/plugins/platforms/xcb/README."
             exit 1
@@ -5487,7 +5481,7 @@ if [ "$CFG_DIRECTFB" != "no" ]; then
             CFG_DIRECTFB=yes
         elif [ "$CFG_DIRECTFB" = "yes" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
             echo " DirectFB support cannot be enabled due to functionality tests!"
-            [ -z "$PKG_CONFIG" ] && echo " Use of pkg-config is not enabled, maybe you want to pass -force-pkg-config?"
+            [ -z "$PKG_CONFIG" ] && echo " Use of pkg-config is not enabled, maybe you want to pass -pkg-config?"
             echo " Turn on verbose messaging (-v) to $0 to see the final report."
             echo " If you believe this message is in error you may use the continue"
             echo " switch (-continue) to $0 to continue."
@@ -5544,7 +5538,7 @@ if [ "$CFG_XCB" != "no" ]; then
         elif [ "$CFG_XKBCOMMON" = "system" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
             echo " xkbcommon support cannot be enabled because either xkbcommon or "
             echo " xkbcommon-x11 >= $MIN_REQ_XKBCOMMON was not found via pkg-config!"
-            [ -z "$PKG_CONFIG" ] && echo " Use of pkg-config is not enabled, maybe you want to pass -force-pkg-config?"
+            [ -z "$PKG_CONFIG" ] && echo " Use of pkg-config is not enabled, maybe you want to pass -pkg-config?"
             echo " Turn on verbose messaging (-v) to $0 to see the final report."
             echo " If you believe this message is in error you may use the continue"
             echo " switch (-continue) to $0 to continue."
@@ -5605,7 +5599,7 @@ if [ "$CFG_EGL" != "no" ]; then
         fi
     elif [ "$CFG_EGL" = "yes" ]; then
         echo " The EGL functionality test failed; EGL is required by some QPA plugins to manage contexts & surfaces."
-        [ -z "$PKG_CONFIG" ] && echo " Use of pkg-config is not enabled, maybe you want to pass -force-pkg-config?"
+        [ -z "$PKG_CONFIG" ] && echo " Use of pkg-config is not enabled, maybe you want to pass -pkg-config?"
         echo " You might need to modify the include and library search paths by editing"
         echo " QMAKE_INCDIR_EGL, QMAKE_LIBDIR_EGL and QMAKE_LIBS_EGL in ${XQMAKESPEC}."
         exit 1
