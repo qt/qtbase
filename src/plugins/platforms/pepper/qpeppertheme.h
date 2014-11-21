@@ -20,7 +20,6 @@
 #ifndef QPEPPERTHEME_H
 #define QPEPPERTHEME_H
 
-#include <QtCore/QHash>
 #include <qpa/qplatformtheme.h>
 
 QT_BEGIN_NAMESPACE
