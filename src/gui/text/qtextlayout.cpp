@@ -2063,9 +2063,8 @@ static QGlyphRun glyphRunWithInfo(QFontEngine *fontEngine,
     // Make a font for this particular engine
     QRawFont font;
     QRawFontPrivate *fontD = QRawFontPrivate::get(font);
-    fontD->fontEngine = fontEngine;
-    fontD->thread = QThread::currentThread();
-    fontD->fontEngine->ref.ref();
+    fontD->setFontEngine(fontEngine);
+
     QVarLengthArray<glyph_t> glyphsArray;
     QVarLengthArray<QFixedPoint> positionsArray;
 

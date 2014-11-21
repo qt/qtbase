@@ -247,7 +247,6 @@ void QRawFont::loadFromData(const QByteArray &fontData,
     d.detach();
     d->cleanUp();
     d->hintingPreference = hintingPreference;
-    d->thread = QThread::currentThread();
     d->loadFromData(fontData, pixelSize, hintingPreference);
 }
 
@@ -700,8 +699,7 @@ QRawFont QRawFont::fromFont(const QFont &font, QFontDatabase::WritingSystem writ
     }
 
     if (fe != 0) {
-        rawFont.d.data()->fontEngine = fe;
-        rawFont.d.data()->fontEngine->ref.ref();
+        rawFont.d.data()->setFontEngine(fe);
         rawFont.d.data()->hintingPreference = font.hintingPreference();
     }
     return rawFont;
@@ -712,42 +710,23 @@ QRawFont QRawFont::fromFont(const QFont &font, QFontDatabase::WritingSystem writ
 */
 void QRawFont::setPixelSize(qreal pixelSize)
 {
-    if (d->fontEngine == 0 || qFuzzyCompare(d->fontEngine->fontDef.pixelSize, pixelSize))
+    if (!d->isValid() || qFuzzyCompare(d->fontEngine->fontDef.pixelSize, pixelSize))
         return;
 
     d.detach();
-    QFontEngine *oldFontEngine = d->fontEngine;
-
-    d->fontEngine = d->fontEngine->cloneWithSize(pixelSize);
-    if (d->fontEngine != 0)
-        d->fontEngine->ref.ref();
-
-    if (!oldFontEngine->ref.deref())
-        delete oldFontEngine;
+    d->setFontEngine(d->fontEngine->cloneWithSize(pixelSize));
 }
 
 /*!
     \internal
 */
-void QRawFontPrivate::cleanUp()
-{
-    if (fontEngine != 0) {
-        if (!fontEngine->ref.deref())
-            delete fontEngine;
-        fontEngine = 0;
-    }
-    hintingPreference = QFont::PreferDefaultHinting;
-}
-
 void QRawFontPrivate::loadFromData(const QByteArray &fontData, qreal pixelSize,
                                            QFont::HintingPreference hintingPreference)
 {
     Q_ASSERT(fontEngine == 0);
 
     QPlatformFontDatabase *pfdb = QGuiApplicationPrivate::platformIntegration()->fontDatabase();
-    fontEngine = pfdb->fontEngine(fontData, pixelSize, hintingPreference);
-    if (fontEngine != 0)
-        fontEngine->ref.ref();
+    setFontEngine(pfdb->fontEngine(fontData, pixelSize, hintingPreference));
 }
 
 /*!
@@ -757,7 +736,7 @@ void QRawFontPrivate::loadFromData(const QByteArray &fontData, qreal pixelSize,
 */
 QRectF QRawFont::boundingRect(quint32 glyphIndex) const
 {
-    if (!isValid())
+    if (!d->isValid())
         return QRectF();
 
     glyph_metrics_t gm = d->fontEngine->boundingBox(glyphIndex);

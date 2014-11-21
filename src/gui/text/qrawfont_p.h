@@ -66,10 +66,11 @@ public:
     {}
 
     QRawFontPrivate(const QRawFontPrivate &other)
-        : hintingPreference(other.hintingPreference)
+        : fontEngine(other.fontEngine)
+        , hintingPreference(other.hintingPreference)
         , thread(other.thread)
     {
-        fontEngine = other.fontEngine;
+        Q_ASSERT(fontEngine == 0 || thread == QThread::currentThread());
         if (fontEngine != 0)
             fontEngine->ref.ref();
     }
@@ -80,13 +81,38 @@ public:
         cleanUp();
     }
 
+    inline void cleanUp()
+    {
+        setFontEngine(0);
+        hintingPreference = QFont::PreferDefaultHinting;
+    }
+
     inline bool isValid() const
     {
-        Q_ASSERT(thread == 0 || thread == QThread::currentThread());
+        Q_ASSERT(fontEngine == 0 || thread == QThread::currentThread());
         return fontEngine != 0;
     }
 
-    void cleanUp();
+    inline void setFontEngine(QFontEngine *engine)
+    {
+        Q_ASSERT(fontEngine == 0 || thread == QThread::currentThread());
+        if (fontEngine == engine)
+            return;
+
+        if (fontEngine != 0) {
+            if (!fontEngine->ref.deref())
+                delete fontEngine;
+            thread = 0;
+        }
+
+        fontEngine = engine;
+
+        if (fontEngine != 0) {
+            fontEngine->ref.ref();
+            Q_ASSERT(thread = QThread::currentThread()); // set only if assertions enabled
+        }
+    }
+
     void loadFromData(const QByteArray &fontData,
                               qreal pixelSize,
                               QFont::HintingPreference hintingPreference);
@@ -95,9 +121,10 @@ public:
 
     QFontEngine *fontEngine;
     QFont::HintingPreference hintingPreference;
-    QThread *thread;
     QAtomicInt ref;
 
+private:
+    QThread *thread;
 };
 
 QT_END_NAMESPACE
