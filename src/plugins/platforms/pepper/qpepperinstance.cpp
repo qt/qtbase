@@ -207,7 +207,7 @@ bool QPepperInstance::HandleDocumentLoad(const URLLoader& url_loader)
 
 void QPepperInstance::HandleMessage(const Var& var_message)
 {
-    QByteArray message = toQByteArray(varMessage);
+    QByteArray message = toQByteArray(var_message);
     if (message.startsWith("qtGetAppVersion")) {
         handleGetAppVersionMessage(message);
     }
