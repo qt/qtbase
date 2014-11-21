@@ -146,7 +146,7 @@ template <typename StringType> struct QStringAlgorithms
             // nothing happened, return the original
             return str;
         }
-        result.resize(ptr - dst);
+        result.resize(newlen);
         return result;
     }
 };
