@@ -1915,10 +1915,10 @@ bool VCXProjectWriter::outputFileConfig(OutputFilterData *d, XmlOutput &xml, Xml
     }
 
     // Actual XML output ----------------------------------
-    if (hasCustomBuildStep || filter.useCompilerTool
+    if (hasCustomBuildStep || filter.useCustomBuildTool || filter.useCompilerTool
             || !d->inBuild || filter.Name.startsWith("Deployment Files")) {
 
-        if (hasCustomBuildStep)
+        if (hasCustomBuildStep || filter.useCustomBuildTool)
         {
             if (!fileAdded) {
                 fileAdded = true;

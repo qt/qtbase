@@ -1632,8 +1632,6 @@ QPrinter::PaperSource QPrinter::paperSource() const
 
   Enabled or disables font embedding depending on \a enable.
 
-  Currently this option is only supported on X11.
-
   \sa fontEmbeddingEnabled()
 */
 void QPrinter::setFontEmbeddingEnabled(bool enable)
@@ -1646,8 +1644,6 @@ void QPrinter::setFontEmbeddingEnabled(bool enable)
   \since 4.1
 
   Returns \c true if font embedding is enabled.
-
-  Currently this option is only supported on X11.
 
   \sa setFontEmbeddingEnabled()
 */

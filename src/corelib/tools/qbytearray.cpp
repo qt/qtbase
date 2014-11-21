@@ -725,7 +725,7 @@ static inline char qToLower(char c)
     occurrences of a particular value with another, use one of the
     two-parameter replace() overloads.
 
-    QByteArrays can be compared using overloaded operators such as
+    {QByteArray}s can be compared using overloaded operators such as
     operator<(), operator<=(), operator==(), operator>=(), and so on.
     The comparison is based exclusively on the numeric values
     of the characters and is very fast, but is not what a human would
@@ -770,7 +770,7 @@ static inline char qToLower(char c)
     lastIndexOf(), operator<(), operator<=(), operator>(),
     operator>=(), toLower() and toUpper().
 
-    This issue does not apply to QStrings since they represent
+    This issue does not apply to {QString}s since they represent
     characters using Unicode.
 
     \sa QString, QBitArray
@@ -3105,6 +3105,7 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
     replaced with a single space.
 
     Whitespace means any character for which the standard C++
+    \c isspace() function returns \c true in the C locale. This includes the ASCII
     isspace() function returns \c true in the C locale. This includes the ASCII
     characters '\\t', '\\n', '\\v', '\\f', '\\r', and ' '.
 
@@ -3143,13 +3144,13 @@ QByteArray QByteArray::simplified() const
     and the end.
 
     Whitespace means any character for which the standard C++
-    isspace() function returns \c true in the C locale. This includes the ASCII
+    \c isspace() function returns \c true in the C locale. This includes the ASCII
     characters '\\t', '\\n', '\\v', '\\f', '\\r', and ' '.
 
     Example:
     \snippet code/src_corelib_tools_qbytearray.cpp 33
 
-    Unlike simplified(), trimmed() leaves internal whitespace alone.
+    Unlike simplified(), \l {QByteArray::trimmed()}{trimmed()} leaves internal whitespace alone.
 
     \sa simplified()
 */

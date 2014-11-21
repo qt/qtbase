@@ -6,12 +6,35 @@
 
 // ShaderD3D.cpp: Defines the rx::ShaderD3D class which implements rx::ShaderImpl.
 
-#include "libGLESv2/renderer/d3d/ShaderD3D.h"
-#include "libGLESv2/renderer/Renderer.h"
 #include "libGLESv2/Shader.h"
 #include "libGLESv2/main.h"
+#include "libGLESv2/renderer/d3d/RendererD3D.h"
+#include "libGLESv2/renderer/d3d/ShaderD3D.h"
 
+#include "common/features.h"
 #include "common/utilities.h"
+
+// Definitions local to the translation unit
+namespace
+{
+
+const char *GetShaderTypeString(GLenum type)
+{
+    switch (type)
+    {
+      case GL_VERTEX_SHADER:
+        return "VERTEX";
+
+      case GL_FRAGMENT_SHADER:
+        return "FRAGMENT";
+
+      default:
+        UNREACHABLE();
+        return "";
+    }
+}
+
+}
 
 namespace rx
 {
@@ -44,13 +67,13 @@ const std::vector<VarT> *GetShaderVariables(const std::vector<VarT> *variableLis
     return variableList;
 }
 
-ShaderD3D::ShaderD3D(GLenum type, rx::Renderer *renderer)
+ShaderD3D::ShaderD3D(const gl::Data &data, GLenum type, RendererD3D *renderer)
     : mType(type),
       mRenderer(renderer),
       mShaderVersion(100)
 {
     uncompile();
-    initializeCompiler();
+    initializeCompiler(data);
 }
 
 ShaderD3D::~ShaderD3D()
@@ -69,23 +92,28 @@ const ShaderD3D *ShaderD3D::makeShaderD3D(const ShaderImpl *impl)
     return static_cast<const ShaderD3D*>(impl);
 }
 
+std::string ShaderD3D::getDebugInfo() const
+{
+    return mDebugInfo + std::string("\n// ") + GetShaderTypeString(mType) + " SHADER END\n";
+}
+
 // Perform a one-time initialization of the shader compiler (or after being destructed by releaseCompiler)
-void ShaderD3D::initializeCompiler()
+void ShaderD3D::initializeCompiler(const gl::Data &data)
 {
     if (!mFragmentCompiler)
     {
-        int result = ShInitialize();
+        bool result = ShInitialize();
 
         if (result)
         {
+            ShShaderSpec specVersion = (data.clientVersion >= 3) ? SH_GLES3_SPEC : SH_GLES2_SPEC;
             ShShaderOutput hlslVersion = (mRenderer->getMajorShaderModel() >= 4) ? SH_HLSL11_OUTPUT : SH_HLSL9_OUTPUT;
 
             ShBuiltInResources resources;
             ShInitBuiltInResources(&resources);
 
-            // TODO(geofflang): use context's caps
-            const gl::Caps &caps = mRenderer->getRendererCaps();
-            const gl::Extensions &extensions = mRenderer->getRendererExtensions();
+            const gl::Caps &caps = *data.caps;
+            const gl::Extensions &extensions = *data.extensions;
 
             resources.MaxVertexAttribs = caps.maxVertexAttributes;
             resources.MaxVertexUniformVectors = caps.maxVertexUniformVectors;
@@ -107,8 +135,8 @@ void ShaderD3D::initializeCompiler()
             resources.MinProgramTexelOffset = caps.minProgramTexelOffset;
             resources.MaxProgramTexelOffset = caps.maxProgramTexelOffset;
 
-            mFragmentCompiler = ShConstructCompiler(GL_FRAGMENT_SHADER, SH_GLES2_SPEC, hlslVersion, &resources);
-            mVertexCompiler = ShConstructCompiler(GL_VERTEX_SHADER, SH_GLES2_SPEC, hlslVersion, &resources);
+            mFragmentCompiler = ShConstructCompiler(GL_FRAGMENT_SHADER, specVersion, hlslVersion, &resources);
+            mVertexCompiler = ShConstructCompiler(GL_VERTEX_SHADER, specVersion, hlslVersion, &resources);
         }
     }
 }
@@ -126,7 +154,7 @@ void ShaderD3D::releaseCompiler()
 
 void ShaderD3D::parseVaryings(void *compiler)
 {
-     if (!mHlsl.empty())
+    if (!mHlsl.empty())
     {
         const std::vector<sh::Varying> *varyings = ShGetVaryings(compiler);
         ASSERT(varyings);
@@ -183,21 +211,25 @@ void ShaderD3D::uncompile()
     mInterfaceBlocks.clear();
     mActiveAttributes.clear();
     mActiveOutputVariables.clear();
+    mDebugInfo.clear();
 }
 
-void ShaderD3D::compileToHLSL(void *compiler, const std::string &source)
+void ShaderD3D::compileToHLSL(const gl::Data &data, void *compiler, const std::string &source)
 {
     // ensure the compiler is loaded
-    initializeCompiler();
+    initializeCompiler(data);
 
     int compileOptions = (SH_OBJECT_CODE | SH_VARIABLES);
     std::string sourcePath;
+
+#if !defined (ANGLE_ENABLE_WINDOWS_STORE)
     if (gl::perfActive())
     {
         sourcePath = getTempPath();
         writeFile(sourcePath.c_str(), source.c_str(), source.length());
         compileOptions |= SH_LINE_DIRECTIVES;
     }
+#endif
 
     int result;
     if (sourcePath.empty())
@@ -220,25 +252,20 @@ void ShaderD3D::compileToHLSL(void *compiler, const std::string &source)
         result = ShCompile(compiler, sourceStrings, ArraySize(sourceStrings), compileOptions | SH_SOURCE_PATH);
     }
 
-    size_t shaderVersion = 100;
-    ShGetInfo(compiler, SH_SHADER_VERSION, &shaderVersion);
+    mShaderVersion = ShGetShaderVersion(compiler);
 
-    mShaderVersion = static_cast<int>(shaderVersion);
-
-    if (shaderVersion == 300 && mRenderer->getCurrentClientVersion() < 3)
+    if (mShaderVersion == 300 && data.clientVersion < 3)
     {
         mInfoLog = "GLSL ES 3.00 is not supported by OpenGL ES 2.0 contexts";
         TRACE("\n%s", mInfoLog.c_str());
     }
     else if (result)
     {
-        size_t objCodeLen = 0;
-        ShGetInfo(compiler, SH_OBJECT_CODE_LENGTH, &objCodeLen);
-
-        char* outputHLSL = new char[objCodeLen];
-        ShGetObjectCode(compiler, outputHLSL);
+        mHlsl = ShGetObjectCode(compiler);
 
 #ifdef _DEBUG
+        // Prefix hlsl shader with commented out glsl shader
+        // Useful in diagnostics tools like pix which capture the hlsl shaders
         std::ostringstream hlslStream;
         hlslStream << "// GLSL\n";
         hlslStream << "//\n";
@@ -254,13 +281,9 @@ void ShaderD3D::compileToHLSL(void *compiler, const std::string &source)
             curPos = (nextLine == std::string::npos) ? std::string::npos : (nextLine + 1);
         }
         hlslStream << "\n\n";
-        hlslStream << outputHLSL;
+        hlslStream << mHlsl;
         mHlsl = hlslStream.str();
-#else
-        mHlsl = outputHLSL;
 #endif
-
-        SafeDeleteArray(outputHLSL);
 
         mUniforms = *GetShaderVariables(ShGetUniforms(compiler));
 
@@ -271,7 +294,7 @@ void ShaderD3D::compileToHLSL(void *compiler, const std::string &source)
             if (uniform.staticUse)
             {
                 unsigned int index = -1;
-                bool result = ShGetUniformRegister(compiler, uniform.name.c_str(), &index);
+                bool result = ShGetUniformRegister(compiler, uniform.name, &index);
                 UNUSED_ASSERTION_VARIABLE(result);
                 ASSERT(result);
 
@@ -288,7 +311,7 @@ void ShaderD3D::compileToHLSL(void *compiler, const std::string &source)
             if (interfaceBlock.staticUse)
             {
                 unsigned int index = -1;
-                bool result = ShGetInterfaceBlockRegister(compiler, interfaceBlock.name.c_str(), &index);
+                bool result = ShGetInterfaceBlockRegister(compiler, interfaceBlock.name, &index);
                 UNUSED_ASSERTION_VARIABLE(result);
                 ASSERT(result);
 
@@ -298,24 +321,19 @@ void ShaderD3D::compileToHLSL(void *compiler, const std::string &source)
     }
     else
     {
-        size_t infoLogLen = 0;
-        ShGetInfo(compiler, SH_INFO_LOG_LENGTH, &infoLogLen);
-
-        char* infoLog = new char[infoLogLen];
-        ShGetInfoLog(compiler, infoLog);
-        mInfoLog = infoLog;
+        mInfoLog = ShGetInfoLog(compiler);
 
         TRACE("\n%s", mInfoLog.c_str());
     }
 }
 
-rx::D3DWorkaroundType ShaderD3D::getD3DWorkarounds() const
+D3DWorkaroundType ShaderD3D::getD3DWorkarounds() const
 {
     if (mUsesDiscardRewriting)
     {
         // ANGLE issue 486:
         // Work-around a D3D9 compiler bug that presents itself when using conditional discard, by disabling optimization
-        return rx::ANGLE_D3D_WORKAROUND_SKIP_OPTIMIZATION;
+        return ANGLE_D3D_WORKAROUND_SKIP_OPTIMIZATION;
     }
 
     if (mUsesNestedBreak)
@@ -323,10 +341,10 @@ rx::D3DWorkaroundType ShaderD3D::getD3DWorkarounds() const
         // ANGLE issue 603:
         // Work-around a D3D9 compiler bug that presents itself when using break in a nested loop, by maximizing optimization
         // We want to keep the use of ANGLE_D3D_WORKAROUND_MAX_OPTIMIZATION minimal to prevent hangs, so usesDiscard takes precedence
-        return rx::ANGLE_D3D_WORKAROUND_MAX_OPTIMIZATION;
+        return ANGLE_D3D_WORKAROUND_MAX_OPTIMIZATION;
     }
 
-    return rx::ANGLE_D3D_WORKAROUND_NONE;
+    return ANGLE_D3D_WORKAROUND_NONE;
 }
 
 // true if varying x has a higher priority in packing than y
@@ -387,19 +405,16 @@ ShShaderOutput ShaderD3D::getCompilerOutputType(GLenum shader)
       default: UNREACHABLE();  return SH_HLSL9_OUTPUT;
     }
 
-    size_t outputType = 0;
-    ShGetInfo(compiler, SH_OUTPUT_TYPE, &outputType);
-
-    return static_cast<ShShaderOutput>(outputType);
+    return ShGetShaderOutputType(compiler);
 }
 
-bool ShaderD3D::compile(const std::string &source)
+bool ShaderD3D::compile(const gl::Data &data, const std::string &source)
 {
     uncompile();
 
     void *compiler = getCompiler();
 
-    compileToHLSL(compiler, source);
+    compileToHLSL(data, compiler, source);
 
     if (mType == GL_VERTEX_SHADER)
     {
@@ -419,6 +434,15 @@ bool ShaderD3D::compile(const std::string &source)
             FilterInactiveVariables(&mActiveOutputVariables);
         }
     }
+
+#if ANGLE_SHADER_DEBUG_INFO == ANGLE_ENABLED
+    mDebugInfo += std::string("// ") + GetShaderTypeString(mType) + " SHADER BEGIN\n";
+    mDebugInfo += "\n// GLSL BEGIN\n\n" + source + "\n\n// GLSL END\n\n\n";
+    mDebugInfo += "// INITIAL HLSL BEGIN\n\n" + getTranslatedSource() + "\n// INITIAL HLSL END\n\n\n";
+    // Successive steps will append more info
+#else
+    mDebugInfo += getTranslatedSource();
+#endif
 
     return !getTranslatedSource().empty();
 }

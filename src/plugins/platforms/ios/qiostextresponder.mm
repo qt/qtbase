@@ -268,8 +268,11 @@
         qImDebug() << "keyboard was closed, clearing focus object";
         m_inputContext->clearCurrentFocusObject();
     } else {
-        // We've lost responder status because another window was made active
-        Q_ASSERT(FirstResponderCandidate::currentCandidate());
+        // We've lost responder status because another Qt window was made active,
+        // another QIOSTextResponder was made first-responder, another UIView was
+        // made first-responder, or the first-responder was cleared globally. In
+        // either of these cases we don't have to do anything.
+        qImDebug() << "lost first responder, but not clearing focus object";
     }
 
     return YES;
@@ -280,21 +283,6 @@
 {
     return qApp->focusWindow() ?
         reinterpret_cast<QUIView *>(qApp->focusWindow()->handle()->winId()) : 0;
-}
-
-/*!
-    iOS uses [UIResponder(Internal) _requiresKeyboardWhenFirstResponder] to check if the
-    current responder should bring up the keyboard, which in turn checks if the responder
-    supports the UIKeyInput protocol. By dynamically reporting our protocol conformance
-    we can control the keyboard visibility depending on whether or not we have a focus
-    object with IME enabled.
-*/
-- (BOOL)conformsToProtocol:(Protocol *)protocol
-{
-    if (protocol == @protocol(UIKeyInput))
-        return m_inputContext->inputMethodAccepted();
-
-    return [super conformsToProtocol:protocol];
 }
 
 // -------------------------------------------------------------------------

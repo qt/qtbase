@@ -141,6 +141,11 @@ int infoPlistValue(NSString* key, int defaultValue)
 @end
 
 @implementation QtFirstResponderEvent
+- (void) dealloc
+{
+    self.firstResponder = 0;
+    [super dealloc];
+}
 @end
 
 

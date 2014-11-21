@@ -1,6 +1,6 @@
-From cb00356bad800ca2397301cb8b79ad0b097bddd8 Mon Sep 17 00:00:00 2001
+From 3a39939b5eba9f788789961c4800ba62618f758c Mon Sep 17 00:00:00 2001
 From: Friedemann Kleint <Friedemann.Kleint@digia.com>
-Date: Tue, 16 Sep 2014 23:43:00 +0300
+Date: Tue, 11 Nov 2014 10:26:32 +0200
 Subject: [PATCH 04/16] Make it possible to link ANGLE statically for
  single-thread use.
 
@@ -11,8 +11,8 @@ Change-Id: Ifab25a820adf5953bb3b09036de53dbf7f1a7fd5
 ---
  src/3rdparty/angle/include/KHR/khrplatform.h |  2 +-
  src/3rdparty/angle/src/libEGL/main.cpp       | 10 ++++++++++
- src/3rdparty/angle/src/libGLESv2/main.cpp    | 10 ++++++++++
- 3 files changed, 21 insertions(+), 1 deletion(-)
+ src/3rdparty/angle/src/libGLESv2/main.cpp    | 10 ++++++++--
+ 3 files changed, 19 insertions(+), 3 deletions(-)
 
 diff --git a/src/3rdparty/angle/include/KHR/khrplatform.h b/src/3rdparty/angle/include/KHR/khrplatform.h
 index c9e6f17..1ac2d3f 100644
@@ -28,7 +28,7 @@ index c9e6f17..1ac2d3f 100644
  #elif defined (__SYMBIAN32__)
  #   define KHRONOS_APICALL IMPORT_C
 diff --git a/src/3rdparty/angle/src/libEGL/main.cpp b/src/3rdparty/angle/src/libEGL/main.cpp
-index 0f8439c..8a1baef 100644
+index d1489f2..e88cad7 100644
 --- a/src/3rdparty/angle/src/libEGL/main.cpp
 +++ b/src/3rdparty/angle/src/libEGL/main.cpp
 @@ -49,6 +49,8 @@ void DeallocateCurrent()
@@ -40,7 +40,7 @@ index 0f8439c..8a1baef 100644
  extern "C" BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, LPVOID reserved)
  {
      switch (reason)
-@@ -100,16 +102,24 @@ extern "C" BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, LPVOID reserved
+@@ -108,16 +110,24 @@ extern "C" BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, LPVOID reserved
      return TRUE;
  }
  
@@ -64,26 +64,27 @@ index 0f8439c..8a1baef 100644
 +#endif
  }
  
- void setCurrentError(EGLint error)
+ void recordError(const Error &error)
 diff --git a/src/3rdparty/angle/src/libGLESv2/main.cpp b/src/3rdparty/angle/src/libGLESv2/main.cpp
-index 4444d1a..1c577bc 100644
+index 3ac00d5..00f63ae 100644
 --- a/src/3rdparty/angle/src/libGLESv2/main.cpp
 +++ b/src/3rdparty/angle/src/libGLESv2/main.cpp
-@@ -46,6 +46,8 @@ void DeallocateCurrent()
+@@ -74,7 +74,7 @@ void DeallocateCurrent()
  
  }
  
-+#ifndef QT_OPENGL_ES_2_ANGLE_STATIC
-+
+-#ifdef ANGLE_PLATFORM_WINDOWS
++#if defined(ANGLE_PLATFORM_WINDOWS) && !defined(QT_OPENGL_ES_2_ANGLE_STATIC)
  extern "C" BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, LPVOID reserved)
  {
      switch (reason)
-@@ -82,16 +84,24 @@ extern "C" BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, LPVOID reserved
+@@ -117,18 +117,24 @@ extern "C" BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, LPVOID reserved
+ 
      return TRUE;
  }
+-#endif
++#endif // ANGLE_PLATFORM_WINDOWS && !QT_OPENGL_ES_2_ANGLE_STATIC
  
-+#endif // !QT_OPENGL_ES_2_ANGLE_STATIC
-+
  namespace gl
  {
  
@@ -104,5 +105,5 @@ index 4444d1a..1c577bc 100644
  
  void makeCurrent(Context *context, egl::Display *display, egl::Surface *surface)
 -- 
-1.9.0.msysgit.0
+1.9.4.msysgit.1
 

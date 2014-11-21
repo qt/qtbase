@@ -529,41 +529,27 @@ qint64 QNativeSocketEngine::write(const char *data, qint64 len)
 qint64 QNativeSocketEngine::readDatagram(char *data, qint64 maxlen, QHostAddress *addr, quint16 *port)
 {
     Q_D(QNativeSocketEngine);
-    if (d->socketType != QAbstractSocket::UdpSocket)
+    if (d->socketType != QAbstractSocket::UdpSocket || d->pendingDatagrams.isEmpty())
         return -1;
 
-    QHostAddress returnAddress;
-    quint16 returnPort;
+    WinRtDatagram datagram = d->pendingDatagrams.takeFirst();
+    if (addr)
+        *addr = datagram.address;
 
-    for (int i = 0; i < d->pendingDatagrams.size(); ++i) {
-        IDatagramSocketMessageReceivedEventArgs *arg = d->pendingDatagrams.at(i);
-        ComPtr<IHostName> remoteHost;
-        HString remoteHostString;
-        HString remotePort;
-        arg->get_RemoteAddress(&remoteHost);
-        arg->get_RemotePort(remotePort.GetAddressOf());
-        remoteHost->get_CanonicalName(remoteHostString.GetAddressOf());
-        returnAddress.setAddress(qt_QStringFromHString(remoteHostString));
-        returnPort = qt_QStringFromHString(remotePort).toInt();
-        ComPtr<IDataReader> reader;
-        arg->GetDataReader(&reader);
-        if (!reader)
-            continue;
+    if (port)
+        *port = datagram.port;
 
-        BYTE buffer[1024];
-        reader->ReadBytes(maxlen, buffer);
-        *addr = returnAddress;
-        *port = returnPort;
-        arg = d->pendingDatagrams.takeFirst();
-        arg->Release();
-
-        // TODO: fill data
-        Q_UNUSED(data);
-        --i;
-        return maxlen;
+    QByteArray readOrigin;
+    // Do not read the whole datagram. Put the rest of it back into the "queue"
+    if (maxlen < datagram.data.length()) {
+        QByteArray readOrigin = datagram.data.left(maxlen);
+        datagram.data = datagram.data.remove(0, maxlen);
+        d->pendingDatagrams.prepend(datagram);
+    } else {
+        readOrigin = datagram.data;
     }
-
-    return -1;
+    strcpy(data, readOrigin);
+    return readOrigin.length();
 }
 
 qint64 QNativeSocketEngine::writeDatagram(const char *data, qint64 len, const QHostAddress &addr, quint16 port)
@@ -609,17 +595,10 @@ bool QNativeSocketEngine::hasPendingDatagrams() const
 qint64 QNativeSocketEngine::pendingDatagramSize() const
 {
     Q_D(const QNativeSocketEngine);
-    qint64 ret = 0;
-    foreach (IDatagramSocketMessageReceivedEventArgs *arg, d->pendingDatagrams) {
-        ComPtr<IDataReader> reader;
-        UINT32 unconsumedBufferLength;
-        arg->GetDataReader(&reader);
-        if (!reader)
-            return -1;
-        reader->get_UnconsumedBufferLength(&unconsumedBufferLength);
-        ret += unconsumedBufferLength;
-    }
-    return ret;
+    if (d->pendingDatagrams.isEmpty())
+        return -1;
+
+    return d->pendingDatagrams.at(0).data.length();
 }
 
 qint64 QNativeSocketEngine::bytesToWrite() const
@@ -1236,7 +1215,32 @@ HRESULT QNativeSocketEnginePrivate::handleNewDatagram(IDatagramSocket *socket, I
 {
     Q_Q(QNativeSocketEngine);
     Q_UNUSED(socket);
-    pendingDatagrams.append(args);
+
+    WinRtDatagram datagram;
+    QHostAddress returnAddress;
+    ComPtr<IHostName> remoteHost;
+    HRESULT hr = args->get_RemoteAddress(&remoteHost);
+    RETURN_OK_IF_FAILED("Could not obtain remote host");
+    HString remoteHostString;
+    remoteHost->get_CanonicalName(remoteHostString.GetAddressOf());
+    RETURN_OK_IF_FAILED("Could not obtain remote host's canonical name");
+    returnAddress.setAddress(qt_QStringFromHString(remoteHostString));
+    datagram.address = returnAddress;
+    HString remotePort;
+    hr = args->get_RemotePort(remotePort.GetAddressOf());
+    RETURN_OK_IF_FAILED("Could not obtain remote port");
+    datagram.port = qt_QStringFromHString(remotePort).toInt();
+
+    ComPtr<IDataReader> reader;
+    hr = args->GetDataReader(&reader);
+    RETURN_OK_IF_FAILED("Could not obtain data reader");
+    quint32 length;
+    hr = reader->get_UnconsumedBufferLength(&length);
+    RETURN_OK_IF_FAILED("Could not obtain unconsumed buffer length");
+    datagram.data.resize(length);
+    hr = reader->ReadBytes(length, reinterpret_cast<BYTE *>(datagram.data.data()));
+    RETURN_OK_IF_FAILED("Could not read datagram");
+    pendingDatagrams.append(datagram);
     emit q->readReady();
 
     return S_OK;

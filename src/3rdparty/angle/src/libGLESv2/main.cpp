@@ -11,24 +11,42 @@
 
 #include "common/tls.h"
 
-#if defined(ANGLE_PLATFORM_WINRT)
-__declspec(thread)
-#endif
-static TLSIndex currentTLS = TLS_OUT_OF_INDEXES;
+static TLSIndex currentTLS = TLS_INVALID_INDEX;
 
 namespace gl
 {
 
+// TODO(kbr): figure out how these are going to be managed on
+// non-Windows platforms. These routines would need to be exported
+// from ANGLE and called cooperatively when users create and destroy
+// threads -- or the initialization of the TLS index, and allocation
+// of thread-local data, will have to be done lazily. Will have to use
+// destructor function with pthread_create_key on POSIX platforms to
+// clean up thread-local data.
+
+// Call this exactly once at process startup.
+bool CreateThreadLocalIndex()
+{
+    currentTLS = CreateTLSIndex();
+    if (currentTLS == TLS_INVALID_INDEX)
+    {
+        return false;
+    }
+    return true;
+}
+
+// Call this exactly once at process shutdown.
+void DestroyThreadLocalIndex()
+{
+    DestroyTLSIndex(currentTLS);
+    currentTLS = TLS_INVALID_INDEX;
+}
+
+// Call this upon thread startup.
 Current *AllocateCurrent()
 {
-#if defined(ANGLE_PLATFORM_WINRT)
-    if (currentTLS == TLS_OUT_OF_INDEXES)
-    {
-        currentTLS = CreateTLSIndex();
-    }
-#endif
-    ASSERT(currentTLS != TLS_OUT_OF_INDEXES);
-    if (currentTLS == TLS_OUT_OF_INDEXES)
+    ASSERT(currentTLS != TLS_INVALID_INDEX);
+    if (currentTLS == TLS_INVALID_INDEX)
     {
         return NULL;
     }
@@ -46,14 +64,9 @@ Current *AllocateCurrent()
     return current;
 }
 
+// Call this upon thread shutdown.
 void DeallocateCurrent()
 {
-#if defined(ANGLE_PLATFORM_WINRT)
-    if (currentTLS == TLS_OUT_OF_INDEXES)
-    {
-        return;
-    }
-#endif
     Current *current = reinterpret_cast<Current*>(GetTLSValue(currentTLS));
     SafeDelete(current);
     SetTLSValue(currentTLS, NULL);
@@ -61,22 +74,21 @@ void DeallocateCurrent()
 
 }
 
-#ifndef QT_OPENGL_ES_2_ANGLE_STATIC
-
+#if defined(ANGLE_PLATFORM_WINDOWS) && !defined(QT_OPENGL_ES_2_ANGLE_STATIC)
 extern "C" BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, LPVOID reserved)
 {
     switch (reason)
     {
       case DLL_PROCESS_ATTACH:
         {
-#if defined(ANGLE_PLATFORM_WINRT) // On WinRT, don't handle TLS from DllMain
-            return DisableThreadLibraryCalls(instance);
-#endif
-            currentTLS = CreateTLSIndex();
-            if (currentTLS == TLS_OUT_OF_INDEXES)
+            if (!gl::CreateThreadLocalIndex())
             {
                 return FALSE;
             }
+
+#ifdef ANGLE_ENABLE_DEBUG_ANNOTATIONS
+            gl::InitializeDebugAnnotations();
+#endif
         }
         // Fall through to initialize index
       case DLL_THREAD_ATTACH:
@@ -91,9 +103,11 @@ extern "C" BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, LPVOID reserved
         break;
       case DLL_PROCESS_DETACH:
         {
-#if !defined(ANGLE_PLATFORM_WINRT)
             gl::DeallocateCurrent();
-            DestroyTLSIndex(currentTLS);
+            gl::DestroyThreadLocalIndex();
+
+#ifdef ANGLE_ENABLE_DEBUG_ANNOTATIONS
+            gl::UninitializeDebugAnnotations();
 #endif
         }
         break;
@@ -103,8 +117,7 @@ extern "C" BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, LPVOID reserved
 
     return TRUE;
 }
-
-#endif // !QT_OPENGL_ES_2_ANGLE_STATIC
+#endif // ANGLE_PLATFORM_WINDOWS && !QT_OPENGL_ES_2_ANGLE_STATIC
 
 namespace gl
 {
@@ -152,7 +165,7 @@ Context *getNonLostContext()
     {
         if (context->isContextLost())
         {
-            gl::error(GL_OUT_OF_MEMORY);
+            context->recordError(Error(GL_OUT_OF_MEMORY, "Context has been lost."));
             return NULL;
         }
         else
@@ -170,32 +183,4 @@ egl::Display *getDisplay()
     return current->display;
 }
 
-// Records an error code
-void error(GLenum errorCode)
-{
-    gl::Context *context = glGetCurrentContext();
-    context->recordError(Error(errorCode));
-
-    switch (errorCode)
-    {
-      case GL_INVALID_ENUM:
-        TRACE("\t! Error generated: invalid enum\n");
-        break;
-      case GL_INVALID_VALUE:
-        TRACE("\t! Error generated: invalid value\n");
-        break;
-      case GL_INVALID_OPERATION:
-        TRACE("\t! Error generated: invalid operation\n");
-        break;
-      case GL_OUT_OF_MEMORY:
-        TRACE("\t! Error generated: out of memory\n");
-        break;
-      case GL_INVALID_FRAMEBUFFER_OPERATION:
-        TRACE("\t! Error generated: invalid framebuffer operation\n");
-        break;
-      default: UNREACHABLE();
-    }
 }
-
-}
-

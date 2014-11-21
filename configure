@@ -3157,6 +3157,7 @@ if [ "$XPLATFORM_IOS" = "yes" ]; then
     CFG_NOBUILD_PARTS="$CFG_NOBUILD_PARTS examples"
     CFG_SHARED="no" # iOS builds should be static to be able to submit to the App Store
     CFG_SKIP_MODULES="$CFG_SKIP_MODULES qtconnectivity qtdoc qtmacextras qtserialport qtwebkit qtwebkit-examples"
+    CFG_PRECOMPILE="no" # Precompiled headers not supported with multiple -arch arguments
 
     # If the user passes -sdk on the command line we build a SDK-specific Qt build.
     # Otherwise we build a joined simulator and device build, which is the default.
@@ -5788,7 +5789,11 @@ fi
 [ '!' -z "$INCLUDES" ] && QMakeVar add INCLUDEPATH "$INCLUDES"
 [ '!' -z "$L_FLAGS" ] && QMakeVar add LIBS "$L_FLAGS"
 
-if [ -z "`getXQMakeConf 'QMAKE_(LFLAGS_)?RPATH'`" ]; then
+if [ "$XPLATFORM_MAC" = "yes" ] && [ "$QT_CROSS_COMPILE" = "no" ]; then
+    if [ "$CFG_RPATH" = "yes" ]; then
+       QMAKE_CONFIG="$QMAKE_CONFIG absolute_library_soname"
+    fi
+elif [ -z "`getXQMakeConf 'QMAKE_(LFLAGS_)?RPATH'`" ]; then
     if [ -n "$RPATH_FLAGS" ]; then
         echo
         echo "ERROR: -R cannot be used on this platform as \$QMAKE_LFLAGS_RPATH is"

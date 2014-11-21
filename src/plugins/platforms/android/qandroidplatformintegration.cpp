@@ -78,10 +78,24 @@ void *QAndroidPlatformNativeInterface::nativeResourceForIntegration(const QByteA
         return QtAndroid::javaVM();
     if (resource == "QtActivity")
         return QtAndroid::activity();
-    if (resource == "AndroidStylePalettes")
-        return &m_palettes;
-    if (resource == "AndroidStyleFonts")
-        return &m_fonts;
+    if (resource == "AndroidStyleData") {
+        if (m_androidStyle)
+            return &m_androidStyle->m_styleData;
+        else
+            return Q_NULLPTR;
+    }
+    if (resource == "AndroidStandardPalette") {
+        if (m_androidStyle)
+            return &m_androidStyle->m_standardPalette;
+        else
+            return Q_NULLPTR;
+    }
+    if (resource == "AndroidQWidgetFonts") {
+        if (m_androidStyle)
+            return &m_androidStyle->m_QWidgetsFonts;
+        else
+            return Q_NULLPTR;
+    }
     if (resource == "AndroidDeviceName") {
         static QString deviceName = QtAndroid::deviceName();
         return &deviceName;

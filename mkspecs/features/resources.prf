@@ -11,7 +11,7 @@ rcc.name = RCC ${QMAKE_FILE_IN}
 rcc.depend_command = $$QMAKE_RCC_DEP -list $$QMAKE_RESOURCE_FLAGS ${QMAKE_FILE_IN}
 rcc.CONFIG += add_inputs_as_makefile_deps
 
-resources_small|ltcg|macx-xcode|contains(TEMPLATE, "vc.*") {
+!resources_big|ltcg|macx-xcode|contains(TEMPLATE, "vc.*") {
 
 rcc.output = $$RCC_DIR/$${first(QMAKE_MOD_RCC)}_${QMAKE_FILE_BASE}$${first(QMAKE_EXT_CPP)}
 rcc.commands = $$QMAKE_RCC $$QMAKE_RESOURCE_FLAGS ${QMAKE_FILE_IN} -o ${QMAKE_FILE_OUT}

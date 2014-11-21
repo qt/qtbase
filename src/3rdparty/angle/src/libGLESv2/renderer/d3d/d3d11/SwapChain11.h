@@ -19,13 +19,13 @@ class Renderer11;
 class SwapChain11 : public SwapChain
 {
   public:
-    SwapChain11(Renderer11 *renderer, EGLNativeWindowType window, HANDLE shareHandle,
+    SwapChain11(Renderer11 *renderer, NativeWindow nativeWindow, HANDLE shareHandle,
                 GLenum backBufferFormat, GLenum depthBufferFormat);
     virtual ~SwapChain11();
 
     EGLint resize(EGLint backbufferWidth, EGLint backbufferHeight);
     virtual EGLint reset(EGLint backbufferWidth, EGLint backbufferHeight, EGLint swapInterval);
-    virtual EGLint swapRect(EGLint x, EGLint y, EGLint width, EGLint height, EGLint flags);
+    virtual EGLint swapRect(EGLint x, EGLint y, EGLint width, EGLint height);
     virtual void recreate();
 
     virtual ID3D11Texture2D *getOffscreenTexture();
@@ -52,13 +52,13 @@ class SwapChain11 : public SwapChain
     Renderer11 *mRenderer;
     EGLint mHeight;
     EGLint mWidth;
-    EGLint mViewportWidth;
-    EGLint mViewportHeight;
+    bool mRotateL;
+    bool mRotateR;
     bool mAppCreatedShareHandle;
     unsigned int mSwapInterval;
     bool mPassThroughResourcesInit;
 
-    IDXGISwapChain *mSwapChain;
+    DXGISwapChain *mSwapChain;
 
     ID3D11Texture2D *mBackBufferTexture;
     ID3D11RenderTargetView *mBackBufferRTView;

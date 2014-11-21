@@ -38,7 +38,6 @@
 #include <QFile>
 #include <QFont>
 #include <QApplication>
-#include <QTime>
 #include <qdrawutil.h>
 #include <QPixmapCache>
 #include <QFileInfo>
@@ -55,55 +54,8 @@
 QT_BEGIN_NAMESPACE
 
 namespace {
-    const int textStyle_bold = 1;
-    const int textStyle_italic = 2;
-
-    const int typeface_sans = 1;
-    const int typeface_serif = 2;
-    const int typeface_monospace = 3;
-
     const quint32 NO_COLOR = 1;
     const quint32 TRANSPARENT_COLOR = 0;
-}
-
-static int fontType(const QString &androidControl)
-{
-    if (androidControl == QLatin1String("textViewStyle"))
-        return QPlatformTheme::SystemFont;
-    else if (androidControl == QLatin1String("buttonStyle"))
-        return QPlatformTheme::PushButtonFont;
-    else if (androidControl == QLatin1String("checkboxStyle"))
-        return QPlatformTheme::CheckBoxFont;
-    else if (androidControl == QLatin1String("radioButtonStyle"))
-        return QPlatformTheme::RadioButtonFont;
-    else if (androidControl == QLatin1String("simple_list_item_single_choice"))
-        return QPlatformTheme::ItemViewFont;
-    else if (androidControl == QLatin1String("simple_spinner_dropdown_item"))
-        return QPlatformTheme::ComboMenuItemFont;
-    else if (androidControl == QLatin1String("spinnerStyle"))
-        return QPlatformTheme::ComboLineEditFont;
-    else if (androidControl == QLatin1String("simple_list_item"))
-        return QPlatformTheme::ListViewFont;
-    return -1;
-}
-
-static int paletteType(const QString &androidControl)
-{
-    if (androidControl == QLatin1String("textViewStyle"))
-        return QPlatformTheme::SystemPalette;
-    else if (androidControl == QLatin1String("buttonStyle"))
-        return QPlatformTheme::ButtonPalette;
-    else if (androidControl == QLatin1String("checkboxStyle"))
-        return QPlatformTheme::CheckBoxPalette;
-    else if (androidControl == QLatin1String("radioButtonStyle"))
-        return QPlatformTheme::RadioButtonPalette;
-    else if (androidControl == QLatin1String("simple_list_item_single_choice"))
-        return QPlatformTheme::ItemViewPalette;
-    else if (androidControl == QLatin1String("editTextStyle"))
-        return QPlatformTheme::TextLineEditPalette;
-    else if (androidControl == QLatin1String("spinnerStyle"))
-        return QPlatformTheme::ComboBoxPalette;
-    return -1;
 }
 
 QAndroidStyle::QAndroidStyle()
@@ -111,49 +63,24 @@ QAndroidStyle::QAndroidStyle()
 {
     QPixmapCache::clear();
     checkBoxControl = NULL;
-    QString stylePath(QLatin1String(qgetenv("MINISTRO_ANDROID_STYLE_PATH")));
-    const QLatin1Char slashChar('/');
-    if (!stylePath.isEmpty() && !stylePath.endsWith(slashChar))
-        stylePath += slashChar;
-
-    QString androidTheme = QLatin1String(qgetenv("QT_ANDROID_THEME"));
-    if (!androidTheme.isEmpty() && !androidTheme.endsWith(slashChar))
-        androidTheme += slashChar;
-
-    if (stylePath.isEmpty()) {
-        stylePath = QLatin1String("/data/data/org.kde.necessitas.ministro/files/dl/style/")
-                  + QLatin1String(qgetenv("QT_ANDROID_THEME_DISPLAY_DPI")) + slashChar;
-    }
-    Q_ASSERT(!stylePath.isEmpty());
-
-    if (!androidTheme.isEmpty() && QFileInfo(stylePath + androidTheme + QLatin1String("style.json")).exists())
-        stylePath += androidTheme;
-
-    QFile f(stylePath + QLatin1String("style.json"));
-    if (!f.open(QIODevice::ReadOnly))
-        return;
-
-    QJsonParseError error;
-    QJsonDocument document = QJsonDocument::fromJson(f.readAll(), &error);
-    if (document.isNull()) {
-        qCritical() << error.errorString();
-        return;
-    }
-
-    if (!document.isObject()) {
-        qCritical() << "Style.json does not contain a valid style.";
-        return;
-    }
-
     QPlatformNativeInterface *nativeInterface = QGuiApplication::platformNativeInterface();
+    QPalette *standardPalette = reinterpret_cast<QPalette *>(nativeInterface->nativeResourceForIntegration("AndroidStandardPalette"));
+    if (standardPalette)
+        m_standardPalette = *standardPalette;
 
-    QHash<int, QPalette> *palettes = reinterpret_cast<QHash<int, QPalette> *>(nativeInterface->nativeResourceForIntegration("AndroidStylePalettes"));
-    QHash<int, QFont> *fonts = reinterpret_cast<QHash<int, QFont> *>(nativeInterface->nativeResourceForIntegration("AndroidStyleFonts"));
-    palettes->clear();
-    fonts->clear();
-    QJsonObject object = document.object();
-    for (QJsonObject::const_iterator objectIterator = object.constBegin();
-         objectIterator != object.constEnd();
+    QHash<QByteArray, QFont> *qwidgetsFonts = reinterpret_cast<QHash<QByteArray, QFont> *>(nativeInterface->nativeResourceForIntegration("AndroidQWidgetFonts"));
+    if (qwidgetsFonts) {
+        for (auto it = qwidgetsFonts->constBegin(); it != qwidgetsFonts->constEnd(); ++it)
+            QApplication::setFont(it.value(), it.key());
+        qwidgetsFonts->clear(); // free the memory
+    }
+
+    QJsonObject *object = reinterpret_cast<QJsonObject *>(nativeInterface->nativeResourceForIntegration("AndroidStyleData"));
+    if (!object)
+        return;
+
+    for (QJsonObject::const_iterator objectIterator = object->constBegin();
+         objectIterator != object->constEnd();
          ++objectIterator) {
         QString key = objectIterator.key();
         QJsonValue value = objectIterator.value();
@@ -163,85 +90,6 @@ QAndroidStyle::QAndroidStyle()
         }
 
         QJsonObject item = value.toObject();
-        QJsonObject::const_iterator attributeIterator = item.find(QLatin1String("qtClass"));
-        QString qtClassName;
-        if (attributeIterator != item.constEnd()) {
-            // The item has palette and font information for a specific Qt Class (e.g. QWidget, QPushButton, etc.)
-            qtClassName = attributeIterator.value().toString();
-        }
-        const int ft = fontType(key);
-        if (ft > -1 || !qtClassName.isEmpty()) {
-            // Extract font information
-            QFont font;
-
-            // Font size (in pixels)
-            attributeIterator = item.find(QLatin1String("TextAppearance_textSize"));
-            if (attributeIterator != item.constEnd())
-                font.setPixelSize(int(attributeIterator.value().toDouble()));
-
-            // Font style
-            attributeIterator = item.find(QLatin1String("TextAppearance_textStyle"));
-            if (attributeIterator != item.constEnd()) {
-                const int style = int(attributeIterator.value().toDouble());
-                font.setBold(style & textStyle_bold);
-                font.setItalic(style & textStyle_italic);
-            }
-
-            // Font typeface
-            attributeIterator = item.find(QLatin1String("TextAppearance_typeface"));
-            if (attributeIterator != item.constEnd()) {
-                QFont::StyleHint styleHint = QFont::AnyStyle;
-                switch (int(attributeIterator.value().toDouble())) {
-                case typeface_sans:
-                    styleHint = QFont::SansSerif;
-                    break;
-                case typeface_serif:
-                    styleHint = QFont::Serif;
-                    break;
-                case typeface_monospace:
-                    styleHint = QFont::Monospace;
-                    break;
-                }
-                font.setStyleHint(styleHint, QFont::PreferMatch);
-            }
-            if (!qtClassName.isEmpty())
-                QApplication::setFont(font, qtClassName.toUtf8());
-            if (ft > -1)
-                fonts->insert(ft, font);
-            // Extract font information
-        }
-
-        const int pt = paletteType(key);
-        if (pt > -1 || !qtClassName.isEmpty()) {
-            // Extract palette information
-            QPalette palette;
-            attributeIterator = item.find(QLatin1String("defaultTextColorPrimary"));
-            if (attributeIterator != item.constEnd())
-                palette.setColor(QPalette::WindowText, QRgb(int(attributeIterator.value().toDouble())));
-
-            attributeIterator = item.find(QLatin1String("defaultBackgroundColor"));
-            if (attributeIterator != item.constEnd())
-                palette.setColor(QPalette::Background, QRgb(int(attributeIterator.value().toDouble())));
-
-            attributeIterator = item.find(QLatin1String("TextAppearance_textColor"));
-            if (attributeIterator != item.constEnd())
-                setPaletteColor(attributeIterator.value().toObject().toVariantMap(), palette, QPalette::WindowText);
-
-            attributeIterator = item.find(QLatin1String("TextAppearance_textColorLink"));
-            if (attributeIterator != item.constEnd())
-                setPaletteColor(attributeIterator.value().toObject().toVariantMap(), palette, QPalette::Link);
-
-            attributeIterator = item.find(QLatin1String("TextAppearance_textColorHighlight"));
-            if (attributeIterator != item.constEnd())
-                palette.setColor(QPalette::Highlight, QRgb(int(attributeIterator.value().toDouble())));
-
-            if (QLatin1String("QWidget") == qtClassName)
-                m_standardPalette = palette;
-
-            if (pt > -1)
-                palettes->insert(pt, palette);
-            // Extract palette information
-        }
         QAndroidStyle::ItemType itemType = qtControl(key);
         if (QC_UnknownType == itemType)
             continue;
@@ -277,86 +125,12 @@ QAndroidStyle::QAndroidStyle()
             break;
         }
     }
+    *object = QJsonObject(); // free memory
 }
 
 QAndroidStyle::~QAndroidStyle()
 {
     qDeleteAll(m_androidControlsHash);
-}
-
-
-void QAndroidStyle::setPaletteColor(const QVariantMap &object,
-                                    QPalette &palette,
-                                    QPalette::ColorRole role)
-{
-    // QPalette::Active -> ENABLED_FOCUSED_WINDOW_FOCUSED_STATE_SET
-    palette.setColor(QPalette::Active,
-                     role,
-                     QRgb(object.value(QLatin1String("ENABLED_FOCUSED_WINDOW_FOCUSED_STATE_SET")).toInt()));
-
-    // QPalette::Inactive -> ENABLED_STATE_SET
-    palette.setColor(QPalette::Inactive,
-                     role,
-                     QRgb(object.value(QLatin1String("ENABLED_STATE_SET")).toInt()));
-
-    // QPalette::Disabled -> EMPTY_STATE_SET
-    palette.setColor(QPalette::Disabled,
-                     role,
-                     QRgb(object.value(QLatin1String("EMPTY_STATE_SET")).toInt()));
-
-    palette.setColor(QPalette::Current, role, palette.color(QPalette::Active, role));
-
-    if (role == QPalette::WindowText) {
-        // QPalette::BrightText -> PRESSED
-        // QPalette::Active -> PRESSED_ENABLED_FOCUSED_WINDOW_FOCUSED_STATE_SET
-        palette.setColor(QPalette::Active,
-                         QPalette::BrightText,
-                         QRgb(object.value(QLatin1String("PRESSED_ENABLED_FOCUSED_WINDOW_FOCUSED_STATE_SET")).toInt()));
-
-        // QPalette::Inactive -> PRESSED_ENABLED_STATE_SET
-        palette.setColor(QPalette::Inactive,
-                         QPalette::BrightText,
-                         QRgb(object.value(QLatin1String("PRESSED_ENABLED_STATE_SET")).toInt()));
-
-        // QPalette::Disabled -> PRESSED_STATE_SET
-        palette.setColor(QPalette::Disabled,
-                         QPalette::BrightText,
-                         QRgb(object.value(QLatin1String("PRESSED_STATE_SET")).toInt()));
-
-        palette.setColor(QPalette::Current, QPalette::BrightText, palette.color(QPalette::Active, QPalette::BrightText));
-
-        // QPalette::HighlightedText -> SELECTED
-        // QPalette::Active -> ENABLED_SELECTED_WINDOW_FOCUSED_STATE_SET
-        palette.setColor(QPalette::Active,
-                         QPalette::HighlightedText,
-                         QRgb(object.value(QLatin1String("ENABLED_SELECTED_WINDOW_FOCUSED_STATE_SET")).toInt()));
-
-        // QPalette::Inactive -> ENABLED_SELECTED_STATE_SET
-        palette.setColor(QPalette::Inactive,
-                         QPalette::HighlightedText,
-                         QRgb(object.value(QLatin1String("ENABLED_SELECTED_STATE_SET")).toInt()));
-
-        // QPalette::Disabled -> SELECTED_STATE_SET
-        palette.setColor(QPalette::Disabled,
-                         QPalette::HighlightedText,
-                         QRgb(object.value(QLatin1String("SELECTED_STATE_SET")).toInt()));
-
-        palette.setColor(QPalette::Current,
-                         QPalette::HighlightedText,
-                         palette.color(QPalette::Active, QPalette::HighlightedText));
-
-        // Same colors for Text
-        palette.setColor(QPalette::Active, QPalette::Text, palette.color(QPalette::Active, role));
-        palette.setColor(QPalette::Inactive, QPalette::Text, palette.color(QPalette::Inactive, role));
-        palette.setColor(QPalette::Disabled, QPalette::Text, palette.color(QPalette::Disabled, role));
-        palette.setColor(QPalette::Current, QPalette::Text, palette.color(QPalette::Current, role));
-
-        // And for ButtonText
-        palette.setColor(QPalette::Active, QPalette::ButtonText, palette.color(QPalette::Active, role));
-        palette.setColor(QPalette::Inactive, QPalette::ButtonText, palette.color(QPalette::Inactive, role));
-        palette.setColor(QPalette::Disabled, QPalette::ButtonText, palette.color(QPalette::Disabled, role));
-        palette.setColor(QPalette::Current, QPalette::ButtonText, palette.color(QPalette::Current, role));
-    }
 }
 
 QAndroidStyle::ItemType QAndroidStyle::qtControl(const QString &android)
@@ -469,6 +243,10 @@ QAndroidStyle::ItemType QAndroidStyle::qtControl(QStyle::PrimitiveElement primit
     case QStyle::PE_PanelLineEdit:
     case QStyle::PE_FrameLineEdit:
         return QC_EditText;
+
+    case QStyle::PE_IndicatorViewItemCheck:
+    case QStyle::PE_IndicatorCheckBox:
+        return QC_Checkbox;
 
     case QStyle::PE_FrameWindow:
     case QStyle::PE_Widget:
@@ -583,37 +361,8 @@ void QAndroidStyle::drawControl(QStyle::ControlElement element,
             }
             break;
         default:
-            break;
-        }
-    } else if (element == CE_ItemViewItem) {
-        const QStyleOptionViewItem *vopt = qstyleoption_cast<const QStyleOptionViewItem *>(opt);
-        if (vopt && vopt->features & QStyleOptionViewItem::HasCheckIndicator) {
-            p->save();
-            p->setClipRect(opt->rect);
-
-            QRect checkRect = proxy()->subElementRect(SE_ItemViewItemCheckIndicator, vopt, w);
-
-            // draw the background
-            proxy()->drawPrimitive(PE_PanelItemViewItem, opt, p, w);
-
-            // draw the check mark
-            QStyleOptionViewItem option(*vopt);
-            option.rect = checkRect;
-            option.state = option.state & ~QStyle::State_HasFocus;
-
-            switch (vopt->checkState) {
-            case Qt::Unchecked:
-                option.state |= QStyle::State_Off;
-                break;
-            default:
-                option.state |= QStyle::State_On;
-                break;
-            }
-            QPixmap pixmap = checkBoxControl->imgCheckBox(&option);
-            p->drawPixmap(checkRect, pixmap);
-            p->restore();
-        } else {
             QFusionStyle::drawControl(element, opt, p, w);
+            break;
         }
     } else {
         QFusionStyle::drawControl(element, opt, p, w);
@@ -758,7 +507,7 @@ QRect QAndroidStyle::subControlRect(ComplexControl cc,
         case CC_GroupBox: {
             if (const QStyleOptionGroupBox *groupBox = qstyleoption_cast<const QStyleOptionGroupBox *>(opt)) {
                 QSize textSize = opt->fontMetrics.boundingRect(groupBox->text).size() + QSize(2, 2);
-                QSize checkBoxSize = checkBoxControl->sizeCheckBox(opt);
+                QSize checkBoxSize = checkBoxControl->size(opt);
                 int indicatorWidth = checkBoxSize.width();
                 int indicatorHeight = checkBoxSize.height();
                 QRect checkBoxRect;
@@ -815,9 +564,9 @@ int QAndroidStyle::pixelMetric(PixelMetric metric, const QStyleOption *option,
     case PM_ScrollBarExtent:
         return 0;
     case PM_IndicatorWidth:
-        return checkBoxControl->sizeCheckBox(option).width();
+        return checkBoxControl->size(option).width();
     case PM_IndicatorHeight:
-        return checkBoxControl->sizeCheckBox(option).height();
+        return checkBoxControl->size(option).height();
     default:
         return QFusionStyle::pixelMetric(metric, option, widget);
     }
@@ -834,7 +583,7 @@ QSize QAndroidStyle::sizeFromContents(ContentsType ct,
         if (const QStyleOptionHeader *hdr = qstyleoption_cast<const QStyleOptionHeader *>(opt)) {
             bool nullIcon = hdr->icon.isNull();
             int margin = pixelMetric(QStyle::PM_HeaderMargin, hdr, w);
-            int iconSize = nullIcon ? 0 : checkBoxControl->sizeCheckBox(opt).width();
+            int iconSize = nullIcon ? 0 : checkBoxControl->size(opt).width();
             QSize txt;
 /*
  * These next 4 lines are a bad hack to fix a bug in case a QStyleSheet is applied at QApplication level.
@@ -868,7 +617,7 @@ QSize QAndroidStyle::sizeFromContents(ContentsType ct,
     if (ct == CT_GroupBox) {
         if (const QStyleOptionGroupBox *groupBox = qstyleoption_cast<const QStyleOptionGroupBox *>(opt)) {
             QSize textSize = opt->fontMetrics.boundingRect(groupBox->text).size() + QSize(2, 2);
-            QSize checkBoxSize = checkBoxControl->sizeCheckBox(opt);
+            QSize checkBoxSize = checkBoxControl->size(opt);
             int indicatorWidth = checkBoxSize.width();
             int indicatorHeight = checkBoxSize.height();
             QRect checkBoxRect;
@@ -964,13 +713,6 @@ QSize QAndroidStyle::AndroidDrawable::size() const
 
     return QSize();
 }
-QPixmap QAndroidStyle::AndroidDrawable::img() const
-{
-    if (type() == Image || type() == NinePatch)
-        return static_cast<const QAndroidStyle::AndroidImageDrawable *>(this)->img();
-
-    return QPixmap();
-}
 
 QAndroidStyle::AndroidDrawable * QAndroidStyle::AndroidDrawable::fromMap(const QVariantMap &drawable,
                                                                          ItemType itemType)
@@ -1036,19 +778,7 @@ void QAndroidStyle::AndroidImageDrawable::draw(QPainter *painter, const QStyleOp
         QPixmapCache::insert(m_hashKey, pm);
     }
 
-    painter->drawPixmap(opt->rect.x(), (opt->rect.height() - pm.height()) / 2, pm);
-}
-QPixmap QAndroidStyle::AndroidImageDrawable::img() const
-{
-    if (m_hashKey.isEmpty())
-        m_hashKey = QFileInfo(m_filePath).fileName();
-
-    QPixmap pm;
-    if (!QPixmapCache::find(m_hashKey, &pm)) {
-        pm.load(m_filePath);
-        QPixmapCache::insert(m_hashKey, pm);
-    }
-    return pm;
+    painter->drawPixmap(opt->rect.x(), opt->rect.y() + (opt->rect.height() - pm.height()) / 2, pm);
 }
 
 QSize QAndroidStyle::AndroidImageDrawable::size() const
@@ -1446,14 +1176,6 @@ QSize QAndroidStyle::AndroidStateDrawable::sizeImage(const QStyleOption *opt) co
         s = drawable->size();
     return s;
 }
-QPixmap QAndroidStyle::AndroidStateDrawable::img(const QStyleOption *opt) const
-{
-    QPixmap pm;
-    const AndroidDrawable *drawable = bestAndroidStateMatch(opt);
-    if (drawable)
-        pm = drawable->img();
-    return pm;
-}
 
 const QAndroidStyle::AndroidDrawable * QAndroidStyle::AndroidStateDrawable::bestAndroidStateMatch(const QStyleOption *opt) const
 {
@@ -1733,7 +1455,6 @@ QRect QAndroidStyle::AndroidControl::subElementRect(QStyle::SubElement /* subEle
         return visualRect(option->direction, option->rect, r);
     }
     return option->rect;
-
 }
 
 QRect QAndroidStyle::AndroidControl::subControlRect(const QStyleOptionComplex *option,
@@ -1778,6 +1499,16 @@ QMargins QAndroidStyle::AndroidControl::padding()
     return QMargins();
 }
 
+QSize QAndroidStyle::AndroidControl::size(const QStyleOption *option)
+{
+    if (const AndroidDrawable *drawable = backgroundDrawable()) {
+        if (drawable->type() == State)
+            drawable = static_cast<const AndroidStateDrawable *>(backgroundDrawable())->bestAndroidStateMatch(option);
+        return drawable->size();
+    }
+    return QSize();
+}
+
 const QAndroidStyle::AndroidDrawable *QAndroidStyle::AndroidControl::backgroundDrawable() const
 {
     return m_background;
@@ -1788,11 +1519,12 @@ QAndroidStyle::AndroidCompoundButtonControl::AndroidCompoundButtonControl(const 
     : AndroidControl(control, itemType)
 {
     QVariantMap::const_iterator it = control.find(QLatin1String("CompoundButton_button"));
-    if (it != control.end())
+    if (it != control.end()) {
         m_button = AndroidDrawable::fromMap(it.value().toMap(), itemType);
-    else
+        const_cast<AndroidDrawable *>(m_button)->setPaddingLeftToSizeWidth();
+    } else {
         m_button = 0;
-    const_cast<AndroidDrawable *>(m_button)->setPaddingLeftToSizeWidth();
+    }
 }
 
 QAndroidStyle::AndroidCompoundButtonControl::~AndroidCompoundButtonControl()
@@ -1808,16 +1540,24 @@ void QAndroidStyle::AndroidCompoundButtonControl::drawControl(const QStyleOption
     if (m_button)
         m_button->draw(p, opt);
 }
-QSize QAndroidStyle::AndroidCompoundButtonControl::sizeCheckBox(const QStyleOption *opt) const
+
+QMargins QAndroidStyle::AndroidCompoundButtonControl::padding()
 {
-    const AndroidDrawable *drawable = m_button;
-    return static_cast<const QAndroidStyle::AndroidStateDrawable *>(drawable)->sizeImage(opt);
+    if (m_button)
+        return m_button->padding();
+    return AndroidControl::padding();
 }
-QPixmap QAndroidStyle::AndroidCompoundButtonControl::imgCheckBox(const QStyleOption *opt) const
+
+QSize QAndroidStyle::AndroidCompoundButtonControl::size(const QStyleOption *option)
 {
-    const AndroidDrawable *drawable = m_button;
-    return static_cast<const QAndroidStyle::AndroidStateDrawable *>(drawable)->img(opt);
+    if (m_button) {
+        if (m_button->type() == State)
+            return static_cast<const AndroidStateDrawable *>(m_button)->bestAndroidStateMatch(option)->size();
+        return m_button->size();
+    }
+    return AndroidControl::size(option);
 }
+
 const QAndroidStyle::AndroidDrawable * QAndroidStyle::AndroidCompoundButtonControl::backgroundDrawable() const
 {
     return m_background ? m_background : m_button;
@@ -1908,7 +1648,6 @@ QRect QAndroidStyle::AndroidProgressBarControl::subElementRect(QStyle::SubElemen
         p |= QRect(padding.left(), padding.top(), padding.right() - padding.left(), padding.bottom() - padding.top());
         padding = m_progressDrawable->padding();
         p |= QRect(padding.left(), padding.top(), padding.right() - padding.left(), padding.bottom() - padding.top());
-
         QRect r = option->rect.adjusted(p.left(), p.top(), -p.right(), -p.bottom());
 
         if (horizontal) {
@@ -1991,15 +1730,15 @@ void QAndroidStyle::AndroidSeekBarControl::drawControl(const QStyleOption *optio
         if (drawable->type() == State)
             drawable = static_cast<const QAndroidStyle::AndroidStateDrawable *>(m_seekBarThumb)->bestAndroidStateMatch(option);
         QStyleOption copy(*option);
-        copy.rect.setY((copy.rect.height() - m_minSize.height()) / 2);
-        copy.rect.setHeight(m_minSize.height());
+        copy.rect.setHeight(m_progressDrawable->size().height());
         copy.rect.setWidth(copy.rect.width() - drawable->size().width());
-        copy.rect.translate(drawable->size().width() / 2, 0);
+        const int yTranslate = abs(drawable->size().height() - copy.rect.height()) / 2;
+        copy.rect.translate(drawable->size().width() / 2, yTranslate);
         m_progressDrawable->draw(p, &copy);
         if (styleOption->orientation == Qt::Vertical)
             qCritical() << "Vertical slider are not supported";
-        int pos = copy.rect.width()*factor - drawable->size().width() / 2;
-        copy.rect.translate(pos, 0);
+        int pos = copy.rect.width() * factor - drawable->size().width() / 2;
+        copy.rect.translate(pos, -yTranslate);
         copy.rect.setSize(drawable->size());
         m_seekBarThumb->draw(p, &copy);
     }

@@ -11,28 +11,24 @@
 #define LIBGLESV2_RENDERER_SWAPCHAIN_H_
 
 #include "common/angleutils.h"
+#include "common/NativeWindow.h"
 #include "common/platform.h"
 
 #include <GLES2/gl2.h>
 #include <EGL/egl.h>
-#include <EGL/eglplatform.h>
+
+#if !defined(ANGLE_FORCE_VSYNC_OFF)
+#define ANGLE_FORCE_VSYNC_OFF 0
+#endif
 
 namespace rx
 {
 
-enum SwapFlags
-{
-    SWAP_NORMAL = 0,
-    SWAP_ROTATE_90 = 1,
-    SWAP_ROTATE_270 = 2,
-    SWAP_ROTATE_180 = SWAP_ROTATE_90|SWAP_ROTATE_270,
-};
-
 class SwapChain
 {
   public:
-    SwapChain(EGLNativeWindowType window, HANDLE shareHandle, GLenum backBufferFormat, GLenum depthBufferFormat)
-        : mWindow(window), mShareHandle(shareHandle), mBackBufferFormat(backBufferFormat), mDepthBufferFormat(depthBufferFormat)
+    SwapChain(rx::NativeWindow nativeWindow, HANDLE shareHandle, GLenum backBufferFormat, GLenum depthBufferFormat)
+        : mNativeWindow(nativeWindow), mShareHandle(shareHandle), mBackBufferFormat(backBufferFormat), mDepthBufferFormat(depthBufferFormat)
     {
     }
 
@@ -40,13 +36,16 @@ class SwapChain
 
     virtual EGLint resize(EGLint backbufferWidth, EGLint backbufferSize) = 0;
     virtual EGLint reset(EGLint backbufferWidth, EGLint backbufferHeight, EGLint swapInterval) = 0;
-    virtual EGLint swapRect(EGLint x, EGLint y, EGLint width, EGLint height, EGLint flags) = 0;
+    virtual EGLint swapRect(EGLint x, EGLint y, EGLint width, EGLint height) = 0;
     virtual void recreate() = 0;
+
+    GLenum GetBackBufferInternalFormat() const { return mBackBufferFormat; }
+    GLenum GetDepthBufferInternalFormat() const { return mDepthBufferFormat; }
 
     virtual HANDLE getShareHandle() {return mShareHandle;};
 
   protected:
-    const EGLNativeWindowType mWindow;            // Window that the surface is created for.
+    rx::NativeWindow mNativeWindow;  // Handler for the Window that the surface is created for.
     const GLenum mBackBufferFormat;
     const GLenum mDepthBufferFormat;
 

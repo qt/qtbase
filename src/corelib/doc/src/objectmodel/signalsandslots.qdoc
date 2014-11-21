@@ -242,7 +242,7 @@
 
     By default, for every connection you make, a signal is emitted;
     two signals are emitted for duplicate connections. You can break
-    all of these connections with a single disconnect() call.
+    all of these connections with a single \l{QObject::disconnect()}{disconnect()} call.
     If you pass the Qt::UniqueConnection \a type, the connection will only
     be made if it is not a duplicate. If there is already a duplicate
     (exact same signal to the exact same slot on the same objects),
@@ -251,9 +251,7 @@
     This example illustrates that objects can work together without needing to
     know any information about each other. To enable this, the objects only
     need to be connected together, and this can be achieved with some simple
-    QObject::connect() function calls, or with \c{uic}'s
-    \l{Using a Designer UI File in Your Application#Automatic Connections}
-    {automatic connections} feature.
+    QObject::connect() function calls, or with \c{uic}'s {automatic connections} feature.
 
 
     \section1 A Real Example
@@ -354,7 +352,7 @@
     connect(sender, &QObject::destroyed, this, &MyObject::objectDestroyed);
     \endcode
 
-    There are several advantages to using connect() with function pointers.
+    There are several advantages to using QObject::connect() with function pointers.
     First, it allows the compiler to check that the signal's arguments are
     compatible with the slot's arguments. Arguments can also be implicitly
     converted by the compiler, if needed.
@@ -407,7 +405,7 @@
     will open: "Tax File", "Accounts File", or "Report File".
 
     In order to open the correct file, you use QSignalMapper::setMapping() to
-    map all the clicked() signals to a QSignalMapper object. Then you connect
+    map all the QPushButton::clicked() signals to a QSignalMapper object. Then you connect
     the file's QPushButton::clicked() signal to the QSignalMapper::map() slot.
 
     \snippet signalmapper/filereader.cpp 0

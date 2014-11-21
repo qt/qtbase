@@ -85,15 +85,12 @@ public:
     const ImeState &imeState() { return m_imeState; };
     bool inputMethodAccepted() const;
 
-    bool isReloadingInputViewsFromUpdate() const { return m_isReloadingInputViewsFromUpdate; }
-
     static QIOSInputContext *instance();
 
 private:
     QIOSKeyboardListener *m_keyboardListener;
     QIOSTextInputResponder *m_textResponder;
     ImeState m_imeState;
-    bool m_isReloadingInputViewsFromUpdate;
 };
 
 QT_END_NAMESPACE

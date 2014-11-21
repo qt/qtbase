@@ -86,6 +86,9 @@ enum ThreadAction {
     MessageResultReceivedAction = 26,
     ActivateSignalAction = 27,
     PendingCallBlockAction = 28,
+    SendMessageAction = 29,
+    SendWithReplyAndBlockAction = 30,
+    HuntAndEmitAction = 31,
 
     AddTimeoutAction = 50,
     RealAddTimeoutAction = 51,
@@ -193,13 +196,6 @@ struct QDBusDispatchLocker: QDBusMutexLocker
 {
     inline QDBusDispatchLocker(ThreadAction a, QDBusConnectionPrivate *s)
         : QDBusMutexLocker(a, s, &s->dispatchLock)
-    { }
-};
-
-struct QDBusWatchAndTimeoutLocker: QDBusMutexLocker
-{
-    inline QDBusWatchAndTimeoutLocker(ThreadAction a, QDBusConnectionPrivate *s)
-        : QDBusMutexLocker(a, s, &s->watchAndTimeoutLock)
     { }
 };
 

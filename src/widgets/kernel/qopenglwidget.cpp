@@ -471,7 +471,7 @@ class QOpenGLWidgetPaintDevice : public QOpenGLPaintDevice
 {
 public:
     QOpenGLWidgetPaintDevice(QOpenGLWidget *widget)
-        : QOpenGLPaintDevice(new QOpenGLWidgetPaintDevicePrivate(widget)) { }
+        : QOpenGLPaintDevice(*new QOpenGLWidgetPaintDevicePrivate(widget)) { }
     void ensureActiveTarget() Q_DECL_OVERRIDE;
 };
 

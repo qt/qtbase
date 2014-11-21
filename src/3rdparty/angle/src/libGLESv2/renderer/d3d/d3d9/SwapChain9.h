@@ -19,18 +19,21 @@ class Renderer9;
 class SwapChain9 : public SwapChain
 {
   public:
-    SwapChain9(Renderer9 *renderer, HWND window, HANDLE shareHandle,
+    SwapChain9(Renderer9 *renderer, NativeWindow nativeWindow, HANDLE shareHandle,
                GLenum backBufferFormat, GLenum depthBufferFormat);
     virtual ~SwapChain9();
 
     EGLint resize(EGLint backbufferWidth, EGLint backbufferHeight);
     virtual EGLint reset(EGLint backbufferWidth, EGLint backbufferHeight, EGLint swapInterval);
-    virtual EGLint swapRect(EGLint x, EGLint y, EGLint width, EGLint height, EGLint);
+    virtual EGLint swapRect(EGLint x, EGLint y, EGLint width, EGLint height);
     virtual void recreate();
 
     virtual IDirect3DSurface9 *getRenderTarget();
     virtual IDirect3DSurface9 *getDepthStencil();
     virtual IDirect3DTexture9 *getOffscreenTexture();
+
+    EGLint getWidth() const { return mWidth; }
+    EGLint getHeight() const { return mHeight; }
 
     static SwapChain9 *makeSwapChain9(SwapChain *swapChain);
 

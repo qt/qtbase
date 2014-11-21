@@ -1168,8 +1168,6 @@ int QTextEngine::shapeTextWithHarfbuzzNG(const QScriptItem &si, const ushort *st
             };
             const int num_features = 1;
             shapedOk = hb_shape_full(hb_font, buffer, features, num_features, 0);
-
-            hb_font_destroy(hb_font);
         }
         if (!shapedOk) {
             hb_buffer_destroy(buffer);

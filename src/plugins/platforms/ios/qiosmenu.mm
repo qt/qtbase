@@ -153,13 +153,29 @@ static NSString *const kSelectorPrefix = @"_qtMenuItem_";
         [self setDelegate:self];
         [self setDataSource:self];
         [self selectRow:m_selectedRow inComponent:0 animated:false];
+        [self listenForKeyboardWillHideNotification:YES];
     }
 
     return self;
 }
 
+-(void)listenForKeyboardWillHideNotification:(BOOL)listen
+{
+    if (listen) {
+        [[NSNotificationCenter defaultCenter]
+            addObserver:self
+            selector:@selector(cancelMenu)
+            name:@"UIKeyboardWillHideNotification" object:nil];
+    } else {
+        [[NSNotificationCenter defaultCenter]
+            removeObserver:self
+            name:@"UIKeyboardWillHideNotification" object:nil];
+    }
+}
+
 -(void)dealloc
 {
+    [self listenForKeyboardWillHideNotification:NO];
     self.toolbar = 0;
     [super dealloc];
 }
@@ -193,6 +209,7 @@ static NSString *const kSelectorPrefix = @"_qtMenuItem_";
 
 - (void)closeMenu
 {
+    [self listenForKeyboardWillHideNotification:NO];
     if (!m_visibleMenuItems.isEmpty())
         QIOSMenu::currentMenu()->handleItemSelected(m_visibleMenuItems.at(m_selectedRow));
     else
@@ -201,6 +218,7 @@ static NSString *const kSelectorPrefix = @"_qtMenuItem_";
 
 - (void)cancelMenu
 {
+    [self listenForKeyboardWillHideNotification:NO];
     QIOSMenu::currentMenu()->dismiss();
 }
 
@@ -452,11 +470,11 @@ void QIOSMenu::toggleShowUsingUIPickerView(bool show)
         Q_ASSERT(!focusObjectWithPickerView);
         focusObjectWithPickerView = qApp->focusWindow()->focusObject();
         focusObjectWithPickerView->installEventFilter(this);
-        qApp->inputMethod()->update(Qt::ImPlatformData);
+        qApp->inputMethod()->update(Qt::ImEnabled | Qt::ImPlatformData);
     } else {
         Q_ASSERT(focusObjectWithPickerView);
         focusObjectWithPickerView->removeEventFilter(this);
-        qApp->inputMethod()->update(Qt::ImPlatformData);
+        qApp->inputMethod()->update(Qt::ImEnabled | Qt::ImPlatformData);
         focusObjectWithPickerView = 0;
 
         Q_ASSERT(m_pickerView);
@@ -477,6 +495,7 @@ bool QIOSMenu::eventFilter(QObject *obj, QEvent *event)
             imPlatformData.insert(kImePlatformDataInputView, QVariant::fromValue(static_cast<void *>(m_pickerView)));
             imPlatformData.insert(kImePlatformDataInputAccessoryView, QVariant::fromValue(static_cast<void *>(m_pickerView.toolbar)));
             queryEvent->setValue(Qt::ImPlatformData, imPlatformData);
+            queryEvent->setValue(Qt::ImEnabled, true);
 
             return true;
         }

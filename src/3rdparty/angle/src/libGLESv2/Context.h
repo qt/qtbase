@@ -13,12 +13,12 @@
 #include "common/angleutils.h"
 #include "common/RefCountObject.h"
 #include "libGLESv2/Caps.h"
+#include "libGLESv2/Constants.h"
+#include "libGLESv2/Data.h"
 #include "libGLESv2/Error.h"
 #include "libGLESv2/HandleAllocator.h"
-#include "libGLESv2/angletypes.h"
-#include "libGLESv2/Constants.h"
 #include "libGLESv2/VertexAttribute.h"
-#include "libGLESv2/State.h"
+#include "libGLESv2/angletypes.h"
 
 #include "angle_gl.h"
 
@@ -50,11 +50,6 @@ class Texture3D;
 class Texture2DArray;
 class Framebuffer;
 class Renderbuffer;
-class RenderbufferStorage;
-class Colorbuffer;
-class Depthbuffer;
-class Stencilbuffer;
-class DepthStencilbuffer;
 class FenceNV;
 class FenceSync;
 class Query;
@@ -68,7 +63,7 @@ class TransformFeedback;
 class Context
 {
   public:
-    Context(int clientVersion, const gl::Context *shareContext, rx::Renderer *renderer, bool notifyResets, bool robustAccess);
+    Context(int clientVersion, const Context *shareContext, rx::Renderer *renderer, bool notifyResets, bool robustAccess);
 
     virtual ~Context();
 
@@ -86,7 +81,7 @@ class Context
     GLuint createRenderbuffer();
     GLuint createSampler();
     GLuint createTransformFeedback();
-    GLsync createFenceSync(GLenum condition);
+    GLsync createFenceSync();
 
     void deleteBuffer(GLuint buffer);
     void deleteShader(GLuint shader);
@@ -115,7 +110,7 @@ class Context
 
     void bindArrayBuffer(GLuint buffer);
     void bindElementArrayBuffer(GLuint buffer);
-    void bindTexture(GLenum target, GLuint texture);
+    void bindTexture(GLenum target, GLuint handle);
     void bindReadFramebuffer(GLuint framebuffer);
     void bindDrawFramebuffer(GLuint framebuffer);
     void bindRenderbuffer(GLuint renderbuffer);
@@ -130,16 +125,14 @@ class Context
     void bindPixelPackBuffer(GLuint buffer);
     void bindPixelUnpackBuffer(GLuint buffer);
     void useProgram(GLuint program);
-    void linkProgram(GLuint program);
-    void setProgramBinary(GLuint program, GLenum binaryFormat, const void *binary, GLint length);
+    Error linkProgram(GLuint program);
+    Error setProgramBinary(GLuint program, GLenum binaryFormat, const void *binary, GLint length);
     void bindTransformFeedback(GLuint transformFeedback);
 
     Error beginQuery(GLenum target, GLuint query);
     Error endQuery(GLenum target);
 
     void setFramebufferZero(Framebuffer *framebuffer);
-
-    void setRenderbufferStorage(GLsizei width, GLsizei height, GLenum internalformat, GLsizei samples);
 
     void setVertexAttribDivisor(GLuint index, GLuint divisor);
 
@@ -183,17 +176,17 @@ class Context
     bool getIndexedQueryParameterInfo(GLenum target, GLenum *type, unsigned int *numParams);
 
     Error clear(GLbitfield mask);
-    Error clearBufferfv(GLenum buffer, int drawbuffer, const float *values);
-    Error clearBufferuiv(GLenum buffer, int drawbuffer, const unsigned int *values);
-    Error clearBufferiv(GLenum buffer, int drawbuffer, const int *values);
-    Error clearBufferfi(GLenum buffer, int drawbuffer, float depth, int stencil);
+    Error clearBufferfv(GLenum buffer, GLint drawbuffer, const GLfloat *values);
+    Error clearBufferuiv(GLenum buffer, GLint drawbuffer, const GLuint *values);
+    Error clearBufferiv(GLenum buffer, GLint drawbuffer, const GLint *values);
+    Error clearBufferfi(GLenum buffer, GLint drawbuffer, GLfloat depth, GLint stencil);
 
     Error readPixels(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, GLsizei *bufSize, void* pixels);
     Error drawArrays(GLenum mode, GLint first, GLsizei count, GLsizei instances);
     Error drawElements(GLenum mode, GLsizei count, GLenum type,
                        const GLvoid *indices, GLsizei instances,
                        const rx::RangeUI &indexRange);
-    void sync(bool block);   // flush/finish
+    Error sync(bool block);   // flush/finish
 
     void recordError(const Error &error);
 
@@ -215,31 +208,20 @@ class Context
 
     void getCurrentReadFormatType(GLenum *internalFormat, GLenum *format, GLenum *type);
 
-    void blitFramebuffer(GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1, GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1,
-                         GLbitfield mask, GLenum filter);
+    Error blitFramebuffer(GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1, GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1,
+                          GLbitfield mask, GLenum filter);
 
     rx::Renderer *getRenderer() { return mRenderer; }
 
     State &getState() { return mState; }
     const State &getState() const { return mState; }
 
+    Data getData() const;
+
     void releaseShaderCompiler();
 
   private:
     DISALLOW_COPY_AND_ASSIGN(Context);
-
-    // TODO: std::array may become unavailable using older versions of GCC
-    typedef std::array<unsigned int, IMPLEMENTATION_MAX_FRAMEBUFFER_ATTACHMENTS> FramebufferTextureSerialArray;
-
-    Error applyRenderTarget(GLenum drawMode, bool ignoreViewport);
-    Error applyState(GLenum drawMode);
-    Error applyShaders(ProgramBinary *programBinary, bool transformFeedbackActive);
-    Error applyTextures(ProgramBinary *programBinary, SamplerType shaderType, const FramebufferTextureSerialArray &framebufferSerials,
-                        size_t framebufferSerialCount);
-    Error applyTextures(ProgramBinary *programBinary);
-    Error applyUniformBuffers();
-    bool applyTransformFeedbackBuffers();
-    void markTransformFeedbackUsage();
 
     void detachBuffer(GLuint buffer);
     void detachTexture(GLuint texture);
@@ -249,17 +231,8 @@ class Context
     void detachTransformFeedback(GLuint transformFeedback);
     void detachSampler(GLuint sampler);
 
-    Error generateSwizzles(ProgramBinary *programBinary, SamplerType type);
-    Error generateSwizzles(ProgramBinary *programBinary);
-
-    Texture *getIncompleteTexture(GLenum type);
-
-    bool skipDraw(GLenum drawMode);
-
     void initRendererString();
     void initExtensionStrings();
-
-    size_t getBoundFramebufferTextureSerials(FramebufferTextureSerialArray *outSerialArray);
 
     void initCaps(GLuint clientVersion);
 
@@ -273,7 +246,6 @@ class Context
 
     int mClientVersion;
 
-    typedef std::map< GLenum, BindingPointer<Texture> > TextureMap;
     TextureMap mZeroTextures;
     TextureMap mIncompleteTextures;
 

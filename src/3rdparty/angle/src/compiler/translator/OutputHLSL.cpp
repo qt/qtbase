@@ -135,6 +135,7 @@ OutputHLSL::OutputHLSL(TParseContext &context, TranslatorHLSL *parentTranslator)
     mUniqueIndex = 0;
 
     mContainsLoopDiscontinuity = false;
+    mContainsAnyLoop = false;
     mOutputLod0Function = false;
     mInsideDiscontinuousLoop = false;
     mNestedLoopDepth = 0;
@@ -172,6 +173,7 @@ OutputHLSL::~OutputHLSL()
 void OutputHLSL::output()
 {
     mContainsLoopDiscontinuity = mContext.shaderType == GL_FRAGMENT_SHADER && containsLoopDiscontinuity(mContext.treeRoot);
+    mContainsAnyLoop = containsAnyLoop(mContext.treeRoot);
     const std::vector<TIntermTyped*> &flaggedStructs = FlagStd140ValueStructs(mContext.treeRoot);
     makeFlaggedStructMaps(flaggedStructs);
 
@@ -320,13 +322,21 @@ void OutputHLSL::header()
 
     if (mUsesDiscardRewriting)
     {
-        out << "#define ANGLE_USES_DISCARD_REWRITING" << "\n";
+        out << "#define ANGLE_USES_DISCARD_REWRITING\n";
     }
 
     if (mUsesNestedBreak)
     {
-        out << "#define ANGLE_USES_NESTED_BREAK" << "\n";
+        out << "#define ANGLE_USES_NESTED_BREAK\n";
     }
+
+    out << "#ifdef ANGLE_ENABLE_LOOP_FLATTEN\n"
+           "#define LOOP [loop]\n"
+           "#define FLATTEN [flatten]\n"
+           "#else\n"
+           "#define LOOP\n"
+           "#define FLATTEN\n"
+           "#endif\n";
 
     if (mContext.shaderType == GL_FRAGMENT_SHADER)
     {
@@ -1747,6 +1757,7 @@ bool OutputHLSL::visitUnary(Visit visit, TIntermUnary *node)
     switch (node->getOp())
     {
       case EOpNegative:         outputTriplet(visit, "(-", "", ")");         break;
+      case EOpPositive:         outputTriplet(visit, "(+", "", ")");         break;
       case EOpVectorLogicalNot: outputTriplet(visit, "(!", "", ")");         break;
       case EOpLogicalNot:       outputTriplet(visit, "(!", "", ")");         break;
       case EOpPostIncrement:    outputTriplet(visit, "(", "", "++)");        break;
@@ -1860,15 +1871,20 @@ bool OutputHLSL::visitAggregate(Visit visit, TIntermAggregate *node)
 
                 if (!variable->getAsSymbolNode() || variable->getAsSymbolNode()->getSymbol() != "")   // Variable declaration
                 {
-                    if (!mInsideFunction)
-                    {
-                        out << "static ";
-                    }
-
-                    out << TypeString(variable->getType()) + " ";
-
                     for (TIntermSequence::iterator sit = sequence->begin(); sit != sequence->end(); sit++)
                     {
+                        if (isSingleStatement(*sit))
+                        {
+                            mUnfoldShortCircuit->traverse(*sit);
+                        }
+
+                        if (!mInsideFunction)
+                        {
+                            out << "static ";
+                        }
+
+                        out << TypeString(variable->getType()) + " ";
+
                         TIntermSymbol *symbol = (*sit)->getAsSymbolNode();
 
                         if (symbol)
@@ -1884,7 +1900,7 @@ bool OutputHLSL::visitAggregate(Visit visit, TIntermAggregate *node)
 
                         if (*sit != sequence->back())
                         {
-                            out << ", ";
+                            out << ";\n";
                         }
                     }
                 }
@@ -1925,7 +1941,7 @@ bool OutputHLSL::visitAggregate(Visit visit, TIntermAggregate *node)
       case EOpPrototype:
         if (visit == PreVisit)
         {
-            out << TypeString(node->getType()) << " " << Decorate(node->getName()) << (mOutputLod0Function ? "Lod0(" : "(");
+            out << TypeString(node->getType()) << " " << Decorate(TFunction::unmangleName(node->getName())) << (mOutputLod0Function ? "Lod0(" : "(");
 
             TIntermSequence *arguments = node->getSequence();
 
@@ -2287,6 +2303,15 @@ bool OutputHLSL::visitSelection(Visit visit, TIntermSelection *node)
     {
         mUnfoldShortCircuit->traverse(node->getCondition());
 
+        // D3D errors when there is a gradient operation in a loop in an unflattened if
+        // however flattening all the ifs in branch heavy shaders made D3D error too.
+        // As a temporary workaround we flatten the ifs only if there is at least a loop
+        // present somewhere in the shader.
+        if (mContext.shaderType == GL_FRAGMENT_SHADER && mContainsAnyLoop)
+        {
+            out << "FLATTEN ";
+        }
+
         out << "if (";
 
         node->getCondition()->traverse(this);
@@ -2367,14 +2392,14 @@ bool OutputHLSL::visitLoop(Visit visit, TIntermLoop *node)
 
     if (node->getType() == ELoopDoWhile)
     {
-        out << "{do\n";
+        out << "{LOOP do\n";
 
         outputLineDirective(node->getLine().first_line);
         out << "{\n";
     }
     else
     {
-        out << "{for(";
+        out << "{LOOP for(";
 
         if (node->getInit())
         {
@@ -2501,6 +2526,12 @@ bool OutputHLSL::isSingleStatement(TIntermNode *node)
     {
         if (aggregate->getOp() == EOpSequence)
         {
+            return false;
+        }
+        else if (aggregate->getOp() == EOpDeclaration)
+        {
+            // Declaring multiple comma-separated variables must be considered multiple statements
+            // because each individual declaration has side effects which are visible in the next.
             return false;
         }
         else
@@ -2675,7 +2706,7 @@ bool OutputHLSL::handleExcessiveLoop(TIntermLoop *node)
 
                 // for(int index = initial; index < clampedLimit; index += increment)
 
-                out << "for(";
+                out << "LOOP for(";
                 index->traverse(this);
                 out << " = ";
                 out << initial;

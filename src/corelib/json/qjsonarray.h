@@ -105,6 +105,7 @@ public:
         typedef int difference_type;
         typedef QJsonValue value_type;
         typedef QJsonValueRef reference;
+        typedef QJsonValueRefPtr pointer;
 
         inline iterator() : a(0), i(0) { }
         explicit inline iterator(QJsonArray *array, int index) : a(array), i(index) { }
@@ -149,6 +150,7 @@ public:
         typedef qptrdiff difference_type;
         typedef QJsonValue value_type;
         typedef QJsonValue reference;
+        typedef QJsonValuePtr pointer;
 
         inline const_iterator() : a(0), i(0) { }
         explicit inline const_iterator(const QJsonArray *array, int index) : a(array), i(index) { }

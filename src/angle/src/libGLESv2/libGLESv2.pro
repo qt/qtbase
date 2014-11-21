@@ -24,11 +24,13 @@ HEADERS += \
     $$ANGLE_DIR/src/common/blocklayout.h \
     $$ANGLE_DIR/src/common/shadervars.h \
     $$ANGLE_DIR/src/common/utilities.h \
+    $$ANGLE_DIR/src/common/NativeWindow.h \
     $$ANGLE_DIR/src/libGLESv2/angletypes.h \
     $$ANGLE_DIR/src/libGLESv2/BinaryStream.h \
     $$ANGLE_DIR/src/libGLESv2/Buffer.h \
     $$ANGLE_DIR/src/libGLESv2/Caps.h \
     $$ANGLE_DIR/src/libGLESv2/Context.h \
+    $$ANGLE_DIR/src/libGLESv2/Data.h \
     $$ANGLE_DIR/src/libGLESv2/Error.h \
     $$ANGLE_DIR/src/libGLESv2/Fence.h \
     $$ANGLE_DIR/src/libGLESv2/formatutils.h \
@@ -53,6 +55,8 @@ HEADERS += \
     $$ANGLE_DIR/src/libGLESv2/renderer/d3d/IndexDataManager.h \
     $$ANGLE_DIR/src/libGLESv2/renderer/d3d/MemoryBuffer.h \
     $$ANGLE_DIR/src/libGLESv2/renderer/d3d/ProgramD3D.h \
+    $$ANGLE_DIR/src/libGLESv2/renderer/d3d/RenderbufferD3D.h \
+    $$ANGLE_DIR/src/libGLESv2/renderer/d3d/RendererD3D.h \
     $$ANGLE_DIR/src/libGLESv2/renderer/d3d/ShaderD3D.h \
     $$ANGLE_DIR/src/libGLESv2/renderer/d3d/TextureD3D.h \
     $$ANGLE_DIR/src/libGLESv2/renderer/d3d/TextureStorage.h \
@@ -69,6 +73,7 @@ HEADERS += \
     $$ANGLE_DIR/src/libGLESv2/renderer/loadimage.h \
     $$ANGLE_DIR/src/libGLESv2/renderer/ProgramImpl.h \
     $$ANGLE_DIR/src/libGLESv2/renderer/QueryImpl.h \
+    $$ANGLE_DIR/src/libGLESv2/renderer/RenderbufferImpl.h \
     $$ANGLE_DIR/src/libGLESv2/renderer/Renderer.h \
     $$ANGLE_DIR/src/libGLESv2/renderer/RenderTarget.h \
     $$ANGLE_DIR/src/libGLESv2/renderer/ShaderExecutable.h \
@@ -77,6 +82,7 @@ HEADERS += \
     $$ANGLE_DIR/src/libGLESv2/renderer/TextureImpl.h \
     $$ANGLE_DIR/src/libGLESv2/renderer/TextureFeedbackImpl.h \
     $$ANGLE_DIR/src/libGLESv2/renderer/VertexDeclarationCache.h \
+    $$ANGLE_DIR/src/libGLESv2/renderer/Workarounds.h \
     $$ANGLE_DIR/src/libGLESv2/resource.h \
     $$ANGLE_DIR/src/libGLESv2/ResourceManager.h \
     $$ANGLE_DIR/src/libGLESv2/Sampler.h \
@@ -102,6 +108,7 @@ SOURCES += \
     $$ANGLE_DIR/src/libGLESv2/Buffer.cpp \
     $$ANGLE_DIR/src/libGLESv2/Caps.cpp \
     $$ANGLE_DIR/src/libGLESv2/Context.cpp \
+    $$ANGLE_DIR/src/libGLESv2/Data.cpp \
     $$ANGLE_DIR/src/libGLESv2/Error.cpp \
     $$ANGLE_DIR/src/libGLESv2/Fence.cpp \
     $$ANGLE_DIR/src/libGLESv2/Float16ToFloat32.cpp \
@@ -131,10 +138,12 @@ SOURCES += \
     $$ANGLE_DIR/src/libGLESv2/VertexAttribute.cpp \
     $$ANGLE_DIR/src/libGLESv2/renderer/copyimage.cpp \
     $$ANGLE_DIR/src/libGLESv2/renderer/loadimage.cpp \
-    $$ANGLE_DIR/src/libGLESv2/renderer/loadimageSSE2.cpp \
     $$ANGLE_DIR/src/libGLESv2/renderer/Image.cpp \
     $$ANGLE_DIR/src/libGLESv2/renderer/IndexRangeCache.cpp \
+    $$ANGLE_DIR/src/libGLESv2/renderer/ProgramImpl.cpp \
+    $$ANGLE_DIR/src/libGLESv2/renderer/RenderbufferImpl.cpp \
     $$ANGLE_DIR/src/libGLESv2/renderer/Renderer.cpp \
+    $$ANGLE_DIR/src/libGLESv2/renderer/RenderTarget.cpp \
     $$ANGLE_DIR/src/libGLESv2/renderer/d3d/BufferD3D.cpp \
     $$ANGLE_DIR/src/libGLESv2/renderer/d3d/DynamicHLSL.cpp \
     $$ANGLE_DIR/src/libGLESv2/renderer/d3d/HLSLCompiler.cpp \
@@ -143,6 +152,8 @@ SOURCES += \
     $$ANGLE_DIR/src/libGLESv2/renderer/d3d/IndexDataManager.cpp \
     $$ANGLE_DIR/src/libGLESv2/renderer/d3d/MemoryBuffer.cpp \
     $$ANGLE_DIR/src/libGLESv2/renderer/d3d/ProgramD3D.cpp \
+    $$ANGLE_DIR/src/libGLESv2/renderer/d3d/RenderbufferD3D.cpp \
+    $$ANGLE_DIR/src/libGLESv2/renderer/d3d/RendererD3D.cpp \
     $$ANGLE_DIR/src/libGLESv2/renderer/d3d/ShaderD3D.cpp \
     $$ANGLE_DIR/src/libGLESv2/renderer/d3d/TextureD3D.cpp \
     $$ANGLE_DIR/src/libGLESv2/renderer/d3d/TextureStorage.cpp \
@@ -192,6 +203,8 @@ angle_d3d11 {
         $$ANGLE_DIR/src/libGLESv2/renderer/d3d/d3d11/VertexBuffer11.cpp
 }
 
+SSE2_SOURCES += $$ANGLE_DIR/src/libGLESv2/renderer/loadimageSSE2.cpp
+
 !winrt {
     HEADERS += \
         $$ANGLE_DIR/src/libGLESv2/renderer/d3d/d3d9/Blit9.h \
@@ -211,6 +224,7 @@ angle_d3d11 {
         $$ANGLE_DIR/src/third_party/systeminfo/SystemInfo.h
 
     SOURCES += \
+        $$ANGLE_DIR/src/common/win32/NativeWindow.cpp \
         $$ANGLE_DIR/src/libGLESv2/renderer/d3d/d3d9/Blit9.cpp \
         $$ANGLE_DIR/src/libGLESv2/renderer/d3d/d3d9/Buffer9.cpp \
         $$ANGLE_DIR/src/libGLESv2/renderer/d3d/d3d9/Fence9.cpp \
@@ -227,6 +241,16 @@ angle_d3d11 {
         $$ANGLE_DIR/src/libGLESv2/renderer/d3d/d3d9/VertexBuffer9.cpp \
         $$ANGLE_DIR/src/libGLESv2/renderer/d3d/d3d9/VertexDeclarationCache.cpp \
         $$ANGLE_DIR/src/third_party/systeminfo/SystemInfo.cpp
+} else {
+    HEADERS += \
+        $$ANGLE_DIR/src/common/winrt/CoreWindowNativeWindow.h \
+        $$ANGLE_DIR/src/common/winrt/InspectableNativeWindow.h \
+        $$ANGLE_DIR/src/common/winrt/SwapChainPanelNativeWindow.h
+
+    SOURCES += \
+        $$ANGLE_DIR/src/common/winrt/CoreWindowNativeWindow.cpp \
+        $$ANGLE_DIR/src/common/winrt/InspectableNativeWindow.cpp \
+        $$ANGLE_DIR/src/common/winrt/SwapChainPanelNativeWindow.cpp
 }
 
 !static {

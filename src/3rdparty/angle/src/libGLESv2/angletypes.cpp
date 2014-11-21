@@ -9,6 +9,10 @@
 #include "libGLESv2/angletypes.h"
 #include "libGLESv2/ProgramBinary.h"
 #include "libGLESv2/VertexAttribute.h"
+#include "libGLESv2/State.h"
+#include "libGLESv2/VertexArray.h"
+
+#include <float.h>
 
 namespace gl
 {
@@ -148,16 +152,16 @@ VertexFormat::VertexFormat(const VertexAttribute &attrib, GLenum currentValueTyp
 
 void VertexFormat::GetInputLayout(VertexFormat *inputLayout,
                                   ProgramBinary *programBinary,
-                                  const VertexAttribute *attributes,
-                                  const gl::VertexAttribCurrentValueData *currentValues)
+                                  const State &state)
 {
+    const VertexAttribute *vertexAttributes = state.getVertexArray()->getVertexAttributes();
     for (unsigned int attributeIndex = 0; attributeIndex < MAX_VERTEX_ATTRIBS; attributeIndex++)
     {
         int semanticIndex = programBinary->getSemanticIndex(attributeIndex);
 
         if (semanticIndex != -1)
         {
-            inputLayout[semanticIndex] = VertexFormat(attributes[attributeIndex], currentValues[attributeIndex].Type);
+            inputLayout[semanticIndex] = VertexFormat(vertexAttributes[attributeIndex], state.getVertexAttribCurrentValue(attributeIndex).Type);
         }
     }
 }
@@ -190,6 +194,17 @@ bool VertexFormat::operator<(const VertexFormat& other) const
         return mComponents < other.mComponents;
     }
     return mPureInteger < other.mPureInteger;
+}
+
+bool Box::operator==(const Box &other) const
+{
+    return (x == other.x && y == other.y && z == other.z &&
+            width == other.width && height == other.height && depth == other.depth);
+}
+
+bool Box::operator!=(const Box &other) const
+{
+    return !(*this == other);
 }
 
 }

@@ -41,7 +41,7 @@ QT_BEGIN_NAMESPACE
 class QWinRTEGLContext : public QEGLPlatformContext
 {
 public:
-    explicit QWinRTEGLContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share, EGLDisplay display, EGLSurface surface);
+    explicit QWinRTEGLContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share, EGLDisplay display, EGLSurface surface, EGLConfig config);
 
     QFunctionPointer getProcAddress(const QByteArray &procName) Q_DECL_OVERRIDE;
 

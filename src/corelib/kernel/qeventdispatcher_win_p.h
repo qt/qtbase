@@ -67,6 +67,8 @@ class Q_CORE_EXPORT QEventDispatcherWin32 : public QAbstractEventDispatcher
 
 protected:
     void createInternalHwnd();
+    void installMessageHook();
+    void uninstallMessageHook();
 
 public:
     explicit QEventDispatcherWin32(QObject *parent = 0);
@@ -145,6 +147,7 @@ public:
     DWORD threadId;
 
     bool interrupt;
+    bool closingDown;
 
     // internal window handle used for socketnotifiers/timers/etc
     HWND internalHwnd;

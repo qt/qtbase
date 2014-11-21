@@ -2501,7 +2501,8 @@ void QPdfEnginePrivate::drawTextItem(const QPointF &p, const QTextItemInt &ti)
 
     QFontEngine::FaceId face_id = fe->faceId();
     bool noEmbed = false;
-    if (face_id.filename.isEmpty()
+    if (!embedFonts
+        || face_id.filename.isEmpty()
         || fe->fsType & 0x200 /* bitmap embedding only */
         || fe->fsType == 2 /* no embedding allowed */) {
         *currentPage << "Q\n";
@@ -2523,10 +2524,6 @@ void QPdfEnginePrivate::drawTextItem(const QPointF &p, const QTextItemInt &ti)
         currentPage->fonts.append(font->object_id);
 
     qreal size = ti.fontEngine->fontDef.pixelSize;
-
-#if defined(Q_OS_WIN)
-    size = (ti.fontEngine->ascent() + ti.fontEngine->descent()).toReal();
-#endif
 
     QVarLengthArray<glyph_t> glyphs;
     QVarLengthArray<QFixedPoint> positions;

@@ -37,8 +37,8 @@
 #ifdef Q_OS_LINUX
 #include <sys/ioctl.h>
 #include <linux/fb.h>
-#include <private/qmath_p.h>
 #endif
+#include <private/qmath_p.h>
 
 #include "qeglconvenience_p.h"
 
@@ -448,10 +448,13 @@ void q_printEglConfig(EGLDisplay display, EGLConfig config)
     }
 }
 
-#ifdef Q_OS_LINUX
+#ifdef Q_OS_UNIX
 
 QSizeF q_physicalScreenSizeFromFb(int framebufferDevice, const QSize &screenSize)
 {
+#ifndef Q_OS_LINUX
+    Q_UNUSED(framebufferDevice)
+#endif
     const int defaultPhysicalDpi = 100;
     static QSizeF size;
 
@@ -466,10 +469,11 @@ QSizeF q_physicalScreenSizeFromFb(int framebufferDevice, const QSize &screenSize
             return size;
         }
 
-        struct fb_var_screeninfo vinfo;
         int w = -1;
         int h = -1;
         QSize screenResolution;
+#ifdef Q_OS_LINUX
+        struct fb_var_screeninfo vinfo;
 
         if (framebufferDevice != -1) {
             if (ioctl(framebufferDevice, FBIOGET_VSCREENINFO, &vinfo) == -1) {
@@ -479,7 +483,9 @@ QSizeF q_physicalScreenSizeFromFb(int framebufferDevice, const QSize &screenSize
                 h = vinfo.height;
                 screenResolution = QSize(vinfo.xres, vinfo.yres);
             }
-        } else {
+        } else
+#endif
+        {
             // Use the provided screen size, when available, since some platforms may have their own
             // specific way to query it. Otherwise try querying it from the framebuffer.
             screenResolution = screenSize.isEmpty() ? q_screenSizeFromFb(framebufferDevice) : screenSize;
@@ -499,6 +505,9 @@ QSizeF q_physicalScreenSizeFromFb(int framebufferDevice, const QSize &screenSize
 
 QSize q_screenSizeFromFb(int framebufferDevice)
 {
+#ifndef Q_OS_LINUX
+    Q_UNUSED(framebufferDevice)
+#endif
     const int defaultWidth = 800;
     const int defaultHeight = 600;
     static QSize size;
@@ -513,6 +522,7 @@ QSize q_screenSizeFromFb(int framebufferDevice)
             return size;
         }
 
+#ifdef Q_OS_LINUX
         struct fb_var_screeninfo vinfo;
         int xres = -1;
         int yres = -1;
@@ -528,6 +538,10 @@ QSize q_screenSizeFromFb(int framebufferDevice)
 
         size.setWidth(xres <= 0 ? defaultWidth : xres);
         size.setHeight(yres <= 0 ? defaultHeight : yres);
+#else
+        size.setWidth(defaultWidth);
+        size.setHeight(defaultHeight);
+#endif
     }
 
     return size;
@@ -535,10 +549,14 @@ QSize q_screenSizeFromFb(int framebufferDevice)
 
 int q_screenDepthFromFb(int framebufferDevice)
 {
+#ifndef Q_OS_LINUX
+    Q_UNUSED(framebufferDevice)
+#endif
     const int defaultDepth = 32;
     static int depth = qgetenv("QT_QPA_EGLFS_DEPTH").toInt();
 
     if (depth == 0) {
+#ifdef Q_OS_LINUX
         struct fb_var_screeninfo vinfo;
 
         if (framebufferDevice != -1) {
@@ -550,11 +568,14 @@ int q_screenDepthFromFb(int framebufferDevice)
 
         if (depth <= 0)
             depth = defaultDepth;
+#else
+        depth = defaultDepth;
+#endif
     }
 
     return depth;
 }
 
-#endif // Q_OS_LINUX
+#endif // Q_OS_UNIX
 
 QT_END_NAMESPACE

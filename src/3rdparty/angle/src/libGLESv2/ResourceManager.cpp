@@ -21,9 +21,9 @@
 namespace gl
 {
 ResourceManager::ResourceManager(rx::Renderer *renderer)
+    : mRenderer(renderer),
+      mRefCount(1)
 {
-    mRefCount = 1;
-    mRenderer = renderer;
 }
 
 ResourceManager::~ResourceManager()
@@ -88,13 +88,13 @@ GLuint ResourceManager::createBuffer()
 }
 
 // Returns an unused shader/program name
-GLuint ResourceManager::createShader(GLenum type)
+GLuint ResourceManager::createShader(const gl::Data &data, GLenum type)
 {
     GLuint handle = mProgramShaderHandleAllocator.allocate();
 
     if (type == GL_VERTEX_SHADER || type == GL_FRAGMENT_SHADER)
     {
-        mShaderMap[handle] = new Shader(this, mRenderer->createShader(type), type, handle);
+        mShaderMap[handle] = new Shader(this, mRenderer->createShader(data, type), type, handle);
     }
     else UNREACHABLE();
 
@@ -146,7 +146,7 @@ GLuint ResourceManager::createFenceSync()
 {
     GLuint handle = mFenceSyncHandleAllocator.allocate();
 
-    FenceSync *fenceSync = new FenceSync(mRenderer, handle);
+    FenceSync *fenceSync = new FenceSync(mRenderer->createFenceSync(), handle);
     fenceSync->addRef();
     mFenceSyncMap[handle] = fenceSync;
 
@@ -295,9 +295,9 @@ Texture *ResourceManager::getTexture(unsigned int handle)
     }
 }
 
-Program *ResourceManager::getProgram(unsigned int handle)
+Program *ResourceManager::getProgram(unsigned int handle) const
 {
-    ProgramMap::iterator program = mProgramMap.find(handle);
+    ProgramMap::const_iterator program = mProgramMap.find(handle);
 
     if (program == mProgramMap.end())
     {
@@ -403,7 +403,7 @@ void ResourceManager::checkRenderbufferAllocation(GLuint renderbuffer)
 {
     if (renderbuffer != 0 && !getRenderbuffer(renderbuffer))
     {
-        Renderbuffer *renderbufferObject = new Renderbuffer(renderbuffer, new Colorbuffer(mRenderer, 0, 0, GL_RGBA4, 0));
+        Renderbuffer *renderbufferObject = new Renderbuffer(mRenderer->createRenderbuffer(), renderbuffer);
         mRenderbufferMap[renderbuffer] = renderbufferObject;
         renderbufferObject->addRef();
     }

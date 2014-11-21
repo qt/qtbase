@@ -104,7 +104,7 @@ Clear11::Clear11(Renderer11 *renderer)
     rsDesc.DepthBias = 0;
     rsDesc.DepthBiasClamp = 0.0f;
     rsDesc.SlopeScaledDepthBias = 0.0f;
-    rsDesc.DepthClipEnable = mRenderer->isLevel9();
+    rsDesc.DepthClipEnable = renderer->isLevel9();
     rsDesc.ScissorEnable = FALSE;
     rsDesc.MultisampleEnable = FALSE;
     rsDesc.AntialiasedLineEnable = FALSE;
@@ -119,7 +119,6 @@ Clear11::Clear11(Renderer11 *renderer)
         memset(&mIntClearShader, 0, sizeof(ClearShader));
         return;
     }
-
     mUintClearShader  = CreateClearShader(device, DXGI_FORMAT_R32G32B32A32_UINT,  g_VS_ClearUint,  g_PS_ClearUint );
     mIntClearShader   = CreateClearShader(device, DXGI_FORMAT_R32G32B32A32_SINT,  g_VS_ClearSint,  g_PS_ClearSint );
 }
@@ -154,7 +153,7 @@ Clear11::~Clear11()
     SafeRelease(mRasterizerState);
 }
 
-gl::Error Clear11::clearFramebuffer(const gl::ClearParameters &clearParams, gl::Framebuffer *frameBuffer)
+gl::Error Clear11::clearFramebuffer(const gl::ClearParameters &clearParams, const gl::Framebuffer *frameBuffer)
 {
     // First determine if a scissored clear is needed, this will always require drawing a quad.
     //
@@ -217,10 +216,11 @@ gl::Error Clear11::clearFramebuffer(const gl::ClearParameters &clearParams, gl::
             gl::FramebufferAttachment *attachment = frameBuffer->getColorbuffer(colorAttachment);
             if (attachment)
             {
-                RenderTarget11 *renderTarget = d3d11::GetAttachmentRenderTarget(attachment);
-                if (!renderTarget)
+                RenderTarget11 *renderTarget = NULL;
+                gl::Error error = d3d11::GetAttachmentRenderTarget(attachment, &renderTarget);
+                if (error.isError())
                 {
-                    return gl::Error(GL_OUT_OF_MEMORY, "Internal render target view pointer unexpectedly null.");
+                    return error;
                 }
 
                 const gl::InternalFormat &formatInfo = gl::GetInternalFormatInfo(attachment->getInternalFormat());
@@ -290,10 +290,11 @@ gl::Error Clear11::clearFramebuffer(const gl::ClearParameters &clearParams, gl::
         gl::FramebufferAttachment *attachment = frameBuffer->getDepthOrStencilbuffer();
         if (attachment)
         {
-            RenderTarget11 *renderTarget = d3d11::GetAttachmentRenderTarget(attachment);
-            if (!renderTarget)
+            RenderTarget11 *renderTarget = NULL;
+            gl::Error error = d3d11::GetAttachmentRenderTarget(attachment, &renderTarget);
+            if (error.isError())
             {
-                return gl::Error(GL_OUT_OF_MEMORY, "Internal depth stencil view pointer unexpectedly null.");
+                return error;
             }
 
             const gl::InternalFormat &actualFormatInfo = gl::GetInternalFormatInfo(attachment->getActualFormat());

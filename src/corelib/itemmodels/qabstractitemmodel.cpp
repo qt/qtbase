@@ -2711,7 +2711,7 @@ bool QAbstractItemModelPrivate::allowMove(const QModelIndex &srcParent, int star
     persistent indexes in the model, which you would otherwise be
     required to do yourself. Using beginMoveRows and endMoveRows
     is an alternative to emitting layoutAboutToBeChanged and
-    layoutChanged directly along with changePersistentIndexes.
+    layoutChanged directly along with changePersistentIndex.
 
     The \a sourceParent index corresponds to the parent from which the
     rows are moved; \a sourceFirst and \a sourceLast are the first and last
@@ -2978,7 +2978,7 @@ void QAbstractItemModel::endRemoveColumns()
     persistent indexes in the model, which you would otherwise be
     required to do yourself. Using beginMoveRows and endMoveRows
     is an alternative to emitting layoutAboutToBeChanged and
-    layoutChanged directly along with changePersistentIndexes.
+    layoutChanged directly along with changePersistentIndex.
 
     The \a sourceParent index corresponds to the parent from which the
     columns are moved; \a sourceFirst and \a sourceLast are the first and last
@@ -3165,11 +3165,11 @@ void QAbstractItemModel::changePersistentIndex(const QModelIndex &from, const QM
 /*!
     \since 4.1
 
-    Changes the QPersistentModelIndexes that is equal to the indexes in the
+    Changes the {QPersistentModelIndex}es that are equal to the indexes in the
     given \a from model index list to the given \a to model index list.
 
     If no persistent model indexes equal to the indexes in the given \a from
-    model index list was found, nothing is changed.
+    model index list are found, nothing is changed.
 
     \sa persistentIndexList(), changePersistentIndex()
 */

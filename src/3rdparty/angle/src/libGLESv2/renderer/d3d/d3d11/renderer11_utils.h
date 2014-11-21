@@ -12,6 +12,7 @@
 
 #include "libGLESv2/angletypes.h"
 #include "libGLESv2/Caps.h"
+#include "libGLESv2/Error.h"
 
 #include <vector>
 
@@ -23,6 +24,7 @@ class FramebufferAttachment;
 namespace rx
 {
 class RenderTarget11;
+struct Workarounds;
 
 namespace gl_d3d11
 {
@@ -176,7 +178,9 @@ inline void SetBufferData(ID3D11DeviceContext *context, ID3D11Buffer *constantBu
     context->Unmap(constantBuffer, 0);
 }
 
-RenderTarget11 *GetAttachmentRenderTarget(gl::FramebufferAttachment *attachment);
+gl::Error GetAttachmentRenderTarget(gl::FramebufferAttachment *attachment, RenderTarget11 **outRT);
+
+Workarounds GenerateWorkarounds();
 
 }
 
