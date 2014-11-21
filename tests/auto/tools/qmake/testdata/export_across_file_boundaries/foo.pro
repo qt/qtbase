@@ -1,3 +1,6 @@
+TEMPLATE = aux
+CONFIG =
+
 !equals(FOO,bar) {
    message( "FAILED: export() invisible from default_pre.prf to foo.pro" )
 }
