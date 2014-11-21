@@ -39,7 +39,6 @@
 #include <private/qimage_p.h>
 #include <qstatictext.h>
 #include <private/qstatictext_p.h>
-#include <private/qrawfont_p.h>
 
 #include <QDebug>
 
@@ -1744,14 +1743,8 @@ void QPainterReplayer::process(const QPaintBufferCommand &cmd)
 
             painter->setFont(font);
 
-            QRawFont rawFont;
-            QRawFontPrivate *rawFontD = QRawFontPrivate::get(rawFont);
-            QFontPrivate *fontD = QFontPrivate::get(font);
-            rawFontD->fontEngine = fontD->engineForScript(QChar::Script_Common);
-            rawFontD->fontEngine->ref.ref();
-
             QGlyphRun glyphs;
-            glyphs.setRawFont(rawFont);
+            glyphs.setRawFont(QRawFont::fromFont(font, QFontDatabase::Any));
             glyphs.setGlyphIndexes(glyphIndexes);
             glyphs.setPositions(positions);
 
