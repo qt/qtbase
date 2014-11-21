@@ -32,6 +32,9 @@ function handleMessageEvent(messageEvent)
     if (this.qtMessageHandlers === undefined)
         this.qtMessageHandlers = {}
 
+    // Give the message handlers access to the nacl module.
+    var embed = document.getElementById("nacl_module");
+
     var parts = messageEvent.data.split(/:(.+)/);
     var tag = parts[0];
     var message = parts[1];
@@ -63,6 +66,8 @@ function createNaClEmbed()
     var listener = document.createElement("div");
     listener.addEventListener('message', handleMessageEvent, true);
     listener.appendChild(embed);
+    listener.embed = embed;
+    
 
     document.body.appendChild(listener);
 }
