@@ -1769,6 +1769,9 @@
     dropped onto existing items separately to data dropped into the top level
     of the model (i.e., onto an invalid item).
 
+    Models can forbid dropping on certain items, or depending on the dropped data,
+    by reimplementing QAbstractItemModel::canDropMimeData().
+
     The model first has to make sure that the operation should be acted on,
     the data supplied is in a format that can be used, and that its destination
     within the model is valid:

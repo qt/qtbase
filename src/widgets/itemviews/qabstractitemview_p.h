@@ -164,13 +164,15 @@ public:
 #ifndef QT_NO_DRAGANDDROP
     virtual QAbstractItemView::DropIndicatorPosition position(const QPoint &pos, const QRect &rect, const QModelIndex &idx) const;
 
-    inline bool canDecode(QDropEvent *e) const {
-        QStringList modelTypes = model->mimeTypes();
-        const QMimeData *mime = e->mimeData();
-        for (int i = 0; i < modelTypes.count(); ++i)
-            if (mime->hasFormat(modelTypes.at(i))
-                && (e->dropAction() & model->supportedDropActions()))
-                return true;
+    inline bool canDecode(QDropEvent *event) {
+        QModelIndex index;
+        int col = -1;
+        int row = -1;
+        if (dropOn(event, &row, &col, &index)) {
+            return model->canDropMimeData(event->mimeData(),
+                                          dragDropMode == QAbstractItemView::InternalMove ? Qt::MoveAction : event->dropAction(),
+                                          row, col, index);
+        }
         return false;
     }
 

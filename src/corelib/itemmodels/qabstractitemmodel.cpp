@@ -1842,7 +1842,9 @@ QMimeData *QAbstractItemModel::mimeData(const QModelIndexList &indexes) const
 
 /*!
     Returns \c{true} if a model can accept a drop of the \a data. This
-    default implementation always returns \c{true}.
+    default implementation only checks if \a data has at least one format
+    in the list of mimeTypes() and if \a action is among the
+    model's supportedDropActions().
 
     Reimplement this function in your custom model, if you want to
     test whether the \a data can be dropped at \a row, \a column,
@@ -1855,12 +1857,19 @@ bool QAbstractItemModel::canDropMimeData(const QMimeData *data, Qt::DropAction a
                                          int row, int column,
                                          const QModelIndex &parent) const
 {
-    Q_UNUSED(data)
-    Q_UNUSED(action)
     Q_UNUSED(row)
     Q_UNUSED(column)
     Q_UNUSED(parent)
-    return true;
+
+    if (!(action & supportedDropActions()))
+        return false;
+
+    const QStringList modelTypes = mimeTypes();
+    for (int i = 0; i < modelTypes.count(); ++i) {
+        if (data->hasFormat(modelTypes.at(i)))
+            return true;
+    }
+    return false;
 }
 
 /*!
