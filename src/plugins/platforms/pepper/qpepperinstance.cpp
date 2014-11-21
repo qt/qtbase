@@ -168,8 +168,6 @@ void QPepperInstance::DidChangeView(const View &view)
     m_currentCssScale = cssScale;
     m_currentDevicePixelRatio = devicePixelRatio;
 
-    qDebug() << this->geometry() << this->deviceGeometry();
-
     // Start Qt on the first DidChangeView. This means we have a "screen" while
     // the application creates the root window etc, which makes life easier.
     if (!m_qtStarted) {
