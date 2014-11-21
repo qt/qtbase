@@ -57,7 +57,6 @@
 
 QT_BEGIN_NAMESPACE
 
-class QRawFontPrivate;
 class QCoreTextFontEngine : public QFontEngine
 {
 public:
@@ -127,8 +126,6 @@ public:
     static int antialiasingThreshold;
     static QFontEngine::GlyphFormat defaultGlyphFormat;
 private:
-    friend class QRawFontPrivate;
-
     void init();
     QImage imageForGlyph(glyph_t glyph, QFixed subPixelPosition, bool colorful, const QTransform &m);
     CTFontRef ctfont;
