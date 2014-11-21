@@ -37,17 +37,13 @@
 #include <QtCore/qhash.h>
 #include <QtCore/qstring.h>
 #include <QtCore/QThread>
+#include <QtCore/QReadWriteLock>
 
 QT_BEGIN_NAMESPACE
 
 static inline QString keyBase()
 {
     return QStringLiteral("%1%2%3");
-}
-
-static inline QByteArray threadBaseName()
-{
-    return QByteArrayLiteral("QtThread-");
 }
 
 static QString qt_convertJString(jstring string)
@@ -74,6 +70,7 @@ static inline bool exceptionCheckAndClear(JNIEnv *env)
 
 typedef QHash<QString, jclass> JClassHash;
 Q_GLOBAL_STATIC(JClassHash, cachedClasses)
+Q_GLOBAL_STATIC(QReadWriteLock, cachedClassesLock)
 
 static QString toDotEncodedClassName(const char *className)
 {
@@ -82,8 +79,9 @@ static QString toDotEncodedClassName(const char *className)
 
 static jclass getCachedClass(const QString &classDotEnc, bool *isCached = 0)
 {
-    QHash<QString, jclass>::iterator it = cachedClasses->find(classDotEnc);
-    const bool found = (it != cachedClasses->end());
+    QReadLocker locker(cachedClassesLock);
+    const QHash<QString, jclass>::const_iterator &it = cachedClasses->constFind(classDotEnc);
+    const bool found = (it != cachedClasses->constEnd());
 
     if (isCached != 0)
         *isCached = found;
@@ -101,6 +99,12 @@ static jclass loadClassDotEnc(const QString &classDotEnc, JNIEnv *env)
     QJNIObjectPrivate classLoader = QtAndroidPrivate::classLoader();
     if (!classLoader.isValid())
         return 0;
+
+    QWriteLocker locker(cachedClassesLock);
+    // did we lose the race?
+    const QHash<QString, jclass>::const_iterator &it = cachedClasses->constFind(classDotEnc);
+    if (it != cachedClasses->constEnd())
+        return it.value();
 
     QJNIObjectPrivate stringName = QJNIObjectPrivate::fromString(classDotEnc);
     QJNIObjectPrivate classObject = classLoader.callObjectMethod("loadClass",
@@ -121,6 +125,7 @@ inline static jclass loadClass(const char *className, JNIEnv *env)
 
 typedef QHash<QString, jmethodID> JMethodIDHash;
 Q_GLOBAL_STATIC(JMethodIDHash, cachedMethodID)
+Q_GLOBAL_STATIC(QReadWriteLock, cachedMethodIDLock)
 
 static jmethodID getCachedMethodID(JNIEnv *env,
                                    jclass clazz,
@@ -128,11 +133,24 @@ static jmethodID getCachedMethodID(JNIEnv *env,
                                    const char *sig,
                                    bool isStatic = false)
 {
-    jmethodID id = 0;
     // TODO: We need to use something else then the ref. from clazz to avoid collisions.
-    QString key = keyBase().arg(size_t(clazz)).arg(QLatin1String(name)).arg(QLatin1String(sig));
-    QHash<QString, jmethodID>::iterator it = cachedMethodID->find(key);
-    if (it == cachedMethodID->end()) {
+    const QString key = keyBase().arg(size_t(clazz)).arg(QLatin1String(name)).arg(QLatin1String(sig));
+    QHash<QString, jmethodID>::const_iterator it;
+
+    {
+        QReadLocker locker(cachedMethodIDLock);
+        it = cachedMethodID->constFind(key);
+        if (it != cachedMethodID->constEnd())
+            return it.value();
+    }
+
+    {
+        QWriteLocker locker(cachedMethodIDLock);
+        it = cachedMethodID->constFind(key);
+        if (it != cachedMethodID->constEnd())
+            return it.value();
+
+        jmethodID id = 0;
         if (isStatic)
             id = env->GetStaticMethodID(clazz, name, sig);
         else
@@ -142,14 +160,13 @@ static jmethodID getCachedMethodID(JNIEnv *env,
             id = 0;
 
         cachedMethodID->insert(key, id);
-    } else {
-        id = it.value();
+        return id;
     }
-    return id;
 }
 
 typedef QHash<QString, jfieldID> JFieldIDHash;
 Q_GLOBAL_STATIC(JFieldIDHash, cachedFieldID)
+Q_GLOBAL_STATIC(QReadWriteLock, cachedFieldIDLock)
 
 static jfieldID getCachedFieldID(JNIEnv *env,
                                  jclass clazz,
@@ -157,10 +174,23 @@ static jfieldID getCachedFieldID(JNIEnv *env,
                                  const char *sig,
                                  bool isStatic = false)
 {
-    jfieldID id = 0;
-    QString key = keyBase().arg(size_t(clazz)).arg(QLatin1String(name)).arg(QLatin1String(sig));
-    QHash<QString, jfieldID>::iterator it = cachedFieldID->find(key);
-    if (it == cachedFieldID->end()) {
+    const QString key = keyBase().arg(size_t(clazz)).arg(QLatin1String(name)).arg(QLatin1String(sig));
+    QHash<QString, jfieldID>::const_iterator it;
+
+    {
+        QReadLocker locker(cachedFieldIDLock);
+        it = cachedFieldID->constFind(key);
+        if (it != cachedFieldID->constEnd())
+            return it.value();
+    }
+
+    {
+        QWriteLocker locker(cachedFieldIDLock);
+        it = cachedFieldID->constFind(key);
+        if (it != cachedFieldID->constEnd())
+            return it.value();
+
+        jfieldID id = 0;
         if (isStatic)
             id = env->GetStaticFieldID(clazz, name, sig);
         else
@@ -170,10 +200,8 @@ static jfieldID getCachedFieldID(JNIEnv *env,
             id = 0;
 
         cachedFieldID->insert(key, id);
-    } else {
-        id = it.value();
+        return id;
     }
-    return id;
 }
 
 class QJNIEnvironmentPrivateTLS
@@ -187,14 +215,14 @@ public:
 
 Q_GLOBAL_STATIC(QThreadStorage<QJNIEnvironmentPrivateTLS *>, jniEnvTLS)
 
+static const char qJniThreadName[] = "QtThread";
+
 QJNIEnvironmentPrivate::QJNIEnvironmentPrivate()
     : jniEnv(0)
 {
     JavaVM *vm = QtAndroidPrivate::javaVM();
     if (vm->GetEnv((void**)&jniEnv, JNI_VERSION_1_6) == JNI_EDETACHED) {
-        const qulonglong id = reinterpret_cast<qulonglong>(QThread::currentThreadId());
-        const QByteArray threadName = threadBaseName() + QByteArray::number(id);
-        JavaVMAttachArgs args = { JNI_VERSION_1_6, threadName, Q_NULLPTR };
+        JavaVMAttachArgs args = { JNI_VERSION_1_6, qJniThreadName, Q_NULLPTR };
         if (vm->AttachCurrentThread(&jniEnv, &args) != JNI_OK)
             return;
     }
@@ -223,6 +251,12 @@ jclass QJNIEnvironmentPrivate::findClass(const char *className, JNIEnv *env)
         return clazz;
 
     if (env != 0) { // We got an env. pointer (We expect this to be the right env. and call FindClass())
+        QWriteLocker locker(cachedClassesLock);
+        const QHash<QString, jclass>::const_iterator &it = cachedClasses->constFind(classDotEnc);
+        // Did we lose the race?
+        if (it != cachedClasses->constEnd())
+            return it.value();
+
         jclass fclazz = env->FindClass(className);
         if (!exceptionCheckAndClear(env)) {
             clazz = static_cast<jclass>(env->NewGlobalRef(fclazz));
@@ -400,7 +434,6 @@ QJNIObjectPrivate::QJNIObjectPrivate(jobject obj)
     d->m_jclass = static_cast<jclass>(env->NewGlobalRef(objectClass));
     env->DeleteLocalRef(objectClass);
 }
-
 template <>
 void QJNIObjectPrivate::callMethodV<void>(const char *methodName, const char *sig, va_list args) const
 {
