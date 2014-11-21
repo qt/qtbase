@@ -59,6 +59,16 @@ pp::Point toPPPoint(QPoint point)
     return pp::Point(point.x(), point.y());
 }
 
+QByteArray toQByteArray(const pp::Var &var)
+{
+    return QByteArray(var.AsString().data());
+}
+
+pp::Var toPPVar(const QByteArray &data)
+{
+    return pp::Var(data.constData());
+}
+
 ThreadSafeRefCount::ThreadSafeRefCount()
    : ref(0) { }
 

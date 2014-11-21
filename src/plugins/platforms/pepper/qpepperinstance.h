@@ -23,6 +23,8 @@
 #include "qpeppereventtranslator.h"
 #include "qpepperhelpers.h"
 
+#include <qpa/qplatformtheme.h>
+
 #include <ppapi/cpp/instance.h>
 #include "ppapi/cpp/var.h"
 #include "ppapi/cpp/rect.h"
@@ -61,10 +63,12 @@ public:
     void scheduleWindowSystemEventsFlush();
     void postMessage(const QByteArray &message);
     void runJavascript(const QByteArray &script);
+    QPlatformTheme::KeyboardSchemes keyboardScheme();
 
     // privates:
     void startQt();
     void windowSystemEventsFlushCallback(int32_t);
+    void handleGetAppVersionMessage(const QByteArray &message);
 
     void drawTestImage();
     void flushCompletedCallback(int32_t);
@@ -83,6 +87,8 @@ public:
     pp::ImageData *m_imageData2D;
     QImage *m_frameBuffer;
     bool m_inFlush;
+    QPlatformTheme::KeyboardSchemes m_keyboardScheme;
+
     pp::CompletionCallbackFactory<QPepperInstance> m_callbackFactory;
 };
 

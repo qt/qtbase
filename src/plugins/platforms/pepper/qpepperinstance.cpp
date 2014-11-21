@@ -207,10 +207,27 @@ bool QPepperInstance::HandleDocumentLoad(const URLLoader& url_loader)
     return false;
 }
 
-// HandleMessage expects a message of the format "funcitonName:argument", or
-// "functionName" and will call the corresponding slot on qtScriptableObject.
 void QPepperInstance::HandleMessage(const Var& var_message)
 {
+    QByteArray message = toQByteArray(varMessage);
+    if (message.startsWith("qtGetAppVersion")) {
+        handleGetAppVersionMessage(message);
+    }
+}
+
+void QPepperInstance::handleGetAppVersionMessage(const QByteArray  &message)
+{
+    if (message.contains("OS X"))
+        m_keyboardScheme = QPlatformTheme::MacKeyboardScheme;
+    else if (message.contains("Win"))
+        m_keyboardScheme = QPlatformTheme::WindowsKeyboardScheme;
+    else
+        m_keyboardScheme = QPlatformTheme::X11KeyboardScheme;
+}
+
+QPlatformTheme::KeyboardSchemes QPepperInstance::keyboardScheme()
+{
+    return m_keyboardScheme;
 }
 
 QRect QPepperInstance::geometry()
@@ -257,7 +274,7 @@ void QPepperInstance::windowSystemEventsFlushCallback(int32_t)
 void QPepperInstance::postMessage(const QByteArray &message)
 {
     qCDebug(QT_PLATFORM_PEPPER_INSTANCE) << "postMessage" << message;
-    PostMessage(pp::Var(message.constData()));
+    PostMessage(toPPVar(message));
 }
 
 // Runs the given script on the containing web page, using
@@ -284,6 +301,14 @@ void QPepperInstance::startQt()
     m_pepperIntegraton = QPepperIntegration::getPepperIntegration();
     m_pepperIntegraton->setPepperInstance(this);
     m_pepperIntegraton->resizeScreen(toQSize(m_currentGeometry.size()), m_currentDevicePixelRatio);
+
+    // Look at navigator.appVersion to get the host OS.
+    const char *getAppVersionsMessageHandler = \
+        "this.qtMessageHandlers[\"qtGetAppVersion\"] = function(url) { "
+        "    embed.postMessage(\"qtGetAppVersion\"  + navigator.appVersion);"
+        "}";
+    runJavascript(getAppVersionsMessageHandler);
+    postMessage("qtGetAppVersion: ");
 
     qCDebug(QT_PLATFORM_PEPPER_INSTANCE) << "qGuiAppInit";
     // Run the applicaiton startup function which will create the root UI Window.

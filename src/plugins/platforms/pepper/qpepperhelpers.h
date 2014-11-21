@@ -25,6 +25,7 @@
 
 #include <ppapi/cpp/rect.h>
 #include <ppapi/cpp/point.h>
+#include <ppapi/cpp/var.h>
 
 pp::Rect toPPRect(const QRect rect);
 QRect toQRect(pp::Rect rect);
@@ -34,6 +35,8 @@ QPointF toQPointF(pp::FloatPoint point);
 pp::FloatPoint toPPFloatPoint(QPointF point);
 QPoint toQPointF(pp::Point point);
 pp::Point toPPFloatPoint(QPoint point);
+QByteArray toQByteArray(const pp::Var &var);
+pp::Var toPPVar(const QByteArray &data);
 
 // QAtomic-based ref count for the callback factory.
 class ThreadSafeRefCount

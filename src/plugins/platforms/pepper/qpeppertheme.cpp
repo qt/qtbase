@@ -18,6 +18,7 @@
 ****************************************************************************/
 
 #include "qpeppertheme.h"
+#include "qpepperinstance.h"
 
 #include <QtCore/QStringList>
 #include <QtCore/QVariant>
@@ -39,6 +40,8 @@ QVariant QPepperTheme::themeHint(ThemeHint hint) const
     switch (hint) {
     case QPlatformTheme::StyleNames:
         return QStringList(QStringLiteral("cleanlooks"));
+    case QPlatformTheme::KeyboardScheme:
+        return QPepperInstance::get()->keyboardScheme();
     default:
         break;
     }
