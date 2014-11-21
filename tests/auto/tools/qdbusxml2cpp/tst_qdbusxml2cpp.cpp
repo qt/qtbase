@@ -160,6 +160,16 @@ void tst_qdbusxml2cpp::process_data()
                                       .arg(basicTypeList[i].cppType), QRegularExpression::DotMatchesEverythingOption);
     }
 
+    QTest::newRow("method-name")
+        << "<method name=\"Method\">"
+            "<arg type=\"s\" direction=\"in\"/>"
+            "<annotation name=\"org.qtproject.QtDBus.MethodName\" value=\"MethodRenamed\" />"
+            "</method>"
+        << QRegularExpression("Q_SLOTS:.*QDBusPendingReply<> MethodRenamed\\(const QString &\\w*",
+                                QRegularExpression::DotMatchesEverythingOption)
+        << QRegularExpression("Q_SLOTS:.*void MethodRenamed\\(const QString &\\w*",
+                                QRegularExpression::DotMatchesEverythingOption);
+
     QTest::newRow("method-complex")
             << "<method name=\"Method\">"
                "<arg type=\"(dd)\" direction=\"in\"/>"

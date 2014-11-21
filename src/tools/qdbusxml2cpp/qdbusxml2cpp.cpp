@@ -488,6 +488,15 @@ static QString propertySetter(const QDBusIntrospection::Property &property)
     return setter;
 }
 
+static QString methodName(const QDBusIntrospection::Method &method)
+{
+    QString name = method.annotations.value(QStringLiteral("org.qtproject.QtDBus.MethodName"));
+    if (!name.isEmpty())
+        return name;
+
+    return method.name;
+}
+
 static QString stringify(const QString &data)
 {
     QString retval;
@@ -679,7 +688,7 @@ static void writeProxy(const QString &filename, const QDBusIntrospection::Interf
                 hs << "> ";
             }
 
-            hs << method.name << "(";
+            hs << methodName(method) << "(";
 
             QStringList argNames = makeArgNames(method.inputArgs);
             writeArgList(hs, argNames, method.annotations, method.inputArgs);
@@ -1012,7 +1021,7 @@ static void writeAdaptor(const QString &filename, const QDBusIntrospection::Inte
                 cs << returnType << " ";
             }
 
-            QString name = method.name;
+            QString name = methodName(method);
             hs << name << "(";
             cs << className << "::" << name << "(";
 
@@ -1023,7 +1032,7 @@ static void writeAdaptor(const QString &filename, const QDBusIntrospection::Inte
             hs << ");" << endl; // finished for header
             cs << ")" << endl
                << "{" << endl
-               << "    // handle method call " << interface->name << "." << method.name << endl;
+               << "    // handle method call " << interface->name << "." << methodName(method) << endl;
 
             // make the call
             bool usingInvokeMethod = false;
