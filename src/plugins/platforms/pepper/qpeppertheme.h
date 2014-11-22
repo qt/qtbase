@@ -24,13 +24,18 @@
 
 QT_BEGIN_NAMESPACE
 
-class QPepperTheme : public QPlatformTheme
+class QPepperTheme : public QObject, public QPlatformTheme
 {
+Q_OBJECT
 public:
     QPepperTheme();
     ~QPepperTheme();
 
     QVariant themeHint(ThemeHint hint) const;
+public Q_SLOTS:
+    void handleGetAppVersionMessage(const QByteArray &message);
+private:
+    QPlatformTheme::KeyboardSchemes m_keyboardScheme;
 };
 
 QT_END_NAMESPACE

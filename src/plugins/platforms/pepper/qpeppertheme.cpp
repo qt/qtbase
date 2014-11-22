@@ -27,8 +27,21 @@ QT_BEGIN_NAMESPACE
 
 
 QPepperTheme::QPepperTheme()
+    :m_keyboardScheme(QPlatformTheme::X11KeyboardScheme)
 {
+    // Look at navigator.appVersion to get the host OS.
+    // ## These calls to javascript are async, which means m_keyboardScheme
+    // may not be set correctly during startup before handleGetAppVersionMessage
+    // is called.
 
+    QPepperInstance *instance = QPepperInstance::get();
+    instance->registerMessageHandler("qtGetAppVersion", this, "handleGetAppVersionMessage");
+    const char *getAppVersionsScript = \
+        "this.qtMessageHandlers[\"qtGetAppVersion\"] = function(url) { "
+        "    embed.postMessage(\"qtGetAppVersion: \"  + navigator.appVersion);"
+        "}";
+    instance->runJavascript(getAppVersionsScript);
+    instance->postMessage("qtGetAppVersion: ");
 }
 
 QPepperTheme::~QPepperTheme()
@@ -41,11 +54,21 @@ QVariant QPepperTheme::themeHint(ThemeHint hint) const
     case QPlatformTheme::StyleNames:
         return QStringList(QStringLiteral("cleanlooks"));
     case QPlatformTheme::KeyboardScheme:
-        return QPepperInstance::get()->keyboardScheme();
+        return m_keyboardScheme;
     default:
         break;
     }
     return QPlatformTheme::themeHint(hint);
+}
+
+void QPepperTheme::handleGetAppVersionMessage(const QByteArray &message)
+{
+    if (message.contains("OS X"))
+        m_keyboardScheme = QPlatformTheme::MacKeyboardScheme;
+    else if (message.contains("Win"))
+        m_keyboardScheme = QPlatformTheme::WindowsKeyboardScheme;
+    else
+        m_keyboardScheme = QPlatformTheme::X11KeyboardScheme;
 }
 
 

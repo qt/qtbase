@@ -207,25 +207,24 @@ bool QPepperInstance::HandleDocumentLoad(const URLLoader& url_loader)
 
 void QPepperInstance::HandleMessage(const Var& var_message)
 {
-    QByteArray message = toQByteArray(var_message);
-    if (message.startsWith("qtGetAppVersion")) {
-        handleGetAppVersionMessage(message);
+    // Expect messages formatted like "tag:message". Dispatch the
+    // message to the handler registered for "tag".
+    QByteArray q_message = toQByteArray(var_message);
+    int split = q_message.indexOf(':');
+    if (split == -1)
+        return;
+    QByteArray tag = q_message.mid(0, split);
+    QByteArray message = q_message.mid(split + 1);
+    if (m_messageHandlers.contains(tag)) {
+        QPair<QPointer<QObject>, const char *> handler = m_messageHandlers[tag];
+        if (!handler.first.isNull())
+            QMetaObject::invokeMethod(handler.first.data(), handler.second, Q_ARG(QByteArray, message));
     }
 }
 
-void QPepperInstance::handleGetAppVersionMessage(const QByteArray  &message)
+void QPepperInstance::registerMessageHandler(const QByteArray &messageTag, QObject *obj, const char *slot)
 {
-    if (message.contains("OS X"))
-        m_keyboardScheme = QPlatformTheme::MacKeyboardScheme;
-    else if (message.contains("Win"))
-        m_keyboardScheme = QPlatformTheme::WindowsKeyboardScheme;
-    else
-        m_keyboardScheme = QPlatformTheme::X11KeyboardScheme;
-}
-
-QPlatformTheme::KeyboardSchemes QPepperInstance::keyboardScheme()
-{
-    return m_keyboardScheme;
+    m_messageHandlers[messageTag] = qMakePair(QPointer<QObject>(obj), slot);
 }
 
 QRect QPepperInstance::geometry()
@@ -299,14 +298,6 @@ void QPepperInstance::startQt()
     m_pepperIntegraton = QPepperIntegration::getPepperIntegration();
     m_pepperIntegraton->setPepperInstance(this);
     m_pepperIntegraton->resizeScreen(toQSize(m_currentGeometry.size()), m_currentDevicePixelRatio);
-
-    // Look at navigator.appVersion to get the host OS.
-    const char *getAppVersionsMessageHandler = \
-        "this.qtMessageHandlers[\"qtGetAppVersion\"] = function(url) { "
-        "    embed.postMessage(\"qtGetAppVersion\"  + navigator.appVersion);"
-        "}";
-    runJavascript(getAppVersionsMessageHandler);
-    postMessage("qtGetAppVersion: ");
 
     qCDebug(QT_PLATFORM_PEPPER_INSTANCE) << "qGuiAppInit";
     // Run the applicaiton startup function which will create the root UI Window.

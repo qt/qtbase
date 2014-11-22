@@ -24,6 +24,7 @@
 #include "qpepperhelpers.h"
 
 #include <qpa/qplatformtheme.h>
+#include <QtCore/qhash.h>
 
 #include <ppapi/cpp/instance.h>
 #include "ppapi/cpp/var.h"
@@ -63,6 +64,7 @@ public:
     void scheduleWindowSystemEventsFlush();
     void postMessage(const QByteArray &message);
     void runJavascript(const QByteArray &script);
+    void registerMessageHandler(const QByteArray &messageTag, QObject *obj, const char *slot);
     QPlatformTheme::KeyboardSchemes keyboardScheme();
 
     // privates:
@@ -87,7 +89,7 @@ public:
     pp::ImageData *m_imageData2D;
     QImage *m_frameBuffer;
     bool m_inFlush;
-    QPlatformTheme::KeyboardSchemes m_keyboardScheme;
+    QHash<QByteArray, QPair<QPointer<QObject>, const char *> >m_messageHandlers;
 
     pp::CompletionCallbackFactory<QPepperInstance> m_callbackFactory;
 };
