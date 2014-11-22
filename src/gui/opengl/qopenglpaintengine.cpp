@@ -1528,10 +1528,8 @@ void QOpenGL2PaintEngineEx::drawTextItem(const QPointF &p, const QTextItem &text
 
         {
             QStaticTextItem staticTextItem;
-            staticTextItem.chars = const_cast<QChar *>(ti.chars);
             staticTextItem.setFontEngine(ti.fontEngine);
             staticTextItem.glyphs = glyphs.data();
-            staticTextItem.numChars = ti.num_chars;
             staticTextItem.numGlyphs = glyphs.size();
             staticTextItem.glyphPositions = positions.data();
 

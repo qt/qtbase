@@ -393,7 +393,7 @@ QSizeF QStaticText::size() const
 }
 
 QStaticTextPrivate::QStaticTextPrivate()
-        : textWidth(-1.0), items(0), itemCount(0), glyphPool(0), positionPool(0), charPool(0),
+        : textWidth(-1.0), items(0), itemCount(0), glyphPool(0), positionPool(0),
           needsRelayout(true), useBackendOptimizations(false), textFormat(Qt::AutoText),
           untransformedCoordinates(false)
 {
@@ -401,7 +401,7 @@ QStaticTextPrivate::QStaticTextPrivate()
 
 QStaticTextPrivate::QStaticTextPrivate(const QStaticTextPrivate &other)
     : text(other.text), font(other.font), textWidth(other.textWidth), matrix(other.matrix),
-      items(0), itemCount(0), glyphPool(0), positionPool(0), charPool(0), textOption(other.textOption),
+      items(0), itemCount(0), glyphPool(0), positionPool(0), textOption(other.textOption),
       needsRelayout(true), useBackendOptimizations(other.useBackendOptimizations),
       textFormat(other.textFormat), untransformedCoordinates(other.untransformedCoordinates)
 {
@@ -412,7 +412,6 @@ QStaticTextPrivate::~QStaticTextPrivate()
     delete[] items;
     delete[] glyphPool;
     delete[] positionPool;
-    delete[] charPool;
 }
 
 QStaticTextPrivate *QStaticTextPrivate::get(const QStaticText *q)
@@ -447,8 +446,6 @@ namespace {
             QStaticTextItem currentItem;
             currentItem.setFontEngine(ti.fontEngine);
             currentItem.font = ti.font();
-            currentItem.charOffset = m_chars.size();
-            currentItem.numChars = ti.num_chars;
             currentItem.glyphOffset = m_glyphs.size(); // Store offset into glyph pool
             currentItem.positionOffset = m_glyphs.size(); // Offset into position pool
             currentItem.useBackendOptimizations = m_useBackendOptimizations;
@@ -468,16 +465,12 @@ namespace {
 
             m_glyphs.resize(m_glyphs.size() + size);
             m_positions.resize(m_glyphs.size());
-            m_chars.resize(m_chars.size() + ti.num_chars);
 
             glyph_t *glyphsDestination = m_glyphs.data() + currentItem.glyphOffset;
             memcpy(glyphsDestination, glyphs.constData(), sizeof(glyph_t) * currentItem.numGlyphs);
 
             QFixedPoint *positionsDestination = m_positions.data() + currentItem.positionOffset;
             memcpy(positionsDestination, positions.constData(), sizeof(QFixedPoint) * currentItem.numGlyphs);
-
-            QChar *charsDestination = m_chars.data() + currentItem.charOffset;
-            memcpy(charsDestination, ti.chars, sizeof(QChar) * currentItem.numChars);
 
             m_items.append(currentItem);
         }
@@ -510,16 +503,10 @@ namespace {
             return m_glyphs;
         }
 
-        QVector<QChar> chars() const
-        {
-            return m_chars;
-        }
-
     private:
         QVector<QStaticTextItem> m_items;
         QVector<QFixedPoint> m_positions;
         QVector<glyph_t> m_glyphs;
-        QVector<QChar> m_chars;
 
         bool m_dirtyPen;
         bool m_useBackendOptimizations;
@@ -593,11 +580,6 @@ namespace {
         QVector<QStaticTextItem> items() const
         {
             return m_paintEngine->items();
-        }
-
-        QVector<QChar> chars() const
-        {
-            return m_paintEngine->chars();
         }
 
     private:
@@ -677,7 +659,6 @@ void QStaticTextPrivate::init()
     delete[] items;
     delete[] glyphPool;
     delete[] positionPool;
-    delete[] charPool;
 
     position = QPointF(0, 0);
 
@@ -693,7 +674,6 @@ void QStaticTextPrivate::init()
     QVector<QStaticTextItem> deviceItems = device.items();
     QVector<QFixedPoint> positions = device.positions();
     QVector<glyph_t> glyphs = device.glyphs();
-    QVector<QChar> chars = device.chars();
 
     itemCount = deviceItems.size();
     items = new QStaticTextItem[itemCount];
@@ -704,15 +684,11 @@ void QStaticTextPrivate::init()
     positionPool = new QFixedPoint[positions.size()];
     memcpy(positionPool, positions.constData(), positions.size() * sizeof(QFixedPoint));
 
-    charPool = new QChar[chars.size()];
-    memcpy(charPool, chars.constData(), chars.size() * sizeof(QChar));
-
     for (int i=0; i<itemCount; ++i) {
         items[i] = deviceItems.at(i);
 
         items[i].glyphs = glyphPool + items[i].glyphOffset;
         items[i].glyphPositions = positionPool + items[i].positionOffset;
-        items[i].chars = charPool + items[i].charOffset;
     }
 
     needsRelayout = false;

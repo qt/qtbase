@@ -70,7 +70,7 @@ public:
 class Q_GUI_EXPORT QStaticTextItem
 {
 public:
-    QStaticTextItem() : chars(0), numChars(0), useBackendOptimizations(false),
+    QStaticTextItem() : useBackendOptimizations(false),
                         userDataNeedsUpdate(0), usesRawFont(0),
                         m_fontEngine(0), m_userData(0) {}
 
@@ -83,9 +83,7 @@ public:
     {
         glyphPositions = other.glyphPositions;
         glyphs = other.glyphs;
-        chars = other.chars;
         numGlyphs = other.numGlyphs;
-        numChars = other.numChars;
         font = other.font;
         color = other.color;
         useBackendOptimizations = other.useBackendOptimizations;
@@ -125,28 +123,22 @@ public:
         glyph_t *glyphs;                         // 4 bytes per glyph
         int glyphOffset;
     };
-    union {
-        QChar *chars;                            // 2 bytes per glyph
-        int charOffset;
-    };
                                                  // =================
-                                                 // 14 bytes per glyph
+                                                 // 12 bytes per glyph
 
-                                                 // 12 bytes for pointers
+                                                 // 8 bytes for pointers
     int numGlyphs;                               // 4 bytes per item
-    int numChars;                                // 4 bytes per item
     QFont font;                                  // 8 bytes per item
     QColor color;                                // 10 bytes per item
     char useBackendOptimizations : 1;            // 1 byte per item
     char userDataNeedsUpdate : 1;                //
     char usesRawFont : 1;                        //
-                                                 // ================
-                                                 // 51 bytes per item
 
 private: // Needs special handling in setters, so private to avoid abuse
     QFontEngine *m_fontEngine;                     // 4 bytes per item
     QStaticTextUserData *m_userData;               // 8 bytes per item
-
+                                                 // ================
+                                                 // 43 bytes per item
 };
 
 class QStaticText;
@@ -179,7 +171,6 @@ public:
 
     glyph_t *glyphPool;                  // 4 bytes per text
     QFixedPoint *positionPool;           // 4 bytes per text
-    QChar *charPool;                     // 4 bytes per text
 
     QTextOption textOption;              // 28 bytes per text
 
@@ -188,7 +179,7 @@ public:
     unsigned char textFormat               : 2;
     unsigned char untransformedCoordinates : 1;
                                          // ================
-                                         // 195 bytes per text
+                                         // 191 bytes per text
 
     static QStaticTextPrivate *get(const QStaticText *q);
 };
