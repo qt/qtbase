@@ -101,7 +101,7 @@ public:
         };
 
         explicit WindowSystemEvent(EventType t)
-            : type(t), flags(0) { }
+            : type(t), flags(0),  eventAccepted(true) { }
         virtual ~WindowSystemEvent() { }
 
         bool synthetic() const  { return flags & Synthetic; }
@@ -109,6 +109,7 @@ public:
 
         EventType type;
         int flags;
+        bool eventAccepted;
     };
 
     class CloseEvent : public WindowSystemEvent {
@@ -480,7 +481,7 @@ public:
     static WindowSystemEvent *getNonUserInputWindowSystemEvent();
     static WindowSystemEvent *peekWindowSystemEvent(EventType t);
     static void removeWindowSystemEvent(WindowSystemEvent *event);
-    static void handleWindowSystemEvent(WindowSystemEvent *ev);
+    static bool handleWindowSystemEvent(WindowSystemEvent *ev);
 
     static QElapsedTimer eventTime;
     static bool synchronousWindowSystemEvents;

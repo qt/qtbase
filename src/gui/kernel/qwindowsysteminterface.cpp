@@ -424,10 +424,12 @@ void QWindowSystemInterfacePrivate::removeWindowSystemEvent(WindowSystemEvent *e
     windowSystemEventQueue.remove(event);
 }
 
-void QWindowSystemInterfacePrivate::handleWindowSystemEvent(QWindowSystemInterfacePrivate::WindowSystemEvent *ev)
+bool QWindowSystemInterfacePrivate::handleWindowSystemEvent(QWindowSystemInterfacePrivate::WindowSystemEvent *ev)
 {
+    bool eventAccepted = true; // accept all events by default
     if (synchronousWindowSystemEvents) {
         QGuiApplicationPrivate::processWindowSystemEvent(ev);
+        eventAccepted = ev->eventAccepted;
         delete ev;
     } else {
         windowSystemEventQueue.append(ev);
@@ -435,6 +437,7 @@ void QWindowSystemInterfacePrivate::handleWindowSystemEvent(QWindowSystemInterfa
         if (dispatcher)
             dispatcher->wakeUp();
     }
+    return eventAccepted;
 }
 
 void QWindowSystemInterface::registerTouchDevice(QTouchDevice *device)
