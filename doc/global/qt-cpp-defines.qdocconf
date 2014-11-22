@@ -33,6 +33,7 @@ Cpp.ignoretokens        += \
                           Q_DECL_DEPRECATED \
                           Q_DECL_NOEXCEPT \
                           Q_DECL_FINAL \
+                          Q_DECL_OVERRIDE \
                           Q_DECL_NOTHROW \
                           Q_DECL_PURE_FUNCTION \
                           Q_DECL_UNUSED \
