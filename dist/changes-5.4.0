@@ -198,6 +198,10 @@ QtGui
 -----
 
  - Added QPixelFormat class.
+ - Added QOpenGLWidget class.
+ - Added QOpenGLWindow class.
+ - Added QRasterWindow class.
+ - QOpenGLContext is now able to adopt existing native contexts.
  - [QTBUG-38168] QtGui's OpenGL headers are now automatically including the
    highest available header (gl31.h, gl3.h or gl2.h) in OpenGL ES builds.
  - [QTBUG-36483] Dynamic OpenGL implementation loading is now supported on
@@ -205,6 +209,10 @@ QtGui
  - [QTBUG-39583] Keymaps are now changeable at runtime when using eglfs.
  - [QTBUG-40841] environment variable QT_DBL_CLICK_DIST customizes the
    amount of movement allowed when detecting a double click.
+ - [QTBUG-37552] The eglfs mouse cursor properly resets the array buffer
+   from now on to avoid rendering issues.
+ - [QTBUG-40093] QWindow::close() is changed to send a QCloseEvent which
+   must be accepted before destroy() will be called.
 
  - Clipboard:
    * [QTBUG-41852] Fixed a memory leak in setMimeData() when the platform
@@ -250,7 +258,11 @@ QtGui
      accounting for QDataStream versions greater than Qt 4.5.
 
  - Tablet support:
-   * [QTBUG-39458] Added buttons to QTabletEvent
+   * [QTBUG-39458] Added buttons to QTabletEvent.
+   * [QTBUG-39666] Events correctly identify the tool.
+   * [QTBUG-39570][QTBUG-40469] Corrected valuator ranges across platforms.
+   * Better support for non-Wacom devices.
+   * Better manual test to verify more features.
 
  - Text:
    * [QTBUG-41372] Fixed regression when rendering Uchen text in WebKit
@@ -311,6 +323,8 @@ QtWidgets
  - [QTBUG-32888] Accessibility for widgets is now included in the widget
    library instead of being a separate plugin. For static builds this means
    that libqtaccessiblewidgets is no longer required.
+ - [QTBUG-39814] Accessors for Qt::MouseEventSource and Qt::MouseEventFlags
+   are now available in QGraphicsSceneMouseEvent.
 
  - QComboBox:
    * [QTBUG-33537] Fixed positions of items when QComboBox is set as
@@ -365,6 +379,10 @@ QtWidgets
 *                      Platform Specific Changes                           *
 ****************************************************************************
 
+- Several QPA logging categories are added under qt.qpa to enable logging
+  of various platform-specific details. qt.qpa.input is now used
+  consistently.
+
 Android
 -------
 
@@ -408,10 +426,9 @@ Linux/XCB
    is no alpha channel or system tray visual.
  - environment variables QT_XCB_DEBUG_XINPUT and
    QT_XCB_DEBUG_XINPUT_DEVICES are deprecated and replaced with logging
-   categories qt.qpa.events.input and qt.qpa.devices respectively
- - [QTBUG-39572] Wacom touch devices are not mistaken for additional
-   graphics tablets any more.
-
+   categories qt.qpa.input and qt.qpa.input.devices respectively
+ - [QTBUG-39572] Wacom touch devices are now working correctly.
+ - [QTBUG-42249] A path to a font file can now contain non-Latin characters.
 
 OS X
 ----
@@ -522,3 +539,6 @@ rcc
    extensions.
  - [QTBUG-40649][QTBUG-40658][QTBUG-41031][QTBUG-41081][QTBUG-41308][QTBUG-
    41563] ANGLE updated to 2.1~f8602ad91e4f
+ - [QTBUG-41031] The ANGLE D3D11 renderer is now enabled by default. Systems
+   which cannot use the new renderer will automatically fall back to the D3D9
+   renderer at runtime.
