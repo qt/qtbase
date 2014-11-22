@@ -35,8 +35,9 @@ QT_BEGIN_NAMESPACE
 
 class QPlatformFontDatabase; 
 class QPepperFontDatabase;
+class QPlatformClipboard;
+class QPepperClipboard;
 class QPepperCompositor;
-class QPepperJavascriptBridge;
 class QPepperPlatformWindow;
 class QPepperServices;
 class QAbstractEventDispatcher;
@@ -56,6 +57,7 @@ public:
     QAbstractEventDispatcher* createEventDispatcher() const;
 
     QPlatformFontDatabase *fontDatabase() const;
+    QPlatformClipboard *clipboard() const;
 
     QStringList themeNames() const;
     QPlatformTheme *createPlatformTheme(const QString &name) const;
@@ -88,6 +90,7 @@ public:
 
     mutable QPepperPlatformWindow *m_topLevelWindow;
     mutable QPepperFontDatabase *m_fontDatabase;
+    mutable QPepperClipboard *m_clipboard;
     mutable QPepperServices *m_services;
 
 };

@@ -15,7 +15,8 @@ SOURCES += $$PWD/qpepperpluginmain.cpp \
            $$PWD/qpeppercompositor.cpp \
            $$PWD/qpeppereventdispatcher.cpp \
            $$PWD/qpeppercursor.cpp \
-           $$PWD/qpepperservices.cpp
+           $$PWD/qpepperservices.cpp \
+           $$PWD/qpepperclipboard.cpp
 
 HEADERS += $$PWD/qpepperhelpers.h \
            $$PWD/qpeppermodule.h \
@@ -33,7 +34,8 @@ HEADERS += $$PWD/qpepperhelpers.h \
            $$PWD/qpeppercompositor.h \
            $$PWD/qpeppereventdispatcher.h \
            $$PWD/qpeppercursor.h \
-           $$PWD/qpepperservices.h
+           $$PWD/qpepperservices.h \
+           $$PWD/qpepperclipboard.h
 
 RESOURCES += $$PWD/../../../../lib/fonts/naclfonts.qrc
 

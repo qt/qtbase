@@ -21,6 +21,7 @@
 #include "qpepperscreen.h"
 #include "qpepperplatformwindow.h"
 #include "qpepperfontdatabase.h"
+#include "qpepperclipboard.h"
 #include "qpepperbackingstore.h"
 #include "qpeppereventdispatcher.h"
 #include "qpeppertheme.h"
@@ -64,6 +65,7 @@ QPepperIntegration::QPepperIntegration()
     m_pepperEventDispatcher = 0;
     m_topLevelWindow = 0;
     m_fontDatabase = 0;
+    m_clipboard = 0;
     m_services = 0;
 }
 
@@ -114,6 +116,15 @@ QPlatformFontDatabase *QPepperIntegration::fontDatabase() const
         m_fontDatabase = new QPepperFontDatabase();
 
     return m_fontDatabase;
+}
+
+QPlatformClipboard *QPepperIntegration::clipboard() const
+{
+//  WIP: disabled.
+//    if (m_clipboard == 0)
+//        m_clipboard = new QPepperClipboard();
+//    return m_clipboard;
+    return QPlatformIntegration::clipboard();
 }
 
 QStringList QPepperIntegration::themeNames() const
