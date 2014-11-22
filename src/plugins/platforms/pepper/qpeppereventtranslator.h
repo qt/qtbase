@@ -21,10 +21,14 @@
 #define QT_PEPPEREVENT_TRANSLATOR_H
 
 #ifndef QT_NO_PEPPER_INTEGRATION
+
+#include <QtCore/qobject.h>
+#include <QtCore/qloggingcategory.h>
+
+Q_DECLARE_LOGGING_CATEGORY(QT_PLATFORM_PEPPER_EVENT_KEYBOARD)
+
 #include "ppapi/c/pp_input_event.h"
 #include "ppapi/cpp/input_event.h"
-
-#include <QtGui>
 
 class PepperEventTranslator : public QObject
 {

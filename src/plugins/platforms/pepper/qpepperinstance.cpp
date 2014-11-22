@@ -114,7 +114,11 @@ bool QPepperInstance::Init(uint32_t argc, const char* argn[], const char* argv[]
         qCDebug(QT_PLATFORM_PEPPER_INSTANCE) << "setting environment variable" << name << "=" << value;
     }
 
-    RequestInputEvents(PP_INPUTEVENT_CLASS_MOUSE | PP_INPUTEVENT_CLASS_WHEEL | PP_INPUTEVENT_CLASS_KEYBOARD);
+    // Enable input event types Qt is interested in. Filtering input events
+    // are special: Qt can reject those and the event will bubble to the rest
+    // of the page.
+    RequestInputEvents(PP_INPUTEVENT_CLASS_MOUSE | PP_INPUTEVENT_CLASS_WHEEL);
+    RequestFilteringInputEvents(PP_INPUTEVENT_CLASS_KEYBOARD);
 
     return true;
 }

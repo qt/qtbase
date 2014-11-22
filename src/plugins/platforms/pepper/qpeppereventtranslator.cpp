@@ -30,8 +30,11 @@
 
 #ifndef QT_NO_PEPPER_INTEGRATION
 
+Q_LOGGING_CATEGORY(QT_PLATFORM_PEPPER_EVENT_KEYBOARD, "qt.platform.pepper.event.keyboard")
+
 PepperEventTranslator::PepperEventTranslator()
 {
+    QWindowSystemInterface::setSynchronousWindowsSystemEvents(true);
 }
 
 bool PepperEventTranslator::processEvent(const pp::InputEvent& event)
@@ -117,41 +120,44 @@ bool PepperEventTranslator::processWheelEvent(const pp::WheelInputEvent &event)
     return true;
 }
 
-/*
-    Key translation: Pepper sends three types of events. Pressing and
-    holding a key gives the following sequence:
-    NPEventType_KeyDown
-    NPEventType_Char
-    NPEventType_KeyDown
-    NPEventType_Char
-    ...
-    NPEventType_KeyUp
 
-    Translate this to Qt KeyPress/KeyRelease events by sending
-    the Press on NPEventType_Char.
-*/
+//    Key translation: Pepper sends three types of events. Pressing and
+//    holding a key gives the following sequence:
+//
+//        NPEventType_KeyDown
+//        [NPEventType_Char]
+//        NPEventType_KeyDown
+//        [NPEventType_Char]
+//        ...
+//        NPEventType_KeyUp
+//
+//    The "NPEventType_Char" is optional and is sent only when the key stroke should
+//    generate text input. Qt needs the text from the NPEventType_Char event; delay
+//    sending the keypress until NPEventType_Char in cases where the KeyDown will be
+//    followed by a NPEventType_Char.
+//
 bool PepperEventTranslator::processKeyEvent(const pp::KeyboardInputEvent &event, PP_InputEvent_Type eventType)
 {
     Qt::KeyboardModifiers modifiers = translatePepperKeyModifiers(event.GetModifiers());
-    bool alphanumretic;
-    Qt::Key key = translatePepperKey(event.GetKeyCode(), &alphanumretic);
+    bool alphanumeric;
+    Qt::Key key = translatePepperKey(event.GetKeyCode(), &alphanumeric);
 
     QWindow *window = 0;
     emit getKeyWindow(&window);
 
     if (eventType == PP_INPUTEVENT_TYPE_KEYDOWN) {
         currentPepperKey = event.GetKeyCode();
-        if (!alphanumretic) {
-            QWindowSystemInterface::handleKeyEvent(window, QEvent::KeyPress, key, modifiers);
-           // qDebug() << "send Key Down" << event.GetKeyCode() << hex << modifiers;
+        qCDebug(QT_PLATFORM_PEPPER_EVENT_KEYBOARD) << "Key Down" << currentPepperKey << "alphanum" << alphanumeric;
+        if (!alphanumeric || modifiers != Qt::NoModifier) {
+            return QWindowSystemInterface::handleKeyEvent(window, QEvent::KeyPress, key, modifiers);
         }
     }
 
     if (eventType == PP_INPUTEVENT_TYPE_KEYUP) {
-       // qDebug() << "send Key Up" << event.key_code << hex << modifiers;
-        QWindowSystemInterface::handleKeyEvent(window, QEvent::KeyRelease, key,  modifiers);
+        qCDebug(QT_PLATFORM_PEPPER_EVENT_KEYBOARD) << "Key Up" << currentPepperKey;
+        return QWindowSystemInterface::handleKeyEvent(window, QEvent::KeyRelease, key,  modifiers);
     }
-    return true;
+    return false;
 }
 
 bool PepperEventTranslator::processCharacterEvent(const pp::KeyboardInputEvent &event)
@@ -160,12 +166,16 @@ bool PepperEventTranslator::processCharacterEvent(const pp::KeyboardInputEvent &
     Qt::KeyboardModifiers modifiers = translatePepperKeyModifiers(event.GetModifiers());
     Qt::Key key = translatePepperKey(currentPepperKey, 0);
 
+    qCDebug(QT_PLATFORM_PEPPER_EVENT_KEYBOARD) << "Key Character" << key << text;
+
+    // Discard duplicate Key_Return: handled in PP_INPUTEVENT_TYPE_KEYDOWN above
+    if (key == Qt::Key_Return)
+        return false;
+
     QWindow *window = 0;
     emit getKeyWindow(&window);
 
-    QWindowSystemInterface::handleKeyEvent(window, QEvent::KeyPress, key, modifiers, text);
-
-    return true;
+    return QWindowSystemInterface::handleKeyEvent(window, QEvent::KeyPress, key, modifiers, text);
 }
 
 Qt::MouseButton PepperEventTranslator::translatePepperMouseButton(PP_InputEvent_MouseButton pepperButton)
@@ -202,11 +212,11 @@ Qt::MouseButtons PepperEventTranslator::translatePepperMouseModifiers(uint32_t m
     added first.
 */
 
-Qt::Key PepperEventTranslator::translatePepperKey(uint32_t pepperKey, bool *outAlphanumretic)
+Qt::Key PepperEventTranslator::translatePepperKey(uint32_t pepperKey, bool *outAlphanumeric)
 {
     Qt::Key qtKey;
-    if (outAlphanumretic)
-        *outAlphanumretic = false;
+    if (outAlphanumeric)
+        *outAlphanumeric = false;
 
     using namespace base; // keybaord codes from keyboard_codes_posix.h
 
@@ -270,8 +280,8 @@ Qt::Key PepperEventTranslator::translatePepperKey(uint32_t pepperKey, bool *outA
         case VKEY_F24: qtKey = Qt::Key_F24; break;
 
       default:
-            if (outAlphanumretic)
-                *outAlphanumretic = true;
+            if (outAlphanumeric)
+                *outAlphanumeric = true;
             qtKey = static_cast<Qt::Key>(pepperKey);
         break;
     }
