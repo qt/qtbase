@@ -16,6 +16,7 @@ src_tools_rcc.CONFIG = host_build
 
 src_tools_qlalr.subdir = tools/qlalr
 src_tools_qlalr.target = sub-qlalr
+src_tools_qlalr.CONFIG = host_build
 force_bootstrap: src_tools_qlalr.depends = src_tools_bootstrap
 else: src_tools_qlalr.depends = src_corelib
 
