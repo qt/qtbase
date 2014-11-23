@@ -33,6 +33,7 @@
 
 #include "qstandardpaths.h"
 #include <qdir.h>
+#include <qurl.h>
 #include <private/qcore_mac_p.h>
 
 #ifndef QT_BOOTSTRAPPED
@@ -55,8 +56,6 @@ OSType translateLocation(QStandardPaths::StandardLocation type)
         return kPreferencesFolderType;
     case QStandardPaths::DesktopLocation:
         return kDesktopFolderType;
-    case QStandardPaths::DownloadLocation: // needs NSSearchPathForDirectoriesInDomains with NSDownloadsDirectory
-                                           // which needs an objective-C *.mm file...
     case QStandardPaths::DocumentsLocation:
         return kDocumentsFolderType;
     case QStandardPaths::FontsLocation:
@@ -113,6 +112,15 @@ static void appendOrganizationAndApp(QString &path)
 
 static QString macLocation(QStandardPaths::StandardLocation type, short domain)
 {
+    // https://developer.apple.com/library/mac/documentation/Cocoa/Reference/Foundation/Classes/NSFileManager_Class/index.html
+    if (type == QStandardPaths::DownloadLocation) {
+        NSFileManager *fileManager = [NSFileManager defaultManager];
+        NSURL *url = [fileManager URLForDirectory:NSDownloadsDirectory inDomain:NSUserDomainMask appropriateForURL:nil create:NO error:nil];
+        if (!url)
+            return QString();
+        return QString::fromNSString([url path]);
+    }
+
     // http://developer.apple.com/documentation/Carbon/Reference/Folder_Manager/Reference/reference.html
     FSRef ref;
     OSErr err = FSFindFolder(domain, translateLocation(type), false, &ref);
