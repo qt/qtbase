@@ -68,6 +68,7 @@ defineTest(qtAddModule) {
         using_privates = true
         export(using_privates)
     }
+    contains(MODULE_CONFIG, ltcg): CONFIG += link_ltcg
 
     qtProcessModuleFlags(CONFIG, QT.$${1}.CONFIG)
     qtProcessModuleFlags(DEFINES, QT.$${1}.DEFINES)
