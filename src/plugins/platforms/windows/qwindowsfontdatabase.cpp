@@ -1083,7 +1083,7 @@ QFontEngine * QWindowsFontDatabase::fontEngine(const QFontDef &fontDef, void *ha
 {
     QFontEngine *fe = QWindowsFontDatabase::createEngine(fontDef, 0,
                                                          QWindowsContext::instance()->defaultDPI(),
-                                                         false, sharedFontData());
+                                                         sharedFontData());
     qCDebug(lcQpaFonts) << __FUNCTION__ << "FONTDEF" << fontDef << fe << handle;
     return fe;
 }
@@ -1133,7 +1133,7 @@ QFontEngine *QWindowsFontDatabase::fontEngine(const QByteArray &fontData, qreal 
 
             fontEngine = QWindowsFontDatabase::createEngine(request, 0,
                                                             QWindowsContext::instance()->defaultDPI(),
-                                                            false, sharedFontData());
+                                                            sharedFontData());
 
             if (fontEngine) {
                 if (request.family != fontEngine->fontDef.family) {
@@ -1669,7 +1669,7 @@ QStringList QWindowsFontDatabase::fallbacksForFamily(const QString &family, QFon
 
 
 QFontEngine *QWindowsFontDatabase::createEngine(const QFontDef &request,
-                                                HDC fontHdc, int dpi, bool rawMode,
+                                                HDC fontHdc, int dpi,
                                                 const QSharedPointer<QWindowsFontEngineData> &data)
 {
     LOGFONT lf;
@@ -1692,32 +1692,7 @@ QFontEngine *QWindowsFontDatabase::createEngine(const QFontDef &request,
     bool useDirectWrite = false;
 #endif
 
-    if (rawMode) {                        // will choose a stock font
-        int f = SYSTEM_FONT;
-        const QString fam = request.family.toLower();
-        if (fam == QLatin1String("default") || fam == QLatin1String("system"))
-            f = SYSTEM_FONT;
-#ifndef Q_OS_WINCE
-        else if (fam == QLatin1String("system_fixed"))
-            f = SYSTEM_FIXED_FONT;
-        else if (fam == QLatin1String("ansi_fixed"))
-            f = ANSI_FIXED_FONT;
-        else if (fam == QLatin1String("ansi_var"))
-            f = ANSI_VAR_FONT;
-        else if (fam == QLatin1String("device_default"))
-            f = DEVICE_DEFAULT_FONT;
-        else if (fam == QLatin1String("oem_fixed"))
-            f = OEM_FIXED_FONT;
-#endif
-        else if (fam.at(0) == QLatin1Char('#'))
-            f = fam.right(fam.length()-1).toInt();
-        hfont = (HFONT)GetStockObject(f);
-        if (!hfont) {
-            qErrnoWarning("%s: GetStockObject failed", __FUNCTION__);
-            hfont = QWindowsFontDatabase::systemFont();
-        }
-        stockFont = true;
-    } else {
+    {
         lf = fontDefToLOGFONT(request);
         preferClearTypeAA = lf.lfQuality == CLEARTYPE_QUALITY;
 

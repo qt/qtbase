@@ -1261,7 +1261,7 @@ QFontEngine *QWindowsFontEngine::cloneWithSize(qreal pixelSize) const
     QFontEngine *fontEngine =
         QWindowsFontDatabase::createEngine(request, 0,
                                            QWindowsContext::instance()->defaultDPI(),
-                                           false, m_fontEngineData);
+                                           m_fontEngineData);
     if (fontEngine) {
         fontEngine->fontDef.family = actualFontName;
         if (!uniqueFamilyName.isEmpty()) {
