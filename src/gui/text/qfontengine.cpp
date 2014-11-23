@@ -2105,4 +2105,8 @@ QFontEngine* QFontEngineMultiBasicImpl::createMultiFontEngine(QFontEngine *fe, i
     return engine;
 }
 
+QTestFontEngine::QTestFontEngine(int size)
+    : QFontEngineBox(TestFontEngine, size)
+{}
+
 QT_END_NAMESPACE
