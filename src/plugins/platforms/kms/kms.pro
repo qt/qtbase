@@ -9,6 +9,7 @@ QT += core-private gui-private platformsupport-private
 qtHaveModule(opengl):QT += opengl-private
 
 DEFINES += MESA_EGL_NO_X11_HEADERS __GBM__
+contains(QT_CONFIG, libudev): DEFINES += QDEVICEDISCOVERY_UDEV
 
 CONFIG += link_pkgconfig egl qpa/genericunixfontdatabase
 
