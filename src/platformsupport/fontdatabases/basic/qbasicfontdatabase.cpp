@@ -52,37 +52,6 @@
 
 QT_BEGIN_NAMESPACE
 
-typedef struct {
-    quint16 majorVersion;
-    quint16 minorVersion;
-    quint16 numTables;
-    quint16 searchRange;
-    quint16 entrySelector;
-    quint16 rangeShift;
-} OFFSET_TABLE;
-
-typedef struct {
-    quint32 tag;
-    quint32 checkSum;
-    quint32 offset;
-    quint32 length;
-} TABLE_DIRECTORY;
-
-typedef struct {
-    quint16 fontSelector;
-    quint16 nrCount;
-    quint16 storageOffset;
-} NAME_TABLE_HEADER;
-
-typedef struct {
-    quint16 platformID;
-    quint16 encodingID;
-    quint16 languageID;
-    quint16 nameID;
-    quint16 stringLength;
-    quint16 stringOffset;
-} NAME_RECORD;
-
 void QBasicFontDatabase::populateFontDatabase()
 {
     QString fontpath = fontDir();
@@ -321,94 +290,6 @@ QStringList QBasicFontDatabase::addTTFile(const QByteArray &fontData, const QByt
         ++index;
     } while (index < numFaces);
     return families;
-}
-
-QString QBasicFontDatabase::fontNameFromTTFile(const QString &filename)
-{
-    QFile f(filename);
-    QString retVal;
-    qint64 bytesRead;
-    qint64 bytesToRead;
-
-    if (f.open(QIODevice::ReadOnly)) {
-        OFFSET_TABLE ttOffsetTable;
-        bytesToRead = sizeof(OFFSET_TABLE);
-        bytesRead = f.read((char*)&ttOffsetTable, bytesToRead);
-        if (bytesToRead != bytesRead)
-            return retVal;
-        ttOffsetTable.numTables = qFromBigEndian(ttOffsetTable.numTables);
-        ttOffsetTable.majorVersion = qFromBigEndian(ttOffsetTable.majorVersion);
-        ttOffsetTable.minorVersion = qFromBigEndian(ttOffsetTable.minorVersion);
-
-        if (ttOffsetTable.majorVersion != 1 || ttOffsetTable.minorVersion != 0)
-            return retVal;
-
-        TABLE_DIRECTORY tblDir;
-        bool found = false;
-
-        for (int i = 0; i < ttOffsetTable.numTables; i++) {
-            bytesToRead = sizeof(TABLE_DIRECTORY);
-            bytesRead = f.read((char*)&tblDir, bytesToRead);
-            if (bytesToRead != bytesRead)
-                return retVal;
-            if (qFromBigEndian(tblDir.tag) == MAKE_TAG('n', 'a', 'm', 'e')) {
-                found = true;
-                tblDir.length = qFromBigEndian(tblDir.length);
-                tblDir.offset = qFromBigEndian(tblDir.offset);
-                break;
-            }
-        }
-
-        if (found) {
-            f.seek(tblDir.offset);
-            NAME_TABLE_HEADER ttNTHeader;
-            bytesToRead = sizeof(NAME_TABLE_HEADER);
-            bytesRead = f.read((char*)&ttNTHeader, bytesToRead);
-            if (bytesToRead != bytesRead)
-                return retVal;
-            ttNTHeader.nrCount = qFromBigEndian(ttNTHeader.nrCount);
-            ttNTHeader.storageOffset = qFromBigEndian(ttNTHeader.storageOffset);
-            NAME_RECORD ttRecord;
-            found = false;
-
-            for (int i = 0; i < ttNTHeader.nrCount; i++) {
-                bytesToRead = sizeof(NAME_RECORD);
-                bytesRead = f.read((char*)&ttRecord, bytesToRead);
-                if (bytesToRead != bytesRead)
-                    return retVal;
-                ttRecord.nameID = qFromBigEndian(ttRecord.nameID);
-                if (ttRecord.nameID == 1) {
-                    ttRecord.stringLength = qFromBigEndian(ttRecord.stringLength);
-                    ttRecord.stringOffset = qFromBigEndian(ttRecord.stringOffset);
-                    int nPos = f.pos();
-                    f.seek(tblDir.offset + ttRecord.stringOffset + ttNTHeader.storageOffset);
-
-                    QByteArray nameByteArray = f.read(ttRecord.stringLength);
-                    if (!nameByteArray.isEmpty()) {
-                        if (ttRecord.encodingID == 256 || ttRecord.encodingID == 768) {
-                            //This is UTF-16 in big endian
-                            int stringLength = ttRecord.stringLength / 2;
-                            retVal.resize(stringLength);
-                            QChar *data = retVal.data();
-                            const ushort *srcData = (const ushort *)nameByteArray.data();
-                            for (int i = 0; i < stringLength; ++i)
-                                data[i] = qFromBigEndian(srcData[i]);
-                            return retVal;
-                        } else if (ttRecord.encodingID == 0) {
-                            //This is Latin1
-                            retVal = QString::fromLatin1(nameByteArray);
-                        } else {
-                            qWarning("Could not retrieve Font name from file: %s", qPrintable(QDir::toNativeSeparators(filename)));
-                        }
-                        break;
-                    }
-                    f.seek(nPos);
-                }
-            }
-        }
-        f.close();
-    }
-    return retVal;
 }
 
 QT_END_NAMESPACE

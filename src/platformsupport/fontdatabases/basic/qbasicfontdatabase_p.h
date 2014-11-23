@@ -68,7 +68,6 @@ public:
     void releaseHandle(void *handle) Q_DECL_OVERRIDE;
 
     static QStringList addTTFile(const QByteArray &fontData, const QByteArray &file, QSupportedWritingSystems *supportedWritingSystems = 0);
-    static QString fontNameFromTTFile(const QString &filename);
 };
 
 QT_END_NAMESPACE
