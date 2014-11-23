@@ -1089,6 +1089,8 @@ static void init_plugins(const QList<QByteArray> &pluginList)
                                                    QLatin1String(pluginSpec.mid(colonPos+1)));
         if (plugin)
             QGuiApplicationPrivate::generic_plugin_list.append(plugin);
+        else
+            qWarning() << "No such plugin for spec " << pluginSpec;
     }
 }
 
@@ -1254,8 +1256,11 @@ void QGuiApplicationPrivate::init()
     }
 
     // Load environment exported generic plugins
-    foreach (const QByteArray &plugin, qgetenv("QT_QPA_GENERIC_PLUGINS").split(','))
-        pluginList << plugin;
+    QByteArray envPlugins = qgetenv("QT_QPA_GENERIC_PLUGINS");
+    if (!envPlugins.isEmpty()) {
+        foreach (const QByteArray &plugin, envPlugins.split(','))
+            pluginList << plugin;
+    }
 
     if (platform_integration == 0)
         createPlatformIntegration();
