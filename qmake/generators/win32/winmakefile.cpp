@@ -156,7 +156,7 @@ Win32MakefileGenerator::findLibraries()
             (*it) = out;
         } else if(!exists(Option::fixPathToLocalOS(opt))) {
             QList<QMakeLocalFileName> lib_dirs;
-            QString file = opt;
+            QString file = Option::fixPathToTargetOS(opt);
             int slsh = file.lastIndexOf(Option::dir_sep);
             if(slsh != -1) {
                 lib_dirs.append(QMakeLocalFileName(file.left(slsh+1)));
