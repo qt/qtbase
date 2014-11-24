@@ -289,13 +289,14 @@ QWindowsFontEngine::QWindowsFontEngine(const QString &name,
     qCDebug(lcQpaFonts) << __FUNCTION__ << name << lf.lfHeight;
     HDC hdc = m_fontEngineData->hdc;
     SelectObject(hdc, hfont);
-    fontDef.pixelSize = -lf.lfHeight;
     const BOOL res = GetTextMetrics(hdc, &tm);
-    fontDef.fixedPitch = !(tm.tmPitchAndFamily & TMPF_FIXED_PITCH);
     if (!res) {
         qErrnoWarning("%s: GetTextMetrics failed", __FUNCTION__);
         ZeroMemory(&tm, sizeof(TEXTMETRIC));
     }
+
+    fontDef.pixelSize = -lf.lfHeight;
+    fontDef.fixedPitch = !(tm.tmPitchAndFamily & TMPF_FIXED_PITCH);
 
     cache_cost = tm.tmHeight * tm.tmAveCharWidth * 2000;
     getCMap();
