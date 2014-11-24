@@ -252,8 +252,7 @@ QString NmakeMakefileGenerator::defaultInstall(const QString &t)
 
     const QString root = "$(INSTALL_ROOT)";
     ProStringList &uninst = project->values(ProKey(t + ".uninstall"));
-    QString targetdir = Option::fixPathToTargetOS(project->first(ProKey(t + ".path")).toQString(), false);
-    targetdir = fileFixify(targetdir, FileFixifyAbsolute);
+    QString targetdir = fileFixify(project->first(ProKey(t + ".path")).toQString(), FileFixifyAbsolute);
     if(targetdir.right(1) != Option::dir_sep)
         targetdir += Option::dir_sep;
 

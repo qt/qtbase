@@ -581,7 +581,7 @@ void Win32MakefileGenerator::writeCleanParts(QTextStream &t)
     }
     t << "\n\t-$(DEL_FILE) $(DESTDIR_TARGET)\n";
     {
-        QString ofile = Option::fixPathToTargetOS(fileFixify(Option::output.fileName()));
+        QString ofile = fileFixify(Option::output.fileName());
         if(!ofile.isEmpty())
             t << "\t-$(DEL_FILE) " << escapeFilePath(ofile) << endl;
     }
@@ -803,8 +803,7 @@ QString Win32MakefileGenerator::defaultInstall(const QString &t)
     const QString root = "$(INSTALL_ROOT)";
     ProStringList &uninst = project->values(ProKey(t + ".uninstall"));
     QString ret;
-    QString targetdir = Option::fixPathToTargetOS(project->first(ProKey(t + ".path")).toQString(), false);
-    targetdir = fileFixify(targetdir, FileFixifyAbsolute);
+    QString targetdir = fileFixify(project->first(ProKey(t + ".path")).toQString(), FileFixifyAbsolute);
     if(targetdir.right(1) != Option::dir_sep)
         targetdir += Option::dir_sep;
 
