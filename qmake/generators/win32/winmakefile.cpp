@@ -169,7 +169,7 @@ Win32MakefileGenerator::findLibraries()
             if(file.endsWith(".lib")) {
                 file = file.left(file.length() - 4);
                 if(!file.at(file.length()-1).isNumber()) {
-                    ProString suffix = project->first(ProKey("QMAKE_" + file.section(Option::dir_sep, -1).toUpper() + "_SUFFIX"));
+                    ProString suffix = project->first(ProKey("QMAKE_" + file.toUpper() + "_SUFFIX"));
                     for(QList<QMakeLocalFileName>::Iterator dep_it = lib_dirs.begin(); dep_it != lib_dirs.end(); ++dep_it) {
                         QString lib_tmpl(file + "%1" + suffix + ".lib");
                         int ver = findHighestVersion((*dep_it).local(), file);
