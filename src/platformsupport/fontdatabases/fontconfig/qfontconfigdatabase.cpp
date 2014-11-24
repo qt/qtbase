@@ -409,7 +409,7 @@ static void populateFromPattern(FcPattern *pattern)
 #endif
 
     FontFile *fontFile = new FontFile;
-    fontFile->fileName = QLatin1String((const char *)file_value);
+    fontFile->fileName = QString::fromLocal8Bit((const char *)file_value);
     fontFile->indexValue = indexValue;
 
     QFont::Style style = (slant_value == FC_SLANT_ITALIC)

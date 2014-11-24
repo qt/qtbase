@@ -1471,7 +1471,8 @@ void QWindowsDirect2DPaintEngine::drawPixmap(const QRectF &r,
             r.x(), r.y() + r.height()
         };
         const QVectorPath vp(points, 4, 0, QVectorPath::RectangleHint);
-        const QBrush brush(sr.isValid() ? pm.copy(sr.toRect()) : pm);
+        QBrush brush(sr.isValid() ? pm.copy(sr.toRect()) : pm);
+        brush.setTransform(QTransform::fromTranslate(r.x(), r.y()));
         rasterFill(vp, brush);
         return;
     }

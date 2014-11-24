@@ -94,6 +94,8 @@ else: \
 
 # OS X and iOS frameworks
 mac:CONFIG(shared, static|shared):contains(QT_CONFIG, qt_framework) {
+   # Set the CFBundleIdentifier prefix for Qt frameworks
+   QMAKE_TARGET_BUNDLE_PREFIX = org.qt-project
    #QMAKE_FRAMEWORK_VERSION = 4.0
    CONFIG += lib_bundle sliced_bundle qt_framework
    CONFIG -= qt_install_headers #no need to install these as well

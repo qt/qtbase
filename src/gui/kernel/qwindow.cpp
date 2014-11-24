@@ -1127,6 +1127,10 @@ Qt::WindowState QWindow::windowState() const
     This is a hint to the window manager that this window is a dialog or pop-up
     on behalf of the given window.
 
+    In order to cause the window to be centered above its transient parent by
+    default, depending on the window manager, it may also be necessary to call
+    setFlags() with a suitable \l Qt::WindowType (such as \c Qt::Dialog).
+
     \sa transientParent(), parent()
 */
 void QWindow::setTransientParent(QWindow *parent)
@@ -1644,8 +1648,6 @@ QPlatformSurface *QWindow::surfaceHandle() const
 bool QWindow::setKeyboardGrabEnabled(bool grab)
 {
     Q_D(QWindow);
-    if (grab && QGuiApplicationPrivate::noGrab)
-        return false;
     if (d->platformWindow)
         return d->platformWindow->setKeyboardGrabEnabled(grab);
     return false;
@@ -1663,8 +1665,6 @@ bool QWindow::setKeyboardGrabEnabled(bool grab)
 bool QWindow::setMouseGrabEnabled(bool grab)
 {
     Q_D(QWindow);
-    if (grab && QGuiApplicationPrivate::noGrab)
-        return false;
     if (d->platformWindow)
         return d->platformWindow->setMouseGrabEnabled(grab);
     return false;
@@ -2352,7 +2352,7 @@ QWindow *QWindow::fromWinId(WId id)
 /*!
     Causes an alert to be shown for \a msec miliseconds. If \a msec is \c 0 (the
     default), then the alert is shown indefinitely until the window becomes
-    active again.
+    active again. This function has no effect on an active window.
 
     In alert state, the window indicates that it demands attention, for example by
     flashing or bouncing the taskbar entry.
@@ -2363,7 +2363,7 @@ QWindow *QWindow::fromWinId(WId id)
 void QWindow::alert(int msec)
 {
     Q_D(QWindow);
-    if (!d->platformWindow || d->platformWindow->isAlertState())
+    if (!d->platformWindow || d->platformWindow->isAlertState() || isActive())
         return;
     d->platformWindow->setAlertState(true);
     if (d->platformWindow->isAlertState() && msec)

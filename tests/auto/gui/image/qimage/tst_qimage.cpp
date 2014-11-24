@@ -173,6 +173,8 @@ private slots:
     void invertPixelsRGB_data();
     void invertPixelsRGB();
 
+    void exifOrientation();
+
     void cleanupFunctions();
 
 private:
@@ -2637,6 +2639,22 @@ void tst_QImage::invertPixelsRGB()
     QCOMPARE(qRed(pixel) >> 4, (255 - 32) >> 4);
     QCOMPARE(qGreen(pixel) >> 4, (255 - 64) >> 4);
     QCOMPARE(qBlue(pixel) >> 4, (255 - 96) >> 4);
+}
+
+void tst_QImage::exifOrientation()
+{
+    for (unsigned int i = 1; i <= 8; ++i) {
+        QImage img;
+        QRgb px;
+
+        QVERIFY(img.load(m_prefix + QString::fromLatin1("jpeg_exif_orientation_value_%1.jpg").arg(i)));
+
+        px = img.pixel(0, 0);
+        QVERIFY(qRed(px) > 250 && qGreen(px) < 5 && qBlue(px) < 5);
+
+        px = img.pixel(img.width() - 1, 0);
+        QVERIFY(qRed(px) < 5 && qGreen(px) < 5 && qBlue(px) > 250);
+    }
 }
 
 static void cleanupFunction(void* info)

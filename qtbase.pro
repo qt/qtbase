@@ -140,7 +140,7 @@ for (ft, features) {
             "$${LITERAL_HASH}  define QT_NO_$$ft" \
             "$${LITERAL_HASH}endif"
         FEATURES_PRI += \
-            "contains(QT_DISABLED_FEATURES, "^($$lower($$join($$list($$replace(features.$${ft}.depends, _, -)), "|")))$"): \\" \
+            "contains(QT_DISABLED_FEATURES, "$$lower($$join($$list($$replace(features.$${ft}.depends, _, -)), "|"))"): \\" \
             "    QT_DISABLED_FEATURES += $$lower($$replace(ft, _, -))"
     }
 }
@@ -168,7 +168,8 @@ for (def, QT_NO_DEFINES) {
 }
 no_features = $$unique(no_features)
 
-# Can't simply add these to QT_CONFIG, as e.g., contains(QT_CONFIG, accessibility) matches no-accessibililty.
+# Don't simply add these to QT_CONFIG, as then one might expect them to be there without load(qfeatures).
+# And we don't want to do that automatically, as the dynamic dependency resolution is somewhat expensive.
 FEATURES_PRI = \
     "$${LITERAL_HASH} Features disabled by configure:" \
     "QT_DISABLED_FEATURES =$$lower($$join($$list($$replace(no_features, _, -)), " ", " "))" \

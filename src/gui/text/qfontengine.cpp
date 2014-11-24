@@ -373,8 +373,6 @@ bool QFontEngine::supportsScript(QChar::Script script) const
                 if (!ret && script_tag_2 != HB_OT_TAG_DEFAULT_SCRIPT)
                     ret = hb_ot_layout_table_find_script(face, HB_OT_TAG_GSUB, HB_OT_TAG_DEFAULT_SCRIPT, &script_index);
             }
-
-            hb_face_destroy(face);
         }
         return ret;
     }
@@ -2028,7 +2026,7 @@ void QFontEngineMultiBasicImpl::loadEngine(int at)
     request.family = fallbackFamilies.at(at-1);
     engines[at] = QFontDatabase::findFont(script,
                                           /*fontprivate = */0,
-                                          request, /*multi = */false, true);
+                                          request, /*multi = */false);
     Q_ASSERT(engines[at]);
     engines[at]->ref.ref();
     engines[at]->fontDef = request;
@@ -2097,5 +2095,9 @@ QFontEngine* QFontEngineMultiBasicImpl::createMultiFontEngine(QFontEngine *fe, i
     Q_ASSERT(engine);
     return engine;
 }
+
+QTestFontEngine::QTestFontEngine(int size)
+    : QFontEngineBox(TestFontEngine, size)
+{}
 
 QT_END_NAMESPACE

@@ -89,8 +89,8 @@ void QMimeTypePrivate::addGlobPattern(const QString &pattern)
 
     Determining the MIME type of a file can be useful to make sure your
     application supports it. It is also useful in file-manager-like applications
-    or widgets, in order to display an appropriate icon() for the file, or even
-    the descriptive comment() in detailed views.
+    or widgets, in order to display an appropriate \l {QMimeType::iconName}{icon} for the file, or even
+    the descriptive \l {QMimeType::comment()}{comment} in detailed views.
 
     To check if a file has the expected MIME type, you should use inherits()
     rather than a simple string comparison based on the name(). This is because

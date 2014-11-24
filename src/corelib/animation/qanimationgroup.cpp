@@ -62,7 +62,7 @@
 
     QAnimationGroup provides methods for adding and retrieving
     animations. Besides that, you can remove animations by calling
-    remove(), and clear the animation group by calling
+    \l removeAnimation(), and clear the animation group by calling
     clear(). You may keep track of changes in the group's
     animations by listening to QEvent::ChildAdded and
     QEvent::ChildRemoved events.

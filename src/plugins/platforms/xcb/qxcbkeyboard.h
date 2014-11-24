@@ -91,6 +91,9 @@ protected:
     void updateVModMapping();
     void updateVModToRModMapping();
 
+    xkb_keysym_t lookupLatinKeysym(xkb_keycode_t keycode) const;
+    void checkForLatinLayout();
+
 private:
     bool m_config;
     xcb_keycode_t m_autorepeat_code;
@@ -99,6 +102,7 @@ private:
     struct xkb_keymap *xkb_keymap;
     struct xkb_state *xkb_state;
     struct xkb_rule_names xkb_names;
+    mutable struct xkb_keymap *latin_keymap;
 
     struct _mod_masks {
         uint alt;
@@ -128,6 +132,7 @@ private:
     _mod_masks vmod_masks;
     int core_device_id;
 #endif
+    bool m_hasLatinLayout;
 };
 
 QT_END_NAMESPACE

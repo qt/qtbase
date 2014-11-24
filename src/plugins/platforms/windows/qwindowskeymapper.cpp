@@ -39,6 +39,7 @@
 
 #include <QtGui/QWindow>
 #include <qpa/qwindowsysteminterface.h>
+#include <private/qguiapplication_p.h>
 #include <QtGui/QKeyEvent>
 
 QT_BEGIN_NAMESPACE
@@ -1104,9 +1105,17 @@ bool QWindowsKeyMapper::translateKeyEventInternal(QWindow *window, const MSG &ms
         else {
             const QString text = uch.isNull() ? QString() : QString(uch);
             const char a = uch.row() ? 0 : uch.cell();
+            const Qt::KeyboardModifiers modifiers(state);
+#ifndef QT_NO_SHORTCUT
+            // Is Qt interested in the context menu key?
+            if (modifiers == Qt::SHIFT && code == Qt::Key_F10
+                && !QGuiApplicationPrivate::instance()->shortcutMap.hasShortcutForKeySequence(QKeySequence(Qt::SHIFT + Qt::Key_F10))) {
+                return false;
+            }
+#endif // !QT_NO_SHORTCUT
             key_recorder.storeKey(msg.wParam, a, state, text);
             QWindowSystemInterface::handleExtendedKeyEvent(receiver, QEvent::KeyPress, code,
-                                                           Qt::KeyboardModifier(state), scancode, msg.wParam, nModifiers, text, false);
+                                                           modifiers, scancode, msg.wParam, nModifiers, text, false);
             result =true;
             bool store = true;
 #ifndef Q_OS_WINCE

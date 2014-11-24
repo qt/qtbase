@@ -79,7 +79,7 @@ QT_BEGIN_NAMESPACE
     There are two ways to affect how QVariantAnimation interpolates
     the values. You can set an easing curve by calling
     setEasingCurve(), and configure the duration by calling
-    setDuration(). You can change how the QVariants are interpolated
+    setDuration(). You can change how the \l{QVariant}s are interpolated
     by creating a subclass of QVariantAnimation, and reimplementing
     the virtual interpolated() function.
 
@@ -110,7 +110,7 @@ QT_BEGIN_NAMESPACE
     If you need to interpolate other variant types, including custom
     types, you have to implement interpolation for these yourself.
     To do this, you can register an interpolator function for a given
-    type. This function takes 3 parameters: the start value, the end value
+    type. This function takes 3 parameters: the start value, the end value,
     and the current progress.
 
     Example:
@@ -378,8 +378,8 @@ QVariantAnimation::~QVariantAnimation()
     keyValues are referring to this effective progress.
 
     The easing curve is used with the interpolator, the interpolated()
-    virtual function, the animation's duration, and iterationCount, to
-    control how the current value changes as the animation progresses.
+    virtual function, and the animation's duration to control how the
+    current value changes as the animation progresses.
 */
 QEasingCurve QVariantAnimation::easingCurve() const
 {

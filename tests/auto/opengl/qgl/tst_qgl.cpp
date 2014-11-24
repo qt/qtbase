@@ -42,6 +42,8 @@
 #include <qglcolormap.h>
 #include <qpaintengine.h>
 #include <qopenglfunctions.h>
+#include <qopenglframebufferobject.h>
+#include <qopenglpaintdevice.h>
 
 #include <QGraphicsView>
 #include <QGraphicsProxyWidget>
@@ -78,6 +80,7 @@ private slots:
     void glWidgetRendering();
     void glFBOSimpleRendering();
     void glFBORendering();
+    void currentFboSync();
     void multipleFBOInterleavedRendering();
     void glFBOUseInGLWidget();
     void glPBufferRendering();
@@ -1138,6 +1141,93 @@ void tst_QGL::glFBORendering()
     qt_opengl_check_test_pattern(fb);
 }
 
+class QOpenGLFramebufferObjectPaintDevice : public QOpenGLPaintDevice
+{
+public:
+    QOpenGLFramebufferObjectPaintDevice(int width, int height)
+        : QOpenGLPaintDevice(width, height)
+        , m_fbo(width, height, QOpenGLFramebufferObject::CombinedDepthStencil)
+    {
+    }
+
+    void ensureActiveTarget()
+    {
+        m_fbo.bind();
+    }
+
+    QImage toImage() const
+    {
+        return m_fbo.toImage();
+    }
+
+private:
+    QOpenGLFramebufferObject m_fbo;
+};
+
+void tst_QGL::currentFboSync()
+{
+    if (!QGLFramebufferObject::hasOpenGLFramebufferObjects())
+        QSKIP("QGLFramebufferObject not supported on this platform");
+
+#if defined(Q_OS_QNX)
+    QSKIP("Reading the QGLFramebufferObject is unsupported on this platform");
+#endif
+
+    QGLWidget glw;
+    glw.makeCurrent();
+
+    {
+        QGLFramebufferObject fbo1(256, 256, QGLFramebufferObject::CombinedDepthStencil);
+
+        QOpenGLFramebufferObjectPaintDevice fbo2(256, 256);
+
+        QImage sourceImage(256, 256, QImage::Format_ARGB32_Premultiplied);
+        QPainter sourcePainter(&sourceImage);
+        qt_opengl_draw_test_pattern(&sourcePainter, 256, 256);
+
+        QPainter fbo1Painter(&fbo1);
+
+        QPainter fbo2Painter(&fbo2);
+        fbo2Painter.drawImage(0, 0, sourceImage);
+        fbo2Painter.end();
+
+        QImage fbo2Image = fbo2.toImage();
+
+        fbo1Painter.drawImage(0, 0, sourceImage);
+        fbo1Painter.end();
+
+        QGLFramebufferObject::bindDefault();
+
+        QCOMPARE(fbo1.toImage(), fbo2Image);
+    }
+
+    {
+        QGLFramebufferObject fbo1(512, 512, QGLFramebufferObject::CombinedDepthStencil);
+
+        QOpenGLFramebufferObjectPaintDevice fbo2(256, 256);
+
+        QImage sourceImage(256, 256, QImage::Format_ARGB32_Premultiplied);
+        QPainter sourcePainter(&sourceImage);
+        qt_opengl_draw_test_pattern(&sourcePainter, 256, 256);
+
+        QPainter fbo2Painter(&fbo2);
+        fbo2Painter.drawImage(0, 0, sourceImage);
+        QImage fbo2Image1 = fbo2.toImage();
+        fbo2Painter.fillRect(0, 0, 256, 256, Qt::white);
+
+        QPainter fbo1Painter(&fbo1);
+        fbo1Painter.drawImage(0, 0, sourceImage);
+        fbo1Painter.end();
+
+        // check that the OpenGL paint engine now knows it needs to sync
+        fbo2Painter.drawImage(0, 0, sourceImage);
+        QImage fbo2Image2 = fbo2.toImage();
+
+        fbo2Painter.end();
+
+        QCOMPARE(fbo2Image1, fbo2Image2);
+    }
+}
 
 // Tests multiple QPainters active on different FBOs at the same time, with
 // interleaving painting. Performance-wise, this is sub-optimal, but it still

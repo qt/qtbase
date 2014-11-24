@@ -384,6 +384,26 @@ QMimeData* QAbstractProxyModel::mimeData(const QModelIndexList &indexes) const
     return d->model->mimeData(list);
 }
 
+void QAbstractProxyModelPrivate::mapDropCoordinatesToSource(int row, int column, const QModelIndex &parent,
+                                                            int *sourceRow, int *sourceColumn, QModelIndex *sourceParent) const
+{
+    Q_Q(const QAbstractProxyModel);
+    *sourceRow = -1;
+    *sourceColumn = -1;
+    if (row == -1 && column == -1) {
+        *sourceParent = q->mapToSource(parent);
+    } else if (row == q->rowCount(parent)) {
+        *sourceParent = q->mapToSource(parent);
+        *sourceRow = model->rowCount(*sourceParent);
+    } else {
+        QModelIndex proxyIndex = q->index(row, column, parent);
+        QModelIndex sourceIndex = q->mapToSource(proxyIndex);
+        *sourceRow = sourceIndex.row();
+        *sourceColumn = sourceIndex.column();
+        *sourceParent = sourceIndex.parent();
+    }
+}
+
 /*!
     \reimp
     \since 5.4
@@ -392,8 +412,11 @@ bool QAbstractProxyModel::canDropMimeData(const QMimeData *data, Qt::DropAction 
                                           int row, int column, const QModelIndex &parent) const
 {
     Q_D(const QAbstractProxyModel);
-    const QModelIndex source = mapToSource(index(row, column, parent));
-    return d->model->canDropMimeData(data, action, source.row(), source.column(), source.parent());
+    int sourceDestinationRow;
+    int sourceDestinationColumn;
+    QModelIndex sourceParent;
+    d->mapDropCoordinatesToSource(row, column, parent, &sourceDestinationRow, &sourceDestinationColumn, &sourceParent);
+    return d->model->canDropMimeData(data, action, sourceDestinationRow, sourceDestinationColumn, sourceParent);
 }
 
 /*!
@@ -404,8 +427,11 @@ bool QAbstractProxyModel::dropMimeData(const QMimeData *data, Qt::DropAction act
                                        int row, int column, const QModelIndex &parent)
 {
     Q_D(QAbstractProxyModel);
-    const QModelIndex source = mapToSource(index(row, column, parent));
-    return d->model->dropMimeData(data, action, source.row(), source.column(), source.parent());
+    int sourceDestinationRow;
+    int sourceDestinationColumn;
+    QModelIndex sourceParent;
+    d->mapDropCoordinatesToSource(row, column, parent, &sourceDestinationRow, &sourceDestinationColumn, &sourceParent);
+    return d->model->dropMimeData(data, action, sourceDestinationRow, sourceDestinationColumn, sourceParent);
 }
 
 /*!

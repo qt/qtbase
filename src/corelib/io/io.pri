@@ -148,9 +148,8 @@ win32 {
                 HEADERS += io/qfilesystemwatcher_fsevents_p.h
             }
             macx {
-                SOURCES += \
-                    io/qstorageinfo_mac.cpp \
-                    io/qstandardpaths_mac.cpp
+                SOURCES += io/qstorageinfo_mac.cpp
+                OBJECTIVE_SOURCES += io/qstandardpaths_mac.mm
                 LIBS += -framework DiskArbitration -framework IOKit
             } else:ios {
                 OBJECTIVE_SOURCES += io/qstandardpaths_ios.mm

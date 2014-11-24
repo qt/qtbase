@@ -73,6 +73,17 @@ QT_BEGIN_NAMESPACE
 #  endif
 #endif
 
+#ifdef Q_OS_WIN
+// on Windows, read() and write() use int and unsigned int
+typedef int SignedIOType;
+typedef unsigned int UnsignedIOType;
+#else
+typedef ssize_t SignedIOType;
+typedef size_t UnsignedIOType;
+Q_STATIC_ASSERT_X(sizeof(SignedIOType) == sizeof(UnsignedIOType),
+                  "Unsupported: read/write return a type with different size as the len parameter");
+#endif
+
 /*! \class QFSFileEngine
     \inmodule QtCore
     \brief The QFSFileEngine class implements Qt's default file engine.
@@ -605,13 +616,16 @@ qint64 QFSFileEnginePrivate::readFdFh(char *data, qint64 len)
     } else if (fd != -1) {
         // Unbuffered stdio mode.
 
-#ifdef Q_OS_WIN
-        int result;
-#else
-        ssize_t result;
-#endif
+        SignedIOType result;
         do {
-            result = QT_READ(fd, data + readBytes, size_t(len - readBytes));
+            // calculate the chunk size
+            // on Windows or 32-bit no-largefile Unix, we'll need to read in chunks
+            // we limit to the size of the signed type, otherwise we could get a negative number as a result
+            quint64 wantedBytes = quint64(len) - quint64(readBytes);
+            UnsignedIOType chunkSize = std::numeric_limits<SignedIOType>::max();
+            if (chunkSize > wantedBytes)
+                chunkSize = wantedBytes;
+            result = QT_READ(fd, data + readBytes, chunkSize);
         } while (result > 0 && (readBytes += result) < len);
 
         eof = !(result == -1);
@@ -722,13 +736,16 @@ qint64 QFSFileEnginePrivate::writeFdFh(const char *data, qint64 len)
     } else if (fd != -1) {
         // Unbuffered stdio mode.
 
-#ifdef Q_OS_WIN
-        int result;
-#else
-        ssize_t result;
-#endif
+        SignedIOType result;
         do {
-            result = QT_WRITE(fd, data + writtenBytes, size_t(len - writtenBytes));
+            // calculate the chunk size
+            // on Windows or 32-bit no-largefile Unix, we'll need to read in chunks
+            // we limit to the size of the signed type, otherwise we could get a negative number as a result
+            quint64 wantedBytes = quint64(len) - quint64(writtenBytes);
+            UnsignedIOType chunkSize = std::numeric_limits<SignedIOType>::max();
+            if (chunkSize > wantedBytes)
+                chunkSize = wantedBytes;
+            result = QT_WRITE(fd, data + writtenBytes, chunkSize);
         } while (result > 0 && (writtenBytes += result) < len);
     }
 

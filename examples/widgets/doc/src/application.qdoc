@@ -75,12 +75,12 @@
 
     \snippet mainwindows/application/mainwindow.cpp 0
 
-    We start by including \c <QtGui>, a header file that contains the
-    definition of all classes in the Qt Core and Qt GUI
+    We start by including \c <QtWidgets>, a header file that contains the
+    definition of all classes in the Qt Core, Qt GUI and Qt Widgets
     modules. This saves us from the trouble of having to include
     every class individually. We also include \c mainwindow.h.
 
-    You might wonder why we don't include \c <QtGui> in \c
+    You might wonder why we don't include \c <QtWidgets> in \c
     mainwindow.h and be done with it. The reason is that including
     such a large header from another header file can rapidly degrade
     performances. Here, it wouldn't do any harm, but it's still

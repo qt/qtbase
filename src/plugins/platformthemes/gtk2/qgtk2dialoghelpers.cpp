@@ -82,6 +82,7 @@ QGtk2Dialog::QGtk2Dialog(GtkWidget *gtkWidget) : gtkWidget(gtkWidget)
 
 QGtk2Dialog::~QGtk2Dialog()
 {
+    gtk_clipboard_store(gtk_clipboard_get(GDK_SELECTION_CLIPBOARD));
     gtk_widget_destroy(gtkWidget);
 }
 

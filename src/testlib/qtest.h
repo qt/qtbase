@@ -46,7 +46,6 @@
 #include <QtCore/qobject.h>
 #include <QtCore/qvariant.h>
 #include <QtCore/qurl.h>
-#include <QtCore/qversionnumber.h>
 
 #include <QtCore/qpoint.h>
 #include <QtCore/qsize.h>
@@ -162,11 +161,6 @@ template<> inline char *toString(const QVariant &v)
     vstring.append(')');
 
     return qstrdup(vstring.constData());
-}
-
-template<> inline char *toString(const QVersionNumber &version)
-{
-    return toString(version.toString());
 }
 
 template<>

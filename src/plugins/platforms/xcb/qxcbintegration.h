@@ -117,6 +117,7 @@ private:
 
     mutable QByteArray m_wmClass;
     const char *m_instanceName;
+    bool m_canGrab;
 };
 
 QT_END_NAMESPACE

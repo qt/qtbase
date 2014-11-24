@@ -44,6 +44,8 @@
 
 #include "qandroidplatformscreen.h"
 
+#include <memory>
+
 QT_BEGIN_NAMESPACE
 
 class QDesktopWidget;
@@ -51,12 +53,12 @@ class QAndroidPlatformServices;
 class QAndroidSystemLocale;
 class QPlatformAccessibility;
 
+struct AndroidStyle;
 class QAndroidPlatformNativeInterface: public QPlatformNativeInterface
 {
 public:
     void *nativeResourceForIntegration(const QByteArray &resource);
-    QHash<int, QPalette> m_palettes;
-    QHash<int, QFont> m_fonts;
+    std::shared_ptr<AndroidStyle> m_androidStyle;
 };
 
 class QAndroidPlatformIntegration : public QPlatformIntegration

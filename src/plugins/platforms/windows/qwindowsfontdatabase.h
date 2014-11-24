@@ -38,12 +38,12 @@
 #include <QtCore/QSharedPointer>
 #include "qtwindows_additional.h"
 
-QT_BEGIN_NAMESPACE
-
 #if !defined(QT_NO_DIRECTWRITE)
     struct IDWriteFactory;
     struct IDWriteGdiInterop;
 #endif
+
+QT_BEGIN_NAMESPACE
 
 class QWindowsFontEngineData
 {

@@ -95,14 +95,12 @@ QStringList QOfonoManagerInterface::getModems()
 {
     if (modemList.isEmpty()) {
         QList<QVariant> argumentList;
-        QDBusPendingReply<PathPropertiesList> reply = asyncCallWithArgumentList(QLatin1String("GetModems"), argumentList);
+        QDBusPendingReply<PathPropertiesList> reply = callWithArgumentList(QDBus::Block, QLatin1String("GetModems"), argumentList);
         reply.waitForFinished();
         if (!reply.isError()) {
             foreach (ObjectPathProperties modem, reply.value()) {
                 modemList << modem.path.path();
             }
-        } else {
-            qDebug() << reply.error().message();
         }
     }
 
@@ -114,7 +112,8 @@ QString QOfonoManagerInterface::currentModem()
     QStringList modems = getModems();
     foreach (const QString &modem, modems) {
         QOfonoModemInterface device(modem);
-        if (device.isPowered() && device.isOnline())
+        if (device.isPowered() && device.isOnline()
+                && device.interfaces().contains(QStringLiteral("org.ofono.NetworkRegistration")))
         return modem;
     }
     return QString();
@@ -171,11 +170,17 @@ bool QOfonoModemInterface::isOnline()
     return qdbus_cast<bool>(var);
 }
 
+QStringList QOfonoModemInterface::interfaces()
+{
+    const QVariant var = getProperty(QStringLiteral("Interfaces"));
+    return var.toStringList();
+}
+
 QVariantMap QOfonoModemInterface::getProperties()
 {
     if (propertiesMap.isEmpty()) {
         QList<QVariant> argumentList;
-        QDBusPendingReply<QVariantMap> reply = asyncCallWithArgumentList(QLatin1String("GetProperties"), argumentList);
+        QDBusPendingReply<QVariantMap> reply = callWithArgumentList(QDBus::Block, QLatin1String("GetProperties"), argumentList);
         if (!reply.isError()) {
             propertiesMap = reply.value();
         }
@@ -187,7 +192,8 @@ QVariant QOfonoModemInterface::getProperty(const QString &property)
 {
     QVariant var;
     QVariantMap map = getProperties();
-    var = map.value(property);
+    if (map.contains(property))
+        var = map.value(property);
     return var;
 }
 
@@ -214,7 +220,8 @@ QVariant QOfonoNetworkRegistrationInterface::getProperty(const QString &property
 {
     QVariant var;
     QVariantMap map = getProperties();
-    var = map.value(property);
+    if (map.contains(property))
+        var = map.value(property);
     return var;
 }
 
@@ -222,12 +229,10 @@ QVariantMap QOfonoNetworkRegistrationInterface::getProperties()
 {
     if (propertiesMap.isEmpty()) {
         QList<QVariant> argumentList;
-        QDBusPendingReply<QVariantMap> reply = asyncCallWithArgumentList(QLatin1String("GetProperties"), argumentList);
+        QDBusPendingReply<QVariantMap> reply = callWithArgumentList(QDBus::Block, QLatin1String("GetProperties"), argumentList);
         reply.waitForFinished();
         if (!reply.isError()) {
             propertiesMap = reply.value();
-        } else {
-            qDebug() << reply.error().message();
         }
     }
     return propertiesMap;
@@ -264,10 +269,28 @@ QStringList QOfonoDataConnectionManagerInterface::contexts()
     return contextList;
 }
 
+PathPropertiesList QOfonoDataConnectionManagerInterface::contextsWithProperties()
+{
+    if (contextListProperties.isEmpty()) {
+        QDBusPendingReply<PathPropertiesList > reply = call(QLatin1String("GetContexts"));
+        reply.waitForFinished();
+        if (!reply.isError()) {
+            contextListProperties = reply.value();
+        }
+    }
+    return contextListProperties;
+}
+
 bool QOfonoDataConnectionManagerInterface::roamingAllowed()
 {
     QVariant var = getProperty(QStringLiteral("RoamingAllowed"));
     return qdbus_cast<bool>(var);
+}
+
+QString QOfonoDataConnectionManagerInterface::bearer()
+{
+    QVariant var = getProperty(QStringLiteral("Bearer"));
+    return qdbus_cast<QString>(var);
 }
 
 QVariant QOfonoDataConnectionManagerInterface::getProperty(const QString &property)
@@ -279,7 +302,7 @@ QVariantMap &QOfonoDataConnectionManagerInterface::getProperties()
 {
     if (propertiesMap.isEmpty()) {
         QList<QVariant> argumentList;
-        QDBusPendingReply<QVariantMap> reply = asyncCallWithArgumentList(QLatin1String("GetProperties"), argumentList);
+        QDBusPendingReply<QVariantMap> reply = callWithArgumentList(QDBus::Block, QLatin1String("GetProperties"), argumentList);
         if (!reply.isError()) {
             propertiesMap = reply.value();
         }
@@ -292,6 +315,68 @@ void QOfonoDataConnectionManagerInterface::propertyChanged(const QString &name, 
     propertiesMap[name] = value.variant();
     if (name == QLatin1String("RoamingAllowed"))
         Q_EMIT roamingAllowedChanged(value.variant().toBool());
+}
+
+
+QOfonoConnectionContextInterface::QOfonoConnectionContextInterface(const QString &dbusPathName, QObject *parent)
+    : QDBusAbstractInterface(QLatin1String(OFONO_SERVICE),
+                             dbusPathName,
+                             OFONO_CONNECTION_CONTEXT_INTERFACE,
+                             QDBusConnection::systemBus(), parent)
+{
+    QDBusConnection::systemBus().connect(QLatin1String(OFONO_SERVICE),
+                                         path(),
+                                         QLatin1String(OFONO_MODEM_INTERFACE),
+                                         QLatin1String("PropertyChanged"),
+                                         this,SLOT(propertyChanged(QString,QDBusVariant)));
+}
+
+QOfonoConnectionContextInterface::~QOfonoConnectionContextInterface()
+{
+}
+
+QVariantMap QOfonoConnectionContextInterface::getProperties()
+{
+    if (propertiesMap.isEmpty()) {
+        QList<QVariant> argumentList;
+        QDBusPendingReply<QVariantMap> reply = callWithArgumentList(QDBus::Block, QLatin1String("GetProperties"), argumentList);
+        if (!reply.isError()) {
+            propertiesMap = reply.value();
+        }
+    }
+    return propertiesMap;
+}
+
+void QOfonoConnectionContextInterface::propertyChanged(const QString &name, const QDBusVariant &value)
+{
+    propertiesMap[name] = value.variant();
+}
+
+QVariant QOfonoConnectionContextInterface::getProperty(const QString &property)
+{
+    QVariant var;
+    QVariantMap map = getProperties();
+    if (map.contains(property))
+        var = map.value(property);
+    return var;
+}
+
+bool QOfonoConnectionContextInterface::active()
+{
+    QVariant var = getProperty(QStringLiteral("Active"));
+    return qdbus_cast<bool>(var);
+}
+
+QString QOfonoConnectionContextInterface::accessPointName()
+{
+    QVariant var = getProperty(QStringLiteral("AccessPointName"));
+    return qdbus_cast<QString>(var);
+}
+
+QString QOfonoConnectionContextInterface::name()
+{
+    QVariant var = getProperty(QStringLiteral("Name"));
+    return qdbus_cast<QString>(var);
 }
 
 QT_END_NAMESPACE

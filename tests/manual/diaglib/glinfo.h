@@ -3,7 +3,7 @@
 ** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL21$
 ** Commercial License Usage
@@ -31,43 +31,18 @@
 **
 ****************************************************************************/
 
-#ifndef QNMDBUSHELPERPRIVATE_H
-#define QNMDBUSHELPERPRIVATE_H
+#ifndef _GLINFO_
+#define _GLINFO_
 
-#include <QDBusObjectPath>
-#include <QDBusContext>
-#include <QMap>
+#include <QtCore/QtGlobal>
 
-#ifndef QT_NO_DBUS
+QT_FORWARD_DECLARE_CLASS(QObject)
+QT_FORWARD_DECLARE_CLASS(QString)
 
-QT_BEGIN_NAMESPACE
+namespace QtDiag {
 
-class QNmDBusHelper: public QObject, protected QDBusContext
- {
-     Q_OBJECT
- public:
-    QNmDBusHelper(QObject *parent = 0);
-    ~QNmDBusHelper();
+QString glInfo(const QObject *o);
 
- public slots:
-    void deviceStateChanged(quint32);
-    void slotAccessPointAdded(QDBusObjectPath);
-    void slotAccessPointRemoved(QDBusObjectPath);
-    void slotPropertiesChanged(QMap<QString,QVariant>);
-    void slotSettingsRemoved();
-    void activeConnectionPropertiesChanged(QMap<QString,QVariant>);
+} // namespace QtDiag
 
-Q_SIGNALS:
-    void pathForStateChanged(const QString &, quint32);
-    void pathForAccessPointAdded(const QString &);
-    void pathForAccessPointRemoved(const QString &);
-    void pathForPropertiesChanged(const QString &, QMap<QString,QVariant>);
-    void pathForSettingsRemoved(const QString &);
-    void pathForConnectionsChanged(const QStringList &pathsList);
-};
-
-QT_END_NAMESPACE
-
-#endif // QT_NO_DBUS
-
-#endif// QNMDBUSHELPERPRIVATE_H
+#endif

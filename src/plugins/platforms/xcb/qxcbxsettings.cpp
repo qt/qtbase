@@ -262,6 +262,12 @@ QXcbXSettings::QXcbXSettings(QXcbScreen *screen)
     d_ptr->initialized = true;
 }
 
+QXcbXSettings::~QXcbXSettings()
+{
+    delete d_ptr;
+    d_ptr = 0;
+}
+
 bool QXcbXSettings::initialized() const
 {
     Q_D(const QXcbXSettings);

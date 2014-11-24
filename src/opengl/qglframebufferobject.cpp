@@ -472,6 +472,8 @@ void QGLFramebufferObjectPrivate::init(QGLFramebufferObject *q, const QSize &sz,
     if (!funcs.hasOpenGLFeature(QOpenGLFunctions::Framebuffers))
         return;
 
+    ctx->d_ptr->refreshCurrentFbo();
+
     size = sz;
     target = texture_target;
     // texture dimensions
@@ -1027,7 +1029,7 @@ bool QGLFramebufferObject::bind()
     d->funcs.glBindFramebuffer(GL_FRAMEBUFFER, d->fbo());
     d->valid = d->checkFramebufferStatus();
     if (d->valid && current)
-        current->d_ptr->current_fbo = d->fbo();
+        current->d_ptr->setCurrentFbo(d->fbo());
     return d->valid;
 }
 
@@ -1060,7 +1062,7 @@ bool QGLFramebufferObject::release()
 #endif
 
     if (current) {
-        current->d_ptr->current_fbo = current->d_ptr->default_fbo;
+        current->d_ptr->setCurrentFbo(current->d_ptr->default_fbo);
         d->funcs.glBindFramebuffer(GL_FRAMEBUFFER, current->d_ptr->default_fbo);
     }
 
@@ -1108,6 +1110,20 @@ QGLFramebufferObjectFormat QGLFramebufferObject::format() const
     \fn QImage QGLFramebufferObject::toImage() const
 
     Returns the contents of this framebuffer object as a QImage.
+
+    The returned image has a format of premultiplied ARGB32 or RGB32. The latter is used
+    only when internalTextureFormat() is set to \c GL_RGB.
+
+    If the rendering in the framebuffer was not done with premultiplied alpha in mind,
+    create a wrapper QImage with a non-premultiplied format. This is necessary before
+    performing operations like QImage::save() because otherwise the image data would get
+    unpremultiplied, even though it was not premultiplied in the first place. To create
+    such a wrapper without performing a copy of the pixel data, do the following:
+
+    \code
+    QImage fboImage(fbo.toImage());
+    QImage image(fboImage.constBits(), fboImage.width(), fboImage.height(), QImage::Format_ARGB32);
+    \endcode
 
     On QNX the back buffer is not preserved when a buffer swap occures. So this function
     might return old content.
@@ -1173,7 +1189,7 @@ bool QGLFramebufferObject::bindDefault()
         if (!functions.hasOpenGLFeature(QOpenGLFunctions::Framebuffers))
             return false;
 
-        ctx->d_ptr->current_fbo = ctx->d_ptr->default_fbo;
+        ctx->d_ptr->setCurrentFbo(ctx->d_ptr->default_fbo);
         functions.glBindFramebuffer(GL_FRAMEBUFFER, ctx->d_ptr->default_fbo);
 #ifdef QT_DEBUG
     } else {
@@ -1320,7 +1336,12 @@ bool QGLFramebufferObject::isBound() const
 {
     Q_D(const QGLFramebufferObject);
     const QGLContext *current = QGLContext::currentContext();
-    return current ? current->d_ptr->current_fbo == d->fbo() : false;
+    if (current) {
+        current->d_ptr->refreshCurrentFbo();
+        return current->d_ptr->current_fbo == d->fbo();
+    }
+
+    return false;
 }
 
 /*!
@@ -1399,6 +1420,8 @@ void QGLFramebufferObject::blitFramebuffer(QGLFramebufferObject *target, const Q
     const int tx1 = targetRect.left() + targetRect.width();
     const int ty0 = th - (targetRect.top() + targetRect.height());
     const int ty1 = th - targetRect.top();
+
+    ctx->d_ptr->refreshCurrentFbo();
 
     functions.glBindFramebuffer(GL_READ_FRAMEBUFFER, source ? source->handle() : 0);
     functions.glBindFramebuffer(GL_DRAW_FRAMEBUFFER, target ? target->handle() : 0);

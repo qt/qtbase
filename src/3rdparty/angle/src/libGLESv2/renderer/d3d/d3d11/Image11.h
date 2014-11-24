@@ -11,6 +11,7 @@
 #define LIBGLESV2_RENDERER_IMAGE11_H_
 
 #include "libGLESv2/renderer/d3d/ImageD3D.h"
+#include "libGLESv2/ImageIndex.h"
 
 #include "common/debug.h"
 
@@ -21,7 +22,6 @@ class Framebuffer;
 
 namespace rx
 {
-class Renderer;
 class Renderer11;
 class TextureStorage11;
 
@@ -33,42 +33,41 @@ class Image11 : public ImageD3D
 
     static Image11 *makeImage11(Image *img);
 
-    static void generateMipmap(Image11 *dest, Image11 *src);
+    static gl::Error generateMipmap(Image11 *dest, Image11 *src);
 
     virtual bool isDirty() const;
 
-    virtual bool copyToStorage2D(TextureStorage *storage, int level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height);
-    virtual bool copyToStorageCube(TextureStorage *storage, int face, int level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height);
-    virtual bool copyToStorage3D(TextureStorage *storage, int level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth);
-    virtual bool copyToStorage2DArray(TextureStorage *storage, int level, GLint xoffset, GLint yoffset, GLint arrayLayer, GLsizei width, GLsizei height);
+    virtual gl::Error copyToStorage(TextureStorage *storage, const gl::ImageIndex &index, const gl::Box &region);
 
-    virtual bool redefine(Renderer *renderer, GLenum target, GLenum internalformat, GLsizei width, GLsizei height, GLsizei depth, bool forceRelease);
+    bool redefine(RendererD3D *renderer, GLenum target, GLenum internalformat, GLsizei width, GLsizei height, GLsizei depth, bool forceRelease) override;
 
     DXGI_FORMAT getDXGIFormat() const;
-    
-    virtual void loadData(GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth,
-                          GLint unpackAlignment, GLenum type, const void *input);
-    virtual void loadCompressedData(GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth,
-                                    const void *input);
 
-    virtual void copy(GLint xoffset, GLint yoffset, GLint zoffset, GLint x, GLint y, GLsizei width, GLsizei height, gl::Framebuffer *source);
+    virtual gl::Error loadData(GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth,
+                               GLint unpackAlignment, GLenum type, const void *input);
+    virtual gl::Error loadCompressedData(GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth,
+                                         const void *input);
 
-    bool recoverFromAssociatedStorage();
+    virtual gl::Error copy(GLint xoffset, GLint yoffset, GLint zoffset, const gl::Rectangle &sourceArea, RenderTarget *source);
+    virtual gl::Error copy(GLint xoffset, GLint yoffset, GLint zoffset, const gl::Rectangle &sourceArea,
+                           const gl::ImageIndex &sourceIndex, TextureStorage *source);
+
+    gl::Error recoverFromAssociatedStorage();
     bool isAssociatedStorageValid(TextureStorage11* textureStorage) const;
     void disassociateStorage();
 
   protected:
-    HRESULT map(D3D11_MAP mapType, D3D11_MAPPED_SUBRESOURCE *map);
+    gl::Error map(D3D11_MAP mapType, D3D11_MAPPED_SUBRESOURCE *map);
     void unmap();
 
   private:
     DISALLOW_COPY_AND_ASSIGN(Image11);
 
-    bool copyToStorageImpl(TextureStorage11 *storage11, int level, int layerTarget, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height);
+    gl::Error copyToStorageImpl(TextureStorage11 *storage11, const gl::ImageIndex &index, const gl::Box &region);
+    gl::Error copy(GLint xoffset, GLint yoffset, GLint zoffset, const gl::Rectangle &sourceArea, ID3D11Texture2D *source, UINT sourceSubResource);
 
-    ID3D11Resource *getStagingTexture();
-    unsigned int getStagingSubresource();
-    void createStagingTexture();
+    gl::Error getStagingTexture(ID3D11Resource **outStagingTexture, unsigned int *outSubresourceIndex);
+    gl::Error createStagingTexture();
     void releaseStagingTexture();
 
     Renderer11 *mRenderer;
@@ -79,8 +78,7 @@ class Image11 : public ImageD3D
 
     bool mRecoverFromStorage;
     TextureStorage11 *mAssociatedStorage;
-    int mAssociatedStorageLevel;
-    int mAssociatedStorageLayerTarget;
+    gl::ImageIndex mAssociatedImageIndex;
     unsigned int mRecoveredFromStorageCount;
 };
 

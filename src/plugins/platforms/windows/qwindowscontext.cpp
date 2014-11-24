@@ -102,15 +102,6 @@ static inline int componentVerbose(const char *v, const char *keyWord)
     return 0;
 }
 
-static inline bool hasTouchSupport(QSysInfo::WinVersion wv)
-{
-    enum { QT_SM_DIGITIZER = 94, QT_NID_INTEGRATED_TOUCH = 0x1,
-           QT_NID_EXTERNAL_TOUCH = 0x02, QT_NID_MULTI_INPUT = 0x40 };
-
-    return wv < QSysInfo::WV_WINDOWS7 ? false :
-           (GetSystemMetrics(QT_SM_DIGITIZER) & (QT_NID_INTEGRATED_TOUCH | QT_NID_EXTERNAL_TOUCH | QT_NID_MULTI_INPUT)) != 0;
-}
-
 #if !defined(LANG_SYRIAC)
 #    define LANG_SYRIAC 0x5a
 #endif
@@ -318,7 +309,7 @@ QWindowsContextPrivate::QWindowsContextPrivate()
     QWindowsContext::shell32dll.init();
     QWindowsContext::shcoredll.init();
 
-    if (hasTouchSupport(ver) && QWindowsContext::user32dll.initTouch())
+    if (m_mouseHandler.touchDevice() && QWindowsContext::user32dll.initTouch())
         m_systemInfo |= QWindowsContext::SI_SupportsTouch;
 #endif // !Q_OS_WINCE
     m_displayContext = GetDC(0);

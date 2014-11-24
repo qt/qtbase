@@ -39,6 +39,7 @@
 #include "qwindowsdirect2dwindow.h"
 
 #include "qwindowscontext.h"
+#include "qwindowsguieventdispatcher.h"
 
 #include <qplatformdefs.h>
 #include <QtCore/QCoreApplication>
@@ -46,6 +47,16 @@
 #include <QtGui/qpa/qwindowsysteminterface.h>
 
 QT_BEGIN_NAMESPACE
+
+class QWindowsDirect2DEventDispatcher : public QWindowsGuiEventDispatcher
+{
+public:
+    QWindowsDirect2DEventDispatcher(QObject *parent = 0)
+        : QWindowsGuiEventDispatcher(parent)
+    {
+        uninstallMessageHook(); // ### Workaround for QTBUG-42428
+    }
+};
 
 class QWindowsDirect2DIntegrationPrivate
 {
@@ -235,6 +246,11 @@ QPlatformPixmap *QWindowsDirect2DIntegration::createPlatformPixmap(QPlatformPixm
 QPlatformBackingStore *QWindowsDirect2DIntegration::createPlatformBackingStore(QWindow *window) const
 {
     return new QWindowsDirect2DBackingStore(window);
+}
+
+QAbstractEventDispatcher *QWindowsDirect2DIntegration::createEventDispatcher() const
+{
+    return new QWindowsDirect2DEventDispatcher;
 }
 
 QWindowsDirect2DContext *QWindowsDirect2DIntegration::direct2DContext() const

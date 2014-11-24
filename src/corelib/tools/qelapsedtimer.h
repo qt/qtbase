@@ -51,8 +51,8 @@ public:
     };
 
     Q_DECL_CONSTEXPR QElapsedTimer()
-        : t1(Q_INT64_C(0x8000000000000000))
-        , t2(Q_INT64_C(0x8000000000000000))
+        : t1(Q_INT64_C(0x8000000000000000)),
+          t2(Q_INT64_C(0x8000000000000000))
     {
     }
 

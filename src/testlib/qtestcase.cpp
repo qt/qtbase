@@ -1027,13 +1027,6 @@ QT_BEGIN_NAMESPACE
     Returns a textual representation of the given \a variant.
 */
 
-/*!
-    \fn char *QTest::toString(const QVersionNumber &version)
-    \overload
-
-    Returns a textual representation of the given \a version.
-*/
-
 /*! \fn void QTest::qWait(int ms)
 
     Waits for \a ms milliseconds. While waiting, events will be processed and
@@ -1735,7 +1728,8 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
         } else if (strcmp(argv[i], "-vb") == 0) {
             QBenchmarkGlobalData::current->verboseOutput = true;
 #ifdef Q_OS_WINRT
-        } else if (strncmp(argv[i], "-ServerName:", 12) == 0) {
+        } else if (strncmp(argv[i], "-ServerName:", 12) == 0 ||
+                   strncmp(argv[i], "-qdevel", 7) == 0) {
             continue;
 #endif
         } else if (argv[i][0] == '-') {
@@ -2159,7 +2153,7 @@ char *toPrettyUnicode(const ushort *p, int length)
             break;
         }
 
-        if (*p < 0x7f && *p >= 0x20 && *p != '\\') {
+        if (*p < 0x7f && *p >= 0x20 && *p != '\\' && *p != '"') {
             *dst++ = *p;
             continue;
         }

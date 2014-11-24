@@ -238,6 +238,8 @@ public:
     bool ownContext;
 
     void setupSharing();
+    void refreshCurrentFbo();
+    void setCurrentFbo(GLuint fbo);
 
     QGLFormat glFormat;
     QGLFormat reqFormat;

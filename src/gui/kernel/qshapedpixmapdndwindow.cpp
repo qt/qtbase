@@ -52,6 +52,12 @@ QShapedPixmapWindow::QShapedPixmapWindow()
     m_backingStore = new QBackingStore(this);
 }
 
+QShapedPixmapWindow::~QShapedPixmapWindow()
+{
+    delete m_backingStore;
+    m_backingStore = 0;
+}
+
 void QShapedPixmapWindow::render()
 {
     QRect rect(QPoint(), geometry().size());

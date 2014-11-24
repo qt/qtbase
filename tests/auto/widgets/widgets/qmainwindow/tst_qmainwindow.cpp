@@ -104,6 +104,7 @@ public:
     tst_QMainWindow();
 
 private slots:
+    void cleanup();
     void getSetCheck();
     void constructor();
     void iconSize();
@@ -146,6 +147,12 @@ private slots:
 #endif
     void QTBUG21378_animationFinished();
 };
+
+
+void tst_QMainWindow::cleanup()
+{
+    QVERIFY(QApplication::topLevelWidgets().isEmpty());
+}
 
 // Testing get/set functions
 void tst_QMainWindow::getSetCheck()
@@ -854,6 +861,7 @@ void tst_QMainWindow::takeCentralWidget() {
 
     QVERIFY(!w2.isNull());
     QCOMPARE(w2.data(), hopefullyW2);
+    delete w2;
 }
 
 void tst_QMainWindow::corner()

@@ -1459,10 +1459,7 @@ void QFontEngineFT::getUnscaledGlyph(glyph_t glyph, QPainterPath *path, glyph_me
 
 bool QFontEngineFT::supportsTransformation(const QTransform &transform) const
 {
-    // The freetype engine falls back to QFontEngine for tranformed glyphs,
-    // which uses fast-tranform and produces very ugly results, so we claim
-    // to support just translations.
-    return transform.type() <= QTransform::TxTranslate;
+    return transform.type() <= QTransform::TxRotate;
 }
 
 void QFontEngineFT::addOutlineToPath(qreal x, qreal y, const QGlyphLayout &glyphs, QPainterPath *path, QTextItem::RenderFlags flags)
@@ -1943,17 +1940,75 @@ void QFontEngineFT::unlockAlphaMapForGlyph()
     currentlyLockedAlphaMap = QImage();
 }
 
-QFontEngineFT::Glyph *QFontEngineFT::loadGlyphFor(glyph_t g, QFixed subPixelPosition, GlyphFormat format)
+QFontEngineFT::Glyph *QFontEngineFT::loadGlyphFor(glyph_t g,
+                                                  QFixed subPixelPosition,
+                                                  GlyphFormat format,
+                                                  const QTransform &t)
 {
-    return defaultGlyphSet.outline_drawing ? 0 :
-            loadGlyph(cacheEnabled ? &defaultGlyphSet : 0, g, subPixelPosition, format);
+    FT_Face face = 0;
+    QGlyphSet *glyphSet = 0;
+    FT_Matrix ftMatrix = QTransformToFTMatrix(t);
+    if (cacheEnabled) {
+        if (t.type() > QTransform::TxTranslate && FT_IS_SCALABLE(freetype->face)) {
+            for (int i = 0; i < transformedGlyphSets.count(); ++i) {
+                const QGlyphSet &g = transformedGlyphSets.at(i);
+                if (g.transformationMatrix.xx == ftMatrix.xx
+                    && g.transformationMatrix.xy == ftMatrix.xy
+                    && g.transformationMatrix.yx == ftMatrix.yx
+                    && g.transformationMatrix.yy == ftMatrix.yy) {
+
+                    // found a match, move it to the front
+                    transformedGlyphSets.move(i, 0);
+                    glyphSet = &transformedGlyphSets[0];
+                    break;
+                }
+            }
+
+            if (!glyphSet) {
+                // don't cache more than 10 transformations
+                if (transformedGlyphSets.count() >= 10) {
+                    transformedGlyphSets.move(transformedGlyphSets.size() - 1, 0);
+                } else {
+                    transformedGlyphSets.prepend(QGlyphSet());
+                }
+                glyphSet = &transformedGlyphSets[0];
+                glyphSet->clear();
+                glyphSet->transformationMatrix = ftMatrix;
+            }
+        } else {
+            glyphSet = &defaultGlyphSet;
+        }
+        Q_ASSERT(glyphSet != 0);
+    }
+
+    if (glyphSet != 0 && glyphSet->outline_drawing)
+        return 0;
+
+    Glyph *glyph = glyphSet != 0 ? glyphSet->getGlyph(g, subPixelPosition) : 0;
+    if (!glyph || glyph->format != format) {
+        face = lockFace();
+        FT_Matrix m = this->matrix;
+        FT_Matrix_Multiply(&ftMatrix, &m);
+        freetype->matrix = m;
+        glyph = loadGlyph(glyphSet, g, subPixelPosition, format, false);
+    }
+
+    if (face)
+        unlockFace();
+
+    return glyph;
 }
 
 QImage QFontEngineFT::alphaMapForGlyph(glyph_t g, QFixed subPixelPosition)
 {
+    return alphaMapForGlyph(g, subPixelPosition, QTransform());
+}
+
+QImage QFontEngineFT::alphaMapForGlyph(glyph_t g, QFixed subPixelPosition, const QTransform &t)
+{
     lockFace();
 
-    QScopedPointer<Glyph> glyph(loadGlyphFor(g, subPixelPosition, antialias ? Format_A8 : Format_Mono));
+    QScopedPointer<Glyph> glyph(loadGlyphFor(g, subPixelPosition, antialias ? Format_A8 : Format_Mono, t));
     if (!glyph || !glyph->data) {
         unlockFace();
         return QFontEngine::alphaMapForGlyph(g);
@@ -1982,12 +2037,12 @@ QImage QFontEngineFT::alphaMapForGlyph(glyph_t g, QFixed subPixelPosition)
 
 QImage QFontEngineFT::alphaRGBMapForGlyph(glyph_t g, QFixed subPixelPosition, const QTransform &t)
 {
-    if (t.type() > QTransform::TxTranslate)
+    if (t.type() > QTransform::TxRotate)
         return QFontEngine::alphaRGBMapForGlyph(g, subPixelPosition, t);
 
     lockFace();
 
-    QScopedPointer<Glyph> glyph(loadGlyphFor(g, subPixelPosition, Format_A32));
+    QScopedPointer<Glyph> glyph(loadGlyphFor(g, subPixelPosition, Format_A32, t));
     if (!glyph || !glyph->data) {
         unlockFace();
         return QFontEngine::alphaRGBMapForGlyph(g, subPixelPosition, t);

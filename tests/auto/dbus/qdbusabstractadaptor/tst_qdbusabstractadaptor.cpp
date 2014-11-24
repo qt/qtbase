@@ -338,6 +338,24 @@ void registerMyObjectPeer(const QString & path, QDBusConnection::RegisterOptions
     QDBusMessage reply = QDBusConnection::sessionBus().call(req);
 }
 
+void syncPeer()
+{
+    static int counter = 0;
+    QString reqId = QString::number(++counter);
+
+    // wait for the sync signal with the right ID
+    QEventLoop loop;
+    QDBusConnection con("peer");
+    con.connect(serviceName, objectPath, interfaceName, "syncReceived",
+                QStringList() << reqId, QString(), &loop, SLOT(quit()));
+
+    QDBusMessage req = QDBusMessage::createMethodCall(serviceName, objectPath, interfaceName, "requestSync");
+    req << reqId;
+    QDBusConnection::sessionBus().send(req);
+
+    loop.exec();
+}
+
 void emitSignalPeer(const QString &interface, const QString &name, const QVariant &parameter)
 {
     if (parameter.isValid())
@@ -1159,6 +1177,8 @@ void tst_QDBusAbstractAdaptor::signalEmissionsPeer()
 
     // connect all signals and emit only one
     {
+        syncPeer();
+
         QDBusSignalSpy spy;
         con.connect(QString(), "/", "local.Interface2", "signal",
                     &spy, SLOT(slot(QDBusMessage)));
@@ -1186,6 +1206,8 @@ void tst_QDBusAbstractAdaptor::signalEmissionsPeer()
 
     // connect one signal and emit them all
     {
+        syncPeer();
+
         QDBusSignalSpy spy;
         con.connect(QString(), "/", interface, name, &spy, SLOT(slot(QDBusMessage)));
         emitSignalPeer("local.Interface2", "signal", QVariant());
@@ -1214,6 +1236,7 @@ void tst_QDBusAbstractAdaptor::sameSignalDifferentPathsPeer()
     registerMyObjectPeer("/p1");
     registerMyObjectPeer("/p2");
 
+    syncPeer();
     QDBusSignalSpy spy;
     con.connect(QString(), "/p1", "local.Interface2", "signal", &spy, SLOT(slot(QDBusMessage)));
     emitSignalPeer("local.Interface2", QString(), QVariant());
@@ -1241,6 +1264,7 @@ void tst_QDBusAbstractAdaptor::sameObjectDifferentPathsPeer()
     registerMyObjectPeer("/p1");
     registerMyObjectPeer("/p2", 0); // don't export anything
 
+    syncPeer();
     QDBusSignalSpy spy;
     con.connect(QString(), "/p1", "local.Interface2", "signal", &spy, SLOT(slot(QDBusMessage)));
     con.connect(QString(), "/p2", "local.Interface2", "signal", &spy, SLOT(slot(QDBusMessage)));
@@ -1263,6 +1287,7 @@ void tst_QDBusAbstractAdaptor::scriptableSignalOrNotPeer()
         registerMyObjectPeer("/p1", QDBusConnection::ExportScriptableSignals);
         registerMyObjectPeer("/p2", 0); // don't export anything
 
+        syncPeer();
         QDBusSignalSpy spy;
         con.connect(QString(), "/p1", "local.MyObject", "scriptableSignalVoid", &spy, SLOT(slot(QDBusMessage)));
         con.connect(QString(), "/p2", "local.MyObject", "scriptableSignalVoid", &spy, SLOT(slot(QDBusMessage)));
@@ -1286,6 +1311,7 @@ void tst_QDBusAbstractAdaptor::scriptableSignalOrNotPeer()
         registerMyObjectPeer("/p2", QDBusConnection::ExportScriptableSignals
                                 | QDBusConnection::ExportNonScriptableSignals);
 
+        syncPeer();
         QDBusSignalSpy spy;
         con.connect(QString(), "/p1", "local.MyObject", "nonScriptableSignalVoid", &spy, SLOT(slot(QDBusMessage)));
         con.connect(QString(), "/p2", "local.MyObject", "nonScriptableSignalVoid", &spy, SLOT(slot(QDBusMessage)));
@@ -1338,6 +1364,7 @@ void tst_QDBusAbstractAdaptor::overloadedSignalEmissionPeer()
 
     // connect all signals and emit only one
     {
+        syncPeer();
         QDBusSignalSpy spy;
         con.connect(QString(), "/", "local.Interface4", "signal", "",
                     &spy, SLOT(slot(QDBusMessage)));
@@ -1358,6 +1385,7 @@ void tst_QDBusAbstractAdaptor::overloadedSignalEmissionPeer()
     QFETCH(QString, signature);
     // connect one signal and emit them all
     {
+        syncPeer();
         QDBusSignalSpy spy;
         con.connect(QString(), "/", interface, name, signature, &spy, SLOT(slot(QDBusMessage)));
         emitSignalPeer("local.Interface4", "signal", QVariant());

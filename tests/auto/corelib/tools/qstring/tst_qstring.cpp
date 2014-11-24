@@ -4447,6 +4447,28 @@ void tst_QString::section_data()
                             << QString("o") << 1 << 2
                             << int(QString::SectionIncludeLeadingSep|QString::SectionIncludeTrailingSep)
                             << QString("o1o2o") << false;
+    QTest::newRow( "range1" ) << QString("o1o2o")
+                            << QString("o") << -5 << -5
+                            << int(QString::SectionIncludeLeadingSep|QString::SectionIncludeTrailingSep)
+                            << QString() << false;
+    QTest::newRow( "range2" ) << QString("oo1o2o")
+                            << QString("o") << -5 << 1
+                            << int(QString::SectionIncludeLeadingSep|QString::SectionIncludeTrailingSep
+                                   |QString::SectionSkipEmpty)
+                            << QString("oo1o2o") << false;
+    QTest::newRow( "range3" ) << QString("o1o2o")
+                            << QString("o") << 2 << 1
+                            << int(QString::SectionIncludeLeadingSep|QString::SectionIncludeTrailingSep)
+                            << QString() << false;
+    QTest::newRow( "range4" ) << QString("o1o2o")
+                            << QString("o") << 4 << 4
+                            << int(QString::SectionIncludeLeadingSep|QString::SectionIncludeTrailingSep)
+                            << QString() << false;
+    QTest::newRow( "range5" ) << QString("o1oo2o")
+                            << QString("o") << -2 << -1
+                            << int(QString::SectionIncludeLeadingSep|QString::SectionIncludeTrailingSep
+                                   |QString::SectionSkipEmpty)
+                            << QString("o1oo2o") << false;
     QTest::newRow( "rx1" ) << QString("o1o2o")
                         << QString("[a-z]") << 0 << 0
                         << int(QString::SectionIncludeLeadingSep|QString::SectionIncludeTrailingSep)

@@ -466,17 +466,13 @@ bool QCocoaPrintDevice::openPpdFile()
         ppdClose(m_ppd);
     m_ppd = 0;
     CFURLRef ppdURL = NULL;
-#if MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7
-    char ppdPath[PATH_MAX];
-#else
     char ppdPath[MAXPATHLEN];
-#endif
     if (PMPrinterCopyDescriptionURL(m_printer, kPMPPDDescriptionType, &ppdURL) == noErr
-        && ppdURL != NULL
-        && CFURLGetFileSystemRepresentation(ppdURL, true, (UInt8*)ppdPath, sizeof(ppdPath))) {
-        m_ppd = ppdOpenFile(ppdPath);
+        && ppdURL != NULL) {
+        if (CFURLGetFileSystemRepresentation(ppdURL, true, (UInt8*)ppdPath, sizeof(ppdPath)))
+            m_ppd = ppdOpenFile(ppdPath);
+        CFRelease(ppdURL);
     }
-    CFRelease(ppdURL);
     return m_ppd ? true : false;
 }
 

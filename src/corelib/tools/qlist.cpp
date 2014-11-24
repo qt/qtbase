@@ -1365,7 +1365,7 @@ void **QListData::erase(void **xi)
     \sa operator*()
 */
 
-/*! \fn T &QList::iterator::operator[](int j) const
+/*! \fn T &QList::iterator::operator[](difference_type j) const
 
     Returns a modifiable reference to the item at position *this +
     \a{j}.
@@ -1466,7 +1466,7 @@ void **QListData::erase(void **xi)
     current and returns an iterator to the previously current item.
 */
 
-/*! \fn QList::iterator &QList::iterator::operator+=(int j)
+/*! \fn QList::iterator &QList::iterator::operator+=(difference_type j)
 
     Advances the iterator by \a j items. (If \a j is negative, the
     iterator goes backward.)
@@ -1474,7 +1474,7 @@ void **QListData::erase(void **xi)
     \sa operator-=(), operator+()
 */
 
-/*! \fn QList::iterator &QList::iterator::operator-=(int j)
+/*! \fn QList::iterator &QList::iterator::operator-=(difference_type j)
 
     Makes the iterator go back by \a j items. (If \a j is negative,
     the iterator goes forward.)
@@ -1482,7 +1482,7 @@ void **QListData::erase(void **xi)
     \sa operator+=(), operator-()
 */
 
-/*! \fn QList::iterator QList::iterator::operator+(int j) const
+/*! \fn QList::iterator QList::iterator::operator+(difference_type j) const
 
     Returns an iterator to the item at \a j positions forward from
     this iterator. (If \a j is negative, the iterator goes backward.)
@@ -1490,7 +1490,7 @@ void **QListData::erase(void **xi)
     \sa operator-(), operator+=()
 */
 
-/*! \fn QList::iterator QList::iterator::operator-(int j) const
+/*! \fn QList::iterator QList::iterator::operator-(difference_type j) const
 
     Returns an iterator to the item at \a j positions backward from
     this iterator. (If \a j is negative, the iterator goes forward.)
@@ -1620,7 +1620,7 @@ void **QListData::erase(void **xi)
     \sa operator*()
 */
 
-/*! \fn const T &QList::const_iterator::operator[](int j) const
+/*! \fn const T &QList::const_iterator::operator[](difference_type j) const
 
     Returns the item at position *this + \a{j}.
 
@@ -1712,7 +1712,7 @@ void **QListData::erase(void **xi)
     current and returns an iterator to the previously current item.
 */
 
-/*! \fn QList::const_iterator &QList::const_iterator::operator+=(int j)
+/*! \fn QList::const_iterator &QList::const_iterator::operator+=(difference_type j)
 
     Advances the iterator by \a j items. (If \a j is negative, the
     iterator goes backward.)
@@ -1720,7 +1720,7 @@ void **QListData::erase(void **xi)
     \sa operator-=(), operator+()
 */
 
-/*! \fn QList::const_iterator &QList::const_iterator::operator-=(int j)
+/*! \fn QList::const_iterator &QList::const_iterator::operator-=(difference_type j)
 
     Makes the iterator go back by \a j items. (If \a j is negative,
     the iterator goes forward.)
@@ -1728,7 +1728,7 @@ void **QListData::erase(void **xi)
     \sa operator+=(), operator-()
 */
 
-/*! \fn QList::const_iterator QList::const_iterator::operator+(int j) const
+/*! \fn QList::const_iterator QList::const_iterator::operator+(difference_type j) const
 
     Returns an iterator to the item at \a j positions forward from
     this iterator. (If \a j is negative, the iterator goes backward.)
@@ -1736,7 +1736,7 @@ void **QListData::erase(void **xi)
     \sa operator-(), operator+=()
 */
 
-/*! \fn QList::const_iterator QList::const_iterator::operator-(int j) const
+/*! \fn QList::const_iterator QList::const_iterator::operator-(difference_type j) const
 
     Returns an iterator to the item at \a j positions backward from
     this iterator. (If \a j is negative, the iterator goes forward.)

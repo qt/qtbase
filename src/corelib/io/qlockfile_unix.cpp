@@ -183,7 +183,7 @@ bool QLockFilePrivate::isApparentlyStale() const
     QString hostname, appname;
     if (!getLockInfo(&pid, &hostname, &appname))
         return false;
-    if (hostname == QString::fromLocal8Bit(localHostName())) {
+    if (hostname.isEmpty() || hostname == QString::fromLocal8Bit(localHostName())) {
         if (::kill(pid, 0) == -1 && errno == ESRCH)
             return true; // PID doesn't exist anymore
     }

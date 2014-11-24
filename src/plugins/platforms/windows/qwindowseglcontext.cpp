@@ -360,10 +360,10 @@ QWindowsEGLStaticContext *QWindowsEGLStaticContext::create()
     EGLDisplay display = EGL_NO_DISPLAY;
 #ifdef EGL_ANGLE_platform_angle_opengl
     if (libEGL.eglGetPlatformDisplayEXT && qEnvironmentVariableIsSet("QT_ANGLE_PLATFORM")) {
-        const EGLint anglePlatformAttributes[][3] = {
+        const EGLint anglePlatformAttributes[][5] = {
             { EGL_PLATFORM_ANGLE_TYPE_ANGLE, EGL_PLATFORM_ANGLE_TYPE_D3D11_ANGLE, EGL_NONE },
             { EGL_PLATFORM_ANGLE_TYPE_ANGLE, EGL_PLATFORM_ANGLE_TYPE_D3D9_ANGLE, EGL_NONE },
-            { EGL_PLATFORM_ANGLE_TYPE_ANGLE, EGL_PLATFORM_ANGLE_TYPE_D3D11_WARP_ANGLE, EGL_NONE }
+            { EGL_PLATFORM_ANGLE_TYPE_ANGLE, EGL_PLATFORM_ANGLE_TYPE_D3D11_ANGLE, EGL_PLATFORM_ANGLE_USE_WARP_ANGLE, EGL_TRUE, EGL_NONE }
         };
         const EGLint *attributes = 0;
         const QByteArray anglePlatform = qgetenv("QT_ANGLE_PLATFORM");

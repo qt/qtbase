@@ -51,7 +51,8 @@ QT_END_NAMESPACE
 Q_FORWARD_DECLARE_OBJC_CLASS(QNSViewMouseMoveHelper);
 
 @interface QT_MANGLE_NAMESPACE(QNSView) : NSView <NSTextInputClient> {
-    QCocoaBackingStore* m_backingStore;
+    QImage m_backingStore;
+    qreal m_pixelRatio;
     QPoint m_backingStoreOffset;
     CGImageRef m_maskImage;
     uchar *m_maskData;

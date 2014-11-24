@@ -59,6 +59,8 @@ public:
     QAbstractProxyModelPrivate() : QAbstractItemModelPrivate(), model(0) {}
     QAbstractItemModel *model;
     virtual void _q_sourceModelDestroyed();
+    void mapDropCoordinatesToSource(int row, int column, const QModelIndex &parent,
+                                    int *source_row, int *source_column, QModelIndex *source_parent) const;
 };
 
 QT_END_NAMESPACE

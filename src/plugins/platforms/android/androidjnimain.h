@@ -85,29 +85,6 @@ namespace QtAndroid
     jobject createBitmap(int width, int height, QImage::Format format, JNIEnv *env);
     jobject createBitmapDrawable(jobject bitmap, JNIEnv *env = 0);
 
-    struct AttachedJNIEnv
-    {
-        AttachedJNIEnv()
-        {
-            attached = false;
-            if (QtAndroid::javaVM()->GetEnv((void**)&jniEnv, JNI_VERSION_1_6) < 0) {
-                if (QtAndroid::javaVM()->AttachCurrentThread(&jniEnv, NULL) < 0) {
-                    __android_log_print(ANDROID_LOG_ERROR, "Qt", "AttachCurrentThread failed");
-                    jniEnv = Q_NULLPTR;
-                    return;
-                }
-                attached = true;
-            }
-        }
-
-        ~AttachedJNIEnv()
-        {
-            if (attached)
-                QtAndroid::javaVM()->DetachCurrentThread();
-        }
-        bool attached;
-        JNIEnv *jniEnv;
-    };
     const char *classErrorMsgFmt();
     const char *methodErrorMsgFmt();
     const char *qtTagText();

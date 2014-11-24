@@ -148,6 +148,7 @@ private:
     void generateTableOfContents(const Node *node,
                                  CodeMarker *marker,
                                  QList<Section>* sections = 0);
+    void generateSidebar();
     QString generateListOfAllMemberFile(const InnerNode *inner,
                                         CodeMarker *marker);
     QString generateAllQmlMembersFile(QmlClassNode* qml_cn, CodeMarker* marker);
@@ -242,6 +243,7 @@ private:
     QString endHeader;
     QString postHeader;
     QString postPostHeader;
+    QString prologue;
     QString footer;
     QString address;
     bool pleaseGenerateMacRef;
@@ -276,6 +278,7 @@ public:
 #define HTMLGENERATOR_GENERATEMACREFS   "generatemacrefs" // ### document me
 #define HTMLGENERATOR_POSTHEADER        "postheader"
 #define HTMLGENERATOR_POSTPOSTHEADER    "postpostheader"
+#define HTMLGENERATOR_PROLOGUE          "prologue"
 #define HTMLGENERATOR_NONAVIGATIONBAR   "nonavigationbar"
 #define HTMLGENERATOR_NOSUBDIRS         "nosubdirs"
 #define HTMLGENERATOR_TOCDEPTH          "tocdepth"

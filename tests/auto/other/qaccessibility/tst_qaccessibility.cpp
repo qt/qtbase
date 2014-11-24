@@ -2648,57 +2648,67 @@ void tst_QAccessibility::abstractScrollAreaTest()
 
     // Horizontal scrollBar.
     abstractScrollArea.setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
-    QCOMPARE(interface->childCount(), 2);
     QWidget *horizontalScrollBar = abstractScrollArea.horizontalScrollBar();
+
+    // On OS X >= 10.9 the scrollbar will be hidden unless explicitly enabled in the preferences
+    bool scrollBarsVisible = !horizontalScrollBar->style()->styleHint(QStyle::SH_ScrollBar_Transient, 0, horizontalScrollBar);
+    int childCount = scrollBarsVisible ? 2 : 1;
+    QCOMPARE(interface->childCount(), childCount);
     QWidget *horizontalScrollBarContainer = horizontalScrollBar->parentWidget();
-    QVERIFY(verifyChild(horizontalScrollBarContainer, interface, 1, globalGeometry));
+    if (scrollBarsVisible)
+        QVERIFY(verifyChild(horizontalScrollBarContainer, interface, 1, globalGeometry));
 
     // Horizontal scrollBar widgets.
     QLabel *secondLeftLabel = new QLabel(QLatin1String("L2"));
     abstractScrollArea.addScrollBarWidget(secondLeftLabel, Qt::AlignLeft);
-    QCOMPARE(interface->childCount(), 2);
+    QCOMPARE(interface->childCount(), childCount);
 
     QLabel *firstLeftLabel = new QLabel(QLatin1String("L1"));
     abstractScrollArea.addScrollBarWidget(firstLeftLabel, Qt::AlignLeft);
-    QCOMPARE(interface->childCount(), 2);
+    QCOMPARE(interface->childCount(), childCount);
 
     QLabel *secondRightLabel = new QLabel(QLatin1String("R2"));
     abstractScrollArea.addScrollBarWidget(secondRightLabel, Qt::AlignRight);
-    QCOMPARE(interface->childCount(), 2);
+    QCOMPARE(interface->childCount(), childCount);
 
     QLabel *firstRightLabel = new QLabel(QLatin1String("R1"));
     abstractScrollArea.addScrollBarWidget(firstRightLabel, Qt::AlignRight);
-    QCOMPARE(interface->childCount(), 2);
+    QCOMPARE(interface->childCount(), childCount);
 
     // Vertical scrollBar.
     abstractScrollArea.setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
-    QCOMPARE(interface->childCount(), 3);
+    if (scrollBarsVisible)
+        ++childCount;
+    QCOMPARE(interface->childCount(), childCount);
     QWidget *verticalScrollBar = abstractScrollArea.verticalScrollBar();
     QWidget *verticalScrollBarContainer = verticalScrollBar->parentWidget();
-    QVERIFY(verifyChild(verticalScrollBarContainer, interface, 2, globalGeometry));
+    if (scrollBarsVisible)
+        QVERIFY(verifyChild(verticalScrollBarContainer, interface, 2, globalGeometry));
 
     // Vertical scrollBar widgets.
     QLabel *secondTopLabel = new QLabel(QLatin1String("T2"));
     abstractScrollArea.addScrollBarWidget(secondTopLabel, Qt::AlignTop);
-    QCOMPARE(interface->childCount(), 3);
+    QCOMPARE(interface->childCount(), childCount);
 
     QLabel *firstTopLabel = new QLabel(QLatin1String("T1"));
     abstractScrollArea.addScrollBarWidget(firstTopLabel, Qt::AlignTop);
-    QCOMPARE(interface->childCount(), 3);
+    QCOMPARE(interface->childCount(), childCount);
 
     QLabel *secondBottomLabel = new QLabel(QLatin1String("B2"));
     abstractScrollArea.addScrollBarWidget(secondBottomLabel, Qt::AlignBottom);
-    QCOMPARE(interface->childCount(), 3);
+    QCOMPARE(interface->childCount(), childCount);
 
     QLabel *firstBottomLabel = new QLabel(QLatin1String("B1"));
     abstractScrollArea.addScrollBarWidget(firstBottomLabel, Qt::AlignBottom);
-    QCOMPARE(interface->childCount(), 3);
+    QCOMPARE(interface->childCount(), childCount);
 
     // CornerWidget.
+    ++childCount;
     abstractScrollArea.setCornerWidget(new QLabel(QLatin1String("C")));
-    QCOMPARE(interface->childCount(), 4);
+    QCOMPARE(interface->childCount(), childCount);
     QWidget *cornerWidget = abstractScrollArea.cornerWidget();
-    QVERIFY(verifyChild(cornerWidget, interface, 3, globalGeometry));
+    if (scrollBarsVisible)
+        QVERIFY(verifyChild(cornerWidget, interface, 3, globalGeometry));
 
     QCOMPARE(verifyHierarchy(interface), 0);
 

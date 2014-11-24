@@ -131,10 +131,13 @@ QString QStandardPaths::writableLocation(StandardLocation type)
             return QString();
         }
         // "and he MUST be the only one having read and write access to it. Its Unix access mode MUST be 0700."
+        // since the current user is the owner, set both xxxUser and xxxOwner
         QFile file(xdgRuntimeDir);
-        const QFile::Permissions wantedPerms = QFile::ReadUser | QFile::WriteUser | QFile::ExeUser;
+        const QFile::Permissions wantedPerms = QFile::ReadUser | QFile::WriteUser | QFile::ExeUser
+                                               | QFile::ReadOwner | QFile::WriteOwner | QFile::ExeOwner;
         if (file.permissions() != wantedPerms && !file.setPermissions(wantedPerms)) {
-            qWarning("QStandardPaths: wrong permissions on runtime directory %s", qPrintable(xdgRuntimeDir));
+            qWarning("QStandardPaths: could not set correct permissions on runtime directory %s: %s",
+                     qPrintable(xdgRuntimeDir), qPrintable(file.errorString()));
             return QString();
         }
         return xdgRuntimeDir;

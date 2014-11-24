@@ -96,12 +96,10 @@ void QCocoaBackingStore::flush(QWindow *win, const QRegion &region, const QPoint
     }
 }
 
-#ifndef QT_NO_OPENGL
 QImage QCocoaBackingStore::toImage() const
 {
     return m_qImage;
 }
-#endif
 
 void QCocoaBackingStore::resize(const QSize &size, const QRegion &)
 {
@@ -119,17 +117,6 @@ bool QCocoaBackingStore::scroll(const QRegion &area, int dx, int dy)
         qt_scrollRectInImage(m_qImage, qrect, qpoint);
     }
     return true;
-}
-
-CGImageRef QCocoaBackingStore::getBackingStoreCGImage()
-{
-    if (!m_cgImage)
-        m_cgImage = qt_mac_toCGImage(m_qImage);
-
-    // Warning: do not retain/release/cache the returned image from
-    // outside the backingstore since it shares data with a QImage and
-    // needs special memory considerations.
-    return m_cgImage;
 }
 
 qreal QCocoaBackingStore::getBackingStoreDevicePixelRatio()

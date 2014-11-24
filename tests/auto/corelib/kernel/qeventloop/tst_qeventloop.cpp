@@ -40,6 +40,7 @@
 #include <private/qeventloop_p.h>
 #if defined(Q_OS_UNIX)
   #include <private/qeventdispatcher_unix_p.h>
+  #include <QtCore/private/qcore_unix_p.h>
   #if defined(HAVE_GLIB)
     #include <private/qeventdispatcher_glib_p.h>
   #endif
@@ -172,7 +173,9 @@ private slots:
     void execAfterExit();
     void wakeUp();
     void quit();
+#if defined(Q_OS_UNIX)
     void processEventsExcludeSocket();
+#endif
     void processEventsExcludeTimers();
     void deliverInDefinedOrder();
 
@@ -383,6 +386,7 @@ void tst_QEventLoop::customEvent(QEvent *e)
     }
 }
 
+#if defined(Q_OS_UNIX)
 class SocketEventsTester: public QObject
 {
     Q_OBJECT
@@ -391,8 +395,10 @@ public:
     {
         socket = 0;
         server = 0;
-        dataArrived = false;
+        dataSent = false;
+        dataReadable = false;
         testResult = false;
+        dataArrived = false;
     }
     ~SocketEventsTester()
     {
@@ -415,8 +421,10 @@ public:
 
     QTcpSocket *socket;
     QTcpServer *server;
-    bool dataArrived;
+    bool dataSent;
+    bool dataReadable;
     bool testResult;
+    bool dataArrived;
 public slots:
     void sendAck()
     {
@@ -428,12 +436,26 @@ public slots:
         qint64 size = sizeof(data);
 
         QTcpSocket *serverSocket = server->nextPendingConnection();
+        QCoreApplication::processEvents();
         serverSocket->write(data, size);
-        serverSocket->flush();
-        QTest::qSleep(200); //allow the TCP/IP stack time to loopback the data, so our socket is ready to read
-        QCoreApplication::processEvents(QEventLoop::ExcludeSocketNotifiers);
-        testResult = dataArrived;
-        QCoreApplication::processEvents(); //check the deferred event is processed
+        dataSent = serverSocket->waitForBytesWritten(-1);
+
+        if (dataSent) {
+            fd_set fdread;
+            int fd = socket->socketDescriptor();
+            FD_ZERO(&fdread);
+            FD_SET(fd, &fdread);
+            dataReadable = (1 == qt_safe_select(fd + 1, &fdread, 0, 0, 0));
+        }
+
+        if (!dataReadable) {
+            testResult = dataArrived;
+        } else {
+            QCoreApplication::processEvents(QEventLoop::ExcludeSocketNotifiers);
+            testResult = dataArrived;
+            // to check if the deferred event is processed
+            QCoreApplication::processEvents();
+        }
         serverSocket->close();
         QThread::currentThread()->exit(0);
     }
@@ -449,12 +471,16 @@ public:
         SocketEventsTester *tester = new SocketEventsTester();
         if (tester->init())
             exec();
+        dataSent = tester->dataSent;
+        dataReadable = tester->dataReadable;
         testResult = tester->testResult;
         dataArrived = tester->dataArrived;
         delete tester;
     }
-     bool testResult;
-     bool dataArrived;
+    bool dataSent;
+    bool dataReadable;
+    bool testResult;
+    bool dataArrived;
 };
 
 void tst_QEventLoop::processEventsExcludeSocket()
@@ -462,9 +488,17 @@ void tst_QEventLoop::processEventsExcludeSocket()
     SocketTestThread thread;
     thread.start();
     QVERIFY(thread.wait());
+    QVERIFY(thread.dataSent);
+    QVERIFY(thread.dataReadable);
+  #if defined(HAVE_GLIB)
+    QAbstractEventDispatcher *eventDispatcher = QCoreApplication::eventDispatcher();
+    if (qobject_cast<QEventDispatcherGlib *>(eventDispatcher))
+        QEXPECT_FAIL("", "ExcludeSocketNotifiers is currently broken in the Glib dispatchers", Continue);
+  #endif
     QVERIFY(!thread.testResult);
     QVERIFY(thread.dataArrived);
 }
+#endif
 
 class TimerReceiver : public QObject
 {

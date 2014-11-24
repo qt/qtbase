@@ -191,6 +191,7 @@ public:
     void updateTextureFilter(GLenum target, GLenum wrapMode, bool smoothPixmapTransform, GLuint id = GLuint(-1));
 
     void resetGLState();
+    bool resetOpenGLContextActiveEngine();
 
     // fill, stroke, drawTexture, drawPixmaps & drawCachedGlyphs are the main rendering entry-points,
     // however writeClip can also be thought of as en entry point as it does similar things.

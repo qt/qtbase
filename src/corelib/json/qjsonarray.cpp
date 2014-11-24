@@ -56,7 +56,7 @@ QT_BEGIN_NAMESPACE
     removing QJsonValue's from the array.
 
     A QJsonArray can be converted to and from a QVariantList. You can query the
-    number of entries with size(), insert(), and remove() entries from it
+    number of entries with size(), insert(), and removeAt() entries from it
     and iterate over its content using the standard C++ iterator pattern.
 
     QJsonArray is an implicitly shared class and shares the data with the document

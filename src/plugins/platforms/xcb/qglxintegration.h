@@ -75,7 +75,6 @@ private:
     void init(QXcbScreen *screen, QPlatformOpenGLContext *share);
     void init(QXcbScreen *screen, QPlatformOpenGLContext *share, const QVariant &nativeHandle);
 
-    QXcbScreen *m_screen;
     Display *m_display;
     GLXFBConfig m_config;
     GLXContext m_context;

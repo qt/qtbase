@@ -471,7 +471,7 @@ class QOpenGLWidgetPaintDevice : public QOpenGLPaintDevice
 {
 public:
     QOpenGLWidgetPaintDevice(QOpenGLWidget *widget)
-        : QOpenGLPaintDevice(new QOpenGLWidgetPaintDevicePrivate(widget)) { }
+        : QOpenGLPaintDevice(*new QOpenGLWidgetPaintDevicePrivate(widget)) { }
     void ensureActiveTarget() Q_DECL_OVERRIDE;
 };
 
@@ -578,12 +578,22 @@ GLuint QOpenGLWidgetPrivate::textureId() const
 
 void QOpenGLWidgetPrivate::reset()
 {
+    Q_Q(QOpenGLWidget);
+
+    // Destroy the OpenGL resources first. These need the context to be current.
+    if (initialized)
+        q->makeCurrent();
+
     delete paintDevice;
     paintDevice = 0;
     delete fbo;
     fbo = 0;
     delete resolvedFbo;
     resolvedFbo = 0;
+
+    if (initialized)
+        q->doneCurrent();
+
     // Delete the context first, then the surface. Slots connected to
     // the context's aboutToBeDestroyed() may still call makeCurrent()
     // to perform some cleanup.

@@ -103,7 +103,7 @@ void QEglFSWindow::create()
 
     if (isRaster()) {
         QOpenGLContext *context = new QOpenGLContext(QGuiApplication::instance());
-        context->setFormat(window()->requestedFormat());
+        context->setFormat(m_format);
         context->setScreen(window()->screen());
         if (!context->create())
             qFatal("EGLFS: Failed to create compositing context");

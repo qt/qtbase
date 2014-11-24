@@ -181,7 +181,7 @@ void SslClient::sendData()
     form->sessionInput->clear();
 }
 
-void SslClient::socketError(QAbstractSocket::SocketError error)
+void SslClient::socketError(QAbstractSocket::SocketError)
 {
     QMessageBox::critical(this, tr("Connection error"), socket->errorString());
 }

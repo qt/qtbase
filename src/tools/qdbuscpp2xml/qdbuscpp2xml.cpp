@@ -243,6 +243,8 @@ static QString generateInterfaceXml(const ClassDef *mo)
         foreach (const FunctionDef &mm, mo->signalList) {
             if (mm.wasCloned)
                 continue;
+            if (!mm.isScriptable && !(flags & QDBusConnection::ExportNonScriptableSignals))
+                continue;
 
             retval += addFunction(mm, true);
         }
@@ -250,10 +252,14 @@ static QString generateInterfaceXml(const ClassDef *mo)
 
     if (flags & (QDBusConnection::ExportScriptableSlots | QDBusConnection::ExportNonScriptableSlots)) {
         foreach (const FunctionDef &slot, mo->slotList) {
+            if (!slot.isScriptable && !(flags & QDBusConnection::ExportNonScriptableSlots))
+                continue;
             if (slot.access == FunctionDef::Public)
               retval += addFunction(slot);
         }
         foreach (const FunctionDef &method, mo->methodList) {
+            if (!method.isScriptable && !(flags & QDBusConnection::ExportNonScriptableSlots))
+                continue;
             if (method.access == FunctionDef::Public)
               retval += addFunction(method);
         }

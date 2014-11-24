@@ -241,11 +241,11 @@ enum SetJumpResult
     kJumpedFromUserMainTrampoline,
 };
 
-// We define qt_main so that user_main_trampoline() will not cause
+// We define qtmn so that user_main_trampoline() will not cause
 // missing symbols in the case of hybrid applications that don't
-// user our main wrapper. Since the symbol is weak, it will not
+// use our main wrapper. Since the symbol is weak, it will not
 // get used or cause a clash in the normal Qt application usecase,
-// where we rename main to qt_main.
+// where we rename main to qtmn before linking.
 extern "C" int __attribute__((weak)) qtmn(int argc, char *argv[])
 {
     Q_UNUSED(argc);
@@ -317,11 +317,16 @@ static bool rootLevelRunLoopIntegration()
 }
 
 #if defined(Q_PROCESSOR_X86)
-#  define SET_STACK_POINTER "mov %0, %%esp"
 #  define FUNCTION_CALL_ALIGNMENT 16
+#  if defined(Q_PROCESSOR_X86_32)
+#    define SET_STACK_POINTER "mov %0, %%esp"
+#  elif defined(Q_PROCESSOR_X86_64)
+#    define SET_STACK_POINTER "movq %0, %%rsp"
+#  endif
 #elif defined(Q_PROCESSOR_ARM)
-#  define SET_STACK_POINTER "mov sp, %0"
+#  // Valid for both 32 and 64-bit ARM
 #  define FUNCTION_CALL_ALIGNMENT 4
+#  define SET_STACK_POINTER "mov sp, %0"
 #else
 #  error "Unknown processor family"
 #endif

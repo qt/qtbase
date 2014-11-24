@@ -3144,7 +3144,7 @@ bool QLocaleData::numberToCLocale(const QChar *str, int len,
 }
 
 bool QLocaleData::validateChars(const QString &str, NumberMode numMode, QByteArray *buff,
-                                    int decDigits) const
+                                int decDigits, bool rejectGroupSeparators) const
 {
     buff->clear();
     buff->reserve(str.length());
@@ -3205,7 +3205,7 @@ bool QLocaleData::validateChars(const QString &str, NumberMode numMode, QByteArr
 
                 case ',':
                     //it can only be placed after a digit which is before the decimal point
-                    if (!lastWasDigit || decPointCnt > 0)
+                    if (rejectGroupSeparators || !lastWasDigit || decPointCnt > 0)
                         return false;
                     break;
 

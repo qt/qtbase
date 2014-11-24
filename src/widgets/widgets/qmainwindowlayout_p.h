@@ -133,7 +133,7 @@ public:
     QLayoutItem *unplug(const QList<int> &path, QMainWindowLayoutState *savedState = 0);
 
     void saveState(QDataStream &stream) const;
-    bool checkFormat(QDataStream &stream, bool pre43);
+    bool checkFormat(QDataStream &stream);
     bool restoreState(QDataStream &stream, const QMainWindowLayoutState &oldState);
 };
 

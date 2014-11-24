@@ -1,35 +1,29 @@
-From 75c39e9020f062d155097f6b49aebbc12970b1e8 Mon Sep 17 00:00:00 2001
-From: Andrew Knight <andrew.knight@digia.com>
-Date: Tue, 23 Sep 2014 23:39:14 +0300
+From 43c8ceb17ccd6d5ae13a07c6d01b45eb40983917 Mon Sep 17 00:00:00 2001
+From: Andrew Knight <andrew.knight@theqtcompany.com>
+Date: Tue, 11 Nov 2014 14:36:43 +0200
 Subject: [PATCH 16/16] ANGLE: Fix compilation with MinGW + D3D11
 
-Provide workarounds for things GCC doesn't like, and define a number
-of macros not found in the MinGW headers.
+Provide workarounds for things GCC doesn't like, and define a few
+missing definitions not found in the MinGW headers.
 
 Change-Id: I254c208209c0071fae5efb6727f2b3cfd5542da6
 ---
- src/3rdparty/angle/src/common/platform.h           | 11 +++++
- src/3rdparty/angle/src/libEGL/Display.cpp          |  1 +
- src/3rdparty/angle/src/libGLESv2/Context.cpp       |  5 +-
- src/3rdparty/angle/src/libGLESv2/angletypes.h      |  1 +
- .../angle/src/libGLESv2/renderer/copyimage.inl     |  2 +-
- .../src/libGLESv2/renderer/d3d/TextureD3D.cpp      |  4 +-
+ src/3rdparty/angle/src/common/platform.h           | 73 ++++++++++++++++++++++
+ .../src/libGLESv2/renderer/d3d/HLSLCompiler.cpp    |  6 ++
  .../libGLESv2/renderer/d3d/d3d11/Renderer11.cpp    |  2 +-
- .../libGLESv2/renderer/d3d/d3d11/SwapChain11.cpp   |  2 +-
- .../renderer/d3d/d3d11/renderer11_utils.cpp        | 53 +++++++++++++++++++++-
+ .../renderer/d3d/d3d11/renderer11_utils.cpp        |  2 +-
  .../src/libGLESv2/renderer/d3d/d3d9/Renderer9.cpp  |  4 +-
- src/3rdparty/angle/src/libGLESv2/validationES.cpp  |  2 +-
- 11 files changed, 76 insertions(+), 11 deletions(-)
+ 5 files changed, 83 insertions(+), 4 deletions(-)
 
 diff --git a/src/3rdparty/angle/src/common/platform.h b/src/3rdparty/angle/src/common/platform.h
-index 3c619f3..b53394f 100644
+index 972eee2..0001e71 100644
 --- a/src/3rdparty/angle/src/common/platform.h
 +++ b/src/3rdparty/angle/src/common/platform.h
-@@ -68,6 +68,17 @@
- #      if !defined(COMPILER_IMPLEMENTATION)
- #       include <d3dcompiler.h>
- #      endif
-+#      if defined(__MINGW32__)
+@@ -81,6 +81,79 @@
+ #       endif
+ #   endif
+ 
++#  if defined(__MINGW32__) // Missing defines on MinGW
 +typedef enum D3D11_MAP_FLAG
 +{
 +    D3D11_MAP_FLAG_DO_NOT_WAIT = 0x100000L
@@ -39,202 +33,121 @@ index 3c619f3..b53394f 100644
 +    UINT64 NumPrimitivesWritten;
 +    UINT64 PrimitivesStorageNeeded;
 +} D3D11_QUERY_DATA_SO_STATISTICS;
-+#      endif
- #   endif
- 
++typedef HRESULT (WINAPI *PFN_D3D11_CREATE_DEVICE)(
++        IDXGIAdapter *, D3D_DRIVER_TYPE, HMODULE, UINT, CONST D3D_FEATURE_LEVEL *,
++        UINT FeatureLevels, UINT, ID3D11Device **, D3D_FEATURE_LEVEL *, ID3D11DeviceContext **);
++#define D3D11_MESSAGE_CATEGORY UINT
++#define D3D11_MESSAGE_SEVERITY UINT
++#define D3D11_MESSAGE_ID UINT
++struct D3D11_MESSAGE;
++typedef struct D3D11_INFO_QUEUE_FILTER_DESC
++{
++    UINT NumCategories;
++    D3D11_MESSAGE_CATEGORY *pCategoryList;
++    UINT NumSeverities;
++    D3D11_MESSAGE_SEVERITY *pSeverityList;
++    UINT NumIDs;
++    D3D11_MESSAGE_ID *pIDList;
++} D3D11_INFO_QUEUE_FILTER_DESC;
++typedef struct D3D11_INFO_QUEUE_FILTER
++{
++    D3D11_INFO_QUEUE_FILTER_DESC AllowList;
++    D3D11_INFO_QUEUE_FILTER_DESC DenyList;
++} D3D11_INFO_QUEUE_FILTER;
++static const IID IID_ID3D11InfoQueue = { 0x6543dbb6, 0x1b48, 0x42f5, 0xab, 0x82, 0xe9, 0x7e, 0xc7, 0x43, 0x26, 0xf6 };
++MIDL_INTERFACE("6543dbb6-1b48-42f5-ab82-e97ec74326f6") ID3D11InfoQueue : public IUnknown
++{
++public:
++    virtual HRESULT __stdcall SetMessageCountLimit(UINT64) = 0;
++    virtual void __stdcall ClearStoredMessages() = 0;
++    virtual HRESULT __stdcall GetMessage(UINT64, D3D11_MESSAGE *, SIZE_T *) = 0;
++    virtual UINT64 __stdcall GetNumMessagesAllowedByStorageFilter() = 0;
++    virtual UINT64 __stdcall GetNumMessagesDeniedByStorageFilter() = 0;
++    virtual UINT64 __stdcall GetNumStoredMessages() = 0;
++    virtual UINT64 __stdcall GetNumStoredMessagesAllowedByRetrievalFilter() = 0;
++    virtual UINT64 __stdcall GetNumMessagesDiscardedByMessageCountLimit() = 0;
++    virtual UINT64 __stdcall GetMessageCountLimit() = 0;
++    virtual HRESULT __stdcall AddStorageFilterEntries(D3D11_INFO_QUEUE_FILTER *) = 0;
++    virtual HRESULT __stdcall GetStorageFilter(D3D11_INFO_QUEUE_FILTER *, SIZE_T *) = 0;
++    virtual void __stdcall ClearStorageFilter() = 0;
++    virtual HRESULT __stdcall PushEmptyStorageFilter() = 0;
++    virtual HRESULT __stdcall PushCopyOfStorageFilter() = 0;
++    virtual HRESULT __stdcall PushStorageFilter(D3D11_INFO_QUEUE_FILTER *) = 0;
++    virtual void __stdcall PopStorageFilter() = 0;
++    virtual UINT __stdcall GetStorageFilterStackSize() = 0;
++    virtual HRESULT __stdcall AddRetrievalFilterEntries(D3D11_INFO_QUEUE_FILTER *) = 0;
++    virtual HRESULT __stdcall GetRetrievalFilter(D3D11_INFO_QUEUE_FILTER *, SIZE_T *) = 0;
++    virtual void __stdcall ClearRetrievalFilter() = 0;
++    virtual HRESULT __stdcall PushEmptyRetrievalFilter() = 0;
++    virtual HRESULT __stdcall PushCopyOfRetrievalFilter() = 0;
++    virtual HRESULT __stdcall PushRetrievalFilter(D3D11_INFO_QUEUE_FILTER *) = 0;
++    virtual void __stdcall PopRetrievalFilter() = 0;
++    virtual UINT __stdcall GetRetrievalFilterStackSize() = 0;
++    virtual HRESULT __stdcall AddMessage(D3D11_MESSAGE_CATEGORY, D3D11_MESSAGE_SEVERITY, D3D11_MESSAGE_ID, LPCSTR) = 0;
++    virtual HRESULT __stdcall AddApplicationMessage(D3D11_MESSAGE_SEVERITY, LPCSTR) = 0;
++    virtual HRESULT __stdcall SetBreakOnCategory(D3D11_MESSAGE_CATEGORY, BOOL) = 0;
++    virtual HRESULT __stdcall SetBreakOnSeverity(D3D11_MESSAGE_SEVERITY, BOOL) = 0;
++    virtual HRESULT __stdcall SetBreakOnID(D3D11_MESSAGE_ID, BOOL) = 0;
++    virtual BOOL __stdcall GetBreakOnCategory(D3D11_MESSAGE_CATEGORY) = 0;
++    virtual BOOL __stdcall GetBreakOnSeverity(D3D11_MESSAGE_SEVERITY) = 0;
++    virtual BOOL __stdcall GetBreakOnID(D3D11_MESSAGE_ID) = 0;
++    virtual void __stdcall SetMuteDebugOutput(BOOL) = 0;
++    virtual BOOL __stdcall GetMuteDebugOutput() = 0;
++};
++#endif // __MINGW32__
++
  #   undef near
-diff --git a/src/3rdparty/angle/src/libEGL/Display.cpp b/src/3rdparty/angle/src/libEGL/Display.cpp
-index ba09631..5a50e4b 100644
---- a/src/3rdparty/angle/src/libEGL/Display.cpp
-+++ b/src/3rdparty/angle/src/libEGL/Display.cpp
-@@ -14,6 +14,7 @@
- #include <map>
- #include <vector>
- #include <sstream>
-+#include <iterator>
+ #   undef far
+ #endif
+diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/HLSLCompiler.cpp b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/HLSLCompiler.cpp
+index 9d003b4..776d92b 100644
+--- a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/HLSLCompiler.cpp
++++ b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/HLSLCompiler.cpp
+@@ -14,6 +14,12 @@
+ #ifndef QT_D3DCOMPILER_DLL
+ #define QT_D3DCOMPILER_DLL D3DCOMPILER_DLL
+ #endif
++#ifndef D3DCOMPILE_RESERVED16
++#define D3DCOMPILE_RESERVED16 (1 << 16)
++#endif
++#ifndef D3DCOMPILE_RESERVED17
++#define D3DCOMPILE_RESERVED17 (1 << 17)
++#endif
  
- #include "common/debug.h"
- #include "common/mathutil.h"
-diff --git a/src/3rdparty/angle/src/libGLESv2/Context.cpp b/src/3rdparty/angle/src/libGLESv2/Context.cpp
-index 04c7616..5342de1 100644
---- a/src/3rdparty/angle/src/libGLESv2/Context.cpp
-+++ b/src/3rdparty/angle/src/libGLESv2/Context.cpp
-@@ -33,6 +33,7 @@
- #include "libEGL/Surface.h"
- 
- #include <sstream>
-+#include <iterator>
- 
- namespace gl
- {
-@@ -354,7 +355,7 @@ void Context::deleteFenceSync(GLsync fenceSync)
-     // wait commands finish. However, since the name becomes invalid, we cannot query the fence,
-     // and since our API is currently designed for being called from a single thread, we can delete
-     // the fence immediately.
--    mResourceManager->deleteFenceSync(reinterpret_cast<GLuint>(fenceSync));
-+    mResourceManager->deleteFenceSync(uintptr_t(fenceSync));
- }
- 
- void Context::deleteVertexArray(GLuint vertexArray)
-@@ -460,7 +461,7 @@ Renderbuffer *Context::getRenderbuffer(GLuint handle)
- 
- FenceSync *Context::getFenceSync(GLsync handle) const
- {
--    return mResourceManager->getFenceSync(reinterpret_cast<GLuint>(handle));
-+    return mResourceManager->getFenceSync(uintptr_t(handle));
- }
- 
- VertexArray *Context::getVertexArray(GLuint handle) const
-diff --git a/src/3rdparty/angle/src/libGLESv2/angletypes.h b/src/3rdparty/angle/src/libGLESv2/angletypes.h
-index 922053e..642a6ec 100644
---- a/src/3rdparty/angle/src/libGLESv2/angletypes.h
-+++ b/src/3rdparty/angle/src/libGLESv2/angletypes.h
-@@ -11,6 +11,7 @@
- 
- #include "libGLESv2/constants.h"
- #include "common/RefCountObject.h"
-+#include <float.h>
- 
- namespace gl
- {
-diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/copyimage.inl b/src/3rdparty/angle/src/libGLESv2/renderer/copyimage.inl
-index ea6970c..0498cf7 100644
---- a/src/3rdparty/angle/src/libGLESv2/renderer/copyimage.inl
-+++ b/src/3rdparty/angle/src/libGLESv2/renderer/copyimage.inl
-@@ -24,7 +24,7 @@ inline void WriteColor(const uint8_t *source, uint8_t *dest)
- template <typename sourceType, typename destType, typename colorDataType>
- inline void CopyPixel(const uint8_t *source, uint8_t *dest)
- {
--    colorType temp;
-+    colorDataType temp;
-     ReadColor<sourceType, colorDataType>(source, &temp);
-     WriteColor<destType, colorDataType>(&temp, dest);
- }
-diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/TextureD3D.cpp b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/TextureD3D.cpp
-index 2650913..96c8497 100644
---- a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/TextureD3D.cpp
-+++ b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/TextureD3D.cpp
-@@ -129,7 +129,7 @@ bool TextureD3D::subImage(GLint xoffset, GLint yoffset, GLint zoffset, GLsizei w
-     if (unpack.pixelBuffer.id() != 0)
-     {
-         gl::Buffer *pixelBuffer = unpack.pixelBuffer.get();
--        unsigned int offset = reinterpret_cast<unsigned int>(pixels);
-+        ptrdiff_t offset = reinterpret_cast<ptrdiff_t>(pixels);
-         // TODO: setImage/subImage is the only place outside of renderer that asks for a buffers raw data.
-         // This functionality should be moved into renderer and the getData method of BufferImpl removed.
-         const void *bufferData = pixelBuffer->getImplementation()->getData();
-@@ -186,7 +186,7 @@ bool TextureD3D::fastUnpackPixels(const gl::PixelUnpackState &unpack, const void
-     // to create a render target.
-     ASSERT(mRenderer->supportsFastCopyBufferToTexture(sizedInternalFormat));
- 
--    unsigned int offset = reinterpret_cast<unsigned int>(pixels);
-+    ptrdiff_t offset = reinterpret_cast<ptrdiff_t>(pixels);
- 
-     return mRenderer->fastCopyBufferToTexture(unpack, offset, destRenderTarget, sizedInternalFormat, type, destArea);
- }
+ // Definitions local to the translation unit
+ namespace
 diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/Renderer11.cpp b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/Renderer11.cpp
-index bd07ee1..b29b2ef 100644
+index a28fd78..e6d7f30 100644
 --- a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/Renderer11.cpp
 +++ b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/Renderer11.cpp
-@@ -281,7 +281,7 @@ EGLint Renderer11::initialize()
-     }
- 
+@@ -333,7 +333,7 @@ EGLint Renderer11::initialize()
      // Disable some spurious D3D11 debug warnings to prevent them from flooding the output log
--#if defined(ANGLE_SUPPRESS_D3D11_HAZARD_WARNINGS) && defined(_DEBUG)
-+#if !defined(__MINGW32__) && defined(ANGLE_SUPPRESS_D3D11_HAZARD_WARNINGS) && defined(_DEBUG)
+ #if defined(ANGLE_SUPPRESS_D3D11_HAZARD_WARNINGS) && defined(_DEBUG)
      ID3D11InfoQueue *infoQueue;
-     result = mDevice->QueryInterface(__uuidof(ID3D11InfoQueue),  (void **)&infoQueue);
+-    result = mDevice->QueryInterface(__uuidof(ID3D11InfoQueue),  (void **)&infoQueue);
++    result = mDevice->QueryInterface(IID_ID3D11InfoQueue, (void **)&infoQueue);
  
-diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/SwapChain11.cpp b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/SwapChain11.cpp
-index 787c511..4b29be0 100644
---- a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/SwapChain11.cpp
-+++ b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/SwapChain11.cpp
-@@ -537,7 +537,7 @@ void SwapChain11::initPassThroughResources()
-     samplerDesc.BorderColor[2] = 0.0f;
-     samplerDesc.BorderColor[3] = 0.0f;
-     samplerDesc.MinLOD = 0;
--    samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
-+    samplerDesc.MaxLOD = FLT_MAX;
- 
-     result = device->CreateSamplerState(&samplerDesc, &mPassThroughSampler);
-     ASSERT(SUCCEEDED(result));
+     if (SUCCEEDED(result))
+     {
 diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/renderer11_utils.cpp b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/renderer11_utils.cpp
-index 345fd24..2af97e7 100644
+index 5831c57..121aa3b 100644
 --- a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/renderer11_utils.cpp
 +++ b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/renderer11_utils.cpp
-@@ -47,6 +47,57 @@
- #ifndef D3D_FL9_3_REQ_TEXTURE2D_U_OR_V_DIMENSION
- #  define D3D_FL9_3_REQ_TEXTURE2D_U_OR_V_DIMENSION 4096
- #endif
-+#ifndef D3D11_REQ_TEXTURECUBE_DIMENSION
-+#  define D3D11_REQ_TEXTURECUBE_DIMENSION 16384
-+#endif
-+#ifndef D3D11_REQ_TEXTURE2D_ARRAY_AXIS_DIMENSION
-+#  define D3D11_REQ_TEXTURE2D_ARRAY_AXIS_DIMENSION 2048
-+#endif
-+#ifndef D3D11_REQ_TEXTURE3D_U_V_OR_W_DIMENSION
-+#  define D3D11_REQ_TEXTURE3D_U_V_OR_W_DIMENSION 2048
-+#endif
-+#ifndef D3D11_REQ_DRAWINDEXED_INDEX_COUNT_2_TO_EXP
-+#  define D3D11_REQ_DRAWINDEXED_INDEX_COUNT_2_TO_EXP 32
-+#endif
-+#ifndef D3D11_REQ_DRAW_VERTEX_COUNT_2_TO_EXP
-+#  define D3D11_REQ_DRAW_VERTEX_COUNT_2_TO_EXP 32
-+#endif
-+#ifndef D3D10_1_STANDARD_VERTEX_ELEMENT_COUNT
-+#  define D3D10_1_STANDARD_VERTEX_ELEMENT_COUNT 32
-+#endif
-+#ifndef D3D11_STANDARD_VERTEX_ELEMENT_COUNT
-+#  define D3D11_STANDARD_VERTEX_ELEMENT_COUNT 32
-+#endif
-+#ifndef D3D10_1_SO_BUFFER_SLOT_COUNT
-+#  define D3D10_1_SO_BUFFER_SLOT_COUNT 4
-+#endif
-+#ifndef D3D11_SO_BUFFER_SLOT_COUNT
-+#  define D3D11_SO_BUFFER_SLOT_COUNT 4
-+#endif
-+#ifndef D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT
-+#  define D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT 14
-+#endif
-+#ifndef D3D11_COMMONSHADER_SAMPLER_SLOT_COUNT
-+#  define D3D11_COMMONSHADER_SAMPLER_SLOT_COUNT 16
-+#endif
-+#ifndef D3D11_COMMONSHADER_TEXEL_OFFSET_MAX_NEGATIVE
-+#  define D3D11_COMMONSHADER_TEXEL_OFFSET_MAX_NEGATIVE -8
-+#endif
-+#ifndef D3D11_COMMONSHADER_TEXEL_OFFSET_MAX_POSITIVE
-+#  define D3D11_COMMONSHADER_TEXEL_OFFSET_MAX_POSITIVE 7
-+#endif
-+#ifndef D3D11_REQ_CONSTANT_BUFFER_ELEMENT_COUNT
-+#  define D3D11_REQ_CONSTANT_BUFFER_ELEMENT_COUNT 4096
-+#endif
-+#ifndef D3D11_PS_INPUT_REGISTER_COUNT
-+#  define D3D11_PS_INPUT_REGISTER_COUNT 32
-+#endif
-+#ifndef D3D10_1_VS_OUTPUT_REGISTER_COUNT
-+#  define D3D10_1_VS_OUTPUT_REGISTER_COUNT 32
-+#endif
-+#ifndef D3D11_VS_OUTPUT_REGISTER_COUNT
-+#  define D3D11_VS_OUTPUT_REGISTER_COUNT 32
-+#endif
- 
- namespace rx
- {
-@@ -1147,7 +1198,7 @@ void SetPositionLayerTexCoord3DVertex(PositionLayerTexCoord3DVertex* vertex, flo
+@@ -1196,7 +1196,7 @@ void SetPositionLayerTexCoord3DVertex(PositionLayerTexCoord3DVertex* vertex, flo
  
  HRESULT SetDebugName(ID3D11DeviceChild *resource, const char *name)
  {
 -#if defined(_DEBUG)
-+#if !defined(__MINGW32__) && defined(_DEBUG)
++#if defined(_DEBUG) && !defined(__MINGW32__)
      return resource->SetPrivateData(WKPDID_D3DDebugObjectName, strlen(name), name);
  #else
      return S_OK;
 diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d9/Renderer9.cpp b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d9/Renderer9.cpp
-index 1d52705..d63f9b8 100644
+index 4c552b2..601cd24 100644
 --- a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d9/Renderer9.cpp
 +++ b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d9/Renderer9.cpp
-@@ -205,7 +205,7 @@ EGLint Renderer9::initialize()
-     if (ANGLE_ENABLE_D3D9EX && Direct3DCreate9ExPtr && SUCCEEDED(Direct3DCreate9ExPtr(D3D_SDK_VERSION, &mD3d9Ex)))
+@@ -200,7 +200,7 @@ EGLint Renderer9::initialize()
+     if (ANGLE_D3D9EX == ANGLE_ENABLED && Direct3DCreate9ExPtr && SUCCEEDED(Direct3DCreate9ExPtr(D3D_SDK_VERSION, &mD3d9Ex)))
      {
          ASSERT(mD3d9Ex);
 -        mD3d9Ex->QueryInterface(__uuidof(IDirect3D9), reinterpret_cast<void**>(&mD3d9));
@@ -242,7 +155,7 @@ index 1d52705..d63f9b8 100644
          ASSERT(mD3d9);
      }
      else
-@@ -329,7 +329,7 @@ EGLint Renderer9::initialize()
+@@ -324,7 +324,7 @@ EGLint Renderer9::initialize()
  
      if (mD3d9Ex)
      {
@@ -251,19 +164,6 @@ index 1d52705..d63f9b8 100644
          ASSERT(SUCCEEDED(result));
      }
  
-diff --git a/src/3rdparty/angle/src/libGLESv2/validationES.cpp b/src/3rdparty/angle/src/libGLESv2/validationES.cpp
-index 1b6180d..f79bc97 100644
---- a/src/3rdparty/angle/src/libGLESv2/validationES.cpp
-+++ b/src/3rdparty/angle/src/libGLESv2/validationES.cpp
-@@ -1667,7 +1667,7 @@ bool ValidateDrawElements(Context *context, GLenum mode, GLsizei count, GLenum t
-     // TODO: also disable index checking on back-ends that are robust to out-of-range accesses.
-     if (elementArrayBuffer)
-     {
--        unsigned int offset = reinterpret_cast<unsigned int>(indices);
-+        GLint64 offset = reinterpret_cast<GLint64>(indices);
-         if (!elementArrayBuffer->getIndexRangeCache()->findRange(type, offset, count, indexRangeOut, NULL))
-         {
-             const void *dataPointer = elementArrayBuffer->getImplementation()->getData();
 -- 
-1.9.0.msysgit.0
+1.9.4.msysgit.1
 

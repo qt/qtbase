@@ -48,7 +48,7 @@ template <typename T> class QList;
 class Q_CORE_EXPORT QMetaMethod
 {
 public:
-    inline QMetaMethod() : mobj(0),handle(0) {}
+    Q_DECL_CONSTEXPR inline QMetaMethod() : mobj(0),handle(0) {}
 
     QByteArray methodSignature() const;
     QByteArray name() const;
@@ -204,7 +204,7 @@ inline bool operator!=(const QMetaMethod &m1, const QMetaMethod &m2)
 class Q_CORE_EXPORT QMetaEnum
 {
 public:
-    inline QMetaEnum() : mobj(0),handle(0) {}
+    Q_DECL_CONSTEXPR inline QMetaEnum() : mobj(0),handle(0) {}
 
     const char *name() const;
     bool isFlag() const;
@@ -286,7 +286,7 @@ private:
 class Q_CORE_EXPORT QMetaClassInfo
 {
 public:
-    inline QMetaClassInfo() : mobj(0),handle(0) {}
+    Q_DECL_CONSTEXPR inline QMetaClassInfo() : mobj(0),handle(0) {}
     const char *name() const;
     const char *value() const;
     inline const QMetaObject *enclosingMetaObject() const { return mobj; }

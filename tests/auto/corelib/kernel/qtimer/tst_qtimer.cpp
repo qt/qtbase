@@ -642,18 +642,25 @@ struct CountedStruct
     QThread *thread;
 };
 
-static QEventLoop _e;
+static QScopedPointer<QEventLoop> _e;
 static QThread *_t = Q_NULLPTR;
 
 class StaticEventLoop
 {
 public:
-    static void quitEventLoop() { _e.quit(); if (_t) QCOMPARE(QThread::currentThread(), _t); }
+    static void quitEventLoop()
+    {
+        QVERIFY(!_e.isNull());
+        _e->quit();
+        if (_t)
+            QCOMPARE(QThread::currentThread(), _t);
+    }
 };
 
 void tst_QTimer::singleShotToFunctors()
 {
     int count = 0;
+    _e.reset(new QEventLoop);
     QEventLoop e;
 
     QTimer::singleShot(0, CountedStruct(&count));
@@ -661,7 +668,7 @@ void tst_QTimer::singleShotToFunctors()
     QCOMPARE(count, 1);
 
     QTimer::singleShot(0, &StaticEventLoop::quitEventLoop);
-    QCOMPARE(_e.exec(), 0);
+    QCOMPARE(_e->exec(), 0);
 
     QThread t1;
     QObject c1;
@@ -687,7 +694,7 @@ void tst_QTimer::singleShotToFunctors()
     QCOMPARE(e.exec(), 0);
 
     QTimer::singleShot(0, &c2, &StaticEventLoop::quitEventLoop);
-    QCOMPARE(_e.exec(), 0);
+    QCOMPARE(_e->exec(), 0);
 
     _t->quit();
     _t->wait();
@@ -721,8 +728,10 @@ void tst_QTimer::singleShotToFunctors()
     thread.quit();
     thread.wait();
 #endif
-}
 
+    _e.reset();
+    _t = Q_NULLPTR;
+}
 
 class DontBlockEvents : public QObject
 {

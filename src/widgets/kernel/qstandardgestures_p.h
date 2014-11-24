@@ -55,11 +55,14 @@ QT_BEGIN_NAMESPACE
 class QPanGestureRecognizer : public QGestureRecognizer
 {
 public:
-    QPanGestureRecognizer();
+    explicit QPanGestureRecognizer(int pointCount = 2) : m_pointCount(pointCount) {}
 
     QGesture *create(QObject *target);
     QGestureRecognizer::Result recognize(QGesture *state, QObject *watched, QEvent *event);
     void reset(QGesture *state);
+
+private:
+    const int m_pointCount;
 };
 
 class QPinchGestureRecognizer : public QGestureRecognizer

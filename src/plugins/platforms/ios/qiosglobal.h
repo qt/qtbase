@@ -41,6 +41,16 @@
 
 QT_BEGIN_NAMESPACE
 
+Q_DECLARE_LOGGING_CATEGORY(lcQpaInputMethods);
+
+#if !defined(QT_NO_DEBUG)
+#define qImDebug(...) \
+    for (bool qt_category_enabled = lcQpaInputMethods().isDebugEnabled(); qt_category_enabled; qt_category_enabled = false) \
+        QMessageLogger(QT_MESSAGELOG_FILE, QT_MESSAGELOG_LINE, QT_MESSAGELOG_FUNC, lcQpaInputMethods().categoryName()).debug(__VA_ARGS__)
+#else
+#define qImDebug() QT_NO_QDEBUG_MACRO()
+#endif
+
 class QPlatformScreen;
 
 bool isQtApplication();
@@ -52,7 +62,7 @@ QPointF fromCGPoint(const CGPoint &point);
 
 Qt::ScreenOrientation toQtScreenOrientation(UIDeviceOrientation uiDeviceOrientation);
 UIDeviceOrientation fromQtScreenOrientation(Qt::ScreenOrientation qtOrientation);
-QRect fromPortraitToPrimary(const QRect &rect, QPlatformScreen *screen);
+
 int infoPlistValue(NSString* key, int defaultValue);
 
 QT_END_NAMESPACE
@@ -60,5 +70,15 @@ QT_END_NAMESPACE
 @interface UIResponder (QtFirstResponder)
 +(id)currentFirstResponder;
 @end
+
+class FirstResponderCandidate : public QScopedValueRollback<UIResponder *>
+{
+public:
+     FirstResponderCandidate(UIResponder *);
+     static UIResponder *currentCandidate() { return s_firstResponderCandidate; }
+
+private:
+    static UIResponder *s_firstResponderCandidate;
+};
 
 #endif // QIOSGLOBAL_H

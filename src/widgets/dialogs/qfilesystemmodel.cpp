@@ -76,7 +76,7 @@ QT_BEGIN_NAMESPACE
     QFileSystemModel can be accessed using the standard interface provided by
     QAbstractItemModel, but it also provides some convenience functions that are
     specific to a directory model.
-    The fileInfo(), isDir(), name(), and path() functions provide information
+    The fileInfo(), isDir(), fileName() and filePath() functions provide information
     about the underlying files and directories related to items in the model.
     Directories can be created and removed using mkdir(), rmdir().
 

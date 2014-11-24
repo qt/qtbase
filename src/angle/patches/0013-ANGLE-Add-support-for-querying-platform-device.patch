@@ -1,6 +1,6 @@
-From 3499339ab768017458d3b5295af3742a0f6015db Mon Sep 17 00:00:00 2001
-From: Andrew Knight <andrew.knight@digia.com>
-Date: Mon, 22 Sep 2014 23:15:26 +0300
+From 5ef9348de2624c21be1c9fddd265fec5a0851d25 Mon Sep 17 00:00:00 2001
+From: Andrew Knight <andrew.knight@theqtcompany.com>
+Date: Thu, 13 Nov 2014 15:34:26 +0200
 Subject: [PATCH 13/16] ANGLE: Add support for querying platform device
 
 The EGL_EXT_device_base extension allows for querying the platform
@@ -16,14 +16,14 @@ the IDXGIDevice3::Trim() calls required by the Windows Store.
 
 Change-Id: Ibdf228d81d6604e56db9dd8597d7cd2983ebc428
 ---
- src/3rdparty/angle/src/libEGL/libEGL.cpp | 47 +++++++++++++++++++++++++-------
- 1 file changed, 37 insertions(+), 10 deletions(-)
+ src/3rdparty/angle/src/libEGL/libEGL.cpp | 50 +++++++++++++++++++++++++-------
+ 1 file changed, 39 insertions(+), 11 deletions(-)
 
 diff --git a/src/3rdparty/angle/src/libEGL/libEGL.cpp b/src/3rdparty/angle/src/libEGL/libEGL.cpp
-index 7ea11c5..c2e0fd6 100644
+index dc20d85..68399d6 100644
 --- a/src/3rdparty/angle/src/libEGL/libEGL.cpp
 +++ b/src/3rdparty/angle/src/libEGL/libEGL.cpp
-@@ -18,6 +18,9 @@
+@@ -17,6 +17,9 @@
  #include "libGLESv2/Texture.h"
  #include "libGLESv2/main.h"
  #include "libGLESv2/renderer/SwapChain.h"
@@ -33,7 +33,7 @@ index 7ea11c5..c2e0fd6 100644
  
  #include "libEGL/main.h"
  #include "libEGL/Display.h"
-@@ -484,24 +487,48 @@ EGLBoolean __stdcall eglQuerySurfacePointerANGLE(EGLDisplay dpy, EGLSurface surf
+@@ -582,25 +585,50 @@ EGLBoolean __stdcall eglQuerySurfacePointerANGLE(EGLDisplay dpy, EGLSurface surf
      egl::Display *display = static_cast<egl::Display*>(dpy);
      egl::Surface *eglSurface = (egl::Surface*)surface;
  
@@ -44,7 +44,8 @@ index 7ea11c5..c2e0fd6 100644
 -
 -    if (surface == EGL_NO_SURFACE)
 -    {
--        return egl::error(EGL_BAD_SURFACE, EGL_FALSE);
+-        recordError(egl::Error(EGL_BAD_SURFACE));
+-        return EGL_FALSE;
 -    }
 -
      switch (attribute)
@@ -58,7 +59,8 @@ index 7ea11c5..c2e0fd6 100644
 +
 +            if (surface == EGL_NO_SURFACE)
 +            {
-+                return egl::error(EGL_BAD_SURFACE, EGL_FALSE);
++                recordError(egl::Error(EGL_BAD_SURFACE));
++                return EGL_FALSE;
 +            }
 +
              rx::SwapChain *swapchain = eglSurface->getSwapChain();
@@ -82,7 +84,8 @@ index 7ea11c5..c2e0fd6 100644
 +
 +            if (renderer->getMajorShaderModel() < 4)
 +            {
-+                return egl::error(EGL_BAD_CONTEXT, EGL_FALSE);
++                recordError(egl::Error(EGL_BAD_CONTEXT));
++                return EGL_FALSE;
 +            }
 +
 +            *value = static_cast<rx::Renderer11*>(renderer)->getDevice();
@@ -90,8 +93,8 @@ index 7ea11c5..c2e0fd6 100644
 +        break;
 +#endif
        default:
-         return egl::error(EGL_BAD_ATTRIBUTE, EGL_FALSE);
-     }
+         recordError(egl::Error(EGL_BAD_ATTRIBUTE));
+         return EGL_FALSE;
 -- 
-1.9.0.msysgit.0
+1.9.4.msysgit.1
 

@@ -6928,7 +6928,7 @@ void qInitDrawhelperAsm()
     qt_fetch_radial_gradient = qt_fetch_radial_gradient_neon;
 #endif
 
-#ifdef Q_PROCESSOR_MIPS_32
+#if defined(Q_PROCESSOR_MIPS_32) && defined(QT_COMPILER_SUPPORTS_MIPS_DSP)
     qt_memfill32 = qt_memfill32_asm_mips_dsp;
 #endif // Q_PROCESSOR_MIPS_32
 

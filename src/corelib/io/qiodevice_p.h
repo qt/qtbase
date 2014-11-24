@@ -98,19 +98,19 @@ public:
         first++;
         return ch;
     }
-    int read(char* target, qint64 size) {
-        int r = qMin(size, len);
+    qint64 read(char* target, qint64 size) {
+        qint64 r = qMin(size, len);
         memcpy(target, first, r);
         len -= r;
         first += r;
         return r;
     }
-    int peek(char* target, qint64 size) {
-        int r = qMin(size, len);
+    qint64 peek(char* target, qint64 size) {
+        qint64 r = qMin(size, len);
         memcpy(target, first, r);
         return r;
     }
-    char* reserve(int size) {
+    char* reserve(qint64 size) {
         makeSpace(size + len, freeSpaceAtEnd);
         char* writePtr = first + len;
         len += size;
@@ -128,16 +128,16 @@ public:
         clear();
         return retVal;
     }
-    int readLine(char* target, qint64 size) {
-        int r = qMin(size, len);
+    qint64 readLine(char* target, qint64 size) {
+        qint64 r = qMin(size, len);
         char* eol = static_cast<char*>(memchr(first, '\n', r));
         if (eol)
             r = 1+(eol-first);
         memcpy(target, first, r);
         len -= r;
         first += r;
-        return int(r);
-        }
+        return r;
+    }
     bool canReadLine() const {
         return memchr(first, '\n', len);
     }

@@ -358,6 +358,19 @@ private:
     friend Q_GUI_EXPORT QWindowPrivate *qt_window_private(QWindow *window);
 };
 
+#ifndef Q_QDOC
+template <> inline QWindow *qobject_cast<QWindow*>(QObject *o)
+{
+    if (!o || !o->isWindowType()) return 0;
+    return static_cast<QWindow*>(o);
+}
+template <> inline const QWindow *qobject_cast<const QWindow*>(const QObject *o)
+{
+    if (!o || !o->isWindowType()) return 0;
+    return static_cast<const QWindow*>(o);
+}
+#endif // !Q_QDOC
+
 QT_END_NAMESPACE
 
 #endif // QWINDOW_H

@@ -58,16 +58,16 @@ void invalidateCache(QAccessibleInterface *iface)
         return;
     }
 
-    QWindow *win = 0;
-    QAccessibleInterface *parent = iface;
-    do {
-        win = parent->window();
-        parent = parent->parent();
-    } while (!win && parent);
-
-    if (win && win->handle()) {
-        QIOSWindow *window = static_cast<QIOSWindow*>(win->handle());
-        window->clearAccessibleCache();
+    // This will invalidate everything regardless of what window the
+    // interface belonged to. We might want to revisit this strategy later.
+    // (Therefore this function still takes the interface as argument)
+    // It is also responsible for the bug that focus gets temporary lost
+    // when items get added or removed from the screen
+    foreach (QWindow *win, QGuiApplication::topLevelWindows()) {
+        if (win && win->handle()) {
+            QIOSWindow *window = static_cast<QIOSWindow*>(win->handle());
+            window->clearAccessibleCache();
+        }
     }
 }
 

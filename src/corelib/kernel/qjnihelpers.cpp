@@ -34,6 +34,7 @@
 #include "qjnihelpers_p.h"
 #include "qmutex.h"
 #include "qlist.h"
+#include <QtCore/qrunnable.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -41,6 +42,19 @@ static JavaVM *g_javaVM = Q_NULLPTR;
 static jobject g_jActivity = Q_NULLPTR;
 static jobject g_jClassLoader = Q_NULLPTR;
 static jint g_androidSdkVersion = 0;
+static jclass g_jNativeClass = Q_NULLPTR;
+static jmethodID g_runQtOnUiThreadMethodID = Q_NULLPTR;
+
+static void onAndroidUiThread(JNIEnv *, jclass, jlong thiz)
+{
+    QRunnable *runnable = reinterpret_cast<QRunnable *>(thiz);
+    if (runnable == 0)
+        return;
+
+    runnable->run();
+    if (runnable->autoDelete())
+        delete runnable;
+}
 
 namespace {
     class ActivityResultListeners
@@ -140,6 +154,22 @@ jint QtAndroidPrivate::initJNI(JavaVM *vm, JNIEnv *env)
     env->DeleteLocalRef(activity);
     g_javaVM = vm;
 
+    static const JNINativeMethod methods[] = {
+        {"onAndroidUiThread", "(J)V", reinterpret_cast<void *>(onAndroidUiThread)}
+    };
+
+    const bool regOk = (env->RegisterNatives(jQtNative, methods, sizeof(methods) / sizeof(methods[0])) == JNI_OK);
+
+    if (!regOk && exceptionCheck(env))
+        return JNI_ERR;
+
+    g_runQtOnUiThreadMethodID = env->GetStaticMethodID(jQtNative,
+                                                       "runQtOnUiThread",
+                                                       "(J)V");
+
+    g_jNativeClass = static_cast<jclass>(env->NewGlobalRef(jQtNative));
+    env->DeleteLocalRef(jQtNative);
+
     return JNI_OK;
 }
 
@@ -162,6 +192,14 @@ jobject QtAndroidPrivate::classLoader()
 jint QtAndroidPrivate::androidSdkVersion()
 {
     return g_androidSdkVersion;
+}
+
+void QtAndroidPrivate::runOnUiThread(QRunnable *runnable, JNIEnv *env)
+{
+    Q_ASSERT(runnable != 0);
+    env->CallStaticVoidMethod(g_jNativeClass, g_runQtOnUiThreadMethodID, reinterpret_cast<jlong>(runnable));
+    if (exceptionCheck(env) && runnable != 0 && runnable->autoDelete())
+        delete runnable;
 }
 
 QT_END_NAMESPACE

@@ -1565,7 +1565,7 @@ public slots:
 
     void doAnotherThing(bool a = (1 < 3), bool b = (1 > 4)) { Q_UNUSED(a); Q_UNUSED(b); }
 
-#if defined(Q_MOC_RUN) || (defined(Q_COMPILER_AUTO_TYPE) && !(defined(Q_CC_CLANG) && (__clang_major__ * 100) + __clang_minor__) < 304)
+#if defined(Q_MOC_RUN) || (defined(Q_COMPILER_AUTO_TYPE) && !(defined(Q_CC_CLANG) && Q_CC_CLANG < 304))
     // There is no Q_COMPILER_>>  but if compiler support auto, it should also support >>
     void performSomething(QVector<QList<QString>> e = QVector<QList<QString>>(8 < 1),
                           QHash<int, QVector<QString>> h = QHash<int, QVector<QString>>())

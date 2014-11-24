@@ -40,7 +40,10 @@
 ****************************************************************************/
 
 #include "buttontester.h"
-#include <QtGui>
+
+#include <QApplication>
+#include <QPushButton>
+#include <QVBoxLayout>
 
 int main(int argv, char **args)
 {

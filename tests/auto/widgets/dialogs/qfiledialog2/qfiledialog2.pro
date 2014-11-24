@@ -20,4 +20,3 @@ wince* {
     DEFINES += SRCDIR=\\\"$$PWD/\\\"
 }
 
-macx:CONFIG += insignificant_test # QTBUG-39183

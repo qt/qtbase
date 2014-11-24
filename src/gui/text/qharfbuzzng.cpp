@@ -632,7 +632,7 @@ hb_face_t *hb_qt_face_get_for_engine(QFontEngine *fe)
         fe->face_destroy_func = _hb_qt_face_release;
     }
 
-    return hb_face_reference((hb_face_t *)fe->face_);
+    return (hb_face_t *)fe->face_;
 }
 
 
@@ -644,8 +644,6 @@ _hb_qt_font_create(QFontEngine *fe)
         return NULL;
 
     hb_font_t *font = hb_font_create(face);
-
-    hb_face_destroy(face); // ref-ed in hb_qt_face_get_for_engine()
 
     if (Q_UNLIKELY(hb_font_is_immutable(font))) {
         hb_font_destroy(font);
@@ -684,7 +682,7 @@ hb_font_t *hb_qt_font_get_for_engine(QFontEngine *fe)
         fe->font_destroy_func = _hb_qt_font_release;
     }
 
-    return hb_font_reference((hb_font_t *)fe->font_);
+    return (hb_font_t *)fe->font_;
 }
 
 QT_END_NAMESPACE

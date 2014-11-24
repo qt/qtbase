@@ -221,7 +221,6 @@ public:
 
     QStyleHints *styleHints;
     static bool obey_desktop_settings;
-    static bool noGrab;
     QInputMethod *inputMethod;
 
     QString firstWindowTitle;

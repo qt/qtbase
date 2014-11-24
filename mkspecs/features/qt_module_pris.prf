@@ -74,6 +74,10 @@ MODULE_FWD_PRI = $$mod_work_pfx/qt_lib_$${MODULE_ID}.pri
         module_plugtypes = "QT.$${MODULE_ID}.plugin_types = $$replace(MODULE_PLUGIN_TYPES, /.*$, )"
     else: \
         module_plugtypes =
+    !isEmpty(MODULE_MASTER_HEADER): \
+        module_master = "QT.$${MODULE_ID}.master_header = $$MODULE_MASTER_HEADER"
+    else: \
+        module_master =
     !no_module_headers:!minimal_syncqt {
         MODULE_INCLUDES = \$\$QT_MODULE_INCLUDE_BASE \$\$QT_MODULE_INCLUDE_BASE/$$MODULE_INCNAME
         MODULE_PRIVATE_INCLUDES = \$\$QT_MODULE_INCLUDE_BASE/$$MODULE_INCNAME/$$VERSION \
@@ -97,6 +101,7 @@ MODULE_FWD_PRI = $$mod_work_pfx/qt_lib_$${MODULE_ID}.pri
         "QT.$${MODULE_ID}.name = $$TARGET" \
         "QT.$${MODULE_ID}.libs = $$module_libs" \
         $$module_rpath \
+        $$module_master \
         "QT.$${MODULE_ID}.includes = $$MODULE_INCLUDES"
     !host_build: MODULE_PRI_CONT += \
         "QT.$${MODULE_ID}.bins = \$\$QT_MODULE_BIN_BASE" \

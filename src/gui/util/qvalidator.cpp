@@ -316,7 +316,12 @@ void QValidator::fixup(QString &) const
     QIntValidator uses its locale() to interpret the number. For example,
     in Arabic locales, QIntValidator will accept Arabic digits.
 
-    \sa QDoubleValidator, QRegExpValidator, {Line Edits Example}
+    \note The QLocale::NumberOptions set on the locale() also affect the
+    way the number is interpreted. For example, since QLocale::RejectGroupSeparator
+    is not set by default, the validator will accept group separators. It is thus
+    recommended to use QLocale::toInt() to obtain the numeric value.
+
+    \sa QDoubleValidator, QRegExpValidator, QLocale::toInt(), {Line Edits Example}
 */
 
 /*!
@@ -393,7 +398,8 @@ static qlonglong pow10(int exp)
 QValidator::State QIntValidator::validate(QString & input, int&) const
 {
     QByteArray buff;
-    if (!locale().d->m_data->validateChars(input, QLocaleData::IntegerMode, &buff)) {
+    if (!locale().d->m_data->validateChars(input, QLocaleData::IntegerMode, &buff,
+                                           -1, locale().numberOptions() & QLocale::RejectGroupSeparator)) {
         return Invalid;
     }
 
@@ -432,7 +438,8 @@ QValidator::State QIntValidator::validate(QString & input, int&) const
 void QIntValidator::fixup(QString &input) const
 {
     QByteArray buff;
-    if (!locale().d->m_data->validateChars(input, QLocaleData::IntegerMode, &buff)) {
+    if (!locale().d->m_data->validateChars(input, QLocaleData::IntegerMode, &buff,
+                                           -1, locale().numberOptions() & QLocale::RejectGroupSeparator)) {
         return;
     }
     bool ok, overflow;
@@ -548,7 +555,12 @@ public:
     in the German locale, "1,234" will be accepted as the fractional number
     1.234. In Arabic locales, QDoubleValidator will accept Arabic digits.
 
-    \sa QIntValidator, QRegExpValidator, {Line Edits Example}
+    \note The QLocale::NumberOptions set on the locale() also affect the
+    way the number is interpreted. For example, since QLocale::RejectGroupSeparator
+    is not set by default, the validator will accept group separators. It is thus
+    recommended to use QLocale::toDouble() to obtain the numeric value.
+
+    \sa QIntValidator, QRegExpValidator, QLocale::toDouble(), {Line Edits Example}
 */
 
  /*!
@@ -648,8 +660,10 @@ QValidator::State QDoubleValidatorPrivate::validateWithLocale(QString &input, QL
 {
     Q_Q(const QDoubleValidator);
     QByteArray buff;
-    if (!locale.d->m_data->validateChars(input, numMode, &buff, q->dec))
+    if (!locale.d->m_data->validateChars(input, numMode, &buff, q->dec,
+                                         locale.numberOptions() & QLocale::RejectGroupSeparator)) {
         return QValidator::Invalid;
+    }
 
     if (buff.isEmpty())
         return QValidator::Intermediate;
@@ -1003,7 +1017,7 @@ QValidator::State QRegularExpressionValidator::validate(QString &input, int &pos
     const QRegularExpressionMatch m = d->usedRe.match(input, 0, QRegularExpression::PartialPreferCompleteMatch);
     if (m.hasMatch()) {
         return Acceptable;
-    } else if (m.hasPartialMatch()) {
+    } else if (input.isEmpty() || m.hasPartialMatch()) {
         return Intermediate;
     } else {
         pos = input.size();

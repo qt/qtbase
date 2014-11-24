@@ -80,7 +80,6 @@ static jmethodID m_createBitmapMethodID = Q_NULLPTR;
 static jobject m_ARGB_8888_BitmapConfigValue = Q_NULLPTR;
 static jobject m_RGB_565_BitmapConfigValue = Q_NULLPTR;
 
-jmethodID m_setFullScreenMethodID = Q_NULLPTR;
 static bool m_statusBarShowing = true;
 
 static jclass m_bitmapDrawableClass = Q_NULLPTR;
@@ -182,13 +181,7 @@ namespace QtAndroid
         if (m_statusBarShowing)
             return;
 
-        QtAndroid::AttachedJNIEnv env;
-        if (!env.jniEnv) {
-            qWarning("Failed to get JNI Environment.");
-            return;
-        }
-
-        env.jniEnv->CallStaticVoidMethod(m_applicationClass, m_setFullScreenMethodID, false);
+        QJNIObjectPrivate::callStaticMethod<void>(m_applicationClass, "setFullScreen", "(Z)V", false);
         m_statusBarShowing = true;
     }
 
@@ -197,13 +190,7 @@ namespace QtAndroid
         if (!m_statusBarShowing)
             return;
 
-        QtAndroid::AttachedJNIEnv env;
-        if (!env.jniEnv) {
-            qWarning("Failed to get JNI Environment.");
-            return;
-        }
-
-        env.jniEnv->CallStaticVoidMethod(m_applicationClass, m_setFullScreenMethodID, true);
+        QJNIObjectPrivate::callStaticMethod<void>(m_applicationClass, "setFullScreen", "(Z)V", true);
         m_statusBarShowing = false;
     }
 
@@ -453,16 +440,9 @@ static void *startMainMethod(void */*data*/)
         if (res < 0)
             qWarning() << "dlclose failed:" << dlerror();
     }
-    m_mainLibraryHnd = Q_NULLPTR;
-    m_main = Q_NULLPTR;
-    QtAndroid::AttachedJNIEnv env;
-    if (!env.jniEnv)
-        return 0;
 
-    if (m_applicationClass) {
-        jmethodID quitApp = env.jniEnv->GetStaticMethodID(m_applicationClass, "quitApp", "()V");
-        env.jniEnv->CallStaticVoidMethod(m_applicationClass, quitApp);
-    }
+    if (m_applicationClass)
+        QJNIObjectPrivate::callStaticMethod<void>(m_applicationClass, "quitApp", "()V");
 
     return 0;
 }
@@ -723,7 +703,6 @@ static int registerNatives(JNIEnv *env)
     jclass clazz;
     FIND_AND_CHECK_CLASS("org/qtproject/qt5/android/QtNative");
     m_applicationClass = static_cast<jclass>(env->NewGlobalRef(clazz));
-    GET_AND_CHECK_STATIC_METHOD(m_setFullScreenMethodID, m_applicationClass, "setFullScreen", "(Z)V");
 
     if (env->RegisterNatives(m_applicationClass, methods, sizeof(methods) / sizeof(methods[0])) < 0) {
         __android_log_print(ANDROID_LOG_FATAL,"Qt", "RegisterNatives failed");

@@ -138,8 +138,8 @@ QOpenGLPaintDevice::QOpenGLPaintDevice(int width, int height)
 /*!
     \internal
  */
-QOpenGLPaintDevice::QOpenGLPaintDevice(QOpenGLPaintDevicePrivate *dd)
-    : d_ptr(dd)
+QOpenGLPaintDevice::QOpenGLPaintDevice(QOpenGLPaintDevicePrivate &dd)
+    : d_ptr(&dd)
 {
 }
 

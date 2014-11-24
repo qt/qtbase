@@ -80,7 +80,7 @@ class QPanGesturePrivate : public QGesturePrivate
 
 public:
     QPanGesturePrivate()
-        : acceleration(0), xVelocity(0), yVelocity(0)
+        : acceleration(0), xVelocity(0), yVelocity(0), pointCount(2)
     {
     }
 
@@ -95,6 +95,7 @@ public:
     qreal acceleration;
     qreal xVelocity;
     qreal yVelocity;
+    int pointCount; // ### fixme Qt 5.5: Add accessor to QPanGesture.
 };
 
 class QPinchGesturePrivate : public QGesturePrivate
@@ -134,11 +135,17 @@ class QSwipeGesturePrivate : public QGesturePrivate
     Q_DECLARE_PUBLIC(QSwipeGesture)
 
 public:
+    enum State {
+        NoGesture,
+        Started,
+        ThreePointsReached
+    };
+
     QSwipeGesturePrivate()
         : horizontalDirection(QSwipeGesture::NoDirection),
           verticalDirection(QSwipeGesture::NoDirection),
           swipeAngle(0),
-          started(false), velocityValue(0)
+          state(NoGesture), velocityValue(0)
     {
     }
 
@@ -150,7 +157,7 @@ public:
     qreal swipeAngle;
 
     QPoint lastPositions[3];
-    bool started;
+    State state;
     qreal velocityValue;
     QElapsedTimer time;
 };

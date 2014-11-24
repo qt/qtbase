@@ -963,7 +963,8 @@ void QWindowsXPStylePrivate::drawBackgroundThruNativeBuffer(XPThemeData &themeDa
 
     QImage img;
     if (!haveCachedPixmap) { // If the pixmap is not cached, generate it! -------------------------
-        buffer(w, h); // Ensure a buffer of at least (w, h) in size
+        if (!buffer(w, h)) // Ensure a buffer of at least (w, h) in size
+            return;
         HDC dc = bufferHDC();
 
         // Clear the buffer
@@ -2539,7 +2540,7 @@ QRect QWindowsXPStylePrivate::scrollBarGripperBounds(QStyle::State flags, const 
 
     const int hSpace = theme->rect.width() - size.width();
     const int vSpace = theme->rect.height() - size.height();
-    const bool sufficientSpace = horizontal && hSpace > (contentsMargin.left() + contentsMargin.right())
+    const bool sufficientSpace = (horizontal && hSpace > (contentsMargin.left() + contentsMargin.right()))
         || vSpace > contentsMargin.top() + contentsMargin.bottom();
     return sufficientSpace ? QRect(theme->rect.topLeft() + QPoint(hSpace, vSpace) / 2, size) : QRect();
 }

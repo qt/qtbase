@@ -29,6 +29,7 @@ qtabletevent \
 qtexteditlist \
 qtbug-8933 \
 qtouchevent \
+touch \
 qwidget_zorder \
 repaint \
 socketengine \

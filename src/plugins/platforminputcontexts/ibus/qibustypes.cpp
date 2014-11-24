@@ -32,7 +32,6 @@
 ****************************************************************************/
 
 #include "qibustypes.h"
-#include <qtextformat.h>
 #include <QtDBus>
 #include <QHash>
 
@@ -134,7 +133,7 @@ const QDBusArgument &operator>>(const QDBusArgument &argument, QIBusAttribute &a
     return argument;
 }
 
-QTextFormat QIBusAttribute::format() const
+QTextCharFormat QIBusAttribute::format() const
 {
     QTextCharFormat fmt;
     switch (type) {
@@ -225,11 +224,32 @@ const QDBusArgument &operator>>(const QDBusArgument &arg, QIBusAttributeList &at
 
 QList<QInputMethodEvent::Attribute> QIBusAttributeList::imAttributes() const
 {
-    QList<QInputMethodEvent::Attribute> imAttrs;
+    QHash<QPair<int, int>, QTextCharFormat> rangeAttrs;
+
+    // Merge text fomats for identical ranges into a single QTextFormat.
     for (int i = 0; i < attributes.size(); ++i) {
         const QIBusAttribute &attr = attributes.at(i);
-        imAttrs += QInputMethodEvent::Attribute(QInputMethodEvent::TextFormat, attr.start, attr.end - attr.start, attr.format());
+        const QTextCharFormat &format = attr.format();
+
+        if (format.isValid()) {
+            const QPair<int, int> range(attr.start, attr.end);
+            rangeAttrs[range].merge(format);
+        }
     }
+
+    // Assemble list in original attribute order.
+    QList<QInputMethodEvent::Attribute> imAttrs;
+
+    for (int i = 0; i < attributes.size(); ++i) {
+        const QIBusAttribute &attr = attributes.at(i);
+        const QTextFormat &format = attr.format();
+
+        imAttrs += QInputMethodEvent::Attribute(QInputMethodEvent::TextFormat,
+            attr.start,
+            attr.end - attr.start,
+            format.isValid() ? rangeAttrs[QPair<int, int>(attr.start, attr.end)] : format);
+    }
+
     return imAttrs;
 }
 

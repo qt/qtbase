@@ -416,8 +416,8 @@ QStringList ProStringList::toQStringList() const
 {
     QStringList ret;
     ret.reserve(size());
-    foreach (const ProString &str, *this)
-        ret << str.toQString();
+    for (int i = 0; i < size(); i++) // foreach causes MSVC2010 ICE
+        ret << at(i).toQString();
     return ret;
 }
 

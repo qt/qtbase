@@ -47,12 +47,10 @@ class QIOSInputContext;
 
 @interface QIOSTextInputResponder : UIResponder <UITextInputTraits, UIKeyInput, UITextInput>
 {
-  @public
-    QString m_markedText;
-    BOOL m_inSendEventToFocusObject;
-
   @private
     QIOSInputContext *m_inputContext;
+    QString m_markedText;
+    BOOL m_inSendEventToFocusObject;
 }
 
 - (id)initWithInputContext:(QIOSInputContext *)context;

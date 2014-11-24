@@ -268,6 +268,7 @@ public: // for QNSView
 
     bool m_inConstructor;
     bool m_inSetVisible;
+    bool m_inSetGeometry;
 #ifndef QT_NO_OPENGL
     QCocoaGLContext *m_glContext;
 #endif

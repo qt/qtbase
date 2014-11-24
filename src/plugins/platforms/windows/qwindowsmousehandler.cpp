@@ -109,6 +109,30 @@ static inline void compressMouseMove(MSG *msg)
     }
 }
 
+static inline QTouchDevice *createTouchDevice()
+{
+    enum { QT_SM_TABLETPC = 86, QT_SM_DIGITIZER = 94, QT_SM_MAXIMUMTOUCHES = 95,
+           QT_NID_INTEGRATED_TOUCH = 0x1, QT_NID_EXTERNAL_TOUCH = 0x02,
+           QT_NID_MULTI_INPUT = 0x40, QT_NID_READY = 0x80 };
+
+    if (QSysInfo::windowsVersion() < QSysInfo::WV_WINDOWS7)
+        return 0;
+    const int digitizers = GetSystemMetrics(QT_SM_DIGITIZER);
+    if (!(digitizers & (QT_NID_INTEGRATED_TOUCH | QT_NID_EXTERNAL_TOUCH)))
+        return 0;
+    const int tabletPc = GetSystemMetrics(QT_SM_TABLETPC);
+    const int maxTouchPoints = GetSystemMetrics(QT_SM_MAXIMUMTOUCHES);
+    qCDebug(lcQpaEvents) << "Digitizers:" << hex << showbase << (digitizers & ~QT_NID_READY)
+        << "Ready:" << (digitizers & QT_NID_READY) << dec << noshowbase
+        << "Tablet PC:" << tabletPc << "Max touch points:" << maxTouchPoints;
+    QTouchDevice *result = new QTouchDevice;
+    result->setType(digitizers & QT_NID_INTEGRATED_TOUCH
+                    ? QTouchDevice::TouchScreen : QTouchDevice::TouchPad);
+    result->setCapabilities(QTouchDevice::Position | QTouchDevice::Area | QTouchDevice::NormalizedPosition);
+    result->setMaximumTouchPoints(maxTouchPoints);
+    return result;
+}
+
 /*!
     \class QWindowsMouseHandler
     \brief Windows mouse handler
@@ -122,10 +146,12 @@ static inline void compressMouseMove(MSG *msg)
 QWindowsMouseHandler::QWindowsMouseHandler() :
     m_windowUnderMouse(0),
     m_trackedWindow(0),
-    m_touchDevice(0),
+    m_touchDevice(createTouchDevice()),
     m_leftButtonDown(false),
     m_previousCaptureWindow(0)
 {
+    if (m_touchDevice)
+        QWindowSystemInterface::registerTouchDevice(m_touchDevice);
 }
 
 Qt::MouseButtons QWindowsMouseHandler::queryMouseButtons()
@@ -404,6 +430,7 @@ bool QWindowsMouseHandler::translateTouchEvent(QWindow *window, HWND,
     typedef QWindowSystemInterface::TouchPoint QTouchPoint;
     typedef QList<QWindowSystemInterface::TouchPoint> QTouchPointList;
 
+    Q_ASSERT(m_touchDevice);
     const QRect screenGeometry = window->screen()->geometry();
 
     const int winTouchPointCount = msg.wParam;
@@ -463,14 +490,6 @@ bool QWindowsMouseHandler::translateTouchEvent(QWindow *window, HWND,
     // all touch points released, forget the ids we've seen, they may not be reused
     if (allStates == Qt::TouchPointReleased)
         m_touchInputIDToTouchPointID.clear();
-
-    if (!m_touchDevice) {
-        m_touchDevice = new QTouchDevice;
-        // TODO: Device used to be hardcoded to screen in previous code.
-        m_touchDevice->setType(QTouchDevice::TouchScreen);
-        m_touchDevice->setCapabilities(QTouchDevice::Position | QTouchDevice::Area | QTouchDevice::NormalizedPosition);
-        QWindowSystemInterface::registerTouchDevice(m_touchDevice);
-    }
 
     QWindowSystemInterface::handleTouchEvent(window,
                                              m_touchDevice,

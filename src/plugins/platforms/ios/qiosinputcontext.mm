@@ -44,12 +44,16 @@
 #import <UIKit/UIGestureRecognizerSubclass.h>
 
 #include "qiosglobal.h"
+#include "qiosintegration.h"
 #include "qiostextresponder.h"
+#include "qiosviewcontroller.h"
 #include "qioswindow.h"
 #include "quiview.h"
 
 #include <QGuiApplication>
 #include <QtGui/private/qwindow_p.h>
+
+// -------------------------------------------------------------------------
 
 static QUIView *focusView()
 {
@@ -57,13 +61,13 @@ static QUIView *focusView()
         reinterpret_cast<QUIView *>(qApp->focusWindow()->winId()) : 0;
 }
 
-@interface QIOSKeyboardListener : UIGestureRecognizer {
+// -------------------------------------------------------------------------
+
+@interface QIOSKeyboardListener : UIGestureRecognizer <UIGestureRecognizerDelegate> {
 @public
     QIOSInputContext *m_context;
     BOOL m_keyboardVisible;
     BOOL m_keyboardVisibleAndDocked;
-    BOOL m_touchPressWhileKeyboardVisible;
-    BOOL m_keyboardHiddenByGesture;
     QRectF m_keyboardRect;
     CGRect m_keyboardEndRect;
     NSTimeInterval m_duration;
@@ -76,13 +80,11 @@ static QUIView *focusView()
 
 - (id)initWithQIOSInputContext:(QIOSInputContext *)context
 {
-    self = [super initWithTarget:self action:@selector(gestureTriggered)];
+    self = [super initWithTarget:self action:@selector(gestureStateChanged:)];
     if (self) {
         m_context = context;
         m_keyboardVisible = NO;
         m_keyboardVisibleAndDocked = NO;
-        m_touchPressWhileKeyboardVisible = NO;
-        m_keyboardHiddenByGesture = NO;
         m_duration = 0;
         m_curve = UIViewAnimationCurveEaseOut;
         m_viewController = 0;
@@ -98,10 +100,9 @@ static QUIView *focusView()
             Q_ASSERT(m_viewController);
 
             // Attach 'hide keyboard' gesture to the window, but keep it disabled when the
-            // keyboard is not visible. Note that we never trigger the gesture the way it is intended
-            // since we don't want to cancel touch events and interrupt flicking etc. Instead we use
-            // the gesture framework more as an event filter and hide the keyboard silently.
+            // keyboard is not visible.
             self.enabled = NO;
+            self.cancelsTouchesInView = NO;
             self.delaysTouchesEnded = NO;
             [m_viewController.view.window addGestureRecognizer:self];
         }
@@ -155,11 +156,19 @@ static QUIView *focusView()
     // Note that UIKeyboardWillShowNotification is only sendt when the keyboard is docked.
     m_keyboardVisibleAndDocked = YES;
     m_keyboardEndRect = [[[notification userInfo] objectForKey:UIKeyboardFrameEndUserInfoKey] CGRectValue];
-    self.enabled = YES;
+
     if (!m_duration) {
         m_duration = [[notification.userInfo objectForKey:UIKeyboardAnimationDurationUserInfoKey] doubleValue];
         m_curve = UIViewAnimationCurve([[notification.userInfo objectForKey:UIKeyboardAnimationCurveUserInfoKey] integerValue]);
     }
+
+    UIResponder *firstResponder = [UIResponder currentFirstResponder];
+    if (![firstResponder isKindOfClass:[QIOSTextInputResponder class]])
+        return;
+
+    // Enable hide-keyboard gesture
+    self.enabled = YES;
+
     m_context->scrollToCursor();
 }
 
@@ -168,7 +177,7 @@ static QUIView *focusView()
     // Note that UIKeyboardWillHideNotification is also sendt when the keyboard is undocked.
     m_keyboardVisibleAndDocked = NO;
     m_keyboardEndRect = [[[notification userInfo] objectForKey:UIKeyboardFrameEndUserInfoKey] CGRectValue];
-    if (!m_keyboardHiddenByGesture) {
+    if (self.state != UIGestureRecognizerStateBegan) {
         // Only disable the gesture if the hiding of the keyboard was not caused by it.
         // Otherwise we need to await the final touchEnd callback for doing some clean-up.
         self.enabled = NO;
@@ -201,51 +210,81 @@ static QUIView *focusView()
     }
 }
 
-- (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event
-{
-    CGPoint p = [[touches anyObject] locationInView:m_viewController.view.window];
-    if (CGRectContainsPoint(m_keyboardEndRect, p)) {
-        m_keyboardHiddenByGesture = YES;
-        m_context->hideVirtualKeyboard();
-    }
-
-    [super touchesMoved:touches withEvent:event];
-}
+// -------------------------------------------------------------------------
 
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
 {
-    Q_ASSERT(m_keyboardVisibleAndDocked);
-    m_touchPressWhileKeyboardVisible = YES;
     [super touchesBegan:touches withEvent:event];
+
+    Q_ASSERT(m_keyboardVisibleAndDocked);
+
+    if ([touches count] != 1)
+        self.state = UIGestureRecognizerStateFailed;
+}
+
+- (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event
+{
+    [super touchesMoved:touches withEvent:event];
+
+    if (self.state != UIGestureRecognizerStatePossible)
+        return;
+
+    CGPoint touchPoint = [[touches anyObject] locationInView:m_viewController.view.window];
+    if (CGRectContainsPoint(m_keyboardEndRect, touchPoint))
+        self.state = UIGestureRecognizerStateBegan;
 }
 
 - (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
 {
-    m_touchPressWhileKeyboardVisible = NO;
-    [self performSelectorOnMainThread:@selector(touchesEndedPostDelivery) withObject:nil waitUntilDone:NO];
     [super touchesEnded:touches withEvent:event];
+
+    [self touchesEndedOrCancelled];
 }
 
 - (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event
 {
-    m_touchPressWhileKeyboardVisible = NO;
-    [self performSelectorOnMainThread:@selector(touchesEndedPostDelivery) withObject:nil waitUntilDone:NO];
     [super touchesCancelled:touches withEvent:event];
+
+    [self touchesEndedOrCancelled];
 }
 
-- (void)touchesEndedPostDelivery
+- (void)touchesEndedOrCancelled
 {
-    // Do some clean-up _after_ touchEnd has been delivered to QUIView
-    m_keyboardHiddenByGesture = NO;
+    // Defer final state change until next runloop iteration, so that Qt
+    // has a chance to process the final touch events first, before we eg.
+    // scroll the view.
+    dispatch_async(dispatch_get_main_queue (), ^{
+        // iOS will transition from began to changed by itself
+        Q_ASSERT(self.state != UIGestureRecognizerStateBegan);
+
+        if (self.state == UIGestureRecognizerStateChanged)
+            self.state = UIGestureRecognizerStateEnded;
+        else
+            self.state = UIGestureRecognizerStateFailed;
+    });
+}
+
+- (void)gestureStateChanged:(id)sender
+{
+    Q_UNUSED(sender);
+
+    if (self.state == UIGestureRecognizerStateBegan) {
+        qImDebug() << "hide keyboard gesture was triggered";
+        UIResponder *firstResponder = [UIResponder currentFirstResponder];
+        Q_ASSERT([firstResponder isKindOfClass:[QIOSTextInputResponder class]]);
+        [firstResponder resignFirstResponder];
+    }
+}
+
+- (void)reset
+{
+    [super reset];
+
     if (!m_keyboardVisibleAndDocked) {
+        qImDebug() << "keyboard was hidden, disabling hide-keyboard gesture";
         self.enabled = NO;
-        if (qApp->focusObject()) {
-            // UI Controls are told to gain focus on touch release. So when the 'hide keyboard' gesture
-            // finishes, the final touch end can trigger a control to gain focus. This is in conflict with
-            // the gesture, so we clear focus once more as a work-around.
-            static_cast<QWindowPrivate *>(QObjectPrivate::get(qApp->focusWindow()))->clearFocusObject();
-        }
     } else {
+        qImDebug() << "gesture completed without triggering, scrolling view to cursor";
         m_context->scrollToCursor();
     }
 }
@@ -261,8 +300,11 @@ Qt::InputMethodQueries ImeState::update(Qt::InputMethodQueries properties)
 
     QInputMethodQueryEvent newState(properties);
 
-    if (qApp && qApp->focusObject())
-        QCoreApplication::sendEvent(qApp->focusObject(), &newState);
+    // Update the focus object that the new state is based on
+    focusObject = qApp ? qApp->focusObject() : 0;
+
+    if (focusObject)
+        QCoreApplication::sendEvent(focusObject, &newState);
 
     Qt::InputMethodQueries updatedProperties;
     for (uint i = 0; i < (sizeof(Qt::ImQueryAll) * CHAR_BIT); ++i) {
@@ -278,6 +320,11 @@ Qt::InputMethodQueries ImeState::update(Qt::InputMethodQueries properties)
 }
 
 // -------------------------------------------------------------------------
+
+QIOSInputContext *QIOSInputContext::instance()
+{
+    return static_cast<QIOSInputContext *>(QIOSIntegration::instance()->inputContext());
+}
 
 QIOSInputContext::QIOSInputContext()
     : QPlatformInputContext()
@@ -303,16 +350,29 @@ QRectF QIOSInputContext::keyboardRect() const
 void QIOSInputContext::showInputPanel()
 {
     // No-op, keyboard controlled fully by platform based on focus
+    qImDebug() << "can't show virtual keyboard without a focus object, ignoring";
 }
 
 void QIOSInputContext::hideInputPanel()
 {
-    // No-op, keyboard controlled fully by platform based on focus
+    if (![m_textResponder isFirstResponder]) {
+        qImDebug() << "QIOSTextInputResponder is not first responder, ignoring";
+        return;
+    }
+
+    if (qGuiApp->focusObject() != m_imeState.focusObject) {
+        qImDebug() << "current focus object does not match IM state, likely hiding from focusOut event, so ignoring";
+        return;
+    }
+
+    qImDebug() << "hiding VKB as requested by QInputMethod::hide()";
+    [m_textResponder resignFirstResponder];
 }
 
-void QIOSInputContext::hideVirtualKeyboard()
+void QIOSInputContext::clearCurrentFocusObject()
 {
-    static_cast<QWindowPrivate *>(QObjectPrivate::get(qApp->focusWindow()))->clearFocusObject();
+    if (QWindow *focusWindow = qApp->focusWindow())
+        static_cast<QWindowPrivate *>(QObjectPrivate::get(focusWindow))->clearFocusObject();
 }
 
 bool QIOSInputContext::isInputPanelVisible() const
@@ -342,10 +402,10 @@ void QIOSInputContext::scrollToCursor()
     if (!isQtApplication())
         return;
 
-    if (m_keyboardListener->m_touchPressWhileKeyboardVisible) {
-        // Don't scroll to the cursor if the user is touching the screen. This
-        // interferes with selection and the 'hide keyboard' gesture. Instead
-        // we update scrolling upon touchEnd.
+    if (m_keyboardListener.state == UIGestureRecognizerStatePossible && m_keyboardListener.numberOfTouches == 1) {
+        // Don't scroll to the cursor if the user is touching the screen and possibly
+        // trying to trigger the hide-keyboard gesture.
+        qImDebug() << "preventing scrolling to cursor as we're still waiting for a possible gesture";
         return;
     }
 
@@ -415,6 +475,18 @@ void QIOSInputContext::setFocusObject(QObject *focusObject)
 {
     Q_UNUSED(focusObject);
 
+    qImDebug() << "new focus object =" << focusObject;
+
+    if (m_keyboardListener.state == UIGestureRecognizerStateChanged) {
+        // A new focus object may be set as part of delivering touch events to
+        // application during the hide-keyboard gesture, but we don't want that
+        // to result in a new object getting focus and bringing the keyboard up
+        // again.
+        qImDebug() << "clearing focus object" << focusObject << "as hide-keyboard gesture is active";
+        clearCurrentFocusObject();
+        return;
+    }
+
     reset();
 
     if (m_keyboardListener->m_keyboardVisibleAndDocked)
@@ -424,6 +496,8 @@ void QIOSInputContext::setFocusObject(QObject *focusObject)
 void QIOSInputContext::focusWindowChanged(QWindow *focusWindow)
 {
     Q_UNUSED(focusWindow);
+
+    qImDebug() << "new focus window =" << focusWindow;
 
     reset();
 
@@ -443,15 +517,57 @@ void QIOSInputContext::update(Qt::InputMethodQueries updatedProperties)
     // Mask for properties that we are interested in and see if any of them changed
     updatedProperties &= (Qt::ImEnabled | Qt::ImHints | Qt::ImQueryInput | Qt::ImPlatformData);
 
+    if (updatedProperties & Qt::ImEnabled) {
+        // Switching on and off input-methods needs a re-fresh of hints and platform
+        // data when we turn them on again, as the IM state we have may have been
+        // invalidated when IM was switched off. We could defer this until we know
+        // if IM was turned on, to limit the extra query parameters, but for simplicity
+        // we always do the update.
+        updatedProperties |= (Qt::ImHints | Qt::ImPlatformData);
+    }
+
+    qImDebug() << "fw =" << qApp->focusWindow() << "fo =" << qApp->focusObject();
+
     Qt::InputMethodQueries changedProperties = m_imeState.update(updatedProperties);
     if (changedProperties & (Qt::ImEnabled | Qt::ImHints | Qt::ImPlatformData)) {
         // Changes to enablement or hints require virtual keyboard reconfigure
-        [m_textResponder release];
-        m_textResponder = [[QIOSTextInputResponder alloc] initWithInputContext:this];
-        [m_textResponder reloadInputViews];
+
+        qImDebug() << "changed IM properties" << changedProperties << "require keyboard reconfigure";
+
+        if (inputMethodAccepted()) {
+            qImDebug() << "replacing text responder with new text responder";
+            [m_textResponder autorelease];
+            m_textResponder = [[QIOSTextInputResponder alloc] initWithInputContext:this];
+            [m_textResponder becomeFirstResponder];
+        } else if ([UIResponder currentFirstResponder] == m_textResponder) {
+            qImDebug() << "IM not enabled, resigning text responder as first responder";
+            [m_textResponder resignFirstResponder];
+        } else {
+            qImDebug() << "IM not enabled. Text responder not first responder. Nothing to do";
+        }
     } else {
         [m_textResponder notifyInputDelegate:changedProperties];
     }
+}
+
+bool QIOSInputContext::inputMethodAccepted() const
+{
+    // The IM enablement state is based on the last call to update()
+    bool lastKnownImEnablementState = m_imeState.currentState.value(Qt::ImEnabled).toBool();
+
+#if !defined(QT_NO_DEBUG)
+    // QPlatformInputContext keeps a cached value of the current IM enablement state that is
+    // updated by QGuiApplication when the current focus object changes, or by QInputMethod's
+    // update() function. If the focus object changes, but the change is not propagated as
+    // a signal to QGuiApplication due to bugs in the widget/graphicsview/qml stack, we'll
+    // end up with a stale value for QPlatformInputContext::inputMethodAccepted(). To be on
+    // the safe side we always use our own cached value to decide if IM is enabled, and try
+    // to detect the case where the two values are out of sync.
+    if (lastKnownImEnablementState != QPlatformInputContext::inputMethodAccepted())
+        qWarning("QPlatformInputContext::inputMethodAccepted() does not match actual focus object IM enablement!");
+#endif
+
+    return lastKnownImEnablementState;
 }
 
 /*!
@@ -478,16 +594,3 @@ void QIOSInputContext::commit()
     [m_textResponder unmarkText];
     [m_textResponder notifyInputDelegate:Qt::ImSurroundingText];
 }
-
-// -------------------------------------------------------------------------
-
-@interface QUIView (InputMethods)
-- (void)reloadInputViews;
-@end
-
-@implementation QUIView (InputMethods)
-- (void)reloadInputViews
-{
-    qApp->inputMethod()->reset();
-}
-@end

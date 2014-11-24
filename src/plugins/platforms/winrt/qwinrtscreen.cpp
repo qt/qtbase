@@ -33,6 +33,11 @@
 
 #include "qwinrtscreen.h"
 
+#define EGL_EGLEXT_PROTOTYPES
+#include <EGL/eglext.h>
+#include <d3d11.h>
+#include <dxgi1_2.h>
+
 #include "qwinrtbackingstore.h"
 #include "qwinrtinputcontext.h"
 #include "qwinrtcursor.h"
@@ -452,6 +457,7 @@ public:
 
     EGLDisplay eglDisplay;
     EGLSurface eglSurface;
+    EGLConfig eglConfig;
 
     QHash<CoreApplicationCallbackRemover, EventRegistrationToken> applicationTokens;
     QHash<CoreWindowCallbackRemover, EventRegistrationToken> windowTokens;
@@ -467,6 +473,7 @@ QWinRTScreen::QWinRTScreen()
     Q_D(QWinRTScreen);
     d->orientation = Qt::PrimaryOrientation;
     d->touchDevice = Q_NULLPTR;
+    d->eglDisplay = EGL_NO_DISPLAY;
 
     // Obtain the WinRT Application, view, and window
     HRESULT hr;
@@ -525,8 +532,10 @@ QWinRTScreen::QWinRTScreen()
     Q_ASSERT_SUCCEEDED(hr);
     hr = d->coreWindow->add_PointerWheelChanged(Callback<PointerHandler>(this, &QWinRTScreen::onPointerUpdated).Get(), &d->windowTokens[&ICoreWindow::remove_PointerWheelChanged]);
     Q_ASSERT_SUCCEEDED(hr);
+#ifndef Q_OS_WINPHONE
     hr = d->coreWindow->add_SizeChanged(Callback<SizeChangedHandler>(this, &QWinRTScreen::onSizeChanged).Get(), &d->windowTokens[&ICoreWindow::remove_SizeChanged]);
     Q_ASSERT_SUCCEEDED(hr);
+#endif
     hr = d->coreWindow->add_Activated(Callback<ActivatedHandler>(this, &QWinRTScreen::onActivated).Get(), &d->windowTokens[&ICoreWindow::remove_Activated]);
     Q_ASSERT_SUCCEEDED(hr);
     hr = d->coreWindow->add_Closed(Callback<ClosedHandler>(this, &QWinRTScreen::onClosed).Get(), &d->windowTokens[&ICoreWindow::remove_Closed]);
@@ -575,7 +584,43 @@ QWinRTScreen::QWinRTScreen()
     if (!eglInitialize(d->eglDisplay, NULL, NULL))
         qCritical("Failed to initialize EGL: 0x%x", eglGetError());
 
-    d->eglSurface = eglCreateWindowSurface(d->eglDisplay, q_configFromGLFormat(d->eglDisplay, d->surfaceFormat), d->coreWindow.Get(), NULL);
+    // Check that the device properly supports depth/stencil rendering, and disable them if not
+    ComPtr<ID3D11Device> d3dDevice;
+    const EGLBoolean ok = eglQuerySurfacePointerANGLE(d->eglDisplay, EGL_NO_SURFACE, EGL_DEVICE_EXT, (void **)d3dDevice.GetAddressOf());
+    if (ok && d3dDevice) {
+        ComPtr<IDXGIDevice> dxgiDevice;
+        hr = d3dDevice.As(&dxgiDevice);
+        if (SUCCEEDED(hr)) {
+            ComPtr<IDXGIAdapter> dxgiAdapter;
+            hr = dxgiDevice->GetAdapter(&dxgiAdapter);
+            if (SUCCEEDED(hr)) {
+                ComPtr<IDXGIAdapter2> dxgiAdapter2;
+                hr = dxgiAdapter.As(&dxgiAdapter2);
+                if (SUCCEEDED(hr)) {
+                    DXGI_ADAPTER_DESC2 desc;
+                    hr = dxgiAdapter2->GetDesc2(&desc);
+                    if (SUCCEEDED(hr)) {
+                        // The following GPUs do not render properly with depth/stencil
+                        if ((desc.VendorId == 0x4d4f4351 && desc.DeviceId == 0x32303032)) { // Qualcomm Adreno 225
+                            d->surfaceFormat.setDepthBufferSize(-1);
+                            d->surfaceFormat.setStencilBufferSize(-1);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    d->eglConfig = q_configFromGLFormat(d->eglDisplay, d->surfaceFormat);
+    d->surfaceFormat = q_glFormatFromConfig(d->eglDisplay, d->eglConfig, d->surfaceFormat);
+    const QRect bounds = geometry();
+    EGLint windowAttributes[] = {
+        EGL_FIXED_SIZE_ANGLE, EGL_TRUE,
+        EGL_WIDTH, bounds.width(),
+        EGL_HEIGHT, bounds.height(),
+        EGL_NONE
+    };
+    d->eglSurface = eglCreateWindowSurface(d->eglDisplay, d->eglConfig, d->coreWindow.Get(), windowAttributes);
     if (d->eglSurface == EGL_NO_SURFACE)
         qCritical("Failed to create EGL window surface: 0x%x", eglGetError());
 }
@@ -704,6 +749,12 @@ EGLSurface QWinRTScreen::eglSurface() const
 {
     Q_D(const QWinRTScreen);
     return d->eglSurface;
+}
+
+EGLConfig QWinRTScreen::eglConfig() const
+{
+    Q_D(const QWinRTScreen);
+    return d->eglConfig;
 }
 
 QWindow *QWinRTScreen::topWindow() const
@@ -1010,26 +1061,33 @@ HRESULT QWinRTScreen::onAutomationProviderRequested(ICoreWindow *, IAutomationPr
     return S_OK;
 }
 
-HRESULT QWinRTScreen::onSizeChanged(ICoreWindow *, IWindowSizeChangedEventArgs *args)
+HRESULT QWinRTScreen::onSizeChanged(ICoreWindow *, IWindowSizeChangedEventArgs *)
 {
     Q_D(QWinRTScreen);
 
-    Size size;
-    HRESULT hr = args->get_Size(&size);
-    RETURN_OK_IF_FAILED("Failed to get window size.");
-
+    Rect size;
+    HRESULT hr;
+    hr = d->coreWindow->get_Bounds(&size);
+    RETURN_OK_IF_FAILED("Failed to get window bounds");
     QSizeF logicalSize = QSizeF(size.Width, size.Height);
+#ifndef Q_OS_WINPHONE // This handler is called from orientation changed, in which case we should always update the size
     if (d->logicalSize == logicalSize)
         return S_OK;
+#endif
 
-    // Regardless of state, all top-level windows are viewport-sized - this might change if
-    // a more advanced compositor is written.
     d->logicalSize = logicalSize;
-    const QRect newGeometry = geometry();
-    QWindowSystemInterface::handleScreenGeometryChange(screen(), newGeometry, newGeometry);
-    QPlatformScreen::resizeMaximizedWindows();
-    handleExpose();
-
+    if (d->eglDisplay) {
+        const QRect newGeometry = geometry();
+#ifdef Q_OS_WINPHONE // Resize the EGL window
+        const int width = newGeometry.width() * (d->orientation == Qt::InvertedPortraitOrientation || d->orientation == Qt::LandscapeOrientation ? -1 : 1);
+        const int height = newGeometry.height() * (d->orientation == Qt::InvertedPortraitOrientation || d->orientation == Qt::InvertedLandscapeOrientation ? -1 : 1);
+        eglSurfaceAttrib(d->eglDisplay, d->eglSurface, EGL_WIDTH, width);
+        eglSurfaceAttrib(d->eglDisplay, d->eglSurface, EGL_HEIGHT, height);
+#endif
+        QWindowSystemInterface::handleScreenGeometryChange(screen(), newGeometry, newGeometry);
+        QPlatformScreen::resizeMaximizedWindows();
+        handleExpose();
+    }
     return S_OK;
 }
 
@@ -1099,6 +1157,9 @@ HRESULT QWinRTScreen::onOrientationChanged(IDisplayInformation *, IInspectable *
         QWindowSystemInterface::handleScreenOrientationChange(screen(), d->orientation);
     }
 
+#ifdef Q_OS_WINPHONE // The size changed handler is ignored in favor of this callback
+    onSizeChanged(Q_NULLPTR, Q_NULLPTR);
+#endif
     return S_OK;
 }
 

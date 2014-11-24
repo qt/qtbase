@@ -42,6 +42,7 @@
 
 const char kImePlatformDataInputView[] = "inputView";
 const char kImePlatformDataInputAccessoryView[] = "inputAccessoryView";
+const char kImePlatformDataReturnKeyType[] = "returnKeyType";
 
 QT_BEGIN_NAMESPACE
 
@@ -50,9 +51,10 @@ QT_BEGIN_NAMESPACE
 
 struct ImeState
 {
-    ImeState() : currentState(0) {}
+    ImeState() : currentState(0), focusObject(0) {}
     Qt::InputMethodQueries update(Qt::InputMethodQueries properties);
     QInputMethodQueryEvent currentState;
+    QObject *focusObject;
 };
 
 class QIOSInputContext : public QPlatformInputContext
@@ -65,7 +67,8 @@ public:
 
     void showInputPanel();
     void hideInputPanel();
-    void hideVirtualKeyboard();
+
+    void clearCurrentFocusObject();
 
     bool isInputPanelVisible() const;
     void setFocusObject(QObject *object);
@@ -80,6 +83,9 @@ public:
     void commit();
 
     const ImeState &imeState() { return m_imeState; };
+    bool inputMethodAccepted() const;
+
+    static QIOSInputContext *instance();
 
 private:
     QIOSKeyboardListener *m_keyboardListener;

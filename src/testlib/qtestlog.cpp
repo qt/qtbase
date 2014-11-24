@@ -279,7 +279,6 @@ namespace QTest {
             return;
 
         QString msg = qFormatLogMessage(type, context, message);
-        msg.chop(1); // remove trailing newline
 
         if (type != QtFatalMsg) {
             if (counter.load() <= 0)

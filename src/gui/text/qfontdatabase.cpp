@@ -620,7 +620,7 @@ struct QtFontDesc
 
 static int match(int script, const QFontDef &request,
                  const QString &family_name, const QString &foundry_name, int force_encoding_id,
-                 QtFontDesc *desc, const QList<int> &blacklisted, bool fallback);
+                 QtFontDesc *desc, const QList<int> &blacklisted);
 
 static void initFontDef(const QtFontDesc &desc, const QFontDef &request, QFontDef *fontDef, bool multi)
 {
@@ -1110,7 +1110,7 @@ static bool matchFamilyName(const QString &familyName, QtFontFamily *f)
 */
 static int match(int script, const QFontDef &request,
                  const QString &family_name, const QString &foundry_name, int force_encoding_id,
-                 QtFontDesc *desc, const QList<int> &blacklistedFamilies, bool fallback = false)
+                 QtFontDesc *desc, const QList<int> &blacklistedFamilies)
 {
     Q_UNUSED(force_encoding_id);
     int result = -1;
@@ -1163,7 +1163,7 @@ static int match(int script, const QFontDef &request,
             load(test.family->name, script);
 
         // Check if family is supported in the script we want
-        if (!fallback && script != QChar::Script_Common && !(test.family->writingSystems[writingSystem] & QtFontFamily::Supported))
+        if (script != QChar::Script_Common && !(test.family->writingSystems[writingSystem] & QtFontFamily::Supported))
             continue;
 
         // as we know the script is supported, we can be sure
@@ -2490,7 +2490,7 @@ bool QFontDatabase::supportsThreadedFontRendering()
 */
 QFontEngine *
 QFontDatabase::findFont(int script, const QFontPrivate *fp,
-                        const QFontDef &request, bool multi, bool fallback)
+                        const QFontDef &request, bool multi)
 {
     QMutexLocker locker(fontDatabaseMutex());
 
@@ -2518,7 +2518,7 @@ QFontDatabase::findFont(int script, const QFontPrivate *fp,
 
     QtFontDesc desc;
     QList<int> blackListed;
-    int index = match(script, request, family_name, foundry_name, force_encoding_id, &desc, blackListed, fallback);
+    int index = match(script, request, family_name, foundry_name, force_encoding_id, &desc, blackListed);
     if (index >= 0) {
         engine = loadEngine(script, request, desc.family, desc.foundry, desc.style, desc.size);
         if (!engine)

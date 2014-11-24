@@ -14,14 +14,11 @@
 #include <GLES2/gl2.h>
 #include <EGL/egl.h>
 
-#ifndef Sleep
-#define Sleep(ms) WaitForSingleObjectEx(GetCurrentThread(), ms, FALSE)
-#endif
-
 namespace egl
 {
 class Display;
 class Surface;
+class AttributeMap;
 }
 
 namespace gl
@@ -40,16 +37,6 @@ Context *getContext();
 Context *getNonLostContext();
 egl::Display *getDisplay();
 
-void error(GLenum errorCode);
-
-template<class T>
-const T &error(GLenum errorCode, const T &returnValue)
-{
-    error(errorCode);
-
-    return returnValue;
-}
-
 }
 
 namespace rx
@@ -64,11 +51,11 @@ gl::Context *glCreateContext(int clientVersion, const gl::Context *shareContext,
 void glDestroyContext(gl::Context *context);
 void glMakeCurrent(gl::Context *context, egl::Display *display, egl::Surface *surface);
 gl::Context *glGetCurrentContext();
-rx::Renderer *glCreateRenderer(egl::Display *display, EGLNativeDisplayType nativeDisplay, EGLint requestedDisplayType);
+rx::Renderer *glCreateRenderer(egl::Display *display, EGLNativeDisplayType nativeDisplay, const egl::AttributeMap &attribMap);
 void glDestroyRenderer(rx::Renderer *renderer);
 
-__eglMustCastToProperFunctionPointerType __stdcall glGetProcAddress(const char *procname);
-bool __stdcall glBindTexImage(egl::Surface *surface);
+__eglMustCastToProperFunctionPointerType EGLAPIENTRY glGetProcAddress(const char *procname);
+bool EGLAPIENTRY glBindTexImage(egl::Surface *surface);
 }
 
 #endif   // LIBGLESV2_MAIN_H_

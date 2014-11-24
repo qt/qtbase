@@ -1179,6 +1179,12 @@ void tst_QUrl::toLocalFile_data()
 
     QTest::newRow("data0") << QString::fromLatin1("file:/a.txt") << QString::fromLatin1("/a.txt");
     QTest::newRow("data4") << QString::fromLatin1("file:///a.txt") << QString::fromLatin1("/a.txt");
+    QTest::newRow("data4a") << QString::fromLatin1("webdavs://somewebdavhost/somedir/somefile")
+#ifdef Q_OS_WIN // QTBUG-42346, WebDAV is visible as local file on Windows only.
+                            << QString::fromLatin1("//somewebdavhost@SSL/somedir/somefile");
+#else
+                            << QString();
+#endif
 #ifdef Q_OS_WIN
     QTest::newRow("data5") << QString::fromLatin1("file:///c:/a.txt") << QString::fromLatin1("c:/a.txt");
 #else
@@ -1226,6 +1232,9 @@ void tst_QUrl::fromLocalFile_data()
     QTest::newRow("data2") << QString::fromLatin1("/a/b.txt") << QString::fromLatin1("file:///a/b.txt") << QString::fromLatin1("/a/b.txt");
     QTest::newRow("data3") << QString::fromLatin1("c:/a.txt") << QString::fromLatin1("file:///c:/a.txt") << QString::fromLatin1("/c:/a.txt");
     QTest::newRow("data4") << QString::fromLatin1("//somehost/somedir/somefile") << QString::fromLatin1("file://somehost/somedir/somefile")
+                        << QString::fromLatin1("/somedir/somefile");
+    QTest::newRow("data4a") << QString::fromLatin1("//somewebdavhost@SSL/somedir/somefile")
+                        << QString::fromLatin1("webdavs://somewebdavhost/somedir/somefile")
                         << QString::fromLatin1("/somedir/somefile");
     QTest::newRow("data5") << QString::fromLatin1("//somehost") << QString::fromLatin1("file://somehost")
                         << QString::fromLatin1("");

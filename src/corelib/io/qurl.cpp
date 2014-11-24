@@ -403,6 +403,7 @@
 #include "qdebug.h"
 #include "qhash.h"
 #include "qdir.h"         // for QDir::fromNativeSeparators
+#include "qdatastream.h"
 #include "qtldurl_p.h"
 #include "private/qipaddress_p.h"
 #include "qurlquery.h"
@@ -427,6 +428,16 @@ static inline QString ftpScheme()
 static inline QString fileScheme()
 {
     return QStringLiteral("file");
+}
+
+static inline QString webDavScheme()
+{
+    return QStringLiteral("webdavs");
+}
+
+static inline QString webDavSslTag()
+{
+    return QStringLiteral("@SSL");
 }
 
 #ifdef Q_COMPILER_CLASS_ENUM
@@ -992,10 +1003,15 @@ inline bool QUrlPrivate::setScheme(const QString &value, int len, bool doSetErro
     }
 
     // did we set to the file protocol?
-    if (scheme == fileScheme())
+    if (scheme == fileScheme()
+#ifdef Q_OS_WIN
+        || scheme == webDavScheme()
+#endif
+       ) {
         flags |= IsLocalFile;
-    else
+    } else {
         flags &= ~IsLocalFile;
+    }
     return true;
 }
 
@@ -3738,7 +3754,7 @@ QUrl QUrl::fromLocalFile(const QString &localFile)
     QUrl url;
     if (localFile.isEmpty())
         return url;
-    url.setScheme(fileScheme());
+    QString scheme = fileScheme();
     QString deslashified = QDir::fromNativeSeparators(localFile);
 
     // magic for drives on windows
@@ -3747,13 +3763,21 @@ QUrl QUrl::fromLocalFile(const QString &localFile)
     } else if (deslashified.startsWith(QLatin1String("//"))) {
         // magic for shared drive on windows
         int indexOfPath = deslashified.indexOf(QLatin1Char('/'), 2);
-        url.setHost(deslashified.mid(2, indexOfPath - 2));
+        QString hostSpec = deslashified.mid(2, indexOfPath - 2);
+        // Check for Windows-specific WebDAV specification: "//host@SSL/path".
+        if (hostSpec.endsWith(webDavSslTag(), Qt::CaseInsensitive)) {
+            hostSpec.chop(4);
+            scheme = webDavScheme();
+        }
+        url.setHost(hostSpec);
+
         if (indexOfPath > 2)
             deslashified = deslashified.right(deslashified.length() - indexOfPath);
         else
             deslashified.clear();
     }
 
+    url.setScheme(scheme);
     url.setPath(deslashified, DecodedMode);
     return url;
 }
@@ -3783,8 +3807,14 @@ QString QUrl::toLocalFile() const
 
     // magic for shared drive on windows
     if (!d->host.isEmpty()) {
-        tmp = QStringLiteral("//") + host() + (ourPath.length() > 0 && ourPath.at(0) != QLatin1Char('/')
-                                               ? QLatin1Char('/') + ourPath :  ourPath);
+        tmp = QStringLiteral("//") + host();
+#ifdef Q_OS_WIN // QTBUG-42346, WebDAV is visible as local file on Windows only.
+        if (scheme() == webDavScheme())
+            tmp += webDavSslTag();
+#endif
+        if (!ourPath.isEmpty() && !ourPath.startsWith(QLatin1Char('/')))
+            tmp += QLatin1Char('/');
+        tmp += ourPath;
     } else {
         tmp = ourPath;
 #ifdef Q_OS_WIN

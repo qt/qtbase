@@ -10,6 +10,7 @@
 #define LIBGLESV2_RENDERER_SHADERD3D_H_
 
 #include "libGLESv2/renderer/ShaderImpl.h"
+#include "libGLESv2/renderer/Workarounds.h"
 #include "libGLESv2/Shader.h"
 
 #include <map>
@@ -17,22 +18,23 @@
 namespace rx
 {
 class DynamicHLSL;
-class Renderer;
+class RendererD3D;
 
 class ShaderD3D : public ShaderImpl
 {
     friend class DynamicHLSL;
 
   public:
-    ShaderD3D(GLenum type, rx::Renderer *renderer);
+    ShaderD3D(const gl::Data &data, GLenum type, RendererD3D *renderer);
     virtual ~ShaderD3D();
 
     static ShaderD3D *makeShaderD3D(ShaderImpl *impl);
     static const ShaderD3D *makeShaderD3D(const ShaderImpl *impl);
 
     // ShaderImpl implementation
-    const std::string &getInfoLog() const { return mInfoLog; }
-    const std::string &getTranslatedSource() const { return mHlsl; }
+    virtual const std::string &getInfoLog() const { return mInfoLog; }
+    virtual const std::string &getTranslatedSource() const { return mHlsl; }
+    virtual std::string getDebugInfo() const;
 
     // D3D-specific methods
     virtual void uncompile();
@@ -40,8 +42,9 @@ class ShaderD3D : public ShaderImpl
     unsigned int getUniformRegister(const std::string &uniformName) const;
     unsigned int getInterfaceBlockRegister(const std::string &blockName) const;
     int getSemanticIndex(const std::string &attributeName) const;
+    void appendDebugInfo(const std::string &info) { mDebugInfo += info; }
 
-    rx::D3DWorkaroundType getD3DWorkarounds() const;
+    D3DWorkaroundType getD3DWorkarounds() const;
     int getShaderVersion() const { return mShaderVersion; }
     bool usesDepthRange() const { return mUsesDepthRange; }
     bool usesPointSize() const { return mUsesPointSize; }
@@ -49,15 +52,15 @@ class ShaderD3D : public ShaderImpl
     static void releaseCompiler();
     static ShShaderOutput getCompilerOutputType(GLenum shader);
 
-    virtual bool compile(const std::string &source);
+    virtual bool compile(const gl::Data &data, const std::string &source);
 
   private:
     DISALLOW_COPY_AND_ASSIGN(ShaderD3D);
 
-    void compileToHLSL(void *compiler, const std::string &source);
+    void compileToHLSL(const gl::Data &data, void *compiler, const std::string &source);
     void parseVaryings(void *compiler);
 
-    void initializeCompiler();
+    void initializeCompiler(const gl::Data &data);
     void parseAttributes(void *compiler);
     void *getCompiler();
 
@@ -67,7 +70,7 @@ class ShaderD3D : public ShaderImpl
     static void *mVertexCompiler;
 
     GLenum mType;
-    rx::Renderer *mRenderer;
+    RendererD3D *mRenderer;
 
     int mShaderVersion;
 
@@ -85,6 +88,7 @@ class ShaderD3D : public ShaderImpl
 
     std::string mHlsl;
     std::string mInfoLog;
+    std::string mDebugInfo;
     std::map<std::string, unsigned int> mUniformRegisterMap;
     std::map<std::string, unsigned int> mInterfaceBlockRegisterMap;
 };

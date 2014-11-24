@@ -1968,8 +1968,10 @@ QGraphicsItem::CacheMode QGraphicsItem::cacheMode() const
     Caching can speed up rendering if your item spends a significant time
     redrawing itself. In some cases the cache can also slow down rendering, in
     particular when the item spends less time redrawing than QGraphicsItem
-    spends redrawing from the cache. When enabled, the item's paint() function
-    will be called only once for each call to update(); for any subsequent
+    spends redrawing from the cache.
+
+    When caching is enabled, an item's paint() function will generally draw into an
+    offscreen pixmap cache; for any subsequent
     repaint requests, the Graphics View framework will redraw from the
     cache. This approach works particularly well with QGLWidget, which stores
     all the cache as OpenGL textures.
@@ -1979,6 +1981,12 @@ QGraphicsItem::CacheMode QGraphicsItem::cacheMode() const
 
     You can read more about the different cache modes in the CacheMode
     documentation.
+
+    \note Enabling caching does not imply that the item's paint() function will be
+    called only in response to an explicit update() call. For instance, under
+    memory pressure, Qt may decide to drop some of the cache information;
+    in such cases an item's paint() function will be called even if there
+    was no update() call (that is, exactly as if there were no caching enabled).
 
     \sa CacheMode, QPixmapCache::setCacheLimit()
 */
@@ -2439,7 +2447,12 @@ void QGraphicsItemPrivate::setVisibleHelper(bool newVisible, bool explicitly,
     Items are visible by default; it is unnecessary to call
     setVisible() on a new item.
 
-    \sa isVisible(), show(), hide()
+    \note An item with opacity set to 0 will still be considered visible,
+    although it will be treated like an invisible item: mouse events will pass
+    through it, it will not be included in the items returned by
+    QGraphicsView::items(), and so on. However, the item will retain the focus.
+
+    \sa isVisible(), show(), hide(), setOpacity()
 */
 void QGraphicsItem::setVisible(bool visible)
 {
@@ -2707,7 +2720,11 @@ qreal QGraphicsItem::effectiveOpacity() const
     with the parent: ItemIgnoresParentOpacity and
     ItemDoesntPropagateOpacityToChildren.
 
-    \sa opacity(), effectiveOpacity()
+    \note Setting the opacity of an item to 0 will not make the item invisible
+    (according to isVisible()), but the item will be treated like an invisible
+    one. See the documentation of setVisible() for more information.
+
+    \sa opacity(), effectiveOpacity(), setVisible()
 */
 void QGraphicsItem::setOpacity(qreal opacity)
 {
@@ -4487,7 +4504,7 @@ void QGraphicsItem::resetTransform()
     Use
 
     \code
-    setRotation(rotation() + angle);
+    item->setTransform(QTransform().rotate(angle), true);
     \endcode
 
     instead.
@@ -5336,6 +5353,16 @@ void QGraphicsItem::setBoundingRegionGranularity(qreal granularity)
     a non-zero width.
 
     All painting is done in local coordinates.
+
+    \note It is mandatory that an item will always redraw itself in the exact
+    same way, unless update() was called; otherwise visual artifacts may
+    occur. In other words, two subsequent calls to paint() must always produce
+    the same output, unless update() was called between them.
+
+    \note Enabling caching for an item does not guarantee that paint()
+    will be invoked only once by the Graphics View framework,
+    even without any explicit call to update(). See the documentation of
+    setCacheMode() for more details.
 
     \sa setCacheMode(), QPen::width(), {Item Coordinates}, ItemUsesExtendedStyleOption
 */
@@ -9764,6 +9791,7 @@ QVariant QGraphicsPixmapItem::extension(const QVariant &variant) const
     using textWidth().
 
     \note In order to align HTML text in the center, the item's text width must be set.
+    Otherwise, you can call adjustSize() after setting the item's text.
 
     \image graphicsview-textitem.png
 

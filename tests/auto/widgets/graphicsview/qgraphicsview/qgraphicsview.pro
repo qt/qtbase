@@ -9,5 +9,4 @@ SOURCES  += tst_qgraphicsview.cpp tst_qgraphicsview_2.cpp
 HEADERS +=  tst_qgraphicsview.h
 DEFINES += QT_NO_CAST_TO_ASCII
 
-mac:CONFIG+=insignificant_test # QTBUG-26580
 DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

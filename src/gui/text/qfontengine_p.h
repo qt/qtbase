@@ -463,7 +463,7 @@ private:
 class QTestFontEngine : public QFontEngineBox
 {
 public:
-    inline QTestFontEngine(int size) : QFontEngineBox(TestFontEngine, size) {}
+    QTestFontEngine(int size);
 };
 
 QT_END_NAMESPACE

@@ -37,7 +37,21 @@
 #include <qpa/qplatformtheme.h>
 #include <QtGui/qpalette.h>
 
+#include <QJsonObject>
+
+#include <memory>
+
 QT_BEGIN_NAMESPACE
+
+struct AndroidStyle
+{
+    QJsonObject m_styleData;
+    QPalette m_standardPalette;
+    QHash<int, QPalette> m_palettes;
+    QHash<int, QFont> m_fonts;
+    QHash<QByteArray, QFont> m_QWidgetsFonts;
+    QHash<QByteArray, QFont> m_QWidgetsPalettes;
+};
 
 class QAndroidPlatformNativeInterface;
 class QAndroidPlatformTheme: public QPlatformTheme
@@ -57,7 +71,7 @@ public:
 
 
 private:
-    QAndroidPlatformNativeInterface * m_androidPlatformNativeInterface;
+    std::shared_ptr<AndroidStyle> m_androidStyleData;
     QPalette m_defaultPalette;
 };
 

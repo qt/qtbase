@@ -76,7 +76,6 @@ protected:
 private:
     friend class QEglFSWindow;
 
-    EGLDisplay m_dpy;
     EGLSurface m_surface;
     QPlatformCursor *m_cursor;
     QEGLPlatformWindow *m_rootWindow;

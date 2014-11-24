@@ -1552,13 +1552,13 @@ QAbstractItemModel::~QAbstractItemModel()
 */
 
 /*!
-    \fn void QAbstractItemModel::rowsMoved(const QModelIndex &sourceParent, int sourceStart, int sourceEnd, const QModelIndex &destinationParent, int destinationRow)
+    \fn void QAbstractItemModel::rowsMoved(const QModelIndex &parent, int start, int end, const QModelIndex &destination, int row)
     \since 4.6
 
     This signal is emitted after rows have been moved within the
-    model. The items between \a sourceStart and \a sourceEnd
-    inclusive, under the given \a sourceParent item have been moved to \a destinationParent
-    starting at the row \a destinationRow.
+    model. The items between \a start and \a end
+    inclusive, under the given \a parent item have been moved to \a destination
+    starting at the row \a row.
 
     \b{Note:} Components connected to this signal use it to adapt to changes
     in the model's dimensions. It can only be emitted by the QAbstractItemModel
@@ -1584,13 +1584,13 @@ QAbstractItemModel::~QAbstractItemModel()
 */
 
 /*!
-    \fn void QAbstractItemModel::columnsMoved(const QModelIndex &sourceParent, int sourceStart, int sourceEnd, const QModelIndex &destinationParent, int destinationColumn)
+    \fn void QAbstractItemModel::columnsMoved(const QModelIndex &parent, int start, int end, const QModelIndex &destination, int column)
     \since 4.6
 
     This signal is emitted after columns have been moved within the
-    model. The items between \a sourceStart and \a sourceEnd
-    inclusive, under the given \a sourceParent item have been moved to \a destinationParent
-    starting at the column \a destinationColumn.
+    model. The items between \a start and \a end
+    inclusive, under the given \a parent item have been moved to \a destination
+    starting at the column \a column.
 
     \b{Note:} Components connected to this signal use it to adapt to changes
     in the model's dimensions. It can only be emitted by the QAbstractItemModel
@@ -1842,7 +1842,9 @@ QMimeData *QAbstractItemModel::mimeData(const QModelIndexList &indexes) const
 
 /*!
     Returns \c{true} if a model can accept a drop of the \a data. This
-    default implementation always returns \c{true}.
+    default implementation only checks if \a data has at least one format
+    in the list of mimeTypes() and if \a action is among the
+    model's supportedDropActions().
 
     Reimplement this function in your custom model, if you want to
     test whether the \a data can be dropped at \a row, \a column,
@@ -1855,12 +1857,19 @@ bool QAbstractItemModel::canDropMimeData(const QMimeData *data, Qt::DropAction a
                                          int row, int column,
                                          const QModelIndex &parent) const
 {
-    Q_UNUSED(data)
-    Q_UNUSED(action)
     Q_UNUSED(row)
     Q_UNUSED(column)
     Q_UNUSED(parent)
-    return true;
+
+    if (!(action & supportedDropActions()))
+        return false;
+
+    const QStringList modelTypes = mimeTypes();
+    for (int i = 0; i < modelTypes.count(); ++i) {
+        if (data->hasFormat(modelTypes.at(i)))
+            return true;
+    }
+    return false;
 }
 
 /*!
@@ -2711,7 +2720,7 @@ bool QAbstractItemModelPrivate::allowMove(const QModelIndex &srcParent, int star
     persistent indexes in the model, which you would otherwise be
     required to do yourself. Using beginMoveRows and endMoveRows
     is an alternative to emitting layoutAboutToBeChanged and
-    layoutChanged directly along with changePersistentIndexes.
+    layoutChanged directly along with changePersistentIndex.
 
     The \a sourceParent index corresponds to the parent from which the
     rows are moved; \a sourceFirst and \a sourceLast are the first and last
@@ -2978,7 +2987,7 @@ void QAbstractItemModel::endRemoveColumns()
     persistent indexes in the model, which you would otherwise be
     required to do yourself. Using beginMoveRows and endMoveRows
     is an alternative to emitting layoutAboutToBeChanged and
-    layoutChanged directly along with changePersistentIndexes.
+    layoutChanged directly along with changePersistentIndex.
 
     The \a sourceParent index corresponds to the parent from which the
     columns are moved; \a sourceFirst and \a sourceLast are the first and last
@@ -3165,11 +3174,11 @@ void QAbstractItemModel::changePersistentIndex(const QModelIndex &from, const QM
 /*!
     \since 4.1
 
-    Changes the QPersistentModelIndexes that is equal to the indexes in the
+    Changes the {QPersistentModelIndex}es that are equal to the indexes in the
     given \a from model index list to the given \a to model index list.
 
     If no persistent model indexes equal to the indexes in the given \a from
-    model index list was found, nothing is changed.
+    model index list are found, nothing is changed.
 
     \sa persistentIndexList(), changePersistentIndex()
 */

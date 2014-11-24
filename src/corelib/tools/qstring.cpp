@@ -3938,28 +3938,31 @@ QString QString::section(const QString &sep, int start, int end, SectionFlags fl
 {
     QStringList sections = split(sep, KeepEmptyParts,
                                  (flags & SectionCaseInsensitiveSeps) ? Qt::CaseInsensitive : Qt::CaseSensitive);
-    if (sections.isEmpty())
-        return QString();
+    const int sectionsSize = sections.size();
+
     if (!(flags & SectionSkipEmpty)) {
         if (start < 0)
-            start += sections.count();
+            start += sectionsSize;
         if (end < 0)
-            end += sections.count();
+            end += sectionsSize;
     } else {
         int skip = 0;
-        for (int k=0; k<sections.size(); ++k) {
+        for (int k = 0; k < sectionsSize; ++k) {
             if (sections.at(k).isEmpty())
                 skip++;
         }
         if (start < 0)
-            start += sections.count() - skip;
+            start += sectionsSize - skip;
         if (end < 0)
-            end += sections.count() - skip;
+            end += sectionsSize - skip;
     }
+    if (start >= sectionsSize || end < 0 || start > end)
+        return QString();
+
     int x = 0;
     QString ret;
     int first_i = start, last_i = end;
-    for (int i = 0; x <= end && i < sections.size(); ++i) {
+    for (int i = 0; x <= end && i < sectionsSize; ++i) {
         QString section = sections.at(i);
         const bool empty = section.isEmpty();
         if (x >= start) {
@@ -3967,16 +3970,16 @@ QString QString::section(const QString &sep, int start, int end, SectionFlags fl
                 first_i = i;
             if(x == end)
                 last_i = i;
-            if(x > start)
+            if (x > start && i > 0)
                 ret += sep;
             ret += section;
         }
         if (!empty || !(flags & SectionSkipEmpty))
             x++;
     }
-    if((flags & SectionIncludeLeadingSep) && first_i)
+    if ((flags & SectionIncludeLeadingSep) && first_i > 0)
         ret.prepend(sep);
-    if((flags & SectionIncludeTrailingSep) && last_i < sections.size()-1)
+    if ((flags & SectionIncludeTrailingSep) && last_i < sectionsSize - 1)
         ret += sep;
     return ret;
 }
@@ -3996,15 +3999,32 @@ static QString extractSections(const QVector<qt_section_chunk> &sections,
                                int end,
                                QString::SectionFlags flags)
 {
-    if (start < 0)
-        start += sections.count();
-    if (end < 0)
-        end += sections.count();
+    const int sectionsSize = sections.size();
+
+    if (!(flags & QString::SectionSkipEmpty)) {
+        if (start < 0)
+            start += sectionsSize;
+        if (end < 0)
+            end += sectionsSize;
+    } else {
+        int skip = 0;
+        for (int k = 0; k < sectionsSize; ++k) {
+            const qt_section_chunk &section = sections.at(k);
+            if (section.length == section.string.length())
+                skip++;
+        }
+        if (start < 0)
+            start += sectionsSize - skip;
+        if (end < 0)
+            end += sectionsSize - skip;
+    }
+    if (start >= sectionsSize || end < 0 || start > end)
+        return QString();
 
     QString ret;
     int x = 0;
     int first_i = start, last_i = end;
-    for (int i = 0; x <= end && i < sections.size(); ++i) {
+    for (int i = 0; x <= end && i < sectionsSize; ++i) {
         const qt_section_chunk &section = sections.at(i);
         const bool empty = (section.length == section.string.length());
         if (x >= start) {
@@ -4021,12 +4041,13 @@ static QString extractSections(const QVector<qt_section_chunk> &sections,
             x++;
     }
 
-    if ((flags & QString::SectionIncludeLeadingSep) && first_i < sections.size()) {
+    if ((flags & QString::SectionIncludeLeadingSep) && first_i >= 0) {
         const qt_section_chunk &section = sections.at(first_i);
         ret.prepend(section.string.left(section.length));
     }
 
-    if ((flags & QString::SectionIncludeTrailingSep) && last_i+1 <= sections.size()-1) {
+    if ((flags & QString::SectionIncludeTrailingSep)
+        && last_i < sectionsSize - 1) {
         const qt_section_chunk &section = sections.at(last_i+1);
         ret += section.string.left(section.length);
     }
@@ -5650,21 +5671,18 @@ QString QString::toUpper_helper(QString &str)
     Safely builds a formatted string from the format string \a cformat
     and an arbitrary list of arguments.
 
-    The %lc escape sequence expects a unicode character of type ushort
-    (as returned by QChar::unicode()). The %ls escape sequence expects
-    a pointer to a zero-terminated array of unicode characters of type
-    ushort (as returned by QString::utf16()).
+    The format string supports the conversion specifiers, length modifiers,
+    and flags provided by printf() in the standard C++ library. The \a cformat
+    string and \c{%s} arguments must be UTF-8 encoded.
 
-    \note This function expects a UTF-8 string for %s and Latin-1 for
-    the format string.
-
-    The format string supports most of the conversion specifiers
-    provided by printf() in the standard C++ library. It doesn't
-    honor the length modifiers (e.g. \c h for \c short, \c ll for
-    \c{long long}). If you need those, use the standard snprintf()
-    function instead:
-
-    \snippet qstring/main.cpp 63
+    \note The \c{%lc} escape sequence expects a unicode character of type
+    \c char16_t, or \c ushort (as returned by QChar::unicode()).
+    The \c{%ls} escape sequence expects a pointer to a zero-terminated array
+    of unicode characters of type \c char16_t, or ushort (as returned by
+    QString::utf16()). This is at odds with the printf() in the standard C++
+    library, which defines \c {%lc} to print a wchar_t and \c{%ls} to print
+    a \c{wchar_t*}, and might also produce compiler warnings on platforms
+    where the size of \c {wchar_t} is not 16 bits.
 
     \warning We do not recommend using QString::sprintf() in new Qt
     code. Instead, consider using QTextStream or arg(), both of
@@ -6284,8 +6302,7 @@ ushort QString::toUShort(bool *ok, int base) const
 
     \snippet qstring/main.cpp 66
 
-    Various string formats for floating point numbers can be converted
-    to double values:
+    \warning The QString content may only contain valid numerical characters which includes the plus/minus sign, the characters g and e used in scientific notation, and the decimal point. Including the unit or additional characters leads to a conversion error.
 
     \snippet qstring/main.cpp 67
 
@@ -6294,7 +6311,7 @@ ushort QString::toUShort(bool *ok, int base) const
 
     \snippet qstring/main.cpp 68
 
-    For historic reasons, this function does not handle
+    For historical reasons, this function does not handle
     thousands group separators. If you need to convert such numbers,
     use QLocale::toDouble().
 

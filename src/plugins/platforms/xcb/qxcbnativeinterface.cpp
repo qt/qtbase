@@ -367,7 +367,7 @@ void *QXcbNativeInterface::x11Screen()
     QXcbIntegration *integration = static_cast<QXcbIntegration *>(QGuiApplicationPrivate::platformIntegration());
     QXcbConnection *defaultConnection = integration->defaultConnection();
     if (defaultConnection)
-        return reinterpret_cast<void *>(defaultConnection->primaryScreen());
+        return reinterpret_cast<void *>(defaultConnection->primaryScreenNumber());
     return 0;
 }
 

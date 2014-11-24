@@ -10,6 +10,7 @@
 #include "libGLESv2/renderer/d3d/d3d11/RenderTarget11.h"
 #include "libGLESv2/renderer/d3d/d3d11/Renderer11.h"
 #include "libGLESv2/renderer/d3d/d3d11/renderer11_utils.h"
+#include "libGLESv2/renderer/d3d/d3d11/SwapChain11.h"
 #include "libGLESv2/renderer/d3d/d3d11/formatutils11.h"
 #include "libGLESv2/main.h"
 
@@ -176,246 +177,10 @@ static unsigned int getDSVSubresourceIndex(ID3D11Resource *resource, ID3D11Depth
     return D3D11CalcSubresource(mipSlice, arraySlice, mipLevels);
 }
 
-RenderTarget11::RenderTarget11(Renderer *renderer, ID3D11RenderTargetView *rtv, ID3D11Resource *resource,
-                               ID3D11ShaderResourceView *srv, GLsizei width, GLsizei height, GLsizei depth)
-{
-    mRenderer = Renderer11::makeRenderer11(renderer);
-
-    mTexture = resource;
-    if (mTexture)
-    {
-        mTexture->AddRef();
-    }
-
-    mRenderTarget = rtv;
-    if (mRenderTarget)
-    {
-        mRenderTarget->AddRef();
-    }
-
-    mDepthStencil = NULL;
-
-    mShaderResource = srv;
-    if (mShaderResource)
-    {
-        mShaderResource->AddRef();
-    }
-
-    mSubresourceIndex = 0;
-
-    if (mRenderTarget && mTexture)
-    {
-        D3D11_RENDER_TARGET_VIEW_DESC desc;
-        mRenderTarget->GetDesc(&desc);
-
-        unsigned int mipLevels, samples;
-        getTextureProperties(mTexture, &mipLevels, &samples);
-
-        mSubresourceIndex = getRTVSubresourceIndex(mTexture, mRenderTarget);
-        mWidth = width;
-        mHeight = height;
-        mDepth = depth;
-        mSamples = samples;
-
-        const d3d11::DXGIFormat &dxgiFormatInfo = d3d11::GetDXGIFormatInfo(desc.Format);
-        mInternalFormat = dxgiFormatInfo.internalFormat;
-        mActualFormat = dxgiFormatInfo.internalFormat;
-    }
-}
-
-RenderTarget11::RenderTarget11(Renderer *renderer, ID3D11DepthStencilView *dsv, ID3D11Resource *resource,
-                               ID3D11ShaderResourceView *srv, GLsizei width, GLsizei height, GLsizei depth)
-{
-    mRenderer = Renderer11::makeRenderer11(renderer);
-
-    mTexture = resource;
-    if (mTexture)
-    {
-        mTexture->AddRef();
-    }
-
-    mRenderTarget = NULL;
-
-    mDepthStencil = dsv;
-    if (mDepthStencil)
-    {
-        mDepthStencil->AddRef();
-    }
-
-    mShaderResource = srv;
-    if (mShaderResource)
-    {
-        mShaderResource->AddRef();
-    }
-
-    mSubresourceIndex = 0;
-
-    if (mDepthStencil && mTexture)
-    {
-        D3D11_DEPTH_STENCIL_VIEW_DESC desc;
-        mDepthStencil->GetDesc(&desc);
-
-        unsigned int mipLevels, samples;
-        getTextureProperties(mTexture, &mipLevels, &samples);
-
-        mSubresourceIndex = getDSVSubresourceIndex(mTexture, mDepthStencil);
-        mWidth = width;
-        mHeight = height;
-        mDepth = depth;
-        mSamples = samples;
-
-        const d3d11::DXGIFormat &dxgiFormatInfo = d3d11::GetDXGIFormatInfo(desc.Format);
-        mInternalFormat = dxgiFormatInfo.internalFormat;
-        mActualFormat = dxgiFormatInfo.internalFormat;
-    }
-}
-
-RenderTarget11::RenderTarget11(Renderer *renderer, GLsizei width, GLsizei height, GLenum internalFormat, GLsizei samples)
-{
-    mRenderer = Renderer11::makeRenderer11(renderer);
-    mTexture = NULL;
-    mRenderTarget = NULL;
-    mDepthStencil = NULL;
-    mShaderResource = NULL;
-
-    const d3d11::TextureFormat &formatInfo = d3d11::GetTextureFormatInfo(internalFormat);
-    const d3d11::DXGIFormat &dxgiFormatInfo = d3d11::GetDXGIFormatInfo(formatInfo.texFormat);
-
-    const gl::TextureCaps &textureCaps = mRenderer->getRendererTextureCaps().get(internalFormat);
-    GLuint supportedSamples = textureCaps.getNearestSamples(samples);
-
-    if (width > 0 && height > 0)
-    {
-        // Create texture resource
-        D3D11_TEXTURE2D_DESC desc;
-        desc.Width = width; 
-        desc.Height = height;
-        desc.MipLevels = 1;
-        desc.ArraySize = 1;
-        desc.Format = formatInfo.texFormat;
-        desc.SampleDesc.Count = (supportedSamples == 0) ? 1 : supportedSamples;
-        desc.SampleDesc.Quality = 0;
-        desc.Usage = D3D11_USAGE_DEFAULT;
-        desc.CPUAccessFlags = 0;
-        desc.MiscFlags = 0;
-
-        // If a rendertarget or depthstencil format exists for this texture format,
-        // we'll flag it to allow binding that way. Shader resource views are a little
-        // more complicated.
-        bool bindRTV = false, bindDSV = false, bindSRV = false;
-        bindRTV = (formatInfo.rtvFormat != DXGI_FORMAT_UNKNOWN);
-        bindDSV = (formatInfo.dsvFormat != DXGI_FORMAT_UNKNOWN);
-        if (formatInfo.srvFormat != DXGI_FORMAT_UNKNOWN)
-        {
-            // Multisample targets flagged for binding as depth stencil cannot also be
-            // flagged for binding as SRV, so make certain not to add the SRV flag for
-            // these targets.
-            bindSRV = !(formatInfo.dsvFormat != DXGI_FORMAT_UNKNOWN && desc.SampleDesc.Count > 1);
-        }
-
-        desc.BindFlags = (bindRTV ? D3D11_BIND_RENDER_TARGET   : 0) |
-                         (bindDSV ? D3D11_BIND_DEPTH_STENCIL   : 0) |
-                         (bindSRV ? D3D11_BIND_SHADER_RESOURCE : 0);
-
-        ID3D11Device *device = mRenderer->getDevice();
-        ID3D11Texture2D *texture = NULL;
-        HRESULT result = device->CreateTexture2D(&desc, NULL, &texture);
-        mTexture = texture;
-
-        if (result == E_OUTOFMEMORY)
-        {
-            gl::error(GL_OUT_OF_MEMORY);
-            return;
-        }
-        ASSERT(SUCCEEDED(result));
-
-        if (bindSRV)
-        {
-            D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
-            srvDesc.Format = formatInfo.srvFormat;
-            srvDesc.ViewDimension = (supportedSamples == 0) ? D3D11_SRV_DIMENSION_TEXTURE2D : D3D11_SRV_DIMENSION_TEXTURE2DMS;
-            srvDesc.Texture2D.MostDetailedMip = 0;
-            srvDesc.Texture2D.MipLevels = 1;
-            result = device->CreateShaderResourceView(mTexture, &srvDesc, &mShaderResource);
-
-            if (result == E_OUTOFMEMORY)
-            {
-                SafeRelease(mTexture);
-                gl::error(GL_OUT_OF_MEMORY);
-                return;
-            }
-            ASSERT(SUCCEEDED(result));
-        }
-
-        if (bindDSV)
-        {
-            D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc;
-            dsvDesc.Format = formatInfo.dsvFormat;
-            dsvDesc.ViewDimension = (supportedSamples == 0) ? D3D11_DSV_DIMENSION_TEXTURE2D : D3D11_DSV_DIMENSION_TEXTURE2DMS;
-            dsvDesc.Texture2D.MipSlice = 0;
-            dsvDesc.Flags = 0;
-            result = device->CreateDepthStencilView(mTexture, &dsvDesc, &mDepthStencil);
-
-            if (result == E_OUTOFMEMORY)
-            {
-                SafeRelease(mTexture);
-                SafeRelease(mShaderResource);
-                gl::error(GL_OUT_OF_MEMORY);
-                return;
-            }
-            ASSERT(SUCCEEDED(result));
-        }
-
-        if (bindRTV)
-        {
-            D3D11_RENDER_TARGET_VIEW_DESC rtvDesc;
-            rtvDesc.Format = formatInfo.rtvFormat;
-            rtvDesc.ViewDimension = (supportedSamples == 0) ? D3D11_RTV_DIMENSION_TEXTURE2D : D3D11_RTV_DIMENSION_TEXTURE2DMS;
-            rtvDesc.Texture2D.MipSlice = 0;
-            result = device->CreateRenderTargetView(mTexture, &rtvDesc, &mRenderTarget);
-
-            if (result == E_OUTOFMEMORY)
-            {
-                SafeRelease(mTexture);
-                SafeRelease(mShaderResource);
-                SafeRelease(mDepthStencil);
-                gl::error(GL_OUT_OF_MEMORY);
-                return;
-            }
-            ASSERT(SUCCEEDED(result));
-
-            if (formatInfo.dataInitializerFunction != NULL)
-            {
-                ID3D11DeviceContext *context = mRenderer->getDeviceContext();
-
-                const float clearValues[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
-                context->ClearRenderTargetView(mRenderTarget, clearValues);
-            }
-        }
-    }
-
-
-    mWidth = width;
-    mHeight = height;
-    mDepth = 1;
-    mInternalFormat = internalFormat;
-    mSamples = supportedSamples;
-    mActualFormat = dxgiFormatInfo.internalFormat;
-    mSubresourceIndex = D3D11CalcSubresource(0, 0, 1);
-}
-
-RenderTarget11::~RenderTarget11()
-{
-    SafeRelease(mTexture);
-    SafeRelease(mRenderTarget);
-    SafeRelease(mDepthStencil);
-    SafeRelease(mShaderResource);
-}
-
 RenderTarget11 *RenderTarget11::makeRenderTarget11(RenderTarget *target)
 {
-    ASSERT(HAS_DYNAMIC_TYPE(rx::RenderTarget11*, target));
-    return static_cast<rx::RenderTarget11*>(target);
+    ASSERT(HAS_DYNAMIC_TYPE(RenderTarget11*, target));
+    return static_cast<RenderTarget11*>(target);
 }
 
 void RenderTarget11::invalidate(GLint x, GLint y, GLsizei width, GLsizei height)
@@ -423,29 +188,217 @@ void RenderTarget11::invalidate(GLint x, GLint y, GLsizei width, GLsizei height)
     // Currently a no-op
 }
 
-ID3D11Resource *RenderTarget11::getTexture() const
+TextureRenderTarget11::TextureRenderTarget11(ID3D11RenderTargetView *rtv, ID3D11Resource *resource, ID3D11ShaderResourceView *srv,
+                                             GLenum internalFormat, GLsizei width, GLsizei height, GLsizei depth, GLsizei samples)
+    : mWidth(width),
+      mHeight(height),
+      mDepth(depth),
+      mInternalFormat(internalFormat),
+      mActualFormat(internalFormat),
+      mSamples(samples),
+      mSubresourceIndex(0),
+      mTexture(resource),
+      mRenderTarget(rtv),
+      mDepthStencil(NULL),
+      mShaderResource(srv)
+{
+    if (mTexture)
+    {
+        mTexture->AddRef();
+    }
+
+    if (mRenderTarget)
+    {
+        mRenderTarget->AddRef();
+    }
+
+    if (mShaderResource)
+    {
+        mShaderResource->AddRef();
+    }
+
+    if (mRenderTarget && mTexture)
+    {
+        mSubresourceIndex = getRTVSubresourceIndex(mTexture, mRenderTarget);
+
+        D3D11_RENDER_TARGET_VIEW_DESC desc;
+        mRenderTarget->GetDesc(&desc);
+
+        const d3d11::DXGIFormat &dxgiFormatInfo = d3d11::GetDXGIFormatInfo(desc.Format);
+        mActualFormat = dxgiFormatInfo.internalFormat;
+    }
+}
+
+TextureRenderTarget11::TextureRenderTarget11(ID3D11DepthStencilView *dsv, ID3D11Resource *resource, ID3D11ShaderResourceView *srv,
+                                             GLenum internalFormat, GLsizei width, GLsizei height, GLsizei depth, GLsizei samples)
+    : mWidth(width),
+      mHeight(height),
+      mDepth(depth),
+      mInternalFormat(internalFormat),
+      mActualFormat(internalFormat),
+      mSamples(samples),
+      mSubresourceIndex(0),
+      mTexture(resource),
+      mRenderTarget(NULL),
+      mDepthStencil(dsv),
+      mShaderResource(srv)
+{
+    if (mTexture)
+    {
+        mTexture->AddRef();
+    }
+
+    if (mDepthStencil)
+    {
+        mDepthStencil->AddRef();
+    }
+
+    if (mShaderResource)
+    {
+        mShaderResource->AddRef();
+    }
+
+    if (mDepthStencil && mTexture)
+    {
+        mSubresourceIndex = getDSVSubresourceIndex(mTexture, mDepthStencil);
+
+        D3D11_DEPTH_STENCIL_VIEW_DESC desc;
+        mDepthStencil->GetDesc(&desc);
+
+        const d3d11::DXGIFormat &dxgiFormatInfo = d3d11::GetDXGIFormatInfo(desc.Format);
+        mActualFormat = dxgiFormatInfo.internalFormat;
+    }
+}
+
+TextureRenderTarget11::~TextureRenderTarget11()
+{
+    SafeRelease(mTexture);
+    SafeRelease(mRenderTarget);
+    SafeRelease(mDepthStencil);
+    SafeRelease(mShaderResource);
+}
+
+ID3D11Resource *TextureRenderTarget11::getTexture() const
 {
     return mTexture;
 }
 
-ID3D11RenderTargetView *RenderTarget11::getRenderTargetView() const
+ID3D11RenderTargetView *TextureRenderTarget11::getRenderTargetView() const
 {
     return mRenderTarget;
 }
 
-ID3D11DepthStencilView *RenderTarget11::getDepthStencilView() const
+ID3D11DepthStencilView *TextureRenderTarget11::getDepthStencilView() const
 {
     return mDepthStencil;
 }
 
-ID3D11ShaderResourceView *RenderTarget11::getShaderResourceView() const
+ID3D11ShaderResourceView *TextureRenderTarget11::getShaderResourceView() const
 {
     return mShaderResource;
 }
 
-unsigned int RenderTarget11::getSubresourceIndex() const
+GLsizei TextureRenderTarget11::getWidth() const
+{
+    return mWidth;
+}
+
+GLsizei TextureRenderTarget11::getHeight() const
+{
+    return mHeight;
+}
+
+GLsizei TextureRenderTarget11::getDepth() const
+{
+    return mDepth;
+}
+
+GLenum TextureRenderTarget11::getInternalFormat() const
+{
+    return mInternalFormat;
+}
+
+GLenum TextureRenderTarget11::getActualFormat() const
+{
+    return mActualFormat;
+}
+
+GLsizei TextureRenderTarget11::getSamples() const
+{
+    return mSamples;
+}
+
+unsigned int TextureRenderTarget11::getSubresourceIndex() const
 {
     return mSubresourceIndex;
+}
+
+
+SurfaceRenderTarget11::SurfaceRenderTarget11(SwapChain11 *swapChain, bool depth)
+    : mSwapChain(swapChain),
+      mDepth(depth)
+{
+    ASSERT(mSwapChain);
+}
+
+SurfaceRenderTarget11::~SurfaceRenderTarget11()
+{
+}
+
+GLsizei SurfaceRenderTarget11::getWidth() const
+{
+    return mSwapChain->getWidth();
+}
+
+GLsizei SurfaceRenderTarget11::getHeight() const
+{
+    return mSwapChain->getHeight();
+}
+
+GLsizei SurfaceRenderTarget11::getDepth() const
+{
+    return 1;
+}
+
+GLenum SurfaceRenderTarget11::getInternalFormat() const
+{
+    return (mDepth ? mSwapChain->GetDepthBufferInternalFormat() : mSwapChain->GetBackBufferInternalFormat());
+}
+
+GLenum SurfaceRenderTarget11::getActualFormat() const
+{
+    return d3d11::GetDXGIFormatInfo(d3d11::GetTextureFormatInfo(getInternalFormat()).texFormat).internalFormat;
+}
+
+GLsizei SurfaceRenderTarget11::getSamples() const
+{
+    // Our EGL surfaces do not support multisampling.
+    return 0;
+}
+
+ID3D11Resource *SurfaceRenderTarget11::getTexture() const
+{
+    return (mDepth ? mSwapChain->getDepthStencilTexture() : mSwapChain->getOffscreenTexture());
+}
+
+ID3D11RenderTargetView *SurfaceRenderTarget11::getRenderTargetView() const
+{
+    return (mDepth ? NULL : mSwapChain->getRenderTarget());
+}
+
+ID3D11DepthStencilView *SurfaceRenderTarget11::getDepthStencilView() const
+{
+    return (mDepth ? mSwapChain->getDepthStencil() : NULL);
+}
+
+ID3D11ShaderResourceView *SurfaceRenderTarget11::getShaderResourceView() const
+{
+    return (mDepth ? mSwapChain->getDepthStencilShaderResource() : mSwapChain->getRenderTargetShaderResource());
+}
+
+unsigned int SurfaceRenderTarget11::getSubresourceIndex() const
+{
+    return 0;
 }
 
 }

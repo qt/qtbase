@@ -136,7 +136,7 @@ QString CppCodeMarker::markedUpSynopsis(const Node *node,
 
     if ((style == Detailed) && !node->parent()->name().isEmpty() &&
         (node->type() != Node::Property) && !node->isQmlNode())
-        name.prepend(taggedNode(node->parent()) + "::");
+        name.prepend(taggedNode(node->parent()) + "::&#8203;");
 
     switch (node->type()) {
     case Node::Namespace:
@@ -212,7 +212,7 @@ QString CppCodeMarker::markedUpSynopsis(const Node *node,
                 bracketed += "slot";
             }
             if (!bracketed.isEmpty())
-                extra += " [" + bracketed.join(' ') + QLatin1Char(']');
+                extra += QLatin1Char('[') + bracketed.join(' ') + QStringLiteral("] ");
         }
         break;
     case Node::Enum:
@@ -283,13 +283,13 @@ QString CppCodeMarker::markedUpSynopsis(const Node *node,
 
     if (style == Summary) {
         if (node->status() == Node::Preliminary) {
-            extra += " (preliminary)";
+            extra += "(preliminary) ";
         }
         else if (node->status() == Node::Deprecated) {
-            extra += " (deprecated)";
+            extra += "(deprecated) ";
         }
         else if (node->status() == Node::Obsolete) {
-            extra += " (obsolete)";
+            extra += "(obsolete) ";
         }
     }
 
@@ -297,7 +297,7 @@ QString CppCodeMarker::markedUpSynopsis(const Node *node,
         extra.prepend("<@extra>");
         extra.append("</@extra>");
     }
-    return synopsis + extra;
+    return extra + synopsis;
 }
 
 /*!

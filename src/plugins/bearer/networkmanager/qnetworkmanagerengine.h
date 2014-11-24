@@ -49,6 +49,8 @@
 
 #include "qnetworkmanagerservice.h"
 
+#include "../linux_common/qofonoservice_linux_p.h"
+
 #include <QMap>
 #include <QVariant>
 
@@ -89,11 +91,8 @@ public:
     QNetworkConfigurationPrivatePointer defaultConfiguration();
 
 private Q_SLOTS:
-    void interfacePropertiesChanged(const QString &path,
-                                    const QMap<QString, QVariant> &properties);
-    void activeConnectionPropertiesChanged(const QString &path,
-                                           const QMap<QString, QVariant> &properties);
-    void devicePropertiesChanged(const QString &path, quint32);
+    void interfacePropertiesChanged(const QMap<QString, QVariant> &properties);
+    void activeConnectionPropertiesChanged(const QMap<QString, QVariant> &properties);
 
     void deviceAdded(const QDBusObjectPath &path);
     void deviceRemoved(const QDBusObjectPath &path);
@@ -106,8 +105,15 @@ private Q_SLOTS:
 
     void newAccessPoint(const QString &path);
     void removeAccessPoint(const QString &path);
-    void updateAccessPoint(const QMap<QString, QVariant> &map);
     void scanFinished();
+
+    void wiredCarrierChanged(bool);
+
+    void nmRegistered(const QString &serviceName = QString());
+    void nmUnRegistered(const QString &serviceName = QString());
+
+    void ofonoRegistered(const QString &serviceName = QString());
+    void ofonoUnRegistered(const QString &serviceName = QString());
 
 private:
     QNetworkConfigurationPrivate *parseConnection(const QString &settingsPath,
@@ -116,14 +122,29 @@ private:
 
     QNetworkManagerInterface *managerInterface;
     QNetworkManagerSettings *systemSettings;
-    QNetworkManagerSettings *userSettings;
+    QHash<QString, QNetworkManagerInterfaceDeviceWired *> wiredDevices;
     QHash<QString, QNetworkManagerInterfaceDeviceWireless *> wirelessDevices;
-    QHash<QString, QNetworkManagerConnectionActive *> activeConnections;
+
+    QHash<QString, QNetworkManagerConnectionActive *> activeConnectionsList;
     QList<QNetworkManagerSettingsConnection *> connections;
     QList<QNetworkManagerInterfaceAccessPoint *> accessPoints;
     QHash<QString, QNetworkManagerInterfaceDevice *> interfaceDevices;
 
     QMap<QString,QString> configuredAccessPoints; //ap, settings path
+    QHash<QString,QString> connectionInterfaces; // ac, interface
+
+    QOfonoManagerInterface *ofonoManager;
+    QHash <QString, QOfonoDataConnectionManagerInterface *> ofonoContextManagers;
+    QNetworkConfiguration::BearerType currentBearerType(const QString &id);
+    QString contextName(const QString &path);
+
+    bool isConnectionActive(const QString &settingsPath);
+    QDBusServiceWatcher *ofonoWatcher;
+    QDBusServiceWatcher *nmWatcher;
+
+    bool isActiveContext(const QString &contextPath);
+    bool nmAvailable;
+    void setupConfigurations();
 };
 
 QT_END_NAMESPACE

@@ -20,7 +20,6 @@ class Framebuffer;
 
 namespace rx
 {
-class Renderer;
 class Renderer9;
 
 class Image9 : public ImageD3D
@@ -31,41 +30,41 @@ class Image9 : public ImageD3D
 
     static Image9 *makeImage9(Image *img);
 
-    static void generateMipmap(Image9 *dest, Image9 *source);
-    static void generateMip(IDirect3DSurface9 *destSurface, IDirect3DSurface9 *sourceSurface);
-    static void copyLockableSurfaces(IDirect3DSurface9 *dest, IDirect3DSurface9 *source);
+    static gl::Error generateMipmap(Image9 *dest, Image9 *source);
+    static gl::Error generateMip(IDirect3DSurface9 *destSurface, IDirect3DSurface9 *sourceSurface);
+    static gl::Error copyLockableSurfaces(IDirect3DSurface9 *dest, IDirect3DSurface9 *source);
 
-    virtual bool redefine(Renderer *renderer, GLenum target, GLenum internalformat, GLsizei width, GLsizei height, GLsizei depth, bool forceRelease);
+    bool redefine(RendererD3D *renderer, GLenum target, GLenum internalformat, GLsizei width, GLsizei height, GLsizei depth, bool forceRelease) override;
 
     D3DFORMAT getD3DFormat() const;
 
     virtual bool isDirty() const;
-    IDirect3DSurface9 *getSurface();
 
-    virtual void setManagedSurface2D(TextureStorage *storage, int level);
-    virtual void setManagedSurfaceCube(TextureStorage *storage, int face, int level);
-    virtual bool copyToStorage2D(TextureStorage *storage, int level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height);
-    virtual bool copyToStorageCube(TextureStorage *storage, int face, int level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height);
-    virtual bool copyToStorage3D(TextureStorage *storage, int level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth);
-    virtual bool copyToStorage2DArray(TextureStorage *storage, int level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height);
+    virtual gl::Error setManagedSurface2D(TextureStorage *storage, int level);
+    virtual gl::Error setManagedSurfaceCube(TextureStorage *storage, int face, int level);
+    virtual gl::Error copyToStorage(TextureStorage *storage, const gl::ImageIndex &index, const gl::Box &region);
 
-    virtual void loadData(GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth,
-                          GLint unpackAlignment, GLenum type, const void *input);
-    virtual void loadCompressedData(GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth,
-                                    const void *input);
+    virtual gl::Error loadData(GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth,
+                               GLint unpackAlignment, GLenum type, const void *input);
+    virtual gl::Error loadCompressedData(GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth,
+                                         const void *input);
 
-    virtual void copy(GLint xoffset, GLint yoffset, GLint zoffset,GLint x, GLint y, GLsizei width, GLsizei height, gl::Framebuffer *source);
+    virtual gl::Error copy(GLint xoffset, GLint yoffset, GLint zoffset, const gl::Rectangle &sourceArea, RenderTarget *source);
+    virtual gl::Error copy(GLint xoffset, GLint yoffset, GLint zoffset, const gl::Rectangle &sourceArea,
+                           const gl::ImageIndex &sourceIndex, TextureStorage *source);
 
   private:
     DISALLOW_COPY_AND_ASSIGN(Image9);
 
-    void createSurface();
-    void setManagedSurface(IDirect3DSurface9 *surface);
-    bool copyToSurface(IDirect3DSurface9 *dest, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height);
+    gl::Error getSurface(IDirect3DSurface9 **outSurface);
 
-    HRESULT lock(D3DLOCKED_RECT *lockedRect, const RECT *rect);
+    gl::Error createSurface();
+    gl::Error setManagedSurface(IDirect3DSurface9 *surface);
+    gl::Error copyToSurface(IDirect3DSurface9 *dest, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height);
+
+    gl::Error lock(D3DLOCKED_RECT *lockedRect, const RECT &rect);
     void unlock();
-    
+
     Renderer9 *mRenderer;
 
     D3DPOOL mD3DPool;   // can only be D3DPOOL_SYSTEMMEM or D3DPOOL_MANAGED since it needs to be lockable.

@@ -24,6 +24,9 @@
 #include "common/mathutil.h"
 #include "common/utilities.h"
 
+// FIXME(jmadill): remove this when we support buffer data caching
+#include "libGLESv2/renderer/d3d/BufferD3D.h"
+
 namespace gl
 {
 
@@ -497,14 +500,26 @@ bool ValidateBlitFramebufferParameters(gl::Context *context, GLint srcX0, GLint 
 
     gl::Framebuffer *readFramebuffer = context->getState().getReadFramebuffer();
     gl::Framebuffer *drawFramebuffer = context->getState().getDrawFramebuffer();
-    if (!readFramebuffer || readFramebuffer->completeness() != GL_FRAMEBUFFER_COMPLETE ||
-        !drawFramebuffer || drawFramebuffer->completeness() != GL_FRAMEBUFFER_COMPLETE)
+
+    if (!readFramebuffer || !drawFramebuffer)
     {
         context->recordError(Error(GL_INVALID_FRAMEBUFFER_OPERATION));
         return false;
     }
 
-    if (drawFramebuffer->getSamples() != 0)
+    if (!readFramebuffer->completeness(context->getData()))
+    {
+        context->recordError(Error(GL_INVALID_FRAMEBUFFER_OPERATION));
+        return false;
+    }
+
+    if (!drawFramebuffer->completeness(context->getData()))
+    {
+        context->recordError(Error(GL_INVALID_FRAMEBUFFER_OPERATION));
+        return false;
+    }
+
+    if (drawFramebuffer->getSamples(context->getData()) != 0)
     {
         context->recordError(Error(GL_INVALID_OPERATION));
         return false;
@@ -588,16 +603,20 @@ bool ValidateBlitFramebufferParameters(gl::Context *context, GLint srcX0, GLint 
                             return false;
                         }
 
-                        if (attachment->getActualFormat() != readColorBuffer->getActualFormat())
+                        // Return an error if the destination formats do not match
+                        if (attachment->getInternalFormat() != readColorBuffer->getInternalFormat())
                         {
                             context->recordError(Error(GL_INVALID_OPERATION));
                             return false;
                         }
                     }
                 }
-                if (readFramebuffer->getSamples() != 0 && IsPartialBlit(context, readColorBuffer, drawColorBuffer,
-                                                                        srcX0, srcY0, srcX1, srcY1,
-                                                                        dstX0, dstY0, dstX1, dstY1))
+
+                int readSamples = readFramebuffer->getSamples(context->getData());
+
+                if (readSamples != 0 && IsPartialBlit(context, readColorBuffer, drawColorBuffer,
+                                                      srcX0, srcY0, srcX1, srcY1,
+                                                      dstX0, dstY0, dstX1, dstY1))
                 {
                     context->recordError(Error(GL_INVALID_OPERATION));
                     return false;
@@ -912,13 +931,14 @@ bool ValidateReadPixelsParameters(gl::Context *context, GLint x, GLint y, GLsize
     gl::Framebuffer *framebuffer = context->getState().getReadFramebuffer();
     ASSERT(framebuffer);
 
-    if (framebuffer->completeness() != GL_FRAMEBUFFER_COMPLETE)
+    if (framebuffer->completeness(context->getData()) != GL_FRAMEBUFFER_COMPLETE)
     {
         context->recordError(Error(GL_INVALID_FRAMEBUFFER_OPERATION));
         return false;
     }
 
-    if (context->getState().getReadFramebuffer()->id() != 0 && framebuffer->getSamples() != 0)
+    if (context->getState().getReadFramebuffer()->id() != 0 &&
+        framebuffer->getSamples(context->getData()) != 0)
     {
         context->recordError(Error(GL_INVALID_OPERATION));
         return false;
@@ -1172,7 +1192,7 @@ bool ValidateStateQuery(gl::Context *context, GLenum pname, GLenum *nativeType, 
         {
             Framebuffer *framebuffer = context->getState().getReadFramebuffer();
             ASSERT(framebuffer);
-            if (framebuffer->completeness() != GL_FRAMEBUFFER_COMPLETE)
+            if (framebuffer->completeness(context->getData()) != GL_FRAMEBUFFER_COMPLETE)
             {
                 context->recordError(Error(GL_INVALID_OPERATION));
                 return false;
@@ -1236,13 +1256,13 @@ bool ValidateCopyTexImageParametersBase(gl::Context* context, GLenum target, GLi
     }
 
     gl::Framebuffer *framebuffer = context->getState().getReadFramebuffer();
-    if (framebuffer->completeness() != GL_FRAMEBUFFER_COMPLETE)
+    if (framebuffer->completeness(context->getData()) != GL_FRAMEBUFFER_COMPLETE)
     {
         context->recordError(Error(GL_INVALID_FRAMEBUFFER_OPERATION));
         return false;
     }
 
-    if (context->getState().getReadFramebuffer()->id() != 0 && framebuffer->getSamples() != 0)
+    if (context->getState().getReadFramebuffer()->id() != 0 && framebuffer->getSamples(context->getData()) != 0)
     {
         context->recordError(Error(GL_INVALID_OPERATION));
         return false;
@@ -1441,7 +1461,7 @@ static bool ValidateDrawBase(Context *context, GLenum mode, GLsizei count, GLsiz
     }
 
     const gl::Framebuffer *fbo = state.getDrawFramebuffer();
-    if (!fbo || fbo->completeness() != GL_FRAMEBUFFER_COMPLETE)
+    if (!fbo || fbo->completeness(context->getData()) != GL_FRAMEBUFFER_COMPLETE)
     {
         context->recordError(Error(GL_INVALID_FRAMEBUFFER_OPERATION));
         return false;
@@ -1667,11 +1687,20 @@ bool ValidateDrawElements(Context *context, GLenum mode, GLsizei count, GLenum t
     // TODO: also disable index checking on back-ends that are robust to out-of-range accesses.
     if (elementArrayBuffer)
     {
-        GLint64 offset = reinterpret_cast<GLint64>(indices);
+        uintptr_t offset = reinterpret_cast<uintptr_t>(indices);
         if (!elementArrayBuffer->getIndexRangeCache()->findRange(type, offset, count, indexRangeOut, NULL))
         {
-            const void *dataPointer = elementArrayBuffer->getImplementation()->getData();
-            const uint8_t *offsetPointer = static_cast<const uint8_t *>(dataPointer) + offset;
+            // FIXME(jmadill): Use buffer data caching instead of the D3D back-end
+            rx::BufferD3D *bufferD3D = rx::BufferD3D::makeBufferD3D(elementArrayBuffer->getImplementation());
+            const uint8_t *dataPointer = NULL;
+            Error error = bufferD3D->getData(&dataPointer);
+            if (error.isError())
+            {
+                context->recordError(error);
+                return false;
+            }
+
+            const uint8_t *offsetPointer = dataPointer + offset;
             *indexRangeOut = rx::IndexRangeCache::ComputeRange(type, offsetPointer, count);
         }
     }
@@ -1847,6 +1876,11 @@ bool ValidateGetUniformBase(Context *context, GLuint program, GLint location)
     if (program == 0)
     {
         context->recordError(Error(GL_INVALID_VALUE));
+        return false;
+    }
+
+    if (!ValidProgram(context, program))
+    {
         return false;
     }
 

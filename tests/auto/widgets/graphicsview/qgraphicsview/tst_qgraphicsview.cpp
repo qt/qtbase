@@ -143,6 +143,10 @@ class tst_QGraphicsView : public QObject
 {
     Q_OBJECT
 
+public:
+    tst_QGraphicsView()
+        : platformName(qApp->platformName().toLower())
+    { }
 private slots:
     void initTestCase();
     void cleanup();
@@ -272,6 +276,7 @@ private:
 #if defined Q_OS_BLACKBERRY
     QScopedPointer<QWidget> rootWindow;
 #endif
+    QString platformName;
 };
 
 void tst_QGraphicsView::initTestCase()
@@ -2827,6 +2832,8 @@ void tst_QGraphicsView::scrollBarRanges()
     if (style == QLatin1String("GTK+") && useStyledPanel)
         QSKIP("GTK + style test skipped, see QTBUG-29002");
 
+    if (useStyledPanel && style == QStringLiteral("Macintosh") && platformName == QStringLiteral("cocoa"))
+        QSKIP("Insignificant on OSX");
     QGraphicsScene scene;
     QGraphicsView view(&scene);
     view.setRenderHint(QPainter::Antialiasing);
@@ -4733,6 +4740,8 @@ public:
 
 void tst_QGraphicsView::hoverLeave()
 {
+    if (platformName == QStringLiteral("cocoa"))
+        QSKIP("Insignificant on OSX");
     const QRect availableGeometry = QGuiApplication::primaryScreen()->availableGeometry();
     QGraphicsScene scene;
     QGraphicsView view(&scene);

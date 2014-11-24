@@ -510,6 +510,35 @@ void QGLContextPrivate::setupSharing() {
     }
 }
 
+void QGLContextPrivate::refreshCurrentFbo()
+{
+    QOpenGLContextPrivate *guiGlContextPrivate =
+        guiGlContext ? QOpenGLContextPrivate::get(guiGlContext) : 0;
+
+    // if QOpenGLFramebufferObjects have been used in the mean-time, we've lost our cached value
+    if (guiGlContextPrivate && guiGlContextPrivate->qgl_current_fbo_invalid) {
+        GLint current;
+        QOpenGLFunctions *funcs = qgl_functions();
+        funcs->glGetIntegerv(GL_FRAMEBUFFER_BINDING, &current);
+
+        current_fbo = current;
+
+        guiGlContextPrivate->qgl_current_fbo_invalid = false;
+    }
+}
+
+void QGLContextPrivate::setCurrentFbo(GLuint fbo)
+{
+    current_fbo = fbo;
+
+    QOpenGLContextPrivate *guiGlContextPrivate =
+        guiGlContext ? QOpenGLContextPrivate::get(guiGlContext) : 0;
+
+    if (guiGlContextPrivate)
+        guiGlContextPrivate->qgl_current_fbo_invalid = false;
+}
+
+
 /*!
     \fn bool QGLFormat::doubleBuffer() const
 

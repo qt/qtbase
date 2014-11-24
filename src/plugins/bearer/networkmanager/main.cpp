@@ -66,10 +66,7 @@ QBearerEngine *QNetworkManagerEnginePlugin::create(const QString &key) const
 {
     if (key == QLatin1String("networkmanager")) {
         QNetworkManagerEngine *engine = new QNetworkManagerEngine;
-        if (engine->networkManagerAvailable())
-            return engine;
-        else
-            delete engine;
+        return engine;
     }
 
     return 0;

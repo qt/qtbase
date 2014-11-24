@@ -92,11 +92,11 @@
 
 QT_BEGIN_NAMESPACE
 
-#if defined(QT_DEBUG) && defined(Q_OS_LINUX)
 // Find out if our parent process is gdb by looking at the 'exe' symlink under /proc,.
 // or, for older Linuxes, read out 'cmdline'.
 static bool runningUnderDebugger()
 {
+#if defined(QT_DEBUG) && defined(Q_OS_LINUX)
     const QString parentProc = QLatin1String("/proc/") + QString::number(getppid());
     const QFileInfo parentProcExe(parentProc + QLatin1String("/exe"));
     if (parentProcExe.isSymLink())
@@ -113,12 +113,15 @@ static bool runningUnderDebugger()
             s += c;
     }
     return s == "gdb";
-}
+#else
+    return false;
 #endif
+}
 
 QXcbIntegration::QXcbIntegration(const QStringList &parameters, int &argc, char **argv)
     : m_services(new QGenericUnixServices)
     , m_instanceName(0)
+    , m_canGrab(true)
 {
     qRegisterMetaType<QXcbWindow*>();
 #ifdef XCB_USE_XLIB
@@ -126,16 +129,10 @@ QXcbIntegration::QXcbIntegration(const QStringList &parameters, int &argc, char 
 #endif
     m_nativeInterface.reset(new QXcbNativeInterface);
 
-    bool canGrab = true;
-    #if defined(QT_DEBUG) && defined(Q_OS_LINUX)
-    canGrab = !runningUnderDebugger();
-    #endif
-    static bool canNotGrabEnv = qgetenv("QT_XCB_NO_GRAB_SERVER").length();
-    if (canNotGrabEnv)
-        canGrab = false;
-
     // Parse arguments
     const char *displayName = 0;
+    bool noGrabArg = false;
+    bool doGrabArg = false;
     if (argc) {
         int j = 1;
         for (int i = 1; i < argc; i++) {
@@ -146,13 +143,35 @@ QXcbIntegration::QXcbIntegration(const QStringList &parameters, int &argc, char 
                 displayName = argv[++i];
             else if (arg == "-name" && i < argc - 1)
                 m_instanceName = argv[++i];
+            else if (arg == "-nograb")
+                noGrabArg = true;
+            else if (arg == "-dograb")
+                doGrabArg = true;
             else
                 argv[j++] = argv[i];
         }
         argc = j;
     } // argc
 
-    m_connections << new QXcbConnection(m_nativeInterface.data(), canGrab, displayName);
+    bool underDebugger = runningUnderDebugger();
+    if (noGrabArg && doGrabArg && underDebugger) {
+        qWarning() << "Both -nograb and -dograb command line arguments specified. Please pick one. -nograb takes prcedence";
+        doGrabArg = false;
+    }
+
+#if defined(QT_DEBUG)
+    if (!noGrabArg && !doGrabArg && underDebugger) {
+        qDebug("Qt: gdb: -nograb added to command-line options.\n"
+               "\t Use the -dograb option to enforce grabbing.");
+    }
+#endif
+    m_canGrab = (!underDebugger && noGrabArg) || (underDebugger && doGrabArg);
+
+    static bool canNotGrabEnv = qEnvironmentVariableIsSet("QT_XCB_NO_GRAB_SERVER");
+    if (canNotGrabEnv)
+        m_canGrab = false;
+
+    m_connections << new QXcbConnection(m_nativeInterface.data(), m_canGrab, displayName);
 
     for (int i = 0; i < parameters.size() - 1; i += 2) {
 #ifdef Q_XCB_DEBUG
@@ -408,19 +427,19 @@ QVariant QXcbIntegration::styleHint(QPlatformIntegration::StyleHint hint) const
     case QPlatformIntegration::StartDragTime:
     case QPlatformIntegration::KeyboardAutoRepeatRate:
     case QPlatformIntegration::PasswordMaskDelay:
-    case QPlatformIntegration::FontSmoothingGamma:
     case QPlatformIntegration::StartDragVelocity:
     case QPlatformIntegration::UseRtlExtensions:
     case QPlatformIntegration::PasswordMaskCharacter:
         // TODO using various xcb, gnome or KDE settings
         break; // Not implemented, use defaults
+    case QPlatformIntegration::FontSmoothingGamma:
+        // Match Qt 4.8 text rendering, and rendering of other X11 toolkits.
+        return qreal(1.0);
     case QPlatformIntegration::StartDragDistance: {
         // The default (in QPlatformTheme::defaultThemeHint) is 10 pixels, but
         // on a high-resolution screen it makes sense to increase it.
-        const QList<QXcbScreen *> &screens = defaultConnection()->screens();
         qreal dpi = 100.0;
-        if (screens.length() > 0) {
-            const QXcbScreen *screen = screens.at(defaultConnection()->primaryScreen());
+        if (const QXcbScreen *screen = defaultConnection()->primaryScreen()) {
             if (screen->logicalDpi().first > dpi)
                 dpi = screen->logicalDpi().first;
             if (screen->logicalDpi().second > dpi)

@@ -9,16 +9,15 @@
 #include "common/utilities.h"
 #include "common/mathutil.h"
 #include "common/platform.h"
-#if defined(ANGLE_PLATFORM_WINRT)
-#  include <locale>
-#  include <codecvt>
-#  include <wrl.h>
-#  include <windows.storage.h>
-   using namespace Microsoft::WRL;
-   using namespace ABI::Windows::Storage;
-#endif
 
 #include <set>
+
+#if defined(ANGLE_ENABLE_WINDOWS_STORE)
+#  include <wrl.h>
+#  include <wrl/wrappers/corewrappers.h>
+#  include <windows.applicationmodel.core.h>
+#  include <windows.graphics.display.h>
+#endif
 
 namespace gl
 {
@@ -447,50 +446,10 @@ int VariableSortOrder(GLenum type)
 
 }
 
+#if !defined(ANGLE_ENABLE_WINDOWS_STORE)
 std::string getTempPath()
 {
-#if defined(ANGLE_PLATFORM_WINRT)
-    static std::string path;
-
-    while (path.empty())
-    {
-        ComPtr<IApplicationDataStatics> factory;
-        Wrappers::HStringReference classId(RuntimeClass_Windows_Storage_ApplicationData);
-        HRESULT result = RoGetActivationFactory(classId.Get(), IID_PPV_ARGS(&factory));
-        if (FAILED(result))
-            break;
-
-        ComPtr<IApplicationData> applicationData;
-        result = factory->get_Current(&applicationData);
-        if (FAILED(result))
-            break;
-
-        ComPtr<IStorageFolder> storageFolder;
-        result = applicationData->get_LocalFolder(&storageFolder);
-        if (FAILED(result))
-            break;
-
-        ComPtr<IStorageItem> localFolder;
-        result = storageFolder.As(&localFolder);
-        if (FAILED(result))
-            break;
-
-        HSTRING localFolderPath;
-        result = localFolder->get_Path(&localFolderPath);
-        if (FAILED(result))
-            break;
-
-        std::wstring_convert< std::codecvt_utf8<wchar_t> > converter;
-        path = converter.to_bytes(WindowsGetStringRawBuffer(localFolderPath, NULL));
-        if (path.empty())
-        {
-            UNREACHABLE();
-            break;
-        }
-    }
-
-    return path;
-#elif defined(ANGLE_PLATFORM_WINDOWS)
+#ifdef ANGLE_PLATFORM_WINDOWS
     char path[MAX_PATH];
     DWORD pathLen = GetTempPathA(sizeof(path) / sizeof(path[0]), path);
     if (pathLen == 0)
@@ -525,3 +484,33 @@ void writeFile(const char* path, const void* content, size_t size)
     fwrite(content, sizeof(char), size, file);
     fclose(file);
 }
+#endif // !ANGLE_ENABLE_WINDOWS_STORE
+
+#if defined(ANGLE_ENABLE_WINDOWS_STORE)
+
+void Sleep(unsigned long dwMilliseconds)
+{
+    static HANDLE singletonEvent = nullptr;
+    HANDLE sleepEvent = singletonEvent;
+    if (!sleepEvent)
+    {
+        sleepEvent = CreateEventEx(nullptr, nullptr, CREATE_EVENT_MANUAL_RESET, EVENT_ALL_ACCESS);
+
+        if (!sleepEvent)
+            return;
+
+        HANDLE previousEvent = InterlockedCompareExchangePointerRelease(&singletonEvent, sleepEvent, nullptr);
+
+        if (previousEvent)
+        {
+            // Back out if multiple threads try to demand create at the same time.
+            CloseHandle(sleepEvent);
+            sleepEvent = previousEvent;
+        }
+    }
+
+    // Emulate sleep by waiting with timeout on an event that is never signalled.
+    WaitForSingleObjectEx(sleepEvent, dwMilliseconds, false);
+}
+
+#endif // ANGLE_ENABLE_WINDOWS_STORE

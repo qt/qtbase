@@ -35,32 +35,36 @@ static DisplayMap *GetDisplayMap()
     return &displays;
 }
 
-egl::Display *Display::getDisplay(EGLNativeDisplayType displayId, EGLint displayType)
+egl::Display *Display::getDisplay(EGLNativeDisplayType displayId, const AttributeMap &attribMap)
 {
+    Display *display = NULL;
+
     DisplayMap *displays = GetDisplayMap();
     DisplayMap::const_iterator iter = displays->find(displayId);
     if (iter != displays->end())
     {
-        return iter->second;
+        display = iter->second;
     }
-    
-    // FIXME: Check if displayId is a valid display device context
+    else
+    {
+        display = new egl::Display(displayId);
+        displays->insert(std::make_pair(displayId, display));
+    }
 
-    egl::Display *display = new egl::Display(displayId, displayType);
-    displays->insert(std::make_pair(displayId, display));
+    // Apply new attributes if the display is not initialized yet.
+    if (!display->isInitialized())
+    {
+        display->setAttributes(attribMap);
+    }
 
     return display;
 }
 
-Display::Display(EGLNativeDisplayType displayId, EGLint displayType)
+Display::Display(EGLNativeDisplayType displayId)
     : mDisplayId(displayId),
-      mRequestedDisplayType(displayType),
+      mAttributeMap(),
       mRenderer(NULL)
 {
-#if defined(ANGLE_PLATFORM_WINRT)
-    if (mDisplayId)
-        mDisplayId->AddRef();
-#endif
 }
 
 Display::~Display()
@@ -73,28 +77,29 @@ Display::~Display()
     {
         displays->erase(iter);
     }
-
-#if defined(ANGLE_PLATFORM_WINRT)
-    if (mDisplayId)
-        mDisplayId->Release();
-#endif
 }
 
-bool Display::initialize()
+void Display::setAttributes(const AttributeMap &attribMap)
+{
+    mAttributeMap = attribMap;
+}
+
+Error Display::initialize()
 {
     if (isInitialized())
     {
-        return true;
+        return Error(EGL_SUCCESS);
     }
 
-    mRenderer = glCreateRenderer(this, mDisplayId, mRequestedDisplayType);
+    mRenderer = glCreateRenderer(this, mDisplayId, mAttributeMap);
 
     if (!mRenderer)
     {
         terminate();
-        return error(EGL_NOT_INITIALIZED, false);
+        return Error(EGL_NOT_INITIALIZED);
     }
 
+    //TODO(jmadill): should be part of caps?
     EGLint minSwapInterval = mRenderer->getMinSwapInterval();
     EGLint maxSwapInterval = mRenderer->getMaxSwapInterval();
     EGLint maxTextureSize = mRenderer->getRendererCaps().max2DTextureSize;
@@ -125,13 +130,13 @@ bool Display::initialize()
     if (!isInitialized())
     {
         terminate();
-        return false;
+        return Error(EGL_NOT_INITIALIZED);
     }
 
     initDisplayExtensionString();
     initVendorString();
 
-    return true;
+    return Error(EGL_SUCCESS);
 }
 
 void Display::terminate()
@@ -148,6 +153,8 @@ void Display::terminate()
 
     glDestroyRenderer(mRenderer);
     mRenderer = NULL;
+
+    mConfigSet.mSet.clear();
 }
 
 bool Display::getConfigs(EGLConfig *configs, const EGLint *attribList, EGLint configSize, EGLint *numConfig)
@@ -202,7 +209,7 @@ bool Display::getConfigAttrib(EGLConfig config, EGLint attribute, EGLint *value)
 
 
 
-EGLSurface Display::createWindowSurface(EGLNativeWindowType window, EGLConfig config, const EGLint *attribList)
+Error Display::createWindowSurface(EGLNativeWindowType window, EGLConfig config, const EGLint *attribList, EGLSurface *outSurface)
 {
     const Config *configuration = mConfigSet.get(config);
     EGLint postSubBufferSupported = EGL_FALSE;
@@ -223,9 +230,9 @@ EGLSurface Display::createWindowSurface(EGLNativeWindowType window, EGLConfig co
                   case EGL_BACK_BUFFER:
                     break;
                   case EGL_SINGLE_BUFFER:
-                    return error(EGL_BAD_MATCH, EGL_NO_SURFACE);   // Rendering directly to front buffer not supported
+                    return Error(EGL_BAD_MATCH);   // Rendering directly to front buffer not supported
                   default:
-                    return error(EGL_BAD_ATTRIBUTE, EGL_NO_SURFACE);
+                    return Error(EGL_BAD_ATTRIBUTE);
                 }
                 break;
               case EGL_POST_SUB_BUFFER_SUPPORTED_NV:
@@ -241,11 +248,11 @@ EGLSurface Display::createWindowSurface(EGLNativeWindowType window, EGLConfig co
                 fixedSize = attribList[1];
                 break;
               case EGL_VG_COLORSPACE:
-                return error(EGL_BAD_MATCH, EGL_NO_SURFACE);
+                return Error(EGL_BAD_MATCH);
               case EGL_VG_ALPHA_FORMAT:
-                return error(EGL_BAD_MATCH, EGL_NO_SURFACE);
+                return Error(EGL_BAD_MATCH);
               default:
-                return error(EGL_BAD_ATTRIBUTE, EGL_NO_SURFACE);
+                return Error(EGL_BAD_ATTRIBUTE);
             }
 
             attribList += 2;
@@ -254,7 +261,7 @@ EGLSurface Display::createWindowSurface(EGLNativeWindowType window, EGLConfig co
 
     if (width < 0 || height < 0)
     {
-        return error(EGL_BAD_PARAMETER, EGL_NO_SURFACE);
+        return Error(EGL_BAD_PARAMETER);
     }
 
     if (!fixedSize)
@@ -265,29 +272,33 @@ EGLSurface Display::createWindowSurface(EGLNativeWindowType window, EGLConfig co
 
     if (hasExistingWindowSurface(window))
     {
-        return error(EGL_BAD_ALLOC, EGL_NO_SURFACE);
+        return Error(EGL_BAD_ALLOC);
     }
 
     if (mRenderer->testDeviceLost(false))
     {
-        if (!restoreLostDevice())
-            return EGL_NO_SURFACE;
+        Error error = restoreLostDevice();
+        if (error.isError())
+        {
+            return error;
+        }
     }
 
     Surface *surface = new Surface(this, configuration, window, fixedSize, width, height, postSubBufferSupported);
-
-    if (!surface->initialize())
+    Error error = surface->initialize();
+    if (error.isError())
     {
-        delete surface;
-        return EGL_NO_SURFACE;
+        SafeDelete(surface);
+        return error;
     }
 
     mSurfaceSet.insert(surface);
 
-    return success(surface);
+    *outSurface = surface;
+    return Error(EGL_SUCCESS);
 }
 
-EGLSurface Display::createOffscreenSurface(EGLConfig config, HANDLE shareHandle, const EGLint *attribList)
+Error Display::createOffscreenSurface(EGLConfig config, HANDLE shareHandle, const EGLint *attribList, EGLSurface *outSurface)
 {
     EGLint width = 0, height = 0;
     EGLenum textureFormat = EGL_NO_TEXTURE;
@@ -319,7 +330,7 @@ EGLSurface Display::createOffscreenSurface(EGLConfig config, HANDLE shareHandle,
                     textureFormat = attribList[1];
                     break;
                   default:
-                    return error(EGL_BAD_ATTRIBUTE, EGL_NO_SURFACE);
+                    return Error(EGL_BAD_ATTRIBUTE);
                 }
                 break;
               case EGL_TEXTURE_TARGET:
@@ -330,19 +341,19 @@ EGLSurface Display::createOffscreenSurface(EGLConfig config, HANDLE shareHandle,
                     textureTarget = attribList[1];
                     break;
                   default:
-                    return error(EGL_BAD_ATTRIBUTE, EGL_NO_SURFACE);
+                    return Error(EGL_BAD_ATTRIBUTE);
                 }
                 break;
               case EGL_MIPMAP_TEXTURE:
                 if (attribList[1] != EGL_FALSE)
-                  return error(EGL_BAD_ATTRIBUTE, EGL_NO_SURFACE);
+                  return Error(EGL_BAD_ATTRIBUTE);
                 break;
               case EGL_VG_COLORSPACE:
-                return error(EGL_BAD_MATCH, EGL_NO_SURFACE);
+                return Error(EGL_BAD_MATCH);
               case EGL_VG_ALPHA_FORMAT:
-                return error(EGL_BAD_MATCH, EGL_NO_SURFACE);
+                return Error(EGL_BAD_MATCH);
               default:
-                return error(EGL_BAD_ATTRIBUTE, EGL_NO_SURFACE);
+                return Error(EGL_BAD_ATTRIBUTE);
             }
 
             attribList += 2;
@@ -351,88 +362,100 @@ EGLSurface Display::createOffscreenSurface(EGLConfig config, HANDLE shareHandle,
 
     if (width < 0 || height < 0)
     {
-        return error(EGL_BAD_PARAMETER, EGL_NO_SURFACE);
+        return Error(EGL_BAD_PARAMETER);
     }
 
     if (width == 0 || height == 0)
     {
-        return error(EGL_BAD_ATTRIBUTE, EGL_NO_SURFACE);
+        return Error(EGL_BAD_ATTRIBUTE);
     }
 
     if (textureFormat != EGL_NO_TEXTURE && !mRenderer->getRendererExtensions().textureNPOT && (!gl::isPow2(width) || !gl::isPow2(height)))
     {
-        return error(EGL_BAD_MATCH, EGL_NO_SURFACE);
+        return Error(EGL_BAD_MATCH);
     }
 
     if ((textureFormat != EGL_NO_TEXTURE && textureTarget == EGL_NO_TEXTURE) ||
         (textureFormat == EGL_NO_TEXTURE && textureTarget != EGL_NO_TEXTURE))
     {
-        return error(EGL_BAD_MATCH, EGL_NO_SURFACE);
+        return Error(EGL_BAD_MATCH);
     }
 
     if (!(configuration->mSurfaceType & EGL_PBUFFER_BIT))
     {
-        return error(EGL_BAD_MATCH, EGL_NO_SURFACE);
+        return Error(EGL_BAD_MATCH);
     }
 
     if ((textureFormat == EGL_TEXTURE_RGB && configuration->mBindToTextureRGB != EGL_TRUE) ||
         (textureFormat == EGL_TEXTURE_RGBA && configuration->mBindToTextureRGBA != EGL_TRUE))
     {
-        return error(EGL_BAD_ATTRIBUTE, EGL_NO_SURFACE);
+        return Error(EGL_BAD_ATTRIBUTE);
     }
 
     if (mRenderer->testDeviceLost(false))
     {
-        if (!restoreLostDevice())
-            return EGL_NO_SURFACE;
+        Error error = restoreLostDevice();
+        if (error.isError())
+        {
+            return error;
+        }
     }
 
     Surface *surface = new Surface(this, configuration, shareHandle, width, height, textureFormat, textureTarget);
-
-    if (!surface->initialize())
+    Error error = surface->initialize();
+    if (error.isError())
     {
-        delete surface;
-        return EGL_NO_SURFACE;
+        SafeDelete(surface);
+        return error;
     }
 
     mSurfaceSet.insert(surface);
 
-    return success(surface);
+    *outSurface = surface;
+    return Error(EGL_SUCCESS);
 }
 
-EGLContext Display::createContext(EGLConfig configHandle, EGLint clientVersion, const gl::Context *shareContext, bool notifyResets, bool robustAccess)
+Error Display::createContext(EGLConfig configHandle, EGLint clientVersion, const gl::Context *shareContext, bool notifyResets,
+                             bool robustAccess, EGLContext *outContext)
 {
     if (!mRenderer)
     {
-        return EGL_NO_CONTEXT;
+        *outContext = EGL_NO_CONTEXT;
+        return Error(EGL_SUCCESS);
     }
     else if (mRenderer->testDeviceLost(false))   // Lost device
     {
-        if (!restoreLostDevice())
+        Error error = restoreLostDevice();
+        if (error.isError())
         {
-            return error(EGL_CONTEXT_LOST, EGL_NO_CONTEXT);
+            return error;
         }
     }
 
+    //TODO(jmadill): shader model is not cross-platform
     if (clientVersion > 2 && mRenderer->getMajorShaderModel() < 4)
     {
-        return error(EGL_BAD_CONFIG, EGL_NO_CONTEXT);
+        return Error(EGL_BAD_CONFIG);
     }
 
     gl::Context *context = glCreateContext(clientVersion, shareContext, mRenderer, notifyResets, robustAccess);
     mContextSet.insert(context);
 
-    return success(context);
+    *outContext = context;
+    return Error(EGL_SUCCESS);
 }
 
-bool Display::restoreLostDevice()
+Error Display::restoreLostDevice()
 {
     for (ContextSet::iterator ctx = mContextSet.begin(); ctx != mContextSet.end(); ctx++)
     {
         if ((*ctx)->isResetNotificationEnabled())
-            return false;   // If reset notifications have been requested, application must delete all contexts first
+        {
+            // If reset notifications have been requested, application must delete all contexts first
+            return Error(EGL_CONTEXT_LOST);
+        }
     }
- 
+
     // Release surface resources to make the Reset() succeed
     for (SurfaceSet::iterator surface = mSurfaceSet.begin(); surface != mSurfaceSet.end(); surface++)
     {
@@ -441,16 +464,20 @@ bool Display::restoreLostDevice()
 
     if (!mRenderer->resetDevice())
     {
-        return error(EGL_BAD_ALLOC, false);
+        return Error(EGL_BAD_ALLOC);
     }
 
     // Restore any surfaces that may have been lost
     for (SurfaceSet::iterator surface = mSurfaceSet.begin(); surface != mSurfaceSet.end(); surface++)
     {
-        (*surface)->resetSwapChain();
+        Error error = (*surface)->resetSwapChain();
+        if (error.isError())
+        {
+            return error;
+        }
     }
 
-    return true;
+    return Error(EGL_SUCCESS);
 }
 
 
@@ -472,7 +499,6 @@ void Display::notifyDeviceLost()
     {
         (*context)->markContextLost();
     }
-    egl::error(EGL_CONTEXT_LOST);
 }
 
 void Display::recreateSwapChains()
@@ -604,10 +630,11 @@ void Display::initVendorString()
 
     LUID adapterLuid = {0};
 
+    //TODO(jmadill): LUID is not cross-platform
     if (mRenderer && mRenderer->getLUID(&adapterLuid))
     {
         char adapterLuidString[64];
-        snprintf(adapterLuidString, sizeof(adapterLuidString), " (adapter LUID: %08x%08x)", adapterLuid.HighPart, adapterLuid.LowPart);
+        sprintf_s(adapterLuidString, sizeof(adapterLuidString), " (adapter LUID: %08x%08x)", adapterLuid.HighPart, adapterLuid.LowPart);
 
         mVendorString += adapterLuidString;
     }

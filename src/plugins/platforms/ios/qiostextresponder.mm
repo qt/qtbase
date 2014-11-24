@@ -173,9 +173,13 @@
     m_inSendEventToFocusObject = NO;
     m_inputContext = inputContext;
 
+    QVariantMap platformData = [self imValue:Qt::ImPlatformData].toMap();
     Qt::InputMethodHints hints = Qt::InputMethodHints([self imValue:Qt::ImHints].toUInt());
 
-    self.returnKeyType = (hints & Qt::ImhMultiLine) ? UIReturnKeyDefault : UIReturnKeyDone;
+    self.returnKeyType = platformData.value(kImePlatformDataReturnKeyType).isValid() ?
+        UIReturnKeyType(platformData.value(kImePlatformDataReturnKeyType).toInt()) :
+        (hints & Qt::ImhMultiLine) ? UIReturnKeyDefault : UIReturnKeyDone;
+
     self.secureTextEntry = BOOL(hints & Qt::ImhHiddenText);
     self.autocorrectionType = (hints & Qt::ImhNoPredictiveText) ?
                 UITextAutocorrectionTypeNo : UITextAutocorrectionTypeDefault;
@@ -202,7 +206,6 @@
     else
         self.keyboardType = UIKeyboardTypeDefault;
 
-    QVariantMap platformData = [self imValue:Qt::ImPlatformData].toMap();
     if (UIView *inputView = static_cast<UIView *>(platformData.value(kImePlatformDataInputView).value<void *>()))
         self.inputView = [[[WrapperView alloc] initWithView:inputView] autorelease];
     if (UIView *accessoryView = static_cast<UIView *>(platformData.value(kImePlatformDataInputAccessoryView).value<void *>()))
@@ -218,30 +221,68 @@
     [super dealloc];
 }
 
-- (BOOL)isFirstResponder
+- (BOOL)canBecomeFirstResponder
 {
     return YES;
 }
+
+- (BOOL)becomeFirstResponder
+{
+    FirstResponderCandidate firstResponderCandidate(self);
+
+    qImDebug() << "self:" << self << "first:" << [UIResponder currentFirstResponder];
+
+    if (![super becomeFirstResponder]) {
+        qImDebug() << self << "was not allowed to become first responder";
+        return NO;
+    }
+
+    qImDebug() << self << "became first responder";
+
+    return YES;
+}
+
+- (BOOL)resignFirstResponder
+{
+    qImDebug() << "self:" << self << "first:" << [UIResponder currentFirstResponder];
+
+    // Don't allow activation events of the window that we're doing text on behalf on
+    // to steal responder.
+    if (FirstResponderCandidate::currentCandidate() == [self nextResponder]) {
+        qImDebug() << "not allowing parent window to steal responder";
+        return NO;
+    }
+
+    if (![super resignFirstResponder])
+        return NO;
+
+    qImDebug() << self << "resigned first responder";
+
+    // Dismissing the keyboard will trigger resignFirstResponder, but so will
+    // a regular responder transfer to another window. In the former case, iOS
+    // will set the new first-responder to our next-responder, and in the latter
+    // case we'll have an active responder candidate.
+    if ([UIResponder currentFirstResponder] == [self nextResponder]) {
+        // We have resigned the keyboard, and transferred back to the parent view, so unset focus object
+        Q_ASSERT(!FirstResponderCandidate::currentCandidate());
+        qImDebug() << "keyboard was closed, clearing focus object";
+        m_inputContext->clearCurrentFocusObject();
+    } else {
+        // We've lost responder status because another Qt window was made active,
+        // another QIOSTextResponder was made first-responder, another UIView was
+        // made first-responder, or the first-responder was cleared globally. In
+        // either of these cases we don't have to do anything.
+        qImDebug() << "lost first responder, but not clearing focus object";
+    }
+
+    return YES;
+}
+
 
 - (UIResponder*)nextResponder
 {
     return qApp->focusWindow() ?
         reinterpret_cast<QUIView *>(qApp->focusWindow()->handle()->winId()) : 0;
-}
-
-/*!
-    iOS uses [UIResponder(Internal) _requiresKeyboardWhenFirstResponder] to check if the
-    current responder should bring up the keyboard, which in turn checks if the responder
-    supports the UIKeyInput protocol. By dynamically reporting our protocol conformance
-    we can control the keyboard visibility depending on whether or not we have a focus
-    object with IME enabled.
-*/
-- (BOOL)conformsToProtocol:(Protocol *)protocol
-{
-    if (protocol == @protocol(UIKeyInput))
-        return m_inputContext->inputMethodAccepted();
-
-    return [super conformsToProtocol:protocol];
 }
 
 // -------------------------------------------------------------------------
@@ -575,9 +616,8 @@
         [self sendEventToFocusObject:press];
         [self sendEventToFocusObject:release];
 
-        Qt::InputMethodHints imeHints = static_cast<Qt::InputMethodHints>([self imValue:Qt::ImHints].toUInt());
-        if (!(imeHints & Qt::ImhMultiLine))
-            m_inputContext->hideVirtualKeyboard();
+        if (self.returnKeyType == UIReturnKeyDone)
+            [self resignFirstResponder];
 
         return;
     }

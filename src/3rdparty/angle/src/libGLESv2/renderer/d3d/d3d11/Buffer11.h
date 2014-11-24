@@ -47,7 +47,7 @@ typedef size_t DataRevision;
 class Buffer11 : public BufferD3D
 {
   public:
-    Buffer11(rx::Renderer11 *renderer);
+    Buffer11(Renderer11 *renderer);
     virtual ~Buffer11();
 
     static Buffer11 *makeBuffer11(BufferImpl *buffer);
@@ -60,11 +60,11 @@ class Buffer11 : public BufferD3D
     // BufferD3D implementation
     virtual size_t getSize() const { return mSize; }
     virtual bool supportsDirectBinding() const;
-    virtual Renderer* getRenderer();
+    RendererD3D *getRenderer() override;
 
     // BufferImpl implementation
     virtual gl::Error setData(const void* data, size_t size, GLenum usage);
-    virtual void *getData();
+    gl::Error getData(const uint8_t **outData) override;
     virtual gl::Error setSubData(const void* data, size_t size, size_t offset);
     virtual gl::Error copySubData(BufferImpl* source, GLintptr sourceOffset, GLintptr destOffset, GLsizeiptr size);
     virtual gl::Error map(size_t offset, size_t length, GLbitfield access, GLvoid **mapPtr);
@@ -78,7 +78,7 @@ class Buffer11 : public BufferD3D
     class NativeBuffer11;
     class PackStorage11;
 
-    rx::Renderer11 *mRenderer;
+    Renderer11 *mRenderer;
     size_t mSize;
 
     BufferStorage11 *mMappedStorage;

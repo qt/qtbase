@@ -46,6 +46,7 @@ QT_BEGIN_NAMESPACE
 const char _CLCompile[]                         = "ClCompile";
 const char _ItemGroup[]                         = "ItemGroup";
 const char _Link[]                              = "Link";
+const char _Lib[]                               = "Lib";
 const char _ManifestTool[]                      = "ManifestTool";
 const char _Midl[]                              = "Midl";
 const char _ResourceCompile[]                   = "ResourceCompile";
@@ -757,8 +758,11 @@ void VCXProjectWriter::write(XmlOutput &xml, VCProject &tool)
         // ClCompile
         write(xml, config.compiler);
 
-        // Link
-        write(xml, config.linker);
+        // Librarian / Linker
+        if (config.ConfigurationType == typeStaticLibrary)
+            write(xml, config.librarian);
+        else
+            write(xml, config.linker);
 
         // Midl
         write(xml, config.idl);
@@ -1686,7 +1690,7 @@ void VCXProjectWriter::write(XmlOutput &xml, const VCCustomBuildTool &tool)
 void VCXProjectWriter::write(XmlOutput &xml, const VCLibrarianTool &tool)
 {
     xml
-        << tag(_Link)
+        << tag(_Lib)
             << attrTagX(_AdditionalDependencies, tool.AdditionalDependencies, ";")
             << attrTagX(_AdditionalLibraryDirectories, tool.AdditionalLibraryDirectories, ";")
             << attrTagX(_AdditionalOptions, tool.AdditionalOptions, " ")
@@ -1706,7 +1710,7 @@ void VCXProjectWriter::write(XmlOutput &xml, const VCLibrarianTool &tool)
 //unused    << attrTagS(_TargetMachine, tool.TargetMachine)
 //unused    << attrTagT(_TreatLibWarningAsErrors, tool.TreatLibWarningAsErrors)
 //unused    << attrTagT(_Verbose, tool.Verbose)
-        << closetag(_Link);
+        << closetag(_Lib);
 }
 
 void VCXProjectWriter::write(XmlOutput &xml, const VCResourceCompilerTool &tool)
@@ -1911,10 +1915,10 @@ bool VCXProjectWriter::outputFileConfig(OutputFilterData *d, XmlOutput &xml, Xml
     }
 
     // Actual XML output ----------------------------------
-    if (hasCustomBuildStep || filter.useCompilerTool
+    if (hasCustomBuildStep || filter.useCustomBuildTool || filter.useCompilerTool
             || !d->inBuild || filter.Name.startsWith("Deployment Files")) {
 
-        if (hasCustomBuildStep)
+        if (hasCustomBuildStep || filter.useCustomBuildTool)
         {
             if (!fileAdded) {
                 fileAdded = true;

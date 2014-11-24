@@ -470,9 +470,10 @@ void QPpdPrintDevice::loadPrinter()
     m_cupsDest = cupsGetNamedDest(CUPS_HTTP_DEFAULT, m_cupsName, m_cupsInstance);
     if (m_cupsDest) {
         const char *ppdFile = cupsGetPPD(m_cupsName);
-        if (ppdFile)
+        if (ppdFile) {
             m_ppd = ppdOpenFile(ppdFile);
-        unlink(ppdFile);
+            unlink(ppdFile);
+        }
         if (m_ppd) {
             ppdMarkDefaults(m_ppd);
         } else {

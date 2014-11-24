@@ -67,11 +67,13 @@ QByteArray QEglFSHooks::fbDeviceName() const
 int QEglFSHooks::framebufferIndex() const
 {
     int fbIndex = 0;
+#ifndef QT_NO_REGULAREXPRESSION
     QRegularExpression fbIndexRx(QLatin1String("fb(\\d+)"));
     QRegularExpressionMatch match = fbIndexRx.match(fbDeviceName());
     if (match.hasMatch())
         fbIndex = match.captured(1).toInt();
 
+#endif
     return fbIndex;
 }
 

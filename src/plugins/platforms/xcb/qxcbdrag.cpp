@@ -311,7 +311,7 @@ void QXcbDrag::move(const QMouseEvent *me)
         return;
 
     const QList<QXcbScreen *> &screens = connection()->screens();
-    QXcbScreen *screen = screens.at(connection()->primaryScreen());
+    QXcbScreen *screen = connection()->primaryScreen();
     for (int i = 0; i < screens.size(); ++i) {
         if (screens.at(i)->geometry().contains(globalPos)) {
             screen = screens.at(i);

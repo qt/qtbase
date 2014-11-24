@@ -412,7 +412,10 @@ void QMacPrintEngine::drawTextItem(const QPointF &p, const QTextItem &ti)
 {
     Q_D(QMacPrintEngine);
     Q_ASSERT(d->state == QPrinter::Active);
-    d->paintEngine->drawTextItem(p, ti);
+    if (!d->embedFonts)
+        QPaintEngine::drawTextItem(p, ti);
+    else
+        d->paintEngine->drawTextItem(p, ti);
 }
 
 void QMacPrintEngine::drawTiledPixmap(const QRectF &dr, const QPixmap &pixmap, const QPointF &sr)
@@ -457,8 +460,6 @@ void QMacPrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &va
         break;
     case PPK_CustomBase:
         break;
-    case PPK_FontEmbedding:
-        break;
     case PPK_PageOrder:
         // TODO Check if can be supported via Cups Options
         break;
@@ -471,6 +472,9 @@ void QMacPrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &va
         break;
 
     // The following keys are properties and settings that are supported by the Mac PrintEngine
+    case PPK_FontEmbedding:
+        d->embedFonts = value.toBool();
+        break;
     case PPK_Resolution:  {
         // TODO It appears the old code didn't actually set the resolution???  Can we delete all this???
         int bestResolution = 0;
@@ -622,9 +626,6 @@ QVariant QMacPrintEngine::property(PrintEnginePropertyKey key) const
     case PPK_CustomBase:
         // Special case, leave null
         break;
-    case PPK_FontEmbedding:
-        ret = false;
-        break;
     case PPK_PageOrder:
         // TODO Check if can be supported via Cups Options
         ret = QPrinter::FirstPageFirst;
@@ -648,6 +649,9 @@ QVariant QMacPrintEngine::property(PrintEnginePropertyKey key) const
         break;
 
     // The following keys are properties and settings that are supported by the Mac PrintEngine
+    case PPK_FontEmbedding:
+        ret = d->embedFonts;
+        break;
     case PPK_CollateCopies: {
         Boolean status;
         PMGetCollate(d->settings(), &status);

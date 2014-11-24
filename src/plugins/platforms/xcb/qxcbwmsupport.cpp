@@ -56,7 +56,7 @@ void QXcbWMSupport::updateNetWMAtoms()
 {
     net_wm_atoms.clear();
 
-    xcb_window_t root = connection()->screens().at(connection()->primaryScreen())->root();
+    xcb_window_t root = connection()->primaryScreen()->root();
     int offset = 0;
     int remaining = 0;
     do {
@@ -90,7 +90,7 @@ void QXcbWMSupport::updateVirtualRoots()
     if (!isSupportedByWM(atom(QXcbAtom::_NET_VIRTUAL_ROOTS)))
         return;
 
-    xcb_window_t root = connection()->screens().at(connection()->primaryScreen())->root();
+    xcb_window_t root = connection()->primaryScreen()->root();
     int offset = 0;
     int remaining = 0;
     do {

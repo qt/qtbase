@@ -282,7 +282,7 @@ public:
     bool isWritable() const;
     QString fileName() const;
 
-    static bool readIniFile(const QByteArray &data, UnparsedSettingsMap *unparsedIniSections);
+    bool readIniFile(const QByteArray &data, UnparsedSettingsMap *unparsedIniSections);
     static bool readIniSection(const QSettingsKey &section, const QByteArray &data,
                                ParsedSettingsMap *settingsMap, QTextCodec *codec);
     static bool readIniLine(const QByteArray &data, int &dataPos, int &lineStart, int &lineLen,

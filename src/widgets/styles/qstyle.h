@@ -698,6 +698,8 @@ public:
         SH_ToolTip_FallAsleepDelay,
         SH_Widget_Animate,
         SH_Splitter_OpaqueResize,
+        // Whether we should use a native popup.
+        // Only supported for non-editable combo boxes on Mac OS X so far.
         SH_ComboBox_UseNativePopup,
         SH_LineEdit_PasswordMaskDelay,
         SH_TabBar_ChangeCurrentDelay,

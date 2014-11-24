@@ -16,7 +16,7 @@
 namespace rx
 {
 
-VertexBuffer11::VertexBuffer11(rx::Renderer11 *const renderer) : mRenderer(renderer)
+VertexBuffer11::VertexBuffer11(Renderer11 *const renderer) : mRenderer(renderer)
 {
     mBuffer = NULL;
     mBufferSize = 0;
@@ -91,8 +91,13 @@ gl::Error VertexBuffer11::storeVertexAttributes(const gl::VertexAttribute &attri
     {
         if (buffer)
         {
-            Buffer11 *storage = Buffer11::makeBuffer11(buffer->getImplementation());
-            input = static_cast<const uint8_t*>(storage->getData()) + static_cast<int>(attrib.offset);
+            BufferD3D *storage = BufferD3D::makeFromBuffer(buffer);
+            gl::Error error = storage->getData(&input);
+            if (error.isError())
+            {
+                return error;
+            }
+            input += static_cast<int>(attrib.offset);
         }
         else
         {
@@ -132,7 +137,7 @@ gl::Error VertexBuffer11::getSpaceRequired(const gl::VertexAttribute &attrib, GL
         else
         {
             // Round up to divisor, if possible
-            elementCount = rx::UnsignedCeilDivide(static_cast<unsigned int>(instances), attrib.divisor);
+            elementCount = UnsignedCeilDivide(static_cast<unsigned int>(instances), attrib.divisor);
         }
 
         gl::VertexFormat vertexFormat(attrib);

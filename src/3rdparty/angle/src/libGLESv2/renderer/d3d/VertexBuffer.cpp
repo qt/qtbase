@@ -9,7 +9,7 @@
 
 #include "libGLESv2/renderer/d3d/VertexBuffer.h"
 #include "libGLESv2/renderer/d3d/BufferD3D.h"
-#include "libGLESv2/renderer/Renderer.h"
+#include "libGLESv2/renderer/d3d/RendererD3D.h"
 #include "libGLESv2/VertexAttribute.h"
 
 #include "common/mathutil.h"
@@ -38,7 +38,7 @@ unsigned int VertexBuffer::getSerial() const
     return mSerial;
 }
 
-VertexBufferInterface::VertexBufferInterface(rx::Renderer *renderer, bool dynamic) : mRenderer(renderer)
+VertexBufferInterface::VertexBufferInterface(RendererD3D *renderer, bool dynamic) : mRenderer(renderer)
 {
     mDynamic = dynamic;
     mWritePosition = 0;
@@ -127,7 +127,7 @@ gl::Error VertexBufferInterface::storeVertexAttributes(const gl::VertexAttribute
     mWritePosition += spaceRequired;
 
     // Align to 16-byte boundary
-    mWritePosition = rx::roundUp(mWritePosition, 16u);
+    mWritePosition = roundUp(mWritePosition, 16u);
 
     return gl::Error(GL_NO_ERROR);
 }
@@ -153,7 +153,7 @@ gl::Error VertexBufferInterface::reserveVertexSpace(const gl::VertexAttribute &a
     mReservedSpace += requiredSpace;
 
     // Align to 16-byte boundary
-    mReservedSpace = rx::roundUp(mReservedSpace, 16u);
+    mReservedSpace = roundUp(mReservedSpace, 16u);
 
     return gl::Error(GL_NO_ERROR);
 }
@@ -197,7 +197,7 @@ bool VertexBufferInterface::directStoragePossible(const gl::VertexAttribute &att
     return !requiresConversion && isAligned;
 }
 
-StreamingVertexBufferInterface::StreamingVertexBufferInterface(rx::Renderer *renderer, std::size_t initialSize) : VertexBufferInterface(renderer, true)
+StreamingVertexBufferInterface::StreamingVertexBufferInterface(RendererD3D *renderer, std::size_t initialSize) : VertexBufferInterface(renderer, true)
 {
     setBufferSize(initialSize);
 }
@@ -231,7 +231,7 @@ gl::Error StreamingVertexBufferInterface::reserveSpace(unsigned int size)
     return gl::Error(GL_NO_ERROR);
 }
 
-StaticVertexBufferInterface::StaticVertexBufferInterface(rx::Renderer *renderer) : VertexBufferInterface(renderer, false)
+StaticVertexBufferInterface::StaticVertexBufferInterface(RendererD3D *renderer) : VertexBufferInterface(renderer, false)
 {
 }
 

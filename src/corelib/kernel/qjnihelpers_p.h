@@ -50,6 +50,8 @@
 
 QT_BEGIN_NAMESPACE
 
+class QRunnable;
+
 namespace QtAndroidPrivate
 {
     class Q_CORE_EXPORT ActivityResultListener
@@ -64,6 +66,7 @@ namespace QtAndroidPrivate
     Q_CORE_EXPORT jint initJNI(JavaVM *vm, JNIEnv *env);
     jobject classLoader();
     Q_CORE_EXPORT jint androidSdkVersion();
+    Q_CORE_EXPORT void runOnUiThread(QRunnable *runnable, JNIEnv *env);
 
     Q_CORE_EXPORT void handleActivityResult(jint requestCode, jint resultCode, jobject data);
     Q_CORE_EXPORT void registerActivityResultListener(ActivityResultListener *listener);

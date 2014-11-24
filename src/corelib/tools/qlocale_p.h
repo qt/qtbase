@@ -251,7 +251,9 @@ public:
     inline char digitToCLocale(QChar c) const;
 
     // this function is used in QIntValidator (QtGui)
-    Q_CORE_EXPORT bool validateChars(const QString &str, NumberMode numMode, QByteArray *buff, int decDigits = -1) const;
+    Q_CORE_EXPORT bool validateChars(const QString &str, NumberMode numMode,
+                                     QByteArray *buff, int decDigits = -1,
+                                     bool rejectGroupSeparators = false) const;
 
 public:
     quint16 m_language_id, m_script_id, m_country_id;

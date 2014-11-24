@@ -1403,6 +1403,8 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
 
     if (q->testAttribute(Qt::WA_ShowWithoutActivating))
         win->setProperty("_q_showWithoutActivating", QVariant(true));
+    if (q->testAttribute(Qt::WA_MacAlwaysShowToolWindow))
+        win->setProperty("_q_macAlwaysShowToolWindow", QVariant::fromValue(QVariant(true)));
     win->setFlags(data.window_flags);
     fixPosIncludesFrame();
     if (q->testAttribute(Qt::WA_Moved)
@@ -7151,10 +7153,7 @@ void QWidgetPrivate::setGeometry_sys(int x, int y, int w, int h, bool isMove)
             }
         }
 
-        // generate a move event for QWidgets without window handles. QWidgets with native
-        // window handles already receive a move event from
-        // QGuiApplicationPrivate::processGeometryChangeEvent.
-        if (isMove && (!q->windowHandle() || q->testAttribute(Qt::WA_DontShowOnScreen))) {
+        if (isMove) {
             QMoveEvent e(q->pos(), oldPos);
             QApplication::sendEvent(q, &e);
         }
@@ -10510,8 +10509,9 @@ void QWidgetPrivate::setParent_sys(QWidget *newparent, Qt::WindowFlags f)
             QWidget *parentWithWindow =
                 newparent ? (newparent->windowHandle() ? newparent : newparent->nativeParentWidget()) : 0;
             if (parentWithWindow) {
-                if (f & Qt::Window) {
-                    q->windowHandle()->setTransientParent(parentWithWindow->windowHandle());
+                QWidget *topLevel = parentWithWindow->window();
+                if ((f & Qt::Window) && topLevel && topLevel->windowHandle()) {
+                    q->windowHandle()->setTransientParent(topLevel->windowHandle());
                     q->windowHandle()->setParent(0);
                 } else {
                     q->windowHandle()->setTransientParent(0);

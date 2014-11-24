@@ -67,6 +67,7 @@
 #define OFONO_MODEM_INTERFACE                    "org.ofono.Modem"
 #define OFONO_NETWORK_REGISTRATION_INTERFACE     "org.ofono.NetworkRegistration"
 #define OFONO_DATA_CONNECTION_MANAGER_INTERFACE  "org.ofono.ConnectionManager"
+#define OFONO_CONNECTION_CONTEXT_INTERFACE       "org.ofono.ConnectionContext"
 
 QT_BEGIN_NAMESPACE
 
@@ -114,6 +115,7 @@ public:
 
     bool isPowered();
     bool isOnline();
+    QStringList interfaces();
 private:
     QVariantMap getProperties();
     QVariantMap propertiesMap;
@@ -151,18 +153,42 @@ public:
     ~QOfonoDataConnectionManagerInterface();
 
     QStringList contexts();
+    PathPropertiesList contextsWithProperties();
     bool roamingAllowed();
+    QVariant getProperty(const QString &);
+    QString bearer();
 Q_SIGNALS:
     void roamingAllowedChanged(bool);
 private:
     QVariantMap &getProperties();
     QVariantMap propertiesMap;
-    QVariant getProperty(const QString &);
     QStringList contextList;
+    PathPropertiesList contextListProperties;
 private Q_SLOTS:
     void propertyChanged(const QString &, const QDBusVariant &value);
 };
 
+class QOfonoConnectionContextInterface : public QDBusAbstractInterface
+{
+    Q_OBJECT
+
+public:
+
+    explicit QOfonoConnectionContextInterface(const QString &dbusPathName, QObject *parent = 0);
+    ~QOfonoConnectionContextInterface();
+
+    QVariant getProperty(const QString &);
+    bool active();
+    QString accessPointName();
+    QString name();
+
+Q_SIGNALS:
+private:
+    QVariantMap getProperties();
+    QVariantMap propertiesMap;
+private slots:
+    void propertyChanged(const QString &, const QDBusVariant &value);
+};
 
 QT_END_NAMESPACE
 

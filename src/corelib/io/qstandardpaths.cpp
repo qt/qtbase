@@ -195,7 +195,7 @@ QT_BEGIN_NAMESPACE
          \li "~/Library/Preferences"
          \li "C:/Users/<USER>/AppData/Local", "C:/ProgramData"
     \row \li DownloadLocation
-         \li "~/Documents"
+         \li "~/Downloads"
          \li "C:/Users/<USER>/Documents"
     \row \li GenericCacheLocation
          \li "~/Library/Caches", "/Library/Caches"
@@ -526,7 +526,7 @@ QString QStandardPaths::findExecutable(const QString &executableName, const QStr
     an empty QString if no relevant location can be found.
 */
 
-#if !defined(Q_OS_MAC) && !defined(QT_BOOTSTRAPPED)
+#if !defined(Q_OS_OSX) && !defined(QT_BOOTSTRAPPED)
 QString QStandardPaths::displayName(StandardLocation type)
 {
     switch (type) {

@@ -104,7 +104,7 @@ static bool tabBetweenSubWindowsIn(QMdiArea *mdiArea, int tabCount = -1, bool re
         if (tabCount > 1)
             QTest::qWait(500);
         if (walkThrough) {
-            QRubberBand *rubberBand = mdiArea->viewport()->findChild<QRubberBand *>();
+            QRubberBand *rubberBand = mdiArea->findChild<QRubberBand *>();
             if (!rubberBand) {
                 qWarning("No rubber band");
                 return false;

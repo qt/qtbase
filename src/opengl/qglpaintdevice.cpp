@@ -74,6 +74,8 @@ void QGLPaintDevice::beginPaint()
     QGLContext *ctx = context();
     ctx->makeCurrent();
 
+    ctx->d_func()->refreshCurrentFbo();
+
     // Record the currently bound FBO so we can restore it again
     // in endPaint() and bind this device's FBO
     //
@@ -85,7 +87,7 @@ void QGLPaintDevice::beginPaint()
     m_previousFBO = ctx->d_func()->current_fbo;
 
     if (m_previousFBO != m_thisFBO) {
-        ctx->d_ptr->current_fbo = m_thisFBO;
+        ctx->d_func()->setCurrentFbo(m_thisFBO);
         ctx->contextHandle()->functions()->glBindFramebuffer(GL_FRAMEBUFFER, m_thisFBO);
     }
 
@@ -102,8 +104,10 @@ void QGLPaintDevice::ensureActiveTarget()
     if (ctx != QGLContext::currentContext())
         ctx->makeCurrent();
 
+    ctx->d_func()->refreshCurrentFbo();
+
     if (ctx->d_ptr->current_fbo != m_thisFBO) {
-        ctx->d_ptr->current_fbo = m_thisFBO;
+        ctx->d_func()->setCurrentFbo(m_thisFBO);
         ctx->contextHandle()->functions()->glBindFramebuffer(GL_FRAMEBUFFER, m_thisFBO);
     }
 
@@ -114,8 +118,11 @@ void QGLPaintDevice::endPaint()
 {
     // Make sure the FBO bound at beginPaint is re-bound again here:
     QGLContext *ctx = context();
+
+    ctx->d_func()->refreshCurrentFbo();
+
     if (m_previousFBO != ctx->d_func()->current_fbo) {
-        ctx->d_ptr->current_fbo = m_previousFBO;
+        ctx->d_func()->setCurrentFbo(m_previousFBO);
         ctx->contextHandle()->functions()->glBindFramebuffer(GL_FRAMEBUFFER, m_previousFBO);
     }
 

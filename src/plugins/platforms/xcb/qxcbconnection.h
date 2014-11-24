@@ -324,6 +324,7 @@ private:
 class QXcbWindowEventListener
 {
 public:
+    virtual ~QXcbWindowEventListener() {}
     virtual bool handleGenericEvent(xcb_generic_event_t *, long *) { return false; }
 
     virtual void handleExposeEvent(const xcb_expose_event_t *) {}
@@ -369,7 +370,8 @@ public:
     QXcbConnection *connection() const { return const_cast<QXcbConnection *>(this); }
 
     const QList<QXcbScreen *> &screens() const { return m_screens; }
-    int primaryScreen() const { return m_primaryScreen; }
+    int primaryScreenNumber() const { return m_primaryScreenNumber; }
+    QXcbScreen *primaryScreen() const;
 
     inline xcb_atom_t atom(QXcbAtom::Atom atom) const { return m_allAtoms[atom]; }
     QXcbAtom::Atom qatom(xcb_atom_t atom) const;
@@ -469,6 +471,7 @@ public:
 
     QXcbEventReader *eventReader() const { return m_reader; }
 
+    bool canGrab() const { return m_canGrabServer; }
 protected:
     bool event(QEvent *e) Q_DECL_OVERRIDE;
 
@@ -550,7 +553,7 @@ private:
     bool m_canGrabServer;
 
     QList<QXcbScreen *> m_screens;
-    int m_primaryScreen;
+    int m_primaryScreenNumber;
 
     xcb_atom_t m_allAtoms[QXcbAtom::NAtoms];
 

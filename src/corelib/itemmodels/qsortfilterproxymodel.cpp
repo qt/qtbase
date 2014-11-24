@@ -1196,11 +1196,7 @@ void QSortFilterProxyModelPrivate::_q_sourceDataChanged(const QModelIndex &sourc
         parents << q->mapFromSource(source_parent);
         emit q->layoutAboutToBeChanged(parents, QAbstractItemModel::VerticalSortHint);
         QModelIndexPairList source_indexes = store_persistent_indexes();
-        remove_source_items(m->proxy_rows, m->source_rows, source_rows_resort,
-                            source_parent, Qt::Vertical, false);
-        sort_source_rows(source_rows_resort, source_parent);
-        insert_source_items(m->proxy_rows, m->source_rows, source_rows_resort,
-                            source_parent, Qt::Vertical, false);
+        sort_source_rows(m->source_rows, source_parent);
         update_persistent_indexes(source_indexes);
         emit q->layoutChanged(parents, QAbstractItemModel::VerticalSortHint);
         // Make sure we also emit dataChanged for the rows
@@ -2034,30 +2030,14 @@ Qt::DropActions QSortFilterProxyModel::supportedDropActions() const
     return d->model->supportedDropActions();
 }
 
+// Qt6: remove unnecessary reimplementation
 /*!
   \reimp
 */
 bool QSortFilterProxyModel::dropMimeData(const QMimeData *data, Qt::DropAction action,
                                          int row, int column, const QModelIndex &parent)
 {
-    Q_D(QSortFilterProxyModel);
-    if ((row == -1) && (column == -1))
-        return d->model->dropMimeData(data, action, -1, -1, mapToSource(parent));
-    int source_destination_row = -1;
-    int source_destination_column = -1;
-    QModelIndex source_parent;
-    if (row == rowCount(parent)) {
-        source_parent = mapToSource(parent);
-        source_destination_row = d->model->rowCount(source_parent);
-    } else {
-        QModelIndex proxy_index = index(row, column, parent);
-        QModelIndex source_index = mapToSource(proxy_index);
-        source_destination_row = source_index.row();
-        source_destination_column = source_index.column();
-        source_parent = source_index.parent();
-    }
-    return d->model->dropMimeData(data, action, source_destination_row,
-                                  source_destination_column, source_parent);
+    return QAbstractProxyModel::dropMimeData(data, action, row, column, parent);
 }
 
 /*!

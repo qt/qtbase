@@ -71,6 +71,7 @@ tst_QGestureRecognizer::tst_QGestureRecognizer()
     : m_fingerDistance(qRound(QGuiApplication::primaryScreen()->physicalDotsPerInch() / 2.0))
     , m_touchDevice(new QTouchDevice)
 {
+    qputenv("QT_PAN_TOUCHPOINTS", "2"); // Prevent device detection of pan touch point count.
 }
 
 void tst_QGestureRecognizer::initTestCase()

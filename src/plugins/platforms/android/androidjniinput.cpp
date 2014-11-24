@@ -48,10 +48,6 @@ using namespace QtAndroid;
 
 namespace QtAndroidInput
 {
-    static jmethodID m_showSoftwareKeyboardMethodID = 0;
-    static jmethodID m_resetSoftwareKeyboardMethodID = 0;
-    static jmethodID m_hideSoftwareKeyboardMethodID = 0;
-    static jmethodID m_updateSelectionMethodID = 0;
 
     static bool m_ignoreMouseEvents = false;
     static bool m_softwareKeyboardVisible = false;
@@ -62,30 +58,28 @@ namespace QtAndroidInput
 
     void updateSelection(int selStart, int selEnd, int candidatesStart, int candidatesEnd)
     {
-        AttachedJNIEnv env;
-        if (!env.jniEnv)
-            return;
-
 #ifdef QT_DEBUG_ANDROID_IM_PROTOCOL
         qDebug() << ">>> UPDATESELECTION" << selStart << selEnd << candidatesStart << candidatesEnd;
 #endif
-        env.jniEnv->CallStaticVoidMethod(applicationClass(), m_updateSelectionMethodID,
-                                         selStart, selEnd, candidatesStart, candidatesEnd);
+        QJNIObjectPrivate::callStaticMethod<void>(applicationClass(),
+                                                  "updateSelection",
+                                                  "(IIII)V",
+                                                  selStart,
+                                                  selEnd,
+                                                  candidatesStart,
+                                                  candidatesEnd);
     }
 
     void showSoftwareKeyboard(int left, int top, int width, int height, int inputHints)
     {
-        AttachedJNIEnv env;
-        if (!env.jniEnv)
-            return;
-
-        env.jniEnv->CallStaticVoidMethod(applicationClass(),
-                                         m_showSoftwareKeyboardMethodID,
-                                         left,
-                                         top,
-                                         width,
-                                         height,
-                                         inputHints);
+        QJNIObjectPrivate::callStaticMethod<void>(applicationClass(),
+                                                  "showSoftwareKeyboard",
+                                                  "(IIIII)V",
+                                                  left,
+                                                  top,
+                                                  width,
+                                                  height,
+                                                  inputHints);
 #ifdef QT_DEBUG_ANDROID_IM_PROTOCOL
         qDebug() << "@@@ SHOWSOFTWAREKEYBOARD" << left << top << width << height << inputHints;
 #endif
@@ -93,11 +87,7 @@ namespace QtAndroidInput
 
     void resetSoftwareKeyboard()
     {
-        AttachedJNIEnv env;
-        if (!env.jniEnv)
-            return;
-
-        env.jniEnv->CallStaticVoidMethod(applicationClass(), m_resetSoftwareKeyboardMethodID);
+        QJNIObjectPrivate::callStaticMethod<void>(applicationClass(), "resetSoftwareKeyboard");
 #ifdef QT_DEBUG_ANDROID_IM_PROTOCOL
         qDebug() << "@@@ RESETSOFTWAREKEYBOARD";
 #endif
@@ -105,11 +95,7 @@ namespace QtAndroidInput
 
     void hideSoftwareKeyboard()
     {
-        AttachedJNIEnv env;
-        if (!env.jniEnv)
-            return;
-
-        env.jniEnv->CallStaticVoidMethod(applicationClass(), m_hideSoftwareKeyboardMethodID);
+        QJNIObjectPrivate::callStaticMethod<void>(applicationClass(), "hideSoftwareKeyboard");
 #ifdef QT_DEBUG_ANDROID_IM_PROTOCOL
         qDebug() << "@@@ HIDESOFTWAREKEYBOARD";
 #endif
@@ -722,13 +708,6 @@ namespace QtAndroidInput
         {"keyboardVisibilityChanged", "(Z)V", (void *)keyboardVisibilityChanged}
     };
 
-#define GET_AND_CHECK_STATIC_METHOD(VAR, CLASS, METHOD_NAME, METHOD_SIGNATURE) \
-    VAR = env->GetStaticMethodID(CLASS, METHOD_NAME, METHOD_SIGNATURE); \
-    if (!VAR) { \
-        __android_log_print(ANDROID_LOG_FATAL, qtTagText(), methodErrorMsgFmt(), METHOD_NAME, METHOD_SIGNATURE); \
-        return false; \
-    }
-
     bool registerNatives(JNIEnv *env)
     {
         jclass appClass = QtAndroid::applicationClass();
@@ -738,10 +717,6 @@ namespace QtAndroidInput
             return false;
         }
 
-        GET_AND_CHECK_STATIC_METHOD(m_showSoftwareKeyboardMethodID, appClass, "showSoftwareKeyboard", "(IIIII)V");
-        GET_AND_CHECK_STATIC_METHOD(m_resetSoftwareKeyboardMethodID, appClass, "resetSoftwareKeyboard", "()V");
-        GET_AND_CHECK_STATIC_METHOD(m_hideSoftwareKeyboardMethodID, appClass, "hideSoftwareKeyboard", "()V");
-        GET_AND_CHECK_STATIC_METHOD(m_updateSelectionMethodID, appClass, "updateSelection", "(IIII)V");
         return true;
     }
 }

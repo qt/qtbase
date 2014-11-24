@@ -353,7 +353,10 @@ QFixed QCoreTextFontEngine::averageCharWidth() const
 
 qreal QCoreTextFontEngine::maxCharWidth() const
 {
-    return 0;
+    // ### FIXME: 'W' might not be the widest character, but this is better than nothing
+    const glyph_t glyph = glyphIndex('W');
+    glyph_metrics_t bb = const_cast<QCoreTextFontEngine *>(this)->boundingBox(glyph);
+    return bb.xoff.toReal();
 }
 
 qreal QCoreTextFontEngine::minLeftBearing() const

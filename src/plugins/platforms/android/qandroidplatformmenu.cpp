@@ -34,6 +34,7 @@
 #include "qandroidplatformmenu.h"
 #include "qandroidplatformmenuitem.h"
 #include "androidjnimenu.h"
+#include <QtCore/private/qjni_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -140,7 +141,7 @@ void QAndroidPlatformMenu::showPopup(const QWindow *parentWindow, const QRect &t
     Q_UNUSED(parentWindow);
     Q_UNUSED(item);
     setVisible(true);
-    QtAndroidMenu::showContextMenu(this, targetRect);
+    QtAndroidMenu::showContextMenu(this, targetRect, QJNIEnvironmentPrivate());
 }
 
 QPlatformMenuItem *QAndroidPlatformMenu::menuItemAt(int position) const

@@ -48,6 +48,7 @@
 
 #include "qmacmime_p.h"
 #include "qguiapplication.h"
+#include "private/qcore_mac_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -335,9 +336,9 @@ QVariant QMacPasteboardMimePlainTextFallback::convertToMime(const QString &mimet
         // Note that public.text is documented by Apple to have an undefined encoding. From
         // testing it seems that utf8 is normally used, at least by Safari on iOS.
         const QByteArray &firstData = data.first();
-        return QString::fromCFString(CFStringCreateWithBytes(kCFAllocatorDefault,
+        return QString(QCFString(CFStringCreateWithBytes(kCFAllocatorDefault,
                                              reinterpret_cast<const UInt8 *>(firstData.constData()),
-                                             firstData.size(), kCFStringEncodingUTF8, false));
+                                             firstData.size(), kCFStringEncodingUTF8, false)));
     } else {
         qWarning("QMime::convertToMime: unhandled mimetype: %s", qPrintable(mimetype));
     }
@@ -410,9 +411,9 @@ QVariant QMacPasteboardMimeUnicodeText::convertToMime(const QString &mimetype, Q
     // I can only handle two types (system and unicode) so deal with them that way
     QVariant ret;
     if (flavor == QLatin1String("public.utf8-plain-text")) {
-        ret = QString::fromCFString(CFStringCreateWithBytes(kCFAllocatorDefault,
+        ret = QString(QCFString(CFStringCreateWithBytes(kCFAllocatorDefault,
                                              reinterpret_cast<const UInt8 *>(firstData.constData()),
-                                             firstData.size(), CFStringGetSystemEncoding(), false));
+                                             firstData.size(), CFStringGetSystemEncoding(), false)));
     } else if (flavor == QLatin1String("public.utf16-plain-text")) {
         ret = QString(reinterpret_cast<const QChar *>(firstData.constData()),
                       firstData.size() / sizeof(QChar));

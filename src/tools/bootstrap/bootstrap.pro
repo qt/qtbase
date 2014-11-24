@@ -142,8 +142,9 @@ mac {
 }
 
 macx {
-    SOURCES += \
-        ../../corelib/io/qstandardpaths_mac.cpp
+    OBJECTIVE_SOURCES += \
+        ../../corelib/tools/qstring_mac.mm \
+        ../../corelib/io/qstandardpaths_mac.mm
 } else:unix {
     SOURCES += \
         ../../corelib/io/qstandardpaths_unix.cpp

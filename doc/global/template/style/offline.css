@@ -2,7 +2,6 @@ body {
     font: normal 400 14px/1.2 Arial;
     margin-top: 85px;
     font-family: Arial, Helvetica;
-    color: #313131;
     text-align: left;
     margin-left: 5px;
     margin-right: 5px;
@@ -365,7 +364,9 @@ h3.fn, span.fn {
     margin: 0px;
     margin-top: 45px;
 }
-
+h3.fn code {
+    float: right;
+}
 h3.fn:target {
     background-color: #F6F6D6;
 }
@@ -711,8 +712,21 @@ Landing page
     float: left;
 }
 
-.icons1of3  h2 {
+.icons1of3 h2, .doc-column h2 {
     font-size: 15px;
     margin: 0px;
     padding: 0px;
+}
+
+div.multi-column {
+    position: relative;
+}
+
+div.multi-column div {
+    display: -moz-inline-box;
+    display: inline-block;
+    vertical-align: top;
+    margin-top: 1em;
+    margin-right: 4em;
+    width: 24em;
 }

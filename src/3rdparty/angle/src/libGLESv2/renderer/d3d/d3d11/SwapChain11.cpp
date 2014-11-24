@@ -6,7 +6,6 @@
 
 // SwapChain11.cpp: Implements a back-end specific class for the D3D11 swap chain.
 
-#include "common/platform.h"
 #include "libGLESv2/renderer/d3d/d3d11/SwapChain11.h"
 #include "libGLESv2/renderer/d3d/d3d11/renderer11_utils.h"
 #include "libGLESv2/renderer/d3d/d3d11/formatutils11.h"
@@ -16,12 +15,16 @@
 #include "libGLESv2/renderer/d3d/d3d11/shaders/compiled/passthrough2dvs.h"
 #include "libGLESv2/renderer/d3d/d3d11/shaders/compiled/passthroughrgba2dps.h"
 
+#include "common/features.h"
+#include "common/NativeWindow.h"
+
 namespace rx
 {
 
-SwapChain11::SwapChain11(Renderer11 *renderer, EGLNativeWindowType window, HANDLE shareHandle,
+SwapChain11::SwapChain11(Renderer11 *renderer, NativeWindow nativeWindow, HANDLE shareHandle,
                          GLenum backBufferFormat, GLenum depthBufferFormat)
-    : mRenderer(renderer), SwapChain(window, shareHandle, backBufferFormat, depthBufferFormat)
+    : mRenderer(renderer),
+      SwapChain(nativeWindow, shareHandle, backBufferFormat, depthBufferFormat)
 {
     mSwapChain = NULL;
     mBackBufferTexture = NULL;
@@ -39,8 +42,8 @@ SwapChain11::SwapChain11(Renderer11 *renderer, EGLNativeWindowType window, HANDL
     mPassThroughPS = NULL;
     mWidth = -1;
     mHeight = -1;
-    mViewportWidth = -1;
-    mViewportHeight = -1;
+    mRotateL = false;
+    mRotateR = false;
     mSwapInterval = 0;
     mAppCreatedShareHandle = mShareHandle != NULL;
     mPassThroughResourcesInit = false;
@@ -91,11 +94,11 @@ EGLint SwapChain11::resetOffscreenTexture(int backbufferWidth, int backbufferHei
     ASSERT(device != NULL);
 
     // D3D11 does not allow zero size textures
-    ASSERT(backbufferWidth >= 1);
-    ASSERT(backbufferHeight >= 1);
+    ASSERT(backbufferWidth != 0);
+    ASSERT(backbufferHeight != 0);
 
     // Preserve the render target content
-#if !defined(ANGLE_PLATFORM_WINRT)
+#if !defined(ANGLE_ENABLE_WINDOWS_STORE)
     ID3D11Texture2D *previousOffscreenTexture = mOffscreenTexture;
     if (previousOffscreenTexture)
     {
@@ -137,8 +140,8 @@ EGLint SwapChain11::resetOffscreenTexture(int backbufferWidth, int backbufferHei
         D3D11_TEXTURE2D_DESC offscreenTextureDesc = {0};
         mOffscreenTexture->GetDesc(&offscreenTextureDesc);
 
-        if (offscreenTextureDesc.Width != (UINT)backbufferWidth ||
-            offscreenTextureDesc.Height != (UINT)backbufferHeight ||
+        if (offscreenTextureDesc.Width != UINT(abs(backbufferWidth)) ||
+            offscreenTextureDesc.Height != UINT(abs(backbufferHeight)) ||
             offscreenTextureDesc.Format != backbufferFormatInfo.texFormat ||
             offscreenTextureDesc.MipLevels != 1 ||
             offscreenTextureDesc.ArraySize != 1)
@@ -150,11 +153,11 @@ EGLint SwapChain11::resetOffscreenTexture(int backbufferWidth, int backbufferHei
     }
     else
     {
-        const bool useSharedResource = !mWindow && mRenderer->getShareHandleSupport();
+        const bool useSharedResource = !mNativeWindow.getNativeWindow() && mRenderer->getShareHandleSupport();
 
         D3D11_TEXTURE2D_DESC offscreenTextureDesc = {0};
-        offscreenTextureDesc.Width = backbufferWidth;
-        offscreenTextureDesc.Height = backbufferHeight;
+        offscreenTextureDesc.Width = abs(backbufferWidth);
+        offscreenTextureDesc.Height = abs(backbufferHeight);
         offscreenTextureDesc.Format = backbufferFormatInfo.texFormat;
         offscreenTextureDesc.MipLevels = 1;
         offscreenTextureDesc.ArraySize = 1;
@@ -234,8 +237,8 @@ EGLint SwapChain11::resetOffscreenTexture(int backbufferWidth, int backbufferHei
     if (mDepthBufferFormat != GL_NONE)
     {
         D3D11_TEXTURE2D_DESC depthStencilTextureDesc;
-        depthStencilTextureDesc.Width = backbufferWidth;
-        depthStencilTextureDesc.Height = backbufferHeight;
+        depthStencilTextureDesc.Width = abs(backbufferWidth);
+        depthStencilTextureDesc.Height = abs(backbufferHeight);
         depthStencilTextureDesc.Format = depthBufferFormatInfo.texFormat;
         depthStencilTextureDesc.MipLevels = 1;
         depthStencilTextureDesc.ArraySize = 1;
@@ -286,12 +289,8 @@ EGLint SwapChain11::resetOffscreenTexture(int backbufferWidth, int backbufferHei
 
     mWidth = backbufferWidth;
     mHeight = backbufferHeight;
-#if !defined(ANGLE_PLATFORM_WINRT) || WINAPI_FAMILY==WINAPI_FAMILY_PC_APP
-    mViewportWidth = backbufferWidth;
-    mViewportHeight = backbufferHeight;
-#endif
 
-#if !defined(ANGLE_PLATFORM_WINRT)
+#if !defined(ANGLE_ENABLE_WINDOWS_STORE)
     if (previousOffscreenTexture != NULL)
     {
         D3D11_BOX sourceBox = {0};
@@ -310,7 +309,7 @@ EGLint SwapChain11::resetOffscreenTexture(int backbufferWidth, int backbufferHei
 
         if (mSwapChain)
         {
-            swapRect(0, 0, mWidth, mHeight, SWAP_NORMAL);
+            swapRect(0, 0, mWidth, mHeight);
         }
     }
 #endif
@@ -327,8 +326,16 @@ EGLint SwapChain11::resize(EGLint backbufferWidth, EGLint backbufferHeight)
         return EGL_BAD_ACCESS;
     }
 
+    // Windows Phone works around the rotation limitation by using negative values for the swap chain size
+#if defined(ANGLE_ENABLE_WINDOWS_STORE) && (WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP)
+    mRotateL = backbufferWidth < 0; // Landscape/InvertedLandscape
+    mRotateR = backbufferHeight < 0; // InvertedPortrait/InvertedLandscape
+    backbufferWidth = abs(backbufferWidth);
+    backbufferHeight = abs(backbufferHeight);
+#endif
+
     // EGL allows creating a surface with 0x0 dimension, however, DXGI does not like 0x0 swapchains
-    if (backbufferWidth < 1 || backbufferHeight < 1)
+    if (backbufferWidth == 0 || backbufferHeight == 0)
     {
         return EGL_SUCCESS;
     }
@@ -336,19 +343,15 @@ EGLint SwapChain11::resize(EGLint backbufferWidth, EGLint backbufferHeight)
     // Can only call resize if we have already created our swap buffer and resources
     ASSERT(mSwapChain && mBackBufferTexture && mBackBufferRTView);
 
+#if !defined(ANGLE_ENABLE_WINDOWS_STORE) || (WINAPI_FAMILY == WINAPI_FAMILY_PC_APP) // The swap chain is not directly resized on Windows Phone
     SafeRelease(mBackBufferTexture);
     SafeRelease(mBackBufferRTView);
 
     // Resize swap chain
-    HRESULT result;
-#if !defined(ANGLE_PLATFORM_WINRT) || WINAPI_FAMILY==WINAPI_FAMILY_PC_APP // Windows phone swap chain is never resized, only the texture is
-#if !defined(ANGLE_PLATFORM_WINRT)
-    const int bufferCount = 1;
-#else
-    const int bufferCount = 2;
-#endif
+    DXGI_SWAP_CHAIN_DESC desc;
+    mSwapChain->GetDesc(&desc);
     const d3d11::TextureFormat &backbufferFormatInfo = d3d11::GetTextureFormatInfo(mBackBufferFormat);
-    result = mSwapChain->ResizeBuffers(bufferCount, backbufferWidth, backbufferHeight, backbufferFormatInfo.texFormat, 0);
+    HRESULT result = mSwapChain->ResizeBuffers(desc.BufferCount, backbufferWidth, backbufferHeight, backbufferFormatInfo.texFormat, 0);
 
     if (FAILED(result))
     {
@@ -364,7 +367,6 @@ EGLint SwapChain11::resize(EGLint backbufferWidth, EGLint backbufferHeight)
             return EGL_BAD_ALLOC;
         }
     }
-#endif
 
     result = mSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&mBackBufferTexture);
     ASSERT(SUCCEEDED(result));
@@ -379,6 +381,7 @@ EGLint SwapChain11::resize(EGLint backbufferWidth, EGLint backbufferHeight)
     {
         d3d11::SetDebugName(mBackBufferRTView, "Back buffer render target");
     }
+#endif
 
     return resetOffscreenTexture(backbufferWidth, backbufferHeight);
 }
@@ -412,62 +415,14 @@ EGLint SwapChain11::reset(int backbufferWidth, int backbufferHeight, EGLint swap
         return EGL_SUCCESS;
     }
 
-    if (mWindow)
+    if (mNativeWindow.getNativeWindow())
     {
         const d3d11::TextureFormat &backbufferFormatInfo = d3d11::GetTextureFormatInfo(mBackBufferFormat);
 
-        IDXGIFactory *factory = mRenderer->getDxgiFactory();
+        HRESULT result = mNativeWindow.createSwapChain(device, mRenderer->getDxgiFactory(),
+                                               backbufferFormatInfo.texFormat,
+                                               backbufferWidth, backbufferHeight, &mSwapChain);
 
-#if !defined(ANGLE_PLATFORM_WINRT)
-        DXGI_SWAP_CHAIN_DESC swapChainDesc = {0};
-        swapChainDesc.BufferDesc.Width = backbufferWidth;
-        swapChainDesc.BufferDesc.Height = backbufferHeight;
-        swapChainDesc.BufferDesc.RefreshRate.Numerator = 0;
-        swapChainDesc.BufferDesc.RefreshRate.Denominator = 1;
-        swapChainDesc.BufferDesc.Format = backbufferFormatInfo.texFormat;
-        swapChainDesc.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
-        swapChainDesc.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
-        swapChainDesc.SampleDesc.Count = 1;
-        swapChainDesc.SampleDesc.Quality = 0;
-        swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-        swapChainDesc.BufferCount = 1;
-        swapChainDesc.OutputWindow = mWindow;
-        swapChainDesc.Windowed = TRUE;
-        swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
-        swapChainDesc.Flags = 0;
-
-        HRESULT result = factory->CreateSwapChain(device, &swapChainDesc, &mSwapChain);
-#else
-        IDXGIFactory2 *factory2;
-        HRESULT result = factory->QueryInterface(IID_PPV_ARGS(&factory2));
-        ASSERT(SUCCEEDED(result));
-
-        DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {0};
-        swapChainDesc.Width = 0;
-        swapChainDesc.Height = 0;
-        swapChainDesc.Format = backbufferFormatInfo.texFormat;
-        swapChainDesc.SampleDesc.Count = 1;
-        swapChainDesc.SampleDesc.Quality = 0;
-        swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-        swapChainDesc.Stereo = FALSE;
-        swapChainDesc.Flags = 0;
-#if WINAPI_FAMILY==WINAPI_FAMILY_PC_APP
-        swapChainDesc.Scaling = DXGI_SCALING_NONE;
-        swapChainDesc.BufferCount = 2;
-        swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;
-#elif WINAPI_FAMILY==WINAPI_FAMILY_PHONE_APP
-        swapChainDesc.BufferCount = 1;
-        swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
-#endif
-
-        IDXGISwapChain1 *swapChain;
-        result = factory2->CreateSwapChainForCoreWindow(device, mWindow, &swapChainDesc, NULL, &swapChain);
-        mSwapChain = swapChain;
-        HRESULT hr = swapChain->GetDesc1(&swapChainDesc);
-        ASSERT(SUCCEEDED(hr));
-        mViewportWidth = swapChainDesc.Width;
-        mViewportHeight = swapChainDesc.Height;
-#endif
         if (FAILED(result))
         {
             ERR("Could not create additional swap chains or offscreen surfaces: %08lX", result);
@@ -537,7 +492,7 @@ void SwapChain11::initPassThroughResources()
     samplerDesc.BorderColor[2] = 0.0f;
     samplerDesc.BorderColor[3] = 0.0f;
     samplerDesc.MinLOD = 0;
-    samplerDesc.MaxLOD = FLT_MAX;
+    samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
 
     result = device->CreateSamplerState(&samplerDesc, &mPassThroughSampler);
     ASSERT(SUCCEEDED(result));
@@ -563,7 +518,7 @@ void SwapChain11::initPassThroughResources()
 }
 
 // parameters should be validated/clamped by caller
-EGLint SwapChain11::swapRect(EGLint x, EGLint y, EGLint width, EGLint height, EGLint flags)
+EGLint SwapChain11::swapRect(EGLint x, EGLint y, EGLint width, EGLint height)
 {
     if (!mSwapChain)
     {
@@ -572,16 +527,6 @@ EGLint SwapChain11::swapRect(EGLint x, EGLint y, EGLint width, EGLint height, EG
 
     ID3D11Device *device = mRenderer->getDevice();
     ID3D11DeviceContext *deviceContext = mRenderer->getDeviceContext();
-
-    // Set vertices
-    D3D11_MAPPED_SUBRESOURCE mappedResource;
-    HRESULT result = deviceContext->Map(mQuadVB, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
-    if (FAILED(result))
-    {
-        return EGL_BAD_ACCESS;
-    }
-
-    d3d11::PositionTexCoordVertex *vertices = static_cast<d3d11::PositionTexCoordVertex*>(mappedResource.pData);
 
     // Create a quad in homogeneous coordinates
     float x1 = (x / float(mWidth)) * 2.0f - 1.0f;
@@ -594,8 +539,18 @@ EGLint SwapChain11::swapRect(EGLint x, EGLint y, EGLint width, EGLint height, EG
     float u2 = (x + width) / float(mWidth);
     float v2 = (y + height) / float(mHeight);
 
-    const int rotateL = flags & SWAP_ROTATE_90;
-    const int rotateR = flags & SWAP_ROTATE_270;
+    const bool rotateL = mRotateL;
+    const bool rotateR = mRotateR;
+
+    // Set vertices
+    D3D11_MAPPED_SUBRESOURCE mappedResource;
+    HRESULT result = deviceContext->Map(mQuadVB, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+    if (FAILED(result))
+    {
+        return EGL_BAD_ACCESS;
+    }
+
+    d3d11::PositionTexCoordVertex *vertices = static_cast<d3d11::PositionTexCoordVertex*>(mappedResource.pData);
 
     d3d11::SetPositionTexCoordVertex(&vertices[0], x1, y1, rotateL ? u2 : u1, rotateR ? v2 : v1);
     d3d11::SetPositionTexCoordVertex(&vertices[1], x1, y2, rotateR ? u2 : u1, rotateL ? v1 : v2);
@@ -628,22 +583,23 @@ EGLint SwapChain11::swapRect(EGLint x, EGLint y, EGLint width, EGLint height, EG
 
     // Set the viewport
     D3D11_VIEWPORT viewport;
-    viewport.TopLeftX = 0;
-    viewport.TopLeftY = 0;
-    viewport.Width = mViewportWidth;
-    viewport.Height = mViewportHeight;
+    viewport.TopLeftX = 0.0f;
+    viewport.TopLeftY = 0.0f;
+    const bool invertViewport = (mRotateL || mRotateR) && !(mRotateL && mRotateR);
+    viewport.Width = FLOAT(invertViewport ? mHeight : mWidth);
+    viewport.Height = FLOAT(invertViewport ? mWidth : mHeight);
     viewport.MinDepth = 0.0f;
     viewport.MaxDepth = 1.0f;
     deviceContext->RSSetViewports(1, &viewport);
 
     // Apply textures
-    deviceContext->PSSetShaderResources(0, 1, &mOffscreenSRView);
+    mRenderer->setShaderResource(gl::SAMPLER_PIXEL, 0, mOffscreenSRView);
     deviceContext->PSSetSamplers(0, 1, &mPassThroughSampler);
 
     // Draw
     deviceContext->Draw(4, 0);
 
-#ifdef ANGLE_FORCE_VSYNC_OFF
+#if ANGLE_VSYNC == ANGLE_DISABLED
     result = mSwapChain->Present(0, 0);
 #else
     result = mSwapChain->Present(mSwapInterval, 0);
@@ -667,8 +623,7 @@ EGLint SwapChain11::swapRect(EGLint x, EGLint y, EGLint width, EGLint height, EG
     }
 
     // Unbind
-    static ID3D11ShaderResourceView *const nullSRV = NULL;
-    deviceContext->PSSetShaderResources(0, 1, &nullSRV);
+    mRenderer->setShaderResource(gl::SAMPLER_PIXEL, 0, NULL);
 
     mRenderer->unapplyRenderTargets();
     mRenderer->markAllStateDirty();
@@ -708,8 +663,8 @@ ID3D11Texture2D *SwapChain11::getDepthStencilTexture()
 
 SwapChain11 *SwapChain11::makeSwapChain11(SwapChain *swapChain)
 {
-    ASSERT(HAS_DYNAMIC_TYPE(rx::SwapChain11*, swapChain));
-    return static_cast<rx::SwapChain11*>(swapChain);
+    ASSERT(HAS_DYNAMIC_TYPE(SwapChain11*, swapChain));
+    return static_cast<SwapChain11*>(swapChain);
 }
 
 void SwapChain11::recreate()

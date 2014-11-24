@@ -1286,21 +1286,15 @@ void QToolBarAreaLayout::saveState(QDataStream &stream) const
     }
 }
 
-static inline int getInt(QDataStream &stream, Qt::Orientation o, bool pre43)
+static inline int getInt(QDataStream &stream)
 {
-    if (pre43) {
-        QPoint p;
-        stream >> p;
-        return pick(o, p);
-    } else {
-        int x;
-        stream >> x;
-        return x;
-    }
+    int x;
+    stream >> x;
+    return x;
 }
 
 
-bool QToolBarAreaLayout::restoreState(QDataStream &stream, const QList<QToolBar*> &_toolBars, uchar tmarker, bool pre43, bool testing)
+bool QToolBarAreaLayout::restoreState(QDataStream &stream, const QList<QToolBar*> &_toolBars, uchar tmarker, bool testing)
 {
     QList<QToolBar*> toolBars = _toolBars;
     int lines;
@@ -1325,8 +1319,8 @@ bool QToolBarAreaLayout::restoreState(QDataStream &stream, const QList<QToolBar*
             stream >> objectName;
             uchar shown;
             stream >> shown;
-            item.pos = getInt(stream, dock.o, pre43);
-            item.size = getInt(stream, dock.o, pre43);
+            item.pos = getInt(stream);
+            item.size = getInt(stream);
 
             /*
                4.3.0 added floating toolbars, but failed to add the ability to restore them.
@@ -1339,9 +1333,9 @@ bool QToolBarAreaLayout::restoreState(QDataStream &stream, const QList<QToolBar*
             QRect rect;
             bool floating = false;
             uint geom0, geom1;
-            geom0 = getInt(stream, dock.o, pre43);
+            geom0 = getInt(stream);
             if (tmarker == ToolBarStateMarkerEx) {
-                geom1 = getInt(stream, dock.o, pre43);
+                geom1 = getInt(stream);
                 rect = unpackRect(geom0, geom1, &floating);
             }
 

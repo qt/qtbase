@@ -90,17 +90,16 @@ static bool isPseudoFs(const QString &mountDir, const QByteArray &type)
 {
     if (mountDir.startsWith(QLatin1String("/dev"))
         || mountDir.startsWith(QLatin1String("/proc"))
-        || mountDir.startsWith(QLatin1String("/run"))
         || mountDir.startsWith(QLatin1String("/sys"))
         || mountDir.startsWith(QLatin1String("/var/run"))
         || mountDir.startsWith(QLatin1String("/var/lock"))) {
         return true;
     }
-#if defined(Q_OS_LINUX)
-    if (type == "rootfs")
+    if (type == "tmpfs")
         return true;
-#else
-    Q_UNUSED(type);
+#if defined(Q_OS_LINUX)
+    if (type == "rootfs" || type == "rpc_pipefs")
+        return true;
 #endif
 
     return false;

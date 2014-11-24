@@ -414,12 +414,14 @@ QString QAccessibleDisplay::text(QAccessible::Text t) const
             if (qobject_cast<QLabel*>(object())) {
                 QLabel *label = qobject_cast<QLabel*>(object());
                 str = label->text();
+#ifndef QT_NO_TEXTHTMLPARSER
                 if (label->textFormat() == Qt::RichText
                     || (label->textFormat() == Qt::AutoText && Qt::mightBeRichText(str))) {
                     QTextDocument doc;
                     doc.setHtml(str);
                     str = doc.toPlainText();
                 }
+#endif
                 if (label->buddy())
                     str = qt_accStripAmp(str);
 #ifndef QT_NO_LCDNUMBER
