@@ -1852,7 +1852,8 @@ MakefileGenerator::writeExtraCompilerTargets(QTextStream &t)
         t << endl;
 
         if (config.indexOf("no_clean") == -1) {
-            QString tmp_clean = escapeFilePaths(project->values(ProKey(*it + ".clean"))).join(' ');
+            const ProStringList &raw_clean = project->values(ProKey(*it + ".clean"));
+            QString tmp_clean = escapeFilePaths(raw_clean).join(' ');
             QString tmp_clean_cmds = project->values(ProKey(*it + ".clean_commands")).join(' ');
             if(!tmp_inputs.isEmpty())
                 clean_targets += QString("compiler_" + (*it) + "_clean ");
@@ -1871,28 +1872,31 @@ MakefileGenerator::writeExtraCompilerTargets(QTextStream &t)
                 wrote_clean = true;
             }
             if(!wrote_clean_cmds || !wrote_clean) {
-                ProStringList cleans;
+                QStringList q_raw_clean = raw_clean.toQStringList();
+                QStringList cleans;
                 const QString del_statement("-$(DEL_FILE)");
                 if(!wrote_clean) {
-                    if(project->isActiveConfig("no_delete_multiple_files")) {
-                        for (ProStringList::ConstIterator input = tmp_inputs.begin(); input != tmp_inputs.end(); ++input) {
-                            QString tinp = (*input).toQString();
-                            cleans.append(" " + Option::fixPathToTargetOS(replaceExtraCompilerVariables(tmp_clean, tinp,
-                                                    replaceExtraCompilerVariables(tmp_out, tinp, QString(), NoShell), TargetShell)));
+                    QStringList dels;
+                    for (ProStringList::ConstIterator input = tmp_inputs.begin(); input != tmp_inputs.end(); ++input) {
+                        QString tinp = (*input).toQString();
+                        QString out = replaceExtraCompilerVariables(tmp_out, tinp, QString(), NoShell);
+                        foreach (const QString &rc, q_raw_clean) {
+                            dels << ' ' + escapeFilePath(Option::fixPathToTargetOS(
+                                    replaceExtraCompilerVariables(rc, tinp, out, NoShell), false));
                         }
+                    }
+                    if(project->isActiveConfig("no_delete_multiple_files")) {
+                        cleans = dels;
                     } else {
-                        QString files, file;
+                        QString files;
                         const int commandlineLimit = 2047; // NT limit, expanded
-                        for(int input = 0; input < tmp_inputs.size(); ++input) {
-                            QString tinp = tmp_inputs.at(input).toQString();
-                            file = " " + replaceExtraCompilerVariables(tmp_clean, tinp,
-                                            replaceExtraCompilerVariables(tmp_out, tinp, QString(), NoShell), TargetShell);
+                        foreach (const QString &file, dels) {
                             if(del_statement.length() + files.length() +
                                qMax(fixEnvVariables(file).length(), file.length()) > commandlineLimit) {
                                 cleans.append(files);
                                 files.clear();
                             }
-                            files += Option::fixPathToTargetOS(file);
+                            files += file;
                         }
                         if(!files.isEmpty())
                             cleans.append(files);
