@@ -86,7 +86,7 @@ public:
     static QFont systemDefaultFont();
 
     static QFontEngine *createEngine(const QFontDef &request,
-                                     HDC fontHdc, int dpi,
+                                     int dpi,
                                      const QSharedPointer<QWindowsFontEngineData> &data);
 
     static HFONT systemFont();

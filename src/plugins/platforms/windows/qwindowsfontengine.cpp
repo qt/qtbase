@@ -1259,7 +1259,7 @@ QFontEngine *QWindowsFontEngine::cloneWithSize(qreal pixelSize) const
     request.pixelSize = pixelSize;
 
     QFontEngine *fontEngine =
-        QWindowsFontDatabase::createEngine(request, 0,
+        QWindowsFontDatabase::createEngine(request,
                                            QWindowsContext::instance()->defaultDPI(),
                                            m_fontEngineData);
     if (fontEngine) {
@@ -1274,11 +1274,10 @@ QFontEngine *QWindowsFontEngine::cloneWithSize(qreal pixelSize) const
 }
 
 void QWindowsFontEngine::initFontInfo(const QFontDef &request,
-                                      HDC fontHdc,
                                       int dpi)
 {
     fontDef = request; // most settings are equal
-    HDC dc = ((request.styleStrategy & QFont::PreferDevice) && fontHdc) ? fontHdc : m_fontEngineData->hdc;
+    HDC dc = m_fontEngineData->hdc;
     SelectObject(dc, hfont);
     wchar_t n[64];
     GetTextFace(dc, 64, n);

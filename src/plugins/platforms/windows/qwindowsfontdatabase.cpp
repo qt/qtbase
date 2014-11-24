@@ -1081,7 +1081,7 @@ QFontEngineMulti *QWindowsFontDatabase::fontEngineMulti(QFontEngine *fontEngine,
 
 QFontEngine * QWindowsFontDatabase::fontEngine(const QFontDef &fontDef, void *handle)
 {
-    QFontEngine *fe = QWindowsFontDatabase::createEngine(fontDef, 0,
+    QFontEngine *fe = QWindowsFontDatabase::createEngine(fontDef,
                                                          QWindowsContext::instance()->defaultDPI(),
                                                          sharedFontData());
     qCDebug(lcQpaFonts) << __FUNCTION__ << "FONTDEF" << fontDef << fe << handle;
@@ -1131,7 +1131,7 @@ QFontEngine *QWindowsFontDatabase::fontEngine(const QByteArray &fontData, qreal 
             request.styleStrategy = QFont::PreferMatch;
             request.hintingPreference = hintingPreference;
 
-            fontEngine = QWindowsFontDatabase::createEngine(request, 0,
+            fontEngine = QWindowsFontDatabase::createEngine(request,
                                                             QWindowsContext::instance()->defaultDPI(),
                                                             sharedFontData());
 
@@ -1669,15 +1669,11 @@ QStringList QWindowsFontDatabase::fallbacksForFamily(const QString &family, QFon
 
 
 QFontEngine *QWindowsFontDatabase::createEngine(const QFontDef &request,
-                                                HDC fontHdc, int dpi,
+                                                int dpi,
                                                 const QSharedPointer<QWindowsFontEngineData> &data)
 {
     LOGFONT lf;
     memset(&lf, 0, sizeof(LOGFONT));
-
-    const bool useDevice = (request.styleStrategy & QFont::PreferDevice) && fontHdc;
-
-    const HDC hdc = useDevice ? fontHdc : data->hdc;
 
     bool stockFont = false;
     bool preferClearTypeAA = false;
@@ -1704,13 +1700,13 @@ QFontEngine *QWindowsFontDatabase::createEngine(const QFontDef &request,
         bool ttf = false;
         int avWidth = 0;
         BOOL res;
-        HGDIOBJ oldObj = SelectObject(hdc, hfont);
+        HGDIOBJ oldObj = SelectObject(data->hdc, hfont);
 
         TEXTMETRIC tm;
-        res = GetTextMetrics(hdc, &tm);
+        res = GetTextMetrics(data->hdc, &tm);
         avWidth = tm.tmAveCharWidth;
         ttf = tm.tmPitchAndFamily & TMPF_TRUETYPE;
-        SelectObject(hdc, oldObj);
+        SelectObject(data->hdc, oldObj);
 
         if (!useDirectWrite) {
             if (hfont && (!ttf || request.stretch != 100)) {
@@ -1769,7 +1765,7 @@ QFontEngine *QWindowsFontDatabase::createEngine(const QFontDef &request,
         QWindowsFontEngine *few = new QWindowsFontEngine(request.family, hfont, stockFont, lf, data);
         if (preferClearTypeAA)
             few->glyphFormat = QFontEngine::Format_A32;
-        few->initFontInfo(request, fontHdc, dpi);
+        few->initFontInfo(request, dpi);
         fe = few;
     }
 

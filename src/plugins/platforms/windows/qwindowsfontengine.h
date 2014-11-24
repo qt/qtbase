@@ -68,7 +68,7 @@ public:
 
     ~QWindowsFontEngine();
     void initFontInfo(const QFontDef &request,
-                      HDC fontHdc,  int dpi);
+                      int dpi);
 
     QFixed lineThickness() const Q_DECL_OVERRIDE;
     Properties properties() const Q_DECL_OVERRIDE;
