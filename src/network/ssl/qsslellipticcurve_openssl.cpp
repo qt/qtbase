@@ -103,6 +103,26 @@ QSslEllipticCurve QSslEllipticCurve::fromShortName(const QString &name)
     return result;
 }
 
+QSslEllipticCurve QSslEllipticCurve::fromLongName(const QString &name)
+{
+    if (name.isEmpty())
+        return QSslEllipticCurve();
+
+    QSslSocketPrivate::ensureInitialized();
+
+    QSslEllipticCurve result;
+
+#ifndef OPENSSL_NO_EC
+    const QByteArray curveNameLatin1 = name.toLatin1();
+
+    int nid = q_OBJ_ln2nid(curveNameLatin1.data());
+    result.id = nid;
+#endif
+
+    return result;
+}
+
+
 // The brainpool curve NIDs (RFC 7027) have been introduced in OpenSSL 1.0.2,
 // redefine them here to make Qt compile with previous versions of OpenSSL
 // (yet correctly recognize them as TLS named curves).

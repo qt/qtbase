@@ -92,6 +92,19 @@ QT_BEGIN_NAMESPACE
     \sa shortName()
 */
 
+/*!
+    \fn QSslEllipticCurve QSslEllipticCurve::fromLongName(const QString &name)
+
+    Returns an QSslEllipticCurve instance representing the named curve \a name.
+    The \a name is a long name for the curve, whose exact spelling depends on the
+    SSL implementation.
+
+    If the given \a name is not supported, returns an invalid QSslEllipticCurve instance.
+
+    \note The OpenSSL implementation of this function treats the name case-sensitively.
+
+    \sa longName()
+*/
 
 /*!
     \fn QString QSslEllipticCurve::shortName() const

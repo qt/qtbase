@@ -54,6 +54,8 @@ private Q_SLOTS:
     void construction();
     void fromShortName_data();
     void fromShortName();
+    void fromLongName_data();
+    void fromLongName();
 #endif
 };
 
@@ -112,6 +114,34 @@ void tst_QSslEllipticCurve::fromShortName()
     QCOMPARE(result.isValid(), valid);
     QCOMPARE(result.shortName(), curve.shortName());
     QCOMPARE(result.shortName(), valid ? shortName : QString());
+}
+
+void tst_QSslEllipticCurve::fromLongName_data()
+{
+    QTest::addColumn<QString>("longName");
+    QTest::addColumn<QSslEllipticCurve>("curve");
+    QTest::addColumn<bool>("valid");
+
+    QTest::newRow("QString()") << QString() << QSslEllipticCurve() << false;
+    QTest::newRow("\"\"") << QString("") << QSslEllipticCurve() << false;
+    QTest::newRow("does-not-exist") << QStringLiteral("does-not-exist") << QSslEllipticCurve() << false;
+    Q_FOREACH (QSslEllipticCurve ec, QSslSocket::supportedEllipticCurves()) {
+        const QString lN = ec.longName();
+        QTest::newRow(qPrintable("supported EC \"" + lN + '"')) << lN << ec << true;
+    }
+}
+
+void tst_QSslEllipticCurve::fromLongName()
+{
+    QFETCH(QString, longName);
+    QFETCH(QSslEllipticCurve, curve);
+    QFETCH(bool, valid);
+
+    const QSslEllipticCurve result = QSslEllipticCurve::fromLongName(longName);
+    QCOMPARE(result, curve);
+    QCOMPARE(result.isValid(), valid);
+    QCOMPARE(result.longName(), curve.longName());
+    QCOMPARE(result.longName(), valid ? longName : QString());
 }
 
 #endif // QT_NO_SSL

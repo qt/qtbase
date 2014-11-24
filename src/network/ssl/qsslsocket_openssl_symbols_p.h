@@ -259,6 +259,7 @@ int q_i2d_X509(X509 *a, unsigned char **b);
 const char *q_OBJ_nid2sn(int a);
 const char *q_OBJ_nid2ln(int a);
 int q_OBJ_sn2nid(const char *s);
+int q_OBJ_ln2nid(const char *s);
 int q_i2t_ASN1_OBJECT(char *buf, int buf_len, ASN1_OBJECT *obj);
 int q_OBJ_obj2txt(char *buf, int buf_len, ASN1_OBJECT *obj, int no_name);
 int q_OBJ_obj2nid(const ASN1_OBJECT *a);
