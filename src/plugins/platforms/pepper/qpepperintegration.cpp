@@ -40,6 +40,10 @@ QPlatformIntegration *qt_create_pepper_integration()
 
 QPepperIntegration * QPepperIntegration::createPepperIntegration()
 {
+    if (QPepperInstance::get() == 0) {
+        qFatal("ERROR: QPepperInstance is not created. Use Q_GUI_MAIN instead of main().");
+        return 0;
+    }
     return new QPepperIntegration();
 }
 
