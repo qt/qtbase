@@ -49,10 +49,6 @@
 #include <QSocketNotifier>
 #include <QStringList>
 
-#ifdef QDEVICEDISCOVERY_UDEV
-#include <libudev.h>
-#endif
-
 #define QT_EVDEV_DEVICE_PATH "/dev/input/"
 #define QT_EVDEV_DEVICE_PREFIX "event"
 #define QT_EVDEV_DEVICE QT_EVDEV_DEVICE_PATH QT_EVDEV_DEVICE_PREFIX
@@ -84,39 +80,18 @@ public:
     Q_DECLARE_FLAGS(QDeviceTypes, QDeviceType)
 
     static QDeviceDiscovery *create(QDeviceTypes type, QObject *parent = 0);
-    ~QDeviceDiscovery();
 
-    QStringList scanConnectedDevices();
+    virtual QStringList scanConnectedDevices() = 0;
 
 signals:
     void deviceDetected(const QString &deviceNode);
     void deviceRemoved(const QString &deviceNode);
 
-#ifdef QDEVICEDISCOVERY_UDEV
-private slots:
-    void handleUDevNotification();
-#endif
-
-private:
-#ifdef QDEVICEDISCOVERY_UDEV
-    QDeviceDiscovery(QDeviceTypes types, struct udev *udev, QObject *parent = 0);
-    bool checkDeviceType(struct udev_device *dev);
-#else
-    QDeviceDiscovery(QDeviceTypes types, QObject *parent = 0);
-    bool checkDeviceType(const QString &device);
-#endif
+protected:
+    QDeviceDiscovery(QDeviceTypes types, QObject *parent) : QObject(parent), m_types(types) { }
+    Q_DISABLE_COPY(QDeviceDiscovery)
 
     QDeviceTypes m_types;
-
-#ifdef QDEVICEDISCOVERY_UDEV
-    void startWatching();
-    void stopWatching();
-
-    struct udev *m_udev;
-    struct udev_monitor *m_udevMonitor;
-    int m_udevMonitorFileDescriptor;
-    QSocketNotifier *m_udevSocketNotifier;
-#endif
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QDeviceDiscovery::QDeviceTypes)

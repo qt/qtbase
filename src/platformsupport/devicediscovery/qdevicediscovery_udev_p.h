@@ -31,23 +31,49 @@
 **
 ****************************************************************************/
 
-#include "qdevicediscovery_dummy_p.h"
+#ifndef QDEVICEDISCOVERY_UDEV_H
+#define QDEVICEDISCOVERY_UDEV_H
+
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
+#include "qdevicediscovery_p.h"
+#include <libudev.h>
 
 QT_BEGIN_NAMESPACE
 
-QDeviceDiscovery *QDeviceDiscovery::create(QDeviceTypes types, QObject *parent)
+class QDeviceDiscoveryUDev : public QDeviceDiscovery
 {
-    return new QDeviceDiscoveryDummy(types, parent);
-}
+    Q_OBJECT
 
-QDeviceDiscoveryDummy::QDeviceDiscoveryDummy(QDeviceTypes types, QObject *parent)
-    : QDeviceDiscovery(types, parent)
-{
-}
+public:
+    QDeviceDiscoveryUDev(QDeviceTypes types, struct udev *udev, QObject *parent = 0);
+    ~QDeviceDiscoveryUDev();
+    QStringList scanConnectedDevices() Q_DECL_OVERRIDE;
 
-QStringList QDeviceDiscoveryDummy::scanConnectedDevices()
-{
-    return QStringList();
-}
+private slots:
+    void handleUDevNotification();
+
+private:
+    bool checkDeviceType(struct udev_device *dev);
+
+    void startWatching();
+    void stopWatching();
+
+    struct udev *m_udev;
+    struct udev_monitor *m_udevMonitor;
+    int m_udevMonitorFileDescriptor;
+    QSocketNotifier *m_udevSocketNotifier;
+};
 
 QT_END_NAMESPACE
+
+#endif // QDEVICEDISCOVERY_UDEV_H

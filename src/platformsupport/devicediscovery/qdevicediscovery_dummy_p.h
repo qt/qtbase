@@ -31,23 +31,33 @@
 **
 ****************************************************************************/
 
-#include "qdevicediscovery_dummy_p.h"
+#ifndef QDEVICEDISCOVERY_DUMMY_H
+#define QDEVICEDISCOVERY_DUMMY_H
+
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
+#include "qdevicediscovery_p.h"
 
 QT_BEGIN_NAMESPACE
 
-QDeviceDiscovery *QDeviceDiscovery::create(QDeviceTypes types, QObject *parent)
+class QDeviceDiscoveryDummy : public QDeviceDiscovery
 {
-    return new QDeviceDiscoveryDummy(types, parent);
-}
+    Q_OBJECT
 
-QDeviceDiscoveryDummy::QDeviceDiscoveryDummy(QDeviceTypes types, QObject *parent)
-    : QDeviceDiscovery(types, parent)
-{
-}
-
-QStringList QDeviceDiscoveryDummy::scanConnectedDevices()
-{
-    return QStringList();
-}
+public:
+    QDeviceDiscoveryDummy(QDeviceTypes types, QObject *parent = 0);
+    QStringList scanConnectedDevices() Q_DECL_OVERRIDE;
+};
 
 QT_END_NAMESPACE
+
+#endif // QDEVICEDISCOVERY_DUMMY_H

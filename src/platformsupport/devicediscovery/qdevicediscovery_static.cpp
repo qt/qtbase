@@ -31,7 +31,7 @@
 **
 ****************************************************************************/
 
-#include "qdevicediscovery_p.h"
+#include "qdevicediscovery_static_p.h"
 
 #include <QStringList>
 #include <QCoreApplication>
@@ -75,23 +75,18 @@ QT_BEGIN_NAMESPACE
 
 QDeviceDiscovery *QDeviceDiscovery::create(QDeviceTypes types, QObject *parent)
 {
-    return new QDeviceDiscovery(types, parent);
+    return new QDeviceDiscoveryStatic(types, parent);
 }
 
-QDeviceDiscovery::QDeviceDiscovery(QDeviceTypes types, QObject *parent) :
-    QObject(parent),
-    m_types(types)
+QDeviceDiscoveryStatic::QDeviceDiscoveryStatic(QDeviceTypes types, QObject *parent)
+    : QDeviceDiscovery(types, parent)
 {
 #ifdef QT_QPA_DEVICE_DISCOVERY_DEBUG
     qWarning() << "New DeviceDiscovery created for type" << types;
 #endif
 }
 
-QDeviceDiscovery::~QDeviceDiscovery()
-{
-}
-
-QStringList QDeviceDiscovery::scanConnectedDevices()
+QStringList QDeviceDiscoveryStatic::scanConnectedDevices()
 {
     QStringList devices;
     QDir dir;
@@ -124,7 +119,7 @@ QStringList QDeviceDiscovery::scanConnectedDevices()
     return devices;
 }
 
-bool QDeviceDiscovery::checkDeviceType(const QString &device)
+bool QDeviceDiscoveryStatic::checkDeviceType(const QString &device)
 {
     bool ret = false;
     int fd = QT_OPEN(device.toLocal8Bit().constData(), O_RDONLY | O_NDELAY, 0);

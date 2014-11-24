@@ -29,8 +29,6 @@ HEADERS = qdirectfbintegration.h \
     qdirectfbscreen.h \
     qdirectfbeglhooks.h
 
-contains(QT_CONFIG, libudev): DEFINES += QDEVICEDISCOVERY_UDEV
-
 # ### port the GL context
 contains(QT_CONFIG, directfb_egl) {
     HEADERS += qdirectfb_egl.h
