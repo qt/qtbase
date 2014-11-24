@@ -874,7 +874,7 @@ QWindowList QGuiApplication::topLevelWindows()
 /*!
     Returns the primary (or default) screen of the application.
 
-    This will be the screen where QWindows are shown, unless otherwise specified.
+    This will be the screen where QWindows are initially shown, unless otherwise specified.
 */
 QScreen *QGuiApplication::primaryScreen()
 {
