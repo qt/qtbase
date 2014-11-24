@@ -453,7 +453,7 @@ bool QPlatformWindow::frameStrutEventsEnabled() const
 QString QPlatformWindow::formatWindowTitle(const QString &title, const QString &separator)
 {
     QString fullTitle = title;
-    if (QGuiApplicationPrivate::displayName) {
+    if (QGuiApplicationPrivate::displayName && !title.endsWith(*QGuiApplicationPrivate::displayName)) {
         // Append display name, if set.
         if (!fullTitle.isEmpty())
             fullTitle += separator;
