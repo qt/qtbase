@@ -1688,22 +1688,6 @@ bool VcprojGenerator::openOutput(QFile &file, const QString &/*build*/) const
     return Win32MakefileGenerator::openOutput(file, QString());
 }
 
-QString VcprojGenerator::fixFilename(QString ofile) const
-{
-    ofile = Option::fixPathToLocalOS(ofile);
-    int slashfind = ofile.lastIndexOf(Option::dir_sep);
-    if(slashfind == -1) {
-        ofile.replace('-', '_');
-    } else {
-        int hyphenfind = ofile.indexOf('-', slashfind);
-        while (hyphenfind != -1 && slashfind < hyphenfind) {
-            ofile.replace(hyphenfind, 1, '_');
-            hyphenfind = ofile.indexOf('-', hyphenfind + 1);
-        }
-    }
-    return ofile;
-}
-
 void VcprojGenerator::outputVariables()
 {
 #if 0
