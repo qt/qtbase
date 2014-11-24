@@ -771,8 +771,8 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
                                 mkt << "\\\n\t";
                             ++added;
                             const QString file_name = fileFixify(fn, Option::output_dir, Option::output_dir);
-                            mkt << " " << escapeDependencyPath(replaceExtraCompilerVariables(
-                                    Option::fixPathToTargetOS(tmp_out.first().toQString(), false), file_name, QString(), NoShell));
+                            mkt << ' ' << escapeDependencyPath(Option::fixPathToTargetOS(
+                                    replaceExtraCompilerVariables(tmp_out.first().toQString(), file_name, QString(), NoShell)));
                         }
                     }
                 }
