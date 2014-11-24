@@ -1675,7 +1675,6 @@ QFontEngine *QWindowsFontDatabase::createEngine(const QFontDef &request,
     LOGFONT lf;
     memset(&lf, 0, sizeof(LOGFONT));
 
-    bool stockFont = false;
     bool preferClearTypeAA = false;
 
     HFONT hfont = 0;
@@ -1696,7 +1695,6 @@ QFontEngine *QWindowsFontDatabase::createEngine(const QFontDef &request,
         if (!hfont)
             qErrnoWarning("%s: CreateFontIndirect failed", __FUNCTION__);
 
-        stockFont = (hfont == 0);
         bool ttf = false;
         int avWidth = 0;
         BOOL res;
@@ -1720,15 +1718,11 @@ QFontEngine *QWindowsFontDatabase::createEngine(const QFontDef &request,
             }
 
 #ifndef Q_OS_WINCE
-            if (hfont == 0) {
+            if (hfont == 0)
                 hfont = (HFONT)GetStockObject(ANSI_VAR_FONT);
-                stockFont = true;
-            }
 #else
-            if (hfont == 0) {
+            if (hfont == 0)
                 hfont = (HFONT)GetStockObject(SYSTEM_FONT);
-                stockFont = true;
-            }
 #endif
         }
 
@@ -1762,7 +1756,7 @@ QFontEngine *QWindowsFontDatabase::createEngine(const QFontDef &request,
 
     QFontEngine *fe = 0;
     if (!useDirectWrite)  {
-        QWindowsFontEngine *few = new QWindowsFontEngine(request.family, hfont, stockFont, lf, data);
+        QWindowsFontEngine *few = new QWindowsFontEngine(request.family, hfont, lf, data);
         if (preferClearTypeAA)
             few->glyphFormat = QFontEngine::Format_A32;
         few->initFontInfo(request, dpi);

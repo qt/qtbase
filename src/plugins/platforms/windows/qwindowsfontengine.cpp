@@ -264,14 +264,13 @@ int QWindowsFontEngine::getGlyphIndexes(const QChar *str, int numChars, QGlyphLa
 */
 
 QWindowsFontEngine::QWindowsFontEngine(const QString &name,
-                               HFONT _hfont, bool stockFontIn, LOGFONT lf,
+                                       HFONT _hfont, LOGFONT lf,
                                const QSharedPointer<QWindowsFontEngineData> &fontEngineData)
     : QFontEngine(Win),
     m_fontEngineData(fontEngineData),
     _name(name),
     hfont(_hfont),
     m_logfont(lf),
-    stockFont(stockFontIn),
     ttf(0),
     hasOutline(0),
     lw(0),
@@ -325,10 +324,8 @@ QWindowsFontEngine::~QWindowsFontEngine()
     // make sure we aren't by accident still selected
     SelectObject(m_fontEngineData->hdc, (HFONT)GetStockObject(SYSTEM_FONT));
 
-    if (!stockFont) {
-        if (!DeleteObject(hfont))
-            qErrnoWarning("%s: QFontEngineWin: failed to delete non-stock font... failed", __FUNCTION__);
-    }
+    if (!DeleteObject(hfont))
+        qErrnoWarning("%s: QFontEngineWin: failed to delete font...", __FUNCTION__);
     qCDebug(lcQpaFonts) << __FUNCTION__ << _name;
 
     if (!uniqueFamilyName.isEmpty()) {
@@ -1365,14 +1362,10 @@ QFontEngine *QWindowsMultiFontEngine::loadEngine(int at)
     // Get here if original font is not DirectWrite or DirectWrite creation failed for some
     // reason
     HFONT hfont = CreateFontIndirect(&lf);
-
-    bool stockFont = false;
-    if (hfont == 0) {
+    if (hfont == 0)
         hfont = (HFONT)GetStockObject(ANSI_VAR_FONT);
-        stockFont = true;
-    }
 
-    return new QWindowsFontEngine(fam, hfont, stockFont, lf, data);
+    return new QWindowsFontEngine(fam, hfont, lf, data);
 }
 
 bool QWindowsFontEngine::supportsTransformation(const QTransform &transform) const
