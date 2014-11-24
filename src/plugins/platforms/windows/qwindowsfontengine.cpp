@@ -322,7 +322,7 @@ QWindowsFontEngine::~QWindowsFontEngine()
         free(widthCache);
 
     // make sure we aren't by accident still selected
-    SelectObject(m_fontEngineData->hdc, (HFONT)GetStockObject(SYSTEM_FONT));
+    SelectObject(m_fontEngineData->hdc, QWindowsFontDatabase::systemFont());
 
     if (!DeleteObject(hfont))
         qErrnoWarning("%s: QFontEngineWin: failed to delete font...", __FUNCTION__);
@@ -1363,7 +1363,7 @@ QFontEngine *QWindowsMultiFontEngine::loadEngine(int at)
     // reason
     HFONT hfont = CreateFontIndirect(&lf);
     if (hfont == 0)
-        hfont = (HFONT)GetStockObject(ANSI_VAR_FONT);
+        hfont = QWindowsFontDatabase::systemFont();
 
     return new QWindowsFontEngine(fam, hfont, lf, data);
 }

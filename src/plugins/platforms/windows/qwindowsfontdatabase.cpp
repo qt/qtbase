@@ -1422,7 +1422,7 @@ void QWindowsFontDatabase::refUniqueFont(const QString &uniqueFont)
 
 HFONT QWindowsFontDatabase::systemFont()
 {
-    static const HFONT stock_sysfont = (HFONT)GetStockObject(SYSTEM_FONT);
+    static const HFONT stock_sysfont = (HFONT)GetStockObject(DEFAULT_GUI_FONT);
     return stock_sysfont;
 }
 
@@ -1706,13 +1706,8 @@ QFontEngine *QWindowsFontDatabase::createEngine(const QFontDef &request,
                     qErrnoWarning("%s: CreateFontIndirect with stretch failed", __FUNCTION__);
             }
 
-#ifndef Q_OS_WINCE
             if (hfont == 0)
-                hfont = (HFONT)GetStockObject(ANSI_VAR_FONT);
-#else
-            if (hfont == 0)
-                hfont = (HFONT)GetStockObject(SYSTEM_FONT);
-#endif
+                hfont = QWindowsFontDatabase::systemFont();
         }
 
 #if !defined(QT_NO_DIRECTWRITE)
@@ -1782,7 +1777,7 @@ static inline int verticalDPI()
 QFont QWindowsFontDatabase::systemDefaultFont()
 {
     LOGFONT lf;
-    GetObject(GetStockObject(DEFAULT_GUI_FONT), sizeof(lf), &lf);
+    GetObject(QWindowsFontDatabase::systemFont(), sizeof(lf), &lf);
     QFont systemFont =  QWindowsFontDatabase::LOGFONT_to_QFont(lf);
     // "MS Shell Dlg 2" is the correct system font >= Win2k
     if (systemFont.family() == QLatin1String("MS Shell Dlg"))
