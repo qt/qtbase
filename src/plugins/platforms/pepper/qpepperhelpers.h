@@ -21,6 +21,7 @@
 #define QPEPPERHELPERS_H
 
 #include <QRect>
+#include <QByteArray>
 #include <QAtomicInt>
 
 #include <ppapi/cpp/rect.h>

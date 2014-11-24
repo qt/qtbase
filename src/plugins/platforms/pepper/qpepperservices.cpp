@@ -20,6 +20,7 @@
 #include "qpepperservices.h"
 #include "qpepperinstance.h"
 
+#include <QtCore/qurl.h>
 #include <qpa/qplatformservices.h>
 
 QT_BEGIN_NAMESPACE

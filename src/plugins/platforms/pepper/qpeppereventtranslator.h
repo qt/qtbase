@@ -24,6 +24,7 @@
 
 #include <QtCore/qobject.h>
 #include <QtCore/qloggingcategory.h>
+#include <QtGui/qwindow.h>
 
 Q_DECLARE_LOGGING_CATEGORY(QT_PLATFORM_PEPPER_EVENT_KEYBOARD)
 
