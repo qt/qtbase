@@ -12575,13 +12575,10 @@ int QWidget::metric(PaintDeviceMetric m) const
 
     QWindow *topLevelWindow = 0;
     QScreen *screen = 0;
-    if (QWidget *topLevel = window())
+    if (QWidget *topLevel = window()) {
         topLevelWindow = topLevel->windowHandle();
-
-    if (topLevelWindow) {
-        QPlatformScreen *platformScreen = QPlatformScreen::platformScreenForWindow(topLevelWindow);
-        if (platformScreen)
-            screen = platformScreen->screen();
+        if (topLevelWindow)
+            screen = topLevelWindow->screen();
     }
     if (!screen && QGuiApplication::primaryScreen())
         screen = QGuiApplication::primaryScreen();
