@@ -324,7 +324,8 @@ QUuid VcprojGenerator::getProjectUUID(const QString &filename)
 
     // If none, create one based on the MD5 of absolute project path
     if(uuid.isNull() || !filename.isEmpty()) {
-        QString abspath = Option::fixPathToLocalOS(filename.isEmpty()?project->first("QMAKE_MAKEFILE").toQString():filename);
+        QString abspath = Option::fixPathToTargetOS(
+                    filename.isEmpty() ? project->first("QMAKE_MAKEFILE").toQString() : filename);
         QByteArray digest = QCryptographicHash::hash(abspath.toUtf8(), QCryptographicHash::Sha1);
         memcpy((unsigned char*)(&uuid), digest.constData(), sizeof(QUuid));
         validUUID = !uuid.isNull();
@@ -457,14 +458,14 @@ ProStringList VcprojGenerator::collectDependencies(QMakeProject *proj, QHash<QSt
     while (collectedIt.hasNext()) {
         QPair<QString, ProStringList> subdir = collectedIt.next();
         QString profile = subdir.first;
-        QFileInfo fi(fileInfo(Option::fixPathToLocalOS(profile, true)));
+        QFileInfo fi(fileInfo(Option::normalizePath(profile)));
         if (fi.exists()) {
             if (fi.isDir()) {
                 if (!profile.endsWith(Option::dir_sep))
                     profile += Option::dir_sep;
                 profile += fi.baseName() + Option::pro_ext;
                 QString profileKey = fi.absoluteFilePath();
-                fi = QFileInfo(fileInfo(Option::fixPathToLocalOS(profile, true)));
+                fi = QFileInfo(fileInfo(Option::normalizePath(profile)));
                 if (!fi.exists())
                     continue;
                 projLookup.insert(profileKey, fi.absoluteFilePath());
@@ -1344,13 +1345,13 @@ void VcprojGenerator::initDeploymentTool()
                 || devicePath.at(0) == QLatin1Char('\\')
                 || devicePath.at(0) == QLatin1Char('%'))) {
                 // create output path
-                devicePath = Option::fixPathToLocalOS(QDir::cleanPath(targetPath + QLatin1Char('\\') + devicePath));
+                devicePath = Option::fixPathToTargetOS(targetPath + QLatin1Char('\\') + devicePath);
             }
         }
         // foreach d in item.files
         foreach (const ProString &src, project->values(ProKey(item + ".files"))) {
             QString itemDevicePath = devicePath;
-            QString source = Option::fixPathToLocalOS(src.toQString());
+            QString source = Option::normalizePath(src.toQString());
             QString nameFilter;
             QFileInfo info(source);
             QString searchPath;
@@ -1359,7 +1360,7 @@ void VcprojGenerator::initDeploymentTool()
                 itemDevicePath += "\\" + info.fileName();
                 searchPath = info.absoluteFilePath();
             } else {
-                nameFilter = source.split('\\').last();
+                nameFilter = info.fileName();
                 searchPath = info.absolutePath();
             }
 
@@ -1371,10 +1372,10 @@ void VcprojGenerator::initDeploymentTool()
             while(iterator.hasNext()) {
                 iterator.next();
                 if (conf.WinRT) {
-                    QString absoluteItemFilePath = Option::fixPathToLocalOS(QFileInfo(iterator.filePath()).absoluteFilePath());
+                    QString absoluteItemFilePath = Option::fixPathToTargetOS(QFileInfo(iterator.filePath()).absoluteFilePath());
                     vcProject.DeploymentFiles.addFile(absoluteItemFilePath);
                 } else {
-                    QString absoluteItemPath = Option::fixPathToLocalOS(QFileInfo(iterator.filePath()).absolutePath());
+                    QString absoluteItemPath = Option::fixPathToTargetOS(QFileInfo(iterator.filePath()).absolutePath());
                     // Identify if it is just another subdir
                     int diffSize = absoluteItemPath.size() - pathSize;
                     // write out rules

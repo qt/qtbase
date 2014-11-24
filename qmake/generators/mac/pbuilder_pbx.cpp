@@ -151,7 +151,7 @@ ProjectBuilderMakefileGenerator::writeSubDirs(QTextStream &t)
                     subdir += Option::dir_sep;
                 tmp = subdir + tmp;
             }
-            QFileInfo fi(fileInfo(Option::fixPathToLocalOS(tmp, true)));
+            QFileInfo fi(fileInfo(Option::normalizePath(tmp)));
             if(fi.exists()) {
                 if(fi.isDir()) {
                     QString profile = tmp;
@@ -1076,7 +1076,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
     if (!project->isEmpty("DESTDIR")) {
         QString phase_key = keyFor("QMAKE_PBX_TARGET_COPY_PHASE");
         QString destDir = project->first("DESTDIR").toQString();
-        destDir = fileInfo(Option::fixPathToLocalOS(destDir)).absoluteFilePath();
+        destDir = fileInfo(Option::normalizePath(destDir)).absoluteFilePath();
         project->values("QMAKE_PBX_BUILDPHASES").append(phase_key);
         t << "\t\t" << phase_key << " = {\n"
           << "\t\t\t" << writeSettings("isa", "PBXShellScriptBuildPhase", SettingsNoQuote) << ";\n"

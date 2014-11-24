@@ -91,9 +91,9 @@ bool MingwMakefileGenerator::findLibraries()
                 if (ver > 0)
                     extension += QString::number(ver);
                 extension += suffix;
-                if(QMakeMetaInfo::libExists((*dir_it).local() + Option::dir_sep + steam) ||
-                    exists((*dir_it).local() + Option::dir_sep + steam + extension + ".a") ||
-                    exists((*dir_it).local() + Option::dir_sep + steam + extension + ".dll.a")) {
+                if (QMakeMetaInfo::libExists((*dir_it).local() + '/' + steam)
+                    || exists((*dir_it).local() + '/' + steam + extension + ".a")
+                    || exists((*dir_it).local() + '/' + steam + extension + ".dll.a")) {
                         out = *it + extension;
                         break;
                 }

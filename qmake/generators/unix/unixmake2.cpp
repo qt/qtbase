@@ -805,7 +805,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
             QString info_plist = fileFixify(project->first("QMAKE_INFO_PLIST").toQString());
             if (info_plist.isEmpty())
                 info_plist = specdir() + QDir::separator() + "Info.plist." + project->first("TEMPLATE");
-            if (!exists(Option::fixPathToLocalOS(info_plist))) {
+            if (!exists(Option::normalizePath(info_plist))) {
                 warn_msg(WarnLogic, "Could not resolve Info.plist: '%s'. Check if QMAKE_INFO_PLIST points to a valid file.",
                          info_plist.toLatin1().constData());
                 break;
@@ -898,12 +898,12 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                     int pos = name.indexOf('/');
                     if (pos > 0)
                         name = name.mid(0, pos);
-                    symlinks[Option::fixPathToLocalOS(path + name)] =
+                    symlinks[Option::fixPathToTargetOS(path + name)] =
                             project->first(vkey) + "/Current/" + name;
                     path += version;
                 }
                 path += project->first(pkey).toQString();
-                path = Option::fixPathToLocalOS(path);
+                path = Option::fixPathToTargetOS(path);
                 for(int file = 0; file < files.count(); file++) {
                     QString fn = files.at(file).toQString();
                     QString src = fileFixify(fn, FileFixifyAbsolute);
@@ -1397,7 +1397,7 @@ UnixMakefileGenerator::libtoolFileName(bool fixify)
     if(fixify) {
         if(QDir::isRelativePath(ret) && !project->isEmpty("DESTDIR"))
             ret.prepend(project->first("DESTDIR").toQString());
-        ret = Option::fixPathToLocalOS(fileFixify(ret, qmake_getpwd(), Option::output_dir));
+        ret = fileFixify(ret, qmake_getpwd(), Option::output_dir);
     }
     return ret;
 }

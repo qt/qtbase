@@ -511,7 +511,7 @@ UnixMakefileGenerator::findLibraries()
                 for (ProStringList::Iterator extit = extens.begin(); extit != extens.end(); ++extit) {
                     if(dir.isNull()) {
                         for(QList<QMakeLocalFileName>::Iterator dep_it = libdirs.begin(); dep_it != libdirs.end(); ++dep_it) {
-                            QString pathToLib = ((*dep_it).local() + Option::dir_sep
+                            QString pathToLib = ((*dep_it).local() + '/'
                                     + project->first("QMAKE_PREFIX_SHLIB")
                                     + stub + "." + (*extit));
                             if(exists(pathToLib)) {
@@ -531,7 +531,7 @@ UnixMakefileGenerator::findLibraries()
                 }
                 if(!found && project->isActiveConfig("compile_libtool")) {
                     for(int dep_i = 0; dep_i < libdirs.size(); ++dep_i) {
-                        if (exists(libdirs[dep_i].local() + Option::dir_sep + project->first("QMAKE_PREFIX_SHLIB") + stub + Option::libtool_ext)) {
+                        if (exists(libdirs[dep_i].local() + '/' + project->first("QMAKE_PREFIX_SHLIB") + stub + Option::libtool_ext)) {
                             (*it) = libdirs[dep_i].real() + Option::dir_sep + project->first("QMAKE_PREFIX_SHLIB") + stub + Option::libtool_ext;
                             found = true;
                             break;
@@ -579,15 +579,15 @@ UnixMakefileGenerator::processPrlFiles()
                     for(int dep_i = 0; dep_i < libdirs.size(); ++dep_i) {
                         const QMakeLocalFileName &lfn = libdirs[dep_i];
                         if(!project->isActiveConfig("compile_libtool")) { //give them the .libs..
-                            QString la = lfn.local() + Option::dir_sep + project->first("QMAKE_PREFIX_SHLIB") + lib + Option::libtool_ext;
-                            if(exists(la) && QFile::exists(lfn.local() + Option::dir_sep + ".libs")) {
+                            QString la = lfn.local() + '/' + project->first("QMAKE_PREFIX_SHLIB") + lib + Option::libtool_ext;
+                            if (exists(la) && QFile::exists(lfn.local() + "/.libs")) {
                                 QString dot_libs = lfn.real() + Option::dir_sep + ".libs";
                                 l.append("-L" + dot_libs);
                                 libdirs.insert(libidx++, QMakeLocalFileName(dot_libs));
                             }
                         }
 
-                        QString prl = lfn.local() + Option::dir_sep + project->first("QMAKE_PREFIX_SHLIB") + lib + prl_ext;
+                        QString prl = lfn.local() + '/' + project->first("QMAKE_PREFIX_SHLIB") + lib + prl_ext;
                         if(processPrlFile(prl)) {
                             if(prl.startsWith(lfn.local()))
                                 prl.replace(0, lfn.local().length(), lfn.real());

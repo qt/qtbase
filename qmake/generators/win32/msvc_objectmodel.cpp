@@ -2901,7 +2901,7 @@ void VCProjectWriter::write(XmlOutput &xml, VCFilter &tool)
     for (int i = 0; i < tool.Files.count(); ++i) {
         const VCFilterFile &info = tool.Files.at(i);
         xml << tag(q_File)
-                << attrS(_RelativePath, Option::fixPathToLocalOS(info.file))
+                << attrS(_RelativePath, Option::fixPathToTargetOS(info.file))
             << data(); // In case no custom builds, to avoid "/>" endings
         outputFileConfig(tool, xml, tool.Files.at(i).file);
         xml << closetag(q_File);
@@ -2960,7 +2960,7 @@ void VCProjectWriter::outputFilter(VCProject &project, XmlOutput &xml, const QSt
 void VCProjectWriter::outputFileConfigs(VCProject &project, XmlOutput &xml, const VCFilterFile &info, const QString &filtername)
 {
     xml << tag(q_File)
-            << attrS(_RelativePath, Option::fixPathToLocalOS(info.file));
+            << attrS(_RelativePath, Option::fixPathToTargetOS(info.file));
     for (int i = 0; i < project.SingleProjects.count(); ++i) {
         VCFilter filter = project.SingleProjects.at(i).filterByName(filtername);
         if (filter.Config) // only if the filter is not empty

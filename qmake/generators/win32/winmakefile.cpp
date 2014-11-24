@@ -52,12 +52,12 @@ Win32MakefileGenerator::Win32MakefileGenerator() : MakefileGenerator()
 int
 Win32MakefileGenerator::findHighestVersion(const QString &d, const QString &stem, const QString &ext)
 {
-    QString bd = Option::fixPathToLocalOS(d, true);
+    QString bd = Option::normalizePath(d);
     if(!exists(bd))
         return -1;
 
     QMakeMetaInfo libinfo(project);
-    bool libInfoRead = libinfo.readLib(bd + Option::dir_sep + stem);
+    bool libInfoRead = libinfo.readLib(bd + '/' + stem);
 
     // If the library, for which we're trying to find the highest version
     // number, is a static library
@@ -146,8 +146,8 @@ Win32MakefileGenerator::findLibraries()
                         extension += QString::number(ver);
                     extension += suffix;
                     extension += ".lib";
-                    if(QMakeMetaInfo::libExists((*it).local() + Option::dir_sep + lib) ||
-                       exists((*it).local() + Option::dir_sep + lib + extension)) {
+                    if (QMakeMetaInfo::libExists((*it).local() + '/' + lib)
+                            || exists((*it).local() + '/' + lib + extension)) {
                         out = (*it).real() + Option::dir_sep + lib + extension;
                         break;
                     }
@@ -156,7 +156,7 @@ Win32MakefileGenerator::findLibraries()
             if(out.isEmpty())
                 out = lib + ".lib";
             (*it) = out;
-        } else if(!exists(Option::fixPathToLocalOS(opt))) {
+        } else if (!exists(Option::normalizePath(opt))) {
             QList<QMakeLocalFileName> lib_dirs;
             QString file = Option::fixPathToTargetOS(opt);
             int slsh = file.lastIndexOf(Option::dir_sep);
@@ -223,7 +223,7 @@ Win32MakefileGenerator::processPrlFiles()
                     else
                         tmp = opt;
                     for(QList<QMakeLocalFileName>::Iterator it = libdirs.begin(); it != libdirs.end(); ++it) {
-                        QString prl = (*it).local() + Option::dir_sep + tmp;
+                        QString prl = (*it).local() + '/' + tmp;
                         if (processPrlFile(prl))
                             break;
                     }
