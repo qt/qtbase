@@ -1,108 +1,106 @@
-TOC
+The mostly pain-free introduction to Qt for Google Native Client
 
-This document has two main sections:
+The Native Client SDK provides several toolchains. Qt for NaCl provides nacl-configure
+for configuring Qt for one of them:
+    nacl-configure <toolcain> [release|debug]
 
-    Using Qt for Google Native Client
-    Developing Qt for Google Native Client
+Available toolchains are:
+    mac_arm_newlib
+    mac_pnacl
+    mac_x86_glibc
+    mac_x86_newlib
 
-If you want to use Qt then the first one most relevant. The second
-section goes into details.
+Linux systems have corresponding "linux_"-prefixed toolchains. Windows is not supported
+as a host platform.
 
-* Using Qt for Google Native Client
+Which toolchain should I use?
+    * pnacl is the "deployment" toolchain which produces .pexes which runs in most Chrome
+      Chrome browser (Android and iOS Chrome are not supported)
+    * x86_newlib is a good choice for development since it avoids the run-time pnacl to
+      native code translation step which gives faster build-debug cycles. x86_newlib use
+      requires enabling Native Client in Chrome's about:flags settings.
 
-The Native Client SDK provides several toolchains. Qt for NaCl provides configure and build
-scripts that makes dealing with them easier:
+The fine print: The glibc toolchain(s) are not currently supported. x86_newlib has 32/64
+bit variants; the nacl-configure script currently builds 32-bit only, which excludes some
+64-bit platforms as targets. (The pnacl builds have no such restrictions). Both *newlib and
+pnacl produces static binaries (glibc produces shared libraries).
 
-nacl-configure      : configure Qt for a single toolchain
-nacl-configure-all  : configure Qt for all toolchains
-nacl-build-all      : build supported parts of Qt for all toolchains.
+NaCl Toolchain versions: Qt should build using any recent NaCl toolchain. The current
+version in use as of writing is pepper_39. Set NACL_SDK_ROOT:
+    export NACL_SDK_ROOT=/Users/USER/code/nacl_sdk/pepper_39
 
-Using the scripts is optional - it's also possible to build Qt using plain 
-configure and make.
+Release and debug builds: Debug binaries are large (~50MB for QtGui). This combined with
+static linking make debug builds impractical due to the increased link and load time.
 
-Build Qt:
+Building Qt:
+    export NACL_SDK_ROOT=/Users/USER/code/nacl_sdk/pepper_39
+    /path/to/nacl-configure mac_x86_newlib release
+    make module-qtdeclarative
+    make module-qtquickcontrols
 
-Install the Native Cleint SDK and setting NACL_SDK_ROOT:
-    export NACL_SDK_ROOT=/Users/USER/code/nacl_sdk/pepper_35
+    [the "make" calls above should succeed]
 
-A) Building Qt for a single toolchain using nacl-configure in QtBase:
+Building applications with Qt for NaCl:
 
-1) Select the toolchain and configure Qt. Use shadow builds (CWD is the build dir)
-   /path/to/nacl-configure <toolchain> [release|debug]
+This has a couple of moving parts. We'll start by building the provided examples, staying
+on the beaten path:
 
-   <toolchain> is one of:
-        nacl-arm-newlib-g++
-        nacl-x86-glibc-g++
-        nacl-x86-glibc-g++64
-        nacl-x86-newlib-g++
-        pnacl-newlib-clang
+Prerequesites:
+    * All relevant Qt dependencies must be built. The current dev effort focuses on
+      Qt Quick (including Qt Quick Controls) and its direct dependencies. nacl-configure
+      is the canonical way to build Qt - it defoines the required configurte options and
+      anything disabled in that script is not supported.
+    * In particular QtWidgets is not well tested.
+    * The app itself must be ported to use Q_GUI_MAIN instead of defining main().
+      (this is relativly straightforward, see the examples)
 
-   (nacl-configure calls Qt's configure; the final command line with configure options is 
-    printed to the terminal for reference)
+Then:
+    * build with the standard qmake + make
+    * deploy with nacldeployqt
 
-2) Build:
-   "make"
-   
-B) Building Qt for all toolchains using nacl-configure-all in QtBase:
+qtbase/tests/manual/nacl contains a set of ported known good examples,
+including window_raster, window_opengl, window_qtquick, and window_controls_gallery.
 
-(cwd is the build dir)
+Buidling the provided examples:
+    path/to/qtbase/bin/qmake -r path/to/qtbase/tests/manual/nacl
+    make
+Running a provided example:
+    cd window_controls_gallery
+    /path/to/nacldeployqt --run --template windowed --quick
 
-1) /path/to/nacl-configure-all
-   You should now have the following build directories:
-       release/mac_arm_newlib
-       release/mac_pnacl
-       release/mac_x86_glibc
-       release/mac_x86_newlib
-       debug/mac_arm_newlib
-       debug/mac_pnacl
-       debug/mac_x86_glibc
-       debug/mac_x86_newlib
+nacldeployqt in depth:
+    Due to a quirk in the current implementation, always run nacldeployqt with a
+    complete path: ../../bin/nacldeployqt.
 
-2) /path/to/nacl-build-all
-    Builds each configuration. Now is a good time to get coffe.
+nacldeployqt performs the following steps:
 
-Running Examples:
-    NOTE: The standard examples and demos have not had app startup ported and won't run
-          out of the box. See "App Porting Notes" below.
+- Deploys Qt Quick Imports. Currenly deploys all imports installed into qbase/qml.
+  May run qmlimportscanner in the future. Enabled with the "quick" option:
+      --quick
+- pnacl: "finalize" step. Converts from llvm intemediate to pnacl stable bitcode.
+  This is done automatically for all pnacl builds.
+- Creates the .nmf manifest file
+- Creates supporting html and javascript. Generates simple html and javascript
+  loader/support code. Controllable with the "template" option:
+      --template windowed
+      --template fullscreen
+- Optionally starts a webserver and Chrome and load the application:
+      --run
+      --debug
+   When debugging chrome will start and wait for the debugger. Run "attach" on
+   on the gdb command line when both are ready:
+       (gdb) attach localhost:4014
 
-    There's a series of basic examples in qtbase/tests/manual/nacl:
-        window_raster
-        window_opengl
-        window_quick
-
-    From each direcory, build, then run ../../../../bin/nacldeployqt to deploy the
-    example and launch a server.
-
-App Porting Notes:
-    * App startup: Use QT_GUI_MAIN instead of defining main:
-        QT_GUI_MAIN(app_init_function, app_exit_function)
-      See for example qtbase/tests/manual/nacl/window_raster
-
-* Developing Qt for Google Native Client
-
-Standard output goes to Chrome standard out. Lauch Chrome from the command line:
-
-NACL_DEBUG_ENABLE=1 PPAPI_BROWSER_DEBUG=1 NACL_PLUGIN_DEBUG=1 /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --incognito --disable-cache --no-default-browser-check --vmodule=ppb*=4 --enable-logging=stderr  --new-window "http://localhost:8000"
-
-
-Qt bootstrapping / tests
-
-In qtbase/tests/manual/nacl. qtnacl.pro
-
-
-Debugging:
-
-1) Run Chrome in debug mode:
-
-    /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --enable-nacl-debug --no-sandbox
-
-2) Attach debugger: [TODO successfully load debug symbols.]
-
-    ~/code/nacl_sdk/pepper_35/toolchain/mac_x86_glibc/bin/x86_64-nacl-gdb
-   target remote localhost:4014
-   nacl-manifest wiggly.nmf
-   remote get irt /Applications/Google\ Chrome.app/Contents/Versions/36.0.1985.125/Google\ Chrome\ Framework.framework/Internet\ Plug-Ins/nacl_irt_x86_32.nexe
-   nacl-irt /Applications/Google\ Chrome.app/Contents/Versions/36.0.1985.125/Google\ Chrome\ Framework.framework/Internet\ Plug-Ins/nacl_irt_x86_32.nexe
-
-   NACL_DEBUG_ENABLE=1 PPAPI_BROWSER_DEBUG=1 NACL_PLUGIN_DEBUG=1 /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --vmodule=ppb*=4 --enable-logging=stderr   
-
+Run-time behavior and options:
+    - pnacl translation delay: There is a ~10-30s delay the first time a pnacl executable
+      is loaded. The loading screen is a blank white screen with no progress indicator.
+    - qmldir loading: Qt Quick looks for qmldir files using a standard search pattern,
+      first QtQuick.2.2/qmldir, then QtQuick.2/qmldir, then QtQuick/qmldir. This generates
+      several 404 error messages on the Javascript and terminal console. This is normal.
+    - Console output (qDebug() etc): nacldeployqt starts Chrome with the sandbox disabled,
+      debug output will go to the terminal. The Qt/pepper platform plugin logs on the
+      "qt.platform.pepper" logging category.
+    - Envirnment variables: Variables can be set in the url query string (when using the
+      nacldeploqt-generated html and javascrpt):
+          http://localhost:8000/index.html?QT_LOGGING_RULES=qt.platform.pepper.*=true
+          http://localhost:8000/index.html?QSG_VISUALIZE=overdraw
