@@ -54,6 +54,13 @@
 
 QT_BEGIN_NAMESPACE
 
+static const int maxWeight = 99;
+
+static inline int mapToQtWeightForRange(int fcweight, int fcLower, int fcUpper, int qtLower, int qtUpper)
+{
+    return qtLower + ((fcweight - fcLower) * (qtUpper - qtLower)) / (fcUpper - fcLower);
+}
+
 static inline bool requiresOpenType(int writingSystem)
 {
     return ((writingSystem >= QFontDatabase::Syriac && writingSystem <= QFontDatabase::Sinhala)
@@ -68,26 +75,22 @@ static inline int weightFromFcWeight(int fcweight)
     // mapping.  This ensures that where there is a corresponding enum on both sides (for example
     // FC_WEIGHT_DEMIBOLD and QFont::DemiBold) we map one to the other but other values map
     // to intermediate Qt weights.
-    const int maxWeight = 99;
-    int qtweight;
-    if (fcweight < 0)
-        qtweight = 0;
-    else if (fcweight <= FC_WEIGHT_LIGHT)
-        qtweight = (fcweight * QFont::Light) / FC_WEIGHT_LIGHT;
-    else if (fcweight <= FC_WEIGHT_NORMAL)
-        qtweight = QFont::Light + ((fcweight - FC_WEIGHT_LIGHT) * (QFont::Normal - QFont::Light)) / (FC_WEIGHT_NORMAL - FC_WEIGHT_LIGHT);
-    else if (fcweight <= FC_WEIGHT_DEMIBOLD)
-        qtweight = QFont::Normal + ((fcweight - FC_WEIGHT_NORMAL) * (QFont::DemiBold - QFont::Normal)) / (FC_WEIGHT_DEMIBOLD - FC_WEIGHT_NORMAL);
-    else if (fcweight <= FC_WEIGHT_BOLD)
-        qtweight = QFont::DemiBold + ((fcweight - FC_WEIGHT_DEMIBOLD) * (QFont::Bold - QFont::DemiBold)) / (FC_WEIGHT_BOLD - FC_WEIGHT_DEMIBOLD);
-    else if (fcweight <= FC_WEIGHT_BLACK)
-        qtweight = QFont::Bold + ((fcweight - FC_WEIGHT_BOLD) * (QFont::Black - QFont::Bold)) / (FC_WEIGHT_BLACK - FC_WEIGHT_BOLD);
-    else if (fcweight <= FC_WEIGHT_ULTRABLACK)
-        qtweight = QFont::Black + ((fcweight - FC_WEIGHT_BLACK) * (maxWeight - QFont::Black)) / (FC_WEIGHT_ULTRABLACK - FC_WEIGHT_BLACK);
-    else
-        qtweight = maxWeight;
 
-    return qtweight;
+    if (fcweight < 0)
+        return 0;
+    if (fcweight <= FC_WEIGHT_LIGHT)
+        return mapToQtWeightForRange(fcweight, 0, FC_WEIGHT_LIGHT, 0, QFont::Light);
+    if (fcweight <= FC_WEIGHT_NORMAL)
+        return mapToQtWeightForRange(fcweight, FC_WEIGHT_LIGHT, FC_WEIGHT_NORMAL, QFont::Light, QFont::Normal);
+    if (fcweight <= FC_WEIGHT_DEMIBOLD)
+        return mapToQtWeightForRange(fcweight, FC_WEIGHT_NORMAL, FC_WEIGHT_DEMIBOLD, QFont::Normal, QFont::DemiBold);
+    if (fcweight <= FC_WEIGHT_BOLD)
+        return mapToQtWeightForRange(fcweight, FC_WEIGHT_DEMIBOLD, FC_WEIGHT_BOLD, QFont::DemiBold, QFont::Bold);
+    if (fcweight <= FC_WEIGHT_BLACK)
+        return mapToQtWeightForRange(fcweight, FC_WEIGHT_BOLD, FC_WEIGHT_BLACK, QFont::Bold, QFont::Black);
+    if (fcweight <= FC_WEIGHT_ULTRABLACK)
+        return mapToQtWeightForRange(fcweight, FC_WEIGHT_BLACK, FC_WEIGHT_ULTRABLACK, QFont::Black, maxWeight);
+    return maxWeight;
 }
 
 static inline int stretchFromFcWidth(int fcwidth)
