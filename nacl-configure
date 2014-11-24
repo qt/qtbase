@@ -30,6 +30,7 @@ if [ $# -eq 0 ]
     echo "    mac_pnacl"
     echo "    mac_x86_glibc"
     echo "    mac_x86_newlib"
+    echo "    host"
     echo "(replace "mac" with your platform)"
     echo ""
     exit 
@@ -80,6 +81,12 @@ if [[ $TOOLCHAIN == *glibc* ]]
   then
     CLIB="glibc"
 fi
+if [[ $TOOLCHAIN == host ]]
+  then
+    PNACL=""
+    CLIB=""
+    ARCH=""
+fi
 
 # Select a mkspec, which can be one of:
 # nacl-arm-newlib-g++
@@ -105,6 +112,15 @@ if [[ $TOOLCHAIN == *x86_newlib ]]
   then
     QT_MKSPEC="nacl-x86-newlib-g++"
 fi
+if [[ $TOOLCHAIN == host ]]
+  then
+    QT_MKSPEC=""
+fi
+if [[ -z "$QT_MKSPEC" ]]; then
+    QT_PLATFPORM=""
+else
+    QT_PLATFPORM="-xplatform unsupported/$QT_MKSPEC"
+fi
 
 # Map the toolchain and bits to a lib directory. One of:
 # glibc_x86_32
@@ -123,16 +139,29 @@ if [[ $ARCH == x86 ]]
   then
       LIBDIR="${LIBDIR}_${BITS}"
 fi
+if [[ $TOOLCHAIN == host ]]
+  then
+    LIBDIR==""
+fi
 
 # Assemble command-line options for the configure line
 NACL_CONFIGURE_LINE="$QTBASE/../configure"
 # mkspec and nacl toolchain path
-NACL_CONFIGURE_LINE="$NACL_CONFIGURE_LINE -xplatform unsupported/$QT_MKSPEC -device-option CROSS_COMPILE=$NACL_SDK_ROOT/toolchain/$TOOLCHAIN/bin/"
+NACL_CONFIGURE_LINE="$NACL_CONFIGURE_LINE  $QT_PLATFPORM -device-option CROSS_COMPILE=$NACL_SDK_ROOT/toolchain/$TOOLCHAIN/bin/"
 NACL_CONFIGURE_LINE="$NACL_CONFIGURE_LINE -I $NACL_SDK_ROOT/include -L $NACL_SDK_ROOT/lib/$LIBDIR/Release"
 # developer build
 NACL_CONFIGURE_LINE="$NACL_CONFIGURE_LINE -developer-build -opensource -confirm-license -nomake examples -nomake tests"
+# OpenGL
+if [[ $TOOLCHAIN != "host" ]]; then
+    NACL_CONFIGURE_LINE"$NACL_CONFIGURE_LINE -opengl es2"
+fi
+
+# disable sse
+if [[ $TOOLCHAIN != "host" ]]; then
+    NACL_CONFIGURE_LINE="$NACL_CONFIGURE_LINE -no-sse2"
+fi
 # misc
-NACL_CONFIGURE_LINE="$NACL_CONFIGURE_LINE -no-sse2 -no-qpa-platform-guard -opengl es2 -skip xmlpatterns -skip qtsvg -no-warnings-are-errors -no-qml-debug"
+NACL_CONFIGURE_LINE="$NACL_CONFIGURE_LINE -no-qpa-platform-guard -skip xmlpatterns -skip qtsvg -no-warnings-are-errors -no-qml-debug -no-dbus"
 
 # Newlib is static builds only.
 if [[ $QT_MKSPEC == *newlib* ]]
@@ -156,6 +185,7 @@ NACL_CONFIGURE_LINE="$NACL_CONFIGURE_LINE $ARG_REST"
 rm qtbase/mkspecs/qconfig.pri
 # Make configure work on compiler upgrades (For example: Xcode.app -> XcodeBeta.app)
 rm qtbase/.qmake.cache
+touch qtbase/.qmake.cache
 
 echo $NACL_CONFIGURE_LINE
 

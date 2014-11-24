@@ -9,7 +9,6 @@ import itertools
 # possible configuration valuues
 hostPlatform = 'mac'
 possibleTargets = ['x86_glibc', 'x86_newlib', 'arm_newlib', 'pnacl'] 
-possibleTargetPlatforms = [hostPlatform + '_' + possibleTarget for possibleTarget in possibleTargets]
 possibleVariants = ['debug', 'release', 'debug-release']
 possibleActions = ['configure', 'build']
 
@@ -43,7 +42,7 @@ print ''
 scriptfile =  __file__
 qtbasedir = path.abspath(path.dirname(scriptfile))
 qtdir = path.dirname(qtbasedir)
-configureScript = path.abspath(path.join(os.getcwd(), qtbasedir, 'nacl-configure'))
+naclconfigureScript = path.abspath(path.join(os.getcwd(), qtbasedir, 'nacl-configure'))
 print 'Qt sources in: ' + qtdir
 
 # perform each platform, variant, action
@@ -57,8 +56,11 @@ for platform, variant, action in itertools.product(platforms, variants, actions)
 
     if action == 'configure':
         # configure Qt
-        configurearglist = ' '.join(["-"  +configurearg for configurearg in configure])
-        cmd = configureScript + ' ' + hostPlatform + '_' + platform + ' ' + variant + ' ' + configurearglist
+        configurearglist = ' '.join(["-"  + configurearg for configurearg in configure])
+        cmd = naclconfigureScript
+        if platform != 'host':
+            cmd +=  ' ' + hostPlatform + '_' + platform
+        cmd += ' ' + variant + ' ' + configurearglist
         print 'call ' + cmd
         if not dryrun:
             Popen(cmd, shell=True, cwd=buildwd)
