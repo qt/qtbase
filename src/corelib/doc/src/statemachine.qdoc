@@ -63,7 +63,7 @@
   used to effectively embed the elements and semantics of statecharts in Qt
   applications. The framework integrates tightly with Qt's meta-object system;
   for example, transitions between states can be triggered by signals, and
-  states can be configured to set properties and invoke methods on QObjects.
+  states can be configured to set properties and invoke methods on {QObject}s.
   Qt's event system is used to drive the state machines.
 
   The state graph in the State Machine framework is hierarchical. States can be nested inside of
@@ -126,9 +126,9 @@
 
   The QState::entered() signal is emitted when the state is entered, and the
   QState::exited() signal is emitted when the state is exited. In the
-  following snippet, the button's showMaximized() slot will be called when
-  state \c s3 is entered, and the button's showMinimized() slot will be called
-  when \c s3 is exited:
+  following snippet, the button's \l {QPushButton::}{showMaximized()} slot
+  will be called when state \c s3 is entered, and the button's \l {QPushButton::}{showMinimized()}
+  slot will be called when \c s3 is exited:
 
   \snippet statemachine/main.cpp 5
 
@@ -151,7 +151,7 @@
   Assume we wanted the user to be able to quit the application at any time by
   clicking a Quit button. In order to achieve this, we need to create a final
   state and make it the target of a transition associated with the Quit
-  button's clicked() signal. We could add a transition from each of \c s1, \c
+  button's \l{QPushButton::}{clicked()} signal. We could add a transition from each of \c s1, \c
   s2 and \c s3; however, this seems redundant, and one would also have to
   remember to add such a transition from every new state that is added in the
   future.
@@ -184,8 +184,8 @@
   \snippet statemachine/main2.cpp 1
 
   In this case we want the application to quit when the state machine is
-  finished, so the machine's finished() signal is connected to the
-  application's quit() slot.
+  finished, so the machine's \l {QStateMachine::}{finished()} signal is connected to the
+  application's \l {QCoreApplication::}{quit()} slot.
 
   A child state can override an inherited transition. For example, the
   following code adds a transition that effectively causes the Quit button to
@@ -290,7 +290,7 @@
     \endomit
 
   When \c s1 's final state is entered, \c s1 will automatically emit
-  finished(). We use a signal transition to cause this event to trigger a
+  \l {QState::}{finished()}. We use a signal transition to cause this event to trigger a
   state change:
 
   \snippet statemachine/main3.cpp 1
@@ -302,7 +302,7 @@
   encapsulation mechanism when building complex (deeply nested) state
   machines. (In the above example, you could of course create a transition
   directly from \c s1 's \c done state rather than relying on \c s1 's
-  finished() signal, but with the consequence that implementation details of
+  \l {QState::}{finished()} signal, but with the consequence that implementation details of
   \c s1 are exposed and depended on).
 
   For parallel state groups, the QState::finished() signal is emitted when \e
@@ -365,8 +365,8 @@
 
   \snippet statemachine/main4.cpp 1
 
-  In the eventTest() reimplementation, we first check if the event type is the
-  desired one; if so, we cast the event to a StringEvent and perform the
+  In the \l {QAbstractTransition::}{eventTest()} reimplementation, we first check if the event type is the
+  desired one; if so, we cast the event to a \c StringEvent and perform the
   string comparison.
 
   The following is a statechart that uses the custom event and transition:
@@ -486,7 +486,7 @@
   message box will pop up before the geometry of the button has actually been set.
 
   To ensure that the message box does not pop up until the geometry actually reaches its final
-  value, we can use the state's propertiesAssigned() signal. The propertiesAssigned() signal will be
+  value, we can use the state's \l {QState::}{propertiesAssigned()} signal. The \l {QState::}{propertiesAssigned()} signal will be
   emitted when the property is assigned its final value, whether this is done immediately or
   after the animation has finished playing.
 
@@ -503,14 +503,14 @@
   has been assigned the defined value.
 
   If the global restore policy is set to QStateMachine::RestoreProperties, the state will not emit
-  the propertiesAssigned() signal until these have been executed as well.
+  the \l {QState::}{propertiesAssigned()} signal until these have been executed as well.
 
   \section1 What Happens If A State Is Exited Before The Animation Has Finished
 
   If a state has property assignments, and the transition into the state has animations for the
   properties, the state can potentially be exited before the properties have been assigned to the
   values defines by the state. This is true in particular when there are transitions out from the
-  state that do not depend on the propertiesAssigned signal, as described in the previous section.
+  state that do not depend on the \l {QState::}{propertiesAssigned()} signal, as described in the previous section.
 
   The State Machine API guarantees that a property assigned by the state machine either:
   \list
@@ -563,13 +563,13 @@
 
   The parent state machine treats the child machine as an \e atomic state in the state machine
   algorithm. The child state machine is self-contained; it maintains its own event queue and
-  configuration. In particular, note that the \l{QStateMachine::configuration()}{configuration}
+  configuration. In particular, note that the \l{QStateMachine::}{configuration()}
   of the child machine is not part of the parent machine's configuration (only the child machine
   itself is).
 
   States of the child state machine cannot be specified as targets of transitions in the parent
   state machine; only the child state machine itself can. Conversely, states of the parent state
   machine cannot be specified as targets of transitions in the child state machine. The child
-  state machine's \l{QState::finished()}{finished}() signal can be used to trigger a transition
+  state machine's \l{QState::}{finished}() signal can be used to trigger a transition
   in the parent machine.
 */
