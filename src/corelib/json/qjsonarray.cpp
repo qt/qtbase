@@ -709,6 +709,11 @@ bool QJsonArray::operator!=(const QJsonArray &other) const
     \internal
 */
 
+/*! \typedef QJsonArray::iterator::pointer
+
+    \internal
+*/
+
 /*! \fn QJsonArray::iterator::iterator()
 
     Constructs an uninitialized iterator.
@@ -949,6 +954,11 @@ bool QJsonArray::operator!=(const QJsonArray &other) const
 */
 
 /*! \typedef QJsonArray::const_iterator::reference
+
+    \internal
+*/
+
+/*! \typedef QJsonArray::const_iterator::pointer
 
     \internal
 */
