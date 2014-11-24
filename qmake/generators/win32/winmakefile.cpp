@@ -305,11 +305,6 @@ void Win32MakefileGenerator::processVars()
     fixTargetExt();
     processRcFileVar();
 
-    ProStringList &incDir = project->values("INCLUDEPATH");
-    for (ProStringList::Iterator incDir_it = incDir.begin(); incDir_it != incDir.end(); ++incDir_it)
-        if (!(*incDir_it).isEmpty())
-            (*incDir_it) = Option::fixPathToTargetOS((*incDir_it).toQString(), false, false);
-
     ProString libArg = project->first("QMAKE_L_FLAG");
     ProStringList libs;
     ProStringList &libDir = project->values("QMAKE_LIBDIR");
