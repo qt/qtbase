@@ -80,6 +80,11 @@ QFont QWinRTFontDatabase::defaultFont() const
     return QFont(QStringLiteral("Segoe UI"));
 }
 
+bool QWinRTFontDatabase::fontsAlwaysScalable() const
+{
+    return true;
+}
+
 void QWinRTFontDatabase::populateFontDatabase()
 {
     ComPtr<IDWriteFactory1> factory;

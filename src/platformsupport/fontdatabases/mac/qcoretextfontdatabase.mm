@@ -842,6 +842,11 @@ QFont QCoreTextFontDatabase::defaultFont() const
     return QFont(defaultFontName);
 }
 
+bool QCoreTextFontDatabase::fontsAlwaysScalable() const
+{
+    return true;
+}
+
 QList<int> QCoreTextFontDatabase::standardSizes() const
 {
     QList<int> ret;

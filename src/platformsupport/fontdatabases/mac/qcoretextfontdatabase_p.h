@@ -87,6 +87,7 @@ public:
     void releaseHandle(void *handle);
     bool isPrivateFontFamily(const QString &family) const;
     QFont defaultFont() const;
+    bool fontsAlwaysScalable() const Q_DECL_OVERRIDE;
     QList<int> standardSizes() const;
 
     // For iOS and OS X platform themes
