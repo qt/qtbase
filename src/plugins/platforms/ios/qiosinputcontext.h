@@ -48,6 +48,7 @@ QT_BEGIN_NAMESPACE
 
 @class QIOSKeyboardListener;
 @class QIOSTextInputResponder;
+@protocol KeyboardState;
 
 struct ImeState
 {
@@ -90,7 +91,10 @@ public:
     static QIOSInputContext *instance();
 
 private:
-    QIOSKeyboardListener *m_keyboardListener;
+    union {
+        QIOSKeyboardListener *m_keyboardHideGesture;
+        id <KeyboardState> m_keyboardState;
+    };
     QIOSTextInputResponder *m_textResponder;
     ImeState m_imeState;
 };
