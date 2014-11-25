@@ -794,7 +794,7 @@ QString getEnglishName(const QString &familyName)
     HDC hdc = GetDC( 0 );
     LOGFONT lf;
     memset(&lf, 0, sizeof(LOGFONT));
-    memcpy(lf.lfFaceName, familyName.utf16(), qMin(LF_FACESIZE, familyName.length()) * sizeof(wchar_t));
+    memcpy(lf.lfFaceName, familyName.utf16(), qMin(familyName.length(), LF_FACESIZE - 1) * sizeof(wchar_t));
     lf.lfCharSet = DEFAULT_CHARSET;
     HFONT hfont = CreateFontIndirect(&lf);
 
@@ -958,14 +958,9 @@ static int QT_WIN_CALLBACK storeFontSub(ENUMLOGFONTEX* f, NEWTEXTMETRICEX *textm
 
     HDC dummy = GetDC(0);
     LOGFONT lf;
+    memset(&lf, 0, sizeof(LOGFONT));
     lf.lfCharSet = DEFAULT_CHARSET;
-    if (wcslen(f->elfLogFont.lfFaceName) >= LF_FACESIZE) {
-        qWarning("%s: Unable to enumerate family '%s'.",
-                 __FUNCTION__, qPrintable(QString::fromWCharArray(f->elfLogFont.lfFaceName)));
-        return 1;
-    }
-    wmemcpy(lf.lfFaceName, f->elfLogFont.lfFaceName,
-            wcslen(f->elfLogFont.lfFaceName) + 1);
+    memcpy(lf.lfFaceName, f->elfLogFont.lfFaceName, LF_FACESIZE * sizeof(wchar_t));
     lf.lfPitchAndFamily = 0;
     EnumFontFamiliesEx(dummy, &lf, (FONTENUMPROC)storeFont,
                        (LPARAM)namesSetIn, 0);
@@ -1001,20 +996,21 @@ void QWindowsFontDatabase::populate(const QString &family)
 
     HDC dummy = GetDC(0);
     LOGFONT lf;
+    memset(&lf, 0, sizeof(LOGFONT));
     lf.lfCharSet = DEFAULT_CHARSET;
     if (family.size() >= LF_FACESIZE) {
         qWarning("%s: Unable to enumerate family '%s'.",
                  __FUNCTION__, qPrintable(family));
         return;
     }
-    wmemcpy(lf.lfFaceName, reinterpret_cast<const wchar_t*>(family.utf16()),
-            family.size() + 1);
+
     lf.lfPitchAndFamily = 0;
 
     if (family.isEmpty()) {
         EnumFontFamiliesEx(dummy, &lf, (FONTENUMPROC)storeFontSub,
                            (LPARAM)&m_families, 0);
     } else {
+        memcpy(lf.lfFaceName, family.utf16(), family.size() * sizeof(wchar_t));
         EnumFontFamiliesEx(dummy, &lf, (FONTENUMPROC)storeFont,
                            (LPARAM)&m_families, 0);
     }
@@ -1350,7 +1346,7 @@ QStringList QWindowsFontDatabase::addApplicationFont(const QByteArray &fontData,
             HDC hdc = GetDC(0);
             LOGFONT lf;
             memset(&lf, 0, sizeof(LOGFONT));
-            memcpy(lf.lfFaceName, familyName.utf16(), sizeof(wchar_t) * qMin(LF_FACESIZE, familyName.size()));
+            memcpy(lf.lfFaceName, familyName.utf16(), sizeof(wchar_t) * qMin(LF_FACESIZE - 1, familyName.size()));
             lf.lfCharSet = DEFAULT_CHARSET;
             HFONT hfont = CreateFontIndirect(&lf);
             HGDIOBJ oldobj = SelectObject(hdc, hfont);
@@ -1575,6 +1571,10 @@ LOGFONT QWindowsFontDatabase::fontDefToLOGFONT(const QFontDef &request)
     lf.lfPitchAndFamily = DEFAULT_PITCH | hint;
 
     QString fam = request.family;
+    if (fam.size() >= LF_FACESIZE) {
+        qCritical("%s: Family name '%s' is too long.", __FUNCTION__, qPrintable(fam));
+        fam.truncate(LF_FACESIZE - 1);
+    }
 
     if (fam.isEmpty())
         fam = QStringLiteral("MS Sans Serif");
@@ -1586,7 +1586,7 @@ LOGFONT QWindowsFontDatabase::fontDefToLOGFONT(const QFontDef &request)
     if (fam == QLatin1String("Courier") && !(request.styleStrategy & QFont::PreferBitmap))
         fam = QStringLiteral("Courier New");
 
-    memcpy(lf.lfFaceName, fam.utf16(), sizeof(wchar_t) * qMin(fam.length() + 1, 32));  // 32 = Windows hard-coded
+    memcpy(lf.lfFaceName, fam.utf16(), fam.size() * sizeof(wchar_t));
 
     return lf;
 }
@@ -1767,9 +1767,13 @@ QFontEngine *QWindowsFontDatabase::createEngine(const QFontDef &request,
             // turns out okay)
             useDirectWrite = false;
             if (initDirectWrite(data.data())) {
-                const QString nameSubstitute = QWindowsFontEngineDirectWrite::fontNameSubstitute(QString::fromWCharArray(lf.lfFaceName));
-                memcpy(lf.lfFaceName, nameSubstitute.utf16(),
-                       sizeof(wchar_t) * qMin(nameSubstitute.length() + 1, LF_FACESIZE));
+                const QString fam = QString::fromWCharArray(lf.lfFaceName);
+                const QString nameSubstitute = QWindowsFontEngineDirectWrite::fontNameSubstitute(fam);
+                if (nameSubstitute != fam) {
+                    const int nameSubstituteLength = qMin(nameSubstitute.length(), LF_FACESIZE - 1);
+                    memcpy(lf.lfFaceName, nameSubstitute.utf16(), nameSubstituteLength * sizeof(wchar_t));
+                    lf.lfFaceName[nameSubstituteLength] = 0;
+                }
 
                 HRESULT hr = data->directWriteGdiInterop->CreateFontFromLOGFONT(
                             &lf,

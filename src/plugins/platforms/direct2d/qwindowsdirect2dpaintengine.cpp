@@ -923,7 +923,11 @@ public:
         static const char keyC[] = "HKEY_LOCAL_MACHINE\\Software\\Microsoft\\Windows NT\\CurrentVersion\\FontSubstitutes";
         const QString familyName = QString::fromWCharArray(lf.lfFaceName);
         const QString nameSubstitute = QSettings(QLatin1String(keyC), QSettings::NativeFormat).value(familyName, familyName).toString();
-        memcpy(lf.lfFaceName, nameSubstitute.utf16(), sizeof(wchar_t) * qMin(nameSubstitute.length() + 1, LF_FACESIZE));
+        if (nameSubstitute != familyName) {
+            const int nameSubstituteLength = qMin(nameSubstitute.length(), LF_FACESIZE - 1);
+            memcpy(lf.lfFaceName, nameSubstitute.utf16(), nameSubstituteLength * sizeof(wchar_t));
+            lf.lfFaceName[nameSubstituteLength] = 0;
+        }
 
         ComPtr<IDWriteFont> dwriteFont;
         HRESULT hr = QWindowsDirect2DContext::instance()->dwriteGdiInterop()->CreateFontFromLOGFONT(&lf, &dwriteFont);

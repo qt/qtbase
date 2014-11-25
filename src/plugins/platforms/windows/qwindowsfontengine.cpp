@@ -1329,13 +1329,18 @@ QFontEngine *QWindowsMultiFontEngine::loadEngine(int at)
     }
 
     const QString fam = fallbackFamilyAt(at - 1);
-    memcpy(lf.lfFaceName, fam.utf16(), sizeof(wchar_t) * qMin(fam.length() + 1, 32));  // 32 = Windows hard-coded
+    const int faceNameLength = qMin(fam.length(), LF_FACESIZE - 1);
+    memcpy(lf.lfFaceName, fam.utf16(), faceNameLength * sizeof(wchar_t));
+    lf.lfFaceName[faceNameLength] = 0;
 
 #ifndef QT_NO_DIRECTWRITE
     if (fontEngine->type() == QFontEngine::DirectWrite) {
-        const QString nameSubstitute = QWindowsFontEngineDirectWrite::fontNameSubstitute(QString::fromWCharArray(lf.lfFaceName));
-        memcpy(lf.lfFaceName, nameSubstitute.utf16(),
-               sizeof(wchar_t) * qMin(nameSubstitute.length() + 1, LF_FACESIZE));
+        const QString nameSubstitute = QWindowsFontEngineDirectWrite::fontNameSubstitute(fam);
+        if (nameSubstitute != fam) {
+            const int nameSubstituteLength = qMin(nameSubstitute.length(), LF_FACESIZE - 1);
+            memcpy(lf.lfFaceName, nameSubstitute.utf16(), nameSubstituteLength * sizeof(wchar_t));
+            lf.lfFaceName[nameSubstituteLength] = 0;
+        }
 
         IDWriteFont *directWriteFont = 0;
         HRESULT hr = data->directWriteGdiInterop->CreateFontFromLOGFONT(&lf, &directWriteFont);
