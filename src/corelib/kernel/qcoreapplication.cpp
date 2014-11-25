@@ -2580,6 +2580,7 @@ void QCoreApplication::removeNativeEventFilter(QAbstractNativeEventFilter *filte
 
     \sa QAbstractEventDispatcher::hasPendingEvents()
 */
+#if QT_DEPRECATED_SINCE(5, 3)
 bool QCoreApplication::hasPendingEvents()
 {
     QAbstractEventDispatcher *eventDispatcher = QAbstractEventDispatcher::instance();
@@ -2587,6 +2588,7 @@ bool QCoreApplication::hasPendingEvents()
         return eventDispatcher->hasPendingEvents();
     return false;
 }
+#endif
 
 /*!
     Returns a pointer to the event dispatcher object for the main thread. If no

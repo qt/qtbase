@@ -2591,6 +2591,7 @@ void QOpenGLTexture::setData(PixelFormat sourceFormat, PixelType sourceType,
     d->setData(0, 0, QOpenGLTexture::CubeMapPositiveX, sourceFormat, sourceType, data, options);
 }
 
+#if QT_DEPRECATED_SINCE(5, 3)
 /*!
     \obsolete
     \overload
@@ -2648,6 +2649,7 @@ void QOpenGLTexture::setData(PixelFormat sourceFormat, PixelType sourceType,
     Q_ASSERT(d->textureId);
     d->setData(0, 0, QOpenGLTexture::CubeMapPositiveX, sourceFormat, sourceType, data, options);
 }
+#endif
 
 /*!
     This overload of setData() will allocate storage for you.
@@ -2736,6 +2738,7 @@ void QOpenGLTexture::setCompressedData(int dataSize, const void *data,
     d->setCompressedData(0, 0, QOpenGLTexture::CubeMapPositiveX, dataSize, data, options);
 }
 
+#if QT_DEPRECATED_SINCE(5, 3)
 /*!
     \obsolete
     \overload
@@ -2789,6 +2792,7 @@ void QOpenGLTexture::setCompressedData(int dataSize, void *data,
     Q_ASSERT(d->textureId);
     d->setCompressedData(0, 0, QOpenGLTexture::CubeMapPositiveX, dataSize, data, options);
 }
+#endif
 
 /*!
     Returns \c true if your OpenGL implementation and version supports the texture

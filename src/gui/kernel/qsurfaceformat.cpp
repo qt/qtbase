@@ -308,6 +308,7 @@ void QSurfaceFormat::setSamples(int numSamples)
     }
 }
 
+#if QT_DEPRECATED_SINCE(5, 2)
 /*!
     \obsolete
     \overload
@@ -343,6 +344,7 @@ bool QSurfaceFormat::testOption(QSurfaceFormat::FormatOptions opt) const
 {
     return d->opts & opt;
 }
+#endif // QT_DEPRECATED_SINCE(5, 2)
 
 /*!
     \since 5.3

@@ -119,8 +119,10 @@ public:
     bool stereo() const;
     void setStereo(bool enable);
 
+#if QT_DEPRECATED_SINCE(5, 2)
     QT_DEPRECATED void setOption(QSurfaceFormat::FormatOptions opt);
     QT_DEPRECATED bool testOption(QSurfaceFormat::FormatOptions opt) const;
+#endif
 
     void setOptions(QSurfaceFormat::FormatOptions options);
     void setOption(FormatOption option, bool on = true);
