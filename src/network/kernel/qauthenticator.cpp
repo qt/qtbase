@@ -53,13 +53,7 @@
 #endif
 #endif
 
-//#define NTLMV1_CLIENT
-
 QT_BEGIN_NAMESPACE
-
-#ifdef NTLMV1_CLIENT
-#include "../../3rdparty/des/des.cpp"
-#endif
 
 static QByteArray qNtlmPhase1();
 static QByteArray qNtlmPhase3(QAuthenticatorPrivate *ctx, const QByteArray& phase2data);
@@ -848,8 +842,6 @@ QByteArray QAuthenticatorPrivate::digestMd5Response(const QByteArray &challenge,
  */
 #define AVTIMESTAMP 7
 
-//#define NTLMV1_CLIENT
-
 
 //************************Global variables***************************
 
@@ -1096,49 +1088,6 @@ static QString qStringFromUcs2Le(const QByteArray& src)
     return QString((const QChar *)src.data(), src.size()/2);
 }
 
-#ifdef NTLMV1_CLIENT
-static QByteArray qEncodeNtlmResponse(const QAuthenticatorPrivate *ctx, const QNtlmPhase2Block& ch)
-{
-    QCryptographicHash md4(QCryptographicHash::Md4);
-    QByteArray asUcs2Le = qStringAsUcs2Le(ctx->password);
-    md4.addData(asUcs2Le.data(), asUcs2Le.size());
-
-    unsigned char md4hash[22];
-    memset(md4hash, 0, sizeof(md4hash));
-    QByteArray hash = md4.result();
-    Q_ASSERT(hash.size() == 16);
-    memcpy(md4hash, hash.constData(), 16);
-
-    QByteArray rc(24, 0);
-    deshash((unsigned char *)rc.data(), md4hash, (unsigned char *)ch.challenge);
-    deshash((unsigned char *)rc.data() + 8, md4hash + 7, (unsigned char *)ch.challenge);
-    deshash((unsigned char *)rc.data() + 16, md4hash + 14, (unsigned char *)ch.challenge);
-
-    hash.fill(0);
-    return rc;
-}
-
-
-static QByteArray qEncodeLmResponse(const QAuthenticatorPrivate *ctx, const QNtlmPhase2Block& ch)
-{
-    QByteArray hash(21, 0);
-    QByteArray key(14, 0);
-    qstrncpy(key.data(), ctx->password.toUpper().toLatin1(), 14);
-    const char *block = "KGS!@#$%";
-
-    deshash((unsigned char *)hash.data(), (unsigned char *)key.data(), (unsigned char *)block);
-    deshash((unsigned char *)hash.data() + 8, (unsigned char *)key.data() + 7, (unsigned char *)block);
-    key.fill(0);
-
-    QByteArray rc(24, 0);
-    deshash((unsigned char *)rc.data(), (unsigned char *)hash.data(), ch.challenge);
-    deshash((unsigned char *)rc.data() + 8, (unsigned char *)hash.data() + 7, ch.challenge);
-    deshash((unsigned char *)rc.data() + 16, (unsigned char *)hash.data() + 14, ch.challenge);
-
-    hash.fill(0);
-    return rc;
-}
-#endif
 
 /*********************************************************************
 * Function Name: qEncodeHmacMd5
@@ -1457,23 +1406,15 @@ static QByteArray qNtlmPhase3(QAuthenticatorPrivate *ctx, const QByteArray& phas
     pb.workstationStr = ctx->workstation;
 
     // Get LM response
-#ifdef NTLMV1_CLIENT
-    pb.lmResponseBuf = qEncodeLmResponse(ctx, ch);
-#else
     if (ch.targetInfo.len > 0) {
         pb.lmResponseBuf = QByteArray();
     } else {
         pb.lmResponseBuf = qEncodeLmv2Response(ctx, ch, &pb);
     }
-#endif
     offset = qEncodeNtlmBuffer(pb.lmResponse, offset, pb.lmResponseBuf);
 
     // Get NTLM response
-#ifdef NTLMV1_CLIENT
-    pb.ntlmResponseBuf = qEncodeNtlmResponse(ctx, ch);
-#else
     pb.ntlmResponseBuf = qEncodeNtlmv2Response(ctx, ch, &pb);
-#endif
     offset = qEncodeNtlmBuffer(pb.ntlmResponse, offset, pb.ntlmResponseBuf);
 
 
