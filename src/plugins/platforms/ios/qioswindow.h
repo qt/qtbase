@@ -63,6 +63,7 @@ public:
     void setOpacity(qreal level) Q_DECL_OVERRIDE;
 
     bool isExposed() const Q_DECL_OVERRIDE;
+    void propagateSizeHints() Q_DECL_OVERRIDE {}
 
     void raise() { raiseOrLower(true); }
     void lower() { raiseOrLower(false); }
