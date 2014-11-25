@@ -226,10 +226,10 @@ class QGridLayoutRowData
 {
 public:
     void reset(int count);
-    void distributeMultiCells(const QGridLayoutRowInfo &rowInfo);
+    void distributeMultiCells(const QGridLayoutRowInfo &rowInfo, bool snapToPixelGrid);
     void calculateGeometries(int start, int end, qreal targetSize, qreal *positions, qreal *sizes,
                              qreal *descents, const QGridLayoutBox &totalBox,
-                             const QGridLayoutRowInfo &rowInfo);
+                             const QGridLayoutRowInfo &rowInfo, bool snapToPixelGrid);
     QGridLayoutBox totalBox(int start, int end) const;
     void stealBox(int start, int end, int which, qreal *positions, qreal *sizes);
 
@@ -331,7 +331,7 @@ private:
 class Q_GUI_EXPORT QGridLayoutEngine
 {
 public:
-    QGridLayoutEngine(Qt::Alignment defaultAlignment = Qt::Alignment(0));
+    QGridLayoutEngine(Qt::Alignment defaultAlignment = Qt::Alignment(0), bool snapToPixelGrid = false);
     inline ~QGridLayoutEngine() { qDeleteAll(q_items); }
 
     int rowCount(Qt::Orientation orientation) const;
@@ -436,7 +436,10 @@ private:
     QLayoutParameter<qreal> q_defaultSpacings[NOrientations];
     QGridLayoutRowInfo q_infos[NOrientations];
     Qt::LayoutDirection m_visualDirection;
+
+    // Configuration
     Qt::Alignment m_defaultAlignment;
+    unsigned m_snapToPixelGrid : 1;
 
     // Lazily computed from the above user input
     mutable int q_cachedEffectiveFirstRows[NOrientations];
