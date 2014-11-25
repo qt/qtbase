@@ -207,7 +207,9 @@ QMouseEvent::QMouseEvent(Type type, const QPointF &localPos, Qt::MouseButton but
                          Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers)
     : QInputEvent(type, modifiers), l(localPos), w(localPos), b(button), mouseState(buttons), caps(0)
 {
+#ifndef QT_NO_CURSOR
     s = QCursor::pos();
+#endif
 }
 
 
@@ -1545,7 +1547,9 @@ QContextMenuEvent::~QContextMenuEvent()
 QContextMenuEvent::QContextMenuEvent(Reason reason, const QPoint &pos)
     : QInputEvent(ContextMenu), p(pos), reas(reason)
 {
+#ifndef QT_NO_CURSOR
     gp = QCursor::pos();
+#endif
 }
 
 /*!
