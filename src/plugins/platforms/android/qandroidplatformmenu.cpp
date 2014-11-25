@@ -53,18 +53,18 @@ QAndroidPlatformMenu::~QAndroidPlatformMenu()
 void QAndroidPlatformMenu::insertMenuItem(QPlatformMenuItem *menuItem, QPlatformMenuItem *before)
 {
     QMutexLocker lock(&m_menuItemsMutex);
-    m_menuItems.insert(qFind(m_menuItems.begin(),
-                             m_menuItems.end(),
-                             static_cast<QAndroidPlatformMenuItem *>(before)),
+    m_menuItems.insert(std::find(m_menuItems.begin(),
+                                 m_menuItems.end(),
+                                 static_cast<QAndroidPlatformMenuItem *>(before)),
                        static_cast<QAndroidPlatformMenuItem *>(menuItem));
 }
 
 void QAndroidPlatformMenu::removeMenuItem(QPlatformMenuItem *menuItem)
 {
     QMutexLocker lock(&m_menuItemsMutex);
-    PlatformMenuItemsType::iterator it = qFind(m_menuItems.begin(),
-                                               m_menuItems.end(),
-                                               static_cast<QAndroidPlatformMenuItem *>(menuItem));
+    PlatformMenuItemsType::iterator it = std::find(m_menuItems.begin(),
+                                                   m_menuItems.end(),
+                                                   static_cast<QAndroidPlatformMenuItem *>(menuItem));
     if (it != m_menuItems.end())
         m_menuItems.erase(it);
 }

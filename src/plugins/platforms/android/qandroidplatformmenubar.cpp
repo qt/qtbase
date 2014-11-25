@@ -51,18 +51,18 @@ QAndroidPlatformMenuBar::~QAndroidPlatformMenuBar()
 void QAndroidPlatformMenuBar::insertMenu(QPlatformMenu *menu, QPlatformMenu *before)
 {
     QMutexLocker lock(&m_menusListMutex);
-    m_menus.insert(qFind(m_menus.begin(),
-                         m_menus.end(),
-                         static_cast<QAndroidPlatformMenu *>(before)),
-                         static_cast<QAndroidPlatformMenu *>(menu));
+    m_menus.insert(std::find(m_menus.begin(),
+                             m_menus.end(),
+                             static_cast<QAndroidPlatformMenu *>(before)),
+                   static_cast<QAndroidPlatformMenu *>(menu));
 }
 
 void QAndroidPlatformMenuBar::removeMenu(QPlatformMenu *menu)
 {
     QMutexLocker lock(&m_menusListMutex);
-    m_menus.erase(qFind(m_menus.begin(),
-                        m_menus.end(),
-                        static_cast<QAndroidPlatformMenu *>(menu)));
+    m_menus.erase(std::find(m_menus.begin(),
+                            m_menus.end(),
+                            static_cast<QAndroidPlatformMenu *>(menu)));
 }
 
 void QAndroidPlatformMenuBar::syncMenu(QPlatformMenu *menu)
