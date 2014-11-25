@@ -38,7 +38,7 @@
 QT_BEGIN_NAMESPACE
 
 QFontEngineMultiFontConfig::QFontEngineMultiFontConfig(QFontEngine *fe, int script)
-    : QFontEngineMultiBasicImpl(fe, script)
+    : QFontEngineMulti(fe, script)
 {
 }
 
@@ -67,8 +67,8 @@ bool QFontEngineMultiFontConfig::shouldLoadFontEngineForCharacter(int at, uint u
 FcPattern * QFontEngineMultiFontConfig::getMatchPatternForFallback(int fallBackIndex) const
 {
     Q_ASSERT(fallBackIndex < fallbackFamilyCount());
-    if (engines.size() - 1 > cachedMatchPatterns.size())
-        cachedMatchPatterns.resize(engines.size() - 1);
+    if (fallbackFamilyCount() > cachedMatchPatterns.size())
+        cachedMatchPatterns.resize(fallbackFamilyCount());
     FcPattern *ret = cachedMatchPatterns.at(fallBackIndex);
     if (ret)
         return ret;

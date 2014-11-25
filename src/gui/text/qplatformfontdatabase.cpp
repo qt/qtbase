@@ -314,7 +314,7 @@ void QPlatformFontDatabase::invalidate()
 */
 QFontEngineMulti *QPlatformFontDatabase::fontEngineMulti(QFontEngine *fontEngine, QChar::Script script)
 {
-    return new QFontEngineMultiBasicImpl(fontEngine, script);
+    return new QFontEngineMulti(fontEngine, script);
 }
 
 /*!

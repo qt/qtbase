@@ -1950,7 +1950,7 @@ QFontEngine *QTextEngine::fontEngine(const QScriptItem &si, QFixed *ascent, QFix
         if (feCache.prevFontEngine && feCache.prevFontEngine->type() == QFontEngine::Multi && feCache.prevScript == script) {
             engine = feCache.prevFontEngine;
         } else {
-            engine = QFontEngineMultiBasicImpl::createMultiFontEngine(rawFont.d->fontEngine, script);
+            engine = QFontEngineMulti::createMultiFontEngine(rawFont.d->fontEngine, script);
             feCache.prevFontEngine = engine;
             feCache.prevScript = script;
             engine->ref.ref();
@@ -1965,7 +1965,7 @@ QFontEngine *QTextEngine::fontEngine(const QScriptItem &si, QFixed *ascent, QFix
             } else {
                 QFontEngine *scEngine = rawFont.d->fontEngine->cloneWithSize(smallCapsFraction * rawFont.pixelSize());
                 scEngine->ref.ref();
-                scaledEngine = QFontEngineMultiBasicImpl::createMultiFontEngine(scEngine, script);
+                scaledEngine = QFontEngineMulti::createMultiFontEngine(scEngine, script);
                 scaledEngine->ref.ref();
                 feCache.prevScaledFontEngine = scaledEngine;
                 // If scEngine is not ref'ed by scaledEngine, make sure it is deallocated and not leaked.

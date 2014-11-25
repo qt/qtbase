@@ -1302,17 +1302,13 @@ void QWindowsFontEngine::initFontInfo(const QFontDef &request,
     Will probably be superseded by a common Free Type font engine in Qt 5.X.
 */
 QWindowsMultiFontEngine::QWindowsMultiFontEngine(QFontEngine *fe, int script)
-    : QFontEngineMultiBasicImpl(fe, script)
+    : QFontEngineMulti(fe, script)
 {
 }
 
-void QWindowsMultiFontEngine::loadEngine(int at)
+QFontEngine *QWindowsMultiFontEngine::loadEngine(int at)
 {
-    ensureFallbackFamiliesQueried();
-    Q_ASSERT(at < engines.size());
-    Q_ASSERT(engines.at(at) == 0);
-
-    QFontEngine *fontEngine = engines.at(0);
+    QFontEngine *fontEngine = engine(0);
     QSharedPointer<QWindowsFontEngineData> data;
     LOGFONT lf;
 
@@ -1345,23 +1341,18 @@ void QWindowsMultiFontEngine::loadEngine(int at)
         if (FAILED(hr)) {
             qErrnoWarning("%s: CreateFontFromLOGFONT failed", __FUNCTION__);
         } else {
+            Q_ASSERT(directWriteFont);
             IDWriteFontFace *directWriteFontFace = NULL;
             HRESULT hr = directWriteFont->CreateFontFace(&directWriteFontFace);
             if (SUCCEEDED(hr)) {
+                Q_ASSERT(directWriteFontFace);
                 QWindowsFontEngineDirectWrite *fedw = new QWindowsFontEngineDirectWrite(directWriteFontFace,
                                                                                         fontEngine->fontDef.pixelSize,
                                                                                         data);
-                fedw->fontDef = fontDef;
-                fedw->fontDef.family = fam;
-                fedw->ref.ref();
-                engines[at] = fedw;
-
-                qCDebug(lcQpaFonts) << __FUNCTION__ << at << fam;
-                return;
+                return fedw;
             } else {
                 qErrnoWarning("%s: CreateFontFace failed", __FUNCTION__);
             }
-
         }
     }
 #endif
@@ -1375,13 +1366,8 @@ void QWindowsMultiFontEngine::loadEngine(int at)
         hfont = (HFONT)GetStockObject(ANSI_VAR_FONT);
         stockFont = true;
     }
-    engines[at] = new QWindowsFontEngine(fam, hfont, stockFont, lf, data);
-    engines[at]->ref.ref();
-    engines[at]->fontDef = fontDef;
-    engines[at]->fontDef.family = fam;
-    qCDebug(lcQpaFonts) << __FUNCTION__ << at << fam;
 
-    // TODO: increase cost in QFontCache for the font engine loaded here
+    return new QWindowsFontEngine(fam, hfont, stockFont, lf, data);
 }
 
 bool QWindowsFontEngine::supportsTransformation(const QTransform &transform) const

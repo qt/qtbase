@@ -163,13 +163,12 @@ private:
     mutable int designAdvancesSize;
 };
 
-
-class QWindowsMultiFontEngine : public QFontEngineMultiBasicImpl
+class QWindowsMultiFontEngine : public QFontEngineMulti
 {
 public:
     explicit QWindowsMultiFontEngine(QFontEngine *fe, int script);
 
-    void loadEngine(int at);
+    QFontEngine *loadEngine(int at) Q_DECL_OVERRIDE;
 };
 
 QT_END_NAMESPACE

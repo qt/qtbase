@@ -385,7 +385,7 @@ private:
 class Q_GUI_EXPORT QFontEngineMulti : public QFontEngine
 {
 public:
-    explicit QFontEngineMulti(int engineCount);
+    explicit QFontEngineMulti(QFontEngine *engine, int script, const QStringList &fallbackFamilies = QStringList());
     ~QFontEngineMulti();
 
     virtual glyph_t glyphIndex(uint ucs4) const;
@@ -418,46 +418,28 @@ public:
 
     virtual bool canRender(const QChar *string, int len) const;
 
-    QFontEngine *engine(int at) const
-    {Q_ASSERT(at < engines.size()); return engines.at(at); }
+    inline int fallbackFamilyCount() const { return m_fallbackFamilies.size(); }
+    inline QString fallbackFamilyAt(int at) const { return m_fallbackFamilies.at(at); }
 
-    inline void ensureEngineAt(int at)
-    {
-        if (at >= engines.size() || engines.at(at) == 0)
-            loadEngine(at);
-    }
+    void setFallbackFamiliesList(const QStringList &fallbackFamilies);
 
-    virtual bool shouldLoadFontEngineForCharacter(int at, uint ucs4) const;
-    virtual void setFallbackFamiliesList(const QStringList &) {}
+    inline QFontEngine *engine(int at) const
+    { Q_ASSERT(at < m_engines.size()); return m_engines.at(at); }
+
+    void ensureEngineAt(int at);
+
+    static QFontEngine *createMultiFontEngine(QFontEngine *fe, int script);
 
 protected:
-    friend class QRawFont;
-    virtual void loadEngine(int at) = 0;
-    virtual void ensureFallbackFamiliesQueried() {}
-    QVector<QFontEngine *> engines;
-};
-
-class Q_GUI_EXPORT QFontEngineMultiBasicImpl : public QFontEngineMulti
-{
-public:
-    QFontEngineMultiBasicImpl(QFontEngine *fe, int script, const QStringList &fallbacks);
-    QFontEngineMultiBasicImpl(QFontEngine *fe, int script);
-
-    void loadEngine(int at);
-    static QFontEngine* createMultiFontEngine(QFontEngine *fe, int script);
-
-    int fallbackFamilyCount() const { return fallbackFamilies.size(); }
-    QString fallbackFamilyAt(int at) const { return fallbackFamilies.at(at); }
-
     virtual void ensureFallbackFamiliesQueried();
-    virtual void setFallbackFamiliesList(const QStringList &fallbacks);
+    virtual bool shouldLoadFontEngineForCharacter(int at, uint ucs4) const;
+    virtual QFontEngine *loadEngine(int at);
 
 private:
-    void init(QFontEngine *fe);
-
-    mutable QStringList fallbackFamilies;
-    int script;
-    mutable bool fallbacksQueried;
+    QVector<QFontEngine *> m_engines;
+    QStringList m_fallbackFamilies;
+    const int m_script;
+    bool m_fallbackFamiliesQueried;
 };
 
 class QTestFontEngine : public QFontEngineBox

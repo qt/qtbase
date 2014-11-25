@@ -1554,34 +1554,103 @@ static inline uchar highByte(glyph_t glyph)
 static inline glyph_t stripped(glyph_t glyph)
 { return glyph & 0x00ffffff; }
 
-QFontEngineMulti::QFontEngineMulti(int engineCount)
-    : QFontEngine(Multi)
+QFontEngineMulti::QFontEngineMulti(QFontEngine *engine, int script, const QStringList &fallbackFamilies)
+    : QFontEngine(Multi),
+      m_fallbackFamilies(fallbackFamilies),
+      m_script(script),
+      m_fallbackFamiliesQueried(!m_fallbackFamilies.isEmpty())
 {
-    engines.fill(0, engineCount);
-    cache_cost = 0;
+    Q_ASSERT(engine && engine->type() != QFontEngine::Multi);
+
+    if (m_fallbackFamilies.isEmpty()) {
+        // defer obtaining the fallback families until loadEngine(1)
+        m_fallbackFamilies << QString();
+    }
+
+    m_engines.fill(0, m_fallbackFamilies.size() + 1);
+
+    engine->ref.ref();
+    m_engines[0] = engine;
+
+    fontDef = engine->fontDef;
+    cache_cost = engine->cache_cost;
 }
 
 QFontEngineMulti::~QFontEngineMulti()
 {
-    for (int i = 0; i < engines.size(); ++i) {
-        QFontEngine *fontEngine = engines.at(i);
+    for (int i = 0; i < m_engines.size(); ++i) {
+        QFontEngine *fontEngine = m_engines.at(i);
         if (fontEngine && !fontEngine->ref.deref())
             delete fontEngine;
     }
+}
+
+void QFontEngineMulti::ensureFallbackFamiliesQueried()
+{
+    if (QPlatformIntegration *integration = QGuiApplicationPrivate::platformIntegration()) {
+        const QStringList fallbackFamilies = integration->fontDatabase()->fallbacksForFamily(fontDef.family,
+                                                                                             QFont::Style(fontDef.style),
+                                                                                             QFont::AnyStyle,
+                                                                                             QChar::Script(m_script));
+        setFallbackFamiliesList(fallbackFamilies);
+    }
+}
+
+void QFontEngineMulti::setFallbackFamiliesList(const QStringList &fallbackFamilies)
+{
+    Q_ASSERT(!m_fallbackFamiliesQueried);
+
+    m_fallbackFamilies = fallbackFamilies;
+
+    m_engines.resize(m_fallbackFamilies.size() + 1);
+
+    if (m_fallbackFamilies.isEmpty()) {
+        // turns out we lied about having any fallback at all
+        QFontEngine *engine = m_engines.at(0);
+        engine->ref.ref();
+        m_engines[1] = engine;
+        m_fallbackFamilies << fontDef.family;
+    }
+
+    m_fallbackFamiliesQueried = true;
+}
+
+void QFontEngineMulti::ensureEngineAt(int at)
+{
+    Q_ASSERT(m_fallbackFamiliesQueried);
+    Q_ASSERT(at < m_engines.size());
+    if (!m_engines.at(at)) {
+        QFontEngine *engine = loadEngine(at);
+        if (!engine)
+            engine = new QFontEngineBox(fontDef.pixelSize);
+        Q_ASSERT(engine && engine->type() != QFontEngine::Multi);
+        engine->ref.ref();
+        m_engines[at] = engine;
+    }
+}
+
+QFontEngine *QFontEngineMulti::loadEngine(int at)
+{
+    QFontDef request(fontDef);
+    request.styleStrategy |= QFont::NoFontMerging;
+    request.family = fallbackFamilyAt(at - 1);
+
+    return QFontDatabase::findFont(m_script, /*fontprivate = */0, request, /*multi = */false);
 }
 
 glyph_t QFontEngineMulti::glyphIndex(uint ucs4) const
 {
     glyph_t glyph = engine(0)->glyphIndex(ucs4);
     if (glyph == 0 && ucs4 != QChar::LineSeparator) {
-        const_cast<QFontEngineMulti *>(this)->ensureFallbackFamiliesQueried();
-        for (int x = 1, n = qMin(engines.size(), 256); x < n; ++x) {
-            QFontEngine *engine = engines.at(x);
+        if (!m_fallbackFamiliesQueried)
+            const_cast<QFontEngineMulti *>(this)->ensureFallbackFamiliesQueried();
+        for (int x = 1, n = qMin(m_engines.size(), 256); x < n; ++x) {
+            QFontEngine *engine = m_engines.at(x);
             if (!engine) {
                 if (!shouldLoadFontEngineForCharacter(x, ucs4))
                     continue;
-                const_cast<QFontEngineMulti *>(this)->loadEngine(x);
-                engine = engines.at(x);
+                const_cast<QFontEngineMulti *>(this)->ensureEngineAt(x);
+                engine = m_engines.at(x);
             }
             Q_ASSERT(engine != 0);
             if (engine->type() == Box)
@@ -1606,20 +1675,22 @@ bool QFontEngineMulti::stringToCMap(const QChar *str, int len,
     if (!engine(0)->stringToCMap(str, len, glyphs, nglyphs, flags))
         return false;
 
-    const_cast<QFontEngineMulti *>(this)->ensureFallbackFamiliesQueried();
     int glyph_pos = 0;
     QStringIterator it(str, str + len);
     while (it.hasNext()) {
         const uint ucs4 = it.peekNext();
         if (glyphs->glyphs[glyph_pos] == 0 && ucs4 != QChar::LineSeparator) {
-            for (int x = 1, n = qMin(engines.size(), 256); x < n; ++x) {
-                if (engines.at(x) == 0 && !shouldLoadFontEngineForCharacter(x, ucs4))
-                    continue;
-
-                QFontEngine *engine = engines.at(x);
+            if (!m_fallbackFamiliesQueried)
+                const_cast<QFontEngineMulti *>(this)->ensureFallbackFamiliesQueried();
+            for (int x = 1, n = qMin(m_engines.size(), 256); x < n; ++x) {
+                QFontEngine *engine = m_engines.at(x);
                 if (!engine) {
-                    const_cast<QFontEngineMulti *>(this)->loadEngine(x);
-                    engine = engines.at(x);
+                    if (!shouldLoadFontEngineForCharacter(x, ucs4))
+                        continue;
+                    const_cast<QFontEngineMulti *>(this)->ensureEngineAt(x);
+                    engine = m_engines.at(x);
+                    if (!engine)
+                        continue;
                 }
                 Q_ASSERT(engine != 0);
                 if (engine->type() == Box)
@@ -1874,7 +1945,6 @@ void QFontEngineMulti::doKerning(QGlyphLayout *glyphs, QFontEngine::ShaperFlags 
 glyph_metrics_t QFontEngineMulti::boundingBox(glyph_t glyph)
 {
     const int which = highByte(glyph);
-    Q_ASSERT(which < engines.size());
     return engine(which)->boundingBox(stripped(glyph));
 }
 
@@ -1953,108 +2023,31 @@ bool QFontEngineMulti::canRender(const QChar *string, int len) const
 QImage QFontEngineMulti::alphaMapForGlyph(glyph_t glyph)
 {
     const int which = highByte(glyph);
-    Q_ASSERT(which < engines.size());
     return engine(which)->alphaMapForGlyph(stripped(glyph));
 }
 
 QImage QFontEngineMulti::alphaMapForGlyph(glyph_t glyph, QFixed subPixelPosition)
 {
     const int which = highByte(glyph);
-    Q_ASSERT(which < engines.size());
     return engine(which)->alphaMapForGlyph(stripped(glyph), subPixelPosition);
 }
 
 QImage QFontEngineMulti::alphaMapForGlyph(glyph_t glyph, const QTransform &t)
 {
     const int which = highByte(glyph);
-    Q_ASSERT(which < engines.size());
     return engine(which)->alphaMapForGlyph(stripped(glyph), t);
 }
 
 QImage QFontEngineMulti::alphaMapForGlyph(glyph_t glyph, QFixed subPixelPosition, const QTransform &t)
 {
     const int which = highByte(glyph);
-    Q_ASSERT(which < engines.size());
     return engine(which)->alphaMapForGlyph(stripped(glyph), subPixelPosition, t);
 }
 
 QImage QFontEngineMulti::alphaRGBMapForGlyph(glyph_t glyph, QFixed subPixelPosition, const QTransform &t)
 {
     const int which = highByte(glyph);
-    Q_ASSERT(which < engines.size());
     return engine(which)->alphaRGBMapForGlyph(stripped(glyph), subPixelPosition, t);
-}
-
-/*
-    Creates a new multi engine.
-
-    This function takes ownership of the QFontEngine, increasing it's refcount.
-*/
-QFontEngineMultiBasicImpl::QFontEngineMultiBasicImpl(QFontEngine *fe, int _script, const QStringList &fallbacks)
-    : QFontEngineMulti(fallbacks.size() + 1),
-      fallbackFamilies(fallbacks), script(_script)
-    , fallbacksQueried(true)
-{
-    init(fe);
-}
-
-QFontEngineMultiBasicImpl::QFontEngineMultiBasicImpl(QFontEngine *fe, int _script)
-    : QFontEngineMulti(2)
-    , script(_script)
-    , fallbacksQueried(false)
-{
-    fallbackFamilies << QString();
-    init(fe);
-}
-
-void QFontEngineMultiBasicImpl::init(QFontEngine *fe)
-{
-    Q_ASSERT(fe && fe->type() != QFontEngine::Multi);
-    engines[0] = fe;
-    fe->ref.ref();
-    fontDef = engines[0]->fontDef;
-    cache_cost = fe->cache_cost;
-}
-
-void QFontEngineMultiBasicImpl::loadEngine(int at)
-{
-    ensureFallbackFamiliesQueried();
-    Q_ASSERT(at < engines.size());
-    Q_ASSERT(engines.at(at) == 0);
-    QFontDef request = fontDef;
-    request.styleStrategy |= QFont::NoFontMerging;
-    request.family = fallbackFamilies.at(at-1);
-    engines[at] = QFontDatabase::findFont(script,
-                                          /*fontprivate = */0,
-                                          request, /*multi = */false);
-    Q_ASSERT(engines[at]);
-    engines[at]->ref.ref();
-    engines[at]->fontDef = request;
-}
-void QFontEngineMultiBasicImpl::ensureFallbackFamiliesQueried()
-{
-    if (fallbacksQueried)
-        return;
-    QStringList fallbacks = QGuiApplicationPrivate::instance()->platformIntegration()->fontDatabase()->fallbacksForFamily(engine(0)->fontDef.family, QFont::Style(engine(0)->fontDef.style)
-                                                                                                                          , QFont::AnyStyle, QChar::Script(script));
-    setFallbackFamiliesList(fallbacks);
-}
-
-void QFontEngineMultiBasicImpl::setFallbackFamiliesList(const QStringList &fallbacks)
-{
-    // Original FontEngine to restore after the fill.
-    QFontEngine *fe = engines[0];
-    fallbackFamilies = fallbacks;
-    if (!fallbackFamilies.isEmpty()) {
-        engines.fill(0, fallbackFamilies.size() + 1);
-        engines[0] = fe;
-    } else {
-        // Turns out we lied about having any fallback at all.
-        fallbackFamilies << fe->fontDef.family;
-        engines[1] = fe;
-        fe->ref.ref();
-    }
-    fallbacksQueried = true;
 }
 
 /*
@@ -2065,7 +2058,7 @@ void QFontEngineMultiBasicImpl::setFallbackFamiliesList(const QStringList &fallb
   the same raw font over and over again, we want to cache the corresponding multi font engine
   as it may contain fallback font engines already.
 */
-QFontEngine* QFontEngineMultiBasicImpl::createMultiFontEngine(QFontEngine *fe, int script)
+QFontEngine *QFontEngineMulti::createMultiFontEngine(QFontEngine *fe, int script)
 {
     QFontEngine *engine = 0;
     QFontCache::Key key(fe->fontDef, script, /*multi = */true);

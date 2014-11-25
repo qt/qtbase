@@ -50,7 +50,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class QFontEngineMultiFontConfig : public QFontEngineMultiBasicImpl
+class QFontEngineMultiFontConfig : public QFontEngineMulti
 {
 public:
     explicit QFontEngineMultiFontConfig(QFontEngine *fe, int script);
