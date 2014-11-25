@@ -63,6 +63,7 @@ public:
     void setOrientationUpdateMask(Qt::ScreenOrientations mask);
 
     UIScreen *uiScreen() const;
+    UIWindow *uiWindow() const;
 
     void updateProperties();
 

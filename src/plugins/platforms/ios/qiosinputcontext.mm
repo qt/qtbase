@@ -45,6 +45,7 @@
 
 #include "qiosglobal.h"
 #include "qiosintegration.h"
+#include "qiosscreen.h"
 #include "qiostextresponder.h"
 #include "qiosviewcontroller.h"
 #include "qioswindow.h"
@@ -76,8 +77,6 @@ static QUIView *focusView()
 // -------------------------------------------------------------------------
 
 @interface QIOSKeyboardListener : UIGestureRecognizer <KeyboardState, UIGestureRecognizerDelegate> {
-  @public
-    UIViewController *m_viewController;
   @private
     QIOSInputContext *m_context;
 }
@@ -97,26 +96,13 @@ static QUIView *focusView()
 {
     if (self = [super initWithTarget:self action:@selector(gestureStateChanged:)]) {
         m_context = context;
-        m_viewController = 0;
 
-        if (isQtApplication()) {
-            // Get the root view controller that is on the same screen as the keyboard:
-            for (UIWindow *uiWindow in [[UIApplication sharedApplication] windows]) {
-                if (uiWindow.screen == [UIScreen mainScreen]) {
-                    m_viewController = [uiWindow.rootViewController retain];
-                    break;
-                }
-            }
-            Q_ASSERT(m_viewController);
+        // UIGestureRecognizer
+        self.enabled = NO;
+        self.cancelsTouchesInView = NO;
+        self.delaysTouchesEnded = NO;
 
-            // Attach 'hide keyboard' gesture to the window, but keep it disabled when the
-            // keyboard is not visible.
-            self.enabled = NO;
-            self.cancelsTouchesInView = NO;
-            self.delaysTouchesEnded = NO;
-            [m_viewController.view.window addGestureRecognizer:self];
-        }
-
+        /// KeyboardState
         self.keyboardVisible = NO;
         self.keyboardVisibleAndDocked = NO;
         self.animationDuration = 0;
@@ -141,9 +127,6 @@ static QUIView *focusView()
 
 - (void)dealloc
 {
-    [m_viewController.view.window removeGestureRecognizer:self];
-    [m_viewController release];
-
     [[NSNotificationCenter defaultCenter]
         removeObserver:self
         name:@"UIKeyboardWillShowNotification" object:nil];
@@ -247,7 +230,7 @@ static QUIView *focusView()
     if (self.state != UIGestureRecognizerStatePossible)
         return;
 
-    CGPoint touchPoint = [[touches anyObject] locationInView:m_viewController.view.window];
+    CGPoint touchPoint = [[touches anyObject] locationInView:self.view];
     if (CGRectContainsPoint(self.keyboardEndRect, touchPoint))
         self.state = UIGestureRecognizerStateBegan;
 }
@@ -349,14 +332,21 @@ QIOSInputContext::QIOSInputContext()
     , m_keyboardHideGesture([[QIOSKeyboardListener alloc] initWithQIOSInputContext:this])
     , m_textResponder(0)
 {
-    if (isQtApplication())
+    if (isQtApplication()) {
+        QIOSScreen *iosScreen = static_cast<QIOSScreen*>(QGuiApplication::primaryScreen()->handle());
+        [iosScreen->uiWindow() addGestureRecognizer:m_keyboardHideGesture];
+
         connect(qGuiApp->inputMethod(), &QInputMethod::cursorRectangleChanged, this, &QIOSInputContext::cursorRectangleChanged);
+    }
+
     connect(qGuiApp, &QGuiApplication::focusWindowChanged, this, &QIOSInputContext::focusWindowChanged);
 }
 
 QIOSInputContext::~QIOSInputContext()
 {
+    [m_keyboardHideGesture.view removeGestureRecognizer:m_keyboardHideGesture];
     [m_keyboardHideGesture release];
+
     [m_textResponder release];
 }
 
@@ -398,6 +388,8 @@ QRectF QIOSInputContext::keyboardRect() const
     return m_keyboardState.keyboardRect;
 }
 
+// -------------------------------------------------------------------------
+
 void QIOSInputContext::cursorRectangleChanged()
 {
     if (!m_keyboardState.keyboardVisibleAndDocked || !qApp->focusObject())
@@ -415,6 +407,18 @@ void QIOSInputContext::cursorRectangleChanged()
     prevCursor = cursor;
 }
 
+UIView *QIOSInputContext::scrollableRootView()
+{
+    if (!m_keyboardHideGesture.view)
+        return 0;
+
+    UIWindow *window = static_cast<UIWindow*>(m_keyboardHideGesture.view);
+    if (![window.rootViewController isKindOfClass:[QIOSViewController class]])
+        return 0;
+
+    return window.rootViewController.view;
+}
+
 void QIOSInputContext::scrollToCursor()
 {
     if (!isQtApplication())
@@ -427,24 +431,29 @@ void QIOSInputContext::scrollToCursor()
         return;
     }
 
-    UIView *view = m_keyboardHideGesture->m_viewController.view;
-    if (view.window != focusView().window)
+    UIView *rootView = scrollableRootView();
+    if (!rootView)
+        return;
+
+    if (rootView.window != focusView().window)
         return;
 
     const int margin = 20;
     QRectF translatedCursorPos = qApp->inputMethod()->cursorRectangle();
     translatedCursorPos.translate(focusView().qwindow->geometry().topLeft());
 
-    qreal keyboardY = [view convertRect:m_keyboardState.keyboardEndRect fromView:nil].origin.y;
+    qreal keyboardY = [rootView convertRect:m_keyboardState.keyboardEndRect fromView:nil].origin.y;
     int statusBarY = qGuiApp->primaryScreen()->availableGeometry().y();
 
     scroll((translatedCursorPos.bottomLeft().y() < keyboardY - margin) ? 0
-        : qMin(view.bounds.size.height - keyboardY, translatedCursorPos.y() - statusBarY - margin));
+        : qMin(rootView.bounds.size.height - keyboardY, translatedCursorPos.y() - statusBarY - margin));
 }
 
 void QIOSInputContext::scroll(int y)
 {
-    UIView *rootView = m_keyboardHideGesture->m_viewController.view;
+    UIView *rootView = scrollableRootView();
+    if (!rootView)
+        return;
 
     CATransform3D translationTransform = CATransform3DMakeTranslation(0.0, -y, 0.0);
     if (CATransform3DEqualToTransform(translationTransform, rootView.layer.sublayerTransform))

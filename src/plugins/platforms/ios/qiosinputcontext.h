@@ -91,6 +91,8 @@ public:
     static QIOSInputContext *instance();
 
 private:
+    UIView* scrollableRootView();
+
     union {
         QIOSKeyboardListener *m_keyboardHideGesture;
         id <KeyboardState> m_keyboardState;
