@@ -379,15 +379,33 @@ void Atom::dump() const
   the space character.
  */
 LinkAtom::LinkAtom(const QString& p1, const QString& p2)
-    : Atom(p1), genus_(Node::DontCare), goal_(Node::NoType), domain_(0)
+    : Atom(p1),
+      resolved_(false),
+      genus_(Node::DontCare),
+      goal_(Node::NoType),
+      domain_(0),
+      squareBracketParams_(p2)
 {
-    QStringList params = p2.toLower().split(QLatin1Char(' '));
-    foreach (const QString& p, params) {
+    // nada.
+}
+
+/*!
+  This function resolves the parameters that were enclosed in
+  square brackets. If the parameters have already been resolved,
+  it does nothing and returns immediately.
+ */
+void LinkAtom::resolveSquareBracketParams()
+{
+    if (resolved_)
+        return;
+    QStringList params = squareBracketParams_.toLower().split(QLatin1Char(' '));
+     foreach (const QString& p, params) {
         if (!domain_) {
             domain_ = QDocDatabase::qdocDB()->findTree(p);
-            if (domain_)
-                continue;
-        }
+            if (domain_) {
+                 continue;
+            }
+         }
         if (goal_ == Node::NoType) {
             goal_ = Node::goal(p);
             if (goal_ != Node::NoType)
@@ -401,9 +419,14 @@ LinkAtom::LinkAtom(const QString& p1, const QString& p2)
             genus_ = Node::CPP;
             continue;
         }
-        error_ = p2;
+        if (p == "doc") {
+            genus_ = Node::DOC;
+            continue;
+        }
+        error_ = squareBracketParams_;
         break;
     }
+    resolved_ = true;
 }
 
 /*!
@@ -411,10 +434,12 @@ LinkAtom::LinkAtom(const QString& p1, const QString& p2)
  */
 LinkAtom::LinkAtom(const LinkAtom& t)
     : Atom(Link, t.string()),
+      resolved_(t.resolved_),
       genus_(t.genus_),
       goal_(t.goal_),
       domain_(t.domain_),
-      error_(t.error_)
+      error_(t.error_),
+      squareBracketParams_(t.squareBracketParams_)
 {
     // nothing
 }
@@ -426,10 +451,12 @@ LinkAtom::LinkAtom(const LinkAtom& t)
  */
 LinkAtom::LinkAtom(Atom* previous, const LinkAtom& t)
     : Atom(previous, Link, t.string()),
+      resolved_(t.resolved_),
       genus_(t.genus_),
       goal_(t.goal_),
       domain_(t.domain_),
-      error_(t.error_)
+      error_(t.error_),
+      squareBracketParams_(t.squareBracketParams_)
 {
     previous->next_ = this;
 }

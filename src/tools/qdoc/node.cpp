@@ -732,7 +732,7 @@ Node *InnerNode::findChildNode(const QString& name, Node::Genus genus) const
         if (!nodes.isEmpty()) {
             for (int i=0; i<nodes.size(); ++i) {
                 Node* node = nodes.at(i);
-                if (genus == node->genus() || genus == Node::DontCare)
+                if (genus == node->genus())
                     return node;
             }
         }

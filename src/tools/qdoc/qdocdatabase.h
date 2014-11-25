@@ -73,6 +73,9 @@ class QDocForest
     Tree* nextTree();
     Tree* primaryTree() { return primaryTree_; }
     Tree* findTree(const QString& t) { return forest_.value(t); }
+    QStringList keys() {
+        return forest_.keys();
+    }
     NamespaceNode* primaryTreeRoot() { return (primaryTree_ ? primaryTree_->root() : 0); }
     bool isEmpty() { return searchOrder().isEmpty(); }
     bool done() { return (currentIndex_ >= searchOrder().size()); }
@@ -401,6 +404,9 @@ class QDocDatabase
     }
     TargetList* getTargetList(const QString& t) { return primaryTree()->getTargetList(t); }
     QStringList getTargetListKeys() { return primaryTree()->getTargetListKeys(); }
+    QStringList keys() {
+        return forest_.keys();
+    }
 
  private:
     friend class QDocIndexFiles;

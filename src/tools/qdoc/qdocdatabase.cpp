@@ -1606,10 +1606,11 @@ void QDocDatabase::mergeCollections(CollectionNode* cn)
   \a ref. If the returned node pointer is null, \a ref is not
   valid.
  */
-const Node* QDocDatabase::findNodeForAtom(const Atom* atom, const Node* relative, QString& ref)
+const Node* QDocDatabase::findNodeForAtom(const Atom* a, const Node* relative, QString& ref)
 {
     const Node* node = 0;
 
+    Atom* atom = const_cast<Atom*>(a);
     QStringList targetPath = atom->string().split("#");
     QString first = targetPath.first().trimmed();
 

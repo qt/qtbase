@@ -219,7 +219,8 @@ const FunctionNode* Tree::findFunctionNode(const QStringList& path,
                                            int findFlags,
                                            Node::Genus genus) const
 {
-    if (path.size() == 3 && !path[0].isEmpty() && (genus != Node::CPP)) {
+    if (path.size() == 3 && !path[0].isEmpty() &&
+        ((genus == Node::QML) || (genus == Node::DontCare))) {
         QmlClassNode* qcn = lookupQmlType(QString(path[0] + "::" + path[1]));
         if (!qcn) {
             QStringList p(path[1]);
@@ -691,7 +692,7 @@ const Node* Tree::findNodeForTarget(const QStringList& path,
     QString p;
     if (path.size() > 1)
         p = path.join(QString("::"));
-    else {
+    else if ((genus == Node::DontCare) || (genus == Node::DOC)) {
         p = path.at(0);
         node = findDocNodeByTitle(p);
         if (node) {
@@ -728,7 +729,8 @@ const Node* Tree::findNodeForTarget(const QStringList& path,
       type node.
     */
     int path_idx = 0;
-    if ((genus != Node::CPP) && (path.size() >= 2) && !path[0].isEmpty()) {
+    if (((genus == Node::QML) || (genus == Node::DontCare)) &&
+        (path.size() >= 2) && !path[0].isEmpty()) {
         QmlClassNode* qcn = lookupQmlType(QString(path[0] + "::" + path[1]));
         if (qcn) {
             current = qcn;
@@ -737,8 +739,7 @@ const Node* Tree::findNodeForTarget(const QStringList& path,
                     ref = getRef(target, current);
                     if (!ref.isEmpty())
                         return current;
-                    else if (genus == Node::QML)
-                        return 0;
+                    return 0;
                 }
                 else
                     return current;
@@ -824,7 +825,8 @@ const Node* Tree::matchPathAndTarget(const QStringList& path,
                 return t;
         }
     }
-    if ((genus != Node::QML) && node->isClass() && (flags & SearchBaseClasses)) {
+    if (((genus == Node::CPP) || (genus == Node::DontCare)) &&
+        node->isClass() && (flags & SearchBaseClasses)) {
         NodeList baseClasses = allBaseClasses(static_cast<const ClassNode*>(node));
         foreach (const Node* bc, baseClasses) {
             t = matchPathAndTarget(path, idx, target, bc, flags, genus, ref);
@@ -872,7 +874,8 @@ const Node* Tree::findNode(const QStringList& path,
           If the answer is yes, the reference identifies a QML
           type node.
         */
-        if ((genus != Node::CPP) && (path.size() >= 2) && !path[0].isEmpty()) {
+        if (((genus == Node::QML) || (genus == Node::DontCare)) &&
+            (path.size() >= 2) && !path[0].isEmpty()) {
             QmlClassNode* qcn = lookupQmlType(QString(path[0] + "::" + path[1]));
             if (qcn) {
                 node = qcn;
@@ -890,7 +893,8 @@ const Node* Tree::findNode(const QStringList& path,
             if (!next && (findFlags & SearchEnumValues) && i == path.size()-1) {
                 next = static_cast<const InnerNode*>(node)->findEnumNodeForValue(path.at(i));
             }
-            if (!next && (genus != Node::QML) && node->isClass() && (findFlags & SearchBaseClasses)) {
+            if (!next && ((genus == Node::CPP) || (genus == Node::DontCare)) &&
+                node->isClass() && (findFlags & SearchBaseClasses)) {
                 NodeList baseClasses = allBaseClasses(static_cast<const ClassNode*>(node));
                 foreach (const Node* baseClass, baseClasses) {
                     next = static_cast<const InnerNode*>(baseClass)->findChildNode(path.at(i), genus);

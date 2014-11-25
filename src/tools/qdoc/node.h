@@ -107,7 +107,7 @@ public:
         LastSubtype
     };
 
-    enum Genus { DontCare, CPP, QML };
+    enum Genus { DontCare, CPP, QML, DOC };
 
     enum Access { Public, Protected, Private };
 
@@ -531,11 +531,13 @@ public:
     virtual QString imageFileName() const { return QString(); }
     virtual QString nameForLists() const Q_DECL_OVERRIDE { return title(); }
     virtual void setImageFileName(const QString& ) { }
+
     virtual bool isHeaderFile() const Q_DECL_OVERRIDE { return (subType() == Node::HeaderFile); }
     virtual bool isExample() const Q_DECL_OVERRIDE { return (subType() == Node::Example); }
     virtual bool isExampleFile() const Q_DECL_OVERRIDE { return (parent() && parent()->isExample()); }
     virtual bool isExternalPage() const Q_DECL_OVERRIDE { return nodeSubtype_ == ExternalPage; }
     virtual bool isDocNode() const Q_DECL_OVERRIDE { return true; }
+    virtual Node::Genus genus() const Q_DECL_OVERRIDE { return Node::DOC; }
 
 protected:
     SubType nodeSubtype_;

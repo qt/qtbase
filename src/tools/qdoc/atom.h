@@ -194,11 +194,12 @@ public:
     const QStringList& strings() const { return strs; }
 
     virtual bool isLinkAtom() const { return false; }
-    virtual Node::Genus genus() const { return Node::DontCare; }
-    virtual bool specifiesDomain() const { return false; }
-    virtual Tree* domain() const { return 0; }
-    virtual Node::Type goal() const { return Node::NoType; }
+    virtual Node::Genus genus() { return Node::DontCare; }
+    virtual bool specifiesDomain() { return false; }
+    virtual Tree* domain() { return 0; }
+    virtual Node::Type goal() { return Node::NoType; }
     virtual const QString& error() { return noError_; }
+    virtual void resolveSquareBracketParams() { }
 
  protected:
     static QString noError_;
@@ -216,17 +217,20 @@ class LinkAtom : public Atom
     virtual ~LinkAtom() { }
 
     virtual bool isLinkAtom() const Q_DECL_OVERRIDE { return true; }
-    virtual Node::Genus genus() const Q_DECL_OVERRIDE { return genus_; }
-    virtual bool specifiesDomain() const Q_DECL_OVERRIDE { return (domain_ != 0); }
-    virtual Tree* domain() const Q_DECL_OVERRIDE { return domain_; }
-    virtual Node::Type goal() const Q_DECL_OVERRIDE { return goal_; }
+    virtual Node::Genus genus() Q_DECL_OVERRIDE { resolveSquareBracketParams(); return genus_; }
+    virtual bool specifiesDomain() Q_DECL_OVERRIDE { resolveSquareBracketParams(); return (domain_ != 0); }
+    virtual Tree* domain() Q_DECL_OVERRIDE { resolveSquareBracketParams(); return domain_; }
+    virtual Node::Type goal() Q_DECL_OVERRIDE { resolveSquareBracketParams(); return goal_; }
     virtual const QString& error() Q_DECL_OVERRIDE { return error_; }
+    virtual void resolveSquareBracketParams() Q_DECL_OVERRIDE;
 
  protected:
+    bool        resolved_;
     Node::Genus genus_;
     Node::Type  goal_;
     Tree*       domain_;
     QString     error_;
+    QString     squareBracketParams_;
 };
 
 #define ATOM_FORMATTING_BOLD            "bold"
