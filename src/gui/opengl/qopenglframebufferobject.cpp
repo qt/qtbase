@@ -479,11 +479,9 @@ void QOpenGLFramebufferObjectPrivate::init(QOpenGLFramebufferObject *, const QSi
         GLenum storageFormat = internal_format;
         // ES requires a sized format. The older desktop extension does not. Correct the format on ES.
         if (ctx->isOpenGLES() && internal_format == GL_RGBA) {
-#ifdef GL_RGBA8_OES
             if (funcs.hasOpenGLExtension(QOpenGLExtensions::Sized8Formats))
-                storageFormat = GL_RGBA8_OES;
+                storageFormat = GL_RGBA8;
             else
-#endif
                 storageFormat = GL_RGBA4;
         }
 
