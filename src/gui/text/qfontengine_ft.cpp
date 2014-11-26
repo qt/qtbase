@@ -762,8 +762,10 @@ bool QFontEngineFT::init(FaceId faceId, bool antialias, GlyphFormat format,
                 face->face_flags &= ~FT_FACE_FLAG_SCALABLE;
 
                 FT_Select_Size(face, i);
-                metrics.ascender = face->size->metrics.ascender;
-                metrics.descender = face->size->metrics.descender;
+                if (face->size->metrics.ascender + face->size->metrics.descender > 0) {
+                    metrics.ascender = face->size->metrics.ascender;
+                    metrics.descender = face->size->metrics.descender;
+                }
                 FT_Set_Char_Size(face, xsize, ysize, 0, 0);
 
                 face->face_flags |= FT_FACE_FLAG_SCALABLE;
