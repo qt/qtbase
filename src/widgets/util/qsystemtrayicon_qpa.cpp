@@ -111,13 +111,11 @@ bool QSystemTrayIconPrivate::supportsMessages_sys()
         return false;
 }
 
-void QSystemTrayIconPrivate::showMessage_sys(const QString &message,
-                                             const QString &title,
-                                             QSystemTrayIcon::MessageIcon icon,
-                                             int msecs)
+void QSystemTrayIconPrivate::showMessage_sys(const QString &title, const QString &message,
+                                             QSystemTrayIcon::MessageIcon icon, int msecs)
 {
     if (qpa_sys)
-        showMessage_sys_qpa(message, title, icon, msecs);
+        showMessage_sys_qpa(title, message, icon, msecs);
 }
 
 QT_END_NAMESPACE

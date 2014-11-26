@@ -57,7 +57,7 @@ public:
     virtual void updateToolTip(const QString &toolTip);
     virtual void updateMenu(QPlatformMenu *menu);
     virtual QRect geometry() const;
-    virtual void showMessage(const QString &msg, const QString &title,
+    virtual void showMessage(const QString &title, const QString &msg,
                              const QIcon& icon, MessageIcon iconType, int secs);
 
     virtual bool isSystemTrayAvailable() const;

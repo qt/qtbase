@@ -718,8 +718,8 @@ void QSystemTrayIconPrivate::updateToolTip_sys_qpa()
     qpa_sys->updateToolTip(toolTip);
 }
 
-void QSystemTrayIconPrivate::showMessage_sys_qpa(const QString &message,
-                                                 const QString &title,
+void QSystemTrayIconPrivate::showMessage_sys_qpa(const QString &title,
+                                                 const QString &message,
                                                  QSystemTrayIcon::MessageIcon icon,
                                                  int msecs)
 {
@@ -737,7 +737,7 @@ void QSystemTrayIconPrivate::showMessage_sys_qpa(const QString &message,
     default:
         break;
     }
-    qpa_sys->showMessage(message, title, notificationIcon,
+    qpa_sys->showMessage(title, message, notificationIcon,
                      static_cast<QPlatformSystemTrayIcon::MessageIcon>(icon), msecs);
 }
 
