@@ -63,6 +63,7 @@
 
 QT_BEGIN_NAMESPACE
 
+#if !defined(Q_OS_OSX)
 static inline int panTouchPoints()
 {
     // Override by environment variable for testing.
@@ -80,6 +81,7 @@ static inline int panTouchPoints()
     // correctly.
     return 2;
 }
+#endif
 
 QGestureManager::QGestureManager(QObject *parent)
     : QObject(parent), state(NotGesture), m_lastCustomGestureId(Qt::CustomGesture)
