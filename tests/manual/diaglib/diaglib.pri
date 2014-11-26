@@ -26,7 +26,7 @@ greaterThan(QT_MAJOR_VERSION, 4) {
     }
 } else {
     HEADERS += \
-        $$PWD/$$PWD/qwidgetdump.h
+        $$PWD/qwidgetdump.h
 
     SOURCES += \
         $$PWD/qwidgetdump.cpp
