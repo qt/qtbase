@@ -86,13 +86,13 @@ static const uchar magic[MagicLength] = {
     0xcd, 0x21, 0x1c, 0xbf, 0x60, 0xa1, 0xbd, 0xdd
 };
 
-static bool match(const uchar* found, const char* target, uint len)
+static bool match(const uchar *found, uint foundLen, const char *target, uint targetLen)
 {
     // catch the case if \a found has a zero-terminating symbol and \a len includes it.
     // (normalize it to be without the zero-terminating symbol)
-    if (len > 0 && found[len-1] == '\0')
-        --len;
-    return (memcmp(found, target, len) == 0 && target[len] == '\0');
+    if (foundLen > 0 && found[foundLen-1] == '\0')
+        --foundLen;
+    return ((targetLen == foundLen) && memcmp(found, target, foundLen) == 0);
 }
 
 static void elfHash_continue(const char *name, uint &h)
@@ -877,6 +877,9 @@ static QString getMessage(const uchar *m, const uchar *end, const char *context,
 {
     const uchar *tn = 0;
     uint tn_length = 0;
+    const uint sourceTextLen = strlen(sourceText);
+    const uint contextLen = strlen(context);
+    const uint commentLen = strlen(comment);
 
     for (;;) {
         uchar tag = 0;
@@ -903,7 +906,7 @@ static QString getMessage(const uchar *m, const uchar *end, const char *context,
         case Tag_SourceText: {
             quint32 len = read32(m);
             m += 4;
-            if (!match(m, sourceText, len))
+            if (!match(m, len, sourceText, sourceTextLen))
                 return QString();
             m += len;
         }
@@ -911,7 +914,7 @@ static QString getMessage(const uchar *m, const uchar *end, const char *context,
         case Tag_Context: {
             quint32 len = read32(m);
             m += 4;
-            if (!match(m, context, len))
+            if (!match(m, len, context, contextLen))
                 return QString();
             m += len;
         }
@@ -919,7 +922,7 @@ static QString getMessage(const uchar *m, const uchar *end, const char *context,
         case Tag_Comment: {
             quint32 len = read32(m);
             m += 4;
-            if (*m && !match(m, comment, len))
+            if (*m && !match(m, len, comment, commentLen))
                 return QString();
             m += len;
         }
@@ -969,11 +972,12 @@ QString QTranslatorPrivate::do_translate(const char *context, const char *source
             return QString();
         c = contextArray + (2 + (hTableSize << 1) + (off << 1));
 
+        const int contextLen = strlen(context);
         for (;;) {
             quint8 len = read8(c++);
             if (len == 0)
                 return QString();
-            if (match(c, context, len))
+            if (match(c, len, context, contextLen))
                 break;
             c += len;
         }
