@@ -278,7 +278,8 @@ static std::shared_ptr<AndroidStyle> loadAndroidStyle(QPalette *defaultPalette)
         const int pt = paletteType(key);
         if (pt > -1 || !qtClassName.isEmpty()) {
             // Extract palette information
-            QPalette palette;
+            QPalette palette = *defaultPalette;
+
             attributeIterator = item.find(QLatin1String("defaultTextColorPrimary"));
             if (attributeIterator != item.constEnd())
                 palette.setColor(QPalette::WindowText, QRgb(int(attributeIterator.value().toDouble())));
