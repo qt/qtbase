@@ -9408,9 +9408,11 @@ void QWidget::focusOutEvent(QFocusEvent *)
     if (focusPolicy() != Qt::NoFocus || !isWindow())
         update();
 
-    // automatically hide the SIP
+#ifndef Q_OS_IOS
+    // FIXME: revisit autoSIP logic, QTBUG-42906
     if (qApp->autoSipEnabled() && testAttribute(Qt::WA_InputMethodEnabled))
         qApp->inputMethod()->hide();
+#endif
 }
 
 /*!
