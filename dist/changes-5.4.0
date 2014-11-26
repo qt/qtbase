@@ -418,6 +418,13 @@ iOS
    Applications making use of DataLocation should move these data to the
    new location. This can be done using the path provided by
    DocumentLocation as the source path.
+ - [QTBUG-41458] screen resolution update after device rotation now works.
+ - [QTBUG-42345] fixed crash on startup on iOS 7.1
+ - iOS is now using fat builds with both 32-, and 64-bit support.
+ - New launch screen added to support iPhone6/6+.
+ - QtQuick Controls now support native text selection and popup menus.
+ - Virtual keyboard visibility is now automatically managed by the platform plugin.
+ - Default theme fonts now uses Dynamic Type, which is based on user system settings.
 
 Linux/XCB
 ---------
