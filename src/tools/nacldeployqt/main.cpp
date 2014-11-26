@@ -18,8 +18,7 @@ void runCommand(const QString &command)
 }
 
 static bool copyRecursively(const QString &srcFilePath,
-                            const QString &tgtFilePath,
-                            const QString &fileSuffixWhiteList)
+                            const QString &tgtFilePath)
 {
     QFileInfo srcFileInfo(srcFilePath);
     if (srcFileInfo.isDir()) {
@@ -35,13 +34,12 @@ static bool copyRecursively(const QString &srcFilePath,
                     = srcFilePath + QLatin1Char('/') + fileName;
             const QString newTgtFilePath
                     = tgtFilePath + QLatin1Char('/') + fileName;
-            if (!copyRecursively(newSrcFilePath, newTgtFilePath, fileSuffixWhiteList))
+            if (!copyRecursively(newSrcFilePath, newTgtFilePath))
                 return false;
         }
     } else {
-        if (!fileSuffixWhiteList.isEmpty() && srcFilePath.endsWith(fileSuffixWhiteList))
-            if (!QFile::copy(srcFilePath, tgtFilePath))
-                return false;
+        if (!QFile::copy(srcFilePath, tgtFilePath))
+            return false;
     }
     return true;
 }
@@ -167,11 +165,8 @@ int main(int argc, char **argv)
             QString source = qtImportsDir + "/" + import;
             QString target = targetBase + "/" + import;
 
-            // For static builds the qmldir files are the only thing that
-            // needs to be deployed: The .qml files are inlcuded in the binary
-            // plugins as resources, which are again statically linked into the
-            // main executable.
-            copyRecursively(source, target, "qmldir");
+            // TODO: Skip the binaries for static builds; they will be built into the main nexe
+            copyRecursively(source, target);
         }
     }
 
