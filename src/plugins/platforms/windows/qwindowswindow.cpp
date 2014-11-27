@@ -1831,7 +1831,12 @@ QMargins QWindowsWindow::frameMarginsDp() const
     // event sequences, introduce a dirty flag mechanism to be able
     // to cache results.
     if (testFlag(FrameDirty)) {
-        m_data.frame = QWindowsGeometryHint::frame(style(), exStyle());
+        // Always skip calculating style-dependent margins for windows claimed to be frameless.
+        // This allows users to remove the margins by handling WM_NCCALCSIZE with WS_THICKFRAME set
+        // to ensure Areo snap still works (QTBUG-40578).
+        m_data.frame = window()->flags() & Qt::FramelessWindowHint
+            ? QMargins(0, 0, 0, 0)
+            : QWindowsGeometryHint::frame(style(), exStyle());
         clearFlag(FrameDirty);
     }
     return m_data.frame + m_data.customMargins;
