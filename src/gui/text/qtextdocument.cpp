@@ -1244,6 +1244,39 @@ void QTextDocument::setHtml(const QString &html)
     \sa metaInformation(), setMetaInformation()
 */
 
+static bool findInBlock(const QTextBlock &block, const QString &expression, int offset,
+                        QTextDocument::FindFlags options, QTextCursor *cursor)
+{
+    QString text = block.text();
+    text.replace(QChar::Nbsp, QLatin1Char(' '));
+    Qt::CaseSensitivity sensitivity = options & QTextDocument::FindCaseSensitively ? Qt::CaseSensitive : Qt::CaseInsensitive;
+    int idx = -1;
+
+    while (offset >= 0 && offset <= text.length()) {
+        idx = (options & QTextDocument::FindBackward) ?
+               text.lastIndexOf(expression, offset, sensitivity) : text.indexOf(expression, offset, sensitivity);
+        if (idx == -1)
+            return false;
+
+        if (options & QTextDocument::FindWholeWords) {
+            const int start = idx;
+            const int end = start + expression.length();
+            if ((start != 0 && text.at(start - 1).isLetterOrNumber())
+                || (end != text.length() && text.at(end).isLetterOrNumber())) {
+                //if this is not a whole word, continue the search in the string
+                offset = (options & QTextDocument::FindBackward) ? idx-1 : end+1;
+                idx = -1;
+                continue;
+            }
+        }
+        //we have a hit, return the cursor for that.
+        *cursor = QTextCursor(block.docHandle(), block.position() + idx);
+        cursor->setPosition(cursor->position() + expression.length(), QTextCursor::KeepAnchor);
+        return true;
+    }
+    return false;
+}
+
 /*!
     \fn QTextCursor QTextDocument::find(const QString &subString, int position, FindFlags options) const
 
@@ -1262,11 +1295,41 @@ void QTextDocument::setHtml(const QString &html)
 */
 QTextCursor QTextDocument::find(const QString &subString, int from, FindFlags options) const
 {
-    QRegExp expr(subString);
-    expr.setPatternSyntax(QRegExp::FixedString);
-    expr.setCaseSensitivity((options & QTextDocument::FindCaseSensitively) ? Qt::CaseSensitive : Qt::CaseInsensitive);
+    Q_D(const QTextDocument);
 
-    return find(expr, from, options);
+    if (subString.isEmpty())
+        return QTextCursor();
+
+    int pos = from;
+    //the cursor is positioned between characters, so for a backward search
+    //do not include the character given in the position.
+    if (options & FindBackward) {
+        --pos ;
+        if (pos < subString.size())
+            return QTextCursor();
+    }
+
+    QTextCursor cursor;
+    QTextBlock block = d->blocksFind(pos);
+    int blockOffset = pos - block.position();
+
+    if (!(options & FindBackward)) {
+        while (block.isValid()) {
+            if (findInBlock(block, subString, blockOffset, options, &cursor))
+                return cursor;
+            block = block.next();
+            blockOffset = 0;
+        }
+    } else {
+        while (block.isValid()) {
+            if (findInBlock(block, subString, blockOffset, options, &cursor))
+                return cursor;
+            block = block.previous();
+            blockOffset = block.length() - 2;
+        }
+    }
+
+    return QTextCursor();
 }
 
 /*!
@@ -1293,11 +1356,8 @@ QTextCursor QTextDocument::find(const QString &subString, const QTextCursor &cur
         else
             pos = cursor.selectionEnd();
     }
-    QRegExp expr(subString);
-    expr.setPatternSyntax(QRegExp::FixedString);
-    expr.setCaseSensitivity((options & QTextDocument::FindCaseSensitively) ? Qt::CaseSensitive : Qt::CaseInsensitive);
 
-    return find(expr, pos, options);
+    return find(subString, pos, options);
 }
 
 
