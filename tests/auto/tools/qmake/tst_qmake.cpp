@@ -461,7 +461,8 @@ void tst_qmake::bundle_spaces()
     // Bundles and since this might be the wrong output we rely on dry-running
     // make (-n).
 
-    test_compiler.setArguments("-n", "-spec macx-clang");
+    test_compiler.setArguments(QStringList() << "-n",
+                               QStringList() << "-spec" << "macx-clang");
 
     QVERIFY( test_compiler.qmake(workDir, "bundle-spaces") );
 

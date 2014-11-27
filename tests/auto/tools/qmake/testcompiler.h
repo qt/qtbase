@@ -49,7 +49,7 @@ public:
     void setBaseCommands( QString makeCmd, QString qmakeCmd );
 
     void resetArguments();
-    void setArguments( QString makeArgs, QString qmakeArgs );
+    void setArguments(const QStringList &makeArgs, const QStringList &qmakeArgs);
 
     void resetEnvironment();
     void addToEnvironment( QString varAssignment );
@@ -78,11 +78,13 @@ public:
     void clearCommandOutput();
 
 private:
-    bool runCommand( QString cmdLine, bool expectFail = false );
+    bool runCommand(const QString &cmd, const QStringList &args, bool expectFail = false);
     bool errorOut();
 
-    QString makeCmd_, makeArgs_;
-    QString qmakeCmd_, qmakeArgs_;
+    QString makeCmd_;
+    QStringList makeArgs_;
+    QString qmakeCmd_;
+    QStringList qmakeArgs_;
     QStringList environment_;
 
     QStringList testOutput_;
