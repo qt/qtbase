@@ -515,12 +515,12 @@ void Win32MakefileGenerator::processRcFileVar()
 
         resFile.replace(".rc", Option::res_ext);
         project->values("RES_FILE").prepend(fileInfo(resFile).fileName());
-        if (!project->values("OBJECTS_DIR").isEmpty()) {
-            QString resDestDir;
-            if (project->isActiveConfig("staticlib"))
-                resDestDir = project->first("DESTDIR").toQString();
-            else
-                resDestDir = project->first("OBJECTS_DIR").toQString();
+        QString resDestDir;
+        if (project->isActiveConfig("staticlib"))
+            resDestDir = project->first("DESTDIR").toQString();
+        else
+            resDestDir = project->first("OBJECTS_DIR").toQString();
+        if (!resDestDir.isEmpty()) {
             resDestDir.append(Option::dir_sep);
             project->values("RES_FILE").first().prepend(resDestDir);
         }
