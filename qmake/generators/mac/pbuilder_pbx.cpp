@@ -880,10 +880,10 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
                                                 QString librarySuffix = project->first("QMAKE_XCODE_LIBRARY_SUFFIX").toQString();
                                                 suffixSetting = "$(" + suffixSetting + ")";
                                                 if (!librarySuffix.isEmpty()) {
-                                                    library = library.replace(librarySuffix, suffixSetting);
-                                                    name = name.remove(librarySuffix);
+                                                    library.replace(librarySuffix, suffixSetting);
+                                                    name.remove(librarySuffix);
                                                 } else {
-                                                    library = library.replace(name, name + suffixSetting);
+                                                    library.replace(name, name + suffixSetting);
                                                 }
                                             }
                                         }
@@ -1416,22 +1416,21 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
                         if (plist_in_file.open(QIODevice::ReadOnly)) {
                             QTextStream plist_in(&plist_in_file);
                             QString plist_in_text = plist_in.readAll();
-                            plist_in_text = plist_in_text.replace("@ICON@",
+                            plist_in_text.replace("@ICON@",
                               (project->isEmpty("ICON") ? QString("") : project->first("ICON").toQString().section(Option::dir_sep, -1)));
                             if (project->first("TEMPLATE") == "app") {
-                                plist_in_text = plist_in_text.replace("@EXECUTABLE@", project->first("QMAKE_ORIG_TARGET").toQString());
+                                plist_in_text.replace("@EXECUTABLE@", project->first("QMAKE_ORIG_TARGET").toQString());
                             } else {
-                                plist_in_text = plist_in_text.replace("@LIBRARY@", project->first("QMAKE_ORIG_TARGET").toQString());
+                                plist_in_text.replace("@LIBRARY@", project->first("QMAKE_ORIG_TARGET").toQString());
                             }
                             QString bundlePrefix = project->first("QMAKE_TARGET_BUNDLE_PREFIX").toQString();
                             if (bundlePrefix.isEmpty())
                                 bundlePrefix = "com.yourcompany";
-                            plist_in_text = plist_in_text.replace("@BUNDLEIDENTIFIER@", bundlePrefix + "." + QLatin1String("${PRODUCT_NAME:rfc1034identifier}"));
+                            plist_in_text.replace("@BUNDLEIDENTIFIER@", bundlePrefix + '.' + QLatin1String("${PRODUCT_NAME:rfc1034identifier}"));
                             if (!project->values("VERSION").isEmpty()) {
-                                plist_in_text = plist_in_text.replace("@SHORT_VERSION@", project->first("VER_MAJ") + "." +
-                                                                      project->first("VER_MIN"));
+                                plist_in_text.replace("@SHORT_VERSION@", project->first("VER_MAJ") + "." + project->first("VER_MIN"));
                             }
-                            plist_in_text = plist_in_text.replace("@TYPEINFO@",
+                            plist_in_text.replace("@TYPEINFO@",
                                 (project->isEmpty("QMAKE_PKGINFO_TYPEINFO")
                                     ? QString::fromLatin1("????") : project->first("QMAKE_PKGINFO_TYPEINFO").left(4).toQString()));
                             QFile plist_out_file("Info.plist");
@@ -1746,7 +1745,7 @@ ProjectBuilderMakefileGenerator::pbuilderVersion() const
                 version_plist = "/Developer/Applications/Project Builder.app/Contents/version.plist";
 #endif
         } else {
-            version_plist = version_plist.replace(QRegExp("\""), "");
+            version_plist.replace(QRegExp("\""), "");
         }
         if (ret.isEmpty()) {
             QFile version_file(version_plist);

@@ -714,7 +714,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                     t << destdir << "$(TARGET): " << var("PRE_TARGETDEPS")
                       << " " << var("POST_TARGETDEPS") << valList(build) << "\n\t";
                     ar = project->first("QMAKE_AR_CMD").toQString();
-                    ar = ar.replace("$(OBJECTS)", build.join(' '));
+                    ar.replace("$(OBJECTS)", build.join(' '));
                 } else {
                     t << (*libit) << ": " << valList(build) << "\n\t";
                     ar = "$(AR) " + (*libit) + " " + build.join(' ');
@@ -1075,8 +1075,8 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                   << "\n\techo \"// Automatically generated, do not modify\" > " << sourceFile
                   << "\n\trm -f " << pchOutput;
 
-                pchFlags = pchFlags.replace("${QMAKE_PCH_TEMP_SOURCE}", sourceFile)
-                           .replace("${QMAKE_PCH_TEMP_OBJECT}", objectFile);
+                pchFlags.replace("${QMAKE_PCH_TEMP_SOURCE}", sourceFile)
+                        .replace("${QMAKE_PCH_TEMP_OBJECT}", objectFile);
             } else {
                 // gcc style (including clang_pch_style)
                 ProString header_prefix = project->first("QMAKE_PRECOMP_PREFIX");
@@ -1102,9 +1102,9 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                 t << pchOutput << ": " << pchInput << " " << findDependencies(pchInput).join(" \\\n\t\t")
                   << "\n\t" << mkdir_p_asstring(pchOutputDir);
             }
-            pchFlags = pchFlags.replace("${QMAKE_PCH_INPUT}", pchInput)
-                       .replace("${QMAKE_PCH_OUTPUT_BASE}", pchBaseName.toQString())
-                       .replace("${QMAKE_PCH_OUTPUT}", pchOutput.toQString());
+            pchFlags.replace("${QMAKE_PCH_INPUT}", pchInput)
+                    .replace("${QMAKE_PCH_OUTPUT_BASE}", pchBaseName.toQString())
+                    .replace("${QMAKE_PCH_OUTPUT}", pchOutput.toQString());
 
             QString compiler;
             if(comps[i] == "C" || comps[i] == "OBJC" || comps[i] == "OBJCXX")

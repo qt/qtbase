@@ -488,7 +488,7 @@ ProjectGenerator::fixPathToQmake(const QString &file)
 {
     QString ret = file;
     if(Option::dir_sep != QLatin1String("/"))
-        ret = ret.replace(Option::dir_sep, QLatin1String("/"));
+        ret.replace(Option::dir_sep, QLatin1String("/"));
     return ret;
 }
 

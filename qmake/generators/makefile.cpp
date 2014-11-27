@@ -2280,7 +2280,7 @@ MakefileGenerator::findSubDirsSubTargets() const
             ProString ofile = subdirs[subdir];
             QString oname = ofile.toQString();
             QString fixedSubdir = oname;
-            fixedSubdir = fixedSubdir.replace(QRegExp("[^a-zA-Z0-9_]"),"-");
+            fixedSubdir.replace(QRegExp("[^a-zA-Z0-9_]"),"-");
 
             SubTarget *st = new SubTarget;
             st->name = oname;
@@ -2345,7 +2345,7 @@ MakefileGenerator::findSubDirsSubTargets() const
                         if(subdirs[subDep] == depends.at(depend)) {
                             QString subName = subdirs[subDep].toQString();
                             QString fixedSubDep = subName;
-                            fixedSubDep = fixedSubDep.replace(QRegExp("[^a-zA-Z0-9_]"),"-");
+                            fixedSubDep.replace(QRegExp("[^a-zA-Z0-9_]"),"-");
                             const ProKey dtkey(fixedSubDep + ".target");
                             if (!project->isEmpty(dtkey)) {
                                 st->depends += project->first(dtkey);
@@ -2376,7 +2376,7 @@ MakefileGenerator::findSubDirsSubTargets() const
                 st->target = project->first(tkey).toQString();
             } else {
                 st->target = "sub-" + file;
-        st->target = st->target.replace(QRegExp("[^a-zA-Z0-9_]"),"-");
+                st->target.replace(QRegExp("[^a-zA-Z0-9_]"), "-");
             }
         }
     }
@@ -3146,7 +3146,7 @@ MakefileGenerator::pkgConfigFixPath(QString path) const
 {
     QString prefix = pkgConfigPrefix();
     if(path.startsWith(prefix))
-        path = path.replace(prefix, "${prefix}");
+        path.replace(prefix, "${prefix}");
     return path;
 }
 

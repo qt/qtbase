@@ -530,15 +530,15 @@ Option::fixString(QString string, uchar flags)
 
     //fix separators
     if (flags & Option::FixPathToNormalSeparators) {
-        string = string.replace('\\', '/');
+        string.replace('\\', '/');
     } else if (flags & Option::FixPathToLocalSeparators) {
 #if defined(Q_OS_WIN32)
-        string = string.replace('/', '\\');
+        string.replace('/', '\\');
 #else
-        string = string.replace('\\', '/');
+        string.replace('\\', '/');
 #endif
     } else if(flags & Option::FixPathToTargetSeparators) {
-        string = string.replace('/', Option::dir_sep).replace('\\', Option::dir_sep);
+        string.replace('/', Option::dir_sep).replace('\\', Option::dir_sep);
     }
 
     if ((string.startsWith("\"") && string.endsWith("\"")) ||

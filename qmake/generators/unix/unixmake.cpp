@@ -194,13 +194,11 @@ UnixMakefileGenerator::init()
             pchBaseName += project->first("QMAKE_ORIG_TARGET").toQString();
 
             // replace place holders
-            pchFlags = pchFlags.replace("${QMAKE_PCH_INPUT}",
-                                        project->first("PRECOMPILED_HEADER").toQString());
-            pchFlags = pchFlags.replace("${QMAKE_PCH_OUTPUT_BASE}", pchBaseName);
+            pchFlags.replace("${QMAKE_PCH_INPUT}", project->first("PRECOMPILED_HEADER").toQString());
+            pchFlags.replace("${QMAKE_PCH_OUTPUT_BASE}", pchBaseName);
             if (project->isActiveConfig("icc_pch_style")) {
                 // icc style
-                pchFlags = pchFlags.replace("${QMAKE_PCH_OUTPUT}",
-                                            pchBaseName + project->first("QMAKE_PCH_OUTPUT_EXT"));
+                pchFlags.replace("${QMAKE_PCH_OUTPUT}", pchBaseName + project->first("QMAKE_PCH_OUTPUT_EXT"));
             } else {
                 // gcc style (including clang_pch_style)
                 QString headerSuffix;
@@ -224,8 +222,7 @@ UnixMakefileGenerator::init()
                 }
 
                 if(!pchOutputFile.isEmpty()) {
-                    pchFlags = pchFlags.replace("${QMAKE_PCH_OUTPUT}",
-                            pchBaseName + pchOutputFile + headerSuffix);
+                    pchFlags.replace("${QMAKE_PCH_OUTPUT}", pchBaseName + pchOutputFile + headerSuffix);
                 }
             }
 

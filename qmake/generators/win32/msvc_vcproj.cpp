@@ -1693,11 +1693,11 @@ QString VcprojGenerator::fixFilename(QString ofile) const
     ofile = Option::fixPathToLocalOS(ofile);
     int slashfind = ofile.lastIndexOf(Option::dir_sep);
     if(slashfind == -1) {
-        ofile = ofile.replace('-', '_');
+        ofile.replace('-', '_');
     } else {
         int hyphenfind = ofile.indexOf('-', slashfind);
         while (hyphenfind != -1 && slashfind < hyphenfind) {
-            ofile = ofile.replace(hyphenfind, 1, '_');
+            ofile.replace(hyphenfind, 1, '_');
             hyphenfind = ofile.indexOf('-', hyphenfind + 1);
         }
     }
