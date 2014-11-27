@@ -379,6 +379,7 @@ sub fixPaths {
 
     my $out = File::Spec->abs2rel(cleanupPath($file), cleanupPath($dir));
     $out =~ s,\\,/,g;
+    $out = "\"$out\"" if ($out =~ / /);
     return $out;
 }
 

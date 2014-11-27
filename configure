@@ -4047,7 +4047,7 @@ fi
 #-------------------------------------------------------------------------------
 # Verify makespec
 #-------------------------------------------------------------------------------
-QMAKE_OUTPUT=`$outpath/bin/qmake -E -nocache -spec "$XQMAKESPEC" "QT=" $DEV_NULL 2>&1`
+QMAKE_OUTPUT=`"$outpath/bin/qmake" -E -nocache -spec "$XQMAKESPEC" "QT=" $DEV_NULL 2>&1`
 if [ $? != "0" ]; then
     echo "Failed to process makespec for platform '$XPLATFORM'"
     if [ "$OPT_VERBOSE" = "yes" ]; then

@@ -47,7 +47,7 @@ if not exist mkspecs (
     md mkspecs
     if errorlevel 1 goto exit
 )
-perl %QTSRC%bin\syncqt.pl -minimal -module QtCore -outdir %QTDIR% %QTSRC%
+perl %QTSRC%bin\syncqt.pl -minimal -module QtCore -outdir "%QTDIR%" %QTSRC%
 if errorlevel 1 goto exit
 
 if not exist tools\configure (

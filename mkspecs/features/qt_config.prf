@@ -5,16 +5,21 @@ QMAKE_QT_CONFIG = $$[QT_HOST_DATA/get]/mkspecs/qconfig.pri
    debug(1, "Cannot load qconfig.pri!")
 } else {
    debug(1, "Loaded .qconfig.pri from ($$QMAKE_QT_CONFIG)")
-   QMAKE_MODULE_PATH = $$split($$list($$(QMAKEMODULES)), $$DIRLIST_SEPARATOR)
+   dirs = $$(QMAKEMODULES)
+   QMAKE_MODULE_PATH = $$split(dirs, $$DIRLIST_SEPARATOR)
    QMAKE_MODULE_PATH += $$QMAKEMODULES
-   QMAKE_MODULE_PATH += $$split($$list($$[QMAKEMODULES]), $$DIRLIST_SEPARATOR)
-   QMAKE_MODULE_PATH += $$replace($$list($$split($$list($$[QMAKE_MKSPECS]), $$DIRLIST_SEPARATOR)), \
-                                  \$, /modules)
+   dirs = $$[QMAKEMODULES]
+   QMAKE_MODULE_PATH += $$split(dirs, $$DIRLIST_SEPARATOR)
+   dirs = $$[QMAKE_MKSPECS]
+   dirs = $$split(dirs, $$DIRLIST_SEPARATOR)
+   QMAKE_MODULE_PATH += $$replace(dirs, \$, /modules)
+   unset(dirs)
    QMAKE_MODULE_PATH = $$unique(QMAKE_MODULE_PATH)
    QMAKE_MODULE_PATH = $$reverse(QMAKE_MODULE_PATH)
    for(dir, QMAKE_MODULE_PATH) {
       debug(1, "Loading modules from $${dir}")
-      for(mod, $$list($$files($$dir/qt_*.pri))) {
+      mods = $$files($$dir/qt_*.pri)
+      for (mod, mods) {
          # For installed Qt these paths will be common for all modules.
          # For uninstalled prefix builds these will vary per module, via the
          # forwarding module pri files. Keep qt_module_pris.prf in sync with this!
@@ -28,6 +33,7 @@ QMAKE_QT_CONFIG = $$[QT_HOST_DATA/get]/mkspecs/qconfig.pri
          QT_MODULE_QML_BASE = $$[QT_INSTALL_QML]
          include($$mod)
       }
+      unset(mods)
    }
    QT_MODULES = $$unique(QT_MODULES)   # In case modules appear in multiple places
    unset(QT_MODULE_INCLUDE_BASE)

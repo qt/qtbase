@@ -21,7 +21,7 @@ load(qt_build_paths)
         QMAKE_SYNCQT += -module $$MODULE_INCNAME -version $$VERSION
     }
     QMAKE_SYNCQT += \
-        -outdir $$MODULE_BASE_OUTDIR $$MODULE_SYNCQT_DIR
+        -outdir $$system_quote($$MODULE_BASE_OUTDIR) $$MODULE_SYNCQT_DIR
     !silent: message($$QMAKE_SYNCQT)
     system($$QMAKE_SYNCQT)|error("Failed to run: $$QMAKE_SYNCQT")
 }
