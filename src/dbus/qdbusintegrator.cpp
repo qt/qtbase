@@ -1184,6 +1184,7 @@ void QDBusConnectionPrivate::socketRead(int fd)
         if (it->watch && it->read && it->read->isEnabled()) {
             if (!q_dbus_watch_handle(it.value().watch, DBUS_WATCH_READABLE))
                 qDebug("OUT OF MEM");
+            break;
         }
         ++it;
     }
@@ -1198,6 +1199,7 @@ void QDBusConnectionPrivate::socketWrite(int fd)
         if (it->watch && it->write && it->write->isEnabled()) {
             if (!q_dbus_watch_handle(it.value().watch, DBUS_WATCH_WRITABLE))
                 qDebug("OUT OF MEM");
+            break;
         }
         ++it;
     }
