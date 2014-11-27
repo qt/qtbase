@@ -1464,6 +1464,15 @@
     executable needs to be specified as long as it is on a path contained
     in the \c PATH variable when the Makefile is processed.
 
+    \section1 QMAKE_CFLAGS
+
+    Specifies the C compiler flags for building
+    a project. The value of this variable is typically handled by
+    qmake or \l{#QMAKESPEC}{qmake.conf} and rarely
+    needs to be modified. The flags specific to debug and release modes can be
+    adjusted by modifying the \c QMAKE_CFLAGS_DEBUG and
+    \c QMAKE_CFLAGS_RELEASE variables, respectively.
+
     \target QMAKE_CFLAGS_DEBUG
     \section1 QMAKE_CFLAGS_DEBUG
 
