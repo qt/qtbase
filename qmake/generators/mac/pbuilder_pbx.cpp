@@ -307,7 +307,7 @@ ProjectBuilderMakefileGenerator::writeSubDirs(QTextStream &t)
                 ProString name = l.at(i);
                 const ProKey buildKey(name + ".build");
                 if (!project->isEmpty(buildKey)) {
-                    const QString build = project->values(buildKey).first().toQString();
+                    const QString build = project->first(buildKey).toQString();
                     if (build.toLower() != configName.toLower())
                         continue;
                 }
@@ -344,7 +344,7 @@ ProjectBuilderMakefileGenerator::writeSubDirs(QTextStream &t)
     t << "\t\t" << keyFor("QMAKE_SUBDIR_PBX_AGGREGATE_TARGET") << " = {\n"
       << "\t\t\t" << writeSettings("buildPhases", ProStringList(), SettingsAsList, 4) << ";\n"
       << "\t\t\tbuildSettings = {\n"
-      << "\t\t\t\t" << writeSettings("PRODUCT_NAME",  project->values("TARGET").first()) << ";\n"
+      << "\t\t\t\t" << writeSettings("PRODUCT_NAME", project->first("TARGET")) << ";\n"
       << "\t\t\t};\n";
     {
         ProStringList dependencies;
@@ -354,8 +354,8 @@ ProjectBuilderMakefileGenerator::writeSubDirs(QTextStream &t)
         t << "\t\t\t" << writeSettings("dependencies", dependencies, SettingsAsList, 4) << ";\n"
     }
     t << "\t\t\t" << writeSettings("isa", "PBXAggregateTarget", SettingsNoQuote) << ";\n"
-      << "\t\t\t" << writeSettings("name", project->values("TARGET").first()) << ";\n"
-      << "\t\t\t" << writeSettings("productName", project->values("TARGET").first()) << ";\n"
+      << "\t\t\t" << writeSettings("name", project->first("TARGET")) << ";\n"
+      << "\t\t\t" << writeSettings("productName", project->first("TARGET")) << ";\n"
       << "\t\t};\n";
 #endif
 
@@ -1361,14 +1361,14 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
                 ProString name = l.at(i);
                 const ProKey buildKey(name + ".build");
                 if (!project->isEmpty(buildKey)) {
-                    const QString build = project->values(buildKey).first().toQString();
+                    const QString build = project->first(buildKey).toQString();
                     if (build.toLower() != configName.toLower())
                         continue;
                 }
                 const QString value = project->values(ProKey(name + ".value")).join(QString(Option::field_sep));
                 const ProKey nkey(name + ".name");
                 if (!project->isEmpty(nkey))
-                    name = project->values(nkey).first();
+                    name = project->first(nkey);
                 settings.insert(name.toQString(), value);
             }
         }

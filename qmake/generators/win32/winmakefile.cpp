@@ -287,7 +287,7 @@ void Win32MakefileGenerator::processVars()
     if (!project->isActiveConfig("skip_target_version_ext")
         && project->values("TARGET_VERSION_EXT").isEmpty()
         && !project->values("VER_MAJ").isEmpty())
-        project->values("TARGET_VERSION_EXT").append(project->values("VER_MAJ").first());
+        project->values("TARGET_VERSION_EXT").append(project->first("VER_MAJ"));
 
     if(project->isEmpty("QMAKE_COPY_FILE"))
         project->values("QMAKE_COPY_FILE").append("$(COPY)");
@@ -406,7 +406,7 @@ void Win32MakefileGenerator::processRcFileVar()
         else
             productName = project->first("TARGET").toQString();
 
-        QString originalName = project->values("TARGET").first() + project->values("TARGET_EXT").first();
+        QString originalName = project->first("TARGET") + project->first("TARGET_EXT");
         int rcLang = project->intValue("RC_LANG", 1033);            // default: English(USA)
         int rcCodePage = project->intValue("RC_CODEPAGE", 1200);    // default: Unicode
 
@@ -473,9 +473,9 @@ void Win32MakefileGenerator::processRcFileVar()
         ts.flush();
 
 
-        QString rcFilename = project->values("OUT_PWD").first()
+        QString rcFilename = project->first("OUT_PWD")
                            + "/"
-                           + project->values("TARGET").first()
+                           + project->first("TARGET")
                            + "_resource"
                            + ".rc";
         QFile rcFile(QDir::cleanPath(rcFilename));
@@ -530,7 +530,7 @@ void Win32MakefileGenerator::processRcFileVar()
             project->values("RES_FILE").first().prepend(resDestDir);
         }
         project->values("RES_FILE").first() = Option::fixPathToTargetOS(
-                    project->values("RES_FILE").first().toQString(), false, false);
+                    project->first("RES_FILE").toQString(), false, false);
         project->values("POST_TARGETDEPS") += project->values("RES_FILE");
         project->values("CLEAN_FILES") += project->values("RES_FILE");
     }

@@ -75,14 +75,14 @@ UnixMakefileGenerator::writeMakefile(QTextStream &t)
     if (writeDummyMakefile(t))
         return true;
 
-    if (project->values("TEMPLATE").first() == "app" ||
-        project->values("TEMPLATE").first() == "lib" ||
-        project->values("TEMPLATE").first() == "aux") {
+    if (project->first("TEMPLATE") == "app" ||
+        project->first("TEMPLATE") == "lib" ||
+        project->first("TEMPLATE") == "aux") {
         if(Option::mkfile::do_stub_makefile && MakefileGenerator::writeStubMakefile(t))
             return true;
         writeMakeParts(t);
         return MakefileGenerator::writeMakefile(t);
-    } else if(project->values("TEMPLATE").first() == "subdirs") {
+    } else if (project->first("TEMPLATE") == "subdirs") {
         MakefileGenerator::writeSubDirs(t);
         return true;
     }
@@ -456,7 +456,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
             } else {
                 //actual target
                 QString incr_target_dir = var("DESTDIR") + "lib" + incr_target + "." +
-                                          project->values("QMAKE_EXTENSION_SHLIB").first();
+                                          project->first("QMAKE_EXTENSION_SHLIB");
                 QString incr_lflags = var("QMAKE_LFLAGS_SHLIB") + " ";
                 if(project->isActiveConfig("debug"))
                     incr_lflags += var("QMAKE_LFLAGS_DEBUG");
@@ -1126,9 +1126,9 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
 void UnixMakefileGenerator::init2()
 {
     if(project->isEmpty("QMAKE_FRAMEWORK_VERSION"))
-        project->values("QMAKE_FRAMEWORK_VERSION").append(project->values("VER_MAJ").first());
+        project->values("QMAKE_FRAMEWORK_VERSION").append(project->first("VER_MAJ"));
 
-    if (project->values("TEMPLATE").first() == "aux")
+    if (project->first("TEMPLATE") == "aux")
         return;
 
     if (!project->values("QMAKE_APP_FLAG").isEmpty()) {
@@ -1245,7 +1245,7 @@ void UnixMakefileGenerator::init2()
                                                             project->first("VER_MAJ") + "." +
                                                             project->first("VER_MIN") +  "." +
                                                             project->first("VER_PAT") + "." +
-                                                            project->values("QMAKE_EXTENSION_SHLIB").first());
+                                                            project->first("QMAKE_EXTENSION_SHLIB"));
             } else {
                 project->values("TARGET_x").append("lib" + project->first("TARGET") + "." +
                                                         project->first("QMAKE_EXTENSION_SHLIB") +
@@ -1256,8 +1256,8 @@ void UnixMakefileGenerator::init2()
                                                       "." + project->first("VER_MIN"));
                 project->values("TARGET_x.y.z").append("lib" + project->first("TARGET") +
                                                             "." +
-                                                            project->values(
-                                                                "QMAKE_EXTENSION_SHLIB").first() + "." +
+                                                            project->first(
+                                                                "QMAKE_EXTENSION_SHLIB") + "." +
                                                             project->first("VER_MAJ") + "." +
                                                             project->first("VER_MIN") +  "." +
                                                             project->first("VER_PAT"));

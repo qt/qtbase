@@ -710,7 +710,7 @@ MakefileGenerator::init()
         const ProKey ikey(*it + ".input");
         const ProKey vokey(*it + ".variable_out");
         const ProStringList &config = project->values(ProKey(*it + ".CONFIG"));
-        const ProString &tmp_out = project->values(ProKey(*it + ".output")).first();
+        const ProString &tmp_out = project->first(ProKey(*it + ".output"));
         if(tmp_out.isEmpty())
             continue;
         if (config.indexOf("combine") != -1) {
@@ -1690,7 +1690,7 @@ MakefileGenerator::verifyExtraCompiler(const ProString &comp, const QString &fil
             }
         }
     } else if (config.indexOf("function_verify") != -1) {
-        ProString tmp_out = project->values(ProKey(comp + ".output")).first();
+        ProString tmp_out = project->first(ProKey(comp + ".output"));
         if(tmp_out.isEmpty())
             return false;
         ProStringList verify_function = project->values(ProKey(comp + ".verify_function"));
@@ -1735,7 +1735,7 @@ MakefileGenerator::verifyExtraCompiler(const ProString &comp, const QString &fil
             }
         }
     } else if (config.indexOf("verify") != -1) {
-        QString tmp_out = project->values(ProKey(comp + ".output")).first().toQString();
+        QString tmp_out = project->first(ProKey(comp + ".output")).toQString();
         if(tmp_out.isEmpty())
             return false;
         const QString tmp_cmd = project->values(ProKey(comp + ".commands")).join(' ');
