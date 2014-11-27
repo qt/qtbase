@@ -363,6 +363,7 @@ void QEGLPlatformCursor::draw(const QRectF &r)
         s2, t1
     };
 
+    glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, m_cursor.texture);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
@@ -374,6 +375,8 @@ void QEGLPlatformCursor::draw(const QRectF &r)
 
     m_program->setUniformValue(m_textureEntry, 0);
 
+    glDisable(GL_CULL_FACE);
+    glFrontFace(GL_CCW);
     glEnable(GL_BLEND);
     glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
     glDisable(GL_DEPTH_TEST); // disable depth testing to make sure cursor is always on top
