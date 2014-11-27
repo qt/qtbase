@@ -402,7 +402,8 @@ Android
  - [QTBUG-41817] QClipboard::mimeData() now returns an empty object instead
    of null pointer from QClipboard when clipboard is empty for consistency
    with other platforms.
-
+ - New bearer plugin. It's now possible to get more information about the
+   different network configurations on Android.
  - Important Behavior Changes:
    * [QTBUG-36274] The main event loop is now stopped when the app is
      suspended
