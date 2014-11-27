@@ -92,41 +92,7 @@ bool MakefileGenerator::mkdir(const QString &in_path) const
     if(QFile::exists(path))
         return true;
 
-    QDir d;
-    if(path.startsWith(QDir::separator())) {
-        d.cd(QString(QDir::separator()));
-        path.remove(0, 1);
-    }
-    bool ret = true;
-#ifdef Q_OS_WIN
-    bool driveExists = true;
-    if(!QDir::isRelativePath(path)) {
-        if(QFile::exists(path.left(3))) {
-            d.cd(path.left(3));
-            path.remove(0, 3);
-        } else {
-            warn_msg(WarnLogic, "Cannot access drive '%s' (%s)",
-                     path.left(3).toLatin1().data(), path.toLatin1().data());
-            driveExists = false;
-        }
-    }
-    if(driveExists)
-#endif
-    {
-        QStringList subs = path.split(QDir::separator());
-        for(QStringList::Iterator subit = subs.begin(); subit != subs.end(); ++subit) {
-            if(!d.cd(*subit)) {
-                d.mkdir((*subit));
-                if(d.exists((*subit))) {
-                    d.cd((*subit));
-                } else {
-                    ret = false;
-                    break;
-                }
-            }
-        }
-    }
-    return ret;
+    return QDir().mkpath(path);
 }
 
 // ** base makefile generator
