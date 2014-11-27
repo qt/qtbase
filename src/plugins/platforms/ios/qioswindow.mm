@@ -145,9 +145,10 @@ void QIOSWindow::setVisible(bool visible)
 bool QIOSWindow::shouldAutoActivateWindow() const
 {
     // We don't want to do automatic window activation for popup windows
-    // (including Tool, ToolTip and SplashScreen windows), unless they
-    // are standalone (no parent/transient parent), and hence not active.
-    return !(window()->type() & Qt::Popup) || !window()->isActive();
+    // that are unlikely to contain editable controls (to avoid hiding
+    // the keyboard while the popup is showing)
+    const Qt::WindowType type = window()->type();
+    return (type != Qt::Popup && type != Qt::ToolTip) || !window()->isActive();
 }
 
 void QIOSWindow::setOpacity(qreal level)

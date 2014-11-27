@@ -145,6 +145,7 @@ static inline void imeNotifyCancelComposition(HWND hwnd)
 */
 
 
+HIMC QWindowsInputContext::m_defaultContext = 0;
 
 QWindowsInputContext::CompositionContext::CompositionContext() :
     hwnd(0), haveCaret(false), position(0), isComposing(false)
@@ -161,6 +162,21 @@ QWindowsInputContext::QWindowsInputContext() :
 
 QWindowsInputContext::~QWindowsInputContext()
 {
+}
+
+bool QWindowsInputContext::hasCapability(Capability capability) const
+{
+    switch (capability) {
+    case QPlatformInputContext::HiddenTextCapability:
+#ifndef Q_OS_WINCE
+        return false; // QTBUG-40691, do not show IME on desktop for password entry fields.
+#else
+        break; // Windows CE: Show software keyboard.
+#endif
+    default:
+        break;
+    }
+    return true;
 }
 
 /*!
@@ -184,13 +200,33 @@ void QWindowsInputContext::reset()
     doneContext();
 }
 
-void QWindowsInputContext::setFocusObject(QObject *)
+void QWindowsInputContext::setFocusObject(QObject *object)
 {
     // ### fixme: On Windows 8.1, it has been observed that the Input context
     // remains active when this happens resulting in a lock-up. Consecutive
     // key events still have VK_PROCESSKEY set and are thus ignored.
     if (m_compositionContext.isComposing)
         imeNotifyCancelComposition(m_compositionContext.hwnd);
+
+    const QWindow *window = QGuiApplication::focusWindow();
+    if (object && window) {
+        QWindowsWindow *platformWindow = QWindowsWindow::baseWindowOf(window);
+        if (inputMethodAccepted()) {
+            // Re-enable IME by associating default context saved on first disabling.
+            if (platformWindow->testFlag(QWindowsWindow::InputMethodDisabled)) {
+                ImmAssociateContext(platformWindow->handle(), QWindowsInputContext::m_defaultContext);
+                platformWindow->clearFlag(QWindowsWindow::InputMethodDisabled);
+            }
+        } else {
+            // Disable IME by associating 0 context. Store context first time.
+            if (!platformWindow->testFlag(QWindowsWindow::InputMethodDisabled)) {
+                const HIMC oldImC = ImmAssociateContext(platformWindow->handle(), 0);
+                platformWindow->setFlag(QWindowsWindow::InputMethodDisabled);
+                if (!QWindowsInputContext::m_defaultContext && oldImC)
+                    QWindowsInputContext::m_defaultContext = oldImC;
+            }
+        }
+    }
 }
 
 /*!

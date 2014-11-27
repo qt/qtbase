@@ -1403,7 +1403,9 @@ void QFusionStyle::drawControl(ControlElement element, const QStyleOption *optio
                 painter->drawRoundedRect(progressBar.adjusted(1, 1, -1, -1), 1, 1);
 
                 if (!indeterminate) {
+#ifndef QT_NO_ANIMATION
                     (const_cast<QFusionStylePrivate*>(d))->stopAnimation(option->styleObject);
+#endif
                 } else {
                     highlightedGradientStartColor.setAlpha(120);
                     painter->setPen(QPen(highlightedGradientStartColor, 9.0));
@@ -2431,6 +2433,7 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
                     styleObject->setProperty("_q_stylestate", static_cast<int>(scrollBar->state));
                     styleObject->setProperty("_q_stylecontrols", static_cast<uint>(scrollBar->activeSubControls));
 
+#ifndef QT_NO_ANIMATION
                     QScrollbarStyleAnimation *anim  = qobject_cast<QScrollbarStyleAnimation *>(d->animation(styleObject));
                     if (transient) {
                         if (!anim) {
@@ -2444,8 +2447,10 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
                     } else if (anim && anim->mode() == QScrollbarStyleAnimation::Deactivating) {
                         d->stopAnimation(styleObject);
                     }
+#endif // !QT_NO_ANIMATION
                 }
 
+#ifndef QT_NO_ANIMATION
                 QScrollbarStyleAnimation *anim = qobject_cast<QScrollbarStyleAnimation *>(d->animation(styleObject));
                 if (anim && anim->mode() == QScrollbarStyleAnimation::Deactivating) {
                     // once a scrollbar was active (hovered/pressed), it retains
@@ -2474,6 +2479,7 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
                     }
                 }
                 painter->setOpacity(opacity);
+#endif // !QT_NO_ANIMATION
             }
 
             bool transient = proxy()->styleHint(SH_ScrollBar_Transient, option, widget);

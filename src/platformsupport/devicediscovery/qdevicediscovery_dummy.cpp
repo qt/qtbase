@@ -31,34 +31,23 @@
 **
 ****************************************************************************/
 
-#include "qdevicediscovery_p.h"
+#include "qdevicediscovery_dummy_p.h"
 
 QT_BEGIN_NAMESPACE
 
 QDeviceDiscovery *QDeviceDiscovery::create(QDeviceTypes types, QObject *parent)
 {
-    return new QDeviceDiscovery(types, parent);
+    return new QDeviceDiscoveryDummy(types, parent);
 }
 
-QDeviceDiscovery::QDeviceDiscovery(QDeviceTypes types, QObject *parent)
-    : QObject(parent),
-      m_types(types)
+QDeviceDiscoveryDummy::QDeviceDiscoveryDummy(QDeviceTypes types, QObject *parent)
+    : QDeviceDiscovery(types, parent)
 {
 }
 
-QDeviceDiscovery::~QDeviceDiscovery()
-{
-}
-
-QStringList QDeviceDiscovery::scanConnectedDevices()
+QStringList QDeviceDiscoveryDummy::scanConnectedDevices()
 {
     return QStringList();
-}
-
-bool QDeviceDiscovery::checkDeviceType(const QString &device)
-{
-    Q_UNUSED(device);
-    return false;
 }
 
 QT_END_NAMESPACE

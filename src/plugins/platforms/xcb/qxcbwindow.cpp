@@ -2022,6 +2022,19 @@ void QXcbWindow::handleMouseEvent(xcb_timestamp_t time, const QPoint &local, con
     QWindowSystemInterface::handleMouseEvent(window(), time, local, global, connection()->buttons(), modifiers);
 }
 
+static bool ignoreLeaveEvent(const xcb_leave_notify_event_t *event)
+{
+    return event->detail == XCB_NOTIFY_DETAIL_VIRTUAL
+            || event->detail == XCB_NOTIFY_DETAIL_NONLINEAR_VIRTUAL;
+}
+
+static bool ignoreEnterEvent(const xcb_enter_notify_event_t *event)
+{
+    return ((event->mode != XCB_NOTIFY_MODE_NORMAL && event->mode != XCB_NOTIFY_MODE_UNGRAB)
+            || event->detail == XCB_NOTIFY_DETAIL_VIRTUAL
+            || event->detail == XCB_NOTIFY_DETAIL_NONLINEAR_VIRTUAL);
+}
+
 class EnterEventChecker
 {
 public:
@@ -2033,13 +2046,8 @@ public:
             return false;
 
         xcb_enter_notify_event_t *enter = (xcb_enter_notify_event_t *)event;
-
-        if ((enter->mode != XCB_NOTIFY_MODE_NORMAL && enter->mode != XCB_NOTIFY_MODE_UNGRAB)
-            || enter->detail == XCB_NOTIFY_DETAIL_VIRTUAL
-            || enter->detail == XCB_NOTIFY_DETAIL_NONLINEAR_VIRTUAL)
-        {
+        if (ignoreEnterEvent(enter))
             return false;
-        }
 
         return true;
     }
@@ -2052,12 +2060,9 @@ void QXcbWindow::handleEnterNotifyEvent(const xcb_enter_notify_event_t *event)
     connection()->handleEnterEvent(event);
 #endif
 
-    if ((event->mode != XCB_NOTIFY_MODE_NORMAL && event->mode != XCB_NOTIFY_MODE_UNGRAB)
-        || event->detail == XCB_NOTIFY_DETAIL_VIRTUAL
-        || event->detail == XCB_NOTIFY_DETAIL_NONLINEAR_VIRTUAL)
-    {
+    if (ignoreEnterEvent(event))
         return;
-    }
+
     const int dpr = int(devicePixelRatio());
     const QPoint local(event->event_x/dpr, event->event_y/dpr);
     const QPoint global(event->root_x/dpr, event->root_y/dpr);
@@ -2068,12 +2073,8 @@ void QXcbWindow::handleLeaveNotifyEvent(const xcb_leave_notify_event_t *event)
 {
     connection()->setTime(event->time);
 
-    if ((event->mode != XCB_NOTIFY_MODE_NORMAL && event->mode != XCB_NOTIFY_MODE_UNGRAB)
-        || event->detail == XCB_NOTIFY_DETAIL_VIRTUAL
-        || event->detail == XCB_NOTIFY_DETAIL_NONLINEAR_VIRTUAL)
-    {
+    if (ignoreLeaveEvent(event))
         return;
-    }
 
     EnterEventChecker checker;
     xcb_enter_notify_event_t *enter = (xcb_enter_notify_event_t *)connection()->checkEvent(checker);

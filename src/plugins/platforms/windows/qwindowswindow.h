@@ -138,7 +138,8 @@ public:
         Exposed = 0x10000,
         WithinCreate = 0x20000,
         WithinMaximize = 0x40000,
-        MaximizeToFullScreen = 0x80000
+        MaximizeToFullScreen = 0x80000,
+        InputMethodDisabled =0x100000
     };
 
     QWindowsWindow(QWindow *window, const QWindowsWindowData &data);
@@ -182,6 +183,7 @@ public:
     void windowEvent(QEvent *event);
 
     void propagateSizeHints() Q_DECL_OVERRIDE;
+    bool handleGeometryChanging(MSG *message) const;
     QMargins frameMarginsDp() const;
     QMargins frameMargins() const Q_DECL_OVERRIDE { return frameMarginsDp() / QWindowsScaling::factor(); }
 

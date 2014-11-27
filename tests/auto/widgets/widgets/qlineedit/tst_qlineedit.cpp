@@ -3384,10 +3384,20 @@ void tst_QLineEdit::textMargin()
     testWidget.setCursorPosition(6);
 
     QSize sizeHint = testWidget.sizeHint();
+    QSize minSizeHint = testWidget.minimumSizeHint();
     testWidget.setTextMargins(left, top, right, bottom);
+
     sizeHint.setWidth(sizeHint.width() + left + right);
     sizeHint.setHeight(sizeHint.height() + top +bottom);
     QCOMPARE(testWidget.sizeHint(), sizeHint);
+
+    if (minSizeHint.width() > -1) {
+        minSizeHint.setWidth(minSizeHint.width() + left + right);
+        minSizeHint.setHeight(minSizeHint.height() + top + bottom);
+        QCOMPARE(testWidget.minimumSizeHint(), minSizeHint);
+    }
+
+
     testWidget.setFrame(false);
     centerOnScreen(&tlw);
     tlw.show();

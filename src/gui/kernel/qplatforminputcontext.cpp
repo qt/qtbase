@@ -92,6 +92,17 @@ bool QPlatformInputContext::isValid() const
 }
 
 /*!
+    Returns whether the implementation supports \a capability.
+    \internal
+    \since 5.4
+ */
+bool QPlatformInputContext::hasCapability(Capability capability) const
+{
+    Q_UNUSED(capability)
+    return true;
+}
+
+/*!
     Method to be called when input method needs to be reset. Called by QInputMethod::reset().
     No further QInputMethodEvents should be sent as response.
  */

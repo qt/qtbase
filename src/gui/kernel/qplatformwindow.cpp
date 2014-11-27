@@ -526,12 +526,14 @@ static inline const QScreen *effectiveScreen(const QWindow *window)
     if (!screen)
         return QGuiApplication::primaryScreen();
     const QList<QScreen *> siblings = screen->virtualSiblings();
+#ifndef QT_NO_CURSOR
     if (siblings.size() > 1) {
         const QPoint referencePoint = window->transientParent() ? window->transientParent()->geometry().center() : QCursor::pos();
         foreach (const QScreen *sibling, siblings)
             if (sibling->geometry().contains(referencePoint))
                 return sibling;
     }
+#endif
     return screen;
 }
 

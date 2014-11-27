@@ -52,6 +52,8 @@ EventFilter::EventFilter(QObject *p)
 
 void EventFilter::init(EventCategories eventCategories)
 {
+    m_objectTypes = OtherType | QWidgetType | QWindowType;
+
     if (eventCategories & MouseEvents) {
         m_eventTypes << QEvent::MouseButtonPress << QEvent::MouseButtonRelease
             << QEvent::MouseButtonDblClick << QEvent::NonClientAreaMouseButtonPress
@@ -79,6 +81,13 @@ void EventFilter::init(EventCategories eventCategories)
         m_eventTypes << QEvent::KeyPress << QEvent::KeyRelease << QEvent::ShortcutOverride
             << QEvent::Shortcut;
     }
+    if (eventCategories & FocusEvents) {
+        m_eventTypes
+#if QT_VERSION >= 0x050000
+            << QEvent::FocusAboutToChange
+#endif
+            << QEvent::FocusIn << QEvent::FocusOut;
+    }
     if (eventCategories & GeometryEvents)
         m_eventTypes << QEvent::Move << QEvent::Resize;
     if (eventCategories & PaintEvents) {
@@ -88,18 +97,44 @@ void EventFilter::init(EventCategories eventCategories)
         m_eventTypes << QEvent::Expose;
 #endif
     }
+    if (eventCategories & StateChangeEvents) {
+        m_eventTypes
+            << QEvent::WindowStateChange
+            << QEvent::WindowBlocked << QEvent::WindowUnblocked
+#if QT_VERSION >= 0x050000
+            << QEvent::ApplicationStateChange
+#endif
+            << QEvent::ApplicationActivate << QEvent::ApplicationDeactivate;
+    }
     if (eventCategories & TimerEvents)
         m_eventTypes << QEvent::Timer << QEvent::ZeroTimerEvent;
     if (eventCategories & ObjectEvents) {
         m_eventTypes << QEvent::ChildAdded << QEvent::ChildPolished
             << QEvent::ChildRemoved << QEvent::Create << QEvent::Destroy;
     }
+    if (eventCategories & InputMethodEvents) {
+        m_eventTypes << QEvent::InputMethod;
+#if QT_VERSION >= 0x050000
+        m_eventTypes << QEvent::InputMethodQuery;
+#endif
+    }
+}
+
+static inline bool matchesType(const QObject *o, EventFilter::ObjectTypes types)
+{
+    if (o->isWidgetType())
+        return types & EventFilter::QWidgetType;
+#if QT_VERSION >= 0x050000
+    if (o->isWindowType())
+        return types & EventFilter::QWindowType;
+#endif
+    return types & EventFilter::OtherType;
 }
 
 bool EventFilter::eventFilter(QObject *o, QEvent *e)
 {
     static int n = 0;
-    if (m_eventTypes.contains(e->type())) {
+    if (matchesType(o, m_objectTypes) && m_eventTypes.contains(e->type())) {
         QDebug debug = qDebug().nospace();
         const QString on = o->objectName();
         debug << '#' << n++ << ' ' << o->metaObject()->className();

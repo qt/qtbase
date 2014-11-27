@@ -31,71 +31,49 @@
 **
 ****************************************************************************/
 
-#ifndef QIOSWINDOW_H
-#define QIOSWINDOW_H
+#ifndef QDEVICEDISCOVERY_UDEV_H
+#define QDEVICEDISCOVERY_UDEV_H
 
-#include <qpa/qplatformwindow.h>
-#include <qpa/qwindowsysteminterface.h>
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
 
-#import <UIKit/UIKit.h>
-
-class QIOSContext;
-class QIOSWindow;
+#include "qdevicediscovery_p.h"
+#include <libudev.h>
 
 QT_BEGIN_NAMESPACE
 
-@class QUIView;
-
-class QIOSWindow : public QObject, public QPlatformWindow
+class QDeviceDiscoveryUDev : public QDeviceDiscovery
 {
     Q_OBJECT
 
 public:
-    explicit QIOSWindow(QWindow *window);
-    ~QIOSWindow();
+    QDeviceDiscoveryUDev(QDeviceTypes types, struct udev *udev, QObject *parent = 0);
+    ~QDeviceDiscoveryUDev();
+    QStringList scanConnectedDevices() Q_DECL_OVERRIDE;
 
-    void setGeometry(const QRect &rect);
-
-    void setWindowState(Qt::WindowState state);
-    void setParent(const QPlatformWindow *window);
-    void handleContentOrientationChange(Qt::ScreenOrientation orientation);
-    void setVisible(bool visible);
-    void setOpacity(qreal level) Q_DECL_OVERRIDE;
-
-    bool isExposed() const Q_DECL_OVERRIDE;
-    void propagateSizeHints() Q_DECL_OVERRIDE {}
-
-    void raise() { raiseOrLower(true); }
-    void lower() { raiseOrLower(false); }
-
-    bool shouldAutoActivateWindow() const;
-    void requestActivateWindow();
-
-    qreal devicePixelRatio() const;
-
-    bool setMouseGrabEnabled(bool grab) { return grab; }
-    bool setKeyboardGrabEnabled(bool grab) { return grab; }
-
-    WId winId() const { return WId(m_view); };
-
-    void clearAccessibleCache();
+private slots:
+    void handleUDevNotification();
 
 private:
-    void applicationStateChanged(Qt::ApplicationState state);
-    void applyGeometry(const QRect &rect);
+    bool checkDeviceType(struct udev_device *dev);
 
-    QUIView *m_view;
+    void startWatching();
+    void stopWatching();
 
-    QRect m_normalGeometry;
-    int m_windowLevel;
-
-    void raiseOrLower(bool raise);
-    void updateWindowLevel();
-    bool blockedByModal();
-
-    friend class QIOSScreen;
+    struct udev *m_udev;
+    struct udev_monitor *m_udevMonitor;
+    int m_udevMonitorFileDescriptor;
+    QSocketNotifier *m_udevSocketNotifier;
 };
 
 QT_END_NAMESPACE
 
-#endif // QIOSWINDOW_H
+#endif // QDEVICEDISCOVERY_UDEV_H

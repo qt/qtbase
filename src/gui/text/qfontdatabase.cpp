@@ -2482,11 +2482,12 @@ bool QFontDatabase::removeAllApplicationFonts()
 
     \sa {Thread-Support in Qt Modules#Painting In Threads}{Painting In Threads}
 */
-// QT_DEPRECATED_SINCE(5, 2)
+#if QT_DEPRECATED_SINCE(5, 2)
 bool QFontDatabase::supportsThreadedFontRendering()
 {
     return true;
 }
+#endif
 
 /*!
     \internal

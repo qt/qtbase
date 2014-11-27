@@ -136,6 +136,7 @@ public:
     void emitScreenChangedRecursion(QScreen *newScreen);
 
     virtual void clearFocusObject();
+    virtual QRectF closestAcceptableGeometry(const QRectF &rect) const;
 
     bool isPopup() const { return (windowFlags & Qt::WindowType_Mask) == Qt::Popup; }
 

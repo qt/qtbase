@@ -31,7 +31,7 @@
 **
 ****************************************************************************/
 
-#include "qdevicediscovery_p.h"
+#include "qdevicediscovery_udev_p.h"
 
 #include <QStringList>
 #include <QCoreApplication>
@@ -60,7 +60,7 @@ QDeviceDiscovery *QDeviceDiscovery::create(QDeviceTypes types, QObject *parent)
 
     udev = udev_new();
     if (udev) {
-        helper = new QDeviceDiscovery(types, udev, parent);
+        helper = new QDeviceDiscoveryUDev(types, udev, parent);
     } else {
         qWarning("Failed to get udev library context.");
     }
@@ -68,9 +68,9 @@ QDeviceDiscovery *QDeviceDiscovery::create(QDeviceTypes types, QObject *parent)
     return helper;
 }
 
-QDeviceDiscovery::QDeviceDiscovery(QDeviceTypes types, struct udev *udev, QObject *parent) :
-    QObject(parent),
-    m_types(types), m_udev(udev), m_udevMonitor(0), m_udevMonitorFileDescriptor(-1), m_udevSocketNotifier(0)
+QDeviceDiscoveryUDev::QDeviceDiscoveryUDev(QDeviceTypes types, struct udev *udev, QObject *parent) :
+    QDeviceDiscovery(types, parent),
+    m_udev(udev), m_udevMonitor(0), m_udevMonitorFileDescriptor(-1), m_udevSocketNotifier(0)
 {
 #ifdef QT_QPA_DEVICE_DISCOVERY_DEBUG
     qWarning() << "New UDeviceHelper created for type" << types;
@@ -96,7 +96,7 @@ QDeviceDiscovery::QDeviceDiscovery(QDeviceTypes types, struct udev *udev, QObjec
     connect(m_udevSocketNotifier, SIGNAL(activated(int)), this, SLOT(handleUDevNotification()));
 }
 
-QDeviceDiscovery::~QDeviceDiscovery()
+QDeviceDiscoveryUDev::~QDeviceDiscoveryUDev()
 {
     if (m_udevMonitor)
         udev_monitor_unref(m_udevMonitor);
@@ -105,7 +105,7 @@ QDeviceDiscovery::~QDeviceDiscovery()
         udev_unref(m_udev);
 }
 
-QStringList QDeviceDiscovery::scanConnectedDevices()
+QStringList QDeviceDiscoveryUDev::scanConnectedDevices()
 {
     QStringList devices;
 
@@ -165,7 +165,7 @@ QStringList QDeviceDiscovery::scanConnectedDevices()
     return devices;
 }
 
-void QDeviceDiscovery::handleUDevNotification()
+void QDeviceDiscoveryUDev::handleUDevNotification()
 {
     if (!m_udevMonitor)
         return;
@@ -216,7 +216,7 @@ cleanup:
     udev_device_unref(dev);
 }
 
-bool QDeviceDiscovery::checkDeviceType(udev_device *dev)
+bool QDeviceDiscoveryUDev::checkDeviceType(udev_device *dev)
 {
     if (!dev)
         return false;

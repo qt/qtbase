@@ -1723,9 +1723,9 @@ void QString::expand(int i)
 
 /*! \fn void QString::clear()
 
-    Clears the contents of the string and makes it empty.
+    Clears the contents of the string and makes it null.
 
-    \sa resize(), isEmpty()
+    \sa resize(), isNull()
 */
 
 /*! \fn QString &QString::operator=(const QString &other)

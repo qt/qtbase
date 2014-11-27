@@ -52,25 +52,41 @@ public:
         TabletEvents       = 0x00008,
         DragAndDropEvents  = 0x00010,
         KeyEvents          = 0x00020,
-        GeometryEvents     = 0x00040,
-        PaintEvents        = 0x00080,
-        TimerEvents        = 0x00100,
-        ObjectEvents       = 0x00200
+        FocusEvents        = 0x00040,
+        GeometryEvents     = 0x00080,
+        PaintEvents        = 0x00100,
+        StateChangeEvents  = 0x00200,
+        InputMethodEvents  = 0x00400,
+        TimerEvents        = 0x00800,
+        ObjectEvents       = 0x01000,
+        AllEvents          = 0xFFFFF
     };
     Q_DECLARE_FLAGS(EventCategories, EventCategory)
+
+    enum ObjectType {
+        QWindowType = 0x1,
+        QWidgetType = 0x2,
+        OtherType   = 0x4
+    };
+    Q_DECLARE_FLAGS(ObjectTypes, ObjectType)
 
     explicit EventFilter(EventCategories eventCategories, QObject *p = 0);
     explicit EventFilter(QObject *p = 0);
 
     bool eventFilter(QObject *, QEvent *);
 
+    ObjectTypes objectTypes() const { return m_objectTypes; }
+    void setObjectTypes(ObjectTypes objectTypes) { m_objectTypes = objectTypes; }
+
 private:
     void init(EventCategories eventCategories);
 
     QList<QEvent::Type> m_eventTypes;
+    ObjectTypes m_objectTypes;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(EventFilter::EventCategories)
+Q_DECLARE_OPERATORS_FOR_FLAGS(EventFilter::ObjectTypes)
 
 } // namespace QtDiag
 

@@ -2480,6 +2480,7 @@ void CloseButton::paintEvent(QPaintEvent *)
     style()->drawPrimitive(QStyle::PE_IndicatorTabClose, &opt, &p, this);
 }
 
+#ifndef QT_NO_ANIMATION
 void QTabBarPrivate::Tab::TabBarAnimation::updateCurrentValue(const QVariant &current)
 {
     priv->moveTab(priv->tabList.indexOf(*tab), current.toInt());
@@ -2489,6 +2490,7 @@ void QTabBarPrivate::Tab::TabBarAnimation::updateState(QAbstractAnimation::State
 {
     if (newState == Stopped) priv->moveTabFinished(priv->tabList.indexOf(*tab));
 }
+#endif
 
 QT_END_NAMESPACE
 

@@ -1950,6 +1950,7 @@ static void set_extended_font_bits(quint8 bits, QFontPrivate *f)
 }
 #endif
 
+#if QT_DEPRECATED_SINCE(5, 3)
 /*!
     \fn QString QFont::rawName() const
     \deprecated
@@ -1986,6 +1987,7 @@ QString QFont::rawName() const
 void QFont::setRawName(const QString &)
 {
 }
+#endif
 
 /*!
     Returns the font's key, a textual representation of a font. It is

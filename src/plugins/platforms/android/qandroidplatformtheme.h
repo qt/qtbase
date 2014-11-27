@@ -35,6 +35,7 @@
 #define QANDROIDPLATFORMTHEME_H
 
 #include <qpa/qplatformtheme.h>
+#include <QtGui/qfont.h>
 #include <QtGui/qpalette.h>
 
 #include <QJsonObject>
@@ -73,6 +74,7 @@ public:
 private:
     std::shared_ptr<AndroidStyle> m_androidStyleData;
     QPalette m_defaultPalette;
+    QFont m_systemFont;
 };
 
 QT_END_NAMESPACE

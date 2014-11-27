@@ -102,7 +102,7 @@ static QString getGlString(GLenum name)
     return QString();
 }
 
-QString glInfo(const QWidget *)
+QString glInfo(const QObject *)
 {
     return getGlString(GL_VENDOR) + QLatin1Char('\n') + getGlString(GL_RENDERER);
 }

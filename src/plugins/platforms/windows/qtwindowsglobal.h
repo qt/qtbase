@@ -72,7 +72,8 @@ enum WindowsEventType // Simplify event types
     ShowEventOnParentRestoring = WindowEventFlag + 20,
     HideEvent = WindowEventFlag + 8,
     DestroyEvent = WindowEventFlag + 9,
-    MoveEvent = WindowEventFlag + 10,
+    GeometryChangingEvent = WindowEventFlag + 10,
+    MoveEvent = WindowEventFlag + 11,
     ResizeEvent = WindowEventFlag + 12,
     QuerySizeHints = WindowEventFlag + 15,
     CalculateSize = WindowEventFlag + 16,
@@ -146,6 +147,10 @@ inline QtWindows::WindowsEventType windowsEventType(UINT message, WPARAM wParamI
     case WM_MOUSEWHEEL:
     case WM_MOUSEHWHEEL:
         return QtWindows::MouseWheelEvent;
+#ifndef Q_OS_WINCE
+    case WM_WINDOWPOSCHANGING:
+        return QtWindows::GeometryChangingEvent;
+#endif
     case WM_MOVE:
         return QtWindows::MoveEvent;
     case WM_SHOWWINDOW:

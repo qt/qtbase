@@ -869,7 +869,7 @@ QWindowList QGuiApplication::topLevelWindows()
 /*!
     Returns the primary (or default) screen of the application.
 
-    This will be the screen where QWindows are shown, unless otherwise specified.
+    This will be the screen where QWindows are initially shown, unless otherwise specified.
 */
 QScreen *QGuiApplication::primaryScreen()
 {
@@ -3386,15 +3386,21 @@ void QGuiApplicationPrivate::_q_updateFocusObject(QObject *object)
 {
     Q_Q(QGuiApplication);
 
+    QPlatformInputContext *inputContext = platformIntegration()->inputContext();
     bool enabled = false;
-    if (object) {
-        QInputMethodQueryEvent query(Qt::ImEnabled);
+    if (object && inputContext) {
+        QInputMethodQueryEvent query(Qt::ImEnabled | Qt::ImHints);
         QGuiApplication::sendEvent(object, &query);
         enabled = query.value(Qt::ImEnabled).toBool();
+        if (enabled) {
+            static const bool supportsHiddenText = inputContext->hasCapability(QPlatformInputContext::HiddenTextCapability);
+            const Qt::InputMethodHints hints = static_cast<Qt::InputMethodHints>(query.value(Qt::ImHints).toInt());
+            if ((hints & Qt::ImhHiddenText) && !supportsHiddenText)
+                enabled = false;
+        }
     }
 
     QPlatformInputContextPrivate::setInputMethodAccepted(enabled);
-    QPlatformInputContext *inputContext = platformIntegration()->inputContext();
     if (inputContext)
         inputContext->setFocusObject(object);
     emit q->focusObjectChanged(object);

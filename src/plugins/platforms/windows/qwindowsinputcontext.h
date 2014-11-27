@@ -62,6 +62,7 @@ public:
     explicit QWindowsInputContext();
     ~QWindowsInputContext();
 
+    bool hasCapability(Capability capability) const Q_DECL_OVERRIDE;
     void reset() Q_DECL_OVERRIDE;
     void update(Qt::InputMethodQueries) Q_DECL_OVERRIDE;
     void invokeAction(QInputMethod::Action, int cursorPosition) Q_DECL_OVERRIDE;
@@ -87,6 +88,7 @@ private:
     void endContextComposition();
 
     const DWORD m_WM_MSIME_MOUSE;
+    static HIMC m_defaultContext;
     CompositionContext m_compositionContext;
     bool m_endCompositionRecursionGuard;
 };

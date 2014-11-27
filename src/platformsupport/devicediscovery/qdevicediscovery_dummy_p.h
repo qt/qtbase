@@ -31,71 +31,33 @@
 **
 ****************************************************************************/
 
-#ifndef QIOSWINDOW_H
-#define QIOSWINDOW_H
+#ifndef QDEVICEDISCOVERY_DUMMY_H
+#define QDEVICEDISCOVERY_DUMMY_H
 
-#include <qpa/qplatformwindow.h>
-#include <qpa/qwindowsysteminterface.h>
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
 
-#import <UIKit/UIKit.h>
-
-class QIOSContext;
-class QIOSWindow;
+#include "qdevicediscovery_p.h"
 
 QT_BEGIN_NAMESPACE
 
-@class QUIView;
-
-class QIOSWindow : public QObject, public QPlatformWindow
+class QDeviceDiscoveryDummy : public QDeviceDiscovery
 {
     Q_OBJECT
 
 public:
-    explicit QIOSWindow(QWindow *window);
-    ~QIOSWindow();
-
-    void setGeometry(const QRect &rect);
-
-    void setWindowState(Qt::WindowState state);
-    void setParent(const QPlatformWindow *window);
-    void handleContentOrientationChange(Qt::ScreenOrientation orientation);
-    void setVisible(bool visible);
-    void setOpacity(qreal level) Q_DECL_OVERRIDE;
-
-    bool isExposed() const Q_DECL_OVERRIDE;
-    void propagateSizeHints() Q_DECL_OVERRIDE {}
-
-    void raise() { raiseOrLower(true); }
-    void lower() { raiseOrLower(false); }
-
-    bool shouldAutoActivateWindow() const;
-    void requestActivateWindow();
-
-    qreal devicePixelRatio() const;
-
-    bool setMouseGrabEnabled(bool grab) { return grab; }
-    bool setKeyboardGrabEnabled(bool grab) { return grab; }
-
-    WId winId() const { return WId(m_view); };
-
-    void clearAccessibleCache();
-
-private:
-    void applicationStateChanged(Qt::ApplicationState state);
-    void applyGeometry(const QRect &rect);
-
-    QUIView *m_view;
-
-    QRect m_normalGeometry;
-    int m_windowLevel;
-
-    void raiseOrLower(bool raise);
-    void updateWindowLevel();
-    bool blockedByModal();
-
-    friend class QIOSScreen;
+    QDeviceDiscoveryDummy(QDeviceTypes types, QObject *parent = 0);
+    QStringList scanConnectedDevices() Q_DECL_OVERRIDE;
 };
 
 QT_END_NAMESPACE
 
-#endif // QIOSWINDOW_H
+#endif // QDEVICEDISCOVERY_DUMMY_H
