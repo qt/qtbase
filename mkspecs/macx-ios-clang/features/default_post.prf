@@ -185,13 +185,17 @@ macx-xcode {
     launch_images.files = $$copy_image.output
     QMAKE_BUNDLE_DATA += launch_images
 
-    # Set up default LaunchScreen to support iPhone6/6+
-    launch_screen = LaunchScreen.xib
-    copy_launch_screen.input = $$QMAKESPEC/$$launch_screen
-    copy_launch_screen.output = $$OUT_PWD/$${TARGET}.xcodeproj/$$launch_screen
-    QMAKE_SUBSTITUTES += copy_launch_screen
-    launch_screens.files = $$copy_launch_screen.output
-    QMAKE_BUNDLE_DATA += launch_screens
+    lessThan(QMAKE_XCODE_VERSION, "6.0") {
+        warning("You need to update Xcode to version 6 or newer to fully support iPhone6/6+")
+    } else {
+        # Set up default LaunchScreen to support iPhone6/6+
+        launch_screen = LaunchScreen.xib
+        copy_launch_screen.input = $$QMAKESPEC/$$launch_screen
+        copy_launch_screen.output = $$OUT_PWD/$${TARGET}.xcodeproj/$$launch_screen
+        QMAKE_SUBSTITUTES += copy_launch_screen
+        launch_screens.files = $$copy_launch_screen.output
+        QMAKE_BUNDLE_DATA += launch_screens
+    }
 }
 
 macx-xcode {
