@@ -88,7 +88,13 @@ QIOSIntegration::QIOSIntegration()
     // Set current directory to app bundle folder
     QDir::setCurrent(QString::fromUtf8([[[NSBundle mainBundle] bundlePath] UTF8String]));
 
-    for (UIScreen *screen in [UIScreen screens])
+    NSMutableArray *screens = [[[UIScreen screens] mutableCopy] autorelease];
+    if (![screens containsObject:[UIScreen mainScreen]]) {
+        // Fallback for iOS 7.1 (QTBUG-42345)
+        [screens insertObject:[UIScreen mainScreen] atIndex:0];
+    }
+
+    for (UIScreen *screen in screens)
         addScreen(new QIOSScreen(screen));
 
     // Depends on a primary screen being present

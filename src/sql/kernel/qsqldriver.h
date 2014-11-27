@@ -71,8 +71,8 @@ public:
 
     enum NotificationSource { UnknownSource, SelfSource, OtherSource };
 
-    enum DBMSType {
-        UnknownDBMS,
+    enum DbmsType {
+        UnknownDbms,
         MSSqlServer,
         MySqlServer,
         PostgreSQL,
@@ -123,7 +123,7 @@ public:
     void setNumericalPrecisionPolicy(QSql::NumericalPrecisionPolicy precisionPolicy);
     QSql::NumericalPrecisionPolicy numericalPrecisionPolicy() const;
 
-    DBMSType dbmsType() const;
+    DbmsType dbmsType() const;
 
 public Q_SLOTS:
     virtual bool cancelQuery();

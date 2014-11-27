@@ -403,8 +403,8 @@ QDebug &QDebug::resetFormat()
     \brief Convenience class for custom QDebug operators
 
     Saves the settings used by QDebug, and restores them upon destruction,
-    then calls maybeSpace(), to separate arguments with a space if
-    autoInsertSpaces() was true at the time of constructing the QDebugStateSaver.
+    then calls \l {QDebug::maybeSpace()}{maybeSpace()}, to separate arguments with a space if
+    \l {QDebug::autoInsertSpaces()}{autoInsertSpaces()} was true at the time of constructing the QDebugStateSaver.
 
     The automatic insertion of spaces between writes is one of the settings
     that QDebugStateSaver stores for the duration of the current block.

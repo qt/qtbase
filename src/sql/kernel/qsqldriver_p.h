@@ -61,14 +61,14 @@ public:
         isOpen(false),
         isOpenError(false),
         precisionPolicy(QSql::LowPrecisionDouble),
-        dbmsType(QSqlDriver::UnknownDBMS)
+        dbmsType(QSqlDriver::UnknownDbms)
     { }
 
     uint isOpen;
     uint isOpenError;
     QSqlError error;
     QSql::NumericalPrecisionPolicy precisionPolicy;
-    QSqlDriver::DBMSType dbmsType;
+    QSqlDriver::DbmsType dbmsType;
 };
 
 QT_END_NAMESPACE

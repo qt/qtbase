@@ -575,12 +575,12 @@ QList<QSslError> QSslCertificate::verify(QList<QSslCertificate> certificateChain
 
   \note The \a device must be open and ready to be read from.
  */
-bool QSslCertificate::importPKCS12(QIODevice *device,
+bool QSslCertificate::importPkcs12(QIODevice *device,
                                    QSslKey *key, QSslCertificate *certificate,
                                    QList<QSslCertificate> *caCertificates,
                                    const QByteArray &passPhrase)
 {
-    return QSslSocketBackendPrivate::importPKCS12(device, key, certificate, caCertificates, passPhrase);
+    return QSslSocketBackendPrivate::importPkcs12(device, key, certificate, caCertificates, passPhrase);
 }
 
 // These certificates are known to be fraudulent and were created during the comodo

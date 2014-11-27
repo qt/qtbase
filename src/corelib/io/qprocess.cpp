@@ -1853,8 +1853,8 @@ void QProcess::setProcessState(ProcessState state)
 
 /*!
   This function is called in the child process context just before the
-    program is executed on Unix or Mac OS X (i.e., after \e fork(), but before
-    \e execve()). Reimplement this function to do last minute initialization
+    program is executed on Unix or OS X (i.e., after \c fork(), but before
+    \c execve()). Reimplement this function to do last minute initialization
     of the child process. Example:
 
     \snippet code/src_corelib_io_qprocess.cpp 4
@@ -1864,7 +1864,7 @@ void QProcess::setProcessState(ProcessState state)
     execution, your workaround is to emit finished() and then call
     exit().
 
-    \warning This function is called by QProcess on Unix and Mac OS X
+    \warning This function is called by QProcess on Unix and OS X
     only. On Windows and QNX, it is not called.
 */
 void QProcess::setupChildProcess()
@@ -2272,7 +2272,7 @@ void QProcess::setArguments(const QStringList &arguments)
 
     On Windows, terminate() posts a WM_CLOSE message to all toplevel windows
     of the process and then to the main thread of the process itself. On Unix
-    and Mac OS X the SIGTERM signal is sent.
+    and OS X the \c SIGTERM signal is sent.
 
     Console applications on Windows that do not run an event loop, or whose
     event loop does not handle the WM_CLOSE message, can only be terminated by
@@ -2289,7 +2289,7 @@ void QProcess::terminate()
 /*!
     Kills the current process, causing it to exit immediately.
 
-    On Windows, kill() uses TerminateProcess, and on Unix and Mac OS X, the
+    On Windows, kill() uses TerminateProcess, and on Unix and OS X, the
     SIGKILL signal is sent to the process.
 
     \sa terminate()

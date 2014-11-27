@@ -2687,8 +2687,8 @@ void QUrl::setQuery(const QUrlQuery &query)
     Sets the query string of the URL to an encoded version of \a
     query. The contents of \a query are converted to a string
     internally, each pair delimited by the character returned by
-    queryPairDelimiter(), and the key and value are delimited by
-    queryValueDelimiter().
+    \l {QUrlQuery::queryPairDelimiter()}{queryPairDelimiter()}, and the key and value are delimited by
+    \l {QUrlQuery::queryValueDelimiter()}{queryValueDelimiter()}
 
     \note This method does not encode spaces (ASCII 0x20) as plus (+) signs,
     like HTML forms do. If you need that kind of encoding, you must encode
@@ -2707,8 +2707,8 @@ void QUrl::setQuery(const QUrlQuery &query)
     Sets the query string of the URL to the encoded version of \a
     query. The contents of \a query are converted to a string
     internally, each pair delimited by the character returned by
-    queryPairDelimiter(), and the key and value are delimited by
-    queryValueDelimiter().
+    \l {QUrlQuery::queryPairDelimiter()}{queryPairDelimiter()}, and the key and value are delimited by
+    \l {QUrlQuery::queryValueDelimiter()}{queryValueDelimiter()}.
 
     \obsolete Use QUrlQuery and setQuery().
 
@@ -2725,8 +2725,9 @@ void QUrl::setQuery(const QUrlQuery &query)
     The key-value pair is encoded before it is added to the query. The
     pair is converted into separate strings internally. The \a key and
     \a value is first encoded into UTF-8 and then delimited by the
-    character returned by queryValueDelimiter(). Each key-value pair is
-    delimited by the character returned by queryPairDelimiter().
+    character returned by \l {QUrlQuery::queryValueDelimiter()}{queryValueDelimiter()}.
+    Each key-value pair is delimited by the character returned by
+    \l {QUrlQuery::queryPairDelimiter()}{queryPairDelimiter()}
 
     \note This method does not encode spaces (ASCII 0x20) as plus (+) signs,
     like HTML forms do. If you need that kind of encoding, you must encode

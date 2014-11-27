@@ -380,7 +380,7 @@ QTextCodec::ConverterState::~ConverterState()
     If Qt is compiled with ICU support enabled, most codecs supported by
     ICU will also be available to the application.
 
-    QTextCodecs can be used as follows to convert some locally encoded
+    \l {QTextCodec}s can be used as follows to convert some locally encoded
     string to Unicode. Suppose you have some string encoded in Russian
     KOI8-R encoding, and want to convert it to Unicode. The simple way
     to do it is like this:
@@ -453,7 +453,7 @@ QTextCodec::ConverterState::~ConverterState()
          \li Converts a Unicode string to an 8-bit character string.
     \endtable
 
-    \sa QTextStream, QTextDecoder, QTextEncoder, {Codecs Example}
+    \sa QTextStream, QTextDecoder, QTextEncoder, {Text Codecs Example}
 */
 
 /*!

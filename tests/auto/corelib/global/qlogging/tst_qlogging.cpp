@@ -765,7 +765,7 @@ void tst_qmessagehandler::qMessagePattern_data()
 
     // %{time}  should have a padding of 6 so if it takes less than 10 seconds to show
     // the first message, there should be 5 spaces
-    QTest::newRow("time") << "<%{time}>%{message}" << true << (QList<QByteArray>()
+    QTest::newRow("time-process") << "<%{time process}>%{message}" << true << (QList<QByteArray>()
             << "<     ");
 
 #ifdef __GLIBC__

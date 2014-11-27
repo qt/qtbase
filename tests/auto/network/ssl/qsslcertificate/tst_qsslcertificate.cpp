@@ -1312,7 +1312,7 @@ void tst_QSslCertificate::pkcs12()
 #ifdef QT_NO_OPENSSL
     QEXPECT_FAIL("", "QTBUG-40884: WinRT API does not support pkcs12 imports", Abort);
 #endif
-    ok = QSslCertificate::importPKCS12(&f, &key, &cert, &caCerts);
+    ok = QSslCertificate::importPkcs12(&f, &key, &cert, &caCerts);
     QVERIFY(ok);
     f.close();
 

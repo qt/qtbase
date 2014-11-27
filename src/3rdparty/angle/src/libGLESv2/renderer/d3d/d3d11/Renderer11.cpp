@@ -1870,6 +1870,8 @@ bool Renderer11::testDeviceResettable()
 
 void Renderer11::release()
 {
+    RendererD3D::cleanup();
+
     releaseShaderCompiler();
     releaseDeviceResources();
 

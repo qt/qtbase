@@ -92,7 +92,7 @@ public:
 
     static QList<QSslCipher> defaultCiphers();
     static QList<QSslError> verify(QList<QSslCertificate> certificateChain, const QString &hostName);
-    static bool importPKCS12(QIODevice *device,
+    static bool importPkcs12(QIODevice *device,
                              QSslKey *key, QSslCertificate *cert,
                              QList<QSslCertificate> *caCertificates,
                              const QByteArray &passPhrase);
