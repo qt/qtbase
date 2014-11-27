@@ -439,7 +439,7 @@ OS X
  - The Qt binary packages are now configured with C++11 enabled.
  - [QTBUG-41208] Fixed detection of writing system support in fonts for
    some scripts such as Mkhedruli.
- - [QTBUG-41192] Fixed menu item shortcuts without keyboard modifiers.
+ - Fixed menu item shortcuts without keyboard modifiers.
  - [QTBUG-31301] Drag-and-drop QMimeData requests are now delayed until
    drop time.
  - [QTBUG-10899] Added support for ApplicationState
