@@ -1567,7 +1567,7 @@ QFontEngineMulti::QFontEngineMulti(QFontEngine *engine, int script, const QStrin
         m_fallbackFamilies << QString();
     }
 
-    m_engines.fill(0, m_fallbackFamilies.size() + 1);
+    m_engines.resize(m_fallbackFamilies.size() + 1);
 
     engine->ref.ref();
     m_engines[0] = engine;
@@ -1601,15 +1601,15 @@ void QFontEngineMulti::setFallbackFamiliesList(const QStringList &fallbackFamili
     Q_ASSERT(!m_fallbackFamiliesQueried);
 
     m_fallbackFamilies = fallbackFamilies;
-
-    m_engines.resize(m_fallbackFamilies.size() + 1);
-
     if (m_fallbackFamilies.isEmpty()) {
         // turns out we lied about having any fallback at all
+        Q_ASSERT(m_engines.size() == 2); // see c-tor for details
         QFontEngine *engine = m_engines.at(0);
         engine->ref.ref();
         m_engines[1] = engine;
         m_fallbackFamilies << fontDef.family;
+    } else {
+        m_engines.resize(m_fallbackFamilies.size() + 1);
     }
 
     m_fallbackFamiliesQueried = true;
