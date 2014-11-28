@@ -124,6 +124,26 @@ shellQuoteLines()
     echo `echo "$1" | sed 's,^[^ ]* .*$,"&",'`
 }
 
+makeabs()
+{
+    local FILE=$1
+    local RES=$FILE
+    if [ -z "${FILE##/*}" ]; then
+        true
+    elif [ "$OSTYPE" = "msys" -a -z "${FILE##[a-zA-Z]:[/\\]*}" ]; then
+        true
+    else
+        RES=$PWD/$FILE
+    fi
+    RES=$RES/
+    while true; do
+        nres=`echo "$RES" | sed 's,/[^/][^/]*/\.\./,/,g; s,/\./,/,g'`
+        test x"$nres" = x"$RES" && break
+        RES=$nres
+    done
+    echo "$RES" | sed 's,//,/,g; s,/$,,'
+}
+
 # Adds a new qmake variable to the cache
 # Usage: QMakeVar mode varname contents
 #   where mode is one of: set, add, del
@@ -362,7 +382,7 @@ filterDefaultPaths()
 {
     local path
     path=`cat`
-    path=`"$relpath/config.tests/unix/makeabs" "$path"`
+    path=`makeabs "$path"`
     echo "$1" | grep "^$path\$" > /dev/null || echo "$path"
 }
 
@@ -3010,7 +3030,7 @@ minimal|small|medium|large|full)
 *)
     # not known to be sufficient for anything
     if [ ! -f "$CFG_QCONFIG_PATH" ]; then
-        CFG_QCONFIG_PATH=`"$relpath/config.tests/unix/makeabs" "${CFG_QCONFIG}"`
+        CFG_QCONFIG_PATH=`makeabs "${CFG_QCONFIG}"`
         if [ ! -f "$CFG_QCONFIG_PATH" ]; then
             echo >&2 "Error: configuration file not found:"
             echo >&2 "  $relpath/src/corelib/global/qconfig-${CFG_QCONFIG}.h"
@@ -3497,32 +3517,32 @@ if [ -z "$QT_INSTALL_PREFIX" ]; then
         QT_INSTALL_PREFIX="/usr/local/Qt-${QT_VERSION}" # the default install prefix is /usr/local/Qt-$QT_VERSION
     fi
 fi
-QT_INSTALL_PREFIX=`"$relpath/config.tests/unix/makeabs" "$QT_INSTALL_PREFIX"`
+QT_INSTALL_PREFIX=`makeabs "$QT_INSTALL_PREFIX"`
 
 if [ -z "$QT_INSTALL_HEADERS" ]; then #default
     QT_INSTALL_HEADERS="$QT_INSTALL_PREFIX/include"
 fi
-QT_INSTALL_HEADERS=`"$relpath/config.tests/unix/makeabs" "$QT_INSTALL_HEADERS"`
+QT_INSTALL_HEADERS=`makeabs "$QT_INSTALL_HEADERS"`
 
 if [ -z "$QT_INSTALL_LIBS" ]; then #default
     QT_INSTALL_LIBS="$QT_INSTALL_PREFIX/lib" #fallback
 fi
-QT_INSTALL_LIBS=`"$relpath/config.tests/unix/makeabs" "$QT_INSTALL_LIBS"`
+QT_INSTALL_LIBS=`makeabs "$QT_INSTALL_LIBS"`
 
 if [ -z "$QT_INSTALL_ARCHDATA" ]; then #default
     QT_INSTALL_ARCHDATA="$QT_INSTALL_PREFIX" #fallback
 fi
-QT_INSTALL_ARCHDATA=`"$relpath/config.tests/unix/makeabs" "$QT_INSTALL_ARCHDATA"`
+QT_INSTALL_ARCHDATA=`makeabs "$QT_INSTALL_ARCHDATA"`
 
 if [ -z "$QT_INSTALL_DATA" ]; then #default
     QT_INSTALL_DATA="$QT_INSTALL_PREFIX" #fallback
 fi
-QT_INSTALL_DATA=`"$relpath/config.tests/unix/makeabs" "$QT_INSTALL_DATA"`
+QT_INSTALL_DATA=`makeabs "$QT_INSTALL_DATA"`
 
 if [ -z "$QT_INSTALL_BINS" ]; then #default
     QT_INSTALL_BINS="$QT_INSTALL_PREFIX/bin" #fallback
 fi
-QT_INSTALL_BINS=`"$relpath/config.tests/unix/makeabs" "$QT_INSTALL_BINS"`
+QT_INSTALL_BINS=`makeabs "$QT_INSTALL_BINS"`
 
 if [ "$XPLATFORM_MINGW" = "yes" ]; then
     QT_INSTALL_LIBEXECS_DIRNAME="bin"
@@ -3533,33 +3553,33 @@ fi
 if [ -z "$QT_INSTALL_LIBEXECS" ]; then #default
     QT_INSTALL_LIBEXECS="$QT_INSTALL_ARCHDATA/$QT_INSTALL_LIBEXECS_DIRNAME" #fallback
 fi
-QT_INSTALL_LIBEXECS=`"$relpath/config.tests/unix/makeabs" "$QT_INSTALL_LIBEXECS"`
+QT_INSTALL_LIBEXECS=`makeabs "$QT_INSTALL_LIBEXECS"`
 
 if [ -z "$QT_INSTALL_DOCS" ]; then #default
     QT_INSTALL_DOCS="$QT_INSTALL_DATA/doc" #fallback
 fi
-QT_INSTALL_DOCS=`"$relpath/config.tests/unix/makeabs" "$QT_INSTALL_DOCS"`
+QT_INSTALL_DOCS=`makeabs "$QT_INSTALL_DOCS"`
 
 if [ -z "$QT_INSTALL_PLUGINS" ]; then #default
     QT_INSTALL_PLUGINS="$QT_INSTALL_ARCHDATA/plugins" #fallback
 fi
-QT_INSTALL_PLUGINS=`"$relpath/config.tests/unix/makeabs" "$QT_INSTALL_PLUGINS"`
+QT_INSTALL_PLUGINS=`makeabs "$QT_INSTALL_PLUGINS"`
 
 if [ -z "$QT_INSTALL_IMPORTS" ]; then #default
     QT_INSTALL_IMPORTS="$QT_INSTALL_ARCHDATA/imports" #fallback
 fi
-QT_INSTALL_IMPORTS=`"$relpath/config.tests/unix/makeabs" "$QT_INSTALL_IMPORTS"`
+QT_INSTALL_IMPORTS=`makeabs "$QT_INSTALL_IMPORTS"`
 
 #qml
 if [ -z "$QT_INSTALL_QML" ]; then #default
     QT_INSTALL_QML="$QT_INSTALL_ARCHDATA/qml" #fallback
 fi
-QT_INSTALL_QML=`"$relpath/config.tests/unix/makeabs" "$QT_INSTALL_QML"`
+QT_INSTALL_QML=`makeabs "$QT_INSTALL_QML"`
 
 if [ -z "$QT_INSTALL_TRANSLATIONS" ]; then #default
     QT_INSTALL_TRANSLATIONS="$QT_INSTALL_DATA/translations" #fallback
 fi
-QT_INSTALL_TRANSLATIONS=`"$relpath/config.tests/unix/makeabs" "$QT_INSTALL_TRANSLATIONS"`
+QT_INSTALL_TRANSLATIONS=`makeabs "$QT_INSTALL_TRANSLATIONS"`
 
 if [ -z "$QT_INSTALL_SETTINGS" ]; then #default
     if [ "$XPLATFORM_MAC" = "yes" ]; then
@@ -3568,18 +3588,18 @@ if [ -z "$QT_INSTALL_SETTINGS" ]; then #default
         QT_INSTALL_SETTINGS=$QT_INSTALL_PREFIX/etc/xdg
     fi
 fi
-QT_INSTALL_SETTINGS=`"$relpath/config.tests/unix/makeabs" "$QT_INSTALL_SETTINGS"`
+QT_INSTALL_SETTINGS=`makeabs "$QT_INSTALL_SETTINGS"`
 
 if [ -z "$QT_INSTALL_EXAMPLES" ]; then #default
     QT_INSTALL_EXAMPLES="$QT_INSTALL_PREFIX/examples" #fallback
 fi
-QT_INSTALL_EXAMPLES=`"$relpath/config.tests/unix/makeabs" "$QT_INSTALL_EXAMPLES"`
+QT_INSTALL_EXAMPLES=`makeabs "$QT_INSTALL_EXAMPLES"`
 
 #tests
 if [ -z "$QT_INSTALL_TESTS" ]; then #default
     QT_INSTALL_TESTS="$QT_INSTALL_PREFIX/tests" #fallback
 fi
-QT_INSTALL_TESTS=`"$relpath/config.tests/unix/makeabs" "$QT_INSTALL_TESTS"`
+QT_INSTALL_TESTS=`makeabs "$QT_INSTALL_TESTS"`
 
 #------- sysroot-external install paths --------
 
@@ -3620,7 +3640,7 @@ if [ -z "$QT_HOST_PREFIX" ]; then
     QT_HOST_PREFIX=$QT_INSTALL_PREFIX
     haveHpx=false
 else
-    QT_HOST_PREFIX=`"$relpath/config.tests/unix/makeabs" "$QT_HOST_PREFIX"`
+    QT_HOST_PREFIX=`makeabs "$QT_HOST_PREFIX"`
     haveHpx=true
 fi
 
@@ -3631,7 +3651,7 @@ if [ -z "$QT_HOST_BINS" ]; then #default
         QT_HOST_BINS="$QT_INSTALL_BINS"
     fi
 fi
-QT_HOST_BINS=`"$relpath/config.tests/unix/makeabs" "$QT_HOST_BINS"`
+QT_HOST_BINS=`makeabs "$QT_HOST_BINS"`
 
 if [ -z "$QT_HOST_LIBS" ]; then #default
     if $haveHpx; then
@@ -3640,7 +3660,7 @@ if [ -z "$QT_HOST_LIBS" ]; then #default
         QT_HOST_LIBS="$QT_INSTALL_LIBS"
     fi
 fi
-QT_HOST_LIBS=`"$relpath/config.tests/unix/makeabs" "$QT_HOST_LIBS"`
+QT_HOST_LIBS=`makeabs "$QT_HOST_LIBS"`
 
 if [ -z "$QT_HOST_DATA" ]; then #default
     if $haveHpx; then
@@ -3649,7 +3669,7 @@ if [ -z "$QT_HOST_DATA" ]; then #default
         QT_HOST_DATA="$QT_INSTALL_ARCHDATA"
     fi
 else
-    QT_HOST_DATA=`"$relpath/config.tests/unix/makeabs" "$QT_HOST_DATA"`
+    QT_HOST_DATA=`makeabs "$QT_HOST_DATA"`
 fi
 
 if [ "$CFG_COMPILE_EXAMPLES" = "yes" ]; then
