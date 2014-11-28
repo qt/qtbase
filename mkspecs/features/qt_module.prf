@@ -181,7 +181,10 @@ load(qt_common)
 unix|mingw {
     CONFIG += create_pc
     QMAKE_PKGCONFIG_DESTDIR = pkgconfig
-    QMAKE_PKGCONFIG_LIBDIR = $$qt_libdir
+    host_build: \
+        QMAKE_PKGCONFIG_LIBDIR = $$[QT_HOST_LIBS]
+    else: \
+        QMAKE_PKGCONFIG_LIBDIR = $$[QT_INSTALL_LIBS/raw]
     QMAKE_PKGCONFIG_INCDIR = $$[QT_INSTALL_HEADERS/raw]
     QMAKE_PKGCONFIG_CFLAGS = -I${includedir}/$$MODULE_INCNAME
     QMAKE_PKGCONFIG_NAME = $$replace(TARGET, ^Qt, "Qt$$QT_MAJOR_VERSION ")
@@ -190,12 +193,23 @@ unix|mingw {
         QMAKE_PKGCONFIG_REQUIRES += $$replace(QT.$${i}.name, ^Qt, Qt$$eval(QT.$${i}.MAJOR_VERSION))
     isEmpty(QMAKE_PKGCONFIG_DESCRIPTION): \
         QMAKE_PKGCONFIG_DESCRIPTION = $$replace(TARGET, ^Qt, "Qt ") module
-    QMAKE_PKGCONFIG_INSTALL_REPLACE += lib_replace
+    pclib_replace.match = $$lib_replace.match
+    !isEmpty(lib_replace.replace): \
+        pclib_replace.replace = $$QMAKE_PKGCONFIG_LIBDIR
+    pclib_replace.CONFIG = path
+    QMAKE_PKGCONFIG_INSTALL_REPLACE += pclib_replace
 
     unix {
         CONFIG += create_libtool explicitlib
-        QMAKE_LIBTOOL_LIBDIR = $$qt_libdir
-        QMAKE_LIBTOOL_INSTALL_REPLACE += lib_replace
+        host_build: \
+            QMAKE_LIBTOOL_LIBDIR = $$[QT_HOST_LIBS]
+        else: \
+            QMAKE_LIBTOOL_LIBDIR = "=$$[QT_INSTALL_LIBS/raw]"
+        ltlib_replace.match = $$lib_replace.match
+        !isEmpty(lib_replace.replace): \
+            ltlib_replace.replace = $$QMAKE_LIBTOOL_LIBDIR
+        ltlib_replace.CONFIG = path
+        QMAKE_LIBTOOL_INSTALL_REPLACE += ltlib_replace
     }
 }
 
