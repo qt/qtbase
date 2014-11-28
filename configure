@@ -3749,10 +3749,10 @@ EOF
 cat >> "$outpath/src/corelib/global/qconfig.cpp.new" <<EOF
 
 /* strlen( "qt_lcnsxxxx" ) == 12 */
-#define QT_CONFIGURE_LICENSEE qt_configure_licensee_str + 12;
-#define QT_CONFIGURE_LICENSED_PRODUCTS qt_configure_licensed_products_str + 12;
+#define QT_CONFIGURE_LICENSEE qt_configure_licensee_str + 12
+#define QT_CONFIGURE_LICENSED_PRODUCTS qt_configure_licensed_products_str + 12
 
-#define QT_CONFIGURE_SETTINGS_PATH qt_configure_settings_path_str + 12;
+#define QT_CONFIGURE_SETTINGS_PATH qt_configure_settings_path_str + 12
 EOF
 
 # avoid unecessary rebuilds by copying only if qconfig.cpp has changed

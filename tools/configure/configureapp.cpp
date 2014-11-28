@@ -4020,11 +4020,11 @@ void Configure::generateQConfigCpp()
                   << "static const char qt_sysrootify_prefix[] = \"qt_ssrtfpfx=" << sysrootifyPrefix << "\";\n"
                   << "#endif\n\n"
                   << "/* strlen( \"qt_lcnsxxxx\") == 12 */" << endl
-                  << "#define QT_CONFIGURE_LICENSEE qt_configure_licensee_str + 12;" << endl
-                  << "#define QT_CONFIGURE_LICENSED_PRODUCTS qt_configure_licensed_products_str + 12;" << endl;
+                  << "#define QT_CONFIGURE_LICENSEE qt_configure_licensee_str + 12" << endl
+                  << "#define QT_CONFIGURE_LICENSED_PRODUCTS qt_configure_licensed_products_str + 12" << endl;
 
         if ((platform() != WINDOWS) && (platform() != WINDOWS_CE) && (platform() != WINDOWS_RT))
-            tmpStream << "#define QT_CONFIGURE_SETTINGS_PATH qt_configure_settings_path_str + 12;" << endl;
+            tmpStream << "#define QT_CONFIGURE_SETTINGS_PATH qt_configure_settings_path_str + 12" << endl;
 
         if (!tmpStream.flush())
             dictionary[ "DONE" ] = "error";
