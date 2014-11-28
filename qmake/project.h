@@ -78,6 +78,7 @@ public:
     using QMakeEvaluator::evaluateFeatureFile;
     using QMakeEvaluator::evaluateConfigFeatures;
     using QMakeEvaluator::evaluateExpression;
+    using QMakeEvaluator::propertyValue;
     using QMakeEvaluator::values;
     using QMakeEvaluator::first;
     using QMakeEvaluator::isActiveConfig;

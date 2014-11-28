@@ -37,7 +37,7 @@
 #include <qregexp.h>
 #include <qhash.h>
 #include <qdebug.h>
-#include <qsettings.h>
+#include <qlibraryinfo.h>
 #include <stdlib.h>
 #include <stdarg.h>
 

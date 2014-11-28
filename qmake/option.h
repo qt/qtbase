@@ -42,7 +42,6 @@
 #include <qstring.h>
 #include <qstringlist.h>
 #include <qfile.h>
-#include <qlibraryinfo.h>
 
 QT_BEGIN_NAMESPACE
 

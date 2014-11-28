@@ -1233,8 +1233,7 @@ void VcprojGenerator::initDeploymentTool()
     // Only deploy Qt libs for shared build
     if (!project->values("QMAKE_QT_DLL").isEmpty()) {
         // FIXME: This code should actually resolve the libraries from all Qt modules.
-        const QString &qtdir = QLibraryInfo::rawLocation(QLibraryInfo::LibrariesPath,
-                                                         QLibraryInfo::EffectivePaths);
+        const QString &qtdir = project->propertyValue(ProKey("QT_INSTALL_LIBS/get")).toQString();
         ProStringList arg = project->values("QMAKE_LIBS") + project->values("QMAKE_LIBS_PRIVATE");
         for (ProStringList::ConstIterator it = arg.constBegin(); it != arg.constEnd(); ++it) {
             if (it->contains(qtdir)) {

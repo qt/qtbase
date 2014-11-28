@@ -455,8 +455,8 @@ ProjectBuilderSources::files(QMakeProject *project) const
 {
     QStringList ret = project->values(ProKey(key)).toQStringList();
     if(key == "QMAKE_INTERNAL_INCLUDED_FILES") {
-        QString qtPrefix(QLibraryInfo::rawLocation(QLibraryInfo::PrefixPath, QLibraryInfo::EffectivePaths) + '/');
-        QString qtSrcPrefix(QLibraryInfo::rawLocation(QLibraryInfo::PrefixPath, QLibraryInfo::EffectiveSourcePaths) + '/');
+        QString qtPrefix(project->propertyValue(ProKey("QT_INSTALL_PREFIX/get")).toQString() + '/');
+        QString qtSrcPrefix(project->propertyValue(ProKey("QT_INSTALL_PREFIX/src")).toQString() + '/');
 
         QStringList newret;
         for(int i = 0; i < ret.size(); ++i) {

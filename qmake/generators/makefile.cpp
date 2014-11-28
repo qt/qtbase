@@ -45,7 +45,6 @@
 #include <qhash.h>
 #include <qdebug.h>
 #include <qbuffer.h>
-#include <qsettings.h>
 #include <qdatetime.h>
 
 #if defined(Q_OS_UNIX)
@@ -3144,7 +3143,7 @@ MakefileGenerator::pkgConfigPrefix() const
 {
     if(!project->isEmpty("QMAKE_PKGCONFIG_PREFIX"))
         return project->first("QMAKE_PKGCONFIG_PREFIX").toQString();
-    return QLibraryInfo::rawLocation(QLibraryInfo::PrefixPath, QLibraryInfo::FinalPaths);
+    return project->propertyValue(ProKey("QT_INSTALL_PREFIX")).toQString();
 }
 
 QString
