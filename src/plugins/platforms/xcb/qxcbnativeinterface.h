@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2015 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -47,6 +47,7 @@ class QWidget;
 class QXcbScreen;
 class QXcbConnection;
 class QXcbNativeInterfaceHandler;
+class QDBusMenuConnection;
 
 class Q_XCB_EXPORT QXcbNativeInterface : public QPlatformNativeInterface
 {
@@ -121,6 +122,7 @@ private:
 
     xcb_atom_t m_sysTraySelectionAtom;
     xcb_visualid_t m_systrayVisualId;
+    QDBusMenuConnection *m_dbusTrayConnection;
 
     static QXcbScreen *qPlatformScreenForWindow(QWindow *window);
 

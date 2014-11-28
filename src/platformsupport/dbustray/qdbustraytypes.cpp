@@ -32,20 +32,47 @@
 **
 ****************************************************************************/
 
+#ifndef QT_NO_SYSTEMTRAYICON
+
 #include "qdbustraytypes_p.h"
 
 #include <QDBusConnection>
+#include <QDBusMetaType>
 #include <QImage>
 #include <QIcon>
 #include <QImage>
 #include <QPixmap>
 #include <QDebug>
 #include <QtEndian>
+#include <qpa/qplatformmenu.h>
+#include "qdbusplatformmenu_p.h"
+
+QT_BEGIN_NAMESPACE
+
+static const int IconSizeLimit = 32;
+static const int IconNormalSmallSize = 22;
 
 QXdgDBusImageVector iconToQXdgDBusImageVector(const QIcon &icon)
 {
     QXdgDBusImageVector ret;
-    foreach (QSize size, icon.availableSizes()) {
+    QList<QSize> sizes = icon.availableSizes();
+
+    // Omit any size larger than 32 px, to save D-Bus bandwidth;
+    // and ensure that 22px or smaller exists, because it's a common size.
+    bool hasSmallIcon = false;
+    QList<QSize> toRemove;
+    Q_FOREACH (const QSize &size, sizes) {
+        if (size.width() <= IconNormalSmallSize)
+            hasSmallIcon = true;
+        else if (size.width() > IconSizeLimit)
+            toRemove << size;
+    }
+    Q_FOREACH (const QSize &size, toRemove)
+        sizes.removeOne(size);
+    if (!hasSmallIcon)
+        sizes.append(QSize(IconNormalSmallSize, IconNormalSmallSize));
+
+    foreach (QSize size, sizes) {
         QXdgDBusImageStruct kim;
         kim.width = size.width();
         kim.height = size.height();
@@ -155,9 +182,5 @@ const QDBusArgument &operator>>(const QDBusArgument &argument, QXdgDBusToolTipSt
     return argument;
 }
 
-void registerDBusTrayTypes()
-{
-    qDBusRegisterMetaType<QXdgDBusImageStruct>();
-    qDBusRegisterMetaType<QXdgDBusImageVector>();
-    qDBusRegisterMetaType<QXdgDBusToolTipStruct>();
-}
+QT_END_NAMESPACE
+#endif // QT_NO_SYSTEMTRAYICON

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2015 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -98,6 +98,9 @@ public:
     virtual const QPalette *palette(Palette type = SystemPalette) const Q_DECL_OVERRIDE;
 
     virtual const QFont *font(Font type) const Q_DECL_OVERRIDE;
+#if !defined(QT_NO_DBUS) && !defined(QT_NO_SYSTEMTRAYICON)
+    QPlatformSystemTrayIcon *createPlatformSystemTrayIcon() const Q_DECL_OVERRIDE;
+#endif
 
     static const char *name;
 };
@@ -115,6 +118,9 @@ public:
     QString standardButtonText(int button) const Q_DECL_OVERRIDE;
 
     virtual QString gtkFontName() const;
+#if !defined(QT_NO_DBUS) && !defined(QT_NO_SYSTEMTRAYICON)
+    QPlatformSystemTrayIcon *createPlatformSystemTrayIcon() const Q_DECL_OVERRIDE;
+#endif
 
     static const char *name;
 };

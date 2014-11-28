@@ -1,6 +1,5 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Marco Martin <notmart@gmail.com>
 ** Copyright (C) 2015 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
@@ -32,55 +31,58 @@
 **
 ****************************************************************************/
 
-#ifndef QDBUSTRAYTYPES_P_H
-#define QDBUSTRAYTYPES_P_H
+#ifndef DBUSCONNECTION_H
+#define DBUSCONNECTION_H
 
-#ifndef QT_NO_SYSTEMTRAYICON
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
 
-#include <QObject>
-#include <QString>
-#include <QDBusArgument>
-#include <QDBusConnection>
-#include <QDBusObjectPath>
-#include <QPixmap>
+#include <QtCore/QString>
+#include <QtDBus/QDBusConnection>
+#include <QtDBus/QDBusVariant>
 
 QT_BEGIN_NAMESPACE
 
-// Custom message type to send icons across D-Bus
-struct QXdgDBusImageStruct
+class QDBusServiceWatcher;
+#ifndef QT_NO_SYSTEMTRAYICON
+class QDBusTrayIcon;
+#endif // QT_NO_SYSTEMTRAYICON
+
+class QDBusMenuConnection : public QObject
 {
-    int width;
-    int height;
-    QByteArray data;
+    Q_OBJECT
+
+public:
+    QDBusMenuConnection(QObject *parent = 0);
+    QDBusConnection connection() const { return m_connection; }
+    bool isWatcherRegistered() const { return m_watcherRegistered; }
+#ifndef QT_NO_SYSTEMTRAYICON
+    bool registerTrayIcon(QDBusTrayIcon *item);
+    bool unregisterTrayIcon(QDBusTrayIcon *item);
+#endif // QT_NO_SYSTEMTRAYICON
+
+Q_SIGNALS:
+#ifndef QT_NO_SYSTEMTRAYICON
+    void trayIconRegistered();
+#endif // QT_NO_SYSTEMTRAYICON
+
+private Q_SLOTS:
+    void dbusError(const QDBusError &error);
+
+private:
+    QDBusConnection m_connection;
+    QDBusServiceWatcher *m_dbusWatcher;
+    bool m_watcherRegistered;
 };
-
-typedef QVector<QXdgDBusImageStruct> QXdgDBusImageVector;
-
-QXdgDBusImageVector iconToQXdgDBusImageVector(const QIcon &icon);
-
-// Custom message type to send tooltips across D-Bus
-struct QXdgDBusToolTipStruct
-{
-    QString icon;
-    QXdgDBusImageVector image;
-    QString title;
-    QString subTitle;
-};
-
-const QDBusArgument &operator<<(QDBusArgument &argument, const QXdgDBusImageStruct &icon);
-const QDBusArgument &operator>>(const QDBusArgument &argument, QXdgDBusImageStruct &icon);
-
-const QDBusArgument &operator<<(QDBusArgument &argument, const QXdgDBusImageVector &iconVector);
-const QDBusArgument &operator>>(const QDBusArgument &argument, QXdgDBusImageVector &iconVector);
-
-const QDBusArgument &operator<<(QDBusArgument &argument, const QXdgDBusToolTipStruct &toolTip);
-const QDBusArgument &operator>>(const QDBusArgument &argument, QXdgDBusToolTipStruct &toolTip);
 
 QT_END_NAMESPACE
 
-Q_DECLARE_METATYPE(QXdgDBusImageStruct)
-Q_DECLARE_METATYPE(QXdgDBusImageVector)
-Q_DECLARE_METATYPE(QXdgDBusToolTipStruct)
-
-#endif // QT_NO_SYSTEMTRAYICON
-#endif // QDBUSTRAYTYPES_P_H
+#endif // DBUSCONNECTION_H

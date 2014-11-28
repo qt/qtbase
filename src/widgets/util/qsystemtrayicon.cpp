@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2015 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtWidgets module of the Qt Toolkit.
@@ -69,8 +69,12 @@ QT_BEGIN_NAMESPACE
 
     \list
     \li All supported versions of Windows.
-    \li All window managers for X11 that implement the \l{freedesktop.org} system
-       tray specification, including recent versions of KDE and GNOME.
+    \li All window managers and independent tray implementations for X11 that implement the
+       \l{http://standards.freedesktop.org/systemtray-spec/systemtray-spec-0.2.html freedesktop.org}
+       XEmbed system tray specification.
+    \li All X11 desktop environments that implement the D-Bus
+       \l{http://www.freedesktop.org/wiki/Specifications/StatusNotifierItem/ StatusNotifierItem}
+       specification, including recent versions of KDE and Unity.
     \li All supported versions of Mac OS X. Note that the Growl
        notification system must be installed for
        QSystemTrayIcon::showMessage() to display messages on Mac OS X prior to 10.8 (Mountain Lion).

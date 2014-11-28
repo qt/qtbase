@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2015 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -51,6 +51,10 @@
 #include <qpa/qplatformintegration.h>
 #include <qpa/qplatformservices.h>
 #include <qpa/qplatformdialoghelper.h>
+#if !defined(QT_NO_DBUS) && !defined(QT_NO_SYSTEMTRAYICON)
+#include "QtPlatformSupport/private/qdbustrayicon_p.h"
+#include "QtPlatformSupport/private/qdbusplatformmenu_p.h"
+#endif
 
 #include <algorithm>
 
@@ -84,6 +88,20 @@ const char *QGenericUnixTheme::name = "generic";
 // XRender/FontConfig which we can now assume as default.
 static const char defaultSystemFontNameC[] = "Sans Serif";
 enum { defaultSystemFontSize = 9 };
+
+#if !defined(QT_NO_DBUS) && !defined(QT_NO_SYSTEMTRAYICON)
+static bool isDBusTrayAvailable() {
+    static bool dbusTrayAvailable = false;
+    static bool dbusTrayAvailableKnown = false;
+    if (!dbusTrayAvailableKnown) {
+        QDBusMenuConnection conn;
+        if (conn.isWatcherRegistered())
+            dbusTrayAvailable = true;
+        dbusTrayAvailableKnown = true;
+    }
+    return dbusTrayAvailable;
+}
+#endif
 
 class QGenericUnixThemePrivate : public QPlatformThemePrivate
 {
@@ -509,6 +527,15 @@ QPlatformTheme *QKdeTheme::createKdeTheme()
     return new QKdeTheme(kdeDirs, kdeVersion);
 }
 
+#if !defined(QT_NO_DBUS) && !defined(QT_NO_SYSTEMTRAYICON)
+QPlatformSystemTrayIcon *QKdeTheme::createPlatformSystemTrayIcon() const
+{
+    if (isDBusTrayAvailable())
+        return new QDBusTrayIcon();
+    return Q_NULLPTR;
+}
+#endif
+
 #endif // QT_NO_SETTINGS
 
 /*!
@@ -594,6 +621,15 @@ QString QGnomeTheme::gtkFontName() const
 {
     return QStringLiteral("%1 %2").arg(QLatin1String(defaultSystemFontNameC)).arg(defaultSystemFontSize);
 }
+
+#if !defined(QT_NO_DBUS) && !defined(QT_NO_SYSTEMTRAYICON)
+QPlatformSystemTrayIcon *QGnomeTheme::createPlatformSystemTrayIcon() const
+{
+    if (isDBusTrayAvailable())
+        return new QDBusTrayIcon();
+    return Q_NULLPTR;
+}
+#endif
 
 QString QGnomeTheme::standardButtonText(int button) const
 {

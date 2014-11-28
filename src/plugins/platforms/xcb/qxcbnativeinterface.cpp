@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2015 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -47,6 +47,7 @@
 #include <QtGui/qscreen.h>
 
 #include <QtPlatformHeaders/qxcbwindowfunctions.h>
+#include "QtPlatformSupport/private/qdbusmenuconnection_p.h"
 
 #ifdef XCB_USE_XLIB
 #  include <X11/Xlib.h>
@@ -82,8 +83,8 @@ static int resourceType(const QByteArray &key)
 QXcbNativeInterface::QXcbNativeInterface() :
     m_genericEventFilterType(QByteArrayLiteral("xcb_generic_event_t")),
     m_sysTraySelectionAtom(XCB_ATOM_NONE),
-    m_systrayVisualId(XCB_NONE)
-
+    m_systrayVisualId(XCB_NONE),
+    m_dbusTrayConnection(Q_NULLPTR)
 {
 }
 
