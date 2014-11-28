@@ -1516,13 +1516,11 @@ static bool findInBlock(const QTextBlock &block, const QRegularExpression &expre
             }
         }
         //we have a hit, return the cursor for that.
-        break;
+        *cursor = QTextCursor(block.docHandle(), block.position() + idx);
+        cursor->setPosition(cursor->position() + match.capturedLength(), QTextCursor::KeepAnchor);
+        return true;
     }
-    if (idx == -1)
-        return false;
-    *cursor = qMove(QTextCursor(block.docHandle(), block.position() + idx));
-    cursor->setPosition(cursor->position() + match.capturedLength(), QTextCursor::KeepAnchor);
-    return true;
+    return false;
 }
 
 /*!
@@ -1557,17 +1555,16 @@ QTextCursor QTextDocument::find(const QRegularExpression &expr, int from, FindFl
 
     QTextCursor cursor;
     QTextBlock block = d->blocksFind(pos);
+    int blockOffset = pos - block.position();
 
     if (!(options & FindBackward)) {
-        int blockOffset = qMax(0, pos - block.position());
         while (block.isValid()) {
             if (findInBlock(block, expr, blockOffset, options, &cursor))
                 return cursor;
-            blockOffset = 0;
             block = block.next();
+            blockOffset = 0;
         }
     } else {
-        int blockOffset = pos - block.position();
         while (block.isValid()) {
             if (findInBlock(block, expr, blockOffset, options, &cursor))
                 return cursor;
