@@ -2,14 +2,7 @@
 
 FILE="$1"
 RES="$FILE"
-
-CUT_ARG="-b1"
-if [ `uname -s` = "QNX" ]; then
-    # QNX does not understand "-b1"
-    CUT_ARG="-c1"
-fi
-
-if [ `echo $FILE | cut $CUT_ARG` = "/" ]; then
+if [ -z "${FILE##/*}" ]; then
     true
 elif [ "$OSTYPE" = "msys" -a -z "${FILE##[a-zA-Z]:[/\\]*}" ]; then
     true
