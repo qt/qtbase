@@ -91,11 +91,20 @@ public:
             int blockSize = buffers.first().size() - head;
 
             if (tailBuffer == 0 || blockSize > bytes) {
-                bufferSize -= bytes;
-                if (bufferSize <= 0)
-                    clear(); // try to minify/squeeze us
-                else
+                // keep a single block around if it does not exceed
+                // the basic block size, to avoid repeated allocations
+                // between uses of the buffer
+                if (bufferSize <= bytes) {
+                    if (buffers.first().size() <= basicBlockSize) {
+                        bufferSize = 0;
+                        head = tail = 0;
+                    } else {
+                        clear(); // try to minify/squeeze us
+                    }
+                } else {
                     head += bytes;
+                    bufferSize -= bytes;
+                }
                 return;
             }
 
@@ -139,11 +148,20 @@ public:
     inline void chop(int bytes) {
         while (bytes > 0) {
             if (tailBuffer == 0 || tail > bytes) {
-                bufferSize -= bytes;
-                if (bufferSize <= 0)
-                    clear(); // try to minify/squeeze us
-                else
+                // keep a single block around if it does not exceed
+                // the basic block size, to avoid repeated allocations
+                // between uses of the buffer
+                if (bufferSize <= bytes) {
+                    if (buffers.first().size() <= basicBlockSize) {
+                        bufferSize = 0;
+                        head = tail = 0;
+                    } else {
+                        clear(); // try to minify/squeeze us
+                    }
+                } else {
                     tail -= bytes;
+                    bufferSize -= bytes;
+                }
                 return;
             }
 
