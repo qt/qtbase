@@ -49,6 +49,7 @@
 #include <QWindow>
 #include <QScreen>
 #include <QFile>
+#include <QMouseEvent>
 #include <QTemporaryDir>
 #include <QCommandLineParser>
 #include <QCommandLineOption>
@@ -461,6 +462,64 @@ public:
     }
 };
 
+class LinePainter : public QWidget
+{
+public:
+    void paintEvent(QPaintEvent *event);
+    void mousePressEvent(QMouseEvent *event);
+    void mouseReleaseEvent(QMouseEvent *event);
+    void mouseMoveEvent(QMouseEvent *event);
+
+    QPoint lastMousePoint;
+    QVector<QPoint> linePoints;
+};
+
+void LinePainter::paintEvent(QPaintEvent *)
+{
+    QPainter p(this);
+    p.fillRect(QRect(QPoint(0, 0), size()), QBrush(Qt::gray));
+
+    // Default antialiased line
+    p.setRenderHint(QPainter::Antialiasing);
+    p.drawLines(linePoints);
+
+    // Cosmetic 1 antialiased line
+    QPen pen;
+    pen.setCosmetic(true);
+    pen.setWidth(1);
+    p.setPen(pen);
+    p.translate(3, 3);
+    p.drawLines(linePoints);
+
+    // Aliased cosmetic 1 line
+    p.setRenderHint(QPainter::Antialiasing, false);
+    p.translate(3, 3);
+    p.drawLines(linePoints);
+}
+
+void LinePainter::mousePressEvent(QMouseEvent *event)
+{
+    lastMousePoint = event->pos();
+}
+
+void LinePainter::mouseReleaseEvent(QMouseEvent *)
+{
+    lastMousePoint = QPoint();
+}
+
+void LinePainter::mouseMoveEvent(QMouseEvent *event)
+{
+    if (lastMousePoint.isNull())
+        return;
+
+    QPoint newMousePoint = event->pos();
+    if (lastMousePoint == newMousePoint)
+        return;
+    linePoints.append(lastMousePoint);
+    linePoints.append(newMousePoint);
+    lastMousePoint = newMousePoint;
+    update();
+}
 
 int main(int argc, char **argv)
 {
@@ -490,6 +549,9 @@ int main(int argc, char **argv)
     parser.addOption(iconDrawingOption);
     QCommandLineOption buttonsOption("buttons", "Test buttons");
     parser.addOption(buttonsOption);
+    QCommandLineOption linePainterOption("linepainter", "Test line painting");
+    parser.addOption(linePainterOption);
+
 
     parser.process(app);
 
@@ -548,6 +610,12 @@ int main(int argc, char **argv)
     if (parser.isSet(buttonsOption)) {
         buttons.reset(new Buttons);
         buttons->show();
+    }
+
+    QScopedPointer<LinePainter> linePainter;
+    if (parser.isSet(linePainterOption)) {
+        linePainter.reset(new LinePainter);
+        linePainter->show();
     }
 
     if (QApplication::topLevelWidgets().isEmpty())
