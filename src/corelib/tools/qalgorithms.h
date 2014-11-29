@@ -37,7 +37,9 @@
 #include <QtCore/qglobal.h>
 
 QT_BEGIN_NAMESPACE
-
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_GCC("-Wdeprecated-declarations")
+QT_WARNING_DISABLE_CLANG("-Wdeprecated-declarations")
 
 /*
     Warning: The contents of QAlgorithmsPrivate is not a part of the public Qt API
@@ -582,7 +584,7 @@ Q_DECL_CONSTEXPR inline uint qPopulationCount(long unsigned int v)
 #undef QALGORITHMS_USE_BUILTIN_POPCOUNT
 #endif
 
-
+QT_WARNING_POP
 QT_END_NAMESPACE
 
 #endif // QALGORITHMS_H
