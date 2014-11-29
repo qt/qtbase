@@ -48,7 +48,7 @@ static bool containsTLDEntry(const QString &entry)
     // select the right chunk from the big table
     short chunk = 0;
     uint chunkIndex = tldIndices[index], offset = 0;
-    while (tldIndices[index] >= tldChunks[chunk] && chunk < tldChunkCount) {
+    while (chunk < tldChunkCount && tldIndices[index] >= tldChunks[chunk]) {
         chunkIndex -= tldChunks[chunk];
         offset += tldChunks[chunk];
         chunk++;
