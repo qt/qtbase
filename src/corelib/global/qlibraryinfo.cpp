@@ -128,9 +128,7 @@ QLibrarySettings::QLibrarySettings()
             settings.reset(0);
 #else
     } else {
-#ifdef QT_BOOTSTRAPPED
         haveEffectiveSourcePaths = false;
-#endif
         haveEffectivePaths = false;
         havePaths = false;
 #endif
