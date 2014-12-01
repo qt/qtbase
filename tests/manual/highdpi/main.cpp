@@ -296,10 +296,23 @@ public:
     void paintEvent(QPaintEvent *)
     {
         QPainter painter(this);
-        int y = 40;
-        for (int fontSize = 2; fontSize < 18; fontSize += 2) {
+
+        // Points
+        int y = 10;
+        for (int fontSize = 6; fontSize < 18; fontSize += 2) {
             QFont font;
             font.setPointSize(fontSize);
+            QString string = QString(QStringLiteral("%1 The quick brown fox jumped over the lazy Doug.")).arg(fontSize);
+            painter.setFont(font);
+            painter.drawText(10, y, string);
+            y += (fontSize  * 2.5);
+        }
+
+        // Pixels
+        y = 160;
+        for (int fontSize = 6; fontSize < 18; fontSize += 2) {
+            QFont font;
+            font.setPixelSize(fontSize);
             QString string = QString(QStringLiteral("%1 The quick brown fox jumped over the lazy Doug.")).arg(fontSize);
             painter.setFont(font);
             painter.drawText(10, y, string);
