@@ -625,7 +625,7 @@ void QCocoaWindow::show(bool becauseOfAncestor)
                && !m_hiddenByClipping) { // ... NOR clipped
         if (m_isNSWindowChild) {
             m_hiddenByAncestor = false;
-            setCocoaGeometry(window()->geometry());
+            setCocoaGeometry(windowGeometry());
         }
         if (!m_hiddenByClipping) { // setCocoaGeometry() can change the clipping status
             [m_nsWindow orderFront:nil];
@@ -664,7 +664,7 @@ void QCocoaWindow::setVisible(bool visible)
         if (parentCocoaWindow) {
             // The parent window might have moved while this window was hidden,
             // update the window geometry if there is a parent.
-            setGeometry(window()->geometry());
+            setGeometry(windowGeometry());
 
             if (window()->type() == Qt::Popup) {
                 // QTBUG-30266: a window should not be resizable while a transient popup is open
@@ -870,8 +870,8 @@ void QCocoaWindow::setWindowZoomButton(Qt::WindowFlags flags)
     // no-WindowMaximizeButtonHint windows. From a Qt perspective it migth be expected
     // that the button would be removed in the latter case, but disabling it is more
     // in line with the platform style guidelines.
-    bool fixedSizeNoZoom = (window()->minimumSize().isValid() && window()->maximumSize().isValid()
-                            && window()->minimumSize() == window()->maximumSize());
+    bool fixedSizeNoZoom = (windowMinimumSize().isValid() && windowMaximumSize().isValid()
+                            && windowMinimumSize() == windowMaximumSize());
     bool customizeNoZoom = ((flags & Qt::CustomizeWindowHint) && !(flags & Qt::WindowMaximizeButtonHint));
     [[m_nsWindow standardWindowButton:NSWindowZoomButton] setEnabled:!(fixedSizeNoZoom || customizeNoZoom)];
 }
@@ -1060,20 +1060,20 @@ void QCocoaWindow::propagateSizeHints()
 
 #ifdef QT_COCOA_ENABLE_WINDOW_DEBUG
     qDebug() << "QCocoaWindow::propagateSizeHints" << this;
-    qDebug() << "     min/max " << window()->minimumSize() << window()->maximumSize();
-    qDebug() << "size increment" << window()->sizeIncrement();
-    qDebug() << "     basesize" << window()->baseSize();
-    qDebug() << "     geometry" << geometry();
+    qDebug() << "     min/max " << windowMinimumSize() << windowMaximumSize();
+    qDebug() << "size increment" << windowSizeIncrement();
+    qDebug() << "     basesize" << windowBaseSize();
+    qDebug() << "     geometry" << windowGeometry();
 #endif
 
     // Set the minimum content size.
-    const QSize minimumSize = window()->minimumSize();
+    const QSize minimumSize = windowMinimumSize();
     if (!minimumSize.isValid()) // minimumSize is (-1, -1) when not set. Make that (0, 0) for Cocoa.
         [m_nsWindow setContentMinSize : NSMakeSize(0.0, 0.0)];
     [m_nsWindow setContentMinSize : NSMakeSize(minimumSize.width(), minimumSize.height())];
 
     // Set the maximum content size.
-    const QSize maximumSize = window()->maximumSize();
+    const QSize maximumSize = windowMaximumSize();
     [m_nsWindow setContentMaxSize : NSMakeSize(maximumSize.width(), maximumSize.height())];
 
     // The window may end up with a fixed size; in this case the zoom button should be disabled.
@@ -1081,13 +1081,14 @@ void QCocoaWindow::propagateSizeHints()
 
     // sizeIncrement is observed to take values of (-1, -1) and (0, 0) for windows that should be
     // resizable and that have no specific size increment set. Cocoa expects (1.0, 1.0) in this case.
-    if (!window()->sizeIncrement().isEmpty())
-        [m_nsWindow setResizeIncrements : qt_mac_toNSSize(window()->sizeIncrement())];
+    const QSize sizeIncrement = windowSizeIncrement();
+    if (!sizeIncrement.isEmpty())
+        [m_nsWindow setResizeIncrements : qt_mac_toNSSize(sizeIncrement)];
     else
         [m_nsWindow setResizeIncrements : NSMakeSize(1.0, 1.0)];
 
     QRect rect = geometry();
-    QSize baseSize = window()->baseSize();
+    QSize baseSize = windowBaseSize();
     if (!baseSize.isNull() && baseSize.isValid()) {
         [m_nsWindow setFrame:NSMakeRect(rect.x(), rect.y(), baseSize.width(), baseSize.height()) display:YES];
     }
@@ -1331,7 +1332,7 @@ void QCocoaWindow::recreateWindow(const QPlatformWindow *parentWindow)
                 | NSWindowCollectionBehaviorFullScreenAuxiliary;
         m_nsWindow.animationBehavior = NSWindowAnimationBehaviorNone;
         m_nsWindow.collectionBehavior = collectionBehavior;
-        setCocoaGeometry(window()->geometry());
+        setCocoaGeometry(windowGeometry());
 
         QList<QCocoaWindow *> &siblings = m_parentCocoaWindow->m_childWindows;
         if (siblings.contains(this)) {
@@ -1345,7 +1346,7 @@ void QCocoaWindow::recreateWindow(const QPlatformWindow *parentWindow)
     } else {
         // Child windows have no NSWindow, link the NSViews instead.
         [m_parentCocoaWindow->m_contentView addSubview : m_contentView];
-        QRect rect = window()->geometry();
+        QRect rect = windowGeometry();
         // Prevent setting a (0,0) window size; causes opengl context
         // "Invalid Drawable" warnings.
         if (rect.isNull())
@@ -1397,7 +1398,7 @@ QCocoaNSWindow * QCocoaWindow::createNSWindow()
 {
     QCocoaAutoReleasePool pool;
 
-    QRect rect = initialGeometry(window(), window()->geometry(), defaultWindowWidth, defaultWindowHeight);
+    QRect rect = initialGeometry(window(), windowGeometry(), defaultWindowWidth, defaultWindowHeight);
     NSRect frame = qt_mac_flipRect(rect);
 
     Qt::WindowType type = window()->type();
