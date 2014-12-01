@@ -39,7 +39,9 @@
 #include <qpa/qwindowsysteminterface.h>
 #include <QtGui/qwindow.h>
 #include <QtGui/qscreen.h>
+#include <private/qhighdpiscaling_p.h>
 #include <private/qwindow_p.h>
+
 
 QT_BEGIN_NAMESPACE
 
@@ -624,6 +626,55 @@ void QPlatformWindow::requestUpdate()
     QWindowPrivate *wp = (QWindowPrivate *) QObjectPrivate::get(w);
     Q_ASSERT(wp->updateTimer == 0);
     wp->updateTimer = w->startTimer(timeout, Qt::PreciseTimer);
+}
+
+/*!
+    Returns the QWindow minimum size.
+*/
+QSize QPlatformWindow::windowMinimumSize() const
+{
+    return qHighDpiToDevicePixelsConstrained(window()->minimumSize(), window());
+}
+
+/*!
+    Returns the QWindow maximum size.
+*/
+QSize QPlatformWindow::windowMaximumSize() const
+{
+    return qHighDpiToDevicePixelsConstrained(window()->maximumSize(), window());
+}
+
+/*!
+    Returns the QWindow base size.
+*/
+QSize QPlatformWindow::windowBaseSize() const
+{
+    return qHighDpiToDevicePixels(window()->baseSize(), window());
+}
+
+/*!
+    Returns the QWindow size increment.
+*/
+QSize QPlatformWindow::windowSizeIncrement() const
+{
+    QSize increment = window()->sizeIncrement();
+    if (!QHighDpiScaling::isActive())
+        return increment;
+
+    // Normalize the increment. If not set the increment can be
+    // (-1, -1) or (0, 0). Make that (1, 1) which is scalable.
+    if (increment.isEmpty())
+        increment = QSize(1, 1);
+
+    return qHighDpiToDevicePixels(increment, window());
+}
+
+/*!
+    Returns the QWindow geometry.
+*/
+QRect QPlatformWindow::windowGeometry() const
+{
+    return qHighDpiToDevicePixels(window()->geometry(), window());
 }
 
 /*!
