@@ -37,6 +37,9 @@
 #include <EGL/eglext.h>
 #include <d3d11.h>
 #include <dxgi1_2.h>
+#ifndef Q_OS_WINPHONE
+#include <dxgi1_3.h>
+#endif
 
 #include "qwinrtbackingstore.h"
 #include "qwinrtinputcontext.h"
@@ -1113,6 +1116,16 @@ HRESULT QWinRTScreen::onActivated(ICoreWindow *, IWindowActivatedEventArgs *args
 
 HRESULT QWinRTScreen::onSuspended(IInspectable *, ISuspendingEventArgs *)
 {
+#ifndef Q_OS_WINPHONE
+    Q_D(QWinRTScreen);
+    ComPtr<ID3D11Device> d3dDevice;
+    const EGLBoolean ok = eglQuerySurfacePointerANGLE(d->eglDisplay, EGL_NO_SURFACE, EGL_DEVICE_EXT, (void **)d3dDevice.GetAddressOf());
+    if (ok && d3dDevice) {
+        ComPtr<IDXGIDevice3> dxgiDevice;
+        if (SUCCEEDED(d3dDevice.As(&dxgiDevice)))
+            dxgiDevice->Trim();
+    }
+#endif
     QWindowSystemInterface::handleApplicationStateChanged(Qt::ApplicationSuspended);
     QWindowSystemInterface::flushWindowSystemEvents();
     return S_OK;
