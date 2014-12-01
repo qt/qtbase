@@ -51,7 +51,7 @@ QT_BEGIN_NAMESPACE
 
 static inline qreal initialScaleFactor()
 {
-    static const char envVar[] = "QT_HIGHDPI_SCALE_FACTOR";
+    static const char envVar[] = "QT_SCALE_FACTOR";
     qreal result = 1;
     if (qEnvironmentVariableIsSet(envVar)) {
         bool ok;

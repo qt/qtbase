@@ -57,7 +57,7 @@
 //
 // Several scaling factors can be set:
 //   - A process-global scale factor
-//       - the QT_HIGHDPI_SCALE_FACTOR environment variable.
+//       - the QT_SCALE_FACTOR environment variable.
 //       - QHighDpiScaling::setFactor(factor);
 //   - A per-window scale factor
 //       - QHighDpiScaling::setWindowFactor(window, factor);
