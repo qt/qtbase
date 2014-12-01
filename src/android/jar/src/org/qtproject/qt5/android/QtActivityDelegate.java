@@ -321,7 +321,6 @@ public class QtActivityDelegate
 
         m_layout.removeView(m_editText);
         m_layout.addView(m_editText, new QtLayout.LayoutParams(width, height, x, y));
-        m_editText.bringToFront();
         m_editText.requestFocus();
         m_editText.postDelayed(new Runnable() {
             @Override
