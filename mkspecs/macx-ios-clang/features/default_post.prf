@@ -68,8 +68,7 @@ equals(TEMPLATE, app) {
                     debug-iphonesimulator-distclean debug-iphoneos-distclean \
                     release-iphonesimulator-distclean release-iphoneos-distclean
                 QMAKE_EXTRA_TARGETS += xcode_distclean
-                distclean.depends = xcode_distclean
-                QMAKE_EXTRA_TARGETS += distclean
+                DISTCLEAN_DEPS += xcode_distclean
 
                 mkpath($$OUT_PWD)|error("Aborting.")
                 args =
