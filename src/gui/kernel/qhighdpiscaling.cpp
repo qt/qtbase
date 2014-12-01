@@ -49,6 +49,8 @@
 
 QT_BEGIN_NAMESPACE
 
+Q_LOGGING_CATEGORY(lcScaling, "qt.scaling");
+
 static inline qreal initialScaleFactor()
 {
     static const char envVar[] = "QT_SCALE_FACTOR";
@@ -56,8 +58,10 @@ static inline qreal initialScaleFactor()
     if (qEnvironmentVariableIsSet(envVar)) {
         bool ok;
         const qreal f = qgetenv(envVar).toDouble(&ok);
-        if (ok && f > 0)
+        if (ok && f > 0) {
+            qCDebug(lcScaling) << "Apply QT_SCALE_FACTOR" << f;
             result = f;
+        }
     }
     return result;
 }

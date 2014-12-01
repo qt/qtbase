@@ -46,6 +46,7 @@
 #include <QtCore/qmargins.h>
 #include <QtCore/qrect.h>
 #include <QtCore/qvector.h>
+#include <QtCore/qloggingcategory.h>
 #include <QtGui/qregion.h>
 
 // This file implmements utility functions for high-dpi scaling on operating
@@ -72,6 +73,8 @@
 // scaling factors can not be guaranteed.
 
 QT_BEGIN_NAMESPACE
+
+Q_DECLARE_LOGGING_CATEGORY(lcScaling);
 
 class Q_GUI_EXPORT QHighDpiScaling {
 public:
