@@ -1009,6 +1009,8 @@ void QDockWidgetPrivate::setWindowState(bool floating, bool unplug, const QRect 
     }
 
     bool wasFloating = q->isFloating();
+    if (wasFloating) // Prevent repetitive unplugging from nested invocations (QTBUG-42818)
+        unplug = false;
     bool hidden = q->isHidden();
 
     if (q->isVisible())
