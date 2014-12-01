@@ -84,8 +84,11 @@ QT_USE_NAMESPACE
         PMPageFormat format = static_cast<PMPageFormat>([printInfo PMPageFormat]);
         PMRect paperRect;
         PMGetUnadjustedPaperRect(format, &paperRect);
+        PMOrientation orientation;
+        PMGetOrientation(format, &orientation);
         QSizeF paperSize = QSizeF(paperRect.right - paperRect.left, paperRect.bottom - paperRect.top);
         printer->printEngine()->setProperty(QPrintEngine::PPK_CustomPaperSize, paperSize);
+        printer->printEngine()->setProperty(QPrintEngine::PPK_Orientation, orientation == kPMLandscape ? QPrinter::Landscape : QPrinter::Portrait);
     }
 
     dialog->done((returnCode == NSOKButton) ? QDialog::Accepted : QDialog::Rejected);
