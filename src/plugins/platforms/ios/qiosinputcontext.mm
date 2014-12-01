@@ -74,7 +74,10 @@ static QUIView *focusView()
 
 - (id)initWithQIOSInputContext:(QIOSInputContext *)context
 {
+    id originalSelf = self;
     if (self = [super initWithTarget:self action:@selector(gestureStateChanged:)]) {
+        Q_ASSERT(self == originalSelf);
+
         m_context = context;
 
         // UIGestureRecognizer
