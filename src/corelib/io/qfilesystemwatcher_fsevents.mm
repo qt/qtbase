@@ -518,7 +518,6 @@ bool QFseventsFileSystemWatcherEngine::startStream()
         NULL
     };
     const CFAbsoluteTime latency = .5; // in seconds
-    FSEventStreamCreateFlags flags = kFSEventStreamCreateFlagWatchRoot;
 
     // Never start with kFSEventStreamEventIdSinceNow, because this will generate an invalid
     // soft-assert in FSEventStreamFlushSync in CarbonCore when no event occurred.
@@ -530,7 +529,7 @@ bool QFseventsFileSystemWatcherEngine::startStream()
                                  reinterpret_cast<CFArrayRef>(pathsToWatch),
                                  lastReceivedEvent,
                                  latency,
-                                 flags);
+                                 FSEventStreamCreateFlags(0));
 
     if (!stream) {
         DEBUG() << "Failed to create stream!";
