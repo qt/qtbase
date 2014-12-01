@@ -1717,12 +1717,15 @@ bool Configure::displayHelp()
 
         desc("These are optional, but you may specify install directories.\n\n", 0, 1);
 
-        desc(       "-prefix <dir>",                    "This will install everything relative to <dir> (default $QT_INSTALL_PREFIX)\n");
+        desc(       "-prefix <dir>",                    "The deployment directory, as seen on the target device.\n"
+                                                        "(default %CD%)\n");
 
-        desc(       "-extprefix <dir>",                 "When -sysroot is used, install everything to <dir>, rather than into SYSROOT/PREFIX.\n");
+        desc(       "-extprefix <dir>",                 "The installation directory, as seen on the host machine.\n"
+                                                        "(default SYSROOT/PREFIX)\n");
 
-        desc(       "-hostprefix [dir]",                "Tools and libraries needed when developing applications are installed in [dir]. "
-                                                        "If [dir] is not given, the current build directory will be used. (default EXTPREFIX)\n");
+        desc(       "-hostprefix [dir]",                "The installation directory for build tools running on the\n"
+                                                        "host machine. If [dir] is not given, the current build\n"
+                                                        "directory will be used. (default EXTPREFIX)\n");
 
         desc("You may use these to separate different parts of the install:\n\n");
 

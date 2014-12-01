@@ -2254,16 +2254,15 @@ Installation options:
 
  These are optional, but you may specify install directories.
 
-    -prefix <dir> ...... This will install everything relative to <dir>
+    -prefix <dir> ...... The deployment directory, as seen on the target device.
                          (default /usr/local/Qt-${QT_VERSION}, \$PWD if -developer-build is active)
 
-    -extprefix <dir> ... When -sysroot is used, install everything to <dir>,
-                         rather than into SYSROOT/PREFIX.
+    -extprefix <dir> ... The installation directory, as seen on the host machine.
+                         (default SYSROOT/PREFIX)
 
-    -hostprefix [dir] .. Tools and libraries needed when developing
-                         applications are installed in [dir]. If [dir] is
-                         not given, the current build directory will be used.
-                         (default EXTPREFIX)
+    -hostprefix [dir] .. The installation directory for build tools running on the
+                         host machine. If [dir] is not given, the current build
+                         directory will be used. (default EXTPREFIX)
 
  You may use these to separate different parts of the install:
 
