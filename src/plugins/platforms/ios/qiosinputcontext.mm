@@ -64,33 +64,13 @@ static QUIView *focusView()
 
 // -------------------------------------------------------------------------
 
-@protocol KeyboardState
-- (void)updateKeyboardRect;
-@property(nonatomic) BOOL keyboardVisible;
-@property(nonatomic) BOOL keyboardVisibleAndDocked;
-@property(nonatomic, assign) QRectF keyboardRect;
-@property(nonatomic) CGRect keyboardEndRect;
-@property(nonatomic) NSTimeInterval animationDuration;
-@property(nonatomic) UIViewAnimationCurve animationCurve;
-@end
-
-// -------------------------------------------------------------------------
-
-@interface QIOSKeyboardListener : UIGestureRecognizer <KeyboardState, UIGestureRecognizerDelegate> {
+@interface QIOSKeyboardListener : UIGestureRecognizer <UIGestureRecognizerDelegate> {
   @private
     QIOSInputContext *m_context;
 }
 @end
 
 @implementation QIOSKeyboardListener
-
-// KeyboardState protocol
-@synthesize keyboardVisible;
-@synthesize keyboardVisibleAndDocked;
-@synthesize keyboardRect;
-@synthesize keyboardEndRect;
-@synthesize animationDuration;
-@synthesize animationCurve;
 
 - (id)initWithQIOSInputContext:(QIOSInputContext *)context
 {
@@ -102,24 +82,23 @@ static QUIView *focusView()
         self.cancelsTouchesInView = NO;
         self.delaysTouchesEnded = NO;
 
-        /// KeyboardState
-        self.keyboardVisible = NO;
-        self.keyboardVisibleAndDocked = NO;
-        self.animationDuration = 0;
-        self.animationCurve = UIViewAnimationCurveEaseOut;
+        NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
 
-        [[NSNotificationCenter defaultCenter]
-            addObserver:self
+        [notificationCenter addObserver:self
             selector:@selector(keyboardWillShow:)
-            name:@"UIKeyboardWillShowNotification" object:nil];
-        [[NSNotificationCenter defaultCenter]
-            addObserver:self
+            name:UIKeyboardWillShowNotification object:nil];
+        [notificationCenter addObserver:self
+            selector:@selector(keyboardWillOrDidChange:)
+            name:UIKeyboardDidShowNotification object:nil];
+        [notificationCenter addObserver:self
             selector:@selector(keyboardWillHide:)
-            name:@"UIKeyboardWillHideNotification" object:nil];
-        [[NSNotificationCenter defaultCenter]
-            addObserver:self
+            name:UIKeyboardWillHideNotification object:nil];
+        [notificationCenter addObserver:self
+            selector:@selector(keyboardWillOrDidChange:)
+            name:UIKeyboardDidHideNotification object:nil];
+        [notificationCenter addObserver:self
             selector:@selector(keyboardDidChangeFrame:)
-            name:@"UIKeyboardDidChangeFrameNotification" object:nil];
+            name:UIKeyboardDidChangeFrameNotification object:nil];
     }
 
     return self;
@@ -127,41 +106,16 @@ static QUIView *focusView()
 
 - (void)dealloc
 {
-    [[NSNotificationCenter defaultCenter]
-        removeObserver:self
-        name:@"UIKeyboardWillShowNotification" object:nil];
-    [[NSNotificationCenter defaultCenter]
-        removeObserver:self
-        name:@"UIKeyboardWillHideNotification" object:nil];
-    [[NSNotificationCenter defaultCenter]
-        removeObserver:self
-        name:@"UIKeyboardDidChangeFrameNotification" object:nil];
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
 
     [super dealloc];
 }
 
-- (void)keyboardDidChangeFrame:(NSNotification *)notification
-{
-    Q_UNUSED(notification);
-
-    [self updateKeyboardRect];
-
-    // If the keyboard was visible and docked from before, this is just a geometry
-    // change (normally caused by an orientation change). In that case, update scroll:
-    if (self.keyboardVisibleAndDocked)
-        m_context->scrollToCursor();
-}
+// -------------------------------------------------------------------------
 
 - (void)keyboardWillShow:(NSNotification *)notification
 {
-    // Note that UIKeyboardWillShowNotification is only sendt when the keyboard is docked.
-    self.keyboardVisibleAndDocked = YES;
-    self.keyboardEndRect = [[[notification userInfo] objectForKey:UIKeyboardFrameEndUserInfoKey] CGRectValue];
-
-    if (!self.animationDuration) {
-        self.animationDuration = [[notification.userInfo objectForKey:UIKeyboardAnimationDurationUserInfoKey] doubleValue];
-        self.animationCurve = UIViewAnimationCurve([[notification.userInfo objectForKey:UIKeyboardAnimationCurveUserInfoKey] integerValue]);
-    }
+    [self keyboardWillOrDidChange:notification];
 
     UIResponder *firstResponder = [UIResponder currentFirstResponder];
     if (![firstResponder isKindOfClass:[QIOSTextInputResponder class]])
@@ -175,9 +129,8 @@ static QUIView *focusView()
 
 - (void)keyboardWillHide:(NSNotification *)notification
 {
-    // Note that UIKeyboardWillHideNotification is also sendt when the keyboard is undocked.
-    self.keyboardVisibleAndDocked = NO;
-    self.keyboardEndRect = [[[notification userInfo] objectForKey:UIKeyboardFrameEndUserInfoKey] CGRectValue];
+    [self keyboardWillOrDidChange:notification];
+
     if (self.state != UIGestureRecognizerStateBegan) {
         // Only disable the gesture if the hiding of the keyboard was not caused by it.
         // Otherwise we need to await the final touchEnd callback for doing some clean-up.
@@ -186,29 +139,19 @@ static QUIView *focusView()
     m_context->scroll(0);
 }
 
-- (void)updateKeyboardRect
+- (void)keyboardDidChangeFrame:(NSNotification *)notification
 {
-    // QInputmethod::keyboardRectangle() is documented to be in window coordinates.
-    // If there is no focus window, we return an empty rectangle
-    UIView *view = focusView();
-    QRectF convertedRect = fromCGRect([view convertRect:self.keyboardEndRect fromView:nil]);
+    [self keyboardWillOrDidChange:notification];
 
-    // Set height to zero if keyboard is hidden. Otherwise the rect will not change
-    // when the keyboard hides on a scrolled screen (since the keyboard will already
-    // be at the bottom of the 'screen' in that case)
-    if (!self.keyboardVisibleAndDocked)
-        convertedRect.setHeight(0);
+    // If the keyboard was visible and docked from before, this is just a geometry
+    // change (normally caused by an orientation change). In that case, update scroll:
+    if (m_context->isInputPanelVisible())
+        m_context->scrollToCursor();
+}
 
-    if (convertedRect != self.keyboardRect) {
-        self.keyboardRect = convertedRect;
-        m_context->emitKeyboardRectChanged();
-    }
-
-    BOOL visible = CGRectIntersectsRect(self.keyboardEndRect, [UIScreen mainScreen].bounds);
-    if (self.keyboardVisible != visible) {
-        self.keyboardVisible = visible;
-        m_context->emitInputPanelVisibleChanged();
-    }
+- (void)keyboardWillOrDidChange:(NSNotification *)notification
+{
+    m_context->updateKeyboardState(notification);
 }
 
 // -------------------------------------------------------------------------
@@ -217,7 +160,7 @@ static QUIView *focusView()
 {
     [super touchesBegan:touches withEvent:event];
 
-    Q_ASSERT(self.keyboardVisibleAndDocked);
+    Q_ASSERT(m_context->isInputPanelVisible());
 
     if ([touches count] != 1)
         self.state = UIGestureRecognizerStateFailed;
@@ -231,7 +174,7 @@ static QUIView *focusView()
         return;
 
     CGPoint touchPoint = [[touches anyObject] locationInView:self.view];
-    if (CGRectContainsPoint(self.keyboardEndRect, touchPoint))
+    if (CGRectContainsPoint(m_context->keyboardState().keyboardEndRect, touchPoint))
         self.state = UIGestureRecognizerStateBegan;
 }
 
@@ -281,7 +224,7 @@ static QUIView *focusView()
 {
     [super reset];
 
-    if (!self.keyboardVisibleAndDocked) {
+    if (!m_context->isInputPanelVisible()) {
         qImDebug() << "keyboard was hidden, disabling hide-keyboard gesture";
         self.enabled = NO;
     } else {
@@ -378,9 +321,73 @@ void QIOSInputContext::clearCurrentFocusObject()
         static_cast<QWindowPrivate *>(QObjectPrivate::get(focusWindow))->clearFocusObject();
 }
 
+// -------------------------------------------------------------------------
+
+void QIOSInputContext::updateKeyboardState(NSNotification *notification)
+{
+    static CGRect currentKeyboardRect = CGRectZero;
+
+    KeyboardState previousState = m_keyboardState;
+
+    if (notification) {
+        NSDictionary *userInfo = [notification userInfo];
+
+        CGRect frameBegin = [[userInfo objectForKey:UIKeyboardFrameBeginUserInfoKey] CGRectValue];
+        CGRect frameEnd = [[userInfo objectForKey:UIKeyboardFrameEndUserInfoKey] CGRectValue];
+
+        bool atEndOfKeyboardTransition = [notification.name rangeOfString:@"Did"].location != NSNotFound;
+
+        currentKeyboardRect = atEndOfKeyboardTransition ? frameEnd : frameBegin;
+
+        // The isInputPanelVisible() property is based on whether or not the virtual keyboard
+        // is visible on screen, and does not follow the logic of the iOS WillShow and WillHide
+        // notifications which are not emitted for undocked keyboards, and are buggy when dealing
+        // with input-accesosory-views. The reason for using frameEnd here (the future state),
+        // instead of the current state reflected in frameBegin, is that QInputMethod::isVisible()
+        // is documented to reflect the future state in the case of animated transitions.
+        m_keyboardState.keyboardVisible = CGRectIntersectsRect(frameEnd, [UIScreen mainScreen].bounds);
+
+        // Used for auto-scroller, and will be used for animation-signal in the future
+        m_keyboardState.keyboardEndRect = frameEnd;
+
+        if (m_keyboardState.animationCurve < 0) {
+            // We only set the animation curve the first time it has a valid value, since iOS will sometimes report
+            // an invalid animation curve even if the keyboard is animating, and we don't want to overwrite the
+            // curve in that case.
+            m_keyboardState.animationCurve = UIViewAnimationCurve([[userInfo objectForKey:UIKeyboardAnimationCurveUserInfoKey] integerValue]);
+        }
+
+        m_keyboardState.animationDuration = [[userInfo objectForKey:UIKeyboardAnimationDurationUserInfoKey] doubleValue];
+        m_keyboardState.keyboardAnimating = m_keyboardState.animationDuration > 0 && !atEndOfKeyboardTransition;
+
+        qImDebug() << qPrintable(QString::fromNSString(notification.name)) << "from" << fromCGRect(frameBegin) << "to" << fromCGRect(frameEnd)
+                   << "(curve =" << m_keyboardState.animationCurve << "duration =" << m_keyboardState.animationDuration << "s)";
+    } else {
+        qImDebug() << "No notification to update keyboard state based on, just updating keyboard rect";
+    }
+
+    if (!focusView() || CGRectIsEmpty(currentKeyboardRect))
+        m_keyboardState.keyboardRect = QRectF();
+    else // QInputmethod::keyboardRectangle() is documented to be in window coordinates.
+        m_keyboardState.keyboardRect = fromCGRect([focusView() convertRect:currentKeyboardRect fromView:nil]);
+
+    // Emit for all changed properties
+    if (m_keyboardState.keyboardVisible != previousState.keyboardVisible)
+        emitInputPanelVisibleChanged();
+    if (m_keyboardState.keyboardAnimating != previousState.keyboardAnimating)
+        emitAnimatingChanged();
+    if (m_keyboardState.keyboardRect != previousState.keyboardRect)
+        emitKeyboardRectChanged();
+}
+
 bool QIOSInputContext::isInputPanelVisible() const
 {
     return m_keyboardState.keyboardVisible;
+}
+
+bool QIOSInputContext::isAnimating() const
+{
+    return m_keyboardState.keyboardAnimating;
 }
 
 QRectF QIOSInputContext::keyboardRect() const
@@ -392,7 +399,7 @@ QRectF QIOSInputContext::keyboardRect() const
 
 void QIOSInputContext::cursorRectangleChanged()
 {
-    if (!m_keyboardState.keyboardVisibleAndDocked || !qApp->focusObject())
+    if (!isInputPanelVisible() || !qApp->focusObject())
         return;
 
     // Check if the cursor has changed position inside the input item. Since
@@ -437,6 +444,12 @@ void QIOSInputContext::scrollToCursor()
 
     if (rootView.window != focusView().window)
         return;
+
+    // We only support auto-scroll for docked keyboards for now, so make sure that's the case
+    if (CGRectGetMaxY(m_keyboardState.keyboardEndRect) != CGRectGetMaxY([UIScreen mainScreen].bounds)) {
+        qImDebug() << "Keyboard not docked, ignoring request to scroll to reveal cursor";
+        return;
+    }
 
     const int margin = 20;
     QRectF translatedCursorPos = qApp->inputMethod()->cursorRectangle();
@@ -490,8 +503,12 @@ void QIOSInputContext::scroll(int y)
             [rootView.qtViewController updateProperties];
         }
         completion:^(BOOL){
-            if (self)
-                [m_keyboardState updateKeyboardRect];
+            if (self) {
+                // Scrolling the root view results in the keyboard being moved
+                // relative to the focus window, so we need to re-evaluate the
+                // keyboard rectangle.
+                updateKeyboardState();
+            }
         }
     ];
 }
@@ -516,7 +533,7 @@ void QIOSInputContext::setFocusObject(QObject *focusObject)
 
     reset();
 
-    if (m_keyboardState.keyboardVisibleAndDocked)
+    if (isInputPanelVisible())
         scrollToCursor();
 }
 
@@ -528,9 +545,11 @@ void QIOSInputContext::focusWindowChanged(QWindow *focusWindow)
 
     reset();
 
-    [m_keyboardState updateKeyboardRect];
+    // The keyboard rectangle depend on the focus window, so
+    // we need to re-evaluate the keyboard state.
+    updateKeyboardState();
 
-    if (m_keyboardState.keyboardVisibleAndDocked)
+    if (isInputPanelVisible())
         scrollToCursor();
 }
 
