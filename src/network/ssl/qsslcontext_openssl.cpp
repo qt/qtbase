@@ -340,11 +340,12 @@ init_context:
 #if OPENSSL_VERSION_NUMBER >= 0x10002000L && !defined(OPENSSL_NO_EC)
         // Set the curves to be used
         if (q_SSLeay() >= 0x10002000L) {
-            QVarLengthArray<int, 32> curves;
-            foreach (const QSslEllipticCurve curve, qcurves)
-                curves.append(curve.id);
-
-            if (!q_SSL_CTX_ctrl(sslContext->ctx, SSL_CTRL_SET_CURVES, curves.size(), curves.data())) {
+            // SSL_CTX_ctrl wants a non-const pointer as last argument,
+            // but let's avoid a copy into a temporary array
+            if (!q_SSL_CTX_ctrl(sslContext->ctx,
+                                SSL_CTRL_SET_CURVES,
+                                qcurves.size(),
+                                const_cast<int *>(reinterpret_cast<const int *>(qcurves.data())))) {
                 sslContext->errorStr = QSslSocket::tr("Error when setting the elliptic curves (%1)").arg(QSslSocketBackendPrivate::getErrorsFromOpenSsl());
                 sslContext->errorCode = QSslError::UnspecifiedError;
                 return sslContext;

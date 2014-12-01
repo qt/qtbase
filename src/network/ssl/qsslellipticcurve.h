@@ -82,7 +82,6 @@ private:
     friend Q_DECL_CONSTEXPR uint qHash(QSslEllipticCurve curve, uint seed) Q_DECL_NOTHROW
     { return qHash(curve.id, seed); }
 
-    friend class QSslContext;
     friend class QSslSocketPrivate;
     friend class QSslSocketBackendPrivate;
 };
