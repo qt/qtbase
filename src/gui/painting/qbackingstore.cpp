@@ -38,6 +38,7 @@
 #include <qpa/qplatformintegration.h>
 #include <qscreen.h>
 #include <qdebug.h>
+#include <qscopedpointer.h>
 
 #include <private/qguiapplication_p.h>
 #include <private/qwindow_p.h>
@@ -50,12 +51,13 @@ class QBackingStorePrivate
 {
 public:
     QBackingStorePrivate(QWindow *w)
-        : window(w)
+        : window(w), highDpiBackingstore(0)
     {
     }
 
     QWindow *window;
     QPlatformBackingStore *platformBackingStore;
+    QScopedPointer<QImage> highDpiBackingstore;
     QRegion staticContents;
     QSize size;
 };
@@ -115,13 +117,31 @@ void QBackingStore::flush(const QRegion &region, QWindow *win, const QPoint &off
 QPaintDevice *QBackingStore::paintDevice()
 {
     QPaintDevice *device = d_ptr->platformBackingStore->paintDevice();
-    // When QtGui is applying a high-dpi scale factor we are asking
-    // the platform backing store to create a "large" backing store
-    // image. This image needs to be converted into a high-dpi image by
-    // setting the scale factor on the image:
+
+    // When QtGui is applying a high-dpi scale factor the backing store
+    // creates a "large" backing store image. This image needs to be
+    // painted on as a high-dpi image, which is done by setting
+    // devicePixelRatio. Do this on a separate image instance that shares
+    // the image data to avoid having the new devicePxielRatio be propagated
+    // back to the platform plugin.
     if (QHighDpiScaling::isActive() && device->devType() == QInternal::Image) {
-        QImage *image = reinterpret_cast<QImage *>(device);
-        image->setDevicePixelRatio(d_ptr->window->devicePixelRatio());
+        QImage *source = reinterpret_cast<QImage *>(device);
+        const bool needsNewImage = d_ptr->highDpiBackingstore.isNull()
+            || source->data_ptr() != d_ptr->highDpiBackingstore->data_ptr()
+            || source->size() != d_ptr->highDpiBackingstore->size()
+            || source->devicePixelRatio() != d_ptr->highDpiBackingstore->devicePixelRatio();
+        if (needsNewImage) {
+            qCDebug(lcScaling) << "QBackingStore::paintDevice new backingstore:";
+            qCDebug(lcScaling) << "  source size" << source->size() << "dpr" << source->devicePixelRatio();
+            d_ptr->highDpiBackingstore.reset(
+                new QImage(source->bits(), source->width(), source->height(), source->format()));
+            qreal targetDevicePixelRatio = d_ptr->window->devicePixelRatio();
+            d_ptr->highDpiBackingstore->setDevicePixelRatio(targetDevicePixelRatio);
+            qCDebug(lcScaling) <<"  destinaion size" << d_ptr->highDpiBackingstore->size()
+                               << "dpr" << targetDevicePixelRatio;
+        }
+
+        return d_ptr->highDpiBackingstore.data();
     }
 
     return device;
