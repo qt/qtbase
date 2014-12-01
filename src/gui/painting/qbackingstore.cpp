@@ -202,8 +202,8 @@ void QBackingStore::endPaint()
 */
 void QBackingStore::resize(const QSize &size)
 {
-    d_ptr->size = size; // QBackingStore stores size in point, QPlatformBackingStore gets it in pixel.
-    d_ptr->platformBackingStore->resize(size * QHighDpiScaling::factor(), d_ptr->staticContents);
+    d_ptr->size = size;
+    d_ptr->platformBackingStore->resize(qHighDpiToDevicePixels(size, d_ptr->window), d_ptr->staticContents);
 }
 
 /*!
