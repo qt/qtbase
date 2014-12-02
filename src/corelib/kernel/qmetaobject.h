@@ -275,6 +275,8 @@ public:
     inline const QMetaObject *enclosingMetaObject() const { return mobj; }
 
 private:
+    int registerPropertyType() const;
+
     const QMetaObject *mobj;
     uint handle;
     int idx;

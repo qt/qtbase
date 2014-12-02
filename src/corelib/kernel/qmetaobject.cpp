@@ -2820,9 +2820,8 @@ int QMetaProperty::userType() const
     if (isEnumType()) {
         type = QMetaType::type(qualifiedName(menum));
         if (type == QMetaType::UnknownType) {
-            void *argv[] = { &type };
-            mobj->static_metacall(QMetaObject::RegisterPropertyMetaType, idx, argv);
-            if (type == -1 || type == QMetaType::UnknownType)
+            type = registerPropertyType();
+            if (type == QMetaType::UnknownType)
                 return QVariant::Int; // Match behavior of QMetaType::type()
         }
         return type;
@@ -2830,11 +2829,7 @@ int QMetaProperty::userType() const
     type = QMetaType::type(typeName());
     if (type != QMetaType::UnknownType)
         return type;
-    void *argv[] = { &type };
-    mobj->static_metacall(QMetaObject::RegisterPropertyMetaType, idx, argv);
-    if (type != -1)
-        return type;
-    return QMetaType::UnknownType;
+    return registerPropertyType();
 }
 
 /*!
@@ -2898,6 +2893,20 @@ bool QMetaProperty::hasStdCppSet() const
 }
 
 /*!
+    \internal
+    Executes metacall with QMetaObject::RegisterPropertyMetaType flag.
+    Returns id of registered type or QMetaType::UnknownType if a type
+    could not be registered for any reason.
+*/
+int QMetaProperty::registerPropertyType() const
+{
+    int registerResult = -1;
+    void *argv[] = { &registerResult };
+    mobj->static_metacall(QMetaObject::RegisterPropertyMetaType, idx, argv);
+    return registerResult == -1 ? QMetaType::UnknownType : registerResult;
+}
+
+/*!
     Returns the enumerator if this property's type is an enumerator
     type; otherwise the returned value is undefined.
 
@@ -2942,20 +2951,11 @@ QVariant QMetaProperty::read(const QObject *object) const
         }
         if (t == QMetaType::UnknownType) {
             // Try to register the type and try again before reporting an error.
-            int registerResult = -1;
-            void *argv[] = { &registerResult };
-            if ((priv(mobj->d.data)->flags & PropertyAccessInStaticMetaCall) && mobj->d.static_metacall) {
-                mobj->d.static_metacall(const_cast<QObject*>(object), QMetaObject::RegisterPropertyMetaType,
-                                        idx, argv);
-            } else {
-                QMetaObject::metacall(const_cast<QObject*>(object), QMetaObject::RegisterPropertyMetaType,
-                                      idx + mobj->propertyOffset(), argv);
-            }
-            if (registerResult == -1) {
+            t = registerPropertyType();
+            if (t == QMetaType::UnknownType) {
                 qWarning("QMetaProperty::read: Unable to handle unregistered datatype '%s' for property '%s::%s'", typeName, mobj->className(), name());
                 return QVariant();
             }
-            t = registerResult;
         }
     }
 
