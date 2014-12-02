@@ -891,6 +891,13 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph,
         // this is an error in the bytecode interpreter, just try to run without it
         load_flags |= FT_LOAD_FORCE_AUTOHINT;
         err = FT_Load_Glyph(face, glyph, load_flags);
+    } else if (err == FT_Err_Execution_Too_Long) {
+        // This is an error in the bytecode, probably a web font made by someone who
+        // didn't test bytecode hinting at all so disable for it for all glyphs.
+        qWarning("load glyph failed due to broken hinting bytecode in font, switching to auto hinting");
+        default_load_flags |= FT_LOAD_FORCE_AUTOHINT;
+        load_flags |= FT_LOAD_FORCE_AUTOHINT;
+        err = FT_Load_Glyph(face, glyph, load_flags);
     }
     if (err != FT_Err_Ok) {
         qWarning("load glyph failed err=%x face=%p, glyph=%d", err, face, glyph);
