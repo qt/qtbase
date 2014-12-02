@@ -162,6 +162,18 @@ static QUIView *focusView()
 
 // -------------------------------------------------------------------------
 
+- (BOOL)canPreventGestureRecognizer:(UIGestureRecognizer *)other
+{
+    Q_UNUSED(other);
+    return NO;
+}
+
+- (BOOL)canBePreventedByGestureRecognizer:(UIGestureRecognizer *)other
+{
+    Q_UNUSED(other);
+    return NO;
+}
+
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
 {
     [super touchesBegan:touches withEvent:event];
