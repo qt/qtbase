@@ -801,7 +801,7 @@ QWindowCreationContext::QWindowCreationContext(const QWindow *w,
                                                const QRect &geometry,
                                                const QMargins &cm,
                                                DWORD style_, DWORD exStyle_) :
-    geometryHint(w, cm), style(style_), exStyle(exStyle_),
+    geometryHint(w, cm), window(w), style(style_), exStyle(exStyle_),
     requestedGeometry(geometry), obtainedGeometry(geometry),
     margins(QWindowsGeometryHint::frame(style, exStyle)), customMargins(cm),
     frameX(CW_USEDEFAULT), frameY(CW_USEDEFAULT),
@@ -1783,16 +1783,14 @@ void QWindowsWindow::propagateSizeHints()
     qCDebug(lcQpaWindows) << __FUNCTION__ << this << window();
 }
 
-bool QWindowsWindow::handleGeometryChanging(MSG *message) const
+bool QWindowsWindow::handleGeometryChangingMessage(MSG *message, const QWindow *qWindow, const QMargins &marginsDp)
 {
 #ifndef Q_OS_WINCE
-    QWindow *qWin = window();
-    if (!qWin->isTopLevel())
+    if (!qWindow->isTopLevel()) // Implement hasHeightForWidth().
         return false;
     WINDOWPOS *windowPos = reinterpret_cast<WINDOWPOS *>(message->lParam);
     if ((windowPos->flags & (SWP_NOCOPYBITS | SWP_NOSIZE)))
         return false;
-    const QMargins marginsDp = frameMarginsDp();
     const QRect suggestedFrameGeometryDp(windowPos->x, windowPos->y,
                                          windowPos->cx, windowPos->cy);
     const qreal factor = QWindowsScaling::factor();
@@ -1800,7 +1798,7 @@ bool QWindowsWindow::handleGeometryChanging(MSG *message) const
     const QRectF suggestedGeometry = QRectF(QPointF(suggestedGeometryDp.topLeft()) / factor,
                                             QSizeF(suggestedGeometryDp.size()) / factor);
     const QRectF correctedGeometryF =
-        qt_window_private(qWin)->closestAcceptableGeometry(suggestedGeometry);
+        qt_window_private(const_cast<QWindow *>(qWindow))->closestAcceptableGeometry(suggestedGeometry);
     if (!correctedGeometryF.isValid())
         return false;
     const QRect correctedFrameGeometryDp
@@ -1818,6 +1816,12 @@ bool QWindowsWindow::handleGeometryChanging(MSG *message) const
     Q_UNUSED(message)
     return false;
 #endif
+}
+
+bool QWindowsWindow::handleGeometryChanging(MSG *message) const
+{
+    const QMargins marginsDp = window()->isTopLevel() ? frameMarginsDp() : QMargins();
+    return QWindowsWindow::handleGeometryChangingMessage(message, window(), marginsDp);
 }
 
 QMargins QWindowsWindow::frameMarginsDp() const

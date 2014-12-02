@@ -84,6 +84,7 @@ struct QWindowCreationContext
 #endif
 
     QWindowsGeometryHint geometryHint;
+    const QWindow *window;
     DWORD style;
     DWORD exStyle;
     QRect requestedGeometry;
@@ -183,6 +184,7 @@ public:
     void windowEvent(QEvent *event);
 
     void propagateSizeHints() Q_DECL_OVERRIDE;
+    static bool handleGeometryChangingMessage(MSG *message, const QWindow *qWindow, const QMargins &marginsDp);
     bool handleGeometryChanging(MSG *message) const;
     QMargins frameMarginsDp() const;
     QMargins frameMargins() const Q_DECL_OVERRIDE { return frameMarginsDp() / QWindowsScaling::factor(); }
