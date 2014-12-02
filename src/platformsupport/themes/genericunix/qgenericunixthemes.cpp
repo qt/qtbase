@@ -637,20 +637,25 @@ QStringList QGenericUnixTheme::themeNames()
     QStringList result;
     if (QGuiApplication::desktopSettingsAware()) {
         const QByteArray desktopEnvironment = QGuiApplicationPrivate::platformIntegration()->services()->desktopEnvironment();
-        if (desktopEnvironment == "KDE") {
+        QList<QByteArray> gtkBasedEnvironments;
+        gtkBasedEnvironments << "GNOME"
+                             << "X-CINNAMON"
+                             << "UNITY"
+                             << "MATE"
+                             << "XFCE"
+                             << "LXDE";
+        QList<QByteArray> desktopNames = desktopEnvironment.split(':');
+        Q_FOREACH (const QByteArray &desktopName, desktopNames) {
+            if (desktopEnvironment == "KDE") {
 #ifndef QT_NO_SETTINGS
-            result.push_back(QLatin1String(QKdeTheme::name));
+                result.push_back(QLatin1String(QKdeTheme::name));
 #endif
-        } else if (desktopEnvironment == "GNOME" ||
-                desktopEnvironment == "X-CINNAMON" ||
-                desktopEnvironment == "UNITY" ||
-                desktopEnvironment == "MATE" ||
-                desktopEnvironment == "XFCE" ||
-                desktopEnvironment == "LXDE") { // Gtk-based desktops
-            // prefer the GTK2 theme implementation with native dialogs etc.
-            result.push_back(QStringLiteral("gtk2"));
-            // fallback to the generic Gnome theme if loading the GTK2 theme fails
-            result.push_back(QLatin1String(QGnomeTheme::name));
+            } else if (gtkBasedEnvironments.contains(desktopName)) {
+                // prefer the GTK2 theme implementation with native dialogs etc.
+                result.push_back(QStringLiteral("gtk2"));
+                // fallback to the generic Gnome theme if loading the GTK2 theme fails
+                result.push_back(QLatin1String(QGnomeTheme::name));
+            }
         }
         const QString session = QString::fromLocal8Bit(qgetenv("DESKTOP_SESSION"));
         if (!session.isEmpty() && session != QLatin1String("default") && !result.contains(session))
