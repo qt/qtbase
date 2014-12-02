@@ -193,7 +193,12 @@ public:
     void updateBrushUniforms();
     void updateMatrix();
     void updateCompositionMode();
-    void updateTextureFilter(GLenum wrapMode, bool smoothPixmapTransform, GLuint id = GLuint(-1));
+
+    enum TextureUpdateMode { UpdateIfNeeded, ForceUpdate };
+    template<typename T>
+    void updateTexture(GLenum textureUnit, const T &texture, GLenum wrapMode, GLenum filterMode, TextureUpdateMode updateMode = UpdateIfNeeded);
+    template<typename T>
+    GLuint bindTexture(const T &texture);
 
     void resetGLState();
 
