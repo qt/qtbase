@@ -24,7 +24,7 @@ if [ $# -eq 0 ]
   then
     echo ""
     echo "No arguments supplied. Usage:"
-    echo "\"nacl-configure <tooolchain> [release|debug]"
+    echo "\"nacl-configure <tooolchain> [release|debug] [32|64]"
     echo "Toolchain is one of:" 
     echo "    mac_arm_newlib"
     echo "    mac_pnacl"
@@ -41,19 +41,27 @@ QTBASE="$(dirname $0)"
 
 # Argument 1: Which toolchain?
 TOOLCHAIN=$1
-# Select 32/64 bit builds for the non-pnacl toolchains. Currently hardcoded to 32.
-BITS=32
+shift
 
-# Argument 2: release/debug build
-OPTIMIZE=$2
+# Argument 2: release/debug build (release default)
+OPTIMIZE=$1
 if [ -z "$OPTIMIZE" ]; then
     OPTIMIZE="release"
+else
+    shift
 fi
-echo "OPTIMIZE: $OPTIMIZE"
+
+# Argument 3: 32/64 bit build (64-bit default)
+BITS=$1
+if [[ $BITS == "64" ]]; then
+    shift
+elif [[ $BITS == "32" ]]; then
+    shift
+else
+    BITS=64
+fi
 
 # set up for passing the rest of the args to configure
-shift
-shift
 ARG_REST=$@
 
 # Extract parts from the toolchain
@@ -90,12 +98,13 @@ fi
 
 # Select a mkspec, which can be one of:
 # nacl-arm-newlib-g++
-# nacl-x86-glibc-g++
-# nacl-x86-glibc-g++64
-# nacl-x86-newlib-g++
+# nacl-x86-glibc-g++-32
+# nacl-x86-glibc-g++-64
+# nacl-x86-newlib-g++-32
+# nacl-x86-newlib-g++.-64
 # pnacl-newlib-clang
 
-# Map the selected toolchain to a mkspec. (It's currently not possible to compile for nacl-x86-glibc-g++64 this way)
+# Map the selected toolchain to a mkspec.
 if [[ $TOOLCHAIN == *arm_newlib ]]
   then
     QT_MKSPEC="nacl-arm-newlib-g++"
@@ -106,11 +115,11 @@ if [[ $TOOLCHAIN == *pnacl ]]
 fi
 if [[ $TOOLCHAIN == *x86_glibc ]]
   then
-    QT_MKSPEC="nacl-x86-glibc-g++"
+    QT_MKSPEC="nacl-x86-glibc-g++-$BITS"
 fi
 if [[ $TOOLCHAIN == *x86_newlib ]]
   then
-    QT_MKSPEC="nacl-x86-newlib-g++"
+    QT_MKSPEC="nacl-x86-newlib-g++-$BITS"
 fi
 if [[ $TOOLCHAIN == host ]]
   then
