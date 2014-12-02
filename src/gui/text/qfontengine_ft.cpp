@@ -1771,8 +1771,7 @@ glyph_metrics_t QFontEngineFT::alphaMapBoundingBox(glyph_t glyph, QFixed subPixe
         overall.x = TRUNC(left);
         overall.y = -TRUNC(top);
         overall.xoff = TRUNC(ROUND(face->glyph->advance.x));
-        if (face)
-            unlockFace();
+        unlockFace();
     }
     return overall;
 }
