@@ -202,12 +202,13 @@ void QOpenGL2PaintEngineExPrivate::updateBrushTexture()
         funcs.glActiveTexture(GL_TEXTURE0 + QT_BRUSH_TEXTURE_UNIT);
         funcs.glBindTexture(GL_TEXTURE_2D, texId);
 
+        GLenum wrapMode = GL_CLAMP_TO_EDGE;
         if (g->spread() == QGradient::RepeatSpread || g->type() == QGradient::ConicalGradient)
-            updateTextureFilter(GL_REPEAT, q->state()->renderHints & QPainter::SmoothPixmapTransform);
+            wrapMode = GL_REPEAT;
         else if (g->spread() == QGradient::ReflectSpread)
-            updateTextureFilter(GL_MIRRORED_REPEAT, q->state()->renderHints & QPainter::SmoothPixmapTransform);
-        else
-            updateTextureFilter(GL_CLAMP_TO_EDGE, q->state()->renderHints & QPainter::SmoothPixmapTransform);
+            wrapMode = GL_MIRRORED_REPEAT;
+
+        updateTextureFilter(wrapMode, q->state()->renderHints & QPainter::SmoothPixmapTransform);
     }
     else if (style == Qt::TexturePattern) {
         currentBrushImage = currentBrush.textureImage();
