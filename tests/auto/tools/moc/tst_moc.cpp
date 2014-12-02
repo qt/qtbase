@@ -1301,13 +1301,13 @@ public:
     PrivatePropertyTest(QObject *parent = 0) : QObject(parent), mFoo(0), d (new MyDPointer) {}
     int foo() { return mFoo ; }
     void setFoo(int value) { mFoo = value; }
-    MyDPointer *d_func() {return d;}
+    MyDPointer *d_func() {return d.data();}
 signals:
     void blub4Changed();
     void blub5Changed(const QString &newBlub);
 private:
     int mFoo;
-    MyDPointer *d;
+    QScopedPointer<MyDPointer> d;
 };
 
 
@@ -1411,19 +1411,19 @@ void tst_Moc::constructors()
     QCOMPARE(mo->indexOfConstructor("CtorTestClass2(QObject*)"), -1);
     QCOMPARE(mo->indexOfConstructor("CtorTestClass(float,float)"), -1);
 
-    QObject *o1 = mo->newInstance();
+    QScopedPointer<QObject> o1(mo->newInstance());
     QVERIFY(o1 != 0);
     QCOMPARE(o1->parent(), (QObject*)0);
-    QVERIFY(qobject_cast<CtorTestClass*>(o1) != 0);
+    QVERIFY(qobject_cast<CtorTestClass*>(o1.data()) != 0);
 
-    QObject *o2 = mo->newInstance(Q_ARG(QObject*, o1));
+    QObject *o2 = mo->newInstance(Q_ARG(QObject*, o1.data()));
     QVERIFY(o2 != 0);
-    QCOMPARE(o2->parent(), o1);
+    QCOMPARE(o2->parent(), o1.data());
 
     QString str = QString::fromLatin1("hello");
-    QObject *o3 = mo->newInstance(Q_ARG(QString, str));
+    QScopedPointer<QObject> o3(mo->newInstance(Q_ARG(QString, str)));
     QVERIFY(o3 != 0);
-    QCOMPARE(qobject_cast<CtorTestClass*>(o3)->m_str, str);
+    QCOMPARE(qobject_cast<CtorTestClass*>(o3.data())->m_str, str);
 
     {
         //explicit constructor
