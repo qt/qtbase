@@ -3027,9 +3027,11 @@ bool QMetaProperty::write(QObject *object, const QVariant &value) const
         else {
             typeName = rawStringData(mobj, typeInfo & TypeNameIndexMask);
             t = QMetaType::type(typeName);
+            if (t == QMetaType::UnknownType)
+                t = registerPropertyType();
+            if (t == QMetaType::UnknownType)
+                return false;
         }
-        if (t == QMetaType::UnknownType)
-            return false;
         if (t != QMetaType::QVariant && t != (uint)value.userType() && (t < QMetaType::User && !v.convert((QVariant::Type)t)))
             return false;
     }

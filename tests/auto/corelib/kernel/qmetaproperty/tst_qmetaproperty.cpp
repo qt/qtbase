@@ -52,6 +52,7 @@ private slots:
     void isConstant();
     void isFinal();
     void gadget();
+    void readAndWriteWithLazyRegistration();
 
 public:
     enum EnumType { EnumType1 };
@@ -129,6 +130,56 @@ void tst_QMetaProperty::gadget()
         QVERIFY(valueProp.resetOnGadget(&g));
         QCOMPARE(valueProp.readOnGadget(&g), QVariant(QLatin1String("reset")));
     }
+}
+
+struct CustomReadObject : QObject
+{
+    Q_OBJECT
+};
+
+struct CustomWriteObject : QObject
+{
+    Q_OBJECT
+};
+
+struct CustomWriteObjectChild : CustomWriteObject
+{
+    Q_OBJECT
+};
+
+struct TypeLazyRegistration : QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(CustomReadObject *read MEMBER _read)
+    Q_PROPERTY(CustomWriteObject *write MEMBER _write)
+
+    CustomReadObject *_read;
+    CustomWriteObject *_write;
+
+public:
+    TypeLazyRegistration()
+        : _read()
+        , _write()
+    {}
+};
+
+void tst_QMetaProperty::readAndWriteWithLazyRegistration()
+{
+    QCOMPARE(QMetaType::type("CustomReadObject*"), int(QMetaType::UnknownType));
+    QCOMPARE(QMetaType::type("CustomWriteObject*"), int(QMetaType::UnknownType));
+
+    TypeLazyRegistration o;
+    QVERIFY(o.property("read").isValid());
+    QVERIFY(QMetaType::type("CustomReadObject*") != QMetaType::UnknownType);
+    QCOMPARE(QMetaType::type("CustomWriteObject*"), int(QMetaType::UnknownType));
+
+    CustomWriteObjectChild data;
+    QVariant value = QVariant::fromValue(&data); // this register CustomWriteObjectChild
+    // check if base classes are not registered automatically, otherwise this test would be meaningless
+    QCOMPARE(QMetaType::type("CustomWriteObject*"), int(QMetaType::UnknownType));
+    QVERIFY(o.setProperty("write", value));
+    QVERIFY(QMetaType::type("CustomWriteObject*") != QMetaType::UnknownType);
+    QCOMPARE(o.property("write").value<CustomWriteObjectChild*>(), &data);
 }
 
 
