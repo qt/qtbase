@@ -219,7 +219,7 @@ void qDBusReplyFill(const QDBusMessage &reply, QDBusError &error, QVariant &data
 
     // error
     if (receivedSignature.isEmpty())
-        receivedSignature = "no signature";
+        receivedSignature = "<empty signature>";
     QString errorMsg;
     if (receivedType) {
         errorMsg = QString::fromLatin1("Unexpected reply signature: got \"%1\" (%4), "
