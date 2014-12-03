@@ -65,6 +65,7 @@ struct QLibrarySettings
     QLibrarySettings();
     QScopedPointer<QSettings> settings;
 #ifdef QT_BUILD_QMAKE
+    bool haveDevicePaths;
     bool haveEffectiveSourcePaths;
     bool haveEffectivePaths;
     bool havePaths;
@@ -83,7 +84,10 @@ public:
         return ls ? (group == QLibraryInfo::EffectiveSourcePaths
                      ? ls->haveEffectiveSourcePaths
                      : group == QLibraryInfo::EffectivePaths
-                       ? ls->haveEffectivePaths : ls->havePaths) : false;
+                       ? ls->haveEffectivePaths
+                       : group == QLibraryInfo::DevicePaths
+                         ? ls->haveDevicePaths
+                         : ls->havePaths) : false;
     }
 #endif
     static QSettings *configuration()
@@ -99,6 +103,7 @@ QLibrarySettings::QLibrarySettings()
     : settings(QLibraryInfoPrivate::findConfiguration())
 {
 #ifndef QT_BUILD_QMAKE
+    bool haveDevicePaths;
     bool haveEffectivePaths;
     bool havePaths;
 #endif
@@ -106,6 +111,7 @@ QLibrarySettings::QLibrarySettings()
         // This code needs to be in the regular library, as otherwise a qt.conf that
         // works for qmake would break things for dynamically built Qt tools.
         QStringList children = settings->childGroups();
+        haveDevicePaths = children.contains(QLatin1String("DevicePaths"));
 #ifdef QT_BUILD_QMAKE
         haveEffectiveSourcePaths = children.contains(QLatin1String("EffectiveSourcePaths"));
 #else
@@ -114,13 +120,15 @@ QLibrarySettings::QLibrarySettings()
 #endif
         haveEffectivePaths = haveEffectiveSourcePaths || children.contains(QLatin1String("EffectivePaths"));
         // Backwards compat: an existing but empty file is claimed to contain the Paths section.
-        havePaths = (!haveEffectivePaths && !children.contains(QLatin1String(platformsSection)))
+        havePaths = (!haveDevicePaths && !haveEffectivePaths
+                     && !children.contains(QLatin1String(platformsSection)))
                     || children.contains(QLatin1String("Paths"));
 #ifndef QT_BUILD_QMAKE
         if (!havePaths)
             settings.reset(0);
 #else
     } else {
+        haveDevicePaths = false;
         haveEffectiveSourcePaths = false;
         haveEffectivePaths = false;
         havePaths = false;
@@ -404,11 +412,12 @@ QLibraryInfo::rawLocation(LibraryLocation loc, PathGroup group)
     // FinalPaths. For FinalPaths, use qt.conf if present and contains not only
     // [EffectivePaths], otherwise fall back to builtins.
     // EffectiveSourcePaths falls back to EffectivePaths.
+    // DevicePaths falls back to FinalPaths.
     PathGroup orig_group = group;
     if (!QLibraryInfoPrivate::haveGroup(group)
         && !(group == EffectiveSourcePaths
              && (group = EffectivePaths, QLibraryInfoPrivate::haveGroup(group)))
-        && !(group == EffectivePaths
+        && !((group == EffectivePaths || group == DevicePaths)
              && (group = FinalPaths, QLibraryInfoPrivate::haveGroup(group)))
         && (group = orig_group, true))
 #elif !defined(QT_NO_SETTINGS)
@@ -417,14 +426,19 @@ QLibraryInfo::rawLocation(LibraryLocation loc, PathGroup group)
     {
         const char *path = 0;
         if (loc == PrefixPath) {
-            path = QT_CONFIGURE_PREFIX_PATH;
+            path =
+#ifdef QT_BUILD_QMAKE
+                (group != DevicePaths) ?
+                    QT_CONFIGURE_EXT_PREFIX_PATH :
+#endif
+                    QT_CONFIGURE_PREFIX_PATH;
         } else if (unsigned(loc) <= sizeof(qt_configure_str_offsets)/sizeof(qt_configure_str_offsets[0])) {
             path = qt_configure_strs + qt_configure_str_offsets[loc - 1];
 #ifndef Q_OS_WIN // On Windows we use the registry
         } else if (loc == SettingsPath) {
             path = QT_CONFIGURE_SETTINGS_PATH;
 #endif
-#ifdef QT_BOOTSTRAPPED
+#ifdef QT_BUILD_QMAKE
         } else if (loc == HostPrefixPath) {
             path = QT_CONFIGURE_HOST_PREFIX_PATH;
 #endif
@@ -449,6 +463,7 @@ QLibraryInfo::rawLocation(LibraryLocation loc, PathGroup group)
             QSettings *config = QLibraryInfoPrivate::configuration();
             config->beginGroup(QLatin1String(
 #ifdef QT_BUILD_QMAKE
+                   group == DevicePaths ? "DevicePaths" :
                    group == EffectiveSourcePaths ? "EffectiveSourcePaths" :
                    group == EffectivePaths ? "EffectivePaths" :
 #endif

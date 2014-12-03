@@ -80,6 +80,7 @@ QMakeProperty::QMakeProperty() : settings(0)
         m_values[ProKey(name + "/get")] = QLibraryInfo::rawLocation(propList[i].loc, QLibraryInfo::EffectivePaths);
         QString val = QLibraryInfo::rawLocation(propList[i].loc, QLibraryInfo::FinalPaths);
         if (!propList[i].raw) {
+            m_values[ProKey(name + "/dev")] = QLibraryInfo::rawLocation(propList[i].loc, QLibraryInfo::DevicePaths);
             m_values[ProKey(name)] = QLibraryInfo::location(propList[i].loc);
             name += "/raw";
         }
@@ -159,6 +160,7 @@ QMakeProperty::exec()
                 ProString pval = value(ProKey(prop + "/raw"));
                 ProString gval = value(ProKey(prop + "/get"));
                 ProString sval = value(ProKey(prop + "/src"));
+                ProString dval = value(ProKey(prop + "/dev"));
                 fprintf(stdout, "%s:%s\n", prop.toLatin1().constData(), val.toLatin1().constData());
                 if (!pval.isEmpty() && pval != val)
                     fprintf(stdout, "%s/raw:%s\n", prop.toLatin1().constData(), pval.toLatin1().constData());
@@ -166,6 +168,8 @@ QMakeProperty::exec()
                     fprintf(stdout, "%s/get:%s\n", prop.toLatin1().constData(), gval.toLatin1().constData());
                 if (!sval.isEmpty() && sval != gval)
                     fprintf(stdout, "%s/src:%s\n", prop.toLatin1().constData(), sval.toLatin1().constData());
+                if (!dval.isEmpty() && dval != pval)
+                    fprintf(stdout, "%s/dev:%s\n", prop.toLatin1().constData(), dval.toLatin1().constData());
             }
             return true;
         }

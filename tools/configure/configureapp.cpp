@@ -4054,10 +4054,9 @@ void Configure::generateQConfigCpp()
                   << "static const char qt_configure_installation          [11  + 12] = \"qt_instdate=" << QDate::currentDate().toString(Qt::ISODate) << "\";" << endl
                   << endl
                   << "/* Installation Info */" << endl
-                  << "#ifndef QT_BUILD_QMAKE" << endl
                   << "static const char qt_configure_prefix_path_str       [512 + 12] = \"qt_prfxpath=" << dictionary["QT_INSTALL_PREFIX"] << "\";" << endl
-                  << "#else" << endl
-                  << "static const char qt_configure_prefix_path_str       [512 + 12] = \"qt_prfxpath=" << dictionary["QT_EXT_PREFIX"] << "\";" << endl
+                  << "#ifdef QT_BUILD_QMAKE" << endl
+                  << "static const char qt_configure_ext_prefix_path_str   [512 + 12] = \"qt_epfxpath=" << dictionary["QT_EXT_PREFIX"] << "\";" << endl
                   << "static const char qt_configure_host_prefix_path_str  [512 + 12] = \"qt_hpfxpath=" << dictionary["QT_HOST_PREFIX"] << "\";" << endl
                   << "#endif" << endl
                   << endl
@@ -4085,6 +4084,7 @@ void Configure::generateQConfigCpp()
                   << endl
                   << "#define QT_CONFIGURE_PREFIX_PATH qt_configure_prefix_path_str + 12\n"
                   << "#ifdef QT_BUILD_QMAKE\n"
+                  << "# define QT_CONFIGURE_EXT_PREFIX_PATH qt_configure_ext_prefix_path_str + 12\n"
                   << "# define QT_CONFIGURE_HOST_PREFIX_PATH qt_configure_host_prefix_path_str + 12\n"
                   << "#endif\n";
 

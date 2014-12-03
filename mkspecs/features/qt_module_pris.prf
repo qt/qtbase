@@ -50,7 +50,7 @@ MODULE_FWD_PRI = $$mod_work_pfx/qt_lib_$${MODULE_ID}.pri
         host_build: \
             module_rpath = "QT.$${MODULE_ID}.rpath = $$[QT_HOST_LIBS]"
         else: \
-            module_rpath = "QT.$${MODULE_ID}.rpath = $$[QT_INSTALL_LIBS/raw]"
+            module_rpath = "QT.$${MODULE_ID}.rpath = $$[QT_INSTALL_LIBS/dev]"
     } else {
         module_rpath =
     }

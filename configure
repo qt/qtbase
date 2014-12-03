@@ -3736,10 +3736,9 @@ static const char qt_configure_licensed_products_str [256 + 12] = "qt_lcnsprod=$
 static const char qt_configure_installation          [12+11]    = "qt_instdate=`date +%Y-%m-%d`";
 
 /* Installation Info */
-#ifndef QT_BUILD_QMAKE
 static const char qt_configure_prefix_path_str       [256 + 12] = "qt_prfxpath=$QT_INSTALL_PREFIX";
-#else
-static const char qt_configure_prefix_path_str       [256 + 12] = "qt_prfxpath=$QT_EXT_PREFIX";
+#ifdef QT_BUILD_QMAKE
+static const char qt_configure_ext_prefix_path_str   [256 + 12] = "qt_epfxpath=$QT_EXT_PREFIX";
 static const char qt_configure_host_prefix_path_str  [256 + 12] = "qt_hpfxpath=$QT_HOST_PREFIX";
 #endif
 
@@ -3766,6 +3765,7 @@ $QT_CONFIGURE_STRS#endif
 
 #define QT_CONFIGURE_PREFIX_PATH qt_configure_prefix_path_str + 12
 #ifdef QT_BUILD_QMAKE
+# define QT_CONFIGURE_EXT_PREFIX_PATH qt_configure_ext_prefix_path_str + 12
 # define QT_CONFIGURE_HOST_PREFIX_PATH qt_configure_host_prefix_path_str + 12
 #endif
 EOF
