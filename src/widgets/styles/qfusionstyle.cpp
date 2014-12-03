@@ -514,6 +514,9 @@ void QFusionStyle::drawPrimitive(PrimitiveElement elem,
             break;
         }
         arrow = colorizedImage(QLatin1String(":/qt-project.org/styles/commonstyle/images/fusion_arrow.png"), arrowColor, rotation);
+        if (arrow.isNull())
+            break;
+
         QRect rect = option->rect;
         QRect arrowRect;
         int imageMax = qMin(arrow.height(), arrow.width());
