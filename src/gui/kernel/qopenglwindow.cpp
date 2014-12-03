@@ -166,10 +166,13 @@ class QOpenGLWindowPrivate : public QPaintDeviceWindowPrivate
 {
     Q_DECLARE_PUBLIC(QOpenGLWindow)
 public:
-    QOpenGLWindowPrivate(QOpenGLWindow::UpdateBehavior updateBehavior)
+    QOpenGLWindowPrivate(QOpenGLContext *shareContext, QOpenGLWindow::UpdateBehavior updateBehavior)
         : updateBehavior(updateBehavior)
         , hasFboBlit(false)
+        , shareContext(shareContext)
     {
+        if (!shareContext)
+            this->shareContext = qt_gl_global_share_context();
     }
 
     ~QOpenGLWindowPrivate()
@@ -201,7 +204,7 @@ public:
 
         if (!context) {
             context.reset(new QOpenGLContext);
-            context->setShareContext(qt_gl_global_share_context());
+            context->setShareContext(shareContext);
             context->setFormat(q->requestedFormat());
             if (!context->create())
                 qWarning("QOpenGLWindow::beginPaint: Failed to create context");
@@ -299,6 +302,7 @@ public:
     QOpenGLWindow::UpdateBehavior updateBehavior;
     bool hasFboBlit;
     QScopedPointer<QOpenGLContext> context;
+    QOpenGLContext *shareContext;
     QScopedPointer<QOpenGLFramebufferObject> fbo;
     QScopedPointer<QOpenGLWindowPaintDevice> paintDevice;
     QOpenGLTextureBlitter blitter;
@@ -317,11 +321,21 @@ void QOpenGLWindowPaintDevice::ensureActiveTarget()
   \sa QOpenGLWindow::UpdateBehavior
  */
 QOpenGLWindow::QOpenGLWindow(QOpenGLWindow::UpdateBehavior updateBehavior, QWindow *parent)
-    : QPaintDeviceWindow(*(new QOpenGLWindowPrivate(updateBehavior)), parent)
+    : QPaintDeviceWindow(*(new QOpenGLWindowPrivate(Q_NULLPTR, updateBehavior)), parent)
 {
     setSurfaceType(QSurface::OpenGLSurface);
 }
 
+/*!
+  Constructs a new QOpenGLWindow with the given \a parent and \a updateBehavior. The QOpenGLWindow's context will share with \a shareContext.
+
+  \sa QOpenGLWindow::UpdateBehavior shareContext
+*/
+QOpenGLWindow::QOpenGLWindow(QOpenGLContext *shareContext, UpdateBehavior updateBehavior, QWindow *parent)
+    : QPaintDeviceWindow(*(new QOpenGLWindowPrivate(shareContext, updateBehavior)), parent)
+{
+    setSurfaceType(QSurface::OpenGLSurface);
+}
 /*!
   \return the update behavior for this QOpenGLWindow.
 */
@@ -411,6 +425,15 @@ QOpenGLContext *QOpenGLWindow::context() const
 {
     Q_D(const QOpenGLWindow);
     return d->context.data();
+}
+
+/*!
+  \return The QOpenGLContext requested to be shared with this window's QOpenGLContext.
+*/
+QOpenGLContext *QOpenGLWindow::shareContext() const
+{
+    Q_D(const QOpenGLWindow);
+    return d->shareContext;
 }
 
 /*!

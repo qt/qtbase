@@ -59,6 +59,7 @@ public:
     };
 
     explicit QOpenGLWindow(UpdateBehavior updateBehavior = NoPartialUpdate, QWindow *parent = 0);
+    explicit QOpenGLWindow(QOpenGLContext *shareContext, UpdateBehavior updateBehavior = NoPartialUpdate, QWindow *parent = 0);
 
     UpdateBehavior updateBehavior() const;
     bool isValid() const;
@@ -67,6 +68,7 @@ public:
     void doneCurrent();
 
     QOpenGLContext *context() const;
+    QOpenGLContext *shareContext() const;
 
     GLuint defaultFramebufferObject() const;
 
