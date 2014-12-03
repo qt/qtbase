@@ -976,8 +976,11 @@ void QColumnViewPrivate::_q_changeCurrentColumn()
             QAbstractItemView *view = columns.at(i);
             view->setSelectionModel(replacementSelectionModel);
             view->setFocusPolicy(Qt::NoFocus);
-            if (columns.size() > i + 1)
-                view->setCurrentIndex(columns.at(i+1)->rootIndex());
+            if (columns.size() > i + 1) {
+                const QModelIndex newRootIndex = columns.at(i + 1)->rootIndex();
+                if (newRootIndex.isValid())
+                    view->setCurrentIndex(newRootIndex);
+            }
             break;
         }
     }
