@@ -218,16 +218,23 @@ struct QTypedArrayData
             AllocationOptions options = Default)
     {
         Q_STATIC_ASSERT(sizeof(QTypedArrayData) == sizeof(QArrayData));
-        return static_cast<QTypedArrayData *>(QArrayData::allocate(sizeof(T),
-                    alignof(AlignmentDummy), capacity, options));
+        void *result = QArrayData::allocate(sizeof(T),
+                    alignof(AlignmentDummy), capacity, options);
+#if (defined(Q_CC_GNU) && Q_CC_GNU >= 407) || QT_HAS_BUILTIN(__builtin_assume_aligned)
+        result = __builtin_assume_aligned(result, Q_ALIGNOF(AlignmentDummy));
+#endif
+        return static_cast<QTypedArrayData *>(result);
     }
 
     static QTypedArrayData *reallocateUnaligned(QTypedArrayData *data, size_t capacity,
             AllocationOptions options = Default)
     {
         Q_STATIC_ASSERT(sizeof(QTypedArrayData) == sizeof(QArrayData));
-        return static_cast<QTypedArrayData *>(QArrayData::reallocateUnaligned(data, sizeof(T),
-                    capacity, options));
+        void *result = QArrayData::reallocateUnaligned(data, sizeof(T), capacity, options));
+#if (defined(Q_CC_GNU) && Q_CC_GNU >= 407) || QT_HAS_BUILTIN(__builtin_assume_aligned)
+        result =__builtin_assume_aligned(result, Q_ALIGNOF(AlignmentDummy));
+#endif
+        return static_cast<QTypedArrayData *>(result);
     }
 
     static void deallocate(QArrayData *data)
