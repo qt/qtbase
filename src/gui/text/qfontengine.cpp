@@ -1635,7 +1635,12 @@ QFontEngine *QFontEngineMulti::loadEngine(int at)
     request.styleStrategy |= QFont::NoFontMerging;
     request.family = fallbackFamilyAt(at - 1);
 
-    return QFontDatabase::findFont(m_script, /*fontprivate = */0, request, /*multi = */false);
+    if (QFontEngine *engine = QFontDatabase::findFont(m_script, /*fontprivate = */0, request, /*multi = */false)) {
+        engine->fontDef = request;
+        return engine;
+    }
+
+    return 0;
 }
 
 glyph_t QFontEngineMulti::glyphIndex(uint ucs4) const
