@@ -60,6 +60,8 @@ private slots:
     void viewportCrash();
     void task214488_layoutDirection_data();
     void task214488_layoutDirection();
+
+    void margins();
 };
 
 tst_QAbstractScrollArea::tst_QAbstractScrollArea()
@@ -373,6 +375,23 @@ void tst_QAbstractScrollArea::patternBackground()
 
     scrollArea.render(&image);
     QCOMPARE(image.pixel(QPoint(20,20)) , QColor(Qt::red).rgb());
+}
+
+class ScrollArea : public QAbstractScrollArea
+{
+public:
+    using QAbstractScrollArea::setViewportMargins;
+    using QAbstractScrollArea::viewportMargins;
+};
+
+void tst_QAbstractScrollArea::margins()
+{
+    ScrollArea area;
+    QCOMPARE(area.viewportMargins(), QMargins());
+
+    QMargins margins(10, 20, 30, 40);
+    area.setViewportMargins(margins);
+    QCOMPARE(area.viewportMargins(), margins);
 }
 
 QTEST_MAIN(tst_QAbstractScrollArea)

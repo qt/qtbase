@@ -97,6 +97,7 @@ protected:
     QAbstractScrollArea(QAbstractScrollAreaPrivate &dd, QWidget *parent = 0);
     void setViewportMargins(int left, int top, int right, int bottom);
     void setViewportMargins(const QMargins &margins);
+    QMargins viewportMargins() const;
 
     bool eventFilter(QObject *, QEvent *) Q_DECL_OVERRIDE;
     bool event(QEvent *) Q_DECL_OVERRIDE;

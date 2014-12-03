@@ -923,7 +923,7 @@ QWidgetList QAbstractScrollArea::scrollBarWidgets(Qt::Alignment alignment)
     they should not call this function.
 
     By default all margins are zero.
-
+    \sa viewportMargins()
 */
 void QAbstractScrollArea::setViewportMargins(int left, int top, int right, int bottom)
 {
@@ -943,12 +943,25 @@ void QAbstractScrollArea::setViewportMargins(int left, int top, int right, int b
     area.
 
     By default all margins are zero.
-
+    \sa viewportMargins()
 */
 void QAbstractScrollArea::setViewportMargins(const QMargins &margins)
 {
     setViewportMargins(margins.left(), margins.top(),
                        margins.right(), margins.bottom());
+}
+
+/*!
+    \since 5.5
+    Returns the margins around the scrolling area.
+    By default all the margins are zero.
+
+    \sa setViewportMargins()
+*/
+QMargins QAbstractScrollArea::viewportMargins() const
+{
+    Q_D(const QAbstractScrollArea);
+    return QMargins(d->left, d->top, d->right, d->bottom);
 }
 
 /*! \internal */
