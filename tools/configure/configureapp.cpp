@@ -3867,11 +3867,6 @@ void Configure::generateHeaders()
     }
 }
 
-static QString stripPrefix(const QString &str, const QString &pfx)
-{
-    return str.startsWith(pfx) ? str.mid(pfx.length()) : str;
-}
-
 void Configure::substPrefix(QString *path)
 {
     QString spfx = dictionary["QT_SYSROOT_PREFIX"];
@@ -3881,6 +3876,9 @@ void Configure::substPrefix(QString *path)
 
 void Configure::generateQConfigCpp()
 {
+    QString hostSpec = dictionary["QMAKESPEC"];
+    QString targSpec = dictionary.contains("XQMAKESPEC") ? dictionary["XQMAKESPEC"] : hostSpec;
+
     // if QT_INSTALL_* have not been specified on commandline, define them now from QT_INSTALL_PREFIX
     // if prefix is empty (WINCE), make all of them empty, if they aren't set
     bool qipempty = false;
@@ -3962,10 +3960,6 @@ void Configure::generateQConfigCpp()
         dictionary["QT_HOST_LIBS"] = haveHpx ? dictionary["QT_HOST_PREFIX"] + "/lib" : dictionary["QT_INSTALL_LIBS"];
     if (dictionary["QT_HOST_DATA"].isEmpty())
         dictionary["QT_HOST_DATA"] = haveHpx ? dictionary["QT_HOST_PREFIX"] : dictionary["QT_INSTALL_ARCHDATA"];
-
-    QString specPfx = dictionary["QT_HOST_DATA"] + "/mkspecs/";
-    QString hostSpec = stripPrefix(dictionary["QMAKESPEC"], specPfx);
-    QString targSpec = dictionary.contains("XQMAKESPEC") ? stripPrefix(dictionary["XQMAKESPEC"], specPfx) : hostSpec;
 
     // Generate the new qconfig.cpp file
     {
