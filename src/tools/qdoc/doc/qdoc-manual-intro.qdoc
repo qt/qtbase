@@ -89,8 +89,8 @@
 
     \section1 Running QDoc
 
-    The current name of the QDoc program is \c {qdoc}. To run qdoc
-    from the command line, give it the name of a configuration file:
+    The name of the QDoc program is \c {qdoc}. To run qdoc from the
+    command line, give it the name of a configuration file:
 
     \quotation
         \c {$ ../../bin/qdoc ./config.qdocconf}
@@ -106,6 +106,151 @@
 
     See \l{The QDoc Configuration File} for instructions on how to
     set up a QDoc configuration file.
+
+    \section2 Running QDoc in Single Execution Mode
+
+    Beginning with Qt 5.5, a new way to run QDoc is available that
+    reduces the time it takes to generate the Qt5 documentation by as
+    much as 90%. The new way to run QDoc is \e{single execution} mode.
+    Single execution mode is not currently available in the Qt5 build
+    system, which still uses the \e {standard} mode. Single execution
+    mode is only available when you run QDoc yourself, which you will
+    want to do often as you document your module and integrate your
+    documentation with the other Qt modules.
+
+    To run QDoc in single execution mode, add \c {-single-exec} to the
+    command line and pass QDoc a master \c qdocconf file that is
+    simply a list of file paths for qdocconf files of all the Qt5
+    modules. For example:
+
+    \code
+    /Users/me/qt5/qtbase/bin/qdoc -outputdir /Users/me/qt5/qtbase/doc -installdir /Users/me/qt5/qtbase/doc /Users/me/qt5/master.qdocconf -single-exec
+    \endcode
+
+    The qdocconf file, \c {master.qdocconf}, just lists the qdocconf files for all the Qt5 modules to be processed:
+
+    \badcode
+     /Users/me/qt5/qtbase/src/corelib/doc/qtcore.qdocconf
+     /Users/me/qt5/qtbase/src/network/doc/qtnetwork.qdocconf
+     /Users/me/qt5/qtbase/src/sql/doc/qtsql.qdocconf
+     /Users/me/qt5/qtbase/src/xml/doc/qtxml.qdocconf
+     /Users/me/qt5/qtbase/src/testlib/doc/qttestlib.qdocconf
+     /Users/me/qt5/qtbase/src/concurrent/doc/qtconcurrent.qdocconf
+     /Users/me/qt5/qtbase/src/gui/doc/qtgui.qdocconf
+     /Users/me/qt5/qtbase/src/platformheaders/doc/qtplatformheaders.qdocconf
+     /Users/me/qt5/qtbase/src/widgets/doc/qtwidgets.qdocconf
+     /Users/me/qt5/qtbase/src/opengl/doc/qtopengl.qdocconf
+     /Users/me/qt5/qtbase/src/printsupport/doc/qtprintsupport.qdocconf
+     /Users/me/qt5/qtbase/src/tools/qdoc/doc/config/qdoc.qdocconf
+     /Users/me/qt5/qtbase/qmake/doc/qmake.qdocconf
+     /Users/me/qt5/qtsvg/src/svg/doc/qtsvg.qdocconf
+     /Users/me/qt5/qtxmlpatterns/src/xmlpatterns/doc/qtxmlpatterns.qdocconf
+     /Users/me/qt5/qtdeclarative/src/qml/doc/qtqml.qdocconf
+     /Users/me/qt5/qtdeclarative/src/quick/doc/qtquick.qdocconf
+     /Users/me/qt5/qtquickcontrols/src/controls/doc/qtquickcontrols.qdocconf
+     /Users/me/qt5/qtquickcontrols/src/layouts/doc/qtquicklayouts.qdocconf
+     /Users/me/qt5/qtquickcontrols/src/dialogs/doc/qtquickdialogs.qdocconf
+     /Users/me/qt5/qtmultimedia/src/multimedia/doc/qtmultimedia.qdocconf
+     /Users/me/qt5/qtmultimedia/src/multimediawidgets/doc/qtmultimediawidgets.qdocconf
+     /Users/me/qt5/qtactiveqt/src/activeqt/doc/activeqt.qdocconf
+     /Users/me/qt5/qtsensors/src/sensors/doc/qtsensors.qdocconf
+     /Users/me/qt5/qtwebkit/Source/qtwebkit.qdocconf
+     /Users/me/qt5/qttools/src/assistant/help/doc/qthelp.qdocconf
+     /Users/me/qt5/qttools/src/assistant/assistant/doc/qtassistant.qdocconf
+     /Users/me/qt5/qttools/src/designer/src/uitools/doc/qtuitools.qdocconf
+     /Users/me/qt5/qttools/src/designer/src/designer/doc/qtdesigner.qdocconf
+     /Users/me/qt5/qttools/src/linguist/linguist/doc/qtlinguist.qdocconf
+     /Users/me/qt5/qtwebkit-examples/doc/qtwebkitexamples.qdocconf
+     /Users/me/qt5/qtimageformats/src/imageformats/doc/qtimageformats.qdocconf
+     /Users/me/qt5/qtgraphicaleffects/src/effects/doc/qtgraphicaleffects.qdocconf
+     /Users/me/qt5/qtscript/src/script/doc/qtscript.qdocconf
+     /Users/me/qt5/qtscript/src/scripttools/doc/qtscripttools.qdocconf
+     /Users/me/qt5/qtserialport/src/serialport/doc/qtserialport.qdocconf
+     /Users/me/qt5/qtdoc/doc/config/qtdoc.qdocconf
+    \endcode
+
+    \section3 Why Standard Mode Is Slow
+
+    Currently, the Qt5 build system does not use QDoc's \e {single
+    execution} mode for generating the Qt5 documentation. It runs QDoc
+    in the \e {standard} mode. The standard mode was came about
+    because it was the easiest way to get convert the Qt4 QDoc to
+    handle the modularization of Qt in Qt5. In Qt4, QDoc ran once over
+    all the Qt4 sources to generate the HTML documentation for Qt.
+    While generating the Qt documentation, Qt4 QDoc also generated an
+    \e {index file} for Qt. That index file was meant to be used as
+    input to subsequent QDoc runs for generating HTML documentation
+    for other software libraries/products that were based on Qt. The
+    Qt index file allowed QDoc to link documentation written for those
+    other libraries/products to the Qt4 documentation.
+
+    When Qt5 came along, Qt was divided into modules. Since then,
+    many new modules have been added to Qt. As of version 5.5, there
+    are over 40 separate modules in Qt5, each with its own
+    documentation that links to (depends on) the documentation of
+    other Qt modules.
+
+    In \e {standard mode}, QDoc runs twice for each module. The first
+    QDoc run for a particular Qt module, parses all the module's
+    source files and then uses the information to generate the
+    module's index file. It is called the \e{prepare phase} because
+    it \e prepares the module's index file. The second QDoc run for
+    the module also parses all the module's source files and then
+    generates the module's documentation pages. This is called the \e
+    {generate phase} because it generates the module's documentation.
+
+    The module's documentation will likely contain HTML links to the
+    documentation of one or more of the other Qt modules. For example,
+    most Qt5 modules contain links to documentation in QtCore. When a
+    Qt module contains links into the documentation of other Qt
+    module's, that module is said to depend on those other Qt modules.
+    Hence when QDoc runs the \e {generate phase} for that module, it
+    must also load the index files for those modules so it can create
+    those thinks.
+
+    Hence, when the Qt build system generates the Qt documentation, it
+    first runs QDoc once for each module to perform the \e {prepare
+    phase} to generate all the index files. Then it runs QDoc once for
+    each module to perform the \e {generate phase}, where it uses the
+    dependent index files to generate the module's documentation,
+    including any cross-module links it finds.  Each execution of
+    QDoc, both \e {prepare phase} and \e {generate phase}, parses
+    all the source files that are included in the module, and in the
+    \e {generate phase} also parses the index files for the dependent
+    modules. Nothing is retained or retainable between QDoc runs.
+
+    \section3 Why Single Execution Mode Is Much Faster
+
+    As the name implies, single execution mode uses a single QDoc
+    process to generate all the Qt5 documentation. The single QDoc
+    process still performs a \e{prepare phase} for each module and
+    then a \e{generate phase} for each module, but there are a few
+    differences.  It begins by reading the master qdocconf file. Then
+    it reads each qdocconf file in the master list and performs the
+    \e{prepare phase} for each module.  During the \e{prepare phase},
+    all the source files for the module are parsed to build a syntax
+    tree for the module. The module's index file is then generated,
+    although QDoc will not re-read the index files in the \e{generate
+    phase}. The important difference here is that the module's syntax
+    tree is retained after the index file is generated, so that after
+    the \e{prepare phase} has been run for all the modules, QDoc still
+    has all the syntax trees it built.
+
+    QDoc then processes each module again for the \e{generate phase}.
+    But now QDoc doesn't need to re-parse each module's source files,
+    because the module's syntax tree is still in memory. Nor does QDoc
+    need to re-read the index files for the dependent modules, again
+    because it still has the syntax trees for those modules in memry.
+    It remains only to traverse each module's syntax tree to generate
+    the documentation pages.
+
+    Hence, QDoc parses each source file once and only once and doesn't
+    need to read index files. This is what makes single execution mode
+    much faster than the standard mode. It is anticipated that the Qt
+    build system will eventually run QDoc in single execution mode.
+    However, changes to the master qdocconf file might be required, so
+    the method described above for running QDoc in single execution
+    mode might have to change, watch this space for updates.
 
     \section1 How QDoc Works
 

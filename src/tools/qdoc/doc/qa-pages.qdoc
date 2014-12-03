@@ -1,0 +1,109 @@
+/****************************************************************************
+**
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Contact: http://www.qt-project.org/legal
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** Commercial License Usage
+** Licensees holding valid commercial Qt licenses may use this file in
+** accordance with the commercial license agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and Digia.  For licensing terms and
+** conditions see http://qt.digia.com/licensing.  For further information
+** use the contact form at http://qt.digia.com/contact-us.
+**
+** GNU Free Documentation License Usage
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of
+** this file.  Please review the following information to ensure
+** the GNU Free Documentation License version 1.3 requirements
+** will be met: http://www.gnu.org/copyleft/fdl.html.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+    \page 28-qdoc-qa-pages.html
+    \previouspage Generating DITA XML Output
+    \contentspage QDoc Manual
+    \nextpage QDoc Manual
+
+    \title QA Pages
+
+    qdoc can generate some extra HTML pages that can be useful for
+    debugging qdoc documentation. These \e QA pages make it easier for
+    those who write documentation to find links that either go to the
+    wrong targets or don't go anywhere at all.
+
+    \section2 Generating the QA Pages
+
+    Add \c {-write-qa-pages} to the command line to tell qdoc to
+    generate the QA pages. If this option is not provided, the QA
+    pages will not be generated, and previolusly generated QA pages
+    will be deleted.
+
+    \section2 Finding the Module's Main QA Page
+
+    The main QA page for a module is not linked into the module's
+    generated documentation, but it is located in the same output
+    directory. To find the top-level QA page for module \e {xxx}, set
+    your browser to the qdoc output directory for module \e {xxx}.
+    Several files whose names begin with \e {aaa} appear at the top of
+    the list. These are the QA pages for module \e{xxx}. The file
+    names begin with \e {aaa} to ensure that they are easy to find at
+    the top of the directory.
+
+    For module \e{xxx}, find the file \e{aaa-xxx-qa-page.html}. This
+    is the top-level QA page for module \e{xxx}. Load that file into
+    the browser. The top-level QA page shows a table that contains
+    links to several QA sub-pages.
+
+    For example, the main QA page for QtCore is \c{aaa-qtcore-qa-page.html}.
+    This was the table for QtCore at one point:
+
+    \image qa-table.png
+
+    Each table entry shows the number of links from QtCore to some
+    other module, except for the last entry, which shows the number of
+    broken links in QtCore. Click the \b qtquick entry to load the QA
+    subpage showing the links from QtCore to QtQuick.
+
+    \section2 Links To Links Page
+
+    Clicking the \b qtquick table entry on the main QA page for QtCore
+    loads the QA subpage showing a table containing all the links from
+    QtCore to QtQuick. The table contains all the links constructed
+    with the \l {l-command} {\\l command}, as well as the autolinks.
+
+    \image links-to-links.png
+
+    At the time this table was generated, there were six links from
+    QtCore to QtQuick.  The first column of each table entry contains
+    a link to some link in QtCore. The link text as it appears in
+    QtCore is shown. The second and third columns contain the source
+    file name and line number for where qdoc saw the link in a qdoc
+    comment.
+
+    \note The line number will normally refer to the first line of the
+    comment where qdoc saw the link.
+
+    Clicking on a link in the table takes you to that link in the
+    documentation. There the link will be marked with three red
+    asterisks. For example, clicking on the link in the fifth table
+    entry takes you here:
+
+    \image link-to-qquickitem.png
+
+    The link is marked with three red asterisks. Now you can click on
+    the actual link to check that it goes to the correct place. In
+    this case, the link should go to the reference page for the
+    QQuickItem class.  You can check each link in the table this
+    way. If you find a link that goes to the wrong place, use the
+    source file name and line number to find the link, and fix the
+    problem using the square bracket notation for the \l {l-command}
+    {\\l command}.
+
+ */

@@ -1771,8 +1771,14 @@
     different kinds of targets. The command's general syntax is:
 
     \code
-      \l {link target} {link text}
+      \l [ link criteria ] { link target } { link text }
     \endcode
+
+    ...where the \c {link criteria} in square brackets are optional
+    but may be required when the \c {link target} is ambiguous. See
+    \l {Fixing Ambiguous Links} below.
+
+    Here is an example using the \\l command to link to an external page:
 
     \code
        / *!
@@ -1876,6 +1882,101 @@
     \quotation
     \l {QWidget::} {sizeHint()}
     \endquotation
+
+    \section2 Fixing Ambiguous Links
+
+    Because of the modularization of Qt beginning with Qt 5.0, The
+    possibility that qdoc will have to deal with ambiguous links has
+    increased. An ambiguous link is one that has a matching target in
+    more than one Qt module, e.g. the same section title can appear in
+    more than one Qt module, or the name of a C++ class in one module
+    can also be the name of a QML type in another module. A real
+    example in Qt5 is the name Qt itself. Qt is the name of both a C++
+    namespace in QtCore and a QML type in QtQml.
+
+    Suppose we want to link to the \l {Qt} {Qt C++ namespace}.  At the
+    time qdoc generated this HTML page, that link was correct.  Does
+    it still go to the C++ namespace? Qdoc generated that link from
+    this link command:
+
+    \list
+        \li \c {\l {Qt} {Qt C++ namespace}}
+    \endlist
+
+    Now suppose we want to link to the \l [QML] {Qt} {Qt QML type}.
+    At the time qdoc generated this HTML page, that link was also
+    correct, but we had to use this link command:
+
+    \list
+        \li \c {\l [QML] {Qt} {Qt QML type}}
+    \endlist
+
+    The \e {QML} in \e {square brackets} tells qdoc to accept a
+    matching target only if the traget is on a QML page. Qdoc actually
+    finds the C++ namespace target first, but since that target is on
+    a C++ page, qdoc ignores it and keeps looking until it finds the
+    same target on a QML page.
+
+    Without the guidance in the \e{\\l command} in the optional \e
+    {square bracket} argument, qdoc links to the first matching target
+    it finds. qdoc can't warn that the link was ambiguous in such
+    cases because it doesn't know that another matching target exists.
+
+    \section2 What arguments can appear in square brackets?
+
+    A link command with square bracket argument has the following syntax:
+    \list
+    \c {\l [QML|CPP|DOC|QtModuleName] {link target} {link text}}
+    \endlist
+
+    The \e {square bracket} argument is only allowed in the \c {\\l
+    (link)} command. The example above shows how \c QML is used as the
+    \e {square brackets} argument to force qdoc to match a QML target.
+    Most often, this will be a QML type, but it can also be a QML
+    member function of property.
+
+    In the example, qdoc didn't need a \e {square bracket} argument to
+    find the Qt C++ namespace page, because that one was the first
+    matching target qdoc found anyway. However, to force qdoc to find
+    a C++ target when a matching QML target gets in the way, \c CPP
+    can be used as the \e {square bracket} argument. For example:
+
+    \list
+        \li \c {\l [CPP] {Qt} {Qt C++ namespace}}
+    \endlist
+
+    ...will force qdoc to ignore the Qt QML type and continue
+    searching until it matches the Qt C++ namespace.
+
+    If the link target is neither a C++ nor a QML entity, \c {DOC} can
+    be used as the \e {square bracket} argument to prevent qdoc from
+    matching either of those. At this writing, there were no cases of
+    ambiguous links where using \c {DOC} was required.
+
+    Often, the documentor knows which Qt module the link target is
+    in. When the module name is known, use the module name as the \e
+    {square bracket} argument. In the example above, if we know that
+    the QML type named Qt is located in the QtQml module, we can write
+    the link command like this:
+
+    \list
+        \li \c {\l [QtQml] {Qt} {Qt QML type}}
+    \endlist
+
+    When a module name is used as the \e {square bracket} argument,
+    qdoc will search for link the target in that module only. This
+    makes searching for link targets more efficient.
+
+    Finally, the module name and entity type arguments can be
+    combined, separated by a blank, so something like this is also
+    allowed:
+
+    \list
+        \li \c {\l [CPP QtQml] {Window} {C++ class Window}}
+    \endlist
+
+    As of this writing, there were no cases where combining the two
+    was required.
 
     See also \l {sa-command} {\\sa}, \l {target-command} {\\target},
     and \l {keyword-command} {\\keyword}.
