@@ -96,6 +96,7 @@ private slots:
     void changeSourceData_data();
     void changeSourceData();
     void changeSourceDataKeepsStableSorting_qtbug1548();
+    void changeSourceDataForwardsRoles_qtbug35440();
     void sortFilterRole();
     void selectionFilteredOut();
     void match_data();
@@ -2082,6 +2083,37 @@ void tst_QSortFilterProxyModel::changeSourceDataKeepsStableSorting_qtbug1548()
     // change the background color of the second "c"
     model.item(5)->setBackground(Qt::red);
     checkSortedTableModel(&model, rows);
+}
+
+void tst_QSortFilterProxyModel::changeSourceDataForwardsRoles_qtbug35440()
+{
+    QStringList strings;
+    for (int i = 0; i < 100; ++i)
+        strings << QString::number(i);
+
+    QStringListModel model(strings);
+
+    QSortFilterProxyModel proxy;
+    proxy.setSourceModel(&model);
+    proxy.sort(0, Qt::AscendingOrder);
+
+    QSignalSpy spy(&proxy, &QAbstractItemModel::dataChanged);
+    QVERIFY(spy.isValid());
+    QCOMPARE(spy.length(), 0);
+
+    QModelIndex index;
+
+    index = model.index(0, 0);
+    QVERIFY(index.isValid());
+    model.setData(index, QStringLiteral("teststring"), Qt::DisplayRole);
+    QCOMPARE(spy.length(), 1);
+    QCOMPARE(spy.at(0).at(2).value<QVector<int> >(), QVector<int>() << Qt::DisplayRole);
+
+    index = model.index(1, 0);
+    QVERIFY(index.isValid());
+    model.setData(index, QStringLiteral("teststring2"), Qt::EditRole);
+    QCOMPARE(spy.length(), 2);
+    QCOMPARE(spy.at(1).at(2).value<QVector<int> >(), QVector<int>() << Qt::EditRole);
 }
 
 void tst_QSortFilterProxyModel::sortFilterRole()

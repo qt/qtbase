@@ -195,7 +195,8 @@ public:
     }
 
     void _q_sourceDataChanged(const QModelIndex &source_top_left,
-                           const QModelIndex &source_bottom_right);
+                              const QModelIndex &source_bottom_right,
+                              const QVector<int> &roles);
     void _q_sourceHeaderDataChanged(Qt::Orientation orientation, int start, int end);
 
     void _q_sourceAboutToBeReset();
@@ -1131,7 +1132,8 @@ QSet<int> QSortFilterProxyModelPrivate::handle_filter_changed(
 }
 
 void QSortFilterProxyModelPrivate::_q_sourceDataChanged(const QModelIndex &source_top_left,
-                                                        const QModelIndex &source_bottom_right)
+                                                        const QModelIndex &source_bottom_right,
+                                                        const QVector<int> &roles)
 {
     Q_Q(QSortFilterProxyModel);
     if (!source_top_left.isValid() || !source_bottom_right.isValid())
@@ -1224,7 +1226,7 @@ void QSortFilterProxyModelPrivate::_q_sourceDataChanged(const QModelIndex &sourc
                 --source_right_column;
             const QModelIndex proxy_bottom_right = create_index(
                 proxy_end_row, m->proxy_columns.at(source_right_column), it);
-            emit q->dataChanged(proxy_top_left, proxy_bottom_right);
+            emit q->dataChanged(proxy_top_left, proxy_bottom_right, roles);
         }
     }
 
@@ -1728,8 +1730,8 @@ void QSortFilterProxyModel::setSourceModel(QAbstractItemModel *sourceModel)
 
     beginResetModel();
 
-    disconnect(d->model, SIGNAL(dataChanged(QModelIndex,QModelIndex)),
-               this, SLOT(_q_sourceDataChanged(QModelIndex,QModelIndex)));
+    disconnect(d->model, SIGNAL(dataChanged(QModelIndex,QModelIndex,QVector<int>)),
+               this, SLOT(_q_sourceDataChanged(QModelIndex,QModelIndex,QVector<int>)));
 
     disconnect(d->model, SIGNAL(headerDataChanged(Qt::Orientation,int,int)),
                this, SLOT(_q_sourceHeaderDataChanged(Qt::Orientation,int,int)));
@@ -1781,8 +1783,8 @@ void QSortFilterProxyModel::setSourceModel(QAbstractItemModel *sourceModel)
 
     QAbstractProxyModel::setSourceModel(sourceModel);
 
-    connect(d->model, SIGNAL(dataChanged(QModelIndex,QModelIndex)),
-            this, SLOT(_q_sourceDataChanged(QModelIndex,QModelIndex)));
+    connect(d->model, SIGNAL(dataChanged(QModelIndex,QModelIndex,QVector<int>)),
+            this, SLOT(_q_sourceDataChanged(QModelIndex,QModelIndex,QVector<int>)));
 
     connect(d->model, SIGNAL(headerDataChanged(Qt::Orientation,int,int)),
             this, SLOT(_q_sourceHeaderDataChanged(Qt::Orientation,int,int)));
