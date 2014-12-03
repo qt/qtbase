@@ -654,18 +654,6 @@ static void initFontDef(const QtFontDesc &desc, const QFontDef &request, QFontDe
     fontDef->ignorePitch   = false;
 }
 
-static void getEngineData(const QFontPrivate *d, const QFontDef &def)
-{
-    // look for the requested font in the engine data cache
-    d->engineData = QFontCache::instance()->findEngineData(def);
-    if (!d->engineData) {
-        // create a new one
-        d->engineData = new QFontEngineData;
-        QFontCache::instance()->insertEngineData(def, d->engineData);
-    }
-    d->engineData->ref.ref();
-}
-
 static QStringList familyList(const QFontDef &req)
 {
     // list of families to try
@@ -2614,18 +2602,26 @@ void QFontDatabase::load(const QFontPrivate *d, int script)
     if (req.stretch == 0)
         req.stretch = 100;
 
+    if (!d->engineData) {
+        // look for the requested font in the engine data cache
+        d->engineData = QFontCache::instance()->findEngineData(req);
+        if (!d->engineData) {
+            // create a new one
+            d->engineData = new QFontEngineData;
+            QFontCache::instance()->insertEngineData(req, d->engineData);
+        }
+        d->engineData->ref.ref();
+    }
+
+    // the cached engineData could have already loaded the engine we want
+    if (d->engineData->engines[script])
+        return;
+
     // Until we specifically asked not to, try looking for Multi font engine
     // first, the last '1' indicates that we want Multi font engine instead
     // of single ones
     bool multi = !(req.styleStrategy & QFont::NoFontMerging);
     QFontCache::Key key(req, script, multi ? 1 : 0);
-
-    if (!d->engineData)
-        getEngineData(d, req);
-
-    // the cached engineData could have already loaded the engine we want
-    if (d->engineData->engines[script])
-        return;
 
     QFontEngine *fe = QFontCache::instance()->findEngine(key);
 
