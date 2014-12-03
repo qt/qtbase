@@ -174,7 +174,7 @@ public:
     }
 
     inline bool isEmpty() const {
-        return tailBuffer == 0 && tail == 0;
+        return bufferSize == 0;
     }
 
     inline int getChar() {
