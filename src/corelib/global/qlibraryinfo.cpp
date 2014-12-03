@@ -404,11 +404,13 @@ QLibraryInfo::rawLocation(LibraryLocation loc, PathGroup group)
     // FinalPaths. For FinalPaths, use qt.conf if present and contains not only
     // [EffectivePaths], otherwise fall back to builtins.
     // EffectiveSourcePaths falls back to EffectivePaths.
+    PathGroup orig_group = group;
     if (!QLibraryInfoPrivate::haveGroup(group)
         && !(group == EffectiveSourcePaths
              && (group = EffectivePaths, QLibraryInfoPrivate::haveGroup(group)))
         && !(group == EffectivePaths
-             && (group = FinalPaths, QLibraryInfoPrivate::haveGroup(group))))
+             && (group = FinalPaths, QLibraryInfoPrivate::haveGroup(group)))
+        && (group = orig_group, true))
 #elif !defined(QT_NO_SETTINGS)
     if (!QLibraryInfoPrivate::configuration())
 #endif
