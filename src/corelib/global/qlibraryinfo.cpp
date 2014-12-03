@@ -396,9 +396,6 @@ QLibraryInfo::location(LibraryLocation loc)
 QString
 QLibraryInfo::rawLocation(LibraryLocation loc, PathGroup group)
 {
-#else
-# define rawLocation(loca, group) location(loca)
-# define group dummy
 #endif
     QString ret;
 #ifdef QT_BUILD_QMAKE
@@ -494,6 +491,9 @@ QLibraryInfo::rawLocation(LibraryLocation loc, PathGroup group)
         } else if (loc > SysrootPath && loc <= LastHostPath) {
             // We make any other host path absolute to the host prefix directory.
             baseDir = rawLocation(HostPrefixPath, group);
+        } else {
+            // we make any other path absolute to the prefix directory
+            baseDir = rawLocation(PrefixPath, group);
 #else
         if (loc == PrefixPath) {
             if (QCoreApplication::instance()) {
@@ -518,10 +518,10 @@ QLibraryInfo::rawLocation(LibraryLocation loc, PathGroup group)
             } else {
                 baseDir = QDir::currentPath();
             }
-#endif
         } else {
             // we make any other path absolute to the prefix directory
-            baseDir = rawLocation(PrefixPath, group);
+            baseDir = location(PrefixPath);
+#endif
         }
         ret = QDir::cleanPath(baseDir + QLatin1Char('/') + ret);
     }
