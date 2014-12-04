@@ -208,6 +208,18 @@ void QXcbNativeInterface::clearRegion(const QWindow *qwindow, const QRect& rect)
     }
 }
 
+void QXcbNativeInterface::setParentRelativeBackPixmap(const QWindow *qwindow)
+{
+    if (const QPlatformWindow *platformWindow = qwindow->handle()) {
+        const QXcbWindow *qxwindow = static_cast<const QXcbWindow *>(platformWindow);
+        xcb_connection_t *xcb_conn = qxwindow->xcb_connection();
+
+        const quint32 mask = XCB_CW_BACK_PIXMAP;
+        const quint32 values[] = { XCB_BACK_PIXMAP_PARENT_RELATIVE };
+        Q_XCB_CALL(xcb_change_window_attributes(xcb_conn, qxwindow->xcb_window(), mask, values));
+    }
+}
+
 void *QXcbNativeInterface::nativeResourceForIntegration(const QByteArray &resourceString)
 {
     void *result = 0;
