@@ -571,6 +571,22 @@ static inline int maybeSwapShortcut(int shortcut)
     return shortcut;
 }
 #endif
+#if defined(Q_OS_NACL)
+// ### merge with Q_OS_MACX function above once the seemingly inverted
+// AA_MacDontSwapCtrlAndMeta logic is figured out.
+static inline int maybeSwapShortcut(int shortcut, uint platform)
+{
+    if (platform == KB_Mac) {
+        uint oldshortcut = shortcut;
+        shortcut &= ~(Qt::CTRL | Qt::META);
+        if (oldshortcut & Qt::CTRL)
+            shortcut |= Qt::META;
+        if (oldshortcut & Qt::META)
+            shortcut |= Qt::CTRL;
+    }
+    return shortcut;
+}
+#endif
 
 // mixed-mode predicate: all of these overloads are actually needed (but not all for every compiler)
 struct ByStandardKey {
@@ -611,6 +627,8 @@ QList<QKeySequence> QPlatformTheme::keyBindings(QKeySequence::StandardKey key) c
         uint shortcut =
 #if defined(Q_OS_MACX)
             maybeSwapShortcut(it->shortcut);
+#elif defined(Q_OS_NACL)
+            maybeSwapShortcut(it->shortcut, platform);
 #else
             it->shortcut;
 #endif
