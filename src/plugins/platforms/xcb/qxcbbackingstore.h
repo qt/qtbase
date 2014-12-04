@@ -56,8 +56,8 @@ public:
     void composeAndFlush(QWindow *window, const QRegion &region, const QPoint &offset,
                          QPlatformTextureList *textures, QOpenGLContext *context,
                          bool translucentBackground) Q_DECL_OVERRIDE;
-#endif
     QImage toImage() const Q_DECL_OVERRIDE;
+#endif
     void resize(const QSize &size, const QRegion &staticContents) Q_DECL_OVERRIDE;
     bool scroll(const QRegion &area, int dx, int dy) Q_DECL_OVERRIDE;
 

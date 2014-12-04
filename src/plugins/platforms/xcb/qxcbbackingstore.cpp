@@ -287,10 +287,12 @@ void QXcbBackingStore::beginPaint(const QRegion &region)
     }
 }
 
+#ifndef QT_NO_OPENGL
 QImage QXcbBackingStore::toImage() const
 {
     return m_image && m_image->image() ? *m_image->image() : QImage();
 }
+#endif
 
 void QXcbBackingStore::flush(QWindow *window, const QRegion &region, const QPoint &offset)
 {
