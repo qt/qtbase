@@ -48,6 +48,7 @@ QElapsedTimer QWindowSystemInterfacePrivate::eventTime;
 bool QWindowSystemInterfacePrivate::synchronousWindowSystemEvents = false;
 QWaitCondition QWindowSystemInterfacePrivate::eventsFlushed;
 QMutex QWindowSystemInterfacePrivate::flushEventMutex;
+bool QWindowSystemInterfacePrivate::eventAccepted;
 QWindowSystemEventHandler *QWindowSystemInterfacePrivate::eventHandler;
 
 //------------------------------------------------------------
@@ -576,17 +577,17 @@ void QWindowSystemInterface::deferredFlushWindowSystemEvents(QEventLoop::Process
     QWindowSystemInterfacePrivate::eventsFlushed.wakeOne();
 }
 
-void QWindowSystemInterface::flushWindowSystemEvents(QEventLoop::ProcessEventsFlags flags)
+bool QWindowSystemInterface::flushWindowSystemEvents(QEventLoop::ProcessEventsFlags flags)
 {
     const int count = QWindowSystemInterfacePrivate::windowSystemEventQueue.count();
     if (!count)
-        return;
+        return true;
     if (!QGuiApplication::instance()) {
         qWarning().nospace()
             << "QWindowSystemInterface::flushWindowSystemEvents() invoked after "
                "QGuiApplication destruction, discarding " << count << " events.";
         QWindowSystemInterfacePrivate::windowSystemEventQueue.clear();
-        return;
+        return true;
     }
     if (QThread::currentThread() != QGuiApplication::instance()->thread()) {
         QMutexLocker locker(&QWindowSystemInterfacePrivate::flushEventMutex);
@@ -596,6 +597,7 @@ void QWindowSystemInterface::flushWindowSystemEvents(QEventLoop::ProcessEventsFl
     } else {
         sendWindowSystemEvents(flags);
     }
+    return QWindowSystemInterfacePrivate::eventAccepted;
 }
 
 bool QWindowSystemInterface::sendWindowSystemEvents(QEventLoop::ProcessEventsFlags flags)
@@ -616,6 +618,12 @@ bool QWindowSystemInterface::sendWindowSystemEvents(QEventLoop::ProcessEventsFla
         } else {
             nevents++;
             QGuiApplicationPrivate::processWindowSystemEvent(event);
+            // Record the accepted status for the last event processed
+            // that is not flush event. This status may later be returned
+            // by flushWindowSystemEvents(), if we are here as a result of
+            // a call to that function.
+            if (event->type != QWindowSystemInterfacePrivate::FlushEvents)
+                QWindowSystemInterfacePrivate::eventAccepted = event->eventAccepted;
         }
         delete event;
     }
