@@ -22,6 +22,12 @@
 <Message type="qdebug" file="" line="0">
     <Description><![CDATA[Debug]]></Description>
 </Message>
+<Message type="qinfo" file="" line="0">
+    <Description><![CDATA[Info]]></Description>
+</Message>
+<Message type="qinfo" file="" line="0">
+    <Description><![CDATA[Info]]></Description>
+</Message>
 <Message type="qdebug" file="" line="0">
     <Description><![CDATA[Baba]]></Description>
 </Message>

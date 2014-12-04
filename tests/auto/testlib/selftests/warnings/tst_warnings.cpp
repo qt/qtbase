@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2015 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -62,6 +62,13 @@ void tst_Warnings::testWarnings()
     qDebug("Debug");
 
     qDebug("Debug");
+
+    qInfo("Info");
+
+    QTest::ignoreMessage(QtInfoMsg, "Info");
+    qInfo("Info");
+
+    qInfo("Info");
 
     QTest::ignoreMessage(QtDebugMsg, "Bubu");
     qDebug("Baba");

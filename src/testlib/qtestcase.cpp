@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2015 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtTest module of the Qt Toolkit.
@@ -2597,7 +2597,7 @@ void QTest::qWarn(const char *message, const char *file, int line)
 }
 
 /*!
-    Ignores messages created by qDebug() or qWarning(). If the \a message
+    Ignores messages created by qDebug(), qInfo() or qWarning(). If the \a message
     with the corresponding \a type is outputted, it will be removed from the
     test log. If the test finished and the \a message was not outputted,
     a test failure is appended to the test log.
@@ -2621,7 +2621,7 @@ void QTest::ignoreMessage(QtMsgType type, const char *message)
 /*!
     \overload
 
-    Ignores messages created by qDebug() or qWarning(). If the message
+    Ignores messages created by qDebug(), qInfo() or qWarning(). If the message
     matching \a messagePattern
     with the corresponding \a type is outputted, it will be removed from the
     test log. If the test finished and the message was not outputted,

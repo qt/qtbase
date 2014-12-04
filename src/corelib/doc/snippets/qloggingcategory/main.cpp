@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2015 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the examples of the Qt Toolkit.
@@ -117,6 +117,11 @@ oldCategoryFilter = QLoggingCategory::installFilter(myCategoryFilter);
 //![10]
     }
 
+//![qcinfo_stream]
+    QLoggingCategory category("driver.usb");
+    qCInfo(category) << "an informational message";
+//![qcinfo_stream]
+
     {
 //![11]
     QLoggingCategory category("driver.usb");
@@ -136,6 +141,13 @@ oldCategoryFilter = QLoggingCategory::installFilter(myCategoryFilter);
     QLoggingCategory category("driver.usb");
     qCDebug(category, "a debug message logged into category %s", category.categoryName());
 //![13]
+    }
+
+    {
+//![qcinfo_printf]
+    QLoggingCategory category("driver.usb");
+    qCInfo(category, "an informational message logged into category %s", category.categoryName());
+//![qcinfo_printf]
     }
 
     {

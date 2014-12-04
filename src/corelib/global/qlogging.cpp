@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2015 Digia Plc and/or its subsidiary(-ies).
 ** Copyright (C) 2014 Olivier Goffart <ogoffart@woboq.com>
 ** Copyright (C) 2014 Intel Corporation.
 ** Contact: http://www.qt-project.org/legal
@@ -201,7 +201,7 @@ Q_CORE_EXPORT bool qt_logging_to_console()
     \brief The QMessageLogContext class provides additional information about a log message.
     \since 5.0
 
-    The class provides information about the source code location a qDebug(), qWarning(),
+    The class provides information about the source code location a qDebug(), qInfo(), qWarning(),
     qCritical() or qFatal() message was generated.
 
     \note By default, this information is recorded only in debug builds. You can overwrite
@@ -217,7 +217,7 @@ Q_CORE_EXPORT bool qt_logging_to_console()
     \since 5.0
 
     QMessageLogger is used to generate messages for the Qt logging framework. Usually one uses
-    it through qDebug(), qWarning(), qCritical, or qFatal() functions,
+    it through qDebug(), qInfo(), qWarning(), qCritical, or qFatal() functions,
     which are actually macros: For example qDebug() expands to
     QMessageLogger(__FILE__, __LINE__, Q_FUNC_INFO).debug()
     for debug builds, and QMessageLogger(0, 0, 0).debug() for release builds.
@@ -226,7 +226,7 @@ Q_CORE_EXPORT bool qt_logging_to_console()
 
     \snippet code/qlogging/qlogging.cpp 1
 
-    \sa QMessageLogContext, qDebug(), qWarning(), qCritical(), qFatal()
+    \sa QMessageLogContext, qDebug(), qInfo(), qWarning(), qCritical(), qFatal()
 */
 
 #ifdef Q_OS_WIN
@@ -275,6 +275,28 @@ void QMessageLogger::debug(const char *msg, ...) const
 
     if (isFatal(QtDebugMsg))
         qt_message_fatal(QtDebugMsg, context, message);
+}
+
+
+#undef qInfo
+/*!
+    Logs an informational message specified with format \a msg. Additional
+    parameters, specified by \a msg, may be used.
+
+    \sa qInfo()
+    \since 5.5
+*/
+void QMessageLogger::info(const char *msg, ...) const
+{
+    QString message;
+
+    va_list ap;
+    va_start(ap, msg); // use variable arg list
+    qt_message(QtInfoMsg, context, msg, ap, message);
+    va_end(ap);
+
+    if (isFatal(QtInfoMsg))
+        qt_message_fatal(QtInfoMsg, context, message);
 }
 
 /*!
@@ -402,6 +424,110 @@ QDebug QMessageLogger::debug(QMessageLogger::CategoryFunction catFunc) const
 QNoDebug QMessageLogger::noDebug() const Q_DECL_NOTHROW
 {
     return QNoDebug();
+}
+
+#endif
+
+/*!
+    Logs an informational message specified with format \a msg for the context \a cat.
+    Additional parameters, specified by \a msg, may be used.
+
+    \since 5.5
+    \sa qCInfo()
+*/
+void QMessageLogger::info(const QLoggingCategory &cat, const char *msg, ...) const
+{
+    if (!cat.isInfoEnabled())
+        return;
+
+    QMessageLogContext ctxt;
+    ctxt.copy(context);
+    ctxt.category = cat.categoryName();
+
+    QString message;
+
+    va_list ap;
+    va_start(ap, msg); // use variable arg list
+    qt_message(QtInfoMsg, ctxt, msg, ap, message);
+    va_end(ap);
+
+    if (isFatal(QtInfoMsg))
+        qt_message_fatal(QtInfoMsg, ctxt, message);
+}
+
+/*!
+    Logs an informational message specified with format \a msg for the context returned
+    by \a catFunc. Additional parameters, specified by \a msg, may be used.
+
+    \since 5.5
+    \sa qCInfo()
+*/
+void QMessageLogger::info(QMessageLogger::CategoryFunction catFunc,
+                           const char *msg, ...) const
+{
+    const QLoggingCategory &cat = (*catFunc)();
+    if (!cat.isInfoEnabled())
+        return;
+
+    QMessageLogContext ctxt;
+    ctxt.copy(context);
+    ctxt.category = cat.categoryName();
+
+    QString message;
+
+    va_list ap;
+    va_start(ap, msg); // use variable arg list
+    qt_message(QtInfoMsg, ctxt, msg, ap, message);
+    va_end(ap);
+
+    if (isFatal(QtInfoMsg))
+        qt_message_fatal(QtInfoMsg, ctxt, message);
+}
+
+#ifndef QT_NO_DEBUG_STREAM
+
+/*!
+    Logs an informational message using a QDebug stream.
+
+    \since 5.5
+    \sa qInfo(), QDebug
+*/
+QDebug QMessageLogger::info() const
+{
+    QDebug dbg = QDebug(QtInfoMsg);
+    QMessageLogContext &ctxt = dbg.stream->context;
+    ctxt.copy(context);
+    return dbg;
+}
+
+/*!
+    Logs an informational message into the category \a cat using a QDebug stream.
+
+    \since 5.5
+    \sa qCInfo(), QDebug
+*/
+QDebug QMessageLogger::info(const QLoggingCategory &cat) const
+{
+    QDebug dbg = QDebug(QtInfoMsg);
+    if (!cat.isInfoEnabled())
+        dbg.stream->message_output = false;
+
+    QMessageLogContext &ctxt = dbg.stream->context;
+    ctxt.copy(context);
+    ctxt.category = cat.categoryName();
+
+    return dbg;
+}
+
+/*!
+    Logs an informational message into category returned by \a catFunc using a QDebug stream.
+
+    \since 5.5
+    \sa qCInfo(), QDebug
+*/
+QDebug QMessageLogger::info(QMessageLogger::CategoryFunction catFunc) const
+{
+    return info((*catFunc)());
 }
 
 #endif
@@ -840,6 +966,7 @@ static const char timeTokenC[] = "%{time"; //not a typo: this command has argume
 static const char backtraceTokenC[] = "%{backtrace"; //ditto
 static const char ifCategoryTokenC[] = "%{if-category}";
 static const char ifDebugTokenC[] = "%{if-debug}";
+static const char ifInfoTokenC[] = "%{if-info}";
 static const char ifWarningTokenC[] = "%{if-warning}";
 static const char ifCriticalTokenC[] = "%{if-critical}";
 static const char ifFatalTokenC[] = "%{if-fatal}";
@@ -1009,6 +1136,7 @@ void QMessagePattern::setPattern(const QString &pattern)
             }
             IF_TOKEN(ifCategoryTokenC)
             IF_TOKEN(ifDebugTokenC)
+            IF_TOKEN(ifInfoTokenC)
             IF_TOKEN(ifWarningTokenC)
             IF_TOKEN(ifCriticalTokenC)
             IF_TOKEN(ifFatalTokenC)
@@ -1087,6 +1215,9 @@ static void slog2_default_handler(QtMsgType msgType, const char *message)
     //Determines the severity level
     switch (msgType) {
     case QtDebugMsg:
+        severity = SLOG2_DEBUG1;
+        break;
+    case QtInfoMsg:
         severity = SLOG2_INFO;
         break;
     case QtWarningMsg:
@@ -1149,6 +1280,7 @@ QString qFormatLogMessage(QtMsgType type, const QMessageLogContext &context, con
         } else if (token == typeTokenC) {
             switch (type) {
             case QtDebugMsg:   message.append(QLatin1String("debug")); break;
+            case QtInfoMsg:    message.append(QLatin1String("info")); break;
             case QtWarningMsg: message.append(QLatin1String("warning")); break;
             case QtCriticalMsg:message.append(QLatin1String("critical")); break;
             case QtFatalMsg:   message.append(QLatin1String("fatal")); break;
@@ -1255,6 +1387,7 @@ QString qFormatLogMessage(QtMsgType type, const QMessageLogContext &context, con
         } else if (token == if##LEVEL##TokenC) { \
             skip = type != Qt##LEVEL##Msg;
         HANDLE_IF_TOKEN(Debug)
+        HANDLE_IF_TOKEN(Info)
         HANDLE_IF_TOKEN(Warning)
         HANDLE_IF_TOKEN(Critical)
         HANDLE_IF_TOKEN(Fatal)
@@ -1290,6 +1423,9 @@ static void systemd_default_message_handler(QtMsgType type,
     case QtDebugMsg:
         priority = LOG_DEBUG; // Debug-level messages
         break;
+    case QtInfoMsg:
+        priority = LOG_INFO; // Informational conditions
+        break;
     case QtWarningMsg:
         priority = LOG_WARNING; // Warning conditions
         break;
@@ -1319,6 +1455,7 @@ static void android_default_message_handler(QtMsgType type,
     android_LogPriority priority = ANDROID_LOG_DEBUG;
     switch (type) {
     case QtDebugMsg: priority = ANDROID_LOG_DEBUG; break;
+    case QtInfoMsg: priority = ANDROID_LOG_INFO; break;
     case QtWarningMsg: priority = ANDROID_LOG_WARN; break;
     case QtCriticalMsg: priority = ANDROID_LOG_ERROR; break;
     case QtFatalMsg: priority = ANDROID_LOG_FATAL; break;
@@ -1609,7 +1746,7 @@ void qErrnoWarning(int code, const char *msg, ...)
         tail call optimization.
     \endtable
 
-    You can also use conditionals on the type of the message using \c %{if-debug},
+    You can also use conditionals on the type of the message using \c %{if-debug}, \c %{if-info}
     \c %{if-warning}, \c %{if-critical} or \c %{if-fatal} followed by an \c %{endif}.
     What is inside the \c %{if-*} and \c %{endif} will only be printed if the type matches.
 
@@ -1618,7 +1755,7 @@ void qErrnoWarning(int code, const char *msg, ...)
 
     Example:
     \code
-    QT_MESSAGE_PATTERN="[%{time yyyyMMdd h:mm:ss.zzz t} %{if-debug}D%{endif}%{if-warning}W%{endif}%{if-critical}C%{endif}%{if-fatal}F%{endif}] %{file}:%{line} - %{message}"
+    QT_MESSAGE_PATTERN="[%{time yyyyMMdd h:mm:ss.zzz t} %{if-debug}D{%endif}%{if-info}I%{endif}%{if-warning}W%{endif}%{if-critical}C%{endif}%{if-fatal}F%{endif}] %{file}:%{line} - %{message}"
     \endcode
 
     The default \a pattern is "%{if-category}%{category}: %{endif}%{message}".

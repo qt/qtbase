@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2015 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -51,7 +51,7 @@ QT_BEGIN_NAMESPACE
 class QDebug;
 class QNoDebug;
 
-enum QtMsgType { QtDebugMsg, QtWarningMsg, QtCriticalMsg, QtFatalMsg, QtSystemMsg = QtCriticalMsg };
+enum QtMsgType { QtDebugMsg, QtWarningMsg, QtCriticalMsg, QtFatalMsg, QtInfoMsg, QtSystemMsg = QtCriticalMsg };
 
 class QMessageLogContext
 {
@@ -89,6 +89,7 @@ public:
     void debug(const char *msg, ...) const Q_ATTRIBUTE_FORMAT_PRINTF(2, 3);
     void noDebug(const char *, ...) const Q_ATTRIBUTE_FORMAT_PRINTF(2, 3)
     {}
+    void info(const char *msg, ...) const Q_ATTRIBUTE_FORMAT_PRINTF(2, 3);
     void warning(const char *msg, ...) const Q_ATTRIBUTE_FORMAT_PRINTF(2, 3);
     void critical(const char *msg, ...) const Q_ATTRIBUTE_FORMAT_PRINTF(2, 3);
 
@@ -96,6 +97,8 @@ public:
 
     void debug(const QLoggingCategory &cat, const char *msg, ...) const Q_ATTRIBUTE_FORMAT_PRINTF(3, 4);
     void debug(CategoryFunction catFunc, const char *msg, ...) const Q_ATTRIBUTE_FORMAT_PRINTF(3, 4);
+    void info(const QLoggingCategory &cat, const char *msg, ...) const Q_ATTRIBUTE_FORMAT_PRINTF(3, 4);
+    void info(CategoryFunction catFunc, const char *msg, ...) const Q_ATTRIBUTE_FORMAT_PRINTF(3, 4);
     void warning(const QLoggingCategory &cat, const char *msg, ...) const Q_ATTRIBUTE_FORMAT_PRINTF(3, 4);
     void warning(CategoryFunction catFunc, const char *msg, ...) const Q_ATTRIBUTE_FORMAT_PRINTF(3, 4);
     void critical(const QLoggingCategory &cat, const char *msg, ...) const Q_ATTRIBUTE_FORMAT_PRINTF(3, 4);
@@ -110,6 +113,9 @@ public:
     QDebug debug() const;
     QDebug debug(const QLoggingCategory &cat) const;
     QDebug debug(CategoryFunction catFunc) const;
+    QDebug info() const;
+    QDebug info(const QLoggingCategory &cat) const;
+    QDebug info(CategoryFunction catFunc) const;
     QDebug warning() const;
     QDebug warning(const QLoggingCategory &cat) const;
     QDebug warning(CategoryFunction catFunc) const;
@@ -143,6 +149,7 @@ private:
 #endif
 
 #define qDebug QMessageLogger(QT_MESSAGELOG_FILE, QT_MESSAGELOG_LINE, QT_MESSAGELOG_FUNC).debug
+#define qInfo QMessageLogger(QT_MESSAGELOG_FILE, QT_MESSAGELOG_LINE, QT_MESSAGELOG_FUNC).info
 #define qWarning QMessageLogger(QT_MESSAGELOG_FILE, QT_MESSAGELOG_LINE, QT_MESSAGELOG_FUNC).warning
 #define qCritical QMessageLogger(QT_MESSAGELOG_FILE, QT_MESSAGELOG_LINE, QT_MESSAGELOG_FUNC).critical
 #define qFatal QMessageLogger(QT_MESSAGELOG_FILE, QT_MESSAGELOG_LINE, QT_MESSAGELOG_FUNC).fatal
@@ -153,6 +160,10 @@ private:
 #if defined(QT_NO_DEBUG_OUTPUT)
 #  undef qDebug
 #  define qDebug QT_NO_QDEBUG_MACRO
+#endif
+#if defined(QT_NO_INFO_OUTPUT)
+#  undef qInfo
+#  define qInfo QT_NO_QDEBUG_MACRO
 #endif
 #if defined(QT_NO_WARNING_OUTPUT)
 #  undef qWarning

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2015 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -124,6 +124,10 @@ void QLoggingRule::parse(const QStringRef &pattern)
         p = QStringRef(pattern.string(), pattern.position(),
                        pattern.length() - 6); // strlen(".debug")
         messageType = QtDebugMsg;
+    } else if (pattern.endsWith(QLatin1String(".info"))) {
+        p = QStringRef(pattern.string(), pattern.position(),
+                       pattern.length() - 5); // strlen(".info")
+        messageType = QtInfoMsg;
     } else if (pattern.endsWith(QLatin1String(".warning"))) {
         p = QStringRef(pattern.string(), pattern.position(),
                        pattern.length() - 8); // strlen(".warning")
@@ -392,6 +396,7 @@ void QLoggingRegistry::defaultCategoryFilter(QLoggingCategory *cat)
     QtMsgType enableForLevel = reg->categories.value(cat);
 
     bool debug = (enableForLevel == QtDebugMsg);
+    bool info = (enableForLevel <= QtInfoMsg);
     bool warning = (enableForLevel <= QtWarningMsg);
     bool critical = (enableForLevel <= QtCriticalMsg);
 
@@ -409,6 +414,9 @@ void QLoggingRegistry::defaultCategoryFilter(QLoggingCategory *cat)
         int filterpass = item.pass(categoryName, QtDebugMsg);
         if (filterpass != 0)
             debug = (filterpass > 0);
+        filterpass = item.pass(categoryName, QtInfoMsg);
+        if (filterpass != 0)
+            info = (filterpass > 0);
         filterpass = item.pass(categoryName, QtWarningMsg);
         if (filterpass != 0)
             warning = (filterpass > 0);
@@ -418,6 +426,7 @@ void QLoggingRegistry::defaultCategoryFilter(QLoggingCategory *cat)
     }
 
     cat->setEnabled(QtDebugMsg, debug);
+    cat->setEnabled(QtInfoMsg, info);
     cat->setEnabled(QtWarningMsg, warning);
     cat->setEnabled(QtCriticalMsg, critical);
 }

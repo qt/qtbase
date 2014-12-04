@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2015 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -83,6 +83,7 @@ void tst_Silent::messages()
     QWARN("This is an internal testlib warning that should not appear in silent test output");
     qDebug("This is a debug message that should not appear in silent test output");
     qCritical("This is a critical message that should not appear in silent test output");
+    qInfo("This is an info message that should not appear in silent test output");
     QTestLog::info("This is an internal testlib info message that should not appear in silent test output", __FILE__, __LINE__);
     qFatal("This is a fatal error message that should still appear in silent test output");
 }

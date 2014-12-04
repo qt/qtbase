@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2015 Digia Plc and/or its subsidiary(-ies).
 ** Copyright (C) 2014 Olivier Goffart <ogoffart@woboq.com>
 ** Contact: http://www.qt-project.org/legal
 **
@@ -730,10 +730,11 @@ void tst_qmessagehandler::qMessagePattern_data()
             << "static destructor"
             << "debug tst_qlogging 65 MyClass::myFunction from_a_function 34"
             << "debug tst_qlogging 75 main qDebug"
-            << "warning tst_qlogging 76 main qWarning"
-            << "critical tst_qlogging 77 main qCritical"
-            << "warning tst_qlogging 80 main qDebug with category"
-            << "debug tst_qlogging 84 main qDebug2");
+            << "info tst_qlogging 76 main qInfo"
+            << "warning tst_qlogging 77 main qWarning"
+            << "critical tst_qlogging 78 main qCritical"
+            << "warning tst_qlogging 81 main qDebug with category"
+            << "debug tst_qlogging 85 main qDebug2");
 
 
     QTest::newRow("invalid") << "PREFIX: %{unknown} %{message}" << false << (QList<QByteArray>()
@@ -877,6 +878,7 @@ void tst_qmessagehandler::setMessagePattern()
     //qDebug() << output;
     QByteArray expected = "static constructor\n"
             "[debug] qDebug\n"
+            "[info] qInfo\n"
             "[warning] qWarning\n"
             "[critical] qCritical\n"
             "[warning] qDebug with category\n";
@@ -908,10 +910,13 @@ void tst_qmessagehandler::formatLogMessage_data()
                            << QtDebugMsg << BA("main.cpp") << 1 << BA("func") << BA("") << "msg";
 
     // test the if conditions
-    QString format = "[%{if-debug}D%{endif}%{if-warning}W%{endif}%{if-critical}C%{endif}%{if-fatal}F%{endif}] %{if-category}%{category}: %{endif}%{message}";
+    QString format = "[%{if-debug}D%{endif}%{if-info}I%{endif}%{if-warning}W%{endif}%{if-critical}C%{endif}%{if-fatal}F%{endif}] %{if-category}%{category}: %{endif}%{message}";
     QTest::newRow("if-debug")
             << format << "[D] msg"
             << QtDebugMsg << BA("") << 0 << BA("func") << QByteArray() << "msg";
+    QTest::newRow("if_info")
+            << format << "[I] msg"
+            << QtInfoMsg << BA("") << 0 << BA("func") << QByteArray() << "msg";
     QTest::newRow("if_warning")
             << format << "[W] msg"
             << QtWarningMsg << BA("") << 0 << BA("func") << QByteArray() << "msg";

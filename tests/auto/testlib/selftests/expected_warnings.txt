@@ -5,6 +5,8 @@ QWARN  : tst_Warnings::testWarnings() Warning
 QWARN  : tst_Warnings::testWarnings() Warning
 QDEBUG : tst_Warnings::testWarnings() Debug
 QDEBUG : tst_Warnings::testWarnings() Debug
+QINFO  : tst_Warnings::testWarnings() Info
+QINFO  : tst_Warnings::testWarnings() Info
 QDEBUG : tst_Warnings::testWarnings() Baba
 QDEBUG : tst_Warnings::testWarnings() Baba
 QDEBUG : tst_Warnings::testWarnings() Bubublabla

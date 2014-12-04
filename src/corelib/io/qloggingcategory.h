@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2015 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -53,10 +53,12 @@ public:
 
 #ifdef Q_ATOMIC_INT8_IS_SUPPORTED
     bool isDebugEnabled() const { return bools.enabledDebug.load(); }
+    bool isInfoEnabled() const { return bools.enabledInfo.load(); }
     bool isWarningEnabled() const { return bools.enabledWarning.load(); }
     bool isCriticalEnabled() const { return bools.enabledCritical.load(); }
 #else
     bool isDebugEnabled() const { return enabled.load() >> DebugShift & 1; }
+    bool isInfoEnabled() const { return enabled.load() >> InfoShift & 1; }
     bool isWarningEnabled() const { return enabled.load() >> WarningShift & 1; }
     bool isCriticalEnabled() const { return enabled.load() >> CriticalShift & 1; }
 #endif
@@ -80,9 +82,9 @@ private:
     const char *name;
 
 #ifdef Q_BIG_ENDIAN
-    enum { DebugShift = 0, WarningShift = 8, CriticalShift = 16 };
+    enum { DebugShift = 0, WarningShift = 8, CriticalShift = 16, InfoShift = 24 };
 #else
-    enum { DebugShift = 24, WarningShift = 16, CriticalShift = 8 };
+    enum { DebugShift = 24, WarningShift = 16, CriticalShift = 8, InfoShift = 0};
 #endif
 
     struct AtomicBools {
@@ -90,6 +92,7 @@ private:
         QBasicAtomicInteger<bool> enabledDebug;
         QBasicAtomicInteger<bool> enabledWarning;
         QBasicAtomicInteger<bool> enabledCritical;
+        QBasicAtomicInteger<bool> enabledInfo;
 #endif
     };
     union {
@@ -114,6 +117,9 @@ private:
 #define qCDebug(category, ...) \
     for (bool qt_category_enabled = category().isDebugEnabled(); qt_category_enabled; qt_category_enabled = false) \
         QMessageLogger(QT_MESSAGELOG_FILE, QT_MESSAGELOG_LINE, QT_MESSAGELOG_FUNC, category().categoryName()).debug(__VA_ARGS__)
+#define qCInfo(category, ...) \
+    for (bool qt_category_enabled = category().isInfoEnabled(); qt_category_enabled; qt_category_enabled = false) \
+        QMessageLogger(QT_MESSAGELOG_FILE, QT_MESSAGELOG_LINE, QT_MESSAGELOG_FUNC, category().categoryName()).info(__VA_ARGS__)
 #define qCWarning(category, ...) \
     for (bool qt_category_enabled = category().isWarningEnabled(); qt_category_enabled; qt_category_enabled = false) \
         QMessageLogger(QT_MESSAGELOG_FILE, QT_MESSAGELOG_LINE, QT_MESSAGELOG_FUNC, category().categoryName()).warning(__VA_ARGS__)
@@ -133,6 +139,7 @@ private:
 
 // check for enabled category inside QMessageLogger.
 #define qCDebug qDebug
+#define qCInfo qInfo
 #define qCWarning qWarning
 #define qCCritical qCritical
 
@@ -141,6 +148,10 @@ private:
 #if defined(QT_NO_DEBUG_OUTPUT)
 #  undef qCDebug
 #  define qCDebug(category) QT_NO_QDEBUG_MACRO()
+#endif
+#if defined(QT_NO_INFO_OUTPUT)
+#  undef qCInfo
+#  define qCInfo(category) QT_NO_QDEBUG_MACRO()
 #endif
 #if defined(QT_NO_WARNING_OUTPUT)
 #  undef qCWarning

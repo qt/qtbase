@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2015 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtTest module of the Qt Toolkit.
@@ -55,6 +55,8 @@ namespace QTest {
             return "system";
         case QAbstractTestLogger::QDebug:
             return "qdebug";
+        case QAbstractTestLogger::QInfo:
+            return "qinfo";
         case QAbstractTestLogger::QWarning:
             return "qwarn";
         case QAbstractTestLogger::QFatal:

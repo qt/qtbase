@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2015 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtTest module of the Qt Toolkit.
@@ -297,6 +297,9 @@ void QXunitTestLogger::addMessage(MessageTypes type, const QString &message, con
         break;
     case QAbstractTestLogger::QDebug:
         typeBuf = "qdebug";
+        break;
+    case QAbstractTestLogger::QInfo:
+        typeBuf = "qinfo";
         break;
     case QAbstractTestLogger::QWarning:
         typeBuf = "qwarn";

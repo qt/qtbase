@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2015 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -253,6 +253,9 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QS
     case QtDebugMsg:
         fprintf(stderr, "Debug: %s (%s:%u, %s)\n", localMsg.constData(), context.file, context.line, context.function);
         break;
+    case QtInfoMsg:
+        fprintf(stderr, "Info: %s (%s:%u, %s)\n", localMsg.constData(), context.file, context.line, context.function);
+        break;
     case QtWarningMsg:
         fprintf(stderr, "Warning: %s (%s:%u, %s)\n", localMsg.constData(), context.file, context.line, context.function);
         break;
@@ -284,6 +287,14 @@ qDebug("Items in list: %d", myList.size());
 qDebug() << "Brush:" << myQBrush << "Other value:" << i;
 //! [25]
 
+
+//! [qInfo_printf]
+qInfo("Items in list: %d", myList.size());
+//! [qInfo_printf]
+
+//! [qInfo_stream]
+qInfo() << "Brush:" << myQBrush << "Other value:" << i;
+//! [qInfo_stream]
 
 //! [26]
 void f(int c)

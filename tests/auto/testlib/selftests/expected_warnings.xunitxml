@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite errors="15" failures="4" tests="6" name="tst_Warnings">
+<testsuite errors="17" failures="4" tests="6" name="tst_Warnings">
   <properties>
     <property value="@INSERT_QT_VERSION_HERE@" name="QTestVersion"/>
     <property value="@INSERT_QT_VERSION_HERE@" name="QtVersion"/>
@@ -11,6 +11,8 @@
     <!-- message="Warning" type="qwarn" -->
     <!-- message="Debug" type="qdebug" -->
     <!-- message="Debug" type="qdebug" -->
+    <!-- message="Info" type="qinfo" -->
+    <!-- message="Info" type="qinfo" -->
     <!-- message="Baba" type="qdebug" -->
     <!-- message="Baba" type="qdebug" -->
     <!-- message="Bubublabla" type="qdebug" -->
@@ -39,6 +41,8 @@
 <![CDATA[Warning]]>
 <![CDATA[Debug]]>
 <![CDATA[Debug]]>
+<![CDATA[Info]]>
+<![CDATA[Info]]>
 <![CDATA[Baba]]>
 <![CDATA[Baba]]>
 <![CDATA[Bubublabla]]>
