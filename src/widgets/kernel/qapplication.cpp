@@ -53,7 +53,6 @@
 #include "qtranslator.h"
 #include "qvariant.h"
 #include "qwidget.h"
-#include "qgraphicssceneevent.h"
 #include "private/qdnd_p.h"
 #include "private/qguiapplication_p.h"
 #include "qcolormap.h"
@@ -2285,31 +2284,6 @@ QWidget *QApplicationPrivate::focusNextPrevChild_helper(QWidget *toplevel, bool 
         return 0;
     }
     return w;
-}
-
-Qt::MouseEventSource QApplicationPrivate::mouseEventSource(const QEvent *e)
-{
-    switch (e->type()) {
-    case QEvent::NonClientAreaMouseButtonDblClick:
-    case QEvent::NonClientAreaMouseButtonPress:
-    case QEvent::NonClientAreaMouseButtonRelease:
-    case QEvent::NonClientAreaMouseMove:
-    case QEvent::MouseButtonDblClick:
-    case QEvent::MouseButtonPress:
-    case QEvent::MouseButtonRelease:
-    case QEvent::MouseMove:
-        return static_cast<const QMouseEvent *>(e)->source();
-#ifndef QT_NO_GRAPHICSVIEW
-    case QEvent::GraphicsSceneMouseDoubleClick:
-    case QEvent::GraphicsSceneMousePress:
-    case QEvent::GraphicsSceneMouseRelease:
-    case QEvent::GraphicsSceneMouseMove:
-        return static_cast<const QGraphicsSceneMouseEvent *>(e)->source();
-#endif // !QT_NO_GRAPHICSVIEW
-    default:
-        break;
-    }
-    return Qt::MouseEventNotSynthesized;
 }
 
 /*!
