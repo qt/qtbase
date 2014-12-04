@@ -514,7 +514,8 @@ void QIOSInputContext::setFocusObject(QObject *focusObject)
 
     qImDebug() << "new focus object =" << focusObject;
 
-    if (m_keyboardHideGesture.state == UIGestureRecognizerStateChanged) {
+    if (QPlatformInputContext::inputMethodAccepted()
+            && m_keyboardHideGesture.state == UIGestureRecognizerStateChanged) {
         // A new focus object may be set as part of delivering touch events to
         // application during the hide-keyboard gesture, but we don't want that
         // to result in a new object getting focus and bringing the keyboard up
