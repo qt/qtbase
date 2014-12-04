@@ -436,16 +436,6 @@ filterLibraryOptions()
     filterPathOptions -L "$DEFAULT_LIBDIRS"
 }
 
-substPrefix()
-{
-    base=${1#$QT_SYSROOT_PREFIX}
-    if [ x"$base" != x"$1" ]; then
-        echo "$QT_EXT_PREFIX$base"
-    else
-        echo "$1"
-    fi
-}
-
 #-------------------------------------------------------------------------------
 # device options
 #-------------------------------------------------------------------------------
@@ -2284,7 +2274,8 @@ Installation options:
                          host machine. If [dir] is not given, the current build
                          directory will be used. (default EXTPREFIX)
 
- You may use these to separate different parts of the install:
+ You may use these to change the layout of the install. Note that all directories
+ except -sysconfdir should be located under -prefix/-hostprefix:
 
     -bindir <dir> ......... User executables will be installed to <dir>
                             (default PREFIX/bin)
@@ -3507,7 +3498,7 @@ if echo $CFG_BUILD_PARTS | grep -v libs >/dev/null 2>&1; then
 fi
 
 #-------------------------------------------------------------------------------
-# post process QT_INSTALL_* variables
+# postprocess installation and deployment paths
 #-------------------------------------------------------------------------------
 
 if [ -z "$QT_INSTALL_PREFIX" ]; then
@@ -3516,179 +3507,225 @@ if [ -z "$QT_INSTALL_PREFIX" ]; then
     else
         QT_INSTALL_PREFIX="/usr/local/Qt-${QT_VERSION}" # the default install prefix is /usr/local/Qt-$QT_VERSION
     fi
+    HAVE_INSTALL_PATH=false
+else
+    HAVE_INSTALL_PATH=true
 fi
 QT_INSTALL_PREFIX=`makeabs "$QT_INSTALL_PREFIX"`
 
-if [ -z "$QT_INSTALL_HEADERS" ]; then #default
-    QT_INSTALL_HEADERS="$QT_INSTALL_PREFIX/include"
-fi
-QT_INSTALL_HEADERS=`makeabs "$QT_INSTALL_HEADERS"`
-
-if [ -z "$QT_INSTALL_LIBS" ]; then #default
-    QT_INSTALL_LIBS="$QT_INSTALL_PREFIX/lib" #fallback
-fi
-QT_INSTALL_LIBS=`makeabs "$QT_INSTALL_LIBS"`
-
-if [ -z "$QT_INSTALL_ARCHDATA" ]; then #default
-    QT_INSTALL_ARCHDATA="$QT_INSTALL_PREFIX" #fallback
-fi
-QT_INSTALL_ARCHDATA=`makeabs "$QT_INSTALL_ARCHDATA"`
-
-if [ -z "$QT_INSTALL_DATA" ]; then #default
-    QT_INSTALL_DATA="$QT_INSTALL_PREFIX" #fallback
-fi
-QT_INSTALL_DATA=`makeabs "$QT_INSTALL_DATA"`
-
-if [ -z "$QT_INSTALL_BINS" ]; then #default
-    QT_INSTALL_BINS="$QT_INSTALL_PREFIX/bin" #fallback
-fi
-QT_INSTALL_BINS=`makeabs "$QT_INSTALL_BINS"`
-
-if [ "$XPLATFORM_MINGW" = "yes" ]; then
-    QT_INSTALL_LIBEXECS_DIRNAME="bin"
-else
-    QT_INSTALL_LIBEXECS_DIRNAME="libexec"
-fi
-
-if [ -z "$QT_INSTALL_LIBEXECS" ]; then #default
-    QT_INSTALL_LIBEXECS="$QT_INSTALL_ARCHDATA/$QT_INSTALL_LIBEXECS_DIRNAME" #fallback
-fi
-QT_INSTALL_LIBEXECS=`makeabs "$QT_INSTALL_LIBEXECS"`
-
-if [ -z "$QT_INSTALL_DOCS" ]; then #default
-    QT_INSTALL_DOCS="$QT_INSTALL_DATA/doc" #fallback
-fi
-QT_INSTALL_DOCS=`makeabs "$QT_INSTALL_DOCS"`
-
-if [ -z "$QT_INSTALL_PLUGINS" ]; then #default
-    QT_INSTALL_PLUGINS="$QT_INSTALL_ARCHDATA/plugins" #fallback
-fi
-QT_INSTALL_PLUGINS=`makeabs "$QT_INSTALL_PLUGINS"`
-
-if [ -z "$QT_INSTALL_IMPORTS" ]; then #default
-    QT_INSTALL_IMPORTS="$QT_INSTALL_ARCHDATA/imports" #fallback
-fi
-QT_INSTALL_IMPORTS=`makeabs "$QT_INSTALL_IMPORTS"`
-
-#qml
-if [ -z "$QT_INSTALL_QML" ]; then #default
-    QT_INSTALL_QML="$QT_INSTALL_ARCHDATA/qml" #fallback
-fi
-QT_INSTALL_QML=`makeabs "$QT_INSTALL_QML"`
-
-if [ -z "$QT_INSTALL_TRANSLATIONS" ]; then #default
-    QT_INSTALL_TRANSLATIONS="$QT_INSTALL_DATA/translations" #fallback
-fi
-QT_INSTALL_TRANSLATIONS=`makeabs "$QT_INSTALL_TRANSLATIONS"`
-
-if [ -z "$QT_INSTALL_SETTINGS" ]; then #default
-    if [ "$XPLATFORM_MAC" = "yes" ]; then
-        QT_INSTALL_SETTINGS=/Library/Preferences/Qt
+if [ -z "$QT_EXT_PREFIX" ]; then
+    QT_EXT_PREFIX=$QT_INSTALL_PREFIX
+    if [ -n "$CFG_SYSROOT" ]; then
+        QMAKE_SYSROOTIFY=true
     else
-        QT_INSTALL_SETTINGS=$QT_INSTALL_PREFIX/etc/xdg
+        QMAKE_SYSROOTIFY=false
+    fi
+else
+    QT_EXT_PREFIX=`makeabs "$QT_EXT_PREFIX"`
+    QMAKE_SYSROOTIFY=false
+fi
+
+if [ -z "$QT_HOST_PREFIX" ]; then
+    if $QMAKE_SYSROOTIFY; then
+        QT_HOST_PREFIX=$CFG_SYSROOT$QT_EXT_PREFIX
+    else
+        QT_HOST_PREFIX=$QT_EXT_PREFIX
+    fi
+    HAVE_HOST_PATH=false
+else
+    QT_HOST_PREFIX=`makeabs "$QT_HOST_PREFIX"`
+    HAVE_HOST_PATH=true
+fi
+
+#------- make the paths relative to the prefixes --------
+
+PREFIX_COMPLAINTS=
+PREFIX_REMINDER=false
+while read basevar baseoption var option; do
+    eval path=\$QT_${basevar}_$var
+    [ -z "$path" ] && continue
+    path=`makeabs "$path"`
+    eval base=\$QT_${basevar}_PREFIX
+    rel=${path##$base}
+    if [ x"$rel" = x"$path" ]; then
+        if [ x"$option" != x"sysconf" ]; then
+            PREFIX_COMPLAINTS="$PREFIX_COMPLAINTS
+        NOTICE: -${option}dir is not a subdirectory of ${baseoption}prefix."
+            eval \$HAVE_${basevar}_PATH || PREFIX_REMINDER=true
+        fi
+        eval QT_REL_${basevar}_$var=\$rel
+    elif [ -z "$rel" ]; then
+        eval QT_REL_${basevar}_$var=.
+    else
+        eval QT_REL_${basevar}_$var=\${rel#/}
+    fi
+done <<EOF
+INSTALL - DOCS doc
+INSTALL - HEADERS header
+INSTALL - LIBS lib
+INSTALL - LIBEXECS libexec
+INSTALL - BINS bin
+INSTALL - PLUGINS plugin
+INSTALL - IMPORTS import
+INSTALL - QML qml
+INSTALL - ARCHDATA archdata
+INSTALL - DATA data
+INSTALL - TRANSLATIONS translation
+INSTALL - EXAMPLES examples
+INSTALL - TESTS tests
+INSTALL - SETTINGS sysconf
+HOST -host BINS hostbin
+HOST -host LIBS hostlib
+HOST -host DATA hostdata
+EOF
+$PREFIX_REMINDER && PREFIX_COMPLAINTS="$PREFIX_COMPLAINTS
+        Maybe you forgot to specify -prefix/-hostprefix?"
+
+if [ -z "$QT_REL_INSTALL_HEADERS" ]; then
+    QT_REL_INSTALL_HEADERS=include
+fi
+
+if [ -z "$QT_REL_INSTALL_LIBS" ]; then
+    QT_REL_INSTALL_LIBS=lib
+fi
+
+if [ -z "$QT_REL_INSTALL_BINS" ]; then
+    QT_REL_INSTALL_BINS=bin
+fi
+
+if [ -z "$QT_REL_INSTALL_ARCHDATA" ]; then
+    QT_REL_INSTALL_ARCHDATA=.
+fi
+if [ x"$QT_REL_INSTALL_ARCHDATA" != x. ]; then
+    QT_REL_INSTALL_ARCHDATA_PREFIX=$QT_REL_INSTALL_ARCHDATA/
+fi
+
+if [ -z "$QT_REL_INSTALL_LIBEXECS" ]; then
+    if [ "$XPLATFORM_MINGW" = "yes" ]; then
+        QT_REL_INSTALL_LIBEXECS=${QT_REL_INSTALL_ARCHDATA_PREFIX}bin
+    else
+        QT_REL_INSTALL_LIBEXECS=${QT_REL_INSTALL_ARCHDATA_PREFIX}libexec
     fi
 fi
-QT_INSTALL_SETTINGS=`makeabs "$QT_INSTALL_SETTINGS"`
 
-if [ -z "$QT_INSTALL_EXAMPLES" ]; then #default
-    QT_INSTALL_EXAMPLES="$QT_INSTALL_PREFIX/examples" #fallback
+if [ -z "$QT_REL_INSTALL_PLUGINS" ]; then
+    QT_REL_INSTALL_PLUGINS=${QT_REL_INSTALL_ARCHDATA_PREFIX}plugins
 fi
-QT_INSTALL_EXAMPLES=`makeabs "$QT_INSTALL_EXAMPLES"`
 
-#tests
-if [ -z "$QT_INSTALL_TESTS" ]; then #default
-    QT_INSTALL_TESTS="$QT_INSTALL_PREFIX/tests" #fallback
+if [ -z "$QT_REL_INSTALL_IMPORTS" ]; then
+    QT_REL_INSTALL_IMPORTS=${QT_REL_INSTALL_ARCHDATA_PREFIX}imports
 fi
-QT_INSTALL_TESTS=`makeabs "$QT_INSTALL_TESTS"`
 
-#------- sysroot-external install paths --------
+if [ -z "$QT_REL_INSTALL_QML" ]; then
+    QT_REL_INSTALL_QML=${QT_REL_INSTALL_ARCHDATA_PREFIX}qml
+fi
 
-QT_SYSROOT_PREFIX=$QT_INSTALL_PREFIX
-QT_SYSROOT_DOCS=$QT_INSTALL_DOCS
-QT_SYSROOT_HEADERS=$QT_INSTALL_HEADERS
-QT_SYSROOT_LIBS=$QT_INSTALL_LIBS
-QT_SYSROOT_LIBEXECS=$QT_INSTALL_LIBEXECS
-QT_SYSROOT_BINS=$QT_INSTALL_BINS
-QT_SYSROOT_PLUGINS=$QT_INSTALL_PLUGINS
-QT_SYSROOT_IMPORTS=$QT_INSTALL_IMPORTS
-QT_SYSROOT_QML=$QT_INSTALL_QML
-QT_SYSROOT_ARCHDATA=$QT_INSTALL_ARCHDATA
-QT_SYSROOT_DATA=$QT_INSTALL_DATA
-QT_SYSROOT_TRANSLATIONS=$QT_INSTALL_TRANSLATIONS
-QT_SYSROOT_EXAMPLES=$QT_INSTALL_EXAMPLES
-QT_SYSROOT_TESTS=$QT_INSTALL_TESTS
-if [ -n "$QT_EXT_PREFIX" ]; then
-    QT_INSTALL_PREFIX=$QT_EXT_PREFIX
-    QT_INSTALL_DOCS=`substPrefix "$QT_INSTALL_DOCS"`
-    QT_INSTALL_HEADERS=`substPrefix "$QT_INSTALL_HEADERS"`
-    QT_INSTALL_LIBS=`substPrefix "$QT_INSTALL_LIBS"`
-    QT_INSTALL_LIBEXECS=`substPrefix "$QT_INSTALL_LIBEXECS"`
-    QT_INSTALL_BINS=`substPrefix "$QT_INSTALL_BINS"`
-    QT_INSTALL_PLUGINS=`substPrefix "$QT_INSTALL_PLUGINS"`
-    QT_INSTALL_IMPORTS=`substPrefix "$QT_INSTALL_IMPORTS"`
-    QT_INSTALL_QML=`substPrefix "$QT_INSTALL_QML"`
-    QT_INSTALL_ARCHDATA=`substPrefix "$QT_INSTALL_ARCHDATA"`
-    QT_INSTALL_DATA=`substPrefix "$QT_INSTALL_DATA"`
-    QT_INSTALL_TRANSLATIONS=`substPrefix "$QT_INSTALL_TRANSLATIONS"`
-    QT_INSTALL_EXAMPLES=`substPrefix "$QT_INSTALL_EXAMPLES"`
-    QT_INSTALL_TESTS=`substPrefix "$QT_INSTALL_TESTS"`
+if [ -z "$QT_REL_INSTALL_DATA" ]; then
+    QT_REL_INSTALL_DATA=.
+fi
+if [ x"$QT_REL_INSTALL_DATA" != x. ]; then
+    QT_REL_INSTALL_DATA_PREFIX=$QT_REL_INSTALL_DATA/
+fi
+
+if [ -z "$QT_REL_INSTALL_DOCS" ]; then
+    QT_REL_INSTALL_DOCS=${QT_REL_INSTALL_DATA_PREFIX}doc
+fi
+
+if [ -z "$QT_REL_INSTALL_TRANSLATIONS" ]; then
+    QT_REL_INSTALL_TRANSLATIONS=${QT_REL_INSTALL_DATA_PREFIX}translations
+fi
+
+if [ -z "$QT_REL_INSTALL_EXAMPLES" ]; then
+    QT_REL_INSTALL_EXAMPLES=examples
+fi
+
+if [ -z "$QT_REL_INSTALL_TESTS" ]; then
+    QT_REL_INSTALL_TESTS=tests
+fi
+
+if [ -z "$QT_REL_INSTALL_SETTINGS" ]; then
+    if [ "$XPLATFORM_MAC" = "yes" ]; then
+        QT_REL_INSTALL_SETTINGS=/Library/Preferences/Qt
+    else
+        QT_REL_INSTALL_SETTINGS=etc/xdg
+    fi
 fi
 
 #------- host paths --------
 
-if [ -z "$QT_HOST_PREFIX" ]; then
-    QT_HOST_PREFIX=$QT_INSTALL_PREFIX
-    haveHpx=false
-else
-    QT_HOST_PREFIX=`makeabs "$QT_HOST_PREFIX"`
-    haveHpx=true
-fi
-
-if [ -z "$QT_HOST_BINS" ]; then #default
-    if $haveHpx; then
-        QT_HOST_BINS="$QT_HOST_PREFIX/bin" #fallback
+if [ -z "$QT_REL_HOST_BINS" ]; then
+    if $HAVE_HOST_PATH; then
+        QT_REL_HOST_BINS=bin
     else
-        QT_HOST_BINS="$QT_INSTALL_BINS"
+        QT_REL_HOST_BINS=$QT_REL_INSTALL_BINS
     fi
 fi
-QT_HOST_BINS=`makeabs "$QT_HOST_BINS"`
 
-if [ -z "$QT_HOST_LIBS" ]; then #default
-    if $haveHpx; then
-        QT_HOST_LIBS="$QT_HOST_PREFIX/lib" #fallback
+if [ -z "$QT_REL_HOST_LIBS" ]; then
+    if $HAVE_HOST_PATH; then
+        QT_REL_HOST_LIBS=lib
     else
-        QT_HOST_LIBS="$QT_INSTALL_LIBS"
+        QT_REL_HOST_LIBS=$QT_REL_INSTALL_LIBS
     fi
 fi
-QT_HOST_LIBS=`makeabs "$QT_HOST_LIBS"`
 
-if [ -z "$QT_HOST_DATA" ]; then #default
-    if $haveHpx; then
-        QT_HOST_DATA="$QT_HOST_PREFIX"
+if [ -z "$QT_REL_HOST_DATA" ]; then
+    if $HAVE_HOST_PATH; then
+        QT_REL_HOST_DATA=.
     else
-        QT_HOST_DATA="$QT_INSTALL_ARCHDATA"
+        QT_REL_HOST_DATA=$QT_REL_INSTALL_ARCHDATA
     fi
-else
-    QT_HOST_DATA=`makeabs "$QT_HOST_DATA"`
 fi
 
 if [ "$CFG_COMPILE_EXAMPLES" = "yes" ]; then
     QMAKE_CONFIG="$QMAKE_CONFIG compile_examples"
 fi
 
+shortxspec=`echo $XQMAKESPEC | sed "s,^${relpath}/mkspecs/,,"`
+shortspec=`echo $QMAKESPEC | sed "s,^${relpath}/mkspecs/,,"`
+
+QT_CONFIGURE_STR_OFF=0
+
+addConfStr()
+{
+    QT_CONFIGURE_STR_OFFSETS="$QT_CONFIGURE_STR_OFFSETS $QT_CONFIGURE_STR_OFF,"
+    QT_CONFIGURE_STRS="$QT_CONFIGURE_STRS    \"$1\\0\"
+"
+    count=`echo "$1" | wc -c`
+    QT_CONFIGURE_STR_OFF=`expr $QT_CONFIGURE_STR_OFF + $count`
+}
+
+QT_CONFIGURE_STR_OFFSETS=
+QT_CONFIGURE_STRS=
+addConfStr "$QT_REL_INSTALL_DOCS"
+addConfStr "$QT_REL_INSTALL_HEADERS"
+addConfStr "$QT_REL_INSTALL_LIBS"
+addConfStr "$QT_REL_INSTALL_LIBEXECS"
+addConfStr "$QT_REL_INSTALL_BINS"
+addConfStr "$QT_REL_INSTALL_PLUGINS"
+addConfStr "$QT_REL_INSTALL_IMPORTS"
+addConfStr "$QT_REL_INSTALL_QML"
+addConfStr "$QT_REL_INSTALL_ARCHDATA"
+addConfStr "$QT_REL_INSTALL_DATA"
+addConfStr "$QT_REL_INSTALL_TRANSLATIONS"
+addConfStr "$QT_REL_INSTALL_EXAMPLES"
+addConfStr "$QT_REL_INSTALL_TESTS"
+QT_CONFIGURE_STR_OFFSETS_ALL=$QT_CONFIGURE_STR_OFFSETS
+QT_CONFIGURE_STRS_ALL=$QT_CONFIGURE_STRS
+
+QT_CONFIGURE_STR_OFFSETS=
+QT_CONFIGURE_STRS=
+addConfStr "$CFG_SYSROOT"
+addConfStr "$QT_REL_HOST_BINS"
+addConfStr "$QT_REL_HOST_LIBS"
+addConfStr "$QT_REL_HOST_DATA"
+addConfStr "$shortxspec"
+addConfStr "$shortspec"
+
 #-------------------------------------------------------------------------------
 # generate qconfig.cpp
 #-------------------------------------------------------------------------------
 [ -d "$outpath/src/corelib/global" ] || mkdir -p "$outpath/src/corelib/global"
-
-shortxspec=`echo $XQMAKESPEC | sed "s,^${relpath}/mkspecs/,,"`
-shortspec=`echo $QMAKESPEC | sed "s,^${relpath}/mkspecs/,,"`
-
-if [ -z "$QT_EXT_PREFIX" ]; then
-    QMAKE_SYSROOTIFY=y
-else
-    QMAKE_SYSROOTIFY=n
-fi
 
 cat > "$outpath/src/corelib/global/qconfig.cpp.new" <<EOF
 /* License Info */
@@ -3699,60 +3736,38 @@ static const char qt_configure_licensed_products_str [256 + 12] = "qt_lcnsprod=$
 static const char qt_configure_installation          [12+11]    = "qt_instdate=`date +%Y-%m-%d`";
 
 /* Installation Info */
-static const char qt_configure_prefix_path_strs[][256 + 12] = {
 #ifndef QT_BUILD_QMAKE
-    "qt_prfxpath=$QT_SYSROOT_PREFIX",
-    "qt_docspath=$QT_SYSROOT_DOCS",
-    "qt_hdrspath=$QT_SYSROOT_HEADERS",
-    "qt_libspath=$QT_SYSROOT_LIBS",
-    "qt_lbexpath=$QT_SYSROOT_LIBEXECS",
-    "qt_binspath=$QT_SYSROOT_BINS",
-    "qt_plugpath=$QT_SYSROOT_PLUGINS",
-    "qt_impspath=$QT_SYSROOT_IMPORTS",
-    "qt_qml2path=$QT_SYSROOT_QML",
-    "qt_adatpath=$QT_SYSROOT_ARCHDATA",
-    "qt_datapath=$QT_SYSROOT_DATA",
-    "qt_trnspath=$QT_SYSROOT_TRANSLATIONS",
-    "qt_xmplpath=$QT_SYSROOT_EXAMPLES",
-    "qt_tstspath=$QT_SYSROOT_TESTS",
+static const char qt_configure_prefix_path_str       [256 + 12] = "qt_prfxpath=$QT_INSTALL_PREFIX";
 #else
-    "qt_prfxpath=$QT_INSTALL_PREFIX",
-    "qt_docspath=$QT_INSTALL_DOCS",
-    "qt_hdrspath=$QT_INSTALL_HEADERS",
-    "qt_libspath=$QT_INSTALL_LIBS",
-    "qt_lbexpath=$QT_INSTALL_LIBEXECS",
-    "qt_binspath=$QT_INSTALL_BINS",
-    "qt_plugpath=$QT_INSTALL_PLUGINS",
-    "qt_impspath=$QT_INSTALL_IMPORTS",
-    "qt_qml2path=$QT_INSTALL_QML",
-    "qt_adatpath=$QT_INSTALL_ARCHDATA",
-    "qt_datapath=$QT_INSTALL_DATA",
-    "qt_trnspath=$QT_INSTALL_TRANSLATIONS",
-    "qt_xmplpath=$QT_INSTALL_EXAMPLES",
-    "qt_tstspath=$QT_INSTALL_TESTS",
-    "qt_ssrtpath=$CFG_SYSROOT",
-    "qt_hpfxpath=$QT_HOST_PREFIX",
-    "qt_hbinpath=$QT_HOST_BINS",
-    "qt_hlibpath=$QT_HOST_LIBS",
-    "qt_hdatpath=$QT_HOST_DATA",
-    "qt_targspec=$shortxspec",
-    "qt_hostspec=$shortspec",
+static const char qt_configure_prefix_path_str       [256 + 12] = "qt_prfxpath=$QT_EXT_PREFIX";
+static const char qt_configure_host_prefix_path_str  [256 + 12] = "qt_hpfxpath=$QT_HOST_PREFIX";
+#endif
+
+static const short qt_configure_str_offsets[] = {
+    $QT_CONFIGURE_STR_OFFSETS_ALL
+#ifdef QT_BUILD_QMAKE
+    $QT_CONFIGURE_STR_OFFSETS
 #endif
 };
-static const char qt_configure_settings_path_str[256 + 12] = "qt_stngpath=$QT_INSTALL_SETTINGS";
+static const char qt_configure_strs[] =
+$QT_CONFIGURE_STRS_ALL#ifdef QT_BUILD_QMAKE
+$QT_CONFIGURE_STRS#endif
+;
+
+#define QT_CONFIGURE_SETTINGS_PATH "$QT_REL_INSTALL_SETTINGS"
 
 #ifdef QT_BUILD_QMAKE
-static const char qt_sysrootify_prefix[] = "qt_ssrtfpfx=$QMAKE_SYSROOTIFY";
+# define QT_CONFIGURE_SYSROOTIFY_PREFIX $QMAKE_SYSROOTIFY
 #endif
-EOF
-
-cat >> "$outpath/src/corelib/global/qconfig.cpp.new" <<EOF
 
 /* strlen( "qt_lcnsxxxx" ) == 12 */
 #define QT_CONFIGURE_LICENSEE qt_configure_licensee_str + 12
 #define QT_CONFIGURE_LICENSED_PRODUCTS qt_configure_licensed_products_str + 12
 
-#define QT_CONFIGURE_SETTINGS_PATH qt_configure_settings_path_str + 12
+#define QT_CONFIGURE_PREFIX_PATH qt_configure_prefix_path_str + 12
+#ifdef QT_BUILD_QMAKE
+# define QT_CONFIGURE_HOST_PREFIX_PATH qt_configure_host_prefix_path_str + 12
+#endif
 EOF
 
 # avoid unecessary rebuilds by copying only if qconfig.cpp has changed
@@ -7091,6 +7106,12 @@ fi
 if [ -n "$RPATH_MESSAGE" ]; then
     echo
     echo "$RPATH_MESSAGE"
+fi
+
+if [ -n "$PREFIX_COMPLAINTS" ]; then
+    echo
+    echo "$PREFIX_COMPLAINTS"
+    echo
 fi
 
 MAKE=`basename "$MAKE"`

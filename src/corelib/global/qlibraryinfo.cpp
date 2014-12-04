@@ -361,12 +361,12 @@ static const struct {
     { "Tests", "tests" },
 #ifdef QT_BUILD_QMAKE
     { "Sysroot", "" },
-    { "HostPrefix", "" },
     { "HostBinaries", "bin" },
     { "HostLibraries", "lib" },
     { "HostData", "." },
     { "TargetSpec", "" },
     { "HostSpec", "" },
+    { "HostPrefix", "" },
 #endif
 };
 
@@ -381,7 +381,7 @@ QLibraryInfo::location(LibraryLocation loc)
     QString ret = rawLocation(loc, FinalPaths);
 
     // Automatically prepend the sysroot to target paths
-    if ((loc < SysrootPath || loc > LastHostPath) && qt_sysrootify_prefix[12] == 'y') {
+    if ((loc < SysrootPath || loc > LastHostPath) && QT_CONFIGURE_SYSROOTIFY_PREFIX) {
         QString sysroot = rawLocation(SysrootPath, FinalPaths);
         if (!sysroot.isEmpty() && ret.length() > 2 && ret.at(1) == QLatin1Char(':')
             && (ret.at(2) == QLatin1Char('/') || ret.at(2) == QLatin1Char('\\')))
@@ -416,12 +416,19 @@ QLibraryInfo::rawLocation(LibraryLocation loc, PathGroup group)
 #endif
     {
         const char *path = 0;
-        if (unsigned(loc) < sizeof(qt_configure_prefix_path_strs)/sizeof(qt_configure_prefix_path_strs[0]))
-            path = qt_configure_prefix_path_strs[loc] + 12;
+        if (loc == PrefixPath) {
+            path = QT_CONFIGURE_PREFIX_PATH;
+        } else if (unsigned(loc) <= sizeof(qt_configure_str_offsets)/sizeof(qt_configure_str_offsets[0])) {
+            path = qt_configure_strs + qt_configure_str_offsets[loc - 1];
 #ifndef Q_OS_WIN // On Windows we use the registry
-        else if (loc == SettingsPath)
+        } else if (loc == SettingsPath) {
             path = QT_CONFIGURE_SETTINGS_PATH;
 #endif
+#ifdef QT_BOOTSTRAPPED
+        } else if (loc == HostPrefixPath) {
+            path = QT_CONFIGURE_HOST_PREFIX_PATH;
+#endif
+        }
 
         if (path)
             ret = QString::fromLocal8Bit(path);
@@ -455,7 +462,7 @@ QLibraryInfo::rawLocation(LibraryLocation loc, PathGroup group)
                     ret = config->value(QLatin1String(qtConfEntries[PrefixPath].key),
                                         QLatin1String(qtConfEntries[PrefixPath].value)).toString();
                 else if (loc == TargetSpecPath || loc == HostSpecPath)
-                    ret = QString::fromLocal8Bit(qt_configure_prefix_path_strs[loc] + 12);
+                    ret = QString::fromLocal8Bit(qt_configure_strs + qt_configure_str_offsets[loc - 1]);
             }
 #endif
 
@@ -608,9 +615,9 @@ void qt_core_boilerplate()
            "Library path:        %s\n"
            "Include path:        %s\n",
            qt_configure_installation + 12,
-           qt_configure_prefix_path_strs[QT_PREPEND_NAMESPACE(QLibraryInfo)::PrefixPath] + 12,
-           qt_configure_prefix_path_strs[QT_PREPEND_NAMESPACE(QLibraryInfo)::LibrariesPath] + 12,
-           qt_configure_prefix_path_strs[QT_PREPEND_NAMESPACE(QLibraryInfo)::HeadersPath] + 12);
+           qt_configure_prefix_path_str + 12,
+           qt_configure_strs + qt_configure_str_offsets[QT_PREPEND_NAMESPACE(QLibraryInfo)::LibrariesPath - 1],
+           qt_configure_strs + qt_configure_str_offsets[QT_PREPEND_NAMESPACE(QLibraryInfo)::HeadersPath - 1]);
 
     QT_PREPEND_NAMESPACE(qDumpCPUFeatures)();
 

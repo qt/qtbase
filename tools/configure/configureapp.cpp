@@ -1727,7 +1727,8 @@ bool Configure::displayHelp()
                                                         "host machine. If [dir] is not given, the current build\n"
                                                         "directory will be used. (default EXTPREFIX)\n");
 
-        desc("You may use these to separate different parts of the install:\n\n");
+        desc("You may use these to change the layout of the install. Note that all directories\n"
+             "except -sysconfdir should be located under -prefix/-hostprefix:\n\n");
 
         desc(       "-bindir <dir>",                    "User executables will be installed to <dir>\n(default PREFIX/bin)");
         desc(       "-libdir <dir>",                    "Libraries will be installed to <dir>\n(default PREFIX/lib)");
@@ -3832,6 +3833,11 @@ void Configure::displayConfig()
              << "will be the same unless you are cross-compiling)." << endl
              << endl;
     }
+    if (!dictionary["PREFIX_COMPLAINTS"].isEmpty()) {
+        sout << endl
+             << dictionary["PREFIX_COMPLAINTS"] << endl
+             << endl;
+    }
 
     // display config.summary
     sout.seekg(0, ios::beg);
@@ -3867,11 +3873,11 @@ void Configure::generateHeaders()
     }
 }
 
-void Configure::substPrefix(QString *path)
+void Configure::addConfStr(int group, const QString &val)
 {
-    QString spfx = dictionary["QT_SYSROOT_PREFIX"];
-    if (path->startsWith(spfx))
-        path->replace(0, spfx.size(), dictionary["QT_EXT_PREFIX"]);
+    confStrOffsets[group] += ' ' + QString::number(confStringOff) + ',';
+    confStrings[group] += "    \"" + val + "\\0\"\n";
+    confStringOff += val.length() + 1;
 }
 
 void Configure::generateQConfigCpp()
@@ -3879,87 +3885,163 @@ void Configure::generateQConfigCpp()
     QString hostSpec = dictionary["QMAKESPEC"];
     QString targSpec = dictionary.contains("XQMAKESPEC") ? dictionary["XQMAKESPEC"] : hostSpec;
 
-    // if QT_INSTALL_* have not been specified on commandline, define them now from QT_INSTALL_PREFIX
-    // if prefix is empty (WINCE), make all of them empty, if they aren't set
+    dictionary["CFG_SYSROOT"] = QDir::cleanPath(dictionary["CFG_SYSROOT"]);
+
     bool qipempty = false;
     if (dictionary["QT_INSTALL_PREFIX"].isEmpty())
         qipempty = true;
-
-    if (!dictionary["QT_INSTALL_HEADERS"].size())
-        dictionary["QT_INSTALL_HEADERS"] = qipempty ? "" : dictionary["QT_INSTALL_PREFIX"] + "/include";
-    if (!dictionary["QT_INSTALL_LIBS"].size())
-        dictionary["QT_INSTALL_LIBS"] = qipempty ? "" : dictionary["QT_INSTALL_PREFIX"] + "/lib";
-    if (!dictionary["QT_INSTALL_ARCHDATA"].size())
-        dictionary["QT_INSTALL_ARCHDATA"] = qipempty ? "" : dictionary["QT_INSTALL_PREFIX"];
-    if (!dictionary["QT_INSTALL_LIBEXECS"].size()) {
-        if (targSpec.startsWith("win"))
-            dictionary["QT_INSTALL_LIBEXECS"] = qipempty ? "" : dictionary["QT_INSTALL_ARCHDATA"] + "/bin";
-        else
-            dictionary["QT_INSTALL_LIBEXECS"] = qipempty ? "" : dictionary["QT_INSTALL_ARCHDATA"] + "/libexec";
-    }
-    if (!dictionary["QT_INSTALL_BINS"].size())
-        dictionary["QT_INSTALL_BINS"] = qipempty ? "" : dictionary["QT_INSTALL_PREFIX"] + "/bin";
-    if (!dictionary["QT_INSTALL_PLUGINS"].size())
-        dictionary["QT_INSTALL_PLUGINS"] = qipempty ? "" : dictionary["QT_INSTALL_ARCHDATA"] + "/plugins";
-    if (!dictionary["QT_INSTALL_IMPORTS"].size())
-        dictionary["QT_INSTALL_IMPORTS"] = qipempty ? "" : dictionary["QT_INSTALL_ARCHDATA"] + "/imports";
-    if (!dictionary["QT_INSTALL_QML"].size())
-        dictionary["QT_INSTALL_QML"] = qipempty ? "" : dictionary["QT_INSTALL_ARCHDATA"] + "/qml";
-    if (!dictionary["QT_INSTALL_DATA"].size())
-        dictionary["QT_INSTALL_DATA"] = qipempty ? "" : dictionary["QT_INSTALL_PREFIX"];
-    if (!dictionary["QT_INSTALL_DOCS"].size())
-        dictionary["QT_INSTALL_DOCS"] = qipempty ? "" : dictionary["QT_INSTALL_DATA"] + "/doc";
-    if (!dictionary["QT_INSTALL_TRANSLATIONS"].size())
-        dictionary["QT_INSTALL_TRANSLATIONS"] = qipempty ? "" : dictionary["QT_INSTALL_DATA"] + "/translations";
-    if (!dictionary["QT_INSTALL_EXAMPLES"].size())
-        dictionary["QT_INSTALL_EXAMPLES"] = qipempty ? "" : dictionary["QT_INSTALL_PREFIX"] + "/examples";
-    if (!dictionary["QT_INSTALL_TESTS"].size())
-        dictionary["QT_INSTALL_TESTS"] = qipempty ? "" : dictionary["QT_INSTALL_PREFIX"] + "/tests";
-
-    QChar sysrootifyPrefix = QLatin1Char('y');
-    dictionary["QT_SYSROOT_PREFIX"] = dictionary["QT_INSTALL_PREFIX"];
-    dictionary["QT_SYSROOT_HEADERS"] = dictionary["QT_INSTALL_HEADERS"];
-    dictionary["QT_SYSROOT_LIBS"] = dictionary["QT_INSTALL_LIBS"];
-    dictionary["QT_SYSROOT_ARCHDATA"] = dictionary["QT_INSTALL_ARCHDATA"];
-    dictionary["QT_SYSROOT_LIBEXECS"] = dictionary["QT_INSTALL_LIBEXECS"];
-    dictionary["QT_SYSROOT_BINS"] = dictionary["QT_INSTALL_BINS"];
-    dictionary["QT_SYSROOT_PLUGINS"] = dictionary["QT_INSTALL_PLUGINS"];
-    dictionary["QT_SYSROOT_IMPORTS"] = dictionary["QT_INSTALL_IMPORTS"];
-    dictionary["QT_SYSROOT_QML"] = dictionary["QT_INSTALL_QML"];
-    dictionary["QT_SYSROOT_DATA"] = dictionary["QT_INSTALL_DATA"];
-    dictionary["QT_SYSROOT_DOCS"] = dictionary["QT_INSTALL_DOCS"];
-    dictionary["QT_SYSROOT_TRANSLATIONS"] = dictionary["QT_INSTALL_TRANSLATIONS"];
-    dictionary["QT_SYSROOT_EXAMPLES"] = dictionary["QT_INSTALL_EXAMPLES"];
-    dictionary["QT_SYSROOT_TESTS"] = dictionary["QT_INSTALL_TESTS"];
-    if (dictionary["QT_EXT_PREFIX"].size()) {
-        sysrootifyPrefix = QLatin1Char('n');
-        dictionary["QT_INSTALL_PREFIX"] = dictionary["QT_EXT_PREFIX"];
-        substPrefix(&dictionary["QT_INSTALL_HEADERS"]);
-        substPrefix(&dictionary["QT_INSTALL_LIBS"]);
-        substPrefix(&dictionary["QT_INSTALL_ARCHDATA"]);
-        substPrefix(&dictionary["QT_INSTALL_LIBEXECS"]);
-        substPrefix(&dictionary["QT_INSTALL_BINS"]);
-        substPrefix(&dictionary["QT_INSTALL_PLUGINS"]);
-        substPrefix(&dictionary["QT_INSTALL_IMPORTS"]);
-        substPrefix(&dictionary["QT_INSTALL_QML"]);
-        substPrefix(&dictionary["QT_INSTALL_DATA"]);
-        substPrefix(&dictionary["QT_INSTALL_DOCS"]);
-        substPrefix(&dictionary["QT_INSTALL_TRANSLATIONS"]);
-        substPrefix(&dictionary["QT_INSTALL_EXAMPLES"]);
-        substPrefix(&dictionary["QT_INSTALL_TESTS"]);
-    }
-
-    bool haveHpx = false;
-    if (dictionary["QT_HOST_PREFIX"].isEmpty())
-        dictionary["QT_HOST_PREFIX"] = dictionary["QT_INSTALL_PREFIX"];
     else
+        dictionary["QT_INSTALL_PREFIX"] = QDir::cleanPath(dictionary["QT_INSTALL_PREFIX"]);
+
+    bool sysrootifyPrefix;
+    if (dictionary["QT_EXT_PREFIX"].isEmpty()) {
+        dictionary["QT_EXT_PREFIX"] = dictionary["QT_INSTALL_PREFIX"];
+        sysrootifyPrefix = !dictionary["CFG_SYSROOT"].isEmpty();
+    } else {
+        dictionary["QT_EXT_PREFIX"] = QDir::cleanPath(dictionary["QT_EXT_PREFIX"]);
+        sysrootifyPrefix = false;
+    }
+
+    bool haveHpx;
+    if (dictionary["QT_HOST_PREFIX"].isEmpty()) {
+        dictionary["QT_HOST_PREFIX"] = (sysrootifyPrefix ? dictionary["CFG_SYSROOT"] : QString())
+                                       + dictionary["QT_INSTALL_PREFIX"];
+        haveHpx = false;
+    } else {
+        dictionary["QT_HOST_PREFIX"] = QDir::cleanPath(dictionary["QT_HOST_PREFIX"]);
         haveHpx = true;
-    if (dictionary["QT_HOST_BINS"].isEmpty())
-        dictionary["QT_HOST_BINS"] = haveHpx ? dictionary["QT_HOST_PREFIX"] + "/bin" : dictionary["QT_INSTALL_BINS"];
-    if (dictionary["QT_HOST_LIBS"].isEmpty())
-        dictionary["QT_HOST_LIBS"] = haveHpx ? dictionary["QT_HOST_PREFIX"] + "/lib" : dictionary["QT_INSTALL_LIBS"];
-    if (dictionary["QT_HOST_DATA"].isEmpty())
-        dictionary["QT_HOST_DATA"] = haveHpx ? dictionary["QT_HOST_PREFIX"] : dictionary["QT_INSTALL_ARCHDATA"];
+    }
+
+    static const struct {
+        const char *basevar, *baseoption, *var, *option;
+    } varmod[] = {
+        { "INSTALL_", "-prefix", "DOCS", "-docdir" },
+        { "INSTALL_", "-prefix", "HEADERS", "-headerdir" },
+        { "INSTALL_", "-prefix", "LIBS", "-libdir" },
+        { "INSTALL_", "-prefix", "LIBEXECS", "-libexecdir" },
+        { "INSTALL_", "-prefix", "BINS", "-bindir" },
+        { "INSTALL_", "-prefix", "PLUGINS", "-plugindir" },
+        { "INSTALL_", "-prefix", "IMPORTS", "-importdir" },
+        { "INSTALL_", "-prefix", "QML", "-qmldir" },
+        { "INSTALL_", "-prefix", "ARCHDATA", "-archdatadir" },
+        { "INSTALL_", "-prefix", "DATA", "-datadir" },
+        { "INSTALL_", "-prefix", "TRANSLATIONS", "-translationdir" },
+        { "INSTALL_", "-prefix", "EXAMPLES", "-examplesdir" },
+        { "INSTALL_", "-prefix", "TESTS", "-testsdir" },
+        { "INSTALL_", "-prefix", "SETTINGS", "-sysconfdir" },
+        { "HOST_", "-hostprefix", "BINS", "-hostbindir" },
+        { "HOST_", "-hostprefix", "LIBS", "-hostlibdir" },
+        { "HOST_", "-hostprefix", "DATA", "-hostdatadir" },
+    };
+
+    bool prefixReminder = false;
+    for (int i = 0; i < sizeof(varmod) / sizeof(varmod[0]); i++) {
+        QString path = QDir::cleanPath(
+                    dictionary[QLatin1String("QT_") + varmod[i].basevar + varmod[i].var]);
+        if (path.isEmpty())
+            continue;
+        QString base = dictionary[QLatin1String("QT_") + varmod[i].basevar + "PREFIX"];
+        if (!path.startsWith(base)) {
+            if (i != 13) {
+                dictionary["PREFIX_COMPLAINTS"] += QLatin1String("\n        NOTICE: ")
+                        + varmod[i].option + " is not a subdirectory of " + varmod[i].baseoption + ".";
+                if (i < 13 ? qipempty : !haveHpx)
+                    prefixReminder = true;
+            }
+        } else {
+            path.remove(0, base.size());
+            if (path.startsWith('/'))
+                path.remove(0, 1);
+        }
+        dictionary[QLatin1String("QT_REL_") + varmod[i].basevar + varmod[i].var]
+                = path.isEmpty() ? "." : path;
+    }
+    if (prefixReminder) {
+        dictionary["PREFIX_COMPLAINTS"]
+                += "\n        Maybe you forgot to specify -prefix/-hostprefix?";
+    }
+
+    if (!qipempty) {
+        // If QT_INSTALL_* have not been specified on the command line,
+        // default them here, unless prefix is empty (WinCE).
+
+        if (dictionary["QT_REL_INSTALL_HEADERS"].isEmpty())
+            dictionary["QT_REL_INSTALL_HEADERS"] = "include";
+
+        if (dictionary["QT_REL_INSTALL_LIBS"].isEmpty())
+            dictionary["QT_REL_INSTALL_LIBS"] = "lib";
+
+        if (dictionary["QT_REL_INSTALL_BINS"].isEmpty())
+            dictionary["QT_REL_INSTALL_BINS"] = "bin";
+
+        if (dictionary["QT_REL_INSTALL_ARCHDATA"].isEmpty())
+            dictionary["QT_REL_INSTALL_ARCHDATA"] = ".";
+        if (dictionary["QT_REL_INSTALL_ARCHDATA"] != ".")
+            dictionary["QT_REL_INSTALL_ARCHDATA_PREFIX"] = dictionary["QT_REL_INSTALL_ARCHDATA"] + '/';
+
+        if (dictionary["QT_REL_INSTALL_LIBEXECS"].isEmpty()) {
+            if (targSpec.startsWith("win"))
+                dictionary["QT_REL_INSTALL_LIBEXECS"] = dictionary["QT_REL_INSTALL_ARCHDATA_PREFIX"] + "bin";
+            else
+                dictionary["QT_REL_INSTALL_LIBEXECS"] = dictionary["QT_REL_INSTALL_ARCHDATA_PREFIX"] + "libexec";
+        }
+
+        if (dictionary["QT_REL_INSTALL_PLUGINS"].isEmpty())
+            dictionary["QT_REL_INSTALL_PLUGINS"] = dictionary["QT_REL_INSTALL_ARCHDATA_PREFIX"] + "plugins";
+
+        if (dictionary["QT_REL_INSTALL_IMPORTS"].isEmpty())
+            dictionary["QT_REL_INSTALL_IMPORTS"] = dictionary["QT_REL_INSTALL_ARCHDATA_PREFIX"] + "imports";
+
+        if (dictionary["QT_REL_INSTALL_QML"].isEmpty())
+            dictionary["QT_REL_INSTALL_QML"] = dictionary["QT_REL_INSTALL_ARCHDATA_PREFIX"] + "qml";
+
+        if (dictionary["QT_REL_INSTALL_DATA"].isEmpty())
+            dictionary["QT_REL_INSTALL_DATA"] = ".";
+        if (dictionary["QT_REL_INSTALL_DATA"] != ".")
+            dictionary["QT_REL_INSTALL_DATA_PREFIX"] = dictionary["QT_REL_INSTALL_DATA"] + '/';
+
+        if (dictionary["QT_REL_INSTALL_DOCS"].isEmpty())
+            dictionary["QT_REL_INSTALL_DOCS"] = dictionary["QT_REL_INSTALL_DATA_PREFIX"] + "doc";
+
+        if (dictionary["QT_REL_INSTALL_TRANSLATIONS"].isEmpty())
+            dictionary["QT_REL_INSTALL_TRANSLATIONS"] = dictionary["QT_REL_INSTALL_DATA_PREFIX"] + "translations";
+
+        if (dictionary["QT_REL_INSTALL_EXAMPLES"].isEmpty())
+            dictionary["QT_REL_INSTALL_EXAMPLES"] = "examples";
+
+        if (dictionary["QT_REL_INSTALL_TESTS"].isEmpty())
+            dictionary["QT_REL_INSTALL_TESTS"] = "tests";
+    }
+
+    if (dictionary["QT_REL_HOST_BINS"].isEmpty())
+        dictionary["QT_REL_HOST_BINS"] = haveHpx ? "bin" : dictionary["QT_REL_INSTALL_BINS"];
+
+    if (dictionary["QT_REL_HOST_LIBS"].isEmpty())
+        dictionary["QT_REL_HOST_LIBS"] = haveHpx ? "lib" : dictionary["QT_REL_INSTALL_LIBS"];
+
+    if (dictionary["QT_REL_HOST_DATA"].isEmpty())
+        dictionary["QT_REL_HOST_DATA"] = haveHpx ? "." : dictionary["QT_REL_INSTALL_ARCHDATA"];
+
+    confStringOff = 0;
+    addConfStr(0, dictionary["QT_REL_INSTALL_DOCS"]);
+    addConfStr(0, dictionary["QT_REL_INSTALL_HEADERS"]);
+    addConfStr(0, dictionary["QT_REL_INSTALL_LIBS"]);
+    addConfStr(0, dictionary["QT_REL_INSTALL_LIBEXECS"]);
+    addConfStr(0, dictionary["QT_REL_INSTALL_BINS"]);
+    addConfStr(0, dictionary["QT_REL_INSTALL_PLUGINS"]);
+    addConfStr(0, dictionary["QT_REL_INSTALL_IMPORTS"]);
+    addConfStr(0, dictionary["QT_REL_INSTALL_QML"]);
+    addConfStr(0, dictionary["QT_REL_INSTALL_ARCHDATA"]);
+    addConfStr(0, dictionary["QT_REL_INSTALL_DATA"]);
+    addConfStr(0, dictionary["QT_REL_INSTALL_TRANSLATIONS"]);
+    addConfStr(0, dictionary["QT_REL_INSTALL_EXAMPLES"]);
+    addConfStr(0, dictionary["QT_REL_INSTALL_TESTS"]);
+    addConfStr(1, dictionary["CFG_SYSROOT"]);
+    addConfStr(1, dictionary["QT_REL_HOST_BINS"]);
+    addConfStr(1, dictionary["QT_REL_HOST_LIBS"]);
+    addConfStr(1, dictionary["QT_REL_HOST_DATA"]);
+    addConfStr(1, targSpec);
+    addConfStr(1, hostSpec);
 
     // Generate the new qconfig.cpp file
     {
@@ -3971,60 +4053,40 @@ void Configure::generateQConfigCpp()
                   << "/* Build date */" << endl
                   << "static const char qt_configure_installation          [11  + 12] = \"qt_instdate=" << QDate::currentDate().toString(Qt::ISODate) << "\";" << endl
                   << endl
-                  << "static const char qt_configure_prefix_path_strs[][12 + 512] = {" << endl
+                  << "/* Installation Info */" << endl
                   << "#ifndef QT_BUILD_QMAKE" << endl
-                  << "    \"qt_prfxpath=" << QDir::cleanPath(dictionary["QT_SYSROOT_PREFIX"]) << "\"," << endl
-                  << "    \"qt_docspath=" << QDir::cleanPath(dictionary["QT_SYSROOT_DOCS"]) << "\","  << endl
-                  << "    \"qt_hdrspath=" << QDir::cleanPath(dictionary["QT_SYSROOT_HEADERS"]) << "\","  << endl
-                  << "    \"qt_libspath=" << QDir::cleanPath(dictionary["QT_SYSROOT_LIBS"]) << "\","  << endl
-                  << "    \"qt_lbexpath=" << QDir::cleanPath(dictionary["QT_SYSROOT_LIBEXECS"]) << "\","  << endl
-                  << "    \"qt_binspath=" << QDir::cleanPath(dictionary["QT_SYSROOT_BINS"]) << "\","  << endl
-                  << "    \"qt_plugpath=" << QDir::cleanPath(dictionary["QT_SYSROOT_PLUGINS"]) << "\","  << endl
-                  << "    \"qt_impspath=" << QDir::cleanPath(dictionary["QT_SYSROOT_IMPORTS"]) << "\","  << endl
-                  << "    \"qt_qml2path=" << QDir::cleanPath(dictionary["QT_SYSROOT_QML"]) << "\","  << endl
-                  << "    \"qt_adatpath=" << QDir::cleanPath(dictionary["QT_SYSROOT_ARCHDATA"]) << "\","  << endl
-                  << "    \"qt_datapath=" << QDir::cleanPath(dictionary["QT_SYSROOT_DATA"]) << "\","  << endl
-                  << "    \"qt_trnspath=" << QDir::cleanPath(dictionary["QT_SYSROOT_TRANSLATIONS"]) << "\"," << endl
-                  << "    \"qt_xmplpath=" << QDir::cleanPath(dictionary["QT_SYSROOT_EXAMPLES"]) << "\","  << endl
-                  << "    \"qt_tstspath=" << QDir::cleanPath(dictionary["QT_SYSROOT_TESTS"]) << "\","  << endl
+                  << "static const char qt_configure_prefix_path_str       [512 + 12] = \"qt_prfxpath=" << dictionary["QT_INSTALL_PREFIX"] << "\";" << endl
                   << "#else" << endl
-                  << "    \"qt_prfxpath=" << QDir::cleanPath(dictionary["QT_INSTALL_PREFIX"]) << "\"," << endl
-                  << "    \"qt_docspath=" << QDir::cleanPath(dictionary["QT_INSTALL_DOCS"]) << "\","  << endl
-                  << "    \"qt_hdrspath=" << QDir::cleanPath(dictionary["QT_INSTALL_HEADERS"]) << "\","  << endl
-                  << "    \"qt_libspath=" << QDir::cleanPath(dictionary["QT_INSTALL_LIBS"]) << "\","  << endl
-                  << "    \"qt_lbexpath=" << QDir::cleanPath(dictionary["QT_INSTALL_LIBEXECS"]) << "\","  << endl
-                  << "    \"qt_binspath=" << QDir::cleanPath(dictionary["QT_INSTALL_BINS"]) << "\","  << endl
-                  << "    \"qt_plugpath=" << QDir::cleanPath(dictionary["QT_INSTALL_PLUGINS"]) << "\","  << endl
-                  << "    \"qt_impspath=" << QDir::cleanPath(dictionary["QT_INSTALL_IMPORTS"]) << "\","  << endl
-                  << "    \"qt_qml2path=" << QDir::cleanPath(dictionary["QT_INSTALL_QML"]) << "\","  << endl
-                  << "    \"qt_adatpath=" << QDir::cleanPath(dictionary["QT_INSTALL_ARCHDATA"]) << "\","  << endl
-                  << "    \"qt_datapath=" << QDir::cleanPath(dictionary["QT_INSTALL_DATA"]) << "\","  << endl
-                  << "    \"qt_trnspath=" << QDir::cleanPath(dictionary["QT_INSTALL_TRANSLATIONS"]) << "\"," << endl
-                  << "    \"qt_xmplpath=" << QDir::cleanPath(dictionary["QT_INSTALL_EXAMPLES"]) << "\","  << endl
-                  << "    \"qt_tstspath=" << QDir::cleanPath(dictionary["QT_INSTALL_TESTS"]) << "\","  << endl
-                  << "    \"qt_ssrtpath=" << QDir::cleanPath(dictionary["CFG_SYSROOT"]) << "\"," << endl
-                  << "    \"qt_hpfxpath=" << QDir::cleanPath(dictionary["QT_HOST_PREFIX"]) << "\"," << endl
-                  << "    \"qt_hbinpath=" << QDir::cleanPath(dictionary["QT_HOST_BINS"]) << "\"," << endl
-                  << "    \"qt_hlibpath=" << QDir::cleanPath(dictionary["QT_HOST_LIBS"]) << "\"," << endl
-                  << "    \"qt_hdatpath=" << QDir::cleanPath(dictionary["QT_HOST_DATA"]) << "\"," << endl
-                  << "    \"qt_targspec=" << targSpec << "\"," << endl
-                  << "    \"qt_hostspec=" << hostSpec << "\"," << endl
+                  << "static const char qt_configure_prefix_path_str       [512 + 12] = \"qt_prfxpath=" << dictionary["QT_EXT_PREFIX"] << "\";" << endl
+                  << "static const char qt_configure_host_prefix_path_str  [512 + 12] = \"qt_hpfxpath=" << dictionary["QT_HOST_PREFIX"] << "\";" << endl
                   << "#endif" << endl
-                  << "};" << endl;
-
+                  << endl
+                  << "static const short qt_configure_str_offsets[] = {\n"
+                  << "    " << confStrOffsets[0] << endl
+                  << "#ifdef QT_BUILD_QMAKE\n"
+                  << "    " << confStrOffsets[1] << endl
+                  << "#endif\n"
+                  << "};\n"
+                  << "static const char qt_configure_strs[] =\n"
+                  << confStrings[0] << "#ifdef QT_BUILD_QMAKE\n"
+                  << confStrings[1] << "#endif\n"
+                  << ";\n"
+                  << endl;
         if ((platform() != WINDOWS) && (platform() != WINDOWS_CE) && (platform() != WINDOWS_RT))
-            tmpStream << "static const char qt_configure_settings_path_str [256 + 12] = \"qt_stngpath=" << QDir::cleanPath(dictionary["QT_INSTALL_SETTINGS"]) << "\";" << endl;
+            tmpStream << "#define QT_CONFIGURE_SETTINGS_PATH \"" << QDir::cleanPath(dictionary["QT_INSTALL_SETTINGS"]) << "\"" << endl;
 
         tmpStream << endl
                   << "#ifdef QT_BUILD_QMAKE\n"
-                  << "static const char qt_sysrootify_prefix[] = \"qt_ssrtfpfx=" << sysrootifyPrefix << "\";\n"
+                  << "# define QT_CONFIGURE_SYSROOTIFY_PREFIX " << (sysrootifyPrefix ? "true" : "false") << endl
                   << "#endif\n\n"
                   << "/* strlen( \"qt_lcnsxxxx\") == 12 */" << endl
                   << "#define QT_CONFIGURE_LICENSEE qt_configure_licensee_str + 12" << endl
-                  << "#define QT_CONFIGURE_LICENSED_PRODUCTS qt_configure_licensed_products_str + 12" << endl;
-
-        if ((platform() != WINDOWS) && (platform() != WINDOWS_CE) && (platform() != WINDOWS_RT))
-            tmpStream << "#define QT_CONFIGURE_SETTINGS_PATH qt_configure_settings_path_str + 12" << endl;
+                  << "#define QT_CONFIGURE_LICENSED_PRODUCTS qt_configure_licensed_products_str + 12" << endl
+                  << endl
+                  << "#define QT_CONFIGURE_PREFIX_PATH qt_configure_prefix_path_str + 12\n"
+                  << "#ifdef QT_BUILD_QMAKE\n"
+                  << "# define QT_CONFIGURE_HOST_PREFIX_PATH qt_configure_host_prefix_path_str + 12\n"
+                  << "#endif\n";
 
         if (!tmpStream.flush())
             dictionary[ "DONE" ] = "error";

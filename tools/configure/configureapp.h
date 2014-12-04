@@ -143,8 +143,11 @@ private:
     int descIndent;
     int outputWidth;
 
-    void substPrefix(QString *path);
+    QString confStrOffsets[2];
+    QString confStrings[2];
+    int confStringOff;
 
+    void addConfStr(int group, const QString &val);
     QString formatPath(const QString &path);
     QString formatPaths(const QStringList &paths);
 

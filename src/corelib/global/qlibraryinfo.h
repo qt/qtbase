@@ -76,13 +76,13 @@ public:
 #ifdef QT_BUILD_QMAKE
         // These are not subject to binary compatibility constraints
         SysrootPath,
-        HostPrefixPath,
         HostBinariesPath,
         HostLibrariesPath,
         HostDataPath,
         TargetSpecPath,
         HostSpecPath,
-        LastHostPath = HostSpecPath,
+        HostPrefixPath,
+        LastHostPath = HostPrefixPath,
 #endif
         SettingsPath = 100
     };
