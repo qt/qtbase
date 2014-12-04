@@ -572,7 +572,7 @@ void QWindowSystemInterface::deferredFlushWindowSystemEvents(QEventLoop::Process
     Q_ASSERT(QThread::currentThread() == QGuiApplication::instance()->thread());
 
     QMutexLocker locker(&QWindowSystemInterfacePrivate::flushEventMutex);
-    flushWindowSystemEvents(flags);
+    sendWindowSystemEvents(flags);
     QWindowSystemInterfacePrivate::eventsFlushed.wakeOne();
 }
 
