@@ -5572,7 +5572,7 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                                                     CGContextTranslateCTM(ctx, 0, rect.size.height);
                                                     CGContextScaleCTM(ctx, 1, -1);
                                                 }
-                                                [sl.cell drawBarInside:tdi.bounds flipped:NO];
+                                                [sl.cell drawBarInside:NSRectFromCGRect(tdi.bounds) flipped:NO];
                                                 // No need to restore the CTM later, the context has been saved
                                                 // and will be restored at the end of drawNSViewInRect()
                                             });
