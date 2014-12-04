@@ -1268,6 +1268,7 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
         return [super scrollWheel:theEvent];
 
     QPoint angleDelta;
+    Qt::MouseEventSource source = Qt::MouseEventNotSynthesized;
     if ([theEvent hasPreciseScrollingDeltas]) {
         // The mouse device contains pixel scroll wheel support (Mighty Mouse, Trackpad).
         // Since deviceDelta is delivered as pixels rather than degrees, we need to
@@ -1277,6 +1278,7 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
         const int pixelsToDegrees = 2; // 8 * 1/4
         angleDelta.setX([theEvent scrollingDeltaX] * pixelsToDegrees);
         angleDelta.setY([theEvent scrollingDeltaY] * pixelsToDegrees);
+        source = Qt::MouseEventSynthesizedBySystem;
     } else {
         // Remove acceleration, and use either -120 or 120 as delta:
         angleDelta.setX(qBound(-120, int([theEvent deltaX] * 10000), 120));
@@ -1334,7 +1336,7 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
         m_scrolling = false;
     }
 
-    QWindowSystemInterface::handleWheelEvent(m_window, qt_timestamp, qt_windowPoint, qt_screenPoint, pixelDelta, angleDelta, currentWheelModifiers, ph);
+    QWindowSystemInterface::handleWheelEvent(m_window, qt_timestamp, qt_windowPoint, qt_screenPoint, pixelDelta, angleDelta, currentWheelModifiers, ph, source);
 }
 #endif //QT_NO_WHEELEVENT
 

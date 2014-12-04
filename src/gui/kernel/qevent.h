@@ -176,7 +176,9 @@ public:
     QWheelEvent(const QPointF &pos, const QPointF& globalPos,
                 QPoint pixelDelta, QPoint angleDelta, int qt4Delta, Qt::Orientation qt4Orientation,
                 Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers, Qt::ScrollPhase phase);
-
+    QWheelEvent(const QPointF &pos, const QPointF &globalPos, QPoint pixelDelta, QPoint angleDelta,
+                int qt4Delta, Qt::Orientation qt4Orientation, Qt::MouseButtons buttons,
+                Qt::KeyboardModifiers modifiers, Qt::ScrollPhase phase, Qt::MouseEventSource source);
     ~QWheelEvent();
 
 
@@ -201,6 +203,8 @@ public:
 
     inline Qt::ScrollPhase phase() const { return Qt::ScrollPhase(ph); }
 
+    Qt::MouseEventSource source() const { return Qt::MouseEventSource(src); }
+
 protected:
     QPointF p;
     QPointF g;
@@ -210,7 +214,8 @@ protected:
     Qt::Orientation qt4O;
     Qt::MouseButtons mouseState;
     uint ph : 2;
-    int reserved : 30;
+    uint src: 2;
+    int reserved : 28;
 };
 #endif
 

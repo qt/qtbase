@@ -3317,7 +3317,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
 
             while (w) {
                 QWheelEvent we(relpos, wheel->globalPos(), wheel->pixelDelta(), wheel->angleDelta(), wheel->delta(), wheel->orientation(), wheel->buttons(),
-                               wheel->modifiers(), wheel->phase());
+                               wheel->modifiers(), wheel->phase(), wheel->source());
                 we.spont = wheel->spontaneous();
                 res = d->notify_helper(w, w == receiver ? wheel : &we);
                 eventAccepted = ((w == receiver) ? wheel : &we)->isAccepted();
