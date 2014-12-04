@@ -1842,10 +1842,12 @@ QStyleOptionMenuItem::QStyleOptionMenuItem(int version)
 
 /*!
     \variable QStyleOptionMenuItem::tabWidth
-    \brief the tab width for the menu item
+    \brief the reserved width for the menu item's shortcut
 
-    The tab width is the distance between the text of the menu item
-    and the shortcut. The default value is 0.
+    QMenu sets it to the width occupied by the widest shortcut among
+    all visible items within the menu.
+
+    The default value is 0.
 */
 
 
