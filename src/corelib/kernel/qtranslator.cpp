@@ -877,9 +877,9 @@ static QString getMessage(const uchar *m, const uchar *end, const char *context,
 {
     const uchar *tn = 0;
     uint tn_length = 0;
-    const uint sourceTextLen = strlen(sourceText);
-    const uint contextLen = strlen(context);
-    const uint commentLen = strlen(comment);
+    const uint sourceTextLen = uint(strlen(sourceText));
+    const uint contextLen = uint(strlen(context));
+    const uint commentLen = uint(strlen(comment));
 
     for (;;) {
         uchar tag = 0;
@@ -972,7 +972,7 @@ QString QTranslatorPrivate::do_translate(const char *context, const char *source
             return QString();
         c = contextArray + (2 + (hTableSize << 1) + (off << 1));
 
-        const int contextLen = strlen(context);
+        const uint contextLen = uint(strlen(context));
         for (;;) {
             quint8 len = read8(c++);
             if (len == 0)
