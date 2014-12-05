@@ -38,6 +38,7 @@
 #include <qapplication.h>
 #include <qlistview.h>
 #include <private/qlistview_p.h>
+#include <private/qcoreapplication_p.h>
 #include <qlistwidget.h>
 #include <qitemdelegate.h>
 #include <qstandarditemmodel.h>
@@ -148,6 +149,7 @@ private slots:
     void testScrollToWithHidden();
     void testViewOptions();
     void taskQTBUG_39902_mutualScrollBars();
+    void horizontalScrollingByVerticalWheelEvents();
 };
 
 // Testing get/set functions
@@ -2370,6 +2372,53 @@ void tst_QListView::taskQTBUG_39902_mutualScrollBars()
     view->resize(itemSize.width() + view->frameWidth() * 2, model.rowCount() * itemSize.height() + view->frameWidth() * 2);
     // this will end up in a stack overflow, if QTBUG-39902 is not fixed
     QTest::qWait(100);
+}
+
+void tst_QListView::horizontalScrollingByVerticalWheelEvents()
+{
+    QListView lv;
+    lv.setWrapping(true);
+
+    TestDelegate *delegate = new TestDelegate(&lv);
+    delegate->m_sizeHint = QSize(100, 100);
+    lv.setItemDelegate(delegate);
+
+    QtTestModel model;
+    model.colCount = 1;
+    model.rCount = 100;
+
+    lv.setModel(&model);
+
+    lv.resize(300, 300);
+    lv.show();
+    QTest::qWaitForWindowExposed(&lv);
+
+    QPoint globalPos = lv.geometry().center();
+    QPoint pos = lv.viewport()->geometry().center();
+
+    QWheelEvent wheelDownEvent(pos, globalPos, QPoint(0, 0), QPoint(0, -120), -120, Qt::Vertical, 0, 0);
+    QWheelEvent wheelUpEvent(pos, globalPos, QPoint(0, 0), QPoint(0, 120), 120, Qt::Vertical, 0, 0);
+    QWheelEvent wheelLeftDownEvent(pos, globalPos, QPoint(0, 0), QPoint(120, -120), -120, Qt::Vertical, 0, 0);
+
+    int hValue = lv.horizontalScrollBar()->value();
+    QApplication::sendEvent(lv.viewport(), &wheelDownEvent);
+    QVERIFY(lv.horizontalScrollBar()->value() > hValue);
+
+    QApplication::sendEvent(lv.viewport(), &wheelUpEvent);
+    QVERIFY(lv.horizontalScrollBar()->value() == hValue);
+
+    QApplication::sendEvent(lv.viewport(), &wheelLeftDownEvent);
+    QVERIFY(lv.horizontalScrollBar()->value() == hValue);
+
+    // ensure that vertical wheel events are not converted when vertical
+    // scroll bar is not visible but vertical scrolling is possible
+    lv.setWrapping(false);
+    lv.setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    QApplication::processEvents();
+
+    int vValue = lv.verticalScrollBar()->value();
+    QApplication::sendEvent(lv.viewport(), &wheelDownEvent);
+    QVERIFY(lv.verticalScrollBar()->value() > vValue);
 }
 
 QTEST_MAIN(tst_QListView)

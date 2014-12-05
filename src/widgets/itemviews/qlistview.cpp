@@ -53,6 +53,8 @@
 
 QT_BEGIN_NAMESPACE
 
+extern bool qt_sendSpontaneousEvent(QObject *receiver, QEvent *event);
+
 /*!
     \class QListView
 
@@ -795,6 +797,35 @@ void QListView::mouseReleaseEvent(QMouseEvent *e)
         d->elasticBand = QRect();
     }
 }
+
+#ifndef QT_NO_WHEELEVENT
+/*!
+  \reimp
+*/
+void QListView::wheelEvent(QWheelEvent *e)
+{
+    Q_D(QListView);
+    if (e->orientation() == Qt::Vertical) {
+        if (e->angleDelta().x() == 0
+            && ((d->flow == TopToBottom && d->wrap) || (d->flow == LeftToRight && !d->wrap))
+            && d->vbar->minimum() == 0 && d->vbar->maximum() == 0) {
+            QPoint pixelDelta(e->pixelDelta().y(), e->pixelDelta().x());
+            QPoint angleDelta(e->angleDelta().y(), e->angleDelta().x());
+            QWheelEvent hwe(e->pos(), e->globalPos(), pixelDelta, angleDelta, e->delta(),
+                            Qt::Horizontal, e->buttons(), e->modifiers(), e->phase());
+            if (e->spontaneous())
+                qt_sendSpontaneousEvent(d->hbar, &hwe);
+            else
+                QApplication::sendEvent(d->hbar, &hwe);
+            e->setAccepted(hwe.isAccepted());
+        } else {
+            QApplication::sendEvent(d->vbar, e);
+        }
+    } else {
+        QApplication::sendEvent(d->hbar, e);
+    }
+}
+#endif // QT_NO_WHEELEVENT
 
 /*!
   \reimp
