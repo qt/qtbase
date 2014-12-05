@@ -219,8 +219,9 @@ QSize QEglFSX11Integration::screenSize() const
         if (env.length() == 2) {
             m_screenSize = QSize(env.at(0).toInt(), env.at(1).toInt());
         } else {
-            m_screenSize = QSize(640, 480);
-            qWarning("EGLFS_X11_SIZE not set, falling back to 640x480");
+            XWindowAttributes a;
+            if (XGetWindowAttributes(DISPLAY, DefaultRootWindow(DISPLAY), &a))
+                m_screenSize = QSize(a.width, a.height);
         }
     }
     return m_screenSize;
@@ -240,8 +241,6 @@ EGLNativeWindowType QEglFSX11Integration::createNativeWindow(QPlatformWindow *pl
                       0, 0, size.width(), size.height(), 0,
                       XCB_WINDOW_CLASS_INPUT_OUTPUT, it.data->root_visual,
                       0, 0);
-
-    xcb_map_window(m_connection, m_window);
 
     xcb_intern_atom_cookie_t cookies[Atoms::N_ATOMS];
     static const char *atomNames[Atoms::N_ATOMS] = {
@@ -268,12 +267,11 @@ EGLNativeWindowType QEglFSX11Integration::createNativeWindow(QPlatformWindow *pl
     xcb_change_property(m_connection, XCB_PROP_MODE_REPLACE, m_window,
                         m_atoms[Atoms::WM_PROTOCOLS], XCB_ATOM_ATOM, 32, 1, &m_atoms[Atoms::WM_DELETE_WINDOW]);
 
-    if (qEnvironmentVariableIntValue("EGLFS_X11_FULLSCREEN")) {
-        // Go fullscreen. The QScreen and QWindow size is controlled by EGLFS_X11_SIZE regardless,
-        // this is just the native window.
-        xcb_change_property(m_connection, XCB_PROP_MODE_REPLACE, m_window,
-                            m_atoms[Atoms::_NET_WM_STATE], XCB_ATOM_ATOM, 32, 1, &m_atoms[Atoms::_NET_WM_STATE_FULLSCREEN]);
-    }
+    // Go fullscreen.
+    xcb_change_property(m_connection, XCB_PROP_MODE_REPLACE, m_window,
+                        m_atoms[Atoms::_NET_WM_STATE], XCB_ATOM_ATOM, 32, 1, &m_atoms[Atoms::_NET_WM_STATE_FULLSCREEN]);
+
+    xcb_map_window(m_connection, m_window);
 
     xcb_flush(m_connection);
 
