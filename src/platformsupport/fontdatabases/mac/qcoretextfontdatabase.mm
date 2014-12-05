@@ -177,6 +177,8 @@ QCoreTextFontDatabase::QCoreTextFontDatabase()
 
 QCoreTextFontDatabase::~QCoreTextFontDatabase()
 {
+    foreach (CTFontDescriptorRef ref, m_systemFontDescriptors)
+        CFRelease(ref);
 }
 
 static CFArrayRef availableFamilyNames()
