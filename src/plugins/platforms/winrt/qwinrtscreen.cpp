@@ -37,6 +37,9 @@
 #include <EGL/eglext.h>
 #include <d3d11.h>
 #include <dxgi1_2.h>
+#ifndef Q_OS_WINPHONE
+#include <dxgi1_3.h>
+#endif
 
 #include "qwinrtbackingstore.h"
 #include "qwinrtinputcontext.h"
@@ -1078,12 +1081,14 @@ HRESULT QWinRTScreen::onSizeChanged(ICoreWindow *, IWindowSizeChangedEventArgs *
     d->logicalSize = logicalSize;
     if (d->eglDisplay) {
         const QRect newGeometry = geometry();
-#ifdef Q_OS_WINPHONE // Resize the EGL window
-        const int width = newGeometry.width() * (d->orientation == Qt::InvertedPortraitOrientation || d->orientation == Qt::LandscapeOrientation ? -1 : 1);
-        const int height = newGeometry.height() * (d->orientation == Qt::InvertedPortraitOrientation || d->orientation == Qt::InvertedLandscapeOrientation ? -1 : 1);
+        int width = newGeometry.width();
+        int height = newGeometry.height();
+#ifdef Q_OS_WINPHONE // Windows Phone can pass in a negative size to provide orientation information
+        width *= (d->orientation == Qt::InvertedPortraitOrientation || d->orientation == Qt::LandscapeOrientation) ? -1 : 1;
+        height *= (d->orientation == Qt::InvertedPortraitOrientation || d->orientation == Qt::InvertedLandscapeOrientation) ? -1 : 1;
+#endif
         eglSurfaceAttrib(d->eglDisplay, d->eglSurface, EGL_WIDTH, width);
         eglSurfaceAttrib(d->eglDisplay, d->eglSurface, EGL_HEIGHT, height);
-#endif
         QWindowSystemInterface::handleScreenGeometryChange(screen(), newGeometry, newGeometry);
         QPlatformScreen::resizeMaximizedWindows();
         handleExpose();
@@ -1113,6 +1118,16 @@ HRESULT QWinRTScreen::onActivated(ICoreWindow *, IWindowActivatedEventArgs *args
 
 HRESULT QWinRTScreen::onSuspended(IInspectable *, ISuspendingEventArgs *)
 {
+#ifndef Q_OS_WINPHONE
+    Q_D(QWinRTScreen);
+    ComPtr<ID3D11Device> d3dDevice;
+    const EGLBoolean ok = eglQuerySurfacePointerANGLE(d->eglDisplay, EGL_NO_SURFACE, EGL_DEVICE_EXT, (void **)d3dDevice.GetAddressOf());
+    if (ok && d3dDevice) {
+        ComPtr<IDXGIDevice3> dxgiDevice;
+        if (SUCCEEDED(d3dDevice.As(&dxgiDevice)))
+            dxgiDevice->Trim();
+    }
+#endif
     QWindowSystemInterface::handleApplicationStateChanged(Qt::ApplicationSuspended);
     QWindowSystemInterface::flushWindowSystemEvents();
     return S_OK;

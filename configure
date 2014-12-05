@@ -4650,8 +4650,8 @@ if [ "$CFG_DBUS" != "no" ]; then
         fi
         QMakeVar set QT_HOST_CFLAGS_DBUS "$QT_CFLAGS_DBUS"
     else
-        if [ "$CFG_DBUS" = "auto" ]; then
-            CFG_DBUS=no
+        if [ "$CFG_DBUS" != "linked" ]; then
+            CFG_DBUS=runtime
         elif [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
             # CFG_DBUS is "yes" or "linked" here
 

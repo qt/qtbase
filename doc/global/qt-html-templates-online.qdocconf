@@ -1,23 +1,9 @@
 #include standard set of HTML header and footer.
 include(html-config.qdocconf)
 include(html-header-online.qdocconf)
-include(html-footer.qdocconf)
+include(html-footer-online.qdocconf)
 
 #uncomment if navigation bar is not wanted
 #HTML.nonavigationbar      = "true"
 
-HTML.stylesheets =  template/style/online.css
-HTML.extraimages += template/images/ico_out.png \
-                    template/images/ico_note.png \
-                    template/images/ico_note_attention.png \
-                    template/images/btn_prev.png \
-                    template/images/btn_next.png \
-                    template/images/bullet_dn.png \
-                    template/images/bullet_sq.png \
-                    template/images/bgrContent.png \
-                    template/images/Qt-logo.png \
-                    template/images/Qt-dark_gradient.png \
-                    template/images/Qt-footer-bg.jpg \
-                    template/images/Qt-footer_shadow.png \
-                    template/images/Qt-gradient.png \
-                    template/images/Qt-header-bg.jpg
+sourcedirs += includes-online

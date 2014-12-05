@@ -11,3 +11,6 @@ include(qt-html-templates-offline.qdocconf)
 
 #extra configuration data such as file extensions
 include(config.qdocconf)
+
+# Show Qt version as part of the navigation bar
+buildversion = "Qt $QT_VERSION Reference Documentation"

@@ -73,3 +73,5 @@ depends += \
     qtx11extras \
     qtxml \
     qtxmlpatterns
+
+navigation.landingpage = "qmake Manual"

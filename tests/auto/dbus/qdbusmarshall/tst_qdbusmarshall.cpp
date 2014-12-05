@@ -33,13 +33,15 @@
 #include <QtCore/QtCore>
 #include <QtTest/QtTest>
 #include <QtDBus/QtDBus>
-#include <QtDBus/private/qdbusutil_p.h>
-#include <QtDBus/private/qdbusconnection_p.h>
 
 #include "common.h"
 #include <limits>
 
 #include <dbus/dbus.h>
+
+#define QT_LINKED_LIBDBUS
+#include <QtDBus/private/qdbusutil_p.h>
+#include <QtDBus/private/qdbusconnection_p.h>
 
 static const char serviceName[] = "org.qtproject.autotests.qpong";
 static const char objectPath[] = "/org/qtproject/qpong";
