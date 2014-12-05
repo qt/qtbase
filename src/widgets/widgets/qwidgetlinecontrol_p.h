@@ -245,7 +245,7 @@ public:
 
     void insert(const QString &);
     void clear();
-    void undo() { internalUndo(); finishChange(-1, true); }
+    void undo();
     void redo() { internalRedo(); finishChange(); }
     void selectWordAtPos(int);
 

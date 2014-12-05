@@ -279,6 +279,23 @@ void QWidgetLineControl::clear()
     separate();
     finishChange(priorState, /*update*/false, /*edited*/false);
 }
+/*!
+    \internal
+
+    Undoes the previous operation.
+*/
+
+void QWidgetLineControl::undo()
+{
+    // Undo works only for clearing the line when in any of password the modes
+    if (m_echoMode == QLineEdit::Normal) {
+        internalUndo();
+        finishChange(-1, true);
+    } else {
+        cancelPasswordEchoTimer();
+        clear();
+    }
+}
 
 /*!
     \internal
@@ -1277,12 +1294,6 @@ void QWidgetLineControl::internalUndo(int until)
         return;
     cancelPasswordEchoTimer();
     internalDeselect();
-
-    // Undo works only for clearing the line when in any of password the modes
-    if (m_echoMode != QLineEdit::Normal) {
-        clear();
-        return;
-    }
 
     while (m_undoState && m_undoState > until) {
         Command& cmd = m_history[--m_undoState];
