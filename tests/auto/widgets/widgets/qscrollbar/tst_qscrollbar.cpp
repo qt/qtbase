@@ -58,6 +58,7 @@ private slots:
 #ifndef QT_NO_WHEELEVENT
     void QTBUG_27308();
 #endif
+    void QTBUG_42871();
 };
 
 class SingleStepTestScrollBar : public QScrollBar {
@@ -168,6 +169,45 @@ void tst_QScrollBar::QTBUG_27308()
     QCOMPARE(testWidget.value(), testWidget.minimum());
 }
 #endif
+
+class QTBUG_42871_Handler : public QObject {
+    Q_OBJECT
+public:
+    int updatesCount;
+    QTBUG_42871_Handler() : QObject(), updatesCount(0) {}
+public slots:
+    void valueUpdated(int) { ++updatesCount; QTest::qSleep(600); }
+};
+
+void tst_QScrollBar::QTBUG_42871()
+{
+    QTBUG_42871_Handler myHandler;
+    QScrollBar scrollBarWidget(Qt::Vertical);
+    bool connection = connect(&scrollBarWidget, SIGNAL(valueChanged(int)), &myHandler, SLOT(valueUpdated(int)));
+    QVERIFY(connection);
+    scrollBarWidget.resize(100, scrollBarWidget.height());
+    centerOnScreen(&scrollBarWidget);
+    scrollBarWidget.show();
+    QTest::qWaitForWindowExposed(&scrollBarWidget);
+    QSignalSpy spy(&scrollBarWidget, SIGNAL(actionTriggered(int)));
+    QVERIFY(spy.isValid());
+    QCOMPARE(myHandler.updatesCount, 0);
+    QCOMPARE(spy.count(), 0);
+
+    // Simulate a mouse click on the "scroll down button".
+    const QPoint pressPoint(scrollBarWidget.width() / 2, scrollBarWidget.height() - 10);
+    const QPoint globalPressPoint = scrollBarWidget.mapToGlobal(pressPoint);
+    QMouseEvent mousePressEvent(QEvent::MouseButtonPress, pressPoint, globalPressPoint,
+                                Qt::LeftButton, Qt::LeftButton, 0);
+    QApplication::sendEvent(&scrollBarWidget, &mousePressEvent);
+    QTest::qWait(1);
+    QMouseEvent mouseReleaseEvent(QEvent::MouseButtonRelease, pressPoint, globalPressPoint,
+                                  Qt::LeftButton, Qt::LeftButton, 0);
+    QApplication::sendEvent(&scrollBarWidget, &mouseReleaseEvent);
+    // Check that the action was triggered once.
+    QCOMPARE(myHandler.updatesCount, 1);
+    QCOMPARE(spy.count(), 1);
+}
 
 QTEST_MAIN(tst_QScrollBar)
 #include "tst_qscrollbar.moc"
