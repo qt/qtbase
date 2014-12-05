@@ -19,7 +19,7 @@ greaterThan(QT_MAJOR_VERSION, 4) {
     QT += gui-private core-private
     contains(QT, widgets) {
         HEADERS += \
-            $$PWD/$$PWD/qwidgetdump.h
+            $$PWD/qwidgetdump.h
 
         SOURCES += \
             $$PWD/qwidgetdump.cpp
