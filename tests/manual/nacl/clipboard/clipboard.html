@@ -1,0 +1,44 @@
+<html>
+
+<body>
+
+<div id='div'> Clipboard Event Handler
+    <embed id="nacl_module" name="index" src="main.nmf"
+           type="application/x-nacl" width=640 height=480>
+</div>
+
+<script>
+(function() {
+    // Add cut-copy-paste event handlers, either for the caputring
+    // or bubbling event phase. The nacl embed above calls
+    // RequestFilteringInputEvents(PP_INPUTEVENT_CLASS_KEYBOARD)
+    // and then returns false for all events. Once it has focus
+    // (click below "Clipboard Event Handler") we no longer get
+    // copy events. We still get cut and paste events
+
+    var capturing = false;
+    var divElement = document.getElementById('div');
+    var target = divElement;
+    //var target = document.body;
+    //var target = window;
+
+    target.addEventListener('cut', function (ev) {
+       ev.clipboardData.setData('text/plain', 'some text here, ' + new Date);
+       ev.preventDefault();
+       console.log('clipboard cut');
+    }, capturing);
+    target.addEventListener('copy', function (ev) {
+       ev.clipboardData.setData('text/plain', 'some text here, ' + new Date);
+       ev.preventDefault();
+       console.log('clipboard copy');
+    }, capturing);
+   target.addEventListener('paste', function (ev) {
+       ev.preventDefault();
+       console.log('clipboard paste');
+    }, capturing);
+})();
+</script>
+
+</body>
+
+</hml>
