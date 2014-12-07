@@ -458,6 +458,8 @@ public:
     Data nextTransition(qint64 afterMSecsSinceEpoch) const Q_DECL_OVERRIDE;
     Data previousTransition(qint64 beforeMSecsSinceEpoch) const Q_DECL_OVERRIDE;
 
+    Data dataForLocalTime(qint64 forLocalMSecs) const Q_DECL_OVERRIDE;
+
     QByteArray systemTimeZoneId() const Q_DECL_OVERRIDE;
 
     QSet<QByteArray> availableTimeZoneIds() const Q_DECL_OVERRIDE;
