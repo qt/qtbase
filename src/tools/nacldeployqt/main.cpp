@@ -4,78 +4,41 @@
 #include <qcommandlineparser.h>
 #include <qlibraryinfo.h>
 #include <qdir.h>
-#include <qprocess.h>
+#include <qhash.h>
 
-
-void runCommand(const QString &command)
+// QtNaclDeployer Usage: set the public options and call deploy();
+class QtNaclDeployer
 {
-    QByteArray c = command.toLatin1();
-    // qDebug() << "RUN" << c;
+public:
+    QString tmplate;
+    bool quickImports;
+    bool isApp;
+    QString outDir;
+    bool print;
+    bool run;
+    bool debug;
+    QString binary;
+    QString qtBaseDir;
 
-    // This is a host tool, which means no QProcess. Use 'system':
-    int r = system(c.constData());
-    Q_UNUSED(r);
-}
+    int deploy();
 
-static bool copyRecursively(const QString &srcFilePath,
-                            const QString &tgtFilePath)
+private:
+    QByteArray mainHtmlFileName;
+    QHash<QByteArray, QByteArray> templateReplacements;
+    bool isPNaCl;
+    QString appName;
+    QString nmf;
+
+    void runCommand(const QString &command);
+    bool copyRecursively(const QString &srcFilePath, const QString &tgtFilePath);
+    QByteArray instantiateTemplate(const QByteArray &tmplate);
+    void instantiateWriteTemplate(const QByteArray &tmplate, const QString &filePath);
+};
+
+int QtNaclDeployer::deploy()
 {
-    QFileInfo srcFileInfo(srcFilePath);
-    if (srcFileInfo.isDir()) {
-        QDir targetDir(tgtFilePath);
-        targetDir.cdUp();
-        targetDir.mkdir(QFileInfo(tgtFilePath).fileName());
-        if (!targetDir.exists())
-            return false;
-        QDir sourceDir(srcFilePath);
-        QStringList fileNames = sourceDir.entryList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot | QDir::Hidden | QDir::System);
-        foreach (const QString &fileName, fileNames) {
-            const QString newSrcFilePath
-                    = srcFilePath + QLatin1Char('/') + fileName;
-            const QString newTgtFilePath
-                    = tgtFilePath + QLatin1Char('/') + fileName;
-            if (!copyRecursively(newSrcFilePath, newTgtFilePath))
-                return false;
-        }
-    } else {
-        if (!QFile::copy(srcFilePath, tgtFilePath))
-            return false;
-    }
-    return true;
-}
+    mainHtmlFileName = "index.html";
 
-int main(int argc, char **argv)
-{
-    // Command line handling
-    QCoreApplication app(argc, argv);
-    QCoreApplication::setApplicationName("nacldeployqt");
-    QCommandLineParser parser;
-    parser.addHelpOption();
-    parser.addPositionalArgument("binary", "Application binary file (.nexe or .bc)");
-
-    parser.addOption(QCommandLineOption(QStringList() << "t" << "template",
-                        "Selects a html template. Can be either 'fullscreen' or 'debug'. "
-                        "Omit this option to use the default nacl_sdk template, as created "
-                        "by create_html.py", "template", ""));
-
-    parser.addOption(QCommandLineOption(QStringList() << "q" << "quick", "Deploy Qt Quick imports"));
-    parser.addOption(QCommandLineOption(QStringList() << "o" << "out", "Specify an output directory", "outDir", "."));
-
-    parser.addOption(QCommandLineOption(QStringList() << "a" << "app", "Create Chrome App."));
-
-    parser.addOption(QCommandLineOption(QStringList() << "p" << "print", "Print Chrome and debugging help."));
-    parser.addOption(QCommandLineOption(QStringList() << "r" << "run", "Run the application in Chrome."));
-    parser.addOption(QCommandLineOption(QStringList() << "d" << "debug", "Debug the application in Chrome."));
-
-    parser.process(app);
-    const QStringList args = parser.positionalArguments();
-    QString tmplate = parser.value("template");
-    const bool quickImports = parser.isSet("quick");
-    const bool isApp = parser.isSet("app");
-    QString outDir = parser.value("out");
-    const bool print = parser.isSet("print");
-    bool run = parser.isSet("run");
-    const bool debug = parser.isSet("debug");
     if (run && debug) // "--debug" takes priority over "run"
         run = false;
 
@@ -84,32 +47,24 @@ int main(int argc, char **argv)
         outDir.append("/");
     QDir().mkpath(outDir);
 
-    // Get target binary file name from command line, or find one
-    // in the currrent directory
-    QStringList binaries = QDir().entryList(QStringList() << "*.nexe" << "*.bc", QDir::Files);
-    QString binary;
-    if (args.count() == 0) {
-        if (binaries.count() == 0) {
-            parser.showHelp(0);
-            return 0;
-        }
-        binary = binaries.at(0);
-    } else {
-        binary = args.at(0);
-    }
-
-    bool isPNaCl = binary.endsWith(".bc");
+    isPNaCl = binary.endsWith(".bc");
 
     QString appName = binary;
     appName.replace(".nexe", "");
     appName.replace(".bc", "");
-    QString nmf = appName + ".nmf";
-    
+    nmf = appName + ".nmf";
+
     if (!QFile(binary).exists()) {
         qDebug() << "File not found" << binary;
         return 0;
     }
     
+    // Set up template replacments. There is one global map
+    // for all templates.
+    templateReplacements["%MAINHTML%"] = mainHtmlFileName;
+    templateReplacements["%APPNAME%"] = appName.toUtf8();
+    templateReplacements["%APPTYPE%"] = isPNaCl ? "application/x-pnacl" : "application/x-nacl";
+
     // Get the NaCl SDK root from environment
     QString naclSdkRoot = qgetenv("NACL_SDK_ROOT");
     if (naclSdkRoot.isEmpty()) {
@@ -137,11 +92,6 @@ int main(int argc, char **argv)
         return 0;
     }
 
-    // Get the lib dir for this Qt install
-    // Use argv[0]: path/to/qtbase/bin/nacldeployqt -> path/to/qtbase/lib
-    QString nacldeployqtPath = argv[0];
-    nacldeployqtPath.chop(QStringLiteral("nacldeployqt").length());
-    QString qtBaseDir = QDir(nacldeployqtPath + QStringLiteral("../")).canonicalPath(); 
     QString qtLibDir = qtBaseDir + "/lib";
     QString qtBinDir = qtBaseDir + "/bin";
     QString qtImportsDir = qtBaseDir + "/qml";
@@ -181,6 +131,8 @@ int main(int argc, char **argv)
         finalBinary.replace(".bc", ".pexe");
         QString finalizeCommand = pnaclFinalize + " -o " + outDir + finalBinary + " " + binary;
         runCommand(finalizeCommand);
+    } else {
+        QFile::copy(binary, outDir + finalBinary);
     }
 
     const QString finalBinaryPath = outDir + finalBinary;
@@ -196,68 +148,37 @@ int main(int argc, char **argv)
     
     runCommand(nmfCommand.toLatin1().constData());
 
-    // create the index.html file. Use a built-in template if specified,
-    // else use create_html.py. For PNaCl always use a templace since
-    // create_html generates nacl-only html.
-    if (isPNaCl && tmplate.isEmpty())
-        tmplate = "debug";
-
-    if (!isPNaCl && tmplate.isEmpty()) {
-        QString outFile = outDir + "index.html";
-        QString hmtlCommand = QStringLiteral("python ") + createHtml + " " + nmf
-                    + " -o " + outFile;
-        runCommand(hmtlCommand.toLatin1().constData());
-    } else {
-        // select template. See the template_*.cpp files.
-        QByteArray html;
-        if (tmplate== "fullscreen") {
-            extern const char * templateFullscreen;
-            html = QByteArray(templateFullscreen);
-        } else if (tmplate== "debug") {
-            extern const char * templateDebug;
-            html = QByteArray(templateDebug);
-        } else if (tmplate== "windowed") {
-            extern const char * templateWindowed;
-            html = QByteArray(templateWindowed);
-        }
-
-        // instantiate template. Order matters, LOADERSCRIPT should be
-        // replaced first.
-        html.replace("%APPNAME%", appName.toUtf8());
-        html.replace("%APPTYPE%", isPNaCl ? "application/x-pnacl" : "application/x-nacl");
-
-        // write html contents to index.html
-        QFile indexHtml(outDir + "index.html");
-        indexHtml.open(QIODevice::WriteOnly|QIODevice::Truncate);
-        indexHtml.write(html);
-
-        // Write qtloader.js
-        extern const char *loaderScript;
-        QByteArray loader(loaderScript);
-        loader.replace("%APPNAME%", appName.toUtf8());
-        loader.replace("%APPTYPE%", isPNaCl ? "application/x-pnacl" : "application/x-nacl");
-        QFile qtLoaderFile(outDir + "qtloader.js");
-        qtLoaderFile.open(QIODevice::WriteOnly|QIODevice::Truncate);
-        qtLoaderFile.write(loader);
+    // select template. See the template_*.cpp files.
+    if (tmplate.isEmpty())
+        tmplate = "windowed";
+    QByteArray html;
+    if (tmplate== "fullscreen") {
+        extern const char * templateFullscreen;
+        html = QByteArray(templateFullscreen);
+    } else if (tmplate== "debug") {
+        extern const char * templateDebug;
+        html = QByteArray(templateDebug);
+    } else if (tmplate== "windowed") {
+        extern const char * templateWindowed;
+        html = QByteArray(templateWindowed);
     }
+
+    // Write the main html file.
+    instantiateWriteTemplate(html, outDir + mainHtmlFileName);
+
+    // Write qtloader.js
+    extern const char *loaderScript;
+    instantiateWriteTemplate(QByteArray(loaderScript),  outDir + "qtloader.js");
 
     // Create Chrome App support files.
     if (isApp) {
         // Write manifest.json
         extern const char *templateAppManifest;
-        QByteArray appManifest(templateAppManifest);
-        appManifest.replace("%APPNAME%", appName.toUtf8());
-        QFile appManifestFile(outDir + "manifest.json");
-        appManifestFile.open(QIODevice::WriteOnly|QIODevice::Truncate);
-        appManifestFile.write(appManifest);
+        instantiateWriteTemplate(QByteArray(templateAppManifest), outDir + "manifest.json");
 
         // Write background.js
         extern const char *templateBackgroundJs;
-        QByteArray backgroundJs(templateBackgroundJs);
-        backgroundJs.replace("%MAINHTML%", "index.html");
-        QFile backgroundJsFile(outDir + "background.js");
-        backgroundJsFile.open(QIODevice::WriteOnly|QIODevice::Truncate);
-        backgroundJsFile.write(backgroundJs);
+        instantiateWriteTemplate(QByteArray(templateBackgroundJs), outDir + "background.js");
     }
 
     // NOTE: At this point deployment is done. The following are
@@ -295,7 +216,7 @@ int main(int argc, char **argv)
     }
 
     // Start Chrome with proper options
-    if (run || isApp)
+    if (run)
         runCommand(chromeExecutable + chromeNormalOptions + chromeOpenOptions + " &");
     else if (debug)
         runCommand(chromeExecutable + chromeDebugOptions + chromeOpenOptions + " &");
@@ -315,4 +236,126 @@ int main(int argc, char **argv)
     if (run || debug) {
         runCommand("python -m SimpleHTTPServer");
     }
+    return 0;
+}
+
+void QtNaclDeployer::runCommand(const QString &command)
+{
+    QByteArray c = command.toLatin1();
+    // qDebug() << "RUN" << c;
+
+    // This is a host tool, which means no QProcess. Use 'system':
+    int r = system(c.constData());
+    Q_UNUSED(r);
+}
+
+bool QtNaclDeployer::copyRecursively(const QString &srcFilePath,
+                                            const QString &tgtFilePath)
+{
+    QFileInfo srcFileInfo(srcFilePath);
+    if (srcFileInfo.isDir()) {
+        QDir targetDir(tgtFilePath);
+        targetDir.cdUp();
+        targetDir.mkdir(QFileInfo(tgtFilePath).fileName());
+        if (!targetDir.exists())
+            return false;
+        QDir sourceDir(srcFilePath);
+        QStringList fileNames = sourceDir.entryList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot | QDir::Hidden | QDir::System);
+        foreach (const QString &fileName, fileNames) {
+            const QString newSrcFilePath
+                    = srcFilePath + QLatin1Char('/') + fileName;
+            const QString newTgtFilePath
+                    = tgtFilePath + QLatin1Char('/') + fileName;
+            if (!copyRecursively(newSrcFilePath, newTgtFilePath))
+                return false;
+        }
+    } else {
+        if (!QFile::copy(srcFilePath, tgtFilePath))
+            return false;
+    }
+    return true;
+}
+
+
+QByteArray QtNaclDeployer::instantiateTemplate(const QByteArray &tmplate)
+{
+    QByteArray instantiated = tmplate;
+    int replacementCount;
+
+    do {
+        replacementCount = 0;
+        for (auto it : templateReplacements.keys()) {
+            if (!instantiated.contains(it))
+                continue;
+            ++replacementCount;
+            instantiated.replace(it, templateReplacements[it]);
+        }
+    } while (replacementCount > 0);
+
+    return instantiated;
+}
+
+void QtNaclDeployer::instantiateWriteTemplate(const QByteArray &tmplate, const QString &filePath)
+{
+    QByteArray fileContents = instantiateTemplate(tmplate);
+    QFile outFile(filePath);
+    outFile.open(QIODevice::WriteOnly|QIODevice::Truncate);
+    outFile.write(fileContents);
+}
+
+int main(int argc, char **argv)
+{
+    // Command line handling
+    QCoreApplication app(argc, argv);
+    QCoreApplication::setApplicationName("nacldeployqt");
+    QCommandLineParser parser;
+    parser.addHelpOption();
+    parser.addPositionalArgument("binary", "Application binary file (.nexe or .bc)");
+
+    parser.addOption(QCommandLineOption(QStringList() << "t" << "template",
+                        "Selects a html template. Can be either 'fullscreen' or 'debug'. "
+                        "Omit this option to use the default nacl_sdk template, as created "
+                        "by create_html.py", "template", ""));
+
+    parser.addOption(QCommandLineOption(QStringList() << "q" << "quick", "Deploy Qt Quick imports"));
+    parser.addOption(QCommandLineOption(QStringList() << "o" << "out", "Specify an output directory", "outDir", "."));
+
+    parser.addOption(QCommandLineOption(QStringList() << "a" << "app", "Create Chrome App."));
+
+    parser.addOption(QCommandLineOption(QStringList() << "p" << "print", "Print Chrome and debugging help."));
+    parser.addOption(QCommandLineOption(QStringList() << "r" << "run", "Run the application in Chrome."));
+    parser.addOption(QCommandLineOption(QStringList() << "d" << "debug", "Debug the application in Chrome."));
+
+    parser.process(app);
+    QStringList args = parser.positionalArguments();
+
+    QtNaclDeployer deployer;
+    deployer.tmplate = parser.value("template");
+    deployer.quickImports = parser.isSet("quick");
+    deployer.isApp = parser.isSet("app");
+    deployer.outDir = parser.value("out");
+    deployer.print = parser.isSet("print");
+    deployer.run = parser.isSet("run");
+    deployer.debug = parser.isSet("debug");
+
+    // Get target binary file name from command line, or find one
+    // in the currrent directory
+    QStringList binaries = QDir().entryList(QStringList() << "*.nexe" << "*.bc", QDir::Files);
+    if (args.count() == 0) {
+        if (binaries.count() == 0) {
+            parser.showHelp(0);
+            return 0;
+        }
+        deployer.binary = binaries.at(0);
+    } else {
+        deployer.binary = args.at(0);
+    }
+
+    // Find the path to the Qt install. Go via argv[0]:
+    // path/to/qtbase/bin/nacldeployqt -> path/to/qtbase/
+    QString nacldeployqtPath = argv[0];
+    nacldeployqtPath.chop(QStringLiteral("nacldeployqt").length());
+    deployer.qtBaseDir = QDir(nacldeployqtPath + QStringLiteral("../")).canonicalPath();
+
+    return deployer.deploy();
 }
