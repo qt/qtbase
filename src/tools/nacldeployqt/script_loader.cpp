@@ -29,8 +29,16 @@ function handleMessageEvent(messageEvent)
     // javscript into the web page, for example to install
     // message handlers.
 
-    if (this.qtMessageHandlers === undefined)
+    if (this.qtMessageHandlers === undefined) {
         this.qtMessageHandlers = {}
+        // Install message handlers needed by Qt:
+        this.qtMessageHandlers["qtGetAppVersion"] = function(url) {
+            embed.postMessage("qtGetAppVersion: " + navigator.appVersion);
+        };
+        this.qtMessageHandlers["qtOpenUrl"] = function(url) {
+            window.open(url);
+        };
+    }
 
     // Give the message handlers access to the nacl module.
     var embed = document.getElementById("nacl_module");

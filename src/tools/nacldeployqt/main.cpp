@@ -61,6 +61,8 @@ int main(int argc, char **argv)
     parser.addOption(QCommandLineOption(QStringList() << "q" << "quick", "Deploy Qt Quick imports"));
     parser.addOption(QCommandLineOption(QStringList() << "o" << "out", "Specify an output directory", "outDir", "."));
 
+    parser.addOption(QCommandLineOption(QStringList() << "a" << "app", "Create Chrome App."));
+
     parser.addOption(QCommandLineOption(QStringList() << "p" << "print", "Print Chrome and debugging help."));
     parser.addOption(QCommandLineOption(QStringList() << "r" << "run", "Run the application in Chrome."));
     parser.addOption(QCommandLineOption(QStringList() << "d" << "debug", "Debug the application in Chrome."));
@@ -69,6 +71,7 @@ int main(int argc, char **argv)
     const QStringList args = parser.positionalArguments();
     QString tmplate = parser.value("template");
     const bool quickImports = parser.isSet("quick");
+    const bool isApp = parser.isSet("app");
     QString outDir = parser.value("out");
     const bool print = parser.isSet("print");
     bool run = parser.isSet("run");
@@ -220,8 +223,6 @@ int main(int argc, char **argv)
 
         // instantiate template. Order matters, LOADERSCRIPT should be
         // replaced first.
-        extern const char * loaderScript;
-        html.replace("%LOADERSCRIPT%", QByteArray(loaderScript));
         html.replace("%APPNAME%", appName.toUtf8());
         html.replace("%APPTYPE%", isPNaCl ? "application/x-pnacl" : "application/x-nacl");
 
@@ -229,6 +230,34 @@ int main(int argc, char **argv)
         QFile indexHtml(outDir + "index.html");
         indexHtml.open(QIODevice::WriteOnly|QIODevice::Truncate);
         indexHtml.write(html);
+
+        // Write qtloader.js
+        extern const char *loaderScript;
+        QByteArray loader(loaderScript);
+        loader.replace("%APPNAME%", appName.toUtf8());
+        loader.replace("%APPTYPE%", isPNaCl ? "application/x-pnacl" : "application/x-nacl");
+        QFile qtLoaderFile(outDir + "qtloader.js");
+        qtLoaderFile.open(QIODevice::WriteOnly|QIODevice::Truncate);
+        qtLoaderFile.write(loader);
+    }
+
+    // Create Chrome App support files.
+    if (isApp) {
+        // Write manifest.json
+        extern const char *templateAppManifest;
+        QByteArray appManifest(templateAppManifest);
+        appManifest.replace("%APPNAME%", appName.toUtf8());
+        QFile appManifestFile(outDir + "manifest.json");
+        appManifestFile.open(QIODevice::WriteOnly|QIODevice::Truncate);
+        appManifestFile.write(appManifest);
+
+        // Write background.js
+        extern const char *templateBackgroundJs;
+        QByteArray backgroundJs(templateBackgroundJs);
+        backgroundJs.replace("%MAINHTML%", "index.html");
+        QFile backgroundJsFile(outDir + "background.js");
+        backgroundJsFile.open(QIODevice::WriteOnly|QIODevice::Truncate);
+        backgroundJsFile.write(backgroundJs);
     }
 
     // NOTE: At this point deployment is done. The following are
@@ -250,22 +279,26 @@ int main(int argc, char **argv)
     }
 
     // Find chrome, print startup instructions
-    QString chromeApp = "/Applications/Google\\ Chrome.app/Contents/MacOS/Google\\ Chrome";
-    QString chromeNormalOptions = " --incognito --disable-cache --no-default-browser-check --new-window \"http://localhost:8000\"";
+    QString chromeExecutable = "/Applications/Google\\ Chrome.app/Contents/MacOS/Google\\ Chrome";
+    QString chromeNormalOptions = " --disable-cache --no-default-browser-check";
     QString chromeDebugOptions = chromeNormalOptions + " --enable-nacl-debug --no-sandbox";
+    QString chromeOpenAppOptions = " --load-and-launch-app=" + outDir;
+    QString chromeOpenWindowOptions = " --incognito --new-window \"http://localhost:8000\"";
+    QString chromeOpenOptions = isApp ? chromeOpenAppOptions : chromeOpenWindowOptions;
+
     if (print) {
         qDebug() << "chrome:";
-        qDebug() << qPrintable("  " + chromeApp + chromeNormalOptions);
+        qDebug() << qPrintable("  " + chromeExecutable + chromeNormalOptions + chromeOpenOptions);
         qDebug() << qPrintable("chrome (wait for debugger)");
-        qDebug() << qPrintable("  " + chromeApp + chromeDebugOptions);
+        qDebug() << qPrintable("  " + chromeExecutable + chromeDebugOptions + chromeOpenOptions);
         qDebug() << "";
     }
 
     // Start Chrome with proper options
-    if (run)
-        runCommand(chromeApp + chromeNormalOptions + " &");
+    if (run || isApp)
+        runCommand(chromeExecutable + chromeNormalOptions + chromeOpenOptions + " &");
     else if (debug)
-        runCommand(chromeApp + chromeDebugOptions + " &");
+        runCommand(chromeExecutable + chromeDebugOptions + chromeOpenOptions + " &");
 
     // Start the debugger
     if (debug) {

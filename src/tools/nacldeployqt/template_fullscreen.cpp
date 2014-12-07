@@ -10,16 +10,13 @@ const char * templateFullscreen = R"STRING_DELIMITER(
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="-1">
     <title>%APPNAME%</title>
+    <script src="qtloader.js" type="text/javascript"></script>
 </head>
 
 <style>
     body { margin:0; overflow:hidden;}
     embed { height:100vh; width:100vw; }
 </style>
-
-<script>
-%LOADERSCRIPT%
-</script>
 
 <body>
 </body>

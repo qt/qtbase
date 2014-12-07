@@ -10,16 +10,13 @@ const char * templateWindowed = R"STRING_DELIMITER(
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="-1">
     <title>%APPNAME%</title>
+    <script src="qtloader.js" type="text/javascript"></script>
 </head>
 
 <style>
     embed { width:640px; height:480px; display:block; margin: auto; box-shadow: 0 0 1em #888888; }
     H2 { text-align: center; }
 </style>
-
-<script>
-%LOADERSCRIPT%
-</script>
 
 <body>
 <h2>%APPNAME%</h2>
