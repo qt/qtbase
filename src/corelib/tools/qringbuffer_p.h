@@ -63,7 +63,7 @@ public:
     }
 
     inline const char *readPointer() const {
-        return buffers.isEmpty() ? 0 : (buffers.first().constData() + head);
+        return bufferSize == 0 ? Q_NULLPTR : (buffers.first().constData() + head);
     }
 
     // access the bytes at a specified position
