@@ -4026,6 +4026,46 @@ compileTest()
     "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" "$path" "$name" $I_FLAGS $D_FLAGS $L_FLAGS "$@"
 }
 
+compileTestWithPkgConfig()
+{
+    if [ $# -lt 4 ]; then
+        echo "CompileTestWithPkgConfig requires at least 4 arguments."
+        echo "compileTestWithPkgConfig pkg_name configtest configtest_name qmake_postfix + additional arguments to compileTest"
+        exit 1
+    fi
+
+    local pkg_name=$1
+    local configtest=$2
+    local configtest_name="$3"
+    local qmake_postfix=$4
+    shift 4
+
+    local has_used_pkg_config="no"
+
+    local incdir_raw incdir_mod cflags
+    local libdir_raw libdir_mod libs
+    if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists $pkg_name 2>/dev/null; then
+        incdir_raw=`$PKG_CONFIG --cflags-only-I $pkg_name 2>/dev/null`
+        cflags=`$PKG_CONFIG --cflags-only-other $pkg_name 2>/dev/null`
+        libdir_raw=`$PKG_CONFIG --libs-only-L $pkg_name 2>/dev/null`
+        libs=`$PKG_CONFIG --libs-only-l --libs-only-other $pkg_name 2>/dev/null`
+        incdir_mod=`echo $incdir_raw | sed -e 's,^-I,,g' -e 's, -I, ,g'`
+        libdir_mod=`echo $libdir_raw | sed -e 's,^-L,,g' -e 's, -L, ,g'`
+        has_used_pkg_config="yes"
+    fi
+    if compileTest $configtest $configtest_name $libdir_raw $incdir_raw $libs $cflags "$@"; then
+        if [ "$has_used_pkg_config" = "yes" ] && [ -n "$qmake_postfix" ]; then
+            QMakeVar set QMAKE_INCDIR_$qmake_postfix "`shellArgumentListToQMakeList $incdir_mod`"
+            QMakeVar set QMAKE_LIBDIR_$qmake_postfix "`shellArgumentListToQMakeList $libdir_mod`"
+            QMakeVar set QMAKE_LIBS_$qmake_postfix "`shellArgumentListToQMakeList $libs`"
+            QMakeVar set QMAKE_CFLAGS_$qmake_postfix "`shellArgumentListToQMakeList $cflags`"
+        fi
+        return 0
+    else
+        return 1
+    fi
+}
+
 #-------------------------------------------------------------------------------
 # determine the target and host architectures
 #-------------------------------------------------------------------------------
@@ -4914,9 +4954,9 @@ fi
 
 # auto-detect OpenGL support (es2 = OpenGL ES 2.0 or higher)
 if [ "$CFG_OPENGL" = "auto" ] || [ "$CFG_OPENGL" = "yes" ]; then
-    if compileTest unix/opengldesktop "OpenGL"; then
+    if compileTestWithPkgConfig gl unix/opengldesktop "OpenGL" OPENGL; then
         CFG_OPENGL=desktop
-    elif compileTest unix/opengles2 "OpenGL ES 2.0"; then
+    elif compileTestWithPkgConfig glesv2 unix/opengles2 "OpenGL ES 2.0" OPENGL_ES2; then
         CFG_OPENGL=es2
     else
         if [ "$CFG_OPENGL" = "yes" ]; then
@@ -4930,17 +4970,8 @@ if [ "$CFG_OPENGL" = "auto" ] || [ "$CFG_OPENGL" = "yes" ]; then
     fi
 elif [ "$CFG_OPENGL" = "es2" ]; then
     #OpenGL ES 2.0
-    if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists glesv2 2>/dev/null; then
-        QMAKE_INCDIR_OPENGL_ES2=`$PKG_CONFIG --cflags-only-I glesv2 2>/dev/null | sed -e 's,^-I,,g' -e 's, -I, ,g'`
-        QMAKE_LIBDIR_OPENGL_ES2=`$PKG_CONFIG --libs-only-L glesv2 2>/dev/null | sed -e 's,^-L,,g' -e 's, -L, ,g'`
-        QMAKE_LIBS_OPENGL_ES2=`$PKG_CONFIG --libs glesv2 2>/dev/null`
-        QMAKE_CFLAGS_OPENGL_ES2=`$PKG_CONFIG --cflags glesv2 2>/dev/null`
-        QMakeVar set QMAKE_INCDIR_OPENGL_ES2 "`shellArgumentListToQMakeList "$QMAKE_INCDIR_OPENGL_ES2"`"
-        QMakeVar set QMAKE_LIBDIR_OPENGL_ES2 "`shellArgumentListToQMakeList "$QMAKE_LIBDIR_OPENGL_ES2"`"
-        QMakeVar set QMAKE_LIBS_OPENGL_ES2 "`shellArgumentListToQMakeList "$QMAKE_LIBS_OPENGL_ES2"`"
-    fi
 
-    compileTest unix/opengles2 "OpenGL ES 2.0" $QMAKE_LIBS_OPENGL_ES2 $QMAKE_CFLAGS_OPENGL_ES2
+    compileTestWithPkgConfig glesv2 unix/opengles2 "OpenGL ES 2.0" OPENGL_ES2
     if [ $? != "0" ]; then
         echo "The OpenGL ES 2.0 functionality test failed!"
         echo " You might need to modify the include and library search paths by editing"
@@ -4950,7 +4981,7 @@ elif [ "$CFG_OPENGL" = "es2" ]; then
     fi
 elif [ "$CFG_OPENGL" = "desktop" ]; then
     # Desktop OpenGL support
-    compileTest unix/opengldesktop "OpenGL"
+    compileTestWithPkgConfig gl unix/opengldesktop "OpenGL" OPENGL
     if [ $? != "0" ]; then
         echo "The OpenGL functionality test failed!"
         echo " You might need to modify the include and library search paths by editing"
@@ -4965,11 +4996,11 @@ fi
 # compatible) ES headers (for example, GLES3/gl31.h). Other than that, there is
 # no difference in the configuration, even the library is the same.
 if [ "$CFG_OPENGL" = "es2" ]; then
-    if compileTest unix/opengles3 "OpenGL ES 3.0" $QMAKE_LIBS_OPENGL_ES2 $QMAKE_CFLAGS_OPENGL_ES2; then
+    if compileTestWithPkgConfig glesv2 unix/opengles3 "OpenGL ES 3.0" ""; then
         # Add a define for ES3, in addition to ES and ES2.
         QCONFIG_FLAGS="$QCONFIG_FLAGS QT_OPENGL_ES_3"
     fi
-    if compileTest unix/opengles31 "OpenGL ES 3.1" $QMAKE_LIBS_OPENGL_ES2 $QMAKE_CFLAGS_OPENGL_ES2; then
+    if compileTestWithPkgConfig glesv2 unix/opengles31 "OpenGL ES 3.1" ""; then
         # Add a define for ES31.
         QCONFIG_FLAGS="$QCONFIG_FLAGS QT_OPENGL_ES_3_1"
     fi
