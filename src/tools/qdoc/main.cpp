@@ -38,7 +38,6 @@
 #include "config.h"
 #include "cppcodemarker.h"
 #include "cppcodeparser.h"
-#include "ditaxmlgenerator.h"
 #include "doc.h"
 #include "htmlgenerator.h"
 #include "location.h"
@@ -595,7 +594,7 @@ int main(int argc, char **argv)
     QmlCodeMarker qmlMarker;
 
     HtmlGenerator htmlGenerator;
-    DitaXmlGenerator ditaxmlGenerator;
+    //DitaXmlGenerator ditaxmlGenerator;
 
     QCommandLineParser parser;
     parser.setApplicationDescription(QCoreApplication::translate("qdoc", "Qt documentation generator"));

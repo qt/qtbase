@@ -38,7 +38,6 @@
 #include <qdebug.h>
 #include "codemarker.h"
 #include "config.h"
-#include "ditaxmlgenerator.h"
 #include "doc.h"
 #include "editdistance.h"
 #include "generator.h"

@@ -26,7 +26,6 @@ HEADERS += atom.h \
            config.h \
            cppcodemarker.h \
            cppcodeparser.h \
-           ditaxmlgenerator.h \
            doc.h \
            editdistance.h \
            generator.h \
@@ -52,7 +51,6 @@ SOURCES += atom.cpp \
            config.cpp \
            cppcodemarker.cpp \
            cppcodeparser.cpp \
-           ditaxmlgenerator.cpp \
            doc.cpp \
            editdistance.cpp \
            generator.cpp \
