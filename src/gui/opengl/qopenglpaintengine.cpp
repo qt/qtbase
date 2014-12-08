@@ -223,6 +223,20 @@ GLuint QOpenGL2PaintEngineExPrivate::bindTexture(const QPixmap &pixmap)
     return QOpenGLTextureCache::cacheForContext(ctx)->bindTexture(ctx, pixmap);
 }
 
+template<>
+GLuint QOpenGL2PaintEngineExPrivate::bindTexture(const QGradient &gradient)
+{
+    // We apply global opacity in the fragment shaders, so we always pass 1.0
+    // for opacity to the cache.
+    GLuint textureId = QOpenGL2GradientCache::cacheForContext(ctx)->getBuffer(gradient, 1.0);
+
+    // QOpenGL2GradientCache::getBuffer() may bind and generate a new texture if it
+    // hasn't been cached yet, but will otherwise return an unbound texture id. To
+    // be sure that the texture is bound, we unfortunately have to bind again,
+    // which results in the initial generation of the texture doing two binds.
+    return bindTexture(textureId);
+}
+
 struct ImageWithBindOptions
 {
     const QImage &image;
@@ -253,19 +267,15 @@ void QOpenGL2PaintEngineExPrivate::updateBrushTexture()
     else if (style >= Qt::LinearGradientPattern && style <= Qt::ConicalGradientPattern) {
         // Gradiant brush: All the gradiants use the same texture
 
-        const QGradient* g = currentBrush.gradient();
-
-        // We apply global opacity in the fragment shaders, so we always pass 1.0
-        // for opacity to the cache.
-        GLuint textureId = QOpenGL2GradientCache::cacheForContext(ctx)->getBuffer(*g, 1.0);
+        const QGradient *gradient = currentBrush.gradient();
 
         GLenum wrapMode = GL_CLAMP_TO_EDGE;
-        if (g->spread() == QGradient::RepeatSpread || g->type() == QGradient::ConicalGradient)
+        if (gradient->spread() == QGradient::RepeatSpread || gradient->type() == QGradient::ConicalGradient)
             wrapMode = GL_REPEAT;
-        else if (g->spread() == QGradient::ReflectSpread)
+        else if (gradient->spread() == QGradient::ReflectSpread)
             wrapMode = GL_MIRRORED_REPEAT;
 
-        updateTexture(QT_BRUSH_TEXTURE_UNIT, textureId, wrapMode, filterMode, ForceUpdate);
+        updateTexture(QT_BRUSH_TEXTURE_UNIT, *gradient, wrapMode, filterMode, ForceUpdate);
     }
     else if (style == Qt::TexturePattern) {
         currentBrushImage = currentBrush.textureImage();
