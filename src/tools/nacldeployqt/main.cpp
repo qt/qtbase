@@ -59,6 +59,11 @@ int QtNaclDeployer::deploy()
         return 0;
     }
     
+    if (!quickImports && QFile::exists(binary + "_qml_plugin_import.cpp")) {
+        qDebug() << "Note: qml_plugin_import.cpp file found. Auto-enabling --quick option.";
+        quickImports = true;
+    }
+
     // Set up template replacments. There is one global map
     // for all templates.
     templateReplacements["%MAINHTML%"] = mainHtmlFileName;
