@@ -1189,6 +1189,8 @@ Qt::KeyboardModifiers QWindowsKeyMapper::queryKeyboardModifiers()
         modifiers |= Qt::ControlModifier;
     if (GetKeyState(VK_MENU) < 0)
         modifiers |= Qt::AltModifier;
+    if (GetKeyState(VK_LWIN) < 0 || GetKeyState(VK_RWIN) < 0)
+        modifiers |= Qt::MetaModifier;
     return modifiers;
 }
 
