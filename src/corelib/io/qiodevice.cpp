@@ -1667,6 +1667,23 @@ QString QIODevice::errorString() const
     \sa read(), write()
 */
 
+/*!
+  \internal
+  \fn int qt_subtract_from_timeout(int timeout, int elapsed)
+
+  Reduces the \a timeout by \a elapsed, taking into account that -1 is a
+  special value for timeouts.
+*/
+
+int qt_subtract_from_timeout(int timeout, int elapsed)
+{
+    if (timeout == -1)
+        return -1;
+
+    timeout = timeout - elapsed;
+    return timeout < 0 ? 0 : timeout;
+}
+
 
 #if !defined(QT_NO_DEBUG_STREAM)
 QDebug operator<<(QDebug debug, QIODevice::OpenMode modes)

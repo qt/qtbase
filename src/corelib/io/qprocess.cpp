@@ -1793,8 +1793,7 @@ bool QProcess::waitForBytesWritten(int msecs)
         bool started = waitForStarted(msecs);
         if (!started)
             return false;
-        if (msecs != -1)
-            msecs -= stopWatch.elapsed();
+        msecs = qt_subtract_from_timeout(msecs, stopWatch.elapsed());
     }
 
     return d->waitForBytesWritten(msecs);
@@ -1830,8 +1829,7 @@ bool QProcess::waitForFinished(int msecs)
         bool started = waitForStarted(msecs);
         if (!started)
             return false;
-        if (msecs != -1)
-            msecs -= stopWatch.elapsed();
+        msecs = qt_subtract_from_timeout(msecs, stopWatch.elapsed());
     }
 
     return d->waitForFinished(msecs);

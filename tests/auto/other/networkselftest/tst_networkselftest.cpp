@@ -34,6 +34,7 @@
 #include <QtTest/QtTest>
 #include <QtNetwork/QtNetwork>
 #include <QtCore/QDateTime>
+#include <QtCore/private/qiodevice_p.h>
 
 #ifndef QT_NO_BEARERMANAGEMENT
 #include <QtNetwork/qnetworkconfigmanager.h>
@@ -171,10 +172,11 @@ static bool doSocketRead(QTcpSocket *socket, int minBytesAvailable, int timeout 
     forever {
         if (socket->bytesAvailable() >= minBytesAvailable)
             return true;
+        timeout = qt_subtract_from_timeout(timeout, timer.elapsed());
         if (socket->state() == QAbstractSocket::UnconnectedState
-            || timer.elapsed() >= timeout)
+            || timeout == 0)
             return false;
-        if (!socket->waitForReadyRead(timeout - timer.elapsed()))
+        if (!socket->waitForReadyRead(timeout))
             return false;
     }
 }
@@ -202,10 +204,11 @@ static bool doSocketFlush(QTcpSocket *socket, int timeout = 4000)
 #endif
             )
             return true;
+        timeout = qt_subtract_from_timeout(timeout, timer.elapsed());
         if (socket->state() == QAbstractSocket::UnconnectedState
-            || timer.elapsed() >= timeout)
+            || timeout == 0)
             return false;
-        if (!socket->waitForBytesWritten(timeout - timer.elapsed()))
+        if (!socket->waitForBytesWritten(timeout))
             return false;
     }
 }
