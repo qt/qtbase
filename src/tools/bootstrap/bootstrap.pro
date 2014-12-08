@@ -84,6 +84,7 @@ SOURCES += \
            ../../corelib/plugin/quuid.cpp \
            ../../corelib/tools/qbitarray.cpp \
            ../../corelib/tools/qbytearray.cpp \
+           ../../corelib/tools/qbytearraylist.cpp \
            ../../corelib/tools/qarraydata.cpp \
            ../../corelib/tools/qbytearraymatcher.cpp \
            ../../corelib/tools/qcommandlineparser.cpp \
