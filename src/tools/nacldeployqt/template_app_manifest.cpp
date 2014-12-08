@@ -8,6 +8,7 @@ const char * templateAppManifest = R"STRING_DELIMITER(
     "background": {
       "scripts": ["background.js"]
     }
-  }
+  },
+  "permissions": [ %PERMISSIONS% ]
 }
 )STRING_DELIMITER";

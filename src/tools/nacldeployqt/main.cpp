@@ -5,6 +5,7 @@
 #include <qlibraryinfo.h>
 #include <qdir.h>
 #include <qhash.h>
+#include <qset.h>
 
 // QtNaclDeployer Usage: set the public options and call deploy();
 class QtNaclDeployer
@@ -28,7 +29,9 @@ private:
     bool isPNaCl;
     QString appName;
     QString nmf;
+    QSet<QByteArray> permissions;
 
+    QList<QByteArray> quote(const QList<QByteArray> &list);
     void runCommand(const QString &command);
     bool copyRecursively(const QString &srcFilePath, const QString &tgtFilePath);
     QByteArray instantiateTemplate(const QByteArray &tmplate);
@@ -38,6 +41,8 @@ private:
 int QtNaclDeployer::deploy()
 {
     mainHtmlFileName = "index.html";
+    // Create the default Chrome App permission set.
+    permissions = { "clipboardRead", "clipboardWrite" };
 
     if (run && debug) // "--debug" takes priority over "run"
         run = false;
@@ -69,6 +74,7 @@ int QtNaclDeployer::deploy()
     templateReplacements["%MAINHTML%"] = mainHtmlFileName;
     templateReplacements["%APPNAME%"] = appName.toUtf8();
     templateReplacements["%APPTYPE%"] = isPNaCl ? "application/x-pnacl" : "application/x-nacl";
+    templateReplacements["%PERMISSIONS%"] = quote(permissions.toList()).join(", ");
 
     // Get the NaCl SDK root from environment
     QString naclSdkRoot = qgetenv("NACL_SDK_ROOT");
@@ -242,6 +248,14 @@ int QtNaclDeployer::deploy()
         runCommand("python -m SimpleHTTPServer");
     }
     return 0;
+}
+
+QList<QByteArray> QtNaclDeployer::quote(const QList<QByteArray> &list)
+{
+    QList<QByteArray> result;
+    for (const QByteArray &item : list)
+        result.append('"' + item + '"');
+    return result;
 }
 
 void QtNaclDeployer::runCommand(const QString &command)
