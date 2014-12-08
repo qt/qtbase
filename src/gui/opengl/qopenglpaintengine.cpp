@@ -153,12 +153,26 @@ void QOpenGL2PaintEngineExPrivate::useSimpleShader()
         updateMatrix();
 }
 
+/*
+    Single entry-point for activating, binding, and setting properties.
+
+    Allows keeping track of (caching) the latest texture unit and bound
+    texture in a central place, so that we can skip re-binding unless
+    needed.
+
+    \note Any code or Qt API that internally activates or binds will
+    not affect the cache used by this function, which means they will
+    lead to inconsisent state. QPainter::beginNativePainting() takes
+    care of resetting the cache, so for user–code this is fine, but
+    internally in the paint engine care must be taken to not call
+    functions that may activate or bind under our feet.
+*/
 template<typename T>
 void QOpenGL2PaintEngineExPrivate::updateTexture(GLenum textureUnit, const T &texture, GLenum wrapMode, GLenum filterMode, TextureUpdateMode updateMode)
 {
     static const GLenum target = GL_TEXTURE_2D;
 
-    funcs.glActiveTexture(GL_TEXTURE0 + textureUnit);
+    activateTextureUnit(textureUnit);
 
     GLuint textureId = bindTexture(texture);
 
@@ -172,6 +186,20 @@ void QOpenGL2PaintEngineExPrivate::updateTexture(GLenum textureUnit, const T &te
 
     funcs.glTexParameteri(target, GL_TEXTURE_MAG_FILTER, filterMode);
     funcs.glTexParameteri(target, GL_TEXTURE_MIN_FILTER, filterMode);
+}
+
+void QOpenGL2PaintEngineExPrivate::activateTextureUnit(GLenum textureUnit)
+{
+    if (textureUnit != lastTextureUnitUsed) {
+        funcs.glActiveTexture(GL_TEXTURE0 + textureUnit);
+        lastTextureUnitUsed = textureUnit;
+
+        // We simplify things by keeping a single cached value of the last
+        // texture that was bound, instead of one per texture unit. This
+        // means that switching texture units could potentially mean we
+        // need a re-bind and corresponding parameter updates.
+        lastTextureUsed = GLuint(-1);
+    }
 }
 
 template<>
@@ -597,9 +625,15 @@ void QOpenGL2PaintEngineEx::beginNativePainting()
     }
 #endif // QT_OPENGL_ES_2
 
-    d->lastTextureUsed = GLuint(-1);
-    d->dirtyStencilRegion = QRect(0, 0, d->width, d->height);
     d->resetGLState();
+
+    // We don't know what texture units and textures the native painting
+    // will activate and bind, so we can't assume anything when we return
+    // from the native painting.
+    d->lastTextureUnitUsed = QT_UNKNOWN_TEXTURE_UNIT;
+    d->lastTextureUsed = GLuint(-1);
+
+    d->dirtyStencilRegion = QRect(0, 0, d->width, d->height);
 
     d->shaderManager->setDirty();
 
@@ -608,8 +642,9 @@ void QOpenGL2PaintEngineEx::beginNativePainting()
 
 void QOpenGL2PaintEngineExPrivate::resetGLState()
 {
+    activateTextureUnit(QT_DEFAULT_TEXTURE_UNIT);
+
     funcs.glDisable(GL_BLEND);
-    funcs.glActiveTexture(GL_TEXTURE0);
     funcs.glDisable(GL_STENCIL_TEST);
     funcs.glDisable(GL_DEPTH_TEST);
     funcs.glDisable(GL_SCISSOR_TEST);
@@ -1368,7 +1403,12 @@ void QOpenGL2PaintEngineEx::renderHintsChanged()
 #endif // QT_OPENGL_ES_2
 
     Q_D(QOpenGL2PaintEngineEx);
+
+    // This is a somewhat sneaky way of conceptually making the next call to
+    // updateTexture() use FoceUpdate for the TextureUpdateMode. We need this
+    // as new render hints may require updating the filter mode.
     d->lastTextureUsed = GLuint(-1);
+
     d->brushTextureDirty = true;
 //    qDebug("QOpenGL2PaintEngineEx::renderHintsChanged() not implemented!");
 }
@@ -1673,7 +1713,7 @@ void QOpenGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngine::GlyphFormat gly
             // uses the image texture unit for blitting to the cache, while
             // we switch between image and mask units when drawing.
             static const GLenum glypchCacheTextureUnit = QT_IMAGE_TEXTURE_UNIT;
-            funcs.glActiveTexture(GL_TEXTURE0 + glypchCacheTextureUnit);
+            activateTextureUnit(glypchCacheTextureUnit);
 
             cache->fillInPendingGlyphs();
 
@@ -1891,6 +1931,10 @@ void QOpenGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngine::GlyphFormat gly
             funcs.glActiveTexture(GL_TEXTURE0 + QT_IMAGE_TEXTURE_UNIT);
         else
             funcs.glActiveTexture(GL_TEXTURE0 + QT_MASK_TEXTURE_UNIT);
+
+        // Need to reset the unit here, until we've made drawCachedGlyphs
+        // use the shared code-path for activating and binding.
+        lastTextureUnitUsed = QT_UNKNOWN_TEXTURE_UNIT;
 
         if (lastMaskTextureUsed != cache->texture()) {
             funcs.glBindTexture(GL_TEXTURE_2D, cache->texture());

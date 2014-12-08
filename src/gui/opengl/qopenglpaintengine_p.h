@@ -69,6 +69,8 @@ enum EngineMode {
 QT_BEGIN_NAMESPACE
 
 #define GL_STENCIL_HIGH_BIT         GLuint(0x80)
+#define QT_UNKNOWN_TEXTURE_UNIT     GLuint(-1)
+#define QT_DEFAULT_TEXTURE_UNIT     GLuint(0)
 #define QT_BRUSH_TEXTURE_UNIT       GLuint(0)
 #define QT_IMAGE_TEXTURE_UNIT       GLuint(0) //Can be the same as brush texture unit
 #define QT_MASK_TEXTURE_UNIT        GLuint(1)
@@ -184,6 +186,7 @@ public:
             snapToPixelGrid(false),
             nativePaintingActive(false),
             inverseScale(1),
+            lastTextureUnitUsed(QT_UNKNOWN_TEXTURE_UNIT),
             lastMaskTextureUsed(0)
     { }
 
@@ -199,6 +202,7 @@ public:
     void updateTexture(GLenum textureUnit, const T &texture, GLenum wrapMode, GLenum filterMode, TextureUpdateMode updateMode = UpdateIfNeeded);
     template<typename T>
     GLuint bindTexture(const T &texture);
+    void activateTextureUnit(GLenum textureUnit);
 
     void resetGLState();
 
@@ -300,6 +304,7 @@ public:
     GLfloat pmvMatrix[3][3];
     GLfloat inverseScale;
 
+    GLenum lastTextureUnitUsed;
     GLuint lastTextureUsed;
     GLuint lastMaskTextureUsed;
 
