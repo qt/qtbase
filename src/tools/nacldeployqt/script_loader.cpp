@@ -17,6 +17,29 @@ function decodeQuery() {
     return keyValues;
 }
 
+function copyToClipboard(content)
+{
+    var copySource = document.createElement("div");
+    copySource.contentEditable = true;
+    var activeElement = document.activeElement.appendChild(copySource).parentNode;
+    copySource.innerText = content;
+    copySource.focus();
+    document.execCommand("Copy", null, null);
+    activeElement.removeChild(copySource);
+}
+
+function pasteFromClipboard()
+{
+    var pasteTarget = document.createElement("div");
+    pasteTarget.contentEditable = true;
+    var activeElement = document.activeElement.appendChild(pasteTarget).parentNode;
+    pasteTarget.focus();
+    document.execCommand("Paste", null, null);
+    var content = pasteTarget.innerText;
+    activeElement.removeChild(pasteTarget);
+    return content;
+}
+
 // Qt message handler
 function handleMessageEvent(messageEvent)
 {
@@ -37,6 +60,15 @@ function handleMessageEvent(messageEvent)
         };
         this.qtMessageHandlers["qtOpenUrl"] = function(url) {
             window.open(url);
+        };
+        this.qtMessageHandlers["qtClipboardRequestCopy"] = function(content) {
+            console.log("copy to clipbard " + content);
+            copyToClipboard(content);
+        };
+        this.qtMessageHandlers["qtClipboardRequestPaste"] = function() {
+            var content = pasteFromClipboard();
+            console.log("paste from clipboard " + content);
+            embed.postMessage("qtClipboardtPaste: " + content);
         };
     }
 

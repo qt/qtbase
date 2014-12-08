@@ -70,6 +70,8 @@ QMimeData *QPepperClipboard::mimeData(QClipboard::Mode mode)
     qCDebug(QT_PLATFORM_PEPPER_CLIPBOARD) << "mimeData" <<  mode;
     if (mode != QClipboard::Clipboard)
         return 0;
+    QByteArray message = "qtClipboardRequestPaste: ";
+    QPepperInstance::get()->postMessage(message);
     return 0;
 }
 
@@ -78,6 +80,8 @@ void QPepperClipboard::setMimeData(QMimeData *mimeData, QClipboard::Mode mode)
     qCDebug(QT_PLATFORM_PEPPER_CLIPBOARD) << "setMimeData" <<  mode;
     if (mode != QClipboard::Clipboard)
         return;
+    QByteArray message = "qtClipboardRequestCopy:" + mimeData->text().toUtf8();
+    QPepperInstance::get()->postMessage(message);
 }
 
 bool QPepperClipboard::supportsMode(QClipboard::Mode mode) const
