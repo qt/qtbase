@@ -52,6 +52,13 @@
 #include <qpa/qplatformwindow.h>
 #include <qpa/qwindowsysteminterface.h>
 
+void *QPepperPlatformNativeInterface::nativeResourceForIntegration(const QByteArray &resource)
+{
+    if (resource == "Instance")
+        return QPepperInstancePrivate::getPPInstance();
+    return 0;
+}
+
 QPlatformIntegration *qt_create_pepper_integration()
 {
     return QPepperIntegration::create();
@@ -78,6 +85,7 @@ QPepperIntegration::QPepperIntegration()
     , m_compositor(0)
     , m_eventTranslator(0)
     , m_screen(0)
+    , m_platformNativeInterface(0)
 {
     globalPepperIntegration = this;
 
@@ -94,6 +102,7 @@ QPepperIntegration::QPepperIntegration()
 QPepperIntegration::~QPepperIntegration()
 {
     globalPepperIntegration = 0;
+    delete m_platformNativeInterface;
     delete m_compositor;
     delete m_eventTranslator;
     delete m_fontDatabase;
@@ -142,6 +151,14 @@ QPlatformClipboard *QPepperIntegration::clipboard() const
     //        m_clipboard = new QPepperClipboard();
     //    return m_clipboard;
     return QPlatformIntegration::clipboard();
+}
+
+QPlatformNativeInterface *QPepperIntegration::nativeInterface() const
+{
+    if (m_platformNativeInterface == 0)
+        m_platformNativeInterface = new QPepperPlatformNativeInterface();
+
+    return m_platformNativeInterface;
 }
 
 QPlatformServices *QPepperIntegration::services() const

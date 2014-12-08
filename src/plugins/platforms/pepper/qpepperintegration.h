@@ -42,6 +42,7 @@
 #include <qpa/qplatformscreen.h>
 #include <qpa/qplatformservices.h>
 #include <qpa/qplatformfontdatabase.h>
+#include <qpa/qplatformnativeinterface.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -54,6 +55,12 @@ class QPepperScreen;
 class QPepperServices;
 class QPepperWindow;
 class QPlatformClipboard;
+
+class QPepperPlatformNativeInterface: public QPlatformNativeInterface
+{
+public:
+    void *nativeResourceForIntegration(const QByteArray &resource);
+};
 
 class QPepperIntegration : public QObject, public QPlatformIntegration
 {
@@ -74,6 +81,7 @@ public:
     QPlatformServices *services() const Q_DECL_OVERRIDE;
     QVariant styleHint(StyleHint hint) const Q_DECL_OVERRIDE;
     Qt::WindowState defaultWindowState(Qt::WindowFlags) const Q_DECL_OVERRIDE;
+    QPlatformNativeInterface *nativeInterface() const;
 
     QStringList themeNames() const Q_DECL_OVERRIDE;
     QPlatformTheme *createPlatformTheme(const QString &name) const Q_DECL_OVERRIDE;
@@ -94,6 +102,7 @@ private:
     mutable QPepperFontDatabase *m_fontDatabase;
     mutable QPepperServices *m_services;
     mutable QPepperWindow *m_topLevelWindow;
+    mutable QPepperPlatformNativeInterface *m_platformNativeInterface;
     QPepperCompositor *m_compositor;
     QPepperEventTranslator *m_eventTranslator;
     QPepperScreen *m_screen;
