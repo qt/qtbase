@@ -652,15 +652,18 @@ void QWindowsVistaStyle::drawPrimitive(PrimitiveElement element, const QStyleOpt
     case PE_PanelItemViewItem:
         {
             const QStyleOptionViewItem *vopt;
-            const QAbstractItemView *view = qobject_cast<const QAbstractItemView *>(widget);
             bool newStyle = true;
+            QAbstractItemView::SelectionBehavior selectionBehavior = QAbstractItemView::SelectRows;
+            QAbstractItemView::SelectionMode selectionMode = QAbstractItemView::NoSelection;
+            if (const QAbstractItemView *view = qobject_cast<const QAbstractItemView *>(widget)) {
+                newStyle = !qobject_cast<const QTableView*>(view);
+                selectionBehavior = view->selectionBehavior();
+                selectionMode = view->selectionMode();
+            }
 
-            if (qobject_cast<const QTableView*>(widget))
-                newStyle = false;
-
-            if (newStyle && view && (vopt = qstyleoption_cast<const QStyleOptionViewItem *>(option))) {
+            if (newStyle && (vopt = qstyleoption_cast<const QStyleOptionViewItem *>(option))) {
                 bool selected = vopt->state & QStyle::State_Selected;
-                bool hover = vopt->state & QStyle::State_MouseOver;
+                const bool hover = selectionMode != QAbstractItemView::NoSelection && (vopt->state & QStyle::State_MouseOver);
                 bool active = vopt->state & QStyle::State_Active;
 
                 if (vopt->features & QStyleOptionViewItem::Alternate)
@@ -679,10 +682,8 @@ void QWindowsVistaStyle::drawPrimitive(PrimitiveElement element, const QStyleOpt
                 if (vopt->showDecorationSelected)
                     sectionSize = vopt->rect.size();
 
-                if (view->selectionBehavior() == QAbstractItemView::SelectRows)
+                if (selectionBehavior == QAbstractItemView::SelectRows)
                     sectionSize.setWidth(vopt->rect.width());
-                if (view->selectionMode() == QAbstractItemView::NoSelection)
-                    hover = false;
                 QPixmap pixmap;
 
                 if (vopt->backgroundBrush.style() != Qt::NoBrush) {
