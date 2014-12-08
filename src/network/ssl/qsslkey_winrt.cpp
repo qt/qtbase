@@ -39,6 +39,7 @@
 **
 ****************************************************************************/
 
+#include "qssl_p.h"
 #include "qsslkey.h"
 #include "qsslkey_p.h"
 #include "qsslcertificate_p.h"
@@ -144,7 +145,7 @@ static QByteArray doCrypt(QSslKeyPrivate::Cipher cipher, QByteArray data, const 
         if (padding > 0 && padding <= blockLength)
             resultLength -= padding;
         else
-            qWarning("Invalid padding length of %u; decryption likely failed.", padding);
+            qCWarning(lcSsl, "Invalid padding length of %u; decryption likely failed.", padding);
     }
 
     return QByteArray(reinterpret_cast<const char *>(resultData), resultLength);

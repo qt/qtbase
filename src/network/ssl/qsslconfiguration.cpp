@@ -32,6 +32,7 @@
 **
 ****************************************************************************/
 
+#include "qssl_p.h"
 #include "qsslconfiguration.h"
 #include "qsslconfiguration_p.h"
 #include "qsslsocket.h"
@@ -341,7 +342,8 @@ int QSslConfiguration::peerVerifyDepth() const
 void QSslConfiguration::setPeerVerifyDepth(int depth)
 {
     if (depth < 0) {
-        qWarning("QSslConfiguration::setPeerVerifyDepth: cannot set negative depth of %d", depth);
+        qCWarning(lcSsl,
+                 "QSslConfiguration::setPeerVerifyDepth: cannot set negative depth of %d", depth);
         return;
     }
     d->peerVerifyDepth = depth;
