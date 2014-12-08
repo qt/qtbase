@@ -775,7 +775,8 @@ void QWindowSystemInterface::handleEnterWhatsThisEvent()
 
 #ifndef QT_NO_DEBUG_STREAM
 Q_GUI_EXPORT QDebug operator<<(QDebug dbg, const QWindowSystemInterface::TouchPoint &p) {
-    dbg.nospace() << "TouchPoint(" << p.id << " @" << p.normalPosition << " press " << p.pressure << " vel " << p.velocity << " state " << (int)p.state;
+    dbg.nospace() << "TouchPoint(" << p.id << " @" << p.area << " normalized " << p.normalPosition
+                  << " press " << p.pressure << " vel " << p.velocity << " state " << (int)p.state;
     return dbg.space();
 }
 #endif
