@@ -166,7 +166,7 @@ QXcbScreen* QXcbConnection::findOrCreateScreen(QList<QXcbScreen *>& newScreens,
         int dotPos = displayName.lastIndexOf('.');
         if (dotPos != -1)
             displayName.truncate(dotPos);
-        name = displayName + QLatin1Char('.') + QString::number(screenNumber);
+        name = QString::fromLocal8Bit(displayName) + QLatin1Char('.') + QString::number(screenNumber);
     }
     foreach (QXcbScreen* scr, m_screens)
         if (scr->name() == name && scr->root() == xcbScreen->root)
