@@ -104,6 +104,7 @@ public:
 
     bool populate(QFontEngine *fontEngine, int numGlyphs, const glyph_t *glyphs,
                   const QFixedPoint *positions);
+    bool hasPendingGlyphs() const { return !m_pendingGlyphs.isEmpty(); };
     void fillInPendingGlyphs();
 
     virtual void createTextureData(int width, int height) = 0;

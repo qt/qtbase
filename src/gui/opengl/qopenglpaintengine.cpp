@@ -1639,7 +1639,25 @@ void QOpenGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngine::GlyphFormat gly
             cache->populate(fe, staticTextItem->numGlyphs,
                             staticTextItem->glyphs, staticTextItem->glyphPositions);
         }
-        cache->fillInPendingGlyphs();
+
+        if (cache->hasPendingGlyphs()) {
+            // Filling in the glyphs binds and sets parameters, so we need to
+            // ensure that the glyph cache doesn't mess with whatever unit
+            // is currently active. Note that the glyph cache internally
+            // uses the image texture unit for blitting to the cache, while
+            // we switch between image and mask units when drawing.
+            static const GLenum glypchCacheTextureUnit = QT_IMAGE_TEXTURE_UNIT;
+            funcs.glActiveTexture(GL_TEXTURE0 + glypchCacheTextureUnit);
+
+            cache->fillInPendingGlyphs();
+
+            // We assume the cache can be trusted on which texture was bound
+            lastTextureUsed = cache->texture();
+
+            // But since the brush and image texture units are possibly shared
+            // we may have to re-bind brush textures after filling in the cache.
+            brushTextureDirty = (QT_BRUSH_TEXTURE_UNIT == glypchCacheTextureUnit);
+        }
     }
 
     if (cache->width() == 0 || cache->height() == 0)
