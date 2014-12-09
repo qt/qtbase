@@ -110,7 +110,7 @@ QWidgetTextControlPrivate::QWidgetTextControlPrivate()
 #ifndef Q_OS_ANDROID
       interactionFlags(Qt::TextEditorInteraction),
 #else
-      interactionFlags(Qt::TextEditable),
+      interactionFlags(Qt::TextEditable | Qt::TextSelectableByKeyboard),
 #endif
       dragEnabled(true),
 #ifndef QT_NO_DRAGANDDROP
