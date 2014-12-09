@@ -301,7 +301,7 @@ void tst_QWindow::positioning()
     // if our positioning is actually fully respected by the window manager
     // test whether it correctly handles frame positioning as well
     if (originalPos == geometry.topLeft() && (originalMargins.top() != 0 || originalMargins.left() != 0)) {
-        QPoint framePos = QPlatformScreen::platformScreenForWindow(&window)->availableGeometry().topLeft() + QPoint(40, 40);
+        QPoint framePos = QPlatformScreen::platformScreenForWindow(&window)->availableGeometry().center();
 
         window.reset();
         window.setFramePosition(framePos);
