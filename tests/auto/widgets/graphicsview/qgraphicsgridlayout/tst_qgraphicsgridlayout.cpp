@@ -1682,6 +1682,23 @@ void tst_QGraphicsGridLayout::sizeHint_data()
                             << QSizeF(100, 100)
                             << QSizeF(100, 100);
 
+    QTest::newRow("colSpan_with_ignored_column") << (ItemList()
+                                    << ItemDesc(0,0)
+                                        .minSize(QSizeF(40,20))
+                                        .maxSize(QSizeF(60,20))
+                                        .colSpan(2)
+                                    << ItemDesc(0,2)
+                                        .minSize(QSizeF(20, 20))
+                                        .maxSize(QSizeF(30, 20))
+                                    << ItemDesc(1,0)
+                                        .minSize(QSizeF(60, 20))
+                                        .maxSize(QSizeF(90, 20))
+                                        .colSpan(3)
+                                )
+                            << QSizeF(60, 40)
+                            << QSizeF(80, 40)
+                            << QSizeF(90, 40);
+
 }
 
 // public QSizeF sizeHint(Qt::SizeHint which, QSizeF const& constraint = QSizeF()) const

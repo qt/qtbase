@@ -1367,7 +1367,7 @@ void QGridLayoutEngine::fillRowData(QGridLayoutRowData *rowData,
                             rowStretch = qMax(rowStretch, itemStretch);
                     } else {
                         QGridLayoutMultiCellData &multiCell =
-                                rowData->multiCellMap[qMakePair(row, effectiveRowSpan)];
+                                rowData->multiCellMap[qMakePair(row, itemRowSpan)];
                         box = &multiCell.q_box;
                         multiCell.q_stretch = itemStretch;
                     }
