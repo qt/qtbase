@@ -37,10 +37,6 @@
 #include "qelapsedtimer.h"
 #if defined(Q_OS_VXWORKS)
 #include "qfunctions_vxworks.h"
-#elif defined(Q_OS_QNX)
-#include <sys/neutrino.h>
-#include <sys/syspage.h>
-#include <inttypes.h>
 #else
 #include <sys/time.h>
 #include <time.h>
@@ -88,18 +84,7 @@ QT_BEGIN_NAMESPACE
  *  see http://pubs.opengroup.org/onlinepubs/9699919799/functions/clock_getres.html
  */
 
-#if defined(Q_OS_QNX)
-static inline void qt_clock_gettime(clockid_t clock, struct timespec *ts)
-{
-    // The standard POSIX clock calls only have 1ms accuracy on QNX.  To get
-    // higher accuracy, this platform-specific function must be used instead
-    quint64 cycles_per_sec = SYSPAGE_ENTRY(qtime)->cycles_per_sec;
-    quint64 cycles = ClockCycles();
-    ts->tv_sec = cycles / cycles_per_sec;
-    quint64 mod = cycles % cycles_per_sec;
-    ts->tv_nsec = mod * Q_INT64_C(1000000000) / cycles_per_sec;
-}
-#elif !defined(CLOCK_REALTIME)
+#if !defined(CLOCK_REALTIME)
 #  define CLOCK_REALTIME 0
 static inline void qt_clock_gettime(int, struct timespec *ts)
 {
