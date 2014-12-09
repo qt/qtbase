@@ -1,5 +1,7 @@
 const char * loaderScript = R"STRING_DELIMITER( 
 
+var isChromeApp = %CHROMEAPP%
+
 // Utility function for plitting Url query paramterers
 // ("?Foo=bar&Bar=baz") into key-value pars.
 function decodeQuery() {
@@ -79,7 +81,8 @@ function handleMessageEvent(messageEvent)
     var tag = parts[0];
     var message = parts[1];
     if (tag == "qtEval") {
-        eval(message)
+        if (!isChromeApp) // "eval()" is not allowed for Chrome Apps
+            eval(message)
     } else {
         this.qtMessageHandlers[tag](message);
     }

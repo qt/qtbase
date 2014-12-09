@@ -74,6 +74,7 @@ int QtNaclDeployer::deploy()
     templateReplacements["%MAINHTML%"] = mainHtmlFileName;
     templateReplacements["%APPNAME%"] = appName.toUtf8();
     templateReplacements["%APPTYPE%"] = isPNaCl ? "application/x-pnacl" : "application/x-nacl";
+    templateReplacements["%CHROMEAPP%"] = isApp ? "true;" : "false;";
     templateReplacements["%PERMISSIONS%"] = quote(permissions.toList()).join(", ");
 
     // Get the NaCl SDK root from environment
