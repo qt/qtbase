@@ -9,3 +9,7 @@ contains(QT_CONFIG, tslib) {
 }
 
 SUBDIRS += tuiotouch
+
+contains(QT_CONFIG, libinput) {
+    SUBDIRS += libinput
+}

@@ -643,6 +643,7 @@ CFG_XINPUT2=auto
 CFG_XINPUT=runtime
 CFG_XKB=auto
 CFG_XKBCOMMON=yes
+CFG_XKBCOMMON_EVDEV=auto
 CFG_XKB_CONFIG_ROOT=auto
 CFG_XCB=auto
 CFG_XCB_XLIB=auto
@@ -652,6 +653,7 @@ CFG_DIRECTFB=auto
 CFG_LINUXFB=auto
 CFG_KMS=auto
 CFG_LIBUDEV=auto
+CFG_LIBINPUT=auto
 CFG_OBSOLETE_WAYLAND=no
 CFG_EVDEV=auto
 CFG_TSLIB=auto
@@ -1722,7 +1724,14 @@ while [ "$#" -gt 0 ]; do
             UNKNOWN_OPT=yes
         fi
         ;;
-    xkbcommon)
+    xkbcommon-evdev)
+        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
+            CFG_XKBCOMMON_EVDEV="$VAL"
+        else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
+    xkbcommon|xkbcommon-x11)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ] || [ "$VAL" = "qt" ] || [ "$VAL" = "system" ]; then
             CFG_XKBCOMMON="$VAL"
         else
@@ -1780,6 +1789,13 @@ while [ "$#" -gt 0 ]; do
     libudev)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
             CFG_LIBUDEV="$VAL"
+        else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
+    libinput)
+        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
+            CFG_LIBINPUT="$VAL"
         else
             UNKNOWN_OPT=yes
         fi
@@ -2360,74 +2376,77 @@ Configure options:
 
 Third Party Libraries:
 
-    -qt-zlib ........... Use the zlib bundled with Qt.
- +  -system-zlib ....... Use zlib from the operating system.
-                         See http://www.gzip.org/zlib
+    -qt-zlib ............ Use the zlib bundled with Qt.
+ +  -system-zlib ........ Use zlib from the operating system.
+                          See http://www.gzip.org/zlib
 
-    -no-mtdev .........  Do not compile mtdev support.
- +  -mtdev ............. Enable mtdev support.
+    -no-mtdev ........... Do not compile mtdev support.
+ +  -mtdev .............. Enable mtdev support.
 
- +  -no-journald ....... Do not send logging output to journald.
-    -journald .......... Send logging output to journald.
+ +  -no-journald ........ Do not send logging output to journald.
+    -journald ........... Send logging output to journald.
 
-    -no-gif ............ Do not compile GIF reading support.
+    -no-gif ............. Do not compile GIF reading support.
 
-    -no-libpng ......... Do not compile PNG support.
-    -qt-libpng ......... Use the libpng bundled with Qt.
- +  -system-libpng ..... Use libpng from the operating system.
-                         See http://www.libpng.org/pub/png
+    -no-libpng .......... Do not compile PNG support.
+    -qt-libpng .......... Use the libpng bundled with Qt.
+ +  -system-libpng ...... Use libpng from the operating system.
+                          See http://www.libpng.org/pub/png
 
-    -no-libjpeg ........ Do not compile JPEG support.
-    -qt-libjpeg ........ Use the libjpeg bundled with Qt.
- +  -system-libjpeg .... Use libjpeg from the operating system.
-                         See http://www.ijg.org
+    -no-libjpeg ......... Do not compile JPEG support.
+    -qt-libjpeg ......... Use the libjpeg bundled with Qt.
+ +  -system-libjpeg ..... Use libjpeg from the operating system.
+                          See http://www.ijg.org
 
-    -no-freetype ....... Do not compile in Freetype2 support.
-    -qt-freetype ....... Use the libfreetype bundled with Qt.
- +  -system-freetype.... Use the libfreetype provided by the system (enabled if -fontconfig is active).
-                         See http://www.freetype.org
+    -no-freetype ........ Do not compile in Freetype2 support.
+    -qt-freetype ........ Use the libfreetype bundled with Qt.
+ +  -system-freetype..... Use the libfreetype provided by the system (enabled if -fontconfig is active).
+                          See http://www.freetype.org
 
-    -no-harfbuzz ....... Do not compile HarfBuzz-NG support.
- *  -qt-harfbuzz ....... Use HarfBuzz-NG bundled with Qt to do text shaping.
-                         It can still be disabled by setting
-                         the QT_HARFBUZZ environment variable to "old".
-    -system-harfbuzz ... Use HarfBuzz-NG from the operating system
-                         to do text shaping. It can still be disabled
-                         by setting the QT_HARFBUZZ environment variable to "old".
-                         See http://www.harfbuzz.org
+    -no-harfbuzz ........ Do not compile HarfBuzz-NG support.
+ *  -qt-harfbuzz ........ Use HarfBuzz-NG bundled with Qt to do text shaping.
+                          It can still be disabled by setting
+                          the QT_HARFBUZZ environment variable to "old".
+    -system-harfbuzz .... Use HarfBuzz-NG from the operating system
+                          to do text shaping. It can still be disabled
+                          by setting the QT_HARFBUZZ environment variable to "old".
+                          See http://www.harfbuzz.org
 
-    -no-openssl ........ Do not compile support for OpenSSL.
- +  -openssl ........... Enable run-time OpenSSL support.
-    -openssl-linked .... Enabled linked OpenSSL support.
+    -no-openssl ......... Do not compile support for OpenSSL.
+ +  -openssl ............ Enable run-time OpenSSL support.
+    -openssl-linked ..... Enabled linked OpenSSL support.
 
-    -qt-pcre ........... Use the PCRE library bundled with Qt.
- +  -system-pcre ....... Use the PCRE library from the operating system.
+    -qt-pcre ............ Use the PCRE library bundled with Qt.
+ +  -system-pcre ........ Use the PCRE library from the operating system.
 
-    -qt-xcb ............ Use xcb- libraries bundled with Qt.
-                         (libxcb.so will still be used from operating system).
- +  -system-xcb ........ Use xcb- libraries from the operating system.
+    -qt-xcb ............. Use xcb- libraries bundled with Qt.
+                          (libxcb.so will still be used from operating system).
+ +  -system-xcb ......... Use xcb- libraries from the operating system.
 
-    -xkb-config-root ... Set default XKB config root. This option is used only together with -qt-xkbcommon.
-    -qt-xkbcommon ...... Use the xkbcommon library bundled with Qt.
- +  -system-xkbcommon .. Use the xkbcommon library from the operating system.
+    -xkb-config-root .... Set default XKB config root. This option is used only together with -qt-xkbcommon-x11.
+    -qt-xkbcommon-x11 ... Use the xkbcommon library bundled with Qt in combination with xcb.
+ +  -system-xkbcommon-x11 Use the xkbcommon library from the operating system in combination with xcb.
 
-    -no-xinput2 ........ Do not compile XInput2 support.
- *  -xinput2 ........... Compile XInput2 support.
+    -no-xkbcommon-evdev . Do not use X-less xkbcommon when compiling libinput support.
+ *  -xkbcommon-evdev .... Use X-less xkbcommon when compiling libinput support.
 
-    -no-xcb-xlib........ Do not compile Xcb-Xlib support.
- *  -xcb-xlib........... Compile Xcb-Xlib support.
+    -no-xinput2 ......... Do not compile XInput2 support.
+ *  -xinput2 ............ Compile XInput2 support.
 
-    -no-glib ........... Do not compile Glib support.
- +  -glib .............. Compile Glib support.
+    -no-xcb-xlib......... Do not compile Xcb-Xlib support.
+ *  -xcb-xlib............ Compile Xcb-Xlib support.
 
-    -no-pulseaudio ..... Do not compile PulseAudio support.
- +  -pulseaudio ........ Compile PulseAudio support.
+    -no-glib ............ Do not compile Glib support.
+ +  -glib ............... Compile Glib support.
 
-    -no-alsa ........... Do not compile ALSA support.
- +  -alsa .............. Compile ALSA support.
+    -no-pulseaudio ...... Do not compile PulseAudio support.
+ +  -pulseaudio ......... Compile PulseAudio support.
 
-    -no-gtkstyle ....... Do not compile GTK theme support.
- +  -gtkstyle .......... Compile GTK theme support.
+    -no-alsa ............ Do not compile ALSA support.
+ +  -alsa ............... Compile ALSA support.
+
+    -no-gtkstyle ........ Do not compile GTK theme support.
+ +  -gtkstyle ........... Compile GTK theme support.
 
 Additional options:
 
@@ -2553,6 +2572,9 @@ Additional options:
                           With no parameter, this will attempt to auto-detect
                           OpenGL ES 2.0 and higher, or regular desktop OpenGL.
                           Use es2 for <api> to override auto-detection.
+
+    -no-libinput ........ Do not support libinput.
+ *  -libinput ........... Enable libinput support.
 
  *  -no-system-proxies .. Do not use system network proxies by default.
     -system-proxies ..... Use system network proxies by default.
@@ -2991,7 +3013,7 @@ if [ "$XPLATFORM_MAC" = "no" -a "$CFG_DEBUG_RELEASE" = "yes" ]; then
 fi
 
 if ( [ "$CFG_XCB" = "system" ] || [ "$CFG_XCB" = "qt" ] ) && [ "$CFG_XKBCOMMON" = "no" ]; then
-    echo "Error: -no-xkbcommon is not supported on XCB platform plugin."
+    echo "Error: -no-xkbcommon-x11 is not supported on XCB platform plugin."
     exit 101
 fi
 
@@ -5086,6 +5108,47 @@ if [ "$CFG_TSLIB" = "no" ]; then
     QMakeVar add DEFINES QT_NO_TSLIB
 fi
 
+if [ "$CFG_XKBCOMMON_EVDEV" != "no" ]; then
+    if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists xkbcommon 2>/dev/null; then
+        QMAKE_INCDIR_XKBCOMMON_EVDEV=`$PKG_CONFIG --cflags-only-I xkbcommon 2>/dev/null | sed -e 's,^-I,,g' -e 's, -I, ,g'`
+        QMAKE_LIBS_XKBCOMMON_EVDEV=`$PKG_CONFIG --libs xkbcommon 2>/dev/null`
+        QMAKE_CFLAGS_XKBCOMMON_EVDEV=`$PKG_CONFIG --cflags xkbcommon 2>/dev/null`
+        QMakeVar set QMAKE_INCDIR_XKBCOMMON_EVDEV "$QMAKE_INCDIR_XKBCOMMON_EVDEV"
+        QMakeVar set QMAKE_LIBS_XKBCOMMON_EVDEV "$QMAKE_LIBS_XKBCOMMON_EVDEV"
+    fi
+    if compileTest unix/xkbcommon "xkbcommon" $QMAKE_CFLAGS_XKBCOMMON_EVDEV $QMAKE_LIBS_XKBCOMMON_EVDEV; then
+        CFG_XKBCOMMON_EVDEV=yes
+        QT_CONFIG="$QT_CONFIG xkbcommon-evdev"
+    elif [ "$CFG_XKBCOMMON_EVDEV" = "yes" ]; then
+        echo "The xkbcommon-evdev functionality test failed!"
+        exit 1
+    else
+        CFG_XKBCOMMON_EVDEV=no
+    fi
+fi
+
+if [ "$CFG_LIBINPUT" != "no" ] && [ "$CFG_LIBUDEV" != "no" ]; then
+    if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists libinput 2>/dev/null; then
+        QMAKE_INCDIR_LIBINPUT=`$PKG_CONFIG --cflags-only-I libinput 2>/dev/null | sed -e 's,^-I,,g' -e 's, -I, ,g'`
+        QMAKE_LIBS_LIBINPUT=`$PKG_CONFIG --libs libinput 2>/dev/null`
+        QMAKE_CFLAGS_LIBINPUT=`$PKG_CONFIG --cflags libinput 2>/dev/null`
+        QMakeVar set QMAKE_INCDIR_LIBINPUT "$QMAKE_INCDIR_LIBINPUT"
+        QMakeVar set QMAKE_LIBS_LIBINPUT "$QMAKE_LIBS_LIBINPUT"
+    fi
+    if compileTest unix/libinput "libinput" $QMAKE_CFLAGS_LIBINPUT $QMAKE_LIBS_LIBINPUT; then
+        CFG_LIBINPUT=yes
+        QT_CONFIG="$QT_CONFIG libinput"
+    elif [ "$CFG_LIBINPUT" = "yes" ]; then
+        echo "The libinput functionality test failed!"
+        exit 1
+    else
+        CFG_LIBINPUT=no
+    fi
+fi
+if [ "$CFG_LIBINPUT" = "no" ]; then
+    QMakeVar add DEFINES QT_NO_LIBINPUT
+fi
+
 # Check we actually have X11 :-)
 if compileTest x11/xlib "XLib"; then
     QT_CONFIG="$QT_CONFIG xlib"
@@ -6716,6 +6779,7 @@ report_support_plugin "    GIF .................." "$CFG_GIF" qt QtGui
 report_support_plugin "    JPEG ................." "$CFG_JPEG" "$CFG_LIBJPEG" QtGui
 report_support_plugin "    PNG .................." "$CFG_PNG" "$CFG_LIBPNG" QtGui
 report_support "  journald ..............." "$CFG_JOURNALD"
+report_support "  libinput................" "$CFG_LIBINPUT"
 report_support "  mtdev .................." "$CFG_MTDEV" yes "system library"
 report_support "  Networking:"
 [ "$XPLATFORM_MAC" = "yes" ] && \
@@ -6778,7 +6842,8 @@ report_support_plugin "    SQLite ..............." "$CFG_SQL_sqlite" "$CFG_SQLIT
 report_support "    TDS .................." "$CFG_SQL_tds" plugin "plugin" yes "built into QtSql"
 report_support "  tslib .................." "$CFG_TSLIB"
 report_support "  udev ..................." "$CFG_LIBUDEV"
-report_support "  xkbcommon .............." "$CFG_XKBCOMMON" system "system library" qt "bundled copy, XKB config root: $CFG_XKB_CONFIG_ROOT"
+report_support "  xkbcommon-x11..........." "$CFG_XKBCOMMON" system "system library" qt "bundled copy, XKB config root: $CFG_XKB_CONFIG_ROOT"
+report_support "  xkbcommon-evdev........." "$CFG_XKBCOMMON_EVDEV"
 report_support "  zlib ..................." "$CFG_ZLIB" system "system library" yes "bundled copy"
 
 echo
