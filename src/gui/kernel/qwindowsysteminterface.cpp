@@ -201,6 +201,11 @@ bool QWindowSystemInterface::tryHandleShortcutEvent(QWindow *w, ulong timestamp,
 #ifndef QT_NO_SHORTCUT
     QGuiApplicationPrivate::modifier_buttons = mods;
 
+    if (!w)
+        w = QGuiApplication::focusWindow();
+    if (!w)
+        return false;
+
     QObject *focus = w->focusObject();
     if (!focus)
         focus = w;
@@ -287,8 +292,8 @@ void QWindowSystemInterface::handleKeyEvent(QWindow *w, QEvent::Type t, int k, Q
 
 void QWindowSystemInterface::handleKeyEvent(QWindow *tlw, ulong timestamp, QEvent::Type t, int k, Qt::KeyboardModifiers mods, const QString & text, bool autorep, ushort count)
 {
-    if (t == QEvent::KeyPress && tlw && QWindowSystemInterface::tryHandleShortcutEvent(tlw, timestamp, k, mods, text))
-            return;
+    if (t == QEvent::KeyPress && QWindowSystemInterface::tryHandleShortcutEvent(tlw, timestamp, k, mods, text))
+        return;
 
     QWindowSystemInterfacePrivate::KeyEvent * e =
             new QWindowSystemInterfacePrivate::KeyEvent(tlw, timestamp, t, k, mods, text, autorep, count);
@@ -314,8 +319,8 @@ void QWindowSystemInterface::handleExtendedKeyEvent(QWindow *tlw, ulong timestam
                                                     ushort count, bool tryShortcutOverride)
 {
     // on OS X we try the shortcut override even earlier and thus shouldn't handle it here
-    if (tryShortcutOverride && tlw && type == QEvent::KeyPress && QWindowSystemInterface::tryHandleShortcutEvent(tlw, timestamp, key, modifiers, text))
-            return;
+    if (tryShortcutOverride && type == QEvent::KeyPress && QWindowSystemInterface::tryHandleShortcutEvent(tlw, timestamp, key, modifiers, text))
+        return;
 
     QWindowSystemInterfacePrivate::KeyEvent * e =
             new QWindowSystemInterfacePrivate::KeyEvent(tlw, timestamp, type, key, modifiers,
