@@ -374,9 +374,6 @@ QVariant QXcbIntegration::styleHint(QPlatformIntegration::StyleHint hint) const
         // X11 always has support for windows, but the
         // window manager could prevent it (e.g. matchbox)
         return false;
-    case QPlatformIntegration::SynthesizeMouseFromTouchEvents:
-        // We do not want Qt to synthesize mouse events if X11 already does it.
-        return m_connections.at(0)->hasTouchWithoutMouseEmulation();
     default:
         break;
     }

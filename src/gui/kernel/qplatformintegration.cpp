@@ -386,8 +386,6 @@ QVariant QPlatformIntegration::styleHint(StyleHint hint) const
         return QPlatformTheme::defaultThemeHint(QPlatformTheme::StartDragVelocity);
     case UseRtlExtensions:
         return QVariant(false);
-    case SynthesizeMouseFromTouchEvents:
-        return true;
     case SetFocusOnTouchRelease:
         return QVariant(false);
     case MousePressAndHoldInterval:

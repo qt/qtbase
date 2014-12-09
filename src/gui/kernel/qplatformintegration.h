@@ -141,7 +141,6 @@ public:
         FontSmoothingGamma,
         StartDragVelocity,
         UseRtlExtensions,
-        SynthesizeMouseFromTouchEvents,
         PasswordMaskCharacter,
         SetFocusOnTouchRelease,
         ShowIsMaximized,

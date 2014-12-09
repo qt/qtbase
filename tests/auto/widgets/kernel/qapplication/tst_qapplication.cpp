@@ -2006,9 +2006,6 @@ void tst_QApplication::touchEventPropagation()
     int argc = 1;
     QApplication app(argc, &argv0);
 
-    const bool mouseEventSynthesizing = QGuiApplicationPrivate::platformIntegration()
-        ->styleHint(QPlatformIntegration::SynthesizeMouseFromTouchEvents).toBool();
-
     QList<QTouchEvent::TouchPoint> pressedTouchPoints;
     QTouchEvent::TouchPoint press(0);
     press.setState(Qt::TouchPointPressed);
@@ -2047,7 +2044,7 @@ void tst_QApplication::touchEventPropagation()
                                                  touchPointList(releasedTouchPoints));
         QCoreApplication::processEvents();
         QVERIFY(!window.seenTouchEvent);
-        QCOMPARE(window.seenMouseEvent, mouseEventSynthesizing); // QApplication may transform ignored touch events in mouse events
+        QVERIFY(window.seenMouseEvent); // QApplication may transform ignored touch events in mouse events
 
         window.reset();
         window.setAttribute(Qt::WA_AcceptTouchEvents);
@@ -2061,7 +2058,7 @@ void tst_QApplication::touchEventPropagation()
                                                  touchPointList(releasedTouchPoints));
         QCoreApplication::processEvents();
         QVERIFY(window.seenTouchEvent);
-        QCOMPARE(window.seenMouseEvent, mouseEventSynthesizing);
+        QVERIFY(window.seenMouseEvent);
 
         window.reset();
         window.acceptTouchEvent = true;
@@ -2100,9 +2097,9 @@ void tst_QApplication::touchEventPropagation()
                                                  touchPointList(releasedTouchPoints));
         QCoreApplication::processEvents();
         QVERIFY(!widget.seenTouchEvent);
-        QCOMPARE(widget.seenMouseEvent, mouseEventSynthesizing);
+        QVERIFY(widget.seenMouseEvent);
         QVERIFY(!window.seenTouchEvent);
-        QCOMPARE(window.seenMouseEvent, mouseEventSynthesizing);
+        QVERIFY(window.seenMouseEvent);
 
         window.reset();
         widget.reset();
@@ -2117,9 +2114,9 @@ void tst_QApplication::touchEventPropagation()
                                                  touchPointList(releasedTouchPoints));
         QCoreApplication::processEvents();
         QVERIFY(widget.seenTouchEvent);
-        QCOMPARE(widget.seenMouseEvent, mouseEventSynthesizing);
+        QVERIFY(widget.seenMouseEvent);
         QVERIFY(!window.seenTouchEvent);
-        QCOMPARE(window.seenMouseEvent, mouseEventSynthesizing);
+        QVERIFY(window.seenMouseEvent);
 
         window.reset();
         widget.reset();
@@ -2134,7 +2131,7 @@ void tst_QApplication::touchEventPropagation()
                                                  touchPointList(releasedTouchPoints));
         QCoreApplication::processEvents();
         QVERIFY(widget.seenTouchEvent);
-        QCOMPARE(widget.seenMouseEvent, mouseEventSynthesizing);
+        QVERIFY(widget.seenMouseEvent);
         QVERIFY(!window.seenTouchEvent);
         QVERIFY(!window.seenMouseEvent);
 
@@ -2169,9 +2166,9 @@ void tst_QApplication::touchEventPropagation()
                                                  touchPointList(releasedTouchPoints));
         QCoreApplication::processEvents();
         QVERIFY(!widget.seenTouchEvent);
-        QCOMPARE(widget.seenMouseEvent, mouseEventSynthesizing);
+        QVERIFY(widget.seenMouseEvent);
         QVERIFY(window.seenTouchEvent);
-        QCOMPARE(window.seenMouseEvent, mouseEventSynthesizing);
+        QVERIFY(window.seenMouseEvent);
 
         window.reset();
         widget.reset();
@@ -2186,13 +2183,13 @@ void tst_QApplication::touchEventPropagation()
                                                  touchPointList(releasedTouchPoints));
         QCoreApplication::processEvents();
         QVERIFY(!widget.seenTouchEvent);
-        QCOMPARE(widget.seenMouseEvent, mouseEventSynthesizing);
+        QVERIFY(!widget.seenMouseEvent);
         QVERIFY(window.seenTouchEvent);
         QVERIFY(!window.seenMouseEvent);
 
         window.reset();
         widget.reset();
-        widget.acceptMouseEvent = true; // it matters, touch events are propagated in parallel to synthesized mouse events
+        widget.acceptMouseEvent = true; // doesn't matter, touch events are propagated first
         window.acceptTouchEvent = true;
         QWindowSystemInterface::handleTouchEvent(window.windowHandle(),
                                                  0,
@@ -2204,8 +2201,8 @@ void tst_QApplication::touchEventPropagation()
                                                  touchPointList(releasedTouchPoints));
         QCoreApplication::processEvents();
         QVERIFY(!widget.seenTouchEvent);
-        QCOMPARE(widget.seenMouseEvent, mouseEventSynthesizing);
-        QCOMPARE(!window.seenTouchEvent, mouseEventSynthesizing);
+        QVERIFY(!widget.seenMouseEvent);
+        QVERIFY(window.seenTouchEvent);
         QVERIFY(!window.seenMouseEvent);
     }
 }

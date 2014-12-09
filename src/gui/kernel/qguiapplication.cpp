@@ -788,12 +788,6 @@ bool QGuiApplicationPrivate::isWindowBlocked(QWindow *window, QWindow **blocking
     return false;
 }
 
-bool QGuiApplicationPrivate::synthesizeMouseFromTouchEventsEnabled()
-{
-    return QCoreApplication::testAttribute(Qt::AA_SynthesizeMouseForUnhandledTouchEvents)
-            && QGuiApplicationPrivate::platformIntegration()->styleHint(QPlatformIntegration::SynthesizeMouseFromTouchEvents).toBool();
-}
-
 /*!
     Returns the QWindow that receives events tied to focus,
     such as key events.
@@ -2423,9 +2417,9 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
         }
 
         QGuiApplication::sendSpontaneousEvent(w, &touchEvent);
-        if (!e->synthetic() && !touchEvent.isAccepted() && synthesizeMouseFromTouchEventsEnabled()) {
-            // exclude touchpads as those generate their own mouse events
-            if (touchEvent.device()->type() != QTouchDevice::TouchPad) {
+        if (!e->synthetic() && !touchEvent.isAccepted() && qApp->testAttribute(Qt::AA_SynthesizeMouseForUnhandledTouchEvents)) {
+            // exclude devices which generate their own mouse events
+            if (!(touchEvent.device()->capabilities() & QTouchDevice::MouseEmulation)) {
                 Qt::MouseButtons b = eventType == QEvent::TouchEnd ? Qt::NoButton : Qt::LeftButton;
                 if (b == Qt::NoButton)
                     self->synthesizedMousePoints.clear();

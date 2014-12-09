@@ -128,7 +128,10 @@ static inline QTouchDevice *createTouchDevice()
     QTouchDevice *result = new QTouchDevice;
     result->setType(digitizers & QT_NID_INTEGRATED_TOUCH
                     ? QTouchDevice::TouchScreen : QTouchDevice::TouchPad);
-    result->setCapabilities(QTouchDevice::Position | QTouchDevice::Area | QTouchDevice::NormalizedPosition);
+    QTouchDevice::Capabilities capabilities = QTouchDevice::Position | QTouchDevice::Area | QTouchDevice::NormalizedPosition;
+    if (result->type() == QTouchDevice::TouchPad)
+        capabilities |= QTouchDevice::MouseEmulation;
+    result->setCapabilities(capabilities);
     result->setMaximumTouchPoints(maxTouchPoints);
     return result;
 }
@@ -150,8 +153,6 @@ QWindowsMouseHandler::QWindowsMouseHandler() :
     m_leftButtonDown(false),
     m_previousCaptureWindow(0)
 {
-    if (m_touchDevice)
-        QWindowSystemInterface::registerTouchDevice(m_touchDevice);
 }
 
 Qt::MouseButtons QWindowsMouseHandler::queryMouseButtons()

@@ -9824,9 +9824,6 @@ public:
 
 void tst_QWidget::touchEventSynthesizedMouseEvent()
 {
-    // Pass if the platform does not want mouse event synhesizing
-    if (!QGuiApplicationPrivate::platformIntegration()->styleHint(QPlatformIntegration::SynthesizeMouseFromTouchEvents).toBool())
-        return;
     if (m_platform == QStringLiteral("wayland"))
         QSKIP("Wayland: This fails. Figure out why.");
 
@@ -9852,7 +9849,7 @@ void tst_QWidget::touchEventSynthesizedMouseEvent()
         QCOMPARE(widget.m_lastMouseEventPos, QPointF(15, 15));
         QTest::touchEvent(&widget, device).release(0, QPoint(20, 20), &widget);
         QCOMPARE(widget.m_touchEventCount, 0);
-        QCOMPARE(widget.m_mouseEventCount, 3);
+        QCOMPARE(widget.m_mouseEventCount, 4); // we receive extra mouse move event
         QCOMPARE(widget.m_lastMouseEventPos, QPointF(20, 20));
     }
 
@@ -9903,8 +9900,7 @@ void tst_QWidget::touchEventSynthesizedMouseEvent()
         QCOMPARE(parent.m_touchEventCount, 1);
         QCOMPARE(parent.m_mouseEventCount, 0);
         QCOMPARE(child.m_touchEventCount, 0);
-        QCOMPARE(child.m_mouseEventCount, 1); // Attempt at mouse event before propagation
-        QCOMPARE(child.m_lastMouseEventPos, QPointF(10, 10));
+        QCOMPARE(child.m_mouseEventCount, 0);
     }
 
     {

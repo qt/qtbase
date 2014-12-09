@@ -157,7 +157,7 @@ static NSString *_q_NSWindowDidChangeOcclusionStateNotification = nil;
         if (!touchDevice) {
             touchDevice = new QTouchDevice;
             touchDevice->setType(QTouchDevice::TouchPad);
-            touchDevice->setCapabilities(QTouchDevice::Position | QTouchDevice::NormalizedPosition);
+            touchDevice->setCapabilities(QTouchDevice::Position | QTouchDevice::NormalizedPosition | QTouchDevice::MouseEmulation);
             QWindowSystemInterface::registerTouchDevice(touchDevice);
         }
     }

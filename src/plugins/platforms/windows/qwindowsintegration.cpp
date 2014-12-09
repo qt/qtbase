@@ -227,6 +227,18 @@ QWindowsIntegrationPrivate::QWindowsIntegrationPrivate(const QStringList &paramL
     qCDebug(lcQpaWindows)
         << __FUNCTION__ << "DpiAwareness=" << dpiAwareness <<",Scaling="
         << QWindowsScaling::factor();
+
+    QTouchDevice *touchDevice = m_context.touchDevice();
+    if (touchDevice) {
+#ifdef Q_OS_WINCE
+        touchDevice->setCapabilities(touchDevice->capabilities() | QTouchDevice::MouseEmulation);
+#else
+        if (!(m_options & QWindowsIntegration::DontPassOsMouseEventsSynthesizedFromTouch)) {
+            touchDevice->setCapabilities(touchDevice->capabilities() | QTouchDevice::MouseEmulation);
+        }
+#endif
+        QWindowSystemInterface::registerTouchDevice(touchDevice);
+    }
 }
 
 QWindowsIntegrationPrivate::~QWindowsIntegrationPrivate()
@@ -496,13 +508,6 @@ QVariant QWindowsIntegration::styleHint(QPlatformIntegration::StyleHint hint) co
         break;
     case QPlatformIntegration::UseRtlExtensions:
         return QVariant(d->m_context.useRTLExtensions());
-    case QPlatformIntegration::SynthesizeMouseFromTouchEvents:
-#ifdef Q_OS_WINCE
-        // We do not want Qt to synthesize mouse events as Windows also does that.
-       return false;
-#else // Q_OS_WINCE
-       return QVariant(bool(d->m_options & DontPassOsMouseEventsSynthesizedFromTouch));
-#endif // !Q_OS_WINCE
     default:
         break;
     }

@@ -55,7 +55,8 @@ public:
         Pressure = 0x0004,
         Velocity = 0x0008,
         RawPositions = 0x0010,
-        NormalizedPosition = 0x0020
+        NormalizedPosition = 0x0020,
+        MouseEmulation = 0x0040
     };
     Q_DECLARE_FLAGS(Capabilities, CapabilityFlag)
 
