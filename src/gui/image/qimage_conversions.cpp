@@ -2252,7 +2252,7 @@ Image_Converter qimage_converter_map[QImage::NImageFormats][QImage::NImageFormat
         convert_ARGB_to_ARGB_PM,
 #else
         0,
-        0
+        0,
 #endif
         0, 0, 0, 0
     }, // Format_RGBA8888
@@ -2281,7 +2281,7 @@ Image_Converter qimage_converter_map[QImage::NImageFormats][QImage::NImageFormat
 #else
         0,
         0,
-        0
+        0,
 #endif
         0, 0, 0, 0
     }, // Format_RGBA8888_Premultiplied
