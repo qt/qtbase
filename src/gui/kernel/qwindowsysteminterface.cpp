@@ -595,7 +595,7 @@ bool QWindowSystemInterface::flushWindowSystemEvents(QEventLoop::ProcessEventsFl
 {
     const int count = QWindowSystemInterfacePrivate::windowSystemEventQueue.count();
     if (!count)
-        return true;
+        return QWindowSystemInterfacePrivate::eventAccepted;
     if (!QGuiApplication::instance()) {
         qWarning().nospace()
             << "QWindowSystemInterface::flushWindowSystemEvents() invoked after "
