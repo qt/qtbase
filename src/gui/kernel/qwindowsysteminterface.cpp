@@ -606,7 +606,7 @@ bool QWindowSystemInterface::flushWindowSystemEvents(QEventLoop::ProcessEventsFl
     if (QThread::currentThread() != QGuiApplication::instance()->thread()) {
         QMutexLocker locker(&QWindowSystemInterfacePrivate::flushEventMutex);
         QWindowSystemInterfacePrivate::FlushEventsEvent *e = new QWindowSystemInterfacePrivate::FlushEventsEvent(flags);
-        QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
+        QWindowSystemInterfacePrivate::postWindowSystemEvent(e);
         QWindowSystemInterfacePrivate::eventsFlushed.wait(&QWindowSystemInterfacePrivate::flushEventMutex);
     } else {
         sendWindowSystemEvents(flags);
