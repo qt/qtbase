@@ -1871,10 +1871,8 @@ while [ "$#" -gt 0 ]; do
         fi
         ;;
     dbus)
-        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ] || [ "$VAL" = "linked" ]; then
+        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ] || [ "$VAL" = "linked" ] || [ "$VAL" = "runtime" ]; then
             CFG_DBUS="$VAL"
-	elif [ "$VAL" = "runtime" ]; then
-	    CFG_DBUS="yes"
         else
             UNKNOWN_OPT=yes
         fi
@@ -5780,8 +5778,8 @@ fi
 [ "$CFG_ICONV" = "sun" ] && QT_CONFIG="$QT_CONFIG sun-libiconv"
 [ "$CFG_ICONV" = "gnu" ] && QT_CONFIG="$QT_CONFIG gnu-libiconv"
 [ "$CFG_GLIB" = "yes" ] && QT_CONFIG="$QT_CONFIG glib"
-[ "$CFG_DBUS" = "yes" ] && QT_CONFIG="$QT_CONFIG dbus"
-[ "$CFG_DBUS" = "linked" ] && QT_CONFIG="$QT_CONFIG dbus dbus-linked"
+[ "$CFG_DBUS" != "no" ] && QT_CONFIG="$QT_CONFIG dbus"
+[ "$CFG_DBUS" = "linked" ] && QT_CONFIG="$QT_CONFIG dbus-linked"
 [ "$CFG_OPENSSL" = "yes" ] && QT_CONFIG="$QT_CONFIG openssl"
 [ "$CFG_OPENSSL" = "linked" ] && QT_CONFIG="$QT_CONFIG openssl-linked"
 [ "$CFG_XCB" != "no" ] && QT_CONFIG="$QT_CONFIG xcb"
@@ -6559,7 +6557,7 @@ fi
 # Qt modules
 echo
 echo "Qt modules and options:"
-report_support "  Qt D-Bus ..............." "$CFG_DBUS" yes "loading dbus-1 at runtime" linked "linked to dbus-1"
+report_support "  Qt D-Bus ..............." "$CFG_DBUS" runtime "loading dbus-1 at runtime" linked "linked to dbus-1"
 report_support "  Qt Concurrent .........." "$CFG_CONCURRENT"
 report_support "  Qt GUI ................." "$CFG_GUI"
 report_support "  Qt Widgets ............." "$CFG_WIDGETS"
