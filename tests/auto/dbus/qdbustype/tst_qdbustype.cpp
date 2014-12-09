@@ -35,8 +35,18 @@
 #include <QtCore/QCoreApplication>
 
 #include <QtDBus/private/qdbusutil_p.h>
+#include <QtDBus/private/qdbus_symbols_p.h>
 
-#include <dbus/dbus.h>
+DEFINEFUNC(dbus_bool_t, dbus_signature_validate, (const char       *signature,
+                                                DBusError        *error),
+           (signature, error), return)
+DEFINEFUNC(dbus_bool_t, dbus_signature_validate_single, (const char       *signature,
+                                                         DBusError        *error),
+           (signature, error), return)
+DEFINEFUNC(dbus_bool_t, dbus_type_is_basic, (int            typecode),
+           (typecode), return)
+DEFINEFUNC(dbus_bool_t, dbus_type_is_fixed, (int            typecode),
+           (typecode), return)
 
 class tst_QDBusType : public QObject
 {
@@ -182,7 +192,7 @@ void tst_QDBusType::isValidFixedType()
 
     int type = data.at(0).unicode();
     if (isValid)
-        QCOMPARE(bool(dbus_type_is_fixed(type)), result);
+        QCOMPARE(bool(q_dbus_type_is_fixed(type)), result);
     QCOMPARE(QDBusUtil::isValidFixedType(type), result);
 }
 
@@ -204,7 +214,7 @@ void tst_QDBusType::isValidBasicType()
 
     int type = data.at(0).unicode();
     if (isValid)
-        QCOMPARE(bool(dbus_type_is_basic(type)), result);
+        QCOMPARE(bool(q_dbus_type_is_basic(type)), result);
     QCOMPARE(QDBusUtil::isValidBasicType(type), result);
 }
 
@@ -220,7 +230,7 @@ void tst_QDBusType::isValidSingleSignature()
     QFETCH(QString, data);
     QFETCH(bool, result);
 
-    QCOMPARE(bool(dbus_signature_validate_single(data.toLatin1(), 0)), result);
+    QCOMPARE(bool(q_dbus_signature_validate_single(data.toLatin1(), 0)), result);
     QCOMPARE(QDBusUtil::isValidSingleSignature(data), result);
 }
 
@@ -236,11 +246,11 @@ void tst_QDBusType::isValidArray()
     QFETCH(bool, result);
 
     data.prepend("a");
-    QCOMPARE(bool(dbus_signature_validate_single(data.toLatin1(), 0)), result);
+    QCOMPARE(bool(q_dbus_signature_validate_single(data.toLatin1(), 0)), result);
     QCOMPARE(QDBusUtil::isValidSingleSignature(data), result);
 
     data.prepend("a");
-    QCOMPARE(bool(dbus_signature_validate_single(data.toLatin1(), 0)), result);
+    QCOMPARE(bool(q_dbus_signature_validate_single(data.toLatin1(), 0)), result);
     QCOMPARE(QDBusUtil::isValidSingleSignature(data), result);
 }
 
@@ -256,7 +266,7 @@ void tst_QDBusType::isValidSignature()
 
     data.append(data);
     if (data.at(0).unicode())
-        QCOMPARE(bool(dbus_signature_validate(data.toLatin1(), 0)), result);
+        QCOMPARE(bool(q_dbus_signature_validate(data.toLatin1(), 0)), result);
     QCOMPARE(QDBusUtil::isValidSignature(data), result);
 }
 
