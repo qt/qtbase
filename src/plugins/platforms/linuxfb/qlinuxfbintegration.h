@@ -35,6 +35,7 @@
 #define QLINUXFBINTEGRATION_H
 
 #include <qpa/qplatformintegration.h>
+#include <qpa/qplatformnativeinterface.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -42,7 +43,7 @@ class QAbstractEventDispatcher;
 class QLinuxFbScreen;
 class QFbVtHandler;
 
-class QLinuxFbIntegration : public QPlatformIntegration
+class QLinuxFbIntegration : public QPlatformIntegration, public QPlatformNativeInterface
 {
 public:
     QLinuxFbIntegration(const QStringList &paramList);
@@ -63,6 +64,8 @@ public:
     QList<QPlatformScreen *> screens() const;
 
 private:
+    void createInputHandlers();
+
     QLinuxFbScreen *m_primaryScreen;
     QPlatformInputContext *m_inputContext;
     QScopedPointer<QPlatformFontDatabase> m_fontDb;

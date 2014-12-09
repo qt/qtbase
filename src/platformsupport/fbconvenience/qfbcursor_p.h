@@ -50,9 +50,12 @@
 QT_BEGIN_NAMESPACE
 
 class QFbScreen;
+class QDeviceDiscovery;
 
 class QFbCursor : public QPlatformCursor
 {
+    Q_OBJECT
+
 public:
     QFbCursor(QFbScreen *screen);
 
@@ -70,6 +73,8 @@ public:
     virtual bool isDirty() const { return mDirty; }
     virtual bool isOnScreen() const { return mOnScreen; }
     virtual QRect lastPainted() const { return mPrevRect; }
+
+    void setMouseDeviceDiscovery(QDeviceDiscovery *dd);
 
 private:
     void setCursor(const uchar *data, const uchar *mask, int width, int height, int hotX, int hotY);

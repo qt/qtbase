@@ -46,6 +46,16 @@
 #include <QtGui/private/qguiapplication_p.h>
 #include <qpa/qplatforminputcontextfactory_p.h>
 
+#if !defined(QT_NO_EVDEV) && (!defined(Q_OS_ANDROID) || defined(Q_OS_ANDROID_NO_SDK))
+#include <QtPlatformSupport/private/qevdevmousemanager_p.h>
+#include <QtPlatformSupport/private/qevdevkeyboardmanager_p.h>
+#include <QtPlatformSupport/private/qevdevtouch_p.h>
+#endif
+
+#if !defined(QT_NO_TSLIB) && (!defined(Q_OS_ANDROID) || defined(Q_OS_ANDROID_NO_SDK))
+#include <QtPlatformSupport/private/qtslib_p.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 QLinuxFbIntegration::QLinuxFbIntegration(const QStringList &paramList)
@@ -70,6 +80,9 @@ void QLinuxFbIntegration::initialize()
     m_inputContext = QPlatformInputContextFactory::create();
 
     m_vtHandler.reset(new QFbVtHandler);
+
+    if (!qEnvironmentVariableIntValue("QT_QPA_FB_DISABLE_INPUT"))
+        createInputHandlers();
 }
 
 bool QLinuxFbIntegration::hasCapability(QPlatformIntegration::Capability cap) const
@@ -111,6 +124,26 @@ QPlatformFontDatabase *QLinuxFbIntegration::fontDatabase() const
 QPlatformServices *QLinuxFbIntegration::services() const
 {
     return m_services.data();
+}
+
+void QLinuxFbIntegration::createInputHandlers()
+{
+#if !defined(QT_NO_EVDEV) && (!defined(Q_OS_ANDROID) || defined(Q_OS_ANDROID_NO_SDK))
+    new QEvdevKeyboardManager(QLatin1String("EvdevKeyboard"), QString(), this);
+    QEvdevMouseManager *mouseMgr = new QEvdevMouseManager(QLatin1String("EvdevMouse"), QString(), this);
+    Q_FOREACH (QScreen *screen, QGuiApplication::screens()) {
+        QFbCursor *cursor = qobject_cast<QFbCursor *>(screen->handle()->cursor());
+        if (cursor)
+            cursor->setMouseDeviceDiscovery(mouseMgr->deviceDiscovery());
+    }
+#ifndef QT_NO_TSLIB
+    const bool useTslib = qEnvironmentVariableIntValue("QT_QPA_FB_TSLIB");
+    if (useTslib)
+        new QTsLibMouseHandler(QLatin1String("TsLib"), QString());
+    else
+#endif // QT_NO_TSLIB
+        new QEvdevTouchScreenHandlerThread(QString(), this);
+#endif
 }
 
 QT_END_NAMESPACE

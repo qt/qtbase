@@ -137,4 +137,9 @@ void QFbCursor::setDirty()
     }
 }
 
+void QFbCursor::setMouseDeviceDiscovery(QDeviceDiscovery *dd)
+{
+    Q_UNUSED(dd);
+}
+
 QT_END_NAMESPACE
