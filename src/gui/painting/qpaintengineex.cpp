@@ -1075,9 +1075,9 @@ void QPaintEngineEx::drawStaticTextItem(QStaticTextItem *staticTextItem)
     }
 }
 
-bool QPaintEngineEx::requiresPretransformedGlyphPositions(QFontEngine *, const QTransform &t) const
+bool QPaintEngineEx::requiresPretransformedGlyphPositions(QFontEngine *, const QTransform &) const
 {
-    return t.type() >= QTransform::TxProject;
+    return false;
 }
 
 bool QPaintEngineEx::shouldDrawCachedGlyphs(QFontEngine *fontEngine, const QTransform &m) const
