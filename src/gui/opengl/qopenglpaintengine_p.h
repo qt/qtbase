@@ -186,8 +186,7 @@ public:
             snapToPixelGrid(false),
             nativePaintingActive(false),
             inverseScale(1),
-            lastTextureUnitUsed(QT_UNKNOWN_TEXTURE_UNIT),
-            lastMaskTextureUsed(0)
+            lastTextureUnitUsed(QT_UNKNOWN_TEXTURE_UNIT)
     { }
 
     ~QOpenGL2PaintEngineExPrivate();
@@ -306,7 +305,6 @@ public:
 
     GLenum lastTextureUnitUsed;
     GLuint lastTextureUsed;
-    GLuint lastMaskTextureUsed;
 
     bool needsSync;
     bool multisamplingAlwaysEnabled;

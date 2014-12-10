@@ -697,10 +697,6 @@ void QOpenGL2PaintEngineExPrivate::transferMode(EngineMode newMode)
     if (newMode == mode)
         return;
 
-    if (mode != BrushDrawingMode) {
-        lastTextureUsed = GLuint(-1);
-    }
-
     if (newMode == TextDrawingMode) {
         shaderManager->setHasComplexGeometry(true);
     } else {
@@ -1934,34 +1930,22 @@ void QOpenGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngine::GlyphFormat gly
         prepareForCachedGlyphDraw(*cache);
     }
 
-    QOpenGLTextureGlyphCache::FilterMode filterMode = (s->matrix.type() > QTransform::TxTranslate)?QOpenGLTextureGlyphCache::Linear:QOpenGLTextureGlyphCache::Nearest;
-    if (lastMaskTextureUsed != cache->texture() || cache->filterMode() != filterMode) {
+    GLenum textureUnit = QT_MASK_TEXTURE_UNIT;
+    if (glyphFormat == QFontEngine::Format_ARGB)
+        textureUnit = QT_IMAGE_TEXTURE_UNIT;
 
-        if (glyphFormat == QFontEngine::Format_ARGB)
-            funcs.glActiveTexture(GL_TEXTURE0 + QT_IMAGE_TEXTURE_UNIT);
-        else
-            funcs.glActiveTexture(GL_TEXTURE0 + QT_MASK_TEXTURE_UNIT);
+    QOpenGLTextureGlyphCache::FilterMode filterMode = (s->matrix.type() > QTransform::TxTranslate) ?
+        QOpenGLTextureGlyphCache::Linear : QOpenGLTextureGlyphCache::Nearest;
 
-        // Need to reset the unit here, until we've made drawCachedGlyphs
-        // use the shared code-path for activating and binding.
-        lastTextureUnitUsed = QT_UNKNOWN_TEXTURE_UNIT;
+    GLenum glFilterMode = filterMode == QOpenGLTextureGlyphCache::Linear ? GL_LINEAR : GL_NEAREST;
 
-        if (lastMaskTextureUsed != cache->texture()) {
-            funcs.glBindTexture(GL_TEXTURE_2D, cache->texture());
-            lastMaskTextureUsed = cache->texture();
-        }
-
-        if (cache->filterMode() != filterMode) {
-            if (filterMode == QOpenGLTextureGlyphCache::Linear) {
-                funcs.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-                funcs.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-            } else {
-                funcs.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-                funcs.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-            }
-            cache->setFilterMode(filterMode);
-        }
+    TextureUpdateMode updateMode = UpdateIfNeeded;
+    if (cache->filterMode() != filterMode) {
+        updateMode = ForceUpdate;
+        cache->setFilterMode(filterMode);
     }
+
+    updateTexture(textureUnit, cache->texture(), GL_REPEAT, glFilterMode, updateMode);
 
 #if defined(QT_OPENGL_DRAWCACHEDGLYPHS_INDEX_ARRAY_VBO)
     funcs.glDrawElements(GL_TRIANGLE_STRIP, 6 * numGlyphs, GL_UNSIGNED_SHORT, 0);
@@ -2185,7 +2169,6 @@ void QOpenGL2PaintEngineEx::ensureActive()
         d->transferMode(BrushDrawingMode);
         d->funcs.glViewport(0, 0, d->width, d->height);
         d->needsSync = false;
-        d->lastMaskTextureUsed = 0;
         d->shaderManager->setDirty();
         d->syncGlState();
         for (int i = 0; i < 3; ++i)
