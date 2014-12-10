@@ -68,6 +68,7 @@ static QUIView *focusView()
   @private
     QIOSInputContext *m_context;
 }
+@property BOOL hasDeferredScrollToCursor;
 @end
 
 @implementation QIOSKeyboardListener
@@ -79,6 +80,8 @@ static QUIView *focusView()
         Q_ASSERT(self == originalSelf);
 
         m_context = context;
+
+        self.hasDeferredScrollToCursor = NO;
 
         // UIGestureRecognizer
         self.enabled = NO;
@@ -231,9 +234,14 @@ static QUIView *focusView()
         qImDebug() << "keyboard was hidden, disabling hide-keyboard gesture";
         self.enabled = NO;
     } else {
-        qImDebug() << "gesture completed without triggering, scrolling view to cursor";
-        m_context->scrollToCursor();
+        qImDebug() << "gesture completed without triggering";
+        if (self.hasDeferredScrollToCursor) {
+            qImDebug() << "applying deferred scroll to cursor";
+            m_context->scrollToCursor();
+        }
     }
+
+    self.hasDeferredScrollToCursor = NO;
 }
 
 @end
@@ -418,7 +426,8 @@ void QIOSInputContext::scrollToCursor()
     if (m_keyboardHideGesture.state == UIGestureRecognizerStatePossible && m_keyboardHideGesture.numberOfTouches == 1) {
         // Don't scroll to the cursor if the user is touching the screen and possibly
         // trying to trigger the hide-keyboard gesture.
-        qImDebug() << "preventing scrolling to cursor as we're still waiting for a possible gesture";
+        qImDebug() << "deferring scrolling to cursor as we're still waiting for a possible gesture";
+        m_keyboardHideGesture.hasDeferredScrollToCursor = YES;
         return;
     }
 
