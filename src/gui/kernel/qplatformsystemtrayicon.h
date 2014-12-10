@@ -70,7 +70,7 @@ public:
     virtual void updateMenu(QPlatformMenu *menu) = 0;
     virtual QRect geometry() const = 0;
     virtual void showMessage(const QString &msg, const QString &title,
-                             const QIcon &icon, MessageIcon iconType, int secs) = 0;
+                             const QIcon &icon, MessageIcon iconType, int msecs) = 0;
 
     virtual bool isSystemTrayAvailable() const = 0;
     virtual bool supportsMessages() const = 0;
