@@ -281,8 +281,6 @@ QIOSInputContext::QIOSInputContext()
     if (isQtApplication()) {
         QIOSScreen *iosScreen = static_cast<QIOSScreen*>(QGuiApplication::primaryScreen()->handle());
         [iosScreen->uiWindow() addGestureRecognizer:m_keyboardHideGesture];
-
-        connect(qGuiApp->inputMethod(), &QInputMethod::cursorRectangleChanged, this, &QIOSInputContext::cursorRectangleChanged);
     }
 
     connect(qGuiApp, &QGuiApplication::focusWindowChanged, this, &QIOSInputContext::focusWindowChanged);
@@ -399,23 +397,6 @@ QRectF QIOSInputContext::keyboardRect() const
 }
 
 // -------------------------------------------------------------------------
-
-void QIOSInputContext::cursorRectangleChanged()
-{
-    if (!isInputPanelVisible() || !qApp->focusObject())
-        return;
-
-    // Check if the cursor has changed position inside the input item. Since
-    // qApp->inputMethod()->cursorRectangle() will also change when the input item
-    // itself moves, we need to ask the focus object for ImCursorRectangle:
-    static QPoint prevCursor;
-    QInputMethodQueryEvent queryEvent(Qt::ImCursorRectangle);
-    QCoreApplication::sendEvent(qApp->focusObject(), &queryEvent);
-    QPoint cursor = queryEvent.value(Qt::ImCursorRectangle).toRect().topLeft();
-    if (cursor != prevCursor)
-        scrollToCursor();
-    prevCursor = cursor;
-}
 
 UIView *QIOSInputContext::scrollableRootView()
 {
@@ -598,6 +579,9 @@ void QIOSInputContext::update(Qt::InputMethodQueries updatedProperties)
     } else {
         [m_textResponder notifyInputDelegate:changedProperties];
     }
+
+    if (changedProperties & Qt::ImCursorRectangle)
+        scrollToCursor();
 }
 
 bool QIOSInputContext::inputMethodAccepted() const
