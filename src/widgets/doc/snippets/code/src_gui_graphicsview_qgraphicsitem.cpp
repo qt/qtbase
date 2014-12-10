@@ -61,7 +61,7 @@ public:
 //! [1]
 class CustomItem : public QGraphicsItem
 {
-   ...
+public:
    enum { Type = UserType + 1 };
 
    int type() const
