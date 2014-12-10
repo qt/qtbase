@@ -460,18 +460,9 @@ void tst_QFileSystemWatcher::watchFileAndItsDirectory()
 #endif
 
     QTRY_VERIFY(fileChangedSpy.count() > 0);
-
-    //according to Qt 4 documentation:
-    //void QFileSystemWatcher::directoryChanged ( const QString & path )   [signal]
-    //This signal is emitted when the directory at a specified path, is modified
-    //(e.g., when a file is added, -->modified<-- or deleted) or removed from disk.
-    //Note that if there are several changes during a short period of time, some
-    //of the changes might not emit this signal. However, the last change in the
-    //sequence of changes will always generate this signal.
-    QVERIFY(dirChangedSpy.count() < 2);
+    QCOMPARE(dirChangedSpy.count(), 0);
 
     fileChangedSpy.clear();
-    dirChangedSpy.clear();
     QFile secondFile(secondFileName);
     QVERIFY2(secondFile.open(QIODevice::WriteOnly | QIODevice::Truncate), msgFileOperationFailed("open", secondFile));
     QVERIFY2(secondFile.write(QByteArrayLiteral("Foo")) > 0, msgFileOperationFailed("write", secondFile));
