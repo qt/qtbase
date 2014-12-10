@@ -220,10 +220,8 @@ void QToolBarPrivate::endDrag()
         if (!layout->plug(state->widgetItem)) {
             if (q->isFloatable()) {
                 layout->restore();
-#if defined(Q_WS_X11) || defined(Q_WS_MAC)
                 setWindowState(true); // gets rid of the X11BypassWindowManager window flag
                                       // and activates the resizer
-#endif
                 q->activateWindow();
             } else {
                 layout->revert(state->widgetItem);

@@ -150,7 +150,7 @@ void tst_QSqlQueryModel::createTestTables(QSqlDatabase db)
 {
     dropTestTables(db);
     QSqlQuery q(db);
-    QSqlDriver::DBMSType dbType = tst_Databases::getDatabaseType(db);
+    QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
     if (dbType == QSqlDriver::PostgreSQL)
         QVERIFY_SQL( q, exec("set client_min_messages='warning'"));
     QVERIFY_SQL( q, exec("create table " + qTableName("test", __FILE__, db) + "(id integer not null, name varchar(20), title integer, primary key (id))"));
@@ -305,7 +305,7 @@ void tst_QSqlQueryModel::insertColumn()
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
-    const QSqlDriver::DBMSType dbType = tst_Databases::getDatabaseType(db);
+    const QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
 
     DBTestModel model;
     model.setQuery(QSqlQuery("select * from " + qTableName("test", __FILE__, db), db));
@@ -409,7 +409,7 @@ void tst_QSqlQueryModel::record()
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
-    const QSqlDriver::DBMSType dbType = tst_Databases::getDatabaseType(db);
+    const QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
 
     QSqlQueryModel model;
     model.setQuery(QSqlQuery("select * from " + qTableName("test", __FILE__, db), db));
@@ -440,7 +440,7 @@ void tst_QSqlQueryModel::setHeaderData()
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
-    const QSqlDriver::DBMSType dbType = tst_Databases::getDatabaseType(db);
+    const QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
 
     QSqlQueryModel model;
 

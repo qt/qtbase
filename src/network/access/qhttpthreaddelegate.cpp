@@ -558,6 +558,8 @@ void QHttpThreadDelegate::synchronousFinishedWithErrorSlot(QNetworkReply::Networ
     incomingErrorCode = errorCode;
     incomingErrorDetail = detail;
 
+    synchronousDownloadData = httpReply->readAll();
+
     QMetaObject::invokeMethod(httpReply, "deleteLater", Qt::QueuedConnection);
     QMetaObject::invokeMethod(synchronousRequestLoop, "quit", Qt::QueuedConnection);
     httpReply = 0;

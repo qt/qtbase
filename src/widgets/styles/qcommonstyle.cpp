@@ -4587,7 +4587,7 @@ int QCommonStyle::pixelMetric(PixelMetric m, const QStyleOption *opt, const QWid
         ret = int(QStyleHelper::dpiScaled(4.));
         break;
     case PM_HeaderMarkSize:
-        ret = int(QStyleHelper::dpiScaled(32.));
+        ret = int(QStyleHelper::dpiScaled(16.));
         break;
     case PM_HeaderGripMargin:
         ret = int(QStyleHelper::dpiScaled(4.));
@@ -4907,8 +4907,11 @@ int QCommonStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget
 
 
     case SH_TabBar_Alignment:
-    case SH_Header_ArrowAlignment:
         ret = Qt::AlignLeft;
+        break;
+
+    case SH_Header_ArrowAlignment:
+        ret = Qt::AlignRight | Qt::AlignVCenter;
         break;
 
     case SH_TitleBar_AutoRaise:

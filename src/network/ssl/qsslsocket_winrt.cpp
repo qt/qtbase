@@ -661,7 +661,7 @@ QList<QSslError> QSslSocketBackendPrivate::verify(QList<QSslCertificate> certifi
     return errors;
 }
 
-bool QSslSocketBackendPrivate::importPKCS12(QIODevice *device,
+bool QSslSocketBackendPrivate::importPkcs12(QIODevice *device,
                          QSslKey *key, QSslCertificate *cert,
                          QList<QSslCertificate> *caCertificates,
                          const QByteArray &passPhrase)

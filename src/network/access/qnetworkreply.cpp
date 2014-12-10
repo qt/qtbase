@@ -276,7 +276,7 @@ QNetworkReplyPrivate::QNetworkReplyPrivate()
     processing. After this signal is emitted, there will be no more
     updates to the reply's data or metadata.
 
-    Unless close() has been called, the reply will be still be opened
+    Unless close() or abort() have been called, the reply will be still be opened
     for reading, so the data can be retrieved by calls to read() or
     readAll(). In particular, if no calls to read() were made as a
     result of readyRead(), a call to readAll() will retrieve the full
@@ -365,7 +365,9 @@ QNetworkReplyPrivate::QNetworkReplyPrivate()
     connections still open. Uploads still in progress are also
     aborted.
 
-    \sa close()
+    The finished() signal will also be emitted.
+
+    \sa close(), finished()
 */
 
 /*!

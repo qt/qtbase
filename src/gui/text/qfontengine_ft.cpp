@@ -762,8 +762,10 @@ bool QFontEngineFT::init(FaceId faceId, bool antialias, GlyphFormat format,
                 face->face_flags &= ~FT_FACE_FLAG_SCALABLE;
 
                 FT_Select_Size(face, i);
-                metrics.ascender = face->size->metrics.ascender;
-                metrics.descender = face->size->metrics.descender;
+                if (face->size->metrics.ascender + face->size->metrics.descender > 0) {
+                    metrics.ascender = face->size->metrics.ascender;
+                    metrics.descender = face->size->metrics.descender;
+                }
                 FT_Set_Char_Size(face, xsize, ysize, 0, 0);
 
                 face->face_flags |= FT_FACE_FLAG_SCALABLE;
@@ -887,6 +889,13 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph,
     }
     if (err == FT_Err_Too_Few_Arguments) {
         // this is an error in the bytecode interpreter, just try to run without it
+        load_flags |= FT_LOAD_FORCE_AUTOHINT;
+        err = FT_Load_Glyph(face, glyph, load_flags);
+    } else if (err == FT_Err_Execution_Too_Long) {
+        // This is an error in the bytecode, probably a web font made by someone who
+        // didn't test bytecode hinting at all so disable for it for all glyphs.
+        qWarning("load glyph failed due to broken hinting bytecode in font, switching to auto hinting");
+        default_load_flags |= FT_LOAD_FORCE_AUTOHINT;
         load_flags |= FT_LOAD_FORCE_AUTOHINT;
         err = FT_Load_Glyph(face, glyph, load_flags);
     }
@@ -1123,7 +1132,7 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph,
                 while (h--) {
                     uint *dd = (uint *)dst;
                     *dd++ = 0;
-                    for (int x = 0; x < slot->bitmap.width; x++) {
+                    for (int x = 0; x < static_cast<int>(slot->bitmap.width); x++) {
                         uint a = ((src[x >> 3] & (0x80 >> (x & 7))) ? 0xffffff : 0x000000);
                         *dd++ = a;
                     }
@@ -1134,7 +1143,7 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph,
             } else if (vfactor != 1) {
                 while (h--) {
                     uint *dd = (uint *)dst;
-                    for (int x = 0; x < slot->bitmap.width; x++) {
+                    for (int x = 0; x < static_cast<int>(slot->bitmap.width); x++) {
                         uint a = ((src[x >> 3] & (0x80 >> (x & 7))) ? 0xffffff : 0x000000);
                         *dd++ = a;
                     }
@@ -1143,7 +1152,7 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph,
                 }
             } else {
                 while (h--) {
-                    for (int x = 0; x < slot->bitmap.width; x++) {
+                    for (int x = 0; x < static_cast<int>(slot->bitmap.width); x++) {
                         unsigned char a = ((src[x >> 3] & (0x80 >> (x & 7))) ? 0xff : 0x00);
                         dst[x] = a;
                     }
@@ -1771,8 +1780,7 @@ glyph_metrics_t QFontEngineFT::alphaMapBoundingBox(glyph_t glyph, QFixed subPixe
         overall.x = TRUNC(left);
         overall.y = -TRUNC(top);
         overall.xoff = TRUNC(ROUND(face->glyph->advance.x));
-        if (face)
-            unlockFace();
+        unlockFace();
     }
     return overall;
 }

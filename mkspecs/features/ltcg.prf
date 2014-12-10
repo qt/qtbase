@@ -31,23 +31,9 @@ CONFIG(release, debug|release) {
             QMAKE_CXXFLAGS_LTCG =
             QMAKE_LFLAGS_LTCG =
         }
-
-        # When doing link-time code generation, we need to pass the compiler
-        # flags during linking stage too. This file is processed after
-        # default_post.prf, so the QMAKE_CXXFLAGS already contains
-        # QMAKE_CXXFLAGS_DEBUG or _RELEASE.
-        use_c_linker {
-            # use_c_linker.prf is in effect, use the C flags
-            QMAKE_LFLAGS_LTCG += $$QMAKE_CFLAGS $$QMAKE_CFLAGS_LTCG
-            QMAKE_LFLAGS_APP += $$QMAKE_CFLAGS_APP
-            QMAKE_LFLAGS_SHLIB += $$QMAKE_CFLAGS_SHLIB
-        } else {
-            QMAKE_LFLAGS_LTCG = $$QMAKE_CXXFLAGS $$QMAKE_LFLAGS_LTCG
-            QMAKE_LFLAGS_APP += $$QMAKE_CXXFLAGS_APP
-            QMAKE_LFLAGS_SHLIB += $$QMAKE_CXXFLAGS_SHLIB
-        }
     }
 
+    load(link_ltcg)
     QMAKE_CFLAGS *= $$QMAKE_CFLAGS_LTCG
     QMAKE_CXXFLAGS *= $$QMAKE_CXXFLAGS_LTCG
     QMAKE_LFLAGS *= $$QMAKE_LFLAGS_LTCG

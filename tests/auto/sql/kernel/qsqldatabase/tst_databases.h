@@ -385,7 +385,7 @@ public:
         bool wasDropped;
         QSqlQuery q( db );
         QStringList dbtables=db.tables();
-        QSqlDriver::DBMSType dbType = getDatabaseType(db);
+        QSqlDriver::DbmsType dbType = getDatabaseType(db);
         foreach(const QString &tableName, tableNames)
         {
             wasDropped = true;
@@ -462,7 +462,7 @@ public:
     // blobSize is only used if the db doesn't have a generic blob type
     static QString blobTypeName( QSqlDatabase db, int blobSize = 10000 )
     {
-        const QSqlDriver::DBMSType dbType = getDatabaseType(db);
+        const QSqlDriver::DbmsType dbType = getDatabaseType(db);
         if (dbType == QSqlDriver::MySqlServer)
             return "longblob";
 
@@ -491,7 +491,7 @@ public:
 
     static QString dateTimeTypeName(QSqlDatabase db)
     {
-        const QSqlDriver::DBMSType dbType = tst_Databases::getDatabaseType(db);
+        const QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
         if (dbType == QSqlDriver::PostgreSQL)
             return QLatin1String("timestamp");
         if (dbType == QSqlDriver::Oracle && getOraVersion(db) >= 9)
@@ -501,7 +501,7 @@ public:
 
     static QString autoFieldName( QSqlDatabase db )
     {
-        const QSqlDriver::DBMSType dbType = tst_Databases::getDatabaseType(db);
+        const QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
         if (dbType == QSqlDriver::MySqlServer)
             return "AUTO_INCREMENT";
         if (dbType == QSqlDriver::Sybase || dbType == QSqlDriver::MSSqlServer)
@@ -538,7 +538,7 @@ public:
         return result.toLocal8Bit();
     }
 
-    static QSqlDriver::DBMSType getDatabaseType(QSqlDatabase db)
+    static QSqlDriver::DbmsType getDatabaseType(QSqlDatabase db)
     {
         QSqlDriverPrivate *d = static_cast<QSqlDriverPrivate *>(QObjectPrivate::get(db.driver()));
         return d->dbmsType;

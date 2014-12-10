@@ -38,6 +38,7 @@
 #include <QtGui/QOpenGLFunctions>
 #include <QtGui/private/qopengltextureblitter_p.h>
 #include <QtGui/private/qopenglextensions_p.h>
+#include <QtGui/private/qopenglcontext_p.h>
 #include <QtGui/QMatrix4x4>
 #include <QtGui/QOffscreenSurface>
 
@@ -100,6 +101,10 @@ QT_BEGIN_NAMESPACE
   useful for applications than render incrementally using QPainter, because
   this way they do not have to redraw the entire window content on each
   paintGL() call.
+
+  Similarly to QOpenGLWidget, QOpenGLWindow supports the Qt::AA_ShareOpenGLContexts
+  attribute. When enabled, the OpenGL contexts of all QOpenGLWindow instances will share
+  with each other. This allows accessing each other's shareable OpenGL resources.
 
   For more information on graphics in Qt, see \l {Graphics}.
  */
@@ -196,6 +201,7 @@ public:
 
         if (!context) {
             context.reset(new QOpenGLContext);
+            context->setShareContext(qt_gl_global_share_context());
             context->setFormat(q->requestedFormat());
             if (!context->create())
                 qWarning("QOpenGLWindow::beginPaint: Failed to create context");

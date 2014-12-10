@@ -47,9 +47,14 @@
 #define QDBUS_SYMBOLS_P_H
 
 #include <QtCore/qglobal.h>
-#include <dbus/dbus.h>
 
 #ifndef QT_NO_DBUS
+
+#ifdef QT_LINKED_LIBDBUS
+#  include <dbus/dbus.h>
+#else
+#  include "dbus_minimal_p.h"
+#endif
 
 QT_BEGIN_NAMESPACE
 

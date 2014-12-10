@@ -1376,9 +1376,10 @@
     \section1 \\inqmlmodule
 
     A QML class may belong to a \l{qmlmodule-command}{QML module} by inserting
-    the \l{inqmlmodule-command}{\\inqmlmodule} command as a topic command.
-    Every member of a group must be linked to using the module name and two
-    colons (\c{::}).
+    the \l{inqmlmodule-command}{\\inqmlmodule} command as a topic command, with
+    the module name (without a version number) as the only argument. Every
+    member of a group must be linked to using the module name and two colons
+    (\c{::}).
 
     \code
         \qmltype ClickableButton

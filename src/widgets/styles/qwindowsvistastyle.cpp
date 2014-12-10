@@ -2112,6 +2112,9 @@ int QWindowsVistaStyle::styleHint(StyleHint hint, const QStyleOption *option, co
         else
             ret = -1;
         break;
+    case SH_Header_ArrowAlignment:
+        ret = Qt::AlignTop | Qt::AlignHCenter;
+        break;
     default:
         ret = QWindowsXPStyle::styleHint(hint, option, widget, returnData);
         break;

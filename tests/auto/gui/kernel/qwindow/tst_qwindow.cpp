@@ -250,17 +250,11 @@ void tst_QWindow::resizeEventAfterResize()
 void tst_QWindow::positioning_data()
 {
     QTest::addColumn<int>("windowflags");
-    QTest::addColumn<int>("resizecount");
 
-    QTest::newRow("default") << int(Qt::Window | Qt::WindowTitleHint | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint | Qt::WindowFullscreenButtonHint)
-#if defined(Q_OS_OSX) && MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7
-                             << 4;
-#else
-                             << 3;
-#endif
+    QTest::newRow("default") << int(Qt::Window | Qt::WindowTitleHint | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint | Qt::WindowFullscreenButtonHint);
 
 #ifdef Q_OS_OSX
-    QTest::newRow("fake") << int(Qt::Window | Qt::WindowTitleHint | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint) << 4;
+    QTest::newRow("fake") << int(Qt::Window | Qt::WindowTitleHint | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint);
 #endif
 }
 
@@ -279,7 +273,6 @@ void tst_QWindow::positioning()
     const QRect geometry(m_availableTopLeft + QPoint(80, 80), m_testWindowSize);
 
     QFETCH(int, windowflags);
-    QFETCH(int, resizecount);
     Window window((Qt::WindowFlags)windowflags);
     window.setGeometry(QRect(m_availableTopLeft + QPoint(20, 20), m_testWindowSize));
     window.setFramePosition(m_availableTopLeft + QPoint(40, 40)); // Move window around before show, size must not change.
@@ -290,8 +283,7 @@ void tst_QWindow::positioning()
     window.showNormal();
     QCoreApplication::processEvents();
 
-    QTRY_COMPARE(window.received(QEvent::Resize), 1);
-    QTRY_VERIFY(window.received(QEvent::Expose) > 0);
+    QTest::qWaitForWindowExposed(&window);
 
     QMargins originalMargins = window.frameMargins();
 
@@ -301,25 +293,22 @@ void tst_QWindow::positioning()
     QPoint originalPos = window.position();
     QPoint originalFramePos = window.framePosition();
 
+    window.reset();
     window.setWindowState(Qt::WindowFullScreen);
     QCoreApplication::processEvents();
-#if defined(Q_OS_BLACKBERRY) // "window" is the "root" window and will always be shown fullscreen
-                              // so we only expect one resize event
-    Q_UNUSED(resizecount);
-    QTRY_COMPARE(window.received(QEvent::Resize), 1);
-#else
-    QTRY_COMPARE(window.received(QEvent::Resize), 2);
+    // On BB10 the window is the root window and fullscreen, so nothing is resized.
+#if !defined(Q_OS_BLACKBERRY)
+    QTRY_VERIFY(window.received(QEvent::Resize) > 0);
 #endif
 
     QTest::qWait(2000);
 
+    window.reset();
     window.setWindowState(Qt::WindowNoState);
     QCoreApplication::processEvents();
-#if defined(Q_OS_BLACKBERRY) // "window" is the "root" window and will always be shown fullscreen
-                              // so we only expect one resize event
-    QTRY_COMPARE(window.received(QEvent::Resize), 1);
-#else
-    QTRY_COMPARE(window.received(QEvent::Resize), resizecount);
+    // On BB10 the window is the root window and fullscreen, so nothing is resized.
+#if !defined(Q_OS_BLACKBERRY)
+    QTRY_VERIFY(window.received(QEvent::Resize) > 0);
 #endif
 
     QTRY_COMPARE(originalPos, window.position());
@@ -329,7 +318,7 @@ void tst_QWindow::positioning()
     // if our positioning is actually fully respected by the window manager
     // test whether it correctly handles frame positioning as well
     if (originalPos == geometry.topLeft() && (originalMargins.top() != 0 || originalMargins.left() != 0)) {
-        QPoint framePos = QPlatformScreen::platformScreenForWindow(&window)->availableGeometry().topLeft() + QPoint(40, 40);
+        QPoint framePos = QPlatformScreen::platformScreenForWindow(&window)->availableGeometry().center();
 
         window.reset();
         window.setFramePosition(framePos);

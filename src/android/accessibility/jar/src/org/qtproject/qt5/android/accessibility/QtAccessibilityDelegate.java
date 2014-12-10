@@ -43,6 +43,7 @@
 package org.qtproject.qt5.android.accessibility;
 
 import android.accessibilityservice.AccessibilityService;
+import android.app.Activity;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.util.Log;
@@ -60,6 +61,8 @@ import android.content.Context;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.qtproject.qt5.android.QtActivityDelegate;
+
 public class QtAccessibilityDelegate extends View.AccessibilityDelegate
 {
     private static final String TAG = "Qt A11Y";
@@ -72,8 +75,11 @@ public class QtAccessibilityDelegate extends View.AccessibilityDelegate
     // Pretend to be an inner class of the QtSurface.
     private static final String DEFAULT_CLASS_NAME = "$VirtualChild";
 
-    private final View m_view;
-    private final AccessibilityManager m_manager;
+    private View m_view = null;
+    private AccessibilityManager m_manager;
+    private QtActivityDelegate m_activityDelegate;
+    private Activity m_activity;
+    private ViewGroup m_layout;
 
     // The accessible object that currently has the "accessibility focus"
     // usually indicated by a yellow rectangle on screen.
@@ -95,16 +101,70 @@ public class QtAccessibilityDelegate extends View.AccessibilityDelegate
         }
     }
 
-    public QtAccessibilityDelegate(View host)
+    public QtAccessibilityDelegate(Activity activity, ViewGroup layout, QtActivityDelegate activityDelegate)
     {
-        m_view = host;
-        m_view.setOnHoverListener(new HoverEventListener());
-        m_manager = (AccessibilityManager) host.getContext()
-                .getSystemService(Context.ACCESSIBILITY_SERVICE);
+        m_activity = activity;
+        m_layout = layout;
+        m_activityDelegate = activityDelegate;
+
+        m_manager = (AccessibilityManager) m_activity.getSystemService(Context.ACCESSIBILITY_SERVICE);
+        if (m_manager != null) {
+            AccessibilityManagerListener accServiceListener = new AccessibilityManagerListener();
+            if (!m_manager.addAccessibilityStateChangeListener(accServiceListener))
+                Log.w("Qt A11y", "Could not register a11y state change listener");
+            if (m_manager.isEnabled())
+                accServiceListener.onAccessibilityStateChanged(true);
+        }
+
 
         // Enable Qt Accessibility so that notifications are enabled
         QtNativeAccessibility.setActive(true);
     }
+
+    private class AccessibilityManagerListener implements AccessibilityManager.AccessibilityStateChangeListener
+    {
+        @Override
+        public void onAccessibilityStateChanged(boolean enabled)
+        {
+            if (enabled) {
+                // The accessibility code depends on android API level 16, so dynamically resolve it
+                if (android.os.Build.VERSION.SDK_INT >= 16) {
+                    try {
+                        View view = m_view;
+                        if (view == null) {
+                            view = new View(m_activity);
+                            view.setId(View.NO_ID);
+                        }
+
+                        // ### Keep this for debugging for a while. It allows us to visually see that our View
+                        // ### is on top of the surface(s)
+                        // ColorDrawable color = new ColorDrawable(0x80ff8080);    //0xAARRGGBB
+                        // view.setBackground(color);
+                        view.setAccessibilityDelegate(QtAccessibilityDelegate.this);
+
+                        // if all is fine, add it to the layout
+                        if (m_view == null) {
+                            //m_layout.addAccessibilityView(view);
+                            m_layout.addView(view, m_activityDelegate.getSurfaceCount(),
+                                             new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+                        }
+                        m_view = view;
+
+                        m_view.setOnHoverListener(new HoverEventListener());
+                    } catch (Exception e) {
+                        // Unknown exception means something went wrong.
+                        Log.w("Qt A11y", "Unknown exception: " + e.toString());
+                    }
+                }
+            } else {
+                if (m_view != null) {
+                    m_layout.removeView(m_view);
+                    m_view = null;
+                }
+            }
+        }
+    }
+
 
     @Override
     public AccessibilityNodeProvider getAccessibilityNodeProvider(View host)

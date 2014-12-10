@@ -4719,8 +4719,8 @@ if [ "$CFG_DBUS" != "no" ]; then
         fi
         QMakeVar set QT_HOST_CFLAGS_DBUS "$QT_CFLAGS_DBUS"
     else
-        if [ "$CFG_DBUS" = "auto" ]; then
-            CFG_DBUS=no
+        if [ "$CFG_DBUS" != "linked" ]; then
+            CFG_DBUS=runtime
         elif [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
             # CFG_DBUS is "yes" or "linked" here
 
@@ -5007,10 +5007,11 @@ if [ "$CFG_LIBUDEV" != "no" ]; then
     if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists libudev 2>/dev/null; then
         QMAKE_INCDIR_LIBUDEV=`$PKG_CONFIG --cflags-only-I libudev 2>/dev/null | sed -e 's,^-I,,g' -e 's, -I, ,g'`
         QMAKE_LIBS_LIBUDEV=`$PKG_CONFIG --libs libudev 2>/dev/null`
+        QMAKE_CFLAGS_LIBUDEV=`$PKG_CONFIG --cflags libudev 2>/dev/null`
         QMakeVar set QMAKE_INCDIR_LIBUDEV "$QMAKE_INCDIR_LIBUDEV"
         QMakeVar set QMAKE_LIBS_LIBUDEV "$QMAKE_LIBS_LIBUDEV"
     fi
-    if compileTest unix/libudev "libudev" $QMAKE_INCDIR_LIBUDEV $QMAKE_LIBS_LIBUDEV; then
+    if compileTest unix/libudev "libudev" $QMAKE_CFLAGS_LIBUDEV $QMAKE_LIBS_LIBUDEV; then
         CFG_LIBUDEV=yes
         QT_CONFIG="$QT_CONFIG libudev"
     elif [ "$CFG_LIBUDEV" = "yes" ]; then
@@ -5561,7 +5562,7 @@ if [ "$CFG_OPENSSL" != "no" ]; then
             CFG_OPENSSL=yes
         fi
     else
-        if ( [ "$CFG_OPENSSL" = "yes" ] || [ "$CFG_OPENSSL" = "linked" ] ) && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]  && [ "$XPLATFORM_ANDROID" = "no" ]; then
+        if ( [ "$CFG_OPENSSL" = "yes" ] || [ "$CFG_OPENSSL" = "linked" ] ) && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
             echo "OpenSSL support cannot be enabled due to functionality tests!"
             echo " Turn on verbose messaging (-v) to $0 to see the final report."
             echo " If you believe this message is in error you may use the continue"
@@ -6123,6 +6124,10 @@ s/icpc version \([0-9]*\)\.\([0-9]*\)\.\([0-9]*\) .*$/QT_ICC_MAJOR_VERSION=\1; Q
         QT_GCC_MINOR_VERSION=`echo $COMPILER_VERSION | sed 's,^\([0-9]*\)\.\([0-9]*\).*,\2,'`
         QT_GCC_PATCH_VERSION=0
         ;;
+    *)
+        QT_GCC_MAJOR_VERSION=$COMPILER_VERSION
+        QT_GCC_MINOR_VERSION=0
+        QT_GCC_PATCH_VERSION=0
     esac
 
     ;;

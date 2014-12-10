@@ -1,0 +1,84 @@
+# HTML footer for qt.io
+
+HTML.footer += \
+    "</div>\n" \
+    "</div>\n" \
+    "</div>\n" \
+    "</div>\n" \
+    "</div>\n" \
+    "<div id=\"footer\">\n" \
+        "<footer id=\"footerbar\">\n" \
+    "    <div class=\"footer-main\">\n" \
+    "            <div class=\"container clearfix\">\n" \
+    "                <nav class=\"footer-nav clearfix\">\n" \
+    "                    <div class=\"menu-footer-menu-container\"><ul id=\"menu-footer-menu\" class=\"menu\"><li id=\"menu-item-1350\" class=\"menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children menu-item-1350\"><a href=\"http://qt.io/about-us/\">About us</a>\n" \
+    "<ul class=\"sub-menu\">\n" \
+    "    <li id=\"menu-item-1353\" class=\"menu-item menu-item-type-post_type menu-item-object-page menu-item-1353\"><a href=\"http://qt.io/events/\">Events</a></li>\n" \
+    "    <li id=\"menu-item-1596\" class=\"menu-item menu-item-type-post_type menu-item-object-page menu-item-1596\"><a href=\"http://qt.io/news/\">News</a></li>\n" \
+    "    <li id=\"menu-item-1354\" class=\"menu-item menu-item-type-post_type menu-item-object-page menu-item-1354\"><a href=\"http://qt.io/resource-center/\">Resource Center</a></li>\n" \
+    "    <li id=\"menu-item-1352\" class=\"menu-item menu-item-type-post_type menu-item-object-page menu-item-1352\"><a href=\"http://qt.io/partners/\">Partners</a></li>\n" \
+    "    <li id=\"menu-item-1349\" class=\"menu-item menu-item-type-post_type menu-item-object-page menu-item-1349\"><a href=\"http://qt.io/careers/\">Careers</a></li>\n" \
+    "    <li id=\"menu-item-1415\" class=\"menu-item menu-item-type-post_type menu-item-object-page menu-item-1415\"><a href=\"http://qt.io/terms-conditions/\">Terms &amp; Conditions</a></li>\n" \
+    "</ul>\n" \
+    "</li>\n" \
+    "<li id=\"menu-item-1355\" class=\"menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children menu-item-1355\"><a href=\"http://qt.io/product/\">Product</a>\n" \
+    "<ul class=\"sub-menu\">\n" \
+    "    <li id=\"menu-item-1358\" class=\"menu-item menu-item-type-post_type menu-item-object-page menu-item-1358\"><a href=\"http://qt.io/qt-framework/\">Qt Framework</a></li>\n" \
+    "    <li id=\"menu-item-1356\" class=\"menu-item menu-item-type-post_type menu-item-object-page menu-item-1356\"><a href=\"http://qt.io/qt-features/\">Qt Features</a></li>\n" \
+    "    <li id=\"menu-item-1359\" class=\"menu-item menu-item-type-post_type menu-item-object-page menu-item-1359\"><a href=\"http://qt.io/qt-quick/\">Qt Quick</a></li>\n" \
+    "    <li id=\"menu-item-1357\" class=\"menu-item menu-item-type-post_type menu-item-object-page menu-item-1357\"><a href=\"http://qt.io/qt-for-device-creation/\">Qt for Device Creation</a></li>\n" \
+    "    <li id=\"menu-item-34\" class=\"menu-item menu-item-type-post_type menu-item-object-page menu-item-34\"><a href=\"http://qt.io/qt-in-use/\">Qt in Use</a></li>\n" \
+    "    <li id=\"menu-item-1366\" class=\"menu-item menu-item-type-custom menu-item-object-custom menu-item-1366\"><a href=\"http://showroom.qt-project.org/\">Showroom</a></li>\n" \
+    "</ul>\n" \
+    "</li>\n" \
+    "<li id=\"menu-item-33\" class=\"menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children menu-item-33\"><a href=\"http://qt.io/developers/\">Developers</a>\n" \
+    "<ul class=\"sub-menu\">\n" \
+    "    <li id=\"menu-item-1365\" class=\"menu-item menu-item-type-custom menu-item-object-custom menu-item-1365\"><a href=\"http://qt-project.org/doc/\">Documentation</a></li>\n" \
+    "    <li id=\"menu-item-1364\" class=\"menu-item menu-item-type-custom menu-item-object-custom menu-item-1364\"><a href=\"http://qt-project.org/doc/qt-5/qtexamplesandtutorials.html\">Examples &amp; Tutorials</a></li>\n" \
+    "    <li id=\"menu-item-1363\" class=\"menu-item menu-item-type-custom menu-item-object-custom menu-item-1363\"><a href=\"http://qt-project.org/doc/qt-5/topics-app-development.html\">Tools</a></li>\n" \
+    "    <li id=\"menu-item-1361\" class=\"menu-item menu-item-type-custom menu-item-object-custom menu-item-1361\"><a href=\"http://qt-project.org/wiki\">Wiki</a></li>\n" \
+    "    <li id=\"menu-item-1360\" class=\"menu-item menu-item-type-custom menu-item-object-custom menu-item-1360\"><a href=\"http://qt-project.org/forums\">Forums</a></li>\n" \
+    "    <li id=\"menu-item-1362\" class=\"menu-item menu-item-type-custom menu-item-object-custom menu-item-1362\"><a href=\"http://qt-project.org/wiki/Qt-Contribution-Guidelines\">Contribute to Qt</a></li>\n" \
+    "</ul>\n" \
+    "</li>\n" \
+    "<li id=\"menu-item-1347\" class=\"menu-item menu-item-type-post_type menu-item-object-page current-menu-ancestor current-menu-parent current_page_parent current_page_ancestor menu-item-has-children menu-item-1347\"><a href=\"http://qt.io/services/\">Services</a>\n" \
+    "<ul class=\"sub-menu\">\n" \
+    "    <li id=\"menu-item-32\" class=\"menu-item menu-item-type-post_type menu-item-object-page page_item page-item-14 menu-item-32\"><a href=\"http://qt.io/support/\">Support</a></li>\n" \
+    "    <li id=\"menu-item-4028\" class=\"menu-item menu-item-type-post_type menu-item-object-page menu-item-4028\"><a href=\"http://qt.io/services-technology-evaluation/\">Technology Evaluation</a></li>\n" \
+    "    <li id=\"menu-item-4027\" class=\"menu-item menu-item-type-post_type menu-item-object-page menu-item-4027\"><a href=\"http://qt.io/services-proof-of-concept/\">Proof of Concept</a></li>\n" \
+    "    <li id=\"menu-item-4026\" class=\"menu-item menu-item-type-post_type menu-item-object-page menu-item-4026\"><a href=\"http://qt.io/services-design-implementation/\">Design &amp; Implementation</a></li>\n" \
+    "    <li id=\"menu-item-4025\" class=\"menu-item menu-item-type-post_type menu-item-object-page menu-item-4025\"><a href=\"http://qt.io/services-productization/\">Productization</a></li>\n" \
+    "</ul>\n" \
+    "</li>\n" \
+    "<li id=\"menu-item-1403\" class=\"menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children menu-item-1403\"><a href=\"http://qt.io/download/\">Download</a>\n" \
+    "<ul class=\"sub-menu\">\n" \
+    "    <li id=\"menu-item-1985\" class=\"menu-item menu-item-type-post_type menu-item-object-page menu-item-1985\"><a title=\"Professional\" href=\"http://qt.io/buy/\">Professional</a></li>\n" \
+    "    <li id=\"menu-item-3346\" class=\"menu-item menu-item-type-post_type menu-item-object-page menu-item-3346\"><a title=\"Indie Mobile\" href=\"http://qt.io/download-mobile/\">Indie Mobile</a></li>\n" \
+    "    <li id=\"menu-item-1982\" class=\"menu-item menu-item-type-post_type menu-item-object-page menu-item-1982\"><a title=\"Enterprise\" href=\"http://qt.io/download-enterprise-step-2/\">Enterprise</a></li>\n" \
+    "    <li id=\"menu-item-3013\" class=\"menu-item menu-item-type-post_type menu-item-object-page menu-item-3013\"><a title=\"Evaluation\" href=\"http://qt.io/download-eval-step-2/\">Evaluation</a></li>\n" \
+    "    <li id=\"menu-item-3343\" class=\"menu-item menu-item-type-post_type menu-item-object-page menu-item-3343\"><a href=\"http://qt.io/download-open-source/\">Community</a></li>\n" \
+    "</ul>\n" \
+    "</li>\n" \
+    "</ul></div></nav>\n" \
+    "<a href=\"http://digia.com\" target=\"_blank\" class=\"footer-logo retina\" data-icon=\"\">\n" \
+    "    </a>\n" \
+    "    <div class=\"footer-social clearfix\">\n" \
+    "        <div class=\"facebook\">\n" \
+    "            <div class=\"fb-like fb_iframe_widget\" data-href=\"https://www.facebook.com/qtbydigia\" data-layout=\"button_count\" data-action=\"like\" data-show-faces=\"true\" data-share=\"false\" fb-xfbml-state=\"parsed\" fb-iframe-plugin-query=\"action=like&amp;app_id=207346529386114&amp;href=https%3A%2F%2Fwww.facebook.com%2Fqtbydigia&amp;layout=button_count&amp;locale=en_US&amp;sdk=joey&amp;share=false&amp;show_faces=true\" style=\"display: block;\"><iframe style=\"width: 30px; height: 19px; border: 0px;\"></iframe></div>\n" \
+    "        </div>\n" \
+    "        <div class=\"twitter\">\n" \
+    "            <iframe id=\"twitter-widget-0\" scrolling=\"no\" frameborder=\"0\" allowtransparency=\"true\" src=\"http://platform.twitter.com/widgets/follow_button.33b190ea0cba008796487b65df7f6d8e.en.html#_=1414403615717&amp;id=twitter-widget-0&amp;lang=en&amp;screen_name=qtproject&amp;show_count=true&amp;show_screen_name=false&amp;size=m\" class=\"twitter-follow-button twitter-follow-button\" title=\"Twitter Follow Button\" data-twttr-rendered=\"true\" style=\"width: 160px; height: 20px;\"></iframe>\n" \
+    "        </div>\n" \
+    "    </div>\n" \
+    "</div>\n" \
+    "</div>\n" \
+    "<div class=\"disclaimer\">\n" \
+    "<div class=\"container clearfix no_discs\">\n" \
+    "    <ul id=\"menu-footer-submenu\" class=\"right clearfix\"><li id=\"menu-item-1795\" class=\"menu-item menu-item-type-custom menu-item-object-custom menu-item-1795\"><a title=\"Sign into your account.\" href=\"https://account.qt.io/login\">Sign In</a></li>\n" \
+    "     <li id=\"menu-item-1494\" class=\"menu-item menu-item-type-post_type menu-item-object-page menu-item-1494\"><a href=\"http://qt.io/contact-us/\">Contact us</a></li>\n" \
+    "        <li id=\"menu-item-4472\" class=\"menu-item menu-item-type-custom menu-item-object-custom menu-item-4472\"><a href=\"http://www.digia.com\">© 2014 Digia Oyj</a></li>\n" \
+    "    </ul>\n" \
+    "</div>\n" \
+    "</div>\n" \
+    "</footer>\n" \
+    "</div>\n"

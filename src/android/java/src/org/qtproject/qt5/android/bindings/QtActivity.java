@@ -187,7 +187,7 @@ public class QtActivity extends Activity
             QT_ANDROID_THEMES = new String[] {"Theme_Light"};
             QT_ANDROID_DEFAULT_THEME = "Theme_Light";
         }
-        else if (Build.VERSION.SDK_INT >= 11 && Build.VERSION.SDK_INT <= 13) {
+        else if ((Build.VERSION.SDK_INT >= 11 && Build.VERSION.SDK_INT <= 13) || Build.VERSION.SDK_INT == 21){
             QT_ANDROID_THEMES = new String[] {"Theme_Holo_Light"};
             QT_ANDROID_DEFAULT_THEME = "Theme_Holo_Light";
         } else {

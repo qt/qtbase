@@ -66,6 +66,8 @@ MODULE_FWD_PRI = $$mod_work_pfx/qt_lib_$${MODULE_ID}.pri
         module_build_type =
     internal_module: \
         module_build_type += internal_module
+    ltcg: \
+        module_build_type += ltcg
     !isEmpty(MODULE_CONFIG): \
         module_config = "QT.$${MODULE_ID}.CONFIG = $$MODULE_CONFIG"
     else: \

@@ -37,7 +37,7 @@
 #include "qbytearray.h"
 #include "qhash.h"
 
-QT_USE_NAMESPACE
+QT_BEGIN_NAMESPACE
 
 // Environment ------------------------------------------------------
 inline QHash<QByteArray, QByteArray> &qt_app_environment()
@@ -93,5 +93,7 @@ void qt_winrt_tzset()
 void qt_winrt__tzset()
 {
 }
+
+QT_END_NAMESPACE
 
 #endif // Q_OS_WINRT

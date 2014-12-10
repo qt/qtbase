@@ -116,6 +116,9 @@ void qInitImageConversions();
 const uchar *qt_get_bitflip_array();
 Q_GUI_EXPORT void qGamma_correct_back_to_linear_cs(QImage *image);
 
+#if defined(Q_OS_WINRT) && defined(_M_ARM) // QTBUG-42038
+#pragma optimize("", off)
+#endif
 inline int qt_depthForFormat(QImage::Format format)
 {
     int depth = 0;
@@ -160,6 +163,9 @@ inline int qt_depthForFormat(QImage::Format format)
     }
     return depth;
 }
+#if defined(Q_OS_WINRT) && defined(_M_ARM)
+#pragma optimize("", on)
+#endif
 
 QT_END_NAMESPACE
 

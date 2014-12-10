@@ -1201,11 +1201,14 @@ QString qFormatLogMessage(QtMsgType type, const QMessageLogContext &context, con
             }
 #endif
         } else if (token == timeTokenC) {
-            quint64 ms = pattern->timer.elapsed();
-            if (pattern->timeFormat.isEmpty())
+            if (pattern->timeFormat == QLatin1String("process")) {
+                quint64 ms = pattern->timer.elapsed();
                 message.append(QString().sprintf("%6d.%03d", uint(ms / 1000), uint(ms % 1000)));
-            else
-                message.append(pattern->startTime.addMSecs(ms).toString(pattern->timeFormat));
+            } else if (pattern->timeFormat.isEmpty()) {
+                message.append(QDateTime::currentDateTime().toString(Qt::ISODate));
+            } else {
+                message.append(QDateTime::currentDateTime().toString(pattern->timeFormat));
+            }
 #endif
         } else if (token == ifCategoryTokenC) {
             if (!context.category || (strcmp(context.category, "default") == 0))
@@ -1550,9 +1553,10 @@ void qErrnoWarning(int code, const char *msg, ...)
     \row \li \c %{pid} \li QCoreApplication::applicationPid()
     \row \li \c %{threadid} \li ID of current thread
     \row \li \c %{type} \li "debug", "warning", "critical" or "fatal"
-    \row \li \c %{time} \li time of the message, in seconds since the process started
-    \row \li \c %{time format} \li system time when the message occurred, formatted by
-        passing the \c format to \l QDateTime::toString()
+    \row \li \c %{time process} \li time of the message, in seconds since the process started (the token "process" is literal)
+    \row \li \c %{time [format]} \li system time when the message occurred, formatted by
+        passing the \c format to \l QDateTime::toString(). If the format is
+        not specified, the format of Qt::ISODate is used.
     \row \li \c{%{backtrace [depth=N] [separator="..."]}} \li A backtrace with the number of frames
         specified by the optional \c depth parameter (defaults to 5), and separated by the optional
         \c separator parameter (defaults to "|").

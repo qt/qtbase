@@ -570,8 +570,21 @@ QWindowsWindowCursor QWindowsCursor::pixmapWindowCursor(const QCursor &c)
 {
     const  QWindowsCursorCacheKey cacheKey(c);
     CursorCache::iterator it = m_cursorCache.find(cacheKey);
-    if (it == m_cursorCache.end())
+    if (it == m_cursorCache.end()) {
+        if (m_cursorCache.size() > 50) {
+            // Prevent the cursor cache from growing indefinitely hitting GDI resource
+            // limits if new pixmap cursors are created repetitively by purging out
+            // all-noncurrent pixmap cursors (QTBUG-43515)
+            const HCURSOR currentCursor = GetCursor();
+            for (it = m_cursorCache.begin(); it != m_cursorCache.end() ; ) {
+                if (it.key().bitmapCacheKey && it.value().handle() != currentCursor)
+                    it = m_cursorCache.erase(it);
+                else
+                    ++it;
+            }
+        }
         it = m_cursorCache.insert(cacheKey, QWindowsWindowCursor(c));
+    }
     return it.value();
 }
 

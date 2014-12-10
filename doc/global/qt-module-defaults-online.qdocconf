@@ -1,6 +1,19 @@
 #The online onfiguration for a Qt 5 module, including Add-Ons and Tools.
-#Online version contains a different header.
 #Include this file for a standard Qt 5 module; builds with the online style.
+
+# Start of footer - the rest is defined in qt-html-templates-online.qdocconf
+HTML.footer = \
+    "   </div>\n" \
+    "   <p class=\"copy-notice\">\n" \
+    "   <acronym title=\"Copyright\">&copy;</acronym> 2014 Digia Plc and/or its\n" \
+    "   subsidiaries. Documentation contributions included herein are the copyrights of\n" \
+    "   their respective owners. " \
+    "   The documentation provided herein is licensed under the terms of the" \
+    "   <a href=\"http://www.gnu.org/licenses/fdl.html\">GNU Free Documentation" \
+    "   License version 1.3</a> as published by the Free Software Foundation. " \
+    "   Digia, Qt and their respective logos are trademarks of Digia Plc " \
+    "   in Finland and/or other countries worldwide. All other trademarks are property\n" \
+    "   of their respective owners. </p>\n"
 
 #include standard set of macros and C++ defines and ignores
 include(macros.qdocconf)
@@ -12,3 +25,7 @@ include(qt-html-templates-online.qdocconf)
 
 #extra configuration data DITA information
 include(config.qdocconf)
+
+# single-directory output mode
+HTML.nosubdirs = "true"
+HTML.outputsubdir = "html"

@@ -293,7 +293,7 @@ private:
 protected:
 
     QFreetypeFace *freetype;
-    int default_load_flags;
+    mutable int default_load_flags;
     HintStyle default_hint_style;
     bool antialias;
     bool transform;

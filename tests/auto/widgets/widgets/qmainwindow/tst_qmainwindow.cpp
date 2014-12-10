@@ -46,6 +46,7 @@
 #include <qlabel.h>
 #include <qtextedit.h>
 #include <qstylehints.h>
+#include <qdesktopwidget.h>
 #include <private/qmainwindowlayout_p.h>
 #include <private/qdockarealayout_p.h>
 
@@ -132,6 +133,8 @@ private slots:
     void saveRestore_data();
     void statusBar();
 #endif
+    void contentsMargins_data();
+    void contentsMargins();
     void isSeparator();
 #ifndef QTEST_NO_CURSOR
     void setCursor();
@@ -749,7 +752,40 @@ void tst_QMainWindow::statusBar()
         QVERIFY(indexOfSb == -1);
     }
 }
+
 #endif
+
+void tst_QMainWindow::contentsMargins_data()
+{
+    QTest::addColumn<int>("contentsMargin");
+    QTest::newRow("0") << 0;
+    QTest::newRow("10") << 10;
+}
+
+void tst_QMainWindow::contentsMargins()
+{
+    QFETCH(int, contentsMargin);
+
+    QMainWindow mw;
+    const QRect availGeometry = QApplication::desktop()->availableGeometry();
+    mw.menuBar()->addMenu("File");
+    mw.setWindowTitle(QLatin1String(QTest::currentTestFunction())
+                      + QLatin1Char(' ') + QLatin1String(QTest::currentDataTag()));
+    mw.resize(availGeometry.size() / 4);
+    mw.move((availGeometry.width() - mw.width()) / 2,
+            (availGeometry.height() - mw.height()) / 2);
+    mw.setContentsMargins(contentsMargin, contentsMargin, contentsMargin, contentsMargin);
+    mw.statusBar()->showMessage("Hello");
+
+    mw.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&mw));
+
+    QCOMPARE(mw.menuBar()->geometry().left(), contentsMargin);
+    QCOMPARE(mw.menuBar()->geometry().top(), contentsMargin);
+
+    QCOMPARE(mw.statusBar()->geometry().left(), contentsMargin);
+    QCOMPARE(mw.statusBar()->geometry().bottom() + 1, mw.height() - contentsMargin);
+}
 
 void tst_QMainWindow::centralWidget()
 {

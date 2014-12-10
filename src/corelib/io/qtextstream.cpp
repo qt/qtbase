@@ -85,8 +85,8 @@ static const int QTEXTSTREAM_BUFFERSIZE = 16384;
 
     \li Chunk by chunk, by calling readLine() or readAll().
 
-    \li Word by word. QTextStream supports streaming into QStrings,
-    QByteArrays and char* buffers. Words are delimited by space, and
+    \li Word by word. QTextStream supports streaming into \l {QString}s,
+    \l {QByteArray}s and char* buffers. Words are delimited by space, and
     leading white space is automatically skipped.
 
     \li Character by character, by streaming into QChar or char types.
@@ -158,7 +158,7 @@ static const int QTEXTSTREAM_BUFFERSIZE = 16384;
     parameter: qSetFieldWidth(), qSetPadChar(), and
     qSetRealNumberPrecision().
 
-    \sa QDataStream, QIODevice, QFile, QBuffer, QTcpSocket, {Codecs Example}
+    \sa QDataStream, QIODevice, QFile, QBuffer, QTcpSocket, {Text Codecs Example}
 */
 
 /*! \enum QTextStream::RealNumberNotation
@@ -1557,7 +1557,7 @@ bool QTextStream::atEnd() const
     QString. Avoid this function when working on large files, as it
     will consume a significant amount of memory.
 
-    Calling readLine() is better if you do not know how much data is
+    Calling \l {QTextStream::readLine()}{readLine()} is better if you do not know how much data is
     available.
 
     \sa readLine()
@@ -1582,9 +1582,9 @@ QString QTextStream::readAll()
     The returned line has no trailing end-of-line characters ("\\n"
     or "\\r\\n"), so calling QString::trimmed() is unnecessary.
 
-    If the stream has read to the end of the file, readLine() will return a
-    null QString. For strings, or for devices that support it, you can
-    explicitly test for the end of the stream using atEnd().
+    If the stream has read to the end of the file, \l {QTextStream::readLine()}{readLine()}
+    will return a null QString. For strings, or for devices that support it,
+    you can explicitly test for the end of the stream using atEnd().
 
     \sa readAll(), QIODevice::readLine()
 */
@@ -2816,7 +2816,7 @@ QTextStream &endl(QTextStream &stream)
 /*!
     \relates QTextStream
 
-    Calls QTextStream::flush() on \a stream and returns \a stream.
+    Calls \l{QTextStream::flush()}{flush()} on \a stream and returns \a stream.
 
     \sa endl(), reset(), {QTextStream manipulators}
 */

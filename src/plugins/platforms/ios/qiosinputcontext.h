@@ -48,6 +48,22 @@ QT_BEGIN_NAMESPACE
 
 @class QIOSKeyboardListener;
 @class QIOSTextInputResponder;
+@protocol KeyboardState;
+
+struct KeyboardState
+{
+    KeyboardState() :
+        keyboardVisible(false), keyboardAnimating(false),
+        animationDuration(0), animationCurve(UIViewAnimationCurve(-1))
+        {}
+
+    bool keyboardVisible;
+    bool keyboardAnimating;
+    QRectF keyboardRect;
+    CGRect keyboardEndRect;
+    NSTimeInterval animationDuration;
+    UIViewAnimationCurve animationCurve;
+};
 
 struct ImeState
 {
@@ -69,6 +85,7 @@ public:
     void hideInputPanel() Q_DECL_OVERRIDE;
 
     bool isInputPanelVisible() const Q_DECL_OVERRIDE;
+    bool isAnimating() const Q_DECL_OVERRIDE;
     QRectF keyboardRect() const Q_DECL_OVERRIDE;
 
     void update(Qt::InputMethodQueries) Q_DECL_OVERRIDE;
@@ -84,14 +101,21 @@ public:
     void scrollToCursor();
     void scroll(int y);
 
+    void updateKeyboardState(NSNotification *notification = 0);
+
     const ImeState &imeState() { return m_imeState; };
+    const KeyboardState &keyboardState() { return m_keyboardState; };
+
     bool inputMethodAccepted() const;
 
     static QIOSInputContext *instance();
 
 private:
-    QIOSKeyboardListener *m_keyboardListener;
+    UIView* scrollableRootView();
+
+    QIOSKeyboardListener *m_keyboardHideGesture;
     QIOSTextInputResponder *m_textResponder;
+    KeyboardState m_keyboardState;
     ImeState m_imeState;
 };
 

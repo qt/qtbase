@@ -80,6 +80,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.InputStreamReader;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -321,7 +322,6 @@ public class QtActivityDelegate
 
         m_layout.removeView(m_editText);
         m_layout.addView(m_editText, new QtLayout.LayoutParams(width, height, x, y));
-        m_editText.bringToFront();
         m_editText.requestFocus();
         m_editText.postDelayed(new Runnable() {
             @Override
@@ -803,6 +803,22 @@ public class QtActivityDelegate
         m_nativeViews = new HashMap<Integer, View>();
         m_activity.registerForContextMenu(m_layout);
 
+        // Initialize accessibility
+        try {
+            final String a11yDelegateClassName = "org.qtproject.qt5.android.accessibility.QtAccessibilityDelegate";
+            Class<?> qtDelegateClass = Class.forName(a11yDelegateClassName);
+            Constructor constructor = qtDelegateClass.getConstructor(android.app.Activity.class,
+                                                                     android.view.ViewGroup.class,
+                                                                     this.getClass());
+            Object accessibilityDelegate = constructor.newInstance(m_activity, m_layout, this);
+        } catch (ClassNotFoundException e) {
+            // Class not found is fine since we are compatible with Android API < 16, but the function will
+            // only be available with that API level.
+        } catch (Exception e) {
+            // Unknown exception means something went wrong.
+            Log.w("Qt A11y", "Unknown exception: " + e.toString());
+        }
+
         m_activity.setContentView(m_layout,
                                   new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                                                              ViewGroup.LayoutParams.MATCH_PARENT));
@@ -1179,8 +1195,8 @@ public class QtActivityDelegate
 
         // Native views are always inserted in the end of the stack (i.e., on top).
         // All other views are stacked based on the order they are created.
-        final int index = m_layout.getChildCount() - m_nativeViews.size() - 1;
-        m_layout.addView(surface, index < 0 ? 0 : index);
+        final int surfaceCount = getSurfaceCount();
+        m_layout.addView(surface, surfaceCount);
 
         m_surfaces.put(id, surface);
     }
@@ -1221,12 +1237,18 @@ public class QtActivityDelegate
         }
     }
 
+    public int getSurfaceCount()
+    {
+        return m_surfaces.size();
+    }
+
     public void bringChildToFront(int id)
     {
         View view = m_surfaces.get(id);
         if (view != null) {
-            final int index = m_layout.getChildCount() - m_nativeViews.size() - 1;
-            m_layout.moveChild(view, index < 0 ? 0 : index);
+            final int surfaceCount = getSurfaceCount();
+            if (surfaceCount > 0)
+                m_layout.moveChild(view, surfaceCount - 1);
             return;
         }
 
@@ -1245,7 +1267,7 @@ public class QtActivityDelegate
 
         view = m_nativeViews.get(id);
         if (view != null) {
-            final int index = m_layout.getChildCount() - m_nativeViews.size();
+            final int index = getSurfaceCount();
             m_layout.moveChild(view, index);
         }
     }

@@ -1440,7 +1440,7 @@ void QMainWindowLayout::setGeometry(const QRect &_r)
     QLayout::setGeometry(r);
 
     if (statusbar) {
-        QRect sbr(QPoint(0, 0),
+        QRect sbr(QPoint(r.left(), 0),
                   QSize(r.width(), statusbar->heightForWidth(r.width()))
                   .expandedTo(statusbar->minimumSize()));
         sbr.moveBottom(r.bottom());

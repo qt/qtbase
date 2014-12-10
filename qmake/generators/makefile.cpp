@@ -444,6 +444,22 @@ MakefileGenerator::init()
 
     setSystemIncludes(v["QMAKE_DEFAULT_INCDIRS"]);
 
+    const char * const cacheKeys[] = { "_QMAKE_STASH_", "_QMAKE_SUPER_CACHE_", 0 };
+    for (int i = 0; cacheKeys[i]; ++i) {
+        if (v[cacheKeys[i]].isEmpty())
+            continue;
+        const ProString &file = v[cacheKeys[i]].first();
+        if (file.isEmpty())
+            continue;
+
+        QFileInfo fi(fileInfo(file.toQString()));
+
+        // If the file lives in the output dir we treat it as 'owned' by
+        // the current project, so it should be distcleaned by it as well.
+        if (fi.path() == Option::output_dir)
+            v["QMAKE_DISTCLEAN"].append(fi.fileName());
+    }
+
     ProStringList &quc = v["QMAKE_EXTRA_COMPILERS"];
 
     //make sure the COMPILERS are in the correct input/output chain order

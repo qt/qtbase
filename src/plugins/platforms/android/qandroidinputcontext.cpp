@@ -611,6 +611,9 @@ jboolean QAndroidInputContext::endBatchEdit()
 */
 jboolean QAndroidInputContext::commitText(const QString &text, jint newCursorPosition)
 {
+    bool updateSelectionWasBlocked = m_blockUpdateSelection;
+    m_blockUpdateSelection = true;
+
     QInputMethodEvent event;
     event.setCommitString(text);
     sendInputMethodEventThreadSafe(&event);
@@ -630,6 +633,7 @@ jboolean QAndroidInputContext::commitText(const QString &text, jint newCursorPos
                                                            newLocalPos, 0, QVariant()));
         }
     }
+    m_blockUpdateSelection = updateSelectionWasBlocked;
 
     updateCursorPosition();
     return JNI_TRUE;

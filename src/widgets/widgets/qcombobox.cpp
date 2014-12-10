@@ -942,8 +942,8 @@ QComboBox::QComboBox(QComboBoxPrivate &dd, QWidget *parent)
 void QComboBoxPrivate::init()
 {
     Q_Q(QComboBox);
-#ifdef Q_OS_MAC
-    // On Mac, only line edits and list views always get tab focus. It's only
+#ifdef Q_OS_OSX
+    // On OS X, only line edits and list views always get tab focus. It's only
     // when we enable full keyboard access that other controls can get tab focus.
     // When it's not editable, a combobox looks like a button, and it behaves as
     // such in this respect.

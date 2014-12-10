@@ -38,7 +38,7 @@
     \title external: Publishing Applications to Ovi Store
 */
 /*!
-    \externalpage http://qt-project.org/doc/qtcreator
+    \externalpage http://doc.qt.io/qtcreator
     \title external: Qt Creator Manual
 */
 /*!
@@ -50,31 +50,31 @@
     \title external: Qt Mobility QML Plugins
 */
 /*!
-    \externalpage http://qt-project.org/doc/qtcreator/creator-project-managing.html
+    \externalpage http://doc.qt.io/qtcreator/creator-project-managing.html
     \title external: Creating Qt Projects in Creator
 */
 /*!
-    \externalpage http://qt-project.org/doc/qtcreator/creator-building-running.html
+    \externalpage http://doc.qt.io/qtcreator/creator-building-running.html
     \title external: Building and Running Applications in Creator
 */
 /*!
-    \externalpage http://qt-project.org/doc/qtcreator/creator-running-targets.html
+    \externalpage http://doc.qt.io/qtcreator/creator-running-targets.html
     \title external: Set Compiler Targets in Creator
 */
 /*!
-    \externalpage http://qt-project.org/doc/qtcreator/creator-build-settings.html
+    \externalpage http://doc.qt.io/qtcreator/creator-build-settings.html
     \title external: Build Settings in Creator
 */
 /*!
-    \externalpage http://qt-project.org/doc/qtcreator/creator-run-settings.html
+    \externalpage http://doc.qt.io/qtcreator/creator-run-settings.html
     \title external: Run Settings in Creator
 */
 /*!
-    \externalpage http://qt-project.org/doc/qtcreator/creator-using-qt-designer.html
+    \externalpage http://doc.qt.io/qtcreator/creator-using-qt-designer.html
     \title external: Designer in Creator
 */
 /*!
-    \externalpage http://qt-project.org/doc/qtcreator/creator-debugging.html
+    \externalpage http://doc.qt.io/qtcreator/creator-debugging.html
     \title external: Debugging Applications in Creator
 */
 /*!
@@ -90,6 +90,6 @@
     \title external: Qt Mobility Examples
 */
 /*!
-    \externalpage http://qt-project.org/doc/qtcreator/creator-overview.html
+    \externalpage http://doc.qt.io/qtcreator/creator-overview.html
     \title external: Qt Creator Overview
 */

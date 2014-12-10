@@ -952,6 +952,9 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
             return true;
         case QtWindows::CalculateSize:
             return QWindowsGeometryHint::handleCalculateSize(d->m_creationContext->customMargins, msg, result);
+        case QtWindows::GeometryChangingEvent:
+            return QWindowsWindow::handleGeometryChangingMessage(&msg, d->m_creationContext->window,
+                                                                 d->m_creationContext->margins + d->m_creationContext->customMargins);
         default:
             break;
         }
