@@ -245,21 +245,6 @@ scene->destroyItemGroup(group);
 //! [17]
 
 
-//! [QGraphicsItem type]
-class CustomItem : public QGraphicsItem
-{
-   ...
-   enum { Type = UserType + 1 };
-
-   int type() const
-   {
-       // Enable the use of qgraphicsitem_cast with this item.
-       return Type;
-   }
-   ...
-};
-//! [QGraphicsItem type]
-
 //! [18]
 class QGraphicsPathItem : public QAbstractGraphicsShapeItem
 {
