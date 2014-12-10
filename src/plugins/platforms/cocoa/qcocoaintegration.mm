@@ -142,6 +142,16 @@ qreal QCocoaScreen::devicePixelRatio() const
     return qreal(screen ? [screen backingScaleFactor] : 1.0);
 }
 
+QPlatformScreen::SubpixelAntialiasingType QCocoaScreen::subpixelAntialiasingTypeHint() const
+{
+    QPlatformScreen::SubpixelAntialiasingType type = QPlatformScreen::subpixelAntialiasingTypeHint();
+    if (type == QPlatformScreen::Subpixel_None) {
+        // Every OSX machine has RGB pixels unless a peculiar or rotated non-Apple screen is attached
+        type = QPlatformScreen::Subpixel_RGB;
+    }
+    return type;
+}
+
 QWindow *QCocoaScreen::topLevelAt(const QPoint &point) const
 {
     NSPoint screenPoint = qt_mac_flipPoint(point);

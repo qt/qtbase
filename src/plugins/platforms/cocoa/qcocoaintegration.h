@@ -73,6 +73,7 @@ public:
     QPlatformCursor *cursor() const Q_DECL_OVERRIDE { return m_cursor; }
     QWindow *topLevelAt(const QPoint &point) const Q_DECL_OVERRIDE;
     QList<QPlatformScreen *> virtualSiblings() const Q_DECL_OVERRIDE { return m_siblings; }
+    QPlatformScreen::SubpixelAntialiasingType subpixelAntialiasingTypeHint() const Q_DECL_OVERRIDE;
 
     // ----------------------------------------------------
     // Additional methods
