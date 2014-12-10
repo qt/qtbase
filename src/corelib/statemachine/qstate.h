@@ -35,8 +35,8 @@
 #define QSTATE_H
 
 #include <QtCore/qabstractstate.h>
-
 #include <QtCore/qlist.h>
+#include <QtCore/qmetaobject.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -74,6 +74,18 @@ public:
 
     void addTransition(QAbstractTransition *transition);
     QSignalTransition *addTransition(const QObject *sender, const char *signal, QAbstractState *target);
+#ifdef Q_QDOC
+    QSignalTransition *addTransition(const QObject *sender, PointerToMemberFunction signal,
+                       QAbstractState *target);
+#else
+    template <typename Func>
+    QSignalTransition *addTransition(const typename QtPrivate::FunctionPointer<Func>::Object *obj,
+                      Func signal, QAbstractState *target)
+    {
+        const QMetaMethod signalMetaMethod = QMetaMethod::fromSignal(signal);
+        return addTransition(obj, signalMetaMethod.methodSignature().constData(), target);
+    }
+#endif // Q_QDOC
     QAbstractTransition *addTransition(QAbstractState *target);
     void removeTransition(QAbstractTransition *transition);
     QList<QAbstractTransition*> transitions() const;

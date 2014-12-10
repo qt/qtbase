@@ -339,6 +339,17 @@ void QState::addTransition(QAbstractTransition *transition)
 }
 
 /*!
+  \fn QState::addTransition(const QObject *sender, PointerToMemberFunction signal,
+                       QAbstractState *target);
+  \since 5.5
+  \overload
+
+  Adds a transition associated with the given \a signal of the given \a sender
+  object, and returns the new QSignalTransition object. The transition has
+  this state as the source, and the given \a target as the target state.
+*/
+
+/*!
   Adds a transition associated with the given \a signal of the given \a sender
   object, and returns the new QSignalTransition object. The transition has
   this state as the source, and the given \a target as the target state.

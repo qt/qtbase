@@ -205,12 +205,16 @@ void tst_QState::transitions()
     QVERIFY(s1.transitions().isEmpty());
 
     QAbstractTransition *t1 = s1.addTransition(this, SIGNAL(destroyed()), &s2);
+    QAbstractTransition *t1_1 = s1.addTransition(this, &tst_QState::destroyed, &s2);
     QVERIFY(t1 != 0);
-    QCOMPARE(s1.transitions().count(), 1);
+    QVERIFY(t1_1 != 0);
+    QCOMPARE(s1.transitions().count(), 2);
     QCOMPARE(s1.transitions().first(), t1);
+    QCOMPARE(s1.transitions().last(), t1_1);
     QVERIFY(s2.transitions().isEmpty());
 
     s1.removeTransition(t1);
+    s1.removeTransition(t1_1);
     QVERIFY(s1.transitions().isEmpty());
 
     s1.addTransition(t1);
