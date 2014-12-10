@@ -31,9 +31,8 @@
     \brief The Qt OpenGL module offers classes that make it easy to
     use OpenGL in Qt applications.
 
-    \warning Apart from the \l{QGLWidget} class, this module should not be used
-    anymore for new code. Please use the corresponding OpenGL classes in
-    \l{Qt Gui}.
+    \warning This module should not be used anymore for new code. Please
+    use the corresponding OpenGL classes in \l{Qt Gui}.
 
     OpenGL is a standard API for rendering 3D graphics. OpenGL only
     deals with 3D rendering and provides little or no support for GUI
