@@ -43,8 +43,8 @@ class PingerServer : public QDBusServer
     Q_OBJECT
     Q_CLASSINFO("D-Bus Interface", "org.qtproject.autotests.qpinger")
 public:
-    PingerServer(QString addr = "unix:tmpdir=/tmp", QObject* parent = 0)
-        : QDBusServer(addr, parent),
+    PingerServer(QObject* parent = 0)
+        : QDBusServer(parent),
           m_conn("none")
     {
         connect(this, SIGNAL(newConnection(QDBusConnection)), SLOT(handleConnection(QDBusConnection)));

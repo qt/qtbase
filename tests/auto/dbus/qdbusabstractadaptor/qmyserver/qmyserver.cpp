@@ -50,8 +50,8 @@ class MyServer : public QDBusServer
     Q_CLASSINFO("D-Bus Interface", "org.qtproject.autotests.qmyserver")
 
 public:
-    MyServer(QString addr = "unix:tmpdir=/tmp", QObject* parent = 0)
-        : QDBusServer(addr, parent),
+    MyServer(QObject* parent = 0)
+        : QDBusServer(parent),
           m_conn("none"),
           obj(NULL)
     {
