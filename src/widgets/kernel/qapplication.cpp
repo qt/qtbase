@@ -3320,12 +3320,10 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
             QWidget* w = static_cast<QWidget *>(receiver);
             QWheelEvent* wheel = static_cast<QWheelEvent*>(e);
 
-            // QTBUG-40656, combo and other popups should close when the main window gets a wheel event.
-            while (QWidget *popup = QApplication::activePopupWidget()) {
+            // QTBUG-40656, QTBUG-42731: ignore wheel events when a popup (QComboBox) is open.
+            if (const QWidget *popup = QApplication::activePopupWidget()) {
                 if (w->window() != popup)
-                    popup->close();
-                else
-                    break;
+                    return true;
             }
 
             QPoint relpos = wheel->pos();
