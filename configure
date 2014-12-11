@@ -1986,7 +1986,8 @@ while [ "$#" -gt 0 ]; do
         if [ "$VAL" = "no" ] || [ "$VAL" = "linked" ] || [ "$VAL" = "runtime" ]; then
             CFG_DBUS="$VAL"
         elif [ "$VAL" = "yes" ]; then
-            CFG_DBUS="runtime"
+            # keep as auto, we'll auto-detect whether to go linked or runtime later
+            CFG_DBUS=auto
         else
             UNKNOWN_OPT=yes
         fi
@@ -1995,6 +1996,13 @@ while [ "$#" -gt 0 ]; do
         if [ "$VAL" = "yes" ]; then
 	    CFG_DBUS="linked"
 	else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
+    dbus-runtime)
+        if [ "$VAL" = "yes" ]; then
+            CFG_DBUS="runtime"
+        else
             UNKNOWN_OPT=yes
         fi
         ;;
@@ -2631,8 +2639,8 @@ Additional options:
     -pch ............... Use precompiled header support.
 
     -no-dbus ........... Do not compile the Qt D-Bus module.
- +  -dbus .............. Compile the Qt D-Bus module and dynamically load libdbus-1.
-    -dbus-linked ....... Compile the Qt D-Bus module and link to libdbus-1.
+ +  -dbus-linked ....... Compile the Qt D-Bus module and link to libdbus-1.
+    -dbus-runtime ...... Compile the Qt D-Bus module and dynamically load libdbus-1.
 
     -reduce-relocations ..... Reduce relocations in the libraries through extra
                               linker optimizations (Qt/X11 and Qt for Embedded Linux only;
@@ -5027,10 +5035,10 @@ if [ "$CFG_ICONV" != "no" ]; then
 fi
 
 # auto-detect libdbus-1 support
-if [ "$CFG_DBUS" = "auto" ]; then
-    CFG_DBUS="runtime"
-fi
-if [ "$CFG_DBUS" = "linked" ]; then
+# auto: detect if libdbus-1 is present; if so, link to it
+# linked: fail if libdbus-1 is not present; otherwise link to it
+# runtime: no detection (cannot fail), load libdbus-1 at runtime
+if [ "$CFG_DBUS" = "auto" ] || [ "$CFG_DBUS" = "linked" ]; then
     if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --atleast-version="$MIN_DBUS_1_VERSION" dbus-1 2>/dev/null; then
         QT_CFLAGS_DBUS=`$PKG_CONFIG --cflags dbus-1 2>/dev/null`
         QT_LIBS_DBUS=`$PKG_CONFIG --libs dbus-1 2>/dev/null`
@@ -5046,14 +5054,19 @@ if [ "$CFG_DBUS" = "linked" ]; then
             QT_CFLAGS_DBUS=`env -i PATH="$PATH" pkg-config --cflags dbus-1 2>/dev/null`
         fi
         QMakeVar set QT_HOST_CFLAGS_DBUS "$QT_CFLAGS_DBUS"
+        CFG_DBUS=linked
     else
-        if [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
+        # Failed to compile the test, so it's an error if CFG_DBUS is "linked"
+        if [ "$CFG_DBUS" = "linked" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
             echo "The Qt D-Bus module cannot be enabled because libdbus-1 version $MIN_DBUS_1_VERSION was not found."
             [ -z "$PKG_CONFIG" ] && echo " Use of pkg-config is not enabled, maybe you want to pass -pkg-config?"
             echo " Turn on verbose messaging (-v) to $0 to see the final report."
             echo " If you believe this message is in error you may use the continue"
             echo " switch (-continue) to $0 to continue."
             exit 101
+        else
+            # CFG_DBUS is "auto" here
+            CFG_DBUS=runtime
         fi
     fi
 fi

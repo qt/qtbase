@@ -904,13 +904,15 @@ void Configure::parseCmdLine()
         } else if (configCmdLine.at(i) == "-no-qdbus") {
             dictionary[ "DBUS" ] = "no";
         } else if (configCmdLine.at(i) == "-qdbus") {
-            dictionary[ "DBUS" ] = "yes";
+            dictionary[ "DBUS" ] = "auto";
         } else if (configCmdLine.at(i) == "-no-dbus") {
             dictionary[ "DBUS" ] = "no";
         } else if (configCmdLine.at(i) == "-dbus") {
-            dictionary[ "DBUS" ] = "yes";
+            dictionary[ "DBUS" ] = "auto";
         } else if (configCmdLine.at(i) == "-dbus-linked") {
             dictionary[ "DBUS" ] = "linked";
+        } else if (configCmdLine.at(i) == "-dbus-runtime") {
+            dictionary[ "DBUS" ] = "runtime";
         } else if (configCmdLine.at(i) == "-audio-backend") {
             dictionary[ "AUDIO_BACKEND" ] = "yes";
         } else if (configCmdLine.at(i) == "-no-audio-backend") {
@@ -2023,8 +2025,8 @@ bool Configure::displayHelp()
         desc("LIBPROXY", "no",   "-no-libproxy",        "Do not compile in libproxy support.");
         desc("LIBPROXY", "yes",  "-libproxy",           "Compile in libproxy support (for cross compilation targets).\n");
         desc("DBUS", "no",       "-no-dbus",            "Do not compile in D-Bus support.");
-        desc("DBUS", "yes",      "-dbus",               "Compile in D-Bus support and load libdbus-1\ndynamically.");
         desc("DBUS", "linked",   "-dbus-linked",        "Compile in D-Bus support and link to libdbus-1.\n");
+        desc("DBUS", "runtime",  "-dbus-runtime",       "Compile in D-Bus support and load libdbus-1\ndynamically.");
         desc("AUDIO_BACKEND", "no","-no-audio-backend", "Do not compile in the platform audio backend into\nQt Multimedia.");
         desc("AUDIO_BACKEND", "yes","-audio-backend",   "Compile in the platform audio backend into Qt Multimedia.\n");
         desc("WMF_BACKEND", "no","-no-wmf-backend",     "Do not compile in the windows media foundation backend\ninto Qt Multimedia.");
@@ -2496,7 +2498,7 @@ void Configure::autoDetection()
     if (dictionary["LIBPROXY"] == "auto")
         dictionary["LIBPROXY"] = checkAvailability("LIBPROXY") ? "yes" : "no";
     if (dictionary["DBUS"] == "auto")
-        dictionary["DBUS"] = checkAvailability("DBUS") ? "yes" : "no";
+        dictionary["DBUS"] = checkAvailability("DBUS") ? "linked" : "runtime";
     if (dictionary["QML_DEBUG"] == "auto")
         dictionary["QML_DEBUG"] = dictionary["QML"] == "yes" ? "yes" : "no";
     if (dictionary["AUDIO_BACKEND"] == "auto")
@@ -2966,7 +2968,7 @@ void Configure::generateOutputVars()
     if (dictionary[ "LIBPROXY" ] == "yes")
         qtConfig += "libproxy";
 
-    if (dictionary[ "DBUS" ] == "yes")
+    if (dictionary[ "DBUS" ] == "runtime")
         qtConfig += "dbus";
     else if (dictionary[ "DBUS" ] == "linked")
         qtConfig += "dbus dbus-linked";
@@ -3076,7 +3078,7 @@ void Configure::generateOutputVars()
             qmakeVars += QString("OPENSSL_LIBS += -L%1/lib").arg(opensslPath);
         }
     }
-    if (dictionary[ "DBUS" ] != "no") {
+    if (dictionary[ "DBUS" ] == "linked") {
        if (!dbusPath.isEmpty()) {
            qmakeVars += QString("QT_CFLAGS_DBUS = -I%1/include").arg(dbusPath);
            qmakeVars += QString("QT_LIBS_DBUS = -L%1/lib").arg(dbusPath);
