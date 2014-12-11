@@ -51,7 +51,7 @@ std::string getTempPath();
 void writeFile(const char* path, const void* data, size_t size);
 #endif
 
-#if defined(ANGLE_ENABLE_WINDOWS_STORE)
+#if defined(ANGLE_ENABLE_WINDOWS_STORE) && _MSC_FULL_VER < 180031101
 void Sleep(_In_ unsigned long dwMilliseconds);
 #endif
 
