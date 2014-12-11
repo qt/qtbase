@@ -42,7 +42,7 @@ static const char objectPath[] = "/org/qtproject/qmyserver";
 int MyObject::callCount = 0;
 QVariantList MyObject::callArgs;
 
-class MyServer : public QDBusServer
+class MyServer : public QDBusServer, protected QDBusContext
 {
     Q_OBJECT
     Q_CLASSINFO("D-Bus Interface", "org.qtproject.autotests.qmyserver")
@@ -58,6 +58,8 @@ public:
 public slots:
     QString address() const
     {
+        if (!QDBusServer::isConnected())
+            sendErrorReply(QDBusServer::lastError().name(), QDBusServer::lastError().message());
         return QDBusServer::address();
     }
 

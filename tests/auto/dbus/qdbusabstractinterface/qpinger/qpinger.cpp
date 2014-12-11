@@ -38,7 +38,7 @@ static const char serviceName[] = "org.qtproject.autotests.qpinger";
 static const char objectPath[] = "/org/qtproject/qpinger";
 //static const char *interfaceName = serviceName;
 
-class PingerServer : public QDBusServer
+class PingerServer : public QDBusServer, protected QDBusContext
 {
     Q_OBJECT
     Q_CLASSINFO("D-Bus Interface", "org.qtproject.autotests.qpinger")
@@ -54,6 +54,8 @@ public:
 public slots:
     QString address() const
     {
+        if (!QDBusServer::isConnected())
+            sendErrorReply(QDBusServer::lastError().name(), QDBusServer::lastError().message());
         return QDBusServer::address();
     }
 
