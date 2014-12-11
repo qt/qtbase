@@ -890,7 +890,8 @@ QWindowsWindow::QWindowsWindow(QWindow *aWindow, const QWindowsWindowData &data)
     updateDropSite();
 
 #ifndef Q_OS_WINCE
-    if (QWindowsContext::instance()->systemInfo() & QWindowsContext::SI_SupportsTouch) {
+    if ((QWindowsContext::instance()->systemInfo() & QWindowsContext::SI_SupportsTouch)
+        && aWindow->type() != Qt::ForeignWindow) {
         if (QWindowsContext::user32dll.registerTouchWindow(m_data.hwnd, 0)) {
             setFlag(TouchRegistered);
         } else {
