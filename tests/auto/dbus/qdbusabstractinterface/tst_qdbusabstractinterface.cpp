@@ -51,6 +51,7 @@ class tst_QDBusAbstractInterface: public QObject
 {
     Q_OBJECT
     Interface targetObj;
+    QString peerAddress;
 
     Pinger getPinger(QString service = "", const QString &path = "/")
     {
@@ -81,6 +82,7 @@ public:
 
 private slots:
     void initTestCase();
+    void cleanupTestCase();
 
     void init();
     void cleanup();
@@ -223,12 +225,6 @@ void tst_QDBusAbstractInterface::initTestCase()
     QDBusConnection con = QDBusConnection::sessionBus();
     QVERIFY(con.isConnected());
     con.registerObject("/", &targetObj, QDBusConnection::ExportScriptableContents);
-}
-
-void tst_QDBusAbstractInterface::init()
-{
-    QDBusConnection con = QDBusConnection::sessionBus();
-    QVERIFY(con.isConnected());
 
     // verify service isn't registered by something else
     // (e.g. a left over qpinger from a previous test run)
@@ -249,10 +245,29 @@ void tst_QDBusAbstractInterface::init()
     QDBusMessage req = QDBusMessage::createMethodCall(serviceName, objectPath, interfaceName, "address");
     QDBusMessage rpl = con.call(req);
     QVERIFY(rpl.type() == QDBusMessage::ReplyMessage);
-    QString address = rpl.arguments().at(0).toString();
+    peerAddress = rpl.arguments().at(0).toString();
+}
+
+void tst_QDBusAbstractInterface::cleanupTestCase()
+{
+    // Kill peer, resetting the object exported by a separate process
+    proc.terminate();
+    QVERIFY(proc.waitForFinished() || proc.state() == QProcess::NotRunning);
+
+    // Wait until the service is certainly not registered
+    QDBusConnection con = QDBusConnection::sessionBus();
+    if (con.isConnected()) {
+        QTRY_VERIFY(!con.interface()->isServiceRegistered(serviceName));
+    }
+}
+
+void tst_QDBusAbstractInterface::init()
+{
+    QDBusConnection con = QDBusConnection::sessionBus();
+    QVERIFY(con.isConnected());
 
     // connect to peer server
-    QDBusConnection peercon = QDBusConnection::connectToPeer(address, "peer");
+    QDBusConnection peercon = QDBusConnection::connectToPeer(peerAddress, "peer");
     QVERIFY(peercon.isConnected());
 
     QDBusMessage req2 = QDBusMessage::createMethodCall(serviceName, objectPath, interfaceName, "isConnected");
@@ -265,20 +280,13 @@ void tst_QDBusAbstractInterface::cleanup()
 {
     QDBusConnection::disconnectFromPeer("peer");
 
-    // Kill peer, resetting the object exported by a separate process
-    proc.terminate();
-    QVERIFY(proc.waitForFinished() || proc.state() == QProcess::NotRunning);
-
     // Reset the object exported by this process
     targetObj.m_stringProp = QString();
     targetObj.m_variantProp = QDBusVariant();
     targetObj.m_complexProp = RegisteredType();
 
-    // Wait until the service is certainly not registered
-    QDBusConnection con = QDBusConnection::sessionBus();
-    if (con.isConnected()) {
-        QTRY_VERIFY(!con.interface()->isServiceRegistered(serviceName));
-    }
+    QDBusMessage resetCall = QDBusMessage::createMethodCall(serviceName, objectPath, interfaceName, "reset");
+    QVERIFY(QDBusConnection::sessionBus().call(resetCall).type() == QDBusMessage::ReplyMessage);
 }
 
 void tst_QDBusAbstractInterface::makeVoidCall()
