@@ -481,7 +481,7 @@ static QVersionDirectivePosition findVersionDirectivePosition(const char *source
     int splitPosition = 0;
     int linePosition = 1;
 
-    static const QRegularExpression pattern(QStringLiteral("^#\\s*version.*(\\n)?"),
+    static const QRegularExpression pattern(QStringLiteral("^\\s*#\\s*version.*(\\n)?"),
                                             QRegularExpression::MultilineOption
                                             | QRegularExpression::OptimizeOnFirstUsageOption);
     QRegularExpressionMatch match = pattern.match(working);
