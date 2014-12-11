@@ -154,17 +154,17 @@
 /* Clang also masquerades as GCC */
 #    if defined(__apple_build_version__)
 #      /* http://en.wikipedia.org/wiki/Xcode#Toolchain_Versions */
-#      if __apple_build_version__ >= 600051
+#      if __apple_build_version__ >= 6000051
 #        define Q_CC_CLANG 305
-#      elif __apple_build_version__ >= 503038
+#      elif __apple_build_version__ >= 5030038
 #        define Q_CC_CLANG 304
-#      elif __apple_build_version__ >= 500275
+#      elif __apple_build_version__ >= 5000275
 #        define Q_CC_CLANG 303
-#      elif __apple_build_version__ >= 425024
+#      elif __apple_build_version__ >= 4250024
 #        define Q_CC_CLANG 302
-#      elif __apple_build_version__ >= 318045
+#      elif __apple_build_version__ >= 3180045
 #        define Q_CC_CLANG 301
-#      elif __apple_build_version__ >= 211101
+#      elif __apple_build_version__ >= 2111001
 #        define Q_CC_CLANG 300
 #      else
 #        error "Unknown Apple Clang version"
