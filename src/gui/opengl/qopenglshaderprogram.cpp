@@ -471,7 +471,8 @@ static QVersionDirectivePosition findVersionDirectivePosition(const char *source
             } else {
                 if (*c == QLatin1Char('#'))
                     *c = QLatin1Char('_');
-                state = MultiLineComment;
+                if (*c != QLatin1Char('*'))
+                    state = MultiLineComment;
             }
             break;
         }
