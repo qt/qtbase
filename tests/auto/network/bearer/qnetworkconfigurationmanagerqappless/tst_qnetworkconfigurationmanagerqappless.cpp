@@ -47,7 +47,7 @@ private slots:
 void tst_QNetworkConfigurationManager::staticsInitialization()
 {
     // This code should not crash. The test was introduced as
-    // a fix for https://bugreports.qt-project.org/browse/QTBUG-36897
+    // a fix for QTBUG-36897
     for (int i = 0; i < 2; i++)
     {
         int argc = 1;

@@ -356,7 +356,7 @@ void tst_QScroller::scrollerProperties()
 void tst_QScroller::scrollTo()
 {
 #ifdef Q_OS_MAC
-    QSKIP("Flakey test - https://bugreports.qt-project.org/browse/QTBUG-29950");
+    QSKIP("Flakey test - QTBUG-29950");
 #endif
     {
         tst_QScrollerWidget *sw = new tst_QScrollerWidget();
@@ -385,7 +385,7 @@ void tst_QScroller::scrollTo()
 void tst_QScroller::scroll()
 {
 #ifdef Q_OS_MAC
-    QSKIP("Flakey test - https://bugreports.qt-project.org/browse/QTBUG-30133");
+    QSKIP("Flakey test - QTBUG-30133");
 #endif
 #ifndef QT_NO_GESTURES
     // -- good case. normal scroll
@@ -430,7 +430,7 @@ void tst_QScroller::scroll()
 void tst_QScroller::overshoot()
 {
 #ifdef Q_OS_MAC
-    QSKIP("Flakey test - https://bugreports.qt-project.org/browse/QTBUG-29950");
+    QSKIP("Flakey test - QTBUG-29950");
 #endif
 #ifndef QT_NO_GESTURES
     tst_QScrollerWidget *sw = new tst_QScrollerWidget();

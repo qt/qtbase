@@ -151,7 +151,7 @@ void tst_QScrollBar::task_209492()
 #define WHEEL_DELTA 120 // copied from tst_QAbstractSlider / tst_QComboBox
 void tst_QScrollBar::QTBUG_27308()
 {
-    // https://bugreports.qt-project.org/browse/QTBUG-27308
+    // QTBUG-27308
     // Check that a disabled scrollbar doesn't react on wheel events anymore
 
     QScrollBar testWidget(Qt::Horizontal);

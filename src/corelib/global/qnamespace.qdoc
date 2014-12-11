@@ -2612,7 +2612,7 @@
     \value ElideNone    Ellipsis should NOT appear in the text.
 
     Qt::ElideMiddle is normally the most appropriate choice for URLs (e.g.,
-    "\l{http://bugreports.qt-project.org/browse/QTWEBSITE-13}{http://bugreports.qt.../QTWEBSITE-13/}"),
+    "\l{http://bugreports.qt.io/browse/QTWEBSITE-13}{http://bugreports.qt.../QTWEBSITE-13/}"),
     whereas Qt::ElideRight is appropriate
     for other strings (e.g.,
     "\l{http://doc.qt.digia.com/qq/qq09-mac-deployment.html}{Deploying Applications on Ma...}").

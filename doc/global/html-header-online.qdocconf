@@ -117,7 +117,7 @@ HTML.postheader = \
     "        <li><a href=\"http://qt-project.org/wiki\">Wiki</a></li>\n" \
     "        <li><a href=\"http://doc.qt.io/\" class=\"active\">Documentation</a></li>\n" \
     "        <li><a href=\"http://qt-project.org/forums\">Forum</a></li>\n" \
-    "        <li><a href=\"https://bugreports.qt-project.org/\">Bug Reports</a></li>\n" \
+    "        <li><a href=\"https://bugreports.qt.io/\">Bug Reports</a></li>\n" \
     "        <li><a href=\"https://codereview.qt-project.org/\">Code Review</a></li>\n" \
     "    </ul>\n" \
     "    <div id=\"main_title_bar\">\n" \

@@ -7236,7 +7236,7 @@ void tst_QNetworkReply::synchronousRequest()
     // workaround for HTTPS requests: add self-signed server cert to list of CA certs,
     // since we cannot react to the sslErrors() signal
     // to fix this properly we would need to have an ignoreSslErrors() method in the
-    // QNetworkRequest, see http://bugreports.qt-project.org/browse/QTBUG-14774
+    // QNetworkRequest, see QTBUG-14774
     if (url.scheme() == "https") {
         QSslConfiguration sslConf;
         QList<QSslCertificate> certs = QSslCertificate::fromPath(testDataDir + "/certs/qt-test-server-cacert.pem");
