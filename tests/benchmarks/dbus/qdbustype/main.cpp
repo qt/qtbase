@@ -48,7 +48,8 @@ private Q_SLOTS:
 
 static inline void benchmarkAddRow(const char *name, const char *data)
 {
-    QTest::newRow(QByteArray(QByteArray("native-") + name)) << data << true;
+    if (qdbus_loadLibDBus())
+        QTest::newRow(QByteArray(QByteArray("native-") + name)) << data << true;
     QTest::newRow(name) << data << false;
 }
 
