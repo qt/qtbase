@@ -873,7 +873,7 @@ public:
 
     bool                    suppressUnknownOptionWarnings;
     DotNET                  CompilerVersion;
-    bool                    WinRT, WinPhone, WinPhone80;
+    bool                    WinRT, WinPhone;
 
     // Variables
     triState                ATLMinimizesCRunTimeLibraryUsage;

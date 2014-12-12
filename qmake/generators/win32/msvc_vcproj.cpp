@@ -908,11 +908,6 @@ void VcprojGenerator::initProject()
     initFormFiles();
     initResourceFiles();
     initExtraCompilerOutputs();
-    if (vcProject.Configuration.WinRT) {
-        if (vcProject.Configuration.WinPhone80
-                && vcProject.Configuration.ConfigurationType == typeApplication)
-            initWMAppManifest();
-    }
 
     // Own elements -----------------------------
     vcProject.Name = unescapeFilePath(project->first("QMAKE_ORIG_TARGET").toQString());
@@ -1020,7 +1015,6 @@ void VcprojGenerator::initConfiguration()
         conf.WinRT = project->isActiveConfig("winrt");
         if (conf.WinRT) {
             conf.WinPhone = project->isActiveConfig("winphone");
-            conf.WinPhone80 = project->first("WINTARGET_VER") == "WP80";
             // Saner defaults
             conf.compiler.UsePrecompiledHeader = pchNone;
             conf.compiler.CompileAsWinRT = _False;
@@ -1614,68 +1608,6 @@ void VcprojGenerator::initExtraCompilerOutputs()
 
         vcProject.ExtraCompilersFiles.append(extraCompile);
     }
-}
-
-void VcprojGenerator::initWMAppManifest()
-{
-    if (!project->isActiveConfig("autogen_wmappmanifest"))
-        return;
-
-    // autogen_wmappmanifest
-    QFile file(Option::output_dir + "\\WMAppManifest.xml");
-    if (!file.open(QFile::WriteOnly))
-        return;
-
-    QTextStream stream(&file);
-
-    QString productID = project->first("PRODUCTID").toQString();
-    QString target = project->first("TARGET").toQString();
-    QString author = project->first("AUTHOR").toQString();
-    QString publisher = project->first("PUBLISHER").toQString();
-    QString publisherID = project->first("PUBLISHERID").toQString();
-    QString description = project->first("DESCRIPTION").toQString();
-
-    if (author.isEmpty())
-        author = "Qt";
-    if (publisher.isEmpty())
-        publisher = "Qt";
-    if (productID.isEmpty())
-        productID = QUuid::createUuid().toString();
-    if (publisherID.isEmpty())
-        publisherID = QUuid::createUuid().toString();
-
-    stream << "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
-           << "<Deployment xmlns=\"http://schemas.microsoft.com/windowsphone/2012/deployment\" AppPlatformVersion=\"8.0\">\n"
-           << "  <DefaultLanguage xmlns=\"\" code=\"en-US\"/>\n"
-           << "  <App xmlns=\"\" ProductID=\"" << productID << "\" Title=\"" << target
-           << "\" RuntimeType=\"Modern Native\" Version=\"1.0.0.0\""
-           << " Genre=\"apps.normal\"  Author=\"" << author
-           << "\" Description=\"" << description << "\" Publisher=\"" << publisher
-           << "\" PublisherID=\"" << publisherID << "\">\n"
-           << "    <IconPath IsRelative=\"true\" IsResource=\"false\">ApplicationIcon.png</IconPath>\n"
-           << "    <Capabilities>\n"
-           << "      <Capability Name=\"ID_CAP_NETWORKING\" />\n"
-           << "      <Capability Name=\"ID_CAP_MEDIALIB_AUDIO\" />\n"
-           << "      <Capability Name=\"ID_CAP_MEDIALIB_PLAYBACK\" />\n"
-           << "    </Capabilities>\n"
-           << "    <Tasks>\n"
-           << "      <DefaultTask Name=\"_default\" ImagePath=\"" << target << ".exe\" ImageParams=\"\" />\n"
-           << "    </Tasks>\n"
-           << "    <Tokens>\n"
-           << "      <PrimaryToken TokenID=\"" << target << "Token\" TaskName=\"_default\">\n"
-           << "        <TemplateType5>\n"
-           << "          <Count>0</Count>\n"
-           << "          <Title>" << target << "</Title>\n"
-           << "        </TemplateType5>\n"
-           << "      </PrimaryToken>\n"
-           << "    </Tokens>\n"
-           << "    <ScreenResolutions>\n"
-           << "      <ScreenResolution Name=\"ID_RESOLUTION_WVGA\" />\n"
-           << "      <ScreenResolution Name=\"ID_RESOLUTION_WXGA\" />\n"
-           << "      <ScreenResolution Name=\"ID_RESOLUTION_HD720P\" />\n"
-           << "    </ScreenResolutions>\n"
-           << "  </App>\n"
-           << "</Deployment>\n";
 }
 
 void VcprojGenerator::initOld()

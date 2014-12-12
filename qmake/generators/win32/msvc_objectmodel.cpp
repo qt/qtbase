@@ -2137,7 +2137,6 @@ VCPreLinkEventTool::VCPreLinkEventTool()
 VCConfiguration::VCConfiguration()
     :   WinRT(false),
         WinPhone(false),
-        WinPhone80(false),
         ATLMinimizesCRunTimeLibraryUsage(unset),
         BuildBrowserInformation(unset),
         CharacterSet(charSetNotSet),

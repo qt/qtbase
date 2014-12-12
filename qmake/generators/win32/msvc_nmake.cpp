@@ -160,10 +160,7 @@ NmakeMakefileGenerator::writeMakefile(QTextStream &t)
 
                 QString windowsPath;
                 if (isPhone) {
-                    if (targetVer == "WP80") // ### Windows Phone 8.0, remove in Qt 5.4
-                        windowsPath = "Microsoft\\Microsoft SDKs\\WindowsPhone\\v";
-                    else
-                        windowsPath = "Microsoft\\Microsoft SDKs\\WindowsPhoneApp\\v";
+                    windowsPath = "Microsoft\\Microsoft SDKs\\WindowsPhoneApp\\v";
                 } else {
                     windowsPath = "Microsoft\\Microsoft SDKs\\Windows\\v";
                 }
@@ -184,8 +181,6 @@ NmakeMakefileGenerator::writeMakefile(QTextStream &t)
                 QStringList binDirs;
                 if (isPhone) {
                     QString sdkDir = vcInstallDir;
-                    if (targetVer == "WP80")
-                        sdkDir += QStringLiteral("/WPSDK/") + targetVer;
                     if (!QDir(sdkDir).exists()) {
                         fprintf(stderr, "Failed to find the Windows Phone SDK in %s.\n"
                                         "Check that it is properly installed.\n",
