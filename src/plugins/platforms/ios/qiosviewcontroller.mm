@@ -281,14 +281,8 @@
     // All decisions are based on the the top level window
     focusWindow = qt_window_private(focusWindow)->topLevelWindow();
 
-    bool hasScrolledRootViewDueToVirtualKeyboard =
-        !CATransform3DIsIdentity(self.view.layer.sublayerTransform);
-
     bool currentStatusBarVisibility = self.prefersStatusBarHidden;
-    self.prefersStatusBarHidden = focusWindow->windowState() == Qt::WindowFullScreen
-                                    || hasScrolledRootViewDueToVirtualKeyboard;
-    self.preferredStatusBarUpdateAnimation = hasScrolledRootViewDueToVirtualKeyboard ?
-        UIStatusBarAnimationFade : UIStatusBarAnimationNone;
+    self.prefersStatusBarHidden = focusWindow->windowState() == Qt::WindowFullScreen;
 
     if (self.prefersStatusBarHidden != currentStatusBarVisibility) {
 #if QT_IOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__IPHONE_7_0)
