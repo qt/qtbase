@@ -168,8 +168,8 @@ bool PepperEventTranslator::processCharacterEvent(const pp::KeyboardInputEvent &
 
     qCDebug(QT_PLATFORM_PEPPER_EVENT_KEYBOARD) << "Key Character" << key << text;
 
-    // Discard duplicate Key_Return: handled in PP_INPUTEVENT_TYPE_KEYDOWN above
-    if (key == Qt::Key_Return)
+    // Discard newline/spaces character events, these are handled by processKeyEvent()
+    if (key == Qt::Key_Return || key == Qt::Key_Enter || key == Qt::Key_Tab || key == Qt::Key_Backtab)
         return false;
 
     QWindow *window = 0;
