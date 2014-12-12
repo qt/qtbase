@@ -51,6 +51,7 @@ int main(int argc, char *argv[])
 
     ServerObject obj(objectPath, con);
     printf("ready.\n");
+    fflush(stdout);
     return app.exec();
 }
 

@@ -163,6 +163,7 @@ int main(int argc, char *argv[])
     con.registerObject(objectPath, &server, QDBusConnection::ExportAllSlots);
 
     printf("ready.\n");
+    fflush(stdout);
 
     return app.exec();
 }

@@ -86,6 +86,7 @@ void tst_QDBusPerformance::initTestCase()
 #endif
     proc.start(QFINDTESTDATA("server/server" EXE));
     QVERIFY2(proc.waitForStarted(), qPrintable(proc.errorString()));
+    QVERIFY(proc.waitForReadyRead());
 
     QTestEventLoop::instance().enterLoop(5);
     QVERIFY(con.interface()->isServiceRegistered(serviceName));

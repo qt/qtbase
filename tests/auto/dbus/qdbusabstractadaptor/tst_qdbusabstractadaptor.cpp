@@ -498,6 +498,7 @@ void tst_QDBusAbstractAdaptor::initTestCase()
 #endif
     proc.start(QFINDTESTDATA("qmyserver/qmyserver" EXE));
     QVERIFY2(proc.waitForStarted(), qPrintable(proc.errorString()));
+    QVERIFY(proc.waitForReadyRead());
 
     WaitForQMyServer w;
     QVERIFY(w.ok());

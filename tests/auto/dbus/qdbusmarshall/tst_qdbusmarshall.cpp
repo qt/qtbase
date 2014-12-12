@@ -137,20 +137,8 @@ void tst_QDBusMarshall::initTestCase()
 #  define EXE ""
 #endif
     proc.start(QFINDTESTDATA("qpong/qpong" EXE));
-    if (!QDBusConnection::sessionBus().interface()->isServiceRegistered(serviceName)) {
-        QVERIFY2(proc.waitForStarted(), qPrintable(proc.errorString()));
-
-        QVERIFY(con.isConnected());
-        con.connect("org.freedesktop.DBus", QString(), "org.freedesktop.DBus", "NameOwnerChanged",
-                    QStringList() << serviceName << QString(""), QString(),
-                    &QTestEventLoop::instance(), SLOT(exitLoop()));
-        QTestEventLoop::instance().enterLoop(2);
-        QVERIFY(!QTestEventLoop::instance().timeout());
-        QVERIFY(QDBusConnection::sessionBus().interface()->isServiceRegistered(serviceName));
-        con.disconnect("org.freedesktop.DBus", QString(), "org.freedesktop.DBus", "NameOwnerChanged",
-                       QStringList() << serviceName << QString(""), QString(),
-                       &QTestEventLoop::instance(), SLOT(exitLoop()));
-    }
+    QVERIFY2(proc.waitForStarted(), qPrintable(proc.errorString()));
+    QVERIFY(proc.waitForReadyRead());
 }
 
 void tst_QDBusMarshall::cleanupTestCase()

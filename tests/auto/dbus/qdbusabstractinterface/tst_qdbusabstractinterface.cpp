@@ -238,6 +238,7 @@ void tst_QDBusAbstractInterface::initTestCase()
 #endif
     proc.start(QFINDTESTDATA("qpinger/qpinger" EXE));
     QVERIFY2(proc.waitForStarted(), qPrintable(proc.errorString()));
+    QVERIFY(proc.waitForReadyRead());
 
     // verify service is now registered
     QTRY_VERIFY(con.interface()->isServiceRegistered(serviceName));
