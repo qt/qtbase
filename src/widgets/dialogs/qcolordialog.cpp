@@ -57,6 +57,7 @@
 #include "qdialogbuttonbox.h"
 #include "qscreen.h"
 #include "qcursor.h"
+#include "qtimer.h"
 
 #include <algorithm>
 
@@ -1577,6 +1578,11 @@ void QColorDialogPrivate::_q_pickScreenColor()
 #else
     q->grabMouse();
 #endif
+
+#ifdef Q_OS_WIN
+    // On Windows mouse tracking doesn't work over other processes's windows
+    updateTimer->start(30);
+#endif
     q->grabKeyboard();
     /* With setMouseTracking(true) the desired color can be more precisedly picked up,
      * and continuously pushing the mouse button is not necessary.
@@ -1600,6 +1606,9 @@ void QColorDialogPrivate::releaseColorPicking()
     cp->setCrossVisible(true);
     q->removeEventFilter(colorPickingEventFilter);
     q->releaseMouse();
+#ifdef Q_OS_WIN
+    updateTimer->stop();
+#endif
     q->releaseKeyboard();
     q->setMouseTracking(false);
     lblScreenColorInfo->setText(QLatin1String("\n"));
@@ -1782,6 +1791,10 @@ void QColorDialogPrivate::initWidgets()
     cancel = buttons->addButton(QDialogButtonBox::Cancel);
     QObject::connect(cancel, SIGNAL(clicked()), q, SLOT(reject()));
 
+#ifdef Q_OS_WIN
+    updateTimer = new QTimer(q);
+    QObject::connect(updateTimer, SIGNAL(timeout()), q, SLOT(_q_updateColorPicking()));
+#endif
     retranslateStrings();
 }
 
@@ -2196,18 +2209,37 @@ void QColorDialog::changeEvent(QEvent *e)
     QDialog::changeEvent(e);
 }
 
-bool QColorDialogPrivate::handleColorPickingMouseMove(QMouseEvent *e)
+void QColorDialogPrivate::_q_updateColorPicking()
 {
-    // If the cross is visible the grabbed color will be black most of the times
-    cp->setCrossVisible(!cp->geometry().contains(e->pos()));
+#ifndef QT_NO_CURSOR
+    Q_Q(QColorDialog);
+    static QPoint lastGlobalPos;
+    QPoint newGlobalPos = QCursor::pos();
+    if (lastGlobalPos == newGlobalPos)
+        return;
+    lastGlobalPos = newGlobalPos;
 
-    const QPoint globalPos = e->globalPos();
+    if (!q->rect().contains(q->mapFromGlobal(newGlobalPos))) // Inside the dialog mouse tracking works, handleColorPickingMouseMove will be called
+        updateColorPicking(newGlobalPos);
+#endif // ! QT_NO_CURSOR
+}
+
+void QColorDialogPrivate::updateColorPicking(const QPoint &globalPos)
+{
     const QColor color = grabScreenColor(globalPos);
     // QTBUG-39792, do not change standard, custom color selectors while moving as
     // otherwise it is not possible to pre-select a custom cell for assignment.
     setCurrentColor(color, ShowColor);
     lblScreenColorInfo->setText(QColorDialog::tr("Cursor at %1, %2, color: %3\nPress ESC to cancel")
                                 .arg(globalPos.x()).arg(globalPos.y()).arg(color.name()));
+}
+
+bool QColorDialogPrivate::handleColorPickingMouseMove(QMouseEvent *e)
+{
+    // If the cross is visible the grabbed color will be black most of the times
+    cp->setCrossVisible(!cp->geometry().contains(e->pos()));
+
+    updateColorPicking(e->globalPos());
     return true;
 }
 

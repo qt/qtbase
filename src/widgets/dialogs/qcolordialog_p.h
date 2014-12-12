@@ -63,6 +63,7 @@ class QVBoxLayout;
 class QPushButton;
 class QWellArray;
 class QColorPickingEventFilter;
+class QTimer;
 
 class QColorDialogPrivate : public QDialogPrivate
 {
@@ -75,7 +76,11 @@ public:
         SetColorAll = ShowColor | SelectColor
     };
 
-    QColorDialogPrivate() : options(new QColorDialogOptions) {}
+    QColorDialogPrivate() : options(new QColorDialogOptions)
+#ifdef Q_OS_WIN
+        , updateTimer(0)
+#endif
+    {}
 
     QPlatformColorDialogHelper *platformColorDialogHelper() const
         { return static_cast<QPlatformColorDialogHelper *>(platformHelper()); }
@@ -104,6 +109,8 @@ public:
     void _q_newCustom(int, int);
     void _q_newStandard(int, int);
     void _q_pickScreenColor();
+    void _q_updateColorPicking();
+    void updateColorPicking(const QPoint &pos);
     void releaseColorPicking();
     bool handleColorPickingMouseMove(QMouseEvent *e);
     bool handleColorPickingMouseButtonRelease(QMouseEvent *e);
@@ -136,6 +143,9 @@ public:
 
     QPointer<QObject> receiverToDisconnectOnClose;
     QByteArray memberToDisconnectOnClose;
+#ifdef Q_OS_WIN
+    QTimer *updateTimer;
+#endif
 
 #ifdef Q_WS_MAC
     void openCocoaColorPanel(const QColor &initial,
