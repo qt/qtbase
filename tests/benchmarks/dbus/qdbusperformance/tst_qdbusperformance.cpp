@@ -80,11 +80,12 @@ void tst_QDBusPerformance::initTestCase()
             &QTestEventLoop::instance(), SLOT(exitLoop()));
 
 #ifdef Q_OS_WIN
-    proc.start("server");
+#  define EXE ".exe"
 #else
-    proc.start("./server/server");
+#  define EXE ""
 #endif
-    QVERIFY(proc.waitForStarted());
+    proc.start(QFINDTESTDATA("server/server" EXE));
+    QVERIFY2(proc.waitForStarted(), qPrintable(proc.errorString()));
 
     QTestEventLoop::instance().enterLoop(5);
     QVERIFY(con.interface()->isServiceRegistered(serviceName));

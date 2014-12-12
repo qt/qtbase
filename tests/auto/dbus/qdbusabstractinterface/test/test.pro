@@ -3,6 +3,7 @@ SOURCES += ../tst_qdbusabstractinterface.cpp ../interface.cpp
 HEADERS += ../interface.h
 
 TARGET = ../tst_qdbusabstractinterface
+DESTDIR = ./
 
 QT = core testlib
 QT += dbus

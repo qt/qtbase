@@ -266,13 +266,13 @@ void tst_QDBusInterface::initTestCase()
                        | QDBusConnection::ExportAllSlots
                        | QDBusConnection::ExportAllInvokables);
 
-    // start peer server
-    #ifdef Q_OS_WIN
-    proc.start("qmyserver");
-    #else
-    proc.start("./qmyserver/qmyserver");
-    #endif
-    QVERIFY(proc.waitForStarted());
+#ifdef Q_OS_WIN
+#  define EXE ".exe"
+#else
+#  define EXE ""
+#endif
+    proc.start(QFINDTESTDATA("qmyserver/qmyserver" EXE));
+    QVERIFY2(proc.waitForStarted(), qPrintable(proc.errorString()));
 
     WaitForQMyServer w;
     QVERIFY(w.ok());

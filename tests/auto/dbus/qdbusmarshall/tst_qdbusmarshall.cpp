@@ -130,13 +130,15 @@ void tst_QDBusMarshall::initTestCase()
     commonInit();
     QDBusConnection con = QDBusConnection::sessionBus();
     fileDescriptorPassing = con.connectionCapabilities() & QDBusConnection::UnixFileDescriptorPassing;
+
 #ifdef Q_OS_WIN
-    proc.start("qpong");
+#  define EXE ".exe"
 #else
-    proc.start("./qpong/qpong");
+#  define EXE ""
 #endif
+    proc.start(QFINDTESTDATA("qpong/qpong" EXE));
     if (!QDBusConnection::sessionBus().interface()->isServiceRegistered(serviceName)) {
-        QVERIFY(proc.waitForStarted());
+        QVERIFY2(proc.waitForStarted(), qPrintable(proc.errorString()));
 
         QVERIFY(con.isConnected());
         con.connect("org.freedesktop.DBus", QString(), "org.freedesktop.DBus", "NameOwnerChanged",

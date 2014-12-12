@@ -231,12 +231,13 @@ void tst_QDBusAbstractInterface::initTestCase()
     QVERIFY(!con.interface()->isServiceRegistered(serviceName));
 
     // start peer server
-    #ifdef Q_OS_WIN
-    proc.start("qpinger");
-    #else
-    proc.start("./qpinger/qpinger");
-    #endif
-    QVERIFY(proc.waitForStarted());
+#ifdef Q_OS_WIN
+#  define EXE ".exe"
+#else
+#  define EXE ""
+#endif
+    proc.start(QFINDTESTDATA("qpinger/qpinger" EXE));
+    QVERIFY2(proc.waitForStarted(), qPrintable(proc.errorString()));
 
     // verify service is now registered
     QTRY_VERIFY(con.interface()->isServiceRegistered(serviceName));
@@ -251,7 +252,11 @@ void tst_QDBusAbstractInterface::initTestCase()
 void tst_QDBusAbstractInterface::cleanupTestCase()
 {
     // Kill peer, resetting the object exported by a separate process
+#ifdef Q_OS_WIN
+    proc.kill(); // non-GUI processes don't respond to QProcess::terminate()
+#else
     proc.terminate();
+#endif
     QVERIFY(proc.waitForFinished() || proc.state() == QProcess::NotRunning);
 
     // Wait until the service is certainly not registered
