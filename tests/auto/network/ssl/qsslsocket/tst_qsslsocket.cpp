@@ -2752,8 +2752,10 @@ void tst_QSslSocket::setEmptyDefaultConfiguration() // this test should be last,
     QSslConfiguration emptyConf;
     QSslConfiguration::setDefaultConfiguration(emptyConf);
 
-    QSslSocketPtr socket = newSocket();
-    connect(socket.data(), SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(ignoreErrorSlot()));
+    QSslSocketPtr client = newSocket();
+    socket = client.data();
+
+    connect(socket, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(ignoreErrorSlot()));
     socket->connectToHostEncrypted(QtNetworkSettings::serverName(), 443);
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy && socket->waitForEncrypted(4000))
