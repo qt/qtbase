@@ -51,8 +51,8 @@ class tst_QDBusConnectionNoBus : public QObject
 public:
     tst_QDBusConnectionNoBus()
     {
-        ::setenv("DBUS_SESSION_BUS_ADDRESS", "unix:abstract=/tmp/does_not_exist", 1);
-        ::setenv("QT_SIMULATE_DBUS_LIBFAIL", "1", 1);
+        qputenv("DBUS_SESSION_BUS_ADDRESS", "unix:abstract=/tmp/does_not_exist");
+        qputenv("QT_SIMULATE_DBUS_LIBFAIL", "1");
     }
 
 private slots:
