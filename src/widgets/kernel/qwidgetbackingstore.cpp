@@ -963,9 +963,12 @@ void QWidgetBackingStore::sync(QWidget *exposedWidget, const QRegion &exposedReg
 static void findTextureWidgetsRecursively(QWidget *tlw, QWidget *widget, QPlatformTextureList *widgetTextures)
 {
     QWidgetPrivate *wd = QWidgetPrivate::get(widget);
-    if (wd->renderToTexture)
-        widgetTextures->appendTexture(wd->textureId(), QRect(widget->mapTo(tlw, QPoint()), widget->size()),
-                                      widget->testAttribute(Qt::WA_AlwaysStackOnTop));
+    if (wd->renderToTexture) {
+        QPlatformTextureList::Flags flags = 0;
+        if (widget->testAttribute(Qt::WA_AlwaysStackOnTop))
+            flags |= QPlatformTextureList::StacksOnTop;
+        widgetTextures->appendTexture(widget, wd->textureId(), QRect(widget->mapTo(tlw, QPoint()), widget->size()), flags);
+    }
 
     for (int i = 0; i < wd->children.size(); ++i) {
         QWidget *w = qobject_cast<QWidget *>(wd->children.at(i));
@@ -1156,28 +1159,20 @@ void QWidgetBackingStore::doSync()
     }
 
 #ifndef QT_NO_OPENGL
-    // There is something other dirty than the renderToTexture widgets.
-    // Now it is time to include the renderToTexture ones among the others.
     if (widgetTextures && widgetTextures->count()) {
         for (int i = 0; i < widgetTextures->count(); ++i) {
-            const QRect rect = widgetTextures->geometry(i); // mapped to the tlw already
-            dirty += rect;
-            toClean += rect;
+            QWidget *w = widgetTextures->widget(i);
+            if (dirtyRenderToTextureWidgets.contains(w)) {
+                const QRect rect = widgetTextures->geometry(i); // mapped to the tlw already
+                dirty += rect;
+                toClean += rect;
+            }
         }
     }
-#endif
-
-    // The dirtyRenderToTextureWidgets list is useless here, so just reset. As
-    // unintuitive as it is, we need to send paint events to renderToTexture
-    // widgets always when something (any widget) needs to be updated, even if
-    // the renderToTexture widget itself is clean, i.e. there was no update()
-    // call for it. This is because changing any widget will cause a flush and
-    // so a potentially blocking buffer swap for the window, and skipping paints
-    // for the renderToTexture widgets would make it impossible to have smoothly
-    // animated content in them.
     for (int i = 0; i < dirtyRenderToTextureWidgets.count(); ++i)
         resetWidget(dirtyRenderToTextureWidgets.at(i));
     dirtyRenderToTextureWidgets.clear();
+#endif
 
 #ifndef QT_NO_GRAPHICSVIEW
     if (tlw->d_func()->extra->proxyWidget) {

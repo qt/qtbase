@@ -152,7 +152,7 @@ void QEGLPlatformBackingStore::flush(QWindow *window, const QRegion &region, con
     screen->compositingContext()->makeCurrent(dstWin->window());
     updateTexture();
     m_textures->clear();
-    m_textures->appendTexture(m_bsTexture, window->geometry());
+    m_textures->appendTexture(Q_NULLPTR, m_bsTexture, window->geometry());
     composite(screen->compositingContext(), dstWin);
 }
 
@@ -176,10 +176,10 @@ void QEGLPlatformBackingStore::composeAndFlush(QWindow *window, const QRegion &r
 
     m_textures->clear();
     for (int i = 0; i < textures->count(); ++i)
-        m_textures->appendTexture(textures->textureId(i), textures->geometry(i), textures->stacksOnTop(i));
+        m_textures->appendTexture(textures->widget(i), textures->textureId(i), textures->geometry(i), textures->flags(i));
 
     updateTexture();
-    m_textures->appendTexture(m_bsTexture, window->geometry());
+    m_textures->appendTexture(Q_NULLPTR, m_bsTexture, window->geometry());
 
     textures->lock(true);
     m_lockedWidgetTextures = textures;
