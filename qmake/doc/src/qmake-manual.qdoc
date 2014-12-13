@@ -917,6 +917,9 @@
     \row    \li c++11 \li C++11 support is enabled. This option has no effect if
             the compiler does not support C++11.
             By default, support is disabled.
+    \row    \li c++14 \li C++14 support is enabled. This option has no effect if
+            the compiler does not support C++14.
+            By default, support is disabled.
     \endtable
 
     When you use the \c debug_and_release option (which is the default under
