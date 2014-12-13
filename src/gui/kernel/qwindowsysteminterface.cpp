@@ -299,7 +299,7 @@ bool QWindowSystemInterface::handleKeyEvent(QWindow *tlw, ulong timestamp, QEven
     // shortcut overriding on other platforms.
 #if defined(Q_OS_OSX)
     if (t == QEvent::KeyPress && QWindowSystemInterface::tryHandleShortcutEvent(tlw, timestamp, k, mods, text))
-        return;
+        return true;
 #endif // Q_OS_OSX
 
     QWindowSystemInterfacePrivate::KeyEvent * e =
