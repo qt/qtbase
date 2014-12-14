@@ -57,13 +57,10 @@ pp::Core *QtModule::core()
     return g_core;
 }
 
-// This is the Pepper main entry point. We create a QtModule, which
-// will subsequently create a QPepperInstance.
-namespace pp {
-    PP_EXPORT Module* CreateModule() {
-        QtModule *module = new QtModule();
-        // Grant non-platform plugin parts of Qt access to the module.
-        qtPepperModule = module;
-        return module;
-    }
+pp::Module *qtCreatePepperModule()
+{
+    QtModule *module = new QtModule();
+    // Grant non-platform plugin parts of Qt access to the module.
+    qtPepperModule = module;
+    return module;
 }
