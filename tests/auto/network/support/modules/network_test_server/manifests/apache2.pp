@@ -3,10 +3,27 @@ class network_test_server::apache2 {
         "apache2": ensure  =>  present;
     }
 
+    exec {
+        "download SPDY module":
+            command => "/usr/bin/wget https://dl-ssl.google.com/dl/linux/direct/mod-spdy-beta_current_i386.deb --directory-prefix=/tmp",
+            creates => "/tmp/mod-spdy-beta_current_i386.deb",
+            notify  =>  Service["apache2"]
+        ;
+    }
+
+    package {
+        "mod_spdy":
+            ensure   => installed,
+            provider => dpkg,
+            source   => "/tmp/mod-spdy-beta_current_i386.deb",
+            notify   => Service["apache2"],
+            require  => [ Package["apache2"], Exec["download SPDY module"] ]
+    }
+
     service { "apache2":
         enable  =>  true,
         ensure  =>  running,
-        require =>  Package["apache2"],
+        require =>  Package["apache2", "mod_spdy"],
     }
 
     apache2_module {
