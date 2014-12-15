@@ -54,6 +54,8 @@ public:
     virtual bool HandleDocumentLoad(const pp::URLLoader& url_loader);
     virtual void HandleMessage(const pp::Var& var_message);
 
+    virtual void applicationInit();
+
     // Instance attribute getters
     QRect geometry();
     QRect deviceGeometry();

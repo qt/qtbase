@@ -204,6 +204,13 @@ void QPepperInstance::HandleMessage(const Var& var_message)
     }
 }
 
+void QPepperInstance::applicationInit()
+{
+    // Run the applicaiton startup function which will create the root UI Window.
+    extern void qGuiAppInit();
+    qGuiAppInit();
+}
+
 void QPepperInstance::registerMessageHandler(const QByteArray &messageTag, QObject *obj, const char *slot)
 {
     m_messageHandlers[messageTag] = qMakePair(QPointer<QObject>(obj), slot);
@@ -282,9 +289,7 @@ void QPepperInstance::startQt()
     m_pepperIntegraton->resizeScreen(toQSize(m_currentGeometry.size()), m_currentDevicePixelRatio);
 
     qCDebug(QT_PLATFORM_PEPPER_INSTANCE) << "qGuiAppInit";
-    // Run the applicaiton startup function which will create the root UI Window.
-    extern void qGuiAppInit();
-    qGuiAppInit();
+    applicationInit();
 }
 
 void QPepperInstance::drawTestImage()
