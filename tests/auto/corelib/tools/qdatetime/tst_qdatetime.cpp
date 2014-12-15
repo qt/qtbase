@@ -1901,6 +1901,14 @@ void tst_QDateTime::fromStringDateFormat_data()
         << Qt::ISODate << QDateTime(QDate(1970, 1, 1), QTime(0, 12, 34), Qt::UTC);
     QTest::newRow("ISO +00:00") << QString::fromLatin1("1970-01-01T00:12:34+00:00")
         << Qt::ISODate << QDateTime(QDate(1970, 1, 1), QTime(0, 12, 34), Qt::UTC);
+    QTest::newRow("ISO -03") << QString::fromLatin1("2014-12-15T12:37:09-03")
+        << Qt::ISODate << QDateTime(QDate(2014, 12, 15), QTime(15, 37, 9), Qt::UTC);
+    QTest::newRow("ISO zzz-03") << QString::fromLatin1("2014-12-15T12:37:09.745-03")
+        << Qt::ISODate << QDateTime(QDate(2014, 12, 15), QTime(15, 37, 9, 745), Qt::UTC);
+    QTest::newRow("ISO -3") << QString::fromLatin1("2014-12-15T12:37:09-3")
+        << Qt::ISODate << QDateTime(QDate(2014, 12, 15), QTime(15, 37, 9), Qt::UTC);
+    QTest::newRow("ISO zzz-3") << QString::fromLatin1("2014-12-15T12:37:09.745-3")
+        << Qt::ISODate << QDateTime(QDate(2014, 12, 15), QTime(15, 37, 9, 745), Qt::UTC);
     // No time specified - defaults to Qt::LocalTime.
     QTest::newRow("ISO data3") << QString::fromLatin1("2002-10-01")
         << Qt::ISODate << QDateTime(QDate(2002, 10, 1), QTime(0, 0, 0, 0), Qt::LocalTime);

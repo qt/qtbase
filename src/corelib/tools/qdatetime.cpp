@@ -248,7 +248,7 @@ static QString toOffsetString(Qt::DateFormat format, int offset)
                  .arg((qAbs(offset) / 60) % 60, 2, 10, QLatin1Char('0'));
 }
 
-// Parse offset in [+-]HH[:]MM format
+// Parse offset in [+-]HH[[:]MM] format
 static int fromOffsetString(const QString &offsetString, bool *valid)
 {
     *valid = false;
@@ -272,7 +272,7 @@ static int fromOffsetString(const QString &offsetString, bool *valid)
     // Split the hour and minute parts
     QStringList parts = offsetString.mid(1).split(QLatin1Char(':'));
     if (parts.count() == 1) {
-        // [+-]HHMM format
+        // [+-]HHMM or [+-]HH format
         parts.append(parts.at(0).mid(2));
         parts[0] = parts.at(0).left(2);
     }
@@ -282,7 +282,7 @@ static int fromOffsetString(const QString &offsetString, bool *valid)
     if (!ok)
         return 0;
 
-    const int minute = parts.at(1).toInt(&ok);
+    const int minute = (parts.at(1).isEmpty()) ? 0 : parts.at(1).toInt(&ok);
     if (!ok || minute < 0 || minute > 59)
         return 0;
 
@@ -4428,8 +4428,7 @@ QDateTime QDateTime::fromString(const QString& string, Qt::DateFormat format)
         } else {
             // the loop below is faster but functionally equal to:
             // const int signIndex = isoString.indexOf(QRegExp(QStringLiteral("[+-]")));
-            const int sizeOfTimeZoneString = 4;
-            int signIndex = isoString.size() - sizeOfTimeZoneString - 1;
+            int signIndex = isoString.size() - 1;
             bool found = false;
             {
                 const QChar plus = QLatin1Char('+');
