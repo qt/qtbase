@@ -58,7 +58,7 @@ Q_DECLARE_LOGGING_CATEGORY(QT_GUI_MAIN)
 #ifdef Q_OS_NACL
 
 void Q_GUI_EXPORT qGuiRegisterAppFunctions(QAppInitFunction appInitFunction,
-                                          QAppExitFunction appExitFunction);
+                                           QAppExitFunction appExitFunction);
 
 // NaCl QtGui main:
 // - define the pp::CreateModule() Ppapi main entry point.
@@ -76,10 +76,10 @@ QGuiMain qGuiMain;
 #else
 
 int Q_GUI_EXPORT qGuiMainWithAppFunctions(int argc, char **argv, 
-                                           QAppInitFunction appInitFunction,
-                                        QAppExitFunction appExitFunction);
+                                          QAppInitFunction appInitFunction,
+                                          QAppExitFunction appExitFunction);
 
-// Standard QtGui main: define the "main" symbol, call
+// Standard QtGui main: define main(), call
 // qGuiMainWithAppFunctions which will run the applicaiton.
 #define Q_GUI_MAIN(qAppInitFunction, qAppExitFunction) \
 int main(int argc, char **argv) { \
