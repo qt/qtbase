@@ -116,6 +116,7 @@ private slots:
     void boundingRectForSetLineWidth();
     void glyphLessItems();
     void justifyTrailingSpaces();
+    void layoutWithCustomTabStops();
 
     // QTextLine stuff
     void setNumColumnsWrapAtWordBoundaryOrAnywhere();
@@ -2048,6 +2049,39 @@ void tst_QTextLayout::nbsp()
     }
 
     layout.endLayout();
+}
+
+void tst_QTextLayout::layoutWithCustomTabStops()
+{
+    QScopedPointer<QTextLayout> textLayout(new QTextLayout);
+    QList<QTextOption::Tab> tabStops;
+
+    const int tabWidth = 18;
+    const int maxTabPos = 2500;
+    for (int tabPos = tabWidth; tabPos < maxTabPos; tabPos += tabWidth)
+        tabStops << QTextOption::Tab(tabPos, QTextOption::LeftTab);
+
+    QTextOption textOption;
+    textOption.setTabs(tabStops);
+    textLayout->setTextOption(textOption);
+
+    textLayout->setText(QStringLiteral("\ta aa aa aa aa aa aa"));
+
+    textLayout->beginLayout();
+    textLayout->createLine();
+    textLayout->endLayout();
+
+    qreal shortWidth = textLayout->maximumWidth();
+
+    textLayout->setText(QStringLiteral("\ta aa aa aa aa aa aa aa aa aa aa aa aa a"));
+
+    textLayout->beginLayout();
+    textLayout->createLine();
+    textLayout->endLayout();
+
+    qreal longWidth = textLayout->maximumWidth();
+
+    QVERIFY(longWidth > shortWidth);
 }
 
 QTEST_MAIN(tst_QTextLayout)
