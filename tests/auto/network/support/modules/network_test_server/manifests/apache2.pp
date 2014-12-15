@@ -5,8 +5,8 @@ class network_test_server::apache2 {
 
     exec {
         "download SPDY module":
-            command => "/usr/bin/wget https://dl-ssl.google.com/dl/linux/direct/mod-spdy-beta_current_i386.deb --directory-prefix=/tmp",
-            creates => "/tmp/mod-spdy-beta_current_i386.deb",
+            command => "/usr/bin/wget https://dl-ssl.google.com/dl/linux/direct/mod-spdy-beta_current_i386.deb --directory-prefix=/home/qt-test-server",
+            creates => "/home/qt-test-server/mod-spdy-beta_current_i386.deb",
             notify  =>  Service["apache2"]
         ;
     }
@@ -15,7 +15,7 @@ class network_test_server::apache2 {
         "mod_spdy":
             ensure   => installed,
             provider => dpkg,
-            source   => "/tmp/mod-spdy-beta_current_i386.deb",
+            source   => "/home/qt-test-server/mod-spdy-beta_current_i386.deb",
             notify   => Service["apache2"],
             require  => [ Package["apache2"], Exec["download SPDY module"] ]
     }
