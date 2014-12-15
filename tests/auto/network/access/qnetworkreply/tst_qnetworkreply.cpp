@@ -6340,17 +6340,7 @@ void tst_QNetworkReply::getAndThenDeleteObject()
     reply->setReadBufferSize(1);
     reply->setParent((QObject*)0); // must be 0 because else it is the manager
 
-    QTime stopWatch;
-    stopWatch.start();
-    forever {
-        QCoreApplication::instance()->processEvents();
-        if (reply->bytesAvailable())
-            break;
-        if (stopWatch.elapsed() >= 30000)
-            break;
-    }
-
-    QVERIFY(reply->bytesAvailable());
+    QTRY_VERIFY_WITH_TIMEOUT(reply->bytesAvailable(), 30000);
     QCOMPARE(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(), 200);
     QVERIFY(!reply->isFinished()); // must not be finished
 
