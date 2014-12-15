@@ -9,7 +9,6 @@ SUBDIRS=\
    macnativeevents \
    macplist \
    modeltest \
-   networkselftest \
    qaccessibility \
    # qaccessibilitylinux \ # QTBUG-44434
    qaccessibilitymac \
@@ -40,7 +39,6 @@ SUBDIRS=\
 
 !qtHaveModule(network): SUBDIRS -= \
    lancelot \
-   networkselftest \
    qnetworkaccessmanager_and_qprogressdialog \
    qobjectperformance
 
