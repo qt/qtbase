@@ -1489,8 +1489,8 @@ bool QColorDialogPrivate::selectColor(const QColor &col)
         const QRgb *match = std::find(standardColors, standardColorsEnd, color);
         if (match != standardColorsEnd) {
             const int index = int(match - standardColors);
-            const int row = index / standardColorRows;
-            const int column = index % standardColorRows;
+            const int column = index / standardColorRows;
+            const int row = index % standardColorRows;
             _q_newStandard(row, column);
             standard->setCurrent(row, column);
             standard->setSelected(row, column);
@@ -1505,8 +1505,8 @@ bool QColorDialogPrivate::selectColor(const QColor &col)
         const QRgb *match = std::find(customColors, customColorsEnd, color);
         if (match != customColorsEnd) {
             const int index = int(match - customColors);
-            const int row = index / customColorRows;
-            const int column = index % customColorRows;
+            const int column = index / customColorRows;
+            const int row = index % customColorRows;
             _q_newCustom(row, column);
             custom->setCurrent(row, column);
             custom->setSelected(row, column);
