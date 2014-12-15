@@ -15,6 +15,7 @@ class network_test_server {
   include network_test_server::samba
   include network_test_server::tmpreaper
   include network_test_server::sshd
+  include network_test_server::openssl_server_psk
 
   user { 'qt-test-server':
     ensure     => present,
