@@ -151,14 +151,7 @@ void tst_QHttpNetworkConnection::head()
     QHttpNetworkRequest request(protocol + host + path, QHttpNetworkRequest::Head);
     QHttpNetworkReply *reply = connection.sendRequest(request);
 
-    QTime stopWatch;
-    stopWatch.start();
-    do {
-        QCoreApplication::instance()->processEvents();
-        if (stopWatch.elapsed() >= 30000)
-            break;
-    } while (!reply->isFinished());
-
+    QTRY_VERIFY_WITH_TIMEOUT(reply->isFinished(), 30000);
     QCOMPARE(reply->statusCode(), statusCode);
     QCOMPARE(reply->reasonPhrase(), statusString);
     // only check it if it is set and expected
@@ -208,15 +201,7 @@ void tst_QHttpNetworkConnection::get()
     QHttpNetworkRequest request(protocol + host + path);
     QHttpNetworkReply *reply = connection.sendRequest(request);
 
-    QTime stopWatch;
-    stopWatch.start();
-    forever {
-        QCoreApplication::instance()->processEvents();
-        if (reply->bytesAvailable())
-            break;
-        if (stopWatch.elapsed() >= 30000)
-            break;
-    }
+    QTRY_VERIFY_WITH_TIMEOUT(reply->bytesAvailable(), 30000);
 
     QCOMPARE(reply->statusCode(), statusCode);
     QCOMPARE(reply->reasonPhrase(), statusString);
@@ -224,17 +209,8 @@ void tst_QHttpNetworkConnection::get()
     if (reply->contentLength() != -1 && contentLength != -1)
         QCOMPARE(reply->contentLength(), qint64(contentLength));
 
-    stopWatch.start();
-    QByteArray ba;
-    do {
-        QCoreApplication::instance()->processEvents();
-        while (reply->bytesAvailable())
-            ba += reply->readAny();
-        if (stopWatch.elapsed() >= 30000)
-            break;
-    } while (!reply->isFinished());
-
-    QVERIFY(reply->isFinished());
+    QTRY_VERIFY_WITH_TIMEOUT(reply->isFinished(), 30000);
+    QByteArray ba = reply->readAll();
     //do not require server generated error pages to be a fixed size
     if (downloadSize != -1)
         QCOMPARE(ba.size(), downloadSize);
@@ -303,13 +279,7 @@ void tst_QHttpNetworkConnection::put()
     connect(reply, SIGNAL(finishedWithError(QNetworkReply::NetworkError,QString)),
         SLOT(finishedWithError(QNetworkReply::NetworkError,QString)));
 
-    QTime stopWatch;
-    stopWatch.start();
-    do {
-        QCoreApplication::instance()->processEvents();
-        if (stopWatch.elapsed() >= 30000)
-            break;
-    } while (!reply->isFinished() && !finishedCalled && !finishedWithErrorCalled);
+    QTRY_VERIFY_WITH_TIMEOUT(reply->isFinished() || finishedCalled || finishedWithErrorCalled, 30000);
 
     if (reply->isFinished()) {
         QByteArray ba;
@@ -385,16 +355,7 @@ void tst_QHttpNetworkConnection::post()
 
     QHttpNetworkReply *reply = connection.sendRequest(request);
 
-    QTime stopWatch;
-    stopWatch.start();
-    forever {
-        QCoreApplication::instance()->processEvents();
-        if (reply->bytesAvailable())
-            break;
-        if (stopWatch.elapsed() >= 30000)
-            break;
-    }
-
+    QTRY_VERIFY_WITH_TIMEOUT(reply->bytesAvailable(), 30000);
     QCOMPARE(reply->statusCode(), statusCode);
     QCOMPARE(reply->reasonPhrase(), statusString);
 
@@ -411,17 +372,8 @@ void tst_QHttpNetworkConnection::post()
         }
     }
 
-    stopWatch.start();
-    QByteArray ba;
-    do {
-        QCoreApplication::instance()->processEvents();
-        while (reply->bytesAvailable())
-            ba += reply->readAny();
-        if (stopWatch.elapsed() >= 30000)
-            break;
-    } while (!reply->isFinished());
-
-    QVERIFY(reply->isFinished());
+    QTRY_VERIFY_WITH_TIMEOUT(reply->isFinished(), 30000);
+    QByteArray ba = reply->readAll();
     //don't require fixed size for generated error pages
     if (downloadSize != -1)
         QCOMPARE(ba.size(), downloadSize);
@@ -536,17 +488,7 @@ void tst_QHttpNetworkConnection::get401()
     connect(reply, SIGNAL(finishedWithError(QNetworkReply::NetworkError,QString)),
         SLOT(finishedWithError(QNetworkReply::NetworkError,QString)));
 
-    QTime stopWatch;
-    stopWatch.start();
-    forever {
-        QCoreApplication::instance()->processEvents();
-        if (finishedCalled)
-            break;
-        if (finishedWithErrorCalled)
-            break;
-        if (stopWatch.elapsed() >= 30000)
-            break;
-    }
+    QTRY_VERIFY_WITH_TIMEOUT(finishedCalled || finishedWithErrorCalled, 30000);
     QCOMPARE(reply->statusCode(), statusCode);
     delete reply;
 }
@@ -595,16 +537,8 @@ void tst_QHttpNetworkConnection::compression()
     if (!autoCompress)
         request.setHeaderField("Accept-Encoding", contentCoding.toLatin1());
     QHttpNetworkReply *reply = connection.sendRequest(request);
-    QTime stopWatch;
-    stopWatch.start();
-    forever {
-        QCoreApplication::instance()->processEvents();
-        if (reply->bytesAvailable())
-            break;
-        if (stopWatch.elapsed() >= 30000)
-            break;
-    }
 
+    QTRY_VERIFY_WITH_TIMEOUT(reply->bytesAvailable(), 30000);
     QCOMPARE(reply->statusCode(), statusCode);
     QCOMPARE(reply->reasonPhrase(), statusString);
     bool isLengthOk = (reply->contentLength() == qint64(contentLength)
@@ -613,17 +547,8 @@ void tst_QHttpNetworkConnection::compression()
 
     QVERIFY(isLengthOk);
 
-    stopWatch.start();
-    QByteArray ba;
-    do {
-        QCoreApplication::instance()->processEvents();
-        while (reply->bytesAvailable())
-            ba += reply->readAny();
-        if (stopWatch.elapsed() >= 30000)
-            break;
-    } while (!reply->isFinished());
-
-    QVERIFY(reply->isFinished());
+    QTRY_VERIFY_WITH_TIMEOUT(reply->isFinished(), 30000);
+    QByteArray ba = reply->readAll();
     QCOMPARE(ba.size(), downloadSize);
 
     delete reply;
@@ -694,17 +619,7 @@ void tst_QHttpNetworkConnection::ignoresslerror()
 
     connect(reply, SIGNAL(finished()), SLOT(finishedReply()));
 
-    QTime stopWatch;
-    stopWatch.start();
-    forever {
-        QCoreApplication::instance()->processEvents();
-        if (reply->bytesAvailable())
-            break;
-        if (statusCode == 100 && finishedWithErrorCalled)
-            break;
-        if (stopWatch.elapsed() >= 30000)
-            break;
-    }
+    QTRY_VERIFY_WITH_TIMEOUT(reply->bytesAvailable() || (statusCode == 100 && finishedWithErrorCalled), 30000);
     QCOMPARE(reply->statusCode(), statusCode);
     delete reply;
 }
@@ -746,15 +661,7 @@ void tst_QHttpNetworkConnection::nossl()
     connect(reply, SIGNAL(finishedWithError(QNetworkReply::NetworkError,QString)),
         SLOT(finishedWithError(QNetworkReply::NetworkError,QString)));
 
-    QTime stopWatch;
-    stopWatch.start();
-    forever {
-        QCoreApplication::instance()->processEvents();
-        if (finishedWithErrorCalled)
-            break;
-        if (stopWatch.elapsed() >= 30000)
-            break;
-    }
+    QTRY_VERIFY_WITH_TIMEOUT(finishedWithErrorCalled, 30000);
     QCOMPARE(netErrorCode, networkError);
     delete reply;
 }
@@ -772,6 +679,15 @@ void tst_QHttpNetworkConnection::getMultiple_data()
     QTest::newRow("1 connection, no pipelining, 100 requests")  << quint16(1) << false << 100;
     QTest::newRow("6 connections, pipelining allowed, 100 requests")  << quint16(6) << true << 100;
     QTest::newRow("1 connection, pipelining allowed, 100 requests")  << quint16(1) << true << 100;
+}
+
+static bool allRepliesFinished(const QList<QHttpNetworkReply*> *_replies)
+{
+    const QList<QHttpNetworkReply*> &replies = *_replies;
+    for (int i = 0; i < replies.length(); i++)
+        if (!replies.at(i)->isFinished())
+            return false;
+    return true;
 }
 
 void tst_QHttpNetworkConnection::getMultiple()
@@ -797,27 +713,7 @@ void tst_QHttpNetworkConnection::getMultiple()
         replies.append(reply);
     }
 
-    QTime stopWatch;
-    stopWatch.start();
-    int finishedCount = 0;
-    do {
-        QCoreApplication::instance()->processEvents();
-        if (stopWatch.elapsed() >= 60000)
-            break;
-
-        finishedCount = 0;
-        for (int i = 0; i < replies.length(); i++)
-            if (replies.at(i)->isFinished())
-                finishedCount++;
-
-    } while (finishedCount != replies.length());
-
-    // redundant
-    for (int i = 0; i < replies.length(); i++)
-        QVERIFY(replies.at(i)->isFinished());
-
-    qDebug() << "===" << stopWatch.elapsed() << "msec ===";
-
+    QTRY_VERIFY_WITH_TIMEOUT(allRepliesFinished(&replies), 60000);
     qDeleteAll(requests);
     qDeleteAll(replies);
 }
@@ -854,24 +750,10 @@ void tst_QHttpNetworkConnection::getMultipleWithPipeliningAndMultiplePriorities(
         replies.append(reply);
     }
 
-    QTime stopWatch;
-    stopWatch.start();
-    int finishedCount = 0;
-    do {
-        QCoreApplication::instance()->processEvents();
-        if (stopWatch.elapsed() >= 60000)
-            break;
-
-        finishedCount = 0;
-        for (int i = 0; i < replies.length(); i++)
-            if (replies.at(i)->isFinished())
-                finishedCount++;
-
-    } while (finishedCount != replies.length());
+    QTRY_VERIFY_WITH_TIMEOUT(allRepliesFinished(&replies), 60000);
 
     int pipelinedCount = 0;
     for (int i = 0; i < replies.length(); i++) {
-        QVERIFY(replies.at(i)->isFinished());
         QVERIFY (!(replies.at(i)->request().isPipeliningAllowed() == false
             && replies.at(i)->isPipeliningUsed()));
 
@@ -884,8 +766,6 @@ void tst_QHttpNetworkConnection::getMultipleWithPipeliningAndMultiplePriorities(
     // (this is a very relaxed condition, when last measured 79 of 100
     // requests had been pipelined)
     QVERIFY(pipelinedCount >= requestCount / 2);
-
-    qDebug() << "===" << stopWatch.elapsed() << "msec ===";
 
     qDeleteAll(requests);
     qDeleteAll(replies);
@@ -1062,17 +942,7 @@ void tst_QHttpNetworkConnection::getAndThenDeleteObject()
     QHttpNetworkReply *reply = connection->sendRequest(request);
     reply->setDownstreamLimited(true);
 
-    QTime stopWatch;
-    stopWatch.start();
-    forever {
-        QCoreApplication::instance()->processEvents();
-        if (reply->bytesAvailable())
-            break;
-        if (stopWatch.elapsed() >= 30000)
-            break;
-    }
-
-    QVERIFY(reply->bytesAvailable());
+    QTRY_VERIFY_WITH_TIMEOUT(reply->bytesAvailable(), 30000);
     QCOMPARE(reply->statusCode() ,200);
     QVERIFY(!reply->isFinished()); // must not be finished
 
