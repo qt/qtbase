@@ -45,7 +45,7 @@
 #include <QtTest/QTest>
 
 #include <QtCore/QDebug>
-#include "../../../../shared/filesystem.h"
+#include "shared/filesystem.h"
 
 class tst_QAbstractFileEngine
     : public QObject

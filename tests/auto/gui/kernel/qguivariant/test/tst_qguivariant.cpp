@@ -57,7 +57,7 @@
 
 #include "tst_qvariant_common.h"
 
-#include "../../../../qtest-config.h"
+#include "qtest-config.h"
 
 class tst_QGuiVariant : public QObject
 {

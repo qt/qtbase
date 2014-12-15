@@ -51,7 +51,7 @@
 #include <qmetatype.h>
 #include <qdebug.h>
 
-#include "../../../network-settings.h"
+#include "network-settings.h"
 
 class tst_QSocks5SocketEngine : public QObject, public QAbstractSocketEngineReceiver
 {

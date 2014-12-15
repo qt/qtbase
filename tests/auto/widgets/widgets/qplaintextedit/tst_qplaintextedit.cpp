@@ -51,9 +51,9 @@
 #include <qtextdocumentfragment.h>
 
 #include "qplaintextedit.h"
-#include "../../../shared/platformclipboard.h"
+#include "shared/platformclipboard.h"
 
-#include "../../../qtest-config.h"
+#include "qtest-config.h"
 
 //Used in copyAvailable
 typedef QPair<Qt::Key, Qt::KeyboardModifier> keyPairType;

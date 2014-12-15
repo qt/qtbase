@@ -39,7 +39,7 @@
 #include <QList>
 #include <QPointer>
 
-#include "../../../../shared/filesystem.h"
+#include "shared/filesystem.h"
 
 static inline void setFrameless(QWidget *w)
 {

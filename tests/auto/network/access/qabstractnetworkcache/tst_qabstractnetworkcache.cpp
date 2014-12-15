@@ -34,7 +34,7 @@
 #include <QTemporaryDir>
 #include <QtTest/QtTest>
 #include <QtNetwork/QtNetwork>
-#include "../../../network-settings.h"
+#include "network-settings.h"
 
 #ifndef QT_NO_BEARERMANAGEMENT
 #include <QtNetwork/qnetworkconfigmanager.h>

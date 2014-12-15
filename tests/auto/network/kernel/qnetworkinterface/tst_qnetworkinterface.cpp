@@ -41,7 +41,7 @@
 #include <QNetworkConfigurationManager>
 #include <QNetworkSession>
 #endif
-#include "../../../network-settings.h"
+#include "network-settings.h"
 
 class tst_QNetworkInterface : public QObject
 {

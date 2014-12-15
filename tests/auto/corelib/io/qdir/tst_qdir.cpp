@@ -42,14 +42,14 @@
 
 #if (defined(Q_OS_WIN) && !defined(Q_OS_WINCE))
 #include <QtCore/private/qfsfileengine_p.h>
-#include "../../../network-settings.h"
+#include "network-settings.h"
 #endif
 
 #if defined(Q_OS_WIN) && !defined(_WIN32_WINNT)
 #define _WIN32_WINNT  0x500
 #endif
 
-#include "../../../../shared/filesystem.h"
+#include "shared/filesystem.h"
 
 #if defined(Q_OS_UNIX)
 # include <unistd.h>

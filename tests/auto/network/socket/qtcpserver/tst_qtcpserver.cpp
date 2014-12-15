@@ -64,7 +64,7 @@
 #include <QNetworkSession>
 #include <QNetworkConfiguration>
 #include <QNetworkConfigurationManager>
-#include "../../../network-settings.h"
+#include "network-settings.h"
 
 class tst_QTcpServer : public QObject
 {

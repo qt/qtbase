@@ -47,7 +47,7 @@
 #endif
 
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
-#  include "../../../network-settings.h"
+#  include "network-settings.h"
 #endif
 
 Q_DECLARE_METATYPE(QDirIterator::IteratorFlags)

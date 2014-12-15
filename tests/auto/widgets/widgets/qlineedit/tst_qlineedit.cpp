@@ -70,11 +70,11 @@
 
 #include "qplatformdefs.h"
 
-#include "../../../shared/platformclipboard.h"
-#include "../../../shared/platforminputcontext.h"
+#include "shared/platformclipboard.h"
+#include "shared/platforminputcontext.h"
 #include <private/qinputmethod_p.h>
 
-#include "../../../qtest-config.h"
+#include "qtest-config.h"
 
 QT_BEGIN_NAMESPACE
 class QPainter;

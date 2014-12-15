@@ -43,7 +43,7 @@
 #include <QtNetwork/private/qsslsocket_openssl_p.h>
 #endif // QT_BUILD_INTERNAL && !QT_NO_OPENSSL
 
-#include "../../../network-settings.h"
+#include "network-settings.h"
 
 Q_DECLARE_METATYPE(QAuthenticator*)
 

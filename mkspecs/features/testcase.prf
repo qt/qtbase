@@ -1,5 +1,10 @@
 have_target {
 
+INCLUDEPATH += \
+    $$QT_SOURCE_TREE/tests \
+    $$QT_SOURCE_TREE/tests/auto \
+    $$QT_SOURCE_TREE/tests/auto/shared
+
 # qt_build_config.prf disables execptions for all Qt modules which don't
 # explicitly turn it on again, while the qmake default is to build with
 # exceptions. As we want tests to be built like 3rd party applications,

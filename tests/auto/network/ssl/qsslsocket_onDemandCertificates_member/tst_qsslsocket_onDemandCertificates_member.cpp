@@ -44,7 +44,7 @@
 #    include "private/qsslsocket_p.h"
 #  endif // !QT_NO_OPENSSL
 #endif // QT_BUILD_INTERNAL
-#include "../../../network-settings.h"
+#include "network-settings.h"
 
 #ifndef QT_NO_OPENSSL
 typedef QSharedPointer<QSslSocket> QSslSocketPtr;

@@ -45,7 +45,7 @@
 #include <qdebug.h>
 #include <qtcpserver.h>
 
-#include "../../../network-settings.h"
+#include "network-settings.h"
 
 class tst_QHttpSocketEngine : public QObject
 {

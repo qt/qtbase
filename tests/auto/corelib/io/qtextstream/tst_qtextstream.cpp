@@ -47,7 +47,7 @@
 #include <QTextCodec>
 #include <QProcess>
 
-#include "../../../network-settings.h"
+#include "network-settings.h"
 
 
 QT_BEGIN_NAMESPACE

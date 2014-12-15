@@ -53,7 +53,7 @@
 #include <QScreen>
 #include <QSizeGrip>
 
-#include "../../../qtest-config.h"
+#include "qtest-config.h"
 
 QT_BEGIN_NAMESPACE
 #if !defined(Q_DEAD_CODE_FROM_QT4_WIN)

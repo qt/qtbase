@@ -47,7 +47,7 @@
 #include <qstylefactory.h>
 #include <qscreen.h>
 
-#include "../../../qtest-config.h"
+#include "qtest-config.h"
 
 class EventSpy : public QObject
 {

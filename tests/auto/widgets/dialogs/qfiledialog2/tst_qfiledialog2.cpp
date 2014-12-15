@@ -60,7 +60,7 @@
 #include <qpa/qplatformdialoghelper.h>
 
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
-#include "../../../network-settings.h"
+#include "network-settings.h"
 #endif
 
 #if defined QT_BUILD_INTERNAL

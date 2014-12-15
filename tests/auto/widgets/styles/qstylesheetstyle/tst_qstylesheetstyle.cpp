@@ -39,7 +39,7 @@
 
 #include <private/qstylesheetstyle_p.h>
 
-#include "../../../qtest-config.h"
+#include "qtest-config.h"
 
 static inline void centerOnScreen(QWidget *w)
 {

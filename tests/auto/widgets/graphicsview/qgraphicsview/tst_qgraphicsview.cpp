@@ -56,10 +56,10 @@
 #include <QtWidgets/QDesktopWidget>
 #include <private/qgraphicsscene_p.h>
 #include <private/qgraphicsview_p.h>
-#include "../../../shared/platforminputcontext.h"
+#include "shared/platforminputcontext.h"
 #include <private/qinputmethod_p.h>
 
-#include "../../../qtest-config.h"
+#include "qtest-config.h"
 #include "tst_qgraphicsview.h"
 
 Q_DECLARE_METATYPE(ExpectedValueDescription)

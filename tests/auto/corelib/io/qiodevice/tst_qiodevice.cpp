@@ -35,7 +35,7 @@
 #include <QtNetwork/QtNetwork>
 #include <QtTest/QtTest>
 
-#include "../../../network-settings.h"
+#include "network-settings.h"
 
 class tst_QIODevice : public QObject
 {

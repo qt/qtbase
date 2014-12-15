@@ -83,7 +83,7 @@
 
 #include "private/qhostinfo_p.h"
 
-#include "../../../network-settings.h"
+#include "network-settings.h"
 
 QT_FORWARD_DECLARE_CLASS(QTcpSocket)
 class SocketPair;

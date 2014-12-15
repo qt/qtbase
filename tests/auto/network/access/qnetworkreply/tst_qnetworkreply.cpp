@@ -86,7 +86,7 @@ Q_DECLARE_METATYPE(QSharedPointer<char>)
 #endif
 #include <time.h>
 
-#include "../../../network-settings.h"
+#include "network-settings.h"
 
 // Non-OpenSSL backends are not able to report a specific error code
 // for self-signed certificates.

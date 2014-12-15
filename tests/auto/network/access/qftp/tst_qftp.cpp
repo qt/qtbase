@@ -47,7 +47,7 @@
 #include <QNetworkSession>
 #include <QtNetwork/private/qnetworksession_p.h>
 
-#include "../../../network-settings.h"
+#include "network-settings.h"
 
 template <class T1, class T2>
 static QByteArray msgComparison(T1 lhs, const char *op, T2 rhs)

@@ -44,7 +44,7 @@
 #include <QtNetwork/qnetworksession.h>
 #endif
 
-#include "../../network-settings.h"
+#include "network-settings.h"
 
 class tst_NetworkSelfTest: public QObject
 {

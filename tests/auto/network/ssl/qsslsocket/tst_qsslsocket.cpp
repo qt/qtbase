@@ -51,7 +51,7 @@
 #include "private/qhostinfo_p.h"
 #include "private/qiodevice_p.h" // for QIODEVICE_BUFFERSIZE
 
-#include "../../../network-settings.h"
+#include "network-settings.h"
 
 #ifndef QT_NO_SSL
 #ifndef QT_NO_OPENSSL
@@ -61,6 +61,7 @@
 #include "private/qsslsocket_p.h"
 #include "private/qsslconfiguration_p.h"
 
+#ifndef QT_NO_SSL
 Q_DECLARE_METATYPE(QSslSocket::SslMode)
 typedef QList<QSslError::SslError> SslErrorList;
 Q_DECLARE_METATYPE(SslErrorList)

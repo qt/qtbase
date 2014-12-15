@@ -40,7 +40,7 @@
 
 #include "private/qhostinfo_p.h"
 
-#include "../../../network-settings.h"
+#include "network-settings.h"
 
 #ifndef QT_NO_OPENSSL
 typedef QSharedPointer<QSslSocket> QSslSocketPtr;

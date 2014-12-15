@@ -72,7 +72,7 @@
 #include <QtGui/qwindow.h>
 #include <qtimer.h>
 
-#include "../../../qtest-config.h"
+#include "qtest-config.h"
 
 #if defined(Q_OS_MAC)
 #include "tst_qwidget_mac_helpers.h"  // Abstract the ObjC stuff out so not everyone must run an ObjC++ compile.

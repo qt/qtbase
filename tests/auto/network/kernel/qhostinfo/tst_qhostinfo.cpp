@@ -83,7 +83,7 @@
 # endif
 #endif
 
-#include "../../../network-settings.h"
+#include "network-settings.h"
 
 #define TEST_DOMAIN ".test.macieira.org"
 

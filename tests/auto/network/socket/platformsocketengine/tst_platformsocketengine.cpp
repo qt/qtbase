@@ -64,7 +64,7 @@
 
 #include <qstringlist.h>
 
-#include "../../../network-settings.h"
+#include "network-settings.h"
 
 class tst_PlatformSocketEngine : public QObject
 {

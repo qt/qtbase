@@ -36,7 +36,7 @@
 #include <QtGui>
 #include <QtTest/QtTest>
 
-#include "../../../qtest-config.h"
+#include "qtest-config.h"
 
 Q_DECLARE_METATYPE(QMetaType::Type)
 

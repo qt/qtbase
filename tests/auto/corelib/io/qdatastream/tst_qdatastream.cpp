@@ -40,7 +40,7 @@
 #include <QtGui/QPainter>
 #include <QtGui/QPen>
 
-#include "../../../qtest-config.h"
+#include "qtest-config.h"
 
 class tst_QDataStream : public QObject
 {

@@ -38,7 +38,7 @@
 #include <private/qgraphicsproxywidget_p.h>
 #include <private/qlayoutengine_p.h>    // qSmartMin functions...
 
-#include "../../../qtest-config.h"
+#include "qtest-config.h"
 
 static void sendMouseMove(QWidget *widget, const QPoint &point, Qt::MouseButton button = Qt::NoButton)
 {

@@ -41,7 +41,7 @@
 #include <QtNetwork/QNetworkReply>
 #include <qdebug.h>
 
-#include "../../network-settings.h"
+#include "network-settings.h"
 
 
 class tst_QNetworkAccessManager_And_QProgressDialog : public QObject

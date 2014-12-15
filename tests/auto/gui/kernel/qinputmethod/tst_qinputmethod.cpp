@@ -36,7 +36,7 @@
 #include <private/qguiapplication_p.h>
 #include <private/qinputmethod_p.h>
 #include <qpa/qplatforminputcontext.h>
-#include "../../../shared/platforminputcontext.h"
+#include "shared/platforminputcontext.h"
 
 class InputItem : public QObject
 {

@@ -40,7 +40,7 @@
 #include <QtGui/QClipboard>
 #include <QtGui/QImage>
 #include <QtGui/QColor>
-#include "../../../shared/platformclipboard.h"
+#include "shared/platformclipboard.h"
 
 class tst_QClipboard : public QObject
 {
