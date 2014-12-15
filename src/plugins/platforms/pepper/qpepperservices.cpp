@@ -18,7 +18,7 @@
 ****************************************************************************/
 
 #include "qpepperservices.h"
-#include "qpepperinstance.h"
+#include "qpepperinstance_p.h"
 
 #include <QtCore/qurl.h>
 #include <qpa/qplatformservices.h>
@@ -32,13 +32,13 @@ QPepperServices::QPepperServices()
         "this.qtMessageHandlers[\"qtOpenUrl\"] = function(url) { "
         "    window.open(url);"
         "}";
-    QPepperInstance::get()->runJavascript(addUrlMessageHandler);
+    QPepperInstancePrivate::get()->runJavascript(addUrlMessageHandler);
 }
 
 bool QPepperServices::openUrl(const QUrl &url)
 {
     QByteArray message = "qtOpenUrl:" + url.toString().toUtf8();
-    QPepperInstance::get()->postMessage(message);
+    QPepperInstancePrivate::get()->postMessage(message);
     return true;
 }
 

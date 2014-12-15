@@ -20,7 +20,7 @@
 #include "qpepperscreen.h"
 #include "qpepperhelpers.h"
 #include "qpepperintegration.h"
-#include "qpepperinstance.h"
+#include "qpepperinstance_p.h"
 #include "qpeppercursor.h"
 
 #include <qdebug.h>
@@ -44,12 +44,12 @@ QPepperScreen::QPepperScreen()
 
 QRect QPepperScreen::geometry() const
 {
-    return QRect(QPoint(), QPepperInstance::get()->geometry().size());
+    return QRect(QPoint(), QPepperInstancePrivate::get()->geometry().size());
 }
 
 qreal QPepperScreen::devicePixelRatio() const
 {
-    return QPepperInstance::get()->devicePixelRatio();
+    return QPepperInstancePrivate::get()->devicePixelRatio();
 }
 
 QPlatformCursor *QPepperScreen::cursor() const

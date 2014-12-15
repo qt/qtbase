@@ -18,7 +18,7 @@
 ****************************************************************************/
 
 #include "qpepperclipboard.h"
-#include "qpepperinstance.h"
+#include "qpepperinstance_p.h"
 
 #include <QtGui/QClipboard>
 
@@ -57,7 +57,7 @@ QPepperClipboard::QPepperClipboard()
         "   console.log(embed.postMessageAndAwaitResponse);"
         "})";
 
-    QPepperInstance::get()->runJavascript(copyEventhandler);
+    QPepperInstancePrivate::get()->runJavascript(copyEventhandler);
 }
 
 QPepperClipboard::~QPepperClipboard()
@@ -71,7 +71,7 @@ QMimeData *QPepperClipboard::mimeData(QClipboard::Mode mode)
     if (mode != QClipboard::Clipboard)
         return 0;
     QByteArray message = "qtClipboardRequestPaste: ";
-    QPepperInstance::get()->postMessage(message);
+    QPepperInstancePrivate::get()->postMessage(message);
     return 0;
 }
 
@@ -81,7 +81,7 @@ void QPepperClipboard::setMimeData(QMimeData *mimeData, QClipboard::Mode mode)
     if (mode != QClipboard::Clipboard)
         return;
     QByteArray message = "qtClipboardRequestCopy:" + mimeData->text().toUtf8();
-    QPepperInstance::get()->postMessage(message);
+    QPepperInstancePrivate::get()->postMessage(message);
 }
 
 bool QPepperClipboard::supportsMode(QClipboard::Mode mode) const

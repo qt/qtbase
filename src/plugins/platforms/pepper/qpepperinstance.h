@@ -20,80 +20,23 @@
 #ifndef QT_PEPPER_INSTANCE_H
 #define QT_PEPPER_INSTANCE_H
 
-#include "qpeppereventtranslator.h"
-#include "qpepperhelpers.h"
-
-#include <qpa/qplatformtheme.h>
-#include <QtCore/qhash.h>
-
 #include <ppapi/cpp/instance.h>
-#include "ppapi/cpp/var.h"
-#include "ppapi/cpp/rect.h"
-#include "ppapi/cpp/size.h"
-#include "ppapi/cpp/graphics_2d.h"
-#include "ppapi/cpp/image_data.h"
-#include <ppapi/cpp/completion_callback.h>
-#include "ppapi/cpp/view.h"
-#include <ppapi/utility/completion_callback_factory.h>
 
-Q_DECLARE_LOGGING_CATEGORY(QT_PLATFORM_PEPPER_INSTANCE)
-
-class QPepperIntegration;
+class QPepperInstancePrivate;
 class QPepperInstance : public pp::Instance
 {
 public:
     QPepperInstance(PP_Instance instance);
-    virtual ~QPepperInstance();
-    static QPepperInstance *get();
 
-    // pp::Instance virtuals:
     virtual bool Init(uint32_t argc, const char* argn[], const char* argv[]);
     virtual void DidChangeView(const pp::View &view);
     virtual void DidChangeFocus(bool hasFucus);
     virtual bool HandleInputEvent(const pp::InputEvent& event);
-    virtual bool HandleDocumentLoad(const pp::URLLoader& url_loader);
-    virtual void HandleMessage(const pp::Var& var_message);
+    virtual void HandleMessage(const pp::Var& message);
 
     virtual void applicationInit();
-
-    // Instance attribute getters
-    QRect geometry();
-    QRect deviceGeometry();
-    qreal devicePixelRatio();
-    qreal cssScale();
-
-    // publics:
-    void scheduleWindowSystemEventsFlush();
-    void postMessage(const QByteArray &message);
-    void runJavascript(const QByteArray &script);
-    void registerMessageHandler(const QByteArray &messageTag, QObject *obj, const char *slot);
-    QPlatformTheme::KeyboardSchemes keyboardScheme();
-
-    // privates:
-    void startQt();
-    void windowSystemEventsFlushCallback(int32_t);
-    void handleGetAppVersionMessage(const QByteArray &message);
-
-    void drawTestImage();
-    void flushCompletedCallback(int32_t);
-
-    QPepperIntegration *m_pepperIntegraton;
-
-    bool m_qtStarted;
-
-    pp::Var m_console;
-    pp::Rect m_currentGeometry;
-    qreal m_currentCssScale;
-    qreal m_currentDeviceScale;
-    qreal m_currentDevicePixelRatio;
-
-    pp::Graphics2D *m_context2D;
-    pp::ImageData *m_imageData2D;
-    QImage *m_frameBuffer;
-    bool m_inFlush;
-    QHash<QByteArray, QPair<QPointer<QObject>, const char *> >m_messageHandlers;
-
-    pp::CompletionCallbackFactory<QPepperInstance> m_callbackFactory;
+private:
+    QPepperInstancePrivate *d;
 };
 
 #endif

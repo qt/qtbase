@@ -18,7 +18,7 @@
 ****************************************************************************/
 
 #include "qpeppertheme.h"
-#include "qpepperinstance.h"
+#include "qpepperinstance_p.h"
 
 #include <QtCore/QStringList>
 #include <QtCore/QVariant>
@@ -34,7 +34,7 @@ QPepperTheme::QPepperTheme()
     // may not be set correctly during startup before handleGetAppVersionMessage
     // is called.
 
-    QPepperInstance *instance = QPepperInstance::get();
+    QPepperInstancePrivate *instance = QPepperInstancePrivate::get();
     instance->registerMessageHandler("qtGetAppVersion", this, "handleGetAppVersionMessage");
     const char *getAppVersionsScript = \
         "this.qtMessageHandlers[\"qtGetAppVersion\"] = function(url) { "

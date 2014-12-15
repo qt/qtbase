@@ -20,6 +20,9 @@
 #include "qpepperbackingstore.h"
 #include "qpeppercompositor.h"
 #include "qpepperplatformwindow.h"
+#include "qpepperinstance.h"
+#include "qpepperinstance_p.h"
+
 
 #include <QtCore/qdebug.h>
 #include <QtGui/QPainter>
@@ -114,7 +117,7 @@ void QPepperBackingStore::resize(const QSize &size, const QRegion &)
 {
     qCDebug(QT_PLATFORM_PEPPER_BACKINGSTORE) << "resize" << size;
 
-    qreal devicePixelRatio = QPepperInstance::get()->devicePixelRatio();
+    qreal devicePixelRatio = QPepperInstancePrivate::get()->devicePixelRatio();
 
     if (!m_frameBuffer || size * devicePixelRatio != m_frameBuffer->size()) {
         createFrameBuffer(size, devicePixelRatio);
@@ -135,7 +138,7 @@ void QPepperBackingStore::createFrameBuffer(QSize size, qreal devicePixelRatio)
         m_compositor->setFrameBuffer(window(),  m_frameBuffer);
     } else {
         QSize devicePixelSize = size * devicePixelRatio;
-        QPepperInstance *instance = QPepperInstance::get();
+        QPepperInstance *instance = QPepperInstancePrivate::getInstance();
 
         // Create a new 2D graphics context, an pp::ImageData with the new size
         // plus a QImage that shares the ImageData frame buffer.

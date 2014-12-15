@@ -22,7 +22,7 @@
 
 #include <QtGui>
 #include <QtCore>
-#include "qpepperinstance.h"
+#include "qpepperinstance_p.h"
 
 #include "ppapi/cpp/graphics_2d.h"
 #include "ppapi/cpp/image_data.h"

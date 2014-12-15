@@ -23,6 +23,7 @@
 
 #include "qpepperglcontext.h"
 #include "qpepperinstance.h"
+#include "qpepperinstance_p.h"
 
 #include <ppapi/gles2/gl2ext_ppapi.h>
 #include <ppapi/cpp/graphics_3d.h>
@@ -51,7 +52,7 @@ bool QPepperGLContext::makeCurrent(QPlatformSurface *surface)
     if (m_context.is_null())
         initGl();
 
-    QSize newSize = QPepperInstance::get()->deviceGeometry().size();
+    QSize newSize = QPepperInstancePrivate::get()->deviceGeometry().size();
     if (newSize != m_currentSize) {
         int32_t result = m_context.ResizeBuffers(newSize.width(), newSize.height());
         if (result < 0) {
@@ -126,8 +127,7 @@ bool QPepperGLContext::initGl()
       qWarning("Unable to initialize GL PPAPI!\n");
       return false;
     }
-    QPepperInstance *instance = QPepperInstance::get();
-    m_currentSize = instance->geometry().size();
+    m_currentSize = QPepperInstancePrivate::get()->geometry().size();
     QSurfaceFormat f = format();
 
     const int32_t attrib_list[] = {
@@ -139,6 +139,7 @@ bool QPepperGLContext::initGl()
       PP_GRAPHICS3DATTRIB_NONE
     };
 
+    QPepperInstance *instance = QPepperInstancePrivate::getInstance();
     m_context = pp::Graphics3D(instance, attrib_list);
     if (!instance->BindGraphics(m_context)) {
       qWarning("Unable to bind 3d context!\n");

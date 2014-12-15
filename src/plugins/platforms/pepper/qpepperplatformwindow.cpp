@@ -64,7 +64,7 @@ void QPepperPlatformWindow::setVisible(bool visible)
     QWindowSystemInterface::handleExposeEvent(window(), visible ?
                                               QRect(QPoint(), geometry().size()) :
                                               QRect());
-    QPepperInstance::get()->scheduleWindowSystemEventsFlush();
+    QPepperInstancePrivate::get()->scheduleWindowSystemEventsFlush();
 
     if (m_compositor)
         m_compositor->setVisible(this->window(), visible);
@@ -82,7 +82,7 @@ void QPepperPlatformWindow::setWindowState(Qt::WindowState state)
         QPlatformWindow::setGeometry(targetWindowGeometry);
         QWindowSystemInterface::handleGeometryChange(window(), targetWindowGeometry);
         QWindowSystemInterface::handleExposeEvent(window(), targetWindowGeometry);
-        QPepperInstance::get()->scheduleWindowSystemEventsFlush();
+        QPepperInstancePrivate::get()->scheduleWindowSystemEventsFlush();
         break;
     }
     default:
@@ -112,7 +112,7 @@ void QPepperPlatformWindow::setGeometry(const QRect &rect)
 
     QPlatformWindow::setGeometry(rect);
     QWindowSystemInterface::handleGeometryChange(window(), rect);
-    QPepperInstance::get()->scheduleWindowSystemEventsFlush();
+    QPepperInstancePrivate::get()->scheduleWindowSystemEventsFlush();
 }
 
 void QPepperPlatformWindow::setParent(const QPlatformWindow *parent)
@@ -141,7 +141,7 @@ bool QPepperPlatformWindow::setMouseGrabEnabled(bool grab)
 
 qreal QPepperPlatformWindow::devicePixelRatio() const
 {
-    return QPepperInstance::get()->devicePixelRatio();
+    return QPepperInstancePrivate::get()->devicePixelRatio();
 }
 
 
