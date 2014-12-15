@@ -14,6 +14,7 @@ SUBDIRS = \
     window_opengl \                 # QWindow with OpenGL graphics.
     window_qtquick \                # QQuickWindow
     window_qmlapplicationengine \   # QQmlApplicationEngine
+    window_appmodule \              # App-defined pp::CreateModule()
     window_shadereffects \          # Shaders!
     window_controls \               # (some) Qt Quick Controls
     window_controls_gallery \       # Qt Quick Gallery example
