@@ -329,7 +329,8 @@ qreal QQnxScreen::refreshRate() const
 {
     screen_display_mode_t displayMode;
     int result = screen_get_display_property_pv(m_display, SCREEN_PROPERTY_MODE, reinterpret_cast<void **>(&displayMode));
-    if (result != 0) {
+    // Screen shouldn't really return 0 but it does so default to 60 or things break.
+    if (result != 0 || displayMode.refresh == 0) {
         qWarning("QQnxScreen: Failed to query screen mode. Using default value of 60Hz");
         return 60.0;
     }
