@@ -724,8 +724,7 @@ QHostInfo QHostInfoCache::get(const QString &name, bool *valid)
     QMutexLocker locker(&this->mutex);
 
     *valid = false;
-    if (cache.contains(name)) {
-        QHostInfoCacheElement *element = cache.object(name);
+    if (QHostInfoCacheElement *element = cache.object(name)) {
         if (element->age.elapsed() < max_age*1000)
             *valid = true;
         return element->info;
