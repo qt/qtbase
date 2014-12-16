@@ -49,7 +49,10 @@ include(animation/animation.pri)
 include(itemmodels/itemmodels.pri)
 
 # Include the Pepper "plugin" into the QtGui build on native client.
-nacl:include($$PWD/../plugins/platforms/pepper/pepper.pri)
+nacl {
+    include($$PWD/../plugins/platforms/pepper/pepper.pri)
+    include($$PWD/platforms/pepper/pepper.pri)
+}
 
 QMAKE_LIBS += $$QMAKE_LIBS_GUI
 

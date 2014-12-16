@@ -1,8 +1,9 @@
 # DEFINES += QT_PEPPER_USE_PEPPER_FONT_ENGINE
+
+INCLUDEPATH += $$PWD
+
 SOURCES += $$PWD/qpepperpluginmain.cpp \
-           $$PWD/qpeppermodule.cpp \
            $$PWD/qpeppermodule_p.cpp \
-           $$PWD/qpepperinstance.cpp \
            $$PWD/qpepperinstance_p.cpp \
            $$PWD/qpepperfontdatabase.cpp \
            $$PWD/qpepperscreen.cpp \
@@ -21,9 +22,7 @@ SOURCES += $$PWD/qpepperpluginmain.cpp \
            $$PWD/qpepperclipboard.cpp
 
 HEADERS += $$PWD/qpepperhelpers.h \
-           $$PWD/qpeppermodule.h \
            $$PWD/qpeppermodule_p.h \
-           $$PWD/qpepperinstance.h \
            $$PWD/qpepperinstance_p.h \
            $$PWD/qpeppereventtranslator.h \
            $$PWD/qpepperintegration.h \
