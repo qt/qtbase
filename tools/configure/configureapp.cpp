@@ -1700,6 +1700,7 @@ void Configure::applySpecSpecifics()
         dictionary[ "QT_GETIFADDRS" ]       = "no";
         dictionary[ "QT_XKBCOMMON" ]        = "no";
         dictionary["ANDROID_STYLE_ASSETS"]  = "yes";
+        dictionary[ "STYLE_ANDROID" ]       = "yes";
     }
 }
 
@@ -2711,6 +2712,9 @@ void Configure::generateOutputVars()
 
     if (dictionary[ "STYLE_WINDOWSMOBILE" ] == "yes")
     qmakeStyles += "windowsmobile";
+
+    if (dictionary[ "STYLE_ANDROID" ] == "yes")
+        qmakeStyles += "android";
 
     // Databases ----------------------------------------------------
     if (dictionary[ "SQL_MYSQL" ] == "yes")
