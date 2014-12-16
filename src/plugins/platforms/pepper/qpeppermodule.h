@@ -23,14 +23,15 @@
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/core.h"
 
-class QtModule : public pp::Module {
+class QPepperModulePrivate;
+class QPepperModule : public pp::Module {
 public:
-    QtModule();
-    ~QtModule();
-    virtual bool Init();
-    virtual pp::Instance* CreateInstance(PP_Instance ppInstance);
-    static pp::Core* core();
+    QPepperModule();
+    ~QPepperModule();
+    bool Init() Q_DECL_OVERRIDE;
+    pp::Instance* CreateInstance(PP_Instance ppInstance) Q_DECL_OVERRIDE;
 private:
+    QPepperModulePrivate *d;
 };
 
 #endif

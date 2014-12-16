@@ -18,7 +18,7 @@
 ****************************************************************************/
 
 #include "qpeppereventdispatcher.h"
-#include "qpeppermodule.h"
+#include "qpeppermodule_p.h"
 
 #include <qdebug.h>
 #include <QtCore/qcoreapplication.h>
@@ -141,7 +141,7 @@ void QPepperEventDispatcher::startTimer(PepperTimerInfo info)
     m_activeTimerIds[m_currentTimerSerial] = info.timerId;
     m_activeTimerSerials[info.timerId] = m_currentTimerSerial;
 
-    QtModule::core()->CallOnMainThread(info.interval,
+    QPepperModulePrivate::core()->CallOnMainThread(info.interval,
         m_completionCallbackFactory.NewCallback(&QPepperEventDispatcher::timerCallback), m_currentTimerSerial);
 }
 

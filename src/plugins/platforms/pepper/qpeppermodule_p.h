@@ -17,26 +17,22 @@
 **
 ****************************************************************************/
 
-#ifndef QT_PEPPER_INSTANCE_H
-#define QT_PEPPER_INSTANCE_H
+#ifndef QT_PEPPER_MODULE_P_H
+#define QT_PEPPER_MODULE_P_H
 
-#include <ppapi/cpp/instance.h>
+#include "ppapi/cpp/core.h"
+#include "ppapi/cpp/module.h"
+#include "ppapi/cpp/instance.h"
 
-class QPepperInstancePrivate;
-class QPepperInstance : public pp::Instance
-{
+class QPepperModule;
+class QPepperModulePrivate {
 public:
-    QPepperInstance(PP_Instance instance);
-
-    bool Init(uint32_t argc, const char* argn[], const char* argv[]) Q_DECL_OVERRIDE;
-    void DidChangeView(const pp::View &view) Q_DECL_OVERRIDE;
-    void DidChangeFocus(bool hasFucus) Q_DECL_OVERRIDE;
-    bool HandleInputEvent(const pp::InputEvent& event) Q_DECL_OVERRIDE;
-    void HandleMessage(const pp::Var& message) Q_DECL_OVERRIDE;
-
-    virtual void applicationInit();
+    QPepperModulePrivate(QPepperModule *module);
+    bool init();
+    pp::Instance* createInstance(PP_Instance ppInstance);
+    static pp::Core* core();
 private:
-    QPepperInstancePrivate *d;
+    QPepperModule *q;
 };
 
 #endif

@@ -22,7 +22,7 @@
 
 #ifndef QT_PEPPER_STANDALONE_MODE
 #include "qpepperhelpers.h"
-#include "qpeppermodule.h"
+#include "qpeppermodule_p.h"
 #include "qpepperintegration.h"
 #endif
 
@@ -250,7 +250,7 @@ qreal QPepperInstancePrivate::cssScale()
 // to the Pepper event loop.
 void QPepperInstancePrivate::scheduleWindowSystemEventsFlush()
 {
-    QtModule::core()->
+    QPepperModulePrivate::core()->
         CallOnMainThread(0,
                          m_callbackFactory.NewCallback(&QPepperInstancePrivate::windowSystemEventsFlushCallback),
                          0);

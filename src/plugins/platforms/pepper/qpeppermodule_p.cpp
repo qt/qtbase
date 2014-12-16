@@ -20,31 +20,38 @@
 #include "qpeppermodule.h"
 #include "qpeppermodule_p.h"
 #include "qpepperinstance.h"
+#include <ppapi/c/ppp.h>
 
-extern QPepperModulePrivate *qtCreatePepperModulePrivate(QPepperModule *module);
+static pp::Core *g_core = 0;
+extern void *qtPepperInstance; // QtCore
+extern void *qtPepperModule; // QtCore
 
-QPepperModule::QPepperModule()
-:d(qtCreatePepperModulePrivate(this))
+QPepperModulePrivate *qtCreatePepperModulePrivate(QPepperModule *module)
 {
-    
+    return new QPepperModulePrivate(module);
 }
 
-QPepperModule::~QPepperModule()
+QPepperModulePrivate::QPepperModulePrivate(QPepperModule *module)
+:q(module)
 {
-    delete d;
+    qtPepperModule = module;
 }
 
-bool QPepperModule::Init()
+bool QPepperModulePrivate::init()
 {
-    return d->init();
+    g_core = q->core();
+    return true;
 }
 
-pp::Instance* QPepperModule::CreateInstance(PP_Instance ppInstance)
+pp::Instance* QPepperModulePrivate::createInstance(PP_Instance ppInstance)
 {
-    return  d->createInstance(ppInstance);
+    QPepperInstance *instance = new QPepperInstance(ppInstance);
+    // Grant non-platform plugin parts of Qt access to the instance.
+    qtPepperInstance = instance;
+    return instance;
 }
 
-pp::Module *qtCreatePepperModule()
+pp::Core *QPepperModulePrivate::core()
 {
-    return new QPepperModule();
+    return g_core;
 }
