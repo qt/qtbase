@@ -2471,6 +2471,9 @@ QString QSysInfo::productType()
 #elif defined(Q_OS_DARWIN)
     return QStringLiteral("darwin");
 
+#elif defined(Q_OS_HAIKU)
+    return QStringLiteral("haiku");
+
 #elif defined(USE_ETC_OS_RELEASE) // Q_OS_UNIX
     QUnixOSVersion unixOsVersion;
     readEtcOsRelease(unixOsVersion);
@@ -2601,6 +2604,8 @@ QString QSysInfo::prettyProductName()
     return QLatin1String("Android ") + productVersion();
 #elif defined(Q_OS_BLACKBERRY)
     return QLatin1String("BlackBerry ") + productVersion();
+#elif defined(Q_OS_HAIKU)
+    return QLatin1String("Haiku ") + productVersion();
 #elif defined(Q_OS_UNIX)
 #  ifdef USE_ETC_OS_RELEASE
     QUnixOSVersion unixOsVersion;

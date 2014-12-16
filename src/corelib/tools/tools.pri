@@ -214,7 +214,7 @@ INCLUDEPATH += ../3rdparty/md5 \
                ../3rdparty/sha3
 
 # Note: libm should be present by default becaue this is C++
-!macx-icc:!vxworks:unix:LIBS_PRIVATE += -lm
+!macx-icc:!vxworks:!haiku:unix:LIBS_PRIVATE += -lm
 
 TR_EXCLUDE += ../3rdparty/*
 

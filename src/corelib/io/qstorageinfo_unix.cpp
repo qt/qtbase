@@ -75,6 +75,9 @@
 #  if !defined(ST_RDONLY)
 #    define ST_RDONLY 1 // hack for missing define on Android
 #  endif
+#elif defined(Q_OS_HAIKU)
+#  define QT_STATFSBUF struct statvfs
+#  define QT_STATFS    ::statvfs
 #else
 #  if defined(QT_LARGEFILE_SUPPORT)
 #    define QT_STATFSBUF struct statvfs64
