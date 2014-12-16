@@ -828,7 +828,11 @@ QFont *QCoreTextFontDatabase::themeFont(QPlatformTheme::Font f) const
     CTFontDescriptorRef fontDesc = fontDescriptorFromTheme(f);
     FontDescription fd;
     getFontDescription(fontDesc, &fd);
-    m_systemFontDescriptors.insert(fontDesc);
+
+    if (!m_systemFontDescriptors.contains(fontDesc))
+        m_systemFontDescriptors.insert(fontDesc);
+    else
+        CFRelease(fontDesc);
 
     QFont *font = new QFont(fd.familyName, fd.pixelSize, fd.weight, fd.style == QFont::StyleItalic);
     return font;
