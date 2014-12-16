@@ -707,6 +707,7 @@ XPLATFORM_IOS=no        # Whether target platform is iOS
 XPLATFORM_ANDROID=no
 XPLATFORM_MINGW=no      # Whether target platform is MinGW (win32-g++*)
 XPLATFORM_QNX=no
+XPLATFORM_HAIKU=no
 PLATFORM=$QMAKESPEC
 QT_CROSS_COMPILE=no
 OPT_CONFIRM_LICENSE=no
@@ -2823,6 +2824,9 @@ case "$XPLATFORM" in
         ;;
     *qnx-*|*blackberry-*)
         XPLATFORM_QNX=yes
+        ;;
+    *haiku-*)
+        XPLATFORM_HAIKU=yes
         ;;
     *ios*)
         XPLATFORM_MAC=yes
@@ -5473,7 +5477,7 @@ if [ "$CFG_KMS" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG kms"
 fi
 
-if [ "$XPLATFORM_MAC" = "no" ] && [ "$XPLATFORM_MINGW" = "no" ] && [ "$XPLATFORM_QNX" = "no" ] && [ "$XPLATFORM_ANDROID" = "no" ]; then
+if [ "$XPLATFORM_MAC" = "no" ] && [ "$XPLATFORM_MINGW" = "no" ] && [ "$XPLATFORM_QNX" = "no" ] && [ "$XPLATFORM_ANDROID" = "no" ] && [ "$XPLATFORM_HAIKU" = "no" ]; then
     if [ "$CFG_XCB" = "no" ] && [ "$CFG_EGLFS" = "no" ] && [ "$CFG_DIRECTFB" = "no" ] && [ "$CFG_LINUXFB" = "no" ] && [ "$CFG_KMS" = "no" ]; then
         if [ "$QPA_PLATFORM_GUARD" = "yes" ] &&
             ( [ "$ORIG_CFG_XCB" = "auto" ] || [ "$ORIG_CFG_EGLFS" = "auto" ] || [ "$ORIG_CFG_DIRECTFB" = "auto" ] || [ "$ORIG_CFG_LINUXFB" = "auto" ] || [ "$ORIG_CFG_KMS" = "auto" ] ); then
