@@ -58,6 +58,11 @@
 # define QT_NO_IPV6IFNAME
 #endif
 
+#ifdef Q_OS_HAIKU
+# include <sys/sockio.h>
+# define IFF_RUNNING 0x0001
+#endif
+
 #ifndef QT_NO_GETIFADDRS
 # include <ifaddrs.h>
 #endif
