@@ -802,11 +802,11 @@ void QOpenGLWidgetPrivate::invalidateFbo()
 {
     QOpenGLExtensions *f = static_cast<QOpenGLExtensions *>(QOpenGLContext::currentContext()->functions());
     if (f->hasOpenGLExtension(QOpenGLExtensions::DiscardFramebuffer)) {
-        const int gl_color_ext = 0x1800;
-        const int gl_depth_ext = 0x1801;
-        const int gl_stencil_ext = 0x1802;
+        const int gl_color_attachment0 = 0x8CE0;  // GL_COLOR_ATTACHMENT0
+        const int gl_depth_attachment = 0x8D00;   // GL_DEPTH_ATTACHMENT
+        const int gl_stencil_attachment = 0x8D20; // GL_STENCIL_ATTACHMENT
         const GLenum attachments[] = {
-            gl_color_ext, gl_depth_ext, gl_stencil_ext
+            gl_color_attachment0, gl_depth_attachment, gl_stencil_attachment
         };
         f->glDiscardFramebufferEXT(GL_FRAMEBUFFER, sizeof attachments / sizeof *attachments, attachments);
     } else {
