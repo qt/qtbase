@@ -20,6 +20,8 @@
 #ifndef QT_PEPPER_MODULE_H
 #define QT_PEPPER_MODULE_H
 
+#include <QtCore/qglobal.h>
+
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/core.h"
 

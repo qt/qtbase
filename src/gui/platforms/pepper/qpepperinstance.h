@@ -20,6 +20,8 @@
 #ifndef QT_PEPPER_INSTANCE_H
 #define QT_PEPPER_INSTANCE_H
 
+#include <QtCore/qglobal.h>
+
 #include <ppapi/cpp/instance.h>
 
 class QPepperInstancePrivate;
