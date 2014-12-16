@@ -43,3 +43,10 @@ pp::Instance* QPepperModule::CreateInstance(PP_Instance ppInstance)
 {
     return  d->createInstance(ppInstance);
 }
+
+// Helper function for Q_GUI_MAIN: allows creating a QPepperModule
+// without pulling in the ppapi headers.
+pp::Module *qtGuiCreatePepperModule()
+{
+    return new QPepperModule();
+}

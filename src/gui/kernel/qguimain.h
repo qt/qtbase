@@ -47,11 +47,6 @@
 #include <QtCore/qstringlist.h>
 #include <QtCore/qcoremain.h>
 
-#ifdef Q_OS_NACL
-#include <ppapi/cpp/module.h>
-#include <QtGui/qpeppermodule.h>
-#endif
-
 QT_BEGIN_NAMESPACE
 
 Q_DECLARE_LOGGING_CATEGORY(QT_GUI_MAIN)
@@ -65,7 +60,9 @@ void Q_GUI_EXPORT qGuiRegisterAppFunctions(QAppInitFunction appInitFunction,
 // - define the pp::CreateModule() Ppapi main entry point.
 // - register app init and exit functions.
 #define Q_GUI_MAIN(qAppInitFunction, qAppExitFunction) \
-namespace pp { pp::Module* CreateModule() { return new QPepperModule(); } }\
+namespace pp { class Module; } \
+extern pp::Module *qtGuiCreatePepperModule(); \
+namespace pp { pp::Module* CreateModule() { return qtGuiCreatePepperModule(); } } \
 class QGuiMain \
 { \
 public:  \
