@@ -49,6 +49,7 @@
 
 #ifdef Q_OS_NACL
 #include <ppapi/cpp/module.h>
+#include <QtGui/qpeppermodule.h>
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -64,8 +65,7 @@ void Q_GUI_EXPORT qGuiRegisterAppFunctions(QAppInitFunction appInitFunction,
 // - define the pp::CreateModule() Ppapi main entry point.
 // - register app init and exit functions.
 #define Q_GUI_MAIN(qAppInitFunction, qAppExitFunction) \
-extern pp::Module *qtCreatePepperModule(); \
-namespace pp { pp::Module* CreateModule() { return qtCreatePepperModule(); } }\
+namespace pp { pp::Module* CreateModule() { return new QPepperModule(); } }\
 class QGuiMain \
 { \
 public:  \

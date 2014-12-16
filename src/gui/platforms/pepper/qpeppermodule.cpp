@@ -43,8 +43,3 @@ pp::Instance* QPepperModule::CreateInstance(PP_Instance ppInstance)
 {
     return  d->createInstance(ppInstance);
 }
-
-pp::Module *qtCreatePepperModule()
-{
-    return new QPepperModule();
-}
