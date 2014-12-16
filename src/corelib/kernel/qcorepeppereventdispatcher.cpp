@@ -52,8 +52,6 @@ QCorePepperEventDispatcher::QCorePepperEventDispatcher(QObject *parent)
     : QAbstractEventDispatcher(*new QCorePepperEventDispatcherPrivate, parent)
 {
     qCDebug(QT_PLATFORM_PEPPER_COREEVENTDISPATHCER) << "create QCorePepperEventDispatcher";
-    qDebug() << "QCorePepperEventDispatcher";
-
 }
 
 QCorePepperEventDispatcher::QCorePepperEventDispatcher(QCorePepperEventDispatcherPrivate &dd, QObject *parent)
