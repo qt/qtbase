@@ -63,7 +63,7 @@ int qFindByteArray(
 int qAllocMore(int alloc, int extra) Q_DECL_NOTHROW
 {
     Q_ASSERT(alloc >= 0 && extra >= 0);
-    Q_ASSERT_X(alloc < (1 << 30) - extra, "qAllocMore", "Requested size is too large!");
+    Q_ASSERT_X(uint(alloc) < QByteArray::MaxSize, "qAllocMore", "Requested size is too large!");
 
     unsigned nalloc = qNextPowerOfTwo(alloc + extra);
 
@@ -774,6 +774,15 @@ static inline char qToLower(char c)
     characters using Unicode.
 
     \sa QString, QBitArray
+*/
+
+/*!
+    \variable QByteArray::MaxSize
+    \internal
+    \since 5.4
+
+    The maximum size of a QByteArray, in bytes. Also applies to a the maximum
+    storage size of QString and QVector, though not the number of elements.
 */
 
 /*!

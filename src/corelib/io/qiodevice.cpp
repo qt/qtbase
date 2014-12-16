@@ -1025,7 +1025,7 @@ QByteArray QIODevice::readAll()
     } else {
         // Read it all in one go.
         // If resize fails, don't read anything.
-        if (readBytes + theSize - d->pos > INT_MAX)
+        if (quint64(readBytes + theSize - d->pos) > QByteArray::MaxSize)
             return QByteArray();
         result.resize(int(readBytes + theSize - d->pos));
         readBytes += read(result.data() + readBytes, result.size() - readBytes);
