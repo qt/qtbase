@@ -1552,6 +1552,7 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
                 printf ("\n"
                         " QmlTest options:\n"
                         " -import dir         : Specify an import directory.\n"
+                        " -plugins dir        : Specify a directory where to search for plugins.\n"
                         " -input dir/file     : Specify the root directory for test cases or a single test case file.\n"
                         " -qtquick1           : Run with QtQuick 1 rather than QtQuick 2.\n"
                         " -translation file   : Specify the translation file.\n"
@@ -1740,6 +1741,7 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
             if (qml) {
                 fprintf(stderr, "\nqmltest related options:\n"
                                 " -import    : Specify an import directory.\n"
+                                " -plugins   : Specify a directory where to search for plugins.\n"
                                 " -input     : Specify the root directory for test cases.\n"
                                 " -qtquick1  : Run with QtQuick 1 rather than QtQuick 2.\n"
                        );
