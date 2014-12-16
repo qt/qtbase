@@ -48,10 +48,12 @@ QPepperInstancePrivate *qtCreatePepperInstancePrivate(QPepperInstance *instance)
 }
 
 static QPepperInstancePrivate *g_pepperInstancePrivate = 0;
+extern void *qtPepperInstance; // QtCore
 
 QPepperInstancePrivate::QPepperInstancePrivate(QPepperInstance *instance)
 {
     q = instance;
+    qtPepperInstance = instance;
     g_pepperInstancePrivate = this;
     m_qtStarted = false;
     m_currentGeometry = Rect();

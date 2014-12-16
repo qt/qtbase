@@ -23,7 +23,6 @@
 #include <ppapi/c/ppp.h>
 
 static pp::Core *g_core = 0;
-extern void *qtPepperInstance; // QtCore
 extern void *qtPepperModule; // QtCore
 
 QPepperModulePrivate *qtCreatePepperModulePrivate(QPepperModule *module)
@@ -45,10 +44,7 @@ bool QPepperModulePrivate::init()
 
 pp::Instance* QPepperModulePrivate::createInstance(PP_Instance ppInstance)
 {
-    QPepperInstance *instance = new QPepperInstance(ppInstance);
-    // Grant non-platform plugin parts of Qt access to the instance.
-    qtPepperInstance = instance;
-    return instance;
+    return new QPepperInstance(ppInstance);
 }
 
 pp::Core *QPepperModulePrivate::core()
