@@ -283,7 +283,6 @@ QMouseEvent::~QMouseEvent()
 
   \sa Qt::MouseEventSource
   \sa QGraphicsSceneMouseEvent::source()
-  \sa QGraphicsSceneMouseEvent::setSource()
  */
 Qt::MouseEventSource QMouseEvent::source() const
 {
@@ -299,7 +298,6 @@ Qt::MouseEventSource QMouseEvent::source() const
 
      \sa Qt::MouseEventFlag
      \sa QGraphicsSceneMouseEvent::flags()
-     \sa QGraphicsSceneMouseEvent::setFlags()
  */
 Qt::MouseEventFlags QMouseEvent::flags() const
 {

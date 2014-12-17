@@ -88,7 +88,7 @@ public:
     Access to these parameters are useful when implementing custom user interface components, in that
     they allow the components to exhibit the same behaviour and feel as other components.
 
-    \sa QGuiApplication::styleHints(), QPlatformTheme
+    \sa QGuiApplication::styleHints()
  */
 QStyleHints::QStyleHints()
     : QObject(*new QStyleHintsPrivate(), 0)
