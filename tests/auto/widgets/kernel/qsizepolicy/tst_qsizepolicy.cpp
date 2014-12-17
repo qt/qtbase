@@ -40,17 +40,17 @@ class tst_QSizePolicy : public QObject
     Q_OBJECT
 
 private Q_SLOTS:
+    void defaultValues();
     void getSetCheck();
     void dataStream();
     void horizontalStretch();
     void verticalStretch();
 };
 
-// Testing get/set functions
-void tst_QSizePolicy::getSetCheck()
+void tst_QSizePolicy::defaultValues()
 {
     {
-        // check values of a default constructed QSizePolicy
+        // check values of a default-constructed QSizePolicy
         QSizePolicy sp;
         QCOMPARE(sp.horizontalPolicy(), QSizePolicy::Fixed);
         QCOMPARE(sp.verticalPolicy(), QSizePolicy::Fixed);
@@ -61,7 +61,11 @@ void tst_QSizePolicy::getSetCheck()
         QCOMPARE(sp.hasHeightForWidth(), false);
         QCOMPARE(sp.hasWidthForHeight(), false);
     }
+}
 
+// Testing get/set functions
+void tst_QSizePolicy::getSetCheck()
+{
     {
         static const QSizePolicy::Policy policies[3] = {
             QSizePolicy::Fixed,
