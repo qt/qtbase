@@ -40,12 +40,62 @@ class tst_QSizePolicy : public QObject
     Q_OBJECT
 
 private Q_SLOTS:
+    void qtest();
     void defaultValues();
     void getSetCheck();
     void dataStream();
     void horizontalStretch();
     void verticalStretch();
 };
+
+
+struct PrettyPrint {
+    const char *m_s;
+    template <typename T>
+    explicit PrettyPrint(const T &t) : m_s(Q_NULLPTR)
+    {
+        using QT_PREPEND_NAMESPACE(QTest)::toString;
+        m_s = toString(t);
+    }
+    ~PrettyPrint() { delete[] m_s; }
+    const char* s() const { return m_s ? m_s : "<null>" ; }
+};
+
+void tst_QSizePolicy::qtest()
+{
+#define CHECK(x) QCOMPARE(PrettyPrint(QSizePolicy::x).s(), #x)
+    // Policy:
+    CHECK(Fixed);
+    CHECK(Minimum);
+    CHECK(Ignored);
+    CHECK(MinimumExpanding);
+    CHECK(Expanding);
+    CHECK(Maximum);
+    CHECK(Preferred);
+    // ControlType:
+    CHECK(ButtonBox);
+    CHECK(CheckBox);
+    CHECK(ComboBox);
+    CHECK(Frame);
+    CHECK(GroupBox);
+    CHECK(Label);
+    CHECK(Line);
+    CHECK(LineEdit);
+    CHECK(PushButton);
+    CHECK(RadioButton);
+    CHECK(Slider);
+    CHECK(SpinBox);
+    CHECK(TabWidget);
+    CHECK(ToolButton);
+#undef CHECK
+#define CHECK2(x, y) QCOMPARE(PrettyPrint(QSizePolicy::x|QSizePolicy::y).s(), \
+                              QSizePolicy::x < QSizePolicy::y ? #x "|" #y : #y "|" #x)
+    // ControlTypes (sample)
+    CHECK2(ButtonBox, CheckBox);
+    CHECK2(CheckBox, ButtonBox);
+    CHECK2(ToolButton, Slider);
+#undef CHECK2
+}
 
 void tst_QSizePolicy::defaultValues()
 {

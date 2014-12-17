@@ -97,6 +97,11 @@ using QtMiscUtils::toHexUpper;
    See the \l{Qt Test Overview} for information about how to write unit tests.
 */
 
+/*!
+   \namespace QTest::Internal
+   \internal
+*/
+
 /*! \macro QVERIFY(condition)
 
    \relates QTest
@@ -1039,6 +1044,38 @@ using QtMiscUtils::toHexUpper;
     \overload
 
     Returns a textual representation of the given \a variant.
+*/
+
+/*!
+    \fn char *QTest::toString(QSizePolicy::ControlType ct)
+    \overload
+    \since 5.5
+
+    Returns a textual representation of control type \a ct.
+*/
+
+/*!
+    \fn char *QTest::toString(QSizePolicy::ControlTypes cts)
+    \overload
+    \since 5.5
+
+    Returns a textual representation of control types \a cts.
+*/
+
+/*!
+    \fn char *QTest::toString(QSizePolicy::Policy p)
+    \overload
+    \since 5.5
+
+    Returns a textual representation of policy \a p.
+*/
+
+/*!
+    \fn char *QTest::toString(QSizePolicy sp)
+    \overload
+    \since 5.5
+
+    Returns a textual representation of size policy \a sp.
 */
 
 /*! \fn void QTest::qWait(int ms)
