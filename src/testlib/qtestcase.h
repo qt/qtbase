@@ -282,7 +282,7 @@ namespace QTest
                         const char *file, int line)
     {
         return compare_helper(t1 == t2, "Compared values are not the same",
-                              toString<T>(t1), toString<T>(t2), actual, expected, file, line);
+                              toString(t1), toString(t2), actual, expected, file, line);
     }
 
     Q_TESTLIB_EXPORT bool qCompare(float const &t1, float const &t2,
