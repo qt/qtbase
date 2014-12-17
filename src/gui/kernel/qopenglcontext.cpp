@@ -1113,9 +1113,9 @@ void QOpenGLContext::deleteQGLContext()
 void *QOpenGLContext::openGLModuleHandle()
 {
 #ifdef QT_OPENGL_DYNAMIC
-    QGuiApplication *app = qGuiApp;
-    Q_ASSERT(app);
-    return app->platformNativeInterface()->nativeResourceForIntegration(QByteArrayLiteral("glhandle"));
+    QPlatformNativeInterface *ni = QGuiApplication::platformNativeInterface();
+    Q_ASSERT(ni);
+    return ni->nativeResourceForIntegration(QByteArrayLiteral("glhandle"));
 #else
     return 0;
 #endif
