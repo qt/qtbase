@@ -516,28 +516,6 @@ QString QtPrivate::QStringList_join(const QStringList *that, const QChar *sep, i
     the latter string list.
 */
 
-#ifndef QT_NO_DATASTREAM
-/*!
-    \fn QDataStream &operator>>(QDataStream &in, QStringList &list)
-    \relates QStringList
-
-    Reads a string list from the given \a in stream into the specified
-    \a list.
-
-    \sa {Serializing Qt Data Types}
-*/
-
-/*!
-    \fn QDataStream &operator<<(QDataStream &out, const QStringList &list)
-    \relates QStringList
-
-    Writes the given string \a list to the specified \a out stream.
-
-    \sa {Serializing Qt Data Types}
-*/
-#endif // QT_NO_DATASTREAM
-
-
 #ifndef QT_NO_REGEXP
 static int indexOfMutating(const QStringList *that, QRegExp &rx, int from)
 {

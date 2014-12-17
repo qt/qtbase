@@ -238,17 +238,6 @@ inline int QStringList::lastIndexOf(const QRegularExpression &rx, int from) cons
 #endif // QT_NO_REGULAREXPRESSION
 #endif // QT_BOOTSTRAPPED
 
-#ifndef QT_NO_DATASTREAM
-inline QDataStream &operator>>(QDataStream &in, QStringList &list)
-{
-    return operator>>(in, static_cast<QList<QString> &>(list));
-}
-inline QDataStream &operator<<(QDataStream &out, const QStringList &list)
-{
-    return operator<<(out, static_cast<const QList<QString> &>(list));
-}
-#endif // QT_NO_DATASTREAM
-
 QT_END_NAMESPACE
 
 #endif // QSTRINGLIST_H
