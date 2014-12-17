@@ -31,9 +31,13 @@
 **
 ****************************************************************************/
 
-
 #include <QtTest/QtTest>
 #include <qsizepolicy.h>
+
+Q_DECLARE_METATYPE(Qt::Orientations)
+Q_DECLARE_METATYPE(QSizePolicy)
+Q_DECLARE_METATYPE(QSizePolicy::Policy)
+Q_DECLARE_METATYPE(QSizePolicy::ControlType)
 
 class tst_QSizePolicy : public QObject
 {
@@ -42,10 +46,13 @@ class tst_QSizePolicy : public QObject
 private Q_SLOTS:
     void qtest();
     void defaultValues();
+    void getSetCheck_data() { data(); }
     void getSetCheck();
     void dataStream();
     void horizontalStretch();
     void verticalStretch();
+private:
+    void data() const;
 };
 
 
@@ -113,9 +120,60 @@ void tst_QSizePolicy::defaultValues()
     }
 }
 
+#define FETCH_TEST_DATA \
+    QFETCH(QSizePolicy, sp); \
+    QFETCH(QSizePolicy::Policy, hp); \
+    QFETCH(QSizePolicy::Policy, vp); \
+    QFETCH(int, hst); \
+    QFETCH(int, vst); \
+    QFETCH(QSizePolicy::ControlType, ct); \
+    QFETCH(bool, hfw); \
+    QFETCH(bool, wfh); \
+    QFETCH(Qt::Orientations, ed)
+
+
 // Testing get/set functions
 void tst_QSizePolicy::getSetCheck()
 {
+    FETCH_TEST_DATA;
+
+    QCOMPARE(QPixmap(), QPixmap());
+
+    QCOMPARE(sp.horizontalPolicy(),    hp);
+    QCOMPARE(sp.verticalPolicy(),      vp);
+    QCOMPARE(sp.horizontalStretch(),   hst);
+    QCOMPARE(sp.verticalStretch(),     vst);
+    QCOMPARE(sp.controlType(),         ct);
+    QCOMPARE(sp.hasHeightForWidth(),   hfw);
+    QCOMPARE(sp.hasWidthForHeight(),   wfh);
+    QCOMPARE(sp.expandingDirections(), ed);
+}
+
+#undef FETCH_TEST_DATA
+
+static void makeRow(QSizePolicy sp, QSizePolicy::Policy hp, QSizePolicy::Policy vp,
+                    int hst, int vst, QSizePolicy::ControlType ct, bool hfw, bool wfh,
+                    Qt::Orientations orients)
+{
+    QTest::newRow(qPrintable(QString().sprintf("%s-%s-%d-%d-%s-%s-%s",
+                                               PrettyPrint(hp).s(), PrettyPrint(vp).s(), hst, vst,
+                                               PrettyPrint(ct).s(),
+                                               hfw ? "true" : "false", wfh ? "true" : "false")))
+            << sp << hp << vp << hst << vst << ct << hfw << wfh << orients;
+}
+
+void tst_QSizePolicy::data() const
+{
+    QTest::addColumn<QSizePolicy>("sp");
+    QTest::addColumn<QSizePolicy::Policy>("hp");
+    QTest::addColumn<QSizePolicy::Policy>("vp");
+    QTest::addColumn<int>("hst");
+    QTest::addColumn<int>("vst");
+    QTest::addColumn<QSizePolicy::ControlType>("ct");
+    QTest::addColumn<bool>("hfw");
+    QTest::addColumn<bool>("wfh");
+    QTest::addColumn<Qt::Orientations>("ed");
+
     {
         static const QSizePolicy::Policy policies[3] = {
             QSizePolicy::Fixed,
@@ -164,13 +222,6 @@ void tst_QSizePolicy::getSetCheck()
                                         case 5: sp.setHeightForWidth(hfw); sp.setWidthForHeight(wfh); break;
                                         default: break;
                                         }
-                                        QCOMPARE(sp.horizontalPolicy(),  (i >= 0 ? hp  : oldsp.horizontalPolicy()));
-                                        QCOMPARE(sp.verticalPolicy(),    (i >= 1 ? vp  : oldsp.verticalPolicy()));
-                                        QCOMPARE(sp.horizontalStretch(), (i >= 2 ? hst : oldsp.horizontalStretch()));
-                                        QCOMPARE(sp.verticalStretch(),   (i >= 3 ? vst : oldsp.verticalStretch()));
-                                        QCOMPARE(sp.controlType(),       (i >= 4 ? ct  : oldsp.controlType()));
-                                        QCOMPARE(sp.hasHeightForWidth(), (i >= 5 ? hfw : oldsp.hasHeightForWidth()));
-                                        QCOMPARE(sp.hasWidthForHeight(), (i >= 5 ? wfh : oldsp.hasWidthForHeight()));
 
                                         Qt::Orientations orients;
                                         if (sp.horizontalPolicy() & QSizePolicy::ExpandFlag)
@@ -178,7 +229,15 @@ void tst_QSizePolicy::getSetCheck()
                                         if (sp.verticalPolicy() & QSizePolicy::ExpandFlag)
                                             orients |= Qt::Vertical;
 
-                                        QCOMPARE(sp.expandingDirections(), orients);
+                                        makeRow(sp,
+                                                i >= 0 ? hp  : oldsp.horizontalPolicy(),
+                                                i >= 1 ? vp  : oldsp.verticalPolicy(),
+                                                i >= 2 ? hst : oldsp.horizontalStretch(),
+                                                i >= 3 ? vst : oldsp.verticalStretch(),
+                                                i >= 4 ? ct  : oldsp.controlType(),
+                                                i >= 5 ? hfw : oldsp.hasHeightForWidth(),
+                                                i >= 5 ? wfh : oldsp.hasWidthForHeight(),
+                                                orients);
 #ifdef GENERATE_BASELINE
                                         stream << sp;
 #endif
