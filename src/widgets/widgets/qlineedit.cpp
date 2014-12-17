@@ -434,12 +434,6 @@ bool QLineEdit::hasFrame() const
 */
 
 /*!
-    \fn void QLineEdit::addAction(QAction *action)
-    \overload
-    \internal
-*/
-
-/*!
     \overload
 
     Adds the \a action to the list of actions at the \a position.

@@ -230,11 +230,7 @@ public:
 
     virtual QHash<int,QByteArray> roleNames() const;
 
-#ifdef Q_NO_USING_KEYWORD
-    inline QObject *parent() const { return QObject::parent(); }
-#else
     using QObject::parent;
-#endif
 
     enum LayoutChangeHint
     {
@@ -425,13 +421,7 @@ public:
 
     Qt::ItemFlags flags(const QModelIndex &index) const Q_DECL_OVERRIDE;
 
-#ifdef Q_NO_USING_KEYWORD
-#ifndef Q_QDOC
-    inline QObject *parent() const { return QAbstractItemModel::parent(); }
-#endif
-#else
     using QObject::parent;
-#endif
 
 protected:
     QAbstractTableModel(QAbstractItemModelPrivate &dd, QObject *parent);
@@ -456,13 +446,7 @@ public:
 
     Qt::ItemFlags flags(const QModelIndex &index) const Q_DECL_OVERRIDE;
 
-#ifdef Q_NO_USING_KEYWORD
-#ifndef Q_QDOC
-    inline QObject *parent() const { return QAbstractItemModel::parent(); }
-#endif
-#else
     using QObject::parent;
-#endif
 
 protected:
     QAbstractListModel(QAbstractItemModelPrivate &dd, QObject *parent);

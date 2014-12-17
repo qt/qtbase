@@ -42,9 +42,6 @@
 #ifdef QT_INCLUDE_COMPAT
 # include <QtWidgets/qdesktopwidget.h>
 #endif
-#ifdef Q_NO_USING_KEYWORD
-#include <QtGui/qpalette.h>
-#endif
 #include <QtGui/qguiapplication.h>
 
 QT_BEGIN_NAMESPACE
@@ -104,11 +101,7 @@ public:
     QT_DEPRECATED static inline void setGraphicsSystem(const QString &) {}
 #endif
 
-#if defined(Q_NO_USING_KEYWORD) && !defined(Q_QDOC)
-    static QPalette palette() { return QGuiApplication::palette(); }
-#else
     using QGuiApplication::palette;
-#endif
     static QPalette palette(const QWidget *);
     static QPalette palette(const char *className);
     static void setPalette(const QPalette &, const char* className = 0);

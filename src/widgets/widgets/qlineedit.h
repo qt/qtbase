@@ -166,13 +166,7 @@ public:
     void getTextMargins(int *left, int *top, int *right, int *bottom) const;
     QMargins textMargins() const;
 
-#ifdef Q_NO_USING_KEYWORD
-    inline void addAction(QAction *action)
-    { QWidget::addAction(action); }
-#else
     using QWidget::addAction;
-#endif
-
     void addAction(QAction *action, ActionPosition position);
     QAction *addAction(const QIcon &icon, ActionPosition position);
 

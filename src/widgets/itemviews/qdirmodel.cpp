@@ -1146,11 +1146,6 @@ QFileInfo QDirModel::fileInfo(const QModelIndex &index) const
     return node->info;
 }
 
-/*!
-  \fn QObject *QDirModel::parent() const
-  \internal
-*/
-
 /*
   The root node is never seen outside the model.
 */

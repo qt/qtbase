@@ -56,13 +56,7 @@ public:
     explicit QPrintPreviewDialog(QPrinter *printer, QWidget *parent = 0, Qt::WindowFlags flags = 0);
     ~QPrintPreviewDialog();
 
-#ifdef Q_NO_USING_KEYWORD
-#ifndef Q_QDOC
-    void open() { QDialog::open(); }
-#endif
-#else
     using QDialog::open;
-#endif
     void open(QObject *receiver, const char *member);
 
     QPrinter *printer();

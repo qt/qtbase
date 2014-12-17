@@ -2390,18 +2390,6 @@ bool QGraphicsWidget::close()
     return true;
 }
 
-#ifdef Q_NO_USING_KEYWORD
-/*!
-    \fn const QObjectList &QGraphicsWidget::children() const
-    \internal
-
-    This function returns the same value as QObject::children(). It's
-    provided to differentiate between the obsolete member
-    QGraphicsItem::children() and QObject::children(). QGraphicsItem now
-    provides childItems() instead.
-*/
-#endif
-
 #if 0
 void QGraphicsWidget::dumpFocusChain()
 {

@@ -1087,46 +1087,6 @@ QPointF QGestureEvent::mapToGraphicsScene(const QPointF &gesturePoint) const
 }
 #endif //QT_NO_GRAPHICSVIEW
 
-#ifdef Q_NO_USING_KEYWORD
-/*!
-    \fn void QGestureEvent::setAccepted(bool accepted)
-
-    Sets or clears the event's internal flag that determines whether it should
-    be delivered to other objects.
-
-    Calling this function with a value of true for \a accepted indicates that the
-    caller has accepted the event and that it should not be propagated further.
-    Calling this function with a value of false indicates that the caller has
-    ignored the event and that it should be delivered to other objects.
-
-    For convenience, the accept flag can also be set with accept(), and cleared
-    with ignore().
-
-    \sa QEvent::accepted
-*/
-/*!
-    \fn bool QGestureEvent::isAccepted() const
-
-    Returns \c true is the event has been accepted; otherwise returns \c false.
-
-    \sa QEvent::accepted
-*/
-/*!
-    \fn void QGestureEvent::accept()
-
-    Accepts the event, the equivalent of calling setAccepted(true).
-
-    \sa QEvent::accept()
-*/
-/*!
-    \fn void QGestureEvent::ignore()
-
-    Ignores the event, the equivalent of calling setAccepted(false).
-
-    \sa QEvent::ignore()
-*/
-#endif // Q_NO_USING_KEYWORD
-
 #ifndef QT_NO_DEBUG_STREAM
 
 static void formatGestureHeader(QDebug d, const char *className, const QGesture *gesture)
@@ -1200,7 +1160,6 @@ Q_WIDGETS_EXPORT QDebug operator<<(QDebug d, const QGestureEvent *gestureEvent)
 }
 
 #endif // !QT_NO_DEBUG_STREAM
-
 QT_END_NAMESPACE
 
 #include <moc_qgesture.cpp>

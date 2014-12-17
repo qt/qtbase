@@ -3249,15 +3249,6 @@ void QMenu::internalDelayedPopup()
 }
 
 /*!
-    \fn void QMenu::addAction(QAction *action)
-    \overload
-
-    Appends the action \a action to the menu's list of actions.
-
-    \sa QMenuBar::addAction(), QWidget::addAction()
-*/
-
-/*!
     \fn void QMenu::aboutToHide()
     \since 4.2
 

@@ -211,11 +211,7 @@ public:
 
     virtual QVariant inputMethodQuery(Qt::InputMethodQuery query) const Q_DECL_OVERRIDE;
 
-#ifdef Q_NO_USING_KEYWORD
-    inline void update() { QAbstractScrollArea::update(); }
-#else
     using QAbstractScrollArea::update;
-#endif
 
 public Q_SLOTS:
     virtual void reset();

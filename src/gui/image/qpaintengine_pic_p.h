@@ -83,12 +83,7 @@ public:
     void drawEllipse(const QRectF &rect) Q_DECL_OVERRIDE;
     void drawPath(const QPainterPath &path) Q_DECL_OVERRIDE;
     void drawPolygon(const QPointF *points, int numPoints, PolygonDrawMode mode) Q_DECL_OVERRIDE;
-#ifdef Q_NO_USING_KEYWORD
-    inline void drawPolygon(const QPoint *points, int pointCount, PolygonDrawMode mode)
-        { QPaintEngine::drawPolygon(points, pointCount, mode); }
-#else
     using QPaintEngine::drawPolygon;
-#endif
 
     void drawPixmap(const QRectF &r, const QPixmap &pm, const QRectF &sr) Q_DECL_OVERRIDE;
     void drawTiledPixmap(const QRectF &r, const QPixmap &pixmap, const QPointF &s) Q_DECL_OVERRIDE;

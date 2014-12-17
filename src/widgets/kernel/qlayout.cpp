@@ -268,14 +268,6 @@ bool QLayout::setAlignment(QLayout *l, Qt::Alignment alignment)
 }
 
 /*!
-    \fn void QLayout::setAlignment(Qt::Alignment alignment)
-
-    Sets the alignment of this item to \a alignment.
-
-    \sa QLayoutItem::setAlignment()
-*/
-
-/*!
     \property QLayout::margin
     \brief the width of the outside border of the layout
     \obsolete

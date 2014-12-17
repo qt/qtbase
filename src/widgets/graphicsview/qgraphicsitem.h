@@ -556,11 +556,7 @@ public:
     explicit QGraphicsObject(QGraphicsItem *parent = 0);
     ~QGraphicsObject();
 
-#ifdef Q_NO_USING_KEYWORD
-    const QObjectList &children() const { return QObject::children(); }
-#else
     using QObject::children;
-#endif
 
 #ifndef QT_NO_GESTURES
     void grabGesture(Qt::GestureType type, Qt::GestureFlags flags = Qt::GestureFlags());

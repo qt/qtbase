@@ -172,13 +172,7 @@ public:
     void setOptions(Options options);
     Options options() const;
 
-#ifdef Q_NO_USING_KEYWORD
-#ifndef Q_QDOC
-    void open() { QDialog::open(); }
-#endif
-#else
     using QDialog::open;
-#endif
     void open(QObject *receiver, const char *member);
     void setVisible(bool visible) Q_DECL_OVERRIDE;
 

@@ -418,15 +418,6 @@ void QToolBarPrivate::plug(const QRect &r)
 */
 
 /*!
-    \fn void QToolBar::addAction(QAction *action)
-    \overload
-
-    Appends the \a action to the toolbar's list of actions.
-
-    \sa QMenu::addAction(), QWidget::addAction()
-*/
-
-/*!
     \fn void QToolBar::actionTriggered(QAction *action)
 
     This signal is emitted when an action in this toolbar is triggered.

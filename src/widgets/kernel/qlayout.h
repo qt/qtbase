@@ -88,11 +88,7 @@ public:
 
     bool setAlignment(QWidget *w, Qt::Alignment alignment);
     bool setAlignment(QLayout *l, Qt::Alignment alignment);
-#ifdef Q_NO_USING_KEYWORD
-    inline void setAlignment(Qt::Alignment alignment) { QLayoutItem::setAlignment(alignment); }
-#else
     using QLayoutItem::setAlignment;
-#endif
 
     void setSizeConstraint(SizeConstraint);
     SizeConstraint sizeConstraint() const;

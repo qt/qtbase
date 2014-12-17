@@ -275,18 +275,10 @@ public:
     QList<QGesture *> activeGestures() const;
     QList<QGesture *> canceledGestures() const;
 
-#ifdef Q_NO_USING_KEYWORD
-    inline void setAccepted(bool accepted) { QEvent::setAccepted(accepted); }
-    inline bool isAccepted() const { return QEvent::isAccepted(); }
-
-    inline void accept() { QEvent::accept(); }
-    inline void ignore() { QEvent::ignore(); }
-#else
     using QEvent::setAccepted;
     using QEvent::isAccepted;
     using QEvent::accept;
     using QEvent::ignore;
-#endif
 
     void setAccepted(QGesture *, bool);
     void accept(QGesture *);

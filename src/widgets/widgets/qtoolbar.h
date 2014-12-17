@@ -86,13 +86,7 @@ public:
 
     void clear();
 
-#ifdef Q_NO_USING_KEYWORD
-    inline void addAction(QAction *action)
-    { QWidget::addAction(action); }
-#else
     using QWidget::addAction;
-#endif
-
     QAction *addAction(const QString &text);
     QAction *addAction(const QIcon &icon, const QString &text);
     QAction *addAction(const QString &text, const QObject *receiver, const char* member);

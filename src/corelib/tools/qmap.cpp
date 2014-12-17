@@ -1798,12 +1798,6 @@ void QMapDataBase::freeData(QMapDataBase *d)
 */
 
 /*!
-    \fn bool QMultiMap::contains(const Key &key) const
-    \overload
-    \sa QMap::contains()
-*/
-
-/*!
     \fn int QMultiMap::remove(const Key &key, const T &value)
     \since 4.3
 
@@ -1814,29 +1808,11 @@ void QMapDataBase::freeData(QMapDataBase *d)
 */
 
 /*!
-    \fn int QMultiMap::remove(const Key &key)
-    \overload
-    \sa QMap::remove()
-*/
-
-/*!
     \fn int QMultiMap::count(const Key &key, const T &value) const
     \since 4.3
 
     Returns the number of items with key \a key and value \a value.
 
-    \sa QMap::count()
-*/
-
-/*!
-    \fn int QMultiMap::count(const Key &key) const
-    \overload
-    \sa QMap::count()
-*/
-
-/*!
-    \fn int QMultiMap::count() const
-    \overload
     \sa QMap::count()
 */
 
@@ -1853,12 +1829,6 @@ void QMapDataBase::freeData(QMapDataBase *d)
     function returns an iterator that points to the most recently
     inserted value.
 
-    \sa QMap::find()
-*/
-
-/*!
-    \fn typename QMap<Key, T>::iterator QMultiMap::find(const Key &key)
-    \overload
     \sa QMap::find()
 */
 
@@ -1880,13 +1850,6 @@ void QMapDataBase::freeData(QMapDataBase *d)
 */
 
 /*!
-    \fn typename QMap<Key, T>::const_iterator QMultiMap::find(const Key &key) const
-    \since 4.3
-    \overload
-    \sa QMap::find()
-*/
-
-/*!
     \fn typename QMap<Key, T>::const_iterator QMultiMap::constFind(const Key &key, const T &value) const
     \since 4.3
 
@@ -1896,12 +1859,6 @@ void QMapDataBase::freeData(QMapDataBase *d)
     If the map contains no such item, the function returns
     constEnd().
 
-    \sa QMap::constFind()
-*/
-
-/*!
-    \fn typename QMap<Key, T>::const_iterator QMultiMap::constFind(const Key &key) const
-    \overload
     \sa QMap::constFind()
 */
 

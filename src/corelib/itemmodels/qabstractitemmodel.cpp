@@ -1264,11 +1264,6 @@ void QAbstractItemModel::resetInternalData()
 */
 
 /*!
-    \fn QObject *QAbstractItemModel::parent() const
-    \internal
-*/
-
-/*!
     \fn QModelIndex QAbstractItemModel::parent(const QModelIndex &index) const = 0
 
     Returns the parent of the model item with the given \a index. If the item

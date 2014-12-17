@@ -2103,16 +2103,6 @@ void QColorDialog::open(QObject *receiver, const char *member)
 }
 
 /*!
-    \fn QColorDialog::open()
-
-    \since 4.5
-    Shows the dialog as a \l{QDialog#Modal Dialogs}{window modal dialog},
-    returning immediately.
-
-    \sa QDialog::open()
-*/
-
-/*!
     \since 4.5
 
     Pops up a modal color dialog with the given window \a title (or "Select Color" if none is

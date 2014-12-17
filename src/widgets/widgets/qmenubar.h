@@ -57,11 +57,7 @@ public:
     explicit QMenuBar(QWidget *parent = 0);
     ~QMenuBar();
 
-#ifdef Q_NO_USING_KEYWORD
-    void addAction(QAction *action) { QWidget::addAction(action); }
-#else
     using QWidget::addAction;
-#endif
     QAction *addAction(const QString &text);
     QAction *addAction(const QString &text, const QObject *receiver, const char* member);
 

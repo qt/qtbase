@@ -75,7 +75,6 @@
 #  if defined(__SC__) && __SC__ < 0x750
 #    error "Compiler not supported"
 #  endif
-#  define Q_NO_USING_KEYWORD
 
 #elif defined(_MSC_VER)
 #  define Q_CC_MSVC (_MSC_VER)
@@ -113,7 +112,6 @@
 #  if __BORLANDC__ < 0x502
 #    error "Compiler not supported"
 #  endif
-#  define Q_NO_USING_KEYWORD
 
 #elif defined(__WATCOMC__)
 #  define Q_CC_WAT
@@ -278,7 +276,6 @@
 #    error "Compiler not supported"
 #  endif
 /* Spurious (?) error messages observed on Compaq C++ V6.5-014. */
-#  define Q_NO_USING_KEYWORD
 /* Apply to all versions prior to Compaq C++ V6.0-000 - observed on
    DEC C++ V5.5-004. */
 #  if __DECCXX_VER < 60060000
@@ -323,7 +320,6 @@
    compiler is using its own set of rules. Forget it. */
 #  elif defined(__KCC)
 #    define Q_CC_KAI
-#    define Q_NO_USING_KEYWORD
 
 /* Using the `using' keyword avoids Intel C++ for Linux warnings */
 #  elif defined(__INTEL_COMPILER)
@@ -346,23 +342,19 @@
 #    if !defined(__SCO_VERSION__) || (__SCO_VERSION__ < 302200010)
 #      define Q_OUTOFLINE_TEMPLATE inline
 #    endif
-#    define Q_NO_USING_KEYWORD /* ### check "using" status */
 
 /* Never tested! */
 #  elif defined(CENTERLINE_CLPP) || defined(OBJECTCENTER)
 #    define Q_CC_OC
-#    define Q_NO_USING_KEYWORD
 
 /* CDS++ defines __EDG__ although this is not documented in the Reliant
    documentation. It also follows conventions like _BOOL and this documented */
 #  elif defined(sinix)
 #    define Q_CC_CDS
-#    define Q_NO_USING_KEYWORD
 
 /* The MIPSpro compiler defines __EDG */
 #  elif defined(__sgi)
 #    define Q_CC_MIPS
-#    define Q_NO_USING_KEYWORD /* ### check "using" status */
 #    define Q_NO_TEMPLATE_FRIENDS
 #    if defined(_COMPILER_VERSION) && (_COMPILER_VERSION >= 740)
 #      define Q_OUTOFLINE_TEMPLATE inline
@@ -404,9 +396,6 @@
 #    if !defined(_BOOL)
 #      error "Compiler not supported"
 #    endif
-#    if defined(__SUNPRO_CC_COMPAT) && (__SUNPRO_CC_COMPAT <= 4)
-#      define Q_NO_USING_KEYWORD
-#    endif
 #    define Q_C_CALLBACKS
 /* 4.2 compiler or older */
 #  else
@@ -445,7 +434,6 @@
 #  else
 #    error "Compiler not supported"
 #  endif
-#  define Q_NO_USING_KEYWORD /* ### check "using" status */
 
 #else
 #  error "Qt has not been tested with this compiler - see http://www.qt-project.org/"

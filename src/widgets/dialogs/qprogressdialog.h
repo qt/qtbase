@@ -87,13 +87,7 @@ public:
     void setAutoClose(bool close);
     bool autoClose() const;
 
-#ifdef Q_NO_USING_KEYWORD
-#ifndef Q_QDOC
-    void open() { QDialog::open(); }
-#endif
-#else
     using QDialog::open;
-#endif
     void open(QObject *receiver, const char *member);
 
 public Q_SLOTS:

@@ -140,13 +140,7 @@ public:
     void setVisible(bool visible);
 #endif
 
-#ifdef Q_NO_USING_KEYWORD
-#ifndef Q_QDOC
-    void open() { QDialog::open(); }
-#endif
-#else
     using QDialog::open;
-#endif
     void open(QObject *receiver, const char *member);
 
     QList<QAbstractButton *> buttons() const;

@@ -161,11 +161,7 @@ public:
     void dumpFocusChain();
 #endif
 
-#ifdef Q_NO_USING_KEYWORD
-    const QObjectList &children() const { return QObject::children(); }
-#else
     using QObject::children;
-#endif
 
 Q_SIGNALS:
     void geometryChanged();

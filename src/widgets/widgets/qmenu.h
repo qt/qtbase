@@ -72,11 +72,7 @@ public:
     explicit QMenu(const QString &title, QWidget *parent = 0);
     ~QMenu();
 
-#ifdef Q_NO_USING_KEYWORD
-    inline void addAction(QAction *action) { QWidget::addAction(action); }
-#else
     using QWidget::addAction;
-#endif
     QAction *addAction(const QString &text);
     QAction *addAction(const QIcon &icon, const QString &text);
     QAction *addAction(const QString &text, const QObject *receiver, const char* member, const QKeySequence &shortcut = 0);

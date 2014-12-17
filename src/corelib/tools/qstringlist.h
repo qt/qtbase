@@ -108,15 +108,8 @@ public:
 #endif // QT_NO_REGULAREXPRESSION
 #endif // QT_BOOTSTRAPPED
 
-#if !defined(Q_NO_USING_KEYWORD)
     using QList<QString>::indexOf;
     using QList<QString>::lastIndexOf;
-#else
-    inline int indexOf(const QString &str, int from = 0) const
-    { return QList<QString>::indexOf(str, from); }
-    inline int lastIndexOf(const QString &str, int from = -1) const
-    { return QList<QString>::lastIndexOf(str, from); }
-#endif
 };
 
 Q_DECLARE_TYPEINFO(QStringList, Q_MOVABLE_TYPE);

@@ -66,11 +66,7 @@ public:
 
     QWidget *currentWidget() const;
     int currentIndex() const;
-#ifdef Q_NO_USING_KEYWORD
-    inline QWidget *widget() { return QLayout::widget(); }
-#else
     using QLayout::widget;
-#endif
     QWidget *widget(int) const;
     int count() const Q_DECL_OVERRIDE;
 

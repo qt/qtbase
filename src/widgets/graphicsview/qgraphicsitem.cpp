@@ -8034,16 +8034,6 @@ void QGraphicsItemPrivate::resetHeight()
 */
 
 /*!
-  \fn const QObjectList &QGraphicsObject::children() const
-  \internal
-
-  This function returns the same value as QObject::children(). It's
-  provided to differentiate between the obsolete member
-  QGraphicsItem::children() and QObject::children(). QGraphicsItem now
-  provides childItems() instead.
-*/
-
-/*!
   \property QGraphicsObject::transformOriginPoint
   \brief the transformation origin
 
