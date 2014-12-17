@@ -426,7 +426,7 @@ QSize QProgressBar::sizeHint() const
     int cw = style()->pixelMetric(QStyle::PM_ProgressBarChunkWidth, &opt, this);
     QSize size = QSize(qMax(9, cw) * 7 + fm.width(QLatin1Char('0')) * 4, fm.height() + 8);
     if (opt.orientation == Qt::Vertical)
-        size.transpose();
+        size = size.transposed();
     return style()->sizeFromContents(QStyle::CT_ProgressBar, &opt, size, this);
 }
 

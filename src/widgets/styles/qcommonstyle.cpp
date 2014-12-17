@@ -2910,7 +2910,7 @@ QRect QCommonStyle::subElementRect(SubElement sr, const QStyleOption *opt,
                                         opt, widget).actualSize(QSize(iconSize, iconSize));
                 sz += QSize(buttonMargin, buttonMargin);
                 if (verticalTitleBar)
-                    sz.transpose();
+                    sz = sz.transposed();
                 closeRect = QRect(right - sz.width(),
                                     rect.center().y() - sz.height()/2,
                                     sz.width(), sz.height());
@@ -2927,7 +2927,7 @@ QRect QCommonStyle::subElementRect(SubElement sr, const QStyleOption *opt,
                                         opt, widget).actualSize(QSize(iconSize, iconSize));
                 sz += QSize(buttonMargin, buttonMargin);
                 if (verticalTitleBar)
-                    sz.transpose();
+                    sz = sz.transposed();
                 floatRect = QRect(right - sz.width(),
                                     rect.center().y() - sz.height()/2,
                                     sz.width(), sz.height());
@@ -2947,7 +2947,7 @@ QRect QCommonStyle::subElementRect(SubElement sr, const QStyleOption *opt,
                         && icon.cacheKey() != QApplication::windowIcon().cacheKey()) {
                     QSize sz = icon.actualSize(QSize(r.height(), r.height()));
                     if (verticalTitleBar)
-                        sz.transpose();
+                        sz = sz.transposed();
                     iconRect = QRect(left, rect.center().y() - sz.height()/2,
                                         sz.width(), sz.height());
                     left = iconRect.right() + margin;

@@ -5207,7 +5207,7 @@ QRect QMacStyle::subElementRect(SubElement sr, const QStyleOption *opt,
                                             opt, widget).actualSize(QSize(iconSize, iconSize));
                     sz += QSize(buttonMargin, buttonMargin);
                     if (verticalTitleBar)
-                        sz.transpose();
+                        sz = sz.transposed();
                     closeRect = QRect(left,
                                       srect.center().y() - sz.height()/2,
                                       sz.width(), sz.height());
@@ -5224,7 +5224,7 @@ QRect QMacStyle::subElementRect(SubElement sr, const QStyleOption *opt,
                                             opt, widget).actualSize(QSize(iconSize, iconSize));
                     sz += QSize(buttonMargin, buttonMargin);
                     if (verticalTitleBar)
-                        sz.transpose();
+                        sz = sz.transposed();
                     floatRect = QRect(left,
                                       srect.center().y() - sz.height()/2,
                                       sz.width(), sz.height());
@@ -5244,7 +5244,7 @@ QRect QMacStyle::subElementRect(SubElement sr, const QStyleOption *opt,
                         && icon.cacheKey() != QApplication::windowIcon().cacheKey()) {
                         QSize sz = icon.actualSize(QSize(rect.height(), rect.height()));
                         if (verticalTitleBar)
-                            sz.transpose();
+                            sz = sz.transposed();
                         iconRect = QRect(right - sz.width(), srect.center().y() - sz.height()/2,
                                          sz.width(), sz.height());
                         right = iconRect.left() - 1;
@@ -6625,7 +6625,7 @@ QSize QMacStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
             ThemeTabDirection ttd = getTabDirection(tab->shape);
             bool vertTabs = ttd == kThemeTabWest || ttd == kThemeTabEast;
             if (vertTabs)
-                sz.transpose();
+                sz = sz.transposed();
             int defaultTabHeight;
             int defaultExtraSpace = proxy()->pixelMetric(PM_TabBarTabHSpace, tab, widget); // Remove spurious gcc warning (AFAIK)
             QFontMetrics fm = opt->fontMetrics;
@@ -6655,7 +6655,7 @@ QSize QMacStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
             }
 
             if (vertTabs)
-                sz.transpose();
+                sz = sz.transposed();
 
             int maxWidgetHeight = qMax(tab->leftButtonSize.height(), tab->rightButtonSize.height());
             int maxWidgetWidth = qMax(tab->leftButtonSize.width(), tab->rightButtonSize.width());

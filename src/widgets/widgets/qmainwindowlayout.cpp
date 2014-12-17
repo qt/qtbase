@@ -1261,8 +1261,8 @@ bool QMainWindowTabBar::event(QEvent *e)
     QSize size = this->size();
     QSize hint = sizeHint();
     if (shape() == QTabBar::RoundedWest || shape() == QTabBar::RoundedEast) {
-        size.transpose();
-        hint.transpose();
+        size = size.transposed();
+        hint = hint.transposed();
     }
     if (size.width() < hint.width())
         return QTabBar::event(e);
