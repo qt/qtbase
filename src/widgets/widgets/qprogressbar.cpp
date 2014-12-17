@@ -508,9 +508,7 @@ void QProgressBar::setOrientation(Qt::Orientation orientation)
         return;
     d->orientation = orientation;
     if (!testAttribute(Qt::WA_WState_OwnSizePolicy)) {
-        QSizePolicy sp = sizePolicy();
-        sp.transpose();
-        setSizePolicy(sp);
+        setSizePolicy(sizePolicy().transposed());
         setAttribute(Qt::WA_WState_OwnSizePolicy, false);
     }
     d->resetLayoutItemMargins();
