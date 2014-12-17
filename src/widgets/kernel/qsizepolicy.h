@@ -45,6 +45,7 @@ class Q_WIDGETS_EXPORT QSizePolicy
 {
     Q_GADGET
     Q_ENUMS(Policy)
+    Q_FLAGS(ControlTypes)
 
 public:
     enum PolicyFlag {
