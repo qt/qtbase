@@ -1580,14 +1580,14 @@ QWindowsNativeDialogBase *QWindowsFileDialogHelper::createNativeDialog()
     QWindowsNativeFileDialogBase *result = QWindowsNativeFileDialogBase::create(options()->acceptMode(), m_data);
     if (!result)
         return 0;
-    QObject::connect(result, SIGNAL(accepted()), this, SIGNAL(accept()));
-    QObject::connect(result, SIGNAL(rejected()), this, SIGNAL(reject()));
-    QObject::connect(result, SIGNAL(directoryEntered(QUrl)),
-                     this, SIGNAL(directoryEntered(QUrl)));
-    QObject::connect(result, SIGNAL(currentChanged(QUrl)),
-                     this, SIGNAL(currentChanged(QUrl)));
-    QObject::connect(result, SIGNAL(filterSelected(QString)),
-                     this, SIGNAL(filterSelected(QString)));
+    QObject::connect(result, &QWindowsNativeDialogBase::accepted, this, &QPlatformDialogHelper::accept);
+    QObject::connect(result, &QWindowsNativeDialogBase::rejected, this, &QPlatformDialogHelper::reject);
+    QObject::connect(result, &QWindowsNativeFileDialogBase::directoryEntered,
+                     this, &QPlatformFileDialogHelper::directoryEntered);
+    QObject::connect(result, &QWindowsNativeFileDialogBase::currentChanged,
+                     this, &QPlatformFileDialogHelper::currentChanged);
+    QObject::connect(result, &QWindowsNativeFileDialogBase::filterSelected,
+                     this, &QPlatformFileDialogHelper::filterSelected);
 
     // Apply settings.
     const QSharedPointer<QFileDialogOptions> &opts = options();
@@ -1961,8 +1961,8 @@ QWindowsNativeDialogBase *QWindowsXpFileDialogHelper::createNativeDialog()
 {
     m_data.fromOptions(options());
     if (QWindowsXpNativeFileDialog *result = QWindowsXpNativeFileDialog::create(options(), m_data)) {
-        QObject::connect(result, SIGNAL(accepted()), this, SIGNAL(accept()));
-        QObject::connect(result, SIGNAL(rejected()), this, SIGNAL(reject()));
+        QObject::connect(result, &QWindowsNativeDialogBase::accepted, this, &QPlatformDialogHelper::accept);
+        QObject::connect(result, &QWindowsNativeDialogBase::rejected, this, &QPlatformDialogHelper::reject);
         return result;
     }
     return 0;
@@ -2117,8 +2117,8 @@ QWindowsNativeDialogBase *QWindowsColorDialogHelper::createNativeDialog()
 {
     QWindowsNativeColorDialog *nativeDialog = new QWindowsNativeColorDialog(m_currentColor);
     nativeDialog->setWindowTitle(options()->windowTitle());
-    connect(nativeDialog, SIGNAL(accepted()), this, SIGNAL(accept()));
-    connect(nativeDialog, SIGNAL(rejected()), this, SIGNAL(reject()));
+    connect(nativeDialog, &QWindowsNativeDialogBase::accepted, this, &QPlatformDialogHelper::accept);
+    connect(nativeDialog, &QWindowsNativeDialogBase::rejected, this, &QPlatformDialogHelper::reject);
     return nativeDialog;
 }
 #endif // USE_NATIVE_COLOR_DIALOG

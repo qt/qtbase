@@ -156,8 +156,8 @@ QWindowsInputContext::QWindowsInputContext() :
     m_WM_MSIME_MOUSE(RegisterWindowMessage(L"MSIMEMouseOperation")),
     m_endCompositionRecursionGuard(false)
 {
-    connect(QGuiApplication::inputMethod(), SIGNAL(cursorRectangleChanged()),
-            this, SLOT(cursorRectChanged()));
+    connect(QGuiApplication::inputMethod(), &QInputMethod::cursorRectangleChanged,
+            this, &QWindowsInputContext::cursorRectChanged);
 }
 
 QWindowsInputContext::~QWindowsInputContext()
