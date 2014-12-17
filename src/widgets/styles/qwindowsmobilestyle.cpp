@@ -5686,9 +5686,7 @@ void QWindowsMobileStyle::drawControl(ControlElement element, const QStyleOption
             QRect r = rect;
 
             if (verticalTitleBar) {
-                QSize s = r.size();
-                s.transpose();
-                r.setSize(s);
+                r.setSize(r.size().transposed());
 
                 painter->save();
                 painter->translate(r.left(), r.top() + r.width());

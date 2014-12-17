@@ -1210,9 +1210,7 @@ void QFusionStyle::drawControl(ControlElement element, const QStyleOption *optio
             if (verticalTitleBar) {
                 QRect rect = dwOpt->rect;
                 QRect r = rect;
-                QSize s = r.size();
-                s.transpose();
-                r.setSize(s);
+                r.setSize(r.size().transposed());
                 titleRect = QRect(r.left() + rect.bottom()
                                   - titleRect.bottom(),
                                   r.top() + titleRect.left() - rect.left(),

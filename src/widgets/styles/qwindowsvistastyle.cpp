@@ -1382,9 +1382,7 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
             bool verticalTitleBar = v2 == 0 ? false : v2->verticalTitleBar;
 
             if (verticalTitleBar) {
-                QSize s = rect.size();
-                s.transpose();
-                rect.setSize(s);
+                rect.setSize(rect.size().transposed());
 
                 painter->translate(rect.left() - 1, rect.top() + rect.width());
                 painter->rotate(-90);

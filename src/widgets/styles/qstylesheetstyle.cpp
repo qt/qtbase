@@ -4049,9 +4049,7 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
            if (!dwOpt->title.isEmpty()) {
                QRect r = subElementRect(SE_DockWidgetTitleBarText, opt, w);
                if (dwOpt->verticalTitleBar) {
-                   QSize s = r.size();
-                   s.transpose();
-                   r.setSize(s);
+                   r.setSize(r.size().transposed());
                    p->save();
                    p->translate(r.left(), r.top() + r.width());
                    p->rotate(-90);

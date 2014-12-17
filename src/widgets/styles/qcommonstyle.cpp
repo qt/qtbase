@@ -2021,9 +2021,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
                 bool verticalTitleBar = v2 == 0 ? false : v2->verticalTitleBar;
 
                 if (verticalTitleBar) {
-                    QSize s = r.size();
-                    s.transpose();
-                    r.setSize(s);
+                    r.setSize(r.size().transposed());
 
                     p->save();
                     p->translate(r.left(), r.top() + r.width());
@@ -2898,11 +2896,8 @@ QRect QCommonStyle::subElementRect(SubElement sr, const QStyleOption *opt,
         // If this is a vertical titlebar, we transpose and work as if it was
         // horizontal, then transpose again.
 
-        if (verticalTitleBar) {
-            QSize size = rect.size();
-            size.transpose();
-            rect.setSize(size);
-        }
+        if (verticalTitleBar)
+            rect.setSize(rect.size().transposed());
 
         do {
 
