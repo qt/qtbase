@@ -450,7 +450,8 @@ int QThread::idealThreadCount() Q_DECL_NOTHROW
     // the rest: Linux, Solaris, AIX, Tru64
     cores = (int)sysconf(_SC_NPROCESSORS_ONLN);
 #endif
-
+    if (cores == -1)
+        return 1;
     return cores;
 }
 
