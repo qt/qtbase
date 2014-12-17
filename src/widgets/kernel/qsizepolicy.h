@@ -158,7 +158,7 @@ public:
     QT_SIZEPOLICY_CONSTEXPR bool retainSizeWhenHidden() const { return bits.retainSizeWhenHidden; }
     void setRetainSizeWhenHidden(bool retainSize) { bits.retainSizeWhenHidden = retainSize; }
 
-    void transpose();
+    void transpose() { *this = transposed(); }
 #ifndef Q_QDOC
     QT_SIZEPOLICY_CONSTEXPR_AND_UNIFORM_INIT
 #endif
@@ -220,16 +220,6 @@ Q_WIDGETS_EXPORT QDataStream &operator>>(QDataStream &, QSizePolicy &);
 Q_WIDGETS_EXPORT QDebug operator<<(QDebug dbg, const QSizePolicy &);
 #endif
 
-inline void QSizePolicy::transpose() {
-    Policy hData = horizontalPolicy();
-    Policy vData = verticalPolicy();
-    int hStretch = horizontalStretch();
-    int vStretch = verticalStretch();
-    setHorizontalPolicy(vData);
-    setVerticalPolicy(hData);
-    setHorizontalStretch(vStretch);
-    setVerticalStretch(hStretch);
-}
 
 #undef QT_SIZEPOLICY_CONSTEXPR
 #undef QT_SIZEPOLICY_CONSTEXPR_AND_UNIFORM_INIT
