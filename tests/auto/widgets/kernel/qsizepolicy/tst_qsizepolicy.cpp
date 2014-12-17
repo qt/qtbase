@@ -37,27 +37,14 @@
 
 class tst_QSizePolicy : public QObject
 {
-Q_OBJECT
+    Q_OBJECT
 
-public:
-    tst_QSizePolicy();
-    virtual ~tst_QSizePolicy();
-
-private slots:
+private Q_SLOTS:
     void getSetCheck();
     void dataStream();
     void horizontalStretch();
     void verticalStretch();
 };
-
-tst_QSizePolicy::tst_QSizePolicy()
-{
-}
-
-tst_QSizePolicy::~tst_QSizePolicy()
-{
-}
-
 
 // Testing get/set functions
 void tst_QSizePolicy::getSetCheck()
