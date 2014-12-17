@@ -49,10 +49,24 @@ QT_BEGIN_NAMESPACE
 // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=54922
 #if !defined(Q_CC_GNU) || defined(Q_CC_INTEL) || defined(Q_CC_CLANG) || Q_CC_GNU >= 408
 # define QT_SIZEPOLICY_CONSTEXPR Q_DECL_CONSTEXPR
+# if defined(Q_COMPILER_UNIFORM_INIT)
+#  define QT_SIZEPOLICY_CONSTEXPR_AND_UNIFORM_INIT Q_DECL_CONSTEXPR
+#  if defined(Q_COMPILER_CONSTEXPR)
+#   define QT_SIZEPOLICY_RETURN_BITS(E1, E2, E3, E4, E5, E6, E7, E8) \
+        return Bits{ E1, E2, E3, E4, E5, E6, E7, E8 }
+#  endif // constexpr && uniform-init
+# endif // uniform-init
 #endif
 
 #ifndef QT_SIZEPOLICY_CONSTEXPR
 # define QT_SIZEPOLICY_CONSTEXPR
+#endif
+#ifndef QT_SIZEPOLICY_CONSTEXPR_AND_UNIFORM_INIT
+# define QT_SIZEPOLICY_CONSTEXPR_AND_UNIFORM_INIT
+#endif
+#ifndef QT_SIZEPOLICY_RETURN_BITS
+# define QT_SIZEPOLICY_RETURN_BITS(E1, E2, E3, E4, E5, E6, E7, E8) \
+    const Bits result = { E1, E2, E3, E4, E5, E6, E7, E8 }; return result
 #endif
 
 class QVariant;
@@ -145,6 +159,13 @@ public:
     void setRetainSizeWhenHidden(bool retainSize) { bits.retainSizeWhenHidden = retainSize; }
 
     void transpose();
+#ifndef Q_QDOC
+    QT_SIZEPOLICY_CONSTEXPR_AND_UNIFORM_INIT
+#endif
+    QSizePolicy transposed() const Q_DECL_NOTHROW Q_REQUIRED_RESULT
+    {
+        return QSizePolicy(bits.transposed());
+    }
 
 private:
 #ifndef QT_NO_DATASTREAM
@@ -152,6 +173,8 @@ private:
     friend Q_WIDGETS_EXPORT QDataStream &operator>>(QDataStream &, QSizePolicy &);
 #endif
     QT_SIZEPOLICY_CONSTEXPR QSizePolicy(int i) : data(i) { }
+    struct Bits;
+    QT_SIZEPOLICY_CONSTEXPR explicit QSizePolicy(Bits b) Q_DECL_NOTHROW : bits(b) { }
 
     struct Bits {
         quint32 horStretch : 8;
@@ -162,6 +185,19 @@ private:
         quint32 hfw : 1;
         quint32 wfh : 1;
         quint32 retainSizeWhenHidden : 1;
+
+        QT_SIZEPOLICY_CONSTEXPR_AND_UNIFORM_INIT
+        Bits transposed() const Q_DECL_NOTHROW
+        {
+            QT_SIZEPOLICY_RETURN_BITS(verStretch, // \ swap
+                                      horStretch, // /
+                                      verPolicy, // \ swap
+                                      horPolicy, // /
+                                      ctype,
+                                      hfw, // \ don't swap (historic behavior)
+                                      wfh, // /
+                                      retainSizeWhenHidden);
+        }
     };
     union {
         Bits bits;
@@ -196,6 +232,8 @@ inline void QSizePolicy::transpose() {
 }
 
 #undef QT_SIZEPOLICY_CONSTEXPR
+#undef QT_SIZEPOLICY_CONSTEXPR_AND_UNIFORM_INIT
+#undef QT_SIZEPOLICY_RETURN_BITS
 
 QT_END_NAMESPACE
 

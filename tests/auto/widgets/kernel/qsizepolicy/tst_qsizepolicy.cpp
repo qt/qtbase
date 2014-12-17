@@ -45,6 +45,8 @@ private Q_SLOTS:
     void defaultValues();
     void getSetCheck_data() { data(); }
     void getSetCheck();
+    void transposed_data() { data(); }
+    void transposed();
     void dataStream();
     void horizontalStretch();
     void verticalStretch();
@@ -159,6 +161,26 @@ void tst_QSizePolicy::getSetCheck()
     QCOMPARE(sp.hasHeightForWidth(),   hfw);
     QCOMPARE(sp.hasWidthForHeight(),   wfh);
     QCOMPARE(sp.expandingDirections(), ed);
+}
+
+void tst_QSizePolicy::transposed()
+{
+    FETCH_TEST_DATA;
+
+    const QSizePolicy tr = sp.transposed();
+
+    QCOMPARE(tr.horizontalPolicy(),    vp);  // swapped
+    QCOMPARE(tr.verticalPolicy(),      hp);  // swapped
+    QCOMPARE(tr.horizontalStretch(),   vst); // swapped
+    QCOMPARE(tr.verticalStretch(),     hst); // swapped
+    QCOMPARE(tr.controlType(),         ct);  // not swapped
+    QCOMPARE(tr.hasHeightForWidth(),   hfw); // not swapped (historic behavior)
+    QCOMPARE(tr.hasWidthForHeight(),   wfh); // not swapped (historic behavior)
+    QCOMPARE(tr.expandingDirections(), ed);  // swapped
+
+    // destructive test - keep last:
+    sp.transpose();
+    QCOMPARE(sp, tr);
 }
 
 static void makeRow(QSizePolicy sp, QSizePolicy::Policy hp, QSizePolicy::Policy vp,
