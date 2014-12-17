@@ -109,7 +109,7 @@ void tst_QSizePolicy::getSetCheck()
                                         case 0: sp.setHorizontalPolicy(hp); break;
                                         case 1: sp.setVerticalPolicy(vp); break;
                                         case 2: sp.setHorizontalStretch(hst); break;
-                           case 3: sp.setVerticalStretch(vst); break;
+                                        case 3: sp.setVerticalStretch(vst); break;
                                         case 4: sp.setControlType(ct); break;
                                         case 5: sp.setHeightForWidth(hfw); sp.setWidthForHeight(wfh); break;
                                         default: break;
@@ -143,6 +143,7 @@ void tst_QSizePolicy::getSetCheck()
             out.close();
         }
 #endif
+#undef ITEMCOUNT
     }
 }
 
@@ -203,5 +204,6 @@ void tst_QSizePolicy::verticalStretch()
     sp.setVerticalStretch(257);
     QCOMPARE(sp.verticalStretch(), 255);
 }
+
 QTEST_MAIN(tst_QSizePolicy)
 #include "tst_qsizepolicy.moc"
