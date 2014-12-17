@@ -136,7 +136,7 @@ QString CppCodeMarker::markedUpSynopsis(const Node *node,
 
     if ((style == Detailed) && !node->parent()->name().isEmpty() &&
         (node->type() != Node::Property) && !node->isQmlNode())
-        name.prepend(taggedNode(node->parent()) + "::&#8203;");
+        name.prepend(taggedNode(node->parent()) + "::");
 
     switch (node->type()) {
     case Node::Namespace:
