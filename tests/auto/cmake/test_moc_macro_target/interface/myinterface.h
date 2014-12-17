@@ -34,11 +34,17 @@
 #ifndef MYINTERFACE_H
 #define MYINTERFACE_H
 
+#include <qglobal.h>
+
 class MyInterface
 {
 
 };
 
+QT_BEGIN_NAMESPACE
+
 Q_DECLARE_INTERFACE(MyInterface, "org.cmake.example.MyInterface")
+
+QT_END_NAMESPACE
 
 #endif
