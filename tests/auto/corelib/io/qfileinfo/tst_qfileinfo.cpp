@@ -272,9 +272,32 @@ private:
 
 void tst_QFileInfo::initTestCase()
 {
+#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_NO_SDK)
+    QString dataPath = QStandardPaths::writableLocation(QStandardPaths::CacheLocation);
+    QString resourceSourcePath = QStringLiteral(":/android_testdata");
+    QDirIterator it(resourceSourcePath, QDirIterator::Subdirectories);
+    while (it.hasNext()) {
+        it.next();
+
+        QFileInfo fileInfo = it.fileInfo();
+        if (!fileInfo.isDir()) {
+            QString destination = dataPath + QLatin1Char('/') + fileInfo.filePath().mid(resourceSourcePath.length());
+            QFileInfo destinationFileInfo(destination);
+            if (!destinationFileInfo.exists()) {
+                QDir().mkpath(destinationFileInfo.path());
+                if (!QFile::copy(fileInfo.filePath(), destination))
+                    qWarning("Failed to copy %s", qPrintable(fileInfo.filePath()));
+            }
+        }
+    }
+    m_sourceFile = dataPath + QStringLiteral("/tst_qfileinfo.cpp");
+    m_resourcesDir = dataPath + QStringLiteral("/resources");
+#else
     m_sourceFile = QFINDTESTDATA("tst_qfileinfo.cpp");
-    QVERIFY(!m_sourceFile.isEmpty());
     m_resourcesDir = QFINDTESTDATA("resources");
+#endif
+
+    QVERIFY(!m_sourceFile.isEmpty());
     QVERIFY(!m_resourcesDir.isEmpty());
     QVERIFY(m_dir.isValid());
     QVERIFY(QDir::setCurrent(m_dir.path()));
