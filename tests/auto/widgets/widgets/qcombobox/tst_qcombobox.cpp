@@ -1576,6 +1576,12 @@ void tst_QComboBox::setModel()
     box.setModel(new QStandardItemModel(2,1, &box));
     QCOMPARE(box.currentIndex(), 0);
     QVERIFY(box.model() != oldModel);
+
+    // check that setting the very same model doesn't move the current item
+    box.setCurrentIndex(1);
+    QCOMPARE(box.currentIndex(), 1);
+    box.setModel(box.model());
+    QCOMPARE(box.currentIndex(), 1);
 }
 
 void tst_QComboBox::setCustomModelAndView()

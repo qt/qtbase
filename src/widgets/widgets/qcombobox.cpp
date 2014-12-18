@@ -1931,6 +1931,9 @@ void QComboBox::setModel(QAbstractItemModel *model)
         return;
     }
 
+    if (model == d->model)
+        return;
+
 #ifndef QT_NO_COMPLETER
     if (d->lineEdit && d->lineEdit->completer()
         && d->lineEdit->completer() == d->completer)
