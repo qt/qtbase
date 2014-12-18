@@ -40,6 +40,9 @@
 class tst_qmessagehandler : public QObject
 {
     Q_OBJECT
+public:
+    tst_qmessagehandler();
+
 public slots:
     void initTestCase();
 
@@ -90,6 +93,12 @@ void customMsgHandler(QtMsgType type, const char *msg)
     s_line = 0;
     s_function = 0;
     s_message = QString::fromLocal8Bit(msg);
+}
+
+tst_qmessagehandler::tst_qmessagehandler()
+{
+    // ensure it's unset, otherwise we'll have trouble
+    qputenv("QT_MESSAGE_PATTERN", "");
 }
 
 void tst_qmessagehandler::initTestCase()
