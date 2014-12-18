@@ -43,6 +43,7 @@
 #include "qwindowsopenglcontext.h"
 
 #include <qpa/qplatformwindow.h>
+#include <QtPlatformHeaders/qwindowswindowfunctions.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -260,6 +261,9 @@ public:
     void alertWindow(int durationMs = 0);
     void stopAlertWindow();
 #endif
+
+    static void setTouchWindowTouchTypeStatic(QWindow *window, QWindowsWindowFunctions::TouchWindowTouchTypes touchTypes);
+    void registerTouchWindow(QWindowsWindowFunctions::TouchWindowTouchTypes touchTypes = QWindowsWindowFunctions::NormalTouch);
 
 private:
     inline void show_sys() const;

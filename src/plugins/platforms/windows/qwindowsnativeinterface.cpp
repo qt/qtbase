@@ -216,4 +216,11 @@ int QWindowsNativeInterface::registerMimeType(const QString &mimeType)
     return QWindowsMime::registerMimeType(mimeType);
 }
 
+QFunctionPointer QWindowsNativeInterface::platformFunction(const QByteArray &function) const
+{
+    if (function == QWindowsWindowFunctions::setTouchWindowTouchTypeIdentifier())
+        return QFunctionPointer(QWindowsWindow::setTouchWindowTouchTypeStatic);
+    return Q_NULLPTR;
+}
+
 QT_END_NAMESPACE

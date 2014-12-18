@@ -85,6 +85,8 @@ public:
     QVariant windowProperty(QPlatformWindow *window, const QString &name) const Q_DECL_OVERRIDE;
     QVariant windowProperty(QPlatformWindow *window, const QString &name, const QVariant &defaultValue) const Q_DECL_OVERRIDE;
     void setWindowProperty(QPlatformWindow *window, const QString &name, const QVariant &value) Q_DECL_OVERRIDE;
+
+    QFunctionPointer platformFunction(const QByteArray &function) const Q_DECL_OVERRIDE;
 };
 
 QT_END_NAMESPACE

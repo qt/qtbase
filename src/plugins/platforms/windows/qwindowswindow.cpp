@@ -889,16 +889,7 @@ QWindowsWindow::QWindowsWindow(QWindow *aWindow, const QWindowsWindowData &data)
 #endif // QT_NO_OPENGL
     updateDropSite();
 
-#ifndef Q_OS_WINCE
-    if ((QWindowsContext::instance()->systemInfo() & QWindowsContext::SI_SupportsTouch)
-        && aWindow->type() != Qt::ForeignWindow) {
-        if (QWindowsContext::user32dll.registerTouchWindow(m_data.hwnd, 0)) {
-            setFlag(TouchRegistered);
-        } else {
-            qErrnoWarning("RegisterTouchWindow() failed for window '%s'.", qPrintable(aWindow->objectName()));
-        }
-    }
-#endif // !Q_OS_WINCE
+    registerTouchWindow();
     setWindowState(aWindow->windowState());
     const qreal opacity = qt_window_private(aWindow)->opacity;
     if (!qFuzzyCompare(opacity, qreal(1.0)))
@@ -2315,6 +2306,26 @@ void *QWindowsWindow::surface(void *nativeConfig)
 
     return m_surface;
 #endif
+}
+
+void QWindowsWindow::setTouchWindowTouchTypeStatic(QWindow *window, QWindowsWindowFunctions::TouchWindowTouchTypes touchTypes)
+{
+    if (!window->handle())
+        return;
+    static_cast<QWindowsWindow *>(window->handle())->registerTouchWindow(touchTypes);
+}
+
+void QWindowsWindow::registerTouchWindow(QWindowsWindowFunctions::TouchWindowTouchTypes touchTypes)
+{
+#ifndef Q_OS_WINCE
+    if ((QWindowsContext::instance()->systemInfo() & QWindowsContext::SI_SupportsTouch)
+        && window()->type() != Qt::ForeignWindow) {
+        if (QWindowsContext::user32dll.registerTouchWindow(m_data.hwnd, (ULONG)touchTypes))
+            setFlag(TouchRegistered);
+        else
+            qErrnoWarning("RegisterTouchWindow() failed for window '%s'.", qPrintable(window()->objectName()));
+    }
+#endif // !Q_OS_WINCE
 }
 
 QT_END_NAMESPACE

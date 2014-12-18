@@ -6,6 +6,7 @@ MODULE_INCNAME = QtPlatformHeaders
 include(nativecontexts/nativecontexts.pri)
 include(xcbfunctions/xcbfunctions.pri)
 include(eglfsfunctions/eglfsfunctions.pri)
+include(windowsfunctions/windowsfunctions.pri)
 
 QMAKE_DOCS = $$PWD/doc/qtplatformheaders.qdocconf
 

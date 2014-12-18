@@ -78,7 +78,7 @@
     classes is only guaranteed to work with the Qt version it was developed
     against. Unlike QPA however, source compatibility is guaranteed.
 
-    \sa QXcbWindowFunctions
+    \sa QXcbWindowFunctions QWindowsWindowFunctions
 
     \section1 API Reference
     \list
