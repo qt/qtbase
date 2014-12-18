@@ -1160,7 +1160,11 @@ void tst_QFileInfo::fileTimes()
     QEXPECT_FAIL("simple", "WinCE only stores date of access data, not the time", Continue);
 #elif defined(Q_OS_QNX)
     QEXPECT_FAIL("", "QNX uses the noatime filesystem option", Continue);
+#elif defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_NO_SDK)
+    if (fileInfo.lastRead() <= beforeRead)
+        QEXPECT_FAIL("", "Android may use relatime or noatime on mounts", Continue);
 #endif
+
     QVERIFY(fileInfo.lastRead() > beforeRead);
     QVERIFY(fileInfo.lastModified() > beforeWrite);
     QVERIFY(fileInfo.lastModified() < beforeRead);
