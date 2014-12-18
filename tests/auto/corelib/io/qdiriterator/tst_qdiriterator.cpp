@@ -119,8 +119,34 @@ private slots:
 
 void tst_QDirIterator::initTestCase()
 {
+#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_NO_SDK)
+    QString testdata_dir = QStandardPaths::writableLocation(QStandardPaths::CacheLocation);
+    QString resourceSourcePath = QStringLiteral(":/");
+    QDirIterator it(resourceSourcePath, QDirIterator::Subdirectories);
+    while (it.hasNext()) {
+        it.next();
+
+        QFileInfo fileInfo = it.fileInfo();
+
+        if (!fileInfo.isDir()) {
+            QString destination = testdata_dir + QLatin1Char('/') + fileInfo.filePath().mid(resourceSourcePath.length());
+            QFileInfo destinationFileInfo(destination);
+            if (!destinationFileInfo.exists()) {
+                QDir().mkpath(destinationFileInfo.path());
+                if (!QFile::copy(fileInfo.filePath(), destination))
+                    qWarning("Failed to copy %s", qPrintable(fileInfo.filePath()));
+            }
+        }
+
+    }
+
+    testdata_dir += QStringLiteral("/entrylist");
+#else
+
     // chdir into testdata directory, then find testdata by relative paths.
     QString testdata_dir = QFileInfo(QFINDTESTDATA("entrylist")).absolutePath();
+#endif
+
     QVERIFY2(QDir::setCurrent(testdata_dir), qPrintable("Could not chdir to " + testdata_dir));
 
     QFile::remove("entrylist/entrylist1.lnk");
