@@ -39,6 +39,7 @@
 **
 ****************************************************************************/
 
+#include "qssl_p.h"
 #include "qsslsocket_openssl_symbols_p.h"
 #include "qsslcertificate_p.h"
 #include "qsslkey_p.h"
@@ -303,7 +304,7 @@ static QVariant x509UnknownExtensionToValue(X509_EXTENSION *ext)
         else
             return list;
     } else if (meth->i2s && ext_internal) {
-        //qDebug() << meth->i2s(meth, ext_internal);
+        //qCDebug(lcSsl) << meth->i2s(meth, ext_internal);
         QVariant result(QString::fromUtf8(meth->i2s(meth, ext_internal)));
         return result;
     } else if (meth->i2r && ext_internal) {
@@ -371,7 +372,7 @@ static QVariant x509ExtensionToValue(X509_EXTENSION *ext)
 
                     result[QString::fromUtf8(QSslCertificatePrivate::asn1ObjectName(ad->method))] = uri;
                 } else {
-                    qWarning() << "Strange location type" << name->type;
+                    qCWarning(lcSsl) << "Strange location type" << name->type;
                 }
             }
 
@@ -516,7 +517,7 @@ void QSslCertificatePrivate::init(const QByteArray &data, QSsl::EncodingFormat f
 QByteArray QSslCertificatePrivate::QByteArray_from_X509(X509 *x509, QSsl::EncodingFormat format)
 {
     if (!x509) {
-        qWarning("QSslSocketBackendPrivate::X509_to_QByteArray: null X509");
+        qCWarning(lcSsl, "QSslSocketBackendPrivate::X509_to_QByteArray: null X509");
         return QByteArray();
     }
 
@@ -551,7 +552,7 @@ QByteArray QSslCertificatePrivate::QByteArray_from_X509(X509 *x509, QSsl::Encodi
 QString QSslCertificatePrivate::text_from_X509(X509 *x509)
 {
     if (!x509) {
-        qWarning("QSslSocketBackendPrivate::text_from_X509: null X509");
+        qCWarning(lcSsl, "QSslSocketBackendPrivate::text_from_X509: null X509");
         return QString();
     }
 

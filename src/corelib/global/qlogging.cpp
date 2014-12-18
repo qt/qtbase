@@ -1286,8 +1286,8 @@ static void android_default_message_handler(QtMsgType type,
     case QtFatalMsg: priority = ANDROID_LOG_FATAL; break;
     };
 
-    __android_log_print(priority, "Qt", "%s:%d (%s): %s\n",
-                        context.file, context.line,
+    __android_log_print(priority, qPrintable(QCoreApplication::applicationName()),
+                        "%s:%d (%s): %s\n", context.file, context.line,
                         context.function, qPrintable(message));
 }
 #endif //Q_OS_ANDROID

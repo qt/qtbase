@@ -165,7 +165,7 @@ QXcbIntegration::QXcbIntegration(const QStringList &parameters, int &argc, char 
                "\t Use the -dograb option to enforce grabbing.");
     }
 #endif
-    m_canGrab = (!underDebugger && noGrabArg) || (underDebugger && doGrabArg);
+    m_canGrab = (!underDebugger && !noGrabArg) || (underDebugger && doGrabArg);
 
     static bool canNotGrabEnv = qEnvironmentVariableIsSet("QT_XCB_NO_GRAB_SERVER");
     if (canNotGrabEnv)

@@ -70,7 +70,7 @@ VisualID QXlibEglIntegration::getCompatibleVisualId(Display *display, EGLDisplay
         chosenVisualInfo = XGetVisualInfo(display, VisualIDMask, &visualInfoTemplate, &matchingCount);
         if (chosenVisualInfo) {
             // Skip size checks if implementation supports non-matching visual
-            // and config (http://bugreports.qt-project.org/browse/QTBUG-9444).
+            // and config (QTBUG-9444).
             if (q_hasEglExtension(eglDisplay,"EGL_NV_post_convert_rounding")) {
                 XFree(chosenVisualInfo);
                 return visualId;

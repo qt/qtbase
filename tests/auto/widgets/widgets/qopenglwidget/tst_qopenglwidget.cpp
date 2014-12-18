@@ -34,6 +34,11 @@
 #include <QtWidgets/QOpenGLWidget>
 #include <QtGui/QOpenGLFunctions>
 #include <QtGui/QPainter>
+#include <QtWidgets/QGraphicsView>
+#include <QtWidgets/QGraphicsScene>
+#include <QtWidgets/QGraphicsRectItem>
+#include <QtWidgets/QVBoxLayout>
+#include <QtWidgets/QPushButton>
 #include <QtTest/QtTest>
 #include <QSignalSpy>
 
@@ -49,6 +54,7 @@ private slots:
     void painter();
     void reparentToAlreadyCreated();
     void reparentToNotYetCreated();
+    void asViewport();
 };
 
 void tst_QOpenGLWidget::create()
@@ -251,6 +257,52 @@ void tst_QOpenGLWidget::reparentToNotYetCreated()
     QCOMPARE(image.width(), 320);
     QCOMPARE(image.height(), 200);
     QVERIFY(image.pixel(20, 10) == qRgb(0, 0, 255));
+}
+
+class CountingGraphicsView : public QGraphicsView
+{
+public:
+    CountingGraphicsView(): m_count(0) { }
+    int paintCount() const { return m_count; }
+    void resetPaintCount() { m_count = 0; }
+
+protected:
+    void drawForeground(QPainter *, const QRectF &) Q_DECL_OVERRIDE;
+    int m_count;
+};
+
+void CountingGraphicsView::drawForeground(QPainter *, const QRectF &)
+{
+    ++m_count;
+}
+
+void tst_QOpenGLWidget::asViewport()
+{
+    // Have a QGraphicsView with a QOpenGLWidget as its viewport.
+    QGraphicsScene scene;
+    scene.addItem(new QGraphicsRectItem(10, 10, 100, 100));
+    CountingGraphicsView *view = new CountingGraphicsView;
+    view->setScene(&scene);
+    view->setViewport(new QOpenGLWidget);
+    QWidget widget;
+    QVBoxLayout *layout = new QVBoxLayout;
+    layout->addWidget(view);
+    QPushButton *btn = new QPushButton("Test");
+    layout->addWidget(btn);
+    widget.setLayout(layout);
+    widget.show();
+    QTest::qWaitForWindowExposed(&widget);
+
+    QVERIFY(view->paintCount() > 0);
+    view->resetPaintCount();
+
+    // And now trigger a repaint on the push button. We must not
+    // receive paint events for the graphics view. If we do, that's a
+    // side effect of QOpenGLWidget's special behavior and handling in
+    // the widget stack.
+    btn->update();
+    qApp->processEvents();
+    QVERIFY(view->paintCount() == 0);
 }
 
 QTEST_MAIN(tst_QOpenGLWidget)

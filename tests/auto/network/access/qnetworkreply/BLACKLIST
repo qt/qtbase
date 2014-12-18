@@ -2,6 +2,8 @@
 osx
 [ioGetFromBuiltinHttp:https+limited]
 osx
+[ioGetFromHttpBrokenServer:no-newline]
+osx
 [synchronousRequest:https]
 osx
 [SslHandshakeFailedError]

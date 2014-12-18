@@ -331,11 +331,13 @@ bool QCommandLineParser::addOption(const QCommandLineOption &option)
 /*!
     \since 5.4
 
-    Adds the options \a options to look for while parsing.
+    Adds the options to look for while parsing. The options are specified by
+    the parameter \a options.
 
-    Returns \c false if adding any of the options failed; otherwise returns \c false.
+    Returns \c true if adding all of the options was successful; otherwise
+    returns \c false.
 
-    Cf. addOption() for when it may fail.
+    See the documentation for addOption() for when this function may fail.
 */
 bool QCommandLineParser::addOptions(const QList<QCommandLineOption> &options)
 {

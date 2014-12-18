@@ -1776,6 +1776,11 @@ void QTextLine::layout_helper(int maxGlyphs)
 
             QFixed x = line.x + line.textWidth + lbh.tmpData.textWidth + lbh.spaceData.textWidth;
             QFixed tabWidth = eng->calculateTabWidth(item, x);
+            attributes = eng->attributes();
+            if (!attributes)
+                return;
+            lbh.logClusters = eng->layoutData->logClustersPtr;
+            lbh.glyphs = eng->shapedGlyphs(&current);
 
             lbh.spaceData.textWidth += tabWidth;
             lbh.spaceData.length++;
@@ -2063,9 +2068,8 @@ static QGlyphRun glyphRunWithInfo(QFontEngine *fontEngine,
     // Make a font for this particular engine
     QRawFont font;
     QRawFontPrivate *fontD = QRawFontPrivate::get(font);
-    fontD->fontEngine = fontEngine;
-    fontD->thread = QThread::currentThread();
-    fontD->fontEngine->ref.ref();
+    fontD->setFontEngine(fontEngine);
+
     QVarLengthArray<glyph_t> glyphsArray;
     QVarLengthArray<QFixedPoint> positionsArray;
 

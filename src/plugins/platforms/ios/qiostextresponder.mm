@@ -263,10 +263,14 @@
     // will set the new first-responder to our next-responder, and in the latter
     // case we'll have an active responder candidate.
     if ([UIResponder currentFirstResponder] == [self nextResponder]) {
-        // We have resigned the keyboard, and transferred back to the parent view, so unset focus object
+        // We have resigned the keyboard, and transferred first responder back to the parent view
         Q_ASSERT(!FirstResponderCandidate::currentCandidate());
-        qImDebug() << "keyboard was closed, clearing focus object";
-        m_inputContext->clearCurrentFocusObject();
+        if ([self imValue:Qt::ImEnabled].toBool()) {
+            // The current focus object expects text input, but there
+            // is no keyboard to get input from. So we clear focus.
+            qImDebug() << "no keyboard available, clearing focus object";
+            m_inputContext->clearCurrentFocusObject();
+        }
     } else {
         // We've lost responder status because another Qt window was made active,
         // another QIOSTextResponder was made first-responder, another UIView was

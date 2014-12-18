@@ -96,7 +96,6 @@ public:
 
     void setFocusObject(QObject *object) Q_DECL_OVERRIDE;
     void focusWindowChanged(QWindow *focusWindow);
-    void cursorRectangleChanged();
 
     void scrollToCursor();
     void scroll(int y);

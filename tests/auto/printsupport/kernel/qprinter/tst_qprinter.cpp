@@ -735,7 +735,7 @@ void tst_QPrinter::customPaperNameSettingBySize()
         // Fail with the original values
         if (!paperNameFound) {
             qDebug() << "supportedPageSizes() = " << sizes;
-            QEXPECT_FAIL("", "Paper Name mismatch: please report this failure at bugreports.qt-project.org", Continue);
+            QEXPECT_FAIL("", "Paper Name mismatch: please report this failure at bugreports.qt.io", Continue);
             QCOMPARE(sizes.at(i).name(), printer.paperName());
         }
     }

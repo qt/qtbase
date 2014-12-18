@@ -39,6 +39,7 @@
 **
 ****************************************************************************/
 
+#include "qssl_p.h"
 #include "qsslsocket_winrt_p.h"
 #include "qsslsocket.h"
 #include "qsslcertificate_p.h"
@@ -455,8 +456,9 @@ HRESULT QSslSocketBackendPrivate::onSslUpgrade(IAsyncAction *action, AsyncStatus
     Q_Q(QSslSocket);
 
     if (wasDeleted) {
-        qWarning("SSL upgrade callback received after the delegate was deleted. "
-                 "This may be indicative of an internal bug in the WinRT SSL implementation.");
+        qCWarning(lcSsl,
+                  "SSL upgrade callback received after the delegate was deleted. "
+                  "This may be indicative of an internal bug in the WinRT SSL implementation.");
         return S_OK;
     }
 
@@ -477,8 +479,9 @@ HRESULT QSslSocketBackendPrivate::onSslUpgrade(IAsyncAction *action, AsyncStatus
 
     IStreamSocket *socket = reinterpret_cast<IStreamSocket *>(plainSocket->socketDescriptor());
     if (qintptr(socket) == -1) {
-        qWarning("The underlying TCP socket used by the SSL socket is invalid. "
-                 "This may be indicative of an internal bug in the WinRT SSL implementation.");
+        qCWarning(lcSsl,
+                  "The underlying TCP socket used by the SSL socket is invalid. "
+                  "This may be indicative of an internal bug in the WinRT SSL implementation.");
         return S_OK;
     }
 

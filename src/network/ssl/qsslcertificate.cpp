@@ -112,6 +112,7 @@
 #include "qsslsocket_winrt_p.h"
 #endif
 
+#include "qssl_p.h"
 #include "qsslcertificate.h"
 #include "qsslcertificate_p.h"
 #include "qsslkey_p.h"
@@ -524,7 +525,7 @@ QList<QSslCertificate> QSslCertificate::fromPath(const QString &path,
 QList<QSslCertificate> QSslCertificate::fromDevice(QIODevice *device, QSsl::EncodingFormat format)
 {
     if (!device) {
-        qWarning("QSslCertificate::fromDevice: cannot read from a null device");
+        qCWarning(lcSsl, "QSslCertificate::fromDevice: cannot read from a null device");
         return QList<QSslCertificate>();
     }
     return fromData(device->readAll(), format);

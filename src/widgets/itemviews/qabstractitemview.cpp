@@ -53,6 +53,7 @@
 #include <qstyleditemdelegate.h>
 #include <private/qabstractitemview_p.h>
 #include <private/qabstractitemmodel_p.h>
+#include <private/qguiapplication_p.h>
 #ifndef QT_NO_ACCESSIBILITY
 #include <qaccessible.h>
 #endif
@@ -1885,6 +1886,7 @@ void QAbstractItemView::mouseDoubleClickEvent(QMouseEvent *event)
         QMouseEvent me(QEvent::MouseButtonPress,
                        event->localPos(), event->windowPos(), event->screenPos(),
                        event->button(), event->buttons(), event->modifiers());
+        QGuiApplicationPrivate::setMouseEventSource(&me, event->source());
         mousePressEvent(&me);
         return;
     }

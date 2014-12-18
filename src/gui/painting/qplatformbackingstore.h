@@ -69,6 +69,11 @@ class Q_GUI_EXPORT QPlatformTextureList : public QObject
     Q_OBJECT
     Q_DECLARE_PRIVATE(QPlatformTextureList)
 public:
+    enum Flag {
+        StacksOnTop = 0x01
+    };
+    Q_DECLARE_FLAGS(Flags, Flag)
+
     explicit QPlatformTextureList(QObject *parent = 0);
     ~QPlatformTextureList();
 
@@ -76,16 +81,18 @@ public:
     bool isEmpty() const { return count() == 0; }
     GLuint textureId(int index) const;
     QRect geometry(int index) const;
-    bool stacksOnTop(int index) const;
+    QWidget *widget(int index);
+    Flags flags(int index) const;
     void lock(bool on);
     bool isLocked() const;
 
-    void appendTexture(GLuint textureId, const QRect &geometry, bool stacksOnTop = false);
+    void appendTexture(QWidget *widget, GLuint textureId, const QRect &geometry, Flags flags = 0);
     void clear();
 
  Q_SIGNALS:
     void locked(bool);
 };
+Q_DECLARE_OPERATORS_FOR_FLAGS(QPlatformTextureList::Flags)
 #endif
 
 class Q_GUI_EXPORT QPlatformBackingStore

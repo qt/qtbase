@@ -3,7 +3,7 @@
 ** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the test suite of the Qt Toolkit.
+** This file is part of the QtNetwork module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL21$
 ** Commercial License Usage
@@ -31,35 +31,28 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
-#include <QtNetwork/qnetworkaccessmanager.h>
 
-QT_USE_NAMESPACE
+#ifndef QSSL_P_H
+#define QSSL_P_H
 
-class tst_QNetworkConfigurationManager : public QObject
-{
-    Q_OBJECT
 
-private slots:
-    void staticsInitialization();
-};
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists for the convenience
+// of qsslcertificate.cpp.  This header file may change from version to version
+// without notice, or even be removed.
+//
+// We mean it.
+//
 
-void tst_QNetworkConfigurationManager::staticsInitialization()
-{
-    // This code should not crash. The test was introduced as
-    // a fix for QTBUG-36897
-    for (int i = 0; i < 2; i++)
-    {
-        int argc = 1;
-        const char *testName = "tst_qnetworkconfigurationmanagerqappless";
-        char **argv = const_cast<char **>(&testName);
-        QCoreApplication app(argc, argv);
-        QNetworkAccessManager qnam;
-        Q_UNUSED(app);
-        Q_UNUSED(qnam);
-    }
-    QVERIFY(true);
-}
+#include <QtCore/QLoggingCategory>
 
-QTEST_APPLESS_MAIN(tst_QNetworkConfigurationManager)
-#include "tst_qnetworkconfigurationmanagerqappless.moc"
+QT_BEGIN_NAMESPACE
+
+Q_DECLARE_LOGGING_CATEGORY(lcSsl)
+
+QT_END_NAMESPACE
+
+#endif // QSSL_P_H

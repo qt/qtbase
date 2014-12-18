@@ -4511,7 +4511,6 @@ QImage QImage::transformed(const QTransform &matrix, Qt::TransformationMode mode
 
     dImage.d->dpmx = dotsPerMeterX();
     dImage.d->dpmy = dotsPerMeterY();
-    dImage.d->devicePixelRatio = devicePixelRatio();
 
     // initizialize the data
     if (d->format == QImage::Format_Indexed8) {
@@ -4526,13 +4525,19 @@ QImage QImage::transformed(const QTransform &matrix, Qt::TransformationMode mode
         memset(dImage.bits(), 0x00, dImage.byteCount());
 
     if (target_format >= QImage::Format_RGB32) {
+        // Prevent QPainter from applying devicePixelRatio corrections
+        const QImage sImage = (devicePixelRatio() != 1) ? QImage(constBits(), width(), height(), format()) : *this;
+
+        Q_ASSERT(sImage.devicePixelRatio() == 1);
+        Q_ASSERT(sImage.devicePixelRatio() == dImage.devicePixelRatio());
+
         QPainter p(&dImage);
         if (mode == Qt::SmoothTransformation) {
             p.setRenderHint(QPainter::Antialiasing);
             p.setRenderHint(QPainter::SmoothPixmapTransform);
         }
         p.setTransform(mat);
-        p.drawImage(QPoint(0, 0), *this);
+        p.drawImage(QPoint(0, 0), sImage);
     } else {
         bool invertible;
         mat = mat.inverted(&invertible);                // invert matrix
@@ -4544,6 +4549,8 @@ QImage QImage::transformed(const QTransform &matrix, Qt::TransformationMode mode
         int dbpl = dImage.bytesPerLine();
         qt_xForm_helper(mat, 0, type, bpp, dImage.bits(), dbpl, 0, hd, sptr, sbpl, ws, hs);
     }
+
+    dImage.d->devicePixelRatio = devicePixelRatio();
     return dImage;
 }
 

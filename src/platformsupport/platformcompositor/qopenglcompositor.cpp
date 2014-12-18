@@ -177,7 +177,7 @@ void QOpenGLCompositor::render(QOpenGLCompositorWindow *window)
             const bool translucent = window->sourceWindow()->requestedFormat().alphaBufferSize() > 0;
             blend.set(translucent);
             m_blitter.blit(textureId, target, QOpenGLTextureBlitter::OriginTopLeft);
-        } else if (!textures->stacksOnTop(i)) {
+        } else if (!textures->flags(i).testFlag(QPlatformTextureList::StacksOnTop)) {
             // Texture from an FBO belonging to a QOpenGLWidget
             blend.set(false);
             m_blitter.blit(textureId, target, QOpenGLTextureBlitter::OriginBottomLeft);
@@ -185,7 +185,7 @@ void QOpenGLCompositor::render(QOpenGLCompositorWindow *window)
     }
 
     for (int i = 0; i < textures->count(); ++i) {
-        if (textures->stacksOnTop(i)) {
+        if (textures->flags(i).testFlag(QPlatformTextureList::StacksOnTop)) {
             QMatrix4x4 target = QOpenGLTextureBlitter::targetTransform(textures->geometry(i), targetWindowRect);
             blend.set(true);
             m_blitter.blit(textures->textureId(i), target, QOpenGLTextureBlitter::OriginBottomLeft);

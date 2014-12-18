@@ -97,7 +97,10 @@
     of the property changes.
     \c NOTIFY signals for \c MEMBER variables must take zero or one parameter,
     which must be of the same type as the property. The parameter will take the
-    new value of the property.
+    new value of the property. The \c NOTIFY signal should only be emitted when
+    the property has really been changed, to avoid bindings being unnecessarily
+    re-evaluated in QML, for example. Qt emits automatically that signal when
+    needed for MEMBER properties that do not have an explicit setter.
 
     \li A \c REVISION number is optional. If included, it defines
     the property and its notifier signal to be used in a particular

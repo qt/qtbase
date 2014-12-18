@@ -59,7 +59,7 @@ void EventFilter::init(EventCategories eventCategories)
             << QEvent::MouseButtonDblClick << QEvent::NonClientAreaMouseButtonPress
             << QEvent::NonClientAreaMouseButtonRelease
             << QEvent::NonClientAreaMouseButtonDblClick
-            << QEvent::Enter << QEvent::Leave;
+            << QEvent::Wheel << QEvent::Enter << QEvent::Leave;
     }
     if (eventCategories & MouseMoveEvents)
         m_eventTypes << QEvent::MouseMove << QEvent::NonClientAreaMouseMove;
