@@ -1990,13 +1990,12 @@ void QComboBox::setModel(QAbstractItemModel *model)
 
     bool currentReset = false;
 
-    if (count()) {
-        for (int pos=0; pos < count(); pos++) {
-            if (d->model->index(pos, d->modelColumn, d->root).flags() & Qt::ItemIsEnabled) {
-                setCurrentIndex(pos);
-                currentReset = true;
-                break;
-            }
+    const int rowCount = count();
+    for (int pos=0; pos < rowCount; pos++) {
+        if (d->model->index(pos, d->modelColumn, d->root).flags() & Qt::ItemIsEnabled) {
+            setCurrentIndex(pos);
+            currentReset = true;
+            break;
         }
     }
 
