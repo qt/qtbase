@@ -35,7 +35,11 @@
 #ifndef QGLOBAL_H
 #define QGLOBAL_H
 
-#include <stddef.h>
+#ifdef __cplusplus
+#  include <cstddef>
+#else
+#  include <stddef.h>
+#endif
 
 #define QT_VERSION_STR   "5.5.0"
 /*

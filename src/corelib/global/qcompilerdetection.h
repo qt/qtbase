@@ -499,7 +499,7 @@
 //    at least since 13.1, but I can't test further back
 #     define Q_COMPILER_BINARY_LITERALS
 #  endif
-#  if __cplusplus >= 201103L
+#  if __cplusplus >= 201103L || defined(__INTEL_CXX11_MODE__)
 #    if __INTEL_COMPILER >= 1200
 #      define Q_COMPILER_AUTO_TYPE
 #      define Q_COMPILER_CLASS_ENUM
@@ -517,7 +517,9 @@
 #      define Q_COMPILER_AUTO_FUNCTION
 #      define Q_COMPILER_NULLPTR
 #      define Q_COMPILER_TEMPLATE_ALIAS
-#      define Q_COMPILER_UNICODE_STRINGS
+#      ifndef _CHAR16T      // MSVC headers
+#        define Q_COMPILER_UNICODE_STRINGS
+#      endif
 #      define Q_COMPILER_VARIADIC_TEMPLATES
 #    endif
 #    if __INTEL_COMPILER >= 1300
