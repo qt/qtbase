@@ -145,6 +145,10 @@
 #  if defined(__INTEL_COMPILER)
 /* Intel C++ also masquerades as GCC */
 #    define Q_CC_INTEL      (__INTEL_COMPILER)
+#    ifdef __clang__
+/* Intel C++ masquerades as Clang masquerading as GCC */
+#      define Q_CC_CLANG    305
+#    endif
 #    define Q_ASSUME_IMPL(expr)  __assume(expr)
 #    define Q_UNREACHABLE_IMPL() __builtin_unreachable()
 #    if __INTEL_COMPILER >= 1300 && !defined(__APPLE__)
