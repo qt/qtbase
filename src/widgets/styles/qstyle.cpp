@@ -627,7 +627,7 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
     indicator or button bevel.
 
     \omitvalue PE_IndicatorViewItemCheck
-    \value PE_FrameStatusBar Frame
+    \value PE_FrameStatusBar  Obsolete. Use PE_FrameStatusBarItem instead.
 
     \value PE_PanelButtonCommand  Button used to initiate an action, for
         example, a QPushButton.
