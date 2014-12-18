@@ -1986,6 +1986,8 @@ void QComboBox::setModel(QAbstractItemModel *model)
                 this, SLOT(_q_emitHighlighted(QModelIndex)), Qt::UniqueConnection);
     }
 
+    setRootModelIndex(QModelIndex());
+
     bool currentReset = false;
 
     if (count()) {
@@ -2024,6 +2026,8 @@ QModelIndex QComboBox::rootModelIndex() const
 void QComboBox::setRootModelIndex(const QModelIndex &index)
 {
     Q_D(QComboBox);
+    if (d->root == index)
+        return;
     d->root = QPersistentModelIndex(index);
     view()->setRootIndex(index);
     update();

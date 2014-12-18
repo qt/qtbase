@@ -1577,11 +1577,34 @@ void tst_QComboBox::setModel()
     QCOMPARE(box.currentIndex(), 0);
     QVERIFY(box.model() != oldModel);
 
+    // set a new root index
+    QModelIndex rootModelIndex;
+    rootModelIndex = box.model()->index(0, 0);
+    QVERIFY(rootModelIndex.isValid());
+    box.setRootModelIndex(rootModelIndex);
+    QCOMPARE(box.rootModelIndex(), rootModelIndex);
+
+    // change the model, ensure that the root index gets reset
+    oldModel = box.model();
+    box.setModel(new QStandardItemModel(2, 1, &box));
+    QCOMPARE(box.currentIndex(), 0);
+    QVERIFY(box.model() != oldModel);
+    QVERIFY(box.rootModelIndex() != rootModelIndex);
+    QVERIFY(box.rootModelIndex() == QModelIndex());
+
     // check that setting the very same model doesn't move the current item
     box.setCurrentIndex(1);
     QCOMPARE(box.currentIndex(), 1);
     box.setModel(box.model());
     QCOMPARE(box.currentIndex(), 1);
+
+    // check that setting the very same model doesn't move the root index
+    rootModelIndex = box.model()->index(0, 0);
+    QVERIFY(rootModelIndex.isValid());
+    box.setRootModelIndex(rootModelIndex);
+    QCOMPARE(box.rootModelIndex(), rootModelIndex);
+    box.setModel(box.model());
+    QCOMPARE(box.rootModelIndex(), rootModelIndex);
 }
 
 void tst_QComboBox::setCustomModelAndView()
