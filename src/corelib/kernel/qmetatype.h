@@ -640,7 +640,7 @@ private:
     static bool registerDebugStreamOperatorFunction(const QtPrivate::AbstractDebugStreamFunction *f, int type);
 #endif
 
-#ifndef Q_NO_TEMPLATE_FRIENDS
+#if !defined(Q_NO_TEMPLATE_FRIENDS) && !defined(Q_CC_MSVC)
 #ifndef Q_QDOC
     template<typename T>
     friend bool qRegisterSequentialConverter();
