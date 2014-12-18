@@ -2648,32 +2648,10 @@ static const uint * QT_FASTCALL qt_fetch_conical_gradient(uint *buffer, const Op
     return b;
 }
 
-#if defined(Q_CC_RVCT)
-// Force ARM code generation for comp_func_* -methods
-#  pragma push
-#  pragma arm
-#  if defined(Q_PROCESSOR_ARM_V6)
-static __forceinline void preload(const uint *start)
-{
-    asm( "pld [start]" );
-}
-static const uint L2CacheLineLength = 32;
-static const uint L2CacheLineLengthInInts = L2CacheLineLength/sizeof(uint);
-#    define PRELOAD_INIT(x) preload(x);
-#    define PRELOAD_INIT2(x,y) PRELOAD_INIT(x) PRELOAD_INIT(y)
-#    define PRELOAD_COND(x) if (((uint)&x[i])%L2CacheLineLength == 0) preload(&x[i] + L2CacheLineLengthInInts);
-// Two consecutive preloads stall, so space them out a bit by using different modulus.
-#    define PRELOAD_COND2(x,y) if (((uint)&x[i])%L2CacheLineLength == 0) preload(&x[i] + L2CacheLineLengthInInts); \
-         if (((uint)&y[i])%L2CacheLineLength == 16) preload(&y[i] + L2CacheLineLengthInInts);
-#  endif // Q_PROCESSOR_ARM_V6
-#endif // Q_CC_RVCT
-
-#if !defined(Q_CC_RVCT) || !defined(Q_PROCESSOR_ARM_V6)
 #    define PRELOAD_INIT(x)
 #    define PRELOAD_INIT2(x,y)
 #    define PRELOAD_COND(x)
 #    define PRELOAD_COND2(x,y)
-#endif
 
 /* The constant alpha factor describes an alpha factor that gets applied
    to the result of the composition operation combining it with the destination.
@@ -3828,11 +3806,7 @@ static inline int soft_light_op(int dst, int src, int da, int sa)
     else if (4 * dst <= da)
         return (dst * sa * 255 + da * (src2 - sa) * ((((16 * dst_np - 12 * 255) * dst_np + 3 * 65025) * dst_np) / 65025) + temp) / 65025;
     else {
-#   ifdef Q_CC_RVCT // needed to avoid compiler crash in RVCT 2.2
-        return (dst * sa * 255 + da * (src2 - sa) * (qIntSqrtInt(dst_np * 255) - dst_np) + temp) / 65025;
-#   else
         return (dst * sa * 255 + da * (src2 - sa) * (int(qSqrt(qreal(dst_np * 255))) - dst_np) + temp) / 65025;
-#   endif
     }
 }
 
@@ -4039,11 +4013,6 @@ void QT_FASTCALL comp_func_Exclusion(uint *Q_DECL_RESTRICT dest, const uint *Q_D
     else
         comp_func_Exclusion_impl(dest, src, length, QPartialCoverage(const_alpha));
 }
-
-#if defined(Q_CC_RVCT)
-// Restore pragma state from previous #pragma arm
-#  pragma pop
-#endif
 
 void QT_FASTCALL rasterop_solid_SourceOrDestination(uint *dest,
                                                     int length,

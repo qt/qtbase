@@ -624,14 +624,7 @@ Q_CORE_EXPORT bool qSharedBuild() Q_DECL_NOTHROW;
 /*
    Avoid "unused parameter" warnings
 */
-
-#if defined(Q_CC_RVCT)
-template <typename T>
-inline void qUnused(T &x) { (void)x; }
-#  define Q_UNUSED(x) qUnused(x);
-#else
-#  define Q_UNUSED(x) (void)x;
-#endif
+#define Q_UNUSED(x) (void)x;
 
 /*
    Debugging and error handling
@@ -865,7 +858,7 @@ QT_WARNING_DISABLE_MSVC(4530) /* C++ exception handler used, but unwind semantic
 #  endif
 #endif
 
-#if defined(Q_COMPILER_DECLTYPE) || (defined(Q_CC_GNU) && !defined(Q_CC_RVCT))
+#if defined(Q_COMPILER_DECLTYPE) || defined(Q_CC_GNU)
 /* make use of decltype or GCC's __typeof__ extension */
 template <typename T>
 class QForeachContainer {

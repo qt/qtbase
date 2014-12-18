@@ -733,12 +733,6 @@ qint64 QIODevice::bytesToWrite() const
     return qint64(0);
 }
 
-#ifdef Q_CC_RVCT
-// arm mode makes the 64-bit integer operations much faster in RVCT 2.2
-#pragma push
-#pragma arm
-#endif
-
 /*!
     Reads at most \a maxSize bytes from the device into \a data, and
     returns the number of bytes read. If an error occurs, such as when
@@ -902,10 +896,6 @@ qint64 QIODevice::read(char *data, qint64 maxSize)
     return readSoFar;
 }
 
-#ifdef Q_CC_RVCT
-#pragma pop
-#endif
-
 /*!
     \overload
 
@@ -1017,12 +1007,6 @@ QByteArray QIODevice::readAll()
 
     return result;
 }
-
-#ifdef Q_CC_RVCT
-// arm mode makes the 64-bit integer operations much faster in RVCT 2.2
-#pragma push
-#pragma arm
-#endif
 
 /*!
     This function reads a line of ASCII characters from the device, up
@@ -1242,10 +1226,6 @@ qint64 QIODevice::readLineData(char *data, qint64 maxSize)
         return isSequential() ? lastReadReturn : -1;
     return readSoFar;
 }
-
-#ifdef Q_CC_RVCT
-#pragma pop
-#endif
 
 /*!
     Returns \c true if a complete line of data can be read from the device;

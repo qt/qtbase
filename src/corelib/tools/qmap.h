@@ -1157,29 +1157,11 @@ public:
     inline QMultiMap operator+(const QMultiMap &other) const
     { QMultiMap result = *this; result += other; return result; }
 
-#if !defined(Q_CC_RVCT)
-    // RVCT compiler doesn't handle using-keyword right when used functions are overloaded in child class
     using QMap<Key, T>::contains;
     using QMap<Key, T>::remove;
     using QMap<Key, T>::count;
     using QMap<Key, T>::find;
     using QMap<Key, T>::constFind;
-#else
-    inline bool contains(const Key &key) const
-    { return QMap<Key, T>::contains(key); }
-    inline int remove(const Key &key)
-    { return QMap<Key, T>::remove(key); }
-    inline int count(const Key &key) const
-    { return QMap<Key, T>::count(key); }
-    inline int count() const
-    { return QMap<Key, T>::count(); }
-    inline typename QMap<Key, T>::iterator find(const Key &key)
-    { return QMap<Key, T>::find(key); }
-    inline typename QMap<Key, T>::const_iterator find(const Key &key) const
-    { return QMap<Key, T>::find(key); }
-    inline typename QMap<Key, T>::const_iterator constFind(const Key &key) const
-    { return QMap<Key, T>::constFind(key); }
-#endif
 
     bool contains(const Key &key, const T &value) const;
 

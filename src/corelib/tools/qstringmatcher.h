@@ -66,11 +66,6 @@ private:
     QStringMatcherPrivate *d_ptr;
     QString q_pattern;
     Qt::CaseSensitivity q_cs;
-#ifdef Q_CC_RVCT
-// explicitly allow anonymous unions for RVCT to prevent compiler warnings
-#  pragma push
-#  pragma anon_unions
-#endif
     struct Data {
         uchar q_skiptable[256];
         const QChar *uc;
@@ -80,9 +75,6 @@ private:
         uint q_data[256];
         Data p;
     };
-#ifdef Q_CC_RVCT
-#  pragma pop
-#endif
 };
 
 QT_END_NAMESPACE

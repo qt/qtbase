@@ -615,13 +615,8 @@ QDebug operator<<(QDebug debug, const QNetworkInterface &networkInterface)
                     << ", hardware address = " << networkInterface.hardwareAddress()
                     << ", flags = ";
     flagsDebug(debug, networkInterface.flags());
-#if defined(Q_CC_RVCT)
-    // RVCT gets confused with << networkInterface.addressEntries(), reason unknown.
-    debug.nospace() << ")\n";
-#else
     debug.nospace() << ", entries = " << networkInterface.addressEntries()
                     << ")\n";
-#endif
     return debug.space();
 }
 #endif

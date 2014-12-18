@@ -57,14 +57,8 @@
 #  include "QtCore/qfunctions_winrt.h"
 #endif
 
-#ifdef Q_CC_RVCT
-// rvct doesn't see static operators when using our qalgorithms
-#  define Q_STATIC_GLOBAL_OPERATOR inline
-#  define Q_STATIC_GLOBAL_INLINE_OPERATOR inline
-#else
-#  define Q_STATIC_GLOBAL_OPERATOR static
-#  define Q_STATIC_GLOBAL_INLINE_OPERATOR static inline
-#endif
+#define Q_STATIC_GLOBAL_OPERATOR static
+#define Q_STATIC_GLOBAL_INLINE_OPERATOR static inline
 
 #endif
 
