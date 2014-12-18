@@ -458,8 +458,6 @@ public:
     bool isApplicationFont(const QString &fileName);
 
     void invalidate();
-
-    QStringList fallbackFamilies;
 };
 
 void QFontDatabasePrivate::invalidate()
@@ -881,10 +879,8 @@ QFontEngine *loadEngine(int script, const QFontDef &request,
         }
 
         QStringList fallbacks = request.fallBackFamilies;
-        if (family && !family->fallbackFamilies.isEmpty())
+        if (family)
             fallbacks += family->fallbackFamilies;
-        else
-            fallbacks += privateDb()->fallbackFamilies;
 
         QPlatformFontDatabase *pfdb = QGuiApplicationPrivate::platformIntegration()->fontDatabase();
         QFontEngineMulti *pfMultiEngine = pfdb->fontEngineMulti(engine, QChar::Script(script));
