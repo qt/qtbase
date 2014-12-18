@@ -57,8 +57,5 @@
 #  include "QtCore/qfunctions_winrt.h"
 #endif
 
-#define Q_STATIC_GLOBAL_OPERATOR static
-#define Q_STATIC_GLOBAL_INLINE_OPERATOR static inline
-
 #endif
 

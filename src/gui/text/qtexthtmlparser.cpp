@@ -45,7 +45,6 @@
 #include "qtextdocument_p.h"
 #include "qtextcursor.h"
 #include "qfont_p.h"
-#include "private/qfunctions_p.h"
 
 #include <algorithm>
 
@@ -323,12 +322,12 @@ bool operator<(const QTextHtmlEntity &entity1, const QTextHtmlEntity &entity2)
 }
 #endif
 
-Q_STATIC_GLOBAL_OPERATOR bool operator<(const QString &entityStr, const QTextHtmlEntity &entity)
+static bool operator<(const QString &entityStr, const QTextHtmlEntity &entity)
 {
     return entityStr < QLatin1String(entity.name);
 }
 
-Q_STATIC_GLOBAL_OPERATOR bool operator<(const QTextHtmlEntity &entity, const QString &entityStr)
+static bool operator<(const QTextHtmlEntity &entity, const QString &entityStr)
 {
     return QLatin1String(entity.name) < entityStr;
 }
@@ -443,18 +442,18 @@ static const QTextHtmlElement elements[Html_NumElements]= {
 };
 
 #if defined(Q_CC_MSVC) && _MSC_VER < 1600
-Q_STATIC_GLOBAL_OPERATOR bool operator<(const QTextHtmlElement &e1, const QTextHtmlElement &e2)
+static bool operator<(const QTextHtmlElement &e1, const QTextHtmlElement &e2)
 {
     return QLatin1String(e1.name) < QLatin1String(e2.name);
 }
 #endif
 
-Q_STATIC_GLOBAL_OPERATOR bool operator<(const QString &str, const QTextHtmlElement &e)
+static bool operator<(const QString &str, const QTextHtmlElement &e)
 {
     return str < QLatin1String(e.name);
 }
 
-Q_STATIC_GLOBAL_OPERATOR bool operator<(const QTextHtmlElement &e, const QString &str)
+static bool operator<(const QTextHtmlElement &e, const QString &str)
 {
     return QLatin1String(e.name) < str;
 }

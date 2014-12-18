@@ -383,12 +383,12 @@ struct QCheckPoint
 };
 Q_DECLARE_TYPEINFO(QCheckPoint, Q_PRIMITIVE_TYPE);
 
-Q_STATIC_GLOBAL_OPERATOR bool operator<(const QCheckPoint &checkPoint, QFixed y)
+static bool operator<(const QCheckPoint &checkPoint, QFixed y)
 {
     return checkPoint.y < y;
 }
 
-Q_STATIC_GLOBAL_OPERATOR bool operator<(const QCheckPoint &checkPoint, int pos)
+static bool operator<(const QCheckPoint &checkPoint, int pos)
 {
     return checkPoint.positionInFrame < pos;
 }
@@ -396,17 +396,17 @@ Q_STATIC_GLOBAL_OPERATOR bool operator<(const QCheckPoint &checkPoint, int pos)
 #if defined(Q_CC_MSVC) && _MSC_VER < 1600
 //The STL implementation of MSVC 2008 requires the definitions
 
-Q_STATIC_GLOBAL_OPERATOR bool operator<(const QCheckPoint &checkPoint1, const QCheckPoint &checkPoint2)
+static bool operator<(const QCheckPoint &checkPoint1, const QCheckPoint &checkPoint2)
 {
     return checkPoint1.y < checkPoint2.y;
 }
 
-Q_STATIC_GLOBAL_OPERATOR bool operator<(QFixed y, const QCheckPoint &checkPoint)
+static bool operator<(QFixed y, const QCheckPoint &checkPoint)
 {
     return y < checkPoint.y;
 }
 
-Q_STATIC_GLOBAL_OPERATOR bool operator<(int pos, const QCheckPoint &checkPoint)
+static bool operator<(int pos, const QCheckPoint &checkPoint)
 {
     return pos < checkPoint.positionInFrame;
 }
