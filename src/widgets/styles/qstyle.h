@@ -134,7 +134,7 @@ public:
         PE_FrameGroupBox,
         PE_FrameLineEdit,
         PE_FrameMenu,
-        PE_FrameStatusBar, // obsolete
+        PE_FrameStatusBar, // ### Qt 6: remove
         PE_FrameStatusBarItem = PE_FrameStatusBar,
         PE_FrameTabWidget,
         PE_FrameWindow,
@@ -155,7 +155,7 @@ public:
         PE_IndicatorArrowUp,
         PE_IndicatorBranch,
         PE_IndicatorButtonDropDown,
-        PE_IndicatorViewItemCheck,
+        PE_IndicatorViewItemCheck, // ### Qt 6: remove
         PE_IndicatorItemViewItemCheck = PE_IndicatorViewItemCheck,
         PE_IndicatorCheckBox,
         PE_IndicatorDockWidgetResizeHandle,
@@ -298,7 +298,7 @@ public:
         SE_TabWidgetLeftCorner,
         SE_TabWidgetRightCorner,
 
-        SE_ViewItemCheckIndicator,
+        SE_ViewItemCheckIndicator, // ### Qt 6: remove
         SE_ItemViewItemCheckIndicator = SE_ViewItemCheckIndicator,
 
         SE_TabBarTearIndicator,
@@ -491,9 +491,9 @@ public:
         PM_DialogButtonsButtonHeight,
 
         PM_MdiSubWindowFrameWidth,
-        PM_MDIFrameWidth = PM_MdiSubWindowFrameWidth,            //obsolete
+        PM_MDIFrameWidth = PM_MdiSubWindowFrameWidth,         // ### Qt 6: remove
         PM_MdiSubWindowMinimizedWidth,
-        PM_MDIMinimizedWidth = PM_MdiSubWindowMinimizedWidth,    //obsolete
+        PM_MDIMinimizedWidth = PM_MdiSubWindowMinimizedWidth, // ### Qt 6: remove
 
         PM_HeaderMargin,
         PM_HeaderMarkSize,
@@ -511,9 +511,9 @@ public:
 
         PM_SpinBoxSliderHeight,
 
-        PM_DefaultTopLevelMargin,
-        PM_DefaultChildMargin,
-        PM_DefaultLayoutSpacing,
+        PM_DefaultTopLevelMargin, // ### Qt 6: remove
+        PM_DefaultChildMargin,    // ### Qt 6: remove
+        PM_DefaultLayoutSpacing,  // ### Qt 6: remove
 
         PM_ToolBarIconSize,
         PM_ListViewIconSize,
@@ -631,7 +631,7 @@ public:
         SH_ComboBox_Popup,
         SH_TitleBar_NoBorder,
         SH_Slider_StopMouseOverSlider,
-        SH_ScrollBar_StopMouseOverSlider = SH_Slider_StopMouseOverSlider, // obsolete
+        SH_ScrollBar_StopMouseOverSlider = SH_Slider_StopMouseOverSlider, // ### Qt 6: remove
         SH_BlinkCursorWhenTextSelected,
         SH_RichText_FullWidthSelection,
         SH_Menu_Scrollable,
