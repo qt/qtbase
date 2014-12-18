@@ -1070,7 +1070,17 @@
  */
 
 #define QT_DO_PRAGMA(text)                      _Pragma(#text)
-#if defined(Q_CC_INTEL)
+#if defined(Q_CC_INTEL) && defined(Q_CC_MSVC)
+/* icl.exe: Intel compiler on Windows */
+#  undef QT_DO_PRAGMA                           /* not needed */
+#  define QT_WARNING_PUSH                       __pragma(warning(push))
+#  define QT_WARNING_POP                        __pragma(warning(pop))
+#  define QT_WARNING_DISABLE_MSVC(number)
+#  define QT_WARNING_DISABLE_INTEL(number)      __pragma(warning(disable: number))
+#  define QT_WARNING_DISABLE_CLANG(text)
+#  define QT_WARNING_DISABLE_GCC(text)
+#elif defined(Q_CC_INTEL)
+/* icc: Intel compiler on Linux or OS X */
 #  define QT_WARNING_PUSH                       QT_DO_PRAGMA(warning(push))
 #  define QT_WARNING_POP                        QT_DO_PRAGMA(warning(pop))
 #  define QT_WARNING_DISABLE_INTEL(number)      QT_DO_PRAGMA(warning(disable: number))
