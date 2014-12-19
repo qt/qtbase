@@ -6010,10 +6010,13 @@ void tst_QWidget::childEvents()
         expected =
             EventRecorder::EventList()
             << qMakePair(&widget, QEvent::Polish)
+            << qMakePair(&widget, QEvent::PlatformSurface)
             << qMakePair(&widget, QEvent::WinIdChange)
+            << qMakePair(&widget, QEvent::WindowIconChange)
             << qMakePair(&widget, QEvent::Move)
             << qMakePair(&widget, QEvent::Resize)
             << qMakePair(&widget, QEvent::Show)
+            << qMakePair(&widget, QEvent::CursorChange)
             << qMakePair(&widget, QEvent::ShowToParent);
 
         QVERIFY2(spy.eventList() == expected,
@@ -6025,13 +6028,9 @@ void tst_QWidget::childEvents()
             EventRecorder::EventList()
             << qMakePair(&widget, QEvent::PolishRequest)
             << qMakePair(&widget, QEvent::Type(QEvent::User + 1))
-#if defined(Q_OS_OSX) || defined(Q_OS_QNX)
             << qMakePair(&widget, QEvent::UpdateLater)
-#endif
             << qMakePair(&widget, QEvent::UpdateRequest);
 
-        if (m_platform == QStringLiteral("windows") || m_platform == QStringLiteral("xcb"))
-            QEXPECT_FAIL("", EventRecorder::msgExpectFailQtBug26424(expected, spy.eventList()).constData(), Continue);
         QVERIFY2(spy.eventList() == expected,
                  EventRecorder::msgEventListMismatch(expected, spy.eventList()).constData());
     }
@@ -6100,10 +6099,13 @@ void tst_QWidget::childEvents()
             << qMakePair(&widget, QEvent::Polish)
             << qMakePair(&widget, QEvent::ChildPolished)
             << qMakePair(&widget, QEvent::ChildPolished)
+            << qMakePair(&widget, QEvent::PlatformSurface)
             << qMakePair(&widget, QEvent::WinIdChange)
+            << qMakePair(&widget, QEvent::WindowIconChange)
             << qMakePair(&widget, QEvent::Move)
             << qMakePair(&widget, QEvent::Resize)
             << qMakePair(&widget, QEvent::Show)
+            << qMakePair(&widget, QEvent::CursorChange)
             << qMakePair(&widget, QEvent::ShowToParent);
 
         QVERIFY2(spy.eventList() == expected,
@@ -6116,13 +6118,9 @@ void tst_QWidget::childEvents()
             << qMakePair(&widget, QEvent::PolishRequest)
             << qMakePair(&widget, QEvent::Type(QEvent::User + 1))
             << qMakePair(&widget, QEvent::Type(QEvent::User + 2))
-#if defined(Q_OS_OSX) || defined(Q_OS_QNX)
             << qMakePair(&widget, QEvent::UpdateLater)
-#endif
             << qMakePair(&widget, QEvent::UpdateRequest);
 
-        if (m_platform == QStringLiteral("windows") || m_platform == QStringLiteral("xcb"))
-            QEXPECT_FAIL("", EventRecorder::msgExpectFailQtBug26424(expected, spy.eventList()).constData(), Continue);
         QVERIFY2(spy.eventList() == expected,
                  EventRecorder::msgEventListMismatch(expected, spy.eventList()).constData());
     }
@@ -6193,10 +6191,13 @@ void tst_QWidget::childEvents()
             EventRecorder::EventList()
             << qMakePair(&widget, QEvent::Polish)
             << qMakePair(&widget, QEvent::ChildPolished)
+            << qMakePair(&widget, QEvent::PlatformSurface)
             << qMakePair(&widget, QEvent::WinIdChange)
+            << qMakePair(&widget, QEvent::WindowIconChange)
             << qMakePair(&widget, QEvent::Move)
             << qMakePair(&widget, QEvent::Resize)
             << qMakePair(&widget, QEvent::Show)
+            << qMakePair(&widget, QEvent::CursorChange)
             << qMakePair(&widget, QEvent::ShowToParent);
 
         QVERIFY2(spy.eventList() == expected,
@@ -6209,13 +6210,9 @@ void tst_QWidget::childEvents()
             << qMakePair(&widget, QEvent::PolishRequest)
             << qMakePair(&widget, QEvent::Type(QEvent::User + 1))
             << qMakePair(&widget, QEvent::Type(QEvent::User + 2))
-#if defined(Q_OS_OSX) || defined(Q_OS_QNX)
             << qMakePair(&widget, QEvent::UpdateLater)
-#endif
             << qMakePair(&widget, QEvent::UpdateRequest);
 
-        if (m_platform == QStringLiteral("windows") || m_platform == QStringLiteral("xcb"))
-            QEXPECT_FAIL("", EventRecorder::msgExpectFailQtBug26424(expected, spy.eventList()).constData(), Continue);
         QVERIFY2(spy.eventList() == expected,
                  EventRecorder::msgEventListMismatch(expected, spy.eventList()).constData());
     }

@@ -161,7 +161,7 @@ bool QWidgetWindow::event(QEvent *event)
     if (m_widget->testAttribute(Qt::WA_DontShowOnScreen)) {
         // \a event is uninteresting for QWidgetWindow, the event was probably
         // generated before WA_DontShowOnScreen was set
-        return m_widget->event(event);
+        return QCoreApplication::sendEvent(m_widget, event);
     }
 
     switch (event->type()) {
@@ -303,7 +303,7 @@ bool QWidgetWindow::event(QEvent *event)
         break;
     }
 
-    if (m_widget->event(event) && event->type() != QEvent::Timer)
+    if (QCoreApplication::sendEvent(m_widget, event) && event->type() != QEvent::Timer)
         return true;
 
     return QWindow::event(event);

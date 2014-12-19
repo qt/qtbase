@@ -6116,8 +6116,15 @@ QIcon QWidget::windowIcon() const
 
 void QWidgetPrivate::setWindowIcon_helper()
 {
+    Q_Q(QWidget);
     QEvent e(QEvent::WindowIconChange);
-    QApplication::sendEvent(q_func(), &e);
+
+    // Do not send the event if the widget is a top level.
+    // In that case, setWindowIcon_sys does it, and event propagation from
+    // QWidgetWindow to the top level QWidget ensures that the event reaches
+    // the top level anyhow
+    if (!q->windowHandle())
+        QApplication::sendEvent(q, &e);
     for (int i = 0; i < children.size(); ++i) {
         QWidget *w = qobject_cast<QWidget *>(children.at(i));
         if (w && !w->isWindow())
