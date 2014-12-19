@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/android_testdata">
+        <file>tst_qtemporaryfile.cpp</file>
+        <file>resources/test.txt</file>
+    </qresource>
+</RCC>
