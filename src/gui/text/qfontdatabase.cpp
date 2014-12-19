@@ -1178,7 +1178,7 @@ static int match(int script, const QFontDef &request,
             load(test.family->name, script);
 
         // Check if family is supported in the script we want
-        if (script != QChar::Script_Common && !(test.family->writingSystems[writingSystem] & QtFontFamily::Supported))
+        if (writingSystem != QFontDatabase::Any && !(test.family->writingSystems[writingSystem] & QtFontFamily::Supported))
             continue;
 
         // as we know the script is supported, we can be sure
