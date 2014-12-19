@@ -52,6 +52,7 @@ class QUrl;
 class Q_GUI_EXPORT QPlatformServices
 {
 public:
+    QPlatformServices();
     virtual ~QPlatformServices() { }
 
     virtual bool openUrl(const QUrl &url);
