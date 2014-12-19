@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2015 Digia Plc and/or its subsidiary(-ies).
 ** Copyright (C) 2014 Olivier Goffart <ogoffart@woboq.com>
 ** Contact: http://www.qt-project.org/legal
 **
@@ -653,16 +653,13 @@ private:
     static bool registerDebugStreamOperatorFunction(const QtPrivate::AbstractDebugStreamFunction *f, int type);
 #endif
 
+// ### Qt6: FIXME: Remove the special Q_CC_MSVC handling, it was introduced to maintain BC.
 #if !defined(Q_NO_TEMPLATE_FRIENDS) && !defined(Q_CC_MSVC)
 #ifndef Q_QDOC
-    template<typename T>
-    friend bool qRegisterSequentialConverter();
     template<typename, bool> friend struct QtPrivate::ValueTypeIsMetaType;
     template<typename, typename> friend struct QtPrivate::ConverterMemberFunction;
     template<typename, typename> friend struct QtPrivate::ConverterMemberFunctionOk;
     template<typename, typename, typename> friend struct QtPrivate::ConverterFunctor;
-    template<typename T>
-    friend bool qRegisterAssociativeConverter();
     template<typename, bool> friend struct QtPrivate::AssociativeValueTypeIsMetaType;
     template<typename, bool> friend struct QtPrivate::IsMetaTypePair;
     template<typename, typename> friend struct QtPrivate::MetaTypeSmartPointerHelper;
