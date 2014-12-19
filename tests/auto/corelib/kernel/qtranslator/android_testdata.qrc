@@ -1,0 +1,7 @@
+<RCC>
+    <qresource prefix="/android_testdata">
+        <file>hellotr_la.qm</file>
+        <file>msgfmt_from_po.qm</file>
+        <file>dependencies_la.qm</file>
+    </qresource>
+</RCC>

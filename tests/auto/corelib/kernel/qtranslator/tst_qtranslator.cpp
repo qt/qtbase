@@ -68,6 +68,26 @@ tst_QTranslator::tst_QTranslator()
 
 void tst_QTranslator::initTestCase()
 {
+#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_NO_SDK)
+    QString sourceDir(":/android_testdata/");
+    QDirIterator it(sourceDir, QDirIterator::Subdirectories);
+    while (it.hasNext()) {
+        it.next();
+
+        QFileInfo sourceFileInfo = it.fileInfo();
+        if (!sourceFileInfo.isDir()) {
+            QFileInfo destinationFileInfo(QStandardPaths::writableLocation(QStandardPaths::CacheLocation) + QLatin1Char('/') + sourceFileInfo.filePath().mid(sourceDir.length()));
+
+            if (!destinationFileInfo.exists()) {
+                QVERIFY(QDir().mkpath(destinationFileInfo.path()));
+                QVERIFY(QFile::copy(sourceFileInfo.filePath(), destinationFileInfo.filePath()));
+            }
+        }
+    }
+
+    QDir::setCurrent(QStandardPaths::writableLocation(QStandardPaths::CacheLocation));
+#endif
+
     // chdir into the directory containing our testdata,
     // to make the code simpler (load testdata via relative paths)
     QString testdata_dir = QFileInfo(QFINDTESTDATA("hellotr_la.qm")).absolutePath();
