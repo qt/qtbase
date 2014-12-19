@@ -228,6 +228,9 @@ void *QXcbNativeInterface::nativeResourceForIntegration(const QByteArray &resour
     case RootWindow:
         result = rootWindow();
         break;
+    case Display:
+        result = display();
+        break;
     default:
         break;
     }
@@ -419,6 +422,17 @@ void *QXcbNativeInterface::rootWindow()
     if (defaultConnection)
         return reinterpret_cast<void *>(defaultConnection->rootWindow());
     return 0;
+}
+
+void *QXcbNativeInterface::display()
+{
+#ifdef XCB_USE_XLIB
+    QXcbIntegration *integration = static_cast<QXcbIntegration *>(QGuiApplicationPrivate::platformIntegration());
+    QXcbConnection *defaultConnection = integration->defaultConnection();
+    return defaultConnection->xlib_display();
+#else
+    return 0;
+#endif
 }
 
 void QXcbNativeInterface::setAppTime(QScreen* screen, xcb_timestamp_t time)

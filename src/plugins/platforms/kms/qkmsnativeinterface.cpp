@@ -52,6 +52,21 @@ public:
 
 Q_GLOBAL_STATIC(QKmsResourceMap, qKmsResourceMap)
 
+void *QKmsNativeInterface::nativeResourceForIntegration(const QByteArray &resourceString)
+{
+    QByteArray lowerCaseResource = resourceString.toLower();
+    ResourceType resource = qKmsResourceMap()->value(lowerCaseResource);
+    void *result = 0;
+    switch (resource) {
+    case EglDisplay:
+        result = eglDisplay();
+        break;
+    default:
+        result = 0;
+    }
+    return result;
+
+}
 void *QKmsNativeInterface::nativeResourceForWindow(const QByteArray &resourceString, QWindow *window)
 {
     QByteArray lowerCaseResource = resourceString.toLower();
@@ -79,7 +94,14 @@ QPlatformNativeInterface::NativeResourceForContextFunction QKmsNativeInterface::
     return 0;
 }
 
-
+void *QKmsNativeInterface::eglDisplay()
+{
+    //QKmsIntegration *integration = static_cast<QKmsIntegration *>(QGuiApplicationPrivate::platformIntegration());
+    QKmsScreen *screen = static_cast<QKmsScreen *>(QGuiApplication::primaryScreen()->handle());
+    if (!screen || !screen->device())
+        return 0;
+    return screen->device()->eglDisplay();
+}
 
 void *QKmsNativeInterface::eglDisplayForWindow(QWindow *window)
 {

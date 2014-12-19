@@ -41,7 +41,9 @@
 
 #include "qxcbeglnativeinterfacehandler.h"
 
+#include <QtGui/private/qguiapplication_p.h>
 #include "qxcbeglwindow.h"
+#include "qxcbintegration.h"
 #include "qxcbeglintegration.h"
 #include "qxcbeglcontext.h"
 
@@ -70,6 +72,16 @@ QXcbEglNativeInterfaceHandler::QXcbEglNativeInterfaceHandler(QXcbNativeInterface
 {
 }
 
+QPlatformNativeInterface::NativeResourceForIntegrationFunction QXcbEglNativeInterfaceHandler::nativeResourceFunctionForIntegration(const QByteArray &resource) const{
+    switch (resourceType(resource)) {
+    case EglDisplay:
+        return eglDisplay;
+    default:
+        break;
+    }
+    return Q_NULLPTR;
+}
+
 QPlatformNativeInterface::NativeResourceForContextFunction QXcbEglNativeInterfaceHandler::nativeResourceFunctionForContext(const QByteArray &resource) const
 {
     switch (resourceType(resource)) {
@@ -92,6 +104,13 @@ QPlatformNativeInterface::NativeResourceForWindowFunction QXcbEglNativeInterface
         break;
     }
     return Q_NULLPTR;
+}
+
+void *QXcbEglNativeInterfaceHandler::eglDisplay()
+{
+    QXcbIntegration *integration = static_cast<QXcbIntegration *>(QGuiApplicationPrivate::platformIntegration());
+    QXcbEglIntegration *eglIntegration = static_cast<QXcbEglIntegration *>(integration->defaultConnection()->glIntegration());
+    return eglIntegration->eglDisplay();
 }
 
 void *QXcbEglNativeInterfaceHandler::eglDisplayForWindow(QWindow *window)

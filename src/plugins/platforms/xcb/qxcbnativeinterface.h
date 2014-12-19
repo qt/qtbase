@@ -95,6 +95,7 @@ public:
     void *startupId();
     void *x11Screen();
     void *rootWindow();
+    void *display();
     static void setStartupId(const char *);
     static void setAppTime(QScreen *screen, xcb_timestamp_t time);
     static void setAppUserTime(QScreen *screen, xcb_timestamp_t time);

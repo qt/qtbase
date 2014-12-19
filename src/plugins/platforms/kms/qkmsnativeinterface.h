@@ -46,10 +46,12 @@ public:
         EglContext
     };
 
+    void *nativeResourceForIntegration(const QByteArray &resource) Q_DECL_OVERRIDE;
     void *nativeResourceForWindow(const QByteArray &resourceString, QWindow *window) Q_DECL_OVERRIDE;
 
     NativeResourceForContextFunction nativeResourceFunctionForContext(const QByteArray &resource) Q_DECL_OVERRIDE;
 
+    void *eglDisplay();
     void *eglDisplayForWindow(QWindow *window);
     void *eglContextForWindow(QWindow *window);
     static void *eglContextForContext(QOpenGLContext *context);

@@ -57,9 +57,11 @@ public:
 
     QXcbEglNativeInterfaceHandler(QXcbNativeInterface *nativeInterface);
 
+    QPlatformNativeInterface::NativeResourceForIntegrationFunction nativeResourceFunctionForIntegration(const QByteArray &resource) const Q_DECL_OVERRIDE;
     QPlatformNativeInterface::NativeResourceForContextFunction nativeResourceFunctionForContext(const QByteArray &resource) const Q_DECL_OVERRIDE;
     QPlatformNativeInterface::NativeResourceForWindowFunction nativeResourceFunctionForWindow(const QByteArray &resource) const Q_DECL_OVERRIDE;
 private:
+    static void *eglDisplay();
     static void *eglDisplayForWindow(QWindow *window);
     static void *eglContextForContext(QOpenGLContext *context);
     static void *eglConfigForContext(QOpenGLContext *context);
