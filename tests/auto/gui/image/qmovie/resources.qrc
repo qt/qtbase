@@ -1,5 +1,7 @@
 <!DOCTYPE RCC><RCC version="1.0">
 <qresource>
+    <file>animations/comicsecard.gif</file>
     <file>animations/corrupt.gif</file>
+    <file>animations/trolltech.gif</file>
 </qresource>
 </RCC>
