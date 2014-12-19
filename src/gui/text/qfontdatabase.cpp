@@ -816,7 +816,7 @@ static inline void load(const QString & = QString(), int = -1)
 static
 QFontEngine *loadSingleEngine(int script,
                               const QFontDef &request,
-                              QtFontFoundry *foundry,
+                              QtFontFamily *family, QtFontFoundry *foundry,
                               QtFontStyle *style, QtFontSize *size)
 {
     Q_UNUSED(foundry);
@@ -835,6 +835,24 @@ QFontEngine *loadSingleEngine(int script,
     QFontCache::Key key(def,script);
     QFontEngine *engine = QFontCache::instance()->findEngine(key);
     if (!engine) {
+        if (script != QChar::Script_Common) {
+            // fast path: check if engine was loaded for another script
+            key.script = QChar::Script_Common;
+            engine = QFontCache::instance()->findEngine(key);
+            key.script = script;
+            if (engine) {
+                Q_ASSERT(engine->type() != QFontEngine::Multi);
+                // Also check for OpenType tables when using complex scripts
+                if (Q_UNLIKELY(!engine->supportsScript(QChar::Script(script)))) {
+                    qWarning("  OpenType support missing for script %d", script);
+                    return 0;
+                }
+
+                QFontCache::instance()->insertEngine(key, engine);
+                return engine;
+            }
+        }
+
         // If the font data's native stretch matches the requested stretch we need to set stretch to 100
         // to avoid the fontengine synthesizing stretch. If they didn't match exactly we need to calculate
         // the new stretch factor. This only done if not matched by styleName.
@@ -854,6 +872,13 @@ QFontEngine *loadSingleEngine(int script,
             }
 
             QFontCache::instance()->insertEngine(key, engine);
+
+            if (!engine->symbol && script != QChar::Script_Common && (family->writingSystems[QFontDatabase::Latin] & QtFontFamily::Supported) != 0) {
+                // cache engine for Common script as well
+                key.script = QChar::Script_Common;
+                if (!QFontCache::instance()->findEngine(key))
+                    QFontCache::instance()->insertEngine(key, engine);
+            }
         }
     }
     return engine;
@@ -864,7 +889,7 @@ QFontEngine *loadEngine(int script, const QFontDef &request,
                         QtFontFamily *family, QtFontFoundry *foundry,
                         QtFontStyle *style, QtFontSize *size)
 {
-    QFontEngine *engine = loadSingleEngine(script, request, foundry, style, size);
+    QFontEngine *engine = loadSingleEngine(script, request, family, foundry, style, size);
     Q_ASSERT(!engine || engine->type() != QFontEngine::Multi);
     if (engine && !(request.styleStrategy & QFont::NoFontMerging) && !engine->symbol) {
         // make sure that the db has all fallback families
