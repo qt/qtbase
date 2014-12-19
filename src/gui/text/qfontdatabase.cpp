@@ -1166,7 +1166,7 @@ static int match(int script, const QFontDef &request,
             bestFoundry(script, score, request.styleStrategy,
                         test.family, foundry_name, styleKey, request.pixelSize, pitch,
                         &test, force_encoding_id, request.styleName);
-        if (test.foundry == 0) {
+        if (test.foundry == 0 && !foundry_name.isEmpty()) {
             // the specific foundry was not found, so look for
             // any foundry matching our requirements
             newscore = bestFoundry(script, score, request.styleStrategy, test.family,
