@@ -119,12 +119,19 @@ public:
 
     QT_SIZEPOLICY_CONSTEXPR QSizePolicy() : data(0) { }
 
+#ifdef Q_COMPILER_UNIFORM_INIT
+    QT_SIZEPOLICY_CONSTEXPR QSizePolicy(Policy horizontal, Policy vertical, ControlType type = DefaultType)
+        : bits{0, 0, quint32(horizontal), quint32(vertical),
+               type == DefaultType ? 0 : toControlTypeFieldValue(type), 0, 0, 0}
+    {}
+#else
     QSizePolicy(Policy horizontal, Policy vertical, ControlType type = DefaultType)
         : data(0) {
         bits.horPolicy = horizontal;
         bits.verPolicy = vertical;
         setControlType(type);
     }
+#endif // uniform-init
     QT_SIZEPOLICY_CONSTEXPR Policy horizontalPolicy() const { return static_cast<Policy>(bits.horPolicy); }
     QT_SIZEPOLICY_CONSTEXPR Policy verticalPolicy() const { return static_cast<Policy>(bits.verPolicy); }
     ControlType controlType() const;
@@ -175,6 +182,8 @@ private:
     QT_SIZEPOLICY_CONSTEXPR QSizePolicy(int i) : data(i) { }
     struct Bits;
     QT_SIZEPOLICY_CONSTEXPR explicit QSizePolicy(Bits b) Q_DECL_NOTHROW : bits(b) { }
+
+    static quint32 toControlTypeFieldValue(ControlType type) Q_DECL_NOTHROW;
 
     struct Bits {
         quint32 horStretch : 8;

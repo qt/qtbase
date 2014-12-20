@@ -113,6 +113,8 @@ void tst_QSizePolicy::constExpr()
     // check that certain ctors are constexpr (compile-only):
     { Q_CONSTEXPR QSizePolicy sp; Q_UNUSED(sp); }
     { Q_CONSTEXPR QSizePolicy sp = QSizePolicy(); Q_UNUSED(sp); }
+    { Q_CONSTEXPR QSizePolicy sp = QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Preferred); Q_UNUSED(sp); }
+    { Q_CONSTEXPR QSizePolicy sp = QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding, QSizePolicy::DefaultType); Q_UNUSED(sp); }
 #else
     QSKIP("QSizePolicy cannot be constexpr with this version of the compiler.");
 #endif

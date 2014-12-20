@@ -255,6 +255,11 @@ QSizePolicy::ControlType QSizePolicy::controlType() const
 */
 void QSizePolicy::setControlType(ControlType type)
 {
+    bits.ctype = toControlTypeFieldValue(type);
+}
+
+quint32 QSizePolicy::toControlTypeFieldValue(ControlType type) Q_DECL_NOTHROW
+{
     /*
         The control type is a flag type, with values 0x1, 0x2, 0x4, 0x8, 0x10,
         etc. In memory, we pack it onto the available bits (CTSize) in
@@ -271,10 +276,8 @@ void QSizePolicy::setControlType(ControlType type)
 
     int i = 0;
     while (true) {
-        if (type & (0x1 << i)) {
-            bits.ctype = i;
-            return;
-        }
+        if (type & (0x1 << i))
+            return i;
         ++i;
     }
 }
