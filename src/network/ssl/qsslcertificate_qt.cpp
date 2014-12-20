@@ -39,10 +39,10 @@
 **
 ****************************************************************************/
 
-
-#include "qssl_p.h"
 #include "qsslcertificate.h"
 #include "qsslcertificate_p.h"
+
+#include "qssl_p.h"
 #include "qsslkey.h"
 #include "qsslkey_p.h"
 #include "qsslcertificateextension.h"
