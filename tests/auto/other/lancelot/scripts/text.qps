@@ -140,3 +140,23 @@ save
   setPen black
   repeat_block text_drawing
 restore
+
+translate 150 0
+save
+  setPen black
+  setFont "sansserif" 10 normal
+  drawText 0 20 "testing glyph cache textures"
+
+  # Important that this gradient doesn't match any earlier
+  # gradients, so that it's not cached from before.
+  gradient_clearStops
+  gradient_appendStop 0 blue
+  gradient_appendStop 0.5 #00ff00
+  gradient_appendStop 1 red
+  gradient_setLinear 0 0 100 0
+  setPen nopen
+  drawRect 0 30 100 20
+
+  setPen black
+  drawText 0 70 "testing glyph cache textures"
+restore

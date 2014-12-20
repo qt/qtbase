@@ -79,8 +79,11 @@ void *QAndroidPlatformNativeInterface::nativeResourceForIntegration(const QByteA
     if (resource == "QtActivity")
         return QtAndroid::activity();
     if (resource == "AndroidStyleData") {
-        if (m_androidStyle)
+        if (m_androidStyle) {
+            if (m_androidStyle->m_styleData.isEmpty())
+                m_androidStyle->m_styleData = AndroidStyle::loadStyleData();
             return &m_androidStyle->m_styleData;
+        }
         else
             return Q_NULLPTR;
     }

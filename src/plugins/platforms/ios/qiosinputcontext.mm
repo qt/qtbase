@@ -68,6 +68,7 @@ static QUIView *focusView()
   @private
     QIOSInputContext *m_context;
 }
+@property BOOL hasDeferredScrollToCursor;
 @end
 
 @implementation QIOSKeyboardListener
@@ -79,6 +80,8 @@ static QUIView *focusView()
         Q_ASSERT(self == originalSelf);
 
         m_context = context;
+
+        self.hasDeferredScrollToCursor = NO;
 
         // UIGestureRecognizer
         self.enabled = NO;
@@ -159,6 +162,18 @@ static QUIView *focusView()
 
 // -------------------------------------------------------------------------
 
+- (BOOL)canPreventGestureRecognizer:(UIGestureRecognizer *)other
+{
+    Q_UNUSED(other);
+    return NO;
+}
+
+- (BOOL)canBePreventedByGestureRecognizer:(UIGestureRecognizer *)other
+{
+    Q_UNUSED(other);
+    return NO;
+}
+
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
 {
     [super touchesBegan:touches withEvent:event];
@@ -231,9 +246,14 @@ static QUIView *focusView()
         qImDebug() << "keyboard was hidden, disabling hide-keyboard gesture";
         self.enabled = NO;
     } else {
-        qImDebug() << "gesture completed without triggering, scrolling view to cursor";
-        m_context->scrollToCursor();
+        qImDebug() << "gesture completed without triggering";
+        if (self.hasDeferredScrollToCursor) {
+            qImDebug() << "applying deferred scroll to cursor";
+            m_context->scrollToCursor();
+        }
     }
+
+    self.hasDeferredScrollToCursor = NO;
 }
 
 @end
@@ -281,8 +301,6 @@ QIOSInputContext::QIOSInputContext()
     if (isQtApplication()) {
         QIOSScreen *iosScreen = static_cast<QIOSScreen*>(QGuiApplication::primaryScreen()->handle());
         [iosScreen->uiWindow() addGestureRecognizer:m_keyboardHideGesture];
-
-        connect(qGuiApp->inputMethod(), &QInputMethod::cursorRectangleChanged, this, &QIOSInputContext::cursorRectangleChanged);
     }
 
     connect(qGuiApp, &QGuiApplication::focusWindowChanged, this, &QIOSInputContext::focusWindowChanged);
@@ -400,23 +418,6 @@ QRectF QIOSInputContext::keyboardRect() const
 
 // -------------------------------------------------------------------------
 
-void QIOSInputContext::cursorRectangleChanged()
-{
-    if (!isInputPanelVisible() || !qApp->focusObject())
-        return;
-
-    // Check if the cursor has changed position inside the input item. Since
-    // qApp->inputMethod()->cursorRectangle() will also change when the input item
-    // itself moves, we need to ask the focus object for ImCursorRectangle:
-    static QPoint prevCursor;
-    QInputMethodQueryEvent queryEvent(Qt::ImCursorRectangle);
-    QCoreApplication::sendEvent(qApp->focusObject(), &queryEvent);
-    QPoint cursor = queryEvent.value(Qt::ImCursorRectangle).toRect().topLeft();
-    if (cursor != prevCursor)
-        scrollToCursor();
-    prevCursor = cursor;
-}
-
 UIView *QIOSInputContext::scrollableRootView()
 {
     if (!m_keyboardHideGesture.view)
@@ -437,7 +438,8 @@ void QIOSInputContext::scrollToCursor()
     if (m_keyboardHideGesture.state == UIGestureRecognizerStatePossible && m_keyboardHideGesture.numberOfTouches == 1) {
         // Don't scroll to the cursor if the user is touching the screen and possibly
         // trying to trigger the hide-keyboard gesture.
-        qImDebug() << "preventing scrolling to cursor as we're still waiting for a possible gesture";
+        qImDebug() << "deferring scrolling to cursor as we're still waiting for a possible gesture";
+        m_keyboardHideGesture.hasDeferredScrollToCursor = YES;
         return;
     }
 
@@ -524,7 +526,8 @@ void QIOSInputContext::setFocusObject(QObject *focusObject)
 
     qImDebug() << "new focus object =" << focusObject;
 
-    if (m_keyboardHideGesture.state == UIGestureRecognizerStateChanged) {
+    if (QPlatformInputContext::inputMethodAccepted()
+            && m_keyboardHideGesture.state == UIGestureRecognizerStateChanged) {
         // A new focus object may be set as part of delivering touch events to
         // application during the hide-keyboard gesture, but we don't want that
         // to result in a new object getting focus and bringing the keyboard up
@@ -598,6 +601,9 @@ void QIOSInputContext::update(Qt::InputMethodQueries updatedProperties)
     } else {
         [m_textResponder notifyInputDelegate:changedProperties];
     }
+
+    if (changedProperties & Qt::ImCursorRectangle)
+        scrollToCursor();
 }
 
 bool QIOSInputContext::inputMethodAccepted() const

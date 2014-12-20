@@ -791,7 +791,7 @@ void tst_QImageReader::animatedGif()
     }
 }
 
-// http://bugreports.qt-project.org/browse/QTBUG-6696
+// QTBUG-6696
 // Check the count of images in various call orders...
 void tst_QImageReader::gifImageCount()
 {

@@ -1006,7 +1006,7 @@ QList<QNetworkCookie> QNetworkCookiePrivate::parseSetCookieHeaderLine(const QByt
 */
 void QNetworkCookie::normalize(const QUrl &url)
 {
-    // don't do path checking. See http://bugreports.qt-project.org/browse/QTBUG-5815
+    // don't do path checking. See QTBUG-5815
     if (d->path.isEmpty()) {
         QString pathAndFileName = url.path();
         QString defaultPath = pathAndFileName.left(pathAndFileName.lastIndexOf(QLatin1Char('/'))+1);

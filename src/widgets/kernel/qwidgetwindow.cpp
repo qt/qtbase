@@ -147,6 +147,12 @@ QObject *QWidgetWindow::focusObject() const
     if (!widget)
         widget = m_widget;
 
+    if (widget) {
+        QObject *focusObj = QWidgetPrivate::get(widget)->focusObject();
+        if (focusObj)
+            return focusObj;
+    }
+
     return widget;
 }
 

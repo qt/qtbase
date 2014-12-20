@@ -155,6 +155,7 @@ public:
     void reset()
     {
         m_received.clear();
+        m_framePositionsOnMove.clear();
     }
 
     bool event(QEvent *event)
@@ -170,6 +171,9 @@ public:
             m_surfaceventType = static_cast<QPlatformSurfaceEvent *>(event)->surfaceEventType();
             break;
 
+        case QEvent::Move:
+            m_framePositionsOnMove << framePosition();
+            break;
         default:
             break;
         }
@@ -197,6 +201,7 @@ public:
         return m_surfaceventType;
     }
 
+    QVector<QPoint> m_framePositionsOnMove;
 private:
     QHash<QEvent::Type, int> m_received;
     QVector<QEvent::Type> m_order;
@@ -321,9 +326,17 @@ void tst_QWindow::positioning()
         QPoint framePos = QPlatformScreen::platformScreenForWindow(&window)->availableGeometry().center();
 
         window.reset();
+        const QPoint oldFramePos = window.framePosition();
         window.setFramePosition(framePos);
 
         QTRY_VERIFY(window.received(QEvent::Move));
+        if (window.framePosition() != framePos) {
+            qDebug() << "About to fail auto-test. Here is some additional information:";
+            qDebug() << "window.framePosition() == " << window.framePosition();
+            qDebug() << "old frame position == " << oldFramePos;
+            qDebug() << "We received " << window.received(QEvent::Move) << " move events";
+            qDebug() << "frame positions after each move event:" << window.m_framePositionsOnMove;
+        }
         QTRY_COMPARE(framePos, window.framePosition());
         QTRY_COMPARE(originalMargins, window.frameMargins());
         QCOMPARE(window.position(), window.framePosition() + QPoint(originalMargins.left(), originalMargins.top()));

@@ -46,12 +46,12 @@ QT_BEGIN_NAMESPACE
 
 struct AndroidStyle
 {
+    static QJsonObject loadStyleData();
     QJsonObject m_styleData;
     QPalette m_standardPalette;
     QHash<int, QPalette> m_palettes;
     QHash<int, QFont> m_fonts;
     QHash<QByteArray, QFont> m_QWidgetsFonts;
-    QHash<QByteArray, QFont> m_QWidgetsPalettes;
 };
 
 class QAndroidPlatformNativeInterface;

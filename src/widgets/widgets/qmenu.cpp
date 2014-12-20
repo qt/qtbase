@@ -1111,6 +1111,7 @@ bool QMenuPrivate::mouseEventTaken(QMouseEvent *e)
             if(e->type() != QEvent::MouseButtonRelease || mouseDown == caused) {
             QMouseEvent new_e(e->type(), cpos, caused->mapTo(caused->topLevelWidget(), cpos), e->screenPos(),
                               e->button(), e->buttons(), e->modifiers());
+            QGuiApplicationPrivate::setMouseEventSource(&new_e, e->source());
             QApplication::sendEvent(caused, &new_e);
             return true;
             }

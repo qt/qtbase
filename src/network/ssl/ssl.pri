@@ -2,6 +2,7 @@
 contains(QT_CONFIG, ssl) | contains(QT_CONFIG, openssl) | contains(QT_CONFIG, openssl-linked) {
     HEADERS += ssl/qasn1element_p.h \
                ssl/qssl.h \
+               ssl/qssl_p.h \
                ssl/qsslcertificate.h \
                ssl/qsslcertificate_p.h \
                ssl/qsslconfiguration.h \

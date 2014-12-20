@@ -47,6 +47,7 @@
 **
 ****************************************************************************/
 
+#include "qssl_p.h"
 #include "qsslsocket_openssl_symbols_p.h"
 
 #ifdef Q_OS_WIN
@@ -115,12 +116,12 @@ QT_BEGIN_NAMESPACE
 namespace {
 void qsslSocketUnresolvedSymbolWarning(const char *functionName)
 {
-    qWarning("QSslSocket: cannot call unresolved function %s", functionName);
+    qCWarning(lcSsl, "QSslSocket: cannot call unresolved function %s", functionName);
 }
 
 void qsslSocketCannotResolveSymbolWarning(const char *functionName)
 {
-    qWarning("QSslSocket: cannot resolve %s", functionName);
+    qCWarning(lcSsl, "QSslSocket: cannot resolve %s", functionName);
 }
 }
 
@@ -393,11 +394,11 @@ DEFINEFUNC(void, PKCS12_free, PKCS12 *pkcs12, pkcs12, return, DUMMYARG)
 #ifdef QT_NO_LIBRARY
 bool q_resolveOpenSslSymbols()
 {
-    qWarning("QSslSocket: unable to resolve symbols. "
-             "QT_NO_LIBRARY is defined which means runtime resolving of "
-             "libraries won't work.");
-    qWarning("Either compile Qt statically or with support for runtime resolving "
-             "of libraries.");
+    qCWarning(lcSsl, "QSslSocket: unable to resolve symbols. "
+                     "QT_NO_LIBRARY is defined which means runtime resolving of "
+                     "libraries won't work.");
+    qCWarning(lcSsl, "Either compile Qt statically or with support for runtime resolving "
+                     "of libraries.");
     return false;
 }
 #else
@@ -1003,7 +1004,7 @@ QDateTime q_getTimeFromASN1(const ASN1_TIME *aTime)
         return result;
 
     } else {
-        qWarning("unsupported date format detected");
+        qCWarning(lcSsl, "unsupported date format detected");
         return QDateTime();
     }
 

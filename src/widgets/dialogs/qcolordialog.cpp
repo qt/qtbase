@@ -627,6 +627,7 @@ public:
     QColorPicker(QWidget* parent);
     ~QColorPicker();
 
+    void setCrossVisible(bool visible);
 public slots:
     void setCol(int h, int s);
 
@@ -650,6 +651,7 @@ private:
     void setCol(const QPoint &pt);
 
     QPixmap pix;
+    bool crossVisible;
 };
 
 static int pWidth = 220;
@@ -805,6 +807,7 @@ void QColorPicker::setCol(const QPoint &pt)
 
 QColorPicker::QColorPicker(QWidget* parent)
     : QFrame(parent)
+    , crossVisible(true)
 {
     hue = 0; sat = 0;
     setCol(150, 255);
@@ -815,6 +818,14 @@ QColorPicker::QColorPicker(QWidget* parent)
 
 QColorPicker::~QColorPicker()
 {
+}
+
+void QColorPicker::setCrossVisible(bool visible)
+{
+    if (crossVisible != visible) {
+        crossVisible = visible;
+        update();
+    }
 }
 
 QSize QColorPicker::sizeHint() const
@@ -858,12 +869,13 @@ void QColorPicker::paintEvent(QPaintEvent* )
     QRect r = contentsRect();
 
     p.drawPixmap(r.topLeft(), pix);
-    QPoint pt = colPt() + r.topLeft();
-    p.setPen(Qt::black);
 
-    p.fillRect(pt.x()-9, pt.y(), 20, 2, Qt::black);
-    p.fillRect(pt.x(), pt.y()-9, 2, 20, Qt::black);
-
+    if (crossVisible) {
+        QPoint pt = colPt() + r.topLeft();
+        p.setPen(Qt::black);
+        p.fillRect(pt.x()-9, pt.y(), 20, 2, Qt::black);
+        p.fillRect(pt.x(), pt.y()-9, 2, 20, Qt::black);
+    }
 }
 
 void QColorPicker::resizeEvent(QResizeEvent *ev)
@@ -1477,8 +1489,8 @@ bool QColorDialogPrivate::selectColor(const QColor &col)
         const QRgb *match = std::find(standardColors, standardColorsEnd, color);
         if (match != standardColorsEnd) {
             const int index = int(match - standardColors);
-            const int row = index / standardColorRows;
-            const int column = index % standardColorRows;
+            const int column = index / standardColorRows;
+            const int row = index % standardColorRows;
             _q_newStandard(row, column);
             standard->setCurrent(row, column);
             standard->setSelected(row, column);
@@ -1493,8 +1505,8 @@ bool QColorDialogPrivate::selectColor(const QColor &col)
         const QRgb *match = std::find(customColors, customColorsEnd, color);
         if (match != customColorsEnd) {
             const int index = int(match - customColors);
-            const int row = index / customColorRows;
-            const int column = index % customColorRows;
+            const int column = index / customColorRows;
+            const int row = index % customColorRows;
             _q_newCustom(row, column);
             custom->setCurrent(row, column);
             custom->setSelected(row, column);
@@ -1578,6 +1590,7 @@ void QColorDialogPrivate::_q_pickScreenColor()
 void QColorDialogPrivate::releaseColorPicking()
 {
     Q_Q(QColorDialog);
+    cp->setCrossVisible(true);
     q->removeEventFilter(colorPickingEventFilter);
     q->releaseMouse();
     q->releaseKeyboard();
@@ -2174,6 +2187,9 @@ void QColorDialog::changeEvent(QEvent *e)
 
 bool QColorDialogPrivate::handleColorPickingMouseMove(QMouseEvent *e)
 {
+    // If the cross is visible the grabbed color will be black most of the times
+    cp->setCrossVisible(!cp->geometry().contains(e->pos()));
+
     const QPoint globalPos = e->globalPos();
     const QColor color = grabScreenColor(globalPos);
     // QTBUG-39792, do not change standard, custom color selectors while moving as

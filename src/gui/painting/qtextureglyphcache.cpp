@@ -222,7 +222,7 @@ bool QTextureGlyphCache::populate(QFontEngine *fontEngine, int numGlyphs, const 
 
 void QTextureGlyphCache::fillInPendingGlyphs()
 {
-    if (m_pendingGlyphs.isEmpty())
+    if (!hasPendingGlyphs())
         return;
 
     int requiredHeight = m_h;

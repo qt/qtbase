@@ -82,9 +82,10 @@ public:
 
 struct QBackingstoreTextureInfo
 {
+    QWidget *widget; // may be null
     GLuint textureId;
     QRect rect;
-    bool stacksOnTop;
+    QPlatformTextureList::Flags flags;
 };
 
 Q_DECLARE_TYPEINFO(QBackingstoreTextureInfo, Q_MOVABLE_TYPE);
@@ -122,10 +123,16 @@ GLuint QPlatformTextureList::textureId(int index) const
     return d->textures.at(index).textureId;
 }
 
-bool QPlatformTextureList::stacksOnTop(int index) const
+QWidget *QPlatformTextureList::widget(int index)
 {
     Q_D(const QPlatformTextureList);
-    return d->textures.at(index).stacksOnTop;
+    return d->textures.at(index).widget;
+}
+
+QPlatformTextureList::Flags QPlatformTextureList::flags(int index) const
+{
+    Q_D(const QPlatformTextureList);
+    return d->textures.at(index).flags;
 }
 
 QRect QPlatformTextureList::geometry(int index) const
@@ -149,13 +156,14 @@ bool QPlatformTextureList::isLocked() const
     return d->locked;
 }
 
-void QPlatformTextureList::appendTexture(GLuint textureId, const QRect &geometry, bool stacksOnTop)
+void QPlatformTextureList::appendTexture(QWidget *widget, GLuint textureId, const QRect &geometry, Flags flags)
 {
     Q_D(QPlatformTextureList);
     QBackingstoreTextureInfo bi;
+    bi.widget = widget;
     bi.textureId = textureId;
     bi.rect = geometry;
-    bi.stacksOnTop = stacksOnTop;
+    bi.flags = flags;
     d->textures.append(bi);
 }
 
@@ -245,7 +253,7 @@ void QPlatformBackingStore::composeAndFlush(QWindow *window, const QRegion &regi
 
     // Textures for renderToTexture widgets.
     for (int i = 0; i < textures->count(); ++i) {
-        if (!textures->stacksOnTop(i)) {
+        if (!textures->flags(i).testFlag(QPlatformTextureList::StacksOnTop)) {
             QRect targetRect = deviceRect(textures->geometry(i), window);
             QMatrix4x4 target = QOpenGLTextureBlitter::targetTransform(targetRect, windowRect);
             d_ptr->blitter->blit(textures->textureId(i), target, QOpenGLTextureBlitter::OriginBottomLeft);
@@ -272,7 +280,7 @@ void QPlatformBackingStore::composeAndFlush(QWindow *window, const QRegion &regi
 
     // Textures for renderToTexture widgets that have WA_AlwaysStackOnTop set.
     for (int i = 0; i < textures->count(); ++i) {
-        if (textures->stacksOnTop(i)) {
+        if (textures->flags(i).testFlag(QPlatformTextureList::StacksOnTop)) {
             QRect targetRect = deviceRect(textures->geometry(i), window);
             QMatrix4x4 target = QOpenGLTextureBlitter::targetTransform(targetRect, windowRect);
             d_ptr->blitter->blit(textures->textureId(i), target, QOpenGLTextureBlitter::OriginBottomLeft);

@@ -292,7 +292,7 @@ public class QtActivityDelegate
                 }
             } else if ((inputHints & ImhHiddenText) != 0) {
                 inputType |= android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD;
-            } else if ((inputHints & ImhSensitiveData) != 0) {
+            } else if ((inputHints & ImhSensitiveData) != 0 || (inputHints & ImhNoPredictiveText) != 0) {
                 inputType |= android.text.InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD;
             }
 

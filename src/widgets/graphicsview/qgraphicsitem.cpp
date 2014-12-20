@@ -6592,7 +6592,7 @@ void QGraphicsItem::setData(int key, const QVariant &value)
 
     For example:
 
-    \snippet code/src_gui_graphicsview_qgraphicsitem.cpp QGraphicsItem type
+    \snippet code/src_gui_graphicsview_qgraphicsitem.cpp 1
 
     \sa UserType
 */

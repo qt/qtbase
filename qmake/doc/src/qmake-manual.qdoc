@@ -1019,7 +1019,7 @@
          on the directory they reside. This is turned on by default.
     \row \li embed_manifest_dll \li Embeds a manifest file in the DLL created
          as part of a library project.
-    \row \li embed_manifest_exe \li Embeds a manifest file in the DLL created
+    \row \li embed_manifest_exe \li Embeds a manifest file in the EXE created
          as part of an application project.
     \endtable
 

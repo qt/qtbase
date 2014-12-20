@@ -33,8 +33,11 @@
 
 
 #include "qsslkey.h"
+#include "qssl_p.h"
 
 QT_BEGIN_NAMESPACE
+
+Q_LOGGING_CATEGORY(lcSsl, "qt.network.ssl");
 
 /*! \namespace QSsl
 

@@ -270,6 +270,7 @@ void QGraphicsProxyWidgetPrivate::sendWidgetMouseEvent(QGraphicsSceneMouseEvent 
     QMouseEvent mouseEvent(type, pos, receiver->mapTo(receiver->topLevelWidget(), pos.toPoint()),
                            receiver->mapToGlobal(pos.toPoint()),
                            event->button(), event->buttons(), event->modifiers());
+    QGuiApplicationPrivate::setMouseEventSource(&mouseEvent, event->source());
 
     QWidget *embeddedMouseGrabberPtr = (QWidget *)embeddedMouseGrabber;
     QApplicationPrivate::sendMouseEvent(receiver, &mouseEvent, alienWidget, widget,

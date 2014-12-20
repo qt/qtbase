@@ -559,10 +559,11 @@ QWindowsWindowData
         Q_ASSERT(result.hwnd);
         const LONG_PTR style = GetWindowLongPtr(result.hwnd, GWL_STYLE);
         const LONG_PTR exStyle = GetWindowLongPtr(result.hwnd, GWL_EXSTYLE);
-        result.geometry = frameGeometry(result.hwnd, !GetParent(result.hwnd));
-        result.frame = QWindowsGeometryHint::frame(style, exStyle);
         result.embedded = false;
-        qCDebug(lcQpaWindows) << "Foreign window: " << w << result.hwnd << result.geometry << result.frame;
+        result.frame = QWindowsGeometryHint::frame(style, exStyle);
+        result.geometry = frameGeometry(result.hwnd, !GetParent(result.hwnd))
+            .marginsRemoved(result.frame);
+        qCDebug(lcQpaWindows) << "Foreign window: " << w << result.hwnd << result.geometry;
         return result;
     }
 
@@ -889,7 +890,8 @@ QWindowsWindow::QWindowsWindow(QWindow *aWindow, const QWindowsWindowData &data)
     updateDropSite();
 
 #ifndef Q_OS_WINCE
-    if (QWindowsContext::instance()->systemInfo() & QWindowsContext::SI_SupportsTouch) {
+    if ((QWindowsContext::instance()->systemInfo() & QWindowsContext::SI_SupportsTouch)
+        && aWindow->type() != Qt::ForeignWindow) {
         if (QWindowsContext::user32dll.registerTouchWindow(m_data.hwnd, 0)) {
             setFlag(TouchRegistered);
         } else {

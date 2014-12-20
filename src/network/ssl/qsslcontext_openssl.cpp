@@ -37,6 +37,7 @@
 #include <QtNetwork/qsslsocket.h>
 #include <QtCore/qmutex.h>
 
+#include "private/qssl_p.h"
 #include "private/qsslcontext_openssl_p.h"
 #include "private/qsslsocket_p.h"
 #include "private/qsslsocket_openssl_p.h"
@@ -390,7 +391,7 @@ static int next_proto_cb(SSL *, unsigned char **out, unsigned char *outlen,
         ctx->status = QSslConfiguration::NextProtocolNegotiationUnsupported;
         break;
     default:
-        qWarning("OpenSSL sent unknown NPN status");
+        qCWarning(lcSsl, "OpenSSL sent unknown NPN status");
     }
 
     return SSL_TLSEXT_ERR_OK;
@@ -417,7 +418,7 @@ SSL* QSslContext::createSsl()
     if (session) {
         // Try to resume the last session we cached
         if (!q_SSL_set_session(ssl, session)) {
-            qWarning("could not set SSL session");
+            qCWarning(lcSsl, "could not set SSL session");
             q_SSL_SESSION_free(session);
             session = 0;
         }
@@ -429,8 +430,8 @@ SSL* QSslContext::createSsl()
         m_supportedNPNVersions.clear();
         for (int a = 0; a < protocols.count(); ++a) {
             if (protocols.at(a).size() > 255) {
-                qWarning() << "TLS NPN extension" << protocols.at(a)
-                           << "is too long and will be truncated to 255 characters.";
+                qCWarning(lcSsl) << "TLS NPN extension" << protocols.at(a)
+                                 << "is too long and will be truncated to 255 characters.";
                 protocols[a] = protocols.at(a).left(255);
             }
             m_supportedNPNVersions.append(protocols.at(a).size()).append(protocols.at(a));
@@ -466,7 +467,7 @@ bool QSslContext::cacheSession(SSL* ssl)
             m_sessionASN1.resize(sessionSize);
             unsigned char *data = reinterpret_cast<unsigned char *>(m_sessionASN1.data());
             if (!q_i2d_SSL_SESSION(session, &data))
-                qWarning("could not store persistent version of SSL session");
+                qCWarning(lcSsl, "could not store persistent version of SSL session");
             m_sessionTicketLifeTimeHint = session->tlsext_tick_lifetime_hint;
         }
     }
