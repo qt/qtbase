@@ -43,6 +43,7 @@
 #include <qmath.h>
 
 #ifndef QT_NO_COMPRESS
+#include <zconf.h>
 #include <zlib.h>
 #endif
 #include <ctype.h>
