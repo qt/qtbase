@@ -670,6 +670,8 @@ QVariant QMYSQLResult::data(int field)
 
 bool QMYSQLResult::isNull(int field)
 {
+   if (field < 0 || field >= d->fields.count())
+       return true;
    if (d->preparedQuery)
        return d->fields.at(field).nullIndicator;
    else
