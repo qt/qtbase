@@ -237,7 +237,11 @@ static QVariant::Type qDecodeMYSQLType(int mysqltype, uint flags)
     QVariant::Type type;
     switch (mysqltype) {
     case FIELD_TYPE_TINY :
+        type = static_cast<QVariant::Type>((flags & UNSIGNED_FLAG) ? QMetaType::UChar : QMetaType::Char);
+        break;
     case FIELD_TYPE_SHORT :
+        type = static_cast<QVariant::Type>((flags & UNSIGNED_FLAG) ? QMetaType::UShort : QMetaType::Short);
+        break;
     case FIELD_TYPE_LONG :
     case FIELD_TYPE_INT24 :
         type = (flags & UNSIGNED_FLAG) ? QVariant::UInt : QVariant::Int;
@@ -316,13 +320,11 @@ static bool qIsBlob(int t)
 
 static bool qIsInteger(int t)
 {
-    return t == MYSQL_TYPE_TINY
-           || t == MYSQL_TYPE_SHORT
-           || t == MYSQL_TYPE_LONG
-           || t == MYSQL_TYPE_LONGLONG
-           || t == MYSQL_TYPE_INT24;
+    return t == QMetaType::Char || t == QMetaType::UChar
+        || t == QMetaType::Short || t == QMetaType::UShort
+        || t == QMetaType::Int || t == QMetaType::UInt
+        || t == QMetaType::LongLong || t == QMetaType::ULongLong;
 }
-
 
 void QMYSQLResultPrivate::bindBlobs()
 {
@@ -371,14 +373,9 @@ bool QMYSQLResultPrivate::bindInValues()
             // after mysql_stmt_exec() in QMYSQLResult::exec()
             fieldInfo->length = 0;
             hasBlobs = true;
+        } else if (qIsInteger(f.type)) {
+            fieldInfo->length = 8;
         } else {
-            // fieldInfo->length specifies the display width, which may be too
-            // small to hold valid integer values (see
-            // http://dev.mysql.com/doc/refman/5.0/en/numeric-types.html ), so
-            // always use the MAX_BIGINT_WIDTH for integer types
-            if (qIsInteger(fieldInfo->type)) {
-                fieldInfo->length = MAX_BIGINT_WIDTH;
-            }
             fieldInfo->type = MYSQL_TYPE_STRING;
         }
         bind = &inBinds[i];
@@ -598,6 +595,9 @@ QVariant QMYSQLResult::data(int field)
         if (f.nullIndicator)
             return QVariant(f.type);
 
+        if (qIsInteger(f.type))
+            return QVariant(f.type, f.outField);
+
         if (f.type != QVariant::ByteArray)
             val = toUnicode(d->driver->d_func()->tc, f.outField, f.bufLength);
     } else {
@@ -605,18 +605,24 @@ QVariant QMYSQLResult::data(int field)
             // NULL value
             return QVariant(f.type);
         }
+
         fieldLength = mysql_fetch_lengths(d->result)[field];
+
         if (f.type != QVariant::ByteArray)
             val = toUnicode(d->driver->d_func()->tc, d->row[field], fieldLength);
     }
 
-    switch(f.type) {
+    switch (static_cast<int>(f.type)) {
     case QVariant::LongLong:
         return QVariant(val.toLongLong());
     case QVariant::ULongLong:
         return QVariant(val.toULongLong());
+    case QMetaType::Char:
+    case QMetaType::Short:
     case QVariant::Int:
         return QVariant(val.toInt());
+    case QMetaType::UChar:
+    case QMetaType::UShort:
     case QVariant::UInt:
         return QVariant(val.toUInt());
     case QVariant::Double: {
