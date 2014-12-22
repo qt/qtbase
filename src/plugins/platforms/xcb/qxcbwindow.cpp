@@ -328,6 +328,7 @@ void QXcbWindow::create()
 
     resolveFormat();
 
+#ifdef XCB_USE_XLIB
     if (QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::OpenGL)) {
         XVisualInfo *visualInfo = static_cast<XVisualInfo *>(createVisual());
         if (!visualInfo && window()->surfaceType() == QSurface::OpenGLSurface)
@@ -359,6 +360,7 @@ void QXcbWindow::create()
             XFree(visualInfo);
         }
     }
+#endif
 
     if (!m_window)
     {

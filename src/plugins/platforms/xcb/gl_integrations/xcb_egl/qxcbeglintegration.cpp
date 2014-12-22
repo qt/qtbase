@@ -66,7 +66,11 @@ bool QXcbEglIntegration::initialize(QXcbConnection *connection)
 {
     m_connection = connection;
 
+#ifdef USE_XCB_XLIB
     Display *dpy = (Display *)m_connection->xlib_display();
+#else
+    EGLNativeDisplayType dpy = EGL_DEFAULT_DISPLAY;
+#endif
     m_egl_display = eglGetDisplay(dpy);
 
     EGLint major, minor;

@@ -1155,10 +1155,12 @@ xcb_window_t QXcbConnection::rootWindow()
     return primaryScreen()->root();
 }
 
+#ifdef XCB_USE_XLIB
 void *QXcbConnection::xlib_display() const
 {
     return m_xlib_display;
 }
+#endif
 
 void QXcbConnection::processXcbEvents()
 {
