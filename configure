@@ -4310,6 +4310,18 @@ fi
 [ "$XPLATFORM_MINGW" = "yes" ] && QMakeVar add styles "windowsxp windowsvista"
 [ "$XPLATFORM_ANDROID" = "yes" ] && QMakeVar add styles "android"
 
+# check IPC support
+if ! compileTest unix/ipc_sysv "ipc_sysv" ; then
+    # SYSV IPC is not supported - check POSIX IPC
+    if compileTest unix/ipc_posix "ipc_posix" ; then
+        QCONFIG_FLAGS="$QCONFIG_FLAGS QT_POSIX_IPC"
+    else
+        if [ "$XPLATFORM_ANDROID" = "no" ] ; then
+            QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_SYSTEMSEMAPHORE QT_NO_SHAREDMEMORY"
+        fi
+    fi
+fi
+
 # detect zlib
 if [ "$CFG_ZLIB" = "no" ]; then
     # Note: Qt no longer support builds without zlib
