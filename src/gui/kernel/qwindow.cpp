@@ -2393,7 +2393,8 @@ void QWindowPrivate::setCursor(const QCursor *newCursor)
         hasCursor = false;
     }
     // Only attempt to set cursor and emit signal if there is an actual platform cursor
-    if (q->screen()->handle()->cursor()) {
+    QScreen* screen = q->screen();
+    if (screen && screen->handle()->cursor()) {
         applyCursor();
         QEvent event(QEvent::CursorChange);
         QGuiApplication::sendEvent(q, &event);
