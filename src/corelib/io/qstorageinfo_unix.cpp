@@ -52,17 +52,18 @@
 
 #if defined(Q_OS_BSD4)
 #  include <sys/mount.h>
+#  include <sys/statvfs.h>
 #elif defined(Q_OS_ANDROID)
 #  include <sys/mount.h>
 #  include <sys/vfs.h>
 #  include <mntent.h>
-#elif defined(Q_OS_QNX)
-#  include <sys/statvfs.h>
 #elif defined(Q_OS_LINUX)
 #  include <mntent.h>
 #  include <sys/statvfs.h>
 #elif defined(Q_OS_SOLARIS)
 #  include <sys/mnttab.h>
+#else
+#  include <sys/statvfs.h>
 #endif
 
 #if defined(Q_OS_BSD4)
@@ -118,7 +119,7 @@ public:
     inline QByteArray device() const;
 private:
 #if defined(Q_OS_BSD4)
-    statfs *stat_buf;
+    struct statfs *stat_buf;
     int entryCount;
     int currentIndex;
 #elif defined(Q_OS_SOLARIS)
