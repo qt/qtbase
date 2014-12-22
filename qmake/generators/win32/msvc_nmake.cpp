@@ -37,6 +37,7 @@
 
 #include <qregexp.h>
 #include <qdir.h>
+#include <qdiriterator.h>
 #include <qset.h>
 
 #include <windows/registry_p.h>
@@ -425,6 +426,17 @@ void NmakeMakefileGenerator::init()
     }
 }
 
+QStringList NmakeMakefileGenerator::sourceFilesForImplicitRulesFilter()
+{
+    QStringList filter;
+    const QChar wildcard = QLatin1Char('*');
+    foreach (const QString &ext, Option::c_ext)
+        filter << wildcard + ext;
+    foreach (const QString &ext, Option::cpp_ext)
+        filter << wildcard + ext;
+    return filter;
+}
+
 void NmakeMakefileGenerator::writeImplicitRulesPart(QTextStream &t)
 {
     t << ".SUFFIXES:";
@@ -434,12 +446,9 @@ void NmakeMakefileGenerator::writeImplicitRulesPart(QTextStream &t)
         t << " " << (*cppit);
     t << endl << endl;
 
-    if(!project->isActiveConfig("no_batch")) {
-        // Batchmode doesn't use the non implicit rules QMAKE_RUN_CXX & QMAKE_RUN_CC
-        project->variables().remove("QMAKE_RUN_CXX");
-        project->variables().remove("QMAKE_RUN_CC");
-
-        QSet<QString> source_directories;
+    bool useInferenceRules = !project->isActiveConfig("no_batch");
+    QSet<QString> source_directories;
+    if (useInferenceRules) {
         source_directories.insert(".");
         static const char * const directories[] = { "UI_SOURCES_DIR", "UI_DIR", 0 };
         for (int y = 0; directories[y]; y++) {
@@ -461,6 +470,38 @@ void NmakeMakefileGenerator::writeImplicitRulesPart(QTextStream &t)
                     source_directories.insert(dir);
             }
         }
+
+        // nmake's inference rules might pick up the wrong files when encountering source files with
+        // the same name in different directories. In this situation, turn inference rules off.
+        QHash<QString, QString> fileNames;
+        bool duplicatesFound = false;
+        const QStringList sourceFilesFilter = sourceFilesForImplicitRulesFilter();
+        QStringList fixifiedSourceDirs = fileFixify(source_directories.toList(), FileFixifyAbsolute);
+        fixifiedSourceDirs.removeDuplicates();
+        foreach (const QString &sourceDir, fixifiedSourceDirs) {
+            QDirIterator dit(sourceDir, sourceFilesFilter, QDir::Files | QDir::NoDotAndDotDot);
+            while (dit.hasNext()) {
+                dit.next();
+                QString &duplicate = fileNames[dit.fileName()];
+                if (duplicate.isNull()) {
+                    duplicate = dit.filePath();
+                } else {
+                    warn_msg(WarnLogic, "%s conflicts with %s", qPrintable(duplicate),
+                             qPrintable(dit.filePath()));
+                    duplicatesFound = true;
+                }
+            }
+        }
+        if (duplicatesFound) {
+            useInferenceRules = false;
+            warn_msg(WarnLogic, "Automatically turning off nmake's inference rules. (CONFIG += no_batch)");
+        }
+    }
+
+    if (useInferenceRules) {
+        // Batchmode doesn't use the non implicit rules QMAKE_RUN_CXX & QMAKE_RUN_CC
+        project->variables().remove("QMAKE_RUN_CXX");
+        project->variables().remove("QMAKE_RUN_CC");
 
         foreach (const QString &sourceDir, source_directories) {
             if (sourceDir.isEmpty())
