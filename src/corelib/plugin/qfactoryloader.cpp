@@ -54,6 +54,16 @@ Q_GLOBAL_STATIC(QList<QFactoryLoader *>, qt_factory_loaders)
 
 Q_GLOBAL_STATIC_WITH_ARGS(QMutex, qt_factoryloader_mutex, (QMutex::Recursive))
 
+namespace {
+
+// avoid duplicate QStringLiteral data:
+inline QString iidKeyLiteral() { return QStringLiteral("IID"); }
+inline QString versionKeyLiteral() { return QStringLiteral("version"); }
+inline QString metaDataKeyLiteral() { return QStringLiteral("MetaData"); }
+inline QString keysKeyLiteral() { return QStringLiteral("Keys"); }
+
+}
+
 class QFactoryLoaderPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QFactoryLoader)
@@ -162,12 +172,12 @@ void QFactoryLoader::update()
             QStringList keys;
             bool metaDataOk = false;
 
-            QString iid = library->metaData.value(QLatin1String("IID")).toString();
+            QString iid = library->metaData.value(iidKeyLiteral()).toString();
             if (iid == QLatin1String(d->iid.constData(), d->iid.size())) {
-                QJsonObject object = library->metaData.value(QLatin1String("MetaData")).toObject();
+                QJsonObject object = library->metaData.value(metaDataKeyLiteral()).toObject();
                 metaDataOk = true;
 
-                QJsonArray k = object.value(QLatin1String("Keys")).toArray();
+                QJsonArray k = object.value(keysKeyLiteral()).toArray();
                 for (int i = 0; i < k.size(); ++i)
                     keys += d->cs ? k.at(i).toString() : k.at(i).toString().toLower();
             }
@@ -190,9 +200,9 @@ void QFactoryLoader::update()
                 QLibraryPrivate *previous = d->keyMap.value(key);
                 int prev_qt_version = 0;
                 if (previous) {
-                    prev_qt_version = (int)previous->metaData.value(QLatin1String("version")).toDouble();
+                    prev_qt_version = (int)previous->metaData.value(versionKeyLiteral()).toDouble();
                 }
-                int qt_version = (int)library->metaData.value(QLatin1String("version")).toDouble();
+                int qt_version = (int)library->metaData.value(versionKeyLiteral()).toDouble();
                 if (!previous || (prev_qt_version > QT_VERSION && qt_version <= QT_VERSION)) {
                     d->keyMap[key] = library;
                     ++keyUsageCount;
@@ -229,7 +239,7 @@ QList<QJsonObject> QFactoryLoader::metaData() const
 
     foreach (const QStaticPlugin &plugin, QPluginLoader::staticPlugins()) {
         const QJsonObject object = plugin.metaData();
-        if (object.value(QLatin1String("IID")) != QLatin1String(d->iid.constData(), d->iid.size()))
+        if (object.value(iidKeyLiteral()) != QLatin1String(d->iid.constData(), d->iid.size()))
             continue;
         metaData.append(object);
     }
@@ -261,7 +271,7 @@ QObject *QFactoryLoader::instance(int index) const
     QVector<QStaticPlugin> staticPlugins = QPluginLoader::staticPlugins();
     for (int i = 0; i < staticPlugins.count(); ++i) {
         const QJsonObject object = staticPlugins.at(i).metaData();
-        if (object.value(QLatin1String("IID")) != QLatin1String(d->iid.constData(), d->iid.size()))
+        if (object.value(iidKeyLiteral()) != QLatin1String(d->iid.constData(), d->iid.size()))
             continue;
 
         if (index == 0)
@@ -289,10 +299,6 @@ void QFactoryLoader::refreshAll()
         (*it)->update();
     }
 }
-
-// avoid duplicate QStringLiteral data:
-static inline QString metaDataKeyLiteral() { return QStringLiteral("MetaData"); }
-static inline QString keysKeyLiteral() { return QStringLiteral("Keys"); }
 
 QMultiMap<int, QString> QFactoryLoader::keyMap() const
 {
