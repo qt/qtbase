@@ -4001,11 +4001,11 @@ void QAssociativeIterable::const_iterator::end()
     m_impl.end();
 }
 
-void find(QAssociativeIterable::const_iterator &it, const QVariant &key)
+void QAssociativeIterable::const_iterator::find(const QVariant &key)
 {
-    Q_ASSERT(key.userType() == it.m_impl._metaType_id_key);
+    Q_ASSERT(key.userType() == m_impl._metaType_id_key);
     const QtMetaTypePrivate::VariantData dkey(key.userType(), key.constData(), 0 /*key.flags()*/);
-    it.m_impl.find(dkey);
+    m_impl.find(dkey);
 }
 
 /*!
@@ -4035,7 +4035,7 @@ QAssociativeIterable::const_iterator QAssociativeIterable::end() const
 }
 
 /*!
-    \internal
+    \since 5.5
 
     Returns a QAssociativeIterable::const_iterator for the given key \a key
     in the container, if the types are convertible.
@@ -4046,12 +4046,12 @@ QAssociativeIterable::const_iterator QAssociativeIterable::end() const
 
     \sa begin(), end(), value()
 */
-QAssociativeIterable::const_iterator find(const QAssociativeIterable &iterable, const QVariant &key)
+QAssociativeIterable::const_iterator QAssociativeIterable::find(const QVariant &key) const
 {
-    QAssociativeIterable::const_iterator it(iterable, new QAtomicInt(0));
+    const_iterator it(*this, new QAtomicInt(0));
     QVariant key_ = key;
-    if (key_.canConvert(iterable.m_impl._metaType_id_key) && key_.convert(iterable.m_impl._metaType_id_key))
-        find(it, key_);
+    if (key_.canConvert(m_impl._metaType_id_key) && key_.convert(m_impl._metaType_id_key))
+        it.find(key_);
     else
         it.end();
     return it;
@@ -4059,10 +4059,12 @@ QAssociativeIterable::const_iterator find(const QAssociativeIterable &iterable, 
 
 /*!
     Returns the value for the given \a key in the container, if the types are convertible.
+
+    \sa find()
 */
 QVariant QAssociativeIterable::value(const QVariant &key) const
 {
-    const const_iterator it = find(*this, key);
+    const const_iterator it = find(key);
     if (it == end())
         return QVariant();
     return *it;

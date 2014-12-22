@@ -631,9 +631,7 @@ public:
 
         void begin();
         void end();
-        // ### Qt 5.5: make find() (1st one) a member function
-        friend void find(const_iterator &it, const QVariant &key);
-        friend const_iterator find(const QAssociativeIterable &iterable, const QVariant &key);
+        void find(const QVariant &key);
     public:
         ~const_iterator();
         const_iterator(const const_iterator &other);
@@ -663,9 +661,7 @@ public:
 
     const_iterator begin() const;
     const_iterator end() const;
-private: // ### Qt 5.5: make it a public find() member function:
-    friend const_iterator find(const QAssociativeIterable &iterable, const QVariant &key);
-public:
+    const_iterator find(const QVariant &key) const;
 
     QVariant value(const QVariant &key) const;
 

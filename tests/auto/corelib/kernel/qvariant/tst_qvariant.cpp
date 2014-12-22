@@ -4407,10 +4407,13 @@ void tst_QVariant::iterateContainerElements()
             QCOMPARE(varMap.value(QString::number(key)).value<MAPPED_TYPE>(), expected); \
             QCOMPARE(varHash.value(QString::number(key)).value<MAPPED_TYPE>(), expected); \
             QCOMPARE(actual, expected); \
+            const QAssociativeIterable::const_iterator it = mappingIter.find(key); \
+            QVERIFY(it != mappingIter.end()); \
+            QCOMPARE(it.value().value<MAPPED_TYPE>(), expected); \
         } \
         QCOMPARE(numSeen, (int)std::distance(mapping.begin(), mapping.end())); \
         QCOMPARE(containerIter, containerEnd); \
-        \
+        QVERIFY(mappingIter.find(10) == mappingIter.end()); \
     }
 
     TEST_ASSOCIATIVE_ITERATION(QHash, int, bool)
