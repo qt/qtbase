@@ -1,0 +1,3 @@
+StartDocument( )
+Invalid( )
+ERROR: Expected '[a-zA-Z]', but got ' '.
