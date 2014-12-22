@@ -1662,7 +1662,7 @@ void QColorDialogPrivate::initWidgets()
 
 #if !defined(Q_OS_WINCE) && !defined(QT_SMALL_COLORDIALOG)
         // The screen color picker button
-        screenColorPickerButton = new QPushButton(QColorDialog::tr("Pick Screen Color"));
+        screenColorPickerButton = new QPushButton(QColorDialog::tr("&Pick Screen Color"));
         leftLay->addWidget(screenColorPickerButton);
         lblScreenColorInfo = new QLabel(QLatin1String("\n"));
         leftLay->addWidget(lblScreenColorInfo);
