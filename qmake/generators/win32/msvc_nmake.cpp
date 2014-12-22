@@ -36,8 +36,8 @@
 #include "cesdkhandler.h"
 
 #include <qregexp.h>
-#include <qhash.h>
 #include <qdir.h>
+#include <qset.h>
 
 #include <windows/registry_p.h>
 
@@ -439,15 +439,15 @@ void NmakeMakefileGenerator::writeImplicitRulesPart(QTextStream &t)
         project->variables().remove("QMAKE_RUN_CXX");
         project->variables().remove("QMAKE_RUN_CC");
 
-        QHash<QString, void*> source_directories;
-        source_directories.insert(".", (void*)1);
+        QSet<QString> source_directories;
+        source_directories.insert(".");
         static const char * const directories[] = { "UI_SOURCES_DIR", "UI_DIR", 0 };
         for (int y = 0; directories[y]; y++) {
             QString dirTemp = project->first(directories[y]).toQString();
             if (dirTemp.endsWith("\\"))
                 dirTemp.truncate(dirTemp.length()-1);
             if(!dirTemp.isEmpty())
-                source_directories.insert(dirTemp, (void*)1);
+                source_directories.insert(dirTemp);
         }
         static const char * const srcs[] = { "SOURCES", "GENERATED_SOURCES", 0 };
         for (int x = 0; srcs[x]; x++) {
@@ -457,22 +457,22 @@ void NmakeMakefileGenerator::writeImplicitRulesPart(QTextStream &t)
                 if((*sit).indexOf(sep) == -1)
                     sep = "/";
                 QString dir = (*sit).toQString().section(sep, 0, -2);
-                if(!dir.isEmpty() && !source_directories[dir])
-                    source_directories.insert(dir, (void*)1);
+                if (!dir.isEmpty())
+                    source_directories.insert(dir);
             }
         }
 
-        for(QHash<QString, void*>::Iterator it(source_directories.begin()); it != source_directories.end(); ++it) {
-            if(it.key().isEmpty())
+        foreach (const QString &sourceDir, source_directories) {
+            if (sourceDir.isEmpty())
                 continue;
             QString objDir = var("OBJECTS_DIR");
             if (objDir == ".\\")
                 objDir = "";
             for(QStringList::Iterator cppit = Option::cpp_ext.begin(); cppit != Option::cpp_ext.end(); ++cppit)
-                t << "{" << it.key() << "}" << (*cppit) << "{" << objDir << "}" << Option::obj_ext << "::\n\t"
+                t << "{" << sourceDir << "}" << (*cppit) << "{" << objDir << "}" << Option::obj_ext << "::\n\t"
                   << var("QMAKE_RUN_CXX_IMP_BATCH").replace(QRegExp("\\$@"), var("OBJECTS_DIR")) << endl << "\t$<\n<<\n\n";
             for(QStringList::Iterator cit = Option::c_ext.begin(); cit != Option::c_ext.end(); ++cit)
-                t << "{" << it.key() << "}" << (*cit) << "{" << objDir << "}" << Option::obj_ext << "::\n\t"
+                t << "{" << sourceDir << "}" << (*cit) << "{" << objDir << "}" << Option::obj_ext << "::\n\t"
                   << var("QMAKE_RUN_CC_IMP_BATCH").replace(QRegExp("\\$@"), var("OBJECTS_DIR")) << endl << "\t$<\n<<\n\n";
         }
     } else {
