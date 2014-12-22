@@ -53,6 +53,9 @@
 #ifndef Q_OS_WINCE
 #   include <sys/types.h>
 #endif
+#ifdef QT_POSIX_IPC
+#   include <semaphore.h>
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -75,6 +78,9 @@ public:
 #ifdef Q_OS_WIN
     Qt::HANDLE handle(QSystemSemaphore::AccessMode mode = QSystemSemaphore::Open);
     void setErrorString(const QString &function);
+#elif defined(QT_POSIX_IPC)
+    bool handle(QSystemSemaphore::AccessMode mode = QSystemSemaphore::Open);
+    void setErrorString(const QString &function);
 #else
     key_t handle(QSystemSemaphore::AccessMode mode = QSystemSemaphore::Open);
     void setErrorString(const QString &function);
@@ -88,11 +94,14 @@ public:
 #ifdef Q_OS_WIN
     Qt::HANDLE semaphore;
     Qt::HANDLE semaphoreLock;
+#elif defined(QT_POSIX_IPC)
+    sem_t *semaphore;
+    bool createdSemaphore;
 #else
+    key_t unix_key;
     int semaphore;
     bool createdFile;
     bool createdSemaphore;
-    key_t unix_key;
 #endif
     QString errorString;
     QSystemSemaphore::SystemSemaphoreError error;

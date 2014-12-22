@@ -174,7 +174,11 @@ void tst_QSharedMemory::cleanup()
 #include <private/qsharedmemory_p.h>
 #include <sys/types.h>
 #include <sys/ipc.h>
+#ifndef QT_POSIX_IPC
 #include <sys/shm.h>
+#else
+#include <sys/mman.h>
+#endif // QT_POSIX_IPC
 #include <errno.h>
 #endif
 
@@ -189,7 +193,10 @@ QString tst_QSharedMemory::helperBinary()
 
 int tst_QSharedMemory::remove(const QString &key)
 {
-#ifndef Q_OS_WIN
+#ifdef Q_OS_WIN
+    Q_UNUSED(key);
+    return 0;
+#else
     // On unix the shared memory might exists from a previously failed test
     // or segfault, remove it it does
     if (key.isEmpty())
@@ -202,6 +209,7 @@ int tst_QSharedMemory::remove(const QString &key)
         return -2;
     }
 
+#ifndef QT_POSIX_IPC
     int unix_key = ftok(fileName.toLatin1().constData(), 'Q');
     if (-1 == unix_key) {
         qDebug() << "ftok failed";
@@ -219,11 +227,15 @@ int tst_QSharedMemory::remove(const QString &key)
         qDebug() << "shmctl failed";
         return -5;
     }
-    return QFile::remove(fileName);
 #else
-    Q_UNUSED(key);
-    return 0;
-#endif
+    if (shm_unlink(QFile::encodeName(fileName).constData()) == -1) {
+        qDebug() << "shm_unlink failed";
+        return -5;
+    }
+#endif // QT_POSIX_IPC
+
+    return QFile::remove(fileName);
+#endif // Q_OS_WIN
 }
 
 /*!

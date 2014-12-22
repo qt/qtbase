@@ -122,6 +122,8 @@ public:
             const QString &prefix = QLatin1String("qipc_sharedmemory_"));
 #ifdef Q_OS_WIN
     Qt::HANDLE handle();
+#elif defined(QT_POSIX_IPC)
+    int handle();
 #else
     key_t handle();
 #endif
@@ -147,6 +149,8 @@ public:
 private:
 #ifdef Q_OS_WIN
     Qt::HANDLE hand;
+#elif defined(QT_POSIX_IPC)
+    int hand;
 #else
     key_t unix_key;
 #endif

@@ -69,6 +69,8 @@ QSharedMemoryPrivate::makePlatformSafeKey(const QString &key,
     result.append(QLatin1String(hex));
 #ifdef Q_OS_WIN
     return result;
+#elif defined(QT_POSIX_IPC)
+    return QLatin1Char('/') + result;
 #else
     return QDir::tempPath() + QLatin1Char('/') + result;
 #endif
