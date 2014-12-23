@@ -49,6 +49,8 @@
 #include "qsslcertificateextension_p.h"
 #include "qasn1element_p.h"
 
+#include <QtCore/qdatastream.h>
+
 QT_BEGIN_NAMESPACE
 
 enum GeneralNameType
