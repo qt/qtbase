@@ -1261,7 +1261,7 @@ void tst_QUdpSocket::multicast()
     QFETCH(bool, bindResult);
     QFETCH(QHostAddress, groupAddress);
     QFETCH(bool, joinResult);
-    if (groupAddress.protocol() == QAbstractSocket::IPv6Protocol)
+    if (groupAddress.protocol() == QAbstractSocket::IPv6Protocol && !QtNetworkSettings::hasIPv6())
         QSKIP("system doesn't support ipv6!");
     if (setProxy) {
         // UDP multicast does not work with proxies
