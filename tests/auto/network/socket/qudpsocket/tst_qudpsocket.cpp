@@ -85,7 +85,8 @@ private slots:
     void dualStack();
     void dualStackAutoBinding();
     void dualStackNoIPv4onV6only();
-    void readLine();
+    void connectToHost();
+    void bindAndConnectToHost();
     void pendingDatagramSize();
     void writeDatagram();
     void performance();
@@ -621,7 +622,7 @@ void tst_QUdpSocket::empty_connectedSlot()
 
 //----------------------------------------------------------------------------------
 
-void tst_QUdpSocket::readLine()
+void tst_QUdpSocket::connectToHost()
 {
     QUdpSocket socket1;
     QUdpSocket socket2;
@@ -629,10 +630,41 @@ void tst_QUdpSocket::readLine()
     socket1.setProperty("_q_networksession", QVariant::fromValue(networkSession));
     socket2.setProperty("_q_networksession", QVariant::fromValue(networkSession));
 #endif
+
     QVERIFY2(socket1.bind(), socket1.errorString().toLatin1().constData());
 
     socket2.connectToHost(makeNonAny(socket1.localAddress()), socket1.localPort());
     QVERIFY(socket2.waitForConnected(5000));
+}
+
+//----------------------------------------------------------------------------------
+
+void tst_QUdpSocket::bindAndConnectToHost()
+{
+    QUdpSocket socket1;
+    QUdpSocket socket2;
+    QUdpSocket dummysocket;
+#ifdef FORCE_SESSION
+    socket1.setProperty("_q_networksession", QVariant::fromValue(networkSession));
+    socket2.setProperty("_q_networksession", QVariant::fromValue(networkSession));
+    dummysocket.setProperty("_q_networksession", QVariant::fromValue(networkSession));
+#endif
+
+    // we use the dummy socket to use up a file descriptor
+    dummysocket.bind();
+
+    QVERIFY2(socket2.bind(), socket2.errorString().toLatin1());
+    quint16 boundPort = socket2.localPort();
+    qintptr fd = socket2.socketDescriptor();
+
+    QVERIFY2(socket1.bind(), socket1.errorString().toLatin1().constData());
+
+    dummysocket.close();
+    socket2.connectToHost(makeNonAny(socket1.localAddress()), socket1.localPort());
+    QVERIFY(socket2.waitForConnected(5000));
+
+    QCOMPARE(socket2.localPort(), boundPort);
+    QCOMPARE(socket2.socketDescriptor(), fd);
 }
 
 //----------------------------------------------------------------------------------

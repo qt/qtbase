@@ -73,6 +73,7 @@
 // RVCT compiles also unused inline methods
 # include <QNetworkProxy>
 
+#include <time.h>
 #ifdef Q_OS_LINUX
 #include <stdio.h>
 #include <stdlib.h>
@@ -123,6 +124,8 @@ private slots:
     void constructing();
     void bind_data();
     void bind();
+    void bindThenResolveHost_data();
+    void bindThenResolveHost();
     void setInvalidSocketDescriptor();
 #ifndef Q_OS_WINRT
     void setSocketDescriptor();
@@ -245,6 +248,9 @@ private:
     int earlyBytesWrittenCount;
     int earlyReadyReadCount;
     QString stressTestDir;
+
+    QString firstFailName;
+    QHostInfo firstFailInfo;
 };
 
 enum ProxyTests {
@@ -297,7 +303,10 @@ public:
 };
 
 tst_QTcpSocket::tst_QTcpSocket()
+    : firstFailName("qt-test-server-first-fail")
 {
+    qsrand(time(NULL));
+
     tmpSocket = 0;
 
     //This code relates to the socketsConstructedBeforeEventLoop test case
@@ -308,6 +317,8 @@ tst_QTcpSocket::tst_QTcpSocket()
     connect(earlyConstructedSockets->endPoints[0], SIGNAL(readyRead()), this, SLOT(earlySocketReadyRead()));
     connect(earlyConstructedSockets->endPoints[1], SIGNAL(bytesWritten(qint64)), this, SLOT(earlySocketBytesSent(qint64)));
     earlyConstructedSockets->endPoints[1]->write("hello work");
+
+    firstFailInfo.setAddresses(QList<QHostAddress>() << QHostAddress("224.0.0.0") << QtNetworkSettings::serverIP());
 }
 
 tst_QTcpSocket::~tst_QTcpSocket()
@@ -389,6 +400,7 @@ void tst_QTcpSocket::init()
     }
 
     qt_qhostinfo_clear_cache();
+    qt_qhostinfo_cache_inject(firstFailName, firstFailInfo);
 }
 
 QTcpSocket *tst_QTcpSocket::newSocket() const
@@ -486,8 +498,11 @@ void tst_QTcpSocket::constructing()
 void tst_QTcpSocket::bind_data()
 {
     QTest::addColumn<QString>("stringAddr");
+    QTest::addColumn<int>("port");
     QTest::addColumn<bool>("successExpected");
     QTest::addColumn<QString>("stringExpectedLocalAddress");
+
+    bool testIpv6 = false;
 
     // iterate all interfaces, add all addresses on them as test data
     QList<QNetworkInterface> interfaces = QNetworkInterface::allInterfaces();
@@ -501,9 +516,25 @@ void tst_QTcpSocket::bind_data()
                 continue; // link-local bind will fail, at least on Linux, so skip it.
 
             QString ip(entry.ip().toString());
-            QTest::newRow(ip.toLatin1().constData()) << ip << true << ip;
+            QTest::newRow(ip.toLatin1().constData()) << ip << 0 << true << ip;
+
+            if (!testIpv6 && entry.ip().protocol() == QAbstractSocket::IPv6Protocol)
+                testIpv6 = true;
         }
     }
+
+    // test binding to localhost
+    QTest::newRow("0.0.0.0") << "0.0.0.0" << 0 << true << "0.0.0.0";
+    if (testIpv6)
+        QTest::newRow("[::]") << "::" << 0 << true << "::";
+
+    // and binding with a port number...
+    // Since we want to test that we got the port number we asked for, we need a random port number.
+    // We use random in case a previous run of the test left the port lingering open.
+    // -1 indicates "random port"
+    QTest::newRow("0.0.0.0:randomport") << "0.0.0.0" << -1 << true << "0.0.0.0";
+    if (testIpv6)
+        QTest::newRow("[::]:randomport") << "::" << -1 << true << "::";
 
     // additionally, try bind to known-bad addresses, and make sure this doesn't work
     // these ranges are guaranteed to be reserved for 'documentation purposes',
@@ -513,8 +544,16 @@ void tst_QTcpSocket::bind_data()
     knownBad << "198.51.100.1";
     knownBad << "2001:0DB8::1";
     foreach (const QString &badAddress, knownBad) {
-        QTest::newRow(badAddress.toLatin1().constData()) << badAddress << false << QString();
+        QTest::newRow(badAddress.toLatin1().constData()) << badAddress << 0 << false << QString();
     }
+
+#ifdef Q_OS_UNIX
+    // try to bind to a privileged ports
+    // we should fail if we're not root (unless the ports are in use!)
+    QTest::newRow("127.0.0.1:1") << "127.0.0.1" << 1 << !geteuid() << (geteuid() ? QString() : "127.0.0.1");
+    if (testIpv6)
+        QTest::newRow("[::]:1") << "::" << 1 << !geteuid() << (geteuid() ? QString() : "::");
+#endif
 }
 
 void tst_QTcpSocket::bind()
@@ -523,22 +562,123 @@ void tst_QTcpSocket::bind()
     if (setProxy)
         return; // QTBUG-22964 for proxies, QTBUG-29972 for QSKIP
     QFETCH(QString, stringAddr);
+    QFETCH(int, port);
     QFETCH(bool, successExpected);
     QFETCH(QString, stringExpectedLocalAddress);
 
     QHostAddress addr(stringAddr);
     QHostAddress expectedLocalAddress(stringExpectedLocalAddress);
 
+    QTcpSocket dummySocket;     // used only to "use up" a file descriptor
+    dummySocket.bind();
+
     QTcpSocket *socket = newSocket();
-    qDebug() << "Binding " << addr;
+    quint16 boundPort;
+    qintptr fd;
 
     if (successExpected) {
-        QVERIFY2(socket->bind(addr), qPrintable(socket->errorString()));
+        bool randomPort = port == -1;
+        int attemptsLeft = 5;     // only used with randomPort
+        do {
+            if (randomPort) {
+                // try to get a random port number
+                // we do this to ensure we're not trying to bind to the same port as we've just used in
+                // a previous run - race condition with the OS actually freeing the port
+                Q_STATIC_ASSERT(RAND_MAX > 1024);
+                port = qrand() & USHRT_MAX;
+                if (port < 1024)
+                    continue;
+            }
+
+            bool bindSuccess = socket->bind(addr, port);
+            if (!bindSuccess && randomPort && socket->error() == QTcpSocket::AddressInUseError) {
+                // we may have been unlucky and hit an already open port, so try another
+                --attemptsLeft;
+                continue;
+            }
+
+            QVERIFY2(bindSuccess, qPrintable(socket->errorString() + ", tried port " + QString::number(port)));
+            break;
+        } while (randomPort && attemptsLeft);
+
+        QCOMPARE(socket->state(), QAbstractSocket::BoundState);
+        boundPort = socket->localPort();
+        if (port)
+            QCOMPARE(int(boundPort), port);
+        fd = socket->socketDescriptor();
+        QVERIFY(fd != INVALID_SOCKET);
     } else {
-        QVERIFY(!socket->bind(addr));
+        QVERIFY(!socket->bind(addr, port));
+        QCOMPARE(socket->localPort(), quint16(0));
     }
 
     QCOMPARE(socket->localAddress(), expectedLocalAddress);
+
+    if (successExpected) {
+        // try to use the socket and expect it to remain working
+        QTcpServer server;
+        QVERIFY(server.listen(addr));
+
+        // free up the file descriptor
+        dummySocket.close();
+
+        QHostAddress remoteAddr = addr;
+        if (addr == QHostAddress::AnyIPv4)
+            remoteAddr = QHostAddress::LocalHost;
+        else if (addr == QHostAddress::AnyIPv6)
+            remoteAddr = QHostAddress::LocalHostIPv6;
+
+        socket->connectToHost(remoteAddr, server.serverPort());
+        QVERIFY2(socket->waitForConnected(2000), socket->errorString().toLocal8Bit());
+        QVERIFY(server.waitForNewConnection(2000));
+
+        QTcpSocket *acceptedSocket = server.nextPendingConnection();
+        QCOMPARE(socket->localPort(), boundPort);
+        QCOMPARE(acceptedSocket->peerPort(), boundPort);
+        QCOMPARE(socket->localAddress(), remoteAddr);
+        QCOMPARE(socket->socketDescriptor(), fd);
+    }
+
+    delete socket;
+}
+
+//----------------------------------------------------------------------------------
+
+void tst_QTcpSocket::bindThenResolveHost_data()
+{
+    QTest::addColumn<QString>("hostName");
+    QTest::newRow("ip-literal") << QtNetworkSettings::serverIP().toString();
+    QTest::newRow("name") << QtNetworkSettings::serverName();
+    QTest::newRow("first-fail") << firstFailName;
+}
+
+// similar to the previous test, but we'll connect to a host name that needs resolving
+void tst_QTcpSocket::bindThenResolveHost()
+{
+    QFETCH_GLOBAL(bool, setProxy);
+    if (setProxy)
+        return;                 // doesn't make sense to test binding locally with proxies
+
+    QFETCH(QString, hostName);
+
+    QTcpSocket dummySocket;     // used only to "use up" a file descriptor
+    dummySocket.bind();
+
+    QTcpSocket *socket = newSocket();
+
+    QVERIFY2(socket->bind(QHostAddress(QHostAddress::AnyIPv4), 0), socket->errorString().toLocal8Bit());
+    QCOMPARE(socket->state(), QAbstractSocket::BoundState);
+    quint16 boundPort = socket->localPort();
+    qintptr fd = socket->socketDescriptor();
+    QVERIFY(fd != INVALID_SOCKET);
+
+    dummySocket.close();
+
+    socket->connectToHost(hostName, 80);
+    QVERIFY2(socket->waitForConnected(), "Network timeout");
+
+    QCOMPARE(socket->localPort(), boundPort);
+    QCOMPARE(socket->socketDescriptor(), fd);
 
     delete socket;
 }
@@ -592,13 +732,10 @@ void tst_QTcpSocket::setSocketDescriptor()
     QCOMPARE(socket->socketDescriptor(), (qintptr)sock);
 
     qt_qhostinfo_clear_cache(); //avoid the HostLookupState being skipped due to address being in cache from previous test.
-    socket->connectToHost(QtNetworkSettings::serverName(), 143);
+    socket->connectToHost(QtNetworkSettings::serverName(), 80);
     QCOMPARE(socket->state(), QTcpSocket::HostLookupState);
     QCOMPARE(socket->socketDescriptor(), (qintptr)sock);
     QVERIFY(socket->waitForConnected(10000));
-    // skip this, it has been broken for years, see task 260735
-    // if somebody complains, consider fixing it, but it might break existing applications.
-    QEXPECT_FAIL("", "bug has been around for years, will not fix without need", Continue);
     QCOMPARE(socket->socketDescriptor(), (qintptr)sock);
     delete socket;
 #ifdef Q_OS_WIN
@@ -615,8 +752,8 @@ void tst_QTcpSocket::socketDescriptor()
 
     QCOMPARE(socket->socketDescriptor(), (qintptr)-1);
     socket->connectToHost(QtNetworkSettings::serverName(), 143);
-    QVERIFY((socket->state() == QAbstractSocket::HostLookupState && socket->socketDescriptor() == -1) ||
-            (socket->state() == QAbstractSocket::ConnectingState && socket->socketDescriptor() != -1));
+    QVERIFY(socket->state() == QAbstractSocket::HostLookupState ||
+            socket->state() == QAbstractSocket::ConnectingState);
     QVERIFY(socket->waitForConnected(10000));
     QVERIFY(socket->state() == QAbstractSocket::ConnectedState);
     QVERIFY(socket->socketDescriptor() != -1);

@@ -976,7 +976,7 @@ void QAbstractSocketPrivate::startConnectingByName(const QString &host)
 
     connectTimeElapsed = 0;
 
-    if (initSocketLayer(QAbstractSocket::UnknownNetworkLayerProtocol)) {
+    if (cachedSocketDescriptor != -1 || initSocketLayer(QAbstractSocket::UnknownNetworkLayerProtocol)) {
         if (socketEngine->connectToHostByName(host, port) ||
             socketEngine->state() == QAbstractSocket::ConnectingState) {
             cachedSocketDescriptor = socketEngine->socketDescriptor();
@@ -1117,7 +1117,7 @@ void QAbstractSocketPrivate::_q_connectToNextAddress()
                host.toString().toLatin1().constData(), port, addresses.count());
 #endif
 
-        if (!initSocketLayer(host.protocol())) {
+        if (cachedSocketDescriptor == -1 && !initSocketLayer(host.protocol())) {
             // hope that the next address is better
 #if defined(QABSTRACTSOCKET_DEBUG)
             qDebug("QAbstractSocketPrivate::_q_connectToNextAddress(), failed to initialize sock layer");
@@ -1133,9 +1133,6 @@ void QAbstractSocketPrivate::_q_connectToNextAddress()
             fetchConnectionParameters();
             return;
         }
-
-        // cache the socket descriptor even if we're not fully connected yet
-        cachedSocketDescriptor = socketEngine->socketDescriptor();
 
         // Check that we're in delayed connection state. If not, try
         // the next address
@@ -1481,54 +1478,60 @@ void QAbstractSocket::setPauseMode(PauseModes pauseMode)
 bool QAbstractSocket::bind(const QHostAddress &address, quint16 port, BindMode mode)
 {
     Q_D(QAbstractSocket);
+    return d->bind(address, port, mode);
+}
+
+bool QAbstractSocketPrivate::bind(const QHostAddress &address, quint16 port, QAbstractSocket::BindMode mode)
+{
+    Q_Q(QAbstractSocket);
 
     // now check if the socket engine is initialized and to the right type
-    if (!d->socketEngine || !d->socketEngine->isValid()) {
+    if (!socketEngine || !socketEngine->isValid()) {
         QHostAddress nullAddress;
-        d->resolveProxy(nullAddress.toString(), port);
+        resolveProxy(nullAddress.toString(), port);
 
         QAbstractSocket::NetworkLayerProtocol protocol = address.protocol();
         if (protocol == QAbstractSocket::UnknownNetworkLayerProtocol)
             protocol = nullAddress.protocol();
 
-        if (!d->initSocketLayer(protocol))
+        if (!initSocketLayer(protocol))
             return false;
     }
 
-    if (mode != DefaultForPlatform) {
+    if (mode != QAbstractSocket::DefaultForPlatform) {
 #ifdef Q_OS_UNIX
-    if ((mode & ShareAddress) || (mode & ReuseAddressHint))
-        d->socketEngine->setOption(QAbstractSocketEngine::AddressReusable, 1);
+    if ((mode & QAbstractSocket::ShareAddress) || (mode & QAbstractSocket::ReuseAddressHint))
+        socketEngine->setOption(QAbstractSocketEngine::AddressReusable, 1);
     else
-        d->socketEngine->setOption(QAbstractSocketEngine::AddressReusable, 0);
+        socketEngine->setOption(QAbstractSocketEngine::AddressReusable, 0);
 #endif
 #ifdef Q_OS_WIN
-    if (mode & ReuseAddressHint)
-        d->socketEngine->setOption(QAbstractSocketEngine::AddressReusable, 1);
+    if (mode & QAbstractSocket::ReuseAddressHint)
+        socketEngine->setOption(QAbstractSocketEngine::AddressReusable, 1);
     else
-        d->socketEngine->setOption(QAbstractSocketEngine::AddressReusable, 0);
-    if (mode & DontShareAddress)
-        d->socketEngine->setOption(QAbstractSocketEngine::BindExclusively, 1);
+        socketEngine->setOption(QAbstractSocketEngine::AddressReusable, 0);
+    if (mode & QAbstractSocket::DontShareAddress)
+        socketEngine->setOption(QAbstractSocketEngine::BindExclusively, 1);
     else
-        d->socketEngine->setOption(QAbstractSocketEngine::BindExclusively, 0);
+        socketEngine->setOption(QAbstractSocketEngine::BindExclusively, 0);
 #endif
     }
-    bool result = d->socketEngine->bind(address, port);
-    d->cachedSocketDescriptor = d->socketEngine->socketDescriptor();
+    bool result = socketEngine->bind(address, port);
+    cachedSocketDescriptor = socketEngine->socketDescriptor();
 
     if (!result) {
-        d->socketError = d->socketEngine->error();
-        setErrorString(d->socketEngine->errorString());
-        emit error(d->socketError);
+        socketError = socketEngine->error();
+        q->setErrorString(socketEngine->errorString());
+        emit q->error(socketError);
         return false;
     }
 
-    d->state = BoundState;
-    d->localAddress = d->socketEngine->localAddress();
-    d->localPort = d->socketEngine->localPort();
+    state = QAbstractSocket::BoundState;
+    localAddress = socketEngine->localAddress();
+    localPort = socketEngine->localPort();
 
-    emit stateChanged(d->state);
-    d->socketEngine->setReadNotificationEnabled(true);
+    emit q->stateChanged(state);
+    socketEngine->setReadNotificationEnabled(true);
     return true;
 }
 
@@ -1605,14 +1608,16 @@ void QAbstractSocket::connectToHost(const QString &hostName, quint16 port,
     d->preferredNetworkLayerProtocol = protocol;
     d->hostName = hostName;
     d->port = port;
-    d->state = UnconnectedState;
     d->buffer.clear();
     d->writeBuffer.clear();
     d->abortCalled = false;
     d->pendingClose = false;
-    d->localPort = 0;
+    if (d->state != BoundState) {
+        d->state = UnconnectedState;
+        d->localPort = 0;
+        d->localAddress.clear();
+    }
     d->peerPort = 0;
-    d->localAddress.clear();
     d->peerAddress.clear();
     d->peerName = hostName;
     if (d->hostLookupId != -1) {

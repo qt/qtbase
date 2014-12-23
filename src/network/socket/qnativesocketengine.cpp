@@ -136,6 +136,12 @@ QT_BEGIN_NAMESPACE
                  " not in "#state1" or "#state2); \
         return (returnValue); \
     } } while (0)
+#define Q_CHECK_STATES3(function, state1, state2, state3, returnValue) do { \
+    if (d->socketState != (state1) && d->socketState != (state2) && d->socketState != (state3)) { \
+        qWarning(""#function" was called" \
+                 " not in "#state1" or "#state2); \
+        return (returnValue); \
+    } } while (0)
 #define Q_CHECK_TYPE(function, type, returnValue) do { \
     if (d->socketType != (type)) { \
         qWarning(#function" was called by a" \
@@ -495,7 +501,7 @@ bool QNativeSocketEngine::connectToHost(const QHostAddress &address, quint16 por
     if (!d->checkProxy(address))
         return false;
 
-    Q_CHECK_STATES(QNativeSocketEngine::connectToHost(),
+    Q_CHECK_STATES3(QNativeSocketEngine::connectToHost(), QAbstractSocket::BoundState,
                    QAbstractSocket::UnconnectedState, QAbstractSocket::ConnectingState, false);
 
     d->peerAddress = address;
@@ -961,7 +967,7 @@ bool QNativeSocketEngine::waitForWrite(int msecs, bool *timedOut)
                     QNativeSocketEnginePrivate::TimeOutErrorString);
         d->hasSetSocketError = false; // A timeout error is temporary in waitFor functions
         return false;
-    } else if (state() == QAbstractSocket::ConnectingState) {
+    } else if (state() == QAbstractSocket::ConnectingState || (state() == QAbstractSocket::BoundState && d->socketDescriptor != -1)) {
         connectToHost(d->peerAddress, d->peerPort);
     }
 

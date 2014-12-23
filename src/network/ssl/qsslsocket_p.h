@@ -172,6 +172,7 @@ public:
     static void checkSettingSslContext(QSslSocket*, QSharedPointer<QSslContext>);
     static QSharedPointer<QSslContext> sslContext(QSslSocket *socket);
     bool isPaused() const;
+    bool bind(const QHostAddress &address, quint16, QAbstractSocket::BindMode) Q_DECL_OVERRIDE;
     void _q_connectedSlot();
     void _q_hostFoundSlot();
     void _q_disconnectedSlot();

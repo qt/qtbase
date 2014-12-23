@@ -689,6 +689,7 @@ void qt_qhostinfo_clear_cache()
     }
 }
 
+#ifdef QT_BUILD_INTERNAL
 void Q_AUTOTEST_EXPORT qt_qhostinfo_enable_cache(bool e)
 {
     QAbstractHostInfoLookupManager* manager = theHostInfoLookupManager();
@@ -696,6 +697,16 @@ void Q_AUTOTEST_EXPORT qt_qhostinfo_enable_cache(bool e)
         manager->cache.setEnabled(e);
     }
 }
+
+void qt_qhostinfo_cache_inject(const QString &hostname, const QHostInfo &resolution)
+{
+    QAbstractHostInfoLookupManager* manager = theHostInfoLookupManager();
+    if (!manager || !manager->cache.isEnabled())
+        return;
+
+    manager->cache.put(hostname, resolution);
+}
+#endif
 
 // cache for 60 seconds
 // cache 128 items
