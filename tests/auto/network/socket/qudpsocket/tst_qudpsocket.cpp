@@ -1259,16 +1259,7 @@ void tst_QUdpSocket::multicast()
         QSKIP("system doesn't support ipv6!");
     if (setProxy) {
         // UDP multicast does not work with proxies
-        if (
-#ifndef Q_OS_WIN
-            //windows native socket engine binds 0.0.0.0 instead of the requested multicast address
-            (bindAddress.protocol() == QAbstractSocket::IPv4Protocol && (bindAddress.toIPv4Address() & 0xffff0000) == 0xefff0000) ||
-#endif
-            bindAddress.protocol() == QAbstractSocket::IPv6Protocol) {
-            // proxy cannot bind to IPv6 or multicast addresses
-            bindResult = false;
-        }
-        joinResult = false;
+        return;
     }
 
     QUdpSocket receiver;
