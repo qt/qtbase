@@ -308,7 +308,7 @@ void tst_QUdpSocket::broadcasting()
 #endif
         broadcastSocket.bind(QHostAddress(QHostAddress::AnyIPv4), 0);
 
-        for (int j = 0; j < 100; ++j) {
+        for (int j = 0; j < 10; ++j) {
             for (int k = 0; k < 4; k++) {
                 broadcastSocket.writeDatagram(message[i], strlen(message[i]),
                     QHostAddress::Broadcast, 5000);
