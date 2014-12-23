@@ -1249,7 +1249,7 @@ void tst_QUdpSocket::multicast_data()
     QTest::newRow("same bind, group ipv4 address") << groupAddress << true << groupAddress << true;
     QTest::newRow("valid bind, group ipv6 address") << any6Address << true << group6Address << true;
     QTest::newRow("valid bind, invalid group ipv6 address") << any6Address << true << any6Address << false;
-    QTest::newRow("same bind, group ipv6 address") << group6Address << true << group6Address << true;
+    QTest::newRow("same bind, group ipv6 address") << group6Address << false << group6Address << false;
     QTest::newRow("dual bind, group ipv4 address") << dualAddress << true << groupAddress << false;
     QTest::newRow("dual bind, group ipv6 address") << dualAddress << true << group6Address << true;
 }
@@ -1279,6 +1279,12 @@ void tst_QUdpSocket::multicast()
     if (!bindResult)
         return;
 
+    if (bindAddress == QHostAddress::Any && groupAddress.protocol() == QAbstractSocket::IPv4Protocol) {
+        QCOMPARE(joinResult, false);
+        QTest::ignoreMessage(QtWarningMsg,
+                             "QAbstractSocket: cannot bind to QHostAddress::Any (or an IPv6 address) and join an IPv4 multicast group;"
+                             " bind to QHostAddress::AnyIPv4 instead if you want to do this");
+    }
     QVERIFY2(receiver.joinMulticastGroup(groupAddress) == joinResult,
              qPrintable(receiver.errorString()));
     if (!joinResult)
