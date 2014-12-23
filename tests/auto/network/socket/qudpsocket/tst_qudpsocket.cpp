@@ -1163,8 +1163,8 @@ void tst_QUdpSocket::multicastJoinBeforeBind()
 void tst_QUdpSocket::multicastLeaveAfterClose_data()
 {
     QTest::addColumn<QHostAddress>("groupAddress");
-    QTest::newRow("valid ipv4 group address") << QHostAddress("239.255.118.62");
-    QTest::newRow("valid ipv6 group address") << QHostAddress("FF01::114");
+    QTest::newRow("ipv4") << QHostAddress("239.255.118.62");
+    QTest::newRow("ipv6") << QHostAddress("FF01::114");
 }
 
 void tst_QUdpSocket::multicastLeaveAfterClose()
@@ -1180,7 +1180,10 @@ void tst_QUdpSocket::multicastLeaveAfterClose()
 #ifdef FORCE_SESSION
     udpSocket.setProperty("_q_networksession", QVariant::fromValue(networkSession));
 #endif
-    QVERIFY2(udpSocket.bind(groupAddress, 0),
+    QHostAddress bindAddress = QHostAddress::AnyIPv4;
+    if (groupAddress.protocol() == QAbstractSocket::IPv6Protocol)
+        bindAddress = QHostAddress::AnyIPv6;
+    QVERIFY2(udpSocket.bind(bindAddress, 0),
              qPrintable(udpSocket.errorString()));
     QVERIFY2(udpSocket.joinMulticastGroup(groupAddress),
              qPrintable(udpSocket.errorString()));
