@@ -282,8 +282,11 @@ void tst_QUdpSocket::broadcasting()
     foreach (QNetworkInterface iface, QNetworkInterface::allInterfaces()) {
         if ((iface.flags() & QNetworkInterface::CanBroadcast)
             && iface.flags() & QNetworkInterface::IsUp) {
-            for (int i=0;i<iface.addressEntries().count();i++)
-                broadcastAddresses.append(iface.addressEntries().at(i).broadcast());
+            for (int i=0;i<iface.addressEntries().count();i++) {
+                QHostAddress broadcast = iface.addressEntries().at(i).broadcast();
+                if (broadcast.protocol() == QAbstractSocket::IPv4Protocol)
+                    broadcastAddresses.append(broadcast);
+            }
         }
     }
     if (broadcastAddresses.isEmpty())
@@ -293,7 +296,7 @@ void tst_QUdpSocket::broadcasting()
 #ifdef FORCE_SESSION
         serverSocket.setProperty("_q_networksession", QVariant::fromValue(networkSession));
 #endif
-        QVERIFY2(serverSocket.bind(QHostAddress::Any, 5000), serverSocket.errorString().toLatin1().constData());
+        QVERIFY2(serverSocket.bind(QHostAddress::AnyIPv4, 5000), serverSocket.errorString().toLatin1().constData());
 
         QCOMPARE(serverSocket.state(), QUdpSocket::BoundState);
 
@@ -303,7 +306,7 @@ void tst_QUdpSocket::broadcasting()
 #ifdef FORCE_SESSION
         broadcastSocket.setProperty("_q_networksession", QVariant::fromValue(networkSession));
 #endif
-        broadcastSocket.bind();
+        broadcastSocket.bind(QHostAddress(QHostAddress::AnyIPv4), 0);
 
         for (int j = 0; j < 100; ++j) {
             for (int k = 0; k < 4; k++) {
