@@ -296,7 +296,8 @@ void tst_QUdpSocket::broadcasting()
 #ifdef FORCE_SESSION
         serverSocket.setProperty("_q_networksession", QVariant::fromValue(networkSession));
 #endif
-        QVERIFY2(serverSocket.bind(QHostAddress::AnyIPv4, 5000), serverSocket.errorString().toLatin1().constData());
+        QVERIFY2(serverSocket.bind(QHostAddress(QHostAddress::AnyIPv4), 0), serverSocket.errorString().toLatin1().constData());
+        quint16 serverPort = serverSocket.localPort();
 
         QCOMPARE(serverSocket.state(), QUdpSocket::BoundState);
 
@@ -311,9 +312,9 @@ void tst_QUdpSocket::broadcasting()
         for (int j = 0; j < 10; ++j) {
             for (int k = 0; k < 4; k++) {
                 broadcastSocket.writeDatagram(message[i], strlen(message[i]),
-                    QHostAddress::Broadcast, 5000);
+                    QHostAddress::Broadcast, serverPort);
                 foreach (QHostAddress addr, broadcastAddresses)
-                    broadcastSocket.writeDatagram(message[i], strlen(message[i]), addr, 5000);
+                    broadcastSocket.writeDatagram(message[i], strlen(message[i]), addr, serverPort);
             }
             QTestEventLoop::instance().enterLoop(15);
             if (QTestEventLoop::instance().timeout()) {
@@ -422,13 +423,18 @@ void tst_QUdpSocket::ipv6Loop()
     paul.setProperty("_q_networksession", QVariant::fromValue(networkSession));
 #endif
 
-    quint16 peterPort = 28124;
-    quint16 paulPort = 28123;
+    quint16 peterPort;
+    quint16 paulPort;
 
-    if (!peter.bind(QHostAddress::LocalHostIPv6, peterPort)) {
-    QCOMPARE(peter.error(), QUdpSocket::UnsupportedSocketOperationError);
-    } else {
-    QVERIFY(paul.bind(QHostAddress::LocalHostIPv6, paulPort));
+    if (!peter.bind(QHostAddress(QHostAddress::LocalHostIPv6), 0)) {
+        QCOMPARE(peter.error(), QUdpSocket::UnsupportedSocketOperationError);
+        return;
+    }
+
+    QVERIFY(paul.bind(QHostAddress(QHostAddress::LocalHostIPv6), 0));
+
+    peterPort = peter.localPort();
+    paulPort = paul.localPort();
 
     QCOMPARE(peter.writeDatagram(peterMessage.data(), peterMessage.length(), QHostAddress("::1"),
                                     paulPort), qint64(peterMessage.length()));
@@ -454,7 +460,6 @@ void tst_QUdpSocket::ipv6Loop()
 
     QCOMPARE(QByteArray(peterBuffer, paulMessage.length()), paulMessage);
     QCOMPARE(QByteArray(paulBuffer, peterMessage.length()), peterMessage);
-    }
 }
 
 void tst_QUdpSocket::dualStack()
