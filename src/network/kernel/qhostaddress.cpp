@@ -153,10 +153,8 @@ void QHostAddressPrivate::setAddress(const quint8 *a_)
     for (int i = 0; i < 16; i++)
         a6[i] = a_[i];
     a = 0;
-    if (parseMappedAddress(a, a6))
-        protocol = QAbstractSocket::IPv4Protocol;
-    else
-        protocol = QAbstractSocket::IPv6Protocol;
+    parseMappedAddress(a, a6);
+    protocol = QAbstractSocket::IPv6Protocol;
     isParsed = true;
 }
 
@@ -164,10 +162,8 @@ void QHostAddressPrivate::setAddress(const Q_IPV6ADDR &a_)
 {
     a6 = a_;
     a = 0;
-    if (parseMappedAddress(a, a6))
-        protocol = QAbstractSocket::IPv4Protocol;
-    else
-        protocol = QAbstractSocket::IPv6Protocol;
+    parseMappedAddress(a, a6);
+    protocol = QAbstractSocket::IPv6Protocol;
     isParsed = true;
 }
 
@@ -197,7 +193,6 @@ bool QHostAddressPrivate::parse()
         quint8 maybeIp6[16];
         if (parseIp6(a, maybeIp6, &scopeId)) {
             setAddress(maybeIp6);
-            protocol = QAbstractSocket::IPv6Protocol;
             return true;
         }
     }
@@ -205,7 +200,6 @@ bool QHostAddressPrivate::parse()
     quint32 maybeIp4 = 0;
     if (QIPAddressUtils::parseIp4(maybeIp4, a.constBegin(), a.constEnd())) {
         setAddress(maybeIp4);
-        protocol = QAbstractSocket::IPv4Protocol;
         return true;
     }
 
