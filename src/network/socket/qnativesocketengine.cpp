@@ -281,6 +281,38 @@ void QNativeSocketEnginePrivate::setError(QAbstractSocket::SocketError error, Er
     }
 }
 
+/*!
+    \internal
+
+    Adjusts the incoming \a address family to match the currently bound address
+    (if any). This function will convert v4-mapped IPv6 addresses to IPv4 and
+    vice-versa. All other address types and values will be left unchanged.
+ */
+QHostAddress QNativeSocketEnginePrivate::adjustAddressProtocol(const QHostAddress &address) const
+{
+    QAbstractSocket::NetworkLayerProtocol targetProtocol = socketProtocol;
+    if (Q_LIKELY(targetProtocol == QAbstractSocket::UnknownNetworkLayerProtocol))
+        return address;
+
+    QAbstractSocket::NetworkLayerProtocol sourceProtocol = address.protocol();
+
+    if (targetProtocol == QAbstractSocket::AnyIPProtocol)
+        targetProtocol = QAbstractSocket::IPv6Protocol;
+    if (targetProtocol == QAbstractSocket::IPv6Protocol && sourceProtocol == QAbstractSocket::IPv4Protocol) {
+        // convert to IPv6 v4-mapped address. This always works
+        return QHostAddress(address.toIPv6Address());
+    }
+
+    if (targetProtocol == QAbstractSocket::IPv4Protocol && sourceProtocol == QAbstractSocket::IPv6Protocol) {
+        // convert to IPv4 if the source is a v4-mapped address
+        quint32 ip4 = address.toIPv4Address();
+        if (ip4)
+            return QHostAddress(ip4);
+    }
+
+    return address;
+}
+
 bool QNativeSocketEnginePrivate::checkProxy(const QHostAddress &address)
 {
     if (address.isLoopback())
@@ -506,7 +538,7 @@ bool QNativeSocketEngine::connectToHost(const QHostAddress &address, quint16 por
 
     d->peerAddress = address;
     d->peerPort = port;
-    bool connected = d->nativeConnect(address, port);
+    bool connected = d->nativeConnect(d->adjustAddressProtocol(address), port);
     if (connected)
         d->fetchConnectionParameters();
 
@@ -566,7 +598,7 @@ bool QNativeSocketEngine::bind(const QHostAddress &address, quint16 port)
 
     Q_CHECK_STATE(QNativeSocketEngine::bind(), QAbstractSocket::UnconnectedState, false);
 
-    if (!d->nativeBind(address, port))
+    if (!d->nativeBind(d->adjustAddressProtocol(address), port))
         return false;
 
     d->fetchConnectionParameters();
@@ -776,7 +808,7 @@ qint64 QNativeSocketEngine::writeDatagram(const char *data, qint64 size,
     Q_D(QNativeSocketEngine);
     Q_CHECK_VALID_SOCKETLAYER(QNativeSocketEngine::writeDatagram(), -1);
     Q_CHECK_TYPE(QNativeSocketEngine::writeDatagram(), QAbstractSocket::UdpSocket, -1);
-    return d->nativeSendDatagram(data, size, host, port);
+    return d->nativeSendDatagram(data, size, d->adjustAddressProtocol(host), port);
 }
 
 /*!
