@@ -83,6 +83,8 @@ private slots:
     void isInSubnet();
     void isLoopback_data();
     void isLoopback();
+    void convertv4v6_data();
+    void convertv4v6();
 };
 
 QT_BEGIN_NAMESPACE
@@ -660,6 +662,52 @@ void tst_QHostAddress::isLoopback()
     QFETCH(bool, result);
 
     QCOMPARE(address.isLoopback(), result);
+}
+
+void tst_QHostAddress::convertv4v6_data()
+{
+    QTest::addColumn<QHostAddress>("source");
+    QTest::addColumn<int>("protocol");
+    QTest::addColumn<QHostAddress>("result");
+
+    QTest::newRow("any-to-v4") << QHostAddress(QHostAddress::Any) << 4 << QHostAddress(QHostAddress::AnyIPv4);
+    QTest::newRow("any-to-v6") << QHostAddress(QHostAddress::Any) << 6 << QHostAddress(QHostAddress::AnyIPv6);
+    QTest::newRow("anyv4-to-v6") << QHostAddress(QHostAddress::AnyIPv4) << 6 << QHostAddress(QHostAddress::AnyIPv6);
+    QTest::newRow("anyv6-to-v4") << QHostAddress(QHostAddress::AnyIPv6) << 4 << QHostAddress(QHostAddress::AnyIPv4);
+
+    QTest::newRow("v4mapped-to-v4") << QHostAddress("::ffff:192.0.2.1") << 4 << QHostAddress("192.0.2.1");
+    QTest::newRow("v4-to-v4mapped") << QHostAddress("192.0.2.1") << 6 << QHostAddress("::ffff:192.0.2.1");
+
+    // we won't convert 127.0.0.1 to ::1 or vice-versa:
+    // you can connect to a v4 server socket with ::ffff:127.0.0.1, but not with ::1
+    QTest::newRow("localhost-to-v4mapped") << QHostAddress(QHostAddress::LocalHost) << 6 << QHostAddress("::ffff:127.0.0.1");
+    QTest::newRow("v4mapped-to-localhost") << QHostAddress("::ffff:127.0.0.1") << 4 << QHostAddress(QHostAddress::LocalHost);
+
+    // in turn, that means localhost6 doesn't convert to v4
+    QTest::newRow("localhost6-to-v4") << QHostAddress(QHostAddress::LocalHostIPv6) << 4 << QHostAddress();
+
+    // some other v6 addresses that won't convert to v4
+    QTest::newRow("v4compat-to-v4") << QHostAddress("::192.0.2.1") << 4 << QHostAddress();
+    QTest::newRow("localhostv4compat-to-v4") << QHostAddress("::127.0.0.1") << 4 << QHostAddress();
+    QTest::newRow("v6global-to-v4") << QHostAddress("2001:db8::1") << 4 << QHostAddress();
+    QTest::newRow("v6multicast-to-v4") << QHostAddress("ff02::1") << 4 << QHostAddress();
+}
+
+void tst_QHostAddress::convertv4v6()
+{
+    QFETCH(QHostAddress, source);
+    QFETCH(int, protocol);
+    QFETCH(QHostAddress, result);
+
+    if (protocol == 4) {
+        bool ok;
+        quint32 v4 = source.toIPv4Address(&ok);
+        QCOMPARE(ok, result.protocol() == QAbstractSocket::IPv4Protocol);
+        if (ok)
+            QCOMPARE(QHostAddress(v4), result);
+    } else if (protocol == 6) {
+        QCOMPARE(QHostAddress(source.toIPv6Address()), result);
+    }
 }
 
 QTEST_MAIN(tst_QHostAddress)

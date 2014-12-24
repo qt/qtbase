@@ -634,7 +634,31 @@ void QHostAddress::setAddress(const struct sockaddr *sockaddr)
 */
 quint32 QHostAddress::toIPv4Address() const
 {
+    return toIPv4Address(Q_NULLPTR);
+}
+
+/*!
+    Returns the IPv4 address as a number.
+
+    For example, if the address is 127.0.0.1, the returned value is
+    2130706433 (i.e. 0x7f000001).
+
+    This value is valid if the protocol() is
+    \l{QAbstractSocket::}{IPv4Protocol},
+    or if the protocol is
+    \l{QAbstractSocket::}{IPv6Protocol},
+    and the IPv6 address is an IPv4 mapped address. (RFC4291). In those
+    cases, \a ok will be set to true. Otherwise, it will be set to false.
+
+    \sa toString()
+*/
+quint32 QHostAddress::toIPv4Address(bool *ok) const
+{
     QT_ENSURE_PARSED(this);
+    quint32 dummy;
+    if (ok)
+        *ok = d->protocol == QAbstractSocket::IPv4Protocol || d->protocol == QAbstractSocket::AnyIPProtocol
+              || (d->protocol == QAbstractSocket::IPv6Protocol && convertToIpv4(dummy, d->a6));
     return d->a;
 }
 
