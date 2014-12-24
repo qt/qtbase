@@ -1881,7 +1881,7 @@ QStringList QFont::substitutions()
     return ret;
 }
 
-
+#ifndef QT_NO_DATASTREAM
 /*  \internal
     Internal function. Converts boolean font settings to an unsigned
     8-bit number. Used for serialization etc.
@@ -1923,8 +1923,6 @@ static quint8 get_extended_font_bits(const QFontPrivate *f)
         bits |= 0x02;
     return bits;
 }
-
-#ifndef QT_NO_DATASTREAM
 
 /*  \internal
     Internal function. Sets boolean font settings from an unsigned
