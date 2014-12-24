@@ -406,9 +406,6 @@ QFontEngineData::~QFontEngineData()
     setPointSize() has a similar effect and provides device
     independence.
 
-    In X11 you can set a font using its system
-    specific name with setRawName().
-
     Loading fonts can be expensive, especially on X11. QFont contains
     extensive optimizations to make the copying of QFont objects fast,
     and to cache the results of the slow window system functions it
@@ -1584,10 +1581,9 @@ QFont::Capitalization QFont::capitalization() const
     return the values set in the QFont for all parameters, including
     the family name).
 
-    \warning Do not use raw mode unless you really, really need it! In
-    most (if not all) cases, setRawName() is a much better choice.
+    \warning Do not use raw mode unless you really, really need it!
 
-    \sa rawMode(), setRawName()
+    \sa rawMode()
 */
 void QFont::setRawMode(bool enable)
 {
@@ -1717,7 +1713,7 @@ bool QFont::isCopyOf(const QFont & f) const
     Returns \c true if raw mode is used for font name matching; otherwise
     returns \c false.
 
-    \sa setRawMode(), rawName()
+    \sa setRawMode()
 */
 bool QFont::rawMode() const
 {
@@ -2165,7 +2161,7 @@ QString QFont::defaultFamily() const
     happens. Please \l{bughowto.html}{report it as a bug} if
     it does, preferably with a list of the fonts you have installed.
 
-    \sa lastResortFamily(), rawName()
+    \sa lastResortFamily()
 */
 QString QFont::lastResortFont() const
 {
