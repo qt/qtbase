@@ -116,8 +116,9 @@ void *QXcbEglNativeInterfaceHandler::eglDisplay()
 void *QXcbEglNativeInterfaceHandler::eglDisplayForWindow(QWindow *window)
 {
     Q_ASSERT(window);
-    Q_ASSERT(window->handle());
-    if (window->supportsOpenGL())
+    if (window->supportsOpenGL() && window->handle() == Q_NULLPTR)
+        return eglDisplay();
+    else if (window->supportsOpenGL())
         return static_cast<QXcbEglWindow *>(window->handle())->glIntegration()->eglDisplay();
     return Q_NULLPTR;
 }
