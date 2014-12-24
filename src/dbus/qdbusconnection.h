@@ -35,6 +35,7 @@
 #define QDBUSCONNECTION_H
 
 #include <QtDBus/qdbusmacros.h>
+#include <QtCore/qobjectdefs.h>
 #include <QtCore/qstring.h>
 
 #ifndef QT_NO_DBUS
