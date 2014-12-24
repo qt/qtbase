@@ -138,10 +138,10 @@ bool QNativeSocketEnginePrivate::createNewSocket(QAbstractSocket::SocketType soc
     int protocol = (socketProtocol == QAbstractSocket::IPv6Protocol || socketProtocol == QAbstractSocket::AnyIPProtocol) ? AF_INET6 : AF_INET;
     int type = (socketType == QAbstractSocket::UdpSocket) ? SOCK_DGRAM : SOCK_STREAM;
 
-    int socket = qt_safe_socket(protocol, type, 0);
+    int socket = qt_safe_socket(protocol, type, 0, O_NONBLOCK);
     if (socket < 0 && socketProtocol == QAbstractSocket::AnyIPProtocol && errno == EAFNOSUPPORT) {
         protocol = AF_INET;
-        socket = qt_safe_socket(protocol, type, 0);
+        socket = qt_safe_socket(protocol, type, 0, O_NONBLOCK);
         socketProtocol = QAbstractSocket::IPv4Protocol;
     }
 

@@ -235,17 +235,9 @@ void QLocalSocket::connectToServer(OpenMode openMode)
     }
 
     // create the socket
-    if (-1 == (d->connectingSocket = qt_safe_socket(PF_UNIX, SOCK_STREAM, 0))) {
+    if (-1 == (d->connectingSocket = qt_safe_socket(PF_UNIX, SOCK_STREAM, 0, O_NONBLOCK))) {
         d->errorOccurred(UnsupportedSocketOperationError,
                         QLatin1String("QLocalSocket::connectToServer"));
-        return;
-    }
-    // set non blocking so we can try to connect and it won't wait
-    int flags = fcntl(d->connectingSocket, F_GETFL, 0);
-    if (-1 == flags
-        || -1 == (fcntl(d->connectingSocket, F_SETFL, flags | O_NONBLOCK))) {
-        d->errorOccurred(UnknownSocketError,
-                QLatin1String("QLocalSocket::connectToServer"));
         return;
     }
 

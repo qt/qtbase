@@ -383,8 +383,15 @@ bool QNativeSocketEnginePrivate::createNewSocket(QAbstractSocket::SocketType soc
 #endif
 
     socketDescriptor = socket;
-    return true;
 
+    // Make the socket nonblocking.
+    if (!setOption(QAbstractSocketEngine::NonBlockingSocketOption, 1)) {
+        setError(QAbstractSocket::UnsupportedSocketOperationError, NonBlockingInitFailedErrorString);
+        q_func()->close();
+        return false;
+    }
+
+    return true;
 }
 
 /*! \internal
