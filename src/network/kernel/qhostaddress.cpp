@@ -123,28 +123,41 @@ QHostAddressPrivate::QHostAddressPrivate()
 void QHostAddressPrivate::setAddress(quint32 a_)
 {
     a = a_;
-    //create mapped address
+    //create mapped address, except for a_ == 0 (any)
     memset(&a6, 0, sizeof(a6));
+    if (a) {
+        a6[11] = 0xFF;
+        a6[10] = 0xFF;
+    } else {
+        a6[11] = 0;
+        a6[10] = 0;
+    }
+
     int i;
     for (i=15; a_ != 0; i--) {
         a6[i] = a_ & 0xFF;
         a_ >>=8;
     }
     Q_ASSERT(i >= 11);
-    a6[11] = 0xFF;
-    a6[10] = 0xFF;
     protocol = QAbstractSocket::IPv4Protocol;
     isParsed = true;
 }
 
-static bool parseMappedAddress(quint32& a, const Q_IPV6ADDR &a6)
+/// parses v4-mapped addresses or the AnyIPv6 address and stores in \a a;
+/// returns true if the address was one of those
+static bool convertToIpv4(quint32& a, const Q_IPV6ADDR &a6)
 {
-    int i;
-    for (i=0;i<10;i++)
-        if (a6[i]) return false;
-    for (;i<12;i++)
-        if (a6[i] != 0xFF) return false;
-    a=(a6[12] << 24) | (a6[13] << 16) | (a6[14] << 8) | a6[15];
+    const uchar *ptr = a6.c;
+    if (qFromUnaligned<quint64>(ptr) != 0)
+        return false;
+    if (qFromBigEndian<quint32>(ptr + 8) == 0) {
+        // is it AnyIPv6?
+        a = 0;
+        return qFromBigEndian<quint32>(ptr + 12) == 0;
+    }
+    if (qFromBigEndian<quint32>(ptr + 8) != 0xFFFF)
+        return false;
+    a = qFromBigEndian<quint32>(ptr + 12);
     return true;
 }
 
@@ -153,7 +166,7 @@ void QHostAddressPrivate::setAddress(const quint8 *a_)
     for (int i = 0; i < 16; i++)
         a6[i] = a_[i];
     a = 0;
-    parseMappedAddress(a, a6);
+    convertToIpv4(a, a6);
     protocol = QAbstractSocket::IPv6Protocol;
     isParsed = true;
 }
@@ -162,7 +175,7 @@ void QHostAddressPrivate::setAddress(const Q_IPV6ADDR &a_)
 {
     a6 = a_;
     a = 0;
-    parseMappedAddress(a, a6);
+    convertToIpv4(a, a6);
     protocol = QAbstractSocket::IPv6Protocol;
     isParsed = true;
 }
