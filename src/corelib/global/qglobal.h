@@ -37,9 +37,9 @@
 
 #ifdef __cplusplus
 #  include <cstddef>
-#else
-#  include <stddef.h>
 #endif
+
+#include <stddef.h>
 
 #define QT_VERSION_STR   "5.5.0"
 /*
