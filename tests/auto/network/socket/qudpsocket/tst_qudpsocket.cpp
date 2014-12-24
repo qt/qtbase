@@ -127,6 +127,17 @@ private:
 #endif
 };
 
+static QHostAddress makeNonAny(const QHostAddress &address, QHostAddress::SpecialAddress preferForAny = QHostAddress::LocalHost)
+{
+    if (address == QHostAddress::Any)
+        return preferForAny;
+    if (address == QHostAddress::AnyIPv4)
+        return QHostAddress::LocalHost;
+    if (address == QHostAddress::AnyIPv6)
+        return QHostAddress::LocalHostIPv6;
+    return address;
+}
+
 tst_QUdpSocket::tst_QUdpSocket()
 {
 }
@@ -236,10 +247,7 @@ void tst_QUdpSocket::unconnectedServerAndClientTest()
 
     const char *message[] = {"Yo mista", "Yo", "Wassap"};
 
-    QHostAddress serverAddress = QHostAddress::LocalHost;
-    if (!(serverSocket.localAddress() == QHostAddress::AnyIPv4 || serverSocket.localAddress() == QHostAddress::AnyIPv6))
-        serverAddress = serverSocket.localAddress();
-
+    QHostAddress serverAddress = makeNonAny(serverSocket.localAddress());
     for (int i = 0; i < 3; ++i) {
         QUdpSocket clientSocket;
 #ifdef FORCE_SESSION
@@ -375,12 +383,8 @@ void tst_QUdpSocket::loop()
     QVERIFY2(peter.bind(), peter.errorString().toLatin1().constData());
     QVERIFY2(paul.bind(), paul.errorString().toLatin1().constData());
 
-    QHostAddress peterAddress = QHostAddress::LocalHost;
-    if (!(peter.localAddress() == QHostAddress::AnyIPv4 || peter.localAddress() == QHostAddress::AnyIPv6))
-        peterAddress = peter.localAddress();
-    QHostAddress pualAddress = QHostAddress::LocalHost;
-    if (!(paul.localAddress() == QHostAddress::AnyIPv4 || paul.localAddress() == QHostAddress::AnyIPv6))
-        pualAddress = paul.localAddress();
+    QHostAddress peterAddress = makeNonAny(peter.localAddress());
+    QHostAddress pualAddress = makeNonAny(paul.localAddress());
 
     QCOMPARE(peter.writeDatagram(peterMessage.data(), peterMessage.length(),
                                 pualAddress, paul.localPort()), qint64(peterMessage.length()));
@@ -624,7 +628,7 @@ void tst_QUdpSocket::readLine()
 #endif
     QVERIFY2(socket1.bind(), socket1.errorString().toLatin1().constData());
 
-    socket2.connectToHost("127.0.0.1", socket1.localPort());
+    socket2.connectToHost(makeNonAny(socket1.localAddress()), socket1.localPort());
     QVERIFY(socket2.waitForConnected(5000));
 }
 
@@ -638,10 +642,7 @@ void tst_QUdpSocket::pendingDatagramSize()
 #endif
     QVERIFY2(server.bind(), server.errorString().toLatin1().constData());
 
-    QHostAddress serverAddress = QHostAddress::LocalHost;
-    if (!(server.localAddress() == QHostAddress::AnyIPv4 || server.localAddress() == QHostAddress::AnyIPv6))
-        serverAddress = server.localAddress();
-
+    QHostAddress serverAddress = makeNonAny(server.localAddress());
     QUdpSocket client;
 #ifdef FORCE_SESSION
     client.setProperty("_q_networksession", QVariant::fromValue(networkSession));
@@ -689,10 +690,7 @@ void tst_QUdpSocket::writeDatagram()
 #endif
     QVERIFY2(server.bind(), server.errorString().toLatin1().constData());
 
-    QHostAddress serverAddress = QHostAddress::LocalHost;
-    if (!(server.localAddress() == QHostAddress::AnyIPv4 || server.localAddress() == QHostAddress::AnyIPv6))
-        serverAddress = server.localAddress();
-
+    QHostAddress serverAddress = makeNonAny(server.localAddress());
     QUdpSocket client;
 #ifdef FORCE_SESSION
     client.setProperty("_q_networksession", QVariant::fromValue(networkSession));
@@ -739,10 +737,7 @@ void tst_QUdpSocket::performance()
 #endif
     QVERIFY2(server.bind(), server.errorString().toLatin1().constData());
 
-    QHostAddress serverAddress = QHostAddress::LocalHost;
-    if (!(server.localAddress() == QHostAddress::AnyIPv4 || server.localAddress() == QHostAddress::AnyIPv6))
-        serverAddress = server.localAddress();
-
+    QHostAddress serverAddress = makeNonAny(server.localAddress());
     QUdpSocket client;
 #ifdef FORCE_SESSION
     client.setProperty("_q_networksession", QVariant::fromValue(networkSession));
