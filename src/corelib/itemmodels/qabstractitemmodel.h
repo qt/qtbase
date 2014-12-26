@@ -49,24 +49,24 @@ class Q_CORE_EXPORT QModelIndex
 {
     friend class QAbstractItemModel;
 public:
-    Q_DECL_CONSTEXPR inline QModelIndex() : r(-1), c(-1), i(0), m(0) {}
+    Q_DECL_CONSTEXPR inline QModelIndex() Q_DECL_NOTHROW : r(-1), c(-1), i(0), m(0) {}
     // compiler-generated copy/move ctors/assignment operators are fine!
-    Q_DECL_CONSTEXPR inline int row() const { return r; }
-    Q_DECL_CONSTEXPR inline int column() const { return c; }
-    Q_DECL_CONSTEXPR inline quintptr internalId() const { return i; }
-    inline void *internalPointer() const { return reinterpret_cast<void*>(i); }
+    Q_DECL_CONSTEXPR inline int row() const Q_DECL_NOTHROW { return r; }
+    Q_DECL_CONSTEXPR inline int column() const Q_DECL_NOTHROW { return c; }
+    Q_DECL_CONSTEXPR inline quintptr internalId() const Q_DECL_NOTHROW { return i; }
+    inline void *internalPointer() const Q_DECL_NOTHROW { return reinterpret_cast<void*>(i); }
     inline QModelIndex parent() const;
     inline QModelIndex sibling(int row, int column) const;
     inline QModelIndex child(int row, int column) const;
     inline QVariant data(int role = Qt::DisplayRole) const;
     inline Qt::ItemFlags flags() const;
-    Q_DECL_CONSTEXPR inline const QAbstractItemModel *model() const { return m; }
-    Q_DECL_CONSTEXPR inline bool isValid() const { return (r >= 0) && (c >= 0) && (m != 0); }
-    Q_DECL_CONSTEXPR inline bool operator==(const QModelIndex &other) const
+    Q_DECL_CONSTEXPR inline const QAbstractItemModel *model() const Q_DECL_NOTHROW { return m; }
+    Q_DECL_CONSTEXPR inline bool isValid() const Q_DECL_NOTHROW { return (r >= 0) && (c >= 0) && (m != 0); }
+    Q_DECL_CONSTEXPR inline bool operator==(const QModelIndex &other) const Q_DECL_NOTHROW
         { return (other.r == r) && (other.i == i) && (other.c == c) && (other.m == m); }
-    Q_DECL_CONSTEXPR inline bool operator!=(const QModelIndex &other) const
+    Q_DECL_CONSTEXPR inline bool operator!=(const QModelIndex &other) const Q_DECL_NOTHROW
         { return !(*this == other); }
-    Q_DECL_CONSTEXPR inline bool operator<(const QModelIndex &other) const
+    Q_DECL_CONSTEXPR inline bool operator<(const QModelIndex &other) const Q_DECL_NOTHROW
         {
             return  r <  other.r
                 || (r == other.r && (c <  other.c
@@ -74,9 +74,9 @@ public:
                                                   || (i == other.i && m < other.m )))));
         }
 private:
-    inline QModelIndex(int arow, int acolumn, void *ptr, const QAbstractItemModel *amodel)
+    inline QModelIndex(int arow, int acolumn, void *ptr, const QAbstractItemModel *amodel) Q_DECL_NOTHROW
         : r(arow), c(acolumn), i(reinterpret_cast<quintptr>(ptr)), m(amodel) {}
-    Q_DECL_CONSTEXPR inline QModelIndex(int arow, int acolumn, quintptr id, const QAbstractItemModel *amodel)
+    Q_DECL_CONSTEXPR inline QModelIndex(int arow, int acolumn, quintptr id, const QAbstractItemModel *amodel) Q_DECL_NOTHROW
         : r(arow), c(acolumn), i(id), m(amodel) {}
     int r, c;
     quintptr i;
@@ -475,7 +475,7 @@ inline QVariant QModelIndex::data(int arole) const
 inline Qt::ItemFlags QModelIndex::flags() const
 { return m ? m->flags(*this) : Qt::ItemFlags(0); }
 
-inline uint qHash(const QModelIndex &index)
+inline uint qHash(const QModelIndex &index) Q_DECL_NOTHROW
 { return uint((index.row() << 4) + index.column() + index.internalId()); }
 
 QT_END_NAMESPACE
