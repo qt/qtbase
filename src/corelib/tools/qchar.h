@@ -44,9 +44,9 @@ class QString;
 struct QLatin1Char
 {
 public:
-    Q_DECL_CONSTEXPR inline explicit QLatin1Char(char c) : ch(c) {}
-    Q_DECL_CONSTEXPR inline char toLatin1() const { return ch; }
-    Q_DECL_CONSTEXPR inline ushort unicode() const { return ushort(uchar(ch)); }
+    Q_DECL_CONSTEXPR inline explicit QLatin1Char(char c) Q_DECL_NOTHROW : ch(c) {}
+    Q_DECL_CONSTEXPR inline char toLatin1() const Q_DECL_NOTHROW { return ch; }
+    Q_DECL_CONSTEXPR inline ushort unicode() const Q_DECL_NOTHROW { return ushort(uchar(ch)); }
 
 private:
     char ch;
@@ -72,19 +72,19 @@ public:
         LastValidCodePoint = 0x10ffff
     };
 
-    Q_DECL_CONSTEXPR QChar() : ucs(0) {}
-    Q_DECL_CONSTEXPR QChar(ushort rc) : ucs(rc){} // implicit
-    Q_DECL_CONSTEXPR QChar(uchar c, uchar r) : ucs(ushort((r << 8) | c)){}
-    Q_DECL_CONSTEXPR QChar(short rc) : ucs(ushort(rc)){} // implicit
-    Q_DECL_CONSTEXPR QChar(uint rc) : ucs(ushort(rc & 0xffff)){}
-    Q_DECL_CONSTEXPR QChar(int rc) : ucs(ushort(rc & 0xffff)){}
-    Q_DECL_CONSTEXPR QChar(SpecialCharacter s) : ucs(ushort(s)) {} // implicit
-    Q_DECL_CONSTEXPR QChar(QLatin1Char ch) : ucs(ch.unicode()) {} // implicit
+    Q_DECL_CONSTEXPR QChar() Q_DECL_NOTHROW : ucs(0) {}
+    Q_DECL_CONSTEXPR QChar(ushort rc) Q_DECL_NOTHROW : ucs(rc) {} // implicit
+    Q_DECL_CONSTEXPR QChar(uchar c, uchar r) Q_DECL_NOTHROW : ucs(ushort((r << 8) | c)) {}
+    Q_DECL_CONSTEXPR QChar(short rc) Q_DECL_NOTHROW : ucs(ushort(rc)) {} // implicit
+    Q_DECL_CONSTEXPR QChar(uint rc) Q_DECL_NOTHROW : ucs(ushort(rc & 0xffff)) {}
+    Q_DECL_CONSTEXPR QChar(int rc) Q_DECL_NOTHROW : ucs(ushort(rc & 0xffff)) {}
+    Q_DECL_CONSTEXPR QChar(SpecialCharacter s) Q_DECL_NOTHROW : ucs(ushort(s)) {} // implicit
+    Q_DECL_CONSTEXPR QChar(QLatin1Char ch) Q_DECL_NOTHROW : ucs(ch.unicode()) {} // implicit
 
 #ifndef QT_NO_CAST_FROM_ASCII
-    QT_ASCII_CAST_WARN Q_DECL_CONSTEXPR explicit QChar(char c) : ucs(uchar(c)) { }
+    QT_ASCII_CAST_WARN Q_DECL_CONSTEXPR explicit QChar(char c) Q_DECL_NOTHROW : ucs(uchar(c)) { }
 #ifndef QT_RESTRICTED_CAST_FROM_ASCII
-    QT_ASCII_CAST_WARN Q_DECL_CONSTEXPR explicit QChar(uchar c) : ucs(c) { }
+    QT_ASCII_CAST_WARN Q_DECL_CONSTEXPR explicit QChar(uchar c) Q_DECL_NOTHROW : ucs(c) { }
 #endif
 #endif
     // Unicode information
@@ -369,11 +369,11 @@ public:
     };
     // ****** WHEN ADDING FUNCTIONS, CONSIDER ADDING TO QCharRef TOO
 
-    inline Category category() const { return QChar::category(ucs); }
-    inline Direction direction() const { return QChar::direction(ucs); }
-    inline JoiningType joiningType() const { return QChar::joiningType(ucs); }
+    inline Category category() const Q_DECL_NOTHROW { return QChar::category(ucs); }
+    inline Direction direction() const Q_DECL_NOTHROW { return QChar::direction(ucs); }
+    inline JoiningType joiningType() const Q_DECL_NOTHROW { return QChar::joiningType(ucs); }
 #if QT_DEPRECATED_SINCE(5, 3)
-    QT_DEPRECATED inline Joining joining() const
+    QT_DEPRECATED inline Joining joining() const Q_DECL_NOTHROW
     {
         switch (QChar::joiningType(ucs)) {
         case QChar::Joining_Causing: return QChar::Center;
@@ -386,177 +386,177 @@ public:
         }
     }
 #endif
-    inline unsigned char combiningClass() const { return QChar::combiningClass(ucs); }
+    inline unsigned char combiningClass() const Q_DECL_NOTHROW { return QChar::combiningClass(ucs); }
 
-    inline QChar mirroredChar() const { return QChar::mirroredChar(ucs); }
-    inline bool hasMirrored() const { return QChar::hasMirrored(ucs); }
+    inline QChar mirroredChar() const Q_DECL_NOTHROW { return QChar::mirroredChar(ucs); }
+    inline bool hasMirrored() const Q_DECL_NOTHROW { return QChar::hasMirrored(ucs); }
 
     QString decomposition() const;
-    inline Decomposition decompositionTag() const { return QChar::decompositionTag(ucs); }
+    inline Decomposition decompositionTag() const Q_DECL_NOTHROW { return QChar::decompositionTag(ucs); }
 
-    inline int digitValue() const { return QChar::digitValue(ucs); }
-    inline QChar toLower() const { return QChar::toLower(ucs); }
-    inline QChar toUpper() const { return QChar::toUpper(ucs); }
-    inline QChar toTitleCase() const { return QChar::toTitleCase(ucs); }
-    inline QChar toCaseFolded() const { return QChar::toCaseFolded(ucs); }
+    inline int digitValue() const Q_DECL_NOTHROW { return QChar::digitValue(ucs); }
+    inline QChar toLower() const Q_DECL_NOTHROW { return QChar::toLower(ucs); }
+    inline QChar toUpper() const Q_DECL_NOTHROW { return QChar::toUpper(ucs); }
+    inline QChar toTitleCase() const Q_DECL_NOTHROW { return QChar::toTitleCase(ucs); }
+    inline QChar toCaseFolded() const Q_DECL_NOTHROW { return QChar::toCaseFolded(ucs); }
 
-    inline Script script() const { return QChar::script(ucs); }
+    inline Script script() const Q_DECL_NOTHROW { return QChar::script(ucs); }
 
-    inline UnicodeVersion unicodeVersion() const { return QChar::unicodeVersion(ucs); }
+    inline UnicodeVersion unicodeVersion() const Q_DECL_NOTHROW { return QChar::unicodeVersion(ucs); }
 
 #if QT_DEPRECATED_SINCE(5, 0)
-    QT_DEPRECATED Q_DECL_CONSTEXPR inline char toAscii() const { return toLatin1(); }
+    QT_DEPRECATED Q_DECL_CONSTEXPR inline char toAscii() const Q_DECL_NOTHROW { return toLatin1(); }
 #endif
-    Q_DECL_CONSTEXPR inline char toLatin1() const { return ucs > 0xff ? '\0' : char(ucs); }
-    Q_DECL_CONSTEXPR inline ushort unicode() const { return ucs; }
-    inline ushort &unicode() { return ucs; }
+    Q_DECL_CONSTEXPR inline char toLatin1() const Q_DECL_NOTHROW { return ucs > 0xff ? '\0' : char(ucs); }
+    Q_DECL_CONSTEXPR inline ushort unicode() const Q_DECL_NOTHROW { return ucs; }
+    inline ushort &unicode() Q_DECL_NOTHROW { return ucs; }
 
 #if QT_DEPRECATED_SINCE(5, 0)
-    QT_DEPRECATED static Q_DECL_CONSTEXPR inline QChar fromAscii(char c)
+    QT_DEPRECATED static Q_DECL_CONSTEXPR inline QChar fromAscii(char c) Q_DECL_NOTHROW
     { return fromLatin1(c); }
 #endif
-    static Q_DECL_CONSTEXPR inline QChar fromLatin1(char c) { return QChar(ushort(uchar(c))); }
+    static Q_DECL_CONSTEXPR inline QChar fromLatin1(char c) Q_DECL_NOTHROW { return QChar(ushort(uchar(c))); }
 
-    Q_DECL_CONSTEXPR inline bool isNull() const { return ucs == 0; }
+    Q_DECL_CONSTEXPR inline bool isNull() const Q_DECL_NOTHROW { return ucs == 0; }
 
-    inline bool isPrint() const { return QChar::isPrint(ucs); }
-    Q_DECL_CONSTEXPR inline bool isSpace() const { return QChar::isSpace(ucs); }
-    inline bool isMark() const { return QChar::isMark(ucs); }
-    inline bool isPunct() const { return QChar::isPunct(ucs); }
-    inline bool isSymbol() const { return QChar::isSymbol(ucs); }
-    Q_DECL_CONSTEXPR inline bool isLetter() const { return QChar::isLetter(ucs); }
-    Q_DECL_CONSTEXPR inline bool isNumber() const { return QChar::isNumber(ucs); }
-    Q_DECL_CONSTEXPR inline bool isLetterOrNumber() const { return QChar::isLetterOrNumber(ucs); }
-    Q_DECL_CONSTEXPR inline bool isDigit() const { return QChar::isDigit(ucs); }
-    Q_DECL_CONSTEXPR inline bool isLower() const { return QChar::isLower(ucs); }
-    Q_DECL_CONSTEXPR inline bool isUpper() const { return QChar::isUpper(ucs); }
-    Q_DECL_CONSTEXPR inline bool isTitleCase() const { return QChar::isTitleCase(ucs); }
+    inline bool isPrint() const Q_DECL_NOTHROW { return QChar::isPrint(ucs); }
+    Q_DECL_CONSTEXPR inline bool isSpace() const Q_DECL_NOTHROW { return QChar::isSpace(ucs); }
+    inline bool isMark() const Q_DECL_NOTHROW { return QChar::isMark(ucs); }
+    inline bool isPunct() const Q_DECL_NOTHROW { return QChar::isPunct(ucs); }
+    inline bool isSymbol() const Q_DECL_NOTHROW { return QChar::isSymbol(ucs); }
+    Q_DECL_CONSTEXPR inline bool isLetter() const Q_DECL_NOTHROW { return QChar::isLetter(ucs); }
+    Q_DECL_CONSTEXPR inline bool isNumber() const Q_DECL_NOTHROW { return QChar::isNumber(ucs); }
+    Q_DECL_CONSTEXPR inline bool isLetterOrNumber() const Q_DECL_NOTHROW { return QChar::isLetterOrNumber(ucs); }
+    Q_DECL_CONSTEXPR inline bool isDigit() const Q_DECL_NOTHROW { return QChar::isDigit(ucs); }
+    Q_DECL_CONSTEXPR inline bool isLower() const Q_DECL_NOTHROW { return QChar::isLower(ucs); }
+    Q_DECL_CONSTEXPR inline bool isUpper() const Q_DECL_NOTHROW { return QChar::isUpper(ucs); }
+    Q_DECL_CONSTEXPR inline bool isTitleCase() const Q_DECL_NOTHROW { return QChar::isTitleCase(ucs); }
 
-    Q_DECL_CONSTEXPR inline bool isNonCharacter() const { return QChar::isNonCharacter(ucs); }
-    Q_DECL_CONSTEXPR inline bool isHighSurrogate() const { return QChar::isHighSurrogate(ucs); }
-    Q_DECL_CONSTEXPR inline bool isLowSurrogate() const { return QChar::isLowSurrogate(ucs); }
-    Q_DECL_CONSTEXPR inline bool isSurrogate() const { return QChar::isSurrogate(ucs); }
+    Q_DECL_CONSTEXPR inline bool isNonCharacter() const Q_DECL_NOTHROW { return QChar::isNonCharacter(ucs); }
+    Q_DECL_CONSTEXPR inline bool isHighSurrogate() const Q_DECL_NOTHROW { return QChar::isHighSurrogate(ucs); }
+    Q_DECL_CONSTEXPR inline bool isLowSurrogate() const Q_DECL_NOTHROW { return QChar::isLowSurrogate(ucs); }
+    Q_DECL_CONSTEXPR inline bool isSurrogate() const Q_DECL_NOTHROW { return QChar::isSurrogate(ucs); }
 
-    Q_DECL_CONSTEXPR inline uchar cell() const { return uchar(ucs & 0xff); }
-    Q_DECL_CONSTEXPR inline uchar row() const { return uchar((ucs>>8)&0xff); }
-    inline void setCell(uchar acell) { ucs = ushort((ucs & 0xff00) + acell); }
-    inline void setRow(uchar arow) { ucs = ushort((ushort(arow)<<8) + (ucs&0xff)); }
+    Q_DECL_CONSTEXPR inline uchar cell() const Q_DECL_NOTHROW { return uchar(ucs & 0xff); }
+    Q_DECL_CONSTEXPR inline uchar row() const Q_DECL_NOTHROW { return uchar((ucs>>8)&0xff); }
+    inline void setCell(uchar acell) Q_DECL_NOTHROW { ucs = ushort((ucs & 0xff00) + acell); }
+    inline void setRow(uchar arow) Q_DECL_NOTHROW { ucs = ushort((ushort(arow)<<8) + (ucs&0xff)); }
 
-    static Q_DECL_CONSTEXPR inline bool isNonCharacter(uint ucs4)
+    static Q_DECL_CONSTEXPR inline bool isNonCharacter(uint ucs4) Q_DECL_NOTHROW
     {
         return ucs4 >= 0xfdd0 && (ucs4 <= 0xfdef || (ucs4 & 0xfffe) == 0xfffe);
     }
-    static Q_DECL_CONSTEXPR inline bool isHighSurrogate(uint ucs4)
+    static Q_DECL_CONSTEXPR inline bool isHighSurrogate(uint ucs4) Q_DECL_NOTHROW
     {
         return ((ucs4 & 0xfffffc00) == 0xd800);
     }
-    static Q_DECL_CONSTEXPR inline bool isLowSurrogate(uint ucs4)
+    static Q_DECL_CONSTEXPR inline bool isLowSurrogate(uint ucs4) Q_DECL_NOTHROW
     {
         return ((ucs4 & 0xfffffc00) == 0xdc00);
     }
-    static Q_DECL_CONSTEXPR inline bool isSurrogate(uint ucs4)
+    static Q_DECL_CONSTEXPR inline bool isSurrogate(uint ucs4) Q_DECL_NOTHROW
     {
         return (ucs4 - 0xd800u < 2048u);
     }
-    static Q_DECL_CONSTEXPR inline bool requiresSurrogates(uint ucs4)
+    static Q_DECL_CONSTEXPR inline bool requiresSurrogates(uint ucs4) Q_DECL_NOTHROW
     {
         return (ucs4 >= 0x10000);
     }
-    static Q_DECL_CONSTEXPR inline uint surrogateToUcs4(ushort high, ushort low)
+    static Q_DECL_CONSTEXPR inline uint surrogateToUcs4(ushort high, ushort low) Q_DECL_NOTHROW
     {
         return (uint(high)<<10) + low - 0x35fdc00;
     }
-    static Q_DECL_CONSTEXPR inline uint surrogateToUcs4(QChar high, QChar low)
+    static Q_DECL_CONSTEXPR inline uint surrogateToUcs4(QChar high, QChar low) Q_DECL_NOTHROW
     {
         return surrogateToUcs4(high.ucs, low.ucs);
     }
-    static Q_DECL_CONSTEXPR inline ushort highSurrogate(uint ucs4)
+    static Q_DECL_CONSTEXPR inline ushort highSurrogate(uint ucs4) Q_DECL_NOTHROW
     {
         return ushort((ucs4>>10) + 0xd7c0);
     }
-    static Q_DECL_CONSTEXPR inline ushort lowSurrogate(uint ucs4)
+    static Q_DECL_CONSTEXPR inline ushort lowSurrogate(uint ucs4) Q_DECL_NOTHROW
     {
         return ushort(ucs4%0x400 + 0xdc00);
     }
 
-    static Category QT_FASTCALL category(uint ucs4) Q_DECL_CONST_FUNCTION;
-    static Direction QT_FASTCALL direction(uint ucs4) Q_DECL_CONST_FUNCTION;
-    static JoiningType QT_FASTCALL joiningType(uint ucs4) Q_DECL_CONST_FUNCTION;
+    static Category QT_FASTCALL category(uint ucs4) Q_DECL_NOTHROW Q_DECL_CONST_FUNCTION;
+    static Direction QT_FASTCALL direction(uint ucs4) Q_DECL_NOTHROW Q_DECL_CONST_FUNCTION;
+    static JoiningType QT_FASTCALL joiningType(uint ucs4) Q_DECL_NOTHROW Q_DECL_CONST_FUNCTION;
 #if QT_DEPRECATED_SINCE(5, 3)
-    QT_DEPRECATED static Joining QT_FASTCALL joining(uint ucs4) Q_DECL_CONST_FUNCTION;
+    QT_DEPRECATED static Joining QT_FASTCALL joining(uint ucs4) Q_DECL_NOTHROW Q_DECL_CONST_FUNCTION;
 #endif
-    static unsigned char QT_FASTCALL combiningClass(uint ucs4) Q_DECL_CONST_FUNCTION;
+    static unsigned char QT_FASTCALL combiningClass(uint ucs4) Q_DECL_NOTHROW Q_DECL_CONST_FUNCTION;
 
-    static uint QT_FASTCALL mirroredChar(uint ucs4) Q_DECL_CONST_FUNCTION;
-    static bool QT_FASTCALL hasMirrored(uint ucs4) Q_DECL_CONST_FUNCTION;
+    static uint QT_FASTCALL mirroredChar(uint ucs4) Q_DECL_NOTHROW Q_DECL_CONST_FUNCTION;
+    static bool QT_FASTCALL hasMirrored(uint ucs4) Q_DECL_NOTHROW Q_DECL_CONST_FUNCTION;
 
     static QString QT_FASTCALL decomposition(uint ucs4);
-    static Decomposition QT_FASTCALL decompositionTag(uint ucs4) Q_DECL_CONST_FUNCTION;
+    static Decomposition QT_FASTCALL decompositionTag(uint ucs4) Q_DECL_NOTHROW Q_DECL_CONST_FUNCTION;
 
-    static int QT_FASTCALL digitValue(uint ucs4) Q_DECL_CONST_FUNCTION;
-    static uint QT_FASTCALL toLower(uint ucs4) Q_DECL_CONST_FUNCTION;
-    static uint QT_FASTCALL toUpper(uint ucs4) Q_DECL_CONST_FUNCTION;
-    static uint QT_FASTCALL toTitleCase(uint ucs4) Q_DECL_CONST_FUNCTION;
-    static uint QT_FASTCALL toCaseFolded(uint ucs4) Q_DECL_CONST_FUNCTION;
+    static int QT_FASTCALL digitValue(uint ucs4) Q_DECL_NOTHROW Q_DECL_CONST_FUNCTION;
+    static uint QT_FASTCALL toLower(uint ucs4) Q_DECL_NOTHROW Q_DECL_CONST_FUNCTION;
+    static uint QT_FASTCALL toUpper(uint ucs4) Q_DECL_NOTHROW Q_DECL_CONST_FUNCTION;
+    static uint QT_FASTCALL toTitleCase(uint ucs4) Q_DECL_NOTHROW Q_DECL_CONST_FUNCTION;
+    static uint QT_FASTCALL toCaseFolded(uint ucs4) Q_DECL_NOTHROW Q_DECL_CONST_FUNCTION;
 
-    static Script QT_FASTCALL script(uint ucs4) Q_DECL_CONST_FUNCTION;
+    static Script QT_FASTCALL script(uint ucs4) Q_DECL_NOTHROW Q_DECL_CONST_FUNCTION;
 
-    static UnicodeVersion QT_FASTCALL unicodeVersion(uint ucs4) Q_DECL_CONST_FUNCTION;
+    static UnicodeVersion QT_FASTCALL unicodeVersion(uint ucs4) Q_DECL_NOTHROW Q_DECL_CONST_FUNCTION;
 
-    static UnicodeVersion QT_FASTCALL currentUnicodeVersion() Q_DECL_CONST_FUNCTION;
+    static UnicodeVersion QT_FASTCALL currentUnicodeVersion() Q_DECL_NOTHROW Q_DECL_CONST_FUNCTION;
 
-    static bool QT_FASTCALL isPrint(uint ucs4) Q_DECL_CONST_FUNCTION;
-    static Q_DECL_CONSTEXPR inline bool isSpace(uint ucs4) Q_DECL_CONST_FUNCTION
+    static bool QT_FASTCALL isPrint(uint ucs4) Q_DECL_NOTHROW Q_DECL_CONST_FUNCTION;
+    static Q_DECL_CONSTEXPR inline bool isSpace(uint ucs4) Q_DECL_NOTHROW Q_DECL_CONST_FUNCTION
     {
         // note that [0x09..0x0d] + 0x85 are exceptional Cc-s and must be handled explicitly
         return ucs4 == 0x20 || (ucs4 <= 0x0d && ucs4 >= 0x09)
                 || (ucs4 > 127 && (ucs4 == 0x85 || ucs4 == 0xa0 || QChar::isSpace_helper(ucs4)));
     }
-    static bool QT_FASTCALL isMark(uint ucs4) Q_DECL_CONST_FUNCTION;
-    static bool QT_FASTCALL isPunct(uint ucs4) Q_DECL_CONST_FUNCTION;
-    static bool QT_FASTCALL isSymbol(uint ucs4) Q_DECL_CONST_FUNCTION;
-    static Q_DECL_CONSTEXPR inline bool isLetter(uint ucs4) Q_DECL_CONST_FUNCTION
+    static bool QT_FASTCALL isMark(uint ucs4) Q_DECL_NOTHROW Q_DECL_CONST_FUNCTION;
+    static bool QT_FASTCALL isPunct(uint ucs4) Q_DECL_NOTHROW Q_DECL_CONST_FUNCTION;
+    static bool QT_FASTCALL isSymbol(uint ucs4) Q_DECL_NOTHROW Q_DECL_CONST_FUNCTION;
+    static Q_DECL_CONSTEXPR inline bool isLetter(uint ucs4) Q_DECL_NOTHROW Q_DECL_CONST_FUNCTION
     {
         return (ucs4 >= 'A' && ucs4 <= 'z' && (ucs4 >= 'a' || ucs4 <= 'Z'))
                 || (ucs4 > 127 && QChar::isLetter_helper(ucs4));
     }
-    static Q_DECL_CONSTEXPR inline bool isNumber(uint ucs4) Q_DECL_CONST_FUNCTION
+    static Q_DECL_CONSTEXPR inline bool isNumber(uint ucs4) Q_DECL_NOTHROW Q_DECL_CONST_FUNCTION
     { return (ucs4 <= '9' && ucs4 >= '0') || (ucs4 > 127 && QChar::isNumber_helper(ucs4)); }
-    static Q_DECL_CONSTEXPR inline bool isLetterOrNumber(uint ucs4) Q_DECL_CONST_FUNCTION
+    static Q_DECL_CONSTEXPR inline bool isLetterOrNumber(uint ucs4) Q_DECL_NOTHROW Q_DECL_CONST_FUNCTION
     {
         return (ucs4 >= 'A' && ucs4 <= 'z' && (ucs4 >= 'a' || ucs4 <= 'Z'))
                 || (ucs4 >= '0' && ucs4 <= '9')
                 || (ucs4 > 127 && QChar::isLetterOrNumber_helper(ucs4));
     }
-    static Q_DECL_CONSTEXPR inline bool isDigit(uint ucs4) Q_DECL_CONST_FUNCTION
+    static Q_DECL_CONSTEXPR inline bool isDigit(uint ucs4) Q_DECL_NOTHROW Q_DECL_CONST_FUNCTION
     { return (ucs4 <= '9' && ucs4 >= '0') || (ucs4 > 127 && QChar::category(ucs4) == Number_DecimalDigit); }
-    static Q_DECL_CONSTEXPR inline bool isLower(uint ucs4) Q_DECL_CONST_FUNCTION
+    static Q_DECL_CONSTEXPR inline bool isLower(uint ucs4) Q_DECL_NOTHROW Q_DECL_CONST_FUNCTION
     { return (ucs4 <= 'z' && ucs4 >= 'a') || (ucs4 > 127 && QChar::category(ucs4) == Letter_Lowercase); }
-    static Q_DECL_CONSTEXPR inline bool isUpper(uint ucs4) Q_DECL_CONST_FUNCTION
+    static Q_DECL_CONSTEXPR inline bool isUpper(uint ucs4) Q_DECL_NOTHROW Q_DECL_CONST_FUNCTION
     { return (ucs4 <= 'Z' && ucs4 >= 'A') || (ucs4 > 127 && QChar::category(ucs4) == Letter_Uppercase); }
-    static Q_DECL_CONSTEXPR inline bool isTitleCase(uint ucs4) Q_DECL_CONST_FUNCTION
+    static Q_DECL_CONSTEXPR inline bool isTitleCase(uint ucs4) Q_DECL_NOTHROW Q_DECL_CONST_FUNCTION
     { return ucs4 > 127 && QChar::category(ucs4) == Letter_Titlecase; }
 
 private:
-    static bool QT_FASTCALL isSpace_helper(uint ucs4) Q_DECL_CONST_FUNCTION;
-    static bool QT_FASTCALL isLetter_helper(uint ucs4) Q_DECL_CONST_FUNCTION;
-    static bool QT_FASTCALL isNumber_helper(uint ucs4) Q_DECL_CONST_FUNCTION;
-    static bool QT_FASTCALL isLetterOrNumber_helper(uint ucs4) Q_DECL_CONST_FUNCTION;
+    static bool QT_FASTCALL isSpace_helper(uint ucs4) Q_DECL_NOTHROW Q_DECL_CONST_FUNCTION;
+    static bool QT_FASTCALL isLetter_helper(uint ucs4) Q_DECL_NOTHROW Q_DECL_CONST_FUNCTION;
+    static bool QT_FASTCALL isNumber_helper(uint ucs4) Q_DECL_NOTHROW Q_DECL_CONST_FUNCTION;
+    static bool QT_FASTCALL isLetterOrNumber_helper(uint ucs4) Q_DECL_NOTHROW Q_DECL_CONST_FUNCTION;
 
 #ifdef QT_NO_CAST_FROM_ASCII
-    QChar(char c);
-    QChar(uchar c);
+    QChar(char c) Q_DECL_NOTHROW;
+    QChar(uchar c) Q_DECL_NOTHROW;
 #endif
 
-    friend Q_DECL_CONSTEXPR bool operator==(QChar, QChar);
-    friend Q_DECL_CONSTEXPR bool operator< (QChar, QChar);
+    friend Q_DECL_CONSTEXPR bool operator==(QChar, QChar) Q_DECL_NOTHROW;
+    friend Q_DECL_CONSTEXPR bool operator< (QChar, QChar) Q_DECL_NOTHROW;
     ushort ucs;
 };
 
 Q_DECLARE_TYPEINFO(QChar, Q_MOVABLE_TYPE);
 
-Q_DECL_CONSTEXPR inline bool operator==(QChar c1, QChar c2) { return c1.ucs == c2.ucs; }
-Q_DECL_CONSTEXPR inline bool operator< (QChar c1, QChar c2) { return c1.ucs <  c2.ucs; }
+Q_DECL_CONSTEXPR inline bool operator==(QChar c1, QChar c2) Q_DECL_NOTHROW { return c1.ucs == c2.ucs; }
+Q_DECL_CONSTEXPR inline bool operator< (QChar c1, QChar c2) Q_DECL_NOTHROW { return c1.ucs <  c2.ucs; }
 
 Q_DECL_CONSTEXPR inline bool operator!=(QChar c1, QChar c2) { return !operator==(c1, c2); }
 Q_DECL_CONSTEXPR inline bool operator>=(QChar c1, QChar c2) { return !operator< (c1, c2); }
