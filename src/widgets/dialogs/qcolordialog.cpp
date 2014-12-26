@@ -1587,11 +1587,16 @@ void QColorDialogPrivate::_q_pickScreenColor()
     buttons->setDisabled(true);
     screenColorPickerButton->setDisabled(true);
 
-    q->setCurrentColor(grabScreenColor(QCursor::pos()));
-    lblScreenColorInfo->setText(QColorDialog::tr("Cursor at %1, %2, color: %3\nPress ESC to cancel")
-                                .arg(QCursor::pos().x())
-                                .arg(QCursor::pos().y())
-                                .arg(q->currentColor().name()));
+    const QPoint globalPos = QCursor::pos();
+    q->setCurrentColor(grabScreenColor(globalPos));
+    updateColorLabelText(globalPos);
+}
+
+void QColorDialogPrivate::updateColorLabelText(const QPoint &globalPos)
+{
+    lblScreenColorInfo->setText(QColorDialog::tr("Cursor at %1, %2\nPress ESC to cancel")
+                                .arg(globalPos.x())
+                                .arg(globalPos.y()));
 }
 
 void QColorDialogPrivate::releaseColorPicking()
@@ -2196,8 +2201,8 @@ bool QColorDialogPrivate::handleColorPickingMouseMove(QMouseEvent *e)
     // QTBUG-39792, do not change standard, custom color selectors while moving as
     // otherwise it is not possible to pre-select a custom cell for assignment.
     setCurrentColor(color, ShowColor);
-    lblScreenColorInfo->setText(QColorDialog::tr("Cursor at %1, %2, color: %3\nPress ESC to cancel")
-                                .arg(globalPos.x()).arg(globalPos.y()).arg(color.name()));
+    updateColorLabelText(globalPos);
+
     return true;
 }
 

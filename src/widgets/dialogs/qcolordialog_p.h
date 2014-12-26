@@ -104,6 +104,7 @@ public:
     void _q_newCustom(int, int);
     void _q_newStandard(int, int);
     void _q_pickScreenColor();
+    void updateColorLabelText(const QPoint &);
     void releaseColorPicking();
     bool handleColorPickingMouseMove(QMouseEvent *e);
     bool handleColorPickingMouseButtonRelease(QMouseEvent *e);
