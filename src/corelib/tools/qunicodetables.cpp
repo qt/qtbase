@@ -6912,44 +6912,44 @@ static const Properties uc_properties[] = {
     { 12, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 12, 0 }
 };
 
-Q_DECL_CONST_FUNCTION static inline const Properties *qGetProp(uint ucs4)
+Q_DECL_CONST_FUNCTION static inline const Properties *qGetProp(uint ucs4) Q_DECL_NOTHROW
 {
     const int index = GET_PROP_INDEX(ucs4);
     return uc_properties + index;
 }
 
-Q_DECL_CONST_FUNCTION static inline const Properties *qGetProp(ushort ucs2)
+Q_DECL_CONST_FUNCTION static inline const Properties *qGetProp(ushort ucs2) Q_DECL_NOTHROW
 {
     const int index = GET_PROP_INDEX_UCS2(ucs2);
     return uc_properties + index;
 }
 
-Q_DECL_CONST_FUNCTION Q_CORE_EXPORT const Properties * QT_FASTCALL properties(uint ucs4)
+Q_DECL_CONST_FUNCTION Q_CORE_EXPORT const Properties * QT_FASTCALL properties(uint ucs4) Q_DECL_NOTHROW
 {
     return qGetProp(ucs4);
 }
 
-Q_DECL_CONST_FUNCTION Q_CORE_EXPORT const Properties * QT_FASTCALL properties(ushort ucs2)
+Q_DECL_CONST_FUNCTION Q_CORE_EXPORT const Properties * QT_FASTCALL properties(ushort ucs2) Q_DECL_NOTHROW
 {
     return qGetProp(ucs2);
 }
 
-Q_CORE_EXPORT GraphemeBreakClass QT_FASTCALL graphemeBreakClass(uint ucs4)
+Q_CORE_EXPORT GraphemeBreakClass QT_FASTCALL graphemeBreakClass(uint ucs4) Q_DECL_NOTHROW
 {
     return (GraphemeBreakClass)qGetProp(ucs4)->graphemeBreakClass;
 }
 
-Q_CORE_EXPORT WordBreakClass QT_FASTCALL wordBreakClass(uint ucs4)
+Q_CORE_EXPORT WordBreakClass QT_FASTCALL wordBreakClass(uint ucs4) Q_DECL_NOTHROW
 {
     return (WordBreakClass)qGetProp(ucs4)->wordBreakClass;
 }
 
-Q_CORE_EXPORT SentenceBreakClass QT_FASTCALL sentenceBreakClass(uint ucs4)
+Q_CORE_EXPORT SentenceBreakClass QT_FASTCALL sentenceBreakClass(uint ucs4) Q_DECL_NOTHROW
 {
     return (SentenceBreakClass)qGetProp(ucs4)->sentenceBreakClass;
 }
 
-Q_CORE_EXPORT LineBreakClass QT_FASTCALL lineBreakClass(uint ucs4)
+Q_CORE_EXPORT LineBreakClass QT_FASTCALL lineBreakClass(uint ucs4) Q_DECL_NOTHROW
 {
     return (LineBreakClass)qGetProp(ucs4)->lineBreakClass;
 }
