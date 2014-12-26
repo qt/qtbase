@@ -232,7 +232,7 @@ QT_BEGIN_NAMESPACE
     Returns the control type associated with the widget for which
     this size policy applies.
 */
-QSizePolicy::ControlType QSizePolicy::controlType() const
+QSizePolicy::ControlType QSizePolicy::controlType() const Q_DECL_NOTHROW
 {
     return QSizePolicy::ControlType(1 << bits.ctype);
 }
@@ -253,7 +253,7 @@ QSizePolicy::ControlType QSizePolicy::controlType() const
 
     \sa QStyle::layoutSpacing()
 */
-void QSizePolicy::setControlType(ControlType type)
+void QSizePolicy::setControlType(ControlType type) Q_DECL_NOTHROW
 {
     bits.ctype = toControlTypeFieldValue(type);
 }
