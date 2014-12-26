@@ -101,12 +101,8 @@ public:
     void setControlType(ControlType type);
 
     Qt::Orientations expandingDirections() const {
-        Qt::Orientations result;
-        if (verticalPolicy() & ExpandFlag)
-            result |= Qt::Vertical;
-        if (horizontalPolicy() & ExpandFlag)
-            result |= Qt::Horizontal;
-        return result;
+        return ( (verticalPolicy()   & ExpandFlag) ? Qt::Vertical   : Qt::Orientations() )
+             | ( (horizontalPolicy() & ExpandFlag) ? Qt::Horizontal : Qt::Orientations() ) ;
     }
 
     void setHeightForWidth(bool b) { bits.hfw = b;  }
