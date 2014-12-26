@@ -295,7 +295,7 @@ QT_BEGIN_NAMESPACE
     \sa isValid(), isEmpty()
 */
 
-QRect QRect::normalized() const
+QRect QRect::normalized() const Q_DECL_NOTHROW
 {
     QRect r;
     if (x2 < x1 - 1) {                                // swap bad x values
@@ -804,7 +804,7 @@ QRect QRect::normalized() const
     \sa intersects()
 */
 
-bool QRect::contains(const QPoint &p, bool proper) const
+bool QRect::contains(const QPoint &p, bool proper) const Q_DECL_NOTHROW
 {
     int l, r;
     if (x2 < x1 - 1) {
@@ -868,7 +868,7 @@ bool QRect::contains(const QPoint &p, bool proper) const
     rectangle (not on the edge).
 */
 
-bool QRect::contains(const QRect &r, bool proper) const
+bool QRect::contains(const QRect &r, bool proper) const Q_DECL_NOTHROW
 {
     if (isNull() || r.isNull())
         return false;
@@ -946,7 +946,7 @@ bool QRect::contains(const QRect &r, bool proper) const
     \sa operator|=(), united()
 */
 
-QRect QRect::operator|(const QRect &r) const
+QRect QRect::operator|(const QRect &r) const Q_DECL_NOTHROW
 {
     if (isNull())
         return r;
@@ -1017,7 +1017,7 @@ QRect QRect::operator|(const QRect &r) const
     \sa operator&=(), intersected()
 */
 
-QRect QRect::operator&(const QRect &r) const
+QRect QRect::operator&(const QRect &r) const Q_DECL_NOTHROW
 {
     if (isNull() || r.isNull())
         return QRect();
@@ -1096,7 +1096,7 @@ QRect QRect::operator&(const QRect &r) const
     \sa contains()
 */
 
-bool QRect::intersects(const QRect &r) const
+bool QRect::intersects(const QRect &r) const Q_DECL_NOTHROW
 {
     if (isNull() || r.isNull())
         return false;
@@ -1522,7 +1522,7 @@ QDebug operator<<(QDebug dbg, const QRect &r)
     \sa isValid(), isEmpty()
 */
 
-QRectF QRectF::normalized() const
+QRectF QRectF::normalized() const Q_DECL_NOTHROW
 {
     QRectF r = *this;
     if (r.w < 0) {
@@ -1935,7 +1935,7 @@ QRectF QRectF::normalized() const
     \sa intersects()
 */
 
-bool QRectF::contains(const QPointF &p) const
+bool QRectF::contains(const QPointF &p) const Q_DECL_NOTHROW
 {
     qreal l = xp;
     qreal r = xp;
@@ -1981,7 +1981,7 @@ bool QRectF::contains(const QPointF &p) const
     otherwise returns \c false.
 */
 
-bool QRectF::contains(const QRectF &r) const
+bool QRectF::contains(const QRectF &r) const Q_DECL_NOTHROW
 {
     qreal l1 = xp;
     qreal r1 = xp;
@@ -2119,7 +2119,7 @@ bool QRectF::contains(const QRectF &r) const
     \sa united(), operator|=()
 */
 
-QRectF QRectF::operator|(const QRectF &r) const
+QRectF QRectF::operator|(const QRectF &r) const Q_DECL_NOTHROW
 {
     if (isNull())
         return r;
@@ -2188,7 +2188,7 @@ QRectF QRectF::operator|(const QRectF &r) const
     \sa operator&=(), intersected()
 */
 
-QRectF QRectF::operator&(const QRectF &r) const
+QRectF QRectF::operator&(const QRectF &r) const Q_DECL_NOTHROW
 {
     qreal l1 = xp;
     qreal r1 = xp;
@@ -2273,7 +2273,7 @@ QRectF QRectF::operator&(const QRectF &r) const
     \sa contains()
 */
 
-bool QRectF::intersects(const QRectF &r) const
+bool QRectF::intersects(const QRectF &r) const Q_DECL_NOTHROW
 {
     qreal l1 = xp;
     qreal r1 = xp;
@@ -2340,7 +2340,7 @@ bool QRectF::intersects(const QRectF &r) const
     \sa toRect()
 */
 
-QRect QRectF::toAlignedRect() const
+QRect QRectF::toAlignedRect() const Q_DECL_NOTHROW
 {
     int xmin = int(qFloor(xp));
     int xmax = int(qCeil(xp + w));
