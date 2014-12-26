@@ -52,6 +52,7 @@
 #include <QtGui/QGuiApplication>
 #include <QtGui/QWindow>
 #include <QtGui/private/qwindow_p.h>
+#include <QtGui/private/qhighdpiscaling_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -81,8 +82,10 @@ private:
 
 QAndroidPlatformScreen::QAndroidPlatformScreen():QObject(),QPlatformScreen()
 {
-    m_availableGeometry = QRect(0, 0, QAndroidPlatformIntegration::m_defaultGeometryWidth, QAndroidPlatformIntegration::m_defaultGeometryHeight);
-    m_size = QSize(QAndroidPlatformIntegration::m_defaultScreenWidth, QAndroidPlatformIntegration::m_defaultScreenHeight);
+    m_availableGeometry = QRect(0, 0, QAndroidPlatformIntegration::m_defaultGeometryWidth,
+                                      QAndroidPlatformIntegration::m_defaultGeometryHeight);
+    m_size = QSize(QAndroidPlatformIntegration::m_defaultScreenWidth,
+                   QAndroidPlatformIntegration::m_defaultScreenHeight);
     // Raster only apps should set QT_ANDROID_RASTER_IMAGE_DEPTH to 16
     // is way much faster than 32
     if (qEnvironmentVariableIntValue("QT_ANDROID_RASTER_IMAGE_DEPTH") == 16) {
@@ -107,6 +110,16 @@ QAndroidPlatformScreen::~QAndroidPlatformScreen()
         m_surfaceWaitCondition.wakeOne();
         releaseSurface();
     }
+}
+
+QRect QAndroidPlatformScreen::geometry() const
+{
+    return QRect(QPoint(), m_size);
+}
+
+QRect QAndroidPlatformScreen::availableGeometry() const
+{
+    return m_availableGeometry;
 }
 
 QWindow *QAndroidPlatformScreen::topWindow() const
@@ -378,7 +391,7 @@ void QAndroidPlatformScreen::doRedraw()
 
 QDpi QAndroidPlatformScreen::logicalDpi() const
 {
-    qreal lDpi = QtAndroid::scaledDensity() * 72;
+    qreal lDpi = 72;
     return QDpi(lDpi, lDpi);
 }
 

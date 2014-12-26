@@ -787,7 +787,8 @@ public class QtActivityDelegate
             m_activity.getWindowManager().getDefaultDisplay().getMetrics(metrics);
             QtNative.setApplicationDisplayMetrics(metrics.widthPixels, metrics.heightPixels,
                                                   0, 0,
-                                                  metrics.xdpi, metrics.ydpi, metrics.scaledDensity);
+                                                  metrics.xdpi, metrics.ydpi,
+                                                  metrics.scaledDensity, metrics.density);
         }
 
         ViewGroup layout = null;

@@ -64,7 +64,8 @@ public class QtLayout extends ViewGroup
         DisplayMetrics metrics = new DisplayMetrics();
         ((Activity) getContext()).getWindowManager().getDefaultDisplay().getMetrics(metrics);
         QtNative.setApplicationDisplayMetrics(metrics.widthPixels,
-                                              metrics.heightPixels, w, h, metrics.xdpi, metrics.ydpi, metrics.scaledDensity);
+                                              metrics.heightPixels, w, h, metrics.xdpi, metrics.ydpi,
+                                              metrics.scaledDensity, metrics.density);
     }
 
     @Override

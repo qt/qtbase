@@ -58,8 +58,8 @@ public:
     QAndroidPlatformScreen();
     ~QAndroidPlatformScreen();
 
-    QRect geometry() const { return QRect(QPoint(), m_size); }
-    QRect availableGeometry() const { return m_availableGeometry; }
+    QRect geometry() const;
+    QRect availableGeometry() const;
     int depth() const { return m_depth; }
     QImage::Format format() const { return m_format; }
     QSizeF physicalSize() const { return m_physicalSize; }
