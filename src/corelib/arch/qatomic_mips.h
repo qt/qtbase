@@ -120,7 +120,10 @@ void QBasicAtomicOps<size>::releaseMemoryFence(const T &) Q_DECL_NOTHROW
 template <int size> template <typename T> inline
 void QBasicAtomicOps<size>::orderedMemoryFence(const T &) Q_DECL_NOTHROW
 {
-    asm volatile ("sync 0" ::: "memory");
+    asm volatile (".set push\n"
+                  ".set mips32\n"
+                  "sync 0\n"
+                  ".set pop\n" ::: "memory");
 }
 
 template<> template<typename T> inline
