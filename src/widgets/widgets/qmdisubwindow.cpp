@@ -412,6 +412,10 @@ bool ControlLabel::event(QEvent *event)
 {
     if (event->type() == QEvent::WindowIconChange)
         updateWindowIcon();
+    else if (event->type() == QEvent::StyleChange) {
+        updateWindowIcon();
+        setFixedSize(label.size());
+    }
 #ifndef QT_NO_TOOLTIP
     else if (event->type() == QEvent::ToolTip) {
         QStyleOptionTitleBar options;
@@ -480,7 +484,8 @@ void ControlLabel::updateWindowIcon()
     QIcon menuIcon = windowIcon();
     if (menuIcon.isNull())
         menuIcon = style()->standardIcon(QStyle::SP_TitleBarMenuButton, 0, parentWidget());
-    label = menuIcon.pixmap(16, 16);
+    const int iconSize = style()->pixelMetric(QStyle::PM_TitleBarButtonIconSize, 0, parentWidget());
+    label = menuIcon.pixmap(iconSize);
     update();
 }
 
@@ -556,7 +561,8 @@ QSize ControllerWidget::sizeHint() const
     ensurePolished();
     QStyleOptionComplex opt;
     initStyleOption(&opt);
-    QSize size(48, 16);
+    const int buttonSize = style()->pixelMetric(QStyle::PM_TitleBarButtonSize, &opt, mdiArea);
+    QSize size(3 * buttonSize, buttonSize);
     return style()->sizeFromContents(QStyle::CT_MdiControls, &opt, size, mdiArea);
 }
 

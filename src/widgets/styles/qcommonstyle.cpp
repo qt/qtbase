@@ -3724,6 +3724,8 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
             btnOpt.state &= ~State_MouseOver;
             int bsx = 0;
             int bsy = 0;
+            const int buttonIconMetric = proxy()->pixelMetric(PM_TitleBarButtonIconSize, &btnOpt, widget);
+            const QSize buttonIconSize(buttonIconMetric, buttonIconMetric);
             if (opt->subControls & QStyle::SC_MdiCloseButton) {
                 if (opt->activeSubControls & QStyle::SC_MdiCloseButton && (opt->state & State_Sunken)) {
                     btnOpt.state |= State_Sunken;
@@ -3738,7 +3740,7 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
                 }
                 btnOpt.rect = proxy()->subControlRect(CC_MdiControls, opt, SC_MdiCloseButton, widget);
                 proxy()->drawPrimitive(PE_PanelButtonCommand, &btnOpt, p, widget);
-                QPixmap pm = proxy()->standardIcon(SP_TitleBarCloseButton).pixmap(qt_getWindow(widget), QSize(16, 16));
+                QPixmap pm = proxy()->standardIcon(SP_TitleBarCloseButton).pixmap(qt_getWindow(widget), buttonIconSize);
                 proxy()->drawItemPixmap(p, btnOpt.rect.translated(bsx, bsy), Qt::AlignCenter, pm);
             }
             if (opt->subControls & QStyle::SC_MdiNormalButton) {
@@ -3755,7 +3757,7 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
                 }
                 btnOpt.rect = proxy()->subControlRect(CC_MdiControls, opt, SC_MdiNormalButton, widget);
                 proxy()->drawPrimitive(PE_PanelButtonCommand, &btnOpt, p, widget);
-                QPixmap pm = proxy()->standardIcon(SP_TitleBarNormalButton).pixmap(qt_getWindow(widget), QSize(16, 16));
+                QPixmap pm = proxy()->standardIcon(SP_TitleBarNormalButton).pixmap(qt_getWindow(widget), buttonIconSize);
                 proxy()->drawItemPixmap(p, btnOpt.rect.translated(bsx, bsy), Qt::AlignCenter, pm);
             }
             if (opt->subControls & QStyle::SC_MdiMinButton) {
@@ -3772,7 +3774,7 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
                 }
                 btnOpt.rect = proxy()->subControlRect(CC_MdiControls, opt, SC_MdiMinButton, widget);
                 proxy()->drawPrimitive(PE_PanelButtonCommand, &btnOpt, p, widget);
-                QPixmap pm = proxy()->standardIcon(SP_TitleBarMinButton).pixmap(qt_getWindow(widget), QSize(16, 16));
+                QPixmap pm = proxy()->standardIcon(SP_TitleBarMinButton).pixmap(qt_getWindow(widget), buttonIconSize);
                 proxy()->drawItemPixmap(p, btnOpt.rect.translated(bsx, bsy), Qt::AlignCenter, pm);
             }
         }
@@ -4393,6 +4395,13 @@ int QCommonStyle::pixelMetric(PixelMetric m, const QStyleOption *opt, const QWid
         }
 
         break; }
+    case PM_TitleBarButtonSize:
+        ret = int(QStyleHelper::dpiScaled(16.));
+        break;
+    case PM_TitleBarButtonIconSize:
+        ret = int(QStyleHelper::dpiScaled(16.));
+        break;
+
     case PM_ScrollBarSliderMin:
         ret = int(QStyleHelper::dpiScaled(9.));
         break;
@@ -4845,16 +4854,18 @@ QSize QCommonStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
 #endif // QT_NO_GROUPBOX
     case CT_MdiControls:
         if (const QStyleOptionComplex *styleOpt = qstyleoption_cast<const QStyleOptionComplex *>(opt)) {
+            const int buttonSize = proxy()->pixelMetric(PM_TitleBarButtonSize, styleOpt, widget);
             int width = 1;
             if (styleOpt->subControls & SC_MdiMinButton)
-                width += 16 + 1;
+                width += buttonSize + 1;
             if (styleOpt->subControls & SC_MdiNormalButton)
-                width += 16 + 1;
+                width += buttonSize + 1;
             if (styleOpt->subControls & SC_MdiCloseButton)
-                width += 16 + 1;
-            sz = QSize(width, 16);
+                width += buttonSize + 1;
+            sz = QSize(width, buttonSize);
         } else {
-            sz = QSize(52, 16);
+            const int buttonSize = proxy()->pixelMetric(PM_TitleBarButtonSize, opt, widget);
+            sz = QSize(1 + 3 * (buttonSize + 1), buttonSize);
         }
         break;
 #ifndef QT_NO_ITEMVIEWS

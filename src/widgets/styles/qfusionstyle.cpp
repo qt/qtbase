@@ -3102,6 +3102,9 @@ int QFusionStyle::pixelMetric(PixelMetric metric, const QStyleOption *option, co
     case PM_DockWidgetTitleBarButtonMargin:
         val = 2;
         break;
+    case PM_TitleBarButtonSize:
+        val = 19;
+        break;
     case PM_MaximumDragDistance:
         return -1; // Do not dpi-scale because the value is magic
     case PM_TabCloseIndicatorWidth:
@@ -3225,18 +3228,7 @@ QSize QFusionStyle::sizeFromContents(ContentsType type, const QStyleOption *opti
         newSize += QSize(4, 4);
         break;
     case CT_MdiControls:
-        if (const QStyleOptionComplex *styleOpt = qstyleoption_cast<const QStyleOptionComplex *>(option)) {
-            int width = 0;
-            if (styleOpt->subControls & SC_MdiMinButton)
-                width += 19 + 1;
-            if (styleOpt->subControls & SC_MdiNormalButton)
-                width += 19 + 1;
-            if (styleOpt->subControls & SC_MdiCloseButton)
-                width += 19 + 1;
-            newSize = QSize(width, 19);
-        } else {
-            newSize = QSize(60, 19);
-        }
+        newSize -= QSize(1, 0);
         break;
     default:
         break;

@@ -1494,6 +1494,11 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
     \value PM_HeaderDefaultSectionSizeVertical The default size of sections
            in a vertical header. This enum value has been introduced in Qt 5.5.
 
+    \value PM_TitleBarButtonIconSize The size of button icons on a title bar.
+           This enum value has been introduced in Qt 5.8.
+    \value PM_TitleBarButtonSize The size of buttons on a title bar.
+           This enum value has been introduced in Qt 5.8.
+
     \value PM_CustomBase Base value for custom pixel metrics.  Custom
     values must be greater than this value.
 
