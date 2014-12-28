@@ -402,8 +402,17 @@ static void convertLineOffset(QAccessibleTextInterface *text, int &line, int &of
     if ([attribute isEqualToString: NSAccessibilityBoundsForRangeParameterizedAttribute]) {
         NSRange range = [parameter rangeValue];
         QRect firstRect = iface->textInterface()->characterRect(range.location);
-        QRect lastRect = iface->textInterface()->characterRect(range.location + range.length);
-        QRect rect = firstRect.united(lastRect); // This is off quite often, but at least a rough approximation
+        QRect rect;
+        if (range.length > 0) {
+            NSUInteger position = range.location + range.length - 1;
+            if (position > range.location && iface->textInterface()->text(position, position + 1) == QStringLiteral("\n"))
+                --position;
+            QRect lastRect = iface->textInterface()->characterRect(position);
+            rect = firstRect.united(lastRect);
+        } else {
+            rect = firstRect;
+            rect.setWidth(1);
+        }
         return [NSValue valueWithRect: NSMakeRect((CGFloat) rect.x(),(CGFloat) qt_mac_flipYCoordinate(rect.y() + rect.height()), rect.width(), rect.height())];
     }
     if ([attribute isEqualToString: NSAccessibilityAttributedStringForRangeParameterizedAttribute]) {
