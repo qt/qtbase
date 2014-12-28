@@ -331,8 +331,6 @@ public:
     static QDBusConnectionPrivate *d(const QDBusConnection& q) { return q.d; }
     static QDBusConnection q(QDBusConnectionPrivate *connection) { return QDBusConnection(connection); }
 
-    static void setSender(const QDBusConnectionPrivate *s);
-
     friend class QDBusActivateObjectEvent;
     friend class QDBusCallDeliveryEvent;
 };

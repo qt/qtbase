@@ -58,18 +58,6 @@ QT_BEGIN_NAMESPACE
 
 Q_GLOBAL_STATIC(QDBusConnectionManager, _q_manager)
 
-QDBusConnectionPrivate *QDBusConnectionManager::sender() const
-{
-    QMutexLocker locker(&senderMutex);
-    return connection(senderName);
-}
-
-void QDBusConnectionManager::setSender(const QDBusConnectionPrivate *s)
-{
-    QMutexLocker locker(&senderMutex);
-    senderName = (s ? s->name : QString());
-}
-
 QDBusConnectionPrivate *QDBusConnectionManager::connection(const QString &name) const
 {
     return connectionHash.value(name, 0);
@@ -1096,29 +1084,20 @@ QDBusConnection QDBusConnection::systemBus()
     return *_q_systemBus();
 }
 
+#if QT_DEPRECATED_SINCE(5,5)
 /*!
-  \nonreentrant
+  \deprecated
 
-  Returns the connection that sent the signal, if called in a slot activated
-  by QDBus; otherwise it returns 0.
+  Always returns a disconnected, invalid QDBusConnection object. For the old
+  functionality of determining the sender connection, please use \ref QDBusContext.
 
-  \note Please avoid this function. This function is not thread-safe, so if
-  there's any other thread delivering a D-Bus call, this function may return
-  the wrong connection. In new code, please use QDBusContext::connection()
-  (see that class for a description on how to use it).
+  \sa QDBusContext
 */
 QDBusConnection QDBusConnection::sender()
 {
-    return QDBusConnection(_q_manager()->sender());
+    return QDBusConnection(QString());
 }
-
-/*!
-  \internal
-*/
-void QDBusConnectionPrivate::setSender(const QDBusConnectionPrivate *s)
-{
-    _q_manager()->setSender(s);
-}
+#endif
 
 /*!
   \internal

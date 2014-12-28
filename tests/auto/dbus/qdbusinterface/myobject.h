@@ -38,7 +38,7 @@
 #include <QtDBus/QtDBus>
 
 
-class MyObject: public QObject
+class MyObject: public QObject, protected QDBusContext
 {
     Q_OBJECT
     Q_CLASSINFO("D-Bus Interface", "org.qtproject.QtDBus.MyObject")
@@ -123,15 +123,12 @@ public:
 
     Q_INVOKABLE void ping_invokable(QDBusMessage msg)
     {
-        QDBusConnection sender = QDBusConnection::sender();
-        if (!sender.isConnected())
-            exit(1);
-
+        Q_ASSERT(QDBusContext::calledFromDBus());
         ++callCount;
         callArgs = msg.arguments();
 
         msg.setDelayedReply(true);
-        if (!sender.send(msg.createReply(callArgs)))
+        if (!QDBusContext::connection().send(msg.createReply(callArgs)))
             exit(1);
     }
 
@@ -139,15 +136,12 @@ public slots:
 
     void ping(QDBusMessage msg)
     {
-        QDBusConnection sender = QDBusConnection::sender();
-        if (!sender.isConnected())
-            exit(1);
-
+        Q_ASSERT(QDBusContext::calledFromDBus());
         ++callCount;
         callArgs = msg.arguments();
 
         msg.setDelayedReply(true);
-        if (!sender.send(msg.createReply(callArgs)))
+        if (!QDBusContext::connection().send(msg.createReply(callArgs)))
             exit(1);
     }
 };

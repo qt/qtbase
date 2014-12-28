@@ -985,12 +985,10 @@ void QDBusConnectionPrivate::deliverCall(QObject *object, int /*flags*/, const Q
         // FIXME: save the old sender!
         QDBusContextPrivate context(QDBusConnection(this), msg);
         QDBusContextPrivate *old = QDBusContextPrivate::set(object, &context);
-        QDBusConnectionPrivate::setSender(this);
 
         QPointer<QObject> ptr = object;
         fail = object->qt_metacall(QMetaObject::InvokeMetaMethod,
                                    slotIdx, params.data()) >= 0;
-        QDBusConnectionPrivate::setSender(0);
         // the object might be deleted in the slot
         if (!ptr.isNull())
             QDBusContextPrivate::set(object, old);

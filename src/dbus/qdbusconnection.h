@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2015 Intel Corporation.
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtDBus module of the Qt Toolkit.
@@ -184,7 +185,10 @@ public:
     static QDBusConnection sessionBus();
     static QDBusConnection systemBus();
 
-    static QDBusConnection sender();
+#if QT_DEPRECATED_SINCE(5,5)
+    static QT_DEPRECATED_X("This function no longer works, use QDBusContext instead")
+    QDBusConnection sender();
+#endif
 
 protected:
     explicit QDBusConnection(QDBusConnectionPrivate *dd);

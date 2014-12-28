@@ -63,9 +63,6 @@ public:
     void removeConnection(const QString &name);
     void setConnection(const QString &name, QDBusConnectionPrivate *c);
 
-    QDBusConnectionPrivate *sender() const;
-    void setSender(const QDBusConnectionPrivate *s);
-
     mutable QMutex mutex;
 private:
     QHash<QString, QDBusConnectionPrivate *> connectionHash;
