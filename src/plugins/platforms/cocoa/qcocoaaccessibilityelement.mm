@@ -40,6 +40,47 @@
 
 #import <AppKit/NSAccessibility.h>
 
+
+static void convertLineOffset(QAccessibleTextInterface *text, int &line, int &offset, NSUInteger *start = 0, NSUInteger *end = 0)
+{
+    Q_ASSERT(line == -1 || offset == -1);
+    Q_ASSERT(line != -1 || offset != -1);
+    Q_ASSERT(offset <= text->characterCount());
+
+    int curLine = -1;
+    int curStart = 0, curEnd = 0;
+
+    do {
+        curStart = curEnd;
+        text->textAtOffset(curStart, QAccessible::LineBoundary, &curStart, &curEnd);
+        ++curLine;
+        {
+            // check for a case where a single word longer than the text edit's width and gets wrapped
+            // in the middle of the word; in this case curEnd will be an offset belonging to the next line
+            // and therefore nextEnd will not be equal to curEnd
+            int nextStart;
+            int nextEnd;
+            text->textAtOffset(curEnd, QAccessible::LineBoundary, &nextStart, &nextEnd);
+            if (nextEnd == curEnd)
+                ++curEnd;
+        }
+    } while ((line == -1 || curLine < line) && (offset == -1 || (curEnd <= offset)) && curEnd <= text->characterCount());
+
+    curEnd = qMin(curEnd, text->characterCount());
+
+    if (line == -1)
+        line = curLine;
+    if (offset == -1)
+        offset = curStart;
+
+    Q_ASSERT(curStart >= 0);
+    Q_ASSERT(curEnd >= 0);
+    if (start)
+        *start = curStart;
+    if (end)
+        *end = curEnd;
+}
+
 @implementation QMacAccessibilityElement
 
 - (id)initWithId:(QAccessible::Id)anId
@@ -284,8 +325,10 @@
 
     } else if ([attribute isEqualToString:NSAccessibilityInsertionPointLineNumberAttribute]) {
         if (QAccessibleTextInterface *text = iface->textInterface()) {
-            QString textBeforeCursor = text->text(0, text->cursorPosition());
-            return [NSNumber numberWithInt: textBeforeCursor.count(QLatin1Char('\n'))];
+            int line = -1;
+            int position = text->cursorPosition();
+            convertLineOffset(text, line, position);
+            return [NSNumber numberWithInt: line];
         }
         return nil;
     } else if ([attribute isEqualToString:NSAccessibilityMinValueAttribute]) {
@@ -340,22 +383,21 @@
     }
     if ([attribute isEqualToString: NSAccessibilityLineForIndexParameterizedAttribute]) {
         int index = [parameter intValue];
-        NSNumber *ln = [QMacAccessibilityElement lineNumberForIndex: index forText: iface->text(QAccessible::Value)];
-        return ln;
+        if (index < 0 || index > iface->textInterface()->characterCount())
+            return nil;
+        int line = -1;
+        convertLineOffset(iface->textInterface(), line, index);
+        return [NSNumber numberWithInt:line];
     }
     if ([attribute isEqualToString: NSAccessibilityRangeForLineParameterizedAttribute]) {
-        int lineNumber = [parameter intValue];
-        QString text = iface->text(QAccessible::Value);
-        int startOffset = 0;
-        // skip newlines until we have the one we look for
-        for (int i = 0; i < lineNumber; ++i)
-            startOffset = text.indexOf(QLatin1Char('\n'), startOffset) + 1;
-        if (startOffset < 0) // invalid line number, return the first line
-            startOffset = 0;
-        int endOffset = text.indexOf(QLatin1Char('\n'), startOffset);
-        if (endOffset == -1)
-            endOffset = text.length();
-        return [NSValue valueWithRange:NSMakeRange(quint32(startOffset), quint32(endOffset - startOffset))];
+        int line = [parameter intValue];
+        if (line < 0)
+            return nil;
+        int lineOffset = -1;
+        NSUInteger startOffset = 0;
+        NSUInteger endOffset = 0;
+        convertLineOffset(iface->textInterface(), line, lineOffset, &startOffset, &endOffset);
+        return [NSValue valueWithRange:NSMakeRange(startOffset, endOffset - startOffset)];
     }
     if ([attribute isEqualToString: NSAccessibilityBoundsForRangeParameterizedAttribute]) {
         NSRange range = [parameter rangeValue];
