@@ -1091,13 +1091,7 @@ void QDBusConnectionPrivate::closeConnection()
 
 void QDBusConnectionPrivate::checkThread()
 {
-    if (!thread()) {
-        if (QCoreApplication::instance())
-            moveToThread(QCoreApplication::instance()->thread());
-        else
-            qWarning("The thread that had QDBusConnection('%s') has died and there is no main thread",
-                     qPrintable(name));
-    }
+    Q_ASSERT(thread() == QDBusConnectionManager::instance());
 }
 
 bool QDBusConnectionPrivate::handleError(const QDBusErrorInternal &error)
@@ -1833,11 +1827,11 @@ void QDBusConnectionPrivate::processFinishedCall(QDBusPendingCallPrivate *call)
         call->pending = 0;
     }
 
-    locker.unlock();
-
     // Are there any watchers?
     if (call->watcherHelper)
         call->watcherHelper->emitSignals(msg, call->sentMessage);
+
+    locker.unlock();
 
     if (msg.type() == QDBusMessage::ErrorMessage)
         emit connection->callWithCallbackFailed(QDBusError(msg), call->sentMessage);

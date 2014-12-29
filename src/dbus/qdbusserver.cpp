@@ -63,13 +63,14 @@ QDBusServer::QDBusServer(const QString &address, QObject *parent)
         d = 0;
         return;
     }
-    d = new QDBusConnectionPrivate(this);
+    d = new QDBusConnectionPrivate;
 
     QObject::connect(d, SIGNAL(newServerConnection(QDBusConnectionPrivate*)),
                      this, SLOT(_q_newConnection(QDBusConnectionPrivate*)), Qt::QueuedConnection);
 
     QDBusErrorInternal error;
     d->setServer(this, q_dbus_server_listen(address.toUtf8().constData(), error), error);
+    d->moveToThread(QDBusConnectionManager::instance());
 }
 
 /*!
@@ -91,13 +92,14 @@ QDBusServer::QDBusServer(QObject *parent)
         d = 0;
         return;
     }
-    d = new QDBusConnectionPrivate(this);
+    d = new QDBusConnectionPrivate;
 
     QObject::connect(d, SIGNAL(newServerConnection(QDBusConnectionPrivate*)),
                      this, SLOT(_q_newConnection(QDBusConnectionPrivate*)), Qt::QueuedConnection);
 
     QDBusErrorInternal error;
     d->setServer(this, q_dbus_server_listen(address, error), error);
+    d->moveToThread(QDBusConnectionManager::instance());
 }
 
 /*!

@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2015 The Qt Company Ltd.
+** Copyright (C) 2015 Intel Corporation.
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the QtDBus module of the Qt Toolkit.
@@ -47,15 +48,17 @@
 #define QDBUSCONNECTIONMANAGER_P_H
 
 #include "qdbusconnection_p.h"
+#include "private/qthread_p.h"
 
 #ifndef QT_NO_DBUS
 
 QT_BEGIN_NAMESPACE
 
-class QDBusConnectionManager
+class QDBusConnectionManager : public QDaemonThread
 {
+    Q_OBJECT
 public:
-    QDBusConnectionManager() {}
+    QDBusConnectionManager();
     ~QDBusConnectionManager();
     static QDBusConnectionManager* instance();
 
@@ -64,6 +67,10 @@ public:
     void setConnection(const QString &name, QDBusConnectionPrivate *c);
 
     mutable QMutex mutex;
+
+protected:
+    void run() Q_DECL_OVERRIDE;
+
 private:
     QHash<QString, QDBusConnectionPrivate *> connectionHash;
 
