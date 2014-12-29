@@ -39,7 +39,7 @@
 #  error "This version of fontconfig is tool old, it is missing the FC_RGBA_UNKNOWN define"
 #endif
 
-#if ((FREETYPE_MAJOR*10000 + FREETYPE_MINOR*100 + FREETYPE_PATCH) < 20103)
+#if ((FREETYPE_MAJOR*10000 + FREETYPE_MINOR*100 + FREETYPE_PATCH) < 20110)
 #  error "This version of freetype is too old."
 #endif
 

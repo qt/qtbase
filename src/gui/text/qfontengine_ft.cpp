@@ -76,34 +76,6 @@
 
 QT_BEGIN_NAMESPACE
 
-/*
- * Freetype 2.1.7 and earlier used width/height
- * for matching sizes in the BDF and PCF loaders.
- * This has been fixed for 2.1.8.
- */
-#if (FREETYPE_MAJOR*10000+FREETYPE_MINOR*100+FREETYPE_PATCH) >= 20105
-#define X_SIZE(face,i) ((face)->available_sizes[i].x_ppem)
-#define Y_SIZE(face,i) ((face)->available_sizes[i].y_ppem)
-#else
-#define X_SIZE(face,i) ((face)->available_sizes[i].width << 6)
-#define Y_SIZE(face,i) ((face)->available_sizes[i].height << 6)
-#endif
-
-/* FreeType 2.1.10 starts to provide FT_GlyphSlot_Embolden */
-#if (FREETYPE_MAJOR*10000+FREETYPE_MINOR*100+FREETYPE_PATCH) >= 20110
-#define Q_FT_GLYPHSLOT_EMBOLDEN(slot)   FT_GlyphSlot_Embolden(slot)
-#else
-#define Q_FT_GLYPHSLOT_EMBOLDEN(slot)
-#endif
-
-/* FreeType 2.1.10 starts to provide FT_GlyphSlot_Oblique */
-#if (FREETYPE_MAJOR*10000+FREETYPE_MINOR*100+FREETYPE_PATCH) >= 20110
-#define Q_HAS_FT_GLYPHSLOT_OBLIQUE
-#define Q_FT_GLYPHSLOT_OBLIQUE(slot)   FT_GlyphSlot_Oblique(slot)
-#else
-#define Q_FT_GLYPHSLOT_OBLIQUE(slot)
-#endif
-
 #define FLOOR(x)    ((x) & -64)
 #define CEIL(x)     (((x)+63) & -64)
 #define TRUNC(x)    ((x) >> 6)
@@ -297,7 +269,7 @@ QFreetypeFace *QFreetypeFace::getFace(const QFontEngine::FaceId &face_id,
         }
 
         if (!FT_IS_SCALABLE(newFreetype->face) && newFreetype->face->num_fixed_sizes == 1)
-            FT_Set_Char_Size (face, X_SIZE(newFreetype->face, 0), Y_SIZE(newFreetype->face, 0), 0, 0);
+            FT_Set_Char_Size(face, newFreetype->face->available_sizes[0].x_ppem, newFreetype->face->available_sizes[0].y_ppem, 0, 0);
 
         FT_Set_Charmap(newFreetype->face, newFreetype->unicode_map);
         QT_TRY {
@@ -357,18 +329,18 @@ void QFreetypeFace::computeSize(const QFontDef &fontDef, int *xsize, int *ysize,
     if (!(face->face_flags & FT_FACE_FLAG_SCALABLE)) {
         int best = 0;
         for (int i = 1; i < face->num_fixed_sizes; i++) {
-            if (qAbs(*ysize -  Y_SIZE(face,i)) <
-                qAbs (*ysize - Y_SIZE(face, best)) ||
-                (qAbs (*ysize - Y_SIZE(face, i)) ==
-                 qAbs (*ysize - Y_SIZE(face, best)) &&
-                 qAbs (*xsize - X_SIZE(face, i)) <
-                 qAbs (*xsize - X_SIZE(face, best)))) {
+            if (qAbs(*ysize -  face->available_sizes[i].y_ppem) <
+                qAbs(*ysize - face->available_sizes[best].y_ppem) ||
+                (qAbs(*ysize - face->available_sizes[i].y_ppem) ==
+                 qAbs(*ysize - face->available_sizes[best].y_ppem) &&
+                 qAbs(*xsize - face->available_sizes[i].x_ppem) <
+                 qAbs(*xsize - face->available_sizes[best].x_ppem))) {
                 best = i;
             }
         }
-        if (FT_Set_Char_Size (face, X_SIZE(face, best), Y_SIZE(face, best), 0, 0) == 0) {
-            *xsize = X_SIZE(face, best);
-            *ysize = Y_SIZE(face, best);
+        if (FT_Set_Char_Size(face, face->available_sizes[best].x_ppem, face->available_sizes[best].y_ppem, 0, 0) == 0) {
+            *xsize = face->available_sizes[best].x_ppem;
+            *ysize = face->available_sizes[best].y_ppem;
         } else {
             int err = 1;
             if (!(face->face_flags & FT_FACE_FLAG_SCALABLE) && ysize == 0 && face->num_fixed_sizes >= 1) {
@@ -719,14 +691,8 @@ bool QFontEngineFT::init(FaceId faceId, bool antialias, GlyphFormat format,
 
     if (FT_IS_SCALABLE(face)) {
         bool fake_oblique = (fontDef.style != QFont::StyleNormal) && !(face->style_flags & FT_STYLE_FLAG_ITALIC);
-        if (fake_oblique) {
-#if !defined(Q_HAS_FT_GLYPHSLOT_OBLIQUE)
-            matrix.xy = 0x10000*3/10;
-            transform = true;
-#else
+        if (fake_oblique)
             obliquen = true;
-#endif
-        }
         FT_Set_Transform(face, &matrix, 0);
         freetype->matrix = matrix;
         // fake bold
@@ -758,7 +724,7 @@ bool QFontEngineFT::init(FaceId faceId, bool antialias, GlyphFormat format,
     */
     if (FT_IS_SCALABLE(face)) {
         for (int i = 0; i < face->num_fixed_sizes; ++i) {
-            if (xsize == X_SIZE(face, i) && ysize == Y_SIZE(face, i)) {
+            if (xsize == face->available_sizes[i].x_ppem && ysize == face->available_sizes[i].y_ppem) {
                 face->face_flags &= ~FT_FACE_FLAG_SCALABLE;
 
                 FT_Select_Size(face, i);
@@ -908,9 +874,10 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph,
 
     FT_GlyphSlot slot = face->glyph;
 
-    if (embolden) Q_FT_GLYPHSLOT_EMBOLDEN(slot);
+    if (embolden)
+        FT_GlyphSlot_Embolden(slot);
     if (obliquen) {
-        Q_FT_GLYPHSLOT_OBLIQUE(slot);
+        FT_GlyphSlot_Oblique(slot);
 
         // While Embolden alters the metrics of the slot, oblique does not, so we need
         // to fix this ourselves.
@@ -1512,8 +1479,10 @@ void QFontEngineFT::addGlyphsToPath(glyph_t *glyphs, QFixedPoint *positions, int
         FT_GlyphSlot g = face->glyph;
         if (g->format != FT_GLYPH_FORMAT_OUTLINE)
             continue;
-        if (embolden) Q_FT_GLYPHSLOT_EMBOLDEN(g);
-        if (obliquen) Q_FT_GLYPHSLOT_OBLIQUE(g);
+        if (embolden)
+            FT_GlyphSlot_Embolden(g);
+        if (obliquen)
+            FT_GlyphSlot_Oblique(g);
         QFreetypeFace::addGlyphToPath(face, g, positions[gl], path, xsize, ysize);
     }
     unlockFace();
