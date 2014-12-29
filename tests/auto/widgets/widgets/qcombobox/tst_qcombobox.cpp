@@ -158,6 +158,7 @@ private slots:
     void highlightedSignal();
     void itemData();
     void task_QTBUG_31146_popupCompletion();
+    void task_QTBUG_41288_completerChangesCurrentIndex();
     void keyboardSelection();
     void setCustomModelAndView();
     void updateDelegateOnEditableChange();
@@ -3024,6 +3025,44 @@ void tst_QComboBox::task_QTBUG_31146_popupCompletion()
     QTest::keyClick(comboBox.completer()->popup(), Qt::Key_Up);
     QTest::keyClick(comboBox.completer()->popup(), Qt::Key_Enter);
     QCOMPARE(comboBox.currentIndex(), 0);
+}
+
+void tst_QComboBox::task_QTBUG_41288_completerChangesCurrentIndex()
+{
+    QComboBox comboBox;
+    comboBox.setEditable(true);
+
+    comboBox.addItems(QStringList() << QStringLiteral("111") << QStringLiteral("222"));
+
+    comboBox.show();
+    comboBox.activateWindow();
+    QVERIFY(QTest::qWaitForWindowActive(&comboBox));
+
+    {
+        // change currentIndex() by keyboard
+        comboBox.lineEdit()->selectAll();
+        QTest::keyClicks(comboBox.lineEdit(), "222");
+        QTest::keyClick(comboBox.lineEdit(), Qt::Key_Enter);
+        QCOMPARE(comboBox.currentIndex(), 1);
+
+        QTest::keyClick(&comboBox, Qt::Key_Up);
+        comboBox.lineEdit()->selectAll();
+        QTest::keyClick(comboBox.lineEdit(), Qt::Key_Enter);
+        QCOMPARE(comboBox.currentIndex(), 0);
+    }
+
+    {
+        // change currentIndex() programmatically
+        comboBox.lineEdit()->selectAll();
+        QTest::keyClicks(comboBox.lineEdit(), "222");
+        QTest::keyClick(comboBox.lineEdit(), Qt::Key_Enter);
+        QCOMPARE(comboBox.currentIndex(), 1);
+
+        comboBox.setCurrentIndex(0);
+        comboBox.lineEdit()->selectAll();
+        QTest::keyClick(comboBox.lineEdit(), Qt::Key_Enter);
+        QCOMPARE(comboBox.currentIndex(), 0);
+    }
 }
 
 void tst_QComboBox::keyboardSelection()
