@@ -14,3 +14,4 @@ wince*: {
    DEPLOYMENT += addPlugins
 }
 TESTDATA += icons/*
+android:RESOURCES+=qicoimageformat.qrc

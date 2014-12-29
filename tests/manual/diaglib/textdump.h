@@ -30,47 +30,19 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include <qcoreapplication.h>
-#include <qdebug.h>
 
-#include <QtTest/QtTest>
-#include <QtDBus/QtDBus>
+#ifndef TEXTDUMP_H
+#define TEXTDUMP_H
 
-#include <stdlib.h>
+#include <QtCore/QtGlobal>
 
-/* This test uses an appless main, to ensure that no D-Bus stuff is implicitly done
-   It also sets the magic "QT_SIMULATE_DBUS_LIBFAIL" env variable, that is only available
-   in developer builds. That env variable simulates a D-Bus library load fail.
+QT_FORWARD_DECLARE_CLASS(QString)
 
-   In no case should the QDBus module crash because D-Bus libs couldn't be loaded */
+namespace QtDiag {
 
-class tst_QDBusConnectionNoBus : public QObject
-{
-    Q_OBJECT
+QString dumpText(const QString &text);
+QString dumpTextAsCode(const QString &text);
 
-public:
-    tst_QDBusConnectionNoBus()
-    {
-        qputenv("DBUS_SESSION_BUS_ADDRESS", "unix:abstract=/tmp/does_not_exist");
-        qputenv("QT_SIMULATE_DBUS_LIBFAIL", "1");
-    }
+} // namespace QtDiag
 
-private slots:
-    void connectToBus();
-};
-
-
-void tst_QDBusConnectionNoBus::connectToBus()
-{
-    int argc = 0;
-    QCoreApplication app(argc, 0);
-
-    QDBusConnection con = QDBusConnection::sessionBus();
-
-    QVERIFY(true); // if we didn't crash here, the test passed :)
-}
-
-QTEST_APPLESS_MAIN(tst_QDBusConnectionNoBus)
-
-#include "tst_qdbusconnection_no_bus.moc"
-
+#endif // TEXTDUMP_H

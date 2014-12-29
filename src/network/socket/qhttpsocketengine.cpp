@@ -116,7 +116,7 @@ void QHttpSocketEngine::setProxy(const QNetworkProxy &proxy)
 qintptr QHttpSocketEngine::socketDescriptor() const
 {
     Q_D(const QHttpSocketEngine);
-    return d->socket ? d->socket->socketDescriptor() : 0;
+    return d->socket ? d->socket->socketDescriptor() : -1;
 }
 
 bool QHttpSocketEngine::isValid() const

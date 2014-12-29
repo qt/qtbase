@@ -40,7 +40,13 @@ class tst_QResourceEngine: public QObject
     Q_OBJECT
 
 public:
-    tst_QResourceEngine() : m_runtimeResourceRcc(QFINDTESTDATA("runtime_resource.rcc")) {}
+    tst_QResourceEngine()
+#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_NO_SDK)
+        : m_runtimeResourceRcc(QFileInfo(QStandardPaths::writableLocation(QStandardPaths::CacheLocation) + QStringLiteral("/runtime_resource.rcc")).absoluteFilePath())
+#else
+        : m_runtimeResourceRcc(QFINDTESTDATA("runtime_resource.rcc"))
+#endif
+    {}
 
 private slots:
     void initTestCase();
@@ -62,6 +68,29 @@ private:
 
 void tst_QResourceEngine::initTestCase()
 {
+#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_NO_SDK)
+    QString sourcePath(QStringLiteral(":/android_testdata/"));
+    QString dataPath(QStandardPaths::writableLocation(QStandardPaths::CacheLocation));
+
+    QDirIterator it(sourcePath, QDirIterator::Subdirectories);
+    while (it.hasNext()) {
+        it.next();
+
+        QFileInfo fileInfo = it.fileInfo();
+        if (!fileInfo.isDir()) {
+            QString destination(dataPath + QLatin1Char('/') + fileInfo.filePath().mid(sourcePath.length()));
+            QFileInfo destinationFileInfo(destination);
+            if (!destinationFileInfo.exists()) {
+                QVERIFY(QDir().mkpath(destinationFileInfo.path()));
+                QVERIFY(QFile::copy(fileInfo.filePath(), destination));
+                QVERIFY(QFileInfo(destination).exists());
+            }
+        }
+    }
+
+    QVERIFY(QDir::setCurrent(dataPath));
+#endif
+
     QVERIFY(!m_runtimeResourceRcc.isEmpty());
     QVERIFY(QResource::registerResource(m_runtimeResourceRcc));
     QVERIFY(QResource::registerResource(m_runtimeResourceRcc, "/secondary_root/"));
@@ -85,16 +114,25 @@ void tst_QResourceEngine::checkStructure_data()
 
     QFileInfo info;
 
+    QStringList rootContents;
+    rootContents << QLatin1String("aliasdir")
+                 << QLatin1String("otherdir")
+                 << QLatin1String("qt-project.org")
+                 << QLatin1String("runtime_resource")
+                 << QLatin1String("searchpath1")
+                 << QLatin1String("searchpath2")
+                 << QLatin1String("secondary_root")
+                 << QLatin1String("test")
+                 << QLatin1String("withoutslashes");
+
+#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_NO_SDK)
+    rootContents.insert(1, QLatin1String("android_testdata"));
+#endif
+
     QTest::newRow("root dir")          << QString(":/")
                                        << QString()
                                        << (QStringList() << "search_file.txt")
-                                       << (QStringList() << QLatin1String("aliasdir") << QLatin1String("otherdir")
-                                           << QLatin1String("qt-project.org")
-                                           << QLatin1String("runtime_resource")
-                                           << QLatin1String("searchpath1") << QLatin1String("searchpath2")
-                                           << QLatin1String("secondary_root")
-                                           << QLatin1String("test")
-                                           << QLatin1String("withoutslashes"))
+                                       << rootContents
                                        << QLocale::c()
                                        << qlonglong(0);
 

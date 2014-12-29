@@ -1,6 +1,7 @@
 CONFIG += testcase
 SOURCES += ../tst_qdbusmarshall.cpp
 TARGET = ../tst_qdbusmarshall
+DESTDIR = ./
 
 QT = core-private dbus-private testlib
 

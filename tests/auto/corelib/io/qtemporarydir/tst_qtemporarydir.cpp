@@ -237,7 +237,11 @@ void tst_QTemporaryDir::nonWritableCurrentDir()
     };
     ChdirOnReturn cor(QDir::currentPath());
 
+#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_NO_SDK)
+    QDir::setCurrent("/data");
+#else
     QDir::setCurrent("/home");
+#endif
     // QTemporaryDir("tempXXXXXX") is probably a bad idea in any app
     // where the current dir could anything...
     QTemporaryDir dir("tempXXXXXX");

@@ -713,9 +713,8 @@
 
     \snippet code/doc_src_sql-driver.cpp 31
 
-    the problem is usually that the plugin had the wrong \l{Deploying
-    Plugins#The Build Key}{build key}. This might require removing an
-    entry from the \l{Deploying Plugins#The Plugin Cache} {plugin cache}.
+    the problem is usually that the plugin had the wrong build key.
+    This might require removing an entry from the plugin cache.
 
     \target development
     \section1 How to Write Your Own Database Driver

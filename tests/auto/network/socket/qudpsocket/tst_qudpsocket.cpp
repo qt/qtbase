@@ -127,6 +127,17 @@ private:
 #endif
 };
 
+static QHostAddress makeNonAny(const QHostAddress &address, QHostAddress::SpecialAddress preferForAny = QHostAddress::LocalHost)
+{
+    if (address == QHostAddress::Any)
+        return preferForAny;
+    if (address == QHostAddress::AnyIPv4)
+        return QHostAddress::LocalHost;
+    if (address == QHostAddress::AnyIPv6)
+        return QHostAddress::LocalHostIPv6;
+    return address;
+}
+
 tst_QUdpSocket::tst_QUdpSocket()
 {
 }
@@ -236,10 +247,7 @@ void tst_QUdpSocket::unconnectedServerAndClientTest()
 
     const char *message[] = {"Yo mista", "Yo", "Wassap"};
 
-    QHostAddress serverAddress = QHostAddress::LocalHost;
-    if (!(serverSocket.localAddress() == QHostAddress::AnyIPv4 || serverSocket.localAddress() == QHostAddress::AnyIPv6))
-        serverAddress = serverSocket.localAddress();
-
+    QHostAddress serverAddress = makeNonAny(serverSocket.localAddress());
     for (int i = 0; i < 3; ++i) {
         QUdpSocket clientSocket;
 #ifdef FORCE_SESSION
@@ -282,8 +290,11 @@ void tst_QUdpSocket::broadcasting()
     foreach (QNetworkInterface iface, QNetworkInterface::allInterfaces()) {
         if ((iface.flags() & QNetworkInterface::CanBroadcast)
             && iface.flags() & QNetworkInterface::IsUp) {
-            for (int i=0;i<iface.addressEntries().count();i++)
-                broadcastAddresses.append(iface.addressEntries().at(i).broadcast());
+            for (int i=0;i<iface.addressEntries().count();i++) {
+                QHostAddress broadcast = iface.addressEntries().at(i).broadcast();
+                if (broadcast.protocol() == QAbstractSocket::IPv4Protocol)
+                    broadcastAddresses.append(broadcast);
+            }
         }
     }
     if (broadcastAddresses.isEmpty())
@@ -293,7 +304,8 @@ void tst_QUdpSocket::broadcasting()
 #ifdef FORCE_SESSION
         serverSocket.setProperty("_q_networksession", QVariant::fromValue(networkSession));
 #endif
-        QVERIFY2(serverSocket.bind(QHostAddress::Any, 5000), serverSocket.errorString().toLatin1().constData());
+        QVERIFY2(serverSocket.bind(QHostAddress(QHostAddress::AnyIPv4), 0), serverSocket.errorString().toLatin1().constData());
+        quint16 serverPort = serverSocket.localPort();
 
         QCOMPARE(serverSocket.state(), QUdpSocket::BoundState);
 
@@ -303,14 +315,14 @@ void tst_QUdpSocket::broadcasting()
 #ifdef FORCE_SESSION
         broadcastSocket.setProperty("_q_networksession", QVariant::fromValue(networkSession));
 #endif
-        broadcastSocket.bind();
+        broadcastSocket.bind(QHostAddress(QHostAddress::AnyIPv4), 0);
 
-        for (int j = 0; j < 100; ++j) {
+        for (int j = 0; j < 10; ++j) {
             for (int k = 0; k < 4; k++) {
                 broadcastSocket.writeDatagram(message[i], strlen(message[i]),
-                    QHostAddress::Broadcast, 5000);
+                    QHostAddress::Broadcast, serverPort);
                 foreach (QHostAddress addr, broadcastAddresses)
-                    broadcastSocket.writeDatagram(message[i], strlen(message[i]), addr, 5000);
+                    broadcastSocket.writeDatagram(message[i], strlen(message[i]), addr, serverPort);
             }
             QTestEventLoop::instance().enterLoop(15);
             if (QTestEventLoop::instance().timeout()) {
@@ -371,12 +383,8 @@ void tst_QUdpSocket::loop()
     QVERIFY2(peter.bind(), peter.errorString().toLatin1().constData());
     QVERIFY2(paul.bind(), paul.errorString().toLatin1().constData());
 
-    QHostAddress peterAddress = QHostAddress::LocalHost;
-    if (!(peter.localAddress() == QHostAddress::AnyIPv4 || peter.localAddress() == QHostAddress::AnyIPv6))
-        peterAddress = peter.localAddress();
-    QHostAddress pualAddress = QHostAddress::LocalHost;
-    if (!(paul.localAddress() == QHostAddress::AnyIPv4 || paul.localAddress() == QHostAddress::AnyIPv6))
-        pualAddress = paul.localAddress();
+    QHostAddress peterAddress = makeNonAny(peter.localAddress());
+    QHostAddress pualAddress = makeNonAny(paul.localAddress());
 
     QCOMPARE(peter.writeDatagram(peterMessage.data(), peterMessage.length(),
                                 pualAddress, paul.localPort()), qint64(peterMessage.length()));
@@ -419,13 +427,18 @@ void tst_QUdpSocket::ipv6Loop()
     paul.setProperty("_q_networksession", QVariant::fromValue(networkSession));
 #endif
 
-    quint16 peterPort = 28124;
-    quint16 paulPort = 28123;
+    quint16 peterPort;
+    quint16 paulPort;
 
-    if (!peter.bind(QHostAddress::LocalHostIPv6, peterPort)) {
-    QCOMPARE(peter.error(), QUdpSocket::UnsupportedSocketOperationError);
-    } else {
-    QVERIFY(paul.bind(QHostAddress::LocalHostIPv6, paulPort));
+    if (!peter.bind(QHostAddress(QHostAddress::LocalHostIPv6), 0)) {
+        QCOMPARE(peter.error(), QUdpSocket::UnsupportedSocketOperationError);
+        return;
+    }
+
+    QVERIFY(paul.bind(QHostAddress(QHostAddress::LocalHostIPv6), 0));
+
+    peterPort = peter.localPort();
+    paulPort = paul.localPort();
 
     QCOMPARE(peter.writeDatagram(peterMessage.data(), peterMessage.length(), QHostAddress("::1"),
                                     paulPort), qint64(peterMessage.length()));
@@ -451,7 +464,6 @@ void tst_QUdpSocket::ipv6Loop()
 
     QCOMPARE(QByteArray(peterBuffer, paulMessage.length()), paulMessage);
     QCOMPARE(QByteArray(paulBuffer, peterMessage.length()), peterMessage);
-    }
 }
 
 void tst_QUdpSocket::dualStack()
@@ -616,7 +628,7 @@ void tst_QUdpSocket::readLine()
 #endif
     QVERIFY2(socket1.bind(), socket1.errorString().toLatin1().constData());
 
-    socket2.connectToHost("127.0.0.1", socket1.localPort());
+    socket2.connectToHost(makeNonAny(socket1.localAddress()), socket1.localPort());
     QVERIFY(socket2.waitForConnected(5000));
 }
 
@@ -630,10 +642,7 @@ void tst_QUdpSocket::pendingDatagramSize()
 #endif
     QVERIFY2(server.bind(), server.errorString().toLatin1().constData());
 
-    QHostAddress serverAddress = QHostAddress::LocalHost;
-    if (!(server.localAddress() == QHostAddress::AnyIPv4 || server.localAddress() == QHostAddress::AnyIPv6))
-        serverAddress = server.localAddress();
-
+    QHostAddress serverAddress = makeNonAny(server.localAddress());
     QUdpSocket client;
 #ifdef FORCE_SESSION
     client.setProperty("_q_networksession", QVariant::fromValue(networkSession));
@@ -681,10 +690,7 @@ void tst_QUdpSocket::writeDatagram()
 #endif
     QVERIFY2(server.bind(), server.errorString().toLatin1().constData());
 
-    QHostAddress serverAddress = QHostAddress::LocalHost;
-    if (!(server.localAddress() == QHostAddress::AnyIPv4 || server.localAddress() == QHostAddress::AnyIPv6))
-        serverAddress = server.localAddress();
-
+    QHostAddress serverAddress = makeNonAny(server.localAddress());
     QUdpSocket client;
 #ifdef FORCE_SESSION
     client.setProperty("_q_networksession", QVariant::fromValue(networkSession));
@@ -731,10 +737,7 @@ void tst_QUdpSocket::performance()
 #endif
     QVERIFY2(server.bind(), server.errorString().toLatin1().constData());
 
-    QHostAddress serverAddress = QHostAddress::LocalHost;
-    if (!(server.localAddress() == QHostAddress::AnyIPv4 || server.localAddress() == QHostAddress::AnyIPv6))
-        serverAddress = server.localAddress();
-
+    QHostAddress serverAddress = makeNonAny(server.localAddress());
     QUdpSocket client;
 #ifdef FORCE_SESSION
     client.setProperty("_q_networksession", QVariant::fromValue(networkSession));
@@ -1160,8 +1163,8 @@ void tst_QUdpSocket::multicastJoinBeforeBind()
 void tst_QUdpSocket::multicastLeaveAfterClose_data()
 {
     QTest::addColumn<QHostAddress>("groupAddress");
-    QTest::newRow("valid ipv4 group address") << QHostAddress("239.255.118.62");
-    QTest::newRow("valid ipv6 group address") << QHostAddress("FF01::114");
+    QTest::newRow("ipv4") << QHostAddress("239.255.118.62");
+    QTest::newRow("ipv6") << QHostAddress("FF01::114");
 }
 
 void tst_QUdpSocket::multicastLeaveAfterClose()
@@ -1177,7 +1180,10 @@ void tst_QUdpSocket::multicastLeaveAfterClose()
 #ifdef FORCE_SESSION
     udpSocket.setProperty("_q_networksession", QVariant::fromValue(networkSession));
 #endif
-    QVERIFY2(udpSocket.bind(groupAddress, 0),
+    QHostAddress bindAddress = QHostAddress::AnyIPv4;
+    if (groupAddress.protocol() == QAbstractSocket::IPv6Protocol)
+        bindAddress = QHostAddress::AnyIPv6;
+    QVERIFY2(udpSocket.bind(bindAddress, 0),
              qPrintable(udpSocket.errorString()));
     QVERIFY2(udpSocket.joinMulticastGroup(groupAddress),
              qPrintable(udpSocket.errorString()));
@@ -1243,7 +1249,7 @@ void tst_QUdpSocket::multicast_data()
     QTest::newRow("same bind, group ipv4 address") << groupAddress << true << groupAddress << true;
     QTest::newRow("valid bind, group ipv6 address") << any6Address << true << group6Address << true;
     QTest::newRow("valid bind, invalid group ipv6 address") << any6Address << true << any6Address << false;
-    QTest::newRow("same bind, group ipv6 address") << group6Address << true << group6Address << true;
+    QTest::newRow("same bind, group ipv6 address") << group6Address << false << group6Address << false;
     QTest::newRow("dual bind, group ipv4 address") << dualAddress << true << groupAddress << false;
     QTest::newRow("dual bind, group ipv6 address") << dualAddress << true << group6Address << true;
 }
@@ -1255,20 +1261,11 @@ void tst_QUdpSocket::multicast()
     QFETCH(bool, bindResult);
     QFETCH(QHostAddress, groupAddress);
     QFETCH(bool, joinResult);
-    if (groupAddress.protocol() == QAbstractSocket::IPv6Protocol)
+    if (groupAddress.protocol() == QAbstractSocket::IPv6Protocol && !QtNetworkSettings::hasIPv6())
         QSKIP("system doesn't support ipv6!");
     if (setProxy) {
         // UDP multicast does not work with proxies
-        if (
-#ifndef Q_OS_WIN
-            //windows native socket engine binds 0.0.0.0 instead of the requested multicast address
-            (bindAddress.protocol() == QAbstractSocket::IPv4Protocol && (bindAddress.toIPv4Address() & 0xffff0000) == 0xefff0000) ||
-#endif
-            bindAddress.protocol() == QAbstractSocket::IPv6Protocol) {
-            // proxy cannot bind to IPv6 or multicast addresses
-            bindResult = false;
-        }
-        joinResult = false;
+        return;
     }
 
     QUdpSocket receiver;
@@ -1282,6 +1279,12 @@ void tst_QUdpSocket::multicast()
     if (!bindResult)
         return;
 
+    if (bindAddress == QHostAddress::Any && groupAddress.protocol() == QAbstractSocket::IPv4Protocol) {
+        QCOMPARE(joinResult, false);
+        QTest::ignoreMessage(QtWarningMsg,
+                             "QAbstractSocket: cannot bind to QHostAddress::Any (or an IPv6 address) and join an IPv4 multicast group;"
+                             " bind to QHostAddress::AnyIPv4 instead if you want to do this");
+    }
     QVERIFY2(receiver.joinMulticastGroup(groupAddress) == joinResult,
              qPrintable(receiver.errorString()));
     if (!joinResult)

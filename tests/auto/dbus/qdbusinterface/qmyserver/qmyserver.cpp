@@ -42,14 +42,14 @@ static const char objectPath[] = "/org/qtproject/qmyserver";
 int MyObject::callCount = 0;
 QVariantList MyObject::callArgs;
 
-class MyServer : public QDBusServer
+class MyServer : public QDBusServer, protected QDBusContext
 {
     Q_OBJECT
     Q_CLASSINFO("D-Bus Interface", "org.qtproject.autotests.qmyserver")
 
 public:
-    MyServer(QString addr = "unix:tmpdir=/tmp", QObject* parent = 0)
-        : QDBusServer(addr, parent),
+    MyServer(QObject* parent = 0)
+        : QDBusServer(parent),
           m_conn("none")
     {
         connect(this, SIGNAL(newConnection(QDBusConnection)), SLOT(handleConnection(QDBusConnection)));
@@ -58,6 +58,8 @@ public:
 public slots:
     QString address() const
     {
+        if (!QDBusServer::isConnected())
+            sendErrorReply(QDBusServer::lastError().name(), QDBusServer::lastError().message());
         return QDBusServer::address();
     }
 
@@ -140,6 +142,7 @@ int main(int argc, char *argv[])
     con.registerObject(objectPath, &server, QDBusConnection::ExportAllSlots);
 
     printf("ready.\n");
+    fflush(stdout);
 
     return app.exec();
 }

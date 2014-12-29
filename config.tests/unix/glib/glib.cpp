@@ -39,10 +39,11 @@ int main(int, char **)
 {
     GMainContext *context;
     GSource *source;
-    GPollFD *pollfd;
+    GPollFD *pollfd = NULL;
     if (!g_thread_supported())
         g_thread_init(NULL);
     context = g_main_context_default();
+    (void)context;
     source = g_source_new(0, 0);
     g_source_add_poll(source, pollfd);
     return 0;

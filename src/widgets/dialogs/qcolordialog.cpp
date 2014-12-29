@@ -972,6 +972,7 @@ private:
     QColorShowLabel *lab;
     bool rgbOriginal;
     QColorDialog *colorDialog;
+    QGridLayout *gl;
 
     friend class QColorDialog;
     friend class QColorDialogPrivate;
@@ -1099,7 +1100,7 @@ QColorShower::QColorShower(QColorDialog *parent)
     curCol = qRgb(255, 255, 255);
     curQColor = Qt::white;
 
-    QGridLayout *gl = new QGridLayout(this);
+    gl = new QGridLayout(this);
     gl->setMargin(gl->spacing());
     lab = new QColorShowLabel(this);
 
@@ -1277,10 +1278,16 @@ QColorShower::QColorShower(QColorDialog *parent)
 #else
     htEd->setReadOnly(true);
 #endif
+    htEd->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Fixed);
 
     lblHtml->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
+#if defined(QT_SMALL_COLORDIALOG)
+    gl->addWidget(lblHtml, 5, 0);
+    gl->addWidget(htEd, 5, 1, 1, /*colspan=*/ 2);
+#else
     gl->addWidget(lblHtml, 5, 1);
-    gl->addWidget(htEd, 5, 2);
+    gl->addWidget(htEd, 5, 2, 1, /*colspan=*/ 3);
+#endif
 
     connect(hEd, SIGNAL(valueChanged(int)), this, SLOT(hsvEd()));
     connect(sEd, SIGNAL(valueChanged(int)), this, SLOT(hsvEd()));
@@ -1742,7 +1749,9 @@ void QColorDialogPrivate::initWidgets()
         lp->hide();
 #else
     lp->setFixedWidth(20);
+    pickLay->addSpacing(10);
     pickLay->addWidget(lp);
+    pickLay->addStretch();
 #endif
 
     QObject::connect(cp, SIGNAL(newCol(int,int)), lp, SLOT(setCol(int,int)));
@@ -1751,6 +1760,7 @@ void QColorDialogPrivate::initWidgets()
     rightLay->addStretch();
 
     cs = new QColorShower(q);
+    pickLay->setMargin(cs->gl->margin());
     QObject::connect(cs, SIGNAL(newCol(QRgb)), q, SLOT(_q_newColorTypedIn(QRgb)));
     QObject::connect(cs, SIGNAL(currentColorChanged(QColor)),
                      q, SIGNAL(currentColorChanged(QColor)));
@@ -1760,6 +1770,7 @@ void QColorDialogPrivate::initWidgets()
     topLay->addWidget(cs);
 #else
     rightLay->addWidget(cs);
+    leftLay->addSpacing(cs->gl->margin());
 #endif
 
     buttons = new QDialogButtonBox(q);

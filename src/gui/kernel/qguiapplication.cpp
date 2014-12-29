@@ -2159,6 +2159,9 @@ void QGuiApplicationPrivate::processTabletLeaveProximityEvent(QWindowSystemInter
 #ifndef QT_NO_GESTURES
 void QGuiApplicationPrivate::processGestureEvent(QWindowSystemInterfacePrivate::GestureEvent *e)
 {
+    if (e->window.isNull())
+        return;
+
     QNativeGestureEvent ev(e->type, e->pos, e->pos, e->globalPos, e->realValue, e->sequenceId, e->intValue);
     ev.setTimestamp(e->timestamp);
     QGuiApplication::sendSpontaneousEvent(e->window, &ev);

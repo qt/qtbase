@@ -1,0 +1,44 @@
+<RCC>
+    <qresource prefix="/android_testdata">
+        <file>tst_qdir.cpp</file>
+        <file>entrylist/file</file>
+        <file>entrylist/directory/dummy</file>
+        <file>searchdir/subdir1/picker.png</file>
+        <file>searchdir/subdir2/picker.png</file>
+        <file>testData/empty</file>
+        <file>testdir/dir/tmp/empty</file>
+        <file>testdir/dir/qdir.pro</file>
+        <file>testdir/dir/qrc_qdir.cpp</file>
+        <file>testdir/dir/tst_qdir.cpp</file>
+        <file>testdir/spaces/foo. bar</file>
+        <file>testdir/spaces/foo.bar</file>
+        <file>types/a</file>
+        <file>types/a.a</file>
+        <file>types/a.b</file>
+        <file>types/a.c</file>
+        <file>types/b</file>
+        <file>types/b.a</file>
+        <file>types/b.b</file>
+        <file>types/b.c</file>
+        <file>types/c</file>
+        <file>types/c.a</file>
+        <file>types/c.b</file>
+        <file>types/c.c</file>
+        <file>types/d/dummy</file>
+        <file>types/d.a/dummy</file>
+        <file>types/d.c/dummy</file>
+        <file>types/d.b/dummy</file>
+        <file>types/e/dummy</file>
+        <file>types/e.a/dummy</file>
+        <file>types/e.c/dummy</file>
+        <file>types/f/dummy</file>
+        <file>types/f.a/dummy</file>
+        <file>types/f.b/dummy</file>
+        <file>types/f.c/dummy</file>
+        <file>types/e.b/dummy</file>
+        <file>resources/entryList/file1.data</file>
+        <file>resources/entryList/file2.data</file>
+        <file>resources/entryList/file3.data</file>
+        <file>resources/entryList/file4.nothing</file>
+    </qresource>
+</RCC>

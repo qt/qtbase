@@ -72,20 +72,17 @@
 # include "private/qcore_unix_p.h"
 #endif
 
-#if !defined QT_NO_REGULAREXPRESSION && !defined(QT_BOOTSTRAPPED)
-#ifdef __has_include
-#if __has_include(<cxxabi.h>) && __has_include(<execinfo.h>)
-#define QLOGGING_HAVE_BACKTRACE
-#endif
-#elif defined(__GLIBCXX__) && defined(__GLIBC__) // (because older version of gcc don't have __has_include)
-#define QLOGGING_HAVE_BACKTRACE
+#ifndef __has_include
+#  define __has_include(x) 0
 #endif
 
-#ifdef QLOGGING_HAVE_BACKTRACE
-#include <qregularexpression.h>
-#include <cxxabi.h>
-#include <execinfo.h>
-#endif
+#if !defined QT_NO_REGULAREXPRESSION && !defined(QT_BOOTSTRAPPED)
+#  if (defined(__GLIBC__) && defined(__GLIBCXX__)) || (__has_include(<cxxabi.h>) && __has_include(<execinfo.h>))
+#    define QLOGGING_HAVE_BACKTRACE
+#    include <qregularexpression.h>
+#    include <cxxabi.h>
+#    include <execinfo.h>
+#  endif
 #endif
 
 #include <stdio.h>

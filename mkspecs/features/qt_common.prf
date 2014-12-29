@@ -50,9 +50,6 @@ warnings_are_errors:warning_clean {
         reg_ver = $${QT_CLANG_MAJOR_VERSION}.$${QT_CLANG_MINOR_VERSION}
         contains(apple_ver, "4\\.[012]|5\\.[01]")|contains(reg_ver, "3\\.[34]") {
             QMAKE_CXXFLAGS_WARN_ON += -Werror -Wno-error=\\$${LITERAL_HASH}warnings -Wno-error=deprecated-declarations $$WERROR
-
-            # glibc's bswap_XX macros use the "register" keyword
-            linux:equals(reg_ver, "3.4"): QMAKE_CXXFLAGS_WARN_ON += -Wno-error=deprecated-register
         }
     } else:intel_icc:linux {
         # Intel CC 13.0 - 15.0, on Linux only

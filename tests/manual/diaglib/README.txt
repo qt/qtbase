@@ -12,6 +12,17 @@ code can be enlosed within #ifdef to work without it as well.
 
 All functions and classes are in the QtDiag namespace.
 
+function dumpText() (textdump.h)
+  Returns a string containing the input text split up in characters
+  listing category, script, direction etc.
+  Useful for analyzing non-Latin text.
+
+function  dumpTextAsCode() (textdump.h)
+   Returns a string containing a code snippet creating a QString
+   by appending the unicode value of character of the input.
+   This is useful for constructing non-Latin strings with purely ASCII
+   source code.
+
 class EventFilter (eventfilter.h):
   An event filter that logs Qt events to qDebug() depending on
   configured categories (for example mouse, keyboard, etc).

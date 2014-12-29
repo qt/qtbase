@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/android_testdata">
+        <file>resources/file1</file>
+        <file>resources/file1.ext1</file>
+        <file>resources/file1.ext1.ext2</file>
+        <file>tst_qfileinfo.cpp</file>
+    </qresource>
+</RCC>

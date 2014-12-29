@@ -84,14 +84,29 @@ bool qdbus_loadLibDBus()
     triedToLoadLibrary = true;
 
     static int majorversions[] = { 3, 2, -1 };
-    lib->unload();
-    lib->setFileName(QLatin1String("dbus-1"));
-    for (uint i = 0; i < sizeof(majorversions) / sizeof(majorversions[0]); ++i) {
-        lib->setFileNameAndVersion(lib->fileName(), majorversions[i]);
-        if (lib->load() && lib->resolve("dbus_connection_open_private"))
-            return true;
+    const QString baseNames[] = {
+#ifdef Q_OS_WIN
+        QStringLiteral("dbus-1"),
+#endif
+        QStringLiteral("libdbus-1")
+    };
 
-        lib->unload();
+    lib->unload();
+    for (uint i = 0; i < sizeof(majorversions) / sizeof(majorversions[0]); ++i) {
+        for (uint j = 0; j < sizeof(baseNames) / sizeof(baseNames[0]); ++j) {
+#ifdef Q_OS_WIN
+            QString suffix;
+            if (majorversions[i] != -1)
+                suffix = QString::number(- majorversions[i]); // negative so it prepends the dash
+            lib->setFileName(baseNames[j] + suffix);
+#else
+            lib->setFileNameAndVersion(baseNames[j], majorversions[i]);
+#endif
+            if (lib->load() && lib->resolve("dbus_connection_open_private"))
+                return true;
+
+            lib->unload();
+        }
     }
 
     delete lib;

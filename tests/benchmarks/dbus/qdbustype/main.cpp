@@ -57,29 +57,24 @@ void tst_QDBusType::benchmarkSignature_data()
     QTest::addColumn<QString>("data");
     QTest::addColumn<bool>("useNative");
 
-    for (int loopCount = 0; loopCount < 2; ++loopCount) {
-        bool useNative = loopCount;
-        QByteArray prefix = useNative ? "native-" : "";
+    benchmarkAddRow("single-invalid", "~");
+    benchmarkAddRow("single-invalid-array", "a~");
+    benchmarkAddRow("single-invalid-struct", "(.)");
 
-        benchmarkAddRow("single-invalid", "~");
-        benchmarkAddRow("single-invalid-array", "a~");
-        benchmarkAddRow("single-invalid-struct", "(.)");
+    benchmarkAddRow("single-char", "b");
+    benchmarkAddRow("single-array", "as");
+    benchmarkAddRow("single-simplestruct", "(y)");
+    benchmarkAddRow("single-simpledict", "a{sv}");
+    benchmarkAddRow("single-complexdict", "a{s(aya{io})}");
 
-        benchmarkAddRow("single-char", "b");
-        benchmarkAddRow("single-array", "as");
-        benchmarkAddRow("single-simplestruct", "(y)");
-        benchmarkAddRow("single-simpledict", "a{sv}");
-        benchmarkAddRow("single-complexdict", "a{s(aya{io})}");
+    benchmarkAddRow("multiple-char", "ssg");
+    benchmarkAddRow("multiple-arrays", "asasay");
 
-        benchmarkAddRow("multiple-char", "ssg");
-        benchmarkAddRow("multiple-arrays", "asasay");
-
-        benchmarkAddRow("struct-missingclose", "(ayyyy");
-        benchmarkAddRow("longstruct", "(yyyyyyayasy)");
-        benchmarkAddRow("invalid-longstruct", "(yyyyyyayas.y)");
-        benchmarkAddRow("complexstruct", "(y(aasay)oga{sv})");
-        benchmarkAddRow("multiple-simple-structs", "(y)(y)(y)");
-    }
+    benchmarkAddRow("struct-missingclose", "(ayyyy");
+    benchmarkAddRow("longstruct", "(yyyyyyayasy)");
+    benchmarkAddRow("invalid-longstruct", "(yyyyyyayas.y)");
+    benchmarkAddRow("complexstruct", "(y(aasay)oga{sv})");
+    benchmarkAddRow("multiple-simple-structs", "(y)(y)(y)");
 }
 
 void tst_QDBusType::benchmarkSignature()
