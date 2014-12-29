@@ -1969,12 +1969,6 @@ QDBusMessage QDBusConnectionPrivate::sendWithReply(const QDBusMessage &message,
 {
     QDBusBlockingCallWatcher watcher(message);
 
-    checkThread();
-    if ((sendMode == QDBus::BlockWithGui || sendMode == QDBus::Block)
-         && isServiceRegisteredByThread(message.service()))
-        // special case for synchronous local calls
-        return sendWithReplyLocal(message);
-
     QDBusPendingCallPrivate *pcall = sendWithReplyAsync(message, 0, 0, 0, timeout);
     Q_ASSERT(pcall);
 
