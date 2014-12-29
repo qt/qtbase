@@ -1224,7 +1224,10 @@ void QPrinter::setPageSize(PageSize newPageSize)
 
 void QPrinter::setPaperSize(const QSizeF &paperSize, QPrinter::Unit unit)
 {
-    setPageSize(QPageSize(paperSize, QPageSize::Unit(unit)));
+    if (unit == QPrinter::DevicePixel)
+        setPageSize(QPageSize(paperSize * qt_pixelMultiplier(resolution()), QPageSize::Point));
+    else
+        setPageSize(QPageSize(paperSize, QPageSize::Unit(unit)));
 }
 
 /*!

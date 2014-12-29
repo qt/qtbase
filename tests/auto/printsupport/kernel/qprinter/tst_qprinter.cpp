@@ -526,7 +526,7 @@ void tst_QPrinter::testCustomPageSizes()
 {
     QPrinter p;
 
-    QSizeF customSize(8.5, 11.0);
+    QSizeF customSize(7.0, 11.0);
     p.setPaperSize(customSize, QPrinter::Inch);
 
     QSizeF paperSize = p.paperSize(QPrinter::Inch);
@@ -538,6 +538,16 @@ void tst_QPrinter::testCustomPageSizes()
     paperSize = p.paperSize(QPrinter::Inch);
     QCOMPARE(paperSize.width(), customSize.width());
     QCOMPARE(paperSize.height(), customSize.height());
+
+    const QSizeF sizeInPixels = p.paperSize(QPrinter::DevicePixel);
+    QPrinter p3;
+    p3.setPaperSize(sizeInPixels, QPrinter::DevicePixel);
+    paperSize = p3.paperSize(QPrinter::Inch);
+    QCOMPARE(paperSize.width(), customSize.width());
+    QCOMPARE(paperSize.height(), customSize.height());
+    QPageSize pageSize = p3.pageLayout().pageSize();
+    QCOMPARE(pageSize.key(), QString("Custom.504x792"));
+    QCOMPARE(pageSize.name(), QString("Custom (504pt x 792pt)"));
 }
 
 void tst_QPrinter::customPaperSizeAndMargins_data()
