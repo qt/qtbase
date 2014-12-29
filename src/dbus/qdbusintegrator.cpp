@@ -1874,13 +1874,9 @@ bool QDBusConnectionPrivate::send(const QDBusMessage& message)
     }
 
     q_dbus_message_set_no_reply(msg, true); // the reply would not be delivered to anything
-
     qDBusDebug() << this << "sending message (no reply):" << message;
-    checkThread();
-    QDBusDispatchLocker locker(SendMessageAction, this);
-    bool isOk = q_dbus_connection_send(connection, msg, 0);
-    q_dbus_message_unref(msg);
-    return isOk;
+    emit messageNeedsSending(Q_NULLPTR, msg);
+    return true;
 }
 
 // small helper to note long running blocking dbus calls.
@@ -2089,10 +2085,15 @@ void QDBusConnectionPrivate::sendInternal(QDBusPendingCallPrivate *pcall, void *
     QDBusError error;
     DBusPendingCall *pending = 0;
     DBusMessage *msg = static_cast<DBusMessage *>(message);
-    checkThread();
+    bool isNoReply = !pcall;
+    Q_ASSERT(isNoReply == !!q_dbus_message_get_no_reply(msg));
 
-    QDBusDispatchLocker locker(SendWithReplyAsyncAction, this);
-    if (q_dbus_connection_send_with_reply(connection, msg, &pending, timeout)) {
+    checkThread();
+    QDBusDispatchLocker locker(SendMessageAction, this);
+
+    if (isNoReply && q_dbus_connection_send(connection, msg, Q_NULLPTR)) {
+        // success
+    } else if (!isNoReply && q_dbus_connection_send_with_reply(connection, msg, &pending, timeout)) {
         if (pending) {
             q_dbus_message_unref(msg);
 
@@ -2113,8 +2114,10 @@ void QDBusConnectionPrivate::sendInternal(QDBusPendingCallPrivate *pcall, void *
     }
 
     q_dbus_message_unref(msg);
-    pcall->replyMessage = QDBusMessage::createError(error);
-    processFinishedCall(pcall);
+    if (pcall) {
+        pcall->replyMessage = QDBusMessage::createError(error);
+        processFinishedCall(pcall);
+    }
 }
 
 bool QDBusConnectionPrivate::connectSignal(const QString &service,
