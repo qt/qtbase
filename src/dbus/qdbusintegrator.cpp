@@ -2038,34 +2038,15 @@ QDBusPendingCallPrivate *QDBusConnectionPrivate::sendWithReplyAsync(const QDBusM
                                                                     QObject *receiver, const char *returnMethod,
                                                                     const char *errorMethod, int timeout)
 {
-    if (isServiceRegisteredByThread(message.service())) {
+    checkThread();
+
+    QDBusPendingCallPrivate *pcall = new QDBusPendingCallPrivate(message, this);
+    bool isLoopback;
+    if ((isLoopback = isServiceRegisteredByThread(message.service()))) {
         // special case for local calls
-        QDBusPendingCallPrivate *pcall = new QDBusPendingCallPrivate(message, this);
         pcall->replyMessage = sendWithReplyLocal(message);
-        if (receiver && returnMethod)
-            pcall->setReplyCallback(receiver, returnMethod);
-
-        if (errorMethod) {
-            pcall->watcherHelper = new QDBusPendingCallWatcherHelper;
-            connect(pcall->watcherHelper, SIGNAL(error(QDBusError,QDBusMessage)), receiver, errorMethod,
-                    Qt::QueuedConnection);
-            pcall->watcherHelper->moveToThread(thread());
-        }
-
-        if ((receiver && returnMethod) || errorMethod) {
-           // no one waiting, will delete pcall in processFinishedCall()
-           pcall->ref.store(1);
-        } else {
-           // set double ref to prevent race between processFinishedCall() and ref counting
-           // by QDBusPendingCall::QExplicitlySharedDataPointer<QDBusPendingCallPrivate>
-           pcall->ref.store(2);
-        }
-        processFinishedCall(pcall);
-        return pcall;
     }
 
-    checkThread();
-    QDBusPendingCallPrivate *pcall = new QDBusPendingCallPrivate(message, this);
     if (receiver && returnMethod)
         pcall->setReplyCallback(receiver, returnMethod);
 
@@ -2083,6 +2064,12 @@ QDBusPendingCallPrivate *QDBusConnectionPrivate::sendWithReplyAsync(const QDBusM
        // set double ref to prevent race between processFinishedCall() and ref counting
        // by QDBusPendingCall::QExplicitlySharedDataPointer<QDBusPendingCallPrivate>
        pcall->ref.store(2);
+    }
+
+    if (isLoopback) {
+        // a loopback call
+        processFinishedCall(pcall);
+        return pcall;
     }
 
     QDBusError error;
