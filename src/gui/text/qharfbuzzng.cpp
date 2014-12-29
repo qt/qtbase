@@ -375,7 +375,7 @@ _hb_qt_font_get_glyph(hb_font_t * /*font*/, void *font_data,
                       hb_codepoint_t *glyph,
                       void * /*user_data*/)
 {
-    QFontEngine *fe = (QFontEngine *)font_data;
+    QFontEngine *fe = static_cast<QFontEngine *>(font_data);
     Q_ASSERT(fe);
 
     *glyph = fe->glyphIndex(unicode);
@@ -388,7 +388,7 @@ _hb_qt_font_get_glyph_h_advance(hb_font_t *font, void *font_data,
                                 hb_codepoint_t glyph,
                                 void * /*user_data*/)
 {
-    QFontEngine *fe = (QFontEngine *)font_data;
+    QFontEngine *fe = static_cast<QFontEngine *>(font_data);
     Q_ASSERT(fe);
 
     QFixed advance;
@@ -436,7 +436,7 @@ _hb_qt_font_get_glyph_h_kerning(hb_font_t *font, void *font_data,
                                 hb_codepoint_t first_glyph, hb_codepoint_t second_glyph,
                                 void * /*user_data*/)
 {
-    QFontEngine *fe = (QFontEngine *)font_data;
+    QFontEngine *fe = static_cast<QFontEngine *>(font_data);
     Q_ASSERT(fe);
 
     glyph_t glyphs[2] = { first_glyph, second_glyph };
@@ -467,7 +467,7 @@ _hb_qt_font_get_glyph_extents(hb_font_t * /*font*/, void *font_data,
                               hb_glyph_extents_t *extents,
                               void * /*user_data*/)
 {
-    QFontEngine *fe = (QFontEngine *)font_data;
+    QFontEngine *fe = static_cast<QFontEngine *>(font_data);
     Q_ASSERT(fe);
 
     glyph_metrics_t gm = fe->boundingBox(glyph);
@@ -486,7 +486,7 @@ _hb_qt_font_get_glyph_contour_point(hb_font_t * /*font*/, void *font_data,
                                     unsigned int point_index, hb_position_t *x, hb_position_t *y,
                                     void * /*user_data*/)
 {
-    QFontEngine *fe = (QFontEngine *)font_data;
+    QFontEngine *fe = static_cast<QFontEngine *>(font_data);
     Q_ASSERT(fe);
 
     QFixed xpos, ypos;
@@ -573,7 +573,7 @@ hb_font_funcs_t *hb_qt_get_font_funcs()
 static hb_blob_t *
 _hb_qt_reference_table(hb_face_t * /*face*/, hb_tag_t tag, void *user_data)
 {
-    QFontEngine::FaceData *data = (QFontEngine::FaceData *)user_data;
+    QFontEngine::FaceData *data = static_cast<QFontEngine::FaceData *>(user_data);
     Q_ASSERT(data);
 
     qt_get_font_table_func_t get_font_table = data->get_font_table;
@@ -583,7 +583,7 @@ _hb_qt_reference_table(hb_face_t * /*face*/, hb_tag_t tag, void *user_data)
     if (Q_UNLIKELY(!get_font_table(data->user_data, tag, 0, &length)))
         return hb_blob_get_empty();
 
-    char *buffer = (char *)malloc(length);
+    char *buffer = static_cast<char *>(malloc(length));
     Q_CHECK_PTR(buffer);
 
     if (Q_UNLIKELY(!get_font_table(data->user_data, tag, reinterpret_cast<uchar *>(buffer), &length)))
@@ -597,7 +597,7 @@ _hb_qt_reference_table(hb_face_t * /*face*/, hb_tag_t tag, void *user_data)
 static inline hb_face_t *
 _hb_qt_face_create(QFontEngine *fe)
 {
-    QFontEngine::FaceData *data = (QFontEngine::FaceData *)malloc(sizeof(QFontEngine::FaceData));
+    QFontEngine::FaceData *data = static_cast<QFontEngine::FaceData *>(malloc(sizeof(QFontEngine::FaceData)));
     Q_CHECK_PTR(data);
     data->user_data = fe->faceData.user_data;
     data->get_font_table = fe->faceData.get_font_table;
@@ -618,7 +618,7 @@ static void
 _hb_qt_face_release(void *user_data)
 {
     if (Q_LIKELY(user_data))
-        hb_face_destroy((hb_face_t *)user_data);
+        hb_face_destroy(static_cast<hb_face_t *>(user_data));
 }
 
 hb_face_t *hb_qt_face_get_for_engine(QFontEngine *fe)
@@ -632,7 +632,7 @@ hb_face_t *hb_qt_face_get_for_engine(QFontEngine *fe)
         fe->face_destroy_func = _hb_qt_face_release;
     }
 
-    return (hb_face_t *)fe->face_;
+    return static_cast<hb_face_t *>(fe->face_);
 }
 
 
@@ -668,7 +668,7 @@ static void
 _hb_qt_font_release(void *user_data)
 {
     if (Q_LIKELY(user_data))
-        hb_font_destroy((hb_font_t *)user_data);
+        hb_font_destroy(static_cast<hb_font_t *>(user_data));
 }
 
 hb_font_t *hb_qt_font_get_for_engine(QFontEngine *fe)
@@ -682,7 +682,7 @@ hb_font_t *hb_qt_font_get_for_engine(QFontEngine *fe)
         fe->font_destroy_func = _hb_qt_font_release;
     }
 
-    return (hb_font_t *)fe->font_;
+    return static_cast<hb_font_t *>(fe->font_);
 }
 
 QT_END_NAMESPACE
