@@ -91,6 +91,8 @@ static inline QDebug operator<<(QDebug dbg, const QThread *th)
     dbg.nospace() << "QThread(ptr=" << (void*)th;
     if (th && !th->objectName().isEmpty())
         dbg.nospace() << ", name=" << th->objectName();
+    else if (th)
+        dbg.nospace() << ", name=" << th->metaObject()->className();
     dbg.nospace() << ')';
     return dbg.space();
 }
@@ -396,7 +398,7 @@ static void qDBusNewConnection(DBusServer *server, DBusConnection *connection, v
 
     QDBusConnectionPrivate *newConnection = new QDBusConnectionPrivate(serverConnection->parent());
     QMutexLocker locker(&QDBusConnectionManager::instance()->mutex);
-    QDBusConnectionManager::instance()->setConnection(QLatin1String("QDBusServer-") + QString::number(reinterpret_cast<qulonglong>(newConnection)), newConnection);
+    QDBusConnectionManager::instance()->setConnection(QLatin1String("QDBusServer-") + QString::number(reinterpret_cast<qulonglong>(newConnection), 16), newConnection);
     serverConnection->serverConnectionNames << newConnection->name;
 
     // setPeer does the error handling for us
