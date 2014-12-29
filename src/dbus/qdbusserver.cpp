@@ -34,6 +34,7 @@
 #include "qdbusserver.h"
 #include "qdbusconnection_p.h"
 #include "qdbusconnectionmanager_p.h"
+#include "qdbusutil_p.h"
 
 #ifndef QT_NO_DBUS
 
@@ -130,7 +131,7 @@ bool QDBusServer::isConnected() const
 */
 QDBusError QDBusServer::lastError() const
 {
-    return d ? d->lastError : QDBusError(QDBusError::Disconnected, QStringLiteral("Not connected."));
+    return d ? d->lastError : QDBusError(QDBusError::Disconnected, QDBusUtil::disconnectedErrorMessage());
 }
 
 /*!

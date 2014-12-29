@@ -42,7 +42,7 @@
 #include <QtCore/QVariant>
 #include <QtCore/QDebug>
 
-#include "qdbus_symbols_p.h"          // for the DBUS_* constants
+#include "qdbusutil_p.h"          // for the DBUS_* constants
 
 #ifndef QT_NO_DBUS
 
@@ -154,8 +154,8 @@ const char *QDBusConnectionInterface::staticInterfaceName()
 */
 QDBusConnectionInterface::QDBusConnectionInterface(const QDBusConnection &connection,
                                                    QObject *parent)
-    : QDBusAbstractInterface(QLatin1String(DBUS_SERVICE_DBUS),
-                             QLatin1String(DBUS_PATH_DBUS),
+    : QDBusAbstractInterface(QDBusUtil::dbusService(),
+                             QDBusUtil::dbusPath(),
                              DBUS_INTERFACE_DBUS, connection, parent)
 {
     connect(this, SIGNAL(NameAcquired(QString)), this, SIGNAL(serviceRegistered(QString)));

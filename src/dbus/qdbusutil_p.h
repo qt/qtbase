@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2015 The Qt Company Ltd.
+** Copyright (C) 2015 Intel Corporation.
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the QtDBus module of the Qt Toolkit.
@@ -50,6 +51,8 @@
 
 #include <QtDBus/qdbusmacros.h>
 #include <QtDBus/qdbuserror.h>
+
+#include "qdbus_symbols_p.h"
 
 #ifndef QT_NO_DBUS
 
@@ -147,6 +150,25 @@ namespace QDBusUtil
         *error = QDBusError(QDBusError::InvalidInterface, QString::fromLatin1("Invalid error name: %1").arg(name));
         return false;
     }
+
+    inline QString dbusService()
+    { return QStringLiteral(DBUS_SERVICE_DBUS); }
+    inline QString dbusPath()
+    { return QStringLiteral(DBUS_PATH_DBUS); }
+    inline QString dbusInterface()
+    {
+        // it's the same string, but just be sure
+        Q_ASSERT(dbusService() == QLatin1String(DBUS_INTERFACE_DBUS));
+        return dbusService();
+    }
+    inline QString dbusInterfaceProperties()
+    { return QStringLiteral(DBUS_INTERFACE_PROPERTIES); }
+    inline QString dbusInterfaceIntrospectable()
+    { return QStringLiteral(DBUS_INTERFACE_INTROSPECTABLE); }
+    inline QString nameOwnerChanged()
+    { return QStringLiteral("NameOwnerChanged"); }
+    inline QString disconnectedErrorMessage()
+    { return QStringLiteral("Not connected to D-Bus server"); }
 }
 
 QT_END_NAMESPACE
