@@ -929,7 +929,7 @@ QObject *QDBusConnection::objectRegisteredAt(const QString &path) const
 */
 QDBusConnectionInterface *QDBusConnection::interface() const
 {
-    if (!d)
+    if (!d || d->mode != QDBusConnectionPrivate::ClientMode)
         return 0;
     return d->busService;
 }

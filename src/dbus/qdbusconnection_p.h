@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2015 The Qt Company Ltd.
+** Copyright (C) 2015 Intel Corporation.
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the QtDBus module of the Qt Toolkit.
@@ -79,6 +80,7 @@ struct QDBusMetaObject;
 class QDBusAbstractInterface;
 class QDBusConnectionInterface;
 class QDBusPendingCallPrivate;
+class QDBusServer;
 
 #ifndef QT_BOOTSTRAPPED
 
@@ -191,7 +193,7 @@ public:
     void setBusService(const QDBusConnection &connection);
     void setPeer(DBusConnection *connection, const QDBusErrorInternal &error);
     void setConnection(DBusConnection *connection, const QDBusErrorInternal &error);
-    void setServer(DBusServer *server, const QDBusErrorInternal &error);
+    void setServer(QDBusServer *object, DBusServer *server, const QDBusErrorInternal &error);
     void closeConnection();
 
     QString getNameOwner(const QString &service);
@@ -228,9 +230,6 @@ public:
 
     void postEventToThread(int action, QObject *target, QEvent *event);
 
-    inline void serverConnection(const QDBusConnection &connection)
-        { emit newServerConnection(connection); }
-
 private:
     void checkThread();
     bool handleError(const QDBusErrorInternal &error);
@@ -252,6 +251,8 @@ private:
 
     QString getNameOwnerNoCache(const QString &service);
 
+    void _q_newConnection(QDBusConnectionPrivate *newConnection);
+
 protected:
     void customEvent(QEvent *e) Q_DECL_OVERRIDE;
     void timerEvent(QTimerEvent *e) Q_DECL_OVERRIDE;
@@ -272,7 +273,7 @@ private slots:
 signals:
     void serviceOwnerChanged(const QString &name, const QString &oldOwner, const QString &newOwner);
     void callWithCallbackFailed(const QDBusError &error, const QDBusMessage &message);
-    void newServerConnection(const QDBusConnection &connection);
+    void newServerConnection(QDBusConnectionPrivate *newConnection);
 
 public:
     QAtomicInt ref;
@@ -282,7 +283,10 @@ public:
     QStringList serverConnectionNames;
 
     ConnectionMode mode;
-    QDBusConnectionInterface *busService;
+    union {
+        QDBusConnectionInterface *busService;
+        QDBusServer *serverObject;
+    };
 
     // the dispatch lock protects everything related to the DBusConnection or DBusServer
     // including the timeouts and watches
@@ -333,6 +337,7 @@ public:
 
     friend class QDBusActivateObjectEvent;
     friend class QDBusCallDeliveryEvent;
+    friend class QDBusServer;
 };
 
 // in qdbusmisc.cpp

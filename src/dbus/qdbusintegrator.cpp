@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2015 The Qt Company Ltd.
+** Copyright (C) 2015 Intel Corporation.
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the QtDBus module of the Qt Toolkit.
@@ -52,6 +53,7 @@
 #include "qdbusmetatype_p.h"
 #include "qdbusabstractadaptor.h"
 #include "qdbusabstractadaptor_p.h"
+#include "qdbusserver.h"
 #include "qdbusutil_p.h"
 #include "qdbusvirtualobject.h"
 #include "qdbusmessage_p.h"
@@ -393,10 +395,14 @@ static void qDBusNewConnection(DBusServer *server, DBusConnection *connection, v
     QDBusErrorInternal error;
     newConnection->setPeer(connection, error);
 
-    QDBusConnection retval = QDBusConnectionPrivate::q(newConnection);
+    // this is a queued connection and will resume in the QDBusServer's thread
+    emit serverConnection->newServerConnection(newConnection);
+}
 
-    // make QDBusServer emit the newConnection signal
-    serverConnection->serverConnection(retval);
+void QDBusConnectionPrivate::_q_newConnection(QDBusConnectionPrivate *newConnection)
+{
+    Q_ASSERT(mode == ServerMode);
+    emit serverObject->newConnection(QDBusConnectionPrivate::q(newConnection));
 }
 
 } // extern "C"
@@ -1645,9 +1651,10 @@ void QDBusConnectionPrivate::handleSignal(const QDBusMessage& msg)
     handleSignal(key, msg);                  // third try
 }
 
-void QDBusConnectionPrivate::setServer(DBusServer *s, const QDBusErrorInternal &error)
+void QDBusConnectionPrivate::setServer(QDBusServer *object, DBusServer *s, const QDBusErrorInternal &error)
 {
     mode = ServerMode;
+    serverObject = object;
     if (!s) {
         handleError(error);
         return;
