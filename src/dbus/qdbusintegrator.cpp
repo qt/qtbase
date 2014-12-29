@@ -1022,6 +1022,8 @@ QDBusConnectionPrivate::QDBusConnectionPrivate(QObject *p)
     QDBusMetaTypeId::init();
     connect(this, &QDBusConnectionPrivate::dispatchStatusChanged,
             this, &QDBusConnectionPrivate::doDispatch, Qt::QueuedConnection);
+    connect(this, &QDBusConnectionPrivate::messageNeedsSending,
+            this, &QDBusConnectionPrivate::sendInternal);
 
     rootNode.flags = 0;
 
@@ -1092,6 +1094,7 @@ void QDBusConnectionPrivate::closeConnection()
 void QDBusConnectionPrivate::checkThread()
 {
     Q_ASSERT(thread() == QDBusConnectionManager::instance());
+    Q_ASSERT(QThread::currentThread() == thread());
 }
 
 bool QDBusConnectionPrivate::handleError(const QDBusErrorInternal &error)
@@ -1822,7 +1825,6 @@ void QDBusConnectionPrivate::processFinishedCall(QDBusPendingCallPrivate *call)
     }
 
     if (call->pending) {
-        call->waitForFinishedCondition.wakeAll();
         q_dbus_pending_call_unref(call->pending);
         call->pending = 0;
     }
@@ -1831,6 +1833,7 @@ void QDBusConnectionPrivate::processFinishedCall(QDBusPendingCallPrivate *call)
     if (call->watcherHelper)
         call->watcherHelper->emitSignals(msg, call->sentMessage);
 
+    call->waitForFinishedCondition.wakeAll();
     locker.unlock();
 
     if (msg.type() == QDBusMessage::ErrorMessage)
@@ -2032,8 +2035,6 @@ QDBusPendingCallPrivate *QDBusConnectionPrivate::sendWithReplyAsync(const QDBusM
                                                                     QObject *receiver, const char *returnMethod,
                                                                     const char *errorMethod, int timeout)
 {
-    checkThread();
-
     QDBusPendingCallPrivate *pcall = new QDBusPendingCallPrivate(message, this);
     bool isLoopback;
     if ((isLoopback = isServiceRegisteredByThread(message.service()))) {
@@ -2076,11 +2077,19 @@ QDBusPendingCallPrivate *QDBusConnectionPrivate::sendWithReplyAsync(const QDBusM
         pcall->replyMessage = QDBusMessage::createError(error);
         lastError = error;
         processFinishedCall(pcall);
-        return pcall;
+    } else {
+        qDBusDebug() << this << "sending message:" << message;
+        emit messageNeedsSending(pcall, msg, timeout);
     }
+    return pcall;
+}
 
-    qDBusDebug() << this << "sending message:" << message;
+void QDBusConnectionPrivate::sendInternal(QDBusPendingCallPrivate *pcall, void *message, int timeout)
+{
+    QDBusError error;
     DBusPendingCall *pending = 0;
+    DBusMessage *msg = static_cast<DBusMessage *>(message);
+    checkThread();
 
     QDBusDispatchLocker locker(SendWithReplyAsyncAction, this);
     if (q_dbus_connection_send_with_reply(connection, msg, &pending, timeout)) {
@@ -2094,7 +2103,7 @@ QDBusPendingCallPrivate *QDBusConnectionPrivate::sendWithReplyAsync(const QDBusM
             if (mode == QDBusConnectionPrivate::PeerMode)
                 pendingCalls.append(pcall);
 
-            return pcall;
+            return;
         } else {
             // we're probably disconnected at this point
             lastError = error = QDBusError(QDBusError::Disconnected, QDBusUtil::disconnectedErrorMessage());
@@ -2106,7 +2115,6 @@ QDBusPendingCallPrivate *QDBusConnectionPrivate::sendWithReplyAsync(const QDBusM
     q_dbus_message_unref(msg);
     pcall->replyMessage = QDBusMessage::createError(error);
     processFinishedCall(pcall);
-    return pcall;
 }
 
 bool QDBusConnectionPrivate::connectSignal(const QString &service,

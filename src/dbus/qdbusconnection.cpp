@@ -483,7 +483,7 @@ bool QDBusConnection::send(const QDBusMessage &message) const
             d->lastError = err;
         return false;
     }
-    return d->send(message) != 0;
+    return d->send(message);
 }
 
 /*!

@@ -242,6 +242,7 @@ private:
     bool activateInternalFilters(const ObjectTreeNode &node, const QDBusMessage &msg);
     bool activateCall(QObject *object, int flags, const QDBusMessage &msg);
 
+    void sendInternal(QDBusPendingCallPrivate *pcall, void *msg, int timeout);
     void sendError(const QDBusMessage &msg, QDBusError::ErrorType code);
     void deliverCall(QObject *object, int flags, const QDBusMessage &msg,
                      const QVector<int> &metaTypes, int slotIdx);
@@ -271,6 +272,7 @@ private slots:
 
 signals:
     void dispatchStatusChanged();
+    void messageNeedsSending(QDBusPendingCallPrivate *pcall, void *msg, int timeout);
     void serviceOwnerChanged(const QString &name, const QString &oldOwner, const QString &newOwner);
     void callWithCallbackFailed(const QDBusError &error, const QDBusMessage &message);
     void newServerConnection(QDBusConnectionPrivate *newConnection);
