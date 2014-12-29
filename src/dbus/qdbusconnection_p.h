@@ -223,7 +223,6 @@ public:
     void unregisterService(const QString &serviceName);
 
     bool handleMessage(const QDBusMessage &msg);
-    void waitForFinished(QDBusPendingCallPrivate *pcall);
 
     QDBusMetaObject *findMetaObject(const QString &service, const QString &path,
                                     const QString &interface, QDBusError &error);

@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2015 The Qt Company Ltd.
+** Copyright (C) 2015 Intel Corporation.
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -525,6 +526,7 @@ public slots:
         QVERIFY(isConnected());
         QVERIFY(c.isConnected());
         QVERIFY(registerObject(c));
+        QTestEventLoop::instance().exitLoop();
     }
 
 private:
@@ -552,11 +554,14 @@ void tst_QDBusConnection::registerObjectPeer()
     MyServer server(path);
 
     QDBusConnection::connectToPeer(server.address(), "beforeFoo");
+    QTestEventLoop::instance().enterLoop(2);
+    QVERIFY(!QTestEventLoop::instance().timeout());
 
     {
         QDBusConnection con = QDBusConnection::connectToPeer(server.address(), "foo");
 
-        QCoreApplication::processEvents();
+        QTestEventLoop::instance().enterLoop(2);
+        QVERIFY(!QTestEventLoop::instance().timeout());
         QVERIFY(con.isConnected());
 
         MyObject obj;
@@ -565,6 +570,7 @@ void tst_QDBusConnection::registerObjectPeer()
     }
 
     QDBusConnection::connectToPeer(server.address(), "afterFoo");
+    QTestEventLoop::instance().enterLoop(2);
 
     {
         QDBusConnection con("foo");
@@ -713,6 +719,7 @@ public slots:
         m_conn = c;
         QVERIFY(isConnected());
         QVERIFY(m_conn.isConnected());
+        QTestEventLoop::instance().exitLoop();
     }
 
 private:
@@ -724,7 +731,8 @@ void tst_QDBusConnection::registerObjectPeer2()
 {
     MyServer2 server;
     QDBusConnection con = QDBusConnection::connectToPeer(server.address(), "foo");
-    QCoreApplication::processEvents();
+    QTestEventLoop::instance().enterLoop(2);
+    QVERIFY(!QTestEventLoop::instance().timeout());
     QVERIFY(con.isConnected());
 
     QDBusConnection srv_con = server.connection();
@@ -879,6 +887,8 @@ void tst_QDBusConnection::registerQObjectChildrenPeer()
 {
     MyServer2 server;
     QDBusConnection con = QDBusConnection::connectToPeer(server.address(), "foo");
+    QTestEventLoop::instance().enterLoop(2);
+    QVERIFY(!QTestEventLoop::instance().timeout());
     QCoreApplication::processEvents();
     QVERIFY(con.isConnected());
 
