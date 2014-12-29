@@ -590,7 +590,7 @@ _hb_qt_reference_table(hb_face_t * /*face*/, hb_tag_t tag, void *user_data)
         length = 0;
 
     return hb_blob_create(const_cast<const char *>(buffer), length,
-                          HB_MEMORY_MODE_WRITABLE,
+                          HB_MEMORY_MODE_READONLY,
                           buffer, free);
 }
 
