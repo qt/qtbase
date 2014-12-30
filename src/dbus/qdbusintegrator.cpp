@@ -357,18 +357,8 @@ static void qDBusUpdateDispatchStatus(DBusConnection *connection, DBusDispatchSt
     Q_ASSERT(connection);
     Q_UNUSED(connection);
     QDBusConnectionPrivate *d = static_cast<QDBusConnectionPrivate *>(data);
-
-    static int slotId; // 0 is QObject::deleteLater()
-    if (!slotId) {
-        // it's ok to do this: there's no race condition because the store is atomic
-        // and we always set to the same value
-        slotId = QDBusConnectionPrivate::staticMetaObject.indexOfSlot("doDispatch()");
-    }
-
-    //qDBusDebug() << "Updating dispatcher status" << slotId;
     if (new_status == DBUS_DISPATCH_DATA_REMAINS)
-        QDBusConnectionPrivate::staticMetaObject.method(slotId).
-            invoke(d, Qt::QueuedConnection);
+        emit d->dispatchStatusChanged();
 }
 
 static void qDBusNewConnection(DBusServer *server, DBusConnection *connection, void *data)
@@ -1030,6 +1020,8 @@ QDBusConnectionPrivate::QDBusConnectionPrivate(QObject *p)
 #endif
 
     QDBusMetaTypeId::init();
+    connect(this, &QDBusConnectionPrivate::dispatchStatusChanged,
+            this, &QDBusConnectionPrivate::doDispatch, Qt::QueuedConnection);
 
     rootNode.flags = 0;
 

@@ -271,6 +271,7 @@ private slots:
     void unregisterServiceNoLock(const QString &serviceName);
 
 signals:
+    void dispatchStatusChanged();
     void serviceOwnerChanged(const QString &name, const QString &oldOwner, const QString &newOwner);
     void callWithCallbackFailed(const QDBusError &error, const QDBusMessage &message);
     void newServerConnection(QDBusConnectionPrivate *newConnection);
