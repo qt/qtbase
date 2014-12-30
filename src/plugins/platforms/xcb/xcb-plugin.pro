@@ -9,6 +9,5 @@ QT += core-private gui-private platformsupport-private xcb_qpa_lib-private
 
 SOURCES = \
     qxcbmain.cpp
-
 OTHER_FILES += xcb.json README
 

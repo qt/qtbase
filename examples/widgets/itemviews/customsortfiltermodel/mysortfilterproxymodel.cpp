@@ -91,15 +91,15 @@ bool MySortFilterProxyModel::lessThan(const QModelIndex &left,
     if (leftData.type() == QVariant::DateTime) {
         return leftData.toDateTime() < rightData.toDateTime();
     } else {
-        QRegExp *emailPattern = new QRegExp("([\\w\\.]*@[\\w\\.]*)");
+        static QRegExp emailPattern("[\\w\\.]*@[\\w\\.]*)");
 
         QString leftString = leftData.toString();
-        if(left.column() == 1 && emailPattern->indexIn(leftString) != -1)
-            leftString = emailPattern->cap(1);
+        if(left.column() == 1 && emailPattern.indexIn(leftString) != -1)
+            leftString = emailPattern.cap(1);
 
         QString rightString = rightData.toString();
-        if(right.column() == 1 && emailPattern->indexIn(rightString) != -1)
-            rightString = emailPattern->cap(1);
+        if(right.column() == 1 && emailPattern.indexIn(rightString) != -1)
+            rightString = emailPattern.cap(1);
 
         return QString::localeAwareCompare(leftString, rightString) < 0;
     }

@@ -70,14 +70,18 @@ public:
         , hintingPreference(other.hintingPreference)
         , thread(other.thread)
     {
+#ifndef QT_NO_DEBUG
         Q_ASSERT(fontEngine == 0 || thread == QThread::currentThread());
+#endif
         if (fontEngine != 0)
             fontEngine->ref.ref();
     }
 
     ~QRawFontPrivate()
     {
+#ifndef QT_NO_DEBUG
         Q_ASSERT(ref.load() == 0);
+#endif
         cleanUp();
     }
 
@@ -89,27 +93,36 @@ public:
 
     inline bool isValid() const
     {
+#ifndef QT_NO_DEBUG
         Q_ASSERT(fontEngine == 0 || thread == QThread::currentThread());
+#endif
         return fontEngine != 0;
     }
 
     inline void setFontEngine(QFontEngine *engine)
     {
+#ifndef QT_NO_DEBUG
         Q_ASSERT(fontEngine == 0 || thread == QThread::currentThread());
+#endif
         if (fontEngine == engine)
             return;
 
         if (fontEngine != 0) {
             if (!fontEngine->ref.deref())
                 delete fontEngine;
+#ifndef QT_NO_DEBUG
             thread = 0;
+#endif
         }
 
         fontEngine = engine;
 
         if (fontEngine != 0) {
             fontEngine->ref.ref();
-            Q_ASSERT(thread = QThread::currentThread()); // set only if assertions enabled
+#ifndef QT_NO_DEBUG
+            thread = QThread::currentThread();
+            Q_ASSERT(thread);
+#endif
         }
     }
 

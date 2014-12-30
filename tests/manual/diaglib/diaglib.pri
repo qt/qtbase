@@ -1,9 +1,11 @@
 INCLUDEPATH += $$PWD
 SOURCES += \
+    $$PWD/textdump.cpp \
     $$PWD/eventfilter.cpp \
     $$PWD/qwindowdump.cpp \
 
 HEADERS += \
+    $$PWD/textdump.h \
     $$PWD/eventfilter.h \
     $$PWD/qwindowdump.h \
     $$PWD/nativewindowdump.h

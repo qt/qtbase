@@ -1,0 +1,21 @@
+<RCC>
+    <qresource prefix="/android_testdata">
+        <file>runtime_resource.rcc</file>
+        <file>parentdir.txt</file>
+        <file>testqrc/blahblah.txt</file>
+        <file>testqrc/currentdir.txt</file>
+        <file>testqrc/currentdir2.txt</file>
+        <file>testqrc/search_file.txt</file>
+        <file>testqrc/aliasdir/aliasdir.txt</file>
+        <file>testqrc/aliasdir/compressme.txt</file>
+        <file>testqrc/otherdir/otherdir.txt</file>
+        <file>testqrc/searchpath1/search_file.txt</file>
+        <file>testqrc/searchpath2/search_file.txt</file>
+        <file>testqrc/subdir/subdir.txt</file>
+        <file>testqrc/test/test/test2.txt</file>
+        <file>testqrc/test/test/test1.txt</file>
+        <file>testqrc/test/german.txt</file>
+        <file>testqrc/test/testdir.txt</file>
+        <file>testqrc/test/testdir2.txt</file>
+    </qresource>
+</RCC>

@@ -24,9 +24,18 @@ ios: SUBDIRS  = corelib gui
 wince*:                                     SUBDIRS -= printsupport
 cross_compile:                              SUBDIRS -= tools
 !qtHaveModule(opengl):                      SUBDIRS -= opengl
-!unix|embedded|!qtHaveModule(dbus):         SUBDIRS -= dbus
 !qtHaveModule(gui):                         SUBDIRS -= gui cmake
 !qtHaveModule(widgets):                     SUBDIRS -= widgets
 !qtHaveModule(printsupport):                SUBDIRS -= printsupport
 !qtHaveModule(concurrent):                  SUBDIRS -= concurrent
 !qtHaveModule(network):                     SUBDIRS -= network
+
+# Disable the QtDBus tests if we can't connect to the session bus
+qtHaveModule(dbus) {
+    !system("dbus-send --type=signal / local.AutotestCheck.Hello"): {
+        warning("QtDBus is enabled but session bus is not available. Please check the installation.")
+        SUBDIRS -= dbus
+    }
+} else {
+    SUBDIRS -= dbus
+}

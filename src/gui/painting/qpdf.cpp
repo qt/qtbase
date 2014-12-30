@@ -2083,10 +2083,8 @@ int QPdfEnginePrivate::writeImage(const QByteArray &data, int width, int height,
     }
     if (maskObject > 0)
         xprintf("/Mask %d 0 R\n", maskObject);
-    if (softMaskObject > 0) {
+    if (softMaskObject > 0)
         xprintf("/SMask %d 0 R\n", softMaskObject);
-        xprintf("/Decode [1 0 1 0 1 0]\n");
-    }
 
     int lenobj = requestObject();
     xprintf("/Length %d 0 R\n", lenobj);

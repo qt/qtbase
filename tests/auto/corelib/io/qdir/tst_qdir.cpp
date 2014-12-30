@@ -214,8 +214,35 @@ private:
 Q_DECLARE_METATYPE(tst_QDir::UncHandling)
 
 tst_QDir::tst_QDir()
+#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_NO_SDK)
+    : m_dataPath(QStandardPaths::writableLocation(QStandardPaths::CacheLocation))
+#else
     : m_dataPath(QFileInfo(QFINDTESTDATA("testData")).absolutePath())
+#endif
 {
+#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_NO_SDK)
+    QString resourceSourcePath = QStringLiteral(":/android_testdata/");
+    QDirIterator it(resourceSourcePath, QDirIterator::Subdirectories);
+    while (it.hasNext()) {
+        it.next();
+
+        QFileInfo fileInfo = it.fileInfo();
+
+        if (!fileInfo.isDir()) {
+            QString destination = m_dataPath + QLatin1Char('/') + fileInfo.filePath().mid(resourceSourcePath.length());
+            QFileInfo destinationFileInfo(destination);
+            if (!destinationFileInfo.exists()) {
+                QDir().mkpath(destinationFileInfo.path());
+                if (!QFile::copy(fileInfo.filePath(), destination))
+                    qWarning("Failed to copy %s", qPrintable(fileInfo.filePath()));
+            }
+        }
+
+    }
+
+    if (!QDir::setCurrent(m_dataPath))
+        qWarning("Couldn't set current path to %s", qPrintable(m_dataPath));
+#endif
 }
 
 void tst_QDir::init()
@@ -2028,6 +2055,8 @@ void tst_QDir::equalityOperator_data()
     //need a path in the root directory that is unlikely to be a symbolic link.
 #if defined (Q_OS_WIN)
     QString pathinroot("c:/windows/..");
+#elif defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_NO_SDK)
+    QString pathinroot("/system/..");
 #else
     QString pathinroot("/usr/..");
 #endif

@@ -1024,7 +1024,10 @@ bool QHostAddress::isLoopback() const
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug d, const QHostAddress &address)
 {
-    d.maybeSpace() << "QHostAddress(" << address.toString() << ')';
+    if (address == QHostAddress::Any)
+        d.maybeSpace() << "QHostAddress(QHostAddress::Any)";
+    else
+        d.maybeSpace() << "QHostAddress(" << address.toString() << ')';
     return d.space();
 }
 #endif

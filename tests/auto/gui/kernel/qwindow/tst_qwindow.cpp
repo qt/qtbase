@@ -316,6 +316,8 @@ void tst_QWindow::positioning()
     QTRY_VERIFY(window.received(QEvent::Resize) > 0);
 #endif
 
+    QTest::qWait(2000);
+
     QTRY_COMPARE(originalPos, window.position());
     QTRY_COMPARE(originalFramePos, window.framePosition());
     QTRY_COMPARE(originalMargins, window.frameMargins());

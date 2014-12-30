@@ -1377,36 +1377,6 @@ QFontEngineFT::QGlyphSet *QFontEngineFT::loadTransformedGlyphSet(const QTransfor
     return gs;
 }
 
-bool QFontEngineFT::loadGlyphs(QGlyphSet *gs, const glyph_t *glyphs, int num_glyphs,
-                               const QFixedPoint *positions,
-                               GlyphFormat format)
-{
-    FT_Face face = 0;
-
-    for (int i = 0; i < num_glyphs; ++i) {
-        QFixed spp = subPixelPositionForX(positions[i].x);
-        Glyph *glyph = gs ? gs->getGlyph(glyphs[i], spp) : 0;
-        if (glyph == 0 || glyph->format != format) {
-            if (!face) {
-                face = lockFace();
-                FT_Matrix m = matrix;
-                FT_Matrix_Multiply(&gs->transformationMatrix, &m);
-                FT_Set_Transform(face, &m, 0);
-                freetype->matrix = m;
-            }
-            if (!loadGlyph(gs, glyphs[i], spp, format)) {
-                unlockFace();
-                return false;
-            }
-        }
-    }
-
-    if (face)
-        unlockFace();
-
-    return true;
-}
-
 void QFontEngineFT::getUnscaledGlyph(glyph_t glyph, QPainterPath *path, glyph_metrics_t *metrics)
 {
     FT_Face face = lockFace(Unscaled);

@@ -39,6 +39,10 @@
 #  define DC_COLLATE 22
 #endif
 
+#if defined (Q_CC_MINGW)
+# pragma GCC diagnostic ignored "-Wsign-compare"
+#endif
+
 QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_PRINTER

@@ -1420,11 +1420,10 @@ void HtmlGenerator::generateClassLikeNode(InnerNode* inner, CodeMarker* marker)
             }
             if (!s->reimpMembers.isEmpty()) {
                 QString name = QString("Reimplemented ") + (*s).name;
+                QString ref = registerRef(name.toLower());
                 //  out() << "<hr />\n";
-                out() << "<a name=\""
-                      << registerRef(name.toLower())
-                      << "\"></a>" << divNavTop << "\n";
-                out() << "<h2>" << protectEnc(name) << "</h2>\n";
+                out() << "<a name=\"" << ref << "\"></a>" << divNavTop << "\n";
+                out() << "<h2 id=\"" << ref << "\">" << protectEnc(name) << "</h2>\n";
                 generateSection(s->reimpMembers, inner, marker, CodeMarker::Summary);
             }
 
@@ -2419,12 +2418,21 @@ void HtmlGenerator::generateTableOfContents(const Node *node,
     else if (sections && (node->isClass() || node->isNamespace() || node->isQmlType())) {
         QList<Section>::ConstIterator s = sections->constBegin();
         while (s != sections->constEnd()) {
-            if (!s->members.isEmpty() || !s->reimpMembers.isEmpty()) {
+            if (!s->members.isEmpty()) {
                 out() << "<li class=\"level"
                       << sectionNumber.size()
                       << "\"><a href=\"#"
                       << registerRef((*s).pluralMember)
                       << "\">" << (*s).name
+                      << "</a></li>\n";
+            }
+            if (!s->reimpMembers.isEmpty()) {
+                QString ref = QString("Reimplemented ") + (*s).pluralMember;
+                out() << "<li class=\"level"
+                      << sectionNumber.size()
+                      << "\"><a href=\"#"
+                      << registerRef(ref.toLower())
+                      << "\">" << QString("Reimplemented ") + (*s).name
                       << "</a></li>\n";
             }
             ++s;

@@ -957,7 +957,8 @@ QList<int> QXcbKeyboard::possibleKeys(const QKeyEvent *event) const
 
     QList<int> result;
     int baseQtKey = keysymToQtKey(sym, modifiers, lookupString(kb_state, keycode));
-    result += (baseQtKey + modifiers); // The base key is _always_ valid, of course
+    if (baseQtKey)
+        result += (baseQtKey + modifiers);
 
     xkb_mod_index_t shiftMod = xkb_keymap_mod_get_index(xkb_keymap, "Shift");
     xkb_mod_index_t altMod = xkb_keymap_mod_get_index(xkb_keymap, "Alt");

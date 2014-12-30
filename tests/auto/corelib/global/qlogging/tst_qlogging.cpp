@@ -40,6 +40,9 @@
 class tst_qmessagehandler : public QObject
 {
     Q_OBJECT
+public:
+    tst_qmessagehandler();
+
 public slots:
     void initTestCase();
 
@@ -90,6 +93,12 @@ void customMsgHandler(QtMsgType type, const char *msg)
     s_line = 0;
     s_function = 0;
     s_message = QString::fromLocal8Bit(msg);
+}
+
+tst_qmessagehandler::tst_qmessagehandler()
+{
+    // ensure it's unset, otherwise we'll have trouble
+    qputenv("QT_MESSAGE_PATTERN", "");
 }
 
 void tst_qmessagehandler::initTestCase()
@@ -756,6 +765,12 @@ void tst_qmessagehandler::qMessagePattern_data()
             << "A DEBUG qDebug  "
             << "A  qWarning  ");
 
+    QTest::newRow("pid") << "%{pid}: %{message}"
+         << true << QList<QByteArray>(); // can't match anything, just test validity
+    QTest::newRow("threadid") << "ThreadId:%{threadid}: %{message}"
+         << true << (QList<QByteArray>()
+              << "ThreadId:0x");
+
     // This test won't work when midnight is too close... wait a bit
     while (QTime::currentTime() > QTime(23, 59, 30))
         QTest::qWait(10000);
@@ -811,6 +826,7 @@ void tst_qmessagehandler::qMessagePattern()
     process.start(appExe);
     QVERIFY2(process.waitForStarted(), qPrintable(
         QString::fromLatin1("Could not start %1: %2").arg(appExe, process.errorString())));
+    QByteArray pid = QByteArray::number(process.processId());
     process.waitForFinished();
 
     QByteArray output = process.readAllStandardError();
@@ -825,6 +841,8 @@ void tst_qmessagehandler::qMessagePattern()
             QVERIFY(output.contains(e));
         }
     }
+    if (pattern.startsWith("%{pid}"))
+        QVERIFY2(output.startsWith('"' + pid), "PID: " + pid + "\noutput:\n" + output);
 #endif
 }
 

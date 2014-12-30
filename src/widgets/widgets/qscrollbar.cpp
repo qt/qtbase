@@ -593,13 +593,14 @@ void QScrollBar::mousePressEvent(QMouseEvent *e)
         d->clickOffset = sliderLength / 2;
     }
     const int initialDelay = 500; // default threshold
-    d->activateControl(d->pressedControl, initialDelay);
     QElapsedTimer time;
     time.start();
+    d->activateControl(d->pressedControl, initialDelay);
     repaint(style()->subControlRect(QStyle::CC_ScrollBar, &opt, d->pressedControl, this));
     if (time.elapsed() >= initialDelay && d->repeatActionTimer.isActive()) {
-        // It took more than 500ms (the initial timer delay) to process the repaint(), we
-        // therefore need to restart the timer in case we have a pending mouse release event;
+        // It took more than 500ms (the initial timer delay) to process
+        // the control activation and repaint(), we therefore need
+        // to restart the timer in case we have a pending mouse release event;
         // otherwise we'll get a timer event right before the release event,
         // causing the repeat action to be invoked twice on a single mouse click.
         // 50ms is the default repeat time (see activateControl/setRepeatAction).

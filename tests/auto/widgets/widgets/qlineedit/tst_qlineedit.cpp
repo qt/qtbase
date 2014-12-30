@@ -2512,6 +2512,7 @@ void tst_QLineEdit::setValidator_QIntValidator_data()
     QTest::addColumn<QString>("expectedText");
     QTest::addColumn<bool>("useKeys");
     QTest::addColumn<bool>("is_valid");
+    QTest::addColumn<uint>("echoMode");
 
     for (int i=0; i<2; i++) {
         bool useKeys = false;
@@ -2528,7 +2529,8 @@ void tst_QLineEdit::setValidator_QIntValidator_data()
             << QString("1")
             << QString("1")
             << bool(useKeys)
-            << bool(true);
+            << bool(true)
+            << uint(QLineEdit::Normal);
 
         QTest::newRow(QString(inputMode + "range [3,7] valid '3'").toLatin1())
             << 3
@@ -2536,7 +2538,8 @@ void tst_QLineEdit::setValidator_QIntValidator_data()
             << QString("3")
             << QString("3")
             << bool(useKeys)
-            << bool(true);
+            << bool(true)
+            << uint(QLineEdit::Normal);
 
         QTest::newRow(QString(inputMode + "range [3,7] valid '7'").toLatin1())
             << 3
@@ -2544,7 +2547,8 @@ void tst_QLineEdit::setValidator_QIntValidator_data()
             << QString("7")
             << QString("7")
             << bool(useKeys)
-            << bool(true);
+            << bool(true)
+            << uint(QLineEdit::Normal);
 
         QTest::newRow(QString(inputMode + "range [0,100] valid '9'").toLatin1())
             << 0
@@ -2552,7 +2556,8 @@ void tst_QLineEdit::setValidator_QIntValidator_data()
             << QString("9")
             << QString("9")
             << bool(useKeys)
-            << bool(true);
+            << bool(true)
+            << uint(QLineEdit::Normal);
 
         QTest::newRow(QString(inputMode + "range [0,100] valid '12'").toLatin1())
             << 0
@@ -2560,7 +2565,8 @@ void tst_QLineEdit::setValidator_QIntValidator_data()
             << QString("12")
             << QString("12")
             << bool(useKeys)
-            << bool(true);
+            << bool(true)
+            << uint(QLineEdit::Normal);
 
         QTest::newRow(QString(inputMode + "range [-100,100] valid '-12'").toLatin1())
             << -100
@@ -2568,7 +2574,8 @@ void tst_QLineEdit::setValidator_QIntValidator_data()
             << QString("-12")
             << QString("-12")
             << bool(useKeys)
-            << bool(true);
+            << bool(true)
+            << uint(QLineEdit::Normal);
 
         // invalid data
         // characters not allowed in QIntValidator
@@ -2578,7 +2585,8 @@ void tst_QLineEdit::setValidator_QIntValidator_data()
             << QString("a")
             << QString("")
             << bool(useKeys)
-            << bool(false);
+            << bool(false)
+            << uint(QLineEdit::Normal);
 
         QTest::newRow(QString(inputMode + "range [0,9] inv 'A'").toLatin1())
             << 0
@@ -2586,7 +2594,8 @@ void tst_QLineEdit::setValidator_QIntValidator_data()
             << QString("A")
             << QString("")
             << bool(useKeys)
-            << bool(false);
+            << bool(false)
+            << uint(QLineEdit::Normal);
         // minus sign only allowed with a range on the negative side
         QTest::newRow(QString(inputMode + "range [0,100] inv '-'").toLatin1())
             << 0
@@ -2594,36 +2603,48 @@ void tst_QLineEdit::setValidator_QIntValidator_data()
             << QString("-")
             << QString("")
             << bool(useKeys)
-            << bool(false);
+            << bool(false)
+            << uint(QLineEdit::Normal);
         QTest::newRow(QString(inputMode + "range [0,100] int '153'").toLatin1())
             << 0
             << 100
             << QString("153")
             << QString(useKeys ? "15" : "")
             << bool(useKeys)
-            << bool(useKeys ? true : false);
+            << bool(useKeys ? true : false)
+            << uint(QLineEdit::Normal);
         QTest::newRow(QString(inputMode + "range [-100,100] int '-153'").toLatin1())
             << -100
             << 100
             << QString("-153")
             << QString(useKeys ? "-15" : "")
             << bool(useKeys)
-            << bool(useKeys ? true : false);
+            << bool(useKeys ? true : false)
+            << uint(QLineEdit::Normal);
         QTest::newRow(QString(inputMode + "range [3,7] int '2'").toLatin1())
             << 3
             << 7
             << QString("2")
             << QString("2")
             << bool(useKeys)
-            << bool(false);
-
+            << bool(false)
+            << uint(QLineEdit::Normal);
         QTest::newRow(QString(inputMode + "range [3,7] int '8'").toLatin1())
             << 3
             << 7
             << QString("8")
             << QString("")
             << bool(useKeys)
-            << bool(false);
+            << bool(false)
+            << uint(QLineEdit::Normal);
+        QTest::newRow(QString(inputMode + "range [0,99] inv 'a-a'").toLatin1())
+            << 0
+            << 99
+            << QString("19a")
+            << QString(useKeys ? "19" : "")
+            << bool(useKeys)
+            << bool(useKeys ? true : false)
+            << uint(QLineEdit::Password);
     }
 }
 
@@ -2635,9 +2656,11 @@ void tst_QLineEdit::setValidator_QIntValidator()
     QFETCH(QString, expectedText);
     QFETCH(bool, useKeys);
     QFETCH(bool, is_valid);
+    QFETCH(uint, echoMode);
 
     QIntValidator intValidator(mini, maxi, 0);
     QLineEdit *testWidget = ensureTestWidget();
+    testWidget->setEchoMode((QLineEdit::EchoMode)echoMode);
     testWidget->setValidator(&intValidator);
     QVERIFY(testWidget->text().isEmpty());
 //qDebug("1 input: '" + input + "' Exp: '" + expectedText + "'");

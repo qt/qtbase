@@ -39,8 +39,12 @@
 
 #include <private/qabstractanimation_p.h>
 
-#ifdef Q_OS_WIN
-static const char winTimerError[] = "On windows, consistent timing is not working properly due to bad timer resolution";
+#if defined(Q_OS_WIN) || defined(Q_OS_ANDROID)
+#  define BAD_TIMER_RESOLUTION
+#endif
+
+#ifdef BAD_TIMER_RESOLUTION
+static const char timerError[] = "On this platform, consistent timing is not working properly due to bad timer resolution";
 #endif
 
 class TestablePauseAnimation : public QPauseAnimation
@@ -140,17 +144,17 @@ void tst_QPauseAnimation::noTimerUpdates()
     animation.start();
     QTest::qWait(animation.totalDuration() + 100);
 
-#ifdef Q_OS_WIN
+#ifdef BAD_TIMER_RESOLUTION
     if (animation.state() != QAbstractAnimation::Stopped)
-        QEXPECT_FAIL("", winTimerError, Abort);
+        QEXPECT_FAIL("", timerError, Abort);
 #endif
 
     QVERIFY(animation.state() == QAbstractAnimation::Stopped);
     const int expectedLoopCount = 1 + loopCount;
 
-#ifdef Q_OS_WIN
+#ifdef BAD_TIMER_RESOLUTION
     if (animation.m_updateCurrentTimeCount != expectedLoopCount)
-        QEXPECT_FAIL("", winTimerError, Abort);
+        QEXPECT_FAIL("", timerError, Abort);
 #endif
     QCOMPARE(animation.m_updateCurrentTimeCount, expectedLoopCount);
 }
@@ -169,41 +173,41 @@ void tst_QPauseAnimation::multiplePauseAnimations()
     animation2.start();
     QTest::qWait(animation.totalDuration() + 100);
 
-#ifdef Q_OS_WIN
+#ifdef BAD_TIMER_RESOLUTION
     if (animation.state() != QAbstractAnimation::Stopped)
-        QEXPECT_FAIL("", winTimerError, Abort);
+        QEXPECT_FAIL("", timerError, Abort);
 #endif
     QVERIFY(animation.state() == QAbstractAnimation::Stopped);
 
-#ifdef Q_OS_WIN
+#ifdef BAD_TIMER_RESOLUTION
     if (animation2.state() != QAbstractAnimation::Running)
-        QEXPECT_FAIL("", winTimerError, Abort);
+        QEXPECT_FAIL("", timerError, Abort);
 #endif
     QVERIFY(animation2.state() == QAbstractAnimation::Running);
 
-#ifdef Q_OS_WIN
+#ifdef BAD_TIMER_RESOLUTION
     if (animation.m_updateCurrentTimeCount != 2)
-        QEXPECT_FAIL("", winTimerError, Abort);
+        QEXPECT_FAIL("", timerError, Abort);
 #endif
     QCOMPARE(animation.m_updateCurrentTimeCount, 2);
 
-#ifdef Q_OS_WIN
+#ifdef BAD_TIMER_RESOLUTION
     if (animation2.m_updateCurrentTimeCount != 2)
-        QEXPECT_FAIL("", winTimerError, Abort);
+        QEXPECT_FAIL("", timerError, Abort);
 #endif
     QCOMPARE(animation2.m_updateCurrentTimeCount, 2);
 
     QTest::qWait(550);
 
-#ifdef Q_OS_WIN
+#ifdef BAD_TIMER_RESOLUTION
     if (animation2.state() != QAbstractAnimation::Stopped)
-        QEXPECT_FAIL("", winTimerError, Abort);
+        QEXPECT_FAIL("", timerError, Abort);
 #endif
     QVERIFY(animation2.state() == QAbstractAnimation::Stopped);
 
-#ifdef Q_OS_WIN
+#ifdef BAD_TIMER_RESOLUTION
     if (animation2.m_updateCurrentTimeCount != 3)
-        QEXPECT_FAIL("", winTimerError, Abort);
+        QEXPECT_FAIL("", timerError, Abort);
 #endif
     QCOMPARE(animation2.m_updateCurrentTimeCount, 3);
 }
@@ -232,9 +236,9 @@ void tst_QPauseAnimation::pauseAndPropertyAnimations()
 
     QTest::qWait(animation.totalDuration() + 100);
 
-#ifdef Q_OS_WIN
+#ifdef BAD_TIMER_RESOLUTION
     if (animation.state() != QAbstractAnimation::Stopped)
-        QEXPECT_FAIL("", winTimerError, Abort);
+        QEXPECT_FAIL("", timerError, Abort);
 #endif
     QVERIFY(animation.state() == QAbstractAnimation::Stopped);
     QVERIFY(pause.state() == QAbstractAnimation::Stopped);
@@ -253,9 +257,9 @@ void tst_QPauseAnimation::pauseResume()
     animation.start();
     QTRY_COMPARE(animation.state(), QAbstractAnimation::Stopped);
 
-#ifdef Q_OS_WIN
+#ifdef BAD_TIMER_RESOLUTION
     if (animation.m_updateCurrentTimeCount < 3)
-        QEXPECT_FAIL("", winTimerError, Abort);
+        QEXPECT_FAIL("", timerError, Abort);
 #endif
     QVERIFY2(animation.m_updateCurrentTimeCount >= 3, qPrintable(
         QString::fromLatin1("animation.m_updateCurrentTimeCount = %1").arg(animation.m_updateCurrentTimeCount)));
@@ -408,39 +412,39 @@ void tst_QPauseAnimation::multipleSequentialGroups()
     // measure...
     QTest::qWait(group.totalDuration() + 500);
 
-#ifdef Q_OS_WIN
+#ifdef BAD_TIMER_RESOLUTION
     if (group.state() != QAbstractAnimation::Stopped)
-        QEXPECT_FAIL("", winTimerError, Abort);
+        QEXPECT_FAIL("", timerError, Abort);
 #endif
     QVERIFY(group.state() == QAbstractAnimation::Stopped);
 
-#ifdef Q_OS_WIN
+#ifdef BAD_TIMER_RESOLUTION
     if (subgroup1.state() != QAbstractAnimation::Stopped)
-        QEXPECT_FAIL("", winTimerError, Abort);
+        QEXPECT_FAIL("", timerError, Abort);
 #endif
     QVERIFY(subgroup1.state() == QAbstractAnimation::Stopped);
 
-#ifdef Q_OS_WIN
+#ifdef BAD_TIMER_RESOLUTION
     if (subgroup2.state() != QAbstractAnimation::Stopped)
-        QEXPECT_FAIL("", winTimerError, Abort);
+        QEXPECT_FAIL("", timerError, Abort);
 #endif
     QVERIFY(subgroup2.state() == QAbstractAnimation::Stopped);
 
-#ifdef Q_OS_WIN
+#ifdef BAD_TIMER_RESOLUTION
     if (subgroup3.state() != QAbstractAnimation::Stopped)
-        QEXPECT_FAIL("", winTimerError, Abort);
+        QEXPECT_FAIL("", timerError, Abort);
 #endif
     QVERIFY(subgroup3.state() == QAbstractAnimation::Stopped);
 
-#ifdef Q_OS_WIN
+#ifdef BAD_TIMER_RESOLUTION
     if (subgroup4.state() != QAbstractAnimation::Stopped)
-        QEXPECT_FAIL("", winTimerError, Abort);
+        QEXPECT_FAIL("", timerError, Abort);
 #endif
     QVERIFY(subgroup4.state() == QAbstractAnimation::Stopped);
 
-#ifdef Q_OS_WIN
+#ifdef BAD_TIMER_RESOLUTION
     if (pause5.m_updateCurrentTimeCount != 4)
-        QEXPECT_FAIL("", winTimerError, Abort);
+        QEXPECT_FAIL("", timerError, Abort);
 #endif
     QCOMPARE(pause5.m_updateCurrentTimeCount, 4);
 }

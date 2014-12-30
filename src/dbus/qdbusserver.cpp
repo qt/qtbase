@@ -72,12 +72,18 @@ QDBusServer::QDBusServer(const QString &address, QObject *parent)
 
 /*!
     Constructs a QDBusServer with the given \a parent. The server will listen
-    for connections in \c {/tmp}.
+    for connections in \c {/tmp} (on Unix systems) or on a TCP port bound to
+    localhost (elsewhere).
 */
 QDBusServer::QDBusServer(QObject *parent)
     : QObject(parent)
 {
-    const QString address = QLatin1String("unix:tmpdir=/tmp");
+#ifdef Q_OS_UNIX
+    // Use Unix sockets on Unix systems only
+    static const char address[] = "unix:tmpdir=/tmp";
+#else
+    static const char address[] = "tcp:";
+#endif
 
     if (!qdbus_loadLibDBus()) {
         d = 0;
@@ -89,7 +95,7 @@ QDBusServer::QDBusServer(QObject *parent)
                      this, SIGNAL(newConnection(QDBusConnection)));
 
     QDBusErrorInternal error;
-    d->setServer(q_dbus_server_listen(address.toUtf8().constData(), error), error);
+    d->setServer(q_dbus_server_listen(address, error), error);
 }
 
 /*!
