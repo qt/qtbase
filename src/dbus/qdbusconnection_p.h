@@ -254,7 +254,6 @@ private:
     void _q_newConnection(QDBusConnectionPrivate *newConnection);
 
 protected:
-    void customEvent(QEvent *e) Q_DECL_OVERRIDE;
     void timerEvent(QTimerEvent *e) Q_DECL_OVERRIDE;
 
 public slots:

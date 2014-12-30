@@ -133,7 +133,6 @@ extern "C" {
 
     // libdbus-1 callbacks
 
-static bool qDBusRealAddTimeout(QDBusConnectionPrivate *d, DBusTimeout *timeout, int ms);
 static dbus_bool_t qDBusAddTimeout(DBusTimeout *timeout, void *data)
 {
     Q_ASSERT(timeout);
@@ -142,29 +141,17 @@ static dbus_bool_t qDBusAddTimeout(DBusTimeout *timeout, void *data)
   //  qDebug("addTimeout %d", q_dbus_timeout_get_interval(timeout));
 
     QDBusConnectionPrivate *d = static_cast<QDBusConnectionPrivate *>(data);
+    Q_ASSERT(QThread::currentThread() == d->thread());
 
-    if (!q_dbus_timeout_get_enabled(timeout))
-        return true;
+    // we may get called from qDBusToggleTimeout
+    if (Q_UNLIKELY(!q_dbus_timeout_get_enabled(timeout)))
+        return false;
 
     QDBusDispatchLocker locker(AddTimeoutAction, d);
-    if (QCoreApplication::instance() && QThread::currentThread() == d->thread()) {
-        // correct thread
-        return qDBusRealAddTimeout(d, timeout, q_dbus_timeout_get_interval(timeout));
-    } else {
-        // wrong thread: sync back
-        QDBusConnectionCallbackEvent *ev = new QDBusConnectionCallbackEvent;
-        ev->subtype = QDBusConnectionCallbackEvent::AddTimeout;
-        d->timeoutsPendingAdd.append(qMakePair(timeout, q_dbus_timeout_get_interval(timeout)));
-        d->postEventToThread(AddTimeoutAction, d, ev);
-        return true;
-    }
-}
-
-static bool qDBusRealAddTimeout(QDBusConnectionPrivate *d, DBusTimeout *timeout, int ms)
-{
     Q_ASSERT(d->timeouts.key(timeout, 0) == 0);
 
-    int timerId = d->startTimer(ms);
+    int timerId = d->startTimer(q_dbus_timeout_get_interval(timeout));
+    Q_ASSERT_X(timerId, "QDBusConnection", "Failed to start a timer");
     if (!timerId)
         return false;
 
@@ -180,33 +167,14 @@ static void qDBusRemoveTimeout(DBusTimeout *timeout, void *data)
   //  qDebug("removeTimeout");
 
     QDBusConnectionPrivate *d = static_cast<QDBusConnectionPrivate *>(data);
+    Q_ASSERT(QThread::currentThread() == d->thread());
 
     QDBusDispatchLocker locker(RemoveTimeoutAction, d);
 
-    // is it pending addition?
-    QDBusConnectionPrivate::PendingTimeoutList::iterator pit = d->timeoutsPendingAdd.begin();
-    while (pit != d->timeoutsPendingAdd.end()) {
-        if (pit->first == timeout)
-            pit = d->timeoutsPendingAdd.erase(pit);
-        else
-            ++pit;
-    }
-
-    // is it a running timer?
-    bool correctThread = QCoreApplication::instance() && QThread::currentThread() == d->thread();
     QDBusConnectionPrivate::TimeoutHash::iterator it = d->timeouts.begin();
     while (it != d->timeouts.end()) {
         if (it.value() == timeout) {
-            if (correctThread) {
-                // correct thread
-                d->killTimer(it.key());
-            } else {
-                // incorrect thread or no application, post an event for later
-                QDBusConnectionCallbackEvent *ev = new QDBusConnectionCallbackEvent;
-                ev->subtype = QDBusConnectionCallbackEvent::KillTimer;
-                ev->timerId = it.key();
-                d->postEventToThread(KillTimerAction, d, ev);
-            }
+            d->killTimer(it.key());
             it = d->timeouts.erase(it);
             break;
         } else {
@@ -226,52 +194,33 @@ static void qDBusToggleTimeout(DBusTimeout *timeout, void *data)
     qDBusAddTimeout(timeout, data);
 }
 
-static bool qDBusRealAddWatch(QDBusConnectionPrivate *d, DBusWatch *watch, int flags, int fd);
 static dbus_bool_t qDBusAddWatch(DBusWatch *watch, void *data)
 {
     Q_ASSERT(watch);
     Q_ASSERT(data);
 
     QDBusConnectionPrivate *d = static_cast<QDBusConnectionPrivate *>(data);
+    Q_ASSERT(QThread::currentThread() == d->thread());
 
     int flags = q_dbus_watch_get_flags(watch);
     int fd = q_dbus_watch_get_unix_fd(watch);
 
-    if (QCoreApplication::instance() && QThread::currentThread() == d->thread()) {
-        return qDBusRealAddWatch(d, watch, flags, fd);
-    } else {
-        QDBusConnectionCallbackEvent *ev = new QDBusConnectionCallbackEvent;
-        ev->subtype = QDBusConnectionCallbackEvent::AddWatch;
-        ev->watch = watch;
-        ev->fd = fd;
-        ev->extra = flags;
-        d->postEventToThread(AddWatchAction, d, ev);
-        return true;
-    }
-}
-
-static bool qDBusRealAddWatch(QDBusConnectionPrivate *d, DBusWatch *watch, int flags, int fd)
-{
     QDBusConnectionPrivate::Watcher watcher;
 
     QDBusDispatchLocker locker(AddWatchAction, d);
     if (flags & DBUS_WATCH_READABLE) {
         //qDebug("addReadWatch %d", fd);
         watcher.watch = watch;
-        if (QCoreApplication::instance()) {
-            watcher.read = new QSocketNotifier(fd, QSocketNotifier::Read, d);
-            watcher.read->setEnabled(q_dbus_watch_get_enabled(watch));
-            d->connect(watcher.read, SIGNAL(activated(int)), SLOT(socketRead(int)));
-        }
+        watcher.read = new QSocketNotifier(fd, QSocketNotifier::Read, d);
+        watcher.read->setEnabled(q_dbus_watch_get_enabled(watch));
+        d->connect(watcher.read, SIGNAL(activated(int)), SLOT(socketRead(int)));
     }
     if (flags & DBUS_WATCH_WRITABLE) {
         //qDebug("addWriteWatch %d", fd);
         watcher.watch = watch;
-        if (QCoreApplication::instance()) {
-            watcher.write = new QSocketNotifier(fd, QSocketNotifier::Write, d);
-            watcher.write->setEnabled(q_dbus_watch_get_enabled(watch));
-            d->connect(watcher.write, SIGNAL(activated(int)), SLOT(socketWrite(int)));
-        }
+        watcher.write = new QSocketNotifier(fd, QSocketNotifier::Write, d);
+        watcher.write->setEnabled(q_dbus_watch_get_enabled(watch));
+        d->connect(watcher.write, SIGNAL(activated(int)), SLOT(socketWrite(int)));
     }
     d->watchers.insertMulti(fd, watcher);
 
@@ -286,23 +235,15 @@ static void qDBusRemoveWatch(DBusWatch *watch, void *data)
     //qDebug("remove watch");
 
     QDBusConnectionPrivate *d = static_cast<QDBusConnectionPrivate *>(data);
+    Q_ASSERT(QThread::currentThread() == d->thread());
     int fd = q_dbus_watch_get_unix_fd(watch);
 
     QDBusDispatchLocker locker(RemoveWatchAction, d);
     QDBusConnectionPrivate::WatcherHash::iterator i = d->watchers.find(fd);
     while (i != d->watchers.end() && i.key() == fd) {
         if (i.value().watch == watch) {
-            if (QCoreApplication::instance() && QThread::currentThread() == d->thread()) {
-                // correct thread, delete the socket notifiers
-                delete i.value().read;
-                delete i.value().write;
-            } else {
-                // incorrect thread or no application, use delete later
-                if (i->read)
-                    i->read->deleteLater();
-                if (i->write)
-                    i->write->deleteLater();
-            }
+            delete i.value().read;
+            delete i.value().write;
             i = d->watchers.erase(i);
         } else {
             ++i;
@@ -310,28 +251,15 @@ static void qDBusRemoveWatch(DBusWatch *watch, void *data)
     }
 }
 
-static void qDBusRealToggleWatch(QDBusConnectionPrivate *d, DBusWatch *watch, int fd);
 static void qDBusToggleWatch(DBusWatch *watch, void *data)
 {
     Q_ASSERT(watch);
     Q_ASSERT(data);
 
     QDBusConnectionPrivate *d = static_cast<QDBusConnectionPrivate *>(data);
+    Q_ASSERT(QThread::currentThread() == d->thread());
     int fd = q_dbus_watch_get_unix_fd(watch);
 
-    if (QCoreApplication::instance() && QThread::currentThread() == d->thread()) {
-        qDBusRealToggleWatch(d, watch, fd);
-    } else {
-        QDBusConnectionCallbackEvent *ev = new QDBusConnectionCallbackEvent;
-        ev->subtype = QDBusConnectionCallbackEvent::ToggleWatch;
-        ev->watch = watch;
-        ev->fd = fd;
-        d->postEventToThread(ToggleWatchAction, d, ev);
-    }
-}
-
-static void qDBusRealToggleWatch(QDBusConnectionPrivate *d, DBusWatch *watch, int fd)
-{
     QDBusDispatchLocker locker(ToggleWatchAction, d);
 
     QDBusConnectionPrivate::WatcherHash::iterator i = d->watchers.find(fd);
@@ -1118,40 +1046,6 @@ void QDBusConnectionPrivate::timerEvent(QTimerEvent *e)
     }
 
     doDispatch();
-}
-
-void QDBusConnectionPrivate::customEvent(QEvent *e)
-{
-    Q_ASSERT(e->type() == QEvent::User);
-
-    QDBusConnectionCallbackEvent *ev = static_cast<QDBusConnectionCallbackEvent *>(e);
-    QDBusLockerBase::reportThreadAction(int(AddTimeoutAction) + int(ev->subtype),
-                                        QDBusLockerBase::BeforeDeliver, this);
-    switch (ev->subtype)
-    {
-    case QDBusConnectionCallbackEvent::AddTimeout: {
-        QDBusDispatchLocker locker(RealAddTimeoutAction, this);
-        while (!timeoutsPendingAdd.isEmpty()) {
-            QPair<DBusTimeout *, int> entry = timeoutsPendingAdd.takeFirst();
-            qDBusRealAddTimeout(this, entry.first, entry.second);
-        }
-        break;
-    }
-
-    case QDBusConnectionCallbackEvent::KillTimer:
-        killTimer(ev->timerId);
-        break;
-
-    case QDBusConnectionCallbackEvent::AddWatch:
-        qDBusRealAddWatch(this, ev->watch, ev->extra, ev->fd);
-        break;
-
-    case QDBusConnectionCallbackEvent::ToggleWatch:
-        qDBusRealToggleWatch(this, ev->watch, ev->fd);
-        break;
-    }
-    QDBusLockerBase::reportThreadAction(int(AddTimeoutAction) + int(ev->subtype),
-                                        QDBusLockerBase::AfterDeliver, this);
 }
 
 void QDBusConnectionPrivate::doDispatch()
