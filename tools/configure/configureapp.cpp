@@ -3172,7 +3172,7 @@ void Configure::detectArch()
         if (!exe.open(QFile::ReadOnly)) { // no Text, this is binary
             exe.setFileName("arch");
             if (!exe.open(QFile::ReadOnly)) {
-                cout << "Could not find output file: " << qPrintable(exe.errorString()) << endl;
+                cout << "Could not find output file '" << qPrintable(arch_exe) << "' or 'arch' in " << qPrintable(newpwd) << " : " << qPrintable(exe.errorString()) << endl;
                 dictionary["DONE"] = "error";
                 return;
             }
