@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2015 The Qt Company Ltd.
+** Copyright (C) 2015 Intel Corporation.
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the QtDBus module of the Qt Toolkit.
@@ -41,6 +42,7 @@
 #include "qdbusmessage_p.h"
 #include "qdbusmetaobject_p.h"
 #include "qdbusmetatype_p.h"
+#include "qdbusservicewatcher.h"
 #include "qdbusutil_p.h"
 
 #include <qdebug.h>
@@ -95,6 +97,17 @@ QDBusAbstractInterfacePrivate::QDBusAbstractInterfacePrivate(const QString &serv
             lastError = connectionPrivate()->lastError;
         }
     }
+}
+
+void QDBusAbstractInterfacePrivate::initOwnerTracking()
+{
+    if (!isValid || !connection.isConnected() || connectionPrivate()->mode == QDBusConnectionPrivate::PeerMode)
+        return;
+    if (service.isEmpty() || service.startsWith(QLatin1Char(':')))
+        return;
+    QObject::connect(new QDBusServiceWatcher(service, connection, QDBusServiceWatcher::WatchForOwnerChange, q_func()),
+                     SIGNAL(serviceOwnerChanged(QString,QString,QString)),
+                     q_func(), SLOT(_q_serviceOwnerChanged(QString,QString,QString)));
 }
 
 bool QDBusAbstractInterfacePrivate::canMakeCalls() const
@@ -218,9 +231,8 @@ void QDBusAbstractInterfacePrivate::_q_serviceOwnerChanged(const QString &name,
     Q_UNUSED(oldOwner);
     Q_UNUSED(name);
     //qDebug() << "QDBusAbstractInterfacePrivate serviceOwnerChanged" << name << oldOwner << newOwner;
-    if (name == service) {
-        currentOwner = newOwner;
-    }
+    Q_ASSERT(name == service);
+    currentOwner = newOwner;
 }
 
 QDBusAbstractInterfaceBase::QDBusAbstractInterfaceBase(QDBusAbstractInterfacePrivate &d, QObject *parent)
@@ -285,19 +297,7 @@ int QDBusAbstractInterfaceBase::qt_metacall(QMetaObject::Call _c, int _id, void 
 QDBusAbstractInterface::QDBusAbstractInterface(QDBusAbstractInterfacePrivate &d, QObject *parent)
     : QDBusAbstractInterfaceBase(d, parent)
 {
-    // keep track of the service owner
-    if (d.isValid &&
-        d.connection.isConnected()
-        && !d.service.isEmpty()
-        && !d.service.startsWith(QLatin1Char(':'))
-        && d.connectionPrivate()->mode != QDBusConnectionPrivate::PeerMode)
-        d_func()->connection.connect(QDBusUtil::dbusService(), // service
-                                     QString(), // path
-                                     QDBusUtil::dbusInterface(), // interface
-                                     QDBusUtil::nameOwnerChanged(),
-                                     QStringList() << d.service,
-                                     QString(), // signature
-                                     this, SLOT(_q_serviceOwnerChanged(QString,QString,QString)));
+    d.initOwnerTracking();
 }
 
 /*!
@@ -312,18 +312,7 @@ QDBusAbstractInterface::QDBusAbstractInterface(const QString &service, const QSt
                                                  con, false), parent)
 {
     // keep track of the service owner
-    if (d_func()->isValid &&
-        d_func()->connection.isConnected()
-        && !service.isEmpty()
-        && !service.startsWith(QLatin1Char(':'))
-        && d_func()->connectionPrivate()->mode != QDBusConnectionPrivate::PeerMode)
-        d_func()->connection.connect(QDBusUtil::dbusService(), // service
-                                     QString(), // path
-                                     QDBusUtil::dbusInterface(), // interface
-                                     QDBusUtil::nameOwnerChanged(),
-                                     QStringList() << service,
-                                     QString(), //signature
-                                     this, SLOT(_q_serviceOwnerChanged(QString,QString,QString)));
+    d_func()->initOwnerTracking();
 }
 
 /*!
