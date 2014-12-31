@@ -72,7 +72,7 @@ public:
 
     DBusMessage *msg;
     DBusMessage *reply;
-    int type;
+    QDBusMessage::MessageType type;
     int timeout;
     mutable QDBusMessage *localReply;
     QAtomicInt ref;

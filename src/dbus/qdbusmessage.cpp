@@ -49,13 +49,19 @@
 
 QT_BEGIN_NAMESPACE
 
+Q_STATIC_ASSERT(QDBusMessage::InvalidMessage == DBUS_MESSAGE_TYPE_INVALID);
+Q_STATIC_ASSERT(QDBusMessage::MethodCallMessage == DBUS_MESSAGE_TYPE_METHOD_CALL);
+Q_STATIC_ASSERT(QDBusMessage::ReplyMessage == DBUS_MESSAGE_TYPE_METHOD_RETURN);
+Q_STATIC_ASSERT(QDBusMessage::ErrorMessage == DBUS_MESSAGE_TYPE_ERROR);
+Q_STATIC_ASSERT(QDBusMessage::SignalMessage == DBUS_MESSAGE_TYPE_SIGNAL);
+
 static inline const char *data(const QByteArray &arr)
 {
     return arr.isEmpty() ? 0 : arr.constData();
 }
 
 QDBusMessagePrivate::QDBusMessagePrivate()
-    : msg(0), reply(0), type(DBUS_MESSAGE_TYPE_INVALID),
+    : msg(0), reply(0), type(QDBusMessage::InvalidMessage),
       timeout(-1), localReply(0), ref(1), delayedReply(false), localMessage(false),
       parametersValidated(false), autoStartService(true)
 {
@@ -106,10 +112,10 @@ DBusMessage *QDBusMessagePrivate::toDBusMessage(const QDBusMessage &message, QDB
     const QDBusMessagePrivate *d_ptr = message.d_ptr;
 
     switch (d_ptr->type) {
-    case DBUS_MESSAGE_TYPE_INVALID:
+    case QDBusMessage::InvalidMessage:
         //qDebug() << "QDBusMessagePrivate::toDBusMessage" <<  "message is invalid";
         break;
-    case DBUS_MESSAGE_TYPE_METHOD_CALL:
+    case QDBusMessage::MethodCallMessage:
         // only service and interface can be empty -> path and name must not be empty
         if (!d_ptr->parametersValidated) {
             if (!QDBusUtil::checkBusName(d_ptr->service, QDBusUtil::EmptyAllowed, error))
@@ -126,14 +132,14 @@ DBusMessage *QDBusMessagePrivate::toDBusMessage(const QDBusMessage &message, QDB
                                              data(d_ptr->interface.toUtf8()), d_ptr->name.toUtf8());
         q_dbus_message_set_auto_start( msg, d_ptr->autoStartService );
         break;
-    case DBUS_MESSAGE_TYPE_METHOD_RETURN:
+    case QDBusMessage::ReplyMessage:
         msg = q_dbus_message_new(DBUS_MESSAGE_TYPE_METHOD_RETURN);
         if (!d_ptr->localMessage) {
             q_dbus_message_set_destination(msg, q_dbus_message_get_sender(d_ptr->reply));
             q_dbus_message_set_reply_serial(msg, q_dbus_message_get_serial(d_ptr->reply));
         }
         break;
-    case DBUS_MESSAGE_TYPE_ERROR:
+    case QDBusMessage::ErrorMessage:
         // error name can't be empty
         if (!d_ptr->parametersValidated
             && !QDBusUtil::checkErrorName(d_ptr->name, QDBusUtil::EmptyNotAllowed, error))
@@ -146,7 +152,7 @@ DBusMessage *QDBusMessagePrivate::toDBusMessage(const QDBusMessage &message, QDB
             q_dbus_message_set_reply_serial(msg, q_dbus_message_get_serial(d_ptr->reply));
         }
         break;
-    case DBUS_MESSAGE_TYPE_SIGNAL:
+    case QDBusMessage::SignalMessage:
         // nothing can be empty here
         if (!d_ptr->parametersValidated) {
             if (!QDBusUtil::checkObjectPath(d_ptr->path, QDBusUtil::EmptyNotAllowed, error))
@@ -159,9 +165,6 @@ DBusMessage *QDBusMessagePrivate::toDBusMessage(const QDBusMessage &message, QDB
 
         msg = q_dbus_message_new_signal(d_ptr->path.toUtf8(), d_ptr->interface.toUtf8(),
                                         d_ptr->name.toUtf8());
-        break;
-    default:
-        Q_ASSERT(false);
         break;
     }
 
@@ -221,7 +224,7 @@ QDBusMessage QDBusMessagePrivate::fromDBusMessage(DBusMessage *dmsg, QDBusConnec
     if (!dmsg)
         return message;
 
-    message.d_ptr->type = q_dbus_message_get_type(dmsg);
+    message.d_ptr->type = QDBusMessage::MessageType(q_dbus_message_get_type(dmsg));
     message.d_ptr->path = QString::fromUtf8(q_dbus_message_get_path(dmsg));
     message.d_ptr->interface = QString::fromUtf8(q_dbus_message_get_interface(dmsg));
     message.d_ptr->name = message.d_ptr->type == DBUS_MESSAGE_TYPE_ERROR ?
@@ -360,7 +363,7 @@ QDBusMessage QDBusMessage::createSignal(const QString &path, const QString &inte
                                         const QString &name)
 {
     QDBusMessage message;
-    message.d_ptr->type = DBUS_MESSAGE_TYPE_SIGNAL;
+    message.d_ptr->type = SignalMessage;
     message.d_ptr->path = path;
     message.d_ptr->interface = interface;
     message.d_ptr->name = name;
@@ -391,7 +394,7 @@ QDBusMessage QDBusMessage::createMethodCall(const QString &service, const QStrin
                                             const QString &interface, const QString &method)
 {
     QDBusMessage message;
-    message.d_ptr->type = DBUS_MESSAGE_TYPE_METHOD_CALL;
+    message.d_ptr->type = MethodCallMessage;
     message.d_ptr->service = service;
     message.d_ptr->path = path;
     message.d_ptr->interface = interface;
@@ -407,7 +410,7 @@ QDBusMessage QDBusMessage::createMethodCall(const QString &service, const QStrin
 QDBusMessage QDBusMessage::createError(const QString &name, const QString &msg)
 {
     QDBusMessage error;
-    error.d_ptr->type = DBUS_MESSAGE_TYPE_ERROR;
+    error.d_ptr->type = ErrorMessage;
     error.d_ptr->name = name;
     error.d_ptr->message = msg;
 
@@ -437,7 +440,7 @@ QDBusMessage QDBusMessage::createReply(const QVariantList &arguments) const
 {
     QDBusMessage reply;
     reply.setArguments(arguments);
-    reply.d_ptr->type = DBUS_MESSAGE_TYPE_METHOD_RETURN;
+    reply.d_ptr->type = ReplyMessage;
     if (d_ptr->msg)
         reply.d_ptr->reply = q_dbus_message_ref(d_ptr->msg);
     if (d_ptr->localMessage) {
@@ -606,7 +609,7 @@ QString QDBusMessage::signature() const
 bool QDBusMessage::isReplyRequired() const
 {
     // Only method calls can have replies
-    if (d_ptr->type != DBUS_MESSAGE_TYPE_METHOD_CALL)
+    if (d_ptr->type != QDBusMessage::MethodCallMessage)
         return false;
 
     if (!d_ptr->msg)
