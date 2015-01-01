@@ -133,6 +133,11 @@ public slots:
         valueSpy.clear();
     }
 
+    void quit()
+    {
+        qApp->quit();
+    }
+
 signals:
     Q_SCRIPTABLE void syncReceived(const QString &sequence);
 

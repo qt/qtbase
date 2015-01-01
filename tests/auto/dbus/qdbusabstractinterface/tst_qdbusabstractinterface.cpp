@@ -252,19 +252,10 @@ void tst_QDBusAbstractInterface::initTestCase()
 
 void tst_QDBusAbstractInterface::cleanupTestCase()
 {
-    // Kill peer, resetting the object exported by a separate process
-#ifdef Q_OS_WIN
-    proc.kill(); // non-GUI processes don't respond to QProcess::terminate()
-#else
-    proc.terminate();
-#endif
-    QVERIFY(proc.waitForFinished() || proc.state() == QProcess::NotRunning);
-
-    // Wait until the service is certainly not registered
-    QDBusConnection con = QDBusConnection::sessionBus();
-    if (con.isConnected()) {
-        QTRY_VERIFY(!con.interface()->isServiceRegistered(serviceName));
-    }
+    QDBusMessage msg = QDBusMessage::createMethodCall(serviceName, objectPath, interfaceName, "quit");
+    QDBusConnection::sessionBus().call(msg);
+    proc.waitForFinished(200);
+    proc.close();
 }
 
 void tst_QDBusAbstractInterface::init()

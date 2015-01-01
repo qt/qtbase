@@ -143,9 +143,10 @@ void tst_QDBusMarshall::initTestCase()
 
 void tst_QDBusMarshall::cleanupTestCase()
 {
-    proc.close();
-    proc.terminate();
+    QDBusMessage msg = QDBusMessage::createMethodCall(serviceName, objectPath, interfaceName, "quit");
+    QDBusConnection::sessionBus().call(msg);
     proc.waitForFinished(200);
+    proc.close();
 }
 
 int tst_QDBusMarshall::fileDescriptorForTest()

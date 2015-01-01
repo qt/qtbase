@@ -521,8 +521,10 @@ void tst_QDBusAbstractAdaptor::initTestCase()
 
 void tst_QDBusAbstractAdaptor::cleanupTestCase()
 {
+    QDBusMessage msg = QDBusMessage::createMethodCall(serviceName, objectPath, interfaceName, "quit");
+    QDBusConnection::sessionBus().call(msg);
+    proc.waitForFinished(200);
     proc.close();
-    proc.kill();
 }
 
 void tst_QDBusAbstractAdaptor::methodCalls_data()

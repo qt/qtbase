@@ -112,6 +112,10 @@ public slots:
         return obj.m_complexProp;
     }
 
+    void quit()
+    {
+        qApp->quit();
+    }
 
 private slots:
     void handleConnection(const QDBusConnection& con)

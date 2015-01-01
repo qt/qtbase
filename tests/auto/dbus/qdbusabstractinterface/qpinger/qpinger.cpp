@@ -87,6 +87,11 @@ public slots:
         emit targetObj.complexSignal(reg);
     }
 
+    void quit()
+    {
+        qApp->quit();
+    }
+
 private slots:
     void handleConnection(const QDBusConnection& con)
     {

@@ -297,8 +297,10 @@ void tst_QDBusInterface::initTestCase()
 
 void tst_QDBusInterface::cleanupTestCase()
 {
+    QDBusMessage msg = QDBusMessage::createMethodCall(serviceName, objectPath, interfaceName, "quit");
+    QDBusConnection::sessionBus().call(msg);
+    proc.waitForFinished(200);
     proc.close();
-    proc.kill();
 }
 
 void tst_QDBusInterface::notConnected()
