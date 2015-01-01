@@ -136,6 +136,7 @@ void tst_QDBusMarshall::initTestCase()
 #else
 #  define EXE ""
 #endif
+    proc.setProcessChannelMode(QProcess::ForwardedErrorChannel);
     proc.start(QFINDTESTDATA("qpong/qpong" EXE));
     QVERIFY2(proc.waitForStarted(), qPrintable(proc.errorString()));
     QVERIFY(proc.waitForReadyRead());

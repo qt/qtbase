@@ -236,6 +236,7 @@ void tst_QDBusAbstractInterface::initTestCase()
 #else
 #  define EXE ""
 #endif
+    proc.setProcessChannelMode(QProcess::ForwardedErrorChannel);
     proc.start(QFINDTESTDATA("qpinger/qpinger" EXE));
     QVERIFY2(proc.waitForStarted(), qPrintable(proc.errorString()));
     QVERIFY(proc.waitForReadyRead());

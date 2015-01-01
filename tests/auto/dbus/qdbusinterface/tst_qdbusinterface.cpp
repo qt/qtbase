@@ -271,6 +271,7 @@ void tst_QDBusInterface::initTestCase()
 #else
 #  define EXE ""
 #endif
+    proc.setProcessChannelMode(QProcess::ForwardedErrorChannel);
     proc.start(QFINDTESTDATA("qmyserver/qmyserver" EXE));
     QVERIFY2(proc.waitForStarted(), qPrintable(proc.errorString()));
     QVERIFY(proc.waitForReadyRead());

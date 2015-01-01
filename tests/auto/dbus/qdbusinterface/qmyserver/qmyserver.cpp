@@ -88,7 +88,6 @@ public slots:
 
     QVariantList callArgs()
     {
-        qDebug() << "callArgs" << MyObject::callArgs.count();
         return MyObject::callArgs;
     }
 
