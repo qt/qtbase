@@ -743,7 +743,7 @@ QString QAccessibleTextWidget::attributes(int offset, int *startOffset, int *end
     QTextBlockFormat blockFormat = cursor.blockFormat();
 
     QMap<QByteArray, QString> attrs;
-    QString family = charFormat.fontFamily();
+    QString family = charFormat.font().family();
     if (!family.isEmpty()) {
         family = family.replace('\\',QStringLiteral("\\\\"));
         family = family.replace(':',QStringLiteral("\\:"));
@@ -754,12 +754,12 @@ QString QAccessibleTextWidget::attributes(int offset, int *startOffset, int *end
         attrs["font-family"] = QString::fromLatin1("\"%1\"").arg(family);
     }
 
-    int fontSize = int(charFormat.fontPointSize());
+    int fontSize = int(charFormat.font().pointSize());
     if (fontSize)
         attrs["font-size"] = QString::fromLatin1("%1pt").arg(fontSize);
 
     //Different weight values are not handled
-    attrs["font-weight"] = QString::fromLatin1(charFormat.fontWeight() > QFont::Normal ? "bold" : "normal");
+    attrs["font-weight"] = QString::fromLatin1(charFormat.font().weight() > QFont::Normal ? "bold" : "normal");
 
     QFont::Style style = charFormat.font().style();
     attrs["font-style"] = QString::fromLatin1((style == QFont::StyleItalic) ? "italic" : ((style == QFont::StyleOblique) ? "oblique": "normal"));
