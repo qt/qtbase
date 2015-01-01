@@ -790,7 +790,7 @@ QString QAccessibleTextWidget::attributes(int offset, int *startOffset, int *end
         attrs["text-align"] = QStringLiteral("center");
         break;
     case Qt::AlignJustify:
-        attrs["text-align"] = QStringLiteral("left");
+        attrs["text-align"] = QStringLiteral("justify");
         break;
     }
 
