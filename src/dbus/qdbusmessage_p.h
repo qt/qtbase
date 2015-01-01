@@ -72,10 +72,9 @@ public:
 
     DBusMessage *msg;
     DBusMessage *reply;
-    QDBusMessage::MessageType type;
-    int timeout;
     mutable QDBusMessage *localReply;
     QAtomicInt ref;
+    QDBusMessage::MessageType type;
 
     mutable uint delayedReply : 1;
     uint localMessage : 1;

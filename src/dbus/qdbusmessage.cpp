@@ -61,8 +61,8 @@ static inline const char *data(const QByteArray &arr)
 }
 
 QDBusMessagePrivate::QDBusMessagePrivate()
-    : msg(0), reply(0), type(QDBusMessage::InvalidMessage),
-      timeout(-1), localReply(0), ref(1), delayedReply(false), localMessage(false),
+    : msg(0), reply(0), localReply(0), ref(1), type(QDBusMessage::InvalidMessage),
+      delayedReply(false), localMessage(false),
       parametersValidated(false), autoStartService(true)
 {
 }
