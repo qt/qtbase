@@ -72,9 +72,17 @@ public slots:
         return QDBusServer::address();
     }
 
-    bool isConnected() const
+    void waitForConnected()
     {
-        return m_conn.isConnected();
+        if (callPendingReply.type() != QDBusMessage::InvalidMessage) {
+            sendErrorReply(QDBusError::NotSupported, "One call already pending!");
+            return;
+        }
+        if (m_conn.isConnected())
+            return;
+        // not connected, we'll reply later
+        setDelayedReply(true);
+        callPendingReply = message();
     }
 
     Q_NOREPLY void requestSync(const QString &seq)
@@ -146,10 +154,16 @@ private slots:
     {
         m_conn = con;
         con.registerObject(objectPath, this, QDBusConnection::ExportScriptableSignals);
+
+        if (callPendingReply.type() != QDBusMessage::InvalidMessage) {
+            QDBusConnection::sessionBus().send(callPendingReply.createReply());
+            callPendingReply = QDBusMessage();
+        }
     }
 
 private:
     QDBusConnection m_conn;
+    QDBusMessage callPendingReply;
     MyObject* obj;
 };
 
