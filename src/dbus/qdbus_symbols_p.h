@@ -64,14 +64,90 @@ void (*qdbus_resolve_conditionally(const char *name))(); // doesn't print a warn
 void (*qdbus_resolve_me(const char *name))(); // prints a warning
 bool qdbus_loadLibDBus();
 
+//# define TRACE_DBUS_CALLS
+# ifdef TRACE_DBUS_CALLS
+namespace QtDBusCallTracing {
+struct TraceDBusCall
+{
+    struct ThreadData {
+        TraceDBusCall *ptr;
+        int level;
+        bool finishedPrinted;
+    };
+
+    static inline ThreadData &td()
+    {
+        static thread_local ThreadData value;
+        return value;
+    }
+
+    ThreadData savedData;
+    QDebug s;
+    TraceDBusCall(QDebug s, const char *fname)
+        : savedData(td()), s(s.nospace() << QByteArray(savedData.level * 3, ' ').constData() << fname)
+    {
+        if (savedData.ptr && !savedData.finishedPrinted) {
+            savedData.ptr->s << " ...unfinished";
+            savedData.ptr->s = qDebug().nospace() << QByteArray(savedData.level * 3 - 3, ' ').constData();
+            savedData.finishedPrinted = true;
+        }
+        ThreadData &data = td();
+        data.ptr = this;
+        data.level++;
+        data.finishedPrinted = false;
+    }
+    ~TraceDBusCall()
+    {
+        td() = savedData;
+    }
+
+    void operator()() { s << ")"; }
+    template <typename... Args> void operator()(const char *arg1, Args &&... args)
+    {
+        s << '"' << arg1 << '"';
+        if (sizeof...(args))
+            s << ", ";
+        operator()(args...);
+    }
+    template <typename Arg1, typename... Args> void operator()(Arg1 &&arg1, Args &&... args)
+    {
+        s << arg1;
+        if (sizeof...(args))
+            s << ", ";
+        operator()(args...);
+    }
+};
+template <typename T> T operator,(TraceDBusCall &&tc, T &&ret)
+{
+    tc.s << " = " << ret;
+    return ret;
+}
+inline const char *operator,(TraceDBusCall &&tc, const char *ret)
+{
+    tc.s << " = \"" << ret << '"';
+    return ret;
+}
+
+template <typename T> struct TraceReturn { typedef TraceDBusCall Type; };
+template <>           struct TraceReturn<void> { typedef void Type; };
+}
+
+#  define DEBUGCALL(name, argcall)   QtDBusCallTracing::TraceDBusCall tc(qDebug(), name "("); tc argcall
+#  define DEBUGRET(ret)              (QtDBusCallTracing::TraceReturn<ret>::Type) tc ,
+# else
+#  define DEBUGCALL(name, argcall)
+#  define DEBUGRET(ret)
+# endif
+
 # define DEFINEFUNC(ret, func, args, argcall, funcret)          \
     typedef ret (* _q_PTR_##func) args;                         \
     static inline ret q_##func args                             \
     {                                                           \
         static _q_PTR_##func ptr;                               \
+        DEBUGCALL(#func, argcall);                              \
         if (!ptr)                                               \
             ptr = (_q_PTR_##func) qdbus_resolve_me(#func);      \
-        funcret ptr argcall;                                    \
+        funcret DEBUGRET(ret) ptr argcall;                      \
     }
 
 #else // defined QT_LINKED_LIBDBUS
