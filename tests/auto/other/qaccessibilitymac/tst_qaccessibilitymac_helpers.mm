@@ -80,11 +80,13 @@ bool trusted()
 {
     AXUIElementRef reference;
     NSString *_role;
+    NSString *_title;
     NSString *_description;
     NSString *_value;
     CGRect _rect;
 }
     @property (readonly) NSString *role;
+    @property (readonly) NSString *title;
     @property (readonly) NSString *description;
     @property (readonly) NSString *value;
     @property (readonly) CGRect rect;
@@ -93,6 +95,7 @@ bool trusted()
 @implementation TestAXObject
 
     @synthesize role = _role;
+    @synthesize title = _title;
     @synthesize description = _description;
     @synthesize value = _value;
     @synthesize rect = _rect;
@@ -102,6 +105,7 @@ bool trusted()
     if ( self = [super init] ) {
         reference = ref;
         AXUIElementCopyAttributeValue(ref, kAXRoleAttribute, (CFTypeRef*)&_role);
+        AXUIElementCopyAttributeValue(ref, kAXTitleAttribute, (CFTypeRef*)&_title);
         AXUIElementCopyAttributeValue(ref, kAXDescriptionAttribute, (CFTypeRef*)&_description);
         AXUIElementCopyAttributeValue(ref, kAXValueAttribute, (CFTypeRef*)&_value);
         AXValueRef sizeValue;
@@ -116,7 +120,7 @@ bool trusted()
 
 - (AXUIElementRef) ref { return reference; }
 - (void) print {
-    NSLog(@"Accessible Object role: '%@', description: '%@', value: '%@', rect: '%@'", self.role, self.description, self.value, NSStringFromRect(self.rect));
+    NSLog(@"Accessible Object role: '%@', title: '%@', description: '%@', value: '%@', rect: '%@'", self.role, self.title, self.description, self.value, NSStringFromRect(self.rect));
     NSLog(@"    Children: %ld", [[self childList] count]);
 }
 
@@ -282,7 +286,7 @@ bool testHierarchy(QWidget *w)
     TestAXObject *focusButton2 = [[TestAXObject alloc] initWithAXUIElementRef: focussedElement];
 
     EXPECT([[focusButton2 role] isEqualToString: NSAccessibilityButtonRole]);
-    EXPECT([[focusButton2 description] isEqualToString: @"Button 2"]);
+    EXPECT([[focusButton2 title] isEqualToString: @"Button 2"]);
 
 
     button1->setFocus();
@@ -292,7 +296,7 @@ bool testHierarchy(QWidget *w)
     EXPECT(focussedElement);
     TestAXObject *focusButton1 = [[TestAXObject alloc] initWithAXUIElementRef: focussedElement];
     EXPECT([[focusButton1 role] isEqualToString: NSAccessibilityButtonRole]);
-    EXPECT([[focusButton1 description] isEqualToString: @"I am a button"]);
+    EXPECT([[focusButton1 title] isEqualToString: @"I am a button"]);
 
     return true;
 }
