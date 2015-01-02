@@ -5,7 +5,7 @@ QT += testlib core-private gui-private widgets-private
 SOURCES += tst_qaccessibility.cpp
 HEADERS += accessiblewidgets.h
 
-unix:!mac:LIBS+=-lm
+unix:!mac:!haiku:LIBS+=-lm
 
 wince*: {
 	accessneeded.files = $$QT_BUILD_TREE\\plugins\\accessible\\*.dll

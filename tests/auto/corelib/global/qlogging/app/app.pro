@@ -12,5 +12,5 @@ SOURCES += main.cpp
 DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0
 DEFINES += QT_MESSAGELOGCONTEXT
 
-gcc:!mingw: QMAKE_LFLAGS += -rdynamic
+gcc:!mingw:!haiku: QMAKE_LFLAGS += -rdynamic
 

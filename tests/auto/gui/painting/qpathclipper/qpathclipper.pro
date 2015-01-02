@@ -8,4 +8,4 @@ QT += gui-private testlib
 
 requires(contains(QT_CONFIG,private_tests))
 
-unix:!mac:LIBS+=-lm
+unix:!mac:!haiku:LIBS+=-lm
