@@ -76,13 +76,13 @@ public:
     }
 
 #ifdef Q_QDOC
-    int load() const;
-    int loadAcquire() const;
-    void store(int newValue);
-    void storeRelease(int newValue);
+    T load() const;
+    T loadAcquire() const;
+    void store(T newValue);
+    void storeRelease(T newValue);
 
-    operator int() const;
-    QAtomicInteger &operator=(int);
+    operator T() const;
+    QAtomicInteger &operator=(T);
 
     static Q_DECL_CONSTEXPR bool isReferenceCountingNative();
     static Q_DECL_CONSTEXPR bool isReferenceCountingWaitFree();
@@ -93,56 +93,56 @@ public:
     static Q_DECL_CONSTEXPR bool isTestAndSetNative();
     static Q_DECL_CONSTEXPR bool isTestAndSetWaitFree();
 
-    bool testAndSetRelaxed(int expectedValue, int newValue);
-    bool testAndSetAcquire(int expectedValue, int newValue);
-    bool testAndSetRelease(int expectedValue, int newValue);
-    bool testAndSetOrdered(int expectedValue, int newValue);
+    bool testAndSetRelaxed(T expectedValue, T newValue);
+    bool testAndSetAcquire(T expectedValue, T newValue);
+    bool testAndSetRelease(T expectedValue, T newValue);
+    bool testAndSetOrdered(T expectedValue, T newValue);
 
     static Q_DECL_CONSTEXPR bool isFetchAndStoreNative();
     static Q_DECL_CONSTEXPR bool isFetchAndStoreWaitFree();
 
-    int fetchAndStoreRelaxed(int newValue);
-    int fetchAndStoreAcquire(int newValue);
-    int fetchAndStoreRelease(int newValue);
-    int fetchAndStoreOrdered(int newValue);
+    T fetchAndStoreRelaxed(T newValue);
+    T fetchAndStoreAcquire(T newValue);
+    T fetchAndStoreRelease(T newValue);
+    T fetchAndStoreOrdered(T newValue);
 
     static Q_DECL_CONSTEXPR bool isFetchAndAddNative();
     static Q_DECL_CONSTEXPR bool isFetchAndAddWaitFree();
 
-    int fetchAndAddRelaxed(int valueToAdd);
-    int fetchAndAddAcquire(int valueToAdd);
-    int fetchAndAddRelease(int valueToAdd);
-    int fetchAndAddOrdered(int valueToAdd);
+    T fetchAndAddRelaxed(T valueToAdd);
+    T fetchAndAddAcquire(T valueToAdd);
+    T fetchAndAddRelease(T valueToAdd);
+    T fetchAndAddOrdered(T valueToAdd);
 
-    int fetchAndSubRelaxed(int valueToSub);
-    int fetchAndSubAcquire(int valueToSub);
-    int fetchAndSubRelease(int valueToSub);
-    int fetchAndSubOrdered(int valueToSub);
+    T fetchAndSubRelaxed(T valueToSub);
+    T fetchAndSubAcquire(T valueToSub);
+    T fetchAndSubRelease(T valueToSub);
+    T fetchAndSubOrdered(T valueToSub);
 
-    int fetchAndOrRelaxed(int valueToOr);
-    int fetchAndOrAcquire(int valueToOr);
-    int fetchAndOrRelease(int valueToOr);
-    int fetchAndOrOrdered(int valueToOr);
+    T fetchAndOrRelaxed(T valueToOr);
+    T fetchAndOrAcquire(T valueToOr);
+    T fetchAndOrRelease(T valueToOr);
+    T fetchAndOrOrdered(T valueToOr);
 
-    int fetchAndAndRelaxed(int valueToAnd);
-    int fetchAndAndAcquire(int valueToAnd);
-    int fetchAndAndRelease(int valueToAnd);
-    int fetchAndAndOrdered(int valueToAnd);
+    T fetchAndAndRelaxed(T valueToAnd);
+    T fetchAndAndAcquire(T valueToAnd);
+    T fetchAndAndRelease(T valueToAnd);
+    T fetchAndAndOrdered(T valueToAnd);
 
-    int fetchAndXorRelaxed(int valueToXor);
-    int fetchAndXorAcquire(int valueToXor);
-    int fetchAndXorRelease(int valueToXor);
-    int fetchAndXorOrdered(int valueToXor);
+    T fetchAndXorRelaxed(T valueToXor);
+    T fetchAndXorAcquire(T valueToXor);
+    T fetchAndXorRelease(T valueToXor);
+    T fetchAndXorOrdered(T valueToXor);
 
-    int operator++();
-    int operator++(int);
-    int operator--();
-    int operator--(int);
-    int operator+=(int value);
-    int operator-=(int value);
-    int operator|=(int value);
-    int operator&=(int value);
-    int operator^=(int value);
+    T operator++();
+    T operator++(int);
+    T operator--();
+    T operator--(int);
+    T operator+=(T value);
+    T operator-=(T value);
+    T operator|=(T value);
+    T operator&=(T value);
+    T operator^=(T value);
 #endif
 };
 
