@@ -553,6 +553,7 @@
 #      define Q_COMPILER_UNRESTRICTED_UNIONS
 #    endif
 #    if __INTEL_COMPILER >= 1500
+#      define Q_COMPILER_CONSTEXPR
 #      define Q_COMPILER_ALIGNAS
 #      define Q_COMPILER_ALIGNOF
 #      define Q_COMPILER_INHERITING_CONSTRUCTORS
