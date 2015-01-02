@@ -39,20 +39,22 @@ public:
 
     // the following parameters are "const": they are not changed after the constructors
     // the parametersValidated member below controls whether they've been validated already
+    // (service is also used to store the destination of reply-type messages)
     QString service, path, interface, name, message, signature;
 
-    DBusMessage *msg;
-    DBusMessage *reply;
     mutable QDBusMessage *localReply;
     QAtomicInt ref;
     QDBusMessage::MessageType type;
+    uint32_t serial; // if type == MethodCall; the incoming serial; if type == Reply or Error, the serial we're replying to
 
     mutable uint delayedReply : 1;
-    uint localMessage : 1;
     mutable uint parametersValidated : 1;
+    uint localMessage : 1;
     uint autoStartService : 1;
     uint interactiveAuthorizationAllowed : 1;
+    uint isReplyRequired : 1;
 
+    void createResponseLink(const QDBusMessagePrivate *call);
     static void setParametersValidated(QDBusMessage &msg, bool enable)
     { msg.d_ptr->parametersValidated = enable; }
 
