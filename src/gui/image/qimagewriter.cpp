@@ -252,6 +252,8 @@ public:
     QString description;
     QString text;
     QByteArray subType;
+    bool optimizedWrite;
+    bool progressiveScanWrite;
 
     // error
     QImageWriter::ImageWriterError imageWriterError;
@@ -271,6 +273,8 @@ QImageWriterPrivate::QImageWriterPrivate(QImageWriter *qq)
     quality = -1;
     compression = 0;
     gamma = 0.0;
+    optimizedWrite = false;
+    progressiveScanWrite = false;
     imageWriterError = QImageWriter::UnknownError;
     errorString = QImageWriter::tr("Unknown error");
 
@@ -555,6 +559,63 @@ QList<QByteArray> QImageWriter::supportedSubTypes() const
 }
 
 /*!
+    \since 5.5
+
+    This is an image format-specific function which sets the \a optimize flags when
+    writing images. For image formats that do not support setting an \a optimize flag,
+    this value is ignored.
+
+    The default is false.
+
+    \sa optimizedWrite()
+*/
+void QImageWriter::setOptimizedWrite(bool optimize)
+{
+    d->optimizedWrite = optimize;
+}
+
+/*!
+    \since 5.5
+
+    Returns whether optimization has been turned on for writing the image.
+
+    \sa setOptimizedWrite()
+*/
+bool QImageWriter::optimizedWrite() const
+{
+    return d->optimizedWrite;
+}
+
+/*!
+    \since 5.5
+
+    This is an image format-specific function which turns on \a progressive scanning
+    when writing images. For image formats that do not support setting a \a progressive
+    scan flag, this value is ignored.
+
+    The default is false.
+
+    \sa progressiveScanWrite()
+*/
+
+void QImageWriter::setProgressiveScanWrite(bool progressive)
+{
+    d->progressiveScanWrite = progressive;
+}
+
+/*!
+    \since 5.5
+
+    Returns whether the image should be written as a progressive image.
+
+    \sa setProgressiveScanWrite()
+*/
+bool QImageWriter::progressiveScanWrite() const
+{
+    return d->progressiveScanWrite;
+}
+
+/*!
     \obsolete
 
     Use setText() instead.
@@ -657,6 +718,10 @@ bool QImageWriter::write(const QImage &image)
         d->handler->setOption(QImageIOHandler::Description, d->description);
     if (!d->subType.isEmpty() && d->handler->supportsOption(QImageIOHandler::SubType))
         d->handler->setOption(QImageIOHandler::SubType, d->subType);
+    if (d->handler->supportsOption(QImageIOHandler::OptimizedWrite))
+        d->handler->setOption(QImageIOHandler::OptimizedWrite, d->optimizedWrite);
+    if (d->handler->supportsOption(QImageIOHandler::ProgressiveScanWrite))
+        d->handler->setOption(QImageIOHandler::ProgressiveScanWrite, d->progressiveScanWrite);
 
     if (!d->handler->write(image))
         return false;

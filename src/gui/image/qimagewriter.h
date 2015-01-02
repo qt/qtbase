@@ -83,6 +83,12 @@ public:
     QByteArray subType() const;
     QList<QByteArray> supportedSubTypes() const;
 
+    void setOptimizedWrite(bool optimize);
+    bool optimizedWrite() const;
+
+    void setProgressiveScanWrite(bool progressive);
+    bool progressiveScanWrite() const;
+
     // Obsolete as of 4.1
     void setDescription(const QString &description);
     QString description() const;

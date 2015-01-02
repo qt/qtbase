@@ -153,6 +153,12 @@
     \value SupportedSubTypes Image formats that support different saving
     variants should return a list of supported variant names
     (QList<QByteArray>) in this option.
+
+    \value OptimizedWrite. A handler which supports this option
+    is expected to turn on optimization flags when writing.
+
+    \value ProgressiveScanWrite. A handler which supports
+    this option is expected to write the image as a progressive scan image.
 */
 
 /*!

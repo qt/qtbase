@@ -84,7 +84,9 @@ public:
         Animation,
         BackgroundColor,
         ImageFormat,
-        SupportedSubTypes
+        SupportedSubTypes,
+        OptimizedWrite,
+        ProgressiveScanWrite
     };
     virtual QVariant option(ImageOption option) const;
     virtual void setOption(ImageOption option, const QVariant &value);

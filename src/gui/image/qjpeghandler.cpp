@@ -538,7 +538,7 @@ static inline void set_text(const QImage &image, j_compress_ptr cinfo, const QSt
     }
 }
 
-static bool write_jpeg_image(const QImage &image, QIODevice *device, volatile int sourceQuality, const QString &description)
+static bool write_jpeg_image(const QImage &image, QIODevice *device, volatile int sourceQuality, const QString &description, bool optimize, bool progressive)
 {
     bool success = false;
     const QVector<QRgb> cmap = image.colorTable();
@@ -607,6 +607,11 @@ static bool write_jpeg_image(const QImage &image, QIODevice *device, volatile in
             cinfo.Y_density = (image.dotsPerMeterY()+50) / 100;
         }
 
+        if (optimize)
+            cinfo.optimize_coding = true;
+
+        if (progressive)
+            jpeg_simple_progression(&cinfo);
 
         int quality = sourceQuality >= 0 ? qMin(int(sourceQuality),100) : 75;
         jpeg_set_quality(&cinfo, quality, TRUE /* limit to baseline-JPEG values */);
@@ -729,7 +734,7 @@ public:
     };
 
     QJpegHandlerPrivate(QJpegHandler *qq)
-        : quality(75), exifOrientation(1), iod_src(0), state(Ready), q(qq)
+        : quality(75), exifOrientation(1), iod_src(0), state(Ready), optimize(false), progressive(false), q(qq)
     {}
 
     ~QJpegHandlerPrivate()
@@ -761,6 +766,9 @@ public:
     struct my_error_mgr err;
 
     State state;
+
+    bool optimize;
+    bool progressive;
 
     QJpegHandler *q;
 };
@@ -1066,7 +1074,7 @@ bool QJpegHandler::read(QImage *image)
 
 bool QJpegHandler::write(const QImage &image)
 {
-    return write_jpeg_image(image, device(), d->quality, d->description);
+    return write_jpeg_image(image, device(), d->quality, d->description, d->optimize, d->progressive);
 }
 
 bool QJpegHandler::supportsOption(ImageOption option) const
@@ -1077,7 +1085,9 @@ bool QJpegHandler::supportsOption(ImageOption option) const
         || option == ClipRect
         || option == Description
         || option == Size
-        || option == ImageFormat;
+        || option == ImageFormat
+        || option == OptimizedWrite
+        || option == ProgressiveScanWrite;
 }
 
 QVariant QJpegHandler::option(ImageOption option) const
@@ -1100,6 +1110,10 @@ QVariant QJpegHandler::option(ImageOption option) const
     case ImageFormat:
         d->readJpegHeader(device());
         return d->format;
+    case OptimizedWrite:
+        return d->optimize;
+    case ProgressiveScanWrite:
+        return d->progressive;
     default:
         break;
     }
@@ -1124,6 +1138,12 @@ void QJpegHandler::setOption(ImageOption option, const QVariant &value)
         break;
     case Description:
         d->description = value.toString();
+        break;
+    case OptimizedWrite:
+        d->optimize = value.toBool();
+        break;
+    case ProgressiveScanWrite:
+        d->progressive = value.toBool();
         break;
     default:
         break;
