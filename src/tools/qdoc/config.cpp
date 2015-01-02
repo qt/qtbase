@@ -1006,8 +1006,8 @@ void Config::load(Location location, const QString& fileName)
                             SKIP_CHAR();
                         }
                         if (!var.isEmpty()) {
-                            char *val = getenv(var.toLatin1().data());
-                            if (val == 0) {
+                            const QByteArray val = qgetenv(var.toLatin1().data());
+                            if (val.isNull()) {
                                 location.fatal(tr("Environment variable '%1' undefined").arg(var));
                             }
                             else {
@@ -1114,8 +1114,8 @@ void Config::load(Location location, const QString& fileName)
                             SKIP_CHAR();
                         }
                         if (!var.isEmpty()) {
-                            char *val = getenv(var.toLatin1().data());
-                            if (val == 0) {
+                            const QByteArray val = qgetenv(var.toLatin1().constData());
+                            if (val.isNull()) {
                                 location.fatal(tr("Environment variable '%1' undefined").arg(var));
                             }
                             else {
