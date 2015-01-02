@@ -726,7 +726,7 @@ static const short QXmlStreamReader_tokenTypeString_indices[] = {
 
 /*!
     \property  QXmlStreamReader::namespaceProcessing
-    the namespace-processing flag of the stream reader
+    The namespace-processing flag of the stream reader
 
     This property controls whether or not the stream reader processes
     namespaces. If enabled, the reader processes namespaces, otherwise
@@ -3315,7 +3315,7 @@ QTextCodec *QXmlStreamWriter::codec() const
 /*!
     \property  QXmlStreamWriter::autoFormatting
     \since 4.4
-    the auto-formatting flag of the stream writer
+    The auto-formatting flag of the stream writer
 
     This property controls whether or not the stream writer
     automatically formats the generated XML data. If enabled, the

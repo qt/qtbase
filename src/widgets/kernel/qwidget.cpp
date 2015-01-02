@@ -7235,7 +7235,7 @@ QByteArray QWidget::saveGeometry() const
 /*!
     \since 4.2
 
-    Restores the geometry and state top-level widgets stored in the
+    Restores the geometry and state of top-level widgets stored in the
     byte array \a geometry. Returns \c true on success; otherwise
     returns \c false.
 

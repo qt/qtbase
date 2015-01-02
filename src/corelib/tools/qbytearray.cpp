@@ -3945,7 +3945,7 @@ QByteArray QByteArray::fromRawData(const char *data, int size)
     copies of it exist that have not been modified.
 
     This function can be used instead of fromRawData() to re-use
-    existings QByteArray objects to save memory re-allocations.
+    existing QByteArray objects to save memory re-allocations.
 
     \sa fromRawData(), data(), constData()
 */
