@@ -173,6 +173,13 @@ bool QSharedMemoryPrivate::attach(QSharedMemory::AccessMode mode)
         return false;
     }
 
+#ifdef F_ADD_SEALS
+    // Make sure the shared memory region will not shrink
+    // otherwise someone could cause SIGBUS on us.
+    // (see http://lwn.net/Articles/594919/)
+    fcntl(hand, F_ADD_SEALS, F_SEAL_SHRINK);
+#endif
+
     return true;
 }
 
