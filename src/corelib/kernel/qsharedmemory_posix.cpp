@@ -85,7 +85,14 @@ bool QSharedMemoryPrivate::create(int size)
     const QByteArray shmName = QFile::encodeName(makePlatformSafeKey(key));
 
     int fd;
+#ifdef O_CLOEXEC
+    // First try with O_CLOEXEC flag, if that fails, fall back to normal flags
+    EINTR_LOOP(fd, ::shm_open(shmName.constData(), O_RDWR | O_CREAT | O_EXCL | O_CLOEXEC, 0600));
+    if (fd == -1)
+        EINTR_LOOP(fd, ::shm_open(shmName.constData(), O_RDWR | O_CREAT | O_EXCL, 0600));
+#else
     EINTR_LOOP(fd, ::shm_open(shmName.constData(), O_RDWR | O_CREAT | O_EXCL, 0600));
+#endif
     if (fd == -1) {
         const int errorNumber = errno;
         const QString function = QLatin1String("QSharedMemory::create");
@@ -122,7 +129,14 @@ bool QSharedMemoryPrivate::attach(QSharedMemory::AccessMode mode)
     const int oflag = (mode == QSharedMemory::ReadOnly ? O_RDONLY : O_RDWR);
     const mode_t omode = (mode == QSharedMemory::ReadOnly ? 0400 : 0600);
 
+#ifdef O_CLOEXEC
+    // First try with O_CLOEXEC flag, if that fails, fall back to normal flags
+    EINTR_LOOP(hand, ::shm_open(shmName.constData(), oflag | O_CLOEXEC, omode));
+    if (hand == -1)
+        EINTR_LOOP(hand, ::shm_open(shmName.constData(), oflag, omode));
+#else
     EINTR_LOOP(hand, ::shm_open(shmName.constData(), oflag, omode));
+#endif
     if (hand == -1) {
         const int errorNumber = errno;
         const QString function = QLatin1String("QSharedMemory::attach (shm_open)");
