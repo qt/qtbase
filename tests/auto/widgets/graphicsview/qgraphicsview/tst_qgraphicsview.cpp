@@ -164,6 +164,7 @@ private slots:
     void dragMode_scrollHand();
     void dragMode_rubberBand();
     void rubberBandSelectionMode();
+    void rubberBandExtendSelection();
     void rotated_rubberBand();
     void backgroundBrush();
     void foregroundBrush();
@@ -939,6 +940,61 @@ void tst_QGraphicsView::rubberBandSelectionMode()
     sendMouseMove(view.viewport(), view.viewport()->rect().bottomRight(),
                   Qt::LeftButton, Qt::LeftButton);
     QCOMPARE(scene.selectedItems(), QList<QGraphicsItem *>() << rect);
+}
+
+void tst_QGraphicsView::rubberBandExtendSelection()
+{
+   QWidget toplevel;
+   setFrameless(&toplevel);
+
+   QGraphicsScene scene(0, 0, 1000, 1000);
+
+   QGraphicsView view(&scene, &toplevel);
+   view.setDragMode(QGraphicsView::RubberBandDrag);
+   toplevel.show();
+
+   // Disable mouse tracking to prevent the window system from sending mouse
+   // move events to the viewport while we are synthesizing events. If
+   // QGraphicsView gets a mouse move event with no buttons down, it'll
+   // terminate the rubber band.
+   view.viewport()->setMouseTracking(false);
+
+   QGraphicsItem *item1 = scene.addRect(10, 10, 100, 100);
+   QGraphicsItem *item2 = scene.addRect(10, 120, 100, 100);
+   QGraphicsItem *item3 = scene.addRect(10, 230, 100, 100);
+
+   item1->setFlag(QGraphicsItem::ItemIsSelectable);
+   item2->setFlag(QGraphicsItem::ItemIsSelectable);
+   item3->setFlag(QGraphicsItem::ItemIsSelectable);
+
+   // select first item
+   item1->setSelected(true);
+   QCOMPARE(scene.selectedItems(), QList<QGraphicsItem *>() << item1);
+
+   // first rubberband without modifier key
+   sendMousePress(view.viewport(), view.mapFromScene(20, 115), Qt::LeftButton);
+   sendMouseMove(view.viewport(), view.mapFromScene(20, 300), Qt::LeftButton, Qt::LeftButton);
+   QVERIFY(!item1->isSelected());
+   QVERIFY(item2->isSelected());
+   QVERIFY(item3->isSelected());
+   sendMouseRelease(view.viewport(), QPoint(), Qt::LeftButton);
+
+   scene.clearSelection();
+
+   // select first item
+   item1->setSelected(true);
+   QVERIFY(item1->isSelected());
+
+   // now rubberband with modifier key
+   {
+      QPoint clickPoint = view.mapFromScene(20, 115);
+      QMouseEvent event(QEvent::MouseButtonPress, clickPoint, view.viewport()->mapToGlobal(clickPoint), Qt::LeftButton, 0, Qt::ControlModifier);
+      QApplication::sendEvent(view.viewport(), &event);
+   }
+   sendMouseMove(view.viewport(), view.mapFromScene(20, 300), Qt::LeftButton, Qt::LeftButton);
+   QVERIFY(item1->isSelected());
+   QVERIFY(item2->isSelected());
+   QVERIFY(item3->isSelected());
 }
 
 void tst_QGraphicsView::rotated_rubberBand()

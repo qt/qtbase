@@ -134,6 +134,7 @@ public:
     void updateRubberBand(const QMouseEvent *event);
     bool rubberBanding;
     Qt::ItemSelectionMode rubberBandSelectionMode;
+    Qt::ItemSelectionOperation rubberBandSelectionOperation;
 #endif
     int handScrollMotions;
 

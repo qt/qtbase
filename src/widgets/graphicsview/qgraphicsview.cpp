@@ -350,6 +350,7 @@ QGraphicsViewPrivate::QGraphicsViewPrivate()
 #ifndef QT_NO_RUBBERBAND
       rubberBanding(false),
       rubberBandSelectionMode(Qt::IntersectsItemShape),
+      rubberBandSelectionOperation(Qt::ReplaceSelection),
 #endif
       handScrollMotions(0), cacheMode(0),
 #ifndef QT_NO_CURSOR
@@ -735,6 +736,7 @@ void QGraphicsViewPrivate::updateRubberBand(const QMouseEvent *event)
     // if we didn't get the release events).
     if (!event->buttons()) {
         rubberBanding = false;
+        rubberBandSelectionOperation = Qt::ReplaceSelection;
         if (!rubberBandRect.isNull()) {
             rubberBandRect = QRect();
             emit q->rubberBandChanged(rubberBandRect, QPointF(), QPointF());
@@ -768,7 +770,7 @@ void QGraphicsViewPrivate::updateRubberBand(const QMouseEvent *event)
     selectionArea.addPolygon(q->mapToScene(rubberBandRect));
     selectionArea.closeSubpath();
     if (scene)
-        scene->setSelectionArea(selectionArea, rubberBandSelectionMode, q->viewportTransform());
+        scene->setSelectionArea(selectionArea, rubberBandSelectionOperation, rubberBandSelectionMode, q->viewportTransform());
 }
 #endif
 
@@ -3289,8 +3291,14 @@ void QGraphicsView::mousePressEvent(QMouseEvent *event)
             d->rubberBanding = true;
             d->rubberBandRect = QRect();
             if (d->scene) {
-                // Initiating a rubber band always clears the selection.
-                d->scene->clearSelection();
+                bool extendSelection = (event->modifiers() & Qt::ControlModifier) != 0;
+
+                if (extendSelection) {
+                    d->rubberBandSelectionOperation = Qt::AddToSelection;
+                } else {
+                    d->rubberBandSelectionOperation = Qt::ReplaceSelection;
+                    d->scene->clearSelection();
+                }
             }
         }
     } else
@@ -3347,6 +3355,7 @@ void QGraphicsView::mouseReleaseEvent(QMouseEvent *event)
                     d->updateAll();
             }
             d->rubberBanding = false;
+            d->rubberBandSelectionOperation = Qt::ReplaceSelection;
             if (!d->rubberBandRect.isNull()) {
                 d->rubberBandRect = QRect();
                 emit rubberBandChanged(d->rubberBandRect, QPointF(), QPointF());

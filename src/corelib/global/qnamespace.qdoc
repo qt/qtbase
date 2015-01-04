@@ -2234,6 +2234,21 @@
 */
 
 /*!
+    \enum Qt::ItemSelectionOperation
+
+    This enum is used in QGraphicsScene to specify what to do with currently selected
+    items when setting a selection area.
+
+    \value ReplaceSelection The currently selected items are replaced by items
+           in the selection area.
+
+    \value AddToSelection The items in the selection area are added to the currently
+           selected items.
+
+    \sa QGraphicsScene::setSelectionArea()
+*/
+
+/*!
     \enum Qt::FillRule
 
     Specifies which method should be used to fill the paths and polygons.

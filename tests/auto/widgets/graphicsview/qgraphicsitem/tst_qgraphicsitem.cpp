@@ -1799,6 +1799,12 @@ void tst_QGraphicsItem::selected_multi()
     // Ctrl-click on scene
     QTest::mouseClick(view.viewport(), Qt::LeftButton, Qt::ControlModifier, view.mapFromScene(0, 0));
     QTest::qWait(20);
+    QVERIFY(item1->isSelected());
+    QVERIFY(!item2->isSelected());
+
+    // Click on scene
+    QTest::mouseClick(view.viewport(), Qt::LeftButton, 0, view.mapFromScene(0, 0));
+    QTest::qWait(20);
     QVERIFY(!item1->isSelected());
     QVERIFY(!item2->isSelected());
 

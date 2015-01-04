@@ -73,6 +73,7 @@ Qt {
     Q_ENUMS(TextInteractionFlag)
     Q_FLAGS(TextInteractionFlags)
     Q_ENUMS(ItemSelectionMode)
+    Q_ENUMS(ItemSelectionOperation)
     Q_FLAGS(ItemFlags)
     Q_ENUMS(CheckState)
     Q_ENUMS(SortOrder CaseSensitivity)
@@ -1296,6 +1297,11 @@ public:
         IntersectsItemShape = 0x1,
         ContainsItemBoundingRect = 0x2,
         IntersectsItemBoundingRect = 0x3
+    };
+
+    enum ItemSelectionOperation {
+        ReplaceSelection,
+        AddToSelection
     };
 
     enum TransformationMode {

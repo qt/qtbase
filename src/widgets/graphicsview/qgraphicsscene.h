@@ -177,6 +177,8 @@ public:
     QPainterPath selectionArea() const;
     void setSelectionArea(const QPainterPath &path, const QTransform &deviceTransform);
     void setSelectionArea(const QPainterPath &path, Qt::ItemSelectionMode mode = Qt::IntersectsItemShape, const QTransform &deviceTransform = QTransform());
+    void setSelectionArea(const QPainterPath &path, Qt::ItemSelectionOperation selectionOperation, Qt::ItemSelectionMode mode = Qt::IntersectsItemShape, const QTransform &deviceTransform = QTransform());
+    // ### Qt6 merge the last 2 functions and add a default: Qt::ItemSelectionOperation selectionOperation = Qt::ReplaceSelection
 
     QGraphicsItemGroup *createItemGroup(const QList<QGraphicsItem *> &items);
     void destroyItemGroup(QGraphicsItemGroup *group);

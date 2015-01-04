@@ -1468,6 +1468,8 @@ void QGraphicsScenePrivate::mousePressEventHandler(QGraphicsSceneMouseEvent *mou
 
         QGraphicsView *view = mouseEvent->widget() ? qobject_cast<QGraphicsView *>(mouseEvent->widget()->parentWidget()) : 0;
         bool dontClearSelection = view && view->dragMode() == QGraphicsView::ScrollHandDrag;
+        bool extendSelection = (mouseEvent->modifiers() & Qt::ControlModifier) != 0;
+        dontClearSelection |= extendSelection;
         if (!dontClearSelection) {
             // Clear the selection if the originating view isn't in scroll
             // hand drag mode. The view will clear the selection if no drag
@@ -2263,6 +2265,28 @@ void QGraphicsScene::setSelectionArea(const QPainterPath &path, const QTransform
 void QGraphicsScene::setSelectionArea(const QPainterPath &path, Qt::ItemSelectionMode mode,
                                       const QTransform &deviceTransform)
 {
+    setSelectionArea(path, Qt::ReplaceSelection, mode, deviceTransform);
+}
+
+/*!
+    \overload
+    \since 5.5
+
+    Sets the selection area to \a path using \a mode to determine if items are
+    included in the selection area.
+
+    \a deviceTransform is the transformation that applies to the view, and needs to
+    be provided if the scene contains items that ignore transformations.
+
+    \a selectionOperation determines what to do with the currently selected items.
+
+    \sa clearSelection(), selectionArea()
+*/
+void QGraphicsScene::setSelectionArea(const QPainterPath &path,
+                                      Qt::ItemSelectionOperation selectionOperation,
+                                      Qt::ItemSelectionMode mode,
+                                      const QTransform &deviceTransform)
+{
     Q_D(QGraphicsScene);
 
     // Note: with boolean path operations, we can improve performance here
@@ -2287,10 +2311,16 @@ void QGraphicsScene::setSelectionArea(const QPainterPath &path, Qt::ItemSelectio
         }
     }
 
-    // Unselect all items outside path.
-    foreach (QGraphicsItem *item, unselectItems) {
-        item->setSelected(false);
-        changed = true;
+    switch (selectionOperation) {
+    case Qt::ReplaceSelection:
+        // Deselect all items outside path.
+        foreach (QGraphicsItem *item, unselectItems) {
+            item->setSelected(false);
+            changed = true;
+        }
+        break;
+    default:
+        break;
     }
 
     // Reenable emitting selectionChanged() for individual items.
