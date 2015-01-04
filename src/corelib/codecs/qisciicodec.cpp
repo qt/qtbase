@@ -212,6 +212,7 @@ QByteArray QIsciiCodec::convertFromUnicode(const QChar *uc, int len, ConverterSt
             if (iscii > 0x80) {
                 *ch++ = iscii;
             } else if (iscii) {
+                Q_ASSERT((2 * iscii) < (sizeof(uni_to_iscii_pairs) / sizeof(uni_to_iscii_pairs[0])));
                 const uchar *pair = uni_to_iscii_pairs + 2*iscii;
                 *ch++ = *pair++;
                 *ch++ = *pair++;
