@@ -667,7 +667,20 @@ QRect QAccessibleTextWidget::characterRect(int offset) const
 
     if (line.isValid()) {
         qreal x = line.cursorToX(relativeOffset);
-        QFontMetrics fm(textCursor().charFormat().font());
+
+        QTextCharFormat format;
+        QTextBlock::iterator iter = block.begin();
+        if (iter.atEnd())
+            format = block.charFormat();
+        else {
+            while (!iter.atEnd() && !iter.fragment().contains(offset))
+                ++iter;
+            if (iter.atEnd()) // newline should have same format as preceding character
+                --iter;
+            format = iter.fragment().charFormat();
+        }
+
+        QFontMetrics fm(format.font());
         const QString ch = text(offset, offset + 1);
         if (!ch.isEmpty()) {
             int w = fm.width(ch);
