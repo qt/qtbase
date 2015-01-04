@@ -45,6 +45,7 @@
 #include <private/qwidgettextcontrol_p.h>
 #include <qscrollbar.h>
 #include <qtextobject.h>
+#include <qmenu.h>
 
 #include <qabstracttextdocumentlayout.h>
 #include <qtextdocumentfragment.h>
@@ -150,6 +151,9 @@ private slots:
     void layoutAfterMultiLineRemove();
     void undoCommandRemovesAndReinsertsBlock();
     void taskQTBUG_43562_lineCountCrash();
+#ifndef QT_NO_CONTEXTMENU
+    void contextMenu();
+#endif
 
 private:
     void createSelection();
@@ -1686,6 +1690,42 @@ void tst_QPlainTextEdit::taskQTBUG_43562_lineCountCrash()
     QTest::keyClicks(ed, "nd some more");
     disconnect(ed->document(), SIGNAL(contentsChange(int, int, int)), 0, 0);
 }
+
+#ifndef QT_NO_CONTEXTMENU
+void tst_QPlainTextEdit::contextMenu()
+{
+    ed->appendHtml(QStringLiteral("Hello <a href='http://www.qt.io'>Qt</a>"));
+
+    QMenu *menu = ed->createStandardContextMenu();
+    QVERIFY(menu);
+    QAction *action = ed->findChild<QAction *>(QStringLiteral("link-copy"));
+    QVERIFY(!action);
+    delete menu;
+    QVERIFY(!ed->findChild<QAction *>(QStringLiteral("link-copy")));
+
+    ed->setTextInteractionFlags(Qt::TextBrowserInteraction);
+
+    menu = ed->createStandardContextMenu();
+    QVERIFY(menu);
+    action = ed->findChild<QAction *>(QStringLiteral("link-copy"));
+    QVERIFY(action);
+    QVERIFY(!action->isEnabled());
+    delete menu;
+    QVERIFY(!ed->findChild<QAction *>(QStringLiteral("link-copy")));
+
+    QTextCursor cursor = ed->textCursor();
+    cursor.setPosition(ed->toPlainText().length() - 2);
+    ed->setTextCursor(cursor);
+
+    menu = ed->createStandardContextMenu(ed->cursorRect().center());
+    QVERIFY(menu);
+    action = ed->findChild<QAction *>(QStringLiteral("link-copy"));
+    QVERIFY(action);
+    QVERIFY(action->isEnabled());
+    delete menu;
+    QVERIFY(!ed->findChild<QAction *>(QStringLiteral("link-copy")));
+}
+#endif // QT_NO_CONTEXTMENU
 
 QTEST_MAIN(tst_QPlainTextEdit)
 #include "tst_qplaintextedit.moc"

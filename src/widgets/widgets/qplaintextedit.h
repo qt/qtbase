@@ -149,6 +149,7 @@ public:
     virtual QVariant loadResource(int type, const QUrl &name);
 #ifndef QT_NO_CONTEXTMENU
     QMenu *createStandardContextMenu();
+    QMenu *createStandardContextMenu(const QPoint &position);
 #endif
 
     QTextCursor cursorForPosition(const QPoint &pos) const;

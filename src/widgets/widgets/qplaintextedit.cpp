@@ -2331,15 +2331,34 @@ void QPlainTextEdit::zoomInF(float range)
 
 #ifndef QT_NO_CONTEXTMENU
 /*!  This function creates the standard context menu which is shown
-  when the user clicks on the line edit with the right mouse
+  when the user clicks on the text edit with the right mouse
   button. It is called from the default contextMenuEvent() handler.
   The popup menu's ownership is transferred to the caller.
+
+  We recommend that you use the createStandardContextMenu(QPoint) version instead
+  which will enable the actions that are sensitive to where the user clicked.
 */
 
 QMenu *QPlainTextEdit::createStandardContextMenu()
 {
     Q_D(QPlainTextEdit);
     return d->control->createStandardContextMenu(QPointF(), this);
+}
+
+/*!
+  \since 5.5
+  This function creates the standard context menu which is shown
+  when the user clicks on the text edit with the right mouse
+  button. It is called from the default contextMenuEvent() handler
+  and it takes the \a position in document coordinates where the mouse click was.
+  This can enable actions that are sensitive to the position where the user clicked.
+  The popup menu's ownership is transferred to the caller.
+*/
+
+QMenu *QPlainTextEdit::createStandardContextMenu(const QPoint &position)
+{
+    Q_D(QPlainTextEdit);
+    return d->control->createStandardContextMenu(position, this);
 }
 #endif // QT_NO_CONTEXTMENU
 
