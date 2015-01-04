@@ -1768,7 +1768,8 @@ void QColorDialogPrivate::initWidgets()
     topLay->addWidget(cs);
 #else
     rightLay->addWidget(cs);
-    leftLay->addSpacing(cs->gl->margin());
+    if (leftLay)
+        leftLay->addSpacing(cs->gl->margin());
 #endif
 
     buttons = new QDialogButtonBox(q);
