@@ -149,6 +149,16 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \fn QCursor::QCursor(QCursor &&other)
+    \since 5.5
+
+    Move-constructs a cursor from \a other. After being moved from,
+    the only valid operations on \a other are destruction and
+    (move and copy) assignment. The effects of calling any other
+    member function on a moved-from instance are undefined.
+*/
+
+/*!
     \fn QCursor &QCursor::operator=(QCursor &&other)
 
     Move-assigns \a other to this QCursor instance.

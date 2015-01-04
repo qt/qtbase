@@ -80,6 +80,7 @@ public:
     ~QCursor();
     QCursor &operator=(const QCursor &cursor);
 #ifdef Q_COMPILER_RVALUE_REFS
+    QCursor(QCursor &&other) Q_DECL_NOTHROW : d(other.d) { other.d = Q_NULLPTR; }
     inline QCursor &operator=(QCursor &&other)
     { qSwap(d, other.d); return *this; }
 #endif
