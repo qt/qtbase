@@ -1655,9 +1655,7 @@ void QColorDialogPrivate::initWidgets()
     if (!smallDisplay) {
         leftLay = new QVBoxLayout;
         topLay->addLayout(leftLay);
-    }
 
-    if (!smallDisplay) {
         standard = new QColorWell(q, standardColorRows, colorColumns, QColorDialogOptions::standardColors());
         lblBasicColors = new QLabel(q);
 #ifndef QT_NO_SHORTCUT
