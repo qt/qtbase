@@ -60,6 +60,43 @@ bool trusted()
     return AXIsProcessTrusted();
 }
 
+struct AXErrorTag {
+    AXError err;
+    explicit AXErrorTag(AXError theErr) : err(theErr) {}
+};
+
+QDebug operator<<(QDebug dbg, AXErrorTag err)
+{
+    QDebugStateSaver saver(dbg);
+
+    const char *errDesc = 0;
+    const char *errName = 0;
+    switch (err.err) {
+#define HANDLE_ERR(error, desc) case kAXError##error: errName = "kAXError" #error; errDesc = desc; break
+        HANDLE_ERR(Success, "Success");
+        HANDLE_ERR(Failure, "A system error occurred, such as the failure to allocate an object.");
+        HANDLE_ERR(IllegalArgument, "An illegal argument was passed to the function.");
+        HANDLE_ERR(InvalidUIElement, "The AXUIElementRef passed to the function is invalid.");
+        HANDLE_ERR(InvalidUIElementObserver, "The AXObserverRef passed to the function is not a valid observer.");
+        HANDLE_ERR(CannotComplete, "The function cannot complete because messaging failed in some way or because the application with which the function is communicating is busy or unresponsive.");
+        HANDLE_ERR(AttributeUnsupported, "The attribute is not supported by the AXUIElementRef.");
+        HANDLE_ERR(ActionUnsupported, "The action is not supported by the AXUIElementRef.");
+        HANDLE_ERR(NotificationUnsupported, "The notification is not supported by the AXUIElementRef.");
+        HANDLE_ERR(NotImplemented, "Indicates that the function or method is not implemented (this can be returned if a process does not support the accessibility API).");
+        HANDLE_ERR(NotificationAlreadyRegistered, "This notification has already been registered for.");
+        HANDLE_ERR(NotificationNotRegistered, "Indicates that a notification is not registered yet.");
+        HANDLE_ERR(APIDisabled, "The accessibility API is disabled (as when, for example, the user deselects \"Enable access for assistive devices\" in Universal Access Preferences).");
+        HANDLE_ERR(NoValue, "The requested value or AXUIElementRef does not exist.");
+        HANDLE_ERR(ParameterizedAttributeUnsupported, "The parameterized attribute is not supported by the AXUIElementRef.");
+        HANDLE_ERR(NotEnoughPrecision, "Not enough precision.");
+        default: errName = "<unknown error>"; errDesc = "UNKNOWN ERROR"; break;
+    }
+#undef HANDLE_ERR
+
+    dbg.nospace() << "AXError(value=" << err.err << ", name=" << errName << ", description=\"" << errDesc << "\")";
+
+    return dbg;
+}
 
 #define EXPECT(cond) \
     if (!(cond)) { \
@@ -71,11 +108,6 @@ bool trusted()
 @interface TestAXObject : NSObject
 {
     AXUIElementRef reference;
-    NSString *_role;
-    NSString *_title;
-    NSString *_description;
-    NSString *_value;
-    CGRect _rect;
 }
     @property (readonly) NSString *role;
     @property (readonly) NSString *title;
@@ -86,26 +118,10 @@ bool trusted()
 
 @implementation TestAXObject
 
-    @synthesize role = _role;
-    @synthesize title = _title;
-    @synthesize description = _description;
-    @synthesize value = _value;
-    @synthesize rect = _rect;
-
 - (id) initWithAXUIElementRef: (AXUIElementRef) ref {
 
     if ( self = [super init] ) {
         reference = ref;
-        AXUIElementCopyAttributeValue(ref, kAXRoleAttribute, (CFTypeRef*)&_role);
-        AXUIElementCopyAttributeValue(ref, kAXTitleAttribute, (CFTypeRef*)&_title);
-        AXUIElementCopyAttributeValue(ref, kAXDescriptionAttribute, (CFTypeRef*)&_description);
-        AXUIElementCopyAttributeValue(ref, kAXValueAttribute, (CFTypeRef*)&_value);
-        AXValueRef sizeValue;
-        AXUIElementCopyAttributeValue(ref, kAXSizeAttribute, (CFTypeRef*)&sizeValue);
-        AXValueGetValue(sizeValue, kAXValueCGSizeType, &_rect.size);
-        AXValueRef positionValue;
-        AXUIElementCopyAttributeValue(ref, kAXPositionAttribute, (CFTypeRef*)&positionValue);
-        AXValueGetValue(positionValue, kAXValueCGPointType, &_rect.origin);
     }
     return self;
 }
@@ -140,24 +156,18 @@ bool trusted()
 
 - (AXUIElementRef) findDirectChildByRole: (CFStringRef) role
 {
-    AXUIElementRef result = nil;
+    TestAXObject *result = nil;
     NSArray *childList = [self childList];
     for (id child in childList) {
-        CFStringRef typeString;
-        AXUIElementCopyAttributeValue((AXUIElementRef)child, kAXRoleAttribute, (CFTypeRef*)&typeString);
-        if (CFStringCompare(typeString, role, 0) == 0) {
-            result = (AXUIElementRef) child;
+        TestAXObject *childObject = [[TestAXObject alloc] initWithAXUIElementRef:(AXUIElementRef)child];
+        if ([childObject.role isEqualToString:(NSString*)role]) {
+            result = childObject;
             break;
         }
     }
-    return result;
-}
-
-- (AXUIElementRef) parent
-{
-    AXUIElementRef p = nil;
-    AXUIElementCopyAttributeValue(reference, kAXParentAttribute, (CFTypeRef*)&p);
-    return p;
+    AXUIElementRef ret = [result ref];
+    [result release];
+    return ret;
 }
 
 + (TestAXObject *) getApplicationAXObject
@@ -167,6 +177,184 @@ bool trusted()
     TestAXObject *appObject = [[TestAXObject alloc] initWithAXUIElementRef: appRef];
     return appObject;
 }
+
++ (NSInteger)_numberFromValue:(CFTypeRef)value
+{
+    NSInteger number = -1;
+    if (!CFNumberGetValue((CFNumberRef)value, kCFNumberNSIntegerType, &number))
+    {
+        qDebug() << "Could not get NSInteger value out of CFNumberRef";
+    }
+    return number;
+}
+
++ (BOOL)_boolFromValue:(CFTypeRef)value
+{
+    return CFBooleanGetValue((CFBooleanRef)value);
+}
+
++ (NSRange)_rangeFromValue:(CFTypeRef)value
+{
+    CFRange cfRange;
+    NSRange range = NSMakeRange(0, 0);
+
+    if (!AXValueGetValue((AXValueRef)value, kAXValueCFRangeType, &cfRange))
+        qDebug() << "Could not get CFRange value out of AXValueRef";
+    else if (cfRange.location < 0 || cfRange.length < 0)
+        qDebug() << "Cannot convert CFRange with negative location or length to NSRange";
+    else if (static_cast<uintmax_t>(cfRange.location) > NSUIntegerMax || static_cast<uintmax_t>(cfRange.length) > NSUIntegerMax)
+        qDebug() << "Cannot convert CFRange with location or length out of bounds for NSUInteger";
+    else
+    {
+        range.length = static_cast<NSUInteger>(cfRange.length);
+        range.location = static_cast<NSUInteger>(cfRange.location);
+    }
+
+    return range;
+}
+
++ (NSRect)_rectFromValue:(CFTypeRef)value
+{
+    NSRect rect = NSMakeRect(0, 0, 0, 0);
+    if (!AXValueGetValue((AXValueRef)value, kAXValueCGRectType, reinterpret_cast<CGRect*>(&rect)))
+    {
+        qDebug() << "Could not get CGRect value out of AXValueRef";
+    }
+    return rect;
+}
+
++ (NSPoint)_pointFromValue:(CFTypeRef)value
+{
+    NSPoint point = NSMakePoint(0, 0);
+    if (!AXValueGetValue((AXValueRef)value, kAXValueCGPointType, reinterpret_cast<CGPoint*>(&point)))
+    {
+        qDebug() << "Could not get CGPoint value out of AXValueRef";
+    }
+    return point;
+}
+
++ (NSSize)_sizeFromValue:(CFTypeRef)value
+{
+    NSSize size = NSMakeSize(0, 0);
+    if (!AXValueGetValue((AXValueRef)value, kAXValueCGSizeType, reinterpret_cast<CGSize*>(&size)))
+    {
+        qDebug() << "Could not get CGSize value out of AXValueRef";
+    }
+    return size;
+}
+
+- (CFTypeRef)_attributeValue:(CFStringRef)attribute
+{
+    CFTypeRef value = NULL;
+    AXError err;
+
+    if (kAXErrorSuccess != (err = AXUIElementCopyAttributeValue(reference, attribute, &value)))
+    {
+        qDebug() << "AXUIElementCopyAttributeValue(" << QString::fromCFString(attribute) << ") returned error = " << AXErrorTag(err);
+    }
+    return value;
+}
+
+- (NSString*)_stringAttributeValue:(CFStringRef)attribute
+{
+    return (NSString*)[self _attributeValue:attribute];
+}
+
+- (NSInteger)_numberAttributeValue:(CFStringRef)attribute
+{
+    return [[self class] _numberFromValue:[self _attributeValue:attribute]];
+}
+
+- (BOOL)_boolAttributeValue:(CFStringRef)attribute
+{
+    return [[self class] _boolFromValue:[self _attributeValue:attribute]];
+}
+
+- (NSRange)_rangeAttributeValue:(CFStringRef)attribute
+{
+    return [[self class] _rangeFromValue:[self _attributeValue:attribute]];
+}
+
+- (NSRect)_rectAttributeValue:(CFStringRef)attribute
+{
+    return [[self class] _rectFromValue:[self _attributeValue:attribute]];
+}
+
+- (NSPoint)_pointAttributeValue:(CFStringRef)attribute
+{
+    return [[self class] _pointFromValue:[self _attributeValue:attribute]];
+}
+
+- (NSSize)_sizeAttributeValue:(CFStringRef)attribute
+{
+    return [[self class] _sizeFromValue:[self _attributeValue:attribute]];
+}
+
+- (CFTypeRef)_attributeValue:(CFStringRef)attribute forParameter:(CFTypeRef)parameter
+{
+    CFTypeRef value = NULL;
+    AXError err;
+
+    if (kAXErrorSuccess != (err = AXUIElementCopyParameterizedAttributeValue(reference, attribute, parameter, &value)))
+    {
+        CFStringRef description = CFCopyDescription(parameter);
+        qDebug() << "AXUIElementCopyParameterizedAttributeValue(" << QString::fromCFString(attribute) << ", parameter=" << QString::fromCFString(description) << ") returned error = " << AXErrorTag(err);
+        CFRelease(description);
+    }
+    return value;
+}
+
+- (CFTypeRef)_attributeValue:(CFStringRef)attribute forRange:(NSRange)aRange
+{
+    CFRange cfRange = CFRangeMake(aRange.location, aRange.length);
+    AXValueRef range = AXValueCreate(kAXValueCFRangeType, &cfRange);
+    CFTypeRef value =  [self _attributeValue:attribute forParameter:range];
+    CFRelease(range);
+    return value;
+}
+
+- (CFTypeRef)_attributeValue:(CFStringRef)attribute forNumber:(NSInteger)aNumber
+{
+    CFNumberRef number = CFNumberCreate(NULL, kCFNumberNSIntegerType, &aNumber);
+    CFTypeRef value = [self _attributeValue:attribute forParameter:number];
+    CFRelease(number);
+    return value;
+}
+
+- (CFTypeRef)_attributeValue:(CFStringRef)attribute forPoint:(CGPoint)aPoint
+{
+    AXValueRef point = AXValueCreate(kAXValueCGPointType, &aPoint);
+    CFTypeRef value = [self _attributeValue:attribute forParameter:point];
+    CFRelease(point);
+    return value;
+}
+
+- (NSString*)           role { return [self _stringAttributeValue:kAXRoleAttribute]; }
+- (NSString*)           title { return [self _stringAttributeValue:kAXTitleAttribute]; }
+- (NSString*)           description { return [self _stringAttributeValue:kAXDescriptionAttribute]; }
+- (NSString*)           value { return [self _stringAttributeValue:kAXValueAttribute]; }
+- (NSRect)              rect
+{
+    NSRect rect;
+    rect.origin = [self _pointAttributeValue:kAXPositionAttribute];
+    rect.size = [self _sizeAttributeValue:kAXSizeAttribute];
+    return rect;
+}
+- (AXUIElementRef)      parent { return (AXUIElementRef)[self _attributeValue:kAXParentAttribute]; }
+- (BOOL)                focused { return [self _boolAttributeValue:kAXFocusedAttribute]; }
+- (NSInteger)           numberOfCharacters { return [self _numberAttributeValue:kAXNumberOfCharactersAttribute]; }
+- (NSString*)           selectedText { return [self _stringAttributeValue:kAXSelectedTextAttribute]; }
+- (NSRange)             selectedTextRange { return [self _rangeAttributeValue:kAXSelectedTextRangeAttribute]; }
+- (NSRange)             visibleCharacterRange  { return [self _rangeAttributeValue:kAXVisibleCharacterRangeAttribute]; }
+- (NSString*)           help { return [self _stringAttributeValue:kAXHelpAttribute]; }
+- (NSInteger)           insertionPointLineNumber { return [self _numberAttributeValue:kAXInsertionPointLineNumberAttribute]; }
+
+- (NSInteger)           lineForIndex:(NSInteger)index { return [[self class] _numberFromValue:[self _attributeValue:kAXLineForIndexParameterizedAttribute forNumber:index]]; }
+- (NSRange)             rangeForLine:(NSInteger)line { return [[self class] _rangeFromValue:[self _attributeValue:kAXRangeForLineParameterizedAttribute forNumber:line]]; }
+- (NSString*)           stringForRange:(NSRange)range { return (NSString*)[self _attributeValue:kAXStringForRangeParameterizedAttribute forRange:range]; }
+- (NSAttributedString*) attributedStringForRange:(NSRange)range { return (NSAttributedString*)[self _attributeValue:kAXAttributedStringForRangeParameterizedAttribute forRange:range]; }
+- (NSRect)              boundsForRange:(NSRange)range { return [[self class] _rectFromValue:[self _attributeValue:kAXBoundsForRangeParameterizedAttribute forRange:range]]; }
+- (NSRange)             styleRangeForIndex:(NSInteger)index { return [[self class] _rangeFromValue:[self _attributeValue:kAXStyleRangeForIndexParameterizedAttribute forNumber:index]]; }
 
 @end
 
@@ -225,9 +413,7 @@ bool testLineEdit()
     // height of window includes title bar
     EXPECT([window rect].size.height >= 400);
 
-    NSString *windowTitle;
-    AXUIElementCopyAttributeValue(windowRef, kAXTitleAttribute, (CFTypeRef*)&windowTitle);
-    EXPECT([windowTitle isEqualToString:@"Test window"]);
+    EXPECT([window.title isEqualToString:@"Test window"]);
 
     // children of window:
     AXUIElementRef lineEdit = [window findDirectChildByRole: kAXTextFieldRole];
