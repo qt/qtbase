@@ -357,7 +357,7 @@ static void convertLineOffset(QAccessibleTextInterface *text, int &line, int &of
 //                    NSAccessibilityRangeForIndexParameterizedAttribute,
                     NSAccessibilityBoundsForRangeParameterizedAttribute,
 //                    NSAccessibilityRTFForRangeParameterizedAttribute,
-//                    NSAccessibilityStyleRangeForIndexParameterizedAttribute,
+                    NSAccessibilityStyleRangeForIndexParameterizedAttribute,
                     NSAccessibilityAttributedStringForRangeParameterizedAttribute,
                     nil
                 ];
@@ -424,6 +424,11 @@ static void convertLineOffset(QAccessibleTextInterface *text, int &line, int &of
         QPoint point(static_cast<int>(nsPoint.x), static_cast<int>(qt_mac_flipYCoordinate(nsPoint.y)));
         int offset = iface->textInterface()->offsetAtPoint(point);
         return [NSValue valueWithRange:NSMakeRange(static_cast<NSUInteger>(offset), 1)];
+    } else if ([attribute isEqualToString: NSAccessibilityStyleRangeForIndexParameterizedAttribute]) {
+        int start = 0;
+        int end = 0;
+        iface->textInterface()->attributes([parameter intValue], &start, &end);
+        return [NSValue valueWithRange:NSMakeRange(static_cast<NSUInteger>(start), static_cast<NSUInteger>(end - start))];
     }
     return nil;
 }
