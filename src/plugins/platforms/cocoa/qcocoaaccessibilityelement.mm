@@ -419,6 +419,11 @@ static void convertLineOffset(QAccessibleTextInterface *text, int &line, int &of
         NSRange range = [parameter rangeValue];
         QString text = iface->textInterface()->text(range.location, range.location + range.length);
         return [[NSAttributedString alloc] initWithString: text.toNSString()];
+    } else if ([attribute isEqualToString: NSAccessibilityRangeForPositionParameterizedAttribute]) {
+        NSPoint nsPoint = [parameter pointValue];
+        QPoint point(static_cast<int>(nsPoint.x), static_cast<int>(qt_mac_flipYCoordinate(nsPoint.y)));
+        int offset = iface->textInterface()->offsetAtPoint(point);
+        return [NSValue valueWithRange:NSMakeRange(static_cast<NSUInteger>(offset), 1)];
     }
     return nil;
 }
