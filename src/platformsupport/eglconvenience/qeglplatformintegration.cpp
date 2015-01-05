@@ -142,6 +142,8 @@ QPlatformFontDatabase *QEGLPlatformIntegration::fontDatabase() const
 QPlatformBackingStore *QEGLPlatformIntegration::createPlatformBackingStore(QWindow *window) const
 {
     QOpenGLCompositorBackingStore *bs = new QOpenGLCompositorBackingStore(window);
+    if (!window->handle())
+        window->create();
     static_cast<QEGLPlatformWindow *>(window->handle())->setBackingStore(bs);
     return bs;
 }
