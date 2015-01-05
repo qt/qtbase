@@ -258,7 +258,7 @@ static void convertLineOffset(QAccessibleTextInterface *text, int &line, int &of
     } else if ([attribute isEqualToString:NSAccessibilitySubroleAttribute]) {
         return QCocoaAccessible::macSubrole(iface);
     } else if ([attribute isEqualToString:NSAccessibilityRoleDescriptionAttribute]) {
-        return NSAccessibilityRoleDescription(role, nil);
+        return NSAccessibilityRoleDescription(role, [self accessibilityAttributeValue:NSAccessibilitySubroleAttribute]);
     } else if ([attribute isEqualToString:NSAccessibilityChildrenAttribute]) {
         return QCocoaAccessible::unignoredChildren(iface);
     } else if ([attribute isEqualToString:NSAccessibilityFocusedAttribute]) {
