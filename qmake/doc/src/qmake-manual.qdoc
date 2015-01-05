@@ -122,10 +122,10 @@
     configuration options to fine tune the build process. For more information,
     see \l{Building Common Project Types}.
 
-    You can use the \l{external: Qt Creator Manual}{Qt Creator} new project
-    wizard to create the project file. You choose the project template, and Qt
-    Creator creates a project file with default values that enable you to build
-    and run the project. You can modify the project file to suit your purposes.
+    You can use the \l{Qt Creator: Creating Projects}{Qt Creator new project wizard} to create the project file.
+    You choose the project template, and Qt Creator creates a project file with
+    default values that enable you to build and run the project. You can modify
+    the project file to suit your purposes.
 
     You can also use qmake to generate project files. For a full description of
     qmake command line options, see \l{Running qmake}.
