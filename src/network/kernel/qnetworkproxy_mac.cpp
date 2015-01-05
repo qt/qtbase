@@ -230,6 +230,10 @@ QList<QNetworkProxy> macQueryInternal(const QNetworkProxyQuery &query)
             if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_5) {
                 QCFType<CFDataRef> pacData;
                 QCFType<CFURLRef> pacUrl = CFURLCreateWithString(kCFAllocatorDefault, cfPacLocation, NULL);
+                if (!pacUrl) {
+                    qWarning("Invalid PAC URL \"%s\"", qPrintable(QCFString::toQString(cfPacLocation)));
+                    return result;
+                }
                 SInt32 errorCode;
                 if (!CFURLCreateDataAndPropertiesFromResource(kCFAllocatorDefault, pacUrl, &pacData, NULL, NULL, &errorCode)) {
                     QString pacLocation = QCFString::toQString(cfPacLocation);
