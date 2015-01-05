@@ -2101,6 +2101,11 @@ bool Configure::checkAngleAvailability(QString *errorMessage /* = 0 */) const
     // it is also  present in MinGW.
     const QString directXSdk = Environment::detectDirectXSdk();
     const Compiler compiler = Environment::compilerFromQMakeSpec(dictionary[QStringLiteral("QMAKESPEC")]);
+    if (compiler >= CC_NET2003 && compiler <= CC_NET2008) {
+        if (errorMessage)
+            *errorMessage = QStringLiteral("ANGLE is no longer supported for this compiler.");
+        return false;
+    }
     if (compiler < CC_NET2012 && directXSdk.isEmpty()) {
         if (errorMessage)
             *errorMessage = QStringLiteral("There is no Direct X SDK installed or the environment variable \"DXSDK_DIR\" is not set.");
