@@ -515,8 +515,9 @@ QImage QWindowsFontEngineDirectWrite::imageForGlyph(glyph_t t,
                                              const QTransform &xform)
 {
     glyph_metrics_t metrics = QFontEngine::boundingBox(t, xform);
-    int width = (metrics.width + margin * 2 + 4).ceil().toInt() ;
-    int height = (metrics.height + margin * 2 + 4).ceil().toInt();
+    // This needs to be kept in sync with alphaMapBoundingBox
+    int width = (metrics.width + margin * 2).ceil().toInt() ;
+    int height = (metrics.height + margin * 2).ceil().toInt();
 
     UINT16 glyphIndex = t;
     FLOAT glyphAdvance = metrics.xoff.toReal();
@@ -697,6 +698,18 @@ QString QWindowsFontEngineDirectWrite::fontNameSubstitute(const QString &familyN
     static const char keyC[] = "HKEY_LOCAL_MACHINE\\Software\\Microsoft\\Windows NT\\CurrentVersion\\"
                                "FontSubstitutes";
     return QSettings(QLatin1String(keyC), QSettings::NativeFormat).value(familyName, familyName).toString();
+}
+
+glyph_metrics_t QWindowsFontEngineDirectWrite::alphaMapBoundingBox(glyph_t glyph, QFixed pos, const QTransform &matrix, GlyphFormat format)
+{
+    Q_UNUSED(pos);
+    int margin = 0;
+    if (format == QFontEngine::Format_A32 || format == QFontEngine::Format_ARGB)
+        margin = glyphMargin(QFontEngine::Format_A32);
+    glyph_metrics_t gm = QFontEngine::boundingBox(glyph, matrix);
+    gm.width += margin * 2;
+    gm.height += margin * 2;
+    return gm;
 }
 
 QT_END_NAMESPACE
