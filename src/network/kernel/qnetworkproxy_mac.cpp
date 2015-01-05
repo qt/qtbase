@@ -221,7 +221,11 @@ QList<QNetworkProxy> macQueryInternal(const QNetworkProxyQuery &query)
         int enabled;
         if (CFNumberGetValue(pacEnabled, kCFNumberIntType, &enabled) && enabled) {
             // PAC is enabled
-            CFStringRef cfPacLocation = (CFStringRef)CFDictionaryGetValue(dict, kSCPropNetProxiesProxyAutoConfigURLString);
+            // kSCPropNetProxiesProxyAutoConfigURLString returns the URL string
+            // as entered in the system proxy configuration dialog
+            CFStringRef pacLocationSetting = (CFStringRef)CFDictionaryGetValue(dict, kSCPropNetProxiesProxyAutoConfigURLString);
+            QCFType<CFStringRef> cfPacLocation = CFURLCreateStringByAddingPercentEscapes(kCFAllocatorDefault, pacLocationSetting, NULL, NULL,
+                kCFStringEncodingUTF8);
 
             if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_5) {
                 QCFType<CFDataRef> pacData;
