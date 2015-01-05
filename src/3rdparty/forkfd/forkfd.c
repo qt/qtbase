@@ -404,7 +404,7 @@ int forkfd(int flags, pid_t *ppid)
 #endif
     {
         /* try a pipe */
-        if (create_pipe(sync_pipe, O_CLOEXEC) == -1) {
+        if (create_pipe(sync_pipe, FFD_CLOEXEC) == -1) {
             /* failed both at eventfd and pipe; fail and pass errno */
             goto err_close;
         }

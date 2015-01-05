@@ -44,8 +44,8 @@
 extern "C" {
 #endif
 
-#define FFD_CLOEXEC  O_CLOEXEC
-#define FFD_NONBLOCK O_NONBLOCK
+#define FFD_CLOEXEC  1
+#define FFD_NONBLOCK 2
 
 #define FFD_CHILD_PROCESS (-2)
 
