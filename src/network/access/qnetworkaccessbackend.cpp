@@ -129,12 +129,6 @@ QNonContiguousByteDevice* QNetworkAccessBackend::createUploadByteDevice()
         return 0;
     }
 
-    bool bufferDisallowed =
-            reply->request.attribute(QNetworkRequest::DoNotBufferUploadDataAttribute,
-                          QVariant(false)) == QVariant(true);
-    if (bufferDisallowed)
-        uploadByteDevice->disableReset();
-
     // We want signal emissions only for normal asynchronous uploads
     if (!isSynchronous())
         connect(uploadByteDevice.data(), SIGNAL(readProgress(qint64,qint64)), this, SLOT(emitReplyUploadProgress(qint64,qint64)));

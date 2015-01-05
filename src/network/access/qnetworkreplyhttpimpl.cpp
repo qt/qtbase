@@ -856,8 +856,6 @@ void QNetworkReplyHttpImplPrivate::postRequest()
         if (uploadByteDevice) {
             QNonContiguousByteDeviceThreadForwardImpl *forwardUploadDevice =
                     new QNonContiguousByteDeviceThreadForwardImpl(uploadByteDevice->atEnd(), uploadByteDevice->size());
-            if (uploadByteDevice->isResetDisabled())
-                forwardUploadDevice->disableReset();
             forwardUploadDevice->setParent(delegate); // needed to make sure it is moved on moveToThread()
             delegate->httpRequest.setUploadByteDevice(forwardUploadDevice);
 
@@ -1895,12 +1893,6 @@ QNonContiguousByteDevice* QNetworkReplyHttpImplPrivate::createUploadByteDevice()
     } else {
         return 0;
     }
-
-    bool bufferDisallowed =
-            request.attribute(QNetworkRequest::DoNotBufferUploadDataAttribute,
-                          QVariant(false)) == QVariant(true);
-    if (bufferDisallowed)
-        uploadByteDevice->disableReset();
 
     // We want signal emissions only for normal asynchronous uploads
     if (!synchronous)

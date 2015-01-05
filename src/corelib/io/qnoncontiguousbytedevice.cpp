@@ -94,17 +94,7 @@ QT_BEGIN_NAMESPACE
     Moves the internal read pointer back to the beginning.
     Returns \c false if this was not possible.
 
-    \sa atEnd(), disableReset()
-
-    \internal
-*/
-/*!
-    \fn void QNonContiguousByteDevice::disableReset()
-
-    Disable the reset() call, e.g. it will always
-    do nothing and return false.
-
-    \sa reset()
+    \sa atEnd()
 
     \internal
 */
@@ -131,17 +121,12 @@ QT_BEGIN_NAMESPACE
     \internal
 */
 
-QNonContiguousByteDevice::QNonContiguousByteDevice() : QObject((QObject*)0), resetDisabled(false)
+QNonContiguousByteDevice::QNonContiguousByteDevice() : QObject((QObject*)0)
 {
 }
 
 QNonContiguousByteDevice::~QNonContiguousByteDevice()
 {
-}
-
-void QNonContiguousByteDevice::disableReset()
-{
-    resetDisabled = true;
 }
 
 // FIXME we should scrap this whole implementation and instead change the ByteArrayImpl to be able to cope with sub-arrays?
@@ -176,8 +161,6 @@ bool QNonContiguousByteDeviceBufferImpl::atEnd()
 
 bool QNonContiguousByteDeviceBufferImpl::reset()
 {
-    if (resetDisabled)
-        return false;
     return arrayImpl->reset();
 }
 
@@ -224,9 +207,6 @@ bool QNonContiguousByteDeviceByteArrayImpl::atEnd()
 
 bool QNonContiguousByteDeviceByteArrayImpl::reset()
 {
-    if (resetDisabled)
-        return false;
-
     currentPosition = 0;
     return true;
 }
@@ -275,9 +255,6 @@ bool QNonContiguousByteDeviceRingBufferImpl::atEnd()
 
 bool QNonContiguousByteDeviceRingBufferImpl::reset()
 {
-    if (resetDisabled)
-        return false;
-
     currentPosition = 0;
     return true;
 }
@@ -378,8 +355,6 @@ bool QNonContiguousByteDeviceIoDeviceImpl::atEnd()
 
 bool QNonContiguousByteDeviceIoDeviceImpl::reset()
 {
-    if (resetDisabled)
-        return false;
     bool reset = (initialPosition == 0) ? device->reset() : device->seek(initialPosition);
     if (reset) {
         eof = false; // assume eof is false, it will be true after a read has been attempted

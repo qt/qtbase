@@ -62,8 +62,6 @@ public:
     virtual bool advanceReadPointer(qint64 amount) = 0;
     virtual bool atEnd() = 0;
     virtual bool reset() = 0;
-    void disableReset();
-    bool isResetDisabled() { return resetDisabled; }
     virtual qint64 size() = 0;
 
     virtual ~QNonContiguousByteDevice();
@@ -72,7 +70,6 @@ protected:
     QNonContiguousByteDevice();
 
 
-    bool resetDisabled;
 Q_SIGNALS:
     void readyRead();
     void readProgress(qint64 current, qint64 total);
