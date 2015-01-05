@@ -240,7 +240,10 @@ QList<QNetworkProxy> macQueryInternal(const QNetworkProxyQuery &query)
                     qWarning("Unable to get the PAC script at \"%s\" (%s)", qPrintable(pacLocation), cfurlErrorDescription(errorCode));
                     return result;
                 }
-
+                if (!pacData) {
+                    qWarning("\"%s\" returned an empty PAC script", qPrintable(QCFString::toQString(cfPacLocation)));
+                    return result;
+                }
                 QCFType<CFStringRef> pacScript = CFStringCreateFromExternalRepresentation(kCFAllocatorDefault, pacData, kCFStringEncodingISOLatin1);
                 if (!pacScript) {
                     // This should never happen, but the documentation says it may return NULL if there was a problem creating the object.
