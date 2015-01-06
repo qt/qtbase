@@ -69,6 +69,7 @@
 #include <QtWidgets/QGraphicsView>
 #include <QtWidgets/QGraphicsProxyWidget>
 #include <QtGui/qwindow.h>
+#include <qtimer.h>
 
 #include "../../../qtest-config.h"
 
@@ -76,7 +77,7 @@
 #include "tst_qwidget_mac_helpers.h"  // Abstract the ObjC stuff out so not everyone must run an ObjC++ compile.
 #endif
 
-#include <QtTest/QtTest>
+#include <QtTest/QTest>
 
 #ifdef Q_OS_WIN
 #  include <QtCore/qt_windows.h>
