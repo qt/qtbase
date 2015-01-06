@@ -730,6 +730,7 @@ void tst_QPainter::initFrom()
     pal.setColor(QPalette::Foreground, QColor(255, 0, 0));
     pal.setBrush(QPalette::Background, QColor(0, 255, 0));
     widget->setPalette(pal);
+    widget->show();
 
     QFont font = widget->font();
     font.setPointSize(26);
