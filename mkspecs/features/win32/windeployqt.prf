@@ -15,5 +15,6 @@ build_pass {
     QMAKE_DISTCLEAN += $$WINDEPLOYQT_OUTPUT
 } else {
     windeployqt.CONFIG += recursive
+    windeployqt_clean.CONFIG += recursive
 }
-QMAKE_EXTRA_TARGETS += windeployqt
+QMAKE_EXTRA_TARGETS += windeployqt windeployqt_clean
