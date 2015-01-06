@@ -1307,21 +1307,7 @@ void QWindowsWindow::setGeometryDp(const QRect &rectIn)
         const QMargins margins = frameMarginsDp();
         rect.moveTopLeft(rect.topLeft() + QPoint(margins.left(), margins.top()));
     }
-    const QSize oldSize = m_data.geometry.size();
     m_data.geometry = rect;
-    const QSize newSize = rect.size();
-    // Check on hint.
-    if (newSize != oldSize) {
-        const QWindowsGeometryHint hint(window(), m_data.customMargins);
-        if (!hint.validSize(newSize)) {
-            qWarning("%s: Attempt to set a size (%dx%d) violating the constraints"
-                     "(%dx%d - %dx%d) on window %s/'%s'.", __FUNCTION__,
-                     newSize.width(), newSize.height(),
-                     hint.minimumSize.width(), hint.minimumSize.height(),
-                     hint.maximumSize.width(), hint.maximumSize.height(),
-                     window()->metaObject()->className(), qPrintable(window()->objectName()));
-        }
-    }
     if (m_data.hwnd) {
         // A ResizeEvent with resulting geometry will be sent. If we cannot
         // achieve that size (for example, window title minimal constraint),
