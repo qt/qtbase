@@ -902,14 +902,21 @@ using QtMiscUtils::toHexUpper;
     Returns a textual representation of \a value. This function is used by
     \l QCOMPARE() to output verbose information in case of a test failure.
 
-    You can add specializations of this function to your test to enable
+    You can add specializations or overloads of this function to your test to enable
     verbose output.
+
+    \b {Note:} Starting with Qt 5.5, you should prefer to provide a toString() function
+    in the type's namespace instead of specializing this template.
+    If your code needs to continue to work with the QTestLib from Qt 5.4 or
+    earlier, you need to continue to use specialization.
 
     \b {Note:} The caller of toString() must delete the returned data
     using \c{delete[]}.  Your implementation should return a string
-    created with \c{new[]} or qstrdup().
+    created with \c{new[]} or qstrdup(). The easiest way to do so is to
+    create a QByteArray or QString and calling QTest::toString() on it
+    (see second example below).
 
-    Example:
+    Example for specializing (Qt ≤ 5.4):
 
     \snippet code/src_qtestlib_qtestcase.cpp 16
 
@@ -917,6 +924,10 @@ using QtMiscUtils::toHexUpper;
     called \c MyPoint. Whenever a comparison of two instances of \c
     MyPoint fails, \l QCOMPARE() will call this function to output the
     contents of \c MyPoint to the test log.
+
+    Same example, but with overloading (Qt ≥ 5.5):
+
+    \snippet code/src_qtestlib_qtestcase.cpp toString-overload
 
     \sa QCOMPARE()
 */

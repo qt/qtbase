@@ -153,6 +153,19 @@ namespace QTest {
 }
 //! [16]
 
+//! [toString-overload]
+namespace MyNamespace {
+    char *toString(const MyPoint &point)
+    {
+        // bring QTest::toString overloads into scope:
+        using QTest::toString;
+        // delegate char* handling to QTest::toString(QByteArray):
+        return toString("MyPoint(" +
+                        QByteArray::number(point.x()) + ", " +
+                        QByteArray::number(point.y()) + ')');
+    }
+}
+//! [toString-overload]
 
 //! [17]
 int i = 0;
