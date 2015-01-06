@@ -1770,6 +1770,8 @@ void QWindowsWindow::windowEvent(QEvent *event)
     case QEvent::WindowBlocked: // Blocked by another modal window.
         setEnabled(false);
         setFlag(BlockedByModal);
+        if (hasMouseCapture())
+            ReleaseCapture();
         break;
     case QEvent::WindowUnblocked:
         setEnabled(true);
