@@ -1904,7 +1904,7 @@ void QTextCharFormat::setFont(const QFont &font)
 
     If \a behavior is QTextCharFormat::FontPropertiesAll, the font property that
     has not been explicitly set is treated like as it were set with default value;
-    If \a behavior is QTextCharFormat::FontPropertiesAll, the font property that
+    If \a behavior is QTextCharFormat::FontPropertiesSpecifiedOnly, the font property that
     has not been explicitly set is ignored and the respective property value
     remains unchanged.
 
