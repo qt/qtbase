@@ -75,8 +75,8 @@ FragmentToy::FragmentToy(const QString &fragmentSource, QObject *parent)
         m_fragment_file_last_modified = info.lastModified();
         m_fragment_file = fragmentSource;
 #ifndef QT_NO_FILESYSTEMWATCHER
-        m_watcher.addPath(info.canonicalFilePath());
-        QObject::connect(&m_watcher, &QFileSystemWatcher::fileChanged, this, &FragmentToy::fileChanged);
+        m_watcher.addPath(info.canonicalPath());
+        QObject::connect(&m_watcher, &QFileSystemWatcher::directoryChanged, this, &FragmentToy::fileChanged);
 #endif
     }
 }
@@ -94,7 +94,7 @@ void FragmentToy::draw(const QSize &windowSize)
     if (!m_vao.isCreated())
         m_vao.create();
 
-    m_vao.bind();
+    QOpenGLVertexArrayObject::Binder binder(&m_vao);
 
     if (!m_vertex_buffer.isCreated()) {
         m_vertex_buffer.create();
@@ -115,7 +115,7 @@ void FragmentToy::draw(const QSize &windowSize)
         }
     }
 
-    if (!m_fragment_shader) {
+    if (!m_fragment_shader && m_recompile_shaders) {
         QByteArray data;
         if (m_fragment_file.size()) {
             QFile file(m_fragment_file);
@@ -160,6 +160,9 @@ void FragmentToy::draw(const QSize &windowSize)
 
     }
 
+    if (!m_program->isLinked())
+        return;
+
     m_program->bind();
 
     m_vertex_buffer.bind();
@@ -167,15 +170,13 @@ void FragmentToy::draw(const QSize &windowSize)
     m_program->enableAttributeArray("vertexCoord");
     m_vertex_buffer.release();
 
-    float radiens = (QTime::currentTime().msecsSinceStartOfDay() / 60) / (2 * M_PI);
+    uint time = QDateTime::currentDateTime().toMSecsSinceEpoch();
     m_program->setUniformValue("currentTime", (uint) QDateTime::currentDateTime().toMSecsSinceEpoch());
-    m_program->setUniformValue("radiens", radiens);
     m_program->setUniformValue("windowSize", windowSize);
 
     QOpenGLContext::currentContext()->functions()->glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
     m_program->release();
-    m_vao.release();
 }
 
 void FragmentToy::fileChanged(const QString &path)

@@ -97,7 +97,7 @@ private:
 // typical in pure QWindow-based applications.
 OpenGLWindow::OpenGLWindow()
     : QOpenGLWindow(QOpenGLWindow::NoPartialUpdate)
-    , m_fragment_toy("background.frag")
+    , m_fragment_toy("./background.frag")
     , m_text_layout("The triangle and this text is rendered with QPainter")
     , m_animate(true)
 {
