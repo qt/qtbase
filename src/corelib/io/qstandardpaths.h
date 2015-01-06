@@ -64,6 +64,7 @@ public:
         GenericCacheLocation,
         GenericConfigLocation,
         AppDataLocation,
+        AppConfigLocation,
         AppLocalDataLocation = DataLocation
     };
 

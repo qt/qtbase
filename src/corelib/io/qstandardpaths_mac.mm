@@ -53,6 +53,7 @@ OSType translateLocation(QStandardPaths::StandardLocation type)
     switch (type) {
     case QStandardPaths::ConfigLocation:
     case QStandardPaths::GenericConfigLocation:
+    case QStandardPaths::AppConfigLocation:
         return kPreferencesFolderType;
     case QStandardPaths::DesktopLocation:
         return kDesktopFolderType;
@@ -129,7 +130,8 @@ static QString macLocation(QStandardPaths::StandardLocation type, short domain)
 
    QString path = getFullPath(ref);
 
-    if (type == QStandardPaths::AppDataLocation || type == QStandardPaths::AppLocalDataLocation || type == QStandardPaths::CacheLocation)
+    if (type == QStandardPaths::AppDataLocation || type == QStandardPaths::AppLocalDataLocation ||
+        type == QStandardPaths::CacheLocation || type == QStandardPaths::AppConfigLocation)
         appendOrganizationAndApp(path);
     return path;
 }
@@ -155,7 +157,11 @@ QString QStandardPaths::writableLocation(StandardLocation type)
             return path;
         case GenericConfigLocation:
         case ConfigLocation:
-            return qttestDir + QLatin1String("/Preferences");
+        case AppConfigLocation:
+            path = qttestDir + QLatin1String("/Preferences");
+            if (type == AppConfigLocation)
+                appendOrganizationAndApp(path);
+            return path;
         default:
             break;
         }

@@ -142,6 +142,10 @@ QT_BEGIN_NAMESPACE
     \value AppLocalDataLocation Returns the local settings path on the Windows operating
            system. On all other platforms, it returns the same value as AppDataLocation.
            This enum value was added in Qt 5.4.
+    \value AppConfigLocation Returns a directory location where user-specific
+           configuration files should be written. This is an application-specific directory,
+           and the returned path is never empty.
+           This enum value was added in Qt 5.5.
 
     The following table gives examples of paths on different operating systems.
     The first path is the writable path (unless noted). Other, additional
@@ -206,6 +210,9 @@ QT_BEGIN_NAMESPACE
     \row \li AppLocalDataLocation
          \li "~/Library/Application Support/<APPNAME>", "/Library/Application Support/<APPNAME>". "<APPDIR>/../Resources"
          \li "C:/Users/<USER>/AppData/Local/<APPNAME>", "C:/ProgramData/<APPNAME>", "<APPDIR>", "<APPDIR>/data"
+    \row \li AppConfigLocation
+         \li "~/Library/Preferences/<APPNAME>"
+         \li "C:/Users/<USER>/AppData/Local/<APPNAME>", "C:/ProgramData/<APPNAME>"
     \endtable
 
     \table
@@ -267,6 +274,9 @@ QT_BEGIN_NAMESPACE
     \row \li AppLocalDataLocation
          \li "<APPROOT>/data", "<APPROOT>/app/native/assets"
          \li "~/.local/share/<APPNAME>", "/usr/local/share/<APPNAME>", "/usr/share/<APPNAME>"
+    \row \li AppConfigLocation
+         \li "<APPROOT>/data/Settings"
+         \li "~/.config/<APPNAME>", "/etc/xdg/<APPNAME>"
     \endtable
 
     \table
@@ -307,6 +317,8 @@ QT_BEGIN_NAMESPACE
          \li "<APPROOT>/cache" (there is no shared cache)
     \row \li AppDataLocation
          \li "<APPROOT>/files", "<USER>/<APPNAME>/files"
+    \row \li AppConfigLocation
+         \li "<APPROOT>/files/settings"
     \endtable
 
     In the table above, \c <APPNAME> is usually the organization name, the
@@ -565,6 +577,8 @@ QString QStandardPaths::displayName(StandardLocation type)
     case AppDataLocation:
     case AppLocalDataLocation:
         return QCoreApplication::translate("QStandardPaths", "Application Data");
+    case AppConfigLocation:
+        return QCoreApplication::translate("QStandardPaths", "Application Configuration");
     }
     // not reached
     return QString();
@@ -585,7 +599,7 @@ QString QStandardPaths::displayName(StandardLocation type)
 
   This affects the locations into which test programs might write files:
   GenericDataLocation, DataLocation, ConfigLocation, GenericConfigLocation,
-  GenericCacheLocation, CacheLocation.
+  AppConfigLocation, GenericCacheLocation, CacheLocation.
   Other locations are not affected.
 
   On Unix, \c XDG_DATA_HOME is set to \e ~/.qttest/share, \c XDG_CONFIG_HOME is

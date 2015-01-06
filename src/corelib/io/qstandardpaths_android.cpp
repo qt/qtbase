@@ -233,6 +233,7 @@ QString QStandardPaths::writableLocation(StandardLocation type)
         return getExternalStoragePublicDirectory("DIRECTORY_DOWNLOADS");
     case QStandardPaths::GenericConfigLocation:
     case QStandardPaths::ConfigLocation:
+    case QStandardPaths::AppConfigLocation:
         return getFilesDir() + testDir() + QLatin1String("/settings");
     case QStandardPaths::GenericDataLocation:
         return getExternalStorageDirectory() + testDir();

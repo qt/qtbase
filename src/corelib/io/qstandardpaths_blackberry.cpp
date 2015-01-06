@@ -69,6 +69,7 @@ QString QStandardPaths::writableLocation(StandardLocation type)
         return QDir::homePath() + testModeInsert() + QLatin1String("/Cache");
     case ConfigLocation:
     case GenericConfigLocation:
+    case AppConfigLocation:
         return QDir::homePath() + testModeInsert() + QLatin1String("/Settings");
     case GenericDataLocation:
         return sharedRoot + testModeInsert() + QLatin1String("/misc");

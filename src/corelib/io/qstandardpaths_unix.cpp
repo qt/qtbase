@@ -97,6 +97,7 @@ QString QStandardPaths::writableLocation(StandardLocation type)
     }
     case ConfigLocation:
     case GenericConfigLocation:
+    case AppConfigLocation:
     {
         // http://standards.freedesktop.org/basedir-spec/latest/
         QString xdgConfigHome = QFile::decodeName(qgetenv("XDG_CONFIG_HOME"));
@@ -104,6 +105,8 @@ QString QStandardPaths::writableLocation(StandardLocation type)
             xdgConfigHome = QDir::homePath() + QLatin1String("/.qttest/config");
         if (xdgConfigHome.isEmpty())
             xdgConfigHome = QDir::homePath() + QLatin1String("/.config");
+        if (type == AppConfigLocation)
+            appendOrganizationAndApp(xdgConfigHome);
         return xdgConfigHome;
     }
     case RuntimeLocation:
@@ -278,21 +281,31 @@ static QStringList xdgDataDirs()
     return dirs;
 }
 
+static QStringList xdgConfigDirs()
+{
+    QStringList dirs;
+    // http://standards.freedesktop.org/basedir-spec/latest/
+    const QString xdgConfigDirs = QFile::decodeName(qgetenv("XDG_CONFIG_DIRS"));
+    if (xdgConfigDirs.isEmpty())
+        dirs.append(QString::fromLatin1("/etc/xdg"));
+    else
+        dirs = xdgConfigDirs.split(QLatin1Char(':'));
+    return dirs;
+}
+
 QStringList QStandardPaths::standardLocations(StandardLocation type)
 {
     QStringList dirs;
     switch (type) {
     case ConfigLocation:
     case GenericConfigLocation:
-    {
-        // http://standards.freedesktop.org/basedir-spec/latest/
-        const QString xdgConfigDirs = QFile::decodeName(qgetenv("XDG_CONFIG_DIRS"));
-        if (xdgConfigDirs.isEmpty())
-            dirs.append(QString::fromLatin1("/etc/xdg"));
-        else
-            dirs = xdgConfigDirs.split(QLatin1Char(':'));
-    }
-    break;
+        dirs = xdgConfigDirs();
+        break;
+    case AppConfigLocation:
+        dirs = xdgConfigDirs();
+        for (int i = 0; i < dirs.count(); ++i)
+            appendOrganizationAndApp(dirs[i]);
+        break;
     case GenericDataLocation:
         dirs = xdgDataDirs();
         break;

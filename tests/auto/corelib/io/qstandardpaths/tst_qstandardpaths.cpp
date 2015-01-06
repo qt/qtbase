@@ -48,7 +48,8 @@
 #define Q_XDG_PLATFORM
 #endif
 
-static const int MaxStandardLocation = QStandardPaths::AppDataLocation;
+// Update this when adding new enum values; update enumNames too
+static const int MaxStandardLocation = QStandardPaths::AppConfigLocation;
 
 class tst_qstandardpaths : public QObject
 {
@@ -61,6 +62,7 @@ private slots:
     void enableTestMode();
     void testLocateAll();
     void testDataLocation();
+    void testAppConfigLocation();
     void testFindExecutable_data();
     void testFindExecutable();
     void testFindExecutableLinkToDirectory();
@@ -122,7 +124,8 @@ static const char * const enumNames[MaxStandardLocation + 1 - int(QStandardPaths
     "DownloadLocation",
     "GenericCacheLocation",
     "GenericConfigLocation",
-    "AppDataLocation"
+    "AppDataLocation",
+    "AppConfigLocation"
 };
 
 void tst_qstandardpaths::dump()
@@ -304,6 +307,27 @@ void tst_qstandardpaths::testDataLocation()
     QCOMPARE(appDataDirs.at(0), expectedAppDataDir);
     QCOMPARE(appDataDirs.at(1), QString::fromLatin1("/usr/local/share/Qt/QtTest"));
     QCOMPARE(appDataDirs.at(2), QString::fromLatin1("/usr/share/Qt/QtTest"));
+#endif
+
+    // reset for other tests
+    QCoreApplication::setOrganizationName(QString());
+    QCoreApplication::setApplicationName(QString());
+}
+
+void tst_qstandardpaths::testAppConfigLocation()
+{
+    // On all platforms where applications are not sandboxed,
+    // AppConfigLocation should be GenericConfigLocation / organization name / app name
+#if !defined(Q_OS_BLACKBERRY) && !defined(Q_OS_ANDROID) && !defined(Q_OS_WINRT)
+    const QString base = QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation);
+    QCOMPARE(QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation), base + "/tst_qstandardpaths");
+    QCoreApplication::setOrganizationName("Qt");
+    QCOMPARE(QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation), base + "/Qt/tst_qstandardpaths");
+    QCoreApplication::setApplicationName("QtTest");
+    QCOMPARE(QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation), base + "/Qt/QtTest");
+    // reset for other tests
+    QCoreApplication::setOrganizationName(QString());
+    QCoreApplication::setApplicationName(QString());
 #endif
 }
 

@@ -67,6 +67,7 @@ QString QStandardPaths::writableLocation(StandardLocation type)
     switch (type) {
     case ConfigLocation: // same as AppLocalDataLocation, on Windows
     case GenericConfigLocation: // same as GenericDataLocation, on Windows
+    case AppConfigLocation:
     case AppDataLocation:
     case AppLocalDataLocation:
     case GenericDataLocation: {

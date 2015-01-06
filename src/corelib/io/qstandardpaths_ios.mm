@@ -103,6 +103,7 @@ QString QStandardPaths::writableLocation(StandardLocation type)
         break;
     case ConfigLocation:
     case GenericConfigLocation:
+    case AppConfigLocation:
         location = pathForDirectory(NSDocumentDirectory);
         break;
     case DownloadLocation:
