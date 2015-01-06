@@ -752,7 +752,7 @@ void QHashData::checkSanity()
     to by \a p, using \a seed to seed the calculation.
 
     Use this function only to implement qHash() for your own custom
-    types. E.g., here's how you could implement a qHash() overload for
+    types. For example, here's how you could implement a qHash() overload for
     std::vector<int>:
 
     \snippet code/src_corelib_tools_qhash.cpp qhashbits
@@ -1130,7 +1130,7 @@ uint qHash(long double key, uint seed) Q_DECL_NOTHROW
 
     This randomization of QHash is enabled by default. Even though programs
     should never depend on a particular QHash ordering, there may be situations
-    where you temporarily need deterministic behavior, e.g. for debugging or
+    where you temporarily need deterministic behavior, for example for debugging or
     regression testing. To disable the randomization, define the environment
     variable \c QT_HASH_SEED. The contents of that variable, interpreted as a
     decimal value, will be used as the seed for qHash().
