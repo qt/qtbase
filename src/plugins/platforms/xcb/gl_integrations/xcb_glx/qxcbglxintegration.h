@@ -60,6 +60,9 @@ public:
     QXcbWindow *createWindow(QWindow *window) const Q_DECL_OVERRIDE;
     QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const Q_DECL_OVERRIDE;
     QPlatformOffscreenSurface *createPlatformOffscreenSurface(QOffscreenSurface *surface) const Q_DECL_OVERRIDE;
+
+    virtual bool supportsThreadedOpenGL() const Q_DECL_OVERRIDE;
+
 private:
     QXcbConnection *m_connection;
     uint32_t m_glx_first_event;

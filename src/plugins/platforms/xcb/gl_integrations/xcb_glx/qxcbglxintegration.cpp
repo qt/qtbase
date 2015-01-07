@@ -214,4 +214,10 @@ QPlatformOffscreenSurface *QXcbGlxIntegration::createPlatformOffscreenSurface(QO
 
 }
 
+bool QXcbGlxIntegration::supportsThreadedOpenGL() const
+{
+    return QGLXContext::supportsThreading();
+}
+
+
 QT_END_NAMESPACE
