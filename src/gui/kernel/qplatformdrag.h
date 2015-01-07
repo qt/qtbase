@@ -98,6 +98,8 @@ public:
 
     static QPixmap defaultPixmap();
 
+    virtual bool ownsDragObject() const;
+
 private:
     QPlatformDragPrivate *d_ptr;
 

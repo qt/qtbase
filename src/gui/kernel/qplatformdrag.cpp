@@ -241,6 +241,18 @@ QPixmap QPlatformDrag::defaultPixmap()
     return *qt_drag_default_pixmap();
 }
 
+/*!
+    \since 5.4
+    \brief Returns bool indicating whether QPlatformDrag takes ownership
+    and therefore responsibility of deleting the QDrag object passed in
+    from QPlatformDrag::drag. This can be useful on platforms where QDrag
+    object has to be kept around.
+ */
+bool QPlatformDrag::ownsDragObject() const
+{
+    return false;
+}
+
 #endif // QT_NO_DRAGANDDROP
 
 QT_END_NAMESPACE
