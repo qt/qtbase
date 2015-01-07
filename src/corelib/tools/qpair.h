@@ -85,38 +85,45 @@ class QTypeInfo<QPair<T1, T2> > : public QTypeInfoMerger<QPair<T1, T2>, T1, T2> 
 
 template <class T1, class T2>
 Q_DECL_CONSTEXPR Q_INLINE_TEMPLATE bool operator==(const QPair<T1, T2> &p1, const QPair<T1, T2> &p2)
+    Q_DECL_NOEXCEPT_EXPR(noexcept(p1.first == p2.first && p1.second == p2.second))
 { return p1.first == p2.first && p1.second == p2.second; }
 
 template <class T1, class T2>
 Q_DECL_CONSTEXPR Q_INLINE_TEMPLATE bool operator!=(const QPair<T1, T2> &p1, const QPair<T1, T2> &p2)
+    Q_DECL_NOEXCEPT_EXPR(noexcept(!(p1 == p2)))
 { return !(p1 == p2); }
 
 template <class T1, class T2>
 Q_DECL_CONSTEXPR Q_INLINE_TEMPLATE bool operator<(const QPair<T1, T2> &p1, const QPair<T1, T2> &p2)
+    Q_DECL_NOEXCEPT_EXPR(noexcept(p1.first < p2.first || (!(p2.first < p1.first) && p1.second < p2.second)))
 {
     return p1.first < p2.first || (!(p2.first < p1.first) && p1.second < p2.second);
 }
 
 template <class T1, class T2>
 Q_DECL_CONSTEXPR Q_INLINE_TEMPLATE bool operator>(const QPair<T1, T2> &p1, const QPair<T1, T2> &p2)
+    Q_DECL_NOEXCEPT_EXPR(noexcept(p2 < p1))
 {
     return p2 < p1;
 }
 
 template <class T1, class T2>
 Q_DECL_CONSTEXPR Q_INLINE_TEMPLATE bool operator<=(const QPair<T1, T2> &p1, const QPair<T1, T2> &p2)
+    Q_DECL_NOEXCEPT_EXPR(noexcept(!(p2 < p1)))
 {
     return !(p2 < p1);
 }
 
 template <class T1, class T2>
 Q_DECL_CONSTEXPR Q_INLINE_TEMPLATE bool operator>=(const QPair<T1, T2> &p1, const QPair<T1, T2> &p2)
+    Q_DECL_NOEXCEPT_EXPR(noexcept(!(p1 < p2)))
 {
     return !(p1 < p2);
 }
 
 template <class T1, class T2>
 Q_DECL_CONSTEXPR Q_OUTOFLINE_TEMPLATE QPair<T1, T2> qMakePair(const T1 &x, const T2 &y)
+    Q_DECL_NOEXCEPT_EXPR(noexcept(QPair<T1, T2>(x, y)))
 {
     return QPair<T1, T2>(x, y);
 }
