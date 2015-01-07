@@ -53,7 +53,7 @@ QXcbScreen::QXcbScreen(QXcbConnection *connection, xcb_screen_t *scr,
     , m_screen(scr)
     , m_crtc(output ? output->crtc : 0)
     , m_outputName(outputName)
-    , m_sizeMillimeters(output ? QSize(output->mm_width, output->mm_height) : QSize())
+    , m_outputSizeMillimeters(output ? QSize(output->mm_width, output->mm_height) : QSize())
     , m_virtualSize(scr->width_in_pixels, scr->height_in_pixels)
     , m_virtualSizeMillimeters(scr->width_in_millimeters, scr->height_in_millimeters)
     , m_orientation(Qt::PrimaryOrientation)
@@ -71,6 +71,7 @@ QXcbScreen::QXcbScreen(QXcbConnection *connection, xcb_screen_t *scr,
 
     updateGeometry(output ? output->timestamp : 0);
     updateRefreshRate();
+
     const int dpr = int(devicePixelRatio());
     // On VNC, it can be that physical size is unknown while
     // virtual size is known (probably back-calculated from DPI and resolution)
@@ -93,6 +94,7 @@ QXcbScreen::QXcbScreen(QXcbConnection *connection, xcb_screen_t *scr,
     qDebug("  virtual height.: %lf", m_virtualSizeMillimeters.height());
     qDebug("  virtual geom...: %d x %d", m_virtualSize.width(), m_virtualSize.height());
     qDebug("  avail virt geom: %d x %d +%d +%d", m_availableGeometry.width(), m_availableGeometry.height(), m_availableGeometry.x(), m_availableGeometry.y());
+    qDebug("  orientation....: %d", m_orientation);
     qDebug("  pixel ratio....: %d", m_devicePixelRatio);
     qDebug("  depth..........: %d", screen()->root_depth);
     qDebug("  white pixel....: %x", screen()->white_pixel);
@@ -413,6 +415,24 @@ void QXcbScreen::updateGeometry(xcb_timestamp_t timestamp)
         if (crtc) {
             xGeometry = QRect(crtc->x, crtc->y, crtc->width, crtc->height);
             xAvailableGeometry = xGeometry;
+            switch (crtc->rotation) {
+            case XCB_RANDR_ROTATION_ROTATE_0: // xrandr --rotate normal
+                m_orientation = Qt::LandscapeOrientation;
+                m_sizeMillimeters = m_outputSizeMillimeters;
+                break;
+            case XCB_RANDR_ROTATION_ROTATE_90: // xrandr --rotate left
+                m_orientation = Qt::PortraitOrientation;
+                m_sizeMillimeters = m_outputSizeMillimeters.transposed();
+                break;
+            case XCB_RANDR_ROTATION_ROTATE_180: // xrandr --rotate inverted
+                m_orientation = Qt::InvertedLandscapeOrientation;
+                m_sizeMillimeters = m_outputSizeMillimeters;
+                break;
+            case XCB_RANDR_ROTATION_ROTATE_270: // xrandr --rotate right
+                m_orientation = Qt::InvertedPortraitOrientation;
+                m_sizeMillimeters = m_outputSizeMillimeters.transposed();
+                break;
+            }
             free(crtc);
         }
     }

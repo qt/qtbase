@@ -111,6 +111,7 @@ private:
     xcb_screen_t *m_screen;
     xcb_randr_crtc_t m_crtc;
     QString m_outputName;
+    QSizeF m_outputSizeMillimeters;
     QSizeF m_sizeMillimeters;
     QRect m_geometry;
     QRect m_availableGeometry;
