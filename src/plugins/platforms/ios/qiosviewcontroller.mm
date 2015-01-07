@@ -119,6 +119,12 @@
 
 // -------------------------------------------------------------------------
 
+@interface QIOSViewController () {
+    QIOSScreen *m_screen;
+}
+@property (nonatomic, assign) BOOL changingOrientation;
+@end
+
 @implementation QIOSViewController
 
 - (id)initWithQIOSScreen:(QIOSScreen *)screen

@@ -35,15 +35,13 @@
 
 class QIOSScreen;
 
-@interface QIOSViewController : UIViewController {
-    QIOSScreen *m_screen;
-}
-
-@property (nonatomic, assign) BOOL changingOrientation;
-@property (nonatomic, assign) BOOL prefersStatusBarHidden;
-@property (nonatomic, assign) UIStatusBarAnimation preferredStatusBarUpdateAnimation;
+@interface QIOSViewController : UIViewController
 
 - (id)initWithQIOSScreen:(QIOSScreen *)screen;
 - (void)updateProperties;
+
+@property (nonatomic, assign) BOOL prefersStatusBarHidden;
+@property (nonatomic, assign) UIStatusBarAnimation preferredStatusBarUpdateAnimation;
+
 @end
 
