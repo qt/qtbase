@@ -70,6 +70,8 @@ public:
     QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const Q_DECL_OVERRIDE;
     QPlatformOffscreenSurface *createPlatformOffscreenSurface(QOffscreenSurface *surface) const Q_DECL_OVERRIDE;
 
+    bool supportsThreadedOpenGL() const Q_DECL_OVERRIDE { return true; }
+
     EGLDisplay eglDisplay() const { return m_egl_display; }
     void *xlib_display() const { return m_connection->xlib_display(); }
 private:
