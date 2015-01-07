@@ -77,8 +77,10 @@ QXcbScreen::QXcbScreen(QXcbConnection *connection, xcb_screen_t *scr,
     // virtual size is known (probably back-calculated from DPI and resolution)
     if (m_sizeMillimeters.isEmpty())
         m_sizeMillimeters = m_virtualSizeMillimeters;
-    if (m_geometry.isEmpty())
+    if (m_geometry.isEmpty()) {
         m_geometry = QRect(QPoint(), m_virtualSize/dpr);
+        m_nativeGeometry = QRect(QPoint(), m_virtualSize);
+    }
     if (m_availableGeometry.isEmpty())
         m_availableGeometry = m_geometry;
 
@@ -461,6 +463,7 @@ void QXcbScreen::updateGeometry(xcb_timestamp_t timestamp)
     m_devicePixelRatio = qRound(dpi/96);
     const int dpr = int(devicePixelRatio()); // we may override m_devicePixelRatio
     m_geometry = QRect(xGeometry.topLeft()/dpr, xGeometry.size()/dpr);
+    m_nativeGeometry = QRect(xGeometry.topLeft(), xGeometry.size());
     m_availableGeometry = QRect(xAvailableGeometry.topLeft()/dpr, xAvailableGeometry.size()/dpr);
 
     QWindowSystemInterface::handleScreenGeometryChange(QPlatformScreen::screen(), m_geometry, m_availableGeometry);

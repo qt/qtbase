@@ -154,6 +154,8 @@ public:
 
     qreal devicePixelRatio() const;
 
+    QPlatformScreen *screenForNativeGeometry(const QRect &newGeometry) const;
+
 public Q_SLOTS:
     void updateSyncRequestCounter();
 

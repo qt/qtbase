@@ -1831,6 +1831,23 @@ void QXcbWindow::handleClientMessageEvent(const xcb_client_message_event_t *even
     }
 }
 
+// Temporary workaround for bug in QPlatformScreen::screenForNativeGeometry
+// we need the native geometries to detect our screen, but that's not
+// available in cross-platform code. Will be fixed properly when highDPI
+// support is refactored to expose the native coordinate system.
+
+QPlatformScreen *QXcbWindow::screenForNativeGeometry(const QRect &newGeometry) const
+{
+    QXcbScreen *currentScreen = static_cast<QXcbScreen*>(screen());
+    if (!parent() && !currentScreen->nativeGeometry().intersects(newGeometry)) {
+        Q_FOREACH (QPlatformScreen* screen, currentScreen->virtualSiblings()) {
+            if (static_cast<QXcbScreen*>(screen)->nativeGeometry().intersects(newGeometry))
+                return screen;
+        }
+    }
+    return currentScreen;
+}
+
 void QXcbWindow::handleConfigureNotifyEvent(const xcb_configure_notify_event_t *event)
 {
     bool fromSendEvent = (event->response_type & 0x80);
@@ -1847,15 +1864,23 @@ void QXcbWindow::handleConfigureNotifyEvent(const xcb_configure_notify_event_t *
         }
     }
 
-    QRect rect = mapFromNative(QRect(pos, QSize(event->width, event->height)), int(devicePixelRatio()));
+    const int dpr = devicePixelRatio();
+    const QRect nativeRect = QRect(pos, QSize(event->width, event->height));
+    const QRect rect = mapFromNative(nativeRect, dpr);
 
     QPlatformWindow::setGeometry(rect);
     QWindowSystemInterface::handleGeometryChange(window(), rect);
 
-    QPlatformScreen *newScreen = screenForGeometry(rect);
+    QPlatformScreen *newScreen = screenForNativeGeometry(nativeRect);
     if (newScreen != m_screen) {
         m_screen = static_cast<QXcbScreen*>(newScreen);
         QWindowSystemInterface::handleWindowScreenChanged(window(), newScreen->screen());
+        int newDpr = devicePixelRatio();
+        if (newDpr != dpr) {
+            QRect newRect = mapFromNative(nativeRect, newDpr);
+            QPlatformWindow::setGeometry(newRect);
+            QWindowSystemInterface::handleGeometryChange(window(), newRect);
+        }
     }
 
     m_configureNotifyPending = false;
