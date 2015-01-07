@@ -86,9 +86,9 @@ bool qdbus_loadLibDBus()
     static int majorversions[] = { 3, 2, -1 };
     const QString baseNames[] = {
 #ifdef Q_OS_WIN
-        QStringLiteral("dbus-1"),
+        QLatin1String("dbus-1"),
 #endif
-        QStringLiteral("libdbus-1")
+        QLatin1String("libdbus-1")
     };
 
     lib->unload();
