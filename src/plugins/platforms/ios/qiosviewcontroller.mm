@@ -41,6 +41,8 @@
 
 #import "qiosviewcontroller.h"
 
+#include <QtCore/qscopedvaluerollback.h>
+
 #include <QtGui/QGuiApplication>
 #include <QtGui/QWindow>
 #include <QtGui/QScreen>
@@ -121,6 +123,7 @@
 
 @interface QIOSViewController () {
     QIOSScreen *m_screen;
+    BOOL m_updatingProperties;
 }
 @property (nonatomic, assign) BOOL changingOrientation;
 @end
@@ -288,6 +291,15 @@
 {
     if (!isQtApplication())
         return;
+
+    // Prevent recursion caused by updating the status bar appearance (position
+    // or visibility), which in turn may cause a layout of our subviews, and
+    // a reset of window-states, which themselves affect the view controller
+    // properties such as the statusbar visibilty.
+    if (m_updatingProperties)
+        return;
+
+    QScopedValueRollback<BOOL> updateRollback(m_updatingProperties, YES);
 
     QWindow *focusWindow = QGuiApplication::focusWindow();
 
