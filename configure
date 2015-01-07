@@ -3954,7 +3954,13 @@ compileTest()
     path=config.tests/$1
     name=$2
     shift 2
-    "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" "$path" "$name" $I_FLAGS $D_FLAGS $L_FLAGS "$@"
+    # allow config tests which behave differently depending on the type of
+    # library being built (shared/static) e.g. see config.tests/unix/icu
+    test_config="$QMAKE_CONFIG shared"
+    if [ "$CFG_SHARED" = "no" ]; then
+        test_config="$QMAKE_CONFIG static"
+    fi
+    "$unixtests/compile.test" "$XQMAKESPEC" "$test_config" $OPT_VERBOSE "$relpath" "$outpath" "$path" "$name" $I_FLAGS $D_FLAGS $L_FLAGS "$@"
 }
 
 #-------------------------------------------------------------------------------
