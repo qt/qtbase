@@ -116,6 +116,31 @@
     \sa qMakePair()
 */
 
+/*!
+    \fn void QPair::swap(QPair &other)
+    \since 5.5
+
+    Swaps this pair with \a other.
+
+    Equivalent to
+    \code
+    qSwap(this->first, other.first);
+    qSwap(this->second, other.second);
+    \endcode
+
+    Swap overloads are found in namespace \c std as well as via
+    argument-dependent lookup (ADL) in \c{T}'s namespace.
+*/
+
+/*!
+    \fn void swap(QPair<T1, T2> &lhs, QPair<T1, T2> &rhs)
+    \overload
+    \relates QPair
+    \since 5.5
+
+    Swaps \a lhs with \a rhs.
+*/
+
 /*! \fn bool operator==(const QPair<T1, T2> &p1, const QPair<T1, T2> &p2)
 
     \relates QPair

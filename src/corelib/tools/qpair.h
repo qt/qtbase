@@ -62,9 +62,21 @@ struct QPair
     { first = std::move(p.first); second = std::move(p.second); return *this; }
 #endif
 
+    Q_DECL_RELAXED_CONSTEXPR void swap(QPair &other)
+        Q_DECL_NOEXCEPT_EXPR(noexcept(qSwap(other.first, other.first)) && noexcept(qSwap(other.second, other.second)))
+    {
+        // use qSwap() to pick up ADL swaps automatically:
+        qSwap(first, other.first);
+        qSwap(second, other.second);
+    }
+
     T1 first;
     T2 second;
 };
+
+template <typename T1, typename T2>
+void swap(QPair<T1, T2> &lhs, QPair<T1, T2> &rhs) Q_DECL_NOEXCEPT_EXPR(noexcept(lhs.swap(rhs)))
+{ lhs.swap(rhs); }
 
 // mark QPair<T1,T2> as complex/movable/primitive depending on the
 // typeinfos of the constituents:
