@@ -155,7 +155,7 @@ private:
 #endif
 #if defined(QT_NO_WARNING_OUTPUT)
 #  undef qCWarning
-#  define qCWarning(category) QT_NO_QWARNING_MACRO()
+#  define qCWarning(category) QT_NO_QDEBUG_MACRO()
 #endif
 
 QT_END_NAMESPACE

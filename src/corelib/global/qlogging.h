@@ -155,7 +155,6 @@ private:
 #define qFatal QMessageLogger(QT_MESSAGELOG_FILE, QT_MESSAGELOG_LINE, QT_MESSAGELOG_FUNC).fatal
 
 #define QT_NO_QDEBUG_MACRO while (false) QMessageLogger().noDebug
-#define QT_NO_QWARNING_MACRO while (false) QMessageLogger().noDebug
 
 #if defined(QT_NO_DEBUG_OUTPUT)
 #  undef qDebug
@@ -167,7 +166,7 @@ private:
 #endif
 #if defined(QT_NO_WARNING_OUTPUT)
 #  undef qWarning
-#  define qWarning QT_NO_QWARNING_MACRO
+#  define qWarning QT_NO_QDEBUG_MACRO
 #endif
 
 Q_CORE_EXPORT void qt_message_output(QtMsgType, const QMessageLogContext &context,
