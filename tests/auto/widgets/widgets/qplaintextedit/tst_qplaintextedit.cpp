@@ -148,6 +148,7 @@ private slots:
 #endif
     void layoutAfterMultiLineRemove();
     void undoCommandRemovesAndReinsertsBlock();
+    void taskQTBUG_43562_lineCountCrash();
 
 private:
     void createSelection();
@@ -1627,6 +1628,38 @@ void tst_QPlainTextEdit::undoCommandRemovesAndReinsertsBlock()
         QVERIFY(block.layout()->lineForTextPosition(0).isValid());
     }
 
+}
+
+class ContentsChangedFunctor {
+public:
+    ContentsChangedFunctor(QPlainTextEdit *t) : textEdit(t) {}
+    void operator()(int, int, int)
+    {
+        QTextCursor c(textEdit->textCursor());
+        c.beginEditBlock();
+        c.movePosition(QTextCursor::Start);
+        c.movePosition(QTextCursor::End, QTextCursor::KeepAnchor);
+        c.setCharFormat(QTextCharFormat());
+        c.endEditBlock();
+    }
+
+private:
+    QPlainTextEdit *textEdit;
+};
+
+void tst_QPlainTextEdit::taskQTBUG_43562_lineCountCrash()
+{
+    connect(ed->document(), &QTextDocument::contentsChange, ContentsChangedFunctor(ed));
+    // Don't crash
+    QTest::keyClicks(ed, "Some text");
+    QTest::keyClick(ed, Qt::Key_Left);
+    QTest::keyClick(ed, Qt::Key_Right);
+    QTest::keyClick(ed, Qt::Key_A);
+    QTest::keyClick(ed, Qt::Key_Left);
+    QTest::keyClick(ed, Qt::Key_Right);
+    QTest::keyClick(ed, Qt::Key_Space);
+    QTest::keyClicks(ed, "nd some more");
+    disconnect(ed->document(), SIGNAL(contentsChange(int, int, int)), 0, 0);
 }
 
 QTEST_MAIN(tst_QPlainTextEdit)
