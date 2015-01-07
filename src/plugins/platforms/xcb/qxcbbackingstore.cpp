@@ -145,8 +145,6 @@ void QXcbShmImage::destroy()
     if (segmentSize && m_shm_info.shmaddr)
         Q_XCB_CALL(xcb_shm_detach(xcb_connection(), m_shm_info.shmseg));
 
-    xcb_image_destroy(m_xcb_image);
-
     if (segmentSize) {
         if (m_shm_info.shmaddr) {
             shmdt(m_shm_info.shmaddr);
@@ -155,6 +153,8 @@ void QXcbShmImage::destroy()
             free(m_xcb_image->data);
         }
     }
+
+    xcb_image_destroy(m_xcb_image);
 
     if (m_gc)
         Q_XCB_CALL(xcb_free_gc(xcb_connection(), m_gc));
