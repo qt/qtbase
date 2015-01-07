@@ -32,6 +32,10 @@
 ****************************************************************************/
 
 #include "qlibinputhandler_p.h"
+#include "qlibinputpointer_p.h"
+#include "qlibinputkeyboard_p.h"
+#include "qlibinputtouch_p.h"
+
 #include <libudev.h>
 #include <libinput.h>
 #include <QtCore/QLoggingCategory>
@@ -94,8 +98,12 @@ QLibInputHandler::QLibInputHandler(const QString &key, const QString &spec)
         qFatal("Failed to assign seat");
 
     m_liFd = libinput_get_fd(m_li);
-    m_notifier = new QSocketNotifier(m_liFd, QSocketNotifier::Read);
-    connect(m_notifier, SIGNAL(activated(int)), SLOT(onReadyRead()));
+    m_notifier.reset(new QSocketNotifier(m_liFd, QSocketNotifier::Read));
+    connect(m_notifier.data(), SIGNAL(activated(int)), SLOT(onReadyRead()));
+
+    m_pointer.reset(new QLibInputPointer);
+    m_keyboard.reset(new QLibInputKeyboard);
+    m_touch.reset(new QLibInputTouch);
 
     // Process the initial burst of DEVICE_ADDED events.
     onReadyRead();
@@ -103,8 +111,6 @@ QLibInputHandler::QLibInputHandler(const QString &key, const QString &spec)
 
 QLibInputHandler::~QLibInputHandler()
 {
-    delete m_notifier;
-
     if (m_li)
         libinput_unref(m_li);
 
@@ -141,7 +147,7 @@ void QLibInputHandler::processEvent(libinput_event *ev)
         const char *name = libinput_device_get_name(dev);
         emit deviceAdded(QString::fromUtf8(sysname), QString::fromUtf8(name));
         if (libinput_device_has_capability(dev, LIBINPUT_DEVICE_CAP_TOUCH))
-            m_touch.registerDevice(dev);
+            m_touch->registerDevice(dev);
         break;
     }
     case LIBINPUT_EVENT_DEVICE_REMOVED:
@@ -150,35 +156,35 @@ void QLibInputHandler::processEvent(libinput_event *ev)
         const char *name = libinput_device_get_name(dev);
         emit deviceRemoved(QString::fromUtf8(sysname), QString::fromUtf8(name));
         if (libinput_device_has_capability(dev, LIBINPUT_DEVICE_CAP_TOUCH))
-            m_touch.unregisterDevice(dev);
+            m_touch->unregisterDevice(dev);
         break;
     }
     case LIBINPUT_EVENT_POINTER_BUTTON:
-        m_pointer.processButton(libinput_event_get_pointer_event(ev));
+        m_pointer->processButton(libinput_event_get_pointer_event(ev));
         break;
     case LIBINPUT_EVENT_POINTER_MOTION:
-        m_pointer.processMotion(libinput_event_get_pointer_event(ev));
+        m_pointer->processMotion(libinput_event_get_pointer_event(ev));
         break;
     case LIBINPUT_EVENT_POINTER_AXIS:
-        m_pointer.processAxis(libinput_event_get_pointer_event(ev));
+        m_pointer->processAxis(libinput_event_get_pointer_event(ev));
         break;
     case LIBINPUT_EVENT_KEYBOARD_KEY:
-        m_keyboard.processKey(libinput_event_get_keyboard_event(ev));
+        m_keyboard->processKey(libinput_event_get_keyboard_event(ev));
         break;
     case LIBINPUT_EVENT_TOUCH_DOWN:
-        m_touch.processTouchDown(libinput_event_get_touch_event(ev));
+        m_touch->processTouchDown(libinput_event_get_touch_event(ev));
         break;
     case LIBINPUT_EVENT_TOUCH_MOTION:
-        m_touch.processTouchMotion(libinput_event_get_touch_event(ev));
+        m_touch->processTouchMotion(libinput_event_get_touch_event(ev));
         break;
     case LIBINPUT_EVENT_TOUCH_UP:
-        m_touch.processTouchUp(libinput_event_get_touch_event(ev));
+        m_touch->processTouchUp(libinput_event_get_touch_event(ev));
         break;
     case LIBINPUT_EVENT_TOUCH_CANCEL:
-        m_touch.processTouchCancel(libinput_event_get_touch_event(ev));
+        m_touch->processTouchCancel(libinput_event_get_touch_event(ev));
         break;
     case LIBINPUT_EVENT_TOUCH_FRAME:
-        m_touch.processTouchFrame(libinput_event_get_touch_event(ev));
+        m_touch->processTouchFrame(libinput_event_get_touch_event(ev));
         break;
     default:
         break;

@@ -35,9 +35,7 @@
 #define QLIBINPUTHANDLER_P_H
 
 #include <QtCore/QObject>
-#include "qlibinputpointer_p.h"
-#include "qlibinputkeyboard_p.h"
-#include "qlibinputtouch_p.h"
+#include <QtCore/QScopedPointer>
 
 //
 //  W A R N I N G
@@ -57,6 +55,9 @@ struct libinput_event;
 QT_BEGIN_NAMESPACE
 
 class QSocketNotifier;
+class QLibInputPointer;
+class QLibInputKeyboard;
+class QLibInputTouch;
 
 class QLibInputHandler : public QObject
 {
@@ -79,10 +80,10 @@ private:
     udev *m_udev;
     libinput *m_li;
     int m_liFd;
-    QSocketNotifier *m_notifier;
-    QLibInputPointer m_pointer;
-    QLibInputKeyboard m_keyboard;
-    QLibInputTouch m_touch;
+    QScopedPointer<QSocketNotifier> m_notifier;
+    QScopedPointer<QLibInputPointer> m_pointer;
+    QScopedPointer<QLibInputKeyboard> m_keyboard;
+    QScopedPointer<QLibInputTouch> m_touch;
 };
 
 QT_END_NAMESPACE
