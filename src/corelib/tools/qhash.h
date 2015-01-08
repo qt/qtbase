@@ -338,19 +338,19 @@ public:
             insert(it->first, it->second);
     }
 #endif
-    inline QHash(const QHash<Key, T> &other) : d(other.d) { d->ref.ref(); if (!d->sharable) detach(); }
-    inline ~QHash() { if (!d->ref.deref()) freeData(d); }
+    QHash(const QHash &other) : d(other.d) { d->ref.ref(); if (!d->sharable) detach(); }
+    ~QHash() { if (!d->ref.deref()) freeData(d); }
 
-    QHash<Key, T> &operator=(const QHash<Key, T> &other);
+    QHash &operator=(const QHash &other);
 #ifdef Q_COMPILER_RVALUE_REFS
-    inline QHash(QHash<Key, T> &&other) Q_DECL_NOTHROW : d(other.d) { other.d = const_cast<QHashData *>(&QHashData::shared_null); }
-    inline QHash<Key, T> &operator=(QHash<Key, T> &&other) Q_DECL_NOTHROW
+    QHash(QHash &&other) Q_DECL_NOTHROW : d(other.d) { other.d = const_cast<QHashData *>(&QHashData::shared_null); }
+    QHash &operator=(QHash &&other) Q_DECL_NOTHROW
     { qSwap(d, other.d); return *this; }
 #endif
-    inline void swap(QHash<Key, T> &other) Q_DECL_NOTHROW { qSwap(d, other.d); }
+    void swap(QHash &other) Q_DECL_NOTHROW { qSwap(d, other.d); }
 
-    bool operator==(const QHash<Key, T> &other) const;
-    inline bool operator!=(const QHash<Key, T> &other) const { return !(*this == other); }
+    bool operator==(const QHash &other) const;
+    bool operator!=(const QHash &other) const { return !(*this == other); }
 
     inline int size() const { return d->size; }
 
@@ -365,7 +365,7 @@ public:
 #if QT_SUPPORTS(UNSHARABLE_CONTAINERS)
     inline void setSharable(bool sharable) { if (!sharable) detach(); if (d != &QHashData::shared_null) d->sharable = sharable; }
 #endif
-    inline bool isSharedWith(const QHash<Key, T> &other) const { return d == other.d; }
+    bool isSharedWith(const QHash &other) const { return d == other.d; }
 
     void clear();
 
@@ -528,7 +528,7 @@ public:
     const_iterator constFind(const Key &key) const;
     iterator insert(const Key &key, const T &value);
     iterator insertMulti(const Key &key, const T &value);
-    QHash<Key, T> &unite(const QHash<Key, T> &other);
+    QHash &unite(const QHash &other);
 
     // STL compatibility
     typedef T mapped_type;
@@ -604,9 +604,9 @@ QHash<Key, T>::createNode(uint ah, const Key &akey, const T &avalue, Node **anex
 }
 
 template <class Key, class T>
-Q_INLINE_TEMPLATE QHash<Key, T> &QHash<Key, T>::unite(const QHash<Key, T> &other)
+Q_INLINE_TEMPLATE QHash<Key, T> &QHash<Key, T>::unite(const QHash &other)
 {
-    QHash<Key, T> copy(other);
+    QHash copy(other);
     const_iterator it = copy.constEnd();
     while (it != copy.constBegin()) {
         --it;
@@ -624,7 +624,7 @@ Q_OUTOFLINE_TEMPLATE void QHash<Key, T>::freeData(QHashData *x)
 template <class Key, class T>
 Q_INLINE_TEMPLATE void QHash<Key, T>::clear()
 {
-    *this = QHash<Key,T>();
+    *this = QHash();
 }
 
 template <class Key, class T>
@@ -637,7 +637,7 @@ Q_OUTOFLINE_TEMPLATE void QHash<Key, T>::detach_helper()
 }
 
 template <class Key, class T>
-Q_INLINE_TEMPLATE QHash<Key, T> &QHash<Key, T>::operator=(const QHash<Key, T> &other)
+Q_INLINE_TEMPLATE QHash<Key, T> &QHash<Key, T>::operator=(const QHash &other)
 {
     if (d != other.d) {
         QHashData *o = other.d;
@@ -965,7 +965,7 @@ Q_OUTOFLINE_TEMPLATE typename QHash<Key, T>::Node **QHash<Key, T>::findNode(cons
 }
 
 template <class Key, class T>
-Q_OUTOFLINE_TEMPLATE bool QHash<Key, T>::operator==(const QHash<Key, T> &other) const
+Q_OUTOFLINE_TEMPLATE bool QHash<Key, T>::operator==(const QHash &other) const
 {
     if (size() != other.size())
         return false;
@@ -1004,7 +1004,7 @@ public:
     }
 #endif
     QMultiHash(const QHash<Key, T> &other) : QHash<Key, T>(other) {}
-    inline void swap(QMultiHash<Key, T> &other) { QHash<Key, T>::swap(other); } // prevent QMultiHash<->QHash swaps
+    void swap(QMultiHash &other) { QHash<Key, T>::swap(other); } // prevent QMultiHash<->QHash swaps
 
     inline typename QHash<Key, T>::iterator replace(const Key &key, const T &value)
     { return QHash<Key, T>::insert(key, value); }

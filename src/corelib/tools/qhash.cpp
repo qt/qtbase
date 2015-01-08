@@ -1146,7 +1146,7 @@ uint qHash(long double key, uint seed) Q_DECL_NOTHROW
 */
 
 /*!
-    \fn QHash::QHash(QHash<Key, T> &&other)
+    \fn QHash::QHash(QHash &&other)
 
     Move-constructs a QHash instance, making it point at the same
     object that \a other was pointing to.
@@ -1164,7 +1164,7 @@ uint qHash(long double key, uint seed) Q_DECL_NOTHROW
     compiled in C++11 mode.
 */
 
-/*! \fn QHash::QHash(const QHash<Key, T> &other)
+/*! \fn QHash::QHash(const QHash &other)
 
     Constructs a copy of \a other.
 
@@ -1182,34 +1182,34 @@ uint qHash(long double key, uint seed) Q_DECL_NOTHROW
     iterators of this hash become invalid.
 */
 
-/*! \fn QHash<Key, T> &QHash::operator=(const QHash<Key, T> &other)
+/*! \fn QHash &QHash::operator=(const QHash &other)
 
     Assigns \a other to this hash and returns a reference to this hash.
 */
 
 /*!
-    \fn QHash<Key, T> &QHash::operator=(QHash<Key, T> &&other)
+    \fn QHash &QHash::operator=(QHash &&other)
 
     Move-assigns \a other to this QHash instance.
 
     \since 5.2
 */
 
-/*! \fn void QHash::swap(QHash<Key, T> &other)
+/*! \fn void QHash::swap(QHash &other)
     \since 4.8
 
     Swaps hash \a other with this hash. This operation is very
     fast and never fails.
 */
 
-/*! \fn void QMultiHash::swap(QMultiHash<Key, T> &other)
+/*! \fn void QMultiHash::swap(QMultiHash &other)
     \since 4.8
 
     Swaps hash \a other with this hash. This operation is very
     fast and never fails.
 */
 
-/*! \fn bool QHash::operator==(const QHash<Key, T> &other) const
+/*! \fn bool QHash::operator==(const QHash &other) const
 
     Returns \c true if \a other is equal to this hash; otherwise returns
     false.
@@ -1222,7 +1222,7 @@ uint qHash(long double key, uint seed) Q_DECL_NOTHROW
     \sa operator!=()
 */
 
-/*! \fn bool QHash::operator!=(const QHash<Key, T> &other) const
+/*! \fn bool QHash::operator!=(const QHash &other) const
 
     Returns \c true if \a other is not equal to this hash; otherwise
     returns \c false.
@@ -1322,7 +1322,7 @@ uint qHash(long double key, uint seed) Q_DECL_NOTHROW
     \internal
 */
 
-/*! \fn bool QHash::isSharedWith(const QHash<Key, T> &other) const
+/*! \fn bool QHash::isSharedWith(const QHash &other) const
 
     \internal
 */
@@ -1644,7 +1644,7 @@ uint qHash(long double key, uint seed) Q_DECL_NOTHROW
     \sa insert(), values()
 */
 
-/*! \fn QHash<Key, T> &QHash::unite(const QHash<Key, T> &other)
+/*! \fn QHash &QHash::unite(const QHash &other)
 
     Inserts all the items in the \a other hash into this hash. If a
     key is common to both hashes, the resulting hash will contain the
