@@ -250,6 +250,26 @@ QFileSystemEntry QFileSystemEngine::canonicalName(const QFileSystemEntry &entry,
             return QFileSystemEntry(ret);
         }
     }
+
+# elif defined(Q_OS_ANDROID)
+    // On some Android versions, realpath() will return a path even if it does not exist
+    // To work around this, we check existence in advance.
+    if (!data.hasFlags(QFileSystemMetaData::ExistsAttribute))
+        fillMetaData(entry, data, QFileSystemMetaData::ExistsAttribute);
+
+    if (!data.exists()) {
+        ret = 0;
+        errno = ENOENT;
+    } else {
+        ret = (char*)malloc(PATH_MAX + 1);
+        if (realpath(entry.nativeFilePath().constData(), (char*)ret) == 0) {
+            const int savedErrno = errno; // errno is checked below, and free() might change it
+            free(ret);
+            errno = savedErrno;
+            ret = 0;
+        }
+    }
+
 # else
 #  if _POSIX_VERSION >= 200801L
     ret = realpath(entry.nativeFilePath().constData(), (char*)0);
