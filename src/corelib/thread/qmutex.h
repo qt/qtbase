@@ -176,12 +176,12 @@ class Q_CORE_EXPORT QMutex
 public:
     enum RecursionMode { NonRecursive, Recursive };
 
-    inline explicit QMutex(RecursionMode mode = NonRecursive) { Q_UNUSED(mode); }
+    inline explicit QMutex(RecursionMode mode = NonRecursive) Q_DECL_NOTHROW { Q_UNUSED(mode); }
 
-    inline void lock() {}
-    inline bool tryLock(int timeout = 0) { Q_UNUSED(timeout); return true; }
-    inline void unlock() {}
-    inline bool isRecursive() { return true; }
+    inline void lock() Q_DECL_NOTHROW {}
+    inline bool tryLock(int timeout = 0) Q_DECL_NOTHROW { Q_UNUSED(timeout); return true; }
+    inline void unlock() Q_DECL_NOTHROW {}
+    inline bool isRecursive() Q_DECL_NOTHROW { return true; }
 
 private:
     Q_DISABLE_COPY(QMutex)
@@ -190,12 +190,12 @@ private:
 class Q_CORE_EXPORT QMutexLocker
 {
 public:
-    inline explicit QMutexLocker(QMutex *) {}
-    inline ~QMutexLocker() {}
+    inline explicit QMutexLocker(QMutex *) Q_DECL_NOTHROW {}
+    inline ~QMutexLocker() Q_DECL_NOTHROW {}
 
-    inline void unlock() {}
-    void relock() {}
-    inline QMutex *mutex() const { return 0; }
+    inline void unlock() Q_DECL_NOTHROW {}
+    void relock() Q_DECL_NOTHROW {}
+    inline QMutex *mutex() const Q_DECL_NOTHROW { return Q_NULLPTR; }
 
 private:
     Q_DISABLE_COPY(QMutexLocker)
