@@ -210,7 +210,7 @@ class Q_CORE_EXPORT QString
 public:
     typedef QStringData Data;
 
-    inline QString();
+    inline QString() Q_DECL_NOTHROW;
     explicit QString(const QChar *unicode, int size = -1);
     QString(QChar c);
     QString(int size, QChar c);
@@ -221,11 +221,11 @@ public:
     QString &operator=(const QString &);
     inline QString &operator=(QLatin1String latin1);
 #ifdef Q_COMPILER_RVALUE_REFS
-    inline QString(QString && other) : d(other.d) { other.d = Data::sharedNull(); }
-    inline QString &operator=(QString &&other)
+    inline QString(QString && other) Q_DECL_NOTHROW : d(other.d) { other.d = Data::sharedNull(); }
+    inline QString &operator=(QString &&other) Q_DECL_NOTHROW
     { qSwap(d, other.d); return *this; }
 #endif
-    inline void swap(QString &other) { qSwap(d, other.d); }
+    inline void swap(QString &other) Q_DECL_NOTHROW { qSwap(d, other.d); }
     inline int size() const { return d->size; }
     inline int count() const { return d->size; }
     inline int length() const;
@@ -1040,7 +1040,7 @@ inline void QCharRef::setRow(uchar arow) { QChar(*this).setRow(arow); }
 inline void QCharRef::setCell(uchar acell) { QChar(*this).setCell(acell); }
 
 
-inline QString::QString() : d(Data::sharedNull()) {}
+inline QString::QString() Q_DECL_NOTHROW : d(Data::sharedNull()) {}
 inline QString::~QString() { if (!d->ref.deref()) Data::deallocate(d); }
 
 inline void QString::reserve(int asize)

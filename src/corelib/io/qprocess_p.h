@@ -98,7 +98,7 @@ public:
     QByteArray key;
     uint hash;
 };
-inline uint qHash(const QProcEnvKey &key) { return key.hash; }
+inline uint qHash(const QProcEnvKey &key) Q_DECL_NOTHROW { return key.hash; }
 
 class QProcEnvValue
 {

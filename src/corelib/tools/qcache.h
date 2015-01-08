@@ -83,7 +83,7 @@ class QCache
     Q_DISABLE_COPY(QCache)
 
 public:
-    inline explicit QCache(int maxCost = 100);
+    inline explicit QCache(int maxCost = 100) Q_DECL_NOTHROW;
     inline ~QCache() { clear(); }
 
     inline int maxCost() const { return mx; }
@@ -110,7 +110,7 @@ private:
 };
 
 template <class Key, class T>
-inline QCache<Key, T>::QCache(int amaxCost)
+inline QCache<Key, T>::QCache(int amaxCost) Q_DECL_NOTHROW
     : f(0), l(0), mx(amaxCost), total(0) {}
 
 template <class Key, class T>

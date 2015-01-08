@@ -195,12 +195,13 @@ public:
     QByteArray &operator=(const QByteArray &);
     QByteArray &operator=(const char *str);
 #ifdef Q_COMPILER_RVALUE_REFS
-    inline QByteArray(QByteArray && other) : d(other.d) { other.d = Data::sharedNull(); }
-    inline QByteArray &operator=(QByteArray &&other)
+    inline QByteArray(QByteArray && other) Q_DECL_NOTHROW : d(other.d) { other.d = Data::sharedNull(); }
+    inline QByteArray &operator=(QByteArray &&other) Q_DECL_NOTHROW
     { qSwap(d, other.d); return *this; }
 #endif
 
-    inline void swap(QByteArray &other) { qSwap(d, other.d); }
+    inline void swap(QByteArray &other) Q_DECL_NOTHROW
+    { qSwap(d, other.d); }
 
     inline int size() const;
     bool isEmpty() const;

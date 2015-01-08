@@ -52,10 +52,10 @@ public:
     ~QCollatorSortKey();
     QCollatorSortKey &operator=(const QCollatorSortKey &other);
 #ifdef Q_COMPILER_RVALUE_REFS
-    inline QCollatorSortKey &operator=(QCollatorSortKey &&other)
+    inline QCollatorSortKey &operator=(QCollatorSortKey &&other) Q_DECL_NOTHROW
     { swap(other); return *this; }
 #endif
-    void swap(QCollatorSortKey &other)
+    void swap(QCollatorSortKey &other) Q_DECL_NOTHROW
     { d.swap(other.d); }
 
     int compare(const QCollatorSortKey &key) const;
@@ -82,13 +82,13 @@ public:
     ~QCollator();
     QCollator &operator=(const QCollator &);
 #ifdef Q_COMPILER_RVALUE_REFS
-    QCollator(QCollator &&other)
+    QCollator(QCollator &&other) Q_DECL_NOTHROW
         : d(other.d) { other.d = 0; }
-    QCollator &operator=(QCollator &&other)
+    QCollator &operator=(QCollator &&other) Q_DECL_NOTHROW
     { swap(other); return *this; }
 #endif
 
-    void swap(QCollator &other)
+    void swap(QCollator &other) Q_DECL_NOTHROW
     { qSwap(d, other.d); }
 
     void setLocale(const QLocale &locale);

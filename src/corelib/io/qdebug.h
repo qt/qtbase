@@ -85,7 +85,7 @@ public:
     inline QDebug(const QDebug &o):stream(o.stream) { ++stream->ref; }
     inline QDebug &operator=(const QDebug &other);
     ~QDebug();
-    inline void swap(QDebug &other) { qSwap(stream, other.stream); }
+    inline void swap(QDebug &other) Q_DECL_NOTHROW { qSwap(stream, other.stream); }
 
     QDebug &resetFormat();
 

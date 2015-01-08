@@ -77,11 +77,11 @@ public:
     QRegularExpression &operator=(const QRegularExpression &re);
 
 #ifdef Q_COMPILER_RVALUE_REFS
-    inline QRegularExpression &operator=(QRegularExpression &&re)
+    QRegularExpression &operator=(QRegularExpression &&re) Q_DECL_NOTHROW
     { d.swap(re.d); return *this; }
 #endif
 
-    inline void swap(QRegularExpression &re) { d.swap(re.d); }
+    void swap(QRegularExpression &other) Q_DECL_NOTHROW { d.swap(other.d); }
 
     QString pattern() const;
     void setPattern(const QString &pattern);
@@ -169,10 +169,10 @@ public:
     QRegularExpressionMatch &operator=(const QRegularExpressionMatch &match);
 
 #ifdef Q_COMPILER_RVALUE_REFS
-    inline QRegularExpressionMatch &operator=(QRegularExpressionMatch &&match)
+    QRegularExpressionMatch &operator=(QRegularExpressionMatch &&match) Q_DECL_NOTHROW
     { d.swap(match.d); return *this; }
 #endif
-    inline void swap(QRegularExpressionMatch &match) { d.swap(match.d); }
+    void swap(QRegularExpressionMatch &other) Q_DECL_NOTHROW { d.swap(other.d); }
 
     QRegularExpression regularExpression() const;
     QRegularExpression::MatchType matchType() const;
@@ -226,10 +226,10 @@ public:
     QRegularExpressionMatchIterator(const QRegularExpressionMatchIterator &iterator);
     QRegularExpressionMatchIterator &operator=(const QRegularExpressionMatchIterator &iterator);
 #ifdef Q_COMPILER_RVALUE_REFS
-    inline QRegularExpressionMatchIterator &operator=(QRegularExpressionMatchIterator &&iterator)
+    QRegularExpressionMatchIterator &operator=(QRegularExpressionMatchIterator &&iterator) Q_DECL_NOTHROW
     { d.swap(iterator.d); return *this; }
 #endif
-    void swap(QRegularExpressionMatchIterator &iterator) { d.swap(iterator.d); }
+    void swap(QRegularExpressionMatchIterator &other) Q_DECL_NOTHROW { d.swap(other.d); }
 
     bool isValid() const;
 

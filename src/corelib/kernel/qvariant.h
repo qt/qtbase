@@ -253,13 +253,13 @@ class Q_CORE_EXPORT QVariant
 
     QVariant& operator=(const QVariant &other);
 #ifdef Q_COMPILER_RVALUE_REFS
-    inline QVariant(QVariant &&other) : d(other.d)
+    inline QVariant(QVariant &&other) Q_DECL_NOTHROW : d(other.d)
     { other.d = Private(); }
-    inline QVariant &operator=(QVariant &&other)
+    inline QVariant &operator=(QVariant &&other) Q_DECL_NOTHROW
     { qSwap(d, other.d); return *this; }
 #endif
 
-    inline void swap(QVariant &other) { qSwap(d, other.d); }
+    inline void swap(QVariant &other) Q_DECL_NOTHROW { qSwap(d, other.d); }
 
     Type type() const;
     int userType() const;
@@ -360,15 +360,15 @@ class Q_CORE_EXPORT QVariant
     };
     struct Private
     {
-        inline Private(): type(Invalid), is_shared(false), is_null(true)
+        inline Private() Q_DECL_NOTHROW : type(Invalid), is_shared(false), is_null(true)
         { data.ptr = 0; }
 
         // Internal constructor for initialized variants.
-        explicit inline Private(uint variantType)
+        explicit inline Private(uint variantType) Q_DECL_NOTHROW
             : type(variantType), is_shared(false), is_null(false)
         {}
 
-        inline Private(const Private &other)
+        inline Private(const Private &other) Q_DECL_NOTHROW
             : data(other.data), type(other.type),
               is_shared(other.is_shared), is_null(other.is_null)
         {}

@@ -112,7 +112,7 @@ class QList : public QListSpecialMethods<T>
     union { QListData p; QListData::Data *d; };
 
 public:
-    inline QList() : d(const_cast<QListData::Data *>(&QListData::shared_null)) { }
+    inline QList() Q_DECL_NOTHROW : d(const_cast<QListData::Data *>(&QListData::shared_null)) { }
     QList(const QList<T> &l);
     ~QList();
     QList<T> &operator=(const QList<T> &l);

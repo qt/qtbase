@@ -318,7 +318,7 @@ QCoreApplication *QCoreApplication::self = 0;
 uint QCoreApplicationPrivate::attribs = (1 << Qt::AA_SynthesizeMouseForUnhandledTouchEvents);
 
 struct QCoreApplicationData {
-    QCoreApplicationData() {
+    QCoreApplicationData() Q_DECL_NOTHROW {
 #ifndef QT_NO_LIBRARY
         app_libpaths = 0;
 #endif

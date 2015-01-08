@@ -113,7 +113,7 @@ struct Q_CORE_EXPORT QArrayData
             size_t alignment) Q_DECL_NOTHROW;
 
     static const QArrayData shared_null[2];
-    static QArrayData *sharedNull() { return const_cast<QArrayData*>(shared_null); }
+    static QArrayData *sharedNull() Q_DECL_NOTHROW { return const_cast<QArrayData*>(shared_null); }
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QArrayData::AllocationOptions)
@@ -237,7 +237,7 @@ struct QTypedArrayData
         return result;
     }
 
-    static QTypedArrayData *sharedNull()
+    static QTypedArrayData *sharedNull() Q_DECL_NOTHROW
     {
         Q_STATIC_ASSERT(sizeof(QTypedArrayData) == sizeof(QArrayData));
         return static_cast<QTypedArrayData *>(QArrayData::sharedNull());

@@ -61,7 +61,7 @@ class QVector
     Data *d;
 
 public:
-    inline QVector() : d(Data::sharedNull()) { }
+    inline QVector() Q_DECL_NOTHROW : d(Data::sharedNull()) { }
     explicit QVector(int size);
     QVector(int size, const T &t);
     inline QVector(const QVector<T> &v);

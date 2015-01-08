@@ -173,14 +173,14 @@ public:
     QUrl &operator=(const QString &url);
 #endif
 #ifdef Q_COMPILER_RVALUE_REFS
-    QUrl(QUrl &&other) : d(0)
-    { qSwap(d, other.d); }
-    inline QUrl &operator=(QUrl &&other)
+    QUrl(QUrl &&other) Q_DECL_NOTHROW : d(other.d)
+    { other.d = Q_NULLPTR; }
+    inline QUrl &operator=(QUrl &&other) Q_DECL_NOTHROW
     { qSwap(d, other.d); return *this; }
 #endif
     ~QUrl();
 
-    inline void swap(QUrl &other) { qSwap(d, other.d); }
+    inline void swap(QUrl &other) Q_DECL_NOTHROW { qSwap(d, other.d); }
 
     void setUrl(const QString &url, ParsingMode mode = TolerantMode);
     QString url(FormattingOptions options = FormattingOptions(PrettyDecoded)) const;

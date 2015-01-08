@@ -91,7 +91,7 @@ Q_CORE_EXPORT QDebug operator<<(QDebug, const QModelIndex &);
 class QPersistentModelIndexData;
 
 // qHash is a friend, but we can't use default arguments for friends (§8.3.6.4)
-uint qHash(const QPersistentModelIndex &index, uint seed = 0);
+uint qHash(const QPersistentModelIndex &index, uint seed = 0) Q_DECL_NOTHROW;
 
 class Q_CORE_EXPORT QPersistentModelIndex
 {
@@ -106,11 +106,12 @@ public:
     { return !operator==(other); }
     QPersistentModelIndex &operator=(const QPersistentModelIndex &other);
 #ifdef Q_COMPILER_RVALUE_REFS
-    inline QPersistentModelIndex(QPersistentModelIndex &&other) : d(other.d) { other.d = 0; }
-    inline QPersistentModelIndex &operator=(QPersistentModelIndex &&other)
+    inline QPersistentModelIndex(QPersistentModelIndex &&other) Q_DECL_NOTHROW
+        : d(other.d) { other.d = Q_NULLPTR; }
+    inline QPersistentModelIndex &operator=(QPersistentModelIndex &&other) Q_DECL_NOTHROW
     { qSwap(d, other.d); return *this; }
 #endif
-    inline void swap(QPersistentModelIndex &other) { qSwap(d, other.d); }
+    inline void swap(QPersistentModelIndex &other) Q_DECL_NOTHROW { qSwap(d, other.d); }
     bool operator==(const QModelIndex &other) const;
     bool operator!=(const QModelIndex &other) const;
     QPersistentModelIndex &operator=(const QModelIndex &other);
@@ -128,14 +129,14 @@ public:
     bool isValid() const;
 private:
     QPersistentModelIndexData *d;
-    friend uint qHash(const QPersistentModelIndex &, uint seed);
+    friend uint qHash(const QPersistentModelIndex &, uint seed) Q_DECL_NOTHROW;
 #ifndef QT_NO_DEBUG_STREAM
     friend Q_CORE_EXPORT QDebug operator<<(QDebug, const QPersistentModelIndex &);
 #endif
 };
 Q_DECLARE_SHARED(QPersistentModelIndex)
 
-inline uint qHash(const QPersistentModelIndex &index, uint seed)
+inline uint qHash(const QPersistentModelIndex &index, uint seed) Q_DECL_NOTHROW
 { return qHash(index.d, seed); }
 
 

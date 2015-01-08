@@ -328,7 +328,7 @@ class QHash
     static inline int alignOfNode() { return qMax<int>(sizeof(void*), Q_ALIGNOF(Node)); }
 
 public:
-    inline QHash() : d(const_cast<QHashData *>(&QHashData::shared_null)) { }
+    inline QHash() Q_DECL_NOTHROW : d(const_cast<QHashData *>(&QHashData::shared_null)) { }
 #ifdef Q_COMPILER_INITIALIZER_LISTS
     inline QHash(std::initializer_list<std::pair<Key,T> > list)
         : d(const_cast<QHashData *>(&QHashData::shared_null))
@@ -343,11 +343,11 @@ public:
 
     QHash<Key, T> &operator=(const QHash<Key, T> &other);
 #ifdef Q_COMPILER_RVALUE_REFS
-    inline QHash(QHash<Key, T> &&other) : d(other.d) { other.d = const_cast<QHashData *>(&QHashData::shared_null); }
-    inline QHash<Key, T> &operator=(QHash<Key, T> &&other)
+    inline QHash(QHash<Key, T> &&other) Q_DECL_NOTHROW : d(other.d) { other.d = const_cast<QHashData *>(&QHashData::shared_null); }
+    inline QHash<Key, T> &operator=(QHash<Key, T> &&other) Q_DECL_NOTHROW
     { qSwap(d, other.d); return *this; }
 #endif
-    inline void swap(QHash<Key, T> &other) { qSwap(d, other.d); }
+    inline void swap(QHash<Key, T> &other) Q_DECL_NOTHROW { qSwap(d, other.d); }
 
     bool operator==(const QHash<Key, T> &other) const;
     inline bool operator!=(const QHash<Key, T> &other) const { return !(*this == other); }
