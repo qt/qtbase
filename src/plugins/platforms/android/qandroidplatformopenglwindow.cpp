@@ -138,19 +138,19 @@ EGLSurface QAndroidPlatformOpenGLWindow::eglSurface(EGLConfig config)
     return m_eglSurface;
 }
 
-void QAndroidPlatformOpenGLWindow::checkNativeSurface(EGLConfig config)
+bool QAndroidPlatformOpenGLWindow::checkNativeSurface(EGLConfig config)
 {
     QMutexLocker lock(&m_surfaceMutex);
     if (m_nativeSurfaceId == -1 || !m_androidSurfaceObject.isValid())
-        return;
+        return false; // makeCurrent is NOT needed.
 
     createEgl(config);
-
 
     // we've create another surface, the window should be repainted
     QRect availableGeometry = screen()->availableGeometry();
     if (geometry().width() > 0 && geometry().height() > 0 && availableGeometry.width() > 0 && availableGeometry.height() > 0)
         QWindowSystemInterface::handleExposeEvent(window(), QRegion(QRect(QPoint(), geometry().size())));
+    return true; // makeCurrent is needed!
 }
 
 void QAndroidPlatformOpenGLWindow::applicationStateChanged(Qt::ApplicationState state)
@@ -209,15 +209,19 @@ void QAndroidPlatformOpenGLWindow::surfaceChanged(JNIEnv *jniEnv, jobject surfac
     Q_UNUSED(jniEnv);
     Q_UNUSED(w);
     Q_UNUSED(h);
+
     lockSurface();
     m_androidSurfaceObject = surface;
-    m_surfaceWaitCondition.wakeOne();
+    if (surface) // wait until we have a valid surface to draw into
+        m_surfaceWaitCondition.wakeOne();
     unlockSurface();
 
-    // repaint the window
-    QRect availableGeometry = screen()->availableGeometry();
-    if (geometry().width() > 0 && geometry().height() > 0 && availableGeometry.width() > 0 && availableGeometry.height() > 0)
-        QWindowSystemInterface::handleExposeEvent(window(), QRegion(QRect(QPoint(), geometry().size())));
+    if (surface) {
+        // repaint the window, when we have a valid surface
+        QRect availableGeometry = screen()->availableGeometry();
+        if (geometry().width() > 0 && geometry().height() > 0 && availableGeometry.width() > 0 && availableGeometry.height() > 0)
+            QWindowSystemInterface::handleExposeEvent(window(), QRegion(QRect(QPoint(), geometry().size())));
+    }
 }
 
 QT_END_NAMESPACE

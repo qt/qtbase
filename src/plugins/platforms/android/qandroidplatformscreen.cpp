@@ -391,7 +391,7 @@ Qt::ScreenOrientation QAndroidPlatformScreen::nativeOrientation() const
 void QAndroidPlatformScreen::surfaceChanged(JNIEnv *env, jobject surface, int w, int h)
 {
     lockSurface();
-    if (surface && w && h) {
+    if (surface && w > 0  && h > 0) {
         releaseSurface();
         m_nativeSurface = ANativeWindow_fromSurface(env, surface);
         QMetaObject::invokeMethod(this, "setDirty", Qt::QueuedConnection, Q_ARG(QRect, QRect(0, 0, w, h)));
