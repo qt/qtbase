@@ -882,11 +882,10 @@ QVariant QStateMachinePrivate::savedValueForRestorable(const QList<QAbstractStat
 #ifdef QSTATEMACHINE_RESTORE_PROPERTIES_DEBUG
     qDebug() << q_func() << ": savedValueForRestorable(" << exitedStates_sorted << object << propertyName << ")";
 #endif
-    RestorableId id(object, propertyName);
     for (int i = exitedStates_sorted.size() - 1; i >= 0; --i) {
         QAbstractState *s = exitedStates_sorted.at(i);
         QHash<RestorableId, QVariant> restorables = registeredRestorablesForState.value(s);
-        QHash<RestorableId, QVariant>::const_iterator it = restorables.constFind(id);
+        QHash<RestorableId, QVariant>::const_iterator it = restorables.constFind(RestorableId(object, propertyName));
         if (it != restorables.constEnd()) {
 #ifdef QSTATEMACHINE_RESTORE_PROPERTIES_DEBUG
             qDebug() << q_func() << ":   using" << it.value() << "from" << s;
@@ -897,7 +896,7 @@ QVariant QStateMachinePrivate::savedValueForRestorable(const QList<QAbstractStat
 #ifdef QSTATEMACHINE_RESTORE_PROPERTIES_DEBUG
     qDebug() << q_func() << ":   falling back to current value";
 #endif
-    return id.first->property(id.second);
+    return object->property(propertyName);
 }
 
 void QStateMachinePrivate::registerRestorable(QAbstractState *state, QObject *object, const QByteArray &propertyName,
