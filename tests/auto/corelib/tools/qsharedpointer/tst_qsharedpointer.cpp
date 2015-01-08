@@ -2355,6 +2355,24 @@ void tst_QSharedPointer::sharedFromThis()
     QCOMPARE(Data::generationCounter, generations + 4);
     QCOMPARE(Data::destructorCounter, destructions + 4);
 
+    {
+        QSharedPointer<SomeClass> scp2 = QSharedPointer<SomeClass>::create();
+        QVERIFY(!scp2.isNull());
+
+        scp = scp2->sharedFromThis();
+        QVERIFY(!scp.isNull());
+
+        QVERIFY(scp == scp2);
+        QCOMPARE(Data::generationCounter, generations + 5);
+        QCOMPARE(Data::destructorCounter, destructions + 4);
+    }
+    QCOMPARE(Data::generationCounter, generations + 5);
+    QCOMPARE(Data::destructorCounter, destructions + 4);
+
+    scp.clear();
+
+    QCOMPARE(Data::generationCounter, generations + 5);
+    QCOMPARE(Data::destructorCounter, destructions + 5);
 }
 
 namespace ReentrancyWhileDestructing {
