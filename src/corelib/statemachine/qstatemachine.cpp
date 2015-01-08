@@ -947,14 +947,15 @@ QList<QPropertyAssignment> QStateMachinePrivate::restorablesToPropertyList(const
     QList<QPropertyAssignment> result;
     QHash<RestorableId, QVariant>::const_iterator it;
     for (it = restorables.constBegin(); it != restorables.constEnd(); ++it) {
-        if (!it.key().first) {
+        const RestorableId &id = it.key();
+        if (!id.object()) {
             // Property object was deleted
             continue;
         }
 #ifdef QSTATEMACHINE_RESTORE_PROPERTIES_DEBUG
-        qDebug() << q_func() << ": restoring" << it.key().first << it.key().second << "to" << it.value();
+        qDebug() << q_func() << ": restoring" << id.object() << id.proertyName() << "to" << it.value();
 #endif
-        result.append(QPropertyAssignment(it.key().first, it.key().second, it.value(), /*explicitlySet=*/false));
+        result.append(QPropertyAssignment(id.object(), id.propertyName(), it.value(), /*explicitlySet=*/false));
     }
     return result;
 }

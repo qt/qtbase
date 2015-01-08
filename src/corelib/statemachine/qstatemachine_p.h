@@ -189,7 +189,24 @@ public:
     void cancelAllDelayedEvents();
 
 #ifndef QT_NO_PROPERTIES
-    typedef QPair<QPointer<QObject>, QByteArray> RestorableId;
+    class RestorableId {
+        QPointer<QObject> guard;
+        QObject *obj;
+        QByteArray prop;
+        // two overloads because friends can't have default arguments
+        friend uint qHash(const RestorableId &key, uint seed) Q_DECL_NOEXCEPT_EXPR(noexcept(std::declval<QByteArray>()))
+        { return qHash(qMakePair(key.obj, key.prop), seed); }
+        friend uint qHash(const RestorableId &key) Q_DECL_NOEXCEPT_EXPR(noexcept(qHash(key, 0U)))
+        { return qHash(key, 0U); }
+        friend bool operator==(const RestorableId &lhs, const RestorableId &rhs) Q_DECL_NOTHROW
+        { return lhs.obj == rhs.obj && lhs.prop == rhs.prop; }
+        friend bool operator!=(const RestorableId &lhs, const RestorableId &rhs) Q_DECL_NOTHROW
+        { return !operator==(lhs, rhs); }
+    public:
+        explicit RestorableId(QObject *o, QByteArray p) Q_DECL_NOTHROW : guard(o), obj(o), prop(qMove(p)) {}
+        QObject *object() const Q_DECL_NOTHROW { return guard; }
+        QByteArray propertyName() const Q_DECL_NOTHROW { return prop; }
+    };
     QHash<QAbstractState*, QHash<RestorableId, QVariant> > registeredRestorablesForState;
     bool hasRestorable(QAbstractState *state, QObject *object, const QByteArray &propertyName) const;
     QVariant savedValueForRestorable(const QList<QAbstractState*> &exitedStates_sorted,
