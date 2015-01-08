@@ -58,18 +58,18 @@ public:
     QPen(const QColor &color);
     QPen(const QBrush &brush, qreal width, Qt::PenStyle s = Qt::SolidLine,
          Qt::PenCapStyle c = Qt::SquareCap, Qt::PenJoinStyle j = Qt::BevelJoin);
-    QPen(const QPen &pen);
+    QPen(const QPen &pen) Q_DECL_NOTHROW;
 
     ~QPen();
 
-    QPen &operator=(const QPen &pen);
+    QPen &operator=(const QPen &pen) Q_DECL_NOTHROW;
 #ifdef Q_COMPILER_RVALUE_REFS
-    inline QPen(QPen &&other)
+    QPen(QPen &&other) Q_DECL_NOTHROW
         : d(other.d) { other.d = 0; }
-    inline QPen &operator=(QPen &&other)
+    QPen &operator=(QPen &&other) Q_DECL_NOTHROW
     { qSwap(d, other.d); return *this; }
 #endif
-    inline void swap(QPen &other) { qSwap(d, other.d); }
+    void swap(QPen &other) Q_DECL_NOTHROW { qSwap(d, other.d); }
 
     Qt::PenStyle style() const;
     void setStyle(Qt::PenStyle);
