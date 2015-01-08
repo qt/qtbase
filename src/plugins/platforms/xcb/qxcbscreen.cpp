@@ -317,8 +317,14 @@ QDpi QXcbScreen::logicalDpi() const
     if (m_forcedDpi > 0)
         return QDpi(m_forcedDpi/dpr, m_forcedDpi/dpr);
 
-    return QDpi(Q_MM_PER_INCH * m_virtualSize.width() / m_virtualSizeMillimeters.width() / dpr,
-                Q_MM_PER_INCH * m_virtualSize.height() / m_virtualSizeMillimeters.height() / dpr);
+    static const bool auto_dpr = qgetenv("QT_DEVICE_PIXEL_RATIO").toLower() == "auto";
+    if (auto_dpr) {
+        return QDpi(Q_MM_PER_INCH * m_geometry.width() / m_sizeMillimeters.width(),
+                    Q_MM_PER_INCH * m_geometry.height() / m_sizeMillimeters.height());
+    } else {
+        return QDpi(Q_MM_PER_INCH * m_virtualSize.width() / m_virtualSizeMillimeters.width() / dpr,
+                    Q_MM_PER_INCH * m_virtualSize.height() / m_virtualSizeMillimeters.height() / dpr);
+    }
 }
 
 
