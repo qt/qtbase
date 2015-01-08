@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2015 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -32,13 +32,148 @@
 ****************************************************************************/
 
 #include "qwindowsopengltester.h"
-#include "qt_windows.h"
 #include "qwindowscontext.h"
+
+#include <QtCore/QVariantMap>
+#include <QtCore/QDebug>
+#include <QtCore/QTextStream>
+
+#ifndef Q_OS_WINCE
+#  include <QtCore/qt_windows.h>
+#  include <private/qsystemlibrary_p.h>
+#  include <d3d9.h>
+#endif
 
 QT_BEGIN_NAMESPACE
 
+QString GpuDriverVersion::toString() const
+{
+    return QString::number(product)
+        + QLatin1Char('.') + QString::number(version)
+        + QLatin1Char('.') + QString::number(subVersion)
+        + QLatin1Char('.') + QString::number(build);
+}
+
+int GpuDriverVersion::compare(const GpuDriverVersion &rhs) const
+{
+    if (product < rhs.product)
+        return -1;
+    if (product > rhs.product)
+        return 1;
+    if (version < rhs.version)
+        return -1;
+    if (version > rhs.version)
+        return 1;
+    if (subVersion < rhs.subVersion)
+        return -1;
+    if (subVersion > rhs.subVersion)
+        return 1;
+    if (build < rhs.build)
+        return -1;
+    if (build > rhs.build)
+        return 1;
+    return 0;
+}
+
+GpuDescription GpuDescription::detect()
+{
+#ifndef Q_OS_WINCE
+    typedef IDirect3D9 * (WINAPI *PtrDirect3DCreate9)(UINT);
+
+    GpuDescription result;
+    QSystemLibrary d3d9lib(QStringLiteral("d3d9"));
+    if (!d3d9lib.load())
+        return result;
+    PtrDirect3DCreate9 direct3DCreate9 = (PtrDirect3DCreate9)d3d9lib.resolve("Direct3DCreate9");
+    if (!direct3DCreate9)
+        return result;
+    IDirect3D9 *direct3D9 = direct3DCreate9(D3D_SDK_VERSION);
+    if (!direct3D9)
+        return result;
+    D3DADAPTER_IDENTIFIER9 adapterIdentifier;
+    const HRESULT hr = direct3D9->GetAdapterIdentifier(0, 0, &adapterIdentifier);
+    direct3D9->Release();
+    if (SUCCEEDED(hr)) {
+        result.vendorId = int(adapterIdentifier.VendorId);
+        result.deviceId = int(adapterIdentifier.DeviceId);
+        result.revision = int(adapterIdentifier.Revision);
+        result.subSysId = int(adapterIdentifier.SubSysId);
+        result.driverVersion.product = HIWORD(adapterIdentifier.DriverVersion.HighPart);
+        result.driverVersion.version = LOWORD(adapterIdentifier.DriverVersion.HighPart);
+        result.driverVersion.subVersion = HIWORD(adapterIdentifier.DriverVersion.LowPart);
+        result.driverVersion.build = LOWORD(adapterIdentifier.DriverVersion.LowPart);
+        result.driverName = adapterIdentifier.Driver;
+        result.description = adapterIdentifier.Description;
+    }
+    return result;
+#else // !Q_OS_WINCE
+    GpuDescription result;
+    result.vendorId = result.deviceId = result.revision
+        = result.driverVersion.product = result.driverVersion.version
+        = result.driverVersion.build = 1;
+    result.driverName = result.description = QByteArrayLiteral("Generic");
+    return result;
+#endif
+}
+
+QDebug operator<<(QDebug d, const GpuDriverVersion &v)
+{
+    QDebugStateSaver s(d);
+    d.nospace();
+    d << v.product << '.' << v.version << '.' << v.subVersion << '.' << v.build;
+    return d;
+}
+
+QDebug operator<<(QDebug d, const GpuDescription &gd)
+{
+    QDebugStateSaver s(d);
+    d.nospace();
+    d << hex << showbase << "GpuDescription(vendorId=" << gd.vendorId
+      << ", deviceId=" << gd.deviceId << ", subSysId=" << gd.subSysId
+      << dec << noshowbase << ", revision=" << gd.revision
+      << ", driver: " << gd.driverName
+      << ", version=" << gd.driverVersion << ", " << gd.description << ')';
+    return d;
+}
+
+// Return printable string formatted like the output of the dxdiag tool.
+QString GpuDescription::toString() const
+{
+    QString result;
+    QTextStream str(&result);
+    str <<   "         Card name: " << description
+        << "\n       Driver Name: " << driverName
+        << "\n    Driver Version: " << driverVersion.toString()
+        << "\n         Vendor ID: 0x" << qSetPadChar(QLatin1Char('0'))
+        << uppercasedigits << hex << qSetFieldWidth(4) << vendorId
+        << "\n         Device ID: 0x" << qSetFieldWidth(4) << deviceId
+        << "\n         SubSys ID: 0x" << qSetFieldWidth(8) << subSysId
+        << "\n       Revision ID: 0x" << qSetFieldWidth(4) << revision
+        << dec;
+    return result;
+}
+
+QVariant GpuDescription::toVariant() const
+{
+    QVariantMap result;
+    result.insert(QStringLiteral("vendorId"), QVariant(vendorId));
+    result.insert(QStringLiteral("deviceId"), QVariant(deviceId));
+    result.insert(QStringLiteral("subSysId"),QVariant(subSysId));
+    result.insert(QStringLiteral("revision"), QVariant(revision));
+    result.insert(QStringLiteral("driver"), QVariant(QLatin1String(driverName)));
+    result.insert(QStringLiteral("driverProduct"), QVariant(driverVersion.product));
+    result.insert(QStringLiteral("driverVersion"), QVariant(driverVersion.version));
+    result.insert(QStringLiteral("driverSubVersion"), QVariant(driverVersion.subVersion));
+    result.insert(QStringLiteral("driverBuild"), QVariant(driverVersion.build));
+    result.insert(QStringLiteral("driverVersionString"), driverVersion.toString());
+    result.insert(QStringLiteral("description"), QVariant(QLatin1String(description)));
+    result.insert(QStringLiteral("printable"), QVariant(toString()));
+    return result;
+}
+
 bool QWindowsOpenGLTester::testDesktopGL()
 {
+#ifndef Q_OS_WINCE
     HMODULE lib = 0;
     HWND wnd = 0;
     HDC dc = 0;
@@ -133,6 +268,9 @@ cleanup:
     // No FreeLibrary. Some implementations, Mesa in particular, deadlock when trying to unload.
 
     return result;
+#else // !Q_OS_WINCE
+    return false;
+#endif
 }
 
 QT_END_NAMESPACE

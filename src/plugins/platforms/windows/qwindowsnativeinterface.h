@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2015 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -58,6 +58,7 @@ class QWindowsNativeInterface : public QPlatformNativeInterface
 {
     Q_OBJECT
     Q_PROPERTY(bool asyncExpose READ asyncExpose WRITE setAsyncExpose)
+    Q_PROPERTY(QVariant gpu READ gpu STORED false)
 
 public:
     void *nativeResourceForIntegration(const QByteArray &resource) Q_DECL_OVERRIDE;
@@ -80,6 +81,8 @@ public:
 
     bool asyncExpose() const;
     void setAsyncExpose(bool value);
+
+    QVariant gpu() const;
 
     QVariantMap windowProperties(QPlatformWindow *window) const Q_DECL_OVERRIDE;
     QVariant windowProperty(QPlatformWindow *window, const QString &name) const Q_DECL_OVERRIDE;
