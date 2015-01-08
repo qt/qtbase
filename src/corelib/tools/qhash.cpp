@@ -418,7 +418,7 @@ QHashData *QHashData::detach_helper(void (*node_duplicate)(Node *, void *),
         Node *e;
     };
     if (this == &shared_null)
-        qt_initialize_qhash_seed();
+        qt_initialize_qhash_seed(); // may throw
     d = new QHashData;
     d->fakeNext = 0;
     d->buckets = 0;
@@ -428,7 +428,7 @@ QHashData *QHashData::detach_helper(void (*node_duplicate)(Node *, void *),
     d->userNumBits = userNumBits;
     d->numBits = numBits;
     d->numBuckets = numBuckets;
-    d->seed = uint(qt_qhash_seed.load());
+    d->seed = (this == &shared_null) ? uint(qt_qhash_seed.load()) : seed;
     d->sharable = true;
     d->strictAlignment = nodeAlign > 8;
     d->reserved = 0;
