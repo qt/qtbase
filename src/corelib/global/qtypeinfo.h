@@ -205,8 +205,6 @@ Q_DECLARE_TYPEINFO_BODY(QFlags<T>, Q_PRIMITIVE_TYPE);
 
 #define Q_DECLARE_SHARED(TYPE)                                          \
 Q_DECLARE_TYPEINFO(TYPE, Q_MOVABLE_TYPE); \
-template <> inline void qSwap<TYPE>(TYPE &value1, TYPE &value2) \
-{ value1.swap(value2); } \
 inline void swap(TYPE &value1, TYPE &value2) \
     Q_DECL_NOEXCEPT_EXPR(noexcept(value1.swap(value2))) \
 { value1.swap(value2); }
