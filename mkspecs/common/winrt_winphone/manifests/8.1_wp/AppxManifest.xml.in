@@ -30,11 +30,13 @@
         Description=\"$${WINRT_MANIFEST.description}\"
         BackgroundColor=\"$${WINRT_MANIFEST.background}\"
         ForegroundText=\"$${WINRT_MANIFEST.foreground}\"
-        Square150x150Logo=\"$${WINRT_MANIFEST.logo_large}\"
+        Square150x150Logo=\"$${WINRT_MANIFEST.logo_150x150}\"
         Square44x44Logo=\"$${WINRT_MANIFEST.logo_44x44}\">
-        <m3:DefaultTile Square71x71Logo=\"$${WINRT_MANIFEST.logo_71x71}\">
+        <m3:DefaultTile Square71x71Logo=\"$${WINRT_MANIFEST.logo_71x71}\"
+          Wide310x150Logo=\"$${WINRT_MANIFEST.logo_310x150}\">
           <m3:ShowNameOnTiles>
             <m3:ShowOn Tile=\"square150x150Logo\" />
+            <m3:ShowOn Tile=\"wide310x150Logo\" />
           </m3:ShowNameOnTiles>
         </m3:DefaultTile>
         <m3:SplashScreen Image=\"$${WINRT_MANIFEST.logo_480x800}\" />$${WINRT_MANIFEST.rotation_preference}

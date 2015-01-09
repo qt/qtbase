@@ -137,6 +137,18 @@
     ICONS_FOUND ~= s/.*\\\$\\\$\\{WINRT_MANIFEST\\.((logo|tile)_[^\}]+)\\}.*/\\1/g
     for (ICON_NAME, ICONS_FOUND) {
         ICON_FILE = $$eval(WINRT_MANIFEST.$$ICON_NAME)
+        isEmpty(ICON_FILE) {
+            equals(ICON_NAME, "logo_310x150"): ICON_FILE = $$eval(WINRT_MANIFEST.logo_wide)
+            else: equals(ICON_NAME, "logo_150x150"): ICON_FILE = $$eval(WINRT_MANIFEST.logo_large)
+            # Windows Phone specifics
+            else: equals(ICON_NAME, "logo_480x800"): ICON_FILE = $$eval(WINRT_MANIFEST.logo_splash)
+            else: equals(ICON_NAME, "logo_71x71"): ICON_FILE = $$eval(WINRT_MANIFEST.logo_medium)
+            else: equals(ICON_NAME, "logo_44x44"): ICON_FILE = $$eval(WINRT_MANIFEST.logo_small)
+            # Windows RT specifics
+            else: equals(ICON_NAME, "logo_620x300"): ICON_FILE = $$eval(WINRT_MANIFEST.logo_splash)
+            else: equals(ICON_NAME, "logo_70x70"): ICON_FILE = $$eval(WINRT_MANIFEST.logo_medium)
+            else: equals(ICON_NAME, "logo_30x30"): ICON_FILE = $$eval(WINRT_MANIFEST.logo_small)
+        }
         isEmpty(ICON_FILE): ICON_FILE = $$WINRT_ASSETS_PATH/$${ICON_NAME}.png
         icon_$${ICON_NAME}.input = $$ICON_FILE
         icon_$${ICON_NAME}.output = $$BUILD_DIR/assets/$$basename(ICON_FILE)
