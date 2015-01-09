@@ -308,8 +308,6 @@ void MingwMakefileGenerator::writeIncPart(QTextStream &t)
 
     if (!project->isActiveConfig("no_include_pwd")) {
         QString pwd = escapeFilePath(fileFixify(qmake_getpwd()));
-        if (pwd.isEmpty())
-            pwd = ".";
         t << "-I" << pwd << " ";
     }
 

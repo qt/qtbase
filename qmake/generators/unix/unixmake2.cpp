@@ -187,8 +187,6 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
     t << "INCPATH       = -I" << specdir();
     if(!project->isActiveConfig("no_include_pwd")) {
         QString pwd = escapeFilePath(fileFixify(qmake_getpwd()));
-        if(pwd.isEmpty())
-            pwd = ".";
         t << " -I" << pwd;
     }
     {

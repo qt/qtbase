@@ -742,8 +742,6 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
             mkt << "INCPATH       = -I" << specdir();
             if(!project->isActiveConfig("no_include_pwd")) {
                 QString pwd = escapeFilePath(fileFixify(qmake_getpwd()));
-                if(pwd.isEmpty())
-                    pwd = ".";
                 mkt << " -I" << pwd;
             }
             {

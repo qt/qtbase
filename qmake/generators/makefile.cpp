@@ -795,8 +795,6 @@ MakefileGenerator::init()
             incDirs += v["INCLUDEPATH"];
         if(!project->isActiveConfig("no_include_pwd")) {
             QString pwd = qmake_getpwd();
-            if(pwd.isEmpty())
-                pwd = ".";
             incDirs += pwd;
         }
         QList<QMakeLocalFileName> deplist;
