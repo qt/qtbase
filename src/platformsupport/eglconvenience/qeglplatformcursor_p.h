@@ -48,11 +48,11 @@
 #include <qpa/qplatformcursor.h>
 #include <qpa/qplatformscreen.h>
 #include <QtGui/QOpenGLFunctions>
+#include <QtGui/private/qinputdevicemanager_p.h>
 
 QT_BEGIN_NAMESPACE
 
 class QOpenGLShaderProgram;
-class QDeviceDiscovery;
 class QEGLPlatformCursor;
 
 class QEGLPlatformCursorDeviceListener : public QObject
@@ -60,16 +60,14 @@ class QEGLPlatformCursorDeviceListener : public QObject
     Q_OBJECT
 
 public:
-    QEGLPlatformCursorDeviceListener(QDeviceDiscovery *dd, QEGLPlatformCursor *cursor);
+    QEGLPlatformCursorDeviceListener(QEGLPlatformCursor *cursor) : m_cursor(cursor) { }
     bool hasMouse() const;
 
-private slots:
-    void onDeviceAdded();
-    void onDeviceRemoved();
+public slots:
+    void onDeviceListChanged(QInputDeviceManager::DeviceType type);
 
 private:
     QEGLPlatformCursor *m_cursor;
-    int m_mouseCount;
 };
 
 class QEGLPlatformCursorUpdater : public QObject
@@ -108,7 +106,6 @@ public:
     void paintOnScreen();
     void resetResources();
 
-    void setMouseDeviceDiscovery(QDeviceDiscovery *dd);
     void updateMouseStatus();
 
 private:

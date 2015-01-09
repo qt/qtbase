@@ -352,12 +352,7 @@ void QEGLPlatformIntegration::createInputHandlers()
 {
 #if !defined(QT_NO_EVDEV) && (!defined(Q_OS_ANDROID) || defined(Q_OS_ANDROID_NO_SDK))
     m_kbdMgr = new QEvdevKeyboardManager(QLatin1String("EvdevKeyboard"), QString() /* spec */, this);
-    QEvdevMouseManager *mouseMgr = new QEvdevMouseManager(QLatin1String("EvdevMouse"), QString() /* spec */, this);
-    Q_FOREACH (QScreen *screen, QGuiApplication::screens()) {
-        QEGLPlatformCursor *cursor = qobject_cast<QEGLPlatformCursor *>(screen->handle()->cursor());
-        if (cursor)
-            cursor->setMouseDeviceDiscovery(mouseMgr->deviceDiscovery());
-    }
+    new QEvdevMouseManager(QLatin1String("EvdevMouse"), QString() /* spec */, this);
 #ifndef QT_NO_TSLIB
     const bool useTslib = qEnvironmentVariableIntValue("QT_QPA_EGLFS_TSLIB");
     if (useTslib)

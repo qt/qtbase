@@ -37,6 +37,9 @@
 #include <QCoreApplication>
 #include <QLoggingCategory>
 
+#include <private/qguiapplication_p.h>
+#include <private/qinputdevicemanager_p_p.h>
+
 QT_BEGIN_NAMESPACE
 
 Q_DECLARE_LOGGING_CATEGORY(qLcEvdevKey)
@@ -97,10 +100,13 @@ void QEvdevKeyboardManager::addKeyboard(const QString &deviceNode)
     qCDebug(qLcEvdevKey) << "Adding keyboard at" << deviceNode;
     QEvdevKeyboardHandler *keyboard;
     keyboard = QEvdevKeyboardHandler::create(deviceNode, m_spec, m_defaultKeymapFile);
-    if (keyboard)
+    if (keyboard) {
         m_keyboards.insert(deviceNode, keyboard);
-    else
+        QInputDeviceManagerPrivate::get(QGuiApplicationPrivate::inputDeviceManager())->setDeviceCount(
+            QInputDeviceManager::DeviceTypeKeyboard, m_keyboards.count());
+    } else {
         qWarning("Failed to open keyboard device %s", qPrintable(deviceNode));
+    }
 }
 
 void QEvdevKeyboardManager::removeKeyboard(const QString &deviceNode)
@@ -109,6 +115,8 @@ void QEvdevKeyboardManager::removeKeyboard(const QString &deviceNode)
         qCDebug(qLcEvdevKey) << "Removing keyboard at" << deviceNode;
         QEvdevKeyboardHandler *keyboard = m_keyboards.value(deviceNode);
         m_keyboards.remove(deviceNode);
+        QInputDeviceManagerPrivate::get(QGuiApplicationPrivate::inputDeviceManager())->setDeviceCount(
+            QInputDeviceManager::DeviceTypeKeyboard, m_keyboards.count());
         delete keyboard;
     }
 }

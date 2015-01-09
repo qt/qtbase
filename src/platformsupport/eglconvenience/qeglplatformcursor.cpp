@@ -39,7 +39,7 @@
 #include <QtCore/QJsonObject>
 #include <QtDebug>
 
-#include <QtPlatformSupport/private/qdevicediscovery_p.h>
+#include <QtGui/private/qguiapplication_p.h>
 
 #include "qeglplatformcursor_p.h"
 #include "qeglplatformintegration_p.h"
@@ -79,6 +79,11 @@ QEGLPlatformCursor::QEGLPlatformCursor(QPlatformScreen *screen)
     QCursor cursor(Qt::ArrowCursor);
     setCurrentCursor(&cursor);
 #endif
+
+    m_deviceListener = new QEGLPlatformCursorDeviceListener(this);
+    connect(QGuiApplicationPrivate::inputDeviceManager(), &QInputDeviceManager::deviceListChanged,
+            m_deviceListener, &QEGLPlatformCursorDeviceListener::onDeviceListChanged);
+    updateMouseStatus();
 }
 
 QEGLPlatformCursor::~QEGLPlatformCursor()
@@ -87,42 +92,20 @@ QEGLPlatformCursor::~QEGLPlatformCursor()
     delete m_deviceListener;
 }
 
-void QEGLPlatformCursor::setMouseDeviceDiscovery(QDeviceDiscovery *dd)
-{
-    if (m_visible && dd) {
-        m_deviceListener = new QEGLPlatformCursorDeviceListener(dd, this);
-        updateMouseStatus();
-    }
-}
-
 void QEGLPlatformCursor::updateMouseStatus()
 {
     m_visible = m_deviceListener->hasMouse();
 }
 
-QEGLPlatformCursorDeviceListener::QEGLPlatformCursorDeviceListener(QDeviceDiscovery *dd, QEGLPlatformCursor *cursor)
-    : m_cursor(cursor)
-{
-    m_mouseCount = dd->scanConnectedDevices().count();
-    connect(dd, SIGNAL(deviceDetected(QString)), SLOT(onDeviceAdded()));
-    connect(dd, SIGNAL(deviceRemoved(QString)), SLOT(onDeviceRemoved()));
-}
-
 bool QEGLPlatformCursorDeviceListener::hasMouse() const
 {
-    return m_mouseCount > 0;
+    return QGuiApplicationPrivate::inputDeviceManager()->deviceCount(QInputDeviceManager::DeviceTypePointer) > 0;
 }
 
-void QEGLPlatformCursorDeviceListener::onDeviceAdded()
+void QEGLPlatformCursorDeviceListener::onDeviceListChanged(QInputDeviceManager::DeviceType type)
 {
-    ++m_mouseCount;
-    m_cursor->updateMouseStatus();
-}
-
-void QEGLPlatformCursorDeviceListener::onDeviceRemoved()
-{
-    --m_mouseCount;
-    m_cursor->updateMouseStatus();
+    if (type == QInputDeviceManager::DeviceTypePointer)
+        m_cursor->updateMouseStatus();
 }
 
 void QEGLPlatformCursor::resetResources()

@@ -55,10 +55,6 @@
 
 #include <linux/fb.h>
 
-#if !defined(QT_NO_EVDEV) && (!defined(Q_OS_ANDROID) || defined(Q_OS_ANDROID_NO_SDK))
-#include <QtPlatformSupport/private/qdevicediscovery_p.h>
-#endif
-
 QT_BEGIN_NAMESPACE
 
 static int openFramebufferDevice(const QString &dev)
@@ -393,22 +389,7 @@ bool QLinuxFbScreen::initialize()
     QFbScreen::initializeCompositor();
     mFbScreenImage = QImage(mMmap.data, geometry.width(), geometry.height(), mBytesPerLine, mFormat);
 
-    QByteArray hideCursorVal = qgetenv("QT_QPA_FB_HIDECURSOR");
-#if !defined(Q_OS_ANDROID) || defined(Q_OS_ANDROID_NO_SDK)
-    bool hideCursor = false;
-#else
-    bool hideCursor = true; // default to true to prevent the cursor showing up with the subclass on Android
-#endif
-    if (hideCursorVal.isEmpty()) {
-#if !defined(QT_NO_EVDEV) && (!defined(Q_OS_ANDROID) || defined(Q_OS_ANDROID_NO_SDK))
-        QScopedPointer<QDeviceDiscovery> dis(QDeviceDiscovery::create(QDeviceDiscovery::Device_Mouse));
-        hideCursor = dis->scanConnectedDevices().isEmpty();
-#endif
-    } else {
-        hideCursor = hideCursorVal.toInt() != 0;
-    }
-    if (!hideCursor)
-        mCursor = new QFbCursor(this);
+    mCursor = new QFbCursor(this);
 
     mTtyFd = openTtyDevice(ttyDevice);
     if (mTtyFd == -1)

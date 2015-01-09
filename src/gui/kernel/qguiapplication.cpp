@@ -75,6 +75,7 @@
 #include "private/qwindow_p.h"
 #include "private/qcursor_p.h"
 #include "private/qopenglcontext_p.h"
+#include "private/qinputdevicemanager_p.h"
 
 #include "private/qdnd_p.h"
 #include <qpa/qplatformthemefactory_p.h>
@@ -163,6 +164,8 @@ QWindow *QGuiApplicationPrivate::focus_window = 0;
 static QBasicMutex applicationFontMutex;
 QFont *QGuiApplicationPrivate::app_font = 0;
 bool QGuiApplicationPrivate::obey_desktop_settings = true;
+
+QInputDeviceManager *QGuiApplicationPrivate::m_inputDeviceManager = 0;
 
 static qreal fontSmoothingGamma = 1.7;
 
@@ -3468,6 +3471,16 @@ void QGuiApplicationPrivate::setMouseEventFlags(QMouseEvent *event, Qt::MouseEve
     Q_ASSERT(value <= Qt::MouseEventFlagMask);
     event->caps &= ~MouseFlagsCapsMask;
     event->caps |= (value & Qt::MouseEventFlagMask) << MouseFlagsShift;
+}
+
+QInputDeviceManager *QGuiApplicationPrivate::inputDeviceManager()
+{
+    Q_ASSERT(QGuiApplication::instance());
+
+    if (!m_inputDeviceManager)
+        m_inputDeviceManager = new QInputDeviceManager(QGuiApplication::instance());
+
+    return m_inputDeviceManager;
 }
 
 #include "moc_qguiapplication.cpp"

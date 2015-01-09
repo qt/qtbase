@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2015 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the plugins module of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL21$
 ** Commercial License Usage
@@ -31,12 +31,8 @@
 **
 ****************************************************************************/
 
-#ifndef QLIBINPUTHANDLER_P_H
-#define QLIBINPUTHANDLER_P_H
-
-#include <QtCore/QObject>
-#include <QtCore/QScopedPointer>
-#include <QtCore/QMap>
+#ifndef QINPUTDEVICEMANAGER_P_P_H
+#define QINPUTDEVICEMANAGER_P_P_H
 
 //
 //  W A R N I N G
@@ -49,45 +45,25 @@
 // We mean it.
 //
 
-struct udev;
-struct libinput;
-struct libinput_event;
+#include <QtCore/qmap.h>
+#include <private/qobject_p.h>
+#include "qinputdevicemanager_p.h"
 
 QT_BEGIN_NAMESPACE
 
-class QSocketNotifier;
-class QLibInputPointer;
-class QLibInputKeyboard;
-class QLibInputTouch;
-
-class QLibInputHandler : public QObject
+class Q_GUI_EXPORT QInputDeviceManagerPrivate : public QObjectPrivate
 {
-    Q_OBJECT
+    Q_DECLARE_PUBLIC(QInputDeviceManager)
 
 public:
-    QLibInputHandler(const QString &key, const QString &spec);
-    ~QLibInputHandler();
+    static QInputDeviceManagerPrivate *get(QInputDeviceManager *mgr) { return mgr->d_func(); }
 
-signals:
-    void deviceAdded(const QString &sysname, const QString &name);
-    void deviceRemoved(const QString &sysname, const QString &name);
+    int deviceCount(QInputDeviceManager::DeviceType type) const;
+    void setDeviceCount(QInputDeviceManager::DeviceType type, int count);
 
-private slots:
-    void onReadyRead();
-
-private:
-    void processEvent(libinput_event *ev);
-
-    udev *m_udev;
-    libinput *m_li;
-    int m_liFd;
-    QScopedPointer<QSocketNotifier> m_notifier;
-    QScopedPointer<QLibInputPointer> m_pointer;
-    QScopedPointer<QLibInputKeyboard> m_keyboard;
-    QScopedPointer<QLibInputTouch> m_touch;
-    QMap<int, int> m_devCount;
+    QMap<QInputDeviceManager::DeviceType, int> m_deviceCount;
 };
 
 QT_END_NAMESPACE
 
-#endif
+#endif // QINPUTDEVICEMANAGER_P_P_H

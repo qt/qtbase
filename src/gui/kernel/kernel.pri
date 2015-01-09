@@ -74,7 +74,9 @@ HEADERS += \
         kernel/qpaintdevicewindow_p.h \
         kernel/qrasterwindow.h \
         kernel/qplatformgraphicsbuffer.h \
-        kernel/qplatformgraphicsbufferhelper.h
+        kernel/qplatformgraphicsbufferhelper.h \
+        kernel/qinputdevicemanager_p.h \
+        kernel/qinputdevicemanager_p_p.h
 
 SOURCES += \
         kernel/qgenericpluginfactory.cpp \
@@ -130,7 +132,8 @@ SOURCES += \
         kernel/qrasterwindow.cpp \
         kernel/qplatformgraphicsbuffer.cpp \
         kernel/qplatformgraphicsbufferhelper.cpp \
-        kernel/qplatformhardwarecompositor.cpp
+        kernel/qplatformhardwarecompositor.cpp \
+        kernel/qinputdevicemanager.cpp
 
 contains(QT_CONFIG, opengl)|contains(QT_CONFIG, opengles2) {
     HEADERS += \

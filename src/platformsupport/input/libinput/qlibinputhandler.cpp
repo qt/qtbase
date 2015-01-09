@@ -41,6 +41,8 @@
 #include <QtCore/QLoggingCategory>
 #include <QtCore/QSocketNotifier>
 #include <QtCore/private/qcore_unix_p.h>
+#include <private/qguiapplication_p.h>
+#include <private/qinputdevicemanager_p_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -146,8 +148,25 @@ void QLibInputHandler::processEvent(libinput_event *ev)
         const char *sysname = libinput_device_get_sysname(dev); // node name without path
         const char *name = libinput_device_get_name(dev);
         emit deviceAdded(QString::fromUtf8(sysname), QString::fromUtf8(name));
-        if (libinput_device_has_capability(dev, LIBINPUT_DEVICE_CAP_TOUCH))
+
+        QInputDeviceManagerPrivate *inputManagerPriv = QInputDeviceManagerPrivate::get(
+            QGuiApplicationPrivate::inputDeviceManager());
+        if (libinput_device_has_capability(dev, LIBINPUT_DEVICE_CAP_TOUCH)) {
             m_touch->registerDevice(dev);
+            int &count(m_devCount[QInputDeviceManager::DeviceTypeTouch]);
+            ++count;
+            inputManagerPriv->setDeviceCount(QInputDeviceManager::DeviceTypeTouch, count);
+        }
+        if (libinput_device_has_capability(dev, LIBINPUT_DEVICE_CAP_POINTER)) {
+            int &count(m_devCount[QInputDeviceManager::DeviceTypePointer]);
+            ++count;
+            inputManagerPriv->setDeviceCount(QInputDeviceManager::DeviceTypePointer, count);
+        }
+        if (libinput_device_has_capability(dev, LIBINPUT_DEVICE_CAP_KEYBOARD)) {
+            int &count(m_devCount[QInputDeviceManager::DeviceTypeKeyboard]);
+            ++count;
+            inputManagerPriv->setDeviceCount(QInputDeviceManager::DeviceTypeKeyboard, count);
+        }
         break;
     }
     case LIBINPUT_EVENT_DEVICE_REMOVED:
@@ -155,8 +174,25 @@ void QLibInputHandler::processEvent(libinput_event *ev)
         const char *sysname = libinput_device_get_sysname(dev);
         const char *name = libinput_device_get_name(dev);
         emit deviceRemoved(QString::fromUtf8(sysname), QString::fromUtf8(name));
-        if (libinput_device_has_capability(dev, LIBINPUT_DEVICE_CAP_TOUCH))
+
+        QInputDeviceManagerPrivate *inputManagerPriv = QInputDeviceManagerPrivate::get(
+            QGuiApplicationPrivate::inputDeviceManager());
+        if (libinput_device_has_capability(dev, LIBINPUT_DEVICE_CAP_TOUCH)) {
             m_touch->unregisterDevice(dev);
+            int &count(m_devCount[QInputDeviceManager::DeviceTypeTouch]);
+            --count;
+            inputManagerPriv->setDeviceCount(QInputDeviceManager::DeviceTypeTouch, count);
+        }
+        if (libinput_device_has_capability(dev, LIBINPUT_DEVICE_CAP_POINTER)) {
+            int &count(m_devCount[QInputDeviceManager::DeviceTypePointer]);
+            --count;
+            inputManagerPriv->setDeviceCount(QInputDeviceManager::DeviceTypePointer, count);
+        }
+        if (libinput_device_has_capability(dev, LIBINPUT_DEVICE_CAP_KEYBOARD)) {
+            int &count(m_devCount[QInputDeviceManager::DeviceTypeKeyboard]);
+            --count;
+            inputManagerPriv->setDeviceCount(QInputDeviceManager::DeviceTypeKeyboard, count);
+        }
         break;
     }
     case LIBINPUT_EVENT_POINTER_BUTTON:

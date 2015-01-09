@@ -46,11 +46,27 @@
 //
 
 #include <qpa/qplatformcursor.h>
+#include <QtGui/private/qinputdevicemanager_p.h>
 
 QT_BEGIN_NAMESPACE
 
 class QFbScreen;
-class QDeviceDiscovery;
+class QFbCursor;
+
+class QFbCursorDeviceListener : public QObject
+{
+    Q_OBJECT
+
+public:
+    QFbCursorDeviceListener(QFbCursor *cursor) : m_cursor(cursor) { }
+    bool hasMouse() const;
+
+public slots:
+    void onDeviceListChanged(QInputDeviceManager::DeviceType type);
+
+private:
+    QFbCursor *m_cursor;
+};
 
 class QFbCursor : public QPlatformCursor
 {
@@ -58,6 +74,7 @@ class QFbCursor : public QPlatformCursor
 
 public:
     QFbCursor(QFbScreen *screen);
+    ~QFbCursor();
 
     // output methods
     QRect dirtyRect();
@@ -74,7 +91,7 @@ public:
     virtual bool isOnScreen() const { return mOnScreen; }
     virtual QRect lastPainted() const { return mPrevRect; }
 
-    void setMouseDeviceDiscovery(QDeviceDiscovery *dd);
+    void updateMouseStatus();
 
 private:
     void setCursor(const uchar *data, const uchar *mask, int width, int height, int hotX, int hotY);
@@ -82,12 +99,14 @@ private:
     void setCursor(const QImage &image, int hotx, int hoty);
     QRect getCurrentRect();
 
+    bool mVisible;
     QFbScreen *mScreen;
     QRect mCurrentRect;      // next place to draw the cursor
     QRect mPrevRect;         // last place the cursor was drawn
     bool mDirty;
     bool mOnScreen;
     QPlatformCursorImage *mGraphic;
+    QFbCursorDeviceListener *mDeviceListener;
 };
 
 QT_END_NAMESPACE

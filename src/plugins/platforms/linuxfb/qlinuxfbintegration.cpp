@@ -130,12 +130,7 @@ void QLinuxFbIntegration::createInputHandlers()
 {
 #if !defined(QT_NO_EVDEV) && (!defined(Q_OS_ANDROID) || defined(Q_OS_ANDROID_NO_SDK))
     new QEvdevKeyboardManager(QLatin1String("EvdevKeyboard"), QString(), this);
-    QEvdevMouseManager *mouseMgr = new QEvdevMouseManager(QLatin1String("EvdevMouse"), QString(), this);
-    Q_FOREACH (QScreen *screen, QGuiApplication::screens()) {
-        QFbCursor *cursor = qobject_cast<QFbCursor *>(screen->handle()->cursor());
-        if (cursor)
-            cursor->setMouseDeviceDiscovery(mouseMgr->deviceDiscovery());
-    }
+    new QEvdevMouseManager(QLatin1String("EvdevMouse"), QString(), this);
 #ifndef QT_NO_TSLIB
     const bool useTslib = qEnvironmentVariableIntValue("QT_QPA_FB_TSLIB");
     if (useTslib)

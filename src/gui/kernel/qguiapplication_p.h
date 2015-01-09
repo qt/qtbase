@@ -66,6 +66,7 @@ struct QDrawHelperGammaTables;
 #ifndef QT_NO_DRAGANDDROP
 class QDrag;
 #endif // QT_NO_DRAGANDDROP
+class QInputDeviceManager;
 
 class Q_GUI_EXPORT QGuiApplicationPrivate : public QCoreApplicationPrivate
 {
@@ -272,6 +273,8 @@ public:
 
     static Qt::MouseEventSource wheelEventSource(const QWheelEvent *event);
 
+    static QInputDeviceManager *inputDeviceManager();
+
     const QDrawHelperGammaTables *gammaTables();
 
     // hook reimplemented in QApplication to apply the QStyle function on the QIcon
@@ -301,6 +304,8 @@ private:
     QAtomicPointer<QDrawHelperGammaTables> m_gammaTables;
 
     bool ownGlobalShareContext;
+
+    static QInputDeviceManager *m_inputDeviceManager;
 };
 
 Q_GUI_EXPORT uint qHash(const QGuiApplicationPrivate::ActiveTouchPointsKey &k);

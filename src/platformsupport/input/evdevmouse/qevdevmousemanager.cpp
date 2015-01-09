@@ -38,6 +38,9 @@
 #include <QScreen>
 #include <QLoggingCategory>
 #include <qpa/qwindowsysteminterface.h>
+#include <QtPlatformSupport/private/qdevicediscovery_p.h>
+#include <private/qguiapplication_p.h>
+#include <private/qinputdevicemanager_p_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -141,6 +144,8 @@ void QEvdevMouseManager::addMouse(const QString &deviceNode)
         connect(handler, SIGNAL(handleMouseEvent(int,int,bool,Qt::MouseButtons)), this, SLOT(handleMouseEvent(int,int,bool,Qt::MouseButtons)));
         connect(handler, SIGNAL(handleWheelEvent(int,Qt::Orientation)), this, SLOT(handleWheelEvent(int,Qt::Orientation)));
         m_mice.insert(deviceNode, handler);
+        QInputDeviceManagerPrivate::get(QGuiApplicationPrivate::inputDeviceManager())->setDeviceCount(
+            QInputDeviceManager::DeviceTypePointer, m_mice.count());
     } else {
         qWarning("evdevmouse: Failed to open mouse device %s", qPrintable(deviceNode));
     }
@@ -152,6 +157,8 @@ void QEvdevMouseManager::removeMouse(const QString &deviceNode)
         qCDebug(qLcEvdevMouse) << "Removing mouse at" << deviceNode;
         QEvdevMouseHandler *handler = m_mice.value(deviceNode);
         m_mice.remove(deviceNode);
+        QInputDeviceManagerPrivate::get(QGuiApplicationPrivate::inputDeviceManager())->setDeviceCount(
+            QInputDeviceManager::DeviceTypePointer, m_mice.count());
         delete handler;
     }
 }

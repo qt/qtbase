@@ -47,13 +47,13 @@
 
 #include "qevdevmousehandler_p.h"
 
-#include <QtPlatformSupport/private/qdevicediscovery_p.h>
-
 #include <QObject>
 #include <QHash>
 #include <QSocketNotifier>
 
 QT_BEGIN_NAMESPACE
+
+class QDeviceDiscovery;
 
 class QEvdevMouseManager : public QObject
 {
@@ -61,8 +61,6 @@ class QEvdevMouseManager : public QObject
 public:
     QEvdevMouseManager(const QString &key, const QString &specification, QObject *parent = 0);
     ~QEvdevMouseManager();
-
-    QDeviceDiscovery *deviceDiscovery() { return m_deviceDiscovery; }
 
 public slots:
     void handleMouseEvent(int x, int y, bool abs, Qt::MouseButtons buttons);

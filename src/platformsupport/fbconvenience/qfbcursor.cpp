@@ -34,14 +34,47 @@
 #include "qfbcursor_p.h"
 #include "qfbscreen_p.h"
 #include <QtGui/QPainter>
+#include <QtGui/private/qguiapplication_p.h>
 
 QT_BEGIN_NAMESPACE
 
-QFbCursor::QFbCursor(QFbScreen *screen)
-        : mScreen(screen), mDirty(false), mOnScreen(false)
+bool QFbCursorDeviceListener::hasMouse() const
 {
+    return QGuiApplicationPrivate::inputDeviceManager()->deviceCount(QInputDeviceManager::DeviceTypePointer) > 0;
+}
+
+void QFbCursorDeviceListener::onDeviceListChanged(QInputDeviceManager::DeviceType type)
+{
+    if (type == QInputDeviceManager::DeviceTypePointer)
+        m_cursor->updateMouseStatus();
+}
+
+QFbCursor::QFbCursor(QFbScreen *screen)
+    : mVisible(true),
+      mScreen(screen),
+      mDirty(false),
+      mOnScreen(false),
+      mGraphic(0),
+      mDeviceListener(0)
+{
+    QByteArray hideCursorVal = qgetenv("QT_QPA_FB_HIDECURSOR");
+    if (!hideCursorVal.isEmpty())
+        mVisible = hideCursorVal.toInt() == 0;
+    if (!mVisible)
+        return;
+
     mGraphic = new QPlatformCursorImage(0, 0, 0, 0, 0, 0);
     setCursor(Qt::ArrowCursor);
+
+    mDeviceListener = new QFbCursorDeviceListener(this);
+    connect(QGuiApplicationPrivate::inputDeviceManager(), &QInputDeviceManager::deviceListChanged,
+            mDeviceListener, &QFbCursorDeviceListener::onDeviceListChanged);
+    updateMouseStatus();
+}
+
+QFbCursor::~QFbCursor()
+{
+    delete mDeviceListener;
 }
 
 QRect QFbCursor::getCurrentRect()
@@ -68,6 +101,9 @@ void QFbCursor::pointerEvent(const QMouseEvent & e)
 
 QRect QFbCursor::drawCursor(QPainter & painter)
 {
+    if (!mVisible)
+        return QRect();
+
     mDirty = false;
     if (mCurrentRect.isNull())
         return QRect();
@@ -131,15 +167,19 @@ void QFbCursor::changeCursor(QCursor * widgetCursor, QWindow *window)
 
 void QFbCursor::setDirty()
 {
+    if (!mVisible)
+        return;
+
     if (!mDirty) {
         mDirty = true;
         mScreen->scheduleUpdate();
     }
 }
 
-void QFbCursor::setMouseDeviceDiscovery(QDeviceDiscovery *dd)
+void QFbCursor::updateMouseStatus()
 {
-    Q_UNUSED(dd);
+    mVisible = mDeviceListener->hasMouse();
+    mScreen->setDirty(mVisible ? getCurrentRect() : lastPainted());
 }
 
 QT_END_NAMESPACE
