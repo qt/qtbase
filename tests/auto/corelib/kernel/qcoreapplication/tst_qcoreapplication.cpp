@@ -109,11 +109,11 @@ void tst_QCoreApplication::qAppName()
     QCOMPARE(QCoreApplication::applicationName(), QString::fromLatin1(appName));
 }
 
-// "QCoreApplication::arguments() always parses arguments from actual command line on Windows
-// making this test invalid."
-#ifndef Q_OS_WIN
 void tst_QCoreApplication::argc()
 {
+#if defined(Q_OS_WINCE) || defined(Q_OS_WINRT)
+    QSKIP("QCoreApplication::arguments() parses arguments from actual command line on this platform.");
+#endif
     {
         int argc = 1;
         char *argv[] = { const_cast<char*>(QTest::currentAppName()) };
@@ -150,7 +150,6 @@ void tst_QCoreApplication::argc()
         QCOMPARE(app.arguments().count(), 1);
     }
 }
-#endif
 
 class EventGenerator : public QObject
 {

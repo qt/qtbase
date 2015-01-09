@@ -43,9 +43,7 @@ private slots:
     void sendEventsOnProcessEvents(); // this must be the first test
     void getSetCheck();
     void qAppName();
-#ifndef Q_OS_WIN
     void argc();
-#endif
     void postEvent();
     void removePostedEvents();
 #ifndef QT_NO_THREAD

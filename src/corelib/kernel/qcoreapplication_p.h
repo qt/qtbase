@@ -115,9 +115,8 @@ public:
 
     int &argc;
     char **argv;
-#ifdef Q_OS_WIN
-    int origArgc;
-    char **origArgv; // store unmodified arguments for QCoreApplication::arguments()
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
+    bool modifiedArgv;
 #endif
     void appendApplicationPathToLibraryPaths(void);
 

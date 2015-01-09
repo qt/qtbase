@@ -378,6 +378,34 @@ Q_GLOBAL_STATIC(QCoreApplicationData, coreappdata)
 static bool quitLockRefEnabled = true;
 #endif
 
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
+// Check whether the command line arguments match those passed to main()
+// by comparing to the global __argv/__argc (MS extension).
+// Deep comparison is required since argv/argc is rebuilt by WinMain for
+// GUI apps or when using MinGW due to its globbing.
+static inline bool isArgvModified(int argc, char **argv)
+{
+    if (__argc != argc)
+        return true;
+    if (__argv == argv)
+        return false;
+    for (int a = 0; a < argc; ++a) {
+        if (argv[a] != __argv[a] && strcmp(argv[a], __argv[a]))
+            return true;
+    }
+    return false;
+}
+
+static inline bool contains(int argc, char **argv, const char *needle)
+{
+    for (int a = 0; a < argc; ++a) {
+        if (!strcmp(argv[a], needle))
+            return true;
+    }
+    return false;
+}
+#endif // Q_OS_WIN && !Q_OS_WINRT
+
 QCoreApplicationPrivate::QCoreApplicationPrivate(int &aargc, char **aargv, uint flags)
     :
 #ifndef QT_NO_QOBJECT
@@ -385,9 +413,8 @@ QCoreApplicationPrivate::QCoreApplicationPrivate(int &aargc, char **aargv, uint 
 #endif
       argc(aargc)
     , argv(aargv)
-#ifdef Q_OS_WIN
-    , origArgc(aargc)
-    , origArgv(new char *[aargc])
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
+    , modifiedArgv(false)
 #endif
     , application_type(QCoreApplicationPrivate::Tty)
 #ifndef QT_NO_QOBJECT
@@ -404,9 +431,9 @@ QCoreApplicationPrivate::QCoreApplicationPrivate(int &aargc, char **aargv, uint 
         argc = 0;
         argv = (char **)&empty;
     }
-#ifdef Q_OS_WIN
-    std::copy(argv, argv + argc, origArgv);
-#endif
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
+    modifiedArgv = isArgvModified(argc, argv);
+#endif // Q_OS_WIN && !Q_OS_WINRT
 
 #ifndef QT_NO_QOBJECT
     QCoreApplicationPrivate::is_app_closing = false;
@@ -430,9 +457,6 @@ QCoreApplicationPrivate::~QCoreApplicationPrivate()
 {
 #ifndef QT_NO_QOBJECT
     cleanupThreadData();
-#endif
-#ifdef Q_OS_WIN
-    delete [] origArgv;
 #endif
     QCoreApplicationPrivate::clearApplicationFilePath();
 }
@@ -2131,10 +2155,11 @@ qint64 QCoreApplication::applicationPid()
     Latin1 locale. Most modern Unix systems do not have this limitation, as they are
     Unicode-based.
 
-    On NT-based Windows, this limitation does not apply either.
-    On Windows, the arguments() are not built from the contents of argv/argc, as
-    the content does not support Unicode. Instead, the arguments() are constructed
-    from the return value of
+    On Windows, the list is built from the argc and argv parameters only if
+    modified argv/argc parameters are passed to the constructor. In that case,
+    encoding problems might occur.
+
+    Otherwise, the arguments() are constructed from the return value of
     \l{http://msdn2.microsoft.com/en-us/library/ms683156(VS.85).aspx}{GetCommandLine()}.
     As a result of this, the string given by arguments().at(0) might not be
     the program name on Windows, depending on how the application was started.
@@ -2169,21 +2194,20 @@ QStringList QCoreApplication::arguments()
     }
 #endif // Q_OS_WINCE
 
-    char ** const origArgv = self->d_func()->origArgv;
-    const int origArgc = self->d_func()->origArgc;
-    char ** const avEnd = av + ac;
+    if (!self->d_func()->modifiedArgv) {
+        const QStringList allArguments = qWinCmdArgs(cmdline);
+        Q_ASSERT(allArguments.size() == __argc);
+        for (int i = 0; i < __argc; ++i) {
+            if (contains(ac, av, __argv[i]))
+                list.append(allArguments.at(i));
+        }
+        return list;
+    } // Fall back to rebuilding from argv/argc when a modified argv was passed.
+#endif // defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
 
-    const QStringList allArguments = qWinCmdArgs(cmdline);
-    Q_ASSERT(allArguments.size() == origArgc);
-    for (int i = 0; i < origArgc; ++i)
-        if (std::find(av, avEnd, origArgv[i]) != avEnd)
-            list.push_back(allArguments.at(i));
-
-#else
     for (int a = 0; a < ac; ++a) {
         list << QString::fromLocal8Bit(av[a]);
     }
-#endif
 
     return list;
 }
