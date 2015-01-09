@@ -184,11 +184,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
       << varGlue("DEFINES","-D"," -D","") << endl;
     t << "CFLAGS        = " << var("QMAKE_CFLAGS") << " $(DEFINES)\n";
     t << "CXXFLAGS      = " << var("QMAKE_CXXFLAGS") << " $(DEFINES)\n";
-    t << "INCPATH       = -I" << specdir();
-    if(!project->isActiveConfig("no_include_pwd")) {
-        QString pwd = escapeFilePath(fileFixify(qmake_getpwd()));
-        t << " -I" << pwd;
-    }
+    t << "INCPATH       =";
     {
         QString isystem = var("QMAKE_CFLAGS_ISYSTEM");
         const ProStringList &incs = project->values("INCLUDEPATH");

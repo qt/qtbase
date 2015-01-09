@@ -739,11 +739,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
             mkt << "DEFINES       = "
                 << varGlue("PRL_EXPORT_DEFINES","-D"," -D"," ")
                 << varGlue("DEFINES","-D"," -D","") << endl;
-            mkt << "INCPATH       = -I" << specdir();
-            if(!project->isActiveConfig("no_include_pwd")) {
-                QString pwd = escapeFilePath(fileFixify(qmake_getpwd()));
-                mkt << " -I" << pwd;
-            }
+            mkt << "INCPATH       =";
             {
                 const ProStringList &incs = project->values("INCLUDEPATH");
                 for (ProStringList::ConstIterator incit = incs.begin(); incit != incs.end(); ++incit)
@@ -1495,7 +1491,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
                     t << "\t\t\t\t" << writeSettings("GCC_PRECOMPILE_PREFIX_HEADER", "YES") << ";\n"
                     << "\t\t\t\t" << writeSettings("GCC_PREFIX_HEADER", escapeFilePath(project->first("PRECOMPILED_HEADER"))) << ";\n";
                 }
-                t << "\t\t\t\t" << writeSettings("HEADER_SEARCH_PATHS", fixListForOutput("INCLUDEPATH") + ProStringList(fixForOutput(specdir())), SettingsAsList, 5) << ";\n"
+                t << "\t\t\t\t" << writeSettings("HEADER_SEARCH_PATHS", fixListForOutput("INCLUDEPATH"), SettingsAsList, 5) << ";\n"
                   << "\t\t\t\t" << writeSettings("LIBRARY_SEARCH_PATHS", fixListForOutput("QMAKE_PBX_LIBPATHS"), SettingsAsList, 5) << ";\n"
                   << "\t\t\t\t" << writeSettings("FRAMEWORK_SEARCH_PATHS", fixListForOutput("QMAKE_FRAMEWORKPATH"),
                         !project->values("QMAKE_FRAMEWORKPATH").isEmpty() ? SettingsAsList : 0, 5) << ";\n";

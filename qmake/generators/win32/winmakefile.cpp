@@ -606,8 +606,7 @@ void Win32MakefileGenerator::writeIncPart(QTextStream &t)
         if(!inc.isEmpty())
             t << "-I\"" << inc << "\" ";
     }
-    t << "-I\"" << specdir() << "\""
-      << endl;
+    t << endl;
 }
 
 void Win32MakefileGenerator::writeStandardParts(QTextStream &t)
