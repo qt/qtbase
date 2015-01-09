@@ -577,8 +577,16 @@ Q_GLOBAL_STATIC(QMetaTypeDebugStreamRegistry, customTypesDebugStreamRegistry)
 /*!
     \fn bool QMetaType::registerComparators()
     \since 5.2
-    Registers comparison operetarors for the user-registered type T. This requires T to have
+    Registers comparison operators for the user-registered type T. This requires T to have
     both an operator== and an operator<.
+    Returns \c true if the registration succeeded, otherwise false.
+*/
+
+/*!
+    \fn bool QMetaType::registerEqualsComparator()
+    \since 5.5
+    Registers equals operator for the user-registered type T. This requires T to have
+    an operator==.
     Returns \c true if the registration succeeded, otherwise false.
 */
 
@@ -687,7 +695,7 @@ bool QMetaType::convert(const void *from, int fromTypeId, void *to, int toTypeId
 /*!
     Compares the objects at \a lhs and \a rhs. Both objects need to be of type \a typeId.
     \a result is set to less than, equal to or greater than zero, if \a lhs is less than, equal to
-    or greater than \a rhs. Returns \c true, if the comparison succeeded, otherwiess false.
+    or greater than \a rhs. Returns \c true, if the comparison succeeded, otherwise \c false.
     \since 5.2
 */
 bool QMetaType::compare(const void *lhs, const void *rhs, int typeId, int* result)
@@ -698,8 +706,29 @@ bool QMetaType::compare(const void *lhs, const void *rhs, int typeId, int* resul
         return false;
     if (f->equals(f, lhs, rhs))
         *result = 0;
-    else
+    else if (f->lessThan)
         *result = f->lessThan(f, lhs, rhs) ? -1 : 1;
+    else
+        return false;
+    return true;
+}
+
+/*!
+    Compares the objects at \a lhs and \a rhs. Both objects need to be of type \a typeId.
+    \a result is set to zero, if \a lhs equals to rhs. Returns \c true, if the comparison
+    succeeded, otherwise \c false.
+    \since 5.5
+*/
+bool QMetaType::equals(const void *lhs, const void *rhs, int typeId, int *result)
+{
+    const QtPrivate::AbstractComparatorFunction * const f
+        = customTypesComparatorRegistry()->function(typeId);
+    if (!f)
+        return false;
+    if (f->equals(f, lhs, rhs))
+        *result = 0;
+    else
+        *result = -1;
     return true;
 }
 

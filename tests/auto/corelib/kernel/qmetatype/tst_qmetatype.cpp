@@ -121,6 +121,7 @@ private slots:
     void convertCustomType();
     void compareCustomType_data();
     void compareCustomType();
+    void compareCustomEqualOnlyType();
     void customDebugStream();
 };
 
@@ -2003,9 +2004,23 @@ bool operator==(const CustomConvertibleType2 &lhs, const CustomConvertibleType2 
 bool operator!=(const CustomConvertibleType2 &lhs, const CustomConvertibleType2 &rhs)
 { return !operator==(lhs, rhs); }
 
+
+struct CustomEqualsOnlyType
+{
+    explicit CustomEqualsOnlyType(int value = 0) : val(value) {}
+    virtual ~CustomEqualsOnlyType() {}
+
+    int val;
+};
+bool operator==(const CustomEqualsOnlyType &lhs, const CustomEqualsOnlyType &rhs)
+{ return lhs.val == rhs.val;}
+bool operator!=(const CustomEqualsOnlyType &lhs, const CustomEqualsOnlyType &rhs)
+{ return !operator==(lhs, rhs); }
+
 Q_DECLARE_METATYPE(CustomConvertibleType);
 Q_DECLARE_METATYPE(CustomConvertibleType2);
 Q_DECLARE_METATYPE(CustomDebugStreamableType);
+Q_DECLARE_METATYPE(CustomEqualsOnlyType);
 
 template<typename T, typename U>
 U convert(const T &t)
@@ -2280,6 +2295,81 @@ void tst_QMetaType::compareCustomType()
     QFETCH(QVariantList, sorted);
     std::sort(unsorted.begin(), unsorted.end());
     QCOMPARE(unsorted, sorted);
+}
+
+void tst_QMetaType::compareCustomEqualOnlyType()
+{
+    int metaTypeId = qRegisterMetaType<CustomEqualsOnlyType>();
+    QMetaType::registerEqualsComparator<CustomEqualsOnlyType>();
+    int result;
+
+    CustomEqualsOnlyType val50(50);
+    CustomEqualsOnlyType val100(100);
+    CustomEqualsOnlyType val100x(100);
+
+    QVariant variant50 = QVariant::fromValue(val50);
+    QVariant variant100 = QVariant::fromValue(val100);
+    QVariant variant100x = QVariant::fromValue(val100x);
+
+    QVERIFY(variant50 != variant100);
+    QVERIFY(variant50 != variant100x);
+    QVERIFY(variant100 != variant50);
+    QVERIFY(variant100x != variant50);
+    QVERIFY(variant100 == variant100x);
+    QVERIFY(variant100 == variant100);
+
+    // compare always fails
+    QVERIFY(!(variant50 < variant50));
+    QVERIFY(!(variant50 < variant100));
+    QVERIFY(!(variant100 < variant50));
+
+    // check QMetaType::compare works/doesn't crash for equals only comparators
+    bool wasSuccess = QMetaType::compare(variant50.constData(), variant50.constData(),
+                                          metaTypeId, &result);
+    QCOMPARE(result, 0);
+    QVERIFY(wasSuccess);
+    wasSuccess = QMetaType::compare(variant100.constData(), variant100x.constData(),
+                                          metaTypeId, &result);
+    QCOMPARE(result, 0);
+    QVERIFY(wasSuccess);
+
+    wasSuccess = QMetaType::compare(variant50.constData(), variant100.constData(),
+                                          metaTypeId, &result);
+    QVERIFY(!wasSuccess);
+
+    // check QMetaType::equals works for equals only comparator
+    wasSuccess = QMetaType::equals(variant50.constData(), variant50.constData(),
+                                   metaTypeId, &result);
+    QCOMPARE(result, 0);
+    QVERIFY(wasSuccess);
+    wasSuccess = QMetaType::equals(variant100.constData(), variant100.constData(),
+                                   metaTypeId, &result);
+    QCOMPARE(result, 0);
+    QVERIFY(wasSuccess);
+    wasSuccess = QMetaType::equals(variant100x.constData(), variant100x.constData(),
+                                   metaTypeId, &result);
+    QCOMPARE(result, 0);
+    QVERIFY(wasSuccess);
+    wasSuccess = QMetaType::equals(variant100.constData(), variant100x.constData(),
+                                   metaTypeId, &result);
+    QCOMPARE(result, 0);
+    QVERIFY(wasSuccess);
+    wasSuccess = QMetaType::equals(variant50.constData(), variant100.constData(),
+                                   metaTypeId, &result);
+    QCOMPARE(result, -1);
+    QVERIFY(wasSuccess);
+    wasSuccess = QMetaType::equals(variant50.constData(), variant100x.constData(),
+                                   metaTypeId, &result);
+    QCOMPARE(result, -1);
+    QVERIFY(wasSuccess);
+
+    //check QMetaType::equals for type w/o equals comparator being registered
+    CustomMovable movable1;
+    CustomMovable movable2;
+    wasSuccess = QMetaType::equals(&movable1, &movable2,
+                                   qRegisterMetaType<CustomMovable>(), &result);
+    QVERIFY(!wasSuccess);
+
 }
 
 struct MessageHandlerCustom : public MessageHandler

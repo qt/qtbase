@@ -3313,7 +3313,7 @@ bool QVariant::cmp(const QVariant &v) const
     }
     if (v1.d.type >= QMetaType::User) {
         int result;
-        if (QMetaType::compare(QT_PREPEND_NAMESPACE(constData(v1.d)), QT_PREPEND_NAMESPACE(constData(v2.d)), v1.d.type, &result))
+        if (QMetaType::equals(QT_PREPEND_NAMESPACE(constData(v1.d)), QT_PREPEND_NAMESPACE(constData(v2.d)), v1.d.type, &result))
             return result == 0;
     }
     return handlerManager[v1.d.type]->compare(&v1.d, &v2.d);

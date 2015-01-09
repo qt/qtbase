@@ -291,6 +291,24 @@ struct BuiltInComparatorFunction : public AbstractComparatorFunction
     }
 };
 
+template<typename T>
+struct BuiltInEqualsComparatorFunction : public AbstractComparatorFunction
+{
+    BuiltInEqualsComparatorFunction()
+        : AbstractComparatorFunction(0, equals, destroy) {}
+    static bool equals(const AbstractComparatorFunction *, const void *l, const void *r)
+    {
+        const T *lhs = static_cast<const T *>(l);
+        const T *rhs = static_cast<const T *>(r);
+        return *lhs == *rhs;
+    }
+
+    static void destroy(AbstractComparatorFunction *_this)
+    {
+        delete static_cast<BuiltInEqualsComparatorFunction *>(_this);
+    }
+};
+
 struct AbstractConverterFunction
 {
     typedef bool (*Converter)(const AbstractConverterFunction *, const void *, void*);
@@ -530,6 +548,16 @@ public:
         return registerComparatorFunction( &f, typeId);
     }
     template<typename T>
+    static bool registerEqualsComparator()
+    {
+        Q_STATIC_ASSERT_X((!QMetaTypeId2<T>::IsBuiltIn),
+            "QMetaType::registerEqualsComparator: The type must be a custom type.");
+        const int typeId = qMetaTypeId<T>();
+        static const QtPrivate::BuiltInEqualsComparatorFunction<T> f;
+        return registerComparatorFunction( &f, typeId);
+    }
+
+    template<typename T>
     static bool hasRegisteredComparators()
     {
         return hasRegisteredComparators(qMetaTypeId<T>());
@@ -610,6 +638,7 @@ public:
 
     static bool convert(const void *from, int fromTypeId, void *to, int toTypeId);
     static bool compare(const void *lhs, const void *rhs, int typeId, int* result);
+    static bool equals(const void *lhs, const void *rhs, int typeId, int* result);
     static bool debugStream(QDebug& dbg, const void *rhs, int typeId);
 
     template<typename From, typename To>
