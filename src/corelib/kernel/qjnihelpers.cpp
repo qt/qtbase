@@ -89,6 +89,39 @@ void QtAndroidPrivate::handleActivityResult(jint requestCode, jint resultCode, j
     }
 }
 
+namespace {
+    class NewIntentListeners
+    {
+    public:
+        QMutex mutex;
+        QList<QtAndroidPrivate::NewIntentListener *> listeners;
+    };
+}
+
+Q_GLOBAL_STATIC(NewIntentListeners, g_newIntentListeners)
+
+void QtAndroidPrivate::registerNewIntentListener(NewIntentListener *listener)
+{
+    QMutexLocker locker(&g_newIntentListeners()->mutex);
+    g_newIntentListeners()->listeners.append(listener);
+}
+
+void QtAndroidPrivate::unregisterNewIntentListener(NewIntentListener *listener)
+{
+    QMutexLocker locker(&g_newIntentListeners()->mutex);
+    g_newIntentListeners()->listeners.removeAll(listener);
+}
+
+void QtAndroidPrivate::handleNewIntent(JNIEnv *env, jobject intent)
+{
+    QMutexLocker locker(&g_newIntentListeners()->mutex);
+    const QList<QtAndroidPrivate::NewIntentListener *> &listeners = g_newIntentListeners()->listeners;
+    for (int i=0; i<listeners.size(); ++i) {
+        if (listeners.at(i)->handleNewIntent(env, intent))
+            break;
+    }
+}
+
 static inline bool exceptionCheck(JNIEnv *env)
 {
     if (env->ExceptionCheck()) {

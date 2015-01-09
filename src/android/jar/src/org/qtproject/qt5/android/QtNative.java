@@ -628,6 +628,7 @@ public class QtNative
 
     // activity methods
     public static native void onActivityResult(int requestCode, int resultCode, Intent data);
+    public static native void onNewIntent(Intent data);
 
     public static native void onAndroidUiThread(long id);
 }

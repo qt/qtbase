@@ -883,6 +883,11 @@ public class QtActivityDelegate
         }
     }
 
+    public void onNewIntent(Intent data)
+    {
+        QtNative.onNewIntent(data);
+    }
+
     public void onActivityResult(int requestCode, int resultCode, Intent data)
     {
         try {

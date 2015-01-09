@@ -648,6 +648,11 @@ static void onActivityResult(JNIEnv */*env*/, jclass /*cls*/,
     QtAndroidPrivate::handleActivityResult(requestCode, resultCode, data);
 }
 
+static void onNewIntent(JNIEnv *env, jclass /*cls*/, jobject data)
+{
+    QtAndroidPrivate::handleNewIntent(env, data);
+}
+
 static JNINativeMethod methods[] = {
     {"startQtAndroidPlugin", "()Z", (void *)startQtAndroidPlugin},
     {"startQtApplication", "(Ljava/lang/String;Ljava/lang/String;)V", (void *)startQtApplication},
@@ -658,7 +663,8 @@ static JNINativeMethod methods[] = {
     {"updateWindow", "()V", (void *)updateWindow},
     {"updateApplicationState", "(I)V", (void *)updateApplicationState},
     {"handleOrientationChanged", "(II)V", (void *)handleOrientationChanged},
-    {"onActivityResult", "(IILandroid/content/Intent;)V", (void *)onActivityResult}
+    {"onActivityResult", "(IILandroid/content/Intent;)V", (void *)onActivityResult},
+    {"onNewIntent", "(Landroid/content/Intent;)V", (void *)onNewIntent}
 };
 
 #define FIND_AND_CHECK_CLASS(CLASS_NAME) \

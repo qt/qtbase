@@ -61,6 +61,13 @@ namespace QtAndroidPrivate
         virtual bool handleActivityResult(jint requestCode, jint resultCode, jobject data) = 0;
     };
 
+    class Q_CORE_EXPORT NewIntentListener
+    {
+    public:
+        virtual ~NewIntentListener() {}
+        virtual bool handleNewIntent(JNIEnv *env, jobject intent) = 0;
+    };
+
     Q_CORE_EXPORT jobject activity();
     Q_CORE_EXPORT JavaVM *javaVM();
     Q_CORE_EXPORT jint initJNI(JavaVM *vm, JNIEnv *env);
@@ -71,6 +78,10 @@ namespace QtAndroidPrivate
     Q_CORE_EXPORT void handleActivityResult(jint requestCode, jint resultCode, jobject data);
     Q_CORE_EXPORT void registerActivityResultListener(ActivityResultListener *listener);
     Q_CORE_EXPORT void unregisterActivityResultListener(ActivityResultListener *listener);
+
+    Q_CORE_EXPORT void handleNewIntent(JNIEnv *env, jobject intent);
+    Q_CORE_EXPORT void registerNewIntentListener(NewIntentListener *listener);
+    Q_CORE_EXPORT void unregisterNewIntentListener(NewIntentListener *listener);
 }
 
 QT_END_NAMESPACE
