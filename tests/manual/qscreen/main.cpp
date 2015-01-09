@@ -80,8 +80,11 @@ void screenAdded(QScreen* screen)
     // But this works as long as the screens are all virtual siblings
     w->show();
     QRect geom = w->geometry();
+    geom.setSize(w->sizeHint());
+    if (geom.height() > screen->geometry().height())
+        geom.setHeight(screen->geometry().height() * 9 / 10);
     geom.moveCenter(screen->geometry().center());
-    w->move(geom.topLeft());
+    w->setGeometry(geom);
 
     props->insert(screen, w);
 
