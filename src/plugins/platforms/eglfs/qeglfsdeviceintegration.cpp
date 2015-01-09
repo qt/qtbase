@@ -40,9 +40,11 @@
 ****************************************************************************/
 
 #include "qeglfsdeviceintegration.h"
+#include "qeglfsintegration.h"
 #include <QtPlatformSupport/private/qeglconvenience_p.h>
 #include <QtPlatformSupport/private/qeglplatformcursor_p.h>
 #include <QGuiApplication>
+#include <private/qguiapplication_p.h>
 #include <QScreen>
 #include <QDir>
 #include <QRegularExpression>
@@ -185,8 +187,11 @@ void QEGLDeviceIntegration::screenInit()
 
 void QEGLDeviceIntegration::screenDestroy()
 {
-    while (!qApp->screens().isEmpty())
-        delete qApp->screens().last()->handle();
+    QGuiApplication *app = qGuiApp;
+    QEglFSIntegration *platformIntegration = static_cast<QEglFSIntegration *>(
+        QGuiApplicationPrivate::platformIntegration());
+    while (!app->screens().isEmpty())
+        platformIntegration->removeScreen(app->screens().last()->handle());
 }
 
 QSizeF QEGLDeviceIntegration::physicalScreenSize() const

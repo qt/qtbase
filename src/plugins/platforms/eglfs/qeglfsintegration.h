@@ -47,6 +47,7 @@ public:
     QEglFSIntegration();
 
     void addScreen(QPlatformScreen *screen);
+    void removeScreen(QPlatformScreen *screen);
 
     void initialize() Q_DECL_OVERRIDE;
     void destroy() Q_DECL_OVERRIDE;

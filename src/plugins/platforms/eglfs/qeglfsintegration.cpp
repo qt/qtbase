@@ -82,6 +82,11 @@ void QEglFSIntegration::addScreen(QPlatformScreen *screen)
     screenAdded(screen);
 }
 
+void QEglFSIntegration::removeScreen(QPlatformScreen *screen)
+{
+    destroyScreen(screen);
+}
+
 void QEglFSIntegration::initialize()
 {
     qt_egl_device_integration()->platformInit();
