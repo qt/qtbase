@@ -36,7 +36,9 @@
 #include <QtCore/QByteArray>
 #include <QtCore/QtEndian>
 
+#ifdef XCB_USE_XLIB
 #include <X11/extensions/XIproto.h>
+#endif //XCB_USE_XLIB
 
 QT_BEGIN_NAMESPACE
 /* Implementation of http://standards.freedesktop.org/xsettings-spec/xsettings-0.5.html */
@@ -138,6 +140,7 @@ public:
         return value + 4 - remainder;
     }
 
+#ifdef XCB_USE_XLIB
     void populateSettings(const QByteArray &xSettings)
     {
         if (xSettings.length() < 12)
@@ -212,6 +215,7 @@ public:
         }
 
     }
+#endif //XCB_USE_XLIB
 
     QXcbScreen *screen;
     xcb_window_t x_settings_window;
@@ -258,8 +262,10 @@ QXcbXSettings::QXcbXSettings(QXcbScreen *screen)
     const uint32_t event_mask[] = { XCB_EVENT_MASK_STRUCTURE_NOTIFY|XCB_EVENT_MASK_PROPERTY_CHANGE };
     xcb_change_window_attributes(screen->xcb_connection(),d_ptr->x_settings_window,event,event_mask);
 
+#ifdef XCB_USE_XLIB
     d_ptr->populateSettings(d_ptr->getSettings());
     d_ptr->initialized = true;
+#endif //XCB_USE_XLIB
 }
 
 QXcbXSettings::~QXcbXSettings()
@@ -279,7 +285,9 @@ void QXcbXSettings::handlePropertyNotifyEvent(const xcb_property_notify_event_t 
     Q_D(QXcbXSettings);
     if (event->window != d->x_settings_window)
         return;
+#ifdef XCB_USE_XLIB
     d->populateSettings(d->getSettings());
+#endif //XCB_USE_XLIB
 }
 
 void QXcbXSettings::registerCallbackForProperty(const QByteArray &property, QXcbXSettings::PropertyChangeFunc func, void *handle)
