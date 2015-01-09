@@ -480,10 +480,10 @@
 
       ras.area  = 0;
       ras.cover = 0;
+      ras.ex    = ex;
+      ras.ey    = ey;
     }
 
-    ras.ex      = ex;
-    ras.ey      = ey;
     ras.invalid = ( (unsigned)ey >= (unsigned)ras.count_ey ||
                               ex >= ras.count_ex           );
   }
@@ -670,38 +670,64 @@
     }
 
     /* vertical line - avoid calling gray_render_scanline */
-    incr = 1;
-
     if ( dx == 0 )
     {
       TCoord  ex     = TRUNC( ras.x );
       TCoord  two_fx = (TCoord)( ( ras.x - SUBPIXELS( ex ) ) << 1 );
-      TPos    area;
+      TPos    area, max_ey1;
 
 
       first = ONE_PIXEL;
       if ( dy < 0 )
-      {
         first = 0;
-        incr  = -1;
-      }
 
       delta      = (int)( first - fy1 );
       ras.area  += (TArea)two_fx * delta;
       ras.cover += delta;
-      ey1       += incr;
-
-      gray_set_cell( &ras, ex, ey1 );
 
       delta = (int)( first + first - ONE_PIXEL );
       area  = (TArea)two_fx * delta;
-      while ( ey1 != ey2 )
-      {
-        ras.area  += area;
-        ras.cover += delta;
-        ey1       += incr;
+      max_ey1 = ras.count_ey + ras.min_ey;
+      if (dy < 0) {
+        if (ey1 > max_ey1) {
+          ey1 = (max_ey1 > ey2) ? max_ey1 : ey2;
+          gray_set_cell( &ras, ex, ey1 );
+        } else {
+          ey1--;
+          gray_set_cell( &ras, ex, ey1 );
+        }
+        while ( ey1 > ey2 && ey1 >= ras.min_ey)
+        {
+          ras.area  += area;
+          ras.cover += delta;
+          ey1--;
 
-        gray_set_cell( &ras, ex, ey1 );
+          gray_set_cell( &ras, ex, ey1 );
+        }
+        if (ey1 != ey2) {
+          ey1 = ey2;
+          gray_set_cell( &ras, ex, ey1 );
+        }
+      } else {
+        if (ey1 < ras.min_ey) {
+          ey1 = (ras.min_ey < ey2) ? ras.min_ey : ey2;
+          gray_set_cell( &ras, ex, ey1 );
+        } else {
+          ey1++;
+          gray_set_cell( &ras, ex, ey1 );
+        }
+        while ( ey1 < ey2 && ey1 < max_ey1)
+        {
+          ras.area  += area;
+          ras.cover += delta;
+          ey1++;
+
+          gray_set_cell( &ras, ex, ey1 );
+        }
+        if (ey1 != ey2) {
+          ey1 = ey2;
+          gray_set_cell( &ras, ex, ey1 );
+        }
       }
 
       delta      = (int)( fy2 - ONE_PIXEL + first );
