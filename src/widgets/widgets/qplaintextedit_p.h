@@ -77,6 +77,7 @@ public:
     void insertFromMimeData(const QMimeData *source) Q_DECL_OVERRIDE;
     int hitTest(const QPointF &point, Qt::HitTestAccuracy = Qt::FuzzyHit) const Q_DECL_OVERRIDE;
     QRectF blockBoundingRect(const QTextBlock &block) const Q_DECL_OVERRIDE;
+    QString anchorAt(const QPointF &pos) const Q_DECL_OVERRIDE;
     inline QRectF cursorRect(const QTextCursor &cursor) const {
         QRectF r = QWidgetTextControl::cursorRect(cursor);
         r.setLeft(qMax(r.left(), (qreal) 0.));

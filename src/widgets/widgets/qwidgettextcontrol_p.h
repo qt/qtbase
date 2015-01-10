@@ -124,7 +124,7 @@ public:
     QRectF selectionRect(const QTextCursor &cursor) const;
     QRectF selectionRect() const;
 
-    QString anchorAt(const QPointF &pos) const;
+    virtual QString anchorAt(const QPointF &pos) const;
     QPointF anchorPosition(const QString &name) const;
 
     QString anchorAtCursor() const;

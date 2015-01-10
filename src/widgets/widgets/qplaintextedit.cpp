@@ -604,6 +604,10 @@ QRectF QPlainTextEditControl::blockBoundingRect(const QTextBlock &block) const {
     return r;
 }
 
+QString QPlainTextEditControl::anchorAt(const QPointF &pos) const
+{
+    return textEdit->anchorAt(pos.toPoint());
+}
 
 void QPlainTextEditPrivate::setTopLine(int visualTopLine, int dx)
 {
