@@ -315,13 +315,7 @@ void QFileSystemEntry::findLastSeparator() const
 {
     if (m_lastSeparator == -2) {
         resolveFilePath();
-        m_lastSeparator = -1;
-        for (int i = m_filePath.size() - 1; i >= 0; --i) {
-            if (m_filePath[i].unicode() == '/') {
-                m_lastSeparator = i;
-                break;
-            }
-        }
+        m_lastSeparator = m_filePath.lastIndexOf(QLatin1Char('/'));
     }
 }
 
