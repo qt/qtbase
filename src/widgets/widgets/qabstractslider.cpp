@@ -728,7 +728,7 @@ bool QAbstractSliderPrivate::scrollByDelta(Qt::Orientation orientation, Qt::Keyb
         stepsToScroll = -stepsToScroll;
 
     int prevValue = value;
-    position = overflowSafeAdd(stepsToScroll); // value will be updated by triggerAction()
+    position = bound(overflowSafeAdd(stepsToScroll)); // value will be updated by triggerAction()
     q->triggerAction(QAbstractSlider::SliderMove);
 
     if (prevValue == value) {
