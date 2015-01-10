@@ -67,6 +67,7 @@ private slots:
     void clippedTableCell();
     void floatingTablePageBreak();
     void imageAtRightAlignedTab();
+    void blockVisibility();
 
 private:
     QTextDocument *doc;
@@ -310,6 +311,47 @@ void tst_QTextDocumentLayout::imageAtRightAlignedTab()
 
    // Everything should fit into the 300 pixels
    QCOMPARE(doc->idealWidth(), 300.0);
+}
+
+void tst_QTextDocumentLayout::blockVisibility()
+{
+    QTextCursor cursor(doc);
+    for (int i = 0; i < 10; ++i) {
+        if (!doc->isEmpty())
+            cursor.insertBlock();
+        cursor.insertText(QString::number(i));
+    }
+
+    qreal margin = doc->documentMargin();
+    QSizeF emptySize(2 * margin, 2 * margin);
+    QSizeF halfSize = doc->size();
+    halfSize.rheight() -= 2 * margin;
+    halfSize.rheight() /= 2;
+    halfSize.rheight() += 2 * margin;
+
+    for (int i = 0; i < 10; i += 2) {
+        QTextBlock block = doc->findBlockByNumber(i);
+        block.setVisible(false);
+        doc->markContentsDirty(block.position(), block.length());
+    }
+
+    QCOMPARE(doc->size(), halfSize);
+
+    for (int i = 1; i < 10; i += 2) {
+        QTextBlock block = doc->findBlockByNumber(i);
+        block.setVisible(false);
+        doc->markContentsDirty(block.position(), block.length());
+    }
+
+    QCOMPARE(doc->size(), emptySize);
+
+    for (int i = 0; i < 10; i += 2) {
+        QTextBlock block = doc->findBlockByNumber(i);
+        block.setVisible(true);
+        doc->markContentsDirty(block.position(), block.length());
+    }
+
+    QCOMPARE(doc->size(), halfSize);
 }
 
 QTEST_MAIN(tst_QTextDocumentLayout)
