@@ -30,7 +30,7 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include <math.h>               // isnan
+#include <qmath.h>               // qIsNan
 #include <qvariant.h>
 
 #ifdef Q_OS_UNIX
@@ -320,7 +320,7 @@ bool compare(const QVariant &v1, const QVariant &v2);
 
 bool compare(double d1, double d2)
 {
-    if (isnan(d1) && isnan(d2))
+    if (qIsNaN(d1) && qIsNaN(d2))
         return true;
     return d1 == d2;
 }
