@@ -99,6 +99,7 @@ private:
     void updateMenu_sys_qpa();
     QRect geometry_sys_qpa() const;
     void showMessage_sys_qpa(const QString &msg, const QString &title, QSystemTrayIcon::MessageIcon icon, int secs);
+    void addPlatformMenu(QMenu *menu) const;
 };
 
 class QBalloonTip : public QWidget

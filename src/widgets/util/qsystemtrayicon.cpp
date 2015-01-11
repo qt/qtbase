@@ -37,6 +37,7 @@
 #ifndef QT_NO_SYSTEMTRAYICON
 
 #include "qmenu.h"
+#include "qlist.h"
 #include "qevent.h"
 #include "qpoint.h"
 #include "qlabel.h"
@@ -704,11 +705,7 @@ void QSystemTrayIconPrivate::updateIcon_sys_qpa()
 void QSystemTrayIconPrivate::updateMenu_sys_qpa()
 {
     if (menu) {
-        if (!menu->platformMenu()) {
-            QPlatformMenu *platformMenu = qpa_sys->createMenu();
-            if (platformMenu)
-                menu->setPlatformMenu(platformMenu);
-        }
+        addPlatformMenu(menu);
         qpa_sys->updateMenu(menu->platformMenu());
     }
 }
@@ -739,6 +736,27 @@ void QSystemTrayIconPrivate::showMessage_sys_qpa(const QString &message,
     }
     qpa_sys->showMessage(message, title, notificationIcon,
                      static_cast<QPlatformSystemTrayIcon::MessageIcon>(icon), msecs);
+}
+
+void QSystemTrayIconPrivate::addPlatformMenu(QMenu *menu) const
+{
+    if (menu->platformMenu())
+        return; // The platform menu already exists.
+
+    // The recursion depth is the same as menu depth, so should not
+    // be higher than 3 levels.
+    QListIterator<QAction *> it(menu->actions());
+    while (it.hasNext()) {
+        QAction *action = it.next();
+        if (action->menu())
+            addPlatformMenu(action->menu());
+    }
+
+    // This menu should be processed *after* its children, otherwise
+    // setMenu() is not called on respective QPlatformMenuItems.
+    QPlatformMenu *platformMenu = qpa_sys->createMenu();
+    if (platformMenu)
+        menu->setPlatformMenu(platformMenu);
 }
 
 QT_END_NAMESPACE
