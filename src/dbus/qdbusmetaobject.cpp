@@ -504,7 +504,7 @@ void QDBusMetaObjectGenerator::write(QDBusMetaObject *obj)
     }
 
     Q_ASSERT(offset == header->methodData + header->methodCount * 5);
-    Q_ASSERT(parametersOffset = header->propertyData);
+    Q_ASSERT(parametersOffset == header->propertyData);
     Q_ASSERT(signatureOffset == header->methodDBusData + header->methodCount * intsPerMethod);
     Q_ASSERT(typeidOffset == idata.size());
     offset += methodParametersDataSize;
