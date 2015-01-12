@@ -92,7 +92,8 @@ static QIOSScreen* qtPlatformScreenFor(UIScreen *uiScreen)
     QIOSScreen *screen = qtPlatformScreenFor([notification object]);
     Q_ASSERT_X(screen, Q_FUNC_INFO, "Screen disconnected that we didn't know about");
 
-    delete screen;
+    QIOSIntegration *integration = QIOSIntegration::instance();
+    integration->destroyScreen(screen);
 }
 
 + (void)screenModeChanged:(NSNotification*)notification

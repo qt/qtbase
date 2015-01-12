@@ -76,7 +76,9 @@ public:
     QTouchDevice *touchDevice();
     QPlatformAccessibility *accessibility() const Q_DECL_OVERRIDE;
 
+    // Called from Objective-C class QIOSScreenTracker, which can't be friended
     void addScreen(QPlatformScreen *screen) { screenAdded(screen); }
+    void destroyScreen(QPlatformScreen *screen) { QPlatformIntegration::destroyScreen(screen); }
 
     static QIOSIntegration *instance();
 
