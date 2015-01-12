@@ -126,13 +126,15 @@ HCURSOR QWindowsCursor::createPixmapCursor(const QPixmap &pixmap, const QPoint &
 
 // Create a cursor from image and mask of the format QImage::Format_Mono.
 static HCURSOR createBitmapCursor(const QImage &bbits, const QImage &mbits,
-                                  QPoint hotSpot = QPoint(),
+                                  QPoint hotSpot = QPoint(-1, -1),
                                   bool invb = false, bool invm = false)
 {
     const int width = bbits.width();
     const int height = bbits.height();
-    if (hotSpot.isNull())
-        hotSpot = QPoint(width / 2, height / 2);
+    if (hotSpot.x() < 0)
+        hotSpot.setX(width / 2);
+    if (hotSpot.y() < 0)
+        hotSpot.setY(height / 2);
     const int n = qMax(1, width / 8);
 #if !defined(Q_OS_WINCE)
     QScopedArrayPointer<uchar> xBits(new uchar[height * n]);
