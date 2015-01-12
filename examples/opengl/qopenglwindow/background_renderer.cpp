@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2015 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the examples of the Qt Toolkit.
@@ -170,7 +170,6 @@ void FragmentToy::draw(const QSize &windowSize)
     m_program->enableAttributeArray("vertexCoord");
     m_vertex_buffer.release();
 
-    uint time = QDateTime::currentDateTime().toMSecsSinceEpoch();
     m_program->setUniformValue("currentTime", (uint) QDateTime::currentDateTime().toMSecsSinceEpoch());
     m_program->setUniformValue("windowSize", windowSize);
 
