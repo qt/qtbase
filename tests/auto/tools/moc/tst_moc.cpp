@@ -3363,7 +3363,6 @@ void tst_Moc::veryLongStringData()
     const QMetaObject *mobj = &VeryLongStringData::staticMetaObject;
     QCOMPARE(mobj->classInfoCount(), 4);
 
-    strlen(0);
     QCOMPARE(mobj->classInfo(0).name()[0], 'n');
     QCOMPARE(mobj->classInfo(0).value()[0], 'i');
     QCOMPARE(mobj->classInfo(1).name()[0], 'e');
