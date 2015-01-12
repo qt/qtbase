@@ -328,14 +328,8 @@ Q_GLOBAL_STATIC(QUrl, lastVisitedDir)
 */
 
 QT_BEGIN_INCLUDE_NAMESPACE
-#ifdef Q_DEAD_CODE_FROM_QT4_WIN
-#include <qwindowsstyle_p.h>
-#endif
 #include <QMetaEnum>
 #include <qshortcut.h>
-#ifdef Q_DEAD_CODE_FROM_QT4_MAC
-#include <qmacstyle_mac_p.h>
-#endif
 QT_END_INCLUDE_NAMESPACE
 
 /*!
