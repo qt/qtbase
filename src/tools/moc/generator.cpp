@@ -530,7 +530,7 @@ void Generator::generateCode()
 
     if (isQObject)
         fprintf(out, "    { Q_NULLPTR, ");
-    else if (cdef->superclassList.size())
+    else if (cdef->superclassList.size() && (!cdef->hasQGadget || knownGadgets.contains(purestSuperClass)))
         fprintf(out, "    { &%s::staticMetaObject, ", purestSuperClass.constData());
     else
         fprintf(out, "    { Q_NULLPTR, ");

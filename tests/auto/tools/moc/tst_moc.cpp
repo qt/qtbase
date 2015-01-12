@@ -72,6 +72,9 @@
 #include "related-metaobjects-in-gadget.h"
 #include "related-metaobjects-name-conflict.h"
 
+#include "non-gadget-parent-class.h"
+#include "grand-parent-gadget-class.h"
+
 QT_USE_NAMESPACE
 
 template <bool b> struct QTBUG_31218 {};
@@ -574,6 +577,7 @@ private slots:
     void relatedMetaObjectsNameConflict();
     void strignLiteralsInMacroExtension();
     void veryLongStringData();
+    void gadgetHierarchy();
 
 signals:
     void sigWithUnsignedArg(unsigned foo);
@@ -3377,6 +3381,12 @@ void tst_Moc::veryLongStringData()
     QCOMPARE(strlen(mobj->classInfo(2).value()), static_cast<size_t>(32768));
     QCOMPARE(strlen(mobj->classInfo(3).name()), static_cast<size_t>(1));
     QCOMPARE(strlen(mobj->classInfo(3).value()), static_cast<size_t>(1));
+}
+
+void tst_Moc::gadgetHierarchy()
+{
+    QCOMPARE(NonGadgetParent::Derived::staticMetaObject.superClass(), static_cast<const QMetaObject*>(Q_NULLPTR));
+    QCOMPARE(GrandParentGadget::DerivedGadget::staticMetaObject.superClass(), &GrandParentGadget::BaseGadget::staticMetaObject);
 }
 
 QTEST_MAIN(tst_Moc)

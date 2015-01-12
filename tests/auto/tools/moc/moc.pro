@@ -27,6 +27,7 @@ HEADERS += using-namespaces.h no-keywords.h task87883.h c-comments.h backslash-n
            single-quote-digit-separator-n3781.h \
            related-metaobjects-in-namespaces.h \
            qtbug-35657-gadget.h \
+           non-gadget-parent-class.h grand-parent-gadget-class.h \
            related-metaobjects-in-gadget.h \
            related-metaobjects-name-conflict.h
 

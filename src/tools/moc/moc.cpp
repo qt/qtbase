@@ -139,6 +139,12 @@ bool Moc::parseClassHead(ClassDef *def)
                 def->superclassList += qMakePair(type, access);
             }
         } while (test(COMMA));
+
+        if (knownGadgets.contains(def->superclassList.first().first)) {
+            // Q_GADGET subclasses are treated as Q_GADGETs
+            knownGadgets.insert(def->classname, def->qualified);
+            knownGadgets.insert(def->qualified, def->qualified);
+        }
     }
     if (!test(LBRACE))
         return false;
