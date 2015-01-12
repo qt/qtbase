@@ -9,9 +9,4 @@ android: !android-no-sdk {
     RESOURCES += android_testdata.qrc
 }
 
-win32-msvc:QMAKE_CXXFLAGS -= -Zm200
-win32-msvc:QMAKE_CXXFLAGS += -Zm800
-win32-msvc.net:QMAKE_CXXFLAGS -= -Zm300
-win32-msvc.net:QMAKE_CXXFLAGS += -Zm1100
-
 TESTDATA += images/* baseline/*

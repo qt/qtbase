@@ -16,12 +16,6 @@ QT += widgets
 target.path = $$[QT_INSTALL_EXAMPLES]/widgets/painting/composition
 INSTALLS += target
 
-
-win32-msvc* {
-    QMAKE_CXXFLAGS += /Zm500
-    QMAKE_CFLAGS += /Zm500
-}
-
 wince* {
     DEPLOYMENT_PLUGIN += qjpeg
 }
