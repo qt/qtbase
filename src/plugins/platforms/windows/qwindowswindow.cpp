@@ -2294,6 +2294,14 @@ void *QWindowsWindow::surface(void *nativeConfig)
 #endif
 }
 
+void QWindowsWindow::invalidateSurface()
+{
+    if (m_surface) {
+        m_data.staticOpenGLContext->destroyWindowSurface(m_surface);
+        m_surface = 0;
+    }
+}
+
 void QWindowsWindow::setTouchWindowTouchTypeStatic(QWindow *window, QWindowsWindowFunctions::TouchWindowTouchTypes touchTypes)
 {
     if (!window->handle())

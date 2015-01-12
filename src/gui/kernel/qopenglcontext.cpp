@@ -590,10 +590,10 @@ QVariant QOpenGLContext::nativeHandle() const
 */
 bool QOpenGLContext::create()
 {
-    if (isValid())
+    Q_D(QOpenGLContext);
+    if (d->platformGLContext)
         destroy();
 
-    Q_D(QOpenGLContext);
     d->platformGLContext = QGuiApplicationPrivate::platformIntegration()->createPlatformOpenGLContext(this);
     if (!d->platformGLContext)
         return false;
@@ -675,6 +675,15 @@ QOpenGLContext::~QOpenGLContext()
 
 /*!
     Returns if this context is valid, i.e. has been successfully created.
+
+    On some platforms the return value of \c false for a context that was
+    successfully created previously indicates that the OpenGL context was lost.
+
+    The typical way to handle context loss scenarios in applications is to
+    check via this function whenever makeCurrent() fails and returns \c false.
+    If this function then returns \c false, recreate the underlying native
+    OpenGL context by calling create(), call makeCurrent() again and then
+    reinitialize all OpenGL resources.
 
     \sa create()
 */

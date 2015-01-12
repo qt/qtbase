@@ -254,6 +254,7 @@ public:
     void setWindowIcon(const QIcon &icon);
 
     void *surface(void *nativeConfig);
+    void invalidateSurface() Q_DECL_OVERRIDE;
 
 #ifndef Q_OS_WINCE
     void setAlertState(bool enabled);
