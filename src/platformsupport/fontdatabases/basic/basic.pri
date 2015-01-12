@@ -68,6 +68,9 @@ contains(QT_CONFIG, freetype) {
                   $$QT_FREETYPE_DIR/builds/unix
    }
 
+   # disable warnings about "unsafe" methods in C code
+   msvc:QMAKE_CFLAGS_WARN_ON += -wd"4996"
+
    INCLUDEPATH += \
        $$QT_FREETYPE_DIR/src \
        $$QT_FREETYPE_DIR/include
@@ -84,4 +87,3 @@ contains(QT_CONFIG, freetype) {
     # pull in the proper freetype2 include directory
     include($$QT_SOURCE_TREE/config.tests/unix/freetype/freetype.pri)
 }
-
