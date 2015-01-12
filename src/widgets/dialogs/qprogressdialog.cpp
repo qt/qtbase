@@ -697,9 +697,6 @@ void QProgressDialog::setValue(int progress)
                 d->shown_once = true;
             }
         }
-#ifdef Q_DEAD_CODE_FROM_QT4_MAC
-        QApplication::flush();
-#endif
     }
 
     if (progress == d->bar->maximum() && d->autoReset)
