@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2015 Digia Plc and/or its subsidiary(-ies).
 ** Copyright (C) 2014 Intel Corporation.
 ** Contact: http://www.qt-project.org/legal
 **
@@ -263,12 +263,8 @@ static inline void putEscapedString(QTextStreamPrivate *d, const Char *begin, in
                 // improperly-paired surrogates, fall through
             }
             buf[1] = 'u';
-            if (sizeof(Char) == 1) {
-                buf[2] = buf[3] = '0';
-            } else {
-                buf[2] = toHexUpper(*p >> 12);
-                buf[3] = toHexUpper(*p >> 8);
-            }
+            buf[2] = toHexUpper(ushort(*p) >> 12);
+            buf[3] = toHexUpper(ushort(*p) >> 8);
             buf[4] = toHexUpper(*p >> 4);
             buf[5] = toHexUpper(*p);
             buflen = 6;
