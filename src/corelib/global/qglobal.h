@@ -1049,13 +1049,6 @@ Q_CORE_EXPORT int qrand();
 
 #define QT_MODULE(x)
 
-#ifdef Q_OS_QNX
-// QNX doesn't have SYSV style shared memory. Multiprocess QWS apps,
-// shared fonts and QSystemSemaphore + QSharedMemory are not available
-#  define QT_NO_SYSTEMSEMAPHORE
-#  define QT_NO_SHAREDMEMORY
-#endif
-
 #if !defined(QT_BOOTSTRAPPED) && defined(QT_REDUCE_RELOCATIONS) && defined(__ELF__) && !defined(__PIC__) && !defined(__PIE__)
 #  error "You must build your code with position independent code if Qt was built with -reduce-relocations. "\
          "Compile your code with -fPIC or -fPIE."
