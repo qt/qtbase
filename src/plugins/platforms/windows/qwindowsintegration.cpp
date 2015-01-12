@@ -328,47 +328,61 @@ QPlatformWindow *QWindowsIntegration::createPlatformWindow(QWindow *window) cons
 }
 
 #ifndef QT_NO_OPENGL
+
+QWindowsStaticOpenGLContext *QWindowsStaticOpenGLContext::doCreate()
+{
+#if defined(QT_OPENGL_DYNAMIC)
+    QWindowsOpenGLTester::Renderer requestedRenderer = QWindowsOpenGLTester::requestedRenderer();
+    switch (requestedRenderer) {
+    case QWindowsOpenGLTester::DesktopGl:
+        if (QWindowsStaticOpenGLContext *glCtx = QOpenGLStaticContext::create())
+            return glCtx;
+        qCWarning(lcQpaGl, "System OpenGL failed. Falling back to Software OpenGL.");
+        return QOpenGLStaticContext::create(true);
+    // If ANGLE is requested, use it, don't try anything else.
+    case QWindowsOpenGLTester::AngleRendererD3d9:
+    case QWindowsOpenGLTester::AngleRendererD3d11:
+    case QWindowsOpenGLTester::AngleRendererD3d11Warp:
+        return QWindowsEGLStaticContext::create(requestedRenderer);
+    case QWindowsOpenGLTester::Gles:
+        return QWindowsEGLStaticContext::create(QWindowsOpenGLTester::supportedGlesRenderers());
+    case QWindowsOpenGLTester::SoftwareRasterizer:
+        if (QWindowsStaticOpenGLContext *swCtx = QOpenGLStaticContext::create(true))
+            return swCtx;
+        qCWarning(lcQpaGl, "Software OpenGL failed. Falling back to system OpenGL.");
+        if (QWindowsOpenGLTester::supportedRenderers() & QWindowsOpenGLTester::DesktopGl)
+            return QOpenGLStaticContext::create();
+        return Q_NULLPTR;
+    default:
+        break;
+    }
+
+    const QWindowsOpenGLTester::Renderers supportedRenderers = QWindowsOpenGLTester::supportedRenderers();
+    if (supportedRenderers & QWindowsOpenGLTester::DesktopGl) {
+        if (QWindowsStaticOpenGLContext *glCtx = QOpenGLStaticContext::create())
+            return glCtx;
+    }
+    if (QWindowsOpenGLTester::Renderers glesRenderers = supportedRenderers & QWindowsOpenGLTester::GlesMask) {
+        if (QWindowsEGLStaticContext *eglCtx = QWindowsEGLStaticContext::create(glesRenderers))
+            return eglCtx;
+    }
+    return QOpenGLStaticContext::create(true);
+#elif defined(QT_OPENGL_ES_2)
+    QWindowsOpenGLTester::Renderers glesRenderers = QWindowsOpenGLTester::requestedGlesRenderer();
+    if (glesRenderers == QWindowsOpenGLTester::InvalidRenderer)
+        glesRenderers = QWindowsOpenGLTester::supportedGlesRenderers();
+    return QWindowsEGLStaticContext::create(glesRenderers);
+#elif !defined(QT_NO_OPENGL)
+    return QOpenGLStaticContext::create();
+#endif
+}
+
 static QWindowsStaticOpenGLContext *q_staticOpenGLContext = 0;
 
 QWindowsStaticOpenGLContext *QWindowsStaticOpenGLContext::create()
 {
-    QWindowsStaticOpenGLContext *ctx = 0;
-
-#if defined(QT_OPENGL_DYNAMIC)
-    const QByteArray requested = qgetenv("QT_OPENGL"); // angle, desktop, software
-    const bool angleRequested = QCoreApplication::testAttribute(Qt::AA_UseOpenGLES) || requested == "angle";
-    const bool desktopRequested = QCoreApplication::testAttribute(Qt::AA_UseDesktopOpenGL) || requested == "desktop";
-    const bool softwareRequested = QCoreApplication::testAttribute(Qt::AA_UseSoftwareOpenGL) || requested == "software";
-
-    // If ANGLE is requested, use it, don't try anything else.
-    if (angleRequested) {
-        ctx = QWindowsEGLStaticContext::create();
-    } else {
-        // If opengl32.dll seems to be OpenGL 2.x capable, or desktop OpenGL is requested, use it.
-        if (!softwareRequested && (desktopRequested || QWindowsOpenGLTester::testDesktopGL()))
-            ctx = QOpenGLStaticContext::create();
-        // If failed and desktop OpenGL is not explicitly requested, try ANGLE.
-        if (!ctx && !desktopRequested && !softwareRequested)
-            ctx = QWindowsEGLStaticContext::create();
-        // Try software.
-        if (!ctx) {
-            ctx = QOpenGLStaticContext::create(true);
-            // If software was explicitly requested but failed, try the regular one.
-            if (!ctx && softwareRequested && QWindowsOpenGLTester::testDesktopGL()) {
-                qCWarning(lcQpaGl, "Software OpenGL failed. Falling back to system OpenGL.");
-                ctx = QOpenGLStaticContext::create();
-            }
-        }
-    }
-#elif defined(QT_OPENGL_ES_2)
-    ctx = QWindowsEGLStaticContext::create();
-#elif !defined(QT_NO_OPENGL)
-    ctx = QOpenGLStaticContext::create();
-#endif
-
-    q_staticOpenGLContext = ctx;
-
-    return ctx;
+    q_staticOpenGLContext = QWindowsStaticOpenGLContext::doCreate();
+    return q_staticOpenGLContext;
 }
 
 bool QWindowsIntegrationPrivate::ensureStaticOpenGLContext()

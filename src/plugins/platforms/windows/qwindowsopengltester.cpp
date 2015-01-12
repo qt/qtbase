@@ -37,6 +37,7 @@
 #include <QtCore/QVariantMap>
 #include <QtCore/QDebug>
 #include <QtCore/QTextStream>
+#include <QtCore/QCoreApplication>
 
 #ifndef Q_OS_WINCE
 #  include <QtCore/qt_windows.h>
@@ -168,6 +169,87 @@ QVariant GpuDescription::toVariant() const
     result.insert(QStringLiteral("driverVersionString"), driverVersion.toString());
     result.insert(QStringLiteral("description"), QVariant(QLatin1String(description)));
     result.insert(QStringLiteral("printable"), QVariant(toString()));
+    return result;
+}
+
+QWindowsOpenGLTester::Renderer QWindowsOpenGLTester::requestedGlesRenderer()
+{
+#ifndef Q_OS_WINCE
+    const char platformVar[] = "QT_ANGLE_PLATFORM";
+    if (qEnvironmentVariableIsSet(platformVar)) {
+        const QByteArray anglePlatform = qgetenv(platformVar);
+        if (anglePlatform == "d3d11")
+            return QWindowsOpenGLTester::AngleRendererD3d11;
+        if (anglePlatform == "d3d9")
+            return QWindowsOpenGLTester::AngleRendererD3d9;
+        if (anglePlatform == "warp")
+            return QWindowsOpenGLTester::AngleRendererD3d11Warp;
+        qCWarning(lcQpaGl) << "Invalid value set for " << platformVar << ": " << anglePlatform;
+    }
+#endif // !Q_OS_WINCE
+    return QWindowsOpenGLTester::InvalidRenderer;
+}
+
+QWindowsOpenGLTester::Renderer QWindowsOpenGLTester::requestedRenderer()
+{
+#ifndef Q_OS_WINCE
+    const char openGlVar[] = "QT_OPENGL";
+    if (QCoreApplication::testAttribute(Qt::AA_UseOpenGLES)) {
+        const Renderer glesRenderer = QWindowsOpenGLTester::requestedGlesRenderer();
+        return glesRenderer != InvalidRenderer ? glesRenderer : Gles;
+    }
+    if (QCoreApplication::testAttribute(Qt::AA_UseDesktopOpenGL))
+        return QWindowsOpenGLTester::DesktopGl;
+    if (QCoreApplication::testAttribute(Qt::AA_UseSoftwareOpenGL))
+        return QWindowsOpenGLTester::SoftwareRasterizer;
+    if (qEnvironmentVariableIsSet(openGlVar)) {
+        const QByteArray requested = qgetenv(openGlVar);
+        if (requested == "angle") {
+            const Renderer glesRenderer = QWindowsOpenGLTester::requestedGlesRenderer();
+            return glesRenderer != InvalidRenderer ? glesRenderer : Gles;
+        }
+        if (requested == "desktop")
+            return QWindowsOpenGLTester::DesktopGl;
+        if (requested == "software")
+            return QWindowsOpenGLTester::SoftwareRasterizer;
+        qCWarning(lcQpaGl) << "Invalid value set for " << openGlVar << ": " << requested;
+    }
+#endif // !Q_OS_WINCE
+    return QWindowsOpenGLTester::InvalidRenderer;
+}
+
+static inline QWindowsOpenGLTester::Renderers
+    detectSupportedRenderers(const GpuDescription &gpu, bool glesOnly)
+{
+    Q_UNUSED(gpu)
+#ifndef Q_OS_WINCE
+    // Add checks for card types with known issues here.
+    QWindowsOpenGLTester::Renderers result(QWindowsOpenGLTester::AngleRendererD3d11
+        | QWindowsOpenGLTester::AngleRendererD3d9
+        | QWindowsOpenGLTester::AngleRendererD3d11Warp
+        | QWindowsOpenGLTester::SoftwareRasterizer);
+
+    if (!glesOnly && QWindowsOpenGLTester::testDesktopGL())
+        result |= QWindowsOpenGLTester::DesktopGl;
+    return result;
+#else // !Q_OS_WINCE
+    return QWindowsOpenGLTester::Gles;
+#endif
+}
+
+QWindowsOpenGLTester::Renderers QWindowsOpenGLTester::supportedGlesRenderers()
+{
+    const GpuDescription gpu = GpuDescription::detect();
+    const QWindowsOpenGLTester::Renderers result = detectSupportedRenderers(gpu, true);
+    qDebug(lcQpaGl) << __FUNCTION__ << gpu << "renderer: " << result;
+    return result;
+}
+
+QWindowsOpenGLTester::Renderers QWindowsOpenGLTester::supportedRenderers()
+{
+    const GpuDescription gpu = GpuDescription::detect();
+    const QWindowsOpenGLTester::Renderers result = detectSupportedRenderers(gpu, false);
+    qDebug(lcQpaGl) << __FUNCTION__ << gpu << "renderer: " << result;
     return result;
 }
 

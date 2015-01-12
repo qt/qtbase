@@ -37,6 +37,7 @@
 #include <qtwindowsglobal.h>
 
 #include <QtCore/QByteArray>
+#include <QtCore/QFlags>
 
 QT_BEGIN_NAMESPACE
 
@@ -92,8 +93,28 @@ QDebug operator<<(QDebug d, const GpuDescription &gd);
 class QWindowsOpenGLTester
 {
 public:
+    enum Renderer {
+        InvalidRenderer         = 0x0000,
+        DesktopGl               = 0x0001,
+        AngleRendererD3d11      = 0x0002,
+        AngleRendererD3d9       = 0x0004,
+        AngleRendererD3d11Warp  = 0x0008, // "Windows Advanced Rasterization Platform"
+        AngleBackendMask        = AngleRendererD3d11 | AngleRendererD3d9 | AngleRendererD3d11Warp,
+        Gles                    = 0x0010, // ANGLE/unspecified or Generic GLES for Windows CE.
+        GlesMask                = Gles | AngleBackendMask,
+        SoftwareRasterizer      = 0x0020
+    };
+    Q_DECLARE_FLAGS(Renderers, Renderer)
+
+    static Renderer requestedGlesRenderer();
+    static Renderer requestedRenderer();
+    static Renderers supportedGlesRenderers();
+    static Renderers supportedRenderers();
+
     static bool testDesktopGL();
 };
+
+Q_DECLARE_OPERATORS_FOR_FLAGS(QWindowsOpenGLTester::Renderers)
 
 QT_END_NAMESPACE
 
