@@ -104,7 +104,7 @@ public:
     }
 
     QColor outline(const QPalette &pal) const {
-        if (!pal.window().texture().isNull())
+        if (pal.window().style() == Qt::TexturePattern)
             return QColor(0, 0, 0, 160);
         return pal.background().color().darker(140);
     }
@@ -117,7 +117,7 @@ public:
     }
 
     QColor tabFrameColor(const QPalette &pal) const {
-        if (!pal.button().texture().isNull())
+        if (pal.window().style() == Qt::TexturePattern)
             return QColor(255, 255, 255, 8);
         return buttonColor(pal).lighter(104);
     }

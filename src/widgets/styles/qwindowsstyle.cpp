@@ -1525,8 +1525,14 @@ void QWindowsStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPai
                 p->setBackground(opt->palette.dark().color());
                 p->setBrush(br);
             } else {
-                QPixmap pm = opt->palette.brush(QPalette::Light).texture();
-                br = !pm.isNull() ? QBrush(pm) : QBrush(opt->palette.light().color(), Qt::Dense4Pattern);
+                const QBrush paletteBrush = opt->palette.brush(QPalette::Light);
+                if (paletteBrush.style() == Qt::TexturePattern) {
+                    if (qHasPixmapTexture(paletteBrush))
+                        br = QBrush(paletteBrush.texture());
+                    else
+                        br = QBrush(paletteBrush.textureImage());
+                } else
+                    br = QBrush(opt->palette.light().color(), Qt::Dense4Pattern);
                 p->setBackground(opt->palette.background().color());
                 p->setBrush(br);
             }
@@ -1536,8 +1542,15 @@ void QWindowsStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPai
             break; }
     case CE_ScrollBarSlider:
         if (!(opt->state & State_Enabled)) {
-            QPixmap pm = opt->palette.brush(QPalette::Light).texture();
-            QBrush br = !pm.isNull() ? QBrush(pm) : QBrush(opt->palette.light().color(), Qt::Dense4Pattern);
+            QBrush br;
+            const QBrush paletteBrush = opt->palette.brush(QPalette::Light);
+            if (paletteBrush.style() == Qt::TexturePattern) {
+                if (qHasPixmapTexture(paletteBrush))
+                    br = QBrush(paletteBrush.texture());
+                else
+                    br = QBrush(paletteBrush.textureImage());
+            } else
+                br = QBrush(opt->palette.light().color(), Qt::Dense4Pattern);
             p->setPen(Qt::NoPen);
             p->setBrush(br);
             p->setBackgroundMode(Qt::OpaqueMode);

@@ -2264,9 +2264,9 @@ int QPdfEnginePrivate::addBrushPattern(const QTransform &m, bool *specifyColor, 
     if (pattern.isEmpty()) {
         if (brush.style() != Qt::TexturePattern)
             return 0;
-        QImage image = brush.texture().toImage();
+        QImage image = brush.textureImage();
         bool bitmap = true;
-        imageObject = addImage(image, &bitmap, brush.texture().cacheKey());
+        imageObject = addImage(image, &bitmap, image.cacheKey());
         if (imageObject != -1) {
             QImage::Format f = image.format();
             if (f != QImage::Format_MonoLSB && f != QImage::Format_Mono) {

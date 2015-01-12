@@ -69,6 +69,8 @@ private slots:
     void nullBrush();
     void isOpaque();
     void debug();
+
+    void textureBrushStream();
 };
 
 
@@ -405,6 +407,43 @@ void tst_QBrush::debug()
     pixmap_brush.setTexture(pixmap_source);
     QCOMPARE(pixmap_brush.style(), Qt::TexturePattern);
     qDebug() << pixmap_brush; // don't crash
+}
+
+void tst_QBrush::textureBrushStream()
+{
+    QPixmap pixmap_source(10, 10);
+    QImage image_source(10, 10, QImage::Format_RGB32);
+
+    fill(&pixmap_source);
+    fill(&image_source);
+
+    QBrush pixmap_brush;
+    pixmap_brush.setTexture(pixmap_source);
+    QBrush image_brush;
+    image_brush.setTextureImage(image_source);
+
+    QByteArray data1;
+    QByteArray data2;
+    {
+        QDataStream stream1(&data1, QIODevice::WriteOnly);
+        QDataStream stream2(&data2, QIODevice::WriteOnly);
+        stream1 << pixmap_brush;
+        stream2 << image_brush;
+    }
+
+    QBrush loadedBrush1;
+    QBrush loadedBrush2;
+    {
+        QDataStream stream1(&data1, QIODevice::ReadOnly);
+        QDataStream stream2(&data2, QIODevice::ReadOnly);
+        stream1 >> loadedBrush1;
+        stream2 >> loadedBrush2;
+    }
+
+    QCOMPARE(loadedBrush1.style(), Qt::TexturePattern);
+    QCOMPARE(loadedBrush2.style(), Qt::TexturePattern);
+    QCOMPARE(loadedBrush1.texture(), pixmap_source);
+    QCOMPARE(loadedBrush2.textureImage(), image_source);
 }
 
 QTEST_MAIN(tst_QBrush)

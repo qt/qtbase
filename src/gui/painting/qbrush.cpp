@@ -1029,7 +1029,10 @@ QDataStream &operator<<(QDataStream &s, const QBrush &b)
 
     s << style << b.color();
     if (b.style() == Qt::TexturePattern) {
-        s << b.texture();
+        if (s.version() >= QDataStream::Qt_5_5)
+            s << b.textureImage();
+        else
+            s << b.texture();
     } else if (s.version() >= QDataStream::Qt_4_0 && gradient_style) {
         const QGradient *gradient = b.gradient();
         int type_as_int = int(gradient->type());
@@ -1089,10 +1092,17 @@ QDataStream &operator>>(QDataStream &s, QBrush &b)
     QColor color;
     s >> style;
     s >> color;
+    b = QBrush(color);
     if (style == Qt::TexturePattern) {
-        QPixmap pm;
-        s >> pm;
-        b = QBrush(color, pm);
+        if (s.version() >= QDataStream::Qt_5_5) {
+            QImage img;
+            s >> img;
+            b.setTextureImage(qMove(img));
+        } else {
+            QPixmap pm;
+            s >> pm;
+            b.setTexture(qMove(pm));
+        }
     } else if (style == Qt::LinearGradientPattern
                || style == Qt::RadialGradientPattern
                || style == Qt::ConicalGradientPattern) {
