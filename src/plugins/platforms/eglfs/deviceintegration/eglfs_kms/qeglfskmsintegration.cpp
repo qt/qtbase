@@ -447,7 +447,11 @@ QEglFSKmsCursor::QEglFSKmsCursor(QEglFSKmsScreen *screen)
         initCursorAtlas();
     }
 
-    drmModeMoveCursor(m_screen->device()->fd(), m_screen->output().crtc_id, 0, 0);
+#ifndef QT_NO_CURSOR
+    QCursor cursor(Qt::ArrowCursor);
+    changeCursor(&cursor, 0);
+#endif
+    setPos(QPoint(0, 0));
 }
 
 QEglFSKmsCursor::~QEglFSKmsCursor()
