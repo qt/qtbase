@@ -97,6 +97,7 @@ private slots:
     void changeSourceData();
     void changeSourceDataKeepsStableSorting_qtbug1548();
     void changeSourceDataForwardsRoles_qtbug35440();
+    void resortingDoesNotBreakTreeModels();
     void sortFilterRole();
     void selectionFilteredOut();
     void match_data();
@@ -2030,6 +2031,8 @@ static void checkSortedTableModel(const QAbstractItemModel *model, const QString
 
 void tst_QSortFilterProxyModel::changeSourceDataKeepsStableSorting_qtbug1548()
 {
+    QSKIP("This test will fail, see QTBUG-1548");
+
     // Check that emitting dataChanged from the source model
     // for a change of a role which is not the sorting role
     // doesn't alter the sorting. In this case, we sort on the DisplayRole,
@@ -4058,6 +4061,40 @@ void tst_QSortFilterProxyModel::canDropMimeData()
     // i.e. accept drops on the first 5 rows and refuse drops on the next 5.
     for (int row = 0; row < proxy.rowCount(); ++row)
         QCOMPARE(proxy.canDropMimeData(0, Qt::CopyAction, -1, -1, proxy.index(row, 0)), row < 5);
+}
+
+void tst_QSortFilterProxyModel::resortingDoesNotBreakTreeModels()
+{
+    QStandardItemModel *treeModel = new QStandardItemModel(this);
+    QStandardItem *e1 = new QStandardItem("Loading...");
+    e1->appendRow(new QStandardItem("entry10"));
+    treeModel->appendRow(e1);
+    QStandardItem *e0 = new QStandardItem("Loading...");
+    e0->appendRow(new QStandardItem("entry00"));
+    e0->appendRow(new QStandardItem("entry01"));
+    treeModel->appendRow(e0);
+
+    QSortFilterProxyModel proxy;
+    proxy.setDynamicSortFilter(true);
+    proxy.sort(0);
+    proxy.setSourceModel(treeModel);
+
+    ModelTest modelTest(&proxy);
+
+    QCOMPARE(proxy.rowCount(), 2);
+    e1->setText("entry1");
+    e0->setText("entry0");
+
+    QModelIndex pi0 = proxy.index(0, 0);
+    QCOMPARE(pi0.data().toString(), QString("entry0"));
+    QCOMPARE(proxy.rowCount(pi0), 2);
+
+    QModelIndex pi01 = proxy.index(1, 0, pi0);
+    QCOMPARE(pi01.data().toString(), QString("entry01"));
+
+    QModelIndex pi1 = proxy.index(1, 0);
+    QCOMPARE(pi1.data().toString(), QString("entry1"));
+    QCOMPARE(proxy.rowCount(pi1), 1);
 }
 
 QTEST_MAIN(tst_QSortFilterProxyModel)

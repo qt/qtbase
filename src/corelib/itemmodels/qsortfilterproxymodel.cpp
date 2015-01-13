@@ -1198,7 +1198,11 @@ void QSortFilterProxyModelPrivate::_q_sourceDataChanged(const QModelIndex &sourc
         parents << q->mapFromSource(source_parent);
         emit q->layoutAboutToBeChanged(parents, QAbstractItemModel::VerticalSortHint);
         QModelIndexPairList source_indexes = store_persistent_indexes();
-        sort_source_rows(m->source_rows, source_parent);
+        remove_source_items(m->proxy_rows, m->source_rows, source_rows_resort,
+                            source_parent, Qt::Vertical, false);
+        sort_source_rows(source_rows_resort, source_parent);
+        insert_source_items(m->proxy_rows, m->source_rows, source_rows_resort,
+                            source_parent, Qt::Vertical, false);
         update_persistent_indexes(source_indexes);
         emit q->layoutChanged(parents, QAbstractItemModel::VerticalSortHint);
         // Make sure we also emit dataChanged for the rows
