@@ -46,6 +46,7 @@
 //
 
 #include <qpa/qplatformbackingstore.h>
+#include <QtCore/QMutex>
 
 QT_BEGIN_NAMESPACE
 
@@ -64,12 +65,19 @@ public:
 
     virtual void resize(const QSize &size, const QRegion &region);
 
-    const QImage image() { return mImage; }
+    const QImage image();
+
+    void lock();
+    void unlock();
+
+    void beginPaint(const QRegion &);
+    void endPaint();
 
 protected:
     friend class QFbWindow;
 
     QImage mImage;
+    QMutex mImageMutex;
 };
 
 QT_END_NAMESPACE
