@@ -420,7 +420,7 @@ XInput2TouchDeviceData *QXcbConnection::touchDeviceForId(int id)
         }
         if (type >= QTouchDevice::TouchScreen && type <= QTouchDevice::TouchPad) {
             dev->qtTouchDevice = new QTouchDevice;
-            dev->qtTouchDevice->setName(dev->xiDeviceInfo->name);
+            dev->qtTouchDevice->setName(QString::fromUtf8(dev->xiDeviceInfo->name));
             dev->qtTouchDevice->setType((QTouchDevice::DeviceType)type);
             dev->qtTouchDevice->setCapabilities(caps);
             dev->qtTouchDevice->setMaximumTouchPoints(maxTouchPoints);
