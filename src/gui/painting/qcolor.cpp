@@ -2415,8 +2415,7 @@ bool QColor::operator==(const QColor &color) const
 {
     if (cspec == Hsl && cspec == color.cspec) {
         return (ct.argb.alpha == color.ct.argb.alpha
-                && ((((ct.ahsl.hue % 36000) == (color.ct.ahsl.hue % 36000)))
-                    || (ct.ahsl.hue == color.ct.ahsl.hue))
+                && ct.ahsl.hue % 36000 == color.ct.ahsl.hue % 36000
                 && (qAbs(ct.ahsl.saturation - color.ct.ahsl.saturation) < 50
                     || ct.ahsl.lightness == 0
                     || color.ct.ahsl.lightness == 0
