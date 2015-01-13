@@ -42,6 +42,7 @@ class tst_QDirModel : public QObject
 {
     Q_OBJECT
 public slots:
+    void initTestCase();
     void cleanupTestCase();
     void init();
 private slots:
@@ -111,6 +112,29 @@ void tst_QDirModel::getSetCheck()
     QCOMPARE(false, obj1.lazyChildCount());
     obj1.setLazyChildCount(true);
     QCOMPARE(true, obj1.lazyChildCount());
+}
+
+void tst_QDirModel::initTestCase()
+{
+#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_NO_SDK)
+    QString dataPath = SRCDIR;
+    QString resourceSourcePath = QStringLiteral(":/android_testdata");
+    QDirIterator it(resourceSourcePath, QDirIterator::Subdirectories);
+    while (it.hasNext()) {
+        it.next();
+
+        QFileInfo fileInfo = it.fileInfo();
+        if (!fileInfo.isDir()) {
+            QString destination = dataPath + QLatin1Char('/') + fileInfo.filePath().mid(resourceSourcePath.length());
+            QFileInfo destinationFileInfo(destination);
+            if (!destinationFileInfo.exists()) {
+                QDir().mkpath(destinationFileInfo.path());
+                if (!QFile::copy(fileInfo.filePath(), destination))
+                    qWarning("Failed to copy %s", qPrintable(fileInfo.filePath()));
+            }
+        }
+    }
+#endif
 }
 
 void tst_QDirModel::cleanupTestCase()
@@ -556,10 +580,12 @@ void tst_QDirModel::filePath()
     model.setResolveSymlinks(false);
     QModelIndex index = model.index(SRCDIR "test.lnk");
     QVERIFY(index.isValid());
-#ifndef Q_OS_WINCE
+#if !defined(Q_OS_WINCE) && !defined(Q_OS_ANDROID)
     QString path = SRCDIR;
 #else
-    QString path = QFileInfo(SRCDIR).absoluteFilePath() + "/";
+    QString path = QFileInfo(SRCDIR).absoluteFilePath();
+    if (!path.endsWith("/"))
+        path += "/";
 #endif
     QCOMPARE(model.filePath(index), path + QString( "test.lnk"));
     model.setResolveSymlinks(true);
@@ -591,6 +617,10 @@ void tst_QDirModel::task196768_sorting()
     QCOMPARE(index.data(), index2.data());
     view.setSortingEnabled(true);
     index2 = model.index(path);
+
+#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_NO_SDK)
+    QEXPECT_FAIL("", "QTBUG-43818", Continue);
+#endif
 
     QCOMPARE(index.data(), index2.data());
 }
