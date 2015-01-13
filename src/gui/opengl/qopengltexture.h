@@ -346,8 +346,9 @@ public:
         NPOTTextures                = 0x00000800,
         NPOTTextureRepeat           = 0x00001000,
         Texture1D                   = 0x00002000,
+        TextureComparisonOperators  = 0x00004000,
 #ifndef Q_QDOC
-        MaxFeatureFlag              = 0x00004000
+        MaxFeatureFlag              = 0x00008000
 #endif
     };
     Q_DECLARE_FLAGS(Features, Feature)
@@ -487,6 +488,28 @@ public:
 
     void setDepthStencilMode(DepthStencilMode mode);
     DepthStencilMode depthStencilMode() const;
+
+    enum ComparisonFunction {
+        CompareLessEqual    = 0x0203,   // GL_LEQUAL
+        CompareGreaterEqual = 0x0206,   // GL_GEQUAL
+        CompareLess         = 0x0201,   // GL_LESS
+        CompareGreater      = 0x0204,   // GL_GREATER
+        CompareEqual        = 0x0202,   // GL_EQUAL
+        CommpareNotEqual    = 0x0205,   // GL_NOTEQUAL
+        CompareAlways       = 0x0207,   // GL_ALWAYS
+        CompareNever        = 0x0200    // GL_NEVER
+    };
+
+    void setComparisonFunction(ComparisonFunction function);
+    ComparisonFunction comparisonFunction() const;
+
+    enum ComparisonMode {
+        CompareRefToTexture = 0x884E,   // GL_COMPARE_REF_TO_TEXTURE
+        CompareNone         = 0x0000    // GL_NONE
+    };
+
+    void setComparisonMode(ComparisonMode mode);
+    ComparisonMode comparisonMode() const;
 
     // Sampling Parameters
     enum Filter {

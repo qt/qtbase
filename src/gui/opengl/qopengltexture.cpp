@@ -64,6 +64,8 @@ QOpenGLTexturePrivate::QOpenGLTexturePrivate(QOpenGLTexture::Target textureTarge
       baseLevel(0),
       maxLevel(1000),
       depthStencilMode(QOpenGLTexture::DepthMode),
+      comparisonFunction(QOpenGLTexture::CompareLessEqual),
+      comparisonMode(QOpenGLTexture::CompareNone),
       minFilter(QOpenGLTexture::Nearest),
       magFilter(QOpenGLTexture::Nearest),
       maxAnisotropy(1.0f),
@@ -3250,6 +3252,16 @@ bool QOpenGLTexture::hasFeature(Feature feature)
             supported = f.version() >= qMakePair(1, 1);
             break;
 
+        case TextureComparisonOperators:
+            // GL 1.4 and GL_ARB_shadow alone support only LEQUAL and GEQUAL;
+            // since we're talking about history anyhow avoid to be extra pedantic
+            // in the feature set, and simply claim supported if we have the full set of operators
+            // (which has been added into 1.5 / GL_EXT_shadow_funcs).
+            supported = f.version() >= qMakePair(1, 5)
+                    || (ctx->hasExtension(QByteArrayLiteral("GL_ARB_shadow"))
+                        && ctx->hasExtension(QByteArrayLiteral("GL_EXT_shadow_funcs")));
+            break;
+
         case MaxFeatureFlag:
             break;
         }
@@ -3309,6 +3321,11 @@ bool QOpenGLTexture::hasFeature(Feature feature)
             break;
 
         case Texture1D:
+            break;
+
+        case TextureComparisonOperators:
+            supported = f.version() >= qMakePair(3, 0)
+                    || ctx->hasExtension(QByteArrayLiteral("GL_EXT_shadow_samplers"));
             break;
 
         case MaxFeatureFlag:
@@ -3630,6 +3647,110 @@ QOpenGLTexture::DepthStencilMode QOpenGLTexture::depthStencilMode() const
 {
     Q_D(const QOpenGLTexture);
     return d->depthStencilMode;
+}
+
+/*!
+    \enum ComparisonFunction
+    \since 5.5
+    This enum specifies which comparison operator is used when texture comparison
+    is enabled on this texture.
+
+    \value CompareLessEqual Equivalent to GL_LEQUAL.
+    \value CompareGreaterEqual Equivalent to GL_GEQUAL.
+    \value CompareLess Equivalent to GL_LESS.
+    \value CompareGreater Equivalent to GL_GREATER.
+    \value CompareEqual Equivalent to GL_EQUAL.
+    \value CommpareNotEqual Equivalent to GL_NOTEQUAL.
+    \value CompareAlways Equivalent to GL_ALWAYS.
+    \value CompareNever Equivalent to GL_NEVER.
+
+*/
+
+/*
+    \since 5.5
+
+    Sets the texture comparison function on this texture to \a function. The texture
+    comparison function is used by shadow samplers when sampling a depth texture.
+
+    \sa comparisonFunction()
+*/
+void QOpenGLTexture::setComparisonFunction(QOpenGLTexture::ComparisonFunction function)
+{
+#if !defined(QT_OPENGL_ES_2)
+    Q_D(QOpenGLTexture);
+    d->create();
+    if (!d->features.testFlag(TextureComparisonOperators)) {
+        qWarning("QOpenGLTexture::setComparisonFunction: requires OpenGL >= 1.5 or OpenGL ES >= 3.0");
+        return;
+    }
+    d->comparisonFunction = function;
+    d->texFuncs->glTextureParameteri(d->textureId, d->target, d->bindingTarget, GL_TEXTURE_COMPARE_FUNC, function);
+#else
+    Q_UNUSED(function);
+    qWarning("QOpenGLTexture: texture comparison functions are not supported");
+#endif
+}
+
+/*!
+    \since 5.5
+
+    Returns the texture comparison operator set on this texture. By default, a
+    texture has a CompareLessEqual comparison function.
+
+    \sa setComparisonFunction()
+*/
+QOpenGLTexture::ComparisonFunction QOpenGLTexture::comparisonFunction() const
+{
+    Q_D(const QOpenGLTexture);
+    return d->comparisonFunction;
+}
+
+/*!
+    \enum QOpenGLTexture::ComparisonMode
+    \since 5.5
+    This enum specifies which comparison mode is used when sampling this texture.
+
+    \value CompareRefToTexture Equivalent to GL_COMPARE_REF_TO_TEXTURE.
+    \value CompareNone Equivalent to GL_NONE.
+*/
+
+/*!
+    \since 5.5
+
+    Sets the texture comparison mode on this texture to \a mode. The texture
+    comparison mode is used by shadow samplers when sampling a depth texture.
+
+    \sa comparisonMode()
+*/
+void QOpenGLTexture::setComparisonMode(QOpenGLTexture::ComparisonMode mode)
+{
+#if !defined(QT_OPENGL_ES_2)
+    Q_D(QOpenGLTexture);
+    d->create();
+    if (!d->features.testFlag(TextureComparisonOperators)) {
+        qWarning("QOpenGLTexture::setComparisonMode: requires OpenGL >= 1.5 or OpenGL ES >= 3.0");
+        return;
+    }
+    d->comparisonMode = mode;
+    d->texFuncs->glTextureParameteri(d->textureId, d->target, d->bindingTarget, GL_TEXTURE_COMPARE_MODE, mode);
+#else
+    Q_UNUSED(mode);
+    qWarning("QOpenGLTexture: texture comparison modes are not supported");
+#endif
+}
+
+/*!
+    \since 5.5
+
+    Returns the texture comparison mode set on this texture. By default, a
+    texture has a CompareNone comparison mode (i.e. comparisons are disabled).
+
+    \sa setComparisonMode()
+*/
+QOpenGLTexture::ComparisonMode QOpenGLTexture::comparisonMode() const
+{
+    Q_D(const QOpenGLTexture);
+    return d->comparisonMode;
 }
 
 /*!

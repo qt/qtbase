@@ -138,6 +138,8 @@ public:
 
     QOpenGLTexture::SwizzleValue swizzleMask[4];
     QOpenGLTexture::DepthStencilMode depthStencilMode;
+    QOpenGLTexture::ComparisonFunction comparisonFunction;
+    QOpenGLTexture::ComparisonMode comparisonMode;
 
     QOpenGLTexture::Filter minFilter;
     QOpenGLTexture::Filter magFilter;
