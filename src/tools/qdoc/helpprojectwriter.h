@@ -83,6 +83,9 @@ public:
     HelpProjectWriter(const Config &config,
                       const QString &defaultFileName,
                       Generator* g);
+    void reset(const Config &config,
+          const QString &defaultFileName,
+          Generator* g);
     void addExtraFile(const QString &file);
     void addExtraFiles(const QSet<QString> &files);
     void generate();

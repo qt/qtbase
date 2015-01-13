@@ -226,7 +226,9 @@ void HtmlGenerator::initializeGenerator(const Config &config)
       The help file write should be allocated once and only once
       per qdoc execution.
      */
-    if (helpProjectWriter == 0)
+    if (helpProjectWriter)
+        helpProjectWriter->reset(config, project.toLower() + ".qhp", this);
+    else
         helpProjectWriter = new HelpProjectWriter(config, project.toLower() + ".qhp", this);
 
     // Documentation template handling
@@ -3116,7 +3118,7 @@ void HtmlGenerator::generateQmlItem(const Node *node,
     }
     marked.replace(QRegExp("<@param>([a-z]+)_([1-9n])</@param>"),
                    "<i>\\1<sub>\\2</sub></i>");
-    marked.replace("<@param>", "<i>");
+    marked.replace("<@param>", "<i> ");
     marked.replace("</@param>", "</i>");
 
     if (summary)

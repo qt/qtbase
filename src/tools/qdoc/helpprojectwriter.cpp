@@ -49,8 +49,16 @@ QT_BEGIN_NAMESPACE
 HelpProjectWriter::HelpProjectWriter(const Config &config,
                                      const QString &defaultFileName,
                                      Generator* g)
-    : gen_(g)
 {
+    reset(config, defaultFileName, g);
+}
+
+void HelpProjectWriter::reset(const Config &config,
+                         const QString &defaultFileName,
+                         Generator* g)
+{
+    projects.clear();
+    gen_ = g;
     /*
       Get the pointer to the singleton for the qdoc database and
       store it locally. This replaces all the local accesses to
