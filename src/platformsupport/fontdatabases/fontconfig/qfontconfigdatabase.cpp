@@ -521,6 +521,11 @@ QFontEngine::HintStyle defaultHintStyleFromMatch(QFont::HintingPreference hintin
         break;
     }
 
+    if (QGuiApplication::platformNativeInterface()->nativeResourceForScreen("nofonthinting",
+                         QGuiApplication::primaryScreen())) {
+        return QFontEngine::HintNone;
+    }
+
     if (useXftConf) {
         void *hintStyleResource =
                 QGuiApplication::platformNativeInterface()->nativeResourceForScreen("hintstyle",

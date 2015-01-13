@@ -62,6 +62,7 @@ QXcbScreen::QXcbScreen(QXcbConnection *connection, xcb_screen_t *scr,
     , m_forcedDpi(-1)
     , m_devicePixelRatio(1)
     , m_hintStyle(QFontEngine::HintStyle(-1))
+    , m_noFontHinting(false)
     , m_subpixelType(QFontEngine::SubpixelAntialiasingType(-1))
     , m_antialiasingEnabled(-1)
     , m_xSettings(0)
@@ -85,6 +86,12 @@ QXcbScreen::QXcbScreen(QXcbConnection *connection, xcb_screen_t *scr,
         m_availableGeometry = m_geometry;
 
     readXResources();
+
+    // disable font hinting when we do UI scaling
+    static bool dpr_scaling_enabled = (qgetenv("QT_DEVICE_PIXEL_RATIO").toInt() > 1
+                           || qgetenv("QT_DEVICE_PIXEL_RATIO").toLower() == "auto");
+    if (dpr_scaling_enabled)
+        m_noFontHinting = true;
 
 #ifdef Q_XCB_DEBUG
     qDebug();
