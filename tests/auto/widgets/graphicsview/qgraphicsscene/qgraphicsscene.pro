@@ -17,3 +17,5 @@ wince* {
    DEPLOYMENT += rootFiles renderFiles
    DEFINES += SRCDIR=\\\".\\\"
 }
+
+RESOURCES += testdata.qrc

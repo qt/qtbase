@@ -1,0 +1,32 @@
+<RCC>
+    <qresource prefix="/">
+        <file>testData/render/all-all-45-deg-left.png</file>
+        <file>testData/render/all-all-45-deg-right.png</file>
+        <file>testData/render/all-all-scale-2x.png</file>
+        <file>testData/render/all-all-translate-0-50.png</file>
+        <file>testData/render/all-all-translate-50-0.png</file>
+        <file>testData/render/all-all-untransformed-clip-ellipse.png</file>
+        <file>testData/render/all-all-untransformed-clip-rect.png</file>
+        <file>testData/render/all-all-untransformed.png</file>
+        <file>testData/render/all-bottomleft-untransformed.png</file>
+        <file>testData/render/all-bottomright-untransformed.png</file>
+        <file>testData/render/all-topleft-untransformed.png</file>
+        <file>testData/render/all-topright-untransformed.png</file>
+        <file>testData/render/bottom-bottomright-untransformed.png</file>
+        <file>testData/render/bottom-topleft-untransformed.png</file>
+        <file>testData/render/bottomleft-all-untransformed.png</file>
+        <file>testData/render/bottomleft-topleft-untransformed.png</file>
+        <file>testData/render/bottomright-all-untransformed.png</file>
+        <file>testData/render/bottomright-topleft-untransformed.png</file>
+        <file>testData/render/left-bottomright-untransformed.png</file>
+        <file>testData/render/left-topleft-untransformed.png</file>
+        <file>testData/render/right-bottomright-untransformed.png</file>
+        <file>testData/render/right-topleft-untransformed.png</file>
+        <file>testData/render/top-bottomright-untransformed.png</file>
+        <file>testData/render/top-topleft-untransformed.png</file>
+        <file>testData/render/topleft-all-untransformed.png</file>
+        <file>testData/render/topleft-topleft-untransformed.png</file>
+        <file>testData/render/topright-all-untransformed.png</file>
+        <file>testData/render/topright-topleft-untransformed.png</file>
+    </qresource>
+</RCC>

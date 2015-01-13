@@ -1255,7 +1255,7 @@ void tst_QGraphicsScene::addText()
 
 void tst_QGraphicsScene::removeItem()
 {
-#if defined(Q_OS_WINCE) && !defined(GWES_ICONCURS)
+#if (defined(Q_OS_WINCE) && !defined(GWES_ICONCURS)) || defined(Q_OS_ANDROID)
     QSKIP("No mouse cursor support");
 #endif
     QGraphicsScene scene;
@@ -2629,9 +2629,7 @@ void tst_QGraphicsScene::render()
     scene.render(&painter, targetRect, sourceRect, aspectRatioMode);
     painter.end();
 
-    const QString renderPath = QLatin1String(SRCDIR) + "/testData/render";
-    QString fileName = renderPath + QLatin1Char('/') + QLatin1String(QTest::currentDataTag())
-        + QLatin1String(".png");
+    QString fileName = QFINDTESTDATA(QString("/testData/render/%1.png").arg(QTest::currentDataTag()));
     QImage original(fileName);
     QVERIFY(!original.isNull());
 
@@ -2682,6 +2680,10 @@ void tst_QGraphicsScene::render()
 
 void tst_QGraphicsScene::renderItemsWithNegativeWidthOrHeight()
 {
+#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_NO_SDK)
+    QSKIP("Test only works on platforms with resizable windows");
+#endif
+
     QGraphicsScene scene(0, 0, 150, 150);
 
     // Add item with negative width.
@@ -2757,6 +2759,10 @@ protected:
 
 void tst_QGraphicsScene::contextMenuEvent_ItemIgnoresTransformations()
 {
+#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_NO_SDK)
+    QSKIP("Test fails on some Android devices (QTBUG-44430)");
+#endif
+
     QGraphicsScene scene(0, 0, 200, 200);
     ContextMenuItem *item = new ContextMenuItem;
     item->setFlag(QGraphicsItem::ItemIgnoresTransformations);
@@ -4026,6 +4032,10 @@ void tst_QGraphicsScene::polishItems2()
 
 void tst_QGraphicsScene::isActive()
 {
+#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_NO_SDK)
+    QSKIP("Fails on Android (QTBUG-44430)");
+#endif
+
     QGraphicsScene scene1;
     QVERIFY(!scene1.isActive());
     QGraphicsScene scene2;
