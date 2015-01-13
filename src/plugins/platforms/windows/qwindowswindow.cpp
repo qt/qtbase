@@ -514,8 +514,12 @@ void WindowCreationData::fromWindow(const QWindow *w, const Qt::WindowFlags flag
                 if (flags & Qt::WindowSystemMenuHint)
                     style |= WS_SYSMENU;
                 else if (dialog) {
-                    style |= WS_SYSMENU | WS_BORDER; // QTBUG-2027, dialogs without system menu.
-                    exStyle |= WS_EX_DLGMODALFRAME;
+                    // QTBUG-2027, dialogs without system menu.
+                    style |= WS_SYSMENU;
+                    if (!(flags & Qt::FramelessWindowHint)) {
+                        style |= WS_BORDER;
+                        exStyle |= WS_EX_DLGMODALFRAME;
+                    }
                 }
                 if (flags & Qt::WindowMinimizeButtonHint)
                     style |= WS_MINIMIZEBOX;
