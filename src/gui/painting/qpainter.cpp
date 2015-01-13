@@ -112,11 +112,14 @@ extern bool qHasPixmapTexture(const QBrush &);
 
 static inline bool is_brush_transparent(const QBrush &brush) {
     Qt::BrushStyle s = brush.style();
-    bool brushBitmap = qHasPixmapTexture(brush)
-                       ? brush.texture().isQBitmap()
-                       : (brush.textureImage().depth() == 1);
-    return ((s >= Qt::Dense1Pattern && s <= Qt::DiagCrossPattern)
-            || (s == Qt::TexturePattern && brushBitmap));
+    if (s != Qt::TexturePattern)
+        return s >= Qt::Dense1Pattern && s <= Qt::DiagCrossPattern;
+    if (qHasPixmapTexture(brush))
+        return brush.texture().isQBitmap() || brush.texture().hasAlphaChannel();
+    else {
+        const QImage texture = brush.textureImage();
+        return texture.hasAlphaChannel() || (texture.depth() == 1 && texture.colorCount() == 0);
+    }
 }
 
 static inline bool is_pen_transparent(const QPen &pen) {
