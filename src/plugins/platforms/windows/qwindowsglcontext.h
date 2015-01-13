@@ -232,7 +232,7 @@ public:
     explicit QWindowsGLContext(QOpenGLStaticContext *staticContext, QOpenGLContext *context);
     ~QWindowsGLContext();
     bool isSharing() const Q_DECL_OVERRIDE { return m_context->shareHandle(); }
-    bool isValid() const Q_DECL_OVERRIDE { return m_renderingContext; }
+    bool isValid() const Q_DECL_OVERRIDE { return m_renderingContext && !m_lost; }
     QSurfaceFormat format() const Q_DECL_OVERRIDE { return m_obtainedFormat; }
 
     void swapBuffers(QPlatformSurface *surface) Q_DECL_OVERRIDE;
@@ -262,6 +262,8 @@ private:
     bool m_extensionsUsed;
     int m_swapInterval;
     bool m_ownsContext;
+    GLenum (APIENTRY * m_getGraphicsResetStatus)();
+    bool m_lost;
 };
 
 QT_END_NAMESPACE

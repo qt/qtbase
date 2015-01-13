@@ -135,6 +135,10 @@
 #define GL_CONTEXT_FLAG_DEBUG_BIT 0x00000002
 #endif
 
+// Common GL and WGL constants
+#define RESET_NOTIFICATION_STRATEGY_ARB 0x8256
+#define LOSE_CONTEXT_ON_RESET_ARB 0x8252
+
 QT_BEGIN_NAMESPACE
 
 QWindowsOpengl32DLL QOpenGLStaticContext::opengl32;
@@ -747,6 +751,12 @@ static HGLRC createContext(const QOpenGLStaticContext &staticContext,
             break;
         }
     }
+
+    if (format.testOption(QSurfaceFormat::ResetNotification)) {
+        attributes[attribIndex++] = RESET_NOTIFICATION_STRATEGY_ARB;
+        attributes[attribIndex++] = LOSE_CONTEXT_ON_RESET_ARB;
+    }
+
     qCDebug(lcQpaGl) << __FUNCTION__ << "Creating context version"
         << majorVersion << '.' << minorVersion <<  attribIndex / 2 << "attributes";
 
@@ -859,6 +869,10 @@ QWindowsOpenGLContextFormat QWindowsOpenGLContextFormat::current()
         result.options |= QSurfaceFormat::DeprecatedFunctions;
     if (value & GL_CONTEXT_FLAG_DEBUG_BIT)
         result.options |= QSurfaceFormat::DebugContext;
+    value = 0;
+    QOpenGLStaticContext::opengl32.glGetIntegerv(RESET_NOTIFICATION_STRATEGY_ARB, &value);
+    if (value == LOSE_CONTEXT_ON_RESET_ARB)
+        result.options |= QSurfaceFormat::ResetNotification;
     if (result.version < 0x0302)
         return result;
     // v3.2 onwards: Profiles
@@ -1032,7 +1046,9 @@ QWindowsGLContext::QWindowsGLContext(QOpenGLStaticContext *staticContext,
     m_pixelFormat(0),
     m_extensionsUsed(false),
     m_swapInterval(-1),
-    m_ownsContext(true)
+    m_ownsContext(true),
+    m_getGraphicsResetStatus(0),
+    m_lost(false)
 {
     if (!m_staticContext) // Something went very wrong. Stop here, isValid() will return false.
         return;
@@ -1212,6 +1228,28 @@ bool QWindowsGLContext::updateObtainedParams(HDC hdc, int *obtainedSwapInterval)
     if (m_staticContext->wglGetSwapInternalExt && obtainedSwapInterval)
         *obtainedSwapInterval = m_staticContext->wglGetSwapInternalExt();
 
+    bool hasRobustness = false;
+    if (m_obtainedFormat.majorVersion() < 3) {
+        const char *exts = (const char *) QOpenGLStaticContext::opengl32.glGetString(GL_EXTENSIONS);
+        hasRobustness = exts && strstr(exts, "GL_ARB_robustness");
+    } else {
+        typedef const GLubyte * (APIENTRY *glGetStringi_t)(GLenum, GLuint);
+        glGetStringi_t glGetStringi = (glGetStringi_t) QOpenGLStaticContext::opengl32.wglGetProcAddress("glGetStringi");
+        if (glGetStringi) {
+            GLint n = 0;
+            QOpenGLStaticContext::opengl32.glGetIntegerv(GL_NUM_EXTENSIONS, &n);
+            for (GLint i = 0; i < n; ++i) {
+                const char *p = (const char *) glGetStringi(GL_EXTENSIONS, i);
+                if (p && !strcmp(p, "GL_ARB_robustness")) {
+                    hasRobustness = true;
+                    break;
+                }
+            }
+        }
+    }
+    if (hasRobustness)
+        m_getGraphicsResetStatus = (GLenum (APIENTRY *)()) QOpenGLStaticContext::opengl32.wglGetProcAddress("glGetGraphicsResetStatusARB");
+
     QOpenGLStaticContext::opengl32.wglMakeCurrent(prevSurface, prevContext);
     return true;
 }
@@ -1296,7 +1334,16 @@ bool QWindowsGLContext::makeCurrent(QPlatformSurface *surface)
     }
     m_windowContexts.append(newContext);
 
+    m_lost = false;
     bool success = QOpenGLStaticContext::opengl32.wglMakeCurrent(newContext.hdc, newContext.renderingContext);
+    if (!success) {
+        if (m_getGraphicsResetStatus && m_getGraphicsResetStatus()) {
+            m_lost = true;
+            qCDebug(lcQpaGl) << "makeCurrent(): context loss detected" << this;
+            // Drop the surface. Will recreate on the next makeCurrent.
+            window->invalidateSurface();
+        }
+    }
 
     // Set the swap interval
     if (m_staticContext->wglSwapInternalExt) {

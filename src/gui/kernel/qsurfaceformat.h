@@ -48,7 +48,8 @@ public:
     enum FormatOption {
         StereoBuffers            = 0x0001,
         DebugContext             = 0x0002,
-        DeprecatedFunctions      = 0x0004
+        DeprecatedFunctions      = 0x0004,
+        ResetNotification        = 0x0008
     };
     Q_DECLARE_FLAGS(FormatOptions, FormatOption)
 

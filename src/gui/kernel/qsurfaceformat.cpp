@@ -128,6 +128,10 @@ public:
     \value DeprecatedFunctions Used to request that deprecated functions be included
         in the OpenGL context profile. If not specified, you should get a forward compatible context
         without support functionality marked as deprecated. This requires OpenGL version 3.0 or higher.
+    \value ResetNotification Enables notifications about resets of the OpenGL context. The status is then
+        queryable via the context's \l{QOpenGLContext::isValid()}{isValid()} function. Note that not setting
+        this flag does not guarantee that context state loss never occurs. Additionally, some implementations
+        may choose to report context loss regardless of this flag.
 */
 
 /*!
