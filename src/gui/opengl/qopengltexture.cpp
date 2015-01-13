@@ -3577,6 +3577,16 @@ QOpenGLTexture::SwizzleValue QOpenGLTexture::swizzleMask(SwizzleComponent compon
 }
 
 /*!
+    \enum QOpenGLTexture::DepthStencilMode
+    \since 5.4
+    This enum specifies which component of a depth/stencil texture is
+    accessed when the texture is sampled.
+
+    \value DepthMode Equivalent to GL_DEPTH_COMPONENT.
+    \value StencilMode Equivalent to GL_STENCIL_INDEX.
+*/
+
+/*!
     If using a texture that has a combined depth/stencil format this function sets
     which component of the texture is accessed to \a mode.
 
@@ -3585,6 +3595,7 @@ QOpenGLTexture::SwizzleValue QOpenGLTexture::swizzleMask(SwizzleComponent compon
     the parameter is set to StencilMode, the shader will access the stencil component.
 
     \note This function has no effect on Mac and Qt built for OpenGL ES 2.
+    \since 5.4
     \sa depthStencilMode()
 */
 void QOpenGLTexture::setDepthStencilMode(QOpenGLTexture::DepthStencilMode mode)
@@ -3612,6 +3623,7 @@ void QOpenGLTexture::setDepthStencilMode(QOpenGLTexture::DepthStencilMode mode)
 /*!
     Returns the depth stencil mode for textures using a combined depth/stencil format.
 
+    \since 5.4
     \sa setDepthStencilMode()
 */
 QOpenGLTexture::DepthStencilMode QOpenGLTexture::depthStencilMode() const
