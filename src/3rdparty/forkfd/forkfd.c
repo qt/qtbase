@@ -181,8 +181,6 @@ static int tryReaping(pid_t pid, siginfo_t *info)
         return 0;     // child did not change state
 
     info->si_signo = SIGCHLD;
-    info->si_utime = 0;
-    info->si_stime = 0;
     info->si_pid = pid;
     if (WIFEXITED(status)) {
         info->si_code = CLD_EXITED;
@@ -233,6 +231,8 @@ static void sigchld_handler(int signum)
         BigArray *array;
         siginfo_t info;
         int i;
+
+        memset(&info, 0, sizeof info);
 
 #ifdef HAVE_WAITID
         /* be optimistic: try to see if we can get the child that exited */
