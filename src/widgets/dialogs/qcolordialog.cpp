@@ -1118,10 +1118,7 @@ QColorShower::QColorShower(QColorDialog *parent)
 #if !defined(QT_SMALL_COLORDIALOG)
     gl->addWidget(lab, 0, 0, -1, 1);
 #else
-    if (nonTouchUI)
-        gl->addWidget(lab, 0, 0, 1, -1);
-    else
-        gl->addWidget(lab, 0, 0, -1, 1);
+    gl->addWidget(lab, 0, 0, 1, -1);
 #endif
     connect(lab, SIGNAL(colorDropped(QRgb)), this, SIGNAL(newCol(QRgb)));
     connect(lab, SIGNAL(colorDropped(QRgb)), this, SLOT(setRgb(QRgb)));
@@ -1137,13 +1134,8 @@ QColorShower::QColorShower(QColorDialog *parent)
     gl->addWidget(lblHue, 0, 1);
     gl->addWidget(hEd, 0, 2);
 #else
-    if (nonTouchUI) {
-        gl->addWidget(lblHue, 1, 0);
-        gl->addWidget(hEd, 2, 0);
-    } else {
-        lblHue->hide();
-        hEd->hide();
-    }
+    gl->addWidget(lblHue, 1, 0);
+    gl->addWidget(hEd, 2, 0);
 #endif
 
     sEd = new QColSpinBox(this);
@@ -1156,13 +1148,8 @@ QColorShower::QColorShower(QColorDialog *parent)
     gl->addWidget(lblSat, 1, 1);
     gl->addWidget(sEd, 1, 2);
 #else
-    if (nonTouchUI) {
-        gl->addWidget(lblSat, 1, 1);
-        gl->addWidget(sEd, 2, 1);
-    } else {
-        lblSat->hide();
-        sEd->hide();
-    }
+    gl->addWidget(lblSat, 1, 1);
+    gl->addWidget(sEd, 2, 1);
 #endif
 
     vEd = new QColSpinBox(this);
@@ -1175,13 +1162,8 @@ QColorShower::QColorShower(QColorDialog *parent)
     gl->addWidget(lblVal, 2, 1);
     gl->addWidget(vEd, 2, 2);
 #else
-    if (nonTouchUI) {
-        gl->addWidget(lblVal, 1, 2);
-        gl->addWidget(vEd, 2, 2);
-    } else {
-        lblVal->hide();
-        vEd->hide();
-    }
+    gl->addWidget(lblVal, 1, 2);
+    gl->addWidget(vEd, 2, 2);
 #endif
 
     rEd = new QColSpinBox(this);
@@ -1194,13 +1176,8 @@ QColorShower::QColorShower(QColorDialog *parent)
     gl->addWidget(lblRed, 0, 3);
     gl->addWidget(rEd, 0, 4);
 #else
-    if (nonTouchUI) {
-        gl->addWidget(lblRed, 3, 0);
-        gl->addWidget(rEd, 4, 0);
-    } else {
-        lblRed->hide();
-        rEd->hide();
-    }
+    gl->addWidget(lblRed, 3, 0);
+    gl->addWidget(rEd, 4, 0);
 #endif
 
     gEd = new QColSpinBox(this);
@@ -1213,13 +1190,8 @@ QColorShower::QColorShower(QColorDialog *parent)
     gl->addWidget(lblGreen, 1, 3);
     gl->addWidget(gEd, 1, 4);
 #else
-    if (nonTouchUI) {
-        gl->addWidget(lblGreen, 3, 1);
-        gl->addWidget(gEd, 4, 1);
-    } else {
-        lblGreen->hide();
-        gEd->hide();
-    }
+    gl->addWidget(lblGreen, 3, 1);
+    gl->addWidget(gEd, 4, 1);
 #endif
 
     bEd = new QColSpinBox(this);
@@ -1232,13 +1204,8 @@ QColorShower::QColorShower(QColorDialog *parent)
     gl->addWidget(lblBlue, 2, 3);
     gl->addWidget(bEd, 2, 4);
 #else
-    if (nonTouchUI) {
-        gl->addWidget(lblBlue, 3, 2);
-        gl->addWidget(bEd, 4, 2);
-    } else {
-        lblBlue->hide();
-        bEd->hide();
-    }
+    gl->addWidget(lblBlue, 3, 2);
+    gl->addWidget(bEd, 4, 2);
 #endif
 
     alphaEd = new QColSpinBox(this);
@@ -1251,13 +1218,8 @@ QColorShower::QColorShower(QColorDialog *parent)
     gl->addWidget(alphaLab, 3, 1, 1, 3);
     gl->addWidget(alphaEd, 3, 4);
 #else
-    if (nonTouchUI) {
-        gl->addWidget(alphaLab, 1, 3, 3, 1);
-        gl->addWidget(alphaEd, 4, 3);
-    } else {
-        alphaLab->hide();
-        alphaEd->hide();
-    }
+    gl->addWidget(alphaLab, 1, 3, 3, 1);
+    gl->addWidget(alphaEd, 4, 3);
 #endif
     alphaEd->hide();
     alphaLab->hide();
@@ -1727,12 +1689,7 @@ void QColorDialogPrivate::initWidgets()
     cp->setFrameStyle(QFrame::Panel + QFrame::Sunken);
 
 #if defined(QT_SMALL_COLORDIALOG)
-    if (!nonTouchUI) {
-        pickLay->addWidget(cp);
-        cLay->addSpacing(lumSpace);
-    } else {
-        cp->hide();
-    }
+    cp->hide();
 #else
     cLay->addSpacing(lumSpace);
     cLay->addWidget(cp);
@@ -1741,15 +1698,7 @@ void QColorDialogPrivate::initWidgets()
 
     lp = new QColorLuminancePicker(q);
 #if defined(QT_SMALL_COLORDIALOG)
-    QSize screenSize = QApplication::desktop()->availableGeometry(QCursor::pos()).size();
-    const int minDimension = qMin(screenSize.height(), screenSize.width());
-    //set picker to be finger-usable
-    int pickerWidth = !nonTouchUI ? minDimension/9 : minDimension/12;
-    lp->setFixedWidth(pickerWidth);
-    if (!nonTouchUI)
-        pickLay->addWidget(lp);
-    else
-        lp->hide();
+    lp->hide();
 #else
     lp->setFixedWidth(20);
     pickLay->addSpacing(10);
@@ -1768,8 +1717,6 @@ void QColorDialogPrivate::initWidgets()
     QObject::connect(cs, SIGNAL(currentColorChanged(QColor)),
                      q, SIGNAL(currentColorChanged(QColor)));
 #if defined(QT_SMALL_COLORDIALOG)
-    if (!nonTouchUI)
-        pWidth -= cp->size().width();
     topLay->addWidget(cs);
 #else
     rightLay->addWidget(cs);
