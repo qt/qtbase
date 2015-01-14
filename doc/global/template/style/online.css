@@ -860,7 +860,7 @@ html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abb
 body {
   font-family:“Open Sans”, Arial, Helvetica, sans-serif;
   line-height:1.5;
-  font-weight:300
+  font-weight:400
 }
 h1,h2,h3,h4,h5,h6 {
   font-weight:300
@@ -959,7 +959,7 @@ a:hover {
   color:#46a2da
 }
 .main,.navbar-header,#footerbar>div {
-  max-width:1500px;
+  max-width:1280px;
   width:95%;
   margin:0 auto
 }
@@ -1083,8 +1083,14 @@ dd {
   margin-bottom:1.56em
 }
 .mainContent li {
-  margin-bottom:0.8em;
+  margin-top:0.8em;
   line-height:1.25em
+}
+.mainContent li.level2 {
+  margin-left:10px;
+  margin-top:0.4em;
+  font-size:0.9375em;
+  line-height:1.15em;
 }
 .mainContent p {
   line-height:1.56em;
@@ -1093,7 +1099,7 @@ dd {
   max-width:85%
 }
 .mainContent b {
-  font-weight:400
+  font-weight:600
 }
 .context ul {
   margin-bottom:1.5em
@@ -1180,8 +1186,14 @@ li a.active {
   padding:0px;
   min-height:2em
 }
-.context h4,.context h3,.context h2 {
+.context h2 {
   font-size:2.1875em
+}
+.context h3 {
+  font-size:1.75em
+}
+.context h4 {
+  font-size:1.375em
 }
 .context p img {
   margin-top:0.75em;
@@ -1207,7 +1219,7 @@ table td,table th {
 table.alignedsummary,table.propsummary {
   width:initial
 }
-div.main_index .row:first-child {
+div.main_index .row {
   border-bottom:1px solid #eee
 }
 div.main_index .row {
@@ -1556,6 +1568,11 @@ input.gsc-search-button:hover {
   cursor: pointer;
 }
 
+input.gsc-search-button:focus {
+  outline: none;
+  box-shadow: none;
+}
+
 .gsc-search-box-tools .gsc-clear-button {
   display: none !important;
   visibility: none !important;
@@ -1570,6 +1587,7 @@ input.gsc-input {
   border: 1px solid #d6d6d6 !important;
   border-radius: 5px !important;
   box-sizing: border-box !important;
+  -moz-box-sizing: border-box !important;
   color: #868482 !important;
   outline: 0 none !important;
   padding: 9px 10px 10px !important;

@@ -1,5 +1,6 @@
 #include standard set of HTML header and footer.
-include(html-config.qdocconf)
+HTML.nonavigationbar      = "false"
+HTML.tocdepth             = 2
 include(html-header-online.qdocconf)
 include(html-footer-online.qdocconf)
 
