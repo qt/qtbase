@@ -601,6 +601,9 @@ void tst_QCompleter::directoryModel_data()
         QTest::newRow("()") << "" << "" << "/" << "/";
         QTest::newRow("(/a)") << "/a" << "" << "Applications" << "/Applications";
         QTest::newRow("(/u)") << "/u" << "" << "Users" << "/Users";
+#elif defined(Q_OS_ANDROID)
+        QTest::newRow("()") << "" << "" << "/" << "/";
+        QTest::newRow("(/et)") << "/et" << "" << "etc" << "/etc";
 #else
         QTest::newRow("()") << "" << "" << "/" << "/";
 #if !defined(Q_OS_IRIX) && !defined(Q_OS_AIX) && !defined(Q_OS_HPUX) && !defined(Q_OS_QNX)
@@ -647,6 +650,9 @@ void tst_QCompleter::fileSystemModel_data()
         QTest::newRow("()") << "" << "" << "/" << "/";
         QTest::newRow("(/a)") << "/a" << "" << "Applications" << "/Applications";
 //        QTest::newRow("(/d)") << "/d" << "" << "Developer" << "/Developer";
+#elif defined(Q_OS_ANDROID)
+        QTest::newRow("()") << "" << "" << "/" << "/";
+        QTest::newRow("(/et)") << "/et" << "" << "etc" << "/etc";
 #else
         QTest::newRow("()") << "" << "" << "/" << "/";
 #if !defined(Q_OS_IRIX) && !defined(Q_OS_AIX) && !defined(Q_OS_HPUX) && !defined(Q_OS_QNX)
