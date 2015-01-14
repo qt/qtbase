@@ -1647,6 +1647,37 @@ void tst_QHeaderView::saveRestore()
 
     QVERIFY(s1 == s2);
     QVERIFY(!h2.restoreState(QByteArrayLiteral("Garbage")));
+
+    // QTBUG-40462
+    // Setting from Qt4, where information about multiple sections were grouped together in one
+    // sectionItem object
+    QByteArray settings_qt4 =
+      QByteArray::fromHex("000000ff00000000000000010000000100000000010000000000000000000000000000"
+                          "0000000003e80000000a0101000100000000000000000000000064ffffffff00000081"
+                          "0000000000000001000003e80000000a00000000");
+    QVERIFY(h2.restoreState(settings_qt4));
+    int sectionItemsLengthTotal = 0;
+    for (int i = 0; i < h2.count(); ++i)
+        sectionItemsLengthTotal += h2.sectionSize(i);
+    QVERIFY(sectionItemsLengthTotal == h2.length());
+
+    // Buggy setting where sum(sectionItems) != length. Check false is returned and this corrupted
+    // state isn't restored
+    QByteArray settings_buggy_length =
+      QByteArray::fromHex("000000ff000000000000000100000000000000050100000000000000000000000a4000"
+                          "000000010000000600000258000000fb0000000a010100010000000000000000000000"
+                          "0064ffffffff00000081000000000000000a000000d30000000100000000000000c800"
+                          "000001000000000000008000000001000000000000005c00000001000000000000003c"
+                          "0000000100000000000002580000000100000000000000000000000100000000000002"
+                          "580000000100000000000002580000000100000000000003c000000001000000000000"
+                          "03e8");
+    int old_length = h2.length();
+    QByteArray old_state = h2.saveState();
+    // Check setting is correctly recognized as corrupted
+    QVERIFY(!h2.restoreState(settings_buggy_length));
+    // Check nothing has been actually restored
+    QVERIFY(h2.length() == old_length);
+    QVERIFY(h2.saveState() == old_state);
 }
 
 void tst_QHeaderView::defaultSectionSizeTest()

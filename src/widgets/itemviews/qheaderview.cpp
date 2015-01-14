@@ -3727,12 +3727,14 @@ bool QHeaderViewPrivate::read(QDataStream &in)
     QVector<SectionItem> newSectionItems;
     for (int u = 0; u < sectionItemsIn.count(); ++u) {
         int count = sectionItemsIn.at(u).tmpDataStreamSectionCount;
+        if (count > 0)
+            sectionItemsIn[u].size /= count;
         for (int n = 0; n < count; ++n)
             newSectionItems.append(sectionItemsIn[u]);
     }
 
     int sectionItemsLengthTotal = 0;
-    foreach (const SectionItem& section, sectionItemsIn)
+    foreach (const SectionItem &section, newSectionItems)
         sectionItemsLengthTotal += section.size;
     if (sectionItemsLengthTotal != lengthIn)
         return false;
