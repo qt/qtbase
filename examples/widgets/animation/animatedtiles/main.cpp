@@ -39,6 +39,7 @@
 ****************************************************************************/
 
 #include <QtWidgets>
+#include <QtCore/qmath.h>
 #include <QtCore/qstate.h>
 
 class Pixmap : public QObject, public QGraphicsPixmapItem
@@ -181,13 +182,13 @@ int main(int argc, char **argv)
         Pixmap *item = items.at(i);
         // Ellipse
         ellipseState->assignProperty(item, "pos",
-                                         QPointF(cos((i / 63.0) * 6.28) * 250,
-                                                 sin((i / 63.0) * 6.28) * 250));
+                                         QPointF(qCos((i / 63.0) * 6.28) * 250,
+                                                 qSin((i / 63.0) * 6.28) * 250));
 
         // Figure 8
         figure8State->assignProperty(item, "pos",
-                                         QPointF(sin((i / 63.0) * 6.28) * 250,
-                                                 sin(((i * 2)/63.0) * 6.28) * 250));
+                                         QPointF(qSin((i / 63.0) * 6.28) * 250,
+                                                 qSin(((i * 2)/63.0) * 6.28) * 250));
 
         // Random
         randomState->assignProperty(item, "pos",

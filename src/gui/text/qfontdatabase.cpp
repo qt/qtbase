@@ -2640,7 +2640,7 @@ void QFontDatabase::load(const QFontPrivate *d, int script)
     QFontDef req = d->request;
 
     if (req.pixelSize == -1) {
-        req.pixelSize = floor(((req.pointSize * d->dpi) / 72) * 100 + 0.5) / 100;
+        req.pixelSize = std::floor(((req.pointSize * d->dpi) / 72) * 100 + 0.5) / 100;
         req.pixelSize = qRound(req.pixelSize);
     }
     if (req.pointSize < 0)

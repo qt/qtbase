@@ -40,7 +40,7 @@
 
 #include <QtWidgets>
 
-#include <math.h>
+#include <cmath>
 
 #include "button.h"
 #include "calculator.h"
@@ -164,9 +164,9 @@ void Calculator::unaryOperatorClicked()
             abortOperation();
             return;
         }
-        result = sqrt(operand);
+        result = std::sqrt(operand);
     } else if (clickedOperator == tr("x\302\262")) {
-        result = pow(operand, 2.0);
+        result = std::pow(operand, 2.0);
     } else if (clickedOperator == tr("1/x")) {
         if (operand == 0.0) {
             abortOperation();

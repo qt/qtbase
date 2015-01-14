@@ -654,11 +654,11 @@ QCoreGraphicsPaintEngine::updateState(const QPaintEngineState &state)
                 d->cosmeticPenSize = 1.0;
         } else {
             d->cosmeticPen = QCoreGraphicsPaintEnginePrivate::CosmeticSetPenWidth;
-            static const float sqrt2 = sqrt(2);
+            static const float sqrt2 = std::sqrt(2.0f);
             qreal width = d->current.pen.widthF();
             if (!width)
                 width = 1;
-            d->cosmeticPenSize = sqrt(pow(d->pixelSize.y(), 2) + pow(d->pixelSize.x(), 2)) / sqrt2 * width;
+            d->cosmeticPenSize = std::sqrt(std::pow(d->pixelSize.y(), 2) + std::pow(d->pixelSize.x(), 2)) / sqrt2 * width;
         }
     }
 }

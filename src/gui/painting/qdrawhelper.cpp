@@ -1684,7 +1684,7 @@ static const uint * QT_FASTCALL fetchTransformedBilinearARGB32PM(uint *buffer, c
                     b++;
                     fx += fdx;
                 }
-            } else if ((fdx < 0 && fdx > -(fixed_scale / 8)) || fabs(data->m22) < (1./8.)) { // scale up more than 8x
+            } else if ((fdx < 0 && fdx > -(fixed_scale / 8)) || std::abs(data->m22) < (1./8.)) { // scale up more than 8x
                 int y1 = (fy >> 16);
                 int y2;
                 fetchTransformedBilinear_pixelBounds<blendType>(image_height, image_y1, image_y2, y1, y2);
@@ -1843,7 +1843,7 @@ static const uint * QT_FASTCALL fetchTransformedBilinearARGB32PM(uint *buffer, c
                 }
             }
         } else { //rotation
-            if (fabs(data->m11) > 8 || fabs(data->m22) > 8) {
+            if (std::abs(data->m11) > 8 || std::abs(data->m22) > 8) {
                 //if we are zooming more than 8 times, we use 8bit precision for the position.
                 while (b < end) {
                     int x1 = (fx >> 16);
@@ -2196,7 +2196,7 @@ static const uint *QT_FASTCALL fetchTransformedBilinear(uint *buffer, const Oper
                     layout->convertToARGB32PM(buf1, buf1, len * 2, layout, clut);
                     layout->convertToARGB32PM(buf2, buf2, len * 2, layout, clut);
 
-                    if ((fdx < 0 && fdx > -(fixed_scale / 8)) || fabs(data->m22) < (1./8.)) { // scale up more than 8x
+                    if ((fdx < 0 && fdx > -(fixed_scale / 8)) || std::abs(data->m22) < (1./8.)) { // scale up more than 8x
                         int disty = (fy & 0x0000ffff) >> 8;
                         for (int i = 0; i < len; ++i) {
                             uint tl = buf1[i * 2 + 0];
@@ -2255,7 +2255,7 @@ static const uint *QT_FASTCALL fetchTransformedBilinear(uint *buffer, const Oper
                 layout->convertToARGB32PM(buf1, buf1, len * 2, layout, clut);
                 layout->convertToARGB32PM(buf2, buf2, len * 2, layout, clut);
 
-                if (fabs(data->m11) > 8 || fabs(data->m22) > 8) {
+                if (std::abs(data->m11) > 8 || std::abs(data->m22) > 8) {
                     //if we are zooming more than 8 times, we use 8bit precision for the position.
                     for (int i = 0; i < len; ++i) {
                         uint tl = buf1[i * 2 + 0];

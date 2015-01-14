@@ -38,13 +38,11 @@
 #pragma qt_class(QtMath)
 #endif
 
-#include <math.h>
-
 #include <QtCore/qglobal.h>
-#include <QtCore/qcompilerdetection.h>
+
+#include <cmath>
 
 QT_BEGIN_NAMESPACE
-
 
 #define QT_SINE_TABLE_SIZE 256
 
@@ -52,139 +50,86 @@ extern Q_CORE_EXPORT const qreal qt_sine_table[QT_SINE_TABLE_SIZE];
 
 inline int qCeil(qreal v)
 {
-#ifdef QT_USE_MATH_H_FLOATS
-    if (sizeof(qreal) == sizeof(float))
-        return int(ceilf(float(v)));
-    else
-#endif
-        return int(ceil(v));
+    using std::ceil;
+    return int(ceil(v));
 }
 
 inline int qFloor(qreal v)
 {
-#ifdef QT_USE_MATH_H_FLOATS
-    if (sizeof(qreal) == sizeof(float))
-        return int(floorf(float(v)));
-    else
-#endif
-        return int(floor(v));
+    using std::floor;
+    return int(floor(v));
 }
 
 inline qreal qFabs(qreal v)
 {
-#ifdef QT_USE_MATH_H_FLOATS
-    if(sizeof(qreal) == sizeof(float))
-        return fabsf(float(v));
-    else
-#endif
-        return fabs(v);
+    using std::fabs;
+    return fabs(v);
 }
 
 inline qreal qSin(qreal v)
 {
-#ifdef QT_USE_MATH_H_FLOATS
-    if (sizeof(qreal) == sizeof(float))
-        return sinf(float(v));
-    else
-#endif
-        return sin(v);
+    using std::sin;
+    return sin(v);
 }
 
 inline qreal qCos(qreal v)
 {
-#ifdef QT_USE_MATH_H_FLOATS
-    if (sizeof(qreal) == sizeof(float))
-        return cosf(float(v));
-    else
-#endif
-        return cos(v);
+    using std::cos;
+    return cos(v);
 }
 
 inline qreal qTan(qreal v)
 {
-#ifdef QT_USE_MATH_H_FLOATS
-    if (sizeof(qreal) == sizeof(float))
-        return tanf(float(v));
-    else
-#endif
-        return tan(v);
+    using std::tan;
+    return tan(v);
 }
 
 inline qreal qAcos(qreal v)
 {
-#ifdef QT_USE_MATH_H_FLOATS
-    if (sizeof(qreal) == sizeof(float))
-        return acosf(float(v));
-    else
-#endif
-       return acos(v);
+    using std::acos;
+    return acos(v);
 }
 
 inline qreal qAsin(qreal v)
 {
-#ifdef QT_USE_MATH_H_FLOATS
-    if (sizeof(qreal) == sizeof(float))
-        return asinf(float(v));
-    else
-#endif
-        return asin(v);
+    using std::asin;
+    return asin(v);
 }
 
 inline qreal qAtan(qreal v)
 {
-#ifdef QT_USE_MATH_H_FLOATS
-    if (sizeof(qreal) == sizeof(float))
-        return atanf(float(v));
-    else
-#endif
-        return atan(v);
+    using std::atan;
+    return atan(v);
 }
 
 inline qreal qAtan2(qreal y, qreal x)
 {
-#ifdef QT_USE_MATH_H_FLOATS
-    if (sizeof(qreal) == sizeof(float))
-        return atan2f(float(y), float(x));
-    else
-#endif
-        return atan2(y, x);
+    using std::atan2;
+    return atan2(y, x);
 }
 
 inline qreal qSqrt(qreal v)
 {
-#ifdef QT_USE_MATH_H_FLOATS
-    if (sizeof(qreal) == sizeof(float))
-        return sqrtf(float(v));
-    else
-#endif
-        return sqrt(v);
+    using std::sqrt;
+    return sqrt(v);
 }
 
 inline qreal qLn(qreal v)
 {
-#ifdef QT_USE_MATH_H_FLOATS
-    if (sizeof(qreal) == sizeof(float))
-        return logf(float(v));
-    else
-#endif
-        return log(v);
+    using std::log;
+    return log(v);
 }
 
 inline qreal qExp(qreal v)
 {
-    // only one signature
-    // exists, exp(double)
+    using std::exp;
     return exp(v);
 }
 
 inline qreal qPow(qreal x, qreal y)
 {
-#ifdef QT_USE_MATH_H_FLOATS
-    if (sizeof(qreal) == sizeof(float))
-        return powf(float(x), float(y));
-    else
-#endif
-        return pow(x, y);
+    using std::pow;
+    return pow(x, y);
 }
 
 #ifndef M_E

@@ -509,8 +509,8 @@ static void makeDistanceField(QDistanceFieldData *data, const QPainterPath &path
         bits[i] = exteriorColor;
 
     const qreal angleStep = qreal(15 * 3.141592653589793238 / 180);
-    const QPoint rotation(qRound(cos(angleStep) * 0x4000),
-                          qRound(sin(angleStep) * 0x4000)); // 2:14 signed
+    const QPoint rotation(qRound(qCos(angleStep) * 0x4000),
+                          qRound(qSin(angleStep) * 0x4000)); // 2:14 signed
 
     const quint32 *indices = pathIndices.data();
     QVarLengthArray<QPoint> normals;
@@ -544,7 +544,7 @@ static void makeDistanceField(QDistanceFieldData *data, const QPainterPath &path
             QPoint n(to.y() - from.y(), from.x() - to.x());
             if (n.x() == 0 && n.y() == 0)
                 continue;
-            int scale = qRound((offs << 16) / sqrt(qreal(n.x() * n.x() + n.y() * n.y()))); // 8:16
+            int scale = qRound((offs << 16) / qSqrt(qreal(n.x() * n.x() + n.y() * n.y()))); // 8:16
             n.rx() = n.x() * scale >> 8;
             n.ry() = n.y() * scale >> 8;
             normals.append(n);

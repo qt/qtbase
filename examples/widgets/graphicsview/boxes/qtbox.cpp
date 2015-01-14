@@ -242,7 +242,7 @@ void ItemBase::keyPressEvent(QKeyEvent *event)
 void ItemBase::wheelEvent(QGraphicsSceneWheelEvent *event)
 {
     prepareGeometryChange();
-    m_size = int(m_size * exp(-event->delta() / 600.0));
+    m_size = int(m_size * qExp(-event->delta() / 600.0));
     if (m_size > MAX_ITEM_SIZE)
         m_size = MAX_ITEM_SIZE;
     else if (m_size < MIN_ITEM_SIZE)
@@ -404,10 +404,10 @@ void CircleItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option
 {
     int dt = m_startTime.msecsTo(QTime::currentTime());
 
-    qreal r0 = 0.5 * m_size * (1.0 - exp(-0.001 * ((dt + 3800) % 4000)));
-    qreal r1 = 0.5 * m_size * (1.0 - exp(-0.001 * ((dt + 0) % 4000)));
-    qreal r2 = 0.5 * m_size * (1.0 - exp(-0.001 * ((dt + 1800) % 4000)));
-    qreal r3 = 0.5 * m_size * (1.0 - exp(-0.001 * ((dt + 2000) % 4000)));
+    qreal r0 = 0.5 * m_size * (1.0 - qExp(-0.001 * ((dt + 3800) % 4000)));
+    qreal r1 = 0.5 * m_size * (1.0 - qExp(-0.001 * ((dt + 0) % 4000)));
+    qreal r2 = 0.5 * m_size * (1.0 - qExp(-0.001 * ((dt + 1800) % 4000)));
+    qreal r3 = 0.5 * m_size * (1.0 - qExp(-0.001 * ((dt + 2000) % 4000)));
 
     if (r0 > r1)
         r0 = 0.0;

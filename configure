@@ -4261,13 +4261,6 @@ if [ "$CFG_CXX11" != "no" ]; then
     fi
 fi
 
-# detect availability of float math.h functions
-if compileTest unix/floatmath "floatmath"; then
-    CFG_USE_FLOATMATH=yes
-else
-    CFG_USE_FLOATMATH=no
-fi
-
 # detect sse2 support
 if [ "${CFG_SSE2}" = "auto" ]; then
     if compileTest common/sse2 "sse2"; then
@@ -6497,10 +6490,6 @@ fi
 
 # Add QPA to config.h
 QCONFIG_FLAGS="$QCONFIG_FLAGS"
-
-if [ "${CFG_USE_FLOATMATH}" = "yes" ]; then
-    QCONFIG_FLAGS="${QCONFIG_FLAGS} QT_USE_MATH_H_FLOATS"
-fi
 
 # Add turned on SQL drivers
 for DRIVER in $CFG_SQL_AVAILABLE; do

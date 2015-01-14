@@ -189,7 +189,7 @@ float QVector2D::length() const
     // Need some extra precision if the length is very small.
     double len = double(xp) * double(xp) +
                  double(yp) * double(yp);
-    return float(sqrt(len));
+    return float(std::sqrt(len));
 }
 
 /*!
@@ -220,7 +220,7 @@ QVector2D QVector2D::normalized() const
     if (qFuzzyIsNull(len - 1.0f)) {
         return *this;
     } else if (!qFuzzyIsNull(len)) {
-        double sqrtLen = sqrt(len);
+        double sqrtLen = std::sqrt(len);
         return QVector2D(float(double(xp) / sqrtLen), float(double(yp) / sqrtLen));
     } else {
         return QVector2D();
@@ -241,7 +241,7 @@ void QVector2D::normalize()
     if (qFuzzyIsNull(len - 1.0f) || qFuzzyIsNull(len))
         return;
 
-    len = sqrt(len);
+    len = std::sqrt(len);
 
     xp = float(double(xp) / len);
     yp = float(double(yp) / len);

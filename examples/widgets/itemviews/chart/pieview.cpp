@@ -38,8 +38,8 @@
 **
 ****************************************************************************/
 
-#include <math.h>
 #include <QtWidgets>
+#include <cmath>
 
 #ifndef M_PI
 #define M_PI 3.1415927
@@ -109,13 +109,13 @@ QModelIndex PieView::indexAt(const QPoint &point) const
         double cy = totalSize / 2 - wy; // positive cy for items above the center
 
         // Determine the distance from the center point of the pie chart.
-        double d = pow(pow(cx, 2) + pow(cy, 2), 0.5);
+        double d = std::sqrt(std::pow(cx, 2) + std::pow(cy, 2));
 
         if (d == 0 || d > pieSize / 2)
             return QModelIndex();
 
         // Determine the angle of the point.
-        double angle = (180 / M_PI) * acos(cx / d);
+        double angle = (180 / M_PI) * std::acos(cx / d);
         if (cy < 0)
             angle = 360 - angle;
 

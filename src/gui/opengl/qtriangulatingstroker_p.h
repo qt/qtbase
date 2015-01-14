@@ -134,11 +134,11 @@ inline void QTriangulatingStroker::normalVector(float x1, float y1, float x2, fl
     float pw;
 
     if (dx == 0)
-        pw = m_width / qAbs(dy);
+        pw = m_width / std::abs(dy);
     else if (dy == 0)
-        pw = m_width / qAbs(dx);
+        pw = m_width / std::abs(dx);
     else
-        pw = m_width / sqrt(dx*dx + dy*dy);
+        pw = m_width / std::sqrt(dx*dx + dy*dy);
 
     *nx = -dy * pw;
     *ny = dx * pw;

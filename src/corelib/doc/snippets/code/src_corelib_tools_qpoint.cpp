@@ -105,7 +105,7 @@ MyWidget::mouseMoveEvent(QMouseEvent *event)
 
 
 //! [8]
-double trueLength = sqrt(pow(x(), 2) + pow(y(), 2));
+double trueLength = std::sqrt(std::pow(x(), 2) + std::pow(y(), 2));
 //! [8]
 
 

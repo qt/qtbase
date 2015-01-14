@@ -257,7 +257,7 @@ while (i.hasNext()) {
 QMutableListIterator<double> i(list);
 while (i.hasNext()) {
     double val = i.next();
-    i.setValue(sqrt(val));
+    i.setValue(std::sqrt(val));
 }
 //! [23]
 
@@ -266,7 +266,7 @@ while (i.hasNext()) {
 QMutableLinkedListIterator<double> i(list);
 while (i.hasNext()) {
     double val = i.next();
-    i.setValue(sqrt(val));
+    i.setValue(std::sqrt(val));
 }
 //! [24]
 
@@ -275,7 +275,7 @@ while (i.hasNext()) {
 QMutableVectorIterator<double> i(list);
 while (i.hasNext()) {
     double val = i.next();
-    i.setValue(sqrt(val));
+    i.setValue(std::sqrt(val));
 }
 //! [25]
 

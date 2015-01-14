@@ -1125,8 +1125,8 @@ void QMatrix4x4::rotate(float angle, float x, float y, float z)
         c = -1.0f;
     } else {
         float a = angle * M_PI / 180.0f;
-        c = cosf(a);
-        s = sinf(a);
+        c = std::cos(a);
+        s = std::sin(a);
     }
     if (x == 0.0f) {
         if (y == 0.0f) {
@@ -1186,7 +1186,7 @@ void QMatrix4x4::rotate(float angle, float x, float y, float z)
                  double(y) * double(y) +
                  double(z) * double(z);
     if (!qFuzzyCompare(len, 1.0) && !qFuzzyIsNull(len)) {
-        len = sqrt(len);
+        len = std::sqrt(len);
         x = float(double(x) / len);
         y = float(double(y) / len);
         z = float(double(z) / len);
@@ -1234,8 +1234,8 @@ void QMatrix4x4::projectedRotate(float angle, float x, float y, float z)
         c = -1.0f;
     } else {
         float a = angle * M_PI / 180.0f;
-        c = cosf(a);
-        s = sinf(a);
+        c = std::cos(a);
+        s = std::sin(a);
     }
     if (x == 0.0f) {
         if (y == 0.0f) {
@@ -1282,7 +1282,7 @@ void QMatrix4x4::projectedRotate(float angle, float x, float y, float z)
                  double(y) * double(y) +
                  double(z) * double(z);
     if (!qFuzzyCompare(len, 1.0) && !qFuzzyIsNull(len)) {
-        len = sqrt(len);
+        len = std::sqrt(len);
         x = float(double(x) / len);
         y = float(double(y) / len);
         z = float(double(z) / len);
@@ -1487,10 +1487,10 @@ void QMatrix4x4::perspective(float verticalAngle, float aspectRatio, float nearP
     // Construct the projection.
     QMatrix4x4 m(1);
     float radians = (verticalAngle / 2.0f) * M_PI / 180.0f;
-    float sine = sinf(radians);
+    float sine = std::sin(radians);
     if (sine == 0.0f)
         return;
-    float cotan = cosf(radians) / sine;
+    float cotan = std::cos(radians) / sine;
     float clip = farPlane - nearPlane;
     m.m[0][0] = cotan / aspectRatio;
     m.m[1][0] = 0.0f;

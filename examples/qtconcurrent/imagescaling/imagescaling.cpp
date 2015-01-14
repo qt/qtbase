@@ -38,7 +38,7 @@
 **
 ****************************************************************************/
 #include "imagescaling.h"
-#include "math.h"
+#include <qmath.h>
 
 const int imageSize = 100;
 
@@ -110,7 +110,7 @@ void Images::open()
     qDeleteAll(labels);
     labels.clear();
 
-    int dim = sqrt(qreal(files.count())) + 1;
+    int dim = qSqrt(qreal(files.count())) + 1;
     for (int i = 0; i < dim; ++i) {
         for (int j = 0; j < dim; ++j) {
             QLabel *imageLabel = new QLabel;
