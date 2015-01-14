@@ -19,8 +19,14 @@ CONFIG += egl
 QMAKE_LFLAGS += $$QMAKE_LFLAGS_NOUNDEF
 
 SOURCES += $$PWD/qeglfskmsmain.cpp \
-           $$PWD/qeglfskmsintegration.cpp
+           $$PWD/qeglfskmsintegration.cpp \
+           $$PWD/qeglfskmsdevice.cpp \
+           $$PWD/qeglfskmsscreen.cpp \
+           $$PWD/qeglfskmscursor.cpp
 
-HEADERS += $$PWD/qeglfskmsintegration.h
+HEADERS += $$PWD/qeglfskmsintegration.h \
+           $$PWD/qeglfskmsdevice.h \
+           $$PWD/qeglfskmsscreen.h \
+           $$PWD/qeglfskmscursor.h
 
 OTHER_FILES += $$PWD/eglfs_kms.json

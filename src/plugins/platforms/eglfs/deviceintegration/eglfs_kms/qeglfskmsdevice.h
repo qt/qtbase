@@ -39,50 +39,53 @@
 **
 ****************************************************************************/
 
-#ifndef QEGLFSKMSINTEGRATION_H
-#define QEGLFSKMSINTEGRATION_H
+#ifndef QEGLFSKMSDEVICE_H
+#define QEGLFSKMSDEVICE_H
 
-#include "qeglfsdeviceintegration.h"
-#include <QtCore/QMap>
-#include <QtCore/QVariant>
+#include "qeglfskmsintegration.h"
+
+#include <xf86drm.h>
+#include <xf86drmMode.h>
+#include <gbm.h>
 
 QT_BEGIN_NAMESPACE
 
-class QEglFSKmsDevice;
+class QEglFSKmsScreen;
 
-class QEglFSKmsIntegration : public QEGLDeviceIntegration
+class QEglFSKmsDevice
 {
 public:
-    QEglFSKmsIntegration();
+    QEglFSKmsDevice(QEglFSKmsIntegration *integration, const QString &path);
 
-    void platformInit() Q_DECL_OVERRIDE;
-    void platformDestroy() Q_DECL_OVERRIDE;
-    EGLNativeDisplayType platformDisplay() const Q_DECL_OVERRIDE;
-    bool usesDefaultScreen() Q_DECL_OVERRIDE;
-    void screenInit() Q_DECL_OVERRIDE;
-    QSurfaceFormat surfaceFormatFor(const QSurfaceFormat &inputFormat) const Q_DECL_OVERRIDE;
-    EGLNativeWindowType createNativeWindow(QPlatformWindow *platformWindow,
-                                           const QSize &size,
-                                           const QSurfaceFormat &format) Q_DECL_OVERRIDE;
-    EGLNativeWindowType createNativeOffscreenWindow(const QSurfaceFormat &format) Q_DECL_OVERRIDE;
-    void destroyNativeWindow(EGLNativeWindowType window) Q_DECL_OVERRIDE;
-    bool hasCapability(QPlatformIntegration::Capability cap) const Q_DECL_OVERRIDE;
-    QPlatformCursor *createCursor(QPlatformScreen *screen) const Q_DECL_OVERRIDE;
-    void waitForVSync(QPlatformSurface *surface) const Q_DECL_OVERRIDE;
-    void presentBuffer(QPlatformSurface *surface) Q_DECL_OVERRIDE;
-    bool supportsPBuffers() const Q_DECL_OVERRIDE;
+    bool open();
+    void close();
 
-    bool hwCursor() const;
-    QMap<QString, QVariantMap> outputSettings() const;
+    void createScreens();
+
+    gbm_device *device() const;
+    int fd() const;
+
+    void handleDrmEvent();
 
 private:
-    void loadConfig();
+    Q_DISABLE_COPY(QEglFSKmsDevice)
 
-    QEglFSKmsDevice *m_device;
-    bool m_hwCursor;
-    bool m_pbuffers;
-    QString m_devicePath;
-    QMap<QString, QVariantMap> m_outputSettings;
+    QEglFSKmsIntegration *m_integration;
+    QString m_path;
+    int m_dri_fd;
+    gbm_device *m_gbm_device;
+
+    quint32 m_crtc_allocator;
+    quint32 m_connector_allocator;
+
+    int crtcForConnector(drmModeResPtr resources, drmModeConnectorPtr connector);
+    QEglFSKmsScreen *screenForConnector(drmModeResPtr resources, drmModeConnectorPtr connector, QPoint pos);
+
+    static void pageFlipHandler(int fd,
+                                unsigned int sequence,
+                                unsigned int tv_sec,
+                                unsigned int tv_usec,
+                                void *user_data);
 };
 
 QT_END_NAMESPACE

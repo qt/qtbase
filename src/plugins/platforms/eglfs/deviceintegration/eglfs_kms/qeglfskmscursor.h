@@ -39,50 +39,54 @@
 **
 ****************************************************************************/
 
-#ifndef QEGLFSKMSINTEGRATION_H
-#define QEGLFSKMSINTEGRATION_H
+#ifndef QEGLFSKMSCURSOR_H
+#define QEGLFSKMSCURSOR_H
 
-#include "qeglfsdeviceintegration.h"
-#include <QtCore/QMap>
-#include <QtCore/QVariant>
+#include <qpa/qplatformcursor.h>
+#include <QtCore/QList>
+#include <QtGui/QImage>
+
+#include <gbm.h>
 
 QT_BEGIN_NAMESPACE
 
-class QEglFSKmsDevice;
+class QEglFSKmsScreen;
 
-class QEglFSKmsIntegration : public QEGLDeviceIntegration
+class QEglFSKmsCursor : public QPlatformCursor
 {
+    Q_OBJECT
+
 public:
-    QEglFSKmsIntegration();
+    QEglFSKmsCursor(QEglFSKmsScreen *screen);
+    ~QEglFSKmsCursor();
 
-    void platformInit() Q_DECL_OVERRIDE;
-    void platformDestroy() Q_DECL_OVERRIDE;
-    EGLNativeDisplayType platformDisplay() const Q_DECL_OVERRIDE;
-    bool usesDefaultScreen() Q_DECL_OVERRIDE;
-    void screenInit() Q_DECL_OVERRIDE;
-    QSurfaceFormat surfaceFormatFor(const QSurfaceFormat &inputFormat) const Q_DECL_OVERRIDE;
-    EGLNativeWindowType createNativeWindow(QPlatformWindow *platformWindow,
-                                           const QSize &size,
-                                           const QSurfaceFormat &format) Q_DECL_OVERRIDE;
-    EGLNativeWindowType createNativeOffscreenWindow(const QSurfaceFormat &format) Q_DECL_OVERRIDE;
-    void destroyNativeWindow(EGLNativeWindowType window) Q_DECL_OVERRIDE;
-    bool hasCapability(QPlatformIntegration::Capability cap) const Q_DECL_OVERRIDE;
-    QPlatformCursor *createCursor(QPlatformScreen *screen) const Q_DECL_OVERRIDE;
-    void waitForVSync(QPlatformSurface *surface) const Q_DECL_OVERRIDE;
-    void presentBuffer(QPlatformSurface *surface) Q_DECL_OVERRIDE;
-    bool supportsPBuffers() const Q_DECL_OVERRIDE;
-
-    bool hwCursor() const;
-    QMap<QString, QVariantMap> outputSettings() const;
+    // input methods
+    void pointerEvent(const QMouseEvent & event) Q_DECL_OVERRIDE;
+#ifndef QT_NO_CURSOR
+    void changeCursor(QCursor * windowCursor, QWindow * window) Q_DECL_OVERRIDE;
+#endif
+    QPoint pos() const Q_DECL_OVERRIDE;
+    void setPos(const QPoint &pos) Q_DECL_OVERRIDE;
 
 private:
-    void loadConfig();
+    void initCursorAtlas();
 
-    QEglFSKmsDevice *m_device;
-    bool m_hwCursor;
-    bool m_pbuffers;
-    QString m_devicePath;
-    QMap<QString, QVariantMap> m_outputSettings;
+    QEglFSKmsScreen *m_screen;
+    QSize m_cursorSize;
+    gbm_bo *m_bo;
+    QPoint m_pos;
+    QPlatformCursorImage m_cursorImage;
+    bool m_visible;
+
+    // cursor atlas information
+    struct CursorAtlas {
+        CursorAtlas() : cursorsPerRow(0), cursorWidth(0), cursorHeight(0) { }
+        int cursorsPerRow;
+        int width, height; // width and height of the atlas
+        int cursorWidth, cursorHeight; // width and height of cursors inside the atlas
+        QList<QPoint> hotSpots;
+        QImage image;
+    } m_cursorAtlas;
 };
 
 QT_END_NAMESPACE

@@ -39,50 +39,90 @@
 **
 ****************************************************************************/
 
-#ifndef QEGLFSKMSINTEGRATION_H
-#define QEGLFSKMSINTEGRATION_H
+#ifndef QEGLFSKMSSCREEN_H
+#define QEGLFSKMSSCREEN_H
 
-#include "qeglfsdeviceintegration.h"
-#include <QtCore/QMap>
-#include <QtCore/QVariant>
+#include "qeglfskmsintegration.h"
+#include "qeglfsscreen.h"
+#include <QtCore/QList>
+#include <QtCore/QMutex>
+
+#include <xf86drm.h>
+#include <xf86drmMode.h>
+#include <gbm.h>
 
 QT_BEGIN_NAMESPACE
 
 class QEglFSKmsDevice;
+class QEglFSKmsCursor;
 
-class QEglFSKmsIntegration : public QEGLDeviceIntegration
+struct QEglFSKmsOutput
+{
+    QString name;
+    uint32_t connector_id;
+    uint32_t crtc_id;
+    QSizeF physical_size;
+    int mode; // index of selected mode in list below
+    bool mode_set;
+    drmModeCrtcPtr saved_crtc;
+    QList<drmModeModeInfo> modes;
+};
+
+class QEglFSKmsScreen : public QEglFSScreen
 {
 public:
-    QEglFSKmsIntegration();
+    QEglFSKmsScreen(QEglFSKmsIntegration *integration,
+                    QEglFSKmsDevice *device,
+                    QEglFSKmsOutput output,
+                    QPoint position);
+    ~QEglFSKmsScreen();
 
-    void platformInit() Q_DECL_OVERRIDE;
-    void platformDestroy() Q_DECL_OVERRIDE;
-    EGLNativeDisplayType platformDisplay() const Q_DECL_OVERRIDE;
-    bool usesDefaultScreen() Q_DECL_OVERRIDE;
-    void screenInit() Q_DECL_OVERRIDE;
-    QSurfaceFormat surfaceFormatFor(const QSurfaceFormat &inputFormat) const Q_DECL_OVERRIDE;
-    EGLNativeWindowType createNativeWindow(QPlatformWindow *platformWindow,
-                                           const QSize &size,
-                                           const QSurfaceFormat &format) Q_DECL_OVERRIDE;
-    EGLNativeWindowType createNativeOffscreenWindow(const QSurfaceFormat &format) Q_DECL_OVERRIDE;
-    void destroyNativeWindow(EGLNativeWindowType window) Q_DECL_OVERRIDE;
-    bool hasCapability(QPlatformIntegration::Capability cap) const Q_DECL_OVERRIDE;
-    QPlatformCursor *createCursor(QPlatformScreen *screen) const Q_DECL_OVERRIDE;
-    void waitForVSync(QPlatformSurface *surface) const Q_DECL_OVERRIDE;
-    void presentBuffer(QPlatformSurface *surface) Q_DECL_OVERRIDE;
-    bool supportsPBuffers() const Q_DECL_OVERRIDE;
+    QRect geometry() const Q_DECL_OVERRIDE;
+    int depth() const Q_DECL_OVERRIDE;
+    QImage::Format format() const Q_DECL_OVERRIDE;
 
-    bool hwCursor() const;
-    QMap<QString, QVariantMap> outputSettings() const;
+    QSizeF physicalSize() const Q_DECL_OVERRIDE;
+    QDpi logicalDpi() const Q_DECL_OVERRIDE;
+    Qt::ScreenOrientation nativeOrientation() const Q_DECL_OVERRIDE;
+    Qt::ScreenOrientation orientation() const Q_DECL_OVERRIDE;
+
+    QString name() const Q_DECL_OVERRIDE;
+
+    QPlatformCursor *cursor() const Q_DECL_OVERRIDE;
+
+    QEglFSKmsDevice *device() const { return m_device; }
+
+    gbm_surface *surface() const { return m_gbm_surface; }
+    gbm_surface *createSurface();
+    void destroySurface();
+
+    void waitForFlip();
+    void flip();
+    void flipFinished();
+
+    QEglFSKmsOutput &output() { return m_output; }
+    void restoreMode();
 
 private:
-    void loadConfig();
-
+    QEglFSKmsIntegration *m_integration;
     QEglFSKmsDevice *m_device;
-    bool m_hwCursor;
-    bool m_pbuffers;
-    QString m_devicePath;
-    QMap<QString, QVariantMap> m_outputSettings;
+    gbm_surface *m_gbm_surface;
+
+    gbm_bo *m_gbm_bo_current;
+    gbm_bo *m_gbm_bo_next;
+
+    QEglFSKmsOutput m_output;
+    QPoint m_pos;
+    QScopedPointer<QEglFSKmsCursor> m_cursor;
+
+    struct FrameBuffer {
+        FrameBuffer() : fb(0) {}
+        uint32_t fb;
+    };
+    static void bufferDestroyedHandler(gbm_bo *bo, void *data);
+    FrameBuffer *framebufferForBufferObject(gbm_bo *bo);
+
+    static QMutex m_waitForFlipMutex;
 };
 
 QT_END_NAMESPACE
