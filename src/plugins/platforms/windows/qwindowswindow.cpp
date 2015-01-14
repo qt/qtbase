@@ -1620,17 +1620,6 @@ void QWindowsWindow::setWindowState_sys(Qt::WindowState newState)
 
     setFlag(FrameDirty);
 
-    if ((oldState == Qt::WindowMaximized) != (newState == Qt::WindowMaximized)) {
-        if (visible && !(newState == Qt::WindowMinimized)) {
-            setFlag(WithinMaximize);
-            if (newState == Qt::WindowFullScreen)
-                setFlag(MaximizeToFullScreen);
-            ShowWindow(m_data.hwnd, (newState == Qt::WindowMaximized) ? SW_MAXIMIZE : SW_SHOWNOACTIVATE);
-            clearFlag(WithinMaximize);
-            clearFlag(MaximizeToFullScreen);
-        }
-    }
-
     if ((oldState == Qt::WindowFullScreen) != (newState == Qt::WindowFullScreen)) {
 #ifdef Q_OS_WINCE
         HWND handle = FindWindow(L"HHTaskBar", L"");
@@ -1709,6 +1698,15 @@ void QWindowsWindow::setWindowState_sys(Qt::WindowState newState)
             }
             m_savedStyle = 0;
             m_savedFrameGeometry = QRect();
+        }
+    } else if ((oldState == Qt::WindowMaximized) != (newState == Qt::WindowMaximized)) {
+        if (visible && !(newState == Qt::WindowMinimized)) {
+            setFlag(WithinMaximize);
+            if (newState == Qt::WindowFullScreen)
+                setFlag(MaximizeToFullScreen);
+            ShowWindow(m_data.hwnd, (newState == Qt::WindowMaximized) ? SW_MAXIMIZE : SW_SHOWNOACTIVATE);
+            clearFlag(WithinMaximize);
+            clearFlag(MaximizeToFullScreen);
         }
     }
 
