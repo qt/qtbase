@@ -38,6 +38,7 @@
 #include "qstatusnotifieritemadaptor_p.h"
 #include "qdbusmenuadaptor_p.h"
 #include "dbusmenu/qdbusplatformmenu_p.h"
+#include "qxdgnotificationproxy_p.h"
 
 #include <qplatformmenu.h>
 #include <qstring.h>
@@ -54,6 +55,9 @@ Q_LOGGING_CATEGORY(qLcTray, "qt.qpa.tray")
 
 static const QString KDEItemFormat = QStringLiteral("org.kde.StatusNotifierItem-%1-%2");
 static const QString TempFileTemplate =  QDir::tempPath() + QStringLiteral("/qt-trayicon-XXXXXX.png");
+static const QString XdgNotificationService = QStringLiteral("org.freedesktop.Notifications");
+static const QString XdgNotificationPath = QStringLiteral("/org/freedesktop/Notifications");
+static const QString DefaultAction = QStringLiteral("default");
 static int instanceCount = 0;
 
 /*!
@@ -66,6 +70,7 @@ QDBusTrayIcon::QDBusTrayIcon()
     , m_adaptor(new QStatusNotifierItemAdaptor(this))
     , m_menuAdaptor(Q_NULLPTR)
     , m_menu(Q_NULLPTR)
+    , m_notifier(Q_NULLPTR)
     , m_instanceId(KDEItemFormat.arg(QCoreApplication::applicationPid()).arg(++instanceCount))
     , m_category(QStringLiteral("ApplicationStatus"))
     , m_defaultStatus(QStringLiteral("Active")) // be visible all the time.  QSystemTrayIcon has no API to control this.
@@ -152,8 +157,13 @@ QTemporaryFile *QDBusTrayIcon::tempIcon(const QIcon &icon)
 
 QDBusMenuConnection * QDBusTrayIcon::dBusConnection()
 {
-    if (!m_dbusConnection)
+    if (!m_dbusConnection) {
         m_dbusConnection = new QDBusMenuConnection(this);
+        m_notifier = new QXdgNotificationInterface(XdgNotificationService,
+            XdgNotificationPath, m_dbusConnection->connection(), this);
+        connect(m_notifier, SIGNAL(NotificationClosed(uint,uint)), this, SLOT(notificationClosed(uint,uint)));
+        connect(m_notifier, SIGNAL(ActionInvoked(uint,QString)), this, SLOT(actionInvoked(uint,QString)));
+    }
     return m_dbusConnection;
 }
 
@@ -214,6 +224,7 @@ void QDBusTrayIcon::showMessage(const QString &title, const QString &msg, const 
     m_messageTitle = title;
     m_message = msg;
     m_attentionIcon = icon;
+    QStringList notificationActions;
     switch (iconType) {
     case Information:
         m_attentionIconName = QStringLiteral("dialog-information");
@@ -223,6 +234,10 @@ void QDBusTrayIcon::showMessage(const QString &title, const QString &msg, const 
         break;
     case Critical:
         m_attentionIconName = QStringLiteral("dialog-error");
+        // If there are actions, the desktop notification may appear as a message dialog
+        // with button(s), which will interrupt the user and require a response.
+        // That is an optional feature in implementations of org.freedesktop.Notifications
+        notificationActions << DefaultAction << tr("OK");
         break;
     default:
         m_attentionIconName.clear();
@@ -243,6 +258,28 @@ void QDBusTrayIcon::showMessage(const QString &title, const QString &msg, const 
     m_attentionTimer.start(msecs);
     emit tooltipChanged();
     emit attention();
+
+    // Desktop notification
+    QVariantMap hints;
+    // urgency levels according to https://developer.gnome.org/notification-spec/#urgency-levels
+    // 0 low, 1 normal, 2 critical
+    int urgency = static_cast<int>(iconType) - 1;
+    if (urgency < 0) // no icon
+        urgency = 0;
+    hints.insert(QLatin1String("urgency"), QVariant(urgency));
+    m_notifier->notify(QCoreApplication::applicationName(), 0,
+                       m_attentionIconName, title, msg, notificationActions, hints, msecs);
+}
+
+void QDBusTrayIcon::actionInvoked(uint id, const QString &action)
+{
+    qCDebug(qLcTray) << id << action;
+    emit messageClicked();
+}
+
+void QDBusTrayIcon::notificationClosed(uint id, uint reason)
+{
+    qCDebug(qLcTray) << id << reason;
 }
 
 bool QDBusTrayIcon::isSystemTrayAvailable() const

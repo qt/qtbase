@@ -59,6 +59,7 @@ QT_BEGIN_NAMESPACE
 class QStatusNotifierItemAdaptor;
 class QDBusMenuAdaptor;
 class QDBusPlatformMenu;
+class QXdgNotificationInterface;
 
 class QDBusTrayIcon: public QPlatformSystemTrayIcon
 {
@@ -126,6 +127,8 @@ signals:
 
 private Q_SLOTS:
     void attentionTimerExpired();
+    void actionInvoked(uint id, const QString &action);
+    void notificationClosed(uint id, uint reason);
 
 private:
     void setStatus(const QString &status);
@@ -136,6 +139,7 @@ private:
     QStatusNotifierItemAdaptor *m_adaptor;
     QDBusMenuAdaptor *m_menuAdaptor;
     QDBusPlatformMenu *m_menu;
+    QXdgNotificationInterface *m_notifier;
     QString m_instanceId;
     QString m_category;
     QString m_defaultStatus;
