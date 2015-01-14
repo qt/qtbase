@@ -39,6 +39,7 @@
 #include <qpa/qwindowsysteminterface.h>
 
 #include "qiosapplicationstate.h"
+#include "qiosfileenginefactory.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -90,6 +91,7 @@ private:
     QIOSApplicationState m_applicationState;
     QIOSServices *m_platformServices;
     mutable QPlatformAccessibility *m_accessibility;
+    QIOSFileEngineFactory m_fileEngineFactory;
 };
 
 QT_END_NAMESPACE
