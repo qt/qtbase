@@ -59,6 +59,7 @@
 #include <locale.h>
 #include <qhash.h>
 
+#include <string>
 
 #define CREATE_REF(string)                                              \
     const QString padded = QString::fromLatin1(" %1 ").arg(string);     \
@@ -263,6 +264,7 @@ private slots:
     void assignQLatin1String();
     void isRightToLeft_data();
     void isRightToLeft();
+    void unicodeStrings();
 };
 
 template <class T> const T &verifyZeroTermination(const T &t) { return t; }
@@ -5219,6 +5221,27 @@ void tst_QString::fromUtf16_char16()
     QFETCH(int, len);
 
     QCOMPARE(QString::fromUtf16(reinterpret_cast<const char16_t *>(ucs2.utf16()), len), res);
+#endif
+}
+
+void tst_QString::unicodeStrings()
+{
+#ifdef Q_COMPILER_UNICODE_STRINGS
+    QString s1, s2;
+    static const std::u16string u16str1(u"Hello Unicode World");
+    static const std::u32string u32str1(U"Hello Unicode World");
+    s1 = QString::fromStdU16String(u16str1);
+    s2 = QString::fromStdU32String(u32str1);
+    QCOMPARE(s1, QString("Hello Unicode World"));
+    QCOMPARE(s1, s2);
+
+    QCOMPARE(s2.toStdU16String(), u16str1);
+    QCOMPARE(s1.toStdU32String(), u32str1);
+
+    s1 = QString::fromStdU32String(std::u32string(U"\u221212\U000020AC\U00010000"));
+    QCOMPARE(s1, QString::fromUtf8("\342\210\222" "12" "\342\202\254" "\360\220\200\200"));
+#else
+    QSKIP("Compiler does not support C++11 unicode strings");
 #endif
 }
 

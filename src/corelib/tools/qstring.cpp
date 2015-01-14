@@ -1356,7 +1356,7 @@ const QString::Null QString::null = { };
     windows) and ucs4 if the size of wchar_t is 4 bytes (most Unix
     systems).
 
-    \sa fromUtf16(), fromLatin1(), fromLocal8Bit(), fromUtf8(), fromUcs4()
+    \sa fromUtf16(), fromLatin1(), fromLocal8Bit(), fromUtf8(), fromUcs4(), fromStdU16String(), fromStdU32String()
 */
 
 /*! \fn QString QString::fromWCharArray(const wchar_t *string, int size)
@@ -1381,7 +1381,7 @@ const QString::Null QString::null = { };
     This method is mostly useful to pass a QString to a function
     that accepts a std::wstring object.
 
-    \sa utf16(), toLatin1(), toUtf8(), toLocal8Bit()
+    \sa utf16(), toLatin1(), toUtf8(), toLocal8Bit(), toStdU16String(), toStdU32String()
 */
 
 int QString::toUcs4_helper(const ushort *uc, int length, uint *out)
@@ -4632,7 +4632,7 @@ QString QString::fromUtf8_helper(const char *str, int size)
 
     QString makes a deep copy of the Unicode data.
 
-    \sa utf16(), setUtf16()
+    \sa utf16(), setUtf16(), fromStdU16String()
 */
 QString QString::fromUtf16(const ushort *unicode, int size)
 {
@@ -4656,7 +4656,7 @@ QString QString::fromUtf16(const ushort *unicode, int size)
     If \a size is -1 (default), \a unicode must be terminated
     with a 0.
 
-    \sa toUcs4(), fromUtf16(), utf16(), setUtf16(), fromWCharArray()
+    \sa toUcs4(), fromUtf16(), utf16(), setUtf16(), fromWCharArray(), fromStdU32String()
 */
 QString QString::fromUcs4(const uint *unicode, int size)
 {
@@ -7886,6 +7886,46 @@ QString &QString::setRawData(const QChar *unicode, int size)
     }
     return *this;
 }
+
+/*! \fn QString QString::fromStdU16String(const std::u16string &str)
+    \since 5.5
+
+    Returns a copy of the \a str string. The given string is assumed
+    to be encoded in UTF-16.
+
+    \sa fromUtf16(), fromStdWString(), fromStdU32String()
+*/
+
+/*!
+    \fn std::u16string QString::toStdU16String() const
+    \since 5.5
+
+    Returns a std::u16string object with the data contained in this
+    QString. The Unicode data is the same as returned by the utf16()
+    method.
+
+    \sa utf16(), toStdWString(), toStdU32String()
+*/
+
+/*! \fn QString QString::fromStdU32String(const std::u32string &str)
+    \since 5.5
+
+    Returns a copy of the \a str string. The given string is assumed
+    to be encoded in UCS-4.
+
+    \sa fromUcs4(), fromStdWString(), fromStdU16String()
+*/
+
+/*!
+    \fn std::u32string QString::toStdU32String() const
+    \since 5.5
+
+    Returns a std::u32string object with the data contained in this
+    QString. The Unicode data is the same as returned by the toUcs4()
+    method.
+
+    \sa toUcs4(), toStdWString(), toStdU16String()
+*/
 
 /*! \class QLatin1String
     \inmodule QtCore
