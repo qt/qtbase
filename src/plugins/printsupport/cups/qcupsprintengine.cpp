@@ -46,8 +46,6 @@
 #include <QtGui/qpagelayout.h>
 
 #include <cups/cups.h>
-#include <limits.h>
-#include <math.h>
 
 #include "private/qcore_unix_p.h" // overrides QT_OPEN
 

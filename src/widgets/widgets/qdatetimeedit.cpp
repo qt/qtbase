@@ -31,7 +31,6 @@
 **
 ****************************************************************************/
 
-#include <math.h>
 #include <private/qdatetimeedit_p.h>
 #include <qabstractspinbox.h>
 #include <qapplication.h>

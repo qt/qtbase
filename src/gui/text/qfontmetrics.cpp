@@ -38,9 +38,6 @@
 #include "qfont_p.h"
 #include "qfontengine_p.h"
 
-#include <math.h>
-
-
 QT_BEGIN_NAMESPACE
 
 

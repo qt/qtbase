@@ -762,8 +762,6 @@
 #include <private/qapplication_p.h>
 #include <private/qgesturemanager_p.h>
 
-#include <math.h>
-
 QT_BEGIN_NAMESPACE
 
 static inline void _q_adjustRect(QRect *rect)

@@ -38,8 +38,6 @@
 #include <QtCore/qpoint.h>
 #include <QtCore/qalgorithms.h>
 
-#include <math.h>
-
 #include <private/qopengl_p.h>
 #include <private/qrbtree_p.h>
 

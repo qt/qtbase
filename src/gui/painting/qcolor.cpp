@@ -38,7 +38,6 @@
 #include "qvariant.h"
 #include "qdebug.h"
 
-#include <math.h>
 #include <stdio.h>
 #include <limits.h>
 

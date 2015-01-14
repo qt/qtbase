@@ -35,8 +35,6 @@
 
 #ifndef QT_NO_GRAPHICSVIEW
 
-#include <math.h>
-
 #include "qgridlayoutengine_p.h"
 #include "qvarlengtharray.h"
 

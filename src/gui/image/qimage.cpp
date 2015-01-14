@@ -47,7 +47,6 @@
 #include <ctype.h>
 #include <stdlib.h>
 #include <limits.h>
-#include <math.h>
 #include <qpa/qplatformpixmap.h>
 #include <private/qdrawhelper_p.h>
 #include <private/qmemrotate_p.h>

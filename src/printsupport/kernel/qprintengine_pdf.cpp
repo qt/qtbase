@@ -42,10 +42,6 @@
 #include "qprinterinfo.h"
 #include <QtGui/qpagelayout.h>
 
-#include <limits.h>
-#include <math.h>
-
-
 #ifdef Q_OS_UNIX
 #include "private/qcore_unix_p.h" // overrides QT_OPEN
 #endif

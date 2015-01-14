@@ -36,8 +36,6 @@
 #include "qdebug.h"
 #include "qmath.h"
 
-#include <math.h>
-
 QT_BEGIN_NAMESPACE
 
 /*!

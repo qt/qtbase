@@ -53,8 +53,6 @@
 #include <QtWidgets/qformlayout.h>
 #include <QtCore/QCoreApplication>
 
-#include <math.h>
-
 #ifndef QT_NO_PRINTPREVIEWDIALOG
 
 static void initResources()
