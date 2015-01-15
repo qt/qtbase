@@ -152,8 +152,7 @@ static QIOSScreen* qtPlatformScreenFor(UIScreen *uiScreen)
         // orientations alongside these two orientations.
         return;
     default:
-        Qt::ScreenOrientation screenOrientation = toQtScreenOrientation(deviceOrientation);
-        QWindowSystemInterface::handleScreenOrientationChange(m_screen->screen(), screenOrientation);
+        QWindowSystemInterface::handleScreenOrientationChange(m_screen->screen(), m_screen->orientation());
     }
 }
 
@@ -321,7 +320,18 @@ Qt::ScreenOrientation QIOSScreen::nativeOrientation() const
 
 Qt::ScreenOrientation QIOSScreen::orientation() const
 {
-    return toQtScreenOrientation([UIDevice currentDevice].orientation);
+    UIDeviceOrientation deviceOrientation = [UIDevice currentDevice].orientation;
+
+    // At startup, iOS will report an unknown orientation for the device, even
+    // if we've asked it to begin generating device orientation notifications.
+    // In this case we fall back to the status bar orientation, which reflects
+    // the orientation the application was started up in (which may not match
+    // the physical orientation of the device, but typically does unless the
+    // application has been locked to a subset of the available orientations).
+    if (deviceOrientation == UIDeviceOrientationUnknown)
+        deviceOrientation = UIDeviceOrientation([UIApplication sharedApplication].statusBarOrientation);
+
+    return toQtScreenOrientation(deviceOrientation);
 }
 
 void QIOSScreen::setOrientationUpdateMask(Qt::ScreenOrientations mask)
