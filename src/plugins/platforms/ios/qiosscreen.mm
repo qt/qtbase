@@ -143,17 +143,7 @@ static QIOSScreen* qtPlatformScreenFor(UIScreen *uiScreen)
 - (void) orientationChanged:(NSNotification *)notification
 {
     Q_UNUSED(notification);
-
-    UIDeviceOrientation deviceOrientation = [UIDevice currentDevice].orientation;
-    switch (deviceOrientation) {
-    case UIDeviceOrientationFaceUp:
-    case UIDeviceOrientationFaceDown:
-        // We ignore these events, as iOS will send events with the 'regular'
-        // orientations alongside these two orientations.
-        return;
-    default:
-        QWindowSystemInterface::handleScreenOrientationChange(m_screen->screen(), m_screen->orientation());
-    }
+    m_screen->updateProperties();
 }
 
 @end
@@ -261,6 +251,14 @@ void QIOSScreen::updateProperties()
         m_availableGeometry = transform.mapRect(m_availableGeometry);
     }
 
+    if (screen() && screen()->orientation() != orientation())
+        QWindowSystemInterface::handleScreenOrientationChange(screen(), orientation());
+
+    // Note: The screen orientation change and the geometry changes are not atomic, so when
+    // the former is emitted, the latter has not been reported and reflected in the QScreen
+    // API yet. But conceptually it makes sense that the orientation update happens first,
+    // and the geometry updates caused by auto-rotation happen after that.
+
     if (m_geometry != previousGeometry || m_availableGeometry != previousAvailableGeometry) {
         const qreal millimetersPerInch = 25.4;
         m_physicalSize = QSizeF(m_geometry.size()) / m_unscaledDpi * millimetersPerInch;
@@ -331,6 +329,14 @@ Qt::ScreenOrientation QIOSScreen::orientation() const
     if (deviceOrientation == UIDeviceOrientationUnknown)
         deviceOrientation = UIDeviceOrientation([UIApplication sharedApplication].statusBarOrientation);
 
+    // If the device reports face up or face down orientations, we can't map
+    // them to Qt orientations, so we pretend we're in the same orientation
+    // as before.
+    if (deviceOrientation == UIDeviceOrientationFaceUp || deviceOrientation == UIDeviceOrientationFaceDown) {
+        Q_ASSERT(screen());
+        return screen()->orientation();
+    }
+
     return toQtScreenOrientation(deviceOrientation);
 }
 
@@ -341,6 +347,7 @@ void QIOSScreen::setOrientationUpdateMask(Qt::ScreenOrientations mask)
         m_orientationListener = 0;
     } else if (!m_orientationListener) {
         m_orientationListener = [[QIOSOrientationListener alloc] initWithQIOSScreen:this];
+        updateProperties();
     }
 }
 

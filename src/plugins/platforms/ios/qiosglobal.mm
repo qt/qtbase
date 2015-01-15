@@ -95,7 +95,7 @@ Qt::ScreenOrientation toQtScreenOrientation(UIDeviceOrientation uiDeviceOrientat
         break;
     case UIDeviceOrientationFaceUp:
     case UIDeviceOrientationFaceDown:
-        // FIXME: Use cached device orientation, or fall back to interface orientation
+        qWarning() << "Falling back to Qt::PortraitOrientation for UIDeviceOrientationFaceUp/UIDeviceOrientationFaceDown";
         qtOrientation = Qt::PortraitOrientation;
         break;
     default:
