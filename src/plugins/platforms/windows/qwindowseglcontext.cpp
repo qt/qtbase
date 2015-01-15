@@ -573,6 +573,7 @@ bool QWindowsEGLContext::makeCurrent(QPlatformSurface *surface)
     QWindowsEGLStaticContext::libEGL.eglBindAPI(m_api);
 
     QWindowsWindow *window = static_cast<QWindowsWindow *>(surface);
+    window->aboutToMakeCurrent();
     EGLSurface eglSurface = static_cast<EGLSurface>(window->surface(m_eglConfig));
     Q_ASSERT(eglSurface);
 

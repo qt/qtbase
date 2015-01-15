@@ -1267,6 +1267,7 @@ bool QWindowsGLContext::makeCurrent(QPlatformSurface *surface)
 
     // Do we already have a DC entry for that window?
     QWindowsWindow *window = static_cast<QWindowsWindow *>(surface);
+    window->aboutToMakeCurrent();
     const HWND hwnd = window->handle();
     if (const QOpenGLContextData *contextData = findByHWND(m_windowContexts, hwnd)) {
         // Repeated calls to wglMakeCurrent when vsync is enabled in the driver will

@@ -140,7 +140,8 @@ public:
         WithinCreate = 0x20000,
         WithinMaximize = 0x40000,
         MaximizeToFullScreen = 0x80000,
-        InputMethodDisabled =0x100000
+        InputMethodDisabled = 0x100000,
+        Compositing = 0x200000
     };
 
     QWindowsWindow(QWindow *window, const QWindowsWindowData &data);
@@ -253,6 +254,7 @@ public:
     void setWindowIcon(const QIcon &icon);
 
     void *surface(void *nativeConfig);
+    void aboutToMakeCurrent();
 
 #ifndef Q_OS_WINCE
     void setAlertState(bool enabled);

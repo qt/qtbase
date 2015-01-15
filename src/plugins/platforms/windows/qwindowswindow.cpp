@@ -205,6 +205,18 @@ static inline QSize clientSize(HWND hwnd)
     return qSizeOfRect(rect);
 }
 
+static inline bool windowIsOpenGL(const QWindow *w)
+{
+    switch (w->surfaceType()) {
+    case QSurface::OpenGLSurface:
+        return true;
+    case QSurface::RasterGLSurface:
+        return qt_window_private(const_cast<QWindow *>(w))->compositing;
+    default:
+        return false;
+    }
+}
+
 static bool applyBlurBehindWindow(HWND hwnd)
 {
 #ifdef Q_OS_WINCE
@@ -328,6 +340,17 @@ static void setWindowOpacity(HWND hwnd, Qt::WindowFlags flags, bool hasAlpha, bo
 #endif // !Q_OS_WINCE
 }
 
+static inline void updateGLWindowSettings(const QWindow *w, HWND hwnd, Qt::WindowFlags flags, qreal opacity)
+{
+    const bool isGL = windowIsOpenGL(w);
+    const bool hasAlpha = w->format().hasAlpha();
+
+    if (isGL && hasAlpha)
+        applyBlurBehindWindow(hwnd);
+
+    setWindowOpacity(hwnd, flags, hasAlpha, isGL, opacity);
+}
+
 /*!
     \class WindowCreationData
     \brief Window creation code.
@@ -369,14 +392,13 @@ struct WindowCreationData
     void fromWindow(const QWindow *w, const Qt::WindowFlags flags, unsigned creationFlags = 0);
     inline WindowData create(const QWindow *w, const WindowData &data, QString title) const;
     inline void applyWindowFlags(HWND hwnd) const;
-    void initialize(HWND h, bool frameChange, qreal opacityLevel) const;
+    void initialize(const QWindow *w, HWND h, bool frameChange, qreal opacityLevel) const;
 
     Qt::WindowFlags flags;
     HWND parentHandle;
     Qt::WindowType type;
     unsigned style;
     unsigned exStyle;
-    bool isGL;
     bool topLevel;
     bool popup;
     bool dialog;
@@ -389,7 +411,7 @@ struct WindowCreationData
 QDebug operator<<(QDebug debug, const WindowCreationData &d)
 {
     debug.nospace() << QWindowsWindow::debugWindowFlags(d.flags)
-        << " GL=" << d.isGL << " topLevel=" << d.topLevel << " popup="
+        << " topLevel=" << d.topLevel << " popup="
         << d.popup << " dialog=" << d.dialog << " desktop=" << d.desktop
         << " embedded=" << d.embedded
         << " tool=" << d.tool << " style=" << debugWinStyle(d.style)
@@ -420,8 +442,6 @@ static inline void fixTopLevelWindowFlags(Qt::WindowFlags &flags)
 void WindowCreationData::fromWindow(const QWindow *w, const Qt::WindowFlags flagsIn,
                                     unsigned creationFlags)
 {
-    isGL = w->surfaceType() == QWindow::OpenGLSurface;
-    hasAlpha = w->format().hasAlpha();
     flags = flagsIn;
 
     // Sometimes QWindow doesn't have a QWindow parent but does have a native parent window,
@@ -494,7 +514,7 @@ void WindowCreationData::fromWindow(const QWindow *w, const Qt::WindowFlags flag
         // ### Commented out for now as it causes some problems, but
         // this should be correct anyway, so dig some more into this
 #ifdef Q_FLATTEN_EXPOSE
-        if (isGL)
+        if (windowIsOpenGL(w)) // a bit incorrect since the is-opengl status may change from false to true at any time later on
             style |= WS_CLIPSIBLINGS | WS_CLIPCHILDREN; // see SetPixelFormat
 #else
         style |= WS_CLIPSIBLINGS | WS_CLIPCHILDREN ;
@@ -569,7 +589,7 @@ QWindowsWindowData
 
     const HINSTANCE appinst = (HINSTANCE)GetModuleHandle(0);
 
-    const QString windowClassName = QWindowsContext::instance()->registerWindowClass(w, isGL);
+    const QString windowClassName = QWindowsContext::instance()->registerWindowClass(w);
 
     const QRect geometryDip = QWindowsScaling::mapFromNative(data.geometry);
     QRect fixedGeometryDip = QPlatformWindow::initialGeometry(w, geometryDip, defaultWindowWidth, defaultWindowHeight);
@@ -612,9 +632,6 @@ QWindowsWindowData
     result.embedded = embedded;
     result.customMargins = context->customMargins;
 
-    if (isGL && hasAlpha)
-        applyBlurBehindWindow(result.hwnd);
-
     return result;
 }
 
@@ -637,7 +654,7 @@ void WindowCreationData::applyWindowFlags(HWND hwnd) const
         << debugWinExStyle(newExStyle);
 }
 
-void WindowCreationData::initialize(HWND hwnd, bool frameChange, qreal opacityLevel) const
+void WindowCreationData::initialize(const QWindow *w, HWND hwnd, bool frameChange, qreal opacityLevel) const
 {
     if (desktop || !hwnd)
         return;
@@ -662,8 +679,7 @@ void WindowCreationData::initialize(HWND hwnd, bool frameChange, qreal opacityLe
             else
                 EnableMenuItem(systemMenu, SC_CLOSE, MF_BYCOMMAND|MF_GRAYED);
         }
-
-        setWindowOpacity(hwnd, flags, hasAlpha, isGL, opacityLevel);
+        updateGLWindowSettings(w, hwnd, flags, opacityLevel);
     } else { // child.
         SetWindowPos(hwnd, HWND_TOP, 0, 0, 0, 0, swpFlags);
     }
@@ -1045,7 +1061,7 @@ QWindowsWindowData
     creationData.fromWindow(w, parameters.flags);
     QWindowsWindowData result = creationData.create(w, parameters, title);
     // Force WM_NCCALCSIZE (with wParam=1) via SWP_FRAMECHANGED for custom margin.
-    creationData.initialize(result.hwnd, !parameters.customMargins.isNull(), 1);
+    creationData.initialize(w, result.hwnd, !parameters.customMargins.isNull(), 1);
     return result;
 }
 
@@ -1532,7 +1548,7 @@ QWindowsWindowData QWindowsWindow::setWindowFlags_sys(Qt::WindowFlags wt,
     WindowCreationData creationData;
     creationData.fromWindow(window(), wt, flags);
     creationData.applyWindowFlags(m_data.hwnd);
-    creationData.initialize(m_data.hwnd, true, m_opacity);
+    creationData.initialize(window(), m_data.hwnd, true, m_opacity);
 
     QWindowsWindowData result = m_data;
     result.flags = creationData.flags;
@@ -2300,6 +2316,24 @@ void *QWindowsWindow::surface(void *nativeConfig)
         m_surface = m_data.staticOpenGLContext->createWindowSurface(m_data.hwnd, nativeConfig);
 
     return m_surface;
+#endif
+}
+
+void QWindowsWindow::aboutToMakeCurrent()
+{
+#ifndef QT_NO_OPENGL
+    // For RasterGLSurface windows, that become OpenGL windows dynamically, it might be
+    // time to set up some GL specifics.  This is particularly important for layered
+    // windows (WS_EX_LAYERED due to alpha > 0).
+    const bool isCompositing = qt_window_private(window())->compositing;
+    if (isCompositing != testFlag(Compositing)) {
+        if (isCompositing)
+            setFlag(Compositing);
+        else
+            clearFlag(Compositing);
+
+        updateGLWindowSettings(window(), m_data.hwnd, m_data.flags, m_opacity);
+    }
 #endif
 }
 
