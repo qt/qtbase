@@ -37,6 +37,7 @@
 #include "qwindowsdrag.h"
 #include "qwindowsscreen.h"
 #include "qwindowsscaling.h"
+#include "qwindowsintegration.h"
 #ifdef QT_NO_CURSOR
 #  include "qwindowscursor.h"
 #endif
@@ -958,7 +959,8 @@ void QWindowsWindow::destroyWindow()
         setDropSiteEnabled(false);
 #ifndef QT_NO_OPENGL
         if (m_surface) {
-            m_data.staticOpenGLContext->destroyWindowSurface(m_surface);
+            if (QWindowsStaticOpenGLContext *staticOpenGLContext = QWindowsIntegration::staticOpenGLContext())
+                staticOpenGLContext->destroyWindowSurface(m_surface);
             m_surface = 0;
         }
 #endif
@@ -2302,8 +2304,10 @@ void *QWindowsWindow::surface(void *nativeConfig)
 #ifdef QT_NO_OPENGL
     return 0;
 #else
-    if (!m_surface)
-        m_surface = m_data.staticOpenGLContext->createWindowSurface(m_data.hwnd, nativeConfig);
+    if (!m_surface) {
+        if (QWindowsStaticOpenGLContext *staticOpenGLContext = QWindowsIntegration::staticOpenGLContext())
+            m_surface = staticOpenGLContext->createWindowSurface(m_data.hwnd, nativeConfig);
+    }
 
     return m_surface;
 #endif

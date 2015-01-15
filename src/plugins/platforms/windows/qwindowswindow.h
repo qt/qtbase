@@ -107,9 +107,6 @@ struct QWindowsWindowData
     QMargins customMargins; // User-defined, additional frame for NCCALCSIZE
     HWND hwnd;
     bool embedded;
-#ifndef QT_NO_OPENGL
-    QSharedPointer<QWindowsStaticOpenGLContext> staticOpenGLContext;
-#endif // QT_NO_OPENGL
 
     static QWindowsWindowData create(const QWindow *w,
                                      const QWindowsWindowData &parameters,

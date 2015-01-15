@@ -130,7 +130,6 @@ struct QWindowsIntegrationPrivate
 {
     explicit QWindowsIntegrationPrivate(const QStringList &paramList);
     ~QWindowsIntegrationPrivate();
-    bool ensureStaticOpenGLContext();
 
     unsigned m_options;
     QWindowsContext m_context;
@@ -266,7 +265,9 @@ bool QWindowsIntegration::hasCapability(QPlatformIntegration::Capability cap) co
     case OpenGL:
         return true;
     case ThreadedOpenGL:
-        return d->ensureStaticOpenGLContext() ? d->m_staticOpenGLContext->supportsThreadedOpenGL() : false;
+        if (const QWindowsStaticOpenGLContext *glContext = QWindowsIntegration::staticOpenGLContext())
+            return glContext->supportsThreadedOpenGL();
+        return false;
 #endif // !QT_NO_OPENGL
     case WindowMasks:
         return true;
@@ -311,11 +312,6 @@ QWindowsWindowData QWindowsIntegration::createWindowData(QWindow *window) const
         if ((obtained.flags & Qt::Desktop) != Qt::Desktop && requested.geometry != obtained.geometry)
             QWindowSystemInterface::handleGeometryChange(window, QWindowsScaling::mapFromNative(obtained.geometry));
     }
-
-#ifndef QT_NO_OPENGL
-    d->ensureStaticOpenGLContext();
-    obtained.staticOpenGLContext = d->m_staticOpenGLContext;
-#endif // QT_NO_OPENGL
 
     return obtained;
 }
@@ -377,26 +373,16 @@ QWindowsStaticOpenGLContext *QWindowsStaticOpenGLContext::doCreate()
 #endif
 }
 
-static QWindowsStaticOpenGLContext *q_staticOpenGLContext = 0;
-
 QWindowsStaticOpenGLContext *QWindowsStaticOpenGLContext::create()
 {
-    q_staticOpenGLContext = QWindowsStaticOpenGLContext::doCreate();
-    return q_staticOpenGLContext;
-}
-
-bool QWindowsIntegrationPrivate::ensureStaticOpenGLContext()
-{
-    if (m_staticOpenGLContext.isNull())
-        m_staticOpenGLContext = QSharedPointer<QWindowsStaticOpenGLContext>(QWindowsStaticOpenGLContext::create());
-    return !m_staticOpenGLContext.isNull();
+    return QWindowsStaticOpenGLContext::doCreate();
 }
 
 QPlatformOpenGLContext *QWindowsIntegration::createPlatformOpenGLContext(QOpenGLContext *context) const
 {
     qCDebug(lcQpaGl) << __FUNCTION__ << context->format();
-    if (d->ensureStaticOpenGLContext()) {
-        QScopedPointer<QWindowsOpenGLContext> result(d->m_staticOpenGLContext->createContext(context));
+    if (QWindowsStaticOpenGLContext *staticOpenGLContext = QWindowsIntegration::staticOpenGLContext()) {
+        QScopedPointer<QWindowsOpenGLContext> result(staticOpenGLContext->createContext(context));
         if (result->isValid())
             return result.take();
     }
@@ -410,13 +396,18 @@ QOpenGLContext::OpenGLModuleType QWindowsIntegration::openGLModuleType()
 #elif !defined(QT_OPENGL_DYNAMIC)
     return QOpenGLContext::LibGL;
 #else
-    return d->ensureStaticOpenGLContext() ? d->m_staticOpenGLContext->moduleType() : QOpenGLContext::LibGL;
+    if (const QWindowsStaticOpenGLContext *staticOpenGLContext = QWindowsIntegration::staticOpenGLContext())
+        return staticOpenGLContext->moduleType();
+    return QOpenGLContext::LibGL;
 #endif
 }
 
 QWindowsStaticOpenGLContext *QWindowsIntegration::staticOpenGLContext()
 {
-    return q_staticOpenGLContext;
+    QWindowsIntegrationPrivate *d = QWindowsIntegration::instance()->d.data();
+    if (d->m_staticOpenGLContext.isNull())
+        d->m_staticOpenGLContext = QSharedPointer<QWindowsStaticOpenGLContext>(QWindowsStaticOpenGLContext::create());
+    return d->m_staticOpenGLContext.data();
 }
 #endif // !QT_NO_OPENGL
 
