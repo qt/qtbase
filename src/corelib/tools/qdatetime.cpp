@@ -3186,13 +3186,11 @@ QTimeZone QDateTime::timeZone() const
             d->m_timeZone = QTimeZone(d->m_offsetFromUtc);
         return d->m_timeZone;
     case Qt::UTC:
-        if (!d->m_timeZone.isValid())
-            d->m_timeZone = QTimeZone(QTimeZonePrivate::utcQByteArray());
-        return d->m_timeZone;
-    case Qt::TimeZone :
+        return QTimeZone::utc();
+    case Qt::TimeZone:
         return d->m_timeZone;
     case Qt::LocalTime:
-        return QTimeZone(QTimeZone::systemTimeZoneId());
+        return QTimeZone::systemTimeZone();
     }
     return QTimeZone();
 }

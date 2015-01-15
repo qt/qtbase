@@ -789,6 +789,29 @@ QByteArray QTimeZone::systemTimeZoneId()
 }
 
 /*!
+    \since 5.5
+    Returns a QTimeZone object that refers to the local system time, as
+    specified by systemTimeZoneId().
+
+    \sa utc()
+*/
+QTimeZone QTimeZone::systemTimeZone()
+{
+    return QTimeZone(QTimeZone::systemTimeZoneId());
+}
+
+/*!
+    \since 5.5
+    Returns a QTimeZone object that refers to UTC (Universal Time Coordinated).
+
+    \sa systemTimeZone()
+*/
+QTimeZone QTimeZone::utc()
+{
+    return QTimeZone(QTimeZonePrivate::utcQByteArray());
+}
+
+/*!
     Returns \c true if a given time zone \a ianaId is available on this system.
 
     \sa availableTimeZoneIds()

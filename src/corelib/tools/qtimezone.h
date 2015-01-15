@@ -117,6 +117,8 @@ public:
     OffsetDataList transitions(const QDateTime &fromDateTime, const QDateTime &toDateTime) const;
 
     static QByteArray systemTimeZoneId();
+    static QTimeZone systemTimeZone();
+    static QTimeZone utc();
 
     static bool isTimeZoneIdAvailable(const QByteArray &ianaId);
 
