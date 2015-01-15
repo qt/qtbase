@@ -33,7 +33,7 @@
 
 #include <stdio.h>
 
-int main(int argc, char **argv)
+int main(int, char **argv)
 {
     const char *msg = argv[1];
     char buf[2];

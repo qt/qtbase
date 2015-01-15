@@ -37,9 +37,7 @@
 #include <qfile.h>
 #include <qpainterpath.h>
 #include <qpen.h>
-
-#define _USE_MATH_DEFINES
-#include <math.h>
+#include <qmath.h>
 
 class tst_QPainterPath : public QObject
 {

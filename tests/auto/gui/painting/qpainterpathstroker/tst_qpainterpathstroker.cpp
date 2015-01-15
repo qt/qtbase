@@ -36,9 +36,7 @@
 
 #include <qfile.h>
 #include <QPainterPathStroker>
-
-#define _USE_MATH_DEFINES
-#include <math.h>
+#include <qmath.h>
 
 class tst_QPainterPathStroker : public QObject
 {

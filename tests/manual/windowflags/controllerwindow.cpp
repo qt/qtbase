@@ -102,7 +102,7 @@ ControllerWindow::ControllerWindow() : previewWidget(0)
     updatePreview();
 }
 
-bool ControllerWindow::eventFilter(QObject *o, QEvent *e)
+bool ControllerWindow::eventFilter(QObject *, QEvent *e)
 {
     if (e->type() == QEvent::WindowStateChange)
         updateStateControl();

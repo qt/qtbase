@@ -130,7 +130,7 @@ void DownloadManager::proxyAuthenticationRequired(const QNetworkProxy &, QAuthen
 }
 
 #ifndef QT_NO_SSL
-void DownloadManager::sslErrors(QNetworkReply *reply, const QList<QSslError> &errors)
+void DownloadManager::sslErrors(QNetworkReply *, const QList<QSslError> &errors)
 {
     qDebug() << "sslErrors";
     foreach (const QSslError &error, errors) {

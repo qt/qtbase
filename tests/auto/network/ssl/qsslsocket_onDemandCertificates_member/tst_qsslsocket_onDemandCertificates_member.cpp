@@ -227,6 +227,7 @@ void tst_QSslSocket_onDemandCertificates_member::onDemandRootCertLoadingMemberMe
     bool works;
 #if defined (Q_OS_WIN)
     works = false; // on Windows, this won't work even though we use on demand loading
+    Q_UNUSED(rootCertLoadingAllowed)
 #else
     works = rootCertLoadingAllowed;
 #endif

@@ -3129,7 +3129,7 @@ void tst_Collections::qtimerList()
     QFAIL("QList preallocates too much memory");
 }
 
-#define QVERIFY_TYPE(Type) QVERIFY(sizeof(Type))
+#define QVERIFY_TYPE(Type) QVERIFY(sizeof(Type) > 0)
 
 template <typename Container>
 void testContainerTypedefs(Container container)

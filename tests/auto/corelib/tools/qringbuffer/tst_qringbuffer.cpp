@@ -294,16 +294,16 @@ void tst_QRingBuffer::readLine()
     char stringBuf[102];
     stringBuf[101] = 0; // non-crash terminator
     QVERIFY(ringBuffer.readLine(stringBuf, sizeof(stringBuf) - 2) == ba1.size());
-    QVERIFY(QByteArray(stringBuf, strlen(stringBuf)) == ba1);
+    QVERIFY(QByteArray(stringBuf, int(strlen(stringBuf))) == ba1);
 
     // check first empty string reading
-    stringBuf[0] = 0xFF;
-    QCOMPARE(ringBuffer.readLine(stringBuf, sizeof(stringBuf) - 2), ba2.size());
+    stringBuf[0] = char(0xFF);
+    QCOMPARE(ringBuffer.readLine(stringBuf, int(sizeof(stringBuf)) - 2), ba2.size());
     QVERIFY(stringBuf[0] == ba2[0]);
 
-    QVERIFY(ringBuffer.readLine(stringBuf, sizeof(stringBuf) - 2) == (ba3.size() + ba4.size()
+    QVERIFY(ringBuffer.readLine(stringBuf, int(sizeof(stringBuf)) - 2) == (ba3.size() + ba4.size()
         + ba2.size()));
-    QVERIFY(QByteArray(stringBuf, strlen(stringBuf)) == (ba3 + ba4 + ba2));
+    QVERIFY(QByteArray(stringBuf, int(strlen(stringBuf))) == (ba3 + ba4 + ba2));
     QVERIFY(ringBuffer.size() == 0);
 }
 

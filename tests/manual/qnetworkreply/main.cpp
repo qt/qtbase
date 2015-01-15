@@ -180,6 +180,8 @@ void tst_qnetworkreply::setSslConfiguration()
     QCOMPARE(rootCertLoadingAllowed, true);
 #elif defined(Q_OS_MAC)
     QCOMPARE(rootCertLoadingAllowed, false);
+#else
+    Q_UNUSED(rootCertLoadingAllowed)
 #endif // other platforms: undecided (Windows: depends on the version)
     if (works) {
         QCOMPARE(reply->error(), QNetworkReply::NoError);
