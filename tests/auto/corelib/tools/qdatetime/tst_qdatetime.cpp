@@ -142,6 +142,9 @@ private slots:
     void isDaylightTime() const;
     void daylightTransitions() const;
     void timeZones() const;
+#if defined(Q_OS_UNIX)
+    void systemTimeZoneChange() const;
+#endif
 
     void invalid() const;
 
@@ -2983,6 +2986,56 @@ void tst_QDateTime::timeZones() const
     QVERIFY(future.isValid());
     QCOMPARE(future.offsetFromUtc(), 28800);
 }
+
+#if defined(Q_OS_UNIX)
+// Currently disabled on Windows as adjusting the timezone
+// requires additional privileges that aren't normally
+// enabled for a process. This can be achieved by calling
+// AdjustTokenPrivileges() and then SetTimeZoneInformation(),
+// which will require linking to a different library to access that API.
+static void setTimeZone(const QByteArray &tz)
+{
+    qputenv("TZ", tz);
+    ::tzset();
+
+// following left for future reference, see comment above
+// #if defined(Q_OS_WIN32)
+//     ::_tzset();
+// #endif
+}
+
+void tst_QDateTime::systemTimeZoneChange() const
+{
+    struct ResetTZ {
+        QByteArray original;
+        ResetTZ() : original(qgetenv("TZ")) {}
+        ~ResetTZ() { setTimeZone(original); }
+    } scopedReset;
+
+    // Set the timezone to Brisbane time
+    setTimeZone(QByteArray("AEST-10:00"));
+
+    QDateTime localDate = QDateTime(QDate(2012, 6, 1), QTime(2, 15, 30), Qt::LocalTime);
+    QDateTime utcDate = QDateTime(QDate(2012, 6, 1), QTime(2, 15, 30), Qt::UTC);
+    QDateTime tzDate = QDateTime(QDate(2012, 6, 1), QTime(2, 15, 30), QTimeZone("Australia/Brisbane"));
+    qint64 localMsecs = localDate.toMSecsSinceEpoch();
+    qint64 utcMsecs = utcDate.toMSecsSinceEpoch();
+    qint64 tzMsecs = tzDate.toMSecsSinceEpoch();
+
+    // check that Australia/Brisbane is known
+    QVERIFY(tzDate.timeZone().isValid());
+
+    // Change to Indian time
+    setTimeZone(QByteArray("IST-05:30"));
+
+    QCOMPARE(localDate, QDateTime(QDate(2012, 6, 1), QTime(2, 15, 30), Qt::LocalTime));
+    QVERIFY(localMsecs != localDate.toMSecsSinceEpoch());
+    QCOMPARE(utcDate, QDateTime(QDate(2012, 6, 1), QTime(2, 15, 30), Qt::UTC));
+    QCOMPARE(utcDate.toMSecsSinceEpoch(), utcMsecs);
+    QCOMPARE(tzDate, QDateTime(QDate(2012, 6, 1), QTime(2, 15, 30), QTimeZone("Australia/Brisbane")));
+    QCOMPARE(tzDate.toMSecsSinceEpoch(), tzMsecs);
+}
+#endif
 
 void tst_QDateTime::invalid() const
 {

@@ -2607,7 +2607,6 @@ QDateTimePrivate::QDateTimePrivate(const QDate &toDate, const QTime &toTime,
 void QDateTimePrivate::setTimeSpec(Qt::TimeSpec spec, int offsetSeconds)
 {
     clearValidDateTime();
-    clearTimeZoneCached();
     clearSetToDaylightStatus();
 
 #ifndef QT_BOOTSTRAPPED
@@ -2707,27 +2706,44 @@ QDateTimePrivate::DaylightStatus QDateTimePrivate::daylightStatus() const
     return UnknownDaylightTime;
 }
 
+qint64 QDateTimePrivate::toMSecsSinceEpoch() const
+{
+    switch (m_spec) {
+    case Qt::OffsetFromUTC:
+    case Qt::UTC:
+        return (m_msecs - (m_offsetFromUtc * 1000));
+
+    case Qt::LocalTime:
+        // recalculate the local timezone
+        return localMSecsToEpochMSecs(m_msecs);
+
+    case Qt::TimeZone:
+#ifndef QT_BOOTSTRAPPED
+        return zoneMSecsToEpochMSecs(m_msecs, m_timeZone);
+#endif
+        break;
+    }
+    Q_UNREACHABLE();
+    return 0;
+}
+
 // Check the UTC / offsetFromUTC validity
 void QDateTimePrivate::checkValidDateTime()
 {
     switch (m_spec) {
     case Qt::OffsetFromUTC:
     case Qt::UTC:
+        // for these, a valid date and a valid time imply a valid QDateTime
         if (isValidDate() && isValidTime())
             setValidDateTime();
         else
             clearValidDateTime();
         break;
     case Qt::TimeZone:
-        // Defer checking until required as can be expensive
-        clearValidDateTime();
-        clearTimeZoneCached();
-        m_offsetFromUtc = 0;
-        break;
     case Qt::LocalTime:
-        // Defer checking until required as can be expensive
-        clearValidDateTime();
-        m_offsetFromUtc = 0;
+        // for these, we need to check whether the timezone is valid and whether
+        // the time is valid in that timezone. Expensive, but no other option.
+        refreshDateTime();
         break;
     }
 }
@@ -2741,12 +2757,6 @@ void QDateTimePrivate::refreshDateTime()
         // Always set by setDateTime so just return
         return;
     case Qt::TimeZone:
-        // If already cached then don't need to refresh as tz won't change
-        if (isTimeZoneCached())
-            return;
-        // Flag that will have a cached result after calculations
-        setTimeZoneCached();
-        break;
     case Qt::LocalTime:
         break;
     }
@@ -3082,7 +3092,6 @@ bool QDateTime::isNull() const
 
 bool QDateTime::isValid() const
 {
-    d->refreshDateTime();
     return (d->isValidDateTime());
 }
 
@@ -3143,13 +3152,11 @@ Qt::TimeSpec QDateTime::timeSpec() const
 QTimeZone QDateTime::timeZone() const
 {
     switch (d->m_spec) {
-    case Qt::OffsetFromUTC:
-        if (!d->m_timeZone.isValid())
-            d->m_timeZone = QTimeZone(d->m_offsetFromUtc);
-        return d->m_timeZone;
     case Qt::UTC:
         return QTimeZone::utc();
+    case Qt::OffsetFromUTC:
     case Qt::TimeZone:
+        Q_ASSERT(d->m_timeZone.isValid());
         return d->m_timeZone;
     case Qt::LocalTime:
         return QTimeZone::systemTimeZone();
@@ -3178,7 +3185,6 @@ QTimeZone QDateTime::timeZone() const
 
 int QDateTime::offsetFromUtc() const
 {
-    d->refreshDateTime();
     return d->m_offsetFromUtc;
 }
 
@@ -3350,7 +3356,7 @@ void QDateTime::setTimeZone(const QTimeZone &toZone)
     d->m_spec = Qt::TimeZone;
     d->m_offsetFromUtc = 0;
     d->m_timeZone = toZone;
-    d->m_status = d->m_status & ~QDateTimePrivate::ValidDateTime & ~QDateTimePrivate::TimeZoneCached;
+    d->refreshDateTime();
 }
 #endif // QT_BOOTSTRAPPED
 
@@ -3371,7 +3377,6 @@ void QDateTime::setTimeZone(const QTimeZone &toZone)
 */
 qint64 QDateTime::toMSecsSinceEpoch() const
 {
-    d->refreshDateTime();
     return d->toMSecsSinceEpoch();
 }
 
@@ -3453,8 +3458,8 @@ void QDateTime::setMSecsSinceEpoch(qint64 msecs)
         d->m_status = d->m_status
                     | QDateTimePrivate::ValidDate
                     | QDateTimePrivate::ValidTime
-                    | QDateTimePrivate::ValidDateTime
-                    | QDateTimePrivate::TimeZoneCached;
+                    | QDateTimePrivate::ValidDateTime;
+        d->refreshDateTime();
 #endif // QT_BOOTSTRAPPED
         break;
     case Qt::LocalTime: {
