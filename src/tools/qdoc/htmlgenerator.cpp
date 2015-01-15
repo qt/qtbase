@@ -1532,6 +1532,7 @@ void HtmlGenerator::generateClassLikeNode(InnerNode* inner, CodeMarker* marker)
  */
 void HtmlGenerator::generateQmlTypePage(QmlClassNode* qcn, CodeMarker* marker)
 {
+    Generator::setQmlTypeContext(qcn);
     SubTitleSize subTitleSize = LargeSubTitle;
     QList<Section>::const_iterator s;
     QString htmlTitle = qcn->fullTitle() + " QML Type";
@@ -1595,6 +1596,7 @@ void HtmlGenerator::generateQmlTypePage(QmlClassNode* qcn, CodeMarker* marker)
         ++s;
     }
     generateFooter(qcn);
+    Generator::setQmlTypeContext(0);
 }
 
 /*!
@@ -3894,8 +3896,9 @@ QString HtmlGenerator::getAutoLink(const Atom *atom, const Node *relative, const
     QString ref;
 
     *node = qdb_->findNodeForAtom(atom, relative, ref);
-    if (!(*node))
+    if (!(*node)) {
         return QString();
+    }
 
     QString link = (*node)->url();
     if (link.isEmpty()) {
@@ -3933,21 +3936,9 @@ QString HtmlGenerator::linkForNode(const Node *node, const Node *relative)
         return QString();
 
     QString fn = fileName(node);
-    if (node && relative && node->parent() != relative) {
-        if (node->parent()->isQmlType() && relative->isQmlType()) {
-            if (node->parent()->isAbstract()) {
-                /*
-                  This is a bit of a hack. What we discover with
-                  the three 'if' statements immediately above,
-                  is that node's parent is marked \qmlabstract
-                  but the link appears in a qdoc comment for a
-                  subclass of the node's parent. This means the
-                  link should refer to the file for the relative
-                  node, not the file for node.
-                 */
-                fn = fileName(relative);
-            }
-        }
+    if (node && node->parent() && node->parent()->isQmlType() && node->parent()->isAbstract()) {
+        if (Generator::qmlTypeContext())
+            fn = fileName(Generator::qmlTypeContext());
     }
     QString link = fn;
 

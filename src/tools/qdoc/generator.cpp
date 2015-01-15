@@ -96,6 +96,7 @@ Generator::QDocPass Generator::qdocPass_ = Generator::Neither;
 bool Generator::qdocSingleExec_ = false;
 bool Generator::qdocWriteQaPages_ = false;
 bool Generator::useOutputSubdirs_ = true;
+QmlClassNode* Generator::qmlTypeContext_ = 0;
 
 void Generator::startDebugging(const QString& message)
 {

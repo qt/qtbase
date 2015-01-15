@@ -101,6 +101,8 @@ public:
     static QString defaultModuleName() { return project_; }
     static void resetUseOutputSubdirs() { useOutputSubdirs_ = false; }
     static bool useOutputSubdirs() { return useOutputSubdirs_; }
+    static void setQmlTypeContext(QmlClassNode* t) { qmlTypeContext_ = t; }
+    static QmlClassNode* qmlTypeContext() { return qmlTypeContext_; }
 
 protected:
     virtual void beginSubPage(const InnerNode* node, const QString& fileName);
@@ -221,6 +223,7 @@ private:
     static bool qdocSingleExec_;
     static bool qdocWriteQaPages_;
     static bool useOutputSubdirs_;
+    static QmlClassNode* qmlTypeContext_;
 
     void generateReimplementedFrom(const FunctionNode *func, CodeMarker *marker);
 
