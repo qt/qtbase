@@ -237,7 +237,11 @@ void QPlatformBackingStore::composeAndFlush(QWindow *window, const QRegion &regi
 {
     Q_UNUSED(offset);
 
-    context->makeCurrent(window);
+    if (!context->makeCurrent(window)) {
+        qWarning("composeAndFlush: makeCurrent() failed");
+        return;
+    }
+
     QOpenGLFunctions *funcs = context->functions();
     funcs->glViewport(0, 0, window->width() * window->devicePixelRatio(), window->height() * window->devicePixelRatio());
     funcs->glClearColor(0, 0, 0, translucentBackground ? 0 : 1);
