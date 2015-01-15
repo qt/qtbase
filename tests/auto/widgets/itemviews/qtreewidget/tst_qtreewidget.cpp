@@ -129,6 +129,8 @@ private slots:
     void task245280_sortChildren();
     void task253109_itemHeight();
 
+    void nonEditableTristate();
+
     // QTreeWidgetItem
     void itemOperatorLessThan();
     void addChild();
@@ -3160,6 +3162,40 @@ void tst_QTreeWidget::task217309()
 
     subitem2.setCheckState(0, Qt::Checked);
     QVERIFY(item.data(0, Qt::CheckStateRole) == Qt::Checked);
+}
+
+void tst_QTreeWidget::nonEditableTristate()
+{
+    // A tree with checkable items, the parent is tristate
+    QTreeWidget *tree = new QTreeWidget;
+    QTreeWidgetItem *item = new QTreeWidgetItem();
+    tree->insertTopLevelItem(0, item);
+    item->setFlags(item->flags() | Qt::ItemIsTristate);
+    item->setCheckState(0, Qt::Unchecked);
+    QTreeWidgetItem *subitem1 = new QTreeWidgetItem(item);
+    subitem1->setCheckState(0, Qt::Unchecked);
+    QTreeWidgetItem *subitem2 = new QTreeWidgetItem(item);
+    subitem2->setCheckState(0, Qt::Unchecked);
+    QCOMPARE(int(item->checkState(0)), int(Qt::Unchecked));
+    tree->show();
+
+    // Test clicking on the parent item, it should become Checked (not PartiallyChecked)
+    QStyleOptionViewItem option;
+    option.rect = tree->visualRect(tree->model()->index(0, 0));
+    option.state |= QStyle::State_Enabled;
+    option.features |= QStyleOptionViewItem::HasCheckIndicator | QStyleOptionViewItem::HasDisplay;
+    option.checkState = item->checkState(0);
+
+    const int checkMargin = qApp->style()->pixelMetric(QStyle::PM_FocusFrameHMargin, 0, 0) + 1;
+    QPoint pos = qApp->style()->subElementRect(QStyle::SE_ViewItemCheckIndicator, &option, 0).center() + QPoint(checkMargin, 0);
+    QTest::mouseClick(tree->viewport(), Qt::LeftButton, Qt::NoModifier, pos);
+    QCOMPARE(int(item->checkState(0)), int(Qt::Checked));
+
+    // Click again, it should become Unchecked.
+    QTest::mouseClick(tree->viewport(), Qt::LeftButton, Qt::NoModifier, pos);
+    QCOMPARE(int(item->checkState(0)), int(Qt::Unchecked));
+
+    delete tree;
 }
 
 class TreeWidgetItem : public QTreeWidgetItem

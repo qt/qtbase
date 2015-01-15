@@ -1182,7 +1182,7 @@ bool QItemDelegate::editorEvent(QEvent *event,
     }
 
     Qt::CheckState state = static_cast<Qt::CheckState>(value.toInt());
-    if (flags & Qt::ItemIsTristate)
+    if (flags & Qt::ItemIsUserTristate)
         state = ((Qt::CheckState)((state + 1) % 3));
     else
         state = (state == Qt::Checked) ? Qt::Unchecked : Qt::Checked;

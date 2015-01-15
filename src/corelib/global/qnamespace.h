@@ -1475,7 +1475,8 @@ public:
         ItemIsUserCheckable = 16,
         ItemIsEnabled = 32,
         ItemIsTristate = 64,
-        ItemNeverHasChildren = 128
+        ItemNeverHasChildren = 128,
+        ItemIsUserTristate = 256
     };
     Q_DECLARE_FLAGS(ItemFlags, ItemFlag)
 

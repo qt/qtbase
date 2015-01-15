@@ -2574,8 +2574,13 @@
     \value ItemIsDropEnabled It can be used as a drop target.
     \value ItemIsUserCheckable It can be checked or unchecked by the user.
     \value ItemIsEnabled The user can interact with the item.
-    \value ItemIsTristate The item is checkable with three separate states.
+    \value ItemIsTristate The item can show three separate states.
+           This enables automatic management of the state of parent items in QTreeWidget
+           (checked if all children are checked, unchecked if all children are unchecked,
+           or partially checked if only some children are checked).
     \value ItemNeverHasChildren The item never has child items.
+    \value ItemIsUserTristate The user can cycle through three separate states.
+           This value has been added in Qt 5.5.
 
     Note that checkable items need to be given both a suitable set of flags
     and an initial state, indicating whether the item is checked or not.

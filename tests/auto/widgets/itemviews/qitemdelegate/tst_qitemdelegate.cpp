@@ -1159,7 +1159,7 @@ void tst_QItemDelegate::editorEvent_data()
         << (int)(QEvent::MouseButtonRelease)
         << (int)(Qt::LeftButton)
         << true
-        << (int)(Qt::PartiallyChecked);
+        << (int)(Qt::Checked);
 
     QTest::newRow("partially checked, tristate, release")
         << (int)(Qt::PartiallyChecked)
@@ -1173,6 +1173,33 @@ void tst_QItemDelegate::editorEvent_data()
     QTest::newRow("checked, tristate, release")
         << (int)(Qt::Checked)
         << (int)(defaultFlags | Qt::ItemIsTristate)
+        << true
+        << (int)(QEvent::MouseButtonRelease)
+        << (int)(Qt::LeftButton)
+        << true
+        << (int)(Qt::Unchecked);
+
+    QTest::newRow("unchecked, user-tristate, release")
+        << (int)(Qt::Unchecked)
+        << (int)(defaultFlags | Qt::ItemIsUserTristate)
+        << true
+        << (int)(QEvent::MouseButtonRelease)
+        << (int)(Qt::LeftButton)
+        << true
+        << (int)(Qt::PartiallyChecked);
+
+    QTest::newRow("partially checked, user-tristate, release")
+        << (int)(Qt::PartiallyChecked)
+        << (int)(defaultFlags | Qt::ItemIsUserTristate)
+        << true
+        << (int)(QEvent::MouseButtonRelease)
+        << (int)(Qt::LeftButton)
+        << true
+        << (int)(Qt::Checked);
+
+    QTest::newRow("checked, user-tristate, release")
+        << (int)(Qt::Checked)
+        << (int)(defaultFlags | Qt::ItemIsUserTristate)
         << true
         << (int)(QEvent::MouseButtonRelease)
         << (int)(Qt::LeftButton)
