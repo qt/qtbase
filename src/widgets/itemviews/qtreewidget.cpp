@@ -2934,8 +2934,6 @@ void QTreeWidget::closePersistentEditor(QTreeWidgetItem *item, int column)
 
     Returns the widget displayed in the cell specified by \a item and the given \a column.
 
-    \note The tree takes ownership of the widget.
-
 */
 QWidget *QTreeWidget::itemWidget(QTreeWidgetItem *item, int column) const
 {
