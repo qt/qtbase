@@ -3738,7 +3738,7 @@ QDateTime QDateTime::addDays(qint64 ndays) const
         localMSecsToEpochMSecs(timeToMSecs(date, time), &date, &time);
 #ifndef QT_BOOTSTRAPPED
     else if (d->m_spec == Qt::TimeZone)
-        d->zoneMSecsToEpochMSecs(timeToMSecs(date, time), d->m_timeZone, &date, &time);
+        QDateTimePrivate::zoneMSecsToEpochMSecs(timeToMSecs(date, time), d->m_timeZone, &date, &time);
 #endif // QT_BOOTSTRAPPED
     dt.d->setDateTime(date, time);
     return dt;
@@ -3772,7 +3772,7 @@ QDateTime QDateTime::addMonths(int nmonths) const
         localMSecsToEpochMSecs(timeToMSecs(date, time), &date, &time);
 #ifndef QT_BOOTSTRAPPED
     else if (d->m_spec == Qt::TimeZone)
-        d->zoneMSecsToEpochMSecs(timeToMSecs(date, time), d->m_timeZone, &date, &time);
+        QDateTimePrivate::zoneMSecsToEpochMSecs(timeToMSecs(date, time), d->m_timeZone, &date, &time);
 #endif // QT_BOOTSTRAPPED
     dt.d->setDateTime(date, time);
     return dt;
@@ -3806,7 +3806,7 @@ QDateTime QDateTime::addYears(int nyears) const
         localMSecsToEpochMSecs(timeToMSecs(date, time), &date, &time);
 #ifndef QT_BOOTSTRAPPED
     else if (d->m_spec == Qt::TimeZone)
-        d->zoneMSecsToEpochMSecs(timeToMSecs(date, time), d->m_timeZone, &date, &time);
+        QDateTimePrivate::zoneMSecsToEpochMSecs(timeToMSecs(date, time), d->m_timeZone, &date, &time);
 #endif // QT_BOOTSTRAPPED
     dt.d->setDateTime(date, time);
     return dt;
