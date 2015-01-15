@@ -85,9 +85,10 @@ public:
                                      "}");
         prog.bind();
 
-        glClearColor(0, 0, 0, 1);
-        glClear(GL_COLOR_BUFFER_BIT);
-        glViewport(0, 0, width(), height());
+        QOpenGLFunctions *functions = gl->functions();
+        functions->glClearColor(0, 0, 0, 1);
+        functions->glClear(GL_COLOR_BUFFER_BIT);
+        functions->glViewport(0, 0, width(), height());
 
         prog.enableAttributeArray("a_Pos");
         prog.enableAttributeArray("a_Color");
@@ -104,7 +105,7 @@ public:
         prog.setAttributeArray("a_Pos", GL_FLOAT, coords, 2, 0);
         prog.setAttributeArray("a_Color", GL_FLOAT, colors, 4, 0);
 
-        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+        functions->glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
         prog.disableAttributeArray("a_Pos");
         prog.disableAttributeArray("a_Color");

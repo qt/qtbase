@@ -35,6 +35,7 @@
 
 #include <QtGui/QPainter>
 #include <QtGui/QOpenGLTexture>
+#include <QtGui/QOpenGLFunctions>
 #include <QtGui/QMatrix4x4>
 
 #include <QtCore/QCoreApplication>
@@ -67,10 +68,11 @@ void QOpenGLTextureBlitWindow::render()
     m_context->makeCurrent(this);
 
     QRect viewport(0,0,dWidth(),dHeight());
-    glViewport(0,0,dWidth(), dHeight());
+    QOpenGLFunctions *functions = m_context->functions();
+    functions->glViewport(0,0,dWidth(), dHeight());
 
-    glClearColor(0.f, .6f, .0f, 0.f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    functions->glClearColor(0.f, .6f, .0f, 0.f);
+    functions->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     QOpenGLTexture texture(m_image);
     texture.setWrapMode(QOpenGLTexture::ClampToEdge);
