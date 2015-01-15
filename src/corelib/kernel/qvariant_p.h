@@ -54,7 +54,6 @@
 
 QT_BEGIN_NAMESPACE
 
-namespace {
 template<typename T>
 struct QVariantIntegrator
 {
@@ -64,7 +63,6 @@ struct QVariantIntegrator
 Q_STATIC_ASSERT(QVariantIntegrator<double>::CanUseInternalSpace);
 Q_STATIC_ASSERT(QVariantIntegrator<long int>::CanUseInternalSpace);
 Q_STATIC_ASSERT(QVariantIntegrator<qulonglong>::CanUseInternalSpace);
-} // namespace
 
 #ifdef Q_CC_SUN // Sun CC picks the wrong overload, so introduce awful hack
 
@@ -104,7 +102,7 @@ inline T *v_cast(QVariant::Private *d, T * = 0)
 template <class T> class QVariantPrivateSharedEx : public QVariant::PrivateShared
 {
 public:
-    QVariantPrivateSharedEx() : QVariant::PrivateShared(&m_t) { }
+    QVariantPrivateSharedEx() : QVariant::PrivateShared(&m_t), m_t() { }
     QVariantPrivateSharedEx(const T&t) : QVariant::PrivateShared(&m_t), m_t(t) { }
 
 private:
