@@ -86,7 +86,7 @@ public:
         prog.bind();
 
         QOpenGLFunctions *functions = gl->functions();
-        functions->glClearColor(0, 0, 0, 1);
+        functions->glClearColor(0, 0, 0, 0);
         functions->glClear(GL_COLOR_BUFFER_BIT);
         functions->glViewport(0, 0, width(), height());
 
