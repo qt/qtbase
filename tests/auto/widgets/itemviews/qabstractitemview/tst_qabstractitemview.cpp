@@ -1827,7 +1827,6 @@ void tst_QAbstractItemView::testFocusPolicy()
     QVERIFY(!qApp->focusWidget());
 }
 
-Q_DECLARE_METATYPE(QItemSelection)
 void tst_QAbstractItemView::QTBUG31411_noSelection()
 {
     QWidget window;

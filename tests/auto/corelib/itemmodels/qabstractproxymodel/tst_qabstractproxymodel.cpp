@@ -211,7 +211,6 @@ void tst_QAbstractProxyModel::mapFromSource()
     QCOMPARE(model.mapFromSource(sourceIndex), mapFromSource);
 }
 
-Q_DECLARE_METATYPE(QItemSelection)
 void tst_QAbstractProxyModel::mapSelectionFromSource_data()
 {
     QTest::addColumn<QItemSelection>("selection");

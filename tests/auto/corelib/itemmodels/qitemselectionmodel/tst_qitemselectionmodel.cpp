@@ -86,6 +86,7 @@ private slots:
     void deselectRemovedMiddleRange();
     void rangeOperatorLessThan_data();
     void rangeOperatorLessThan();
+    void setModel();
 
     void testDifferentModels();
 
@@ -106,8 +107,6 @@ QDataStream &operator>>(QDataStream &, QModelIndexList &);
 typedef QList<int> IntList;
 typedef QPair<int, int> IntPair;
 typedef QList<IntPair> PairList;
-
-Q_DECLARE_METATYPE(QItemSelection)
 
 class QStreamHelper: public QAbstractItemModel
 {
@@ -2559,6 +2558,21 @@ void tst_QItemSelectionModel::rangeOperatorLessThan()
 
     if (!(r2 < r4))
         QVERIFY(r4 < r2);
+}
+
+void tst_QItemSelectionModel::setModel()
+{
+    QItemSelectionModel sel;
+    QVERIFY(!sel.model());
+    QSignalSpy modelChangedSpy(&sel, SIGNAL(modelChanged(QAbstractItemModel*)));
+    QStringListModel model(QStringList() << "Blah" << "Blah" << "Blah");
+    sel.setModel(&model);
+    QCOMPARE(sel.model(), &model);
+    QCOMPARE(modelChangedSpy.count(), 1);
+    sel.select(model.index(0), QItemSelectionModel::Select);
+    QVERIFY(!sel.selection().isEmpty());
+    sel.setModel(0);
+    QVERIFY(sel.selection().isEmpty());
 }
 
 void tst_QItemSelectionModel::testDifferentModels()

@@ -143,6 +143,10 @@ class QItemSelectionModelPrivate;
 class Q_CORE_EXPORT QItemSelectionModel : public QObject
 {
     Q_OBJECT
+    Q_PROPERTY(QAbstractItemModel *model READ model WRITE setModel NOTIFY modelChanged)
+    Q_PROPERTY(bool hasSelection READ hasSelection NOTIFY selectionChanged STORED false DESIGNABLE false)
+    Q_PROPERTY(QModelIndex currentIndex READ currentIndex NOTIFY currentChanged STORED false DESIGNABLE false)
+
     Q_DECLARE_PRIVATE(QItemSelectionModel)
     Q_FLAGS(SelectionFlags)
 
@@ -164,27 +168,31 @@ public:
 
     Q_DECLARE_FLAGS(SelectionFlags, SelectionFlag)
 
-    explicit QItemSelectionModel(QAbstractItemModel *model);
+    explicit QItemSelectionModel(QAbstractItemModel *model = 0);
     explicit QItemSelectionModel(QAbstractItemModel *model, QObject *parent);
     virtual ~QItemSelectionModel();
 
     QModelIndex currentIndex() const;
 
-    bool isSelected(const QModelIndex &index) const;
-    bool isRowSelected(int row, const QModelIndex &parent) const;
-    bool isColumnSelected(int column, const QModelIndex &parent) const;
+    Q_INVOKABLE bool isSelected(const QModelIndex &index) const;
+    Q_INVOKABLE bool isRowSelected(int row, const QModelIndex &parent) const;
+    Q_INVOKABLE bool isColumnSelected(int column, const QModelIndex &parent) const;
 
-    bool rowIntersectsSelection(int row, const QModelIndex &parent) const;
-    bool columnIntersectsSelection(int column, const QModelIndex &parent) const;
+    Q_INVOKABLE bool rowIntersectsSelection(int row, const QModelIndex &parent) const;
+    Q_INVOKABLE bool columnIntersectsSelection(int column, const QModelIndex &parent) const;
 
     bool hasSelection() const;
 
-    QModelIndexList selectedIndexes() const;
-    QModelIndexList selectedRows(int column = 0) const;
-    QModelIndexList selectedColumns(int row = 0) const;
-    const QItemSelection selection() const;
+    Q_INVOKABLE QModelIndexList selectedIndexes() const;
+    Q_INVOKABLE QModelIndexList selectedRows(int column = 0) const;
+    Q_INVOKABLE QModelIndexList selectedColumns(int row = 0) const;
+    Q_INVOKABLE const QItemSelection selection() const;
 
+    // ### Qt 6: Merge these two as "QAbstractItemModel *model() const"
     const QAbstractItemModel *model() const;
+    QAbstractItemModel *model();
+
+    void setModel(QAbstractItemModel *model);
 
 public Q_SLOTS:
     virtual void setCurrentIndex(const QModelIndex &index, QItemSelectionModel::SelectionFlags command);
@@ -201,6 +209,7 @@ Q_SIGNALS:
     void currentChanged(const QModelIndex &current, const QModelIndex &previous);
     void currentRowChanged(const QModelIndex &current, const QModelIndex &previous);
     void currentColumnChanged(const QModelIndex &current, const QModelIndex &previous);
+    void modelChanged(QAbstractItemModel *model);
 
 protected:
     QItemSelectionModel(QItemSelectionModelPrivate &dd, QAbstractItemModel *model);
@@ -242,5 +251,8 @@ Q_CORE_EXPORT QDebug operator<<(QDebug, const QItemSelectionRange &);
 #endif // QT_NO_ITEMVIEWS
 
 QT_END_NAMESPACE
+
+Q_DECLARE_METATYPE(QItemSelectionRange)
+Q_DECLARE_METATYPE(QItemSelection)
 
 #endif // QITEMSELECTIONMODEL_H

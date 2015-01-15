@@ -589,33 +589,51 @@ void QItemSelection::split(const QItemSelectionRange &range,
 }
 
 
-void QItemSelectionModelPrivate::initModel(QAbstractItemModel *model)
+void QItemSelectionModelPrivate::initModel(QAbstractItemModel *m)
 {
-    this->model = model;
+    struct Cx {
+        const char *signal;
+        const char *slot;
+    };
+    static const Cx connections[] = {
+        { SIGNAL(rowsAboutToBeRemoved(QModelIndex,int,int)),
+          SLOT(_q_rowsAboutToBeRemoved(QModelIndex,int,int)) },
+        { SIGNAL(columnsAboutToBeRemoved(QModelIndex,int,int)),
+          SLOT(_q_columnsAboutToBeRemoved(QModelIndex,int,int)) },
+        { SIGNAL(rowsAboutToBeInserted(QModelIndex,int,int)),
+          SLOT(_q_rowsAboutToBeInserted(QModelIndex,int,int)) },
+        { SIGNAL(columnsAboutToBeInserted(QModelIndex,int,int)),
+          SLOT(_q_columnsAboutToBeInserted(QModelIndex,int,int)) },
+        { SIGNAL(rowsAboutToBeMoved(QModelIndex,int,int,QModelIndex,int)),
+          SLOT(_q_layoutAboutToBeChanged()) },
+        { SIGNAL(columnsAboutToBeMoved(QModelIndex,int,int,QModelIndex,int)),
+          SLOT(_q_layoutAboutToBeChanged()) },
+        { SIGNAL(rowsMoved(QModelIndex,int,int,QModelIndex,int)),
+          SLOT(_q_layoutChanged()) },
+        { SIGNAL(columnsMoved(QModelIndex,int,int,QModelIndex,int)),
+          SLOT(_q_layoutChanged()) },
+        { SIGNAL(layoutAboutToBeChanged(QList<QPersistentModelIndex>,QAbstractItemModel::LayoutChangeHint)),
+          SLOT(_q_layoutAboutToBeChanged(QList<QPersistentModelIndex>,QAbstractItemModel::LayoutChangeHint)) },
+        { SIGNAL(layoutChanged(QList<QPersistentModelIndex>,QAbstractItemModel::LayoutChangeHint)),
+          SLOT(_q_layoutChanged(QList<QPersistentModelIndex>,QAbstractItemModel::LayoutChangeHint)) },
+        { SIGNAL(modelReset()),
+          SLOT(reset()) },
+        { 0, 0 }
+    };
+
+    if (model == m)
+        return;
+
+    Q_Q(QItemSelectionModel);
     if (model) {
-        Q_Q(QItemSelectionModel);
-        QObject::connect(model, SIGNAL(rowsAboutToBeRemoved(QModelIndex,int,int)),
-                q, SLOT(_q_rowsAboutToBeRemoved(QModelIndex,int,int)));
-        QObject::connect(model, SIGNAL(columnsAboutToBeRemoved(QModelIndex,int,int)),
-                q, SLOT(_q_columnsAboutToBeRemoved(QModelIndex,int,int)));
-        QObject::connect(model, SIGNAL(rowsAboutToBeInserted(QModelIndex,int,int)),
-                q, SLOT(_q_rowsAboutToBeInserted(QModelIndex,int,int)));
-        QObject::connect(model, SIGNAL(columnsAboutToBeInserted(QModelIndex,int,int)),
-                q, SLOT(_q_columnsAboutToBeInserted(QModelIndex,int,int)));
-        QObject::connect(model, SIGNAL(rowsAboutToBeMoved(QModelIndex,int,int,QModelIndex,int)),
-                q, SLOT(_q_layoutAboutToBeChanged()));
-        QObject::connect(model, SIGNAL(columnsAboutToBeMoved(QModelIndex,int,int,QModelIndex,int)),
-                q, SLOT(_q_layoutAboutToBeChanged()));
-        QObject::connect(model, SIGNAL(rowsMoved(QModelIndex,int,int,QModelIndex,int)),
-                q, SLOT(_q_layoutChanged()));
-        QObject::connect(model, SIGNAL(columnsMoved(QModelIndex,int,int,QModelIndex,int)),
-                q, SLOT(_q_layoutChanged()));
-        QObject::connect(model, SIGNAL(layoutAboutToBeChanged(QList<QPersistentModelIndex>,QAbstractItemModel::LayoutChangeHint)),
-                q, SLOT(_q_layoutAboutToBeChanged(QList<QPersistentModelIndex>,QAbstractItemModel::LayoutChangeHint)));
-        QObject::connect(model, SIGNAL(layoutChanged(QList<QPersistentModelIndex>,QAbstractItemModel::LayoutChangeHint)),
-                q, SLOT(_q_layoutChanged(QList<QPersistentModelIndex>,QAbstractItemModel::LayoutChangeHint)));
-        QObject::connect(model, SIGNAL(modelReset()),
-                q, SLOT(reset()));
+        for (const Cx *cx = &connections[0]; cx->signal; cx++)
+            QObject::disconnect(model, cx->signal, q, cx->slot);
+        q->reset();
+    }
+    model = m;
+    if (model) {
+        for (const Cx *cx = &connections[0]; cx->signal; cx++)
+            QObject::connect(model, cx->signal, q, cx->slot);
     }
 }
 
@@ -1078,6 +1096,10 @@ void QItemSelectionModelPrivate::_q_layoutChanged(const QList<QPersistentModelIn
     selection. All functions operate on both layers; for example,
     \l {QTableWidget::selectedItems()}{selecteditems()} will return items from both layers.
 
+    \note Since 5.5, \l{QItemSelectionModel::model()}{model},
+    \l{QItemSelectionModel::hasSelection()}{hasSelection}, and
+    \l{QItemSelectionModel::currentIndex()}{currentIndex} are meta-object properties.
+
     \sa {Model/View Programming}, QAbstractItemModel, {Chart Example}
 */
 
@@ -1175,6 +1197,16 @@ void QItemSelectionModel::select(const QModelIndex &index, QItemSelectionModel::
 */
 
 /*!
+    \fn void QItemSelectionModel::modelChanged(QAbstractItemModel *model)
+    \since 5.5
+
+    This signal is emitted when the model is successfully set with setModel().
+
+    \sa model(), setModel()
+*/
+
+
+/*!
     \enum QItemSelectionModel::SelectionFlag
 
     This enum describes the way the selection model will be updated.
@@ -1205,6 +1237,10 @@ void QItemSelectionModel::select(const QModelIndex &index, QItemSelectionModel::
 void QItemSelectionModel::select(const QItemSelection &selection, QItemSelectionModel::SelectionFlags command)
 {
     Q_D(QItemSelectionModel);
+    if (!d->model) {
+        qWarning("QItemSelectionModel: Selecting when no model has been set will result in a no-op.");
+        return;
+    }
     if (command == NoUpdate)
         return;
 
@@ -1312,6 +1348,10 @@ void QItemSelectionModel::clearSelection()
 void QItemSelectionModel::setCurrentIndex(const QModelIndex &index, QItemSelectionModel::SelectionFlags command)
 {
     Q_D(QItemSelectionModel);
+    if (!d->model) {
+        qWarning("QItemSelectionModel: Setting the current index when no model has been set will result in a no-op.");
+        return;
+    }
     if (index == d->currentIndex) {
         if (command != NoUpdate)
             select(index, command); // select item
@@ -1387,6 +1427,8 @@ bool QItemSelectionModel::isSelected(const QModelIndex &index) const
 bool QItemSelectionModel::isRowSelected(int row, const QModelIndex &parent) const
 {
     Q_D(const QItemSelectionModel);
+    if (!d->model)
+        return false;
     if (parent.isValid() && d->model != parent.model())
         return false;
 
@@ -1447,6 +1489,8 @@ bool QItemSelectionModel::isRowSelected(int row, const QModelIndex &parent) cons
 bool QItemSelectionModel::isColumnSelected(int column, const QModelIndex &parent) const
 {
     Q_D(const QItemSelectionModel);
+    if (!d->model)
+        return false;
     if (parent.isValid() && d->model != parent.model())
         return false;
 
@@ -1503,6 +1547,8 @@ bool QItemSelectionModel::isColumnSelected(int column, const QModelIndex &parent
 bool QItemSelectionModel::rowIntersectsSelection(int row, const QModelIndex &parent) const
 {
     Q_D(const QItemSelectionModel);
+    if (!d->model)
+        return false;
     if (parent.isValid() && d->model != parent.model())
          return false;
 
@@ -1535,6 +1581,8 @@ bool QItemSelectionModel::rowIntersectsSelection(int row, const QModelIndex &par
 bool QItemSelectionModel::columnIntersectsSelection(int column, const QModelIndex &parent) const
 {
     Q_D(const QItemSelectionModel);
+    if (!d->model)
+        return false;
     if (parent.isValid() && d->model != parent.model())
         return false;
 
@@ -1672,11 +1720,57 @@ const QItemSelection QItemSelectionModel::selection() const
 }
 
 /*!
+    \since 5.5
+
+    \property QItemSelectionModel::hasSelection
+    \internal
+*/
+/*!
+    \since 5.5
+
+    \property QItemSelectionModel::currentIndex
+    \internal
+*/
+/*!
+    \since 5.5
+
+    \property QItemSelectionModel::model
+    \internal
+*/
+
+/*!
+    \since 5.5
+
+    Returns the item model operated on by the selection model.
+*/
+QAbstractItemModel *QItemSelectionModel::model()
+{
+    return d_func()->model;
+}
+
+/*!
     Returns the item model operated on by the selection model.
 */
 const QAbstractItemModel *QItemSelectionModel::model() const
 {
     return d_func()->model;
+}
+
+/*!
+    \since 5.5
+
+    Sets the model. The modelChanged() signal will be emitted.
+
+    \sa model(), modelChanged()
+*/
+void QItemSelectionModel::setModel(QAbstractItemModel *model)
+{
+    Q_D(QItemSelectionModel);
+    if (d->model == model)
+        return;
+
+    d->initModel(model);
+    emit modelChanged(model);
 }
 
 /*!
