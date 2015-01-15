@@ -533,7 +533,6 @@
 #      define Q_COMPILER_AUTO_FUNCTION
 #      define Q_COMPILER_NULLPTR
 #      define Q_COMPILER_TEMPLATE_ALIAS
-#      define Q_COMPILER_UNICODE_STRINGS
 #      define Q_COMPILER_VARIADIC_TEMPLATES
 #    endif
 #    if __INTEL_COMPILER >= 1300
@@ -554,6 +553,7 @@
 #      define Q_COMPILER_RANGE_FOR
 #      define Q_COMPILER_RAW_STRINGS
 #      define Q_COMPILER_REF_QUALIFIERS
+#      define Q_COMPILER_UNICODE_STRINGS
 #      define Q_COMPILER_UNRESTRICTED_UNIONS
 #    endif
 #    if __INTEL_COMPILER >= 1500
