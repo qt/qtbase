@@ -1083,7 +1083,6 @@ void tst_QItemDelegate::decoration()
 
 void tst_QItemDelegate::editorEvent_data()
 {
-    QTest::addColumn<QRect>("rect");
     QTest::addColumn<int>("checkState");
     QTest::addColumn<int>("flags");
     QTest::addColumn<bool>("inCheck");
@@ -1100,7 +1099,6 @@ void tst_QItemDelegate::editorEvent_data()
             |Qt::ItemIsDropEnabled);
 
     QTest::newRow("unchecked, checkable, release")
-        << QRect(0, 0, 20, 20)
         << (int)(Qt::Unchecked)
         << defaultFlags
         << true
@@ -1110,7 +1108,6 @@ void tst_QItemDelegate::editorEvent_data()
         << (int)(Qt::Checked);
 
     QTest::newRow("checked, checkable, release")
-        << QRect(0, 0, 20, 20)
         << (int)(Qt::Checked)
         << defaultFlags
         << true
@@ -1120,7 +1117,6 @@ void tst_QItemDelegate::editorEvent_data()
         << (int)(Qt::Unchecked);
 
     QTest::newRow("unchecked, checkable, release")
-        << QRect(0, 0, 20, 20)
         << (int)(Qt::Unchecked)
         << defaultFlags
         << true
@@ -1130,7 +1126,6 @@ void tst_QItemDelegate::editorEvent_data()
         << (int)(Qt::Checked);
 
     QTest::newRow("unchecked, checkable, release, right button")
-        << QRect(0, 0, 20, 20)
         << (int)(Qt::Unchecked)
         << defaultFlags
         << true
@@ -1140,7 +1135,6 @@ void tst_QItemDelegate::editorEvent_data()
         << (int)(Qt::Unchecked);
 
     QTest::newRow("unchecked, checkable, release outside")
-        << QRect(0, 0, 20, 20)
         << (int)(Qt::Unchecked)
         << defaultFlags
         << false
@@ -1150,7 +1144,6 @@ void tst_QItemDelegate::editorEvent_data()
         << (int)(Qt::Unchecked);
 
     QTest::newRow("unchecked, checkable, dblclick")
-        << QRect(0, 0, 20, 20)
         << (int)(Qt::Unchecked)
         << defaultFlags
         << true
@@ -1160,7 +1153,6 @@ void tst_QItemDelegate::editorEvent_data()
         << (int)(Qt::Unchecked);
 
     QTest::newRow("unchecked, tristate, release")
-        << QRect(0, 0, 20, 20)
         << (int)(Qt::Unchecked)
         << (int)(defaultFlags | Qt::ItemIsTristate)
         << true
@@ -1170,7 +1162,6 @@ void tst_QItemDelegate::editorEvent_data()
         << (int)(Qt::PartiallyChecked);
 
     QTest::newRow("partially checked, tristate, release")
-        << QRect(0, 0, 20, 20)
         << (int)(Qt::PartiallyChecked)
         << (int)(defaultFlags | Qt::ItemIsTristate)
         << true
@@ -1180,7 +1171,6 @@ void tst_QItemDelegate::editorEvent_data()
         << (int)(Qt::Checked);
 
     QTest::newRow("checked, tristate, release")
-        << QRect(0, 0, 20, 20)
         << (int)(Qt::Checked)
         << (int)(defaultFlags | Qt::ItemIsTristate)
         << true
@@ -1192,7 +1182,6 @@ void tst_QItemDelegate::editorEvent_data()
 
 void tst_QItemDelegate::editorEvent()
 {
-    QFETCH(QRect, rect);
     QFETCH(int, checkState);
     QFETCH(int, flags);
     QFETCH(bool, inCheck);
@@ -1211,7 +1200,7 @@ void tst_QItemDelegate::editorEvent()
     item->setFlags((Qt::ItemFlags)flags);
 
     QStyleOptionViewItem option;
-    option.rect = rect;
+    option.rect = QRect(0, 0, 20, 20);
     option.state |= QStyle::State_Enabled;
     // mimic QStyledItemDelegate::initStyleOption logic
     option.features |= QStyleOptionViewItem::HasCheckIndicator | QStyleOptionViewItem::HasDisplay;
