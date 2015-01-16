@@ -43,6 +43,7 @@
 #  include <QtCore/qt_windows.h>
 #  include <private/qsystemlibrary_p.h>
 #  include <d3d9.h>
+#  include <GL/gl.h>
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -326,6 +327,37 @@ bool QWindowsOpenGLTester::testDesktopGL()
             goto cleanup;
 
         // Now that there is finally a context current, try doing something useful.
+
+        // Check the version. If we got 1.x then it's all hopeless and we can stop right here.
+        typedef const GLubyte * (APIENTRY * GetString_t)(GLenum name);
+        GetString_t GetString = reinterpret_cast<GetString_t>(::GetProcAddress(lib, "glGetString"));
+        if (GetString) {
+            const char *versionStr = (const char *) GetString(GL_VERSION);
+            if (versionStr) {
+                const QByteArray version(versionStr);
+                const int majorDot = version.indexOf('.');
+                if (majorDot != -1) {
+                    int minorDot = version.indexOf('.', majorDot + 1);
+                    if (minorDot == -1)
+                        minorDot = version.size();
+                    const int major = version.mid(0, majorDot).toInt();
+                    const int minor = version.mid(majorDot + 1, minorDot - majorDot - 1).toInt();
+                    qCDebug(lcQpaGl, "Basic wglCreateContext gives version %d.%d", major, minor);
+                    // Try to be as lenient as possible. Missing version, bogus values and
+                    // such are all accepted. The driver may still be functional. Only
+                    // check for known-bad cases, like versions "1.4.0 ...".
+                    if (major == 1) {
+                        result = false;
+                        qCDebug(lcQpaGl, "OpenGL version too low");
+                    }
+                }
+            }
+        } else {
+            result = false;
+            qCDebug(lcQpaGl, "OpenGL 1.x entry points not found");
+        }
+
+        // Check for a shader-specific function.
         if (WGL_GetProcAddress("glCreateShader")) {
             result = true;
             qCDebug(lcQpaGl, "OpenGL 2.0 entry points available");
