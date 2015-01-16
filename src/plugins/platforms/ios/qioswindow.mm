@@ -250,17 +250,10 @@ void QIOSWindow::setWindowState(Qt::WindowState state)
 
 void QIOSWindow::setParent(const QPlatformWindow *parentWindow)
 {
-    if (parentWindow) {
-        UIView *parentView = reinterpret_cast<UIView *>(parentWindow->winId());
-        [parentView addSubview:m_view];
-    } else if (isQtApplication()) {
-        for (UIWindow *uiWindow in [[UIApplication sharedApplication] windows]) {
-            if (uiWindow.screen == static_cast<QIOSScreen *>(screen())->uiScreen()) {
-                [uiWindow.rootViewController.view addSubview:m_view];
-                break;
-            }
-        }
-    }
+    UIView *parentView = parentWindow ? reinterpret_cast<UIView *>(parentWindow->winId())
+        : isQtApplication() ? static_cast<QIOSScreen *>(screen())->uiWindow().rootViewController.view : 0;
+
+    [parentView addSubview:m_view];
 }
 
 void QIOSWindow::requestActivateWindow()
