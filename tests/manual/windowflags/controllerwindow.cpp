@@ -137,7 +137,10 @@ void ControllerWindow::updatePreview()
         parentWindow->hide();
     }
 
-    previewWidget->setWindowFlags(flags);
+    if (previewWidgetButton->isChecked())
+        previewWindow->setWindowFlags(flags);
+    else
+        previewDialog->setWindowFlags(flags);
 
     if (fixedSizeWindowCheckBox->isChecked()) {
         previewWidget->setFixedSize(300, 300);
