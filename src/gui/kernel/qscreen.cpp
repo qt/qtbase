@@ -467,20 +467,6 @@ Qt::ScreenOrientation QScreen::nativeOrientation() const
     return d->platformScreen->nativeOrientation();
 }
 
-// i must be power of two
-static int log2(uint i)
-{
-    if (i == 0)
-        return -1;
-
-    int result = 0;
-    while (!(i & 1)) {
-        ++result;
-        i >>= 1;
-    }
-    return result;
-}
-
 /*!
     Convenience function to compute the angle of rotation to get from
     rotation \a a to rotation \a b.
@@ -497,19 +483,7 @@ int QScreen::angleBetween(Qt::ScreenOrientation a, Qt::ScreenOrientation b) cons
     if (b == Qt::PrimaryOrientation)
         b = primaryOrientation();
 
-    if (a == b)
-        return 0;
-
-    int ia = log2(uint(a));
-    int ib = log2(uint(b));
-
-    int delta = ia - ib;
-
-    if (delta < 0)
-        delta = delta + 4;
-
-    int angles[] = { 0, 90, 180, 270 };
-    return angles[delta];
+    return QPlatformScreen::angleBetween(a, b);
 }
 
 /*!
@@ -532,28 +506,7 @@ QTransform QScreen::transformBetween(Qt::ScreenOrientation a, Qt::ScreenOrientat
     if (b == Qt::PrimaryOrientation)
         b = primaryOrientation();
 
-    if (a == b)
-        return QTransform();
-
-    int angle = angleBetween(a, b);
-
-    QTransform result;
-    switch (angle) {
-    case 90:
-        result.translate(target.width(), 0);
-        break;
-    case 180:
-        result.translate(target.width(), target.height());
-        break;
-    case 270:
-        result.translate(0, target.height());
-        break;
-    default:
-        Q_ASSERT(false);
-    }
-    result.rotate(angle);
-
-    return result;
+    return QPlatformScreen::transformBetween(a, b, target);
 }
 
 /*!
@@ -573,16 +526,7 @@ QRect QScreen::mapBetween(Qt::ScreenOrientation a, Qt::ScreenOrientation b, cons
     if (b == Qt::PrimaryOrientation)
         b = primaryOrientation();
 
-    if (a == b)
-        return rect;
-
-    if ((a == Qt::PortraitOrientation || a == Qt::InvertedPortraitOrientation)
-        != (b == Qt::PortraitOrientation || b == Qt::InvertedPortraitOrientation))
-    {
-        return QRect(rect.y(), rect.x(), rect.height(), rect.width());
-    }
-
-    return rect;
+    return QPlatformScreen::mapBetween(a, b, rect);
 }
 
 /*!

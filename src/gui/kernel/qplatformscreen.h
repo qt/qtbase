@@ -108,6 +108,10 @@ public:
 
     virtual QPlatformCursor *cursor() const;
 
+    static int angleBetween(Qt::ScreenOrientation a, Qt::ScreenOrientation b);
+    static QTransform transformBetween(Qt::ScreenOrientation a, Qt::ScreenOrientation b, const QRect &target);
+    static QRect mapBetween(Qt::ScreenOrientation a, Qt::ScreenOrientation b, const QRect &rect);
+
 protected:
     void resizeMaximizedWindows();
 

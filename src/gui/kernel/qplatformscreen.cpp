@@ -32,6 +32,7 @@
 ****************************************************************************/
 
 #include "qplatformscreen.h"
+#include <QtCore/qdebug.h>
 #include <QtGui/qguiapplication.h>
 #include <qpa/qplatformcursor.h>
 #include <QtGui/private/qguiapplication_p.h>
@@ -304,6 +305,92 @@ void QPlatformScreen::resizeMaximizedWindows()
         else if (w->windowState() & Qt::WindowFullScreen || w->geometry() == oldGeometry)
             w->setGeometry(newGeometry);
     }
+}
+
+// i must be power of two
+static int log2(uint i)
+{
+    if (i == 0)
+        return -1;
+
+    int result = 0;
+    while (!(i & 1)) {
+        ++result;
+        i >>= 1;
+    }
+    return result;
+}
+
+int QPlatformScreen::angleBetween(Qt::ScreenOrientation a, Qt::ScreenOrientation b)
+{
+    if (a == Qt::PrimaryOrientation || b == Qt::PrimaryOrientation) {
+        qWarning() << "Use QScreen version of" << __FUNCTION__ << "when passing Qt::PrimaryOrientation";
+        return 0;
+    }
+
+    if (a == b)
+        return 0;
+
+    int ia = log2(uint(a));
+    int ib = log2(uint(b));
+
+    int delta = ia - ib;
+
+    if (delta < 0)
+        delta = delta + 4;
+
+    int angles[] = { 0, 90, 180, 270 };
+    return angles[delta];
+}
+
+QTransform QPlatformScreen::transformBetween(Qt::ScreenOrientation a, Qt::ScreenOrientation b, const QRect &target)
+{
+    if (a == Qt::PrimaryOrientation || b == Qt::PrimaryOrientation) {
+        qWarning() << "Use QScreen version of" << __FUNCTION__ << "when passing Qt::PrimaryOrientation";
+        return QTransform();
+    }
+
+    if (a == b)
+        return QTransform();
+
+    int angle = angleBetween(a, b);
+
+    QTransform result;
+    switch (angle) {
+    case 90:
+        result.translate(target.width(), 0);
+        break;
+    case 180:
+        result.translate(target.width(), target.height());
+        break;
+    case 270:
+        result.translate(0, target.height());
+        break;
+    default:
+        Q_ASSERT(false);
+    }
+    result.rotate(angle);
+
+    return result;
+}
+
+QRect QPlatformScreen::mapBetween(Qt::ScreenOrientation a, Qt::ScreenOrientation b, const QRect &rect)
+{
+    if (a == Qt::PrimaryOrientation || b == Qt::PrimaryOrientation) {
+        qWarning() << "Use QScreen version of" << __FUNCTION__ << "when passing Qt::PrimaryOrientation";
+        return rect;
+    }
+
+    if (a == b)
+        return rect;
+
+    if ((a == Qt::PortraitOrientation || a == Qt::InvertedPortraitOrientation)
+        != (b == Qt::PortraitOrientation || b == Qt::InvertedPortraitOrientation))
+    {
+        return QRect(rect.y(), rect.x(), rect.height(), rect.width());
+    }
+
+    return rect;
 }
 
 QT_END_NAMESPACE
