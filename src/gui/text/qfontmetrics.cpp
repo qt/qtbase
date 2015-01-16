@@ -647,7 +647,7 @@ int QFontMetrics::charWidth(const QString &text, int pos) const
     e.g. for italicized fonts, and that the width of the returned
     rectangle might be different than what the width() method returns.
 
-    If you want to know the advance width of the string (to layout
+    If you want to know the advance width of the string (to lay out
     a set of strings next to each other), use width() instead.
 
     Newline characters are processed as normal characters, \e not as
@@ -817,7 +817,7 @@ QSize QFontMetrics::size(int flags, const QString &text, int tabStops, int *tabA
     e.g. for italicized fonts, and that the width of the returned
     rectangle might be different than what the width() method returns.
 
-    If you want to know the advance width of the string (to layout
+    If you want to know the advance width of the string (to lay out
     a set of strings next to each other), use width() instead.
 
     Newline characters are processed as normal characters, \e not as
@@ -1432,7 +1432,7 @@ qreal QFontMetricsF::width(QChar ch) const
     e.g. for italicized fonts, and that the width of the returned
     rectangle might be different than what the width() method returns.
 
-    If you want to know the advance width of the string (to layout
+    If you want to know the advance width of the string (to lay out
     a set of strings next to each other), use width() instead.
 
     Newline characters are processed as normal characters, \e not as
@@ -1606,7 +1606,7 @@ QSizeF QFontMetricsF::size(int flags, const QString &text, int tabStops, int *ta
     e.g. for italicized fonts, and that the width of the returned
     rectangle might be different than what the width() method returns.
 
-    If you want to know the advance width of the string (to layout
+    If you want to know the advance width of the string (to lay out
     a set of strings next to each other), use width() instead.
 
     Newline characters are processed as normal characters, \e not as

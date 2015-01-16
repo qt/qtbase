@@ -444,6 +444,25 @@ MakefileGenerator::init()
 
     setSystemIncludes(v["QMAKE_DEFAULT_INCDIRS"]);
 
+    ProStringList &incs = project->values("INCLUDEPATH");
+    if (!project->isActiveConfig("no_include_pwd")) {
+        if (Option::output_dir != qmake_getpwd()) {
+            // Pretend that the build dir is the source dir for #include purposes,
+            // consistently with the "transparent shadow builds" strategy. This is
+            // also consistent with #include "foo.h" falling back to #include <foo.h>
+            // behavior if it doesn't find the file in the source dir.
+            incs.prepend(Option::output_dir);
+        }
+        // This makes #include <foo.h> work if the header lives in the source dir.
+        // The benefit of that is questionable, as generally the user should use the
+        // correct include style, and extra compilers that put stuff in the source dir
+        // should add the dir themselves.
+        // More importantly, it makes #include "foo.h" work with MSVC when shadow-building,
+        // as this compiler looks files up relative to %CD%, not the source file's parent.
+        incs.prepend(qmake_getpwd());
+    }
+    incs.append(project->specDir());
+
     const char * const cacheKeys[] = { "_QMAKE_STASH_", "_QMAKE_SUPER_CACHE_", 0 };
     for (int i = 0; cacheKeys[i]; ++i) {
         if (v[cacheKeys[i]].isEmpty())
@@ -793,12 +812,6 @@ MakefileGenerator::init()
         ProStringList incDirs = v["DEPENDPATH"] + v["QMAKE_ABSOLUTE_SOURCE_PATH"];
         if(project->isActiveConfig("depend_includepath"))
             incDirs += v["INCLUDEPATH"];
-        if(!project->isActiveConfig("no_include_pwd")) {
-            QString pwd = qmake_getpwd();
-            if(pwd.isEmpty())
-                pwd = ".";
-            incDirs += pwd;
-        }
         QList<QMakeLocalFileName> deplist;
         for (ProStringList::Iterator it = incDirs.begin(); it != incDirs.end(); ++it)
             deplist.append(QMakeLocalFileName(unescapeFilePath((*it).toQString())));
@@ -848,11 +861,6 @@ MakefileGenerator::init()
         ProStringList &trf = project->values("TRANSLATIONS");
         for (ProStringList::Iterator it = trf.begin(); it != trf.end(); ++it)
             (*it) = Option::fixPathToLocalOS((*it).toQString());
-    }
-
-    if(!project->isActiveConfig("no_include_pwd")) { //get the output_dir into the pwd
-        if(Option::output_dir != qmake_getpwd())
-            project->values("INCLUDEPATH").append(".");
     }
 
     //fix up the target deps

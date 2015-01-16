@@ -110,6 +110,7 @@ QDBusServer::~QDBusServer()
         }
         d->serverConnectionNames.clear();
     }
+    d->deleteLater();
 }
 
 /*!

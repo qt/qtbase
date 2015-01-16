@@ -67,7 +67,8 @@ public:
         X11Screen,
         RootWindow,
         ScreenSubpixelType,
-        ScreenAntialiasingEnabled
+        ScreenAntialiasingEnabled,
+        NoFontHinting
     };
 
     QXcbNativeInterface();

@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/">
+        <file>baseline/smartmaxsize</file>
+    </qresource>
+</RCC>

@@ -83,7 +83,7 @@ static NSString *_q_NSWindowDidChangeOcclusionStateNotification = nil;
   - (CGFloat)deviceDeltaZ;
 @end
 
-@interface QNSViewMouseMoveHelper : NSObject
+@interface QT_MANGLE_NAMESPACE(QNSViewMouseMoveHelper) : NSObject
 {
     QNSView *view;
 }
@@ -97,7 +97,7 @@ static NSString *_q_NSWindowDidChangeOcclusionStateNotification = nil;
 
 @end
 
-@implementation QNSViewMouseMoveHelper
+@implementation QT_MANGLE_NAMESPACE(QNSViewMouseMoveHelper)
 
 - (id)initWithView:(QNSView *)theView
 {
@@ -158,7 +158,7 @@ static NSString *_q_NSWindowDidChangeOcclusionStateNotification = nil;
         currentCustomDragTypes = 0;
         m_sendUpAsRightButton = false;
         m_inputSource = 0;
-        m_mouseMoveHelper = [[QNSViewMouseMoveHelper alloc] initWithView:self];
+        m_mouseMoveHelper = [[QT_MANGLE_NAMESPACE(QNSViewMouseMoveHelper) alloc] initWithView:self];
         m_resendKeyEvent = false;
 
         if (!touchDevice) {

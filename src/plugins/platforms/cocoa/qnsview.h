@@ -48,7 +48,7 @@ class QCocoaBackingStore;
 class QCocoaGLContext;
 QT_END_NAMESPACE
 
-Q_FORWARD_DECLARE_OBJC_CLASS(QNSViewMouseMoveHelper);
+Q_FORWARD_DECLARE_OBJC_CLASS(QT_MANGLE_NAMESPACE(QNSViewMouseMoveHelper));
 
 @interface QT_MANGLE_NAMESPACE(QNSView) : NSView <NSTextInputClient> {
     QImage m_backingStore;
@@ -72,7 +72,7 @@ Q_FORWARD_DECLARE_OBJC_CLASS(QNSViewMouseMoveHelper);
     bool m_shouldSetGLContextinDrawRect;
 #endif
     NSString *m_inputSource;
-    QNSViewMouseMoveHelper *m_mouseMoveHelper;
+    QT_MANGLE_NAMESPACE(QNSViewMouseMoveHelper) *m_mouseMoveHelper;
     bool m_resendKeyEvent;
 }
 

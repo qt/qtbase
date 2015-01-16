@@ -1060,6 +1060,7 @@ bool QSqlQuery::exec()
 */
 bool QSqlQuery::execBatch(BatchExecutionMode mode)
 {
+    d->sqlResult->resetBindCount();
     return d->sqlResult->execBatch(mode == ValuesAsColumns);
 }
 

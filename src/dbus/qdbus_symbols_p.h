@@ -323,6 +323,8 @@ DEFINEFUNC(void         , dbus_pending_call_unref, (DBusPendingCall             
 /* dbus-server.h */
 DEFINEFUNC(dbus_bool_t , dbus_server_allocate_data_slot, (dbus_int32_t     *slot_p),
            (slot_p), return)
+DEFINEFUNC(void        , dbus_server_free_data_slot,     (dbus_int32_t     *slot_p),
+           (slot_p), return)
 DEFINEFUNC(void        , dbus_server_disconnect, (DBusServer     *server),
            (server), )
 DEFINEFUNC(char*       , dbus_server_get_address, (DBusServer     *server),

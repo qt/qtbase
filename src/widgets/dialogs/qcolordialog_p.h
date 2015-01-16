@@ -49,6 +49,7 @@
 #include "private/qdialog_p.h"
 #include "qcolordialog.h"
 #include "qsharedpointer.h"
+#include "qwindow.h"
 
 #ifndef QT_NO_COLORDIALOG
 
@@ -77,7 +78,7 @@ public:
     };
 
     QColorDialogPrivate() : options(new QColorDialogOptions)
-#ifdef Q_OS_WIN
+#ifdef Q_OS_WIN32
         , updateTimer(0)
 #endif
     {}
@@ -143,8 +144,9 @@ public:
 
     QPointer<QObject> receiverToDisconnectOnClose;
     QByteArray memberToDisconnectOnClose;
-#ifdef Q_OS_WIN
+#ifdef Q_OS_WIN32
     QTimer *updateTimer;
+    QWindow dummyTransparentWindow;
 #endif
 
 #ifdef Q_WS_MAC

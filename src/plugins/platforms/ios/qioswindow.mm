@@ -75,6 +75,15 @@ QIOSWindow::QIOSWindow(QWindow *window)
 
     setWindowState(window->windowState());
     setOpacity(window->opacity());
+
+    Qt::ScreenOrientation initialOrientation = window->contentOrientation();
+    if (initialOrientation != Qt::PrimaryOrientation) {
+        // Start up in portrait, then apply possible content orientation,
+        // as per Apple's documentation.
+        dispatch_async(dispatch_get_main_queue(), ^{
+            handleContentOrientationChange(initialOrientation);
+        });
+    }
 }
 
 QIOSWindow::~QIOSWindow()
@@ -322,10 +331,12 @@ void QIOSWindow::updateWindowLevel()
 
 void QIOSWindow::handleContentOrientationChange(Qt::ScreenOrientation orientation)
 {
-    // Keep the status bar in sync with content orientation. This will ensure
-    // that the task bar (and associated gestures) are aligned correctly:
-    UIInterfaceOrientation uiOrientation = UIInterfaceOrientation(fromQtScreenOrientation(orientation));
-    [[UIApplication sharedApplication] setStatusBarOrientation:uiOrientation animated:NO];
+    // Update the QWindow representation straight away, so that
+    // we can update the statusbar orientation based on the new
+    // content orientation.
+    qt_window_private(window())->contentOrientation = orientation;
+
+    [m_view.qtViewController updateProperties];
 }
 
 void QIOSWindow::applicationStateChanged(Qt::ApplicationState)

@@ -931,6 +931,8 @@ void QWin32PrintEnginePrivate::initHDC()
     default:
         break;
     }
+
+    updateMetrics();
 }
 
 void QWin32PrintEnginePrivate::release()

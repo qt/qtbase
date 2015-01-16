@@ -97,6 +97,7 @@ int qvsnprintf(char *str, size_t n, const char *fmt, va_list ap)
 #endif
 
 /*!
+    \target bytearray-qsnprintf
     \relates QByteArray
 
     A portable snprintf() function, calls qvsnprintf.

@@ -167,6 +167,7 @@ QString QStandardPaths::writableLocation(StandardLocation type)
     case TempLocation:
         return QDir::tempPath();
     case GenericDataLocation:
+    case AppDataLocation:
     case AppLocalDataLocation:
     case GenericCacheLocation:
     case CacheLocation:

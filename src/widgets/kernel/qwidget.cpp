@@ -12392,10 +12392,9 @@ static void releaseMouseGrabOfWidget(QWidget *widget)
     \note Only visible widgets can grab mouse input. If isVisible()
     returns \c false for a widget, that widget cannot call grabMouse().
 
-    \note \b{(Mac OS X developers)} For \e Cocoa, calling
-    grabMouse() on a widget only works when the mouse is inside the
-    frame of that widget.  For \e Carbon, it works outside the widget's
-    frame as well, like for Windows and X11.
+    \note On Windows, grabMouse() only works when the mouse is inside a window
+    owned by the process.
+    On OS X, grabMouse() only works when the mouse is inside the frame of that widget.
 
     \sa releaseMouse(), grabKeyboard(), releaseKeyboard()
 */
@@ -12416,7 +12415,7 @@ void QWidget::grabMouse()
 
     \warning Grabbing the mouse might lock the terminal.
 
-    \note \b{(Mac OS X developers)} See the note in QWidget::grabMouse().
+    \note See the note in QWidget::grabMouse().
 
     \sa releaseMouse(), grabKeyboard(), releaseKeyboard(), setCursor()
 */

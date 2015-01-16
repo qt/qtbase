@@ -307,24 +307,22 @@ void tst_QRawFont::advances()
     bool supportsSubPixelPositions = font_d->fontEngine->supportsSubPixelPositions();
     QVector<QPointF> advances = font.advancesForGlyphIndexes(glyphIndices);
 
-    // On Windows and QNX, freetype engine returns advance of 9 for some of the glyphs
-    // when full hinting is used (default on Windows).
-    bool mayFail = false;
-#if defined (Q_OS_WIN)
-    mayFail = font_d->fontEngine->type() == QFontEngine::Freetype
-              && (hintingPreference == QFont::PreferFullHinting
-               || hintingPreference == QFont::PreferDefaultHinting);
-#elif defined(Q_OS_QNX)
-    mayFail = font_d->fontEngine->type() == QFontEngine::Freetype
-              && hintingPreference == QFont::PreferFullHinting;
-#endif
+    bool mayDiffer = font_d->fontEngine->type() == QFontEngine::Freetype
+                     && (hintingPreference == QFont::PreferFullHinting
+                      || hintingPreference == QFont::PreferDefaultHinting);
 
     for (int i = 0; i < glyphIndices.size(); ++i) {
-        if (mayFail && (i == 0 || i == 5)) {
-            QEXPECT_FAIL("", "FreeType engine reports unexpected advance "
-                             "for some glyphs (9 instead of 8)", Continue);
+        if ((i == 0 || i == 5) && mayDiffer) {
+            QVERIFY2(qRound(advances.at(i).x()) == 8
+                        || qRound(advances.at(i).x()) == 9,
+                     qPrintable(QStringLiteral("%1 != %2 && %1 != %3")
+                                .arg(qRound(advances.at(i).x()))
+                                .arg(8)
+                                .arg(9)));
+        } else {
+            QCOMPARE(qRound(advances.at(i).x()), 8);
         }
-        QVERIFY(qFuzzyCompare(qRound(advances.at(i).x()), 8.0));
+
         if (supportsSubPixelPositions)
             QVERIFY(advances.at(i).x() > 8.0);
 
@@ -342,11 +340,17 @@ void tst_QRawFont::advances()
     QVERIFY(font.advancesForGlyphIndexes(glyphIndices.constData(), advances.data(), numGlyphs));
 
     for (int i = 0; i < glyphIndices.size(); ++i) {
-        if (mayFail && (i == 0 || i == 5)) {
-            QEXPECT_FAIL("", "FreeType engine reports unexpected advance "
-                             "for some glyphs (9 instead of 8)", Continue);
+        if ((i == 0 || i == 5) && mayDiffer) {
+            QVERIFY2(qRound(advances.at(i).x()) == 8
+                        || qRound(advances.at(i).x()) == 9,
+                     qPrintable(QStringLiteral("%1 != %2 && %1 != %3")
+                                .arg(qRound(advances.at(i).x()))
+                                .arg(8)
+                                .arg(9)));
+        } else {
+            QCOMPARE(qRound(advances.at(i).x()), 8);
         }
-        QVERIFY(qFuzzyCompare(qRound(advances.at(i).x()), 8.0));
+
         if (supportsSubPixelPositions)
             QVERIFY(advances.at(i).x() > 8.0);
 

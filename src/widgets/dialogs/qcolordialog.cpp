@@ -1579,12 +1579,17 @@ void QColorDialogPrivate::_q_pickScreenColor()
     q->grabMouse();
 #endif
 
-#ifdef Q_OS_WIN
+#ifdef Q_OS_WIN32 // excludes WinCE and WinRT
     // On Windows mouse tracking doesn't work over other processes's windows
     updateTimer->start(30);
+
+    // HACK: Because mouse grabbing doesn't work across processes, we have to have a dummy,
+    // invisible window to catch the mouse click, otherwise we will click whatever we clicked
+    // and loose focus.
+    dummyTransparentWindow.show();
 #endif
     q->grabKeyboard();
-    /* With setMouseTracking(true) the desired color can be more precisedly picked up,
+    /* With setMouseTracking(true) the desired color can be more precisely picked up,
      * and continuously pushing the mouse button is not necessary.
      */
     q->setMouseTracking(true);
@@ -1606,8 +1611,9 @@ void QColorDialogPrivate::releaseColorPicking()
     cp->setCrossVisible(true);
     q->removeEventFilter(colorPickingEventFilter);
     q->releaseMouse();
-#ifdef Q_OS_WIN
+#ifdef Q_OS_WIN32
     updateTimer->stop();
+    dummyTransparentWindow.setVisible(false);
 #endif
     q->releaseKeyboard();
     q->setMouseTracking(false);
@@ -1634,6 +1640,10 @@ void QColorDialogPrivate::init(const QColor &initial)
 
 #ifdef Q_WS_MAC
     delegate = 0;
+#endif
+#ifdef Q_OS_WIN32
+    dummyTransparentWindow.resize(1, 1);
+    dummyTransparentWindow.setFlags(Qt::Tool | Qt::FramelessWindowHint);
 #endif
 
     q->setCurrentColor(initial);
@@ -1791,7 +1801,7 @@ void QColorDialogPrivate::initWidgets()
     cancel = buttons->addButton(QDialogButtonBox::Cancel);
     QObject::connect(cancel, SIGNAL(clicked()), q, SLOT(reject()));
 
-#ifdef Q_OS_WIN
+#ifdef Q_OS_WIN32
     updateTimer = new QTimer(q);
     QObject::connect(updateTimer, SIGNAL(timeout()), q, SLOT(_q_updateColorPicking()));
 #endif
@@ -2219,8 +2229,12 @@ void QColorDialogPrivate::_q_updateColorPicking()
         return;
     lastGlobalPos = newGlobalPos;
 
-    if (!q->rect().contains(q->mapFromGlobal(newGlobalPos))) // Inside the dialog mouse tracking works, handleColorPickingMouseMove will be called
+    if (!q->rect().contains(q->mapFromGlobal(newGlobalPos))) { // Inside the dialog mouse tracking works, handleColorPickingMouseMove will be called
         updateColorPicking(newGlobalPos);
+#ifdef Q_OS_WIN32
+        dummyTransparentWindow.setPosition(newGlobalPos);
+#endif
+    }
 #endif // ! QT_NO_CURSOR
 }
 

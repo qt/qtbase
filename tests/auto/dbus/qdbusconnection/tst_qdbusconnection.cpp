@@ -294,6 +294,7 @@ void tst_QDBusConnection::connectToPeer()
                 "", "newconn");
         QVERIFY(!con.isConnected());
         QVERIFY(con.lastError().isValid());
+        QDBusConnection::disconnectFromPeer("newconn");
     }
 
     QDBusServer server;
@@ -303,6 +304,7 @@ void tst_QDBusConnection::connectToPeer()
                 "unix:abstract=/tmp/dbus-XXXXXXXXXX,guid=00000000000000000000000000000000", "newconn2");
         QVERIFY(!con.isConnected());
         QVERIFY(con.lastError().isValid());
+        QDBusConnection::disconnectFromPeer("newconn2");
     }
 
     {

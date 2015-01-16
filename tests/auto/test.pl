@@ -138,35 +138,22 @@ sub handleDir {
     my ($dir) = @_;
     my $currentDir = getcwd();
 
-    chdir($dir) || die("Could not chdir to $dir");
-    my @components;
-    my $command;
-    @components = split(/\//, $dir);
-    my $component = $components[$#components];
+    opendir(DIR, $dir);
+    my @files = readdir(DIR);
+    closedir DIR;
+    my $file;
+    foreach $file (@files) {
+        #skip hidden files
+        next if (substr($file,0,1) eq ".");
 
-    $command = "tst_".$component;
-
-    if ( -e $command.$EXE_SUFFIX )
-    {
-        executeTestCurrentDir($command);
-    } else {
-        opendir(DIR, $dir);
-        my @files = readdir(DIR);
-        closedir DIR;
-        my $file;
-        foreach $file (@files)
-        {
-            #skip hidden files
-            next if (substr($file,0,1) eq ".");
-
-            if ( -d $dir."/".$file)
-            {
-                handleDir($dir."/".$file)
-            }
-
+        if ( -d $dir."/".$file) {
+            handleDir($dir."/".$file)
+        } elsif ( $file =~ /^tst_/ and -x $dir."/".$file ) {
+            chdir($dir) || die("Could not chdir to $dir");
+            executeTestCurrentDir($file);
+            chdir($currentDir);
         }
     }
-    chdir($currentDir);
 }
 
 sub executeTestCurrentDir {

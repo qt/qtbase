@@ -200,6 +200,12 @@ void tst_QDnsLookup::lookup()
     lookup.lookup();
     QVERIFY(waitForDone(&lookup));
     QVERIFY(lookup.isFinished());
+
+#if defined(Q_OS_ANDROID)
+    if (lookup.errorString() == QStringLiteral("Not yet supported on Android"))
+        QEXPECT_FAIL("", "Not yet supported on Android", Abort);
+#endif
+
     QVERIFY2(int(lookup.error()) == error, qPrintable(lookup.errorString()));
     if (error == QDnsLookup::NoError)
         QVERIFY(lookup.errorString().isEmpty());
@@ -295,6 +301,12 @@ void tst_QDnsLookup::lookupReuse()
     lookup.lookup();
     QVERIFY(waitForDone(&lookup));
     QVERIFY(lookup.isFinished());
+
+#if defined(Q_OS_ANDROID)
+    if (lookup.errorString() == QStringLiteral("Not yet supported on Android"))
+        QEXPECT_FAIL("", "Not yet supported on Android", Abort);
+#endif
+
     QCOMPARE(int(lookup.error()), int(QDnsLookup::NoError));
     QVERIFY(!lookup.hostAddressRecords().isEmpty());
     QCOMPARE(lookup.hostAddressRecords().first().name(), domainName("a-single"));
@@ -333,6 +345,12 @@ void tst_QDnsLookup::lookupAbortRetry()
     lookup.lookup();
     QVERIFY(waitForDone(&lookup));
     QVERIFY(lookup.isFinished());
+
+#if defined(Q_OS_ANDROID)
+    if (lookup.errorString() == QStringLiteral("Not yet supported on Android"))
+        QEXPECT_FAIL("", "Not yet supported on Android", Abort);
+#endif
+
     QCOMPARE(int(lookup.error()), int(QDnsLookup::NoError));
     QVERIFY(!lookup.hostAddressRecords().isEmpty());
     QCOMPARE(lookup.hostAddressRecords().first().name(), domainName("aaaa-single"));

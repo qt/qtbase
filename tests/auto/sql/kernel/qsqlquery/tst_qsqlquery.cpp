@@ -147,6 +147,8 @@ private slots:
     void invalidQuery();
     void batchExec_data() { generic_data(); }
     void batchExec();
+    void QTBUG_43874_data() { generic_data(); }
+    void QTBUG_43874();
     void oraArrayBind_data() { generic_data(); }
     void oraArrayBind();
     void lastInsertId_data() { generic_data(); }
@@ -338,6 +340,7 @@ void tst_QSqlQuery::dropTestTables( QSqlDatabase db )
                << qTableName("blobstest", __FILE__, db)
                << qTableName("oraRowId", __FILE__, db)
                << qTableName("qtest_batch", __FILE__, db)
+               << qTableName("bug43874", __FILE__, db)
                << qTableName("bug6421", __FILE__, db).toUpper()
                << qTableName("bug5765", __FILE__, db)
                << qTableName("bug6852", __FILE__, db)
@@ -2183,6 +2186,33 @@ void tst_QSqlQuery::batchExec()
     QVERIFY( q.value( 1 ).isNull() );
     QVERIFY( q.value( 2 ).isNull() );
     QVERIFY( q.value( 3 ).isNull() );
+}
+
+void tst_QSqlQuery::QTBUG_43874()
+{
+    QFETCH(QString, dbName);
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(db);
+
+    QSqlQuery q(db);
+    const QString tableName = qTableName("bug43874", __FILE__, db);
+
+    QVERIFY_SQL(q, exec("CREATE TABLE " + tableName + " (id INT)"));
+    QVERIFY_SQL(q, prepare("INSERT INTO " + tableName + " (id) VALUES (?)"));
+
+    for (int i = 0; i < 2; ++i) {
+        QVariantList ids;
+        ids << i;
+        q.addBindValue(ids);
+        QVERIFY_SQL(q, execBatch());
+    }
+    QVERIFY_SQL(q, exec("SELECT id FROM " + tableName + " ORDER BY id"));
+
+    QVERIFY(q.next());
+    QCOMPARE(q.value(0).toInt(), 0);
+
+    QVERIFY(q.next());
+    QCOMPARE(q.value(0).toInt(), 1);
 }
 
 void tst_QSqlQuery::oraArrayBind()
