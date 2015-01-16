@@ -318,6 +318,10 @@ Qt::ScreenOrientation QIOSScreen::nativeOrientation() const
 
 Qt::ScreenOrientation QIOSScreen::orientation() const
 {
+    // Auxiliary screens are always the same orientation as their primary orientation
+    if (m_uiScreen != [UIScreen mainScreen])
+        return Qt::PrimaryOrientation;
+
     UIDeviceOrientation deviceOrientation = [UIDevice currentDevice].orientation;
 
     // At startup, iOS will report an unknown orientation for the device, even
