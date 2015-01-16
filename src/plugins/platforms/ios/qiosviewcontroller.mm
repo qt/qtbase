@@ -75,7 +75,11 @@
 - (void)layoutView:(QUIView *)view
 {
     QWindow *window = view.qwindow;
-    Q_ASSERT(window->handle());
+
+    // Return early if the QIOSWindow is still constructing, as we'll
+    // take care of setting the correct window state in the constructor.
+    if (!window->handle())
+        return;
 
     // Re-apply window states to update geometry
     if (window->windowState() & (Qt::WindowFullScreen | Qt::WindowMaximized))
