@@ -86,9 +86,7 @@ struct my_error_mgr : public jpeg_error_mgr {
     jmp_buf setjmp_buffer;
 };
 
-#if defined(Q_C_CALLBACKS)
 extern "C" {
-#endif
 
 static void my_error_exit (j_common_ptr cinfo)
 {
@@ -106,9 +104,7 @@ static void my_output_message(j_common_ptr cinfo)
     qWarning("%s", buffer);
 }
 
-#if defined(Q_C_CALLBACKS)
 }
-#endif
 
 
 static const int max_buf = 4096;
@@ -123,9 +119,7 @@ public:
     my_jpeg_source_mgr(QIODevice *device);
 };
 
-#if defined(Q_C_CALLBACKS)
 extern "C" {
-#endif
 
 static void qt_init_source(j_decompress_ptr)
 {
@@ -185,9 +179,7 @@ static void qt_term_source(j_decompress_ptr cinfo)
         src->device->seek(src->device->pos() - src->bytes_in_buffer);
 }
 
-#if defined(Q_C_CALLBACKS)
 }
-#endif
 
 inline my_jpeg_source_mgr::my_jpeg_source_mgr(QIODevice *device)
 {
@@ -458,9 +450,7 @@ public:
 };
 
 
-#if defined(Q_C_CALLBACKS)
 extern "C" {
-#endif
 
 static void qt_init_destination(j_compress_ptr)
 {
@@ -490,9 +480,7 @@ static void qt_term_destination(j_compress_ptr cinfo)
         (*cinfo->err->error_exit)((j_common_ptr)cinfo);
 }
 
-#if defined(Q_C_CALLBACKS)
 }
-#endif
 
 inline my_jpeg_destination_mgr::my_jpeg_destination_mgr(QIODevice *device)
 {

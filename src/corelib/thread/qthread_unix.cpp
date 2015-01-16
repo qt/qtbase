@@ -241,15 +241,9 @@ void QAdoptedThread::init()
    QThreadPrivate
 */
 
-#if defined(Q_C_CALLBACKS)
 extern "C" {
-#endif
-
 typedef void*(*QtThreadCallback)(void*);
-
-#if defined(Q_C_CALLBACKS)
 }
-#endif
 
 #endif // QT_NO_THREAD
 

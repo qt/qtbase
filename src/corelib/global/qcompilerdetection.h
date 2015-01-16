@@ -136,7 +136,6 @@
 
 #elif defined(__GNUC__)
 #  define Q_CC_GNU          (__GNUC__ * 100 + __GNUC_MINOR__)
-#  define Q_C_CALLBACKS
 #  if defined(__MINGW32__)
 #    define Q_CC_MINGW
 #  endif
@@ -312,7 +311,6 @@
 /* The Comeau compiler is based on EDG and does define __EDG__ */
 #  if defined(__COMO__)
 #    define Q_CC_COMEAU
-#    define Q_C_CALLBACKS
 
 /* The `using' keyword was introduced to avoid KAI C++ warnings
    but it's now causing KAI C++ errors instead. The standard is
@@ -396,7 +394,6 @@
 #    if !defined(_BOOL)
 #      error "Compiler not supported"
 #    endif
-#    define Q_C_CALLBACKS
 /* 4.2 compiler or older */
 #  else
 #    error "Compiler not supported"

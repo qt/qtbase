@@ -157,10 +157,6 @@ public:
 };
 
 
-#if defined(Q_C_CALLBACKS)
-extern "C" {
-#endif
-
 class QPNGImageWriter {
 public:
     explicit QPNGImageWriter(QIODevice*);
@@ -190,6 +186,7 @@ private:
     float gamma;
 };
 
+extern "C" {
 static
 void CALLBACK_CALL_TYPE iod_read_fn(png_structp png_ptr, png_bytep data, png_size_t length)
 {
@@ -234,9 +231,7 @@ void CALLBACK_CALL_TYPE qpiw_flush_fn(png_structp /* png_ptr */)
 {
 }
 
-#if defined(Q_C_CALLBACKS)
 }
-#endif
 
 static
 void setup_qt(QImage& image, png_structp png_ptr, png_infop info_ptr, QSize scaledSize, bool *doScaledRead, float screen_gamma=0.0)
@@ -492,17 +487,13 @@ static void read_image_scaled(QImage *outImage, png_structp png_ptr, png_infop i
 
 }
 
-#if defined(Q_C_CALLBACKS)
 extern "C" {
-#endif
 static void CALLBACK_CALL_TYPE qt_png_warning(png_structp /*png_ptr*/, png_const_charp message)
 {
     qWarning("libpng warning: %s", message);
 }
 
-#if defined(Q_C_CALLBACKS)
 }
-#endif
 
 
 void Q_INTERNAL_WIN_NO_THROW QPngHandlerPrivate::readPngTexts(png_info *info)
