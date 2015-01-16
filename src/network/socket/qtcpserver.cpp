@@ -92,7 +92,8 @@
 */
 
 #include "qtcpserver.h"
-#include "private/qobject_p.h"
+#include "qtcpserver_p.h"
+
 #include "qalgorithms.h"
 #include "qhostaddress.h"
 #include "qlist.h"
@@ -107,43 +108,6 @@ QT_BEGIN_NAMESPACE
     if (!d->socketEngine) { \
         return returnValue; \
     } } while (0)
-
-class QTcpServerPrivate : public QObjectPrivate, public QAbstractSocketEngineReceiver
-{
-    Q_DECLARE_PUBLIC(QTcpServer)
-public:
-    QTcpServerPrivate();
-    ~QTcpServerPrivate();
-
-    QList<QTcpSocket *> pendingConnections;
-
-    quint16 port;
-    QHostAddress address;
-
-    QAbstractSocket::SocketState state;
-    QAbstractSocketEngine *socketEngine;
-
-    QAbstractSocket::SocketError serverSocketError;
-    QString serverSocketErrorString;
-
-    int maxConnections;
-
-#ifndef QT_NO_NETWORKPROXY
-    QNetworkProxy proxy;
-    QNetworkProxy resolveProxy(const QHostAddress &address, quint16 port);
-#endif
-
-    // from QAbstractSocketEngineReceiver
-    void readNotification() Q_DECL_OVERRIDE;
-    void closeNotification() Q_DECL_OVERRIDE { readNotification(); }
-    inline void writeNotification() {}
-    inline void exceptionNotification() {}
-    inline void connectionNotification() {}
-#ifndef QT_NO_NETWORKPROXY
-    inline void proxyAuthenticationRequired(const QNetworkProxy &, QAuthenticator *) {}
-#endif
-
-};
 
 /*! \internal
 */
@@ -255,6 +219,13 @@ QTcpServer::QTcpServer(QObject *parent)
 QTcpServer::~QTcpServer()
 {
     close();
+}
+
+/*! \internal
+*/
+QTcpServer::QTcpServer(QTcpServerPrivate &dd, QObject *parent)
+    : QObject(dd, parent)
+{
 }
 
 /*!

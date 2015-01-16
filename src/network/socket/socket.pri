@@ -12,7 +12,8 @@ HEADERS += socket/qabstractsocketengine_p.h \
            socket/qlocalserver.h \
            socket/qlocalserver_p.h \
            socket/qlocalsocket.h \
-           socket/qlocalsocket_p.h
+           socket/qlocalsocket_p.h \
+           socket/qtcpserver_p.h
 
 SOURCES += socket/qabstractsocketengine.cpp \
            socket/qhttpsocketengine.cpp \

@@ -87,6 +87,8 @@ protected:
     virtual void incomingConnection(qintptr handle);
     void addPendingConnection(QTcpSocket* socket);
 
+    QTcpServer(QTcpServerPrivate &dd, QObject *parent = 0);
+
 Q_SIGNALS:
     void newConnection();
     void acceptError(QAbstractSocket::SocketError socketError);
