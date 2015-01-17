@@ -407,7 +407,7 @@ public:
 #if QT_DEPRECATED_SINCE(5, 0)
     QT_DEPRECATED Q_DECL_CONSTEXPR inline char toAscii() const { return toLatin1(); }
 #endif
-    Q_DECL_CONSTEXPR inline char toLatin1() const;
+    Q_DECL_CONSTEXPR inline char toLatin1() const { return ucs > 0xff ? '\0' : char(ucs); }
     Q_DECL_CONSTEXPR inline ushort unicode() const { return ucs; }
     inline ushort &unicode() { return ucs; }
 
@@ -415,7 +415,7 @@ public:
     QT_DEPRECATED static Q_DECL_CONSTEXPR inline QChar fromAscii(char c)
     { return fromLatin1(c); }
 #endif
-    Q_DECL_CONSTEXPR static inline QChar fromLatin1(char c);
+    static Q_DECL_CONSTEXPR inline QChar fromLatin1(char c) { return QChar(ushort(uchar(c))); }
 
     Q_DECL_CONSTEXPR inline bool isNull() const { return ucs == 0; }
 
@@ -439,8 +439,8 @@ public:
 
     Q_DECL_CONSTEXPR inline uchar cell() const { return uchar(ucs & 0xff); }
     Q_DECL_CONSTEXPR inline uchar row() const { return uchar((ucs>>8)&0xff); }
-    inline void setCell(uchar cell);
-    inline void setRow(uchar row);
+    inline void setCell(uchar acell) { ucs = ushort((ucs & 0xff00) + acell); }
+    inline void setRow(uchar arow) { ucs = ushort((ushort(arow)<<8) + (ucs&0xff)); }
 
     static Q_DECL_CONSTEXPR inline bool isNonCharacter(uint ucs4)
     {
@@ -506,17 +506,36 @@ public:
     static UnicodeVersion QT_FASTCALL currentUnicodeVersion() Q_DECL_CONST_FUNCTION;
 
     static bool QT_FASTCALL isPrint(uint ucs4) Q_DECL_CONST_FUNCTION;
-    static Q_DECL_CONSTEXPR inline bool isSpace(uint ucs4) Q_DECL_CONST_FUNCTION;
+    static Q_DECL_CONSTEXPR inline bool isSpace(uint ucs4) Q_DECL_CONST_FUNCTION
+    {
+        // note that [0x09..0x0d] + 0x85 are exceptional Cc-s and must be handled explicitly
+        return ucs4 == 0x20 || (ucs4 <= 0x0d && ucs4 >= 0x09)
+                || (ucs4 > 127 && (ucs4 == 0x85 || ucs4 == 0xa0 || QChar::isSpace_helper(ucs4)));
+    }
     static bool QT_FASTCALL isMark(uint ucs4) Q_DECL_CONST_FUNCTION;
     static bool QT_FASTCALL isPunct(uint ucs4) Q_DECL_CONST_FUNCTION;
     static bool QT_FASTCALL isSymbol(uint ucs4) Q_DECL_CONST_FUNCTION;
-    static Q_DECL_CONSTEXPR inline bool isLetter(uint ucs4) Q_DECL_CONST_FUNCTION;
-    static Q_DECL_CONSTEXPR inline bool isNumber(uint ucs4) Q_DECL_CONST_FUNCTION;
-    static Q_DECL_CONSTEXPR inline bool isLetterOrNumber(uint ucs4) Q_DECL_CONST_FUNCTION;
-    static Q_DECL_CONSTEXPR inline bool isDigit(uint ucs4) Q_DECL_CONST_FUNCTION;
-    static Q_DECL_CONSTEXPR inline bool isLower(uint ucs4) Q_DECL_CONST_FUNCTION;
-    static Q_DECL_CONSTEXPR inline bool isUpper(uint ucs4) Q_DECL_CONST_FUNCTION;
-    static Q_DECL_CONSTEXPR inline bool isTitleCase(uint ucs4) Q_DECL_CONST_FUNCTION;
+    static Q_DECL_CONSTEXPR inline bool isLetter(uint ucs4) Q_DECL_CONST_FUNCTION
+    {
+        return (ucs4 >= 'A' && ucs4 <= 'z' && (ucs4 >= 'a' || ucs4 <= 'Z'))
+                || (ucs4 > 127 && QChar::isLetter_helper(ucs4));
+    }
+    static Q_DECL_CONSTEXPR inline bool isNumber(uint ucs4) Q_DECL_CONST_FUNCTION
+    { return (ucs4 <= '9' && ucs4 >= '0') || (ucs4 > 127 && QChar::isNumber_helper(ucs4)); }
+    static Q_DECL_CONSTEXPR inline bool isLetterOrNumber(uint ucs4) Q_DECL_CONST_FUNCTION
+    {
+        return (ucs4 >= 'A' && ucs4 <= 'z' && (ucs4 >= 'a' || ucs4 <= 'Z'))
+                || (ucs4 >= '0' && ucs4 <= '9')
+                || (ucs4 > 127 && QChar::isLetterOrNumber_helper(ucs4));
+    }
+    static Q_DECL_CONSTEXPR inline bool isDigit(uint ucs4) Q_DECL_CONST_FUNCTION
+    { return (ucs4 <= '9' && ucs4 >= '0') || (ucs4 > 127 && QChar::category(ucs4) == Number_DecimalDigit); }
+    static Q_DECL_CONSTEXPR inline bool isLower(uint ucs4) Q_DECL_CONST_FUNCTION
+    { return (ucs4 <= 'z' && ucs4 >= 'a') || (ucs4 > 127 && QChar::category(ucs4) == Letter_Lowercase); }
+    static Q_DECL_CONSTEXPR inline bool isUpper(uint ucs4) Q_DECL_CONST_FUNCTION
+    { return (ucs4 <= 'Z' && ucs4 >= 'A') || (ucs4 > 127 && QChar::category(ucs4) == Letter_Uppercase); }
+    static Q_DECL_CONSTEXPR inline bool isTitleCase(uint ucs4) Q_DECL_CONST_FUNCTION
+    { return ucs4 > 127 && QChar::category(ucs4) == Letter_Titlecase; }
 
 private:
     static bool QT_FASTCALL isSpace_helper(uint ucs4) Q_DECL_CONST_FUNCTION;
@@ -535,42 +554,6 @@ private:
 };
 
 Q_DECLARE_TYPEINFO(QChar, Q_MOVABLE_TYPE);
-
-Q_DECL_CONSTEXPR inline char QChar::toLatin1() const { return ucs > 0xff ? '\0' : char(ucs); }
-Q_DECL_CONSTEXPR inline QChar QChar::fromLatin1(char c) { return QChar(ushort(uchar(c))); }
-
-inline void QChar::setCell(uchar acell)
-{ ucs = ushort((ucs & 0xff00) + acell); }
-inline void QChar::setRow(uchar arow)
-{ ucs = ushort((ushort(arow)<<8) + (ucs&0xff)); }
-
-Q_DECL_CONSTEXPR inline bool QChar::isSpace(uint ucs4)
-{
-    // note that [0x09..0x0d] + 0x85 are exceptional Cc-s and must be handled explicitly
-    return ucs4 == 0x20 || (ucs4 <= 0x0d && ucs4 >= 0x09)
-            || (ucs4 > 127 && (ucs4 == 0x85 || ucs4 == 0xa0 || QChar::isSpace_helper(ucs4)));
-}
-Q_DECL_CONSTEXPR inline bool QChar::isLetter(uint ucs4)
-{
-    return (ucs4 >= 'A' && ucs4 <= 'z' && (ucs4 >= 'a' || ucs4 <= 'Z'))
-            || (ucs4 > 127 && QChar::isLetter_helper(ucs4));
-}
-Q_DECL_CONSTEXPR inline bool QChar::isNumber(uint ucs4)
-{ return (ucs4 <= '9' && ucs4 >= '0') || (ucs4 > 127 && QChar::isNumber_helper(ucs4)); }
-Q_DECL_CONSTEXPR inline bool QChar::isLetterOrNumber(uint ucs4)
-{
-    return (ucs4 >= 'A' && ucs4 <= 'z' && (ucs4 >= 'a' || ucs4 <= 'Z'))
-            || (ucs4 >= '0' && ucs4 <= '9')
-            || (ucs4 > 127 && QChar::isLetterOrNumber_helper(ucs4));
-}
-Q_DECL_CONSTEXPR inline bool QChar::isDigit(uint ucs4)
-{ return (ucs4 <= '9' && ucs4 >= '0') || (ucs4 > 127 && QChar::category(ucs4) == Number_DecimalDigit); }
-Q_DECL_CONSTEXPR inline bool QChar::isLower(uint ucs4)
-{ return (ucs4 <= 'z' && ucs4 >= 'a') || (ucs4 > 127 && QChar::category(ucs4) == Letter_Lowercase); }
-Q_DECL_CONSTEXPR inline bool QChar::isUpper(uint ucs4)
-{ return (ucs4 <= 'Z' && ucs4 >= 'A') || (ucs4 > 127 && QChar::category(ucs4) == Letter_Uppercase); }
-Q_DECL_CONSTEXPR inline bool QChar::isTitleCase(uint ucs4)
-{ return ucs4 > 127 && QChar::category(ucs4) == Letter_Titlecase; }
 
 Q_DECL_CONSTEXPR inline bool operator==(QChar c1, QChar c2) { return c1.ucs == c2.ucs; }
 Q_DECL_CONSTEXPR inline bool operator< (QChar c1, QChar c2) { return c1.ucs <  c2.ucs; }
