@@ -17,6 +17,7 @@ HEADERS = qbenchmark.h \
     qbenchmarkvalgrind_p.h \
     qbenchmarkevent_p.h \
     qbenchmarkperfevents_p.h \
+    qbenchmarkmetric.h \
     qbenchmarkmetric_p.h \
     qsignalspy.h \
     qtestaccessible.h \
