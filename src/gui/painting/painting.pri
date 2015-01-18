@@ -13,6 +13,7 @@ HEADERS += \
         painting/qdrawhelper_x86_p.h \
         painting/qdrawingprimitive_sse2_p.h \
         painting/qemulationpaintengine_p.h \
+        painting/qfixed_p.h \
         painting/qgrayraster_p.h \
         painting/qmatrix.h \
         painting/qmemrotate_p.h \
