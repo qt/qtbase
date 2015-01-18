@@ -232,7 +232,6 @@ void QToolBoxButton::initStyleOption(QStyleOptionToolBox *option) const
 void QToolBoxButton::paintEvent(QPaintEvent *)
 {
     QPainter paint(this);
-    QString text = QAbstractButton::text();
     QPainter *p = &paint;
     QStyleOptionToolBoxV2 opt;
     initStyleOption(&opt);
