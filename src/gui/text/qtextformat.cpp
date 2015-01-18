@@ -319,7 +319,7 @@ uint QTextFormatPrivate::recalcHash() const
 {
     hashValue = 0;
     for (QVector<Property>::ConstIterator it = props.constBegin(); it != props.constEnd(); ++it)
-        hashValue += (it->key << 16) + variantHash(it->value);
+        hashValue += (static_cast<quint32>(it->key) << 16) + variantHash(it->value);
 
     hashDirty = false;
 
