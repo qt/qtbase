@@ -518,8 +518,9 @@ void QOpenGLContext::setScreen(QScreen *screen)
     in addition. Therefore \a handle is variant containing a platform-specific
     value type. These classes can be found in the QtPlatformHeaders module.
 
-    When create() is called with native handles set, the handles' ownership are
-    not taken, meaning that \c destroy() will not destroy the native context.
+    When create() is called with native handles set, QOpenGLContext does not
+    take ownership of the handles, so destroying the QOpenGLContext does not
+    destroy the native context.
 
     \note Some frameworks track the current context and surfaces internally.
     Making the adopted QOpenGLContext current via Qt will have no effect on such
@@ -582,8 +583,8 @@ QVariant QOpenGLContext::nativeHandle() const
     Returns \c true if the native context was successfully created and is ready to
     be used with makeCurrent(), swapBuffers(), etc.
 
-    \note If the context is already created, this function will first call
-    \c destroy(), and then create a new OpenGL context.
+    \note If the context already exists, this function destroys the existing
+    context first, and then creates a new one.
 
     \sa makeCurrent(), format()
 */
@@ -605,6 +606,8 @@ bool QOpenGLContext::create()
 }
 
 /*!
+    \internal
+
     Destroy the underlying platform context associated with this context.
 
     If any other context is directly or indirectly sharing resources with this
@@ -658,8 +661,7 @@ void QOpenGLContext::destroy()
 /*!
     Destroys the QOpenGLContext object.
 
-    This implicitly calls \c destroy(), so if this is the current context for the
-    thread, doneCurrent() is also called.
+    If this is the current context for the thread, doneCurrent() is also called.
 */
 QOpenGLContext::~QOpenGLContext()
 {
