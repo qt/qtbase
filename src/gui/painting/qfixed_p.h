@@ -56,10 +56,10 @@ private:
     Q_DECL_CONSTEXPR QFixed(int val, int) : val(val) {} // 2nd int is just a dummy for disambiguation
 public:
     Q_DECL_CONSTEXPR QFixed() : val(0) {}
-    Q_DECL_CONSTEXPR QFixed(int i) : val(i<<6) {}
-    Q_DECL_CONSTEXPR QFixed(long i) : val(i<<6) {}
-    QFixed &operator=(int i) { val = (i<<6); return *this; }
-    QFixed &operator=(long i) { val = (i<<6); return *this; }
+    Q_DECL_CONSTEXPR QFixed(int i) : val(i * 64) {}
+    Q_DECL_CONSTEXPR QFixed(long i) : val(i * 64) {}
+    QFixed &operator=(int i) { val = i * 64; return *this; }
+    QFixed &operator=(long i) { val = i * 64; return *this; }
 
     Q_DECL_CONSTEXPR static QFixed fromReal(qreal r) { return fromFixed((int)(r*qreal(64))); }
     Q_DECL_CONSTEXPR static QFixed fromFixed(int fixed) { return QFixed(fixed,0); } // uses private ctor
@@ -70,21 +70,21 @@ public:
     Q_DECL_CONSTEXPR inline int toInt() const { return (((val)+32) & -64)>>6; }
     Q_DECL_CONSTEXPR inline qreal toReal() const { return ((qreal)val)/(qreal)64; }
 
-    Q_DECL_CONSTEXPR inline int truncate() const { return val>>6; }
+    Q_DECL_CONSTEXPR inline int truncate() const { return val / 64; }
     Q_DECL_CONSTEXPR inline QFixed round() const { return fromFixed(((val)+32) & -64); }
     Q_DECL_CONSTEXPR inline QFixed floor() const { return fromFixed((val) & -64); }
     Q_DECL_CONSTEXPR inline QFixed ceil() const { return fromFixed((val+63) & -64); }
 
-    Q_DECL_CONSTEXPR inline QFixed operator+(int i) const { return fromFixed((val + (i<<6))); }
+    Q_DECL_CONSTEXPR inline QFixed operator+(int i) const { return fromFixed(val + i * 64); }
     Q_DECL_CONSTEXPR inline QFixed operator+(uint i) const { return fromFixed((val + (i<<6))); }
     Q_DECL_CONSTEXPR inline QFixed operator+(const QFixed &other) const { return fromFixed((val + other.val)); }
-    inline QFixed &operator+=(int i) { val += (i<<6); return *this; }
+    inline QFixed &operator+=(int i) { val += i * 64; return *this; }
     inline QFixed &operator+=(uint i) { val += (i<<6); return *this; }
     inline QFixed &operator+=(const QFixed &other) { val += other.val; return *this; }
-    Q_DECL_CONSTEXPR inline QFixed operator-(int i) const { return fromFixed((val - (i<<6))); }
+    Q_DECL_CONSTEXPR inline QFixed operator-(int i) const { return fromFixed(val - i * 64); }
     Q_DECL_CONSTEXPR inline QFixed operator-(uint i) const { return fromFixed((val - (i<<6))); }
     Q_DECL_CONSTEXPR inline QFixed operator-(const QFixed &other) const { return fromFixed((val - other.val)); }
-    inline QFixed &operator-=(int i) { val -= (i<<6); return *this; }
+    inline QFixed &operator-=(int i) { val -= i * 64; return *this; }
     inline QFixed &operator-=(uint i) { val -= (i<<6); return *this; }
     inline QFixed &operator-=(const QFixed &other) { val -= other.val; return *this; }
     Q_DECL_CONSTEXPR inline QFixed operator-() const { return fromFixed(-val); }
@@ -162,18 +162,18 @@ Q_DECL_CONSTEXPR inline QFixed operator+(uint i, const QFixed &d) { return d+i; 
 Q_DECL_CONSTEXPR inline QFixed operator-(uint i, const QFixed &d) { return -(d-i); }
 // Q_DECL_CONSTEXPR inline QFixed operator*(qreal d, const QFixed &d2) { return d2*d; }
 
-Q_DECL_CONSTEXPR inline bool operator==(const QFixed &f, int i) { return f.value() == (i<<6); }
-Q_DECL_CONSTEXPR inline bool operator==(int i, const QFixed &f) { return f.value() == (i<<6); }
-Q_DECL_CONSTEXPR inline bool operator!=(const QFixed &f, int i) { return f.value() != (i<<6); }
-Q_DECL_CONSTEXPR inline bool operator!=(int i, const QFixed &f) { return f.value() != (i<<6); }
-Q_DECL_CONSTEXPR inline bool operator<=(const QFixed &f, int i) { return f.value() <= (i<<6); }
-Q_DECL_CONSTEXPR inline bool operator<=(int i, const QFixed &f) { return (i<<6) <= f.value(); }
-Q_DECL_CONSTEXPR inline bool operator>=(const QFixed &f, int i) { return f.value() >= (i<<6); }
-Q_DECL_CONSTEXPR inline bool operator>=(int i, const QFixed &f) { return (i<<6) >= f.value(); }
-Q_DECL_CONSTEXPR inline bool operator<(const QFixed &f, int i) { return f.value() < (i<<6); }
-Q_DECL_CONSTEXPR inline bool operator<(int i, const QFixed &f) { return (i<<6) < f.value(); }
-Q_DECL_CONSTEXPR inline bool operator>(const QFixed &f, int i) { return f.value() > (i<<6); }
-Q_DECL_CONSTEXPR inline bool operator>(int i, const QFixed &f) { return (i<<6) > f.value(); }
+Q_DECL_CONSTEXPR inline bool operator==(const QFixed &f, int i) { return f.value() == i * 64; }
+Q_DECL_CONSTEXPR inline bool operator==(int i, const QFixed &f) { return f.value() == i * 64; }
+Q_DECL_CONSTEXPR inline bool operator!=(const QFixed &f, int i) { return f.value() != i * 64; }
+Q_DECL_CONSTEXPR inline bool operator!=(int i, const QFixed &f) { return f.value() != i * 64; }
+Q_DECL_CONSTEXPR inline bool operator<=(const QFixed &f, int i) { return f.value() <= i * 64; }
+Q_DECL_CONSTEXPR inline bool operator<=(int i, const QFixed &f) { return i * 64 <= f.value(); }
+Q_DECL_CONSTEXPR inline bool operator>=(const QFixed &f, int i) { return f.value() >= i * 64; }
+Q_DECL_CONSTEXPR inline bool operator>=(int i, const QFixed &f) { return i * 64 >= f.value(); }
+Q_DECL_CONSTEXPR inline bool operator<(const QFixed &f, int i) { return f.value() < i * 64; }
+Q_DECL_CONSTEXPR inline bool operator<(int i, const QFixed &f) { return i * 64 < f.value(); }
+Q_DECL_CONSTEXPR inline bool operator>(const QFixed &f, int i) { return f.value() > i * 64; }
+Q_DECL_CONSTEXPR inline bool operator>(int i, const QFixed &f) { return i * 64 > f.value(); }
 
 #ifndef QT_NO_DEBUG_STREAM
 inline QDebug &operator<<(QDebug &dbg, const QFixed &f)
