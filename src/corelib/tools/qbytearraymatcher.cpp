@@ -256,7 +256,7 @@ static int qFindByteArrayBoyerMoore(
 
 #define REHASH(a) \
     if (sl_minus_1 < sizeof(uint) * CHAR_BIT) \
-        hashHaystack -= (a) << sl_minus_1; \
+        hashHaystack -= uint(a) << sl_minus_1; \
     hashHaystack <<= 1
 
 /*!
