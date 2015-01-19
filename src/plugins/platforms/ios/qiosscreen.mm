@@ -227,30 +227,32 @@ void QIOSScreen::updateProperties()
     m_geometry = fromCGRect(m_uiScreen.bounds).toRect();
     m_availableGeometry = fromCGRect(m_uiScreen.applicationFrame).toRect();
 
-    Qt::ScreenOrientation statusBarOrientation = toQtScreenOrientation(UIDeviceOrientation([UIApplication sharedApplication].statusBarOrientation));
+    if (m_uiScreen == [UIScreen mainScreen]) {
+        Qt::ScreenOrientation statusBarOrientation = toQtScreenOrientation(UIDeviceOrientation([UIApplication sharedApplication].statusBarOrientation));
 
-    if (QSysInfo::MacintoshVersion < QSysInfo::MV_IOS_8_0) {
-        // On iOS < 8.0 the UIScreen geometry is always in portait, and the system applies
-        // the screen rotation to the root view-controller's view instead of directly to the
-        // screen, like iOS 8 and above does.
-        m_geometry = mapBetween(Qt::PortraitOrientation, statusBarOrientation, m_geometry);
-        m_availableGeometry = transformBetween(Qt::PortraitOrientation, statusBarOrientation, m_geometry).mapRect(m_availableGeometry);
-    }
+        if (QSysInfo::MacintoshVersion < QSysInfo::MV_IOS_8_0) {
+            // On iOS < 8.0 the UIScreen geometry is always in portait, and the system applies
+            // the screen rotation to the root view-controller's view instead of directly to the
+            // screen, like iOS 8 and above does.
+            m_geometry = mapBetween(Qt::PortraitOrientation, statusBarOrientation, m_geometry);
+            m_availableGeometry = transformBetween(Qt::PortraitOrientation, statusBarOrientation, m_geometry).mapRect(m_availableGeometry);
+        }
 
-    QIOSViewController *qtViewController = [m_uiWindow.rootViewController isKindOfClass:[QIOSViewController class]] ?
-        static_cast<QIOSViewController *>(m_uiWindow.rootViewController) : nil;
+        QIOSViewController *qtViewController = [m_uiWindow.rootViewController isKindOfClass:[QIOSViewController class]] ?
+            static_cast<QIOSViewController *>(m_uiWindow.rootViewController) : nil;
 
-    if (qtViewController.lockedOrientation) {
-        // Setting the statusbar orientation (content orientation) on will affect the screen geometry,
-        // which is not what we want. We want to reflect the screen geometry based on the locked orientation,
-        // and adjust the available geometry based on the repositioned status bar for the current status
-        // bar orientation.
+        if (qtViewController.lockedOrientation) {
+            // Setting the statusbar orientation (content orientation) on will affect the screen geometry,
+            // which is not what we want. We want to reflect the screen geometry based on the locked orientation,
+            // and adjust the available geometry based on the repositioned status bar for the current status
+            // bar orientation.
 
-        Qt::ScreenOrientation lockedOrientation = toQtScreenOrientation(UIDeviceOrientation(qtViewController.lockedOrientation));
-        QTransform transform = transformBetween(lockedOrientation, statusBarOrientation, m_geometry).inverted();
+            Qt::ScreenOrientation lockedOrientation = toQtScreenOrientation(UIDeviceOrientation(qtViewController.lockedOrientation));
+            QTransform transform = transformBetween(lockedOrientation, statusBarOrientation, m_geometry).inverted();
 
-        m_geometry = transform.mapRect(m_geometry);
-        m_availableGeometry = transform.mapRect(m_availableGeometry);
+            m_geometry = transform.mapRect(m_geometry);
+            m_availableGeometry = transform.mapRect(m_availableGeometry);
+        }
     }
 
     if (screen() && screen()->orientation() != orientation())

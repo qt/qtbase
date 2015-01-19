@@ -239,7 +239,7 @@
 
 -(BOOL)shouldAutorotate
 {
-    return !self.lockedOrientation;
+    return m_screen->uiScreen() == [UIScreen mainScreen] && !self.lockedOrientation;
 }
 
 #if QT_IOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__IPHONE_6_0)
