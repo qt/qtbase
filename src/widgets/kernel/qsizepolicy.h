@@ -45,6 +45,15 @@
 
 QT_BEGIN_NAMESPACE
 
+// gcc < 4.8.0 has problems with init'ing variant members in constexpr ctors
+// https://gcc.gnu.org/bugzilla/show_bug.cgi?id=54922
+#if !defined(Q_CC_GNU) || defined(Q_CC_INTEL) || defined(Q_CC_CLANG) || Q_CC_GNU >= 408
+# define QT_SIZEPOLICY_CONSTEXPR Q_DECL_CONSTEXPR
+#endif
+
+#ifndef QT_SIZEPOLICY_CONSTEXPR
+# define QT_SIZEPOLICY_CONSTEXPR
+#endif
 
 class QVariant;
 class QSizePolicy;
@@ -94,7 +103,7 @@ public:
     Q_DECLARE_FLAGS(ControlTypes, ControlType)
     Q_FLAG(ControlTypes)
 
-    QSizePolicy() : data(0) { }
+    QT_SIZEPOLICY_CONSTEXPR QSizePolicy() : data(0) { }
 
     QSizePolicy(Policy horizontal, Policy vertical, ControlType type = DefaultType)
         : data(0) {
@@ -102,48 +111,47 @@ public:
         bits.verPolicy = vertical;
         setControlType(type);
     }
-    Policy horizontalPolicy() const { return static_cast<Policy>(bits.horPolicy); }
-    Policy verticalPolicy() const { return static_cast<Policy>(bits.verPolicy); }
+    QT_SIZEPOLICY_CONSTEXPR Policy horizontalPolicy() const { return static_cast<Policy>(bits.horPolicy); }
+    QT_SIZEPOLICY_CONSTEXPR Policy verticalPolicy() const { return static_cast<Policy>(bits.verPolicy); }
     ControlType controlType() const;
 
     void setHorizontalPolicy(Policy d) { bits.horPolicy = d; }
     void setVerticalPolicy(Policy d) { bits.verPolicy = d; }
     void setControlType(ControlType type);
 
-    Qt::Orientations expandingDirections() const {
+    QT_SIZEPOLICY_CONSTEXPR Qt::Orientations expandingDirections() const {
         return ( (verticalPolicy()   & ExpandFlag) ? Qt::Vertical   : Qt::Orientations() )
              | ( (horizontalPolicy() & ExpandFlag) ? Qt::Horizontal : Qt::Orientations() ) ;
     }
 
-    void setHeightForWidth(bool b) { bits.hfw = b;  }
-    bool hasHeightForWidth() const { return bits.hfw; }
+    void setHeightForWidth(bool b) { bits.hfw = b; }
+    QT_SIZEPOLICY_CONSTEXPR bool hasHeightForWidth() const { return bits.hfw; }
     void setWidthForHeight(bool b) { bits.wfh = b;  }
-    bool hasWidthForHeight() const { return bits.wfh; }
+    QT_SIZEPOLICY_CONSTEXPR bool hasWidthForHeight() const { return bits.wfh; }
 
-    bool operator==(const QSizePolicy& s) const { return data == s.data; }
-    bool operator!=(const QSizePolicy& s) const { return data != s.data; }
+    QT_SIZEPOLICY_CONSTEXPR bool operator==(const QSizePolicy& s) const { return data == s.data; }
+    QT_SIZEPOLICY_CONSTEXPR bool operator!=(const QSizePolicy& s) const { return data != s.data; }
 
     friend Q_DECL_CONST_FUNCTION uint qHash(QSizePolicy key, uint seed) Q_DECL_NOTHROW { return qHash(key.data, seed); }
 
     operator QVariant() const;
 
-    int horizontalStretch() const { return static_cast<int>(bits.horStretch); }
-    int verticalStretch() const { return static_cast<int>(bits.verStretch); }
+    QT_SIZEPOLICY_CONSTEXPR int horizontalStretch() const { return static_cast<int>(bits.horStretch); }
+    QT_SIZEPOLICY_CONSTEXPR int verticalStretch() const { return static_cast<int>(bits.verStretch); }
     void setHorizontalStretch(int stretchFactor) { bits.horStretch = static_cast<quint32>(qBound(0, stretchFactor, 255)); }
     void setVerticalStretch(int stretchFactor) { bits.verStretch = static_cast<quint32>(qBound(0, stretchFactor, 255)); }
 
-    bool retainSizeWhenHidden() const { return bits.retainSizeWhenHidden; }
+    QT_SIZEPOLICY_CONSTEXPR bool retainSizeWhenHidden() const { return bits.retainSizeWhenHidden; }
     void setRetainSizeWhenHidden(bool retainSize) { bits.retainSizeWhenHidden = retainSize; }
 
     void transpose();
-
 
 private:
 #ifndef QT_NO_DATASTREAM
     friend Q_WIDGETS_EXPORT QDataStream &operator<<(QDataStream &, const QSizePolicy &);
     friend Q_WIDGETS_EXPORT QDataStream &operator>>(QDataStream &, QSizePolicy &);
 #endif
-    QSizePolicy(int i) : data(i) { }
+    QT_SIZEPOLICY_CONSTEXPR QSizePolicy(int i) : data(i) { }
 
     struct Bits {
         quint32 horStretch : 8;
@@ -186,6 +194,8 @@ inline void QSizePolicy::transpose() {
     setHorizontalStretch(vStretch);
     setVerticalStretch(hStretch);
 }
+
+#undef QT_SIZEPOLICY_CONSTEXPR
 
 QT_END_NAMESPACE
 

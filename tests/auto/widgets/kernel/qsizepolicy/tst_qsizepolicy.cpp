@@ -41,6 +41,7 @@ class tst_QSizePolicy : public QObject
 private Q_SLOTS:
     void cleanup() { QVERIFY(QApplication::topLevelWidgets().isEmpty()); }
     void qtest();
+    void constExpr();
     void defaultValues();
     void getSetCheck_data() { data(); }
     void getSetCheck();
@@ -100,6 +101,19 @@ void tst_QSizePolicy::qtest()
     CHECK2(CheckBox, ButtonBox);
     CHECK2(ToolButton, Slider);
 #undef CHECK2
+}
+
+void tst_QSizePolicy::constExpr()
+{
+/* gcc < 4.8.0 has problems with init'ing variant members in constexpr ctors */
+/* https://gcc.gnu.org/bugzilla/show_bug.cgi?id=54922 */
+#if !defined(Q_CC_GNU) || defined(Q_CC_INTEL) || defined(Q_CC_CLANG) || Q_CC_GNU >= 408
+    // check that certain ctors are constexpr (compile-only):
+    { Q_CONSTEXPR QSizePolicy sp; Q_UNUSED(sp); }
+    { Q_CONSTEXPR QSizePolicy sp = QSizePolicy(); Q_UNUSED(sp); }
+#else
+    QSKIP("QSizePolicy cannot be constexpr with this version of the compiler.");
+#endif
 }
 
 void tst_QSizePolicy::defaultValues()
