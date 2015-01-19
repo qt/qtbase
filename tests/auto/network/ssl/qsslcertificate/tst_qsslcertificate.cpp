@@ -1301,7 +1301,7 @@ void tst_QSslCertificate::pkcs12()
         return;
     }
 
-    QFile f(QLatin1String(SRCDIR "pkcs12/leaf.p12"));
+    QFile f(testDataDir + QLatin1String("/pkcs12/leaf.p12"));
     bool ok = f.open(QIODevice::ReadOnly);
     QVERIFY(ok);
 
@@ -1316,12 +1316,12 @@ void tst_QSslCertificate::pkcs12()
     QVERIFY(ok);
     f.close();
 
-    QList<QSslCertificate> leafCert = QSslCertificate::fromPath(QLatin1String( SRCDIR "pkcs12/leaf.crt"));
+    QList<QSslCertificate> leafCert = QSslCertificate::fromPath(testDataDir + QLatin1String("/pkcs12/leaf.crt"));
     QVERIFY(!leafCert.isEmpty());
 
     QCOMPARE(cert, leafCert.first());
 
-    QFile f2(QLatin1String(SRCDIR "pkcs12/leaf.key"));
+    QFile f2(testDataDir + QLatin1String("/pkcs12/leaf.key"));
     ok = f2.open(QIODevice::ReadOnly);
     QVERIFY(ok);
 
@@ -1331,7 +1331,7 @@ void tst_QSslCertificate::pkcs12()
     QVERIFY(!leafKey.isNull());
     QCOMPARE(key, leafKey);
 
-    QList<QSslCertificate> caCert = QSslCertificate::fromPath(QLatin1String(SRCDIR "pkcs12/inter.crt"));
+    QList<QSslCertificate> caCert = QSslCertificate::fromPath(testDataDir + QLatin1String("/pkcs12/inter.crt"));
     QVERIFY(!caCert.isEmpty());
 
     QVERIFY(!caCerts.isEmpty());
