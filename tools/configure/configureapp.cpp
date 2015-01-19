@@ -64,7 +64,8 @@ enum Platforms {
     WINDOWS_RT,
     QNX,
     BLACKBERRY,
-    ANDROID
+    ANDROID,
+    OTHER
 };
 
 std::ostream &operator<<(std::ostream &s, const QString &val) {
@@ -4494,6 +4495,8 @@ QString Configure::platformName() const
         return QStringLiteral("Qt for Blackberry");
     case ANDROID:
         return QStringLiteral("Qt for Android");
+    case OTHER:
+        return QStringLiteral("Qt for ???");
     }
 }
 
@@ -4512,6 +4515,8 @@ QString Configure::qpaPlatformName() const
         return QStringLiteral("blackberry");
     case ANDROID:
         return QStringLiteral("android");
+    case OTHER:
+        return QStringLiteral("xcb");
     }
 }
 
@@ -4534,6 +4539,9 @@ int Configure::platform() const
 
     if (xQMakeSpec.contains("android"))
         return ANDROID;
+
+    if (!xQMakeSpec.isEmpty())
+        return OTHER;
 
     return WINDOWS;
 }
