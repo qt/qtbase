@@ -1942,7 +1942,7 @@ void QTextCharFormat::setFont(const QFont &font, FontPropertiesInheritanceBehavi
         setFontFixedPitch(font.fixedPitch());
     if (mask & QFont::CapitalizationResolved)
         setFontCapitalization(font.capitalization());
-    if (mask & QFont::LetterSpacingResolved)
+    if (mask & QFont::WordSpacingResolved)
         setFontWordSpacing(font.wordSpacing());
     if (mask & QFont::LetterSpacingResolved) {
         setFontLetterSpacingType(font.letterSpacingType());
