@@ -938,7 +938,7 @@ void QTextEngine::shapeLine(const QScriptLine &line)
 }
 
 #ifdef QT_ENABLE_HARFBUZZ_NG
-extern bool useHarfbuzzNG; // defined in qfontengine.cpp
+extern bool qt_useHarfbuzzNG(); // defined in qfontengine.cpp
 #endif
 
 void QTextEngine::shapeText(int item) const
@@ -1051,7 +1051,7 @@ void QTextEngine::shapeText(int item) const
     }
 
 #ifdef QT_ENABLE_HARFBUZZ_NG
-    if (useHarfbuzzNG)
+    if (qt_useHarfbuzzNG())
         si.num_glyphs = shapeTextWithHarfbuzzNG(si, string, itemLength, fontEngine, itemBoundaries, kerningEnabled);
     else
 #endif
@@ -1067,7 +1067,7 @@ void QTextEngine::shapeText(int item) const
     QGlyphLayout glyphs = shapedGlyphs(&si);
 
 #ifdef QT_ENABLE_HARFBUZZ_NG
-    if (useHarfbuzzNG)
+    if (qt_useHarfbuzzNG())
         qt_getJustificationOpportunities(string, itemLength, si, glyphs, logClusters(&si));
 #endif
 
@@ -1607,7 +1607,7 @@ void QTextEngine::itemize() const
     }
 #ifdef QT_ENABLE_HARFBUZZ_NG
     analysis = scriptAnalysis.data();
-    if (useHarfbuzzNG) {
+    if (qt_useHarfbuzzNG()) {
         // ### pretend HB-old behavior for now
         for (int i = 0; i < length; ++i) {
             switch (analysis[i].script) {
