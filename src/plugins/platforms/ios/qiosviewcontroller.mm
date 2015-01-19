@@ -56,10 +56,53 @@
 
 // -------------------------------------------------------------------------
 
+@interface QIOSViewController () {
+  @public
+    QIOSScreen *m_screen;
+    BOOL m_updatingProperties;
+}
+@property (nonatomic, assign) BOOL changingOrientation;
+@end
+
+// -------------------------------------------------------------------------
+
 @interface QIOSDesktopManagerView : UIView
 @end
 
 @implementation QIOSDesktopManagerView
+
+- (void)didAddSubview:(UIView *)subview
+{
+    Q_UNUSED(subview);
+
+    QIOSScreen *screen = self.qtViewController->m_screen;
+
+    // The 'window' property of our view is not valid until the window
+    // has been shown, so we have to access it through the QIOSScreen.
+    UIWindow *uiWindow = screen->uiWindow();
+
+    if (uiWindow.hidden) {
+        // Associate UIWindow to screen and show it the first time a QWindow
+        // is mapped to the screen. For external screens this means disabling
+        // mirroring mode and presenting alternate content on the screen.
+        uiWindow.screen = screen->uiScreen();
+        uiWindow.hidden = NO;
+    }
+}
+
+- (void)willRemoveSubview:(UIView *)subview
+{
+    Q_UNUSED(subview);
+
+    Q_ASSERT(self.window);
+    UIWindow *uiWindow = self.window;
+
+    if (uiWindow.screen != [UIScreen mainScreen] && self.subviews.count == 1) {
+        // Removing the last view of an external screen, go back to mirror mode
+        uiWindow.screen = nil;
+        uiWindow.hidden = YES;
+    }
+}
 
 - (void)layoutSubviews
 {
@@ -124,13 +167,6 @@
 @end
 
 // -------------------------------------------------------------------------
-
-@interface QIOSViewController () {
-    QIOSScreen *m_screen;
-    BOOL m_updatingProperties;
-}
-@property (nonatomic, assign) BOOL changingOrientation;
-@end
 
 @implementation QIOSViewController
 

@@ -208,12 +208,6 @@ QIOSScreen::QIOSScreen(UIScreen *screen)
         // Create a window and associated view-controller that we can use
         m_uiWindow = [[UIWindow alloc] initWithFrame:[m_uiScreen bounds]];
         m_uiWindow.rootViewController = [[[QIOSViewController alloc] initWithQIOSScreen:this] autorelease];
-
-        // FIXME: Only do once windows are added to the screen, and for any screen
-        if (screen == [UIScreen mainScreen]) {
-            m_uiWindow.screen = m_uiScreen;
-            m_uiWindow.hidden = NO;
-        }
     }
 
     updateProperties();
