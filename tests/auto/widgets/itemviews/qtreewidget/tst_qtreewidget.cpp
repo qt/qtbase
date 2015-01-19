@@ -1048,6 +1048,12 @@ void tst_QTreeWidget::checkState()
     QCOMPARE(item->checkState(0), Qt::Unchecked);
     QCOMPARE(firstChild->checkState(0), Qt::Unchecked);
     QCOMPARE(seccondChild->checkState(0), Qt::Unchecked);
+
+    // Can't force the state to PartiallyChecked; state comes from children
+    item->setCheckState(0, Qt::PartiallyChecked);
+    QCOMPARE(item->checkState(0), Qt::Unchecked);
+    QCOMPARE(firstChild->checkState(0), Qt::Unchecked);
+    QCOMPARE(seccondChild->checkState(0), Qt::Unchecked);
 }
 
 void tst_QTreeWidget::findItems_data()

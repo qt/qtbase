@@ -1720,7 +1720,7 @@ void QTreeWidgetItem::setData(int column, int role, const QVariant &value)
         }
     } break;
     case Qt::CheckStateRole:
-        if (itemFlags & Qt::ItemIsTristate) {
+        if ((itemFlags & Qt::ItemIsTristate) && value != Qt::PartiallyChecked) {
             for (int i = 0; i < children.count(); ++i) {
                 QTreeWidgetItem *child = children.at(i);
                 if (child->data(column, role).isValid()) {// has a CheckState
