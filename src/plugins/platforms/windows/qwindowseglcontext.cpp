@@ -64,7 +64,7 @@ QT_BEGIN_NAMESPACE
 QWindowsLibEGL QWindowsEGLStaticContext::libEGL;
 QWindowsLibGLESv2 QWindowsEGLStaticContext::libGLESv2;
 
-#ifndef QT_STATIC
+#if !defined(QT_STATIC) || defined(QT_OPENGL_DYNAMIC)
 
 #ifdef Q_CC_MINGW
 static void *resolveFunc(HMODULE lib, const char *name)
@@ -111,7 +111,7 @@ void *QWindowsLibEGL::resolve(const char *name)
 
 #endif // !QT_STATIC
 
-#ifndef QT_STATIC
+#if !defined(QT_STATIC) || defined(QT_OPENGL_DYNAMIC)
 #  define RESOLVE(signature, name) signature(resolve( #name ));
 #else
 #  define RESOLVE(signature, name) signature(&::name);
@@ -127,7 +127,7 @@ bool QWindowsLibEGL::init()
 
     qCDebug(lcQpaGl) << "Qt: Using EGL from" << dllName;
 
-#ifndef QT_STATIC
+#if !defined(QT_STATIC) || defined(QT_OPENGL_DYNAMIC)
     m_lib = ::LoadLibraryW((const wchar_t *) QString::fromLatin1(dllName).utf16());
     if (!m_lib) {
         qErrnoWarning(::GetLastError(), "Failed to load %s", dllName);
@@ -159,7 +159,7 @@ bool QWindowsLibEGL::init()
     return eglGetError && eglGetDisplay && eglInitialize;
 }
 
-#ifndef QT_STATIC
+#if !defined(QT_STATIC) || defined(QT_OPENGL_DYNAMIC)
 void *QWindowsLibGLESv2::resolve(const char *name)
 {
     void *proc = m_lib ? resolveFunc(m_lib, name) : 0;
@@ -179,7 +179,7 @@ bool QWindowsLibGLESv2::init()
 #endif
 
     qCDebug(lcQpaGl) << "Qt: Using OpenGL ES 2.0 from" << dllName;
-#ifndef QT_STATIC
+#if !defined(QT_STATIC) || defined(QT_OPENGL_DYNAMIC)
     m_lib = ::LoadLibraryW((const wchar_t *) QString::fromLatin1(dllName).utf16());
     if (!m_lib) {
         qErrnoWarning(::GetLastError(), "Failed to load %s", dllName);

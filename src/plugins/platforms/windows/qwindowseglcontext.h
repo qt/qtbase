@@ -74,7 +74,7 @@ struct QWindowsLibEGL
     __eglMustCastToProperFunctionPointerType (EGLAPIENTRY * eglGetProcAddress)(const char *procname);
 
 private:
-#ifndef QT_STATIC
+#if !defined(QT_STATIC) || defined(QT_OPENGL_DYNAMIC)
     void *resolve(const char *name);
     HMODULE m_lib;
 #endif
@@ -83,7 +83,8 @@ private:
 struct QWindowsLibGLESv2
 {
     bool init();
-#ifndef QT_STATIC
+
+#if !defined(QT_STATIC) || defined(QT_OPENGL_DYNAMIC)
     void *moduleHandle() const { return m_lib; }
 #else
     void *moduleHandle() const { return Q_NULLPTR; }
@@ -238,7 +239,7 @@ struct QWindowsLibGLESv2
     void (APIENTRY * glDepthRangef)(GLclampf nearVal, GLclampf farVal);
 
 private:
-#ifndef QT_STATIC
+#if !defined(QT_STATIC) || defined(QT_OPENGL_DYNAMIC)
     void *resolve(const char *name);
     HMODULE m_lib;
 #endif
