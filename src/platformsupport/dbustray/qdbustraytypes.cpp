@@ -45,27 +45,33 @@
 #include <QDebug>
 #include <QtEndian>
 #include <QPainter>
+#include <QGuiApplication>
 #include <qpa/qplatformmenu.h>
 #include "qdbusplatformmenu_p.h"
 
 QT_BEGIN_NAMESPACE
 
-static const int IconSizeLimit = 32;
-static const int IconNormalSmallSize = 22;
+static const int IconSizeLimit = 64 * qGuiApp->devicePixelRatio();
+static const int IconNormalSmallSize = 22 * qGuiApp->devicePixelRatio();
+static const int IconNormalMediumSize = 64 * qGuiApp->devicePixelRatio();
 
 QXdgDBusImageVector iconToQXdgDBusImageVector(const QIcon &icon)
 {
     QXdgDBusImageVector ret;
     QList<QSize> sizes = icon.availableSizes();
 
-    // Omit any size larger than 32 px, to save D-Bus bandwidth;
-    // and ensure that 22px or smaller exists, because it's a common size.
+    // Omit any size larger than 64 px, to save D-Bus bandwidth;
+    // ensure that 22px or smaller exists, because it's a common size;
+    // and ensure that something between 22px and 64px exists, for better scaling to other sizes.
     bool hasSmallIcon = false;
+    bool hasMediumIcon = false;
     QList<QSize> toRemove;
     Q_FOREACH (const QSize &size, sizes) {
         int maxSize = qMax(size.width(), size.height());
         if (maxSize <= IconNormalSmallSize)
             hasSmallIcon = true;
+        else if (maxSize <= IconNormalMediumSize)
+            hasMediumIcon = true;
         else if (maxSize > IconSizeLimit)
             toRemove << size;
     }
@@ -73,7 +79,8 @@ QXdgDBusImageVector iconToQXdgDBusImageVector(const QIcon &icon)
         sizes.removeOne(size);
     if (!hasSmallIcon)
         sizes.append(QSize(IconNormalSmallSize, IconNormalSmallSize));
-
+    if (!hasMediumIcon)
+        sizes.append(QSize(IconNormalMediumSize, IconNormalMediumSize));
     foreach (QSize size, sizes) {
         // Protocol specifies ARGB32 format in network byte order
         QImage im = icon.pixmap(size).toImage().convertToFormat(QImage::Format_ARGB32);
