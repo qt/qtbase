@@ -44,6 +44,7 @@
 #include <QPixmap>
 #include <QDebug>
 #include <QtEndian>
+#include <QPainter>
 #include <qpa/qplatformmenu.h>
 #include "qdbusplatformmenu_p.h"
 
@@ -62,9 +63,10 @@ QXdgDBusImageVector iconToQXdgDBusImageVector(const QIcon &icon)
     bool hasSmallIcon = false;
     QList<QSize> toRemove;
     Q_FOREACH (const QSize &size, sizes) {
-        if (size.width() <= IconNormalSmallSize)
+        int maxSize = qMax(size.width(), size.height());
+        if (maxSize <= IconNormalSmallSize)
             hasSmallIcon = true;
-        else if (size.width() > IconSizeLimit)
+        else if (maxSize > IconSizeLimit)
             toRemove << size;
     }
     Q_FOREACH (const QSize &size, toRemove)
@@ -73,12 +75,21 @@ QXdgDBusImageVector iconToQXdgDBusImageVector(const QIcon &icon)
         sizes.append(QSize(IconNormalSmallSize, IconNormalSmallSize));
 
     foreach (QSize size, sizes) {
-        QXdgDBusImageStruct kim;
-        kim.width = size.width();
-        kim.height = size.height();
         // Protocol specifies ARGB32 format in network byte order
         QImage im = icon.pixmap(size).toImage().convertToFormat(QImage::Format_ARGB32);
-        kim.data = QByteArray((char *)(im.bits()), im.byteCount());
+        // letterbox if necessary to make it square
+        if (im.height() != im.width()) {
+            int maxSize = qMax(im.width(), im.height());
+            QImage padded(maxSize, maxSize, QImage::Format_ARGB32);
+            padded.fill(Qt::transparent);
+            QPainter painter(&padded);
+            painter.drawImage((maxSize - im.width()) / 2, (maxSize - im.height()) / 2, im);
+            im = padded;
+        }
+        QXdgDBusImageStruct kim;
+        kim.width = im.width();
+        kim.height = im.height();
+        kim.data = QByteArray(reinterpret_cast<const char*>(im.constBits()), im.byteCount());
         if (QSysInfo::ByteOrder == QSysInfo::LittleEndian) {
             for (char *ptr = kim.data.begin(); ptr < kim.data.end(); ptr += 4)
                 qToUnaligned(qToBigEndian<quint32>(*ptr), reinterpret_cast<uchar *>(ptr));
