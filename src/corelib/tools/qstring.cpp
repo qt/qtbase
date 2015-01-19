@@ -1734,7 +1734,7 @@ void QString::expand(int i)
     string.
 */
 
-QString &QString::operator=(const QString &other)
+QString &QString::operator=(const QString &other) Q_DECL_NOTHROW
 {
     other.d->ref.ref();
     if (!d->ref.deref())

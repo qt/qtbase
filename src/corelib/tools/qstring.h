@@ -215,10 +215,10 @@ public:
     QString(QChar c);
     QString(int size, QChar c);
     inline QString(QLatin1String latin1);
-    inline QString(const QString &);
+    inline QString(const QString &) Q_DECL_NOTHROW;
     inline ~QString();
     QString &operator=(QChar c);
-    QString &operator=(const QString &);
+    QString &operator=(const QString &) Q_DECL_NOTHROW;
     inline QString &operator=(QLatin1String latin1);
 #ifdef Q_COMPILER_RVALUE_REFS
     inline QString(QString && other) Q_DECL_NOTHROW : d(other.d) { other.d = Data::sharedNull(); }
@@ -865,7 +865,7 @@ inline QString &QString::operator=(QLatin1String s)
 }
 inline void QString::clear()
 { if (!isNull()) *this = QString(); }
-inline QString::QString(const QString &other) : d(other.d)
+inline QString::QString(const QString &other) Q_DECL_NOTHROW : d(other.d)
 { Q_ASSERT(&other != this); d->ref.ref(); }
 inline int QString::capacity() const
 { return d->alloc ? d->alloc - 1 : 0; }

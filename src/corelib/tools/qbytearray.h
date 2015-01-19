@@ -185,14 +185,14 @@ public:
     };
     Q_DECLARE_FLAGS(Base64Options, Base64Option)
 
-    inline QByteArray();
+    inline QByteArray() Q_DECL_NOTHROW;
     QByteArray(const char *, int size = -1);
     QByteArray(int size, char c);
     QByteArray(int size, Qt::Initialization);
-    inline QByteArray(const QByteArray &);
+    inline QByteArray(const QByteArray &) Q_DECL_NOTHROW;
     inline ~QByteArray();
 
-    QByteArray &operator=(const QByteArray &);
+    QByteArray &operator=(const QByteArray &) Q_DECL_NOTHROW;
     QByteArray &operator=(const char *str);
 #ifdef Q_COMPILER_RVALUE_REFS
     inline QByteArray(QByteArray && other) Q_DECL_NOTHROW : d(other.d) { other.d = Data::sharedNull(); }
@@ -466,7 +466,7 @@ public:
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QByteArray::Base64Options)
 
-inline QByteArray::QByteArray(): d(Data::sharedNull()) { }
+inline QByteArray::QByteArray() Q_DECL_NOTHROW : d(Data::sharedNull()) { }
 inline QByteArray::~QByteArray() { if (!d->ref.deref()) Data::deallocate(d); }
 inline int QByteArray::size() const
 { return d->size; }
@@ -496,7 +496,7 @@ inline void QByteArray::detach()
 { if (d->ref.isShared() || (d->offset != sizeof(QByteArrayData))) reallocData(uint(d->size) + 1u, d->detachFlags()); }
 inline bool QByteArray::isDetached() const
 { return !d->ref.isShared(); }
-inline QByteArray::QByteArray(const QByteArray &a) : d(a.d)
+inline QByteArray::QByteArray(const QByteArray &a) Q_DECL_NOTHROW : d(a.d)
 { d->ref.ref(); }
 
 inline int QByteArray::capacity() const

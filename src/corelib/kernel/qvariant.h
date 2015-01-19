@@ -189,7 +189,7 @@ class Q_CORE_EXPORT QVariant
         LastType = 0xffffffff // need this so that gcc >= 3.4 allocates 32 bits for Type
     };
 
-    inline QVariant();
+    QVariant() Q_DECL_NOTHROW : d() {}
     ~QVariant();
     QVariant(Type type);
     QVariant(int typeId, const void *copy);
@@ -520,8 +520,6 @@ inline void qVariantSetValue<QVariant>(QVariant &v, const QVariant &t)
     v = t;
 }
 
-
-inline QVariant::QVariant() {}
 inline bool QVariant::isValid() const { return d.type != Invalid; }
 
 template<typename T>

@@ -985,7 +985,7 @@ static inline char qToLower(char c)
     Assigns \a other to this byte array and returns a reference to
     this byte array.
 */
-QByteArray &QByteArray::operator=(const QByteArray & other)
+QByteArray &QByteArray::operator=(const QByteArray & other) Q_DECL_NOTHROW
 {
     other.d->ref.ref();
     if (!d->ref.deref())
