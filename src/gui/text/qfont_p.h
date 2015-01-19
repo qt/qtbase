@@ -175,8 +175,6 @@ public:
     int dpi;
     int screen;
 
-
-    uint rawMode    :  1;
     uint underline  :  1;
     uint overline   :  1;
     uint strikeOut  :  1;

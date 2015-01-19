@@ -222,9 +222,10 @@ public:
     void setHintingPreference(HintingPreference hintingPreference);
     HintingPreference hintingPreference() const;
 
-    // is raw mode still needed?
+#if QT_DEPRECATED_SINCE(5, 5)
     bool rawMode() const;
     void setRawMode(bool);
+#endif
 
     // dupicated from QFontInfo
     bool exactMatch() const;

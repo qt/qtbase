@@ -591,10 +591,6 @@ void tst_QFont::serialize_data()
     QTest::newRow("letterSpacing") << font << QDataStream::Qt_4_5;
 
     font = basicFont;
-    font.setRawMode(true);
-    QTest::newRow("rawMode") << font << QDataStream::Qt_1_0;
-
-    font = basicFont;
     font.setKerning(false);
     QTest::newRow("kerning") << font << QDataStream::Qt_4_0;
 
