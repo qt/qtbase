@@ -7738,10 +7738,17 @@ void QWidgetPrivate::show_helper()
 
 
 
+    const bool isWindow = q->isWindow();
+#ifndef QT_NO_GRAPHICSVIEW
+    bool isEmbedded = isWindow && q->graphicsProxyWidget() != Q_NULLPTR;
+#else
+    bool isEmbedded = false;
+#endif
+
     // popup handling: new popups and tools need to be raised, and
     // existing popups must be closed. Also propagate the current
     // windows's KeyboardFocusChange status.
-    if (q->isWindow()) {
+    if (isWindow && !isEmbedded) {
         if ((q->windowType() == Qt::Tool) || (q->windowType() == Qt::Popup) || q->windowType() == Qt::ToolTip) {
             q->raise();
             if (q->parentWidget() && q->parentWidget()->window()->testAttribute(Qt::WA_KeyboardFocusChange))
@@ -7756,10 +7763,8 @@ void QWidgetPrivate::show_helper()
 
     // Automatic embedding of child windows of widgets already embedded into
     // QGraphicsProxyWidget when they are shown the first time.
-    bool isEmbedded = false;
 #ifndef QT_NO_GRAPHICSVIEW
-    if (q->isWindow()) {
-        isEmbedded = q->graphicsProxyWidget() ? true : false;
+    if (isWindow) {
         if (!isEmbedded && !bypassGraphicsProxyWidget(q)) {
             QGraphicsProxyWidget *ancestorProxy = nearestGraphicsProxyWidget(q->parentWidget());
             if (ancestorProxy) {
