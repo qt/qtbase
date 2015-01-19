@@ -34,7 +34,9 @@
 #include <QtTest/QtTest>
 #include <QtCore/QProcess>
 #include <QtCore/QRegularExpression>
-#include <dbus/dbus.h>
+
+// We just need the DBUS_TYPE_* constants, so use our own copy
+#include "../../../../src/dbus/dbus_minimal_p.h"
 
 class tst_qdbusxml2cpp : public QObject
 {

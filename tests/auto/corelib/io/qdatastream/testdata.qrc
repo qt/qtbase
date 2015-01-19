@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/">
+        <file>datastream.q42</file>
+    </qresource>
+</RCC>

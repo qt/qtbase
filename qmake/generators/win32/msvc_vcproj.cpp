@@ -1620,7 +1620,6 @@ void VcprojGenerator::initOld()
             inc = QString("\"%1\"").arg(inc); // Quote all paths if not quoted already
         project->values("MSVCPROJ_INCPATH").append("-I" + inc);
     }
-    project->values("MSVCPROJ_INCPATH").append("-I" + specdir());
 
     QString dest = Option::fixPathToTargetOS(project->first("TARGET").toQString()) + project->first("TARGET_EXT");
     project->values("MSVCPROJ_TARGET") = ProStringList(dest);

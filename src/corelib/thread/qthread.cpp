@@ -178,7 +178,7 @@ QThreadPrivate::~QThreadPrivate()
     event loop by calling exec() and runs a Qt event loop inside the thread.
 
     You can use worker objects by moving them to the thread using
-    QObject::moveToThread.
+    QObject::moveToThread().
 
     \snippet code/src_corelib_thread_qthread.cpp worker
 
@@ -256,7 +256,7 @@ QThreadPrivate::~QThreadPrivate()
     \l{Mandelbrot Example}, as that is the name of the QThread subclass).
     Note that this is currently not available with release builds on Windows.
 
-    \sa {Thread Support in Qt}, QThreadStorage, {Synchronizing Threads}
+    \sa {Thread Support in Qt}, QThreadStorage, {Synchronizing Threads},
         {Mandelbrot Example}, {Semaphores Example}, {Wait Conditions Example}
 */
 

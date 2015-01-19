@@ -1,0 +1,11 @@
+<RCC>
+    <qresource prefix="/android_testdata">
+        <file>dirtest/test1/dummy</file>
+        <file>dirtest/test1/test</file>
+        <file>test/file01.tst</file>
+        <file>test/file02.tst</file>
+        <file>test/file03.tst</file>
+        <file>test/file04.tst</file>
+        <file>tst_qdirmodel.cpp</file>
+    </qresource>
+</RCC>

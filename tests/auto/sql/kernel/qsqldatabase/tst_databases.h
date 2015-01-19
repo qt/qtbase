@@ -493,7 +493,7 @@ public:
     {
         const QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
         if (dbType == QSqlDriver::PostgreSQL)
-            return QLatin1String("timestamp");
+            return QLatin1String("timestamptz");
         if (dbType == QSqlDriver::Oracle && getOraVersion(db) >= 9)
             return QLatin1String("timestamp(0)");
         return QLatin1String("datetime");

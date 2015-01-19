@@ -116,10 +116,11 @@ QLibrarySettings::QLibrarySettings()
         QStringList children = settings->childGroups();
 #ifdef QT_BOOTSTRAPPED
         haveEffectiveSourcePaths = children.contains(QLatin1String("EffectiveSourcePaths"));
-        haveEffectivePaths = haveEffectiveSourcePaths || children.contains(QLatin1String("EffectivePaths"));
 #else
-        haveEffectivePaths = children.contains(QLatin1String("EffectivePaths"));
+        // EffectiveSourcePaths is for the Qt build only, so needs no backwards compat trickery.
+        bool haveEffectiveSourcePaths = false;
 #endif
+        haveEffectivePaths = haveEffectiveSourcePaths || children.contains(QLatin1String("EffectivePaths"));
         // Backwards compat: an existing but empty file is claimed to contain the Paths section.
         havePaths = (!haveEffectivePaths && !children.contains(QLatin1String(platformsSection)))
                     || children.contains(QLatin1String("Paths"));
@@ -128,9 +129,7 @@ QLibrarySettings::QLibrarySettings()
             settings.reset(0);
 #else
     } else {
-#ifdef QT_BOOTSTRAPPED
         haveEffectiveSourcePaths = false;
-#endif
         haveEffectivePaths = false;
         havePaths = false;
 #endif

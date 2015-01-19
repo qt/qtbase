@@ -805,7 +805,7 @@
         {QWidget::addAction}().
     \endquotation
 
-    If you don't include the function name with the \b{\\overlaod}
+    If you don't include the function name with the \b{\\overload}
     command, then instead of the "This function overloads..." line
     with the link to the documentation for the primary version, you
     get the old standard line:

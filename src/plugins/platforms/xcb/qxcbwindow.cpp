@@ -142,7 +142,7 @@ static inline QRect mapToNative(const QRect &qtRect, int dpr)
     return QRect(qtRect.x() * dpr, qtRect.y() * dpr, qtRect.width() * dpr, qtRect.height() * dpr);
 }
 
-// When converting native rects to Qt rects: round top/left towards the origin and
+// When mapping expose events to Qt rects: round top/left towards the origin and
 // bottom/right away from the origin, making sure that we cover the whole widget
 
 static inline QPoint dpr_floor(const QPoint &p, int dpr)
@@ -155,11 +155,15 @@ static inline QPoint dpr_ceil(const QPoint &p, int dpr)
     return QPoint((p.x() + dpr - 1) / dpr, (p.y() + dpr - 1) / dpr);
 }
 
-static inline QRect mapFromNative(const QRect &xRect, int dpr)
+static inline QRect mapExposeFromNative(const QRect &xRect, int dpr)
 {
     return QRect(dpr_floor(xRect.topLeft(), dpr), dpr_ceil(xRect.bottomRight(), dpr));
 }
 
+static inline QRect mapGeometryFromNative(const QRect &xRect, int dpr)
+{
+    return QRect(xRect.topLeft() / dpr, xRect.bottomRight() / dpr);
+}
 
 // Returns \c true if we should set WM_TRANSIENT_FOR on \a w
 static inline bool isTransient(const QWindow *w)
@@ -1670,7 +1674,7 @@ public:
             return false;
         if (expose->count == 0)
             m_pending = false;
-        *m_region |= mapFromNative(QRect(expose->x, expose->y, expose->width, expose->height), m_dpr);
+        *m_region |= mapExposeFromNative(QRect(expose->x, expose->y, expose->width, expose->height), m_dpr);
         return true;
     }
 
@@ -1698,7 +1702,7 @@ void QXcbWindow::handleExposeEvent(const xcb_expose_event_t *event)
 {
     const int dpr = int(devicePixelRatio());
     QRect x_rect(event->x, event->y, event->width, event->height);
-    QRect rect = mapFromNative(x_rect, dpr);
+    QRect rect = mapExposeFromNative(x_rect, dpr);
 
     if (m_exposeRegion.isEmpty())
         m_exposeRegion = rect;
@@ -1783,6 +1787,23 @@ void QXcbWindow::handleClientMessageEvent(const xcb_client_message_event_t *even
     }
 }
 
+// Temporary workaround for bug in QPlatformScreen::screenForNativeGeometry
+// we need the native geometries to detect our screen, but that's not
+// available in cross-platform code. Will be fixed properly when highDPI
+// support is refactored to expose the native coordinate system.
+
+QPlatformScreen *QXcbWindow::screenForNativeGeometry(const QRect &newGeometry) const
+{
+    QXcbScreen *currentScreen = static_cast<QXcbScreen*>(screen());
+    if (!parent() && !currentScreen->nativeGeometry().intersects(newGeometry)) {
+        Q_FOREACH (QPlatformScreen* screen, currentScreen->virtualSiblings()) {
+            if (static_cast<QXcbScreen*>(screen)->nativeGeometry().intersects(newGeometry))
+                return screen;
+        }
+    }
+    return currentScreen;
+}
+
 void QXcbWindow::handleConfigureNotifyEvent(const xcb_configure_notify_event_t *event)
 {
     bool fromSendEvent = (event->response_type & 0x80);
@@ -1799,15 +1820,23 @@ void QXcbWindow::handleConfigureNotifyEvent(const xcb_configure_notify_event_t *
         }
     }
 
-    QRect rect = mapFromNative(QRect(pos, QSize(event->width, event->height)), int(devicePixelRatio()));
+    const int dpr = devicePixelRatio();
+    const QRect nativeRect = QRect(pos, QSize(event->width, event->height));
+    const QRect rect = mapGeometryFromNative(nativeRect, dpr);
 
     QPlatformWindow::setGeometry(rect);
     QWindowSystemInterface::handleGeometryChange(window(), rect);
 
-    QPlatformScreen *newScreen = screenForGeometry(rect);
+    QPlatformScreen *newScreen = screenForNativeGeometry(nativeRect);
     if (newScreen != m_screen) {
         m_screen = static_cast<QXcbScreen*>(newScreen);
         QWindowSystemInterface::handleWindowScreenChanged(window(), newScreen->screen());
+        int newDpr = devicePixelRatio();
+        if (newDpr != dpr) {
+            QRect newRect = mapGeometryFromNative(nativeRect, newDpr);
+            QPlatformWindow::setGeometry(newRect);
+            QWindowSystemInterface::handleGeometryChange(window(), newRect);
+        }
     }
 
     m_configureNotifyPending = false;

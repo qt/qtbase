@@ -825,10 +825,10 @@ static int getExifOrientation(QByteArray &exifData)
             quint16 tag;
             quint16 type;
             quint32 components;
-            quint32 value;
+            quint16 value;
+            quint16 dummy;
 
-            stream >> tag >> type >> components >> value;
-
+            stream >> tag >> type >> components >> value >> dummy;
             if (tag == 0x0112) { // Tag Exif.Image.Orientation
                 if (components !=1)
                     return -1;

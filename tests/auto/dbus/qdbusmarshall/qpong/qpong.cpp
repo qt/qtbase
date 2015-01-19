@@ -49,6 +49,11 @@ public slots:
         if (!QDBusConnection::sessionBus().send(msg.createReply(msg.arguments())))
             exit(1);
     }
+
+    void quit()
+    {
+        qApp->quit();
+    }
 };
 
 int main(int argc, char *argv[])

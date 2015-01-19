@@ -36,6 +36,28 @@
 #include <QtCore/QDebug>
 #include <QtCore/QTextStream>
 
+#if QT_VERSION >= 0x050000
+#  if defined(QT_WIDGETS_LIB)
+#    define HAVE_APPLICATION
+#  endif
+#  if defined(QT_GUI_LIB)
+#    define HAVE_GUI_APPLICATION
+#  endif
+#else // Qt 5
+#  if defined(QT_GUI_LIB)
+#    define HAVE_APPLICATION
+#  endif
+#endif
+
+#ifdef HAVE_APPLICATION
+#  include <QApplication>
+#  include <QWidget>
+#endif
+#ifdef HAVE_GUI_APPLICATION
+#  include <QtGui/QGuiApplication>
+#  include <QtGui/QWindow>
+#endif
+
 namespace QtDiag {
 
 EventFilter::EventFilter(EventCategories eventCategories, QObject *p)
@@ -131,16 +153,60 @@ static inline bool matchesType(const QObject *o, EventFilter::ObjectTypes types)
     return types & EventFilter::OtherType;
 }
 
+static void formatObject(const QObject *o, QDebug debug)
+{
+    if (o) {
+        debug << o->metaObject()->className();
+        const QString on = o->objectName();
+        if (!on.isEmpty())
+            debug << '/' << on;
+    } else {
+        debug << "null";
+    }
+}
+
+static void formatApplicationState(QDebug debug)
+{
+#if defined(HAVE_APPLICATION)
+    if (const QWidget *mw = QApplication::activeModalWidget()) {
+        debug << "\n  QApplication::activeModalWidget = ";
+        formatObject(mw, debug);
+    }
+    if (const QWidget *pw = QApplication::activePopupWidget()) {
+        debug << "\n  QApplication::activePopupWidget = ";
+        formatObject(pw, debug);
+    }
+    debug << "\n  QApplication::activeWindow      = ";
+    formatObject(QApplication::activeWindow(), debug);
+#endif // HAVE_APPLICATION
+#if defined(HAVE_GUI_APPLICATION)
+    if (const QWindow *mw = QGuiApplication::modalWindow()) {
+        debug << "\n  QGuiApplication::modalWindow    = ";
+        formatObject(mw, debug);
+    }
+    debug << "\n  QGuiApplication::focusWindow    = ";
+    formatObject(QGuiApplication::focusWindow(), debug);
+#endif // HAVE_GUI_APPLICATION
+}
+
 bool EventFilter::eventFilter(QObject *o, QEvent *e)
 {
     static int n = 0;
     if (matchesType(o, m_objectTypes) && m_eventTypes.contains(e->type())) {
         QDebug debug = qDebug().nospace();
-        const QString on = o->objectName();
-        debug << '#' << n++ << ' ' << o->metaObject()->className();
-        if (!on.isEmpty())
-            debug << '/' << on;
+        debug << '#' << n++ << ' ';
+        formatObject(o, debug);
         debug << ' ' << e;
+        switch (e->type()) {
+#if QT_VERSION >= 0x050000
+        case QEvent::FocusAboutToChange:
+#endif
+        case QEvent::FocusIn:
+            formatApplicationState(debug);
+            break;
+        default:
+            break;
+        }
     }
     return false;
 }

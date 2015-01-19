@@ -392,6 +392,14 @@
     \title Qt Creator: Adding New Custom Wizards
 */
 /*!
+    \externalpage http://doc.qt.io/qtcreator/creator-project-wizards-json.html
+    \title Qt Creator: Adding JSON-Based Wizards
+*/
+/*!
+    \externalpage http://doc.qt.io/qtcreator/creator-project-wizards-xml.html
+    \title Qt Creator: Adding XML-Based Wizards
+*/
+/*!
     \externalpage http://doc.qt.io/qtcreator/creator-projects-autotools.html
     \title Qt Creator: Setting Up an Autotools Project
 */

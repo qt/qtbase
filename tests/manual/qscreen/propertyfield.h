@@ -63,6 +63,7 @@ private:
     QString m_lastTextShowing;
     QTime m_lastChangeTime;
     const QMetaProperty m_prop;
+    QBrush m_defaultBrush;
 };
 
 #endif // PROPERTYFIELD_H

@@ -54,7 +54,7 @@ public:
     EGLSurface eglSurface(EGLConfig config);
     QSurfaceFormat format() const;
 
-    void checkNativeSurface(EGLConfig config);
+    bool checkNativeSurface(EGLConfig config);
 
     void applicationStateChanged(Qt::ApplicationState);
 
@@ -66,7 +66,7 @@ protected:
     void clearEgl();
 
 private:
-    EGLDisplay m_eglDisplay;
+    EGLDisplay m_eglDisplay = EGL_NO_DISPLAY;
     EGLSurface m_eglSurface = EGL_NO_SURFACE;
     EGLNativeWindowType m_nativeWindow = nullptr;
 

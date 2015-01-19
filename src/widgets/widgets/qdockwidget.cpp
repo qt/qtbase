@@ -930,12 +930,7 @@ void QDockWidgetPrivate::nonClientAreaMouseEvent(QMouseEvent *event)
             initDrag(event->pos(), true);
             if (state == 0)
                 break;
-#ifdef Q_WS_WIN
-            // On Windows, NCA mouse events don't contain modifier info
-            state->ctrlDrag = GetKeyState(VK_CONTROL) & 0x8000;
-#else
             state->ctrlDrag = event->modifiers() & Qt::ControlModifier;
-#endif
             startDrag();
             break;
         case QEvent::NonClientAreaMouseMove:

@@ -184,13 +184,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
       << varGlue("DEFINES","-D"," -D","") << endl;
     t << "CFLAGS        = " << var("QMAKE_CFLAGS") << " $(DEFINES)\n";
     t << "CXXFLAGS      = " << var("QMAKE_CXXFLAGS") << " $(DEFINES)\n";
-    t << "INCPATH       = -I" << specdir();
-    if(!project->isActiveConfig("no_include_pwd")) {
-        QString pwd = escapeFilePath(fileFixify(qmake_getpwd()));
-        if(pwd.isEmpty())
-            pwd = ".";
-        t << " -I" << pwd;
-    }
+    t << "INCPATH       =";
     {
         QString isystem = var("QMAKE_CFLAGS_ISYSTEM");
         const ProStringList &incs = project->values("INCLUDEPATH");
@@ -1019,8 +1013,9 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
         t << "\t-$(DEL_FILE) -r " << bundlePath << endl;
     } else if(project->isActiveConfig("compile_libtool")) {
         t << "\t-$(LIBTOOL) --mode=clean $(DEL_FILE) $(TARGET)\n";
-    } else if(!project->isActiveConfig("staticlib") && project->values("QMAKE_APP_FLAG").isEmpty() &&
-       !project->isActiveConfig("plugin")) {
+    } else if (project->isActiveConfig("staticlib")) {
+        t << "\t-$(DEL_FILE) " << destdir << "$(TARGET) \n";
+    } else if (project->values("QMAKE_APP_FLAG").isEmpty() && !project->isActiveConfig("plugin")) {
         t << "\t-$(DEL_FILE) " << destdir << "$(TARGET) \n";
         if (!project->isActiveConfig("unversioned_libname")) {
             t << "\t-$(DEL_FILE) " << destdir << "$(TARGET0) " << destdir << "$(TARGET1) "
@@ -1029,7 +1024,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
             t << "\t-$(DEL_FILE) $(TARGETA)\n";
         }
     } else {
-        t << "\t-$(DEL_FILE) " << destdir << "$(TARGET) \n";
+        t << "\t-$(DEL_FILE) $(TARGET) \n";
     }
     t << varGlue("QMAKE_DISTCLEAN","\t-$(DEL_FILE) "," ","\n");
     {

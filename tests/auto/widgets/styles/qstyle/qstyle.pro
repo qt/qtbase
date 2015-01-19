@@ -10,3 +10,8 @@ wince* {
    addPixmap.path = .
    DEPLOYMENT += addPixmap
 }
+
+android: !android-no-sdk {
+    RESOURCES += \
+        testdata.qrc
+}

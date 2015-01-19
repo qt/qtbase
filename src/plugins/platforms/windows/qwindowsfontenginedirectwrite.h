@@ -75,6 +75,7 @@ public:
 
     glyph_metrics_t boundingBox(const QGlyphLayout &glyphs);
     glyph_metrics_t boundingBox(glyph_t g);
+    glyph_metrics_t alphaMapBoundingBox(glyph_t glyph, QFixed, const QTransform &matrix, GlyphFormat);
 
     QFixed ascent() const;
     QFixed descent() const;

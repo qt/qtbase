@@ -113,6 +113,12 @@ void tst_QSidebar::addUrls()
     QAbstractItemModel *model = qsidebar.model();
     QDir testDir = QDir::home();
 
+#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_NO_SDK)
+    // temp and home is the same directory on Android
+    testDir.mkdir(QStringLiteral("test"));
+    QVERIFY(testDir.cd(QStringLiteral("test")));
+#endif
+
     // default
     QCOMPARE(model->rowCount(), 0);
 

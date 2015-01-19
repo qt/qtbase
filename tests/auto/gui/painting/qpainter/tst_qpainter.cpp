@@ -289,7 +289,7 @@ private slots:
     void blendARGBonRGB();
 
     void RasterOp_NotDestination();
-
+    void drawTextNoHinting();
 private:
     void fillData();
     void setPenColor(QPainter& p);
@@ -730,6 +730,7 @@ void tst_QPainter::initFrom()
     pal.setColor(QPalette::Foreground, QColor(255, 0, 0));
     pal.setBrush(QPalette::Background, QColor(0, 255, 0));
     widget->setPalette(pal);
+    widget->show();
 
     QFont font = widget->font();
     font.setPointSize(26);
@@ -4811,6 +4812,21 @@ void tst_QPainter::RasterOp_NotDestination()
 
     uint pixel = image.pixel(1, 1);
     QCOMPARE(pixel, 0xff00ffff);
+}
+
+void tst_QPainter::drawTextNoHinting()
+{
+    {
+        QImage image(250, 250, QImage::Format_RGB32);
+        QPainter p(&image);
+        QFont font("Arial", 8);
+        font.setHintingPreference(QFont::PreferNoHinting);
+        font.setStyleStrategy(QFont::PreferAntialias);
+        p.setFont(font);
+        p.drawText(image.rect(), "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz");
+    }
+    // Testing for a crash when DirectWrite is used on Windows
+    QVERIFY(true);
 }
 
 QTEST_MAIN(tst_QPainter)

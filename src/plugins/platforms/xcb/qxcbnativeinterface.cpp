@@ -71,7 +71,8 @@ static int resourceType(const QByteArray &key)
         QByteArrayLiteral("startupid"), QByteArrayLiteral("traywindow"),
         QByteArrayLiteral("gettimestamp"), QByteArrayLiteral("x11screen"),
         QByteArrayLiteral("rootwindow"),
-        QByteArrayLiteral("subpixeltype"), QByteArrayLiteral("antialiasingEnabled")
+        QByteArrayLiteral("subpixeltype"), QByteArrayLiteral("antialiasingEnabled"),
+        QByteArrayLiteral("nofonthinting")
     };
     const QByteArray *end = names + sizeof(names) / sizeof(names[0]);
     const QByteArray *result = std::find(names, end, key);
@@ -280,6 +281,9 @@ void *QXcbNativeInterface::nativeResourceForScreen(const QByteArray &resourceStr
         break;
     case GetTimestamp:
         result = getTimestamp(xcbScreen);
+        break;
+    case NoFontHinting:
+        result = xcbScreen->noFontHinting() ? this : 0; //qboolptr...
         break;
     default:
         break;

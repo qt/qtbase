@@ -606,7 +606,7 @@ QList<QByteArray> QNetworkReply::rawHeaderList() const
 
 /*!
     Returns the attribute associated with the code \a code. If the
-    attribute has not been set, it returns an invalid QVariant (type QMetaType::Unknown).
+    attribute has not been set, it returns an invalid QVariant (type QMetaType::UnknownType).
 
     You can expect the default values listed in
     QNetworkRequest::Attribute to be applied to the values returned by

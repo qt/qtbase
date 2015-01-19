@@ -151,6 +151,8 @@ public:
 
     virtual void create();
     virtual void destroy();
+    QPlatformScreen *screenForNativeGeometry(const QRect &newGeometry) const;
+
 public Q_SLOTS:
     void updateSyncRequestCounter();
 

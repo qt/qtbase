@@ -171,6 +171,7 @@
         return self;
 
     m_inSendEventToFocusObject = NO;
+    m_inSelectionChange = NO;
     m_inputContext = inputContext;
 
     QVariantMap platformData = [self imValue:Qt::ImPlatformData].toMap();
@@ -302,6 +303,7 @@
         return;
 
     if (updatedProperties & (Qt::ImCursorPosition | Qt::ImAnchorPosition)) {
+        QScopedValueRollback<BOOL> rollback(m_inSelectionChange, true);
         [self.inputDelegate selectionWillChange:self];
         [self.inputDelegate selectionDidChange:self];
     }
@@ -349,6 +351,15 @@
 
 - (void)setSelectedTextRange:(UITextRange *)range
 {
+    if (m_inSelectionChange) {
+        // After [UITextInputDelegate selectionWillChange], UIKit will cancel
+        // any ongoing auto correction (if enabled) and ask us to set an empty selection.
+        // This is contradictory to our current attempt to set a selection, so we ignore
+        // the callback. UIKit will be re-notified of the new selection after
+        // [UITextInputDelegate selectionDidChange].
+        return;
+    }
+
     QUITextRange *r = static_cast<QUITextRange *>(range);
     QList<QInputMethodEvent::Attribute> attrs;
     attrs << QInputMethodEvent::Attribute(QInputMethodEvent::Selection, r.range.location, r.range.length, 0);

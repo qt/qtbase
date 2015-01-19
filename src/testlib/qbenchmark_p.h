@@ -105,6 +105,7 @@ public:
     QBenchmarkResult()
     : value(-1)
     , iterations(-1)
+    , metric(QTest::FramesPerSecond)
     , setByMacro(true)
     , valid(false)
     { }

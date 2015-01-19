@@ -66,6 +66,9 @@
 
 QT_BEGIN_NAMESPACE
 
+// used with dbus_server_allocate_data_slot
+static dbus_int32_t server_slot = -1;
+
 static QBasicAtomicInt isDebugging = Q_BASIC_ATOMIC_INITIALIZER(-1);
 #define qDBusDebug              if (::isDebugging == 0); else qDebug
 
@@ -1084,8 +1087,10 @@ void QDBusConnectionPrivate::closeConnection()
     mode = InvalidMode; // prevent reentrancy
     baseService.clear();
 
-    if (server)
+    if (server) {
         q_dbus_server_disconnect(server);
+        q_dbus_server_free_data_slot(&server_slot);
+    }
 
     if (oldMode == ClientMode || oldMode == PeerMode) {
         if (connection) {
@@ -1650,8 +1655,6 @@ void QDBusConnectionPrivate::handleSignal(const QDBusMessage& msg)
     key += msg.interface();
     handleSignal(key, msg);                  // third try
 }
-
-static dbus_int32_t server_slot = -1;
 
 void QDBusConnectionPrivate::setServer(DBusServer *s, const QDBusErrorInternal &error)
 {

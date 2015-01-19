@@ -171,7 +171,7 @@ class QFreeList
     // take the current serial number from \a o, increment it, and store it in \a n
     static inline int incrementserial(int o, int n)
     {
-        return (n & ConstantsType::IndexMask) | ((o + ConstantsType::SerialCounter) & ConstantsType::SerialMask);
+        return int((uint(n) & ConstantsType::IndexMask) | ((uint(o) + ConstantsType::SerialCounter) & ConstantsType::SerialMask));
     }
 
     // the blocks

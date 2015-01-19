@@ -6,4 +6,6 @@ SOURCES  += tst_qimage.cpp
 QT += core-private gui-private testlib
 contains(QT_CONFIG, c++11): CONFIG += c++11
 
+android:!android-no-sdk:RESOURCES+=qimage.qrc
+
 TESTDATA += images/*

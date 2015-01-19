@@ -272,9 +272,15 @@ template <> inline qint8 qFromBigEndian<qint8>(const uchar *src)
 */
 template <typename T> T qbswap(T source);
 
+#ifdef __has_builtin
+#  define QT_HAS_BUILTIN(x)     __has_builtin(x)
+#else
+#  define QT_HAS_BUILTIN(x)     0
+#endif
+
 // GCC 4.3 implemented all the intrinsics, but the 16-bit one only got implemented in 4.8;
 // Clang 2.6 implemented the 32- and 64-bit but waited until 3.2 to implement the 16-bit one
-#if (defined(Q_CC_GNU) && Q_CC_GNU >= 403) || (defined(Q_CC_CLANG) && Q_CC_CLANG >= 206)
+#if (defined(Q_CC_GNU) && Q_CC_GNU >= 403) || QT_HAS_BUILTIN(__builtin_bswap32)
 template <> inline quint64 qbswap<quint64>(quint64 source)
 {
     return __builtin_bswap64(source);
@@ -306,7 +312,7 @@ template <> inline quint32 qbswap<quint32>(quint32 source)
         | ((source & 0xff000000) >> 24);
 }
 #endif // GCC & Clang intrinsics
-#if (defined(Q_CC_GNU) && Q_CC_GNU >= 408) || (defined(Q_CC_CLANG) && Q_CC_CLANG >= 302)
+#if (defined(Q_CC_GNU) && Q_CC_GNU >= 408) || QT_HAS_BUILTIN(__builtin_bswap16)
 template <> inline quint16 qbswap<quint16>(quint16 source)
 {
     return __builtin_bswap16(source);
@@ -319,6 +325,8 @@ template <> inline quint16 qbswap<quint16>(quint16 source)
                     | ((source & 0xff00) >> 8) );
 }
 #endif // GCC & Clang intrinsics
+
+#undef QT_HAS_BUILTIN
 
 // signed specializations
 template <> inline qint64 qbswap<qint64>(qint64 source)

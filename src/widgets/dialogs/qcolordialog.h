@@ -112,6 +112,7 @@ private:
     Q_PRIVATE_SLOT(d_func(), void _q_newCustom(int, int))
     Q_PRIVATE_SLOT(d_func(), void _q_newStandard(int, int))
     Q_PRIVATE_SLOT(d_func(), void _q_pickScreenColor())
+    Q_PRIVATE_SLOT(d_func(), void _q_updateColorPicking())
     friend class QColorShower;
 };
 
