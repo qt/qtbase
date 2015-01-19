@@ -62,13 +62,6 @@ class QSslKeyPrivate
 public:
     inline QSslKeyPrivate()
         : opaque(0)
-#ifndef QT_NO_OPENSSL
-        , rsa(0)
-        , dsa(0)
-#ifndef OPENSSL_NO_EC
-        , ec(0)
-#endif
-#endif
     {
         clear();
     }
@@ -97,12 +90,14 @@ public:
     QSsl::KeyType type;
     QSsl::KeyAlgorithm algorithm;
 #ifndef QT_NO_OPENSSL
-    EVP_PKEY *opaque;
-    RSA *rsa;
-    DSA *dsa;
+    union {
+        EVP_PKEY *opaque;
+        RSA *rsa;
+        DSA *dsa;
 #ifndef OPENSSL_NO_EC
-    EC_KEY *ec;
+        EC_KEY *ec;
 #endif
+    };
 #else
     enum Cipher {
         DesCbc,

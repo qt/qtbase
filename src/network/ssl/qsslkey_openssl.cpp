@@ -52,24 +52,24 @@ void QSslKeyPrivate::clear(bool deep)
     isNull = true;
     if (!QSslSocket::supportsSsl())
         return;
-    if (rsa) {
+    if (algorithm == QSsl::Rsa && rsa) {
         if (deep)
             q_RSA_free(rsa);
         rsa = 0;
     }
-    if (dsa) {
+    if (algorithm == QSsl::Dsa && dsa) {
         if (deep)
             q_DSA_free(dsa);
         dsa = 0;
     }
 #ifndef OPENSSL_NO_EC
-    if (ec) {
+    if (algorithm == QSsl::Ec && ec) {
        if (deep)
             q_EC_KEY_free(ec);
        ec = 0;
     }
 #endif
-    if (opaque) {
+    if (algorithm == QSsl::Opaque && opaque) {
         if (deep)
             q_EVP_PKEY_free(opaque);
         opaque = 0;
