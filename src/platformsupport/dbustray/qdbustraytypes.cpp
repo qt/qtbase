@@ -93,14 +93,13 @@ QXdgDBusImageVector iconToQXdgDBusImageVector(const QIcon &icon)
             painter.drawImage((maxSize - im.width()) / 2, (maxSize - im.height()) / 2, im);
             im = padded;
         }
-        QXdgDBusImageStruct kim;
-        kim.width = im.width();
-        kim.height = im.height();
-        kim.data = QByteArray(reinterpret_cast<const char*>(im.constBits()), im.byteCount());
-        if (QSysInfo::ByteOrder == QSysInfo::LittleEndian) {
-            for (char *ptr = kim.data.begin(); ptr < kim.data.end(); ptr += 4)
-                qToUnaligned(qToBigEndian<quint32>(*ptr), reinterpret_cast<uchar *>(ptr));
-        }
+        // copy and endian-convert
+        QXdgDBusImageStruct kim(im.width(), im.height());
+        const uchar *end = im.constBits() + im.byteCount();
+        uchar *dest = reinterpret_cast<uchar *>(kim.data.data());
+        for (const uchar *src = im.constBits(); src < end; src += 4, dest += 4)
+            qToUnaligned(qToBigEndian<quint32>(qFromUnaligned<quint32>(src)), dest);
+
         ret << kim;
     }
     return ret;

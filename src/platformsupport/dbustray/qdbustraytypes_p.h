@@ -49,6 +49,9 @@ QT_BEGIN_NAMESPACE
 // Custom message type to send icons across D-Bus
 struct QXdgDBusImageStruct
 {
+    QXdgDBusImageStruct() { }
+    QXdgDBusImageStruct(int w, int h)
+        : width(w), height(h), data(width * height * 4, 0) { }
     int width;
     int height;
     QByteArray data;
