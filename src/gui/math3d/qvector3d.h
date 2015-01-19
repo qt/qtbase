@@ -43,6 +43,7 @@ QT_BEGIN_NAMESPACE
 class QMatrix4x4;
 class QVector2D;
 class QVector4D;
+class QRect;
 
 #ifndef QT_NO_VECTOR3D
 
@@ -93,6 +94,9 @@ public:
     static QVector3D normal(const QVector3D& v1, const QVector3D& v2);
     static QVector3D normal
         (const QVector3D& v1, const QVector3D& v2, const QVector3D& v3);
+
+    QVector3D project(const QMatrix4x4 &modelView, const QMatrix4x4 &projection, const QRect &viewport) const;
+    QVector3D unproject(const QMatrix4x4 &modelView, const QMatrix4x4 &projection, const QRect &viewport) const;
 
     float distanceToPoint(const QVector3D& point) const;
     float distanceToPlane(const QVector3D& plane, const QVector3D& normal) const;

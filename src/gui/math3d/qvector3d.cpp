@@ -34,10 +34,12 @@
 #include "qvector3d.h"
 #include "qvector2d.h"
 #include "qvector4d.h"
+#include "qmatrix4x4.h"
 #include <QtCore/qdatastream.h>
 #include <QtCore/qmath.h>
 #include <QtCore/qvariant.h>
 #include <QtCore/qdebug.h>
+#include <QtCore/qrect.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -356,6 +358,69 @@ QVector3D QVector3D::normal
         (const QVector3D& v1, const QVector3D& v2, const QVector3D& v3)
 {
     return crossProduct((v2 - v1), (v3 - v1)).normalized();
+}
+
+/*!
+    \since 5.5
+
+    Returns the window coordinates of this vector initially in object/model
+    coordinates using the model view matrix \a modelView, the projection matrix
+    \a projection and the viewport dimensions \a viewport.
+
+    When transforming from clip to normalized space, a division by the w
+    component on the vector components takes place. To prevent dividing by 0 if
+    w equals to 0, it is set to 1.
+
+    \note the returned y coordinates are in OpenGL orientation. OpenGL expects
+    the bottom to be 0 whereas for Qt top is 0.
+
+    \sa unproject()
+ */
+QVector3D QVector3D::project(const QMatrix4x4 &modelView, const QMatrix4x4 &projection, const QRect &viewport) const
+{
+    QVector4D tmp(*this, 1.0f);
+    tmp = projection * modelView * tmp;
+    if (qFuzzyIsNull(tmp.w()))
+        tmp.setW(1.0f);
+    tmp /= tmp.w();
+
+    tmp = tmp * 0.5f + QVector4D(0.5f, 0.5f, 0.5f, 0.5f);
+    tmp.setX(tmp.x() * viewport.width() + viewport.x());
+    tmp.setY(tmp.y() * viewport.height() + viewport.y());
+
+    return tmp.toVector3D();
+}
+
+/*!
+    \since 5.5
+
+    Returns the object/model coordinates of this vector initially in window
+    coordinates using the model view matrix \a modelView, the projection matrix
+    \a projection and the viewport dimensions \a viewport.
+
+    When transforming from clip to normalized space, a division by the w
+    component of the vector components takes place. To prevent dividing by 0 if
+    w equals to 0, it is set to 1.
+
+    \note y coordinates in \a point should use OpenGL orientation. OpenGL
+    expects the bottom to be 0 whereas for Qt top is 0.
+
+    \sa project()
+ */
+QVector3D QVector3D::unproject(const QMatrix4x4 &modelView, const QMatrix4x4 &projection, const QRect &viewport) const
+{
+    QMatrix4x4 inverse = QMatrix4x4( projection * modelView ).inverted();
+
+    QVector4D tmp(*this, 1.0f);
+    tmp.setX((tmp.x() - float(viewport.x())) / float(viewport.width()));
+    tmp.setY((tmp.y() - float(viewport.y())) / float(viewport.height()));
+    tmp = tmp * 2.0f - QVector4D(1.0f, 1.0f, 1.0f, 1.0f);
+
+    QVector4D obj = inverse * tmp;
+    if (qFuzzyIsNull(obj.w()))
+        obj.setW(1.0f);
+    obj /= obj.w();
+    return obj.toVector3D();
 }
 
 /*!

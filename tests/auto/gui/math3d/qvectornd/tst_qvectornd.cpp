@@ -36,6 +36,7 @@
 #include <QtGui/qvector2d.h>
 #include <QtGui/qvector3d.h>
 #include <QtGui/qvector4d.h>
+#include <QtGui/qmatrix4x4.h>
 
 class tst_QVectorND : public QObject
 {
@@ -141,6 +142,11 @@ private slots:
     void dotProduct3();
     void dotProduct4_data();
     void dotProduct4();
+
+    void project_data();
+    void project();
+    void unproject_data();
+    void unproject();
 
     void properties();
     void metaTypes();
@@ -2289,6 +2295,158 @@ void tst_QVectorND::dotProduct4()
     float d = x1 * x2 + y1 * y2 + z1 * z2 + w1 * w2;
 
     QCOMPARE(QVector4D::dotProduct(v1, v2), d);
+}
+
+void tst_QVectorND::project_data()
+{
+    QTest::addColumn<QVector3D>("point");
+    QTest::addColumn<QRect>("viewport");
+    QTest::addColumn<QMatrix4x4>("projection");
+    QTest::addColumn<QMatrix4x4>("view");
+    QTest::addColumn<QVector2D>("result");
+
+    QMatrix4x4 projection;
+    projection.ortho(-1.0f, 1.0f, -1.0f, 1.0f, 0.1f, 1000.0f);
+
+    QMatrix4x4 view;
+    // Located at (0, 0, 10), looking at origin, y is up
+    view.lookAt(QVector3D(0.0f, 0.0f, 10.0f), QVector3D(0.0f, 0.0f, 0.0f), QVector3D(0.0f, 1.0f, 0.0f));
+
+    QMatrix4x4 nullMatrix(0.0f, 0.0f, 0.0f, 0.0f,
+                          0.0f, 0.0f, 0.0f, 0.0f,
+                          0.0f, 0.0f, 0.0f, 0.0f,
+                          0.0f, 0.0f, 0.0f, 0.0f);
+
+    QTest::newRow("center")
+        << QVector3D(0.0f, 0.0f, 0.0f)
+        << QRect(0.0f, 0.0f, 800.0f, 600.0f)
+        << projection
+        << view
+        << QVector2D(400.0f, 300.0f);
+
+    QTest::newRow("topLeft")
+        << QVector3D(-1.0f, 1.0f, 0.0f)
+        << QRect(0.0f, 0.0f, 800.0f, 600.0f)
+        << projection
+        << view
+        << QVector2D(0.0f, 600.0f);
+
+    QTest::newRow("topRight")
+        << QVector3D(1.0f, 1.0f, 0.0f)
+        << QRect(0.0f, 0.0f, 800.0f, 600.0f)
+        << projection
+        << view
+        << QVector2D(800.0f, 600.0f);
+
+    QTest::newRow("bottomLeft")
+        << QVector3D(-1.0f, -1.0f, 0.0f)
+        << QRect(0.0f, 0.0f, 800.0f, 600.0f)
+        << projection
+        << view
+        << QVector2D(0.0f, 0.0f);
+
+    QTest::newRow("bottomRight")
+        << QVector3D(1.0f, -1.0f, 0.0f)
+        << QRect(0.0f, 0.0f, 800.0f, 600.0f)
+        << projection
+        << view
+        << QVector2D(800.0f, 0.0f);
+
+    QTest::newRow("nullMatrix")
+        << QVector3D(0.0f, 0.0f, 0.0f)
+        << QRect(0.0f, 0.0f, 800.0f, 600.0f)
+        << nullMatrix
+        << nullMatrix
+        << QVector2D(400.0f, 300.0f);
+}
+
+void tst_QVectorND::project()
+{
+    QFETCH(QVector3D, point);
+    QFETCH(QRect, viewport);
+    QFETCH(QMatrix4x4, projection);
+    QFETCH(QMatrix4x4, view);
+    QFETCH(QVector2D, result);
+
+    QVector3D project = point.project(view, projection, viewport);
+
+    QCOMPARE(project.toVector2D(), result);
+}
+
+void tst_QVectorND::unproject_data()
+{
+    QTest::addColumn<QVector3D>("point");
+    QTest::addColumn<QRect>("viewport");
+    QTest::addColumn<QMatrix4x4>("projection");
+    QTest::addColumn<QMatrix4x4>("view");
+    QTest::addColumn<QVector3D>("result");
+
+    QMatrix4x4 projection;
+    projection.ortho(-1.0f, 1.0f, -1.0f, 1.0f, 0.1f, 1000.0f);
+
+    QMatrix4x4 view;
+    // Located at (0, 0, 10), looking at origin, y is up
+    view.lookAt(QVector3D(0.0f, 0.0f, 10.0f), QVector3D(0.0f, 0.0f, 0.0f), QVector3D(0.0f, 1.0f, 0.0f));
+
+    QMatrix4x4 nullMatrix(0.0f, 0.0f, 0.0f, 0.0f,
+                          0.0f, 0.0f, 0.0f, 0.0f,
+                          0.0f, 0.0f, 0.0f, 0.0f,
+                          0.0f, 0.0f, 0.0f, 0.0f);
+
+    QTest::newRow("center")
+        << QVector3D(400.0f, 300.0f, 0.0f)
+        << QRect(0.0f, 0.0f, 800.0f, 600.0f)
+        << projection
+        << view
+        << QVector3D(0.0f, 0.0f, 9.9f);
+
+    QTest::newRow("topLeft")
+        << QVector3D(0.0f, 600.0f, 0.0f)
+        << QRect(0.0f, 0.0f, 800.0f, 600.0f)
+        << projection
+        << view
+        << QVector3D(-1.0f, 1.0f, 9.9f);
+
+    QTest::newRow("topRight")
+        << QVector3D(800.0f, 600.0f, 0.0f)
+        << QRect(0.0f, 0.0f, 800.0f, 600.0f)
+        << projection
+        << view
+        << QVector3D(1.0f, 1.0f, 9.9f);
+
+    QTest::newRow("bottomLeft")
+        << QVector3D(0.0f, 0.0f, 0.0f)
+        << QRect(0.0f, 0.0f, 800.0f, 600.0f)
+        << projection
+        << view
+        << QVector3D(-1.0, -1.0f, 9.9f);
+
+    QTest::newRow("bottomRight")
+        << QVector3D(800.0f, 0.0f, 0.0f)
+        << QRect(0.0f, 0.0f, 800.0f, 600.0f)
+        << projection
+        << view
+        << QVector3D(1.0f, -1.0f, 9.9f);
+
+    QTest::newRow("nullMatrix")
+        << QVector3D(400.0f, 300.0f, 0.0f)
+        << QRect(0.0f, 0.0f, 800.0f, 600.0f)
+        << nullMatrix
+        << nullMatrix
+        << QVector3D(0.0f, 0.0f, -1.0f);
+
+}
+
+void tst_QVectorND::unproject()
+{
+    QFETCH(QVector3D, point);
+    QFETCH(QRect, viewport);
+    QFETCH(QMatrix4x4, projection);
+    QFETCH(QMatrix4x4, view);
+    QFETCH(QVector3D, result);
+
+    QVector3D unproject = point.unproject(view, projection, viewport);
+    QVERIFY(qFuzzyCompare(unproject, result));
 }
 
 class tst_QVectorNDProperties : public QObject
