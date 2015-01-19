@@ -159,8 +159,8 @@
             [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleBlackTranslucent];
 #endif
 
+        self.lockedOrientation = UIInterfaceOrientationUnknown;
         self.changingOrientation = NO;
-        self.shouldAutorotate = [super shouldAutorotate];
 
         // Status bar may be initially hidden at startup through Info.plist
         self.prefersStatusBarHidden = infoPlistValue(@"UIStatusBarHidden", false);
@@ -200,6 +200,11 @@
 }
 
 // -------------------------------------------------------------------------
+
+-(BOOL)shouldAutorotate
+{
+    return !self.lockedOrientation;
+}
 
 #if QT_IOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__IPHONE_6_0)
 -(NSUInteger)supportedInterfaceOrientations
@@ -356,16 +361,12 @@
         // so we keep the status bar in sync with content orientation. This will ensure
         // that the task bar (and associated gestures) are also rotated accordingly.
 
-        if (self.shouldAutorotate) {
+        if (!self.lockedOrientation) {
             // We are moving from Qt::PrimaryOrientation to an explicit orientation,
             // so we need to store the current statusbar orientation, as we need it
             // later when mapping screen coordinates for QScreen and for returning
             // to Qt::PrimaryOrientation.
             self.lockedOrientation = uiApplication.statusBarOrientation;
-
-            // Calling setStatusBarOrientation only has an effect when auto-rotation is
-            // disabled, which makes sense when there's an explicit content orientation.
-            self.shouldAutorotate = NO;
         }
 
         [uiApplication setStatusBarOrientation:
@@ -377,16 +378,15 @@
         // that auto-rotation should be enabled. But we may be coming out of
         // a state of locked orientation, which needs some cleanup before we
         // can enable auto-rotation again.
-        if (!self.shouldAutorotate) {
+        if (self.lockedOrientation) {
             // First we need to restore the statusbar to what it was at the
             // time of locking the orientation, otherwise iOS will be very
             // confused when it starts doing auto-rotation again.
-            [uiApplication setStatusBarOrientation:
-                UIInterfaceOrientation(self.lockedOrientation)
+            [uiApplication setStatusBarOrientation:self.lockedOrientation
                 animated:kAnimateContentOrientationChanges];
 
             // Then we can re-enable auto-rotation
-            self.shouldAutorotate = YES;
+            self.lockedOrientation = UIInterfaceOrientationUnknown;
 
             // And finally let iOS rotate the root view to match the device orientation
             [UIViewController attemptRotationToDeviceOrientation];

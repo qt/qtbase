@@ -243,15 +243,14 @@ void QIOSScreen::updateProperties()
         m_availableGeometry = transformBetween(Qt::PortraitOrientation, statusBarOrientation, m_geometry).mapRect(m_availableGeometry);
     }
 
-    if (![m_uiWindow.rootViewController shouldAutorotate]) {
+    QIOSViewController *qtViewController = [m_uiWindow.rootViewController isKindOfClass:[QIOSViewController class]] ?
+        static_cast<QIOSViewController *>(m_uiWindow.rootViewController) : nil;
+
+    if (qtViewController.lockedOrientation) {
         // Setting the statusbar orientation (content orientation) on will affect the screen geometry,
         // which is not what we want. We want to reflect the screen geometry based on the locked orientation,
         // and adjust the available geometry based on the repositioned status bar for the current status
         // bar orientation.
-
-        // FIXME: Handle hybrid apps by eg. observing changes to the shouldAutorotate property
-        Q_ASSERT([m_uiWindow.rootViewController isKindOfClass:[QIOSViewController class]]);
-        QIOSViewController *qtViewController = static_cast<QIOSViewController *>(m_uiWindow.rootViewController);
 
         Qt::ScreenOrientation lockedOrientation = toQtScreenOrientation(UIDeviceOrientation(qtViewController.lockedOrientation));
         QTransform transform = transformBetween(lockedOrientation, statusBarOrientation, m_geometry).inverted();
