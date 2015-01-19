@@ -169,6 +169,25 @@ QDebug operator<<(QDebug d, const NCCALCSIZE_PARAMS &p)
 }
 #endif // !Q_OS_WINCE
 
+// QTBUG-43872, for windows that do not have WS_EX_TOOLWINDOW set, WINDOWPLACEMENT
+// is in workspace/available area coordinates.
+static QPoint windowPlacementOffset(HWND hwnd, const QPoint &point)
+{
+#ifndef Q_OS_WINCE
+    if (GetWindowLongPtr(hwnd, GWL_EXSTYLE) & WS_EX_TOOLWINDOW)
+        return QPoint(0, 0);
+    const QWindowsScreenManager &screenManager = QWindowsContext::instance()->screenManager();
+    const QWindowsScreen *screen = screenManager.screens().size() == 1
+        ? screenManager.screens().first() : screenManager.screenAtDp(point);
+    if (screen)
+        return screen->availableGeometryDp().topLeft() - screen->geometryDp().topLeft();
+#else
+    Q_UNUSED(hwnd)
+    Q_UNUSED(point)
+#endif
+    return QPoint(0, 0);
+}
+
 // Return the frame geometry relative to the parent
 // if there is one.
 static inline QRect frameGeometry(HWND hwnd, bool topLevel)
@@ -179,8 +198,10 @@ static inline QRect frameGeometry(HWND hwnd, bool topLevel)
         WINDOWPLACEMENT windowPlacement;
         windowPlacement.length = sizeof(WINDOWPLACEMENT);
         GetWindowPlacement(hwnd, &windowPlacement);
-        if (windowPlacement.showCmd == SW_SHOWMINIMIZED)
-            return qrectFromRECT(windowPlacement.rcNormalPosition);
+        if (windowPlacement.showCmd == SW_SHOWMINIMIZED) {
+            const QRect result = qrectFromRECT(windowPlacement.rcNormalPosition);
+            return result.translated(windowPlacementOffset(hwnd, result.topLeft()));
+        }
     }
 #endif // !Q_OS_WINCE
     GetWindowRect(hwnd, &rect); // Screen coordinates.
@@ -1297,8 +1318,10 @@ static QRect normalFrameGeometry(HWND hwnd)
 #ifndef Q_OS_WINCE
     WINDOWPLACEMENT wp;
     wp.length = sizeof(WINDOWPLACEMENT);
-    if (GetWindowPlacement(hwnd, &wp))
-        return qrectFromRECT(wp.rcNormalPosition);
+    if (GetWindowPlacement(hwnd, &wp)) {
+        const QRect result = qrectFromRECT(wp.rcNormalPosition);
+        return result.translated(windowPlacementOffset(hwnd, result.topLeft()));
+    }
 #else
     Q_UNUSED(hwnd)
 #endif
@@ -1427,7 +1450,8 @@ void QWindowsWindow::setGeometry_sys(const QRect &rect) const
     // window, set the normal position of the window.
     if ((windowPlacement.showCmd == SW_MAXIMIZE && !IsWindowVisible(m_data.hwnd))
         || windowPlacement.showCmd == SW_SHOWMINIMIZED) {
-        windowPlacement.rcNormalPosition = RECTfromQRect(frameGeometry);
+        windowPlacement.rcNormalPosition =
+            RECTfromQRect(frameGeometry.translated(-windowPlacementOffset(m_data.hwnd, frameGeometry.topLeft())));
         windowPlacement.showCmd = windowPlacement.showCmd == SW_SHOWMINIMIZED ? SW_SHOWMINIMIZED : SW_HIDE;
         result = SetWindowPlacement(m_data.hwnd, &windowPlacement);
     } else

@@ -137,6 +137,8 @@ public:
     bool handleDisplayChange(WPARAM wParam, LPARAM lParam);
     const WindowsScreenList &screens() const { return m_screens; }
 
+    const QWindowsScreen *screenAtDp(const QPoint &p) const;
+
 private:
     void removeScreen(int index);
 

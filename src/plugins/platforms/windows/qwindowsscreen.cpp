@@ -497,4 +497,13 @@ bool QWindowsScreenManager::handleScreenChanges()
     return true;
 }
 
+const QWindowsScreen *QWindowsScreenManager::screenAtDp(const QPoint &p) const
+{
+    foreach (QWindowsScreen *scr, m_screens) {
+        if (scr->geometryDp().contains(p))
+            return scr;
+    }
+    return Q_NULLPTR;
+}
+
 QT_END_NAMESPACE

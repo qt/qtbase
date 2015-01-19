@@ -4696,8 +4696,9 @@ void tst_QWidget::setWindowGeometry()
 void tst_QWidget::setGeometry_win()
 {
     QWidget widget;
+
     setFrameless(&widget);
-    widget.setGeometry(0, 600, 100,100);
+    widget.setGeometry(QRect(m_availableTopLeft + QPoint(0, 600), QSize(100, 100)));
     widget.show();
     widget.setWindowState(widget.windowState() | Qt::WindowMaximized);
     QRect geom = widget.normalGeometry();
@@ -4707,8 +4708,10 @@ void tst_QWidget::setGeometry_win()
     widget.show();
     RECT rt;
     ::GetWindowRect(winHandleOf(&widget), &rt);
-    QVERIFY2(rt.left <= 0, msgComparisonFailed(int(rt.left), "<=", 0));
-    QVERIFY2(rt.top <= 0, msgComparisonFailed(int(rt.top), "<=", 0));
+    QVERIFY2(rt.left <= m_availableTopLeft.x(),
+             msgComparisonFailed(int(rt.left), "<=", m_availableTopLeft.x()));
+    QVERIFY2(rt.top <= m_availableTopLeft.y(),
+             msgComparisonFailed(int(rt.top), "<=", m_availableTopLeft.y()));
 }
 #endif // defined (Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
 
