@@ -326,75 +326,6 @@ QString verifyZeroTermination(const QString &str)
 
 typedef QList<int> IntList;
 
-// This next bit is needed for the NAN and INF in string -> number conversion tests
-#include <float.h>
-#include <limits.h>
-#include <math.h>
-#if defined (Q_OS_WIN)
-#   include <windows.h>
-// mingw defines NAN and INFINITY to 0/0 and x/0
-#   if defined(Q_CC_GNU)
-#      undef NAN
-#      undef INFINITY
-#   else
-#      define isnan(d) _isnan(d)
-#   endif
-#endif
-#if defined (Q_OS_MAC) && !defined isnan
-#define isnan(d) __isnand(d)
-#endif
-#if defined (Q_OS_SOLARIS)
-#   include <ieeefp.h>
-#endif
-#if defined (Q_OS_OSF) && (defined(__DECC) || defined(__DECCXX))
-#   define INFINITY DBL_INFINITY
-#   define NAN DBL_QNAN
-#endif
-#if defined(Q_OS_IRIX) && defined(Q_CC_GNU)
-#   include <ieeefp.h>
-#   define isnan(d) isnand(d)
-#endif
-
-enum {
-    LittleEndian,
-    BigEndian
-#ifdef Q_BYTE_ORDER
-#  if Q_BYTE_ORDER == Q_BIG_ENDIAN
-    , ByteOrder = BigEndian
-#  elif Q_BYTE_ORDER == Q_LITTLE_ENDIAN
-    , ByteOrder = LittleEndian
-#  else
-#    error "undefined byte order"
-#  endif
-};
-#else
-};
-static const unsigned int one = 1;
-static const bool ByteOrder = ((*((unsigned char *) &one) == 0) ? BigEndian : LittleEndian);
-#endif
-#if !defined(INFINITY)
-static const unsigned char be_inf_bytes[] = { 0x7f, 0xf0, 0, 0, 0, 0, 0,0 };
-static const unsigned char le_inf_bytes[] = { 0, 0, 0, 0, 0, 0, 0xf0, 0x7f };
-static inline double inf()
-{
-    if (ByteOrder == BigEndian)
-        return *reinterpret_cast<const double *>(be_inf_bytes);
-    return *reinterpret_cast<const double *>(le_inf_bytes);
-}
-#   define INFINITY (::inf())
-#endif
-#if !defined(NAN)
-static const unsigned char be_nan_bytes[] = { 0x7f, 0xf8, 0, 0, 0, 0, 0,0 };
-static const unsigned char le_nan_bytes[] = { 0, 0, 0, 0, 0, 0, 0xf8, 0x7f };
-static inline double nan()
-{
-    if (ByteOrder == BigEndian)
-        return *reinterpret_cast<const double *>(be_nan_bytes);
-    return *reinterpret_cast<const double *>(le_nan_bytes);
-}
-#   define NAN (::nan())
-#endif
-
 tst_QString::tst_QString()
 {
     QTextCodec::setCodecForLocale(QTextCodec::codecForName("ISO 8859-1"));
@@ -5313,7 +5244,7 @@ void tst_QString::nanAndInf()
 #define CHECK_DOUBLE(str, expected_ok, expected_inf) \
     d = QString(str).toDouble(&ok); \
     QVERIFY(ok == expected_ok); \
-    QVERIFY((d == INFINITY) == expected_inf);
+    QVERIFY(qIsInf(d) == expected_inf);
 
     CHECK_DOUBLE("inf", true, true)
     CHECK_DOUBLE("INF", true, true)
@@ -5341,7 +5272,7 @@ void tst_QString::nanAndInf()
 #define CHECK_NAN(str, expected_ok, expected_nan) \
     d = QString(str).toDouble(&ok); \
     QVERIFY(ok == expected_ok); \
-    QVERIFY((bool)isnan(d) == expected_nan); \
+    QVERIFY(qIsNaN(d) == expected_nan);
 
     CHECK_NAN("nan", true, true)
     CHECK_NAN("NAN", true, true)
@@ -5361,7 +5292,7 @@ void tst_QString::nanAndInf()
 
     d = QString("-INF").toDouble(&ok);
     QVERIFY(ok);
-    QVERIFY(d == -INFINITY);
+    QVERIFY(d == -qInf());
 
     QString("INF").toLong(&ok);
     QVERIFY(!ok);
