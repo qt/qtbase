@@ -70,6 +70,8 @@ private slots:
     void QTBUG_4796_data();
     void QTBUG_4796();
 
+    void QTBUG43352_failedSetPermissions();
+
 public:
 };
 
@@ -417,6 +419,18 @@ void tst_QTemporaryDir::QTBUG_4796() // unicode support
         QVERIFY2(!QDir(tempName).exists(), qPrintable(tempName));
 
     cleaner.reset();
+}
+
+void tst_QTemporaryDir::QTBUG43352_failedSetPermissions()
+{
+    QString path = QStandardPaths::writableLocation(QStandardPaths::DownloadLocation) + QStringLiteral("/");
+    int count = QDir(path).entryList().size();
+
+    {
+        QTemporaryDir dir(path);
+    }
+
+    QCOMPARE(QDir(path).entryList().size(), count);
 }
 
 QTEST_MAIN(tst_QTemporaryDir)
