@@ -7,6 +7,10 @@
 #include <qhash.h>
 #include <qset.h>
 
+#include <sys/types.h>
+#include <signal.h>
+#include <unistd.h>
+
 // QtNaclDeployer Usage: set the public options and call deploy();
 class QtNaclDeployer
 {
@@ -18,6 +22,7 @@ public:
     bool print;
     bool run;
     bool debug;
+    bool testlibMode;
     QString binary;
     QString qtBaseDir;
 
@@ -30,6 +35,8 @@ private:
     QString appName;
     QString nmf;
     QSet<QByteArray> permissions;
+    QString stdoutCaptureFile;
+    QString stderrCaptureFile;
 
     QList<QByteArray> quote(const QList<QByteArray> &list);
     void runCommand(const QString &command);
@@ -43,6 +50,11 @@ int QtNaclDeployer::deploy()
     mainHtmlFileName = "index.html";
     // Create the default Chrome App permission set.
     permissions = { "clipboardRead", "clipboardWrite" };
+    stdoutCaptureFile = "qt_stdout";
+    stderrCaptureFile = "qt_stderr";
+
+    if (testlibMode && !run) // "--testlib" implies "run"
+        run = true;
 
     if (run && debug) // "--debug" takes priority over "run"
         run = false;
@@ -110,12 +122,16 @@ int QtNaclDeployer::deploy()
     QString nmfFileName = appName + ".nmf";
     QString nmfFilePath = outDir + nmfFileName;
 
-    qDebug() << " ";
-    qDebug() << "Deploying" << binary;
-    qDebug() << "Using SDK" << naclSdkRoot;
-    qDebug() << "Qt libs in" << qtLibDir;
-    qDebug() << "Output directory:" << QDir(outDir).canonicalPath();
-    qDebug() << " ";
+    // Print info about the environment; exept in testlib mdoe, where we only
+    // want testlib output.
+    if (!testlibMode) {
+        qDebug() << " ";
+        qDebug() << "Deploying" << binary;
+        qDebug() << "Using SDK" << naclSdkRoot;
+        qDebug() << "Qt libs in" << qtLibDir;
+        qDebug() << "Output directory:" << QDir(outDir).canonicalPath();
+        qDebug() << " ";
+    }
 
     // Deply Qt Quick imports
     if (quickImports) {
@@ -196,6 +212,11 @@ int QtNaclDeployer::deploy()
     // NOTE: At this point deployment is done. The following are
     // development aides for running or debugging the app.
 
+    if (testlibMode) {
+        QFile::remove(stdoutCaptureFile);
+        QFile::remove(stderrCaptureFile);
+    }
+
     // Find the debugger, print startup instructions
     QString gdb = naclSdkRoot + "/toolchain/mac_x86_glibc/bin/i686-nacl-gdb";
     if (!QFile(gdb).exists())
@@ -218,6 +239,7 @@ int QtNaclDeployer::deploy()
     QString chromeOpenAppOptions = " --load-and-launch-app=" + outDir;
     QString chromeOpenWindowOptions = " --incognito --new-window \"http://localhost:8000\"";
     QString chromeOpenOptions = isApp ? chromeOpenAppOptions : chromeOpenWindowOptions;
+    QString chromeRedirectOptions = testlibMode ? " 1>" + stdoutCaptureFile + " 2>" + stderrCaptureFile: " ";
 
     if (print) {
         qDebug() << "chrome:";
@@ -229,9 +251,9 @@ int QtNaclDeployer::deploy()
 
     // Start Chrome with proper options
     if (run)
-        runCommand(chromeExecutable + chromeNormalOptions + chromeOpenOptions + " &");
+        runCommand(chromeExecutable + chromeNormalOptions + chromeOpenOptions + chromeRedirectOptions + " &");
     else if (debug)
-        runCommand(chromeExecutable + chromeDebugOptions + chromeOpenOptions + " &");
+        runCommand(chromeExecutable + chromeDebugOptions + chromeOpenOptions + chromeRedirectOptions + " &");
 
     // Start the debugger
     if (debug) {
@@ -245,9 +267,56 @@ int QtNaclDeployer::deploy()
     }
 
     // Start a HTTP server and serve the app.
+    QString serverRedirectOptions = testlibMode ? "> /dev/null 2>&1 &" : " ";
     if (run || debug) {
-        runCommand("python -m SimpleHTTPServer");
+        runCommand("python -m SimpleHTTPServer " + serverRedirectOptions);
     }
+
+    if (testlibMode) {
+        // testlibMode: At this point the test is starting up / running with output
+        // redirected to stdoutCaptureFile. Poll the file at regular intervals to
+        // check for new lines. Echo them to standard out. Keep doing this
+        // until test completion, which is tested for by looking for a line like
+        // ********* Finished testing of tst_Foo *********
+        int skipLines = 0;
+        while (true) {
+            usleep(500 * 1000);
+            QFile out(stdoutCaptureFile);
+            out.open(QIODevice::ReadOnly);
+
+            // read and discard already printed lines;
+            for (int i = 0; i < skipLines; ++i)
+                out.readLine();
+
+            // read and print new lines
+            QByteArray line;
+            do {
+                line = out.readLine().trimmed();
+                if (!line.isEmpty()) {
+                    printf("L %s\n", line.constData());
+                    ++skipLines;
+                }
+                if (line.contains("********* Finished testing of")) {
+                    // DONE: Kill process group: nacldeployqt, Chrome, and the Python server.
+                    QFile::remove(stdoutCaptureFile);
+                    QFile::remove(stderrCaptureFile);
+                    kill(0, 9);
+                }
+            } while (!line.isEmpty());
+
+            // check Chrome stderr for Qt process crash/exit.
+            QFile err(stderrCaptureFile);
+            err.open(QIODevice::ReadOnly);
+            QByteArray contents = err.readAll();
+            if (contents.contains("NaCl process exited with status")
+                || contents.contains("NaCl untrusted code called _exit")) {
+                QFile::remove(stdoutCaptureFile);
+                QFile::remove(stderrCaptureFile);
+                kill(0, 9);
+            }
+        } // while (true)
+    } // testlibMode
+
     return 0;
 }
 
@@ -345,6 +414,7 @@ int main(int argc, char **argv)
     parser.addOption(QCommandLineOption(QStringList() << "p" << "print", "Print Chrome and debugging help."));
     parser.addOption(QCommandLineOption(QStringList() << "r" << "run", "Run the application in Chrome."));
     parser.addOption(QCommandLineOption(QStringList() << "d" << "debug", "Debug the application in Chrome."));
+    parser.addOption(QCommandLineOption(QStringList() << "e" << "testlib", "Run in QTestLib mode"));
 
     parser.process(app);
     QStringList args = parser.positionalArguments();
@@ -357,6 +427,7 @@ int main(int argc, char **argv)
     deployer.print = parser.isSet("print");
     deployer.run = parser.isSet("run");
     deployer.debug = parser.isSet("debug");
+    deployer.testlibMode = parser.isSet("testlib");
 
     // Get target binary file name from command line, or find one
     // in the currrent directory
