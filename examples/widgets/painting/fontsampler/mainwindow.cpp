@@ -80,6 +80,7 @@ void MainWindow::setupFontTree()
         QTreeWidgetItem *familyItem = new QTreeWidgetItem(fontTree);
         familyItem->setText(0, family);
         familyItem->setCheckState(0, Qt::Unchecked);
+        familyItem->setFlags(familyItem->flags() | Qt::ItemIsTristate);
 
         foreach (QString style, styles) {
             QTreeWidgetItem *styleItem = new QTreeWidgetItem(familyItem);
@@ -169,51 +170,11 @@ void MainWindow::updateStyles(QTreeWidgetItem *item, int column)
     QTreeWidgetItem *parent = item->parent();
 
     if (parent) {
-
         // Only count style items.
         if (state == Qt::Checked)
             ++markedCount;
         else
             --markedCount;
-
-        if (state == Qt::Checked && parent->checkState(0) == Qt::Unchecked) {
-            // Mark parent items when child items are checked.
-            parent->setCheckState(0, Qt::Checked);
-
-        } else if (state == Qt::Unchecked && parent->checkState(0) == Qt::Checked) {
-
-            bool marked = false;
-            for (int row = 0; row < parent->childCount(); ++row) {
-                if (parent->child(row)->checkState(0) == Qt::Checked) {
-                    marked = true;
-                    break;
-                }
-            }
-            // Unmark parent items when all child items are unchecked.
-            if (!marked)
-                parent->setCheckState(0, Qt::Unchecked);
-        }
-    } else {
-        int row;
-        int number = 0;
-        for (row = 0; row < item->childCount(); ++row) {
-            if (item->child(row)->checkState(0) == Qt::Checked)
-                ++number;
-        }
-
-        // Mark/unmark all child items when marking/unmarking top-level
-        // items.
-        if (state == Qt::Checked && number == 0) {
-            for (row = 0; row < item->childCount(); ++row) {
-                if (item->child(row)->checkState(0) == Qt::Unchecked)
-                    item->child(row)->setCheckState(0, Qt::Checked);
-            }
-        } else if (state == Qt::Unchecked && number > 0) {
-            for (row = 0; row < item->childCount(); ++row) {
-                if (item->child(row)->checkState(0) == Qt::Checked)
-                    item->child(row)->setCheckState(0, Qt::Unchecked);
-            }
-        }
     }
 
     printAction->setEnabled(markedCount > 0);
