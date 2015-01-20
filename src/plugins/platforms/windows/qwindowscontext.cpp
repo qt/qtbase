@@ -676,7 +676,7 @@ static inline bool findPlatformWindowHelper(const POINT &screenPoint, unsigned c
     const HWND child = ChildWindowFromPointEx(*hwnd, point, cwexFlags);
 #else
     Q_UNUSED(cwexFlags)
-    const HWND child = ChildWindowFromPoint(*hwnd, point);
+    const HWND child = WindowFromPoint(point);
 #endif
     if (!child || child == *hwnd)
         return false;
