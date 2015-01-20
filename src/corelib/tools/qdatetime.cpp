@@ -117,7 +117,12 @@ static inline qint64 julianDayFromDate(int year, int month, int day)
     return day + floordiv(153 * m + 2, 5) + 365 * y + floordiv(y, 4) - floordiv(y, 100) + floordiv(y, 400) - 32045;
 }
 
-static void getDateFromJulianDay(qint64 julianDay, int *yearp, int *monthp, int *dayp)
+struct ParsedDate
+{
+    int year, month, day;
+};
+
+static ParsedDate getDateFromJulianDay(qint64 julianDay)
 {
 /*
  * Math from The Calendar FAQ at http://www.tondering.dk/claus/cal/julperiod.php
@@ -140,12 +145,8 @@ static void getDateFromJulianDay(qint64 julianDay, int *yearp, int *monthp, int 
     if (year <= 0)
         --year ;
 
-    if (yearp)
-        *yearp = year;
-    if (monthp)
-        *monthp = month;
-    if (dayp)
-        *dayp = day;
+    const ParsedDate result = { year, month, day };
+    return result;
 }
 
 /*****************************************************************************
@@ -449,9 +450,7 @@ int QDate::year() const
     if (isNull())
         return 0;
 
-    int y;
-    getDateFromJulianDay(jd, &y, 0, 0);
-    return y;
+    return getDateFromJulianDay(jd).year;
 }
 
 /*!
@@ -483,9 +482,7 @@ int QDate::month() const
     if (isNull())
         return 0;
 
-    int m;
-    getDateFromJulianDay(jd, 0, &m, 0);
-    return m;
+    return getDateFromJulianDay(jd).month;
 }
 
 /*!
@@ -501,9 +498,7 @@ int QDate::day() const
     if (isNull())
         return 0;
 
-    int d;
-    getDateFromJulianDay(jd, 0, 0, &d);
-    return d;
+    return getDateFromJulianDay(jd).day;
 }
 
 /*!
@@ -555,12 +550,11 @@ int QDate::daysInMonth() const
     if (isNull())
         return 0;
 
-    int y, m;
-    getDateFromJulianDay(jd, &y, &m, 0);
-    if (m == 2 && isLeapYear(y))
+    const ParsedDate pd = getDateFromJulianDay(jd);
+    if (pd.month == 2 && isLeapYear(pd.year))
         return 29;
     else
-        return monthDays[m];
+        return monthDays[pd.month];
 }
 
 /*!
@@ -576,9 +570,7 @@ int QDate::daysInYear() const
     if (isNull())
         return 0;
 
-    int y;
-    getDateFromJulianDay(jd, &y, 0, 0);
-    return isLeapYear(y) ? 366 : 365;
+    return isLeapYear(getDateFromJulianDay(jd).year) ? 366 : 365;
 }
 
 /*!
@@ -895,7 +887,7 @@ QString QDate::toString(Qt::DateFormat format) const
     if (!isValid())
         return QString();
 
-    int y, m, d;
+    ParsedDate pd;
 
     switch (format) {
     case Qt::SystemLocaleDate:
@@ -913,19 +905,19 @@ QString QDate::toString(Qt::DateFormat format) const
     default:
 #ifndef QT_NO_TEXTDATE
     case Qt::TextDate:
-        getDateFromJulianDay(jd, &y, &m, &d);
+        pd = getDateFromJulianDay(jd);
         return QString::fromLatin1("%1 %2 %3 %4").arg(shortDayName(dayOfWeek()))
-                                                 .arg(shortMonthName(m))
-                                                 .arg(d)
-                                                 .arg(y);
+                                                 .arg(shortMonthName(pd.month))
+                                                 .arg(pd.day)
+                                                 .arg(pd.year);
 #endif
     case Qt::ISODate:
-        getDateFromJulianDay(jd, &y, &m, &d);
-        if (y < 0 || y > 9999)
+        pd = getDateFromJulianDay(jd);
+        if (pd.year < 0 || pd.year > 9999)
             return QString();
-        return QString::fromLatin1("%1-%2-%3").arg(y, 4, 10, QLatin1Char('0'))
-                                              .arg(m, 2, 10, QLatin1Char('0'))
-                                              .arg(d, 2, 10, QLatin1Char('0'));
+        return QString::fromLatin1("%1-%2-%3").arg(pd.year,  4, 10, QLatin1Char('0'))
+                                              .arg(pd.month, 2, 10, QLatin1Char('0'))
+                                              .arg(pd.day,   2, 10, QLatin1Char('0'));
     }
 }
 
@@ -1031,16 +1023,16 @@ bool QDate::setDate(int year, int month, int day)
 */
 void QDate::getDate(int *year, int *month, int *day)
 {
-    if (isValid()) {
-        getDateFromJulianDay(jd, year, month, day);
-    } else {
-        if (year)
-            *year = 0;
-        if (month)
-            *month = 0;
-        if (day)
-            *day = 0;
-    }
+    ParsedDate pd = { 0, 0, 0 };
+    if (isValid())
+        pd = getDateFromJulianDay(jd);
+
+    if (year)
+        *year = pd.year;
+    if (month)
+        *month = pd.month;
+    if (day)
+        *day = pd.day;
 }
 
 /*!
@@ -1082,7 +1074,12 @@ QDate QDate::addMonths(int nmonths) const
         return *this;
 
     int old_y, y, m, d;
-    getDateFromJulianDay(jd, &y, &m, &d);
+    {
+        const ParsedDate pd = getDateFromJulianDay(jd);
+        y = pd.year;
+        m = pd.month;
+        d = pd.day;
+    }
     old_y = y;
 
     bool increasing = nmonths > 0;
@@ -1140,19 +1137,18 @@ QDate QDate::addYears(int nyears) const
     if (!isValid())
         return QDate();
 
-    int y, m, d;
-    getDateFromJulianDay(jd, &y, &m, &d);
+    ParsedDate pd = getDateFromJulianDay(jd);
 
-    int old_y = y;
-    y += nyears;
+    int old_y = pd.year;
+    pd.year += nyears;
 
     // was there a sign change?
-    if ((old_y > 0 && y <= 0) ||
-        (old_y < 0 && y >= 0))
+    if ((old_y > 0 && pd.year <= 0) ||
+        (old_y < 0 && pd.year >= 0))
         // yes, adjust the date by +1 or -1 years
-        y += nyears > 0 ? +1 : -1;
+        pd.year += nyears > 0 ? +1 : -1;
 
-    return fixedDate(y, m, d);
+    return fixedDate(pd.year, pd.month, pd.day);
 }
 
 /*!
