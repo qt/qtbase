@@ -337,6 +337,9 @@
     if (!isQtApplication())
         return;
 
+    if (!m_screen->screen())
+        return;
+
     // For now we only care about the main screen, as both the statusbar
     // visibility and orientation is only appropriate for the main screen.
     if (m_screen->uiScreen() != [UIScreen mainScreen])

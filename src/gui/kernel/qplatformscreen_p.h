@@ -52,7 +52,7 @@ class QScreen;
 class QPlatformScreenPrivate
 {
 public:
-    QScreen *screen;
+    QPointer<QScreen> screen;
 };
 
 QT_END_NAMESPACE

@@ -461,7 +461,6 @@ void QPlatformIntegration::destroyScreen(QPlatformScreen *screen)
 {
     QGuiApplicationPrivate::screen_list.removeOne(screen->d_func()->screen);
     delete screen->d_func()->screen;
-    screen->d_func()->screen = Q_NULLPTR;
     delete screen;
 }
 
