@@ -120,6 +120,7 @@ private slots:
     void loadGarbage();
 #endif
     void relativePath();
+    void absolutePath();
     void reloadPlugin();
     void preloadedPlugin_data();
     void preloadedPlugin();
@@ -399,6 +400,20 @@ void tst_QPluginLoader::relativePath()
     QVERIFY(!binDir.isEmpty());
     QCoreApplication::addLibraryPath(binDir);
     QPluginLoader loader("theplugin");
+    loader.load(); // not recommended, instance() should do the job.
+    PluginInterface *instance = qobject_cast<PluginInterface*>(loader.instance());
+    QVERIFY(instance);
+    QCOMPARE(instance->pluginName(), QLatin1String("Plugin ok"));
+    QVERIFY(loader.unload());
+}
+
+void tst_QPluginLoader::absolutePath()
+{
+    // Windows binaries run from release and debug subdirs, so we can't rely on the current dir.
+    const QString binDir = QFINDTESTDATA("bin");
+    QVERIFY(!binDir.isEmpty());
+    QVERIFY(QDir::isAbsolutePath(binDir));
+    QPluginLoader loader(binDir + "/theplugin");
     loader.load(); // not recommended, instance() should do the job.
     PluginInterface *instance = qobject_cast<PluginInterface*>(loader.instance());
     QVERIFY(instance);

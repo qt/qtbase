@@ -273,6 +273,13 @@ bool QPluginLoader::isLoaded() const
 #if defined(QT_SHARED)
 static QString locatePlugin(const QString& fileName)
 {
+    const bool isAbsolute = QDir::isAbsolutePath(fileName);
+    if (isAbsolute) {
+        QFileInfo fi(fileName);
+        if (fi.isFile()) {
+            return fi.canonicalFilePath();
+        }
+    }
     QStringList prefixes = QLibraryPrivate::prefixes_sys();
     prefixes.prepend(QString());
     QStringList suffixes = QLibraryPrivate::suffixes_sys(QString());
@@ -281,12 +288,18 @@ static QString locatePlugin(const QString& fileName)
     // Split up "subdir/filename"
     const int slash = fileName.lastIndexOf('/');
     const QString baseName = fileName.mid(slash + 1);
-    const QString basePath = fileName.left(slash + 1); // keep the '/'
+    const QString basePath = isAbsolute ? QString() : fileName.left(slash + 1); // keep the '/'
 
     const bool debug = qt_debug_component();
 
-    QStringList paths = QCoreApplication::libraryPaths();
-    paths.prepend(QStringLiteral("./")); // search in current dir first
+    QStringList paths;
+    if (isAbsolute) {
+        paths.append(fileName.left(slash)); // don't include the '/'
+    } else {
+        paths = QCoreApplication::libraryPaths();
+        paths.prepend(QStringLiteral(".")); // search in current dir first
+    }
+
     foreach (const QString &path, paths) {
         foreach (const QString &prefix, prefixes) {
             foreach (const QString &suffix, suffixes) {
@@ -337,12 +350,7 @@ void QPluginLoader::setFileName(const QString &fileName)
         did_load = false;
     }
 
-    QFileInfo fi(fileName);
-    QString fn;
-    if (fi.isAbsolute())
-        fn = fi.canonicalFilePath();
-    else
-        fn = locatePlugin(fileName);
+    const QString fn = locatePlugin(fileName);
 
     d = QLibraryPrivate::findOrCreate(fn, QString(), lh);
     if (!fn.isEmpty())
