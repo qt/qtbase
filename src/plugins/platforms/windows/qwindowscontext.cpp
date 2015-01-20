@@ -905,6 +905,8 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
         return QWindowsInputContext::instance()->endComposition(hwnd);
     case QtWindows::InputMethodRequest:
         return QWindowsInputContext::instance()->handleIME_Request(wParam, lParam, result);
+    case QtWindows::GestureEvent:
+        return d->m_mouseHandler.translateTouchEvent(platformWindow->window(), hwnd, et, msg, result);
     case QtWindows::InputMethodOpenCandidateWindowEvent:
     case QtWindows::InputMethodCloseCandidateWindowEvent:
         // TODO: Release/regrab mouse if a popup has mouse grab.

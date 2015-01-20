@@ -639,6 +639,10 @@ QWindowsWindowData
                                  context->frameX, context->frameY,
                                  context->frameWidth, context->frameHeight,
                                  parentHandle, NULL, appinst, NULL);
+#ifdef Q_OS_WINCE
+    if (DisableGestures(result.hwnd, TGF_GID_ALL, TGF_SCOPE_WINDOW))
+        EnableGestures(result.hwnd, TGF_GID_DIRECTMANIPULATION, TGF_SCOPE_WINDOW);
+#endif
     qCDebug(lcQpaWindows).nospace()
         << "CreateWindowEx: returns " << w << ' ' << result.hwnd << " obtained geometry: "
         << context->obtainedGeometry << context->margins;
