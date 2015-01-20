@@ -740,8 +740,15 @@ bool QAbstractSocketPrivate::canReadNotification()
         return true;
     }
 
-    if ((isBuffered || socketType != QAbstractSocket::TcpSocket) && socketEngine)
-        socketEngine->setReadNotificationEnabled(readBufferMaxSize == 0 || readBufferMaxSize > q->bytesAvailable());
+    if (socketEngine) {
+        // turn the socket engine off if we've either:
+        // - got pending datagrams
+        // - reached the buffer size limit
+        if (isBuffered)
+            socketEngine->setReadNotificationEnabled(readBufferMaxSize == 0 || readBufferMaxSize > q->bytesAvailable());
+        else if (socketType != QAbstractSocket::TcpSocket)
+            socketEngine->setReadNotificationEnabled(!socketEngine->hasPendingDatagrams());
+    }
 
     // reset the read socket notifier state if we reentered inside the
     // readyRead() connected slot.

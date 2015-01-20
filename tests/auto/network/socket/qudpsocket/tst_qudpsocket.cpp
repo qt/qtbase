@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2015 Intel Corporation.
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -114,6 +115,8 @@ private slots:
     void echo();
     void linkLocalIPv6();
     void linkLocalIPv4();
+    void readyRead();
+    void readyReadForEmptyDatagram();
 
 protected slots:
     void empty_readyReadSlot();
@@ -1513,6 +1516,93 @@ void tst_QUdpSocket::linkLocalIPv4()
         }
     }
     qDeleteAll(sockets);
+}
+
+void tst_QUdpSocket::readyRead()
+{
+    QFETCH_GLOBAL(bool, setProxy);
+    if (setProxy)
+        return;
+
+    char buf[1];
+    QUdpSocket sender, receiver;
+#ifdef FORCE_SESSION
+    sender.setProperty("_q_networksession", QVariant::fromValue(networkSession));
+    receiver.setProperty("_q_networksession", QVariant::fromValue(networkSession));
+#endif
+
+    QVERIFY(receiver.bind(QHostAddress(QHostAddress::AnyIPv4), 0));
+    quint16 port = receiver.localPort();
+    QVERIFY(port != 0);
+
+    QSignalSpy spy(&receiver, SIGNAL(readyRead()));
+
+    // send a datagram to that port
+    sender.writeDatagram("a", makeNonAny(receiver.localAddress()), port);
+
+    // wait a little
+    // if QTBUG-43857 is still going, we'll live-lock on socket notifications from receiver's socket
+    QTest::qWait(100);
+
+    // make sure only one signal was emitted
+    QCOMPARE(spy.count(), 1);
+    QVERIFY(receiver.hasPendingDatagrams());
+    QCOMPARE(receiver.bytesAvailable(), qint64(1));
+    QCOMPARE(receiver.pendingDatagramSize(), qint64(1));
+
+    // write another datagram
+    sender.writeDatagram("ab", makeNonAny(receiver.localAddress()), port);
+
+    // no new signal should be emitted because we haven't read the first datagram yet
+    QTest::qWait(100);
+    QCOMPARE(spy.count(), 1);
+    QVERIFY(receiver.hasPendingDatagrams());
+    QVERIFY(receiver.bytesAvailable() >= 1);    // most likely is 1, but it could be 1 + 2 in the future
+    QCOMPARE(receiver.pendingDatagramSize(), qint64(1));
+
+    // read all the datagrams (we could read one only, but we can't be sure the OS is queueing)
+    while (receiver.hasPendingDatagrams())
+        receiver.readDatagram(buf, sizeof buf);
+
+    // write a new datagram and ensure the signal is emitted now
+    sender.writeDatagram("abc", makeNonAny(receiver.localAddress()), port);
+    QTest::qWait(100);
+    QCOMPARE(spy.count(), 2);
+    QVERIFY(receiver.hasPendingDatagrams());
+    QCOMPARE(receiver.bytesAvailable(), qint64(3));
+    QCOMPARE(receiver.pendingDatagramSize(), qint64(3));
+}
+
+void tst_QUdpSocket::readyReadForEmptyDatagram()
+{
+    QFETCH_GLOBAL(bool, setProxy);
+    if (setProxy)
+        return;
+
+    QUdpSocket sender, receiver;
+#ifdef FORCE_SESSION
+    sender.setProperty("_q_networksession", QVariant::fromValue(networkSession));
+    receiver.setProperty("_q_networksession", QVariant::fromValue(networkSession));
+#endif
+
+    QVERIFY(receiver.bind(QHostAddress(QHostAddress::AnyIPv4), 0));
+    quint16 port = receiver.localPort();
+    QVERIFY(port != 0);
+
+    connect(&receiver, SIGNAL(readyRead()), SLOT(empty_readyReadSlot()));
+
+    // send an empty datagram to that port
+    sender.writeDatagram("", makeNonAny(receiver.localAddress()), port);
+
+    // ensure that we got a readyRead, despite bytesAvailable() == 0
+    QTestEventLoop::instance().enterLoop(1);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+
+    char buf[1];
+    QVERIFY(receiver.hasPendingDatagrams());
+    QCOMPARE(receiver.pendingDatagramSize(), qint64(0));
+    QCOMPARE(receiver.bytesAvailable(), qint64(0));
+    QCOMPARE(receiver.readDatagram(buf, sizeof buf), qint64(0));
 }
 
 QTEST_MAIN(tst_QUdpSocket)
