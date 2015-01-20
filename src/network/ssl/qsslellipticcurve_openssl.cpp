@@ -52,24 +52,20 @@ QT_BEGIN_NAMESPACE
 
 QString QSslEllipticCurve::shortName() const
 {
-    if (id == 0)
-        return QString();
-
     QString result;
 #ifndef OPENSSL_NO_EC
-    result = QString::fromLatin1(q_OBJ_nid2sn(id));
+    if (id != 0)
+        result = QString::fromLatin1(q_OBJ_nid2sn(id));
 #endif
     return result;
 }
 
 QString QSslEllipticCurve::longName() const
 {
-    if (id == 0)
-        return QString();
-
     QString result;
 #ifndef OPENSSL_NO_EC
-    result = QString::fromLatin1(q_OBJ_nid2ln(id));
+    if (id != 0)
+        result = QString::fromLatin1(q_OBJ_nid2ln(id));
 #endif
     return result;
 }
