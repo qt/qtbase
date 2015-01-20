@@ -64,7 +64,7 @@ public:
 
     void updateGeometry() {
         Q_Q(QWindowContainer);
-        if (q->geometry().bottom() <= 0 || q->geometry().right() <= 0)
+        if (!q->isWindow() && (q->geometry().bottom() <= 0 || q->geometry().right() <= 0))
             /* Qt (e.g. QSplitter) sometimes prefer to hide a widget by *not* calling
                setVisible(false). This is often done by setting its coordinates to a sufficiently
                negative value so that its clipped outside the parent. Since a QWindow is not clipped
