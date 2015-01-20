@@ -202,20 +202,21 @@ static void rfcDateImpl(const QString &s, QDate *dd = 0, QTime *dt = 0, int *utc
     // Matches "Wdy, DD Mon YYYY HH:mm:ss ±hhmm" (Wdy, being optional)
     QRegExp rex(QStringLiteral("^(?:[A-Z][a-z]+,)?[ \\t]*(\\d{1,2})[ \\t]+([A-Z][a-z]+)[ \\t]+(\\d\\d\\d\\d)(?:[ \\t]+(\\d\\d):(\\d\\d)(?::(\\d\\d))?)?[ \\t]*(?:([+-])(\\d\\d)(\\d\\d))?"));
     if (s.indexOf(rex) == 0) {
+        const QStringList cap = rex.capturedTexts();
         if (dd) {
-            day = rex.cap(1).toInt();
-            month = qt_monthNumberFromShortName(rex.cap(2));
-            year = rex.cap(3).toInt();
+            day = cap[1].toInt();
+            month = qt_monthNumberFromShortName(cap[2]);
+            year = cap[3].toInt();
         }
         if (dt) {
-            if (!rex.cap(4).isEmpty()) {
-                hour = rex.cap(4).toInt();
-                min = rex.cap(5).toInt();
-                sec = rex.cap(6).toInt();
+            if (!cap[4].isEmpty()) {
+                hour = cap[4].toInt();
+                min = cap[5].toInt();
+                sec = cap[6].toInt();
             }
-            positiveOffset = (rex.cap(7) == QLatin1String("+"));
-            hourOffset = rex.cap(8).toInt();
-            minOffset = rex.cap(9).toInt();
+            positiveOffset = (cap[7] == QLatin1String("+"));
+            hourOffset = cap[8].toInt();
+            minOffset = cap[9].toInt();
         }
         if (utcOffset)
             *utcOffset = ((hourOffset * 60 + minOffset) * (positiveOffset ? 60 : -60));
@@ -223,20 +224,21 @@ static void rfcDateImpl(const QString &s, QDate *dd = 0, QTime *dt = 0, int *utc
         // Matches "Wdy Mon DD HH:mm:ss YYYY"
         QRegExp rex(QStringLiteral("^[A-Z][a-z]+[ \\t]+([A-Z][a-z]+)[ \\t]+(\\d\\d)(?:[ \\t]+(\\d\\d):(\\d\\d):(\\d\\d))?[ \\t]+(\\d\\d\\d\\d)[ \\t]*(?:([+-])(\\d\\d)(\\d\\d))?"));
         if (s.indexOf(rex) == 0) {
+            const QStringList cap = rex.capturedTexts();
             if (dd) {
-                month = qt_monthNumberFromShortName(rex.cap(1));
-                day = rex.cap(2).toInt();
-                year = rex.cap(6).toInt();
+                month = qt_monthNumberFromShortName(cap[1]);
+                day = cap[2].toInt();
+                year = cap[6].toInt();
             }
             if (dt) {
-                if (!rex.cap(3).isEmpty()) {
-                    hour = rex.cap(3).toInt();
-                    min = rex.cap(4).toInt();
-                    sec = rex.cap(5).toInt();
+                if (!cap[3].isEmpty()) {
+                    hour = cap[3].toInt();
+                    min = cap[4].toInt();
+                    sec = cap[5].toInt();
                 }
-                positiveOffset = (rex.cap(7) == QLatin1String("+"));
-                hourOffset = rex.cap(8).toInt();
-                minOffset = rex.cap(9).toInt();
+                positiveOffset = (cap[7] == QLatin1String("+"));
+                hourOffset = cap[8].toInt();
+                minOffset = cap[9].toInt();
             }
             if (utcOffset)
                 *utcOffset = ((hourOffset * 60 + minOffset) * (positiveOffset ? 60 : -60));
