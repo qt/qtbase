@@ -155,7 +155,7 @@ static void getDateFromJulianDay(qint64 julianDay, int *yearp, int *monthp, int 
 static const char monthDays[] = { 0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
 
 #ifndef QT_NO_TEXTDATE
-static const char * const qt_shortMonthNames[] = {
+static const char qt_shortMonthNames[][4] = {
     "Jan", "Feb", "Mar", "Apr", "May", "Jun",
     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
 
