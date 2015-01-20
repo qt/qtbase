@@ -55,8 +55,6 @@ QString QSslEllipticCurve::shortName() const
     if (id == 0)
         return QString();
 
-    QSslSocketPrivate::ensureInitialized();
-
     QString result;
 #ifndef OPENSSL_NO_EC
     result = QString::fromLatin1(q_OBJ_nid2sn(id));
@@ -68,8 +66,6 @@ QString QSslEllipticCurve::longName() const
 {
     if (id == 0)
         return QString();
-
-    QSslSocketPrivate::ensureInitialized();
 
     QString result;
 #ifndef OPENSSL_NO_EC
