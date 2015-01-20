@@ -55,7 +55,7 @@ Q_DECL_CONSTEXPR uint qHash(QSslEllipticCurve curve, uint seed = 0) Q_DECL_NOTHR
 
 class QSslEllipticCurve {
 public:
-    Q_DECL_CONSTEXPR QSslEllipticCurve()
+    Q_DECL_CONSTEXPR QSslEllipticCurve() Q_DECL_NOTHROW
         : id(0)
     {
     }
@@ -66,12 +66,12 @@ public:
     Q_NETWORK_EXPORT QString shortName() const Q_REQUIRED_RESULT;
     Q_NETWORK_EXPORT QString longName() const Q_REQUIRED_RESULT;
 
-    Q_DECL_CONSTEXPR bool isValid() const
+    Q_DECL_CONSTEXPR bool isValid() const Q_DECL_NOTHROW
     {
         return id != 0;
     }
 
-    Q_NETWORK_EXPORT bool isTlsNamedCurve() const;
+    Q_NETWORK_EXPORT bool isTlsNamedCurve() const Q_DECL_NOTHROW;
 
 private:
     int id;
