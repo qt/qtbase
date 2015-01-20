@@ -58,7 +58,7 @@
 
 @interface QIOSViewController () {
   @public
-    QIOSScreen *m_screen;
+    QPointer<QIOSScreen> m_screen;
     BOOL m_updatingProperties;
     QMetaObject::Connection m_focusWindowChangeConnection;
 }
@@ -334,7 +334,8 @@
     if (!QCoreApplication::instance())
         return;
 
-    m_screen->updateProperties();
+    if (m_screen)
+        m_screen->updateProperties();
 }
 
 // -------------------------------------------------------------------------
@@ -344,7 +345,7 @@
     if (!isQtApplication())
         return;
 
-    if (!m_screen->screen())
+    if (!m_screen || !m_screen->screen())
         return;
 
     // For now we only care about the main screen, as both the statusbar
