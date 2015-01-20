@@ -255,7 +255,19 @@ void QIOSScreen::updateProperties()
         }
     }
 
-    if (screen() && screen()->orientation() != orientation())
+    if (m_geometry != previousGeometry) {
+        const qreal millimetersPerInch = 25.4;
+        m_physicalSize = QSizeF(m_geometry.size()) / m_unscaledDpi * millimetersPerInch;
+    }
+
+    // At construction time, we don't yet have an associated QScreen, but we still want
+    // to compute the properties above so they are ready for when the QScreen attaches.
+    // Also, at destruction time the QScreen has already been torn down, so notifying
+    // Qt about changes to the screen will cause asserts in the event delivery system.
+    if (!screen())
+        return;
+
+    if (screen()->orientation() != orientation())
         QWindowSystemInterface::handleScreenOrientationChange(screen(), orientation());
 
     // Note: The screen orientation change and the geometry changes are not atomic, so when
@@ -263,12 +275,8 @@ void QIOSScreen::updateProperties()
     // API yet. But conceptually it makes sense that the orientation update happens first,
     // and the geometry updates caused by auto-rotation happen after that.
 
-    if (m_geometry != previousGeometry || m_availableGeometry != previousAvailableGeometry) {
-        const qreal millimetersPerInch = 25.4;
-        m_physicalSize = QSizeF(m_geometry.size()) / m_unscaledDpi * millimetersPerInch;
-
+    if (m_geometry != previousGeometry || m_availableGeometry != previousAvailableGeometry)
         QWindowSystemInterface::handleScreenGeometryChange(screen(), m_geometry, m_availableGeometry);
-    }
 }
 
 QRect QIOSScreen::geometry() const
