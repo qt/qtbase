@@ -44,9 +44,7 @@
 
 #include <QtCore/QtGlobal>
 #include <QtCore/QString>
-#include <QtCore/QStringList>
 #include <QtCore/QMetaType>
-#include <QtCore/QVector>
 #include <QtCore/QHash>
 
 QT_BEGIN_NAMESPACE
