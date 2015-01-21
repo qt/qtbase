@@ -101,16 +101,6 @@ public:
     QDateTimePrivate(const QDate &toDate, const QTime &toTime, const QTimeZone & timeZone);
 #endif // QT_BOOTSTRAPPED
 
-    QDateTimePrivate(const QDateTimePrivate &other) : QSharedData(other),
-                                                      m_msecs(other.m_msecs),
-                                                      m_spec(other.m_spec),
-                                                      m_offsetFromUtc(other.m_offsetFromUtc),
-#ifndef QT_BOOTSTRAPPED
-                                                      m_timeZone(other.m_timeZone),
-#endif // QT_BOOTSTRAPPED
-                                                      m_status(other.m_status)
-    {}
-
     // ### XXX: when the tooling situation improves, look at fixing the padding.
     // 4 bytes padding
 
