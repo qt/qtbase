@@ -187,68 +187,43 @@ static int fromShortMonthName(const QStringRef &monthName)
 #endif // QT_NO_TEXTDATE
 
 #ifndef QT_NO_DATESTRING
-static void rfcDateImpl(const QString &s, QDate *dd = 0, QTime *dt = 0, int *utcOffset = 0)
+struct ParsedRfcDateTime {
+    QDate date;
+    QTime time;
+    int utcOffset;
+};
+
+static ParsedRfcDateTime rfcDateImpl(const QString &s)
 {
-    int day = -1;
-    int month = -1;
-    int year = -1;
-    int hour = -1;
-    int min = -1;
-    int sec = -1;
-    int hourOffset = 0;
-    int minOffset = 0;
-    bool positiveOffset = false;
+    ParsedRfcDateTime result;
 
     // Matches "Wdy, DD Mon YYYY HH:mm:ss ±hhmm" (Wdy, being optional)
     QRegExp rex(QStringLiteral("^(?:[A-Z][a-z]+,)?[ \\t]*(\\d{1,2})[ \\t]+([A-Z][a-z]+)[ \\t]+(\\d\\d\\d\\d)(?:[ \\t]+(\\d\\d):(\\d\\d)(?::(\\d\\d))?)?[ \\t]*(?:([+-])(\\d\\d)(\\d\\d))?"));
     if (s.indexOf(rex) == 0) {
         const QStringList cap = rex.capturedTexts();
-        if (dd) {
-            day = cap[1].toInt();
-            month = qt_monthNumberFromShortName(cap[2]);
-            year = cap[3].toInt();
-        }
-        if (dt) {
-            if (!cap[4].isEmpty()) {
-                hour = cap[4].toInt();
-                min = cap[5].toInt();
-                sec = cap[6].toInt();
-            }
-            positiveOffset = (cap[7] == QLatin1String("+"));
-            hourOffset = cap[8].toInt();
-            minOffset = cap[9].toInt();
-        }
-        if (utcOffset)
-            *utcOffset = ((hourOffset * 60 + minOffset) * (positiveOffset ? 60 : -60));
+        result.date = QDate(cap[3].toInt(), qt_monthNumberFromShortName(cap[2]), cap[1].toInt());
+        if (!cap[4].isEmpty())
+            result.time = QTime(cap[4].toInt(), cap[5].toInt(), cap[6].toInt());
+        const bool positiveOffset = (cap[7] == QLatin1String("+"));
+        const int hourOffset = cap[8].toInt();
+        const int minOffset = cap[9].toInt();
+        result.utcOffset = ((hourOffset * 60 + minOffset) * (positiveOffset ? 60 : -60));
     } else {
         // Matches "Wdy Mon DD HH:mm:ss YYYY"
         QRegExp rex(QStringLiteral("^[A-Z][a-z]+[ \\t]+([A-Z][a-z]+)[ \\t]+(\\d\\d)(?:[ \\t]+(\\d\\d):(\\d\\d):(\\d\\d))?[ \\t]+(\\d\\d\\d\\d)[ \\t]*(?:([+-])(\\d\\d)(\\d\\d))?"));
         if (s.indexOf(rex) == 0) {
             const QStringList cap = rex.capturedTexts();
-            if (dd) {
-                month = qt_monthNumberFromShortName(cap[1]);
-                day = cap[2].toInt();
-                year = cap[6].toInt();
-            }
-            if (dt) {
-                if (!cap[3].isEmpty()) {
-                    hour = cap[3].toInt();
-                    min = cap[4].toInt();
-                    sec = cap[5].toInt();
-                }
-                positiveOffset = (cap[7] == QLatin1String("+"));
-                hourOffset = cap[8].toInt();
-                minOffset = cap[9].toInt();
-            }
-            if (utcOffset)
-                *utcOffset = ((hourOffset * 60 + minOffset) * (positiveOffset ? 60 : -60));
+            result.date = QDate(cap[6].toInt(), qt_monthNumberFromShortName(cap[1]), cap[2].toInt());
+            if (!cap[3].isEmpty())
+                result.time = QTime(cap[3].toInt(), cap[4].toInt(), cap[5].toInt());
+            const bool positiveOffset = (cap[7] == QLatin1String("+"));
+            const int hourOffset = cap[8].toInt();
+            const int minOffset = cap[9].toInt();
+            result.utcOffset = ((hourOffset * 60 + minOffset) * (positiveOffset ? 60 : -60));
         }
     }
 
-    if (dd)
-        *dd = QDate(year, month, day);
-    if (dt)
-        *dt = QTime(hour, min, sec);
+    return result;
 }
 #endif // QT_NO_DATESTRING
 
@@ -1253,11 +1228,8 @@ QDate QDate::fromString(const QString& string, Qt::DateFormat format)
         return QLocale().toDate(string, QLocale::ShortFormat);
     case Qt::DefaultLocaleLongDate:
         return QLocale().toDate(string, QLocale::LongFormat);
-    case Qt::RFC2822Date: {
-        QDate date;
-        rfcDateImpl(string, &date);
-        return date;
-    }
+    case Qt::RFC2822Date:
+        return rfcDateImpl(string).date;
     default:
 #ifndef QT_NO_TEXTDATE
     case Qt::TextDate: {
@@ -2001,11 +1973,8 @@ QTime QTime::fromString(const QString& string, Qt::DateFormat format)
         return QLocale().toTime(string, QLocale::ShortFormat);
     case Qt::DefaultLocaleLongDate:
         return QLocale().toTime(string, QLocale::LongFormat);
-    case Qt::RFC2822Date: {
-        QTime time;
-        rfcDateImpl(string, 0, &time);
-        return time;
-    }
+    case Qt::RFC2822Date:
+        return rfcDateImpl(string).time;
     case Qt::ISODate:
     case Qt::TextDate:
     default:
@@ -4415,16 +4384,13 @@ QDateTime QDateTime::fromString(const QString& string, Qt::DateFormat format)
     case Qt::DefaultLocaleLongDate:
         return QLocale().toDateTime(string, QLocale::LongFormat);
     case Qt::RFC2822Date: {
-        QDate date;
-        QTime time;
-        int utcOffset = 0;
-        rfcDateImpl(string, &date, &time, &utcOffset);
+        const ParsedRfcDateTime rfc = rfcDateImpl(string);
 
-        if (!date.isValid() || !time.isValid())
+        if (!rfc.date.isValid() || !rfc.time.isValid())
             return QDateTime();
 
-        QDateTime dateTime(date, time, Qt::UTC);
-        dateTime.setOffsetFromUtc(utcOffset);
+        QDateTime dateTime(rfc.date, rfc.time, Qt::UTC);
+        dateTime.setOffsetFromUtc(rfc.utcOffset);
         return dateTime;
     }
     case Qt::ISODate: {
