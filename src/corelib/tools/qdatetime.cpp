@@ -2627,15 +2627,18 @@ void QDateTimePrivate::setDateTime(const QDate &date, const QTime &time)
     checkValidDateTime();
 }
 
-void QDateTimePrivate::getDateTime(QDate *date, QTime *time) const
+QPair<QDate, QTime> QDateTimePrivate::getDateTime() const
 {
-    msecsToTime(m_msecs, date, time);
+    QPair<QDate, QTime> result;
+    msecsToTime(m_msecs, &result.first, &result.second);
 
-    if (date && isNullDate())
-        *date = QDate();
+    if (isNullDate())
+        result.first = QDate();
 
-    if (time && isNullTime())
-        *time = QTime();
+    if (isNullTime())
+        result.second = QTime();
+
+    return result;
 }
 
 // Set the Daylight Status if LocalTime set via msecs
@@ -3523,9 +3526,9 @@ QString QDateTime::toString(Qt::DateFormat format) const
     default:
 #ifndef QT_NO_TEXTDATE
     case Qt::TextDate: {
-        QDate dt;
-        QTime tm;
-        d->getDateTime(&dt, &tm);
+        const QPair<QDate, QTime> p = d->getDateTime();
+        const QDate &dt = p.first;
+        const QTime &tm = p.second;
         //We cant use date.toString(Qt::TextDate) as we need to insert the time before the year
         buf = QString::fromLatin1("%1 %2 %3 %4 %5").arg(dt.shortDayName(dt.dayOfWeek()))
                                                    .arg(dt.shortMonthName(dt.month()))
@@ -3541,9 +3544,9 @@ QString QDateTime::toString(Qt::DateFormat format) const
     }
 #endif
     case Qt::ISODate: {
-        QDate dt;
-        QTime tm;
-        d->getDateTime(&dt, &tm);
+        const QPair<QDate, QTime> p = d->getDateTime();
+        const QDate &dt = p.first;
+        const QTime &tm = p.second;
         buf = dt.toString(Qt::ISODate);
         if (buf.isEmpty())
             return QString();   // failed to convert
@@ -3661,9 +3664,9 @@ QDateTime QDateTime::addDays(qint64 ndays) const
 {
     QDateTime dt(*this);
     dt.detach();
-    QDate date;
-    QTime time;
-    d->getDateTime(&date, &time);
+    QPair<QDate, QTime> p = d->getDateTime();
+    QDate &date = p.first;
+    QTime &time = p.second;
     date = date.addDays(ndays);
     // Result might fall into "missing" DaylightTime transition hour,
     // so call conversion and use the adjusted returned time
@@ -3697,9 +3700,9 @@ QDateTime QDateTime::addMonths(int nmonths) const
 {
     QDateTime dt(*this);
     dt.detach();
-    QDate date;
-    QTime time;
-    d->getDateTime(&date, &time);
+    QPair<QDate, QTime> p = d->getDateTime();
+    QDate &date = p.first;
+    QTime &time = p.second;
     date = date.addMonths(nmonths);
     // Result might fall into "missing" DaylightTime transition hour,
     // so call conversion and use the adjusted returned time
@@ -3733,9 +3736,9 @@ QDateTime QDateTime::addYears(int nyears) const
 {
     QDateTime dt(*this);
     dt.detach();
-    QDate date;
-    QTime time;
-    d->getDateTime(&date, &time);
+    QPair<QDate, QTime> p = d->getDateTime();
+    QDate &date = p.first;
+    QTime &time = p.second;
     date = date.addYears(nyears);
     // Result might fall into "missing" DaylightTime transition hour,
     // so call conversion and use the adjusted returned time
@@ -4769,14 +4772,13 @@ QDataStream &operator>>(QDataStream &in, QTime &time)
 */
 QDataStream &operator<<(QDataStream &out, const QDateTime &dateTime)
 {
-    QDate dt;
-    QTime tm;
+    QPair<QDate, QTime> dateAndTime;
 
     if (out.version() >= QDataStream::Qt_5_2) {
 
         // In 5.2 we switched to using Qt::TimeSpec and added offset support
-        dateTime.d->getDateTime(&dt, &tm);
-        out << dt << tm << qint8(dateTime.timeSpec());
+        dateAndTime = dateTime.d->getDateTime();
+        out << dateAndTime << qint8(dateTime.timeSpec());
         if (dateTime.timeSpec() == Qt::OffsetFromUTC)
             out << qint32(dateTime.offsetFromUtc());
 #ifndef QT_BOOTSTRAPPED
@@ -4790,17 +4792,14 @@ QDataStream &operator<<(QDataStream &out, const QDateTime &dateTime)
         // This approach is wrong and should not be used again; it breaks
         // the guarantee that a deserialised local datetime is the same time
         // of day, regardless of which timezone it was serialised in.
-        if (dateTime.isValid())
-            dateTime.toUTC().d->getDateTime(&dt, &tm);
-        else
-            dateTime.d->getDateTime(&dt, &tm);
-        out << dt << tm << qint8(dateTime.timeSpec());
+        dateAndTime = (dateTime.isValid() ? dateTime.toUTC() : dateTime).d->getDateTime();
+        out << dateAndTime << qint8(dateTime.timeSpec());
 
     } else if (out.version() >= QDataStream::Qt_4_0) {
 
         // From 4.0 to 5.1 (except 5.0) we used QDateTimePrivate::Spec
-        dateTime.d->getDateTime(&dt, &tm);
-        out << dt << tm;
+        dateAndTime = dateTime.d->getDateTime();
+        out << dateAndTime;
         if (out.version() >= QDataStream::Qt_4_0) {
             switch (dateTime.timeSpec()) {
             case Qt::UTC:
@@ -4823,8 +4822,8 @@ QDataStream &operator<<(QDataStream &out, const QDateTime &dateTime)
     } else { // version < QDataStream::Qt_4_0
 
         // Before 4.0 there was no TimeSpec, only Qt::LocalTime was supported
-        dateTime.d->getDateTime(&dt, &tm);
-        out << dt << tm;
+        dateAndTime = dateTime.d->getDateTime();
+        out << dateAndTime;
 
     }
 
