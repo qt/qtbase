@@ -199,7 +199,9 @@ int runRcc(int argc, char *argv[])
     const QStringList filenamesIn = parser.positionalArguments();
 
     foreach (const QString &file, filenamesIn) {
-        if (!QFile::exists(file)) {
+        if (file == QLatin1String("-"))
+            continue;
+        else if (!QFile::exists(file)) {
             qWarning("%s: File does not exist '%s'", argv[0], qPrintable(file));
             return 1;
         }
