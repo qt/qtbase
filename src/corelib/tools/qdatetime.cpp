@@ -167,7 +167,7 @@ static int qt_monthNumberFromShortName(QStringRef shortName)
     }
     return -1;
 }
-int qt_monthNumberFromShortName(const QString &shortName)
+static int qt_monthNumberFromShortName(const QString &shortName)
 { return qt_monthNumberFromShortName(QStringRef(&shortName)); }
 
 static int fromShortMonthName(const QStringRef &monthName)
