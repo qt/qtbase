@@ -526,6 +526,23 @@ QFontEngine::HintStyle defaultHintStyleFromMatch(QFont::HintingPreference hintin
         return QFontEngine::HintNone;
     }
 
+    int hint_style = 0;
+    if (FcPatternGetInteger (match, FC_HINT_STYLE, 0, &hint_style) == FcResultMatch) {
+        switch (hint_style) {
+        case FC_HINT_NONE:
+            return QFontEngine::HintNone;
+        case FC_HINT_SLIGHT:
+            return QFontEngine::HintLight;
+        case FC_HINT_MEDIUM:
+            return QFontEngine::HintMedium;
+        case FC_HINT_FULL:
+            return QFontEngine::HintFull;
+        default:
+            Q_UNREACHABLE();
+            break;
+        }
+    }
+
     if (useXftConf) {
         void *hintStyleResource =
                 QGuiApplication::platformNativeInterface()->nativeResourceForScreen("hintstyle",
@@ -535,27 +552,31 @@ QFontEngine::HintStyle defaultHintStyleFromMatch(QFont::HintingPreference hintin
             return QFontEngine::HintStyle(hintStyle - 1);
     }
 
-    int hint_style = 0;
-    if (FcPatternGetInteger (match, FC_HINT_STYLE, 0, &hint_style) == FcResultNoMatch)
-        hint_style = FC_HINT_FULL;
-    switch (hint_style) {
-    case FC_HINT_NONE:
-        return QFontEngine::HintNone;
-    case FC_HINT_SLIGHT:
-        return QFontEngine::HintLight;
-    case FC_HINT_MEDIUM:
-        return QFontEngine::HintMedium;
-    case FC_HINT_FULL:
-        return QFontEngine::HintFull;
-    default:
-        Q_UNREACHABLE();
-        break;
-    }
     return QFontEngine::HintFull;
 }
 
 QFontEngine::SubpixelAntialiasingType subpixelTypeFromMatch(FcPattern *match, bool useXftConf)
 {
+    int subpixel = FC_RGBA_UNKNOWN;
+    if (FcPatternGetInteger(match, FC_RGBA, 0, &subpixel) == FcResultMatch) {
+        switch (subpixel) {
+        case FC_RGBA_UNKNOWN:
+        case FC_RGBA_NONE:
+            return QFontEngine::Subpixel_None;
+        case FC_RGBA_RGB:
+            return QFontEngine::Subpixel_RGB;
+        case FC_RGBA_BGR:
+            return QFontEngine::Subpixel_BGR;
+        case FC_RGBA_VRGB:
+            return QFontEngine::Subpixel_VRGB;
+        case FC_RGBA_VBGR:
+            return QFontEngine::Subpixel_VBGR;
+        default:
+            Q_UNREACHABLE();
+            break;
+        }
+    }
+
     if (useXftConf) {
         void *subpixelTypeResource =
                 QGuiApplication::platformNativeInterface()->nativeResourceForScreen("subpixeltype",
@@ -565,25 +586,6 @@ QFontEngine::SubpixelAntialiasingType subpixelTypeFromMatch(FcPattern *match, bo
             return QFontEngine::SubpixelAntialiasingType(subpixelType - 1);
     }
 
-    int subpixel = FC_RGBA_UNKNOWN;
-    FcPatternGetInteger(match, FC_RGBA, 0, &subpixel);
-
-    switch (subpixel) {
-    case FC_RGBA_UNKNOWN:
-    case FC_RGBA_NONE:
-        return QFontEngine::Subpixel_None;
-    case FC_RGBA_RGB:
-        return QFontEngine::Subpixel_RGB;
-    case FC_RGBA_BGR:
-        return QFontEngine::Subpixel_BGR;
-    case FC_RGBA_VRGB:
-        return QFontEngine::Subpixel_VRGB;
-    case FC_RGBA_VBGR:
-        return QFontEngine::Subpixel_VBGR;
-    default:
-        Q_UNREACHABLE();
-        break;
-    }
     return QFontEngine::Subpixel_None;
 }
 } // namespace
@@ -823,10 +825,8 @@ void QFontconfigDatabase::setupFontEngine(QFontEngineFT *engine, const QFontDef 
                 QGuiApplication::platformNativeInterface()->nativeResourceForScreen("antialiasingEnabled",
                                                                                     QGuiApplication::primaryScreen());
         int antialiasingEnabled = int(reinterpret_cast<qintptr>(antialiasResource));
-        if (antialiasingEnabled > 0) {
+        if (antialiasingEnabled > 0)
             antialias = antialiasingEnabled - 1;
-            forcedAntialiasSetting = true;
-        }
     }
 
     QFontEngine::GlyphFormat format;
