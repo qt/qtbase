@@ -105,9 +105,10 @@ extern "C" int APIENTRY WinMain(HINSTANCE, HINSTANCE, LPSTR /*cmdParamarg*/, int
     wchar_t **argvW = CommandLineToArgvW(GetCommandLineW(), &argc);
     if (!argvW)
         return -1;
-    char **argv = new char *[argc];
+    char **argv = new char *[argc + 1];
     for (int i = 0; i < argc; ++i)
         argv[i] = wideToMulti(CP_ACP, argvW[i]);
+    argv[argc] = Q_NULLPTR;
     LocalFree(argvW);
     const int exitCode = main(argc, argv);
     for (int i = 0; i < argc; ++i)
