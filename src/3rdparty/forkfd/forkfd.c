@@ -58,7 +58,18 @@
 #  include <sys/eventfd.h>
 #endif
 
-#if _POSIX_VERSION-0 >= 200809L || _XOPEN_VERSION-0 >= 500
+#if defined(__APPLE__)
+/* Up until OS X 10.7, waitid(P_ALL, ...) will return success, but will not
+ * fill in the details of the dead child. That means waitid is not useful to us.
+ * Therefore, we only enable waitid() support if we're targetting OS X 10.8 or
+ * later.
+ */
+#  include <Availability.h>
+#  include <AvailabilityMacros.h>
+#  if MAC_OS_X_VERSION_MIN_REQUIRED >= 1080
+#    define HAVE_WAITID 1
+#  endif
+#elif _POSIX_VERSION-0 >= 200809L || _XOPEN_VERSION-0 >= 500
 #  define HAVE_WAITID   1
 #endif
 
