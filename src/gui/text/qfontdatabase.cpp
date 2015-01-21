@@ -382,7 +382,7 @@ void QtFontFamily::ensurePopulated()
         return;
 
     QGuiApplicationPrivate::platformIntegration()->fontDatabase()->populateFamily(name);
-    Q_ASSERT(populated);
+    Q_ASSERT_X(populated, Q_FUNC_INFO, qPrintable(name));
 }
 
 class QFontDatabasePrivate
