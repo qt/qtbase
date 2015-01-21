@@ -38,6 +38,8 @@
 
 QT_BEGIN_NAMESPACE
 
+class QOpenGLPaintDevice;
+
 class QIOSBackingStore : public QPlatformBackingStore
 {
 public:
@@ -53,7 +55,7 @@ public:
 
 private:
     QOpenGLContext *m_context;
-    QPaintDevice *m_device;
+    QOpenGLPaintDevice *m_device;
 };
 
 QT_END_NAMESPACE

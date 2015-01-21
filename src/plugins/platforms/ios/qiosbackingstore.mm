@@ -73,19 +73,17 @@ QIOSBackingStore::~QIOSBackingStore()
 void QIOSBackingStore::beginPaint(const QRegion &)
 {
     m_context->makeCurrent(window());
-
-    QIOSWindow *iosWindow = static_cast<QIOSWindow *>(window()->handle());
-    static_cast<QOpenGLPaintDevice *>(paintDevice())->setSize(window()->size() * iosWindow->devicePixelRatio());
 }
 
 QPaintDevice *QIOSBackingStore::paintDevice()
 {
-    if (!m_device) {
-        QIOSWindow *iosWindow = static_cast<QIOSWindow *>(window()->handle());
-        QOpenGLPaintDevice *openGLDevice = new QOpenGLPaintDevice(window()->size() * iosWindow->devicePixelRatio());
-        openGLDevice->setDevicePixelRatio(iosWindow->devicePixelRatio());
-        m_device = openGLDevice;
-    }
+    if (!m_device)
+        m_device = new QOpenGLPaintDevice;
+
+    // Keep paint device size and device pixel ratio in sync with window
+    qreal devicePixelRatio = window()->devicePixelRatio();
+    m_device->setSize(window()->size() * devicePixelRatio);
+    m_device->setDevicePixelRatio(devicePixelRatio);
 
     return m_device;
 }
