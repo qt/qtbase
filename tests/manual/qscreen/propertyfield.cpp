@@ -34,8 +34,9 @@
 #include "propertyfield.h"
 #include <QDebug>
 
-PropertyField::PropertyField(QObject* subject, const QMetaProperty& prop, QWidget *parent) :
-    QLineEdit(parent), m_subject(subject), m_lastChangeTime(QTime::currentTime()), m_prop(prop)
+PropertyField::PropertyField(QObject* subject, const QMetaProperty& prop, QWidget *parent)
+  : QLineEdit(parent), m_subject(subject), m_lastChangeTime(QTime::currentTime()), m_prop(prop)
+  , m_defaultBrush(palette().brush(QPalette::Active, QPalette::Text))
 {
     setReadOnly(true);
     if (prop.hasNotifySignal()) {
@@ -99,7 +100,7 @@ void PropertyField::propertyChanged()
             setText(text);
             m_lastText = text;
             m_lastTextShowing = text;
-            modPalette.setBrush(QPalette::Text, Qt::black);
+            modPalette.setBrush(QPalette::Text, m_defaultBrush);
         }
         setPalette(modPalette);
     }

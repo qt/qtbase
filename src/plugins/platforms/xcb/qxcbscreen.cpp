@@ -53,7 +53,7 @@ QXcbScreen::QXcbScreen(QXcbConnection *connection, xcb_screen_t *scr,
     , m_screen(scr)
     , m_crtc(output ? output->crtc : 0)
     , m_outputName(outputName)
-    , m_sizeMillimeters(output ? QSize(output->mm_width, output->mm_height) : QSize())
+    , m_outputSizeMillimeters(output ? QSize(output->mm_width, output->mm_height) : QSize())
     , m_virtualSize(scr->width_in_pixels, scr->height_in_pixels)
     , m_virtualSizeMillimeters(scr->width_in_millimeters, scr->height_in_millimeters)
     , m_orientation(Qt::PrimaryOrientation)
@@ -62,6 +62,7 @@ QXcbScreen::QXcbScreen(QXcbConnection *connection, xcb_screen_t *scr,
     , m_forcedDpi(-1)
     , m_devicePixelRatio(1)
     , m_hintStyle(QFontEngine::HintStyle(-1))
+    , m_noFontHinting(false)
     , m_subpixelType(QFontEngine::SubpixelAntialiasingType(-1))
     , m_antialiasingEnabled(-1)
     , m_xSettings(0)
@@ -71,17 +72,26 @@ QXcbScreen::QXcbScreen(QXcbConnection *connection, xcb_screen_t *scr,
 
     updateGeometry(output ? output->timestamp : 0);
     updateRefreshRate();
+
     const int dpr = int(devicePixelRatio());
     // On VNC, it can be that physical size is unknown while
     // virtual size is known (probably back-calculated from DPI and resolution)
     if (m_sizeMillimeters.isEmpty())
         m_sizeMillimeters = m_virtualSizeMillimeters;
-    if (m_geometry.isEmpty())
+    if (m_geometry.isEmpty()) {
         m_geometry = QRect(QPoint(), m_virtualSize/dpr);
+        m_nativeGeometry = QRect(QPoint(), m_virtualSize);
+    }
     if (m_availableGeometry.isEmpty())
         m_availableGeometry = m_geometry;
 
     readXResources();
+
+    // disable font hinting when we do UI scaling
+    static bool dpr_scaling_enabled = (qgetenv("QT_DEVICE_PIXEL_RATIO").toInt() > 1
+                           || qgetenv("QT_DEVICE_PIXEL_RATIO").toLower() == "auto");
+    if (dpr_scaling_enabled)
+        m_noFontHinting = true;
 
 #ifdef Q_XCB_DEBUG
     qDebug();
@@ -93,6 +103,7 @@ QXcbScreen::QXcbScreen(QXcbConnection *connection, xcb_screen_t *scr,
     qDebug("  virtual height.: %lf", m_virtualSizeMillimeters.height());
     qDebug("  virtual geom...: %d x %d", m_virtualSize.width(), m_virtualSize.height());
     qDebug("  avail virt geom: %d x %d +%d +%d", m_availableGeometry.width(), m_availableGeometry.height(), m_availableGeometry.x(), m_availableGeometry.y());
+    qDebug("  orientation....: %d", m_orientation);
     qDebug("  pixel ratio....: %d", m_devicePixelRatio);
     qDebug("  depth..........: %d", screen()->root_depth);
     qDebug("  white pixel....: %x", screen()->white_pixel);
@@ -313,8 +324,14 @@ QDpi QXcbScreen::logicalDpi() const
     if (m_forcedDpi > 0)
         return QDpi(m_forcedDpi/dpr, m_forcedDpi/dpr);
 
-    return QDpi(Q_MM_PER_INCH * m_virtualSize.width() / m_virtualSizeMillimeters.width() / dpr,
-                Q_MM_PER_INCH * m_virtualSize.height() / m_virtualSizeMillimeters.height() / dpr);
+    static const bool auto_dpr = qgetenv("QT_DEVICE_PIXEL_RATIO").toLower() == "auto";
+    if (auto_dpr) {
+        return QDpi(Q_MM_PER_INCH * m_geometry.width() / m_sizeMillimeters.width(),
+                    Q_MM_PER_INCH * m_geometry.height() / m_sizeMillimeters.height());
+    } else {
+        return QDpi(Q_MM_PER_INCH * m_virtualSize.width() / m_virtualSizeMillimeters.width() / dpr,
+                    Q_MM_PER_INCH * m_virtualSize.height() / m_virtualSizeMillimeters.height() / dpr);
+    }
 }
 
 
@@ -413,6 +430,24 @@ void QXcbScreen::updateGeometry(xcb_timestamp_t timestamp)
         if (crtc) {
             xGeometry = QRect(crtc->x, crtc->y, crtc->width, crtc->height);
             xAvailableGeometry = xGeometry;
+            switch (crtc->rotation) {
+            case XCB_RANDR_ROTATION_ROTATE_0: // xrandr --rotate normal
+                m_orientation = Qt::LandscapeOrientation;
+                m_sizeMillimeters = m_outputSizeMillimeters;
+                break;
+            case XCB_RANDR_ROTATION_ROTATE_90: // xrandr --rotate left
+                m_orientation = Qt::PortraitOrientation;
+                m_sizeMillimeters = m_outputSizeMillimeters.transposed();
+                break;
+            case XCB_RANDR_ROTATION_ROTATE_180: // xrandr --rotate inverted
+                m_orientation = Qt::InvertedLandscapeOrientation;
+                m_sizeMillimeters = m_outputSizeMillimeters;
+                break;
+            case XCB_RANDR_ROTATION_ROTATE_270: // xrandr --rotate right
+                m_orientation = Qt::InvertedPortraitOrientation;
+                m_sizeMillimeters = m_outputSizeMillimeters.transposed();
+                break;
+            }
             free(crtc);
         }
     }
@@ -441,6 +476,7 @@ void QXcbScreen::updateGeometry(xcb_timestamp_t timestamp)
     m_devicePixelRatio = qRound(dpi/96);
     const int dpr = int(devicePixelRatio()); // we may override m_devicePixelRatio
     m_geometry = QRect(xGeometry.topLeft()/dpr, xGeometry.size()/dpr);
+    m_nativeGeometry = QRect(xGeometry.topLeft(), xGeometry.size());
     m_availableGeometry = QRect(xAvailableGeometry.topLeft()/dpr, xAvailableGeometry.size()/dpr);
 
     QWindowSystemInterface::handleScreenGeometryChange(QPlatformScreen::screen(), m_geometry, m_availableGeometry);

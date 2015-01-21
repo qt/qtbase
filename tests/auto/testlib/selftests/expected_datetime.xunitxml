@@ -8,7 +8,7 @@
   <testcase result="pass" name="initTestCase"/>
   <testcase result="fail" name="dateTime">
     <failure message="Compared values are not the same
-   Actual   (local): 2000/05/03 04:03:04.000[local time]
+   Actual   (local): 2000/05/03 04:03:04.000[UTC+00:02]
    Expected (utc)  : 2000/05/03 04:03:04.000[UTC]" result="fail"/>
   </testcase>
   <testcase result="fail" name="qurl">

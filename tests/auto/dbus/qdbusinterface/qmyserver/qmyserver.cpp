@@ -63,9 +63,17 @@ public slots:
         return QDBusServer::address();
     }
 
-    bool isConnected() const
+    void waitForConnected()
     {
-        return m_conn.isConnected();
+        if (callPendingReply.type() != QDBusMessage::InvalidMessage) {
+            sendErrorReply(QDBusError::NotSupported, "One call already pending!");
+            return;
+        }
+        if (m_conn.isConnected())
+            return;
+        // not connected, we'll reply later
+        setDelayedReply(true);
+        callPendingReply = message();
     }
 
     void emitSignal(const QString &interface, const QString &name, const QString &arg)
@@ -88,7 +96,6 @@ public slots:
 
     QVariantList callArgs()
     {
-        qDebug() << "callArgs" << MyObject::callArgs.count();
         return MyObject::callArgs;
     }
 
@@ -112,6 +119,10 @@ public slots:
         return obj.m_complexProp;
     }
 
+    void quit()
+    {
+        qApp->quit();
+    }
 
 private slots:
     void handleConnection(const QDBusConnection& con)
@@ -120,10 +131,15 @@ private slots:
         m_conn.registerObject("/", &obj, QDBusConnection::ExportAllProperties
                        | QDBusConnection::ExportAllSlots
                        | QDBusConnection::ExportAllInvokables);
+        if (callPendingReply.type() != QDBusMessage::InvalidMessage) {
+            QDBusConnection::sessionBus().send(callPendingReply.createReply());
+            callPendingReply = QDBusMessage();
+        }
     }
 
 private:
     QDBusConnection m_conn;
+    QDBusMessage callPendingReply;
     MyObject obj;
 };
 

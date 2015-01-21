@@ -2742,9 +2742,9 @@ QMetaObject::Connection QObject::connect(const QObject *sender, const char *sign
     You can check if the QMetaObject::Connection is valid by casting it to a bool.
 
     This function works in the same way as
-    connect(const QObject *sender, const char *signal,
+    \c {connect(const QObject *sender, const char *signal,
             const QObject *receiver, const char *method,
-            Qt::ConnectionType type)
+            Qt::ConnectionType type)}
     but it uses QMetaMethod to specify signal and method.
 
     \sa connect(const QObject *sender, const char *signal, const QObject *receiver, const char *method, Qt::ConnectionType type)
@@ -2997,7 +2997,7 @@ bool QObject::disconnect(const QObject *sender, const char *signal,
     otherwise returns \c false.
 
     This function provides the same possibilities like
-    disconnect(const QObject *sender, const char *signal, const QObject *receiver, const char *method)
+    \c {disconnect(const QObject *sender, const char *signal, const QObject *receiver, const char *method) }
     but uses QMetaMethod to represent the signal and the method to be disconnected.
 
     Additionally this function returnsfalse and no signals and slots disconnected
@@ -4113,7 +4113,7 @@ QDebug operator<<(QDebug dbg, const QObject *o)
 
     This macro associates extra information to the class, which is available
     using QObject::metaObject(). Qt makes only limited use of this feature, in
-    the \l{Active Qt}, \l{Qt D-Bus} and \l{Qt QML} modules.
+    the \l{Active Qt}, \l{Qt D-Bus} and \l{Qt QML module}{Qt QML}.
 
     The extra information takes the form of a \a Name string and a \a Value
     literal string.
@@ -4125,7 +4125,7 @@ QDebug operator<<(QDebug dbg, const QObject *o)
     \sa QMetaObject::classInfo()
     \sa QAxFactory
     \sa {Using Qt D-Bus Adaptors}
-    \sa {Extending QML - Default Property Example}
+    \sa {Extending QML}
 */
 
 /*!

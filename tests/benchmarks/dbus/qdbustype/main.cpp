@@ -35,8 +35,11 @@
 #include <QtCore/QCoreApplication>
 
 #include <QtDBus/private/qdbusutil_p.h>
+#include <QtDBus/private/qdbus_symbols_p.h>
 
-#include <dbus/dbus.h>
+DEFINEFUNC(dbus_bool_t, dbus_signature_validate, (const char       *signature,
+                                                DBusError        *error),
+           (signature, error), return)
 
 class tst_QDBusType: public QObject
 {
@@ -48,7 +51,8 @@ private Q_SLOTS:
 
 static inline void benchmarkAddRow(const char *name, const char *data)
 {
-    QTest::newRow(QByteArray(QByteArray("native-") + name)) << data << true;
+    if (qdbus_loadLibDBus())
+        QTest::newRow(QByteArray(QByteArray("native-") + name)) << data << true;
     QTest::newRow(name) << data << false;
 }
 
@@ -84,9 +88,9 @@ void tst_QDBusType::benchmarkSignature()
 
     bool result;
     if (useNative) {
-        dbus_signature_validate(data.toLatin1(), 0);
+        q_dbus_signature_validate(data.toLatin1(), 0);
         QBENCHMARK {
-            result = dbus_signature_validate(data.toLatin1(), 0);
+            result = q_dbus_signature_validate(data.toLatin1(), 0);
         }
     } else {
         QDBusUtil::isValidSignature(data);

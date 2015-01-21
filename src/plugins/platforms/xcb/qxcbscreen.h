@@ -63,6 +63,7 @@ public:
     QWindow *topLevelAt(const QPoint &point) const Q_DECL_OVERRIDE;
 
     QRect geometry() const Q_DECL_OVERRIDE { return m_geometry; }
+    QRect nativeGeometry() const { return m_nativeGeometry; }
     QRect availableGeometry() const Q_DECL_OVERRIDE {return m_availableGeometry;}
     int depth() const Q_DECL_OVERRIDE { return m_screen->root_depth; }
     QImage::Format format() const Q_DECL_OVERRIDE;
@@ -98,6 +99,7 @@ public:
     void readXResources();
 
     QFontEngine::HintStyle hintStyle() const { return m_hintStyle; }
+    bool noFontHinting() const { return m_noFontHinting; }
     QFontEngine::SubpixelAntialiasingType subpixelType() const { return m_subpixelType; }
     int antialiasingEnabled() const { return m_antialiasingEnabled; }
 
@@ -112,8 +114,10 @@ private:
     xcb_screen_t *m_screen;
     xcb_randr_crtc_t m_crtc;
     QString m_outputName;
+    QSizeF m_outputSizeMillimeters;
     QSizeF m_sizeMillimeters;
     QRect m_geometry;
+    QRect m_nativeGeometry;
     QRect m_availableGeometry;
     QSize m_virtualSize;
     QSizeF m_virtualSizeMillimeters;
@@ -130,6 +134,7 @@ private:
     int m_forcedDpi;
     int m_devicePixelRatio;
     QFontEngine::HintStyle m_hintStyle;
+    bool m_noFontHinting;
     QFontEngine::SubpixelAntialiasingType m_subpixelType;
     int m_antialiasingEnabled;
     QXcbXSettings *m_xSettings;

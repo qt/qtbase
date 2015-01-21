@@ -116,6 +116,7 @@ public:
                 return false;
             }
         }
+        ::close(s);
 #endif
         return true;
     }

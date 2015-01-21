@@ -142,6 +142,10 @@
 #  if defined(__INTEL_COMPILER)
 /* Intel C++ also masquerades as GCC */
 #    define Q_CC_INTEL      (__INTEL_COMPILER)
+#    ifdef __clang__
+/* Intel C++ masquerades as Clang masquerading as GCC */
+#      define Q_CC_CLANG    305
+#    endif
 #    define Q_ASSUME_IMPL(expr)  __assume(expr)
 #    define Q_UNREACHABLE_IMPL() __builtin_unreachable()
 #    if __INTEL_COMPILER >= 1300 && !defined(__APPLE__)
@@ -537,9 +541,11 @@
 #      define Q_COMPILER_RANGE_FOR
 #      define Q_COMPILER_RAW_STRINGS
 #      define Q_COMPILER_REF_QUALIFIERS
+#      define Q_COMPILER_UNICODE_STRINGS
 #      define Q_COMPILER_UNRESTRICTED_UNIONS
 #    endif
 #    if __INTEL_COMPILER >= 1500
+#      define Q_COMPILER_CONSTEXPR
 #      define Q_COMPILER_ALIGNAS
 #      define Q_COMPILER_ALIGNOF
 #      define Q_COMPILER_INHERITING_CONSTRUCTORS

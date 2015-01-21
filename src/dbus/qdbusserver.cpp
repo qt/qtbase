@@ -110,6 +110,7 @@ QDBusServer::~QDBusServer()
         }
         d->serverConnectionNames.clear();
     }
+    d->deleteLater();
 }
 
 /*!
@@ -129,7 +130,7 @@ bool QDBusServer::isConnected() const
 */
 QDBusError QDBusServer::lastError() const
 {
-    return d->lastError;
+    return d ? d->lastError : QDBusError(QDBusError::Disconnected, QStringLiteral("Not connected."));
 }
 
 /*!

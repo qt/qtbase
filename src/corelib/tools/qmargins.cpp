@@ -484,7 +484,7 @@ QDebug operator<<(QDebug dbg, const QMargins &m) {
 /*!
     \fn bool QMarginsF::isNull() const
 
-    Returns \c true if all margins are is 0; otherwise returns
+    Returns \c true if all margins are 0; otherwise returns
     false.
 */
 

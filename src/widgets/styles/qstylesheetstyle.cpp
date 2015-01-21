@@ -3397,8 +3397,10 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
                         state = QIcon::On;
 
                     QPixmap pixmap = button->icon.pixmap(button->iconSize, mode, state);
-                    int labelWidth = pixmap.width();
-                    int labelHeight = pixmap.height();
+                    int pixmapWidth = pixmap.width() / pixmap.devicePixelRatio();
+                    int pixmapHeight = pixmap.height() / pixmap.devicePixelRatio();
+                    int labelWidth = pixmapWidth;
+                    int labelHeight = pixmapHeight;
                     int iconSpacing = 4;//### 4 is currently hardcoded in QPushButton::sizeHint()
                     int textWidth = button->fontMetrics.boundingRect(opt->rect, tf, button->text).width();
                     if (!button->text.isEmpty())
@@ -3407,15 +3409,15 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
                     //Determine label alignment:
                     if (textAlignment & Qt::AlignLeft) { /*left*/
                         iconRect = QRect(textRect.x(), textRect.y() + (textRect.height() - labelHeight) / 2,
-                                         pixmap.width(), pixmap.height());
+                                         pixmapWidth, pixmapHeight);
                     } else if (textAlignment & Qt::AlignHCenter) { /* center */
                         iconRect = QRect(textRect.x() + (textRect.width() - labelWidth) / 2,
                                          textRect.y() + (textRect.height() - labelHeight) / 2,
-                                         pixmap.width(), pixmap.height());
+                                         pixmapWidth, pixmapHeight);
                     } else { /*right*/
                         iconRect = QRect(textRect.x() + textRect.width() - labelWidth,
                                          textRect.y() + (textRect.height() - labelHeight) / 2,
-                                         pixmap.width(), pixmap.height());
+                                         pixmapWidth, pixmapHeight);
                     }
 
                     iconRect = visualRect(button->direction, textRect, iconRect);

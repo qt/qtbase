@@ -2,7 +2,7 @@
 Config: Using QtTest library @INSERT_QT_VERSION_HERE@, Qt @INSERT_QT_VERSION_HERE@
 PASS   : tst_DateTime::initTestCase()
 FAIL!  : tst_DateTime::dateTime() Compared values are not the same
-   Actual   (local): 2000/05/03 04:03:04.000[local time]
+   Actual   (local): 2000/05/03 04:03:04.000[UTC+00:02]
    Expected (utc)  : 2000/05/03 04:03:04.000[UTC]
    Loc: [tst_datetime.cpp(65)]
 PASS   : tst_DateTime::qurl(empty urls)

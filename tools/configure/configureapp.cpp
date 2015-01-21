@@ -2102,6 +2102,11 @@ bool Configure::checkAngleAvailability(QString *errorMessage /* = 0 */) const
     // it is also  present in MinGW.
     const QString directXSdk = Environment::detectDirectXSdk();
     const Compiler compiler = Environment::compilerFromQMakeSpec(dictionary[QStringLiteral("QMAKESPEC")]);
+    if (compiler >= CC_MSVC2005 && compiler <= CC_MSVC2008) {
+        if (errorMessage)
+            *errorMessage = QStringLiteral("ANGLE is no longer supported for this compiler.");
+        return false;
+    }
     if (compiler < CC_MSVC2012 && directXSdk.isEmpty()) {
         if (errorMessage)
             *errorMessage = QStringLiteral("There is no Direct X SDK installed or the environment variable \"DXSDK_DIR\" is not set.");
@@ -3173,7 +3178,7 @@ void Configure::detectArch()
         if (!exe.open(QFile::ReadOnly)) { // no Text, this is binary
             exe.setFileName("arch");
             if (!exe.open(QFile::ReadOnly)) {
-                cout << "Could not find output file: " << qPrintable(exe.errorString()) << endl;
+                cout << "Could not find output file '" << qPrintable(arch_exe) << "' or 'arch' in " << qPrintable(newpwd) << " : " << qPrintable(exe.errorString()) << endl;
                 dictionary["DONE"] = "error";
                 return;
             }

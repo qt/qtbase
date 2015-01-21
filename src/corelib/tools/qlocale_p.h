@@ -418,9 +418,9 @@ Q_STATIC_ASSERT(!ascii_isspace('\0'));
 Q_STATIC_ASSERT(!ascii_isspace('\a'));
 Q_STATIC_ASSERT(!ascii_isspace('a'));
 Q_STATIC_ASSERT(!ascii_isspace('\177'));
-Q_STATIC_ASSERT(!ascii_isspace('\200'));
-Q_STATIC_ASSERT(!ascii_isspace('\xA0'));
-Q_STATIC_ASSERT(!ascii_isspace('\377'));
+Q_STATIC_ASSERT(!ascii_isspace(uchar('\200')));
+Q_STATIC_ASSERT(!ascii_isspace(uchar('\xA0')));
+Q_STATIC_ASSERT(!ascii_isspace(uchar('\377')));
 #endif
 
 QT_END_NAMESPACE

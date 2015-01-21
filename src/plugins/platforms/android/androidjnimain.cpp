@@ -376,8 +376,6 @@ namespace QtAndroid
         const auto &it = m_surfaces.find(surfaceId);
         if (it != m_surfaces.end())
             m_surfaces.remove(surfaceId);
-        if (m_surfaces.isEmpty())
-            m_surfaceId = 1;
 
         QJNIEnvironmentPrivate env;
         if (!env)

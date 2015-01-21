@@ -90,6 +90,7 @@ private slots:
     void saveToTemporaryFile();
 private:
     QString prefix;
+    QString writePrefix;
 };
 
 // helper to skip an autotest when the given image format is not supported
@@ -114,6 +115,11 @@ void tst_QImageWriter::initTestCase()
     prefix = QFINDTESTDATA("images/");
     if (prefix.isEmpty())
         QFAIL("Can't find images directory!");
+#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_NO_SDK)
+    writePrefix = QDir::homePath();
+#else
+    writePrefix = prefix;
+#endif
 }
 
 // Testing get/set functions
@@ -212,7 +218,7 @@ void tst_QImageWriter::writeImage()
         QVERIFY2(!image.isNull(), qPrintable(reader.errorString()));
     }
     {
-        QImageWriter writer(prefix + "gen-" + fileName, format);
+        QImageWriter writer(writePrefix + "gen-" + fileName, format);
         QVERIFY(writer.write(image));
     }
 
@@ -224,11 +230,11 @@ void tst_QImageWriter::writeImage()
 #endif
         if (!skip) {
             // Shouldn't be able to write to read-only file
-            QFile sourceFile(prefix + "gen-" + fileName);
+            QFile sourceFile(writePrefix + "gen-" + fileName);
             QFile::Permissions permissions = sourceFile.permissions();
             QVERIFY(sourceFile.setPermissions(QFile::ReadOwner | QFile::ReadUser | QFile::ReadGroup | QFile::ReadOther));
 
-            QImageWriter writer(prefix + "gen-" + fileName, format);
+            QImageWriter writer(writePrefix + "gen-" + fileName, format);
             QVERIFY(!writer.write(image));
 
             QVERIFY(sourceFile.setPermissions(permissions));
@@ -237,7 +243,7 @@ void tst_QImageWriter::writeImage()
 
     QImage image2;
     {
-        QImageReader reader(prefix + "gen-" + fileName);
+        QImageReader reader(writePrefix + "gen-" + fileName);
         image2 = reader.read();
         QVERIFY(!image2.isNull());
     }
@@ -456,7 +462,7 @@ void tst_QImageWriter::supportsOption()
                << QImageIOHandler::Animation
                << QImageIOHandler::BackgroundColor;
 
-    QImageWriter writer(prefix + fileName);
+    QImageWriter writer(writePrefix + fileName);
     for (int i = 0; i < options.size(); ++i) {
         QVERIFY(writer.supportsOption(QImageIOHandler::ImageOption(options.at(i))));
         allOptions.remove(QImageIOHandler::ImageOption(options.at(i)));
@@ -472,13 +478,13 @@ void tst_QImageWriter::saveWithNoFormat_data()
     QTest::addColumn<QByteArray>("format");
     QTest::addColumn<QImageWriter::ImageWriterError>("error");
 
-    QTest::newRow("garble") << prefix + QString("gen-out.garble") << QByteArray("jpeg") << QImageWriter::UnsupportedFormatError;
-    QTest::newRow("bmp") << prefix + QString("gen-out.bmp") << QByteArray("bmp") << QImageWriter::ImageWriterError(0);
-    QTest::newRow("xbm") << prefix + QString("gen-out.xbm") << QByteArray("xbm") << QImageWriter::ImageWriterError(0);
-    QTest::newRow("xpm") << prefix + QString("gen-out.xpm") << QByteArray("xpm") << QImageWriter::ImageWriterError(0);
-    QTest::newRow("png") << prefix + QString("gen-out.png") << QByteArray("png") << QImageWriter::ImageWriterError(0);
-    QTest::newRow("ppm") << prefix + QString("gen-out.ppm") << QByteArray("ppm") << QImageWriter::ImageWriterError(0);
-    QTest::newRow("pbm") << prefix + QString("gen-out.pbm") << QByteArray("pbm") << QImageWriter::ImageWriterError(0);
+    QTest::newRow("garble") << writePrefix + QString("gen-out.garble") << QByteArray("jpeg") << QImageWriter::UnsupportedFormatError;
+    QTest::newRow("bmp") << writePrefix + QString("gen-out.bmp") << QByteArray("bmp") << QImageWriter::ImageWriterError(0);
+    QTest::newRow("xbm") << writePrefix + QString("gen-out.xbm") << QByteArray("xbm") << QImageWriter::ImageWriterError(0);
+    QTest::newRow("xpm") << writePrefix + QString("gen-out.xpm") << QByteArray("xpm") << QImageWriter::ImageWriterError(0);
+    QTest::newRow("png") << writePrefix + QString("gen-out.png") << QByteArray("png") << QImageWriter::ImageWriterError(0);
+    QTest::newRow("ppm") << writePrefix + QString("gen-out.ppm") << QByteArray("ppm") << QImageWriter::ImageWriterError(0);
+    QTest::newRow("pbm") << writePrefix + QString("gen-out.pbm") << QByteArray("pbm") << QImageWriter::ImageWriterError(0);
 }
 
 void tst_QImageWriter::saveWithNoFormat()

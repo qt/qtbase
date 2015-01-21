@@ -778,18 +778,34 @@ bool QHostAddress::operator==(const QHostAddress &other) const
 bool QHostAddress::operator ==(SpecialAddress other) const
 {
     QT_ENSURE_PARSED(this);
-    QHostAddress otherAddress(other);
-    QT_ENSURE_PARSED(&otherAddress);
+    switch (other) {
+    case Null:
+        return d->protocol == QAbstractSocket::UnknownNetworkLayerProtocol;
 
-    if (d->protocol == QAbstractSocket::IPv4Protocol)
-        return otherAddress.d->protocol == QAbstractSocket::IPv4Protocol && d->a == otherAddress.d->a;
-    if (d->protocol == QAbstractSocket::IPv6Protocol) {
-        return otherAddress.d->protocol == QAbstractSocket::IPv6Protocol
-               && memcmp(&d->a6, &otherAddress.d->a6, sizeof(Q_IPV6ADDR)) == 0;
+    case Broadcast:
+        return d->protocol == QAbstractSocket::IPv4Protocol && d->a == INADDR_BROADCAST;
+
+    case LocalHost:
+        return d->protocol == QAbstractSocket::IPv4Protocol && d->a == INADDR_LOOPBACK;
+
+    case Any:
+        return d->protocol == QAbstractSocket::AnyIPProtocol;
+
+    case AnyIPv4:
+        return d->protocol == QAbstractSocket::IPv4Protocol && d->a == INADDR_ANY;
+
+    case LocalHostIPv6:
+    case AnyIPv6:
+        if (d->protocol == QAbstractSocket::IPv6Protocol) {
+            Q_IPV6ADDR ip6 = { { 0 } };
+            ip6[15] = quint8(other == LocalHostIPv6);  // 1 for localhost, 0 for any
+            return memcmp(&d->a6, &ip6, sizeof ip6) == 0;
+        }
+        return false;
     }
-    if (d->protocol == QAbstractSocket::AnyIPProtocol)
-        return other == QHostAddress::Any;
-    return int(other) == int(Null);
+
+    Q_UNREACHABLE();
+    return false;
 }
 
 /*!

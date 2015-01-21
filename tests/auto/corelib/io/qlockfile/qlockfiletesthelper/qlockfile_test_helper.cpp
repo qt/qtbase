@@ -50,10 +50,10 @@ int main(int argc, char *argv[])
         option = QString::fromLocal8Bit(argv[2]);
 
     if (option == "-crash") {
-        QLockFile *lockFile = new QLockFile(lockName);
-        lockFile->lock();
-        // leak the lockFile on purpose, so that the lock remains!
-        return 0;
+        QLockFile lockFile(lockName);
+        lockFile.lock();
+        // exit on purpose, so that the lock remains!
+        exit(0);
     } else if (option == "-busy") {
         QLockFile lockFile(lockName);
         lockFile.lock();

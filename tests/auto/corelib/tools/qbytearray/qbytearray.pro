@@ -10,3 +10,8 @@ mac {
     OBJECTIVE_SOURCES += tst_qbytearray_mac.mm
     LIBS += -framework Foundation
 }
+
+android: !android-no-sdk {
+    RESOURCES += \
+        android_testdata.qrc
+}

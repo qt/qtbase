@@ -45,7 +45,7 @@
 // We mean it.
 //
 
-#include <qdatetime.h>
+#include <qelapsedtimer.h>
 #include <qthread.h>
 #include <qmutex.h>
 #include <qwaitcondition.h>
@@ -83,7 +83,7 @@ public:
     {
         if (totalTimeOut == -1)
             return SLEEPMAX;
-        return qMax(totalTimeOut - timer.elapsed(), 0);
+        return qMax(int(totalTimeOut - timer.elapsed()), 0);
     }
 
     bool hasTimedOut() const
@@ -99,7 +99,7 @@ public:
     }
 
 private:
-    QTime timer;
+    QElapsedTimer timer;
     int totalTimeOut;
     int nextSleep;
 };

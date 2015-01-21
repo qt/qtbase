@@ -246,7 +246,7 @@ void tst_QDBusConnection::connectToBus()
 
         QDBusConnection con2("foo");
         QVERIFY(!con2.isConnected());
-        QVERIFY(!con2.lastError().isValid());
+        QVERIFY(con2.lastError().isValid());
 
         con2 = con;
         QVERIFY(con.isConnected());
@@ -274,7 +274,7 @@ void tst_QDBusConnection::connectToBus()
     {
         QDBusConnection con("bubu");
         QVERIFY(!con.isConnected());
-        QVERIFY(!con.lastError().isValid());
+        QVERIFY(con.lastError().isValid());
     }
 
     QByteArray address = qgetenv("DBUS_SESSION_BUS_ADDRESS");
@@ -294,6 +294,7 @@ void tst_QDBusConnection::connectToPeer()
                 "", "newconn");
         QVERIFY(!con.isConnected());
         QVERIFY(con.lastError().isValid());
+        QDBusConnection::disconnectFromPeer("newconn");
     }
 
     QDBusServer server;
@@ -303,6 +304,7 @@ void tst_QDBusConnection::connectToPeer()
                 "unix:abstract=/tmp/dbus-XXXXXXXXXX,guid=00000000000000000000000000000000", "newconn2");
         QVERIFY(!con.isConnected());
         QVERIFY(con.lastError().isValid());
+        QDBusConnection::disconnectFromPeer("newconn2");
     }
 
     {
@@ -314,7 +316,7 @@ void tst_QDBusConnection::connectToPeer()
 
         QDBusConnection con2("foo");
         QVERIFY(!con2.isConnected());
-        QVERIFY(!con2.lastError().isValid());
+        QVERIFY(con2.lastError().isValid());
 
         con2 = con;
         QVERIFY(con.isConnected());
@@ -342,7 +344,7 @@ void tst_QDBusConnection::connectToPeer()
     {
         QDBusConnection con("bubu");
         QVERIFY(!con.isConnected());
-        QVERIFY(!con.lastError().isValid());
+        QVERIFY(con.lastError().isValid());
     }
 }
 

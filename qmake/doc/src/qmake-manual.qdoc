@@ -122,10 +122,10 @@
     configuration options to fine tune the build process. For more information,
     see \l{Building Common Project Types}.
 
-    You can use the \l{external: Qt Creator Manual}{Qt Creator} new project
-    wizard to create the project file. You choose the project template, and Qt
-    Creator creates a project file with default values that enable you to build
-    and run the project. You can modify the project file to suit your purposes.
+    You can use the \l{Qt Creator: Creating Projects}{Qt Creator new project wizard} to create the project file.
+    You choose the project template, and Qt Creator creates a project file with
+    default values that enable you to build and run the project. You can modify
+    the project file to suit your purposes.
 
     You can also use qmake to generate project files. For a full description of
     qmake command line options, see \l{Running qmake}.
@@ -1463,6 +1463,15 @@
     projects containing C source code. Only the file name of the compiler
     executable needs to be specified as long as it is on a path contained
     in the \c PATH variable when the Makefile is processed.
+
+    \section1 QMAKE_CFLAGS
+
+    Specifies the C compiler flags for building
+    a project. The value of this variable is typically handled by
+    qmake or \l{#QMAKESPEC}{qmake.conf} and rarely
+    needs to be modified. The flags specific to debug and release modes can be
+    adjusted by modifying the \c QMAKE_CFLAGS_DEBUG and
+    \c QMAKE_CFLAGS_RELEASE variables, respectively.
 
     \target QMAKE_CFLAGS_DEBUG
     \section1 QMAKE_CFLAGS_DEBUG

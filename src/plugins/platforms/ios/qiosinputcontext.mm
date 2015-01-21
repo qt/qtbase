@@ -75,9 +75,7 @@ static QUIView *focusView()
 
 - (id)initWithQIOSInputContext:(QIOSInputContext *)context
 {
-    id originalSelf = self;
     if (self = [super initWithTarget:self action:@selector(gestureStateChanged:)]) {
-        Q_ASSERT(self == originalSelf);
 
         m_context = context;
 
@@ -505,7 +503,22 @@ void QIOSInputContext::scroll(int y)
             [rootView.layer addAnimation:animation forKey:@"AnimateSubLayerTransform"];
             rootView.layer.sublayerTransform = translationTransform;
 
-            [rootView.qtViewController updateProperties];
+            bool keyboardScrollIsActive = y != 0;
+
+            // Raise all known windows to above the status-bar if we're scrolling the screen,
+            // while keeping the relative window level between the windows the same.
+            NSArray *applicationWindows = [[UIApplication sharedApplication] windows];
+            static QHash<UIWindow *, UIWindowLevel> originalWindowLevels;
+            for (UIWindow *window in applicationWindows) {
+                if (keyboardScrollIsActive && !originalWindowLevels.contains(window))
+                    originalWindowLevels.insert(window, window.windowLevel);
+
+                UIWindowLevel windowLevelAdjustment = keyboardScrollIsActive ? UIWindowLevelStatusBar : 0;
+                window.windowLevel = originalWindowLevels.value(window) + windowLevelAdjustment;
+
+                if (!keyboardScrollIsActive)
+                    originalWindowLevels.remove(window);
+            }
         }
         completion:^(BOOL){
             if (self) {

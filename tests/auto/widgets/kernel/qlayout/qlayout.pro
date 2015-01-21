@@ -11,3 +11,8 @@ wince* {
 } else {
    TESTDATA += baseline/*
 }
+
+android: !android-no-sdk {
+    RESOURCES += \
+        testdata.qrc
+}

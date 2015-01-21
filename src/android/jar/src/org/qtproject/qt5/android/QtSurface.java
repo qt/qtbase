@@ -45,7 +45,6 @@ package org.qtproject.qt5.android;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.PixelFormat;
-import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
@@ -87,7 +86,6 @@ public class QtSurface extends SurfaceView implements SurfaceHolder.Callback
     @Override
     public void surfaceCreated(SurfaceHolder holder)
     {
-        QtNative.setSurface(getId(), holder.getSurface(), getWidth(), getHeight());
     }
 
     @Override

@@ -1062,7 +1062,7 @@ void tst_QUdpSocket::multicastTtlOption_data()
     QTest::addColumn<int>("expected");
 
     QList<QHostAddress> addresses;
-    addresses += QHostAddress(QHostAddress::Any);
+    addresses += QHostAddress(QHostAddress::AnyIPv4);
     addresses += QHostAddress(QHostAddress::AnyIPv6);
 
     foreach (const QHostAddress &address, addresses) {
@@ -1103,7 +1103,7 @@ void tst_QUdpSocket::multicastLoopbackOption_data()
     QTest::addColumn<int>("expected");
 
     QList<QHostAddress> addresses;
-    addresses += QHostAddress(QHostAddress::Any);
+    addresses += QHostAddress(QHostAddress::AnyIPv4);
     addresses += QHostAddress(QHostAddress::AnyIPv6);
 
     foreach (const QHostAddress &address, addresses) {
@@ -1216,7 +1216,7 @@ void tst_QUdpSocket::setMulticastInterface()
     // bind initializes the socket
     bool bound = udpSocket.bind((address.protocol() == QAbstractSocket::IPv6Protocol
                                  ? QHostAddress(QHostAddress::AnyIPv6)
-                                 : QHostAddress(QHostAddress::Any)),
+                                 : QHostAddress(QHostAddress::AnyIPv4)),
                                 0);
     if (!bound)
         QTest::ignoreMessage(QtWarningMsg, "QUdpSocket::setMulticastInterface() called on a QUdpSocket when not in QUdpSocket::BoundState");

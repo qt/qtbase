@@ -1,0 +1,20 @@
+<RCC>
+    <qresource prefix="/">
+        <file>images/mac/button.png</file>
+        <file>images/mac/combobox.png</file>
+        <file>images/mac/lineedit.png</file>
+        <file>images/mac/mdi.png</file>
+        <file>images/mac/menu.png</file>
+        <file>images/mac/radiobutton.png</file>
+        <file>images/mac/slider.png</file>
+        <file>images/mac/spinbox.png</file>
+        <file>images/vista/button.png</file>
+        <file>images/vista/combobox.png</file>
+        <file>images/vista/lineedit.png</file>
+        <file>images/vista/menu.png</file>
+        <file>images/vista/radiobutton.png</file>
+        <file>images/vista/slider.png</file>
+        <file>images/vista/spinbox.png</file>
+        <file>task_25863.png</file>
+    </qresource>
+</RCC>

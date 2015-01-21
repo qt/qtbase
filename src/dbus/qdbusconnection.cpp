@@ -947,7 +947,7 @@ bool QDBusConnection::isConnected() const
 */
 QDBusError QDBusConnection::lastError() const
 {
-    return d ? d->lastError : QDBusError();
+    return d ? d->lastError : QDBusError(QDBusError::Disconnected, QStringLiteral("Not connected."));
 }
 
 /*!

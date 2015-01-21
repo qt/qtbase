@@ -4001,6 +4001,13 @@ void QAssociativeIterable::const_iterator::end()
     m_impl.end();
 }
 
+void find(QAssociativeIterable::const_iterator &it, const QVariant &key)
+{
+    Q_ASSERT(key.userType() == it.m_impl._metaType_id_key);
+    const QtMetaTypePrivate::VariantData dkey(key.userType(), key.constData(), 0 /*key.flags()*/);
+    it.m_impl.find(dkey);
+}
+
 /*!
     Returns a QAssociativeIterable::const_iterator for the beginning of the container. This
     can be used in stl-style iteration.
@@ -4028,27 +4035,37 @@ QAssociativeIterable::const_iterator QAssociativeIterable::end() const
 }
 
 /*!
+    \internal
+
+    Returns a QAssociativeIterable::const_iterator for the given key \a key
+    in the container, if the types are convertible.
+
+    If the key is not found, returns end().
+
+    This can be used in stl-style iteration.
+
+    \sa begin(), end(), value()
+*/
+QAssociativeIterable::const_iterator find(const QAssociativeIterable &iterable, const QVariant &key)
+{
+    QAssociativeIterable::const_iterator it(iterable, new QAtomicInt(0));
+    QVariant key_ = key;
+    if (key_.canConvert(iterable.m_impl._metaType_id_key) && key_.convert(iterable.m_impl._metaType_id_key))
+        find(it, key_);
+    else
+        it.end();
+    return it;
+}
+
+/*!
     Returns the value for the given \a key in the container, if the types are convertible.
 */
 QVariant QAssociativeIterable::value(const QVariant &key) const
 {
-    QVariant key_ = key;
-    if (!key_.canConvert(m_impl._metaType_id_key))
+    const const_iterator it = find(*this, key);
+    if (it == end())
         return QVariant();
-    if (!key_.convert(m_impl._metaType_id_key))
-        return QVariant();
-    const QtMetaTypePrivate::VariantData dkey(key_.userType(), key_.constData(), 0 /*key.flags()*/);
-    QtMetaTypePrivate::QAssociativeIterableImpl impl = m_impl;
-    impl.find(dkey);
-    QtMetaTypePrivate::QAssociativeIterableImpl endIt = m_impl;
-    endIt.end();
-    if (impl.equal(endIt))
-        return QVariant();
-    const QtMetaTypePrivate::VariantData d = impl.getCurrentValue();
-    QVariant v(d.metaTypeId, d.data, d.flags);
-    if (d.metaTypeId == qMetaTypeId<QVariant>())
-        return *reinterpret_cast<const QVariant*>(d.data);
-    return v;
+    return *it;
 }
 
 /*!

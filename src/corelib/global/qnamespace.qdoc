@@ -592,7 +592,7 @@
     string, "ddd MMM d yyyy". See QDate::toString() for more information.
 
     \value ISODate \l{ISO 8601} extended format: either \c{YYYY-MM-DD} for dates or
-    \c{YYYY-MM-DDTHH:MM:SS}, \c{YYYY-MM-DDTHH:MM:SSTZD} (e.g., 1997-07-16T19:20:30+01:00)
+    \c{YYYY-MM-DDTHH:mm:ss}, \c{YYYY-MM-DDTHH:mm:ssTZD} (e.g., 1997-07-16T19:20:30+01:00)
     for combined dates and times.
 
     \value SystemLocaleShortDate The \l{QLocale::ShortFormat}{short format} used

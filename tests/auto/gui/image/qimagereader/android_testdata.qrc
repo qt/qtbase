@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/">
+        <file>images/trans.gif</file>
+        <file>images/kollada-noext</file>
+    </qresource>
+</RCC>

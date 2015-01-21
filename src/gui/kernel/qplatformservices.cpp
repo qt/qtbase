@@ -49,6 +49,9 @@ QT_BEGIN_NAMESPACE
     \brief The QPlatformServices provides the backend for desktop-related functionality.
 */
 
+QPlatformServices::QPlatformServices()
+{ }
+
 bool QPlatformServices::openUrl(const QUrl &url)
 {
     qWarning("This plugin does not support QPlatformServices::openUrl() for '%s'.",

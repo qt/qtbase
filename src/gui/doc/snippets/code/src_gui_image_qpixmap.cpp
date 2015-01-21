@@ -48,7 +48,7 @@ static const char * const start_xpm[]={
 
 //! [1]
 QPixmap myPixmap;
-myPixmap->setMask(myPixmap->createHeuristicMask());
+myPixmap.setMask(myPixmap.createHeuristicMask());
 //! [1]
 
 //! [2]

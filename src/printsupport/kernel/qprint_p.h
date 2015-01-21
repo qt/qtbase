@@ -143,7 +143,7 @@ namespace QPrint {
         QPrint::OutputBinId id;
     };
 
-};
+}
 
 struct InputSlotMap {
     QPrint::InputSlotId id;

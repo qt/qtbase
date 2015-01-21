@@ -147,6 +147,8 @@ private slots:
     void invalidQuery();
     void batchExec_data() { generic_data(); }
     void batchExec();
+    void QTBUG_43874_data() { generic_data(); }
+    void QTBUG_43874();
     void oraArrayBind_data() { generic_data(); }
     void oraArrayBind();
     void lastInsertId_data() { generic_data(); }
@@ -223,6 +225,9 @@ private slots:
 
     void QTBUG_2192_data() { generic_data(); }
     void QTBUG_2192();
+
+    void QTBUG_36211_data() { generic_data("QPSQL"); }
+    void QTBUG_36211();
 
     void sqlite_constraint_data() { generic_data("QSQLITE"); }
     void sqlite_constraint();
@@ -335,6 +340,7 @@ void tst_QSqlQuery::dropTestTables( QSqlDatabase db )
                << qTableName("blobstest", __FILE__, db)
                << qTableName("oraRowId", __FILE__, db)
                << qTableName("qtest_batch", __FILE__, db)
+               << qTableName("bug43874", __FILE__, db)
                << qTableName("bug6421", __FILE__, db).toUpper()
                << qTableName("bug5765", __FILE__, db)
                << qTableName("bug6852", __FILE__, db)
@@ -2182,6 +2188,33 @@ void tst_QSqlQuery::batchExec()
     QVERIFY( q.value( 3 ).isNull() );
 }
 
+void tst_QSqlQuery::QTBUG_43874()
+{
+    QFETCH(QString, dbName);
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(db);
+
+    QSqlQuery q(db);
+    const QString tableName = qTableName("bug43874", __FILE__, db);
+
+    QVERIFY_SQL(q, exec("CREATE TABLE " + tableName + " (id INT)"));
+    QVERIFY_SQL(q, prepare("INSERT INTO " + tableName + " (id) VALUES (?)"));
+
+    for (int i = 0; i < 2; ++i) {
+        QVariantList ids;
+        ids << i;
+        q.addBindValue(ids);
+        QVERIFY_SQL(q, execBatch());
+    }
+    QVERIFY_SQL(q, exec("SELECT id FROM " + tableName + " ORDER BY id"));
+
+    QVERIFY(q.next());
+    QCOMPARE(q.value(0).toInt(), 0);
+
+    QVERIFY(q.next());
+    QCOMPARE(q.value(0).toInt(), 1);
+}
+
 void tst_QSqlQuery::oraArrayBind()
 {
     QFETCH( QString, dbName );
@@ -3558,6 +3591,45 @@ void tst_QSqlQuery::QTBUG_2192()
     }
 }
 
+void tst_QSqlQuery::QTBUG_36211()
+{
+    QFETCH( QString, dbName );
+    QSqlDatabase db = QSqlDatabase::database( dbName );
+    CHECK_DATABASE( db );
+    if (tst_Databases::getDatabaseType(db) == QSqlDriver::PostgreSQL) {
+        const QString tableName(qTableName("bug36211", __FILE__, db));
+        tst_Databases::safeDropTable( db, tableName );
+
+        QSqlQuery q(db);
+        QVERIFY_SQL(q, exec(QString("CREATE TABLE %1 (dtwtz timestamptz, dtwotz timestamp)").arg(tableName)));
+
+        QTimeZone l_tzBrazil("BRT");
+        QTimeZone l_tzChina("CST");
+        QDateTime dt = QDateTime(QDate(2014, 10, 30), QTime(14, 12, 02, 357));
+        QVERIFY_SQL(q, prepare("INSERT INTO " + tableName + " (dtwtz, dtwotz) VALUES (:dt, :dt)"));
+        q.bindValue(":dt", dt);
+        QVERIFY_SQL(q, exec());
+        q.bindValue(":dt", dt.toTimeZone(l_tzBrazil));
+        QVERIFY_SQL(q, exec());
+        q.bindValue(":dt", dt.toTimeZone(l_tzChina));
+        QVERIFY_SQL(q, exec());
+
+        QVERIFY_SQL(q, exec("SELECT dtwtz, dtwotz FROM " + tableName));
+
+        for (int i = 0; i < 3; ++i) {
+            QVERIFY_SQL(q, next());
+
+            for (int j = 0; j < 2; ++j) {
+                // Check if retrieved value preserves reported precision
+                int precision = qMax(0, q.record().field(j).precision());
+                int diff = qAbs(q.value(j).toDateTime().msecsTo(dt));
+                int keep = qMin(1000, (int)qPow(10.0, precision));
+                QVERIFY(diff <= 1000 - keep);
+            }
+        }
+    }
+}
+
 void tst_QSqlQuery::oraOCINumber()
 {
     QFETCH( QString, dbName );
@@ -3822,21 +3894,25 @@ void tst_QSqlQuery::aggregateFunctionTypes()
         QCOMPARE(q.value(0).toDouble(), 2.5);
         QCOMPARE(q.record().field(0).type(), QVariant::Double);
 
-        // PSQL does not have support for the round() function
-        if (dbType != QSqlDriver::PostgreSQL) {
-            QVERIFY_SQL(q, exec("SELECT ROUND(id, 1) FROM " + tableName + " WHERE id=1.5"));
-            QVERIFY(q.next());
-            QCOMPARE(q.value(0).toDouble(), 1.5);
-            QCOMPARE(q.record().field(0).type(), QVariant::Double);
+        QString field = "id";
 
-            QVERIFY_SQL(q, exec("SELECT ROUND(id, 0) FROM " + tableName + " WHERE id=2.5"));
-            QVERIFY(q.next());
-            if (dbType == QSqlDriver::MySqlServer)
-                QCOMPARE(q.value(0).toDouble(), 2.0);
-            else
-                QCOMPARE(q.value(0).toDouble(), 3.0);
-            QCOMPARE(q.record().field(0).type(), QVariant::Double);
+        // PSQL does not have the round() function with real type
+        if (dbType == QSqlDriver::PostgreSQL) {
+            field += "::NUMERIC";
         }
+
+        QVERIFY_SQL(q, exec("SELECT ROUND(" + field + ", 1) FROM " + tableName + " WHERE id=1.5"));
+        QVERIFY(q.next());
+        QCOMPARE(q.value(0).toDouble(), 1.5);
+        QCOMPARE(q.record().field(0).type(), QVariant::Double);
+
+        QVERIFY_SQL(q, exec("SELECT ROUND(" + field + ", 0) FROM " + tableName + " WHERE id=2.5"));
+        QVERIFY(q.next());
+        if (dbType == QSqlDriver::MySqlServer)
+            QCOMPARE(q.value(0).toDouble(), 2.0);
+        else
+            QCOMPARE(q.value(0).toDouble(), 3.0);
+        QCOMPARE(q.record().field(0).type(), QVariant::Double);
     }
     {
         const QString tableName(qTableName("stringFunctions", __FILE__, db));

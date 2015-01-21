@@ -136,7 +136,7 @@
     byte in the buffer, \c numUsedBytes is \c BufferSize - 1 and the
     \c bufferNotEmpty condition is signalled. At that point, two
     things can happen: Either the consumer thread takes over and
-    reads that byte, or the consumer gets to produce a second byte.
+    reads that byte, or the producer gets to produce a second byte.
 
     The producer-consumer model presented in this example makes it
     possible to write highly concurrent multithreaded applications.

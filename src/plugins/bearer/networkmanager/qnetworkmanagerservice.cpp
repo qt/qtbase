@@ -47,32 +47,24 @@
 
 #ifndef QT_NO_DBUS
 
+#define DBUS_PROPERTIES_INTERFACE  "org.freedesktop.DBus.Properties"
+
 QT_BEGIN_NAMESPACE
 
-class QNetworkManagerInterfacePrivate
-{
-public:
-    QDBusInterface *connectionInterface;
-    bool valid;
-};
 
 QNetworkManagerInterface::QNetworkManagerInterface(QObject *parent)
-        : QObject(parent)
+        : QDBusAbstractInterface(QLatin1String(NM_DBUS_SERVICE),
+                                 QLatin1String(NM_DBUS_PATH),
+                                 NM_DBUS_INTERFACE,
+                                 QDBusConnection::systemBus(),parent)
 {
-    d = new QNetworkManagerInterfacePrivate();
-    d->connectionInterface = new QDBusInterface(QLatin1String(NM_DBUS_SERVICE),
-                                                QLatin1String(NM_DBUS_PATH),
-                                                QLatin1String(NM_DBUS_INTERFACE),
-                                                QDBusConnection::systemBus(),parent);
-    if (!d->connectionInterface->isValid()) {
-        d->valid = false;
+    if (!isValid()) {
         return;
     }
-    d->valid = true;
 
-    QDBusInterface managerPropertiesInterface(QLatin1String(NM_DBUS_SERVICE),
+    PropertiesDBusInterface managerPropertiesInterface(QLatin1String(NM_DBUS_SERVICE),
                                                   QLatin1String(NM_DBUS_PATH),
-                                                  QLatin1String("org.freedesktop.DBus.Properties"),
+                                                  DBUS_PROPERTIES_INTERFACE,
                                                   QDBusConnection::systemBus());
     QList<QVariant> argumentList;
     argumentList << QLatin1String(NM_DBUS_INTERFACE);
@@ -81,13 +73,17 @@ QNetworkManagerInterface::QNetworkManagerInterface(QObject *parent)
                                                                        argumentList);
     if (!propsReply.isError()) {
         propertyMap = propsReply.value();
+    } else {
+        qWarning() << Q_FUNC_INFO << "propsReply"<<propsReply.error().message();
     }
 
     QDBusPendingReply<QList <QDBusObjectPath> > nmReply
-            = d->connectionInterface->call(QLatin1String("GetDevices"));
+            = call(QLatin1String("GetDevices"));
     nmReply.waitForFinished();
     if (!nmReply.isError()) {
         devicesPathList = nmReply.value();
+    } else {
+        qWarning() << Q_FUNC_INFO <<"nmReply"<<nmReply.error().message();
     }
 
     QDBusConnection::systemBus().connect(QLatin1String(NM_DBUS_SERVICE),
@@ -99,13 +95,6 @@ QNetworkManagerInterface::QNetworkManagerInterface(QObject *parent)
 
 QNetworkManagerInterface::~QNetworkManagerInterface()
 {
-    delete d->connectionInterface;
-    delete d;
-}
-
-bool QNetworkManagerInterface::isValid()
-{
-    return d->valid;
 }
 
 bool QNetworkManagerInterface::setConnections()
@@ -138,16 +127,11 @@ bool QNetworkManagerInterface::setConnections()
     return allOk;
 }
 
-QDBusInterface *QNetworkManagerInterface::connectionInterface()  const
-{
-    return d->connectionInterface;
-}
-
 QList <QDBusObjectPath> QNetworkManagerInterface::getDevices()
 {
     if (devicesPathList.isEmpty()) {
         //qWarning() << "using blocking call!";
-        QDBusReply<QList<QDBusObjectPath> > reply = d->connectionInterface->call(QLatin1String("GetDevices"));
+        QDBusReply<QList<QDBusObjectPath> > reply = call(QLatin1String("GetDevices"));
         devicesPathList = reply.value();
     }
     return devicesPathList;
@@ -157,7 +141,7 @@ void QNetworkManagerInterface::activateConnection(QDBusObjectPath connectionPath
                                                   QDBusObjectPath devicePath,
                                                   QDBusObjectPath specificObject)
 {
-    QDBusPendingCall pendingCall = d->connectionInterface->asyncCall(QLatin1String("ActivateConnection"),
+    QDBusPendingCall pendingCall = asyncCall(QLatin1String("ActivateConnection"),
                                                                     QVariant::fromValue(connectionPath),
                                                                     QVariant::fromValue(devicePath),
                                                                     QVariant::fromValue(specificObject));
@@ -167,9 +151,9 @@ void QNetworkManagerInterface::activateConnection(QDBusObjectPath connectionPath
                     this, SIGNAL(activationFinished(QDBusPendingCallWatcher*)));
 }
 
-void QNetworkManagerInterface::deactivateConnection(QDBusObjectPath connectionPath)  const
+void QNetworkManagerInterface::deactivateConnection(QDBusObjectPath connectionPath)
 {
-    d->connectionInterface->asyncCall(QLatin1String("DeactivateConnection"), QVariant::fromValue(connectionPath));
+    asyncCall(QLatin1String("DeactivateConnection"), QVariant::fromValue(connectionPath));
 }
 
 bool QNetworkManagerInterface::wirelessEnabled()  const
@@ -245,73 +229,38 @@ void QNetworkManagerInterface::propertiesSwap(QMap<QString,QVariant> map)
     }
 }
 
-class QNetworkManagerInterfaceAccessPointPrivate
-{
-public:
-    QDBusInterface *connectionInterface;
-    QString path;
-    bool valid;
-};
-
 QNetworkManagerInterfaceAccessPoint::QNetworkManagerInterfaceAccessPoint(const QString &dbusPathName, QObject *parent)
-        : QObject(parent)
+        : QDBusAbstractInterface(QLatin1String(NM_DBUS_SERVICE),
+                  dbusPathName,
+                  NM_DBUS_INTERFACE_ACCESS_POINT,
+                  QDBusConnection::systemBus(),parent)
 {
-    d = new QNetworkManagerInterfaceAccessPointPrivate();
-    d->path = dbusPathName;
-    d->connectionInterface = new QDBusInterface(QLatin1String(NM_DBUS_SERVICE),
-                                                d->path,
-                                                QLatin1String(NM_DBUS_INTERFACE_ACCESS_POINT),
-                                                QDBusConnection::systemBus(),parent);
-    if (!d->connectionInterface->isValid()) {
-        d->valid = false;
+    if (!isValid()) {
         return;
     }
-    QDBusInterface accessPointPropertiesInterface(QLatin1String(NM_DBUS_SERVICE),
-                                                  d->path,
-                                                  QLatin1String("org.freedesktop.DBus.Properties"),
+    PropertiesDBusInterface *accessPointPropertiesInterface = new PropertiesDBusInterface(QLatin1String(NM_DBUS_SERVICE),
+                                                  dbusPathName,
+                                                  DBUS_PROPERTIES_INTERFACE,
                                                   QDBusConnection::systemBus());
 
     QList<QVariant> argumentList;
     argumentList << QLatin1String(NM_DBUS_INTERFACE_ACCESS_POINT);
     QDBusPendingReply<QVariantMap> propsReply
-            = accessPointPropertiesInterface.callWithArgumentList(QDBus::Block,QLatin1String("GetAll"),
+            = accessPointPropertiesInterface->callWithArgumentList(QDBus::Block,QLatin1String("GetAll"),
                                                                        argumentList);
     if (!propsReply.isError()) {
         propertyMap = propsReply.value();
     }
 
     QDBusConnection::systemBus().connect(QLatin1String(NM_DBUS_SERVICE),
-                                  d->path,
+                                  dbusPathName,
                                   QLatin1String(NM_DBUS_INTERFACE_ACCESS_POINT),
                                   QLatin1String("PropertiesChanged"),
                                   this,SLOT(propertiesSwap(QMap<QString,QVariant>)));
-
-    d->valid = true;
-
 }
 
 QNetworkManagerInterfaceAccessPoint::~QNetworkManagerInterfaceAccessPoint()
 {
-    delete d->connectionInterface;
-    delete d;
-}
-
-bool QNetworkManagerInterfaceAccessPoint::isValid()
-{
-    return d->valid;
-}
-
-bool QNetworkManagerInterfaceAccessPoint::setConnections()
-{
-    if (!isValid())
-        return false;
-
-    return true;
-}
-
-QDBusInterface *QNetworkManagerInterfaceAccessPoint::connectionInterface() const
-{
-    return d->connectionInterface;
 }
 
 quint32 QNetworkManagerInterfaceAccessPoint::flags() const
@@ -386,31 +335,19 @@ void QNetworkManagerInterfaceAccessPoint::propertiesSwap(QMap<QString,QVariant> 
     }
 }
 
-class QNetworkManagerInterfaceDevicePrivate
-{
-public:
-    QDBusInterface *connectionInterface;
-    QString path;
-    bool valid;
-};
-
 QNetworkManagerInterfaceDevice::QNetworkManagerInterfaceDevice(const QString &deviceObjectPath, QObject *parent)
-        : QObject(parent)
+        : QDBusAbstractInterface(QLatin1String(NM_DBUS_SERVICE),
+                                 deviceObjectPath,
+                                 NM_DBUS_INTERFACE_DEVICE,
+                                 QDBusConnection::systemBus(),parent)
 {
 
-    d = new QNetworkManagerInterfaceDevicePrivate();
-    d->path = deviceObjectPath;
-    d->connectionInterface = new QDBusInterface(QLatin1String(NM_DBUS_SERVICE),
-                                                d->path,
-                                                QLatin1String(NM_DBUS_INTERFACE_DEVICE),
-                                                QDBusConnection::systemBus(),parent);
-    if (!d->connectionInterface->isValid()) {
-        d->valid = false;
+    if (!isValid()) {
         return;
     }
-    QDBusInterface devicePropertiesInterface(QLatin1String(NM_DBUS_SERVICE),
-                                                  d->path,
-                                                  QLatin1String("org.freedesktop.DBus.Properties"),
+    PropertiesDBusInterface devicePropertiesInterface(QLatin1String(NM_DBUS_SERVICE),
+                                                  deviceObjectPath,
+                                                  DBUS_PROPERTIES_INTERFACE,
                                                   QDBusConnection::systemBus(),parent);
 
     QList<QVariant> argumentList;
@@ -424,35 +361,14 @@ QNetworkManagerInterfaceDevice::QNetworkManagerInterfaceDevice(const QString &de
     }
 
     QDBusConnection::systemBus().connect(QLatin1String(NM_DBUS_SERVICE),
-                                  d->path,
+                                  deviceObjectPath,
                                   QLatin1String(NM_DBUS_INTERFACE_DEVICE),
                                   QLatin1String("PropertiesChanged"),
                                   this,SLOT(propertiesSwap(QMap<QString,QVariant>)));
-    d->valid = true;
 }
 
 QNetworkManagerInterfaceDevice::~QNetworkManagerInterfaceDevice()
 {
-    delete d->connectionInterface;
-    delete d;
-}
-
-bool QNetworkManagerInterfaceDevice::isValid()
-{
-    return d->valid;
-}
-
-bool QNetworkManagerInterfaceDevice::setConnections()
-{
-    if (!isValid())
-        return false;
-
-    return true;
-}
-
-QDBusInterface *QNetworkManagerInterfaceDevice::connectionInterface() const
-{
-    return d->connectionInterface;
 }
 
 QString QNetworkManagerInterfaceDevice::udi() const
@@ -519,31 +435,19 @@ void QNetworkManagerInterfaceDevice::propertiesSwap(QMap<QString,QVariant> map)
     Q_EMIT propertiesChanged(map);
 }
 
-class QNetworkManagerInterfaceDeviceWiredPrivate
-{
-public:
-    QDBusInterface *connectionInterface;
-    QString path;
-    bool valid;
-};
-
 QNetworkManagerInterfaceDeviceWired::QNetworkManagerInterfaceDeviceWired(const QString &ifaceDevicePath, QObject *parent)
-    : QObject(parent)
+    : QDBusAbstractInterface(QLatin1String(NM_DBUS_SERVICE),
+                             ifaceDevicePath,
+                             NM_DBUS_INTERFACE_DEVICE_WIRED,
+                             QDBusConnection::systemBus(), parent)
 {
-    d = new QNetworkManagerInterfaceDeviceWiredPrivate();
-    d->path = ifaceDevicePath;
-    d->connectionInterface = new QDBusInterface(QLatin1String(NM_DBUS_SERVICE),
-                                                d->path,
-                                                QLatin1String(NM_DBUS_INTERFACE_DEVICE_WIRED),
-                                                QDBusConnection::systemBus(), parent);
-    if (!d->connectionInterface->isValid()) {
-        d->valid = false;
+    if (!isValid()) {
         return;
     }
-    QDBusInterface deviceWiredPropertiesInterface(QLatin1String(NM_DBUS_SERVICE),
-                                                  d->path,
-                                                  QLatin1String("org.freedesktop.DBus.Properties"),
-                                                  QDBusConnection::systemBus(),parent);
+    PropertiesDBusInterface deviceWiredPropertiesInterface(QLatin1String(NM_DBUS_SERVICE),
+                                                           ifaceDevicePath,
+                                                           DBUS_PROPERTIES_INTERFACE,
+                                                           QDBusConnection::systemBus(),parent);
 
     QList<QVariant> argumentList;
     argumentList << QLatin1String(NM_DBUS_INTERFACE_DEVICE_WIRED);
@@ -556,36 +460,14 @@ QNetworkManagerInterfaceDeviceWired::QNetworkManagerInterfaceDeviceWired(const Q
     }
 
     QDBusConnection::systemBus().connect(QLatin1String(NM_DBUS_SERVICE),
-                                  d->path,
+                                  ifaceDevicePath,
                                   QLatin1String(NM_DBUS_INTERFACE_DEVICE_WIRED),
                                   QLatin1String("PropertiesChanged"),
                                   this,SLOT(propertiesSwap(QMap<QString,QVariant>)));
-
-    d->valid = true;
 }
 
 QNetworkManagerInterfaceDeviceWired::~QNetworkManagerInterfaceDeviceWired()
 {
-    delete d->connectionInterface;
-    delete d;
-}
-
-bool QNetworkManagerInterfaceDeviceWired::isValid()
-{
-
-    return d->valid;
-}
-
-bool QNetworkManagerInterfaceDeviceWired::setConnections()
-{
-    if (!isValid())
-        return false;
-    return true;
-}
-
-QDBusInterface *QNetworkManagerInterfaceDeviceWired::connectionInterface() const
-{
-    return d->connectionInterface;
 }
 
 QString QNetworkManagerInterfaceDeviceWired::hwAddress() const
@@ -639,39 +521,27 @@ void QNetworkManagerInterfaceDeviceWired::propertiesSwap(QMap<QString,QVariant> 
     Q_EMIT propertiesChanged(map);
 }
 
-class QNetworkManagerInterfaceDeviceWirelessPrivate
-{
-public:
-    QDBusInterface *connectionInterface;
-    QString path;
-    bool valid;
-};
-
 QNetworkManagerInterfaceDeviceWireless::QNetworkManagerInterfaceDeviceWireless(const QString &ifaceDevicePath, QObject *parent)
-    : QObject(parent)
+    : QDBusAbstractInterface(QLatin1String(NM_DBUS_SERVICE),
+                             ifaceDevicePath,
+                             NM_DBUS_INTERFACE_DEVICE_WIRELESS,
+                             QDBusConnection::systemBus(), parent)
 {
-    d = new QNetworkManagerInterfaceDeviceWirelessPrivate();
-    d->path = ifaceDevicePath;
-    d->connectionInterface = new QDBusInterface(QLatin1String(NM_DBUS_SERVICE),
-                                                d->path,
-                                                QLatin1String(NM_DBUS_INTERFACE_DEVICE_WIRELESS),
-                                                QDBusConnection::systemBus(), parent);
-    if (!d->connectionInterface->isValid()) {
-        d->valid = false;
+    if (!isValid()) {
         return;
     }
 
-
+    interfacePath = ifaceDevicePath;
     QDBusPendingReply<QList <QDBusObjectPath> > nmReply
-            = d->connectionInterface->call(QLatin1String("GetAccessPoints"));
+            = call(QLatin1String("GetAccessPoints"));
 
     if (!nmReply.isError()) {
         accessPointsList = nmReply.value();
     }
 
-    QDBusInterface deviceWirelessPropertiesInterface(QLatin1String(NM_DBUS_SERVICE),
-                                                  d->path,
-                                                  QLatin1String("org.freedesktop.DBus.Properties"),
+    PropertiesDBusInterface deviceWirelessPropertiesInterface(QLatin1String(NM_DBUS_SERVICE),
+                                                  interfacePath,
+                                                  DBUS_PROPERTIES_INTERFACE,
                                                   QDBusConnection::systemBus(),parent);
 
     QList<QVariant> argumentList;
@@ -684,31 +554,21 @@ QNetworkManagerInterfaceDeviceWireless::QNetworkManagerInterfaceDeviceWireless(c
     }
 
     QDBusConnection::systemBus().connect(QLatin1String(NM_DBUS_SERVICE),
-                                  d->path,
+                                 interfacePath,
                                   QLatin1String(NM_DBUS_INTERFACE_DEVICE_WIRELESS),
                                   QLatin1String("PropertiesChanged"),
                                   this,SLOT(propertiesSwap(QMap<QString,QVariant>)));
 
     QDBusPendingReply<QList<QDBusObjectPath> > reply
-            = d->connectionInterface->asyncCall(QLatin1String("GetAccessPoints"));
+            = asyncCall(QLatin1String("GetAccessPoints"));
 
     QDBusPendingCallWatcher *callWatcher = new QDBusPendingCallWatcher(reply);
     connect(callWatcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
                      this, SLOT(accessPointsFinished(QDBusPendingCallWatcher*)));
-
-
-    d->valid = true;
 }
 
 QNetworkManagerInterfaceDeviceWireless::~QNetworkManagerInterfaceDeviceWireless()
 {
-    delete d->connectionInterface;
-    delete d;
-}
-
-bool QNetworkManagerInterfaceDeviceWireless::isValid()
-{
-    return d->valid;
 }
 
 void QNetworkManagerInterfaceDeviceWireless::slotAccessPointAdded(QDBusObjectPath path)
@@ -732,16 +592,16 @@ bool QNetworkManagerInterfaceDeviceWireless::setConnections()
     bool allOk = true;
 
     if (!dbusConnection.connect(QLatin1String(NM_DBUS_SERVICE),
-                                d->path,
-                              QLatin1String(NM_DBUS_INTERFACE_DEVICE_WIRELESS),
-                              QLatin1String("AccessPointAdded"),
-                              this, SLOT(slotAccessPointAdded(QDBusObjectPath)))) {
+                               interfacePath,
+                                QLatin1String(NM_DBUS_INTERFACE_DEVICE_WIRELESS),
+                                QLatin1String("AccessPointAdded"),
+                                this, SLOT(slotAccessPointAdded(QDBusObjectPath)))) {
         allOk = false;
     }
 
 
     if (!dbusConnection.connect(QLatin1String(NM_DBUS_SERVICE),
-                              d->path,
+                              interfacePath,
                               QLatin1String(NM_DBUS_INTERFACE_DEVICE_WIRELESS),
                               QLatin1String("AccessPointRemoved"),
                               this, SLOT(slotAccessPointRemoved(QDBusObjectPath)))) {
@@ -749,7 +609,7 @@ bool QNetworkManagerInterfaceDeviceWireless::setConnections()
     }
 
     if (!dbusConnection.connect(QLatin1String(NM_DBUS_SERVICE),
-                               d->path,
+                               interfacePath,
                                QLatin1String(NM_DBUS_INTERFACE_DEVICE_WIRELESS),
                                QLatin1String("ScanDone"),
                                this, SLOT(scanIsDone()))) {
@@ -771,17 +631,12 @@ void QNetworkManagerInterfaceDeviceWireless::accessPointsFinished(QDBusPendingCa
     }
 }
 
-QDBusInterface *QNetworkManagerInterfaceDeviceWireless::connectionInterface() const
-{
-    return d->connectionInterface;
-}
-
 QList <QDBusObjectPath> QNetworkManagerInterfaceDeviceWireless::getAccessPoints()
 {
     if (accessPointsList.isEmpty()) {
         //qWarning() << "Using blocking call!";
         QDBusReply<QList<QDBusObjectPath> > reply
-                = d->connectionInterface->call(QLatin1String("GetAccessPoints"));
+                = call(QLatin1String("GetAccessPoints"));
         accessPointsList = reply.value();
     }
     return accessPointsList;
@@ -829,7 +684,7 @@ void QNetworkManagerInterfaceDeviceWireless::scanIsDone()
 
 void QNetworkManagerInterfaceDeviceWireless::requestScan()
 {
-    d->connectionInterface->asyncCall(QLatin1String("RequestScan"));
+    asyncCall(QLatin1String("RequestScan"));
 }
 
 void QNetworkManagerInterfaceDeviceWireless::propertiesSwap(QMap<QString,QVariant> map)
@@ -844,29 +699,17 @@ void QNetworkManagerInterfaceDeviceWireless::propertiesSwap(QMap<QString,QVarian
     }
 }
 
-class QNetworkManagerInterfaceDeviceModemPrivate
-{
-public:
-    QDBusInterface *connectionInterface;
-    QString path;
-    bool valid;
-};
-
 QNetworkManagerInterfaceDeviceModem::QNetworkManagerInterfaceDeviceModem(const QString &ifaceDevicePath, QObject *parent)
-    : QObject(parent)
+    : QDBusAbstractInterface(QLatin1String(NM_DBUS_SERVICE),
+                             ifaceDevicePath,
+                             NM_DBUS_INTERFACE_DEVICE_MODEM,
+                             QDBusConnection::systemBus(), parent)
 {
-    d = new QNetworkManagerInterfaceDeviceModemPrivate();
-    d->path = ifaceDevicePath;
-    d->connectionInterface = new QDBusInterface(QLatin1String(NM_DBUS_SERVICE),
-                                                d->path,
-                                                QLatin1String(NM_DBUS_INTERFACE_DEVICE_MODEM),
-                                                QDBusConnection::systemBus(), parent);
-    if (!d->connectionInterface->isValid()) {
-        d->valid = false;
+    if (!isValid()) {
         return;
     }
-    QDBusInterface deviceModemPropertiesInterface(QLatin1String(NM_DBUS_SERVICE),
-                                                  d->path,
+    PropertiesDBusInterface deviceModemPropertiesInterface(QLatin1String(NM_DBUS_SERVICE),
+                                                  ifaceDevicePath,
                                                   QLatin1String("org.freedesktop.DBus.Properties"),
                                                   QDBusConnection::systemBus(),parent);
 
@@ -880,36 +723,14 @@ QNetworkManagerInterfaceDeviceModem::QNetworkManagerInterfaceDeviceModem(const Q
     }
 
     QDBusConnection::systemBus().connect(QLatin1String(NM_DBUS_SERVICE),
-                                  d->path,
+                                  ifaceDevicePath,
                                   QLatin1String(NM_DBUS_INTERFACE_DEVICE_MODEM),
                                   QLatin1String("PropertiesChanged"),
                                   this,SLOT(propertiesSwap(QMap<QString,QVariant>)));
-    d->valid = true;
 }
 
 QNetworkManagerInterfaceDeviceModem::~QNetworkManagerInterfaceDeviceModem()
 {
-    delete d->connectionInterface;
-    delete d;
-}
-
-bool QNetworkManagerInterfaceDeviceModem::isValid()
-{
-
-    return d->valid;
-}
-
-bool QNetworkManagerInterfaceDeviceModem::setConnections()
-{
-    if (!isValid() )
-        return false;
-
-    return true;
-}
-
-QDBusInterface *QNetworkManagerInterfaceDeviceModem::connectionInterface() const
-{
-    return d->connectionInterface;
 }
 
 QNetworkManagerInterfaceDeviceModem::ModemCapabilities QNetworkManagerInterfaceDeviceModem::modemCapabilities() const
@@ -936,59 +757,39 @@ void QNetworkManagerInterfaceDeviceModem::propertiesSwap(QMap<QString,QVariant> 
     Q_EMIT propertiesChanged(map);
 }
 
-class QNetworkManagerSettingsPrivate
-{
-public:
-    QDBusInterface *connectionInterface;
-    QString path;
-    bool valid;
-};
 
 QNetworkManagerSettings::QNetworkManagerSettings(const QString &settingsService, QObject *parent)
-        : QObject(parent)
+        : QDBusAbstractInterface(settingsService,
+                                 NM_DBUS_PATH_SETTINGS,
+                                 NM_DBUS_IFACE_SETTINGS,
+                                 QDBusConnection::systemBus(), parent)
 {
-    d = new QNetworkManagerSettingsPrivate();
-    d->path = settingsService;
-    d->connectionInterface = new QDBusInterface(settingsService,
-                                                QLatin1String(NM_DBUS_PATH_SETTINGS),
-                                                QLatin1String(NM_DBUS_IFACE_SETTINGS),
-                                                QDBusConnection::systemBus());
-    if (!d->connectionInterface->isValid()) {
-        d->valid = false;
+    if (!isValid()) {
         return;
     }
-
+    interfacePath = settingsService;
     QDBusPendingReply<QList <QDBusObjectPath> > nmReply
-            = d->connectionInterface->call(QLatin1String("ListConnections"));
+            = call(QLatin1String("ListConnections"));
 
     if (!nmReply.isError()) {
         connectionsList = nmReply.value();
     }
-
-    d->valid = true;
 }
 
 QNetworkManagerSettings::~QNetworkManagerSettings()
 {
-    delete d->connectionInterface;
-    delete d;
-}
-
-bool QNetworkManagerSettings::isValid()
-{
-    return d->valid;
 }
 
 bool QNetworkManagerSettings::setConnections()
 {
     bool allOk = true;
-
-    if (!QDBusConnection::systemBus().connect(d->path,
+    if (!QDBusConnection::systemBus().connect(interfacePath,
                                              QLatin1String(NM_DBUS_PATH_SETTINGS),
                                              QLatin1String(NM_DBUS_IFACE_SETTINGS),
                                              QLatin1String("NewConnection"),
                                              this, SIGNAL(newConnection(QDBusObjectPath)))) {
         allOk = false;
+        qWarning() << Q_FUNC_INFO << "NewConnection could not be connected";
     }
 
     return allOk;
@@ -999,7 +800,7 @@ QList <QDBusObjectPath> QNetworkManagerSettings::listConnections()
     if (connectionsList.isEmpty()) {
         //qWarning() << "Using blocking call!";
         QDBusReply<QList<QDBusObjectPath> > reply
-                = d->connectionInterface->call(QLatin1String("ListConnections"));
+                = call(QLatin1String("ListConnections"));
         connectionsList = reply.value();
     }
     return connectionsList;
@@ -1010,59 +811,30 @@ QString QNetworkManagerSettings::getConnectionByUuid(const QString &uuid)
 {
     QList<QVariant> argumentList;
     argumentList << QVariant::fromValue(uuid);
-    QDBusReply<QDBusObjectPath > reply = d->connectionInterface->callWithArgumentList(QDBus::Block,QLatin1String("GetConnectionByUuid"), argumentList);
+    QDBusReply<QDBusObjectPath > reply = callWithArgumentList(QDBus::Block,QLatin1String("GetConnectionByUuid"), argumentList);
     return reply.value().path();
 }
 
-QDBusInterface *QNetworkManagerSettings::connectionInterface() const
-{
-    return d->connectionInterface;
-}
-
-
-class QNetworkManagerSettingsConnectionPrivate
-{
-public:
-    QDBusInterface *connectionInterface;
-    QString path;
-    QString service;
-    QNmSettingsMap settingsMap;
-    bool valid;
-};
-
 QNetworkManagerSettingsConnection::QNetworkManagerSettingsConnection(const QString &settingsService, const QString &connectionObjectPath, QObject *parent)
-    : QObject(parent)
+    : QDBusAbstractInterface(settingsService,
+                             connectionObjectPath,
+                             NM_DBUS_IFACE_SETTINGS_CONNECTION,
+                             QDBusConnection::systemBus(), parent)
 {
     qDBusRegisterMetaType<QNmSettingsMap>();
-    d = new QNetworkManagerSettingsConnectionPrivate();
-    d->path = connectionObjectPath;
-    d->service = settingsService;
-    d->connectionInterface = new QDBusInterface(settingsService,
-                                                d->path,
-                                                QLatin1String(NM_DBUS_IFACE_SETTINGS_CONNECTION),
-                                                QDBusConnection::systemBus(), parent);
-    if (!d->connectionInterface->isValid()) {
-        d->valid = false;
+    if (!isValid()) {
         return;
     }
-    d->valid = true;
-
+    interfacepath = connectionObjectPath;
     QDBusPendingReply<QNmSettingsMap> nmReply
-            = d->connectionInterface->call(QLatin1String("GetSettings"));
+            = call(QLatin1String("GetSettings"));
     if (!nmReply.isError()) {
-        d->settingsMap = nmReply.value();
+        settingsMap = nmReply.value();
     }
 }
 
 QNetworkManagerSettingsConnection::~QNetworkManagerSettingsConnection()
 {
-    delete d->connectionInterface;
-    delete d;
-}
-
-bool QNetworkManagerSettingsConnection::isValid()
-{
-    return d->valid;
 }
 
 bool QNetworkManagerSettingsConnection::setConnections()
@@ -1072,16 +844,16 @@ bool QNetworkManagerSettingsConnection::setConnections()
 
     QDBusConnection dbusConnection = QDBusConnection::systemBus();
     bool allOk = true;
-    if (!dbusConnection.connect(d->service,
-                               d->path,
+    if (!dbusConnection.connect(service(),
+                               interfacepath,
                                QLatin1String(NM_DBUS_IFACE_SETTINGS_CONNECTION),
                                QLatin1String("Updated"),
                                this, SIGNAL(updated()))) {
         allOk = false;
     }
 
-    if (!dbusConnection.connect(d->service,
-                               d->path,
+    if (!dbusConnection.connect(service(),
+                               interfacepath,
                                QLatin1String(NM_DBUS_IFACE_SETTINGS_CONNECTION),
                                QLatin1String("Removed"),
                                this, SIGNAL(slotSettingsRemoved()))) {
@@ -1092,28 +864,23 @@ bool QNetworkManagerSettingsConnection::setConnections()
 
 void QNetworkManagerSettingsConnection::slotSettingsRemoved()
 {
-    Q_EMIT removed(d->path);
-}
-
-QDBusInterface *QNetworkManagerSettingsConnection::connectionInterface() const
-{
-    return d->connectionInterface;
+    Q_EMIT removed(interfacepath);
 }
 
 QNmSettingsMap QNetworkManagerSettingsConnection::getSettings()
 {
-    if (d->settingsMap.isEmpty()) {
+    if (settingsMap.isEmpty()) {
         //qWarning() << "Using blocking call!";
-        QDBusReply<QNmSettingsMap> reply = d->connectionInterface->call(QLatin1String("GetSettings"));
-        d->settingsMap = reply.value();
+        QDBusReply<QNmSettingsMap> reply = call(QLatin1String("GetSettings"));
+        settingsMap = reply.value();
     }
-    return d->settingsMap;
+    return settingsMap;
 }
 
 NMDeviceType QNetworkManagerSettingsConnection::getType()
 {
     const QString devType =
-        d->settingsMap.value(QLatin1String("connection")).value(QLatin1String("type")).toString();
+        settingsMap.value(QLatin1String("connection")).value(QLatin1String("type")).toString();
 
     if (devType == QLatin1String("802-3-ethernet"))
         return DEVICE_TYPE_ETHERNET;
@@ -1128,7 +895,7 @@ NMDeviceType QNetworkManagerSettingsConnection::getType()
 bool QNetworkManagerSettingsConnection::isAutoConnect()
 {
     const QVariant autoConnect =
-        d->settingsMap.value(QLatin1String("connection")).value(QLatin1String("autoconnect"));
+        settingsMap.value(QLatin1String("connection")).value(QLatin1String("autoconnect"));
 
     // NetworkManager default is to auto connect
     if (!autoConnect.isValid())
@@ -1139,27 +906,27 @@ bool QNetworkManagerSettingsConnection::isAutoConnect()
 
 quint64 QNetworkManagerSettingsConnection::getTimestamp()
 {
-    return d->settingsMap.value(QLatin1String("connection"))
+    return settingsMap.value(QLatin1String("connection"))
                          .value(QLatin1String("timestamp")).toUInt();
 }
 
 QString QNetworkManagerSettingsConnection::getId()
 {
-    return d->settingsMap.value(QLatin1String("connection")).value(QLatin1String("id")).toString();
+    return settingsMap.value(QLatin1String("connection")).value(QLatin1String("id")).toString();
 }
 
 QString QNetworkManagerSettingsConnection::getUuid()
 {
-    const QString id = d->settingsMap.value(QLatin1String("connection"))
+    const QString id = settingsMap.value(QLatin1String("connection"))
                                      .value(QLatin1String("uuid")).toString();
 
     // is no uuid, return the connection path
-    return id.isEmpty() ? d->connectionInterface->path() : id;
+    return id.isEmpty() ? path() : id;
 }
 
 QString QNetworkManagerSettingsConnection::getSsid()
 {
-    return d->settingsMap.value(QLatin1String("802-11-wireless"))
+    return settingsMap.value(QLatin1String("802-11-wireless"))
                          .value(QLatin1String("ssid")).toString();
 }
 
@@ -1168,10 +935,10 @@ QString QNetworkManagerSettingsConnection::getMacAddress()
     NMDeviceType type = getType();
 
     if (type == DEVICE_TYPE_ETHERNET) {
-        return d->settingsMap.value(QLatin1String("802-3-ethernet"))
+        return settingsMap.value(QLatin1String("802-3-ethernet"))
                              .value(QLatin1String("mac-address")).toString();
     } else if (type == DEVICE_TYPE_WIFI) {
-        return d->settingsMap.value(QLatin1String("802-11-wireless"))
+        return settingsMap.value(QLatin1String("802-11-wireless"))
                              .value(QLatin1String("mac-address")).toString();
     } else {
         return QString();
@@ -1181,36 +948,24 @@ QString QNetworkManagerSettingsConnection::getMacAddress()
 QStringList QNetworkManagerSettingsConnection::getSeenBssids()
 {
     if (getType() == DEVICE_TYPE_WIFI) {
-        return d->settingsMap.value(QLatin1String("802-11-wireless"))
+        return settingsMap.value(QLatin1String("802-11-wireless"))
                              .value(QLatin1String("seen-bssids")).toStringList();
     } else {
         return QStringList();
     }
 }
 
-class QNetworkManagerConnectionActivePrivate
-{
-public:
-    QDBusInterface *connectionInterface;
-    QString path;
-    bool valid;
-};
-
 QNetworkManagerConnectionActive::QNetworkManagerConnectionActive(const QString &activeConnectionObjectPath, QObject *parent)
-    : QObject(parent)
+    : QDBusAbstractInterface(QLatin1String(NM_DBUS_SERVICE),
+                             activeConnectionObjectPath,
+                             NM_DBUS_INTERFACE_ACTIVE_CONNECTION,
+                             QDBusConnection::systemBus(), parent)
 {
-    d = new QNetworkManagerConnectionActivePrivate();
-    d->path = activeConnectionObjectPath;
-    d->connectionInterface = new QDBusInterface(QLatin1String(NM_DBUS_SERVICE),
-                                                d->path,
-                                                QLatin1String(NM_DBUS_INTERFACE_ACTIVE_CONNECTION),
-                                                QDBusConnection::systemBus(), parent);
-    if (!d->connectionInterface->isValid()) {
-        d->valid = false;
+    if (!isValid()) {
         return;
     }
-    QDBusInterface connectionActivePropertiesInterface(QLatin1String(NM_DBUS_SERVICE),
-                                                  d->path,
+    PropertiesDBusInterface connectionActivePropertiesInterface(QLatin1String(NM_DBUS_SERVICE),
+                                                  activeConnectionObjectPath,
                                                   QLatin1String("org.freedesktop.DBus.Properties"),
                                                   QDBusConnection::systemBus());
 
@@ -1228,35 +983,14 @@ QNetworkManagerConnectionActive::QNetworkManagerConnectionActive(const QString &
     }
 
     QDBusConnection::systemBus().connect(QLatin1String(NM_DBUS_SERVICE),
-                                  d->path,
+                                  activeConnectionObjectPath,
                                   QLatin1String(NM_DBUS_INTERFACE_ACTIVE_CONNECTION),
                                   QLatin1String("PropertiesChanged"),
                                   this,SLOT(propertiesSwap(QMap<QString,QVariant>)));
-    d->valid = true;
 }
 
 QNetworkManagerConnectionActive::~QNetworkManagerConnectionActive()
 {
-    delete d->connectionInterface;
-    delete d;
-}
-
-bool QNetworkManagerConnectionActive::isValid()
-{
-    return d->valid;
-}
-
-bool QNetworkManagerConnectionActive::setConnections()
-{
-    if (!isValid())
-        return false;
-
-    return true;
-}
-
-QDBusInterface *QNetworkManagerConnectionActive::connectionInterface() const
-{
-    return d->connectionInterface;
 }
 
 QDBusObjectPath QNetworkManagerConnectionActive::connection() const
@@ -1327,44 +1061,24 @@ void QNetworkManagerConnectionActive::propertiesSwap(QMap<QString,QVariant> map)
     }
 }
 
-class QNetworkManagerIp4ConfigPrivate
-{
-public:
-    QDBusInterface *connectionInterface;
-    QString path;
-    bool valid;
-};
-
 QNetworkManagerIp4Config::QNetworkManagerIp4Config( const QString &deviceObjectPath, QObject *parent)
-    : QObject(parent)
+    : QDBusAbstractInterface(QLatin1String(NM_DBUS_SERVICE),
+                             deviceObjectPath,
+                             NM_DBUS_INTERFACE_IP4_CONFIG,
+                             QDBusConnection::systemBus(), parent)
 {
-    d = new QNetworkManagerIp4ConfigPrivate();
-    d->path = deviceObjectPath;
-    d->connectionInterface = new QDBusInterface(QLatin1String(NM_DBUS_SERVICE),
-                                                d->path,
-                                                QLatin1String(NM_DBUS_INTERFACE_IP4_CONFIG),
-                                                QDBusConnection::systemBus(), parent);
-    if (!d->connectionInterface->isValid()) {
-        d->valid = false;
+    if (!isValid()) {
         return;
     }
-    d->valid = true;
 }
 
 QNetworkManagerIp4Config::~QNetworkManagerIp4Config()
 {
-    delete d->connectionInterface;
-    delete d;
-}
-
-bool QNetworkManagerIp4Config::isValid()
-{
-    return d->valid;
 }
 
 QStringList QNetworkManagerIp4Config::domains() const
 {
-    return d->connectionInterface->property("Domains").toStringList();
+    return property("Domains").toStringList();
 }
 
 QT_END_NAMESPACE

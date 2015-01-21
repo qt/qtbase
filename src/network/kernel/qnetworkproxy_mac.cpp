@@ -221,18 +221,29 @@ QList<QNetworkProxy> macQueryInternal(const QNetworkProxyQuery &query)
         int enabled;
         if (CFNumberGetValue(pacEnabled, kCFNumberIntType, &enabled) && enabled) {
             // PAC is enabled
-            CFStringRef cfPacLocation = (CFStringRef)CFDictionaryGetValue(dict, kSCPropNetProxiesProxyAutoConfigURLString);
+            // kSCPropNetProxiesProxyAutoConfigURLString returns the URL string
+            // as entered in the system proxy configuration dialog
+            CFStringRef pacLocationSetting = (CFStringRef)CFDictionaryGetValue(dict, kSCPropNetProxiesProxyAutoConfigURLString);
+            QCFType<CFStringRef> cfPacLocation = CFURLCreateStringByAddingPercentEscapes(kCFAllocatorDefault, pacLocationSetting, NULL, NULL,
+                kCFStringEncodingUTF8);
 
             if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_5) {
                 QCFType<CFDataRef> pacData;
                 QCFType<CFURLRef> pacUrl = CFURLCreateWithString(kCFAllocatorDefault, cfPacLocation, NULL);
+                if (!pacUrl) {
+                    qWarning("Invalid PAC URL \"%s\"", qPrintable(QCFString::toQString(cfPacLocation)));
+                    return result;
+                }
                 SInt32 errorCode;
                 if (!CFURLCreateDataAndPropertiesFromResource(kCFAllocatorDefault, pacUrl, &pacData, NULL, NULL, &errorCode)) {
                     QString pacLocation = QCFString::toQString(cfPacLocation);
                     qWarning("Unable to get the PAC script at \"%s\" (%s)", qPrintable(pacLocation), cfurlErrorDescription(errorCode));
                     return result;
                 }
-
+                if (!pacData) {
+                    qWarning("\"%s\" returned an empty PAC script", qPrintable(QCFString::toQString(cfPacLocation)));
+                    return result;
+                }
                 QCFType<CFStringRef> pacScript = CFStringCreateFromExternalRepresentation(kCFAllocatorDefault, pacData, kCFStringEncodingISOLatin1);
                 if (!pacScript) {
                     // This should never happen, but the documentation says it may return NULL if there was a problem creating the object.

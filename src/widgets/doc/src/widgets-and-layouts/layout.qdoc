@@ -219,7 +219,7 @@
     \section1 Custom Widgets in Layouts
 
     When you make your own widget class, you should also communicate its layout
-    properties. If the widget has a one of Qt's layouts, this is already taken
+    properties. If the widget uses one of Qt's layouts, this is already taken
     care of. If the widget does not have any child widgets, or uses manual
     layout, you can change the behavior of the widget using any or all of the
     following mechanisms:

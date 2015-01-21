@@ -1298,21 +1298,7 @@ void QWindowsWindow::setGeometryDp(const QRect &rectIn)
         const QMargins margins = frameMarginsDp();
         rect.moveTopLeft(rect.topLeft() + QPoint(margins.left(), margins.top()));
     }
-    const QSize oldSize = m_data.geometry.size();
     m_data.geometry = rect;
-    const QSize newSize = rect.size();
-    // Check on hint.
-    if (newSize != oldSize) {
-        const QWindowsGeometryHint hint(window(), m_data.customMargins);
-        if (!hint.validSize(newSize)) {
-            qWarning("%s: Attempt to set a size (%dx%d) violating the constraints"
-                     "(%dx%d - %dx%d) on window %s/'%s'.", __FUNCTION__,
-                     newSize.width(), newSize.height(),
-                     hint.minimumSize.width(), hint.minimumSize.height(),
-                     hint.maximumSize.width(), hint.maximumSize.height(),
-                     window()->metaObject()->className(), qPrintable(window()->objectName()));
-        }
-    }
     if (m_data.hwnd) {
         // A ResizeEvent with resulting geometry will be sent. If we cannot
         // achieve that size (for example, window title minimal constraint),
@@ -1625,17 +1611,6 @@ void QWindowsWindow::setWindowState_sys(Qt::WindowState newState)
 
     setFlag(FrameDirty);
 
-    if ((oldState == Qt::WindowMaximized) != (newState == Qt::WindowMaximized)) {
-        if (visible && !(newState == Qt::WindowMinimized)) {
-            setFlag(WithinMaximize);
-            if (newState == Qt::WindowFullScreen)
-                setFlag(MaximizeToFullScreen);
-            ShowWindow(m_data.hwnd, (newState == Qt::WindowMaximized) ? SW_MAXIMIZE : SW_SHOWNOACTIVATE);
-            clearFlag(WithinMaximize);
-            clearFlag(MaximizeToFullScreen);
-        }
-    }
-
     if ((oldState == Qt::WindowFullScreen) != (newState == Qt::WindowFullScreen)) {
 #ifdef Q_OS_WINCE
         HWND handle = FindWindow(L"HHTaskBar", L"");
@@ -1715,6 +1690,15 @@ void QWindowsWindow::setWindowState_sys(Qt::WindowState newState)
             m_savedStyle = 0;
             m_savedFrameGeometry = QRect();
         }
+    } else if ((oldState == Qt::WindowMaximized) != (newState == Qt::WindowMaximized)) {
+        if (visible && !(newState == Qt::WindowMinimized)) {
+            setFlag(WithinMaximize);
+            if (newState == Qt::WindowFullScreen)
+                setFlag(MaximizeToFullScreen);
+            ShowWindow(m_data.hwnd, (newState == Qt::WindowMaximized) ? SW_MAXIMIZE : SW_SHOWNOACTIVATE);
+            clearFlag(WithinMaximize);
+            clearFlag(MaximizeToFullScreen);
+        }
     }
 
     if ((oldState == Qt::WindowMinimized) != (newState == Qt::WindowMinimized)) {
@@ -1761,6 +1745,8 @@ void QWindowsWindow::windowEvent(QEvent *event)
     case QEvent::WindowBlocked: // Blocked by another modal window.
         setEnabled(false);
         setFlag(BlockedByModal);
+        if (hasMouseCapture())
+            ReleaseCapture();
         break;
     case QEvent::WindowUnblocked:
         setEnabled(true);

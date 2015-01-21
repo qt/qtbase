@@ -50,8 +50,10 @@ QAndroidPlatformOpenGLContext::QAndroidPlatformOpenGLContext(const QSurfaceForma
 
 void QAndroidPlatformOpenGLContext::swapBuffers(QPlatformSurface *surface)
 {
-    if (surface->surface()->surfaceClass() == QSurface::Window)
-        static_cast<QAndroidPlatformOpenGLWindow *>(surface)->checkNativeSurface(eglConfig());
+    if (surface->surface()->surfaceClass() == QSurface::Window &&
+            static_cast<QAndroidPlatformOpenGLWindow *>(surface)->checkNativeSurface(eglConfig())) {
+        QEGLPlatformContext::makeCurrent(surface);
+    }
 
     QEGLPlatformContext::swapBuffers(surface);
 }
