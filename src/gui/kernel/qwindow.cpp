@@ -344,20 +344,14 @@ inline bool QWindowPrivate::windowRecreationRequired(QScreen *newScreen) const
 
 inline void QWindowPrivate::disconnectFromScreen()
 {
-    if (topLevelScreen) {
-        Q_Q(QWindow);
-        QObject::disconnect(topLevelScreen, &QObject::destroyed, q, &QWindow::screenDestroyed);
+    if (topLevelScreen)
         topLevelScreen = 0;
-    }
 }
 
 void QWindowPrivate::connectToScreen(QScreen *screen)
 {
-    Q_Q(QWindow);
     disconnectFromScreen();
     topLevelScreen = screen;
-    if (topLevelScreen)
-        QObject::connect(topLevelScreen, &QObject::destroyed, q, &QWindow::screenDestroyed);
 }
 
 void QWindowPrivate::emitScreenChangedRecursion(QScreen *newScreen)
@@ -1710,23 +1704,6 @@ void QWindow::setScreen(QScreen *newScreen)
     if (!newScreen)
         newScreen = QGuiApplication::primaryScreen();
     d->setTopLevelScreen(newScreen, true /* recreate */);
-}
-
-void QWindow::screenDestroyed(QObject *object)
-{
-    Q_D(QWindow);
-    if (d->parentWindow || QGuiApplication::closingDown())
-        return;
-    if (object == static_cast<QObject *>(d->topLevelScreen)) {
-        const bool wasVisible = isVisible();
-        setScreen(0);
-        // destroy() might have hidden our window, show it again.
-        // This might not be the best behavior if the new screen isn't a virtual sibling
-        // of the old one. This can be removed once platform plugins have the power to
-        // update the QScreen of its QWindows itself.
-        if (wasVisible && d->platformWindow)
-            setVisible(true);
-    }
 }
 
 /*!

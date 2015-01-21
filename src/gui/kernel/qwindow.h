@@ -314,9 +314,6 @@ Q_SIGNALS:
 
     Q_REVISION(1) void opacityChanged(qreal opacity);
 
-private Q_SLOTS:
-    void screenDestroyed(QObject *screen);
-
 protected:
     virtual void exposeEvent(QExposeEvent *);
     virtual void resizeEvent(QResizeEvent *);

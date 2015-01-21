@@ -72,8 +72,35 @@ QScreen::QScreen(QPlatformScreen *screen)
  */
 QScreen::~QScreen()
 {
-    if (qApp)
-        Q_EMIT qApp->screenRemoved(this);
+    if (!qApp)
+        return;
+
+    // Allow clients to manage windows that are affected by the screen going
+    // away, before we fall back to moving them to the primary screen.
+    emit qApp->screenRemoved(this);
+
+    if (QGuiApplication::closingDown())
+        return;
+
+    QScreen *primaryScreen = QGuiApplication::primaryScreen();
+    if (this == primaryScreen)
+        return;
+
+    bool movingFromVirtualSibling = primaryScreen->handle()->virtualSiblings().contains(handle());
+
+    // Move any leftover windows to the primary screen
+    foreach (QWindow *window, QGuiApplication::topLevelWindows()) {
+        if (window->screen() != this)
+            continue;
+
+        const bool wasVisible = window->isVisible();
+        window->setScreen(primaryScreen);
+
+        // Re-show window if moved from a virtual sibling screen. Otherwise
+        // leave it up to the application developer to show the window.
+        if (movingFromVirtualSibling)
+            window->setVisible(wasVisible);
+    }
 }
 
 /*!
