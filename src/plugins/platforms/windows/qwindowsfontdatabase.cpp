@@ -946,9 +946,8 @@ static bool addFontToDatabase(const QString &familyName, uchar charSet,
 }
 
 static int QT_WIN_CALLBACK storeFont(ENUMLOGFONTEX* f, NEWTEXTMETRICEX *textmetric,
-                                     int type, LPARAM namesSetIn)
+                                     int type, LPARAM)
 {
-    typedef QSet<QString> StringSet;
     const QString familyName = QString::fromWCharArray(f->elfLogFont.lfFaceName);
     const uchar charSet = f->elfLogFont.lfCharSet;
 
@@ -957,51 +956,69 @@ static int QT_WIN_CALLBACK storeFont(ENUMLOGFONTEX* f, NEWTEXTMETRICEX *textmetr
     // NEWTEXTMETRICEX is a NEWTEXTMETRIC, which according to the documentation is
     // identical to a TEXTMETRIC except for the last four members, which we don't use
     // anyway
-    if (addFontToDatabase(familyName, charSet, (TEXTMETRIC *)textmetric, &signature, type))
-        reinterpret_cast<StringSet *>(namesSetIn)->insert(familyName);
+    addFontToDatabase(familyName, charSet, (TEXTMETRIC *)textmetric, &signature, type);
 
     // keep on enumerating
     return 1;
 }
 
-void QWindowsFontDatabase::populateFontDatabase()
+void QWindowsFontDatabase::populateFamily(const QString &familyName)
 {
-    m_families.clear();
-    removeApplicationFonts();
-    populate(); // Called multiple times.
-    // Work around EnumFontFamiliesEx() not listing the system font, see below.
-    const QString sysFontFamily = QGuiApplication::font().family();
-    if (!m_families.contains(sysFontFamily))
-         populate(sysFontFamily);
-}
-
-/*!
-    \brief Populate font database using EnumFontFamiliesEx().
-
-    Normally, leaving the name empty should enumerate
-    all fonts, however, system fonts like "MS Shell Dlg 2"
-    are only found when specifying the name explicitly.
-*/
-
-void QWindowsFontDatabase::populate(const QString &family)
-    {
-
-    qCDebug(lcQpaFonts) << __FUNCTION__ << m_families.size() << family;
-
+    qCDebug(lcQpaFonts) << familyName;
+    if (familyName.size() >= LF_FACESIZE) {
+        qCWarning(lcQpaFonts) << "Unable to enumerate family '" << familyName << '\'';
+        return;
+    }
     HDC dummy = GetDC(0);
     LOGFONT lf;
     lf.lfCharSet = DEFAULT_CHARSET;
-    if (family.size() >= LF_FACESIZE) {
-        qWarning("%s: Unable to enumerate family '%s'.",
-                 __FUNCTION__, qPrintable(family));
-        return;
-    }
-    wmemcpy(lf.lfFaceName, reinterpret_cast<const wchar_t*>(family.utf16()),
-            family.size() + 1);
+    familyName.toWCharArray(lf.lfFaceName);
+    lf.lfFaceName[familyName.size()] = 0;
     lf.lfPitchAndFamily = 0;
-    EnumFontFamiliesEx(dummy, &lf, (FONTENUMPROC)storeFont,
-                       (LPARAM)&m_families, 0);
+    EnumFontFamiliesEx(dummy, &lf, (FONTENUMPROC)storeFont, 0, 0);
     ReleaseDC(0, dummy);
+}
+
+namespace {
+// Context for enumerating system fonts, records whether the default font has been encountered,
+// which is normally not enumerated by EnumFontFamiliesEx().
+struct PopulateFamiliesContext
+{
+    PopulateFamiliesContext(const QString &f) : systemDefaultFont(f), seenSystemDefaultFont(false) {}
+
+    QString systemDefaultFont;
+    bool seenSystemDefaultFont;
+};
+} // namespace
+
+static int QT_WIN_CALLBACK populateFontFamilies(ENUMLOGFONTEX* f, NEWTEXTMETRICEX *, int, LPARAM lparam)
+{
+    // the "@family" fonts are just the same as "family". Ignore them.
+    const wchar_t *faceNameW = f->elfLogFont.lfFaceName;
+    if (faceNameW[0] && faceNameW[0] != L'@' && wcsncmp(faceNameW, L"WST_", 4)) {
+        const QString faceName = QString::fromWCharArray(faceNameW);
+        QPlatformFontDatabase::registerFontFamily(faceName);
+        PopulateFamiliesContext *context = reinterpret_cast<PopulateFamiliesContext *>(lparam);
+        if (!context->seenSystemDefaultFont && faceName == context->systemDefaultFont)
+            context->seenSystemDefaultFont = true;
+    }
+    return 1; // continue
+}
+
+void QWindowsFontDatabase::populateFontDatabase()
+{
+    removeApplicationFonts();
+    HDC dummy = GetDC(0);
+    LOGFONT lf;
+    lf.lfCharSet = DEFAULT_CHARSET;
+    lf.lfFaceName[0] = 0;
+    lf.lfPitchAndFamily = 0;
+    PopulateFamiliesContext context(QWindowsFontDatabase::systemDefaultFont().family());
+    EnumFontFamiliesEx(dummy, &lf, (FONTENUMPROC)populateFontFamilies, reinterpret_cast<LPARAM>(&context), 0);
+    ReleaseDC(0, dummy);
+    // Work around EnumFontFamiliesEx() not listing the system font.
+    if (!context.seenSystemDefaultFont)
+        QPlatformFontDatabase::registerFontFamily(context.systemDefaultFont);
 }
 
 typedef QSharedPointer<QWindowsFontEngineData> QWindowsFontEngineDataPtr;
@@ -1365,7 +1382,7 @@ QStringList QWindowsFontDatabase::addApplicationFont(const QByteArray &fontData,
 
         // Fonts based on files are added via populate, as they will show up in font enumeration.
         for (int j = 0; j < families.count(); ++j)
-            populate(families.at(j));
+            populateFamily(families.at(j));
     }
 
     m_applicationFonts << font;
@@ -1645,7 +1662,7 @@ QStringList QWindowsFontDatabase::fallbacksForFamily(const QString &family, QFon
     result.append(QWindowsFontDatabase::extraTryFontsForFamily(family));
 
     qCDebug(lcQpaFonts) << __FUNCTION__ << family << style << styleHint
-        << script << result << m_families.size();
+        << script << result;
     return result;
 }
 
