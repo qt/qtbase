@@ -370,6 +370,8 @@ void QCoreTextFontDatabase::releaseHandle(void *handle)
     CFRelease(CTFontDescriptorRef(handle));
 }
 
+extern CGAffineTransform qt_transform_from_fontdef(const QFontDef &fontDef);
+
 QFontEngine *QCoreTextFontDatabase::fontEngine(const QFontDef &f, void *usrPtr)
 {
     qreal scaledPointSize = f.pixelSize;
@@ -384,7 +386,8 @@ QFontEngine *QCoreTextFontDatabase::fontEngine(const QFontDef &f, void *usrPtr)
         scaledPointSize = f.pointSize;
 
     CTFontDescriptorRef descriptor = (CTFontDescriptorRef) usrPtr;
-    CTFontRef font = CTFontCreateWithFontDescriptor(descriptor, scaledPointSize, NULL);
+    CGAffineTransform matrix = qt_transform_from_fontdef(f);
+    CTFontRef font = CTFontCreateWithFontDescriptor(descriptor, scaledPointSize, &matrix);
     if (font) {
         QFontEngine *engine = new QCoreTextFontEngine(font, f);
         engine->fontDef = f;

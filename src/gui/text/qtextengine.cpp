@@ -1237,6 +1237,15 @@ int QTextEngine::shapeTextWithHarfbuzzNG(const QScriptItem &si, const ushort *st
         }
 
 #ifdef Q_OS_MAC
+        // CTRunGetPosition has a bug which applies matrix on 10.6, so we disable
+        // scaling the advances for this particular version
+        if (actualFontEngine->fontDef.stretch != 100
+                && QSysInfo::MacintoshVersion != QSysInfo::MV_10_6) {
+            QFixed stretch = QFixed(actualFontEngine->fontDef.stretch) / QFixed(100);
+            for (uint i = 0; i < num_glyphs; ++i)
+                g.advances[i] *= stretch;
+        }
+
         if (actualFontEngine->fontDef.styleStrategy & QFont::ForceIntegerMetrics) {
             for (uint i = 0; i < num_glyphs; ++i)
                 g.advances[i] = g.advances[i].round();
