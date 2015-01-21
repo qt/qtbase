@@ -544,7 +544,7 @@ Node* CppCodeParser::processTopicCommand(const Doc& doc,
                                    tr("Also used here: %1").arg(other));
         }
 #endif
-        QmlClassNode* qcn = new QmlClassNode(qdb_->primaryTreeRoot(), names[0]);
+        QmlTypeNode* qcn = new QmlTypeNode(qdb_->primaryTreeRoot(), names[0]);
         qcn->setClassNode(classNode);
         qcn->setLocation(doc.startLocation());
         return qcn;
@@ -562,7 +562,7 @@ Node* CppCodeParser::processTopicCommand(const Doc& doc,
         QString qmlType;
         QString type;
         if (splitQmlMethodArg(arg.first,type,module,qmlType)) {
-            QmlClassNode* qmlClass = qdb_->findQmlType(module,qmlType);
+            QmlTypeNode* qmlClass = qdb_->findQmlType(module,qmlType);
             if (qmlClass) {
                 bool attached = false;
                 Node::Type nodeType = Node::QmlMethod;
@@ -740,7 +740,7 @@ void CppCodeParser::processQmlProperties(const Doc& doc, NodeList& nodes, DocLis
     QString qmlType;
     QString property;
     QmlPropertyNode* qpn = 0;
-    QmlClassNode* qmlClass = 0;
+    QmlTypeNode* qmlClass = 0;
     QmlPropertyGroupNode* qpgn = 0;
 
     Topic qmlPropertyGroupTopic;
@@ -932,9 +932,9 @@ void CppCodeParser::processOtherMetaCommand(const Doc& doc,
         if (node->name() == arg)
             doc.location().warning(tr("%1 tries to inherit itself").arg(arg));
         else if (node->isQmlType()) {
-            QmlClassNode *qmlClass = static_cast<QmlClassNode*>(node);
+            QmlTypeNode *qmlClass = static_cast<QmlTypeNode*>(node);
             qmlClass->setQmlBaseName(arg);
-            QmlClassNode::addInheritedBy(arg,node);
+            QmlTypeNode::addInheritedBy(arg,node);
         }
     }
     else if (command == COMMAND_QMLINSTANTIATES) {

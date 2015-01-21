@@ -734,9 +734,9 @@ void QDocDatabase::initializeDB()
   Looks up the QML type node identified by the qualified Qml
   type \a name and returns a pointer to the QML type node.
  */
-QmlClassNode* QDocDatabase::findQmlType(const QString& name)
+QmlTypeNode* QDocDatabase::findQmlType(const QString& name)
 {
-    QmlClassNode* qcn = forest_.lookupQmlType(name);
+    QmlTypeNode* qcn = forest_.lookupQmlType(name);
     if (qcn)
         return qcn;
     return 0;
@@ -750,11 +750,11 @@ QmlClassNode* QDocDatabase::findQmlType(const QString& name)
   If the QML module id is empty, it looks up the QML type by
   \a name only.
  */
-QmlClassNode* QDocDatabase::findQmlType(const QString& qmid, const QString& name)
+QmlTypeNode* QDocDatabase::findQmlType(const QString& qmid, const QString& name)
 {
     if (!qmid.isEmpty()) {
         QString t = qmid + "::" + name;
-        QmlClassNode* qcn = forest_.lookupQmlType(t);
+        QmlTypeNode* qcn = forest_.lookupQmlType(t);
         if (qcn)
             return qcn;
     }
@@ -762,7 +762,7 @@ QmlClassNode* QDocDatabase::findQmlType(const QString& qmid, const QString& name
     QStringList path(name);
     Node* n = forest_.findNodeByNameAndType(path, Node::QmlType);
     if (n && n->isQmlType())
-        return static_cast<QmlClassNode*>(n);
+        return static_cast<QmlTypeNode*>(n);
     return 0;
 }
 
@@ -772,7 +772,7 @@ QmlClassNode* QDocDatabase::findQmlType(const QString& qmid, const QString& name
   QML type \a name and returns a pointer to the QML type node.
   If a QML type node is not found, 0 is returned.
  */
-QmlClassNode* QDocDatabase::findQmlType(const ImportRec& import, const QString& name)
+QmlTypeNode* QDocDatabase::findQmlType(const ImportRec& import, const QString& name)
 {
     if (!import.isEmpty()) {
         QStringList dotSplit;
@@ -784,7 +784,7 @@ QmlClassNode* QDocDatabase::findQmlType(const ImportRec& import, const QString& 
             qmName = import.importUri_;
         for (int i=0; i<dotSplit.size(); ++i) {
             QString qualifiedName = qmName + "::" + dotSplit[i];
-            QmlClassNode* qcn = forest_.lookupQmlType(qualifiedName);
+            QmlTypeNode* qcn = forest_.lookupQmlType(qualifiedName);
             if (qcn)
                 return qcn;
         }
@@ -1398,9 +1398,9 @@ void QDocDatabase::resolveQmlInheritance(InnerNode* root)
     // Do we need recursion?
     foreach (Node* child, root->childNodes()) {
         if (child->isQmlType()) {
-            QmlClassNode* qcn = static_cast<QmlClassNode*>(child);
+            QmlTypeNode* qcn = static_cast<QmlTypeNode*>(child);
             if (qcn->qmlBaseNodeNotSet() && !qcn->qmlBaseName().isEmpty()) {
-                QmlClassNode* bqcn = static_cast<QmlClassNode*>(previousSearches.value(qcn->qmlBaseName()));
+                QmlTypeNode* bqcn = static_cast<QmlTypeNode*>(previousSearches.value(qcn->qmlBaseName()));
                 if (bqcn)
                     qcn->setQmlBaseNode(bqcn);
                 else {

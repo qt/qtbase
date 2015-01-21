@@ -3146,7 +3146,7 @@ void Doc::initialize(const Config& config)
     DocParser::sourceDirs = config.getCanonicalPathList(CONFIG_SOURCEDIRS);
     DocParser::quoting = config.getBool(CONFIG_QUOTINGINFORMATION);
 
-    QmlClassNode::qmlOnly = config.getBool(CONFIG_QMLONLY);
+    QmlTypeNode::qmlOnly = config.getBool(CONFIG_QMLONLY);
     QStringMap reverseAliasMap;
     config_ = &config;
 

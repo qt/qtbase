@@ -50,6 +50,7 @@ QT_BEGIN_NAMESPACE
 #define COMMAND_INGROUP                 Doc::alias(QLatin1String("ingroup"))
 #define COMMAND_INMODULE                Doc::alias(QLatin1String("inmodule"))  // ### don't document
 #define COMMAND_INQMLMODULE             Doc::alias(QLatin1String("inqmlmodule"))
+#define COMMAND_INJSMODULE              Doc::alias(QLatin1String("injsmodule"))
 #define COMMAND_INTERNAL                Doc::alias(QLatin1String("internal"))
 #define COMMAND_MAINCLASS               Doc::alias(QLatin1String("mainclass"))
 #define COMMAND_NONREENTRANT            Doc::alias(QLatin1String("nonreentrant"))

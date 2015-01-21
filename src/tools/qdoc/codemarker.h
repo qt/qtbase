@@ -48,11 +48,11 @@ QT_BEGIN_NAMESPACE
 class Config;
 
 typedef QMultiMap<QString, Node*> MemberMap; // the string is the member signature
-typedef QPair<const QmlClassNode*, MemberMap> ClassMap;    // the node is the QML type
+typedef QPair<const QmlTypeNode*, MemberMap> ClassMap;    // the node is the QML type
 typedef QList<ClassMap*> ClassMapList;
 
 typedef QPair<QStringList, NodeList> KeysAndNodes;
-typedef QPair<const QmlClassNode*, KeysAndNodes> ClassKeysNodes;
+typedef QPair<const QmlTypeNode*, KeysAndNodes> ClassKeysNodes;
 typedef QList<ClassKeysNodes*> ClassKeysNodesList;
 
 struct Section
@@ -146,7 +146,7 @@ public:
     virtual QList<Section> sections(const InnerNode *inner,
                                     SynopsisStyle style,
                                     Status status) = 0;
-    virtual QList<Section> qmlSections(QmlClassNode* qmlClassNode,
+    virtual QList<Section> qmlSections(QmlTypeNode* qmlClassNode,
                                        SynopsisStyle style,
                                        Status status = Okay);
     virtual QStringList macRefsForNode(Node* node);

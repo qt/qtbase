@@ -234,6 +234,11 @@ protected:
 #define COMMAND_LICENSEDESCRIPTION      Doc::alias("licensedescription")
 #define COMMAND_RELEASEDATE             Doc::alias("releasedate")
 #define COMMAND_QTVARIABLE              Doc::alias("qtvariable")
+#define COMMAND_JSTYPE                  Doc::alias("jstype")
+#define COMMAND_JSPROPERTY              Doc::alias("jsproperty")
+#define COMMAND_JSMETHOD                Doc::alias("jsmethod")
+#define COMMAND_JSSIGNAL                Doc::alias("jssignal")
+#define COMMAND_JSMODULE                Doc::alias("jsmodule")
 
 QT_END_NAMESPACE
 

@@ -51,7 +51,7 @@ class ClassNode;
 class InnerNode;
 class ExampleNode;
 class TypedefNode;
-class QmlClassNode;
+class QmlTypeNode;
 class QDocDatabase;
 class FunctionNode;
 class PropertyNode;
@@ -300,7 +300,7 @@ public:
     virtual void setClassNode(ClassNode* ) { }
     virtual const Node* applyModuleName(const Node* ) const { return 0; }
     virtual QString idNumber() { return "0"; }
-    QmlClassNode* qmlClassNode();
+    QmlTypeNode* qmlClassNode();
     ClassNode* declarativeCppNode();
     const QString& outputSubdirectory() const { return outSubDir_; }
     void setOutputSubdirectory(const QString& t) { outSubDir_ = t; }
@@ -493,12 +493,12 @@ public:
 
     QString serviceName() const { return sname; }
     void setServiceName(const QString& value) { sname = value; }
-    QmlClassNode* qmlElement() { return qmlelement; }
-    void setQmlElement(QmlClassNode* qcn) { qmlelement = qcn; }
+    QmlTypeNode* qmlElement() { return qmlelement; }
+    void setQmlElement(QmlTypeNode* qcn) { qmlelement = qcn; }
     virtual bool isAbstract() const Q_DECL_OVERRIDE { return abstract_; }
     virtual void setAbstract(bool b) Q_DECL_OVERRIDE { abstract_ = b; }
     PropertyNode* findPropertyNode(const QString& name);
-    QmlClassNode* findQmlBaseNode();
+    QmlTypeNode* findQmlBaseNode();
 
 private:
     QList<RelatedClass> bases_;
@@ -508,7 +508,7 @@ private:
     bool wrapper_;
     QString sname;
     QString obsoleteLink_;
-    QmlClassNode* qmlelement;
+    QmlTypeNode* qmlelement;
 };
 
 class DocNode : public InnerNode
@@ -578,11 +578,11 @@ struct ImportRec {
 
 typedef QList<ImportRec> ImportList;
 
-class QmlClassNode : public InnerNode
+class QmlTypeNode : public InnerNode
 {
 public:
-    QmlClassNode(InnerNode* parent, const QString& name);
-    virtual ~QmlClassNode();
+    QmlTypeNode(InnerNode* parent, const QString& name);
+    virtual ~QmlTypeNode();
     virtual bool isQmlNode() const Q_DECL_OVERRIDE { return true; }
     virtual bool isQmlType() const Q_DECL_OVERRIDE { return true; }
     virtual bool isQtQuickNode() const Q_DECL_OVERRIDE { return (qmlModuleName() == QLatin1String("QtQuick")); }
@@ -607,8 +607,8 @@ public:
     const QString& qmlBaseName() const { return qmlBaseName_; }
     void setQmlBaseName(const QString& name) { qmlBaseName_ = name; }
     bool qmlBaseNodeNotSet() const { return (qmlBaseNode_ == 0); }
-    QmlClassNode* qmlBaseNode();
-    void setQmlBaseNode(QmlClassNode* b) { qmlBaseNode_ = b; }
+    QmlTypeNode* qmlBaseNode();
+    void setQmlBaseNode(QmlTypeNode* b) { qmlBaseNode_ = b; }
     void requireCppClass() { cnodeRequired_ = true; }
     bool cppClassRequired() const { return cnodeRequired_; }
     static void addInheritedBy(const QString& base, Node* sub);
@@ -627,7 +627,7 @@ private:
     QString             qmlBaseName_;
     QString             obsoleteLink_;
     QmlModuleNode*      qmlModule_;
-    QmlClassNode*       qmlBaseNode_;
+    QmlTypeNode*       qmlBaseNode_;
     ImportList          importList_;
 };
 
@@ -645,7 +645,7 @@ public:
 class QmlPropertyGroupNode : public InnerNode
 {
 public:
-    QmlPropertyGroupNode(QmlClassNode* parent, const QString& name);
+    QmlPropertyGroupNode(QmlTypeNode* parent, const QString& name);
     virtual ~QmlPropertyGroupNode() { }
     virtual bool isQmlNode() const Q_DECL_OVERRIDE { return true; }
     virtual bool isQtQuickNode() const Q_DECL_OVERRIDE { return parent()->isQtQuickNode(); }

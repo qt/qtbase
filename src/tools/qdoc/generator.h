@@ -101,8 +101,8 @@ public:
     static QString defaultModuleName() { return project_; }
     static void resetUseOutputSubdirs() { useOutputSubdirs_ = false; }
     static bool useOutputSubdirs() { return useOutputSubdirs_; }
-    static void setQmlTypeContext(QmlClassNode* t) { qmlTypeContext_ = t; }
-    static QmlClassNode* qmlTypeContext() { return qmlTypeContext_; }
+    static void setQmlTypeContext(QmlTypeNode* t) { qmlTypeContext_ = t; }
+    static QmlTypeNode* qmlTypeContext() { return qmlTypeContext_; }
 
 protected:
     virtual void beginSubPage(const InnerNode* node, const QString& fileName);
@@ -114,7 +114,7 @@ protected:
     virtual int generateAtom(const Atom *atom, const Node *relative, CodeMarker *marker);
     virtual void generateBody(const Node *node, CodeMarker *marker);
     virtual void generateClassLikeNode(InnerNode* inner, CodeMarker* marker);
-    virtual void generateQmlTypePage(QmlClassNode* , CodeMarker* ) { }
+    virtual void generateQmlTypePage(QmlTypeNode* , CodeMarker* ) { }
     virtual void generateQmlBasicTypePage(QmlBasicTypeNode* , CodeMarker* ) { }
     virtual void generateDocNode(DocNode* dn, CodeMarker* marker);
     virtual void generateCollectionNode(CollectionNode* cn, CodeMarker* marker);
@@ -122,8 +122,8 @@ protected:
     virtual void generateInherits(const ClassNode *classe, CodeMarker *marker);
     virtual void generateInnerNode(InnerNode* node);
     virtual void generateMaintainerList(const InnerNode* node, CodeMarker* marker);
-    virtual void generateQmlInheritedBy(const QmlClassNode* qcn, CodeMarker* marker);
-    virtual void generateQmlInherits(QmlClassNode* qcn, CodeMarker* marker);
+    virtual void generateQmlInheritedBy(const QmlTypeNode* qcn, CodeMarker* marker);
+    virtual void generateQmlInherits(QmlTypeNode* qcn, CodeMarker* marker);
     virtual bool generateQmlText(const Text& text,
                                  const Node *relative,
                                  CodeMarker *marker,
@@ -223,7 +223,7 @@ private:
     static bool qdocSingleExec_;
     static bool qdocWriteQaPages_;
     static bool useOutputSubdirs_;
-    static QmlClassNode* qmlTypeContext_;
+    static QmlTypeNode* qmlTypeContext_;
 
     void generateReimplementedFrom(const FunctionNode *func, CodeMarker *marker);
 

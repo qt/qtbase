@@ -96,7 +96,7 @@ protected:
                              const Node *relative,
                              CodeMarker *marker) Q_DECL_OVERRIDE;
     virtual void generateClassLikeNode(InnerNode* inner, CodeMarker* marker) Q_DECL_OVERRIDE;
-    virtual void generateQmlTypePage(QmlClassNode* qcn, CodeMarker* marker) Q_DECL_OVERRIDE;
+    virtual void generateQmlTypePage(QmlTypeNode* qcn, CodeMarker* marker) Q_DECL_OVERRIDE;
     virtual void generateQmlBasicTypePage(QmlBasicTypeNode* qbtn, CodeMarker* marker) Q_DECL_OVERRIDE;
     virtual void generateDocNode(DocNode* dn, CodeMarker* marker) Q_DECL_OVERRIDE;
     virtual void generateCollectionNode(CollectionNode* cn, CodeMarker* marker) Q_DECL_OVERRIDE;
@@ -139,7 +139,7 @@ private:
     void generateFooter(const Node *node = 0);
     void generateRequisites(InnerNode *inner,
                             CodeMarker *marker);
-    void generateQmlRequisites(QmlClassNode *qcn,
+    void generateQmlRequisites(QmlTypeNode *qcn,
                             CodeMarker *marker);
     void generateBrief(const Node *node,
                        CodeMarker *marker,
@@ -151,11 +151,11 @@ private:
     void generateSidebar();
     QString generateListOfAllMemberFile(const InnerNode *inner,
                                         CodeMarker *marker);
-    QString generateAllQmlMembersFile(QmlClassNode* qml_cn, CodeMarker* marker);
+    QString generateAllQmlMembersFile(QmlTypeNode* qml_cn, CodeMarker* marker);
     QString generateLowStatusMemberFile(InnerNode *inner,
                                         CodeMarker *marker,
                                         CodeMarker::Status status);
-    QString generateQmlMemberFile(QmlClassNode* qcn,
+    QString generateQmlMemberFile(QmlTypeNode* qcn,
                                   CodeMarker *marker,
                                   CodeMarker::Status status);
     void generateClassHierarchy(const Node *relative, NodeMap &classMap);
@@ -183,8 +183,8 @@ private:
     void generateDetailedQmlMember(Node *node,
                                    const InnerNode *relative,
                                    CodeMarker *marker);
-    void generateQmlInherits(QmlClassNode* qcn, CodeMarker* marker) Q_DECL_OVERRIDE;
-    void generateQmlInstantiates(QmlClassNode* qcn, CodeMarker* marker);
+    void generateQmlInherits(QmlTypeNode* qcn, CodeMarker* marker) Q_DECL_OVERRIDE;
+    void generateQmlInstantiates(QmlTypeNode* qcn, CodeMarker* marker);
     void generateInstantiatedBy(ClassNode* cn, CodeMarker* marker);
 
     void generateRequisitesTable(const QStringList& requisitesOrder, QMap<QString, Text>& requisites);

@@ -641,7 +641,7 @@ QString CodeMarker::macName(const Node *node, const QString &name)
 /*!
   Returns an empty list of documentation sections.
  */
-QList<Section> CodeMarker::qmlSections(QmlClassNode* , SynopsisStyle , Status )
+QList<Section> CodeMarker::qmlSections(QmlTypeNode* , SynopsisStyle , Status )
 {
     return QList<Section>();
 }

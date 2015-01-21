@@ -177,10 +177,10 @@ class QDocForest
         return 0;
     }
 
-    QmlClassNode* lookupQmlType(const QString& name)
+    QmlTypeNode* lookupQmlType(const QString& name)
     {
         foreach (Tree* t, searchOrder()) {
-            QmlClassNode* qcn = t->lookupQmlType(name);
+            QmlTypeNode* qcn = t->lookupQmlType(name);
             if (qcn)
                 return qcn;
         }
@@ -255,9 +255,9 @@ class QDocDatabase
     void addExampleNode(ExampleNode* n) { primaryTree()->addExampleNode(n); }
     ExampleNodeMap& exampleNodeMap() { return primaryTree()->exampleNodeMap(); }
 
-    QmlClassNode* findQmlType(const QString& name);
-    QmlClassNode* findQmlType(const QString& qmid, const QString& name);
-    QmlClassNode* findQmlType(const ImportRec& import, const QString& name);
+    QmlTypeNode* findQmlType(const QString& name);
+    QmlTypeNode* findQmlType(const QString& qmid, const QString& name);
+    QmlTypeNode* findQmlType(const ImportRec& import, const QString& name);
 
  private:
     void findAllClasses(InnerNode *node);

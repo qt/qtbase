@@ -628,14 +628,14 @@ QString Node::guid() const
   If it is a child of a QML class node, return a pointer to
   the QML class node. Otherwise, return 0;
  */
-QmlClassNode* Node::qmlClassNode()
+QmlTypeNode* Node::qmlClassNode()
 {
     if (isQmlNode()) {
         Node* n = this;
         while (n && !n->isQmlType())
             n = n->parent();
         if (n && n->isQmlType())
-            return static_cast<QmlClassNode*>(n);
+            return static_cast<QmlTypeNode*>(n);
     }
     return 0;
 }
@@ -649,7 +649,7 @@ QmlClassNode* Node::qmlClassNode()
  */
 ClassNode* Node::declarativeCppNode()
 {
-    QmlClassNode* qcn = qmlClassNode();
+    QmlTypeNode* qcn = qmlClassNode();
     if (qcn)
         return qcn->classNode();
     return 0;
@@ -1614,9 +1614,9 @@ PropertyNode* ClassNode::findPropertyNode(const QString& name)
   finds one, it returns the pointer to that QML element. If
   it doesn't find one, it returns null.
  */
-QmlClassNode* ClassNode::findQmlBaseNode()
+QmlTypeNode* ClassNode::findQmlBaseNode()
 {
-    QmlClassNode* result = 0;
+    QmlTypeNode* result = 0;
     const QList<RelatedClass>& bases = baseClasses();
 
     if (!bases.isEmpty()) {
@@ -2133,14 +2133,14 @@ QString PropertyNode::qualifiedDataType() const
     }
 }
 
-bool QmlClassNode::qmlOnly = false;
-QMultiMap<QString,Node*> QmlClassNode::inheritedBy;
+bool QmlTypeNode::qmlOnly = false;
+QMultiMap<QString,Node*> QmlTypeNode::inheritedBy;
 
 /*!
   Constructs a Qml class node. The new node has the given
   \a parent and \a name.
  */
-QmlClassNode::QmlClassNode(InnerNode *parent, const QString& name)
+QmlTypeNode::QmlTypeNode(InnerNode *parent, const QString& name)
     : InnerNode(QmlType, parent, name),
       abstract_(false),
       cnodeRequired_(false),
@@ -2161,7 +2161,7 @@ QmlClassNode::QmlClassNode(InnerNode *parent, const QString& name)
 /*!
   Needed for printing a debug messages.
  */
-QmlClassNode::~QmlClassNode()
+QmlTypeNode::~QmlTypeNode()
 {
     // nothing.
 }
@@ -2170,7 +2170,7 @@ QmlClassNode::~QmlClassNode()
   Clear the static maps so that subsequent runs don't try to use
   contents from a previous run.
  */
-void QmlClassNode::terminate()
+void QmlTypeNode::terminate()
 {
     inheritedBy.clear();
 }
@@ -2179,7 +2179,7 @@ void QmlClassNode::terminate()
   Record the fact that QML class \a base is inherited by
   QML class \a sub.
  */
-void QmlClassNode::addInheritedBy(const QString& base, Node* sub)
+void QmlTypeNode::addInheritedBy(const QString& base, Node* sub)
 {
     if (inheritedBy.constFind(base,sub) == inheritedBy.constEnd()) {
         inheritedBy.insert(base,sub);
@@ -2189,7 +2189,7 @@ void QmlClassNode::addInheritedBy(const QString& base, Node* sub)
 /*!
   Loads the list \a subs with the nodes of all the subclasses of \a base.
  */
-void QmlClassNode::subclasses(const QString& base, NodeList& subs)
+void QmlTypeNode::subclasses(const QString& base, NodeList& subs)
 {
     subs.clear();
     if (inheritedBy.count(base) > 0) {
@@ -2220,7 +2220,7 @@ void QmlModuleNode::setQmlModuleInfo(const QString& arg)
     }
 }
 
-QmlClassNode* QmlClassNode::qmlBaseNode()
+QmlTypeNode* QmlTypeNode::qmlBaseNode()
 {
     if (!qmlBaseNode_ && !qmlBaseName_.isEmpty()) {
         qmlBaseNode_ = QDocDatabase::qdocDB()->findQmlType(qmlBaseName_);
@@ -2233,7 +2233,7 @@ QmlClassNode* QmlClassNode::qmlBaseNode()
   return the fully qualified name of that QML
   type, i.e. <QML-module-name>::<QML-type-name>.
  */
-QString QmlClassNode::qmlFullBaseName() const
+QString QmlTypeNode::qmlFullBaseName() const
 {
     QString result;
     if (qmlBaseNode_) {
@@ -2247,7 +2247,7 @@ QString QmlClassNode::qmlFullBaseName() const
   module name from the QML module node. Otherwise, return the
   empty string.
  */
-QString QmlClassNode::qmlModuleName() const
+QString QmlTypeNode::qmlModuleName() const
 {
     return (qmlModule_ ? qmlModule_->qmlModuleName() : QString());
 }
@@ -2257,7 +2257,7 @@ QString QmlClassNode::qmlModuleName() const
   module version from the QML module node. Otherwise, return
   the empty string.
  */
-QString QmlClassNode::qmlModuleVersion() const
+QString QmlTypeNode::qmlModuleVersion() const
 {
     return (qmlModule_ ? qmlModule_->qmlModuleVersion() : QString());
 }
@@ -2267,7 +2267,7 @@ QString QmlClassNode::qmlModuleVersion() const
   module identifier from the QML module node. Otherwise, return
   the empty string.
  */
-QString QmlClassNode::qmlModuleIdentifier() const
+QString QmlTypeNode::qmlModuleIdentifier() const
 {
     return (qmlModule_ ? qmlModule_->qmlModuleIdentifier() : QString());
 }
@@ -2285,9 +2285,9 @@ QmlBasicTypeNode::QmlBasicTypeNode(InnerNode *parent,
 
 /*!
   Constructor for the Qml property group node. \a parent is
-  always a QmlClassNode.
+  always a QmlTypeNode.
  */
-QmlPropertyGroupNode::QmlPropertyGroupNode(QmlClassNode* parent, const QString& name)
+QmlPropertyGroupNode::QmlPropertyGroupNode(QmlTypeNode* parent, const QString& name)
     : InnerNode(QmlPropertyGroup, parent, name)
 {
     idNumber_ = -1;
@@ -2347,7 +2347,7 @@ bool QmlPropertyNode::isWritable()
     if (readOnly_ != FlagValueDefault)
         return !fromFlagValue(readOnly_, false);
 
-    QmlClassNode* qcn = qmlClassNode();
+    QmlTypeNode* qcn = qmlClassNode();
     if (qcn) {
         if (qcn->cppClassRequired()) {
             if (qcn->classNode()) {
@@ -2381,7 +2381,7 @@ PropertyNode* QmlPropertyNode::findCorrespondingCppProperty()
     while (n && !n->isQmlType())
         n = n->parent();
     if (n) {
-        QmlClassNode* qcn = static_cast<QmlClassNode*>(n);
+        QmlTypeNode* qcn = static_cast<QmlTypeNode*>(n);
         ClassNode* cn = qcn->classNode();
         if (cn) {
             /*

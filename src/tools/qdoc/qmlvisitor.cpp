@@ -371,9 +371,9 @@ void QmlDocVisitor::applyMetacommands(QQmlJS::AST::SourceLocation,
                 if (node->name() == args[0].first)
                     doc.location().warning(tr("%1 tries to inherit itself").arg(args[0].first));
                 else if (node->isQmlType()) {
-                    QmlClassNode *qmlClass = static_cast<QmlClassNode*>(node);
+                    QmlTypeNode *qmlClass = static_cast<QmlTypeNode*>(node);
                     qmlClass->setQmlBaseName(args[0].first);
-                    QmlClassNode::addInheritedBy(args[0].first,node);
+                    QmlTypeNode::addInheritedBy(args[0].first,node);
                 }
             }
             else if (command == COMMAND_QMLDEFAULT) {
@@ -452,12 +452,12 @@ bool QmlDocVisitor::visit(QQmlJS::AST::UiObjectDefinition *definition)
     nestingLevel++;
 
     if (current->type() == Node::Namespace) {
-        QmlClassNode *component = new QmlClassNode(current, name);
+        QmlTypeNode *component = new QmlTypeNode(current, name);
         component->setTitle(name);
         component->setImportList(importList);
         importList.clear();
         if (applyDocumentation(definition->firstSourceLocation(), component)) {
-            QmlClassNode::addInheritedBy(type, component);
+            QmlTypeNode::addInheritedBy(type, component);
             component->setQmlBaseName(type);
         }
         current = component;
@@ -533,7 +533,7 @@ bool QmlDocVisitor::visit(QQmlJS::AST::UiPublicMember *member)
     case QQmlJS::AST::UiPublicMember::Signal:
     {
         if (current->isQmlType()) {
-            QmlClassNode *qmlClass = static_cast<QmlClassNode *>(current);
+            QmlTypeNode *qmlClass = static_cast<QmlTypeNode *>(current);
             if (qmlClass) {
 
                 QString name = member->name.toString();
@@ -556,7 +556,7 @@ bool QmlDocVisitor::visit(QQmlJS::AST::UiPublicMember *member)
         QString type = member->memberType.toString();
         QString name = member->name.toString();
         if (current->isQmlType()) {
-            QmlClassNode *qmlClass = static_cast<QmlClassNode *>(current);
+            QmlTypeNode *qmlClass = static_cast<QmlTypeNode *>(current);
             if (qmlClass) {
                 QString name = member->name.toString();
                 QmlPropertyNode* qmlPropNode = qmlClass->hasQmlProperty(name);
@@ -600,7 +600,7 @@ bool QmlDocVisitor::visit(QQmlJS::AST::FunctionDeclaration* fd)
         return true;
     }
     if (current->isQmlType()) {
-        QmlClassNode* qmlClass = static_cast<QmlClassNode*>(current);
+        QmlTypeNode* qmlClass = static_cast<QmlTypeNode*>(current);
         if (qmlClass) {
             QString name = fd->name.toString();
             FunctionNode* qmlMethod = new FunctionNode(Node::QmlMethod, current, name, false);
@@ -655,7 +655,7 @@ bool QmlDocVisitor::visit(QQmlJS::AST::UiScriptBinding* )
     if (current->isQmlType()) {
         QString handler = sb->qualifiedId->name.toString();
         if (handler.length() > 2 && handler.startsWith("on") && handler.at(2).isUpper()) {
-            QmlClassNode* qmlClass = static_cast<QmlClassNode*>(current);
+            QmlTypeNode* qmlClass = static_cast<QmlTypeNode*>(current);
             if (qmlClass) {
                 FunctionNode* qmlSH = new FunctionNode(Node::QmlSignalHandler,current,handler,false);
                 applyDocumentation(sb->firstSourceLocation(), qmlSH);

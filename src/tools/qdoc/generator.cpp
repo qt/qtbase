@@ -95,7 +95,7 @@ Generator::QDocPass Generator::qdocPass_ = Generator::Neither;
 bool Generator::qdocSingleExec_ = false;
 bool Generator::qdocWriteQaPages_ = false;
 bool Generator::useOutputSubdirs_ = true;
-QmlClassNode* Generator::qmlTypeContext_ = 0;
+QmlTypeNode* Generator::qmlTypeContext_ = 0;
 
 void Generator::startDebugging(const QString& message)
 {
@@ -963,9 +963,6 @@ void Generator::generateInherits(const ClassNode *classe, CodeMarker *marker)
 
 /*!
   Recursive writing of HTML files from the root \a node.
-
-  \note DitaXmlGenerator overrides this function, but
-  HtmlGenerator does not.
  */
 void Generator::generateInnerNode(InnerNode* node)
 {
@@ -1003,7 +1000,7 @@ void Generator::generateInnerNode(InnerNode* node)
         }
         if (node->isQmlType()) {
             beginSubPage(node, fileName(node));
-            QmlClassNode* qcn = static_cast<QmlClassNode*>(node);
+            QmlTypeNode* qcn = static_cast<QmlTypeNode*>(node);
             generateQmlTypePage(qcn, marker);
             endSubPage();
         }
@@ -1084,12 +1081,12 @@ void Generator::generateMaintainerList(const InnerNode* node, CodeMarker* marker
   Output the "Inherit by" list for the QML element,
   if it is inherited by any other elements.
  */
-void Generator::generateQmlInheritedBy(const QmlClassNode* qcn,
+void Generator::generateQmlInheritedBy(const QmlTypeNode* qcn,
                                               CodeMarker* marker)
 {
     if (qcn) {
         NodeList subs;
-        QmlClassNode::subclasses(qcn->name(),subs);
+        QmlTypeNode::subclasses(qcn->name(),subs);
         if (!subs.isEmpty()) {
             Text text;
             text << Atom::ParaLeft << "Inherited by ";
@@ -1102,7 +1099,7 @@ void Generator::generateQmlInheritedBy(const QmlClassNode* qcn,
 
 /*!
  */
-void Generator::generateQmlInherits(QmlClassNode* , CodeMarker* )
+void Generator::generateQmlInherits(QmlTypeNode* , CodeMarker* )
 {
     // stub.
 }
@@ -1924,7 +1921,7 @@ void Generator::terminate()
     imageFiles.clear();
     imageDirs.clear();
     outDir_.clear();
-    QmlClassNode::terminate();
+    QmlTypeNode::terminate();
 }
 
 void Generator::terminateGenerator()

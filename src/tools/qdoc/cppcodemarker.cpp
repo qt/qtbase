@@ -1085,7 +1085,7 @@ QString CppCodeMarker::addMarkUp(const QString &in,
   the list of documentation sections for the children of the
   \a qmlClassNode.
  */
-QList<Section> CppCodeMarker::qmlSections(QmlClassNode* qmlClassNode, SynopsisStyle style, Status status)
+QList<Section> CppCodeMarker::qmlSections(QmlTypeNode* qmlClassNode, SynopsisStyle style, Status status)
 {
     QList<Section> sections;
     if (qmlClassNode) {
@@ -1126,7 +1126,7 @@ QList<Section> CppCodeMarker::qmlSections(QmlClassNode* qmlClassNode, SynopsisSt
                                            "method",
                                            "methods");
 
-            QmlClassNode* qcn = qmlClassNode;
+            QmlTypeNode* qcn = qmlClassNode;
             while (qcn != 0) {
                 NodeList::ConstIterator c = qcn->childNodes().constBegin();
                 while (c != qcn->childNodes().constEnd()) {
@@ -1165,7 +1165,7 @@ QList<Section> CppCodeMarker::qmlSections(QmlClassNode* qmlClassNode, SynopsisSt
                     ++c;
                 }
                 if (qcn->qmlBaseNode() != 0) {
-                    qcn = static_cast<QmlClassNode*>(qcn->qmlBaseNode());
+                    qcn = static_cast<QmlTypeNode*>(qcn->qmlBaseNode());
                     if (!qcn->isAbstract())
                         qcn = 0;
                 }
@@ -1191,7 +1191,7 @@ QList<Section> CppCodeMarker::qmlSections(QmlClassNode* qmlClassNode, SynopsisSt
             FastSection qmlmethods(qmlClassNode,"Method Documentation","qmlmeth","member","members");
             FastSection qmlattachedmethods(qmlClassNode,"Attached Method Documentation","qmlattmeth",
                                            "member","members");
-            QmlClassNode* qcn = qmlClassNode;
+            QmlTypeNode* qcn = qmlClassNode;
             while (qcn != 0) {
                 NodeList::ConstIterator c = qcn->childNodes().constBegin();
                 while (c != qcn->childNodes().constEnd()) {
@@ -1229,7 +1229,7 @@ QList<Section> CppCodeMarker::qmlSections(QmlClassNode* qmlClassNode, SynopsisSt
                     ++c;
                 }
                 if (qcn->qmlBaseNode() != 0) {
-                    qcn = static_cast<QmlClassNode*>(qcn->qmlBaseNode());
+                    qcn = static_cast<QmlTypeNode*>(qcn->qmlBaseNode());
                     if (!qcn->isAbstract())
                         qcn = 0;
                 }
@@ -1251,7 +1251,7 @@ QList<Section> CppCodeMarker::qmlSections(QmlClassNode* qmlClassNode, SynopsisSt
              */
             ClassMap* classMap = 0;
             FastSection all(qmlClassNode,QString(),QString(),"member","members");
-            QmlClassNode* current = qmlClassNode;
+            QmlTypeNode* current = qmlClassNode;
             while (current != 0) {
                 /*
                   If the QML type is abstract, do not create

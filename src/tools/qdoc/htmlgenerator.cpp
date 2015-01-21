@@ -1530,7 +1530,7 @@ void HtmlGenerator::generateClassLikeNode(InnerNode* inner, CodeMarker* marker)
   Generate the HTML page for a QML type. \qcn is the QML type.
   \marker is the code markeup object.
  */
-void HtmlGenerator::generateQmlTypePage(QmlClassNode* qcn, CodeMarker* marker)
+void HtmlGenerator::generateQmlTypePage(QmlTypeNode* qcn, CodeMarker* marker)
 {
     Generator::setQmlTypeContext(qcn);
     SubTitleSize subTitleSize = LargeSubTitle;
@@ -2218,7 +2218,7 @@ void HtmlGenerator::generateRequisites(InnerNode *inner, CodeMarker *marker)
 Lists the required imports and includes in a table.
 The number of rows is known, so this path is simpler than the generateSection() path.
 */
-void HtmlGenerator::generateQmlRequisites(QmlClassNode *qcn, CodeMarker *marker)
+void HtmlGenerator::generateQmlRequisites(QmlTypeNode *qcn, CodeMarker *marker)
 {
     if (!qcn)
         return;
@@ -2280,7 +2280,7 @@ void HtmlGenerator::generateQmlRequisites(QmlClassNode *qcn, CodeMarker *marker)
     }
 
     //add the inherits to the map
-    QmlClassNode* base = qcn->qmlBaseNode();
+    QmlTypeNode* base = qcn->qmlBaseNode();
     while (base && base->isInternal()) {
         base = base->qmlBaseNode();
     }
@@ -2297,7 +2297,7 @@ void HtmlGenerator::generateQmlRequisites(QmlClassNode *qcn, CodeMarker *marker)
 
     //add the inherited-by to the map
     NodeList subs;
-    QmlClassNode::subclasses(qcn->name(), subs);
+    QmlTypeNode::subclasses(qcn->name(), subs);
     if (!subs.isEmpty()) {
         text.clear();
         text << Atom::ParaLeft;
@@ -2541,7 +2541,7 @@ QString HtmlGenerator::generateListOfAllMemberFile(const InnerNode *inner,
   the members of QML class \a qml_cn, including the inherited
   members. The \a marker is used for formatting stuff.
  */
-QString HtmlGenerator::generateAllQmlMembersFile(QmlClassNode* qml_cn, CodeMarker* marker)
+QString HtmlGenerator::generateAllQmlMembersFile(QmlTypeNode* qml_cn, CodeMarker* marker)
 {
     QList<Section> sections;
     QList<Section>::ConstIterator s;
@@ -2564,7 +2564,7 @@ QString HtmlGenerator::generateAllQmlMembersFile(QmlClassNode* qml_cn, CodeMarke
     if (!cknl.isEmpty()) {
         for (int i=0; i<cknl.size(); i++) {
             ClassKeysNodes* ckn = cknl[i];
-            const QmlClassNode* qcn = ckn->first;
+            const QmlTypeNode* qcn = ckn->first;
             KeysAndNodes& kn = ckn->second;
             QStringList& keys = kn.first;
             NodeList& nodes = kn.second;
@@ -2690,7 +2690,7 @@ QString HtmlGenerator::generateLowStatusMemberFile(InnerNode *inner,
   Note that this function currently only handles correctly the
   case where \a status is \c {CodeMarker::Obsolete}.
  */
-QString HtmlGenerator::generateQmlMemberFile(QmlClassNode* qcn,
+QString HtmlGenerator::generateQmlMemberFile(QmlTypeNode* qcn,
                                              CodeMarker *marker,
                                              CodeMarker::Status status)
 {
@@ -4345,11 +4345,11 @@ void HtmlGenerator::generateDetailedQmlMember(Node *node,
   Output the "Inherits" line for the QML element,
   if there should be one.
  */
-void HtmlGenerator::generateQmlInherits(QmlClassNode* qcn, CodeMarker* marker)
+void HtmlGenerator::generateQmlInherits(QmlTypeNode* qcn, CodeMarker* marker)
 {
     if (!qcn)
         return;
-    QmlClassNode* base = qcn->qmlBaseNode();
+    QmlTypeNode* base = qcn->qmlBaseNode();
     while (base && base->isInternal()) {
         base = base->qmlBaseNode();
     }
@@ -4372,7 +4372,7 @@ void HtmlGenerator::generateQmlInherits(QmlClassNode* qcn, CodeMarker* marker)
   If there is no class node, or if the class node status
   is set to Node::Internal, do nothing.
  */
-void HtmlGenerator::generateQmlInstantiates(QmlClassNode* qcn, CodeMarker* marker)
+void HtmlGenerator::generateQmlInstantiates(QmlTypeNode* qcn, CodeMarker* marker)
 {
     ClassNode* cn = qcn->classNode();
     if (cn && (cn->status() != Node::Internal)) {
@@ -4409,7 +4409,7 @@ void HtmlGenerator::generateQmlInstantiates(QmlClassNode* qcn, CodeMarker* marke
 void HtmlGenerator::generateInstantiatedBy(ClassNode* cn, CodeMarker* marker)
 {
     if (cn &&  cn->status() != Node::Internal && cn->qmlElement() != 0) {
-        const QmlClassNode* qcn = cn->qmlElement();
+        const QmlTypeNode* qcn = cn->qmlElement();
         Text text;
         text << Atom::ParaLeft;
         text << Atom(Atom::LinkNode,CodeMarker::stringForNode(cn));

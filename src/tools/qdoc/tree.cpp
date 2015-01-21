@@ -188,7 +188,7 @@ FunctionNode* Tree::findFunctionNode(const QStringList& parentPath, const Functi
   at the root of the tree. Only a Qml type node named <\a path is
   acceptible. If one is not found, 0 is returned.
  */
-QmlClassNode* Tree::findQmlTypeNode(const QStringList& path)
+QmlTypeNode* Tree::findQmlTypeNode(const QStringList& path)
 {
     /*
       If the path contains one or two double colons ("::"),
@@ -199,11 +199,11 @@ QmlClassNode* Tree::findQmlTypeNode(const QStringList& path)
       class node.
     */
     if (path.size() >= 2 && !path[0].isEmpty()) {
-        QmlClassNode* qcn = qdb_->findQmlType(path[0], path[1]);
+        QmlTypeNode* qcn = qdb_->findQmlType(path[0], path[1]);
         if (qcn)
             return qcn;
     }
-    return static_cast<QmlClassNode*>(findNodeRecursive(path, 0, root(), Node::QmlType));
+    return static_cast<QmlTypeNode*>(findNodeRecursive(path, 0, root(), Node::QmlType));
 }
 
 /*!
@@ -221,12 +221,12 @@ const FunctionNode* Tree::findFunctionNode(const QStringList& path,
 {
     if (path.size() == 3 && !path[0].isEmpty() &&
         ((genus == Node::QML) || (genus == Node::DontCare))) {
-        QmlClassNode* qcn = lookupQmlType(QString(path[0] + "::" + path[1]));
+        QmlTypeNode* qcn = lookupQmlType(QString(path[0] + "::" + path[1]));
         if (!qcn) {
             QStringList p(path[1]);
             Node* n = findNodeByNameAndType(p, Node::QmlType);
             if (n && n->isQmlType())
-                qcn = static_cast<QmlClassNode*>(n);
+                qcn = static_cast<QmlTypeNode*>(n);
         }
         if (qcn)
             return static_cast<const FunctionNode*>(qcn->findFunctionNode(path[2]));
@@ -490,7 +490,7 @@ void Tree::resolveCppToQmlLinks()
 
     foreach (Node* child, root_.childNodes()) {
         if (child->isQmlType()) {
-            QmlClassNode* qcn = static_cast<QmlClassNode*>(child);
+            QmlTypeNode* qcn = static_cast<QmlTypeNode*>(child);
             ClassNode* cn = const_cast<ClassNode*>(qcn->classNode());
             if (cn)
                 cn->setQmlElement(qcn);
@@ -731,7 +731,7 @@ const Node* Tree::findNodeForTarget(const QStringList& path,
     int path_idx = 0;
     if (((genus == Node::QML) || (genus == Node::DontCare)) &&
         (path.size() >= 2) && !path[0].isEmpty()) {
-        QmlClassNode* qcn = lookupQmlType(QString(path[0] + "::" + path[1]));
+        QmlTypeNode* qcn = lookupQmlType(QString(path[0] + "::" + path[1]));
         if (qcn) {
             current = qcn;
             if (path.size() == 2) {
@@ -876,7 +876,7 @@ const Node* Tree::findNode(const QStringList& path,
         */
         if (((genus == Node::QML) || (genus == Node::DontCare)) &&
             (path.size() >= 2) && !path[0].isEmpty()) {
-            QmlClassNode* qcn = lookupQmlType(QString(path[0] + "::" + path[1]));
+            QmlTypeNode* qcn = lookupQmlType(QString(path[0] + "::" + path[1]));
             if (qcn) {
                 node = qcn;
                 if (path.size() == 2)
@@ -1374,7 +1374,7 @@ QmlModuleNode* Tree::addToQmlModule(const QString& name, Node* node)
     qmn->addMember(node);
     node->setQmlModule(qmn);
     if (node->isQmlType()) {
-        QmlClassNode* n = static_cast<QmlClassNode*>(node);
+        QmlTypeNode* n = static_cast<QmlTypeNode*>(node);
         for (int i=0; i<qmid.size(); ++i) {
             QString key = qmid[i] + "::" + node->name();
             insertQmlType(key, n);
@@ -1387,7 +1387,7 @@ QmlModuleNode* Tree::addToQmlModule(const QString& name, Node* node)
   If the QML type map does not contain \a key, insert node
   \a n with the specified \a key.
  */
-void Tree::insertQmlType(const QString& key, QmlClassNode* n)
+void Tree::insertQmlType(const QString& key, QmlTypeNode* n)
 {
     if (!qmlTypeMap_.contains(key))
         qmlTypeMap_.insert(key,n);
@@ -1396,8 +1396,6 @@ void Tree::insertQmlType(const QString& key, QmlClassNode* n)
 /*!
   Split \a target on "::" and find the function node with that
   path.
-
-  Called in HtmlGenerator, DitaXmlGenerator, and QdocDatabase.
  */
 const Node* Tree::findFunctionNode(const QString& target, const Node* relative, Node::Genus genus)
 {

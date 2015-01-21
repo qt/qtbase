@@ -81,7 +81,7 @@ struct TargetLoc
 
 typedef QMultiMap<QString, TargetRec*> TargetMap;
 typedef QMultiMap<QString, DocNode*> DocNodeMultiMap;
-typedef QMap<QString, QmlClassNode*> QmlTypeMap;
+typedef QMap<QString, QmlTypeNode*> QmlTypeMap;
 typedef QMultiMap<QString, const ExampleNode*> ExampleNodeMap;
 typedef QVector<TargetLoc*> TargetList;
 typedef QMap<QString, TargetList*> TargetListMap;
@@ -132,7 +132,7 @@ class Tree
                          int findFlags,            // = 0,
                          Node::Genus genus) const; // = Node::DontCare) const;
 
-    QmlClassNode* findQmlTypeNode(const QStringList& path);
+    QmlTypeNode* findQmlTypeNode(const QStringList& path);
 
     Node* findNodeByNameAndType(const QStringList& path, Node::Type type) const;
     InnerNode* findRelatesNode(const QStringList& path);
@@ -196,8 +196,8 @@ class Tree
     ModuleNode* addToModule(const QString& name, Node* node);
     QmlModuleNode* addToQmlModule(const QString& name, Node* node);
 
-    QmlClassNode* lookupQmlType(const QString& name) const { return qmlTypeMap_.value(name); }
-    void insertQmlType(const QString& key, QmlClassNode* n);
+    QmlTypeNode* lookupQmlType(const QString& name) const { return qmlTypeMap_.value(name); }
+    void insertQmlType(const QString& key, QmlTypeNode* n);
     void addExampleNode(ExampleNode* n) { exampleNodeMap_.insert(n->title(), n); }
     ExampleNodeMap& exampleNodeMap() { return exampleNodeMap_; }
     const Node* checkForCollision(const QString& name);

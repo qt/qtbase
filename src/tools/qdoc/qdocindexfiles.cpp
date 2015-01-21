@@ -208,7 +208,7 @@ void QDocIndexFiles::readIndexSection(const QDomElement& element,
         node->setAbstract(abstract);
     }
     else if (element.nodeName() == "qmlclass") {
-        QmlClassNode* qcn = new QmlClassNode(parent, name);
+        QmlTypeNode* qcn = new QmlTypeNode(parent, name);
         qcn->setTitle(element.attribute("title"));
         QString qmlModuleName = element.attribute("qml-module-name");
         if (!qmlModuleName.isEmpty())
@@ -241,7 +241,7 @@ void QDocIndexFiles::readIndexSection(const QDomElement& element,
         node = qbtn;
     }
     else if (element.nodeName() == "qmlpropertygroup") {
-        QmlClassNode* qcn = static_cast<QmlClassNode*>(parent);
+        QmlTypeNode* qcn = static_cast<QmlTypeNode*>(parent);
         QmlPropertyGroupNode* qpgn = new QmlPropertyGroupNode(qcn, name);
         if (element.hasAttribute("location"))
             name = element.attribute("location", QString());
@@ -261,7 +261,7 @@ void QDocIndexFiles::readIndexSection(const QDomElement& element,
             readonly = true;
         QmlPropertyNode* qpn = 0;
         if (parent->isQmlType()) {
-            QmlClassNode* qcn = static_cast<QmlClassNode*>(parent);
+            QmlTypeNode* qcn = static_cast<QmlTypeNode*>(parent);
             qpn = new QmlPropertyNode(qcn, name, type, attached);
         }
         else if (parent->isQmlPropertyGroup()) {
@@ -881,7 +881,7 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
         break;
     case Node::QmlType:
         {
-            const QmlClassNode* qcn = static_cast<const QmlClassNode*>(node);
+            const QmlTypeNode* qcn = static_cast<const QmlTypeNode*>(node);
             writer.writeAttribute("title", qcn->title());
             writer.writeAttribute("fulltitle", qcn->fullTitle());
             writer.writeAttribute("subtitle", qcn->subTitle());

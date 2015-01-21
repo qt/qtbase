@@ -594,7 +594,6 @@ int main(int argc, char **argv)
     QmlCodeMarker qmlMarker;
 
     HtmlGenerator htmlGenerator;
-    //DitaXmlGenerator ditaxmlGenerator;
 
     QCommandLineParser parser;
     parser.setApplicationDescription(QCoreApplication::translate("qdoc", "Qt documentation generator"));
