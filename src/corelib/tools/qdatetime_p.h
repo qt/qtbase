@@ -126,14 +126,14 @@ public:
     void refreshDateTime();
 
     // Get/set date and time status
-    inline bool isNullDate() const { return (m_status & NullDate) == NullDate; }
-    inline bool isNullTime() const { return (m_status & NullTime) == NullTime; }
-    inline bool isValidDate() const { return (m_status & ValidDate) == ValidDate; }
-    inline bool isValidTime() const { return (m_status & ValidTime) == ValidTime; }
-    inline bool isValidDateTime() const { return (m_status & ValidDateTime) == ValidDateTime; }
+    inline bool isNullDate() const { return m_status & NullDate; }
+    inline bool isNullTime() const { return m_status & NullTime; }
+    inline bool isValidDate() const { return m_status & ValidDate; }
+    inline bool isValidTime() const { return m_status & ValidTime; }
+    inline bool isValidDateTime() const { return m_status & ValidDateTime; }
     inline void setValidDateTime() { m_status = m_status | ValidDateTime; }
     inline void clearValidDateTime() { m_status = m_status & ~ValidDateTime; }
-    inline bool isTimeZoneCached() const { return (m_status & TimeZoneCached) == TimeZoneCached; }
+    inline bool isTimeZoneCached() const { return m_status & TimeZoneCached; }
     inline void setTimeZoneCached() { m_status = m_status | TimeZoneCached; }
     inline void clearTimeZoneCached() { m_status = m_status & ~TimeZoneCached; }
     inline void clearSetToDaylightStatus() { m_status = m_status & ~SetToStandardTime & ~SetToDaylightTime; }
