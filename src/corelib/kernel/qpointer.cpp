@@ -55,7 +55,7 @@
 
     \li When using QPointer on a QWidget (or a subclass of QWidget), previously
     the QPointer would be cleared by the QWidget destructor. Now, the QPointer
-    is cleared by the QObject destructor (since this is when QWeakPointers are
+    is cleared by the QObject destructor (since this is when QWeakPointer objects are
     cleared). Any QPointers tracking a widget will \b NOT be cleared before the
     QWidget destructor destroys the children for the widget being tracked.
 

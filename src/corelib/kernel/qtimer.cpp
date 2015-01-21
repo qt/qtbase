@@ -91,7 +91,7 @@ QT_BEGIN_NAMESPACE
     its work. This is the traditional way of implementing heavy work
     in GUI applications, but as multithreading is nowadays becoming available on
     more and more platforms, we expect that zero-millisecond
-    QTimers will gradually be replaced by \l{QThread}s.
+    QTimer objects will gradually be replaced by \l{QThread}s.
 
     \section1 Accuracy and Timer Resolution
 

@@ -2399,7 +2399,7 @@ Q_GLOBAL_STATIC_WITH_ARGS(QMutex, libraryPathMutex, (QMutex::Recursive))
     INSTALL/plugins, where \c INSTALL is the directory where Qt was
     installed).  The directory of the application executable (NOT the
     working directory) is always added, as well as the colon separated
-    entries of the QT_PLUGIN_PATH environment variable.
+    entries of the \c QT_PLUGIN_PATH environment variable.
 
     If you want to iterate over the list, you can use the \l foreach
     pseudo-keyword:
@@ -2544,7 +2544,7 @@ void QCoreApplication::removeLibraryPath(const QString &path)
     \note Native event filters will be disabled when the application the
     Qt::AA_MacPluginApplication attribute is set.
 
-    For maximum portability, you should always try to use QEvents
+    For maximum portability, you should always try to use QEvent
     and QObject::installEventFilter() whenever possible.
 
     \sa QObject::installEventFilter()

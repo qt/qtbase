@@ -197,7 +197,7 @@ Q_GLOBAL_STATIC(QStringList, resourceSearchPaths)
     path requested in setFileName().
 
     The unregisterResource() function removes a reference to a particular
-    file. If there are QResources that currently reference resources related
+    file. If there are QResource objects that currently reference resources related
     to the unregistered file, they will continue to be valid but the resource
     file itself will be removed from the resource roots, and thus no further
     QResource can be created pointing into this resource data. The resource

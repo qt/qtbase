@@ -74,6 +74,20 @@ QT_BEGIN_NAMESPACE
     conversions. This implies that converting to a type that is not stored in the value will return a default
     constructed return value.
 
+    \section1 QJsonValueRef
+
+    QJsonValueRef is a helper class for QJsonArray and QJsonObject.
+    When you get an object of type QJsonValueRef, you can
+    use it as if it were a reference to a QJsonValue. If you assign to it,
+    the assignment will apply to the element in the QJsonArray or QJsonObject
+    from which you got the reference.
+
+    The following methods return QJsonValueRef:
+    \list
+    \li \l {QJsonArray}::operator[](int i)
+    \li \l {QJsonObject}::operator[](const QString & key) const
+    \endlist
+
     \sa {JSON Support in Qt}, {JSON Save Game Example}
 */
 
@@ -416,13 +430,13 @@ QJsonValue QJsonValue::fromVariant(const QVariant &variant)
 
     The QJsonValue types will be converted as follows:
 
-    \value Null     {QVariant::}{QVariant()}
+    \value Null     \l {QVariant::}{QVariant()}
     \value Bool     QMetaType::Bool
     \value Double   QMetaType::Double
     \value String   QString
     \value Array    QVariantList
     \value Object   QVariantMap
-    \value Undefined {QVariant::}{QVariant()}
+    \value Undefined \l {QVariant::}{QVariant()}
 
     \sa fromVariant()
  */

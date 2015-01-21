@@ -498,7 +498,7 @@
     \value TextExpandTabs Makes the U+0009 (ASCII tab) character move to
            the next tab stop.
     \value TextShowMnemonic Displays the string "\&P" as \underline{P}
-           (see QButton for an example). For an ampersand, use "\&\&".
+           For an ampersand, use "\&\&".
     \value TextWordWrap Breaks lines at appropriate points, e.g. at word
            boundaries.
     \value TextWrapAnywhere Breaks lines anywhere, even within words.
@@ -902,8 +902,7 @@
     on QWidget::contentsRect(). This is set by the widget's author.
 
     \value WA_LayoutUsesWidgetRect Ignore the layout item rect from the style
-    when laying out this widget with QLayout. This makes a difference in
-    QMacStyle and QPlastiqueStyle for some widgets.
+    when laying out this widget with QLayout.
 
     \value WA_MacNoClickThrough When a widget that has this attribute set
     is clicked, and its window is inactive, the click will make the window
@@ -1162,7 +1161,7 @@
     _NET_WM_WINDOW_TYPE X11 window property. See
     http://standards.freedesktop.org/wm-spec/ for more details. This
     attribute has no effect on non-X11 platforms. \b Note: Qt
-    automatically sets this attribute for QMenus added to a QMenuBar.
+    automatically sets this attribute for QMenu objects added to a QMenuBar.
 
     \value WA_X11NetWmWindowTypePopupMenu Adds _NET_WM_WINDOW_TYPE_POPUP_MENU
     to the window's _NET_WM_WINDOW_TYPE X11 window property. See

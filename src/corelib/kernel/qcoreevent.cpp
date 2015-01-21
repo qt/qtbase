@@ -58,7 +58,7 @@ QT_BEGIN_NAMESPACE
     send events using QCoreApplication::sendEvent() and
     QCoreApplication::postEvent() (spontaneous() returns \c false).
 
-    QObjects receive events by having their QObject::event() function
+    \l {QObject}{QObjects} receive events by having their QObject::event() function
     called. The function can be reimplemented in subclasses to
     customize event handling and add additional event types;
     QWidget::event() is a notable example. By default, events are
@@ -102,13 +102,13 @@ QT_BEGIN_NAMESPACE
     \value ChildAdded                       An object gets a child (QChildEvent).
     \value ChildPolished                    A widget child gets polished (QChildEvent).
     \value ChildRemoved                     An object loses a child (QChildEvent).
-    \value Clipboard                        The clipboard contents have changed (QClipboardEvent).
+    \value Clipboard                        The clipboard contents have changed.
     \value Close                            Widget was closed (QCloseEvent).
     \value CloseSoftwareInputPanel          A widget wants to close the software input panel (SIP).
     \value ContentsRectChange               The margins of the widget's content rect changed.
     \value ContextMenu                      Context popup menu (QContextMenuEvent).
     \value CursorChange                     The widget's cursor has changed.
-    \value DeferredDelete                   The object will be deleted after it has cleaned up (QDeferredDeleteEvent).
+    \value DeferredDelete                   The object will be deleted after it has cleaned up (QDeferredDeleteEvent)
     \value DragEnter                        The cursor enters a widget during a drag and drop operation (QDragEnterEvent).
     \value DragLeave                        The cursor leaves a widget during a drag and drop operation (QDragLeaveEvent).
     \value DragMove                         A drag and drop operation is in progress (QDragMoveEvent).
@@ -116,7 +116,7 @@ QT_BEGIN_NAMESPACE
     \value DynamicPropertyChange            A dynamic property was added, changed, or removed from the object.
     \value EnabledChange                    Widget's enabled state has changed.
     \value Enter                            Mouse enters widget's boundaries (QEnterEvent).
-    \value EnterEditFocus                   An editor widget gains focus for editing. QT_KEYPAD_NAVIGATION must be defined.
+    \value EnterEditFocus                   An editor widget gains focus for editing. \c QT_KEYPAD_NAVIGATION must be defined.
     \value EnterWhatsThisMode               Send to toplevel widgets when the application enters "What's This?" mode.
     \value Expose                           Sent to a window when its on-screen contents are invalidated and need to be flushed from the backing store.
     \value FileOpen                         File open request (QFileOpenEvent).
@@ -177,7 +177,7 @@ QT_BEGIN_NAMESPACE
     \value MouseTrackingChange              The mouse tracking state has changed.
     \value Move                             Widget's position changed (QMoveEvent).
     \value NativeGesture                    The system has detected a gesture (QNativeGestureEvent).
-    \value OrientationChange                The screens orientation has changes (QScreenOrientationChangeEvent)
+    \value OrientationChange                The screens orientation has changes (QScreenOrientationChangeEvent).
     \value Paint                            Screen update necessary (QPaintEvent).
     \value PaletteChange                    Palette of the widget changed.
     \value ParentAboutToChange              The widget parent is about to change.

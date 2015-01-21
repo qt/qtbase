@@ -1446,7 +1446,7 @@ void QProcess::setStandardErrorFile(const QString &fileName, OpenMode mode)
     The following shell command:
     \snippet code/src_corelib_io_qprocess.cpp 2
 
-    Can be accomplished with QProcesses with the following code:
+    Can be accomplished with QProcess with the following code:
     \snippet code/src_corelib_io_qprocess.cpp 3
 */
 void QProcess::setStandardOutputProcess(QProcess *destination)

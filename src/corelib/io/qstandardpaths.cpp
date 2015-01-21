@@ -77,15 +77,10 @@ QT_BEGIN_NAMESPACE
     this user, but should still be assumed to be unreachable by applications by
     other users.
 
-    The only exception is QStandardPaths::TempLocation (which is the same as
-    QDir::tempPath()): the path returned may be application-specific, but files
-    stored there may be accessed by other applications run by the same user.
-
     Data interchange with other users is out of the scope of QStandardPaths.
 
     \value DesktopLocation Returns the user's desktop directory. This is a generic value.
-           On systems with no concept of a desktop, this is the same as
-           QStandardPaths::HomeLocation.
+           On systems with no concept of a desktop.
     \value DocumentsLocation Returns the directory containing user document files.
            This is a generic value. The returned path is never empty.
     \value FontsLocation Returns the directory containing user's fonts. This is a generic value.
@@ -118,9 +113,6 @@ QT_BEGIN_NAMESPACE
     \value GenericCacheLocation Returns a directory location where user-specific non-essential
            (cached) data, shared across applications, should be written. This is a generic value.
            Note that the returned path may be empty if the system has no concept of shared cache.
-    \value GenericDataLocation Returns a directory location where persistent
-           data shared across applications can be stored. This is a generic value. The returned
-           path is never empty.
     \value RuntimeLocation Returns a directory location where runtime communication
            files should be written, like Unix local sockets. This is a generic value.
            The returned path may be empty on some systems.

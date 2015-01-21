@@ -82,7 +82,7 @@
     For the convenience of generating encoded URL strings or query
     strings, there are two static functions called
     fromPercentEncoding() and toPercentEncoding() which deal with
-    percent encoding and decoding of QStrings.
+    percent encoding and decoding of QString objects.
 
     Calling isRelative() will tell whether or not the URL is
     relative. A relative URL can be resolved by passing it as argument
@@ -172,7 +172,7 @@
                        setters setting components of a URL; it is not permitted in
                        the QUrl constructor, in fromEncoded() or in setUrl().
                        For more information on this mode, see the documentation for
-                       QUrl::FullyDecoded.
+                       \l {QUrl::ComponentFormattingOption}{QUrl::FullyDecoded}.
 
     In TolerantMode, the parser has the following behaviour:
 
@@ -4055,7 +4055,7 @@ QString QUrl::errorString() const
 /*!
     \since 5.1
 
-    Converts a list of \a urls into a list of QStrings, using toString(\a options).
+    Converts a list of \a urls into a list of QString objects, using toString(\a options).
 */
 QStringList QUrl::toStringList(const QList<QUrl> &urls, FormattingOptions options)
 {

@@ -386,7 +386,7 @@ void QAbstractEventDispatcher::closingDown()
     \note The filter function set here receives native messages,
     that is, MSG or XEvent structs.
 
-    For maximum portability, you should always try to use QEvents
+    For maximum portability, you should always try to use QEvent objects
     and QObject::installEventFilter() whenever possible.
 
     \sa QObject::installEventFilter()
