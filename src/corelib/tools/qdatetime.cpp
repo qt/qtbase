@@ -5007,26 +5007,23 @@ QDebug operator<<(QDebug dbg, const QTime &time)
 QDebug operator<<(QDebug dbg, const QDateTime &date)
 {
     QDebugStateSaver saver(dbg);
-    QString spec;
+    dbg.nospace() << "QDateTime(" << date.toString(QStringLiteral("yyyy-MM-dd HH:mm:ss.zzz t"))
+                  << ' ' << date.timeSpec();
     switch (date.d->m_spec) {
     case Qt::UTC:
-        spec = QStringLiteral(" Qt::UTC");
         break;
     case Qt::OffsetFromUTC:
-        spec = QString::fromLatin1(" Qt::OffsetFromUTC %1s").arg(date.offsetFromUtc());
+        dbg << ' ' << date.offsetFromUtc() << 's';
         break;
     case Qt::TimeZone:
 #ifndef QT_BOOTSTRAPPED
-        spec = QStringLiteral(" Qt::TimeZone ") + QString::fromLatin1(date.timeZone().id());
+        dbg << ' ' << date.timeZone().id();
         break;
 #endif // QT_BOOTSTRAPPED
     case Qt::LocalTime:
-        spec = QStringLiteral(" Qt::LocalTime");
         break;
     }
-    QString output = date.toString(QStringLiteral("yyyy-MM-dd HH:mm:ss.zzz t")) + spec;
-    dbg.nospace() << "QDateTime(" << output << ')';
-    return dbg;
+    return dbg << ')';
 }
 #endif
 
