@@ -131,12 +131,12 @@ public:
     inline bool isValidDate() const { return m_status & ValidDate; }
     inline bool isValidTime() const { return m_status & ValidTime; }
     inline bool isValidDateTime() const { return m_status & ValidDateTime; }
-    inline void setValidDateTime() { m_status = m_status | ValidDateTime; }
-    inline void clearValidDateTime() { m_status = m_status & ~ValidDateTime; }
+    inline void setValidDateTime() { m_status |= ValidDateTime; }
+    inline void clearValidDateTime() { m_status &= ~ValidDateTime; }
     inline bool isTimeZoneCached() const { return m_status & TimeZoneCached; }
-    inline void setTimeZoneCached() { m_status = m_status | TimeZoneCached; }
-    inline void clearTimeZoneCached() { m_status = m_status & ~TimeZoneCached; }
-    inline void clearSetToDaylightStatus() { m_status = m_status & ~SetToStandardTime & ~SetToDaylightTime; }
+    inline void setTimeZoneCached() { m_status |= TimeZoneCached; }
+    inline void clearTimeZoneCached() { m_status &= ~TimeZoneCached; }
+    inline void clearSetToDaylightStatus() { m_status &= ~(SetToStandardTime | SetToDaylightTime); }
 
 #ifndef QT_BOOTSTRAPPED
     static qint64 zoneMSecsToEpochMSecs(qint64 msecs, const QTimeZone &zone,
