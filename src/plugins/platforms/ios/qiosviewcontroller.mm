@@ -60,6 +60,7 @@
   @public
     QIOSScreen *m_screen;
     BOOL m_updatingProperties;
+    QMetaObject::Connection m_focusWindowChangeConnection;
 }
 @property (nonatomic, assign) BOOL changingOrientation;
 @end
@@ -202,12 +203,18 @@
         self.prefersStatusBarHidden = infoPlistValue(@"UIStatusBarHidden", false);
         self.preferredStatusBarUpdateAnimation = UIStatusBarAnimationNone;
 
-        QObject::connect(qApp, &QGuiApplication::focusWindowChanged, [self]() {
+        m_focusWindowChangeConnection = QObject::connect(qApp, &QGuiApplication::focusWindowChanged, [self]() {
             [self updateProperties];
         });
     }
 
     return self;
+}
+
+- (void)dealloc
+{
+    QObject::disconnect(m_focusWindowChangeConnection);
+    [super dealloc];
 }
 
 - (void)loadView
