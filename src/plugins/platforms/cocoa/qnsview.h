@@ -75,6 +75,7 @@ Q_FORWARD_DECLARE_OBJC_CLASS(QT_MANGLE_NAMESPACE(QNSViewMouseMoveHelper));
     QT_MANGLE_NAMESPACE(QNSViewMouseMoveHelper) *m_mouseMoveHelper;
     bool m_resendKeyEvent;
     bool m_scrolling;
+    bool m_exposedOnMoveToWindow;
 }
 
 - (id)init;

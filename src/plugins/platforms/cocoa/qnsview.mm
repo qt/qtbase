@@ -272,10 +272,13 @@ static NSString *_q_NSWindowDidChangeOcclusionStateNotification = nil;
     if (self.window) {
         // This is the case of QWidgetAction's generated QWidget inserted in an NSMenu.
         // 10.9 and newer get the NSWindowDidChangeOcclusionStateNotification
-        if (!_q_NSWindowDidChangeOcclusionStateNotification
-            && [self.window.className isEqualToString:@"NSCarbonMenuWindow"])
+        if ((!_q_NSWindowDidChangeOcclusionStateNotification
+            && [self.window.className isEqualToString:@"NSCarbonMenuWindow"])) {
+            m_exposedOnMoveToWindow = true;
             m_platformWindow->exposeWindow();
-    } else {
+        }
+    } else if (m_exposedOnMoveToWindow) {
+        m_exposedOnMoveToWindow = false;
         m_platformWindow->obscureWindow();
     }
 }
