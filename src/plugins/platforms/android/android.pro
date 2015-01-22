@@ -49,7 +49,7 @@ SOURCES += $$PWD/androidplatformplugin.cpp \
            $$PWD/qandroideventdispatcher.cpp
 
 HEADERS += $$PWD/qandroidplatformintegration.h \
-           $$PWD/androidandroiddeadlockprotector.h \
+           $$PWD/androiddeadlockprotector.h \
            $$PWD/androidjnimain.h \
            $$PWD/androidjniaccessibility.h \
            $$PWD/androidjniinput.h \
