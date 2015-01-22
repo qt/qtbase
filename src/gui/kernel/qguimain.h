@@ -62,13 +62,12 @@ void Q_GUI_EXPORT qGuiRegisterAppFunctions(QAppInitFunction appInitFunction,
 #define Q_GUI_MAIN(qAppInitFunction, qAppExitFunction) \
 namespace pp { class Module; } \
 extern pp::Module *qtGuiCreatePepperModule(); \
-namespace pp { pp::Module* CreateModule() { return qtGuiCreatePepperModule(); } } \
-class QGuiMain \
-{ \
-public:  \
-    QGuiMain() { qGuiRegisterAppFunctions(qAppInitFunction, qAppExitFunction); } \
-}; \
-QGuiMain qGuiMain;
+namespace pp {  \
+    pp::Module* CreateModule() { \
+        qGuiRegisterAppFunctions(qAppInitFunction, qAppExitFunction); \
+        return qtGuiCreatePepperModule(); \
+    } \
+}
 
 #else
 
