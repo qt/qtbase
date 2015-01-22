@@ -100,7 +100,9 @@ void QCocoaMenuBar::insertNativeMenu(QCocoaMenu *menu, QCocoaMenu *beforeMenu)
 
     menu->setMenuBar(this);
     syncMenu(static_cast<QPlatformMenu *>(menu));
-    [m_nativeMenu setSubmenu: menu->nsMenu() forItem: menu->nsMenuItem()];
+    if (menu->isVisible()) {
+        [m_nativeMenu setSubmenu: menu->nsMenu() forItem: menu->nsMenuItem()];
+    }
 }
 
 void QCocoaMenuBar::insertMenu(QPlatformMenu *platformMenu, QPlatformMenu *before)
