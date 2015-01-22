@@ -55,4 +55,10 @@ int Q_CORE_EXPORT qCoreMainWithAppFunctions(int argc, char **argv,
     return returnValue;    
 }
 
+int Q_CORE_EXPORT qCoreMainWithBlockingFunction(int argc, char **argv,
+                                                QAppBlockingFunction appBlockingFunction)
+{
+    return appBlockingFunction(argc, argv);
+}
+
 QT_END_NAMESPACE

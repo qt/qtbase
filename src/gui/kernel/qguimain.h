@@ -55,6 +55,7 @@ Q_DECLARE_LOGGING_CATEGORY(QT_GUI_MAIN)
 
 void Q_GUI_EXPORT qGuiRegisterAppFunctions(QAppInitFunction appInitFunction,
                                            QAppExitFunction appExitFunction);
+void Q_GUI_EXPORT qGuiRegisterAppBlockingFunction(QAppBlockingFunction appBlockingFunction);
 
 // NaCl QtGui main:
 // - define the pp::CreateModule() Ppapi main entry point.
@@ -65,6 +66,23 @@ extern pp::Module *qtGuiCreatePepperModule(); \
 namespace pp {  \
     pp::Module* CreateModule() { \
         qGuiRegisterAppFunctions(qAppInitFunction, qAppExitFunction); \
+        return qtGuiCreatePepperModule(); \
+    } \
+}
+
+// Alternative startup function for apps that need more control over the
+// startup sequence, or that are unable to move the Q_GUI_MAIN.
+// 1) QApplication construction is handled by the app
+// 2) The must block and return at app exit.
+//
+// Using this API forces Qt/Pepper to use a secondary thread.
+//
+#define Q_GUI_BLOCKING_MAIN(qAppBlockingFunction) \
+namespace pp { class Module; } \
+extern pp::Module *qtGuiCreatePepperModule(); \
+namespace pp { \
+    pp::Module* CreateModule() { \
+        qGuiRegisterAppBlockingFunction(qAppBlockingFunction); \
         return qtGuiCreatePepperModule(); \
     } \
 }
@@ -82,6 +100,12 @@ int main(int argc, char **argv) { \
     return qGuiMainWithAppFunctions( \
         argc, argv, qAppInitFunction, qAppExitFunction); \
 }
+
+#define Q_GUI_BLOCKING_MAIN(appBlockingFunction) \
+int main(int argc, char **argv) { \
+    return qCoreMainWithBlockingFunction(appBlockingFunction); \
+}
+
 
 #endif
 

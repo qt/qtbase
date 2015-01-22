@@ -59,16 +59,22 @@ Q_LOGGING_CATEGORY(QT_GUI_MAIN, "qt.gui.main")
 //
 QAppInitFunction g_appInit = 0;
 QAppExitFunction g_appExit = 0;
+QAppBlockingFunction g_appBlock = 0;
+
 QGuiApplication *g_guiApplcation = 0;
 
 void Q_GUI_EXPORT qGuiRegisterAppFunctions(QAppInitFunction appInitFunction, QAppExitFunction appExitFunction)
 {
     qCDebug(QT_GUI_MAIN) << "qGuiRegisterAppFunctions" << appInitFunction << appExitFunction;
-
     g_appInit = appInitFunction;
     g_appExit = appExitFunction;
 }
 
+void Q_GUI_EXPORT qGuiRegisterAppBlockingFunction(QAppBlockingFunction appBlockingFunction)
+{
+    qCDebug(QT_GUI_MAIN) << "qGuiRegisterAppBlockingFunction" << appBlockingFunction;
+    g_appBlock = 0;
+}
 
 int g_argc = 0;
 char *g_argv = 0;
@@ -81,21 +87,25 @@ void qGuiStartup()
     // Make sure the fonts resource is included for static builds.
     Q_INIT_RESOURCE(naclfonts);
 #endif
-    g_guiApplcation = new QGuiApplication(g_argc, &g_argv);
+    // TODO: handle g_appBlock case
+    if (!g_appBlock)
+        g_guiApplcation = new QGuiApplication(g_argc, &g_argv);
 }
 
 void qGuiAppInit()
 {
     qCDebug(QT_GUI_MAIN) << "qGuiAppInit";
-    
-    g_appInit(g_argc, &g_argv);
+    if (!g_appBlock)
+        g_appInit(g_argc, &g_argv);
 }
 
 void qGuiAppExit()
 {
     qCDebug(QT_GUI_MAIN) << "qGuiAppExit";
-    g_appExit();
-    delete g_guiApplcation;
+    if (!g_appBlock) {
+        g_appExit();
+        delete g_guiApplcation;
+    }
 }
 
 #else

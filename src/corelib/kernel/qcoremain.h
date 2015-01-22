@@ -48,6 +48,7 @@ QT_BEGIN_NAMESPACE
 
 typedef void (*QAppInitFunction)(int argc, char **argv);
 typedef void (*QAppExitFunction)();
+typedef int (*QAppBlockingFunction)(int argc, char **argv);
 
 int Q_CORE_EXPORT qCoreMainWithAppFunctions(int argc, char **argv, 
                                             QAppInitFunction appInitFunction,
@@ -57,6 +58,14 @@ int Q_CORE_EXPORT qCoreMainWithAppFunctions(int argc, char **argv,
 int main(int argc, char **argv) { \
     return qCoreMainWithAppFunctions( \
         argc, argv, qAppInitFunction, qAppExitFunction); \
+}
+
+int Q_CORE_EXPORT qCoreMainWithBlockingFunction(int argc, char **argv,
+                                                QAppBlockingFunction appBlockingFunction);
+
+#define Q_CORE_BLOCKING_MAIN(appBlockingFunction) \
+int main(int argc, char **argv) { \
+    return qCoreMainWithBlockingFunction(appBlockingFunction); \
 }
 
 QT_END_NAMESPACE
