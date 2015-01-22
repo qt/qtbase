@@ -152,6 +152,7 @@ public:
         { return obj || !children.isEmpty(); }
 
         QString name;
+        QString interfaceName;
         union {
             QObject *obj;
             QDBusVirtualObject *treeNode;

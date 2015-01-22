@@ -161,6 +161,8 @@ public:
 
     bool registerObject(const QString &path, QObject *object,
                         RegisterOptions options = ExportAdaptors);
+    bool registerObject(const QString &path, const QString &interface, QObject *object,
+                        RegisterOptions options = ExportAdaptors);
     void unregisterObject(const QString &path, UnregisterMode mode = UnregisterNode);
     QObject *objectRegisteredAt(const QString &path) const;
 

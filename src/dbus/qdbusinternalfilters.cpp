@@ -134,7 +134,7 @@ QString qDBusIntrospectObject(const QDBusConnectionPrivate::ObjectTreeNode &node
             // create XML for the object itself
             const QMetaObject *mo = node.obj->metaObject();
             for ( ; mo != &QObject::staticMetaObject; mo = mo->superClass())
-                xml_data += qDBusGenerateMetaObjectXml(QString(), mo, mo->superClass(),
+                xml_data += qDBusGenerateMetaObjectXml(node.interfaceName, mo, mo->superClass(),
                                                        node.flags);
         }
 

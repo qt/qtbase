@@ -65,6 +65,27 @@ void MyObject::method(const QDBusMessage &msg)
     //qDebug() << msg;
 }
 
+class MyObjectWithoutInterface: public QObject
+{
+    Q_OBJECT
+public slots:
+    void method(const QDBusMessage &msg);
+
+public:
+    static QString path;
+    static QString interface;
+    int callCount;
+    MyObjectWithoutInterface(QObject *parent = 0) : QObject(parent), callCount(0) {}
+};
+
+void MyObjectWithoutInterface::method(const QDBusMessage &msg)
+{
+    path = msg.path();
+    interface = msg.interface();
+    ++callCount;
+    //qDebug() << msg;
+}
+
 class tst_QDBusConnection: public QObject
 {
     Q_OBJECT
@@ -87,6 +108,8 @@ private slots:
 
     void registerObject_data();
     void registerObject();
+    void registerObjectWithInterface_data();
+    void registerObjectWithInterface();
     void registerObjectPeer_data();
     void registerObjectPeer();
     void registerObject2();
@@ -112,6 +135,7 @@ private slots:
 public:
     QString serviceName() const { return "org.qtproject.Qt.Autotests.QDBusConnection"; }
     bool callMethod(const QDBusConnection &conn, const QString &path);
+    bool callMethod(const QDBusConnection &conn, const QString &path, const QString &interface);
     bool callMethodPeer(const QDBusConnection &conn, const QString &path);
 };
 
@@ -377,6 +401,40 @@ void tst_QDBusConnection::registerObject()
     }
     // make sure it's gone
     QVERIFY(!callMethod(con, path));
+}
+
+void tst_QDBusConnection::registerObjectWithInterface_data()
+{
+    QTest::addColumn<QString>("path");
+    QTest::addColumn<QString>("interface");
+
+    QTest::newRow("/") << "/" << "org.foo";
+    QTest::newRow("/p1") << "/p1" << "org.foo";
+    QTest::newRow("/p2") << "/p2" << "org.foo";
+    QTest::newRow("/p1/q") << "/p1/q" << "org.foo";
+    QTest::newRow("/p1/q/r") << "/p1/q/r" << "org.foo";
+
+}
+
+void tst_QDBusConnection::registerObjectWithInterface()
+{
+    QFETCH(QString, path);
+    QFETCH(QString, interface);
+
+    QDBusConnection con = QDBusConnection::sessionBus();
+    QVERIFY(con.isConnected());
+
+    {
+        // register one object at root:
+        MyObjectWithoutInterface obj;
+        QVERIFY(con.registerObject(path, interface, &obj, QDBusConnection::ExportAllSlots));
+        QCOMPARE(con.objectRegisteredAt(path), static_cast<QObject *>(&obj));
+        QVERIFY(callMethod(con, path, interface));
+        QCOMPARE(obj.path, path);
+        QCOMPARE(obj.interface, interface);
+    }
+    // make sure it's gone
+    QVERIFY(!callMethod(con, path, interface));
 }
 
 class MyServer : public QDBusServer
@@ -844,6 +902,16 @@ bool tst_QDBusConnection::callMethod(const QDBusConnection &conn, const QString 
     return (MyObject::path == path);
 }
 
+bool tst_QDBusConnection::callMethod(const QDBusConnection &conn, const QString &path, const QString &interface)
+{
+    QDBusMessage msg = QDBusMessage::createMethodCall(conn.baseService(), path, interface, "method");
+    QDBusMessage reply = conn.call(msg, QDBus::Block/*WithGui*/);
+    if (reply.type() != QDBusMessage::ReplyMessage)
+        return false;
+    QTest::qCompare(MyObjectWithoutInterface::path, path, "MyObjectWithoutInterface::path", "path", __FILE__, __LINE__);
+    return (MyObjectWithoutInterface::path == path) && MyObjectWithoutInterface::interface == interface;
+}
+
 bool tst_QDBusConnection::callMethodPeer(const QDBusConnection &conn, const QString &path)
 {
     QDBusMessage msg = QDBusMessage::createMethodCall("", path, "", "method");
@@ -1307,6 +1375,8 @@ void tst_QDBusConnection::callVirtualObjectLocal()
 }
 
 QString MyObject::path;
+QString MyObjectWithoutInterface::path;
+QString MyObjectWithoutInterface::interface;
 QTEST_MAIN(tst_QDBusConnection)
 
 #include "tst_qdbusconnection.moc"

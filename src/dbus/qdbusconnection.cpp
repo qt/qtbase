@@ -762,6 +762,26 @@ bool QDBusConnection::disconnect(const QString &service, const QString &path, co
 */
 bool QDBusConnection::registerObject(const QString &path, QObject *object, RegisterOptions options)
 {
+   return registerObject(path, QString(), object, options);
+}
+
+/*!
+    \overload
+    \since 5.5
+
+    Registers the object \a object at path \a path with interface name \a interface
+    and returns \c true if the registration was successful. The \a options parameter
+    specifies how much of the object \a object will be exposed through
+    D-Bus.
+
+    This function does not replace existing objects: if there is already an object registered at
+    path \a path, this function will return false. Use unregisterObject() to unregister it first.
+
+    You cannot register an object as a child object of an object that
+    was registered with QDBusConnection::ExportChildObjects.
+*/
+bool QDBusConnection::registerObject(const QString &path, const QString &interface, QObject *object, RegisterOptions options)
+{
     Q_ASSERT_X(QDBusUtil::isValidObjectPath(path), "QDBusConnection::registerObject",
                "Invalid object path given");
     if (!d || !d->connection || !object || !options || !QDBusUtil::isValidObjectPath(path))
@@ -793,6 +813,7 @@ bool QDBusConnection::registerObject(const QString &path, QObject *object, Regis
             // we can add the object here
             node->obj = object;
             node->flags = options;
+            node->interfaceName = interface;
 
             d->registerObject(node);
             //qDebug("REGISTERED FOR %s", path.toLocal8Bit().constData());

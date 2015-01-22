@@ -1481,8 +1481,12 @@ void QDBusConnectionPrivate::activateObject(ObjectTreeNode &node, const QDBusMes
     if (node.flags & (QDBusConnection::ExportScriptableSlots|QDBusConnection::ExportNonScriptableSlots) ||
         node.flags & (QDBusConnection::ExportScriptableInvokables|QDBusConnection::ExportNonScriptableInvokables)) {
         bool interfaceFound = true;
-        if (!msg.interface().isEmpty())
-            interfaceFound = qDBusInterfaceInObject(node.obj, msg.interface());
+        if (!msg.interface().isEmpty()) {
+            if (!node.interfaceName.isEmpty())
+                interfaceFound = msg.interface() == node.interfaceName;
+            else
+                interfaceFound = qDBusInterfaceInObject(node.obj, msg.interface());
+        }
 
         if (interfaceFound) {
             if (!activateCall(node.obj, node.flags, msg))
