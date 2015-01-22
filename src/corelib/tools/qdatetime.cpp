@@ -122,6 +122,8 @@ struct ParsedDate
     int year, month, day;
 };
 
+// prevent this function from being inlined into all 10 users
+Q_NEVER_INLINE
 static ParsedDate getDateFromJulianDay(qint64 julianDay)
 {
 /*
