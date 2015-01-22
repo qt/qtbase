@@ -1569,9 +1569,7 @@ QString QTime::toString(Qt::DateFormat format) const
     case Qt::ISODate:
     case Qt::TextDate:
     default:
-        return QString::fromLatin1("%1:%2:%3").arg(hour(), 2, 10, QLatin1Char('0'))
-                                              .arg(minute(), 2, 10, QLatin1Char('0'))
-                                              .arg(second(), 2, 10, QLatin1Char('0'));
+        return QString::asprintf("%02d:%02d:%02d", hour(), minute(), second());
     }
 }
 
