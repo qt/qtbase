@@ -636,8 +636,6 @@ QString QDate::shortMonthName(int month, QDate::MonthNameType type)
         return QLocale::system().monthName(month, QLocale::ShortFormat);
     case QDate::StandaloneFormat:
         return QLocale::system().standaloneMonthName(month, QLocale::ShortFormat);
-    default:
-        break;
     }
     return QString();
 }
@@ -683,8 +681,6 @@ QString QDate::longMonthName(int month, MonthNameType type)
         return QLocale::system().monthName(month, QLocale::LongFormat);
     case QDate::StandaloneFormat:
         return QLocale::system().standaloneMonthName(month, QLocale::LongFormat);
-    default:
-        break;
     }
     return QString();
 }
@@ -725,8 +721,6 @@ QString QDate::shortDayName(int weekday, MonthNameType type)
         return QLocale::system().dayName(weekday, QLocale::ShortFormat);
     case QDate::StandaloneFormat:
         return QLocale::system().standaloneDayName(weekday, QLocale::ShortFormat);
-    default:
-        break;
     }
     return QString();
 }
@@ -767,8 +761,6 @@ QString QDate::longDayName(int weekday, MonthNameType type)
         return QLocale::system().dayName(weekday, QLocale::LongFormat);
     case QDate::StandaloneFormat:
         return QLocale::system().standaloneDayName(weekday, QLocale::LongFormat);
-    default:
-        break;
     }
     return QLocale::system().dayName(weekday, QLocale::LongFormat);
 }
