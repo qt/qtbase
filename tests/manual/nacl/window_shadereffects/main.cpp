@@ -46,7 +46,7 @@
 QQuickView *view;
 QQmlFileSelector *fileSelector;
 
-void app_init(const QStringList &arguments)
+void app_init(int argc, char **argv)
 {
     view = new QQuickView();
     new QQmlFileSelector(view->engine(), view);

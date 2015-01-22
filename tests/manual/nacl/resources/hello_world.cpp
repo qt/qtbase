@@ -25,7 +25,7 @@ void testfile(const QString &filename)
 QWindow *window = 0;
 
 // App-provided init and exit functions:
-void app_init(const QStringList &arguments)
+void app_init(int argc, char **argv)
 {
 
     window = new QWindow();

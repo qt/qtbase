@@ -88,8 +88,7 @@ void qGuiAppInit()
 {
     qCDebug(QT_GUI_MAIN) << "qGuiAppInit";
     
-    QStringList noArguments;
-    g_appInit(noArguments);
+    g_appInit(g_argc, &g_argv);
 }
 
 void qGuiAppExit()
@@ -106,7 +105,7 @@ int Q_GUI_EXPORT qGuiMainWithAppFunctions(int argc, char **argv,
                                             QAppExitFunction appExitFunction)
 {
     QGuiApplication app(argc, argv);
-    appInitFunction(app.arguments());
+    appInitFunction(argc, argv);
     int returnValue = qApp->exec();
     appExitFunction();
     return returnValue;    

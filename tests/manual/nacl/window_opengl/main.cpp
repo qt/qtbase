@@ -45,7 +45,7 @@
 
 QList<QWindow *> windows;
 
-void app_init(const QStringList &arguments)
+void app_init(int argc, char **argv)
 {
     QSurfaceFormat format;
     format.setDepthBufferSize(16);

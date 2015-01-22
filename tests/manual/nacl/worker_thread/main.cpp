@@ -52,7 +52,7 @@ private slots:
 QThread *thread = 0;
 WorkerThreadObject *workerThreadObject = 0;
 
-void app_init(const QStringList &arguments)
+void app_init(int argc, char **argv)
 {
     qDebug() << "Running app_init";
     

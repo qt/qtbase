@@ -9,7 +9,7 @@
 RasterWindow *window;
 
 // App-provided init and exit functions:
-void app_init(const QStringList &arguments)
+void app_init(int argc, char **argv)
 {
     qDebug() << "Running app_init";
 

@@ -43,7 +43,7 @@
 
 QQmlApplicationEngine *engine;
 
-void app_init(const QStringList &arguments)
+void app_init(int argc, char **argv)
 {
   engine = new QQmlApplicationEngine(QUrl("qrc:///main.qml"));
 }

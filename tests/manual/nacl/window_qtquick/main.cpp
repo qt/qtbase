@@ -43,7 +43,7 @@
 
 QQuickView *view;
 
-void app_init(const QStringList &arguments)
+void app_init(int argc, char **argv)
 {
     view = new QQuickView();
     view->setSource(QUrl("qrc:///main.qml"));

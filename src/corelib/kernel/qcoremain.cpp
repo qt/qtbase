@@ -49,7 +49,7 @@ int Q_CORE_EXPORT qCoreMainWithAppFunctions(int argc, char **argv,
                                             QAppExitFunction appExitFunction)
 {
     QCoreApplication app(argc, argv);
-    appInitFunction(app.arguments());
+    appInitFunction(argc, argv);
     int returnValue = qApp->exec();
     appExitFunction();
     return returnValue;    

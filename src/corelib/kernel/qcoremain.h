@@ -43,11 +43,10 @@
 #define QT_CORE_MAIN
 
 #include <QtCore/qglobal.h>
-#include <QtCore/qstringlist.h>
 
 QT_BEGIN_NAMESPACE
 
-typedef void (*QAppInitFunction)(const QStringList &arguments);
+typedef void (*QAppInitFunction)(int argc, char **argv);
 typedef void (*QAppExitFunction)();
 
 int Q_CORE_EXPORT qCoreMainWithAppFunctions(int argc, char **argv, 
