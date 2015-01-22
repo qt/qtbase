@@ -557,7 +557,10 @@
 #      define Q_COMPILER_UNRESTRICTED_UNIONS
 #    endif
 #    if __INTEL_COMPILER >= 1500
-#      define Q_COMPILER_CONSTEXPR
+#      if __INTEL_COMPILER * 100 + __INTEL_COMPILER_UPDATE >= 150001
+//       the bug mentioned above is fixed in 15.0.1
+#        define Q_COMPILER_CONSTEXPR
+#      endif
 #      define Q_COMPILER_ALIGNAS
 #      define Q_COMPILER_ALIGNOF
 #      define Q_COMPILER_INHERITING_CONSTRUCTORS
