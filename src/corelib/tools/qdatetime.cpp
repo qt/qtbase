@@ -2682,29 +2682,29 @@ void QDateTimePrivate::setDateTime(const QDate &date, const QTime &time)
     if (!useTime.isValid() && date.isValid())
         useTime = QTime::fromMSecsSinceStartOfDay(0);
 
-    // Reset the status
-    m_status = 0;
+    StatusFlags newStatus;
 
     // Set date value and status
     qint64 days = 0;
     if (date.isValid()) {
         days = date.toJulianDay() - JULIAN_DAY_FOR_EPOCH;
-        m_status = ValidDate;
+        newStatus = ValidDate;
     } else if (date.isNull()) {
-        m_status = NullDate;
+        newStatus = NullDate;
     }
 
     // Set time value and status
     int ds = 0;
     if (useTime.isValid()) {
         ds = useTime.msecsSinceStartOfDay();
-        m_status = m_status | ValidTime;
+        newStatus |= ValidTime;
     } else if (time.isNull()) {
-        m_status = m_status | NullTime;
+        newStatus |= NullTime;
     }
 
     // Set msecs serial value
     m_msecs = (days * MSECS_PER_DAY) + ds;
+    m_status = newStatus;
 
     // Set if date and time are valid
     checkValidDateTime();
