@@ -8,12 +8,7 @@ DEFINES += QT_STATICPLUGIN
 
 load(qt_plugin)
 
-!contains(ANDROID_PLATFORM, android-9) {
-    INCLUDEPATH += $$NDK_ROOT/platforms/android-9/arch-$$ANDROID_ARCHITECTURE/usr/include
-    LIBS += -L$$NDK_ROOT/platforms/android-9/arch-$$ANDROID_ARCHITECTURE/usr/lib -ljnigraphics -landroid
-} else {
-    LIBS += -ljnigraphics -landroid
-}
+LIBS += -ljnigraphics -landroid
 
 QT += core-private gui-private platformsupport-private
 
