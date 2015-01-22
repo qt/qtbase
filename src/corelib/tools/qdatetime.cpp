@@ -888,9 +888,7 @@ QString QDate::toString(Qt::DateFormat format) const
         pd = getDateFromJulianDay(jd);
         if (pd.year < 0 || pd.year > 9999)
             return QString();
-        return QString::fromLatin1("%1-%2-%3").arg(pd.year,  4, 10, QLatin1Char('0'))
-                                              .arg(pd.month, 2, 10, QLatin1Char('0'))
-                                              .arg(pd.day,   2, 10, QLatin1Char('0'));
+        return QString::asprintf("%04d-%02d-%02d", pd.year, pd.month, pd.day);
     }
 }
 
