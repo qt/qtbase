@@ -762,7 +762,7 @@ QString QDate::longDayName(int weekday, MonthNameType type)
     case QDate::StandaloneFormat:
         return QLocale::system().standaloneDayName(weekday, QLocale::LongFormat);
     }
-    return QLocale::system().dayName(weekday, QLocale::LongFormat);
+    return QString();
 }
 #endif //QT_NO_TEXTDATE
 
