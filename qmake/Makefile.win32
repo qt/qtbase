@@ -20,9 +20,9 @@ LINKER            = link
 !  if "$(QMAKESPEC)" == "win32-msvc2005"
 CFLAGS_EXTRA      = /Zc:wchar_t-
 !  elseif "$(QMAKESPEC)" == "win32-msvc2008" || "$(QMAKESPEC)" == "win32-msvc2010" || "$(QMAKESPEC)" == "win32-msvc2012" || "$(QMAKESPEC)" == "win32-msvc2013"
-CFLAGS_EXTRA      = /MP /D_CRT_SECURE_NO_WARNINGS $(CFLAGS_CRT)
+CFLAGS_EXTRA      = /MP /D_CRT_SECURE_NO_WARNINGS /D_SCL_SECURE_NO_WARNINGS $(CFLAGS_CRT)
 !  elseif "$(QMAKESPEC)" == "win32-msvc2015"
-CFLAGS_EXTRA      = /MP /D_CRT_SECURE_NO_WARNINGS /Zc:strictStrings /w44456 /w44457 /w44458 $(CFLAGS_CRT)
+CFLAGS_EXTRA      = /MP /D_CRT_SECURE_NO_WARNINGS /D_SCL_SECURE_NO_WARNINGS /Zc:strictStrings /w44456 /w44457 /w44458 $(CFLAGS_CRT)
 !  else
 !    error Unsupported compiler for this Makefile
 !  endif
