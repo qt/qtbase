@@ -228,18 +228,14 @@ static ParsedRfcDateTime rfcDateImpl(const QString &s)
 #endif // QT_NO_DATESTRING
 
 // Return offset in [+-]HH:mm format
-// Qt::ISODate puts : between the hours and minutes, but Qt:TextDate does not
 static QString toOffsetString(Qt::DateFormat format, int offset)
 {
-    QString result;
-    if (format == Qt::TextDate)
-        result = QStringLiteral("%1%2%3");
-    else // Qt::ISODate
-        result = QStringLiteral("%1%2:%3");
-
-    return result.arg(offset >= 0 ? QLatin1Char('+') : QLatin1Char('-'))
-                 .arg(qAbs(offset) / SECS_PER_HOUR, 2, 10, QLatin1Char('0'))
-                 .arg((qAbs(offset) / 60) % 60, 2, 10, QLatin1Char('0'));
+    return QString::asprintf("%c%02d%s%02d",
+                             offset >= 0 ? '+' : '-',
+                             qAbs(offset) / SECS_PER_HOUR,
+                             // Qt::ISODate puts : between the hours and minutes, but Qt:TextDate does not:
+                             format == Qt::TextDate ? "" : ":",
+                             (qAbs(offset) / 60) % 60);
 }
 
 // Parse offset in [+-]HH[[:]mm] format
