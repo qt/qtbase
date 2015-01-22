@@ -223,6 +223,8 @@ QVariantMap QJsonObject::toVariantMap() const
 
 /*!
     Returns a list of all keys in this object.
+
+    The list is sorted lexographically.
  */
 QStringList QJsonObject::keys() const
 {

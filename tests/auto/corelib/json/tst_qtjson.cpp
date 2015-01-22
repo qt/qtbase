@@ -1051,6 +1051,8 @@ void tst_QtJson::keySorting()
     QCOMPARE(it.key(), QLatin1String("A"));
     ++it;
     QCOMPARE(it.key(), QLatin1String("B"));
+
+    QCOMPARE(o.keys(), QStringList() << QLatin1String("A") << QLatin1String("B"));
 }
 
 void tst_QtJson::undefinedValues()
