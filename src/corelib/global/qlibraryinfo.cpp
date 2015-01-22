@@ -41,16 +41,8 @@
 
 #ifdef QT_BUILD_QMAKE
 QT_BEGIN_NAMESPACE
-extern QString qt_libraryInfoFile();
+extern QString qmake_libraryInfoFile();
 QT_END_NAMESPACE
-#elif defined(QT_BOOTSTRAPPED)
-QString qt_libraryInfoFile()
-{
-    QString qmakeAbsoluteLocation = QLatin1String(QT_QMAKE_LOCATION);
-    if (!qmakeAbsoluteLocation.isEmpty())
-        return QDir(QFileInfo(qmakeAbsoluteLocation).absolutePath()).filePath(QLatin1String("qt.conf"));
-    return QString();
-}
 #else
 # include "qcoreapplication.h"
 #endif
@@ -72,7 +64,7 @@ struct QLibrarySettings
 {
     QLibrarySettings();
     QScopedPointer<QSettings> settings;
-#ifdef QT_BOOTSTRAPPED
+#ifdef QT_BUILD_QMAKE
     bool haveEffectiveSourcePaths;
     bool haveEffectivePaths;
     bool havePaths;
@@ -84,7 +76,7 @@ class QLibraryInfoPrivate
 {
 public:
     static QSettings *findConfiguration();
-#ifdef QT_BOOTSTRAPPED
+#ifdef QT_BUILD_QMAKE
     static bool haveGroup(QLibraryInfo::PathGroup group)
     {
         QLibrarySettings *ls = qt_library_settings();
@@ -106,7 +98,7 @@ static const char platformsSection[] = "Platforms";
 QLibrarySettings::QLibrarySettings()
     : settings(QLibraryInfoPrivate::findConfiguration())
 {
-#ifndef QT_BOOTSTRAPPED
+#ifndef QT_BUILD_QMAKE
     bool haveEffectivePaths;
     bool havePaths;
 #endif
@@ -114,7 +106,7 @@ QLibrarySettings::QLibrarySettings()
         // This code needs to be in the regular library, as otherwise a qt.conf that
         // works for qmake would break things for dynamically built Qt tools.
         QStringList children = settings->childGroups();
-#ifdef QT_BOOTSTRAPPED
+#ifdef QT_BUILD_QMAKE
         haveEffectiveSourcePaths = children.contains(QLatin1String("EffectiveSourcePaths"));
 #else
         // EffectiveSourcePaths is for the Qt build only, so needs no backwards compat trickery.
@@ -124,7 +116,7 @@ QLibrarySettings::QLibrarySettings()
         // Backwards compat: an existing but empty file is claimed to contain the Paths section.
         havePaths = (!haveEffectivePaths && !children.contains(QLatin1String(platformsSection)))
                     || children.contains(QLatin1String("Paths"));
-#ifndef QT_BOOTSTRAPPED
+#ifndef QT_BUILD_QMAKE
         if (!havePaths)
             settings.reset(0);
 #else
@@ -139,9 +131,9 @@ QLibrarySettings::QLibrarySettings()
 QSettings *QLibraryInfoPrivate::findConfiguration()
 {
     QString qtconfig = QStringLiteral(":/qt/etc/qt.conf");
-#ifdef QT_BOOTSTRAPPED
+#ifdef QT_BUILD_QMAKE
     if(!QFile::exists(qtconfig))
-        qtconfig = qt_libraryInfoFile();
+        qtconfig = qmake_libraryInfoFile();
 #else
     if (!QFile::exists(qtconfig) && QCoreApplication::instance()) {
 #ifdef Q_OS_MAC
@@ -189,7 +181,7 @@ QSettings *QLibraryInfoPrivate::findConfiguration()
     \sa QSysInfo, {Using qt.conf}
 */
 
-#ifndef QT_BOOTSTRAPPED
+#ifndef QT_BUILD_QMAKE
 
 /*!
     \internal
@@ -335,7 +327,7 @@ QLibraryInfo::isDebugBuild()
 #endif
 }
 
-#endif // QT_BOOTSTRAPPED
+#endif // QT_BUILD_QMAKE
 
 /*
  * To add a new entry in QLibrary::LibraryLocation, add it to the enum above the bootstrapped values and:
@@ -367,7 +359,7 @@ static const struct {
     { "Translations", "translations" }, // should be ${Data}/translations
     { "Examples", "examples" },
     { "Tests", "tests" },
-#ifdef QT_BOOTSTRAPPED
+#ifdef QT_BUILD_QMAKE
     { "Sysroot", "" },
     { "HostPrefix", "" },
     { "HostBinaries", "bin" },
@@ -385,7 +377,7 @@ static const struct {
 QString
 QLibraryInfo::location(LibraryLocation loc)
 {
-#ifdef QT_BOOTSTRAPPED
+#ifdef QT_BUILD_QMAKE
     QString ret = rawLocation(loc, FinalPaths);
 
     // Automatically prepend the sysroot to target paths
@@ -409,7 +401,7 @@ QLibraryInfo::rawLocation(LibraryLocation loc, PathGroup group)
 # define group dummy
 #endif
     QString ret;
-#ifdef QT_BOOTSTRAPPED
+#ifdef QT_BUILD_QMAKE
     // Logic for choosing the right data source: if EffectivePaths are requested
     // and qt.conf with that section is present, use it, otherwise fall back to
     // FinalPaths. For FinalPaths, use qt.conf if present and contains not only
@@ -450,7 +442,7 @@ QLibraryInfo::rawLocation(LibraryLocation loc, PathGroup group)
         if(!key.isNull()) {
             QSettings *config = QLibraryInfoPrivate::configuration();
             config->beginGroup(QLatin1String(
-#ifdef QT_BOOTSTRAPPED
+#ifdef QT_BUILD_QMAKE
                    group == EffectiveSourcePaths ? "EffectiveSourcePaths" :
                    group == EffectivePaths ? "EffectivePaths" :
 #endif
@@ -458,7 +450,7 @@ QLibraryInfo::rawLocation(LibraryLocation loc, PathGroup group)
 
             ret = config->value(key, defaultValue).toString();
 
-#ifdef QT_BOOTSTRAPPED
+#ifdef QT_BUILD_QMAKE
             if (ret.isEmpty()) {
                 if (loc == HostPrefixPath)
                     ret = config->value(QLatin1String(qtConfEntries[PrefixPath].key),
@@ -485,7 +477,7 @@ QLibraryInfo::rawLocation(LibraryLocation loc, PathGroup group)
 #endif // QT_NO_SETTINGS
     }
 
-#ifdef QT_BOOTSTRAPPED
+#ifdef QT_BUILD_QMAKE
     // The specs need to be returned verbatim.
     if (loc == TargetSpecPath || loc == HostSpecPath)
         return ret;
@@ -493,12 +485,12 @@ QLibraryInfo::rawLocation(LibraryLocation loc, PathGroup group)
 
     if (!ret.isEmpty() && QDir::isRelativePath(ret)) {
         QString baseDir;
-#ifdef QT_BOOTSTRAPPED
+#ifdef QT_BUILD_QMAKE
         if (loc == HostPrefixPath || loc == PrefixPath || loc == SysrootPath) {
             // We make the prefix/sysroot path absolute to the executable's directory.
             // loc == PrefixPath while a sysroot is set would make no sense here.
             // loc == SysrootPath only makes sense if qmake lives inside the sysroot itself.
-            baseDir = QFileInfo(qt_libraryInfoFile()).absolutePath();
+            baseDir = QFileInfo(qmake_libraryInfoFile()).absolutePath();
         } else if (loc > SysrootPath && loc <= LastHostPath) {
             // We make any other host path absolute to the host prefix directory.
             baseDir = rawLocation(HostPrefixPath, group);
@@ -551,7 +543,7 @@ QLibraryInfo::rawLocation(LibraryLocation loc, PathGroup group)
 
 QStringList QLibraryInfo::platformPluginArguments(const QString &platformName)
 {
-#if !defined(QT_BOOTSTRAPPED) && !defined(QT_NO_SETTINGS)
+#if !defined(QT_BUILD_QMAKE) && !defined(QT_NO_SETTINGS)
     QScopedPointer<const QSettings> settings(QLibraryInfoPrivate::findConfiguration());
     if (!settings.isNull()) {
         QString key = QLatin1String(platformsSection);
@@ -560,7 +552,7 @@ QStringList QLibraryInfo::platformPluginArguments(const QString &platformName)
         key += QLatin1String("Arguments");
         return settings->value(key).toStringList();
     }
-#endif // !QT_BOOTSTRAPPED && !QT_NO_SETTINGS
+#endif // !QT_BUILD_QMAKE && !QT_NO_SETTINGS
     return QStringList();
 }
 
