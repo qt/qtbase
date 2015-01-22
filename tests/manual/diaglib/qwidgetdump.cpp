@@ -84,7 +84,7 @@ void dumpAllWidgets(FormatWindowOptions options)
     str << "### QWidgets:\n";
     foreach (QWidget *tw, QApplication::topLevelWidgets())
         dumpWidgetRecursion(str, tw, options);
-#if QT_VERSION > 0x050000
+#if QT_VERSION >= 0x050400
     qDebug().noquote() << d;
 #else
     qDebug("%s", qPrintable(d));

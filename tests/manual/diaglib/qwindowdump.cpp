@@ -157,7 +157,11 @@ void dumpAllWindows(FormatWindowOptions options)
     str << "### QWindows:\n";
     foreach (QWindow *w, QGuiApplication::topLevelWindows())
         dumpWindowRecursion(str, w, options);
+#if QT_VERSION >= 0x050400
     qDebug().noquote() << d;
+#else
+    qDebug() << d;
+#endif
 }
 
 #else // Qt 5
