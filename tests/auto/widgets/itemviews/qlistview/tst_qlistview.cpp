@@ -2004,7 +2004,7 @@ void tst_QListView::taskQTBUG_9455_wrongScrollbarRanges()
     QStringList list;
     const int nrItems = 8;
     for (int i = 0; i < nrItems; i++)
-        list << QString().sprintf("item %d", i);
+        list << QString::asprintf("item %d", i);
 
     QStringListModel model(list);
     ListView_9455 w;

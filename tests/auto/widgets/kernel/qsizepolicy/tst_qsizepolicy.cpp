@@ -155,7 +155,7 @@ static void makeRow(QSizePolicy sp, QSizePolicy::Policy hp, QSizePolicy::Policy 
                     int hst, int vst, QSizePolicy::ControlType ct, bool hfw, bool wfh,
                     Qt::Orientations orients)
 {
-    QTest::newRow(qPrintable(QString().sprintf("%s-%s-%d-%d-%s-%s-%s",
+    QTest::newRow(qPrintable(QString::asprintf("%s-%s-%d-%d-%s-%s-%s",
                                                PrettyPrint(hp).s(), PrettyPrint(vp).s(), hst, vst,
                                                PrettyPrint(ct).s(),
                                                hfw ? "true" : "false", wfh ? "true" : "false")))

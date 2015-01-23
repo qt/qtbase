@@ -182,7 +182,6 @@ tst_QCompleter::~tst_QCompleter()
 
 void tst_QCompleter::setSourceModel(ModelType type)
 {
-    QString text;
     QTreeWidgetItem *parent, *child;
     treeWidget->clear();
     switch(type) {
@@ -192,11 +191,11 @@ void tst_QCompleter::setSourceModel(ModelType type)
         for (int i = 0; i < 2; i++) {
             for (int j = 0; j < 5; j++) {
                 parent = new QTreeWidgetItem(treeWidget);
-                text.sprintf("%c%i", i == 0 ? 'P' : 'p', j);
+                const QString text = QString::asprintf("%c%i", i == 0 ? 'P' : 'p', j);
                 parent->setText(completionColumn, text);
                 for (int k = 0; k < 5; k++) {
                     child = new QTreeWidgetItem(parent);
-                    QString t = QString().sprintf("c%i", k) + text;
+                    QString t = QString::asprintf("c%i", k) + text;
                     child->setText(completionColumn, t);
                 }
             }
@@ -211,11 +210,11 @@ void tst_QCompleter::setSourceModel(ModelType type)
         for (int i = 0; i < 5; i++) {
             for (int j = 0; j < 2; j++) {
                 parent = new QTreeWidgetItem(treeWidget);
-                text.sprintf("%c%i", j == 0 ? 'P' : 'p', i);
+                const QString text = QString::asprintf("%c%i", j == 0 ? 'P' : 'p', i);
                 parent->setText(completionColumn, text);
                 for (int k = 0; k < 5; k++) {
                     child = new QTreeWidgetItem(parent);
-                    QString t = QString().sprintf("c%i", k) + text;
+                    QString t = QString::asprintf("c%i", k) + text;
                     child->setText(completionColumn, t);
                 }
             }

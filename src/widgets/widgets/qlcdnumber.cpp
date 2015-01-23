@@ -160,13 +160,13 @@ static QString int2string(int num, int base, int ndigits, bool *oflow)
     }
     switch(base) {
         case QLCDNumber::Hex:
-            s.sprintf("%*x", ndigits, num);
+            s = QString::asprintf("%*x", ndigits, num);
             break;
         case QLCDNumber::Dec:
-            s.sprintf("%*i", ndigits, num);
+            s = QString::asprintf("%*i", ndigits, num);
             break;
         case QLCDNumber::Oct:
-            s.sprintf("%*o", ndigits, num);
+            s = QString::asprintf("%*o", ndigits, num);
             break;
         case QLCDNumber::Bin:
             {
@@ -219,7 +219,7 @@ static QString double2string(double num, int base, int ndigits, bool *oflow)
     } else {                                    // decimal base
         int nd = ndigits;
         do {
-            s.sprintf("%*.*g", ndigits, nd, num);
+            s = QString::asprintf("%*.*g", ndigits, nd, num);
             int i = s.indexOf(QLatin1Char('e'));
             if (i > 0 && s[i+1]==QLatin1Char('+')) {
                 s[i] = QLatin1Char(' ');

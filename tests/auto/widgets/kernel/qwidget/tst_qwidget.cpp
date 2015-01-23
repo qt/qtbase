@@ -2465,14 +2465,14 @@ void tst_QWidget::hideWhenFocusWidgetIsChild()
         QSKIP("X11: Your window manager is too broken for this test");
 
     QVERIFY(qApp->focusWidget());
-    actualFocusWidget.sprintf("%p %s %s", qApp->focusWidget(), qApp->focusWidget()->objectName().toLatin1().constData(), qApp->focusWidget()->metaObject()->className());
-    expectedFocusWidget.sprintf("%p %s %s", edit, edit->objectName().toLatin1().constData(), edit->metaObject()->className());
+    actualFocusWidget = QString::asprintf("%p %s %s", qApp->focusWidget(), qApp->focusWidget()->objectName().toLatin1().constData(), qApp->focusWidget()->metaObject()->className());
+    expectedFocusWidget = QString::asprintf("%p %s %s", edit, edit->objectName().toLatin1().constData(), edit->metaObject()->className());
     QCOMPARE(actualFocusWidget, expectedFocusWidget);
 
     parentWidget->hide();
     qApp->processEvents();
-    actualFocusWidget.sprintf("%p %s %s", qApp->focusWidget(), qApp->focusWidget()->objectName().toLatin1().constData(), qApp->focusWidget()->metaObject()->className());
-    expectedFocusWidget.sprintf("%p %s %s", edit2, edit2->objectName().toLatin1().constData(), edit2->metaObject()->className());
+    actualFocusWidget = QString::asprintf("%p %s %s", qApp->focusWidget(), qApp->focusWidget()->objectName().toLatin1().constData(), qApp->focusWidget()->metaObject()->className());
+    expectedFocusWidget = QString::asprintf("%p %s %s", edit2, edit2->objectName().toLatin1().constData(), edit2->metaObject()->className());
     QCOMPARE(actualFocusWidget, expectedFocusWidget);
 }
 

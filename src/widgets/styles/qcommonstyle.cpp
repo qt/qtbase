@@ -5199,7 +5199,7 @@ int QCommonStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget
 static QPixmap cachedPixmapFromXPM(const char * const *xpm)
 {
     QPixmap result;
-    const QString tag = QString().sprintf("xpm:0x%p", static_cast<const void*>(xpm));
+    const QString tag = QString::asprintf("xpm:0x%p", static_cast<const void*>(xpm));
     if (!QPixmapCache::find(tag, &result)) {
         result = QPixmap(xpm);
         QPixmapCache::insert(tag, result);

@@ -641,8 +641,8 @@ void tst_QTreeWidget::setItemHidden2()
     top->setText(0, "ItemList");
     for (int i = 1; i <= 4; i++) {
         leaf = new QTreeWidgetItem(top);
-        leaf->setText(0, QString().sprintf("%d", i));
-        leaf->setText(1, QString().sprintf("Item %d", i));
+        leaf->setText(0, QString::asprintf("%d", i));
+        leaf->setText(1, QString::asprintf("Item %d", i));
     }
 
     if (testWidget->topLevelItemCount() > 0) {
