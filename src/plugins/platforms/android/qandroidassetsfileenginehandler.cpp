@@ -133,9 +133,7 @@ public:
 
     virtual bool open(QIODevice::OpenMode openMode)
     {
-        if (m_assetFile)
-            return openMode & QIODevice::ReadOnly;
-        return false;
+        return m_assetFile != 0 && (openMode & QIODevice::WriteOnly) == 0;
     }
 
     virtual bool close()

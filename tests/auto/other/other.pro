@@ -71,3 +71,6 @@ wince*|!contains(QT_CONFIG, accessibility): SUBDIRS -= qaccessibility
 
 winrt: SUBDIRS -= \
    qprocess_and_guieventloop
+
+android: SUBDIRS += \
+    android
