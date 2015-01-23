@@ -253,7 +253,7 @@ static void qt_message(QtMsgType msgType, const QMessageLogContext &context, con
 {
 
     if (msg)
-        buf = QString().vsprintf(msg, ap);
+        buf = QString::vasprintf(msg, ap);
     qt_message_print(msgType, context, buf);
 }
 
@@ -1367,13 +1367,13 @@ QString qFormatLogMessage(QtMsgType type, const QMessageLogContext &context, con
         } else if (token == timeTokenC) {
             if (pattern->timeFormat == QLatin1String("process")) {
                 quint64 ms = pattern->timer.elapsed();
-                message.append(QString().sprintf("%6d.%03d", uint(ms / 1000), uint(ms % 1000)));
+                message.append(QString::asprintf("%6d.%03d", uint(ms / 1000), uint(ms % 1000)));
             } else if (pattern->timeFormat == QLatin1String("boot")) {
                 // just print the milliseconds since the elapsed timer reference
                 // like the Linux kernel does
                 pattern->timer.elapsed();
                 uint ms = pattern->timer.msecsSinceReference();
-                message.append(QString().sprintf("%6d.%03d", uint(ms / 1000), uint(ms % 1000)));
+                message.append(QString::asprintf("%6d.%03d", uint(ms / 1000), uint(ms % 1000)));
             } else if (pattern->timeFormat.isEmpty()) {
                 message.append(QDateTime::currentDateTime().toString(Qt::ISODate));
             } else {
@@ -1611,7 +1611,7 @@ void qErrnoWarning(const char *msg, ...)
     va_list ap;
     va_start(ap, msg);
     if (msg)
-        buf.vsprintf(msg, ap);
+        buf = QString::vasprintf(msg, ap);
     va_end(ap);
 
     buf += QLatin1String(" (") + qt_error_string(-1) + QLatin1Char(')');
@@ -1627,7 +1627,7 @@ void qErrnoWarning(int code, const char *msg, ...)
     va_list ap;
     va_start(ap, msg);
     if (msg)
-        buf.vsprintf(msg, ap);
+        buf = QString::vasprintf(msg, ap);
     va_end(ap);
 
     buf += QLatin1String(" (") + qt_error_string(code) + QLatin1Char(')');
