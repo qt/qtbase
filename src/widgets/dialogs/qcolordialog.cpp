@@ -159,23 +159,6 @@ public:
     QWindow dummyTransparentWindow;
 #endif
 
-#ifdef Q_DEAD_CODE_FROM_QT4_MAC
-    void openCocoaColorPanel(const QColor &initial,
-            QWidget *parent, const QString &title, QColorDialog::ColorDialogOptions options);
-    void closeCocoaColorPanel();
-    void releaseCocoaColorPanelDelegate();
-    void setCocoaPanelColor(const QColor &color);
-
-    inline void done(int result) { q_func()->done(result); }
-    inline QColorDialog *colorDialog() { return q_func(); }
-
-    void *delegate;
-
-    static bool sharedColorPanelAvailable;
-
-    void _q_macRunNativeAppModalPanel();
-    void mac_nativeDialogModalHelp();
-#endif
 private:
     virtual void initHelper(QPlatformDialogHelper *h) Q_DECL_OVERRIDE;
     virtual void helperPrepareShow(QPlatformDialogHelper *h) Q_DECL_OVERRIDE;
@@ -1731,9 +1714,6 @@ void QColorDialogPrivate::init(const QColor &initial)
     if (!nativeDialogInUse)
         initWidgets();
 
-#ifdef Q_DEAD_CODE_FROM_QT4_MAC
-    delegate = 0;
-#endif
 #ifdef Q_OS_WIN32
     dummyTransparentWindow.resize(1, 1);
     dummyTransparentWindow.setFlags(Qt::Tool | Qt::FramelessWindowHint);
@@ -2135,11 +2115,6 @@ QColorDialog::ColorDialogOptions QColorDialog::options() const
     \sa color, colorSelected()
 */
 
-#ifdef Q_DEAD_CODE_FROM_QT4_MAC
-// can only have one Cocoa color panel active
-bool QColorDialogPrivate::sharedColorPanelAvailable = true;
-#endif
-
 /*!
     \fn void QColorDialog::colorSelected(const QColor &color);
 
@@ -2166,23 +2141,6 @@ void QColorDialog::setVisible(bool visible)
     if (visible)
         d->selectedQColor = QColor();
 
-#if defined(Q_DEAD_CODE_FROM_QT4_MAC)
-    if (visible) {
-        if (d->delegate || (QColorDialogPrivate::sharedColorPanelAvailable &&
-                !(testAttribute(Qt::WA_DontShowOnScreen) || (d->opts & DontUseNativeDialog)))){
-            d->openCocoaColorPanel(currentColor(), parentWidget(), windowTitle(), options());
-            QColorDialogPrivate::sharedColorPanelAvailable = false;
-            setAttribute(Qt::WA_DontShowOnScreen);
-        }
-        setWindowFlags(windowModality() == Qt::WindowModal ? Qt::Sheet : DefaultWindowFlags);
-    } else {
-        if (d->delegate) {
-            d->closeCocoaColorPanel();
-            setAttribute(Qt::WA_DontShowOnScreen, false);
-        }
-    }
-#else
-
     if (d->nativeDialogInUse) {
         d->setNativeDialogVisible(visible);
         // Set WA_DontShowOnScreen so that QDialog::setVisible(visible) below
@@ -2191,7 +2149,6 @@ void QColorDialog::setVisible(bool visible)
     } else {
         setAttribute(Qt::WA_DontShowOnScreen, false);
     }
-#endif
 
     QDialog::setVisible(visible);
 }
@@ -2267,13 +2224,7 @@ QRgb QColorDialog::getRgba(QRgb initial, bool *ok, QWidget *parent)
 
 QColorDialog::~QColorDialog()
 {
-#if defined(Q_DEAD_CODE_FROM_QT4_MAC)
-    Q_D(QColorDialog);
-    if (d->delegate) {
-        d->releaseCocoaColorPanelDelegate();
-        QColorDialogPrivate::sharedColorPanelAvailable = true;
-    }
-#endif
+
 }
 
 /*!
