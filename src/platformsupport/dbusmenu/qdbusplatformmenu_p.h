@@ -51,7 +51,7 @@ Q_DECLARE_LOGGING_CATEGORY(qLcMenu)
 
 class QDBusPlatformMenu;
 
-class Q_GUI_EXPORT QDBusPlatformMenuItem : public QPlatformMenuItem
+class QDBusPlatformMenuItem : public QPlatformMenuItem
 {
     Q_OBJECT
 
@@ -109,7 +109,7 @@ private:
     QKeySequence m_shortcut;
 };
 
-class Q_GUI_EXPORT QDBusPlatformMenu : public QPlatformMenu
+class QDBusPlatformMenu : public QPlatformMenu
 {
     Q_OBJECT
 
