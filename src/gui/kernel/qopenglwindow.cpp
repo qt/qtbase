@@ -336,6 +336,31 @@ QOpenGLWindow::QOpenGLWindow(QOpenGLContext *shareContext, UpdateBehavior update
 {
     setSurfaceType(QSurface::OpenGLSurface);
 }
+
+/*!
+  Destroys the QOpenGLWindow instance, freeing its resources.
+
+  The OpenGLWindow's context is made current in the destructor, allowing for
+  safe destruction of any child object that may need to release OpenGL
+  resources belonging to the context provided by this window.
+
+  \warning if you have objects wrapping OpenGL resources (such as
+  QOpenGLBuffer, QOpenGLShaderProgram, etc.), as members of a QOpenGLWindow
+  subclass, you may need to add a call to makeCurrent() in that subclass'
+  destructor as well. Due to the rules of C++ object destruction, those objects
+  will be destroyed \e{before} calling this function (but after that the
+  destructor of the subclass has run), therefore making the OpenGL context
+  current in this function happens too late for their safe disposal.
+
+  \sa makeCurrent
+
+  \since 5.5
+*/
+QOpenGLWindow::~QOpenGLWindow()
+{
+    makeCurrent();
+}
+
 /*!
   \return the update behavior for this QOpenGLWindow.
 */

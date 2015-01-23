@@ -60,6 +60,7 @@ public:
 
     explicit QOpenGLWindow(UpdateBehavior updateBehavior = NoPartialUpdate, QWindow *parent = 0);
     explicit QOpenGLWindow(QOpenGLContext *shareContext, UpdateBehavior updateBehavior = NoPartialUpdate, QWindow *parent = 0);
+    ~QOpenGLWindow();
 
     UpdateBehavior updateBehavior() const;
     bool isValid() const;
