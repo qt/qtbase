@@ -70,6 +70,16 @@ Q_DECL_CONSTEXPR inline int fromHex(uint c) Q_DECL_NOTHROW
            ((c >= 'a') && (c <= 'f')) ? c - 'a' + 10 :
            /* otherwise */              -1;
 }
+
+Q_DECL_CONSTEXPR inline char toOct(uint value) Q_DECL_NOTHROW
+{
+    return '0' + char(value & 0x7);
+}
+
+Q_DECL_CONSTEXPR inline int fromOct(uint c) Q_DECL_NOTHROW
+{
+    return ((c >= '0') && (c <= '7')) ? c - '0' : -1;
+}
 }
 
 // We typically need an extra bit for qNextPowerOfTwo when determining the next allocation size.
