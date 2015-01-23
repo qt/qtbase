@@ -48,16 +48,14 @@
 
 static QString stringNumber(qint64 number)
 {
-    QString tmp;
     if (number > (1024 * 1024 * 1024))
-        tmp.sprintf("%.2fGB", number / (1024.0 * 1024.0 * 1024.0));
+        return QString::asprintf("%.2fGB", number / (1024.0 * 1024.0 * 1024.0));
     else if (number > (1024 * 1024))
-        tmp.sprintf("%.2fMB", number / (1024.0 * 1024.0));
+        return QString::asprintf("%.2fMB", number / (1024.0 * 1024.0));
     else if (number > (1024))
-        tmp.sprintf("%.2fKB", number / (1024.0));
+        return QString::asprintf("%.2fKB", number / (1024.0));
     else
-        tmp.sprintf("%d bytes", int(number));
-    return tmp;
+        return QString::asprintf("%d bytes", int(number));
 }
 
 AddTorrentDialog::AddTorrentDialog(QWidget *parent)

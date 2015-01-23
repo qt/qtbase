@@ -79,9 +79,8 @@ public:
 
         QStringList colors = colorPairs(999);
         for (int i = 0; i < colors.count(); ++i) {
-            QString c = colors[i];
-            QString str;
-            str.sprintf("%4d", i + 1);
+            const QString c = colors[i];
+            const QString str = QString::asprintf("%4d", i + 1);
             m_colorNames << (str + "   " + c);
 
             QStringList duet = c.split(' ');

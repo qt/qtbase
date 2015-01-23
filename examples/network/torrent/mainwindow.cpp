@@ -92,7 +92,7 @@ public:
         // Set the progress and text values of the style option.
         int progress = qobject_cast<MainWindow *>(parent())->clientForRow(index.row())->progress();
         progressBarOption.progress = progress < 0 ? 0 : progress;
-        progressBarOption.text = QString().sprintf("%d%%", progressBarOption.progress);
+        progressBarOption.text = QString::asprintf("%d%%", progressBarOption.progress);
 
         // Draw the progress bar onto the view.
         QApplication::style()->drawControl(QStyle::CE_ProgressBar, &progressBarOption, painter);
@@ -509,8 +509,7 @@ void MainWindow::updateDownloadRate(int bytesPerSecond)
     // Update the download rate.
     TorrentClient *client = qobject_cast<TorrentClient *>(sender());
     int row = rowOfClient(client);
-    QString num;
-    num.sprintf("%.1f KB/s", bytesPerSecond / 1024.0);
+    const QString num = QString::asprintf("%.1f KB/s", bytesPerSecond / 1024.0);
     torrentView->topLevelItem(row)->setText(3, num);
 
     if (!saveChanges) {
@@ -524,8 +523,7 @@ void MainWindow::updateUploadRate(int bytesPerSecond)
     // Update the upload rate.
     TorrentClient *client = qobject_cast<TorrentClient *>(sender());
     int row = rowOfClient(client);
-    QString num;
-    num.sprintf("%.1f KB/s", bytesPerSecond / 1024.0);
+    const QString num = QString::asprintf("%.1f KB/s", bytesPerSecond / 1024.0);
     torrentView->topLevelItem(row)->setText(4, num);
 
     if (!saveChanges) {
@@ -593,14 +591,14 @@ static int rateFromValue(int value)
 void MainWindow::setUploadLimit(int value)
 {
     int rate = rateFromValue(value);
-    uploadLimitLabel->setText(tr("%1 KB/s").arg(QString().sprintf("%4d", rate)));
+    uploadLimitLabel->setText(tr("%1 KB/s").arg(QString::asprintf("%4d", rate)));
     RateController::instance()->setUploadLimit(rate * 1024);
 }
 
 void MainWindow::setDownloadLimit(int value)
 {
     int rate = rateFromValue(value);
-    downloadLimitLabel->setText(tr("%1 KB/s").arg(QString().sprintf("%4d", rate)));
+    downloadLimitLabel->setText(tr("%1 KB/s").arg(QString::asprintf("%4d", rate)));
     RateController::instance()->setDownloadLimit(rate * 1024);
 }
 
