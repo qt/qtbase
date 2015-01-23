@@ -675,6 +675,8 @@ static inline bool findPlatformWindowHelper(const POINT &screenPoint, unsigned c
 #ifndef Q_OS_WINCE
     const HWND child = ChildWindowFromPointEx(*hwnd, point, cwexFlags);
 #else
+//  Under Windows CE we don't use ChildWindowFromPointEx as it's not available
+//  and ChildWindowFromPoint does not work properly.
     Q_UNUSED(cwexFlags)
     const HWND child = WindowFromPoint(point);
 #endif
@@ -683,7 +685,13 @@ static inline bool findPlatformWindowHelper(const POINT &screenPoint, unsigned c
     if (QWindowsWindow *window = context->findPlatformWindow(child)) {
         *result = window;
         *hwnd = child;
+#ifndef Q_OS_WINCE
         return true;
+#else
+//      WindowFromPoint does not return same handle in two sequential calls, which leads
+//      to an endless loop, but calling WindowFromPoint once is good enough.
+        return false;
+#endif
     }
 #ifndef Q_OS_WINCE // Does not have  WS_EX_TRANSPARENT .
     // QTBUG-40555: despite CWP_SKIPINVISIBLE, it is possible to hit on invisible
