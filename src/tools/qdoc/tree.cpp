@@ -65,16 +65,16 @@ QT_BEGIN_NAMESPACE
   qdoc database that is constructing the tree. This might not
   be necessary, and it might be removed later.
  */
-Tree::Tree(const QString& module, QDocDatabase* qdb)
+Tree::Tree(const QString& physicalModuleName, QDocDatabase* qdb)
     : treeHasBeenAnalyzed_(false),
       docsHaveBeenGenerated_(false),
       linkCount_(0),
-      module_(module),
+      physicalModuleName_(physicalModuleName),
       qdb_(qdb),
       root_(0, QString()),
       targetListMap_(0)
 {
-    root_.setModuleName(module_);
+    root_.setPhysicalModuleName(physicalModuleName_);
     root_.setTree(this);
     if (Generator::writeQaPages()) {
         targetListMap_ = new TargetListMap;
@@ -1348,7 +1348,7 @@ ModuleNode* Tree::addToModule(const QString& name, Node* node)
 {
     ModuleNode* mn = findModule(name);
     mn->addMember(node);
-    node->setModuleName(name);
+    node->setPhysicalModuleName(name);
     return mn;
 }
 
@@ -1431,23 +1431,23 @@ QString Tree::getNewLinkTarget(const Node* locNode,
                                QString& text,
                                bool broken)
 {
-    QString moduleName;
+    QString physicalModuleName;
     if (t && !broken) {
         Tree* tree = t->tree();
         if (tree != this)
             tree->incrementLinkCount();
-        moduleName = tree->moduleName();
+        physicalModuleName = tree->physicalModuleName();
     }
     else
-        moduleName = "broken";
+        physicalModuleName = "broken";
     incrementLinkCount();
     QString target = QString("qa-target-%1").arg(-(linkCount()));
     TargetLoc* tloc = new TargetLoc(locNode, target, fileName, text, broken);
     TargetList* tList = 0;
-    TargetListMap::iterator i = targetListMap_->find(moduleName);
+    TargetListMap::iterator i = targetListMap_->find(physicalModuleName);
     if (i == targetListMap_->end()) {
         tList = new TargetList;
-        i = targetListMap_->insert(moduleName, tList);
+        i = targetListMap_->insert(physicalModuleName, tList);
     }
     else
         tList = i.value();

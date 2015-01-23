@@ -182,7 +182,7 @@ public:
     void setThreadSafeness(ThreadSafeness safeness) { safeness_ = safeness; }
     void setSince(const QString &since);
     void setRelates(InnerNode* pseudoParent);
-    void setModuleName(const QString &name) { moduleName_ = name; }
+    void setPhysicalModuleName(const QString &name) { physicalModuleName_ = name; }
     void setUrl(const QString& url) { url_ = url; }
     void setTemplateStuff(const QString &templateStuff) { templateStuff_ = templateStuff; }
     void setReconstitutedBrief(const QString &t) { reconstitutedBrief_ = t; }
@@ -252,7 +252,7 @@ public:
     const Node* root() const;
     InnerNode* relates() const { return relatesTo_; }
     const QString& name() const { return name_; }
-    QString moduleName() const;
+    QString physicalModuleName() const;
     QString url() const { return url_; }
     virtual QString nameForLists() const { return name_; }
     virtual QString outputFileName() const { return QString(); }
@@ -290,11 +290,11 @@ public:
     QString extractClassName(const QString &string) const;
     virtual QString qmlTypeName() const { return name_; }
     virtual QString qmlFullBaseName() const { return QString(); }
-    virtual QString qmlModuleName() const { return QString(); }
-    virtual QString qmlModuleVersion() const { return QString(); }
-    virtual QString qmlModuleIdentifier() const { return QString(); }
+    virtual QString logicalModuleName() const { return QString(); }
+    virtual QString logicalModuleVersion() const { return QString(); }
+    virtual QString logicalModuleIdentifier() const { return QString(); }
     virtual void setQmlModuleInfo(const QString& ) { }
-    virtual QmlModuleNode* qmlModule() const { return 0; }
+    virtual QmlModuleNode* logicalModule() const { return 0; }
     virtual void setQmlModule(QmlModuleNode* ) { }
     virtual ClassNode* classNode() { return 0; }
     virtual void setClassNode(ClassNode* ) { }
@@ -338,7 +338,7 @@ private:
     Doc doc_;
     QMap<LinkType, QPair<QString, QString> > linkMap_;
     QString fileNameBase_;
-    QString moduleName_;
+    QString physicalModuleName_;
     QString url_;
     QString since_;
     QString templateStuff_;
@@ -585,7 +585,9 @@ public:
     virtual ~QmlTypeNode();
     virtual bool isQmlNode() const Q_DECL_OVERRIDE { return true; }
     virtual bool isQmlType() const Q_DECL_OVERRIDE { return true; }
-    virtual bool isQtQuickNode() const Q_DECL_OVERRIDE { return (qmlModuleName() == QLatin1String("QtQuick")); }
+    virtual bool isQtQuickNode() const Q_DECL_OVERRIDE {
+        return (logicalModuleName() == QLatin1String("QtQuick"));
+    }
     virtual ClassNode* classNode() Q_DECL_OVERRIDE { return cnode_; }
     virtual void setClassNode(ClassNode* cn) Q_DECL_OVERRIDE { cnode_ = cn; }
     virtual bool isAbstract() const Q_DECL_OVERRIDE { return abstract_; }
@@ -596,11 +598,11 @@ public:
     virtual QString qmlFullBaseName() const Q_DECL_OVERRIDE;
     virtual QString obsoleteLink() const Q_DECL_OVERRIDE { return obsoleteLink_; }
     virtual void setObsoleteLink(const QString& t) Q_DECL_OVERRIDE { obsoleteLink_ = t; };
-    virtual QString qmlModuleName() const Q_DECL_OVERRIDE;
-    virtual QString qmlModuleVersion() const Q_DECL_OVERRIDE;
-    virtual QString qmlModuleIdentifier() const Q_DECL_OVERRIDE;
-    virtual QmlModuleNode* qmlModule() const Q_DECL_OVERRIDE { return qmlModule_; }
-    virtual void setQmlModule(QmlModuleNode* t) Q_DECL_OVERRIDE { qmlModule_ = t; }
+    virtual QString logicalModuleName() const Q_DECL_OVERRIDE;
+    virtual QString logicalModuleVersion() const Q_DECL_OVERRIDE;
+    virtual QString logicalModuleIdentifier() const Q_DECL_OVERRIDE;
+    virtual QmlModuleNode* logicalModule() const Q_DECL_OVERRIDE { return logicalModule_; }
+    virtual void setQmlModule(QmlModuleNode* t) Q_DECL_OVERRIDE { logicalModule_ = t; }
     virtual Node::Genus genus() const Q_DECL_OVERRIDE { return Node::QML; }
     const ImportList& importList() const { return importList_; }
     void setImportList(const ImportList& il) { importList_ = il; }
@@ -626,7 +628,7 @@ private:
     ClassNode*    cnode_;
     QString             qmlBaseName_;
     QString             obsoleteLink_;
-    QmlModuleNode*      qmlModule_;
+    QmlModuleNode*      logicalModule_;
     QmlTypeNode*       qmlBaseNode_;
     ImportList          importList_;
 };
@@ -650,9 +652,15 @@ public:
     virtual bool isQmlNode() const Q_DECL_OVERRIDE { return true; }
     virtual bool isQtQuickNode() const Q_DECL_OVERRIDE { return parent()->isQtQuickNode(); }
     virtual QString qmlTypeName() const Q_DECL_OVERRIDE { return parent()->qmlTypeName(); }
-    virtual QString qmlModuleName() const Q_DECL_OVERRIDE { return parent()->qmlModuleName(); }
-    virtual QString qmlModuleVersion() const Q_DECL_OVERRIDE { return parent()->qmlModuleVersion(); }
-    virtual QString qmlModuleIdentifier() const Q_DECL_OVERRIDE { return parent()->qmlModuleIdentifier(); }
+    virtual QString logicalModuleName() const Q_DECL_OVERRIDE {
+        return parent()->logicalModuleName();
+    }
+    virtual QString logicalModuleVersion() const Q_DECL_OVERRIDE {
+        return parent()->logicalModuleVersion();
+    }
+    virtual QString logicalModuleIdentifier() const Q_DECL_OVERRIDE {
+        return parent()->logicalModuleIdentifier();
+    }
     virtual QString idNumber() Q_DECL_OVERRIDE;
     virtual bool isQmlPropertyGroup() const Q_DECL_OVERRIDE { return true; }
     virtual Node::Genus genus() const Q_DECL_OVERRIDE { return Node::QML; }
@@ -694,9 +702,15 @@ public:
     virtual bool isQmlNode() const Q_DECL_OVERRIDE { return true; }
     virtual bool isQtQuickNode() const Q_DECL_OVERRIDE { return parent()->isQtQuickNode(); }
     virtual QString qmlTypeName() const Q_DECL_OVERRIDE { return parent()->qmlTypeName(); }
-    virtual QString qmlModuleName() const Q_DECL_OVERRIDE { return parent()->qmlModuleName(); }
-    virtual QString qmlModuleVersion() const Q_DECL_OVERRIDE { return parent()->qmlModuleVersion(); }
-    virtual QString qmlModuleIdentifier() const Q_DECL_OVERRIDE { return parent()->qmlModuleIdentifier(); }
+    virtual QString logicalModuleName() const Q_DECL_OVERRIDE {
+        return parent()->logicalModuleName();
+    }
+    virtual QString logicalModuleVersion() const Q_DECL_OVERRIDE {
+        return parent()->logicalModuleVersion();
+    }
+    virtual QString logicalModuleIdentifier() const Q_DECL_OVERRIDE {
+        return parent()->logicalModuleIdentifier();
+    }
     virtual QString element() const Q_DECL_OVERRIDE;
 
  private:
@@ -865,12 +879,20 @@ public:
                 (type() == QmlSignalHandler));
     }
     virtual bool isCppNode() const Q_DECL_OVERRIDE { return !isQmlNode(); }
-    virtual Node::Genus genus() const Q_DECL_OVERRIDE { return (isQmlNode() ? Node::QML : Node::CPP); }
+    virtual Node::Genus genus() const Q_DECL_OVERRIDE {
+        return (isQmlNode() ? Node::QML : Node::CPP);
+    }
     virtual bool isQtQuickNode() const Q_DECL_OVERRIDE { return parent()->isQtQuickNode(); }
     virtual QString qmlTypeName() const Q_DECL_OVERRIDE { return parent()->qmlTypeName(); }
-    virtual QString qmlModuleName() const Q_DECL_OVERRIDE { return parent()->qmlModuleName(); }
-    virtual QString qmlModuleVersion() const Q_DECL_OVERRIDE { return parent()->qmlModuleVersion(); }
-    virtual QString qmlModuleIdentifier() const Q_DECL_OVERRIDE { return parent()->qmlModuleIdentifier(); }
+    virtual QString logicalModuleName() const Q_DECL_OVERRIDE {
+        return parent()->logicalModuleName();
+    }
+    virtual QString logicalModuleVersion() const Q_DECL_OVERRIDE {
+        return parent()->logicalModuleVersion();
+    }
+    virtual QString logicalModuleIdentifier() const Q_DECL_OVERRIDE {
+        return parent()->logicalModuleIdentifier();
+    }
 
     void debug() const;
 
@@ -1098,21 +1120,21 @@ class QmlModuleNode : public CollectionNode
 
     virtual bool isQmlNode() const Q_DECL_OVERRIDE { return true; }
     virtual bool isQmlModule() const Q_DECL_OVERRIDE { return true; }
-    virtual QString qmlModuleName() const Q_DECL_OVERRIDE { return qmlModuleName_; }
-    virtual QString qmlModuleVersion() const Q_DECL_OVERRIDE {
-        return qmlModuleVersionMajor_ + "." + qmlModuleVersionMinor_;
+    virtual QString logicalModuleName() const Q_DECL_OVERRIDE { return logicalModuleName_; }
+    virtual QString logicalModuleVersion() const Q_DECL_OVERRIDE {
+        return logicalModuleVersionMajor_ + "." + logicalModuleVersionMinor_;
     }
-    virtual QString qmlModuleIdentifier() const Q_DECL_OVERRIDE {
-        return qmlModuleName_ + qmlModuleVersionMajor_;
+    virtual QString logicalModuleIdentifier() const Q_DECL_OVERRIDE {
+        return logicalModuleName_ + logicalModuleVersionMajor_;
     }
     virtual void setQmlModuleInfo(const QString& ) Q_DECL_OVERRIDE;
     virtual void setQtVariable(const QString& v) Q_DECL_OVERRIDE { qtVariable_ = v; }
     virtual QString qtVariable() const Q_DECL_OVERRIDE { return qtVariable_; }
 
  private:
-    QString     qmlModuleName_;
-    QString     qmlModuleVersionMajor_;
-    QString     qmlModuleVersionMinor_;
+    QString     logicalModuleName_;
+    QString     logicalModuleVersionMajor_;
+    QString     logicalModuleVersionMinor_;
     QString     qtVariable_;
 };
 

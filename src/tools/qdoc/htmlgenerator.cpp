@@ -683,9 +683,9 @@ int HtmlGenerator::generateAtom(const Atom *atom, const Node *relative, CodeMark
             generateCompactList(Generic, relative, qdb_->getQmlTypes(), true, QStringLiteral(""));
         }
         else if (atom->string().contains("classesbymodule")) {
-            QString moduleName = atom->string().mid(atom->string().indexOf("classesbymodule") + 15).trimmed();
+            QString physicalModuleName = atom->string().mid(atom->string().indexOf("classesbymodule") + 15).trimmed();
             QDocDatabase* qdb = QDocDatabase::qdocDB();
-            ModuleNode* mn = qdb->findModule(moduleName);
+            ModuleNode* mn = qdb->findModule(physicalModuleName);
             if (mn) {
                 NodeMap m;
                 mn->getMemberClasses(m);
@@ -1857,7 +1857,7 @@ void HtmlGenerator::generateNavigationBar(const QString &title,
 
     if (node->isClass()) {
         const ClassNode *cn = static_cast<const ClassNode *>(node);
-        QString name =  node->moduleName();
+        QString name =  node->physicalModuleName();
 
         if (!cppclassespage.isEmpty())
             navigationbar << Atom(Atom::ListItemLeft)
@@ -2132,8 +2132,8 @@ void HtmlGenerator::generateRequisites(InnerNode *inner, CodeMarker *marker)
 
     if (inner->type() == Node::Class || inner->type() == Node::Namespace) {
         //add the QT variable to the map
-        if (!inner->moduleName().isEmpty()) {
-            ModuleNode* moduleNode = qdb_->findModule(inner->moduleName());
+        if (!inner->physicalModuleName().isEmpty()) {
+            ModuleNode* moduleNode = qdb_->findModule(inner->physicalModuleName());
             if (moduleNode && !moduleNode->qtVariable().isEmpty()) {
                 text.clear();
                 text << "QT += " + moduleNode->qtVariable();
@@ -2242,14 +2242,14 @@ void HtmlGenerator::generateQmlRequisites(QmlTypeNode *qcn, CodeMarker *marker)
                    << inheritedBytext;
 
     //add the module name and version to the map
-    QString qmlModuleVersion;
-    QmlModuleNode* qmn = qdb_->findQmlModule(qcn->qmlModuleName());
+    QString logicalModuleVersion;
+    QmlModuleNode* qmn = qdb_->findQmlModule(qcn->logicalModuleName());
     if (qmn)
-        qmlModuleVersion = qmn->qmlModuleVersion();
+        logicalModuleVersion = qmn->logicalModuleVersion();
     else
-        qmlModuleVersion = qcn->qmlModuleVersion();
+        logicalModuleVersion = qcn->logicalModuleVersion();
     text.clear();
-    text << "import " + qcn->qmlModuleName() + " " + qmlModuleVersion;
+    text << "import " + qcn->logicalModuleName() + " " + logicalModuleVersion;
     requisites.insert(importText, text);
 
     //add the since and project into the map

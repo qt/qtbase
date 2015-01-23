@@ -1021,7 +1021,7 @@ void CppCodeParser::reset()
     access = Node::Public;
     metaness = FunctionNode::Plain;
     lastPath_.clear();
-    moduleName.clear();
+    physicalModuleName.clear();
 }
 
 /*!
@@ -1615,8 +1615,8 @@ bool CppCodeParser::matchClassDecl(InnerNode *parent,
     classe->setLocation(location());
     if (compat)
         classe->setStatus(Node::Compat);
-    if (!moduleName.isEmpty())
-        classe->setModuleName(moduleName);
+    if (!physicalModuleName.isEmpty())
+        classe->setPhysicalModuleName(physicalModuleName);
     classe->setTemplateStuff(templateStuff);
 
     if (match(Tok_Colon) && !matchBaseList(classe, isClass))
@@ -2035,9 +2035,9 @@ bool CppCodeParser::matchDeclList(InnerNode *parent)
         case Tok_QT_MODULE:
             readToken();
             if (match(Tok_LeftParen) && match(Tok_Ident))
-                moduleName = previousLexeme();
-            if (!moduleName.startsWith("Qt"))
-                moduleName.prepend("Qt");
+                physicalModuleName = previousLexeme();
+            if (!physicalModuleName.startsWith("Qt"))
+                physicalModuleName.prepend("Qt");
             match(Tok_RightParen);
             break;
         default:
@@ -2174,7 +2174,7 @@ bool CppCodeParser::matchDocsAndStuff()
                 checkModuleInclusion(*n);
                 if ((*n)->isInnerNode() && ((InnerNode *)*n)->includes().isEmpty()) {
                     InnerNode *m = static_cast<InnerNode *>(*n);
-                    while (m->parent() && m->moduleName().isEmpty()) {
+                    while (m->parent() && m->physicalModuleName().isEmpty()) {
                         m = m->parent();
                     }
                     if (m == *n)

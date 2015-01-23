@@ -225,7 +225,7 @@ void Generator::appendSortedQmlNames(Text& text, const Node* base, const NodeLis
     for (int i = 0; i < subs.size(); ++i) {
         Text t;
         if (!base->isQtQuickNode() || !subs[i]->isQtQuickNode() ||
-                (base->qmlModuleName() == subs[i]->qmlModuleName())) {
+                (base->logicalModuleName() == subs[i]->logicalModuleName())) {
             appendFullName(t, subs[i], base);
             classMap[t.toString().toLower()] = t;
         }
@@ -316,7 +316,7 @@ QString Generator::fileBase(const Node *node) const
             base.truncate(base.length() - 5);
 
         if (node->isExample() || node->isExampleFile()) {
-            QString modPrefix(node->moduleName());
+            QString modPrefix(node->physicalModuleName());
             if (modPrefix.isEmpty()) {
                 modPrefix = project_;
             }
@@ -328,8 +328,8 @@ QString Generator::fileBase(const Node *node) const
     }
     else if (node->isQmlType() || node->isQmlBasicType()) {
         base = node->name();
-        if (!node->qmlModuleName().isEmpty()) {
-            base.prepend(node->qmlModuleName() + QLatin1Char('-'));
+        if (!node->logicalModuleName().isEmpty()) {
+            base.prepend(node->logicalModuleName() + QLatin1Char('-'));
         }
         /*
           To avoid file name conflicts in the html directory,
@@ -462,8 +462,8 @@ QString Generator::fullDocumentLocation(const Node *node, bool useSubdir)
             return fb + QLatin1Char('.') + currentGenerator()->fileExtension();
         else {
             QString mq;
-            if (!node->qmlModuleName().isEmpty()) {
-                mq = node->qmlModuleName().replace(QChar('.'),QChar('-'));
+            if (!node->logicalModuleName().isEmpty()) {
+                mq = node->logicalModuleName().replace(QChar('.'),QChar('-'));
                 mq = mq.toLower() + QLatin1Char('-');
             }
             return fdl+ Generator::outputPrefix(QLatin1String("QML")) + mq +

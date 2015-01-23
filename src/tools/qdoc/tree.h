@@ -216,7 +216,7 @@ class Tree
     QStringList getTargetListKeys() { return targetListMap_->keys(); }
 
  public:
-    const QString& moduleName() const { return module_; }
+    const QString& physicalModuleName() const { return physicalModuleName_; }
     const QString& indexFileName() const { return indexFileName_; }
     long incrementLinkCount() { return --linkCount_; }
     void clearLinkCount() { linkCount_ = 0; }
@@ -226,7 +226,7 @@ private:
     bool treeHasBeenAnalyzed_;
     bool docsHaveBeenGenerated_;
     long linkCount_;
-    QString module_;
+    QString physicalModuleName_;
     QString indexFileName_;
     QDocDatabase* qdb_;
     NamespaceNode root_;

@@ -156,7 +156,7 @@ protected:
     int tok;
     Node::Access access;
     FunctionNode::Metaness metaness;
-    QString moduleName;
+    QString physicalModuleName;
     QStringList lastPath_;
     QRegExp varComment;
     QRegExp sep;

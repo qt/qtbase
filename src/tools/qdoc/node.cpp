@@ -1292,10 +1292,10 @@ void InnerNode::removeChild(Node *child)
   been defined in the header file with a QT_MODULE macro or with an
   \inmodule command in the documentation.
 */
-QString Node::moduleName() const
+QString Node::physicalModuleName() const
 {
-    if (!moduleName_.isEmpty())
-        return moduleName_;
+    if (!physicalModuleName_.isEmpty())
+        return physicalModuleName_;
 
     QString path = location().filePath();
     QString pattern = QString("src") + QDir::separator();
@@ -1310,27 +1310,27 @@ QString Node::moduleName() const
     if (finish == -1)
         return QString();
 
-    QString moduleName = moduleDir.left(finish);
+    QString physicalModuleName = moduleDir.left(finish);
 
-    if (moduleName == "corelib")
+    if (physicalModuleName == "corelib")
         return "QtCore";
-    else if (moduleName == "uitools")
+    else if (physicalModuleName == "uitools")
         return "QtUiTools";
-    else if (moduleName == "gui")
+    else if (physicalModuleName == "gui")
         return "QtGui";
-    else if (moduleName == "network")
+    else if (physicalModuleName == "network")
         return "QtNetwork";
-    else if (moduleName == "opengl")
+    else if (physicalModuleName == "opengl")
         return "QtOpenGL";
-    else if (moduleName == "svg")
+    else if (physicalModuleName == "svg")
         return "QtSvg";
-    else if (moduleName == "sql")
+    else if (physicalModuleName == "sql")
         return "QtSql";
-    else if (moduleName == "qtestlib")
+    else if (physicalModuleName == "qtestlib")
         return "QtTest";
     else if (moduleDir.contains("webkit"))
         return "QtWebKit";
-    else if (moduleName == "xml")
+    else if (physicalModuleName == "xml")
         return "QtXml";
     else
         return QString();
@@ -2146,7 +2146,7 @@ QmlTypeNode::QmlTypeNode(InnerNode *parent, const QString& name)
       cnodeRequired_(false),
       wrapper_(false),
       cnode_(0),
-      qmlModule_(0),
+      logicalModule_(0),
       qmlBaseNode_(0)
 {
     int i = 0;
@@ -2209,14 +2209,14 @@ void QmlTypeNode::subclasses(const QString& base, NodeList& subs)
 void QmlModuleNode::setQmlModuleInfo(const QString& arg)
 {
     QStringList blankSplit = arg.split(QLatin1Char(' '));
-    qmlModuleName_ = blankSplit[0];
+    logicalModuleName_ = blankSplit[0];
     if (blankSplit.size() > 1) {
         QStringList dotSplit = blankSplit[1].split(QLatin1Char('.'));
-        qmlModuleVersionMajor_ = dotSplit[0];
+        logicalModuleVersionMajor_ = dotSplit[0];
         if (dotSplit.size() > 1)
-            qmlModuleVersionMinor_ = dotSplit[1];
+            logicalModuleVersionMinor_ = dotSplit[1];
         else
-            qmlModuleVersionMinor_ = "0";
+            logicalModuleVersionMinor_ = "0";
     }
 }
 
@@ -2237,7 +2237,7 @@ QString QmlTypeNode::qmlFullBaseName() const
 {
     QString result;
     if (qmlBaseNode_) {
-        result = qmlBaseNode_->qmlModuleName() + "::" + qmlBaseNode_->name();
+        result = qmlBaseNode_->logicalModuleName() + "::" + qmlBaseNode_->name();
     }
     return result;
 }
@@ -2247,9 +2247,9 @@ QString QmlTypeNode::qmlFullBaseName() const
   module name from the QML module node. Otherwise, return the
   empty string.
  */
-QString QmlTypeNode::qmlModuleName() const
+QString QmlTypeNode::logicalModuleName() const
 {
-    return (qmlModule_ ? qmlModule_->qmlModuleName() : QString());
+    return (logicalModule_ ? logicalModule_->logicalModuleName() : QString());
 }
 
 /*!
@@ -2257,9 +2257,9 @@ QString QmlTypeNode::qmlModuleName() const
   module version from the QML module node. Otherwise, return
   the empty string.
  */
-QString QmlTypeNode::qmlModuleVersion() const
+QString QmlTypeNode::logicalModuleVersion() const
 {
-    return (qmlModule_ ? qmlModule_->qmlModuleVersion() : QString());
+    return (logicalModule_ ? logicalModule_->logicalModuleVersion() : QString());
 }
 
 /*!
@@ -2267,9 +2267,9 @@ QString QmlTypeNode::qmlModuleVersion() const
   module identifier from the QML module node. Otherwise, return
   the empty string.
  */
-QString QmlTypeNode::qmlModuleIdentifier() const
+QString QmlTypeNode::logicalModuleIdentifier() const
 {
-    return (qmlModule_ ? qmlModule_->qmlModuleIdentifier() : QString());
+    return (logicalModule_ ? logicalModule_->logicalModuleIdentifier() : QString());
 }
 
 /*!
@@ -2358,13 +2358,13 @@ bool QmlPropertyNode::isWritable()
                     location().warning(tr("No Q_PROPERTY for QML property %1::%2::%3 "
                                           "in C++ class documented as QML type: "
                                           "(property not found in the C++ class or its base classes)")
-                                       .arg(qmlModuleName()).arg(qmlTypeName()).arg(name()));
+                                       .arg(logicalModuleName()).arg(qmlTypeName()).arg(name()));
             }
             else
                 location().warning(tr("No Q_PROPERTY for QML property %1::%2::%3 "
                                       "in C++ class documented as QML type: "
                                       "(C++ class not specified or not found).")
-                                   .arg(qmlModuleName()).arg(qmlTypeName()).arg(name()));
+                                   .arg(logicalModuleName()).arg(qmlTypeName()).arg(name()));
         }
     }
     return true;
@@ -2443,8 +2443,8 @@ QString Node::fullDocumentName() const
         if (!n->name().isEmpty() && !n->isQmlPropertyGroup())
             pieces.insert(0, n->name());
 
-        if (n->isQmlType() && !n->qmlModuleName().isEmpty()) {
-            pieces.insert(0, n->qmlModuleName());
+        if (n->isQmlType() && !n->logicalModuleName().isEmpty()) {
+            pieces.insert(0, n->logicalModuleName());
             break;
         }
 

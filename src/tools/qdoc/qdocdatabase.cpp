@@ -160,7 +160,7 @@ void QDocForest::setSearchOrder(QStringList& t)
     moduleNames_.clear();
 
     /* The primary tree is always first in the search order. */
-    QString primaryName = primaryTree()->moduleName();
+    QString primaryName = primaryTree()->physicalModuleName();
     searchOrder_.append(primaryTree_);
     moduleNames_.append(primaryName);
     forest_.remove(primaryName);
@@ -359,7 +359,7 @@ void QDocForest::printLinkCounts(const QString& project)
     QMultiMap<int, QString> m;
     foreach (Tree* t, searchOrder()) {
         if (t->linkCount() < 0)
-            m.insert(t->linkCount(), t->moduleName());
+            m.insert(t->linkCount(), t->physicalModuleName());
     }
     QString depends = "depends                 +=";
     QString module = project.toLower();
@@ -388,7 +388,7 @@ QString QDocForest::getLinkCounts(QStringList& strings, QVector<int>& counts)
     QMultiMap<int, QString> m;
     foreach (Tree* t, searchOrder()) {
         if (t->linkCount() < 0)
-            m.insert(t->linkCount(), t->moduleName());
+            m.insert(t->linkCount(), t->physicalModuleName());
     }
     QString depends = "depends                 +=";
     QString module = Generator::defaultModuleName().toLower();
@@ -1124,7 +1124,7 @@ void QDocDatabase::findAllObsoleteThings(InnerNode* node)
                 else if ((*c)->isQmlType()) {
                     if (name.startsWith(QLatin1String("QML:")))
                         name = name.mid(4);
-                    name = (*c)->qmlModuleName() + "::" + name;
+                    name = (*c)->logicalModuleName() + "::" + name;
                     obsoleteQmlTypes_.insert(name,*c);
                 }
             }
@@ -1642,7 +1642,7 @@ const Node* QDocDatabase::findNodeForAtom(const Atom* a, const Node* relative, Q
                 target = targetPath.at(0);
                 targetPath.removeFirst();
             }
-            if (relative && relative->tree()->moduleName() != domain->moduleName())
+            if (relative && relative->tree()->physicalModuleName() != domain->physicalModuleName())
                 relative = 0;
             node = domain->findNodeForTarget(nodePath, target, relative, flags, genus, ref);
             return node;

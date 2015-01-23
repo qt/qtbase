@@ -210,9 +210,9 @@ void QDocIndexFiles::readIndexSection(const QDomElement& element,
     else if (element.nodeName() == "qmlclass") {
         QmlTypeNode* qcn = new QmlTypeNode(parent, name);
         qcn->setTitle(element.attribute("title"));
-        QString qmlModuleName = element.attribute("qml-module-name");
-        if (!qmlModuleName.isEmpty())
-            qdb_->addToQmlModule(qmlModuleName, qcn);
+        QString logicalModuleName = element.attribute("qml-module-name");
+        if (!logicalModuleName.isEmpty())
+            qdb_->addToQmlModule(logicalModuleName, qcn);
         bool abstract = false;
         if (element.attribute("abstract") == "true")
             abstract = true;
@@ -524,9 +524,9 @@ void QDocIndexFiles::readIndexSection(const QDomElement& element,
     else
         node->setStatus(Node::Commendable);
 
-    QString moduleName = element.attribute("module");
-    if (!moduleName.isEmpty())
-        qdb_->addToModule(moduleName, node);
+    QString physicalModuleName = element.attribute("module");
+    if (!physicalModuleName.isEmpty())
+        qdb_->addToModule(physicalModuleName, node);
     if (!href.isEmpty()) {
         if (node->isExternalPage())
             node->setUrl(href);
@@ -634,8 +634,8 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
         return false;
 
     QString nodeName;
-    QString qmlModuleName;
-    QString qmlModuleVersion;
+    QString logicalModuleName;
+    QString logicalModuleVersion;
     QString qmlFullBaseName;
     switch (node->type()) {
     case Node::Namespace:
@@ -647,9 +647,9 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
     case Node::QmlType:
         {
             nodeName = "qmlclass";
-            QmlModuleNode* qmn = node->qmlModule();
+            QmlModuleNode* qmn = node->logicalModule();
             if (qmn)
-                qmlModuleName = qmn->qmlModuleName();
+                logicalModuleName = qmn->logicalModuleName();
             qmlFullBaseName = node->qmlFullBaseName();
         }
         break;
@@ -789,13 +789,13 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
 
     writer.writeAttribute("name", objName);
     if (node->isQmlModule()) {
-        qmlModuleName = node->qmlModuleName();
-        qmlModuleVersion = node->qmlModuleVersion();
+        logicalModuleName = node->logicalModuleName();
+        logicalModuleVersion = node->logicalModuleVersion();
     }
-    if (!qmlModuleName.isEmpty()) {
-        writer.writeAttribute("qml-module-name", qmlModuleName);
+    if (!logicalModuleName.isEmpty()) {
+        writer.writeAttribute("qml-module-name", logicalModuleName);
         if (node->isQmlModule())
-            writer.writeAttribute("qml-module-version", qmlModuleVersion);
+            writer.writeAttribute("qml-module-version", logicalModuleVersion);
         if (!qmlFullBaseName.isEmpty())
             writer.writeAttribute("qml-base-type", qmlFullBaseName);
     }
@@ -860,8 +860,8 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
             }
             if (!baseStrings.isEmpty())
                 writer.writeAttribute("bases", QStringList(baseStrings.toList()).join(","));
-            if (!node->moduleName().isEmpty())
-                writer.writeAttribute("module", node->moduleName());
+            if (!node->physicalModuleName().isEmpty())
+                writer.writeAttribute("module", node->physicalModuleName());
             if (!classNode->groupNames().isEmpty())
                 writer.writeAttribute("groups", classNode->groupNames().join(","));
             if (!brief.isEmpty())
@@ -871,8 +871,8 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
     case Node::Namespace:
         {
             const NamespaceNode* namespaceNode = static_cast<const NamespaceNode*>(node);
-            if (!namespaceNode->moduleName().isEmpty())
-                writer.writeAttribute("module", namespaceNode->moduleName());
+            if (!namespaceNode->physicalModuleName().isEmpty())
+                writer.writeAttribute("module", namespaceNode->physicalModuleName());
             if (!namespaceNode->groupNames().isEmpty())
                 writer.writeAttribute("groups", namespaceNode->groupNames().join(","));
             if (!brief.isEmpty())
@@ -924,8 +924,8 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
             writer.writeAttribute("title", docNode->title());
             writer.writeAttribute("fulltitle", docNode->fullTitle());
             writer.writeAttribute("subtitle", docNode->subTitle());
-            if (!node->moduleName().isEmpty() && writeModuleName) {
-                writer.writeAttribute("module", node->moduleName());
+            if (!node->physicalModuleName().isEmpty() && writeModuleName) {
+                writer.writeAttribute("module", node->physicalModuleName());
             }
             if (!docNode->groupNames().isEmpty())
                 writer.writeAttribute("groups", docNode->groupNames().join(","));
@@ -940,8 +940,8 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
             writer.writeAttribute("title", gn->title());
             if (!gn->subTitle().isEmpty())
                 writer.writeAttribute("subtitle", gn->subTitle());
-            if (!gn->moduleName().isEmpty())
-                writer.writeAttribute("module", gn->moduleName());
+            if (!gn->physicalModuleName().isEmpty())
+                writer.writeAttribute("module", gn->physicalModuleName());
             if (!gn->groupNames().isEmpty())
                 writer.writeAttribute("groups", gn->groupNames().join(","));
             /*
@@ -965,8 +965,8 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
             writer.writeAttribute("title", mn->title());
             if (!mn->subTitle().isEmpty())
                 writer.writeAttribute("subtitle", mn->subTitle());
-            if (!mn->moduleName().isEmpty())
-                writer.writeAttribute("module", mn->moduleName());
+            if (!mn->physicalModuleName().isEmpty())
+                writer.writeAttribute("module", mn->physicalModuleName());
             if (!mn->groupNames().isEmpty())
                 writer.writeAttribute("groups", mn->groupNames().join(","));
             /*
@@ -990,8 +990,8 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
             writer.writeAttribute("title", qmn->title());
             if (!qmn->subTitle().isEmpty())
                 writer.writeAttribute("subtitle", qmn->subTitle());
-            if (!qmn->moduleName().isEmpty())
-                writer.writeAttribute("module", qmn->moduleName());
+            if (!qmn->physicalModuleName().isEmpty())
+                writer.writeAttribute("module", qmn->physicalModuleName());
             if (!qmn->groupNames().isEmpty())
                 writer.writeAttribute("groups", qmn->groupNames().join(","));
             /*

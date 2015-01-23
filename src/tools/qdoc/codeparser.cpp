@@ -402,8 +402,8 @@ bool CodeParser::isParsingQdoc() const
  */
 void CodeParser::checkModuleInclusion(Node* n)
 {
-    if (n->moduleName().isEmpty()) {
-        n->setModuleName(Generator::defaultModuleName());
+    if (n->physicalModuleName().isEmpty()) {
+        n->setPhysicalModuleName(Generator::defaultModuleName());
         switch (n->type()) {
         case Node::Class:
             if (n->access() != Node::Private && !n->doc().isEmpty()) {
