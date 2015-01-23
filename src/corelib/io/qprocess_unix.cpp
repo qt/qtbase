@@ -37,9 +37,8 @@
 #ifndef QT_NO_PROCESS
 
 #if defined QPROCESS_DEBUG
-#include "qstring.h"
+#include "private/qtools_p.h"
 #include <ctype.h>
-
 
 /*
     Returns a human readable representation of the first \a len
@@ -58,10 +57,16 @@ static QByteArray qt_prettyDebug(const char *data, int len, int maxSize)
         case '\n': out += "\\n"; break;
         case '\r': out += "\\r"; break;
         case '\t': out += "\\t"; break;
-        default:
-            QString tmp;
-            tmp.sprintf("\\%o", c);
-            out += tmp.toLatin1();
+        default: {
+            const char buf[] =  {
+                '\\',
+                QtMiscUtils::toOct(uchar(c) / 64),
+                QtMiscUtils::toOct(uchar(c) % 64 / 8),
+                QtMiscUtils::toOct(uchar(c) % 8),
+                0
+            };
+            out += buf;
+            }
         }
     }
 
