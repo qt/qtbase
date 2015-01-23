@@ -233,6 +233,7 @@ static const int QTEXTSTREAM_BUFFERSIZE = 16384;
 
 #if defined QTEXTSTREAM_DEBUG
 #include <ctype.h>
+#include "private/qtools_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -250,10 +251,16 @@ static QByteArray qt_prettyDebug(const char *data, int len, int maxSize)
         case '\n': out += "\\n"; break;
         case '\r': out += "\\r"; break;
         case '\t': out += "\\t"; break;
-        default:
-            QString tmp;
-            tmp.sprintf("\\x%x", (unsigned int)(unsigned char)c);
-            out += tmp.toLatin1();
+        default: {
+            const char buf[] = {
+                '\\',
+                'x',
+                QtMiscUtils::toHexLower(uchar(c) / 16),
+                QtMiscUtils::toHexLower(uchar(c) % 16),
+                0
+            };
+            out += buf;
+            }
         }
     }
 
