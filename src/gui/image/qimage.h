@@ -220,7 +220,11 @@ public:
     void setPixel(const QPoint &pt, uint index_or_rgb);
 
     QVector<QRgb> colorTable() const;
-    void setColorTable(const QVector<QRgb> colors); // ### Qt 6: remove const
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+    void setColorTable(const QVector<QRgb> &colors);
+#else
+    void setColorTable(const QVector<QRgb> colors);
+#endif
 
     qreal devicePixelRatio() const;
     void setDevicePixelRatio(qreal scaleFactor);

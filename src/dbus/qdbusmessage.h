@@ -79,7 +79,11 @@ public:
     inline QDBusMessage createReply(const QVariant &argument) const
     { return createReply(QList<QVariant>() << argument); }
 
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+    QDBusMessage createErrorReply(const QString &name, const QString &msg) const;
+#else
     QDBusMessage createErrorReply(const QString name, const QString &msg) const;
+#endif
     inline QDBusMessage createErrorReply(const QDBusError &err) const
     { return createErrorReply(err.name(), err.message()); }
     QDBusMessage createErrorReply(QDBusError::ErrorType type, const QString &msg) const;

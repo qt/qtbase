@@ -536,7 +536,11 @@ public:
 #ifndef QT_NO_ACTION
     //actions
     void addAction(QAction *action);
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+    void addActions(const QList<QAction*> &actions);
+#else
     void addActions(QList<QAction*> actions);
+#endif
     void insertAction(QAction *before, QAction *action);
     void insertActions(QAction *before, QList<QAction*> actions);
     void removeAction(QAction *action);

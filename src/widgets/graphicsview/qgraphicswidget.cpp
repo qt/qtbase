@@ -1994,7 +1994,11 @@ void QGraphicsWidget::addAction(QAction *action)
 
     \sa removeAction(), QMenu, addAction(), QWidget::addActions()
 */
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+void QGraphicsWidget::addActions(const QList<QAction *> &actions)
+#else
 void QGraphicsWidget::addActions(QList<QAction *> actions)
+#endif
 {
     for (int i = 0; i < actions.count(); ++i)
         insertAction(0, actions.at(i));

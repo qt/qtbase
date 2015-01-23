@@ -2336,7 +2336,11 @@ QAction *QMenu::exec(const QPoint &p, QAction *action)
 
     \sa popup(), QWidget::mapToGlobal()
 */
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+QAction *QMenu::exec(const QList<QAction *> &actions, const QPoint &pos, QAction *at, QWidget *parent)
+#else
 QAction *QMenu::exec(QList<QAction*> actions, const QPoint &pos, QAction *at, QWidget *parent)
+#endif
 {
     QMenu menu(parent);
     menu.addActions(actions);

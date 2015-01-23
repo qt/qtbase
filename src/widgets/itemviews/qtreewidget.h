@@ -340,7 +340,11 @@ Q_SIGNALS:
 protected:
     bool event(QEvent *e) Q_DECL_OVERRIDE;
     virtual QStringList mimeTypes() const;
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+    virtual QMimeData *mimeData(const QList<QTreeWidgetItem *> &items) const;
+#else
     virtual QMimeData *mimeData(const QList<QTreeWidgetItem*> items) const;
+#endif
     virtual bool dropMimeData(QTreeWidgetItem *parent, int index,
                               const QMimeData *data, Qt::DropAction action);
     virtual Qt::DropActions supportedDropActions() const;

@@ -1351,7 +1351,11 @@ int QImage::colorCount() const
     \sa colorTable(), setColor(), {QImage#Image Transformations}{Image
     Transformations}
 */
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+void QImage::setColorTable(const QVector<QRgb> &colors)
+#else
 void QImage::setColorTable(const QVector<QRgb> colors)
+#endif
 {
     if (!d)
         return;
@@ -1361,7 +1365,11 @@ void QImage::setColorTable(const QVector<QRgb> colors)
     if (!d)
         return;
 
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+    d->colortable = colors;
+#else
     d->colortable = qMove(const_cast<QVector<QRgb>&>(colors));
+#endif
     d->has_alpha_clut = false;
     for (int i = 0; i < d->colortable.size(); ++i) {
         if (qAlpha(d->colortable.at(i)) != 255) {

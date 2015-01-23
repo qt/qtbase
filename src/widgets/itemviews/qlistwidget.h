@@ -266,7 +266,11 @@ Q_SIGNALS:
 protected:
     bool event(QEvent *e) Q_DECL_OVERRIDE;
     virtual QStringList mimeTypes() const;
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+    virtual QMimeData *mimeData(const QList<QListWidgetItem *> &items) const;
+#else
     virtual QMimeData *mimeData(const QList<QListWidgetItem*> items) const;
+#endif
 #ifndef QT_NO_DRAGANDDROP
     virtual bool dropMimeData(int index, const QMimeData *data, Qt::DropAction action);
     virtual Qt::DropActions supportedDropActions() const;

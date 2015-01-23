@@ -457,7 +457,11 @@ QDBusMessage QDBusMessage::createReply(const QVariantList &arguments) const
     Constructs a new DBus message representing an error reply message,
     with the given \a name and \a msg.
 */
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+QDBusMessage QDBusMessage::createErrorReply(const QString &name, const QString &msg) const
+#else
 QDBusMessage QDBusMessage::createErrorReply(const QString name, const QString &msg) const
+#endif
 {
     QDBusMessage reply = QDBusMessage::createError(name, msg);
     if (d_ptr->msg)

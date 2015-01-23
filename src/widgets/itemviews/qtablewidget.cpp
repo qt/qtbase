@@ -2553,7 +2553,11 @@ QStringList QTableWidget::mimeTypes() const
     If the list of items is empty, 0 is returned rather than a serialized
     empty list.
 */
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+QMimeData *QTableWidget::mimeData(const QList<QTableWidgetItem *> &items) const
+#else
 QMimeData *QTableWidget::mimeData(const QList<QTableWidgetItem*> items) const
+#endif
 {
     Q_D(const QTableWidget);
 
