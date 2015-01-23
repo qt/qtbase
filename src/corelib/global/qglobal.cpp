@@ -3159,7 +3159,7 @@ bool qputenv(const char *varName, const QByteArray& value)
 {
 #if defined(_MSC_VER) && _MSC_VER >= 1400
     return _putenv_s(varName, value.constData()) == 0;
-#elif defined(_POSIX_VERSION) && (_POSIX_VERSION-0) >= 200112L
+#elif (defined(_POSIX_VERSION) && (_POSIX_VERSION-0) >= 200112L) || defined(Q_OS_HAIKU)
     // POSIX.1-2001 has setenv
     return setenv(varName, value.constData(), true) == 0;
 #else
@@ -3189,8 +3189,8 @@ bool qunsetenv(const char *varName)
 {
 #if defined(_MSC_VER) && _MSC_VER >= 1400
     return _putenv_s(varName, "") == 0;
-#elif (defined(_POSIX_VERSION) && (_POSIX_VERSION-0) >= 200112L) || defined(Q_OS_BSD4)
-    // POSIX.1-2001 and BSD have unsetenv
+#elif (defined(_POSIX_VERSION) && (_POSIX_VERSION-0) >= 200112L) || defined(Q_OS_BSD4) || defined(Q_OS_HAIKU)
+    // POSIX.1-2001, BSD and Haiku have unsetenv
     return unsetenv(varName) == 0;
 #elif defined(Q_CC_MINGW)
     // On mingw, putenv("var=") removes "var" from the environment
