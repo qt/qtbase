@@ -617,8 +617,7 @@ QString decodeMSG(const MSG& msg)
     if (wmmsg.isEmpty())
         wmmsg = QString::fromLatin1("WM_(%1)").arg(msg.message);
 
-    QString rawParameters;
-    rawParameters.sprintf("hwnd(0x%p) ", (void *)msg.hwnd);
+    const QString rawParameters = QString::asprintf("hwnd(0x%p) ", (void *)msg.hwnd);
 
     // Custom WM_'s
     if (msg.message > WM_APP)
@@ -636,13 +635,13 @@ QString decodeMSG(const MSG& msg)
                                                 FLAG_STRING(WA_INACTIVE,    "Deactivate"),
                                                 FLAG_STRING(WA_CLICKACTIVE, "Activate by mouseclick"),
                                                 FLAG_STRING());
-                parameters.sprintf("%s Hwnd (0x%p)", activation.toLatin1().data(), (void *)msg.hwnd);
+                parameters = QString::asprintf("%s Hwnd (0x%p)", activation.toLatin1().data(), (void *)msg.hwnd);
             }
             break;
 #endif
 #ifdef WM_CAPTURECHANGED
         case WM_CAPTURECHANGED:
-            parameters.sprintf("Hwnd gaining capture (0x%p)", (void *)lParam);
+            parameters = QString::asprintf("Hwnd gaining capture (0x%p)", (void *)lParam);
             break;
 #endif
 #ifdef WM_CREATE
@@ -754,16 +753,16 @@ QString decodeMSG(const MSG& msg)
                     windowName = QString((QChar*)lpcs->lpszName,
                                          (int)wcslen(reinterpret_cast<const wchar_t *>(lpcs->lpszName)));
 
-                parameters.sprintf("x,y(%4d,%4d) w,h(%4d,%4d) className(%s) windowName(%s) parent(0x%p) style(%s) exStyle(%s)",
-                                   lpcs->x, lpcs->y, lpcs->cx, lpcs->cy, className.toLatin1().data(),
-                                   windowName.toLatin1().data(), (void *)lpcs->hwndParent,
-                                   styles.toLatin1().data(), exStyles.toLatin1().data());
+                parameters = QString::asprintf("x,y(%4d,%4d) w,h(%4d,%4d) className(%s) windowName(%s) parent(0x%p) style(%s) exStyle(%s)",
+                                               lpcs->x, lpcs->y, lpcs->cx, lpcs->cy, className.toLatin1().data(),
+                                               windowName.toLatin1().data(), (void *)lpcs->hwndParent,
+                                               styles.toLatin1().data(), exStyles.toLatin1().data());
             }
             break;
 #endif
 #ifdef WM_DESTROY
         case WM_DESTROY:
-            parameters.sprintf("Destroy hwnd (0x%p)", (void *)msg.hwnd);
+            parameters = QString::asprintf("Destroy hwnd (0x%p)", (void *)msg.hwnd);
             break;
 #endif
 #ifdef WM_IME_NOTIFY
@@ -784,7 +783,7 @@ QString decodeMSG(const MSG& msg)
                                             FLGSTR(IMN_SETSENTENCEMODE),
                                             FLGSTR(IMN_SETSTATUSWINDOWPOS),
                                             FLAG_STRING());
-                parameters.sprintf("Command(%s : 0x%p)", imnCommand.toLatin1().data(), (void *)lParam);
+                parameters = QString::asprintf("Command(%s : 0x%p)", imnCommand.toLatin1().data(), (void *)lParam);
             }
             break;
 #endif
@@ -808,13 +807,13 @@ QString decodeMSG(const MSG& msg)
                                              FLGSTR(ISC_SHOWUICANDIDATEWINDOW << 2),
                                              FLGSTR(ISC_SHOWUICANDIDATEWINDOW << 3),
                                              FLAG_STRING());
-                parameters.sprintf("Input context(%s) Show flags(%s)", (fSet? "Active" : "Inactive"), showFlgs.toLatin1().data());
+                parameters = QString::asprintf("Input context(%s) Show flags(%s)", (fSet? "Active" : "Inactive"), showFlgs.toLatin1().data());
             }
             break;
 #endif
 #ifdef WM_KILLFOCUS
         case WM_KILLFOCUS:
-            parameters.sprintf("Hwnd gaining keyboard focus (0x%p)", (void *)wParam);
+            parameters = QString::asprintf("Hwnd gaining keyboard focus (0x%p)", (void *)wParam);
             break;
 #endif
 #ifdef WM_CHAR
@@ -836,8 +835,8 @@ QString decodeMSG(const MSG& msg)
                 bool contextCode = !!(lKeyData & 0x20000000);  // Bit 29
                 bool prevState   = !!(lKeyData & 0x40000000);  // Bit 30
                 bool transState  = !!(lKeyData & 0x80000000);  // Bit 31
-                parameters.sprintf("Virual-key(0x%x) Scancode(%d) Rep(%d) Contextcode(%d), Prev state(%d), Trans state(%d)",
-                                   nVirtKey, scanCode, repCount, contextCode, prevState, transState);
+                parameters = QString::asprintf("Virual-key(0x%x) Scancode(%d) Rep(%d) Contextcode(%d), Prev state(%d), Trans state(%d)",
+                                               nVirtKey, scanCode, repCount, contextCode, prevState, transState);
             }
             break;
 #endif
@@ -857,7 +856,7 @@ QString decodeMSG(const MSG& msg)
         case WM_MOUSEACTIVATE:
             {
                 QString mouseMsg = QString::fromLatin1(findWMstr(HIWORD(lParam)));
-                parameters.sprintf("TLW(0x%p) HittestCode(0x%x) MouseMsg(%s)", (void *)wParam, LOWORD(lParam), mouseMsg.toLatin1().data());
+                parameters = QString::asprintf("TLW(0x%p) HittestCode(0x%x) MouseMsg(%s)", (void *)wParam, LOWORD(lParam), mouseMsg.toLatin1().data());
             }
             break;
 #endif
@@ -917,19 +916,19 @@ QString decodeMSG(const MSG& msg)
                                             FLGSTR(MK_XBUTTON2),
 #endif
                                             FLAG_STRING());
-                parameters.sprintf("x,y(%4d,%4d) Virtual Keys(%s)", GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), vrtKeys.toLatin1().data());
+                parameters = QString::asprintf("x,y(%4d,%4d) Virtual Keys(%s)", GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), vrtKeys.toLatin1().data());
             }
             break;
 #endif
 #ifdef WM_MOVE
         case WM_MOVE:
-            parameters.sprintf("x,y(%4d,%4d)", LOWORD(lParam), HIWORD(lParam));
+            parameters = QString::asprintf("x,y(%4d,%4d)", LOWORD(lParam), HIWORD(lParam));
             break;
 #endif
 #if defined(WM_PAINT) && defined(WM_ERASEBKGND)
         case WM_ERASEBKGND:
         case WM_PAINT:
-            parameters.sprintf("hdc(0x%p)", (void *)wParam);
+            parameters = QString::asprintf("hdc(0x%p)", (void *)wParam);
             break;
 #endif
 #ifdef WM_QUERYNEWPALETTE
@@ -940,18 +939,18 @@ QString decodeMSG(const MSG& msg)
         case WM_SETCURSOR:
             {
                 QString mouseMsg = QString::fromLatin1(findWMstr(HIWORD(lParam)));
-                parameters.sprintf("HitTestCode(0x%x) MouseMsg(%s)", LOWORD(lParam), mouseMsg.toLatin1().data());
+                parameters = QString::asprintf("HitTestCode(0x%x) MouseMsg(%s)", LOWORD(lParam), mouseMsg.toLatin1().data());
             }
             break;
 #endif
 #ifdef WM_SETFOCUS
         case WM_SETFOCUS:
-            parameters.sprintf("Lost Focus (0x%p)", (void *)wParam);
+            parameters = QString::asprintf("Lost Focus (0x%p)", (void *)wParam);
             break;
 #endif
 #ifdef WM_SETTEXT
         case WM_SETTEXT:
-            parameters.sprintf("Set Text (%s)", QString((QChar*)lParam, (int)wcslen(reinterpret_cast<const wchar_t *>(lParam))).toLatin1().data()); //Unicode string
+            parameters = QString::asprintf("Set Text (%s)", QString((QChar*)lParam, (int)wcslen(reinterpret_cast<const wchar_t *>(lParam))).toLatin1().data()); //Unicode string
             break;
 #endif
 #ifdef WM_SIZE
@@ -965,7 +964,7 @@ QString decodeMSG(const MSG& msg)
                                               FLGSTR(SIZE_RESTORED),
                                               FLAG_STRING());
 
-                parameters.sprintf("w,h(%4d,%4d) showmode(%s)", LOWORD(lParam), HIWORD(lParam), showMode.toLatin1().data());
+                parameters = QString::asprintf("w,h(%4d,%4d) showmode(%s)", LOWORD(lParam), HIWORD(lParam), showMode.toLatin1().data());
             }
             break;
 #endif
@@ -1002,7 +1001,7 @@ QString decodeMSG(const MSG& msg)
                                           FLGSTR(SWP_NOZORDER),
                                           FLGSTR(SWP_SHOWWINDOW),
                                           FLAG_STRING());
-                parameters.sprintf("x,y(%4d,%4d) w,h(%4d,%4d) flags(%s) hwndAfter(%s)", winPos->x, winPos->y, winPos->cx, winPos->cy, flags.toLatin1().data(), hwndAfter.toLatin1().data());
+                parameters = QString::asprintf("x,y(%4d,%4d) w,h(%4d,%4d) flags(%s) hwndAfter(%s)", winPos->x, winPos->y, winPos->cx, winPos->cy, flags.toLatin1().data(), hwndAfter.toLatin1().data());
             }
             break;
 #endif
@@ -1020,12 +1019,12 @@ QString decodeMSG(const MSG& msg)
                                                   FLAG_STRING(ENDSESSION_CRITICAL, "Force application end"),
                                                   FLAG_STRING(ENDSESSION_LOGOFF,   "User logoff"),
                                                   FLAG_STRING());
-                parameters.sprintf("End session: %s", logoffOption.toLatin1().data());
+                parameters = QLatin1String("End session: ") + logoffOption;
             }
            break;
 #endif
         default:
-            parameters.sprintf("wParam(0x%p) lParam(0x%p)", (void *)wParam, (void *)lParam);
+            parameters = QString::asprintf("wParam(0x%p) lParam(0x%p)", (void *)wParam, (void *)lParam);
             break;
     }
     // Yes, we want to give the WM_ names 20 chars of space before showing the
