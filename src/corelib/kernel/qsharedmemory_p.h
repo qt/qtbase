@@ -136,7 +136,7 @@ public:
     void setErrorString(const QString &function);
 
 #ifndef QT_NO_SYSTEMSEMAPHORE
-    bool tryLocker(QSharedMemoryLocker *locker, const QString function) {
+    bool tryLocker(QSharedMemoryLocker *locker, const QString &function) {
         if (!locker->lock()) {
             errorString = QSharedMemory::tr("%1: unable to lock").arg(function);
             error = QSharedMemory::LockError;

@@ -43,7 +43,7 @@
 #include "buttonwidget.h"
 
 //! [0]
-ButtonWidget::ButtonWidget(QStringList texts, QWidget *parent)
+ButtonWidget::ButtonWidget(const QStringList &texts, QWidget *parent)
     : QWidget(parent)
 {
     signalMapper = new QSignalMapper(this);

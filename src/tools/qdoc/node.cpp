@@ -2474,7 +2474,7 @@ QString Node::fullDocumentName() const
   be used as the value of an \e id attribute. Search for NCName
   on the internet for details of what can be an NCName.
  */
-QString Node::cleanId(QString str)
+QString Node::cleanId(const QString &str)
 {
     QString clean;
     QString name = str.simplified();

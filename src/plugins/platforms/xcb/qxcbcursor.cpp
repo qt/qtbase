@@ -484,7 +484,7 @@ xcb_cursor_t QXcbCursor::createNonStandardCursor(int cshape)
 }
 
 #ifdef XCB_USE_XLIB
-bool updateCursorTheme(void *dpy, const QByteArray theme) {
+bool updateCursorTheme(void *dpy, const QByteArray &theme) {
     if (!ptrXcursorLibraryGetTheme
             || !ptrXcursorLibrarySetTheme)
         return false;

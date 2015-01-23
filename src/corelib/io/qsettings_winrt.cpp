@@ -281,7 +281,7 @@ class QWinRTSettingsPrivate : public QSettingsPrivate
 public:
     QWinRTSettingsPrivate(QSettings::Scope scope, const QString &organization,
                           const QString &application);
-    QWinRTSettingsPrivate(QString rKey);
+    QWinRTSettingsPrivate(const QString &rKey);
     ~QWinRTSettingsPrivate();
 
     void remove(const QString &uKey);
@@ -315,7 +315,7 @@ QWinRTSettingsPrivate::QWinRTSettingsPrivate(QSettings::Scope scope, const QStri
     init(scope);
 }
 
-QWinRTSettingsPrivate::QWinRTSettingsPrivate(QString rPath)
+QWinRTSettingsPrivate::QWinRTSettingsPrivate(const QString &rPath)
     : QSettingsPrivate(QSettings::NativeFormat, QSettings::UserScope, rPath, QString())
     , writeContainer(0)
 {

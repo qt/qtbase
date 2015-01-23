@@ -140,7 +140,7 @@ QAbstractFileEngine *QWinRTFileEngineHandler::create(const QString &fileName) co
     return Q_NULLPTR;
 }
 
-static HRESULT getDestinationFolder(const QString &fileName, const QString newFileName,
+static HRESULT getDestinationFolder(const QString &fileName, const QString &newFileName,
                                     IStorageItem *file, IStorageFolder **folder)
 {
     HRESULT hr;

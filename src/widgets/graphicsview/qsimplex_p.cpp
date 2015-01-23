@@ -118,7 +118,7 @@ void QSimplex::clearDataStructures()
   This method sets the new constraints, normalizes them, creates the simplex matrix
   and runs the first simplex phase.
 */
-bool QSimplex::setConstraints(const QList<QSimplexConstraint *> newConstraints)
+bool QSimplex::setConstraints(const QList<QSimplexConstraint *> &newConstraints)
 {
     ////////////////////////////
     // Reset to initial state //

@@ -88,7 +88,7 @@ void QKmsIntegration::initialize()
     m_deviceDiscovery = QDeviceDiscovery::create(QDeviceDiscovery::Device_DRM | QDeviceDiscovery::Device_DRM_PrimaryGPU, 0);
     if (m_deviceDiscovery) {
         QStringList devices = m_deviceDiscovery->scanConnectedDevices();
-        foreach (QString device, devices)
+        foreach (const QString &device, devices)
             addDevice(device);
 
         connect(m_deviceDiscovery, SIGNAL(deviceDetected(QString)), this, SLOT(addDevice(QString)));

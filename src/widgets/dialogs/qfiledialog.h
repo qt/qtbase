@@ -289,7 +289,8 @@ private:
     Q_PRIVATE_SLOT(d_func(), void _q_autoCompleteFileName(const QString &text))
     Q_PRIVATE_SLOT(d_func(), void _q_rowsInserted(const QModelIndex & parent))
     Q_PRIVATE_SLOT(d_func(), void _q_fileRenamed(const QString &path,
-                const QString oldName, const QString newName))
+                                                 const QString &oldName,
+                                                 const QString &newName))
     friend class QPlatformDialogHelper;
 };
 

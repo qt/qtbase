@@ -680,7 +680,7 @@ void QXcbKeyboard::updateKeymap()
         if (qEnvironmentVariableIsSet("QT_XKB_CONFIG_ROOT")) {
             xkb_context = xkb_context_new((xkb_context_flags)XKB_CONTEXT_NO_DEFAULT_INCLUDES);
             QList<QByteArray> xkbRootList = QByteArray(qgetenv("QT_XKB_CONFIG_ROOT")).split(':');
-            foreach (QByteArray xkbRoot, xkbRootList)
+            foreach (const QByteArray &xkbRoot, xkbRootList)
                 xkb_context_include_path_append(xkb_context, xkbRoot.constData());
         } else {
             xkb_context = xkb_context_new((xkb_context_flags)0);
@@ -1045,7 +1045,7 @@ int QXcbKeyboard::keysymToQtKey(xcb_keysym_t key) const
     return code;
 }
 
-int QXcbKeyboard::keysymToQtKey(xcb_keysym_t keysym, Qt::KeyboardModifiers &modifiers, QString text) const
+int QXcbKeyboard::keysymToQtKey(xcb_keysym_t keysym, Qt::KeyboardModifiers &modifiers, const QString &text) const
 {
     int code = 0;
 #ifndef QT_NO_TEXTCODEC

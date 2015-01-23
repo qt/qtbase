@@ -145,7 +145,7 @@ private:
 class QHostInfoRunnable : public QRunnable
 {
 public:
-    QHostInfoRunnable (QString hn, int i);
+    QHostInfoRunnable(const QString &hn, int i);
     void run() Q_DECL_OVERRIDE;
 
     QString toBeLookedUp;

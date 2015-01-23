@@ -305,7 +305,7 @@ public:
     const QString& outputSubdirectory() const { return outSubDir_; }
     void setOutputSubdirectory(const QString& t) { outSubDir_ = t; }
     QString fullDocumentName() const;
-    static QString cleanId(QString str);
+    static QString cleanId(const QString &str);
     QString idForNode() const;
 
     static FlagValue toFlagValue(bool b);

@@ -75,8 +75,7 @@ int main (int argc, char *argv[])
   QStringList args = app.arguments ();
   args.removeFirst ();
 
-  foreach (QString arg, args)
-    {
+  foreach (const QString &arg, args) {
       if (arg == QLatin1String ("-h") || arg == QLatin1String ("--help"))
         help_me ();
 

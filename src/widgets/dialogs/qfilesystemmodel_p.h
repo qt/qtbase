@@ -148,7 +148,7 @@ public:
         }
 
         // children shouldn't normally be accessed directly, use node()
-        inline int visibleLocation(QString childName) {
+        inline int visibleLocation(const QString &childName) {
             return visibleChildren.indexOf(childName);
         }
         void updateIcon(QFileIconProvider *iconProvider, const QString &path) {

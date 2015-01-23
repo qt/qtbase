@@ -1213,7 +1213,7 @@ QList<QByteArray> QPicture::inputFormats()
     return QPictureIO::inputFormats();
 }
 
-static QStringList qToStringList(const QList<QByteArray> arr)
+static QStringList qToStringList(const QList<QByteArray> &arr)
 {
     QStringList list;
     for (int i = 0; i < arr.count(); ++i)

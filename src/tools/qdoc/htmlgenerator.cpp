@@ -3190,7 +3190,7 @@ void HtmlGenerator::generateList(const Node* relative, CodeMarker* marker, const
 
 #if 0
     QStringList keys = groups.uniqueKeys();
-    foreach (QString key, keys) {
+    foreach (const QString &key, keys) {
         GroupNode* gn = static_cast<GroupNode*>(groups.value(key));
         if (gn) {
             out() << QString("<h3><a href=\"%1\">%2</a></h3>\n").arg(
@@ -3217,7 +3217,7 @@ void HtmlGenerator::generateList(const Node* relative, CodeMarker* marker, const
 
             out() << "<ul>\n";
             QStringList titles = nm.keys();
-            foreach (QString t, titles) {
+            foreach (const QString &t, titles) {
                 Node* member = nm.value(t);
                 QString title = member->fullTitle();
                 if (title.startsWith("The "))
@@ -4484,7 +4484,7 @@ void HtmlGenerator::generateManifestFiles()
   for each manifest file to be generated. \a manifest is the
   type of manifest file.
  */
-void HtmlGenerator::generateManifestFile(QString manifest, QString element)
+void HtmlGenerator::generateManifestFile(const QString &manifest, const QString &element)
 {
     ExampleNodeMap& exampleNodeMap = qdb_->exampleNodeMap();
     if (exampleNodeMap.isEmpty())

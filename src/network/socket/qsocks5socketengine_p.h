@@ -149,8 +149,8 @@ public:
     virtual bool beginAuthenticate(QTcpSocket *socket, bool *completed);
     virtual bool continueAuthenticate(QTcpSocket *socket, bool *completed);
 
-    virtual bool seal(const QByteArray buf, QByteArray *sealedBuf);
-    virtual bool unSeal(const QByteArray sealedBuf, QByteArray *buf);
+    virtual bool seal(const QByteArray &buf, QByteArray *sealedBuf);
+    virtual bool unSeal(const QByteArray &sealedBuf, QByteArray *buf);
     virtual bool unSeal(QTcpSocket *sealedSocket, QByteArray *buf);
 
     virtual QString errorString() { return QString(); }

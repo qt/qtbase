@@ -183,7 +183,7 @@ public:
     void _q_selectionChanged();
     void _q_updateNeeded(const QRect &);
 #ifndef QT_NO_COMPLETER
-    void _q_completionHighlighted(QString);
+    void _q_completionHighlighted(const QString &);
 #endif
     QPoint mousePressPos;
 #ifndef QT_NO_DRAGANDDROP

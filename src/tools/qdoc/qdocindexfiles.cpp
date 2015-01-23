@@ -542,7 +542,7 @@ void QDocIndexFiles::readIndexSection(const QDomElement& element,
     QString groupsAttr = element.attribute("groups");
     if (!groupsAttr.isEmpty()) {
         QStringList groupNames = groupsAttr.split(",");
-        foreach (QString name, groupNames) {
+        foreach (const QString &name, groupNames) {
             qdb_->addToGroup(name, node);
         }
     }

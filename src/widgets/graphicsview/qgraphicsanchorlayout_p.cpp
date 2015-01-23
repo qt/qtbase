@@ -2049,7 +2049,7 @@ void QGraphicsAnchorLayoutPrivate::calculateGraphs()
 
 // ### Maybe getGraphParts could return the variables when traversing, at least
 // for trunk...
-QList<AnchorData *> getVariables(QList<QSimplexConstraint *> constraints)
+QList<AnchorData *> getVariables(const QList<QSimplexConstraint *> &constraints)
 {
     QSet<AnchorData *> variableSet;
     for (int i = 0; i < constraints.count(); ++i) {

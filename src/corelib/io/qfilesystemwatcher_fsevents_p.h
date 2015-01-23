@@ -74,13 +74,13 @@ public:
     void processEvent(ConstFSEventStreamRef streamRef, size_t numEvents, char **eventPaths, const FSEventStreamEventFlags eventFlags[], const FSEventStreamEventId eventIds[]);
 
 Q_SIGNALS:
-    void emitFileChanged(const QString path, bool removed);
-    void emitDirectoryChanged(const QString path, bool removed);
+    void emitFileChanged(const QString &path, bool removed);
+    void emitDirectoryChanged(const QString &path, bool removed);
     void scheduleStreamRestart();
 
 private slots:
-    void doEmitFileChanged(const QString path, bool removed);
-    void doEmitDirectoryChanged(const QString path, bool removed);
+    void doEmitFileChanged(const QString &path, bool removed);
+    void doEmitDirectoryChanged(const QString &path, bool removed);
     void restartStream();
 
 private:

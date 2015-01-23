@@ -42,7 +42,7 @@ QT_BEGIN_NAMESPACE
 
 namespace CPP {
 
-static QByteArray transformImageData(QString data)
+static QByteArray transformImageData(const QString &data)
 {
     int baSize = data.length() / 2;
     uchar *ba = new uchar[baSize];
@@ -66,7 +66,7 @@ static QByteArray transformImageData(QString data)
     return ret;
 }
 
-static QByteArray unzipXPM(QString data, ulong& length)
+static QByteArray unzipXPM(const QString &data, ulong &length)
 {
 #ifndef QT_NO_COMPRESS
     const int lengthOffset = 4;

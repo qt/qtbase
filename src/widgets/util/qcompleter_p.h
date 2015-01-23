@@ -101,7 +101,7 @@ class QIndexMapper
 public:
     QIndexMapper() : v(false), f(0), t(-1) { }
     QIndexMapper(int f, int t) : v(false), f(f), t(t) { }
-    QIndexMapper(QVector<int> vec) : v(true), vector(vec), f(-1), t(-1) { }
+    QIndexMapper(const QVector<int> &vec) : v(true), vector(vec), f(-1), t(-1) { }
 
     inline int count() const { return v ? vector.count() : t - f + 1; }
     inline int operator[] (int index) const { return v ? vector[index] : f + index; }

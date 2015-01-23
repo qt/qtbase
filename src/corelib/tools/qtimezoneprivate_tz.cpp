@@ -343,7 +343,7 @@ static QDate calculateDowDate(int year, int month, int dayOfWeek, int week)
     return date;
 }
 
-static QDate calculatePosixDate(const QByteArray dateRule, int year)
+static QDate calculatePosixDate(const QByteArray &dateRule, int year)
 {
     // Can start with M, J, or a digit
     if (dateRule.at(0) == 'M') {

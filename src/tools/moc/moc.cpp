@@ -818,7 +818,7 @@ static void findRequiredContainers(ClassDef *cdef, QSet<QByteArray> *requiredQtC
 
     for (int i = 0; i < cdef->propertyList.count(); ++i) {
         const PropertyDef &p = cdef->propertyList.at(i);
-        foreach (const QByteArray candidate, candidates) {
+        foreach (const QByteArray &candidate, candidates) {
             if (p.type.contains(candidate + "<"))
                 requiredQtContainers->insert(candidate);
         }
@@ -829,7 +829,7 @@ static void findRequiredContainers(ClassDef *cdef, QSet<QByteArray> *requiredQtC
     for (int i = 0; i < allFunctions.count(); ++i) {
         const FunctionDef &f = allFunctions.at(i);
         foreach (const ArgumentDef &arg, f.arguments) {
-            foreach (const QByteArray candidate, candidates) {
+            foreach (const QByteArray &candidate, candidates) {
                 if (arg.normalizedType.contains(candidate + "<"))
                     requiredQtContainers->insert(candidate);
             }

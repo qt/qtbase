@@ -104,7 +104,7 @@ protected:
     virtual QString refForNode(const Node *node);
     virtual QString linkForNode(const Node *node, const Node *relative);
 
-    void generateManifestFile(QString manifest, QString element);
+    void generateManifestFile(const QString &manifest, const QString &element);
     void readManifestMetaContent(const Config &config);
     void generateKeywordAnchors(const Node* node);
 

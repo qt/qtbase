@@ -112,7 +112,7 @@ static QSize determineScreenSize(screen_display_t display, bool primaryScreen) {
 #endif
 }
 
-static QQnxWindow *findMultimediaWindow(const QList<QQnxWindow*> windows,
+static QQnxWindow *findMultimediaWindow(const QList<QQnxWindow*> &windows,
                                                     const QByteArray &mmWindowId)
 {
     Q_FOREACH (QQnxWindow *sibling, windows) {
@@ -128,7 +128,7 @@ static QQnxWindow *findMultimediaWindow(const QList<QQnxWindow*> windows,
     return 0;
 }
 
-static QQnxWindow *findMultimediaWindow(const QList<QQnxWindow*> windows,
+static QQnxWindow *findMultimediaWindow(const QList<QQnxWindow*> &windows,
                                                     screen_window_t mmWindowId)
 {
     Q_FOREACH (QQnxWindow *sibling, windows) {

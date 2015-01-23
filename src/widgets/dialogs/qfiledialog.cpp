@@ -1214,7 +1214,7 @@ QList<QUrl> QFileDialogPrivate::userSelectedFiles() const
     return files;
 }
 
-QStringList QFileDialogPrivate::addDefaultSuffixToFiles(const QStringList filesToFix) const
+QStringList QFileDialogPrivate::addDefaultSuffixToFiles(const QStringList &filesToFix) const
 {
     QStringList files;
     for (int i=0; i<filesToFix.size(); ++i) {
@@ -3590,7 +3590,7 @@ void QFileDialogPrivate::_q_rowsInserted(const QModelIndex &parent)
         return;
 }
 
-void QFileDialogPrivate::_q_fileRenamed(const QString &path, const QString oldName, const QString newName)
+void QFileDialogPrivate::_q_fileRenamed(const QString &path, const QString &oldName, const QString &newName)
 {
     const QFileDialog::FileMode fileMode = q_func()->fileMode();
     if (fileMode == QFileDialog::Directory || fileMode == QFileDialog::DirectoryOnly) {

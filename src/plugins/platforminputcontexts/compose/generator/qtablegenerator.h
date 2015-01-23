@@ -103,7 +103,7 @@ public:
     TableState tableState() const { return m_state; }
 
 protected:
-    bool processFile(QString composeFileName);
+    bool processFile(const QString &composeFileName);
     void parseKeySequence(char *line);
     void parseIncludeInstruction(QString line);
 

@@ -72,7 +72,7 @@ static inline bool checkExecutable(const QString &candidate, QString *result)
     return !result->isEmpty();
 }
 
-static inline bool detectWebBrowser(QByteArray desktop,
+static inline bool detectWebBrowser(const QByteArray &desktop,
                                     bool checkBrowserVariable,
                                     QString *browser)
 {

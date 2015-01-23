@@ -431,7 +431,7 @@ void QHostInfo::setErrorString(const QString &str)
     \sa hostName()
 */
 
-QHostInfoRunnable::QHostInfoRunnable(QString hn, int i) : toBeLookedUp(hn), id(i)
+QHostInfoRunnable::QHostInfoRunnable(const QString &hn, int i) : toBeLookedUp(hn), id(i)
 {
     setAutoDelete(true);
 }

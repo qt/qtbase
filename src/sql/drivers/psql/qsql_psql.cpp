@@ -565,7 +565,7 @@ void QPSQLResult::virtual_hook(int id, void *data)
     QSqlResult::virtual_hook(id, data);
 }
 
-static QString qCreateParamString(const QVector<QVariant> boundValues, const QSqlDriver *driver)
+static QString qCreateParamString(const QVector<QVariant> &boundValues, const QSqlDriver *driver)
 {
     if (boundValues.isEmpty())
         return QString();

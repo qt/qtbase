@@ -283,13 +283,13 @@ void QFseventsFileSystemWatcherEngine::processEvent(ConstFSEventStreamRef stream
 #endif
 }
 
-void QFseventsFileSystemWatcherEngine::doEmitFileChanged(const QString path, bool removed)
+void QFseventsFileSystemWatcherEngine::doEmitFileChanged(const QString &path, bool removed)
 {
     DEBUG() << "emitting fileChanged for" << path << "with removed =" << removed;
     emit fileChanged(path, removed);
 }
 
-void QFseventsFileSystemWatcherEngine::doEmitDirectoryChanged(const QString path, bool removed)
+void QFseventsFileSystemWatcherEngine::doEmitDirectoryChanged(const QString &path, bool removed)
 {
     DEBUG() << "emitting directoryChanged for" << path << "with removed =" << removed;
     emit directoryChanged(path, removed);
@@ -316,10 +316,10 @@ QFseventsFileSystemWatcherEngine::QFseventsFileSystemWatcherEngine(QObject *pare
 
     // We cannot use signal-to-signal queued connections, because the
     // QSignalSpy cannot spot signals fired from other/alien threads.
-    connect(this, SIGNAL(emitDirectoryChanged(const QString, bool)),
-            this, SLOT(doEmitDirectoryChanged(const QString, bool)), Qt::QueuedConnection);
-    connect(this, SIGNAL(emitFileChanged(const QString, bool)),
-            this, SLOT(doEmitFileChanged(const QString, bool)), Qt::QueuedConnection);
+    connect(this, SIGNAL(emitDirectoryChanged(QString,bool)),
+            this, SLOT(doEmitDirectoryChanged(QString,bool)), Qt::QueuedConnection);
+    connect(this, SIGNAL(emitFileChanged(QString,bool)),
+            this, SLOT(doEmitFileChanged(QString,bool)), Qt::QueuedConnection);
     connect(this, SIGNAL(scheduleStreamRestart()),
             this, SLOT(restartStream()), Qt::QueuedConnection);
 

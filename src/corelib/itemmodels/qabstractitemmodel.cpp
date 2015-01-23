@@ -677,7 +677,7 @@ void QAbstractItemModelPrivate::itemsAboutToBeMoved(const QModelIndex &srcParent
   column value depending on the value of \a orientation. The indexes may also be moved to a different parent if \a parent
   differs from the existing parent for the index.
 */
-void QAbstractItemModelPrivate::movePersistentIndexes(QVector<QPersistentModelIndexData *> indexes, int change, const QModelIndex &parent, Qt::Orientation orientation)
+void QAbstractItemModelPrivate::movePersistentIndexes(const QVector<QPersistentModelIndexData *> &indexes, int change, const QModelIndex &parent, Qt::Orientation orientation)
 {
     QVector<QPersistentModelIndexData *>::const_iterator it;
     const QVector<QPersistentModelIndexData *>::const_iterator begin = indexes.constBegin();

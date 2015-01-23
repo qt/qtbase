@@ -53,7 +53,7 @@ class ButtonWidget : public QWidget
     Q_OBJECT
 
 public:
-    ButtonWidget(QStringList texts, QWidget *parent = 0);
+    ButtonWidget(const QStringList &texts, QWidget *parent = 0);
 
 signals:
     void clicked(const QString &text);

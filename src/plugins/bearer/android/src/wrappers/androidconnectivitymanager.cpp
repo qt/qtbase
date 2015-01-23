@@ -116,7 +116,7 @@ bool AndroidTrafficStats::isTrafficStatsSupported()
             && AndroidTrafficStats::getTotalRxBytes() != -1);
 }
 
-static AndroidNetworkInfo::NetworkState stateForName(const QString stateName)
+static AndroidNetworkInfo::NetworkState stateForName(const QString &stateName)
 {
     if (stateName == QLatin1String("CONNECTED"))
         return AndroidNetworkInfo::Connected;

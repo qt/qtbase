@@ -64,7 +64,7 @@ struct Topic
     QString topic;
     QString args;
     Topic() { }
-    Topic(QString& t, QString a) : topic(t), args(a) { }
+    Topic(QString& t, const QString &a) : topic(t), args(a) { }
     bool isEmpty() const { return topic.isEmpty(); }
     void clear() { topic.clear(); args.clear(); }
 };

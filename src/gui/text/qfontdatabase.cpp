@@ -974,7 +974,7 @@ static
 unsigned int bestFoundry(int script, unsigned int score, int styleStrategy,
                          const QtFontFamily *family, const QString &foundry_name,
                          QtFontStyle::Key styleKey, int pixelSize, char pitch,
-                         QtFontDesc *desc, int force_encoding_id, QString styleName = QString())
+                         QtFontDesc *desc, int force_encoding_id, const QString &styleName = QString())
 {
     Q_UNUSED(force_encoding_id);
     Q_UNUSED(script);

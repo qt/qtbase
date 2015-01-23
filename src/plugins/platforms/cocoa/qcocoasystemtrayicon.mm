@@ -180,7 +180,7 @@ void QCocoaSystemTrayIcon::cleanup()
 }
 
 static bool heightCompareFunction (QSize a, QSize b) { return (a.height() < b.height()); }
-static QList<QSize> sortByHeight(const QList<QSize> sizes)
+static QList<QSize> sortByHeight(const QList<QSize> &sizes)
 {
     QList<QSize> sorted = sizes;
     std::sort(sorted.begin(), sorted.end(), heightCompareFunction);

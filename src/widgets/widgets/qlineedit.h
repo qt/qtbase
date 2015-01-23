@@ -240,7 +240,7 @@ private:
     Q_PRIVATE_SLOT(d_func(), void _q_textEdited(const QString &))
     Q_PRIVATE_SLOT(d_func(), void _q_cursorPositionChanged(int, int))
 #ifndef QT_NO_COMPLETER
-    Q_PRIVATE_SLOT(d_func(), void _q_completionHighlighted(QString))
+    Q_PRIVATE_SLOT(d_func(), void _q_completionHighlighted(const QString &))
 #endif
 #ifdef QT_KEYPAD_NAVIGATION
     Q_PRIVATE_SLOT(d_func(), void _q_editFocusChange(bool))

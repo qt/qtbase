@@ -565,7 +565,7 @@ class QGnomeThemePrivate : public QPlatformThemePrivate
 {
 public:
     QGnomeThemePrivate() : fontsConfigured(false) { }
-    void configureFonts(QString gtkFontName) const
+    void configureFonts(const QString &gtkFontName) const
     {
         Q_ASSERT(!fontsConfigured);
         const int split = gtkFontName.lastIndexOf(QChar::Space);

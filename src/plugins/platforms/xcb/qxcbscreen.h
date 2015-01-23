@@ -55,7 +55,7 @@ class Q_XCB_EXPORT QXcbScreen : public QXcbObject, public QPlatformScreen
 {
 public:
     QXcbScreen(QXcbConnection *connection, xcb_screen_t *screen,
-               xcb_randr_get_output_info_reply_t *output, QString outputName, int number);
+               xcb_randr_get_output_info_reply_t *output, const QString &outputName, int number);
     ~QXcbScreen();
 
     QPixmap grabWindow(WId window, int x, int y, int width, int height) const Q_DECL_OVERRIDE;

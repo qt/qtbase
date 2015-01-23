@@ -123,7 +123,7 @@ public:
     static QString initialSelection(const QUrl &path);
     QStringList typedFiles() const;
     QList<QUrl> userSelectedFiles() const;
-    QStringList addDefaultSuffixToFiles(const QStringList filesToFix) const;
+    QStringList addDefaultSuffixToFiles(const QStringList &filesToFix) const;
     QList<QUrl> addDefaultSuffixToUrls(const QList<QUrl> &urlsToFix) const;
     bool removeDirectory(const QString &path);
     void setLabelTextControl(QFileDialog::DialogLabel label, const QString &text);
@@ -212,7 +212,7 @@ public:
     void _q_goToUrl(const QUrl &url);
     void _q_autoCompleteFileName(const QString &);
     void _q_rowsInserted(const QModelIndex & parent);
-    void _q_fileRenamed(const QString &path, const QString oldName, const QString newName);
+    void _q_fileRenamed(const QString &path, const QString &oldName, const QString &newName);
 
     // layout
 #ifndef QT_NO_PROXYMODEL

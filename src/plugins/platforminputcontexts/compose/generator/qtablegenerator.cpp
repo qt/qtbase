@@ -259,7 +259,7 @@ QByteArray TableGenerator::readLocaleAliases(const QByteArray &locale)
     return fullLocaleName;
 }
 
-bool TableGenerator::processFile(QString composeFileName)
+bool TableGenerator::processFile(const QString &composeFileName)
 {
     QFile composeFile(composeFileName);
     if (composeFile.open(QIODevice::ReadOnly)) {

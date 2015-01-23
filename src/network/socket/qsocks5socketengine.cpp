@@ -438,13 +438,13 @@ bool QSocks5Authenticator::continueAuthenticate(QTcpSocket *socket, bool *comple
     return true;
 }
 
-bool QSocks5Authenticator::seal(const QByteArray buf, QByteArray *sealedBuf)
+bool QSocks5Authenticator::seal(const QByteArray &buf, QByteArray *sealedBuf)
 {
     *sealedBuf = buf;
     return true;
 }
 
-bool QSocks5Authenticator::unSeal(const QByteArray sealedBuf, QByteArray *buf)
+bool QSocks5Authenticator::unSeal(const QByteArray &sealedBuf, QByteArray *buf)
 {
     *buf = sealedBuf;
     return true;

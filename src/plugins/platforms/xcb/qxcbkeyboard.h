@@ -80,7 +80,7 @@ protected:
     void resolveMaskConflicts();
     QString lookupString(struct xkb_state *state, xcb_keycode_t code) const;
     int keysymToQtKey(xcb_keysym_t keysym) const;
-    int keysymToQtKey(xcb_keysym_t keysym, Qt::KeyboardModifiers &modifiers, QString text) const;
+    int keysymToQtKey(xcb_keysym_t keysym, Qt::KeyboardModifiers &modifiers, const QString &text) const;
     void printKeymapError(const char *error) const;
 
     void readXKBConfig();

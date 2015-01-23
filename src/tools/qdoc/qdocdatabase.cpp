@@ -1549,7 +1549,7 @@ void QDocDatabase::mergeCollections(Node::Type nt, CNMap& cnm, const Node* relat
     if (cnmm.isEmpty())
         return;
     QStringList keys = cnmm.uniqueKeys();
-    foreach (QString key, keys) {
+    foreach (const QString &key, keys) {
         QList<CollectionNode*> values = cnmm.values(key);
         CollectionNode* n = 0;
         foreach (CollectionNode* v, values) {

@@ -48,7 +48,7 @@
 QT_BEGIN_NAMESPACE
 
 QXcbScreen::QXcbScreen(QXcbConnection *connection, xcb_screen_t *scr,
-                       xcb_randr_get_output_info_reply_t *output, QString outputName, int number)
+                       xcb_randr_get_output_info_reply_t *output, const QString &outputName, int number)
     : QXcbObject(connection)
     , m_screen(scr)
     , m_crtc(output ? output->crtc : 0)

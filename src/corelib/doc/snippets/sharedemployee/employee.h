@@ -63,7 +63,7 @@ class Employee
 //! [1]
     Employee() { d = new EmployeeData; }
 //! [1] //! [2]
-    Employee(int id, QString name) {
+    Employee(int id, const QString &name) {
         d = new EmployeeData;
         setId(id);
         setName(name);
@@ -77,7 +77,7 @@ class Employee
 //! [3]
     void setId(int id) { d->id = id; }
 //! [3] //! [4]
-    void setName(QString name) { d->name = name; }
+    void setName(const QString &name) { d->name = name; }
 //! [4]
 
 //! [5]
