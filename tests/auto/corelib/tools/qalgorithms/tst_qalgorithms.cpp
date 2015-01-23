@@ -1054,22 +1054,22 @@ void tst_QAlgorithms::popCount_data_impl(size_t sizeof_T_Int)
         const uint bits = bitsSetInByte(byte);
         const quint64 value = static_cast<quint64>(byte);
         const quint64 input = value << ((i % sizeof_T_Int) * 8U);
-        newRow(qPrintable(QString().sprintf("0x%016llx", input))) << input << bits;
+        newRow(qPrintable(QString::asprintf("0x%016llx", input))) << input << bits;
     }
 
     // and some random ones:
     if (sizeof_T_Int >= 8)
         for (size_t i = 0; i < 1000; ++i) {
             const quint64 input = quint64(qrand()) << 32 | quint32(qrand());
-            newRow(qPrintable(QString().sprintf("0x%016llx", input))) << input << bitsSetInInt64(input);
+            newRow(qPrintable(QString::asprintf("0x%016llx", input))) << input << bitsSetInInt64(input);
         }
         else if (sizeof_T_Int >= 2)
             for (size_t i = 0; i < 1000 ; ++i) {
                 const quint32 input = qrand();
                 if (sizeof_T_Int >= 4)
-                    newRow(qPrintable(QString().sprintf("0x%08x", input))) << quint64(input) << bitsSetInInt(input);
+                    newRow(qPrintable(QString::asprintf("0x%08x", input))) << quint64(input) << bitsSetInInt(input);
                 else
-                    newRow(qPrintable(QString().sprintf("0x%04x", quint16(input & 0xFFFF)))) << quint64(input & 0xFFFF) << bitsSetInShort(input & 0xFFFF);
+                    newRow(qPrintable(QString::asprintf("0x%04x", quint16(input & 0xFFFF)))) << quint64(input & 0xFFFF) << bitsSetInShort(input & 0xFFFF);
             }
 }
 

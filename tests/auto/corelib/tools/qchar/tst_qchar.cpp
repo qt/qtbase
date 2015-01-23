@@ -108,7 +108,7 @@ void tst_QChar::operators_data()
 
     for (int i = 0; i < 3; ++i) {
         for (int j = 0; j < 3; ++j)
-            QTest::newRow(qPrintable(QString().sprintf("'\\%d' (op) '\\%d'", i, j)))
+            QTest::newRow(qPrintable(QString::asprintf("'\\%d' (op) '\\%d'", i, j)))
                     << QChar(ushort(i)) << QChar(ushort(j));
     }
 }

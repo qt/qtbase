@@ -617,12 +617,11 @@ void QHashData::dump()
             numBuckets);
     qDebug("    %p (fakeNode = %p)", this, fakeNext);
     for (int i = 0; i < numBuckets; ++i) {
-        QString line;
         Node *n = buckets[i];
         if (n != reinterpret_cast<Node *>(this)) {
-            line.sprintf("%d:", i);
+            QString line = QString::asprintf("%d:", i);
             while (n != reinterpret_cast<Node *>(this)) {
-                line += QString().sprintf(" -> [%p]", n);
+                line += QString::asprintf(" -> [%p]", n);
                 if (!n) {
                     line += " (CORRUPT)";
                     break;

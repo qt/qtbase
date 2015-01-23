@@ -69,10 +69,7 @@ int qvsnprintf(char *str, size_t n, const char *fmt, va_list ap)
     if (!str || !fmt)
         return -1;
 
-    QString buf;
-    buf.vsprintf(fmt, ap);
-
-    QByteArray ba = buf.toLocal8Bit();
+    const QByteArray ba = QString::vasprintf(fmt, ap).toLocal8Bit();
 
     if (n > 0) {
         size_t blen = qMin(size_t(ba.length()), size_t(n - 1));

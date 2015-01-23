@@ -469,7 +469,7 @@ void QtTestObject::testLongLong(qint64 ll1, quint64 ll2)
 
 void QtTestObject::testSender()
 {
-  slotResult.sprintf("%p", sender());
+    slotResult = QString::asprintf("%p", sender());
 }
 
 void QtTestObject::slotWithUnregisteredParameterType(MyUnregisteredType)

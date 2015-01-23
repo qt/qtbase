@@ -316,8 +316,7 @@ void tst_QRegExp::indexIn_addMoreRows(const QByteArray &stri)
 
         while ( squareRegExp[ii] != 0 ) {
             for ( int j = 0; j < 100; j++ ) {
-                QString name;
-                name.sprintf( "square%.1d%.2d", ii, j );
+                const QString name = QString::asprintf( "square%.1d%.2d", ii, j );
 
                 QString target = "";
                 target.fill( 'a', j );

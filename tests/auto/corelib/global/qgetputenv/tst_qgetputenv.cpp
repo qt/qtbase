@@ -117,13 +117,13 @@ void tst_QGetPutEnv::intValue_data()
     ROW(0xffffffff, 0, false);
     const int bases[] = {10, 8, 16};
     for (size_t i = 0; i < sizeof bases / sizeof *bases; ++i) {
-        QTest::newRow(qPrintable(QString().sprintf("INT_MAX, base %d", bases[i])))
+        QTest::newRow(qPrintable(QString::asprintf("INT_MAX, base %d", bases[i])))
                 << QByteArray::number(INT_MAX) << INT_MAX << true;
-        QTest::newRow(qPrintable(QString().sprintf("INT_MAX+1, base %d", bases[i])))
+        QTest::newRow(qPrintable(QString::asprintf("INT_MAX+1, base %d", bases[i])))
                 << QByteArray::number(qlonglong(INT_MAX) + 1) << 0 << false;
-        QTest::newRow(qPrintable(QString().sprintf("INT_MIN, base %d", bases[i])))
+        QTest::newRow(qPrintable(QString::asprintf("INT_MIN, base %d", bases[i])))
                 << QByteArray::number(INT_MIN) << INT_MIN << true;
-        QTest::newRow(qPrintable(QString().sprintf("INT_MIN-1, base %d", bases[i])))
+        QTest::newRow(qPrintable(QString::asprintf("INT_MIN-1, base %d", bases[i])))
                 << QByteArray::number(qlonglong(INT_MIN) - 1) << 0 << false;
     };
 }
