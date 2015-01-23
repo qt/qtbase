@@ -993,8 +993,9 @@ QUuid QUuid::createUuid()
 */
 QDebug operator<<(QDebug dbg, const QUuid &id)
 {
+    QDebugStateSaver saver(dbg);
     dbg.nospace() << "QUuid(" << id.toString() << ')';
-    return dbg.space();
+    return dbg;
 }
 #endif
 

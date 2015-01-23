@@ -3424,10 +3424,11 @@ bool QVariant::isNull() const
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug dbg, const QVariant &v)
 {
+    QDebugStateSaver saver(dbg);
     const uint typeId = v.d.type;
     dbg.nospace() << "QVariant(";
     if (typeId != QMetaType::UnknownType) {
-        dbg.nospace() << QMetaType::typeName(typeId) << ", ";
+        dbg << QMetaType::typeName(typeId) << ", ";
         bool userStream = false;
         bool canConvertToString = false;
         if (typeId >= QMetaType::User) {
@@ -3439,19 +3440,20 @@ QDebug operator<<(QDebug dbg, const QVariant &v)
         else if (!userStream)
             handlerManager[typeId]->debugStream(dbg, v);
     } else {
-        dbg.nospace() << "Invalid";
+        dbg << "Invalid";
     }
-    dbg.nospace() << ')';
-    return dbg.space();
+    dbg << ')';
+    return dbg;
 }
 
 QDebug operator<<(QDebug dbg, const QVariant::Type p)
 {
+    QDebugStateSaver saver(dbg);
     dbg.nospace() << "QVariant::"
                   << (int(p) != int(QMetaType::UnknownType)
                      ? QMetaType::typeName(p)
                      : "Invalid");
-    return dbg.space();
+    return dbg;
 }
 #endif
 

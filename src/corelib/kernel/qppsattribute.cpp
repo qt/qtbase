@@ -260,7 +260,8 @@ QVariant QPpsAttribute::toVariant() const
 
 QDebug operator<<(QDebug dbg, const QPpsAttribute &attribute)
 {
-    dbg << "QPpsAttribute(";
+    QDebugStateSaver saver(dbg);
+    dbg.nospace() << "QPpsAttribute(";
 
     switch (attribute.type()) {
     case QPpsAttribute::Number:

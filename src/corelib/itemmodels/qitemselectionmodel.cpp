@@ -1849,9 +1849,10 @@ void QItemSelectionModel::emitSelectionChanged(const QItemSelection &newSelectio
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug dbg, const QItemSelectionRange &range)
 {
+    QDebugStateSaver saver(dbg);
     dbg.nospace() << "QItemSelectionRange(" << range.topLeft()
                   << ',' << range.bottomRight() << ')';
-    return dbg.space();
+    return dbg;
 }
 #endif
 

@@ -1417,6 +1417,7 @@ qreal QEasingCurve::valueForProgress(qreal progress) const
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug debug, const QEasingCurve &item)
 {
+    QDebugStateSaver saver(debug);
     debug << "type:" << item.d_ptr->type
           << "func:" << item.d_ptr->func;
     if (item.d_ptr->config) {

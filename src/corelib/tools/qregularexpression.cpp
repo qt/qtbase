@@ -2444,8 +2444,9 @@ QDataStream &operator>>(QDataStream &in, QRegularExpression &re)
 */
 QDebug operator<<(QDebug debug, const QRegularExpression &re)
 {
+    QDebugStateSaver saver(debug);
     debug.nospace() << "QRegularExpression(" << re.pattern() << ", " << re.patternOptions() << ")";
-    return debug.space();
+    return debug;
 }
 
 /*!
@@ -2458,6 +2459,7 @@ QDebug operator<<(QDebug debug, const QRegularExpression &re)
 */
 QDebug operator<<(QDebug debug, QRegularExpression::PatternOptions patternOptions)
 {
+    QDebugStateSaver saver(debug);
     QByteArray flags;
 
     if (patternOptions == QRegularExpression::NoPatternOption) {
@@ -2487,7 +2489,7 @@ QDebug operator<<(QDebug debug, QRegularExpression::PatternOptions patternOption
 
     debug.nospace() << "QRegularExpression::PatternOptions(" << flags << ")";
 
-    return debug.space();
+    return debug;
 }
 /*!
     \relates QRegularExpressionMatch
@@ -2499,11 +2501,12 @@ QDebug operator<<(QDebug debug, QRegularExpression::PatternOptions patternOption
 */
 QDebug operator<<(QDebug debug, const QRegularExpressionMatch &match)
 {
+    QDebugStateSaver saver(debug);
     debug.nospace() << "QRegularExpressionMatch(";
 
     if (!match.isValid()) {
         debug << "Invalid)";
-        return debug.space();
+        return debug;
     }
 
     debug << "Valid";
@@ -2528,7 +2531,7 @@ QDebug operator<<(QDebug debug, const QRegularExpressionMatch &match)
 
     debug << ")";
 
-    return debug.space();
+    return debug;
 }
 #endif
 

@@ -432,9 +432,10 @@ QDataStream &operator>>(QDataStream &s, QMargins &m)
 
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug dbg, const QMargins &m) {
+    QDebugStateSaver saver(dbg);
     dbg.nospace() << "QMargins(" << m.left() << ", "
             << m.top() << ", " << m.right() << ", " << m.bottom() << ')';
-    return dbg.space();
+    return dbg;
 }
 #endif
 
@@ -764,9 +765,10 @@ QDataStream &operator>>(QDataStream &s, QMarginsF &m)
 
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug dbg, const QMarginsF &m) {
+    QDebugStateSaver saver(dbg);
     dbg.nospace() << "QMarginsF(" << m.left() << ", "
             << m.top() << ", " << m.right() << ", " << m.bottom() << ')';
-    return dbg.space();
+    return dbg;
 }
 #endif
 

@@ -3904,8 +3904,9 @@ QDataStream &operator>>(QDataStream &in, QUrl &url)
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug d, const QUrl &url)
 {
-    d.maybeSpace() << "QUrl(" << url.toDisplayString() << ')';
-    return d.space();
+    QDebugStateSaver saver(d);
+    d.nospace() << "QUrl(" << url.toDisplayString() << ')';
+    return d;
 }
 #endif
 

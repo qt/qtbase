@@ -772,18 +772,19 @@ QDataStream &operator>>(QDataStream &in, QBitArray &ba)
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug dbg, const QBitArray &array)
 {
+    QDebugStateSaver saver(dbg);
     dbg.nospace() << "QBitArray(";
     for (int i = 0; i < array.size();) {
         if (array.testBit(i))
-            dbg.nospace() << '1';
+            dbg << '1';
         else
-            dbg.nospace() << '0';
+            dbg << '0';
         i += 1;
         if (!(i % 4) && (i < array.size()))
-            dbg.nospace() << ' ';
+            dbg << ' ';
     }
-    dbg.nospace() << ')';
-    return dbg.space();
+    dbg << ')';
+    return dbg;
 }
 #endif
 

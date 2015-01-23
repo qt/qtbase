@@ -980,9 +980,10 @@ QDataStream &operator>>(QDataStream &ds, QTimeZone &tz)
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug dbg, const QTimeZone &tz)
 {
+    QDebugStateSaver saver(dbg);
     //TODO Include backend and data version details?
     dbg.nospace() << "QTimeZone(" << QString::fromUtf8(tz.id()) << ')';
-    return dbg.space();
+    return dbg;
 }
 #endif
 

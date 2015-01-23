@@ -2204,13 +2204,13 @@ void tst_QtJson::testDebugStream()
         array.append(1);
         array.append(QLatin1String("foo"));
         value = QJsonValue(array); // array
-        QTest::ignoreMessage(QtDebugMsg, "QJsonValue(array, QJsonArray([1,\"foo\"]) )");
+        QTest::ignoreMessage(QtDebugMsg, "QJsonValue(array, QJsonArray([1,\"foo\"]))");
         qDebug() << value;
 
         QJsonObject object;
         object.insert(QLatin1String("foo"), QLatin1String("bar"));
         value = QJsonValue(object); // object
-        QTest::ignoreMessage(QtDebugMsg, "QJsonValue(object, QJsonObject({\"foo\":\"bar\"}) )");
+        QTest::ignoreMessage(QtDebugMsg, "QJsonValue(object, QJsonObject({\"foo\":\"bar\"}))");
         qDebug() << value;
     }
 }

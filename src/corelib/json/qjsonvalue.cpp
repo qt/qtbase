@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2015 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -709,12 +709,13 @@ QJsonValue QJsonValueRef::toValue() const
 #if !defined(QT_NO_DEBUG_STREAM) && !defined(QT_JSON_READONLY)
 QDebug operator<<(QDebug dbg, const QJsonValue &o)
 {
+    QDebugStateSaver saver(dbg);
     switch (o.t) {
     case QJsonValue::Undefined:
-        dbg.nospace() << "QJsonValue(undefined)";
+        dbg << "QJsonValue(undefined)";
         break;
     case QJsonValue::Null:
-        dbg.nospace() << "QJsonValue(null)";
+        dbg << "QJsonValue(null)";
         break;
     case QJsonValue::Bool:
         dbg.nospace() << "QJsonValue(bool, " << o.toBool() << ")";
@@ -727,16 +728,16 @@ QDebug operator<<(QDebug dbg, const QJsonValue &o)
         break;
     case QJsonValue::Array:
         dbg.nospace() << "QJsonValue(array, ";
-        dbg.nospace() << o.toArray();
-        dbg.nospace() << ")";
+        dbg << o.toArray();
+        dbg << ")";
         break;
     case QJsonValue::Object:
         dbg.nospace() << "QJsonValue(object, ";
-        dbg.nospace() << o.toObject();
-        dbg.nospace() << ")";
+        dbg << o.toObject();
+        dbg << ")";
         break;
     }
-    return dbg.space();
+    return dbg;
 }
 #endif
 

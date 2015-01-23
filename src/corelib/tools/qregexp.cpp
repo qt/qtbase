@@ -4577,9 +4577,10 @@ QDataStream &operator>>(QDataStream &in, QRegExp &regExp)
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug dbg, const QRegExp &r)
 {
+    QDebugStateSaver saver(dbg);
     dbg.nospace() << "QRegExp(patternSyntax=" << r.patternSyntax()
                   << ", pattern='"<< r.pattern() << "')";
-    return dbg.space();
+    return dbg;
 }
 #endif
 

@@ -1041,8 +1041,9 @@ QString decodeMSG(const MSG& msg)
 
 QDebug operator<<(QDebug dbg, const MSG &msg)
 {
+    QDebugStateSaver saver(dbg);
     dbg << decodeMSG(msg);
-    return dbg.nospace();
+    return dbg;
 }
 #endif
 

@@ -207,11 +207,13 @@ static timespec roundToMillisecond(timespec val)
 #ifdef QTIMERINFO_DEBUG
 QDebug operator<<(QDebug s, timeval tv)
 {
+    QDebugStateSaver saver(s);
     s.nospace() << tv.tv_sec << "." << qSetFieldWidth(6) << qSetPadChar(QChar(48)) << tv.tv_usec << reset;
-    return s.space();
+    return s;
 }
 QDebug operator<<(QDebug s, Qt::TimerType t)
 {
+    QDebugStateSaver saver(s);
     s << (t == Qt::PreciseTimer ? "P" :
           t == Qt::CoarseTimer ? "C" : "VC");
     return s;

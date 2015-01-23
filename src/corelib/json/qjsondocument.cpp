@@ -561,6 +561,7 @@ bool QJsonDocument::isNull() const
 #if !defined(QT_NO_DEBUG_STREAM) && !defined(QT_JSON_READONLY)
 QDebug operator<<(QDebug dbg, const QJsonDocument &o)
 {
+    QDebugStateSaver saver(dbg);
     if (!o.d) {
         dbg << "QJsonDocument()";
         return dbg;
@@ -573,7 +574,7 @@ QDebug operator<<(QDebug dbg, const QJsonDocument &o)
     dbg.nospace() << "QJsonDocument("
                   << json.constData() // print as utf-8 string without extra quotation marks
                   << ")";
-    return dbg.space();
+    return dbg;
 }
 #endif
 

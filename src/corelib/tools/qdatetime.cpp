@@ -5006,18 +5006,21 @@ QDataStream &operator>>(QDataStream &in, QDateTime &dateTime)
 #if !defined(QT_NO_DEBUG_STREAM) && !defined(QT_NO_DATESTRING)
 QDebug operator<<(QDebug dbg, const QDate &date)
 {
+    QDebugStateSaver saver(dbg);
     dbg.nospace() << "QDate(" << date.toString(Qt::ISODate) << ')';
-    return dbg.space();
+    return dbg;
 }
 
 QDebug operator<<(QDebug dbg, const QTime &time)
 {
+    QDebugStateSaver saver(dbg);
     dbg.nospace() << "QTime(" << time.toString(QStringLiteral("HH:mm:ss.zzz")) << ')';
-    return dbg.space();
+    return dbg;
 }
 
 QDebug operator<<(QDebug dbg, const QDateTime &date)
 {
+    QDebugStateSaver saver(dbg);
     QString spec;
     switch (date.d->m_spec) {
     case Qt::UTC:
@@ -5037,7 +5040,7 @@ QDebug operator<<(QDebug dbg, const QDateTime &date)
     }
     QString output = date.toString(QStringLiteral("yyyy-MM-dd HH:mm:ss.zzz t")) + spec;
     dbg.nospace() << "QDateTime(" << output << ')';
-    return dbg.space();
+    return dbg;
 }
 #endif
 

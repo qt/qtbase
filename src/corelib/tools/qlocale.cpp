@@ -3583,10 +3583,12 @@ QString QLocale::nativeCountryName() const
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug dbg, const QLocale &l)
 {
-    dbg.nospace() << "QLocale(" << qPrintable(QLocale::languageToString(l.language()))
-                  << ", " << qPrintable(QLocale::scriptToString(l.script()))
-                  << ", " << qPrintable(QLocale::countryToString(l.country())) << ')';
-    return dbg.space();
+    QDebugStateSaver saver(dbg);
+    dbg.nospace().noquote()
+        << "QLocale(" << QLocale::languageToString(l.language())
+        << ", " << QLocale::scriptToString(l.script())
+        << ", " << QLocale::countryToString(l.country()) << ')';
+    return dbg;
 }
 #endif
 QT_END_NAMESPACE

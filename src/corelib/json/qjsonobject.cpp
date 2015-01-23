@@ -1111,6 +1111,7 @@ void QJsonObject::setValueAt(int i, const QJsonValue &val)
 #if !defined(QT_NO_DEBUG_STREAM) && !defined(QT_JSON_READONLY)
 QDebug operator<<(QDebug dbg, const QJsonObject &o)
 {
+    QDebugStateSaver saver(dbg);
     if (!o.o) {
         dbg << "QJsonObject()";
         return dbg;
@@ -1120,7 +1121,7 @@ QDebug operator<<(QDebug dbg, const QJsonObject &o)
     dbg.nospace() << "QJsonObject("
                   << json.constData() // print as utf-8 string without extra quotation marks
                   << ")";
-    return dbg.space();
+    return dbg;
 }
 #endif
 

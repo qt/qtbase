@@ -1154,6 +1154,7 @@ void QJsonArray::compact()
 #if !defined(QT_NO_DEBUG_STREAM) && !defined(QT_JSON_READONLY)
 QDebug operator<<(QDebug dbg, const QJsonArray &a)
 {
+    QDebugStateSaver saver(dbg);
     if (!a.a) {
         dbg << "QJsonArray()";
         return dbg;
@@ -1163,7 +1164,7 @@ QDebug operator<<(QDebug dbg, const QJsonArray &a)
     dbg.nospace() << "QJsonArray("
                   << json.constData() // print as utf-8 string without extra quotation marks
                   << ")";
-    return dbg.space();
+    return dbg;
 }
 #endif
 

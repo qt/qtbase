@@ -458,8 +458,9 @@ QDataStream& operator>>(QDataStream &in, QVersionNumber &version)
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug debug, const QVersionNumber &version)
 {
+    QDebugStateSaver saver(debug);
     debug.noquote() << version.toString();
-    return debug.quote();
+    return debug;
 }
 #endif
 
