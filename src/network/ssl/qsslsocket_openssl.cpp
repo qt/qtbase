@@ -1643,7 +1643,7 @@ QList<QSslCertificate> QSslSocketBackendPrivate::STACKOFX509_to_QSslCertificates
     return certificates;
 }
 
-QList<QSslError> QSslSocketBackendPrivate::verify(QList<QSslCertificate> certificateChain, const QString &hostName)
+QList<QSslError> QSslSocketBackendPrivate::verify(const QList<QSslCertificate> &certificateChain, const QString &hostName)
 {
     QList<QSslError> errors;
     if (certificateChain.count() <= 0) {

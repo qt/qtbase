@@ -136,7 +136,11 @@ public:
         NextProtocolNegotiationUnsupported
     };
 
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+    void setAllowedNextProtocols(const QList<QByteArray> &protocols);
+#else
     void setAllowedNextProtocols(QList<QByteArray> protocols);
+#endif
     QList<QByteArray> allowedNextProtocols() const;
 
     QByteArray nextNegotiatedProtocol() const;

@@ -654,7 +654,7 @@ HRESULT QSslSocketBackendPrivate::onSslUpgrade(IAsyncAction *action, AsyncStatus
     return S_OK;
 }
 
-QList<QSslError> QSslSocketBackendPrivate::verify(QList<QSslCertificate> certificateChain, const QString &hostName)
+QList<QSslError> QSslSocketBackendPrivate::verify(const QList<QSslCertificate> &certificateChain, const QString &hostName)
 {
     Q_UNIMPLEMENTED();
     Q_UNUSED(certificateChain)

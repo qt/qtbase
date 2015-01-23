@@ -773,7 +773,11 @@ QByteArray QSslConfiguration::nextNegotiatedProtocol() const
 
   \sa nextNegotiatedProtocol(), nextProtocolNegotiationStatus(), allowedNextProtocols(), QSslConfiguration::NextProtocolSpdy3_0, QSslConfiguration::NextProtocolHttp1_1
  */
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+void QSslConfiguration::setAllowedNextProtocols(const QList<QByteArray> &protocols)
+#else
 void QSslConfiguration::setAllowedNextProtocols(QList<QByteArray> protocols)
+#endif
 {
     d->nextAllowedProtocols = protocols;
 }

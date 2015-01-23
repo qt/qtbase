@@ -136,7 +136,11 @@ public:
     static QList<QSslCertificate> fromData(
         const QByteArray &data, QSsl::EncodingFormat format = QSsl::Pem);
 
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+    static QList<QSslError> verify(const QList<QSslCertificate> &certificateChain, const QString &hostName = QString());
+#else
     static QList<QSslError> verify(QList<QSslCertificate> certificateChain, const QString &hostName = QString());
+#endif
 
     static bool importPkcs12(QIODevice *device,
                              QSslKey *key, QSslCertificate *cert,

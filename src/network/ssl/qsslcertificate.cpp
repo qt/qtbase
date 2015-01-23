@@ -559,7 +559,11 @@ QList<QSslCertificate> QSslCertificate::fromData(const QByteArray &data, QSsl::E
 
     \since 5.0
  */
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+QList<QSslError> QSslCertificate::verify(const QList<QSslCertificate> &certificateChain, const QString &hostName)
+#else
 QList<QSslError> QSslCertificate::verify(QList<QSslCertificate> certificateChain, const QString &hostName)
+#endif
 {
     return QSslSocketBackendPrivate::verify(certificateChain, hostName);
 }

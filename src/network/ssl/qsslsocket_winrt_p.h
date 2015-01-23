@@ -91,7 +91,7 @@ public:
     void continueHandshake() Q_DECL_OVERRIDE;
 
     static QList<QSslCipher> defaultCiphers();
-    static QList<QSslError> verify(QList<QSslCertificate> certificateChain, const QString &hostName);
+    static QList<QSslError> verify(const QList<QSslCertificate> &certificateChain, const QString &hostName);
     static bool importPkcs12(QIODevice *device,
                              QSslKey *key, QSslCertificate *cert,
                              QList<QSslCertificate> *caCertificates,
