@@ -67,6 +67,7 @@ HEADERS +=  \
         tools/qtimezone.h \
         tools/qtimezoneprivate_p.h \
         tools/qtimezoneprivate_data_p.h \
+        tools/qtools_p.h \
         tools/qelapsedtimer.h \
         tools/qunicodetables_p.h \
         tools/qunicodetools_p.h \
