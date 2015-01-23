@@ -1129,14 +1129,14 @@ static bool write_xpm_image(const QImage &sourceImage, QIODevice *device, const 
     while (c != colorMap.end()) {
         QRgb color = c.key();
         if (image.format() != QImage::Format_RGB32 && !qAlpha(color))
-            line.sprintf("\"%s c None\"",
-                          xpm_color_name(cpp, *c));
+            line = QString::asprintf("\"%s c None\"",
+                                     xpm_color_name(cpp, *c));
         else
-            line.sprintf("\"%s c #%02x%02x%02x\"",
-                          xpm_color_name(cpp, *c),
-                          qRed(color),
-                          qGreen(color),
-                          qBlue(color));
+            line = QString::asprintf("\"%s c #%02x%02x%02x\"",
+                                     xpm_color_name(cpp, *c),
+                                     qRed(color),
+                                     qGreen(color),
+                                     qBlue(color));
         ++c;
         s << ',' << endl << line;
     }

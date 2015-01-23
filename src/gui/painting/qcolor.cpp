@@ -505,16 +505,13 @@ QString QColor::name() const
 
 QString QColor::name(NameFormat format) const
 {
-    QString s;
     switch (format) {
     case HexRgb:
-        s.sprintf("#%02x%02x%02x", red(), green(), blue());
-        break;
+        return QString::asprintf("#%02x%02x%02x", red(), green(), blue());
     case HexArgb:
-        s.sprintf("#%02x%02x%02x%02x", alpha(), red(), green(), blue());
-        break;
+        return QString::asprintf("#%02x%02x%02x%02x", alpha(), red(), green(), blue());
     }
-    return s;
+    return QString();
 }
 
 /*!
