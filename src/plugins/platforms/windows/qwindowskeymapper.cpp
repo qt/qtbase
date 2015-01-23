@@ -42,6 +42,36 @@
 #include <private/qguiapplication_p.h>
 #include <QtGui/QKeyEvent>
 
+#if defined(WM_APPCOMMAND)
+#  ifndef FAPPCOMMAND_MOUSE
+#    define FAPPCOMMAND_MOUSE 0x8000
+#  endif
+#  ifndef FAPPCOMMAND_KEY
+#    define FAPPCOMMAND_KEY   0
+#  endif
+#  ifndef FAPPCOMMAND_OEM
+#    define FAPPCOMMAND_OEM   0x1000
+#  endif
+#  ifndef FAPPCOMMAND_MASK
+#    define FAPPCOMMAND_MASK  0xF000
+#  endif
+#  ifndef GET_APPCOMMAND_LPARAM
+#    define GET_APPCOMMAND_LPARAM(lParam) ((short)(HIWORD(lParam) & ~FAPPCOMMAND_MASK))
+#  endif
+#  ifndef GET_DEVICE_LPARAM
+#    define GET_DEVICE_LPARAM(lParam)     ((WORD)(HIWORD(lParam) & FAPPCOMMAND_MASK))
+#  endif
+#  ifndef GET_MOUSEORKEY_LPARAM
+#    define GET_MOUSEORKEY_LPARAM         GET_DEVICE_LPARAM
+#  endif
+#  ifndef GET_FLAGS_LPARAM
+#    define GET_FLAGS_LPARAM(lParam)      (LOWORD(lParam))
+#  endif
+#  ifndef GET_KEYSTATE_LPARAM
+#    define GET_KEYSTATE_LPARAM(lParam)   GET_FLAGS_LPARAM(lParam)
+#  endif
+#endif
+
 QT_BEGIN_NAMESPACE
 
 /*!
