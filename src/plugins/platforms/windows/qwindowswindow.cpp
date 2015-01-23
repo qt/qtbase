@@ -1432,7 +1432,7 @@ void QWindowsWindow::handleGeometryChange()
         fireExpose(QRect(QPoint(0, 0), m_data.geometry.size()), true);
     }
     if (previousGeometry.topLeft() != m_data.geometry.topLeft()) {
-        QPlatformScreen *newScreen = screenForGeometry(m_data.geometry);
+        QPlatformScreen *newScreen = screenForGeometry(geometryDip);
         if (newScreen != screen())
             QWindowSystemInterface::handleWindowScreenChanged(window(), newScreen->screen());
     }
