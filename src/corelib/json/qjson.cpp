@@ -200,6 +200,7 @@ bool Object::isValid() const
     if (tableOffset + length*sizeof(offset) > size)
         return false;
 
+    QString lastKey;
     for (uint i = 0; i < length; ++i) {
         offset entryOffset = table()[i];
         if (entryOffset + sizeof(Entry) >= tableOffset)
@@ -208,8 +209,12 @@ bool Object::isValid() const
         int s = e->size();
         if (table()[i] + s > tableOffset)
             return false;
+        QString key = e->key();
+        if (key < lastKey)
+            return false;
         if (!e->value.isValid(this))
             return false;
+        lastKey = key;
     }
     return true;
 }
