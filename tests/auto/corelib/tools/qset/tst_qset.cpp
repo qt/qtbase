@@ -973,18 +973,35 @@ QT_BEGIN_NAMESPACE
 extern Q_CORE_EXPORT QBasicAtomicInt qt_qhash_seed; // from qhash.cpp
 QT_END_NAMESPACE
 
+class QtQHashSeedSaver {
+    int oldSeed, newSeed;
+public:
+    explicit QtQHashSeedSaver(int seed)
+        : oldSeed(qt_qhash_seed.fetchAndStoreRelaxed(seed)),
+          newSeed(seed)
+    {}
+    ~QtQHashSeedSaver()
+    {
+        // only restore when no-one else changed the seed in the meantime:
+        qt_qhash_seed.testAndSetRelaxed(newSeed, oldSeed);
+    }
+};
+
 void tst_QSet::qhash()
 {
     //
     // check that sets containing the same elements hash to the same value
     //
     {
+        // create some deterministic initial state:
+        const QtQHashSeedSaver seed1(0);
+
         QSet<int> s1;
         s1.reserve(4);
         s1 << 400 << 300 << 200 << 100;
 
         // also change the seed:
-        qt_qhash_seed = qt_qhash_seed + 0x9e3779b9;
+        const QtQHashSeedSaver seed2(0x10101010);
 
         QSet<int> s2;
         s2.reserve(100); // provoke different bucket counts
