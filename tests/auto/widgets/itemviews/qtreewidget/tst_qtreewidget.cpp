@@ -49,6 +49,9 @@ class CustomTreeWidget : public QTreeWidget
 public:
     QModelIndex indexFromItem(QTreeWidgetItem *item, int column = 0) const
     { return QTreeWidget::indexFromItem(item, column); }
+
+    QMimeData * mimeData(const QList<QTreeWidgetItem*> items) const
+    { return QTreeWidget::mimeData(items); }
 };
 
 class tst_QTreeWidget : public QObject
@@ -157,6 +160,7 @@ private slots:
     void setChildIndicatorPolicy();
 
     void task20345_sortChildren();
+    void getMimeDataWithInvalidItem();
 
 public slots:
     void itemSelectionChanged();
@@ -3368,6 +3372,13 @@ void tst_QTreeWidget::task20345_sortChildren()
     QVERIFY(1);
 }
 
+void tst_QTreeWidget::getMimeDataWithInvalidItem()
+{
+    CustomTreeWidget w;
+    QTest::ignoreMessage(QtWarningMsg, "QTreeWidget::mimeData: Null-item passed");
+    QMimeData *md = w.mimeData(QList<QTreeWidgetItem*>() << Q_NULLPTR);
+    QVERIFY(!md);
+}
 
 QTEST_MAIN(tst_QTreeWidget)
 #include "tst_qtreewidget.moc"

@@ -2942,9 +2942,13 @@ QMimeData *QStandardItemModel::mimeData(const QModelIndexList &indexes) const
     itemsSet.reserve(indexes.count());
     stack.reserve(indexes.count());
     for (int i = 0; i < indexes.count(); ++i) {
-        QStandardItem *item = itemFromIndex(indexes.at(i));
-        itemsSet << item;
-        stack.push(item);
+        if (QStandardItem *item = itemFromIndex(indexes.at(i))) {
+            itemsSet << item;
+            stack.push(item);
+        } else {
+            qWarning() << "QStandardItemModel::mimeData: No item associated with invalid index";
+            return 0;
+        }
     }
 
     //remove duplicates childrens
@@ -2978,16 +2982,11 @@ QMimeData *QStandardItemModel::mimeData(const QModelIndexList &indexes) const
     //stream everything recursively
     while (!stack.isEmpty()) {
         QStandardItem *item = stack.pop();
-        if(itemsSet.contains(item)) { //if the item is selection 'top-level', strem its position
+        if (itemsSet.contains(item)) //if the item is selection 'top-level', stream its position
             stream << item->row() << item->column();
-        }
-        if(item) {
-            stream << *item << item->columnCount() << item->d_ptr->children.count();
-            stack += item->d_ptr->children;
-        } else {
-            QStandardItem dummy;
-            stream << dummy << 0 << 0;
-        }
+
+        stream << *item << item->columnCount() << item->d_ptr->children.count();
+        stack += item->d_ptr->children;
     }
 
     data->setData(format, encoded);
