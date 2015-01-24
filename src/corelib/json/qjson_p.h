@@ -54,6 +54,8 @@
 #include <qendian.h>
 #include <qnumeric.h>
 
+#include "private/qsimd_p.h"
+
 #include <limits.h>
 #include <limits>
 
@@ -374,13 +376,34 @@ public:
 
     inline Latin1String &operator=(const QString &str)
     {
-        d->length = str.length();
+        int len = d->length = str.length();
         uchar *l = (uchar *)d->latin1;
         const ushort *uc = (const ushort *)str.unicode();
-        for (int i = 0; i < str.length(); ++i)
-            *l++ = uc[i];
-        while ((quintptr)l & 0x3)
-            *l++ = 0;
+        int i = 0;
+#ifdef __SSE2__
+        for ( ; i + 16 < len; i += 16) {
+            __m128i chunk1 = _mm_loadu_si128((__m128i*)&uc[i]); // load
+            __m128i chunk2 = _mm_loadu_si128((__m128i*)&uc[i + 8]); // load
+            // pack the two vector to 16 x 8bits elements
+            const __m128i result = _mm_packus_epi16(chunk1, chunk2);
+            _mm_storeu_si128((__m128i*)&l[i], result); // store
+        }
+#  ifdef Q_PROCESSOR_X86_64
+        // we can do one more round, of 8 characters
+        if (i + 8 < len) {
+            __m128i chunk = _mm_loadu_si128((__m128i*)&uc[i]); // load
+            // pack with itself, we'll discard the high part anyway
+            chunk = _mm_packus_epi16(chunk, chunk);
+            // unaligned 64-bit store
+            *(quint64*)&l[i] = _mm_cvtsi128_si64(chunk);
+            i += 8;
+        }
+#  endif
+#endif
+        for ( ; i < len; ++i)
+            l[i] = uc[i];
+        for ( ; (quintptr)(l+i) & 0x3; ++i)
+            l[i] = 0;
         return *this;
     }
 
