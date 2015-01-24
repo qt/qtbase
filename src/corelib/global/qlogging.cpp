@@ -251,9 +251,7 @@ static inline void convert_to_wchar_t_elided(wchar_t *d, size_t space, const cha
 static void qt_message(QtMsgType msgType, const QMessageLogContext &context, const char *msg,
                        va_list ap, QString &buf)
 {
-
-    if (msg)
-        buf = QString::vasprintf(msg, ap);
+    buf = QString::vasprintf(msg, ap);
     qt_message_print(msgType, context, buf);
 }
 
@@ -1607,11 +1605,9 @@ void qErrnoWarning(const char *msg, ...)
 {
     // qt_error_string() will allocate anyway, so we don't have
     // to be careful here (like we do in plain qWarning())
-    QString buf;
     va_list ap;
     va_start(ap, msg);
-    if (msg)
-        buf = QString::vasprintf(msg, ap);
+    QString buf = QString::vasprintf(msg, ap);
     va_end(ap);
 
     buf += QLatin1String(" (") + qt_error_string(-1) + QLatin1Char(')');
@@ -1623,11 +1619,9 @@ void qErrnoWarning(int code, const char *msg, ...)
 {
     // qt_error_string() will allocate anyway, so we don't have
     // to be careful here (like we do in plain qWarning())
-    QString buf;
     va_list ap;
     va_start(ap, msg);
-    if (msg)
-        buf = QString::vasprintf(msg, ap);
+    QString buf = QString::vasprintf(msg, ap);
     va_end(ap);
 
     buf += QLatin1String(" (") + qt_error_string(code) + QLatin1Char(')');
