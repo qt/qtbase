@@ -95,6 +95,7 @@ typedef uint32_t hb_tag_t;
 
 #define HB_TAG_NONE HB_TAG(0,0,0,0)
 #define HB_TAG_MAX HB_TAG(0xff,0xff,0xff,0xff)
+#define HB_TAG_MAX_SIGNED HB_TAG(0x7f,0xff,0xff,0xff)
 
 /* len=-1 means str is NUL-terminated. */
 hb_tag_t
@@ -122,12 +123,13 @@ hb_direction_from_string (const char *str, int len);
 const char *
 hb_direction_to_string (hb_direction_t direction);
 
+#define HB_DIRECTION_IS_VALID(dir)	((((unsigned int) (dir)) & ~3U) == 4)
+/* Direction must be valid for the following */
 #define HB_DIRECTION_IS_HORIZONTAL(dir)	((((unsigned int) (dir)) & ~1U) == 4)
 #define HB_DIRECTION_IS_VERTICAL(dir)	((((unsigned int) (dir)) & ~1U) == 6)
 #define HB_DIRECTION_IS_FORWARD(dir)	((((unsigned int) (dir)) & ~2U) == 4)
 #define HB_DIRECTION_IS_BACKWARD(dir)	((((unsigned int) (dir)) & ~2U) == 5)
-#define HB_DIRECTION_IS_VALID(dir)	((((unsigned int) (dir)) & ~3U) == 4)
-#define HB_DIRECTION_REVERSE(dir)	((hb_direction_t) (((unsigned int) (dir)) ^ 1)) /* Direction must be valid */
+#define HB_DIRECTION_REVERSE(dir)	((hb_direction_t) (((unsigned int) (dir)) ^ 1))
 
 
 /* hb_language_t */
@@ -295,11 +297,17 @@ typedef enum
   /*7.0*/ HB_SCRIPT_WARANG_CITI			= HB_TAG ('W','a','r','a'),
 
   /* No script set. */
-  /*---*/ HB_SCRIPT_INVALID			= HB_TAG_NONE,
+  HB_SCRIPT_INVALID				= HB_TAG_NONE,
 
-  /* Dummy value to ensure any hb_tag_t value can be passed/stored as hb_script_t
-   * without risking undefined behavior. */
-  /*---*/ _HB_SCRIPT_MAX_VALUE			= HB_TAG_MAX
+  /* Dummy values to ensure any hb_tag_t value can be passed/stored as hb_script_t
+   * without risking undefined behavior.  Include both a signed and unsigned max,
+   * since technically enums are int, and indeed, hb_script_t ends up being signed.
+   * See this thread for technicalities:
+   *
+   *   http://lists.freedesktop.org/archives/harfbuzz/2014-March/004150.html
+   */
+  _HB_SCRIPT_MAX_VALUE				= HB_TAG_MAX, /*< skip >*/
+  _HB_SCRIPT_MAX_VALUE_SIGNED			= HB_TAG_MAX_SIGNED /*< skip >*/
 
 } hb_script_t;
 
@@ -309,7 +317,7 @@ typedef enum
 hb_script_t
 hb_script_from_iso15924_tag (hb_tag_t tag);
 
-/* suger for tag_from_string() then script_from_iso15924_tag */
+/* sugar for tag_from_string() then script_from_iso15924_tag */
 /* len=-1 means s is NUL-terminated */
 hb_script_t
 hb_script_from_string (const char *s, int len);

@@ -1,3 +1,138 @@
+Overview of changes leading to 0.9.38
+Friday, January 23, 2015
+=====================================
+
+- Fix minor out-of-bounds access in Indic shaper.
+- Change New Tai Lue shaping engine from South-East Asian to default,
+  reflecting change in Unicode encoding model.
+- Add hb-shape --font-size.  Can take up to two numbers for separate
+  x / y size.
+- Fix CoreText and FreeType scale issues with negative scales.
+- Reject blobs larger than 2GB.  This might break some icu-le-hb clients
+  that need security fixes.  See:
+  http://www.icu-project.org/trac/ticket/11450
+- Avoid accessing font tables during face destruction, in casce rogue
+  clients released face data already.
+- Fix up gobject-introspection a bit.  Python bindings kinda working.
+  See README.python.
+- Misc fixes.
+- API additions:
+  hb_ft_face_create_referenced()
+  hb_ft_font_create_referenced()
+
+
+Overview of changes leading to 0.9.37
+Wednesday, December 17, 2014
+=====================================
+
+- Fix out-of-bounds access in Context lookup format 3.
+- Indic: Allow ZWJ/ZWNJ before syllable modifiers.
+
+
+Overview of changes leading to 0.9.36
+Thursday, November 20, 2014
+=====================================
+
+- First time that three months went by without a release since
+  0.9.2 was released on August 10, 2012!
+- Fix performance bug in hb_ot_collect_glyphs():
+  https://bugzilla.mozilla.org/show_bug.cgi?id=1090869
+- Add basic vertical-text support to hb-ot-font.
+- Misc build fixes.
+
+
+Overview of changes leading to 0.9.35
+Saturday, August 13, 2014
+=====================================
+
+- Fix major shape-plan caching bug when more than one shaper were
+  provided to hb_shape_full() (as exercised by XeTeX).
+  http://www.mail-archive.com/debian-bugs-dist@lists.debian.org/msg1246370.html
+- Fix Arabic fallback shaping regression.  This was broken in 0.9.32.
+- Major hb-coretext fixes.  That backend is complete now, including
+  respecing buffer direction and language, down to vertical writing.
+- Build fixes for Windows CE.  Should build fine now.
+- Misc fixes:
+  Use atexit() only if it's safe to call from shared library
+  https://bugs.freedesktop.org/show_bug.cgi?id=82246
+  Mandaic had errors in its Unicode Joining_Type
+  https://bugs.freedesktop.org/show_bug.cgi?id=82306
+- API changes:
+
+  * hb_buffer_clear_contents() does not reset buffer flags now.
+
+    After 763e5466c0a03a7c27020e1e2598e488612529a7, one doesn't
+    need to set flags for different pieces of text.  The flags now
+    are something the client sets up once, depending on how it
+    actually uses the buffer.  As such, don't clear it in
+    clear_contents().
+
+    I don't expect any changes to be needed to any existing client.
+
+
+Overview of changes leading to 0.9.34
+Saturday, August 2, 2014
+=====================================
+
+- hb_feature_from_string() now accepts CSS font-feature-settings format.
+- As a result, hb-shape / hb-view --features also accept CSS-style strings.
+  Eg, "'liga' off" is accepted now.
+- Add old-spec Myanmar shaper:
+  https://bugs.freedesktop.org/show_bug.cgi?id=81775
+- Don't apply 'calt' in Hangul shaper.
+- Fix mark advance zeroing for Hebrew shaper:
+  https://bugs.freedesktop.org/show_bug.cgi?id=76767
+- Implement Windows-1256 custom Arabic shaping.  Only built on Windows,
+  and requires help from get_glyph().  Used by Firefox.
+  https://bugzilla.mozilla.org/show_bug.cgi?id=1045139
+- Disable 'liga' in vertical text.
+- Build fixes.
+- API changes:
+
+  * Make HB_BUFFER_FLAG_BOT/EOT easier to use.
+
+    Previously, we expected users to provide BOT/EOT flags when the
+    text *segment* was at paragraph boundaries.  This meant that for
+    clients that provide full paragraph to HarfBuzz (eg. Pango), they
+    had code like this:
+
+      hb_buffer_set_flags (hb_buffer,
+                           (item_offset == 0 ? HB_BUFFER_FLAG_BOT : 0) |
+                           (item_offset + item_length == paragraph_length ?
+                            HB_BUFFER_FLAG_EOT : 0));
+
+      hb_buffer_add_utf8 (hb_buffer,
+                          paragraph_text, paragraph_length,
+                          item_offset, item_length);
+
+    After this change such clients can simply say:
+
+      hb_buffer_set_flags (hb_buffer,
+                           HB_BUFFER_FLAG_BOT | HB_BUFFER_FLAG_EOT);
+
+      hb_buffer_add_utf8 (hb_buffer,
+                          paragraph_text, paragraph_length,
+                          item_offset, item_length);
+
+    Ie, HarfBuzz itself checks whether the segment is at the beginning/end
+    of the paragraph.  Clients that only pass item-at-a-time to HarfBuzz
+    continue not setting any flags whatsoever.
+
+    Another way to put it is: if there's pre-context text in the buffer,
+    HarfBuzz ignores the BOT flag.  If there's post-context, it ignores
+    EOT flag.
+
+
+Overview of changes leading to 0.9.33
+Tuesday, July 22, 2014
+=====================================
+
+- Turn off ARabic 'cswh' feature that was accidentally turned on.
+- Add HB_TAG_MAX_SIGNED.
+- Make hb_face_make_immutable() really make face immutable!
+- Windows build fixes.
+
+
 Overview of changes leading to 0.9.32
 Thursday, July 17, 2014
 =====================================

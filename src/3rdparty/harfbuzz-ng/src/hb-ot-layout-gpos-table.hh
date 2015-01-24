@@ -345,8 +345,8 @@ struct AnchorMatrix
   inline const Anchor& get_anchor (unsigned int row, unsigned int col, unsigned int cols, bool *found) const {
     *found = false;
     if (unlikely (row >= rows || col >= cols)) return Null(Anchor);
-    *found = !matrix[row * cols + col].is_null ();
-    return this+matrix[row * cols + col];
+    *found = !matrixZ[row * cols + col].is_null ();
+    return this+matrixZ[row * cols + col];
   }
 
   inline bool sanitize (hb_sanitize_context_t *c, unsigned int cols) {
@@ -354,19 +354,19 @@ struct AnchorMatrix
     if (!c->check_struct (this)) return TRACE_RETURN (false);
     if (unlikely (rows > 0 && cols >= ((unsigned int) -1) / rows)) return TRACE_RETURN (false);
     unsigned int count = rows * cols;
-    if (!c->check_array (matrix, matrix[0].static_size, count)) return TRACE_RETURN (false);
+    if (!c->check_array (matrixZ, matrixZ[0].static_size, count)) return TRACE_RETURN (false);
     for (unsigned int i = 0; i < count; i++)
-      if (!matrix[i].sanitize (c, this)) return TRACE_RETURN (false);
+      if (!matrixZ[i].sanitize (c, this)) return TRACE_RETURN (false);
     return TRACE_RETURN (true);
   }
 
   USHORT	rows;			/* Number of rows */
   protected:
   OffsetTo<Anchor>
-		matrix[VAR];		/* Matrix of offsets to Anchor tables--
+		matrixZ[VAR];		/* Matrix of offsets to Anchor tables--
 					 * from beginning of AnchorMatrix table */
   public:
-  DEFINE_SIZE_ARRAY (2, matrix);
+  DEFINE_SIZE_ARRAY (2, matrixZ);
 };
 
 
@@ -530,7 +530,7 @@ struct SinglePos
   template <typename context_t>
   inline typename context_t::return_t dispatch (context_t *c) const
   {
-    TRACE_DISPATCH (this);
+    TRACE_DISPATCH (this, u.format);
     switch (u.format) {
     case 1: return TRACE_RETURN (c->dispatch (u.format1));
     case 2: return TRACE_RETURN (c->dispatch (u.format2));
@@ -583,7 +583,7 @@ struct PairSet
     unsigned int len2 = valueFormats[1].get_len ();
     unsigned int record_size = USHORT::static_size * (1 + len1 + len2);
 
-    const PairValueRecord *record = CastP<PairValueRecord> (array);
+    const PairValueRecord *record = CastP<PairValueRecord> (arrayZ);
     unsigned int count = len;
     for (unsigned int i = 0; i < count; i++)
     {
@@ -602,12 +602,24 @@ struct PairSet
     unsigned int len2 = valueFormats[1].get_len ();
     unsigned int record_size = USHORT::static_size * (1 + len1 + len2);
 
-    const PairValueRecord *record = CastP<PairValueRecord> (array);
+    const PairValueRecord *record_array = CastP<PairValueRecord> (arrayZ);
     unsigned int count = len;
-    for (unsigned int i = 0; i < count; i++)
+
+    /* Hand-coded bsearch. */
+    if (unlikely (!count))
+      return TRACE_RETURN (false);
+    hb_codepoint_t x = buffer->info[pos].codepoint;
+    int min = 0, max = (int) count - 1;
+    while (min <= max)
     {
-      /* TODO bsearch */
-      if (buffer->info[pos].codepoint == record->secondGlyph)
+      int mid = (min + max) / 2;
+      const PairValueRecord *record = &StructAtOffset<PairValueRecord> (record_array, record_size * mid);
+      hb_codepoint_t mid_x = record->secondGlyph;
+      if (x < mid_x)
+        max = mid - 1;
+      else if (x > mid_x)
+        min = mid + 1;
+      else
       {
 	valueFormats[0].apply_value (c->font, c->direction, this,
 				     &record->values[0], buffer->cur_pos());
@@ -618,7 +630,6 @@ struct PairSet
 	buffer->idx = pos;
 	return TRACE_RETURN (true);
       }
-      record = &StructAtOffset<PairValueRecord> (record, record_size);
     }
 
     return TRACE_RETURN (false);
@@ -634,20 +645,20 @@ struct PairSet
   inline bool sanitize (hb_sanitize_context_t *c, const sanitize_closure_t *closure) {
     TRACE_SANITIZE (this);
     if (!(c->check_struct (this)
-       && c->check_array (array, USHORT::static_size * closure->stride, len))) return TRACE_RETURN (false);
+       && c->check_array (arrayZ, USHORT::static_size * closure->stride, len))) return TRACE_RETURN (false);
 
     unsigned int count = len;
-    PairValueRecord *record = CastP<PairValueRecord> (array);
+    PairValueRecord *record = CastP<PairValueRecord> (arrayZ);
     return TRACE_RETURN (closure->valueFormats[0].sanitize_values_stride_unsafe (c, closure->base, &record->values[0], count, closure->stride)
 		      && closure->valueFormats[1].sanitize_values_stride_unsafe (c, closure->base, &record->values[closure->len1], count, closure->stride));
   }
 
   protected:
   USHORT	len;			/* Number of PairValueRecords */
-  USHORT	array[VAR];		/* Array of PairValueRecords--ordered
+  USHORT	arrayZ[VAR];		/* Array of PairValueRecords--ordered
 					 * by GlyphID of the second glyph */
   public:
-  DEFINE_SIZE_ARRAY (2, array);
+  DEFINE_SIZE_ARRAY (2, arrayZ);
 };
 
 struct PairPosFormat1
@@ -822,7 +833,7 @@ struct PairPos
   template <typename context_t>
   inline typename context_t::return_t dispatch (context_t *c) const
   {
-    TRACE_DISPATCH (this);
+    TRACE_DISPATCH (this, u.format);
     switch (u.format) {
     case 1: return TRACE_RETURN (c->dispatch (u.format1));
     case 2: return TRACE_RETURN (c->dispatch (u.format2));
@@ -989,7 +1000,7 @@ struct CursivePos
   template <typename context_t>
   inline typename context_t::return_t dispatch (context_t *c) const
   {
-    TRACE_DISPATCH (this);
+    TRACE_DISPATCH (this, u.format);
     switch (u.format) {
     case 1: return TRACE_RETURN (c->dispatch (u.format1));
     default:return TRACE_RETURN (c->default_return_value ());
@@ -1088,7 +1099,7 @@ struct MarkBasePos
   template <typename context_t>
   inline typename context_t::return_t dispatch (context_t *c) const
   {
-    TRACE_DISPATCH (this);
+    TRACE_DISPATCH (this, u.format);
     switch (u.format) {
     case 1: return TRACE_RETURN (c->dispatch (u.format1));
     default:return TRACE_RETURN (c->default_return_value ());
@@ -1209,7 +1220,7 @@ struct MarkLigPos
   template <typename context_t>
   inline typename context_t::return_t dispatch (context_t *c) const
   {
-    TRACE_DISPATCH (this);
+    TRACE_DISPATCH (this, u.format);
     switch (u.format) {
     case 1: return TRACE_RETURN (c->dispatch (u.format1));
     default:return TRACE_RETURN (c->default_return_value ());
@@ -1328,7 +1339,7 @@ struct MarkMarkPos
   template <typename context_t>
   inline typename context_t::return_t dispatch (context_t *c) const
   {
-    TRACE_DISPATCH (this);
+    TRACE_DISPATCH (this, u.format);
     switch (u.format) {
     case 1: return TRACE_RETURN (c->dispatch (u.format1));
     default:return TRACE_RETURN (c->default_return_value ());
@@ -1387,7 +1398,7 @@ struct PosLookupSubTable
   template <typename context_t>
   inline typename context_t::return_t dispatch (context_t *c, unsigned int lookup_type) const
   {
-    TRACE_DISPATCH (this);
+    TRACE_DISPATCH (this, lookup_type);
     switch (lookup_type) {
     case Single:		return TRACE_RETURN (u.single.dispatch (c));
     case Pair:			return TRACE_RETURN (u.pair.dispatch (c));
@@ -1488,8 +1499,8 @@ struct PosLookup : Lookup
   template <typename context_t>
   inline typename context_t::return_t dispatch (context_t *c) const
   {
-    TRACE_DISPATCH (this);
     unsigned int lookup_type = get_type ();
+    TRACE_DISPATCH (this, lookup_type);
     unsigned int count = get_subtable_count ();
     for (unsigned int i = 0; i < count; i++) {
       typename context_t::return_t r = get_subtable (i).dispatch (c, lookup_type);
@@ -1589,6 +1600,8 @@ GPOS::position_start (hb_font_t *font HB_UNUSED, hb_buffer_t *buffer)
 void
 GPOS::position_finish (hb_font_t *font HB_UNUSED, hb_buffer_t *buffer)
 {
+  _hb_buffer_assert_gsubgpos_vars (buffer);
+
   unsigned int len;
   hb_glyph_position_t *pos = hb_buffer_get_glyph_positions (buffer, &len);
   hb_direction_t direction = buffer->props.direction;
@@ -1600,8 +1613,6 @@ GPOS::position_finish (hb_font_t *font HB_UNUSED, hb_buffer_t *buffer)
   /* Handle attachments */
   for (unsigned int i = 0; i < len; i++)
     fix_mark_attachment (pos, i, direction);
-
-  _hb_buffer_deallocate_gsubgpos_vars (buffer);
 }
 
 

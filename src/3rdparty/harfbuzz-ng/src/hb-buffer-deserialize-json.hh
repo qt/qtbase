@@ -459,8 +459,8 @@ _hb_buffer_deserialize_glyphs_json (hb_buffer_t *buffer,
 
   const char *tok = NULL;
   int cs;
-  hb_glyph_info_t info;
-  hb_glyph_position_t pos;
+  hb_glyph_info_t info = {0};
+  hb_glyph_position_t pos = {0};
   
 #line 466 "hb-buffer-deserialize-json.hh"
 	{

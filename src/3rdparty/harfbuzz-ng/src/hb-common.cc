@@ -33,10 +33,6 @@
 
 #include <locale.h>
 
-#ifdef _WIN32_WCE
-#define strdup(x) _strdup(x)
-#endif
-
 
 /* hb_options_t */
 
@@ -238,8 +234,8 @@ struct hb_language_item_t {
 
 static hb_language_item_t *langs;
 
-#ifdef HAVE_ATEXIT
-static inline
+#ifdef HB_USE_ATEXIT
+static
 void free_langs (void)
 {
   while (langs) {
@@ -273,7 +269,7 @@ retry:
     goto retry;
   }
 
-#ifdef HAVE_ATEXIT
+#ifdef HB_USE_ATEXIT
   if (!first_lang)
     atexit (free_langs); /* First person registers atexit() callback. */
 #endif
@@ -349,7 +345,7 @@ hb_language_get_default (void)
   hb_language_t language = (hb_language_t) hb_atomic_ptr_get (&default_language);
   if (unlikely (language == HB_LANGUAGE_INVALID)) {
     language = hb_language_from_string (setlocale (LC_CTYPE, NULL), -1);
-    hb_atomic_ptr_cmpexch (&default_language, HB_LANGUAGE_INVALID, language);
+    (void) hb_atomic_ptr_cmpexch (&default_language, HB_LANGUAGE_INVALID, language);
   }
 
   return default_language;
