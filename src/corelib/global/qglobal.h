@@ -485,6 +485,14 @@ typedef qptrdiff qintptr;
 #  define Q_ATTRIBUTE_FORMAT_PRINTF(A, B)
 #endif
 
+#ifdef Q_CC_MSVC
+#  define Q_NEVER_INLINE __declspec(noinline)
+#elif defined(Q_CC_GNU)
+#  define Q_NEVER_INLINE __attribute__((noinline))
+#else
+#  define Q_NEVER_INLINE
+#endif
+
 //defines the type for the WNDPROC on windows
 //the alignment needs to be forced for sse2 to not crash with mingw
 #if defined(Q_OS_WIN)

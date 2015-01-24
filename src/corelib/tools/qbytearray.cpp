@@ -2761,15 +2761,11 @@ QByteArray QByteArray::mid(int pos, int len) const
     \sa toUpper(), {8-bit Character Comparisons}
 */
 
-// noinline so that the compiler won't inline the function in each of
+// prevent the compiler from inlining the function in each of
 // toLower and toUpper when the only difference is the table being used
 // (even with constant propagation, there's no gain in performance).
 template <typename T>
-#ifdef Q_CC_MSVC
-__declspec(noinline)
-#elif defined(Q_CC_GNU)
-__attribute__((noinline))
-#endif
+Q_NEVER_INLINE
 static QByteArray toCase_template(T &input, const uchar * table)
 {
     // find the first bad character in input

@@ -5559,11 +5559,7 @@ struct CasefoldTraits
 };
 
 template <typename Traits, typename T>
-#ifdef Q_CC_MSVC
-__declspec(noinline)
-#elif defined(Q_CC_GNU)
-__attribute__((noinline))
-#endif
+Q_NEVER_INLINE
 static QString detachAndConvertCase(T &str, QStringIterator it)
 {
     QString s = qMove(str);             // will copy if T is const QString
