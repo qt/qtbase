@@ -248,6 +248,7 @@ static inline void convert_to_wchar_t_elided(wchar_t *d, size_t space, const cha
 /*!
     \internal
 */
+Q_NEVER_INLINE
 static void qt_message(QtMsgType msgType, const QMessageLogContext &context, const char *msg,
                        va_list ap, QString &buf)
 {
