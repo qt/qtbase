@@ -7600,49 +7600,79 @@ static int getEscape(const QChar *uc, int *pos, int len, int maxNumber = 999)
     return -1;
 }
 
+namespace {
+class ArgMapper {
+    QVarLengthArray<int, 16> argPosToNumberMap; // maps from argument position to number
+public:
+    void found(int n) { argPosToNumberMap.push_back(n); }
+
+    struct AssignmentResult {
+        int numArgs;
+        int lastNumber;
+    };
+
+    AssignmentResult assignArgumentNumberToEachOfTheNs(int numArgs)
+    {
+        std::sort(argPosToNumberMap.begin(), argPosToNumberMap.end());
+        argPosToNumberMap.erase(std::unique(argPosToNumberMap.begin(), argPosToNumberMap.end()),
+                                argPosToNumberMap.end());
+
+        if (argPosToNumberMap.size() > numArgs)
+            argPosToNumberMap.resize(numArgs);
+
+        int lastNumber = argPosToNumberMap.empty() ? -1 : argPosToNumberMap.back();
+        int arg = argPosToNumberMap.size();
+
+        const AssignmentResult result = {arg, lastNumber};
+        return result;
+    }
+
+    int numberToArgsIndex(int number) const
+    {
+        if (number != -1) {
+            const int * const it = std::find(argPosToNumberMap.begin(), argPosToNumberMap.end(), number);
+            return it == argPosToNumberMap.end() ? -1 : it - argPosToNumberMap.begin();
+        } else {
+            return -1;
+        }
+    }
+};
+} // unnamed namespace
+
 QString QString::multiArg(int numArgs, const QString **args) const
 {
     QString result;
-    QMap<int, int> numbersUsed;
+    ArgMapper mapper;
     const QChar *uc = (const QChar *) d->data();
     const int len = d->size;
     const int end = len - 1;
-    int lastNumber = -1;
     int i = 0;
 
-    // populate the numbersUsed map with the %n's that actually occur in the string
+    // populate the arg-mapper with the %n's that actually occur in the string
     while (i < end) {
         if (uc[i] == QLatin1Char('%')) {
             int number = getEscape(uc, &i, len);
             if (number != -1) {
-                numbersUsed.insert(number, -1);
+                mapper.found(number);
                 continue;
             }
         }
         ++i;
     }
 
-    // assign an argument number to each of the %n's
-    QMap<int, int>::iterator j = numbersUsed.begin();
-    QMap<int, int>::iterator jend = numbersUsed.end();
-    int arg = 0;
-    while (j != jend && arg < numArgs) {
-        *j = arg++;
-        lastNumber = j.key();
-        ++j;
-    }
+    const ArgMapper::AssignmentResult r = mapper.assignArgumentNumberToEachOfTheNs(numArgs);
 
     // sanity
-    if (numArgs > arg) {
-        qWarning("QString::arg: %d argument(s) missing in %s", numArgs - arg, toLocal8Bit().data());
-        numArgs = arg;
+    if (numArgs > r.numArgs) {
+        qWarning("QString::arg: %d argument(s) missing in %s", numArgs - r.numArgs, toLocal8Bit().data());
+        numArgs = r.numArgs;
     }
 
     i = 0;
     while (i < len) {
         if (uc[i] == QLatin1Char('%') && i != end) {
-            int number = getEscape(uc, &i, len, lastNumber);
-            int arg = numbersUsed[number];
+            int number = getEscape(uc, &i, len, r.lastNumber);
+            int arg = mapper.numberToArgsIndex(number);
             if (number != -1 && arg != -1) {
                 result += *args[arg];
                 continue;
