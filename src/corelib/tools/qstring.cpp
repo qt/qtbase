@@ -6575,24 +6575,25 @@ QString QString::number(double n, char f, int prec)
 }
 
 namespace {
-template<class ResultList, class StringSource, typename MidMethod, typename Separtor>
-static ResultList splitString(const StringSource &source, MidMethod mid, const Separtor &sep,
+template<class ResultList, class StringSource>
+static ResultList splitString(const StringSource &source, const QChar *sep,
                               QString::SplitBehavior behavior, Qt::CaseSensitivity cs, const int separatorSize)
 {
     ResultList list;
     int start = 0;
     int end;
     int extra = 0;
-    while ((end = source.indexOf(sep, start + extra, cs)) != -1) {
+    while ((end = qFindString(source.constData(), source.size(), start + extra, sep, separatorSize, cs)) != -1) {
         if (start != end || behavior == QString::KeepEmptyParts)
-            list.append((source.*mid)(start, end - start));
+            list.append(source.mid(start, end - start));
         start = end + separatorSize;
         extra = (separatorSize == 0 ? 1 : 0);
     }
     if (start != source.size() || behavior == QString::KeepEmptyParts)
-        list.append((source.*mid)(start, -1));
+        list.append(source.mid(start, -1));
     return list;
 }
+
 } // namespace
 
 /*!
@@ -6615,7 +6616,7 @@ static ResultList splitString(const StringSource &source, MidMethod mid, const S
 */
 QStringList QString::split(const QString &sep, SplitBehavior behavior, Qt::CaseSensitivity cs) const
 {
-    return splitString<QStringList>(*this, &QString::mid, sep, behavior, cs, sep.size());
+    return splitString<QStringList>(*this, sep.constData(), behavior, cs, sep.size());
 }
 
 /*!
@@ -6638,14 +6639,14 @@ QStringList QString::split(const QString &sep, SplitBehavior behavior, Qt::CaseS
 */
 QVector<QStringRef> QString::splitRef(const QString &sep, SplitBehavior behavior, Qt::CaseSensitivity cs) const
 {
-    return splitString<QVector<QStringRef> >(*this, &QString::midRef, sep, behavior, cs, sep.size());
+    return splitString<QVector<QStringRef> >(QStringRef(this), sep.constData(), behavior, cs, sep.size());
 }
 /*!
     \overload
 */
 QStringList QString::split(QChar sep, SplitBehavior behavior, Qt::CaseSensitivity cs) const
 {
-    return splitString<QStringList>(*this, &QString::mid, sep, behavior, cs, 1);
+    return splitString<QStringList>(*this, &sep, behavior, cs, 1);
 }
 
 /*!
@@ -6654,7 +6655,7 @@ QStringList QString::split(QChar sep, SplitBehavior behavior, Qt::CaseSensitivit
 */
 QVector<QStringRef> QString::splitRef(QChar sep, SplitBehavior behavior, Qt::CaseSensitivity cs) const
 {
-    return splitString<QVector<QStringRef> >(*this, &QString::midRef, sep, behavior, cs, 1);
+    return splitString<QVector<QStringRef> >(QStringRef(this), &sep, behavior, cs, 1);
 }
 
 /*!
@@ -6676,7 +6677,7 @@ QVector<QStringRef> QString::splitRef(QChar sep, SplitBehavior behavior, Qt::Cas
 */
 QVector<QStringRef> QStringRef::split(const QString &sep, QString::SplitBehavior behavior, Qt::CaseSensitivity cs) const
 {
-    return splitString<QVector<QStringRef> >(*this, &QStringRef::mid, sep, behavior, cs, sep.size());
+    return splitString<QVector<QStringRef> >(*this, sep.constData(), behavior, cs, sep.size());
 }
 
 /*!
@@ -6685,7 +6686,7 @@ QVector<QStringRef> QStringRef::split(const QString &sep, QString::SplitBehavior
 */
 QVector<QStringRef> QStringRef::split(QChar sep, QString::SplitBehavior behavior, Qt::CaseSensitivity cs) const
 {
-    return splitString<QVector<QStringRef> >(*this, &QStringRef::mid, sep, behavior, cs, 1);
+    return splitString<QVector<QStringRef> >(*this, &sep, behavior, cs, 1);
 }
 
 #ifndef QT_NO_REGEXP
