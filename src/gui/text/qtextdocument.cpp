@@ -1171,7 +1171,7 @@ QString QTextDocument::toPlainText() const
 
 /*!
     Replaces the entire contents of the document with the given plain
-    \a text.
+    \a text. The undo/redo history is reset when this function is called.
 
     \sa setHtml()
 */
@@ -1189,7 +1189,8 @@ void QTextDocument::setPlainText(const QString &text)
 
 /*!
     Replaces the entire contents of the document with the given
-    HTML-formatted text in the \a html string.
+    HTML-formatted text in the \a html string. The undo/redo history
+    is reset when this function is called.
 
     The HTML formatting is respected as much as possible; for example,
     "<b>bold</b> text" will produce text where the first word has a font
