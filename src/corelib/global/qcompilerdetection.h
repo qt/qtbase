@@ -891,15 +891,17 @@
 #ifdef __cplusplus
 # include <utility>
 # if defined(Q_OS_QNX)
-#  if defined(_YVALS) || defined(_LIBCPP_VER)
-// QNX: libcpp (Dinkumware-based) doesn't have the <initializer_list>
-// header, so the feature is useless, even if the compiler supports
-// it. Disable.
+// QNX: test if we are using libcpp (Dinkumware-based).
+// Older versions (QNX 650) do not support C++11 features
+// _HAS_CPP0X is defined by toolchains that actually include
+// Dinkum C++11 libcpp.
+#  if defined(_HAS_DINKUM_CLIB) && !defined(_HAS_CPP0X)
+// Disable C++11 features that depend on library support
 #    undef Q_COMPILER_INITIALIZER_LISTS
-// That libcpp doesn't have std::move either, so disable everything
-// related to rvalue refs.
 #    undef Q_COMPILER_RVALUE_REFS
 #    undef Q_COMPILER_REF_QUALIFIERS
+#    undef Q_COMPILER_UNICODE_STRINGS
+#    undef Q_COMPILER_NOEXCEPT
 #  endif
 # endif // Q_OS_QNX
 # if (defined(Q_CC_CLANG) || defined(Q_CC_INTEL)) && defined(Q_OS_MAC) && defined(__GNUC_LIBSTD__) \
