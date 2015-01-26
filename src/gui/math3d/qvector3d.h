@@ -87,6 +87,7 @@ public:
     QVector3D &operator*=(float factor);
     QVector3D &operator*=(const QVector3D& vector);
     QVector3D &operator/=(float divisor);
+    inline QVector3D &operator/=(const QVector3D &vector);
 
     static float dotProduct(const QVector3D& v1, const QVector3D& v2); //In Qt 6 convert to inline and constexpr
     static QVector3D crossProduct(const QVector3D& v1, const QVector3D& v2); //in Qt 6 convert to inline and constexpr
@@ -112,6 +113,7 @@ public:
     Q_DECL_CONSTEXPR friend const QVector3D operator*(const QVector3D &v1, const QVector3D& v2);
     Q_DECL_CONSTEXPR friend inline const QVector3D operator-(const QVector3D &vector);
     Q_DECL_CONSTEXPR friend inline const QVector3D operator/(const QVector3D &vector, float divisor);
+    Q_DECL_CONSTEXPR friend inline const QVector3D operator/(const QVector3D &vector, const QVector3D &divisor);
 
     Q_DECL_CONSTEXPR friend inline bool qFuzzyCompare(const QVector3D& v1, const QVector3D& v2);
 
@@ -211,6 +213,14 @@ inline QVector3D &QVector3D::operator/=(float divisor)
     return *this;
 }
 
+inline QVector3D &QVector3D::operator/=(const QVector3D &vector)
+{
+    xp /= vector.xp;
+    yp /= vector.yp;
+    zp /= vector.zp;
+    return *this;
+}
+
 Q_DECL_CONSTEXPR inline bool operator==(const QVector3D &v1, const QVector3D &v2)
 {
     return v1.xp == v2.xp && v1.yp == v2.yp && v1.zp == v2.zp;
@@ -254,6 +264,11 @@ Q_DECL_CONSTEXPR inline const QVector3D operator-(const QVector3D &vector)
 Q_DECL_CONSTEXPR inline const QVector3D operator/(const QVector3D &vector, float divisor)
 {
     return QVector3D(vector.xp / divisor, vector.yp / divisor, vector.zp / divisor);
+}
+
+Q_DECL_CONSTEXPR inline const QVector3D operator/(const QVector3D &vector, const QVector3D &divisor)
+{
+    return QVector3D(vector.xp / divisor.xp, vector.yp / divisor.yp, vector.zp / divisor.zp);
 }
 
 Q_DECL_CONSTEXPR inline bool qFuzzyCompare(const QVector3D& v1, const QVector3D& v2)

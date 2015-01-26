@@ -308,6 +308,16 @@ void QVector3D::normalize()
 */
 
 /*!
+    \fn QVector3D &QVector3D::operator/=(const QVector3D &vector)
+    \since 5.5
+
+    Divides the components of this vector by the corresponding
+    components in \a vector.
+
+    \sa operator*=()
+*/
+
+/*!
     Returns the dot product of \a v1 and \a v2.
 */
 float QVector3D::dotProduct(const QVector3D& v1, const QVector3D& v2)
@@ -573,6 +583,17 @@ float QVector3D::distanceToLine
 
     Returns the QVector3D object formed by dividing all three components of
     the given \a vector by the given \a divisor.
+
+    \sa QVector3D::operator/=()
+*/
+
+/*!
+    \fn const QVector3D operator/(const QVector3D &vector, const QVector3D &divisor)
+    \relates QVector3D
+    \since 5.5
+
+    Returns the QVector3D object formed by dividing components of the given
+    \a vector by a respective components of the given \a divisor.
 
     \sa QVector3D::operator/=()
 */

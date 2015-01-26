@@ -359,6 +359,16 @@ void QVector4D::normalize()
 */
 
 /*!
+    \fn QVector4D &QVector4D::operator/=(const QVector4D &vector)
+    \since 5.5
+
+    Divides the components of this vector by the corresponding
+    components in \a vector.
+
+    \sa operator*=()
+*/
+
+/*!
     Returns the dot product of \a v1 and \a v2.
 */
 float QVector4D::dotProduct(const QVector4D& v1, const QVector4D& v2)
@@ -447,6 +457,17 @@ float QVector4D::dotProduct(const QVector4D& v1, const QVector4D& v2)
 
     Returns the QVector4D object formed by dividing all four components of
     the given \a vector by the given \a divisor.
+
+    \sa QVector4D::operator/=()
+*/
+
+/*!
+    \fn const QVector4D operator/(const QVector4D &vector, const QVector4D &divisor)
+    \relates QVector4D
+    \since 5.5
+
+    Returns the QVector4D object formed by dividing components of the given
+    \a vector by a respective components of the given \a divisor.
 
     \sa QVector4D::operator/=()
 */

@@ -316,6 +316,16 @@ float QVector2D::distanceToLine
 */
 
 /*!
+    \fn QVector2D &QVector2D::operator/=(const QVector2D &vector)
+    \since 5.5
+
+    Divides the components of this vector by the corresponding
+    components in \a vector.
+
+    \sa operator*=()
+*/
+
+/*!
     Returns the dot product of \a v1 and \a v2.
 */
 float QVector2D::dotProduct(const QVector2D& v1, const QVector2D& v2)
@@ -402,6 +412,17 @@ float QVector2D::dotProduct(const QVector2D& v1, const QVector2D& v2)
 
     Returns the QVector2D object formed by dividing all three components of
     the given \a vector by the given \a divisor.
+
+    \sa QVector2D::operator/=()
+*/
+
+/*!
+    \fn const QVector2D operator/(const QVector2D &vector, const QVector2D &divisor)
+    \relates QVector2D
+    \since 5.5
+
+    Returns the QVector2D object formed by dividing components of the given
+    \a vector by a respective components of the given \a divisor.
 
     \sa QVector2D::operator/=()
 */

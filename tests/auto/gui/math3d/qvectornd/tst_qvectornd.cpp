@@ -114,6 +114,13 @@ private slots:
     void divide4_data();
     void divide4();
 
+    void divideFactor2_data();
+    void divideFactor2();
+    void divideFactor3_data();
+    void divideFactor3();
+    void divideFactor4_data();
+    void divideFactor4();
+
     void negate2_data();
     void negate2();
     void negate3_data();
@@ -1629,13 +1636,151 @@ void tst_QVectorND::multiplyFactor4()
     QCOMPARE(v3.w(), v1.w() * factor);
 }
 
-// Test vector division by a factor for 2D vectors.
+// Test component-wise vector division for 2D vectors.
 void tst_QVectorND::divide2_data()
 {
     // Use the same test data as the multiply test.
-    multiplyFactor2_data();
+    multiply2_data();
 }
 void tst_QVectorND::divide2()
+{
+    QFETCH(float, x1);
+    QFETCH(float, y1);
+    QFETCH(float, x2);
+    QFETCH(float, y2);
+    QFETCH(float, x3);
+    QFETCH(float, y3);
+
+    QVector2D v1(x1, y1);
+    QVector2D v2(x2, y2);
+    QVector2D v3(x3, y3);
+
+    if (v2.x() != 0.0f && v2.y() != 0.0f) {
+        QVERIFY((v3 / v2) == v1);
+
+        QVector2D v4(v3);
+        v4 /= v2;
+        QVERIFY(v4 == v1);
+
+        QCOMPARE(v4.x(), v3.x() / v2.x());
+        QCOMPARE(v4.y(), v3.y() / v2.y());
+    }
+    if (v1.x() != 0.0f && v1.y() != 0.0f) {
+        QVERIFY((v3 / v1) == v2);
+
+        QVector2D v4(v3);
+        v4 /= v1;
+        QVERIFY(v4 == v2);
+
+        QCOMPARE(v4.x(), v3.x() / v1.x());
+        QCOMPARE(v4.y(), v3.y() / v1.y());
+    }
+}
+
+// Test component-wise vector division for 3D vectors.
+void tst_QVectorND::divide3_data()
+{
+    // Use the same test data as the multiply test.
+    multiply3_data();
+}
+void tst_QVectorND::divide3()
+{
+    QFETCH(float, x1);
+    QFETCH(float, y1);
+    QFETCH(float, z1);
+    QFETCH(float, x2);
+    QFETCH(float, y2);
+    QFETCH(float, z2);
+    QFETCH(float, x3);
+    QFETCH(float, y3);
+    QFETCH(float, z3);
+
+    QVector3D v1(x1, y1, z1);
+    QVector3D v2(x2, y2, z2);
+    QVector3D v3(x3, y3, z3);
+
+    if (v2.x() != 0.0f && v2.y() != 0.0f && v2.z() != 0.0f) {
+        QVERIFY((v3 / v2) == v1);
+
+        QVector3D v4(v3);
+        v4 /= v2;
+        QVERIFY(v4 == v1);
+
+        QCOMPARE(v4.x(), v3.x() / v2.x());
+        QCOMPARE(v4.y(), v3.y() / v2.y());
+        QCOMPARE(v4.z(), v3.z() / v2.z());
+    }
+    if (v1.x() != 0.0f && v1.y() != 0.0f && v1.z() != 0.0f) {
+        QVERIFY((v3 / v1) == v2);
+
+        QVector3D v4(v3);
+        v4 /= v1;
+        QVERIFY(v4 == v2);
+
+        QCOMPARE(v4.x(), v3.x() / v1.x());
+        QCOMPARE(v4.y(), v3.y() / v1.y());
+        QCOMPARE(v4.z(), v3.z() / v1.z());
+    }
+}
+
+// Test component-wise vector division for 4D vectors.
+void tst_QVectorND::divide4_data()
+{
+    // Use the same test data as the multiply test.
+    multiply4_data();
+}
+void tst_QVectorND::divide4()
+{
+    QFETCH(float, x1);
+    QFETCH(float, y1);
+    QFETCH(float, z1);
+    QFETCH(float, w1);
+    QFETCH(float, x2);
+    QFETCH(float, y2);
+    QFETCH(float, z2);
+    QFETCH(float, w2);
+    QFETCH(float, x3);
+    QFETCH(float, y3);
+    QFETCH(float, z3);
+    QFETCH(float, w3);
+
+    QVector4D v1(x1, y1, z1, w1);
+    QVector4D v2(x2, y2, z2, w2);
+    QVector4D v3(x3, y3, z3, w3);
+
+    if (v2.x() != 0.0f && v2.y() != 0.0f && v2.z() != 0.0f && v2.w() != 0.0f) {
+        QVERIFY((v3 / v2) == v1);
+
+        QVector4D v4(v3);
+        v4 /= v2;
+        QVERIFY(v4 == v1);
+
+        QCOMPARE(v4.x(), v3.x() / v2.x());
+        QCOMPARE(v4.y(), v3.y() / v2.y());
+        QCOMPARE(v4.z(), v3.z() / v2.z());
+        QCOMPARE(v4.w(), v3.w() / v2.w());
+    }
+    if (v1.x() != 0.0f && v1.y() != 0.0f && v1.z() != 0.0f && v1.w() != 0.0f) {
+        QVERIFY((v3 / v1) == v2);
+
+        QVector4D v4(v3);
+        v4 /= v1;
+        QVERIFY(v4 == v2);
+
+        QCOMPARE(v4.x(), v3.x() / v1.x());
+        QCOMPARE(v4.y(), v3.y() / v1.y());
+        QCOMPARE(v4.z(), v3.z() / v1.z());
+        QCOMPARE(v4.w(), v3.w() / v1.w());
+    }
+}
+
+// Test vector division by a factor for 2D vectors.
+void tst_QVectorND::divideFactor2_data()
+{
+    // Use the same test data as the multiplyFactor test.
+    multiplyFactor2_data();
+}
+void tst_QVectorND::divideFactor2()
 {
     QFETCH(float, x1);
     QFETCH(float, y1);
@@ -1660,12 +1805,12 @@ void tst_QVectorND::divide2()
 }
 
 // Test vector division by a factor for 3D vectors.
-void tst_QVectorND::divide3_data()
+void tst_QVectorND::divideFactor3_data()
 {
-    // Use the same test data as the multiply test.
+    // Use the same test data as the multiplyFactor test.
     multiplyFactor3_data();
 }
-void tst_QVectorND::divide3()
+void tst_QVectorND::divideFactor3()
 {
     QFETCH(float, x1);
     QFETCH(float, y1);
@@ -1693,12 +1838,12 @@ void tst_QVectorND::divide3()
 }
 
 // Test vector division by a factor for 4D vectors.
-void tst_QVectorND::divide4_data()
+void tst_QVectorND::divideFactor4_data()
 {
-    // Use the same test data as the multiply test.
+    // Use the same test data as the multiplyFactor test.
     multiplyFactor4_data();
 }
-void tst_QVectorND::divide4()
+void tst_QVectorND::divideFactor4()
 {
     QFETCH(float, x1);
     QFETCH(float, y1);
