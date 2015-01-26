@@ -77,6 +77,8 @@ public:
     inline void setRow(int index, const QVector4D& value);
 #endif
 
+    inline bool isAffine() const;
+
     inline bool isIdentity() const;
     inline void setToIdentity();
 
@@ -301,6 +303,11 @@ inline void QMatrix4x4::setRow(int index, const QVector4D& value)
 #endif
 
 Q_GUI_EXPORT QMatrix4x4 operator/(const QMatrix4x4& matrix, float divisor);
+
+inline bool QMatrix4x4::isAffine() const
+{
+    return m[0][3] == 0.0f && m[1][3] == 0.0f && m[2][3] == 0.0f && m[3][3] == 1.0f;
+}
 
 inline bool QMatrix4x4::isIdentity() const
 {
