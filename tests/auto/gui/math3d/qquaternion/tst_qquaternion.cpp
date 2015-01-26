@@ -54,6 +54,9 @@ private slots:
     void normalize_data();
     void normalize();
 
+    void inverted_data();
+    void inverted();
+
     void compare();
 
     void add_data();
@@ -289,6 +292,32 @@ void tst_QQuaternion::normalize()
         QVERIFY(v.isNull());
     else
         QCOMPARE(v.length(), 1.0f);
+}
+
+void tst_QQuaternion::inverted_data()
+{
+    // Use the same test data as the length test.
+    length_data();
+}
+void tst_QQuaternion::inverted()
+{
+    QFETCH(float, x);
+    QFETCH(float, y);
+    QFETCH(float, z);
+    QFETCH(float, w);
+    QFETCH(float, len);
+
+    QQuaternion v(w, x, y, z);
+    QQuaternion u = v.inverted();
+    if (v.isNull()) {
+        QVERIFY(u.isNull());
+    } else {
+        len *= len;
+        QCOMPARE(-u.x() * len, v.x());
+        QCOMPARE(-u.y() * len, v.y());
+        QCOMPARE(-u.z() * len, v.z());
+        QCOMPARE(u.scalar() * len, v.scalar());
+    }
 }
 
 // Test the comparison operators for quaternions.

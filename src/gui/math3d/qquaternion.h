@@ -82,6 +82,8 @@ public:
     QQuaternion normalized() const;
     void normalize();
 
+    inline QQuaternion inverted() const;
+
     QQuaternion conjugate() const;
 
     QVector3D rotatedVector(const QVector3D& vector) const;
@@ -151,6 +153,18 @@ inline void QQuaternion::setX(float aX) { xp = aX; }
 inline void QQuaternion::setY(float aY) { yp = aY; }
 inline void QQuaternion::setZ(float aZ) { zp = aZ; }
 inline void QQuaternion::setScalar(float aScalar) { wp = aScalar; }
+
+inline QQuaternion QQuaternion::inverted() const
+{
+    // Need some extra precision if the length is very small.
+    double len = double(xp) * double(xp) +
+                 double(yp) * double(yp) +
+                 double(zp) * double(zp) +
+                 double(wp) * double(wp);
+    if (!qFuzzyIsNull(len))
+        return QQuaternion(wp / len, -xp / len, -yp / len, -zp / len);
+    return QQuaternion(0.0f, 0.0f, 0.0f, 0.0f);
+}
 
 inline QQuaternion QQuaternion::conjugate() const
 {
