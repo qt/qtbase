@@ -10,13 +10,7 @@ MIDL_GENERATED = $$PWD/generated/$${ARCH_SUBDIR}
 
 INCLUDEPATH += $$MIDL_GENERATED
 
-SOURCES +=  $${MIDL_GENERATED}/ia2_api_all_i.c \
-            $${MIDL_GENERATED}/ia2_api_all_p.c
-
-# Do not add dlldata.c when building accessibility into a static library, as the COM entry points
-# defined there can cause duplicate symbol errors when linking into a binary that also defines
-# such entry points, e.g. anything linked against QtAxServer.
-!static: SOURCES += $${MIDL_GENERATED}/dlldata.c
+SOURCES +=  $${MIDL_GENERATED}/ia2_api_all_i.c
 
 HEADERS +=  $${MIDL_GENERATED}/ia2_api_all.h
 
