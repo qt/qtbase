@@ -358,6 +358,8 @@ QWindowsEGLStaticContext *QWindowsEGLStaticContext::create(QWindowsOpenGLTester:
     }
 
     EGLDisplay display = EGL_NO_DISPLAY;
+    EGLint major = 0;
+    EGLint minor = 0;
 #ifdef EGL_ANGLE_platform_angle_opengl
     if (libEGL.eglGetPlatformDisplayEXT
         && (preferredType & QWindowsOpenGLTester::AngleBackendMask)) {
@@ -373,8 +375,13 @@ QWindowsEGLStaticContext *QWindowsEGLStaticContext::create(QWindowsOpenGLTester:
             attributes = anglePlatformAttributes[1];
         else if (preferredType & QWindowsOpenGLTester::AngleRendererD3d11Warp)
             attributes = anglePlatformAttributes[2];
-        if (attributes)
+        if (attributes) {
             display = libEGL.eglGetPlatformDisplayEXT(EGL_PLATFORM_ANGLE_ANGLE, dc, attributes);
+            if (!libEGL.eglInitialize(display, &major, &minor)) {
+                display = EGL_NO_DISPLAY;
+                major = minor = 0;
+            }
+        }
     }
 #else // EGL_ANGLE_platform_angle_opengl
     Q_UNUSED(preferredType)
@@ -386,9 +393,7 @@ QWindowsEGLStaticContext *QWindowsEGLStaticContext::create(QWindowsOpenGLTester:
         return 0;
     }
 
-    EGLint major;
-    EGLint minor;
-    if (!libEGL.eglInitialize(display, &major, &minor)) {
+    if (!major && !libEGL.eglInitialize(display, &major, &minor)) {
         int err = libEGL.eglGetError();
         qWarning("%s: Could not initialize EGL display: error 0x%x\n", Q_FUNC_INFO, err);
         if (err == 0x3001)
