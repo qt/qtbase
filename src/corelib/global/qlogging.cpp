@@ -866,7 +866,7 @@ QMessagePattern::QMessagePattern()
 
 QMessagePattern::~QMessagePattern()
 {
-    for (int i = 0; literals[i] != 0; ++i)
+    for (int i = 0; literals[i]; ++i)
         delete [] literals[i];
     delete [] literals;
     literals = 0;
@@ -876,8 +876,12 @@ QMessagePattern::~QMessagePattern()
 
 void QMessagePattern::setPattern(const QString &pattern)
 {
+    if (literals) {
+        for (int i = 0; literals[i]; ++i)
+            delete [] literals[i];
+        delete [] literals;
+    }
     delete [] tokens;
-    delete [] literals;
 
     // scanner
     QList<QString> lexemes;
