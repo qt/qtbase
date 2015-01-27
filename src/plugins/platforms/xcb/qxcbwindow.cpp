@@ -215,6 +215,18 @@ static inline QImage::Format imageFormatForVisual(int depth, quint32 red_mask, q
         break;
     }
     qWarning("Unsupported screen format: depth: %d, red_mask: %x, blue_mask: %x", depth, red_mask, blue_mask);
+
+    switch (depth) {
+    case 24:
+        qWarning("Using RGB32 fallback, if this works your X11 server is reporting a bad screen format.");
+        return QImage::Format_RGB32;
+    case 16:
+        qWarning("Using RGB16 fallback, if this works your X11 server is reporting a bad screen format.");
+        return QImage::Format_RGB16;
+    default:
+        break;
+    }
+
     return QImage::Format_Invalid;
 }
 
