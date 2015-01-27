@@ -772,7 +772,7 @@ void tst_QSslSocket::peerCertificateChain()
     QVERIFY(socket->waitForDisconnected());
 
     // connect again to a different server
-    socket->connectToHostEncrypted("qt-project.org", 443);
+    socket->connectToHostEncrypted("www.qt.io", 443);
     socket->ignoreSslErrors();
     QCOMPARE(socket->mode(), QSslSocket::UnencryptedMode);
     QVERIFY(socket->peerCertificateChain().isEmpty());
