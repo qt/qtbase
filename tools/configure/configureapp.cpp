@@ -269,6 +269,7 @@ Configure::Configure(int& argc, char** argv)
     dictionary[ "OPENVG" ]          = "no";
     dictionary[ "SSL" ]             = "auto";
     dictionary[ "OPENSSL" ]         = "auto";
+    dictionary[ "LIBPROXY" ]        = "auto";
     dictionary[ "DBUS" ]            = "auto";
 
     dictionary[ "STYLE_WINDOWS" ]   = "yes";
@@ -859,6 +860,10 @@ void Configure::parseCmdLine()
               dictionary[ "OPENSSL" ] = "yes";
         } else if (configCmdLine.at(i) == "-openssl-linked") {
               dictionary[ "OPENSSL" ] = "linked";
+        } else if (configCmdLine.at(i) == "-no-libproxy") {
+              dictionary[ "LIBPROXY"] = "no";
+        } else if (configCmdLine.at(i) == "-libproxy") {
+              dictionary[ "LIBPROXY" ] = "yes";
         } else if (configCmdLine.at(i) == "-no-qdbus") {
             dictionary[ "DBUS" ] = "no";
         } else if (configCmdLine.at(i) == "-qdbus") {
@@ -1973,6 +1978,8 @@ bool Configure::displayHelp()
         desc("OPENSSL", "no",    "-no-openssl",         "Do not compile support for OpenSSL.");
         desc("OPENSSL", "yes",   "-openssl",            "Enable run-time OpenSSL support.");
         desc("OPENSSL", "linked","-openssl-linked",     "Enable linked OpenSSL support.\n");
+        desc("LIBPROXY", "no",   "-no-libproxy",        "Do not compile in libproxy support.");
+        desc("LIBPROXY", "yes",  "-libproxy",           "Compile in libproxy support (for cross compilation targets).\n");
         desc("DBUS", "no",       "-no-dbus",            "Do not compile in D-Bus support.");
         desc("DBUS", "yes",      "-dbus",               "Compile in D-Bus support and load libdbus-1\ndynamically.");
         desc("DBUS", "linked",   "-dbus-linked",        "Compile in D-Bus support and link to libdbus-1.\n");
@@ -2234,6 +2241,8 @@ bool Configure::checkAvailability(const QString &part)
         available = tryCompileProject("common/avx2");
     else if (part == "OPENSSL")
         available = findFile("openssl\\ssl.h");
+    else if (part == "LIBPROXY")
+        available = dictionary.contains("XQMAKESPEC") && tryCompileProject("common/libproxy");
     else if (part == "DBUS")
         available = findFile("dbus\\dbus.h");
     else if (part == "CETEST") {
@@ -2405,6 +2414,8 @@ void Configure::autoDetection()
     }
     if (dictionary["OPENSSL"] == "auto")
         dictionary["OPENSSL"] = checkAvailability("OPENSSL") ? "yes" : "no";
+    if (dictionary["LIBPROXY"] == "auto")
+        dictionary["LIBPROXY"] = checkAvailability("LIBPROXY") ? "yes" : "no";
     if (dictionary["DBUS"] == "auto")
         dictionary["DBUS"] = checkAvailability("DBUS") ? "yes" : "no";
     if (dictionary["QML_DEBUG"] == "auto")
@@ -2840,6 +2851,9 @@ void Configure::generateOutputVars()
         qtConfig += "openssl";
     else if (dictionary[ "OPENSSL" ] == "linked")
         qtConfig += "openssl-linked";
+
+    if (dictionary[ "LIBPROXY" ] == "yes")
+        qtConfig += "libproxy";
 
     if (dictionary[ "DBUS" ] == "yes")
         qtConfig += "dbus";
@@ -3695,6 +3709,7 @@ void Configure::displayConfig()
     sout << "OpenVG support.............." << dictionary[ "OPENVG" ] << endl;
     sout << "SSL support................." << dictionary[ "SSL" ] << endl;
     sout << "OpenSSL support............." << dictionary[ "OPENSSL" ] << endl;
+    sout << "libproxy support............" << dictionary[ "LIBPROXY" ] << endl;
     sout << "Qt D-Bus support............" << dictionary[ "DBUS" ] << endl;
     sout << "Qt Widgets module support..." << dictionary[ "WIDGETS" ] << endl;
     sout << "Qt GUI module support......." << dictionary[ "GUI" ] << endl;

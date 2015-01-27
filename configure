@@ -681,6 +681,7 @@ CFG_GLIB=auto
 CFG_QGTKSTYLE=auto
 CFG_LARGEFILE=auto
 CFG_OPENSSL=auto
+CFG_LIBPROXY=auto
 CFG_SECURETRANSPORT=auto
 CFG_PRECOMPILE=auto
 CFG_SEPARATE_DEBUG_INFO=no
@@ -1980,6 +1981,13 @@ while [ "$#" -gt 0 ]; do
             UNKNOWN_OPT=yes
         fi
         ;;
+    libproxy)
+        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
+            CFG_LIBPROXY="$VAL"
+        else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
     qml-debug)
         if [ "$VAL" = "yes" ]; then
             CFG_QML_DEBUG="yes"
@@ -2440,6 +2448,9 @@ Third Party Libraries:
     -no-openssl ......... Do not compile support for OpenSSL.
  +  -openssl ............ Enable run-time OpenSSL support.
     -openssl-linked ..... Enabled linked OpenSSL support.
+
+    -no-libproxy ....... Do not compile support for libproxy
+ +  -libproxy .......... Use libproxy from the operating system.
 
     -qt-pcre ............ Use the PCRE library bundled with Qt.
  +  -system-pcre ........ Use the PCRE library from the operating system.
@@ -4864,6 +4875,24 @@ if [ "$CFG_DBUS" = "linked" ]; then
     fi
 fi
 
+# auto-detect libproxy support
+if [ "$CFG_LIBPROXY" != "no" ]; then
+    if compileTest common/libproxy "libproxy"; then
+        CFG_LIBPROXY=yes
+    else
+        if [ "$CFG_LIBPROXY" = "auto" ]; then
+            CFG_LIBPROXY=no
+        elif [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
+            # CFG_LIBPROXY is "yes" here
+            echo "The libproxy support cannot be enabled because libproxy was not found."
+            echo " Turn on verbose messaging (-v) to $0 to see the final report."
+            echo " If you believe this message is in error you may use the continue"
+            echo " switch (-continue) to $0 to continue."
+            exit 101
+        fi
+    fi
+fi
+
 # auto-detect Glib support
 if [ "$CFG_GLIB" != "no" ]; then
     if [ -n "$PKG_CONFIG" ]; then
@@ -6039,6 +6068,7 @@ fi
 [ "$CFG_OPENSSL" = "yes" ] && QT_CONFIG="$QT_CONFIG openssl"
 [ "$CFG_OPENSSL" = "linked" ] && QT_CONFIG="$QT_CONFIG openssl-linked"
 [ "$CFG_SECURETRANSPORT" = "yes" ] && QT_CONFIG="$QT_CONFIG ssl securetransport"
+[ "$CFG_LIBPROXY" = "yes" ] && QT_CONFIG="$QT_CONFIG libproxy"
 [ "$CFG_XCB" != "no" ] && QT_CONFIG="$QT_CONFIG xcb"
 [ "$CFG_XINPUT2" = "yes" ] && QT_CONFIG="$QT_CONFIG xinput2"
 [ "$CFG_SYSTEM_PROXIES" = "yes" ] && QT_CONFIG="$QT_CONFIG system-proxies"
@@ -6430,6 +6460,7 @@ QMakeVar set sql-plugins "$SQL_PLUGINS"
 [ "$CFG_JPEG" != "yes" ]     && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_IMAGEFORMAT_JPEG"
 [ "$CFG_ZLIB" != "yes" ]     && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_ZLIB"
 [ "$CFG_DBUS" = "no" ]      && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_DBUS"
+[ "$CFG_LIBPROXY" = "no" ]   && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_LIBPROXY"
 
 # X11/Unix/Mac only configs
 [ "$CFG_CUPS" = "no" ]       && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_CUPS"
@@ -6878,6 +6909,7 @@ report_support "  Networking:"
 report_support "    getaddrinfo .........." "$CFG_GETADDRINFO"
 report_support "    getifaddrs ..........." "$CFG_GETIFADDRS"
 report_support "    IPv6 ifname .........." "$CFG_IPV6IFNAME"
+report_support "    libproxy.............." "$CFG_LIBPROXY"
 report_support "    OpenSSL .............." "$CFG_OPENSSL" yes "loading libraries at run-time" linked "linked to the libraries"
 [ "$XPLATFORM_MAC" = "yes" ] && \
     report_support "    SecureTransport ......" "$CFG_SECURETRANSPORT"
