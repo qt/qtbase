@@ -446,6 +446,14 @@ QCocoaWindow::~QCocoaWindow()
                                               name:nil object:m_nsWindow];
     }
 
+    // The QNSView object may outlive the corresponding QCocoaWindow object,
+    // for example during app shutdown when the QNSView is embedded in a
+    // foregin NSView hiearchy. Clear the pointers to the QWindow/QCocoaWindow
+    // here to make sure QNSView does not dereference stale pointers.
+    if (m_qtView) {
+        [m_qtView clearQWindowPointers];
+    }
+
     foreach (QCocoaWindow *child, m_childWindows) {
        [m_nsWindow removeChildWindow:child->m_nsWindow];
         child->m_parentCocoaWindow = 0;

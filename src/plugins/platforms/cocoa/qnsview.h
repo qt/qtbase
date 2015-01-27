@@ -80,6 +80,7 @@ Q_FORWARD_DECLARE_OBJC_CLASS(QT_MANGLE_NAMESPACE(QNSViewMouseMoveHelper));
 
 - (id)init;
 - (id)initWithQWindow:(QWindow *)window platformWindow:(QCocoaWindow *) platformWindow;
+- (void) clearQWindowPointers;
 #ifndef QT_NO_OPENGL
 - (void)setQCocoaGLContext:(QCocoaGLContext *)context;
 #endif

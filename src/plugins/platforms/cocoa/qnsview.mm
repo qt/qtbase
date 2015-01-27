@@ -214,6 +214,12 @@ static NSString *_q_NSWindowDidChangeOcclusionStateNotification = nil;
     return self;
 }
 
+- (void) clearQWindowPointers
+{
+    m_window = 0;
+    m_platformWindow = 0;
+}
+
 #ifndef QT_NO_OPENGL
 - (void) setQCocoaGLContext:(QCocoaGLContext *)context
 {
@@ -481,6 +487,8 @@ QT_WARNING_POP
 
 - (BOOL) isOpaque
 {
+    if (!m_platformWindow)
+        return true;
     return m_platformWindow->isOpaque();
 }
 
