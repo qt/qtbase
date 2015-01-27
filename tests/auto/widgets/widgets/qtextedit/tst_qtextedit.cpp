@@ -122,7 +122,6 @@ private slots:
 #ifndef QT_NO_CLIPBOARD
     void copyAndSelectAllInReadonly();
 #endif
-    void ctrlAltInput();
     void noPropertiesOnDefaultTextEditCharFormat();
     void setPlainTextShouldUseCurrentCharFormat();
     void setPlainTextShouldEmitTextChangedOnce();
@@ -1041,12 +1040,6 @@ void tst_QTextEdit::copyAndSelectAllInReadonly()
     QCOMPARE(QApplication::clipboard()->text(), QString("Hello World"));
 }
 #endif
-
-void tst_QTextEdit::ctrlAltInput()
-{
-    QTest::keyClick(ed, Qt::Key_At, Qt::ControlModifier | Qt::AltModifier);
-    QCOMPARE(ed->toPlainText(), QString("@"));
-}
 
 void tst_QTextEdit::noPropertiesOnDefaultTextEditCharFormat()
 {
