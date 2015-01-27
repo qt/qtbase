@@ -31,9 +31,9 @@
 **
 ****************************************************************************/
 
-#include "window.h"
+#include "rasterwindow.h"
 
-#include <private/qguiapplication_p.h>
+//#include <private/qguiapplication_p.h>
 
 #include <QBackingStore>
 #include <QPainter>
@@ -48,21 +48,14 @@ QColor colorTable[] =
     QColor("#c0ef8f")
 };
 
-Window::Window(QScreen *screen)
-    : QWindow(screen)
+RasterWindow::RasterWindow(QRasterWindow *parent)
+    : QRasterWindow(parent)
     , m_backgroundColorIndex(colorIndexId++)
 {
     initialize();
 }
 
-Window::Window(QWindow *parent)
-    : QWindow(parent)
-    , m_backgroundColorIndex(colorIndexId++)
-{
-    initialize();
-}
-
-void Window::initialize()
+void RasterWindow::initialize()
 {
     if (parent())
         setGeometry(QRect(160, 120, 320, 240));
@@ -85,12 +78,12 @@ void Window::initialize()
     m_renderTimer = 0;
 }
 
-void Window::mousePressEvent(QMouseEvent *event)
+void RasterWindow::mousePressEvent(QMouseEvent *event)
 {
     m_lastPos = event->pos();
 }
 
-void Window::mouseMoveEvent(QMouseEvent *event)
+void RasterWindow::mouseMoveEvent(QMouseEvent *event)
 {
     if (m_lastPos != QPoint(-1, -1)) {
         QPainter p(&m_image);
@@ -102,7 +95,7 @@ void Window::mouseMoveEvent(QMouseEvent *event)
     scheduleRender();
 }
 
-void Window::mouseReleaseEvent(QMouseEvent *event)
+void RasterWindow::mouseReleaseEvent(QMouseEvent *event)
 {
     if (m_lastPos != QPoint(-1, -1)) {
         QPainter p(&m_image);
@@ -114,16 +107,16 @@ void Window::mouseReleaseEvent(QMouseEvent *event)
     scheduleRender();
 }
 
-void Window::exposeEvent(QExposeEvent *)
+void RasterWindow::exposeEvent(QExposeEvent *)
 {
     scheduleRender();
 }
 
-void Window::resizeEvent(QResizeEvent *)
+void RasterWindow::resizeEvent(QResizeEvent *)
 {
     QImage old = m_image;
 
-    //qDebug() << "Window::resizeEvent" << width << height;
+    //qDebug() << "RasterWindow::resizeEvent" << width << height;
 
     int width = qMax(geometry().width(), old.width());
     int height = qMax(geometry().height(), old.height());
@@ -139,7 +132,7 @@ void Window::resizeEvent(QResizeEvent *)
     render();
 }
 
-void Window::keyPressEvent(QKeyEvent *event)
+void RasterWindow::keyPressEvent(QKeyEvent *event)
 {
     switch (event->key()) {
     case Qt::Key_Backspace:
@@ -156,20 +149,20 @@ void Window::keyPressEvent(QKeyEvent *event)
     scheduleRender();
 }
 
-void Window::scheduleRender()
+void RasterWindow::scheduleRender()
 {
     if (!m_renderTimer)
         m_renderTimer = startTimer(1);
 }
 
-void Window::timerEvent(QTimerEvent *)
+void RasterWindow::timerEvent(QTimerEvent *)
 {
     render();
     killTimer(m_renderTimer);
     m_renderTimer = 0;
 }
 
-void Window::render()
+void RasterWindow::render()
 {
     QRect rect(QPoint(), geometry().size());
 

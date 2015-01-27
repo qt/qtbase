@@ -31,14 +31,13 @@
 **
 ****************************************************************************/
 
-#include <QWindow>
+#include <QRasterWindow>
 #include <QImage>
 
-class Window : public QWindow
+class RasterWindow : public QRasterWindow
 {
 public:
-    Window(QWindow *parent = 0);
-    Window(QScreen *screen);
+    RasterWindow(QRasterWindow *parent = 0);
 
 protected:
     void mousePressEvent(QMouseEvent *);

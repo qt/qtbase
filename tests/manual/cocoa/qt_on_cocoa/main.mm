@@ -31,123 +31,35 @@
 **
 ****************************************************************************/
 
+#include "rasterwindow.h"
+
 #include <QtGui>
-#include <QtDeclarative>
-
 #include <QtWidgets/QtWidgets>
-#include <private/qwidgetwindow_p.h>
-#include <QtGui/qpa/qplatformnativeinterface.h>
-
-#include <QtGui/QPixmap>
-
-#include "window.h"
 
 #include <Cocoa/Cocoa.h>
 
-
-@interface FilledView : NSView
-{
-
+@interface AppDelegate : NSObject <NSApplicationDelegate> {
+    QGuiApplication *m_app;
+    QWindow *m_window;
 }
+- (AppDelegate *) initWithArgc:(int)argc argv:(const char **)argv;
+- (void) applicationWillFinishLaunching: (NSNotification *)notification;
+- (void)applicationWillTerminate:(NSNotification *)notification;
 @end
 
 
-@implementation FilledView
-
-- (void)drawRect:(NSRect)dirtyRect {
-    // set any NSColor for filling, say white:
-    [[NSColor redColor] setFill];
-    NSRectFill(dirtyRect);
-}
-
-@end
-
-@interface QtMacToolbarDelegate : NSObject <NSToolbarDelegate>
+@implementation AppDelegate
+- (AppDelegate *) initWithArgc:(int)argc argv:(const char **)argv
 {
-@public
-    NSToolbar *toolbar;
-}
-
-- (id)init;
-- (NSToolbarItem *) toolbar: (NSToolbar *)toolbar itemForItemIdentifier: (NSString *) itemIdent willBeInsertedIntoToolbar:(BOOL) willBeInserted;
-- (NSArray *)toolbarDefaultItemIdentifiers:(NSToolbar*)tb;
-- (NSArray *)toolbarAllowedItemIdentifiers:(NSToolbar*)toolbar;
-- (NSArray *)toolbarSelectableItemIdentifiers:(NSToolbar *)toolbar;
-@end
-
-@implementation QtMacToolbarDelegate
-
-- (id)init
-{
-    self = [super init];
-    if (self) {
-    }
+    m_app = new QGuiApplication(argc, const_cast<char **>(argv));
     return self;
 }
 
-- (void)dealloc
+- (void) applicationWillFinishLaunching: (NSNotification *)notification
 {
-    [super dealloc];
-}
+    Q_UNUSED(notification);
 
-- (NSArray *)toolbarDefaultItemIdentifiers:(NSToolbar*)tb
-{
-    Q_UNUSED(tb);
-    NSMutableArray *array = [[[NSMutableArray alloc] init] autorelease];
-//    [array addObject : NSToolbarPrintItemIdentifier];
-//    [array addObject : NSToolbarShowColorsItemIdentifier];
-    [array addObject : @"filledView"];
-    return array;
-}
-
-- (NSArray *)toolbarAllowedItemIdentifiers:(NSToolbar*)tb
-{
-    Q_UNUSED(tb);
-    NSMutableArray *array = [[[NSMutableArray alloc] init] autorelease];
-//    [array addObject : NSToolbarPrintItemIdentifier];
-//    [array addObject : NSToolbarShowColorsItemIdentifier];
-    [array addObject : @"filledView"];
-    return array;
-}
-
-- (NSArray *)toolbarSelectableItemIdentifiers: (NSToolbar *)tb
-{
-    Q_UNUSED(tb);
-    NSMutableArray *array = [[[NSMutableArray alloc] init] autorelease];
-    return array;
-}
-
-- (IBAction)itemClicked:(id)sender
-{
-
-}
-
-- (NSToolbarItem *) toolbar: (NSToolbar *)tb itemForItemIdentifier: (NSString *) itemIdentifier willBeInsertedIntoToolbar:(BOOL) willBeInserted
-{
-    Q_UNUSED(tb);
-    Q_UNUSED(willBeInserted);
-    //const QString identifier = toQString(itemIdentifier);
-    //NSToolbarItem *toolbarItem = [[[NSToolbarItem alloc] initWithItemIdentifier: itemIdentifier] autorelease];
-    //return toolbarItem;
-
-    //NSToolbarItem *toolbarItem = [[[NSToolbarItem alloc] initWithItemIdentifier: itemIdentifier] autorelease];
-    NSToolbarItem *toolbarItem = [[[NSToolbarItem alloc] initWithItemIdentifier: itemIdentifier] autorelease];
-    FilledView *theView = [[FilledView alloc] init];
-    [toolbarItem setView : theView];
-    [toolbarItem setMinSize : NSMakeSize(400, 40)];
-    [toolbarItem setMaxSize : NSMakeSize(4000, 40)];
-    return toolbarItem;
-}
-@end
-
-@interface WindowAndViewAndQtCreator : NSObject {}
-- (void)createWindowAndViewAndQt;
-@end
-
-@implementation WindowAndViewAndQtCreator
-- (void)createWindowAndViewAndQt {
-
-    // Create the window
+    // Create the NSWindow
     NSRect frame = NSMakeRect(500, 500, 500, 500);
     NSWindow* window  = [[NSWindow alloc] initWithContentRect:frame
                         styleMask:NSTitledWindowMask |  NSClosableWindowMask | NSMiniaturizableWindowMask | NSResizableWindowMask
@@ -156,49 +68,31 @@
 
     NSString *title = @"This the NSWindow window";
     [window setTitle:title];
-
     [window setBackgroundColor:[NSColor blueColor]];
 
-    // Create a tool bar, set Qt delegate
-    NSToolbar *toolbar = [[NSToolbar alloc] initWithIdentifier : @"foobartoolbar"];
-    QtMacToolbarDelegate *delegate = [[QtMacToolbarDelegate alloc] init];
-    [toolbar setDelegate : delegate];
-    [window setToolbar : toolbar];
+    // Create the QWindow, use its NSView as the content view
+    m_window = new RasterWindow();
+    [window setContentView:reinterpret_cast<NSView *>(m_window->winId())];
 
-    // Create the QWindow, don't show it.
-    Window *qtWindow = new Window();
-    qtWindow->create();
-
-    //QSGView *qtWindow = new QSGView();
-    //qtWindow->setSource(QUrl::fromLocalFile("/Users/msorvig/code/qt5/qtdeclarative/examples/declarative/samegame/samegame.qml"));
- //   qtWindow->setWindowFlags(Qt::WindowType(13)); // 13: NativeEmbeddedWindow
-
-    // Get the nsview from the QWindow, set it as the content view
-    // on the NSWindow created above.
-    QPlatformNativeInterface *platformNativeInterface = QGuiApplication::platformNativeInterface();
-    NSView *qtView = (NSView *)platformNativeInterface->nativeResourceForWindow("nsview", qtWindow);
-    [window setContentView:qtView];
+    // Show the NSWindow
     [window makeKeyAndOrderFront:NSApp];
 }
+
+- (void)applicationWillTerminate:(NSNotification *)notification
+{
+    Q_UNUSED(notification);
+    delete m_window;
+    delete m_app;
+}
+
 @end
 
-int main(int argc, char *argv[])
+int main(int argc, const char *argv[])
 {
-    QGuiApplication app(argc, argv);
-
-    // fake NSApplicationMain() implementation follows:
-    NSAutoreleasePool * pool = [[NSAutoreleasePool alloc] init];
-    [NSApplication sharedApplication];
-
-    // schedule call to create the UI.
-    WindowAndViewAndQtCreator *windowAndViewAndQtCreator= [WindowAndViewAndQtCreator alloc];
-    [NSTimer scheduledTimerWithTimeInterval:0 target:windowAndViewAndQtCreator selector:@selector(createWindowAndViewAndQt) userInfo:nil repeats:NO];
-
-    [(NSApplication *)NSApp run];
-    [NSApp release];
-    [pool release];
-    exit(0);
-    return 0;
+    // Create NSApplicaiton with delgate
+    NSApplication *app =[NSApplication sharedApplication];
+    app.delegate = [[AppDelegate alloc] initWithArgc:argc argv:argv];
+    return NSApplicationMain (argc, argv);
 }
 
 
