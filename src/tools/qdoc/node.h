@@ -107,7 +107,7 @@ public:
         LastSubtype
     };
 
-    enum Genus { DontCare, CPP, QML, DOC };
+    enum Genus { DontCare, CPP, JS, QML, DOC };
 
     enum Access { Public, Protected, Private };
 
@@ -300,7 +300,7 @@ public:
     virtual void setClassNode(ClassNode* ) { }
     virtual const Node* applyModuleName(const Node* ) const { return 0; }
     virtual QString idNumber() { return "0"; }
-    QmlTypeNode* qmlClassNode();
+    QmlTypeNode* qmlTypeNode();
     ClassNode* declarativeCppNode();
     const QString& outputSubdirectory() const { return outSubDir_; }
     void setOutputSubdirectory(const QString& t) { outSubDir_ = t; }

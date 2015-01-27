@@ -146,7 +146,7 @@ public:
     virtual QList<Section> sections(const InnerNode *inner,
                                     SynopsisStyle style,
                                     Status status) = 0;
-    virtual QList<Section> qmlSections(QmlTypeNode* qmlClassNode,
+    virtual QList<Section> qmlSections(QmlTypeNode* qmlTypeNode,
                                        SynopsisStyle style,
                                        Status status = Okay);
     virtual QStringList macRefsForNode(Node* node);

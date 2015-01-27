@@ -559,11 +559,11 @@ Node* CppCodeParser::processTopicCommand(const Doc& doc,
              (command == COMMAND_QMLATTACHEDSIGNAL) ||
              (command == COMMAND_QMLATTACHEDMETHOD)) {
         QString module;
-        QString qmlType;
+        QString qmlTypeName;
         QString type;
-        if (splitQmlMethodArg(arg.first,type,module,qmlType)) {
-            QmlTypeNode* qmlClass = qdb_->findQmlType(module,qmlType);
-            if (qmlClass) {
+        if (splitQmlMethodArg(arg.first, type, module, qmlTypeName)) {
+            QmlTypeNode* qmlType = qdb_->findQmlType(module, qmlTypeName);
+            if (qmlType) {
                 bool attached = false;
                 Node::Type nodeType = Node::QmlMethod;
                 if (command == COMMAND_QMLSIGNAL)
@@ -581,7 +581,7 @@ Node* CppCodeParser::processTopicCommand(const Doc& doc,
                     return 0; // never get here.
                 FunctionNode* fn = makeFunctionNode(doc,
                                                     arg.first,
-                                                    qmlClass,
+                                                    qmlType,
                                                     nodeType,
                                                     attached,
                                                     command);
@@ -602,19 +602,19 @@ Node* CppCodeParser::processTopicCommand(const Doc& doc,
   This function splits the argument into those parts.
   A <QML-module> is the QML equivalent of a C++ namespace.
   So this function splits \a arg on "::" and stores the
-  parts in \a module, \a qmlType, and \a name, and returns
+  parts in \a module, \a qmlTypeName, and \a name, and returns
   true. If any part is not found, a qdoc warning is emitted
   and false is returned.
  */
 bool CppCodeParser::splitQmlPropertyGroupArg(const QString& arg,
                                              QString& module,
-                                             QString& qmlType,
+                                             QString& qmlTypeName,
                                              QString& name)
 {
     QStringList colonSplit = arg.split("::");
     if (colonSplit.size() == 3) {
         module = colonSplit[0];
-        qmlType = colonSplit[1];
+        qmlTypeName = colonSplit[1];
         name = colonSplit[2];
         return true;
     }
@@ -634,7 +634,7 @@ bool CppCodeParser::splitQmlPropertyGroupArg(const QString& arg,
   was used before the creation of Qt Quick 2 and Qt
   Components. A <QML-module> is the QML equivalent of a
   C++ namespace. So this function splits \a arg on "::"
-  and stores the parts in \a type, \a module, \a qmlType,
+  and stores the parts in \a type, \a module, \a qmlTypeName,
   and \a name, and returns \c true. If any part other than
   \a module is not found, a qdoc warning is emitted and
   false is returned.
@@ -645,7 +645,7 @@ bool CppCodeParser::splitQmlPropertyGroupArg(const QString& arg,
 bool CppCodeParser::splitQmlPropertyArg(const QString& arg,
                                         QString& type,
                                         QString& module,
-                                        QString& qmlType,
+                                        QString& qmlTypeName,
                                         QString& name)
 {
     QStringList blankSplit = arg.split(QLatin1Char(' '));
@@ -654,13 +654,13 @@ bool CppCodeParser::splitQmlPropertyArg(const QString& arg,
         QStringList colonSplit(blankSplit[1].split("::"));
         if (colonSplit.size() == 3) {
             module = colonSplit[0];
-            qmlType = colonSplit[1];
+            qmlTypeName = colonSplit[1];
             name = colonSplit[2];
             return true;
         }
         if (colonSplit.size() == 2) {
             module.clear();
-            qmlType = colonSplit[0];
+            qmlTypeName = colonSplit[0];
             name = colonSplit[1];
             return true;
         }
@@ -681,7 +681,7 @@ bool CppCodeParser::splitQmlPropertyArg(const QString& arg,
   <type> <QML-module>::<QML-type>::<name>(<param>, <param>, ...)
 
   This function splits the argument into one of those two
-  forms, sets \a module, \a qmlType, and \a name, and returns
+  forms, sets \a module, \a qmlTypeName, and \a name, and returns
   true. If the argument doesn't match either form, an error
   message is emitted and false is returned.
 
@@ -691,7 +691,7 @@ bool CppCodeParser::splitQmlPropertyArg(const QString& arg,
 bool CppCodeParser::splitQmlMethodArg(const QString& arg,
                                       QString& type,
                                       QString& module,
-                                      QString& qmlType)
+                                      QString& qmlTypeName)
 {
     QStringList colonSplit(arg.split("::"));
     if (colonSplit.size() > 1) {
@@ -700,22 +700,22 @@ bool CppCodeParser::splitQmlMethodArg(const QString& arg,
             type = blankSplit[0];
             if (colonSplit.size() > 2) {
                 module = blankSplit[1];
-                qmlType = colonSplit[1];
+                qmlTypeName = colonSplit[1];
             }
             else {
                 module.clear();
-                qmlType = blankSplit[1];
+                qmlTypeName = blankSplit[1];
             }
         }
         else {
             type.clear();
             if (colonSplit.size() > 2) {
                 module = colonSplit[0];
-                qmlType = colonSplit[1];
+                qmlTypeName = colonSplit[1];
             }
             else {
                 module.clear();
-                qmlType = colonSplit[0];
+                qmlTypeName = colonSplit[0];
             }
         }
         return true;
@@ -737,10 +737,10 @@ void CppCodeParser::processQmlProperties(const Doc& doc, NodeList& nodes, DocLis
     QString type;
     QString topic;
     QString module;
-    QString qmlType;
+    QString qmlTypeName;
     QString property;
     QmlPropertyNode* qpn = 0;
-    QmlTypeNode* qmlClass = 0;
+    QmlTypeNode* qmlType = 0;
     QmlPropertyGroupNode* qpgn = 0;
 
     Topic qmlPropertyGroupTopic;
@@ -755,11 +755,11 @@ void CppCodeParser::processQmlProperties(const Doc& doc, NodeList& nodes, DocLis
         qmlPropertyGroupTopic = topics.at(0);
         qmlPropertyGroupTopic.topic = COMMAND_QMLPROPERTYGROUP;
         arg = qmlPropertyGroupTopic.args;
-        if (splitQmlPropertyArg(arg, type, module, qmlType, property)) {
+        if (splitQmlPropertyArg(arg, type, module, qmlTypeName, property)) {
             int i = property.indexOf('.');
             if (i != -1) {
                 property = property.left(i);
-                qmlPropertyGroupTopic.args = module + "::" + qmlType + "::" + property;
+                qmlPropertyGroupTopic.args = module + "::" + qmlTypeName + "::" + property;
                 doc.location().warning(tr("No QML property group command found; using \\%1 %2")
                                        .arg(COMMAND_QMLPROPERTYGROUP).arg(qmlPropertyGroupTopic.args));
             }
@@ -775,10 +775,10 @@ void CppCodeParser::processQmlProperties(const Doc& doc, NodeList& nodes, DocLis
 
     if (!qmlPropertyGroupTopic.isEmpty()) {
         arg = qmlPropertyGroupTopic.args;
-        if (splitQmlPropertyGroupArg(arg, module, qmlType, property)) {
-            qmlClass = qdb_->findQmlType(module, qmlType);
-            if (qmlClass) {
-                qpgn = new QmlPropertyGroupNode(qmlClass, property);
+        if (splitQmlPropertyGroupArg(arg, module, qmlTypeName, property)) {
+            qmlType = qdb_->findQmlType(module, qmlTypeName);
+            if (qmlType) {
+                qpgn = new QmlPropertyGroupNode(qmlType, property);
                 qpgn->setLocation(doc.startLocation());
                 nodes.append(qpgn);
                 docs.append(doc);
@@ -793,10 +793,10 @@ void CppCodeParser::processQmlProperties(const Doc& doc, NodeList& nodes, DocLis
         arg = topics.at(i).args;
         if ((topic == COMMAND_QMLPROPERTY) || (topic == COMMAND_QMLATTACHEDPROPERTY)) {
             bool attached = (topic == COMMAND_QMLATTACHEDPROPERTY);
-            if (splitQmlPropertyArg(arg, type, module, qmlType, property)) {
-                qmlClass = qdb_->findQmlType(module, qmlType);
-                if (qmlClass) {
-                    if (qmlClass->hasQmlProperty(property, attached) != 0) {
+            if (splitQmlPropertyArg(arg, type, module, qmlTypeName, property)) {
+                qmlType = qdb_->findQmlType(module, qmlTypeName);
+                if (qmlType) {
+                    if (qmlType->hasQmlProperty(property, attached) != 0) {
                         QString msg = tr("QML property documented multiple times: '%1'").arg(arg);
                         doc.startLocation().warning(msg);
                     }
@@ -805,7 +805,7 @@ void CppCodeParser::processQmlProperties(const Doc& doc, NodeList& nodes, DocLis
                         qpn->setLocation(doc.startLocation());
                     }
                     else {
-                        qpn = new QmlPropertyNode(qmlClass, property, type, attached);
+                        qpn = new QmlPropertyNode(qmlType, property, type, attached);
                         qpn->setLocation(doc.startLocation());
                         nodes.append(qpn);
                         docs.append(doc);
@@ -932,8 +932,8 @@ void CppCodeParser::processOtherMetaCommand(const Doc& doc,
         if (node->name() == arg)
             doc.location().warning(tr("%1 tries to inherit itself").arg(arg));
         else if (node->isQmlType()) {
-            QmlTypeNode *qmlClass = static_cast<QmlTypeNode*>(node);
-            qmlClass->setQmlBaseName(arg);
+            QmlTypeNode* qmlType = static_cast<QmlTypeNode*>(node);
+            qmlType->setQmlBaseName(arg);
             QmlTypeNode::addInheritedBy(arg,node);
         }
     }

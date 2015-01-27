@@ -628,7 +628,7 @@ QString Node::guid() const
   If it is a child of a QML class node, return a pointer to
   the QML class node. Otherwise, return 0;
  */
-QmlTypeNode* Node::qmlClassNode()
+QmlTypeNode* Node::qmlTypeNode()
 {
     if (isQmlNode()) {
         Node* n = this;
@@ -649,7 +649,7 @@ QmlTypeNode* Node::qmlClassNode()
  */
 ClassNode* Node::declarativeCppNode()
 {
-    QmlTypeNode* qcn = qmlClassNode();
+    QmlTypeNode* qcn = qmlTypeNode();
     if (qcn)
         return qcn->classNode();
     return 0;
@@ -2347,7 +2347,7 @@ bool QmlPropertyNode::isWritable()
     if (readOnly_ != FlagValueDefault)
         return !fromFlagValue(readOnly_, false);
 
-    QmlTypeNode* qcn = qmlClassNode();
+    QmlTypeNode* qcn = qmlTypeNode();
     if (qcn) {
         if (qcn->cppClassRequired()) {
             if (qcn->classNode()) {
