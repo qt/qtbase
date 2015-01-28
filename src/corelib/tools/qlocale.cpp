@@ -2744,30 +2744,6 @@ QString QLocaleData::doubleToString(const QChar _zero, const QChar plus, const Q
         int decpt, sign;
         QString digits;
 
-#ifdef QT_QLOCALE_USES_FCVT
-        // NOT thread safe!
-        if (form == DFDecimal) {
-            digits = QLatin1String(fcvt(d, precision, &decpt, &sign));
-        } else {
-            int pr = precision;
-            if (form == DFExponent)
-                ++pr;
-            else if (form == DFSignificantDigits && pr == 0)
-                pr = 1;
-            digits = QLatin1String(ecvt(d, pr, &decpt, &sign));
-
-            // Chop trailing zeros
-            if (digits.length() > 0) {
-                int last_nonzero_idx = digits.length() - 1;
-                while (last_nonzero_idx > 0
-                       && digits.unicode()[last_nonzero_idx] == QLatin1Char('0'))
-                    --last_nonzero_idx;
-                digits.truncate(last_nonzero_idx + 1);
-            }
-
-        }
-
-#else
         int mode;
         if (form == DFDecimal)
             mode = 3;
@@ -2795,7 +2771,6 @@ QString QLocaleData::doubleToString(const QChar _zero, const QChar plus, const Q
         }
         if (buff != 0)
             free(buff);
-#endif // QT_QLOCALE_USES_FCVT
 
         if (_zero.unicode() != '0') {
             ushort z = _zero.unicode() - '0';

@@ -63,10 +63,8 @@
 
 QT_BEGIN_NAMESPACE
 
-#ifndef QT_QLOCALE_USES_FCVT
 static char *_qdtoa( NEEDS_VOLATILE double d, int mode, int ndigits, int *decpt,
                         int *sign, char **rve, char **digits_str);
-#endif
 
 QString qulltoa(qulonglong l, int base, const QChar _zero)
 {
@@ -389,8 +387,6 @@ qlonglong qstrtoll(const char *nptr, const char **endptr, int base, bool *ok)
 
     return acc;
 }
-
-#ifndef QT_QLOCALE_USES_FCVT
 
 /*        From: NetBSD: strtod.c,v 1.26 1998/02/03 18:44:21 perry Exp */
 /* $FreeBSD: src/lib/libc/stdlib/netbsd_strtod.c,v 1.2.2.2 2001/03/02 17:14:15 tegge Exp $        */
@@ -2780,54 +2776,5 @@ static char *_qdtoa( NEEDS_VOLATILE double d, int mode, int ndigits, int *decpt,
         *rve = s;
     return s0;
 }
-#else
-// NOT thread safe!
-
-#include <errno.h>
-
-Q_CORE_EXPORT char *qdtoa( double d, int mode, int ndigits, int *decpt, int *sign, char **rve, char **resultp)
-{
-    if(rve)
-      *rve = 0;
-
-    char *res;
-    if (mode == 0)
-        ndigits = 80;
-
-    if (mode == 3)
-        res = fcvt(d, ndigits, decpt, sign);
-    else
-        res = ecvt(d, ndigits, decpt, sign);
-
-    int n = qstrlen(res);
-    if (mode == 0) { // remove trailing 0's
-        const int stop = qMax(1, *decpt);
-        int i;
-        for (i = n-1; i >= stop; --i) {
-            if (res[i] != '0')
-                break;
-        }
-        n = i + 1;
-    }
-    *resultp = static_cast<char*>(malloc(n + 1));
-    Q_CHECK_PTR(resultp);
-    qstrncpy(*resultp, res, n + 1);
-    return *resultp;
-}
-
-Q_CORE_EXPORT double qstrtod(const char *s00, const char **se, bool *ok)
-{
-    double ret = strtod((char*)s00, (char**)se);
-    if (ok) {
-      if((ret == 0.0l && errno == ERANGE)
-         || ret == HUGE_VAL || ret == -HUGE_VAL)
-        *ok = false;
-      else
-        *ok = true; // the result will be that we don't report underflow in this case
-    }
-    return ret;
-}
-
-#endif // QT_QLOCALE_USES_FCVT
 
 QT_END_NAMESPACE
