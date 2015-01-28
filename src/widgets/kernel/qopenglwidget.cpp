@@ -977,10 +977,8 @@ bool QOpenGLWidget::isValid() const
 void QOpenGLWidget::makeCurrent()
 {
     Q_D(QOpenGLWidget);
-    if (!d->initialized) {
-        qWarning("QOpenGLWidget: Cannot make uninitialized widget current");
+    if (!d->initialized)
         return;
-    }
 
     d->context->makeCurrent(d->surface);
 
