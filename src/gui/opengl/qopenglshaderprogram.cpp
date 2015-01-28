@@ -1970,6 +1970,9 @@ void QOpenGLShaderProgram::setUniformValue(const char *name, GLint value)
     Sets the uniform variable at \a location in the current context to \a value.
     This function should be used when setting sampler values.
 
+    \note This function is not aware of unsigned int support in modern OpenGL
+    versions and therefore treats \a value as a GLint and calls glUniform1i.
+
     \sa setAttributeValue()
 */
 void QOpenGLShaderProgram::setUniformValue(int location, GLuint value)
@@ -1985,6 +1988,9 @@ void QOpenGLShaderProgram::setUniformValue(int location, GLuint value)
 
     Sets the uniform variable called \a name in the current context
     to \a value.  This function should be used when setting sampler values.
+
+    \note This function is not aware of unsigned int support in modern OpenGL
+    versions and therefore treats \a value as a GLint and calls glUniform1i.
 
     \sa setAttributeValue()
 */
@@ -2752,6 +2758,9 @@ void QOpenGLShaderProgram::setUniformValueArray
     Sets the uniform variable array at \a location in the current
     context to the \a count elements of \a values.  This overload
     should be used when setting an array of sampler values.
+
+    \note This function is not aware of unsigned int support in modern OpenGL
+    versions and therefore treats \a value as a GLint and calls glUniform1iv.
 
     \sa setAttributeValue()
 */
