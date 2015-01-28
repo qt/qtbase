@@ -5166,6 +5166,10 @@ if [ "$CFG_LIBINPUT" != "no" ] && [ "$CFG_LIBUDEV" != "no" ]; then
         QMAKE_INCDIR_LIBINPUT=`$PKG_CONFIG --cflags-only-I libinput 2>/dev/null | sed -e 's,^-I,,g' -e 's, -I, ,g'`
         QMAKE_LIBS_LIBINPUT=`$PKG_CONFIG --libs libinput 2>/dev/null`
         QMAKE_CFLAGS_LIBINPUT=`$PKG_CONFIG --cflags libinput 2>/dev/null`
+        QMAKE_LIBINPUT_VERSION_MAJOR=`$PKG_CONFIG --modversion libinput 2>/dev/null | cut -d . -f 1`
+        QMAKE_LIBINPUT_VERSION_MINOR=`$PKG_CONFIG --modversion libinput 2>/dev/null | cut -d . -f 2`
+        QMakeVar set QMAKE_LIBINPUT_VERSION_MAJOR "$QMAKE_LIBINPUT_VERSION_MAJOR"
+        QMakeVar set QMAKE_LIBINPUT_VERSION_MINOR "$QMAKE_LIBINPUT_VERSION_MINOR"
         QMakeVar set QMAKE_INCDIR_LIBINPUT "$QMAKE_INCDIR_LIBINPUT"
         QMakeVar set QMAKE_LIBS_LIBINPUT "$QMAKE_LIBS_LIBINPUT"
     fi

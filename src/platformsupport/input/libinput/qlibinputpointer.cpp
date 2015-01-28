@@ -91,11 +91,21 @@ void QLibInputPointer::processMotion(libinput_event_pointer *e)
 
 void QLibInputPointer::processAxis(libinput_event_pointer *e)
 {
+#if QT_LIBINPUT_VERSION_MAJOR == 0 && QT_LIBINPUT_VERSION_MINOR <= 7
     const double v = libinput_event_pointer_get_axis_value(e) * 120;
     const Qt::Orientation ori = libinput_event_pointer_get_axis(e) == LIBINPUT_POINTER_AXIS_SCROLL_VERTICAL
         ? Qt::Vertical : Qt::Horizontal;
-
     QWindowSystemInterface::handleWheelEvent(Q_NULLPTR, m_pos, m_pos, qRound(-v), ori, QGuiApplication::keyboardModifiers());
+#else
+    if (libinput_event_pointer_has_axis(e, LIBINPUT_POINTER_AXIS_SCROLL_VERTICAL)) {
+        const double v = libinput_event_pointer_get_axis_value(e, LIBINPUT_POINTER_AXIS_SCROLL_VERTICAL) * 120;
+        QWindowSystemInterface::handleWheelEvent(Q_NULLPTR, m_pos, m_pos, qRound(-v), Qt::Vertical, QGuiApplication::keyboardModifiers());
+    }
+    if (libinput_event_pointer_has_axis(e, LIBINPUT_POINTER_AXIS_SCROLL_HORIZONTAL)) {
+        const double v = libinput_event_pointer_get_axis_value(e, LIBINPUT_POINTER_AXIS_SCROLL_HORIZONTAL) * 120;
+        QWindowSystemInterface::handleWheelEvent(Q_NULLPTR, m_pos, m_pos, qRound(-v), Qt::Horizontal, QGuiApplication::keyboardModifiers());
+    }
+#endif
 }
 
 QT_END_NAMESPACE
