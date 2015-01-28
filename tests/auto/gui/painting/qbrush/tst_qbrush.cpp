@@ -37,6 +37,7 @@
 #include "qbrush.h"
 #include <QPainter>
 #include <QBitmap>
+#include <private/qpixmap_raster_p.h>
 
 #include <qdebug.h>
 
@@ -71,6 +72,7 @@ private slots:
     void debug();
 
     void textureBrushStream();
+    void textureBrushComparison();
 };
 
 
@@ -444,6 +446,23 @@ void tst_QBrush::textureBrushStream()
     QCOMPARE(loadedBrush2.style(), Qt::TexturePattern);
     QCOMPARE(loadedBrush1.texture(), pixmap_source);
     QCOMPARE(loadedBrush2.textureImage(), image_source);
+}
+
+void tst_QBrush::textureBrushComparison()
+{
+    QImage image1(10, 10, QImage::Format_RGB32);
+    QRasterPlatformPixmap* ppixmap = new QRasterPlatformPixmap(QPlatformPixmap::PixmapType);
+    ppixmap->fromImage(image1, Qt::NoFormatConversion);
+    QPixmap pixmap(ppixmap);
+    QImage image2(image1);
+
+    QBrush pixmapBrush, imageBrush1, imageBrush2;
+    pixmapBrush.setTexture(pixmap);
+    imageBrush1.setTextureImage(image1);
+    imageBrush2.setTextureImage(image2);
+
+    QVERIFY(imageBrush1 == imageBrush2);
+    QVERIFY(pixmapBrush == imageBrush1);
 }
 
 QTEST_MAIN(tst_QBrush)

@@ -35,6 +35,7 @@
 #include "qpixmap.h"
 #include "qbitmap.h"
 #include "qpixmapcache.h"
+#include "qplatformpixmap.h"
 #include "qdatastream.h"
 #include "qvariant.h"
 #include "qline.h"
@@ -950,9 +951,34 @@ bool QBrush::operator==(const QBrush &b) const
     switch (d->style) {
     case Qt::TexturePattern:
         {
-            const QPixmap &us = (static_cast<QTexturedBrushData *>(d.data()))->pixmap();
-            const QPixmap &them = (static_cast<QTexturedBrushData *>(b.d.data()))->pixmap();
-            return ((us.isNull() && them.isNull()) || us.cacheKey() == them.cacheKey());
+            // Note this produces false negatives if the textures have identical data,
+            // but does not share the same data in memory. Since equality is likely to
+            // be used to avoid iterating over the data for a texture update, this should
+            // still be better than doing an accurate comparison.
+            const QPixmap *us = 0, *them = 0;
+            qint64 cacheKey1, cacheKey2;
+            if (qHasPixmapTexture(*this)) {
+                us = (static_cast<QTexturedBrushData *>(d.data()))->m_pixmap;
+                cacheKey1 = us->cacheKey();
+            } else
+                cacheKey1 = (static_cast<QTexturedBrushData *>(d.data()))->image().cacheKey();
+
+            if (qHasPixmapTexture(b)) {
+                them = (static_cast<QTexturedBrushData *>(b.d.data()))->m_pixmap;
+                cacheKey2 = them->cacheKey();
+            } else
+                cacheKey2 = (static_cast<QTexturedBrushData *>(b.d.data()))->image().cacheKey();
+
+            if (cacheKey1 != cacheKey2)
+                return false;
+            if (!us == !them) // both images or both pixmaps
+                return true;
+            // Only raster QPixmaps use the same cachekeys as QImages.
+            if (us && us->handle()->classId() == QPlatformPixmap::RasterClass)
+                return true;
+            if (them && them->handle()->classId() == QPlatformPixmap::RasterClass)
+                return true;
+            return false;
         }
     case Qt::LinearGradientPattern:
     case Qt::RadialGradientPattern:
