@@ -910,8 +910,8 @@ QTextLayout *QTextCursorPrivate::blockLayout(QTextBlock &block) const{
     select text. For selections see selectionStart(), selectionEnd(),
     hasSelection(), clearSelection(), and removeSelectedText().
 
-    If the position() is at the start of a block atBlockStart()
-    returns \c true; and if it is at the end of a block atBlockEnd() returns
+    If the position() is at the start of a block, atBlockStart()
+    returns \c true; and if it is at the end of a block, atBlockEnd() returns
     true. The format of the current character is returned by
     charFormat(), and the format of the current block is returned by
     blockFormat().
@@ -921,9 +921,9 @@ QTextLayout *QTextCursorPrivate::blockLayout(QTextBlock &block) const{
     mergeBlockFormat() functions. The 'set' functions will replace the
     cursor's current character or block format, while the 'merge'
     functions add the given format properties to the cursor's current
-    format. If the cursor has a selection the given format is applied
-    to the current selection. Note that when only parts of a block is
-    selected the block format is applied to the entire block. The text
+    format. If the cursor has a selection, the given format is applied
+    to the current selection. Note that when only a part of a block is
+    selected, the block format is applied to the entire block. The text
     at the current character position can be turned into a list using
     createList().
 
