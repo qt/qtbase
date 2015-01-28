@@ -41,8 +41,8 @@
 QT_BEGIN_NAMESPACE
 
 QSystemSemaphorePrivate::QSystemSemaphorePrivate() :
-        semaphore(-1), createdFile(false),
-        createdSemaphore(false), unix_key(-1), error(QSystemSemaphore::NoError)
+        unix_key(-1), semaphore(-1), createdFile(false),
+        createdSemaphore(false), error(QSystemSemaphore::NoError)
 {
 }
 

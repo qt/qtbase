@@ -208,6 +208,7 @@ static bool isXcb()
 bool QDockWidgetLayout::nativeWindowDeco(bool floating) const
 {
 #if defined(Q_OS_WINCE) || defined(Q_OS_ANDROID)
+    Q_UNUSED(floating)
     return false;
 #else
     return !isXcb() && (floating && item_list[QDockWidgetLayout::TitleBar] == 0);
