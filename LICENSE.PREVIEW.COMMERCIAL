@@ -14,10 +14,10 @@ TECHNOLOGY PREVIEW LICENSE AGREEMENT: The Americas
 Agreement version 2.4
 
 This Technology Preview License Agreement ("Agreement")is a legal agreement
-between Digia USA, Inc. ("Digia"), with its registered office at 2350
-Mission College Blvd., Suite 1020, Santa Clara, California 95054,
-U.S.A. and you (either an individual or a legal entity) ("Licensee") for the
-Licensed Software (as defined below).
+between The Qt Company USA, Inc. ("The Qt Company"), with its registered
+office at 2350 Mission College Blvd., Suite 1020, Santa Clara, California
+95054, U.S.A. and you (either an individual or a legal entity) ("Licensee")
+for the Licensed Software (as defined below).
 
 1. DEFINITIONS
 
@@ -35,16 +35,16 @@ Licensed Software which may include portions of the Licensed Software.
 
 "Term" shall mean the period of time six (6) months from the later of
 (a) the Effective Date; or (b) the date the Licensed Software was
-initially delivered to Licensee by Digia. If no specific Effective Date
-is set forth in the Agreement, the Effective Date shall be deemed to be
+initially delivered to Licensee by The Qt Company. If no specific Effective
+Date is set forth in the Agreement, the Effective Date shall be deemed to be
 the date the Licensed Software was initially delivered to Licensee.
 
 "Licensed Software" shall mean the computer software, "online" or
 electronic documentation, associated media and printed materials,
 including the source code, example programs and the documentation
-delivered by Digia to Licensee in conjunction with this Agreement.
+delivered by The Qt Company to Licensee in conjunction with this Agreement.
 
-"Party" or "Parties" shall mean Licensee and/or Digia.
+"Party" or "Parties" shall mean Licensee and/or The Qt Company.
 
 
 2. OWNERSHIP
@@ -54,18 +54,18 @@ copyright treaties, as well as other intellectual property laws and
 treaties. The Licensed Software is licensed, not sold.
 
 If Licensee provides any findings, proposals, suggestions or other
-feedback ("Feedback") to Digia regarding the Licensed Software, Digia
-shall own all right, title and interest including the intellectual
-property rights in and to such Feedback, excluding however any existing
-patent rights of Licensee. To the extent Licensee owns or controls any
-patents for such Feedback Licensee hereby grants to Digia and its
+feedback ("Feedback") to The Qt Company regarding the Licensed Software,
+The Qt Company shall own all right, title and interest including the
+intellectual property rights in and to such Feedback, excluding however any
+existing patent rights of Licensee. To the extent Licensee owns or controls
+any patents for such Feedback Licensee hereby grants to The Qt Company and its
 Affiliates, a worldwide, perpetual, non-transferable, sublicensable,
 royalty-free license to (i) use, copy and modify Feedback and to create
 derivative works thereof, (ii) to make (and have made), use, import,
 sell, offer for sale, lease, dispose, offer for disposal or otherwise
-exploit any products or services of Digia containing Feedback, and
+exploit any products or services of The Qt Company containing Feedback, and
 (iii) sublicense all the foregoing rights to third party licensees and
-customers of Digia and/or its Affiliates.
+customers of The Qt Company and/or its Affiliates.
 
 
 3. VALIDITY OF THE AGREEMENT
@@ -74,17 +74,17 @@ By installing, copying, or otherwise using the Licensed Software,
 Licensee agrees to be bound by the terms of this Agreement. If Licensee
 does not agree to the terms of this Agreement, Licensee may not install,
 copy, or otherwise use the Licensed Software. Upon Licensee's acceptance
-of the terms and conditions of this Agreement, Digia grants Licensee the
-right to use the Licensed Software in the manner provided below.
+of the terms and conditions of this Agreement, The Qt Company grants Licensee
+the right to use the Licensed Software in the manner provided below.
 
 
 4. LICENSES
 
 4.1. Using and Copying
 
-Digia grants to Licensee a non-exclusive, non-transferable, time-limited
-license to use and copy the Licensed Software for sole purpose of
-designing, developing and testing Applications, and evaluating and the
+The Qt Company grants to Licensee a non-exclusive, non-transferable,
+time-limited license to use and copy the Licensed Software for sole purpose
+of designing, developing and testing Applications, and evaluating and the
 Licensed Software during the Term.
 
 Licensee may install copies of the Licensed Software on an unlimited
@@ -104,8 +104,8 @@ software statically or dynamically linked with the Licensed Software.
 
 4.3 No Technical Support
 
-Digia has no obligation to furnish Licensee with any technical support
-whatsoever. Any such support is subject to separate agreement between
+The Qt Company has no obligation to furnish Licensee with any technical
+support whatsoever. Any such support is subject to separate agreement between
 the Parties.
 
 
@@ -114,7 +114,7 @@ The Licensed Software contains pre-release code that is not at the level
 of performance and compatibility of a final, generally available,
 product offering. The Licensed Software may not operate correctly and
 may be substantially modified prior to the first commercial product
-release, if any. Digia is not obligated to make this or any later
+release, if any. The Qt Company is not obligated to make this or any later
 version of the Licensed Software commercially available. The License
 Software is "Not for Commercial Use" and may only be used for the
 purposes described in Section 4. The Licensed Software may not be used
@@ -143,8 +143,8 @@ appropriate licensing from such third parties.
 7. LIMITED WARRANTY AND WARRANTY DISCLAIMER
 
 The Licensed Software is licensed to Licensee "as is". To the maximum
-extent permitted by applicable law, Digia on behalf of itself and its
-suppliers, disclaims all warranties and conditions, either express or
+extent permitted by applicable law, The Qt Company on behalf of itself and
+its suppliers, disclaims all warranties and conditions, either express or
 implied, including, but not limited to, implied warranties of
 merchantability, fitness for a particular purpose, title and
 non-infringement with regard to the Licensed Software.
@@ -152,21 +152,21 @@ non-infringement with regard to the Licensed Software.
 
 8. LIMITATION OF LIABILITY
 
-If, Digia's warranty disclaimer notwithstanding, Digia is held liable to
-Licensee, whether in contract, tort or any other legal theory, based on
-the Licensed Software, Digia's entire liability to Licensee and
-Licensee's exclusive remedy shall be, at Digia's option, either (A)
-return of the price Licensee paid for the Licensed Software, or (B)
+If, The Qt Company's warranty disclaimer notwithstanding, The Qt Company is
+held liable to Licensee, whether in contract, tort or any other legal theory,
+based on the Licensed Software, The Qt Company's entire liability to Licensee
+and Licensee's exclusive remedy shall be, at The Qt Company's option, either
+(A) return of the price Licensee paid for the Licensed Software, or (B)
 repair or replacement of the Licensed Software, provided Licensee
-returns to Digia all copies of the Licensed Software as originally
-delivered to Licensee. Digia shall not under any circumstances be liable
-to Licensee based on failure of the Licensed Software if the failure
-resulted from accident, abuse or misapplication, nor shall Digia under
-any circumstances be liable for special damages, punitive or exemplary
+returns to The Qt Company all copies of the Licensed Software as originally
+delivered to Licensee. The Qt Company shall not under any circumstances be
+liable to Licensee based on failure of the Licensed Software if the failure
+resulted from accident, abuse or misapplication, nor shall The Qt Company
+under any circumstances be liable for special damages, punitive or exemplary
 damages, damages for loss of profits or interruption of business or for
-loss or corruption of data. Any award of damages from Digia to Licensee
-shall not exceed the total amount Licensee has paid to Digia in
-connection with this Agreement.
+loss or corruption of data. Any award of damages from The Qt Company to
+Licensee shall not exceed the total amount Licensee has paid to The Qt
+Company in connection with this Agreement.
 
 
 9.  CONFIDENTIALITY
@@ -212,7 +212,7 @@ by all legally available means.
 The obligations of the Receiving Party under this Section shall continue
 during the Initial Term and for a period of five (5) years after
 expiration or termination of this Agreement. To the extent that the
-terms of the Non-Disclosure Agreement between Digia and Licensee
+terms of the Non-Disclosure Agreement between The Qt Company and Licensee
 conflict with the terms of this Section 9, this Section 9 shall be
 controlling over the terms of the Non-Disclosure Agreement.
 
@@ -223,18 +223,19 @@ controlling over the terms of the Non-Disclosure Agreement.
 
 Licensee shall not be entitled to assign or transfer all or any of its
 rights, benefits and obligations under this Agreement without the prior
-written consent of Digia, which shall not be unreasonably withheld.
+written consent of The Qt Company, which shall not be unreasonably withheld.
 
 10.2    Termination
 
-Digia may terminate the Agreement at any time immediately upon written
-notice by Digia to Licensee if Licensee breaches this Agreement.
+The Qt Company may terminate the Agreement at any time immediately upon
+written notice by The Qt Company to Licensee if Licensee breaches this
+Agreement.
 
-Upon termination of this Agreement, Licensee shall return to Digia all
-copies of Licensed Software that were supplied by Digia. All other
-copies of Licensed Software in the possession or control of Licensee
+Upon termination of this Agreement, Licensee shall return to The Qt Company
+all copies of Licensed Software that were supplied by The Qt Company. All
+other copies of Licensed Software in the possession or control of Licensee
 must be erased or destroyed. An officer of Licensee must promptly
-deliver to Digia a written confirmation that this has occurred.
+deliver to The Qt Company a written confirmation that this has occurred.
 
 10.3    Surviving Sections
 
@@ -255,12 +256,12 @@ Agreement ("Non-Disclosure Agreement"), if any, shall be subject to
 Section 9. No modification of this Agreement shall be effective unless
 contained in a writing executed by an authorized representative of each
 party. No term or condition contained in Licensee's purchase order shall
-apply unless expressly accepted by Digia in writing. If any provision of
-the Agreement is found void or unenforceable, the remainder shall remain
-valid and enforceable according to its terms. If any remedy provided is
-determined to have failed for its essential purpose, all limitations of
-liability and exclusions of damages set forth in this Agreement shall
-remain in effect.
+apply unless expressly accepted by The Qt Company in writing. If any
+provision of the Agreement is found void or unenforceable, the remainder
+shall remain valid and enforceable according to its terms. If any remedy
+provided is determined to have failed for its essential purpose, all
+limitations of liability and exclusions of damages set forth in this
+Agreement shall remain in effect.
 
 10.5    Export Control
 
@@ -301,9 +302,9 @@ infringement, whether or not such action relates to this Agreement.
 
 There are no implied licenses or other implied rights granted under this
 Agreement, and all rights, save for those expressly granted hereunder,
-shall remain with Digia and its licensors. In addition, no licenses or
-immunities are granted to the combination of the Licensed Software with
-any other software or hardware not delivered by Digia under this
+shall remain with The Qt Company and its licensors. In addition, no licenses
+or immunities are granted to the combination of the Licensed Software with
+any other software or hardware not delivered by The Qt Company under this
 Agreement.
 
 10.8    Government End Users
@@ -329,9 +330,9 @@ TECHNOLOGY PREVIEW LICENSE AGREEMENT: Rest of the World
 Agreement version 2.4
 
 This Technology Preview License Agreement ("Agreement") is a legal
-agreement between Digia Finland Ltd ("Digia"), with its registered office at
-Valimotie 21,FI-00380 Helsinki, Finland and you (either an individual or a
-legal entity) ("Licensee") for the Licensed Software.
+agreement between The Qt Company Ltd ("The Qt Company"), with its registered
+office at Valimotie 21,FI-00380 Helsinki, Finland and you (either an
+individual or a legal entity) ("Licensee") for the Licensed Software.
 
 1. DEFINITIONS
 
@@ -349,16 +350,16 @@ Licensed Software which may include portions of the Licensed Software.
 
 "Term" shall mean the period of time six (6) months from the later of
 (a) the Effective Date; or (b) the date the Licensed Software was
-initially delivered to Licensee by Digia. If no specific Effective Date
-is set forth in the Agreement, the Effective Date shall be deemed to be
+initially delivered to Licensee by The Qt Company. If no specific Effective
+Date is set forth in the Agreement, the Effective Date shall be deemed to be
 the date the Licensed Software was initially delivered to Licensee.
 
 "Licensed Software" shall mean the computer software, "online" or
 electronic documentation, associated media and printed materials,
 including the source code, example programs and the documentation
-delivered by Digia to Licensee in conjunction with this Agreement.
+delivered by The Qt Company to Licensee in conjunction with this Agreement.
 
-"Party" or "Parties" shall mean Licensee and/or Digia.
+"Party" or "Parties" shall mean Licensee and/or The Qt Company.
 
 
 2. OWNERSHIP
@@ -368,18 +369,18 @@ copyright treaties, as well as other intellectual property laws and
 treaties. The Licensed Software is licensed, not sold.
 
 If Licensee provides any findings, proposals, suggestions or other
-feedback ("Feedback") to Digia regarding the Licensed Software, Digia
-shall own all right, title and interest including the intellectual
-property rights in and to such Feedback, excluding however any existing
-patent rights of Licensee. To the extent Licensee owns or controls any
-patents for such Feedback Licensee hereby grants to Digia and its
-Affiliates, a worldwide, perpetual, non-transferable, sublicensable,
+feedback ("Feedback") to The Qt Company regarding the Licensed Software,
+The Qt Companyshall own all right, title and interest including the
+intellectual property rights in and to such Feedback, excluding however any
+existing patent rights of Licensee. To the extent Licensee owns or controls
+any patents for such Feedback Licensee hereby grants to The Qt Company and
+its Affiliates, a worldwide, perpetual, non-transferable, sublicensable,
 royalty-free license to (i) use, copy and modify Feedback and to create
 derivative works thereof, (ii) to make (and have made), use, import,
 sell, offer for sale, lease, dispose, offer for disposal or otherwise
-exploit any products or services of Digia containing Feedback, and
+exploit any products or services of The Qt Company containing Feedback, and
 (iii) sublicense all the foregoing rights to third party licensees and
-customers of Digia and/or its Affiliates.
+customers of The Qt Company and/or its Affiliates.
 
 3. VALIDITY OF THE AGREEMENT
 
@@ -387,17 +388,17 @@ By installing, copying, or otherwise using the Licensed Software,
 Licensee agrees to be bound by the terms of this Agreement. If Licensee
 does not agree to the terms of this Agreement, Licensee may not install,
 copy, or otherwise use the Licensed Software. Upon Licensee's acceptance
-of the terms and conditions of this Agreement, Digia grants Licensee the
-right to use the Licensed Software in the manner provided below.
+of the terms and conditions of this Agreement, The Qt Company grants Licensee
+the right to use the Licensed Software in the manner provided below.
 
 
 4. LICENSES
 
 4.1. Using and Copying
 
-Digia grants to Licensee a non-exclusive, non-transferable, time-limited
-license to use and copy the Licensed Software for sole purpose of
-designing, developing and testing Applications, and evaluating and the
+The Qt Company grants to Licensee a non-exclusive, non-transferable,
+time-limited license to use and copy the Licensed Software for sole purpose
+of designing, developing and testing Applications, and evaluating and the
 Licensed Software during the Term.
 
 Licensee may install copies of the Licensed Software on an unlimited
@@ -417,9 +418,9 @@ software statically or dynamically linked with the Licensed Software.
 
 4.3 No Technical Support
 
-Digia has no obligation to furnish Licensee with any technical support
-whatsoever. Any such support is subject to separate agreement between
-the Parties.
+The Qt Company has no obligation to furnish Licensee with any technical
+support whatsoever. Any such support is subject to separate agreement
+between the Parties.
 
 
 5. PRE-RELEASE CODE
@@ -428,7 +429,7 @@ The Licensed Software contains pre-release code that is not at the level
 of performance and compatibility of a final, generally available,
 product offering. The Licensed Software may not operate correctly and
 may be substantially modified prior to the first commercial product
-release, if any. Digia is not obligated to make this or any later
+release, if any. The Qt Company is not obligated to make this or any later
 version of the Licensed Software commercially available. The License
 Software is "Not for Commercial Use" and may only be used for the
 purposes described in Section 4. The Licensed Software may not be used
@@ -457,8 +458,8 @@ appropriate licensing from such third parties.
 7. LIMITED WARRANTY AND WARRANTY DISCLAIMER
 
 The Licensed Software is licensed to Licensee "as is". To the maximum
-extent permitted by applicable law, Digia on behalf of itself and its
-suppliers, disclaims all warranties and conditions, either express or
+extent permitted by applicable law, The Qt Company on behalf of itself and
+its suppliers, disclaims all warranties and conditions, either express or
 implied, including, but not limited to, implied warranties of
 merchantability, fitness for a particular purpose, title and
 non-infringement with regard to the Licensed Software.
@@ -466,21 +467,21 @@ non-infringement with regard to the Licensed Software.
 
 8. LIMITATION OF LIABILITY
 
-If, Digia's warranty disclaimer notwithstanding, Digia is held liable to
-Licensee, whether in contract, tort or any other legal theory, based on
-the Licensed Software, Digia's entire liability to Licensee and
-Licensee's exclusive remedy shall be, at Digia's option, either (A)
-return of the price Licensee paid for the Licensed Software, or (B)
+If, The Qt Company's warranty disclaimer notwithstanding, The Qt Company is
+held liable to Licensee, whether in contract, tort or any other legal theory,
+based on the Licensed Software, The Qt Company's entire liability to Licensee
+and Licensee's exclusive remedy shall be, at The Qt Company's option, either
+(A) return of the price Licensee paid for the Licensed Software, or (B)
 repair or replacement of the Licensed Software, provided Licensee
-returns to Digia all copies of the Licensed Software as originally
-delivered to Licensee. Digia shall not under any circumstances be liable
-to Licensee based on failure of the Licensed Software if the failure
-resulted from accident, abuse or misapplication, nor shall Digia under
-any circumstances be liable for special damages, punitive or exemplary
+returns to The Qt Company all copies of the Licensed Software as originally
+delivered to Licensee. The Qt Company shall not under any circumstances be
+liable to Licensee based on failure of the Licensed Software if the failure
+resulted from accident, abuse or misapplication, nor shall The Qt Company
+under any circumstances be liable for special damages, punitive or exemplary
 damages, damages for loss of profits or interruption of business or for
-loss or corruption of data. Any award of damages from Digia to Licensee
-shall not exceed the total amount Licensee has paid to Digia in
-connection with this Agreement.
+loss or corruption of data. Any award of damages from The Qt Company to
+Licensee shall not exceed the total amount Licensee has paid to
+The Qt Company in connection with this Agreement.
 
 
 9.	CONFIDENTIALITY
@@ -526,7 +527,7 @@ by all legally available means.
 The obligations of the Receiving Party under this Section shall continue
 during the Initial Term and for a period of five (5) years after
 expiration or termination of this Agreement. To the extent that the
-terms of the Non-Disclosure Agreement between Digia and Licensee
+terms of the Non-Disclosure Agreement between The Qt Company and Licensee
 conflict with the terms of this Section 9, this Section 9 shall be
 controlling over the terms of the Non-Disclosure Agreement.
 
@@ -537,18 +538,19 @@ controlling over the terms of the Non-Disclosure Agreement.
 
 Licensee shall not be entitled to assign or transfer all or any of its
 rights, benefits and obligations under this Agreement without the prior
-written consent of Digia, which shall not be unreasonably withheld.
+written consent of The Qt Company, which shall not be unreasonably withheld.
 
 10.2 	Termination
 
-Digia may terminate the Agreement at any time immediately upon written
-notice by Digia to Licensee if Licensee breaches this Agreement.
+The Qt Company may terminate the Agreement at any time immediately upon
+written notice by The Qt Company to Licensee if Licensee breaches this
+Agreement.
 
-Upon termination of this Agreement, Licensee shall return to Digia all
-copies of Licensed Software that were supplied by Digia. All other
-copies of Licensed Software in the possession or control of Licensee
+Upon termination of this Agreement, Licensee shall return to The Qt Company
+all copies of Licensed Software that were supplied by The Qt Company. All
+other copies of Licensed Software in the possession or control of Licensee
 must be erased or destroyed. An officer of Licensee must promptly
-deliver to Digia a written confirmation that this has occurred.
+deliver to The Qt Company a written confirmation that this has occurred.
 
 10.3    Surviving Sections
 
@@ -569,8 +571,8 @@ Agreement ("Non-Disclosure Agreement"), if any, shall be subject to
 Section 9. No modification of this Agreement shall be effective unless
 contained in a writing executed by an authorized representative of each
 party. No term or condition contained in Licensee's purchase order shall
-apply unless expressly accepted by Digia in writing. If any provision of
-the Agreement is found void or unenforceable, the remainder shall remain
+apply unless expressly accepted by The Qt Company in writing. If any provision
+of the Agreement is found void or unenforceable, the remainder shall remain
 valid and enforceable according to its terms. If any remedy provided is
 determined to have failed for its essential purpose, all limitations of
 liability and exclusions of damages set forth in this Agreement shall
@@ -603,9 +605,9 @@ process shall be conducted in the English language.
 
 There are no implied licenses or other implied rights granted under this
 Agreement, and all rights, save for those expressly granted hereunder,
-shall remain with Digia and its licensors. In addition, no licenses or
-immunities are granted to the combination of the Licensed Software with
-any other software or hardware not delivered by Digia under this
+shall remain with The Qt Company and its licensors. In addition, no licenses
+or immunities are granted to the combination of the Licensed Software with
+any other software or hardware not delivered by The Qt Company under this
 Agreement.
 
 10.8    Government End Users

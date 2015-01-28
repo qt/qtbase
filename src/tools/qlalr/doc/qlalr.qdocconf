@@ -58,7 +58,7 @@ HTML.postheader         = "<table border=\"0\" cellpadding=\"0\" cellspacing=\"0
 
 HTML.footer             = "<p /><address><hr /><div align=\"center\">\n" \
                           "<table width=\"100%\" cellspacing=\"0\" border=\"0\"><tr class=\"address\">\n" \
-                          "<td width=\"30%\" align=\"left\">Copyright &copy; 2012 Digia Plc and/or its subsidiary(-ies)</td>\n" \
+                          "<td width=\"30%\" align=\"left\">Copyright &copy; 2015 The Qt Company Ltd</td>\n" \
                           "<td width=\"40%\" align=\"center\"><a href=\"trademarks.html\">Trademarks</a></td>\n" \
                           "<td width=\"30%\" align=\"right\"><div align=\"right\">Qt \\version</div></td>\n" \
                           "</tr></table></div></address>"

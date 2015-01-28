@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies)
+ * Copyright (C) 2015 The Qt Company Ltd
  * Copyright (C) 2007  Red Hat, Inc.
  *
  * This is part of HarfBuzz, an OpenType Layout engine library.

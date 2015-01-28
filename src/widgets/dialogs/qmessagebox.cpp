@@ -1,7 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2015 Digia Plc and/or its subsidiary(-ies).
-** Contact: http://www.qt-project.org/legal
+** Copyright (C) 2015 The Qt Company Ltd.
+** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the QtWidgets module of the Qt Toolkit.
 **
@@ -10,9 +10,9 @@
 ** Licensees holding valid commercial Qt licenses may use this file in
 ** accordance with the commercial license agreement provided with the
 ** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and Digia. For licensing terms and
-** conditions see http://qt.digia.com/licensing. For further information
-** use the contact form at http://qt.digia.com/contact-us.
+** a written agreement between you and The Qt Company. For licensing terms
+** and conditions see http://www.qt.io/terms-conditions. For further
+** information use the contact form at http://www.qt.io/contact-us.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -23,8 +23,8 @@
 ** requirements will be met: https://www.gnu.org/licenses/lgpl.html and
 ** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Digia gives you certain additional
-** rights. These rights are described in the Digia Qt LGPL Exception
+** As a special exception, The Qt Company gives you certain additional
+** rights. These rights are described in The Qt Company LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** $QT_END_LICENSE$
@@ -1901,11 +1901,12 @@ void QMessageBox::aboutQt(QWidget *parent, const QString &title)
         "and conditions of the GNU LGPL version 2.1.</p>"
         "<p>Please see <a href=\"http://%2/\">%2</a> "
         "for an overview of Qt licensing.</p>"
-        "<p>Copyright (C) %1 Digia Plc and/or its subsidiary(-ies) and other "
+        "<p>Copyright (C) %1 The Qt Company Ltd and other "
         "contributors.</p>"
-        "<p>Qt and the Qt logo are trademarks of Digia Plc and/or its subsidiary(-ies).</p>"
-        "<p>Qt is a Digia product developed as an open source project. See <a href=\"http://%3/\">%3</a> "
-        "for more information.</p>"
+        "<p>Qt and the Qt logo are trademarks of The Qt Company Ltd and/or its"
+        "subsidiary(-ies).</p>"
+        "<p>Qt is The Qt Company Ltd product developed as an open source"
+        "project. See <a href=\"http://%3/\">%3</a> for more information.</p>"
         ).arg(QStringLiteral("2015"),
               QStringLiteral("qt.io/licensing"),
               QStringLiteral("qt.io"));

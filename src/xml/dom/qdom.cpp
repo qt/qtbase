@@ -1,7 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
-** Contact: http://www.qt-project.org/legal
+** Copyright (C) 2015 The Qt Company Ltd.
+** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the QtXml module of the Qt Toolkit.
 **
@@ -10,9 +10,9 @@
 ** Licensees holding valid commercial Qt licenses may use this file in
 ** accordance with the commercial license agreement provided with the
 ** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and Digia. For licensing terms and
-** conditions see http://qt.digia.com/licensing. For further information
-** use the contact form at http://qt.digia.com/contact-us.
+** a written agreement between you and The Qt Company. For licensing terms
+** and conditions see http://www.qt.io/terms-conditions. For further
+** information use the contact form at http://www.qt.io/contact-us.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -23,8 +23,8 @@
 ** requirements will be met: https://www.gnu.org/licenses/lgpl.html and
 ** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Digia gives you certain additional
-** rights. These rights are described in the Digia Qt LGPL Exception
+** As a special exception, The Qt Company gives you certain additional
+** rights. These rights are described in The Qt Company LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** $QT_END_LICENSE$
@@ -878,7 +878,7 @@ QDomImplementationPrivate* QDomImplementationPrivate::clone()
     You can create a new document type with createDocumentType() and a
     new document with createDocument().
 
-    For further information about the Document Object Model see
+   For further information about the Document Object Model see
     \l{http://www.w3.org/TR/REC-DOM-Level-1/}{Level 1} and
     \l{http://www.w3.org/TR/DOM-Level-2-Core/}{Level 2 Core}. For a more
     general introduction of the DOM implementation see the QDomDocument
@@ -1282,7 +1282,7 @@ int QDomNodeListPrivate::length() const
     You can get a particular node from the list with item(). The
     number of items in the list is returned by length().
 
-    For further information about the Document Object Model see
+   For further information about the Document Object Model see
     \l{http://www.w3.org/TR/REC-DOM-Level-1/}{Level 1} and
     \l{http://www.w3.org/TR/DOM-Level-2-Core/}{Level 2 Core}.
     For a more general introduction of the DOM implementation see the
@@ -1988,7 +1988,7 @@ void QDomNodePrivate::setLocation(int lineNumber, int columnNumber)
 
     \snippet code/src_xml_dom_qdom.cpp 1
 
-    For further information about the Document Object Model see
+   For further information about the Document Object Model see
     \l{W3C DOM Level 1}{Level 1} and
     \l{W3C DOM Level 2}{Level 2 Core}.
     For a more general introduction of the DOM implementation see the
@@ -4263,7 +4263,7 @@ void QDomAttrPrivate::save(QTextStream& s, int, int) const
     true the value was set with setValue(). The node this
     attribute is attached to (if any) is returned by ownerElement().
 
-    For further information about the Document Object Model see
+   For further information about the Document Object Model see
     \l{http://www.w3.org/TR/REC-DOM-Level-1/} and
     \l{http://www.w3.org/TR/DOM-Level-2-Core/}.
     For a more general introduction of the DOM implementation see the
@@ -4686,7 +4686,7 @@ void QDomElementPrivate::save(QTextStream& s, int depth, int indent) const
 
     \snippet code/src_xml_dom_qdom.cpp 11
 
-    For further information about the Document Object Model see
+   For further information about the Document Object Model see
     \l{W3C DOM Level 1}{Level 1} and
     \l{W3C DOM Level 2}{Level 2 Core}.
     For a more general introduction of the DOM implementation see the
@@ -5210,7 +5210,7 @@ void QDomTextPrivate::save(QTextStream& s, int, int) const
     You can split the text in a QDomText object over two QDomText
     objecs with splitText().
 
-    For further information about the Document Object Model see
+   For further information about the Document Object Model see
     \l{http://www.w3.org/TR/REC-DOM-Level-1/}{Level 1} and
     \l{http://www.w3.org/TR/DOM-Level-2-Core/}{Level 2 Core}.
     For a more general introduction of the DOM implementation see the
@@ -5342,7 +5342,7 @@ void QDomCommentPrivate::save(QTextStream& s, int depth, int indent) const
 
     is represented by QDomComment objects in the parsed Dom tree.
 
-    For further information about the Document Object Model see
+   For further information about the Document Object Model see
     \l{W3C DOM Level 1}{Level 1} and
     \l{W3C DOM Level 2}{Level 2 Core}.
     For a more general introduction of the DOM implementation see the
@@ -5450,7 +5450,7 @@ void QDomCDATASectionPrivate::save(QTextStream& s, int, int) const
     Adjacent QDomCDATASection nodes are not merged by the
     QDomNode::normalize() function.
 
-    For further information about the Document Object Model see
+   For further information about the Document Object Model see
     \l{http://www.w3.org/TR/REC-DOM-Level-1/} and
     \l{http://www.w3.org/TR/DOM-Level-2-Core/}.
     For a more general introduction of the DOM implementation see the
@@ -5574,7 +5574,7 @@ void QDomNotationPrivate::save(QTextStream& s, int, int) const
     You can retrieve the publicId() and systemId() from a notation
     node.
 
-    For further information about the Document Object Model see
+   For further information about the Document Object Model see
     \l{http://www.w3.org/TR/REC-DOM-Level-1/}{Level 1} and
     \l{http://www.w3.org/TR/DOM-Level-2-Core/}{Level 2 Core}.
     For a more general introduction of the DOM implementation see the
@@ -5770,7 +5770,7 @@ void QDomEntityPrivate::save(QTextStream& s, int, int) const
     You can access the entity's publicId(), systemId() and
     notationName() when available.
 
-    For further information about the Document Object Model see
+   For further information about the Document Object Model see
     \l{http://www.w3.org/TR/REC-DOM-Level-1/}{Level 1} and
     \l{http://www.w3.org/TR/DOM-Level-2-Core/}{Level 2 Core}.
     For a more general introduction of the DOM implementation see the
@@ -5922,7 +5922,7 @@ void QDomEntityReferencePrivate::save(QTextStream& s, int, int) const
     entity  node. As with the entity node, all descendants of the
     entity reference are read-only.
 
-    For further information about the Document Object Model see
+   For further information about the Document Object Model see
     \l{http://www.w3.org/TR/REC-DOM-Level-1/}{Level 1} and
     \l{http://www.w3.org/TR/DOM-Level-2-Core/}{Level 2 Core}.
     For a more general introduction of the DOM implementation see the
@@ -6039,7 +6039,7 @@ void QDomProcessingInstructionPrivate::save(QTextStream& s, int, int) const
     and set with setData(). The processing instruction's target is
     retrieved with target().
 
-    For further information about the Document Object Model see
+   For further information about the Document Object Model see
     \l{http://www.w3.org/TR/REC-DOM-Level-1/}{Level 1} and
     \l{http://www.w3.org/TR/DOM-Level-2-Core/}{Level 2 Core}.
     For a more general introduction of the DOM implementation see the
@@ -6568,7 +6568,7 @@ void QDomDocumentPrivate::saveDocument(QTextStream& s, const int indent, QDomNod
 
     \snippet code/src_xml_dom_qdom.cpp 17
 
-    For further information about the Document Object Model see
+   For further information about the Document Object Model see
     the Document Object Model (DOM)
     \l{http://www.w3.org/TR/REC-DOM-Level-1/}{Level 1} and
     \l{http://www.w3.org/TR/DOM-Level-2-Core/}{Level 2 Core}
