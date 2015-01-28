@@ -171,22 +171,22 @@ public:
     bool hasFileNameBase() const { return !fileNameBase_.isEmpty(); }
     void setFileNameBase(const QString& t) { fileNameBase_ = t; }
 
-    void setAccess(Access access) { access_ = access; }
+    void setAccess(Access access) { access_ = (unsigned char) access; }
     void setLocation(const Location& location) { loc_ = location; }
     void setDoc(const Doc& doc, bool replace = false);
     void setStatus(Status status) {
-        if (status_ == Obsolete && status == Deprecated)
+        if (status_ == (unsigned char) Obsolete && status == Deprecated)
             return;
-        status_ = status;
+        status_ = (unsigned char) status;
     }
-    void setThreadSafeness(ThreadSafeness safeness) { safeness_ = safeness; }
+    void setThreadSafeness(ThreadSafeness safeness) { safeness_ = (unsigned char) safeness; }
     void setSince(const QString &since);
     void setRelates(InnerNode* pseudoParent);
     void setPhysicalModuleName(const QString &name) { physicalModuleName_ = name; }
     void setUrl(const QString& url) { url_ = url; }
     void setTemplateStuff(const QString &templateStuff) { templateStuff_ = templateStuff; }
     void setReconstitutedBrief(const QString &t) { reconstitutedBrief_ = t; }
-    void setPageType(PageType t) { pageType_ = t; }
+    void setPageType(PageType t) { pageType_ = (unsigned char) t; }
     void setPageType(const QString& t);
     void setParent(InnerNode* n) { parent_ = n; }
     void setIndexNodeFlag() { indexNodeFlag_ = true; }
@@ -245,7 +245,7 @@ public:
     virtual Tree* tree() const;
     virtual void findChildren(const QString& , NodeList& nodes) const { nodes.clear(); }
     bool isIndexNode() const { return indexNodeFlag_; }
-    Type type() const { return nodeType_; }
+    Type type() const { return (Type) nodeType_; }
     virtual SubType subType() const { return NoSubType; }
     bool match(const NodeTypeList& types) const;
     InnerNode* parent() const { return parent_; }
@@ -264,21 +264,21 @@ public:
     const QMap<LinkType, QPair<QString,QString> >& links() const { return linkMap_; }
     void setLink(LinkType linkType, const QString &link, const QString &desc);
 
-    Access access() const { return access_; }
-    bool isPrivate() const { return access_ == Private; }
+    Access access() const { return (Access) access_; }
+    bool isPrivate() const { return (Access) access_ == Private; }
     QString accessString() const;
     const Location& location() const { return loc_; }
     const Doc& doc() const { return doc_; }
     bool hasDoc() const { return !doc_.isEmpty(); }
-    Status status() const { return status_; }
+    Status status() const { return (Status) status_; }
     Status inheritedStatus() const;
-    bool isObsolete() const { return (status_ == Obsolete); }
+    bool isObsolete() const { return (status_ == (unsigned char) Obsolete); }
     ThreadSafeness threadSafeness() const;
     ThreadSafeness inheritedThreadSafeness() const;
     QString since() const { return since_; }
     QString templateStuff() const { return templateStuff_; }
     const QString& reconstitutedBrief() const { return reconstitutedBrief_; }
-    PageType pageType() const { return pageType_; }
+    PageType pageType() const { return (PageType) pageType_; }
     QString pageTypeString() const;
     QString nodeTypeString() const;
     QString nodeSubtypeString() const;
@@ -311,9 +311,9 @@ public:
     static FlagValue toFlagValue(bool b);
     static bool fromFlagValue(FlagValue fv, bool defaultValue);
 
-    static QString pageTypeString(unsigned t);
-    static QString nodeTypeString(unsigned t);
-    static QString nodeSubtypeString(unsigned t);
+    static QString pageTypeString(unsigned char t);
+    static QString nodeTypeString(unsigned char t);
+    static QString nodeSubtypeString(unsigned char t);
     static int incPropertyGroupCount();
     static void clearPropertyGroupCount();
     static void initialize();
@@ -324,11 +324,11 @@ protected:
 
 private:
 
-    Type nodeType_;
-    Access access_;
-    ThreadSafeness safeness_;
-    PageType pageType_;
-    Status status_;
+    unsigned char nodeType_;
+    unsigned char access_;
+    unsigned char safeness_;
+    unsigned char pageType_;
+    unsigned char status_;
     bool indexNodeFlag_;
 
     InnerNode* parent_;
