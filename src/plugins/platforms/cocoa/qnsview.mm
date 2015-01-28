@@ -1326,7 +1326,8 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
         if (!m_scrolling)
             ph = Qt::ScrollBegin;
         m_scrolling = true;
-    } else if (phase == NSEventPhaseEnded || phase == NSEventPhaseCancelled) {
+    } else if (phase == NSEventPhaseEnded || phase == NSEventPhaseCancelled ||
+               momentumPhase == NSEventPhaseEnded || momentumPhase == NSEventPhaseCancelled) {
         ph = Qt::ScrollEnd;
         m_scrolling = false;
     }
