@@ -70,7 +70,7 @@ public:
     Q_DECL_CONSTEXPR inline int toInt() const { return (((val)+32) & -64)>>6; }
     Q_DECL_CONSTEXPR inline qreal toReal() const { return ((qreal)val)/(qreal)64; }
 
-    Q_DECL_CONSTEXPR inline int truncate() const { return val / 64; }
+    Q_DECL_CONSTEXPR inline int truncate() const { return val>>6; }
     Q_DECL_CONSTEXPR inline QFixed round() const { return fromFixed(((val)+32) & -64); }
     Q_DECL_CONSTEXPR inline QFixed floor() const { return fromFixed((val) & -64); }
     Q_DECL_CONSTEXPR inline QFixed ceil() const { return fromFixed((val+63) & -64); }
