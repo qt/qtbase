@@ -195,7 +195,7 @@ static bool convert_passthrough_inplace(QImageData *data, Qt::ImageConversionFla
     return true;
 }
 
-static void convert_ARGB_to_ARGB_PM(QImageData *dest, const QImageData *src, Qt::ImageConversionFlags)
+static inline void convert_ARGB_to_ARGB_PM(QImageData *dest, const QImageData *src, Qt::ImageConversionFlags)
 {
     Q_ASSERT(src->format == QImage::Format_ARGB32 || src->format == QImage::Format_RGBA8888);
     Q_ASSERT(dest->format == QImage::Format_ARGB32_Premultiplied || dest->format == QImage::Format_RGBA8888_Premultiplied);
@@ -219,6 +219,15 @@ static void convert_ARGB_to_ARGB_PM(QImageData *dest, const QImageData *src, Qt:
     }
 }
 
+#if QT_COMPILER_SUPPORTS_HERE(SSE4_1) && !defined(__SSE4_1__)
+QT_FUNCTION_TARGET(SSE4_1)
+static void convert_ARGB_to_ARGB_PM_sse4(QImageData *dest, const QImageData *src, Qt::ImageConversionFlags flags)
+{
+    // Twice as fast autovectorized due to SSE4.1 PMULLD instructions.
+    convert_ARGB_to_ARGB_PM(dest, src, flags);
+}
+#endif
+
 extern bool convert_ARGB_to_ARGB_PM_inplace_sse2(QImageData *data, Qt::ImageConversionFlags);
 
 #ifndef __SSE2__
@@ -232,7 +241,7 @@ static bool convert_ARGB_to_ARGB_PM_inplace(QImageData *data, Qt::ImageConversio
     for (int i = 0; i < data->height; ++i) {
         const QRgb *end = rgb_data + data->width;
         while (rgb_data < end) {
-            *rgb_data = PREMUL(*rgb_data);
+            *rgb_data = qPremultiply(*rgb_data);
             ++rgb_data;
         }
         rgb_data += pad;
@@ -312,7 +321,7 @@ static bool convert_ARGB_to_RGBA_inplace(QImageData *data, Qt::ImageConversionFl
     return true;
 }
 
-static void convert_ARGB_to_RGBA_PM(QImageData *dest, const QImageData *src, Qt::ImageConversionFlags)
+static inline void convert_ARGB_to_RGBA_PM(QImageData *dest, const QImageData *src, Qt::ImageConversionFlags)
 {
     Q_ASSERT(src->format == QImage::Format_ARGB32);
     Q_ASSERT(dest->format == QImage::Format_RGBA8888_Premultiplied);
@@ -335,6 +344,15 @@ static void convert_ARGB_to_RGBA_PM(QImageData *dest, const QImageData *src, Qt:
         dest_data += dest_pad;
     }
 }
+
+#if QT_COMPILER_SUPPORTS_HERE(SSE4_1) && !defined(__SSE4_1__)
+QT_FUNCTION_TARGET(SSE4_1)
+static void convert_ARGB_to_RGBA_PM_sse4(QImageData *dest, const QImageData *src, Qt::ImageConversionFlags flags)
+{
+    // Twice as fast autovectorized due to SSE4.1 PMULLD instructions.
+    convert_ARGB_to_RGBA_PM(dest, src, flags);
+}
+#endif
 
 static void convert_RGBA_to_ARGB(QImageData *dest, const QImageData *src, Qt::ImageConversionFlags)
 {
@@ -2942,6 +2960,14 @@ void qInitImageConversions()
         qimage_converter_map[QImage::Format_RGB888][QImage::Format_RGB32] = convert_RGB888_to_RGB32_ssse3;
         qimage_converter_map[QImage::Format_RGB888][QImage::Format_ARGB32] = convert_RGB888_to_RGB32_ssse3;
         qimage_converter_map[QImage::Format_RGB888][QImage::Format_ARGB32_Premultiplied] = convert_RGB888_to_RGB32_ssse3;
+    }
+#endif
+
+#if QT_COMPILER_SUPPORTS_HERE(SSE4_1) && !defined(__SSE4_1__)
+    if (qCpuHasFeature(SSE4_1)) {
+        qimage_converter_map[QImage::Format_ARGB32][QImage::Format_ARGB32_Premultiplied] = convert_ARGB_to_ARGB_PM_sse4;
+        qimage_converter_map[QImage::Format_RGBA8888][QImage::Format_RGBA8888_Premultiplied] = convert_ARGB_to_ARGB_PM_sse4;
+        qimage_converter_map[QImage::Format_ARGB32][QImage::Format_RGBA8888_Premultiplied] = convert_ARGB_to_RGBA_PM_sse4;
     }
 #endif
 

@@ -503,13 +503,24 @@ static const uint *QT_FASTCALL convertPassThrough(uint *, const uint *src, int,
     return src;
 }
 
-static const uint *QT_FASTCALL convertARGB32ToARGB32PM(uint *buffer, const uint *src, int count,
-                                                       const QPixelLayout *, const QRgb *)
+static inline const uint *QT_FASTCALL convertARGB32ToARGB32PM(uint *buffer, const uint *src, int count,
+                                                              const QPixelLayout *, const QRgb *)
 {
     for (int i = 0; i < count; ++i)
         buffer[i] = qPremultiply(src[i]);
     return buffer;
 }
+
+#if QT_COMPILER_SUPPORTS_HERE(SSE4_1) && !defined(__SSE4_1__)
+QT_FUNCTION_TARGET(SSE4_1)
+static const uint *QT_FASTCALL convertARGB32ToARGB32PM_sse4(uint *buffer, const uint *src, int count,
+                                                            const QPixelLayout *layout, const QRgb *clut)
+{
+    // Twice as fast autovectorized due to SSE4.1 PMULLD instructions.
+    return convertARGB32ToARGB32PM(buffer, src, count, layout, clut);
+}
+#endif
+
 
 static const uint *QT_FASTCALL convertRGBA8888PMToARGB32PM(uint *buffer, const uint *src, int count,
                                                            const QPixelLayout *, const QRgb *)
@@ -519,13 +530,23 @@ static const uint *QT_FASTCALL convertRGBA8888PMToARGB32PM(uint *buffer, const u
     return buffer;
 }
 
-static const uint *QT_FASTCALL convertRGBA8888ToARGB32PM(uint *buffer, const uint *src, int count,
-                                                         const QPixelLayout *, const QRgb *)
+static inline const uint *QT_FASTCALL convertRGBA8888ToARGB32PM(uint *buffer, const uint *src, int count,
+                                                                const QPixelLayout *, const QRgb *)
 {
     for (int i = 0; i < count; ++i)
         buffer[i] = qPremultiply(RGBA2ARGB(src[i]));
     return buffer;
 }
+
+#if QT_COMPILER_SUPPORTS_HERE(SSE4_1) && !defined(__SSE4_1__)
+QT_FUNCTION_TARGET(SSE4_1)
+static const uint *QT_FASTCALL convertRGBA8888ToARGB32PM_sse4(uint *buffer, const uint *src, int count,
+                                                              const QPixelLayout *layout, const QRgb *clut)
+{
+    // Twice as fast autovectorized due to SSE4.1 PMULLD instructions.
+    return convertRGBA8888ToARGB32PM(buffer, src, count, layout, clut);
+}
+#endif
 
 static const uint *QT_FASTCALL convertAlpha8ToRGB32(uint *buffer, const uint *src, int count,
                                                         const QPixelLayout *, const QRgb *)
@@ -6857,6 +6878,13 @@ void qInitDrawhelperAsm()
         qBlendFunctions[QImage::Format_RGBA8888_Premultiplied][QImage::Format_RGBA8888_Premultiplied] = qt_blend_argb32_on_argb32_ssse3;
     }
 #endif // SSSE3
+
+#if QT_COMPILER_SUPPORTS_HERE(SSE4_1) && !defined(__SSE4_1__)
+    if (qCpuHasFeature(SSE4_1)) {
+        qPixelLayouts[QImage::Format_ARGB32].convertToARGB32PM = convertARGB32ToARGB32PM_sse4;
+        qPixelLayouts[QImage::Format_RGBA8888].convertToARGB32PM = convertRGBA8888ToARGB32PM_sse4;
+    }
+#endif
 
     functionForModeAsm = qt_functionForMode_SSE2;
     functionForModeSolidAsm = qt_functionForModeSolid_SSE2;
