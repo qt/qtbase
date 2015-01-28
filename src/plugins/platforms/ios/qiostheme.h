@@ -52,6 +52,9 @@ public:
     QPlatformMenuItem* createPlatformMenuItem() const Q_DECL_OVERRIDE;
     QPlatformMenu* createPlatformMenu() const Q_DECL_OVERRIDE;
 
+    bool usePlatformNativeDialog(DialogType type) const Q_DECL_OVERRIDE;
+    QPlatformDialogHelper *createPlatformDialogHelper(DialogType type) const Q_DECL_OVERRIDE;
+
     const QFont *font(Font type = SystemFont) const;
 
     static const char *name;

@@ -46,6 +46,7 @@
 #include <UIKit/UIInterface.h>
 
 #include "qiosmenu.h"
+#include "qiosfiledialog.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -78,6 +79,27 @@ QPlatformMenuItem* QIOSTheme::createPlatformMenuItem() const
 QPlatformMenu* QIOSTheme::createPlatformMenu() const
 {
     return new QIOSMenu();
+}
+
+bool QIOSTheme::usePlatformNativeDialog(QPlatformTheme::DialogType type) const
+{
+    switch (type) {
+    case FileDialog:
+        return true;
+    default:
+        return false;
+    }
+}
+
+QPlatformDialogHelper *QIOSTheme::createPlatformDialogHelper(QPlatformTheme::DialogType type) const
+{
+    switch (type) {
+    case FileDialog:
+        return new QIOSFileDialog();
+        break;
+    default:
+        return 0;
+    }
 }
 
 QVariant QIOSTheme::themeHint(ThemeHint hint) const
