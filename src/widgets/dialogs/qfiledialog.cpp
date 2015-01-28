@@ -991,7 +991,7 @@ void QFileDialog::setDirectoryUrl(const QUrl &directory)
         d->setDirectory_sys(directory);
     else if (directory.isLocalFile())
         setDirectory(directory.toLocalFile());
-    else
+    else if (d->usingWidgets())
         qWarning() << "Non-native QFileDialog supports only local files";
 }
 
