@@ -602,12 +602,11 @@ void QBlitterPaintEngine::fillRect(const QRectF &rect, const QBrush &brush)
                     d->pmData->blittable()->drawPixmap(targetRect, pm, srcRect);
                 }
             } else if (clipData->hasRegionClip) {
-                QVector<QRect> clipRects = clipData->clipRegion.rects();
                 QRect unclippedTargetRect(x, y, blitWidth, blitHeight);
-                QRegion intersectedRects = clipData->clipRegion.intersected(unclippedTargetRect);
-
-                for (int i = 0; i < intersectedRects.rects().size(); ++i) {
-                    QRect targetRect = intersectedRects.rects().at(i);
+                const QVector<QRect> intersectedRects = clipData->clipRegion.intersected(unclippedTargetRect).rects();
+                const int intersectedSize = intersectedRects.size();
+                for (int i = 0; i < intersectedSize; ++i) {
+                    const QRect &targetRect = intersectedRects.at(i);
                     if (!targetRect.isValid() || targetRect.isEmpty())
                         continue;
                     int tmpSrcX = srcX + (targetRect.x() - x);
