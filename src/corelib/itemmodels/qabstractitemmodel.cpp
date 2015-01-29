@@ -3345,6 +3345,14 @@ QModelIndex QAbstractTableModel::parent(const QModelIndex &) const
     return QModelIndex();
 }
 
+/*!
+    \reimp
+*/
+QModelIndex QAbstractTableModel::sibling(int row, int column, const QModelIndex &) const
+{
+    return index(row, column);
+}
+
 bool QAbstractTableModel::hasChildren(const QModelIndex &parent) const
 {
     if (parent.model() == this || !parent.isValid())
@@ -3484,6 +3492,14 @@ QModelIndex QAbstractListModel::index(int row, int column, const QModelIndex &pa
 QModelIndex QAbstractListModel::parent(const QModelIndex & /* index */) const
 {
     return QModelIndex();
+}
+
+/*!
+    \reimp
+*/
+QModelIndex QAbstractListModel::sibling(int row, int column, const QModelIndex &) const
+{
+    return index(row, column);
 }
 
 /*!
