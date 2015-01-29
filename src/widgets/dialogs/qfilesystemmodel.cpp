@@ -251,6 +251,21 @@ QModelIndex QFileSystemModel::index(int row, int column, const QModelIndex &pare
 }
 
 /*!
+    \reimp
+*/
+QModelIndex QFileSystemModel::sibling(int row, int column, const QModelIndex &idx) const
+{
+    if (row == idx.row() && column < QFileSystemModelPrivate::NumColumns) {
+        // cheap sibling operation: just adjust the column:
+        return createIndex(row, column, idx.internalPointer());
+    } else {
+        // for anything else: call the default implementation
+        // (this could probably be optimized, too):
+        return QAbstractItemModel::sibling(row, column, idx);
+    }
+}
+
+/*!
     \overload
 
     Returns the model item index for the given \a path and \a column.
