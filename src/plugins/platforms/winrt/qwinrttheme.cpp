@@ -232,7 +232,7 @@ QVariant QWinRTTheme::styleHint(QPlatformIntegration::StyleHint hint)
         return false;
     case QPlatformIntegration::ShowIsMaximized:
         return false;
-    case MousePressAndHoldInterval:
+    case QPlatformIntegration::MousePressAndHoldInterval:
         return defaultThemeHint(MousePressAndHoldInterval);
     default:
         break;
