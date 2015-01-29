@@ -316,7 +316,7 @@ int main(int argc, char *argv[]) \
 QT_BEGIN_NAMESPACE \
 QTEST_ADD_GPU_BLACKLIST_SUPPORT_DEFS \
 QT_END_NAMESPACE \
-int main(int argc, char *argv[]) \
+int testMain(int argc, char *argv[]) \
 { \
     QApplication app(argc, argv); \
     app.setAttribute(Qt::AA_Use96Dpi, true); \
@@ -325,7 +325,8 @@ int main(int argc, char *argv[]) \
     TestObject tc; \
     QTEST_SET_MAIN_SOURCE_PATH \
     return QTest::qExec(&tc, argc, argv); \
-}
+} \
+Q_GUI_BLOCKING_MAIN(testMain)
 
 #elif defined(QT_GUI_LIB)
 
@@ -335,7 +336,7 @@ int main(int argc, char *argv[]) \
 QT_BEGIN_NAMESPACE \
 QTEST_ADD_GPU_BLACKLIST_SUPPORT_DEFS \
 QT_END_NAMESPACE \
-int main(int argc, char *argv[]) \
+int testMain(int argc, char *argv[]) \
 { \
     QGuiApplication app(argc, argv); \
     app.setAttribute(Qt::AA_Use96Dpi, true); \
@@ -343,30 +344,33 @@ int main(int argc, char *argv[]) \
     TestObject tc; \
     QTEST_SET_MAIN_SOURCE_PATH \
     return QTest::qExec(&tc, argc, argv); \
-}
+} \
+Q_GUI_BLOCKING_MAIN(testMain)
 
 #else
 
 #define QTEST_MAIN(TestObject) \
-int main(int argc, char *argv[]) \
+int testMain(int argc, char *argv[]) \
 { \
     QCoreApplication app(argc, argv); \
     app.setAttribute(Qt::AA_Use96Dpi, true); \
     TestObject tc; \
     QTEST_SET_MAIN_SOURCE_PATH \
     return QTest::qExec(&tc, argc, argv); \
-}
+} \
+Q_CORE_BLOCKING_MAIN(testMain)
 
 #endif // QT_GUI_LIB
 
 #define QTEST_GUILESS_MAIN(TestObject) \
-int main(int argc, char *argv[]) \
+int testMain(int argc, char *argv[]) \
 { \
     QCoreApplication app(argc, argv); \
     app.setAttribute(Qt::AA_Use96Dpi, true); \
     TestObject tc; \
     QTEST_SET_MAIN_SOURCE_PATH \
     return QTest::qExec(&tc, argc, argv); \
-}
+} \
+Q_CORE_BLOCKING_MAIN(testMain)
 
 #endif

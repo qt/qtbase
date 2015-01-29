@@ -51,6 +51,7 @@
 
 #include <QtGui/qpixmap.h>
 #include <QtGui/qimage.h>
+#include <QtGui/qguimain.h>
 
 #ifdef QT_WIDGETS_LIB
 #include <QtGui/qicon.h>
