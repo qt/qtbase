@@ -1970,6 +1970,7 @@ void QMacStylePrivate::drawColorlessButton(const HIRect &macRect, HIThemeButtonD
                                || bdi->kind == kThemeComboBoxSmall
                                || bdi->kind == kThemeComboBoxMini;
     const bool button = opt->type == QStyleOption::SO_Button;
+    const bool viewItem = opt->type == QStyleOption::SO_ViewItem;
     const bool pressed = bdi->state == kThemeStatePressed;
     const bool usingYosemiteOrLater = QSysInfo::MacintoshVersion > QSysInfo::MV_10_9;
 
@@ -2010,6 +2011,8 @@ void QMacStylePrivate::drawColorlessButton(const HIRect &macRect, HIThemeButtonD
                 HIRect newRect = CGRectMake(xoff, yoff, macRect.size.width, macRect.size.height);
                 if (button && pressed)
                     bdi->state = kThemeStateActive;
+                else if (usingYosemiteOrLater && viewItem)
+                    bdi->state = kThemeStateInactive;
                 HIThemeDrawButton(&newRect, bdi, cg, kHIThemeOrientationNormal, 0);
             }
         }
@@ -2057,7 +2060,7 @@ void QMacStylePrivate::drawColorlessButton(const HIRect &macRect, HIThemeButtonD
                 rect.adjust(0, 0, -5, 0);
             drawNSViewInRect(cw, bc, rect, p);
             return;
-        } else if (usingYosemiteOrLater && editableCombo) {
+        } else if (usingYosemiteOrLater && (editableCombo || viewItem)) {
             QImage image = activePixmap.toImage();
 
             for (int y = 0; y < height; ++y) {
