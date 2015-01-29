@@ -755,6 +755,9 @@ void QXcbWindow::show()
     if (connection()->time() != XCB_TIME_CURRENT_TIME)
         updateNetWmUserTime(connection()->time());
 
+    if (window()->objectName() == QLatin1String("QSystemTrayIconSysWindow"))
+        return; // defer showing until XEMBED_EMBEDDED_NOTIFY
+
     Q_XCB_CALL(xcb_map_window(xcb_connection(), m_window));
 
     if (QGuiApplication::modalWindow() == window())
@@ -2338,7 +2341,10 @@ void QXcbWindow::handleXEmbedMessage(const xcb_client_message_event_t *event)
     switch (event->data.data32[1]) {
     case XEMBED_WINDOW_ACTIVATE:
     case XEMBED_WINDOW_DEACTIVATE:
+        break;
     case XEMBED_EMBEDDED_NOTIFY:
+        Q_XCB_CALL(xcb_map_window(xcb_connection(), m_window));
+        m_screen->windowShown(this);
         break;
     case XEMBED_FOCUS_IN:
         Qt::FocusReason reason;
