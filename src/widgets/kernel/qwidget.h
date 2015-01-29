@@ -89,6 +89,9 @@ class QGraphicsEffect;
 class QRasterWindowSurface;
 class QUnifiedToolbarSurface;
 class QPixmap;
+#ifndef QT_NO_DEBUG_STREAM
+class QDebug;
+#endif
 
 class QWidgetData
 {
@@ -857,6 +860,10 @@ inline bool QWidget::testAttribute(Qt::WidgetAttribute attribute) const
 
 
 #define QWIDGETSIZE_MAX ((1<<24)-1)
+
+#ifndef QT_NO_DEBUG_STREAM
+Q_WIDGETS_EXPORT QDebug operator<<(QDebug, const QWidget *);
+#endif
 
 QT_END_NAMESPACE
 

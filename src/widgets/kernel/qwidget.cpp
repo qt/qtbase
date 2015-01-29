@@ -12817,6 +12817,65 @@ void QWidgetPrivate::setWidgetParentHelper(QObject *widgetAsObject, QObject *new
     widget->setParent(static_cast<QWidget*>(newParent));
 }
 
+#ifndef QT_NO_DEBUG_STREAM
+
+static inline void formatWidgetAttributes(QDebug debug, const QWidget *widget)
+{
+    const QMetaObject *qtMo = qt_getEnumMetaObject(Qt::WA_AttributeCount);
+    const QMetaEnum me = qtMo->enumerator(qtMo->indexOfEnumerator("WidgetAttribute"));
+    debug << ", attributes=[";
+    int count = 0;
+    for (int a = 0; a < Qt::WA_AttributeCount; ++a) {
+        if (widget->testAttribute(static_cast<Qt::WidgetAttribute>(a))) {
+            if (count++)
+                debug << ',';
+            debug << me.valueToKey(a);
+        }
+    }
+    debug << ']';
+}
+
+QDebug operator<<(QDebug debug, const QWidget *widget)
+{
+    const QDebugStateSaver saver(debug);
+    debug.nospace();
+    if (widget) {
+        debug << widget->metaObject()->className() << '(' << (void *)widget;
+        if (!widget->objectName().isEmpty())
+            debug << ", name=" << widget->objectName();
+        if (debug.verbosity() > 2) {
+            const QRect geometry = widget->geometry();
+            const QRect frameGeometry = widget->frameGeometry();
+            if (widget->isVisible())
+                debug << ", visible";
+            if (!widget->isEnabled())
+                debug << ", disabled";
+            debug << ", states=" << widget->windowState()
+                << ", type=" << widget->windowType() << ", flags=" <<  widget->windowFlags();
+            formatWidgetAttributes(debug, widget);
+            if (widget->isWindow())
+                debug << ", window";
+            debug << ", " << geometry.width() << 'x' << geometry.height()
+                << forcesign << geometry.x() << geometry.y() << noforcesign;
+            if (frameGeometry != geometry) {
+                const QMargins margins(geometry.x() - frameGeometry.x(),
+                                       geometry.y() - frameGeometry.y(),
+                                       frameGeometry.right() - geometry.right(),
+                                       frameGeometry.bottom() - geometry.bottom());
+                debug << ", margins=" << margins;
+            }
+            debug << ", devicePixelRatio=" << widget->devicePixelRatio();
+            if (const WId wid = widget->internalWinId())
+                debug << ", winId=0x" << hex << wid << dec;
+        }
+        debug << ')';
+    } else {
+        debug << "QWidget(0x0)";
+    }
+    return debug;
+}
+#endif // !QT_NO_DEBUG_STREAM
+
 QT_END_NAMESPACE
 
 #include "moc_qwidget.cpp"

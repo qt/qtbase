@@ -2456,6 +2456,45 @@ void QWindowPrivate::applyCursor()
 }
 #endif // QT_NO_CURSOR
 
+#ifndef QT_NO_DEBUG_STREAM
+QDebug operator<<(QDebug debug, const QWindow *window)
+{
+    QDebugStateSaver saver(debug);
+    debug.nospace();
+    if (window) {
+        debug << window->metaObject()->className() << '(' << (void *)window;
+        if (!window->objectName().isEmpty())
+            debug << ", name=" << window->objectName();
+        if (debug.verbosity() > 2) {
+            const QRect geometry = window->geometry();
+            if (window->isVisible())
+                debug << ", visible";
+            if (window->isExposed())
+                debug << ", exposed";
+            debug << ", state=" << window->windowState()
+                << ", type=" << window->type() << ", flags=" << window->flags()
+                << ", surface type=" << window->surfaceType();
+            if (window->isTopLevel())
+                debug << ", toplevel";
+            debug << ", " << geometry.width() << 'x' << geometry.height()
+                << forcesign << geometry.x() << geometry.y() << noforcesign;
+            const QMargins margins = window->frameMargins();
+            if (!margins.isNull())
+                debug << ", margins=" << margins;
+            debug << ", devicePixelRatio=" << window->devicePixelRatio();
+            if (const QPlatformWindow *platformWindow = window->handle())
+                debug << ", winId=0x" << hex << platformWindow->winId() << dec;
+            if (const QScreen *screen = window->screen())
+                debug << ", on " << screen->name();
+        }
+        debug << ')';
+    } else {
+        debug << "QWindow(0x0)";
+    }
+    return debug;
+}
+#endif // !QT_NO_DEBUG_STREAM
+
 QT_END_NAMESPACE
 
 #include "moc_qwindow.cpp"

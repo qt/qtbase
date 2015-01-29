@@ -78,6 +78,9 @@ class QBackingStore;
 class QScreen;
 class QAccessibleInterface;
 class QWindowContainer;
+#ifndef QT_NO_DEBUG_STREAM
+class QDebug;
+#endif
 
 class Q_GUI_EXPORT QWindow : public QObject, public QSurface
 {
@@ -366,6 +369,10 @@ template <> inline const QWindow *qobject_cast<const QWindow*>(const QObject *o)
     return static_cast<const QWindow*>(o);
 }
 #endif // !Q_QDOC
+
+#ifndef QT_NO_DEBUG_STREAM
+Q_GUI_EXPORT QDebug operator<<(QDebug, const QWindow *);
+#endif
 
 QT_END_NAMESPACE
 
