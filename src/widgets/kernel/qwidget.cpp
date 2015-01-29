@@ -5227,6 +5227,9 @@ QGraphicsEffect *QWidget::graphicsEffect() const
 
     \note This function will apply the effect on itself and all its children.
 
+    \note Graphics effects are not supported for OpenGL-based widgets, such as QGLWidget,
+    QOpenGLWidget and QQuickWidget.
+
     \since 4.6
 
     \sa graphicsEffect()
