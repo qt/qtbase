@@ -1017,7 +1017,6 @@ static inline int pathHashKey(QSettings::Format format, QSettings::Scope scope)
 static void initDefaultPaths(QMutexLocker *locker)
 {
     PathHash *pathHash = pathHashFunc();
-    QString homePath = QDir::homePath();
     QString systemPath;
 
     locker->unlock();
@@ -1051,13 +1050,13 @@ static void initDefaultPaths(QMutexLocker *locker)
         QString userPath;
         char *env = getenv("XDG_CONFIG_HOME");
         if (env == 0) {
-            userPath = homePath;
+            userPath = QDir::homePath();
             userPath += QLatin1Char('/');
             userPath += QLatin1String(".config");
         } else if (*env == '/') {
             userPath = QFile::decodeName(env);
         } else {
-            userPath = homePath;
+            userPath = QDir::homePath();
             userPath += QLatin1Char('/');
             userPath += QFile::decodeName(env);
         }
