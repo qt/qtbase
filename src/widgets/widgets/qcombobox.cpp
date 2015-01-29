@@ -2069,9 +2069,7 @@ void QComboBoxPrivate::setCurrentIndex(const QModelIndex &mi)
 {
     Q_Q(QComboBox);
 
-    QModelIndex normalized;
-    if (mi.column() != modelColumn)
-        normalized = model->index(mi.row(), modelColumn, mi.parent());
+    QModelIndex normalized = mi.sibling(mi.row(), modelColumn); // no-op if mi.column() == modelColumn
     if (!normalized.isValid())
         normalized = mi;    // Fallback to passed index.
 
