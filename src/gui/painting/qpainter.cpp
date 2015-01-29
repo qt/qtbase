@@ -2720,13 +2720,14 @@ void QPainter::setClipRect(const QRectF &rect, Qt::ClipOperation op)
     Q_D(QPainter);
 
     if (d->extended) {
-        if ((!d->state->clipEnabled && op != Qt::NoClip))
-            op = Qt::ReplaceClip;
-
         if (!d->engine) {
             qWarning("QPainter::setClipRect: Painter not active");
             return;
         }
+        bool simplifyClipOp = (paintEngine()->type() != QPaintEngine::Picture);
+        if (simplifyClipOp && (!d->state->clipEnabled && op != Qt::NoClip))
+            op = Qt::ReplaceClip;
+
         qreal right = rect.x() + rect.width();
         qreal bottom = rect.y() + rect.height();
         qreal pts[] = { rect.x(), rect.y(),
@@ -2777,8 +2778,9 @@ void QPainter::setClipRect(const QRect &rect, Qt::ClipOperation op)
         qWarning("QPainter::setClipRect: Painter not active");
         return;
     }
+    bool simplifyClipOp = (paintEngine()->type() != QPaintEngine::Picture);
 
-    if ((!d->state->clipEnabled && op != Qt::NoClip))
+    if (simplifyClipOp && (!d->state->clipEnabled && op != Qt::NoClip))
         op = Qt::ReplaceClip;
 
     if (d->extended) {
@@ -2791,7 +2793,7 @@ void QPainter::setClipRect(const QRect &rect, Qt::ClipOperation op)
         return;
     }
 
-    if (d->state->clipOperation == Qt::NoClip && op == Qt::IntersectClip)
+    if (simplifyClipOp && d->state->clipOperation == Qt::NoClip && op == Qt::IntersectClip)
         op = Qt::ReplaceClip;
 
     d->state->clipRegion = rect;
@@ -2835,8 +2837,9 @@ void QPainter::setClipRegion(const QRegion &r, Qt::ClipOperation op)
         qWarning("QPainter::setClipRegion: Painter not active");
         return;
     }
+    bool simplifyClipOp = (paintEngine()->type() != QPaintEngine::Picture);
 
-    if ((!d->state->clipEnabled && op != Qt::NoClip))
+    if (simplifyClipOp && (!d->state->clipEnabled && op != Qt::NoClip))
         op = Qt::ReplaceClip;
 
     if (d->extended) {
@@ -2849,7 +2852,7 @@ void QPainter::setClipRegion(const QRegion &r, Qt::ClipOperation op)
         return;
     }
 
-    if (d->state->clipOperation == Qt::NoClip && op == Qt::IntersectClip)
+    if (simplifyClipOp && d->state->clipOperation == Qt::NoClip && op == Qt::IntersectClip)
         op = Qt::ReplaceClip;
 
     d->state->clipRegion = r;
