@@ -60,8 +60,10 @@ QPepperIntegration::QPepperIntegration()
     m_screen = new QPepperScreen();
     screenAdded(m_screen);
 
-    m_pepperInstance = 0;
     m_compositor = 0;
+    QPepperInstancePrivate *instance = QPepperInstancePrivate::get();
+    instance->m_pepperIntegraton = this;
+    resizeScreen(instance->geometry().size(), instance->devicePixelRatio());
     m_eventTranslator = new PepperEventTranslator();
     QObject::connect(m_eventTranslator, SIGNAL(getWindowAt(QPoint,QWindow**)), this, SLOT(getWindowAt(QPoint,QWindow**)));
     QObject::connect(m_eventTranslator, SIGNAL(getKeyWindow(QWindow**)), this, SLOT(getKeyWindow(QWindow**)));
@@ -164,17 +166,6 @@ QVariant QPepperIntegration::styleHint(StyleHint hint) const
 Qt::WindowState QPepperIntegration::defaultWindowState(Qt::WindowFlags) const
 {
     return Qt::WindowFullScreen;
-}
-
-// called on QPepperInstance::Init, pepper startup has now completed
-void QPepperIntegration::setPepperInstance(QPepperInstance *instance)
-{
-    m_pepperInstance = instance;
-}
-
-QPepperInstance *QPepperIntegration::pepperInstance() const
-{
-    return m_pepperInstance;
 }
 
 QPepperCompositor *QPepperIntegration::pepperCompositor() const

@@ -288,11 +288,6 @@ void QPepperInstancePrivate::startQt()
     extern void qGuiStartup();
     qGuiStartup();
 
-    // link the QPepperIntegration instance to this QPepperInstancePrivate. This
-    // links the Qt and pepper instances.
-    m_pepperIntegraton = QPepperIntegration::getPepperIntegration();
-    m_pepperIntegraton->setPepperInstance(q);
-    m_pepperIntegraton->resizeScreen(toQSize(m_currentGeometry.size()), m_currentDevicePixelRatio);
 
     qCDebug(QT_PLATFORM_PEPPER_INSTANCE) << "qGuiAppInit";
     q->applicationInit();

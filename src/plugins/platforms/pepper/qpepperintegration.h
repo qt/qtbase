@@ -67,8 +67,6 @@ public:
     QVariant styleHint(StyleHint hint) const;
     Qt::WindowState defaultWindowState(Qt::WindowFlags) const;
 
-    void setPepperInstance(QPepperInstance *instance);
-    QPepperInstance *pepperInstance() const;
     QPepperCompositor *pepperCompositor() const;
 
     PepperEventTranslator *pepperEventTranslator();
@@ -83,16 +81,13 @@ private Q_SLOTS:
     void handleMessage(const QByteArray &tag, const QString &message);
 public:
     QPepperScreen *m_screen;
-    QPepperInstance *m_pepperInstance;
     QPepperCompositor *m_compositor;
     PepperEventTranslator *m_eventTranslator;
     mutable QPepperEventDispatcher *m_pepperEventDispatcher;
-
     mutable QPepperPlatformWindow *m_topLevelWindow;
     mutable QPepperFontDatabase *m_fontDatabase;
     mutable QPepperClipboard *m_clipboard;
     mutable QPepperServices *m_services;
-
 };
 
 QT_END_NAMESPACE
