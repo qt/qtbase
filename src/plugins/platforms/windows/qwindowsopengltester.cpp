@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2015 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -32,13 +32,231 @@
 ****************************************************************************/
 
 #include "qwindowsopengltester.h"
-#include "qt_windows.h"
 #include "qwindowscontext.h"
+
+#include <QtCore/QVariantMap>
+#include <QtCore/QDebug>
+#include <QtCore/QTextStream>
+#include <QtCore/QCoreApplication>
+
+#ifndef Q_OS_WINCE
+#  include <QtCore/qt_windows.h>
+#  include <private/qsystemlibrary_p.h>
+#  include <d3d9.h>
+#  include <GL/gl.h>
+#endif
 
 QT_BEGIN_NAMESPACE
 
+QString GpuDriverVersion::toString() const
+{
+    return QString::number(product)
+        + QLatin1Char('.') + QString::number(version)
+        + QLatin1Char('.') + QString::number(subVersion)
+        + QLatin1Char('.') + QString::number(build);
+}
+
+int GpuDriverVersion::compare(const GpuDriverVersion &rhs) const
+{
+    if (product < rhs.product)
+        return -1;
+    if (product > rhs.product)
+        return 1;
+    if (version < rhs.version)
+        return -1;
+    if (version > rhs.version)
+        return 1;
+    if (subVersion < rhs.subVersion)
+        return -1;
+    if (subVersion > rhs.subVersion)
+        return 1;
+    if (build < rhs.build)
+        return -1;
+    if (build > rhs.build)
+        return 1;
+    return 0;
+}
+
+GpuDescription GpuDescription::detect()
+{
+#ifndef Q_OS_WINCE
+    typedef IDirect3D9 * (WINAPI *PtrDirect3DCreate9)(UINT);
+
+    GpuDescription result;
+    QSystemLibrary d3d9lib(QStringLiteral("d3d9"));
+    if (!d3d9lib.load())
+        return result;
+    PtrDirect3DCreate9 direct3DCreate9 = (PtrDirect3DCreate9)d3d9lib.resolve("Direct3DCreate9");
+    if (!direct3DCreate9)
+        return result;
+    IDirect3D9 *direct3D9 = direct3DCreate9(D3D_SDK_VERSION);
+    if (!direct3D9)
+        return result;
+    D3DADAPTER_IDENTIFIER9 adapterIdentifier;
+    const HRESULT hr = direct3D9->GetAdapterIdentifier(0, 0, &adapterIdentifier);
+    direct3D9->Release();
+    if (SUCCEEDED(hr)) {
+        result.vendorId = int(adapterIdentifier.VendorId);
+        result.deviceId = int(adapterIdentifier.DeviceId);
+        result.revision = int(adapterIdentifier.Revision);
+        result.subSysId = int(adapterIdentifier.SubSysId);
+        result.driverVersion.product = HIWORD(adapterIdentifier.DriverVersion.HighPart);
+        result.driverVersion.version = LOWORD(adapterIdentifier.DriverVersion.HighPart);
+        result.driverVersion.subVersion = HIWORD(adapterIdentifier.DriverVersion.LowPart);
+        result.driverVersion.build = LOWORD(adapterIdentifier.DriverVersion.LowPart);
+        result.driverName = adapterIdentifier.Driver;
+        result.description = adapterIdentifier.Description;
+    }
+    return result;
+#else // !Q_OS_WINCE
+    GpuDescription result;
+    result.vendorId = result.deviceId = result.revision
+        = result.driverVersion.product = result.driverVersion.version
+        = result.driverVersion.build = 1;
+    result.driverName = result.description = QByteArrayLiteral("Generic");
+    return result;
+#endif
+}
+
+QDebug operator<<(QDebug d, const GpuDriverVersion &v)
+{
+    QDebugStateSaver s(d);
+    d.nospace();
+    d << v.product << '.' << v.version << '.' << v.subVersion << '.' << v.build;
+    return d;
+}
+
+QDebug operator<<(QDebug d, const GpuDescription &gd)
+{
+    QDebugStateSaver s(d);
+    d.nospace();
+    d << hex << showbase << "GpuDescription(vendorId=" << gd.vendorId
+      << ", deviceId=" << gd.deviceId << ", subSysId=" << gd.subSysId
+      << dec << noshowbase << ", revision=" << gd.revision
+      << ", driver: " << gd.driverName
+      << ", version=" << gd.driverVersion << ", " << gd.description << ')';
+    return d;
+}
+
+// Return printable string formatted like the output of the dxdiag tool.
+QString GpuDescription::toString() const
+{
+    QString result;
+    QTextStream str(&result);
+    str <<   "         Card name: " << description
+        << "\n       Driver Name: " << driverName
+        << "\n    Driver Version: " << driverVersion.toString()
+        << "\n         Vendor ID: 0x" << qSetPadChar(QLatin1Char('0'))
+        << uppercasedigits << hex << qSetFieldWidth(4) << vendorId
+        << "\n         Device ID: 0x" << qSetFieldWidth(4) << deviceId
+        << "\n         SubSys ID: 0x" << qSetFieldWidth(8) << subSysId
+        << "\n       Revision ID: 0x" << qSetFieldWidth(4) << revision
+        << dec;
+    return result;
+}
+
+QVariant GpuDescription::toVariant() const
+{
+    QVariantMap result;
+    result.insert(QStringLiteral("vendorId"), QVariant(vendorId));
+    result.insert(QStringLiteral("deviceId"), QVariant(deviceId));
+    result.insert(QStringLiteral("subSysId"),QVariant(subSysId));
+    result.insert(QStringLiteral("revision"), QVariant(revision));
+    result.insert(QStringLiteral("driver"), QVariant(QLatin1String(driverName)));
+    result.insert(QStringLiteral("driverProduct"), QVariant(driverVersion.product));
+    result.insert(QStringLiteral("driverVersion"), QVariant(driverVersion.version));
+    result.insert(QStringLiteral("driverSubVersion"), QVariant(driverVersion.subVersion));
+    result.insert(QStringLiteral("driverBuild"), QVariant(driverVersion.build));
+    result.insert(QStringLiteral("driverVersionString"), driverVersion.toString());
+    result.insert(QStringLiteral("description"), QVariant(QLatin1String(description)));
+    result.insert(QStringLiteral("printable"), QVariant(toString()));
+    return result;
+}
+
+QWindowsOpenGLTester::Renderer QWindowsOpenGLTester::requestedGlesRenderer()
+{
+#ifndef Q_OS_WINCE
+    const char platformVar[] = "QT_ANGLE_PLATFORM";
+    if (qEnvironmentVariableIsSet(platformVar)) {
+        const QByteArray anglePlatform = qgetenv(platformVar);
+        if (anglePlatform == "d3d11")
+            return QWindowsOpenGLTester::AngleRendererD3d11;
+        if (anglePlatform == "d3d9")
+            return QWindowsOpenGLTester::AngleRendererD3d9;
+        if (anglePlatform == "warp")
+            return QWindowsOpenGLTester::AngleRendererD3d11Warp;
+        qCWarning(lcQpaGl) << "Invalid value set for " << platformVar << ": " << anglePlatform;
+    }
+#endif // !Q_OS_WINCE
+    return QWindowsOpenGLTester::InvalidRenderer;
+}
+
+QWindowsOpenGLTester::Renderer QWindowsOpenGLTester::requestedRenderer()
+{
+#ifndef Q_OS_WINCE
+    const char openGlVar[] = "QT_OPENGL";
+    if (QCoreApplication::testAttribute(Qt::AA_UseOpenGLES)) {
+        const Renderer glesRenderer = QWindowsOpenGLTester::requestedGlesRenderer();
+        return glesRenderer != InvalidRenderer ? glesRenderer : Gles;
+    }
+    if (QCoreApplication::testAttribute(Qt::AA_UseDesktopOpenGL))
+        return QWindowsOpenGLTester::DesktopGl;
+    if (QCoreApplication::testAttribute(Qt::AA_UseSoftwareOpenGL))
+        return QWindowsOpenGLTester::SoftwareRasterizer;
+    if (qEnvironmentVariableIsSet(openGlVar)) {
+        const QByteArray requested = qgetenv(openGlVar);
+        if (requested == "angle") {
+            const Renderer glesRenderer = QWindowsOpenGLTester::requestedGlesRenderer();
+            return glesRenderer != InvalidRenderer ? glesRenderer : Gles;
+        }
+        if (requested == "desktop")
+            return QWindowsOpenGLTester::DesktopGl;
+        if (requested == "software")
+            return QWindowsOpenGLTester::SoftwareRasterizer;
+        qCWarning(lcQpaGl) << "Invalid value set for " << openGlVar << ": " << requested;
+    }
+#endif // !Q_OS_WINCE
+    return QWindowsOpenGLTester::InvalidRenderer;
+}
+
+static inline QWindowsOpenGLTester::Renderers
+    detectSupportedRenderers(const GpuDescription &gpu, bool glesOnly)
+{
+    Q_UNUSED(gpu)
+#ifndef Q_OS_WINCE
+    // Add checks for card types with known issues here.
+    QWindowsOpenGLTester::Renderers result(QWindowsOpenGLTester::AngleRendererD3d11
+        | QWindowsOpenGLTester::AngleRendererD3d9
+        | QWindowsOpenGLTester::AngleRendererD3d11Warp
+        | QWindowsOpenGLTester::SoftwareRasterizer);
+
+    if (!glesOnly && QWindowsOpenGLTester::testDesktopGL())
+        result |= QWindowsOpenGLTester::DesktopGl;
+    return result;
+#else // !Q_OS_WINCE
+    return QWindowsOpenGLTester::Gles;
+#endif
+}
+
+QWindowsOpenGLTester::Renderers QWindowsOpenGLTester::supportedGlesRenderers()
+{
+    const GpuDescription gpu = GpuDescription::detect();
+    const QWindowsOpenGLTester::Renderers result = detectSupportedRenderers(gpu, true);
+    qDebug(lcQpaGl) << __FUNCTION__ << gpu << "renderer: " << result;
+    return result;
+}
+
+QWindowsOpenGLTester::Renderers QWindowsOpenGLTester::supportedRenderers()
+{
+    const GpuDescription gpu = GpuDescription::detect();
+    const QWindowsOpenGLTester::Renderers result = detectSupportedRenderers(gpu, false);
+    qDebug(lcQpaGl) << __FUNCTION__ << gpu << "renderer: " << result;
+    return result;
+}
+
 bool QWindowsOpenGLTester::testDesktopGL()
 {
+#ifndef Q_OS_WINCE
     HMODULE lib = 0;
     HWND wnd = 0;
     HDC dc = 0;
@@ -109,6 +327,37 @@ bool QWindowsOpenGLTester::testDesktopGL()
             goto cleanup;
 
         // Now that there is finally a context current, try doing something useful.
+
+        // Check the version. If we got 1.x then it's all hopeless and we can stop right here.
+        typedef const GLubyte * (APIENTRY * GetString_t)(GLenum name);
+        GetString_t GetString = reinterpret_cast<GetString_t>(::GetProcAddress(lib, "glGetString"));
+        if (GetString) {
+            const char *versionStr = (const char *) GetString(GL_VERSION);
+            if (versionStr) {
+                const QByteArray version(versionStr);
+                const int majorDot = version.indexOf('.');
+                if (majorDot != -1) {
+                    int minorDot = version.indexOf('.', majorDot + 1);
+                    if (minorDot == -1)
+                        minorDot = version.size();
+                    const int major = version.mid(0, majorDot).toInt();
+                    const int minor = version.mid(majorDot + 1, minorDot - majorDot - 1).toInt();
+                    qCDebug(lcQpaGl, "Basic wglCreateContext gives version %d.%d", major, minor);
+                    // Try to be as lenient as possible. Missing version, bogus values and
+                    // such are all accepted. The driver may still be functional. Only
+                    // check for known-bad cases, like versions "1.4.0 ...".
+                    if (major == 1) {
+                        result = false;
+                        qCDebug(lcQpaGl, "OpenGL version too low");
+                    }
+                }
+            }
+        } else {
+            result = false;
+            qCDebug(lcQpaGl, "OpenGL 1.x entry points not found");
+        }
+
+        // Check for a shader-specific function.
         if (WGL_GetProcAddress("glCreateShader")) {
             result = true;
             qCDebug(lcQpaGl, "OpenGL 2.0 entry points available");
@@ -133,6 +382,9 @@ cleanup:
     // No FreeLibrary. Some implementations, Mesa in particular, deadlock when trying to unload.
 
     return result;
+#else // !Q_OS_WINCE
+    return false;
+#endif
 }
 
 QT_END_NAMESPACE

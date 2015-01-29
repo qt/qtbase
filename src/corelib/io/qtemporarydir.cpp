@@ -128,8 +128,11 @@ static char *q_mkdtemp(char *templateName)
                                               QFile::ReadOwner |
                                               QFile::WriteOwner |
                                               QFile::ExeOwner, error);
-            if (error.error() != 0)
+            if (error.error() != 0) {
+                if (!QFileSystemEngine::removeDirectory(fileSystemEntry, false))
+                    qWarning() << "Unable to remove unused directory" << templateNameStr;
                 continue;
+            }
             return templateName;
         }
     }

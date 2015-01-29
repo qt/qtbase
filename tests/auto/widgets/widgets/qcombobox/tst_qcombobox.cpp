@@ -124,7 +124,7 @@ private slots:
     void pixmapIcon();
     void mouseWheel_data();
     void mouseWheel();
-    void wheelClosingPopup();
+    void popupWheelHandling();
     void layoutDirection();
     void itemListPosition();
     void separatorItem_data();
@@ -2037,9 +2037,9 @@ void tst_QComboBox::mouseWheel()
     }
 }
 
-void tst_QComboBox::wheelClosingPopup()
+void tst_QComboBox::popupWheelHandling()
 {
-    // QTBUG-40656, combo and other popups should close when the main window gets a wheel event.
+    // QTBUG-40656, QTBUG-42731 combo and other popups should not be affected by wheel events.
     QScrollArea scrollArea;
     scrollArea.move(300, 300);
     QWidget *widget = new QWidget;
@@ -2058,9 +2058,12 @@ void tst_QComboBox::wheelClosingPopup()
     QVERIFY(QTest::qWaitForWindowExposed(&scrollArea));
     comboBox->showPopup();
     QTRY_VERIFY(comboBox->view() && comboBox->view()->isVisible());
+    const QPoint popupPos = comboBox->view()->pos();
     QWheelEvent event(QPointF(10, 10), WHEEL_DELTA, Qt::NoButton, Qt::NoModifier);
     QVERIFY(QCoreApplication::sendEvent(scrollArea.windowHandle(), &event));
-    QTRY_VERIFY(!comboBox->view()->isVisible());
+    QCoreApplication::processEvents();
+    QVERIFY(comboBox->view()->isVisible());
+    QCOMPARE(comboBox->view()->pos(), popupPos);
 }
 
 void tst_QComboBox::layoutDirection()

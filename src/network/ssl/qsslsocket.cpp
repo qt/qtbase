@@ -1983,6 +1983,7 @@ void QSslSocketPrivate::init()
     connectionEncrypted = false;
     ignoreAllSslErrors = false;
     shutdown = false;
+    pendingClose = false;
 
     // we don't want to clear the ignoreErrorsList, so
     // that it is possible setting it before connecting

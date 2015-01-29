@@ -37,6 +37,7 @@
 #include "qwindowsdrag.h"
 #include "qwindowsscreen.h"
 #include "qwindowsscaling.h"
+#include "qwindowsintegration.h"
 #ifdef QT_NO_CURSOR
 #  include "qwindowscursor.h"
 #endif
@@ -555,8 +556,12 @@ void WindowCreationData::fromWindow(const QWindow *w, const Qt::WindowFlags flag
                 if (flags & Qt::WindowSystemMenuHint)
                     style |= WS_SYSMENU;
                 else if (dialog) {
-                    style |= WS_SYSMENU | WS_BORDER; // QTBUG-2027, dialogs without system menu.
-                    exStyle |= WS_EX_DLGMODALFRAME;
+                    // QTBUG-2027, dialogs without system menu.
+                    style |= WS_SYSMENU;
+                    if (!(flags & Qt::FramelessWindowHint)) {
+                        style |= WS_BORDER;
+                        exStyle |= WS_EX_DLGMODALFRAME;
+                    }
                 }
                 if (flags & Qt::WindowMinimizeButtonHint)
                     style |= WS_MINIMIZEBOX;
@@ -995,7 +1000,8 @@ void QWindowsWindow::destroyWindow()
         setDropSiteEnabled(false);
 #ifndef QT_NO_OPENGL
         if (m_surface) {
-            m_data.staticOpenGLContext->destroyWindowSurface(m_surface);
+            if (QWindowsStaticOpenGLContext *staticOpenGLContext = QWindowsIntegration::staticOpenGLContext())
+                staticOpenGLContext->destroyWindowSurface(m_surface);
             m_surface = 0;
         }
 #endif
@@ -2340,8 +2346,10 @@ void *QWindowsWindow::surface(void *nativeConfig)
 #ifdef QT_NO_OPENGL
     return 0;
 #else
-    if (!m_surface)
-        m_surface = m_data.staticOpenGLContext->createWindowSurface(m_data.hwnd, nativeConfig);
+    if (!m_surface) {
+        if (QWindowsStaticOpenGLContext *staticOpenGLContext = QWindowsIntegration::staticOpenGLContext())
+            m_surface = staticOpenGLContext->createWindowSurface(m_data.hwnd, nativeConfig);
+    }
 
     return m_surface;
 #endif

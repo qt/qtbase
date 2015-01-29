@@ -138,7 +138,13 @@ init_context:
 #endif
         break;
     case QSsl::SslV3:
+#ifndef OPENSSL_NO_SSL3_METHOD
         sslContext->ctx = q_SSL_CTX_new(client ? q_SSLv3_client_method() : q_SSLv3_server_method());
+#else
+        // SSL 3 not supported by the system, but chosen deliberately -> error
+        sslContext->ctx = 0;
+        unsupportedProtocol = true;
+#endif
         break;
     case QSsl::SecureProtocols:
         // SSLv2 and SSLv3 will be disabled by SSL options

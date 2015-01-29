@@ -46,10 +46,35 @@
 //
 
 #include "qopenglfunctions.h"
+#include <QtCore/qlibrary.h>
 
 QT_BEGIN_NAMESPACE
 
 class QOpenGLExtensionsPrivate;
+
+class QOpenGLES3Helper
+{
+public:
+    QOpenGLES3Helper();
+
+    GLvoid* (QOPENGLF_APIENTRYP MapBufferRange)(GLenum target, qopengl_GLintptr offset, qopengl_GLsizeiptr length, GLbitfield access);
+    GLboolean (QOPENGLF_APIENTRYP UnmapBuffer)(GLenum target);
+    void (QOPENGLF_APIENTRYP BlitFramebuffer)(GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1, GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1, GLbitfield mask, GLenum filter);
+    void (QOPENGLF_APIENTRYP RenderbufferStorageMultisample)(GLenum target, GLsizei samples, GLenum internalFormat, GLsizei width, GLsizei height);
+
+    void (QOPENGLF_APIENTRYP GenVertexArrays)(GLsizei n, GLuint *arrays);
+    void (QOPENGLF_APIENTRYP DeleteVertexArrays)(GLsizei n, const GLuint *arrays);
+    void (QOPENGLF_APIENTRYP BindVertexArray)(GLuint array);
+    GLboolean (QOPENGLF_APIENTRYP IsVertexArray)(GLuint array);
+
+    void (QOPENGLF_APIENTRYP TexImage3D)(GLenum target, GLint level, GLint internalFormat, GLsizei width, GLsizei height, GLsizei depth, GLint border, GLenum format, GLenum type, const GLvoid *pixels);
+    void (QOPENGLF_APIENTRYP TexSubImage3D)(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLenum type, const GLvoid *pixels);
+    void (QOPENGLF_APIENTRYP CompressedTexImage3D)(GLenum target, GLint level, GLenum internalFormat, GLsizei width, GLsizei height, GLsizei depth, GLint border, GLsizei imageSize, const GLvoid *data);
+    void (QOPENGLF_APIENTRYP CompressedTexSubImage3D)(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLsizei imageSize, const GLvoid *data);
+
+private:
+    QLibrary m_gl;
+};
 
 class Q_GUI_EXPORT QOpenGLExtensions : public QOpenGLFunctions
 {
@@ -101,6 +126,8 @@ public:
                                           GLsizei width, GLsizei height);
 
     void glGetBufferSubData(GLenum target, qopengl_GLintptr offset, qopengl_GLsizeiptr size, GLvoid *data);
+
+    QOpenGLES3Helper *gles3Helper();
 
 private:
     static bool isInitialized(const QOpenGLFunctionsPrivate *d) { return d != 0; }

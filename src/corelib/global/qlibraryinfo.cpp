@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2015 Digia Plc and/or its subsidiary(-ies).
 ** Copyright (C) 2014 Intel Corporation
 ** Contact: http://www.qt-project.org/legal
 **
@@ -604,7 +604,7 @@ extern "C" void qt_core_boilerplate();
 void qt_core_boilerplate()
 {
     printf("This is the QtCore library version " QT_BUILD_STR "\n"
-           "Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).\n"
+           "Copyright (C) 2015 Digia Plc and/or its subsidiary(-ies).\n"
            "Contact: http://www.qt-project.org/legal\n"
            "\n"
            "Build date:          %s\n"

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2015 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -35,6 +35,7 @@
 #include "qwindowswindow.h"
 #include "qwindowscontext.h"
 #include "qwindowsopenglcontext.h"
+#include "qwindowsopengltester.h"
 #include "qwindowsintegration.h"
 #include "qwindowsmime.h"
 
@@ -214,6 +215,11 @@ void QWindowsNativeInterface::unregisterWindowsMime(void *mimeIn)
 int QWindowsNativeInterface::registerMimeType(const QString &mimeType)
 {
     return QWindowsMime::registerMimeType(mimeType);
+}
+
+QVariant QWindowsNativeInterface::gpu() const
+{
+    return GpuDescription::detect().toVariant();
 }
 
 QT_END_NAMESPACE

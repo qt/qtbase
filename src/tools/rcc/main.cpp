@@ -47,6 +47,7 @@
 #ifdef Q_OS_WIN
 #  include <fcntl.h>
 #  include <io.h>
+#  include <stdio.h>
 #endif // Q_OS_WIN
 
 QT_BEGIN_NAMESPACE

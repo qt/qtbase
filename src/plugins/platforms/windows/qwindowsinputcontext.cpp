@@ -209,7 +209,7 @@ void QWindowsInputContext::setFocusObject(QObject *object)
         imeNotifyCancelComposition(m_compositionContext.hwnd);
 
     const QWindow *window = QGuiApplication::focusWindow();
-    if (object && window) {
+    if (object && window && window->handle()) {
         QWindowsWindow *platformWindow = QWindowsWindow::baseWindowOf(window);
         if (inputMethodAccepted()) {
             // Re-enable IME by associating default context saved on first disabling.

@@ -340,7 +340,7 @@ QWindowsEGLStaticContext::QWindowsEGLStaticContext(EGLDisplay display, int versi
 {
 }
 
-QWindowsEGLStaticContext *QWindowsEGLStaticContext::create()
+QWindowsEGLStaticContext *QWindowsEGLStaticContext::create(QWindowsOpenGLTester::Renderers preferredType)
 {
     const HDC dc = QWindowsContext::instance()->displayContext();
     if (!dc){
@@ -358,28 +358,34 @@ QWindowsEGLStaticContext *QWindowsEGLStaticContext::create()
     }
 
     EGLDisplay display = EGL_NO_DISPLAY;
+    EGLint major = 0;
+    EGLint minor = 0;
 #ifdef EGL_ANGLE_platform_angle_opengl
-    if (libEGL.eglGetPlatformDisplayEXT && qEnvironmentVariableIsSet("QT_ANGLE_PLATFORM")) {
+    if (libEGL.eglGetPlatformDisplayEXT
+        && (preferredType & QWindowsOpenGLTester::AngleBackendMask)) {
         const EGLint anglePlatformAttributes[][5] = {
             { EGL_PLATFORM_ANGLE_TYPE_ANGLE, EGL_PLATFORM_ANGLE_TYPE_D3D11_ANGLE, EGL_NONE },
             { EGL_PLATFORM_ANGLE_TYPE_ANGLE, EGL_PLATFORM_ANGLE_TYPE_D3D9_ANGLE, EGL_NONE },
             { EGL_PLATFORM_ANGLE_TYPE_ANGLE, EGL_PLATFORM_ANGLE_TYPE_D3D11_ANGLE, EGL_PLATFORM_ANGLE_USE_WARP_ANGLE, EGL_TRUE, EGL_NONE }
         };
         const EGLint *attributes = 0;
-        const QByteArray anglePlatform = qgetenv("QT_ANGLE_PLATFORM");
-        if (anglePlatform == "d3d11")
+        if (preferredType & QWindowsOpenGLTester::AngleRendererD3d11)
             attributes = anglePlatformAttributes[0];
-        else if (anglePlatform == "d3d9")
+        else if (preferredType & QWindowsOpenGLTester::AngleRendererD3d9)
             attributes = anglePlatformAttributes[1];
-        else if (anglePlatform == "warp")
+        else if (preferredType & QWindowsOpenGLTester::AngleRendererD3d11Warp)
             attributes = anglePlatformAttributes[2];
-        else
-            qCWarning(lcQpaGl) << "Invalid value set for QT_ANGLE_PLATFORM:" << anglePlatform;
-
-        if (attributes)
+        if (attributes) {
             display = libEGL.eglGetPlatformDisplayEXT(EGL_PLATFORM_ANGLE_ANGLE, dc, attributes);
+            if (!libEGL.eglInitialize(display, &major, &minor)) {
+                display = EGL_NO_DISPLAY;
+                major = minor = 0;
+            }
+        }
     }
-#endif // EGL_ANGLE_platform_angle_opengl
+#else // EGL_ANGLE_platform_angle_opengl
+    Q_UNUSED(preferredType)
+#endif
     if (display == EGL_NO_DISPLAY)
         display = libEGL.eglGetDisplay((EGLNativeDisplayType)dc);
     if (!display) {
@@ -387,9 +393,7 @@ QWindowsEGLStaticContext *QWindowsEGLStaticContext::create()
         return 0;
     }
 
-    EGLint major;
-    EGLint minor;
-    if (!libEGL.eglInitialize(display, &major, &minor)) {
+    if (!major && !libEGL.eglInitialize(display, &major, &minor)) {
         int err = libEGL.eglGetError();
         qWarning("%s: Could not initialize EGL display: error 0x%x\n", Q_FUNC_INFO, err);
         if (err == 0x3001)

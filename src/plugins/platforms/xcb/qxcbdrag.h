@@ -70,12 +70,11 @@ public:
 
     virtual QMimeData *platformDropData();
 
-
-    void startDrag();
-    void cancel();
-    void move(const QMouseEvent *me);
-    void drop(const QMouseEvent *me);
-    void endDrag();
+    void startDrag() Q_DECL_OVERRIDE;
+    void cancel() Q_DECL_OVERRIDE;
+    void move(const QMouseEvent *me) Q_DECL_OVERRIDE;
+    void drop(const QMouseEvent *me) Q_DECL_OVERRIDE;
+    void endDrag() Q_DECL_OVERRIDE;
 
     void handleEnter(QWindow *window, const xcb_client_message_event_t *event);
     void handlePosition(QWindow *w, const xcb_client_message_event_t *event);
@@ -87,6 +86,7 @@ public:
     void handleFinished(const xcb_client_message_event_t *event);
 
     bool dndEnable(QXcbWindow *win, bool on);
+    bool ownsDragObject() const Q_DECL_OVERRIDE;
 
     void updatePixmap();
     xcb_timestamp_t targetTime() { return target_time; }

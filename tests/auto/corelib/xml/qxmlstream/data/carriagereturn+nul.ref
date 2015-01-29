@@ -1,0 +1,3 @@
+StartDocument( )
+Invalid( processingInstructionTarget="xml_" )
+ERROR: Invalid XML character.

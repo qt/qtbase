@@ -58,6 +58,9 @@ public:
     // reimplement these.
     virtual void *createWindowSurface(void * /*nativeWindow*/, void * /*nativeConfig*/) { return 0; }
     virtual void destroyWindowSurface(void * /*nativeSurface*/) { }
+
+private:
+    static QWindowsStaticOpenGLContext *doCreate();
 };
 
 class QWindowsOpenGLContext : public QPlatformOpenGLContext

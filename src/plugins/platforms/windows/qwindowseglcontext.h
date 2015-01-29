@@ -35,6 +35,7 @@
 #define QWINDOWSEGLCONTEXT_H
 
 #include "qwindowsopenglcontext.h"
+#include "qwindowsopengltester.h"
 #include <EGL/egl.h>
 
 QT_BEGIN_NAMESPACE
@@ -250,7 +251,7 @@ class QWindowsEGLStaticContext : public QWindowsStaticOpenGLContext
     Q_DISABLE_COPY(QWindowsEGLStaticContext)
 
 public:
-    static QWindowsEGLStaticContext *create();
+    static QWindowsEGLStaticContext *create(QWindowsOpenGLTester::Renderers preferredType);
     ~QWindowsEGLStaticContext();
 
     EGLDisplay display() const { return m_display; }
