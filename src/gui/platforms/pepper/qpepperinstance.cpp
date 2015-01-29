@@ -31,27 +31,63 @@ QPepperInstance::QPepperInstance(PP_Instance instance)
 
 bool QPepperInstance::Init(uint32_t argc, const char* argn[], const char* argv[])
 {
-    return d->init(argc, argn, argv);
+    // argn/argv will not be valid by the time the message loop processes
+    // the message posted below. Make a copy
+    QVector<QByteArray> vargn;
+    QVector<QByteArray> vargv;
+    for (uint32_t i = 0; i < argc; ++i) {
+        vargn.push_back(argn[i]);
+        vargv.push_back(argv[i]);
+    }
+
+    if (d->m_runQtOnThread) {
+       d->m_qtMessageLoop.PostWork(d->m_callbackFactory.NewCallback(&QPepperInstancePrivate::init, argc, vargn, vargv));
+       return true;
+    } else {
+        uint32_t unused;
+        return d->init(unused, argc, vargn, vargv);
+    }
 }
 
 void QPepperInstance::DidChangeView(const pp::View &view)
 {
-    d->didChangeView(view);
+    if (d->m_runQtOnThread) {
+        d->m_qtMessageLoop.PostWork(d->m_callbackFactory.NewCallback(&QPepperInstancePrivate::didChangeView, view));
+    } else {
+        uint32_t unused;
+        d->didChangeView(unused, view);
+    }
 }
 
 void QPepperInstance::DidChangeFocus(bool hasFucus)
 {
-    d->didChangeFocus(hasFucus);
+    if (d->m_runQtOnThread) {
+        d->m_qtMessageLoop.PostWork(d->m_callbackFactory.NewCallback(&QPepperInstancePrivate::didChangeFocus, hasFucus));
+    } else {
+        uint32_t unused;
+        d->didChangeFocus(unused, hasFucus);
+    }
 }
 
 bool QPepperInstance::HandleInputEvent(const pp::InputEvent& event)
 {
-    return d->handleInputEvent(event);
+    if (d->m_runQtOnThread) {
+        d->m_qtMessageLoop.PostWork(d->m_callbackFactory.NewCallback(&QPepperInstancePrivate::handleInputEvent, event));
+        return true; // FIXME: Get result from async call above.
+    } else {
+        uint32_t unused;
+        return d->handleInputEvent(unused, event);
+    }
 }
 
 void QPepperInstance::HandleMessage(const pp::Var& message)
 {
-    d->handleMessage(message);
+    if (d->m_runQtOnThread) {
+        d->m_qtMessageLoop.PostWork(d->m_callbackFactory.NewCallback(&QPepperInstancePrivate::handleMessage, message));
+    } else {
+        uint32_t unused;
+        d->handleMessage(unused, message);
+    }
 }
 
 void QPepperInstance::applicationInit()

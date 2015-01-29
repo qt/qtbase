@@ -39,19 +39,41 @@
 ****************************************************************************/
 
 #include "qtquickcontrolsapplication.h"
+
+#include <QtCore>
 #include <QtGui>
 #include <QtQml/QQmlApplicationEngine>
 
+#if 1 // use Q_GUI_MAIN startup
+
+// optionally run Qt on a separate thread
+// class First { public: First() { qputenv("QT_PEPPER_RUN_QT_ON_THREAD", "1"); } }; First first;
+
 QQmlApplicationEngine *engine;
 
-void app_init(int argc, char **argv)
+void appInit(int argc, char **argv)
 {
     engine = new QQmlApplicationEngine(QUrl("qrc:///main.qml"));
 }
 
-void app_exit()
+void appExit()
 {
     delete engine;
 }
 
-Q_GUI_MAIN(app_init, app_exit);
+Q_GUI_MAIN(appInit, appExit);
+
+#else // use Q_GUI_BLOCKING_MAIN
+
+// (implies running Qt on a separate thread.)
+
+int appMain(int argc, char **argv)
+{
+    QGuiApplication app(argc, argv);
+    QQmlApplicationEngine engine(QUrl("qrc:///main.qml"));
+    return app.exec();
+}
+
+Q_GUI_BLOCKING_MAIN(appMain);
+
+#endif

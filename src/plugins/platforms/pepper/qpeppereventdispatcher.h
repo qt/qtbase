@@ -61,7 +61,7 @@ private:
     };
 
     void startTimer(PepperTimerInfo info);
-    void timerCallback(int32_t timerSerial);
+    void timerCallback(int32_t result, int32_t timerSerial);
     void scheduleProcessEvents();
     void processEventsCallback(int32_t status);
 
@@ -70,7 +70,7 @@ private:
     QHash<int, int> m_activeTimerSerials; // Qt timer id -> timer serial
     QMultiHash<QObject *, int> m_activeObjectTimers; // QObject * -> Qt timer id
     QHash<int, PepperTimerInfo> m_timerDetails;
-    pp::MessageLoop messageLoop;
+    pp::MessageLoop m_messageLoop;
     pp::CompletionCallbackFactory<QPepperEventDispatcher> m_completionCallbackFactory;
 };
 

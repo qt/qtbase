@@ -54,13 +54,20 @@ QPepperIntegration *QPepperIntegration::getPepperIntegration()
 }
 
 QPepperIntegration::QPepperIntegration()
+    : m_screen(0)
+    , m_compositor(0)
+    , m_eventTranslator(0)
+    , m_pepperEventDispatcher(0)
+    , m_topLevelWindow(0)
+    , m_fontDatabase(0)
+    , m_clipboard(0)
+    , m_services(0)
 {
     globalPepperIntegration = this;
 
     m_screen = new QPepperScreen();
     screenAdded(m_screen);
 
-    m_compositor = 0;
     QPepperInstancePrivate *instance = QPepperInstancePrivate::get();
     instance->m_pepperIntegraton = this;
     resizeScreen(instance->geometry().size(), instance->devicePixelRatio());
@@ -77,7 +84,10 @@ QPepperIntegration::QPepperIntegration()
 
 QPepperIntegration::~QPepperIntegration()
 {
+    // Clear pointers to this object
     globalPepperIntegration = 0;
+    QPepperInstancePrivate *instance = QPepperInstancePrivate::get();
+    instance->m_pepperIntegraton = 0;
     delete m_compositor;
     delete m_eventTranslator;
     delete m_fontDatabase;

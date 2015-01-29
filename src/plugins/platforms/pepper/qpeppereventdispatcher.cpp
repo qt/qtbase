@@ -18,7 +18,6 @@
 ****************************************************************************/
 
 #include "qpeppereventdispatcher.h"
-#include "qpeppermodule_p.h"
 
 #include <qdebug.h>
 #include <QtCore/qcoreapplication.h>
@@ -28,10 +27,10 @@ Q_LOGGING_CATEGORY(QT_PLATFORM_PEPPER_EVENTDISPATHCER, "qt.platform.pepper.event
 QPepperEventDispatcher::QPepperEventDispatcher(QObject *parent)
 :QUnixEventDispatcherQPA(parent)
 ,m_currentTimerSerial(0)
+,m_messageLoop(pp::MessageLoop::GetCurrent())
 ,m_completionCallbackFactory(this)
 {
     qCDebug(QT_PLATFORM_PEPPER_EVENTDISPATHCER) << "QPepperEventDispatcher()";
-    messageLoop = pp::MessageLoop::GetCurrent();
 }
 
 QPepperEventDispatcher::~QPepperEventDispatcher()
@@ -141,16 +140,17 @@ void QPepperEventDispatcher::startTimer(PepperTimerInfo info)
     m_activeTimerIds[m_currentTimerSerial] = info.timerId;
     m_activeTimerSerials[info.timerId] = m_currentTimerSerial;
 
-    QPepperModulePrivate::core()->CallOnMainThread(info.interval,
-        m_completionCallbackFactory.NewCallback(&QPepperEventDispatcher::timerCallback), m_currentTimerSerial);
+    m_messageLoop.PostWork(
+        m_completionCallbackFactory.NewCallback(&QPepperEventDispatcher::timerCallback, m_currentTimerSerial),
+        info.interval);
 }
 
-void QPepperEventDispatcher::timerCallback(int32_t timerSerial)
+void QPepperEventDispatcher::timerCallback(int32_t result, int32_t timerSerial)
 {
+    Q_UNUSED(result);
     qCDebug(QT_PLATFORM_PEPPER_EVENTDISPATHCER) << "timerCallback" << timerSerial;
 
-    // The timer might have been unregistered after the CallOnMainThread was
-    // made in startTimer. In that case don't fire.
+    // The timer might have been unregistered. In that case don't fire.
     if (!m_activeTimerIds.contains(timerSerial))
         return;
 
@@ -178,7 +178,7 @@ void QPepperEventDispatcher::scheduleProcessEvents()
     qCDebug(QT_PLATFORM_PEPPER_EVENTDISPATHCER) << "scheduleProcessEvents";
     pp::CompletionCallback processEvents =
         m_completionCallbackFactory.NewCallback(&QPepperEventDispatcher::processEventsCallback);
-    int32_t result = messageLoop.PostWork(processEvents);
+    int32_t result = m_messageLoop.PostWork(processEvents);
     if (result != PP_OK)
         qCDebug(QT_PLATFORM_PEPPER_EVENTDISPATHCER) << "scheduleProcessEvents PostWork error" << result;
 }

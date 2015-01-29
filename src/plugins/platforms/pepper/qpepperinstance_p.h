@@ -35,6 +35,7 @@
 #include <ppapi/cpp/completion_callback.h>
 #include "ppapi/cpp/view.h"
 #include <ppapi/utility/completion_callback_factory.h>
+#include <ppapi/utility/threading/simple_thread.h>
 
 Q_DECLARE_LOGGING_CATEGORY(QT_PLATFORM_PEPPER_INSTANCE)
 
@@ -48,12 +49,12 @@ public:
     static QPepperInstancePrivate *get();
     static QPepperInstance *getInstance();
 
-    bool init(uint32_t argc, const char* argn[], const char* argv[]);
-    void didChangeView(const pp::View &view);
-    void didChangeFocus(bool hasFucus);
-    bool handleInputEvent(const pp::InputEvent& event);
-    bool handleDocumentLoad(const pp::URLLoader& url_loader);
-    void handleMessage(const pp::Var& var_message);
+    bool init(int32_t result, uint32_t argc, const QVector<QByteArray> &vargn, const QVector<QByteArray> &vargv);
+    void didChangeView(int32_t result, const pp::View &view);
+    void didChangeFocus(int32_t result, bool hasFucus);
+    bool handleInputEvent(int32_t result, const pp::InputEvent& event);
+    bool handleDocumentLoad(int32_t result, const pp::URLLoader& url_loader);
+    void handleMessage(int32_t result, const pp::Var& var_message);
 
     // Instance attribute getters
     QRect geometry();
@@ -79,6 +80,9 @@ public:
     QPepperIntegration *m_pepperIntegraton;
 
     bool m_qtStarted;
+    bool m_runQtOnThread;
+    pp::SimpleThread m_qtThread;
+    pp::MessageLoop m_qtMessageLoop;
 
     pp::Var m_console;
     pp::Rect m_currentGeometry;

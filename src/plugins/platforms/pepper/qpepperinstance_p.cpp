@@ -31,6 +31,7 @@
 #include "ppapi/cpp/var.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/completion_callback.h"
+#include "ppapi/utility/threading/simple_thread.h"
 
 #ifdef Q_OS_NACL_NEWLIB
 #include "error_handling/error_handling.h"
@@ -50,18 +51,46 @@ QPepperInstancePrivate *qtCreatePepperInstancePrivate(QPepperInstance *instance)
 static QPepperInstancePrivate *g_pepperInstancePrivate = 0;
 extern void *qtPepperInstance; // QtCore
 
+extern bool qGuiHaveBlockingMain();
+extern int qGuiCallBlockingMain();
+extern bool qGuiStartup();
+
 QPepperInstancePrivate::QPepperInstancePrivate(QPepperInstance *instance)
+    :m_qtThread(instance)
 {
     q = instance;
+    m_pepperIntegraton = 0; // set by the QPepperIntegration constructor
+
     qtPepperInstance = instance;
     g_pepperInstancePrivate = this;
+
     m_qtStarted = false;
+    m_runQtOnThread = false;
+
+#ifdef QT_PEPPER_RUN_QT_ON_THREAD
+    m_runQtOnThread = true;
+#else
+    if (qGuiHaveBlockingMain() || !qgetenv("QT_PEPPER_RUN_QT_ON_THREAD").isEmpty())
+        m_runQtOnThread = true;
+#endif
+
     m_currentGeometry = Rect();
     m_callbackFactory.Initialize(this);
+
+    if (m_runQtOnThread) {
+        m_qtThread.Start();
+        m_qtMessageLoop = m_qtThread.message_loop();
+    } else {
+        m_qtMessageLoop = pp::MessageLoop::GetForMainThread();
+    }
 }
 
 QPepperInstancePrivate::~QPepperInstancePrivate()
 {
+    if (m_runQtOnThread) {
+        m_qtMessageLoop.PostQuit(true); // quit and detach from thread
+        m_qtThread.Join();
+    }
 }
 
 QPepperInstancePrivate *QPepperInstancePrivate::get()
@@ -90,11 +119,9 @@ void qtMessageHandler(QtMsgType, const QMessageLogContext &context, const QStrin
 
 // There is one global app pp::Instance. It corresponds to the
 // html div tag that contains the app.
-bool QPepperInstancePrivate::init(uint32_t argc, const char* argn[], const char* argv[])
+bool QPepperInstancePrivate::init(int32_t result, uint32_t argc, const QVector<QByteArray>& vargn, const QVector<QByteArray> &vargv)
 {
-    Q_UNUSED(argc);
-    Q_UNUSED(argn);
-    Q_UNUSED(argv);
+    Q_UNUSED(result);
 
     qCDebug(QT_PLATFORM_PEPPER_INSTANCE) << "Init argc:" << argc;
 
@@ -113,7 +140,7 @@ bool QPepperInstancePrivate::init(uint32_t argc, const char* argn[], const char*
         //    with other use cases.
         // 3) It's really slow.
         for (unsigned int i = 0; i < argc; ++i) {
-            if (qstrcmp(argn[i], "ps_stdout") && qstrcmp(argv[i], "/dev/tty"))
+            if (qstrcmp(vargn[i], "ps_stdout") && qstrcmp(vargv[i], "/dev/tty"))
                 qInstallMessageHandler(qtMessageHandler);
         }
     }
@@ -121,8 +148,8 @@ bool QPepperInstancePrivate::init(uint32_t argc, const char* argn[], const char*
     // Place argument key/value pairs in the process environment. (NaCl/pepper does
     // not support environment variables, Qt emulates via qputenv and getenv.)
     for (unsigned int i = 0; i < argc; ++i) {
-        QByteArray name = QByteArray(argn[i]).toUpper(); // html forces lowercase.
-        QByteArray value = argv[i];
+        QByteArray name = QByteArray(vargn[i]).toUpper(); // html forces lowercase.
+        QByteArray value = vargv[i];
         qputenv(name.constData(), value);
         qCDebug(QT_PLATFORM_PEPPER_INSTANCE) << "setting environment variable" << name << "=" << value;
     }
@@ -138,8 +165,9 @@ bool QPepperInstancePrivate::init(uint32_t argc, const char* argn[], const char*
 
 // DidchangeView is called on div tag geometry or configuration change, for
 // example if the pixel scaling changes. This is also where Qt is started.
-void QPepperInstancePrivate::didChangeView(const View &view)
+void QPepperInstancePrivate::didChangeView(int32_t result, const View &view)
 {
+    Q_UNUSED(result);
     Rect geometry = view.GetRect();
     // Compute the effective devicePixelRatio. DeviceScale is related
     // to the hardware and is often an integer. CSSScale is the is the
@@ -166,17 +194,20 @@ void QPepperInstancePrivate::didChangeView(const View &view)
     // Start Qt on the first DidChangeView. This means we have a "screen" while
     // the application creates the root window etc, which makes life easier.
     if (!m_qtStarted) {
-        startQt();
         m_qtStarted = true;
+        startQt();
     }  else {
-        m_pepperIntegraton->resizeScreen(this->geometry().size(), m_currentDevicePixelRatio);
+        if (m_pepperIntegraton)
+            m_pepperIntegraton->resizeScreen(this->geometry().size(), m_currentDevicePixelRatio);
     }
 
-    m_pepperIntegraton->processEvents();
+    if (m_pepperIntegraton)
+        m_pepperIntegraton->processEvents();
 }
 
-void QPepperInstancePrivate::didChangeFocus(bool hasFucus)
+void QPepperInstancePrivate::didChangeFocus(int32_t result, bool hasFucus)
 {
+    Q_UNUSED(result);
     qCDebug(QT_PLATFORM_PEPPER_INSTANCE) << "DidChangeFocus" << hasFucus;
 
     QWindow *fucusWindow = (hasFucus &&  m_pepperIntegraton && m_pepperIntegraton->m_topLevelWindow)
@@ -184,24 +215,31 @@ void QPepperInstancePrivate::didChangeFocus(bool hasFucus)
     QWindowSystemInterface::handleWindowActivated(fucusWindow, Qt::ActiveWindowFocusReason);
 }
 
-bool QPepperInstancePrivate::handleInputEvent(const pp::InputEvent& event)
+bool QPepperInstancePrivate::handleInputEvent(int32_t result, const pp::InputEvent& event)
 {
+    Q_UNUSED(result);
     // this one is spammy (mouse moves)
     // qCDebug(QT_PLATFORM_PEPPER_INSTANCE) << "HandleInputEvent";
+
+    if (!m_pepperIntegraton)
+        return false;
 
     bool ret = m_pepperIntegraton->pepperEventTranslator()->processEvent(event);
     m_pepperIntegraton->processEvents();
     return ret;
 }
 
-bool QPepperInstancePrivate::handleDocumentLoad(const URLLoader& url_loader)
+bool QPepperInstancePrivate::handleDocumentLoad(int32_t result, const URLLoader& url_loader)
 {
+    Q_UNUSED(result);
     Q_UNUSED(url_loader);
     return false;
 }
 
-void QPepperInstancePrivate::handleMessage(const Var& var_message)
+void QPepperInstancePrivate::handleMessage(int32_t result, const Var& var_message)
 {
+    Q_UNUSED(result);
+
     // Expect messages formatted like "tag:message". Dispatch the
     // message to the handler registered for "tag".
     QByteArray q_message = toQByteArray(var_message);
@@ -252,10 +290,7 @@ qreal QPepperInstancePrivate::cssScale()
 // to the Pepper event loop.
 void QPepperInstancePrivate::scheduleWindowSystemEventsFlush()
 {
-    QPepperModulePrivate::core()->
-        CallOnMainThread(0,
-                         m_callbackFactory.NewCallback(&QPepperInstancePrivate::windowSystemEventsFlushCallback),
-                         0);
+    m_qtMessageLoop.PostWork(m_callbackFactory.NewCallback(&QPepperInstancePrivate::windowSystemEventsFlushCallback));
 }
 
 void QPepperInstancePrivate::windowSystemEventsFlushCallback(int32_t)
@@ -280,16 +315,34 @@ void QPepperInstancePrivate::runJavascript(const QByteArray &script)
     postMessage("qtEval:" + script);
 }
 
+// Start Qt. Handle the different Qt startup patterns:
+// - Q_GUI_MAIN
+// - Q_GUI_BLOCKING_MAIN
+// - QPepperInstance subclass
+//
 void QPepperInstancePrivate::startQt()
 {
-    qCDebug(QT_PLATFORM_PEPPER_INSTANCE) << "startQt";
+#ifdef Q_OS_NACL_NEWLIB
+    // Make sure the fonts resource is included for static builds.
+    Q_INIT_RESOURCE(naclfonts);
+#endif
 
-    // Create Qt applictaion object and platform plugin (the QPepperIntegration instance).
-    extern void qGuiStartup();
+    // There's a "blocking main" registered, call it. The function
+    // will then create the QGuiApplicaiton object, run the application
+    // and return at app exit.
+    if (qGuiHaveBlockingMain()) {
+         qGuiCallBlockingMain();
+         return;
+    }
+
+    // Call qGuiStartup which will create the QGuiApplicaiton object and
+    // the platform plugin.
     qGuiStartup();
 
-
-    qCDebug(QT_PLATFORM_PEPPER_INSTANCE) << "qGuiAppInit";
+    // Call application init code. The default QPepperInstance
+    // implementation calls the app init function registered
+    // with QT_GUI_MAIN. QPepperInstance sublcasses may override
+    // this with custom app initialization code.
     q->applicationInit();
 }
 

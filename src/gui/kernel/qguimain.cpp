@@ -73,23 +73,26 @@ void Q_GUI_EXPORT qGuiRegisterAppFunctions(QAppInitFunction appInitFunction, QAp
 void Q_GUI_EXPORT qGuiRegisterAppBlockingFunction(QAppBlockingFunction appBlockingFunction)
 {
     qCDebug(QT_GUI_MAIN) << "qGuiRegisterAppBlockingFunction" << appBlockingFunction;
-    g_appBlock = 0;
+    g_appBlock = appBlockingFunction;
 }
 
 int g_argc = 0;
 char *g_argv = 0;
 
+bool qGuiHaveBlockingMain()
+{
+    return g_appBlock;
+}
+
+int qGuiCallBlockingMain()
+{
+    return g_appBlock(g_argc, &g_argv);
+}
+
 void qGuiStartup()
 {
     qCDebug(QT_GUI_MAIN) << "qGuiStartup";
-
-#ifdef Q_OS_NACL_NEWLIB
-    // Make sure the fonts resource is included for static builds.
-    Q_INIT_RESOURCE(naclfonts);
-#endif
-    // TODO: handle g_appBlock case
-    if (!g_appBlock)
-        g_guiApplcation = new QGuiApplication(g_argc, &g_argv);
+    g_guiApplcation = new QGuiApplication(g_argc, &g_argv);
 }
 
 void qGuiAppInit()
