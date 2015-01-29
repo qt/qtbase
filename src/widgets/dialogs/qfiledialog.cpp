@@ -586,10 +586,6 @@ void QFileDialogPrivate::helperPrepareShow(QPlatformDialogHelper *)
     options->setHistory(q->history());
     if (usingWidgets())
         options->setSidebarUrls(qFileDialogUi->sidebar->urls());
-    const QDir directory = q->directory();
-    options->setInitialDirectory(directory.exists() ?
-                                 QUrl::fromLocalFile(directory.absolutePath()) :
-                                 QUrl());
     if (options->initiallySelectedNameFilter().isEmpty())
         options->setInitiallySelectedNameFilter(q->selectedNameFilter());
     if (options->initiallySelectedFiles().isEmpty())
