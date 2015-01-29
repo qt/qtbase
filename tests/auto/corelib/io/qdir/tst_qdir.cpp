@@ -2057,6 +2057,8 @@ void tst_QDir::equalityOperator_data()
     QString pathinroot("c:/windows/..");
 #elif defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_NO_SDK)
     QString pathinroot("/system/..");
+#elif defined(Q_OS_HAIKU)
+    QString pathinroot("/boot/..");
 #else
     QString pathinroot("/usr/..");
 #endif
