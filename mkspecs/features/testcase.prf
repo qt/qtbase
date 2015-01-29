@@ -21,9 +21,6 @@ debug_and_release:debug_and_release_target {
     TEST_TARGET_DIR = $$relative_path($$absolute_path($$DESTDIR, $$OUT_PWD), $$absolute_path($$TESTRUN_CWD, $$OUT_PWD))
 }
 
-!isEmpty(TESTRUN_CWD):!contains(TESTRUN_CWD,^\\./?): \
-    check.commands = cd $$shell_path($$TESTRUN_CWD) &&
-
 # Allow for a custom test runner script
 check.commands += $(TESTRUNNER)
 
@@ -45,6 +42,10 @@ check.commands += $(TESTARGS)
 
 # Add environment for non-installed builds
 qtAddTargetEnv(check.commands, QT)
+
+# This must happen after adding the environment.
+!isEmpty(TESTRUN_CWD):!contains(TESTRUN_CWD, ^\\./?): \
+    check.commands = cd $$shell_path($$TESTRUN_CWD) && $$check.commands
 
 # If the test is marked as insignificant, discard the exit code
 insignificant_test:check.commands = -$${check.commands}
