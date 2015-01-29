@@ -45,6 +45,7 @@
 #include <private/qpaintengine_raster_p.h>
 #include <private/qpainter_p.h>
 #include <private/qdrawhelper_x86_p.h>
+#include <private/qdrawingprimitive_sse2_p.h>
 #include <private/qdrawhelper_neon_p.h>
 #if defined(QT_COMPILER_SUPPORTS_MIPS_DSP) || defined(QT_COMPILER_SUPPORTS_MIPS_DSPR2)
 #include <private/qdrawhelper_mips_dsp_p.h>
@@ -572,6 +573,18 @@ static const uint *QT_FASTCALL convertARGB32FromARGB32PM(uint *buffer, const uin
     return buffer;
 }
 
+#if QT_COMPILER_SUPPORTS_HERE(SSE4_1)
+QT_FUNCTION_TARGET(SSE4_1)
+static const uint *QT_FASTCALL convertARGB32FromARGB32PM_sse4(uint *buffer, const uint *src, int count,
+                                                              const QPixelLayout *, const QRgb *)
+{
+    for (int i = 0; i < count; ++i)
+        buffer[i] = qUnpremultiply_sse4(src[i]);
+    return buffer;
+}
+#endif
+
+
 static const uint *QT_FASTCALL convertRGBA8888PMFromARGB32PM(uint *buffer, const uint *src, int count,
                                                              const QPixelLayout *, const QRgb *)
 {
@@ -588,6 +601,17 @@ static const uint *QT_FASTCALL convertRGBA8888FromARGB32PM(uint *buffer, const u
     return buffer;
 }
 
+#if QT_COMPILER_SUPPORTS_HERE(SSE4_1)
+QT_FUNCTION_TARGET(SSE4_1)
+static const uint *QT_FASTCALL convertRGBA8888FromARGB32PM_sse4(uint *buffer, const uint *src, int count,
+                                                              const QPixelLayout *, const QRgb *)
+{
+    for (int i = 0; i < count; ++i)
+        buffer[i] = ARGB2RGBA(qUnpremultiply_sse4(src[i]));
+    return buffer;
+}
+#endif
+
 static const uint *QT_FASTCALL convertRGBXFromRGB32(uint *buffer, const uint *src, int count,
                                                     const QPixelLayout *, const QRgb *)
 {
@@ -603,6 +627,17 @@ static const uint *QT_FASTCALL convertRGBXFromARGB32PM(uint *buffer, const uint 
         buffer[i] = ARGB2RGBA(0xff000000 | qUnpremultiply(src[i]));
     return buffer;
 }
+
+#if QT_COMPILER_SUPPORTS_HERE(SSE4_1)
+QT_FUNCTION_TARGET(SSE4_1)
+static const uint *QT_FASTCALL convertRGBXFromARGB32PM_sse4(uint *buffer, const uint *src, int count,
+                                                            const QPixelLayout *, const QRgb *)
+{
+    for (int i = 0; i < count; ++i)
+        buffer[i] = ARGB2RGBA(0xff000000 | qUnpremultiply_sse4(src[i]));
+    return buffer;
+}
+#endif
 
 template<QtPixelOrder PixelOrder>
 static const uint *QT_FASTCALL convertA2RGB30PMToARGB32PM(uint *buffer, const uint *src, int count,
@@ -6879,10 +6914,15 @@ void qInitDrawhelperAsm()
     }
 #endif // SSSE3
 
-#if QT_COMPILER_SUPPORTS_HERE(SSE4_1) && !defined(__SSE4_1__)
+#if QT_COMPILER_SUPPORTS_HERE(SSE4_1)
     if (qCpuHasFeature(SSE4_1)) {
+#if !defined(__SSE4_1__)
         qPixelLayouts[QImage::Format_ARGB32].convertToARGB32PM = convertARGB32ToARGB32PM_sse4;
         qPixelLayouts[QImage::Format_RGBA8888].convertToARGB32PM = convertRGBA8888ToARGB32PM_sse4;
+#endif
+        qPixelLayouts[QImage::Format_ARGB32].convertFromARGB32PM = convertARGB32FromARGB32PM_sse4;
+        qPixelLayouts[QImage::Format_RGBA8888].convertFromARGB32PM = convertRGBA8888FromARGB32PM_sse4;
+        qPixelLayouts[QImage::Format_RGBX8888].convertFromARGB32PM = convertRGBXFromARGB32PM_sse4;
     }
 #endif
 

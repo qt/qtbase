@@ -38,6 +38,7 @@
 
 #include <qcolor.h>
 #include <qdebug.h>
+#include <private/qdrawingprimitive_sse2_p.h>
 
 class tst_QColor : public QObject
 {
@@ -101,6 +102,9 @@ private slots:
     void specConstructor();
 
     void achromaticHslHue();
+
+    void premultiply();
+    void unpremultiply_sse4();
 
 #ifdef Q_DEAD_CODE_FROM_QT4_X11
     void setallowX11ColorNames();
@@ -1431,6 +1435,34 @@ void tst_QColor::setallowX11ColorNames()
     }
 }
 #endif
+
+void tst_QColor::premultiply()
+{
+    // Tests that qPremultiply(qUnpremultiply(x)) returns x.
+    for (uint a = 0; a < 256; a++) {
+        for (uint c = 0; c <= a; c++) {
+            QRgb p = qRgba(c, a-c, c, a);
+            QCOMPARE(p, qPremultiply(qUnpremultiply(p)));
+        }
+    }
+}
+
+void tst_QColor::unpremultiply_sse4()
+{
+    // Tests that qUnpremultiply_sse4 returns the same as qUnpremultiply.
+#if QT_COMPILER_SUPPORTS_HERE(SSE4_1)
+    if (qCpuHasFeature(SSE4_1)) {
+        for (uint a = 0; a < 256; a++) {
+            for (uint c = 0; c <= a; c++) {
+                QRgb p = qRgba(c, a-c, c, a);
+                QCOMPARE(qUnpremultiply(p), qUnpremultiply_sse4(p));
+            }
+        }
+        return;
+    }
+#endif
+    QSKIP("SSE4 not supported on this CPU.");
+}
 
 QTEST_MAIN(tst_QColor)
 #include "tst_qcolor.moc"
