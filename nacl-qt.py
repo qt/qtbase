@@ -10,7 +10,7 @@ import itertools
 hostPlatform = 'mac'
 possibleTargets = ['x86_glibc', 'x86_newlib', 'arm_newlib', 'pnacl'] 
 possibleVariants = ['debug', 'release', 'debug-release']
-possibleActions = ['configure', 'build']
+possibleActions = ['configure', 'build', 'build-manual-tests', 'build-auto-tests']
 
 # set up and parse command line configuration values
 parser = argparse.ArgumentParser()
@@ -73,8 +73,8 @@ for platform, variant, action in itertools.product(platforms, variants, actions)
         if not dryrun:
             Popen(makeCommand, shell=True, cwd=buildwd)
 
-    elif action == 'build-tests':
-        # build tests in tests/manual/nacl/
+    elif action == 'build-manual-tests':
+        # build nacl manual tests in tests/manual/nacl/
         qmake = path.abspath(path.join(buildwd, 'qtbase', 'bin', 'qmake'))
         naclTests = 'tests/manual/nacl/'
         testswd = path.join(buildwd, 'qtbase', naclTests)
@@ -82,6 +82,21 @@ for platform, variant, action in itertools.product(platforms, variants, actions)
             os.makedirs(testswd)
         profile = path.join(qtbasedir, naclTests, 'nacl.pro')
         cmd = qmake + ' -r ' + profile + ' && make'
+        print 'qmake: ' + qmake
+        print 'build tests working directory: ' + testswd
+        print 'cmd: ' + cmd
+        if not dryrun:
+            Popen(cmd, shell=True, cwd=testswd)
+
+    elif action == 'build-auto-tests':
+        # build Qt auto tests in tests/auto
+        qmake = path.abspath(path.join(buildwd, 'qtbase', 'bin', 'qmake'))
+        qtTests = 'tests/auto'
+        testswd = path.join(buildwd, 'qtbase', qtTests)
+        if not os.path.exists(testswd):
+            os.makedirs(testswd)
+        profile = path.join(qtbasedir, qtTests, 'auto.pro')
+        cmd = qmake + ' -r ' + profile
         print 'qmake: ' + qmake
         print 'build tests working directory: ' + testswd
         print 'cmd: ' + cmd
