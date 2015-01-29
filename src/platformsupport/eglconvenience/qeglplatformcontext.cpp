@@ -278,7 +278,13 @@ void QEGLPlatformContext::updateFormatFromGL()
     EGLSurface prevSurfaceDraw = eglGetCurrentSurface(EGL_DRAW);
     EGLSurface prevSurfaceRead = eglGetCurrentSurface(EGL_READ);
 
-    EGLSurface tempSurface = createTemporaryOffscreenSurface();
+    // Rely on the surfaceless extension, if available. This is beneficial since we can
+    // avoid creating an extra pbuffer surface which is apparently troublesome with some
+    // drivers (Mesa) when certain attributes are present (multisampling).
+    EGLSurface tempSurface = EGL_NO_SURFACE;
+    if (!q_hasEglExtension(m_eglDisplay, "EGL_KHR_surfaceless_context"))
+        tempSurface = createTemporaryOffscreenSurface();
+
     if (eglMakeCurrent(m_eglDisplay, tempSurface, tempSurface, m_eglContext)) {
         if (m_format.renderableType() == QSurfaceFormat::OpenGL
             || m_format.renderableType() == QSurfaceFormat::OpenGLES) {
@@ -316,8 +322,11 @@ void QEGLPlatformContext::updateFormatFromGL()
             }
         }
         eglMakeCurrent(prevDisplay, prevSurfaceDraw, prevSurfaceRead, prevContext);
+    } else {
+        qWarning("QEGLPlatformContext: Failed to make temporary surface current, format not updated");
     }
-    destroyTemporaryOffscreenSurface(tempSurface);
+    if (tempSurface != EGL_NO_SURFACE)
+        destroyTemporaryOffscreenSurface(tempSurface);
 #endif // QT_NO_OPENGL
 }
 
@@ -354,7 +363,8 @@ bool QEGLPlatformContext::makeCurrent(QPlatformSurface *surface)
             : surface->format().swapInterval();
         if (requestedSwapInterval >= 0 && m_swapInterval != requestedSwapInterval) {
             m_swapInterval = requestedSwapInterval;
-            eglSwapInterval(eglDisplay(), m_swapInterval);
+            if (eglSurface != EGL_NO_SURFACE) // skip if using surfaceless context
+                eglSwapInterval(eglDisplay(), m_swapInterval);
         }
     } else {
         qWarning("QEGLPlatformContext: eglMakeCurrent failed: %x", eglGetError());
@@ -383,9 +393,11 @@ void QEGLPlatformContext::swapBuffers(QPlatformSurface *surface)
 {
     eglBindAPI(m_api);
     EGLSurface eglSurface = eglSurfaceForPlatformSurface(surface);
-    bool ok = eglSwapBuffers(m_eglDisplay, eglSurface);
-    if (!ok)
-        qWarning("QEGLPlatformContext: eglSwapBuffers failed: %x", eglGetError());
+    if (eglSurface != EGL_NO_SURFACE) { // skip if using surfaceless context
+        bool ok = eglSwapBuffers(m_eglDisplay, eglSurface);
+        if (!ok)
+            qWarning("QEGLPlatformContext: eglSwapBuffers failed: %x", eglGetError());
+    }
 }
 
 void (*QEGLPlatformContext::getProcAddress(const QByteArray &procName)) ()

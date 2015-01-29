@@ -51,7 +51,7 @@ QT_BEGIN_NAMESPACE
     QOffscreenSurface is intended to be used with QOpenGLContext to allow rendering with OpenGL in
     an arbitrary thread without the need to create a QWindow.
 
-    Even though the surface is renderable, the surface's pixels are not accessible.
+    Even though the surface is typically renderable, the surface's pixels are not accessible.
     QOffscreenSurface should only be used to create OpenGL resources such as textures
     or framebuffer objects.
 
@@ -77,6 +77,11 @@ QT_BEGIN_NAMESPACE
     created}. Passing the format returned from QWindow::requestedFormat() to setFormat()
     may result in an incompatible offscreen surface since the underlying windowing system
     interface may offer a different set of configurations for window and pbuffer surfaces.
+
+    \note Some platforms may utilize a surfaceless context extension (for example
+    EGL_KHR_surfaceless_context) when available. In this case there will be no underlying
+    native surface. For the use cases of QOffscreenSurface (rendering to FBOs, texture
+    upload) this is not a problem.
 */
 class Q_GUI_EXPORT QOffscreenSurfacePrivate : public QObjectPrivate
 {

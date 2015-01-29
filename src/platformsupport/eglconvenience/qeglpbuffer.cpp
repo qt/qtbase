@@ -55,6 +55,9 @@ QEGLPbuffer::QEGLPbuffer(EGLDisplay display, const QSurfaceFormat &format, QOffs
     , m_display(display)
     , m_pbuffer(EGL_NO_SURFACE)
 {
+    if (q_hasEglExtension(display, "EGL_KHR_surfaceless_context"))
+        return;
+
     EGLConfig config = q_configFromGLFormat(m_display, m_format, false, EGL_PBUFFER_BIT);
 
     if (config) {
@@ -74,7 +77,8 @@ QEGLPbuffer::QEGLPbuffer(EGLDisplay display, const QSurfaceFormat &format, QOffs
 
 QEGLPbuffer::~QEGLPbuffer()
 {
-    eglDestroySurface(m_display, m_pbuffer);
+    if (m_pbuffer != EGL_NO_SURFACE)
+        eglDestroySurface(m_display, m_pbuffer);
 }
 
 QT_END_NAMESPACE
