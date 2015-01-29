@@ -224,7 +224,7 @@ QStringList HelpProjectWriter::keywordDetails(const Node *node) const
         details << node->name();
         details << node->name();
     }
-    details << gen_->fullDocumentLocation(node,Generator::useOutputSubdirs());
+    details << gen_->fullDocumentLocation(node, false);
     return details;
 }
 
@@ -293,12 +293,12 @@ bool HelpProjectWriter::generateSection(HelpProject &project,
                     QStringList details;
                     details << keyword->string()
                             << keyword->string()
-                            << gen_->fullDocumentLocation(node,Generator::useOutputSubdirs()) +
+                            << gen_->fullDocumentLocation(node, false) +
                         QLatin1Char('#') + Doc::canonicalTitle(keyword->string());
                     project.keywords.append(details);
                 }
                 else
-                    node->doc().location().warning(tr("Bad keyword in %1").arg(gen_->fullDocumentLocation(node,Generator::useOutputSubdirs())));
+                    node->doc().location().warning(tr("Bad keyword in %1").arg(gen_->fullDocumentLocation(node, false)));
             }
         }
         project.keywords.append(keywordDetails(node));
@@ -325,7 +325,7 @@ bool HelpProjectWriter::generateSection(HelpProject &project,
                 details << item.name(); // "name"
                 details << item.name(); // "id"
             }
-            details << gen_->fullDocumentLocation(node,Generator::useOutputSubdirs());
+            details << gen_->fullDocumentLocation(node, false);
             project.keywords.append(details);
         }
     }
@@ -343,13 +343,13 @@ bool HelpProjectWriter::generateSection(HelpProject &project,
                             QStringList details;
                             details << keyword->string()
                                     << keyword->string()
-                                    << gen_->fullDocumentLocation(node, Generator::useOutputSubdirs()) +
+                                    << gen_->fullDocumentLocation(node, false) +
                                        QLatin1Char('#') + Doc::canonicalTitle(keyword->string());
                             project.keywords.append(details);
                         }
                         else
                             cn->doc().location().warning(
-                                      tr("Bad keyword in %1").arg(gen_->fullDocumentLocation(node,Generator::useOutputSubdirs()))
+                                      tr("Bad keyword in %1").arg(gen_->fullDocumentLocation(node, false))
                                      );
                     }
                 }
@@ -397,7 +397,7 @@ bool HelpProjectWriter::generateSection(HelpProject &project,
         // Use the location of any associated enum node in preference
         // to that of the typedef.
         if (enumNode)
-            typedefDetails[2] = gen_->fullDocumentLocation(enumNode,Generator::useOutputSubdirs());
+            typedefDetails[2] = gen_->fullDocumentLocation(enumNode, false);
 
         project.keywords.append(typedefDetails);
     }
@@ -424,12 +424,12 @@ bool HelpProjectWriter::generateSection(HelpProject &project,
                             QStringList details;
                             details << keyword->string()
                                     << keyword->string()
-                                    << gen_->fullDocumentLocation(node,Generator::useOutputSubdirs()) +
+                                    << gen_->fullDocumentLocation(node, false) +
                                        QLatin1Char('#') + Doc::canonicalTitle(keyword->string());
                             project.keywords.append(details);
                         } else
                             docNode->doc().location().warning(
-                                        tr("Bad keyword in %1").arg(gen_->fullDocumentLocation(node,Generator::useOutputSubdirs()))
+                                        tr("Bad keyword in %1").arg(gen_->fullDocumentLocation(node, false))
                                         );
                     }
                 }
@@ -554,7 +554,7 @@ void HelpProjectWriter::writeSection(QXmlStreamWriter &writer, const QString &pa
 void HelpProjectWriter::addMembers(HelpProject &project, QXmlStreamWriter &writer,
                                           const Node *node)
 {
-    QString href = gen_->fullDocumentLocation(node,Generator::useOutputSubdirs());
+    QString href = gen_->fullDocumentLocation(node, false);
     href = href.left(href.size()-5);
     if (href.isEmpty())
         return;
@@ -583,7 +583,7 @@ void HelpProjectWriter::addMembers(HelpProject &project, QXmlStreamWriter &write
 void HelpProjectWriter::writeNode(HelpProject &project, QXmlStreamWriter &writer,
                                   const Node *node)
 {
-    QString href = gen_->fullDocumentLocation(node,Generator::useOutputSubdirs());
+    QString href = gen_->fullDocumentLocation(node, false);
     QString objName = node->name();
 
     switch (node->type()) {
@@ -700,7 +700,7 @@ void HelpProjectWriter::generateProject(HelpProject &project)
         node = qdb_->findNodeByNameAndType(QStringList("index.html"), Node::Document);
     QString indexPath;
     if (node)
-        indexPath = gen_->fullDocumentLocation(node,Generator::useOutputSubdirs());
+        indexPath = gen_->fullDocumentLocation(node, false);
     else
         indexPath = "index.html";
     writer.writeAttribute("ref", indexPath);
@@ -742,8 +742,7 @@ void HelpProjectWriter::generateProject(HelpProject &project)
 
                             const Node *page = qdb_->findNodeForTarget(atom->string(), 0);
                             writer.writeStartElement("section");
-                            QString indexPath = gen_->fullDocumentLocation(page,
-                                                                           Generator::useOutputSubdirs());
+                            QString indexPath = gen_->fullDocumentLocation(page, false);
                             writer.writeAttribute("ref", indexPath);
                             writer.writeAttribute("title", atom->string());
 
@@ -768,7 +767,7 @@ void HelpProjectWriter::generateProject(HelpProject &project)
             if (!name.isEmpty()) {
                 writer.writeStartElement("section");
                 QString indexPath = gen_->fullDocumentLocation(qdb_->findNodeForTarget(subproject.indexTitle, 0),
-                                                               Generator::useOutputSubdirs());
+                                                               false);
                 writer.writeAttribute("ref", indexPath);
                 writer.writeAttribute("title", subproject.title);
             }
