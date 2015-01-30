@@ -1930,6 +1930,19 @@
 */
 
 /*!
+    \enum Qt::TabFocusBehavior
+    \since 5.5
+
+    This enum type provides different focus behaviors for tab navigation.
+
+    \value NoTabFocus  iterate nothing.
+    \value TabFocusTextControls  iterate text controls and widgets.
+    \value TabFocusListControls  iterate list controls and widgets.
+    \value TabFocusAllControls  iterate all controls and widgets.
+
+*/
+
+/*!
     \enum Qt::ShortcutContext
 
     For a QEvent::Shortcut event to occur, the shortcut's key sequence

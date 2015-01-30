@@ -173,6 +173,13 @@ public:
         WheelFocus = StrongFocus | 0x4
     };
 
+    enum TabFocusBehavior {
+        NoTabFocus           = 0x00,
+        TabFocusTextControls = 0x01,
+        TabFocusListControls = 0x02,
+        TabFocusAllControls  = 0xff
+    };
+
     enum SortOrder {
         AscendingOrder,
         DescendingOrder
@@ -1686,6 +1693,7 @@ public:
     QT_Q_ENUM(TimerType)
     QT_Q_ENUM(ScrollPhase)
     QT_Q_ENUM(MouseEventSource)
+    QT_Q_ENUM(TabFocusBehavior)
 #endif // Q_DOC
 
 }

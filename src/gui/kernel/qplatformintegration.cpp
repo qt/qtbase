@@ -392,6 +392,8 @@ QVariant QPlatformIntegration::styleHint(StyleHint hint) const
         return QVariant(false);
     case MousePressAndHoldInterval:
         return QPlatformTheme::defaultThemeHint(QPlatformTheme::MousePressAndHoldInterval);
+    case TabFocusBehavior:
+        return QPlatformTheme::defaultThemeHint(QPlatformTheme::TabFocusBehavior);
     }
 
     return 0;

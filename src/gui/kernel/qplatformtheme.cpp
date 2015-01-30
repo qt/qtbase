@@ -132,8 +132,9 @@ QT_BEGIN_NAMESPACE
     \value SpellCheckUnderlineStyle (int) A QTextCharFormat::UnderlineStyle specifying
                                     the underline style used misspelled words when spell checking.
 
-    \value TabAllWidgets (bool) Whether tab navigation should go through all the widgets or components,
-                         or just through text boxes and list views. This is mostly a Mac feature.
+    \value TabFocusBehavior (int) A Qt::TabFocusBehavior specifying
+                         the behavior of focus change when tab key was pressed.
+                         This enum value was added in Qt 5.5.
 
     \value DialogSnapToDefaultButton (bool) Whether the mouse should snap to the default button when a dialog
                                      becomes visible.
@@ -491,8 +492,8 @@ QVariant QPlatformTheme::defaultThemeHint(ThemeHint hint)
         return QVariant(int(0));
     case SpellCheckUnderlineStyle:
         return QVariant(int(QTextCharFormat::SpellCheckUnderline));
-    case TabAllWidgets:
-        return QVariant(true);
+    case TabFocusBehavior:
+        return QVariant(int(Qt::TabFocusAllControls));
     case IconPixmapSizes:
         return QVariant::fromValue(QList<int>());
     case DialogSnapToDefaultButton:

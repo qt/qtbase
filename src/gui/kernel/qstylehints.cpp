@@ -358,4 +358,18 @@ bool QStyleHints::setFocusOnTouchRelease() const
     return hint(QPlatformIntegration::SetFocusOnTouchRelease).toBool();
 }
 
+/*!
+    \property QStyleHints::tabFocusBehavior
+    \since 5.5
+    \brief The focus behavior on press of the tab key.
+
+    \note Do not bind this value in QML because the change notifier
+    signal is not implemented yet.
+*/
+
+Qt::TabFocusBehavior QStyleHints::tabFocusBehavior() const
+{
+    return Qt::TabFocusBehavior(themeableHint(QPlatformTheme::TabFocusBehavior, QPlatformIntegration::TabFocusBehavior).toInt());
+}
+
 QT_END_NAMESPACE

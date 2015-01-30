@@ -145,7 +145,8 @@ public:
         PasswordMaskCharacter,
         SetFocusOnTouchRelease,
         ShowIsMaximized,
-        MousePressAndHoldInterval
+        MousePressAndHoldInterval,
+        TabFocusBehavior
     };
 
     virtual QVariant styleHint(StyleHint hint) const;

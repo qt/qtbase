@@ -60,6 +60,7 @@ class Q_GUI_EXPORT QStyleHints : public QObject
     Q_PROPERTY(int startDragTime READ startDragTime NOTIFY startDragTimeChanged FINAL)
     Q_PROPERTY(int startDragVelocity READ startDragVelocity STORED false CONSTANT FINAL)
     Q_PROPERTY(bool useRtlExtensions READ useRtlExtensions STORED false CONSTANT FINAL)
+    Q_PROPERTY(Qt::TabFocusBehavior tabFocusBehavior READ tabFocusBehavior STORED false CONSTANT FINAL)
 
 public:
     void setMouseDoubleClickInterval(int mouseDoubleClickInterval);
@@ -81,6 +82,7 @@ public:
     qreal fontSmoothingGamma() const;
     bool useRtlExtensions() const;
     bool setFocusOnTouchRelease() const;
+    Qt::TabFocusBehavior tabFocusBehavior() const;
 
 Q_SIGNALS:
     void cursorFlashTimeChanged(int cursorFlashTime);
