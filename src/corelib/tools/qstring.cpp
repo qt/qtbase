@@ -7600,86 +7600,155 @@ static int getEscape(const QChar *uc, int *pos, int len, int maxNumber = 999)
     return -1;
 }
 
+/*
+    Algorithm for multiArg:
+
+    1. Parse the string as a sequence of verbatim text and placeholders (%L?\d{,3}).
+       The L is parsed and accepted for compatibility with non-multi-arg, but since
+       multiArg only accepts strings as replacements, the localization request can
+       be safely ignored.
+    2. The result of step (1) is a list of (string-ref,int)-tuples. The string-ref
+       either points at text to be copied verbatim (in which case the int is -1),
+       or, initially, at the textual representation of the placeholder. In that case,
+       the int contains the numerical number as parsed from the placeholder.
+    3. Next, collect all the non-negative ints found, sort them in ascending order and
+       remove duplicates.
+       3a. If the result has more entires than multiArg() was given replacement strings,
+           we have found placeholders we can't satisfy with replacement strings. That is
+           fine (there could be another .arg() call coming after this one), so just
+           truncate the result to the number of actual multiArg() replacement strings.
+       3b. If the result has less entries than multiArg() was given replacement strings,
+           the string is missing placeholders. This is an error that the user should be
+           warned about.
+    4. The result of step (3) is a mapping from the index of any replacement string to
+       placeholder number. This is the wrong way around, but since placeholder
+       numbers could get as large as 999, while we typically don't have more than 9
+       replacement strings, we trade 4K of sparsely-used memory for doing a reverse lookup
+       each time we need to map a placeholder number to a replacement string index
+       (that's a linear search; but still *much* faster than using an associative container).
+    5. Next, for each of the tuples found in step (1), do the following:
+       5a. If the int is negative, do nothing.
+       5b. Otherwise, if the int is found in the result of step (3) at index I, replace
+           the string-ref with a string-ref for the (complete) I'th replacement string.
+       5c. Otherwise, do nothing.
+    6. Concatenate all string refs into a single result string.
+*/
+
 namespace {
-class ArgMapper {
-    QVarLengthArray<int, 16> argPosToNumberMap; // maps from argument position to number
-public:
-    void found(int n) { argPosToNumberMap.push_back(n); }
+struct Part
+{
+    Part() : stringRef(), number(0) {}
+    Part(const QString &s, int pos, int len, int num = -1) Q_DECL_NOTHROW
+        : stringRef(&s, pos, len), number(num) {}
 
-    struct AssignmentResult {
-        int numArgs;
-        int lastNumber;
-    };
-
-    AssignmentResult assignArgumentNumberToEachOfTheNs(int numArgs)
-    {
-        std::sort(argPosToNumberMap.begin(), argPosToNumberMap.end());
-        argPosToNumberMap.erase(std::unique(argPosToNumberMap.begin(), argPosToNumberMap.end()),
-                                argPosToNumberMap.end());
-
-        if (argPosToNumberMap.size() > numArgs)
-            argPosToNumberMap.resize(numArgs);
-
-        int lastNumber = argPosToNumberMap.empty() ? -1 : argPosToNumberMap.back();
-        int arg = argPosToNumberMap.size();
-
-        const AssignmentResult result = {arg, lastNumber};
-        return result;
-    }
-
-    int numberToArgsIndex(int number) const
-    {
-        if (number != -1) {
-            const int * const it = std::find(argPosToNumberMap.begin(), argPosToNumberMap.end(), number);
-            return it == argPosToNumberMap.end() ? -1 : it - argPosToNumberMap.begin();
-        } else {
-            return -1;
-        }
-    }
+    QStringRef stringRef;
+    int number;
 };
 } // unnamed namespace
 
-QString QString::multiArg(int numArgs, const QString **args) const
+template <>
+class QTypeInfo<Part> : public QTypeInfoMerger<Part, QStringRef, int> {}; // Q_DECLARE_METATYPE
+
+
+namespace {
+
+enum { ExpectedParts = 32 };
+
+typedef QVarLengthArray<Part, ExpectedParts> ParseResult;
+typedef QVarLengthArray<int, ExpectedParts/2> ArgIndexToPlaceholderMap;
+
+static ParseResult parseMultiArgFormatString(const QString &s)
 {
-    QString result;
-    ArgMapper mapper;
-    const QChar *uc = (const QChar *) d->data();
-    const int len = d->size;
+    ParseResult result;
+
+    const QChar *uc = s.constData();
+    const int len = s.size();
     const int end = len - 1;
     int i = 0;
+    int last = 0;
 
-    // populate the arg-mapper with the %n's that actually occur in the string
     while (i < end) {
         if (uc[i] == QLatin1Char('%')) {
+            int percent = i;
             int number = getEscape(uc, &i, len);
             if (number != -1) {
-                mapper.found(number);
+                if (last != percent)
+                    result.push_back(Part(s, last, percent - last)); // literal text (incl. failed placeholders)
+                result.push_back(Part(s, percent, i - percent, number));  // parsed placeholder
+                last = i;
                 continue;
             }
         }
         ++i;
     }
 
-    const ArgMapper::AssignmentResult r = mapper.assignArgumentNumberToEachOfTheNs(numArgs);
+    if (last < len)
+        result.push_back(Part(s, last, len - last)); // trailing literal text
 
-    // sanity
-    if (numArgs > r.numArgs) {
-        qWarning("QString::arg: %d argument(s) missing in %s", numArgs - r.numArgs, toLocal8Bit().data());
-        numArgs = r.numArgs;
+    return result;
+}
+
+static ArgIndexToPlaceholderMap makeArgIndexToPlaceholderMap(const ParseResult &parts)
+{
+    ArgIndexToPlaceholderMap result;
+
+    for (ParseResult::const_iterator it = parts.begin(), end = parts.end(); it != end; ++it) {
+        if (it->number >= 0)
+            result.push_back(it->number);
     }
 
-    i = 0;
-    while (i < len) {
-        if (uc[i] == QLatin1Char('%') && i != end) {
-            int number = getEscape(uc, &i, len, r.lastNumber);
-            int arg = mapper.numberToArgsIndex(number);
-            if (number != -1 && arg != -1) {
-                result += *args[arg];
-                continue;
-            }
+    std::sort(result.begin(), result.end());
+    result.erase(std::unique(result.begin(), result.end()),
+                 result.end());
+
+    return result;
+}
+
+static int resolveStringRefsAndReturnTotalSize(ParseResult &parts, const ArgIndexToPlaceholderMap &argIndexToPlaceholderMap, const QString *args[])
+{
+    int totalSize = 0;
+    for (ParseResult::iterator pit = parts.begin(), end = parts.end(); pit != end; ++pit) {
+        if (pit->number != -1) {
+            const ArgIndexToPlaceholderMap::const_iterator ait
+                    = std::find(argIndexToPlaceholderMap.begin(), argIndexToPlaceholderMap.end(), pit->number);
+            if (ait != argIndexToPlaceholderMap.end())
+                pit->stringRef = QStringRef(args[ait - argIndexToPlaceholderMap.begin()]);
         }
-        result += uc[i++];
+        totalSize += pit->stringRef.size();
     }
+    return totalSize;
+}
+
+} // unnamed namespace
+
+QString QString::multiArg(int numArgs, const QString **args) const
+{
+    // Step 1-2 above
+    ParseResult parts = parseMultiArgFormatString(*this);
+
+    // 3-4
+    ArgIndexToPlaceholderMap argIndexToPlaceholderMap = makeArgIndexToPlaceholderMap(parts);
+
+    if (argIndexToPlaceholderMap.size() > numArgs) // 3a
+        argIndexToPlaceholderMap.resize(numArgs);
+    else if (argIndexToPlaceholderMap.size() < numArgs) // 3b
+        qWarning("QString::arg: %d argument(s) missing in %s",
+                 numArgs - argIndexToPlaceholderMap.size(), toLocal8Bit().data());
+
+    // 5
+    const int totalSize = resolveStringRefsAndReturnTotalSize(parts, argIndexToPlaceholderMap, args);
+
+    // 6:
+    QString result(totalSize, Qt::Uninitialized);
+    QChar *out = result.data();
+
+    for (ParseResult::const_iterator it = parts.begin(), end = parts.end(); it != end; ++it) {
+        if (const int sz = it->stringRef.size()) {
+            memcpy(out, it->stringRef.constData(), sz * sizeof(QChar));
+            out += sz;
+        }
+    }
+
     return result;
 }
 
