@@ -41,20 +41,21 @@ bool QPepperInstance::Init(uint32_t argc, const char* argn[], const char* argv[]
     }
 
     if (d->m_runQtOnThread) {
-       d->m_qtMessageLoop.PostWork(d->m_callbackFactory.NewCallback(&QPepperInstancePrivate::init, argc, vargn, vargv));
-       return true;
+        d->processCall(d->m_callbackFactory.NewCallback(
+                &QPepperInstancePrivate::init, argc, vargn, vargv));
     } else {
-        uint32_t unused;
-        return d->init(unused, argc, vargn, vargv);
+        uint32_t unused = 0;
+        d->init(unused, argc, vargn, vargv);
     }
 }
 
 void QPepperInstance::DidChangeView(const pp::View &view)
 {
     if (d->m_runQtOnThread) {
-        d->m_qtMessageLoop.PostWork(d->m_callbackFactory.NewCallback(&QPepperInstancePrivate::didChangeView, view));
+        d->processCall(d->m_callbackFactory.NewCallback(
+            &QPepperInstancePrivate::didChangeView, view));
     } else {
-        uint32_t unused;
+        uint32_t unused = 0;
         d->didChangeView(unused, view);
     }
 }
@@ -62,9 +63,10 @@ void QPepperInstance::DidChangeView(const pp::View &view)
 void QPepperInstance::DidChangeFocus(bool hasFucus)
 {
     if (d->m_runQtOnThread) {
-        d->m_qtMessageLoop.PostWork(d->m_callbackFactory.NewCallback(&QPepperInstancePrivate::didChangeFocus, hasFucus));
+        d->processCall(d->m_callbackFactory.NewCallback(
+            &QPepperInstancePrivate::didChangeFocus, hasFucus));
     } else {
-        uint32_t unused;
+        uint32_t unused = 0;
         d->didChangeFocus(unused, hasFucus);
     }
 }
@@ -72,10 +74,11 @@ void QPepperInstance::DidChangeFocus(bool hasFucus)
 bool QPepperInstance::HandleInputEvent(const pp::InputEvent& event)
 {
     if (d->m_runQtOnThread) {
-        d->m_qtMessageLoop.PostWork(d->m_callbackFactory.NewCallback(&QPepperInstancePrivate::handleInputEvent, event));
+        d->processCall(d->m_callbackFactory.NewCallback(
+            &QPepperInstancePrivate::handleInputEvent, event));
         return true; // FIXME: Get result from async call above.
     } else {
-        uint32_t unused;
+        uint32_t unused = 0;
         return d->handleInputEvent(unused, event);
     }
 }
@@ -83,9 +86,10 @@ bool QPepperInstance::HandleInputEvent(const pp::InputEvent& event)
 void QPepperInstance::HandleMessage(const pp::Var& message)
 {
     if (d->m_runQtOnThread) {
-        d->m_qtMessageLoop.PostWork(d->m_callbackFactory.NewCallback(&QPepperInstancePrivate::handleMessage, message));
+        d->processCall(d->m_callbackFactory.NewCallback(
+            &QPepperInstancePrivate::handleMessage, message));
     } else {
-        uint32_t unused;
+        uint32_t unused = 0;
         d->handleMessage(unused, message);
     }
 }

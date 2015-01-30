@@ -66,6 +66,7 @@ QPepperInstancePrivate::QPepperInstancePrivate(QPepperInstance *instance)
 
     m_qtStarted = false;
     m_runQtOnThread = false;
+    m_useQtMessageLoop = false;
 
 #ifdef QT_PEPPER_RUN_QT_ON_THREAD
     m_runQtOnThread = true;
@@ -74,12 +75,24 @@ QPepperInstancePrivate::QPepperInstancePrivate(QPepperInstance *instance)
         m_runQtOnThread = true;
 #endif
 
+#ifdef QT_PEPPER_USE_QT_MESSAGE_LOOP
+    m_useQtMessageLoop = true;
+#else
+    if (!qgetenv("QT_PEPPER_USE_QT_MESSAGE_LOOP").isEmpty())
+        m_useQtMessageLoop = true;
+#endif
+
     m_currentGeometry = Rect();
     m_callbackFactory.Initialize(this);
 
     if (m_runQtOnThread) {
-        m_qtThread.Start();
-        m_qtMessageLoop = m_qtThread.message_loop();
+        if (m_useQtMessageLoop) {
+            void *threadFunction(void *context);
+            pthread_create(&m_qtThread_pthread, NULL, threadFunction, this);
+        } else {
+            m_qtThread.Start();
+            m_qtMessageLoop = m_qtThread.message_loop();
+        }
     } else {
         m_qtMessageLoop = pp::MessageLoop::GetForMainThread();
     }
@@ -87,9 +100,13 @@ QPepperInstancePrivate::QPepperInstancePrivate(QPepperInstance *instance)
 
 QPepperInstancePrivate::~QPepperInstancePrivate()
 {
-    if (m_runQtOnThread) {
-        m_qtMessageLoop.PostQuit(true); // quit and detach from thread
-        m_qtThread.Join();
+    if (m_useQtMessageLoop) {
+        if (m_useQtMessageLoop) {
+            pthread_join(m_qtThread_pthread, NULL);
+        } else {
+            m_qtMessageLoop.PostQuit(true); // quit and detach from thread
+            m_qtThread.Join();
+        }
     }
 }
 
@@ -101,6 +118,43 @@ QPepperInstancePrivate *QPepperInstancePrivate::get()
 QPepperInstance *QPepperInstancePrivate::getInstance()
 {
     return g_pepperInstancePrivate->q;
+}
+
+void QPepperInstancePrivate::processCall(pp::CompletionCallback call)
+{
+    // Run call according to threading mode:
+    if (m_useQtMessageLoop)
+        m_qtMessageLoop_pthread.enqueue(call);
+    else
+        m_qtMessageLoop.PostWork(call);
+}
+
+void QPepperInstancePrivate::processMessageLoopMessage()
+{
+    pp::CompletionCallback message = m_qtMessageLoop_pthread.dequeue(); // waits for the next message
+    if (message.pp_completion_callback().user_data != 0) {
+        int resultNotUsed = 0;
+        message.Run(resultNotUsed);
+    }
+}
+
+void *threadFunction(void *context)
+{
+    reinterpret_cast<QPepperInstancePrivate *>(context)->qtMessageLoop();
+    return 0;
+}
+
+void QPepperInstancePrivate::qtMessageLoop()
+{
+    // Attempt PPAPI compatibility: We can attach a message loop,
+    // but not run it (we are running the loop below instead).
+    // According to the pp::MessageLoop documentation this will
+    // allow making blocking PPAPI calls on the Qt main thread
+    // (this thread).
+    m_qtMessageLoop.AttachToCurrentThread();
+
+    while (!m_qtMessageLoop_pthread.testQuit())
+        processMessageLoopMessage();
 }
 
 #ifdef Q_OS_NACL_NEWLIB

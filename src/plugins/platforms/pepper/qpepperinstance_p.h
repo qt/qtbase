@@ -25,6 +25,9 @@
 
 #include <qpa/qplatformtheme.h>
 #include <QtCore/qhash.h>
+#include <QtCore/qmutex.h>
+#include <QtCore/qwaitcondition.h>
+#include <QtCore/qqueue.h>
 
 #include <ppapi/cpp/instance.h>
 #include "ppapi/cpp/var.h"
@@ -37,7 +40,58 @@
 #include <ppapi/utility/completion_callback_factory.h>
 #include <ppapi/utility/threading/simple_thread.h>
 
+#include <pthread.h>
+
 Q_DECLARE_LOGGING_CATEGORY(QT_PLATFORM_PEPPER_INSTANCE)
+
+// ThreadSafeQueue is a simple thread-safe queue. T must
+// be default-constructible and copyable.
+template <typename T>
+class ThreadSafeQueue
+{
+public:
+    ThreadSafeQueue()
+        :m_quit(false)
+    {
+
+    }
+
+    ~ThreadSafeQueue()
+    {
+        setQuit();
+    }
+
+    void enqueue(const T &item)
+    {
+        QMutexLocker lock(&m_lock);
+        m_queue.enqueue(item);
+        m_nextEvent.wakeAll();
+    }
+
+    T dequeue()
+    {
+        QMutexLocker lock(&m_lock);
+        while (!m_quit && m_queue.isEmpty())
+            m_nextEvent.wait(&m_lock);
+        return m_quit ? T() : m_queue.dequeue();
+    }
+
+    void setQuit() {
+        QMutexLocker lock(&m_lock);
+        m_quit = true;
+        m_nextEvent.wakeAll();
+    }
+
+    bool testQuit() {
+        QMutexLocker lock(&m_lock);
+        return m_quit;
+    }
+private:
+    QWaitCondition m_nextEvent;
+    QMutex m_lock;
+    QQueue<T> m_queue;
+    bool m_quit;
+};
 
 class QPepperInstance;
 class QPepperIntegration;
@@ -63,6 +117,7 @@ public:
     qreal cssScale();
 
     // publics:
+    void processCall(pp::CompletionCallback call);
     void scheduleWindowSystemEventsFlush();
     void postMessage(const QByteArray &message);
     void runJavascript(const QByteArray &script);
@@ -73,6 +128,8 @@ public:
     void startQt();
     void windowSystemEventsFlushCallback(int32_t);
     void handleGetAppVersionMessage(const QByteArray &message);
+    void processMessageLoopMessage();
+    void qtMessageLoop();
 
     void flushCompletedCallback(int32_t);
 
@@ -81,8 +138,11 @@ public:
 
     bool m_qtStarted;
     bool m_runQtOnThread;
+    bool m_useQtMessageLoop;
     pp::SimpleThread m_qtThread;
+    pthread_t m_qtThread_pthread; // ##name
     pp::MessageLoop m_qtMessageLoop;
+    ThreadSafeQueue<pp::CompletionCallback> m_qtMessageLoop_pthread; // ##name
 
     pp::Var m_console;
     pp::Rect m_currentGeometry;

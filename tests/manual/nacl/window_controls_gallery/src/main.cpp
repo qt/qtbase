@@ -44,10 +44,17 @@
 #include <QtGui>
 #include <QtQml/QQmlApplicationEngine>
 
+// (This example tests several startup and internal
+//  implementation options. Final use is not intended
+//  to be this complicated.)
+
 #if 1 // use Q_GUI_MAIN startup
 
 // optionally run Qt on a separate thread
-// class First { public: First() { qputenv("QT_PEPPER_RUN_QT_ON_THREAD", "1"); } }; First first;
+class First { public: First() { qputenv("QT_PEPPER_RUN_QT_ON_THREAD", "1"); } }; First first;
+
+// optionally use a custom message loop instead of pp::MessageLoop
+// class Second { public: Second() { qputenv("QT_PEPPER_USE_QT_MESSAGE_LOOP", "1"); } }; Second second;
 
 QQmlApplicationEngine *engine;
 
@@ -66,6 +73,9 @@ Q_GUI_MAIN(appInit, appExit);
 #else // use Q_GUI_BLOCKING_MAIN
 
 // (implies running Qt on a separate thread.)
+
+// optionally don't use pp::MessageLoop
+class Second { public: Second() { qputenv("QT_PEPPER_USE_QT_MESSAGE_LOOP", "1"); } }; Second second;
 
 int appMain(int argc, char **argv)
 {
