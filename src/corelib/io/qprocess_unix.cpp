@@ -761,7 +761,7 @@ qint64 QProcessPrivate::bytesAvailableInChannel(const Channel *channel) const
     if (::ioctl(channel->pipe[0], FIONREAD, (char *) &nbytes) >= 0)
         available = (qint64) nbytes;
 #if defined (QPROCESS_DEBUG)
-    qDebug("QProcessPrivate::bytesAvailableInChannel(%d) == %lld", channel - &stdinChannel, available);
+    qDebug("QProcessPrivate::bytesAvailableInChannel(%d) == %lld", int(channel - &stdinChannel), available);
 #endif
     return available;
 }
@@ -773,7 +773,7 @@ qint64 QProcessPrivate::readFromChannel(const Channel *channel, char *data, qint
 #if defined QPROCESS_DEBUG
     int save_errno = errno;
     qDebug("QProcessPrivate::readFromChannel(%d, %p \"%s\", %lld) == %lld",
-           channel - &stdinChannel,
+           int(channel - &stdinChannel),
            data, qt_prettyDebug(data, bytesRead, 16).constData(), maxlen, bytesRead);
     errno = save_errno;
 #endif
