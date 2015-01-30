@@ -1687,7 +1687,7 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinConditional(
                         if (mode == CacheAdd)
                             newval += diffval;
                         else
-                            removeEach(&newval, diffval);
+                            newval.removeEach(diffval);
                     }
                     if (oldval != newval) {
                         if (target != TargetStash || !m_stashfile.isEmpty()) {
