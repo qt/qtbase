@@ -33,9 +33,12 @@
 
 #include <QtTest/QtTest>
 
+#include <ioutils.h>
 #include <proitems.h>
 
 #include <QObject>
+
+using namespace QMakeInternal;
 
 class tst_qmakelib : public QObject
 {
@@ -46,6 +49,12 @@ public:
     virtual ~tst_qmakelib() {}
 
 private slots:
+    void quoteArgUnix_data();
+    void quoteArgUnix();
+    void quoteArgWin_data();
+    void quoteArgWin();
+    void pathUtils();
+
     void proStringList();
 };
 
@@ -66,6 +75,95 @@ void tst_qmakelib::proStringList()
     QVERIFY(sl1.contains("cool"));
     QVERIFY(!sl1.contains("COOL"));
     QVERIFY(sl1.contains("COOL", Qt::CaseInsensitive));
+}
+
+void tst_qmakelib::quoteArgUnix_data()
+{
+    QTest::addColumn<QString>("in");
+    QTest::addColumn<QString>("out");
+
+    static const struct {
+        const char * const in;
+        const char * const out;
+    } vals[] = {
+        { "", "''" },
+        { "hallo", "hallo" },
+        { "hallo du", "'hallo du'" },
+        { "ha'llo", "'ha'\\''llo'" },
+    };
+
+    for (unsigned i = 0; i < sizeof(vals)/sizeof(vals[0]); i++)
+        QTest::newRow(vals[i].in) << QString::fromLatin1(vals[i].in)
+                                  << QString::fromLatin1(vals[i].out);
+}
+
+void tst_qmakelib::quoteArgUnix()
+{
+    QFETCH(QString, in);
+    QFETCH(QString, out);
+
+    QCOMPARE(IoUtils::shellQuoteUnix(in), out);
+}
+
+void tst_qmakelib::quoteArgWin_data()
+{
+    QTest::addColumn<QString>("in");
+    QTest::addColumn<QString>("out");
+
+    static const struct {
+        const char * const in;
+        const char * const out;
+    } vals[] = {
+        { "", "\"\"" },
+        { "hallo", "hallo" },
+        { "hallo du", "\"hallo du\"" },
+        { "hallo\\", "hallo\\" },
+        { "hallo du\\", "\"hallo du\\\\\"" },
+        { "ha\"llo", "\"ha\\\"llo^\"" },
+        { "ha\\\"llo", "\"ha\\\\\\\"llo^\"" },
+    };
+
+    for (unsigned i = 0; i < sizeof(vals)/sizeof(vals[0]); i++)
+        QTest::newRow(vals[i].in) << QString::fromLatin1(vals[i].in)
+                                  << QString::fromLatin1(vals[i].out);
+}
+
+void tst_qmakelib::quoteArgWin()
+{
+    QFETCH(QString, in);
+    QFETCH(QString, out);
+
+    QCOMPARE(IoUtils::shellQuoteWin(in), out);
+}
+
+void tst_qmakelib::pathUtils()
+{
+    QString afp = QCoreApplication::applicationFilePath();
+    QVERIFY(IoUtils::exists(afp));
+    QVERIFY(!IoUtils::exists(afp + "-tehfail"));
+    QCOMPARE(IoUtils::fileType(afp), IoUtils::FileIsRegular);
+    QString adp = QCoreApplication::applicationDirPath();
+    QCOMPARE(IoUtils::fileType(adp), IoUtils::FileIsDir);
+
+    QString fn0 = "file/path";
+    QVERIFY(IoUtils::isRelativePath(fn0));
+
+    QString fn1 = "/a/unix/file/path";
+    QVERIFY(IoUtils::isAbsolutePath(fn1));
+    QCOMPARE(IoUtils::pathName(fn1).toString(), QStringLiteral("/a/unix/file/"));
+    QCOMPARE(IoUtils::fileName(fn1).toString(), QStringLiteral("path"));
+
+#ifdef Q_OS_WIN
+    QString fn0a = "c:file/path";
+    QVERIFY(IoUtils::isRelativePath(fn0a));
+
+    QString fn1a = "c:\\file\\path";
+    QVERIFY(IoUtils::isAbsolutePath(fn1a));
+#endif
+
+    QString fnbase = "/another/dir";
+    QCOMPARE(IoUtils::resolvePath(fnbase, fn0), QStringLiteral("/another/dir/file/path"));
+    QCOMPARE(IoUtils::resolvePath(fnbase, fn1), QStringLiteral("/a/unix/file/path"));
 }
 
 QTEST_MAIN(tst_qmakelib)
