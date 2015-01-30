@@ -65,7 +65,9 @@ Q_DECLARE_METATYPE(QSslSocket::SslMode)
 typedef QList<QSslError::SslError> SslErrorList;
 Q_DECLARE_METATYPE(SslErrorList)
 Q_DECLARE_METATYPE(QSslError)
+Q_DECLARE_METATYPE(QSslKey)
 Q_DECLARE_METATYPE(QSsl::SslProtocol)
+Q_DECLARE_METATYPE(QSslSocket::PeerVerifyMode);
 typedef QSharedPointer<QSslSocket> QSslSocketPtr;
 
 // Non-OpenSSL backends are not able to report a specific error code
@@ -221,6 +223,8 @@ private slots:
     void qtbug18498_peek2();
     void dhServer();
     void ecdhServer();
+    void verifyClientCertificate_data();
+    void verifyClientCertificate();
     void setEmptyDefaultConfiguration(); // this test should be last
 
 #ifndef QT_NO_OPENSSL
@@ -1059,12 +1063,17 @@ public:
               const QString &certFile = SRCDIR "certs/fluke.cert",
               const QString &interFile = QString())
         : socket(0),
+          ignoreSslErrors(true),
+          peerVerifyMode(QSslSocket::AutoVerifyPeer),
           protocol(QSsl::TlsV1_0),
           m_keyFile(keyFile),
           m_certFile(certFile),
           m_interFile(interFile)
           { }
     QSslSocket *socket;
+    QString addCaCertificates;
+    bool ignoreSslErrors;
+    QSslSocket::PeerVerifyMode peerVerifyMode;
     QSsl::SslProtocol protocol;
     QString m_keyFile;
     QString m_certFile;
@@ -1075,14 +1084,24 @@ protected:
     void incomingConnection(qintptr socketDescriptor)
     {
         socket = new QSslSocket(this);
+        socket->setPeerVerifyMode(peerVerifyMode);
         socket->setProtocol(protocol);
-        connect(socket, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(ignoreErrorSlot()));
+        if (ignoreSslErrors)
+            connect(socket, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(ignoreErrorSlot()));
 
         QFile file(m_keyFile);
         QVERIFY(file.open(QIODevice::ReadOnly));
         QSslKey key(file.readAll(), QSsl::Rsa, QSsl::Pem, QSsl::PrivateKey);
         QVERIFY(!key.isNull());
         socket->setPrivateKey(key);
+
+        // Add CA certificates to verify client certificate
+        if (!addCaCertificates.isEmpty()) {
+            QList<QSslCertificate> caCert = QSslCertificate::fromPath(addCaCertificates);
+            QVERIFY(!caCert.isEmpty());
+            QVERIFY(!caCert.first().isNull());
+            socket->addCaCertificates(caCert);
+        }
 
         // If we have a cert issued directly from the CA
         if (m_interFile.isEmpty()) {
@@ -2780,6 +2799,132 @@ void tst_QSslSocket::ecdhServer()
 
     loop.exec();
     QVERIFY(client->state() == QAbstractSocket::ConnectedState);
+}
+
+void tst_QSslSocket::verifyClientCertificate_data()
+{
+    QTest::addColumn<QSslSocket::PeerVerifyMode>("peerVerifyMode");
+    QTest::addColumn<QList<QSslCertificate> >("clientCerts");
+    QTest::addColumn<QSslKey>("clientKey");
+    QTest::addColumn<bool>("works");
+
+    // no certificate
+    QList<QSslCertificate> noCerts;
+    QSslKey noKey;
+
+    QTest::newRow("NoCert:AutoVerifyPeer") << QSslSocket::AutoVerifyPeer << noCerts << noKey << true;
+    QTest::newRow("NoCert:QueryPeer") << QSslSocket::QueryPeer << noCerts << noKey << true;
+    QTest::newRow("NoCert:VerifyNone") << QSslSocket::VerifyNone << noCerts << noKey << true;
+    QTest::newRow("NoCert:VerifyPeer") << QSslSocket::VerifyPeer << noCerts << noKey << false;
+
+    // self-signed certificate
+    QList<QSslCertificate> flukeCerts = QSslCertificate::fromPath(SRCDIR "certs/fluke.cert");
+    QCOMPARE(flukeCerts.size(), 1);
+
+    QFile flukeFile(SRCDIR "certs/fluke.key");
+    QVERIFY(flukeFile.open(QIODevice::ReadOnly));
+    QSslKey flukeKey(flukeFile.readAll(), QSsl::Rsa, QSsl::Pem, QSsl::PrivateKey);
+    QVERIFY(!flukeKey.isNull());
+
+    QTest::newRow("SelfSignedCert:AutoVerifyPeer") << QSslSocket::AutoVerifyPeer << flukeCerts << flukeKey << true;
+    QTest::newRow("SelfSignedCert:QueryPeer") << QSslSocket::QueryPeer << flukeCerts << flukeKey << true;
+    QTest::newRow("SelfSignedCert:VerifyNone") << QSslSocket::VerifyNone << flukeCerts << flukeKey << true;
+    QTest::newRow("SelfSignedCert:VerifyPeer") << QSslSocket::VerifyPeer << flukeCerts << flukeKey << false;
+
+    // valid certificate, but wrong usage (server certificate)
+    QList<QSslCertificate> serverCerts = QSslCertificate::fromPath(SRCDIR "certs/bogus-server.crt");
+    QCOMPARE(serverCerts.size(), 1);
+
+    QFile serverFile(SRCDIR "certs/bogus-server.key");
+    QVERIFY(serverFile.open(QIODevice::ReadOnly));
+    QSslKey serverKey(serverFile.readAll(), QSsl::Rsa, QSsl::Pem, QSsl::PrivateKey);
+    QVERIFY(!serverKey.isNull());
+
+    QTest::newRow("ValidServerCert:AutoVerifyPeer") << QSslSocket::AutoVerifyPeer << serverCerts << serverKey << true;
+    QTest::newRow("ValidServerCert:QueryPeer") << QSslSocket::QueryPeer << serverCerts << serverKey << true;
+    QTest::newRow("ValidServerCert:VerifyNone") << QSslSocket::VerifyNone << serverCerts << serverKey << true;
+    QTest::newRow("ValidServerCert:VerifyPeer") << QSslSocket::VerifyPeer << serverCerts << serverKey << false;
+
+    // valid certificate, correct usage (client certificate)
+    QList<QSslCertificate> validCerts = QSslCertificate::fromPath(SRCDIR "certs/bogus-client.crt");
+    QCOMPARE(validCerts.size(), 1);
+
+    QFile validFile(SRCDIR "certs/bogus-client.key");
+    QVERIFY(validFile.open(QIODevice::ReadOnly));
+    QSslKey validKey(validFile.readAll(), QSsl::Rsa, QSsl::Pem, QSsl::PrivateKey);
+    QVERIFY(!validKey.isNull());
+
+    QTest::newRow("ValidClientCert:AutoVerifyPeer") << QSslSocket::AutoVerifyPeer << validCerts << validKey << true;
+    QTest::newRow("ValidClientCert:QueryPeer") << QSslSocket::QueryPeer << validCerts << validKey << true;
+    QTest::newRow("ValidClientCert:VerifyNone") << QSslSocket::VerifyNone << validCerts << validKey << true;
+    QTest::newRow("ValidClientCert:VerifyPeer") << QSslSocket::VerifyPeer << validCerts << validKey << true;
+
+    // valid certificate, correct usage (client certificate), with chain
+    validCerts += QSslCertificate::fromPath(SRCDIR "certs/bogus-ca.crt");
+    QCOMPARE(validCerts.size(), 2);
+
+    QTest::newRow("ValidClientCert:AutoVerifyPeer") << QSslSocket::AutoVerifyPeer << validCerts << validKey << true;
+    QTest::newRow("ValidClientCert:QueryPeer") << QSslSocket::QueryPeer << validCerts << validKey << true;
+    QTest::newRow("ValidClientCert:VerifyNone") << QSslSocket::VerifyNone << validCerts << validKey << true;
+    QTest::newRow("ValidClientCert:VerifyPeer") << QSslSocket::VerifyPeer << validCerts << validKey << true;
+}
+
+void tst_QSslSocket::verifyClientCertificate()
+{
+    if (!QSslSocket::supportsSsl()) {
+        qWarning("SSL not supported, skipping test");
+        return;
+    }
+
+    QFETCH_GLOBAL(bool, setProxy);
+    if (setProxy)
+        return;
+
+    QFETCH(QSslSocket::PeerVerifyMode, peerVerifyMode);
+    SslServer server;
+    server.addCaCertificates = QLatin1String(SRCDIR "certs/bogus-ca.crt");
+    server.ignoreSslErrors = false;
+    server.peerVerifyMode = peerVerifyMode;
+    QVERIFY(server.listen());
+
+    QEventLoop loop;
+    QTimer::singleShot(5000, &loop, SLOT(quit()));
+
+    QFETCH(QList<QSslCertificate>, clientCerts);
+    QFETCH(QSslKey, clientKey);
+    QSslSocketPtr client(new QSslSocket);
+    client->setLocalCertificateChain(clientCerts);
+    client->setPrivateKey(clientKey);
+    socket = client.data();
+
+    connect(socket, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(ignoreErrorSlot()));
+    connect(socket, SIGNAL(disconnected()), &loop, SLOT(quit()));
+    connect(socket, SIGNAL(encrypted()), &loop, SLOT(quit()));
+
+    client->connectToHostEncrypted(QHostAddress(QHostAddress::LocalHost).toString(), server.serverPort());
+
+    loop.exec();
+
+    QFETCH(bool, works);
+    QAbstractSocket::SocketState expectedState = (works) ? QAbstractSocket::ConnectedState : QAbstractSocket::UnconnectedState;
+
+    // check server socket
+    QVERIFY(server.socket);
+
+    QCOMPARE(int(server.socket->state()), int(expectedState));
+    QCOMPARE(server.socket->isEncrypted(), works);
+
+    if (peerVerifyMode == QSslSocket::VerifyNone || clientCerts.isEmpty()) {
+        QVERIFY(server.socket->peerCertificate().isNull());
+        QVERIFY(server.socket->peerCertificateChain().isEmpty());
+    } else {
+        QCOMPARE(server.socket->peerCertificate(), clientCerts.first());
+        QCOMPARE(server.socket->peerCertificateChain(), clientCerts);
+    }
+
+    // check client socket
+    QCOMPARE(int(client->state()), int(expectedState));
+    QCOMPARE(client->isEncrypted(), works);
 }
 
 void tst_QSslSocket::setEmptyDefaultConfiguration() // this test should be last, as it has some side effects
