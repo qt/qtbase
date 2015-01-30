@@ -223,8 +223,10 @@ void tst_qdbusxml2cpp::process()
     QFETCH_GLOBAL(QString, commandLineArg);
 
     // Run the tool
+    const QString binpath = QLibraryInfo::location(QLibraryInfo::BinariesPath);
+    const QString command = binpath + QLatin1String("/qdbusxml2cpp");
     QProcess process;
-    process.start("qdbusxml2cpp", QStringList() << commandLineArg << "-" << "-N");
+    process.start(command, QStringList() << commandLineArg << "-" << "-N");
     QVERIFY2(process.waitForStarted(), qPrintable(process.errorString()));
 
     // feed it our XML data
