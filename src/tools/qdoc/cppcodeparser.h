@@ -234,11 +234,17 @@ protected:
 #define COMMAND_LICENSEDESCRIPTION      Doc::alias("licensedescription")
 #define COMMAND_RELEASEDATE             Doc::alias("releasedate")
 #define COMMAND_QTVARIABLE              Doc::alias("qtvariable")
-#define COMMAND_JSTYPE                  Doc::alias("jstype")
-#define COMMAND_JSPROPERTY              Doc::alias("jsproperty")
-#define COMMAND_JSMETHOD                Doc::alias("jsmethod")
-#define COMMAND_JSSIGNAL                Doc::alias("jssignal")
-#define COMMAND_JSMODULE                Doc::alias("jsmodule")
+// Some of these are not used currenmtly, but they are included now for completeness.
+#define COMMAND_JSTYPE                 Doc::alias("jstype")
+#define COMMAND_JSPROPERTY             Doc::alias("jsproperty")
+#define COMMAND_JSPROPERTYGROUP        Doc::alias("jspropertygroup")
+#define COMMAND_JSATTACHEDPROPERTY     Doc::alias("jsattachedproperty")
+#define COMMAND_JSSIGNAL               Doc::alias("jssignal")
+#define COMMAND_JSATTACHEDSIGNAL       Doc::alias("jsattachedsignal")
+#define COMMAND_JSMETHOD               Doc::alias("jsmethod")
+#define COMMAND_JSATTACHEDMETHOD       Doc::alias("jsattachedmethod")
+#define COMMAND_JSBASICTYPE            Doc::alias("jsbasictype")
+#define COMMAND_JSMODULE               Doc::alias("jsmodule")
 
 QT_END_NAMESPACE
 

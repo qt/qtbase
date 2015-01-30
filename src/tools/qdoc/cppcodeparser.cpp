@@ -295,7 +295,17 @@ const QSet<QString>& CppCodeParser::topicCommands()
                        << COMMAND_QMLMETHOD
                        << COMMAND_QMLATTACHEDMETHOD
                        << COMMAND_QMLBASICTYPE
-                       << COMMAND_QMLMODULE;
+                       << COMMAND_QMLMODULE
+                       << COMMAND_JSTYPE
+                       << COMMAND_JSPROPERTY
+                       << COMMAND_JSPROPERTYGROUP
+                       << COMMAND_JSATTACHEDPROPERTY
+                       << COMMAND_JSSIGNAL
+                       << COMMAND_JSATTACHEDSIGNAL
+                       << COMMAND_JSMETHOD
+                       << COMMAND_JSATTACHEDMETHOD
+                       << COMMAND_JSBASICTYPE
+                       << COMMAND_JSMODULE;
     }
     return topicCommands_;
 }

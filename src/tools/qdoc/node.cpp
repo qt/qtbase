@@ -1454,6 +1454,7 @@ LeafNode::LeafNode(InnerNode* parent, Type type, const QString& name)
 NamespaceNode::NamespaceNode(InnerNode *parent, const QString& name)
     : InnerNode(Namespace, parent, name), tree_(0)
 {
+    setGenus(Node::CPP);
     setPageType(ApiPage);
 }
 
@@ -1471,6 +1472,7 @@ ClassNode::ClassNode(InnerNode *parent, const QString& name)
     abstract_ = false;
     wrapper_ = false;
     qmlelement = 0;
+    setGenus(Node::CPP);
     setPageType(ApiPage);
 }
 
@@ -1651,6 +1653,7 @@ QmlTypeNode* ClassNode::findQmlBaseNode()
 DocNode::DocNode(InnerNode* parent, const QString& name, SubType subtype, Node::PageType ptype)
     : InnerNode(Document, parent, name), nodeSubtype_(subtype)
 {
+    setGenus(Node::DOC);
     switch (subtype) {
     case Page:
         setPageType(ptype);
@@ -1735,7 +1738,7 @@ QString DocNode::subTitle() const
 EnumNode::EnumNode(InnerNode *parent, const QString& name)
     : LeafNode(Enum, parent, name), ft(0)
 {
-    // nothing.
+    setGenus(Node::CPP);
 }
 
 /*!
@@ -1780,6 +1783,7 @@ QString EnumNode::itemValue(const QString &name) const
 TypedefNode::TypedefNode(InnerNode *parent, const QString& name)
     : LeafNode(Typedef, parent, name), ae(0)
 {
+    setGenus(Node::CPP);
 }
 
 /*!
@@ -1869,7 +1873,7 @@ FunctionNode::FunctionNode(InnerNode *parent, const QString& name)
       rf(0),
       ap(0)
 {
-    // nothing.
+    setGenus(Node::CPP);
 }
 
 /*!
@@ -1889,10 +1893,13 @@ FunctionNode::FunctionNode(Type type, InnerNode *parent, const QString& name, bo
       rf(0),
       ap(0)
 {
+    setGenus(Node::QML);
     if (type == QmlMethod || type == QmlSignal) {
         if (name.startsWith("__"))
             setStatus(Internal);
     }
+    else if (type == Function)
+        setGenus(Node::CPP);
 }
 
 /*!
@@ -2079,7 +2086,7 @@ PropertyNode::PropertyNode(InnerNode *parent, const QString& name)
       rev(-1),
       overrides(0)
 {
-    // nothing.
+    setGenus(Node::CPP);
 }
 
 /*!
@@ -2156,6 +2163,7 @@ QmlTypeNode::QmlTypeNode(InnerNode *parent, const QString& name)
     }
     setTitle(name.mid(i));
     setPageType(Node::ApiPage);
+    setGenus(Node::QML);
 }
 
 /*!
@@ -2281,6 +2289,7 @@ QmlBasicTypeNode::QmlBasicTypeNode(InnerNode *parent,
     : InnerNode(QmlBasicType, parent, name)
 {
     setTitle(name);
+    setGenus(Node::QML);
 }
 
 /*!
@@ -2291,6 +2300,7 @@ QmlPropertyGroupNode::QmlPropertyGroupNode(QmlTypeNode* parent, const QString& n
     : InnerNode(QmlPropertyGroup, parent, name)
 {
     idNumber_ = -1;
+    setGenus(Node::QML);
 }
 
 /*!
@@ -2328,6 +2338,7 @@ QmlPropertyNode::QmlPropertyNode(InnerNode* parent,
         isAlias_ = true;
     if (name.startsWith("__"))
         setStatus(Internal);
+    setGenus(Node::QML);
 }
 
 /*!

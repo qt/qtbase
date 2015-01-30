@@ -170,6 +170,8 @@ public:
     const QString& fileNameBase() const { return fileNameBase_; }
     bool hasFileNameBase() const { return !fileNameBase_.isEmpty(); }
     void setFileNameBase(const QString& t) { fileNameBase_ = t; }
+    Node::Genus genus() const { return (Genus) genus_; }
+    void setGenus(Genus t) { genus_ = (unsigned char) t; }
 
     void setAccess(Access access) { access_ = (unsigned char) access; }
     void setLocation(const Location& location) { loc_ = location; }
@@ -225,7 +227,6 @@ public:
     virtual bool hasClasses() const { return false; }
     virtual void setAbstract(bool ) { }
     virtual void setWrapper() { }
-    virtual Node::Genus genus() const { return DontCare; }
     virtual QString title() const { return name(); }
     virtual QString fullTitle() const { return name(); }
     virtual QString subTitle() const { return QString(); }
@@ -325,6 +326,7 @@ protected:
 private:
 
     unsigned char nodeType_;
+    unsigned char genus_;
     unsigned char access_;
     unsigned char safeness_;
     unsigned char pageType_;
@@ -439,7 +441,6 @@ public:
     virtual bool isNamespace() const Q_DECL_OVERRIDE { return true; }
     virtual Tree* tree() const Q_DECL_OVERRIDE { return (parent() ? parent()->tree() : tree_); }
     virtual bool isCppNode() const Q_DECL_OVERRIDE { return true; }
-    virtual Node::Genus genus() const Q_DECL_OVERRIDE { return Node::CPP; }
     void setTree(Tree* t) { tree_ = t; }
 
  private:
@@ -472,7 +473,6 @@ public:
     virtual bool isClass() const Q_DECL_OVERRIDE { return true; }
     virtual bool isCppNode() const Q_DECL_OVERRIDE { return true; }
     virtual bool isWrapper() const Q_DECL_OVERRIDE { return wrapper_; }
-    virtual Node::Genus genus() const Q_DECL_OVERRIDE { return Node::CPP; }
     virtual QString obsoleteLink() const Q_DECL_OVERRIDE { return obsoleteLink_; }
     virtual void setObsoleteLink(const QString& t) Q_DECL_OVERRIDE { obsoleteLink_ = t; }
     virtual void setWrapper() Q_DECL_OVERRIDE { wrapper_ = true; }
@@ -537,7 +537,6 @@ public:
     virtual bool isExampleFile() const Q_DECL_OVERRIDE { return (parent() && parent()->isExample()); }
     virtual bool isExternalPage() const Q_DECL_OVERRIDE { return nodeSubtype_ == ExternalPage; }
     virtual bool isDocNode() const Q_DECL_OVERRIDE { return true; }
-    virtual Node::Genus genus() const Q_DECL_OVERRIDE { return Node::DOC; }
 
 protected:
     SubType nodeSubtype_;
@@ -603,7 +602,7 @@ public:
     virtual QString logicalModuleIdentifier() const Q_DECL_OVERRIDE;
     virtual QmlModuleNode* logicalModule() const Q_DECL_OVERRIDE { return logicalModule_; }
     virtual void setQmlModule(QmlModuleNode* t) Q_DECL_OVERRIDE { logicalModule_ = t; }
-    virtual Node::Genus genus() const Q_DECL_OVERRIDE { return Node::QML; }
+
     const ImportList& importList() const { return importList_; }
     void setImportList(const ImportList& il) { importList_ = il; }
     const QString& qmlBaseName() const { return qmlBaseName_; }
@@ -641,7 +640,6 @@ public:
     virtual ~QmlBasicTypeNode() { }
     virtual bool isQmlNode() const Q_DECL_OVERRIDE { return true; }
     virtual bool isQmlBasicType() const Q_DECL_OVERRIDE { return true; }
-    virtual Node::Genus genus() const Q_DECL_OVERRIDE { return Node::QML; }
 };
 
 class QmlPropertyGroupNode : public InnerNode
@@ -663,8 +661,6 @@ public:
     }
     virtual QString idNumber() Q_DECL_OVERRIDE;
     virtual bool isQmlPropertyGroup() const Q_DECL_OVERRIDE { return true; }
-    virtual Node::Genus genus() const Q_DECL_OVERRIDE { return Node::QML; }
-
     virtual QString element() const Q_DECL_OVERRIDE { return parent()->name(); }
 
  private:
@@ -682,7 +678,6 @@ public:
                     bool attached);
     virtual ~QmlPropertyNode() { }
 
-    virtual Node::Genus genus() const Q_DECL_OVERRIDE { return Node::QML; }
     virtual void setDataType(const QString& dataType) Q_DECL_OVERRIDE { type_ = dataType; }
     void setStored(bool stored) { stored_ = toFlagValue(stored); }
     void setDesignable(bool designable) { designable_ = toFlagValue(designable); }
@@ -747,7 +742,6 @@ public:
     EnumNode(InnerNode* parent, const QString& name);
     virtual ~EnumNode() { }
 
-    virtual Node::Genus genus() const Q_DECL_OVERRIDE { return Node::CPP; }
     virtual bool isCppNode() const Q_DECL_OVERRIDE { return true; }
     void addItem(const EnumItem& item);
     void setFlagsType(TypedefNode* typedeff);
@@ -770,7 +764,6 @@ public:
     TypedefNode(InnerNode* parent, const QString& name);
     virtual ~TypedefNode() { }
 
-    virtual Node::Genus genus() const Q_DECL_OVERRIDE { return Node::CPP; }
     virtual bool isCppNode() const Q_DECL_OVERRIDE { return true; }
     const EnumNode* associatedEnum() const { return ae; }
 
@@ -879,9 +872,6 @@ public:
                 (type() == QmlSignalHandler));
     }
     virtual bool isCppNode() const Q_DECL_OVERRIDE { return !isQmlNode(); }
-    virtual Node::Genus genus() const Q_DECL_OVERRIDE {
-        return (isQmlNode() ? Node::QML : Node::CPP);
-    }
     virtual bool isQtQuickNode() const Q_DECL_OVERRIDE { return parent()->isQtQuickNode(); }
     virtual QString qmlTypeName() const Q_DECL_OVERRIDE { return parent()->qmlTypeName(); }
     virtual QString logicalModuleName() const Q_DECL_OVERRIDE {
@@ -926,7 +916,6 @@ public:
     PropertyNode(InnerNode* parent, const QString& name);
     virtual ~PropertyNode() { }
 
-    virtual Node::Genus genus() const Q_DECL_OVERRIDE { return Node::CPP; }
     virtual bool isCppNode() const Q_DECL_OVERRIDE { return true; }
     virtual void setDataType(const QString& dataType) Q_DECL_OVERRIDE { type_ = dataType; }
     void addFunction(FunctionNode* function, FunctionRole role);
@@ -1015,7 +1004,6 @@ public:
     VariableNode(InnerNode* parent, const QString &name);
     virtual ~VariableNode() { }
 
-    virtual Node::Genus genus() const Q_DECL_OVERRIDE { return Node::CPP; }
     virtual bool isCppNode() const Q_DECL_OVERRIDE { return true; }
     void setLeftType(const QString &leftType) { lt = leftType; }
     void setRightType(const QString &rightType) { rt = rightType; }
@@ -1035,7 +1023,7 @@ private:
 inline VariableNode::VariableNode(InnerNode* parent, const QString &name)
     : LeafNode(Variable, parent, name), sta(false)
 {
-    // nothing.
+    setGenus(Node::CPP);
 }
 
 class DitaMapNode : public DocNode
@@ -1089,7 +1077,9 @@ class GroupNode : public CollectionNode
 {
  public:
     GroupNode(InnerNode* parent, const QString& name)
-        : CollectionNode(Node::Group, parent, name) { }
+        : CollectionNode(Node::Group, parent, name) {
+        setGenus(Node::DOC);
+    }
     virtual ~GroupNode() { }
 
     virtual bool isGroup() const Q_DECL_OVERRIDE { return true; }
@@ -1099,7 +1089,9 @@ class ModuleNode : public CollectionNode
 {
  public:
     ModuleNode(InnerNode* parent, const QString& name)
-        : CollectionNode(Node::Module, parent, name) { }
+        : CollectionNode(Node::Module, parent, name) {
+        setGenus(Node::CPP);
+    }
     virtual ~ModuleNode() { }
 
     virtual bool isModule() const Q_DECL_OVERRIDE { return true; }
@@ -1115,7 +1107,9 @@ class QmlModuleNode : public CollectionNode
 {
  public:
     QmlModuleNode(InnerNode* parent, const QString& name)
-        : CollectionNode(Node::QmlModule, parent, name) { }
+        : CollectionNode(Node::QmlModule, parent, name) {
+        setGenus(Node::QML);
+    }
     virtual ~QmlModuleNode() { }
 
     virtual bool isQmlNode() const Q_DECL_OVERRIDE { return true; }
