@@ -876,26 +876,26 @@ public:
         : QGraphicsEffectSourcePrivate(), m_widget(widget), context(0), updateDueToGraphicsEffect(false)
     {}
 
-    inline void detach()
+    void detach() Q_DECL_OVERRIDE
     { m_widget->d_func()->graphicsEffect = 0; }
 
-    inline const QGraphicsItem *graphicsItem() const
+    const QGraphicsItem *graphicsItem() const Q_DECL_OVERRIDE
     { return 0; }
 
-    inline const QWidget *widget() const
+    const QWidget *widget() const Q_DECL_OVERRIDE
     { return m_widget; }
 
-    inline void update()
+    void update() Q_DECL_OVERRIDE
     {
         updateDueToGraphicsEffect = true;
         m_widget->update();
         updateDueToGraphicsEffect = false;
     }
 
-    inline bool isPixmap() const
+    bool isPixmap() const Q_DECL_OVERRIDE
     { return false; }
 
-    inline void effectBoundingRectChanged()
+    void effectBoundingRectChanged() Q_DECL_OVERRIDE
     {
         // ### This function should take a rect parameter; then we can avoid
         // updating too much on the parent widget.
@@ -905,10 +905,10 @@ public:
             update();
     }
 
-    inline const QStyleOption *styleOption() const
+    const QStyleOption *styleOption() const Q_DECL_OVERRIDE
     { return 0; }
 
-    inline QRect deviceRect() const
+    QRect deviceRect() const Q_DECL_OVERRIDE
     { return m_widget->window()->rect(); }
 
     QRectF boundingRect(Qt::CoordinateSystem system) const Q_DECL_OVERRIDE;

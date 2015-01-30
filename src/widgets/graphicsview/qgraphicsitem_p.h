@@ -658,28 +658,28 @@ public:
         : QGraphicsEffectSourcePrivate(), item(i), info(0)
     {}
 
-    inline void detach()
+    void detach() Q_DECL_OVERRIDE
     {
         item->d_ptr->graphicsEffect = 0;
         item->prepareGeometryChange();
     }
 
-    inline const QGraphicsItem *graphicsItem() const
+    const QGraphicsItem *graphicsItem() const Q_DECL_OVERRIDE
     { return item; }
 
-    inline const QWidget *widget() const
+    const QWidget *widget() const Q_DECL_OVERRIDE
     { return 0; }
 
-    inline void update() {
+    void update() Q_DECL_OVERRIDE {
         item->d_ptr->updateDueToGraphicsEffect = true;
         item->update();
         item->d_ptr->updateDueToGraphicsEffect = false;
     }
 
-    inline void effectBoundingRectChanged()
+    void effectBoundingRectChanged() Q_DECL_OVERRIDE
     { item->prepareGeometryChange(); }
 
-    inline bool isPixmap() const
+    bool isPixmap() const Q_DECL_OVERRIDE
     {
         return item->type() == QGraphicsPixmapItem::Type
                && !(item->flags() & QGraphicsItem::ItemIsSelectable)
@@ -687,10 +687,10 @@ public:
             //|| (item->d_ptr->isObject && qobject_cast<QDeclarativeImage *>(q_func()));
     }
 
-    inline const QStyleOption *styleOption() const
+    const QStyleOption *styleOption() const Q_DECL_OVERRIDE
     { return info ? info->option : 0; }
 
-    inline QRect deviceRect() const
+    QRect deviceRect() const Q_DECL_OVERRIDE
     {
         if (!info || !info->widget) {
             qWarning("QGraphicsEffectSource::deviceRect: Not yet implemented, lacking device context");

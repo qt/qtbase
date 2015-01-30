@@ -183,7 +183,7 @@ public:
     QUtcTimeZonePrivate(const QUtcTimeZonePrivate &other);
     virtual ~QUtcTimeZonePrivate();
 
-    QTimeZonePrivate *clone();
+    QTimeZonePrivate *clone() Q_DECL_OVERRIDE;
 
     QLocale::Country country() const Q_DECL_OVERRIDE;
     QString comment() const Q_DECL_OVERRIDE;
@@ -228,7 +228,7 @@ public:
     QIcuTimeZonePrivate(const QIcuTimeZonePrivate &other);
     ~QIcuTimeZonePrivate();
 
-    QTimeZonePrivate *clone();
+    QTimeZonePrivate *clone() Q_DECL_OVERRIDE;
 
     QString displayName(QTimeZone::TimeType timeType, QTimeZone::NameType nameType,
                         const QLocale &locale) const Q_DECL_OVERRIDE;
@@ -271,7 +271,7 @@ public:
     QTzTimeZonePrivate(const QTzTimeZonePrivate &other);
     ~QTzTimeZonePrivate();
 
-    QTimeZonePrivate *clone();
+    QTimeZonePrivate *clone() Q_DECL_OVERRIDE;
 
     QLocale::Country country() const Q_DECL_OVERRIDE;
     QString comment() const Q_DECL_OVERRIDE;
@@ -338,7 +338,7 @@ public:
     QMacTimeZonePrivate(const QMacTimeZonePrivate &other);
     ~QMacTimeZonePrivate();
 
-    QTimeZonePrivate *clone();
+    QTimeZonePrivate *clone() Q_DECL_OVERRIDE;
 
     QString comment() const Q_DECL_OVERRIDE;
 
@@ -389,7 +389,7 @@ public:
     QWinTimeZonePrivate(const QWinTimeZonePrivate &other);
     ~QWinTimeZonePrivate();
 
-    QTimeZonePrivate *clone();
+    QTimeZonePrivate *clone() Q_DECL_OVERRIDE;
 
     QString comment() const Q_DECL_OVERRIDE;
 
@@ -439,7 +439,7 @@ public:
     QAndroidTimeZonePrivate(const QAndroidTimeZonePrivate &other);
     ~QAndroidTimeZonePrivate();
 
-    QTimeZonePrivate *clone();
+    QTimeZonePrivate *clone() Q_DECL_OVERRIDE;
 
     QString displayName(QTimeZone::TimeType timeType, QTimeZone::NameType nameType,
                         const QLocale &locale) const Q_DECL_OVERRIDE;

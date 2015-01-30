@@ -251,7 +251,7 @@ public:
     CloseButton(QWidget *parent = 0);
 
     QSize sizeHint() const Q_DECL_OVERRIDE;
-    inline QSize minimumSizeHint() const
+    QSize minimumSizeHint() const Q_DECL_OVERRIDE
         { return sizeHint(); }
     void enterEvent(QEvent *event) Q_DECL_OVERRIDE;
     void leaveEvent(QEvent *event) Q_DECL_OVERRIDE;

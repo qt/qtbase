@@ -60,7 +60,7 @@ public:
         setCacheMode(DeviceCoordinateCache);
     }
 
-    inline QRectF boundingRect() const
+    QRectF boundingRect() const Q_DECL_OVERRIDE
     { return brect; }
 
     inline int pageNumber() const

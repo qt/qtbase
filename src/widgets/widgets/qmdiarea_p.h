@@ -82,7 +82,7 @@ class RegularTiler : public Rearranger
     // covering the entire domain.
     // Both positions and sizes may change.
     void rearrange(QList<QWidget *> &widgets, const QRect &domain) const Q_DECL_OVERRIDE;
-    inline Type type() const { return Rearranger::RegularTiler; }
+    Type type() const Q_DECL_OVERRIDE { return Rearranger::RegularTiler; }
 };
 
 class SimpleCascader : public Rearranger
@@ -91,7 +91,7 @@ class SimpleCascader : public Rearranger
     // Widgets are resized to minimumSize.
     // Both positions and sizes may change.
     void rearrange(QList<QWidget *> &widgets, const QRect &domain) const Q_DECL_OVERRIDE;
-    inline Type type() const { return Rearranger::SimpleCascader; }
+    Type type() const Q_DECL_OVERRIDE { return Rearranger::SimpleCascader; }
 };
 
 class IconTiler : public Rearranger
@@ -100,7 +100,7 @@ class IconTiler : public Rearranger
     // tiling pattern filling up the domain from the bottom.
     // Only positions may change.
     void rearrange(QList<QWidget *> &widgets, const QRect &domain) const Q_DECL_OVERRIDE;
-    inline Type type() const { return Rearranger::IconTiler; }
+    Type type() const Q_DECL_OVERRIDE { return Rearranger::IconTiler; }
 };
 
 class Placer

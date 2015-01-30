@@ -2268,8 +2268,8 @@ public:
 class QML_PARSER_EXPORT UiObjectMember: public Node
 {
 public:
-    virtual SourceLocation firstSourceLocation() const = 0;
-    virtual SourceLocation lastSourceLocation() const = 0;
+    virtual SourceLocation firstSourceLocation() const Q_DECL_OVERRIDE = 0;
+    virtual SourceLocation lastSourceLocation() const Q_DECL_OVERRIDE = 0;
 
     virtual UiObjectMember *uiObjectMemberCast() Q_DECL_OVERRIDE;
 };

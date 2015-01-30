@@ -91,11 +91,11 @@ public:
     // from QAbstractSocketEngineReceiver
     void readNotification() Q_DECL_OVERRIDE;
     void closeNotification() Q_DECL_OVERRIDE { readNotification(); }
-    inline void writeNotification() {}
-    inline void exceptionNotification() {}
-    inline void connectionNotification() {}
+    void writeNotification() Q_DECL_OVERRIDE {}
+    void exceptionNotification() Q_DECL_OVERRIDE {}
+    void connectionNotification() Q_DECL_OVERRIDE {}
 #ifndef QT_NO_NETWORKPROXY
-    inline void proxyAuthenticationRequired(const QNetworkProxy &, QAuthenticator *) {}
+    void proxyAuthenticationRequired(const QNetworkProxy &, QAuthenticator *) Q_DECL_OVERRIDE {}
 #endif
 
 };

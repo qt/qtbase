@@ -110,7 +110,7 @@ public:
     QDockWidgetTitleButton(QDockWidget *dockWidget);
 
     QSize sizeHint() const Q_DECL_OVERRIDE;
-    inline QSize minimumSizeHint() const
+    QSize minimumSizeHint() const Q_DECL_OVERRIDE
     { return sizeHint(); }
 
     void enterEvent(QEvent *event) Q_DECL_OVERRIDE;
