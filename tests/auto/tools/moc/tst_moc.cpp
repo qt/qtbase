@@ -603,6 +603,7 @@ private:
     void setMember3( const QString &sVal ) { sMember = sVal; }
 
 private:
+    QString m_moc;
     QString m_sourceDirectory;
     QString qtIncludePath;
     class PrivateClass;
@@ -613,12 +614,16 @@ private:
 
 void tst_Moc::initTestCase()
 {
+    QString binpath = QLibraryInfo::location(QLibraryInfo::BinariesPath);
+    QString qmake = QString("%1/qmake").arg(binpath);
+    m_moc = QString("%1/moc").arg(binpath);
+
     const QString testHeader = QFINDTESTDATA("backslash-newlines.h");
     QVERIFY(!testHeader.isEmpty());
     m_sourceDirectory = QFileInfo(testHeader).absolutePath();
 #if defined(Q_OS_UNIX) && !defined(QT_NO_PROCESS)
     QProcess proc;
-    proc.start("qmake", QStringList() << "-query" << "QT_INSTALL_HEADERS");
+    proc.start(qmake, QStringList() << "-query" << "QT_INSTALL_HEADERS");
     QVERIFY(proc.waitForFinished());
     QCOMPARE(proc.exitCode(), 0);
     QByteArray output = proc.readAllStandardOutput();
@@ -662,7 +667,7 @@ void tst_Moc::oldStyleCasts()
 #endif
 #if defined(Q_OS_LINUX) && defined(Q_CC_GNU) && !defined(QT_NO_PROCESS)
     QProcess proc;
-    proc.start("moc", QStringList(m_sourceDirectory + QStringLiteral("/oldstyle-casts.h")));
+    proc.start(m_moc, QStringList(m_sourceDirectory + QStringLiteral("/oldstyle-casts.h")));
     QVERIFY(proc.waitForFinished());
     QCOMPARE(proc.exitCode(), 0);
     QByteArray mocOut = proc.readAllStandardOutput();
@@ -693,7 +698,7 @@ void tst_Moc::warnOnExtraSignalSlotQualifiaction()
 #if defined(Q_OS_LINUX) && defined(Q_CC_GNU) && !defined(QT_NO_PROCESS)
     QProcess proc;
     const QString header = m_sourceDirectory + QStringLiteral("/extraqualification.h");
-    proc.start("moc", QStringList(header));
+    proc.start(m_moc, QStringList(header));
     QVERIFY(proc.waitForFinished());
     QCOMPARE(proc.exitCode(), 0);
     QByteArray mocOut = proc.readAllStandardOutput();
@@ -732,7 +737,7 @@ void tst_Moc::inputFileNameWithDotsButNoExtension()
 #if defined(Q_OS_LINUX) && defined(Q_CC_GNU) && !defined(QT_NO_PROCESS)
     QProcess proc;
     proc.setWorkingDirectory(m_sourceDirectory + QStringLiteral("/task71021"));
-    proc.start("moc", QStringList("../Header"));
+    proc.start(m_moc, QStringList("../Header"));
     QVERIFY(proc.waitForFinished());
     QCOMPARE(proc.exitCode(), 0);
     QByteArray mocOut = proc.readAllStandardOutput();
@@ -980,7 +985,7 @@ void tst_Moc::warnOnMultipleInheritance()
     QStringList args;
     const QString header = m_sourceDirectory + QStringLiteral("/warn-on-multiple-qobject-subclasses.h");
     args << "-I" << qtIncludePath + "/QtGui" << header;
-    proc.start("moc", args);
+    proc.start(m_moc, args);
     QVERIFY(proc.waitForFinished());
     QCOMPARE(proc.exitCode(), 0);
     QByteArray mocOut = proc.readAllStandardOutput();
@@ -1005,7 +1010,7 @@ void tst_Moc::ignoreOptionClashes()
     const QString includeDir = m_sourceDirectory + "/Test.framework/Headers";
     // given --ignore-option-clashes, -pthread should be ignored, but the -I path should not be.
     args << "--ignore-option-clashes" << "-pthread" << "-I" << includeDir << "-fno-builtin" << header;
-    proc.start("moc", args);
+    proc.start(m_moc, args);
     bool finished = proc.waitForFinished();
     if (!finished)
         qWarning("waitForFinished failed. QProcess error: %d", (int)proc.error());
@@ -1043,7 +1048,7 @@ void tst_Moc::forgottenQInterface()
     QStringList args;
     const QString header = m_sourceDirectory + QStringLiteral("/forgotten-qinterface.h");
     args << "-I" << qtIncludePath + "/QtCore" << header;
-    proc.start("moc", args);
+    proc.start(m_moc, args);
     QVERIFY(proc.waitForFinished());
     QCOMPARE(proc.exitCode(), 0);
     QByteArray mocOut = proc.readAllStandardOutput();
@@ -1127,7 +1132,7 @@ void tst_Moc::frameworkSearchPath()
          ;
 
     QProcess proc;
-    proc.start("moc", args);
+    proc.start(m_moc, args);
     bool finished = proc.waitForFinished();
     if (!finished)
         qWarning("waitForFinished failed. QProcess error: %d", (int)proc.error());
@@ -1166,7 +1171,7 @@ void tst_Moc::templateGtGt()
 #endif
 #if defined(Q_OS_LINUX) && defined(Q_CC_GNU) && !defined(QT_NO_PROCESS)
     QProcess proc;
-    proc.start("moc", QStringList(m_sourceDirectory + QStringLiteral("/template-gtgt.h")));
+    proc.start(m_moc, QStringList(m_sourceDirectory + QStringLiteral("/template-gtgt.h")));
     QVERIFY(proc.waitForFinished());
     QCOMPARE(proc.exitCode(), 0);
     QByteArray mocOut = proc.readAllStandardOutput();
@@ -1187,7 +1192,7 @@ void tst_Moc::defineMacroViaCmdline()
     args << "-DFOO";
     args << m_sourceDirectory + QStringLiteral("/macro-on-cmdline.h");
 
-    proc.start("moc", args);
+    proc.start(m_moc, args);
     QVERIFY(proc.waitForFinished());
     QCOMPARE(proc.exitCode(), 0);
     QCOMPARE(proc.readAllStandardError(), QByteArray());
@@ -1365,7 +1370,7 @@ void tst_Moc::warnOnPropertyWithoutREAD()
 #if defined(Q_OS_LINUX) && defined(Q_CC_GNU) && !defined(QT_NO_PROCESS)
     QProcess proc;
     const QString header = m_sourceDirectory + QStringLiteral("/warn-on-property-without-read.h");
-    proc.start("moc", QStringList(header));
+    proc.start(m_moc, QStringList(header));
     QVERIFY(proc.waitForFinished());
     QCOMPARE(proc.exitCode(), 0);
     QByteArray mocOut = proc.readAllStandardOutput();
@@ -1476,7 +1481,7 @@ void tst_Moc::warnOnVirtualSignal()
 #if defined(Q_OS_LINUX) && defined(Q_CC_GNU) && !defined(QT_NO_PROCESS)
     QProcess proc;
     const QString header = m_sourceDirectory + QStringLiteral("/pure-virtual-signals.h");
-    proc.start("moc", QStringList(header));
+    proc.start(m_moc, QStringList(header));
     QVERIFY(proc.waitForFinished());
     QCOMPARE(proc.exitCode(), 0);
     QByteArray mocOut = proc.readAllStandardOutput();
@@ -1608,7 +1613,7 @@ void tst_Moc::notifyError()
 #if defined(Q_OS_LINUX) && defined(Q_CC_GNU) && !defined(QT_NO_PROCESS)
     QProcess proc;
     const QString header = m_sourceDirectory + QStringLiteral("/error-on-wrong-notify.h");
-    proc.start("moc", QStringList(header));
+    proc.start(m_moc, QStringList(header));
     QVERIFY(proc.waitForFinished());
     QCOMPARE(proc.exitCode(), 1);
     QCOMPARE(proc.exitStatus(), QProcess::NormalExit);
@@ -1887,7 +1892,7 @@ void tst_Moc::warnings()
     env.insert("QT_MESSAGE_PATTERN", "no qDebug or qWarning please");
     proc.setProcessEnvironment(env);
 
-    proc.start("moc", args);
+    proc.start(m_moc, args);
     QVERIFY(proc.waitForStarted());
 
     QCOMPARE(proc.write(input), qint64(input.size()));
@@ -3115,7 +3120,7 @@ void tst_Moc::preprocessorOnly()
 #endif
 #if defined(Q_OS_LINUX) && defined(Q_CC_GNU) && !defined(QT_NO_PROCESS)
     QProcess proc;
-    proc.start("moc", QStringList() << "-E" << m_sourceDirectory + QStringLiteral("/pp-dollar-signs.h"));
+    proc.start(m_moc, QStringList() << "-E" << m_sourceDirectory + QStringLiteral("/pp-dollar-signs.h"));
     QVERIFY(proc.waitForFinished());
     QCOMPARE(proc.exitCode(), 0);
     QByteArray mocOut = proc.readAllStandardOutput();
@@ -3136,7 +3141,7 @@ void tst_Moc::unterminatedFunctionMacro()
 #endif
 #if defined(Q_OS_LINUX) && defined(Q_CC_GNU) && !defined(QT_NO_PROCESS)
     QProcess proc;
-    proc.start("moc", QStringList() << "-E" << m_sourceDirectory + QStringLiteral("/unterminated-function-macro.h"));
+    proc.start(m_moc, QStringList() << "-E" << m_sourceDirectory + QStringLiteral("/unterminated-function-macro.h"));
     QVERIFY(proc.waitForFinished());
     QCOMPARE(proc.exitCode(), 1);
     QCOMPARE(proc.readAllStandardOutput(), QByteArray());
