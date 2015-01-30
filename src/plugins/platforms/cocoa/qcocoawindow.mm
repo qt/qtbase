@@ -804,7 +804,7 @@ NSUInteger QCocoaWindow::windowStyleMask(Qt::WindowFlags flags)
     Qt::WindowType type = static_cast<Qt::WindowType>(int(flags & Qt::WindowType_Mask));
     NSInteger styleMask = NSBorderlessWindowMask;
     if (flags & Qt::FramelessWindowHint)
-        return styleMask;
+        return styleMask | NSResizableWindowMask;
     if ((type & Qt::Popup) == Qt::Popup) {
         if (!windowIsPopupType(type))
             styleMask = (NSUtilityWindowMask | NSResizableWindowMask | NSClosableWindowMask |
@@ -1506,7 +1506,10 @@ void QCocoaWindow::syncWindowState(Qt::WindowState newState)
 
     if ((m_synchedWindowState & Qt::WindowMinimized) != (newState & Qt::WindowMinimized)) {
         if (newState & Qt::WindowMinimized) {
-            [m_nsWindow performMiniaturize : m_nsWindow];
+            if (m_nsWindow.styleMask & NSMiniaturizableWindowMask)
+                [m_nsWindow performMiniaturize : m_nsWindow];
+            else
+                [m_nsWindow miniaturize : m_nsWindow];
         } else {
             [m_nsWindow deminiaturize : m_nsWindow];
         }
