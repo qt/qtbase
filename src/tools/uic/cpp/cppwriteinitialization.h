@@ -61,9 +61,6 @@ namespace CPP {
         int compare(const FontHandle &) const;
     private:
         const DomFont *m_domFont;
-#if defined(Q_OS_MAC) && defined(Q_CC_GNU) && (__GNUC__ == 3 && __GNUC_MINOR__ == 3)
-        friend uint qHash(const FontHandle &);
-#endif
     };
     inline bool operator ==(const FontHandle &f1, const FontHandle &f2) { return f1.compare(f2) == 0; }
     inline bool operator  <(const FontHandle &f1, const FontHandle &f2) { return f1.compare(f2) < 0; }
@@ -75,9 +72,6 @@ namespace CPP {
         int compare(const IconHandle &) const;
     private:
         const DomResourceIcon *m_domIcon;
-#if defined(Q_OS_MAC) && defined(Q_CC_GNU) && (__GNUC__ == 3 && __GNUC_MINOR__ == 3)
-        friend uint qHash(const IconHandle &);
-#endif
     };
     inline bool operator ==(const IconHandle &i1, const IconHandle &i2) { return i1.compare(i2) == 0; }
     inline bool operator  <(const IconHandle &i1, const IconHandle &i2) { return i1.compare(i2) < 0; }
@@ -89,15 +83,9 @@ namespace CPP {
         int compare(const SizePolicyHandle &) const;
     private:
         const DomSizePolicy *m_domSizePolicy;
-#if defined(Q_OS_MAC) && defined(Q_CC_GNU) && (__GNUC__ == 3 && __GNUC_MINOR__ == 3)
-        friend uint qHash(const SizePolicyHandle &);
-#endif
     };
     inline bool operator ==(const SizePolicyHandle &f1, const SizePolicyHandle &f2) { return f1.compare(f2) == 0; }
-#if !(defined(Q_OS_MAC) && defined(Q_CC_GNU) && (__GNUC__ == 3 && __GNUC_MINOR__ == 3))
     inline bool operator  <(const SizePolicyHandle &f1, const SizePolicyHandle &f2) { return f1.compare(f2) < 0; }
-#endif
-
 
 
 struct WriteInitialization : public TreeWalker
@@ -287,15 +275,9 @@ private:
     ColorBrushHash m_colorBrushHash;
     // Map from font properties to  font variable name for reuse
     // Map from size policy to  variable for reuse
-#if defined(Q_OS_MAC) && defined(Q_CC_GNU) && (__GNUC__ == 3 && __GNUC_MINOR__ == 3)
-    typedef QHash<FontHandle, QString> FontPropertiesNameMap;
-    typedef QHash<IconHandle, QString> IconPropertiesNameMap;
-    typedef QHash<SizePolicyHandle, QString> SizePolicyNameMap;
-#else
     typedef QMap<FontHandle, QString> FontPropertiesNameMap;
     typedef QMap<IconHandle, QString> IconPropertiesNameMap;
     typedef QMap<SizePolicyHandle, QString> SizePolicyNameMap;
-#endif
     FontPropertiesNameMap m_fontPropertiesNameMap;
     IconPropertiesNameMap m_iconPropertiesNameMap;
     SizePolicyNameMap     m_sizePolicyNameMap;

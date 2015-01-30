@@ -537,18 +537,7 @@ public:
 
     static inline Int32x4 v_toInt(Float32x4 x) { return _mm_cvttps_epi32(x); }
 
-    // pre-VS 2008 doesn't have cast intrinsics, whereas 2008 and later requires it
-    // (same deal with gcc prior to 4.0)
-#if (defined(Q_CC_MSVC) && _MSC_VER < 1500) || (defined(Q_CC_GNU) && __GNUC__ < 4)
-    static inline Int32x4 v_greaterOrEqual(Float32x4 a, Float32x4 b)
-    {
-        union Convert { Int32x4 vi; Float32x4 vf; } convert;
-        convert.vf = _mm_cmpgt_ps(a, b);
-        return convert.vi;
-    }
-#else
     static inline Int32x4 v_greaterOrEqual(Float32x4 a, Float32x4 b) { return _mm_castps_si128(_mm_cmpgt_ps(a, b)); }
-#endif
 };
 
 const uint * QT_FASTCALL qt_fetch_radial_gradient_sse2(uint *buffer, const Operator *op, const QSpanData *data,

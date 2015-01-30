@@ -305,13 +305,6 @@ int IconHandle::compare(const IconHandle &rhs) const
     return 0;
 }
 
-
-#if defined(Q_OS_MAC) && defined(Q_CC_GNU) && (__GNUC__ == 3 && __GNUC_MINOR__ == 3)
-inline uint qHash(const SizePolicyHandle &handle) { return qHash(handle.m_domSizePolicy); }
-inline uint qHash(const FontHandle &handle) { return qHash(handle.m_domFont); }
-inline uint qHash(const IconHandle &handle) { return qHash(handle.m_domIcon); }
-#endif
-
 SizePolicyHandle::SizePolicyHandle(const DomSizePolicy *domSizePolicy) :
     m_domSizePolicy(domSizePolicy)
 {
