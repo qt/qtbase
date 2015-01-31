@@ -933,7 +933,6 @@ void QFileDialog::setDirectory(const QString &directory)
 {
     Q_D(QFileDialog);
     QString newDirectory = directory;
-    QFileInfo info(directory);
     //we remove .. and . from the given path if exist
     if (!directory.isEmpty())
         newDirectory = QDir::cleanPath(directory);
