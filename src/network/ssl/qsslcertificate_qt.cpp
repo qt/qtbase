@@ -53,13 +53,6 @@
 
 QT_BEGIN_NAMESPACE
 
-enum GeneralNameType
-{
-    Rfc822NameType = 0x81,
-    DnsNameType = 0x82,
-    UniformResourceIdentifierType = 0x86
-};
-
 bool QSslCertificate::operator==(const QSslCertificate &other) const
 {
     if (d == other.d)
@@ -407,10 +400,10 @@ bool QSslCertificatePrivate::parse(const QByteArray &data)
                             QDataStream nameStream(sanElem.value());
                             QAsn1Element nameElem;
                             while (nameElem.read(nameStream)) {
-                                if (nameElem.type() == Rfc822NameType) {
-                                    subjectAlternativeNames.insert(QSsl::EmailEntry, QString::fromLatin1(nameElem.value(), nameElem.value().size()));
-                                } else if (nameElem.type() == DnsNameType) {
-                                    subjectAlternativeNames.insert(QSsl::DnsEntry, QString::fromLatin1(nameElem.value(), nameElem.value().size()));
+                                if (nameElem.type() == QAsn1Element::Rfc822NameType) {
+                                    subjectAlternativeNames.insert(QSsl::EmailEntry, nameElem.toString());
+                                } else if (nameElem.type() == QAsn1Element::DnsNameType) {
+                                    subjectAlternativeNames.insert(QSsl::DnsEntry, nameElem.toString());
                                 }
                             }
                         }
@@ -464,10 +457,10 @@ bool QSslCertificatePrivate::parseExtension(const QByteArray &data, QSslCertific
                 return false;
             const QString key = QString::fromLatin1(items.at(0).toObjectName());
             switch (items.at(1).type()) {
-            case Rfc822NameType:
-            case DnsNameType:
-            case UniformResourceIdentifierType:
-                result[key] = QString::fromLatin1(items.at(1).value(), items.at(1).value().size());
+            case QAsn1Element::Rfc822NameType:
+            case QAsn1Element::DnsNameType:
+            case QAsn1Element::UniformResourceIdentifierType:
+                result[key] = items.at(1).toString();
                 break;
             }
         }

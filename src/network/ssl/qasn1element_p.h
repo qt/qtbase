@@ -81,6 +81,11 @@ public:
         SequenceType = 0x30,
         SetType = 0x31,
 
+        // GeneralNameTypes
+        Rfc822NameType = 0x81,
+        DnsNameType = 0x82,
+        UniformResourceIdentifierType = 0x86,
+
         // context specific
         Context0Type = 0xA0,
         Context3Type = 0xA3

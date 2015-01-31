@@ -281,6 +281,15 @@ void tst_QAsn1Element::string_data()
     QTest::newRow("utf8string")
         << QAsn1Element(QAsn1Element::Utf8StringType, QByteArray("Hello World"))
         << QStringLiteral("Hello World");
+    QTest::newRow("rfc822name")
+        << QAsn1Element(QAsn1Element::Rfc822NameType, QByteArray("Hello World"))
+        << QStringLiteral("Hello World");
+    QTest::newRow("dnsname")
+        << QAsn1Element(QAsn1Element::DnsNameType, QByteArray("Hello World"))
+        << QStringLiteral("Hello World");
+    QTest::newRow("uri")
+        << QAsn1Element(QAsn1Element::UniformResourceIdentifierType, QByteArray("Hello World"))
+        << QStringLiteral("Hello World");
 
     // Embedded NULs are not allowed and should be rejected
     QTest::newRow("evil_printablestring")
@@ -291,6 +300,15 @@ void tst_QAsn1Element::string_data()
         << QString();
     QTest::newRow("evil_utf8string")
         << QAsn1Element(QAsn1Element::Utf8StringType, QByteArray("Hello\0World", 11))
+        << QString();
+    QTest::newRow("evil_rfc822name")
+        << QAsn1Element(QAsn1Element::Rfc822NameType, QByteArray("Hello\0World", 11))
+        << QString();
+    QTest::newRow("evil_dnsname")
+        << QAsn1Element(QAsn1Element::DnsNameType, QByteArray("Hello\0World", 11))
+        << QString();
+    QTest::newRow("evil_uri")
+        << QAsn1Element(QAsn1Element::UniformResourceIdentifierType, QByteArray("Hello\0World", 11))
         << QString();
 }
 

@@ -340,7 +340,9 @@ QString QAsn1Element::toString() const
     if (qstrlen(mValue) < uint(mValue.size()))
         return QString();
 
-    if (mType == PrintableStringType || mType == TeletexStringType)
+    if (mType == PrintableStringType || mType == TeletexStringType
+        || mType == Rfc822NameType || mType == DnsNameType
+        || mType == UniformResourceIdentifierType)
         return QString::fromLatin1(mValue, mValue.size());
     if (mType == Utf8StringType)
         return QString::fromUtf8(mValue, mValue.size());
