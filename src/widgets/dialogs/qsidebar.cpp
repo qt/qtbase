@@ -247,10 +247,11 @@ void QUrlModel::addUrls(const QList<QUrl> &list, int row, bool move)
         for (int j = 0; move && j < rowCount(); ++j) {
             QString local = index(j, 0).data(UrlRole).toUrl().toLocalFile();
 #if defined(Q_OS_WIN)
-            if (index(j, 0).data(UrlRole).toUrl().toLocalFile().toLower() == cleanUrl.toLower()) {
+            const Qt::CaseSensitivity cs = Qt::CaseInsensitive;
 #else
-            if (index(j, 0).data(UrlRole).toUrl().toLocalFile() == cleanUrl) {
+            const Qt::CaseSensitivity cs = Qt::CaseSensitive;
 #endif
+            if (!cleanUrl.compare(local, cs)) {
                 removeRow(j);
                 if (j <= row)
                     row--;
