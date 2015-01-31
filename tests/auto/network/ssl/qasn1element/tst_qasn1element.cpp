@@ -55,6 +55,8 @@ private slots:
     void octetString();
     void objectIdentifier_data();
     void objectIdentifier();
+    void string_data();
+    void string();
 };
 
 void tst_QAsn1Element::emptyConstructor()
@@ -263,6 +265,41 @@ void tst_QAsn1Element::objectIdentifier()
     QCOMPARE(elem.toObjectId(), oid);
     QCOMPARE(QAsn1Element::fromObjectId(oid).toObjectId(), oid);
     QCOMPARE(elem.toObjectName(), name);
+}
+
+void tst_QAsn1Element::string_data()
+{
+    QTest::addColumn<QAsn1Element>("element");
+    QTest::addColumn<QString>("value");
+
+    QTest::newRow("printablestring")
+        << QAsn1Element(QAsn1Element::PrintableStringType, QByteArray("Hello World"))
+        << QStringLiteral("Hello World");
+    QTest::newRow("teletextstring")
+        << QAsn1Element(QAsn1Element::TeletexStringType, QByteArray("Hello World"))
+        << QStringLiteral("Hello World");
+    QTest::newRow("utf8string")
+        << QAsn1Element(QAsn1Element::Utf8StringType, QByteArray("Hello World"))
+        << QStringLiteral("Hello World");
+
+    // Embedded NULs are not allowed and should be rejected
+    QTest::newRow("evil_printablestring")
+        << QAsn1Element(QAsn1Element::PrintableStringType, QByteArray("Hello\0World", 11))
+        << QString();
+    QTest::newRow("evil_teletextstring")
+        << QAsn1Element(QAsn1Element::TeletexStringType, QByteArray("Hello\0World", 11))
+        << QString();
+    QTest::newRow("evil_utf8string")
+        << QAsn1Element(QAsn1Element::Utf8StringType, QByteArray("Hello\0World", 11))
+        << QString();
+}
+
+void tst_QAsn1Element::string()
+{
+    QFETCH(QAsn1Element, element);
+    QFETCH(QString, value);
+
+    QCOMPARE(element.toString(), value);
 }
 
 QTEST_MAIN(tst_QAsn1Element)
