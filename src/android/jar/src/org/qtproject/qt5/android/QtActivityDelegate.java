@@ -879,6 +879,23 @@ public class QtActivityDelegate
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        // if splash screen is defined, then show it
+        // Note: QtActivity handles settting the splash screen
+        // in onCreate, change that too if you are changing
+        // how the splash screen should be displayed
+        try {
+            if (m_surfaces.size() == 0) {
+                ActivityInfo info = m_activity.getPackageManager().getActivityInfo(m_activity.getComponentName(), PackageManager.GET_META_DATA);
+                if (info.metaData.containsKey("android.app.splash_screen_drawable"))
+                    m_activity.getWindow().setBackgroundDrawableResource(info.metaData.getInt("android.app.splash_screen_drawable"));
+                else
+                    m_activity.getWindow().setBackgroundDrawable(new ColorDrawable(0xff000000));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         int rotation = m_activity.getWindowManager().getDefaultDisplay().getRotation();
         if (rotation != m_currentRotation) {
             QtNative.handleOrientationChanged(rotation, m_nativeOrientation);
