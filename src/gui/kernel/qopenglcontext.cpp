@@ -1185,6 +1185,21 @@ bool QOpenGLContext::isOpenGLES() const
 }
 
 /*!
+  Returns \c true if the platform supports OpenGL rendering outside the main (gui)
+  thread.
+
+  The value is controlled by the platform plugin in use and may also depend on the
+  graphics drivers.
+
+  \since 5.5
+ */
+bool QOpenGLContext::supportsThreadedOpenGL()
+{
+    Q_ASSERT(qGuiApp);
+    return QGuiApplicationPrivate::instance()->platformIntegration()->hasCapability(QPlatformIntegration::ThreadedOpenGL);
+}
+
+/*!
     \internal
 */
 QOpenGLVersionFunctionsBackend *QOpenGLContext::functionsBackend(const QOpenGLVersionStatus &v) const

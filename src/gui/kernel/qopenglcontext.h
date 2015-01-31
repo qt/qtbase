@@ -198,6 +198,8 @@ public:
 
     bool isOpenGLES() const;
 
+    static bool supportsThreadedOpenGL();
+
 Q_SIGNALS:
     void aboutToBeDestroyed();
 
