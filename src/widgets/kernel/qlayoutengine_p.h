@@ -76,9 +76,9 @@ struct QLayoutStruct
     int sizeHint;
     int maximumSize;
     int minimumSize;
+    int spacing;
     bool expansive;
     bool empty;
-    int spacing;
 
     // temporary storage
     bool done;
