@@ -37,7 +37,7 @@
 #include "qvector.h"
 #include "qwidget.h"
 
-#include <qlist.h>
+#include <qvarlengtharray.h>
 #include <qdebug.h>
 
 #include <algorithm>
@@ -121,12 +121,13 @@ void qGeomCalc(QVector<QLayoutStruct> &chain, int start, int count,
             sumSpacing = spacer * spacerCount;
         }
 
-        QList<int> list;
+        QVarLengthArray<int, 32> minimumSizes;
+        minimumSizes.reserve(count);
 
         for (i = start; i < start + count; i++)
-            list << chain.at(i).minimumSize;
+            minimumSizes << chain.at(i).minimumSize;
 
-        std::sort(list.begin(), list.end());
+        std::sort(minimumSizes.begin(), minimumSizes.end());
 
         int space_left = space - sumSpacing;
 
@@ -135,7 +136,7 @@ void qGeomCalc(QVector<QLayoutStruct> &chain, int start, int count,
         int space_used=0;
         int current = 0;
         while (idx < count && space_used < space_left) {
-            current = list.at(idx);
+            current = minimumSizes.at(idx);
             space_used = sum + current * (count - idx);
             sum += current;
             ++idx;
