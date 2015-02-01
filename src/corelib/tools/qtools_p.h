@@ -51,16 +51,14 @@
 QT_BEGIN_NAMESPACE
 
 namespace QtMiscUtils {
-inline char toHexUpper(uint value) Q_DECL_NOTHROW
+Q_DECL_CONSTEXPR inline char toHexUpper(uint value) Q_DECL_NOTHROW
 {
-    static const char hexdigits[] = "0123456789ABCDEF";
-    return hexdigits[value & 0xF];
+    return "0123456789ABCDEF"[value & 0xF];
 }
 
-inline char toHexLower(uint value) Q_DECL_NOTHROW
+Q_DECL_CONSTEXPR inline char toHexLower(uint value) Q_DECL_NOTHROW
 {
-    static const char hexdigits[] = "0123456789abcdef";
-    return hexdigits[value & 0xF];
+    return "0123456789abcdef"[value & 0xF];
 }
 
 Q_DECL_CONSTEXPR inline int fromHex(uint c) Q_DECL_NOTHROW
