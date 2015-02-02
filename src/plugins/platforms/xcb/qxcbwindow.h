@@ -149,6 +149,8 @@ public:
 
     qreal devicePixelRatio() const Q_DECL_OVERRIDE;
 
+    QXcbScreen *xcbScreen() const;
+
     virtual void create();
     virtual void destroy();
     QPlatformScreen *screenForNativeGeometry(const QRect &newGeometry) const;
@@ -185,8 +187,6 @@ protected:
     bool relayFocusToModalWindow() const;
     void doFocusIn();
     void doFocusOut();
-
-    QXcbScreen *m_screen;
 
     xcb_window_t m_window;
 
