@@ -1524,7 +1524,6 @@ void QXcbWindow::requestActivateWindow()
 
 QSurfaceFormat QXcbWindow::format() const
 {
-    // ### return actual format
     return m_format;
 }
 
