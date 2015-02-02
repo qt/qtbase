@@ -124,17 +124,16 @@ QStringList QMakeProject::expand(const ProKey &func, const QList<ProStringList> 
 ProString QMakeProject::expand(const QString &expr, const QString &where, int line)
 {
     ProString ret;
-    if (ProFile *pro = m_parser->parsedProBlock(expr, where, line, QMakeParser::ValueGrammar)) {
-        if (pro->isOk()) {
-            m_current.pro = pro;
-            m_current.line = 0;
-            const ushort *tokPtr = pro->tokPtr();
-            ProStringList result = expandVariableReferences(tokPtr, 1, true);
-            if (!result.isEmpty())
-                ret = result.at(0);
-        }
-        pro->deref();
+    ProFile *pro = m_parser->parsedProBlock(expr, where, line, QMakeParser::ValueGrammar);
+    if (pro->isOk()) {
+        m_current.pro = pro;
+        m_current.line = 0;
+        const ushort *tokPtr = pro->tokPtr();
+        ProStringList result = expandVariableReferences(tokPtr, 1, true);
+        if (!result.isEmpty())
+            ret = result.at(0);
     }
+    pro->deref();
     return ret;
 }
 
