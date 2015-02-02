@@ -63,6 +63,14 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \fn QQuaternion::QQuaternion(Qt::Initialization)
+    \since 5.5
+    \internal
+
+    Constructs a quaternion without initializing the contents.
+*/
+
+/*!
     \fn QQuaternion::QQuaternion(float scalar, float xpos, float ypos, float zpos)
 
     Constructs a quaternion with the vector (\a xpos, \a ypos, \a zpos)

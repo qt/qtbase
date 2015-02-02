@@ -64,6 +64,14 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \fn QVector2D::QVector2D(Qt::Initialization)
+    \since 5.5
+    \internal
+
+    Constructs a vector without initializing the contents.
+*/
+
+/*!
     \fn QVector2D::QVector2D(float xpos, float ypos)
 
     Constructs a vector with coordinates (\a xpos, \a ypos).

@@ -49,6 +49,7 @@ class Q_GUI_EXPORT QQuaternion
 {
 public:
     QQuaternion();
+    explicit QQuaternion(Qt::Initialization) {}
     QQuaternion(float scalar, float xpos, float ypos, float zpos);
 #ifndef QT_NO_VECTOR3D
     QQuaternion(float scalar, const QVector3D& vector);

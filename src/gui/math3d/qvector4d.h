@@ -50,6 +50,7 @@ class Q_GUI_EXPORT QVector4D
 {
 public:
     Q_DECL_CONSTEXPR QVector4D();
+    explicit QVector4D(Qt::Initialization) {}
     Q_DECL_CONSTEXPR QVector4D(float xpos, float ypos, float zpos, float wpos);
     Q_DECL_CONSTEXPR explicit QVector4D(const QPoint& point);
     Q_DECL_CONSTEXPR explicit QVector4D(const QPointF& point);

@@ -51,6 +51,7 @@ class Q_GUI_EXPORT QVector3D
 {
 public:
     Q_DECL_CONSTEXPR QVector3D();
+    explicit QVector3D(Qt::Initialization) {}
     Q_DECL_CONSTEXPR QVector3D(float xpos, float ypos, float zpos) : xp(xpos), yp(ypos), zp(zpos) {}
 
     Q_DECL_CONSTEXPR explicit QVector3D(const QPoint& point);

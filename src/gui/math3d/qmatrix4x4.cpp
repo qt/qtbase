@@ -76,6 +76,14 @@ static const float inv_dist_to_plane = 1.0f / 1024.0f;
 */
 
 /*!
+    \fn QMatrix4x4::QMatrix4x4(Qt::Initialization)
+    \since 5.5
+    \internal
+
+    Constructs a matrix without initializing the contents.
+*/
+
+/*!
     Constructs a matrix from the given 16 floating-point \a values.
     The contents of the array \a values is assumed to be in
     row-major order.

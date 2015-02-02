@@ -50,6 +50,7 @@ class Q_GUI_EXPORT QVector2D
 {
 public:
     Q_DECL_CONSTEXPR QVector2D();
+    explicit QVector2D(Qt::Initialization) {}
     Q_DECL_CONSTEXPR QVector2D(float xpos, float ypos);
     Q_DECL_CONSTEXPR explicit QVector2D(const QPoint& point);
     Q_DECL_CONSTEXPR explicit QVector2D(const QPointF& point);

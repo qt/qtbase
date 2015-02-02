@@ -46,6 +46,7 @@ class QGenericMatrix
 {
 public:
     QGenericMatrix();
+    explicit QGenericMatrix(Qt::Initialization) {}
     QGenericMatrix(const QGenericMatrix<N, M, T>& other);
     explicit QGenericMatrix(const T *values);
 

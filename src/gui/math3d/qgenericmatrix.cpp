@@ -61,6 +61,14 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \fn QGenericMatrix::QGenericMatrix(Qt::Initialization)
+    \since 5.5
+    \internal
+
+    Constructs a NxM matrix without initializing the contents.
+*/
+
+/*!
     \fn QGenericMatrix::QGenericMatrix(const QGenericMatrix<N, M, T>& other)
 
     Constructs a copy of \a other.

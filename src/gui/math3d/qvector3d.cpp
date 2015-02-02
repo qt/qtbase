@@ -69,6 +69,14 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \fn QVector3D::QVector3D(Qt::Initialization)
+    \since 5.5
+    \internal
+
+    Constructs a vector without initializing the contents.
+*/
+
+/*!
     \fn QVector3D::QVector3D(float xpos, float ypos, float zpos)
 
     Constructs a vector with coordinates (\a xpos, \a ypos, \a zpos).

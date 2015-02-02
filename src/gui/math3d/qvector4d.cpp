@@ -63,6 +63,14 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \fn QVector4D::QVector4D(Qt::Initialization)
+    \since 5.5
+    \internal
+
+    Constructs a vector without initializing the contents.
+*/
+
+/*!
     \fn QVector4D::QVector4D(float xpos, float ypos, float zpos, float wpos)
 
     Constructs a vector with coordinates (\a xpos, \a ypos, \a zpos, \a wpos).
