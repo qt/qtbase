@@ -85,9 +85,9 @@ QMAKE_CFLAGS += $$QMAKE_CFLAGS_XCB
 
 CONFIG += qpa/genericunixfontdatabase
 
-contains(QT_CONFIG, dbus) {
+contains(QT_CONFIG, dbus-linked) {
     QT += dbus
-    LIBS += -ldbus-1
+    LIBS += $$QT_LIBS_DBUS
 }
 
 contains(QT_CONFIG, xcb-qt) {
