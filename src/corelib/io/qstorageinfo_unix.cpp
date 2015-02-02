@@ -54,6 +54,12 @@
 #  include <sys/statvfs.h>
 #elif defined(Q_OS_SOLARIS)
 #  include <sys/mnttab.h>
+#elif defined(Q_OS_HAIKU)
+#  include <Directory.h>
+#  include <Path.h>
+#  include <Volume.h>
+#  include <VolumeRoster.h>
+#  include <sys/statvfs.h>
 #else
 #  include <sys/statvfs.h>
 #endif
@@ -129,6 +135,12 @@ private:
     FILE *fp;
     mntent mnt;
     QByteArray buffer;
+#elif defined(Q_OS_HAIKU)
+    BVolumeRoster m_volumeRoster;
+
+    QByteArray m_rootPath;
+    QByteArray m_fileSystemType;
+    QByteArray m_device;
 #endif
 };
 
@@ -301,6 +313,54 @@ inline QByteArray QStorageIterator::fileSystemType() const
 inline QByteArray QStorageIterator::device() const
 {
     return QByteArray(mnt.mnt_fsname);
+}
+
+#elif defined(Q_OS_HAIKU)
+inline QStorageIterator::QStorageIterator()
+{
+}
+
+inline QStorageIterator::~QStorageIterator()
+{
+}
+
+inline bool QStorageIterator::isValid() const
+{
+    return true;
+}
+
+inline bool QStorageIterator::next()
+{
+    BVolume volume;
+
+    if (m_volumeRoster.GetNextVolume(&volume) != B_OK)
+        return false;
+
+    BDirectory directory;
+    if (volume.GetRootDirectory(&directory) != B_OK)
+        return false;
+
+    const BPath path(&directory);
+    m_rootPath = path.Path();
+    m_fileSystemType = QByteArray(); // no public API to access it
+    m_device = QByteArray::number(static_cast<qint32>(volume.Device()));
+
+    return true;
+}
+
+inline QString QStorageIterator::rootPath() const
+{
+    return QFile::decodeName(m_rootPath);
+}
+
+inline QByteArray QStorageIterator::fileSystemType() const
+{
+    return m_fileSystemType;
+}
+
+inline QByteArray QStorageIterator::device() const
+{
+    return m_device;
 }
 
 #else
