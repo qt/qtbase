@@ -45,9 +45,9 @@
 // We mean it.
 //
 
+#include <QtCore/QVariant>
 #include <qpa/qplatformintegration.h>
 #include <qpa/qplatformnativeinterface.h>
-#include <QtCore/QVariant>
 #include <EGL/egl.h>
 
 QT_BEGIN_NAMESPACE

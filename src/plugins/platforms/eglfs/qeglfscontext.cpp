@@ -31,15 +31,16 @@
 **
 ****************************************************************************/
 
-#include "qeglfscontext.h"
-#include "qeglfswindow.h"
-#include "qeglfshooks.h"
-
-#include <QtPlatformSupport/private/qeglconvenience_p.h>
-#include <QtPlatformSupport/private/qeglpbuffer_p.h>
-#include <QtPlatformSupport/private/qeglplatformcursor_p.h>
 #include <QtGui/QSurface>
 #include <QtDebug>
+
+#include <QtPlatformSupport/private/qeglplatformcursor_p.h>
+#include <QtPlatformSupport/private/qeglconvenience_p.h>
+#include <QtPlatformSupport/private/qeglpbuffer_p.h>
+
+#include "qeglfswindow.h"
+#include "qeglfshooks.h"
+#include "qeglfscontext.h"
 
 QT_BEGIN_NAMESPACE
 

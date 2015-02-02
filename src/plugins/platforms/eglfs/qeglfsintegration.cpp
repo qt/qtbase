@@ -31,18 +31,8 @@
 **
 ****************************************************************************/
 
-#include "qeglfsintegration.h"
-
-#include "qeglfswindow.h"
-#include "qeglfshooks.h"
-#include "qeglfscontext.h"
-
+#include <QtCore/qtextstream.h>
 #include <QtGui/private/qguiapplication_p.h>
-
-#include <QtPlatformSupport/private/qeglconvenience_p.h>
-#include <QtPlatformSupport/private/qeglplatformcontext_p.h>
-#include <QtPlatformSupport/private/qeglpbuffer_p.h>
-#include <QtPlatformHeaders/QEGLNativeContext>
 
 #include <qpa/qplatformwindow.h>
 #include <QtGui/QSurfaceFormat>
@@ -50,6 +40,16 @@
 #include <QtGui/QScreen>
 #include <QtGui/QOffscreenSurface>
 #include <qpa/qplatformcursor.h>
+
+#include "qeglfsintegration.h"
+#include "qeglfswindow.h"
+#include "qeglfshooks.h"
+#include "qeglfscontext.h"
+
+#include <QtPlatformSupport/private/qeglconvenience_p.h>
+#include <QtPlatformSupport/private/qeglplatformcontext_p.h>
+#include <QtPlatformSupport/private/qeglpbuffer_p.h>
+#include <QtPlatformHeaders/QEGLNativeContext>
 
 #include <EGL/egl.h>
 

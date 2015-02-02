@@ -31,10 +31,10 @@
 **
 ****************************************************************************/
 
-#include "qeglfshooks.h"
 #include <QtPlatformSupport/private/qeglplatformcursor_p.h>
 #include <QtPlatformSupport/private/qeglconvenience_p.h>
 #include <QtCore/QRegularExpression>
+#include "qeglfshooks.h"
 
 #if defined(Q_OS_LINUX)
 #include <fcntl.h>
