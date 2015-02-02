@@ -95,8 +95,8 @@ void tst_uic::initTestCase()
     const QString out = QString::fromLocal8Bit(process.readAllStandardError()).remove(QLatin1Char('\r'));
     const QStringList outLines = out.split(QLatin1Char('\n'));
     // Print version
-    QString msg = QString::fromLatin1("uic test built %1 running in '%2' using: ").
-                  arg(QString::fromLatin1(__DATE__), QDir::currentPath());
+    QString msg = QString::fromLatin1("uic test running in '%1' using: ").
+                  arg(QDir::currentPath());
     if (!outLines.empty())
         msg += outLines.front();
     qDebug("%s", qPrintable(msg));
