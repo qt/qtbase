@@ -2462,6 +2462,8 @@ void tst_QImage::inplaceConversion_data()
     QTest::newRow("Format_RGB666 -> Format_RGB888") << QImage::Format_RGB666 << QImage::Format_RGB888;
     QTest::newRow("Format_ARGB8565_Premultiplied, Format_ARGB8555_Premultiplied") << QImage::Format_ARGB8565_Premultiplied << QImage::Format_ARGB8555_Premultiplied;
     QTest::newRow("Format_ARGB4444_Premultiplied, Format_RGB444") << QImage::Format_ARGB4444_Premultiplied << QImage::Format_RGB444;
+    QTest::newRow("Format_RGBA8888 -> RGB16") << QImage::Format_RGBA8888 << QImage::Format_RGB16;
+    QTest::newRow("Format_RGBA8888_Premultiplied -> RGB16") << QImage::Format_RGBA8888_Premultiplied << QImage::Format_RGB16;
 }
 
 void tst_QImage::inplaceConversion()
@@ -2480,6 +2482,7 @@ void tst_QImage::inplaceConversion()
     const uchar* originalPtr = image.constScanLine(0);
 
     QImage imageConverted = std::move(image).convertToFormat(dest_format);
+    QCOMPARE(imageConverted.format(), dest_format);
     for (int i = 0; i < imageConverted.height(); ++i) {
         for (int j = 0; j < imageConverted.width(); ++j) {
             QRgb convertedColor = imageConverted.pixel(j,i);
@@ -2487,8 +2490,8 @@ void tst_QImage::inplaceConversion()
             QCOMPARE(qGreen(convertedColor) & 0xF0, i * 16);
         }
     }
-
-    QCOMPARE(imageConverted.constScanLine(0), originalPtr);
+    if (image.depth() == imageConverted.depth())
+        QCOMPARE(imageConverted.constScanLine(0), originalPtr);
 #endif
 }
 
