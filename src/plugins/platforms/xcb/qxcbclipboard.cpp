@@ -276,7 +276,7 @@ QXcbClipboard::QXcbClipboard(QXcbConnection *c)
     m_timestamp[QClipboard::Clipboard] = XCB_CURRENT_TIME;
     m_timestamp[QClipboard::Selection] = XCB_CURRENT_TIME;
 
-    m_screen = connection()->primaryScreen();
+    QXcbScreen *platformScreen = screen();
 
     int x = 0, y = 0, w = 3, h = 3;
 
@@ -284,11 +284,11 @@ QXcbClipboard::QXcbClipboard(QXcbConnection *c)
     Q_XCB_CALL(xcb_create_window(xcb_connection(),
                                  XCB_COPY_FROM_PARENT,            // depth -- same as root
                                  m_owner,                        // window id
-                                 m_screen->screen()->root,                   // parent window id
+                                 platformScreen->screen()->root,                   // parent window id
                                  x, y, w, h,
                                  0,                               // border width
                                  XCB_WINDOW_CLASS_INPUT_OUTPUT,   // window class
-                                 m_screen->screen()->root_visual, // visual
+                                 platformScreen->screen()->root_visual, // visual
                                  0,                               // value mask
                                  0));                             // value list
 #ifndef QT_NO_DEBUG
@@ -462,9 +462,16 @@ bool QXcbClipboard::ownsMode(QClipboard::Mode mode) const
     return m_timestamp[mode] != XCB_CURRENT_TIME;
 }
 
+QXcbScreen *QXcbClipboard::screen() const
+{
+    return connection()->primaryScreen();
+}
+
 xcb_window_t QXcbClipboard::requestor() const
 {
-    if (!m_requestor) {
+     QXcbScreen *platformScreen = screen();
+
+    if (!m_requestor && platformScreen) {
         const int x = 0, y = 0, w = 3, h = 3;
         QXcbClipboard *that = const_cast<QXcbClipboard *>(this);
 
@@ -472,11 +479,11 @@ xcb_window_t QXcbClipboard::requestor() const
         Q_XCB_CALL(xcb_create_window(xcb_connection(),
                                      XCB_COPY_FROM_PARENT,            // depth -- same as root
                                      window,                        // window id
-                                     m_screen->screen()->root,                   // parent window id
+                                     platformScreen->screen()->root,                   // parent window id
                                      x, y, w, h,
                                      0,                               // border width
                                      XCB_WINDOW_CLASS_INPUT_OUTPUT,   // window class
-                                     m_screen->screen()->root_visual, // visual
+                                     platformScreen->screen()->root_visual, // visual
                                      0,                               // value mask
                                      0));                             // value list
 #ifndef QT_NO_DEBUG

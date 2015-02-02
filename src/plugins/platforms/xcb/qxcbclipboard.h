@@ -59,7 +59,7 @@ public:
     bool supportsMode(QClipboard::Mode mode) const Q_DECL_OVERRIDE;
     bool ownsMode(QClipboard::Mode mode) const Q_DECL_OVERRIDE;
 
-    QXcbScreen *screen() const { return m_screen; }
+    QXcbScreen *screen() const;
 
     xcb_window_t requestor() const;
     void setRequestor(xcb_window_t window);
@@ -90,8 +90,6 @@ private:
 
     xcb_atom_t atomForMode(QClipboard::Mode mode) const;
     QClipboard::Mode modeForAtom(xcb_atom_t atom) const;
-
-    QXcbScreen *m_screen;
 
     // Selection and Clipboard
     QXcbClipboardMime *m_xClipboard[2];
