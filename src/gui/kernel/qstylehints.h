@@ -47,19 +47,19 @@ class Q_GUI_EXPORT QStyleHints : public QObject
     Q_OBJECT
     Q_DECLARE_PRIVATE(QStyleHints)
     Q_PROPERTY(int cursorFlashTime READ cursorFlashTime NOTIFY cursorFlashTimeChanged FINAL)
-    Q_PROPERTY(qreal fontSmoothingGamma READ fontSmoothingGamma STORED false FINAL)
-    Q_PROPERTY(int keyboardAutoRepeatRate READ keyboardAutoRepeatRate STORED false FINAL)
+    Q_PROPERTY(qreal fontSmoothingGamma READ fontSmoothingGamma STORED false CONSTANT FINAL)
+    Q_PROPERTY(int keyboardAutoRepeatRate READ keyboardAutoRepeatRate STORED false CONSTANT FINAL)
     Q_PROPERTY(int keyboardInputInterval READ keyboardInputInterval NOTIFY keyboardInputIntervalChanged FINAL)
     Q_PROPERTY(int mouseDoubleClickInterval READ mouseDoubleClickInterval NOTIFY mouseDoubleClickIntervalChanged FINAL)
-    Q_PROPERTY(int mousePressAndHoldInterval READ mousePressAndHoldInterval STORED false FINAL)
-    Q_PROPERTY(QChar passwordMaskCharacter READ passwordMaskCharacter STORED false FINAL)
-    Q_PROPERTY(int passwordMaskDelay READ passwordMaskDelay STORED false FINAL)
-    Q_PROPERTY(bool setFocusOnTouchRelease READ setFocusOnTouchRelease STORED false FINAL)
-    Q_PROPERTY(bool showIsFullScreen READ showIsFullScreen STORED false FINAL)
+    Q_PROPERTY(int mousePressAndHoldInterval READ mousePressAndHoldInterval STORED false CONSTANT FINAL)
+    Q_PROPERTY(QChar passwordMaskCharacter READ passwordMaskCharacter STORED false CONSTANT FINAL)
+    Q_PROPERTY(int passwordMaskDelay READ passwordMaskDelay STORED false CONSTANT FINAL)
+    Q_PROPERTY(bool setFocusOnTouchRelease READ setFocusOnTouchRelease STORED false CONSTANT FINAL)
+    Q_PROPERTY(bool showIsFullScreen READ showIsFullScreen STORED false CONSTANT FINAL)
     Q_PROPERTY(int startDragDistance READ startDragDistance NOTIFY startDragDistanceChanged FINAL)
     Q_PROPERTY(int startDragTime READ startDragTime NOTIFY startDragTimeChanged FINAL)
-    Q_PROPERTY(int startDragVelocity READ startDragVelocity STORED false FINAL)
-    Q_PROPERTY(bool useRtlExtensions READ useRtlExtensions STORED false FINAL)
+    Q_PROPERTY(int startDragVelocity READ startDragVelocity STORED false CONSTANT FINAL)
+    Q_PROPERTY(bool useRtlExtensions READ useRtlExtensions STORED false CONSTANT FINAL)
 
 public:
     void setMouseDoubleClickInterval(int mouseDoubleClickInterval);
