@@ -67,16 +67,7 @@ namespace {
 
 static QString formatNumber(int number, int fieldWidth)
 {
-    QString str;
-    int pow = 10;
-    for (int i = 0; i < fieldWidth - 1; ++i) {
-        if (number / pow == 0)
-            str += QLatin1Char('0');
-        pow *= 10;
-    }
-    str += QString::number(number);
-
-    return str;
+    return QString::number(number).rightJustified(fieldWidth, QLatin1Char('0'));
 }
 
 class QCalendarDateSectionValidator
