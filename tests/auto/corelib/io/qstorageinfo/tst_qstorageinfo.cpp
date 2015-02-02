@@ -105,9 +105,11 @@ void tst_QStorageInfo::root()
     QVERIFY(storage.isRoot());
     QVERIFY(!storage.device().isEmpty());
     QVERIFY(!storage.fileSystemType().isEmpty());
+#ifndef Q_OS_HAIKU
     QVERIFY(storage.bytesTotal() > 0);
     QVERIFY(storage.bytesFree() > 0);
     QVERIFY(storage.bytesAvailable() > 0);
+#endif
 }
 
 void tst_QStorageInfo::currentStorage()
