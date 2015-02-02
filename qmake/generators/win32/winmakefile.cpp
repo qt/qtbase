@@ -525,7 +525,7 @@ void Win32MakefileGenerator::processRcFileVar()
             project->values("RES_FILE").first().prepend(resDestDir);
         }
         project->values("RES_FILE").first() = Option::fixPathToTargetOS(
-                    project->first("RES_FILE").toQString(), false, false);
+                    project->first("RES_FILE").toQString(), false);
         project->values("POST_TARGETDEPS") += project->values("RES_FILE");
         project->values("CLEAN_FILES") += project->values("RES_FILE");
     }
