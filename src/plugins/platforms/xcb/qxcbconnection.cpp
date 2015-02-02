@@ -143,9 +143,8 @@ QXcbScreen* QXcbConnection::findOrCreateScreen(QList<QXcbScreen *>& newScreens,
 void QXcbConnection::updateScreens()
 {
     xcb_screen_iterator_t it = xcb_setup_roots_iterator(m_setup);
-    int screenNumber = 0;       // index of this QScreen in QGuiApplication::screens()
     int xcbScreenNumber = 0;    // screen number in the xcb sense
-    QSet<QXcbScreen *> activeScreens;
+    QList<QXcbScreen *> activeScreens;
     QList<QXcbScreen *> newScreens;
     QXcbScreen* primaryScreen = NULL;
     while (it.rem) {
@@ -156,6 +155,7 @@ void QXcbConnection::updateScreens()
         xcb_screen_t *xcbScreen = it.data;
         QList<QPlatformScreen *> siblings;
         int outputCount = 0;
+        int connectedOutputCount = 0;
         if (has_randr_extension) {
             xcb_generic_error_t *error = NULL;
             xcb_randr_get_output_primary_cookie_t primaryCookie =
@@ -200,7 +200,7 @@ void QXcbConnection::updateScreens()
                         QXcbScreen *screen = findOrCreateScreen(newScreens, xcbScreenNumber, xcbScreen, output);
                         siblings << screen;
                         activeScreens << screen;
-                        ++screenNumber;
+                        ++connectedOutputCount;
                         // There can be multiple outputs per screen, use either
                         // the first or an exact match.  An exact match isn't
                         // always available if primary->output is XCB_NONE
@@ -223,7 +223,7 @@ void QXcbConnection::updateScreens()
         }
         // If there's no randr extension, or there was some error above, or the screen
         // doesn't have outputs for some other reason (e.g. on VNC or ssh -X), just assume there is one screen.
-        if (outputCount == 0) {
+        if (connectedOutputCount == 0) {
 #ifdef Q_XCB_DEBUG
                 qDebug("Found a screen with zero outputs");
 #endif
@@ -232,7 +232,6 @@ void QXcbConnection::updateScreens()
             activeScreens << screen;
             if (!primaryScreen)
                 primaryScreen = screen;
-            ++screenNumber;
         }
         foreach (QPlatformScreen* s, siblings)
             ((QXcbScreen*)s)->setVirtualSiblings(siblings);
@@ -241,28 +240,50 @@ void QXcbConnection::updateScreens()
     } // for each xcb screen
 
     QXcbIntegration *integration = QXcbIntegration::instance();
-    // Now activeScreens is the complete set of screens which are active at this time.
-    // Delete any existing screens which are not in activeScreens
+
+    // Rebuild screen list, ensuring primary screen is always in front,
+    // both in the QXcbConnection::m_screens list as well as in the
+    // QGuiApplicationPrivate::screen_list list, which gets updated via
+    //  - screen added: integration->screenAdded()
+    //  - screen removed: integration->destroyScreen
+
+    // Gather screens to delete
+    QList<QXcbScreen*> screensToDelete;
     for (int i = m_screens.count() - 1; i >= 0; --i) {
         if (!activeScreens.contains(m_screens[i])) {
-            integration->destroyScreen(m_screens.at(i));
-            m_screens.removeAt(i);
+            screensToDelete.append(m_screens.takeAt(i));
         }
     }
 
-    // Add any new screens, and make sure the primary screen comes first
-    // since it is used by QGuiApplication::primaryScreen()
-    foreach (QXcbScreen* screen, newScreens) {
-        if (screen == primaryScreen)
-            m_screens.prepend(screen);
-        else
-            m_screens.append(screen);
+    // If there is a new primary screen, add that one first
+    if (newScreens.contains(primaryScreen)) {
+        newScreens.removeOne(primaryScreen);
+        m_screens.prepend(primaryScreen);
+        integration->screenAdded(primaryScreen, true);
     }
 
-    // Now that they are in the right order, emit the added signals for new screens only
-    foreach (QXcbScreen* screen, m_screens)
-        if (newScreens.contains(screen))
-            integration->screenAdded(screen);
+    // Add the remaining new screens
+    foreach (QXcbScreen* screen, newScreens) {
+        m_screens.append(screen);
+        integration->screenAdded(screen);
+    }
+
+    // Delete the old screens, now that the new ones were added
+    // and we are sure that there is at least one screen available
+    foreach (QXcbScreen* screen, screensToDelete) {
+        integration->destroyScreen(screen);
+    }
+
+    // Ensure that the primary screen is first in m_screens too
+    // (in case the assignment of primary was the only change,
+    // without adding or removing screens)
+    if (primaryScreen) {
+        Q_ASSERT(!m_screens.isEmpty());
+        if (m_screens.first() != primaryScreen) {
+            m_screens.removeOne(primaryScreen);
+            m_screens.prepend(primaryScreen);
+        }
+    }
 }
 
 QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGrabServer, const char *displayName)

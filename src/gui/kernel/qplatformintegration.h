@@ -171,7 +171,7 @@ public:
 #endif
 
 protected:
-    void screenAdded(QPlatformScreen *screen);
+    void screenAdded(QPlatformScreen *screen, bool isPrimary = false);
     void destroyScreen(QPlatformScreen *screen);
 };
 

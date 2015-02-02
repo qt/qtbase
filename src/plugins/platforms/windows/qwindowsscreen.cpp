@@ -514,7 +514,8 @@ bool QWindowsScreenManager::handleScreenChanges()
         } else {
             QWindowsScreen *newScreen = new QWindowsScreen(newData);
             m_screens.push_back(newScreen);
-            QWindowsIntegration::instance()->emitScreenAdded(newScreen);
+            QWindowsIntegration::instance()->emitScreenAdded(newScreen,
+                                                             newData.flags & QWindowsScreenData::PrimaryScreen);
             qCDebug(lcQpaWindows) << "New Monitor: " << newData;
         }    // exists
     }        // for new screens.
