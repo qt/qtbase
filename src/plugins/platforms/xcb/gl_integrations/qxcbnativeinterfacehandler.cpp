@@ -46,8 +46,9 @@
 QT_BEGIN_NAMESPACE
 
 QXcbNativeInterfaceHandler::QXcbNativeInterfaceHandler(QXcbNativeInterface *nativeInterface)
+    : m_native_interface(nativeInterface)
 {
-    nativeInterface->addHandler(this);
+    m_native_interface->addHandler(this);
 }
 QXcbNativeInterfaceHandler::~QXcbNativeInterfaceHandler()
 {

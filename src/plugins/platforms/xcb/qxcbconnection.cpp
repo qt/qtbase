@@ -406,6 +406,8 @@ QXcbConnection::~QXcbConnection()
     while (!m_screens.isEmpty())
         integration->destroyScreen(m_screens.takeLast());
 
+    delete m_glIntegration;
+
 #ifdef XCB_USE_XLIB
     XCloseDisplay((Display *)m_xlib_display);
 #else
