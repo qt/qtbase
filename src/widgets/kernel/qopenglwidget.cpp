@@ -758,6 +758,7 @@ QImage QOpenGLWidgetPrivate::grabFramebuffer()
     resolveSamples();
     q->makeCurrent();
     QImage res = qt_gl_read_framebuffer(q->size() * q->devicePixelRatio(), false, false);
+    res.setDevicePixelRatio(q->devicePixelRatio());
 
     return res;
 }
