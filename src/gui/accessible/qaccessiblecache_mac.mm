@@ -41,6 +41,11 @@
 
 #include "qaccessiblecache_p.h"
 
+// qcocoaaccessibilityelement.h in Cocoa platform plugin
+@interface QT_MANGLE_NAMESPACE(QMacAccessibilityElement)
+- (void)invalidate;
+@end
+
 QT_BEGIN_NAMESPACE
 
 void QAccessibleCache::insertElement(QAccessible::Id axid, QT_MANGLE_NAMESPACE(QMacAccessibilityElement) *element) const
