@@ -38,7 +38,7 @@
 #include <qbitmap.h>
 #include <qpainter.h>
 #include <qpolygon.h>
-#ifdef Q_WS_X11
+#ifdef Q_DEAD_CODE_FROM_QT4_X11
 #include <private/qt_x11_p.h>
 #endif
 
@@ -82,7 +82,7 @@ private slots:
 
     void isEmpty_data();
     void isEmpty();
-#if defined(Q_WS_X11) && defined(QT_BUILD_INTERNAL)
+#if defined(Q_DEAD_CODE_FROM_QT4_X11) && defined(QT_BUILD_INTERNAL)
     void clipRectangles();
 #endif
 
@@ -848,7 +848,7 @@ void tst_QRegion::isEmpty()
     QVERIFY(region.rects().isEmpty());
 }
 
-#if defined(Q_WS_X11) && defined(QT_BUILD_INTERNAL)
+#if defined(Q_DEAD_CODE_FROM_QT4_X11) && defined(QT_BUILD_INTERNAL)
 void tst_QRegion::clipRectangles()
 {
     QRegion region(30, 30, 30, 30);

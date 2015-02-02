@@ -75,7 +75,7 @@ public:
     QWidget *viewport;
     QWidget *cornerWidget;
     QRect cornerPaintingRect;
-#ifdef Q_WS_MAC
+#ifdef Q_DEAD_CODE_FROM_QT4_MAC
     QRect reverseCornerPaintingRect;
 #endif
     int left, top, right, bottom; // viewport margin
@@ -102,7 +102,7 @@ public:
     { return q_func()->viewportEvent(event); }
     QScopedPointer<QObject> viewportFilter;
 
-#ifdef Q_WS_WIN
+#ifdef Q_DEAD_CODE_FROM_QT4_WIN
     bool singleFingerPanEnabled;
     void setSingleFingerPanEnabled(bool on = true);
 #endif

@@ -7404,7 +7404,7 @@ void QGraphicsItem::setInputMethodHints(Qt::InputMethodHints hints)
 */
 void QGraphicsItem::updateMicroFocus()
 {
-#if !defined(QT_NO_IM) && defined(Q_WS_X11)
+#if !defined(QT_NO_IM) && defined(Q_DEAD_CODE_FROM_QT4_X11)
     if (QWidget *fw = QApplication::focusWidget()) {
         if (scene()) {
             for (int i = 0 ; i < scene()->views().count() ; ++i) {

@@ -411,7 +411,7 @@ QPushButton *QDialogButtonBoxPrivate::createButton(QDialogButtonBox::StandardBut
         qWarning("QDialogButtonBox::createButton: Invalid ButtonRole, button not added");
     }
 
-#ifdef Q_WS_MAC
+#ifdef Q_DEAD_CODE_FROM_QT4_MAC
     // Since mnemonics is off by default on Mac, we add a Cmd-D
     // shortcut here to e.g. make the "Don't Save" button work nativly:
     if (sbutton == QDialogButtonBox::Discard)

@@ -193,7 +193,7 @@ void QStyleOption::init(const QWidget *widget)
         state |= QStyle::State_Active;
     if (widget->isWindow())
         state |= QStyle::State_Window;
-#ifdef Q_WS_MAC
+#ifdef Q_DEAD_CODE_FROM_QT4_MAC
     extern bool qt_mac_can_clickThrough(const QWidget *w); //qwidget_mac.cpp
     if (!(state & QStyle::State_Active) && !qt_mac_can_clickThrough(widget))
         state &= ~QStyle::State_Enabled;

@@ -43,7 +43,7 @@
 #include "languagechooser.h"
 #include "mainwindow.h"
 
-#ifdef Q_WS_MAC
+#ifdef Q_DEAD_CODE_FROM_QT4_MAC
 QT_BEGIN_NAMESPACE
 extern void qt_mac_set_menubar_merge(bool merge);
 QT_END_NAMESPACE
@@ -82,7 +82,7 @@ LanguageChooser::LanguageChooser(const QString& defaultLang, QWidget *parent)
     mainLayout->addWidget(buttonBox);
     setLayout(mainLayout);
 
-#ifdef Q_WS_MAC
+#ifdef Q_DEAD_CODE_FROM_QT4_MAC
     qt_mac_set_menubar_merge(false);
 #endif
 

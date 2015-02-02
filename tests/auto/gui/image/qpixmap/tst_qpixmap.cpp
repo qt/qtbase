@@ -281,7 +281,7 @@ void tst_QPixmap::fromImage()
     image.fill(0x7f7f7f7f);
 
     const QPixmap pixmap = QPixmap::fromImage(image);
-#ifdef Q_WS_X11
+#ifdef Q_DEAD_CODE_FROM_QT4_X11
     if (pixmap.handle()->classId() == QPlatformPixmap::X11Class && !pixmap.x11PictureHandle())
         QSKIP("Requires XRender support");
 #endif
@@ -510,7 +510,7 @@ void tst_QPixmap::fill()
     else
         pm = QPixmap(400, 400);
 
-#if defined(Q_WS_X11)
+#if defined(Q_DEAD_CODE_FROM_QT4_X11)
     if (!bitmap && pm.handle()->classId() == QPlatformPixmap::X11Class && !pm.x11PictureHandle())
         QSKIP("Requires XRender support");
 #endif
@@ -540,7 +540,7 @@ void tst_QPixmap::fill()
 void tst_QPixmap::fill_transparent()
 {
     QPixmap pixmap(10, 10);
-#ifdef Q_WS_X11
+#ifdef Q_DEAD_CODE_FROM_QT4_X11
     if (pixmap.handle()->classId() == QPlatformPixmap::X11Class && !pixmap.x11PictureHandle())
         QSKIP("Requires XRender support");
 #endif

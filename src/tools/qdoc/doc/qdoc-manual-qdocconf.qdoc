@@ -204,7 +204,6 @@
                   QT_.*_LIB \
                   QT_COMPAT \
                   QT3_SUPPORT \
-                  Q_WS_.* \
                   Q_OS_.* \
                   Q_BYTE_ORDER \
                   __cplusplus
@@ -214,14 +213,14 @@
     symbols to be defined. For example:
 
     \code
-        #ifdef Q_WS_WIN
+        #ifdef Q_OS_WIN
           HDC getDC() const;
           void releaseDC(HDC) const;
         #endif
     \endcode
 
-    Since the Q_WS_.* regular expression (specified using the \c
-    defines variable) matches Q_WS_WIN, QDoc will process the code
+    Since the Q_OS_.* regular expression (specified using the \c
+    defines variable) matches Q_OS_WIN, QDoc will process the code
     within #ifdef and #endif in our example.
 
     You can also define preprocessor symbols manually on the command

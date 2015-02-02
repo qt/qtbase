@@ -1605,7 +1605,7 @@ void QColorDialogPrivate::init(const QColor &initial)
     if (!nativeDialogInUse)
         initWidgets();
 
-#ifdef Q_WS_MAC
+#ifdef Q_DEAD_CODE_FROM_QT4_MAC
     delegate = 0;
 #endif
 #ifdef Q_OS_WIN32
@@ -2009,7 +2009,7 @@ QColorDialog::ColorDialogOptions QColorDialog::options() const
     \sa color, colorSelected()
 */
 
-#ifdef Q_WS_MAC
+#ifdef Q_DEAD_CODE_FROM_QT4_MAC
 // can only have one Cocoa color panel active
 bool QColorDialogPrivate::sharedColorPanelAvailable = true;
 #endif
@@ -2040,7 +2040,7 @@ void QColorDialog::setVisible(bool visible)
     if (visible)
         d->selectedQColor = QColor();
 
-#if defined(Q_WS_MAC)
+#if defined(Q_DEAD_CODE_FROM_QT4_MAC)
     if (visible) {
         if (d->delegate || (QColorDialogPrivate::sharedColorPanelAvailable &&
                 !(testAttribute(Qt::WA_DontShowOnScreen) || (d->opts & DontUseNativeDialog)))){
@@ -2141,7 +2141,7 @@ QRgb QColorDialog::getRgba(QRgb initial, bool *ok, QWidget *parent)
 
 QColorDialog::~QColorDialog()
 {
-#if defined(Q_WS_MAC)
+#if defined(Q_DEAD_CODE_FROM_QT4_MAC)
     Q_D(QColorDialog);
     if (d->delegate) {
         d->releaseCocoaColorPanelDelegate();

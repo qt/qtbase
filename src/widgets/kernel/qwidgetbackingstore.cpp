@@ -662,7 +662,7 @@ void QWidgetBackingStore::markDirtyOnScreen(const QRegion &region, QWidget *widg
     if (!widget || widget->d_func()->paintOnScreen() || region.isEmpty())
         return;
 
-#if defined(Q_WS_MAC)
+#if defined(Q_DEAD_CODE_FROM_QT4_MAC)
     if (!widget->testAttribute(Qt::WA_WState_InPaintEvent))
         dirtyOnScreen += region.translated(topLevelOffset);
     return;
@@ -1457,7 +1457,7 @@ void QWidgetPrivate::repaint_sys(const QRegion &rgn)
                                         && (usesDoubleBufferedGLContext || q->autoFillBackground());
     QRegion toBePainted(noPartialUpdateSupport ? q->rect() : rgn);
 
-#ifdef Q_WS_MAC
+#ifdef Q_DEAD_CODE_FROM_QT4_MAC
     // No difference between update() and repaint() on the Mac.
     update_sys(toBePainted);
     return;

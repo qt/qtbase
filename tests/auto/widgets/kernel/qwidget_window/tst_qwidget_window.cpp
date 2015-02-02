@@ -336,7 +336,7 @@ void tst_QWidget_window::tst_windowFilePath()
 
 void tst_QWidget_window::tst_showWithoutActivating()
 {
-#ifndef Q_WS_X11
+#ifndef Q_DEAD_CODE_FROM_QT4_X11
     QSKIP("This test is X11-only.");
 #else
     QWidget w;
@@ -359,7 +359,7 @@ void tst_QWidget_window::tst_showWithoutActivating()
     // Note the use of the , before window because we want the XGetInputFocus to be re-executed
     //     in each iteration of the inside loop of the QTRY_COMPARE macro
 
-#endif // Q_WS_X11
+#endif // Q_DEAD_CODE_FROM_QT4_X11
 }
 
 void tst_QWidget_window::tst_paintEventOnSecondShow()

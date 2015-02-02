@@ -56,7 +56,7 @@
 #include "../../../qtest-config.h"
 
 QT_BEGIN_NAMESPACE
-#if !defined(Q_WS_WIN)
+#if !defined(Q_DEAD_CODE_FROM_QT4_WIN)
 extern bool qt_tab_all_widgets();
 #endif
 QT_END_NAMESPACE

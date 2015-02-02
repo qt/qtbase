@@ -4136,7 +4136,7 @@ void QGraphicsScene::wheelEvent(QGraphicsSceneWheelEvent *wheelEvent)
                                                                 wheelEvent->scenePos(),
                                                                 wheelEvent->widget());
 
-#ifdef Q_WS_MAC
+#ifdef Q_DEAD_CODE_FROM_QT4_MAC
     // On Mac, ignore the event if the first item under the mouse is not the last opened
     // popup (or one of its descendant)
     if (!d->popupWidgets.isEmpty() && !wheelCandidates.isEmpty() && wheelCandidates.first() != d->popupWidgets.back() && !d->popupWidgets.back()->isAncestorOf(wheelCandidates.first())) {
@@ -4375,7 +4375,7 @@ void QGraphicsScenePrivate::drawItemHelper(QGraphicsItem *item, QPainter *painte
 
     // Render directly, using no cache.
     if (cacheMode == QGraphicsItem::NoCache
-#ifdef Q_WS_X11
+#ifdef Q_DEAD_CODE_FROM_QT4_X11
         || !X11->use_xrender
 #endif
         ) {

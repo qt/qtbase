@@ -501,7 +501,7 @@ void tst_QPainter::drawPixmap_comp()
     destPm.fill(c1);
     srcPm.fill(c2);
 
-#if defined(Q_WS_X11)
+#if defined(Q_DEAD_CODE_FROM_QT4_X11)
     if (!destPm.x11PictureHandle())
         QSKIP("Requires XRender support");
 #endif

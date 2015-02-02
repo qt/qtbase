@@ -1934,7 +1934,7 @@ bool QDockAreaLayoutInfo::restoreState(QDataStream &stream, QList<QDockWidget*> 
                 QDockAreaLayoutItem item(new QDockWidgetItem(widget));
                 if (flags & StateFlagFloating) {
                     bool drawer = false;
-#ifdef Q_WS_MAC // drawer support
+#ifdef Q_DEAD_CODE_FROM_QT4_MAC // drawer support
                     extern bool qt_mac_is_macdrawer(const QWidget *); //qwidget_mac.cpp
                     extern bool qt_mac_set_drawer_preferred_edge(QWidget *, Qt::DockWidgetArea); //qwidget_mac.cpp
                     drawer = qt_mac_is_macdrawer(widget);
@@ -1949,7 +1949,7 @@ bool QDockAreaLayoutInfo::restoreState(QDataStream &stream, QList<QDockWidget*> 
                     int x, y, w, h;
                     stream >> x >> y >> w >> h;
 
-#ifdef Q_WS_MAC // drawer support
+#ifdef Q_DEAD_CODE_FROM_QT4_MAC // drawer support
                     if (drawer) {
                         mainWindow->window()->createWinId();
                         widget->window()->createWinId();
@@ -2057,7 +2057,7 @@ void QDockAreaLayoutInfo::updateSeparatorWidgets() const
         }
         j++;
 
-#ifndef Q_WS_MAC
+#ifndef Q_DEAD_CODE_FROM_QT4_MAC
         sepWidget->raise();
 #endif
         QRect sepRect = separatorRect(i).adjusted(-2, -2, 2, 2);
@@ -2979,7 +2979,7 @@ bool QDockAreaLayout::restoreDockWidget(QDockWidget *dockWidget)
         dockWidget->d_func()->setWindowState(true, true, r);
     }
     dockWidget->setVisible(!placeHolder->hidden);
-#ifdef Q_WS_X11
+#ifdef Q_DEAD_CODE_FROM_QT4_X11
     if (placeHolder->window) // gets rid of the X11BypassWindowManager window flag
         dockWidget->d_func()->setWindowState(true);
 #endif
@@ -3169,7 +3169,7 @@ void QDockAreaLayout::updateSeparatorWidgets() const
         }
         j++;
 
-#ifndef Q_WS_MAC
+#ifndef Q_DEAD_CODE_FROM_QT4_MAC
         sepWidget->raise();
 #endif
         QRect sepRect = separatorRect(i).adjusted(-2, -2, 2, 2);

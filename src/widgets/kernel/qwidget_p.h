@@ -177,7 +177,7 @@ struct QTLWExtra {
     uint embedded : 1;
 
     // *************************** Platform specific values (bit fields first) **********
-#if defined(Q_WS_X11) // <----------------------------------------------------------- X11
+#if defined(Q_DEAD_CODE_FROM_QT4_X11) // <----------------------------------------------------------- X11
     uint spont_unmapped: 1; // window was spontaneously unmapped
     uint dnd : 1; // DND properties installed
     uint validWMState : 1; // is WM_STATE valid?
@@ -191,11 +191,11 @@ struct QTLWExtra {
     qint32 newCounterValueHi;
     quint32 newCounterValueLo;
 #endif
-#elif defined(Q_WS_WIN) // <--------------------------------------------------------- WIN
+#elif defined(Q_DEAD_CODE_FROM_QT4_WIN) // <--------------------------------------------------------- WIN
     uint hotkeyRegistered: 1; // Hot key from the STARTUPINFO has been registered.
     HICON winIconBig; // internal big Windows icon
     HICON winIconSmall; // internal small Windows icon
-#elif defined(Q_WS_MAC) // <--------------------------------------------------------- MAC
+#elif defined(Q_DEAD_CODE_FROM_QT4_MAC) // <--------------------------------------------------------- MAC
     uint resizer : 4;
     uint isSetGeometry : 1;
     uint isMove : 1;
@@ -253,15 +253,15 @@ struct QWExtra {
     uint hasWindowContainer : 1;
 
     // *************************** Platform specific values (bit fields first) **********
-#if defined(Q_WS_WIN) // <----------------------------------------------------------- WIN
+#if defined(Q_DEAD_CODE_FROM_QT4_WIN) // <----------------------------------------------------------- WIN
 #ifndef QT_NO_DRAGANDDROP
     QOleDropTarget *dropTarget; // drop target
     QList<QPointer<QWidget> > oleDropWidgets;
 #endif
-#elif defined(Q_WS_X11) // <--------------------------------------------------------- X11
+#elif defined(Q_DEAD_CODE_FROM_QT4_X11) // <--------------------------------------------------------- X11
     uint compress_events : 1;
     WId xDndProxy; // XDND forwarding to embedded windows
-#elif defined(Q_WS_MAC) // <------------------------------------------------------ MAC
+#elif defined(Q_DEAD_CODE_FROM_QT4_MAC) // <------------------------------------------------------ MAC
     // Cocoa Mask stuff
     QImage maskBits;
     CGImageRef imageMask;
@@ -745,7 +745,7 @@ public:
 #if defined(Q_OS_WIN)
     uint noPaintOnScreen : 1; // see qwidget.cpp ::paintEngine()
 #endif
-#if defined(Q_WS_X11) // <----------------------------------------------------------- X11
+#if defined(Q_DEAD_CODE_FROM_QT4_X11) // <----------------------------------------------------------- X11
     Qt::HANDLE picture;
     static QWidget *mouseGrabber;
     static QWidget *keyboardGrabber;
@@ -758,7 +758,7 @@ public:
     void updateX11AcceptFocus();
     QPoint mapToGlobal(const QPoint &pos) const;
     QPoint mapFromGlobal(const QPoint &pos) const;
-#elif defined(Q_WS_WIN) // <--------------------------------------------------------- WIN
+#elif defined(Q_DEAD_CODE_FROM_QT4_WIN) // <--------------------------------------------------------- WIN
 #ifndef QT_NO_GESTURES
     uint nativeGesturePanEnabled : 1;
 #endif
@@ -774,7 +774,7 @@ public:
     void winSetupGestures();
 #elif defined(Q_OS_MAC) // <--------------------------------------------------------- MAC
     void macUpdateSizeAttribute();
-#elif defined(Q_WS_MAC) // <--------------------------------------------------------- MAC (old stuff)
+#elif defined(Q_DEAD_CODE_FROM_QT4_MAC) // <--------------------------------------------------------- MAC (old stuff)
     // This is new stuff
     uint needWindowChange : 1;
 

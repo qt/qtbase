@@ -7044,12 +7044,12 @@ int QWindowsMobileStyle::pixelMetric(PixelMetric pm, const QStyleOption *opt, co
     case PM_DockWidgetTitleMargin:
         ret = 2;
         break;
-#if defined(Q_WS_WIN)
+#if defined(Q_DEAD_CODE_FROM_QT4_WIN)
 #else
     case PM_DockWidgetFrameWidth:
         ret = 4;
         break;
-#endif // Q_WS_WIN
+#endif // Q_DEAD_CODE_FROM_QT4_WIN
     break;
 #endif // QT_NO_MENU
 
@@ -7101,7 +7101,7 @@ int QWindowsMobileStyle::pixelMetric(PixelMetric pm, const QStyleOption *opt, co
         ret = qMax(4, QApplication::globalStrut().width());
         break;
 
-#if defined(Q_WS_WIN)
+#if defined(Q_DEAD_CODE_FROM_QT4_WIN)
     case PM_MDIFrameWidth:
         ret = 1;
         break;

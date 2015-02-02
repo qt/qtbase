@@ -38,7 +38,7 @@
 
 #include "ui_detailedinfodialog.h"
 
-#if defined(Q_WS_MAEMO_6)
+#if defined(Q_DEAD_CODE_FROM_QT4_MAEMO_6)
 #include "ui_bearerex_maemo.h"
 #include "ui_sessiondialog_maemo.h"
 #else

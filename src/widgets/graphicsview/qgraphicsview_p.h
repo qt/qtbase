@@ -176,7 +176,7 @@ public:
 
     inline void dispatchPendingUpdateRequests()
     {
-#ifdef Q_WS_MAC
+#ifdef Q_DEAD_CODE_FROM_QT4_MAC
         // QWidget::update() works slightly different on the Mac without the raster engine;
         // it's not part of our backing store so it needs special threatment.
         if (QApplicationPrivate::graphics_system_name != QLatin1String("raster")) {
@@ -187,7 +187,7 @@ public:
             extern void qt_mac_dispatchPendingUpdateRequests(QWidget *);
             qt_mac_dispatchPendingUpdateRequests(viewport->window());
         } else
-#endif // !Q_WS_MAC
+#endif // !Q_DEAD_CODE_FROM_QT4_MAC
         {
             if (qt_widget_private(viewport)->paintOnScreen())
                 QCoreApplication::sendPostedEvents(viewport, QEvent::UpdateRequest);

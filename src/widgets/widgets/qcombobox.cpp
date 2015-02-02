@@ -59,7 +59,7 @@
 #include <private/qabstractitemmodel_p.h>
 #include <private/qabstractscrollarea_p.h>
 #include <qdebug.h>
-#if defined(Q_WS_MAC) && !defined(QT_NO_EFFECTS) && !defined(QT_NO_STYLE_MAC)
+#if defined(Q_DEAD_CODE_FROM_QT4_MAC) && !defined(QT_NO_EFFECTS) && !defined(QT_NO_STYLE_MAC)
 #include <private/qcore_mac_p.h>
 #include <private/qmacstyle_mac_p.h>
 #include <private/qt_cocoa_helpers_mac_p.h>
@@ -397,7 +397,7 @@ void QComboBoxPrivateContainer::leaveEvent(QEvent *)
 {
 // On Mac using the Mac style we want to clear the selection
 // when the mouse moves outside the popup.
-#ifdef Q_WS_MAC
+#ifdef Q_DEAD_CODE_FROM_QT4_MAC
     QStyleOptionComboBox opt = comboStyleOption();
     if (combo->style()->styleHint(QStyle::SH_ComboBox_Popup, &opt, combo))
           view->clearSelection();

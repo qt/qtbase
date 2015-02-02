@@ -151,7 +151,7 @@ QStyle *QStyleFactory::create(const QString& key)
 #ifndef QT_NO_STYLE_MAC
     if (style.startsWith(QLatin1String("macintosh"))) {
         ret = new QMacStyle;
-#  ifdef Q_WS_MAC
+#  ifdef Q_DEAD_CODE_FROM_QT4_MAC
         if (style == QLatin1String("macintosh"))
             style += QLatin1String(" (aqua)");
 #  endif
@@ -220,7 +220,7 @@ QStringList QStyleFactory::keys()
 #endif
 #ifndef QT_NO_STYLE_MAC
     QString mstyle = QLatin1String("Macintosh");
-# ifdef Q_WS_MAC
+# ifdef Q_DEAD_CODE_FROM_QT4_MAC
     mstyle += QLatin1String(" (aqua)");
 # endif
     if (!list.contains(mstyle))

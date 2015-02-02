@@ -114,7 +114,7 @@ public:
     virtual bool shouldQuit() Q_DECL_OVERRIDE;
     bool tryCloseAllWindows() Q_DECL_OVERRIDE;
 
-#if defined(Q_WS_X11)
+#if defined(Q_DEAD_CODE_FROM_QT4_X11)
 #ifndef QT_NO_SETTINGS
     static bool x11_apply_settings();
 #endif
@@ -137,7 +137,7 @@ public:
     static bool isBlockedByModal(QWidget *widget);
     static bool modalState();
     static bool tryModalHelper(QWidget *widget, QWidget **rettop = 0);
-#ifdef Q_WS_MAC
+#ifdef Q_DEAD_CODE_FROM_QT4_MAC
     static QWidget *tryModalHelper_sys(QWidget *top);
     bool canQuit();
 #endif
@@ -151,14 +151,14 @@ public:
     bool notify_helper(QObject *receiver, QEvent * e);
 
     void construct(
-#ifdef Q_WS_X11
+#ifdef Q_DEAD_CODE_FROM_QT4_X11
                    Display *dpy = 0, Qt::HANDLE visual = 0, Qt::HANDLE cmap = 0
 #endif
                    );
     void initialize();
     void process_cmdline();
 
-#if defined(Q_WS_X11)
+#if defined(Q_DEAD_CODE_FROM_QT4_X11)
     static void x11_initialize_style();
 #endif
 
@@ -213,7 +213,7 @@ public:
     static void initializeWidgetFontHash();
     static void setSystemFont(const QFont &font);
 
-#if defined(Q_WS_X11)
+#if defined(Q_DEAD_CODE_FROM_QT4_X11)
     static void applyX11SpecificCommandLineArguments(QWidget *main_widget);
 #endif
 
@@ -226,7 +226,7 @@ public:
     static Qt::NavigationMode navigationMode;
 #endif
 
-#if defined(Q_WS_MAC) || defined(Q_WS_X11)
+#if defined(Q_DEAD_CODE_FROM_QT4_MAC) || defined(Q_DEAD_CODE_FROM_QT4_X11)
     void _q_alertTimeOut();
     QHash<QWidget *, QTimer *> alertTimerHash;
 #endif
@@ -266,12 +266,12 @@ public:
     QGestureManager *gestureManager;
     QWidget *gestureWidget;
 #endif
-#if defined(Q_WS_X11) || defined(Q_WS_WIN)
+#if defined(Q_DEAD_CODE_FROM_QT4_X11) || defined(Q_DEAD_CODE_FROM_QT4_WIN)
     QPixmap *move_cursor;
     QPixmap *copy_cursor;
     QPixmap *link_cursor;
 #endif
-#if defined(Q_WS_WIN)
+#if defined(Q_DEAD_CODE_FROM_QT4_WIN)
     QPixmap *ignore_cursor;
 #endif
 
@@ -301,9 +301,9 @@ private:
     static bool isAlien(QWidget *);
 };
 
-#if defined(Q_WS_WIN)
+#if defined(Q_DEAD_CODE_FROM_QT4_WIN)
   extern void qt_win_set_cursor(QWidget *, bool);
-#elif defined(Q_WS_X11)
+#elif defined(Q_DEAD_CODE_FROM_QT4_X11)
   extern void qt_x11_enforce_cursor(QWidget *, bool);
   extern void qt_x11_enforce_cursor(QWidget *);
 #else

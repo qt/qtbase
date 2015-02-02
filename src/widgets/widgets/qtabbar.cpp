@@ -57,7 +57,7 @@
 
 #ifndef QT_NO_TABBAR
 
-#ifdef Q_WS_MAC
+#ifdef Q_DEAD_CODE_FROM_QT4_MAC
 #include <private/qt_mac_p.h>
 #include <private/qt_cocoa_helpers_mac_p.h>
 #endif
@@ -1802,7 +1802,7 @@ void QTabBar::mousePressEvent(QMouseEvent *event)
         d->moveTabFinished(d->pressedIndex);
 
     d->pressedIndex = d->indexAtPos(event->pos());
-#ifdef Q_WS_MAC
+#ifdef Q_DEAD_CODE_FROM_QT4_MAC
     d->previousPressedIndex = d->pressedIndex;
 #endif
     if (d->validIndex(d->pressedIndex)) {
@@ -1885,7 +1885,7 @@ void QTabBar::mouseMoveEvent(QMouseEvent *event)
 
             update();
         }
-#ifdef Q_WS_MAC
+#ifdef Q_DEAD_CODE_FROM_QT4_MAC
     } else if (!d->documentMode && event->buttons() == Qt::LeftButton && d->previousPressedIndex != -1) {
         int newPressedIndex = d->indexAtPos(event->pos());
         if (d->pressedIndex == -1 && d->previousPressedIndex == newPressedIndex) {
@@ -1988,7 +1988,7 @@ void QTabBar::mouseReleaseEvent(QMouseEvent *event)
         event->ignore();
         return;
     }
-#ifdef Q_WS_MAC
+#ifdef Q_DEAD_CODE_FROM_QT4_MAC
     d->previousPressedIndex = -1;
 #endif
     if (d->movable && d->dragInProgress && d->validIndex(d->pressedIndex)) {

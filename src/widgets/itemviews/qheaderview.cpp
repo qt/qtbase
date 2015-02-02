@@ -2392,7 +2392,7 @@ void QHeaderView::mouseMoveEvent(QMouseEvent *e)
     if (pos < 0 && d->state != QHeaderViewPrivate::SelectSections)
         return;
     if (e->buttons() == Qt::NoButton) {
-#if !defined(Q_WS_MAC)
+#if !defined(Q_DEAD_CODE_FROM_QT4_MAC)
         // Under Cocoa, when the mouse button is released, may include an extra
         // simulated mouse moved event. The state of the buttons when this event
         // is generated is already "no button" and the code below gets executed

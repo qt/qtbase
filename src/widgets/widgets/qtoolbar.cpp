@@ -316,7 +316,7 @@ bool QToolBarPrivate::mouseMoveEvent(QMouseEvent *event)
 
             startDrag(moving);
             if (!moving && !wasDragging) {
-#ifdef Q_WS_WIN
+#ifdef Q_DEAD_CODE_FROM_QT4_WIN
                 grabMouseWhileInWindow();
 #else
                 q->grabMouse();

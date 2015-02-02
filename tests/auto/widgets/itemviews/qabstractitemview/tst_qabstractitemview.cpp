@@ -1117,7 +1117,7 @@ void tst_QAbstractItemView::setItemDelegate()
     centerOnScreen(&v);
     moveCursorAway(&v);
     v.show();
-#ifdef Q_WS_X11
+#ifdef Q_DEAD_CODE_FROM_QT4_X11
     QCursor::setPos(v.geometry().center());
 #endif
     QApplication::setActiveWindow(&v);

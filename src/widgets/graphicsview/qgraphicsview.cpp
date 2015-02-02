@@ -3484,7 +3484,7 @@ void QGraphicsView::paintEvent(QPaintEvent *event)
 
     // Draw background
     if ((d->cacheMode & CacheBackground)
-#ifdef Q_WS_X11
+#ifdef Q_DEAD_CODE_FROM_QT4_X11
         && X11->use_xrender
 #endif
         ) {
@@ -3683,7 +3683,7 @@ void QGraphicsView::scrollContentsBy(int dx, int dy)
     d->updateLastCenterPoint();
 
     if ((d->cacheMode & CacheBackground)
-#ifdef Q_WS_X11
+#ifdef Q_DEAD_CODE_FROM_QT4_X11
         && X11->use_xrender
 #endif
         ) {

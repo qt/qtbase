@@ -46,7 +46,7 @@
 #include "qdebug.h"
 #include "qpalette.h"
 
-#ifdef Q_WS_MAC
+#ifdef Q_DEAD_CODE_FROM_QT4_MAC
 #include <private/qt_mac_p.h>
 #include <private/qt_cocoa_helpers_mac_p.h>
 #endif

@@ -283,7 +283,7 @@ bool QSystemTrayIcon::isVisible() const
 */
 bool QSystemTrayIcon::event(QEvent *e)
 {
-#if defined(Q_WS_X11)
+#if defined(Q_DEAD_CODE_FROM_QT4_X11)
     if (e->type() == QEvent::ToolTip) {
         Q_D(QSystemTrayIcon);
         return d->sys->deliverToolTipEvent(e);
@@ -586,7 +586,7 @@ void QBalloonTip::balloon(const QPoint& pos, int msecs, bool showArrow)
     }
 
     QPainterPath path;
-#if defined(QT_NO_XSHAPE) && defined(Q_WS_X11)
+#if defined(QT_NO_XSHAPE) && defined(Q_DEAD_CODE_FROM_QT4_X11)
     // XShape is required for setting the mask, so we just
     // draw an ugly square when its not available
     path.moveTo(0, 0);

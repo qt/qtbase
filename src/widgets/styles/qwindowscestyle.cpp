@@ -2222,7 +2222,7 @@ int QWindowsCEStyle::pixelMetric(PixelMetric pm, const QStyleOption *opt, const 
     case PM_DockWidgetTitleMargin:
         ret = 2;
         break;
-#if defined(Q_WS_WIN)
+#if defined(Q_DEAD_CODE_FROM_QT4_WIN)
 //    case PM_DockWidgetFrameWidth:
 //        ret = GetSystemMetrics(SM_CXFRAME);
 //        break;
@@ -2230,7 +2230,7 @@ int QWindowsCEStyle::pixelMetric(PixelMetric pm, const QStyleOption *opt, const 
     case PM_DockWidgetFrameWidth:
         ret = 4;
         break;
-#endif // Q_WS_WIN
+#endif // Q_DEAD_CODE_FROM_QT4_WIN
     break;
 
 #endif // QT_NO_MENU
@@ -2245,7 +2245,7 @@ int QWindowsCEStyle::pixelMetric(PixelMetric pm, const QStyleOption *opt, const 
         ret = qMax(4, QApplication::globalStrut().width());
         break;
 
-#if defined(Q_WS_WIN)
+#if defined(Q_DEAD_CODE_FROM_QT4_WIN)
     case PM_MDIFrameWidth:
         ret = 3;
         break;

@@ -71,7 +71,7 @@
         state |= QStyle::State_MouseOver;
     if (widget->window()->isActiveWindow())
         state |= QStyle::State_Active;
-#ifdef Q_WS_MAC
+#ifdef Q_DEAD_CODE_FROM_QT4_MAC
     extern bool qt_mac_can_clickThrough(const QWidget *w); //qwidget_mac.cpp
     if (!(state & QStyle::State_Active) && !qt_mac_can_clickThrough(widget))
         state &= ~QStyle::State_Enabled;

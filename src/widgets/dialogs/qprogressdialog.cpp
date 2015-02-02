@@ -697,7 +697,7 @@ void QProgressDialog::setValue(int progress)
                 d->shown_once = true;
             }
         }
-#ifdef Q_WS_MAC
+#ifdef Q_DEAD_CODE_FROM_QT4_MAC
         QApplication::flush();
 #endif
     }

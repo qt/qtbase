@@ -327,16 +327,12 @@ Q_GLOBAL_STATIC(QUrl, lastVisitedDir)
   This signal is emitted when the user selects a \a filter.
 */
 
-//#if defined(Q_WS_WIN) || defined(Q_WS_MAC)
-//bool Q_WIDGETS_EXPORT qt_use_native_dialogs = true; // for the benefit of testing tools, until we have a proper API
-//#endif
-
 QT_BEGIN_INCLUDE_NAMESPACE
-#ifdef Q_WS_WIN
+#ifdef Q_DEAD_CODE_FROM_QT4_WIN
 #include <qwindowsstyle_p.h>
 #endif
 #include <qshortcut.h>
-#ifdef Q_WS_MAC
+#ifdef Q_DEAD_CODE_FROM_QT4_MAC
 #include <qmacstyle_mac_p.h>
 #endif
 QT_END_INCLUDE_NAMESPACE

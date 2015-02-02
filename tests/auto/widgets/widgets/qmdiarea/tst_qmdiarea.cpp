@@ -487,7 +487,7 @@ void tst_QMdiArea::subWindowActivated2()
     // Check that we only emit _one_ signal and the active window
     // is unchanged after hide/show.
     mdiArea.hide();
-#ifdef Q_WS_X11
+#ifdef Q_DEAD_CODE_FROM_QT4_X11
     qt_x11_wait_for_window_manager(&mdiArea);
 #endif
     QTest::qWait(100);

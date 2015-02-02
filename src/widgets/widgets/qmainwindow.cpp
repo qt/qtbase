@@ -55,7 +55,7 @@
 #ifdef Q_OS_OSX
 #include <qpa/qplatformnativeinterface.h>
 #endif
-#ifdef Q_WS_MAC
+#ifdef Q_DEAD_CODE_FROM_QT4_MAC
 #include <private/qt_mac_p.h>
 #include <private/qt_cocoa_helpers_mac_p.h>
 QT_BEGIN_NAMESPACE
@@ -74,7 +74,7 @@ public:
 #ifdef Q_OS_OSX
             , useUnifiedToolBar(false)
 #endif
-#ifdef Q_WS_MAC
+#ifdef Q_DEAD_CODE_FROM_QT4_MAC
             , useHIToolBar(false)
             , activateUnifiedToolbarAfterFullScreen(false)
 #endif
@@ -89,7 +89,7 @@ public:
 #ifdef Q_OS_OSX
     bool useUnifiedToolBar;
 #endif
-#ifdef Q_WS_MAC
+#ifdef Q_DEAD_CODE_FROM_QT4_MAC
     bool useHIToolBar;
     bool activateUnifiedToolbarAfterFullScreen;
 #endif
@@ -1079,7 +1079,7 @@ void QMainWindow::addDockWidget(Qt::DockWidgetArea area, QDockWidget *dockwidget
     d_func()->layout->removeWidget(dockwidget); // in case it was already in here
     addDockWidget(area, dockwidget, orientation);
 
-#ifdef Q_WS_MAC     //drawer support
+#ifdef Q_DEAD_CODE_FROM_QT4_MAC     //drawer support
     QMacCocoaAutoReleasePool pool;
     extern bool qt_mac_is_macdrawer(const QWidget *); //qwidget_mac.cpp
     if (qt_mac_is_macdrawer(dockwidget)) {
@@ -1454,7 +1454,7 @@ bool QMainWindow::event(QEvent *event)
             if (!d->explicitIconSize)
                 setIconSize(QSize());
             break;
-#ifdef Q_WS_MAC
+#ifdef Q_DEAD_CODE_FROM_QT4_MAC
         case QEvent::Show:
             if (unifiedTitleAndToolBarOnMac())
                 d->layout->syncUnifiedToolbarVisibility();
@@ -1473,7 +1473,7 @@ bool QMainWindow::event(QEvent *event)
                 }
             }
             break;
-#endif // Q_WS_MAC
+#endif // Q_DEAD_CODE_FROM_QT4_MAC
 #if !defined(QT_NO_DOCKWIDGET) && !defined(QT_NO_CURSOR)
        case QEvent::CursorChange:
            // CursorChange events are triggered as mouse moves to new widgets even
@@ -1529,7 +1529,7 @@ void QMainWindow::setUnifiedTitleAndToolBarOnMac(bool set)
     }
 #endif
 
-#ifdef Q_WS_MAC
+#ifdef Q_DEAD_CODE_FROM_QT4_MAC
     Q_D(QMainWindow);
     if (!isWindow() || d->useHIToolBar == set || QSysInfo::MacintoshVersion < QSysInfo::MV_10_3)
         return;
@@ -1564,7 +1564,7 @@ bool QMainWindow::unifiedTitleAndToolBarOnMac() const
 #ifdef Q_OS_OSX
     return d_func()->useUnifiedToolBar;
 #endif
-#ifdef Q_WS_MAC
+#ifdef Q_DEAD_CODE_FROM_QT4_MAC
     return d_func()->useHIToolBar && !testAttribute(Qt::WA_MacBrushedMetal) && !(windowFlags() & Qt::FramelessWindowHint);
 #endif
     return false;

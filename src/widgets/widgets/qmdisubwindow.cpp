@@ -274,7 +274,7 @@ static inline bool isHoverControl(QStyle::SubControl control)
     return control != QStyle::SC_None && control != QStyle::SC_TitleBarLabel;
 }
 
-#if defined(Q_WS_WIN)
+#if defined(Q_DEAD_CODE_FROM_QT4_WIN)
 static inline QRgb colorref2qrgb(COLORREF col)
 {
     return qRgb(GetRValue(col),GetGValue(col),GetBValue(col));
@@ -1921,7 +1921,7 @@ QPalette QMdiSubWindowPrivate::desktopPalette() const
     QPalette newPalette = q->palette();
 
     bool colorsInitialized = false;
-#ifdef Q_WS_WIN // ask system properties on windows
+#ifdef Q_DEAD_CODE_FROM_QT4_WIN // ask system properties on windows
 #ifndef SPI_GETGRADIENTCAPTIONS
 #define SPI_GETGRADIENTCAPTIONS 0x1008
 #endif
@@ -1957,7 +1957,7 @@ QPalette QMdiSubWindowPrivate::desktopPalette() const
                                 newPalette.color(QPalette::Inactive, QPalette::Highlight));
         }
     }
-#endif // Q_WS_WIN
+#endif // Q_DEAD_CODE_FROM_QT4_WIN
     if (!colorsInitialized) {
         newPalette.setColor(QPalette::Active, QPalette::Highlight,
                             newPalette.color(QPalette::Active, QPalette::Highlight));

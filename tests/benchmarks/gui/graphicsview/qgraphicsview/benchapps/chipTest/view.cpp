@@ -35,7 +35,7 @@
 
 #include <QtGui>
 
-#ifdef Q_WS_WIN
+#ifdef Q_DEAD_CODE_FROM_QT4_WIN
 #define CALLGRIND_START_INSTRUMENTATION  {}
 #define CALLGRIND_STOP_INSTRUMENTATION   {}
 #else

@@ -43,7 +43,7 @@
 #include <QtGui>
 
 
-#ifdef Q_WS_MAC
+#ifdef Q_DEAD_CODE_FROM_QT4_MAC
 
 #include <Carbon/Carbon.h>
 
@@ -344,4 +344,4 @@ QAbstractItemModel *MacMainWindow::createDocumentModel()
     return model;
 }
 
-#endif // Q_WS_MAC
+#endif // Q_DEAD_CODE_FROM_QT4_MAC

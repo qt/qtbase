@@ -52,7 +52,7 @@
 
 #include "qdockwidget_p.h"
 #include "qmainwindowlayout_p.h"
-#ifdef Q_WS_MAC
+#ifdef Q_DEAD_CODE_FROM_QT4_MAC
 #include <private/qapplication_p.h>
 #include <private/qt_mac_p.h>
 #include <private/qmacstyle_mac_p.h>
@@ -860,7 +860,7 @@ bool QDockWidgetPrivate::mouseMoveEvent(QMouseEvent *event)
             && (event->pos() - state->pressPos).manhattanLength()
                 > QApplication::startDragDistance()) {
             startDrag();
-#ifdef Q_WS_WIN
+#ifdef Q_DEAD_CODE_FROM_QT4_WIN
             grabMouseWhileInWindow();
 #else
             q->grabMouse();
@@ -904,7 +904,7 @@ void QDockWidgetPrivate::nonClientAreaMouseEvent(QMouseEvent *event)
 
     QRect geo = q->geometry();
     QRect titleRect = q->frameGeometry();
-#ifdef Q_WS_MAC
+#ifdef Q_DEAD_CODE_FROM_QT4_MAC
     if ((features & QDockWidget::DockWidgetVerticalTitleBar)) {
         titleRect.setTop(geo.top());
         titleRect.setBottom(geo.bottom());
@@ -1437,7 +1437,7 @@ bool QDockWidget::event(QEvent *event)
         if (d->mouseMoveEvent(static_cast<QMouseEvent *>(event)))
             return true;
         break;
-#ifdef Q_WS_WIN
+#ifdef Q_DEAD_CODE_FROM_QT4_WIN
     case QEvent::Leave:
         if (d->state != 0 && d->state->dragging && !d->state->nca) {
             // This is a workaround for loosing the mouse on Vista.

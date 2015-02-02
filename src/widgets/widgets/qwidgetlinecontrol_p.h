@@ -83,7 +83,7 @@ public:
         m_selstart(0), m_selend(0), m_passwordEchoEditing(false)
         , m_passwordEchoTimer(0)
         , m_passwordMaskDelay(-1)
-#if defined(Q_WS_MAC)
+#if defined(Q_DEAD_CODE_FROM_QT4_MAC)
         , m_threadChecks(false)
         , m_textLayoutThread(0)
  #endif
@@ -372,14 +372,14 @@ public:
 
     QTextLayout *textLayout() const
     {
-#if defined(Q_WS_MAC)
+#if defined(Q_DEAD_CODE_FROM_QT4_MAC)
         if (m_threadChecks && QThread::currentThread() != m_textLayoutThread)
             redoTextLayout();
 #endif
         return &m_textLayout;
     }
 
-#if defined(Q_WS_MAC)
+#if defined(Q_DEAD_CODE_FROM_QT4_MAC)
     void setThreadChecks(bool threadChecks)
     {
         m_threadChecks = threadChecks;
@@ -503,7 +503,7 @@ private:
     }
 
     int redoTextLayout() const;
-#if defined(Q_WS_MAC)
+#if defined(Q_DEAD_CODE_FROM_QT4_MAC)
     bool m_threadChecks;
     mutable QThread *m_textLayoutThread;
 #endif

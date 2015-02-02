@@ -81,7 +81,7 @@
 
 QT_BEGIN_NAMESPACE
 
-#ifdef Q_WS_MAC
+#ifdef Q_DEAD_CODE_FROM_QT4_MAC
 extern void qt_mac_secure_keyboard(bool); //qapplication_mac.cpp
 #endif
 
@@ -575,7 +575,7 @@ void QLineEdit::setEchoMode(EchoMode mode)
     setInputMethodHints(imHints);
     d->control->setEchoMode(mode);
     update();
-#ifdef Q_WS_MAC
+#ifdef Q_DEAD_CODE_FROM_QT4_MAC
     if (hasFocus())
         qt_mac_secure_keyboard(mode == Password || mode == NoEcho);
 #endif
@@ -1800,7 +1800,7 @@ void QLineEdit::focusInEvent(QFocusEvent *e)
     if((!hasSelectedText() && d->control->preeditAreaText().isEmpty())
        || style()->styleHint(QStyle::SH_BlinkCursorWhenTextSelected, &opt, this))
         d->setCursorVisible(true);
-#ifdef Q_WS_MAC
+#ifdef Q_DEAD_CODE_FROM_QT4_MAC
     if (d->control->echoMode() == Password || d->control->echoMode() == NoEcho)
         qt_mac_secure_keyboard(true);
 #endif
@@ -1848,7 +1848,7 @@ void QLineEdit::focusOutEvent(QFocusEvent *e)
             if (hasAcceptableInput() || d->control->fixup())
                 emit editingFinished();
     }
-#ifdef Q_WS_MAC
+#ifdef Q_DEAD_CODE_FROM_QT4_MAC
     if (d->control->echoMode() == Password || d->control->echoMode() == NoEcho)
         qt_mac_secure_keyboard(false);
 #endif

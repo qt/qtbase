@@ -60,7 +60,7 @@
 #include "qdockarealayout_p.h"
 #include "qtoolbararealayout_p.h"
 
-#ifdef Q_WS_MAC
+#ifdef Q_DEAD_CODE_FROM_QT4_MAC
 // Forward defs to make avoid including Carbon.h (faster compile you know ;).
 struct OpaqueHIObjectRef;
 typedef struct OpaqueHIObjectRef*       HIObjectRef;
@@ -70,7 +70,7 @@ typedef const struct __CFString * CFStringRef;
 
 #include <private/qunifiedtoolbarsurface_mac_p.h>
 
-#endif // Q_WS_MAC
+#endif // Q_DEAD_CODE_FROM_QT4_MAC
 
 QT_BEGIN_NAMESPACE
 
@@ -292,7 +292,7 @@ private:
 #ifndef QT_NO_TABBAR
     void updateTabBarShapes();
 #endif
-#ifdef Q_WS_MAC
+#ifdef Q_DEAD_CODE_FROM_QT4_MAC
     static OSStatus qtmacToolbarDelegate(EventHandlerCallRef, EventRef , void *);
     static OSStatus qtoolbarInHIToolbarHandler(EventHandlerCallRef inCallRef, EventRef event,
                                                void *data);
@@ -325,7 +325,7 @@ public:
     QUnifiedToolbarSurface *unifiedSurface;
     void updateUnifiedToolbarOffset();
 
-#endif // Q_WS_MAC
+#endif // Q_DEAD_CODE_FROM_QT4_MAC
 };
 
 #if !defined(QT_NO_DOCKWIDGET) && !defined(QT_NO_DEBUG_STREAM)

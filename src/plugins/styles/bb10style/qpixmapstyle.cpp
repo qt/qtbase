@@ -75,7 +75,7 @@ QPixmapStyle::~QPixmapStyle()
 void QPixmapStyle::polish(QApplication *application)
 {
     QCommonStyle::polish(application);
-#if defined(Q_WS_WIN)
+#if defined(Q_DEAD_CODE_FROM_QT4_WIN)
     QApplication::setEffectEnabled(Qt::UI_AnimateCombo, false);
 #endif
 }
@@ -129,7 +129,7 @@ void QPixmapStyle::polish(QWidget *widget)
             frame->setContentsMargins(pix.margins.left(), desc.margins.top(),
                                       pix.margins.right(), desc.margins.bottom());
             frame->setAttribute(Qt::WA_TranslucentBackground);
-#ifdef Q_WS_WIN
+#ifdef Q_DEAD_CODE_FROM_QT4_WIN
             // FramelessWindowHint is needed on windows to make
             // WA_TranslucentBackground work properly
             frame->setWindowFlags(widget->windowFlags() | Qt::FramelessWindowHint);

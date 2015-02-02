@@ -71,7 +71,7 @@ public:
         selectionBehaviorOnRemove(QTabBar::SelectRightTab), paintWithOffsets(true), movable(false),
         dragInProgress(false), documentMode(false), autoHide(false), changeCurrentOnDrag(false),
         switchTabCurrentIndex(-1), switchTabTimerId(0), movingTab(0)
-#ifdef Q_WS_MAC
+#ifdef Q_DEAD_CODE_FROM_QT4_MAC
         , previousPressedIndex(-1)
 #endif
         {}
@@ -202,7 +202,7 @@ public:
     int switchTabTimerId;
 
     QWidget *movingTab;
-#ifdef Q_WS_MAC
+#ifdef Q_DEAD_CODE_FROM_QT4_MAC
     int previousPressedIndex;
 #endif
     // shared by tabwidget and qtabbar

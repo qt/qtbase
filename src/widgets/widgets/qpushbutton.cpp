@@ -50,10 +50,10 @@
 #include "qdebug.h"
 #include "qlayoutitem.h"
 #include "qdialogbuttonbox.h"
-#ifdef Q_WS_MAC
+#ifdef Q_DEAD_CODE_FROM_QT4_MAC
 #include "private/qmacstyle_mac_p.h"
 #include "private/qmacstyle_mac_p_p.h"
-#endif // Q_WS_MAC
+#endif // Q_DEAD_CODE_FROM_QT4_MAC
 
 #ifndef QT_NO_ACCESSIBILITY
 #include "qaccessible.h"
@@ -673,7 +673,7 @@ bool QPushButton::event(QEvent *e)
     return QAbstractButton::event(e);
 }
 
-#ifdef Q_WS_MAC
+#ifdef Q_DEAD_CODE_FROM_QT4_MAC
 /*! \reimp */
 bool QPushButton::hitButton(const QPoint &pos) const
 {
@@ -702,7 +702,7 @@ bool QPushButtonPrivate::hitButton(const QPoint &pos)
                       q->rect().height() - QMacStylePrivate::PushButtonBottomOffset);
     return roundedRect.contains(pos);
 }
-#endif // Q_WS_MAC
+#endif // Q_DEAD_CODE_FROM_QT4_MAC
 
 
 QT_END_NAMESPACE

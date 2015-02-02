@@ -127,7 +127,7 @@ private:
     friend bool qt_mac_buttonIsRenderedFlat(const QPushButton *pushButton, const QStyleOptionButton *option);
 };
 
-#endif // Q_WS_MAC
+#endif // Q_DEAD_CODE_FROM_QT4_MAC
 
 QT_END_NAMESPACE
 

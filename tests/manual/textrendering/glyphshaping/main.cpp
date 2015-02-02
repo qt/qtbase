@@ -165,7 +165,7 @@ bool dumpHtml(const QString &pathName)
     QString platformName = QString::fromLatin1(
 #if defined(Q_OS_WIN)
             "Win32"
-#elif defined(Q_WS_X11)
+#elif defined(Q_DEAD_CODE_FROM_QT4_X11)
             "X11"
 #else
             ""

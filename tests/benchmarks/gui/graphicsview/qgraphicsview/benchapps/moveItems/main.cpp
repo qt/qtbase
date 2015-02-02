@@ -32,14 +32,14 @@
 ****************************************************************************/
 #include <QtGui>
 
-#ifdef Q_WS_WIN
+#ifdef Q_DEAD_CODE_FROM_QT4_WIN
 #define CALLGRIND_START_INSTRUMENTATION  {}
 #define CALLGRIND_STOP_INSTRUMENTATION   {}
 #else
 #include "valgrind/callgrind.h"
 #endif
 
-#ifdef Q_WS_X11
+#ifdef Q_DEAD_CODE_FROM_QT4_X11
 extern void qt_x11_wait_for_window_manager(QWidget *);
 #endif
 
@@ -94,7 +94,7 @@ int main(int argc, char *argv[])
     View view(&scene, item);
     view.resize(300, 300);
     view.show();
-#ifdef Q_WS_X11
+#ifdef Q_DEAD_CODE_FROM_QT4_X11
     qt_x11_wait_for_window_manager(&view);
 #endif
 

@@ -47,7 +47,7 @@
 #include <QtCore/QSettings>
 #include <QtGui/QPainter>
 
-#ifdef Q_WS_MAC
+#ifdef Q_DEAD_CODE_FROM_QT4_MAC
 #include <private/qt_cocoa_helpers_mac_p.h>
 #endif
 
@@ -398,7 +398,7 @@ void QIconLoaderEngine::paint(QPainter *painter, const QRect &rect,
                              QIcon::Mode mode, QIcon::State state)
 {
     QSize pixmapSize = rect.size();
-#if defined(Q_WS_MAC)
+#if defined(Q_DEAD_CODE_FROM_QT4_MAC)
     pixmapSize *= qt_mac_get_scalefactor();
 #endif
     painter->drawPixmap(rect, pixmap(pixmapSize, mode, state));

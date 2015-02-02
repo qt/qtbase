@@ -114,7 +114,7 @@ bool QWidgetResizeHandler::eventFilter(QObject *o, QEvent *ee)
         if (!widget->rect().contains(widget->mapFromGlobal(e->globalPos())))
             return false;
         if (e->button() == Qt::LeftButton) {
-#if defined(Q_WS_X11)
+#if defined(Q_DEAD_CODE_FROM_QT4_X11)
             /*
                Implicit grabs do not stop the X server from changing
                the cursor in children, which looks *really* bad when
@@ -128,7 +128,7 @@ bool QWidgetResizeHandler::eventFilter(QObject *o, QEvent *ee)
 #  else
                 widget->grabMouse();
 #  endif // QT_NO_CURSOR
-#endif // Q_WS_X11
+#endif // Q_DEAD_CODE_FROM_QT4_X11
             buttonDown = false;
             emit activate();
             bool me = movingEnabled;

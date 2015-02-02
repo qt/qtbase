@@ -1002,12 +1002,12 @@ bool QScroller::handleInput(Input input, const QPointF &position, qint64 timesta
     return false;
 }
 
-#if !defined(Q_WS_MAC)
+#if !defined(Q_DEAD_CODE_FROM_QT4_MAC)
 // the Mac version is implemented in qscroller_mac.mm
 
 QPointF QScrollerPrivate::realDpi(int screen)
 {
-#  if defined(Q_WS_X11) && !defined(QT_NO_XRANDR)
+#  if defined(Q_DEAD_CODE_FROM_QT4_X11) && !defined(QT_NO_XRANDR)
     if (X11 && X11->use_xrandr && X11->ptrXRRSizes && X11->ptrXRRRootToScreen) {
         int nsizes = 0;
         // QDesktopWidget is based on Xinerama screens, which do not always
@@ -1033,7 +1033,7 @@ QPointF QScrollerPrivate::realDpi(int screen)
     return QPointF(w->physicalDpiX(), w->physicalDpiY());
 }
 
-#endif // !Q_WS_MAC
+#endif // !Q_DEAD_CODE_FROM_QT4_MAC
 
 
 /*! \internal

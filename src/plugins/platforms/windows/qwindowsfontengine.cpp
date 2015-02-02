@@ -239,7 +239,7 @@ int QWindowsFontEngine::getGlyphIndexes(const QChar *str, int numChars, QGlyphLa
             while (it.hasNext()) {
                 const uint uc = it.next();
                 if (
-#ifdef Q_WS_WINCE
+#ifdef Q_DEAD_CODE_FROM_QT4_WINCE
                     tm.tmFirstChar > 60000 ||
 #endif
                          uc >= first && uc <= last)

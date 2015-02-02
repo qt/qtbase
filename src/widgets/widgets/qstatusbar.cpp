@@ -81,7 +81,7 @@ public:
 
     int savedStrut;
 
-#ifdef Q_WS_MAC
+#ifdef Q_DEAD_CODE_FROM_QT4_MAC
     QPoint dragStart;
 #endif
 
@@ -740,7 +740,7 @@ bool QStatusBar::event(QEvent *e)
 
 // On Mac OS X Leopard it is possible to drag the window by clicking
 // on the tool bar on most applications.
-#ifndef Q_WS_MAC
+#ifndef Q_DEAD_CODE_FROM_QT4_MAC
     return QWidget::event(e);
 #else
     if (QSysInfo::MacintoshVersion <= QSysInfo::MV_10_4)
