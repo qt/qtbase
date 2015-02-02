@@ -1684,6 +1684,7 @@ void Configure::applySpecSpecifics()
         dictionary[ "QT_EVDEV" ]            = "no";
         dictionary[ "QT_MTDEV" ]            = "no";
         dictionary[ "FONT_CONFIG" ]         = "auto";
+        dictionary[ "ANGLE" ]               = "no";
 
         dictionary["DECORATIONS"]           = "default windows styled";
     } else if ((platform() == QNX) || (platform() == BLACKBERRY)) {
