@@ -51,6 +51,14 @@
 
 QT_BEGIN_NAMESPACE
 
+struct Q_CORE_EXPORT QJNILocalRefDeleter
+{
+    static void cleanup(jobject obj);
+};
+
+// To simplify this we only define it for jobjects.
+typedef QScopedPointer<_jobject, QJNILocalRefDeleter> QJNIScopedLocalRef;
+
 class Q_CORE_EXPORT QJNIEnvironmentPrivate
 {
 public:

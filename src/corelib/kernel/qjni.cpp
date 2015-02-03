@@ -204,6 +204,15 @@ static jfieldID getCachedFieldID(JNIEnv *env,
     }
 }
 
+void QJNILocalRefDeleter::cleanup(jobject obj)
+{
+    if (obj == 0)
+        return;
+
+    QJNIEnvironmentPrivate env;
+    env->DeleteLocalRef(obj);
+}
+
 class QJNIEnvironmentPrivateTLS
 {
 public:
@@ -2258,4 +2267,3 @@ bool QJNIObjectPrivate::isSameObject(const QJNIObjectPrivate &other) const
 }
 
 QT_END_NAMESPACE
-
