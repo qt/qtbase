@@ -46,6 +46,7 @@
 //
 
 #include <QtCore/QList>
+#include <QtCore/qtextstream.h>
 #include <qpa/qplatformscreen.h>
 #include <EGL/egl.h>
 

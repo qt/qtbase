@@ -45,6 +45,7 @@
 // We mean it.
 //
 
+#include <QtCore/qtextstream.h>
 #include <qpa/qplatformwindow.h>
 #include <qpa/qplatformopenglcontext.h>
 #include <QtCore/QVariant>
