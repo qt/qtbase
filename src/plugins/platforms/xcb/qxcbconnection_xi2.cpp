@@ -355,8 +355,11 @@ void QXcbConnection::xi2Select(xcb_window_t window)
 
 XInput2TouchDeviceData *QXcbConnection::touchDeviceForId(int id)
 {
-    XInput2TouchDeviceData *dev = m_touchDevices[id];
-    if (!dev) {
+    XInput2TouchDeviceData *dev = Q_NULLPTR;
+    QHash<int, XInput2TouchDeviceData*>::const_iterator devIt = m_touchDevices.find(id);
+    if ( devIt != m_touchDevices.end() ) {
+        dev = devIt.value();
+    } else {
         int nrDevices = 0;
         QTouchDevice::Capabilities caps = 0;
         dev = new XInput2TouchDeviceData;
@@ -428,7 +431,6 @@ XInput2TouchDeviceData *QXcbConnection::touchDeviceForId(int id)
                 QWindowSystemInterface::registerTouchDevice(dev->qtTouchDevice);
             m_touchDevices[id] = dev;
         } else {
-            m_touchDevices.remove(id);
             XIFreeDeviceInfo(dev->xiDeviceInfo);
             delete dev;
             dev = 0;
