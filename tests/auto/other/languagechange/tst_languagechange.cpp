@@ -243,7 +243,7 @@ void tst_languageChange::retranslatability()
         QSKIP("The input data are not suitable for this layout (QDialogButtonBox::GnomeLayout)");
 
     // This will always be queried for when a language changes
-    expected.insert("QCoreApplication::QT_LAYOUT_DIRECTION::Translate this string to the string 'LTR' in left-to-right "
+    expected.insert("QGuiApplication::QT_LAYOUT_DIRECTION::Translate this string to the string 'LTR' in left-to-right "
                     "languages or to 'RTL' in right-to-left languages (such as Hebrew and Arabic) to "
                     "get proper widget layout.");
 
