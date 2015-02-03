@@ -79,39 +79,6 @@ static EGLNativeWindowType createDispmanxLayer(const QPoint &pos, const QSize &s
     return eglWindow;
 }
 
-// these constants are not in any headers (yet)
-#define ELEMENT_CHANGE_LAYER          (1<<0)
-#define ELEMENT_CHANGE_OPACITY        (1<<1)
-#define ELEMENT_CHANGE_DEST_RECT      (1<<2)
-#define ELEMENT_CHANGE_SRC_RECT       (1<<3)
-#define ELEMENT_CHANGE_MASK_RESOURCE  (1<<4)
-#define ELEMENT_CHANGE_TRANSFORM      (1<<5)
-
-static void moveDispmanxLayer(EGLNativeWindowType window, const QPoint &pos)
-{
-    EGL_DISPMANX_WINDOW_T *eglWindow = static_cast<EGL_DISPMANX_WINDOW_T *>(window);
-    QSize size(eglWindow->width, eglWindow->height);
-
-    VC_RECT_T dst_rect;
-    dst_rect.x = pos.x();
-    dst_rect.y = pos.y();
-    dst_rect.width = size.width();
-    dst_rect.height = size.height();
-
-    DISPMANX_UPDATE_HANDLE_T dispman_update = vc_dispmanx_update_start(0);
-    vc_dispmanx_element_change_attributes(dispman_update,
-                                          eglWindow->element,
-                                          ELEMENT_CHANGE_DEST_RECT /*change_flags*/,
-                                          0,
-                                          0,
-                                          &dst_rect,
-                                          NULL,
-                                          0,
-                                          (DISPMANX_TRANSFORM_T)0);
-
-    vc_dispmanx_update_submit_sync(dispman_update);
-}
-
 static void destroyDispmanxLayer(EGLNativeWindowType window)
 {
     EGL_DISPMANX_WINDOW_T *eglWindow = static_cast<EGL_DISPMANX_WINDOW_T *>(window);
