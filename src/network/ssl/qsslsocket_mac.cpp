@@ -689,6 +689,22 @@ bool QSslSocketBackendPrivate::initSslContext()
         return false;
     }
 
+#ifdef Q_OS_OSX
+    if (QSysInfo::MacintoshVersion < QSysInfo::MV_10_8) {
+        // Starting from OS X 10.8 SSLSetSessionOption with kSSLSessionOptionBreakOnServerAuth/
+        // kSSLSessionOptionBreakOnClientAuth disables automatic certificate validation.
+        // But for OS X versions below 10.8 we have to do it explicitly:
+        const OSStatus err = SSLSetEnableCertVerify(context, false);
+        if (err != noErr) {
+            qWarning() << Q_FUNC_INFO << "SSLSetEnableCertVerify failed:" << int(err);
+            destroySslContext();
+            setError(QStringLiteral("SSLSetEnableCertVerify failed: %1").arg(err),
+                     QSslSocket::SslInternalError);
+            return false;
+        }
+    }
+#endif
+
     if (mode == QSslSocket::SslClientMode) {
         // enable Server Name Indication (SNI)
         QString tlsHostName(verificationPeerName.isEmpty() ? q->peerName() : verificationPeerName);
@@ -703,7 +719,7 @@ bool QSslSocketBackendPrivate::initSslContext()
             err = SSLSetSessionOption(context, kSSLSessionOptionBreakOnCertRequested, true);
 
         if (err != noErr) {
-            qWarning() << Q_FUNC_INFO << "SSLSetSessionOption failed:"<<int(err);
+            qWarning() << Q_FUNC_INFO << "SSLSetSessionOption failed:" << int(err);
             destroySslContext();
             setError(QStringLiteral("SSLSetSessionOption failed: %1").arg(err),
                      QSslSocket::SslInternalError);
@@ -712,12 +728,12 @@ bool QSslSocketBackendPrivate::initSslContext()
         //
     } else {
         if (configuration.peerVerifyMode != QSslSocket::VerifyNone) {
-//            OSStatus err = SSLSetClientSideAuthenticate(context, kAlwaysAuthenticate);
+            // kAlwaysAuthenticate - always fails even if we set break on client auth.
             OSStatus err = SSLSetClientSideAuthenticate(context, kTryAuthenticate);
             if (err == noErr) {
                 // We'd like to verify peer ourselves, otherwise handshake will
                 // most probably fail before we can do anything.
-                err = SSLSetSessionOption(context, kSSLSessionOptionBreakOnServerAuth, true);
+                err = SSLSetSessionOption(context, kSSLSessionOptionBreakOnClientAuth, true);
             }
 
             if (err != noErr) {
@@ -1023,30 +1039,27 @@ bool QSslSocketBackendPrivate::verifyPeerTrust()
         }
     }
 
-    // TODO: right now we have nothing on server side?
-    if (mode == QSslSocket::SslClientMode) {
-        // verify certificate chain
-        QCFType<CFMutableArrayRef> certArray = CFArrayCreateMutable(NULL, 0, &kCFTypeArrayCallBacks);
-        foreach (const QSslCertificate &cert, configuration.caCertificates) {
-            QCFType<CFDataRef> certData = cert.d->derData.toCFData();
-            QCFType<SecCertificateRef> certRef = SecCertificateCreateWithData(NULL, certData);
-            CFArrayAppendValue(certArray, certRef);
-        }
-        SecTrustSetAnchorCertificates(trust, certArray);
-        SecTrustSetAnchorCertificatesOnly(trust, false);
+    // verify certificate chain
+    QCFType<CFMutableArrayRef> certArray = CFArrayCreateMutable(NULL, 0, &kCFTypeArrayCallBacks);
+    foreach (const QSslCertificate &cert, configuration.caCertificates) {
+        QCFType<CFDataRef> certData = cert.d->derData.toCFData();
+        QCFType<SecCertificateRef> certRef = SecCertificateCreateWithData(NULL, certData);
+        CFArrayAppendValue(certArray, certRef);
+    }
+    SecTrustSetAnchorCertificates(trust, certArray);
+    SecTrustSetAnchorCertificatesOnly(trust, false);
 
-        SecTrustResultType trustResult = kSecTrustResultInvalid;
-        SecTrustEvaluate(trust, &trustResult);
-        switch (trustResult) {
-        case kSecTrustResultUnspecified:
-        case kSecTrustResultProceed:
-            break;
-        default:
-            if (!canIgnoreVerify) {
-                const QSslError error(QSslError::CertificateUntrusted, configuration.peerCertificate);
-                errors << error;
-                emit q->peerVerifyError(error);
-            }
+    SecTrustResultType trustResult = kSecTrustResultInvalid;
+    SecTrustEvaluate(trust, &trustResult);
+    switch (trustResult) {
+    case kSecTrustResultUnspecified:
+    case kSecTrustResultProceed:
+        break;
+    default:
+        if (!canIgnoreVerify) {
+            const QSslError error(QSslError::CertificateUntrusted, configuration.peerCertificate);
+            errors << error;
+            emit q->peerVerifyError(error);
         }
     }
 
@@ -1107,17 +1120,14 @@ bool QSslSocketBackendPrivate::startHandshake()
         // startHandshake has to be called again ... later.
         return false;
     } else if (err == errSSLServerAuthCompleted) {
-        // TODO: in client mode this happens _before_ ClientCertRequested,
-        // this is the point there we should test the server certificate chain,
-        // not sending any client certificate if the server's certificate validation
-        // fails.
+        // errSSLServerAuthCompleted is a define for errSSLPeerAuthCompleted,
+        // it works for both server/client modes.
+        // In future we'll evaluate peer's trust at this point,
+        // for now we just continue.
         // if (!verifyPeerTrust())
-        //     ....
+        //      ...
         return startHandshake();
     } else if (err == errSSLClientCertRequested) {
-        // TODO: If we are here, the server's trust must
-        // be evaluated and accepted already, otherwise,
-        // we can not send our certificate.
         Q_ASSERT(mode == QSslSocket::SslClientMode);
         QString errorDescription;
         QAbstractSocket::SocketError errorCode = QAbstractSocket::UnknownSocketError;
