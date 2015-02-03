@@ -1118,11 +1118,10 @@ bool QSslSocketBackendPrivate::startHandshake()
     int result = (mode == QSslSocket::SslClientMode) ? q_SSL_connect(ssl) : q_SSL_accept(ssl);
 
     const QList<QPair<int, int> > &lastErrors = _q_sslErrorList()->errors;
+    if (!lastErrors.isEmpty())
+        storePeerCertificates();
     for (int i = 0; i < lastErrors.size(); ++i) {
         const QPair<int, int> &currentError = lastErrors.at(i);
-        // Initialize the peer certificate chain in order to find which certificate caused this error
-        if (configuration.peerCertificateChain.isEmpty())
-            configuration.peerCertificateChain = STACKOFX509_to_QSslCertificates(q_SSL_get_peer_cert_chain(ssl));
         emit q->peerVerifyError(_q_OpenSSL_to_QSslError(currentError.first,
                                 configuration.peerCertificateChain.value(currentError.second)));
         if (q->state() != QAbstractSocket::ConnectedState)
@@ -1155,15 +1154,8 @@ bool QSslSocketBackendPrivate::startHandshake()
         return false;
     }
 
-    // Store the peer certificate and chain. For clients, the peer certificate
-    // chain includes the peer certificate; for servers, it doesn't. Both the
-    // peer certificate and the chain may be empty if the peer didn't present
-    // any certificate.
-    if (configuration.peerCertificateChain.isEmpty())
-        configuration.peerCertificateChain = STACKOFX509_to_QSslCertificates(q_SSL_get_peer_cert_chain(ssl));
-    X509 *x509 = q_SSL_get_peer_certificate(ssl);
-    configuration.peerCertificate = QSslCertificatePrivate::QSslCertificate_from_X509(x509);
-    q_X509_free(x509);
+    // store peer certificate chain
+    storePeerCertificates();
 
     // Start translating errors.
     QList<QSslError> errors;
@@ -1269,6 +1261,22 @@ bool QSslSocketBackendPrivate::startHandshake()
 
     continueHandshake();
     return true;
+}
+
+void QSslSocketBackendPrivate::storePeerCertificates()
+{
+    // Store the peer certificate and chain. For clients, the peer certificate
+    // chain includes the peer certificate; for servers, it doesn't. Both the
+    // peer certificate and the chain may be empty if the peer didn't present
+    // any certificate.
+    X509 *x509 = q_SSL_get_peer_certificate(ssl);
+    configuration.peerCertificate = QSslCertificatePrivate::QSslCertificate_from_X509(x509);
+    q_X509_free(x509);
+    if (configuration.peerCertificateChain.isEmpty()) {
+        configuration.peerCertificateChain = STACKOFX509_to_QSslCertificates(q_SSL_get_peer_cert_chain(ssl));
+        if (!configuration.peerCertificate.isNull() && mode == QSslSocket::SslServerMode)
+            configuration.peerCertificateChain.prepend(configuration.peerCertificate);
+    }
 }
 
 bool QSslSocketBackendPrivate::checkSslErrors()
