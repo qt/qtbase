@@ -86,7 +86,7 @@ QScreen::~QScreen()
     if (this == primaryScreen)
         return;
 
-    bool movingFromVirtualSibling = primaryScreen->handle()->virtualSiblings().contains(handle());
+    bool movingFromVirtualSibling = primaryScreen && primaryScreen->handle()->virtualSiblings().contains(handle());
 
     // Move any leftover windows to the primary screen
     foreach (QWindow *window, QGuiApplication::topLevelWindows()) {

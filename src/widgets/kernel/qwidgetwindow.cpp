@@ -635,7 +635,8 @@ void QWidgetWindow::handleScreenChange()
     sendScreenChangeRecursively(m_widget);
 
     // Invalidate the backing store buffer and repaint immediately.
-    repaintWindow();
+    if (screen())
+        repaintWindow();
 }
 
 void QWidgetWindow::repaintWindow()

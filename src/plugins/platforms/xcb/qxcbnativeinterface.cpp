@@ -249,8 +249,13 @@ void *QXcbNativeInterface::nativeResourceForContext(const QByteArray &resourceSt
 
 void *QXcbNativeInterface::nativeResourceForScreen(const QByteArray &resourceString, QScreen *screen)
 {
+    if (!screen) {
+        qWarning() << "nativeResourceForScreen: null screen";
+        return Q_NULLPTR;
+    }
+
     QByteArray lowerCaseResource = resourceString.toLower();
-    void *result = handlerNativeResourceForScreen(lowerCaseResource ,screen);
+    void *result = handlerNativeResourceForScreen(lowerCaseResource, screen);
     if (result)
         return result;
 

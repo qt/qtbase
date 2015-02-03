@@ -556,6 +556,14 @@ void QXcbWindow::destroy()
         m_pendingSyncRequest->invalidate();
 }
 
+void QXcbWindow::maybeSetScreen(QXcbScreen *screen)
+{
+    if (!window()->screen() && screen->geometry().contains(geometry().topLeft() * int(devicePixelRatio()))) {
+        QWindowSystemInterface::handleWindowScreenChanged(window(), static_cast<QPlatformScreen *>(screen)->screen());
+        QWindowSystemInterface::handleExposeEvent(window(), QRegion(QRect(QPoint(0, 0), window()->size())));
+    }
+}
+
 void QXcbWindow::setGeometry(const QRect &rect)
 {
     QPlatformWindow::setGeometry(rect);
@@ -737,13 +745,15 @@ void QXcbWindow::hide()
     Q_XCB_CALL(xcb_unmap_window(xcb_connection(), m_window));
 
     // send synthetic UnmapNotify event according to icccm 4.1.4
-    xcb_unmap_notify_event_t event;
-    event.response_type = XCB_UNMAP_NOTIFY;
-    event.event = xcbScreen()->root();
-    event.window = m_window;
-    event.from_configure = false;
-    Q_XCB_CALL(xcb_send_event(xcb_connection(), false, xcbScreen()->root(),
-                              XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY | XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT, (const char *)&event));
+    if (xcbScreen()) {
+        xcb_unmap_notify_event_t event;
+        event.response_type = XCB_UNMAP_NOTIFY;
+        event.event = xcbScreen()->root();
+        event.window = m_window;
+        event.from_configure = false;
+        Q_XCB_CALL(xcb_send_event(xcb_connection(), false, xcbScreen()->root(),
+                                  XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY | XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT, (const char *)&event));
+    }
 
     xcb_flush(xcb_connection());
 
@@ -1794,7 +1804,9 @@ void QXcbWindow::handleClientMessageEvent(const xcb_client_message_event_t *even
 QPlatformScreen *QXcbWindow::screenForNativeGeometry(const QRect &newGeometry) const
 {
     QXcbScreen *currentScreen = static_cast<QXcbScreen*>(screen());
-    if (!parent() && !currentScreen->nativeGeometry().intersects(newGeometry)) {
+    if (!currentScreen && QGuiApplication::primaryScreen())
+        currentScreen = static_cast<QXcbScreen*>(QGuiApplication::primaryScreen()->handle());
+    if (currentScreen && !parent() && !currentScreen->nativeGeometry().intersects(newGeometry)) {
         Q_FOREACH (QPlatformScreen* screen, currentScreen->virtualSiblings()) {
             if (static_cast<QXcbScreen*>(screen)->nativeGeometry().intersects(newGeometry))
                 return screen;
@@ -1807,7 +1819,7 @@ void QXcbWindow::handleConfigureNotifyEvent(const xcb_configure_notify_event_t *
 {
     bool fromSendEvent = (event->response_type & 0x80);
     QPoint pos(event->x, event->y);
-    if (!parent() && !fromSendEvent) {
+    if (!parent() && !fromSendEvent && xcbScreen()) {
         // Do not trust the position, query it instead.
         xcb_translate_coordinates_cookie_t cookie = xcb_translate_coordinates(xcb_connection(), xcb_window(),
                                                                               xcbScreen()->root(), 0, 0);
@@ -1825,10 +1837,10 @@ void QXcbWindow::handleConfigureNotifyEvent(const xcb_configure_notify_event_t *
 
     QPlatformWindow::setGeometry(rect);
     QWindowSystemInterface::handleGeometryChange(window(), rect);
-
     QPlatformScreen *newScreen = screenForNativeGeometry(nativeRect);
     if (newScreen != screen()) {
-        QWindowSystemInterface::handleWindowScreenChanged(window(), newScreen->screen());
+        if (newScreen)
+            QWindowSystemInterface::handleWindowScreenChanged(window(), newScreen->screen());
         int newDpr = devicePixelRatio();
         if (newDpr != dpr) {
             QRect newRect = mapGeometryFromNative(nativeRect, newDpr);
@@ -2116,7 +2128,7 @@ void QXcbWindow::handlePropertyNotifyEvent(const xcb_property_notify_event_t *ev
             m_windowState = newState;
         }
         return;
-    } else if (event->atom == atom(QXcbAtom::_NET_WORKAREA) && event->window == xcbScreen()->root()) {
+    } else if (event->atom == atom(QXcbAtom::_NET_WORKAREA) && xcbScreen() && event->window == xcbScreen()->root()) {
         xcbScreen()->updateGeometry(event->time);
     }
 }

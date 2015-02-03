@@ -2583,6 +2583,8 @@ void QGuiApplicationPrivate::processExposeEvent(QWindowSystemInterfacePrivate::E
         return;
 
     QWindow *window = e->exposed.data();
+    if (!window)
+        return;
     QWindowPrivate *p = qt_window_private(window);
 
     if (!p->receivedExpose) {
@@ -2598,7 +2600,7 @@ void QGuiApplicationPrivate::processExposeEvent(QWindowSystemInterfacePrivate::E
         p->receivedExpose = true;
     }
 
-    p->exposed = e->isExposed;
+    p->exposed = e->isExposed && window->screen();
 
     QExposeEvent exposeEvent(e->region);
     QCoreApplication::sendSpontaneousEvent(window, &exposeEvent);

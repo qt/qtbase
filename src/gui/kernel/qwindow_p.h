@@ -45,6 +45,7 @@
 // We mean it.
 //
 
+#include <QtGui/qscreen.h>
 #include <QtGui/qwindow.h>
 #include <qpa/qplatformwindow.h>
 
@@ -73,6 +74,7 @@ public:
         , parentWindow(0)
         , platformWindow(0)
         , visible(false)
+        , visibilityOnDestroy(false)
         , exposed(false)
         , windowState(Qt::WindowNoState)
         , visibility(QWindow::Hidden)
@@ -147,6 +149,7 @@ public:
     QWindow *parentWindow;
     QPlatformWindow *platformWindow;
     bool visible;
+    bool visibilityOnDestroy;
     bool exposed;
     QSurfaceFormat requestedFormat;
     QString windowTitle;
@@ -175,7 +178,7 @@ public:
     int updateTimer;
 
     QPointer<QWindow> transientParent;
-    QScreen *topLevelScreen;
+    QPointer<QScreen> topLevelScreen;
 
 #ifndef QT_NO_CURSOR
     QCursor cursor;

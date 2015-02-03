@@ -83,7 +83,8 @@ QPlatformWindow *QPlatformWindow::parent() const
 */
 QPlatformScreen *QPlatformWindow::screen() const
 {
-    return window()->screen()->handle();
+    QScreen *scr = window()->screen();
+    return scr ? scr->handle() : Q_NULLPTR;
 }
 
 /*!
@@ -479,7 +480,7 @@ QString QPlatformWindow::formatWindowTitle(const QString &title, const QString &
 QPlatformScreen *QPlatformWindow::screenForGeometry(const QRect &newGeometry) const
 {
     QPlatformScreen *currentScreen = screen();
-    if (!parent() && !currentScreen->geometry().intersects(newGeometry)) {
+    if (!parent() && currentScreen && !currentScreen->geometry().intersects(newGeometry)) {
         Q_FOREACH (QPlatformScreen* screen, currentScreen->virtualSiblings()) {
             if (screen->geometry().intersects(newGeometry))
                 return screen;

@@ -338,7 +338,7 @@ inline bool QWindowPrivate::windowRecreationRequired(QScreen *newScreen) const
 {
     Q_Q(const QWindow);
     const QScreen *oldScreen = q->screen();
-    return oldScreen != newScreen && platformWindow
+    return oldScreen != newScreen && (platformWindow || !oldScreen)
         && !(oldScreen && oldScreen->virtualSiblings().contains(newScreen));
 }
 
@@ -373,10 +373,13 @@ void QWindowPrivate::setTopLevelScreen(QScreen *newScreen, bool recreate)
     }
     if (newScreen != topLevelScreen) {
         const bool shouldRecreate = recreate && windowRecreationRequired(newScreen);
-        if (shouldRecreate)
+        const bool shouldShow = visibilityOnDestroy && !topLevelScreen;
+        if (shouldRecreate && platformWindow)
             q->destroy();
         connectToScreen(newScreen);
-        if (newScreen && shouldRecreate)
+        if (shouldShow)
+            q->setVisible(true);
+        else if (newScreen && shouldRecreate)
             create(true);
         emitScreenChangedRecursion(newScreen);
     }
@@ -1600,6 +1603,7 @@ void QWindow::destroy()
         QGuiApplicationPrivate::tabletPressTarget = parent();
 
     bool wasVisible = isVisible();
+    d->visibilityOnDestroy = wasVisible && d->platformWindow;
 
     setVisible(false);
 
@@ -1683,7 +1687,7 @@ bool QWindow::setMouseGrabEnabled(bool grab)
 QScreen *QWindow::screen() const
 {
     Q_D(const QWindow);
-    return d->parentWindow ? d->parentWindow->screen() : d->topLevelScreen;
+    return d->parentWindow ? d->parentWindow->screen() : d->topLevelScreen.data();
 }
 
 /*!
@@ -1703,7 +1707,7 @@ void QWindow::setScreen(QScreen *newScreen)
     Q_D(QWindow);
     if (!newScreen)
         newScreen = QGuiApplication::primaryScreen();
-    d->setTopLevelScreen(newScreen, true /* recreate */);
+    d->setTopLevelScreen(newScreen, newScreen != 0);
 }
 
 /*!

@@ -417,6 +417,13 @@ void QXcbScreen::handleScreenChange(xcb_randr_screen_change_notify_event_t *chan
 
     QDpi ldpi = logicalDpi();
     QWindowSystemInterface::handleScreenLogicalDotsPerInchChange(QPlatformScreen::screen(), ldpi.first, ldpi.second);
+
+    // Windows which had null screens have already had expose events by now.
+    // They need to be told the screen is back, it's OK to render.
+    foreach (QWindow *window, QGuiApplication::topLevelWindows()) {
+        QXcbWindow *xcbWin = static_cast<QXcbWindow*>(window->handle());
+        xcbWin->maybeSetScreen(this);
+    }
 }
 
 void QXcbScreen::updateGeometry(xcb_timestamp_t timestamp)

@@ -332,6 +332,9 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGra
     initializeXRandr();
     updateScreens();
 
+    if (m_screens.isEmpty())
+        qFatal("QXcbConnection: no screens available");
+
     initializeXFixes();
     initializeXRender();
     m_xi2Enabled = false;
