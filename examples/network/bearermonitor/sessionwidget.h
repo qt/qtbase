@@ -43,11 +43,7 @@
 
 #include <qnetworksession.h>
 
-#ifdef MAEMO_UI
-#include "ui_sessionwidget_maemo.h"
-#else
 #include "ui_sessionwidget.h"
-#endif
 
 QT_USE_NAMESPACE
 
@@ -72,10 +68,6 @@ private Q_SLOTS:
     void stopSession();
     void updateSession();
     void updateSessionError(QNetworkSession::SessionError error);
-#ifdef MAEMO_UI
-    void deleteSession();
-#endif
-
 
 private:
     QNetworkSession *session;

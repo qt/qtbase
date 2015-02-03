@@ -74,10 +74,6 @@ SessionWidget::SessionWidget(const QNetworkConfiguration &config, QWidget *paren
             this, SLOT(closeSession()));
     connect(stopSessionButton, SIGNAL(clicked()),
             this, SLOT(stopSession()));
-#ifdef MAEMO_UI
-    connect(deleteSessionButton, SIGNAL(clicked()),
-            this, SLOT(deleteSession()));
-#endif
 }
 
 SessionWidget::~SessionWidget()
@@ -93,13 +89,6 @@ void SessionWidget::timerEvent(QTimerEvent *e)
         activeTime->setText(QString::number(session->activeTime()));
     }
 }
-
-#ifdef MAEMO_UI
-void SessionWidget::deleteSession()
-{
-    delete this;
-}
-#endif
 
 void SessionWidget::updateSession()
 {

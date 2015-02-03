@@ -12,8 +12,6 @@ FORMS = bearermonitor_240_320.ui \
         bearermonitor_640_480.ui \
         sessionwidget.ui
 
-EXAMPLE_FILES = bearermonitor_maemo.ui sessionwidget_maemo.ui  # not used
-
 win32:!wince*:LIBS += -lws2_32
 wince*:LIBS += -lws2
 

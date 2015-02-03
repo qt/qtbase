@@ -116,10 +116,7 @@ TestWidget::TestWidget(QWidget *parent):
 
     setLayout(layout);
     //! [4]
-
-    //! [5]
 }
-//! [5]
 
 //! [6]
 void TestWidget::resizeEvent(QResizeEvent *event)

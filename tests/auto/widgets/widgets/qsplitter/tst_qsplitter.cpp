@@ -768,7 +768,7 @@ void tst_QSplitter::task169702_sizes()
     QTest::qWait(100);
     testW->m_iFactor++;
     testW->updateGeometry();
-    QTest::qWait(500);//100 is too fast for Maemo
+    QTest::qWait(500);
 
     //Make sure the minimimSizeHint is respected
     QCOMPARE(testW->size().height(), testW->minimumSizeHint().height());

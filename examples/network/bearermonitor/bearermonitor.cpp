@@ -56,13 +56,8 @@ BearerMonitor::BearerMonitor(QWidget *parent)
 :   QWidget(parent)
 {
     setupUi(this);
-#ifdef MAEMO_UI
-    newSessionButton->hide();
-    deleteSessionButton->hide();
-#else
     delete tabWidget->currentWidget();
     sessionGroup->hide();
-#endif
     updateConfigurations();
     onlineStateChanged(!manager.allConfigurations(QNetworkConfiguration::Active).isEmpty());
     QNetworkConfiguration defaultConfiguration = manager.defaultConfiguration();
@@ -99,10 +94,8 @@ BearerMonitor::BearerMonitor(QWidget *parent)
 
     connect(newSessionButton, SIGNAL(clicked()),
             this, SLOT(createNewSession()));
-#ifndef MAEMO_UI
     connect(deleteSessionButton, SIGNAL(clicked()),
             this, SLOT(deleteSession()));
-#endif
     connect(scanButton, SIGNAL(clicked()),
             this, SLOT(performScan()));
 
@@ -385,9 +378,7 @@ void BearerMonitor::createSessionFor(QTreeWidgetItem *item)
 
     tabWidget->addTab(session, conf.name());
 
-#ifndef MAEMO_UI
     sessionGroup->show();
-#endif
 
     sessionWidgets.append(session);
 }
@@ -400,7 +391,6 @@ void BearerMonitor::createNewSession()
     createSessionFor(item);
 }
 
-#ifndef MAEMO_UI
 void BearerMonitor::deleteSession()
 {
     SessionWidget *session = qobject_cast<SessionWidget *>(tabWidget->currentWidget());
@@ -413,7 +403,6 @@ void BearerMonitor::deleteSession()
             sessionGroup->hide();
     }
 }
-#endif
 
 void BearerMonitor::performScan()
 {

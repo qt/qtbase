@@ -131,12 +131,6 @@
 
     \snippet widgets/elidedlabel/testwidget.cpp 4
 
-    On the Maemo platform, windows are stuck in landscape mode by default. With
-    this attribute set, the window manager is aware that this window can be
-    rotated.
-
-    \snippet widgets/elidedlabel/testwidget.cpp 5
-
     The \c widthSlider and \c heightSlider have the exact same length as the
     dimensions of the \c elidedText. The maximum value for both of them is
     thus their lengths, and each tick indicates one pixel.
