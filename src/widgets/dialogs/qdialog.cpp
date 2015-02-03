@@ -127,7 +127,7 @@ bool QDialogPrivate::setNativeDialogVisible(bool visible)
             Q_Q(QDialog);
             helperPrepareShow(helper);
             nativeDialogInUse = helper->show(q->windowFlags(), q->windowModality(), parentWindow());
-        } else {
+        } else if (nativeDialogInUse) {
             helper->hide();
         }
     }
