@@ -32,6 +32,7 @@
 ****************************************************************************/
 
 #include "cglconvenience_p.h"
+#include <QtCore/qglobal.h>
 #include <QtCore/private/qcore_mac_p.h>
 #include <Cocoa/Cocoa.h>
 #include <QVector>
@@ -125,6 +126,14 @@ void *qcgl_createNSOpenGLPixelFormat(const QSurfaceFormat &format)
         attrs << NSOpenGLPFAStereo;
 
     attrs << NSOpenGLPFAAllowOfflineRenderers;
+
+    QByteArray useLayer = qgetenv("QT_MAC_WANTS_LAYER");
+    if (!useLayer.isEmpty() && useLayer.toInt() > 0) {
+        // Disable the software rendering fallback. This makes compositing
+        // OpenGL and raster NSViews using Core Animation layers possible.
+        attrs << NSOpenGLPFANoRecovery;
+    }
+
     attrs << 0;
 
     NSOpenGLPixelFormat* pixelFormat = [[NSOpenGLPixelFormat alloc] initWithAttributes:attrs.constData()];
