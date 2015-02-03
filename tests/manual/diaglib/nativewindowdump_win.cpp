@@ -41,6 +41,10 @@
 
 #include <QtCore/qt_windows.h>
 
+#ifndef WS_EX_NOREDIRECTIONBITMAP
+#  define WS_EX_NOREDIRECTIONBITMAP 0x00200000L
+#endif
+
 namespace QtDiag {
 
 struct DumpContext {
