@@ -1960,6 +1960,8 @@ QOpenGLTexture *QOpenGLTexturePrivate::createTextureView(QOpenGLTexture::Target 
     \value NPOTTextureRepeat Full support for non-power-of-two textures including texture
            repeat modes
     \value Texture1D Support for the 1 dimensional texture target
+    \value TextureComparisonOperators Support for texture comparison operators
+    \value TextureMipMapLevel Support for setting the base and maximum mipmap levels
 */
 
 /*!
@@ -3262,6 +3264,10 @@ bool QOpenGLTexture::hasFeature(Feature feature)
                         && ctx->hasExtension(QByteArrayLiteral("GL_EXT_shadow_funcs")));
             break;
 
+        case TextureMipMapLevel:
+            supported = f.version() >= qMakePair(1, 2);
+            break;
+
         case MaxFeatureFlag:
             break;
         }
@@ -3328,6 +3334,10 @@ bool QOpenGLTexture::hasFeature(Feature feature)
                     || ctx->hasExtension(QByteArrayLiteral("GL_EXT_shadow_samplers"));
             break;
 
+        case TextureMipMapLevel:
+            supported = f.version() >= qMakePair(3, 0);
+            break;
+
         case MaxFeatureFlag:
             break;
         }
@@ -3344,21 +3354,17 @@ bool QOpenGLTexture::hasFeature(Feature feature)
 */
 void QOpenGLTexture::setMipBaseLevel(int baseLevel)
 {
-#if !defined(QT_OPENGL_ES_2)
-    if (!QOpenGLContext::currentContext()->isOpenGLES()) {
-        Q_D(QOpenGLTexture);
-        d->create();
-        Q_ASSERT(d->textureId);
-        Q_ASSERT(d->texFuncs);
-        Q_ASSERT(baseLevel <= d->maxLevel);
-        d->baseLevel = baseLevel;
-        d->texFuncs->glTextureParameteri(d->textureId, d->target, d->bindingTarget, GL_TEXTURE_BASE_LEVEL, baseLevel);
+    Q_D(QOpenGLTexture);
+    d->create();
+    if (!d->features.testFlag(TextureMipMapLevel)) {
+        qWarning("QOpenGLTexture::setMipBaseLevel: requires OpenGL >= 1.2 or OpenGL ES >= 3.0");
         return;
     }
-#else
-    Q_UNUSED(baseLevel);
-#endif
-    qWarning("QOpenGLTexture: Mipmap base level is not supported");
+    Q_ASSERT(d->textureId);
+    Q_ASSERT(d->texFuncs);
+    Q_ASSERT(baseLevel <= d->maxLevel);
+    d->baseLevel = baseLevel;
+    d->texFuncs->glTextureParameteri(d->textureId, d->target, d->bindingTarget, GL_TEXTURE_BASE_LEVEL, baseLevel);
 }
 
 /*!
@@ -3381,21 +3387,17 @@ int QOpenGLTexture::mipBaseLevel() const
 */
 void QOpenGLTexture::setMipMaxLevel(int maxLevel)
 {
-#if !defined(QT_OPENGL_ES_2)
-    if (!QOpenGLContext::currentContext()->isOpenGLES()) {
-        Q_D(QOpenGLTexture);
-        d->create();
-        Q_ASSERT(d->textureId);
-        Q_ASSERT(d->texFuncs);
-        Q_ASSERT(d->baseLevel <= maxLevel);
-        d->maxLevel = maxLevel;
-        d->texFuncs->glTextureParameteri(d->textureId, d->target, d->bindingTarget, GL_TEXTURE_MAX_LEVEL, maxLevel);
+    Q_D(QOpenGLTexture);
+    d->create();
+    if (!d->features.testFlag(TextureMipMapLevel)) {
+        qWarning("QOpenGLTexture::setMipMaxLevel: requires OpenGL >= 1.2 or OpenGL ES >= 3.0");
         return;
     }
-#else
-    Q_UNUSED(maxLevel);
-#endif
-    qWarning("QOpenGLTexture: Mipmap max level is not supported");
+    Q_ASSERT(d->textureId);
+    Q_ASSERT(d->texFuncs);
+    Q_ASSERT(d->baseLevel <= maxLevel);
+    d->maxLevel = maxLevel;
+    d->texFuncs->glTextureParameteri(d->textureId, d->target, d->bindingTarget, GL_TEXTURE_MAX_LEVEL, maxLevel);
 }
 
 /*!
@@ -3418,22 +3420,17 @@ int QOpenGLTexture::mipMaxLevel() const
 */
 void QOpenGLTexture::setMipLevelRange(int baseLevel, int maxLevel)
 {
-#if !defined(QT_OPENGL_ES_2)
-    if (!QOpenGLContext::currentContext()->isOpenGLES()) {
-        Q_D(QOpenGLTexture);
-        d->create();
-        Q_ASSERT(d->textureId);
-        Q_ASSERT(d->texFuncs);
-        Q_ASSERT(baseLevel <= maxLevel);
-        d->texFuncs->glTextureParameteri(d->textureId, d->target, d->bindingTarget, GL_TEXTURE_BASE_LEVEL, baseLevel);
-        d->texFuncs->glTextureParameteri(d->textureId, d->target, d->bindingTarget, GL_TEXTURE_MAX_LEVEL, maxLevel);
+    Q_D(QOpenGLTexture);
+    d->create();
+    if (!d->features.testFlag(TextureMipMapLevel)) {
+        qWarning("QOpenGLTexture::setMipLevelRange: requires OpenGL >= 1.2 or OpenGL ES >= 3.0");
         return;
     }
-#else
-    Q_UNUSED(baseLevel);
-    Q_UNUSED(maxLevel);
-#endif
-    qWarning("QOpenGLTexture: Mipmap level range is not supported");
+    Q_ASSERT(d->textureId);
+    Q_ASSERT(d->texFuncs);
+    Q_ASSERT(baseLevel <= maxLevel);
+    d->texFuncs->glTextureParameteri(d->textureId, d->target, d->bindingTarget, GL_TEXTURE_BASE_LEVEL, baseLevel);
+    d->texFuncs->glTextureParameteri(d->textureId, d->target, d->bindingTarget, GL_TEXTURE_MAX_LEVEL, maxLevel);
 }
 
 /*!
@@ -3676,7 +3673,6 @@ QOpenGLTexture::DepthStencilMode QOpenGLTexture::depthStencilMode() const
 */
 void QOpenGLTexture::setComparisonFunction(QOpenGLTexture::ComparisonFunction function)
 {
-#if !defined(QT_OPENGL_ES_2)
     Q_D(QOpenGLTexture);
     d->create();
     if (!d->features.testFlag(TextureComparisonOperators)) {
@@ -3685,10 +3681,6 @@ void QOpenGLTexture::setComparisonFunction(QOpenGLTexture::ComparisonFunction fu
     }
     d->comparisonFunction = function;
     d->texFuncs->glTextureParameteri(d->textureId, d->target, d->bindingTarget, GL_TEXTURE_COMPARE_FUNC, function);
-#else
-    Q_UNUSED(function);
-    qWarning("QOpenGLTexture: texture comparison functions are not supported");
-#endif
 }
 
 /*!
@@ -3724,7 +3716,6 @@ QOpenGLTexture::ComparisonFunction QOpenGLTexture::comparisonFunction() const
 */
 void QOpenGLTexture::setComparisonMode(QOpenGLTexture::ComparisonMode mode)
 {
-#if !defined(QT_OPENGL_ES_2)
     Q_D(QOpenGLTexture);
     d->create();
     if (!d->features.testFlag(TextureComparisonOperators)) {
@@ -3733,10 +3724,6 @@ void QOpenGLTexture::setComparisonMode(QOpenGLTexture::ComparisonMode mode)
     }
     d->comparisonMode = mode;
     d->texFuncs->glTextureParameteri(d->textureId, d->target, d->bindingTarget, GL_TEXTURE_COMPARE_MODE, mode);
-#else
-    Q_UNUSED(mode);
-    qWarning("QOpenGLTexture: texture comparison modes are not supported");
-#endif
 }
 
 /*!

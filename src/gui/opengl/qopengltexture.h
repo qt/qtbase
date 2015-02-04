@@ -347,8 +347,9 @@ public:
         NPOTTextureRepeat           = 0x00001000,
         Texture1D                   = 0x00002000,
         TextureComparisonOperators  = 0x00004000,
+        TextureMipMapLevel          = 0x00008000,
 #ifndef Q_QDOC
-        MaxFeatureFlag              = 0x00008000
+        MaxFeatureFlag              = 0x00010000
 #endif
     };
     Q_DECLARE_FLAGS(Features, Feature)

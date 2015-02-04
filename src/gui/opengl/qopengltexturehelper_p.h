@@ -55,6 +55,20 @@
 
 QT_BEGIN_NAMESPACE
 
+// Constants for OpenGL and OpenGL ES 3.0+ which are not available with OpenGL ES 2.0.
+#ifndef GL_TEXTURE_BASE_LEVEL
+#define GL_TEXTURE_BASE_LEVEL 0x813C
+#endif
+#ifndef GL_TEXTURE_MAX_LEVEL
+#define GL_TEXTURE_MAX_LEVEL 0x813D
+#endif
+#ifndef GL_TEXTURE_COMPARE_MODE
+#define GL_TEXTURE_COMPARE_MODE 0x884C
+#endif
+#ifndef GL_TEXTURE_COMPARE_FUNC
+#define GL_TEXTURE_COMPARE_FUNC 0x884D
+#endif
+
 class QOpenGLContext;
 
 class QOpenGLTextureHelper
