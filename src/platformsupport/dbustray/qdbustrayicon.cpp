@@ -145,12 +145,8 @@ QTemporaryFile *QDBusTrayIcon::tempIcon(const QIcon &icon)
     if (!necessary)
         return Q_NULLPTR;
     QTemporaryFile *ret = new QTemporaryFile(TempFileTemplate, this);
-    QSize tempSize;
-    Q_FOREACH (const QSize &size, icon.availableSizes())
-        if (size.width() > tempSize.width())
-            tempSize = size;
     ret->open();
-    icon.pixmap(tempSize).save(ret);
+    icon.pixmap(QSize(22, 22)).save(ret);
     ret->close();
     return ret;
 }
