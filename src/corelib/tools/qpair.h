@@ -56,7 +56,9 @@ struct QPair
     { first = p.first; second = p.second; return *this; }
 #ifdef Q_COMPILER_RVALUE_REFS
     template <typename TT1, typename TT2>
-    Q_DECL_CONSTEXPR QPair(QPair<TT1, TT2> &&p) : first(std::move(p.first)), second(std::move(p.second)) {}
+    Q_DECL_CONSTEXPR QPair(QPair<TT1, TT2> &&p)
+        // can't use std::move here as it's not constexpr in C++11:
+        : first(static_cast<TT1 &&>(p.first)), second(static_cast<TT2 &&>(p.second)) {}
     template <typename TT1, typename TT2>
     QPair &operator=(QPair<TT1, TT2> &&p)
     { first = std::move(p.first); second = std::move(p.second); return *this; }
