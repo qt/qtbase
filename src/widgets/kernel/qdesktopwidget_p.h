@@ -65,7 +65,7 @@ class QDesktopWidgetPrivate : public QWidgetPrivate {
     Q_DECLARE_PUBLIC(QDesktopWidget)
 
 public:
-    ~QDesktopWidgetPrivate() {foreach(QDesktopScreenWidget *s, screens) delete s; }
+    ~QDesktopWidgetPrivate() { qDeleteAll(screens); }
     void _q_updateScreens();
     void _q_availableGeometryChanged();
 
