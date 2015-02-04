@@ -51,9 +51,9 @@
 
 QT_BEGIN_NAMESPACE
 
-static const int IconSizeLimit = 64 * qGuiApp->devicePixelRatio();
-static const int IconNormalSmallSize = 22 * qGuiApp->devicePixelRatio();
-static const int IconNormalMediumSize = 64 * qGuiApp->devicePixelRatio();
+static const int IconSizeLimit = 64;
+static const int IconNormalSmallSize = 22;
+static const int IconNormalMediumSize = 64;
 
 QXdgDBusImageVector iconToQXdgDBusImageVector(const QIcon &icon)
 {
@@ -65,22 +65,23 @@ QXdgDBusImageVector iconToQXdgDBusImageVector(const QIcon &icon)
     // and ensure that something between 22px and 64px exists, for better scaling to other sizes.
     bool hasSmallIcon = false;
     bool hasMediumIcon = false;
+    qreal dpr = qGuiApp->devicePixelRatio();
     QList<QSize> toRemove;
     Q_FOREACH (const QSize &size, sizes) {
         int maxSize = qMax(size.width(), size.height());
-        if (maxSize <= IconNormalSmallSize)
+        if (maxSize <= IconNormalSmallSize * dpr)
             hasSmallIcon = true;
-        else if (maxSize <= IconNormalMediumSize)
+        else if (maxSize <= IconNormalMediumSize * dpr)
             hasMediumIcon = true;
-        else if (maxSize > IconSizeLimit)
+        else if (maxSize > IconSizeLimit * dpr)
             toRemove << size;
     }
     Q_FOREACH (const QSize &size, toRemove)
         sizes.removeOne(size);
     if (!hasSmallIcon)
-        sizes.append(QSize(IconNormalSmallSize, IconNormalSmallSize));
+        sizes.append(QSize(IconNormalSmallSize * dpr, IconNormalSmallSize * dpr));
     if (!hasMediumIcon)
-        sizes.append(QSize(IconNormalMediumSize, IconNormalMediumSize));
+        sizes.append(QSize(IconNormalMediumSize * dpr, IconNormalMediumSize * dpr));
     foreach (QSize size, sizes) {
         // Protocol specifies ARGB32 format in network byte order
         QImage im = icon.pixmap(size).toImage().convertToFormat(QImage::Format_ARGB32);
