@@ -3847,7 +3847,7 @@ void QOpenGLTexture::setMaximumAnisotropy(float anisotropy)
     d->create();
     Q_ASSERT(d->texFuncs);
     Q_ASSERT(d->textureId);
-    if (!d->features.testFlag(StencilTexturing)) {
+    if (!d->features.testFlag(AnisotropicFiltering)) {
         qWarning("QOpenGLTexture::setMaximumAnisotropy() requires GL_EXT_texture_filter_anisotropic");
         return;
     }
