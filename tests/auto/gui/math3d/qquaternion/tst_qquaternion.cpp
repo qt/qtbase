@@ -83,6 +83,9 @@ private slots:
     void fromAxisAndAngle_data();
     void fromAxisAndAngle();
 
+    void fromRotationMatrix_data();
+    void fromRotationMatrix();
+
     void slerp_data();
     void slerp();
 
@@ -723,6 +726,25 @@ void tst_QQuaternion::fromAxisAndAngle()
     QVERIFY(qFuzzyCompare(answer.y(), result.y()));
     QVERIFY(qFuzzyCompare(answer.z(), result.z()));
     QVERIFY(qFuzzyCompare(answer.scalar(), result.scalar()));
+}
+
+// Test quaternion convertion to and from rotation matrix.
+void tst_QQuaternion::fromRotationMatrix_data()
+{
+    fromAxisAndAngle_data();
+}
+void tst_QQuaternion::fromRotationMatrix()
+{
+    QFETCH(float, x1);
+    QFETCH(float, y1);
+    QFETCH(float, z1);
+    QFETCH(float, angle);
+
+    QQuaternion result = QQuaternion::fromAxisAndAngle(QVector3D(x1, y1, z1), angle);
+    QMatrix3x3 rot3x3 = result.toRotationMatrix();
+    QQuaternion answer = QQuaternion::fromRotationMatrix(rot3x3);
+
+    QVERIFY(qFuzzyCompare(answer, result) || qFuzzyCompare(-answer, result));
 }
 
 // Test spherical interpolation of quaternions.

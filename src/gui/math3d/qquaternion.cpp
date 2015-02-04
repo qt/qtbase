@@ -401,6 +401,91 @@ QQuaternion QQuaternion::fromAxisAndAngle
 }
 
 /*!
+    \since 5.5
+
+    Creates a rotation matrix that corresponds to this quaternion.
+
+    \note If this quaternion is not normalized,
+    the resulting rotation matrix will contain scaling information.
+
+    \sa fromRotationMatrix()
+*/
+QMatrix3x3 QQuaternion::toRotationMatrix() const
+{
+    // Algorithm from:
+    // http://www.j3d.org/matrix_faq/matrfaq_latest.html#Q54
+
+    QMatrix3x3 rot3x3(Qt::Uninitialized);
+
+    const float xx = xp * xp;
+    const float xy = xp * yp;
+    const float xz = xp * zp;
+    const float xw = xp * wp;
+    const float yy = yp * yp;
+    const float yz = yp * zp;
+    const float yw = yp * wp;
+    const float zz = zp * zp;
+    const float zw = zp * wp;
+
+    rot3x3(0, 0) = 1.0f - 2.0f * (yy + zz);
+    rot3x3(0, 1) =        2.0f * (xy - zw);
+    rot3x3(0, 2) =        2.0f * (xz + yw);
+    rot3x3(1, 0) =        2.0f * (xy + zw);
+    rot3x3(1, 1) = 1.0f - 2.0f * (xx + zz);
+    rot3x3(1, 2) =        2.0f * (yz - xw);
+    rot3x3(2, 0) =        2.0f * (xz - yw);
+    rot3x3(2, 1) =        2.0f * (yz + xw);
+    rot3x3(2, 2) = 1.0f - 2.0f * (xx + yy);
+
+    return rot3x3;
+}
+
+/*!
+    \since 5.5
+
+    Creates a quaternion that corresponds to a rotation matrix \a rot3x3.
+
+    \note If a given rotation matrix is not normalized,
+    the resulting quaternion will contain scaling information.
+
+    \sa toRotationMatrix()
+*/
+QQuaternion QQuaternion::fromRotationMatrix(const QMatrix3x3 &rot3x3)
+{
+    // Algorithm from:
+    // http://www.j3d.org/matrix_faq/matrfaq_latest.html#Q55
+
+    float scalar;
+    float axis[3];
+
+    const float trace = rot3x3(0, 0) + rot3x3(1, 1) + rot3x3(2, 2);
+    if (trace > 0.00000001f) {
+        const float s = 2.0f * sqrtf(trace + 1.0f);
+        scalar = 0.25f * s;
+        axis[0] = (rot3x3(2, 1) - rot3x3(1, 2)) / s;
+        axis[1] = (rot3x3(0, 2) - rot3x3(2, 0)) / s;
+        axis[2] = (rot3x3(1, 0) - rot3x3(0, 1)) / s;
+    } else {
+        static int s_next[3] = { 1, 2, 0 };
+        int i = 0;
+        if (rot3x3(1, 1) > rot3x3(0, 0))
+            i = 1;
+        if (rot3x3(2, 2) > rot3x3(i, i))
+            i = 2;
+        int j = s_next[i];
+        int k = s_next[j];
+
+        const float s = 2.0f * sqrtf(rot3x3(i, i) - rot3x3(j, j) - rot3x3(k, k) + 1.0f);
+        axis[i] = 0.25f * s;
+        scalar = (rot3x3(k, j) - rot3x3(j, k)) / s;
+        axis[j] = (rot3x3(j, i) + rot3x3(i, j)) / s;
+        axis[k] = (rot3x3(k, i) + rot3x3(i, k)) / s;
+    }
+
+    return QQuaternion(scalar, axis[0], axis[1], axis[2]);
+}
+
+/*!
     \fn bool operator==(const QQuaternion &q1, const QQuaternion &q2)
     \relates QQuaternion
 

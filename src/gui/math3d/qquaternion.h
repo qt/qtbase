@@ -34,6 +34,7 @@
 #ifndef QQUATERNION_H
 #define QQUATERNION_H
 
+#include <QtGui/qgenericmatrix.h>
 #include <QtGui/qvector3d.h>
 #include <QtGui/qvector4d.h>
 
@@ -118,6 +119,9 @@ public:
 #endif
     static QQuaternion fromAxisAndAngle
             (float x, float y, float z, float angle);
+
+    QMatrix3x3 toRotationMatrix() const;
+    static QQuaternion fromRotationMatrix(const QMatrix3x3 &rot3x3);
 
     static QQuaternion slerp
         (const QQuaternion& q1, const QQuaternion& q2, float t);
