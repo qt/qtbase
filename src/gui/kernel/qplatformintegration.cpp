@@ -538,9 +538,4 @@ QOpenGLContext::OpenGLModuleType QPlatformIntegration::openGLModuleType()
 }
 #endif
 
-QPlatformHardwareCompositor *QPlatformIntegration::hardwareCompositor(QScreen *) const
-{
-    return 0;
-}
-
 QT_END_NAMESPACE

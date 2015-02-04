@@ -71,7 +71,6 @@ class QPlatformSessionManager;
 class QKeyEvent;
 class QPlatformOffscreenSurface;
 class QOffscreenSurface;
-class QPlatformHardwareCompositor;
 
 class Q_GUI_EXPORT QPlatformIntegration
 {
@@ -169,8 +168,6 @@ public:
 #ifndef QT_NO_OPENGL
     virtual QOpenGLContext::OpenGLModuleType openGLModuleType();
 #endif
-
-    virtual QPlatformHardwareCompositor *hardwareCompositor(QScreen *) const;
 
 protected:
     void screenAdded(QPlatformScreen *screen);
