@@ -79,6 +79,9 @@ public:
     virtual QVariant themeHint(ThemeHint hint) const Q_DECL_OVERRIDE;
 
     static QStringList xdgIconThemePaths();
+#if !defined(QT_NO_DBUS) && !defined(QT_NO_SYSTEMTRAYICON)
+    QPlatformSystemTrayIcon *createPlatformSystemTrayIcon() const Q_DECL_OVERRIDE;
+#endif
 
     static const char *name;
 };

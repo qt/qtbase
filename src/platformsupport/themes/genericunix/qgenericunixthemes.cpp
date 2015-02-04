@@ -44,6 +44,7 @@
 #include <QtCore/QFile>
 #include <QtCore/QDebug>
 #include <QtCore/QHash>
+#include <QtCore/QLoggingCategory>
 #include <QtCore/QSettings>
 #include <QtCore/QVariant>
 #include <QtCore/QStringList>
@@ -59,6 +60,8 @@
 #include <algorithm>
 
 QT_BEGIN_NAMESPACE
+
+Q_DECLARE_LOGGING_CATEGORY(qLcTray)
 
 ResourceHelper::ResourceHelper()
 {
@@ -98,6 +101,7 @@ static bool isDBusTrayAvailable() {
         if (conn.isWatcherRegistered())
             dbusTrayAvailable = true;
         dbusTrayAvailableKnown = true;
+        qCDebug(qLcTray) << "D-Bus tray available:" << dbusTrayAvailable;
     }
     return dbusTrayAvailable;
 }
@@ -160,6 +164,15 @@ QStringList QGenericUnixTheme::xdgIconThemePaths()
 
     return paths;
 }
+
+#if !defined(QT_NO_DBUS) && !defined(QT_NO_SYSTEMTRAYICON)
+QPlatformSystemTrayIcon *QGenericUnixTheme::createPlatformSystemTrayIcon() const
+{
+    if (isDBusTrayAvailable())
+        return new QDBusTrayIcon();
+    return Q_NULLPTR;
+}
+#endif
 
 QVariant QGenericUnixTheme::themeHint(ThemeHint hint) const
 {
