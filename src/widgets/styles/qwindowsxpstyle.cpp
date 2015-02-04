@@ -505,13 +505,13 @@ HBITMAP QWindowsXPStylePrivate::buffer(int w, int h)
     nullBitmap = (HBITMAP)SelectObject(bufferDC, bufferBitmap);
 
     if (!bufferBitmap) {
-        qErrnoWarning("QWindowsXPStylePrivate::buffer(w,h), failed to create dibsection");
+        qErrnoWarning("QWindowsXPStylePrivate::buffer(%dx%d), CreateDIBSection() failed.", w, h);
         bufferW = 0;
         bufferH = 0;
         return 0;
     }
     if (!bufferPixels) {
-        qErrnoWarning("QWindowsXPStylePrivate::buffer(w,h), did not allocate pixel data");
+        qErrnoWarning("QWindowsXPStylePrivate::buffer(%dx%d), CreateDIBSection() did not allocate pixel data.", w, h);
         bufferW = 0;
         bufferH = 0;
         return 0;
