@@ -35,7 +35,7 @@
 #include "qapplication_p.h"
 #include "qbrush.h"
 #include "qcursor.h"
-#include "qdesktopwidget.h"
+#include "qdesktopwidget_p.h"
 #include "qevent.h"
 #include "qhash.h"
 #include "qlayout.h"
@@ -1111,9 +1111,10 @@ void QWidgetPrivate::init(QWidget *parentWidget, Qt::WindowFlags f)
     if (allWidgets)
         allWidgets->insert(q);
 
-    QWidget *desktopWidget = 0;
+    int targetScreen = -1;
     if (parentWidget && parentWidget->windowType() == Qt::Desktop) {
-        desktopWidget = parentWidget;
+        const QDesktopScreenWidget *sw = qobject_cast<const QDesktopScreenWidget *>(parentWidget);
+        targetScreen = sw ? sw->screenNumber() : 0;
         parentWidget = 0;
     }
 
@@ -1133,10 +1134,10 @@ void QWidgetPrivate::init(QWidget *parentWidget, Qt::WindowFlags f)
         xinfo = desktopWidget->d_func()->xinfo;
     }
 #endif
-    if (desktopWidget) {
-        const int screen = desktopWidget->d_func()->topData()->screenIndex;
+    if (targetScreen >= 0) {
+        topData()->initialScreenIndex = targetScreen;
         if (QWindow *window = q->windowHandle())
-            window->setScreen(QGuiApplication::screens().value(screen, 0));
+            window->setScreen(QGuiApplication::screens().value(targetScreen, Q_NULLPTR));
     }
 
     data.fstrut_dirty = true;
@@ -1414,8 +1415,15 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
         win->setGeometry(q->geometry());
     else
         win->resize(q->size());
-    if (win->isTopLevel())
-        win->setScreen(QGuiApplication::screens().value(topData()->screenIndex, 0));
+    if (win->isTopLevel()) {
+        int screenNumber = topData()->initialScreenIndex;
+        topData()->initialScreenIndex = -1;
+        if (screenNumber < 0) {
+            screenNumber = q->windowType() != Qt::Desktop
+                ? QApplication::desktop()->screenNumber(q) : 0;
+        }
+        win->setScreen(QGuiApplication::screens().value(screenNumber, Q_NULLPTR));
+    }
 
     QSurfaceFormat format = win->requestedFormat();
     if ((flags & Qt::Window) && win->surfaceType() != QSurface::OpenGLSurface
@@ -1715,7 +1723,7 @@ void QWidgetPrivate::createTLExtra()
         x->embedded = 0;
         x->window = 0;
         x->shareContext = 0;
-        x->screenIndex = 0;
+        x->initialScreenIndex = -1;
 #ifdef Q_WS_MAC
         x->wasMaximized = false;
 #endif // Q_WS_MAC
@@ -10503,9 +10511,8 @@ void QWidgetPrivate::setParent_sys(QWidget *newparent, Qt::WindowFlags f)
     if (newparent && newparent->windowType() == Qt::Desktop) {
         // make sure the widget is created on the same screen as the
         // programmer specified desktop widget
-
-        // get the desktop's screen number
-        targetScreen = newparent->window()->d_func()->topData()->screenIndex;
+        const QDesktopScreenWidget *sw = qobject_cast<const QDesktopScreenWidget *>(newparent);
+        targetScreen = sw ? sw->screenNumber() : 0;
         newparent = 0;
     }
 
@@ -10537,7 +10544,7 @@ void QWidgetPrivate::setParent_sys(QWidget *newparent, Qt::WindowFlags f)
         f |= Qt::Window;
         if (targetScreen == -1) {
             if (parent)
-                targetScreen = q->parentWidget()->window()->d_func()->topData()->screenIndex;
+                targetScreen = QApplication::desktop()->screenNumber(q->parentWidget()->window());
         }
     }
 
@@ -10581,12 +10588,11 @@ void QWidgetPrivate::setParent_sys(QWidget *newparent, Qt::WindowFlags f)
 
     // move the window to the selected screen
     if (!newparent && targetScreen != -1) {
-        if (maybeTopData())
-            maybeTopData()->screenIndex = targetScreen;
         // only if it is already created
-        if (q->testAttribute(Qt::WA_WState_Created)) {
+        if (q->testAttribute(Qt::WA_WState_Created))
             q->windowHandle()->setScreen(QGuiApplication::screens().value(targetScreen, 0));
-        }
+        else
+            topData()->initialScreenIndex = targetScreen;
     }
 }
 

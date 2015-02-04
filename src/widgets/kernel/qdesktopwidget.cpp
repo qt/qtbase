@@ -39,6 +39,13 @@
 
 QT_BEGIN_NAMESPACE
 
+int QDesktopScreenWidget::screenNumber() const
+{
+    const QDesktopWidgetPrivate *desktopWidgetP
+        = static_cast<const QDesktopWidgetPrivate *>(qt_widget_private(QApplication::desktop()));
+    return desktopWidgetP->screens.indexOf(const_cast<QDesktopScreenWidget *>(this));
+}
+
 const QRect QDesktopWidget::screenGeometry(const QWidget *widget) const
 {
     if (!widget) {
@@ -79,7 +86,7 @@ void QDesktopWidgetPrivate::_q_updateScreens()
 
     for (int currentLength = screens.size(); currentLength < targetLength; ++currentLength) {
         QScreen *qScreen = screenList.at(currentLength);
-        QDesktopScreenWidget *screenWidget = new QDesktopScreenWidget(currentLength);
+        QDesktopScreenWidget *screenWidget = new QDesktopScreenWidget;
         screenWidget->setGeometry(qScreen->geometry());
         QObject::connect(qScreen, SIGNAL(geometryChanged(QRect)),
                          q, SLOT(_q_updateScreens()), Qt::QueuedConnection);
