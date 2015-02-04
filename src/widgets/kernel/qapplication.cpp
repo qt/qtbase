@@ -432,9 +432,7 @@ inline bool QApplicationPrivate::isAlien(QWidget *widget)
 
 bool Q_WIDGETS_EXPORT qt_tab_all_widgets()
 {
-    if (const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme())
-        return theme->themeHint(QPlatformTheme::TabAllWidgets).toBool();
-    return true;
+    return QGuiApplication::styleHints()->tabFocusBehavior() == Qt::TabFocusAllControls;
 }
 
 // ######## move to QApplicationPrivate
