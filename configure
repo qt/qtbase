@@ -3744,7 +3744,7 @@ static const char qt_configure_licensee_str          [256 + 12] = "qt_lcnsuser=$
 static const char qt_configure_licensed_products_str [256 + 12] = "qt_lcnsprod=$Edition";
 
 /* Installation date */
-static const char qt_configure_installation          [12+11]    = "qt_instdate=`date +%Y-%m-%d`";
+static const char qt_configure_installation          [12+11]    = "qt_instdate=2012-12-20";
 
 /* Installation Info */
 static const char qt_configure_prefix_path_str       [256 + 12] = "qt_prfxpath=$QT_INSTALL_PREFIX";

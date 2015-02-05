@@ -38,7 +38,6 @@
 #  include "tools.h"
 #endif
 
-#include <qdatetime.h>
 #include <qdir.h>
 #include <qdiriterator.h>
 #include <qtemporaryfile.h>
@@ -4068,7 +4067,7 @@ void Configure::generateQConfigCpp()
                   << "static const char qt_configure_licensed_products_str [512 + 12] = \"qt_lcnsprod=" << dictionary["EDITION"] << "\";" << endl
                   << endl
                   << "/* Build date */" << endl
-                  << "static const char qt_configure_installation          [11  + 12] = \"qt_instdate=" << QDate::currentDate().toString(Qt::ISODate) << "\";" << endl
+                  << "static const char qt_configure_installation          [11  + 12] = \"qt_instdate=2012-12-20\";" << endl
                   << endl
                   << "/* Installation Info */" << endl
                   << "static const char qt_configure_prefix_path_str       [512 + 12] = \"qt_prfxpath=" << dictionary["QT_INSTALL_PREFIX"] << "\";" << endl

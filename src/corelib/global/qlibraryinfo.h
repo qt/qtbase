@@ -48,7 +48,9 @@ public:
     static QString licensedProducts();
 
 #ifndef QT_NO_DATESTRING
-    static QDate buildDate();
+#if QT_DEPRECATED_SINCE(5, 5)
+    static QT_DEPRECATED QDate buildDate();
+#endif // QT_DEPRECATED_SINCE(5, 5)
 #endif //QT_NO_DATESTRING
 
     static const char * build() Q_DECL_NOTHROW;
