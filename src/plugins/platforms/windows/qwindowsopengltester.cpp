@@ -38,6 +38,12 @@
 #include <QtCore/QDebug>
 #include <QtCore/QTextStream>
 #include <QtCore/QCoreApplication>
+#include <QtCore/QFile>
+#include <QtCore/QFileInfo>
+#include <QtCore/QStandardPaths>
+#include <QtCore/QLibraryInfo>
+
+#include <private/qopengl_p.h>
 
 #ifndef Q_OS_WINCE
 #  include <QtCore/qt_windows.h>
@@ -183,6 +189,57 @@ QWindowsOpenGLTester::Renderer QWindowsOpenGLTester::requestedRenderer()
     return QWindowsOpenGLTester::InvalidRenderer;
 }
 
+#ifndef Q_OS_WINCE
+
+static inline QString resolveBugListFile(const QString &fileName)
+{
+    if (QFileInfo(fileName).isAbsolute())
+        return fileName;
+    // Try QLibraryInfo::SettingsPath which is typically empty unless specified in qt.conf,
+    // then resolve via QStandardPaths::ConfigLocation.
+    const QString settingsPath = QLibraryInfo::location(QLibraryInfo::SettingsPath);
+    if (!settingsPath.isEmpty()) { // SettingsPath is empty unless specified in qt.conf.
+        const QFileInfo fi(settingsPath + QLatin1Char('/') + fileName);
+        if (fi.isFile())
+            return fi.absoluteFilePath();
+    }
+    return QStandardPaths::locate(QStandardPaths::ConfigLocation, fileName);
+}
+
+static void readDriverBugList(const GpuDescription &gpu,
+                              QWindowsOpenGLTester::Renderers *result)
+{
+    const char bugListFileVar[] = "QT_OPENGL_BUGLIST";
+    if (!qEnvironmentVariableIsSet(bugListFileVar))
+        return;
+    const QString fileName = resolveBugListFile(QFile::decodeName(qgetenv(bugListFileVar)));
+    if (fileName.isEmpty())
+        return;
+    QOpenGLConfig::Gpu qgpu;
+    qgpu.deviceId = gpu.deviceId;
+    qgpu.vendorId = gpu.vendorId;
+    qgpu.driverVersion = gpu.driverVersion;
+    const QSet<QString> features = QOpenGLConfig::gpuFeatures(qgpu, fileName);
+    if (features.contains(QStringLiteral("disable_desktopgl"))) { // Qt-specific
+        qCWarning(lcQpaGl) << "Disabling Desktop GL: " << gpu;
+        *result &= ~QWindowsOpenGLTester::DesktopGl;
+    }
+    if (features.contains(QStringLiteral("disable_angle"))) { // Qt-specific keyword
+        qCWarning(lcQpaGl) << "Disabling ANGLE: " << gpu;
+        *result &= ~QWindowsOpenGLTester::GlesMask;
+    } else {
+        if (features.contains(QStringLiteral("disable_d3d11"))) { // standard keyword
+            qCWarning(lcQpaGl) << "Disabling D3D11: " << gpu;
+            *result &= ~QWindowsOpenGLTester::AngleRendererD3d11;
+        }
+        if (features.contains(QStringLiteral("disable_d3d9"))) { // Qt-specific
+            qCWarning(lcQpaGl) << "Disabling D3D9: " << gpu;
+            *result &= ~QWindowsOpenGLTester::AngleRendererD3d9;
+        }
+    }
+}
+#endif // !Q_OS_WINCE
+
 static inline QWindowsOpenGLTester::Renderers
     detectSupportedRenderers(const GpuDescription &gpu, bool glesOnly)
 {
@@ -196,6 +253,9 @@ static inline QWindowsOpenGLTester::Renderers
 
     if (!glesOnly && QWindowsOpenGLTester::testDesktopGL())
         result |= QWindowsOpenGLTester::DesktopGl;
+
+    readDriverBugList(gpu, &result);
+
     return result;
 #else // !Q_OS_WINCE
     return QWindowsOpenGLTester::Gles;

@@ -48,8 +48,12 @@
 #include <qopengl.h>
 #include <private/qopenglcontext_p.h>
 #include <QtCore/qset.h>
+#include <QtCore/qstring.h>
+#include <private/qversionnumber_p.h>
 
 QT_BEGIN_NAMESPACE
+
+class QJsonDocument;
 
 class Q_GUI_EXPORT QOpenGLExtensionMatcher
 {
@@ -65,6 +69,28 @@ public:
 
 private:
     QSet<QByteArray> m_extensions;
+};
+
+class Q_GUI_EXPORT QOpenGLConfig
+{
+public:
+    struct Gpu {
+        Gpu() : vendorId(0), deviceId(0) {}
+        bool isValid() const { return deviceId; }
+
+        uint vendorId;
+        uint deviceId;
+        QVersionNumber driverVersion;
+    };
+
+    static QSet<QString> gpuFeatures(const Gpu &gpu,
+                                     const QString &osName, const QVersionNumber &kernelVersion,
+                                     const QJsonDocument &doc);
+    static QSet<QString> gpuFeatures(const Gpu &gpu,
+                                     const QString &osName, const QVersionNumber &kernelVersion,
+                                     const QString &fileName);
+    static QSet<QString> gpuFeatures(const Gpu &gpu, const QJsonDocument &doc);
+    static QSet<QString> gpuFeatures(const Gpu &gpu, const QString &fileName);
 };
 
 QT_END_NAMESPACE

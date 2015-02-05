@@ -37,6 +37,7 @@
 #include <private/qguiapplication_p.h>
 #include <qpa/qplatformintegration.h>
 #include <qpa/qplatformnativeinterface.h>
+#include <private/qopengl_p.h>
 
 #include <QtTest/QtTest>
 
@@ -105,6 +106,7 @@ class tst_QOpenGlConfig : public QObject
 private slots:
     void testConfiguration();
     void testGlConfiguration();
+    void testBugList();
 };
 
 static void dumpConfiguration(QTextStream &str)
@@ -215,6 +217,41 @@ void tst_QOpenGlConfig::testGlConfiguration()
     context.doneCurrent();
 
     qDebug().noquote() << '\n' << result;
+}
+
+static inline QByteArray msgSetMismatch(const QSet<QString> &expected,
+                                        const QSet<QString> &actual)
+{
+    const QString result = QStringList(expected.toList()).join(QLatin1Char(','))
+        + QLatin1String(" != ")
+        + QStringList(actual.toList()).join(QLatin1Char(','));
+    return result.toLatin1();
+}
+
+void tst_QOpenGlConfig::testBugList()
+{
+    // Check bug list parsing for some arbitrary NVidia card
+    // faking Windows OS.
+    const QString fileName = QFINDTESTDATA("buglist.json");
+    QVERIFY(!fileName.isEmpty());
+
+     QSet<QString> expectedFeatures;
+     expectedFeatures << "feature1";
+
+    QOpenGLConfig::Gpu gpu;
+    gpu.vendorId = 0x10DE;
+    gpu.deviceId = 0x0DE9;
+
+#ifdef Q_COMPILER_INITIALIZER_LISTS
+    gpu.driverVersion = QVersionNumber({9, 18, 13, 4460});
+#else
+    gpu.driverVersion = QVersionNumber(QVector<int>() << 9 << 18 << 13 << 4460);
+#endif
+    const QSet<QString> actualFeatures =
+        QOpenGLConfig::gpuFeatures(gpu, QStringLiteral("win"),
+                                   QVersionNumber(6, 3), fileName);
+    QVERIFY2(expectedFeatures == actualFeatures,
+             msgSetMismatch(expectedFeatures, actualFeatures));
 }
 
 QTEST_MAIN(tst_QOpenGlConfig)

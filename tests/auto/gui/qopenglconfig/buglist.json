@@ -1,0 +1,106 @@
+{
+    "name": "gpu driver bug list example",
+    "version": "0.9",
+    "entries": [
+        {
+            "id": 1,
+            "description": "non-applicable feature: different OS",
+            "vendor_id": "0x10de",
+            "device_id": [ "0x0DE9" ],
+            "os": {
+                "type": "android"
+            },
+            "features": [
+                "wrong_feature1"
+            ]
+        },
+        {
+            "id": 2,
+            "description": "non-applicable feature: ancient OS",
+            "vendor_id": "0x10de",
+            "device_id": [ "0x0DE9" ],
+            "os": {
+                "type": "win",
+                "version": {
+                    "op": "<",
+                    "value": "4.0"
+                }
+            },
+            "features": [
+                "wrong_feature2"
+            ]
+        },
+        {
+            "id": 3,
+            "description": "non-applicable feature: excluded OS",
+            "vendor_id": "0x10de",
+            "device_id": [ "0x0DE9" ],
+            "exceptions": [
+                {
+                    "os": {
+                        "type": "win"
+                    }
+                }
+            ],
+            "features": [
+                "wrong_feature3"
+            ]
+        },
+        {
+            "id": 4,
+            "description": "non-applicable feature: wrong vendor",
+            "vendor_id": "0x10df",
+            "device_id": [ "0x0DE9" ],
+            "os": {
+                "type": "win"
+            },
+            "features": [
+                "wrong_feature4"
+            ]
+        },
+        {
+            "id": 4,
+            "description": "non-applicable feature: wrong device",
+            "vendor_id": "0x10de",
+            "device_id": [ "0x0DEA" ],
+            "os": {
+                "type": "win"
+            },
+            "features": [
+                "wrong_feature5"
+            ]
+        },
+        {
+            "id": 5,
+            "description": "feature 1",
+            "vendor_id": "0x10de",
+            "device_id": [ "0x0DE9" ],
+            "os": {
+                "type": "win"
+            },
+            "driver_version": {
+                "op": ">",
+                "value": "9.18.0.0"
+            },
+            "features": [
+                "feature1"
+            ]
+        },
+        {
+            "id": 6,
+            "description": "non-applicable feature: too new driver",
+            "vendor_id": "0x10de",
+            "device_id": [ "0x0DE9" ],
+            "os": {
+                "type": "win"
+            },
+            "driver_version": {
+                "op": "<=",
+                "value": "9.17.13.4344"
+            },
+            "features": [
+                "feature1"
+            ]
+        }
+    ]
+}
