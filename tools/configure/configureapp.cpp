@@ -3181,7 +3181,7 @@ void Configure::detectArch()
 
         // compile
         command = dictionary[ "MAKE" ];
-        if (command.contains("nmake"))
+        if (command.contains("nmake") || command.contains("jom"))
             command += " /NOLOGO";
         command += " -s";
         Environment::execute(command);
@@ -3286,7 +3286,7 @@ bool Configure::tryCompileProject(const QString &projectPath, const QString &ext
     if (code == 0) {
         // compile
         command = dictionary[ "MAKE" ];
-        if (command.contains("nmake"))
+        if (command.contains("nmake") || command.contains("jom"))
             command += " /NOLOGO";
         command += " -s 2>&1";
         output = Environment::execute(command, &code);
