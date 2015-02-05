@@ -70,7 +70,7 @@ struct HelpProject
     QSet<QString> filterAttributes;
     QHash<QString, QSet<QString> > customFilters;
     QSet<QString> excluded;
-    QMap<QString, SubProject> subprojects;
+    QList<SubProject> subprojects;
     QHash<const Node *, QSet<Node::Status> > memberStatus;
     bool includeIndexNodes;
 };

@@ -107,13 +107,13 @@ void HelpProjectWriter::reset(const Config &config,
             subproject.sortPages = config.getBool(subprefix + "sortPages");
             subproject.type = config.getString(subprefix + "type");
             readSelectors(subproject, config.getStringList(subprefix + "selectors"));
-            project.subprojects[name] = subproject;
+            project.subprojects.append(subproject);
         }
 
         if (project.subprojects.isEmpty()) {
             SubProject subproject;
             readSelectors(subproject, config.getStringList(prefix + "selectors"));
-            project.subprojects.insert(QString(), subproject);
+            project.subprojects.insert(0, subproject);
         }
 
         projects.append(project);
@@ -260,16 +260,16 @@ bool HelpProjectWriter::generateSection(HelpProject &project,
     // Only add nodes to the set for each subproject if they match a selector.
     // Those that match will be listed in the table of contents.
 
-    foreach (const QString &name, project.subprojects.keys()) {
-        SubProject subproject = project.subprojects[name];
+    for (int i = 0; i < project.subprojects.length(); i++) {
+        SubProject subproject = project.subprojects[i];
         // No selectors: accept all nodes.
         if (subproject.selectors.isEmpty()) {
-            project.subprojects[name].nodes[objName] = node;
+            project.subprojects[i].nodes[objName] = node;
         }
         else if (subproject.selectors.contains(node->type())) {
             // Accept only the node types in the selectors hash.
             if (node->type() != Node::Document)
-                project.subprojects[name].nodes[objName] = node;
+                project.subprojects[i].nodes[objName] = node;
             else {
                 // Accept only fake nodes with subtypes contained in the selector's
                 // mask.
@@ -278,7 +278,7 @@ bool HelpProjectWriter::generateSection(HelpProject &project,
                         docNode->subType() != Node::ExternalPage &&
                         !docNode->fullTitle().isEmpty()) {
 
-                    project.subprojects[name].nodes[objName] = node;
+                    project.subprojects[i].nodes[objName] = node;
                 }
             }
         }
@@ -713,8 +713,8 @@ void HelpProjectWriter::generateProject(HelpProject &project)
 
     generateSections(project, writer, rootNode);
 
-    foreach (const QString &name, project.subprojects.keys()) {
-        SubProject subproject = project.subprojects[name];
+    for (int i = 0; i < project.subprojects.length(); i++) {
+        SubProject subproject = project.subprojects[i];
 
         if (subproject.type == QLatin1String("manual")) {
 
@@ -769,13 +769,12 @@ void HelpProjectWriter::generateProject(HelpProject &project)
 
         } else {
 
-            if (!name.isEmpty()) {
-                writer.writeStartElement("section");
-                QString indexPath = gen_->fullDocumentLocation(qdb_->findNodeForTarget(subproject.indexTitle, 0),
+            writer.writeStartElement("section");
+            QString indexPath = gen_->fullDocumentLocation(qdb_->findNodeForTarget(subproject.indexTitle, 0),
                                                                false);
-                writer.writeAttribute("ref", indexPath);
-                writer.writeAttribute("title", subproject.title);
-            }
+            writer.writeAttribute("ref", indexPath);
+            writer.writeAttribute("title", subproject.title);
+
             if (subproject.sortPages) {
                 QStringList titles = subproject.nodes.keys();
                 titles.sort();
@@ -815,8 +814,7 @@ void HelpProjectWriter::generateProject(HelpProject &project)
                 }
             }
 
-            if (!name.isEmpty())
-                writer.writeEndElement(); // section
+            writer.writeEndElement(); // section
         }
     }
 
