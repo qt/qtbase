@@ -265,6 +265,29 @@ static const uint *QT_FASTCALL convertRGBFromRGB32(uint *buffer, const uint *src
 }
 
 template<QImage::Format Format>
+static const uint *QT_FASTCALL convertARGBPMFromRGB32(uint *buffer, const uint *src, int count,
+                                                    const QPixelLayout *, const QRgb *)
+{
+    Q_CONSTEXPR uint alphaMask = ((1 << alphaWidth<Format>()) - 1);
+    Q_CONSTEXPR uint redMask = ((1 << redWidth<Format>()) - 1);
+    Q_CONSTEXPR uint greenMask = ((1 << greenWidth<Format>()) - 1);
+    Q_CONSTEXPR uint blueMask = ((1 << blueWidth<Format>()) - 1);
+
+    Q_CONSTEXPR uchar redRightShift = 24 - redWidth<Format>();
+    Q_CONSTEXPR uchar greenRightShift = 16 - greenWidth<Format>();
+    Q_CONSTEXPR uchar blueRightShift = 8 - blueWidth<Format>();
+
+    for (int i = 0; i < count; ++i) {
+        Q_CONSTEXPR uint alpha = (0xff & alphaMask) << alphaShift<Format>();
+        const uint red = ((src[i] >> redRightShift) & redMask) << redShift<Format>();
+        const uint green = ((src[i] >> greenRightShift) & greenMask) << greenShift<Format>();
+        const uint blue = ((src[i] >> blueRightShift) & blueMask) << blueShift<Format>();
+        buffer[i] = alpha | red | green | blue;
+    }
+    return buffer;
+}
+
+template<QImage::Format Format>
 static const uint *QT_FASTCALL convertARGBPMFromARGB32PM(uint *buffer, const uint *src, int count,
                                                          const QPixelLayout *, const QRgb *)
 {
@@ -312,7 +335,7 @@ template<QImage::Format Format> Q_DECL_CONSTEXPR static inline QPixelLayout pixe
         true, bitsPerPixel<Format>(),
         convertARGBPMToARGB32PM<Format>,
         convertARGBPMFromARGB32PM<Format>,
-        0
+        convertARGBPMFromRGB32<Format>
     };
 }
 
@@ -444,12 +467,11 @@ static const uint *QT_FASTCALL convertFromRGB32(uint *buffer, const uint *src, i
     Q_ASSERT(layout->redWidth <= 8);
     Q_ASSERT(layout->greenWidth <= 8);
     Q_ASSERT(layout->blueWidth <= 8);
-    Q_ASSERT(layout->alphaWidth == 0);
-    Q_ASSERT(!layout->premultiplied);
 
     const uint redMask = (1 << layout->redWidth) - 1;
     const uint greenMask = (1 << layout->greenWidth) - 1;
     const uint blueMask = (1 << layout->blueWidth) - 1;
+    const uint alphaMask = (1 << layout->alphaWidth) - 1;
 
     const uchar redRightShift = 24 - layout->redWidth;
     const uchar greenRightShift = 16 - layout->greenWidth;
@@ -459,7 +481,8 @@ static const uint *QT_FASTCALL convertFromRGB32(uint *buffer, const uint *src, i
         uint red = ((src[i] >> redRightShift) & redMask) << layout->redShift;
         uint green = ((src[i] >> greenRightShift) & greenMask) << layout->greenShift;
         uint blue = ((src[i] >> blueRightShift) & blueMask) << layout->blueShift;
-        buffer[i] = red | green | blue;
+        uint alpha = (0xff & alphaMask) << layout->alphaShift;
+        buffer[i] = red | green | blue | alpha;
     }
     return buffer;
 }
@@ -814,10 +837,10 @@ QPixelLayout qPixelLayouts[QImage::NImageFormats] = {
     { 0,  0, 0,  0, 0,  0, 0,  0, false, QPixelLayout::BPP1LSB, convertIndexedToARGB32PM, 0, 0 }, // Format_MonoLSB
     { 0,  0, 0,  0, 0,  0, 0,  0, false, QPixelLayout::BPP8, convertIndexedToARGB32PM, 0, 0 }, // Format_Indexed8
     // Technically using convertPassThrough to convert from ARGB32PM to RGB32 is wrong,
-    // but everywhere this generic conversion would be wrong is currently overloaed.
+    // but everywhere this generic conversion would be wrong is currently overloaded.
     { 8, 16, 8,  8, 8,  0, 0,  0, false, QPixelLayout::BPP32, convertPassThrough, convertPassThrough, convertPassThrough }, // Format_RGB32
-    { 8, 16, 8,  8, 8,  0, 8, 24, false, QPixelLayout::BPP32, convertARGB32ToARGB32PM, convertARGB32FromARGB32PM, 0 }, // Format_ARGB32
-    { 8, 16, 8,  8, 8,  0, 8, 24,  true, QPixelLayout::BPP32, convertPassThrough, convertPassThrough, 0 }, // Format_ARGB32_Premultiplied
+    { 8, 16, 8,  8, 8,  0, 8, 24, false, QPixelLayout::BPP32, convertARGB32ToARGB32PM, convertARGB32FromARGB32PM, convertPassThrough }, // Format_ARGB32
+    { 8, 16, 8,  8, 8,  0, 8, 24,  true, QPixelLayout::BPP32, convertPassThrough, convertPassThrough, convertPassThrough }, // Format_ARGB32_Premultiplied
 #ifdef Q_COMPILER_CONSTEXPR
     pixelLayoutRGB<QImage::Format_RGB16>(),
     pixelLayoutARGBPM<QImage::Format_ARGB8565_Premultiplied>(),
@@ -830,28 +853,28 @@ QPixelLayout qPixelLayouts[QImage::NImageFormats] = {
     pixelLayoutARGBPM<QImage::Format_ARGB4444_Premultiplied>(),
 #else
     { 5, 11, 6,  5, 5,  0, 0,  0, false, QPixelLayout::BPP16, convertRGB16ToRGB32, convertRGB16FromARGB32PM, convertRGB16FromRGB32 }, // Format_RGB16
-    { 5, 19, 6, 13, 5,  8, 8,  0,  true, QPixelLayout::BPP24, convertToARGB32PM, convertFromARGB32PM, 0 }, // Format_ARGB8565_Premultiplied
+    { 5, 19, 6, 13, 5,  8, 8,  0,  true, QPixelLayout::BPP24, convertToARGB32PM, convertFromARGB32PM, convertFromRGB32 }, // Format_ARGB8565_Premultiplied
     { 6, 12, 6,  6, 6,  0, 0,  0, false, QPixelLayout::BPP24, convertToRGB32, convertFromARGB32PM, convertFromRGB32 }, // Format_RGB666
-    { 6, 12, 6,  6, 6,  0, 6, 18,  true, QPixelLayout::BPP24, convertToARGB32PM, convertFromARGB32PM, 0 }, // Format_ARGB6666_Premultiplied
+    { 6, 12, 6,  6, 6,  0, 6, 18,  true, QPixelLayout::BPP24, convertToARGB32PM, convertFromARGB32PM, convertFromRGB32 }, // Format_ARGB6666_Premultiplied
     { 5, 10, 5,  5, 5,  0, 0,  0, false, QPixelLayout::BPP16, convertToRGB32, convertFromARGB32PM, convertFromRGB32 }, // Format_RGB555
-    { 5, 18, 5, 13, 5,  8, 8,  0,  true, QPixelLayout::BPP24, convertToARGB32PM, convertFromARGB32PM, 0 }, // Format_ARGB8555_Premultiplied
+    { 5, 18, 5, 13, 5,  8, 8,  0,  true, QPixelLayout::BPP24, convertToARGB32PM, convertFromARGB32PM, convertFromRGB32 }, // Format_ARGB8555_Premultiplied
     { 8, 16, 8,  8, 8,  0, 0,  0, false, QPixelLayout::BPP24, convertToRGB32, convertFromARGB32PM, convertFromRGB32 }, // Format_RGB888
     { 4,  8, 4,  4, 4,  0, 0,  0, false, QPixelLayout::BPP16, convertToRGB32, convertFromARGB32PM, convertFromRGB32 }, // Format_RGB444
-    { 4,  8, 4,  4, 4,  0, 4, 12,  true, QPixelLayout::BPP16, convertToARGB32PM, convertFromARGB32PM, 0 }, // Format_ARGB4444_Premultiplied
+    { 4,  8, 4,  4, 4,  0, 4, 12,  true, QPixelLayout::BPP16, convertToARGB32PM, convertFromARGB32PM, convertFromRGB32 }, // Format_ARGB4444_Premultiplied
 #endif
 #if Q_BYTE_ORDER == Q_BIG_ENDIAN
     { 8, 24, 8, 16, 8,  8, 0,  0, false, QPixelLayout::BPP32, convertRGBA8888PMToARGB32PM, convertRGBXFromARGB32PM, convertRGBXFromRGB32 }, // Format_RGBX8888
-    { 8, 24, 8, 16, 8,  8, 8,  0, false, QPixelLayout::BPP32, convertRGBA8888ToARGB32PM, convertRGBA8888FromARGB32PM, 0 }, // Format_RGBA8888
-    { 8, 24, 8, 16, 8,  8, 8,  0,  true, QPixelLayout::BPP32, convertRGBA8888PMToARGB32PM, convertRGBA8888PMFromARGB32PM, 0 }, // Format_RGBA8888_Premultiplied
+    { 8, 24, 8, 16, 8,  8, 8,  0, false, QPixelLayout::BPP32, convertRGBA8888ToARGB32PM, convertRGBA8888FromARGB32PM, convertRGBXFromRGB32 }, // Format_RGBA8888
+    { 8, 24, 8, 16, 8,  8, 8,  0,  true, QPixelLayout::BPP32, convertRGBA8888PMToARGB32PM, convertRGBA8888PMFromARGB32PM, convertRGBXFromRGB32}, // Format_RGBA8888_Premultiplied
 #else
     { 8,  0, 8,  8, 8, 16, 0, 24, false, QPixelLayout::BPP32, convertRGBA8888PMToARGB32PM, convertRGBXFromARGB32PM, convertRGBXFromRGB32 }, // Format_RGBX8888
-    { 8,  0, 8,  8, 8, 16, 8, 24, false, QPixelLayout::BPP32, convertRGBA8888ToARGB32PM, convertRGBA8888FromARGB32PM, 0 }, // Format_RGBA8888 (ABGR32)
-    { 8,  0, 8,  8, 8, 16, 8, 24,  true, QPixelLayout::BPP32, convertRGBA8888PMToARGB32PM, convertRGBA8888PMFromARGB32PM, 0 },  // Format_RGBA8888_Premultiplied
+    { 8,  0, 8,  8, 8, 16, 8, 24, false, QPixelLayout::BPP32, convertRGBA8888ToARGB32PM, convertRGBA8888FromARGB32PM, convertRGBXFromRGB32 }, // Format_RGBA8888 (ABGR32)
+    { 8,  0, 8,  8, 8, 16, 8, 24,  true, QPixelLayout::BPP32, convertRGBA8888PMToARGB32PM, convertRGBA8888PMFromARGB32PM, convertRGBXFromRGB32 },  // Format_RGBA8888_Premultiplied
 #endif
     { 10,  20, 10,  10, 10, 0, 0, 30, false, QPixelLayout::BPP32, convertA2RGB30PMToARGB32PM<PixelOrderBGR>, convertRGB30FromARGB32PM<PixelOrderBGR>, convertRGB30FromRGB32<PixelOrderBGR> }, // Format_BGR30
-    { 10,  20, 10,  10, 10, 0, 2, 30,  true, QPixelLayout::BPP32, convertA2RGB30PMToARGB32PM<PixelOrderBGR>, convertA2RGB30PMFromARGB32PM<PixelOrderBGR>, 0 },  // Format_A2BGR30_Premultiplied
+    { 10,  20, 10,  10, 10, 0, 2, 30,  true, QPixelLayout::BPP32, convertA2RGB30PMToARGB32PM<PixelOrderBGR>, convertA2RGB30PMFromARGB32PM<PixelOrderBGR>, convertRGB30FromRGB32<PixelOrderBGR> },  // Format_A2BGR30_Premultiplied
     { 10,  0, 10,  10, 10, 20, 0, 30, false, QPixelLayout::BPP32, convertA2RGB30PMToARGB32PM<PixelOrderRGB>, convertRGB30FromARGB32PM<PixelOrderRGB>, convertRGB30FromRGB32<PixelOrderRGB> }, // Format_RGB30
-    { 10,  0, 10,  10, 10, 20, 2, 30,  true, QPixelLayout::BPP32, convertA2RGB30PMToARGB32PM<PixelOrderRGB>, convertA2RGB30PMFromARGB32PM<PixelOrderRGB>, 0 },  // Format_A2RGB30_Premultiplied
+    { 10,  0, 10,  10, 10, 20, 2, 30,  true, QPixelLayout::BPP32, convertA2RGB30PMToARGB32PM<PixelOrderRGB>, convertA2RGB30PMFromARGB32PM<PixelOrderRGB>, convertRGB30FromRGB32<PixelOrderRGB> },  // Format_A2RGB30_Premultiplied
     { 0, 0,  0, 0,  0, 0,  8, 0, false, QPixelLayout::BPP8, convertAlpha8ToRGB32, convertAlpha8FromARGB32PM, 0 }, // Format_Alpha8
     { 0, 0,  0, 0,  0, 0,  0, 0, false, QPixelLayout::BPP8, convertGrayscale8ToRGB32, convertGrayscale8FromARGB32PM, convertGrayscale8FromRGB32 } // Format_Grayscale8
 };
@@ -1074,10 +1097,9 @@ static void QT_FASTCALL destStore(QRasterBuffer *rasterBuffer, int x, int y, con
     while (length) {
         int l = qMin(length, buffer_size);
         const uint *ptr = 0;
-        if (layout->convertFromRGB32) {
-            Q_ASSERT(!layout->premultiplied && !layout->alphaWidth);
+        if (!layout->premultiplied && !layout->alphaWidth)
             ptr = layout->convertFromRGB32(buf, buffer, l, layout, 0);
-        } else
+        else
             ptr = layout->convertFromARGB32PM(buf, buffer, l, layout, 0);
         store(dest, ptr, x, l);
         length -= l;

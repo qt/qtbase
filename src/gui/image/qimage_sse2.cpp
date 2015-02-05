@@ -43,7 +43,7 @@ QT_BEGIN_NAMESPACE
 
 bool convert_ARGB_to_ARGB_PM_inplace_sse2(QImageData *data, Qt::ImageConversionFlags)
 {
-    Q_ASSERT(data->format == QImage::Format_ARGB32);
+    Q_ASSERT(data->format == QImage::Format_ARGB32 || data->format == QImage::Format_RGBA8888);
 
     // extra pixels on each line
     const int spare = data->width & 3;
@@ -92,7 +92,10 @@ bool convert_ARGB_to_ARGB_PM_inplace_sse2(QImageData *data, Qt::ImageConversionF
         d = reinterpret_cast<__m128i*>(p+pad);
     }
 
-    data->format = QImage::Format_ARGB32_Premultiplied;
+    if (data->format == QImage::Format_ARGB32)
+        data->format = QImage::Format_ARGB32_Premultiplied;
+    else
+        data->format = QImage::Format_RGBA8888_Premultiplied;
     return true;
 }
 
