@@ -149,7 +149,7 @@ QList<QNetworkProxy> QNetworkProxyFactory::systemProxyForQuery(const QNetworkPro
             url.userName(QUrl::FullyDecoded),
             url.password(QUrl::FullyDecoded));
 
-        if (proxy.capabilities() & requiredCapabilities == requiredCapabilities)
+        if ((proxy.capabilities() & requiredCapabilities) == requiredCapabilities)
             proxyList.append(proxy);
     }
 
