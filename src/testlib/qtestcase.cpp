@@ -48,6 +48,8 @@
 #include <QtCore/qdebug.h>
 #include <QtCore/qlibraryinfo.h>
 #include <QtCore/private/qtools_p.h>
+#include <QtCore/qdiriterator.h>
+#include <QtCore/qtemporarydir.h>
 
 #include <QtTest/private/qtestlog_p.h>
 #include <QtTest/private/qtesttable_p.h>
@@ -2754,6 +2756,58 @@ static inline bool isWindowsBuildDirectory(const QString &dirName)
            || dirName.compare(QLatin1String("Release"), Qt::CaseInsensitive) == 0;
 }
 #endif
+
+/* !
+    Extract a directory from resources to disk. The content is extracted
+    recursively to a temporary folder. The extracted content is not removed
+    automatically.
+
+    \a dirName is the name of the directory to extract from resources.
+
+    Returns the path where the data was extracted or an empty string in case of
+    errors.
+ */
+QString QTest::qExtractTestData(const QString &dirName)
+{
+      QTemporaryDir temporaryDir;
+      temporaryDir.setAutoRemove(false);
+
+      if (!temporaryDir.isValid())
+          return QString();
+
+      const QString dataPath = temporaryDir.path();
+      const QString resourcePath = QLatin1Char(':') + dirName;
+      const QFileInfo fileInfo(resourcePath);
+
+      if (!fileInfo.isDir()) {
+          qWarning("Resource path '%s' is not a directory.", qPrintable(resourcePath));
+          return QString();
+      }
+
+      QDirIterator it(resourcePath, QDirIterator::Subdirectories);
+      if (!it.hasNext()) {
+          qWarning("Resource directory '%s' is empty.", qPrintable(resourcePath));
+          return QString();
+      }
+
+      while (it.hasNext()) {
+          it.next();
+
+          QFileInfo fileInfo = it.fileInfo();
+
+          if (!fileInfo.isDir()) {
+              const QString destination = dataPath + QLatin1Char('/') + fileInfo.filePath().mid(resourcePath.length());
+              QFileInfo destinationFileInfo(destination);
+              QDir().mkpath(destinationFileInfo.path());
+              if (!QFile::copy(fileInfo.filePath(), destination)) {
+                  qWarning("Failed to copy '%s'.", qPrintable(fileInfo.filePath()));
+                  return QString();
+              }
+          }
+      }
+
+      return dataPath;
+}
 
 /*! \internal
  */
