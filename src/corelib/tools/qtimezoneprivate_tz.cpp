@@ -119,6 +119,7 @@ struct QTzTransition {
     qint64 tz_time;     // Transition time
     quint8 tz_typeind;  // Type Index
 };
+Q_DECLARE_TYPEINFO(QTzTransition, Q_PRIMITIVE_TYPE);
 
 struct QTzType {
     int tz_gmtoff;  // UTC offset in seconds
@@ -176,27 +177,25 @@ static QTzHeader parseTzHeader(QDataStream &ds, bool *ok)
     return hdr;
 }
 
-static QList<QTzTransition> parseTzTransitions(QDataStream &ds, int tzh_timecnt, bool longTran)
+static QVector<QTzTransition> parseTzTransitions(QDataStream &ds, int tzh_timecnt, bool longTran)
 {
-    QList<QTzTransition> tranList;
+    QVector<QTzTransition> transitions(tzh_timecnt);
 
     if (longTran) {
         // Parse tzh_timecnt x 8-byte transition times
         for (int i = 0; i < tzh_timecnt && ds.status() == QDataStream::Ok; ++i) {
-            QTzTransition tran;
-            ds >> tran.tz_time;
-            if (ds.status() == QDataStream::Ok)
-                tranList.append(tran);
+            ds >> transitions[i].tz_time;
+            if (ds.status() != QDataStream::Ok)
+                transitions.resize(i);
         }
     } else {
         // Parse tzh_timecnt x 4-byte transition times
         int val;
         for (int i = 0; i < tzh_timecnt && ds.status() == QDataStream::Ok; ++i) {
-            QTzTransition tran;
             ds >> val;
-            tran.tz_time = val;
-            if (ds.status() == QDataStream::Ok)
-                tranList.append(tran);
+            transitions[i].tz_time = val;
+            if (ds.status() != QDataStream::Ok)
+                transitions.resize(i);
         }
     }
 
@@ -205,10 +204,10 @@ static QList<QTzTransition> parseTzTransitions(QDataStream &ds, int tzh_timecnt,
         quint8 typeind;
         ds >> typeind;
         if (ds.status() == QDataStream::Ok)
-            tranList[i].tz_typeind = typeind;
+            transitions[i].tz_typeind = typeind;
     }
 
-    return tranList;
+    return transitions;
 }
 
 static QList<QTzType> parseTzTypes(QDataStream &ds, int tzh_typecnt)
@@ -568,7 +567,7 @@ void QTzTimeZonePrivate::init(const QByteArray &ianaId)
     QTzHeader hdr = parseTzHeader(ds, &ok);
     if (!ok || ds.status() != QDataStream::Ok)
         return;
-    QList<QTzTransition> tranList = parseTzTransitions(ds, hdr.tzh_timecnt, false);
+    QVector<QTzTransition> tranList = parseTzTransitions(ds, hdr.tzh_timecnt, false);
     if (ds.status() != QDataStream::Ok)
         return;
     QList<QTzType> typeList = parseTzTypes(ds, hdr.tzh_typecnt);
