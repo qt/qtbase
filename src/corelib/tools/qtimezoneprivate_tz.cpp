@@ -210,12 +210,13 @@ static QVector<QTzTransition> parseTzTransitions(QDataStream &ds, int tzh_timecn
     return transitions;
 }
 
-static QList<QTzType> parseTzTypes(QDataStream &ds, int tzh_typecnt)
+static QVector<QTzType> parseTzTypes(QDataStream &ds, int tzh_typecnt)
 {
-    QList<QTzType> typeList;
+    QVector<QTzType> types(tzh_typecnt);
+
     // Parse tzh_typecnt x transition types
     for (int i = 0; i < tzh_typecnt && ds.status() == QDataStream::Ok; ++i) {
-        QTzType type;
+        QTzType &type = types[i];
         // Parse UTC Offset, 4 bytes
         ds >> type.tz_gmtoff;
         // Parse Is DST flag, 1 byte
@@ -227,14 +228,14 @@ static QList<QTzType> parseTzTypes(QDataStream &ds, int tzh_typecnt)
         // Set defaults in case not populated later
         type.tz_ttisgmt = false;
         type.tz_ttisstd = false;
-        if (ds.status() == QDataStream::Ok)
-            typeList.append(type);
+        if (ds.status() != QDataStream::Ok)
+            types.resize(i);
     }
 
-    return typeList;
+    return types;
 }
 
-static QMap<int, QByteArray> parseTzAbbreviations(QDataStream &ds, int tzh_charcnt, QList<QTzType> typeList)
+static QMap<int, QByteArray> parseTzAbbreviations(QDataStream &ds, int tzh_charcnt, const QVector<QTzType> &types)
 {
     // Parse the abbreviation list which is tzh_charcnt long with '\0' separated strings. The
     // QTzType.tz_abbrind index points to the first char of the abbreviation in the array, not the
@@ -252,8 +253,8 @@ static QMap<int, QByteArray> parseTzAbbreviations(QDataStream &ds, int tzh_charc
         else
             return map;
     }
-    // Then extract all the substrings pointed to by typeList
-    foreach (const QTzType type, typeList) {
+    // Then extract all the substrings pointed to by types
+    foreach (const QTzType &type, types) {
         QByteArray abbrev;
         for (int i = type.tz_abbrind; input.at(i) != '\0'; ++i)
             abbrev.append(input.at(i));
@@ -288,26 +289,26 @@ static void parseTzLeapSeconds(QDataStream &ds, int tzh_leapcnt, bool longTran)
     }
 }
 
-static QList<QTzType> parseTzIndicators(QDataStream &ds, const QList<QTzType> &typeList, int tzh_ttisstdcnt, int tzh_ttisgmtcnt)
+static QVector<QTzType> parseTzIndicators(QDataStream &ds, const QVector<QTzType> &types, int tzh_ttisstdcnt, int tzh_ttisgmtcnt)
 {
-    QList<QTzType> list = typeList;
+    QVector<QTzType> result = types;
     bool temp;
 
     // Parse tzh_ttisstdcnt x 1-byte standard/wall indicators
     for (int i = 0; i < tzh_ttisstdcnt && ds.status() == QDataStream::Ok; ++i) {
         ds >> temp;
         if (ds.status() == QDataStream::Ok)
-            list[i].tz_ttisstd = temp;
+            result[i].tz_ttisstd = temp;
     }
 
     // Parse tzh_ttisgmtcnt x 1-byte UTC/local indicators
     for (int i = 0; i < tzh_ttisgmtcnt && ds.status() == QDataStream::Ok; ++i) {
         ds >> temp;
         if (ds.status() == QDataStream::Ok)
-            list[i].tz_ttisgmt = temp;
+            result[i].tz_ttisgmt = temp;
     }
 
-    return list;
+    return result;
 }
 
 static QByteArray parseTzPosixRule(QDataStream &ds)
@@ -570,7 +571,7 @@ void QTzTimeZonePrivate::init(const QByteArray &ianaId)
     QVector<QTzTransition> tranList = parseTzTransitions(ds, hdr.tzh_timecnt, false);
     if (ds.status() != QDataStream::Ok)
         return;
-    QList<QTzType> typeList = parseTzTypes(ds, hdr.tzh_typecnt);
+    QVector<QTzType> typeList = parseTzTypes(ds, hdr.tzh_typecnt);
     if (ds.status() != QDataStream::Ok)
         return;
     QMap<int, QByteArray> abbrevMap = parseTzAbbreviations(ds, hdr.tzh_charcnt, typeList);
