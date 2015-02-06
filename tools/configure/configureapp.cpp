@@ -3951,7 +3951,7 @@ void Configure::generateQConfigCpp()
     };
 
     bool prefixReminder = false;
-    for (int i = 0; i < sizeof(varmod) / sizeof(varmod[0]); i++) {
+    for (uint i = 0; i < sizeof(varmod) / sizeof(varmod[0]); i++) {
         QString path = QDir::cleanPath(
                     dictionary[QLatin1String("QT_") + varmod[i].basevar + varmod[i].var]);
         if (path.isEmpty())
