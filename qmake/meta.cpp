@@ -94,9 +94,6 @@ QMakeMetaInfo::clear()
 QString
 QMakeMetaInfo::findLib(QString lib)
 {
-    if((lib[0] == '\'' || lib[0] == '"') &&
-       lib[lib.length()-1] == lib[0])
-    lib = lib.mid(1, lib.length()-2);
     lib = Option::normalizePath(lib);
 
     QString ret;

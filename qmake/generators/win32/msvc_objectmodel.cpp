@@ -2363,10 +2363,9 @@ bool VCFilter::addExtraCompiler(const VCFilterFile &info)
             deps = inputs + deps; // input files themselves too..
 
             // Replace variables for command w/all input files
-            // ### join gives path issues with directories containing spaces!
             cmd = Project->replaceExtraCompilerVariables(tmp_cmd,
-                                                         inputs.join(' '),
-                                                         out,
+                                                         inputs,
+                                                         QStringList(out),
                                                          MakefileGenerator::TargetShell);
         } else {
             deps.prepend(inFile); // input file itself too..
@@ -2385,9 +2384,6 @@ bool VCFilter::addExtraCompiler(const VCFilterFile &info)
                 cmd_name = cmd.left(space);
             else
                 cmd_name = cmd;
-            if ((cmd_name[0] == '\'' || cmd_name[0] == '"') &&
-                cmd_name[0] == cmd_name[cmd_name.length()-1])
-                cmd_name = cmd_name.mid(1,cmd_name.length()-2);
         }
 
         // Fixify paths

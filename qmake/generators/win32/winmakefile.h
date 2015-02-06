@@ -60,6 +60,8 @@ protected:
     int findHighestVersion(const QString &dir, const QString &stem, const QString &ext = QLatin1String("lib"));
     virtual bool findLibraries();
 
+    virtual ProString fixLibFlag(const ProString &lib);
+
     virtual void processPrlFiles();
     void processVars();
     void fixTargetExt();

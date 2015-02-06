@@ -260,15 +260,14 @@ QString NmakeMakefileGenerator::defaultInstall(const QString &t)
     if (project->isActiveConfig("debug_info")) {
         if (t == "dlltarget" || project->values(ProKey(t + ".CONFIG")).indexOf("no_dll") == -1) {
             QString pdb_target = getPdbTarget();
-            pdb_target.remove('"');
             QString src_targ = (project->isEmpty("DESTDIR") ? QString("$(DESTDIR)") : project->first("DESTDIR")) + pdb_target;
             QString dst_targ = filePrefixRoot(root, fileFixify(targetdir + pdb_target, FileFixifyAbsolute));
             if(!ret.isEmpty())
                 ret += "\n\t";
-            ret += QString("-$(INSTALL_FILE)") + " \"" + src_targ + "\" \"" + dst_targ + "\"";
+            ret += QString("-$(INSTALL_FILE) ") + escapeFilePath(src_targ) + ' ' + escapeFilePath(dst_targ);
             if(!uninst.isEmpty())
                 uninst.append("\n\t");
-            uninst.append("-$(DEL_FILE) \"" + dst_targ + "\"");
+            uninst.append("-$(DEL_FILE) " + escapeFilePath(dst_targ));
         }
     }
 
@@ -294,9 +293,12 @@ void NmakeMakefileGenerator::writeNmakeParts(QTextStream &t)
 
     // precompiled header
     if(usePCH) {
-        QString precompRule = QString("-c -Yc -Fp%1 -Fo%2").arg(precompPch).arg(precompObj);
-        t << precompObj << ": " << precompH << " " << escapeDependencyPaths(findDependencies(precompH)).join(" \\\n\t\t")
-          << "\n\t$(CXX) " + precompRule +" $(CXXFLAGS) $(INCPATH) -TP " << precompH << endl << endl;
+        QString precompRule = QString("-c -Yc -Fp%1 -Fo%2")
+                .arg(escapeFilePath(precompPch), escapeFilePath(precompObj));
+        t << escapeDependencyPath(precompObj) << ": " << escapeDependencyPath(precompH) << ' '
+          << escapeDependencyPaths(findDependencies(precompH)).join(" \\\n\t\t")
+          << "\n\t$(CXX) " + precompRule +" $(CXXFLAGS) $(INCPATH) -TP "
+          << escapeFilePath(precompH) << endl << endl;
     }
 }
 
@@ -307,10 +309,9 @@ QString NmakeMakefileGenerator::var(const ProKey &value) const
             || value == "QMAKE_RUN_CXX_IMP"
             || value == "QMAKE_RUN_CXX")) {
             QFileInfo precompHInfo(fileInfo(precompH));
+            QString precompH_f = escapeFilePath(precompHInfo.fileName());
             QString precompRule = QString("-c -FI%1 -Yu%2 -Fp%3")
-                .arg(precompHInfo.fileName())
-                .arg(precompHInfo.fileName())
-                .arg(precompPch);
+                    .arg(precompH_f, precompH_f, escapeFilePath(precompPch));
             QString p = MakefileGenerator::var(value);
             p.replace("-c", precompRule);
             // Cannot use -Gm with -FI & -Yu, as this gives an
@@ -357,9 +358,7 @@ void NmakeMakefileGenerator::init()
 
     processVars();
 
-    if (!project->values("RES_FILE").isEmpty()) {
-        project->values("QMAKE_LIBS") += escapeFilePaths(project->values("RES_FILE"));
-    }
+    project->values("QMAKE_LIBS") += project->values("RES_FILE");
 
     if (!project->values("DEF_FILE").isEmpty()) {
         QString defFileName = fileFixify(project->first("DEF_FILE").toQString());
@@ -502,11 +501,15 @@ void NmakeMakefileGenerator::writeImplicitRulesPart(QTextStream &t)
             if (objDir == ".\\")
                 objDir = "";
             for(QStringList::Iterator cppit = Option::cpp_ext.begin(); cppit != Option::cpp_ext.end(); ++cppit)
-                t << "{" << sourceDir << "}" << (*cppit) << "{" << objDir << "}" << Option::obj_ext << "::\n\t"
-                  << var("QMAKE_RUN_CXX_IMP_BATCH").replace(QRegExp("\\$@"), var("OBJECTS_DIR")) << endl << "\t$<\n<<\n\n";
+                t << '{' << escapeDependencyPath(sourceDir) << '}' << (*cppit)
+                  << '{' << escapeDependencyPath(objDir) << '}' << Option::obj_ext << "::\n\t"
+                  << var("QMAKE_RUN_CXX_IMP_BATCH").replace(QRegExp("\\$@"), fileVar("OBJECTS_DIR"))
+                  << "\n\t$<\n<<\n\n";
             for(QStringList::Iterator cit = Option::c_ext.begin(); cit != Option::c_ext.end(); ++cit)
-                t << "{" << sourceDir << "}" << (*cit) << "{" << objDir << "}" << Option::obj_ext << "::\n\t"
-                  << var("QMAKE_RUN_CC_IMP_BATCH").replace(QRegExp("\\$@"), var("OBJECTS_DIR")) << endl << "\t$<\n<<\n\n";
+                t << '{' << escapeDependencyPath(sourceDir) << '}' << (*cit)
+                  << '{' << escapeDependencyPath(objDir) << '}' << Option::obj_ext << "::\n\t"
+                  << var("QMAKE_RUN_CC_IMP_BATCH").replace(QRegExp("\\$@"), fileVar("OBJECTS_DIR"))
+                  << "\n\t$<\n<<\n\n";
         }
     } else {
         for(QStringList::Iterator cppit = Option::cpp_ext.begin(); cppit != Option::cpp_ext.end(); ++cppit)
@@ -522,8 +525,9 @@ void NmakeMakefileGenerator::writeBuildRulesPart(QTextStream &t)
     const ProString templateName = project->first("TEMPLATE");
 
     t << "first: all\n";
-    t << "all: " << fileFixify(Option::output.fileName()) << " " << varGlue("ALL_DEPS"," "," "," ") << "$(DESTDIR_TARGET)\n\n";
-    t << "$(DESTDIR_TARGET): " << var("PRE_TARGETDEPS") << " $(OBJECTS) " << var("POST_TARGETDEPS");
+    t << "all: " << escapeDependencyPath(fileFixify(Option::output.fileName()))
+      << ' ' << depVar("ALL_DEPS") << " $(DESTDIR_TARGET)\n\n";
+    t << "$(DESTDIR_TARGET): " << depVar("PRE_TARGETDEPS") << " $(OBJECTS) " << depVar("POST_TARGETDEPS");
 
     if(!project->isEmpty("QMAKE_PRE_LINK"))
         t << "\n\t" <<var("QMAKE_PRE_LINK");
@@ -547,12 +551,12 @@ void NmakeMakefileGenerator::writeBuildRulesPart(QTextStream &t)
                 if (linkerSupportsEmbedding) {
                     extraLFlags = "/MANIFEST:embed";
                 } else {
-                    manifest = escapeFilePath(target + ".embed.manifest");
-                    extraLFlags += "/MANIFEST /MANIFESTFILE:" + manifest;
+                    manifest = target + ".embed.manifest";
+                    extraLFlags += "/MANIFEST /MANIFESTFILE:" + escapeFilePath(manifest);
                     project->values("QMAKE_CLEAN") << manifest;
                 }
             } else {
-                manifest = escapeFilePath(fileFixify(manifest));
+                manifest = fileFixify(manifest);
             }
 
             const QString resourceId = (templateName == "app") ? "1" : "2";
@@ -560,16 +564,19 @@ void NmakeMakefileGenerator::writeBuildRulesPart(QTextStream &t)
             if (incrementalLinking && !linkerSupportsEmbedding) {
                 // Link a resource that contains the manifest without modifying the exe/dll after linking.
 
-                QString manifest_rc = escapeFilePath(target +  "_manifest.rc");
-                QString manifest_res = escapeFilePath(target +  "_manifest.res");
-                QString manifest_bak = escapeFilePath(target +  "_manifest.bak");
+                QString manifest_rc = target +  "_manifest.rc";
+                QString manifest_res = target +  "_manifest.res";
                 project->values("QMAKE_CLEAN") << manifest_rc << manifest_res;
+                manifest_rc = escapeFilePath(manifest_rc);
+                manifest_res = escapeFilePath(manifest_res);
 
                 t << "\n\techo " << resourceId
                   << " /* CREATEPROCESS_MANIFEST_RESOURCE_ID */ 24 /* RT_MANIFEST */ "
-                  << cQuoted(unescapeFilePath(manifest)) << ">" << manifest_rc;
+                  << cQuoted(manifest) << '>' << manifest_rc;
 
                 if (generateManifest) {
+                    manifest = escapeFilePath(manifest);
+                    QString manifest_bak = escapeFilePath(target +  "_manifest.bak");
                     t << "\n\tif not exist $(DESTDIR_TARGET) if exist " << manifest
                       << " del " << manifest;
                     t << "\n\tif exist " << manifest << " copy /Y " << manifest << ' ' << manifest_bak;
@@ -591,7 +598,7 @@ void NmakeMakefileGenerator::writeBuildRulesPart(QTextStream &t)
                 t << "\n\t";
                 writeLinkCommand(t, extraLFlags);
                 if (!linkerSupportsEmbedding) {
-                    t << "\n\tmt.exe /nologo /manifest " << manifest
+                    t << "\n\tmt.exe /nologo /manifest " << escapeFilePath(manifest)
                       << " /outputresource:$(DESTDIR_TARGET);" << resourceId;
                 }
             }
@@ -604,7 +611,7 @@ void NmakeMakefileGenerator::writeBuildRulesPart(QTextStream &t)
     bool useSignature = !signature.isEmpty() && !project->isActiveConfig("staticlib") &&
                         !project->isEmpty("CE_SDK") && !project->isEmpty("CE_ARCH");
     if(useSignature) {
-        t << "\n\tsigntool sign /F " << signature << " $(DESTDIR_TARGET)";
+        t << "\n\tsigntool sign /F " << escapeFilePath(signature) << " $(DESTDIR_TARGET)";
     }
     if(!project->isEmpty("QMAKE_POST_LINK")) {
         t << "\n\t" << var("QMAKE_POST_LINK");

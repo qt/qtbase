@@ -505,7 +505,7 @@ ProStringList VcprojGenerator::collectDependencies(QMakeProject *proj, QHash<QSt
                     Option::qmake_mode = old_mode;
 
                     // We assume project filename is [QMAKE_PROJECT_NAME].vcproj
-                    QString vcproj = unescapeFilePath(tmp_vcproj.project->first("QMAKE_PROJECT_NAME") + project->first("VCPROJ_EXTENSION"));
+                    QString vcproj = tmp_vcproj.project->first("QMAKE_PROJECT_NAME") + project->first("VCPROJ_EXTENSION");
                     QString vcprojDir = qmake_getpwd();
 
                     // If file doesn't exsist, then maybe the users configuration
@@ -535,7 +535,7 @@ ProStringList VcprojGenerator::collectDependencies(QMakeProject *proj, QHash<QSt
 
                     VcsolutionDepend *newDep = new VcsolutionDepend;
                     newDep->vcprojFile = vcprojDir + Option::dir_sep + vcproj;
-                    newDep->orig_target = unescapeFilePath(tmp_proj.first("QMAKE_ORIG_TARGET")).toQString();
+                    newDep->orig_target = tmp_proj.first("QMAKE_ORIG_TARGET").toQString();
                     newDep->target = tmp_proj.first("MSVCPROJ_TARGET").toQString().section(Option::dir_sep, -1);
                     newDep->targetType = tmp_vcproj.projectTarget;
                     newDep->uuid = tmp_proj.isEmpty("QMAKE_UUID") ? getProjectUUID(Option::fixPathToLocalOS(vcprojDir + QDir::separator() + vcproj)).toString().toUpper(): tmp_proj.first("QMAKE_UUID").toQString();
@@ -671,6 +671,7 @@ void VcprojGenerator::writeSubDirs(QTextStream &t)
 
     // write out projects
     for (QList<VcsolutionDepend*>::Iterator it = solution_cleanup.begin(); it != solution_cleanup.end(); ++it) {
+        // ### quoting rules?
         t << _slnProjectBeg << _slnMSVCvcprojGUID << _slnProjectMid
             << "\"" << (*it)->orig_target << "\", \"" << (*it)->vcprojFile
             << "\", \"" << (*it)->uuid << "\"";
@@ -799,9 +800,7 @@ void VcprojGenerator::init()
     const ProStringList &incs = project->values("INCLUDEPATH");
     for (ProStringList::ConstIterator incit = incs.begin(); incit != incs.end(); ++incit) {
         QString inc = (*incit).toQString();
-        if (!inc.startsWith('"') && !inc.endsWith('"'))
-            inc = QString("\"%1\"").arg(inc); // Quote all paths if not quoted already
-        project->values("MSVCPROJ_INCPATH").append("-I" + inc);
+        project->values("MSVCPROJ_INCPATH").append("-I" + escapeFilePath(inc));
     }
 
     QString dest = Option::fixPathToTargetOS(project->first("TARGET").toQString()) + project->first("TARGET_EXT");
@@ -815,7 +814,7 @@ void VcprojGenerator::init()
         for (dlldir = dlldirs.begin(); dlldir != dlldirs.end(); ++dlldir) {
             if (!copydll.isEmpty())
                 copydll += " && ";
-            copydll += "copy  \"$(TargetPath)\" \"" + *dlldir + "\"";
+            copydll += "copy \"$(TargetPath)\" " + escapeFilePath(*dlldir);
         }
 
         QString deststr("Copy " + dest + " to ");
@@ -842,8 +841,7 @@ void VcprojGenerator::init()
         projectTarget = Application;
     } else if(project->first("TEMPLATE") == "vclib") {
         if(project->isActiveConfig("staticlib")) {
-            if (!project->values("RES_FILE").isEmpty())
-                project->values("QMAKE_LIBS") += escapeFilePaths(project->values("RES_FILE"));
+            project->values("QMAKE_LIBS") += project->values("RES_FILE");
             projectTarget = StaticLib;
         } else
             projectTarget = SharedLib;
@@ -856,7 +854,7 @@ void VcprojGenerator::init()
     if (usePCH) {
         precompHFilename = fileInfo(precompH).fileName();
         // Created files
-        QString origTarget = unescapeFilePath(project->first("QMAKE_ORIG_TARGET").toQString());
+        QString origTarget = project->first("QMAKE_ORIG_TARGET").toQString();
         precompObj = origTarget + Option::obj_ext;
         precompPch = origTarget + ".pch";
         // Add PRECOMPILED_HEADER to HEADERS
@@ -947,7 +945,7 @@ void VcprojGenerator::initProject()
     initExtraCompilerOutputs();
 
     // Own elements -----------------------------
-    vcProject.Name = unescapeFilePath(project->first("QMAKE_ORIG_TARGET").toQString());
+    vcProject.Name = project->first("QMAKE_ORIG_TARGET").toQString();
     switch (which_dotnet_version(project->first("MSVC_VER").toLatin1())) {
     case NET2013:
         vcProject.Version = "12.00";
@@ -1179,7 +1177,7 @@ void VcprojGenerator::initLinkerTool()
             ProStringList l = ProStringList(libs);
             conf.linker.parseOptions(l);
         } else {
-            conf.linker.AdditionalDependencies += libs.toQString();
+            conf.linker.AdditionalDependencies << escapeFilePath(libs.toQString());
         }
     }
 
@@ -1239,7 +1237,7 @@ void VcprojGenerator::initPostBuildEventTools()
                         !project->isHostBuild() && !project->isEmpty("CE_SDK") && !project->isEmpty("CE_ARCH");
     if (useSignature) {
         conf.postBuild.CommandLine.prepend(
-                QLatin1String("signtool sign /F ") + signature + QLatin1String(" \"$(TargetPath)\""));
+                QLatin1String("signtool sign /F ") + escapeFilePath(signature) + QLatin1String(" \"$(TargetPath)\""));
         conf.postBuild.ExcludedFromBuild = _False;
     }
 
@@ -1682,7 +1680,7 @@ bool VcprojGenerator::openOutput(QFile &file, const QString &/*build*/) const
         ProString ext = project->first("VCPROJ_EXTENSION");
         if(project->first("TEMPLATE") == "vcsubdirs")
             ext = project->first("VCSOLUTION_EXTENSION");
-        ProString outputName = unescapeFilePath(project->first("TARGET"));
+        ProString outputName = project->first("TARGET");
         if (!project->first("MAKEFILE").isEmpty())
             outputName = project->first("MAKEFILE");
         file.setFileName(outdir + outputName + ext);

@@ -45,6 +45,8 @@ public:
     ~MingwMakefileGenerator();
 protected:
     QString escapeDependencyPath(const QString &path) const;
+    ProString escapeDependencyPath(const ProString &path) const { return MakefileGenerator::escapeDependencyPath(path); }
+    virtual ProString fixLibFlag(const ProString &lib);
     QString getLibTarget();
     virtual QString getManifestFileForRcFile() const;
     bool writeMakefile(QTextStream &);
@@ -64,7 +66,6 @@ private:
     virtual bool findLibraries();
 
     QString objectsLinkLine;
-    QString quote;
 };
 
 inline MingwMakefileGenerator::~MingwMakefileGenerator()
