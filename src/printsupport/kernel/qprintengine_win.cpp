@@ -855,7 +855,8 @@ void QWin32PrintEnginePrivate::initialize()
 
     txop = QTransform::TxNone;
 
-    bool ok = OpenPrinter((LPWSTR)m_printDevice.id().utf16(), (LPHANDLE)&hPrinter, 0);
+    QString printerName = m_printDevice.id();
+    bool ok = OpenPrinter((LPWSTR)printerName.utf16(), (LPHANDLE)&hPrinter, 0);
     if (!ok) {
         qErrnoWarning("QWin32PrintEngine::initialize: OpenPrinter failed");
         return;
@@ -876,7 +877,32 @@ void QWin32PrintEnginePrivate::initialize()
     }
 
     devMode = pInfo->pDevMode;
-    hdc = CreateDC(NULL, reinterpret_cast<const wchar_t *>(m_printDevice.id().utf16()), 0, devMode);
+
+    if (!devMode) {
+        // pInfo->pDevMode == NULL for some printers and passing NULL
+        // into CreateDC leads to the printer doing nothing.  In addition,
+        // the framework assumes that devMode isn't NULL, such as in
+        // QWin32PrintEngine::begin() and QPageSetupDialog::exec()
+        // Attempt to get the DEVMODE a different way.
+
+        // Allocate the required buffer
+        LONG result = DocumentProperties(NULL, hPrinter, (LPWSTR)printerName.utf16(),
+                                         NULL, NULL, 0);
+        devMode = (DEVMODE *) malloc(result);
+        ownsDevMode = true;
+
+         // Get the default DevMode
+        result = DocumentProperties(NULL, hPrinter, (LPWSTR)printerName.utf16(),
+                                    devMode, NULL, DM_OUT_BUFFER);
+        if (result != IDOK) {
+            qErrnoWarning("QWin32PrintEngine::initialize: Failed to obtain devMode");
+            free(devMode);
+            devMode = NULL;
+            ownsDevMode = false;
+        }
+    }
+
+    hdc = CreateDC(NULL, (LPCWSTR)printerName.utf16(), 0, devMode);
 
     if (!hdc) {
         qErrnoWarning("QWin32PrintEngine::initialize: CreateDC failed");
@@ -939,8 +965,7 @@ void QWin32PrintEnginePrivate::release()
 {
     if (globalDevMode) { // Devmode comes from print dialog
         GlobalUnlock(globalDevMode);
-    } else if (hMem) {            // Devmode comes from initialize...
-        // devMode is a part of the same memory block as pInfo so one free is enough...
+    } else if (hMem) {
         GlobalUnlock(hMem);
         GlobalFree(hMem);
     }
@@ -949,11 +974,16 @@ void QWin32PrintEnginePrivate::release()
     if (hdc)
         DeleteDC(hdc);
 
+    // Check if devMode was allocated separately from pInfo / hMem.
+    if (ownsDevMode)
+        free(devMode);
+
     hdc = 0;
     hPrinter = 0;
     pInfo = 0;
     hMem = 0;
     devMode = 0;
+    ownsDevMode = false;
 }
 
 void QWin32PrintEnginePrivate::doReinit()
@@ -1233,6 +1263,8 @@ void QWin32PrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &
     }
 
     case PPK_QPageSize: {
+        if (!d->devMode)
+            break;
         // Get the page size from the printer if supported
         const QPageSize pageSize = value.value<QPageSize>();
         if (pageSize.isValid()) {
@@ -1303,7 +1335,10 @@ QVariant QWin32PrintEngine::property(PrintEnginePropertyKey key) const
         break;
 
     case PPK_CollateCopies:
-        value = d->devMode->dmCollate == DMCOLLATE_TRUE;
+        if (!d->devMode)
+            value = false;
+        else
+            value = d->devMode->dmCollate == DMCOLLATE_TRUE;
         break;
 
     case PPK_ColorMode:
@@ -1513,6 +1548,10 @@ void QWin32PrintEngine::setGlobalDevMode(HGLOBAL globalDevNames, HGLOBAL globalD
         DEVMODE *dm = (DEVMODE*) GlobalLock(globalDevMode);
         d->release();
         d->globalDevMode = globalDevMode;
+        if (d->ownsDevMode) {
+            free(d->devMode);
+            d->ownsDevMode = false;
+        }
         d->devMode = dm;
         d->hdc = CreateDC(NULL, reinterpret_cast<const wchar_t *>(d->m_printDevice.id().utf16()), 0, dm);
 
@@ -1543,6 +1582,8 @@ void QWin32PrintEnginePrivate::setPageSize(const QPageSize &pageSize)
     if (!pageSize.isValid())
         return;
 
+    Q_ASSERT(devMode);
+
     // Use the printer page size if supported
     const QPageSize printerPageSize = m_printDevice.supportedPageSize(pageSize);
     const QPageSize usePageSize = printerPageSize.isValid() ? printerPageSize : pageSize;
@@ -1571,6 +1612,8 @@ void QWin32PrintEnginePrivate::setPageSize(const QPageSize &pageSize)
 // Update the page layout after any changes made to devMode
 void QWin32PrintEnginePrivate::updatePageLayout()
 {
+    Q_ASSERT(devMode);
+
     // Update orientation first as is needed to obtain printable margins when changing page size
     m_pageLayout.setOrientation(devMode->dmOrientation == DMORIENT_LANDSCAPE ? QPageLayout::Landscape : QPageLayout::Portrait);
     if (devMode->dmPaperSize >= DMPAPER_USER) {

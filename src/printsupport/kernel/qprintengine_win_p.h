@@ -119,6 +119,7 @@ public:
         pInfo(0),
         hMem(0),
         hdc(0),
+        ownsDevMode(false),
         mode(QPrinter::ScreenResolution),
         state(QPrinter::Idle),
         resolution(0),
@@ -178,6 +179,9 @@ public:
     HGLOBAL hMem;
 
     HDC hdc;
+
+    // True if devMode was allocated separately from pInfo.
+    bool ownsDevMode;
 
     QPrinter::PrinterMode mode;
 

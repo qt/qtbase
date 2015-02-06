@@ -134,6 +134,13 @@ int QPageSetupDialog::exec()
 
         // copy from our temp DEVMODE struct
         if (!engine->globalDevMode() && hDevMode) {
+            // Make sure memory is allocated
+            if (ep->ownsDevMode && ep->devMode)
+                free(ep->devMode);
+            ep->devMode = (DEVMODE *) malloc(devModeSize);
+            ep->ownsDevMode = true;
+
+            // Copy
             void *src = GlobalLock(hDevMode);
             memcpy(ep->devMode, src, devModeSize);
             GlobalUnlock(hDevMode);
