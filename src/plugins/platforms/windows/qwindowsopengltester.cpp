@@ -48,35 +48,6 @@
 
 QT_BEGIN_NAMESPACE
 
-QString GpuDriverVersion::toString() const
-{
-    return QString::number(product)
-        + QLatin1Char('.') + QString::number(version)
-        + QLatin1Char('.') + QString::number(subVersion)
-        + QLatin1Char('.') + QString::number(build);
-}
-
-int GpuDriverVersion::compare(const GpuDriverVersion &rhs) const
-{
-    if (product < rhs.product)
-        return -1;
-    if (product > rhs.product)
-        return 1;
-    if (version < rhs.version)
-        return -1;
-    if (version > rhs.version)
-        return 1;
-    if (subVersion < rhs.subVersion)
-        return -1;
-    if (subVersion > rhs.subVersion)
-        return 1;
-    if (build < rhs.build)
-        return -1;
-    if (build > rhs.build)
-        return 1;
-    return 0;
-}
-
 GpuDescription GpuDescription::detect()
 {
 #ifndef Q_OS_WINCE
@@ -100,30 +71,23 @@ GpuDescription GpuDescription::detect()
         result.deviceId = int(adapterIdentifier.DeviceId);
         result.revision = int(adapterIdentifier.Revision);
         result.subSysId = int(adapterIdentifier.SubSysId);
-        result.driverVersion.product = HIWORD(adapterIdentifier.DriverVersion.HighPart);
-        result.driverVersion.version = LOWORD(adapterIdentifier.DriverVersion.HighPart);
-        result.driverVersion.subVersion = HIWORD(adapterIdentifier.DriverVersion.LowPart);
-        result.driverVersion.build = LOWORD(adapterIdentifier.DriverVersion.LowPart);
+        QVector<int> version(4, 0);
+        version[0] = HIWORD(adapterIdentifier.DriverVersion.HighPart); // Product
+        version[1] = LOWORD(adapterIdentifier.DriverVersion.HighPart); // Version
+        version[2] = HIWORD(adapterIdentifier.DriverVersion.LowPart); // Sub version
+        version[3] = LOWORD(adapterIdentifier.DriverVersion.LowPart); // build
+        result.driverVersion = QVersionNumber(version);
         result.driverName = adapterIdentifier.Driver;
         result.description = adapterIdentifier.Description;
     }
     return result;
 #else // !Q_OS_WINCE
     GpuDescription result;
-    result.vendorId = result.deviceId = result.revision
-        = result.driverVersion.product = result.driverVersion.version
-        = result.driverVersion.build = 1;
+    result.vendorId = result.deviceId = result.revision =1;
+    result.driverVersion = QVersionNumber(1, 1, 1);
     result.driverName = result.description = QByteArrayLiteral("Generic");
     return result;
 #endif
-}
-
-QDebug operator<<(QDebug d, const GpuDriverVersion &v)
-{
-    QDebugStateSaver s(d);
-    d.nospace();
-    d << v.product << '.' << v.version << '.' << v.subVersion << '.' << v.build;
-    return d;
 }
 
 QDebug operator<<(QDebug d, const GpuDescription &gd)
@@ -163,10 +127,10 @@ QVariant GpuDescription::toVariant() const
     result.insert(QStringLiteral("subSysId"),QVariant(subSysId));
     result.insert(QStringLiteral("revision"), QVariant(revision));
     result.insert(QStringLiteral("driver"), QVariant(QLatin1String(driverName)));
-    result.insert(QStringLiteral("driverProduct"), QVariant(driverVersion.product));
-    result.insert(QStringLiteral("driverVersion"), QVariant(driverVersion.version));
-    result.insert(QStringLiteral("driverSubVersion"), QVariant(driverVersion.subVersion));
-    result.insert(QStringLiteral("driverBuild"), QVariant(driverVersion.build));
+    result.insert(QStringLiteral("driverProduct"), QVariant(driverVersion.segmentAt(0)));
+    result.insert(QStringLiteral("driverVersion"), QVariant(driverVersion.segmentAt(1)));
+    result.insert(QStringLiteral("driverSubVersion"), QVariant(driverVersion.segmentAt(2)));
+    result.insert(QStringLiteral("driverBuild"), QVariant(driverVersion.segmentAt(3)));
     result.insert(QStringLiteral("driverVersionString"), driverVersion.toString());
     result.insert(QStringLiteral("description"), QVariant(QLatin1String(description)));
     result.insert(QStringLiteral("printable"), QVariant(toString()));

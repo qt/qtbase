@@ -38,38 +38,12 @@
 
 #include <QtCore/QByteArray>
 #include <QtCore/QFlags>
+#include <private/qversionnumber_p.h>
 
 QT_BEGIN_NAMESPACE
 
 class QDebug;
 class QVariant;
-
-struct GpuDriverVersion // ### fixme: Use QVersionNumber in Qt 5.5?
-{
-    GpuDriverVersion(int p = 0, int v = 0, int sv =0, int b = 0) : product(p), version(v), subVersion(sv), build(b) {}
-    QString toString() const;
-    int compare(const GpuDriverVersion &rhs) const;
-
-    int product;
-    int version;
-    int subVersion;
-    int build;
-};
-
-inline bool operator==(const GpuDriverVersion &v1, const GpuDriverVersion &v2)
-    { return !v1.compare(v2); }
-inline bool operator!=(const GpuDriverVersion &v1, const GpuDriverVersion &v2)
-    { return v1.compare(v2); }
-inline bool operator< (const GpuDriverVersion &v1, const GpuDriverVersion &v2)
-    { return v1.compare(v2) < 0; }
-inline bool operator<=(const GpuDriverVersion &v1, const GpuDriverVersion &v2)
-    { return v1.compare(v2) <= 0; }
-inline bool operator> (const GpuDriverVersion &v1, const GpuDriverVersion &v2)
-    { return v1.compare(v2) > 0; }
-inline bool operator>=(const GpuDriverVersion &v1, const GpuDriverVersion &v2)
-    { return v1.compare(v2) >= 0; }
-
-QDebug operator<<(QDebug d, const GpuDriverVersion &gd);
 
 struct GpuDescription
 {
@@ -83,7 +57,7 @@ struct GpuDescription
     int deviceId;
     int revision;
     int subSysId;
-    GpuDriverVersion driverVersion;
+    QVersionNumber driverVersion;
     QByteArray driverName;
     QByteArray description;
 };
