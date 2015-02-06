@@ -42,6 +42,7 @@ class QCommandLineOptionPrivate : public QSharedData
 {
 public:
     inline QCommandLineOptionPrivate()
+        : hidden(false)
     { }
 
     void setNames(const QStringList &nameList);
@@ -58,6 +59,9 @@ public:
 
     //! The list of default values used for this option.
     QStringList defaultValues;
+
+    //! Show or hide in --help
+    bool hidden;
 };
 
 /*!
@@ -360,6 +364,32 @@ void QCommandLineOption::setDefaultValues(const QStringList &defaultValues)
 QStringList QCommandLineOption::defaultValues() const
 {
     return d->defaultValues;
+}
+
+/*!
+    Sets whether to hide this option in the user-visible help output.
+
+    All options are visible by default. Setting \a hidden to true for
+    a particular option makes it internal, i.e. not listed in the help output.
+
+    \since 5.5
+    \sa isHidden
+ */
+void QCommandLineOption::setHidden(bool hide)
+{
+    d->hidden = hide;
+}
+
+/*!
+    Returns true if this option is omitted from the help output,
+    false if the option is listed.
+
+    \since 5.5
+    \sa setHidden()
+ */
+bool QCommandLineOption::isHidden() const
+{
+    return d->hidden;
 }
 
 QT_END_NAMESPACE

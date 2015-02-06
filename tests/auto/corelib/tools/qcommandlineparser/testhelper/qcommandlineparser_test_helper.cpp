@@ -73,6 +73,12 @@ int main(int argc, char *argv[])
                 "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz"));
     parser.addOption(newlineOption);
 
+    // A hidden option
+    QCommandLineOption hiddenOption(QStringList() << QStringLiteral("hidden"));
+    hiddenOption.setDescription(QStringLiteral("THIS SHOULD NEVER APPEAR"));
+    hiddenOption.setHidden(true);
+    parser.addOption(hiddenOption);
+
     // This program supports different options depending on the "command" (first argument).
     // Call parse() to find out the positional arguments.
     parser.parse(QCoreApplication::arguments());

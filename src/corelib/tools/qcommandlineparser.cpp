@@ -1062,6 +1062,8 @@ QString QCommandLineParserPrivate::helpText() const
     ++longestOptionNameString;
     for (int i = 0; i < commandLineOptionList.count(); ++i) {
         const QCommandLineOption &option = commandLineOptionList.at(i);
+        if (option.isHidden())
+            continue;
         text += wrapText(optionNameList.at(i), longestOptionNameString, option.description());
     }
     if (!positionalArgumentDefinitions.isEmpty()) {

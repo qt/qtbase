@@ -77,6 +77,9 @@ public:
     void setDefaultValues(const QStringList &defaultValues);
     QStringList defaultValues() const;
 
+    void setHidden(bool hidden);
+    bool isHidden() const;
+
 private:
     QSharedDataPointer<QCommandLineOptionPrivate> d;
 };
