@@ -1,13 +1,14 @@
 var vOffset = 65;
 
 $(function () {
-    $('a[href*=#]:not([href=#])').on('click', function () {
+    $('a[href*=#]:not([href=#])').on('click', function (e) {
+        if (e.which == 2)
+            return true;
         var target = $(this.hash);
         target = target.length ? target : $('[name=' + this.hash.slice(1) + ']');
         if (target.length) {
             setTimeout(function () {
                 $('html, body').animate({scrollTop: target.offset().top - vOffset}, 50);}, 50);
-            // return false;
         }
     });
 });

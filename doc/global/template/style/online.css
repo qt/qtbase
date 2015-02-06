@@ -153,7 +153,8 @@
 }
 #mainmenu {
   float:left;
-  list-style:none
+  list-style:none;
+  margin-left:16px
 }
 #mainmenu li {
   float:left;
@@ -211,6 +212,9 @@
   overflow:hidden;
   min-width:85px;
   font-weight:100
+}
+#menuextras li:last-child a {
+  border-right:1px solid #eee;
 }
 #menuextras li a:before {
   display:inline-block;
@@ -372,11 +376,36 @@
   #menuextras li.navbar-search {
     padding:5px 0
   }
-  .container {
-    padding:0 2%
+  #footerbar .container {
+    padding:0
   }
   body .main {
     margin-top:0px
+  }
+  #footerbar .footer-main .footer-nav {
+    padding:3.9% 0 3.9% 3%;
+    border-bottom:1px solid #413d3b;
+    float:none;
+    display:block;
+    width:auto
+  }
+  #footerbar .footer-main .theqtcompany {
+    clear:both;
+    float:left;
+    margin:30px 0 28px 3%
+  }
+  #footerbar .footer-main .footer-social {
+    float:left;
+    padding:30px 0px 0px 3%
+  }
+  #footerbar #menu-footer-submenu {
+    clear:both;
+    float:none;
+    display:block;
+    padding:0px 0px 3.9% 3%
+  }
+  ul#menu-footer-submenu {
+    margin-left: 0
   }
 }
 .in-page-nav {
@@ -449,8 +478,9 @@ body.qt-account #navbar .navbar-oneQt h2 {
   margin-bottom:40px
 }
 .cookies_yum {
-  background-color:#006325;
+  background-color:#d6d6d6;
   display:none;
+  line-height:1.625em;
   width:100%
 }
 .cookies_yum img {
@@ -462,18 +492,18 @@ body.qt-account #navbar .navbar-oneQt h2 {
 }
 .cookies_yum div {
   margin:0 auto;
-  max-width:1180px;
+  max-width:1280px;
   min-height:30px;
   padding:6px 0px 6px 0px;
   position:relative
 }
 .cookies_yum p {
-  color:white;
+  color:#585a5c;
   margin:0px;
   font-size:0.79em;
   display:inline-block;
   line-height:1.2;
-  padding:0 30px 0 40px
+  padding:0 30px 0 50px
 }
 .cookies_yum p a {
   white-space:nowrap
@@ -484,13 +514,14 @@ body.qt-account #navbar .navbar-oneQt h2 {
 .cookies_yum .close {
   width:15px;
   height:15px;
-  background-image:url("../images/cookiebar-x.png");
+  background-image:url("cookiebar-x.png");
   background-size:15px 30px;
   background-position:top left;
   cursor:pointer;
-  top:6px;
-  right:6px;
-  position:absolute
+  top:13px;
+  right:13px;
+  position:absolute;
+  transition:none;
 }
 .cookies_yum .close:hover {
   background-position:bottom left
@@ -691,7 +722,7 @@ body.qt-account #navbar .navbar-oneQt h2 {
   left:0;
   width:100%
 }
-#footerbar .footer-main .footer-nav {
+#footerbar .footer-nav {
   display:inline;
   float:left
 }
@@ -734,29 +765,20 @@ body.qt-account #navbar .navbar-oneQt h2 {
 #footerbar .footer-main .footer-nav .sub-menu li a:hover,#footerbar .footer-main .footer-nav .sub-menu li.current-menu-item a {
   color:#eee
 }
-#footerbar .footer-main .footer-logo {
+#footerbar .theqtcompany {
+  background:url("theqtcompany.png") no-repeat;
+  background-size:100%;
+  width:150px;
+  height:68px;
   display:inline;
   float:right;
-  padding:29px 0 28px 10px;
-  margin-left:30px;
-  width:56px
+  margin:29px 0 28px 30px
 }
-#footerbar .footer-main .footer-logo:before {
-  content:attr(data-icon);
-  font-family:'Qt Icons';
-  width:100%;
-  line-height:1.2;
-  display:inline-block;
-  font-size:1.875em;
-  color:#706e6d
-}
-#footerbar .footer-main .footer-logo:hover {
-  padding:31px 0 26px 10px
-}
-#footerbar .footer-main .footer-social {
+#footerbar .footer-social {
   display:inline;
   float:right;
-  padding-top:31px
+  padding-top:31px;
+  width:164px
 }
 #footerbar .footer-main .footer-social>div {
   margin-left:0.1em;
@@ -847,6 +869,9 @@ body.qt-account #navbar .navbar-oneQt h2 {
 }
 .clearfix {
   *zoom:1
+}
+.clearfix .right {
+  float:right
 }
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td,article,aside,canvas,details,embed,figure,figcaption,footer,header,hgroup,menu,nav,output,ruby,section,summary,time,mark,audio,video {
   margin:0;
@@ -1169,7 +1194,7 @@ li a.active {
   position:absolute
 }
 .flowList.odd {
-  background-color:#eee
+  background-color:#f9f9f9
 }
 .context ul>li,.doc-column ul>li {
   list-style-image:url("list_arrow.png");
@@ -1203,7 +1228,7 @@ li a.active {
   vertical-align:initial
 }
 table .odd {
-  background-color:#eee
+  background-color:#f9f9f9
 }
 table thead {
   text-align:left;
