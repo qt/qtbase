@@ -53,6 +53,7 @@ class QCommandLineParserPrivate
 public:
     inline QCommandLineParserPrivate()
         : singleDashWordOptionMode(QCommandLineParser::ParseAsCompactedShortOptions),
+          optionsAfterPositionalArgumentsMode(QCommandLineParser::ParseAsOptions),
           builtinVersionOption(false),
           builtinHelpOption(false),
           needsParsing(true)
@@ -102,6 +103,9 @@ public:
 
     //! The parsing mode for "-abc"
     QCommandLineParser::SingleDashWordOptionMode singleDashWordOptionMode;
+
+    //! How to parse "arg -option"
+    QCommandLineParser::OptionsAfterPositionalArgumentsMode optionsAfterPositionalArgumentsMode;
 
     //! Whether addVersionOption was called
     bool builtinVersionOption;
@@ -296,6 +300,41 @@ QCommandLineParser::~QCommandLineParser()
 void QCommandLineParser::setSingleDashWordOptionMode(QCommandLineParser::SingleDashWordOptionMode singleDashWordOptionMode)
 {
     d->singleDashWordOptionMode = singleDashWordOptionMode;
+}
+
+/*!
+    \enum QCommandLineParser::OptionsAfterPositionalArgumentsMode
+
+    This enum describes the way the parser interprets options that
+    occur after positional arguments.
+
+    \value ParseAsOptions \c{application argument --opt -t} is interpreted as setting
+    the options \c{opt} and \c{t}, just like \c{application --opt -t argument} would do.
+    This is the default parsing mode. In order to specify that \c{--opt} and \c{-t}
+    are positional arguments instead, the user can use \c{--}, as in
+    \c{application argument -- --opt -t}.
+
+    \value ParseAsPositionalArguments \c{application argument --opt} is interpreted as
+    having two positional arguments, \c{argument} and \c{--opt}.
+    This mode is useful for executables that aim to launch other executables
+    (e.g. wrappers, debugging tools, etc.) or that support internal commands
+    followed by options for the command. \c{argument} is the name of the command,
+    and all options occurring after it can be collected and parsed by another
+    command line parser, possibly in another executable.
+
+    \sa setOptionsAfterPositionalArgumentsMode()
+
+    \since 5.5
+*/
+
+/*!
+    Sets the parsing mode to \a parsingMode.
+    This must be called before process() or parse().
+    \since 5.5
+*/
+void QCommandLineParser::setOptionsAfterPositionalArgumentsMode(QCommandLineParser::OptionsAfterPositionalArgumentsMode parsingMode)
+{
+    d->optionsAfterPositionalArgumentsMode = parsingMode;
 }
 
 /*!
@@ -640,7 +679,7 @@ bool QCommandLineParserPrivate::parse(const QStringList &args)
     const QLatin1Char dashChar('-');
     const QLatin1Char assignChar('=');
 
-    bool doubleDashFound = false;
+    bool forcePositional = false;
     errorText.clear();
     positionalArgumentList.clear();
     optionNames.clear();
@@ -658,7 +697,7 @@ bool QCommandLineParserPrivate::parse(const QStringList &args)
     for (; argumentIterator != args.end() ; ++argumentIterator) {
         QString argument = *argumentIterator;
 
-        if (doubleDashFound) {
+        if (forcePositional) {
             positionalArgumentList.append(argument);
         } else if (argument.startsWith(doubleDashString)) {
             if (argument.length() > 2) {
@@ -670,7 +709,7 @@ bool QCommandLineParserPrivate::parse(const QStringList &args)
                     error = true;
                 }
             } else {
-                doubleDashFound = true;
+                forcePositional = true;
             }
         } else if (argument.startsWith(dashChar)) {
             if (argument.size() == 1) { // single dash ("stdin")
@@ -722,6 +761,8 @@ bool QCommandLineParserPrivate::parse(const QStringList &args)
             }
         } else {
             positionalArgumentList.append(argument);
+            if (optionsAfterPositionalArgumentsMode == QCommandLineParser::ParseAsPositionalArguments)
+                forcePositional = true;
         }
         if (argumentIterator == args.end())
             break;

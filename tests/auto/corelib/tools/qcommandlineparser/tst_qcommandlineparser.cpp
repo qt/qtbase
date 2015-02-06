@@ -35,6 +35,7 @@
 #include <QtCore/QCommandLineParser>
 
 Q_DECLARE_METATYPE(char**)
+Q_DECLARE_METATYPE(QCommandLineParser::OptionsAfterPositionalArgumentsMode)
 
 class tst_QCommandLineParser : public QObject
 {
@@ -51,6 +52,8 @@ private slots:
     void testPositionalArguments();
     void testBooleanOption_data();
     void testBooleanOption();
+    void testOptionsAndPositional_data();
+    void testOptionsAndPositional();
     void testMultipleNames_data();
     void testMultipleNames();
     void testSingleValueOption_data();
@@ -139,6 +142,40 @@ void tst_QCommandLineParser::testBooleanOption()
     // Should warn on typos
     QTest::ignoreMessage(QtWarningMsg, "QCommandLineParser: option not defined: \"c\"");
     QVERIFY(!parser.isSet("c"));
+}
+
+void tst_QCommandLineParser::testOptionsAndPositional_data()
+{
+    QTest::addColumn<QStringList>("args");
+    QTest::addColumn<QStringList>("expectedOptionNames");
+    QTest::addColumn<bool>("expectedIsSet");
+    QTest::addColumn<QStringList>("expectedPositionalArguments");
+    QTest::addColumn<QCommandLineParser::OptionsAfterPositionalArgumentsMode>("parsingMode");
+
+    const QStringList arg = QStringList() << "arg";
+    QTest::newRow("before_positional_default") << (QStringList() << "tst_qcommandlineparser" << "-b" << "arg") << (QStringList() << "b") << true << arg << QCommandLineParser::ParseAsOptions;
+    QTest::newRow("after_positional_default") << (QStringList() << "tst_qcommandlineparser" << "arg" << "-b") << (QStringList() << "b") << true << arg << QCommandLineParser::ParseAsOptions;
+    QTest::newRow("before_positional_parseAsArg") << (QStringList() << "tst_qcommandlineparser" << "-b" << "arg") << (QStringList() << "b") << true << arg << QCommandLineParser::ParseAsPositionalArguments;
+    QTest::newRow("after_positional_parseAsArg") << (QStringList() << "tst_qcommandlineparser" << "arg" << "-b") << (QStringList()) << false << (QStringList() << "arg" << "-b") << QCommandLineParser::ParseAsPositionalArguments;
+}
+
+void tst_QCommandLineParser::testOptionsAndPositional()
+{
+    QFETCH(QStringList, args);
+    QFETCH(QStringList, expectedOptionNames);
+    QFETCH(bool, expectedIsSet);
+    QFETCH(QStringList, expectedPositionalArguments);
+    QFETCH(QCommandLineParser::OptionsAfterPositionalArgumentsMode, parsingMode);
+
+    QCoreApplication app(empty_argc, empty_argv);
+    QCommandLineParser parser;
+    parser.setOptionsAfterPositionalArgumentsMode(parsingMode);
+    QVERIFY(parser.addOption(QCommandLineOption(QStringLiteral("b"), QStringLiteral("a boolean option"))));
+    QVERIFY(parser.parse(args));
+    QCOMPARE(parser.optionNames(), expectedOptionNames);
+    QCOMPARE(parser.isSet("b"), expectedIsSet);
+    QCOMPARE(parser.values("b"), QStringList());
+    QCOMPARE(parser.positionalArguments(), expectedPositionalArguments);
 }
 
 void tst_QCommandLineParser::testMultipleNames_data()

@@ -57,6 +57,12 @@ public:
     };
     void setSingleDashWordOptionMode(SingleDashWordOptionMode parsingMode);
 
+    enum OptionsAfterPositionalArgumentsMode {
+        ParseAsOptions,
+        ParseAsPositionalArguments
+    };
+    void setOptionsAfterPositionalArgumentsMode(OptionsAfterPositionalArgumentsMode mode);
+
     bool addOption(const QCommandLineOption &commandLineOption);
     bool addOptions(const QList<QCommandLineOption> &options);
 
