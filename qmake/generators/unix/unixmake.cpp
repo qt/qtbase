@@ -58,22 +58,8 @@ UnixMakefileGenerator::init()
         project->values("ICON") = project->values("RC_FILE");
     if(project->isEmpty("QMAKE_EXTENSION_PLUGIN"))
         project->values("QMAKE_EXTENSION_PLUGIN").append(project->first("QMAKE_EXTENSION_SHLIB"));
-    if(project->isEmpty("QMAKE_COPY_FILE"))
-        project->values("QMAKE_COPY_FILE").append("$(COPY)");
-    if(project->isEmpty("QMAKE_STREAM_EDITOR"))
-        project->values("QMAKE_STREAM_EDITOR").append("sed");
-    if(project->isEmpty("QMAKE_COPY_DIR"))
-        project->values("QMAKE_COPY_DIR").append("$(COPY) -R");
-    if(project->isEmpty("QMAKE_INSTALL_FILE"))
-        project->values("QMAKE_INSTALL_FILE").append("$(COPY_FILE)");
-    if(project->isEmpty("QMAKE_INSTALL_DIR"))
-        project->values("QMAKE_INSTALL_DIR").append("$(COPY_DIR)");
-    if(project->isEmpty("QMAKE_INSTALL_PROGRAM"))
-        project->values("QMAKE_INSTALL_PROGRAM").append("$(COPY_FILE)");
     if(project->isEmpty("QMAKE_LIBTOOL"))
         project->values("QMAKE_LIBTOOL").append("libtool --silent");
-    if(project->isEmpty("QMAKE_SYMBOLIC_LINK"))
-        project->values("QMAKE_SYMBOLIC_LINK").append("ln -f -s");
 
     project->values("QMAKE_ORIG_TARGET") = project->values("TARGET");
 
