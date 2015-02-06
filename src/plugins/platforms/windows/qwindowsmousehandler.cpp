@@ -271,6 +271,16 @@ bool QWindowsMouseHandler::translateMouseEvent(QWindow *window, HWND hwnd,
     QWindow *currentWindowUnderMouse = platformWindow->hasMouseCapture() ?
         QWindowsScreen::windowAt(globalPosition, CWP_SKIPINVISIBLE | CWP_SKIPTRANSPARENT) : window;
 
+    // QTBUG-44332: When Qt is running at low integrity level and
+    // a Qt Window is parented on a Window of a higher integrity process
+    // using QWindow::fromWinId() (for example, Qt running in a browser plugin)
+    // ChildWindowFromPointEx() may not find the Qt window (failing with ERROR_ACCESS_DENIED)
+    if (!currentWindowUnderMouse) {
+        const QRect clientRect(QPoint(0, 0), window->size());
+        if (clientRect.contains(winEventPosition / QWindowsScaling::factor()))
+            currentWindowUnderMouse = window;
+    }
+
     compressMouseMove(&msg);
     // Qt expects the platform plugin to capture the mouse on
     // any button press until release.
