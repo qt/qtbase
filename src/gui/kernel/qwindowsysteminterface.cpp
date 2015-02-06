@@ -427,6 +427,7 @@ void QWindowSystemInterfacePrivate::handleWindowSystemEvent(QWindowSystemInterfa
 {
     if (synchronousWindowsSystemEvents) {
         QGuiApplicationPrivate::processWindowSystemEvent(ev);
+        delete ev;
     } else {
         windowSystemEventQueue.append(ev);
         QAbstractEventDispatcher *dispatcher = QGuiApplicationPrivate::qt_qpa_core_dispatcher();
