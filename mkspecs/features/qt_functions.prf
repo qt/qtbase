@@ -305,15 +305,11 @@ defineReplace(pkgConfigExecutable) {
     isEmpty(PKG_CONFIG) {
         PKG_CONFIG = pkg-config
 
-        !isEmpty(PKG_CONFIG_SYSROOT_DIR) {
-            win32:isEmpty(MINGW_IN_SHELL):PKG_CONFIG = set PKG_CONFIG_SYSROOT_DIR=$$PKG_CONFIG_SYSROOT_DIR& $$PKG_CONFIG
-            else:PKG_CONFIG = PKG_CONFIG_SYSROOT_DIR=\"$$PKG_CONFIG_SYSROOT_DIR\" $$PKG_CONFIG
-        }
-
-        !isEmpty(PKG_CONFIG_LIBDIR) {
-            win32:isEmpty(MINGW_IN_SHELL):PKG_CONFIG = set PKG_CONFIG_LIBDIR=$$PKG_CONFIG_LIBDIR& $$PKG_CONFIG
-            else:PKG_CONFIG = PKG_CONFIG_LIBDIR=\"$$PKG_CONFIG_LIBDIR\" $$PKG_CONFIG
-        }
+        sysroot.name = PKG_CONFIG_SYSROOT_DIR
+        sysroot.value = $$PKG_CONFIG_SYSROOT_DIR
+        libdir.name = PKG_CONFIG_LIBDIR
+        libdir.value = $$PKG_CONFIG_LIBDIR
+        qtAddToolEnv(PKG_CONFIG, sysroot libdir, SYS)
     }
 
     equals(QMAKE_HOST.os, Windows): \
