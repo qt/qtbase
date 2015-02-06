@@ -18,6 +18,7 @@ isEmpty(QMAKE_PLATFORM) {
             TARGET_PLATFORM = win32
         } else:if(equals(MAKEFILE_GENERATOR, PROJECTBUILDER) \
                  |equals(MAKEFILE_GENERATOR, XCODE)) {
+            TARGET_PLATFORM = macx
         } else {
             error("Qmake spec sets an invalid MAKEFILE_GENERATOR.")
         }
