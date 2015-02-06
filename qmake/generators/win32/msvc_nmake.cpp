@@ -79,7 +79,7 @@ NmakeMakefileGenerator::writeMakefile(QTextStream &t)
             const ProValueMap &variables = project->variables();
             if (project->isActiveConfig("wince")) {
                 CeSdkHandler sdkhandler;
-                sdkhandler.parse();
+                sdkhandler.retrieveAvailableSDKs();
                 const QString sdkName = variables["CE_SDK"].join(' ')
                                         + " (" + variables["CE_ARCH"].join(' ') + ")";
                 const QList<CeSdkInfo> sdkList = sdkhandler.listAll();
