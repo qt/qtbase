@@ -45,7 +45,7 @@ QT_BEGIN_NAMESPACE
 
 
 QElapsedTimer QWindowSystemInterfacePrivate::eventTime;
-bool QWindowSystemInterfacePrivate::synchronousWindowsSystemEvents = false;
+bool QWindowSystemInterfacePrivate::synchronousWindowSystemEvents = false;
 QWaitCondition QWindowSystemInterfacePrivate::eventsFlushed;
 QMutex QWindowSystemInterfacePrivate::flushEventMutex;
 
@@ -93,14 +93,14 @@ void QWindowSystemInterface::handleLeaveEvent(QWindow *tlw)
 */
 void QWindowSystemInterface::handleEnterLeaveEvent(QWindow *enter, QWindow *leave, const QPointF &local, const QPointF& global)
 {
-    bool wasSynchronous = QWindowSystemInterfacePrivate::synchronousWindowsSystemEvents;
+    bool wasSynchronous = QWindowSystemInterfacePrivate::synchronousWindowSystemEvents;
     if (wasSynchronous)
-        setSynchronousWindowsSystemEvents(false);
+        setSynchronousWindowSystemEvents(false);
     handleLeaveEvent(leave);
     handleEnterEvent(enter, local, global);
     if (wasSynchronous) {
         flushWindowSystemEvents();
-        setSynchronousWindowsSystemEvents(true);
+        setSynchronousWindowSystemEvents(true);
     }
 }
 
@@ -425,7 +425,7 @@ void QWindowSystemInterfacePrivate::removeWindowSystemEvent(WindowSystemEvent *e
 
 void QWindowSystemInterfacePrivate::handleWindowSystemEvent(QWindowSystemInterfacePrivate::WindowSystemEvent *ev)
 {
-    if (synchronousWindowsSystemEvents) {
+    if (synchronousWindowSystemEvents) {
         QGuiApplicationPrivate::processWindowSystemEvent(ev);
         delete ev;
     } else {
@@ -613,9 +613,9 @@ bool QWindowSystemInterface::sendWindowSystemEvents(QEventLoop::ProcessEventsFla
     return (nevents > 0);
 }
 
-void QWindowSystemInterface::setSynchronousWindowsSystemEvents(bool enable)
+void QWindowSystemInterface::setSynchronousWindowSystemEvents(bool enable)
 {
-    QWindowSystemInterfacePrivate::synchronousWindowsSystemEvents = enable;
+    QWindowSystemInterfacePrivate::synchronousWindowSystemEvents = enable;
 }
 
 int QWindowSystemInterface::windowSystemEventsQueued()

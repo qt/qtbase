@@ -481,7 +481,7 @@ public:
     static void handleWindowSystemEvent(WindowSystemEvent *ev);
 
     static QElapsedTimer eventTime;
-    static bool synchronousWindowsSystemEvents;
+    static bool synchronousWindowSystemEvents;
 
     static QWaitCondition eventsFlushed;
     static QMutex flushEventMutex;
