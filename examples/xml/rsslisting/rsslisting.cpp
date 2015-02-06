@@ -76,7 +76,7 @@ RSSListing::RSSListing(QWidget *parent)
 {
 
     lineEdit = new QLineEdit(this);
-    lineEdit->setText("http://blog.qt.digia.com/feed/");
+    lineEdit->setText("http://blog.qt.io/feed/");
 
     fetchButton = new QPushButton(tr("Fetch"), this);
 
