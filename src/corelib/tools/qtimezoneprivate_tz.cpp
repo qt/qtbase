@@ -397,11 +397,11 @@ static int parsePosixOffset(const QByteArray &timeRule)
     return 0;
 }
 
-static QList<QTimeZonePrivate::Data> calculatePosixTransitions(const QByteArray &posixRule,
-                                                               int startYear, int endYear,
-                                                               int lastTranMSecs)
+static QVector<QTimeZonePrivate::Data> calculatePosixTransitions(const QByteArray &posixRule,
+                                                                 int startYear, int endYear,
+                                                                 int lastTranMSecs)
 {
-    QList<QTimeZonePrivate::Data> list;
+    QVector<QTimeZonePrivate::Data> result;
 
     // Limit year by qint64 max size for msecs
     if (startYear > 292278994)
@@ -448,8 +448,8 @@ static QList<QTimeZonePrivate::Data> calculatePosixTransitions(const QByteArray 
         data.standardTimeOffset = utcOffset;
         data.daylightTimeOffset = 0;
         data.abbreviation = stdName;
-        list << data;
-        return list;
+        result << data;
+        return result;
     }
 
     // If not populated the total dst offset is 1 hour
@@ -493,17 +493,17 @@ static QList<QTimeZonePrivate::Data> calculatePosixTransitions(const QByteArray 
         // Part of the high year will overflow
         if (year == 292278994 && (dstData.atMSecsSinceEpoch < 0 || stdData.atMSecsSinceEpoch < 0)) {
             if (dstData.atMSecsSinceEpoch > 0) {
-                list << dstData;
+                result << dstData;
             } else if (stdData.atMSecsSinceEpoch > 0) {
-                list << stdData;
+                result << stdData;
             }
         } else if (dst < std) {
-            list << dstData << stdData;
+            result << dstData << stdData;
         } else {
-            list << stdData << dstData;
+            result << stdData << dstData;
         }
     }
-    return list;
+    return result;
 }
 
 // Create the system default time zone
@@ -812,8 +812,8 @@ QTimeZonePrivate::Data QTzTimeZonePrivate::data(qint64 forMSecsSinceEpoch) const
         &&!m_posixRule.isEmpty() && forMSecsSinceEpoch >= 0) {
         const int year = QDateTime::fromMSecsSinceEpoch(forMSecsSinceEpoch, Qt::UTC).date().year();
         const int lastMSecs = (m_tranTimes.size() > 0) ? m_tranTimes.last().atMSecsSinceEpoch : 0;
-        QList<QTimeZonePrivate::Data> posixTrans = calculatePosixTransitions(m_posixRule, year - 1,
-                                                                             year + 1, lastMSecs);
+        QVector<QTimeZonePrivate::Data> posixTrans = calculatePosixTransitions(m_posixRule, year - 1,
+                                                                               year + 1, lastMSecs);
         for (int i = posixTrans.size() - 1; i >= 0; --i) {
             if (posixTrans.at(i).atMSecsSinceEpoch <= forMSecsSinceEpoch) {
                 QTimeZonePrivate::Data data;
@@ -856,8 +856,8 @@ QTimeZonePrivate::Data QTzTimeZonePrivate::nextTransition(qint64 afterMSecsSince
         &&!m_posixRule.isEmpty() && afterMSecsSinceEpoch >= 0) {
         const int year = QDateTime::fromMSecsSinceEpoch(afterMSecsSinceEpoch, Qt::UTC).date().year();
         const int lastMSecs = (m_tranTimes.size() > 0) ? m_tranTimes.last().atMSecsSinceEpoch : 0;
-        QList<QTimeZonePrivate::Data> posixTrans = calculatePosixTransitions(m_posixRule, year - 1,
-                                                                             year + 1, lastMSecs);
+        QVector<QTimeZonePrivate::Data> posixTrans = calculatePosixTransitions(m_posixRule, year - 1,
+                                                                               year + 1, lastMSecs);
         for (int i = 0; i < posixTrans.size(); ++i) {
             if (posixTrans.at(i).atMSecsSinceEpoch > afterMSecsSinceEpoch)
                 return posixTrans.at(i);
@@ -882,8 +882,8 @@ QTimeZonePrivate::Data QTzTimeZonePrivate::previousTransition(qint64 beforeMSecs
         &&!m_posixRule.isEmpty() && beforeMSecsSinceEpoch > 0) {
         const int year = QDateTime::fromMSecsSinceEpoch(beforeMSecsSinceEpoch, Qt::UTC).date().year();
         const int lastMSecs = (m_tranTimes.size() > 0) ? m_tranTimes.last().atMSecsSinceEpoch : 0;
-        QList<QTimeZonePrivate::Data> posixTrans = calculatePosixTransitions(m_posixRule, year - 1,
-                                                                             year + 1, lastMSecs);
+        QVector<QTimeZonePrivate::Data> posixTrans = calculatePosixTransitions(m_posixRule, year - 1,
+                                                                               year + 1, lastMSecs);
         for (int i = posixTrans.size() - 1; i >= 0; --i) {
             if (posixTrans.at(i).atMSecsSinceEpoch < beforeMSecsSinceEpoch)
                 return posixTrans.at(i);
