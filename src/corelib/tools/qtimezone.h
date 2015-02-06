@@ -35,7 +35,7 @@
 #ifndef QTIMEZONE_H
 #define QTIMEZONE_H
 
-#include <QtCore/qsharedpointer.h>
+#include <QtCore/qshareddata.h>
 #include <QtCore/qlocale.h>
 #include <QtCore/qdatetime.h>
 
