@@ -13,14 +13,11 @@ isEmpty(QMAKE_PLATFORM) {
             else: \
                 TARGET_PLATFORM = unix
         } else:if(equals(MAKEFILE_GENERATOR, MSVC.NET) \
-                 |equals(MAKEFILE_GENERATOR, BMAKE) \
                  |equals(MAKEFILE_GENERATOR, MSBUILD) \
                  |equals(MAKEFILE_GENERATOR, MINGW)) {
             TARGET_PLATFORM = win32
         } else:if(equals(MAKEFILE_GENERATOR, PROJECTBUILDER) \
                  |equals(MAKEFILE_GENERATOR, XCODE)) {
-        } else:equals(MAKEFILE_GENERATOR, GBUILD) {
-            TARGET_PLATFORM = unix
         } else {
             error("Qmake spec sets an invalid MAKEFILE_GENERATOR.")
         }
