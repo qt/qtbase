@@ -48,6 +48,7 @@
 
 #include "qtimezone.h"
 #include "qlocale_p.h"
+#include "qvector.h"
 
 #ifdef QT_USE_ICU
 #include <unicode/ucal.h>
@@ -261,6 +262,24 @@ private:
 #endif // QT_USE_ICU
 
 #if defined Q_OS_UNIX && !defined Q_OS_MAC && !defined Q_OS_ANDROID
+struct QTzTransitionTime
+{
+    qint64 atMSecsSinceEpoch;
+    quint8 ruleIndex;
+};
+Q_DECLARE_TYPEINFO(QTzTransitionTime, Q_PRIMITIVE_TYPE);
+struct QTzTransitionRule
+{
+    int stdOffset;
+    int dstOffset;
+    quint8 abbreviationIndex;
+};
+Q_DECLARE_TYPEINFO(QTzTransitionRule, Q_PRIMITIVE_TYPE);
+Q_DECL_CONSTEXPR inline bool operator==(const QTzTransitionRule &lhs, const QTzTransitionRule &rhs) Q_DECL_NOTHROW
+{ return lhs.stdOffset == rhs.stdOffset && lhs.dstOffset == rhs.dstOffset && lhs.abbreviationIndex == rhs.abbreviationIndex; }
+Q_DECL_CONSTEXPR inline bool operator!=(const QTzTransitionRule &lhs, const QTzTransitionRule &rhs) Q_DECL_NOTHROW
+{ return !operator==(lhs, rhs); }
+
 class Q_AUTOTEST_EXPORT QTzTimeZonePrivate Q_DECL_FINAL : public QTimeZonePrivate
 {
 public:
@@ -305,20 +324,9 @@ public:
 private:
     void init(const QByteArray &ianaId);
 
-    struct QTzTransitionTime {
-        qint64 atMSecsSinceEpoch;
-        quint8 ruleIndex;
-    };
-    struct QTzTransitionRule {
-        int stdOffset;
-        int dstOffset;
-        quint8 abbreviationIndex;
-        bool operator==(const QTzTransitionRule &other) { return (stdOffset == other.stdOffset
-        && dstOffset == other.dstOffset && abbreviationIndex == other.abbreviationIndex); }
-    };
     Data dataForTzTransition(QTzTransitionTime tran) const;
-    QList<QTzTransitionTime> m_tranTimes;
-    QList<QTzTransitionRule> m_tranRules;
+    QVector<QTzTransitionTime> m_tranTimes;
+    QVector<QTzTransitionRule> m_tranRules;
     QList<QByteArray> m_abbreviations;
 #ifdef QT_USE_ICU
     mutable QSharedDataPointer<QTimeZonePrivate> m_icu;
