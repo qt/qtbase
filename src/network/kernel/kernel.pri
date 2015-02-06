@@ -60,6 +60,6 @@ else:blackberry {
 }
 else:contains(QT_CONFIG, libproxy) {
     SOURCES += kernel/qnetworkproxy_libproxy.cpp
-    LIBS += -lproxy
+    LIBS_PRIVATE += -lproxy
 }
 else:SOURCES += kernel/qnetworkproxy_generic.cpp
