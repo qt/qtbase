@@ -244,9 +244,14 @@ qreal QScreen::logicalDotsPerInch() const
 }
 
 /*!
+    \property QScreen::devicePixelRatio
+    \brief the screen's ratio between physical pixels and device-independent pixels
+    \since 5.5
+
     Returns the ratio between physical pixels and device-independent pixels for the screen.
 
-    Common values are 1.0 on normal displays and 2.0 on Apple "retina" displays.
+    Common values are 1.0 on normal displays and 2.0 on "retina" displays.
+    Higher values are also possible.
 
     \sa QWindow::devicePixelRatio(), QGuiApplication::devicePixelRatio()
 */
