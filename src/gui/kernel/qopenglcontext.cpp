@@ -370,13 +370,10 @@ int QOpenGLContextPrivate::maxTextureSize()
         QOpenGLFunctions_1_0 *gl1funcs = 0;
         QOpenGLFunctions_3_2_Core *gl3funcs = 0;
 
-        if (q->format().profile() == QSurfaceFormat::CoreProfile) {
+        if (q->format().profile() == QSurfaceFormat::CoreProfile)
             gl3funcs = q->versionFunctions<QOpenGLFunctions_3_2_Core>();
-            gl3funcs->initializeOpenGLFunctions();
-        } else {
+        else
             gl1funcs = q->versionFunctions<QOpenGLFunctions_1_0>();
-            gl1funcs->initializeOpenGLFunctions();
-        }
 
         Q_ASSERT(gl1funcs || gl3funcs);
 
@@ -718,9 +715,12 @@ QOpenGLFunctions *QOpenGLContext::functions() const
     \overload versionFunctions()
 
     Returns a pointer to an object that provides access to all functions for
-    the version and profile of this context. Before using any of the functions
-    they must be initialized by calling QAbstractOpenGLFunctions::initializeOpenGLFunctions()
-    with this context being the current context.
+    the version and profile of this context. There is no need to call
+    QAbstractOpenGLFunctions::initializeOpenGLFunctions() as long as this context
+    is current. It is also possible to call this function when the context is not
+    current, but in that case it is the caller's responsibility to ensure proper
+    intiialization by calling QAbstractOpenGLFunctions::initializeOpenGLFunctions()
+    afterwards.
 
     Usually one would use the template version of this function to automatically
     have the result cast to the correct type.
@@ -732,7 +732,6 @@ QOpenGLFunctions *QOpenGLContext::functions() const
             qWarning() << "Could not obtain required OpenGL context version";
             exit(1);
         }
-        funcs->initializeOpenGLFunctions();
     \endcode
 
     It is possible to request a functions object for a different version and profile
@@ -762,9 +761,12 @@ QOpenGLFunctions *QOpenGLContext::functions() const
 
 /*!
     Returns a pointer to an object that provides access to all functions for the
-    \a versionProfile of this context. Before using any of the functions they must
-    be initialized by calling QAbstractOpenGLFunctions::initializeOpenGLFunctions()
-    with this context being the current context.
+    \a versionProfile of this context. There is no need to call
+    QAbstractOpenGLFunctions::initializeOpenGLFunctions() as long as this context
+    is current. It is also possible to call this function when the context is not
+    current, but in that case it is the caller's responsibility to ensure proper
+    initialization by calling QAbstractOpenGLFunctions::initializeOpenGLFunctions()
+    afterwards.
 
     Usually one would use the template version of this function to automatically
     have the result cast to the correct type.
@@ -808,6 +810,9 @@ QAbstractOpenGLFunctions *QOpenGLContext::versionFunctions(const QOpenGLVersionP
     } else {
         funcs = d->versionFunctions.value(vp);
     }
+
+    if (funcs && QOpenGLContext::currentContext() == this)
+        funcs->initializeOpenGLFunctions();
 
     return funcs;
 }
