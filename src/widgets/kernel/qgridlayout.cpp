@@ -565,7 +565,7 @@ void QGridLayoutPrivate::add(QGridBox *box, int row1, int row2, int col1, int co
         add(box, row1, col1);
         return;
     }
-    expand(row2 + 1, col2 + 1);
+    expand(qMax(row1, row2) + 1, qMax(col1, col2) + 1);
     box->row = row1;
     box->col = col1;
 
