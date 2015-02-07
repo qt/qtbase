@@ -345,7 +345,7 @@ QOpenGLWindow::QOpenGLWindow(QOpenGLContext *shareContext, UpdateBehavior update
   resources belonging to the context provided by this window.
 
   \warning if you have objects wrapping OpenGL resources (such as
-  QOpenGLBuffer, QOpenGLShaderProgram, etc.), as members of a QOpenGLWindow
+  QOpenGLBuffer, QOpenGLShaderProgram, etc.) as members of a QOpenGLWindow
   subclass, you may need to add a call to makeCurrent() in that subclass'
   destructor as well. Due to the rules of C++ object destruction, those objects
   will be destroyed \e{before} calling this function (but after that the

@@ -862,12 +862,14 @@ QOpenGLWidget::QOpenGLWidget(QWidget *parent, Qt::WindowFlags f)
 }
 
 /*!
+  Destroys the QOpenGLWidget instance, freeing its resources.
+
   The QOpenGLWidget's context is made current in the destructor, allowing for
   safe destruction of any child object that may need to release OpenGL
   resources belonging to the context provided by this widget.
 
   \warning if you have objects wrapping OpenGL resources (such as
-  QOpenGLBuffer, QOpenGLShaderProgram, etc.), as members of a OpenGLWidget
+  QOpenGLBuffer, QOpenGLShaderProgram, etc.) as members of a OpenGLWidget
   subclass, you may need to add a call to makeCurrent() in that subclass'
   destructor as well. Due to the rules of C++ object destruction, those objects
   will be destroyed \e{before} calling this function (but after that the
