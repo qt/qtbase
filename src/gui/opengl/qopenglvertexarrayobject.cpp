@@ -168,12 +168,10 @@ bool QOpenGLVertexArrayObjectPrivate::create()
         if (format.version() >= qMakePair<int, int>(3,2)) {
             vaoFuncs.core_3_2 = ctx->versionFunctions<QOpenGLFunctions_3_2_Core>();
             vaoFuncsType = Core_3_2;
-            vaoFuncs.core_3_2->initializeOpenGLFunctions();
             vaoFuncs.core_3_2->glGenVertexArrays(1, &vao);
         } else if (format.majorVersion() >= 3) {
             vaoFuncs.core_3_0 = ctx->versionFunctions<QOpenGLFunctions_3_0>();
             vaoFuncsType = Core_3_0;
-            vaoFuncs.core_3_0->initializeOpenGLFunctions();
             vaoFuncs.core_3_0->glGenVertexArrays(1, &vao);
         } else
 #endif
