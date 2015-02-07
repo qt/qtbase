@@ -53,19 +53,20 @@ class QAuthenticator;
 class Q_NETWORK_EXPORT QAbstractSocket : public QIODevice
 {
     Q_OBJECT
-    Q_ENUMS(SocketType NetworkLayerProtocol SocketError SocketState SocketOption)
 public:
     enum SocketType {
         TcpSocket,
         UdpSocket,
         UnknownSocketType = -1
     };
+    Q_ENUM(SocketType)
     enum NetworkLayerProtocol {
         IPv4Protocol,
         IPv6Protocol,
         AnyIPProtocol,
         UnknownNetworkLayerProtocol = -1
     };
+    Q_ENUM(NetworkLayerProtocol)
     enum SocketError {
         ConnectionRefusedError,
         RemoteHostClosedError,
@@ -93,6 +94,7 @@ public:
 
         UnknownSocketError = -1
     };
+    Q_ENUM(SocketError)
     enum SocketState {
         UnconnectedState,
         HostLookupState,
@@ -102,6 +104,7 @@ public:
         ListeningState,
         ClosingState
     };
+    Q_ENUM(SocketState)
     enum SocketOption {
         LowDelayOption, // TCP_NODELAY
         KeepAliveOption, // SO_KEEPALIVE
@@ -111,6 +114,7 @@ public:
         SendBufferSizeSocketOption,    //SO_SNDBUF
         ReceiveBufferSizeSocketOption  //SO_RCVBUF
     };
+    Q_ENUM(SocketOption)
     enum BindFlag {
         DefaultForPlatform = 0x0,
         ShareAddress = 0x1,

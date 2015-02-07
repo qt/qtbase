@@ -55,7 +55,6 @@ class QNetworkReplyPrivate;
 class Q_NETWORK_EXPORT QNetworkReply: public QIODevice
 {
     Q_OBJECT
-    Q_ENUMS(NetworkError)
 public:
     enum NetworkError {
         NoError = 0,
@@ -101,6 +100,7 @@ public:
         ServiceUnavailableError,
         UnknownServerError = 499
     };
+    Q_ENUM(NetworkError)
 
     ~QNetworkReply();
 

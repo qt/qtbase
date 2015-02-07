@@ -167,7 +167,6 @@ Q_DECLARE_SHARED(QDnsTextRecord)
 class Q_NETWORK_EXPORT QDnsLookup : public QObject
 {
     Q_OBJECT
-    Q_ENUMS(Error Type)
     Q_PROPERTY(Error error READ error NOTIFY finished)
     Q_PROPERTY(QString errorString READ errorString NOTIFY finished)
     Q_PROPERTY(QString name READ name WRITE setName NOTIFY nameChanged)
@@ -186,6 +185,7 @@ public:
         ServerRefusedError,
         NotFoundError
     };
+    Q_ENUM(Error)
 
     enum Type
     {
@@ -199,6 +199,7 @@ public:
         SRV = 33,
         TXT = 16
     };
+    Q_ENUM(Type)
 
     explicit QDnsLookup(QObject *parent = 0);
     QDnsLookup(Type type, const QString &name, QObject *parent = 0);
