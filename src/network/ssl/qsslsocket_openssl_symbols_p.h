@@ -337,6 +337,7 @@ int q_SSL_CTX_use_certificate_file(SSL_CTX *a, const char *b, int c);
 int q_SSL_CTX_use_PrivateKey(SSL_CTX *a, EVP_PKEY *b);
 int q_SSL_CTX_use_RSAPrivateKey(SSL_CTX *a, RSA *b);
 int q_SSL_CTX_use_PrivateKey_file(SSL_CTX *a, const char *b, int c);
+X509_STORE *q_SSL_CTX_get_cert_store(const SSL_CTX *a);
 void q_SSL_free(SSL *a);
 #if OPENSSL_VERSION_NUMBER >= 0x00908000L
 // 0.9.8 broke SC and BC by changing this function's signature.

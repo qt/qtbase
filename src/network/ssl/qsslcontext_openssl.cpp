@@ -233,7 +233,7 @@ init_context:
         //
         // See also: QSslSocketBackendPrivate::verify()
         if (caCertificate.expiryDate() >= QDateTime::currentDateTime()) {
-            q_X509_STORE_add_cert(sslContext->ctx->cert_store, (X509 *)caCertificate.handle());
+            q_X509_STORE_add_cert(q_SSL_CTX_get_cert_store(sslContext->ctx), (X509 *)caCertificate.handle());
         }
     }
 
