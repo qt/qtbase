@@ -51,8 +51,6 @@ class QFontDatabasePrivate;
 class Q_GUI_EXPORT QFontDatabase
 {
     Q_GADGET
-    Q_ENUMS(WritingSystem)
-    Q_ENUMS(SystemFont)
 public:
     // do not re-order or delete entries from this enum without updating the
     // QPF2 format and makeqpf!!
@@ -98,6 +96,7 @@ public:
 
         WritingSystemsCount
     };
+    Q_ENUM(WritingSystem)
 
     enum SystemFont {
         GeneralFont,
@@ -105,6 +104,7 @@ public:
         TitleFont,
         SmallestReadableFont
     };
+    Q_ENUM(SystemFont)
 
     static QList<int> standardSizes();
 

@@ -324,7 +324,7 @@ public:
         TotalSnippetCount, InvalidSnippetName
     };
 #if defined (QT_DEBUG)
-    Q_ENUMS(SnippetName)
+    Q_ENUM(SnippetName)
     static QByteArray snippetNameStr(SnippetName snippetName);
 #endif
 

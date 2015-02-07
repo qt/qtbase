@@ -49,7 +49,6 @@ class QVariant;
 class Q_GUI_EXPORT QFont
 {
     Q_GADGET
-    Q_ENUMS(StyleStrategy)
 public:
     enum StyleHint {
         Helvetica,  SansSerif = Helvetica,
@@ -78,6 +77,7 @@ public:
         NoSubpixelAntialias = 0x0800,
         NoFontMerging       = 0x8000
     };
+    Q_ENUM(StyleStrategy)
 
     enum HintingPreference {
         PreferDefaultHinting        = 0,

@@ -147,7 +147,6 @@ class QOpenGLDebugLoggerPrivate;
 class Q_GUI_EXPORT QOpenGLDebugLogger : public QObject
 {
     Q_OBJECT
-    Q_ENUMS(LoggingMode)
     Q_PROPERTY(LoggingMode loggingMode READ loggingMode)
 
 public:
@@ -155,6 +154,7 @@ public:
         AsynchronousLogging,
         SynchronousLogging
     };
+    Q_ENUM(LoggingMode)
 
     explicit QOpenGLDebugLogger(QObject *parent = 0);
     ~QOpenGLDebugLogger();

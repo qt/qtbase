@@ -47,7 +47,6 @@ class QVariant;
 class Q_GUI_EXPORT QPalette
 {
     Q_GADGET
-    Q_ENUMS(ColorGroup ColorRole)
 public:
     QPalette();
     QPalette(const QColor &button);
@@ -80,6 +79,7 @@ public:
 
     // Do not change the order, the serialization format depends on it
     enum ColorGroup { Active, Disabled, Inactive, NColorGroups, Current, All, Normal = Active };
+    Q_ENUM(ColorGroup)
     enum ColorRole { WindowText, Button, Light, Midlight, Dark, Mid,
                      Text, BrightText, ButtonText, Base, Window, Shadow,
                      Highlight, HighlightedText,
@@ -90,6 +90,7 @@ public:
                      NColorRoles = ToolTipText + 1,
                      Foreground = WindowText, Background = Window
                    };
+    Q_ENUM(ColorRole)
 
     inline ColorGroup currentColorGroup() const { return static_cast<ColorGroup>(data.current_group); }
     inline void setCurrentColorGroup(ColorGroup cg) { data.current_group = cg; }

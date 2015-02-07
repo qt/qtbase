@@ -167,7 +167,6 @@ typedef QVector<QGradientStop> QGradientStops;
 class Q_GUI_EXPORT QGradient
 {
     Q_GADGET
-    Q_ENUMS(Type Spread CoordinateMode)
 public:
     enum Type {
         LinearGradient,
@@ -175,18 +174,21 @@ public:
         ConicalGradient,
         NoGradient
     };
+    Q_ENUM(Type)
 
     enum Spread {
         PadSpread,
         ReflectSpread,
         RepeatSpread
     };
+    Q_ENUM(Spread)
 
     enum CoordinateMode {
         LogicalMode,
         StretchToDeviceMode,
         ObjectBoundingMode
     };
+    Q_ENUM(CoordinateMode)
 
     enum InterpolationMode {
         ColorInterpolation,

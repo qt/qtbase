@@ -126,7 +126,6 @@ Q_GUI_EXPORT QDebug operator<<(QDebug, const QTextFormat &);
 class Q_GUI_EXPORT QTextFormat
 {
     Q_GADGET
-    Q_ENUMS(FormatType Property ObjectTypes)
 public:
     enum FormatType {
         InvalidFormat = -1,
@@ -140,6 +139,7 @@ public:
 
         UserFormat = 100
     };
+    Q_ENUM(FormatType)
 
     enum Property {
         ObjectIndex = 0x0,
@@ -257,6 +257,7 @@ public:
         // --
         UserProperty = 0x100000
     };
+    Q_ENUM(Property)
 
     enum ObjectTypes {
         NoObject,
@@ -266,6 +267,7 @@ public:
 
         UserObject = 0x1000
     };
+    Q_ENUM(ObjectTypes)
 
     enum PageBreakFlag {
         PageBreak_Auto = 0,

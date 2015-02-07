@@ -62,7 +62,6 @@ class QKeySequencePrivate;
 class Q_GUI_EXPORT QKeySequence
 {
     Q_GADGET
-    Q_ENUMS(StandardKey)
 
 public:
     enum StandardKey {
@@ -137,6 +136,7 @@ public:
         DeleteCompleteLine,
         Backspace
      };
+     Q_ENUM(StandardKey)
 
     enum SequenceFormat {
         NativeText,

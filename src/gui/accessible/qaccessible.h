@@ -60,7 +60,6 @@ class QTextCursor;
 class Q_GUI_EXPORT QAccessible
 {
     Q_GADGET
-    Q_ENUMS(Role Event)
 public:
 
     enum Event {
@@ -140,6 +139,7 @@ public:
 
         InvalidEvent
     };
+    Q_ENUM(Event)
 
     // 64 bit enums seem hard on some platforms (windows...)
     // which makes using a bit field a sensible alternative
@@ -344,6 +344,7 @@ public:
 
         UserRole       = 0x0000ffff
     };
+    Q_ENUM(Role)
 
     enum Text {
         Name         = 0,

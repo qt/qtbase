@@ -84,8 +84,6 @@ class Q_GUI_EXPORT QWindow : public QObject, public QSurface
     Q_OBJECT
     Q_DECLARE_PRIVATE(QWindow)
 
-    Q_ENUMS(Visibility)
-
     // All properties which are declared here are inherited by QQuickWindow and therefore available in QML.
     // So please think carefully about what it does to the QML namespace if you add any new ones,
     // particularly the possible meanings these names might have in any specializations of Window.
@@ -122,6 +120,7 @@ public:
         Maximized,
         FullScreen
     };
+    Q_ENUM(Visibility)
 
     explicit QWindow(QScreen *screen = 0);
     explicit QWindow(QWindow *parent);

@@ -120,7 +120,6 @@ class Q_GUI_EXPORT QDoubleValidator : public QValidator
     Q_PROPERTY(double bottom READ bottom WRITE setBottom NOTIFY bottomChanged)
     Q_PROPERTY(double top READ top WRITE setTop NOTIFY topChanged)
     Q_PROPERTY(int decimals READ decimals WRITE setDecimals NOTIFY decimalsChanged)
-    Q_ENUMS(Notation)
     Q_PROPERTY(Notation notation READ notation WRITE setNotation NOTIFY notationChanged)
 
 public:
@@ -132,6 +131,7 @@ public:
         StandardNotation,
         ScientificNotation
     };
+    Q_ENUM(Notation)
     QValidator::State validate(QString &, int &) const Q_DECL_OVERRIDE;
 
     virtual void setRange(double bottom, double top, int decimals = 0);

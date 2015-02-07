@@ -55,7 +55,6 @@ class Q_GUI_EXPORT QInputMethod : public QObject
     Q_PROPERTY(QLocale locale READ locale NOTIFY localeChanged)
     Q_PROPERTY(Qt::LayoutDirection inputDirection READ inputDirection NOTIFY inputDirectionChanged)
 
-    Q_ENUMS(Action)
 public:
     QTransform inputItemTransform() const;
     void setInputItemTransform(const QTransform &transform);
@@ -73,6 +72,7 @@ public:
         Click,
         ContextMenu
     };
+    Q_ENUM(Action)
 
     bool isVisible() const;
     void setVisible(bool visible);

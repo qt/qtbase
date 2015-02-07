@@ -223,12 +223,12 @@ protected:
 class Q_GUI_EXPORT QTabletEvent : public QInputEvent
 {
     Q_GADGET
-    Q_ENUMS(TabletDevice)
-    Q_ENUMS(PointerType)
 public:
     enum TabletDevice { NoDevice, Puck, Stylus, Airbrush, FourDMouse,
                         XFreeEraser /*internal*/, RotationStylus };
+    Q_ENUM(TabletDevice)
     enum PointerType { UnknownPointer, Pen, Cursor, Eraser };
+    Q_ENUM(PointerType)
     QTabletEvent(Type t, const QPointF &pos, const QPointF &globalPos,
                  int device, int pointerType, qreal pressure, int xTilt, int yTilt,
                  qreal tangentialPressure, qreal rotation, int z,

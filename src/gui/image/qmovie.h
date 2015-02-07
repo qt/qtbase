@@ -58,7 +58,6 @@ class Q_GUI_EXPORT QMovie : public QObject
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QMovie)
-    Q_ENUMS(MovieState CacheMode)
     Q_PROPERTY(int speed READ speed WRITE setSpeed)
     Q_PROPERTY(CacheMode cacheMode READ cacheMode WRITE setCacheMode)
 public:
@@ -67,10 +66,12 @@ public:
         Paused,
         Running
     };
+    Q_ENUM(MovieState)
     enum CacheMode {
         CacheNone,
         CacheAll
     };
+    Q_ENUM(CacheMode)
 
     explicit QMovie(QObject *parent = 0);
     explicit QMovie(QIODevice *device, const QByteArray &format = QByteArray(), QObject *parent = 0);
