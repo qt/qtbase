@@ -278,7 +278,7 @@ void QTextOdfWriter::writeBlock(QXmlStreamWriter &writer, const QTextBlock &bloc
     writer.writeStartElement(textNS, QString::fromLatin1("p"));
     writer.writeAttribute(textNS, QString::fromLatin1("style-name"), QString::fromLatin1("p%1")
         .arg(block.blockFormatIndex()));
-    for (QTextBlock::Iterator frag= block.begin(); !frag.atEnd(); frag++) {
+    for (QTextBlock::Iterator frag = block.begin(); !frag.atEnd(); ++frag) {
         writer.writeCharacters(QString()); // Trick to make sure that the span gets no linefeed in front of it.
         writer.writeStartElement(textNS, QString::fromLatin1("span"));
 

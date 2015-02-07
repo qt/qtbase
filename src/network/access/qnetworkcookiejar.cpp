@@ -307,11 +307,12 @@ bool QNetworkCookieJar::deleteCookie(const QNetworkCookie &cookie)
 {
     Q_D(QNetworkCookieJar);
     QList<QNetworkCookie>::Iterator it;
-    for (it = d->allCookies.begin(); it != d->allCookies.end(); it++)
+    for (it = d->allCookies.begin(); it != d->allCookies.end(); ++it) {
         if (it->hasSameIdentifier(cookie)) {
             d->allCookies.erase(it);
             return true;
         }
+    }
     return false;
 }
 

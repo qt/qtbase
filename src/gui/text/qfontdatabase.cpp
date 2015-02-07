@@ -781,7 +781,7 @@ static QStringList fallbackFamilies(const QString &family, QFont::Style style, Q
         }
         if (!contains) {
             i = retList.erase(i);
-            i--;
+            --i;
         }
     }
     return retList;

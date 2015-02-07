@@ -153,8 +153,8 @@ QByteArray QSslKeyPrivate::pemFromDer(const QByteArray &der, const QMap<QByteArr
     if (!headers.isEmpty()) {
         QMap<QByteArray, QByteArray>::const_iterator it = headers.constEnd();
         do {
-            it--;
-                extra += it.key() + ": " + it.value() + '\n';
+            --it;
+            extra += it.key() + ": " + it.value() + '\n';
         } while (it != headers.constBegin());
         extra += '\n';
     }

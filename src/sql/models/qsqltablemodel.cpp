@@ -501,9 +501,10 @@ bool QSqlTableModel::isDirty() const
     Q_D(const QSqlTableModel);
     QSqlTableModelPrivate::CacheMap::ConstIterator i = d->cache.constBegin();
     const QSqlTableModelPrivate::CacheMap::ConstIterator e = d->cache.constEnd();
-    for (; i != e; i++)
+    for (; i != e; ++i) {
         if (!i.value().submitted())
             return true;
+    }
     return false;
 }
 

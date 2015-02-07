@@ -2084,7 +2084,7 @@ QFontEngine *QFontEngineMulti::createMultiFontEngine(QFontEngine *fe, int script
             fc->updateHitCountAndTimeStamp(it.value());
             break;
         }
-        it++;
+        ++it;
     }
     if (!engine) {
         engine = QGuiApplicationPrivate::instance()->platformIntegration()->fontDatabase()->fontEngineMulti(fe, QChar::Script(script));
