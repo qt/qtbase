@@ -49,7 +49,6 @@ class Q_WIDGETS_EXPORT QFontDialog : public QDialog
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QFontDialog)
-    Q_ENUMS(FontDialogOption)
     Q_PROPERTY(QFont currentFont READ currentFont WRITE setCurrentFont NOTIFY currentFontChanged)
     Q_PROPERTY(FontDialogOptions options READ options WRITE setOptions)
 
@@ -62,6 +61,7 @@ public:
         MonospacedFonts     = 0x00000010,
         ProportionalFonts   = 0x00000020
     };
+    Q_ENUM(FontDialogOption)
 
     Q_DECLARE_FLAGS(FontDialogOptions, FontDialogOption)
 

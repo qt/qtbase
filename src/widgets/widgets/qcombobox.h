@@ -52,8 +52,6 @@ class Q_WIDGETS_EXPORT QComboBox : public QWidget
 {
     Q_OBJECT
 
-    Q_ENUMS(InsertPolicy)
-    Q_ENUMS(SizeAdjustPolicy)
     Q_PROPERTY(bool editable READ isEditable WRITE setEditable)
     Q_PROPERTY(int count READ count)
     Q_PROPERTY(QString currentText READ currentText WRITE setCurrentText NOTIFY currentTextChanged USER true)
@@ -115,6 +113,7 @@ public:
         InsertBeforeCurrent,
         InsertAlphabetically
     };
+    Q_ENUM(InsertPolicy)
 
     InsertPolicy insertPolicy() const;
     void setInsertPolicy(InsertPolicy policy);
@@ -125,6 +124,7 @@ public:
         AdjustToMinimumContentsLength, // ### Qt 6: remove
         AdjustToMinimumContentsLengthWithIcon
     };
+    Q_ENUM(SizeAdjustPolicy)
 
     SizeAdjustPolicy sizeAdjustPolicy() const;
     void setSizeAdjustPolicy(SizeAdjustPolicy policy);

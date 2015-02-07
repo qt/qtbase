@@ -46,7 +46,6 @@ class QListViewPrivate;
 class Q_WIDGETS_EXPORT QListView : public QAbstractItemView
 {
     Q_OBJECT
-    Q_ENUMS(Movement Flow ResizeMode LayoutMode ViewMode)
     Q_PROPERTY(Movement movement READ movement WRITE setMovement)
     Q_PROPERTY(Flow flow READ flow WRITE setFlow)
     Q_PROPERTY(bool isWrapping READ isWrapping WRITE setWrapping)
@@ -63,10 +62,15 @@ class Q_WIDGETS_EXPORT QListView : public QAbstractItemView
 
 public:
     enum Movement { Static, Free, Snap };
+    Q_ENUM(Movement)
     enum Flow { LeftToRight, TopToBottom };
+    Q_ENUM(Flow)
     enum ResizeMode { Fixed, Adjust };
+    Q_ENUM(ResizeMode)
     enum LayoutMode { SinglePass, Batched };
+    Q_ENUM(LayoutMode)
     enum ViewMode { ListMode, IconMode };
+    Q_ENUM(ViewMode)
 
     explicit QListView(QWidget *parent = 0);
     ~QListView();

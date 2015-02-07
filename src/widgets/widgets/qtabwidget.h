@@ -49,7 +49,6 @@ class QStyleOptionTabWidgetFrame;
 class Q_WIDGETS_EXPORT QTabWidget : public QWidget
 {
     Q_OBJECT
-    Q_ENUMS(TabPosition TabShape)
     Q_PROPERTY(TabPosition tabPosition READ tabPosition WRITE setTabPosition)
     Q_PROPERTY(TabShape tabShape READ tabShape WRITE setTabShape)
     Q_PROPERTY(int currentIndex READ currentIndex WRITE setCurrentIndex NOTIFY currentChanged)
@@ -100,6 +99,7 @@ public:
     int count() const;
 
     enum TabPosition { North, South, West, East };
+    Q_ENUM(TabPosition)
     TabPosition tabPosition() const;
     void setTabPosition(TabPosition);
 
@@ -110,6 +110,7 @@ public:
     void setMovable(bool movable);
 
     enum TabShape { Rounded, Triangular };
+    Q_ENUM(TabShape)
     TabShape tabShape() const;
     void setTabShape(TabShape s);
 

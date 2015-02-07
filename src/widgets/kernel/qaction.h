@@ -55,8 +55,6 @@ class Q_WIDGETS_EXPORT QAction : public QObject
     Q_OBJECT
     Q_DECLARE_PRIVATE(QAction)
 
-    Q_ENUMS(MenuRole)
-    Q_ENUMS(Priority)
     Q_PROPERTY(bool checkable READ isCheckable WRITE setCheckable NOTIFY changed)
     Q_PROPERTY(bool checked READ isChecked WRITE setChecked DESIGNABLE isCheckable NOTIFY toggled)
     Q_PROPERTY(bool enabled READ isEnabled WRITE setEnabled NOTIFY changed)
@@ -81,9 +79,11 @@ public:
     // note this is copied into qplatformmenu.h, which must stay in sync
     enum MenuRole { NoRole = 0, TextHeuristicRole, ApplicationSpecificRole, AboutQtRole,
                     AboutRole, PreferencesRole, QuitRole };
+    Q_ENUM(MenuRole)
     enum Priority { LowPriority = 0,
                     NormalPriority = 128,
                     HighPriority = 256};
+    Q_ENUM(Priority)
     explicit QAction(QObject* parent);
     QAction(const QString &text, QObject* parent);
     QAction(const QIcon &icon, const QString &text, QObject* parent);

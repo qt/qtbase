@@ -48,7 +48,6 @@ class QMdiAreaPrivate;
 class Q_WIDGETS_EXPORT QMdiArea : public QAbstractScrollArea
 {
     Q_OBJECT
-    Q_ENUMS(ViewMode)
     Q_PROPERTY(QBrush background READ background WRITE setBackground)
     Q_PROPERTY(WindowOrder activationOrder READ activationOrder WRITE setActivationOrder)
     Q_PROPERTY(ViewMode viewMode READ viewMode WRITE setViewMode)
@@ -61,7 +60,6 @@ class Q_WIDGETS_EXPORT QMdiArea : public QAbstractScrollArea
     Q_PROPERTY(QTabWidget::TabShape tabShape READ tabShape WRITE setTabShape)
     Q_PROPERTY(QTabWidget::TabPosition tabPosition READ tabPosition WRITE setTabPosition)
 #endif
-    Q_ENUMS(WindowOrder)
 public:
     enum AreaOption {
         DontMaximizeSubWindowOnActivation = 0x1
@@ -73,11 +71,13 @@ public:
         StackingOrder,
         ActivationHistoryOrder
     };
+    Q_ENUM(WindowOrder)
 
     enum ViewMode {
         SubWindowView,
         TabbedView
     };
+    Q_ENUM(ViewMode)
 
     QMdiArea(QWidget *parent = 0);
     ~QMdiArea();

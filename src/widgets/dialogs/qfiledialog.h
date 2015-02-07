@@ -55,7 +55,6 @@ class QAbstractProxyModel;
 class Q_WIDGETS_EXPORT QFileDialog : public QDialog
 {
     Q_OBJECT
-    Q_ENUMS(ViewMode FileMode AcceptMode Option)
     Q_FLAGS(Options)
     Q_PROPERTY(ViewMode viewMode READ viewMode WRITE setViewMode)
     Q_PROPERTY(FileMode fileMode READ fileMode WRITE setFileMode)
@@ -70,8 +69,11 @@ class Q_WIDGETS_EXPORT QFileDialog : public QDialog
 
 public:
     enum ViewMode { Detail, List };
+    Q_ENUM(ViewMode)
     enum FileMode { AnyFile, ExistingFile, Directory, ExistingFiles, DirectoryOnly };
+    Q_ENUM(FileMode)
     enum AcceptMode { AcceptOpen, AcceptSave };
+    Q_ENUM(AcceptMode)
     enum DialogLabel { LookIn, FileName, FileType, Accept, Reject };
 
     enum Option
@@ -85,6 +87,7 @@ public:
         HideNameFilterDetails       = 0x00000040,
         DontUseCustomDirectoryIcons = 0x00000080
     };
+    Q_ENUM(Option)
     Q_DECLARE_FLAGS(Options, Option)
 
     QFileDialog(QWidget *parent, Qt::WindowFlags f);

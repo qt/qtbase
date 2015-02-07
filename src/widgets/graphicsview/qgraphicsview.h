@@ -54,7 +54,6 @@ class Q_WIDGETS_EXPORT QGraphicsView : public QAbstractScrollArea
 {
     Q_OBJECT
     Q_FLAGS(QPainter::RenderHints CacheMode OptimizationFlags)
-    Q_ENUMS(ViewportAnchor DragMode ViewportUpdateMode)
     Q_PROPERTY(QBrush backgroundBrush READ backgroundBrush WRITE setBackgroundBrush)
     Q_PROPERTY(QBrush foregroundBrush READ foregroundBrush WRITE setForegroundBrush)
     Q_PROPERTY(bool interactive READ isInteractive WRITE setInteractive)
@@ -77,6 +76,7 @@ public:
         AnchorViewCenter,
         AnchorUnderMouse
     };
+    Q_ENUM(ViewportAnchor)
 
     enum CacheModeFlag {
         CacheNone = 0x0,
@@ -89,6 +89,7 @@ public:
         ScrollHandDrag,
         RubberBandDrag
     };
+    Q_ENUM(DragMode)
 
     enum ViewportUpdateMode {
         FullViewportUpdate,
@@ -97,6 +98,7 @@ public:
         NoViewportUpdate,
         BoundingRectViewportUpdate
     };
+    Q_ENUM(ViewportUpdateMode)
 
     enum OptimizationFlag {
         DontClipPainter = 0x1, // obsolete

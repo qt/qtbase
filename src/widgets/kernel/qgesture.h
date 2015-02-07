@@ -200,7 +200,6 @@ class Q_WIDGETS_EXPORT QSwipeGesture : public QGesture
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QSwipeGesture)
-    Q_ENUMS(SwipeDirection)
 
     Q_PROPERTY(SwipeDirection horizontalDirection READ horizontalDirection STORED false)
     Q_PROPERTY(SwipeDirection verticalDirection READ verticalDirection STORED false)
@@ -209,6 +208,7 @@ class Q_WIDGETS_EXPORT QSwipeGesture : public QGesture
 
 public:
     enum SwipeDirection { NoDirection, Left, Right, Up, Down };
+    Q_ENUM(SwipeDirection)
 
     explicit QSwipeGesture(QObject *parent = 0);
     ~QSwipeGesture();

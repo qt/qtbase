@@ -51,8 +51,6 @@ class Q_WIDGETS_EXPORT QAbstractSpinBox : public QWidget
 {
     Q_OBJECT
 
-    Q_ENUMS(ButtonSymbols)
-    Q_ENUMS(CorrectionMode)
     Q_PROPERTY(bool wrapping READ wrapping WRITE setWrapping)
     Q_PROPERTY(bool frame READ hasFrame WRITE setFrame)
     Q_PROPERTY(Qt::Alignment alignment READ alignment WRITE setAlignment)
@@ -74,11 +72,13 @@ public:
     Q_DECLARE_FLAGS(StepEnabled, StepEnabledFlag)
 
     enum ButtonSymbols { UpDownArrows, PlusMinus, NoButtons };
+    Q_ENUM(ButtonSymbols)
 
     ButtonSymbols buttonSymbols() const;
     void setButtonSymbols(ButtonSymbols bs);
 
     enum CorrectionMode  { CorrectToPreviousValue, CorrectToNearestValue };
+    Q_ENUM(CorrectionMode)
 
     void setCorrectionMode(CorrectionMode cm);
     CorrectionMode correctionMode() const;

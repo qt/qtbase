@@ -50,9 +50,6 @@ class Q_WIDGETS_EXPORT QCalendarWidget : public QWidget
 {
     Q_OBJECT
     Q_ENUMS(Qt::DayOfWeek)
-    Q_ENUMS(HorizontalHeaderFormat)
-    Q_ENUMS(VerticalHeaderFormat)
-    Q_ENUMS(SelectionMode)
     Q_PROPERTY(QDate selectedDate READ selectedDate WRITE setSelectedDate)
     Q_PROPERTY(QDate minimumDate READ minimumDate WRITE setMinimumDate)
     Q_PROPERTY(QDate maximumDate READ maximumDate WRITE setMaximumDate)
@@ -72,16 +69,19 @@ public:
         ShortDayNames,
         LongDayNames
     };
+    Q_ENUM(HorizontalHeaderFormat)
 
     enum VerticalHeaderFormat {
         NoVerticalHeader,
         ISOWeekNumbers
     };
+    Q_ENUM(VerticalHeaderFormat)
 
     enum SelectionMode {
         NoSelection,
         SingleSelection
     };
+    Q_ENUM(SelectionMode)
 
     explicit QCalendarWidget(QWidget *parent = 0);
     ~QCalendarWidget();

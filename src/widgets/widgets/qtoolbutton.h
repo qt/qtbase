@@ -48,7 +48,7 @@ class QStyleOptionToolButton;
 class Q_WIDGETS_EXPORT QToolButton : public QAbstractButton
 {
     Q_OBJECT
-    Q_ENUMS(Qt::ToolButtonStyle Qt::ArrowType ToolButtonPopupMode)
+    Q_ENUMS(Qt::ToolButtonStyle Qt::ArrowType)
 #ifndef QT_NO_MENU
     Q_PROPERTY(ToolButtonPopupMode popupMode READ popupMode WRITE setPopupMode)
 #endif
@@ -62,6 +62,7 @@ public:
         MenuButtonPopup,
         InstantPopup
     };
+    Q_ENUM(ToolButtonPopupMode)
 
     explicit QToolButton(QWidget * parent=0);
     ~QToolButton();

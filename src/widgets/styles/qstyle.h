@@ -58,9 +58,6 @@ class Q_WIDGETS_EXPORT QStyle : public QObject
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QStyle)
-    Q_ENUMS(StateFlag PrimitiveElement ControlElement SubElement ComplexControl)
-    Q_ENUMS(SubControl PixelMetric ContentsType RequestSoftwareInputPanel StyleHint)
-    Q_ENUMS(StandardPixmap)
 
 protected:
     QStyle(QStylePrivate &dd);
@@ -125,6 +122,7 @@ public:
         State_Small =               0x04000000,
         State_Mini =                0x08000000
     };
+    Q_ENUM(StateFlag)
     Q_DECLARE_FLAGS(State, StateFlag)
 
 
@@ -191,6 +189,7 @@ public:
         // do not add any values below/greater this
         PE_CustomBase = 0xf000000
     };
+    Q_ENUM(PrimitiveElement)
 
     virtual void drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPainter *p,
                                const QWidget *w = 0) const = 0;
@@ -261,6 +260,7 @@ public:
         // do not add any values below/greater than this
         CE_CustomBase = 0xf0000000
     };
+    Q_ENUM(ControlElement)
 
     virtual void drawControl(ControlElement element, const QStyleOption *opt, QPainter *p,
                              const QWidget *w = 0) const = 0;
@@ -344,6 +344,7 @@ public:
         // do not add any values below/greater than this
         SE_CustomBase = 0xf0000000
     };
+    Q_ENUM(SubElement)
 
     virtual QRect subElementRect(SubElement subElement, const QStyleOption *option,
                                  const QWidget *widget = 0) const = 0;
@@ -363,6 +364,7 @@ public:
         // do not add any values below/greater than this
         CC_CustomBase = 0xf0000000
     };
+    Q_ENUM(ComplexControl)
 
     enum SubControl {
         SC_None =                  0x00000000,
@@ -419,6 +421,7 @@ public:
         SC_CustomBase =            0xf0000000,
         SC_All =                   0xffffffff
     };
+    Q_ENUM(SubControl)
     Q_DECLARE_FLAGS(SubControls, SubControl)
 
 
@@ -556,6 +559,7 @@ public:
         // do not add any values below/greater than this
         PM_CustomBase = 0xf0000000
     };
+    Q_ENUM(PixelMetric)
 
     virtual int pixelMetric(PixelMetric metric, const QStyleOption *option = 0,
                             const QWidget *widget = 0) const = 0;
@@ -587,6 +591,7 @@ public:
         // do not add any values below/greater than this
         CT_CustomBase = 0xf0000000
     };
+    Q_ENUM(ContentsType)
 
     virtual QSize sizeFromContents(ContentsType ct, const QStyleOption *opt,
                                    const QSize &contentsSize, const QWidget *w = 0) const = 0;
@@ -595,6 +600,7 @@ public:
         RSIP_OnMouseClickAndAlreadyFocused,
         RSIP_OnMouseClick
     };
+    Q_ENUM(RequestSoftwareInputPanel)
 
     enum StyleHint {
         SH_EtchDisabledText,
@@ -716,6 +722,7 @@ public:
 
         SH_CustomBase = 0xf0000000
     };
+    Q_ENUM(StyleHint)
 
     virtual int styleHint(StyleHint stylehint, const QStyleOption *opt = 0,
                           const QWidget *widget = 0, QStyleHintReturn* returnData = 0) const = 0;
@@ -795,6 +802,7 @@ public:
         // do not add any values below/greater than this
         SP_CustomBase = 0xf0000000
     };
+    Q_ENUM(StandardPixmap)
 
     virtual QPixmap standardPixmap(StandardPixmap standardPixmap, const QStyleOption *opt = 0,
                                    const QWidget *widget = 0) const = 0;

@@ -59,7 +59,6 @@ class Q_WIDGETS_EXPORT QPlainTextEdit : public QAbstractScrollArea
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QPlainTextEdit)
-    Q_ENUMS(LineWrapMode)
     Q_PROPERTY(bool tabChangesFocus READ tabChangesFocus WRITE setTabChangesFocus)
     Q_PROPERTY(QString documentTitle READ documentTitle WRITE setDocumentTitle)
     Q_PROPERTY(bool undoRedoEnabled READ isUndoRedoEnabled WRITE setUndoRedoEnabled)
@@ -81,6 +80,7 @@ public:
         NoWrap,
         WidgetWidth
     };
+    Q_ENUM(LineWrapMode)
 
     explicit QPlainTextEdit(QWidget *parent = 0);
     explicit QPlainTextEdit(const QString &text, QWidget *parent = 0);

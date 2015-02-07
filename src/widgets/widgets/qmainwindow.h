@@ -53,7 +53,6 @@ class Q_WIDGETS_EXPORT QMainWindow : public QWidget
 {
     Q_OBJECT
 
-    Q_ENUMS(DockOption)
     Q_FLAGS(DockOptions)
     Q_PROPERTY(QSize iconSize READ iconSize WRITE setIconSize)
     Q_PROPERTY(Qt::ToolButtonStyle toolButtonStyle READ toolButtonStyle WRITE setToolButtonStyle)
@@ -80,6 +79,7 @@ public:
         ForceTabbedDocks = 0x08,  // implies AllowTabbedDocks, !AllowNestedDocks
         VerticalTabs = 0x10       // implies AllowTabbedDocks
     };
+    Q_ENUM(DockOption)
     Q_DECLARE_FLAGS(DockOptions, DockOption)
 
     explicit QMainWindow(QWidget *parent = 0, Qt::WindowFlags flags = 0);

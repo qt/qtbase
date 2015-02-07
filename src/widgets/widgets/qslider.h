@@ -47,7 +47,6 @@ class Q_WIDGETS_EXPORT QSlider : public QAbstractSlider
 {
     Q_OBJECT
 
-    Q_ENUMS(TickPosition)
     Q_PROPERTY(TickPosition tickPosition READ tickPosition WRITE setTickPosition)
     Q_PROPERTY(int tickInterval READ tickInterval WRITE setTickInterval)
 
@@ -60,6 +59,7 @@ public:
         TicksRight = TicksBelow,
         TicksBothSides = 3
     };
+    Q_ENUM(TickPosition)
 
     explicit QSlider(QWidget *parent = 0);
     explicit QSlider(Qt::Orientation orientation, QWidget *parent = 0);

@@ -49,7 +49,6 @@ class QCheckBox;
 class Q_WIDGETS_EXPORT QMessageBox : public QDialog
 {
     Q_OBJECT
-    Q_ENUMS(Icon)
     Q_FLAGS(StandardButtons)
     Q_PROPERTY(QString text READ text WRITE setText)
     Q_PROPERTY(Icon icon READ icon WRITE setIcon)
@@ -71,6 +70,7 @@ public:
         Critical = 3,
         Question = 4
     };
+    Q_ENUM(Icon)
 
     enum ButtonRole {
         // keep this in sync with QDialogButtonBox::ButtonRole and QPlatformDialogHelper::ButtonRole

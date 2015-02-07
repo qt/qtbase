@@ -48,7 +48,6 @@ class QWizardPrivate;
 class Q_WIDGETS_EXPORT QWizard : public QDialog
 {
     Q_OBJECT
-    Q_ENUMS(WizardStyle WizardOption)
     Q_FLAGS(WizardOptions)
     Q_PROPERTY(WizardStyle wizardStyle READ wizardStyle WRITE setWizardStyle)
     Q_PROPERTY(WizardOptions options READ options WRITE setOptions)
@@ -74,6 +73,7 @@ public:
         NStandardButtons = 6,
         NButtons = 9
     };
+    Q_ENUM(WizardButton)
 
     enum WizardPixmap {
         WatermarkPixmap,
@@ -110,6 +110,7 @@ public:
         HaveCustomButton3               = 0x00008000,
         NoCancelButtonOnLastPage        = 0x00010000
     };
+    Q_ENUM(WizardOption)
 
     Q_DECLARE_FLAGS(WizardOptions, WizardOption)
 

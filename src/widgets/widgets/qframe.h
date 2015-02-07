@@ -46,7 +46,6 @@ class Q_WIDGETS_EXPORT QFrame : public QWidget
 {
     Q_OBJECT
 
-    Q_ENUMS(Shape Shadow)
     Q_PROPERTY(Shape frameShape READ frameShape WRITE setFrameShape)
     Q_PROPERTY(Shadow frameShadow READ frameShadow WRITE setFrameShadow)
     Q_PROPERTY(int lineWidth READ lineWidth WRITE setLineWidth)
@@ -74,11 +73,13 @@ public:
         VLine = 0x0005, // vertical line
         StyledPanel = 0x0006 // rectangular panel depending on the GUI style
     };
+    Q_ENUM(Shape)
     enum Shadow {
         Plain = 0x0010, // plain line
         Raised = 0x0020, // raised shadow effect
         Sunken = 0x0030 // sunken shadow effect
     };
+    Q_ENUM(Shadow)
 
     enum StyleMask {
         Shadow_Mask = 0x00f0, // mask for the shadow

@@ -52,7 +52,6 @@ class QAbstractItemViewPrivate;
 class Q_WIDGETS_EXPORT QAbstractItemView : public QAbstractScrollArea
 {
     Q_OBJECT
-    Q_ENUMS(SelectionMode SelectionBehavior ScrollHint ScrollMode DragDropMode)
     Q_FLAGS(EditTriggers)
     Q_PROPERTY(bool autoScroll READ hasAutoScroll WRITE setAutoScroll)
     Q_PROPERTY(int autoScrollMargin READ autoScrollMargin WRITE setAutoScrollMargin)
@@ -81,12 +80,14 @@ public:
         ExtendedSelection,
         ContiguousSelection
     };
+    Q_ENUM(SelectionMode)
 
     enum SelectionBehavior {
         SelectItems,
         SelectRows,
         SelectColumns
     };
+    Q_ENUM(SelectionBehavior)
 
     enum ScrollHint {
         EnsureVisible,
@@ -94,6 +95,7 @@ public:
         PositionAtBottom,
         PositionAtCenter
     };
+    Q_ENUM(ScrollHint)
 
     enum EditTrigger {
         NoEditTriggers = 0,
@@ -111,6 +113,7 @@ public:
         ScrollPerItem,
         ScrollPerPixel
     };
+    Q_ENUM(ScrollMode)
 
     explicit QAbstractItemView(QWidget *parent = 0);
     ~QAbstractItemView();
@@ -168,6 +171,7 @@ public:
         DragDrop,
         InternalMove
     };
+    Q_ENUM(DragDropMode)
 
     void setDragDropMode(DragDropMode behavior);
     DragDropMode dragDropMode() const;

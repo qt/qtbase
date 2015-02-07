@@ -51,7 +51,6 @@ class Q_WIDGETS_EXPORT QDateTimeEdit : public QAbstractSpinBox
 {
     Q_OBJECT
 
-    Q_ENUMS(Section)
     Q_FLAGS(Sections)
     Q_PROPERTY(QDateTime dateTime READ dateTime WRITE setDateTime NOTIFY dateTimeChanged USER true)
     Q_PROPERTY(QDate date READ date WRITE setDate NOTIFY dateChanged)
@@ -83,6 +82,7 @@ public:
         TimeSections_Mask = AmPmSection|MSecSection|SecondSection|MinuteSection|HourSection,
         DateSections_Mask = DaySection|MonthSection|YearSection
     };
+    Q_ENUM(Section)
 
     Q_DECLARE_FLAGS(Sections, Section)
 

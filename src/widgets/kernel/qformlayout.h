@@ -44,7 +44,6 @@ class QFormLayoutPrivate;
 class Q_WIDGETS_EXPORT QFormLayout : public QLayout
 {
     Q_OBJECT
-    Q_ENUMS(FieldGrowthPolicy RowWrapPolicy ItemRole)
     Q_DECLARE_PRIVATE(QFormLayout)
     Q_PROPERTY(FieldGrowthPolicy fieldGrowthPolicy READ fieldGrowthPolicy WRITE setFieldGrowthPolicy RESET resetFieldGrowthPolicy)
     Q_PROPERTY(RowWrapPolicy rowWrapPolicy READ rowWrapPolicy WRITE setRowWrapPolicy RESET resetRowWrapPolicy)
@@ -59,18 +58,21 @@ public:
         ExpandingFieldsGrow,
         AllNonFixedFieldsGrow
     };
+    Q_ENUM(FieldGrowthPolicy)
 
     enum RowWrapPolicy {
         DontWrapRows,
         WrapLongRows,
         WrapAllRows
     };
+    Q_ENUM(RowWrapPolicy)
 
     enum ItemRole {
         LabelRole = 0,
         FieldRole = 1,
         SpanningRole = 2
     };
+    Q_ENUM(ItemRole)
 
     explicit QFormLayout(QWidget *parent = 0);
     ~QFormLayout();

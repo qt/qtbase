@@ -47,7 +47,6 @@ class QStyleOptionProgressBar;
 class Q_WIDGETS_EXPORT QProgressBar : public QWidget
 {
     Q_OBJECT
-    Q_ENUMS(Direction)
     Q_PROPERTY(int minimum READ minimum WRITE setMinimum)
     Q_PROPERTY(int maximum READ maximum WRITE setMaximum)
     Q_PROPERTY(QString text READ text)
@@ -61,6 +60,7 @@ class Q_WIDGETS_EXPORT QProgressBar : public QWidget
 
 public:
     enum Direction { TopToBottom, BottomToTop };
+    Q_ENUM(Direction)
 
     explicit QProgressBar(QWidget *parent = 0);
     ~QProgressBar();

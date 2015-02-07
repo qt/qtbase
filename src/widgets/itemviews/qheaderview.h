@@ -55,7 +55,6 @@ class Q_WIDGETS_EXPORT QHeaderView : public QAbstractItemView
     Q_PROPERTY(int minimumSectionSize READ minimumSectionSize WRITE setMinimumSectionSize)
     Q_PROPERTY(int maximumSectionSize READ maximumSectionSize WRITE setMaximumSectionSize)
     Q_PROPERTY(Qt::Alignment defaultAlignment READ defaultAlignment WRITE setDefaultAlignment)
-    Q_ENUMS(ResizeMode)
 
 public:
 
@@ -67,6 +66,7 @@ public:
         ResizeToContents,
         Custom = Fixed
     };
+    Q_ENUM(ResizeMode)
 
     explicit QHeaderView(Qt::Orientation orientation, QWidget *parent = 0);
     virtual ~QHeaderView();

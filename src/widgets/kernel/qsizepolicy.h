@@ -44,7 +44,6 @@ class QVariant;
 class Q_WIDGETS_EXPORT QSizePolicy
 {
     Q_GADGET
-    Q_ENUMS(Policy)
     Q_FLAGS(ControlTypes)
 
 public:
@@ -64,6 +63,7 @@ public:
         Expanding = GrowFlag | ShrinkFlag | ExpandFlag,
         Ignored = ShrinkFlag | GrowFlag | IgnoreFlag
     };
+    Q_ENUM(Policy)
 
     enum ControlType {
         DefaultType      = 0x00000001,

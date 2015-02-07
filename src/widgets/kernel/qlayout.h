@@ -56,7 +56,6 @@ class Q_WIDGETS_EXPORT QLayout : public QObject, public QLayoutItem
     Q_OBJECT
     Q_DECLARE_PRIVATE(QLayout)
 
-    Q_ENUMS(SizeConstraint)
     Q_PROPERTY(int margin READ margin WRITE setMargin)
     Q_PROPERTY(int spacing READ spacing WRITE setSpacing)
     Q_PROPERTY(SizeConstraint sizeConstraint READ sizeConstraint WRITE setSizeConstraint)
@@ -69,6 +68,7 @@ public:
         SetMaximumSize,
         SetMinAndMaxSize
     };
+    Q_ENUM(SizeConstraint)
 
     QLayout(QWidget *parent);
     QLayout();

@@ -50,7 +50,6 @@ class Q_WIDGETS_EXPORT QDataWidgetMapper: public QObject
 {
     Q_OBJECT
 
-    Q_ENUMS(SubmitPolicy)
     Q_PROPERTY(int currentIndex READ currentIndex WRITE setCurrentIndex NOTIFY currentIndexChanged)
     Q_PROPERTY(Qt::Orientation orientation READ orientation WRITE setOrientation)
     Q_PROPERTY(SubmitPolicy submitPolicy READ submitPolicy WRITE setSubmitPolicy)
@@ -72,6 +71,7 @@ public:
     Qt::Orientation orientation() const;
 
     enum SubmitPolicy { AutoSubmit, ManualSubmit };
+    Q_ENUM(SubmitPolicy)
     void setSubmitPolicy(SubmitPolicy policy);
     SubmitPolicy submitPolicy() const;
 

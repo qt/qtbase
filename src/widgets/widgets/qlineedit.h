@@ -58,7 +58,6 @@ class Q_WIDGETS_EXPORT QLineEdit : public QWidget
 {
     Q_OBJECT
 
-    Q_ENUMS(ActionPosition EchoMode)
     Q_PROPERTY(QString inputMask READ inputMask WRITE setInputMask)
     Q_PROPERTY(QString text READ text WRITE setText NOTIFY textChanged USER true)
     Q_PROPERTY(int maxLength READ maxLength WRITE setMaxLength)
@@ -83,6 +82,7 @@ public:
         LeadingPosition,
         TrailingPosition
     };
+    Q_ENUM(ActionPosition)
 
     explicit QLineEdit(QWidget* parent=0);
     explicit QLineEdit(const QString &, QWidget* parent=0);
@@ -105,6 +105,7 @@ public:
     bool isClearButtonEnabled() const;
 
     enum EchoMode { Normal, NoEcho, Password, PasswordEchoOnEdit };
+    Q_ENUM(EchoMode)
     EchoMode echoMode() const;
     void setEchoMode(EchoMode);
 

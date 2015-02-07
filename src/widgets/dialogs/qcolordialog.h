@@ -47,7 +47,6 @@ class Q_WIDGETS_EXPORT QColorDialog : public QDialog
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QColorDialog)
-    Q_ENUMS(ColorDialogOption)
     Q_PROPERTY(QColor currentColor READ currentColor WRITE setCurrentColor
                NOTIFY currentColorChanged)
     Q_PROPERTY(ColorDialogOptions options READ options WRITE setOptions)
@@ -58,6 +57,7 @@ public:
         NoButtons           = 0x00000002,
         DontUseNativeDialog = 0x00000004
     };
+    Q_ENUM(ColorDialogOption)
 
     Q_DECLARE_FLAGS(ColorDialogOptions, ColorDialogOption)
 
