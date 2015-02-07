@@ -136,6 +136,11 @@ public:
       : QObject(parent)
     {
     }
+    enum CustomQEnum { Val1, Val2 };
+    Q_ENUM(CustomQEnum)
+};
+class CustomGadget {
+    Q_GADGET
 };
 
 class CustomNonQObject {};
@@ -146,10 +151,13 @@ void tst_QMetaType::defined()
     QCOMPARE(int(QMetaTypeId2<Foo>::Defined), 0);
     QCOMPARE(int(QMetaTypeId2<void*>::Defined), 1);
     QCOMPARE(int(QMetaTypeId2<int*>::Defined), 0);
-    QVERIFY(QMetaTypeId2<CustomQObject*>::Defined);
+    QCOMPARE(int(QMetaTypeId2<CustomQObject::CustomQEnum>::Defined), 1);
+    QCOMPARE(int(QMetaTypeId2<CustomGadget>::Defined), 1);
+    QVERIFY(int(QMetaTypeId2<CustomQObject*>::Defined));
     QVERIFY(!QMetaTypeId2<CustomQObject>::Defined);
     QVERIFY(!QMetaTypeId2<CustomNonQObject>::Defined);
     QVERIFY(!QMetaTypeId2<CustomNonQObject*>::Defined);
+    QVERIFY(!QMetaTypeId2<CustomGadget*>::Defined);
 }
 
 struct Bar
@@ -378,6 +386,11 @@ void tst_QMetaType::typeName_data()
     QTest::newRow("QMap<int,int>") << static_cast<QMetaType::Type>(::qMetaTypeId<QMap<int, int> >()) << QString::fromLatin1("QMap<int,int>");
     QTest::newRow("QVector<QList<int>>") << static_cast<QMetaType::Type>(::qMetaTypeId<QVector<QList<int> > >()) << QString::fromLatin1("QVector<QList<int> >");
     QTest::newRow("QVector<QMap<int,int>>") << static_cast<QMetaType::Type>(::qMetaTypeId<QVector<QMap<int, int> > >()) << QString::fromLatin1("QVector<QMap<int,int> >");
+
+    QTest::newRow("CustomQObject*") << static_cast<QMetaType::Type>(::qMetaTypeId<CustomQObject*>()) << QString::fromLatin1("CustomQObject*");
+    QTest::newRow("CustomGadget") << static_cast<QMetaType::Type>(::qMetaTypeId<CustomGadget>()) << QString::fromLatin1("CustomGadget");
+    QTest::newRow("CustomQObject::CustomQEnum") << static_cast<QMetaType::Type>(::qMetaTypeId<CustomQObject::CustomQEnum>()) << QString::fromLatin1("CustomQObject::CustomQEnum");
+    QTest::newRow("Qt::ArrowType") << static_cast<QMetaType::Type>(::qMetaTypeId<Qt::ArrowType>()) << QString::fromLatin1("Qt::ArrowType");
 }
 
 void tst_QMetaType::typeName()

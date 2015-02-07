@@ -1545,7 +1545,10 @@ namespace QtPrivate
     Q_CORE_EXPORT bool isBuiltinType(const QByteArray &type);
 } // namespace QtPrivate
 
-template <typename T, bool = QtPrivate::IsPointerToTypeDerivedFromQObject<T>::Value>
+template <typename T, int =
+    QtPrivate::IsPointerToTypeDerivedFromQObject<T>::Value ? QMetaType::PointerToQObject :
+    QtPrivate::IsGadgetHelper<T>::Value                    ? QMetaType::IsGadget :
+    QtPrivate::IsQEnumHelper<T>::Value                     ? QMetaType::IsEnumeration : 0>
 struct QMetaTypeIdQObject
 {
     enum {
@@ -1725,8 +1728,9 @@ QT_DEPRECATED inline Q_DECL_CONSTEXPR int qRegisterMetaType(T *)
 #endif
 #endif
 
+#ifndef QT_NO_QOBJECT
 template <typename T>
-struct QMetaTypeIdQObject<T*, /* isPointerToTypeDerivedFromQObject */ true>
+struct QMetaTypeIdQObject<T*, QMetaType::PointerToQObject>
 {
     enum {
         Defined = 1
@@ -1748,6 +1752,53 @@ struct QMetaTypeIdQObject<T*, /* isPointerToTypeDerivedFromQObject */ true>
         return newId;
     }
 };
+
+template <typename T>
+struct QMetaTypeIdQObject<T, QMetaType::IsGadget>
+{
+    enum {
+        Defined = 1
+    };
+
+    static int qt_metatype_id()
+    {
+        static QBasicAtomicInt metatype_id = Q_BASIC_ATOMIC_INITIALIZER(0);
+        if (const int id = metatype_id.loadAcquire())
+            return id;
+        const char * const cName = T::staticMetaObject.className();
+        const int newId = qRegisterNormalizedMetaType<T>(
+            cName,
+            reinterpret_cast<T*>(quintptr(-1)));
+        metatype_id.storeRelease(newId);
+        return newId;
+    }
+};
+
+template <typename T>
+struct QMetaTypeIdQObject<T, QMetaType::IsEnumeration>
+{
+    enum {
+        Defined = 1
+    };
+
+    static int qt_metatype_id()
+    {
+        static QBasicAtomicInt metatype_id = Q_BASIC_ATOMIC_INITIALIZER(0);
+        if (const int id = metatype_id.loadAcquire())
+            return id;
+        const char *eName = qt_getEnumName(T());
+        const char *cName = qt_getEnumMetaObject(T())->className();
+        QByteArray typeName;
+        typeName.reserve(int(strlen(cName) + 2 + strlen(eName)));
+        typeName.append(cName).append("::").append(eName);
+        const int newId = qRegisterNormalizedMetaType<T>(
+            typeName,
+            reinterpret_cast<T*>(quintptr(-1)));
+        metatype_id.storeRelease(newId);
+        return newId;
+    }
+};
+#endif
 
 #ifndef QT_NO_DATASTREAM
 template <typename T>
