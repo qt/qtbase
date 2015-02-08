@@ -785,3 +785,73 @@
     \since 5.2
     \overload
  */
+
+/*!
+    \fn uint qCountTrailingZeroBits(quint8 v)
+    \relates <QtAlgorithms>
+    \since 5.6
+
+    Returns the number of consecutive zero bits in \a v, when searching from the LSB.
+    For example, qCountTrailingZeroBits(1) returns 0 and qCountTrailingZeroBits(8) returns 3.
+ */
+
+/*!
+    \fn uint qCountTrailingZeroBits(quint16 v)
+    \relates <QtAlgorithms>
+    \since 5.6
+    \overload
+ */
+
+/*!
+    \fn uint qCountTrailingZeroBits(quint32 v)
+    \relates <QtAlgorithms>
+    \since 5.6
+    \overload
+ */
+
+/*!
+    \fn uint qCountTrailingZeroBits(quint64 v)
+    \relates <QtAlgorithms>
+    \since 5.6
+    \overload
+ */
+
+/*!
+    \fn uint qCountLeadingZeroBits(quint8 v)
+    \relates <QtAlgorithms>
+    \since 5.6
+
+    Returns the number of consecutive zero bits in \a v, when searching from the MSB.
+    For example, qCountLeadingZeroBits(quint8(1)) returns 7 and
+    qCountLeadingZeroBits(quint8(8)) returns 4.
+ */
+
+/*!
+    \fn uint qCountLeadingZeroBits(quint16 v)
+    \relates <QtAlgorithms>
+    \since 5.6
+
+    Returns the number of consecutive zero bits in \a v, when searching from the MSB.
+    For example, qCountLeadingZeroBits(quint16(1)) returns 15 and
+    qCountLeadingZeroBits(quint16(8)) returns 12.
+ */
+
+/*!
+    \fn uint qCountLeadingZeroBits(quint32 v)
+    \relates <QtAlgorithms>
+    \since 5.6
+
+    Returns the number of consecutive zero bits in \a v, when searching from the MSB.
+    For example, qCountLeadingZeroBits(quint32(1)) returns 31 and
+    qCountLeadingZeroBits(quint32(8)) returns 28.
+ */
+
+/*!
+    \fn uint qCountLeadingZeroBits(quint64 v)
+    \relates <QtAlgorithms>
+    \since 5.6
+
+    Returns the number of consecutive zero bits in \a v, when searching from the MSB.
+    For example, qCountLeadingZeroBits(quint64(1)) returns 63 and
+    qCountLeadingZeroBits(quint64(8)) returns 60.
+ */
