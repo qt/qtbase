@@ -271,8 +271,6 @@ public:
     static Qt::MouseEventFlags mouseEventFlags(const QMouseEvent *event);
     static void setMouseEventFlags(QMouseEvent *event, Qt::MouseEventFlags flags);
 
-    static Qt::MouseEventSource wheelEventSource(const QWheelEvent *event);
-
     static QInputDeviceManager *inputDeviceManager();
 
     const QDrawHelperGammaTables *gammaTables();
