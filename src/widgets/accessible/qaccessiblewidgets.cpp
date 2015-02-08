@@ -672,7 +672,7 @@ QRect QAccessibleTextWidget::characterRect(int offset) const
         if (!ch.isEmpty()) {
             int w = fm.width(ch);
             int h = fm.height();
-            r = QRect(layoutPosition.x() + x, layoutPosition.y() + line.y(),
+            r = QRect(layoutPosition.x() + x, layoutPosition.y() + line.y() + line.ascent() + fm.descent() - h,
                       w, h);
             r.moveTo(viewport()->mapToGlobal(r.topLeft()));
         }
