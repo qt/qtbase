@@ -420,7 +420,27 @@ bool testLineEdit()
     EXPECT(lineEdit != nil);
 
     TestAXObject *le = [[TestAXObject alloc] initWithAXUIElementRef: lineEdit];
-    EXPECT([[le value] isEqualToString:@"a11y test QLineEdit"]);
+    NSString *value = @"a11y test QLineEdit";
+    EXPECT([le.value isEqualToString:value]);
+    EXPECT(value.length <= NSIntegerMax);
+    EXPECT(le.numberOfCharacters == static_cast<NSInteger>(value.length));
+    const NSRange ranges[] = {
+        { 0, 0},
+        { 0, 1},
+        { 0, 5},
+        { 5, 0},
+        { 5, 1},
+        { 0, value.length},
+        { value.length, 0},
+    };
+    for (size_t i = 0; i < sizeof(ranges)/sizeof(ranges[0]); ++i) {
+        NSRange range = ranges[i];
+        NSString *expectedSubstring = [value substringWithRange:range];
+        NSString *actualSubstring = [le stringForRange:range];
+        NSString *actualAttributedSubstring = [le attributedStringForRange:range].string;
+        EXPECT([actualSubstring isEqualTo:expectedSubstring]);
+        EXPECT([actualAttributedSubstring isEqualTo:expectedSubstring]);
+    }
     return true;
 }
 
