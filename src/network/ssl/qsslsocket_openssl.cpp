@@ -646,15 +646,13 @@ void QSslSocketPrivate::resetDefaultCiphers()
     STACK_OF(SSL_CIPHER) *supportedCiphers = q_SSL_get_ciphers(mySsl);
     for (int i = 0; i < q_sk_SSL_CIPHER_num(supportedCiphers); ++i) {
         if (SSL_CIPHER *cipher = q_sk_SSL_CIPHER_value(supportedCiphers, i)) {
-            if (cipher->valid) {
-                QSslCipher ciph = QSslSocketBackendPrivate::QSslCipher_from_SSL_CIPHER(cipher);
-                if (!ciph.isNull()) {
-                    // Unconditionally exclude ADH ciphers since they offer no MITM protection
-                    if (!ciph.name().toLower().startsWith(QLatin1String("adh")))
-                        ciphers << ciph;
-                    if (ciph.usedBits() >= 128)
-                        defaultCiphers << ciph;
-                }
+            QSslCipher ciph = QSslSocketBackendPrivate::QSslCipher_from_SSL_CIPHER(cipher);
+            if (!ciph.isNull()) {
+                // Unconditionally exclude ADH ciphers since they offer no MITM protection
+                if (!ciph.name().toLower().startsWith(QLatin1String("adh")))
+                    ciphers << ciph;
+                if (ciph.usedBits() >= 128)
+                    defaultCiphers << ciph;
             }
         }
     }
