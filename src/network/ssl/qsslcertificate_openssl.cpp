@@ -673,11 +673,7 @@ QList<QSslCertificate> QSslCertificatePrivate::certificatesFromPem(const QByteAr
 
         QByteArray decoded = QByteArray::fromBase64(
             QByteArray::fromRawData(pem.data() + startPos, endPos - startPos));
-#if OPENSSL_VERSION_NUMBER >= 0x00908000L
         const unsigned char *data = (const unsigned char *)decoded.data();
-#else
-        unsigned char *data = (unsigned char *)decoded.data();
-#endif
 
         if (X509 *x509 = q_d2i_X509(0, &data, decoded.size())) {
             certificates << QSslCertificate_from_X509(x509);
@@ -693,12 +689,7 @@ QList<QSslCertificate> QSslCertificatePrivate::certificatesFromDer(const QByteAr
     QList<QSslCertificate> certificates;
     QSslSocketPrivate::ensureInitialized();
 
-
-#if OPENSSL_VERSION_NUMBER >= 0x00908000L
-        const unsigned char *data = (const unsigned char *)der.data();
-#else
-        unsigned char *data = (unsigned char *)der.data();
-#endif
+    const unsigned char *data = (const unsigned char *)der.data();
     int size = der.size();
 
     while (size > 0 && (count == -1 || certificates.size() < count)) {

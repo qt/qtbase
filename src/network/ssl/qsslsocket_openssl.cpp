@@ -366,7 +366,6 @@ bool QSslSocketBackendPrivate::initSslContext()
         return false;
     }
 
-#if OPENSSL_VERSION_NUMBER >= 0x0090806fL && !defined(OPENSSL_NO_TLSEXT)
     if ((configuration.protocol == QSsl::TlsV1SslV3 ||
         configuration.protocol == QSsl::TlsV1_0 ||
         configuration.protocol == QSsl::TlsV1_1 ||
@@ -387,7 +386,6 @@ bool QSslSocketBackendPrivate::initSslContext()
                 qCWarning(lcSsl, "could not set SSL_CTRL_SET_TLSEXT_HOSTNAME, Server Name Indication disabled");
         }
     }
-#endif
 
     // Clear the session.
     errorList.clear();
@@ -1568,10 +1566,8 @@ void QSslSocketBackendPrivate::continueHandshake()
     if (readBufferMaxSize)
         plainSocket->setReadBufferSize(readBufferMaxSize);
 
-#if OPENSSL_VERSION_NUMBER >= 0x0090806fL && !defined(OPENSSL_NO_TLSEXT)
     if (q_SSL_ctrl((ssl), SSL_CTRL_GET_SESSION_REUSED, 0, NULL))
         configuration.peerSessionShared = true;
-#endif
 
 #ifdef QT_DECRYPT_SSL_TRAFFIC
     if (ssl->session && ssl->s3) {
@@ -1621,7 +1617,7 @@ void QSslSocketBackendPrivate::continueHandshake()
         }
     }
 
-#if OPENSSL_VERSION_NUMBER >= 0x1000100fL && !defined(OPENSSL_NO_TLSEXT) && !defined(OPENSSL_NO_NEXTPROTONEG)
+#if OPENSSL_VERSION_NUMBER >= 0x1000100fL && !defined(OPENSSL_NO_NEXTPROTONEG)
     const unsigned char *proto = 0;
     unsigned int proto_len = 0;
     q_SSL_get0_next_proto_negotiated(ssl, &proto, &proto_len);

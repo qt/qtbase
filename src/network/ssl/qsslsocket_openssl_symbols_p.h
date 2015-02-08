@@ -231,12 +231,7 @@ void q_CRYPTO_set_id_callback(unsigned long (*a)());
 void q_CRYPTO_free(void *a);
 DSA *q_DSA_new();
 void q_DSA_free(DSA *a);
-#if OPENSSL_VERSION_NUMBER >= 0x00908000L
-// 0.9.8 broke SC and BC by changing this function's signature.
 X509 *q_d2i_X509(X509 **a, const unsigned char **b, long c);
-#else
-X509 *q_d2i_X509(X509 **a, unsigned char **b, long c);
-#endif
 char *q_ERR_error_string(unsigned long a, char *b);
 unsigned long q_ERR_get_error();
 void q_ERR_free_strings();
@@ -315,12 +310,7 @@ int q_SSL_clear(SSL *a);
 char *q_SSL_CIPHER_description(SSL_CIPHER *a, char *b, int c);
 int q_SSL_CIPHER_get_bits(SSL_CIPHER *a, int *b);
 int q_SSL_connect(SSL *a);
-#if OPENSSL_VERSION_NUMBER >= 0x00908000L
-// 0.9.8 broke SC and BC by changing this function's signature.
 int q_SSL_CTX_check_private_key(const SSL_CTX *a);
-#else
-int q_SSL_CTX_check_private_key(SSL_CTX *a);
-#endif
 long q_SSL_CTX_ctrl(SSL_CTX *a, int b, long c, void *d);
 void q_SSL_CTX_free(SSL_CTX *a);
 #if OPENSSL_VERSION_NUMBER >= 0x10000000L
@@ -339,12 +329,7 @@ int q_SSL_CTX_use_RSAPrivateKey(SSL_CTX *a, RSA *b);
 int q_SSL_CTX_use_PrivateKey_file(SSL_CTX *a, const char *b, int c);
 X509_STORE *q_SSL_CTX_get_cert_store(const SSL_CTX *a);
 void q_SSL_free(SSL *a);
-#if OPENSSL_VERSION_NUMBER >= 0x00908000L
-// 0.9.8 broke SC and BC by changing this function's signature.
 STACK_OF(SSL_CIPHER) *q_SSL_get_ciphers(const SSL *a);
-#else
-STACK_OF(SSL_CIPHER) *q_SSL_get_ciphers(SSL *a);
-#endif
 #if OPENSSL_VERSION_NUMBER >= 0x10000000L
 const SSL_CIPHER *q_SSL_get_current_cipher(SSL *a);
 #else
@@ -354,18 +339,11 @@ int q_SSL_version(const SSL *a);
 int q_SSL_get_error(SSL *a, int b);
 STACK_OF(X509) *q_SSL_get_peer_cert_chain(SSL *a);
 X509 *q_SSL_get_peer_certificate(SSL *a);
-#if OPENSSL_VERSION_NUMBER >= 0x00908000L
-// 0.9.8 broke SC and BC by changing this function's signature.
 long q_SSL_get_verify_result(const SSL *a);
-#else
-long q_SSL_get_verify_result(SSL *a);
-#endif
 int q_SSL_library_init();
 void q_SSL_load_error_strings();
 SSL *q_SSL_new(SSL_CTX *a);
-#if OPENSSL_VERSION_NUMBER >= 0x0090806fL && !defined(OPENSSL_NO_TLSEXT)
 long q_SSL_ctrl(SSL *ssl,int cmd, long larg, void *parg);
-#endif
 int q_SSL_read(SSL *a, void *b, int c);
 void q_SSL_set_bio(SSL *a, BIO *b, BIO *c);
 void q_SSL_set_accept_state(SSL *a);
@@ -532,7 +510,7 @@ const char *q_SSLeay_version(int type);
 int q_i2d_SSL_SESSION(SSL_SESSION *in, unsigned char **pp);
 SSL_SESSION *q_d2i_SSL_SESSION(SSL_SESSION **a, const unsigned char **pp, long length);
 
-#if OPENSSL_VERSION_NUMBER >= 0x1000100fL && !defined(OPENSSL_NO_TLSEXT) && !defined(OPENSSL_NO_NEXTPROTONEG)
+#if OPENSSL_VERSION_NUMBER >= 0x1000100fL && !defined(OPENSSL_NO_NEXTPROTONEG)
 int q_SSL_select_next_proto(unsigned char **out, unsigned char *outlen,
                             const unsigned char *in, unsigned int inlen,
                             const unsigned char *client, unsigned int client_len);
