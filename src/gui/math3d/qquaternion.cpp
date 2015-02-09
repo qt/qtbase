@@ -363,8 +363,21 @@ QVector3D QQuaternion::rotatedVector(const QVector3D& vector) const
 #ifndef QT_NO_VECTOR3D
 
 /*!
+    \fn void QQuaternion::toAxisAndAngle(QVector3D *axis, float *angle) const
+    \since 5.5
+    \overload
+
+    Extracts a 3D axis \a axis and a rotating angle \a angle (in degrees)
+    that corresponds to this quaternion.
+
+    \sa fromAxisAndAngle()
+*/
+
+/*!
     Creates a normalized quaternion that corresponds to rotating through
     \a angle degrees about the specified 3D \a axis.
+
+    \sa toAxisAndAngle()
 */
 QQuaternion QQuaternion::fromAxisAndAngle(const QVector3D& axis, float angle)
 {
@@ -382,8 +395,45 @@ QQuaternion QQuaternion::fromAxisAndAngle(const QVector3D& axis, float angle)
 #endif
 
 /*!
+    \since 5.5
+
+    Extracts a 3D axis (\a x, \a y, \a z) and a rotating angle \a angle (in degrees)
+    that corresponds to this quaternion.
+
+    \sa fromAxisAndAngle()
+*/
+void QQuaternion::toAxisAndAngle(float *x, float *y, float *z, float *angle) const
+{
+    Q_ASSERT(x && y && z && angle);
+
+    // The quaternion representing the rotation is
+    //   q = cos(A/2)+sin(A/2)*(x*i+y*j+z*k)
+
+    float length = xp * xp + yp * yp + zp * zp;
+    if (!qFuzzyIsNull(length)) {
+        *x = xp;
+        *y = yp;
+        *z = zp;
+        if (!qFuzzyIsNull(length - 1.0f)) {
+            length = sqrtf(length);
+            *x /= length;
+            *y /= length;
+            *z /= length;
+        }
+        *angle = 2.0f * acosf(wp);
+    } else {
+        // angle is 0 (mod 2*pi), so any axis will fit
+        *x = *y = *z = *angle = 0.0f;
+    }
+
+    *angle = qRadiansToDegrees(*angle);
+}
+
+/*!
     Creates a normalized quaternion that corresponds to rotating through
     \a angle degrees about the 3D axis (\a x, \a y, \a z).
+
+    \sa toAxisAndAngle()
 */
 QQuaternion QQuaternion::fromAxisAndAngle
         (float x, float y, float z, float angle)

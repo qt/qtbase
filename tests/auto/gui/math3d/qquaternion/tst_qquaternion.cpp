@@ -721,11 +721,31 @@ void tst_QQuaternion::fromAxisAndAngle()
     QVERIFY(qFuzzyCompare(answer.z(), result.z()));
     QVERIFY(qFuzzyCompare(answer.scalar(), result.scalar()));
 
+    {
+        QVector3D answerAxis;
+        float answerAngle;
+        answer.toAxisAndAngle(&answerAxis, &answerAngle);
+        QVERIFY(qFuzzyCompare(answerAxis.x(), vector.x()));
+        QVERIFY(qFuzzyCompare(answerAxis.y(), vector.y()));
+        QVERIFY(qFuzzyCompare(answerAxis.z(), vector.z()));
+        QVERIFY(qFuzzyCompare(answerAngle, angle));
+    }
+
     answer = QQuaternion::fromAxisAndAngle(x1, y1, z1, angle);
     QVERIFY(qFuzzyCompare(answer.x(), result.x()));
     QVERIFY(qFuzzyCompare(answer.y(), result.y()));
     QVERIFY(qFuzzyCompare(answer.z(), result.z()));
     QVERIFY(qFuzzyCompare(answer.scalar(), result.scalar()));
+
+    {
+        float answerAxisX, answerAxisY, answerAxisZ;
+        float answerAngle;
+        answer.toAxisAndAngle(&answerAxisX, &answerAxisY, &answerAxisZ, &answerAngle);
+        QVERIFY(qFuzzyCompare(answerAxisX, vector.x()));
+        QVERIFY(qFuzzyCompare(answerAxisY, vector.y()));
+        QVERIFY(qFuzzyCompare(answerAxisZ, vector.z()));
+        QVERIFY(qFuzzyCompare(answerAngle, angle));
+    }
 }
 
 // Test quaternion convertion to and from rotation matrix.

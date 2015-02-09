@@ -115,8 +115,10 @@ public:
     operator QVariant() const;
 
 #ifndef QT_NO_VECTOR3D
+    inline void toAxisAndAngle(QVector3D *axis, float *angle) const;
     static QQuaternion fromAxisAndAngle(const QVector3D& axis, float angle);
 #endif
+    void toAxisAndAngle(float *x, float *y, float *z, float *angle) const;
     static QQuaternion fromAxisAndAngle
             (float x, float y, float z, float angle);
 
@@ -297,6 +299,13 @@ inline void QQuaternion::setVector(const QVector3D& aVector)
 inline QVector3D QQuaternion::vector() const
 {
     return QVector3D(xp, yp, zp);
+}
+
+inline void QQuaternion::toAxisAndAngle(QVector3D *axis, float *angle) const
+{
+    float aX, aY, aZ;
+    toAxisAndAngle(&aX, &aY, &aZ, angle);
+    *axis = QVector3D(aX, aY, aZ);
 }
 
 #endif
