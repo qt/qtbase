@@ -526,7 +526,7 @@ QT_DEPRECATED_X("Use std::binary_search") Q_OUTOFLINE_TEMPLATE RandomAccessItera
 #define QALGORITHMS_USE_BUILTIN_POPCOUNT
 #endif
 
-Q_DECL_CONSTEXPR inline uint qPopulationCount(quint32 v)
+Q_DECL_CONST_FUNCTION Q_DECL_CONSTEXPR inline uint qPopulationCount(quint32 v) Q_DECL_NOTHROW
 {
 #ifdef QALGORITHMS_USE_BUILTIN_POPCOUNT
     return __builtin_popcount(v);
@@ -539,7 +539,7 @@ Q_DECL_CONSTEXPR inline uint qPopulationCount(quint32 v)
 #endif
 }
 
-Q_DECL_CONSTEXPR inline uint qPopulationCount(quint8 v)
+Q_DECL_CONST_FUNCTION Q_DECL_CONSTEXPR inline uint qPopulationCount(quint8 v) Q_DECL_NOTHROW
 {
 #ifdef QALGORITHMS_USE_BUILTIN_POPCOUNT
     return __builtin_popcount(v);
@@ -549,7 +549,7 @@ Q_DECL_CONSTEXPR inline uint qPopulationCount(quint8 v)
 #endif
 }
 
-Q_DECL_CONSTEXPR inline uint qPopulationCount(quint16 v)
+Q_DECL_CONST_FUNCTION Q_DECL_CONSTEXPR inline uint qPopulationCount(quint16 v) Q_DECL_NOTHROW
 {
 #ifdef QALGORITHMS_USE_BUILTIN_POPCOUNT
     return __builtin_popcount(v);
@@ -560,7 +560,7 @@ Q_DECL_CONSTEXPR inline uint qPopulationCount(quint16 v)
 #endif
 }
 
-Q_DECL_CONSTEXPR inline uint qPopulationCount(quint64 v)
+Q_DECL_CONST_FUNCTION Q_DECL_CONSTEXPR inline uint qPopulationCount(quint64 v) Q_DECL_NOTHROW
 {
 #ifdef QALGORITHMS_USE_BUILTIN_POPCOUNT
     return __builtin_popcountll(v);
@@ -575,7 +575,7 @@ Q_DECL_CONSTEXPR inline uint qPopulationCount(quint64 v)
 #endif
 }
 
-Q_DECL_CONSTEXPR inline uint qPopulationCount(long unsigned int v)
+Q_DECL_CONST_FUNCTION Q_DECL_CONSTEXPR inline uint qPopulationCount(long unsigned int v) Q_DECL_NOTHROW
 {
     return qPopulationCount(static_cast<quint64>(v));
 }
