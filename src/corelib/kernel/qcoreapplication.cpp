@@ -414,7 +414,8 @@ QCoreApplicationPrivate::QCoreApplicationPrivate(int &aargc, char **aargv, uint 
       argc(aargc)
     , argv(aargv)
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
-    , modifiedArgv(false)
+    , origArgc(0)
+    , origArgv(Q_NULLPTR)
 #endif
     , application_type(QCoreApplicationPrivate::Tty)
 #ifndef QT_NO_QOBJECT
@@ -432,7 +433,11 @@ QCoreApplicationPrivate::QCoreApplicationPrivate(int &aargc, char **aargv, uint 
         argv = (char **)&empty;
     }
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
-    modifiedArgv = isArgvModified(argc, argv);
+    if (!isArgvModified(argc, argv)) {
+        origArgc = argc;
+        origArgv = new char *[argc];
+        std::copy(argv, argv + argc, origArgv);
+    }
 #endif // Q_OS_WIN && !Q_OS_WINRT
 
 #ifndef QT_NO_QOBJECT
@@ -457,6 +462,9 @@ QCoreApplicationPrivate::~QCoreApplicationPrivate()
 {
 #ifndef QT_NO_QOBJECT
     cleanupThreadData();
+#endif
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
+    delete [] origArgv;
 #endif
     QCoreApplicationPrivate::clearApplicationFilePath();
 }
@@ -2194,11 +2202,12 @@ QStringList QCoreApplication::arguments()
     }
 #endif // Q_OS_WINCE
 
-    if (!self->d_func()->modifiedArgv) {
+    const QCoreApplicationPrivate *d = self->d_func();
+    if (d->origArgv) {
         const QStringList allArguments = qWinCmdArgs(cmdline);
-        Q_ASSERT(allArguments.size() == __argc);
-        for (int i = 0; i < __argc; ++i) {
-            if (contains(ac, av, __argv[i]))
+        Q_ASSERT(allArguments.size() == d->origArgc);
+        for (int i = 0; i < d->origArgc; ++i) {
+            if (contains(ac, av, d->origArgv[i]))
                 list.append(allArguments.at(i));
         }
         return list;
