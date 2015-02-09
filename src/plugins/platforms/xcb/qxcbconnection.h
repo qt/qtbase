@@ -496,6 +496,7 @@ private:
     void updateScreens();
     void handleButtonPress(xcb_generic_event_t *event);
     void handleButtonRelease(xcb_generic_event_t *event);
+    void handleMotionNotify(xcb_generic_event_t *event);
 
     bool m_xi2Enabled;
     int m_xi2Minor;

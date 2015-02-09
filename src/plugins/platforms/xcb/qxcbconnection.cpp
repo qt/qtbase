@@ -818,6 +818,15 @@ void QXcbConnection::handleButtonRelease(xcb_generic_event_t *ev)
     qCDebug(lcQpaXInput, "xcb: released mouse button %d, button state %X", event->detail, static_cast<unsigned int>(m_buttons));
 }
 
+void QXcbConnection::handleMotionNotify(xcb_generic_event_t *ev)
+{
+    xcb_motion_notify_event_t *event = (xcb_motion_notify_event_t *)ev;
+
+    m_buttons = (m_buttons & ~0x7) | translateMouseButtons(event->state);
+    if (Q_UNLIKELY(lcQpaXInput().isDebugEnabled()))
+        qDebug("xcb: moved mouse to %4d, %4d; button state %X", event->event_x, event->event_y, static_cast<unsigned int>(m_buttons));
+}
+
 #ifndef QT_NO_XKB
 namespace {
     typedef union {
@@ -868,11 +877,8 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
             handleButtonRelease(event);
             HANDLE_PLATFORM_WINDOW_EVENT(xcb_button_release_event_t, event, handleButtonReleaseEvent);
         case XCB_MOTION_NOTIFY:
-            if (Q_UNLIKELY(lcQpaXInput().isDebugEnabled())) {
-                xcb_motion_notify_event_t *mev = (xcb_motion_notify_event_t *)event;
-                qDebug("xcb: moved mouse to %4d, %4d; button state %X", mev->event_x, mev->event_y, static_cast<unsigned int>(m_buttons));
-            }
             m_keyboard->updateXKBStateFromCore(((xcb_motion_notify_event_t *)event)->state);
+            handleMotionNotify(event);
             HANDLE_PLATFORM_WINDOW_EVENT(xcb_motion_notify_event_t, event, handleMotionNotifyEvent);
         case XCB_CONFIGURE_NOTIFY:
             HANDLE_PLATFORM_WINDOW_EVENT(xcb_configure_notify_event_t, event, handleConfigureNotifyEvent);
