@@ -9,10 +9,7 @@ include(../gl_integrations_plugin_base.pri)
 
 CONFIG += egl
 
-DEFINES += SUPPORT_X11
-#should be removed from sources
-DEFINES += XCB_USE_EGL XCB_USE_XLIB
-
+contains(QT_CONFIG, xcb-xlib): DEFINES += XCB_USE_XLIB
 
 HEADERS += \
     qxcbeglcontext.h \

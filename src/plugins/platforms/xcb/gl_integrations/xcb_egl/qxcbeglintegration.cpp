@@ -57,13 +57,7 @@ QXcbEglIntegration::~QXcbEglIntegration()
 bool QXcbEglIntegration::initialize(QXcbConnection *connection)
 {
     m_connection = connection;
-
-#ifdef USE_XCB_XLIB
-    Display *dpy = (Display *)m_connection->xlib_display();
-#else
-    EGLNativeDisplayType dpy = EGL_DEFAULT_DISPLAY;
-#endif
-    m_egl_display = eglGetDisplay(dpy);
+    m_egl_display = eglGetDisplay(reinterpret_cast<EGLNativeDisplayType>(xlib_display()));
 
     EGLint major, minor;
     bool success = eglInitialize(m_egl_display, &major, &minor);
@@ -99,6 +93,15 @@ QPlatformOpenGLContext *QXcbEglIntegration::createPlatformOpenGLContext(QOpenGLC
 QPlatformOffscreenSurface *QXcbEglIntegration::createPlatformOffscreenSurface(QOffscreenSurface *surface) const
 {
     return new QEGLPbuffer(eglDisplay(), surface->requestedFormat(), surface);
+}
+
+void *QXcbEglIntegration::xlib_display() const
+{
+#ifdef XCB_USE_XLIB
+    return m_connection->xlib_display();
+#else
+    return EGL_DEFAULT_DISPLAY;
+#endif
 }
 
 QT_END_NAMESPACE

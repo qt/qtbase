@@ -61,6 +61,7 @@ void QXcbEglWindow::resolveFormat()
 
 void *QXcbEglWindow::createVisual()
 {
+#ifdef XCB_USE_XLIB
     Display *xdpy = static_cast<Display *>(m_glIntegration->xlib_display());
     VisualID id = QXlibEglIntegration::getCompatibleVisualId(xdpy, m_glIntegration->eglDisplay(), m_config);
 
@@ -72,6 +73,9 @@ void *QXcbEglWindow::createVisual()
     int matchingCount = 0;
     visualInfo = XGetVisualInfo(xdpy, VisualIDMask, &visualInfoTemplate, &matchingCount);
     return visualInfo;
+#else
+    return QXcbWindow::createVisual();
+#endif
 }
 
 void QXcbEglWindow::create()
