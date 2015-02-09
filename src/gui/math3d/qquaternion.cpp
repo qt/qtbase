@@ -450,6 +450,131 @@ QQuaternion QQuaternion::fromAxisAndAngle
     return QQuaternion(c, x * s, y * s, z * s).normalized();
 }
 
+#ifndef QT_NO_VECTOR3D
+
+/*!
+    \fn QVector3D QQuaternion::toEulerAngles() const
+    \since 5.5
+    \overload
+
+    Calculates \a roll, \a pitch, and \a yaw Euler angles (in degrees)
+    that corresponds to this quaternion.
+
+    \sa fromEulerAngles()
+*/
+
+/*!
+    \fn QQuaternion QQuaternion::fromEulerAngles(const QVector3D &eulerAngles)
+    \since 5.5
+    \overload
+
+    Creates a quaternion that corresponds to a rotation of
+    \a eulerAngles.z() degrees around the z axis, \a eulerAngles.x() degrees around the x axis,
+    and \a eulerAngles.y() degrees around the y axis (in that order).
+
+    \sa toEulerAngles()
+*/
+
+#endif // QT_NO_VECTOR3D
+
+/*!
+    \since 5.5
+
+    Calculates \a roll, \a pitch, and \a yaw Euler angles (in degrees)
+    that corresponds to this quaternion.
+
+    \sa fromEulerAngles()
+*/
+void QQuaternion::toEulerAngles(float *pitch, float *yaw, float *roll) const
+{
+    Q_ASSERT(pitch && yaw && roll);
+
+    // Algorithm from:
+    // http://www.j3d.org/matrix_faq/matrfaq_latest.html#Q37
+
+    float xx = xp * xp;
+    float xy = xp * yp;
+    float xz = xp * zp;
+    float xw = xp * wp;
+    float yy = yp * yp;
+    float yz = yp * zp;
+    float yw = yp * wp;
+    float zz = zp * zp;
+    float zw = zp * wp;
+
+    const float lengthSquared = xx + yy + zz + wp * wp;
+    if (!qFuzzyIsNull(lengthSquared - 1.0f) && !qFuzzyIsNull(lengthSquared)) {
+        xx /= lengthSquared;
+        xy /= lengthSquared; // same as (xp / length) * (yp / length)
+        xz /= lengthSquared;
+        xw /= lengthSquared;
+        yy /= lengthSquared;
+        yz /= lengthSquared;
+        yw /= lengthSquared;
+        zz /= lengthSquared;
+        zw /= lengthSquared;
+    }
+
+    *pitch = asinf(-2.0f * (yz - xw));
+    if (*pitch < M_PI_2) {
+        if (*pitch > -M_PI_2) {
+            *yaw = atan2f(2.0f * (xz + yw), 1.0f - 2.0f * (xx + yy));
+            *roll = atan2f(2.0f * (xy + zw), 1.0f - 2.0f * (xx + zz));
+        } else {
+            // not a unique solution
+            *roll = 0.0f;
+            *yaw = -atan2f(-2.0f * (xy - zw), 1.0f - 2.0f * (yy + zz));
+        }
+    } else {
+        // not a unique solution
+        *roll = 0.0f;
+        *yaw = atan2f(-2.0f * (xy - zw), 1.0f - 2.0f * (yy + zz));
+    }
+
+    *pitch = qRadiansToDegrees(*pitch);
+    *yaw = qRadiansToDegrees(*yaw);
+    *roll = qRadiansToDegrees(*roll);
+}
+
+/*!
+    \since 5.5
+
+    Creates a quaternion that corresponds to a rotation of
+    \a roll degrees around the z axis, \a pitch degrees around the x axis,
+    and \a yaw degrees around the y axis (in that order).
+
+    \sa toEulerAngles()
+*/
+QQuaternion QQuaternion::fromEulerAngles(float pitch, float yaw, float roll)
+{
+    // Algorithm from:
+    // http://www.j3d.org/matrix_faq/matrfaq_latest.html#Q60
+
+    pitch = qDegreesToRadians(pitch);
+    yaw = qDegreesToRadians(yaw);
+    roll = qDegreesToRadians(roll);
+
+    pitch *= 0.5f;
+    yaw *= 0.5f;
+    roll *= 0.5f;
+
+    const float c1 = cosf(yaw);
+    const float s1 = sinf(yaw);
+    const float c2 = cosf(roll);
+    const float s2 = sinf(roll);
+    const float c3 = cosf(pitch);
+    const float s3 = sinf(pitch);
+    const float c1c2 = c1 * c2;
+    const float s1s2 = s1 * s2;
+
+    const float w = c1c2 * c3 + s1s2 * s3;
+    const float x = c1c2 * s3 + s1s2 * c3;
+    const float y = s1 * c2 * c3 - c1 * s2 * s3;
+    const float z = c1 * s2 * c3 - s1 * c2 * s3;
+
+    return QQuaternion(w, x, y, z);
+}
+
 /*!
     \since 5.5
 

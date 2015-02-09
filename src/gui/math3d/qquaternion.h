@@ -122,6 +122,13 @@ public:
     static QQuaternion fromAxisAndAngle
             (float x, float y, float z, float angle);
 
+#ifndef QT_NO_VECTOR3D
+    inline QVector3D toEulerAngles() const;
+    static inline QQuaternion fromEulerAngles(const QVector3D &eulerAngles);
+#endif
+    void toEulerAngles(float *pitch, float *yaw, float *roll) const;
+    static QQuaternion fromEulerAngles(float pitch, float yaw, float roll);
+
     QMatrix3x3 toRotationMatrix() const;
     static QQuaternion fromRotationMatrix(const QMatrix3x3 &rot3x3);
 
@@ -306,6 +313,18 @@ inline void QQuaternion::toAxisAndAngle(QVector3D *axis, float *angle) const
     float aX, aY, aZ;
     toAxisAndAngle(&aX, &aY, &aZ, angle);
     *axis = QVector3D(aX, aY, aZ);
+}
+
+inline QVector3D QQuaternion::toEulerAngles() const
+{
+    float pitch, yaw, roll;
+    toEulerAngles(&pitch, &yaw, &roll);
+    return QVector3D(pitch, yaw, roll);
+}
+
+inline QQuaternion QQuaternion::fromEulerAngles(const QVector3D &eulerAngles)
+{
+    return QQuaternion::fromEulerAngles(eulerAngles.x(), eulerAngles.y(), eulerAngles.z());
 }
 
 #endif

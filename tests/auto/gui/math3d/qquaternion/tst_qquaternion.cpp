@@ -86,6 +86,9 @@ private slots:
     void fromRotationMatrix_data();
     void fromRotationMatrix();
 
+    void fromEulerAngles_data();
+    void fromEulerAngles();
+
     void slerp_data();
     void slerp();
 
@@ -765,6 +768,115 @@ void tst_QQuaternion::fromRotationMatrix()
     QQuaternion answer = QQuaternion::fromRotationMatrix(rot3x3);
 
     QVERIFY(qFuzzyCompare(answer, result) || qFuzzyCompare(-answer, result));
+}
+
+// This is a more tolerant version of qFuzzyCompare that also handles the case
+// where one or more of the values being compare are close to zero
+static inline bool myFuzzyCompare(float p1, float p2)
+{
+    if (qFuzzyIsNull(p1))
+        return qFuzzyIsNull(p2);
+    if (qFuzzyIsNull(p2))
+        return false;
+    // a very slightly looser version of qFuzzyCompare
+    // for use with values that are not very close to zero
+    return qAbs(p1 - p2) <= 0.00003f * qMin(qAbs(p1), qAbs(p2));
+}
+
+static inline bool myFuzzyCompareRadians(float p1, float p2)
+{
+    static const float fPI = float(M_PI);
+    if (p1 < -fPI)
+        p1 += 2.0f * fPI;
+    else if (p1 > fPI)
+        p1 -= 2.0f * fPI;
+
+    if (p2 < -fPI)
+        p2 += 2.0f * fPI;
+    else if (p2 > fPI)
+        p2 -= 2.0f * fPI;
+
+    return qAbs(qAbs(p1) - qAbs(p2)) <= qDegreesToRadians(0.05f);
+}
+
+static inline bool myFuzzyCompareDegrees(float p1, float p2)
+{
+    p1 = qDegreesToRadians(p1);
+    p2 = qDegreesToRadians(p2);
+    return myFuzzyCompareRadians(p1, p2);
+}
+
+// Test quaternion creation from an axis and an angle.
+void tst_QQuaternion::fromEulerAngles_data()
+{
+    QTest::addColumn<float>("pitch");
+    QTest::addColumn<float>("yaw");
+    QTest::addColumn<float>("roll");
+
+    QTest::newRow("null")
+        << 0.0f << 0.0f << 0.0f;
+
+    QTest::newRow("xonly")
+        << 90.0f << 0.0f << 0.0f;
+
+    QTest::newRow("yonly")
+        << 0.0f << 180.0f << 0.0f;
+
+    QTest::newRow("zonly")
+        << 0.0f << 0.0f << 270.0f;
+
+    QTest::newRow("x+z")
+        << 30.0f << 0.0f << 45.0f;
+
+    QTest::newRow("x+y")
+        << 30.0f << 90.0f << 0.0f;
+
+    QTest::newRow("y+z")
+        << 0.0f << 45.0f << 30.0f;
+
+    QTest::newRow("complex")
+        << 30.0f << 240.0f << -45.0f;
+}
+void tst_QQuaternion::fromEulerAngles()
+{
+    QFETCH(float, pitch);
+    QFETCH(float, yaw);
+    QFETCH(float, roll);
+
+    // Use a straight-forward implementation of the algorithm at:
+    // http://www.j3d.org/matrix_faq/matrfaq_latest.html#Q60
+    // to calculate the answer we expect to get.
+    QQuaternion qx = QQuaternion::fromAxisAndAngle(QVector3D(1, 0, 0), pitch);
+    QQuaternion qy = QQuaternion::fromAxisAndAngle(QVector3D(0, 1, 0), yaw);
+    QQuaternion qz = QQuaternion::fromAxisAndAngle(QVector3D(0, 0, 1), roll);
+    QQuaternion result = qy * (qx * qz);
+    QQuaternion answer = QQuaternion::fromEulerAngles(QVector3D(pitch, yaw, roll));
+
+    QVERIFY(myFuzzyCompare(answer.x(), result.x()));
+    QVERIFY(myFuzzyCompare(answer.y(), result.y()));
+    QVERIFY(myFuzzyCompare(answer.z(), result.z()));
+    QVERIFY(myFuzzyCompare(answer.scalar(), result.scalar()));
+
+    {
+        QVector3D answerEulerAngles = answer.toEulerAngles();
+        QVERIFY(myFuzzyCompareDegrees(answerEulerAngles.x(), pitch));
+        QVERIFY(myFuzzyCompareDegrees(answerEulerAngles.y(), yaw));
+        QVERIFY(myFuzzyCompareDegrees(answerEulerAngles.z(), roll));
+    }
+
+    answer = QQuaternion::fromEulerAngles(pitch, yaw, roll);
+    QVERIFY(myFuzzyCompare(answer.x(), result.x()));
+    QVERIFY(myFuzzyCompare(answer.y(), result.y()));
+    QVERIFY(myFuzzyCompare(answer.z(), result.z()));
+    QVERIFY(myFuzzyCompare(answer.scalar(), result.scalar()));
+
+    {
+        float answerPitch, answerYaw, answerRoll;
+        answer.toEulerAngles(&answerPitch, &answerYaw, &answerRoll);
+        QVERIFY(myFuzzyCompareDegrees(answerPitch, pitch));
+        QVERIFY(myFuzzyCompareDegrees(answerYaw, yaw));
+        QVERIFY(myFuzzyCompareDegrees(answerRoll, roll));
+    }
 }
 
 // Test spherical interpolation of quaternions.
