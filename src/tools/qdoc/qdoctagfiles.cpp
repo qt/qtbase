@@ -149,7 +149,7 @@ void QDocTagFiles::generateTagFileCompounds(QXmlStreamWriter& writer, const Inne
 
         if (node->type() == Node::Class) {
             writer.writeTextElement("name", node->fullDocumentName());
-            writer.writeTextElement("filename", gen_->fullDocumentLocation(node,Generator::useOutputSubdirs()));
+            writer.writeTextElement("filename", gen_->fullDocumentLocation(node, false));
 
             // Classes contain information about their base classes.
             const ClassNode* classNode = static_cast<const ClassNode*>(node);
@@ -169,7 +169,7 @@ void QDocTagFiles::generateTagFileCompounds(QXmlStreamWriter& writer, const Inne
         }
         else {
             writer.writeTextElement("name", node->fullDocumentName());
-            writer.writeTextElement("filename", gen_->fullDocumentLocation(node,Generator::useOutputSubdirs()));
+            writer.writeTextElement("filename", gen_->fullDocumentLocation(node, false));
 
             // Recurse to write all members.
             generateTagFileMembers(writer, static_cast<const InnerNode*>(node));
@@ -285,7 +285,7 @@ void QDocTagFiles::generateTagFileMembers(QXmlStreamWriter& writer, const InnerN
                     writer.writeTextElement("type", "virtual " + functionNode->returnType());
 
                 writer.writeTextElement("name", objName);
-                QStringList pieces = gen_->fullDocumentLocation(node,Generator::useOutputSubdirs()).split(QLatin1Char('#'));
+                QStringList pieces = gen_->fullDocumentLocation(node, false).split(QLatin1Char('#'));
                 writer.writeTextElement("anchorfile", pieces[0]);
                 writer.writeTextElement("anchor", pieces[1]);
                 QString signature = functionNode->signature();
@@ -303,7 +303,7 @@ void QDocTagFiles::generateTagFileMembers(QXmlStreamWriter& writer, const InnerN
                 const PropertyNode* propertyNode = static_cast<const PropertyNode*>(node);
                 writer.writeAttribute("type", propertyNode->dataType());
                 writer.writeTextElement("name", objName);
-                QStringList pieces = gen_->fullDocumentLocation(node,Generator::useOutputSubdirs()).split(QLatin1Char('#'));
+                QStringList pieces = gen_->fullDocumentLocation(node, false).split(QLatin1Char('#'));
                 writer.writeTextElement("anchorfile", pieces[0]);
                 writer.writeTextElement("anchor", pieces[1]);
                 writer.writeTextElement("arglist", QString());
@@ -314,7 +314,7 @@ void QDocTagFiles::generateTagFileMembers(QXmlStreamWriter& writer, const InnerN
             {
                 const EnumNode* enumNode = static_cast<const EnumNode*>(node);
                 writer.writeTextElement("name", objName);
-                QStringList pieces = gen_->fullDocumentLocation(node).split(QLatin1Char('#'));
+                QStringList pieces = gen_->fullDocumentLocation(node, false).split(QLatin1Char('#'));
                 writer.writeTextElement("anchor", pieces[1]);
                 writer.writeTextElement("arglist", QString());
                 writer.writeEndElement(); // member
@@ -337,7 +337,7 @@ void QDocTagFiles::generateTagFileMembers(QXmlStreamWriter& writer, const InnerN
                 else
                     writer.writeAttribute("type", QString());
                 writer.writeTextElement("name", objName);
-                QStringList pieces = gen_->fullDocumentLocation(node,Generator::useOutputSubdirs()).split(QLatin1Char('#'));
+                QStringList pieces = gen_->fullDocumentLocation(node, false).split(QLatin1Char('#'));
                 writer.writeTextElement("anchorfile", pieces[0]);
                 writer.writeTextElement("anchor", pieces[1]);
                 writer.writeTextElement("arglist", QString());
@@ -358,8 +358,19 @@ void QDocTagFiles::generateTagFileMembers(QXmlStreamWriter& writer, const InnerN
 void QDocTagFiles::generateTagFile(const QString& fileName, Generator* g)
 {
     QFile file(fileName);
-    if (!file.open(QFile::WriteOnly | QFile::Text))
-        return ;
+    QFileInfo fileInfo(fileName);
+
+    // If no path was specified or it doesn't exist,
+    // default to the output directory
+    if (fileInfo.fileName() == fileName || !fileInfo.dir().exists())
+        file.setFileName(gen_->outputDir() + QLatin1Char('/') +
+                         fileInfo.fileName());
+
+    if (!file.open(QFile::WriteOnly | QFile::Text)) {
+        Location::null.warning(
+            QString("Failed to open %1 for writing.").arg(file.fileName()));
+        return;
+    }
 
     gen_ = g;
     QXmlStreamWriter writer(&file);
