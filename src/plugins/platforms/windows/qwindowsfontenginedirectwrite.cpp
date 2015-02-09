@@ -184,10 +184,6 @@ namespace {
     database uses most of the same logic but creates a direct write
     font based on the LOGFONT rather than a GDI handle.
 
-    The engine is currently regarded as experimental, meaning that code
-    using it should do substantial testing to make sure it covers their
-    use cases.
-
     Will probably be superseded by a common Free Type font engine in Qt 5.X.
 */
 

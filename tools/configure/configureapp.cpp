@@ -1990,7 +1990,7 @@ bool Configure::displayHelp()
         desc("QML_DEBUG", "no",    "-no-qml-debug",     "Do not build the in-process QML debugging support.");
         desc("QML_DEBUG", "yes",   "-qml-debug",        "Build the in-process QML debugging support.\n");
         desc("DIRECTWRITE", "no", "-no-directwrite", "Do not build support for DirectWrite font rendering.");
-        desc("DIRECTWRITE", "yes", "-directwrite", "Build support for DirectWrite font rendering (experimental, requires DirectWrite availability on target systems, e.g. Windows Vista with Platform Update, Windows 7, etc.)\n");
+        desc("DIRECTWRITE", "yes", "-directwrite", "Build support for DirectWrite font rendering (requires DirectWrite availability on target systems, e.g. Windows Vista with Platform Update, Windows 7, etc.)\n");
 
         desc("DIRECT2D", "no",  "-no-direct2d",         "Do not build the Direct2D platform plugin.");
         desc("DIRECT2D", "yes", "-direct2d",            "Build the Direct2D platform plugin (experimental,\n"
