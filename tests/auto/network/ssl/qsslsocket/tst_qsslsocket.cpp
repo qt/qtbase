@@ -2871,6 +2871,14 @@ void tst_QSslSocket::verifyClientCertificate_data()
 
 void tst_QSslSocket::verifyClientCertificate()
 {
+#ifdef QT_SECURETRANSPORT
+    // We run both client and server on the same machine,
+    // this means, client can update keychain with client's certificates,
+    // and server later will use the same certificates from the same
+    // keychain thus making tests fail (wrong number of certificates,
+    // success instead of failure etc.).
+    QSKIP("This test can not work with Secure Transport");
+#endif
     if (!QSslSocket::supportsSsl()) {
         qWarning("SSL not supported, skipping test");
         return;
