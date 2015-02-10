@@ -81,6 +81,11 @@
 #ifdef Q_OS_WIN
 # ifdef Q_OS_WINRT
 #  include "qeventdispatcher_winrt_p.h"
+#  include "qfunctions_winrt.h"
+#  include <wrl.h>
+#  include <Windows.ApplicationModel.core.h>
+   using namespace ABI::Windows::ApplicationModel::Core;
+   using namespace Microsoft::WRL;
 # else
 #  include "qeventdispatcher_win_p.h"
 # endif
@@ -1221,6 +1226,19 @@ void QCoreApplication::exit(int returnCode)
         QEventLoop *eventLoop = data->eventLoops.at(i);
         eventLoop->exit(returnCode);
     }
+#ifdef Q_OS_WINRT
+    qWarning("QCoreApplication::exit: It is not recommended to explicitly exit an application on Windows Store Apps");
+    ComPtr<ICoreApplication> app;
+    HRESULT hr = RoGetActivationFactory(Wrappers::HString::MakeReference(RuntimeClass_Windows_ApplicationModel_Core_CoreApplication).Get(),
+                                IID_PPV_ARGS(&app));
+    RETURN_VOID_IF_FAILED("Could not acquire ICoreApplication object");
+    ComPtr<ICoreApplicationExit> appExit;
+
+    hr = app.As(&appExit);
+    RETURN_VOID_IF_FAILED("Could not acquire ICoreApplicationExit object");
+    hr = appExit->Exit();
+    RETURN_VOID_IF_FAILED("Could not exit application");
+#endif // Q_OS_WINRT
 }
 
 /*****************************************************************************

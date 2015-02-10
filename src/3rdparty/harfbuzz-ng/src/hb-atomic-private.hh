@@ -41,6 +41,25 @@
 
 #if 0
 
+#elif !defined(HB_NO_MT) && defined(HAVE_QT5_ATOMICS)
+#include <QtCore/qatomic.h>
+
+QT_USE_NAMESPACE
+
+namespace {
+// We need to cast hb_atomic_int_t to QAtomicInt and pointers to
+// QAtomicPointer instead of using QAtomicOps, otherwise we get a failed
+// overload resolution of the template arguments for testAndSetOrdered.
+template <typename T> QAtomicPointer<T> *makeAtomicPointer(T * const &ptr)
+{
+    return reinterpret_cast<QAtomicPointer<T> *>(const_cast<T **>(&ptr));
+}
+}
+
+typedef int                                         hb_atomic_int_t;
+#define hb_atomic_int_add(AI, V)                    reinterpret_cast<QAtomicInt &>(AI).fetchAndAddOrdered(V)
+#define hb_atomic_ptr_get(P)                        makeAtomicPointer(*P)->loadAcquire()
+#define hb_atomic_ptr_cmpexch(P,O,N)                makeAtomicPointer(*P)->testAndSetOrdered((O), (N))
 
 #elif !defined(HB_NO_MT) && (defined(_WIN32) || defined(__CYGWIN__))
 
