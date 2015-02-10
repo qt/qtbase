@@ -594,6 +594,11 @@ static void updateApplicationState(JNIEnv */*env*/, jobject /*thiz*/, jint state
         return;
     }
 
+    if (state == Qt::ApplicationActive)
+        QtAndroidPrivate::handleResume();
+    else if (state == Qt::ApplicationInactive)
+        QtAndroidPrivate::handlePause();
+
     if (state <= Qt::ApplicationInactive) {
         // Don't send timers and sockets events anymore if we are going to hide all windows
         QAndroidEventDispatcherStopper::instance()->goingToStop(true);

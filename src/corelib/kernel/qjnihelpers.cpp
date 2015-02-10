@@ -122,6 +122,45 @@ void QtAndroidPrivate::handleNewIntent(JNIEnv *env, jobject intent)
     }
 }
 
+namespace {
+    class ResumePauseListeners
+    {
+    public:
+        QMutex mutex;
+        QList<QtAndroidPrivate::ResumePauseListener *> listeners;
+    };
+}
+
+Q_GLOBAL_STATIC(ResumePauseListeners, g_resumePauseListeners)
+
+void QtAndroidPrivate::registerResumePauseListener(ResumePauseListener *listener)
+{
+    QMutexLocker locker(&g_resumePauseListeners()->mutex);
+    g_resumePauseListeners()->listeners.append(listener);
+}
+
+void QtAndroidPrivate::unregisterResumePauseListener(ResumePauseListener *listener)
+{
+    QMutexLocker locker(&g_resumePauseListeners()->mutex);
+    g_resumePauseListeners()->listeners.removeAll(listener);
+}
+
+void QtAndroidPrivate::handlePause()
+{
+    QMutexLocker locker(&g_resumePauseListeners()->mutex);
+    const QList<QtAndroidPrivate::ResumePauseListener *> &listeners = g_resumePauseListeners()->listeners;
+    for (int i=0; i<listeners.size(); ++i)
+        listeners.at(i)->handlePause();
+}
+
+void QtAndroidPrivate::handleResume()
+{
+    QMutexLocker locker(&g_resumePauseListeners()->mutex);
+    const QList<QtAndroidPrivate::ResumePauseListener *> &listeners = g_resumePauseListeners()->listeners;
+    for (int i=0; i<listeners.size(); ++i)
+        listeners.at(i)->handleResume();
+}
+
 static inline bool exceptionCheck(JNIEnv *env)
 {
     if (env->ExceptionCheck()) {
