@@ -35,6 +35,7 @@
 #define QWINDOWSEGLCONTEXT_H
 
 #include "qwindowsopenglcontext.h"
+#include "qwindowsopengltester.h"
 #include <EGL/egl.h>
 
 QT_BEGIN_NAMESPACE
@@ -74,7 +75,7 @@ struct QWindowsLibEGL
     __eglMustCastToProperFunctionPointerType (EGLAPIENTRY * eglGetProcAddress)(const char *procname);
 
 private:
-#ifndef QT_STATIC
+#if !defined(QT_STATIC) || defined(QT_OPENGL_DYNAMIC)
     void *resolve(const char *name);
     HMODULE m_lib;
 #endif
@@ -83,7 +84,8 @@ private:
 struct QWindowsLibGLESv2
 {
     bool init();
-#ifndef QT_STATIC
+
+#if !defined(QT_STATIC) || defined(QT_OPENGL_DYNAMIC)
     void *moduleHandle() const { return m_lib; }
 #else
     void *moduleHandle() const { return Q_NULLPTR; }
@@ -238,7 +240,7 @@ struct QWindowsLibGLESv2
     void (APIENTRY * glDepthRangef)(GLclampf nearVal, GLclampf farVal);
 
 private:
-#ifndef QT_STATIC
+#if !defined(QT_STATIC) || defined(QT_OPENGL_DYNAMIC)
     void *resolve(const char *name);
     HMODULE m_lib;
 #endif
@@ -249,7 +251,7 @@ class QWindowsEGLStaticContext : public QWindowsStaticOpenGLContext
     Q_DISABLE_COPY(QWindowsEGLStaticContext)
 
 public:
-    static QWindowsEGLStaticContext *create();
+    static QWindowsEGLStaticContext *create(QWindowsOpenGLTester::Renderers preferredType);
     ~QWindowsEGLStaticContext();
 
     EGLDisplay display() const { return m_display; }

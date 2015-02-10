@@ -39,6 +39,8 @@
 #include <QLoggingCategory>
 #include <QtCore/private/qcore_unix_p.h>
 #include <QtPlatformSupport/private/qdevicediscovery_p.h>
+#include <QtGui/private/qguiapplication_p.h>
+#include <QtGui/private/qinputdevicemanager_p_p.h>
 #include <linux/input.h>
 
 #if !defined(QT_NO_MTDEV)
@@ -146,6 +148,12 @@ void QEvdevTouchScreenData::registerDevice()
         m_device->setCapabilities(m_device->capabilities() | QTouchDevice::Pressure);
 
     QWindowSystemInterface::registerTouchDevice(m_device);
+
+    // No monitoring of added/removed devices is done here, so for now just
+    // increase the number of touch devices.
+    QInputDeviceManager *imgr = QGuiApplicationPrivate::inputDeviceManager();
+    QInputDeviceManagerPrivate::get(imgr)->setDeviceCount(QInputDeviceManager::DeviceTypeTouch,
+                                                          imgr->deviceCount(QInputDeviceManager::DeviceTypeTouch) + 1);
 }
 
 #define LONG_BITS (sizeof(long) << 3)

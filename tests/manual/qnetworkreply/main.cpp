@@ -69,6 +69,7 @@ private slots:
     void proxyAuthentication_data();
     void proxyAuthentication();
     void authentication();
+    void npnWithEmptyList(); // QTBUG-40714
 
 protected slots:
     void spdyReplyFinished(); // only used by spdyMultipleRequestsPerHost test
@@ -577,6 +578,34 @@ void tst_qnetworkreply::authentication()
     QVERIFY2(reply->error() == QNetworkReply::NoError, reply->errorString().toLocal8Bit());
     int statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
     QVERIFY(statusCode >= 200 && statusCode < 400);
+}
+
+void tst_qnetworkreply::npnWithEmptyList() // QTBUG-40714
+{
+#if defined(QT_BUILD_INTERNAL) && !defined(QT_NO_SSL) && OPENSSL_VERSION_NUMBER >= 0x1000100fL && !defined(OPENSSL_NO_TLSEXT) && !defined(OPENSSL_NO_NEXTPROTONEG)
+
+    // The server does not send a list of Next Protocols, so we test
+    // that we continue anyhow and it works
+
+    m_manager.clearAccessCache();
+
+    QUrl url(QStringLiteral("https://www.ossifrage.net/"));
+    QNetworkRequest request(url);
+    request.setAttribute(QNetworkRequest::SpdyAllowedAttribute, QVariant(true));
+    QNetworkReply *reply = m_manager.get(request);
+    QObject::connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+
+    QTestEventLoop::instance().enterLoop(15);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+
+    int statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+    QVERIFY(statusCode == 200);
+
+    QCOMPARE(reply->sslConfiguration().nextProtocolNegotiationStatus(),
+             QSslConfiguration::NextProtocolNegotiationUnsupported);
+#else
+    QSKIP("Qt built withouth OpenSSL, or the OpenSSL version is too old");
+#endif // defined(QT_BUILD_INTERNAL) && !defined(QT_NO_SSL) ...
 }
 
 QTEST_MAIN(tst_qnetworkreply)

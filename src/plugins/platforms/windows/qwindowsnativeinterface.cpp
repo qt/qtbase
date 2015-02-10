@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2015 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -35,6 +35,7 @@
 #include "qwindowswindow.h"
 #include "qwindowscontext.h"
 #include "qwindowsopenglcontext.h"
+#include "qwindowsopengltester.h"
 #include "qwindowsintegration.h"
 #include "qwindowsmime.h"
 
@@ -221,6 +222,11 @@ QFunctionPointer QWindowsNativeInterface::platformFunction(const QByteArray &fun
     if (function == QWindowsWindowFunctions::setTouchWindowTouchTypeIdentifier())
         return QFunctionPointer(QWindowsWindow::setTouchWindowTouchTypeStatic);
     return Q_NULLPTR;
+}
+
+QVariant QWindowsNativeInterface::gpu() const
+{
+    return GpuDescription::detect().toVariant();
 }
 
 QT_END_NAMESPACE

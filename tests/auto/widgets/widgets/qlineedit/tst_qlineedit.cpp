@@ -249,6 +249,7 @@ private slots:
 
     void editInvalidText();
 
+    void charWithAltOrCtrlModifier_data();
     void charWithAltOrCtrlModifier();
 
     void inlineCompletion();
@@ -3224,19 +3225,35 @@ void tst_QLineEdit::editInvalidText()
     testWidget->setValidator(0);
 }
 
+Q_DECLARE_METATYPE(Qt::KeyboardModifiers)
+
+void tst_QLineEdit::charWithAltOrCtrlModifier_data()
+{
+    QTest::addColumn<Qt::KeyboardModifiers>("modifiers");
+    QTest::addColumn<bool>("textExpected");
+    QTest::newRow("no-modifiers") << Qt::KeyboardModifiers() << true;
+    // Ctrl, Ctrl+Shift: No text (QTBUG-35734)
+    QTest::newRow("ctrl") << Qt::KeyboardModifiers(Qt::ControlModifier)
+        << false;
+    QTest::newRow("ctrl-shift") << Qt::KeyboardModifiers(Qt::ShiftModifier | Qt::ControlModifier)
+        << false;
+    QTest::newRow("alt") << Qt::KeyboardModifiers(Qt::AltModifier) << true;
+    // Alt-Ctrl (Alt-Gr on German keyboards, Task 129098): Expect text
+    QTest::newRow("alt-ctrl") << (Qt::AltModifier | Qt::ControlModifier) << true;
+}
+
 void tst_QLineEdit::charWithAltOrCtrlModifier()
 {
+    QFETCH(Qt::KeyboardModifiers, modifiers);
+    QFETCH(bool, textExpected);
+
     QLineEdit *testWidget = ensureTestWidget();
     testWidget->clear();
-    QCOMPARE(testWidget->text(), QString(""));
-    QTest::keyPress(testWidget, Qt::Key_Plus);
-    QCOMPARE(testWidget->text(), QString("+"));
-    QTest::keyPress(testWidget, Qt::Key_Plus, Qt::ControlModifier);
-    QCOMPARE(testWidget->text(), QString("++"));
-    QTest::keyPress(testWidget, Qt::Key_Plus, Qt::AltModifier);
-    QCOMPARE(testWidget->text(), QString("+++"));
-    QTest::keyPress(testWidget, Qt::Key_Plus, Qt::AltModifier | Qt::ControlModifier);
-    QCOMPARE(testWidget->text(), QString("++++"));
+    QVERIFY(testWidget->text().isEmpty());
+
+    QTest::keyPress(testWidget, Qt::Key_Plus, modifiers);
+    const QString expectedText = textExpected ?  QLatin1String("+") : QString();
+    QCOMPARE(testWidget->text(), expectedText);
 }
 
 void tst_QLineEdit::leftKeyOnSelectedText()

@@ -1574,11 +1574,10 @@ QString QTextStream::readAll()
     the stream contains lines longer than this, then the lines will be
     split after \a maxlen characters and returned in parts.
 
-    If \a maxlen is 0, the lines can be of any length. A common value
-    for \a maxlen is 75.
+    If \a maxlen is 0, the lines can be of any length.
 
     The returned line has no trailing end-of-line characters ("\\n"
-    or "\\r\\n"), so calling QString::trimmed() is unnecessary.
+    or "\\r\\n"), so calling QString::trimmed() can be unnecessary.
 
     If the stream has read to the end of the file, \l {QTextStream::readLine()}{readLine()}
     will return a null QString. For strings, or for devices that support it,

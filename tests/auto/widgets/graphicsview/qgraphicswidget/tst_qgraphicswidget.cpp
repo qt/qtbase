@@ -171,6 +171,7 @@ private slots:
     void fontPropagatesResolveViaNonWidget();
     void fontPropagatesResolveFromScene();
     void tabFocus();
+    void windowFrameSectionAt();
 
     // Task fixes
     void task236127_bspTreeIndexFails();
@@ -242,6 +243,9 @@ public:
 
     void call_updateGeometry()
         { return QGraphicsWidget::updateGeometry(); }
+
+    Qt::WindowFrameSection call_windowFrameSectionAt(const QPointF &pos) const
+        { return QGraphicsWidget::windowFrameSectionAt(pos); }
 
     int eventCount;
     Qt::LayoutDirection m_painterLayoutDirection;
@@ -3409,6 +3413,31 @@ void tst_QGraphicsWidget::tabFocus()
     scene.removeItem(widget6);
     verifyTabFocus(&scene, QList<QGraphicsWidget *>() << widget3 << widget4 << widget5, true);
     delete widget6;
+}
+
+void tst_QGraphicsWidget::windowFrameSectionAt()
+{
+    SubQGraphicsWidget widget;
+    widget.setWindowFrameMargins(5, 5, 5, 5);
+    widget.setGeometry(0, 0, 200, 200);
+
+    QCOMPARE(widget.call_windowFrameSectionAt(QPointF(50, 50)), Qt::NoSection);
+    QCOMPARE(widget.call_windowFrameSectionAt(QPointF(-2, -2)), Qt::TopLeftSection);
+    QCOMPARE(widget.call_windowFrameSectionAt(QPointF(-2, 10)), Qt::TopLeftSection);
+    QCOMPARE(widget.call_windowFrameSectionAt(QPointF(-2, 30)), Qt::LeftSection);
+    QCOMPARE(widget.call_windowFrameSectionAt(QPointF(-2, 170)), Qt::LeftSection);
+    QCOMPARE(widget.call_windowFrameSectionAt(QPointF(-2, 198)), Qt::BottomLeftSection);
+    QCOMPARE(widget.call_windowFrameSectionAt(QPointF(-2, 202)), Qt::BottomLeftSection);
+
+    QCOMPARE(widget.call_windowFrameSectionAt(QPointF(202, -2)), Qt::TopRightSection);
+    QCOMPARE(widget.call_windowFrameSectionAt(QPointF(202, 10)), Qt::TopRightSection);
+    QCOMPARE(widget.call_windowFrameSectionAt(QPointF(202, 30)), Qt::RightSection);
+    QCOMPARE(widget.call_windowFrameSectionAt(QPointF(202, 170)), Qt::RightSection);
+    QCOMPARE(widget.call_windowFrameSectionAt(QPointF(202, 198)), Qt::BottomRightSection);
+    QCOMPARE(widget.call_windowFrameSectionAt(QPointF(202, 202)), Qt::BottomRightSection);
+
+    QCOMPARE(widget.call_windowFrameSectionAt(QPointF(50, -2)), Qt::TopSection);
+    QCOMPARE(widget.call_windowFrameSectionAt(QPointF(50, 202)), Qt::BottomSection);
 }
 
 void tst_QGraphicsWidget::QT_BUG_6544_tabFocusFirstUnsetWhenRemovingItems()

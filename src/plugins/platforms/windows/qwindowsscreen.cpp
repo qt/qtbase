@@ -504,4 +504,13 @@ void QWindowsScreenManager::clearScreens()
         QWindowsIntegration::instance()->emitDestroyScreen(m_screens.takeLast());
 }
 
+const QWindowsScreen *QWindowsScreenManager::screenAtDp(const QPoint &p) const
+{
+    foreach (QWindowsScreen *scr, m_screens) {
+        if (scr->geometryDp().contains(p))
+            return scr;
+    }
+    return Q_NULLPTR;
+}
+
 QT_END_NAMESPACE

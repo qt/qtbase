@@ -40,7 +40,8 @@ SOURCES += \
     $$PWD/qwindowsservices.cpp \
     $$PWD/qwindowsnativeimage.cpp \
     $$PWD/qwindowsnativeinterface.cpp \
-    $$PWD/qwindowsscaling.cpp
+    $$PWD/qwindowsscaling.cpp \
+    $$PWD/qwindowsopengltester.cpp
 
 HEADERS += \
     $$PWD/qwindowswindow.h \
@@ -66,9 +67,8 @@ HEADERS += \
     $$PWD/qplatformfunctions_wince.h \
     $$PWD/qwindowsnativeimage.h \
     $$PWD/qwindowsnativeinterface.h \
-    $$PWD/qwindowsscaling.h
-
-!wince: HEADERS += $$PWD/qwindowsopengltester.h
+    $$PWD/qwindowsscaling.h \
+    $$PWD/qwindowsopengltester.h
 
 INCLUDEPATH += $$PWD
 
@@ -84,8 +84,7 @@ contains(QT_CONFIG, opengles2) {
 
 # Dynamic GL needs both WGL and EGL
 contains(QT_CONFIG,dynamicgl) {
-    SOURCES += $$PWD/qwindowseglcontext.cpp \
-               $$PWD/qwindowsopengltester.cpp
+    SOURCES += $$PWD/qwindowseglcontext.cpp
     HEADERS += $$PWD/qwindowseglcontext.h
 }
 

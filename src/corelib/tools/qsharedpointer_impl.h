@@ -412,6 +412,7 @@ public:
 # ifdef QT_SHAREDPOINTER_TRACK_POINTERS
         internalSafetyCheckAdd(result.d, result.value);
 # endif
+        result.enableSharedFromThis(result.data());
         return result;
     }
 #else
@@ -432,6 +433,7 @@ public:
         internalSafetyCheckAdd(result.d, result.value);
 # endif
         result.d->setQObjectShared(result.value, true);
+        result.enableSharedFromThis(result.data());
         return result;
     }
 

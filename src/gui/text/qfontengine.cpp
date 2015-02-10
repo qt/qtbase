@@ -77,7 +77,12 @@ static inline bool qtransform_equals_no_translate(const QTransform &a, const QTr
 // Harfbuzz helper functions
 
 #ifdef QT_ENABLE_HARFBUZZ_NG
-bool useHarfbuzzNG = qgetenv("QT_HARFBUZZ") != "old";
+Q_GLOBAL_STATIC_WITH_ARGS(bool, useHarfbuzzNG,(qgetenv("QT_HARFBUZZ") != "old"))
+
+bool qt_useHarfbuzzNG()
+{
+    return *useHarfbuzzNG();
+}
 #endif
 
 Q_STATIC_ASSERT(sizeof(HB_Glyph) == sizeof(glyph_t));
@@ -282,7 +287,7 @@ void *QFontEngine::harfbuzzFont() const
 {
     Q_ASSERT(type() != QFontEngine::Multi);
 #ifdef QT_ENABLE_HARFBUZZ_NG
-    if (useHarfbuzzNG)
+    if (qt_useHarfbuzzNG())
         return hb_qt_font_get_for_engine(const_cast<QFontEngine *>(this));
 #endif
     if (!font_) {
@@ -318,7 +323,7 @@ void *QFontEngine::harfbuzzFace() const
 {
     Q_ASSERT(type() != QFontEngine::Multi);
 #ifdef QT_ENABLE_HARFBUZZ_NG
-    if (useHarfbuzzNG)
+    if (qt_useHarfbuzzNG())
         return hb_qt_face_get_for_engine(const_cast<QFontEngine *>(this));
 #endif
     if (!face_) {
@@ -360,7 +365,7 @@ bool QFontEngine::supportsScript(QChar::Script script) const
 #endif
 
 #ifdef QT_ENABLE_HARFBUZZ_NG
-    if (useHarfbuzzNG) {
+    if (qt_useHarfbuzzNG()) {
         bool ret = false;
         if (hb_face_t *face = hb_qt_face_get_for_engine(const_cast<QFontEngine *>(this))) {
             hb_tag_t script_tag_1, script_tag_2;

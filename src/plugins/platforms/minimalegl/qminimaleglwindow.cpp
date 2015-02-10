@@ -31,9 +31,9 @@
 **
 ****************************************************************************/
 
-#include "qminimaleglwindow.h"
-
 #include <qpa/qwindowsysteminterface.h>
+
+#include "qminimaleglwindow.h"
 
 QT_BEGIN_NAMESPACE
 

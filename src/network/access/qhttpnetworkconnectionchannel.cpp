@@ -934,7 +934,8 @@ void QHttpNetworkConnectionChannel::_q_encrypted()
 
     if (!protocolHandler) {
         switch (sslSocket->sslConfiguration().nextProtocolNegotiationStatus()) {
-        case QSslConfiguration::NextProtocolNegotiationNegotiated: {
+        case QSslConfiguration::NextProtocolNegotiationNegotiated: /* fall through */
+        case QSslConfiguration::NextProtocolNegotiationUnsupported: {
             QByteArray nextProtocol = sslSocket->sslConfiguration().nextNegotiatedProtocol();
             if (nextProtocol == QSslConfiguration::NextProtocolHttp1_1) {
                 // fall through to create a QHttpProtocolHandler
@@ -955,10 +956,6 @@ void QHttpNetworkConnectionChannel::_q_encrypted()
             connection->setConnectionType(QHttpNetworkConnection::ConnectionTypeHTTP);
             // re-queue requests from SPDY queue to HTTP queue, if any
             requeueSpdyRequests();
-            break;
-        case QSslConfiguration::NextProtocolNegotiationUnsupported:
-            emitFinishedWithError(QNetworkReply::SslHandshakeFailedError,
-                                  "chosen Next Protocol Negotiation value unsupported");
             break;
         default:
             emitFinishedWithError(QNetworkReply::SslHandshakeFailedError,

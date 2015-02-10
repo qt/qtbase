@@ -1043,9 +1043,9 @@ bool QProcessPrivate::_q_processDied()
         return false;
 #endif
 #ifdef Q_OS_WIN
-    drainOutputPipes();
     if (processFinishedNotifier)
         processFinishedNotifier->setEnabled(false);
+    drainOutputPipes();
 #endif
 
     // the process may have died before it got a chance to report that it was

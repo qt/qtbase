@@ -3977,7 +3977,7 @@ void QTreeView::selectionChanged(const QItemSelection &selected,
         if (sel.isValid()) {
             int entry = d->accessibleTree2Index(sel);
             Q_ASSERT(entry >= 0);
-            QAccessibleEvent event(this, QAccessible::Selection);
+            QAccessibleEvent event(this, QAccessible::SelectionAdd);
             event.setChild(entry);
             QAccessible::updateAccessibility(&event);
         }

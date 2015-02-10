@@ -45,6 +45,7 @@
 
 static const char yastFileName[] ="yast2-metapackage-handler-mimetypes.xml";
 static const char qmlAgainFileName[] ="qml-again.xml";
+#define RESOURCE_PREFIX ":/qt-project.org/qmime/"
 
 void initializeLang()
 {
@@ -99,9 +100,7 @@ void tst_QMimeDatabase::initTestCase()
              << "\nGlobal XDG_DATA_DIRS: " << m_globalXdgDir;
 
     const QString freeDesktopXml = QStringLiteral("freedesktop.org.xml");
-    const QString xmlFileName = QLatin1String(CORE_SOURCES)
-                          + QStringLiteral("/mimetypes/mime/packages/")
-                          + freeDesktopXml;
+    const QString xmlFileName = QLatin1String(RESOURCE_PREFIX) + freeDesktopXml;
     QVERIFY2(QFileInfo(xmlFileName).exists(), qPrintable(xmlFileName + QStringLiteral(" does not exist")));
     QFile xml(xmlFileName);
     QVERIFY(xml.copy(globalPackageDir + '/' + freeDesktopXml));
@@ -110,11 +109,11 @@ void tst_QMimeDatabase::initTestCase()
     if (m_testSuite.isEmpty())
         qWarning("%s", qPrintable(testSuiteWarning()));
 
-    m_yastMimeTypes = QFINDTESTDATA(yastFileName);
+    m_yastMimeTypes = QLatin1String(RESOURCE_PREFIX) + yastFileName;
     QVERIFY2(!m_yastMimeTypes.isEmpty(),
              qPrintable(QString::fromLatin1("Cannot find '%1' starting from '%2'").
                         arg(yastFileName, QDir::currentPath())));
-    m_qmlAgainFileName = QFINDTESTDATA(qmlAgainFileName);
+    m_qmlAgainFileName = QLatin1String(RESOURCE_PREFIX) + qmlAgainFileName;
     QVERIFY2(!m_qmlAgainFileName.isEmpty(),
              qPrintable(QString::fromLatin1("Cannot find '%1' starting from '%2'").
                         arg(qmlAgainFileName, QDir::currentPath())));
@@ -844,7 +843,7 @@ void tst_QMimeDatabase::installNewGlobalMimeType()
     checkHasMimeType("text/x-suse-ymp");
 
     // Test that a double-definition of a mimetype doesn't lead to sniffing ("conflicting globs").
-    const QString qmlTestFile = QFINDTESTDATA("test.qml");
+    const QString qmlTestFile = QLatin1String(RESOURCE_PREFIX "test.qml");
     QVERIFY2(!qmlTestFile.isEmpty(),
              qPrintable(QString::fromLatin1("Cannot find '%1' starting from '%2'").
                         arg("test.qml", QDir::currentPath())));
@@ -893,7 +892,7 @@ void tst_QMimeDatabase::installNewLocalMimeType()
     checkHasMimeType("text/x-suse-ymp");
 
     // Test that a double-definition of a mimetype doesn't lead to sniffing ("conflicting globs").
-    const QString qmlTestFile = QFINDTESTDATA("test.qml");
+    const QString qmlTestFile = QLatin1String(RESOURCE_PREFIX "test.qml");
     QVERIFY2(!qmlTestFile.isEmpty(),
              qPrintable(QString::fromLatin1("Cannot find '%1' starting from '%2'").
                         arg("test.qml", QDir::currentPath())));

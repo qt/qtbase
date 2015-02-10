@@ -1675,13 +1675,14 @@ void QMacStylePrivate::getSliderInfo(QStyle::ComplexControl cc, const QStyleOpti
         else
             tdi->max = 10 * slider->rect.height();
 
-        if (usePlainKnob || slider->orientation == Qt::Horizontal) {
+        int range = slider->maximum - slider->minimum;
+        if (range == 0) {
+            tdi->value = 0;
+        } else if (usePlainKnob || slider->orientation == Qt::Horizontal) {
             int endsCorrection = usePlainKnob ? 25 : 10;
-            tdi->value = (tdi->max + 2 * endsCorrection) * (slider->sliderPosition - slider->minimum)
-                    / (slider->maximum - slider->minimum) - endsCorrection;
+            tdi->value = (tdi->max + 2 * endsCorrection) * (slider->sliderPosition - slider->minimum) / range - endsCorrection;
         } else {
-            tdi->value = (tdi->max + 30) * (slider->sliderPosition - slider->minimum)
-                       / (slider->maximum - slider->minimum) - 20;
+            tdi->value = (tdi->max + 30) * (slider->sliderPosition - slider->minimum) / range - 20;
         }
     }
     tdi->attributes = kThemeTrackShowThumb;

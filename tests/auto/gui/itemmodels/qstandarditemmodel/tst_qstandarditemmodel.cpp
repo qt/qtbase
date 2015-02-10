@@ -129,6 +129,7 @@ private slots:
     void removeRowsAndColumns();
 
     void itemRoleNames();
+    void getMimeDataWithInvalidModelIndex();
 
 private:
     QAbstractItemModel *m_model;
@@ -1671,6 +1672,13 @@ void tst_QStandardItemModel::itemRoleNames()
     VERIFY_MODEL
 }
 
+void tst_QStandardItemModel::getMimeDataWithInvalidModelIndex()
+{
+    QStandardItemModel model;
+    QTest::ignoreMessage(QtWarningMsg, "QStandardItemModel::mimeData: No item associated with invalid index");
+    QMimeData *data = model.mimeData(QModelIndexList() << QModelIndex());
+    QVERIFY(!data);
+}
 
 QTEST_MAIN(tst_QStandardItemModel)
 #include "tst_qstandarditemmodel.moc"

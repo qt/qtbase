@@ -430,7 +430,6 @@ QCoreWlanEngine::QCoreWlanEngine(QObject *parent)
 
 QCoreWlanEngine::~QCoreWlanEngine()
 {
-    scanThread->terminate();
     scanThread->wait();
 
     while (!foundConfigurations.isEmpty())

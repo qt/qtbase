@@ -398,9 +398,9 @@ public:
     QRegion region(XPThemeData &themeData);
 
     void setTransparency(QWidget *widget, XPThemeData &themeData);
-    void drawBackground(XPThemeData &themeData);
-    void drawBackgroundThruNativeBuffer(XPThemeData &themeData);
-    void drawBackgroundDirectly(XPThemeData &themeData);
+    bool drawBackground(XPThemeData &themeData);
+    bool drawBackgroundThruNativeBuffer(XPThemeData &themeData);
+    bool drawBackgroundDirectly(XPThemeData &themeData);
 
     bool hasAlphaChannel(const QRect &rect);
     bool fixAlphaChannel(const QRect &rect);

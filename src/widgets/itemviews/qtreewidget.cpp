@@ -2935,8 +2935,6 @@ void QTreeWidget::closePersistentEditor(QTreeWidgetItem *item, int column)
 
     Returns the widget displayed in the cell specified by \a item and the given \a column.
 
-    \note The tree takes ownership of the widget.
-
 */
 QWidget *QTreeWidget::itemWidget(QTreeWidgetItem *item, int column) const
 {
@@ -3276,8 +3274,18 @@ QMimeData *QTreeWidget::mimeData(const QList<QTreeWidgetItem*> items) const
         QList<QModelIndex> indexes;
         for (int i = 0; i < items.count(); ++i) {
             QTreeWidgetItem *item = items.at(i);
+            if (!item) {
+                qWarning() << "QTreeWidget::mimeData: Null-item passed";
+                return 0;
+            }
+
             for (int c = 0; c < item->values.count(); ++c) {
-                indexes << indexFromItem(item, c);
+                const QModelIndex index = indexFromItem(item, c);
+                if (!index.isValid()) {
+                    qWarning() << "QTreeWidget::mimeData: No index associated with item :" << item;
+                    return 0;
+                }
+                indexes << index;
             }
         }
         return d->model->QAbstractItemModel::mimeData(indexes);

@@ -1879,7 +1879,10 @@ void QWidgetLineControl::processKeyEvent(QKeyEvent* event)
         unknown = false;
     }
 
-    if (unknown && !isReadOnly()) {
+    // QTBUG-35734: ignore Ctrl/Ctrl+Shift; accept only AltGr (Alt+Ctrl) on German keyboards
+    if (unknown && !isReadOnly()
+        && event->modifiers() != Qt::ControlModifier
+        && event->modifiers() != (Qt::ControlModifier | Qt::ShiftModifier)) {
         QString t = event->text();
         if (!t.isEmpty() && t.at(0).isPrint()) {
             insert(t);

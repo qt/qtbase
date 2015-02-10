@@ -861,9 +861,6 @@ void tst_QTreeView::editTriggers()
     }
 
     // Check if we got an editor
-#ifdef Q_OS_MAC
-    QEXPECT_FAIL("EditKeyPressed 4", "QTBUG-23696", Continue);
-#endif
     QTRY_COMPARE(view.findChild<QLineEdit *>(QString()) != 0, editorOpened);
 }
 

@@ -39,6 +39,13 @@
 
 QT_BEGIN_NAMESPACE
 
+int QDesktopScreenWidget::screenNumber() const
+{
+    const QDesktopWidgetPrivate *desktopWidgetP
+        = static_cast<const QDesktopWidgetPrivate *>(qt_widget_private(QApplication::desktop()));
+    return desktopWidgetP->screens.indexOf(const_cast<QDesktopScreenWidget *>(this));
+}
+
 const QRect QDesktopWidget::screenGeometry(const QWidget *widget) const
 {
     if (!widget) {
@@ -72,29 +79,22 @@ void QDesktopWidgetPrivate::_q_updateScreens()
     const QList<QScreen *> screenList = QGuiApplication::screens();
     const int targetLength = screenList.length();
     const int oldLength = screens.length();
-    int currentLength = oldLength;
 
     // Add or remove screen widgets as necessary
-    if(currentLength > targetLength) {
-        QDesktopScreenWidget *screen;
-        while (currentLength-- > targetLength) {
-            screen = screens.takeLast();
-            delete screen;
-        }
-    }
-    else if (currentLength < targetLength) {
-        while (currentLength < targetLength) {
-            QScreen *qScreen = screenList.at(currentLength);
-            QDesktopScreenWidget *screenWidget = new QDesktopScreenWidget(currentLength++);
-            screenWidget->setGeometry(qScreen->geometry());
-            QObject::connect(qScreen, SIGNAL(geometryChanged(QRect)),
-                             q, SLOT(_q_updateScreens()), Qt::QueuedConnection);
-            QObject::connect(qScreen, SIGNAL(availableGeometryChanged(QRect)),
-                             q, SLOT(_q_availableGeometryChanged()), Qt::QueuedConnection);
-            QObject::connect(qScreen, SIGNAL(destroyed()),
-                             q, SLOT(_q_updateScreens()), Qt::QueuedConnection);
-            screens.append(screenWidget);
-        }
+    while (screens.size() > targetLength)
+        delete screens.takeLast();
+
+    for (int currentLength = screens.size(); currentLength < targetLength; ++currentLength) {
+        QScreen *qScreen = screenList.at(currentLength);
+        QDesktopScreenWidget *screenWidget = new QDesktopScreenWidget;
+        screenWidget->setGeometry(qScreen->geometry());
+        QObject::connect(qScreen, SIGNAL(geometryChanged(QRect)),
+                         q, SLOT(_q_updateScreens()), Qt::QueuedConnection);
+        QObject::connect(qScreen, SIGNAL(availableGeometryChanged(QRect)),
+                         q, SLOT(_q_availableGeometryChanged()), Qt::QueuedConnection);
+        QObject::connect(qScreen, SIGNAL(destroyed()),
+                         q, SLOT(_q_updateScreens()), Qt::QueuedConnection);
+        screens.append(screenWidget);
     }
 
     QRegion virtualGeometry;

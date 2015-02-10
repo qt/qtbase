@@ -99,7 +99,8 @@ private slots:
 #ifndef QT_NO_CLIPBOARD
     void copyAndSelectAllInReadonly();
 #endif
-    void ctrlAltInput();
+    void charWithAltOrCtrlModifier_data();
+    void charWithAltOrCtrlModifier();
     void noPropertiesOnDefaultTextEditCharFormat();
     void setPlainTextShouldEmitTextChangedOnce();
     void overwriteMode();
@@ -691,10 +692,34 @@ void tst_QPlainTextEdit::copyAndSelectAllInReadonly()
 }
 #endif
 
-void tst_QPlainTextEdit::ctrlAltInput()
+Q_DECLARE_METATYPE(Qt::KeyboardModifiers)
+
+// Test how QWidgetTextControlPrivate (used in QPlainTextEdit, QTextEdit)
+// handles input with modifiers.
+void tst_QPlainTextEdit::charWithAltOrCtrlModifier_data()
 {
-    QTest::keyClick(ed, Qt::Key_At, Qt::ControlModifier | Qt::AltModifier);
-    QCOMPARE(ed->toPlainText(), QString("@"));
+    QTest::addColumn<Qt::KeyboardModifiers>("modifiers");
+    QTest::addColumn<bool>("textExpected");
+
+    QTest::newRow("no-modifiers") << Qt::KeyboardModifiers() << true;
+    // Ctrl, Ctrl+Shift: No text (QTBUG-35734)
+    QTest::newRow("ctrl") << Qt::KeyboardModifiers(Qt::ControlModifier)
+        << false;
+    QTest::newRow("ctrl-shift") << Qt::KeyboardModifiers(Qt::ShiftModifier | Qt::ControlModifier)
+        << false;
+    QTest::newRow("alt") << Qt::KeyboardModifiers(Qt::AltModifier) << true;
+    // Alt-Ctrl (Alt-Gr on German keyboards, Task 129098): Expect text
+    QTest::newRow("alt-ctrl") << (Qt::AltModifier | Qt::ControlModifier) << true;
+}
+
+void tst_QPlainTextEdit::charWithAltOrCtrlModifier()
+{
+    QFETCH(Qt::KeyboardModifiers, modifiers);
+    QFETCH(bool, textExpected);
+
+    QTest::keyClick(ed, Qt::Key_At, modifiers);
+    const QString expectedText = textExpected ?  QLatin1String("@") : QString();
+    QCOMPARE(ed->toPlainText(), expectedText);
 }
 
 void tst_QPlainTextEdit::noPropertiesOnDefaultTextEditCharFormat()

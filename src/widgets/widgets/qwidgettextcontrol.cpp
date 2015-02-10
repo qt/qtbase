@@ -1341,6 +1341,12 @@ void QWidgetTextControlPrivate::keyPressEvent(QKeyEvent *e)
 
 process:
     {
+        // QTBUG-35734: ignore Ctrl/Ctrl+Shift; accept only AltGr (Alt+Ctrl) on German keyboards
+        if (e->modifiers() == Qt::ControlModifier
+            || e->modifiers() == (Qt::ShiftModifier | Qt::ControlModifier)) {
+            e->ignore();
+            return;
+        }
         QString text = e->text();
         if (!text.isEmpty() && (text.at(0).isPrint() || text.at(0) == QLatin1Char('\t'))) {
             if (overwriteMode

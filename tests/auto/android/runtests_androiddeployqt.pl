@@ -334,7 +334,7 @@ sub checkXMLOutput
             while (my($test_key, $test_valule) = each (%{$function_valule})) {
                 next if $test_key ne "Incident";
                 for my $incident  (@{$test_valule}) {
-                    if ($incident->{type} ne "pass") {
+                    if (($incident->{type} ne "pass") && ($incident->{type} ne "xfail")) {
                         print "test $testName::$function_key failed $incident->{file}:$incident->{line}\n";
                         $fail = 1;
                     }

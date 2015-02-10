@@ -6,6 +6,5 @@ SOURCES += tst_qsslcertificate.cpp
 QT = core network testlib
 
 TARGET = tst_qsslcertificate
-DEFINES += SRCDIR=\\\"$$PWD/\\\"
 
 TESTDATA += certificates/* more-certificates/* verify-certs/* pkcs12/*

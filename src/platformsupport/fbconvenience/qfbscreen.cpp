@@ -37,11 +37,15 @@
 #include "qfbbackingstore_p.h"
 
 #include <QtGui/QPainter>
+#include <QtCore/QCoreApplication>
 #include <qpa/qwindowsysteminterface.h>
+
+#include <QtCore/QDebug>
+#include <QtCore/QElapsedTimer>
 
 QT_BEGIN_NAMESPACE
 
-QFbScreen::QFbScreen() : mCursor(0), mGeometry(), mDepth(16), mFormat(QImage::Format_RGB16), mScreenImage(0), mCompositePainter(0), mIsUpToDate(false)
+QFbScreen::QFbScreen() : mUpdatePending(false), mCursor(0), mGeometry(), mDepth(16), mFormat(QImage::Format_RGB16), mScreenImage(0), mCompositePainter(0), mIsUpToDate(false)
 {
 }
 
@@ -54,10 +58,17 @@ QFbScreen::~QFbScreen()
 void QFbScreen::initializeCompositor()
 {
     mScreenImage = new QImage(mGeometry.size(), mFormat);
+    scheduleUpdate();
+}
 
-    mRedrawTimer.setSingleShot(true);
-    mRedrawTimer.setInterval(0);
-    connect(&mRedrawTimer, SIGNAL(timeout()), this, SLOT(doRedraw()));
+bool QFbScreen::event(QEvent *event)
+{
+    if (event->type() == QEvent::UpdateRequest) {
+        doRedraw();
+        mUpdatePending = false;
+        return true;
+    }
+    return QObject::event(event);
 }
 
 void QFbScreen::addWindow(QFbWindow *window)
@@ -146,8 +157,10 @@ void QFbScreen::setDirty(const QRect &rect)
 
 void QFbScreen::scheduleUpdate()
 {
-    if (!mRedrawTimer.isActive())
-        mRedrawTimer.start();
+    if (!mUpdatePending) {
+        mUpdatePending = true;
+        QCoreApplication::postEvent(this, new QEvent(QEvent::UpdateRequest));
+    }
 }
 
 void QFbScreen::setPhysicalSize(const QSize &size)
@@ -246,12 +259,19 @@ QRegion QFbScreen::doRedraw()
                         continue;
                     // if (mWindowStack[layerIndex]->isMinimized())
                     //     continue;
+
                     QRect windowRect = mWindowStack[layerIndex]->geometry().translated(-screenOffset);
                     QRect windowIntersect = rect.translated(-windowRect.left(),
                                                             -windowRect.top());
+
+
                     QFbBackingStore *backingStore = mWindowStack[layerIndex]->backingStore();
-                    if (backingStore)
+
+                    if (backingStore) {
+                        backingStore->lock();
                         mCompositePainter->drawImage(rect, backingStore->image(), windowIntersect);
+                        backingStore->unlock();
+                    }
                     if (firstLayer) {
                         firstLayer = false;
                     }
@@ -271,7 +291,6 @@ QRegion QFbScreen::doRedraw()
 
 
 //    qDebug() << "QFbScreen::doRedraw"  << mWindowStack.size() << mScreenImage->size() << touchedRegion;
-
 
     return touchedRegion;
 }

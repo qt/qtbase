@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2015 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -31,14 +31,91 @@
 **
 ****************************************************************************/
 
+#ifndef QWINDOWSOPENGLTESTER_H
+#define QWINDOWSOPENGLTESTER_H
+
 #include <qtwindowsglobal.h>
 
+#include <QtCore/QByteArray>
+#include <QtCore/QFlags>
+
 QT_BEGIN_NAMESPACE
+
+class QDebug;
+class QVariant;
+
+struct GpuDriverVersion // ### fixme: Use QVersionNumber in Qt 5.5?
+{
+    GpuDriverVersion(int p = 0, int v = 0, int sv =0, int b = 0) : product(p), version(v), subVersion(sv), build(b) {}
+    QString toString() const;
+    int compare(const GpuDriverVersion &rhs) const;
+
+    int product;
+    int version;
+    int subVersion;
+    int build;
+};
+
+inline bool operator==(const GpuDriverVersion &v1, const GpuDriverVersion &v2)
+    { return !v1.compare(v2); }
+inline bool operator!=(const GpuDriverVersion &v1, const GpuDriverVersion &v2)
+    { return v1.compare(v2); }
+inline bool operator< (const GpuDriverVersion &v1, const GpuDriverVersion &v2)
+    { return v1.compare(v2) < 0; }
+inline bool operator<=(const GpuDriverVersion &v1, const GpuDriverVersion &v2)
+    { return v1.compare(v2) <= 0; }
+inline bool operator> (const GpuDriverVersion &v1, const GpuDriverVersion &v2)
+    { return v1.compare(v2) > 0; }
+inline bool operator>=(const GpuDriverVersion &v1, const GpuDriverVersion &v2)
+    { return v1.compare(v2) >= 0; }
+
+QDebug operator<<(QDebug d, const GpuDriverVersion &gd);
+
+struct GpuDescription
+{
+    GpuDescription() :  vendorId(0), deviceId(0), revision(0), subSysId(0) {}
+
+    static GpuDescription detect();
+    QString toString() const;
+    QVariant toVariant() const;
+
+    int vendorId;
+    int deviceId;
+    int revision;
+    int subSysId;
+    GpuDriverVersion driverVersion;
+    QByteArray driverName;
+    QByteArray description;
+};
+
+QDebug operator<<(QDebug d, const GpuDescription &gd);
 
 class QWindowsOpenGLTester
 {
 public:
+    enum Renderer {
+        InvalidRenderer         = 0x0000,
+        DesktopGl               = 0x0001,
+        AngleRendererD3d11      = 0x0002,
+        AngleRendererD3d9       = 0x0004,
+        AngleRendererD3d11Warp  = 0x0008, // "Windows Advanced Rasterization Platform"
+        AngleBackendMask        = AngleRendererD3d11 | AngleRendererD3d9 | AngleRendererD3d11Warp,
+        Gles                    = 0x0010, // ANGLE/unspecified or Generic GLES for Windows CE.
+        GlesMask                = Gles | AngleBackendMask,
+        SoftwareRasterizer      = 0x0020
+    };
+    Q_DECLARE_FLAGS(Renderers, Renderer)
+
+    static Renderer requestedGlesRenderer();
+    static Renderer requestedRenderer();
+    static Renderers supportedGlesRenderers();
+    static Renderers supportedRenderers();
+
     static bool testDesktopGL();
 };
 
+Q_DECLARE_OPERATORS_FOR_FLAGS(QWindowsOpenGLTester::Renderers)
+
 QT_END_NAMESPACE
+
+#endif // QWINDOWSOPENGLTESTER_H

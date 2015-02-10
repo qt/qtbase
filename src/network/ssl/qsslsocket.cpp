@@ -1108,6 +1108,7 @@ QSslCipher QSslSocket::sessionCipher() const
     is set during the handshake phase.
 
     \sa protocol(), setProtocol()
+    \since 5.4
 */
 QSsl::SslProtocol QSslSocket::sessionProtocol() const
 {
@@ -2123,6 +2124,7 @@ void QSslSocketPrivate::init()
     connectionEncrypted = false;
     ignoreAllSslErrors = false;
     shutdown = false;
+    pendingClose = false;
 
     // we don't want to clear the ignoreErrorsList, so
     // that it is possible setting it before connecting

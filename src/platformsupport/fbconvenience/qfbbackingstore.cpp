@@ -69,5 +69,30 @@ void QFbBackingStore::resize(const QSize &size, const QRegion &staticContents)
         mImage = QImage(size, window()->screen()->handle()->format());
 }
 
+const QImage QFbBackingStore::image()
+{
+    return mImage;
+}
+
+void QFbBackingStore::lock()
+{
+    mImageMutex.lock();
+}
+
+void QFbBackingStore::unlock()
+{
+    mImageMutex.unlock();
+}
+
+void QFbBackingStore::beginPaint(const QRegion &)
+{
+    lock();
+}
+
+void QFbBackingStore::endPaint()
+{
+    unlock();
+}
+
 QT_END_NAMESPACE
 

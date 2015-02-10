@@ -353,8 +353,7 @@ void QNetworkAddressEntry::setBroadcast(const QHostAddress &newBroadcast)
     Not all operating systems support reporting all features. Only the
     IPv4 addresses are guaranteed to be listed by this class in all
     platforms. In particular, IPv6 address listing is only supported
-    on Windows XP and more recent versions, Linux, MacOS X and the
-    BSDs.
+    on Windows, Linux, OS X and the BSDs.
 
     \sa QNetworkAddressEntry
 */

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2015 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -3890,7 +3890,7 @@
            <author>Qt Development Frameworks</author>
            <publisher>Qt Project</publisher>
            <copyright>
-               <copyryear year="2014"/>
+               <copyryear year="2015"/>
                <copyrholder>Qt Project</copyrholder>
            </copyright>
            <permissions view="all"/>

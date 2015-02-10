@@ -1311,7 +1311,7 @@ Qt::WindowFrameSection QGraphicsWidget::windowFrameSectionAt(const QPointF &pos)
     if (x <= left + cornerMargin) {
         if (y <= top + windowFrameWidth || (x <= left + windowFrameWidth && y <= top + cornerMargin)) {
             s = Qt::TopLeftSection;
-        } else if (y >= bottom - windowFrameWidth || (x <= left + windowFrameWidth && y >= bottom - windowFrameWidth)) {
+        } else if (y >= bottom - windowFrameWidth || (x <= left + windowFrameWidth && y >= bottom - cornerMargin)) {
             s = Qt::BottomLeftSection;
         } else if (x <= left + windowFrameWidth) {
             s = Qt::LeftSection;
@@ -1319,7 +1319,7 @@ Qt::WindowFrameSection QGraphicsWidget::windowFrameSectionAt(const QPointF &pos)
     } else if (x >= right - cornerMargin) {
         if (y <= top + windowFrameWidth || (x >= right - windowFrameWidth && y <= top + cornerMargin)) {
             s = Qt::TopRightSection;
-        } else if (y >= bottom - windowFrameWidth || (x >= right - windowFrameWidth && y >= bottom - windowFrameWidth)) {
+        } else if (y >= bottom - windowFrameWidth || (x >= right - windowFrameWidth && y >= bottom - cornerMargin)) {
             s = Qt::BottomRightSection;
         } else if (x >= right - windowFrameWidth) {
             s = Qt::RightSection;

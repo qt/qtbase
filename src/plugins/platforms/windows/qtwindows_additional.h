@@ -166,4 +166,8 @@ typedef TOUCHINPUT const * PCTOUCHINPUT;
 
 #endif // if defined(Q_CC_MINGW) || !defined(TOUCHEVENTF_MOVE)
 
+#ifndef WM_GESTURE
+#  define WM_GESTURE 0x0119
+#endif
+
 #endif // QTWINDOWS_ADDITIONAL_H

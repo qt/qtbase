@@ -539,7 +539,7 @@ QTimerEvent::~QTimerEvent()
     \a child.
 
     \a type can be QEvent::ChildAdded, QEvent::ChildRemoved,
-    QEvent::ChildPolished, or QEvent::ChildRemoved.
+    or QEvent::ChildPolished.
 
     \sa child()
 */
