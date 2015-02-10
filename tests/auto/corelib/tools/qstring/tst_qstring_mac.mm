@@ -63,17 +63,23 @@ void tst_QString_macTypes()
     }
     // QString <-> NSString
     {
+        NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+
         QString qtString("test string");
         const NSString *nsString = qtString.toNSString();
         QCOMPARE(QString::fromNSString(nsString), qtString);
-        [nsString release];
+
+        [pool release];
     }
     {
+        NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+
         QString qtString("test string");
         const NSString *nsString = qtString.toNSString();
         QString qtStringCopy(qtString);
         qtString = qtString.toUpper(); // modify
         QCOMPARE(QString::fromNSString(nsString), qtStringCopy);
-        [nsString release];
+
+        [pool release];
     }
 }

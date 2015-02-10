@@ -2773,7 +2773,7 @@ void tst_QAccessibility::listTest()
 
     // Check for events
     QTest::mouseClick(listView->viewport(), Qt::LeftButton, 0, listView->visualItemRect(listView->item(1)).center());
-    QAccessibleEvent selectionEvent(listView, QAccessible::Selection);
+    QAccessibleEvent selectionEvent(listView, QAccessible::SelectionAdd);
     selectionEvent.setChild(1);
     QAccessibleEvent focusEvent(listView, QAccessible::Focus);
     focusEvent.setChild(1);
@@ -2781,7 +2781,7 @@ void tst_QAccessibility::listTest()
     QVERIFY(QTestAccessibility::containsEvent(&focusEvent));
     QTest::mouseClick(listView->viewport(), Qt::LeftButton, 0, listView->visualItemRect(listView->item(2)).center());
 
-    QAccessibleEvent selectionEvent2(listView, QAccessible::Selection);
+    QAccessibleEvent selectionEvent2(listView, QAccessible::SelectionAdd);
     selectionEvent2.setChild(2);
     QAccessibleEvent focusEvent2(listView, QAccessible::Focus);
     focusEvent2.setChild(2);
@@ -3275,7 +3275,7 @@ void tst_QAccessibility::tableTest()
         tableView->setSelectionBehavior(QAbstractItemView::SelectItems);
         tableView->setSelectionMode(QAbstractItemView::SingleSelection);
         tableView->selectionModel()->select(index00, QItemSelectionModel::ClearAndSelect);
-        QAccessibleEvent event(tableView, QAccessible::Selection);
+        QAccessibleEvent event(tableView, QAccessible::SelectionAdd);
         event.setChild(12);
         QCOMPARE(QTestAccessibility::containsEvent(&event), true);
         QTestAccessibility::clearEvents();

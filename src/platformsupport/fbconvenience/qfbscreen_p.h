@@ -94,10 +94,11 @@ protected slots:
 
 protected:
     void initializeCompositor();
+    bool event(QEvent *event);
 
     QList<QFbWindow *> mWindowStack;
     QRegion mRepaintRegion;
-    QTimer mRedrawTimer;
+    bool mUpdatePending;
 
     QFbCursor *mCursor;
     QRect mGeometry;

@@ -70,7 +70,6 @@ public:
 
     virtual QMimeData *platformDropData() Q_DECL_OVERRIDE;
 
-
     void startDrag() Q_DECL_OVERRIDE;
     void cancel() Q_DECL_OVERRIDE;
     void move(const QMouseEvent *me) Q_DECL_OVERRIDE;
@@ -87,6 +86,7 @@ public:
     void handleFinished(const xcb_client_message_event_t *event);
 
     bool dndEnable(QXcbWindow *win, bool on);
+    bool ownsDragObject() const Q_DECL_OVERRIDE;
 
     void updatePixmap();
     xcb_timestamp_t targetTime() { return target_time; }

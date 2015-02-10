@@ -64,7 +64,7 @@ QT_BEGIN_NAMESPACE
 QWindowsLibEGL QWindowsEGLStaticContext::libEGL;
 QWindowsLibGLESv2 QWindowsEGLStaticContext::libGLESv2;
 
-#ifndef QT_STATIC
+#if !defined(QT_STATIC) || defined(QT_OPENGL_DYNAMIC)
 
 #ifdef Q_CC_MINGW
 static void *resolveFunc(HMODULE lib, const char *name)
@@ -111,7 +111,7 @@ void *QWindowsLibEGL::resolve(const char *name)
 
 #endif // !QT_STATIC
 
-#ifndef QT_STATIC
+#if !defined(QT_STATIC) || defined(QT_OPENGL_DYNAMIC)
 #  define RESOLVE(signature, name) signature(resolve( #name ));
 #else
 #  define RESOLVE(signature, name) signature(&::name);
@@ -127,7 +127,7 @@ bool QWindowsLibEGL::init()
 
     qCDebug(lcQpaGl) << "Qt: Using EGL from" << dllName;
 
-#ifndef QT_STATIC
+#if !defined(QT_STATIC) || defined(QT_OPENGL_DYNAMIC)
     m_lib = ::LoadLibraryW((const wchar_t *) QString::fromLatin1(dllName).utf16());
     if (!m_lib) {
         qErrnoWarning(::GetLastError(), "Failed to load %s", dllName);
@@ -159,7 +159,7 @@ bool QWindowsLibEGL::init()
     return eglGetError && eglGetDisplay && eglInitialize;
 }
 
-#ifndef QT_STATIC
+#if !defined(QT_STATIC) || defined(QT_OPENGL_DYNAMIC)
 void *QWindowsLibGLESv2::resolve(const char *name)
 {
     void *proc = m_lib ? resolveFunc(m_lib, name) : 0;
@@ -179,7 +179,7 @@ bool QWindowsLibGLESv2::init()
 #endif
 
     qCDebug(lcQpaGl) << "Qt: Using OpenGL ES 2.0 from" << dllName;
-#ifndef QT_STATIC
+#if !defined(QT_STATIC) || defined(QT_OPENGL_DYNAMIC)
     m_lib = ::LoadLibraryW((const wchar_t *) QString::fromLatin1(dllName).utf16());
     if (!m_lib) {
         qErrnoWarning(::GetLastError(), "Failed to load %s", dllName);
@@ -340,7 +340,7 @@ QWindowsEGLStaticContext::QWindowsEGLStaticContext(EGLDisplay display, int versi
 {
 }
 
-QWindowsEGLStaticContext *QWindowsEGLStaticContext::create()
+QWindowsEGLStaticContext *QWindowsEGLStaticContext::create(QWindowsOpenGLTester::Renderers preferredType)
 {
     const HDC dc = QWindowsContext::instance()->displayContext();
     if (!dc){
@@ -358,28 +358,34 @@ QWindowsEGLStaticContext *QWindowsEGLStaticContext::create()
     }
 
     EGLDisplay display = EGL_NO_DISPLAY;
+    EGLint major = 0;
+    EGLint minor = 0;
 #ifdef EGL_ANGLE_platform_angle_opengl
-    if (libEGL.eglGetPlatformDisplayEXT && qEnvironmentVariableIsSet("QT_ANGLE_PLATFORM")) {
+    if (libEGL.eglGetPlatformDisplayEXT
+        && (preferredType & QWindowsOpenGLTester::AngleBackendMask)) {
         const EGLint anglePlatformAttributes[][5] = {
             { EGL_PLATFORM_ANGLE_TYPE_ANGLE, EGL_PLATFORM_ANGLE_TYPE_D3D11_ANGLE, EGL_NONE },
             { EGL_PLATFORM_ANGLE_TYPE_ANGLE, EGL_PLATFORM_ANGLE_TYPE_D3D9_ANGLE, EGL_NONE },
             { EGL_PLATFORM_ANGLE_TYPE_ANGLE, EGL_PLATFORM_ANGLE_TYPE_D3D11_ANGLE, EGL_PLATFORM_ANGLE_USE_WARP_ANGLE, EGL_TRUE, EGL_NONE }
         };
         const EGLint *attributes = 0;
-        const QByteArray anglePlatform = qgetenv("QT_ANGLE_PLATFORM");
-        if (anglePlatform == "d3d11")
+        if (preferredType & QWindowsOpenGLTester::AngleRendererD3d11)
             attributes = anglePlatformAttributes[0];
-        else if (anglePlatform == "d3d9")
+        else if (preferredType & QWindowsOpenGLTester::AngleRendererD3d9)
             attributes = anglePlatformAttributes[1];
-        else if (anglePlatform == "warp")
+        else if (preferredType & QWindowsOpenGLTester::AngleRendererD3d11Warp)
             attributes = anglePlatformAttributes[2];
-        else
-            qCWarning(lcQpaGl) << "Invalid value set for QT_ANGLE_PLATFORM:" << anglePlatform;
-
-        if (attributes)
+        if (attributes) {
             display = libEGL.eglGetPlatformDisplayEXT(EGL_PLATFORM_ANGLE_ANGLE, dc, attributes);
+            if (!libEGL.eglInitialize(display, &major, &minor)) {
+                display = EGL_NO_DISPLAY;
+                major = minor = 0;
+            }
+        }
     }
-#endif // EGL_ANGLE_platform_angle_opengl
+#else // EGL_ANGLE_platform_angle_opengl
+    Q_UNUSED(preferredType)
+#endif
     if (display == EGL_NO_DISPLAY)
         display = libEGL.eglGetDisplay((EGLNativeDisplayType)dc);
     if (!display) {
@@ -387,9 +393,7 @@ QWindowsEGLStaticContext *QWindowsEGLStaticContext::create()
         return 0;
     }
 
-    EGLint major;
-    EGLint minor;
-    if (!libEGL.eglInitialize(display, &major, &minor)) {
+    if (!major && !libEGL.eglInitialize(display, &major, &minor)) {
         int err = libEGL.eglGetError();
         qWarning("%s: Could not initialize EGL display: error 0x%x\n", Q_FUNC_INFO, err);
         if (err == 0x3001)
@@ -573,6 +577,7 @@ bool QWindowsEGLContext::makeCurrent(QPlatformSurface *surface)
     QWindowsEGLStaticContext::libEGL.eglBindAPI(m_api);
 
     QWindowsWindow *window = static_cast<QWindowsWindow *>(surface);
+    window->aboutToMakeCurrent();
     EGLSurface eglSurface = static_cast<EGLSurface>(window->surface(m_eglConfig));
     Q_ASSERT(eglSurface);
 

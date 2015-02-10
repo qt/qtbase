@@ -171,8 +171,6 @@ contains(CONFIG, plugin) {
     return()
 }
 
-unix:contains(QT_CONFIG, reduce_relocations):CMAKE_ADD_FPIE_FLAGS = "true"
-
 CMAKE_MKSPEC = $$[QMAKE_XSPEC]
 
 CMAKE_MODULE_DEPS = $$cmakeModuleList($$sort_depends(QT.$${MODULE}.depends, QT.))

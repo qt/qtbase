@@ -47,6 +47,7 @@
 #ifdef Q_OS_WIN
 #  include <fcntl.h>
 #  include <io.h>
+#  include <stdio.h>
 #endif // Q_OS_WIN
 
 QT_BEGIN_NAMESPACE
@@ -199,7 +200,9 @@ int runRcc(int argc, char *argv[])
     const QStringList filenamesIn = parser.positionalArguments();
 
     foreach (const QString &file, filenamesIn) {
-        if (!QFile::exists(file)) {
+        if (file == QLatin1String("-"))
+            continue;
+        else if (!QFile::exists(file)) {
             qWarning("%s: File does not exist '%s'", argv[0], qPrintable(file));
             return 1;
         }

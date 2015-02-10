@@ -76,7 +76,7 @@ HTML.footer += \
     "<div class=\"container clearfix no_discs\">\n" \
     "    <ul id=\"menu-footer-submenu\" class=\"right clearfix\"><li id=\"menu-item-1795\" class=\"menu-item menu-item-type-custom menu-item-object-custom menu-item-1795\"><a title=\"Sign into your account.\" href=\"https://account.qt.io/login\">Sign In</a></li>\n" \
     "     <li id=\"menu-item-1494\" class=\"menu-item menu-item-type-post_type menu-item-object-page menu-item-1494\"><a href=\"http://qt.io/contact-us/\">Contact us</a></li>\n" \
-    "        <li id=\"menu-item-4472\" class=\"menu-item menu-item-type-custom menu-item-object-custom menu-item-4472\"><a href=\"http://www.digia.com\">© 2014 Digia Oyj</a></li>\n" \
+    "        <li id=\"menu-item-4472\" class=\"menu-item menu-item-type-custom menu-item-object-custom menu-item-4472\"><a href=\"http://www.digia.com\">© 2015 Digia Oyj</a></li>\n" \
     "    </ul>\n" \
     "</div>\n" \
     "</div>\n" \

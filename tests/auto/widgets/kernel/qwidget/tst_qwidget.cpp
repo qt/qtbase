@@ -185,6 +185,14 @@ inline void setWindowsAnimationsEnabled(bool) {}
 static inline bool windowsAnimationsEnabled() { return false; }
 #endif // !Q_OS_WIN || Q_OS_WINCE || Q_OS_WINRT
 
+template <class T>
+static QByteArray msgComparisonFailed(T v1, const char *op, T v2)
+{
+    QString s;
+    QDebug(&s) << v1 << op << v2;
+    return s.toLocal8Bit();
+}
+
 class tst_QWidget : public QObject
 {
     Q_OBJECT
@@ -1396,11 +1404,13 @@ void tst_QWidget::fonts()
     newFont = newFont.resolve( testWidget->font() );
 
     QVERIFY( cleanTestWidget->testAttribute(Qt::WA_SetFont) );
-    QVERIFY( cleanTestWidget->font() == newFont );
+    QVERIFY2( cleanTestWidget->font() == newFont,
+              msgComparisonFailed(cleanTestWidget->font(), "==", newFont));
 
     cleanTestWidget->setFont(QFont());
     QVERIFY( !cleanTestWidget->testAttribute(Qt::WA_SetFont) );
-    QVERIFY( cleanTestWidget->font() == originalFont );
+    QVERIFY2( cleanTestWidget->font() == originalFont,
+              msgComparisonFailed(cleanTestWidget->font(), "==", originalFont));
 }
 
 void tst_QWidget::mapFromAndTo_data()
@@ -1823,17 +1833,17 @@ void tst_QWidget::activation()
     widget2.show();
 
     QTest::qWait(waitTime);
-    QVERIFY(qApp->activeWindow() == &widget2);
+    QCOMPARE(QApplication::activeWindow(), &widget2);
     widget2.showMinimized();
     QTest::qWait(waitTime);
 
-    QVERIFY(qApp->activeWindow() == &widget1);
+    QCOMPARE(QApplication::activeWindow(), &widget1);
     widget2.showMaximized();
     QTest::qWait(waitTime);
-    QVERIFY(qApp->activeWindow() == &widget2);
+    QCOMPARE(QApplication::activeWindow(), &widget2);
     widget2.showMinimized();
     QTest::qWait(waitTime);
-    QVERIFY(qApp->activeWindow() == &widget1);
+    QCOMPARE(QApplication::activeWindow(), &widget1);
     widget2.showNormal();
     QTest::qWait(waitTime);
 #ifndef Q_OS_WINCE
@@ -1841,10 +1851,10 @@ void tst_QWidget::activation()
         QEXPECT_FAIL("", "MS introduced new behavior after XP", Continue);
 #endif
     QTest::qWait(waitTime);
-    QVERIFY(qApp->activeWindow() == &widget2);
+    QCOMPARE(QApplication::activeWindow(), &widget2);
     widget2.hide();
     QTest::qWait(waitTime);
-    QVERIFY(qApp->activeWindow() == &widget1);
+    QCOMPARE(QApplication::activeWindow(), &widget1);
 }
 #endif // Q_OS_WIN
 
@@ -2745,13 +2755,13 @@ void tst_QWidget::raise()
 
     QList<QObject *> list1;
     list1 << child1 << child2 << child3 << child4;
-    QVERIFY(parentPtr->children() == list1);
+    QCOMPARE(parentPtr->children(), list1);
     QCOMPARE(allChildren.count(), list1.count());
 
     foreach (UpdateWidget *child, allChildren) {
         int expectedPaintEvents = child == child4 ? 1 : 0;
         if (expectedPaintEvents == 0) {
-            QVERIFY(child->numPaintEvents == 0);
+            QCOMPARE(child->numPaintEvents, 0);
         } else {
             // show() issues multiple paint events on some window managers
             QTRY_VERIFY(child->numPaintEvents >= expectedPaintEvents);
@@ -2774,7 +2784,7 @@ void tst_QWidget::raise()
 
     QList<QObject *> list2;
     list2 << child1 << child3 << child4 << child2;
-    QVERIFY(parentPtr->children() == list2);
+    QCOMPARE(parentPtr->children(), list2);
 
     // Creates a widget on top of all the children and checks that raising one of
     // the children underneath doesn't trigger a repaint on the covering widget.
@@ -2807,7 +2817,7 @@ void tst_QWidget::raise()
 
     QList<QObject *> list3;
     list3 << child1 << child4 << child2 << child3;
-    QVERIFY(parent->children() == list3);
+    QCOMPARE(parent->children(), list3);
 
     foreach (UpdateWidget *child, allChildren) {
         int expectedPaintEvents = 0;
@@ -2849,13 +2859,13 @@ void tst_QWidget::lower()
 
     QList<QObject *> list1;
     list1 << child1 << child2 << child3 << child4;
-    QVERIFY(parent->children() == list1);
+    QCOMPARE(parent->children(), list1);
     QCOMPARE(allChildren.count(), list1.count());
 
     foreach (UpdateWidget *child, allChildren) {
         int expectedPaintEvents = child == child4 ? 1 : 0;
         if (expectedPaintEvents == 0) {
-            QVERIFY(child->numPaintEvents == 0);
+            QCOMPARE(child->numPaintEvents, 0);
         } else {
             // show() issues multiple paint events on some window managers
             QTRY_VERIFY(child->numPaintEvents >= expectedPaintEvents);
@@ -2879,7 +2889,7 @@ void tst_QWidget::lower()
 
     QList<QObject *> list2;
     list2 << child4 << child1 << child2 << child3;
-    QVERIFY(parent->children() == list2);
+    QCOMPARE(parent->children(), list2);
 }
 #endif
 
@@ -2913,7 +2923,7 @@ void tst_QWidget::stackUnder()
     QVERIFY(QTest::qWaitForWindowExposed(parent.data()));
     QList<QObject *> list1;
     list1 << child1 << child2 << child3 << child4;
-    QVERIFY(parent->children() == list1);
+    QCOMPARE(parent->children(), list1);
 
     foreach (UpdateWidget *child, allChildren) {
         int expectedPaintEvents = child == child4 ? 1 : 0;
@@ -2932,7 +2942,7 @@ void tst_QWidget::stackUnder()
 
     QList<QObject *> list2;
     list2 << child1 << child4 << child2 << child3;
-    QVERIFY(parent->children() == list2);
+    QCOMPARE(parent->children(), list2);
 
     foreach (UpdateWidget *child, allChildren) {
         int expectedPaintEvents = child == child3 ? 1 : 0;
@@ -2948,7 +2958,7 @@ void tst_QWidget::stackUnder()
 
     QList<QObject *> list3;
     list3 << child4 << child2 << child1 << child3;
-    QVERIFY(parent->children() == list3);
+    QCOMPARE(parent->children(), list3);
 
     foreach (UpdateWidget *child, allChildren) {
         int expectedZOrderChangeEvents = child == child1 ? 1 : 0;
@@ -3760,8 +3770,10 @@ void tst_QWidget::setMinimumSize()
     w.setMinimumSize(nonDefaultSize);
     w.showNormal();
     QTest::qWait(50);
-    QVERIFY(w.height() >= nonDefaultSize.height());
-    QVERIFY(w.width() >= nonDefaultSize.width());
+    QVERIFY2(w.height() >= nonDefaultSize.height(),
+             msgComparisonFailed(w.height(), ">=", nonDefaultSize.height()));
+    QVERIFY2(w.width() >= nonDefaultSize.width(),
+             msgComparisonFailed(w.width(), ">=", nonDefaultSize.width()));
 #endif
 }
 
@@ -3813,7 +3825,7 @@ void tst_QWidget::setFixedSize()
     QTest::qWait(50);
     if (m_platform == QStringLiteral("xcb"))
         QSKIP("QTBUG-26424");
-    QVERIFY(w.size() == defaultSize + QSize(150,150));
+    QCOMPARE(w.size(), defaultSize + QSize(150,150));
 }
 
 void tst_QWidget::ensureCreated()
@@ -4687,8 +4699,9 @@ void tst_QWidget::setWindowGeometry()
 void tst_QWidget::setGeometry_win()
 {
     QWidget widget;
+
     setFrameless(&widget);
-    widget.setGeometry(0, 600, 100,100);
+    widget.setGeometry(QRect(m_availableTopLeft + QPoint(0, 600), QSize(100, 100)));
     widget.show();
     widget.setWindowState(widget.windowState() | Qt::WindowMaximized);
     QRect geom = widget.normalGeometry();
@@ -4698,8 +4711,10 @@ void tst_QWidget::setGeometry_win()
     widget.show();
     RECT rt;
     ::GetWindowRect(winHandleOf(&widget), &rt);
-    QVERIFY(rt.left <= 0);
-    QVERIFY(rt.top <= 0);
+    QVERIFY2(rt.left <= m_availableTopLeft.x(),
+             msgComparisonFailed(int(rt.left), "<=", m_availableTopLeft.x()));
+    QVERIFY2(rt.top <= m_availableTopLeft.y(),
+             msgComparisonFailed(int(rt.top), "<=", m_availableTopLeft.y()));
 }
 #endif // defined (Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
 
@@ -6547,7 +6562,8 @@ void tst_QWidget::renderInvisible()
     QPixmap pixmap(topLevel.sizeHint());
     topLevel.render(&pixmap); // triggers adjustSize()
     const QSize finalSize = topLevel.size();
-    QVERIFY(finalSize != initialSize);
+    QVERIFY2(finalSize != initialSize,
+             msgComparisonFailed(finalSize, "!=", initialSize));
 
     topLevel.layout()->removeWidget(widget);
     QCOMPARE(topLevel.size(), finalSize);
@@ -7188,7 +7204,7 @@ void tst_QWidget::setContentsMargins()
     QSize oldSize = label.sizeHint();
     label.setFrameStyle(QFrame::Sunken | QFrame::Box);
     QSize newSize = label.sizeHint();
-    QVERIFY(oldSize != newSize);
+    QVERIFY2(oldSize != newSize, msgComparisonFailed(oldSize, "!=", newSize));
 
     QLabel label2("why does it always rain on me?");
     label2.show();
@@ -7721,8 +7737,10 @@ void tst_QWidget::adjustSize()
     child->resize(123, 456);
     child->adjustSize();
     if (expectedSize == QSize(100000, 100000)) {
-        QVERIFY(child->size().width() < sizeHint.width());
-        QVERIFY(child->size().height() < sizeHint.height());
+        QVERIFY2(child->size().width() < sizeHint.width(),
+                 msgComparisonFailed(child->size().width(), "<", sizeHint.width()));
+        QVERIFY2(child->size().height() < sizeHint.height(),
+                 msgComparisonFailed(child->size().height(), "<", sizeHint.height()));
     } else {
 #if defined (Q_OS_WINCE)
         if (!haveParent) {
@@ -9511,8 +9529,10 @@ void tst_QWidget::childAt_unifiedToolBar()
     // we use mapToGlobal/mapFromGlobal to re-calculate the corners.
     QPoint oldToolBarTopLeft = toolBarTopLeft;
     toolBarTopLeft = mainWindow.mapFromGlobal(toolBar->mapToGlobal(QPoint()));
-    QVERIFY(toolBarTopLeft != oldToolBarTopLeft);
-    QVERIFY(toolBarTopLeft.y() < 0);
+    QVERIFY2(toolBarTopLeft != oldToolBarTopLeft,
+             msgComparisonFailed(toolBarTopLeft, "!=", oldToolBarTopLeft));
+    QVERIFY2(toolBarTopLeft.y() < 0,
+             msgComparisonFailed(toolBarTopLeft.y(), "<", 0));
     labelTopLeft = mainWindow.mapFromGlobal(label->mapToGlobal(QPoint()));
 
     QCOMPARE(mainWindow.childAt(toolBarTopLeft), static_cast<QWidget *>(toolBar));
@@ -9743,7 +9763,7 @@ void tst_QWidget::grabKeyboard()
     QTest::keyClick(w.windowHandle(), Qt::Key_A);
     grabber->releaseKeyboard();
     QCOMPARE(grabber->text().toLower(), QStringLiteral("a"));
-    QVERIFY(nonGrabber->text().isEmpty());
+    QVERIFY2(nonGrabber->text().isEmpty(), qPrintable(nonGrabber->text()));
 }
 
 class TouchMouseWidget : public QWidget {
@@ -10095,7 +10115,7 @@ void tst_QWidget::underMouse()
     QVERIFY(QTest::qWaitForWindowExposed(&popupWidget));
     QWindow *popupWindow = popupWidget.windowHandle();
     QVERIFY(popupWindow);
-    QVERIFY(QApplication::activePopupWidget() == &popupWidget);
+    QCOMPARE(QApplication::activePopupWidget(), &popupWidget);
 
     // Send an artificial leave event for window, as it won't get generated automatically
     // due to cursor not actually being over the window.
@@ -10368,13 +10388,15 @@ void tst_QWidget::largerThanScreen_QTBUG30142()
     widget.resize(200, 4000);
     widget.show();
     QVERIFY(QTest::qWaitForWindowExposed(&widget));
-    QVERIFY(widget.frameGeometry().y() >= 0);
+    QVERIFY2(widget.frameGeometry().y() >= 0,
+             msgComparisonFailed(widget.frameGeometry().y(), " >=", 0));
 
     QWidget widget2;
     widget2.resize(10000, 400);
     widget2.show();
     QVERIFY(QTest::qWaitForWindowExposed(&widget2));
-    QVERIFY(widget2.frameGeometry().x() >= 0);
+    QVERIFY2(widget2.frameGeometry().x() >= 0,
+             msgComparisonFailed(widget.frameGeometry().x(), " >=", 0));
 }
 
 void tst_QWidget::resizeStaticContentsChildWidget_QTBUG35282()
@@ -10389,13 +10411,14 @@ void tst_QWidget::resizeStaticContentsChildWidget_QTBUG35282()
 
     widget.showNormal();
     QVERIFY(QTest::qWaitForWindowExposed(&widget));
-    QVERIFY(childWidget.numPaintEvents == 0);
+    QCOMPARE(childWidget.numPaintEvents, 0);
     childWidget.reset();
 
     widget.resize(1000,1000);
     QVERIFY(QTest::qWaitForWindowExposed(&widget));
     QGuiApplication::sync();
-    QVERIFY(childWidget.numPaintEvents >= 1);
+    QVERIFY2(childWidget.numPaintEvents >= 1,
+             msgComparisonFailed(childWidget.numPaintEvents, ">=", 1));
 }
 
 void tst_QWidget::qmlSetParentHelper()

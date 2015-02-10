@@ -109,6 +109,7 @@ enum WindowsEventType // Simplify event types
     DisplayChangedEvent = 437,
     SettingChangedEvent = DisplayChangedEvent + 1,
     ContextMenu = 123,
+    GestureEvent = 124,
     UnknownEvent = 542
 };
 
@@ -247,6 +248,8 @@ inline QtWindows::WindowsEventType windowsEventType(UINT message, WPARAM wParamI
     case WM_APPCOMMAND:
         return QtWindows::AppCommandEvent;
 #endif
+    case WM_GESTURE:
+        return QtWindows::GestureEvent;
     default:
         break;
     }

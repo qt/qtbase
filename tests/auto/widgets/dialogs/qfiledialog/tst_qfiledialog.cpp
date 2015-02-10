@@ -1299,9 +1299,6 @@ void tst_QFiledialog::clearLineEdit()
 #endif
 
     QTest::qWait(2000);
-#ifdef Q_OS_MAC
-    QEXPECT_FAIL("", "QTBUG-23703", Abort);
-#endif
     QVERIFY(fd.directory().absolutePath() != QDir::home().absolutePath());
     QVERIFY(!lineEdit->text().isEmpty());
 

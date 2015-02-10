@@ -505,13 +505,13 @@ HBITMAP QWindowsXPStylePrivate::buffer(int w, int h)
     nullBitmap = (HBITMAP)SelectObject(bufferDC, bufferBitmap);
 
     if (!bufferBitmap) {
-        qErrnoWarning("QWindowsXPStylePrivate::buffer(w,h), failed to create dibsection");
+        qErrnoWarning("QWindowsXPStylePrivate::buffer(%dx%d), CreateDIBSection() failed.", w, h);
         bufferW = 0;
         bufferH = 0;
         return 0;
     }
     if (!bufferPixels) {
-        qErrnoWarning("QWindowsXPStylePrivate::buffer(w,h), did not allocate pixel data");
+        qErrnoWarning("QWindowsXPStylePrivate::buffer(%dx%d), CreateDIBSection() did not allocate pixel data.", w, h);
         bufferW = 0;
         bufferH = 0;
         return 0;
@@ -696,16 +696,18 @@ bool QWindowsXPStylePrivate::swapAlphaChannel(const QRect &rect, bool allPixels)
             - Painter does not have an HDC
             - Theme part is flipped (mirrored horizontally)
         else use drawBackgroundDirectly().
+    \note drawBackgroundThruNativeBuffer() can return false for large
+    sizes due to buffer()/CreateDIBSection() failing.
 */
-void QWindowsXPStylePrivate::drawBackground(XPThemeData &themeData)
+bool QWindowsXPStylePrivate::drawBackground(XPThemeData &themeData)
 {
     if (themeData.rect.isEmpty())
-        return;
+        return true;
 
     QPainter *painter = themeData.painter;
     Q_ASSERT_X(painter != 0, "QWindowsXPStylePrivate::drawBackground()", "Trying to draw a theme part without a painter");
     if (!painter || !painter->isActive())
-        return;
+        return false;
 
     painter->save();
 
@@ -741,13 +743,9 @@ void QWindowsXPStylePrivate::drawBackground(XPThemeData &themeData)
     }
 
     const HDC dc = canDrawDirectly ? hdcForWidgetBackingStore(themeData.widget) : HDC(0);
-    if (dc) {
-        drawBackgroundDirectly(themeData);
-    } else {
-        drawBackgroundThruNativeBuffer(themeData);
-    }
-
+    const bool result = dc ? drawBackgroundDirectly(themeData) : drawBackgroundThruNativeBuffer(themeData);
     painter->restore();
+    return result;
 }
 
 /*! \internal
@@ -755,7 +753,7 @@ void QWindowsXPStylePrivate::drawBackground(XPThemeData &themeData)
     Do not use this if you need to perform other transformations on the
     resulting data.
 */
-void QWindowsXPStylePrivate::drawBackgroundDirectly(XPThemeData &themeData)
+bool QWindowsXPStylePrivate::drawBackgroundDirectly(XPThemeData &themeData)
 {
     QPainter *painter = themeData.painter;
     HDC dc = 0;
@@ -830,6 +828,7 @@ void QWindowsXPStylePrivate::drawBackgroundDirectly(XPThemeData &themeData)
     }
     SelectClipRgn(dc, 0);
     DeleteObject(hrgn);
+    return true;
 }
 
 /*! \internal
@@ -840,7 +839,7 @@ void QWindowsXPStylePrivate::drawBackgroundDirectly(XPThemeData &themeData)
     flips (horizonal mirroring only, vertical are handled by the theme
     engine).
 */
-void QWindowsXPStylePrivate::drawBackgroundThruNativeBuffer(XPThemeData &themeData)
+bool QWindowsXPStylePrivate::drawBackgroundThruNativeBuffer(XPThemeData &themeData)
 {
     QPainter *painter = themeData.painter;
     QRect rect = themeData.rect;
@@ -964,7 +963,7 @@ void QWindowsXPStylePrivate::drawBackgroundThruNativeBuffer(XPThemeData &themeDa
     QImage img;
     if (!haveCachedPixmap) { // If the pixmap is not cached, generate it! -------------------------
         if (!buffer(w, h)) // Ensure a buffer of at least (w, h) in size
-            return;
+            return false;
         HDC dc = bufferHDC();
 
         // Clear the buffer
@@ -1017,7 +1016,7 @@ void QWindowsXPStylePrivate::drawBackgroundThruNativeBuffer(XPThemeData &themeDa
                 memset(&data, 0, sizeof(data));
                 data.dataValid = true;
                 alphaCache.insert(key, data);
-                return;
+                return true;
             }
             hasAlpha = hasAlphaChannel(rect);
             if (!hasAlpha && partIsTransparent)
@@ -1132,6 +1131,7 @@ void QWindowsXPStylePrivate::drawBackgroundThruNativeBuffer(XPThemeData &themeDa
         data.hadInvalidAlpha = wasAlphaFixed;
         alphaCache.insert(key, data);
     }
+    return true;
 }
 
 
@@ -1860,18 +1860,29 @@ case PE_Frame:
             if (!theme.isValid())
                 break;
 
+            // May fail due to too-large buffers for large widgets, fall back to Windows style.
             theme.rect = QRect(option->rect.x(), option->rect.y()+fwidth, option->rect.x()+fwidth, option->rect.height()-fwidth);
             theme.partId = WP_FRAMELEFT;
-            d->drawBackground(theme);
+            if (!d->drawBackground(theme)) {
+                QWindowsStyle::drawPrimitive(pe, option, p, widget);
+                return;
+            }
             theme.rect = QRect(option->rect.width()-fwidth, option->rect.y()+fwidth, fwidth, option->rect.height()-fwidth);
             theme.partId = WP_FRAMERIGHT;
-            d->drawBackground(theme);
+            if (!d->drawBackground(theme)) {
+                QWindowsStyle::drawPrimitive(pe, option, p, widget);
+                return;
+            }
             theme.rect = QRect(option->rect.x(), option->rect.height()-fwidth, option->rect.width(), fwidth);
             theme.partId = WP_FRAMEBOTTOM;
-            d->drawBackground(theme);
+            if (!d->drawBackground(theme)) {
+                QWindowsStyle::drawPrimitive(pe, option, p, widget);
+                return;
+            }
             theme.rect = QRect(option->rect.x(), option->rect.y(), option->rect.width(), option->rect.y()+fwidth);
             theme.partId = WP_CAPTION;
-            d->drawBackground(theme);
+            if (!d->drawBackground(theme))
+                QWindowsStyle::drawPrimitive(pe, option, p, widget);
             return;
         }
         break;

@@ -785,6 +785,7 @@ bool QProcessPrivate::waitForFinished(int msecs)
 void QProcessPrivate::findExitCode()
 {
     DWORD theExitCode;
+    Q_ASSERT(pid);
     if (GetExitCodeProcess(pid->hProcess, &theExitCode)) {
         exitCode = theExitCode;
         crashed = (exitCode == 0xf291   // our magic number, see killProcess

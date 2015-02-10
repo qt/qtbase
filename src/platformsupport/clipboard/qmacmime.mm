@@ -611,9 +611,21 @@ QVariant QMacPasteboardMimeFileUri::convertToMime(const QString &mime, QList<QBy
         return QVariant();
     QList<QVariant> ret;
     for (int i = 0; i < data.size(); ++i) {
-        QUrl url = QUrl::fromEncoded(data.at(i));
+        const QByteArray &a = data.at(i);
+        NSString *urlString = [[[NSString alloc] initWithBytesNoCopy:(void *)a.data() length:a.size()
+                                                 encoding:NSUTF8StringEncoding freeWhenDone:NO] autorelease];
+        NSURL *nsurl = [NSURL URLWithString:urlString];
+        QUrl url;
+        // OS X 10.10 sends file references instead of file paths
+        if ([nsurl isFileReferenceURL]) {
+            url = QUrl::fromNSURL([nsurl filePathURL]);
+        } else {
+            url = QUrl::fromNSURL(nsurl);
+        }
+
         if (url.host().toLower() == QLatin1String("localhost"))
             url.setHost(QString());
+
         url.setPath(url.path().normalized(QString::NormalizationForm_C));
         ret.append(url);
     }

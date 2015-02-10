@@ -161,7 +161,7 @@ public:
 
     int defaultDPI() const;
 
-    QString registerWindowClass(const QWindow *w, bool isGL);
+    QString registerWindowClass(const QWindow *w);
     QString registerWindowClass(QString cname, WNDPROC proc,
                                 unsigned style = 0, HBRUSH brush = 0,
                                 bool icon = false);

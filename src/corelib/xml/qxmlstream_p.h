@@ -944,7 +944,7 @@ public:
 
 
     short token;
-    ushort token_char;
+    uint token_char;
 
     uint filterCarriageReturn();
     inline uint getChar();
@@ -955,7 +955,7 @@ public:
     void putStringLiteral(const QString &s);
     void putReplacement(const QString &s);
     void putReplacementInAttributeValue(const QString &s);
-    ushort getChar_helper();
+    uint getChar_helper();
 
     bool scanUntil(const char *str, short tokenToInject = -1);
     bool scanString(const char *str, short tokenToInject, bool requireSpace = true);
@@ -1068,7 +1068,7 @@ bool QXmlStreamReaderPrivate::parse()
         documentVersion.clear();
         documentEncoding.clear();
 #ifndef QT_NO_TEXTCODEC
-        if (decoder->hasFailure()) {
+        if (decoder && decoder->hasFailure()) {
             raiseWellFormedError(QXmlStream::tr("Encountered incorrectly encoded content."));
             readBuffer.clear();
             return false;
@@ -1099,8 +1099,8 @@ bool QXmlStreamReaderPrivate::parse()
         if (token == -1 && - TERMINAL_COUNT != action_index[act]) {
             uint cu = getChar();
             token = NOTOKEN;
-            token_char = cu;
-            if (cu & 0xff0000) {
+            token_char = cu == ~0U ? cu : ushort(cu);
+            if ((cu != ~0U) && (cu & 0xff0000)) {
                 token = cu >> 16;
             } else switch (token_char) {
             case 0xfffe:
@@ -1119,7 +1119,7 @@ bool QXmlStreamReaderPrivate::parse()
                     break;
                 }
                 // fall through
-            case '\0': {
+            case ~0U: {
                 token = EOF_SYMBOL;
                 if (!tagsDone && !inParseEntity) {
                     int a = t_action(act, token);

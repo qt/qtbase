@@ -64,6 +64,9 @@ public:
         availableGeometry = platformScreen->availableGeometry();
         logicalDpi = platformScreen->logicalDpi();
         refreshRate = platformScreen->refreshRate();
+        // safeguard ourselves against buggy platform behavior...
+        if (refreshRate < 1.0)
+            refreshRate = 60.0;
 
         updatePrimaryOrientation();
 

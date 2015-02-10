@@ -31,10 +31,12 @@
 **
 ****************************************************************************/
 
+#include <QtCore/qtextstream.h>
+#include <QtGui/qpa/qplatformcursor.h>
+
 #include "qeglfsscreen.h"
 #include "qeglfswindow.h"
 #include "qeglfshooks.h"
-#include <QtGui/qpa/qplatformcursor.h>
 
 QT_BEGIN_NAMESPACE
 

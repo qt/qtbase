@@ -514,6 +514,7 @@ QSslCipher QSslConfiguration::sessionCipher() const
     is set during the handshake phase.
 
     \sa protocol(), setProtocol()
+    \since 5.4
 */
 QSsl::SslProtocol QSslConfiguration::sessionProtocol() const
 {

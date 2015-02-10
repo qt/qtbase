@@ -79,6 +79,10 @@ private:
     QTouchDevice *m_touchDevice;
     bool m_leftButtonDown;
     QWindow *m_previousCaptureWindow;
+#ifdef Q_OS_WINCE
+//This is required to send a touch up if we don't get a second touch position any more
+    bool m_had2ndTouchPoint;
+#endif
 };
 
 Qt::MouseButtons QWindowsMouseHandler::keyStateToMouseButtons(int wParam)

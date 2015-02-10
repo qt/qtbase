@@ -2572,9 +2572,14 @@ void QGuiApplicationPrivate::reportRefreshRateChange(QWindowSystemInterfacePriva
         return;
 
     QScreen *s = e->screen.data();
-    s->d_func()->refreshRate = e->rate;
-
-    emit s->refreshRateChanged(s->refreshRate());
+    qreal rate = e->rate;
+    // safeguard ourselves against buggy platform behavior...
+    if (rate < 1.0)
+        rate = 60.0;
+    if (!qFuzzyCompare(s->d_func()->refreshRate, rate)) {
+        s->d_func()->refreshRate = rate;
+        emit s->refreshRateChanged(s->refreshRate());
+    }
 }
 
 void QGuiApplicationPrivate::processExposeEvent(QWindowSystemInterfacePrivate::ExposeEvent *e)

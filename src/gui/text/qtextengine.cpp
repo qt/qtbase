@@ -938,7 +938,7 @@ void QTextEngine::shapeLine(const QScriptLine &line)
 }
 
 #ifdef QT_ENABLE_HARFBUZZ_NG
-extern bool useHarfbuzzNG; // defined in qfontengine.cpp
+extern bool qt_useHarfbuzzNG(); // defined in qfontengine.cpp
 #endif
 
 void QTextEngine::shapeText(int item) const
@@ -1051,7 +1051,7 @@ void QTextEngine::shapeText(int item) const
     }
 
 #ifdef QT_ENABLE_HARFBUZZ_NG
-    if (Q_LIKELY(useHarfbuzzNG))
+    if (Q_LIKELY(qt_useHarfbuzzNG()))
         si.num_glyphs = shapeTextWithHarfbuzzNG(si, string, itemLength, fontEngine, itemBoundaries, kerningEnabled);
     else
 #endif
@@ -1067,7 +1067,7 @@ void QTextEngine::shapeText(int item) const
     QGlyphLayout glyphs = shapedGlyphs(&si);
 
 #ifdef QT_ENABLE_HARFBUZZ_NG
-    if (Q_LIKELY(useHarfbuzzNG))
+    if (Q_LIKELY(qt_useHarfbuzzNG()))
         qt_getJustificationOpportunities(string, itemLength, si, glyphs, logClusters(&si));
 #endif
 
@@ -1234,6 +1234,15 @@ int QTextEngine::shapeTextWithHarfbuzzNG(const QScriptItem &si, const ushort *st
         }
 
 #ifdef Q_OS_MAC
+        // CTRunGetPosition has a bug which applies matrix on 10.6, so we disable
+        // scaling the advances for this particular version
+        if (actualFontEngine->fontDef.stretch != 100
+                && QSysInfo::MacintoshVersion != QSysInfo::MV_10_6) {
+            QFixed stretch = QFixed(actualFontEngine->fontDef.stretch) / QFixed(100);
+            for (uint i = 0; i < num_glyphs; ++i)
+                g.advances[i] *= stretch;
+        }
+
         if (actualFontEngine->fontDef.styleStrategy & QFont::ForceIntegerMetrics) {
             for (uint i = 0; i < num_glyphs; ++i)
                 g.advances[i] = g.advances[i].round();
@@ -1604,7 +1613,7 @@ void QTextEngine::itemize() const
     }
 #ifdef QT_ENABLE_HARFBUZZ_NG
     analysis = scriptAnalysis.data();
-    if (useHarfbuzzNG) {
+    if (qt_useHarfbuzzNG()) {
         // ### pretend HB-old behavior for now
         for (int i = 0; i < length; ++i) {
             switch (analysis[i].script) {

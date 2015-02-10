@@ -108,9 +108,6 @@ struct QWindowsWindowData
     QMargins customMargins; // User-defined, additional frame for NCCALCSIZE
     HWND hwnd;
     bool embedded;
-#ifndef QT_NO_OPENGL
-    QSharedPointer<QWindowsStaticOpenGLContext> staticOpenGLContext;
-#endif // QT_NO_OPENGL
 
     static QWindowsWindowData create(const QWindow *w,
                                      const QWindowsWindowData &parameters,
@@ -141,7 +138,8 @@ public:
         WithinCreate = 0x20000,
         WithinMaximize = 0x40000,
         MaximizeToFullScreen = 0x80000,
-        InputMethodDisabled =0x100000
+        InputMethodDisabled = 0x100000,
+        Compositing = 0x200000
     };
 
     QWindowsWindow(QWindow *window, const QWindowsWindowData &data);
@@ -255,6 +253,7 @@ public:
 
     void *surface(void *nativeConfig);
     void invalidateSurface() Q_DECL_OVERRIDE;
+    void aboutToMakeCurrent();
 
 #ifndef Q_OS_WINCE
     void setAlertState(bool enabled);

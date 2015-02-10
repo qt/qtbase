@@ -933,7 +933,7 @@ xkb_keysym_t QXcbKeyboard::lookupLatinKeysym(xkb_keycode_t keycode) const
 QList<int> QXcbKeyboard::possibleKeys(const QKeyEvent *event) const
 {
     // turn off the modifier bits which doesn't participate in shortcuts
-    Qt::KeyboardModifiers notNeeded = Qt::MetaModifier | Qt::KeypadModifier | Qt::GroupSwitchModifier;
+    Qt::KeyboardModifiers notNeeded = Qt::KeypadModifier | Qt::GroupSwitchModifier;
     Qt::KeyboardModifiers modifiers = event->modifiers() &= ~notNeeded;
     // create a fresh kb state and test against the relevant modifier combinations
     struct xkb_state *kb_state = xkb_state_new(xkb_keymap);
@@ -963,10 +963,12 @@ QList<int> QXcbKeyboard::possibleKeys(const QKeyEvent *event) const
     xkb_mod_index_t shiftMod = xkb_keymap_mod_get_index(xkb_keymap, "Shift");
     xkb_mod_index_t altMod = xkb_keymap_mod_get_index(xkb_keymap, "Alt");
     xkb_mod_index_t controlMod = xkb_keymap_mod_get_index(xkb_keymap, "Control");
+    xkb_mod_index_t metaMod = xkb_keymap_mod_get_index(xkb_keymap, "Meta");
 
     Q_ASSERT(shiftMod < 32);
     Q_ASSERT(altMod < 32);
     Q_ASSERT(controlMod < 32);
+    Q_ASSERT(metaMod < 32);
 
     xkb_mod_mask_t depressed;
     int qtKey = 0;
@@ -987,6 +989,8 @@ QList<int> QXcbKeyboard::possibleKeys(const QKeyEvent *event) const
                     depressed |= (1 << shiftMod);
                 if (neededMods & Qt::ControlModifier)
                     depressed |= (1 << controlMod);
+                if (neededMods & Qt::MetaModifier)
+                    depressed |= (1 << metaMod);
                 xkb_state_update_mask(kb_state, depressed, latchedMods, lockedMods, 0, 0, lockedLayout);
                 sym = xkb_state_key_get_one_sym(kb_state, keycode);
             }

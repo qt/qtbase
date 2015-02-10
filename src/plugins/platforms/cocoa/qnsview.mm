@@ -1830,6 +1830,8 @@ static QPoint mapWindowCoordinates(QWindow *source, QWindow *target, QPoint poin
     Qt::DropActions qtAllowed = qt_mac_mapNSDragOperations([sender draggingSourceOperationMask]);
 
     QWindow *target = findEventTargetWindow(m_window);
+    if (!target)
+        return NSDragOperationNone;
 
     // update these so selecting move/copy/link works
     QGuiApplicationPrivate::modifier_buttons = [QNSView convertKeyModifiers: [[NSApp currentEvent] modifierFlags]];
@@ -1849,6 +1851,8 @@ static QPoint mapWindowCoordinates(QWindow *source, QWindow *target, QPoint poin
 - (void)draggingExited:(id <NSDraggingInfo>)sender
 {
     QWindow *target = findEventTargetWindow(m_window);
+    if (!target)
+        return;
 
     NSPoint windowPoint = [self convertPoint: [sender draggingLocation] fromView: nil];
     QPoint qt_windowPoint(windowPoint.x, windowPoint.y);
@@ -1861,6 +1865,8 @@ static QPoint mapWindowCoordinates(QWindow *source, QWindow *target, QPoint poin
 - (BOOL)performDragOperation:(id <NSDraggingInfo>)sender
 {
     QWindow *target = findEventTargetWindow(m_window);
+    if (!target)
+        return false;
 
     NSPoint windowPoint = [self convertPoint: [sender draggingLocation] fromView: nil];
     QPoint qt_windowPoint(windowPoint.x, windowPoint.y);
@@ -1886,6 +1892,8 @@ static QPoint mapWindowCoordinates(QWindow *source, QWindow *target, QPoint poin
     Q_UNUSED(img);
     Q_UNUSED(operation);
     QWindow *target = findEventTargetWindow(m_window);
+    if (!target)
+        return;
 
 // keep our state, and QGuiApplication state (buttons member) in-sync,
 // or future mouse events will be processed incorrectly

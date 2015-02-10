@@ -60,6 +60,7 @@ private slots:
     void defaultOkButton();
     void native_activeModalWidget();
     void task247349_alpha();
+    void QTBUG_43548_initialColor();
 };
 
 class TestNativeDialog : public QColorDialog
@@ -160,6 +161,15 @@ void tst_QColorDialog::task247349_alpha()
     dialog.setCurrentColor(QColor(0x01, 0x02, 0x03, alpha));
     QCOMPARE(alpha, dialog.currentColor().alpha());
     QCOMPARE(alpha, qAlpha(dialog.currentColor().rgba()));
+}
+
+void tst_QColorDialog::QTBUG_43548_initialColor()
+{
+    QColorDialog dialog;
+    dialog.setOption(QColorDialog::DontUseNativeDialog);
+    dialog.setCurrentColor(QColor(Qt::red));
+    QColor a(Qt::red);
+    QCOMPARE(a, dialog.currentColor());
 }
 
 QTEST_MAIN(tst_QColorDialog)

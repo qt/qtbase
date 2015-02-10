@@ -170,7 +170,7 @@ static void dumpNativeWindows(const WIdVector& wins)
     dc.stream = QSharedPointer<QTextStream>(new QTextStream(&s));
     foreach (WId win, wins)
         dumpNativeWindowRecursion(reinterpret_cast<HWND>(win), &dc);
-#if QT_VERSION > 0x050000
+#if QT_VERSION >= 0x050400
     qDebug().noquote() << s;
 #else
     qDebug("%s", qPrintable(s));

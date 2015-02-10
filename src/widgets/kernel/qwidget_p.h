@@ -212,7 +212,7 @@ struct QTLWExtra {
 #endif
     QWidgetWindow *window;
     QOpenGLContext *shareContext;
-    quint32 screenIndex; // index in qplatformscreenlist
+    int initialScreenIndex; // Screen number when passing a QDesktop[Screen]Widget as parent.
 };
 
 struct QWExtra {

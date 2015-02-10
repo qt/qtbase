@@ -130,10 +130,17 @@ static bool currentProcessIsService()
         DWORD size = UNLEN;
         if (ptrGetUserName(userName, &size)) {
             SID_NAME_USE type = SidTypeUser;
-            DWORD dummy = MAX_PATH;
-            wchar_t dummyStr[MAX_PATH] = L"";
-            PSID psid = 0;
-            if (ptrLookupAccountName(NULL, userName, &psid, &dummy, dummyStr, &dummy, &type))
+            DWORD sidSize = 0;
+            DWORD domainSize = 0;
+            // first call is to get the correct size
+            bool bRet = ptrLookupAccountName(NULL, userName, NULL, &sidSize, NULL, &domainSize, &type);
+            if (bRet == FALSE && ERROR_INSUFFICIENT_BUFFER != GetLastError())
+                return false;
+            QVarLengthArray<BYTE, 68> buff(sidSize);
+            QVarLengthArray<wchar_t, MAX_PATH> domainName(domainSize);
+            // second call to LookupAccountNameW actually gets the SID
+            // both the pointer to the buffer and the pointer to the domain name should not be NULL
+            if (ptrLookupAccountName(NULL, userName, buff.data(), &sidSize, domainName.data(), &domainSize, &type))
                 return type != SidTypeUser; //returns true if the current user is not a user
         }
     }

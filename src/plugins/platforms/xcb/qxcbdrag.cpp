@@ -999,6 +999,8 @@ void QXcbDrag::handleFinished(const xcb_client_message_event_t *event)
         if (at != -1) {
 
             Transaction t = transactions.takeAt(at);
+            if (t.drag)
+                t.drag->deleteLater();
 //            QDragManager *manager = QDragManager::self();
 
 //            Window target = current_target;
@@ -1184,6 +1186,11 @@ bool QXcbDrag::dndEnable(QXcbWindow *w, bool on)
         }
         return true;
     }
+}
+
+bool QXcbDrag::ownsDragObject() const
+{
+    return true;
 }
 
 QXcbDropData::QXcbDropData(QXcbDrag *d)
