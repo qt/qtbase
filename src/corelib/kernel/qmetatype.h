@@ -1369,6 +1369,9 @@ namespace QtPrivate
     template<typename T>
     struct IsQEnumHelper {
         static const T &declval();
+        // If the type was declared with Q_ENUM, the friend qt_getEnumMetaObject(T) declared in the
+        // Q_ENUM macro will be chosen by ADL, and the return type will be QMetaObject*.
+        // Otherwise the chosen overload will be qt_getEnumMetaObject(...) which returne 'char'
         enum { Value = sizeof(qt_getEnumMetaObject(declval())) == sizeof(QMetaObject*) };
     };
 
