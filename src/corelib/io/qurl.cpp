@@ -3083,6 +3083,21 @@ bool QUrl::hasFragment() const
     URL does not contain a valid TLD, in which case the function returns
     an empty string.
 
+    Note that this function considers a TLD to be any domain that allows users
+    to register subdomains under, including many home, dynamic DNS websites and
+    blogging providers. This is useful for determining whether two websites
+    belong to the same infrastructure and communication should be allowed, such
+    as browser cookies: two domains should be considered part of the same
+    website if they share at least one label in addition to the value
+    returned by this function.
+
+    \list
+      \li \c{foo.co.uk} and \c{foo.com} do not share a top-level domain
+      \li \c{foo.co.uk} and \c{bar.co.uk} share the \c{.co.uk} domain, but the next label is different
+      \li \c{www.foo.co.uk} and \c{ftp.foo.co.uk} share the same top-level domain and one more label,
+          so they are considered part of the same site
+    \endlist
+
     If \a options includes EncodeUnicode, the returned string will be in
     ASCII Compatible Encoding.
 */
