@@ -32,7 +32,11 @@ contains(QT_CONFIG, opengl)|contains(QT_CONFIG, opengles2) {
                opengl/qopenglversionfunctionsfactory_p.h \
                opengl/qopenglvertexarrayobject.h \
                opengl/qopengldebug.h \
-               opengl/qopengltextureblitter_p.h
+               opengl/qopengltextureblitter_p.h \
+               opengl/qopengltexture.h \
+               opengl/qopengltexture_p.h \
+               opengl/qopengltexturehelper_p.h \
+               opengl/qopenglpixeltransferoptions.h
 
     SOURCES += opengl/qopengl.cpp \
                opengl/qopenglfunctions.cpp \
@@ -53,18 +57,10 @@ contains(QT_CONFIG, opengl)|contains(QT_CONFIG, opengles2) {
                opengl/qopenglversionfunctionsfactory.cpp \
                opengl/qopenglvertexarrayobject.cpp \
                opengl/qopengldebug.cpp \
-               opengl/qopengltextureblitter.cpp
-
-    !wince* {
-        HEADERS += opengl/qopengltexture.h \
-                   opengl/qopengltexture_p.h \
-                   opengl/qopengltexturehelper_p.h \
-                   opengl/qopenglpixeltransferoptions.h
-
-        SOURCES += opengl/qopengltexture.cpp \
-                   opengl/qopengltexturehelper.cpp \
-                   opengl/qopenglpixeltransferoptions.cpp
-    }
+               opengl/qopengltextureblitter.cpp \
+               opengl/qopengltexture.cpp \
+               opengl/qopengltexturehelper.cpp \
+               opengl/qopenglpixeltransferoptions.cpp
 
     !contains(QT_CONFIG, opengles2) {
         HEADERS += opengl/qopenglfunctions_1_0.h \
