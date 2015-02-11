@@ -2483,8 +2483,8 @@ Additional options:
     -device-option <key=value> ... Add device specific options for the device mkspec
                                    (experimental)
 
-    -no-separate-debug-info . Do not store debug information in a separate file.
- *  -separate-debug-info .... Strip debug information into a separate file.
+ *  -no-separate-debug-info . Do not store debug information in a separate file.
+    -separate-debug-info .... Strip debug information into a separate file.
 
     -no-xcb ............ Do not compile Xcb (X protocol C-language Binding) support.
  *  -xcb ............... Compile Xcb support.
