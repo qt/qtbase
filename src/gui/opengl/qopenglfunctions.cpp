@@ -3229,7 +3229,10 @@ QOpenGLES3Helper::QOpenGLES3Helper()
         CompressedTexImage3D = (void (QOPENGLF_APIENTRYP)(GLenum, GLint, GLenum, GLsizei, GLsizei, GLsizei, GLint, GLsizei, const GLvoid *)) m_gl.resolve("glCompressedTexImage3D");
         CompressedTexSubImage3D = (void (QOPENGLF_APIENTRYP)(GLenum, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GLenum, GLsizei, const GLvoid *)) m_gl.resolve("glCompressedTexSubImage3D");
 
-        if (!MapBufferRange || !GenVertexArrays || !TexImage3D)
+        TexStorage3D = (void (QOPENGLF_APIENTRYP)(GLenum, GLsizei, GLenum, GLsizei, GLsizei, GLsizei)) m_gl.resolve("glTexStorage3D");
+        TexStorage2D = (void (QOPENGLF_APIENTRYP)(GLenum, GLsizei, GLenum, GLsizei, GLsizei)) m_gl.resolve("glTexStorage2D");
+
+        if (!MapBufferRange || !GenVertexArrays || !TexImage3D || !TexStorage3D)
             qFatal("OpenGL ES 3.0 entry points not found");
     } else {
         qFatal("Failed to load libGLESv2");

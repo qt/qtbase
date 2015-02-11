@@ -201,13 +201,16 @@ QOpenGLTextureHelper::QOpenGLTextureHelper(QOpenGLContext *context)
     TexImage2DMultisample = 0;
 
     // OpenGL 4.2
-#ifdef QT_OPENGL_ES_3
-    TexStorage3D = ::glTexStorage3D;
-    TexStorage2D = ::glTexStorage2D;
-#else
-    TexStorage3D = 0;
-    TexStorage2D = 0;
-#endif
+    QOpenGLContext *ctx = QOpenGLContext::currentContext();
+    if (ctx->format().majorVersion() >= 3) {
+        // OpenGL ES 3.0+ has immutable storage for 2D and 3D at least.
+        QOpenGLES3Helper *es3 = static_cast<QOpenGLExtensions *>(ctx->functions())->gles3Helper();
+        TexStorage3D = es3->TexStorage3D;
+        TexStorage2D = es3->TexStorage2D;
+    } else {
+        TexStorage3D = 0;
+        TexStorage2D = 0;
+    }
     TexStorage1D = 0;
 
     // OpenGL 4.3
