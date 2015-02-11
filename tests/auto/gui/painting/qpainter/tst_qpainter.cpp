@@ -53,6 +53,7 @@
 #endif
 #include <qpixmap.h>
 
+#include <private/qdrawhelper_p.h>
 #include <qpainter.h>
 
 #ifndef QT_NO_WIDGETS
@@ -125,7 +126,11 @@ private slots:
     void fillRect3();
     void fillRect4_data() { fillRect2_data(); }
     void fillRect4();
+    void fillRectNonPremul_data();
     void fillRectNonPremul();
+
+    void fillRectRGB30_data();
+    void fillRectRGB30();
 
     void drawEllipse_data();
     void drawEllipse();
@@ -1245,22 +1250,87 @@ void tst_QPainter::fillRect4()
     QCOMPARE(image, expected);
 }
 
+void tst_QPainter::fillRectNonPremul_data()
+{
+    QTest::addColumn<QImage::Format>("format");
+    QTest::addColumn<uint>("color");
+
+    QTest::newRow("argb32 7f1f3f7f") << QImage::Format_ARGB32 << qRgba(31, 63, 127, 127);
+    QTest::newRow("rgba8888 7f1f3f7f") << QImage::Format_RGBA8888 << qRgba(31, 63, 127, 127);
+
+    QTest::newRow("argb32 3f1f3f7f") << QImage::Format_ARGB32 << qRgba(31, 63, 127, 63);
+    QTest::newRow("rgba8888 3f1f3f7f") << QImage::Format_RGBA8888 << qRgba(31, 63, 127, 63);
+
+    QTest::newRow("argb32 070375f4") << QImage::Format_ARGB32 << qRgba(3, 117, 244, 7);
+    QTest::newRow("rgba8888 070375f4") << QImage::Format_RGBA8888 << qRgba(3, 117, 244, 7);
+
+    QTest::newRow("argb32 0301fe0c") << QImage::Format_ARGB32 << qRgba(1, 254, 12, 3);
+    QTest::newRow("rgba8888 0301fe0c") << QImage::Format_RGBA8888 << qRgba(1, 254, 12, 3);
+
+    QTest::newRow("argb32 01804010") << QImage::Format_ARGB32 << qRgba(128, 64, 32, 1);
+    QTest::newRow("rgba8888 01804010") << QImage::Format_RGBA8888 << qRgba(128, 64, 32, 1);
+}
+
 void tst_QPainter::fillRectNonPremul()
 {
-    QImage img1(1, 1, QImage::Format_ARGB32);
-    QImage img2(1, 1, QImage::Format_RGBA8888);
+    QFETCH(QImage::Format, format);
+    QFETCH(uint, color);
 
-    QPainter p1(&img1);
-    QPainter p2(&img2);
-
+    QImage image(1, 1, format);
     QRectF rect(0, 0, 1, 1);
-    p1.fillRect(rect, qRgba(31, 63, 127, 127));
-    p2.fillRect(rect, qRgba(31, 63, 127, 127));
 
-    p1.end();
-    p2.end();
+    // Fill with CompositionMode_SourceOver tests blend_color
+    image.fill(Qt::transparent);
+    QPainter painter(&image);
+    painter.fillRect(rect, QColor::fromRgba(color));
+    painter.end();
 
-    QCOMPARE(img1.pixel(0, 0), img2.pixel(0,0));
+    // Fill with CompositionMode_Source tests rectfill.
+    painter.begin(&image);
+    painter.setCompositionMode(QPainter::CompositionMode_Source);
+    painter.fillRect(rect, QColor::fromRgba(color));
+    painter.end();
+
+    QRgb p = image.pixel(0, 0);
+    QCOMPARE(qAlpha(p), qAlpha(color));
+    QVERIFY(qAbs(qRed(p)-qRed(color)) <= 1);
+    QVERIFY(qAbs(qGreen(p)-qGreen(color)) <= 1);
+    QVERIFY(qAbs(qBlue(p)-qBlue(color)) <= 1);
+}
+
+void tst_QPainter::fillRectRGB30_data()
+{
+    QTest::addColumn<uint>("color");
+
+    QTest::newRow("17|43|259") << (0xc0000000 | (17 << 20) | (43 << 10) | 259);
+    QTest::newRow("2|33|444") << (0xc0000000 | (2 << 20) | (33 << 10) | 444);
+    QTest::newRow("1000|1000|1000") << (0xc0000000 | (1000 << 20) | (1000 << 10) | 1000);
+}
+
+void tst_QPainter::fillRectRGB30()
+{
+    QFETCH(uint, color);
+    QRectF rect(0, 0, 1, 1);
+
+    // Fill with CompositionMode_SourceOver tests blend_color
+    QImage image1(1, 1, QImage::Format_A2BGR30_Premultiplied);
+    image1.fill(Qt::transparent);
+    QPainter painter(&image1);
+    painter.fillRect(rect, QColor::fromRgba64(qConvertA2rgb30ToRgb64<PixelOrderBGR>(color)));
+    painter.end();
+
+    uint pixel1 = ((const uint*)(image1.bits()))[0];
+    QCOMPARE(pixel1, color);
+
+    // Fill with CompositionMode_Source tests rectfill.
+    QImage image2(1, 1, QImage::Format_RGB30);
+    painter.begin(&image2);
+    painter.setCompositionMode(QPainter::CompositionMode_Source);
+    painter.fillRect(rect, QColor::fromRgba64(qConvertA2rgb30ToRgb64<PixelOrderRGB>(color)));
+    painter.end();
+
+    uint pixel2 = ((const uint*)(image2.bits()))[0];
+    QCOMPARE(pixel2, color);
 }
 
 void tst_QPainter::drawPath_data()
@@ -2618,28 +2688,6 @@ void tst_QPainter::porterDuff_warning()
 
     QVERIFY(qInstallMessageHandler(old) == porterDuff_warningChecker);
 }
-
-class quint24
-{
-public:
-    inline quint24(quint32 v)
-    {
-        data[0] = qBlue(v);
-        data[1] = qGreen(v);
-        data[2] = qRed(v);
-    }
-
-    inline operator quint32 ()
-    {
-        return qRgb(data[2], data[1], data[0]);
-    }
-
-    inline bool operator==(const quint24 &v) const {
-        return (data[0] == v.data[0] && data[1] == v.data[1] && data[2] == v.data[2]);
-    }
-
-    uchar data[3];
-};
 
 void tst_QPainter::drawhelper_blend_color()
 {
@@ -4064,10 +4112,10 @@ void tst_QPainter::extendedBlendModes()
 
     QVERIFY(testCompositionMode(255, 255, 255, QPainter::CompositionMode_Plus, 0.3));
     QVERIFY(testCompositionMode(  0,   0,   0, QPainter::CompositionMode_Plus, 0.3));
-    QVERIFY(testCompositionMode(127, 128, 165, QPainter::CompositionMode_Plus, 0.3));
-    QVERIFY(testCompositionMode(127,   0,  37, QPainter::CompositionMode_Plus, 0.3));
+    QVERIFY(testCompositionMode(126, 128, 165, QPainter::CompositionMode_Plus, 0.3));
+    QVERIFY(testCompositionMode(127,   0,  38, QPainter::CompositionMode_Plus, 0.3));
     QVERIFY(testCompositionMode(  0, 127, 127, QPainter::CompositionMode_Plus, 0.3));
-    QVERIFY(testCompositionMode(255,   0,  75, QPainter::CompositionMode_Plus, 0.3));
+    QVERIFY(testCompositionMode(255,   0,  76, QPainter::CompositionMode_Plus, 0.3));
     QVERIFY(testCompositionMode(  0, 255, 255, QPainter::CompositionMode_Plus, 0.3));
     QVERIFY(testCompositionMode(128, 128, 166, QPainter::CompositionMode_Plus, 0.3));
     QVERIFY(testCompositionMode(186, 200, 255, QPainter::CompositionMode_Plus, 0.3));

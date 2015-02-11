@@ -466,7 +466,7 @@ void qt_blend_rgb32_on_rgb32_neon(uchar *destPixels, int dbpl,
 }
 
 void qt_alphamapblit_quint16_neon(QRasterBuffer *rasterBuffer,
-                                  int x, int y, quint32 color,
+                                  int x, int y, const QRgba64 &color,
                                   const uchar *bitmap,
                                   int mapWidth, int mapHeight, int mapStride,
                                   const QClipData *)
@@ -475,8 +475,9 @@ void qt_alphamapblit_quint16_neon(QRasterBuffer *rasterBuffer,
     const int destStride = rasterBuffer->bytesPerLine() / sizeof(quint16);
 
     uchar *mask = const_cast<uchar *>(bitmap);
+    const uint c = color.toArgb32();
 
-    pixman_composite_over_n_8_0565_asm_neon(mapWidth, mapHeight, dest, destStride, color, 0, mask, mapStride);
+    pixman_composite_over_n_8_0565_asm_neon(mapWidth, mapHeight, dest, destStride, c, 0, mask, mapStride);
 }
 
 extern "C" void blend_8_pixels_rgb16_on_rgb16_neon(quint16 *dst, const quint16 *src, int const_alpha);

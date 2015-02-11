@@ -44,6 +44,7 @@ HEADERS += \
         painting/qregion.h \
         painting/qrgb.h \
         painting/qrgba64.h \
+        painting/qrgba64_p.h \
         painting/qstroker_p.h \
         painting/qtextureglyphcache_p.h \
         painting/qtransform.h \

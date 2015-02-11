@@ -1766,11 +1766,11 @@ void QImage::fill(const QColor &color)
         break;
     case QImage::Format_BGR30:
     case QImage::Format_A2BGR30_Premultiplied:
-        fill(qConvertArgb32ToA2rgb30<PixelOrderBGR>(color.rgba()));
+        fill(qConvertRgb64ToRgb30<PixelOrderBGR>(color.rgba64()));
         break;
     case QImage::Format_RGB30:
     case QImage::Format_A2RGB30_Premultiplied:
-        fill(qConvertArgb32ToA2rgb30<PixelOrderRGB>(color.rgba()));
+        fill(qConvertRgb64ToRgb30<PixelOrderRGB>(color.rgba64()));
         break;
     case QImage::Format_RGB16:
         fill((uint) qConvertRgb32To16(color.rgba()));

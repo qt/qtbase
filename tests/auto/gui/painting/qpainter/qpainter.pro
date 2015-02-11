@@ -2,7 +2,7 @@ CONFIG += testcase
 CONFIG += parallel_test
 TARGET = tst_qpainter
 
-QT += testlib
+QT += testlib gui-private core-private
 qtHaveModule(widgets): QT += widgets widgets-private
 
 SOURCES  += tst_qpainter.cpp

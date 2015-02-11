@@ -33,6 +33,7 @@
 
 #include "qcosmeticstroker_p.h"
 #include "private/qpainterpath_p.h"
+#include "private/qrgba64_p.h"
 #include <qdebug.h>
 
 QT_BEGIN_NAMESPACE
@@ -280,7 +281,7 @@ void QCosmeticStroker::setup()
     drawCaps = state->lastPen.capStyle() != Qt::FlatCap;
 
     if (strokeSelection & FastDraw) {
-        color = INTERPOLATE_PIXEL_256(state->penData.solid.color, opacity, 0, 0);
+        color = multiplyAlpha256(state->penData.solid.color, opacity).toArgb32();
         QRasterBuffer *buffer = state->penData.rasterBuffer;
         pixels = (uint *)buffer->buffer();
         ppl = buffer->bytesPerLine()>>2;

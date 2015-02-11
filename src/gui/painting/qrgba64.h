@@ -88,6 +88,9 @@ public:
         return fromRgba(rgb >> 16, rgb >> 8, rgb, rgb >> 24);
     }
 
+    Q_DECL_CONSTEXPR bool isOpaque() const { return c.alpha == 0xffff; }
+    Q_DECL_CONSTEXPR bool isTransparent() const { return c.alpha == 0; }
+
     Q_DECL_CONSTEXPR quint16 red()   const { return c.red; }
     Q_DECL_CONSTEXPR quint16 green() const { return c.green; }
     Q_DECL_CONSTEXPR quint16 blue()  const { return c.blue; }
@@ -131,6 +134,12 @@ public:
     Q_DECL_CONSTEXPR operator quint64() const
     {
         return rgba;
+    }
+
+    QRgba64 operator=(quint64 _rgba)
+    {
+        rgba = _rgba;
+        return *this;
     }
 
 private:
