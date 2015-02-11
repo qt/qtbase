@@ -73,7 +73,6 @@ public:
         NStandardButtons = 6,
         NButtons = 9
     };
-    Q_ENUM(WizardButton)
 
     enum WizardPixmap {
         WatermarkPixmap,
@@ -90,6 +89,7 @@ public:
         AeroStyle,
         NStyles
     };
+    Q_ENUM(WizardStyle)
 
     enum WizardOption {
         IndependentPages                = 0x00000001,
