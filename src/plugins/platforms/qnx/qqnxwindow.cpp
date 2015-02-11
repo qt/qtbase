@@ -48,9 +48,7 @@
 #include <QtCore/QDebug>
 
 #if defined(Q_OS_BLACKBERRY)
-#if !defined(Q_OS_BLACKBERRY_TABLET)
 #include "qqnxnavigatorcover.h"
-#endif
 #include <sys/pps.h>
 #include <bps/navigator.h>
 #endif
@@ -635,7 +633,7 @@ QQnxWindow *QQnxWindow::findWindow(screen_window_t windowHandle)
 
 void QQnxWindow::minimize()
 {
-#if defined(Q_OS_BLACKBERRY) && !defined(Q_OS_BLACKBERRY_TABLET)
+#if defined(Q_OS_BLACKBERRY)
     qWindowDebug() << Q_FUNC_INFO;
 
     pps_encoder_t encoder;
@@ -689,7 +687,7 @@ void QQnxWindow::initWindow()
     setScreen(platformScreen);
 
     if (window()->type() == Qt::CoverWindow) {
-#if defined(Q_OS_BLACKBERRY) && !defined(Q_OS_BLACKBERRY_TABLET)
+#if defined(Q_OS_BLACKBERRY)
         if (platformScreen->rootWindow()) {
             screen_set_window_property_pv(m_screen->rootWindow()->nativeHandle(),
                                           SCREEN_PROPERTY_ALTERNATE_WINDOW, (void**)&m_window);

@@ -65,11 +65,6 @@ public:
     void registerForScreenEvents(QQnxScreen *screen);
     void unregisterForScreenEvents(QQnxScreen *screen);
 
-#ifdef Q_OS_BLACKBERRY_TABLET
-    void registerForDialogEvents(QQnxFileDialogHelper *dialog);
-    void unregisterForDialogEvents(QQnxFileDialogHelper *dialog);
-#endif
-
 private:
     bool nativeEventFilter(const QByteArray &eventType, void *message, long *result) Q_DECL_OVERRIDE;
 

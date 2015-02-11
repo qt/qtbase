@@ -105,17 +105,13 @@ CONFIG(blackberry) {
     LIBS += -lbps
 }
 
-CONFIG(blackberry-playbook) {
-    SOURCES += qqnxfiledialoghelper_playbook.cpp
-} else {
-    CONFIG(blackberry) {
-        SOURCES += qqnxfiledialoghelper_bb10.cpp \
-                   qqnxfilepicker.cpp \
-                   qqnxnavigatorcover.cpp
+CONFIG(blackberry) {
+    SOURCES += qqnxfiledialoghelper_bb10.cpp \
+               qqnxfilepicker.cpp \
+               qqnxnavigatorcover.cpp
 
-        HEADERS += qqnxfilepicker.h \
-                   qqnxnavigatorcover.h
-    }
+    HEADERS += qqnxfilepicker.h \
+               qqnxnavigatorcover.h
 }
 
 CONFIG(qqnx_pps) {

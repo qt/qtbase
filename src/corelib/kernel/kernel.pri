@@ -175,7 +175,7 @@ blackberry {
                 kernel/qeventdispatcher_blackberry_p.h
 }
 
-qqnx_pps:!blackberry-playbook {
+qqnx_pps {
         LIBS_PRIVATE += -lpps
         SOURCES += \
                 kernel/qppsattribute.cpp \

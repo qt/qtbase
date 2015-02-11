@@ -127,13 +127,7 @@ void QQnxFilePicker::open()
         map[QStringLiteral("Filter")] = m_filters.join(QLatin1Char(';'));
 
     QByteArray ppsData;
-#if defined(Q_OS_BLACKBERRY_TABLET)
-    QJsonDocument document;
-    document.setObject(QJsonObject::fromVariantMap(map));
-    ppsData = document.toJson(QJsonDocument::Compact);
-#else
     ppsData = QPpsObject::encode(map);
-#endif
 
     errorCode = navigator_invoke_invocation_set_data(m_invocationHandle, ppsData.constData(), ppsData.size());
     if (errorCode != BPS_SUCCESS) {
