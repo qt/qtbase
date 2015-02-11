@@ -47,6 +47,9 @@
 
 QT_BEGIN_NAMESPACE
 
+typedef QList<QTextCodec*>::ConstIterator TextCodecListConstIt;
+typedef QList<QByteArray>::ConstIterator ByteArrayListConstIt;
+
 static void qIcuCodecStateFree(QTextCodec::ConverterState *state)
 {
     ucnv_close(static_cast<UConverter *>(state->d));
@@ -487,20 +490,21 @@ QTextCodec *QIcuCodec::codecForNameUnlocked(const char *name)
             return codec;
     }
 
-    for (int i = 0; i < globalData->allCodecs.size(); ++i) {
-        QTextCodec *cursor = globalData->allCodecs.at(i);
+    for (TextCodecListConstIt it = globalData->allCodecs.constBegin(), cend = globalData->allCodecs.constEnd(); it != cend; ++it) {
+        QTextCodec *cursor = *it;
         if (qTextCodecNameMatch(cursor->name(), standardName)) {
             if (cache)
                 cache->insert(standardName, cursor);
             return cursor;
         }
         QList<QByteArray> aliases = cursor->aliases();
-        for (int y = 0; y < aliases.size(); ++y)
-            if (qTextCodecNameMatch(aliases.at(y), standardName)) {
+        for (ByteArrayListConstIt ait = aliases.constBegin(), acend = aliases.constEnd(); ait != acend; ++ait) {
+            if (qTextCodecNameMatch(*ait, standardName)) {
                 if (cache)
                     cache->insert(standardName, cursor);
                 return cursor;
             }
+        }
     }
 
     QTextCodec *c = loadQtCodec(standardName);

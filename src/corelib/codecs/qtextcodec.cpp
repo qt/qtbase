@@ -87,6 +87,9 @@
 
 QT_BEGIN_NAMESPACE
 
+typedef QList<QTextCodec*>::ConstIterator TextCodecListConstIt;
+typedef QList<QByteArray>::ConstIterator ByteArrayListConstIt;
+
 Q_GLOBAL_STATIC_WITH_ARGS(QMutex, textCodecsMutex, (QMutex::Recursive));
 QMutex *qTextCodecsMutex() { return textCodecsMutex(); }
 
@@ -519,20 +522,21 @@ QTextCodec *QTextCodec::codecForName(const QByteArray &name)
             return codec;
     }
 
-    for (int i = 0; i < globalData->allCodecs.size(); ++i) {
-        QTextCodec *cursor = globalData->allCodecs.at(i);
+    for (TextCodecListConstIt it = globalData->allCodecs.constBegin(), cend = globalData->allCodecs.constEnd(); it != cend; ++it) {
+        QTextCodec *cursor = *it;
         if (qTextCodecNameMatch(cursor->name(), name)) {
             if (cache)
                 cache->insert(name, cursor);
             return cursor;
         }
         QList<QByteArray> aliases = cursor->aliases();
-        for (int y = 0; y < aliases.size(); ++y)
-            if (qTextCodecNameMatch(aliases.at(y), name)) {
+        for (ByteArrayListConstIt ait = aliases.constBegin(), acend = aliases.constEnd(); ait != acend; ++ait) {
+            if (qTextCodecNameMatch(*ait, name)) {
                 if (cache)
                     cache->insert(name, cursor);
                 return cursor;
             }
+        }
     }
 
     return 0;
@@ -567,9 +571,8 @@ QTextCodec* QTextCodec::codecForMib(int mib)
             return codec;
     }
 
-    QList<QTextCodec*>::ConstIterator i;
-    for (int i = 0; i < globalData->allCodecs.size(); ++i) {
-        QTextCodec *cursor = globalData->allCodecs.at(i);
+    for (TextCodecListConstIt it = globalData->allCodecs.constBegin(), cend = globalData->allCodecs.constEnd(); it != cend; ++it) {
+        QTextCodec *cursor = *it;
         if (cursor->mibEnum() == mib) {
             if (cache)
                 cache->insert(key, cursor);
@@ -604,9 +607,9 @@ QList<QByteArray> QTextCodec::availableCodecs()
 
     QList<QByteArray> codecs;
 
-    for (int i = 0; i < globalData->allCodecs.size(); ++i) {
-        codecs += globalData->allCodecs.at(i)->name();
-        codecs += globalData->allCodecs.at(i)->aliases();
+    for (TextCodecListConstIt it = globalData->allCodecs.constBegin(), cend = globalData->allCodecs.constEnd(); it != cend; ++it) {
+        codecs += (*it)->name();
+        codecs += (*it)->aliases();
     }
 
 #ifdef QT_USE_ICU
@@ -636,8 +639,8 @@ QList<int> QTextCodec::availableMibs()
 
     QList<int> codecs;
 
-    for (int i = 0; i < globalData->allCodecs.size(); ++i)
-        codecs += globalData->allCodecs.at(i)->mibEnum();
+    for (TextCodecListConstIt it = globalData->allCodecs.constBegin(), cend = globalData->allCodecs.constEnd(); it != cend; ++it)
+        codecs += (*it)->mibEnum();
 
     return codecs;
 #endif
