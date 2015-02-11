@@ -35,6 +35,7 @@
 #define QLINUXFBINTEGRATION_H
 
 #include <qpa/qplatformintegration.h>
+#include <qpa/qplatformnativeinterface.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -60,6 +61,8 @@ public:
     QPlatformServices *services() const Q_DECL_OVERRIDE;
     QPlatformInputContext *inputContext() const Q_DECL_OVERRIDE { return m_inputContext; }
 
+    QPlatformNativeInterface *nativeInterface() const Q_DECL_OVERRIDE;
+
     QList<QPlatformScreen *> screens() const;
 
 private:
@@ -68,6 +71,7 @@ private:
     QScopedPointer<QPlatformFontDatabase> m_fontDb;
     QScopedPointer<QPlatformServices> m_services;
     QScopedPointer<QFbVtHandler> m_vtHandler;
+    QScopedPointer<QPlatformNativeInterface> m_nativeInterface;
 };
 
 QT_END_NAMESPACE
