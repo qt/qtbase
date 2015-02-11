@@ -192,16 +192,16 @@ void tst_QNetworkCookieJar::setCookiesFromUrl_data()
     result += cookie;
     QTest::newRow("effective-tld1-accepted") << preset << cookie << "http://something.co.uk" << result << true;
 
-    // 2. anything .ar is an effective TLD ('*.ar'), but 'gobiernoelectronico.ar' is an exception
+    // 2. anything .mz is an effective TLD ('*.mz'), but 'teledata.mz' is an exception
     result.clear();
     preset.clear();
-    cookie.setDomain(".farmacia.ar");
-    QTest::newRow("effective-tld2-denied") << preset << cookie << "http://farmacia.ar" << result << false;
-    QTest::newRow("effective-tld2-denied2") << preset << cookie << "http://www.farmacia.ar" << result << false;
-    QTest::newRow("effective-tld2-denied3") << preset << cookie << "http://www.anything.farmacia.ar" << result << false;
-    cookie.setDomain(".gobiernoelectronico.ar");
+    cookie.setDomain(".farmacia.mz");
+    QTest::newRow("effective-tld2-denied") << preset << cookie << "http://farmacia.mz" << result << false;
+    QTest::newRow("effective-tld2-denied2") << preset << cookie << "http://www.farmacia.mz" << result << false;
+    QTest::newRow("effective-tld2-denied3") << preset << cookie << "http://www.anything.farmacia.mz" << result << false;
+    cookie.setDomain(".teledata.mz");
     result += cookie;
-    QTest::newRow("effective-tld2-accepted") << preset << cookie << "http://www.gobiernoelectronico.ar" << result << true;
+    QTest::newRow("effective-tld2-accepted") << preset << cookie << "http://www.teledata.mz" << result << true;
 
     result.clear();
     preset.clear();
@@ -403,6 +403,8 @@ void tst_QNetworkCookieJar::effectiveTLDs_data()
     QTest::newRow("yes7") << "org.ws" << true;
     QTest::newRow("yes8") << "co.uk" << true;
     QTest::newRow("yes9") << "wallonie.museum" << true;
+    QTest::newRow("yes10") << "hk.com" << true;
+    QTest::newRow("yes11") << "hk.org" << true;
 
     QTest::newRow("no1") << "anything.com" << false;
     QTest::newRow("no2") << "anything.de" << false;
@@ -414,6 +416,7 @@ void tst_QNetworkCookieJar::effectiveTLDs_data()
     QTest::newRow("no8") << "teatime.co.uk" << false;
     QTest::newRow("no9") << "bla" << false;
     QTest::newRow("no10") << "bla.bla" << false;
+    QTest::newRow("no11") << "mosreg.ru" << false;
 
     const ushort s1[] = {0x74, 0x72, 0x61, 0x6e, 0xf8, 0x79, 0x2e, 0x6e, 0x6f, 0x00}; // xn--trany-yua.no
     const ushort s2[] = {0x5d9, 0x5e8, 0x5d5, 0x5e9, 0x5dc, 0x5d9, 0x5dd, 0x2e, 0x6d, 0x75, 0x73, 0x65, 0x75, 0x6d, 0x00}; // xn--9dbhblg6di.museum
@@ -453,9 +456,10 @@ void tst_QNetworkCookieJar::effectiveTLDs_data()
     QTest::newRow("yes-wildcard1") << "*.jm" << true;
     QTest::newRow("yes-wildcard1.5") << "anything.jm" << true;
     QTest::newRow("yes-wildcard2") << "something.kh" << true;
-    QTest::newRow("yes-wildcard3") << "whatever.uk" << true;
+    QTest::newRow("no-wildcard3") << "whatever.uk" << false; // was changed at some point
     QTest::newRow("yes-wildcard4") << "anything.sendai.jp" << true;
     QTest::newRow("yes-wildcard5") << "foo.sch.uk" << true;
+    QTest::newRow("yes-wildcard6") << "something.platform.sh" << true;
 }
 
 void tst_QNetworkCookieJar::effectiveTLDs()

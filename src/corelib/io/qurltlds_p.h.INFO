@@ -9,8 +9,8 @@ Those arrays in qurltlds_p.h are derived from the Public
 Suffix List ([2]), which was originally provided by
 Jo Hermans <jo.hermans@gmail.com>.
 
-The file qurltlds_p.h was last generated Friday,
-November 19th 15:24 2010.
+The file qurltlds_p.h was last generated Wednesday,
+February 11th 14:36 2015.
 
 ----
 [1] list: http://mxr.mozilla.org/mozilla-central/source/netwerk/dns/effective_tld_names.dat?raw=1
