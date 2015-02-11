@@ -44,6 +44,7 @@ class QWindowsFontDatabaseFT : public QBasicFontDatabase
 {
 public:
     void populateFontDatabase();
+    void populateFamily(const QString &familyName) Q_DECL_OVERRIDE;
     QFontEngine *fontEngine(const QFontDef &fontDef, void *handle);
     QFontEngine *fontEngine(const QByteArray &fontData, qreal pixelSize, QFont::HintingPreference hintingPreference);
 
@@ -51,11 +52,6 @@ public:
 
     QString fontDir() const Q_DECL_OVERRIDE;
     QFont defaultFont() const Q_DECL_OVERRIDE;
-
-private:
-    void populate(const QString &family = QString());
-
-    QSet<QString> m_families;
 };
 
 QT_END_NAMESPACE
