@@ -55,7 +55,12 @@ class QRegularExpression;
 class Q_TESTLIB_EXPORT QTestLog
 {
 public:
-    enum LogMode { Plain = 0, XML, LightXML, XunitXML, CSV };
+    enum LogMode {
+        Plain = 0, XML, LightXML, XunitXML, CSV,
+#if defined(HAVE_XCTEST)
+        XCTest
+#endif
+    };
 
     static void enterTestFunction(const char* function);
     static void leaveTestFunction();

@@ -1318,6 +1318,96 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
     if(!project->isEmpty("DESTDIR"))
         t << "\t\t\t" << writeSettings("productInstallPath", project->first("DESTDIR")) << ";\n";
     t << "\t\t};\n";
+
+    // Test target for running Qt unit tests under XCTest
+    if (project->isActiveConfig("testcase") && project->isActiveConfig("app_bundle")) {
+        QString devNullFileReferenceKey = keyFor(pbx_dir + "QMAKE_PBX_DEV_NULL_FILE_REFERENCE");
+        t << "\t\t" << devNullFileReferenceKey << " = {\n"
+          << "\t\t\t" << writeSettings("isa", "PBXFileReference", SettingsNoQuote) << ";\n"
+          << "\t\t\t" << writeSettings("name", "/dev/null") << ";\n"
+          << "\t\t\t" << writeSettings("path", "/dev/null") << ";\n"
+          << "\t\t\t" << writeSettings("lastKnownFileType", "sourcecode.c.c") << ";\n"
+          << "\t\t\t" << writeSettings("sourceTree", "<absolute>") << ";\n"
+          << "\t\t};\n";
+
+        QString devNullBuildFileKey = keyFor(pbx_dir + "QMAKE_PBX_DEV_NULL_BUILD_FILE");
+        t << "\t\t" << devNullBuildFileKey << " = {\n"
+          << "\t\t\t" << writeSettings("fileRef", devNullFileReferenceKey) << ";\n"
+          << "\t\t\t" << writeSettings("isa", "PBXBuildFile", SettingsNoQuote) << ";\n"
+          << "\t\t};\n";
+
+        QString dummySourceBuildPhaseKey = keyFor(pbx_dir + "QMAKE_PBX_DUMMY_SOURCE_BUILD_PHASE");
+        t << "\t\t" << dummySourceBuildPhaseKey << " = {\n"
+          << "\t\t\t" << writeSettings("buildActionMask", "2147483647", SettingsNoQuote) << ";\n"
+          << "\t\t\t" << writeSettings("files", devNullBuildFileKey, SettingsAsList, 4) << ";\n"
+          << "\t\t\t" << writeSettings("isa", "PBXSourcesBuildPhase", SettingsNoQuote) << ";\n"
+          << "\t\t\t" << writeSettings("runOnlyForDeploymentPostprocessing", "0", SettingsNoQuote) << ";\n"
+          << "\t\t};\n";
+
+        ProStringList testBundleBuildConfigs;
+
+        ProString targetName = project->first("QMAKE_ORIG_TARGET");
+        ProString testHost = "$(BUILT_PRODUCTS_DIR)/" + targetName + ".app/";
+        if (!project->isActiveConfig("ios"))
+            testHost.append("Contents/MacOS/");
+        testHost.append(targetName);
+
+        static const char * const configs[] = { "Debug", "Release", 0 };
+        for (int i = 0; configs[i]; i++) {
+            QString testBundleBuildConfig = keyFor(pbx_dir + "QMAKE_PBX_TEST_BUNDLE_BUILDCONFIG_" + configs[i]);
+            t << "\t\t" << testBundleBuildConfig << " = {\n"
+              << "\t\t\t" << writeSettings("isa", "XCBuildConfiguration", SettingsNoQuote) << ";\n"
+              << "\t\t\tbuildSettings = {\n"
+              << "\t\t\t\t" << writeSettings("INFOPLIST_FILE", project->first("QMAKE_XCODE_SPECDIR") + "/QtTest.plist") << ";\n"
+              << "\t\t\t\t" << writeSettings("OTHER_LDFLAGS", "") << ";\n"
+              << "\t\t\t\t" << writeSettings("TEST_HOST", testHost) << ";\n"
+              << "\t\t\t\t" << writeSettings("DEBUG_INFORMATION_FORMAT", "dwarf-with-dsym") << ";\n"
+              << "\t\t\t};\n"
+              << "\t\t\t" << writeSettings("name", configs[i], SettingsNoQuote) << ";\n"
+              << "\t\t};\n";
+
+              testBundleBuildConfigs.append(testBundleBuildConfig);
+        }
+
+        QString testBundleBuildConfigurationListKey = keyFor(pbx_dir + "QMAKE_PBX_TEST_BUNDLE_BUILDCONFIG_LIST");
+        t << "\t\t" << testBundleBuildConfigurationListKey << " = {\n"
+          << "\t\t\t" << writeSettings("isa", "XCConfigurationList", SettingsNoQuote) << ";\n"
+          << "\t\t\t" << writeSettings("buildConfigurations", testBundleBuildConfigs, SettingsAsList, 4) << ";\n"
+          << "\t\t\t" << writeSettings("defaultConfigurationIsVisible", "0", SettingsNoQuote) << ";\n"
+          << "\t\t\t" << writeSettings("defaultConfigurationName", "Debug", SettingsNoQuote) << ";\n"
+          << "\t\t};\n";
+
+        QString primaryTargetDependencyKey = keyFor(pbx_dir + "QMAKE_PBX_PRIMARY_TARGET_DEP");
+        t << "\t\t" << primaryTargetDependencyKey  << " = {\n"
+          << "\t\t\t" << writeSettings("isa", "PBXTargetDependency", SettingsNoQuote) << ";\n"
+          << "\t\t\t" << writeSettings("target", keyFor(pbx_dir + "QMAKE_PBX_TARGET")) << ";\n"
+          << "\t\t};\n";
+
+        QString testBundleReferenceKey = keyFor("QMAKE_TEST_BUNDLE_REFERENCE");
+        t << "\t\t" << testBundleReferenceKey << " = {\n"
+          << "\t\t\t" << writeSettings("isa",  "PBXFileReference", SettingsNoQuote) << ";\n"
+          << "\t\t\t" << writeSettings("explicitFileType", "wrapper.cfbundle") << ";\n"
+          << "\t\t\t" << writeSettings("includeInIndex",  "0", SettingsNoQuote) << ";\n"
+          << "\t\t\t" << writeSettings("sourceTree", "BUILT_PRODUCTS_DIR", SettingsNoQuote) << ";\n"
+          << "\t\t};\n";
+
+        QString testTargetKey = keyFor(pbx_dir + "QMAKE_PBX_TEST_TARGET");
+        project->values("QMAKE_PBX_TARGETS").append(testTargetKey);
+        t << "\t\t" << testTargetKey << " = {\n"
+          << "\t\t\t" << writeSettings("buildPhases", dummySourceBuildPhaseKey, SettingsAsList, 4) << ";\n"
+          << "\t\t\t" << writeSettings("dependencies", primaryTargetDependencyKey, SettingsAsList, 4) << ";\n"
+          << "\t\t\t" << writeSettings("buildConfigurationList", testBundleBuildConfigurationListKey) << ";\n"
+          << "\t\t\t" << writeSettings("productType", "com.apple.product-type.bundle.unit-test") << ";\n"
+          << "\t\t\t" << writeSettings("isa", "PBXNativeTarget", SettingsNoQuote) << ";\n"
+          << "\t\t\t" << writeSettings("productReference", testBundleReferenceKey) << ";\n"
+          << "\t\t\t" << writeSettings("name", "Qt Test") << ";\n"
+          << "\t\t};\n";
+
+        QLatin1Literal testTargetID("TestTargetID");
+        project->values(ProKey("QMAKE_PBX_TARGET_ATTRIBUTES_" + testTargetKey + "_" + testTargetID)).append(keyFor(pbx_dir + "QMAKE_PBX_TARGET"));
+        project->values(ProKey("QMAKE_PBX_TARGET_ATTRIBUTES_" + testTargetKey)).append(ProKey(testTargetID));
+    }
+
     //DEBUG/RELEASE
     QString defaultConfig;
     for(int as_release = 0; as_release < 2; as_release++)
@@ -1543,6 +1633,19 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
     t << "\t\t\t" << writeSettings("projectDirPath", ProStringList()) << ";\n"
       << "\t\t\t" << writeSettings("projectRoot", "") << ";\n"
       << "\t\t\t" << writeSettings("targets", project->values("QMAKE_PBX_TARGETS"), SettingsAsList, 4) << ";\n"
+      << "\t\t\t" << "attributes = {\n"
+      << "\t\t\t\tTargetAttributes = {\n";
+    foreach (const ProString &target, project->values("QMAKE_PBX_TARGETS")) {
+        const ProStringList &attributes = project->values(ProKey("QMAKE_PBX_TARGET_ATTRIBUTES_" + target));
+        if (attributes.isEmpty())
+            continue;
+        t << "\t\t\t\t\t" << target << " = {\n";
+        foreach (const ProString &attribute, attributes)
+            t << "\t\t\t\t\t\t" << writeSettings(attribute.toQString(), project->first(ProKey("QMAKE_PBX_TARGET_ATTRIBUTES_" + target + "_" + attribute))) << ";\n";
+        t << "\t\t\t\t\t};\n";
+    }
+    t << "\t\t\t\t};\n"
+      << "\t\t\t};\n"
       << "\t\t};\n";
 
     // FIXME: Deal with developmentRegion and knownRegions for QMAKE_PBX_ROOT
@@ -1600,6 +1703,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
 
                 schemeData.replace("@QMAKE_ORIG_TARGET@", target);
                 schemeData.replace("@TARGET_PBX_KEY@", keyFor(pbx_dir + "QMAKE_PBX_TARGET"));
+                schemeData.replace("@TEST_BUNDLE_PBX_KEY@", keyFor("QMAKE_TEST_BUNDLE_REFERENCE"));
 
                 QTextStream outputSchemeStream(&outputSchemeFile);
                 outputSchemeStream << schemeData;
