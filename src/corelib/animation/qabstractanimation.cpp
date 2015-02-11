@@ -154,6 +154,9 @@
 
 QT_BEGIN_NAMESPACE
 
+typedef QList<QAbstractAnimationTimer*>::ConstIterator TimerListConstIt;
+typedef QList<QAbstractAnimation*>::ConstIterator AnimationListConstIt;
+
 /*!
   \class QAbstractAnimationTimer
   \inmodule QtCore
@@ -497,8 +500,8 @@ void QUnifiedTimer::resumeAnimationTimer(QAbstractAnimationTimer *timer)
 int QUnifiedTimer::closestPausedAnimationTimerTimeToFinish()
 {
     int closestTimeToFinish = INT_MAX;
-    for (int i = 0; i < pausedAnimationTimers.size(); ++i) {
-        int timeToFinish = pausedAnimationTimers.at(i)->pauseDuration;
+    for (TimerListConstIt it = pausedAnimationTimers.constBegin(), cend = pausedAnimationTimers.constEnd(); it != cend; ++it) {
+        const int timeToFinish = (*it)->pauseDuration;
         if (timeToFinish < closestTimeToFinish)
             closestTimeToFinish = timeToFinish;
     }
@@ -726,8 +729,8 @@ void QAnimationTimer::unregisterRunningAnimation(QAbstractAnimation *animation)
 int QAnimationTimer::closestPauseAnimationTimeToFinish()
 {
     int closestTimeToFinish = INT_MAX;
-    for (int i = 0; i < runningPauseAnimations.size(); ++i) {
-        QAbstractAnimation *animation = runningPauseAnimations.at(i);
+    for (AnimationListConstIt it = runningPauseAnimations.constBegin(), cend = runningPauseAnimations.constEnd(); it != cend; ++it) {
+        const QAbstractAnimation *animation = *it;
         int timeToFinish;
 
         if (animation->direction() == QAbstractAnimation::Forward)

@@ -81,6 +81,8 @@
 
 QT_BEGIN_NAMESPACE
 
+typedef QList<QAbstractAnimation *>::ConstIterator AnimationListConstIt;
+
 bool QSequentialAnimationGroupPrivate::atEnd() const
 {
     // we try to detect if we're at the end of the group
@@ -310,9 +312,8 @@ int QSequentialAnimationGroup::duration() const
     Q_D(const QSequentialAnimationGroup);
     int ret = 0;
 
-    for (int i = 0; i < d->animations.size(); ++i) {
-        QAbstractAnimation *animation = d->animations.at(i);
-        const int currentDuration = animation->totalDuration();
+    for (AnimationListConstIt it = d->animations.constBegin(), cend = d->animations.constEnd(); it != cend; ++it) {
+        const int currentDuration = (*it)->totalDuration();
         if (currentDuration == -1)
             return -1; // Undetermined length
 
