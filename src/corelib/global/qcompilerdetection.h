@@ -173,7 +173,11 @@
 #    else
 #      define Q_CC_CLANG ((__clang_major__ * 100) + __clang_minor__)
 #    endif
-#    define Q_ASSUME_IMPL(expr)  if (expr){} else __builtin_unreachable()
+#    if __has_builtin(__builtin_assume)
+#      define Q_ASSUME_IMPL(expr)   __builtin_assume(expr)
+#    else
+#      define Q_ASSUME_IMPL(expr)  if (expr){} else __builtin_unreachable()
+#    endif
 #    define Q_UNREACHABLE_IMPL() __builtin_unreachable()
 #    if !defined(__has_extension)
 #      /* Compatibility with older Clang versions */
