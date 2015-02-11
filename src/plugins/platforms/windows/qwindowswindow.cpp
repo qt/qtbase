@@ -105,22 +105,6 @@ static QByteArray debugWinExStyle(DWORD exStyle)
     return rc;
 }
 
-static QByteArray debugWindowStates(Qt::WindowStates s)
-{
-
-    QByteArray rc = "0x";
-    rc += QByteArray::number(int(s), 16);
-    if (s & Qt::WindowMinimized)
-        rc += " WindowMinimized";
-    if (s & Qt::WindowMaximized)
-        rc += " WindowMaximized";
-    if (s & Qt::WindowFullScreen)
-        rc += " WindowFullScreen";
-    if (s & Qt::WindowActive)
-        rc += " WindowActive";
-    return rc;
-}
-
 #ifndef Q_OS_WINCE // maybe available on some SDKs revisit WM_GETMINMAXINFO
 QDebug operator<<(QDebug d, const MINMAXINFO &i)
 {
@@ -1586,8 +1570,7 @@ QWindowsWindowData QWindowsWindow::setWindowFlags_sys(Qt::WindowFlags wt,
 void QWindowsWindow::handleWindowStateChange(Qt::WindowState state)
 {
     qCDebug(lcQpaWindows) << __FUNCTION__ << this << window()
-                 << "\n    from " << debugWindowStates(m_windowState)
-                 << " to " << debugWindowStates(state);
+                 << "\n    from " << m_windowState << " to " << state;
     setFlag(FrameDirty);
     m_windowState = state;
     QWindowSystemInterface::handleWindowStateChanged(window(), state);
@@ -1656,7 +1639,7 @@ void QWindowsWindow::setWindowState_sys(Qt::WindowState newState)
     if (oldState == newState)
         return;
     qCDebug(lcQpaWindows) << '>' << __FUNCTION__ << this << window()
-        << " from " << debugWindowStates(oldState) << " to " << debugWindowStates(newState);
+        << " from " << oldState << " to " << newState;
 
     const bool visible = isVisible();
 
@@ -1757,7 +1740,7 @@ void QWindowsWindow::setWindowState_sys(Qt::WindowState newState)
             ShowWindow(m_data.hwnd, (newState == Qt::WindowMinimized) ? SW_MINIMIZE :
                        (newState == Qt::WindowMaximized) ? SW_MAXIMIZE : SW_SHOWNOACTIVATE);
     }
-    qCDebug(lcQpaWindows) << '<' << __FUNCTION__ << this << window() << debugWindowStates(newState);
+    qCDebug(lcQpaWindows) << '<' << __FUNCTION__ << this << window() << newState;
 }
 
 void QWindowsWindow::setStyle(unsigned s) const
