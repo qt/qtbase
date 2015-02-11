@@ -1,0 +1,241 @@
+/****************************************************************************
+**
+** Copyright (C) 2015 The Qt Company Ltd.
+** Contact: http://www.qt.io/licensing/
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** Commercial License Usage
+** Licensees holding valid commercial Qt licenses may use this file in
+** accordance with the commercial license agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and The Qt Company. For licensing terms
+** and conditions see http://www.qt.io/terms-conditions. For further
+** information use the contact form at http://www.qt.io/contact-us.
+**
+** GNU Free Documentation License Usage
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of
+** this file. Please review the following information to ensure
+** the GNU Free Documentation License version 1.3 requirements
+** will be met: http://www.gnu.org/copyleft/fdl.html.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+    \class QRgba64
+    \brief The QRgba64 struct contains a 64-bit RGB color.
+    \since 5.6
+
+    \ingroup painting
+    \inmodule QtGui
+
+    QRgba64 is a 64-bit data-structure containing four 16-bit color channels: Red, green, blue and alpha.
+
+    QRgba64 can be used a replacement for QRgb when higher precision is needed. In particular a
+    premultiplied QRgba64 can operate on unpremultipled QRgb without loss of precision except
+    for alpha 0.
+
+    \sa QRgb, QColor
+*/
+
+/*!
+    \fn static QRgba64 QRgba64::fromRgba64(quint16 r, quint16 g, quint16 b, quint16 a)
+
+    Returns the QRgba64 quadruplet (\a{r}, \a{g}, \a{b}, \a{a}).
+
+    \sa fromRgba()
+*/
+
+/*!
+    \fn static QRgba64 QRgba64::fromRgba64(quint64 c)
+
+    Returns \a c as a QRgba64 struct.
+
+    \sa fromArgb32()
+*/
+
+/*!
+    \fn static QRgba64 QRgba64::fromRgba(quint8 red, quint8 green, quint8 blue, quint8 alpha)
+
+    Constructs a QRgba64 value from the four 8-bit color channels \a red, \a green, \a blue and \a alpha.
+
+    \sa fromArgb32()
+*/
+
+/*!
+    \fn static QRgba64 QRgba64::fromArgb32(uint rgb)
+
+    Constructs a QRgba64 value from the 32bit ARGB value \a rgb.
+
+    \sa fromRgba()
+*/
+
+/*!
+    \fn quint16 QRgba64::red() const
+
+    Returns the 16-bit red color component.
+*/
+
+/*!
+    \fn quint16 QRgba64::green() const
+
+    Returns the 16-bit green color component.
+*/
+
+/*!
+    \fn quint16 QRgba64::blue() const
+
+    Returns the 16-bit blue color component.
+*/
+
+/*!
+    \fn quint16 QRgba64::alpha() const
+
+    Returns the 16-bit alpha channel.
+*/
+
+/*!
+    \fn quint8 QRgba64::red8() const
+
+    Returns the red color component as an 8-bit.
+*/
+
+/*!
+    \fn quint8 QRgba64::green8() const
+
+    Returns the green color component as an 8-bit.
+*/
+
+/*!
+    \fn quint8 QRgba64::blue8() const
+
+    Returns the blue color component as an 8-bit.
+*/
+
+/*!
+    \fn quint8 QRgba64::alpha8() const
+
+    Returns the alpha channel as an 8-bit.
+*/
+
+/*!
+    \fn uint QRgba64::toArgb32() const
+
+    Returns the color as a 32-bit ARGB value.
+
+    \sa fromArgb32()
+*/
+
+/*!
+    \fn ushort QRgba64::toRgb16() const
+
+    Returns the color as a 16-bit RGB value.
+
+    \sa toArgb32()
+*/
+
+/*!
+    \fn QRgba64 QRgba64::premultiplied() const
+
+    Returns the color with the alpha premultiplied.
+
+    \sa unpremultiplied()
+*/
+
+/*!
+    \fn QRgba64 QRgba64::unpremultiplied() const
+
+    Returns the color with the alpha unpremultiplied.
+
+    \sa premultiplied()
+*/
+
+/*!
+    \fn QRgba64::operator quint64() const
+
+    Returns the color as a 64bit unsigned integer
+*/
+
+/*!
+    \fn QRgba64 qRgba64(quint16 r, quint16 g, quint16 b, quint16 a)
+    \relates QColor
+    \since 5.6
+
+    Returns the QRgba64 quadruplet (\a{r}, \a{g}, \a{b}, \a{a}).
+
+    \sa qRgba()
+*/
+
+/*!
+    \fn QRgba64 qRgba64(quint64 c)
+    \relates QColor
+    \since 5.6
+
+    Returns \a c as a QRgba64 struct.
+
+    \sa qRgba()
+*/
+
+/*!
+    \fn QRgba64 qPremultiply(QRgba64 rgba64)
+    \since 5.6
+    \relates QColor
+
+    Converts an unpremultiplied QRgba64 quadruplet \a rgba64 into a premultiplied QRgba64 quadruplet.
+
+    \sa QRgba64::premultiplied(), qUnpremultiply()
+*/
+
+/*!
+    \fn QRgba64 qUnpremultiply(QRgba64 rgba64)
+    \since 5.6
+    \relates QColor
+
+    Converts a premultiplied QRgba64 quadruplet \a rgba64 into an unpremultiplied QRgba64 quadruplet.
+
+    \sa QRgba64::unpremultiplied(), qPremultiply()
+*/
+
+/*!
+    \fn uint qRed(QRgba64 rgba64)
+    \since 5.6
+    \relates QColor
+
+    Returns the red component of \a rgba64 as an 8-bit value.
+
+    \sa QRgba64::red8(), QColor::red()
+*/
+
+/*!
+    \fn uint qGreen(QRgba64 rgba64)
+    \since 5.6
+    \relates QColor
+
+    Returns the green component of \a rgba64 as an 8-bit value.
+
+    \sa QRgba64::green8(), QColor::green()
+*/
+
+/*!
+    \fn uint qBlue(QRgba64 rgba64)
+    \since 5.6
+    \relates QColor
+
+    Returns the blue component of \a rgba64 as an 8-bit value.
+
+    \sa QRgba64::blue8(), QColor::blue()
+*/
+
+/*!
+    \fn uint qAlpha(QRgba64 rgba64)
+    \since 5.6
+    \relates QColor
+
+    Returns the alpha component of \a rgba64 as an 8-bit value.
+
+    \sa QRgba64::alpha8(), QColor::alpha()
+*/

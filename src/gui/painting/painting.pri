@@ -43,6 +43,7 @@ HEADERS += \
         painting/qrasterizer_p.h \
         painting/qregion.h \
         painting/qrgb.h \
+        painting/qrgba64.h \
         painting/qstroker_p.h \
         painting/qtextureglyphcache_p.h \
         painting/qtransform.h \

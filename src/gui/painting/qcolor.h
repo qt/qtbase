@@ -37,6 +37,7 @@
 #include <QtGui/qrgb.h>
 #include <QtCore/qnamespace.h>
 #include <QtCore/qstringlist.h>
+#include <QtGui/qrgba64.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -63,6 +64,7 @@ public:
     QColor(Qt::GlobalColor color);
     QColor(int r, int g, int b, int a = 255);
     QColor(QRgb rgb);
+    QColor(QRgba64 rgba64);
     QColor(const QString& name);
     QColor(const char *name);
     QColor(const QColor &color); // ### Qt 6: remove, the trivial one is fine.
@@ -108,6 +110,9 @@ public:
 
     QRgb rgba() const;
     void setRgba(QRgb rgba);
+
+    QRgba64 rgba64() const;
+    void setRgba64(QRgba64 rgba);
 
     QRgb rgb() const;
     void setRgb(QRgb rgb);
@@ -172,6 +177,9 @@ public:
 
     static QColor fromRgb(int r, int g, int b, int a = 255);
     static QColor fromRgbF(qreal r, qreal g, qreal b, qreal a = 1.0);
+
+    static QColor fromRgba64(ushort r, ushort g, ushort b, ushort a = USHRT_MAX);
+    static QColor fromRgba64(QRgba64 rgba);
 
     static QColor fromHsv(int h, int s, int v, int a = 255);
     static QColor fromHsvF(qreal h, qreal s, qreal v, qreal a = 1.0);
