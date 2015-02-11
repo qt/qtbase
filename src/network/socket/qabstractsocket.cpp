@@ -2915,6 +2915,8 @@ QNetworkProxy QAbstractSocket::proxy() const
 #ifndef QT_NO_DEBUG_STREAM
 Q_NETWORK_EXPORT QDebug operator<<(QDebug debug, QAbstractSocket::SocketError error)
 {
+    QDebugStateSaver saver(debug);
+    debug.resetFormat().nospace();
     switch (error) {
     case QAbstractSocket::ConnectionRefusedError:
         debug << "QAbstractSocket::ConnectionRefusedError";
@@ -2982,6 +2984,8 @@ Q_NETWORK_EXPORT QDebug operator<<(QDebug debug, QAbstractSocket::SocketError er
 
 Q_NETWORK_EXPORT QDebug operator<<(QDebug debug, QAbstractSocket::SocketState state)
 {
+    QDebugStateSaver saver(debug);
+    debug.resetFormat().nospace();
     switch (state) {
     case QAbstractSocket::UnconnectedState:
         debug << "QAbstractSocket::UnconnectedState";

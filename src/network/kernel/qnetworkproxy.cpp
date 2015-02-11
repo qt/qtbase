@@ -1580,6 +1580,8 @@ QList<QNetworkProxy> QNetworkProxyFactory::proxyForQuery(const QNetworkProxyQuer
 */
 QDebug operator<<(QDebug debug, const QNetworkProxy &proxy)
 {
+    QDebugStateSaver saver(debug);
+    debug.resetFormat().nospace();
     QNetworkProxy::ProxyType type = proxy.type();
     switch (type) {
     case QNetworkProxy::NoProxy:

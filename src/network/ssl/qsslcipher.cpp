@@ -248,9 +248,11 @@ QSsl::SslProtocol QSslCipher::protocol() const
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug debug, const QSslCipher &cipher)
 {
-    debug << "QSslCipher(name=" << qPrintable(cipher.name())
+    QDebugStateSaver saver(debug);
+    debug.resetFormat().nospace().noquote();
+    debug << "QSslCipher(name=" << cipher.name()
           << ", bits=" << cipher.usedBits()
-          << ", proto=" << qPrintable(cipher.protocolString())
+          << ", proto=" << cipher.protocolString()
           << ')';
     return debug;
 }

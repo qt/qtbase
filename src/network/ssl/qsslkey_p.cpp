@@ -444,9 +444,10 @@ bool QSslKey::operator==(const QSslKey &other) const
 */
 
 #ifndef QT_NO_DEBUG_STREAM
-class QDebug;
 QDebug operator<<(QDebug debug, const QSslKey &key)
 {
+    QDebugStateSaver saver(debug);
+    debug.resetFormat().nospace();
     debug << "QSslKey("
           << (key.type() == QSsl::PublicKey ? "PublicKey" : "PrivateKey")
           << ", " << (key.algorithm() == QSsl::Opaque ? "OPAQUE" :

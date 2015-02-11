@@ -1034,8 +1034,10 @@ void QNetworkCookie::normalize(const QUrl &url)
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug s, const QNetworkCookie &cookie)
 {
-    s.nospace() << "QNetworkCookie(" << cookie.toRawForm(QNetworkCookie::Full) << ')';
-    return s.space();
+    QDebugStateSaver saver(s);
+    s.resetFormat().nospace();
+    s << "QNetworkCookie(" << cookie.toRawForm(QNetworkCookie::Full) << ')';
+    return s;
 }
 #endif
 

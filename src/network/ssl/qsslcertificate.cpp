@@ -682,16 +682,18 @@ QByteArray QSslCertificatePrivate::subjectInfoToString(QSslCertificate::SubjectI
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug debug, const QSslCertificate &certificate)
 {
+    QDebugStateSaver saver(debug);
+    debug.resetFormat().nospace();
     debug << "QSslCertificate("
           << certificate.version()
-          << ',' << certificate.serialNumber()
-          << ',' << certificate.digest().toBase64()
-          << ',' << certificate.issuerInfo(QSslCertificate::Organization)
-          << ',' << certificate.subjectInfo(QSslCertificate::Organization)
-          << ',' << certificate.subjectAlternativeNames()
+          << ", " << certificate.serialNumber()
+          << ", " << certificate.digest().toBase64()
+          << ", " << certificate.issuerInfo(QSslCertificate::Organization)
+          << ", " << certificate.subjectInfo(QSslCertificate::Organization)
+          << ", " << certificate.subjectAlternativeNames()
 #ifndef QT_NO_DATESTRING
-          << ',' << certificate.effectiveDate()
-          << ',' << certificate.expiryDate()
+          << ", " << certificate.effectiveDate()
+          << ", " << certificate.expiryDate()
 #endif
           << ')';
     return debug;

@@ -580,40 +580,42 @@ QList<QHostAddress> QNetworkInterface::allAddresses()
 static inline QDebug flagsDebug(QDebug debug, QNetworkInterface::InterfaceFlags flags)
 {
     if (flags & QNetworkInterface::IsUp)
-        debug.nospace() << "IsUp ";
+        debug << "IsUp ";
     if (flags & QNetworkInterface::IsRunning)
-        debug.nospace() << "IsRunning ";
+        debug << "IsRunning ";
     if (flags & QNetworkInterface::CanBroadcast)
-        debug.nospace() << "CanBroadcast ";
+        debug << "CanBroadcast ";
     if (flags & QNetworkInterface::IsLoopBack)
-        debug.nospace() << "IsLoopBack ";
+        debug << "IsLoopBack ";
     if (flags & QNetworkInterface::IsPointToPoint)
-        debug.nospace() << "IsPointToPoint ";
+        debug << "IsPointToPoint ";
     if (flags & QNetworkInterface::CanMulticast)
-        debug.nospace() << "CanMulticast ";
-    return debug.nospace();
+        debug << "CanMulticast ";
+    return debug;
 }
 
 static inline QDebug operator<<(QDebug debug, const QNetworkAddressEntry &entry)
 {
-    debug.nospace() << "(address = " << entry.ip();
+    debug << "(address = " << entry.ip();
     if (!entry.netmask().isNull())
-        debug.nospace() << ", netmask = " << entry.netmask();
+        debug << ", netmask = " << entry.netmask();
     if (!entry.broadcast().isNull())
-        debug.nospace() << ", broadcast = " << entry.broadcast();
-    debug.nospace() << ')';
-    return debug.space();
+        debug << ", broadcast = " << entry.broadcast();
+    debug << ')';
+    return debug;
 }
 
 QDebug operator<<(QDebug debug, const QNetworkInterface &networkInterface)
 {
-    debug.nospace() << "QNetworkInterface(name = " << networkInterface.name()
-                    << ", hardware address = " << networkInterface.hardwareAddress()
-                    << ", flags = ";
+    QDebugStateSaver saver(debug);
+    debug.resetFormat().nospace();
+    debug << "QNetworkInterface(name = " << networkInterface.name()
+          << ", hardware address = " << networkInterface.hardwareAddress()
+          << ", flags = ";
     flagsDebug(debug, networkInterface.flags());
-    debug.nospace() << ", entries = " << networkInterface.addressEntries()
-                    << ")\n";
-    return debug.space();
+    debug << ", entries = " << networkInterface.addressEntries()
+          << ")\n";
+    return debug;
 }
 #endif
 

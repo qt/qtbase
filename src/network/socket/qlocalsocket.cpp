@@ -487,6 +487,8 @@ bool QLocalSocket::isSequential() const
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug debug, QLocalSocket::LocalSocketError error)
 {
+    QDebugStateSaver saver(debug);
+    debug.resetFormat().nospace();
     switch (error) {
     case QLocalSocket::ConnectionRefusedError:
         debug << "QLocalSocket::ConnectionRefusedError";
@@ -527,6 +529,8 @@ QDebug operator<<(QDebug debug, QLocalSocket::LocalSocketError error)
 
 QDebug operator<<(QDebug debug, QLocalSocket::LocalSocketState state)
 {
+    QDebugStateSaver saver(debug);
+    debug.resetFormat().nospace();
     switch (state) {
     case QLocalSocket::UnconnectedState:
         debug << "QLocalSocket::UnconnectedState";

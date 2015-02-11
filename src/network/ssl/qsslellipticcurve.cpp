@@ -170,7 +170,8 @@ QT_BEGIN_NAMESPACE
 QDebug operator<<(QDebug debug, QSslEllipticCurve curve)
 {
     QDebugStateSaver saver(debug);
-    debug.nospace() << "QSslEllipticCurve(" << curve.shortName() << ")";
+    debug.resetFormat().nospace();
+    debug << "QSslEllipticCurve(" << curve.shortName() << ")";
     return debug;
 }
 #endif
