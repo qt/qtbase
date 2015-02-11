@@ -2307,6 +2307,11 @@ void QXcbWindow::handleXEmbedMessage(const xcb_client_message_event_t *event)
     case XEMBED_EMBEDDED_NOTIFY:
         Q_XCB_CALL(xcb_map_window(xcb_connection(), m_window));
         xcbScreen()->windowShown(this);
+        // Without Qt::WA_TranslucentBackground, we use a ParentRelative BackPixmap.
+        // Clear the whole tray icon window to its background color as early as possible
+        // so that we can get a clean result from grabWindow() later.
+        Q_XCB_CALL(xcb_clear_area(xcb_connection(), false, m_window, 0, 0, geometry().width(), geometry().height()));
+        xcb_flush(xcb_connection());
         break;
     case XEMBED_FOCUS_IN:
         Qt::FocusReason reason;

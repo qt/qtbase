@@ -88,6 +88,7 @@ private:
     bool addToTray();
 
     QSystemTrayIcon *q;
+    QPixmap background;
 };
 
 QSystemTrayIconSys::QSystemTrayIconSys(QSystemTrayIcon *qIn)
@@ -151,6 +152,8 @@ bool QSystemTrayIconSys::addToTray()
         qWarning("requestSystemTrayWindowDock failed.");
         return false;
     }
+    if (!background.isNull())
+        background = QPixmap();
     show();
     return true;
 }
@@ -230,18 +233,14 @@ void QSystemTrayIconSys::paintEvent(QPaintEvent *)
         painter.setCompositionMode(QPainter::CompositionMode_Source);
         painter.fillRect(rect, Qt::transparent);
     } else {
-        // Without Qt::WA_TranslucentBackground, we use a ParentRelative BackPixmap and jump through
-        // some hops to draw this background below our icon. This clears the whole tray icon to its
-        // background color and thus causes flickering (you can see that the icon is being
-        // repainted). However, we can't really do much about this.
-        QMetaObject::invokeMethod(QGuiApplication::platformNativeInterface(),
-                                    "clearRegion", Qt::DirectConnection,
-                                    Q_ARG(const QWindow *, windowHandle()),
-                                    Q_ARG(const QRect&, rect)
-                                 );
-        painter.drawPixmap(QPoint(0, 0),
-                        QGuiApplication::primaryScreen()->grabWindow(winId(),
-                                0, 0, rect.size().width(), rect.size().height()));
+        // clearRegion() was called on XEMBED_EMBEDDED_NOTIFY, so we hope that got done by now.
+        // Grab the tray background pixmap, before rendering the icon for the first time.
+        if (background.isNull()) {
+            background = QGuiApplication::primaryScreen()->grabWindow(winId(),
+                                0, 0, rect.size().width(), rect.size().height());
+        }
+        // Then paint over the icon area with the background before compositing the icon on top.
+        painter.drawPixmap(QPoint(0, 0), background);
     }
     painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
     q->icon().paint(&painter, rect);

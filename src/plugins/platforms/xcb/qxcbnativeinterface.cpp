@@ -191,16 +191,6 @@ bool QXcbNativeInterface::systrayVisualHasAlphaChannel() {
     }
 }
 
-void QXcbNativeInterface::clearRegion(const QWindow *qwindow, const QRect& rect)
-{
-    if (const QPlatformWindow *platformWindow = qwindow->handle()) {
-        const QXcbWindow *qxwindow = static_cast<const QXcbWindow *>(platformWindow);
-        xcb_connection_t *xcb_conn = qxwindow->xcb_connection();
-
-        xcb_clear_area(xcb_conn, false, qxwindow->xcb_window(), rect.x(), rect.y(), rect.width(), rect.height());
-    }
-}
-
 void QXcbNativeInterface::setParentRelativeBackPixmap(const QWindow *qwindow)
 {
     if (const QPlatformWindow *platformWindow = qwindow->handle()) {

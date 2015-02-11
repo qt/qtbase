@@ -104,7 +104,6 @@ public:
 
     Q_INVOKABLE void beep();
     Q_INVOKABLE bool systemTrayAvailable(const QScreen *screen) const;
-    Q_INVOKABLE void clearRegion(const QWindow *qwindow, const QRect& rect);
     Q_INVOKABLE void setParentRelativeBackPixmap(const QWindow *window);
     Q_INVOKABLE bool systrayVisualHasAlphaChannel();
     Q_INVOKABLE bool requestSystemTrayWindowDock(const QWindow *window);
