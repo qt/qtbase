@@ -66,7 +66,7 @@ int main(int argc, char **argv) {
         printf("'inputFile' should be a list of effective TLDs, one per line,\n");
         printf("as obtained from http://publicsuffix.org . To create indices and data file\n");
         printf("file, do the following:\n\n");
-        printf("       wget http://mxr.mozilla.org/mozilla-central/source/netwerk/dns/effective_tld_names.dat?raw=1 -O effective_tld_names.dat\n");
+        printf("       wget https://publicsuffix.org/list/effective_tld_names.dat -O effective_tld_names.dat\n");
         printf("       grep '^[^\\/\\/]' effective_tld_names.dat > effective_tld_names.dat.trimmed\n");
         printf("       %s effective_tld_names.dat.trimmed effective_tld_names.dat.qt\n\n", argv[0]);
         printf("Now copy the data from effective_tld_names.dat.qt to the file src/corelib/io/qurltlds_p.h in your Qt repo\n\n");
