@@ -766,6 +766,27 @@ QString QDate::longDayName(int weekday, MonthNameType type)
 
 #ifndef QT_NO_DATESTRING
 
+#ifndef QT_NO_TEXTDATE
+static QString toStringTextDate(QDate date)
+{
+    const ParsedDate pd = getDateFromJulianDay(date.toJulianDay());
+    static const QLatin1Char sp(' ');
+    return date.shortDayName(date.dayOfWeek()) + sp
+         + date.shortMonthName(pd.month) + sp
+         + QString::number(pd.day) + sp
+         + QString::number(pd.year);
+}
+#endif // QT_NO_TEXTDATE
+
+static QString toStringIsoDate(qint64 jd)
+{
+    const ParsedDate pd = getDateFromJulianDay(jd);
+    if (pd.year >= 0 && pd.year <= 9999)
+        return QString::asprintf("%04d-%02d-%02d", pd.year, pd.month, pd.day);
+    else
+        return QString();
+}
+
 /*!
     \fn QString QDate::toString(Qt::DateFormat format) const
 
@@ -817,8 +838,6 @@ QString QDate::toString(Qt::DateFormat format) const
     if (!isValid())
         return QString();
 
-    ParsedDate pd;
-
     switch (format) {
     case Qt::SystemLocaleDate:
     case Qt::SystemLocaleShortDate:
@@ -835,17 +854,10 @@ QString QDate::toString(Qt::DateFormat format) const
     default:
 #ifndef QT_NO_TEXTDATE
     case Qt::TextDate:
-        pd = getDateFromJulianDay(jd);
-        return QString::fromLatin1("%1 %2 %3 %4").arg(shortDayName(dayOfWeek()))
-                                                 .arg(shortMonthName(pd.month))
-                                                 .arg(pd.day)
-                                                 .arg(pd.year);
+        return toStringTextDate(*this);
 #endif
     case Qt::ISODate:
-        pd = getDateFromJulianDay(jd);
-        if (pd.year < 0 || pd.year > 9999)
-            return QString();
-        return QString::asprintf("%04d-%02d-%02d", pd.year, pd.month, pd.day);
+        return toStringIsoDate(jd);
     }
 }
 
