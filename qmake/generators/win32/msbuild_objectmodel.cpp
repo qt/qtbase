@@ -1895,11 +1895,10 @@ void VCXProjectWriter::outputFileConfigs(VCProject &project, XmlOutput &xml, Xml
 
     bool fileAdded = false;
     for (int i = 0; i < project.SingleProjects.count(); ++i) {
-        const VCFilter &filter = project.SingleProjects.at(i).filterByName(cleanFilterName);
-        if (!filter.Config) // only if the filter is not empty
+        OutputFilterData *d = &data[i];
+        if (!d->filter.Config) // only if the filter is not empty
             continue;
-        if (outputFileConfig(&data[i], xml, xmlFilter, info.file, fileAdded,
-                             hasCustomBuildStep))
+        if (outputFileConfig(d, xml, xmlFilter, info.file, fileAdded, hasCustomBuildStep))
             fileAdded = true;
     }
 
