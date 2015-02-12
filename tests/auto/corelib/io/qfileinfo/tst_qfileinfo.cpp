@@ -1611,9 +1611,13 @@ void tst_QFileInfo::isWritable()
 void tst_QFileInfo::isExecutable()
 {
     QString appPath = QCoreApplication::applicationDirPath();
+#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_NO_SDK)
+    appPath += "/libtst_qfileinfo.so";
+#else
     appPath += "/tst_qfileinfo";
-#if defined(Q_OS_WIN)
+# if defined(Q_OS_WIN)
     appPath += ".exe";
+# endif
 #endif
     QFileInfo fi(appPath);
     QCOMPARE(fi.isExecutable(), true);
