@@ -769,12 +769,7 @@
 
     \section2 Creating Visual Studio Project Files
 
-    Developers using Visual Studio to write Qt applications can use the
-    Visual Studio integration facilities provided with the
-    \l{Qt Commercial License}
-    and do not need to worry about how project dependencies are managed.
-
-    However, some developers may need to import an existing
+    This section describes how to import an existing
     qmake project into Visual Studio.
     qmake is able to take a project file and create
     a Visual Studio project that contains all the necessary information
