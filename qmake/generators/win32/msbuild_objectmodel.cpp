@@ -1878,6 +1878,7 @@ void VCXProjectWriter::outputFileConfigs(VCProject &project, XmlOutput &xml, Xml
         filter.CompilerTool.config = filter.Config;
 
         VCFilterFile fileInFilter = filter.findFile(info.file, &data[i].inBuild);
+        data[i].info = fileInFilter;
         data[i].inBuild &= !fileInFilter.excludeFromBuild;
         if (data[i].inBuild && filter.addExtraCompiler(fileInFilter))
             hasCustomBuildStep = true;
