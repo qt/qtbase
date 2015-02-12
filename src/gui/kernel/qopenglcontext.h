@@ -199,6 +199,7 @@ public:
     bool isOpenGLES() const;
 
     static bool supportsThreadedOpenGL();
+    static QOpenGLContext *globalShareContext();
 
 Q_SIGNALS:
     void aboutToBeDestroyed();

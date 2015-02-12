@@ -1205,6 +1205,31 @@ bool QOpenGLContext::supportsThreadedOpenGL()
 }
 
 /*!
+    \since 5.5
+
+    Returns the application-wide shared OpenGL context, if present.
+    Otherwise, returns a null pointer.
+
+    This is useful if you need to upload OpenGL objects (buffers, textures,
+    etc.) before creating or showing a QOpenGLWidget or QQuickWidget.
+
+    \note You must set the Qt::AA_ShareOpenGLContexts flag on QGuiApplication
+    before creating the QGuiApplication object, otherwise Qt may not create a
+    global shared context.
+
+    \warning Do not attempt to make the context returned by this function
+    current on any surface. Instead, you can create a new context which shares
+    with the global one, and then make the new context current.
+
+    \sa Qt::AA_ShareOpenGLContexts, setShareContext(), makeCurrent()
+*/
+QOpenGLContext *QOpenGLContext::globalShareContext()
+{
+    Q_ASSERT(qGuiApp);
+    return qt_gl_global_share_context();
+}
+
+/*!
     \internal
 */
 QOpenGLVersionFunctionsBackend *QOpenGLContext::functionsBackend(const QOpenGLVersionStatus &v) const
