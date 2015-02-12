@@ -265,40 +265,22 @@ private slots:
 
 private:
     const QString m_currentDir;
+    QString m_dataPath;
     QString m_sourceFile;
+    QString m_proFile;
     QString m_resourcesDir;
     QTemporaryDir m_dir;
 };
 
 void tst_QFileInfo::initTestCase()
 {
-#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_NO_SDK)
-    QString dataPath = QStandardPaths::writableLocation(QStandardPaths::CacheLocation);
-    QString resourceSourcePath = QStringLiteral(":/android_testdata");
-    QDirIterator it(resourceSourcePath, QDirIterator::Subdirectories);
-    while (it.hasNext()) {
-        it.next();
+    m_dataPath = QEXTRACTTESTDATA("/testdata");
+    QVERIFY(!m_dataPath.isEmpty());
 
-        QFileInfo fileInfo = it.fileInfo();
-        if (!fileInfo.isDir()) {
-            QString destination = dataPath + QLatin1Char('/') + fileInfo.filePath().mid(resourceSourcePath.length());
-            QFileInfo destinationFileInfo(destination);
-            if (!destinationFileInfo.exists()) {
-                QDir().mkpath(destinationFileInfo.path());
-                if (!QFile::copy(fileInfo.filePath(), destination))
-                    qWarning("Failed to copy %s", qPrintable(fileInfo.filePath()));
-            }
-        }
-    }
-    m_sourceFile = dataPath + QStringLiteral("/tst_qfileinfo.cpp");
-    m_resourcesDir = dataPath + QStringLiteral("/resources");
-#else
-    m_sourceFile = QFINDTESTDATA("tst_qfileinfo.cpp");
-    m_resourcesDir = QFINDTESTDATA("resources");
-#endif
+    m_sourceFile = m_dataPath + QStringLiteral("/tst_qfileinfo.cpp");
+    m_resourcesDir = m_dataPath + QStringLiteral("/resources");
+    m_proFile = m_dataPath + QStringLiteral("/tst_qfileinfo.pro");
 
-    QVERIFY(!m_sourceFile.isEmpty());
-    QVERIFY(!m_resourcesDir.isEmpty());
     QVERIFY(m_dir.isValid());
     QVERIFY(QDir::setCurrent(m_dir.path()));
 }
@@ -306,6 +288,7 @@ void tst_QFileInfo::initTestCase()
 void tst_QFileInfo::cleanupTestCase()
 {
     QDir::setCurrent(m_currentDir); // Release temporary directory so that it can be deleted on Windows
+    QDir(m_dataPath).removeRecursively();
 }
 
 // Testing get/set functions
@@ -1622,7 +1605,7 @@ void tst_QFileInfo::isExecutable()
     QFileInfo fi(appPath);
     QCOMPARE(fi.isExecutable(), true);
 
-    QCOMPARE(QFileInfo(QFINDTESTDATA("qfileinfo.pro")).isExecutable(), false);
+    QCOMPARE(QFileInfo(m_proFile).isExecutable(), false);
 
 #ifdef Q_OS_UNIX
     QFile::remove("link.lnk");
@@ -1634,7 +1617,7 @@ void tst_QFileInfo::isExecutable()
     QFile::remove("link.lnk");
 
     // Symlink to .pro file
-    QFile proFile(QFINDTESTDATA("qfileinfo.pro"));
+    QFile proFile(m_proFile);
     QVERIFY(proFile.link("link.lnk"));
     QCOMPARE(QFileInfo("link.lnk").isExecutable(), false);
     QFile::remove("link.lnk");
