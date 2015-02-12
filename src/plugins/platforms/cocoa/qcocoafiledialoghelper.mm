@@ -446,7 +446,7 @@ static QString strippedText(QString s)
 - (void)panelSelectionDidChange:(id)sender
 {
     Q_UNUSED(sender);
-    if (mHelper) {
+    if (mHelper && [mSavePanel isVisible]) {
         QString selection = QCFString::toQString([[mSavePanel URL] path]);
         if (selection != mCurrentSelection) {
             *mCurrentSelection = selection;
