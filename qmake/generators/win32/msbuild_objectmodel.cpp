@@ -1898,8 +1898,10 @@ void VCXProjectWriter::outputFileConfigs(VCProject &project, XmlOutput &xml, Xml
         OutputFilterData *d = &data[i];
         if (!d->filter.Config) // only if the filter is not empty
             continue;
-        if (outputFileConfig(d, xml, xmlFilter, info.file, fileAdded, hasCustomBuildStep))
+        if (outputFileConfig(d, xml, xmlFilter, info.file, filtername, fileAdded,
+                             hasCustomBuildStep)) {
             fileAdded = true;
+        }
     }
 
     if ( !fileAdded )
@@ -1910,8 +1912,8 @@ void VCXProjectWriter::outputFileConfigs(VCProject &project, XmlOutput &xml, Xml
 }
 
 bool VCXProjectWriter::outputFileConfig(OutputFilterData *d, XmlOutput &xml, XmlOutput &xmlFilter,
-                                        const QString &filename, bool fileAdded,
-                                        bool hasCustomBuildStep)
+                                        const QString &filename, const QString &fullFilterName,
+                                        bool fileAdded, bool hasCustomBuildStep)
 {
     VCFilter &filter = d->filter;
     if (d->inBuild) {
@@ -1934,7 +1936,7 @@ bool VCXProjectWriter::outputFileConfig(OutputFilterData *d, XmlOutput &xml, Xml
 
                 xmlFilter << tag("CustomBuild")
                     << attrTag("Include",Option::fixPathToLocalOS(filename))
-                    << attrTagS("Filter", filter.Name);
+                    << attrTagS("Filter", fullFilterName);
 
                 xml << tag("CustomBuild")
                     << attrTag("Include",Option::fixPathToLocalOS(filename));
@@ -1952,7 +1954,7 @@ bool VCXProjectWriter::outputFileConfig(OutputFilterData *d, XmlOutput &xml, Xml
         if (!fileAdded)
         {
             fileAdded = true;
-            outputFileConfig(xml, xmlFilter, filename, filter.Name);
+            outputFileConfig(xml, xmlFilter, filename, fullFilterName);
         }
 
         const QString condition = generateCondition(*filter.Config);

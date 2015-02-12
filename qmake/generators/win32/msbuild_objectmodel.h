@@ -185,7 +185,9 @@ private:
     static void outputFilter(VCProject &project, XmlOutput &xml, XmlOutput &xmlFilter, const QString &filtername);
     static void outputFileConfigs(VCProject &project, XmlOutput &xml, XmlOutput &xmlFilter,
                                   const VCFilterFile &info, const QString &filtername);
-    static bool outputFileConfig(OutputFilterData *d, XmlOutput &xml, XmlOutput &xmlFilter, const QString &filename, bool fileAdded, bool hasCustomBuildStep);
+    static bool outputFileConfig(OutputFilterData *d, XmlOutput &xml, XmlOutput &xmlFilter,
+                                 const QString &filename, const QString &fullFilterName,
+                                 bool fileAdded, bool hasCustomBuildStep);
     static void outputFileConfig(XmlOutput &xml, XmlOutput &xmlFilter, const QString &fileName, const QString &filterName);
     static QString generateCondition(const VCConfiguration &config);
 
