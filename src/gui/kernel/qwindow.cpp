@@ -2078,11 +2078,16 @@ void QWindowPrivate::deliverUpdateRequest()
     Calling this function multiple times will result in a single event
     being delivered to the window.
 
-    Subclasses of QWindow should reimplement QWindow::event(), intercept
-    the event and call the application's rendering code, then call the
-    base class implementation.
-*/
+    Subclasses of QWindow should reimplement event(), intercept the event and
+    call the application's rendering code, then call the base class
+    implementation.
 
+    \note The subclass' reimplementation of event() must invoke the base class
+    implementation, unless it is absolutely sure that the event does not need to
+    be handled by the base class. For example, the default implementation of
+    this function relies on QEvent::Timer events. Filtering them away would
+    therefore break the delivery of the update events.
+*/
 void QWindow::requestUpdate()
 {
     Q_D(QWindow);
