@@ -135,7 +135,7 @@ QString CppCodeMarker::markedUpSynopsis(const Node *node,
     name = "<@name>" + name + "</@name>";
 
     if ((style == Detailed) && !node->parent()->name().isEmpty() &&
-        (node->type() != Node::Property) && !node->isQmlNode())
+        (node->type() != Node::Property) && !node->isQmlNode() && !node->isJsNode())
         name.prepend(taggedNode(node->parent()) + "::");
 
     switch (node->type()) {
@@ -307,14 +307,14 @@ QString CppCodeMarker::markedUpQmlItem(const Node* node, bool summary)
     QString name = taggedQmlNode(node);
     if (summary)
         name = linkTag(node,name);
-    else if (node->type() == Node::QmlProperty) {
+    else if (node->isQmlProperty() || node->isJsProperty()) {
         const QmlPropertyNode* pn = static_cast<const QmlPropertyNode*>(node);
         if (pn->isAttached())
             name.prepend(pn->element() + QLatin1Char('.'));
     }
     name = "<@name>" + name + "</@name>";
     QString synopsis;
-    if (node->type() == Node::QmlProperty) {
+    if (node->isQmlProperty() || node->isJsProperty()) {
         const QmlPropertyNode* pn = static_cast<const QmlPropertyNode*>(node);
         synopsis = name + " : " + typified(pn->dataType());
     }
@@ -1134,10 +1134,10 @@ QList<Section> CppCodeMarker::qmlSections(QmlTypeNode* qmlTypeNode, SynopsisStyl
                         ++c;
                         continue;
                     }
-                    if ((*c)->type() == Node::QmlPropertyGroup) {
+                    if ((*c)->isQmlPropertyGroup() || (*c)->isJsPropertyGroup()) {
                         insert(qmlproperties, *c, style, status);
                     }
-                    else if ((*c)->type() == Node::QmlProperty) {
+                    else if ((*c)->isQmlProperty() || (*c)->isJsProperty()) {
                         const QmlPropertyNode* pn = static_cast<const QmlPropertyNode*>(*c);
                         if (pn->isAttached())
                             insert(qmlattachedproperties,*c,style, status);
@@ -1145,17 +1145,17 @@ QList<Section> CppCodeMarker::qmlSections(QmlTypeNode* qmlTypeNode, SynopsisStyl
                             insert(qmlproperties,*c,style, status);
                         }
                     }
-                    else if ((*c)->type() == Node::QmlSignal) {
+                    else if ((*c)->isQmlSignal() || (*c)->isJsSignal()) {
                         const FunctionNode* sn = static_cast<const FunctionNode*>(*c);
                         if (sn->isAttached())
                             insert(qmlattachedsignals,*c,style, status);
                         else
                             insert(qmlsignals,*c,style, status);
                     }
-                    else if ((*c)->type() == Node::QmlSignalHandler) {
+                    else if ((*c)->isQmlSignalHandler() || (*c)->isJsSignalHandler()) {
                         insert(qmlsignalhandlers,*c,style, status);
                     }
-                    else if ((*c)->type() == Node::QmlMethod) {
+                    else if ((*c)->isQmlMethod() || (*c)->isJsMethod()) {
                         const FunctionNode* mn = static_cast<const FunctionNode*>(*c);
                         if (mn->isAttached())
                             insert(qmlattachedmethods,*c,style, status);
@@ -1199,27 +1199,27 @@ QList<Section> CppCodeMarker::qmlSections(QmlTypeNode* qmlTypeNode, SynopsisStyl
                         ++c;
                         continue;
                     }
-                    if ((*c)->type() == Node::QmlPropertyGroup) {
+                    if ((*c)->isQmlPropertyGroup() || (*c)->isJsPropertyGroup()) {
                         insert(qmlproperties,*c,style, status);
                     }
-                    else if ((*c)->type() == Node::QmlProperty) {
+                    else if ((*c)->isQmlProperty() || (*c)->isJsProperty()) {
                         const QmlPropertyNode* pn = static_cast<const QmlPropertyNode*>(*c);
                         if (pn->isAttached())
                             insert(qmlattachedproperties,*c,style, status);
                         else
                             insert(qmlproperties,*c,style, status);
                     }
-                    else if ((*c)->type() == Node::QmlSignal) {
+                    else if ((*c)->isQmlSignal() || (*c)->isJsSignal()) {
                         const FunctionNode* sn = static_cast<const FunctionNode*>(*c);
                         if (sn->isAttached())
                             insert(qmlattachedsignals,*c,style, status);
                         else
                             insert(qmlsignals,*c,style, status);
                     }
-                    else if ((*c)->type() == Node::QmlSignalHandler) {
+                    else if ((*c)->isQmlSignalHandler() || (*c)->isJsSignalHandler()) {
                         insert(qmlsignalhandlers,*c,style, status);
                     }
-                    else if ((*c)->type() == Node::QmlMethod) {
+                    else if ((*c)->isQmlMethod() || (*c)->isJsMethod()) {
                         const FunctionNode* mn = static_cast<const FunctionNode*>(*c);
                         if (mn->isAttached())
                             insert(qmlattachedmethods,*c,style, status);
@@ -1271,11 +1271,11 @@ QList<Section> CppCodeMarker::qmlSections(QmlTypeNode* qmlTypeNode, SynopsisStyl
                 }
                 NodeList::ConstIterator c = current->childNodes().constBegin();
                 while (c != current->childNodes().constEnd()) {
-                    if ((*c)->type() == Node::QmlPropertyGroup) {
+                    if ((*c)->isQmlPropertyGroup() || (*c)->isJsPropertyGroup()) {
                         const QmlPropertyGroupNode* qpgn = static_cast<const QmlPropertyGroupNode*>(*c);
                         NodeList::ConstIterator p = qpgn->childNodes().constBegin();
                         while (p != qpgn->childNodes().constEnd()) {
-                            if ((*p)->type() == Node::QmlProperty) {
+                            if ((*p)->isQmlProperty() || (*c)->isJsProperty()) {
                                 QString key = (*p)->name();
                                 key = sortName(*p, &key);
                                 all.memberMap.insert(key,*p);

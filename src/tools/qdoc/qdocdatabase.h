@@ -167,10 +167,10 @@ class QDocForest
         return 0;
     }
 
-    const DocNode* findDocNodeByTitle(const QString& title)
+    const DocumentNode* findDocumentNodeByTitle(const QString& title)
     {
         foreach (Tree* t, searchOrder()) {
-            const DocNode* n = t->findDocNodeByTitle(title);
+            const DocumentNode* n = t->findDocumentNodeByTitle(title);
             if (n)
                 return n;
         }
@@ -186,16 +186,6 @@ class QDocForest
         }
         return 0;
     }
-    void mergeCollectionMaps(Node::Type nt, CNMultiMap& cnmm);
-    void getCorrespondingCollections(CollectionNode* cn, CollectionList& cl)
-    {
-        foreach (Tree* t, searchOrder()) {
-            CollectionNode* ccn = t->getCorrespondingCollection(cn);
-            if (ccn)
-                cl.append(ccn);
-        }
-    }
-
     void clearSearchOrder() { searchOrder_.clear(); }
     void clearLinkCounts()
     {
@@ -230,28 +220,38 @@ class QDocDatabase
     ~QDocDatabase();
 
     Tree* findTree(const QString& t) { return forest_.findTree(t); }
+
+    CollectionNode* getCollection(const QString& name, Node::Genus genus) {
+        return primaryTree()->getCollection(name, genus);
+    }
     const CNMap& groups() { return primaryTree()->groups(); }
     const CNMap& modules() { return primaryTree()->modules(); }
     const CNMap& qmlModules() { return primaryTree()->qmlModules(); }
+    const CNMap& jsModules() { return primaryTree()->jsModules(); }
 
-    GroupNode* getGroup(const QString& name) { return primaryTree()->getGroup(name); }
-    GroupNode* findGroup(const QString& name) { return primaryTree()->findGroup(name); }
-    ModuleNode* findModule(const QString& name) { return primaryTree()->findModule(name); }
-    QmlModuleNode* findQmlModule(const QString& name) { return primaryTree()->findQmlModule(name); }
+    CollectionNode* findGroup(const QString& name) { return primaryTree()->findGroup(name); }
+    CollectionNode* findModule(const QString& name) { return primaryTree()->findModule(name); }
+    CollectionNode* findQmlModule(const QString& name) { return primaryTree()->findQmlModule(name); }
+    CollectionNode* findJsModule(const QString& name) { return primaryTree()->findJsModule(name); }
 
-    GroupNode* addGroup(const QString& name) { return primaryTree()->addGroup(name); }
-    ModuleNode* addModule(const QString& name) { return primaryTree()->addModule(name); }
-    QmlModuleNode* addQmlModule(const QString& name) { return primaryTree()->addQmlModule(name); }
+    CollectionNode* addGroup(const QString& name) { return primaryTree()->addGroup(name); }
+    CollectionNode* addModule(const QString& name) { return primaryTree()->addModule(name); }
+    CollectionNode* addQmlModule(const QString& name) { return primaryTree()->addQmlModule(name); }
+    CollectionNode* addJsModule(const QString& name) { return primaryTree()->addJsModule(name); }
 
-    GroupNode* addToGroup(const QString& name, Node* node) {
+    CollectionNode* addToGroup(const QString& name, Node* node) {
         return primaryTree()->addToGroup(name, node);
     }
-    ModuleNode* addToModule(const QString& name, Node* node) {
+    CollectionNode* addToModule(const QString& name, Node* node) {
         return primaryTree()->addToModule(name, node);
     }
-    QmlModuleNode* addToQmlModule(const QString& name, Node* node) {
+    CollectionNode* addToQmlModule(const QString& name, Node* node) {
         return primaryTree()->addToQmlModule(name, node);
     }
+    CollectionNode* addToJsModule(const QString& name, Node* node) {
+        return primaryTree()->addToJsModule(name, node);
+    }
+
     void addExampleNode(ExampleNode* n) { primaryTree()->addExampleNode(n); }
     ExampleNodeMap& exampleNodeMap() { return primaryTree()->exampleNodeMap(); }
 
@@ -336,8 +336,8 @@ class QDocDatabase
     }
     const Node* findTypeNode(const QString& type, const Node* relative);
     const Node* findNodeForTarget(const QString& target, const Node* relative);
-    const DocNode* findDocNodeByTitle(const QString& title) {
-        return forest_.findDocNodeByTitle(title);
+    const DocumentNode* findDocumentNodeByTitle(const QString& title) {
+        return forest_.findDocumentNodeByTitle(title);
     }
     Node* findNodeByNameAndType(const QStringList& path, Node::Type type) {
         return forest_.findNodeByNameAndType(path, type);
@@ -386,8 +386,8 @@ class QDocDatabase
     void setLocalSearch() { forest_.searchOrder_ = QVector<Tree*>(1, primaryTree()); }
     void setSearchOrder(const QVector<Tree*>& searchOrder) { forest_.searchOrder_ = searchOrder; }
     void setSearchOrder(QStringList& t) { forest_.setSearchOrder(t); }
-    void mergeCollections(Node::Type nt, CNMap& cnm, const Node* relative);
-    void mergeCollections(CollectionNode* cn);
+    void mergeCollections(Node::Genus genus, CNMap& cnm, const Node* relative);
+    void mergeCollections(CollectionNode* c);
     void clearSearchOrder() { forest_.clearSearchOrder(); }
     void incrementLinkCount(const Node* t) { t->tree()->incrementLinkCount(); }
     void clearLinkCounts() { forest_.clearLinkCounts(); }

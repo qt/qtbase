@@ -81,7 +81,7 @@ protected:
     virtual Node* processTopicCommand(const Doc& doc,
                                       const QString& command,
                                       const ArgLocPair& arg);
-    void processQmlProperties(const Doc& doc, NodeList& nodes, DocList& docs);
+    void processQmlProperties(const Doc& doc, NodeList& nodes, DocList& docs, bool jsProps);
     bool splitQmlPropertyGroupArg(const QString& arg,
                                   QString& module,
                                   QString& element,
@@ -148,7 +148,7 @@ protected:
     void instantiateIteratorMacro(const QString &container,
                                   const QString &includeFile,
                                   const QString &macroDef);
-    void createExampleFileNodes(DocNode *dn);
+    void createExampleFileNodes(DocumentNode *dn);
 
  protected:
     QMap<QString, Node::Type> nodeTypeMap;
@@ -203,7 +203,6 @@ protected:
 #define COMMAND_TYPEDEF                 Doc::alias("typedef")
 #define COMMAND_VARIABLE                Doc::alias("variable")
 #define COMMAND_QMLABSTRACT             Doc::alias("qmlabstract")
-#define COMMAND_QMLCLASS                Doc::alias("qmlclass")
 #define COMMAND_QMLTYPE                 Doc::alias("qmltype")
 #define COMMAND_QMLPROPERTY             Doc::alias("qmlproperty")
 #define COMMAND_QMLPROPERTYGROUP        Doc::alias("qmlpropertygroup")

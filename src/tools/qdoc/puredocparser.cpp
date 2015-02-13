@@ -133,6 +133,7 @@ bool PureDocParser::processQdocComments()
 
             QString topic;
             bool isQmlPropertyTopic = false;
+            bool isJsPropertyTopic = false;
 
             const TopicList& topics = doc.topicsUsed();
             if (!topics.isEmpty()) {
@@ -142,8 +143,13 @@ bool PureDocParser::processQdocComments()
                     (topic == COMMAND_QMLATTACHEDPROPERTY)) {
                     isQmlPropertyTopic = true;
                 }
+                else if ((topic == COMMAND_JSPROPERTY) ||
+                         (topic == COMMAND_JSPROPERTYGROUP) ||
+                         (topic == COMMAND_JSATTACHEDPROPERTY)) {
+                    isJsPropertyTopic = true;
+                }
             }
-            if (isQmlPropertyTopic && topics.size() > 1) {
+            if ((isQmlPropertyTopic || isJsPropertyTopic) && topics.size() > 1) {
                 qDebug() << "MULTIPLE TOPICS:" << doc.location().fileName() << doc.location().lineNo();
                 for (int i=0; i<topics.size(); ++i) {
                     qDebug() << "  " << topics[i].topic << topics[i].args;
@@ -158,9 +164,9 @@ bool PureDocParser::processQdocComments()
                                           "(e.g., '\\%1', '\\%2').")
                                        .arg(COMMAND_MODULE).arg(COMMAND_PAGE));
             }
-            else if (isQmlPropertyTopic) {
+            else if (isQmlPropertyTopic || isJsPropertyTopic) {
                 Doc nodeDoc = doc;
-                processQmlProperties(nodeDoc, nodes, docs);
+                processQmlProperties(nodeDoc, nodes, docs, isJsPropertyTopic);
             }
             else {
                 ArgList args;

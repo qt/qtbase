@@ -72,6 +72,18 @@ QT_BEGIN_NAMESPACE
 #define COMMAND_QMLREADONLY             Doc::alias(QLatin1String("readonly"))
 #define COMMAND_QMLBASICTYPE            Doc::alias(QLatin1String("qmlbasictype"))
 
+#define COMMAND_JSTYPE                 Doc::alias(QLatin1String("jstype"))
+#define COMMAND_JSMODULE               Doc::alias(QLatin1String("jsmodule"))
+#define COMMAND_JSPROPERTY             Doc::alias(QLatin1String("jsproperty"))
+#define COMMAND_JSPROPERTYGROUP        Doc::alias(QLatin1String("jspropertygroup"))
+#define COMMAND_JSATTACHEDPROPERTY     Doc::alias(QLatin1String("jsattachedproperty"))
+#define COMMAND_INJSMODULE             Doc::alias(QLatin1String("injsmodule"))
+#define COMMAND_JSSIGNAL               Doc::alias(QLatin1String("jssignal"))
+#define COMMAND_JSATTACHEDSIGNAL       Doc::alias(QLatin1String("jsattachedsignal"))
+#define COMMAND_JSMETHOD               Doc::alias(QLatin1String("jsmethod"))
+#define COMMAND_JSATTACHEDMETHOD       Doc::alias(QLatin1String("jsattachedmethod"))
+#define COMMAND_JSBASICTYPE            Doc::alias(QLatin1String("jsbasictype"))
+
 /*!
   The constructor stores all the parameters in local data members.
  */
@@ -134,82 +146,6 @@ QQmlJS::AST::SourceLocation QmlDocVisitor::precedingComment(quint32 offset) cons
     return QQmlJS::AST::SourceLocation();
 }
 
-#if 0
-        ArgList args;
-        QSet<QString>::iterator i = metacommands.begin();
-        while (i != metacommands.end()) {
-            if (topics_.contains(*i)) {
-                topic = *i;
-                break;
-            }
-            ++i;
-        }
-        if (!topic.isEmpty()) {
-            args = doc.metaCommandArgs(topic);
-            if ((topic == COMMAND_QMLCLASS) || (topic == COMMAND_QMLTYPE)) {
-                // do nothing.
-            }
-            else if (topic == COMMAND_QMLPROPERTY) {
-                if (node->type() == Node::QmlProperty) {
-                    QmlPropertyNode* qpn = static_cast<QmlPropertyNode*>(node);
-                    qpn->setReadOnly(0);
-                    if (qpn->dataType() == "alias") {
-                        QStringList part = args[0].first.split(QLatin1Char(' '));
-                        qpn->setDataType(part[0]);
-                    }
-                }
-            }
-            else if (topic == COMMAND_QMLPROPERTYGROUP) {
-                // zzz ?
-            }
-            else if (topic == COMMAND_QMLMODULE) {
-            }
-            else if (topic == COMMAND_QMLATTACHEDPROPERTY) {
-                if (node->type() == Node::QmlProperty) {
-                    QmlPropertyNode* qpn = static_cast<QmlPropertyNode*>(node);
-                    qpn->setReadOnly(0);
-                }
-            }
-            else if (topic == COMMAND_QMLSIGNAL) {
-            }
-            else if (topic == COMMAND_QMLATTACHEDSIGNAL) {
-            }
-            else if (topic == COMMAND_QMLMETHOD) {
-            }
-            else if (topic == COMMAND_QMLATTACHEDMETHOD) {
-            }
-            else if (topic == COMMAND_QMLBASICTYPE) {
-            }
-        }
-
-            if (node->type() == Node::QmlProperty) {
-                QmlPropertyNode* qpn = static_cast<QmlPropertyNode*>(node);
-                for (int i=0; i<topicsUsed.size(); ++i) {
-                    if (topicsUsed.at(i).topic == "qmlproperty") {
-                        /*
-                          A \qmlproperty command would be used in a QML file
-                          to document the underlying property for a property
-                          alias.
-                        */
-                        QmlPropArgs qpa;
-                        if (splitQmlPropertyArg(doc, topicsUsed.at(i).args, qpa)) {
-                            QmlPropertyNode* n = parent->hasQmlPropertyNode(qpa.name_);
-                            if (n == 0)
-                                n = new QmlPropertyNode(qpn, qpa.name_, qpa.type_, false);
-                            n->setLocation(doc.location());
-                            n->setReadOnly(qpn->isReadOnly());
-                            if (qpn->isDefault())
-                                n->setDefault();
-                        }
-                        else
-                            qDebug() << "  FAILED TO PARSE QML PROPERTY:"
-                                     << topicsUsed.at(i).topic << topicsUsed.at(i).args;
-                    }
-                }
-            }
-
-#endif
-
 /*!
   Finds the nearest unused qdoc comment above the QML entity
   represented by the \a node and processes the qdoc commands
@@ -241,7 +177,8 @@ bool QmlDocVisitor::applyDocumentation(QQmlJS::AST::SourceLocation location, Nod
         nodes.append(node);
         if (topicsUsed.size() > 0) {
             for (int i=0; i<topicsUsed.size(); ++i) {
-                if (topicsUsed.at(i).topic == COMMAND_QMLPROPERTYGROUP) {
+                if ((topicsUsed.at(i).topic == COMMAND_QMLPROPERTYGROUP) ||
+                    (topicsUsed.at(i).topic == COMMAND_JSPROPERTYGROUP)) {
                     qDebug() << "PROPERTY GROUP COMMAND SEEN:" <<  topicsUsed.at(i).args << filePath_;
                     break;
                 }
@@ -249,7 +186,8 @@ bool QmlDocVisitor::applyDocumentation(QQmlJS::AST::SourceLocation location, Nod
             for (int i=0; i<topicsUsed.size(); ++i) {
                 QString topic = topicsUsed.at(i).topic;
                 QString args = topicsUsed.at(i).args;
-                if ((topic == COMMAND_QMLPROPERTY) || (topic == COMMAND_QMLATTACHEDPROPERTY)) {
+                if ((topic == COMMAND_QMLPROPERTY) || (topic == COMMAND_QMLATTACHEDPROPERTY) ||
+                    (topic == COMMAND_JSPROPERTY) || (topic == COMMAND_JSATTACHEDPROPERTY)) {
                     QmlPropArgs qpa;
                     if (splitQmlPropertyArg(doc, args, qpa)) {
                         if (qpa.name_ == nodePassedIn->name()) {
@@ -257,7 +195,8 @@ bool QmlDocVisitor::applyDocumentation(QQmlJS::AST::SourceLocation location, Nod
                                 nodePassedIn->setDataType(qpa.type_);
                         }
                         else {
-                            bool isAttached = (topic == COMMAND_QMLATTACHEDPROPERTY);
+                            bool isAttached = (topic == COMMAND_QMLATTACHEDPROPERTY) ||
+                                (topic == COMMAND_JSATTACHEDPROPERTY);
                             QmlPropertyNode* n = parent->hasQmlProperty(qpa.name_, isAttached);
                             if (n == 0)
                                 n = new QmlPropertyNode(parent, qpa.name_, qpa.type_, isAttached);
@@ -268,11 +207,14 @@ bool QmlDocVisitor::applyDocumentation(QQmlJS::AST::SourceLocation location, Nod
                                 n->setDefault();
                             if (isAttached)
                                 n->setReadOnly(0);
+                            if ((topic == COMMAND_JSPROPERTY) ||
+                                (topic == COMMAND_JSATTACHEDPROPERTY))
+                                n->setGenus(Node::JS);
                             nodes.append(n);
                         }
                     }
                     else
-                        qDebug() << "  FAILED TO PARSE QML PROPERTY:" << topic << args;
+                        qDebug() << "  FAILED TO PARSE QML OR JS PROPERTY:" << topic << args;
                 }
             }
         }
@@ -357,33 +299,33 @@ void QmlDocVisitor::applyMetacommands(QQmlJS::AST::SourceLocation,
             QString command = *i;
             ArgList args = doc.metaCommandArgs(command);
             if (command == COMMAND_QMLABSTRACT) {
-                if (node->isQmlType()) {
+                if (node->isQmlType() || node->isJsType()) {
                     node->setAbstract(true);
                 }
             }
             else if (command == COMMAND_DEPRECATED) {
                 node->setStatus(Node::Obsolete);
             }
-            else if (command == COMMAND_INQMLMODULE) {
+            else if ((command == COMMAND_INQMLMODULE) || (command == COMMAND_INJSMODULE)) {
                 qdb->addToQmlModule(args[0].first,node);
             }
             else if (command == COMMAND_QMLINHERITS) {
                 if (node->name() == args[0].first)
                     doc.location().warning(tr("%1 tries to inherit itself").arg(args[0].first));
-                else if (node->isQmlType()) {
+                else if (node->isQmlType() || node->isJsType()) {
                     QmlTypeNode *qmlType = static_cast<QmlTypeNode*>(node);
                     qmlType->setQmlBaseName(args[0].first);
                     QmlTypeNode::addInheritedBy(args[0].first,node);
                 }
             }
             else if (command == COMMAND_QMLDEFAULT) {
-                if (node->type() == Node::QmlProperty) {
+                if (node->isQmlProperty() || node->isJsProperty()) {
                     QmlPropertyNode* qpn = static_cast<QmlPropertyNode*>(node);
                     qpn->setDefault();
                 }
             }
             else if (command == COMMAND_QMLREADONLY) {
-                if (node->type() == Node::QmlProperty) {
+                if (node->isQmlProperty() || node->isJsProperty()) {
                     QmlPropertyNode* qpn = static_cast<QmlPropertyNode*>(node);
                     qpn->setReadOnly(1);
                 }
@@ -532,7 +474,7 @@ bool QmlDocVisitor::visit(QQmlJS::AST::UiPublicMember *member)
     switch (member->type) {
     case QQmlJS::AST::UiPublicMember::Signal:
     {
-        if (current->isQmlType()) {
+        if (current->isQmlType() || current->isJsType()) {
             QmlTypeNode *qmlType = static_cast<QmlTypeNode *>(current);
             if (qmlType) {
 
@@ -555,13 +497,16 @@ bool QmlDocVisitor::visit(QQmlJS::AST::UiPublicMember *member)
     {
         QString type = member->memberType.toString();
         QString name = member->name.toString();
-        if (current->isQmlType()) {
+        if (current->isQmlType() || current->isJsType()) {
             QmlTypeNode *qmlType = static_cast<QmlTypeNode *>(current);
             if (qmlType) {
                 QString name = member->name.toString();
                 QmlPropertyNode* qmlPropNode = qmlType->hasQmlProperty(name);
-                if (qmlPropNode == 0)
+                if (qmlPropNode == 0) {
                     qmlPropNode = new QmlPropertyNode(qmlType, name, type, false);
+                    if (current->isJsType())
+                        qmlPropNode->setGenus(Node::JS);
+                }
                 qmlPropNode->setReadOnly(member->isReadonlyMember);
                 if (member->isDefaultMember)
                     qmlPropNode->setDefault();
@@ -599,11 +544,13 @@ bool QmlDocVisitor::visit(QQmlJS::AST::FunctionDeclaration* fd)
     if (nestingLevel > 1) {
         return true;
     }
-    if (current->isQmlType()) {
+    if (current->isQmlType() || current->isJsType()) {
         QmlTypeNode* qmlType = static_cast<QmlTypeNode*>(current);
         if (qmlType) {
             QString name = fd->name.toString();
             FunctionNode* qmlMethod = new FunctionNode(Node::QmlMethod, current, name, false);
+            if (current->isJsType())
+                qmlMethod->setGenus(Node::JS);
             int overloads = 0;
             NodeList::ConstIterator overloadIterator = current->childNodes().constBegin();
             while (overloadIterator != current->childNodes().constEnd()) {
@@ -652,7 +599,7 @@ bool QmlDocVisitor::visit(QQmlJS::AST::UiScriptBinding* )
     if (nestingLevel > 1) {
         return true;
     }
-    if (current->isQmlType()) {
+    if (current->isQmlType() || current->isJsType()) {
         QString handler = sb->qualifiedId->name.toString();
         if (handler.length() > 2 && handler.startsWith("on") && handler.at(2).isUpper()) {
             QmlTypeNode* qmlType = static_cast<QmlTypeNode*>(current);

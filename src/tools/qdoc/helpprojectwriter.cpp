@@ -196,7 +196,7 @@ QStringList HelpProjectWriter::keywordDetails(const Node *node) const
 {
     QStringList details;
 
-    if (node->type() == Node::QmlProperty) {
+    if (node->isQmlProperty() || node->isJsProperty()) {
         // "name"
         details << node->name();
         // "id"
@@ -215,8 +215,12 @@ QStringList HelpProjectWriter::keywordDetails(const Node *node) const
         details << node->name();
         details << "QML." + node->name();
     }
-    else if (node->isDocNode()) {
-        const DocNode *fake = static_cast<const DocNode *>(node);
+    else if (node->isJsType() || node->isJsBasicType()) {
+        details << node->name();
+        details << "JS." + node->name();
+    }
+    else if (node->isDocumentNode()) {
+        const DocumentNode *fake = static_cast<const DocumentNode *>(node);
         details << fake->fullTitle();
         details << fake->fullTitle();
     }
@@ -246,8 +250,8 @@ bool HelpProjectWriter::generateSection(HelpProject &project,
         return false;
 
     QString objName;
-    if (node->isDocNode()) {
-        const DocNode *fake = static_cast<const DocNode *>(node);
+    if (node->isDocumentNode()) {
+        const DocumentNode *fake = static_cast<const DocumentNode *>(node);
         objName = fake->fullTitle();
     }
     else
@@ -269,7 +273,7 @@ bool HelpProjectWriter::generateSection(HelpProject &project,
             else {
                 // Accept only fake nodes with subtypes contained in the selector's
                 // mask.
-                const DocNode *docNode = static_cast<const DocNode *>(node);
+                const DocumentNode *docNode = static_cast<const DocumentNode *>(node);
                 if (subproject.selectors[node->type()].contains(docNode->subType()) &&
                         docNode->subType() != Node::ExternalPage &&
                         !docNode->fullTitle().isEmpty()) {
@@ -412,7 +416,7 @@ bool HelpProjectWriter::generateSection(HelpProject &project,
         // Document nodes (such as manual pages) contain subtypes, titles and other
         // attributes.
     case Node::Document: {
-        const DocNode *docNode = static_cast<const DocNode*>(node);
+        const DocumentNode *docNode = static_cast<const DocumentNode*>(node);
         if (docNode->subType() != Node::ExternalPage &&
                 docNode->subType() != Node::Image &&
                 !docNode->fullTitle().isEmpty()) {
@@ -481,17 +485,17 @@ void HelpProjectWriter::generateSections(HelpProject &project,
                 continue;
 
             if (childNode->type() == Node::Document) {
-                childMap[static_cast<const DocNode *>(childNode)->fullTitle()] = childNode;
+                childMap[static_cast<const DocumentNode *>(childNode)->fullTitle()] = childNode;
             }
-            else if (childNode->type() == Node::QmlPropertyGroup) {
+            else if (childNode->isQmlPropertyGroup() || childNode->isJsPropertyGroup()) {
                 /*
-                  Don't visit QML property group nodes,
+                  Don't visit QML/JS property group nodes,
                   but visit their children, which are all
-                  QML property nodes.
+                  QML/JS property nodes.
 
                   This is probably not correct anymore,
-                  because The Qml Property Group is an
-                  actual documented thing.
+                  because The Qml/Js Property Group is
+                  an actual documented thing.
                  */
                 const InnerNode* inner = static_cast<const InnerNode*>(childNode);
                 foreach (const Node* n, inner->childNodes()) {
@@ -566,7 +570,8 @@ void HelpProjectWriter::addMembers(HelpProject &project, QXmlStreamWriter &write
     // Do not generate a 'List of all members' for namespaces or header files,
     // but always generate it for derived classes and QML classes
     if (!node->isNamespace() && !node->isHeaderFile() &&
-        (derivedClass || node->isQmlType() || !project.memberStatus[node].isEmpty())) {
+        (derivedClass || node->isQmlType() || node->isJsType() ||
+         !project.memberStatus[node].isEmpty())) {
         QString membersPath = href + QStringLiteral("-members.html");
         writeSection(writer, membersPath, tr("List of all members"));
     }
@@ -615,7 +620,7 @@ void HelpProjectWriter::writeNode(HelpProject &project, QXmlStreamWriter &writer
     case Node::Document: {
         // Document nodes (such as manual pages) contain subtypes, titles and other
         // attributes.
-        const DocNode *docNode = static_cast<const DocNode*>(node);
+        const DocumentNode *docNode = static_cast<const DocumentNode*>(node);
 
         writer.writeStartElement("section");
         writer.writeAttribute("ref", href);
@@ -652,7 +657,7 @@ void HelpProjectWriter::generateProject(HelpProject &project)
     qdb_->setLocalSearch();
 
     if (!project.indexRoot.isEmpty())
-        rootNode = qdb_->findDocNodeByTitle(project.indexRoot);
+        rootNode = qdb_->findDocumentNodeByTitle(project.indexRoot);
     else
         rootNode = qdb_->primaryTreeRoot();
 
@@ -695,7 +700,7 @@ void HelpProjectWriter::generateProject(HelpProject &project)
 
     writer.writeStartElement("toc");
     writer.writeStartElement("section");
-    const Node* node = qdb_->findDocNodeByTitle(project.indexTitle);
+    const Node* node = qdb_->findDocumentNodeByTitle(project.indexTitle);
     if (node == 0)
         node = qdb_->findNodeByNameAndType(QStringList("index.html"), Node::Document);
     QString indexPath;

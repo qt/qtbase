@@ -394,7 +394,7 @@ void CodeMarker::insert(FastSection &fastSection,
         if (p->type() == Node::QmlPropertyGroup)
             p = p->parent();
         if (p != fastSection.parent_) {
-            if (!p->isQmlType() || !p->isAbstract()) {
+            if ((!p->isQmlType() && !p->isJsType()) || !p->isAbstract()) {
                 inheritedMember = true;
             }
         }
