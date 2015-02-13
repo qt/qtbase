@@ -47,7 +47,10 @@
 #include <QtGui/qscreen.h>
 
 #include <QtPlatformHeaders/qxcbwindowfunctions.h>
+
+#ifndef QT_NO_DBUS
 #include "QtPlatformSupport/private/qdbusmenuconnection_p.h"
+#endif
 
 #ifdef XCB_USE_XLIB
 #  include <X11/Xlib.h>
