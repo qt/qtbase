@@ -1570,11 +1570,10 @@ bool QFontDatabase::isBitmapScalable(const QString &family,
 
     QT_PREPEND_NAMESPACE(load)(familyName);
 
-    QtFontStyle::Key styleKey(style);
-
     QtFontFamily *f = d->family(familyName);
     if (!f) return bitmapScalable;
 
+    QtFontStyle::Key styleKey(style);
     for (int j = 0; j < f->count; j++) {
         QtFontFoundry *foundry = f->foundries[j];
         if (foundryName.isEmpty() || foundry->name.compare(foundryName, Qt::CaseInsensitive) == 0) {
@@ -1614,8 +1613,6 @@ bool QFontDatabase::isSmoothlyScalable(const QString &family, const QString &sty
 
     QT_PREPEND_NAMESPACE(load)(familyName);
 
-    QtFontStyle::Key styleKey(style);
-
     QtFontFamily *f = d->family(familyName);
     if (!f) {
         for (int i = 0; i < d->count; i++) {
@@ -1628,6 +1625,7 @@ bool QFontDatabase::isSmoothlyScalable(const QString &family, const QString &sty
     }
     if (!f) return smoothScalable;
 
+    QtFontStyle::Key styleKey(style);
     for (int j = 0; j < f->count; j++) {
         QtFontFoundry *foundry = f->foundries[j];
         if (foundryName.isEmpty() || foundry->name.compare(foundryName, Qt::CaseInsensitive) == 0) {
@@ -1680,8 +1678,6 @@ QList<int> QFontDatabase::pointSizes(const QString &family,
 
     QT_PREPEND_NAMESPACE(load)(familyName);
 
-    QtFontStyle::Key styleKey(styleName);
-
     QList<int> sizes;
 
     QtFontFamily *fam = d->family(familyName);
@@ -1690,6 +1686,7 @@ QList<int> QFontDatabase::pointSizes(const QString &family,
 
     const int dpi = qt_defaultDpiY(); // embedded
 
+    QtFontStyle::Key styleKey(styleName);
     for (int j = 0; j < fam->count; j++) {
         QtFontFoundry *foundry = fam->foundries[j];
         if (foundryName.isEmpty() || foundry->name.compare(foundryName, Qt::CaseInsensitive) == 0) {
@@ -1783,8 +1780,6 @@ QList<int> QFontDatabase::smoothSizes(const QString &family,
 
     QT_PREPEND_NAMESPACE(load)(familyName);
 
-    QtFontStyle::Key styleKey(styleName);
-
     QList<int> sizes;
 
     QtFontFamily *fam = d->family(familyName);
@@ -1793,6 +1788,7 @@ QList<int> QFontDatabase::smoothSizes(const QString &family,
 
     const int dpi = qt_defaultDpiY(); // embedded
 
+    QtFontStyle::Key styleKey(styleName);
     for (int j = 0; j < fam->count; j++) {
         QtFontFoundry *foundry = fam->foundries[j];
         if (foundryName.isEmpty() || foundry->name.compare(foundryName, Qt::CaseInsensitive) == 0) {
