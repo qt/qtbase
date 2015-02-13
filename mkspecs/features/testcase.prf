@@ -187,5 +187,11 @@ contains(INSTALLS, target) {
     }
 }
 
+macx-xcode:bundle:isEmpty(QMAKE_BUNDLE_EXTENSION) {
+    QMAKE_PBX_PRODUCT_TYPE = com.apple.product-type.bundle.unit-test
+    QMAKE_PBX_BUNDLE_TYPE = wrapper.cfbundle
+    QMAKE_BUNDLE_EXTENSION = .xctest
+}
+
 } # have_target
 
