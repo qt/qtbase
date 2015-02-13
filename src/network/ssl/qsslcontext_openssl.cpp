@@ -177,7 +177,23 @@ init_context:
         unsupportedProtocol = true;
 #endif
         break;
+    case QSsl::TlsV1_0OrLater:
+        // Specific protocols will be specified via SSL options.
+        sslContext->ctx = q_SSL_CTX_new(client ? q_SSLv23_client_method() : q_SSLv23_server_method());
+        break;
+    case QSsl::TlsV1_1OrLater:
+    case QSsl::TlsV1_2OrLater:
+#if OPENSSL_VERSION_NUMBER >= 0x10001000L
+        // Specific protocols will be specified via SSL options.
+        sslContext->ctx = q_SSL_CTX_new(client ? q_SSLv23_client_method() : q_SSLv23_server_method());
+#else
+        // TLS 1.1/1.2 not supported by the system, but chosen deliberately -> error
+        sslContext->ctx = 0;
+        unsupportedProtocol = true;
+#endif
+        break;
     }
+
     if (!sslContext->ctx) {
         // After stopping Flash 10 the SSL library looses its ciphers. Try re-adding them
         // by re-initializing the library.

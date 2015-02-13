@@ -307,6 +307,17 @@ long QSslSocketBackendPrivate::setupOpenSslOptions(QSsl::SslProtocol protocol, Q
         options = SSL_OP_ALL|SSL_OP_NO_SSLv2;
     else if (protocol == QSsl::SecureProtocols)
         options = SSL_OP_ALL|SSL_OP_NO_SSLv2|SSL_OP_NO_SSLv3;
+    else if (protocol == QSsl::TlsV1_0OrLater)
+        options = SSL_OP_ALL|SSL_OP_NO_SSLv2|SSL_OP_NO_SSLv3;
+#if OPENSSL_VERSION_NUMBER >= 0x10001000L
+    // Choosing Tlsv1_1OrLater or TlsV1_2OrLater on OpenSSL < 1.0.1
+    // will cause an error in QSslContext::fromConfiguration, meaning
+    // we will never get here.
+    else if (protocol == QSsl::TlsV1_1OrLater)
+        options = SSL_OP_ALL|SSL_OP_NO_SSLv2|SSL_OP_NO_SSLv3|SSL_OP_NO_TLSv1;
+    else if (protocol == QSsl::TlsV1_2OrLater)
+        options = SSL_OP_ALL|SSL_OP_NO_SSLv2|SSL_OP_NO_SSLv3|SSL_OP_NO_TLSv1|SSL_OP_NO_TLSv1_1;
+#endif
     else
         options = SSL_OP_ALL;
 
