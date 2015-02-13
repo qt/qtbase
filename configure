@@ -644,6 +644,8 @@ CFG_QNX_IMF=auto
 CFG_LGMON=auto
 CFG_SYSTEM_PROXIES=no
 CFG_ANDROID_STYLE_ASSETS=yes
+CFG_GSTREAMER=auto
+CFG_GSTREAMER_VERSION=""
 
 # Target architecture
 CFG_ARCH=
@@ -968,7 +970,17 @@ while [ "$#" -gt 0 ]; do
             shift;
             VAL=$1
         fi
-	;;
+        ;;
+    -gstreamer)
+        VAR=gstreamer
+        # this option may or may not be followed by an argument
+        if [ -z "$2" ] || echo "$2" | grep '^-' >/dev/null 2>&1; then
+            VAL=yes
+        else
+            shift;
+            VAL=$1
+        fi
+        ;;
     -hostprefix)
         VAR=`echo $1 | sed 's,^-\(.*\),\1,'`
         # this option may or may not be followed by an argument
@@ -1896,6 +1908,15 @@ while [ "$#" -gt 0 ]; do
             UNKNOWN_OPT=yes
         fi
         ;;
+    gstreamer)
+        if  [ "$VAL" = "auto" ] || [ "$VAL" = "yes" ] ||
+            [ "$VAL" = "0.10" ] || [ "$VAL" = "1.0" ] ||
+            [ "$VAL" = "no" ]; then
+            CFG_GSTREAMER="$VAL"
+        else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
     gtkstyle)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
             CFG_QGTKSTYLE="$VAL"
@@ -2611,6 +2632,12 @@ Additional options:
 
     -no-libinput ........ Do not support libinput.
  *  -libinput ........... Enable libinput support.
+
+    -no-gstreamer ....... Do not support GStreamer.
+ +  -gstreamer <version>  Enable GStreamer support
+                          With no parameter, this will attempt to auto-detect GStreamer 0.10 and
+                          1.0. GStreamer 0.10 is used by default when available.
+                          Use 0.10 or 1.0 for <version> to override auto-detection.
 
  *  -no-system-proxies .. Do not use system network proxies by default.
     -system-proxies ..... Use system network proxies by default.
@@ -5852,6 +5879,42 @@ if [ "$CFG_AUDIO_BACKEND" = "auto" ]; then
     CFG_AUDIO_BACKEND=yes
 fi
 
+# detect GStreamer support
+if [ "$CFG_GSTREAMER" = "auto" ] || [ "$CFG_GSTREAMER" = "yes" ]; then
+    if compileTest unix/gstreamer "GStreamer 0.10" -config gst-0.10; then
+        CFG_GSTREAMER=yes
+        CFG_GSTREAMER_VERSION=0.10
+    elif compileTest unix/gstreamer "GStreamer 1.0" -config gst-1.0; then
+        CFG_GSTREAMER=yes
+        CFG_GSTREAMER_VERSION=1.0
+    else
+        if [ "$CFG_GSTREAMER" = "yes" ]; then
+            echo "GStreamer support cannot be enabled due to functionality tests!"
+            echo " Turn on verbose messaging (-v) to $0 to see the final report."
+            exit 1
+        fi
+        CFG_GSTREAMER=no
+    fi
+elif [ "$CFG_GSTREAMER" = "0.10" ]; then
+    if compileTest unix/gstreamer "GStreamer 0.10" -config gst-0.10; then
+        CFG_GSTREAMER=yes
+        CFG_GSTREAMER_VERSION=0.10
+    else
+        echo "The GStreamer 0.10 functionality test failed!"
+        echo " Turn on verbose messaging (-v) to $0 to see the final report."
+        exit 1
+    fi
+elif [ "$CFG_GSTREAMER" = "1.0" ]; then
+    if compileTest unix/gstreamer "GStreamer 1.0" -config gst-1.0; then
+        CFG_GSTREAMER=yes
+        CFG_GSTREAMER_VERSION=1.0
+    else
+        echo "The GStreamer 1.0 functionality test failed!"
+        echo " Turn on verbose messaging (-v) to $0 to see the final report."
+        exit 1
+    fi
+fi
+
 if [ "$CFG_LARGEFILE" != "yes" ] && [ "$XPLATFORM_MINGW" = "yes" ]; then
     echo "Warning: largefile support cannot be disabled for win32."
     CFG_LARGEFILE="yes"
@@ -6123,6 +6186,9 @@ fi
 if [ "$CFG_PULSEAUDIO" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG pulseaudio"
 fi
+
+[ "$CFG_GSTREAMER_VERSION" = "0.10" ] && QT_CONFIG="$QT_CONFIG gstreamer-0.10"
+[ "$CFG_GSTREAMER_VERSION" = "1.0" ] && QT_CONFIG="$QT_CONFIG gstreamer-1.0"
 
 if [ "$CFG_COREWLAN" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG corewlan"
@@ -6892,6 +6958,7 @@ report_support "  Evdev .................." "$CFG_EVDEV"
 report_support "  FontConfig ............." "$CFG_FONTCONFIG"
 report_support "  FreeType ..............." "$CFG_FREETYPE" system "system library" yes "bundled copy"
 report_support "  Glib ..................." "$CFG_GLIB"
+report_support "  GStreamer .............." "$CFG_GSTREAMER" yes "$CFG_GSTREAMER_VERSION"
 report_support "  GTK theme .............." "$CFG_QGTKSTYLE"
 report_support "  HarfBuzz ..............." "$CFG_HARFBUZZ" system "system library" qt "bundled copy"
 report_support "  Iconv .................." "$CFG_ICONV"
