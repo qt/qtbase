@@ -1410,7 +1410,7 @@
     \code
     project     = Qt
     description = Qt Reference Documentation
-    url         = http://qt-project.org/doc/qt-4.8/
+    url         = http://doc.qt.io/qt-4.8/
 
          ...
     \endcode
@@ -1433,7 +1433,7 @@
     \code
         project     = Qt
         description = Qt Reference Documentation
-        url         = http://qt-project.org/doc/qt-4.8/
+        url         = http://doc.qt.io/qt-4.8/
 
         ...
     \endcode

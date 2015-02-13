@@ -1479,10 +1479,10 @@
                \printuntil hello
 
                First we create a \l
-               {http://qt-project.org/doc/qt-5.0/qtwidgets/qapplication.html} {QApplication}
+               {http://doc.qt.io/qt-5/qapplication.html} {QApplication}
                object using the \c argc and \c argv parameters, then we
                create a \l
-               {http://qt-project.org/doc/qt-5.0/qtwidgets/qpushbutton.html} {QPushButton}.
+               {http://doc.qt.io/qt-5/qpushbutton.html} {QPushButton}.
            \endquotation
 
     See also \l {printline-command} {\\printline} and \l
@@ -1776,7 +1776,7 @@
 
     \code
        / *!
-          Read the \l {http://qt-project.org/doc/qt-5.0/}
+          Read the \l {http://doc.qt.io/qt-5/}
           {Qt 5.0 Documentation} carefully.
        * /
     \endcode
@@ -1784,7 +1784,7 @@
     QDoc renders this as:
 
     \quotation
-       Read the \l {http://qt-project.org/doc/qt-5.0/}
+       Read the \l {http://doc.qt.io/qt-5/}
        {Qt 5.0 Documentation} carefully.
     \endquotation
 
@@ -2318,7 +2318,7 @@
 
                <tr valign="top" bgcolor="#d0d0d0">
                    <td>
-                   <a href="http://qt-project.org/doc/qt-5.0/qtcore/signalsandslots.html">
+                   <a href="http://doc.qt.io/qt-5/signalsandslots.html">
                        Signals and Slots</a>
                    </td>
                    <td>Signals and slots are used for communication
@@ -2327,7 +2327,7 @@
 
                <tr valign="top" bgcolor="#c0c0c0">
                    <td>
-                   <a href="http://qt-project.org/doc/qt-5.0/qtwidgets/layout.html">
+                   <a href="http://doc.qt.io/qt-5/layout.html">
                        Layout Management</a></td>
                    <td>The Qt layout system provides a simple
                        and powerful way of specifying the layout
@@ -2336,7 +2336,7 @@
 
                <tr valign="top" bgcolor="#d0d0d0">
                    <td>
-                   <a href="http://qt-project.org/doc/qt-5.0/qtgui/dnd.html">
+                   <a href="http://doc.qt.io/qt-5/dnd.html">
                        Drag and Drop</a></td>
                    <td>Drag and drop provides a simple visual
                        mechanism which users can use to transfer
@@ -2437,7 +2437,7 @@
 
                <tr valign="top" bgcolor="#d0d0d0">
                    <td>
-                   <a href="http://qt-project.org/doc/qt-5.0/qtcore/signalsandslots.html">
+                   <a href="http://doc.qt.io/qt-5/signalsandslots.html">
                        Signals and Slots</a>
                    </td>
                    <td>Signals and slots are used for communication
@@ -2499,7 +2499,7 @@
 
                <tr valign="top" bgcolor="#d0d0d0">
                    <td>
-                   <a href="http://qt-project.org/doc/qt-5.0/qtcore/signalsandslots.html">
+                   <a href="http://doc.qt.io/qt-5/signalsandslots.html">
                        Signals and Slots</a>
                    </td>
                    <td>Signals and slots are used for communication
@@ -2508,7 +2508,7 @@
 
                <tr valign="top" bgcolor="#c0c0c0">
                    <td>
-                   <a href="http://qt-project.org/doc/qt-5.0/qtwidgets/layout.html">
+                   <a href="http://doc.qt.io/qt-5/layout.html">
                        Layout Management</a></td>
                    <td>The Qt layout system provides a simple
                        and powerful way of specifying the layout
@@ -2517,7 +2517,7 @@
 
                <tr valign="top" bgcolor="#d0d0d0">
                    <td>
-                   <a href="http://qt-project.org/doc/qt-5.0/qtgui/dnd.html">
+                   <a href="http://doc.qt.io/qt-5/dnd.html">
                        Drag and Drop</a></td>
                    <td>Drag and drop provides a simple visual
                        mechanism which users can use to transfer
@@ -2935,7 +2935,7 @@
            \quotation
                \raw HTML
                    <h3>geometry :
-                   <a href="http://qt-project.org/doc/qt-5.0/qtcore/qrect.html">QRect</a>
+                   <a href="http://doc.qt.io/qt-5/qrect.html">QRect</a>
                    </h3>
                \endraw
 
