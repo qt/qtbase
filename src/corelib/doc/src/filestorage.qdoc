@@ -87,7 +87,7 @@ There are three general ways to use QTextStream when reading text files:
 
 \list
     \li Chunk by chunk, by calling \l{QBuffer::readLine()}{readLine()} or \l{QBuffer::readAll()}{readAll()}.
-    \li Word by word. QTextStream supports streaming into {QString}s, {QByteArray}s
+    \li Word by word. QTextStream supports streaming into \l{QString}s, \l{QByteArray}s
         and char* buffers. Words are delimited by space, and leading white space
         is automatically skipped.
     \li Character by character, by streaming into QChar or char types. This
