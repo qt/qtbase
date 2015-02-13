@@ -11,7 +11,7 @@
  * and/or other materials provided with the distribution.
 
  * The name of the author may not be used to endorse or promote products
- * derived derived from this software without specific prior written permission.
+ * derived from this software without specific prior written permission.
 
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
