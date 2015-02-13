@@ -913,6 +913,27 @@ bool QSslSocketBackendPrivate::setSessionProtocol()
         err = SSLSetProtocolVersionMin(context, kTLSProtocol1);
         if (err == noErr)
             err = SSLSetProtocolVersionMax(context, kTLSProtocol12);
+    } else if (configuration.protocol == QSsl::TlsV1_0OrLater) {
+#ifdef QSSLSOCKET_DEBUG
+        qDebug() << Q_FUNC_INFO << plainSocket << "requesting : TLSv1 - TLSv1.2";
+#endif
+        err = SSLSetProtocolVersionMin(context, kTLSProtocol1);
+        if (err == noErr)
+            err = SSLSetProtocolVersionMax(context, kTLSProtocol12);
+    } else if (configuration.protocol == QSsl::TlsV1_1OrLater) {
+#ifdef QSSLSOCKET_DEBUG
+        qDebug() << Q_FUNC_INFO << plainSocket << "requesting : TLSv1.1 - TLSv1.2";
+#endif
+        err = SSLSetProtocolVersionMin(context, kTLSProtocol11);
+        if (err == noErr)
+            err = SSLSetProtocolVersionMax(context, kTLSProtocol12);
+    } else if (configuration.protocol == QSsl::TlsV1_2OrLater) {
+#ifdef QSSLSOCKET_DEBUG
+        qDebug() << Q_FUNC_INFO << plainSocket << "requesting : TLSv1.2";
+#endif
+        err = SSLSetProtocolVersionMin(context, kTLSProtocol12);
+        if (err == noErr)
+            err = SSLSetProtocolVersionMax(context, kTLSProtocol12);
     } else {
         qDebug() << Q_FUNC_INFO << "no protocol version found in the configuration";
         return false;
