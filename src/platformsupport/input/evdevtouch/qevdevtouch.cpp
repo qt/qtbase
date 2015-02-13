@@ -554,6 +554,10 @@ void QEvdevTouchScreenData::processInputEvent(input_event *data)
         while (it.hasNext()) {
             it.next();
             Contact &contact(it.value());
+
+            if (!contact.state)
+                continue;
+
             if (contact.state == Qt::TouchPointReleased) {
                 if (m_typeB)
                     contact.state = static_cast<Qt::TouchPointState>(0);
