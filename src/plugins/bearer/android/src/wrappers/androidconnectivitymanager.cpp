@@ -295,8 +295,7 @@ QList<AndroidNetworkInfo> AndroidConnectivityManager::getAllNetworkInfo() const
         if (exceptionCheckAndClear(env))
             break;
 
-        list << AndroidNetworkInfo(lref);
-        env->DeleteLocalRef(lref);
+        list << AndroidNetworkInfo(QJNIObjectPrivate::fromLocalRef(lref));
     }
 
     return list;

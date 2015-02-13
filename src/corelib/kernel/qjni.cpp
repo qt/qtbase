@@ -96,7 +96,7 @@ static jclass loadClassDotEnc(const QString &classDotEnc, JNIEnv *env)
     if (clazz != 0 || isCached)
         return clazz;
 
-    QJNIObjectPrivate classLoader = QtAndroidPrivate::classLoader();
+    QJNIObjectPrivate classLoader(QtAndroidPrivate::classLoader());
     if (!classLoader.isValid())
         return 0;
 
@@ -2237,6 +2237,13 @@ bool QJNIObjectPrivate::isClassAvailable(const char *className)
 bool QJNIObjectPrivate::isValid() const
 {
     return d->m_jobject;
+}
+
+QJNIObjectPrivate QJNIObjectPrivate::fromLocalRef(jobject lref)
+{
+    QJNIObjectPrivate o(lref);
+    QJNIEnvironmentPrivate()->DeleteLocalRef(lref);
+    return o;
 }
 
 bool QJNIObjectPrivate::isSameObject(jobject obj) const
