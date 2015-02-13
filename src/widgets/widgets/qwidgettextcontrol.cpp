@@ -2227,15 +2227,18 @@ QMenu *QWidgetTextControl::createStandardContextMenu(const QPointF &pos, QWidget
     if (d->interactionFlags & Qt::TextEditable) {
         a = menu->addAction(tr("&Undo") + ACCEL_KEY(QKeySequence::Undo), this, SLOT(undo()));
         a->setEnabled(d->doc->isUndoAvailable());
+        a->setObjectName(QStringLiteral("edit-undo"));
         setActionIcon(a, QStringLiteral("edit-undo"));
         a = menu->addAction(tr("&Redo") + ACCEL_KEY(QKeySequence::Redo), this, SLOT(redo()));
         a->setEnabled(d->doc->isRedoAvailable());
+        a->setObjectName(QStringLiteral("edit-redo"));
         setActionIcon(a, QStringLiteral("edit-redo"));
         menu->addSeparator();
 
 #ifndef QT_NO_CLIPBOARD
         a = menu->addAction(tr("Cu&t") + ACCEL_KEY(QKeySequence::Cut), this, SLOT(cut()));
         a->setEnabled(d->cursor.hasSelection());
+        a->setObjectName(QStringLiteral("edit-cut"));
         setActionIcon(a, QStringLiteral("edit-cut"));
 #endif
     }
@@ -2244,6 +2247,7 @@ QMenu *QWidgetTextControl::createStandardContextMenu(const QPointF &pos, QWidget
     if (showTextSelectionActions) {
         a = menu->addAction(tr("&Copy") + ACCEL_KEY(QKeySequence::Copy), this, SLOT(copy()));
         a->setEnabled(d->cursor.hasSelection());
+        a->setObjectName(QStringLiteral("edit-copy"));
         setActionIcon(a, QStringLiteral("edit-copy"));
     }
 
@@ -2252,6 +2256,7 @@ QMenu *QWidgetTextControl::createStandardContextMenu(const QPointF &pos, QWidget
 
         a = menu->addAction(tr("Copy &Link Location"), this, SLOT(_q_copyLink()));
         a->setEnabled(!d->linkToCopy.isEmpty());
+        a->setObjectName(QStringLiteral("link-copy"));
     }
 #endif // QT_NO_CLIPBOARD
 
@@ -2259,10 +2264,12 @@ QMenu *QWidgetTextControl::createStandardContextMenu(const QPointF &pos, QWidget
 #ifndef QT_NO_CLIPBOARD
         a = menu->addAction(tr("&Paste") + ACCEL_KEY(QKeySequence::Paste), this, SLOT(paste()));
         a->setEnabled(canPaste());
+        a->setObjectName(QStringLiteral("edit-paste"));
         setActionIcon(a, QStringLiteral("edit-paste"));
 #endif
         a = menu->addAction(tr("Delete"), this, SLOT(_q_deleteSelected()));
         a->setEnabled(d->cursor.hasSelection());
+        a->setObjectName(QStringLiteral("edit-delete"));
         setActionIcon(a, QStringLiteral("edit-delete"));
     }
 
@@ -2271,6 +2278,7 @@ QMenu *QWidgetTextControl::createStandardContextMenu(const QPointF &pos, QWidget
         menu->addSeparator();
         a = menu->addAction(tr("Select All") + ACCEL_KEY(QKeySequence::SelectAll), this, SLOT(selectAll()));
         a->setEnabled(!d->doc->isEmpty());
+        a->setObjectName(QStringLiteral("select-all"));
     }
 
     if ((d->interactionFlags & Qt::TextEditable) && qApp->styleHints()->useRtlExtensions()) {
