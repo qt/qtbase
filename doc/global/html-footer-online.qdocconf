@@ -33,9 +33,9 @@ HTML.footer += \
     "</li>\n" \
     "<li id=\"menu-item-33\" class=\"menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children menu-item-33\"><a href=\"http://qt.io/developers/\">Developers</a>\n" \
     "<ul class=\"sub-menu\">\n" \
-    "    <li id=\"menu-item-1365\" class=\"menu-item menu-item-type-custom menu-item-object-custom menu-item-1365\"><a href=\"http://qt-project.org/doc/\">Documentation</a></li>\n" \
-    "    <li id=\"menu-item-1364\" class=\"menu-item menu-item-type-custom menu-item-object-custom menu-item-1364\"><a href=\"http://qt-project.org/doc/qt-5/qtexamplesandtutorials.html\">Examples &amp; Tutorials</a></li>\n" \
-    "    <li id=\"menu-item-1363\" class=\"menu-item menu-item-type-custom menu-item-object-custom menu-item-1363\"><a href=\"http://qt-project.org/doc/qt-5/topics-app-development.html\">Tools</a></li>\n" \
+    "    <li id=\"menu-item-1365\" class=\"menu-item menu-item-type-custom menu-item-object-custom menu-item-1365\"><a href=\"http://doc.qt.io/\">Documentation</a></li>\n" \
+    "    <li id=\"menu-item-1364\" class=\"menu-item menu-item-type-custom menu-item-object-custom menu-item-1364\"><a href=\"http://doc.qt.io/qt-5/qtexamplesandtutorials.html\">Examples &amp; Tutorials</a></li>\n" \
+    "    <li id=\"menu-item-1363\" class=\"menu-item menu-item-type-custom menu-item-object-custom menu-item-1363\"><a href=\"http://doc.qt.io/qt-5/topics-app-development.html\">Tools</a></li>\n" \
     "    <li id=\"menu-item-1361\" class=\"menu-item menu-item-type-custom menu-item-object-custom menu-item-1361\"><a href=\"http://qt-project.org/wiki\">Wiki</a></li>\n" \
     "    <li id=\"menu-item-1360\" class=\"menu-item menu-item-type-custom menu-item-object-custom menu-item-1360\"><a href=\"http://qt-project.org/forums\">Forums</a></li>\n" \
     "    <li id=\"menu-item-1362\" class=\"menu-item menu-item-type-custom menu-item-object-custom menu-item-1362\"><a href=\"http://qt-project.org/wiki/Qt-Contribution-Guidelines\">Contribute to Qt</a></li>\n" \
