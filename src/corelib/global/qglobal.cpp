@@ -2529,9 +2529,6 @@ QString QSysInfo::productType()
 #elif defined(Q_OS_DARWIN)
     return QStringLiteral("darwin");
 
-#elif defined(Q_OS_HAIKU)
-    return QStringLiteral("haiku");
-
 #elif defined(USE_ETC_OS_RELEASE) // Q_OS_UNIX
     QUnixOSVersion unixOsVersion;
     readEtcOsRelease(unixOsVersion);
