@@ -251,12 +251,19 @@ QtFontStyle::Key::Key(const QString &styleString)
 {
     weight = getFontWeight(styleString);
 
-    if (styleString.contains(QLatin1String("Italic"))
-        || styleString.contains(QCoreApplication::translate("QFontDatabase", "Italic")))
-        style = QFont::StyleItalic;
-    else if (styleString.contains(QLatin1String("Oblique"))
-             || styleString.contains(QCoreApplication::translate("QFontDatabase", "Oblique")))
-        style = QFont::StyleOblique;
+    if (!styleString.isEmpty()) {
+        // First the straightforward no-translation checks, these are fast.
+        if (styleString.contains(QLatin1String("Italic")))
+            style = QFont::StyleItalic;
+        else if (styleString.contains(QLatin1String("Oblique")))
+            style = QFont::StyleOblique;
+
+        // Then the translation checks. These aren't as fast.
+        else if (styleString.contains(QCoreApplication::translate("QFontDatabase", "Italic")))
+            style = QFont::StyleItalic;
+        else if (styleString.contains(QCoreApplication::translate("QFontDatabase", "Oblique")))
+            style = QFont::StyleOblique;
+    }
 }
 
 QtFontSize *QtFontStyle::pixelSize(unsigned short size, bool add)
