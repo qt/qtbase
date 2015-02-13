@@ -1,14 +1,5 @@
 
-# In case the user sets the SDK manually
-contains(QMAKE_MAC_SDK, ^iphonesimulator.*) {
-    iphonesimulator_and_iphoneos: \
-        error("iOS simulator is handled automatically for iphonesimulator_and_iphoneos")
-
-    CONFIG += iphonesimulator
-}
-
-iphonesimulator_and_iphoneos:iphonesimulator: \
-    QMAKE_MAC_SDK ~= s,^iphoneos,iphonesimulator,
+load(sdk)
 
 # Resolve config so we don't need to use CONFIG() later on
 CONFIG(iphonesimulator, iphonesimulator|iphoneos) {

@@ -1,3 +1,14 @@
+# In case the user sets the SDK manually
+contains(QMAKE_MAC_SDK, ^iphonesimulator.*) {
+    iphonesimulator_and_iphoneos: \
+        error("iOS simulator is handled automatically for iphonesimulator_and_iphoneos")
+
+    CONFIG += iphonesimulator
+}
+
+iphonesimulator_and_iphoneos:iphonesimulator: \
+    QMAKE_MAC_SDK ~= s,^iphoneos,iphonesimulator,
+
 load(sdk)
 
 lessThan(QMAKE_MAC_SDK_VERSION, "8.0"): \
