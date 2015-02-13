@@ -19,6 +19,7 @@
    <file>platforms/+unix/+darwin/+mac/+osx/test</file>
    <file>platforms/+unix/+darwin/+mac/test</file>
    <file>platforms/+unix/+darwin/test</file>
+   <file>platforms/+unix/+haiku/test</file>
    <file>platforms/+unix/+linux/test</file>
    <file>platforms/+unix/test</file>
    <file>platforms/+windows/+wince/test</file>
@@ -30,6 +31,7 @@
    <file>platforms/+osx/test</file>
    <file>platforms/+darwin/test</file>
    <file>platforms/+mac/test</file>
+   <file>platforms/+haiku/test</file>
    <file>platforms/+linux/test</file>
    <file>platforms/+wince/test</file>
 
@@ -39,6 +41,7 @@
    <file>platforms/+blackberry/test2</file>
    <file>platforms/+ios/test2</file>
    <file>platforms/+osx/test2</file>
+   <file>platforms/+haiku/test2</file>
    <file>platforms/+linux/test2</file>
    <file>platforms/+wince/test2</file>
    <file>platforms/+winnt/test2</file>
