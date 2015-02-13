@@ -135,6 +135,7 @@ private:
     int synthesisFlags;
     CGAffineTransform transform;
     QFixed avgCharWidth;
+    QFontEngine::FaceId face_id;
 };
 
 CGAffineTransform qt_transform_from_fontdef(const QFontDef &fontDef);
