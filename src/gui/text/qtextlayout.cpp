@@ -2091,7 +2091,9 @@ static QGlyphRun glyphRunWithInfo(QFontEngine *fontEngine,
     qreal minY = 0;
     qreal maxY = 0;
     QVector<quint32> glyphs;
+    glyphs.reserve(glyphsArray.size());
     QVector<QPointF> positions;
+    positions.reserve(glyphsArray.size());
     for (int i=0; i<glyphsArray.size(); ++i) {
         glyphs.append(glyphsArray.at(i) & 0xffffff);
 
