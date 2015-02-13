@@ -294,10 +294,8 @@ private Q_SLOTS:
     void ioPutToFileFromSocket();
     void ioPutToFileFromLocalSocket_data();
     void ioPutToFileFromLocalSocket();
-#ifndef QT_NO_PROCESS
     void ioPutToFileFromProcess_data();
     void ioPutToFileFromProcess();
-#endif
     void ioPutToFtpFromFile_data();
     void ioPutToFtpFromFile();
     void ioPutToHttpFromFile_data();
@@ -4276,14 +4274,19 @@ void tst_QNetworkReply::ioPutToFileFromLocalSocket()
 }
 
 // Currently no stdin/out supported for Windows CE.
-#ifndef QT_NO_PROCESS
 void tst_QNetworkReply::ioPutToFileFromProcess_data()
 {
+#ifndef QT_NO_PROCESS
     putToFile_data();
+#endif
 }
 
 void tst_QNetworkReply::ioPutToFileFromProcess()
 {
+#ifdef QT_NO_PROCESS
+    QSKIP("No qprocess support", SkipAll);
+#else
+
 #if defined(Q_OS_WINCE)
     QSKIP("Currently no stdin/out supported for Windows CE");
 #else
@@ -4321,8 +4324,9 @@ void tst_QNetworkReply::ioPutToFileFromProcess()
     QByteArray contents = file.readAll();
     QCOMPARE(contents, data);
 #endif
+
+#endif // QT_NO_PROCESS
 }
-#endif
 
 void tst_QNetworkReply::ioPutToFtpFromFile_data()
 {

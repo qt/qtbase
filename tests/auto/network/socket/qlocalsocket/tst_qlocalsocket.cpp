@@ -88,10 +88,8 @@ private slots:
     void threadedConnection_data();
     void threadedConnection();
 
-#ifndef QT_NO_PROCESS
     void processConnection_data();
     void processConnection();
-#endif
 
     void longPath();
     void waitForDisconnect();
@@ -784,7 +782,6 @@ void tst_QLocalSocket::threadedConnection()
     }
 }
 
-#ifndef QT_NO_PROCESS
 void tst_QLocalSocket::processConnection_data()
 {
     QTest::addColumn<int>("processes");
@@ -794,6 +791,7 @@ void tst_QLocalSocket::processConnection_data()
     QTest::newRow("30 clients") << 30;
 }
 
+#ifndef QT_NO_PROCESS
 class ProcessOutputDumper
 {
 public:
@@ -815,12 +813,16 @@ public:
 private:
     QProcess *process;
 };
+#endif
 
 /*!
     Create external processes that produce and consume.
  */
 void tst_QLocalSocket::processConnection()
 {
+#ifdef QT_NO_PROCESS
+    QSKIP("No qprocess support", SkipAll);
+#else
 #ifdef Q_OS_MAC
     QSKIP("The processConnection test is unstable on Mac. See QTBUG-39986.");
 #endif
@@ -860,8 +862,8 @@ void tst_QLocalSocket::processConnection()
     }
     producer.waitForFinished(15000);
     producerOutputDumper.clear();
-}
 #endif
+}
 
 void tst_QLocalSocket::longPath()
 {

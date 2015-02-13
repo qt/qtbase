@@ -66,9 +66,7 @@ private slots:
     void versions();
 
     void threadUniqueness();
-#ifndef QT_NO_PROCESS
     void processUniqueness();
-#endif
 
     void hash();
 
@@ -325,9 +323,11 @@ void tst_QUuid::threadUniqueness()
     qDeleteAll(threads);
 }
 
-#ifndef QT_NO_PROCESS
 void tst_QUuid::processUniqueness()
 {
+#ifdef QT_NO_PROCESS
+    QSKIP("No qprocess support", SkipAll);
+#else
     QProcess process;
     QString processOneOutput;
     QString processTwoOutput;
@@ -352,8 +352,8 @@ void tst_QUuid::processUniqueness()
 
     // They should be *different*!
     QVERIFY(processOneOutput != processTwoOutput);
-}
 #endif
+}
 
 void tst_QUuid::hash()
 {

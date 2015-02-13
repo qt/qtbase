@@ -219,10 +219,8 @@ private slots:
     void fileTimes();
     void fileTimes_oldFile();
 
-#ifndef Q_NO_SYMLINKS
     void isSymLink_data();
     void isSymLink();
-#endif
 
     void isHidden_data();
     void isHidden();
@@ -1206,9 +1204,9 @@ void tst_QFileInfo::fileTimes_oldFile()
 #endif
 }
 
-#ifndef Q_NO_SYMLINKS
 void tst_QFileInfo::isSymLink_data()
 {
+#ifndef Q_NO_SYMLINKS
     QFile::remove("link.lnk");
     QFile::remove("brokenlink.lnk");
     QFile::remove("dummyfile");
@@ -1228,10 +1226,14 @@ void tst_QFileInfo::isSymLink_data()
     QTest::newRow("existent file") << m_sourceFile << false << "";
     QTest::newRow("link") << "link.lnk" << true << QFileInfo(m_sourceFile).absoluteFilePath();
     QTest::newRow("broken link") << "brokenlink.lnk" << true << QFileInfo("dummyfile").absoluteFilePath();
+#endif
 }
 
 void tst_QFileInfo::isSymLink()
 {
+#ifdef Q_NO_SYMLINKS
+    QSKIP("No symlink support", SkipAll);
+#else
     QFETCH(QString, path);
     QFETCH(bool, isSymLink);
     QFETCH(QString, linkTarget);
@@ -1239,8 +1241,8 @@ void tst_QFileInfo::isSymLink()
     QFileInfo fi(path);
     QCOMPARE(fi.isSymLink(), isSymLink);
     QCOMPARE(fi.symLinkTarget(), linkTarget);
-}
 #endif
+}
 
 void tst_QFileInfo::isHidden_data()
 {

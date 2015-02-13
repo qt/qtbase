@@ -74,7 +74,7 @@ private slots:
     void removeWhileAttached();
 #endif
     void emptyMemory();
-#if !defined(Q_OS_WIN) && !defined(QT_NO_PROCESS)
+#if !defined(Q_OS_WIN)
     void readOnly();
 #endif
 
@@ -90,10 +90,8 @@ private slots:
     void simpleThreadedProducerConsumer();
 
     // with processes
-#ifndef QT_NO_PROCESS
     void simpleProcessProducerConsumer_data();
     void simpleProcessProducerConsumer();
-#endif
 
     // extreme cases
     void useTooMuchMemory();
@@ -457,9 +455,12 @@ void tst_QSharedMemory::emptyMemory()
     by writing to data and causing a segfault.
 */
 // This test opens a crash dialog on Windows.
-#if !defined(Q_OS_WIN) && !defined(QT_NO_PROCESS)
+#if !defined(Q_OS_WIN)
 void tst_QSharedMemory::readOnly()
 {
+#ifdef QT_NO_PROCESS
+    QSKIP("No qprocess support", SkipAll);
+#else
     rememberKey("readonly_segfault");
     // ### on windows disable the popup somehow
     QProcess p;
@@ -467,6 +468,7 @@ void tst_QSharedMemory::readOnly()
     p.setProcessChannelMode(QProcess::ForwardedChannels);
     p.waitForFinished();
     QCOMPARE(p.error(), QProcess::Crashed);
+#endif
 }
 #endif
 
@@ -738,15 +740,16 @@ void tst_QSharedMemory::simpleThreadedProducerConsumer()
     }
 }
 
-#ifndef QT_NO_PROCESS
 void tst_QSharedMemory::simpleProcessProducerConsumer_data()
 {
+#ifndef QT_NO_PROCESS
     QTest::addColumn<int>("processes");
     int tries = 5;
     for (int i = 0; i < tries; ++i) {
         QTest::newRow("1 process") << 1;
         QTest::newRow("5 processes") << 5;
     }
+#endif
 }
 
 /*!
@@ -754,6 +757,9 @@ void tst_QSharedMemory::simpleProcessProducerConsumer_data()
  */
 void tst_QSharedMemory::simpleProcessProducerConsumer()
 {
+#ifdef QT_NO_PROCESS
+    QSKIP("No qprocess support", SkipAll);
+#else
     QFETCH(int, processes);
 
     QSKIP("This test is unstable: QTBUG-25655");
@@ -797,8 +803,8 @@ void tst_QSharedMemory::simpleProcessProducerConsumer()
     producer.write("", 1);
     producer.waitForBytesWritten();
     QVERIFY(producer.waitForFinished(5000));
-}
 #endif
+}
 
 void tst_QSharedMemory::uniqueKey_data()
 {

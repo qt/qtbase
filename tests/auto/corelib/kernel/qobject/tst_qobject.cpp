@@ -91,9 +91,7 @@ private slots:
     void floatProperty();
     void qrealProperty();
     void property();
-#ifndef QT_NO_PROCESS
     void recursiveSignalEmission();
-#endif
     void signalBlocking();
     void blockingQueuedConnection();
     void childEvents();
@@ -2981,9 +2979,11 @@ void tst_QObject::dynamicProperties()
     QVERIFY(obj.dynamicPropertyNames().isEmpty());
 }
 
-#ifndef QT_NO_PROCESS
 void tst_QObject::recursiveSignalEmission()
 {
+#ifdef QT_NO_PROCESS
+    QSKIP("No qprocess support", SkipAll);
+#else
     QProcess proc;
     // signalbug helper app should always be next to this test binary
     const QString path = QStringLiteral("signalbug/signalbug");
@@ -2992,8 +2992,8 @@ void tst_QObject::recursiveSignalEmission()
     QVERIFY(proc.waitForFinished());
     QVERIFY(proc.exitStatus() == QProcess::NormalExit);
     QCOMPARE(proc.exitCode(), 0);
-}
 #endif
+}
 
 void tst_QObject::signalBlocking()
 {

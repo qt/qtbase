@@ -134,7 +134,7 @@ private slots:
 #endif
 
     void ctor();
-#if !defined(Q_OS_WINCE) && !defined(QT_NO_PROCESS)
+#if !defined(Q_OS_WINCE)
     void emptyCtor();
 #endif
     void legacyNames();
@@ -499,9 +499,14 @@ static inline bool runSysAppTest(const QString &binary,
     }
     return true;
 }
+#endif
 
+#if !defined(Q_OS_WINCE)
 void tst_QLocale::emptyCtor()
 {
+#ifdef QT_NO_PROCESS
+    QSKIP("No qprocess support", SkipAll);
+#else
 #define TEST_CTOR(req_lc, exp_str) \
     { \
     /* Test constructor without arguments. Needs separate process */ \
@@ -570,6 +575,7 @@ void tst_QLocale::emptyCtor()
 #endif // Q_OS_BLACKBERRY
 
 #undef TEST_CTOR
+#endif
 }
 #endif
 

@@ -95,10 +95,8 @@ private slots:
     void writeDatagramToNonExistingPeer();
     void writeToNonExistingPeer_data();
     void writeToNonExistingPeer();
-#ifndef QT_NO_PROCESS
     void outOfProcessConnectedClientServerTest();
     void outOfProcessUnconnectedClientServerTest();
-#endif
     void zeroLengthDatagram();
     void multicastTtlOption_data();
     void multicastTtlOption();
@@ -937,9 +935,11 @@ void tst_QUdpSocket::writeToNonExistingPeer()
     QCOMPARE(int(sConnected.state()), int(QUdpSocket::ConnectedState));
 }
 
-#ifndef QT_NO_PROCESS
 void tst_QUdpSocket::outOfProcessConnectedClientServerTest()
 {
+#ifdef QT_NO_PROCESS
+    QSKIP("No qprocess support", SkipAll);
+#else
 #if defined(Q_OS_WINCE)
     QSKIP("This test depends on reading data from QProcess (not supported on Qt/WinCE).");
 #endif
@@ -996,12 +996,14 @@ void tst_QUdpSocket::outOfProcessConnectedClientServerTest()
     QVERIFY(clientProcess.waitForFinished());
     serverProcess.kill();
     QVERIFY(serverProcess.waitForFinished());
-}
 #endif
+}
 
-#ifndef QT_NO_PROCESS
 void tst_QUdpSocket::outOfProcessUnconnectedClientServerTest()
 {
+#ifdef QT_NO_PROCESS
+    QSKIP("No qprocess support", SkipAll);
+#else
 #if defined(Q_OS_WINCE)
     QSKIP("This test depends on reading data from QProcess (not supported on Qt/WinCE).");
 #endif
@@ -1059,8 +1061,8 @@ void tst_QUdpSocket::outOfProcessUnconnectedClientServerTest()
     QVERIFY(clientProcess.waitForFinished());
     serverProcess.kill();
     QVERIFY(serverProcess.waitForFinished());
-}
 #endif
+}
 
 void tst_QUdpSocket::zeroLengthDatagram()
 {
