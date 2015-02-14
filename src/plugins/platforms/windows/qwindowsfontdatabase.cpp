@@ -1693,28 +1693,26 @@ QFontEngine *QWindowsFontDatabase::createEngine(const QFontDef &request,
     LOGFONT lf = fontDefToLOGFONT(request);
     const bool preferClearTypeAA = lf.lfQuality == CLEARTYPE_QUALITY;
 
-    if (!useDirectWrite) {
-        if (request.stretch != 100) {
-            HFONT hfont = CreateFontIndirect(&lf);
-            if (!hfont) {
-                qErrnoWarning("%s: CreateFontIndirect failed", __FUNCTION__);
-                hfont = QWindowsFontDatabase::systemFont();
-            }
-
-            HGDIOBJ oldObj = SelectObject(data->hdc, hfont);
-            TEXTMETRIC tm;
-            if (!GetTextMetrics(data->hdc, &tm))
-                qErrnoWarning("%s: GetTextMetrics failed", __FUNCTION__);
-            else
-                lf.lfWidth = tm.tmAveCharWidth * request.stretch / 100;
-            SelectObject(data->hdc, oldObj);
-
-            DeleteObject(hfont);
+    if (request.stretch != 100) {
+        HFONT hfont = CreateFontIndirect(&lf);
+        if (!hfont) {
+            qErrnoWarning("%s: CreateFontIndirect failed", __FUNCTION__);
+            hfont = QWindowsFontDatabase::systemFont();
         }
+
+        HGDIOBJ oldObj = SelectObject(data->hdc, hfont);
+        TEXTMETRIC tm;
+        if (!GetTextMetrics(data->hdc, &tm))
+            qErrnoWarning("%s: GetTextMetrics failed", __FUNCTION__);
+        else
+            lf.lfWidth = tm.tmAveCharWidth * request.stretch / 100;
+        SelectObject(data->hdc, oldObj);
+
+        DeleteObject(hfont);
     }
 
 #if !defined(QT_NO_DIRECTWRITE)
-    else {
+    if (useDirectWrite) {
         // Default to false for DirectWrite (and re-enable once/if everything turns out okay)
         useDirectWrite = false;
         if (initDirectWrite(data.data())) {
