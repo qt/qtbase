@@ -510,7 +510,7 @@ void QFreetypeFace::addGlyphToPath(FT_Face face, FT_GlyphSlot g, const QFixedPoi
 
 extern void qt_addBitmapToPath(qreal x0, qreal y0, const uchar *image_data, int bpl, int w, int h, QPainterPath *path);
 
-void QFreetypeFace::addBitmapToPath(FT_GlyphSlot slot, const QFixedPoint &point, QPainterPath *path, bool)
+void QFreetypeFace::addBitmapToPath(FT_GlyphSlot slot, const QFixedPoint &point, QPainterPath *path)
 {
     if (slot->format != FT_GLYPH_FORMAT_BITMAP
         || slot->bitmap.pixel_mode != FT_PIXEL_MODE_MONO)
@@ -1430,7 +1430,7 @@ void QFontEngineFT::addOutlineToPath(qreal x, qreal y, const QGlyphLayout &glyph
         for (int gl = 0; gl < glyphs.numGlyphs; gl++) {
             FT_UInt glyph = positioned_glyphs[gl];
             FT_Load_Glyph(face, glyph, FT_LOAD_TARGET_MONO);
-            freetype->addBitmapToPath(face->glyph, positions[gl], path);
+            QFreetypeFace::addBitmapToPath(face->glyph, positions[gl], path);
         }
         unlockFace();
     }
