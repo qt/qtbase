@@ -5565,21 +5565,18 @@ void QPainter::drawGlyphRun(const QPointF &position, const QGlyphRun &glyphRun)
         fixedPointPositions[i] = QFixedPoint::fromPointF(processedPosition);
     }
 
-    d->drawGlyphs(glyphIndexes, fixedPointPositions.data(), count, font, glyphRun.overline(),
-                  glyphRun.underline(), glyphRun.strikeOut());
+    d->drawGlyphs(glyphIndexes, fixedPointPositions.data(), count, fontD->fontEngine,
+                  glyphRun.overline(), glyphRun.underline(), glyphRun.strikeOut());
 }
 
 void QPainterPrivate::drawGlyphs(const quint32 *glyphArray, QFixedPoint *positions,
                                  int glyphCount,
-                                 const QRawFont &font, bool overline, bool underline,
+                                 QFontEngine *fontEngine, bool overline, bool underline,
                                  bool strikeOut)
 {
     Q_Q(QPainter);
 
     updateState(state);
-
-    QRawFontPrivate *fontD = QRawFontPrivate::get(font);
-    QFontEngine *fontEngine = fontD->fontEngine;
 
     QFixed leftMost;
     QFixed rightMost;
