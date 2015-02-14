@@ -1700,7 +1700,6 @@ QFontEngine *QWindowsFontDatabase::createEngine(const QFontDef &request,
         hfont = QWindowsFontDatabase::systemFont();
     }
 
-    bool ttf = false;
     int avWidth = 0;
     BOOL res;
     HGDIOBJ oldObj = SelectObject(data->hdc, hfont);
@@ -1708,11 +1707,10 @@ QFontEngine *QWindowsFontDatabase::createEngine(const QFontDef &request,
     TEXTMETRIC tm;
     res = GetTextMetrics(data->hdc, &tm);
     avWidth = tm.tmAveCharWidth;
-    ttf = tm.tmPitchAndFamily & TMPF_TRUETYPE;
     SelectObject(data->hdc, oldObj);
 
     if (!useDirectWrite) {
-        if (!ttf || request.stretch != 100) {
+        if (request.stretch != 100) {
             DeleteObject(hfont);
             if (!res)
                 qErrnoWarning("%s: GetTextMetrics failed", __FUNCTION__);
