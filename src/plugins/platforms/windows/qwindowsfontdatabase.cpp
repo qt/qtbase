@@ -1693,33 +1693,23 @@ QFontEngine *QWindowsFontDatabase::createEngine(const QFontDef &request,
     LOGFONT lf = fontDefToLOGFONT(request);
     const bool preferClearTypeAA = lf.lfQuality == CLEARTYPE_QUALITY;
 
-    HFONT hfont = 0;
-    hfont = CreateFontIndirect(&lf);
-    if (!hfont) {
-        qErrnoWarning("%s: CreateFontIndirect failed", __FUNCTION__);
-        hfont = QWindowsFontDatabase::systemFont();
-    }
-
-    int avWidth = 0;
-    BOOL res;
-    HGDIOBJ oldObj = SelectObject(data->hdc, hfont);
-
-    TEXTMETRIC tm;
-    res = GetTextMetrics(data->hdc, &tm);
-    avWidth = tm.tmAveCharWidth;
-    SelectObject(data->hdc, oldObj);
-
     if (!useDirectWrite) {
         if (request.stretch != 100) {
-            DeleteObject(hfont);
-            if (!res)
-                qErrnoWarning("%s: GetTextMetrics failed", __FUNCTION__);
-            lf.lfWidth = avWidth * request.stretch/100;
-            hfont = CreateFontIndirect(&lf);
+            HFONT hfont = CreateFontIndirect(&lf);
             if (!hfont) {
-                qErrnoWarning("%s: CreateFontIndirect with stretch failed", __FUNCTION__);
+                qErrnoWarning("%s: CreateFontIndirect failed", __FUNCTION__);
                 hfont = QWindowsFontDatabase::systemFont();
             }
+
+            HGDIOBJ oldObj = SelectObject(data->hdc, hfont);
+            TEXTMETRIC tm;
+            if (!GetTextMetrics(data->hdc, &tm))
+                qErrnoWarning("%s: GetTextMetrics failed", __FUNCTION__);
+            else
+                lf.lfWidth = tm.tmAveCharWidth * request.stretch / 100;
+            SelectObject(data->hdc, oldObj);
+
+            DeleteObject(hfont);
         }
     }
 
@@ -1737,18 +1727,22 @@ QFontEngine *QWindowsFontDatabase::createEngine(const QFontDef &request,
             }
 
             HRESULT hr = data->directWriteGdiInterop->CreateFontFromLOGFONT(&lf, &directWriteFont);
-            if (FAILED(hr)) {
+            if (FAILED(hr))
                 qErrnoWarning("%s: CreateFontFromLOGFONT failed", __FUNCTION__);
-            } else {
-                DeleteObject(hfont);
+            else
                 useDirectWrite = true;
-            }
         }
     }
 #endif
 
     QFontEngine *fe = 0;
     if (!useDirectWrite) {
+        HFONT hfont = CreateFontIndirect(&lf);
+        if (!hfont) {
+            qErrnoWarning("%s: CreateFontIndirect failed", __FUNCTION__);
+            hfont = QWindowsFontDatabase::systemFont();
+        }
+
         QWindowsFontEngine *few = new QWindowsFontEngine(request.family, hfont, lf, data);
         if (preferClearTypeAA)
             few->glyphFormat = QFontEngine::Format_A32;
