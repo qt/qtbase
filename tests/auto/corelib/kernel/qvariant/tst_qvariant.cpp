@@ -3356,9 +3356,6 @@ void tst_QVariant::numericalConvert_data()
 
 void tst_QVariant::numericalConvert()
 {
-#if defined(Q_OS_LINUX) && defined(Q_CC_GNU) && !defined(__x86_64__)
-    QSKIP("Known to fail due to a GCC bug on at least Ubuntu 10.04 32-bit - check QTBUG-8959");
-#endif
     QFETCH(QVariant, v);
     QFETCH(bool, isInteger);
     double num = isInteger ? 5 : 5.3;
