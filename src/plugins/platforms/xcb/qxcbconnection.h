@@ -661,7 +661,7 @@ cookie_t q_xcb_call_template(const cookie_t &cookie, QXcbConnection *connection,
 #else
 #define Q_XCB_CALL(x) x
 #define Q_XCB_CALL2(x, connection) x
-#define Q_XCB_NOOP(c)
+#define Q_XCB_NOOP(c) (void)c;
 #endif
 
 QT_END_NAMESPACE
