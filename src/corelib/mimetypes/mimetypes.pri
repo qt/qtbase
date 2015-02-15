@@ -20,6 +20,6 @@ SOURCES += \
         mimetypes/qmimeglobpattern.cpp \
         mimetypes/qmimeprovider.cpp
 
-RESOURCES += \
-        mimetypes/mimetypes.qrc
-
+!contains(DEFINES, QT_NO_MIMETYPE) {
+    RESOURCES += mimetypes/mimetypes.qrc
+}

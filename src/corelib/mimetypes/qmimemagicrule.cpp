@@ -36,6 +36,8 @@
 
 #include "qmimemagicrule_p.h"
 
+#ifndef QT_NO_MIMETYPE
+
 #include <QtCore/QList>
 #include <QtCore/QDebug>
 #include <qendian.h>
@@ -377,3 +379,5 @@ bool QMimeMagicRule::matches(const QByteArray &data) const
 }
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_MIMETYPE

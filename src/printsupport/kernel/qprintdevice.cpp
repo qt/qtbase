@@ -237,10 +237,12 @@ QList<QPrint::ColorMode> QPrintDevice::supportedColorModes() const
     return isValid() ? d->supportedColorModes() : QList<QPrint::ColorMode>();
 }
 
+#ifndef QT_NO_MIMETYPE
 QList<QMimeType> QPrintDevice::supportedMimeTypes() const
 {
     return isValid() ? d->supportedMimeTypes() : QList<QMimeType>();
 }
+#endif // QT_NO_MIMETYPE
 
 #endif // QT_NO_PRINTER
 

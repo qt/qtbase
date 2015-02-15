@@ -33,6 +33,8 @@
 
 #include "qmimeprovider_p.h"
 
+#ifndef QT_NO_MIMETYPE
+
 #include "qmimetypeparser_p.h"
 #include <qstandardpaths.h>
 #include "qmimemagicrulematcher_p.h"
@@ -866,3 +868,5 @@ void QMimeXMLProvider::addMagicMatcher(const QMimeMagicRuleMatcher &matcher)
 }
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_MIMETYPE

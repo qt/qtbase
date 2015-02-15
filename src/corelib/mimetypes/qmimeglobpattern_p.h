@@ -45,6 +45,10 @@
 // We mean it.
 //
 
+#include <QtCore/qglobal.h>
+
+#ifndef QT_NO_MIMETYPE
+
 #include <QtCore/qstringlist.h>
 #include <QtCore/qhash.h>
 
@@ -146,4 +150,5 @@ public:
 
 QT_END_NAMESPACE
 
+#endif // QT_NO_MIMETYPE
 #endif // QMIMEGLOBPATTERN_P_H

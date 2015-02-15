@@ -879,6 +879,12 @@ Section: Utilities
 Requires:
 Name: QDesktopServices
 
+Feature: MIMETYPE
+Description: Describes types of file or data, represented by a MIME type string.
+Section: Utilities
+Requires:
+Name: QMimeType
+
 Feature: SYSTEMTRAYICON
 Description: Provides an icon for an application in the system tray.
 Section: Utilities

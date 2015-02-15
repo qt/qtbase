@@ -33,6 +33,8 @@
 
 #include "qmimeglobpattern_p.h"
 
+#ifndef QT_NO_MIMETYPE
+
 #include <QRegExp>
 #include <QStringList>
 #include <QDebug>
@@ -234,3 +236,5 @@ void QMimeAllGlobPatterns::clear()
 }
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_MIMETYPE

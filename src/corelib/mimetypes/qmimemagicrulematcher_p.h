@@ -45,11 +45,13 @@
 // We mean it.
 //
 
+#include "qmimemagicrule_p.h"
+
+#ifndef QT_NO_MIMETYPE
+
 #include <QtCore/qbytearray.h>
 #include <QtCore/qlist.h>
 #include <QtCore/qstring.h>
-
-#include "qmimemagicrule_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -78,4 +80,5 @@ private:
 
 QT_END_NAMESPACE
 
+#endif // QT_NO_MIMETYPE
 #endif // QMIMEMAGICRULEMATCHER_P_H

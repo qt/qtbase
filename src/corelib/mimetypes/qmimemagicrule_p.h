@@ -45,6 +45,10 @@
 // We mean it.
 //
 
+#include <QtCore/qglobal.h>
+
+#ifndef QT_NO_MIMETYPE
+
 #include <QtCore/qbytearray.h>
 #include <QtCore/qscopedpointer.h>
 #include <QtCore/qlist.h>
@@ -89,4 +93,5 @@ Q_DECLARE_TYPEINFO(QMimeMagicRule, Q_MOVABLE_TYPE);
 
 QT_END_NAMESPACE
 
+#endif // QT_NO_MIMETYPE
 #endif // QMIMEMAGICRULE_H

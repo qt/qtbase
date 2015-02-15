@@ -35,6 +35,9 @@
 #define QMIMEDATABASE_H
 
 #include <QtCore/qmimetype.h>
+
+#ifndef QT_NO_MIMETYPE
+
 #include <QtCore/qstringlist.h>
 
 QT_BEGIN_NAMESPACE
@@ -81,4 +84,6 @@ private:
 };
 
 QT_END_NAMESPACE
-#endif   // QMIMEDATABASE_H
+
+#endif // QT_NO_MIMETYPE
+#endif // QMIMEDATABASE_H
