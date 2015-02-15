@@ -3263,7 +3263,7 @@ fi
 
 # auto-detect -fuse-ld=gold support
 if [ "$CFG_USE_GOLD_LINKER" != "no" ]; then
-    if linkerSupportsFlag $TEST_COMPILER -fuse-ld=gold; then
+    if compilerSupportsFlag $TEST_COMPILER -fuse-ld=gold; then
        CFG_USE_GOLD_LINKER=yes
     else
         if [ "$CFG_USE_GOLD_LINKER" = "yes" ]; then
