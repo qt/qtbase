@@ -471,7 +471,7 @@
 
     By default the Microsoft library is used on Windows, if you want to
     force the use of the Sybase Open Client, you must define \c
-    Q_USE_SYBASE in \c{%QTDIR%\src\sql\drivers\tds\qsql_tds.cpp}. If you
+    Q_USE_SYBASE in \c{%QTDIR%\qtbase\src\sql\drivers\tds\qsql_tds.cpp}. If you
     are not using a Microsoft compiler, replace \c nmake with \c make in
     the line above.
 
@@ -751,7 +751,7 @@
     must use the Q_PLUGIN_METADATA() macro. Read \l{How to Create Qt
     Plugins} for more information on this. You can also check out how
     this is done in the SQL plugins that are provided with Qt in
-    \c{QTDIR/src/plugins/sqldrivers} and \c{QTDIR/src/sql/drivers}.
+    \c{QTDIR/qtbase/src/plugins/sqldrivers} and \c{QTDIR/qtbase/src/sql/drivers}.
 
     The following code can be used as a skeleton for a SQL driver:
 
