@@ -348,11 +348,7 @@ void QCoreTextFontDatabase::populateFromDescriptor(CTFontDescriptorRef font)
 {
     FontDescription fd;
     getFontDescription(font, &fd);
-    populateFromFontDescription(font, fd);
-}
 
-void QCoreTextFontDatabase::populateFromFontDescription(CTFontDescriptorRef font, const FontDescription &fd)
-{
     CFRetain(font);
     QPlatformFontDatabase::registerFont(fd.familyName, fd.styleName, fd.foundryName, fd.weight, fd.style, fd.stretch,
             true /* antialiased */, true /* scalable */,

@@ -70,8 +70,6 @@ Q_DECLARE_METATYPE(ATSFontContainerRef);
 
 QT_BEGIN_NAMESPACE
 
-struct FontDescription;
-
 class QCoreTextFontDatabase : public QPlatformFontDatabase
 {
 public:
@@ -96,7 +94,6 @@ public:
 
 private:
     void populateFromDescriptor(CTFontDescriptorRef font);
-    void populateFromFontDescription(CTFontDescriptorRef font, const FontDescription &fd);
 
     mutable QString defaultFontName;
 
