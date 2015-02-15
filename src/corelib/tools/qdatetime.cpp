@@ -4965,10 +4965,11 @@ QDebug operator<<(QDebug dbg, const QTime &time)
 QDebug operator<<(QDebug dbg, const QDateTime &date)
 {
     QDebugStateSaver saver(dbg);
+    const Qt::TimeSpec ts = date.timeSpec();
     dbg.nospace() << "QDateTime(";
     dbg.noquote() << date.toString(QStringLiteral("yyyy-MM-dd HH:mm:ss.zzz t"))
-                  << ' ' << date.timeSpec();
-    switch (date.d->m_spec) {
+                  << ' ' << ts;
+    switch (ts) {
     case Qt::UTC:
         break;
     case Qt::OffsetFromUTC:
