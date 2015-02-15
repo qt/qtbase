@@ -668,7 +668,7 @@ void tst_QAccessibility::textAttributes_data()
     defaultComplexFont.setStyle(QFont::StyleItalic);
     defaultComplexFont.setUnderline(true);
 
-    static QStringList defaults = QString("font-style:normal;font-weight:normal;text-align:left;text-position:baseline;text-underline-style:none;font-size:13pt").split(';');
+    static QStringList defaults = QString("font-style:normal;font-weight:normal;text-align:left;text-position:baseline;font-size:13pt").split(';');
     static QStringList bold = defaults;
     bold[1] = QString::fromLatin1("font-weight:bold");
 
@@ -683,7 +683,7 @@ void tst_QAccessibility::textAttributes_data()
     monospace.append(QLatin1String("font-family:\"monospace\""));
 
     static QStringList font8pt = defaults;
-    font8pt[5] = (QLatin1String("font-size:8pt"));
+    font8pt[4] = (QLatin1String("font-size:8pt"));
 
     static QStringList color = defaults;
     color << QLatin1String("color:rgb(240,241,242)") << QLatin1String("background-color:rgb(20,240,30)");
@@ -694,8 +694,9 @@ void tst_QAccessibility::textAttributes_data()
     static QStringList defaultFontDifferent = defaults;
     defaultFontDifferent[0] = QString::fromLatin1("font-style:italic");
     defaultFontDifferent[1] = QString::fromLatin1("font-weight:bold");
-    defaultFontDifferent[4] = QString::fromLatin1("text-underline-style:solid");
-    defaultFontDifferent[5] = QString::fromLatin1("font-size:20pt");
+    defaultFontDifferent[4] = QString::fromLatin1("font-size:20pt");
+    defaultFontDifferent.append("text-underline-style:solid");
+    defaultFontDifferent.append("text-underline-type:single");
     defaultFontDifferent.append("font-family:\"Arial\"");
 
     static QStringList defaultFontDifferentBoldItalic = defaultFontDifferent;
@@ -703,10 +704,10 @@ void tst_QAccessibility::textAttributes_data()
     defaultFontDifferentBoldItalic[1] = QString::fromLatin1("font-weight:bold");
 
     static QStringList defaultFontDifferentMonospace = defaultFontDifferent;
-    defaultFontDifferentMonospace[6] = (QLatin1String("font-family:\"monospace\""));
+    defaultFontDifferentMonospace[7] = (QLatin1String("font-family:\"monospace\""));
 
     static QStringList defaultFontDifferentFont8pt = defaultFontDifferent;
-    defaultFontDifferentFont8pt[5] = (QLatin1String("font-size:8pt"));
+    defaultFontDifferentFont8pt[4] = (QLatin1String("font-size:8pt"));
 
     static QStringList defaultFontDifferentColor = defaultFontDifferent;
     defaultFontDifferentColor << QLatin1String("color:rgb(240,241,242)") << QLatin1String("background-color:rgb(20,240,30)");

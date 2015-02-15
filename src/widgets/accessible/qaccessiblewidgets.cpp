@@ -764,7 +764,42 @@ QString QAccessibleTextWidget::attributes(int offset, int *startOffset, int *end
     QFont::Style style = charFormat.font().style();
     attrs["font-style"] = QString::fromLatin1((style == QFont::StyleItalic) ? "italic" : ((style == QFont::StyleOblique) ? "oblique": "normal"));
 
-    attrs["text-underline-style"] = QString::fromLatin1(charFormat.font().underline() ? "solid" : "none");
+    QTextCharFormat::UnderlineStyle underlineStyle = charFormat.underlineStyle();
+    if (underlineStyle == QTextCharFormat::NoUnderline && charFormat.font().underline()) // underline could still be set in the default font
+        underlineStyle = QTextCharFormat::SingleUnderline;
+    QString underlineStyleValue;
+    switch (underlineStyle) {
+        case QTextCharFormat::NoUnderline:
+            break;
+        case QTextCharFormat::SingleUnderline:
+            underlineStyleValue = QStringLiteral("solid");
+            break;
+        case QTextCharFormat::DashUnderline:
+            underlineStyleValue = QStringLiteral("dash");
+            break;
+        case QTextCharFormat::DotLine:
+            underlineStyleValue = QStringLiteral("dash");
+            break;
+        case QTextCharFormat::DashDotLine:
+            underlineStyleValue = QStringLiteral("dot-dash");
+            break;
+        case QTextCharFormat::DashDotDotLine:
+            underlineStyleValue = QStringLiteral("dot-dot-dash");
+            break;
+        case QTextCharFormat::WaveUnderline:
+            underlineStyleValue = QStringLiteral("wave");
+            break;
+        case QTextCharFormat::SpellCheckUnderline:
+            underlineStyleValue = QStringLiteral("wave"); // this is not correct, but provides good approximation at least
+            break;
+        default:
+            qWarning() << "Unknown QTextCharFormat::​UnderlineStyle value " << underlineStyle << " could not be translated to IAccessible2 value";
+            break;
+    }
+    if (!underlineStyleValue.isNull()) {
+        attrs["text-underline-style"] = underlineStyleValue;
+        attrs["text-underline-type"] = QStringLiteral("single"); // if underlineStyleValue is set, there is an underline, and Qt does not support other than single ones
+    } // else both are "none" which is the default - no need to set them
 
     QTextCharFormat::VerticalAlignment alignment = charFormat.verticalAlignment();
     attrs["text-position"] = QString::fromLatin1((alignment == QTextCharFormat::AlignSubScript) ? "sub" : ((alignment == QTextCharFormat::AlignSuperScript) ? "super" : "baseline" ));
