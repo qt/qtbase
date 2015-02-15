@@ -826,6 +826,9 @@ QString QAccessibleTextWidget::attributes(int offset, int *startOffset, int *end
         attrs["text-underline-type"] = QStringLiteral("single"); // if underlineStyleValue is set, there is an underline, and Qt does not support other than single ones
     } // else both are "none" which is the default - no need to set them
 
+    if (block.textDirection() == Qt::RightToLeft)
+        attrs["writing-mode"] = QStringLiteral("rl");
+
     QTextCharFormat::VerticalAlignment alignment = charFormat.verticalAlignment();
     attrs["text-position"] = QString::fromLatin1((alignment == QTextCharFormat::AlignSubScript) ? "sub" : ((alignment == QTextCharFormat::AlignSuperScript) ? "super" : "baseline" ));
 
