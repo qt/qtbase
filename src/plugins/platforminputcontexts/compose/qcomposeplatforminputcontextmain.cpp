@@ -59,4 +59,4 @@ QComposeInputContext *QComposePlatformInputContextPlugin::create(const QString &
 
 QT_END_NAMESPACE
 
-#include "main.moc"
+#include "qcomposeplatforminputcontextmain.moc"
