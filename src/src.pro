@@ -83,6 +83,7 @@ src_testlib.depends = src_corelib   # src_gui & src_widgets are not build-depend
 
 src_3rdparty_harfbuzzng.subdir = $$PWD/3rdparty/harfbuzz-ng
 src_3rdparty_harfbuzzng.target = sub-3rdparty-harfbuzzng
+src_3rdparty_harfbuzzng.depends = src_corelib   # for the Qt atomics
 
 src_angle.subdir = $$PWD/angle
 src_angle.target = sub-angle
