@@ -63,7 +63,7 @@ class QWindowsFontEngine : public QFontEngine
     friend class QWindowsMultiFontEngine;
 
 public:
-    QWindowsFontEngine(const QString &name, HFONT hfont, LOGFONT lf,
+    QWindowsFontEngine(const QString &name, LOGFONT lf,
                        const QSharedPointer<QWindowsFontEngineData> &fontEngineData);
 
     ~QWindowsFontEngine();
@@ -137,7 +137,7 @@ private:
 
     const QString     _name;
     QString     uniqueFamilyName;
-    const HFONT       hfont;
+    HFONT       hfont;
     const LOGFONT     m_logfont;
     uint        ttf        : 1;
     uint        hasOutline : 1;

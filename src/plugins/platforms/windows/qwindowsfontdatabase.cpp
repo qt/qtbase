@@ -1735,13 +1735,7 @@ QFontEngine *QWindowsFontDatabase::createEngine(const QFontDef &request,
 
     QFontEngine *fe = 0;
     if (!useDirectWrite) {
-        HFONT hfont = CreateFontIndirect(&lf);
-        if (!hfont) {
-            qErrnoWarning("%s: CreateFontIndirect failed", __FUNCTION__);
-            hfont = QWindowsFontDatabase::systemFont();
-        }
-
-        QWindowsFontEngine *few = new QWindowsFontEngine(request.family, hfont, lf, data);
+        QWindowsFontEngine *few = new QWindowsFontEngine(request.family, lf, data);
         if (preferClearTypeAA)
             few->glyphFormat = QFontEngine::Format_A32;
         few->initFontInfo(request, dpi);
