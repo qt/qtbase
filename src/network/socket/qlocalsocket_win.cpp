@@ -405,9 +405,6 @@ bool QLocalSocket::waitForReadyRead(int msecs)
 {
     Q_D(QLocalSocket);
 
-    if (bytesAvailable() > 0)
-        return true;
-
     if (d->state != QLocalSocket::ConnectedState)
         return false;
 
