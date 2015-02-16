@@ -74,15 +74,15 @@ bool QFbScreen::event(QEvent *event)
 void QFbScreen::addWindow(QFbWindow *window)
 {
     mWindowStack.prepend(window);
-    if (!mBackingStores.isEmpty()) {
+    if (!mPendingBackingStores.isEmpty()) {
         //check if we have a backing store for this window
-        for (int i = 0; i < mBackingStores.size(); ++i) {
-            QFbBackingStore *bs = mBackingStores.at(i);
+        for (int i = 0; i < mPendingBackingStores.size(); ++i) {
+            QFbBackingStore *bs = mPendingBackingStores.at(i);
             // this gets called during QWindow::create() at a point where the
             // invariant (window->handle()->window() == window) is broken
             if (bs->window() == window->window()) {
                 window->setBackingStore(bs);
-                mBackingStores.removeAt(i);
+                mPendingBackingStores.removeAt(i);
                 break;
             }
         }
@@ -293,6 +293,15 @@ QRegion QFbScreen::doRedraw()
 //    qDebug() << "QFbScreen::doRedraw"  << mWindowStack.size() << mScreenImage->size() << touchedRegion;
 
     return touchedRegion;
+}
+
+QFbWindow *QFbScreen::windowForId(WId wid) const
+{
+    for (int i = 0; i < mWindowStack.count(); ++i)
+        if (mWindowStack[i]->winId() == wid)
+            return mWindowStack[i];
+
+    return 0;
 }
 
 QT_END_NAMESPACE

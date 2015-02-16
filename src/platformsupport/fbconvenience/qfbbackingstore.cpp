@@ -46,7 +46,7 @@ QFbBackingStore::QFbBackingStore(QWindow *window)
     if (window->handle())
         (static_cast<QFbWindow *>(window->handle()))->setBackingStore(this);
     else
-        (static_cast<QFbScreen *>(window->screen()->handle()))->addBackingStore(this);
+        (static_cast<QFbScreen *>(window->screen()->handle()))->addPendingBackingStore(this);
 }
 
 QFbBackingStore::~QFbBackingStore()
