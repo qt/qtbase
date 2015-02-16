@@ -40,6 +40,7 @@
 #endif
 
 #include "qdebug.h"
+#include "qmetaobject.h"
 #include <private/qtextstream_p.h>
 #include <private/qtools_p.h>
 
@@ -642,5 +643,24 @@ QDebugStateSaver::~QDebugStateSaver()
 {
     d->restoreState();
 }
+
+#ifndef QT_NO_QOBJECT
+/*!
+    \internal
+ */
+QDebug qt_QMetaEnum_debugOperator(QDebug &dbg, int value, const QMetaObject *meta, const char *name)
+{
+    QDebugStateSaver saver(dbg);
+    QMetaEnum me = meta->enumerator(meta->indexOfEnumerator(name));
+    const char *key = me.valueToKey(value);
+    dbg.nospace() << meta->className() << "::" << name << '(';
+    if (key)
+        dbg << key;
+    else
+        dbg << value;
+    dbg << ')';
+    return dbg;
+}
+#endif
 
 QT_END_NAMESPACE

@@ -547,16 +547,6 @@ template <class T> inline const char * qobject_interface_iid()
 
 #ifndef QT_NO_DEBUG_STREAM
 Q_CORE_EXPORT QDebug operator<<(QDebug, const QObject *);
-Q_CORE_EXPORT QDebug qt_QMetaEnum_debugOperator(QDebug&, int value, const QMetaObject *meta, const char *name);
-
-template<typename T>
-typename QtPrivate::QEnableIf<QtPrivate::IsQEnumHelper<T>::Value , QDebug>::Type
-operator<<(QDebug &dbg, T value)
-{
-    const QMetaObject *obj = qt_getEnumMetaObject(value);
-    const char *name = qt_getEnumName(value);
-    return qt_QMetaEnum_debugOperator(dbg, typename QFlags<T>::Int(value), obj, name);
-}
 #endif
 
 class QSignalBlocker
