@@ -101,6 +101,9 @@ public:
 #endif
 
     void sync() Q_DECL_OVERRIDE;
+
+    static QXcbIntegration *instance() { return m_instance; }
+
 private:
     QList<QXcbConnection *> m_connections;
 
@@ -120,6 +123,8 @@ private:
     mutable QByteArray m_wmClass;
     const char *m_instanceName;
     bool m_canGrab;
+
+    static QXcbIntegration *m_instance;
 };
 
 QT_END_NAMESPACE

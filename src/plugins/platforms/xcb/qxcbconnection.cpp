@@ -240,7 +240,7 @@ void QXcbConnection::updateScreens()
         ++xcbScreenNumber;
     } // for each xcb screen
 
-    QXcbIntegration *integration = static_cast<QXcbIntegration *>(QGuiApplicationPrivate::platformIntegration());
+    QXcbIntegration *integration = QXcbIntegration::instance();
     // Now activeScreens is the complete set of screens which are active at this time.
     // Delete any existing screens which are not in activeScreens
     for (int i = m_screens.count() - 1; i >= 0; --i) {
@@ -404,7 +404,7 @@ QXcbConnection::~QXcbConnection()
 
     delete m_reader;
 
-    QXcbIntegration *integration = static_cast<QXcbIntegration *>(QGuiApplicationPrivate::platformIntegration());
+    QXcbIntegration *integration = QXcbIntegration::instance();
     // Delete screens in reverse order to avoid crash in case of multiple screens
     while (!m_screens.isEmpty())
         integration->destroyScreen(m_screens.takeLast());

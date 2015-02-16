@@ -100,7 +100,7 @@ QPlatformNativeInterface::NativeResourceForWindowFunction QXcbEglNativeInterface
 
 void *QXcbEglNativeInterfaceHandler::eglDisplay()
 {
-    QXcbIntegration *integration = static_cast<QXcbIntegration *>(QGuiApplicationPrivate::platformIntegration());
+    QXcbIntegration *integration = QXcbIntegration::instance();
     QXcbEglIntegration *eglIntegration = static_cast<QXcbEglIntegration *>(integration->defaultConnection()->glIntegration());
     return eglIntegration->eglDisplay();
 }

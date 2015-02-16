@@ -401,7 +401,7 @@ void *QXcbNativeInterface::getTimestamp(const QXcbScreen *screen)
 
 void *QXcbNativeInterface::startupId()
 {
-    QXcbIntegration* integration = static_cast<QXcbIntegration *>(QGuiApplicationPrivate::platformIntegration());
+    QXcbIntegration* integration = QXcbIntegration::instance();
     QXcbConnection *defaultConnection = integration->defaultConnection();
     if (defaultConnection)
         return reinterpret_cast<void *>(const_cast<char *>(defaultConnection->startupId().constData()));
@@ -410,7 +410,7 @@ void *QXcbNativeInterface::startupId()
 
 void *QXcbNativeInterface::x11Screen()
 {
-    QXcbIntegration *integration = static_cast<QXcbIntegration *>(QGuiApplicationPrivate::platformIntegration());
+    QXcbIntegration *integration = QXcbIntegration::instance();
     QXcbConnection *defaultConnection = integration->defaultConnection();
     if (defaultConnection)
         return reinterpret_cast<void *>(defaultConnection->primaryScreenNumber());
@@ -419,7 +419,7 @@ void *QXcbNativeInterface::x11Screen()
 
 void *QXcbNativeInterface::rootWindow()
 {
-    QXcbIntegration *integration = static_cast<QXcbIntegration *>(QGuiApplicationPrivate::platformIntegration());
+    QXcbIntegration *integration = QXcbIntegration::instance();
     QXcbConnection *defaultConnection = integration->defaultConnection();
     if (defaultConnection)
         return reinterpret_cast<void *>(defaultConnection->rootWindow());
@@ -429,7 +429,7 @@ void *QXcbNativeInterface::rootWindow()
 void *QXcbNativeInterface::display()
 {
 #ifdef XCB_USE_XLIB
-    QXcbIntegration *integration = static_cast<QXcbIntegration *>(QGuiApplicationPrivate::platformIntegration());
+    QXcbIntegration *integration = QXcbIntegration::instance();
     QXcbConnection *defaultConnection = integration->defaultConnection();
     return defaultConnection->xlib_display();
 #else
@@ -450,7 +450,7 @@ void QXcbNativeInterface::setAppUserTime(QScreen* screen, xcb_timestamp_t time)
 void QXcbNativeInterface::setStartupId(const char *data)
 {
     QByteArray startupId(data);
-    QXcbIntegration *integration = static_cast<QXcbIntegration *>(QGuiApplicationPrivate::platformIntegration());
+    QXcbIntegration *integration = QXcbIntegration::instance();
     QXcbConnection *defaultConnection = integration->defaultConnection();
     if (defaultConnection)
         defaultConnection->setStartupId(startupId);

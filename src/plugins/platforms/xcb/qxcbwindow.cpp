@@ -461,7 +461,7 @@ void QXcbWindow::create()
     m_syncValue.hi = 0;
     m_syncValue.lo = 0;
 
-    const QByteArray wmClass = static_cast<QXcbIntegration *>(QGuiApplicationPrivate::platformIntegration())->wmClass();
+    const QByteArray wmClass = QXcbIntegration::instance()->wmClass();
     if (!wmClass.isEmpty()) {
         Q_XCB_CALL(xcb_change_property(xcb_connection(), XCB_PROP_MODE_REPLACE,
                                        m_window, atom(QXcbAtom::WM_CLASS),

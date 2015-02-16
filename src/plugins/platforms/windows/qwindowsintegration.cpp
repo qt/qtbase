@@ -235,9 +235,12 @@ QWindowsIntegrationPrivate::~QWindowsIntegrationPrivate()
         delete m_fontDatabase;
 }
 
+QWindowsIntegration *QWindowsIntegration::m_instance = Q_NULLPTR;
+
 QWindowsIntegration::QWindowsIntegration(const QStringList &paramList) :
     d(new QWindowsIntegrationPrivate(paramList))
 {
+    m_instance = this;
 #ifndef QT_NO_CLIPBOARD
     d->m_clipboard.registerViewer();
 #endif
@@ -246,6 +249,7 @@ QWindowsIntegration::QWindowsIntegration(const QStringList &paramList) :
 
 QWindowsIntegration::~QWindowsIntegration()
 {
+    m_instance = Q_NULLPTR;
 }
 
 void QWindowsIntegration::initialize()
@@ -539,11 +543,6 @@ QPlatformAccessibility *QWindowsIntegration::accessibility() const
     return &d->m_accessibility;
 }
 #endif
-
-QWindowsIntegration *QWindowsIntegration::instance()
-{
-    return static_cast<QWindowsIntegration *>(QGuiApplicationPrivate::platformIntegration());
-}
 
 unsigned QWindowsIntegration::options() const
 {

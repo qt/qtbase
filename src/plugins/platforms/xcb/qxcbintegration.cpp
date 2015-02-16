@@ -110,11 +110,15 @@ static bool runningUnderDebugger()
 #endif
 }
 
+QXcbIntegration *QXcbIntegration::m_instance = Q_NULLPTR;
+
 QXcbIntegration::QXcbIntegration(const QStringList &parameters, int &argc, char **argv)
     : m_services(new QGenericUnixServices)
     , m_instanceName(0)
     , m_canGrab(true)
 {
+    m_instance = this;
+
     qRegisterMetaType<QXcbWindow*>();
 #ifdef XCB_USE_XLIB
     XInitThreads();
@@ -179,6 +183,7 @@ QXcbIntegration::QXcbIntegration(const QStringList &parameters, int &argc, char 
 QXcbIntegration::~QXcbIntegration()
 {
     qDeleteAll(m_connections);
+    m_instance = Q_NULLPTR;
 }
 
 QPlatformWindow *QXcbIntegration::createPlatformWindow(QWindow *window) const
