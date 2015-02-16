@@ -41,7 +41,7 @@ public:
     void beginPaint(const QRegion &);
     void endPaint();
     void flush(QWindow *widget, const QRegion &region, const QPoint &offset);
-    void resize (const QSize &size, const QRegion &);
+    void resize(const QSize &size, const QRegion &);
 
     void createFrameBuffer(QSize size, qreal devicePixelRatio);
     void setFrameBuffer(QImage *frameBuffer);
@@ -51,6 +51,7 @@ public:
 
     bool m_isInPaint;
     bool m_isInFlush;
+
 private:
     QSize m_size;
     QPepperPlatformWindow *m_PepperWindow;

@@ -49,5 +49,4 @@ public:
     QAtomicInt ref;
 };
 
-
 #endif

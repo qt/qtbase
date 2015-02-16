@@ -33,17 +33,13 @@
 Q_LOGGING_CATEGORY(QT_PLATFORM_PEPPER_GLCONTEXT, "qt.platform.pepper.glcontext")
 
 QPepperGLContext::QPepperGLContext()
-    :m_pendingFlush(false)
-    ,m_callbackFactory(this)
+    : m_pendingFlush(false)
+    , m_callbackFactory(this)
 {
     qCDebug(QT_PLATFORM_PEPPER_GLCONTEXT) << "QPepperGLContext";
-
 }
 
-QPepperGLContext::~QPepperGLContext()
-{
-
-}
+QPepperGLContext::~QPepperGLContext() {}
 
 bool QPepperGLContext::makeCurrent(QPlatformSurface *surface)
 {
@@ -85,14 +81,11 @@ void QPepperGLContext::swapBuffers(QPlatformSurface *surface)
     m_context.SwapBuffers(m_callbackFactory.NewCallback(&QPepperGLContext::flushCallback));
 }
 
-void QPepperGLContext::flushCallback(int32_t)
-{
-    m_pendingFlush = false;
-}
+void QPepperGLContext::flushCallback(int32_t) { m_pendingFlush = false; }
 
 //    virtual void (*getProcAddress(const QByteArray&));
 
-QFunctionPointer QPepperGLContext::getProcAddress(const QByteArray& procName)
+QFunctionPointer QPepperGLContext::getProcAddress(const QByteArray &procName)
 {
     qCDebug(QT_PLATFORM_PEPPER_GLCONTEXT) << "getProcAddress" << procName;
 
@@ -124,8 +117,8 @@ bool QPepperGLContext::initGl()
 {
     qCDebug(QT_PLATFORM_PEPPER_GLCONTEXT) << "initGl";
     if (!glInitializePPAPI(pp::Module::Get()->get_browser_interface())) {
-      qWarning("Unable to initialize GL PPAPI!\n");
-      return false;
+        qWarning("Unable to initialize GL PPAPI!\n");
+        return false;
     }
     m_currentSize = QPepperInstancePrivate::get()->geometry().size();
     QSurfaceFormat f = format();
@@ -142,10 +135,10 @@ bool QPepperGLContext::initGl()
     QPepperInstance *instance = QPepperInstancePrivate::getInstance();
     m_context = pp::Graphics3D(instance, attrib_list);
     if (!instance->BindGraphics(m_context)) {
-      qWarning("Unable to bind 3d context!\n");
-      m_context = pp::Graphics3D();
-      glSetCurrentContextPPAPI(0);
-      return false;
+        qWarning("Unable to bind 3d context!\n");
+        m_context = pp::Graphics3D();
+        glSetCurrentContextPPAPI(0);
+        return false;
     }
 
     return true;

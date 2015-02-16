@@ -26,12 +26,11 @@
 QT_BEGIN_NAMESPACE
 
 QPepperServices::QPepperServices()
-    :QPlatformServices()
+    : QPlatformServices()
 {
-    const char *addUrlMessageHandler = \
-        "this.qtMessageHandlers[\"qtOpenUrl\"] = function(url) { "
-        "    window.open(url);"
-        "}";
+    const char *addUrlMessageHandler = "this.qtMessageHandlers[\"qtOpenUrl\"] = function(url) { "
+                                       "    window.open(url);"
+                                       "}";
     QPepperInstancePrivate::get()->runJavascript(addUrlMessageHandler);
 }
 
@@ -43,4 +42,3 @@ bool QPepperServices::openUrl(const QUrl &url)
 }
 
 QT_END_NAMESPACE
-

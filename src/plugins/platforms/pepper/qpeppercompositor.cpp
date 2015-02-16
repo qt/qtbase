@@ -33,23 +33,22 @@
 using namespace pp;
 
 QPepperCompositedWindow::QPepperCompositedWindow()
-    :window(0)
-    ,frameBuffer(0)
-    ,parentWindow(0)
-    ,flushPending(false)
-    ,visible(false)
+    : window(0)
+    , frameBuffer(0)
+    , parentWindow(0)
+    , flushPending(false)
+    , visible(false)
 {
-
 }
 
 QPepperCompositor::QPepperCompositor()
-    :m_frameBuffer(0)
-    ,m_context2D(0)
-    ,m_imageData2D(0)
-    ,m_needComposit(false)
-    ,m_inFlush(false)
-    ,m_inResize(false)
-    ,m_targetDevicePixelRatio(1)
+    : m_frameBuffer(0)
+    , m_context2D(0)
+    , m_imageData2D(0)
+    , m_needComposit(false)
+    , m_inFlush(false)
+    , m_inResize(false)
+    , m_targetDevicePixelRatio(1)
 {
     m_callbackFactory.Initialize(this);
 }
@@ -188,13 +187,13 @@ void QPepperCompositor::endResize()
 
 QWindow *QPepperCompositor::windowAt(QPoint p)
 {
-    int index = m_windowStack.count() -1;
+    int index = m_windowStack.count() - 1;
     // qDebug() << "window at" << "point" << p << "window count" << index;
 
     while (index >= 0) {
-        QPepperCompositedWindow &compositedWindow
-                = m_compositedWindows[m_windowStack.at(index)];
-        // qDebug() << "windwAt testing" << compositedWindow.window << compositedWindow.window->geometry();
+        QPepperCompositedWindow &compositedWindow = m_compositedWindows[m_windowStack.at(index)];
+        // qDebug() << "windwAt testing" << compositedWindow.window <<
+        // compositedWindow.window->geometry();
         if (compositedWindow.visible && compositedWindow.window->geometry().contains(p))
             return m_windowStack.at(index);
         --index;
@@ -202,10 +201,7 @@ QWindow *QPepperCompositor::windowAt(QPoint p)
     return 0;
 }
 
-QWindow *QPepperCompositor::keyWindow()
-{
-    return m_windowStack.at(m_windowStack.count() - 1);
-}
+QWindow *QPepperCompositor::keyWindow() { return m_windowStack.at(m_windowStack.count() - 1); }
 
 void QPepperCompositor::maybeComposit()
 {
@@ -235,7 +231,8 @@ void QPepperCompositor::composit()
     // Composit all windows in stacking order, paint and flush damaged area only.
     foreach (QWindow *window, m_windowStack) {
         QPepperCompositedWindow &compositedWindow = m_compositedWindows[window];
-        qCDebug(QT_PLATFORM_PEPPER_COMPOSITOR) << "composit window" << window << compositedWindow.frameBuffer;
+        qCDebug(QT_PLATFORM_PEPPER_COMPOSITOR) << "composit window" << window
+                                               << compositedWindow.frameBuffer;
 
         if (compositedWindow.visible) {
             const QRect windowGeometry = compositedWindow.window->geometry();
@@ -243,7 +240,8 @@ void QPepperCompositor::composit()
             const QRegion localDamageForWindow = compositedWindow.damage;
             const QRegion totalDamageForWindow = localDamageForWindow + globalDamageForWindow;
             const QRect sourceRect = totalDamageForWindow.boundingRect();
-            const QRect destinationRect = QRect(windowGeometry.topLeft() + sourceRect.topLeft(), sourceRect.size());
+            const QRect destinationRect
+                = QRect(windowGeometry.topLeft() + sourceRect.topLeft(), sourceRect.size());
             if (compositedWindow.frameBuffer) {
                 p.drawImage(destinationRect, *compositedWindow.frameBuffer, sourceRect);
                 painted += destinationRect;
@@ -258,15 +256,16 @@ void QPepperCompositor::composit()
 
     globalDamage = QRect();
 
-    //m_inFlush = true;
-    //emit flush(painted);
+    // m_inFlush = true;
+    // emit flush(painted);
     if (!painted.isEmpty())
         flush2(painted);
 }
 
 void QPepperCompositor::createFrameBuffer()
 {
-    qCDebug(QT_PLATFORM_PEPPER_COMPOSITOR) << "createFrameBuffer" << m_targetSize << m_targetDevicePixelRatio;
+    qCDebug(QT_PLATFORM_PEPPER_COMPOSITOR) << "createFrameBuffer" << m_targetSize
+                                           << m_targetDevicePixelRatio;
 
     delete m_imageData2D;
     delete m_frameBuffer;
@@ -285,13 +284,12 @@ void QPepperCompositor::createFrameBuffer()
         qWarning("Couldn't bind the device context\n");
     }
 
-    m_imageData2D = new ImageData(instance, PP_IMAGEDATAFORMAT_BGRA_PREMUL,
-                                  devicePixelSize, true);
+    m_imageData2D = new ImageData(instance, PP_IMAGEDATAFORMAT_BGRA_PREMUL, devicePixelSize, true);
 
     m_frameBuffer = new QImage(reinterpret_cast<uchar *>(m_imageData2D->data()),
-                           m_targetSize.width() * m_targetDevicePixelRatio,
-                           m_targetSize.height() * m_targetDevicePixelRatio,
-                           m_imageData2D->stride(), QImage::Format_ARGB32_Premultiplied);
+                               m_targetSize.width() * m_targetDevicePixelRatio,
+                               m_targetSize.height() * m_targetDevicePixelRatio,
+                               m_imageData2D->stride(), QImage::Format_ARGB32_Premultiplied);
 
     m_frameBuffer->setDevicePixelRatio(m_targetDevicePixelRatio);
 }
@@ -310,7 +308,7 @@ void QPepperCompositor::flush2(const QRegion &region)
                              flushRect.size() * m_targetDevicePixelRatio);
 
     qCDebug(QT_PLATFORM_PEPPER_COMPOSITOR) << "flushing" << flushRect << deviceRect;
-    m_context2D->PaintImageData(*m_imageData2D, pp::Point(0,0), toPPRect(deviceRect));
+    m_context2D->PaintImageData(*m_imageData2D, pp::Point(0, 0), toPPRect(deviceRect));
     m_context2D->Flush(m_callbackFactory.NewCallback(&QPepperCompositor::flushCompletedCallback));
     m_inFlush = true;
 }
@@ -323,4 +321,3 @@ void QPepperCompositor::flushCompletedCallback(int32_t)
         m_needComposit = false;
     }
 }
-

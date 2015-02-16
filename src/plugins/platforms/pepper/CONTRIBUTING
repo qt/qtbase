@@ -1,0 +1,9 @@
+
+Welcome to the NaCl/Pepper platform plugin!
+
+Contributing to the this platform plugin is similar to contributing to Qt,
+except for:
+
+* We run clang-format on all commits. The style config is in .clang-format.
+  See also git-clang-format at
+  https://llvm.org/svn/llvm-project/cfe/trunk/tools/clang-format/git-clang-format

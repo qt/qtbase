@@ -28,15 +28,8 @@ void QPepperFontDatabase::populateFontDatabase()
 #ifdef QT_PEPPER_USE_PEPPER_FONT_ENGINE
     QSupportedWritingSystems writingSystems;
     writingSystems.setSupported(QFontDatabase::Latin);
-    registerFont("Arial", "",
-                 QFont::Normal,
-                 QFont::StyleNormal,
-                 QFont::Unstretched,
-                 true,
-                 true,
-                 12,
-                 writingSystems,
-                 0);
+    registerFont("Arial", "", QFont::Normal, QFont::StyleNormal, QFont::Unstretched, true, true, 12,
+                 writingSystems, 0);
 #else
     // Load font file from resources. Currently
     // all fonts needs to be bundled with the nexe
@@ -58,7 +51,8 @@ void QPepperFontDatabase::populateFontDatabase()
 
 QFontEngine *QPepperFontDatabase::fontEngine(const QFontDef &fontDef, void *handle)
 {
-   // qDebug() << "QPepperFontDatabase::fontEngine" << fontDef.family << fontDef.pixelSize << fontDef.pointSize;
+// qDebug() << "QPepperFontDatabase::fontEngine" << fontDef.family << fontDef.pixelSize <<
+// fontDef.pointSize;
 #ifdef QT_PEPPER_USE_PEPPER_FONT_ENGINE
     return new QFontEnginePepper(fontDef);
 #else
@@ -66,10 +60,13 @@ QFontEngine *QPepperFontDatabase::fontEngine(const QFontDef &fontDef, void *hand
 #endif
 }
 
-QStringList QPepperFontDatabase::fallbacksForFamily(const QString &family, QFont::Style style, QFont::StyleHint styleHint, QChar::Script script) const
+QStringList QPepperFontDatabase::fallbacksForFamily(const QString &family, QFont::Style style,
+                                                    QFont::StyleHint styleHint,
+                                                    QChar::Script script) const
 {
     // qDebug() << "QPepperFontDatabase::fallbacksForFamily" << family;
-    QStringList fallbacks = QBasicFontDatabase::fallbacksForFamily(family, style, styleHint, script);
+    QStringList fallbacks
+        = QBasicFontDatabase::fallbacksForFamily(family, style, styleHint, script);
     // qDebug() << "Fallbacks" << fallbacks;
 
     // Add the vera.ttf font (loaded in populateFontDatabase above) as a falback font
@@ -85,7 +82,8 @@ QStringList QPepperFontDatabase::fallbacksForFamily(const QString &family, QFont
     return fallbacks;
 }
 
-QStringList QPepperFontDatabase::addApplicationFont(const QByteArray &fontData, const QString &fileName)
+QStringList QPepperFontDatabase::addApplicationFont(const QByteArray &fontData,
+                                                    const QString &fileName)
 {
     // qDebug() << "QPepperFontDatabase::addApplicationFont";
     return QBasicFontDatabase::addApplicationFont(fontData, fileName);

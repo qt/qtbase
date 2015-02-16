@@ -37,54 +37,55 @@ PepperEventTranslator::PepperEventTranslator()
     QWindowSystemInterface::setSynchronousWindowsSystemEvents(true);
 }
 
-bool PepperEventTranslator::processEvent(const pp::InputEvent& event)
+bool PepperEventTranslator::processEvent(const pp::InputEvent &event)
 {
     switch (event.GetType()) {
-        case PP_INPUTEVENT_TYPE_MOUSEDOWN:
-        case PP_INPUTEVENT_TYPE_MOUSEUP:
-        case PP_INPUTEVENT_TYPE_MOUSEMOVE:
-            return processMouseEvent(pp::MouseInputEvent(event), event.GetType());
+    case PP_INPUTEVENT_TYPE_MOUSEDOWN:
+    case PP_INPUTEVENT_TYPE_MOUSEUP:
+    case PP_INPUTEVENT_TYPE_MOUSEMOVE:
+        return processMouseEvent(pp::MouseInputEvent(event), event.GetType());
         break;
 
-        //case PP_INPUTEVENT_TYPE_MOUSEENTER:
-        //case PP_INPUTEVENT_TYPE_MOUSELEAVE:
+    // case PP_INPUTEVENT_TYPE_MOUSEENTER:
+    // case PP_INPUTEVENT_TYPE_MOUSELEAVE:
 
-        case PP_INPUTEVENT_TYPE_WHEEL:
-            return processWheelEvent(pp::WheelInputEvent(event));
+    case PP_INPUTEVENT_TYPE_WHEEL:
+        return processWheelEvent(pp::WheelInputEvent(event));
         break;
 
-        //case PP_INPUTEVENT_TYPE_RAWKEYDOWN:
+    // case PP_INPUTEVENT_TYPE_RAWKEYDOWN:
 
-        case PP_INPUTEVENT_TYPE_KEYDOWN:
-        case PP_INPUTEVENT_TYPE_KEYUP:
-            return processKeyEvent(pp::KeyboardInputEvent(event), event.GetType());
+    case PP_INPUTEVENT_TYPE_KEYDOWN:
+    case PP_INPUTEVENT_TYPE_KEYUP:
+        return processKeyEvent(pp::KeyboardInputEvent(event), event.GetType());
         break;
 
-        case PP_INPUTEVENT_TYPE_CHAR:
-            return processCharacterEvent(pp::KeyboardInputEvent(event));
+    case PP_INPUTEVENT_TYPE_CHAR:
+        return processCharacterEvent(pp::KeyboardInputEvent(event));
         break;
 
-        default:
+    default:
         break;
     }
 
     return false;
 }
 
-bool PepperEventTranslator::processMouseEvent(const pp::MouseInputEvent &event, PP_InputEvent_Type eventType)
+bool PepperEventTranslator::processMouseEvent(const pp::MouseInputEvent &event,
+                                              PP_InputEvent_Type eventType)
 {
     QPoint point = toQPointF(event.GetPosition()) / QPepperInstancePrivate::get()->cssScale();
     currentMouseGlobalPos = point;
-    //Qt::MouseButton button = translatePepperMouseButton(event.button);
+    // Qt::MouseButton button = translatePepperMouseButton(event.button);
     Qt::MouseButtons modifiers = translatePepperMouseModifiers(event.GetModifiers());
 
     QPoint localPoint = point;
-    QWindow *window  = 0;
+    QWindow *window = 0;
     emit getWindowAt(point, &window);
 
     if (window) {
         localPoint = point - window->position();
-//        qDebug() << window << window->position() << point << localPoint;
+        //        qDebug() << window << window->position() << point << localPoint;
     }
 
     // Qt mouse button state is state *after* the mouse event, send NoButton
@@ -92,7 +93,8 @@ bool PepperEventTranslator::processMouseEvent(const pp::MouseInputEvent &event, 
     // ### strictly not correct, only the state for the released button should
     // be cleared.
     if (eventType == PP_INPUTEVENT_TYPE_MOUSEUP) {
-        QWindowSystemInterface::handleMouseEvent(window, localPoint, point, Qt::MouseButtons(Qt::NoButton));
+        QWindowSystemInterface::handleMouseEvent(window, localPoint, point,
+                                                 Qt::MouseButtons(Qt::NoButton));
     } else {
         QWindowSystemInterface::handleMouseEvent(window, localPoint, point, modifiers);
     }
@@ -112,14 +114,14 @@ bool PepperEventTranslator::processWheelEvent(const pp::WheelInputEvent &event)
     } else {
         QPointF delta = toQPointF(event.GetDelta()); // delta is in (device independent) pixels
         const qreal wheelDegreesPerTick = 1;
-        const qreal qtTickUnit = (1.0/8.0); // tick unit is "eighths of a degree"
+        const qreal qtTickUnit = (1.0 / 8.0); // tick unit is "eighths of a degree"
         QPointF ticks = toQPointF(event.GetDelta()) * wheelDegreesPerTick / qtTickUnit;
-        QWindowSystemInterface::handleWheelEvent(window, localPoint, currentMouseGlobalPos, delta.toPoint(), ticks.toPoint());
+        QWindowSystemInterface::handleWheelEvent(window, localPoint, currentMouseGlobalPos,
+                                                 delta.toPoint(), ticks.toPoint());
     }
 
     return true;
 }
-
 
 //    Key translation: Pepper sends three types of events. Pressing and
 //    holding a key gives the following sequence:
@@ -136,7 +138,8 @@ bool PepperEventTranslator::processWheelEvent(const pp::WheelInputEvent &event)
 //    sending the keypress until NPEventType_Char in cases where the KeyDown will be
 //    followed by a NPEventType_Char.
 //
-bool PepperEventTranslator::processKeyEvent(const pp::KeyboardInputEvent &event, PP_InputEvent_Type eventType)
+bool PepperEventTranslator::processKeyEvent(const pp::KeyboardInputEvent &event,
+                                            PP_InputEvent_Type eventType)
 {
     Qt::KeyboardModifiers modifiers = translatePepperKeyModifiers(event.GetModifiers());
     bool alphanumeric;
@@ -147,7 +150,8 @@ bool PepperEventTranslator::processKeyEvent(const pp::KeyboardInputEvent &event,
 
     if (eventType == PP_INPUTEVENT_TYPE_KEYDOWN) {
         currentPepperKey = event.GetKeyCode();
-        qCDebug(QT_PLATFORM_PEPPER_EVENT_KEYBOARD) << "Key Down" << currentPepperKey << "alphanum" << alphanumeric;
+        qCDebug(QT_PLATFORM_PEPPER_EVENT_KEYBOARD) << "Key Down" << currentPepperKey << "alphanum"
+                                                   << alphanumeric;
         if (!alphanumeric || modifiers != Qt::NoModifier) {
             return QWindowSystemInterface::handleKeyEvent(window, QEvent::KeyPress, key, modifiers);
         }
@@ -155,21 +159,23 @@ bool PepperEventTranslator::processKeyEvent(const pp::KeyboardInputEvent &event,
 
     if (eventType == PP_INPUTEVENT_TYPE_KEYUP) {
         qCDebug(QT_PLATFORM_PEPPER_EVENT_KEYBOARD) << "Key Up" << currentPepperKey;
-        return QWindowSystemInterface::handleKeyEvent(window, QEvent::KeyRelease, key,  modifiers);
+        return QWindowSystemInterface::handleKeyEvent(window, QEvent::KeyRelease, key, modifiers);
     }
     return false;
 }
 
 bool PepperEventTranslator::processCharacterEvent(const pp::KeyboardInputEvent &event)
 {
-    QString text = QString::fromUtf8(event.GetCharacterText().AsString().c_str()); // ### wide characters?
+    QString text
+        = QString::fromUtf8(event.GetCharacterText().AsString().c_str()); // ### wide characters?
     Qt::KeyboardModifiers modifiers = translatePepperKeyModifiers(event.GetModifiers());
     Qt::Key key = translatePepperKey(currentPepperKey, 0);
 
     qCDebug(QT_PLATFORM_PEPPER_EVENT_KEYBOARD) << "Key Character" << key << text;
 
     // Discard newline/spaces character events, these are handled by processKeyEvent()
-    if (key == Qt::Key_Return || key == Qt::Key_Enter || key == Qt::Key_Tab || key == Qt::Key_Backtab)
+    if (key == Qt::Key_Return || key == Qt::Key_Enter || key == Qt::Key_Tab
+        || key == Qt::Key_Backtab)
         return false;
 
     QWindow *window = 0;
@@ -178,7 +184,8 @@ bool PepperEventTranslator::processCharacterEvent(const pp::KeyboardInputEvent &
     return QWindowSystemInterface::handleKeyEvent(window, QEvent::KeyPress, key, modifiers, text);
 }
 
-Qt::MouseButton PepperEventTranslator::translatePepperMouseButton(PP_InputEvent_MouseButton pepperButton)
+Qt::MouseButton
+PepperEventTranslator::translatePepperMouseButton(PP_InputEvent_MouseButton pepperButton)
 {
     Qt::MouseButton button;
     if (pepperButton == PP_INPUTEVENT_MOUSEBUTTON_LEFT)
@@ -295,7 +302,7 @@ Qt::Key PepperEventTranslator::translatePepperKey(uint32_t pepperKey, bool *outA
 */
 Qt::KeyboardModifiers PepperEventTranslator::translatePepperKeyModifiers(uint32_t modifier)
 {
-    return Qt::KeyboardModifiers((modifier & 0x1F)<< 25);
+    return Qt::KeyboardModifiers((modifier & 0x1F) << 25);
 }
 
 #endif

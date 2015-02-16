@@ -23,7 +23,6 @@
 #include "qpepperinstance.h"
 #include "qpepperinstance_p.h"
 
-
 #include <QtCore/qdebug.h>
 #include <QtGui/QPainter>
 #include <QtGui/QWindow>
@@ -34,7 +33,7 @@ Q_LOGGING_CATEGORY(QT_PLATFORM_PEPPER_BACKINGSTORE, "qt.platform.pepper.backings
 
 QPepperBackingStore::QPepperBackingStore(QWindow *window)
     : QPlatformBackingStore(window)
-    ,m_callbackFactory(this)
+    , m_callbackFactory(this)
 {
     qCDebug(QT_PLATFORM_PEPPER_BACKINGSTORE) << "QPepperBackingStore for" << window;
 
@@ -90,7 +89,8 @@ void QPepperBackingStore::endPaint()
 
 void QPepperBackingStore::flush(QWindow *window, const QRegion &region, const QPoint &offset)
 {
-    qCDebug(QT_PLATFORM_PEPPER_BACKINGSTORE) << "flush" << window << region.boundingRect() << offset;
+    qCDebug(QT_PLATFORM_PEPPER_BACKINGSTORE) << "flush" << window << region.boundingRect()
+                                             << offset;
 
     Q_UNUSED(window);
     Q_UNUSED(offset);
@@ -102,16 +102,14 @@ void QPepperBackingStore::flush(QWindow *window, const QRegion &region, const QP
         QRect deviceRect = QRect(flushRect.topLeft() * m_frameBuffer->devicePixelRatio(),
                                  flushRect.size() * m_frameBuffer->devicePixelRatio());
 
-        m_context2D->PaintImageData(*m_imageData2D, pp::Point(0,0), toPPRect(deviceRect));
-        m_context2D->Flush(m_callbackFactory.NewCallback(&QPepperBackingStore::flushCompletedCallback));
+        m_context2D->PaintImageData(*m_imageData2D, pp::Point(0, 0), toPPRect(deviceRect));
+        m_context2D->Flush(
+            m_callbackFactory.NewCallback(&QPepperBackingStore::flushCompletedCallback));
         m_isInFlush = true;
     }
 }
 
-void QPepperBackingStore::flushCompletedCallback(int32_t)
-{
-    m_isInFlush = false;
-}
+void QPepperBackingStore::flushCompletedCallback(int32_t) { m_isInFlush = false; }
 
 void QPepperBackingStore::resize(const QSize &size, const QRegion &)
 {
@@ -135,7 +133,7 @@ void QPepperBackingStore::createFrameBuffer(QSize size, qreal devicePixelRatio)
         m_frameBuffer = new QImage(size * devicePixelRatio, QImage::Format_ARGB32_Premultiplied);
         m_frameBuffer->setDevicePixelRatio(devicePixelRatio);
         m_ownsFrameBuffer = true;
-        m_compositor->setFrameBuffer(window(),  m_frameBuffer);
+        m_compositor->setFrameBuffer(window(), m_frameBuffer);
     } else {
         QSize devicePixelSize = size * devicePixelRatio;
         QPepperInstance *instance = QPepperInstancePrivate::getInstance();
@@ -147,10 +145,10 @@ void QPepperBackingStore::createFrameBuffer(QSize size, qreal devicePixelRatio)
             qWarning("Couldn't bind the device context\n");
         }
         m_imageData2D = new pp::ImageData(instance, PP_IMAGEDATAFORMAT_BGRA_PREMUL,
-                                      toPPSize(devicePixelSize), true);
+                                          toPPSize(devicePixelSize), true);
         m_frameBuffer = new QImage(reinterpret_cast<uchar *>(m_imageData2D->data()),
-                               devicePixelSize.width(), devicePixelSize.height(),
-                               m_imageData2D->stride(), QImage::Format_ARGB32_Premultiplied);
+                                   devicePixelSize.width(), devicePixelSize.height(),
+                                   m_imageData2D->stride(), QImage::Format_ARGB32_Premultiplied);
         m_frameBuffer->setDevicePixelRatio(devicePixelRatio);
     }
 }

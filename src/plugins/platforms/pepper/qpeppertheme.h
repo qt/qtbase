@@ -27,7 +27,7 @@ QT_BEGIN_NAMESPACE
 
 class QPepperTheme : public QObject, public QPlatformTheme
 {
-Q_OBJECT
+    Q_OBJECT
 public:
     QPepperTheme();
     ~QPepperTheme();
@@ -35,6 +35,7 @@ public:
     QVariant themeHint(ThemeHint hint) const;
 public Q_SLOTS:
     void handleGetAppVersionMessage(const QByteArray &message);
+
 private:
     QPlatformTheme::KeyboardSchemes m_keyboardScheme;
 };

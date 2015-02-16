@@ -45,9 +45,10 @@ public:
     virtual void doneCurrent();
     virtual void swapBuffers(QPlatformSurface *);
     void flushCallback(int32_t);
-    virtual QFunctionPointer getProcAddress(const QByteArray&);
+    virtual QFunctionPointer getProcAddress(const QByteArray &);
 
     virtual QSurfaceFormat format() const;
+
 private:
     bool initGl();
     QSize m_currentSize;

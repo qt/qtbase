@@ -30,8 +30,8 @@ QT_BEGIN_NAMESPACE
 Q_LOGGING_CATEGORY(QT_PLATFORM_PEPPER_WINDOW, "qt.platform.pepper.window")
 
 QPepperPlatformWindow::QPepperPlatformWindow(QWindow *window)
-:QPlatformWindow(window)
-,m_isVisible(false)
+    : QPlatformWindow(window)
+    , m_isVisible(false)
 {
     qCDebug(QT_PLATFORM_PEPPER_WINDOW) << "Create QPepperPlatformWindow for" << window;
 
@@ -52,18 +52,14 @@ QPepperPlatformWindow::~QPepperPlatformWindow()
         m_compositor->removeWindow(this->window());
 }
 
-WId QPepperPlatformWindow::winId() const
-{
-    return WId(this);
-}
+WId QPepperPlatformWindow::winId() const { return WId(this); }
 
 void QPepperPlatformWindow::setVisible(bool visible)
 {
     qCDebug(QT_PLATFORM_PEPPER_WINDOW) << "setVisible" << visible;
 
-    QWindowSystemInterface::handleExposeEvent(window(), visible ?
-                                              QRect(QPoint(), geometry().size()) :
-                                              QRect());
+    QWindowSystemInterface::handleExposeEvent(window(), visible ? QRect(QPoint(), geometry().size())
+                                                                : QRect());
     QPepperInstancePrivate::get()->scheduleWindowSystemEventsFlush();
 
     if (m_compositor)
@@ -143,6 +139,5 @@ qreal QPepperPlatformWindow::devicePixelRatio() const
 {
     return QPepperInstancePrivate::get()->devicePixelRatio();
 }
-
 
 QT_END_NAMESPACE

@@ -25,9 +25,8 @@
 
 QT_BEGIN_NAMESPACE
 
-
 QPepperTheme::QPepperTheme()
-    :m_keyboardScheme(QPlatformTheme::X11KeyboardScheme)
+    : m_keyboardScheme(QPlatformTheme::X11KeyboardScheme)
 {
     // Look at navigator.appVersion to get the host OS.
     // ## These calls to javascript are async, which means m_keyboardScheme
@@ -36,18 +35,15 @@ QPepperTheme::QPepperTheme()
 
     QPepperInstancePrivate *instance = QPepperInstancePrivate::get();
     instance->registerMessageHandler("qtGetAppVersion", this, "handleGetAppVersionMessage");
-    const char *getAppVersionsScript = \
-        "this.qtMessageHandlers[\"qtGetAppVersion\"] = function(url) { "
-        "    embed.postMessage(\"qtGetAppVersion: \"  + navigator.appVersion);"
-        "}";
+    const char *getAppVersionsScript
+        = "this.qtMessageHandlers[\"qtGetAppVersion\"] = function(url) { "
+          "    embed.postMessage(\"qtGetAppVersion: \"  + navigator.appVersion);"
+          "}";
     instance->runJavascript(getAppVersionsScript);
     instance->postMessage("qtGetAppVersion: ");
 }
 
-QPepperTheme::~QPepperTheme()
-{
-
-}
+QPepperTheme::~QPepperTheme() {}
 QVariant QPepperTheme::themeHint(ThemeHint hint) const
 {
     switch (hint) {
@@ -70,6 +66,5 @@ void QPepperTheme::handleGetAppVersionMessage(const QByteArray &message)
     else
         m_keyboardScheme = QPlatformTheme::X11KeyboardScheme;
 }
-
 
 QT_END_NAMESPACE

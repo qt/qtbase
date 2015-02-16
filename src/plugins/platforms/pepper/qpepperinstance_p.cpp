@@ -56,7 +56,7 @@ extern int qGuiCallBlockingMain();
 extern bool qGuiStartup();
 
 QPepperInstancePrivate::QPepperInstancePrivate(QPepperInstance *instance)
-    :m_qtThread(instance)
+    : m_qtThread(instance)
 {
     q = instance;
     m_pepperIntegraton = 0; // set by the QPepperIntegration constructor
@@ -110,15 +110,9 @@ QPepperInstancePrivate::~QPepperInstancePrivate()
     }
 }
 
-QPepperInstancePrivate *QPepperInstancePrivate::get()
-{
-    return g_pepperInstancePrivate;
-}
+QPepperInstancePrivate *QPepperInstancePrivate::get() { return g_pepperInstancePrivate; }
 
-QPepperInstance *QPepperInstancePrivate::getInstance()
-{
-    return g_pepperInstancePrivate->q;
-}
+QPepperInstance *QPepperInstancePrivate::getInstance() { return g_pepperInstancePrivate->q; }
 
 void QPepperInstancePrivate::processCall(pp::CompletionCallback call)
 {
@@ -131,7 +125,8 @@ void QPepperInstancePrivate::processCall(pp::CompletionCallback call)
 
 void QPepperInstancePrivate::processMessageLoopMessage()
 {
-    pp::CompletionCallback message = m_qtMessageLoop_pthread.dequeue(); // waits for the next message
+    pp::CompletionCallback message
+        = m_qtMessageLoop_pthread.dequeue(); // waits for the next message
     if (message.pp_completion_callback().user_data != 0) {
         int resultNotUsed = 0;
         message.Run(resultNotUsed);
@@ -158,7 +153,8 @@ void QPepperInstancePrivate::qtMessageLoop()
 }
 
 #ifdef Q_OS_NACL_NEWLIB
-void qtExceptionHandler(const char* json) {
+void qtExceptionHandler(const char *json)
+{
     qDebug() << "CRASH";
     qDebug() << json;
 }
@@ -167,21 +163,22 @@ void qtExceptionHandler(const char* json) {
 // Message handler for redirecting Qt debug output to the web page.
 void qtMessageHandler(QtMsgType, const QMessageLogContext &context, const QString &message)
 {
-   QByteArray bytes = context.category + message.toLatin1() + "\n";
-   QPepperInstancePrivate::getInstance()->PostMessage(pp::Var(bytes.constData()));
+    QByteArray bytes = context.category + message.toLatin1() + "\n";
+    QPepperInstancePrivate::getInstance()->PostMessage(pp::Var(bytes.constData()));
 }
 
 // There is one global app pp::Instance. It corresponds to the
 // html div tag that contains the app.
-bool QPepperInstancePrivate::init(int32_t result, uint32_t argc, const QVector<QByteArray>& vargn, const QVector<QByteArray> &vargv)
+bool QPepperInstancePrivate::init(int32_t result, uint32_t argc, const QVector<QByteArray> &vargn,
+                                  const QVector<QByteArray> &vargv)
 {
     Q_UNUSED(result);
 
     qCDebug(QT_PLATFORM_PEPPER_INSTANCE) << "Init argc:" << argc;
 
 #ifdef Q_OS_NACL_NEWLIB
-    // Comment in next line to enable the exception/crash handler.
-    // EHRequestExceptionsJson(qtExceptionHandler);
+// Comment in next line to enable the exception/crash handler.
+// EHRequestExceptionsJson(qtExceptionHandler);
 #endif
 
     if (false) {
@@ -205,7 +202,8 @@ bool QPepperInstancePrivate::init(int32_t result, uint32_t argc, const QVector<Q
         QByteArray name = QByteArray(vargn[i]).toUpper(); // html forces lowercase.
         QByteArray value = vargv[i];
         qputenv(name.constData(), value);
-        qCDebug(QT_PLATFORM_PEPPER_INSTANCE) << "setting environment variable" << name << "=" << value;
+        qCDebug(QT_PLATFORM_PEPPER_INSTANCE) << "setting environment variable" << name << "="
+                                             << value;
     }
 
     // Enable input event types Qt is interested in. Filtering input events
@@ -232,12 +230,12 @@ void QPepperInstancePrivate::didChangeView(int32_t result, const View &view)
     qreal cssScale = view.GetCSSScale();
     qreal devicePixelRatio = deviceScale * cssScale;
 
-    qCDebug(QT_PLATFORM_PEPPER_INSTANCE) << "DidChangeView" << toQRect(geometry)
-                                         << "DeviceScale" << deviceScale
-                                         << "CSSScale" << cssScale
+    qCDebug(QT_PLATFORM_PEPPER_INSTANCE) << "DidChangeView" << toQRect(geometry) << "DeviceScale"
+                                         << deviceScale << "CSSScale" << cssScale
                                          << "devicePixelRatio" << devicePixelRatio;
 
-    if (geometry.size() == m_currentGeometry.size() && devicePixelRatio == m_currentDevicePixelRatio)
+    if (geometry.size() == m_currentGeometry.size()
+        && devicePixelRatio == m_currentDevicePixelRatio)
         return;
 
     m_currentGeometry = geometry;
@@ -250,7 +248,7 @@ void QPepperInstancePrivate::didChangeView(int32_t result, const View &view)
     if (!m_qtStarted) {
         m_qtStarted = true;
         startQt();
-    }  else {
+    } else {
         if (m_pepperIntegraton)
             m_pepperIntegraton->resizeScreen(this->geometry().size(), m_currentDevicePixelRatio);
     }
@@ -264,12 +262,13 @@ void QPepperInstancePrivate::didChangeFocus(int32_t result, bool hasFucus)
     Q_UNUSED(result);
     qCDebug(QT_PLATFORM_PEPPER_INSTANCE) << "DidChangeFocus" << hasFucus;
 
-    QWindow *fucusWindow = (hasFucus &&  m_pepperIntegraton && m_pepperIntegraton->m_topLevelWindow)
-                         ? m_pepperIntegraton->m_topLevelWindow->window() : 0;
+    QWindow *fucusWindow = (hasFucus && m_pepperIntegraton && m_pepperIntegraton->m_topLevelWindow)
+                               ? m_pepperIntegraton->m_topLevelWindow->window()
+                               : 0;
     QWindowSystemInterface::handleWindowActivated(fucusWindow, Qt::ActiveWindowFocusReason);
 }
 
-bool QPepperInstancePrivate::handleInputEvent(int32_t result, const pp::InputEvent& event)
+bool QPepperInstancePrivate::handleInputEvent(int32_t result, const pp::InputEvent &event)
 {
     Q_UNUSED(result);
     // this one is spammy (mouse moves)
@@ -283,14 +282,14 @@ bool QPepperInstancePrivate::handleInputEvent(int32_t result, const pp::InputEve
     return ret;
 }
 
-bool QPepperInstancePrivate::handleDocumentLoad(int32_t result, const URLLoader& url_loader)
+bool QPepperInstancePrivate::handleDocumentLoad(int32_t result, const URLLoader &url_loader)
 {
     Q_UNUSED(result);
     Q_UNUSED(url_loader);
     return false;
 }
 
-void QPepperInstancePrivate::handleMessage(int32_t result, const Var& var_message)
+void QPepperInstancePrivate::handleMessage(int32_t result, const Var &var_message)
 {
     Q_UNUSED(result);
 
@@ -305,11 +304,13 @@ void QPepperInstancePrivate::handleMessage(int32_t result, const Var& var_messag
     if (m_messageHandlers.contains(tag)) {
         QPair<QPointer<QObject>, const char *> handler = m_messageHandlers[tag];
         if (!handler.first.isNull())
-            QMetaObject::invokeMethod(handler.first.data(), handler.second, Q_ARG(QByteArray, message));
+            QMetaObject::invokeMethod(handler.first.data(), handler.second,
+                                      Q_ARG(QByteArray, message));
     }
 }
 
-void QPepperInstancePrivate::registerMessageHandler(const QByteArray &messageTag, QObject *obj, const char *slot)
+void QPepperInstancePrivate::registerMessageHandler(const QByteArray &messageTag, QObject *obj,
+                                                    const char *slot)
 {
     m_messageHandlers[messageTag] = qMakePair(QPointer<QObject>(obj), slot);
 }
@@ -326,15 +327,9 @@ QRect QPepperInstancePrivate::deviceGeometry()
     return QRect(r.topLeft(), r.size() * m_currentDeviceScale);
 }
 
-qreal QPepperInstancePrivate::devicePixelRatio()
-{
-    return m_currentDevicePixelRatio;
-}
+qreal QPepperInstancePrivate::devicePixelRatio() { return m_currentDevicePixelRatio; }
 
-qreal QPepperInstancePrivate::cssScale()
-{
-    return m_currentCssScale;
-}
+qreal QPepperInstancePrivate::cssScale() { return m_currentCssScale; }
 
 // From time to time it's useful to flush and empty the posted
 // window system events queue. However, Qt and Qt apps does not
@@ -344,7 +339,8 @@ qreal QPepperInstancePrivate::cssScale()
 // to the Pepper event loop.
 void QPepperInstancePrivate::scheduleWindowSystemEventsFlush()
 {
-    m_qtMessageLoop.PostWork(m_callbackFactory.NewCallback(&QPepperInstancePrivate::windowSystemEventsFlushCallback));
+    m_qtMessageLoop.PostWork(
+        m_callbackFactory.NewCallback(&QPepperInstancePrivate::windowSystemEventsFlushCallback));
 }
 
 void QPepperInstancePrivate::windowSystemEventsFlushCallback(int32_t)
@@ -385,8 +381,8 @@ void QPepperInstancePrivate::startQt()
     // will then create the QGuiApplicaiton object, run the application
     // and return at app exit.
     if (qGuiHaveBlockingMain()) {
-         qGuiCallBlockingMain();
-         return;
+        qGuiCallBlockingMain();
+        return;
     }
 
     // Call qGuiStartup which will create the QGuiApplicaiton object and
@@ -400,7 +396,4 @@ void QPepperInstancePrivate::startQt()
     q->applicationInit();
 }
 
-void QPepperInstancePrivate::flushCompletedCallback(int32_t)
-{
-
-}
+void QPepperInstancePrivate::flushCompletedCallback(int32_t) {}

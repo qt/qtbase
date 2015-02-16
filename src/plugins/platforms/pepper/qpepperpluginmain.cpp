@@ -26,10 +26,11 @@ QT_BEGIN_NAMESPACE
 class QPepperIntegrationPlugin : public QPlatformIntegrationPlugin
 {
     Q_OBJECT
-    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QPA.QPlatformIntegrationFactoryInterface.5.1" FILE "pepper.json")
+    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QPA.QPlatformIntegrationFactoryInterface.5.1" FILE
+                          "pepper.json")
 public:
     QStringList keys() const;
-    QPlatformIntegration *create(const QString&, const QStringList&);
+    QPlatformIntegration *create(const QString &, const QStringList &);
 };
 
 QStringList QPepperIntegrationPlugin::keys() const
@@ -39,10 +40,11 @@ QStringList QPepperIntegrationPlugin::keys() const
     return list;
 }
 
-QPlatformIntegration* QPepperIntegrationPlugin::create(const QString& system, const QStringList& paramList)
+QPlatformIntegration *QPepperIntegrationPlugin::create(const QString &system,
+                                                       const QStringList &paramList)
 {
     Q_UNUSED(paramList);
-    //qDebug() << "QPepperIntegrationPlugin::create" << system;
+    // qDebug() << "QPepperIntegrationPlugin::create" << system;
     if (system.toLower() == QStringLiteral("pepper"))
         return new QPepperIntegration;
     return 0;

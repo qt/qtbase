@@ -30,16 +30,18 @@ class QFontEnginePepper : public QFontEngine
 {
 public:
     QFontEnginePepper(const QFontDef &fontDef);
-    bool stringToCMap(const QChar*, int, QGlyphLayout*, int*, QFlags<QTextEngine::ShaperFlag>) const;
-    glyph_metrics_t boundingBox(const QGlyphLayout&);
+    bool stringToCMap(const QChar *, int, QGlyphLayout *, int *,
+                      QFlags<QTextEngine::ShaperFlag>) const;
+    glyph_metrics_t boundingBox(const QGlyphLayout &);
     glyph_metrics_t boundingBox(glyph_t);
     QFixed ascent() const;
     QFixed descent() const;
     QFixed leading() const;
     qreal maxCharWidth() const;
-    const char* name() const;
-    bool canRender(const QChar*, int);
+    const char *name() const;
+    bool canRender(const QChar *, int);
     QFontEngine::Type type() const;
+
 private:
     QString m_fontName;
     QFontDef m_fontDef;

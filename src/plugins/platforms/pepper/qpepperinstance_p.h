@@ -46,20 +46,15 @@ Q_DECLARE_LOGGING_CATEGORY(QT_PLATFORM_PEPPER_INSTANCE)
 
 // ThreadSafeQueue is a simple thread-safe queue. T must
 // be default-constructible and copyable.
-template <typename T>
-class ThreadSafeQueue
+template <typename T> class ThreadSafeQueue
 {
 public:
     ThreadSafeQueue()
-        :m_quit(false)
+        : m_quit(false)
     {
-
     }
 
-    ~ThreadSafeQueue()
-    {
-        setQuit();
-    }
+    ~ThreadSafeQueue() { setQuit(); }
 
     void enqueue(const T &item)
     {
@@ -76,16 +71,19 @@ public:
         return m_quit ? T() : m_queue.dequeue();
     }
 
-    void setQuit() {
+    void setQuit()
+    {
         QMutexLocker lock(&m_lock);
         m_quit = true;
         m_nextEvent.wakeAll();
     }
 
-    bool testQuit() {
+    bool testQuit()
+    {
         QMutexLocker lock(&m_lock);
         return m_quit;
     }
+
 private:
     QWaitCondition m_nextEvent;
     QMutex m_lock;
@@ -103,12 +101,13 @@ public:
     static QPepperInstancePrivate *get();
     static QPepperInstance *getInstance();
 
-    bool init(int32_t result, uint32_t argc, const QVector<QByteArray> &vargn, const QVector<QByteArray> &vargv);
+    bool init(int32_t result, uint32_t argc, const QVector<QByteArray> &vargn,
+              const QVector<QByteArray> &vargv);
     void didChangeView(int32_t result, const pp::View &view);
     void didChangeFocus(int32_t result, bool hasFucus);
-    bool handleInputEvent(int32_t result, const pp::InputEvent& event);
-    bool handleDocumentLoad(int32_t result, const pp::URLLoader& url_loader);
-    void handleMessage(int32_t result, const pp::Var& var_message);
+    bool handleInputEvent(int32_t result, const pp::InputEvent &event);
+    bool handleDocumentLoad(int32_t result, const pp::URLLoader &url_loader);
+    void handleMessage(int32_t result, const pp::Var &var_message);
 
     // Instance attribute getters
     QRect geometry();
@@ -154,7 +153,7 @@ public:
     pp::ImageData *m_imageData2D;
     QImage *m_frameBuffer;
     bool m_inFlush;
-    QHash<QByteArray, QPair<QPointer<QObject>, const char *> >m_messageHandlers;
+    QHash<QByteArray, QPair<QPointer<QObject>, const char *>> m_messageHandlers;
 
     pp::CompletionCallbackFactory<QPepperInstancePrivate> m_callbackFactory;
 };

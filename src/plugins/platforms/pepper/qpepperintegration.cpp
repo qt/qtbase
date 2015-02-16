@@ -38,7 +38,7 @@ QPlatformIntegration *qt_create_pepper_integration()
     return QPepperIntegration::createPepperIntegration();
 }
 
-QPepperIntegration * QPepperIntegration::createPepperIntegration()
+QPepperIntegration *QPepperIntegration::createPepperIntegration()
 {
     if (QPepperInstancePrivate::get() == 0) {
         qFatal("ERROR: QPepperInstance is not created. Use Q_GUI_MAIN instead of main().");
@@ -48,10 +48,7 @@ QPepperIntegration * QPepperIntegration::createPepperIntegration()
 }
 
 static QPepperIntegration *globalPepperIntegration;
-QPepperIntegration *QPepperIntegration::getPepperIntegration()
-{
-    return globalPepperIntegration;
-}
+QPepperIntegration *QPepperIntegration::getPepperIntegration() { return globalPepperIntegration; }
 
 QPepperIntegration::QPepperIntegration()
     : m_screen(0)
@@ -72,8 +69,10 @@ QPepperIntegration::QPepperIntegration()
     instance->m_pepperIntegraton = this;
     resizeScreen(instance->geometry().size(), instance->devicePixelRatio());
     m_eventTranslator = new PepperEventTranslator();
-    QObject::connect(m_eventTranslator, SIGNAL(getWindowAt(QPoint,QWindow**)), this, SLOT(getWindowAt(QPoint,QWindow**)));
-    QObject::connect(m_eventTranslator, SIGNAL(getKeyWindow(QWindow**)), this, SLOT(getKeyWindow(QWindow**)));
+    QObject::connect(m_eventTranslator, SIGNAL(getWindowAt(QPoint, QWindow **)), this,
+                     SLOT(getWindowAt(QPoint, QWindow **)));
+    QObject::connect(m_eventTranslator, SIGNAL(getKeyWindow(QWindow **)), this,
+                     SLOT(getKeyWindow(QWindow **)));
 
     m_pepperEventDispatcher = 0;
     m_topLevelWindow = 0;
@@ -94,10 +93,7 @@ QPepperIntegration::~QPepperIntegration()
     delete m_pepperEventDispatcher;
 }
 
-bool QPepperIntegration::hasOpenGL() const
-{
-    return true;
-}
+bool QPepperIntegration::hasOpenGL() const { return true; }
 
 QPlatformWindow *QPepperIntegration::createPlatformWindow(QWindow *window) const
 {
@@ -114,13 +110,14 @@ QPlatformBackingStore *QPepperIntegration::createPlatformBackingStore(QWindow *w
     return backingStore;
 }
 
-QPlatformOpenGLContext *QPepperIntegration::createPlatformOpenGLContext(QOpenGLContext *context) const
+QPlatformOpenGLContext *
+QPepperIntegration::createPlatformOpenGLContext(QOpenGLContext *context) const
 {
     QPepperGLContext *glContext = new QPepperGLContext();
     return glContext;
 }
 
-QAbstractEventDispatcher* QPepperIntegration::createEventDispatcher() const
+QAbstractEventDispatcher *QPepperIntegration::createEventDispatcher() const
 {
     m_pepperEventDispatcher = new QPepperEventDispatcher();
     return m_pepperEventDispatcher;
@@ -136,10 +133,10 @@ QPlatformFontDatabase *QPepperIntegration::fontDatabase() const
 
 QPlatformClipboard *QPepperIntegration::clipboard() const
 {
-//  WIP: disabled.
-//    if (m_clipboard == 0)
-//        m_clipboard = new QPepperClipboard();
-//    return m_clipboard;
+    //  WIP: disabled.
+    //    if (m_clipboard == 0)
+    //        m_clipboard = new QPepperClipboard();
+    //    return m_clipboard;
     return QPlatformIntegration::clipboard();
 }
 
@@ -160,7 +157,7 @@ QPlatformServices *QPepperIntegration::services() const
 {
     if (m_services == 0)
         m_services = new QPepperServices();
-   return m_services;
+    return m_services;
 }
 
 QVariant QPepperIntegration::styleHint(StyleHint hint) const
@@ -178,20 +175,11 @@ Qt::WindowState QPepperIntegration::defaultWindowState(Qt::WindowFlags) const
     return Qt::WindowFullScreen;
 }
 
-QPepperCompositor *QPepperIntegration::pepperCompositor() const
-{
-    return m_compositor;
-}
+QPepperCompositor *QPepperIntegration::pepperCompositor() const { return m_compositor; }
 
-PepperEventTranslator *QPepperIntegration::pepperEventTranslator()
-{
-    return m_eventTranslator;
-}
+PepperEventTranslator *QPepperIntegration::pepperEventTranslator() { return m_eventTranslator; }
 
-void QPepperIntegration::processEvents()
-{
-    m_pepperEventDispatcher->processEvents();
-}
+void QPepperIntegration::processEvents() { m_pepperEventDispatcher->processEvents(); }
 
 bool QPepperIntegration::wantsOpenGLGraphics() const
 {
@@ -207,7 +195,7 @@ void QPepperIntegration::resizeScreen(QSize size, qreal devicePixelRatio)
     // Send the screen geometry change to Qt, resize windows.
     QRect screenRect(QPoint(0, 0), size);
     m_screen->resizeMaximizedWindows();
-    QWindowSystemInterface::handleScreenGeometryChange(m_screen->screen(), 
+    QWindowSystemInterface::handleScreenGeometryChange(m_screen->screen(),
                                                        screenRect,  // new geometry
                                                        screenRect); // new available geometry
     QWindowSystemInterface::flushWindowSystemEvents();
@@ -221,7 +209,7 @@ void QPepperIntegration::resizeScreen(QSize size, qreal devicePixelRatio)
         m_compositor->endResize();
 }
 
-void QPepperIntegration::getWindowAt(const QPoint & point, QWindow **window)
+void QPepperIntegration::getWindowAt(const QPoint &point, QWindow **window)
 {
     if (m_compositor)
         *window = m_compositor->windowAt(point);

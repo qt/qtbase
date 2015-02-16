@@ -24,64 +24,29 @@ pp::Rect toPPRect(const QRect rect)
     return pp::Rect(rect.x(), rect.y(), rect.size().width(), rect.size().height());
 }
 
-QRect toQRect(pp::Rect rect)
-{
-    return QRect(rect.x(), rect.y(), rect.width(), rect.height());
-}
+QRect toQRect(pp::Rect rect) { return QRect(rect.x(), rect.y(), rect.width(), rect.height()); }
 
-QSize toQSize(pp::Size size)
-{
-    return QSize(size.width(), size.height());
-}
+QSize toQSize(pp::Size size) { return QSize(size.width(), size.height()); }
 
-pp::Size toPPSize(const QSize &size)
-{
-    return pp::Size(size.width(), size.height());
-}
+pp::Size toPPSize(const QSize &size) { return pp::Size(size.width(), size.height()); }
 
-QPointF toQPointF(pp::FloatPoint point)
-{
-    return QPointF(point.x(), point.y());
-}
+QPointF toQPointF(pp::FloatPoint point) { return QPointF(point.x(), point.y()); }
 
-pp::FloatPoint toPPFloatPoint(QPointF point)
-{
-    return pp::FloatPoint(point.x(), point.y());
-}
+pp::FloatPoint toPPFloatPoint(QPointF point) { return pp::FloatPoint(point.x(), point.y()); }
 
-QPoint toQPointF(pp::Point point)
-{
-    return QPoint(point.x(), point.y());
-}
+QPoint toQPointF(pp::Point point) { return QPoint(point.x(), point.y()); }
 
-pp::Point toPPPoint(QPoint point)
-{
-    return pp::Point(point.x(), point.y());
-}
+pp::Point toPPPoint(QPoint point) { return pp::Point(point.x(), point.y()); }
 
-QByteArray toQByteArray(const pp::Var &var)
-{
-    return QByteArray(var.AsString().data());
-}
+QByteArray toQByteArray(const pp::Var &var) { return QByteArray(var.AsString().data()); }
 
-pp::Var toPPVar(const QByteArray &data)
-{
-    return pp::Var(data.constData());
-}
+pp::Var toPPVar(const QByteArray &data) { return pp::Var(data.constData()); }
 
 ThreadSafeRefCount::ThreadSafeRefCount()
-   : ref(0) { }
-
-int32_t ThreadSafeRefCount::AddRef()
+    : ref(0)
 {
-    return ref.fetchAndAddOrdered(1);
 }
 
-int32_t ThreadSafeRefCount::Release()
-{
-    return ref.fetchAndAddOrdered(-1);
-}
+int32_t ThreadSafeRefCount::AddRef() { return ref.fetchAndAddOrdered(1); }
 
-
-
-
+int32_t ThreadSafeRefCount::Release() { return ref.fetchAndAddOrdered(-1); }

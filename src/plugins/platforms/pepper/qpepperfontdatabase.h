@@ -27,7 +27,9 @@ class QPepperFontDatabase : public QBasicFontDatabase
 public:
     void populateFontDatabase();
     QFontEngine *fontEngine(const QFontDef &fontDef, void *handle) Q_DECL_OVERRIDE;
-    QStringList fallbacksForFamily(const QString &family, QFont::Style style, QFont::StyleHint styleHint, QChar::Script script) const Q_DECL_OVERRIDE;
+    QStringList fallbacksForFamily(const QString &family, QFont::Style style,
+                                   QFont::StyleHint styleHint,
+                                   QChar::Script script) const Q_DECL_OVERRIDE;
     QStringList addApplicationFont(const QByteArray &fontData, const QString &fileName);
     void releaseHandle(void *handle);
 };

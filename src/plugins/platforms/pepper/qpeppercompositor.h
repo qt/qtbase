@@ -46,12 +46,12 @@ Q_DECLARE_LOGGING_CATEGORY(QT_PLATFORM_PEPPER_COMPOSITOR)
 
 class QPepperCompositor : public QObject
 {
-Q_OBJECT
+    Q_OBJECT
 public:
     QPepperCompositor();
     ~QPepperCompositor();
 
-// Client API
+    // Client API
     void addRasterWindow(QWindow *window, QWindow *parentWindow = 0);
     void removeWindow(QWindow *window);
 
@@ -64,11 +64,12 @@ public:
     void flush(QWindow *surface, const QRegion &region);
     void waitForFlushed(QWindow *surface);
 
-// Server API
-    void beginResize(QSize newSize, qreal newDevicePixelRatio);          // call when the frame buffer geometry changes
+    // Server API
+    void beginResize(QSize newSize,
+                     qreal newDevicePixelRatio); // call when the frame buffer geometry changes
     void endResize();
 
-// Misc API
+    // Misc API
 public:
     QWindow *windowAt(QPoint p);
     QWindow *keyWindow();

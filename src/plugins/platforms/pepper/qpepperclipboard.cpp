@@ -49,25 +49,22 @@ QPepperClipboard::QPepperClipboard()
     // has focus, even if Qt does not take any of the key events.
     //
 
-    const char *copyEventhandler = \
-        "embed.addEventListener('copy', function (ev) {"
-        "   ev.clipboardData.setData('text/plain', 'some text here, ' + new Date);"
-        "   ev.preventDefault();"
-        "   console.log('clipboard copy');"
-        "   console.log(embed.postMessageAndAwaitResponse);"
-        "})";
+    const char *copyEventhandler
+        = "embed.addEventListener('copy', function (ev) {"
+          "   ev.clipboardData.setData('text/plain', 'some text here, ' + new Date);"
+          "   ev.preventDefault();"
+          "   console.log('clipboard copy');"
+          "   console.log(embed.postMessageAndAwaitResponse);"
+          "})";
 
     QPepperInstancePrivate::get()->runJavascript(copyEventhandler);
 }
 
-QPepperClipboard::~QPepperClipboard()
-{
-
-}
+QPepperClipboard::~QPepperClipboard() {}
 
 QMimeData *QPepperClipboard::mimeData(QClipboard::Mode mode)
 {
-    qCDebug(QT_PLATFORM_PEPPER_CLIPBOARD) << "mimeData" <<  mode;
+    qCDebug(QT_PLATFORM_PEPPER_CLIPBOARD) << "mimeData" << mode;
     if (mode != QClipboard::Clipboard)
         return 0;
     QByteArray message = "qtClipboardRequestPaste: ";
@@ -77,7 +74,7 @@ QMimeData *QPepperClipboard::mimeData(QClipboard::Mode mode)
 
 void QPepperClipboard::setMimeData(QMimeData *mimeData, QClipboard::Mode mode)
 {
-    qCDebug(QT_PLATFORM_PEPPER_CLIPBOARD) << "setMimeData" <<  mode;
+    qCDebug(QT_PLATFORM_PEPPER_CLIPBOARD) << "setMimeData" << mode;
     if (mode != QClipboard::Clipboard)
         return;
     QByteArray message = "qtClipboardRequestCopy:" + mimeData->text().toUtf8();

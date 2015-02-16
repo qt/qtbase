@@ -31,7 +31,7 @@ QPepperModulePrivate *qtCreatePepperModulePrivate(QPepperModule *module)
 }
 
 QPepperModulePrivate::QPepperModulePrivate(QPepperModule *module)
-:q(module)
+    : q(module)
 {
     qtPepperModule = module;
 }
@@ -42,12 +42,9 @@ bool QPepperModulePrivate::init()
     return true;
 }
 
-pp::Instance* QPepperModulePrivate::createInstance(PP_Instance ppInstance)
+pp::Instance *QPepperModulePrivate::createInstance(PP_Instance ppInstance)
 {
     return new QPepperInstance(ppInstance);
 }
 
-pp::Core *QPepperModulePrivate::core()
-{
-    return g_core;
-}
+pp::Core *QPepperModulePrivate::core() { return g_core; }

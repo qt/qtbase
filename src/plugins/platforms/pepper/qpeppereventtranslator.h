@@ -33,10 +33,10 @@ Q_DECLARE_LOGGING_CATEGORY(QT_PLATFORM_PEPPER_EVENT_KEYBOARD)
 
 class PepperEventTranslator : public QObject
 {
-Q_OBJECT
+    Q_OBJECT
 public:
     PepperEventTranslator();
-    bool processEvent(const pp::InputEvent& event);
+    bool processEvent(const pp::InputEvent &event);
 
     bool processMouseEvent(const pp::MouseInputEvent &event, PP_InputEvent_Type eventType);
     bool processWheelEvent(const pp::WheelInputEvent &event);
@@ -50,6 +50,7 @@ public:
 Q_SIGNALS:
     void getWindowAt(const QPoint &point, QWindow **window);
     void getKeyWindow(QWindow **window);
+
 private:
     uint32_t currentPepperKey;
     QPoint currentMouseGlobalPos;

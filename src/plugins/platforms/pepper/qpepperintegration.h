@@ -33,7 +33,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class QPlatformFontDatabase; 
+class QPlatformFontDatabase;
 class QPepperFontDatabase;
 class QPlatformClipboard;
 class QPepperClipboard;
@@ -54,7 +54,7 @@ public:
     QPlatformWindow *createPlatformWindow(QWindow *window) const;
     QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const;
     QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const;
-    QAbstractEventDispatcher* createEventDispatcher() const;
+    QAbstractEventDispatcher *createEventDispatcher() const;
 
     QPlatformFontDatabase *fontDatabase() const;
     QPlatformClipboard *clipboard() const;
@@ -76,9 +76,10 @@ public:
     void resizeScreen(QSize size, qreal devicePixelRatio);
 
 private Q_SLOTS:
-    void getWindowAt(const QPoint & point, QWindow **window);
+    void getWindowAt(const QPoint &point, QWindow **window);
     void getKeyWindow(QWindow **window);
     void handleMessage(const QByteArray &tag, const QString &message);
+
 public:
     QPepperScreen *m_screen;
     QPepperCompositor *m_compositor;

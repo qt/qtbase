@@ -25,22 +25,21 @@
 Q_LOGGING_CATEGORY(QT_PLATFORM_PEPPER_EVENTDISPATHCER, "qt.platform.pepper.eventdispatcher");
 
 QPepperEventDispatcher::QPepperEventDispatcher(QObject *parent)
-:QUnixEventDispatcherQPA(parent)
-,m_currentTimerSerial(0)
-,m_messageLoop(pp::MessageLoop::GetCurrent())
-,m_completionCallbackFactory(this)
+    : QUnixEventDispatcherQPA(parent)
+    , m_currentTimerSerial(0)
+    , m_messageLoop(pp::MessageLoop::GetCurrent())
+    , m_completionCallbackFactory(this)
 {
     qCDebug(QT_PLATFORM_PEPPER_EVENTDISPATHCER) << "QPepperEventDispatcher()";
 }
 
-QPepperEventDispatcher::~QPepperEventDispatcher()
-{
+QPepperEventDispatcher::~QPepperEventDispatcher() {}
 
-}
-
-void QPepperEventDispatcher::registerTimer(int timerId, int interval, Qt::TimerType timerType, QObject *object)
+void QPepperEventDispatcher::registerTimer(int timerId, int interval, Qt::TimerType timerType,
+                                           QObject *object)
 {
-    qCDebug(QT_PLATFORM_PEPPER_EVENTDISPATHCER) << "QPepperEventDispatcher::registerTimer" << timerId << interval << object;
+    qCDebug(QT_PLATFORM_PEPPER_EVENTDISPATHCER) << "QPepperEventDispatcher::registerTimer"
+                                                << timerId << interval << object;
 
     // Maintain QObject *-> Qt timer id mapping.
     m_activeObjectTimers.insertMulti(object, timerId);
@@ -54,7 +53,8 @@ void QPepperEventDispatcher::registerTimer(int timerId, int interval, Qt::TimerT
 
 bool QPepperEventDispatcher::unregisterTimer(int timerId)
 {
-    qCDebug(QT_PLATFORM_PEPPER_EVENTDISPATHCER) << "QPepperEventDispatcher::unregisterTimer" << timerId;
+    qCDebug(QT_PLATFORM_PEPPER_EVENTDISPATHCER) << "QPepperEventDispatcher::unregisterTimer"
+                                                << timerId;
 
     // Remove QObject -> Qt timer id mapping.
     QObject *timerObject = m_timerDetails.value(timerId).object;
@@ -72,7 +72,8 @@ bool QPepperEventDispatcher::unregisterTimer(int timerId)
 
 bool QPepperEventDispatcher::unregisterTimers(QObject *object)
 {
-    qCDebug(QT_PLATFORM_PEPPER_EVENTDISPATHCER) << "QPepperEventDispatcher::unregisterTimers" << object;
+    qCDebug(QT_PLATFORM_PEPPER_EVENTDISPATHCER) << "QPepperEventDispatcher::unregisterTimers"
+                                                << object;
 
     // Find all active Qt timer ids for the given object and copy them to a list.
     // (we will update the QObject * -> timerId hash while iterating the list later on)
@@ -82,7 +83,7 @@ bool QPepperEventDispatcher::unregisterTimers(QObject *object)
         timerIds.append(it.value());
 
     // Unregister each timer.
-    foreach(int timerId, timerIds)
+    foreach (int timerId, timerIds)
         unregisterTimer(timerId);
 
     return true;
@@ -140,9 +141,9 @@ void QPepperEventDispatcher::startTimer(PepperTimerInfo info)
     m_activeTimerIds[m_currentTimerSerial] = info.timerId;
     m_activeTimerSerials[info.timerId] = m_currentTimerSerial;
 
-    m_messageLoop.PostWork(
-        m_completionCallbackFactory.NewCallback(&QPepperEventDispatcher::timerCallback, m_currentTimerSerial),
-        info.interval);
+    m_messageLoop.PostWork(m_completionCallbackFactory.NewCallback(
+                               &QPepperEventDispatcher::timerCallback, m_currentTimerSerial),
+                           info.interval);
 }
 
 void QPepperEventDispatcher::timerCallback(int32_t result, int32_t timerSerial)
@@ -176,11 +177,12 @@ void QPepperEventDispatcher::timerCallback(int32_t result, int32_t timerSerial)
 void QPepperEventDispatcher::scheduleProcessEvents()
 {
     qCDebug(QT_PLATFORM_PEPPER_EVENTDISPATHCER) << "scheduleProcessEvents";
-    pp::CompletionCallback processEvents =
-        m_completionCallbackFactory.NewCallback(&QPepperEventDispatcher::processEventsCallback);
+    pp::CompletionCallback processEvents
+        = m_completionCallbackFactory.NewCallback(&QPepperEventDispatcher::processEventsCallback);
     int32_t result = m_messageLoop.PostWork(processEvents);
     if (result != PP_OK)
-        qCDebug(QT_PLATFORM_PEPPER_EVENTDISPATHCER) << "scheduleProcessEvents PostWork error" << result;
+        qCDebug(QT_PLATFORM_PEPPER_EVENTDISPATHCER) << "scheduleProcessEvents PostWork error"
+                                                    << result;
 }
 
 void QPepperEventDispatcher::processEventsCallback(int32_t status)
@@ -190,5 +192,3 @@ void QPepperEventDispatcher::processEventsCallback(int32_t status)
 
     processEvents();
 }
-
-

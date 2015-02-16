@@ -25,12 +25,14 @@
 #include "ppapi/cpp/instance.h"
 
 class QPepperModule;
-class QPepperModulePrivate {
+class QPepperModulePrivate
+{
 public:
     QPepperModulePrivate(QPepperModule *module);
     bool init();
-    pp::Instance* createInstance(PP_Instance ppInstance);
-    static pp::Core* core();
+    pp::Instance *createInstance(PP_Instance ppInstance);
+    static pp::Core *core();
+
 private:
     QPepperModule *q;
 };
