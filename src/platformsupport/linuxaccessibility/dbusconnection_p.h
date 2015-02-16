@@ -68,6 +68,7 @@ Q_SIGNALS:
     void enabledChanged(bool enabled);
 
 private Q_SLOTS:
+    QString getAddressFromXCB();
     void serviceRegistered();
     void serviceUnregistered();
     void connectA11yBus(const QString &address);

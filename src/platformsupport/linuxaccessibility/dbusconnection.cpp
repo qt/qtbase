@@ -42,6 +42,9 @@
 #include <QDBusConnectionInterface>
 #include "bus_interface.h"
 
+#include <QtGui/qguiapplication.h>
+#include <qplatformnativeinterface.h>
+
 QT_BEGIN_NAMESPACE
 
 QString A11Y_SERVICE = QStringLiteral("org.a11y.Bus");
@@ -65,6 +68,29 @@ DBusConnection::DBusConnection(QObject *parent)
     // If it is registered already, setup a11y right away
     if (c.interface()->isServiceRegistered(A11Y_SERVICE))
         serviceRegistered();
+
+    // In addition try if there is an xatom exposing the bus address, this allows applications run as root to work
+    QString address = getAddressFromXCB();
+    if (!address.isEmpty()) {
+        m_enabled = true;
+        connectA11yBus(address);
+    }
+}
+
+QString DBusConnection::getAddressFromXCB()
+{
+    QGuiApplication *app = qobject_cast<QGuiApplication *>(QCoreApplication::instance());
+    if (!app)
+        return QString();
+    QPlatformNativeInterface *platformNativeInterface = app->platformNativeInterface();
+    QByteArray *addressByteArray = reinterpret_cast<QByteArray*>(
+                platformNativeInterface->nativeResourceForIntegration(QByteArrayLiteral("AtspiBus")));
+    if (addressByteArray) {
+        QString address = QString::fromLatin1(*addressByteArray);
+        delete addressByteArray;
+        return address;
+    }
+    return QString();
 }
 
 // We have the a11y registry on the session bus.

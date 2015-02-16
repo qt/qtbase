@@ -67,7 +67,8 @@ public:
         RootWindow,
         ScreenSubpixelType,
         ScreenAntialiasingEnabled,
-        NoFontHinting
+        NoFontHinting,
+        AtspiBus
     };
 
     QXcbNativeInterface();
@@ -98,6 +99,7 @@ public:
     void *x11Screen();
     void *rootWindow();
     void *display();
+    void *atspiBus();
     static void setStartupId(const char *);
     static void setAppTime(QScreen *screen, xcb_timestamp_t time);
     static void setAppUserTime(QScreen *screen, xcb_timestamp_t time);

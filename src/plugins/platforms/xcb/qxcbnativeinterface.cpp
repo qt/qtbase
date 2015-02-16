@@ -77,7 +77,8 @@ static int resourceType(const QByteArray &key)
         QByteArrayLiteral("gettimestamp"), QByteArrayLiteral("x11screen"),
         QByteArrayLiteral("rootwindow"),
         QByteArrayLiteral("subpixeltype"), QByteArrayLiteral("antialiasingEnabled"),
-        QByteArrayLiteral("nofonthinting")
+        QByteArrayLiteral("nofonthinting"),
+        QByteArrayLiteral("atspibus")
     };
     const QByteArray *end = names + sizeof(names) / sizeof(names[0]);
     const QByteArray *result = std::find(names, end, key);
@@ -174,6 +175,9 @@ void *QXcbNativeInterface::nativeResourceForIntegration(const QByteArray &resour
         break;
     case Display:
         result = display();
+        break;
+    case AtspiBus:
+        result = atspiBus();
         break;
     default:
         break;
@@ -400,6 +404,27 @@ void *QXcbNativeInterface::display()
 #else
     return 0;
 #endif
+}
+
+void *QXcbNativeInterface::atspiBus()
+{
+    QXcbIntegration *integration = static_cast<QXcbIntegration *>(QGuiApplicationPrivate::platformIntegration());
+    QXcbConnection *defaultConnection = integration->defaultConnection();
+    if (defaultConnection) {
+        xcb_atom_t atspiBusAtom = defaultConnection->internAtom("AT_SPI_BUS");
+        xcb_get_property_cookie_t cookie = Q_XCB_CALL(xcb_get_property(defaultConnection->xcb_connection(), false,
+                                                            defaultConnection->rootWindow(),
+                                                            atspiBusAtom,
+                                                            XCB_ATOM_STRING, 0, 128));
+        xcb_get_property_reply_t *reply = Q_XCB_CALL(xcb_get_property_reply(defaultConnection->xcb_connection(), cookie, 0));
+        Q_ASSERT(!reply->bytes_after);
+        char *data = (char *)xcb_get_property_value(reply);
+        int length = xcb_get_property_value_length(reply);
+        QByteArray *busAddress = new QByteArray(data, length);
+        free(reply);
+        return busAddress;
+    }
+    return 0;
 }
 
 void QXcbNativeInterface::setAppTime(QScreen* screen, xcb_timestamp_t time)
