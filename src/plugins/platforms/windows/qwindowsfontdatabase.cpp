@@ -1682,13 +1682,7 @@ QFontEngine *QWindowsFontDatabase::createEngine(const QFontDef &request,
                                                 int dpi,
                                                 const QSharedPointer<QWindowsFontEngineData> &data)
 {
-#if !defined(QT_NO_DIRECTWRITE)
-    bool useDirectWrite = (request.hintingPreference == QFont::PreferNoHinting)
-                       || (request.hintingPreference == QFont::PreferVerticalHinting);
-    IDWriteFont *directWriteFont = 0;
-#else
-    bool useDirectWrite = false;
-#endif
+    QFontEngine *fe = 0;
 
     LOGFONT lf = fontDefToLOGFONT(request);
     const bool preferClearTypeAA = lf.lfQuality == CLEARTYPE_QUALITY;
@@ -1712,54 +1706,46 @@ QFontEngine *QWindowsFontDatabase::createEngine(const QFontDef &request,
     }
 
 #if !defined(QT_NO_DIRECTWRITE)
-    if (useDirectWrite) {
-        // Default to false for DirectWrite (and re-enable once/if everything turns out okay)
-        useDirectWrite = false;
-        if (initDirectWrite(data.data())) {
-            const QString fam = QString::fromWCharArray(lf.lfFaceName);
-            const QString nameSubstitute = QWindowsFontEngineDirectWrite::fontNameSubstitute(fam);
-            if (nameSubstitute != fam) {
-                const int nameSubstituteLength = qMin(nameSubstitute.length(), LF_FACESIZE - 1);
-                memcpy(lf.lfFaceName, nameSubstitute.utf16(), nameSubstituteLength * sizeof(wchar_t));
-                lf.lfFaceName[nameSubstituteLength] = 0;
+    bool useDirectWrite = (request.hintingPreference == QFont::PreferNoHinting)
+                       || (request.hintingPreference == QFont::PreferVerticalHinting);
+    if (useDirectWrite && initDirectWrite(data.data())) {
+        const QString fam = QString::fromWCharArray(lf.lfFaceName);
+        const QString nameSubstitute = QWindowsFontEngineDirectWrite::fontNameSubstitute(fam);
+        if (nameSubstitute != fam) {
+            const int nameSubstituteLength = qMin(nameSubstitute.length(), LF_FACESIZE - 1);
+            memcpy(lf.lfFaceName, nameSubstitute.utf16(), nameSubstituteLength * sizeof(wchar_t));
+            lf.lfFaceName[nameSubstituteLength] = 0;
+        }
+
+        IDWriteFont *directWriteFont = 0;
+        HRESULT hr = data->directWriteGdiInterop->CreateFontFromLOGFONT(&lf, &directWriteFont);
+        if (FAILED(hr)) {
+            qErrnoWarning("%s: CreateFontFromLOGFONT failed", __FUNCTION__);
+        } else {
+            IDWriteFontFace *directWriteFontFace = NULL;
+            hr = directWriteFont->CreateFontFace(&directWriteFontFace);
+            if (FAILED(hr)) {
+                qErrnoWarning("%s: CreateFontFace failed", __FUNCTION__);
+            } else {
+                QWindowsFontEngineDirectWrite *fedw = new QWindowsFontEngineDirectWrite(directWriteFontFace,
+                                                                                        request.pixelSize,
+                                                                                        data);
+                fedw->initFontInfo(request, dpi, directWriteFont);
+                fe = fedw;
             }
 
-            HRESULT hr = data->directWriteGdiInterop->CreateFontFromLOGFONT(&lf, &directWriteFont);
-            if (FAILED(hr))
-                qErrnoWarning("%s: CreateFontFromLOGFONT failed", __FUNCTION__);
-            else
-                useDirectWrite = true;
+            directWriteFont->Release();
         }
     }
-#endif
+#endif // QT_NO_DIRECTWRITE
 
-    QFontEngine *fe = 0;
-    if (!useDirectWrite) {
+    if (!fe) {
         QWindowsFontEngine *few = new QWindowsFontEngine(request.family, lf, data);
         if (preferClearTypeAA)
             few->glyphFormat = QFontEngine::Format_A32;
         few->initFontInfo(request, dpi);
         fe = few;
     }
-
-#if !defined(QT_NO_DIRECTWRITE)
-    else {
-        IDWriteFontFace *directWriteFontFace = NULL;
-        HRESULT hr = directWriteFont->CreateFontFace(&directWriteFontFace);
-        if (SUCCEEDED(hr)) {
-            QWindowsFontEngineDirectWrite *fedw = new QWindowsFontEngineDirectWrite(directWriteFontFace,
-                                                                                    request.pixelSize,
-                                                                                    data);
-            fedw->initFontInfo(request, dpi, directWriteFont);
-            fe = fedw;
-        } else {
-            qErrnoWarning("%s: CreateFontFace failed", __FUNCTION__);
-        }
-
-        directWriteFont->Release();
-    }
-
-#endif
 
     return fe;
 }
