@@ -77,6 +77,7 @@ QDBusTrayIcon::QDBusTrayIcon()
     , m_status(m_defaultStatus)
     , m_tempIcon(Q_NULLPTR)
     , m_tempAttentionIcon(Q_NULLPTR)
+    , m_registered(false)
 {
     qCDebug(qLcTray);
     if (instanceCount == 1) {
@@ -101,15 +102,17 @@ QDBusTrayIcon::~QDBusTrayIcon()
 void QDBusTrayIcon::init()
 {
     qCDebug(qLcTray) << "registering" << m_instanceId;
-    dBusConnection()->registerTrayIcon(this);
+    m_registered = dBusConnection()->registerTrayIcon(this);
 }
 
 void QDBusTrayIcon::cleanup()
 {
     qCDebug(qLcTray) << "unregistering" << m_instanceId;
-    dBusConnection()->unregisterTrayIcon(this);
+    if (m_registered)
+        dBusConnection()->unregisterTrayIcon(this);
     delete m_dbusConnection;
     m_dbusConnection = Q_NULLPTR;
+    m_registered = false;
 }
 
 void QDBusTrayIcon::activate(int x, int y)

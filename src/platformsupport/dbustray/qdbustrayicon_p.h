@@ -156,6 +156,7 @@ private:
     QTimer m_attentionTimer;
     bool m_isRequestingAttention;
     bool m_hasMenu;
+    bool m_registered;
 };
 
 QT_END_NAMESPACE
