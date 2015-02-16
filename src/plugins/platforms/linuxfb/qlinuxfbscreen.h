@@ -50,7 +50,8 @@ public:
 
     bool initialize();
 
-public slots:
+    QPixmap grabWindow(WId wid, int x, int y, int width, int height) const Q_DECL_OVERRIDE;
+
     QRegion doRedraw() Q_DECL_OVERRIDE;
 
 private:

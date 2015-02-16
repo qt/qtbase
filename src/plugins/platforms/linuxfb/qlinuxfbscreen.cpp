@@ -33,6 +33,7 @@
 
 #include "qlinuxfbscreen.h"
 #include <QtPlatformSupport/private/qfbcursor_p.h>
+#include <QtPlatformSupport/private/qfbwindow_p.h>
 #include <QtCore/QRegularExpression>
 #include <QtGui/QPainter>
 
@@ -419,6 +420,33 @@ QRegion QLinuxFbScreen::doRedraw()
     for (int i = 0; i < rects.size(); i++)
         mBlitter->drawImage(rects[i], *mScreenImage, rects[i]);
     return touched;
+}
+
+// grabWindow() grabs "from the screen" not from the backingstores.
+// In linuxfb's case it will also include the mouse cursor.
+QPixmap QLinuxFbScreen::grabWindow(WId wid, int x, int y, int width, int height) const
+{
+    if (!wid) {
+        if (width < 0)
+            width = mFbScreenImage.width() - x;
+        if (height < 0)
+            height = mFbScreenImage.height() - y;
+        return QPixmap::fromImage(mFbScreenImage).copy(x, y, width, height);
+    }
+
+    QFbWindow *window = windowForId(wid);
+    if (window) {
+        const QRect geom = window->geometry();
+        if (width < 0)
+            width = geom.width() - x;
+        if (height < 0)
+            height = geom.height() - y;
+        QRect rect(geom.topLeft() + QPoint(x, y), QSize(width, height));
+        rect &= window->geometry();
+        return QPixmap::fromImage(mFbScreenImage).copy(rect);
+    }
+
+    return QPixmap();
 }
 
 QT_END_NAMESPACE

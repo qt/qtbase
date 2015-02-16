@@ -80,7 +80,7 @@ public:
     virtual void lower(QFbWindow *window);
     virtual void topWindowChanged(QWindow *) {}
 
-    void addBackingStore(QFbBackingStore *bs) {mBackingStores << bs;}
+    void addPendingBackingStore(QFbBackingStore *bs) { mPendingBackingStores << bs; }
 
     void scheduleUpdate();
 
@@ -89,12 +89,13 @@ public slots:
     void setPhysicalSize(const QSize &size);
     void setGeometry(const QRect &rect);
 
-protected slots:
+protected:
     virtual QRegion doRedraw();
 
-protected:
     void initializeCompositor();
     bool event(QEvent *event);
+
+    QFbWindow *windowForId(WId wid) const;
 
     QList<QFbWindow *> mWindowStack;
     QRegion mRepaintRegion;
@@ -113,7 +114,7 @@ private:
 
     QPainter *mCompositePainter;
     QVector<QPair<QRect, int> > mCachedRects;
-    QList <QFbBackingStore*> mBackingStores;
+    QList<QFbBackingStore*> mPendingBackingStores;
 
     friend class QFbWindow;
     bool mIsUpToDate;
