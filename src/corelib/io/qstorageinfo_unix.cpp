@@ -59,6 +59,7 @@
 #  include <Path.h>
 #  include <Volume.h>
 #  include <VolumeRoster.h>
+#  include <fs_info.h>
 #  include <sys/statvfs.h>
 #else
 #  include <sys/statvfs.h>
@@ -341,9 +342,18 @@ inline bool QStorageIterator::next()
         return false;
 
     const BPath path(&directory);
+
+    fs_info fsInfo;
+    memset(&fsInfo, 0, sizeof(fsInfo));
+
+    if (fs_stat_dev(volume.Device(), &fsInfo) != 0)
+        return false;
+
     m_rootPath = path.Path();
-    m_fileSystemType = QByteArray(); // no public API to access it
-    m_device = QByteArray::number(static_cast<qint32>(volume.Device()));
+    m_fileSystemType = QByteArray(fsInfo.fsh_name);
+
+    const QByteArray deviceName(fsInfo.device_name);
+    m_device = (deviceName.isEmpty() ? QByteArray::number(qint32(volume.Device())) : deviceName);
 
     return true;
 }
@@ -443,6 +453,19 @@ static inline QString retrieveLabel(const QByteArray &device)
         QFileInfo fileInfo(it.fileInfo());
         if (fileInfo.isSymLink() && fileInfo.symLinkTarget().toLocal8Bit() == device)
             return fileInfo.fileName();
+    }
+#elif defined Q_OS_HAIKU
+    fs_info fsInfo;
+    memset(&fsInfo, 0, sizeof(fsInfo));
+
+    int32 pos = 0;
+    dev_t dev;
+    while ((dev = next_dev(&pos)) >= 0) {
+        if (fs_stat_dev(dev, &fsInfo) != 0)
+            continue;
+
+        if (qstrcmp(fsInfo.device_name, device.constData()) == 0)
+            return QString::fromLocal8Bit(fsInfo.volume_name);
     }
 #else
     Q_UNUSED(device);
