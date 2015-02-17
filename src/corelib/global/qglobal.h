@@ -865,6 +865,7 @@ Q_CORE_EXPORT void qFreeAligned(void *ptr);
 /* make use of decltype or GCC's __typeof__ extension */
 template <typename T>
 class QForeachContainer {
+    QForeachContainer &operator=(const QForeachContainer &) Q_DECL_EQ_DELETE;
 public:
     inline QForeachContainer(const T& t) : c(t), i(c.begin()), e(c.end()), control(1) { }
     const T c;
