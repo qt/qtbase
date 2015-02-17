@@ -32,7 +32,7 @@ QPepperInstance::QPepperInstance(PP_Instance instance)
 bool QPepperInstance::Init(uint32_t argc, const char* argn[], const char* argv[])
 {
     // argn/argv will not be valid by the time the message loop processes
-    // the message posted below. Make a copy
+    // the message posted below. Make a copy.
     QVector<QByteArray> vargn;
     QVector<QByteArray> vargv;
     for (uint32_t i = 0; i < argc; ++i) {
