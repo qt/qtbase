@@ -20,8 +20,8 @@
 #ifndef QPEPPERBACKINGSTORE_H
 #define QPEPPERBACKINGSTORE_H
 
-#include "qpepperplatformwindow.h"
 #include <qpa/qplatformbackingstore.h>
+#include <QtCore/qloggingcategory.h>
 
 #include <ppapi/cpp/graphics_2d.h>
 #include <ppapi/cpp/image_data.h>
@@ -31,6 +31,9 @@ QT_BEGIN_NAMESPACE
 
 Q_DECLARE_LOGGING_CATEGORY(QT_PLATFORM_PEPPER_BACKINGSTORE)
 
+class QPepperPlatformWindow;
+class QPepperCompositor;
+class QPepperInstance;
 class QPepperBackingStore : public QPlatformBackingStore
 {
 public:

@@ -17,8 +17,9 @@
 **
 ****************************************************************************/
 
-#include <qpa/qplatformintegrationplugin.h>
 #include "qpepperintegration.h"
+
+#include <qpa/qplatformintegrationplugin.h>
 #include <qdebug.h>
 
 QT_BEGIN_NAMESPACE

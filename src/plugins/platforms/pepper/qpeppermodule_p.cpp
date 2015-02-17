@@ -20,6 +20,7 @@
 #include "qpeppermodule.h"
 #include "qpeppermodule_p.h"
 #include "qpepperinstance.h"
+
 #include <ppapi/c/ppp.h>
 
 static pp::Core *g_core = 0;

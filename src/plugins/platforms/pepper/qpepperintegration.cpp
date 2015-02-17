@@ -29,7 +29,6 @@
 
 #include <qpa/qplatformwindow.h>
 #include <qpa/qwindowsysteminterface.h>
-
 #include <QtGui/QSurface>
 #include <qdebug.h>
 

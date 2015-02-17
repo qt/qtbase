@@ -20,13 +20,12 @@
 #include "qpeppereventtranslator.h"
 #include "qpepperhelpers.h"
 #include "qpepperinstance_p.h"
-
-#include <ppapi/cpp/point.h>
-#include <ppapi/cpp/var.h>
+#include "3rdparty/keyboard_codes_posix.h"
 
 #include <qpa/qwindowsysteminterface.h>
 
-#include "3rdparty/keyboard_codes_posix.h"
+#include <ppapi/cpp/point.h>
+#include <ppapi/cpp/var.h>
 
 #ifndef QT_NO_PEPPER_INTEGRATION
 

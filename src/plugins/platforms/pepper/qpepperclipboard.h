@@ -20,8 +20,9 @@
 #ifndef QPEPPERCLIPBOARD_H
 #define QPEPPERCLIPBOARD_H
 
-#include <QtCore/qloggingcategory.h>
 #include <qpa/qplatformclipboard.h>
+
+#include <QtCore/qloggingcategory.h>
 
 QT_BEGIN_NAMESPACE
 

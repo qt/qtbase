@@ -20,7 +20,9 @@
 #include "qpeppercursor.h"
 #include "qpepperinstance.h"
 #include "qpepperinstance_p.h"
+
 #include <QtGui/qcursor.h>
+
 #include <ppapi/cpp/mouse_cursor.h>
 
 QT_BEGIN_NAMESPACE

@@ -20,16 +20,16 @@
 #ifndef QPLATFORMINTEGRATION_PEPPER_H
 #define QPLATFORMINTEGRATION_PEPPER_H
 
-#include <qpa/qplatformintegrationplugin.h>
-#include <qpa/qplatformintegration.h>
-#include <qpa/qplatformscreen.h>
-#include <qpa/qplatformservices.h>
-
 #include "qpepperscreen.h"
 #include "qpepperplatformwindow.h"
 #include "qpepperglcontext.h"
 #include "qpepperinstance_p.h"
 #include "qpeppereventdispatcher.h"
+
+#include <qpa/qplatformintegrationplugin.h>
+#include <qpa/qplatformintegration.h>
+#include <qpa/qplatformscreen.h>
+#include <qpa/qplatformservices.h>
 
 QT_BEGIN_NAMESPACE
 

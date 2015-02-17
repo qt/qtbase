@@ -18,7 +18,9 @@
 ****************************************************************************/
 
 #include "qpepperfontdatabase.h"
+
 #include <QtGui>
+
 #ifdef QT_PEPPER_USE_PEPPER_FONT_ENGINE
 #include <QtGui/private/qfontengine_nacl_p.h>
 #endif

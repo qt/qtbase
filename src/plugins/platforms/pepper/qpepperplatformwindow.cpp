@@ -21,6 +21,7 @@
 #include "qpepperglcontext.h"
 #include "qpeppermodule.h"
 #include "qpeppercompositor.h"
+
 #include <QtGui/QSurface>
 #include <qpa/qwindowsysteminterface.h>
 #include <qdebug.h>

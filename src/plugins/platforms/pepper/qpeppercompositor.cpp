@@ -18,12 +18,11 @@
 ****************************************************************************/
 
 #include "qpeppercompositor.h"
+#include "qpepperinstance.h"
+#include "qpepperinstance_p.h"
 
 #include <QtGui>
 #include <qpa/qwindowsysteminterface.h>
-
-#include "qpepperinstance.h"
-#include "qpepperinstance_p.h"
 
 #include "ppapi/cpp/var.h"
 #include "ppapi/cpp/graphics_2d.h"

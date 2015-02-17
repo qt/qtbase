@@ -20,10 +20,9 @@
 #include "qpepperclipboard.h"
 #include "qpepperinstance_p.h"
 
-#include <QtGui/QClipboard>
-
 #include <QtCore/QDebug>
 #include <QtCore/QMimeData>
+#include <QtGui/QClipboard>
 
 QT_BEGIN_NAMESPACE
 

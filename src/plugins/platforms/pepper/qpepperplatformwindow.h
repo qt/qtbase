@@ -20,11 +20,11 @@
 #ifndef QPEPPERPLATFORMWINDOW_H
 #define QPEPPERPLATFORMWINDOW_H
 
-#include <qpa/qplatformwindow.h>
-
 #include "qpepperhelpers.h"
 #include "qpeppercompositor.h"
 #include "qpepperintegration.h"
+
+#include <qpa/qplatformwindow.h>
 
 QT_BEGIN_NAMESPACE
 

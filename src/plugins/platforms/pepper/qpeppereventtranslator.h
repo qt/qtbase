@@ -26,10 +26,10 @@
 #include <QtCore/qloggingcategory.h>
 #include <QtGui/qwindow.h>
 
-Q_DECLARE_LOGGING_CATEGORY(QT_PLATFORM_PEPPER_EVENT_KEYBOARD)
-
 #include "ppapi/c/pp_input_event.h"
 #include "ppapi/cpp/input_event.h"
+
+Q_DECLARE_LOGGING_CATEGORY(QT_PLATFORM_PEPPER_EVENT_KEYBOARD)
 
 class PepperEventTranslator : public QObject
 {
