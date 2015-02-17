@@ -263,6 +263,7 @@ inline QDebug operator<<(QDebug debug, const QContiguousCache<T> &cache)
 
 #ifndef QT_NO_QOBJECT
 Q_CORE_EXPORT QDebug qt_QMetaEnum_debugOperator(QDebug&, int value, const QMetaObject *meta, const char *name);
+Q_CORE_EXPORT QDebug qt_QMetaEnum_flagDebugOperator(QDebug &dbg, quint64 value, const QMetaObject *meta, const char *name);
 
 template<typename T>
 typename QtPrivate::QEnableIf<QtPrivate::IsQEnumHelper<T>::Value, QDebug>::Type
@@ -272,10 +273,21 @@ operator<<(QDebug dbg, T value)
     const char *name = qt_getEnumName(value);
     return qt_QMetaEnum_debugOperator(dbg, typename QFlags<T>::Int(value), obj, name);
 }
-#endif
 
 template <class T>
+inline typename QtPrivate::QEnableIf<QtPrivate::IsQEnumHelper<T>::Value, QDebug>::Type operator<<(QDebug debug, const QFlags<T> &flags)
+{
+    const QMetaObject *obj = qt_getEnumMetaObject(T());
+    const char *name = qt_getEnumName(T());
+    return qt_QMetaEnum_flagDebugOperator(debug, quint64(flags), obj, name);
+}
+
+template <class T>
+inline typename QtPrivate::QEnableIf<!QtPrivate::IsQEnumHelper<T>::Value, QDebug>::Type operator<<(QDebug debug, const QFlags<T> &flags)
+#else // !QT_NO_QOBJECT
+template <class T>
 inline QDebug operator<<(QDebug debug, const QFlags<T> &flags)
+#endif
 {
     QDebugStateSaver saver(debug);
     debug.resetFormat();

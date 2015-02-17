@@ -661,6 +661,20 @@ QDebug qt_QMetaEnum_debugOperator(QDebug &dbg, int value, const QMetaObject *met
     dbg << ')';
     return dbg;
 }
-#endif
+
+QDebug qt_QMetaEnum_flagDebugOperator(QDebug &debug, quint64 value, const QMetaObject *meta, const char *name)
+{
+    QDebugStateSaver saver(debug);
+    debug.resetFormat();
+    debug.noquote();
+    debug.nospace();
+    debug << "QFlags<";
+    const QMetaEnum me = meta->enumerator(meta->indexOfEnumerator(name));
+    if (const char *scope = me.scope())
+        debug << scope << "::";
+    debug << me.name() << ">(" << me.valueToKeys(value) << ')';
+    return debug;
+}
+#endif // !QT_NO_QOBJECT
 
 QT_END_NAMESPACE
