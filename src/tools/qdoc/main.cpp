@@ -227,6 +227,8 @@ static void processQdocconfFile(const QString &fileName)
     config.setStringList(CONFIG_AUTOLINKERRORS, QStringList(autolinkErrors ? "true" : "false"));
     config.setStringList(CONFIG_OBSOLETELINKS, QStringList(obsoleteLinks ? "true" : "false"));
 
+    prevCurrentDir = QDir::currentPath();
+
     /*
       With the default configuration values in place, load
       the qdoc configuration file. Note that the configuration
@@ -236,7 +238,6 @@ static void processQdocconfFile(const QString &fileName)
       in the file being processed, mainly for error reporting
       purposes.
      */
-    currentDir = QFileInfo(fileName).path();
     Location::initialize(config);
     config.load(fileName);
     QString project = config.getString(CONFIG_PROJECT);
@@ -248,7 +249,6 @@ static void processQdocconfFile(const QString &fileName)
     config.setStringList(CONFIG_DEFINES,defs);
     Location::terminate();
 
-    prevCurrentDir = QDir::currentPath();
     currentDir = QFileInfo(fileName).path();
     if (!currentDir.isEmpty())
         QDir::setCurrent(currentDir);

@@ -912,8 +912,10 @@ QStringList Config::loadMaster(const QString& fileName)
  */
 void Config::load(Location location, const QString& fileName)
 {
-    pushWorkingDir(QFileInfo(fileName).path());
-    QDir::setCurrent(QFileInfo(fileName).path());
+    QFileInfo fileInfo(fileName);
+    QString path = fileInfo.canonicalPath();
+    pushWorkingDir(path);
+    QDir::setCurrent(path);
     QRegExp keySyntax(QLatin1String("\\w+(?:\\.\\w+)*"));
 
 #define SKIP_CHAR() \
@@ -935,7 +937,7 @@ void Config::load(Location location, const QString& fileName)
     if (location.depth() > 16)
         location.fatal(tr("Too many nested includes"));
 
-    QFile fin(fileName);
+    QFile fin(fileInfo.fileName());
     if (!fin.open(QFile::ReadOnly | QFile::Text)) {
         if (!Config::installDir.isEmpty()) {
             int prefix = location.filePath().length() - location.fileName().length();
@@ -1030,7 +1032,7 @@ void Config::load(Location location, const QString& fileName)
                 /*
                   Here is the recursive call.
                  */
-                load(location, QFileInfo(QFileInfo(fileName).dir(), includeFile).filePath());
+                load(location, QFileInfo(QDir(path), includeFile).filePath());
             }
             else {
                 /*
