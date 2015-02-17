@@ -4,50 +4,53 @@
 
 INCLUDEPATH += $$PWD
 
-SOURCES += $$PWD/qpepperpluginmain.cpp \
-           $$PWD/qpeppermodule_p.cpp \
-           $$PWD/qpepperinstance_p.cpp \
-           $$PWD/qpepperfontdatabase.cpp \
-           $$PWD/qpepperscreen.cpp \
-           $$PWD/qpeppereventtranslator.cpp \
-           $$PWD/qpepperintegration.cpp \
-           $$PWD/qpeppertheme.cpp \
-           $$PWD/qpepperwindow.cpp \
-           $$PWD/qpepperbackingstore.cpp \
-           $$PWD/qpepperfontengine.cpp \
-           $$PWD/qpepperglcontext.cpp \
-           $$PWD/qpepperhelpers.cpp \
-           $$PWD/qpeppercompositor.cpp \
-           $$PWD/qpeppereventdispatcher.cpp \
-           $$PWD/qpeppercursor.cpp \
-           $$PWD/qpepperservices.cpp \
-           $$PWD/qpepperclipboard.cpp
-
-HEADERS += $$PWD/qpepperhelpers.h \
-           $$PWD/qpeppermodule_p.h \
-           $$PWD/qpepperinstance_p.h \
-           $$PWD/qpeppereventtranslator.h \
-           $$PWD/qpepperintegration.h \
-           $$PWD/qpeppertheme.h \
-           $$PWD/qpeppermwindow.h \
+HEADERS += \
            $$PWD/qpepperbackingstore.h \
+           $$PWD/qpepperclipboard.h \
+           $$PWD/qpeppercompositor.h \
+           $$PWD/qpeppercursor.h \
+           $$PWD/qpeppereventdispatcher.h \
+           $$PWD/qpeppereventtranslator.h \
            $$PWD/qpepperfontdatabase.h \
-           $$PWD/qpepperscreen.h \
            $$PWD/qpepperfontengine.h \
            $$PWD/qpepperglcontext.h \
            $$PWD/qpepperhelpers.h \
-           $$PWD/qpeppercompositor.h \
-           $$PWD/qpeppereventdispatcher.h \
-           $$PWD/qpeppercursor.h \
+           $$PWD/qpepperhelpers.h \
+           $$PWD/qpepperinstance_p.h \
+           $$PWD/qpepperintegration.h \
+           $$PWD/qpeppermodule_p.h \
+           $$PWD/qpeppermwindow.h \
+           $$PWD/qpepperscreen.h \
            $$PWD/qpepperservices.h \
-           $$PWD/qpepperclipboard.h
+           $$PWD/qpeppertheme.h \
+
+SOURCES += \
+           $$PWD/qpepperbackingstore.cpp \
+           $$PWD/qpepperclipboard.cpp \
+           $$PWD/qpeppercompositor.cpp \
+           $$PWD/qpeppercursor.cpp \
+           $$PWD/qpeppereventdispatcher.cpp \
+           $$PWD/qpeppereventtranslator.cpp \
+           $$PWD/qpepperfontdatabase.cpp \
+           $$PWD/qpepperfontengine.cpp \
+           $$PWD/qpepperglcontext.cpp \
+           $$PWD/qpepperhelpers.cpp \
+           $$PWD/qpepperinstance_p.cpp \
+           $$PWD/qpepperintegration.cpp \
+           $$PWD/qpeppermodule_p.cpp \
+           $$PWD/qpepperpluginmain.cpp \
+           $$PWD/qpepperscreen.cpp \
+           $$PWD/qpepperservices.cpp \
+           $$PWD/qpeppertheme.cpp \
+           $$PWD/qpepperwindow.cpp \
 
 RESOURCES += $$PWD/../../../../lib/fonts/naclfonts.qrc
 
-OTHER_FILES += $$PWD/../../../../tools/nacldemoserver/check_browser.js \
+OTHER_FILES += \
+               $$PWD/../../../../tools/nacldemoserver/check_browser.js \
                $$PWD/../../../../tools/nacldemoserver/qtnaclloader.js \
-               $$PWD/qpepperhelpers.js \
                $$PWD/qpepperfileaccess.js \
+               $$PWD/qpepperhelpers.js \
 
 # Normally we would do this:
 # QT += platformsupport-private
@@ -55,8 +58,8 @@ OTHER_FILES += $$PWD/../../../../tools/nacldemoserver/check_browser.js \
 # which craetes a dependency conflict: QtGui needs platformsupport
 # but platformsupport is normally built after QtGui.
 # Include the files we need directly:
-include($$PWD/../../../platformsupport/fontdatabases/basic/basic.pri)
 include($$PWD/../../../platformsupport/eventdispatchers/eventdispatchers.pri)
+include($$PWD/../../../platformsupport/fontdatabases/basic/basic.pri)
 INCLUDEPATH += $$PWD/../../../platformsupport/eventdispatchers
 
 LIBS += -lppapi -lppapi_cpp -lppapi_gles2
