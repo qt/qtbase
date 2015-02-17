@@ -270,23 +270,29 @@ static void getFontDescription(CTFontDescriptorRef font, FontDescription *fd)
     fd->fixedPitch = false;
 
     if (QCFType<CTFontRef> tempFont = CTFontCreateWithFontDescriptor(font, 0.0, 0)) {
-        uint length = 0;
         uint tag = MAKE_TAG('O', 'S', '/', '2');
         CTFontRef tempFontRef = tempFont;
         void *userData = reinterpret_cast<void *>(&tempFontRef);
-        if (QCoreTextFontEngine::ct_getSfntTable(userData, tag, 0, &length)) {
-            QVarLengthArray<uchar> os2Table(length);
-            if (length >= 86 && QCoreTextFontEngine::ct_getSfntTable(userData, tag, os2Table.data(), &length)) {
-                quint32 unicodeRange[4] = {
-                        qFromBigEndian<quint32>(os2Table.data() + 42),
-                        qFromBigEndian<quint32>(os2Table.data() + 46),
-                        qFromBigEndian<quint32>(os2Table.data() + 50),
-                        qFromBigEndian<quint32>(os2Table.data() + 54)
-                    };
-                quint32 codePageRange[2] = { qFromBigEndian<quint32>(os2Table.data() + 78),
-                                             qFromBigEndian<quint32>(os2Table.data() + 82) };
-                fd->writingSystems = QPlatformFontDatabase::writingSystemsFromTrueTypeBits(unicodeRange, codePageRange);
+        uint length = 128;
+        QVarLengthArray<uchar, 128> os2Table(length);
+        if (QCoreTextFontEngine::ct_getSfntTable(userData, tag, os2Table.data(), &length) && length >= 86) {
+            if (length > os2Table.length()) {
+                os2Table.resize(length);
+                if (!QCoreTextFontEngine::ct_getSfntTable(userData, tag, os2Table.data(), &length))
+                    Q_UNREACHABLE();
+                Q_ASSERT(length >= 86);
             }
+            quint32 unicodeRange[4] = {
+                qFromBigEndian<quint32>(os2Table.data() + 42),
+                qFromBigEndian<quint32>(os2Table.data() + 46),
+                qFromBigEndian<quint32>(os2Table.data() + 50),
+                qFromBigEndian<quint32>(os2Table.data() + 54)
+            };
+            quint32 codePageRange[2] = {
+                qFromBigEndian<quint32>(os2Table.data() + 78),
+                qFromBigEndian<quint32>(os2Table.data() + 82)
+            };
+            fd->writingSystems = QPlatformFontDatabase::writingSystemsFromTrueTypeBits(unicodeRange, codePageRange);
         }
     }
 
