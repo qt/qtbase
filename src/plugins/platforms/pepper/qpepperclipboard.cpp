@@ -18,6 +18,7 @@
 ****************************************************************************/
 
 #include "qpepperclipboard.h"
+
 #include "qpepperinstance_p.h"
 
 #include <QtCore/QDebug>

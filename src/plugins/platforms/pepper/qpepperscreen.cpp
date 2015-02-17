@@ -18,6 +18,7 @@
 ****************************************************************************/
 
 #include "qpepperscreen.h"
+
 #include "qpeppercursor.h"
 #include "qpepperhelpers.h"
 #include "qpepperinstance_p.h"

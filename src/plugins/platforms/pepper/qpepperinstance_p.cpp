@@ -18,6 +18,7 @@
 ****************************************************************************/
 
 #include "qpepperinstance_p.h"
+
 #include "qpepperinstance.h"
 
 #ifndef QT_PEPPER_STANDALONE_MODE

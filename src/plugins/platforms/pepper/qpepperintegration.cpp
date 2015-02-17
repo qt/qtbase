@@ -18,6 +18,7 @@
 ****************************************************************************/
 
 #include "qpepperintegration.h"
+
 #include "qpepperbackingstore.h"
 #include "qpepperclipboard.h"
 #include "qpeppereventdispatcher.h"

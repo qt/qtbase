@@ -18,6 +18,7 @@
 ****************************************************************************/
 
 #include "qpeppereventtranslator.h"
+
 #include "qpepperhelpers.h"
 #include "qpepperinstance_p.h"
 #include "3rdparty/keyboard_codes_posix.h"

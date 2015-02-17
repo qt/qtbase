@@ -20,8 +20,8 @@
 #include <qglobal.h>
 
 #ifndef QT_NO_OPENGL
-
 #include "qpepperglcontext.h"
+
 #include "qpepperinstance.h"
 #include "qpepperinstance_p.h"
 
