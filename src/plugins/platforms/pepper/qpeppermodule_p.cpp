@@ -18,8 +18,8 @@
 ****************************************************************************/
 
 #include "qpeppermodule.h"
-#include "qpeppermodule_p.h"
 #include "qpepperinstance.h"
+#include "qpeppermodule_p.h"
 
 #include <ppapi/c/ppp.h>
 

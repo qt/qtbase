@@ -20,14 +20,14 @@
 #ifndef QPEPPERINTEGRATION_H
 #define QPEPPERINTEGRATION_H
 
-#include "qpepperscreen.h"
-#include "qpepperwindow.h"
+#include "qpeppereventdispatcher.h"
 #include "qpepperglcontext.h"
 #include "qpepperinstance_p.h"
-#include "qpeppereventdispatcher.h"
+#include "qpepperscreen.h"
+#include "qpepperwindow.h"
 
-#include <qpa/qplatformintegrationplugin.h>
 #include <qpa/qplatformintegration.h>
+#include <qpa/qplatformintegrationplugin.h>
 #include <qpa/qplatformscreen.h>
 #include <qpa/qplatformservices.h>
 

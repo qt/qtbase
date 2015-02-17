@@ -20,8 +20,8 @@
 #ifndef QPEPPERPLATFORMWINDOW_H
 #define QPEPPERPLATFORMWINDOW_H
 
-#include "qpepperhelpers.h"
 #include "qpeppercompositor.h"
+#include "qpepperhelpers.h"
 #include "qpepperintegration.h"
 
 #include <qpa/qplatformwindow.h>

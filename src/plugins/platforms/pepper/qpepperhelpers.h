@@ -24,8 +24,8 @@
 #include <QByteArray>
 #include <QAtomicInt>
 
-#include <ppapi/cpp/rect.h>
 #include <ppapi/cpp/point.h>
+#include <ppapi/cpp/rect.h>
 #include <ppapi/cpp/var.h>
 
 pp::Rect toPPRect(const QRect rect);

@@ -19,9 +19,9 @@
 
 #include "qpepperbackingstore.h"
 #include "qpeppercompositor.h"
-#include "qpepperwindow.h"
 #include "qpepperinstance.h"
 #include "qpepperinstance_p.h"
+#include "qpepperwindow.h"
 
 #include <QtCore/qdebug.h>
 #include <QtGui/QPainter>

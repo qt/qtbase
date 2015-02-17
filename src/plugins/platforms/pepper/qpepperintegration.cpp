@@ -18,19 +18,19 @@
 ****************************************************************************/
 
 #include "qpepperintegration.h"
-#include "qpepperscreen.h"
-#include "qpepperwindow.h"
-#include "qpepperfontdatabase.h"
-#include "qpepperclipboard.h"
 #include "qpepperbackingstore.h"
+#include "qpepperclipboard.h"
 #include "qpeppereventdispatcher.h"
-#include "qpeppertheme.h"
+#include "qpepperfontdatabase.h"
+#include "qpepperscreen.h"
 #include "qpepperservices.h"
+#include "qpeppertheme.h"
+#include "qpepperwindow.h"
 
+#include <qdebug.h>
 #include <qpa/qplatformwindow.h>
 #include <qpa/qwindowsysteminterface.h>
 #include <QtGui/QSurface>
-#include <qdebug.h>
 
 QPlatformIntegration *qt_create_pepper_integration()
 {

@@ -22,15 +22,15 @@
 
 #ifndef QT_PEPPER_STANDALONE_MODE
 #include "qpepperhelpers.h"
-#include "qpeppermodule_p.h"
 #include "qpepperintegration.h"
+#include "qpeppermodule_p.h"
 #endif
 
 #include <qpa/qwindowsysteminterface.h>
 
-#include <ppapi/cpp/var.h>
-#include <ppapi/cpp/instance.h>
 #include <ppapi/cpp/completion_callback.h>
+#include <ppapi/cpp/instance.h>
+#include <ppapi/cpp/var.h>
 #include <ppapi/utility/threading/simple_thread.h>
 
 #ifdef Q_OS_NACL_NEWLIB

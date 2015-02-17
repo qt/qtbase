@@ -27,9 +27,9 @@
 
 #include <qdebug.h>
 
-#include <ppapi/gles2/gl2ext_ppapi.h>
 #include <ppapi/cpp/graphics_3d.h>
 #include <ppapi/cpp/graphics_3d_client.h>
+#include <ppapi/gles2/gl2ext_ppapi.h>
 
 Q_LOGGING_CATEGORY(QT_PLATFORM_PEPPER_GLCONTEXT, "qt.platform.pepper.glcontext")
 

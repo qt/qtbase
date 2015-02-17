@@ -18,10 +18,10 @@
 ****************************************************************************/
 
 #include "qpepperscreen.h"
-#include "qpepperhelpers.h"
-#include "qpepperintegration.h"
-#include "qpepperinstance_p.h"
 #include "qpeppercursor.h"
+#include "qpepperhelpers.h"
+#include "qpepperinstance_p.h"
+#include "qpepperintegration.h"
 
 #include <qdebug.h>
 

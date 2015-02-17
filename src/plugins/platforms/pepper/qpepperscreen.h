@@ -20,8 +20,8 @@
 #ifndef QPEPPERSCREEN_H
 #define QPEPPERSCREEN_H
 
-#include <QtCore/qscopedpointer.h>
 #include <qpa/qplatformscreen.h>
+#include <QtCore/qscopedpointer.h>
 
 QT_BEGIN_NAMESPACE
 

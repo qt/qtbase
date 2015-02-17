@@ -22,8 +22,8 @@
 
 #ifndef QT_NO_PEPPER_INTEGRATION
 
-#include <QtCore/qobject.h>
 #include <QtCore/qloggingcategory.h>
+#include <QtCore/qobject.h>
 #include <QtGui/qwindow.h>
 
 #include <ppapi/c/pp_input_event.h>

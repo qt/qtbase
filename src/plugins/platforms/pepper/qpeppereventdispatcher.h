@@ -20,12 +20,12 @@
 #ifndef QPEPPEREVENTDISPATCHER_H
 #define QPEPPEREVENTDISPATCHER_H
 
+#include "../platformsupport/eventdispatchers/qunixeventdispatcher_qpa_p.h"
 #include <QtCore/qhash.h>
 #include <QtCore/qloggingcategory.h>
-#include "../platformsupport/eventdispatchers/qunixeventdispatcher_qpa_p.h"
 
-#include <ppapi/utility/completion_callback_factory.h>
 #include <ppapi/cpp/message_loop.h>
+#include <ppapi/utility/completion_callback_factory.h>
 
 QT_BEGIN_NAMESPACE
 

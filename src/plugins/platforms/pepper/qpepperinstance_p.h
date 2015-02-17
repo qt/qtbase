@@ -26,16 +26,16 @@
 #include <qpa/qplatformtheme.h>
 #include <QtCore/qhash.h>
 #include <QtCore/qmutex.h>
-#include <QtCore/qwaitcondition.h>
 #include <QtCore/qqueue.h>
+#include <QtCore/qwaitcondition.h>
 
-#include <ppapi/cpp/instance.h>
-#include <ppapi/cpp/var.h>
-#include <ppapi/cpp/rect.h>
-#include <ppapi/cpp/size.h>
+#include <ppapi/cpp/completion_callback.h>
 #include <ppapi/cpp/graphics_2d.h>
 #include <ppapi/cpp/image_data.h>
-#include <ppapi/cpp/completion_callback.h>
+#include <ppapi/cpp/instance.h>
+#include <ppapi/cpp/rect.h>
+#include <ppapi/cpp/size.h>
+#include <ppapi/cpp/var.h>
 #include <ppapi/cpp/view.h>
 #include <ppapi/utility/completion_callback_factory.h>
 #include <ppapi/utility/threading/simple_thread.h>

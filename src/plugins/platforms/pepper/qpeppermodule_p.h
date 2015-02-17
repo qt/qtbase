@@ -21,8 +21,8 @@
 #define QPEPPERMODULE_P_H
 
 #include <ppapi/cpp/core.h>
-#include <ppapi/cpp/module.h>
 #include <ppapi/cpp/instance.h>
+#include <ppapi/cpp/module.h>
 
 class QPepperModule;
 class QPepperModulePrivate

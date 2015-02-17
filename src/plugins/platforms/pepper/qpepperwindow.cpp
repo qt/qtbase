@@ -18,13 +18,13 @@
 ****************************************************************************/
 
 #include "qpepperwindow.h"
+#include "qpeppercompositor.h"
 #include "qpepperglcontext.h"
 #include "qpeppermodule.h"
-#include "qpeppercompositor.h"
 
-#include <QtGui/QSurface>
-#include <qpa/qwindowsysteminterface.h>
 #include <qdebug.h>
+#include <qpa/qwindowsysteminterface.h>
+#include <QtGui/QSurface>
 
 QT_BEGIN_NAMESPACE
 
