@@ -31,11 +31,11 @@
 Q_DECLARE_LOGGING_CATEGORY(QT_PLATFORM_PEPPER_EVENT_KEYBOARD)
 
 class QWindow;
-class PepperEventTranslator : public QObject
+class QPepperEventTranslator : public QObject
 {
     Q_OBJECT
 public:
-    PepperEventTranslator();
+    QPepperEventTranslator();
     bool processEvent(const pp::InputEvent &event);
 
     bool processMouseEvent(const pp::MouseInputEvent &event, PP_InputEvent_Type eventType);

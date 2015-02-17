@@ -71,7 +71,7 @@ QPepperIntegration::QPepperIntegration()
     QPepperInstancePrivate *instance = QPepperInstancePrivate::get();
     instance->m_pepperIntegraton = this;
     resizeScreen(instance->geometry().size(), instance->devicePixelRatio());
-    m_eventTranslator = new PepperEventTranslator();
+    m_eventTranslator = new QPepperEventTranslator();
     QObject::connect(m_eventTranslator, SIGNAL(getWindowAt(QPoint, QWindow **)), this,
                      SLOT(getWindowAt(QPoint, QWindow **)));
     QObject::connect(m_eventTranslator, SIGNAL(getKeyWindow(QWindow **)), this,
@@ -180,7 +180,7 @@ Qt::WindowState QPepperIntegration::defaultWindowState(Qt::WindowFlags) const
 
 QPepperCompositor *QPepperIntegration::pepperCompositor() const { return m_compositor; }
 
-PepperEventTranslator *QPepperIntegration::pepperEventTranslator() { return m_eventTranslator; }
+QPepperEventTranslator *QPepperIntegration::pepperEventTranslator() { return m_eventTranslator; }
 
 void QPepperIntegration::processEvents() { m_pepperEventDispatcher->processEvents(); }
 

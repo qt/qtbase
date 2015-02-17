@@ -29,7 +29,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class PepperEventTranslator;
+class QPepperEventTranslator;
 class QPepperClipboard;
 class QPepperCompositor;
 class QPepperEventDispatcher;
@@ -67,7 +67,7 @@ public:
 
     QPepperCompositor *pepperCompositor() const;
 
-    PepperEventTranslator *pepperEventTranslator();
+    QPepperEventTranslator *pepperEventTranslator();
     void processEvents();
 
     bool wantsOpenGLGraphics() const;
@@ -81,7 +81,7 @@ private Q_SLOTS:
 public:
     QPepperScreen *m_screen;
     QPepperCompositor *m_compositor;
-    PepperEventTranslator *m_eventTranslator;
+    QPepperEventTranslator *m_eventTranslator;
     mutable QPepperEventDispatcher *m_pepperEventDispatcher;
     mutable QPepperWindow *m_topLevelWindow;
     mutable QPepperFontDatabase *m_fontDatabase;

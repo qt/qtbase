@@ -32,12 +32,12 @@
 
 Q_LOGGING_CATEGORY(QT_PLATFORM_PEPPER_EVENT_KEYBOARD, "qt.platform.pepper.event.keyboard")
 
-PepperEventTranslator::PepperEventTranslator()
+QPepperEventTranslator::QPepperEventTranslator()
 {
     QWindowSystemInterface::setSynchronousWindowsSystemEvents(true);
 }
 
-bool PepperEventTranslator::processEvent(const pp::InputEvent &event)
+bool QPepperEventTranslator::processEvent(const pp::InputEvent &event)
 {
     switch (event.GetType()) {
     case PP_INPUTEVENT_TYPE_MOUSEDOWN:
@@ -71,7 +71,7 @@ bool PepperEventTranslator::processEvent(const pp::InputEvent &event)
     return false;
 }
 
-bool PepperEventTranslator::processMouseEvent(const pp::MouseInputEvent &event,
+bool QPepperEventTranslator::processMouseEvent(const pp::MouseInputEvent &event,
                                               PP_InputEvent_Type eventType)
 {
     QPoint point = toQPointF(event.GetPosition()) / QPepperInstancePrivate::get()->cssScale();
@@ -102,7 +102,7 @@ bool PepperEventTranslator::processMouseEvent(const pp::MouseInputEvent &event,
     return true;
 }
 
-bool PepperEventTranslator::processWheelEvent(const pp::WheelInputEvent &event)
+bool QPepperEventTranslator::processWheelEvent(const pp::WheelInputEvent &event)
 {
     QWindow *window = 0;
     emit getWindowAt(currentMouseGlobalPos, &window);
@@ -110,7 +110,7 @@ bool PepperEventTranslator::processWheelEvent(const pp::WheelInputEvent &event)
     QPoint localPoint = window ? currentMouseGlobalPos - window->position() : currentMouseGlobalPos;
 
     if (event.GetScrollByPage()) {
-        qWarning("PepperEventTranslator::processWheelEvent: ScrollByPage not implemented.");
+        qWarning("QPepperEventTranslator::processWheelEvent: ScrollByPage not implemented.");
     } else {
         QPointF delta = toQPointF(event.GetDelta()); // delta is in (device independent) pixels
         const qreal wheelDegreesPerTick = 1;
@@ -138,7 +138,7 @@ bool PepperEventTranslator::processWheelEvent(const pp::WheelInputEvent &event)
 //    sending the keypress until NPEventType_Char in cases where the KeyDown will be
 //    followed by a NPEventType_Char.
 //
-bool PepperEventTranslator::processKeyEvent(const pp::KeyboardInputEvent &event,
+bool QPepperEventTranslator::processKeyEvent(const pp::KeyboardInputEvent &event,
                                             PP_InputEvent_Type eventType)
 {
     Qt::KeyboardModifiers modifiers = translatePepperKeyModifiers(event.GetModifiers());
@@ -164,7 +164,7 @@ bool PepperEventTranslator::processKeyEvent(const pp::KeyboardInputEvent &event,
     return false;
 }
 
-bool PepperEventTranslator::processCharacterEvent(const pp::KeyboardInputEvent &event)
+bool QPepperEventTranslator::processCharacterEvent(const pp::KeyboardInputEvent &event)
 {
     QString text
         = QString::fromUtf8(event.GetCharacterText().AsString().c_str()); // ### wide characters?
@@ -185,7 +185,7 @@ bool PepperEventTranslator::processCharacterEvent(const pp::KeyboardInputEvent &
 }
 
 Qt::MouseButton
-PepperEventTranslator::translatePepperMouseButton(PP_InputEvent_MouseButton pepperButton)
+QPepperEventTranslator::translatePepperMouseButton(PP_InputEvent_MouseButton pepperButton)
 {
     Qt::MouseButton button;
     if (pepperButton == PP_INPUTEVENT_MOUSEBUTTON_LEFT)
@@ -197,7 +197,7 @@ PepperEventTranslator::translatePepperMouseButton(PP_InputEvent_MouseButton pepp
     return button;
 }
 
-Qt::MouseButtons PepperEventTranslator::translatePepperMouseModifiers(uint32_t modifier)
+Qt::MouseButtons QPepperEventTranslator::translatePepperMouseModifiers(uint32_t modifier)
 {
     Qt::MouseButtons buttons;
     if (modifier & PP_INPUTEVENT_MODIFIER_LEFTBUTTONDOWN)
@@ -219,7 +219,7 @@ Qt::MouseButtons PepperEventTranslator::translatePepperMouseModifiers(uint32_t m
     added first.
 */
 
-Qt::Key PepperEventTranslator::translatePepperKey(uint32_t pepperKey, bool *outAlphanumeric)
+Qt::Key QPepperEventTranslator::translatePepperKey(uint32_t pepperKey, bool *outAlphanumeric)
 {
     Qt::Key qtKey;
     if (outAlphanumeric)
@@ -300,7 +300,7 @@ Qt::Key PepperEventTranslator::translatePepperKey(uint32_t pepperKey, bool *outA
     Translate supported modifiers (first five pepper modifiers).
     pepper starts at 0x1, Qt starts at 0x02000000. (same order)
 */
-Qt::KeyboardModifiers PepperEventTranslator::translatePepperKeyModifiers(uint32_t modifier)
+Qt::KeyboardModifiers QPepperEventTranslator::translatePepperKeyModifiers(uint32_t modifier)
 {
     return Qt::KeyboardModifiers((modifier & 0x1F) << 25);
 }
