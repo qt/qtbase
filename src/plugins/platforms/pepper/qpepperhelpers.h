@@ -20,9 +20,9 @@
 #ifndef QPEPPERHELPERS_H
 #define QPEPPERHELPERS_H
 
-#include <QRect>
-#include <QByteArray>
-#include <QAtomicInt>
+#include <QtCore/QRect>
+#include <QtCore/QByteArray>
+#include <QtCore/QAtomicInt>
 
 #include <ppapi/cpp/point.h>
 #include <ppapi/cpp/rect.h>

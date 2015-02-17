@@ -25,7 +25,7 @@
 #include "qpepperinstance.h"
 #include "qpepperinstance_p.h"
 
-#include <qdebug.h>
+#include <QtCore/QDebug>
 
 #include <ppapi/cpp/graphics_3d.h>
 #include <ppapi/cpp/graphics_3d_client.h>

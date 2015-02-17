@@ -22,7 +22,7 @@
 
 #include <qpa/qplatformclipboard.h>
 
-#include <QtCore/qloggingcategory.h>
+#include <QtCore/QLoggingCategory>
 
 QT_BEGIN_NAMESPACE
 

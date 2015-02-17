@@ -20,9 +20,9 @@
 #ifndef QPEPPEREVENTDISPATCHER_H
 #define QPEPPEREVENTDISPATCHER_H
 
+#include <QtCore/QHash>
+#include <QtCore/QLoggingCategory>
 #include "../platformsupport/eventdispatchers/qunixeventdispatcher_qpa_p.h"
-#include <QtCore/qhash.h>
-#include <QtCore/qloggingcategory.h>
 
 #include <ppapi/cpp/message_loop.h>
 #include <ppapi/utility/completion_callback_factory.h>

@@ -21,17 +21,20 @@
 
 #include "qpepperbackingstore.h"
 #include "qpepperclipboard.h"
+#include "qpeppercompositor.h"
 #include "qpeppereventdispatcher.h"
 #include "qpepperfontdatabase.h"
+#include "qpepperglcontext.h"
+#include "qpepperinstance_p.h"
 #include "qpepperscreen.h"
 #include "qpepperservices.h"
 #include "qpeppertheme.h"
 #include "qpepperwindow.h"
 
-#include <qdebug.h>
+#include <QtCore/qdebug.h>
+#include <QtGui/QSurface>
 #include <qpa/qplatformwindow.h>
 #include <qpa/qwindowsysteminterface.h>
-#include <QtGui/QSurface>
 
 QPlatformIntegration *qt_create_pepper_integration()
 {

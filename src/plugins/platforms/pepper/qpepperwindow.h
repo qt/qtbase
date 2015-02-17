@@ -17,21 +17,19 @@
 **
 ****************************************************************************/
 
-#ifndef QPEPPERPLATFORMWINDOW_H
-#define QPEPPERPLATFORMWINDOW_H
+#ifndef QPEPPERWINDOW_H
+#define QPEPPERWINDOW_H
 
-#include "qpeppercompositor.h"
-#include "qpepperhelpers.h"
-#include "qpepperintegration.h"
-
+#include <QtCore/QLoggingCategory>
 #include <qpa/qplatformwindow.h>
 
 QT_BEGIN_NAMESPACE
 
 Q_DECLARE_LOGGING_CATEGORY(QT_PLATFORM_PEPPER_WINDOW)
 
-class QPepperWindowSurface;
-class QPepperGLContext;
+class QPepperIntegration;
+class QPepperCompositor;
+
 class QPepperWindow : public QPlatformWindow
 {
 public:

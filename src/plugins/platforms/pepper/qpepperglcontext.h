@@ -24,12 +24,11 @@
 
 #ifndef QT_NO_OPENGL
 
-#include <QtCore/qloggingcategory.h>
+#include <QtCore/QLoggingCategory>
 #include <qpa/qplatformopenglcontext.h>
 
 #include <ppapi/cpp/completion_callback.h>
 #include <ppapi/cpp/graphics_3d.h>
-#include <ppapi/cpp/graphics_3d_client.h>
 #include <ppapi/utility/completion_callback_factory.h>
 
 Q_DECLARE_LOGGING_CATEGORY(QT_PLATFORM_PEPPER_GLCONTEXT)

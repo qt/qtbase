@@ -20,11 +20,12 @@
 #include "qpepperbackingstore.h"
 
 #include "qpeppercompositor.h"
+#include "qpepperhelpers.h"
 #include "qpepperinstance.h"
 #include "qpepperinstance_p.h"
 #include "qpepperwindow.h"
 
-#include <QtCore/qdebug.h>
+#include <QtCore/QDebug>
 #include <QtGui/QPainter>
 #include <QtGui/QWindow>
 

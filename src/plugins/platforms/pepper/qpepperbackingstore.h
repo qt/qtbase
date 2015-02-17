@@ -20,8 +20,8 @@
 #ifndef QPEPPERBACKINGSTORE_H
 #define QPEPPERBACKINGSTORE_H
 
-#include <qpa/qplatformbackingstore.h>
 #include <QtCore/qloggingcategory.h>
+#include <qpa/qplatformbackingstore.h>
 
 #include <ppapi/cpp/graphics_2d.h>
 #include <ppapi/cpp/image_data.h>

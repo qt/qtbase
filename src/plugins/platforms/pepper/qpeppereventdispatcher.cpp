@@ -19,8 +19,8 @@
 
 #include "qpeppereventdispatcher.h"
 
-#include <qdebug.h>
-#include <QtCore/qcoreapplication.h>
+#include <QtCore/QDebug>
+#include <QtCore/QCoreApplication>
 
 Q_LOGGING_CATEGORY(QT_PLATFORM_PEPPER_EVENTDISPATHCER, "qt.platform.pepper.eventdispatcher");
 

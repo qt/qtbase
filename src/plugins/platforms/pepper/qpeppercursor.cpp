@@ -22,7 +22,7 @@
 #include "qpepperinstance.h"
 #include "qpepperinstance_p.h"
 
-#include <QtGui/qcursor.h>
+#include <QtGui/QCursor>
 
 #include <ppapi/cpp/mouse_cursor.h>
 

@@ -25,6 +25,7 @@
 #include "qpepperhelpers.h"
 #include "qpepperintegration.h"
 #include "qpeppermodule_p.h"
+#include "qpepperwindow.h"
 #endif
 
 #include <qpa/qwindowsysteminterface.h>
@@ -35,7 +36,7 @@
 #include <ppapi/utility/threading/simple_thread.h>
 
 #ifdef Q_OS_NACL_NEWLIB
-#include "error_handling/error_handling.h"
+#include <error_handling/error_handling.h>
 #endif
 
 using namespace pp;

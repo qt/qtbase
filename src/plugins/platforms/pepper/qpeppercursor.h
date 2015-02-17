@@ -20,7 +20,7 @@
 #ifndef QPEPPERCURSOR_H
 #define QPEPPERCURSOR_H
 
-#include <QtCore/qloggingcategory.h>
+#include <QtCore/QLoggingCategory>
 #include <qpa/qplatformcursor.h>
 
 QT_BEGIN_NAMESPACE

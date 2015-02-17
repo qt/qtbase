@@ -20,27 +20,25 @@
 #ifndef QPEPPERINTEGRATION_H
 #define QPEPPERINTEGRATION_H
 
-#include "qpeppereventdispatcher.h"
-#include "qpepperglcontext.h"
-#include "qpepperinstance_p.h"
-#include "qpepperscreen.h"
-#include "qpepperwindow.h"
-
+#include <QtCore/QAbstractEventDispatcher>
 #include <qpa/qplatformintegration.h>
 #include <qpa/qplatformintegrationplugin.h>
 #include <qpa/qplatformscreen.h>
 #include <qpa/qplatformservices.h>
+#include <qpa/qplatformfontdatabase.h>
 
 QT_BEGIN_NAMESPACE
 
-class QPlatformFontDatabase;
-class QPepperFontDatabase;
-class QPlatformClipboard;
+class PepperEventTranslator;
 class QPepperClipboard;
 class QPepperCompositor;
-class QPepperWindow;
+class QPepperEventDispatcher;
+class QPepperFontDatabase;
+class QPepperScreen;
 class QPepperServices;
-class QAbstractEventDispatcher;
+class QPepperWindow;
+class QPlatformClipboard;
+
 class QPepperIntegration : public QObject, public QPlatformIntegration
 {
     Q_OBJECT

@@ -19,7 +19,7 @@
 
 #include "qpepperintegration.h"
 
-#include <qdebug.h>
+#include <QtCore/QDebug>
 #include <qpa/qplatformintegrationplugin.h>
 
 QT_BEGIN_NAMESPACE

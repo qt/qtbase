@@ -21,13 +21,12 @@
 #define QTPEPPERINSTANCE_P_H
 
 #include "qpeppereventtranslator.h"
-#include "qpepperhelpers.h"
 
+#include <QtCore/QHash>
+#include <QtCore/QMutex>
+#include <QtCore/QQueue>
+#include <QtCore/QWaitCondition>
 #include <qpa/qplatformtheme.h>
-#include <QtCore/qhash.h>
-#include <QtCore/qmutex.h>
-#include <QtCore/qqueue.h>
-#include <QtCore/qwaitcondition.h>
 
 #include <ppapi/cpp/completion_callback.h>
 #include <ppapi/cpp/graphics_2d.h>
@@ -93,6 +92,7 @@ private:
 
 class QPepperInstance;
 class QPepperIntegration;
+
 class QPepperInstancePrivate
 {
 public:

@@ -22,15 +22,15 @@
 
 #ifndef QT_NO_PEPPER_INTEGRATION
 
-#include <QtCore/qloggingcategory.h>
-#include <QtCore/qobject.h>
-#include <QtGui/qwindow.h>
+#include <QtCore/QLoggingCategory>
+#include <QtCore/QObject>
 
 #include <ppapi/c/pp_input_event.h>
 #include <ppapi/cpp/input_event.h>
 
 Q_DECLARE_LOGGING_CATEGORY(QT_PLATFORM_PEPPER_EVENT_KEYBOARD)
 
+class QWindow;
 class PepperEventTranslator : public QObject
 {
     Q_OBJECT

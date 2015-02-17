@@ -19,6 +19,7 @@
 
 #include "qpeppercompositor.h"
 
+#include "qpepperhelpers.h"
 #include "qpepperinstance.h"
 #include "qpepperinstance_p.h"
 

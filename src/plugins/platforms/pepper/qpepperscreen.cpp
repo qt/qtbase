@@ -24,7 +24,7 @@
 #include "qpepperinstance_p.h"
 #include "qpepperintegration.h"
 
-#include <qdebug.h>
+#include <QtCore/QDebug>
 
 QT_BEGIN_NAMESPACE
 

@@ -21,11 +21,12 @@
 
 #include "qpeppercompositor.h"
 #include "qpepperglcontext.h"
+#include "qpepperintegration.h"
 #include "qpeppermodule.h"
 
-#include <qdebug.h>
-#include <qpa/qwindowsysteminterface.h>
+#include <QtCore/QDebug>
 #include <QtGui/QSurface>
+#include <qpa/qwindowsysteminterface.h>
 
 QT_BEGIN_NAMESPACE
 
