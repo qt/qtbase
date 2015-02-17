@@ -34,6 +34,10 @@
 #ifndef QMIMETYPE_H
 #define QMIMETYPE_H
 
+#include <QtCore/qglobal.h>
+
+#ifndef QT_NO_MIMETYPE
+
 #include <QtCore/qshareddata.h>
 #include <QtCore/qstring.h>
 
@@ -108,4 +112,6 @@ Q_CORE_EXPORT QDebug operator<<(QDebug debug, const QMimeType &mime);
 #endif
 
 QT_END_NAMESPACE
-#endif   // QMIMETYPE_H
+
+#endif // QT_NO_MIMETYPE
+#endif // QMIMETYPE_H

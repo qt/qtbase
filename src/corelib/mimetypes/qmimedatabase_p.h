@@ -45,12 +45,15 @@
 // We mean it.
 //
 
-#include <QtCore/qhash.h>
-#include <QtCore/qmutex.h>
-
 #include "qmimetype.h"
+
+#ifndef QT_NO_MIMETYPE
+
 #include "qmimetype_p.h"
 #include "qmimeglobpattern_p.h"
+
+#include <QtCore/qhash.h>
+#include <QtCore/qmutex.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -90,4 +93,5 @@ public:
 
 QT_END_NAMESPACE
 
-#endif   // QMIMEDATABASE_P_H
+#endif // QT_NO_MIMETYPE
+#endif // QMIMEDATABASE_P_H

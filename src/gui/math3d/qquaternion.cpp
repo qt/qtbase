@@ -219,7 +219,7 @@ QT_BEGIN_NAMESPACE
 */
 float QQuaternion::length() const
 {
-    return qSqrt(xp * xp + yp * yp + zp * zp + wp * wp);
+    return std::sqrt(xp * xp + yp * yp + zp * zp + wp * wp);
 }
 
 /*!
@@ -252,7 +252,7 @@ QQuaternion QQuaternion::normalized() const
     if (qFuzzyIsNull(len - 1.0f))
         return *this;
     else if (!qFuzzyIsNull(len))
-        return *this / qSqrt(len);
+        return *this / std::sqrt(len);
     else
         return QQuaternion(0.0f, 0.0f, 0.0f, 0.0f);
 }
@@ -273,7 +273,7 @@ void QQuaternion::normalize()
     if (qFuzzyIsNull(len - 1.0f) || qFuzzyIsNull(len))
         return;
 
-    len = qSqrt(len);
+    len = std::sqrt(len);
 
     xp /= len;
     yp /= len;
@@ -386,8 +386,8 @@ QQuaternion QQuaternion::fromAxisAndAngle(const QVector3D& axis, float angle)
     // We normalize the result just in case the values are close
     // to zero, as suggested in the above FAQ.
     float a = (angle / 2.0f) * M_PI / 180.0f;
-    float s = sinf(a);
-    float c = cosf(a);
+    float s = std::sin(a);
+    float c = std::cos(a);
     QVector3D ax = axis.normalized();
     return QQuaternion(c, ax.x() * s, ax.y() * s, ax.z() * s).normalized();
 }
@@ -415,12 +415,12 @@ void QQuaternion::toAxisAndAngle(float *x, float *y, float *z, float *angle) con
         *y = yp;
         *z = zp;
         if (!qFuzzyIsNull(length - 1.0f)) {
-            length = sqrtf(length);
+            length = std::sqrt(length);
             *x /= length;
             *y /= length;
             *z /= length;
         }
-        *angle = 2.0f * acosf(wp);
+        *angle = 2.0f * std::acos(wp);
     } else {
         // angle is 0 (mod 2*pi), so any axis will fit
         *x = *y = *z = *angle = 0.0f;
@@ -438,15 +438,15 @@ void QQuaternion::toAxisAndAngle(float *x, float *y, float *z, float *angle) con
 QQuaternion QQuaternion::fromAxisAndAngle
         (float x, float y, float z, float angle)
 {
-    float length = qSqrt(x * x + y * y + z * z);
+    float length = std::sqrt(x * x + y * y + z * z);
     if (!qFuzzyIsNull(length - 1.0f) && !qFuzzyIsNull(length)) {
         x /= length;
         y /= length;
         z /= length;
     }
     float a = (angle / 2.0f) * M_PI / 180.0f;
-    float s = sinf(a);
-    float c = cosf(a);
+    float s = std::sin(a);
+    float c = std::cos(a);
     return QQuaternion(c, x * s, y * s, z * s).normalized();
 }
 
@@ -515,20 +515,20 @@ void QQuaternion::toEulerAngles(float *pitch, float *yaw, float *roll) const
         zw /= lengthSquared;
     }
 
-    *pitch = asinf(-2.0f * (yz - xw));
+    *pitch = std::asin(-2.0f * (yz - xw));
     if (*pitch < M_PI_2) {
         if (*pitch > -M_PI_2) {
-            *yaw = atan2f(2.0f * (xz + yw), 1.0f - 2.0f * (xx + yy));
-            *roll = atan2f(2.0f * (xy + zw), 1.0f - 2.0f * (xx + zz));
+            *yaw = std::atan2(2.0f * (xz + yw), 1.0f - 2.0f * (xx + yy));
+            *roll = std::atan2(2.0f * (xy + zw), 1.0f - 2.0f * (xx + zz));
         } else {
             // not a unique solution
             *roll = 0.0f;
-            *yaw = -atan2f(-2.0f * (xy - zw), 1.0f - 2.0f * (yy + zz));
+            *yaw = -std::atan2(-2.0f * (xy - zw), 1.0f - 2.0f * (yy + zz));
         }
     } else {
         // not a unique solution
         *roll = 0.0f;
-        *yaw = atan2f(-2.0f * (xy - zw), 1.0f - 2.0f * (yy + zz));
+        *yaw = std::atan2(-2.0f * (xy - zw), 1.0f - 2.0f * (yy + zz));
     }
 
     *pitch = qRadiansToDegrees(*pitch);
@@ -558,12 +558,12 @@ QQuaternion QQuaternion::fromEulerAngles(float pitch, float yaw, float roll)
     yaw *= 0.5f;
     roll *= 0.5f;
 
-    const float c1 = cosf(yaw);
-    const float s1 = sinf(yaw);
-    const float c2 = cosf(roll);
-    const float s2 = sinf(roll);
-    const float c3 = cosf(pitch);
-    const float s3 = sinf(pitch);
+    const float c1 = std::cos(yaw);
+    const float s1 = std::sin(yaw);
+    const float c2 = std::cos(roll);
+    const float s2 = std::sin(roll);
+    const float c3 = std::cos(pitch);
+    const float s3 = std::sin(pitch);
     const float c1c2 = c1 * c2;
     const float s1s2 = s1 * s2;
 
@@ -635,7 +635,7 @@ QQuaternion QQuaternion::fromRotationMatrix(const QMatrix3x3 &rot3x3)
 
     const float trace = rot3x3(0, 0) + rot3x3(1, 1) + rot3x3(2, 2);
     if (trace > 0.00000001f) {
-        const float s = 2.0f * sqrtf(trace + 1.0f);
+        const float s = 2.0f * std::sqrt(trace + 1.0f);
         scalar = 0.25f * s;
         axis[0] = (rot3x3(2, 1) - rot3x3(1, 2)) / s;
         axis[1] = (rot3x3(0, 2) - rot3x3(2, 0)) / s;
@@ -650,7 +650,7 @@ QQuaternion QQuaternion::fromRotationMatrix(const QMatrix3x3 &rot3x3)
         int j = s_next[i];
         int k = s_next[j];
 
-        const float s = 2.0f * sqrtf(rot3x3(i, i) - rot3x3(j, j) - rot3x3(k, k) + 1.0f);
+        const float s = 2.0f * std::sqrt(rot3x3(i, i) - rot3x3(j, j) - rot3x3(k, k) + 1.0f);
         axis[i] = 0.25f * s;
         scalar = (rot3x3(k, j) - rot3x3(j, k)) / s;
         axis[j] = (rot3x3(j, i) + rot3x3(i, j)) / s;
@@ -792,11 +792,11 @@ QQuaternion QQuaternion::slerp
     float factor1 = 1.0f - t;
     float factor2 = t;
     if ((1.0f - dot) > 0.0000001) {
-        float angle = acosf(dot);
-        float sinOfAngle = sinf(angle);
+        float angle = std::acos(dot);
+        float sinOfAngle = std::sin(angle);
         if (sinOfAngle > 0.0000001) {
-            factor1 = sinf((1.0f - t) * angle) / sinOfAngle;
-            factor2 = sinf(t * angle) / sinOfAngle;
+            factor1 = std::sin((1.0f - t) * angle) / sinOfAngle;
+            factor2 = std::sin(t * angle) / sinOfAngle;
         }
     }
 

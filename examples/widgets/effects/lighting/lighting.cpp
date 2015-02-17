@@ -41,6 +41,7 @@
 #include "lighting.h"
 
 #include <QtWidgets>
+#include <QtCore/qmath.h>
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
@@ -110,8 +111,8 @@ void Lighting::setupScene()
 void Lighting::animate()
 {
     angle += (M_PI / 30);
-    qreal xs = 200 * sin(angle) - 40 + 25;
-    qreal ys = 200 * cos(angle) - 40 + 25;
+    qreal xs = 200 * qSin(angle) - 40 + 25;
+    qreal ys = 200 * qCos(angle) - 40 + 25;
     m_lightSource->setPos(xs, ys);
 
     for (int i = 0; i < m_items.size(); ++i) {
@@ -125,7 +126,7 @@ void Lighting::animate()
 
         qreal dx = delta.x();
         qreal dy = delta.y();
-        qreal dd = sqrt(dx * dx + dy * dy);
+        qreal dd = qSqrt(dx * dx + dy * dy);
         QColor color = effect->color();
         color.setAlphaF(qBound(0.4, 1 - dd / 200.0, 0.7));
         effect->setColor(color);

@@ -256,7 +256,7 @@ float QVector4D::length() const
                  double(yp) * double(yp) +
                  double(zp) * double(zp) +
                  double(wp) * double(wp);
-    return float(sqrt(len));
+    return float(std::sqrt(len));
 }
 
 /*!
@@ -289,7 +289,7 @@ QVector4D QVector4D::normalized() const
     if (qFuzzyIsNull(len - 1.0f)) {
         return *this;
     } else if (!qFuzzyIsNull(len)) {
-        double sqrtLen = sqrt(len);
+        double sqrtLen = std::sqrt(len);
         return QVector4D(float(double(xp) / sqrtLen),
                          float(double(yp) / sqrtLen),
                          float(double(zp) / sqrtLen),
@@ -315,7 +315,7 @@ void QVector4D::normalize()
     if (qFuzzyIsNull(len - 1.0f) || qFuzzyIsNull(len))
         return;
 
-    len = sqrt(len);
+    len = std::sqrt(len);
 
     xp = float(double(xp) / len);
     yp = float(double(yp) / len);

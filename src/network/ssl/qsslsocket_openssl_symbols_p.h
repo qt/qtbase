@@ -440,6 +440,8 @@ STACK_OF(X509) *q_X509_STORE_CTX_get_chain(X509_STORE_CTX *ctx);
 // Diffie-Hellman support
 DH *q_DH_new();
 void q_DH_free(DH *dh);
+DH *q_d2i_DHparams(DH **a, unsigned char **pp, long length);
+
 BIGNUM *q_BN_bin2bn(const unsigned char *s, int len, BIGNUM *ret);
 #define q_SSL_CTX_set_tmp_dh(ctx, dh) q_SSL_CTX_ctrl((ctx), SSL_CTRL_SET_TMP_DH, 0, (char *)dh)
 

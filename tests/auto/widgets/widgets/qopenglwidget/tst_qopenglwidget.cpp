@@ -55,6 +55,7 @@ private slots:
     void reparentToAlreadyCreated();
     void reparentToNotYetCreated();
     void asViewport();
+    void requestUpdate();
 };
 
 void tst_QOpenGLWidget::create()
@@ -303,6 +304,29 @@ void tst_QOpenGLWidget::asViewport()
     btn->update();
     qApp->processEvents();
     QVERIFY(view->paintCount() == 0);
+}
+
+class PaintCountWidget : public QOpenGLWidget
+{
+public:
+    PaintCountWidget() : m_count(0) { }
+    void reset() { m_count = 0; }
+    void paintGL() Q_DECL_OVERRIDE { ++m_count; }
+    int m_count;
+};
+
+void tst_QOpenGLWidget::requestUpdate()
+{
+    PaintCountWidget w;
+    w.resize(640, 480);
+    w.show();
+    QTest::qWaitForWindowExposed(&w);
+
+    w.reset();
+    QCOMPARE(w.m_count, 0);
+
+    w.windowHandle()->requestUpdate();
+    QTRY_VERIFY(w.m_count > 0);
 }
 
 QTEST_MAIN(tst_QOpenGLWidget)

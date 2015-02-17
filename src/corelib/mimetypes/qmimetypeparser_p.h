@@ -47,6 +47,9 @@
 //
 
 #include "qmimedatabase_p.h"
+
+#ifndef QT_NO_MIMETYPE
+
 #include "qmimeprovider_p.h"
 
 QT_BEGIN_NAMESPACE
@@ -118,4 +121,5 @@ private:
 
 QT_END_NAMESPACE
 
+#endif // QT_NO_MIMETYPE
 #endif // MIMETYPEPARSER_P_H

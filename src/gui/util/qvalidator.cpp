@@ -40,7 +40,7 @@
 #include "private/qlocale_p.h"
 
 #include <limits.h>
-#include <math.h>
+#include <cmath>
 
 QT_BEGIN_NAMESPACE
 
@@ -384,7 +384,7 @@ static int numDigits(qlonglong n)
 {
     if (n == 0)
         return 1;
-    return (int)log10(double(n)) + 1;
+    return (int)std::log10(double(n)) + 1;
 }
 
 static qlonglong pow10(int exp)

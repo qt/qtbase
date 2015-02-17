@@ -399,6 +399,7 @@ DEFINEFUNC3(void, SSL_get0_next_proto_negotiated, const SSL *s, s,
 #endif // OPENSSL_VERSION_NUMBER >= 0x1000100fL ...
 DEFINEFUNC(DH *, DH_new, DUMMYARG, DUMMYARG, return 0, return)
 DEFINEFUNC(void, DH_free, DH *dh, dh, return, DUMMYARG)
+DEFINEFUNC3(DH *, d2i_DHparams, DH**a, a, unsigned char **pp, pp, long length, length, return 0, return);
 DEFINEFUNC3(BIGNUM *, BN_bin2bn, const unsigned char *s, s, int len, len, BIGNUM *ret, ret, return 0, return)
 #ifndef OPENSSL_NO_EC
 DEFINEFUNC(EC_KEY *, EC_KEY_dup, const EC_KEY *ec, ec, return 0, return)
@@ -946,6 +947,7 @@ bool q_resolveOpenSslSymbols()
 #endif // OPENSSL_VERSION_NUMBER >= 0x1000100fL ...
     RESOLVEFUNC(DH_new)
     RESOLVEFUNC(DH_free)
+    RESOLVEFUNC(d2i_DHparams)
     RESOLVEFUNC(BN_bin2bn)
 #ifndef OPENSSL_NO_EC
     RESOLVEFUNC(EC_KEY_dup)

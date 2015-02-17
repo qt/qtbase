@@ -1516,6 +1516,8 @@ void QFileDialog::setFilter(QDir::Filters filters)
     d->showHiddenAction->setChecked((filters & QDir::Hidden));
 }
 
+#ifndef QT_NO_MIMETYPE
+
 static QString nameFilterForMime(const QString &mimeType)
 {
     QMimeDatabase db;
@@ -1584,6 +1586,8 @@ void QFileDialog::selectMimeTypeFilter(const QString &filter)
     if (!text.isEmpty())
         selectNameFilter(text);
 }
+
+#endif // QT_NO_MIMETYPE
 
 /*!
     \property QFileDialog::viewMode
@@ -2843,9 +2847,12 @@ void QFileDialogPrivate::createWidgets()
     if (!options->sidebarUrls().isEmpty())
         q->setSidebarUrls(options->sidebarUrls());
     q->setDirectoryUrl(options->initialDirectory());
+#ifndef QT_NO_MIMETYPE
     if (!options->mimeTypeFilters().isEmpty())
         q->setMimeTypeFilters(options->mimeTypeFilters());
-    else if (!options->nameFilters().isEmpty())
+    else
+#endif
+    if (!options->nameFilters().isEmpty())
         q->setNameFilters(options->nameFilters());
     q->selectNameFilter(options->initiallySelectedNameFilter());
     q->setDefaultSuffix(options->defaultSuffix());

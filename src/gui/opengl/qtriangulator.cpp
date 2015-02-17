@@ -49,8 +49,6 @@
 #include <private/qopenglextensions_p.h>
 #include <private/qrbtree_p.h>
 
-#include <math.h>
-
 QT_BEGIN_NAMESPACE
 
 //#define Q_TRIANGULATOR_DEBUG
@@ -1700,8 +1698,8 @@ void QTriangulator<T>::ComplexToSimple::DebugDialog::paintEvent(QPaintEvent *)
         QPodPoint q = vertices.at(splits.at(i).vertex);
         QPodPoint u = vertices.at(edges.at(splits.at(i).edge).from) - q;
         QPodPoint v = vertices.at(edges.at(splits.at(i).edge).to) - q;
-        qreal uLen = sqrt(qreal(qDot(u, u)));
-        qreal vLen = sqrt(qreal(qDot(v, v)));
+        qreal uLen = qSqrt(qDot(u, u));
+        qreal vLen = qSqrt(qDot(v, v));
         if (uLen) {
             u.x *= 2 * halfPointSize / uLen;
             u.y *= 2 * halfPointSize / uLen;
@@ -1719,7 +1717,7 @@ void QTriangulator<T>::ComplexToSimple::DebugDialog::paintEvent(QPaintEvent *)
 template <typename T>
 void QTriangulator<T>::ComplexToSimple::DebugDialog::wheelEvent(QWheelEvent *event)
 {
-    qreal scale = exp(-0.001 * event->delta());
+    qreal scale = qExp(-0.001 * event->delta());
     QPointF center = m_window.center();
     QPointF delta = scale * (m_window.bottomRight() - center);
     m_window = QRectF(center - delta, center + delta);

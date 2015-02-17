@@ -657,7 +657,7 @@ struct BezierEase : public QEasingCurveFunction
 
     qreal static inline _acos(qreal x)
     {
-        return sqrt(1-x)*(1.5707963267948966192313216916398f + x*(-0.213300989f + x*(0.077980478f + x*-0.02164095f)));
+        return std::sqrt(1-x)*(1.5707963267948966192313216916398f + x*(-0.213300989f + x*(0.077980478f + x*-0.02164095f)));
     }
 
     qreal static inline _cos(qreal x) //super fast _cos
@@ -704,8 +704,8 @@ struct BezierEase : public QEasingCurveFunction
         //We use approximations instead
 
         const qreal x_squared = x * x;
-        const qreal x_plus_one_sqrt = sqrt(1.0 + x);
-        const qreal one_minus_x_sqrt = sqrt(1.0 - x);
+        const qreal x_plus_one_sqrt = qSqrt(1.0 + x);
+        const qreal one_minus_x_sqrt = qSqrt(1.0 - x);
 
         //cos(acos(x) / 3)
         //s1 = _cos(_acos(x) / 3);
@@ -743,7 +743,7 @@ struct BezierEase : public QEasingCurveFunction
         const qreal D = 0.25 * q_squared + p_cubic / 27.0;
 
         if (D >= 0) {
-            const qreal D_sqrt = sqrt(D);
+            const qreal D_sqrt = qSqrt(D);
             qreal u = _cbrt( -q * 0.5 + D_sqrt);
             qreal v = _cbrt( -q * 0.5 - D_sqrt);
             qreal z1 = u + v;
@@ -758,13 +758,13 @@ struct BezierEase : public QEasingCurveFunction
         }
 
         //casus irreducibilis
-        const qreal p_minus_sqrt = sqrt(-p);
+        const qreal p_minus_sqrt = qSqrt(-p);
 
         //const qreal f = sqrt(4.0 / 3.0 * -p);
-        const qreal f = sqrt(4.0 / 3.0) * p_minus_sqrt;
+        const qreal f = qSqrt(4.0 / 3.0) * p_minus_sqrt;
 
         //const qreal sqrtP = sqrt(27.0 / -p_cubic);
-        const qreal sqrtP = -3.0*sqrt(3.0) / (p_minus_sqrt * p);
+        const qreal sqrtP = -3.0*qSqrt(3.0) / (p_minus_sqrt * p);
 
 
         const qreal g = -q * 0.5 * sqrtP;

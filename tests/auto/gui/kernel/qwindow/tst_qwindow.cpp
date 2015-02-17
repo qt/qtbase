@@ -91,6 +91,7 @@ private slots:
     void modalWindowModallity();
     void modalWindowPosition();
     void windowsTransientChildren();
+    void requestUpdate();
     void initTestCase();
     void cleanup();
 
@@ -1664,6 +1665,25 @@ void tst_QWindow::windowsTransientChildren()
     // QTBUG-40696, transient children hidden by Qt should not be re-shown by Windows.
     QVERIFY(!isNativeWindowVisible(&dialog));
     QVERIFY(isNativeWindowVisible(&child)); // Real children should be visible.
+}
+
+void tst_QWindow::requestUpdate()
+{
+    QRect geometry(m_availableTopLeft + QPoint(80, 80), m_testWindowSize);
+
+    Window window;
+    window.setGeometry(geometry);
+    window.show();
+    QCoreApplication::processEvents();
+    QTRY_VERIFY(window.isExposed());
+
+    QVERIFY(window.received(QEvent::UpdateRequest) == 0);
+
+    window.requestUpdate();
+    QTRY_VERIFY(window.received(QEvent::UpdateRequest) == 1);
+
+    window.requestUpdate();
+    QTRY_VERIFY(window.received(QEvent::UpdateRequest) == 2);
 }
 
 #include <tst_qwindow.moc>

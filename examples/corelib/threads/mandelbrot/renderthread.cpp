@@ -41,8 +41,7 @@
 #include "renderthread.h"
 
 #include <QtWidgets>
-
-#include <math.h>
+#include <cmath>
 
 //! [0]
 RenderThread::RenderThread(QObject *parent)
@@ -207,9 +206,9 @@ uint RenderThread::rgbFromWaveLength(double wave)
     else if (wave <  420.0)
         s = 0.3 + 0.7 * (wave - 380.0) / (420.0 - 380.0);
 
-    r = pow(r * s, 0.8);
-    g = pow(g * s, 0.8);
-    b = pow(b * s, 0.8);
+    r = std::pow(r * s, 0.8);
+    g = std::pow(g * s, 0.8);
+    b = std::pow(b * s, 0.8);
     return qRgb(int(r * 255), int(g * 255), int(b * 255));
 }
 //! [10]

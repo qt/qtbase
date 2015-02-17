@@ -235,7 +235,7 @@ QVector3D QVector3D::normalized() const
     if (qFuzzyIsNull(len - 1.0f)) {
         return *this;
     } else if (!qFuzzyIsNull(len)) {
-        double sqrtLen = sqrt(len);
+        double sqrtLen = std::sqrt(len);
         return QVector3D(float(double(xp) / sqrtLen),
                          float(double(yp) / sqrtLen),
                          float(double(zp) / sqrtLen));
@@ -259,7 +259,7 @@ void QVector3D::normalize()
     if (qFuzzyIsNull(len - 1.0f) || qFuzzyIsNull(len))
         return;
 
-    len = sqrt(len);
+    len = std::sqrt(len);
 
     xp = float(double(xp) / len);
     yp = float(double(yp) / len);
@@ -679,7 +679,7 @@ float QVector3D::length() const
     double len = double(xp) * double(xp) +
                  double(yp) * double(yp) +
                  double(zp) * double(zp);
-    return float(sqrt(len));
+    return float(std::sqrt(len));
 }
 
 /*!

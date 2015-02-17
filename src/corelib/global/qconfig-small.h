@@ -187,6 +187,9 @@
 #ifndef QT_NO_DESKTOPSERVICES
 #  define QT_NO_DESKTOPSERVICES
 #endif
+#ifndef QT_NO_MIMETYPE
+#  define QT_NO_MIMETYPE
+#endif
 #ifndef QT_NO_SYSTEMTRAYICON
 #  define QT_NO_SYSTEMTRAYICON
 #endif

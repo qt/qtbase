@@ -438,6 +438,7 @@ QPrint::ColorMode QPpdPrintDevice::defaultColorMode() const
     return QPrint::GrayScale;
 }
 
+#ifndef QT_NO_MIMETYPE
 void QPpdPrintDevice::loadMimeTypes() const
 {
     // TODO No CUPS api? Need to manually load CUPS mime.types file?
@@ -453,6 +454,7 @@ void QPpdPrintDevice::loadMimeTypes() const
     m_mimeTypes.append(db.mimeTypeForName(QStringLiteral("text/plain")));
     m_haveMimeTypes = true;
 }
+#endif
 
 void QPpdPrintDevice::loadPrinter()
 {

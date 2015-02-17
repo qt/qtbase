@@ -1516,6 +1516,7 @@ void Generator::initialize(const Config &config)
     if (config.getBool(QString("HTML.nosubdirs")))
         resetUseOutputSubdirs();
 
+    outFileNames_.clear();
     outputFormats = config.getOutputFormats();
     redirectDocumentationToDevNull_ = config.getBool(CONFIG_REDIRECTDOCUMENTATIONTODEVNULL);
     if (!outputFormats.isEmpty()) {

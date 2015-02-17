@@ -35,6 +35,8 @@
 
 #include "qmimetypeparser_p.h"
 
+#ifndef QT_NO_MIMETYPE
+
 #include "qmimetype_p.h"
 #include "qmimemagicrulematcher_p.h"
 
@@ -341,3 +343,5 @@ bool QMimeTypeParserBase::parse(QIODevice *dev, const QString &fileName, QString
 }
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_MIMETYPE

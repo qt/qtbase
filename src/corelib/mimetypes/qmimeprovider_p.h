@@ -45,8 +45,11 @@
 // We mean it.
 //
 
-#include <QtCore/qdatetime.h>
 #include "qmimedatabase_p.h"
+
+#ifndef QT_NO_MIMETYPE
+
+#include <QtCore/qdatetime.h>
 #include <QtCore/qset.h>
 
 QT_BEGIN_NAMESPACE
@@ -168,4 +171,5 @@ private:
 
 QT_END_NAMESPACE
 
+#endif // QT_NO_MIMETYPE
 #endif // QMIMEPROVIDER_P_H

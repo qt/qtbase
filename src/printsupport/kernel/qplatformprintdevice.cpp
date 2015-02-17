@@ -359,6 +359,7 @@ QList<QPrint::ColorMode> QPlatformPrintDevice::supportedColorModes() const
     return m_colorModes.toList();
 }
 
+#ifndef QT_NO_MIMETYPE
 void QPlatformPrintDevice::loadMimeTypes() const
 {
 }
@@ -369,6 +370,7 @@ QList<QMimeType> QPlatformPrintDevice::supportedMimeTypes() const
         loadMimeTypes();
     return m_mimeTypes.toList();
 }
+#endif // QT_NO_MIMETYPE
 
 QPageSize QPlatformPrintDevice::createPageSize(const QString &key, const QSize &size, const QString &localizedName)
 {

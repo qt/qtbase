@@ -712,20 +712,10 @@ static inline bool q26Dot6Compare(qreal p1, qreal p2)
     return int((p2  - p1) * 64.) == 0;
 }
 
-static inline qreal qFloorF(qreal v)
-{
-#ifdef QT_USE_MATH_H_FLOATS
-    if (sizeof(qreal) == sizeof(float))
-        return floorf(v);
-    else
-#endif
-        return floor(v);
-}
-
 static inline QPointF snapTo26Dot6Grid(const QPointF &p)
 {
-    return QPointF(qFloorF(p.x() * 64) * (1 / qreal(64)),
-                   qFloorF(p.y() * 64) * (1 / qreal(64)));
+    return QPointF(std::floor(p.x() * 64) * (1 / qreal(64)),
+                   std::floor(p.y() * 64) * (1 / qreal(64)));
 }
 
 /*
@@ -832,7 +822,7 @@ void QRasterizer::rasterizeLine(const QPointF &a, const QPointF &b, qreal width,
             return;
 
         // adjust width which is given relative to |b - a|
-        width *= sqrt(w0 / w);
+        width *= qSqrt(w0 / w);
     }
 
     QSpanBuffer buffer(d->blend, d->data, d->clipRect);

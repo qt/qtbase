@@ -119,9 +119,11 @@ public:
     void selectNameFilter(const QString &filter);
     QString selectedNameFilter() const;
 
+#ifndef QT_NO_MIMETYPE
     void setMimeTypeFilters(const QStringList &filters);
     QStringList mimeTypeFilters() const;
     void selectMimeTypeFilter(const QString &filter);
+#endif
 
     QDir::Filters filter() const;
     void setFilter(QDir::Filters filters);

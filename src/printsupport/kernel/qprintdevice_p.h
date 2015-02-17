@@ -123,7 +123,9 @@ public:
     QPrint::ColorMode defaultColorMode() const;
     QList<QPrint::ColorMode> supportedColorModes() const;
 
+#ifndef QT_NO_MIMETYPE
     QList<QMimeType> supportedMimeTypes() const;
+#endif
 
 private:
     friend class QPlatformPrinterSupport;

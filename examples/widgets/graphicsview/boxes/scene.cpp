@@ -35,6 +35,7 @@
 #include "scene.h"
 #include <QtGui/qmatrix4x4.h>
 #include <QtGui/qvector3d.h>
+#include <cmath>
 
 #include "3rdparty/fbm.h"
 
@@ -856,7 +857,7 @@ void Scene::renderCubemaps()
 
         float angle = 2.0f * PI * i / m_cubemaps.size();
 
-        center = m_trackBalls[1].rotation().rotatedVector(QVector3D(cos(angle), sin(angle), 0.0f));
+        center = m_trackBalls[1].rotation().rotatedVector(QVector3D(std::cos(angle), std::sin(angle), 0.0f));
 
         for (int face = 0; face < 6; ++face) {
             m_cubemaps[i]->begin(face);
@@ -910,7 +911,7 @@ void Scene::drawBackground(QPainter *painter, const QRectF &)
 
     QMatrix4x4 view;
     view.rotate(m_trackBalls[2].rotation());
-    view(2, 3) -= 2.0f * exp(m_distExp / 1200.0f);
+    view(2, 3) -= 2.0f * std::exp(m_distExp / 1200.0f);
     renderBoxes(view);
 
     defaultStates();

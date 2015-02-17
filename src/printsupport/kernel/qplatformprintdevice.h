@@ -114,7 +114,9 @@ public:
     virtual QPrint::ColorMode defaultColorMode() const;
     virtual QList<QPrint::ColorMode> supportedColorModes() const;
 
+#ifndef QT_NO_MIMETYPE
     virtual QList<QMimeType> supportedMimeTypes() const;
+#endif
 
     static QPageSize createPageSize(const QString &key, const QSize &size, const QString &localizedName);
     static QPageSize createPageSize(int windowsId, const QSize &size, const QString &localizedName);
@@ -126,7 +128,9 @@ protected:
     virtual void loadOutputBins() const;
     virtual void loadDuplexModes() const;
     virtual void loadColorModes() const;
+#ifndef QT_NO_MIMETYPE
     virtual void loadMimeTypes() const;
+#endif
 
     QPageSize supportedPageSizeMatch(const QPageSize &pageSize) const;
 
@@ -163,8 +167,10 @@ protected:
     mutable bool m_haveColorModes;
     mutable QVector<QPrint::ColorMode> m_colorModes;
 
+#ifndef QT_NO_MIMETYPE
     mutable bool m_haveMimeTypes;
     mutable QVector<QMimeType> m_mimeTypes;
+#endif
 };
 
 QT_END_NAMESPACE

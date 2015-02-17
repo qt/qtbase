@@ -95,7 +95,9 @@ protected:
     void loadOutputBins() const Q_DECL_OVERRIDE;
     void loadDuplexModes() const Q_DECL_OVERRIDE;
     void loadColorModes() const Q_DECL_OVERRIDE;
+#ifndef QT_NO_MIMETYPE
     void loadMimeTypes() const Q_DECL_OVERRIDE;
+#endif
 
 private:
     void loadPrinter();

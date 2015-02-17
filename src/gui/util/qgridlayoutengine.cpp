@@ -193,7 +193,7 @@ namespace {
 // does not return int
 static inline qreal qround(qreal f)
 {
-    return floor(f + 0.5);
+    return std::floor(f + qreal(0.5));
 }
 
 }
@@ -355,7 +355,7 @@ void QGridLayoutRowData::calculateGeometries(int start, int end, qreal targetSiz
                     qreal maxBoxSize = box.q_maximumSize;
 
                     if (snapToPixelGrid)
-                        maxBoxSize = qMax(box.q_minimumSize, floor(maxBoxSize));
+                        maxBoxSize = qMax(box.q_minimumSize, std::floor(maxBoxSize));
 
                     qreal avail = sumCurrentAvailable * factors[i] / sumFactors;
                     if (sizes[i] + avail >= maxBoxSize) {

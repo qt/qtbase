@@ -292,11 +292,21 @@ bool QWidgetWindow::event(QEvent *event)
     case QEvent::WindowBlocked:
         qt_button_down = 0;
         break;
+
+    case QEvent::UpdateRequest:
+        // This is not the same as an UpdateRequest for a QWidget. That just
+        // syncs the backing store while here we also must mark as dirty.
+        m_widget->repaint();
+        return true;
+
     default:
         break;
     }
 
-    return m_widget->event(event) || QWindow::event(event);
+    if (m_widget->event(event) && event->type() != QEvent::Timer)
+        return true;
+
+    return QWindow::event(event);
 }
 
 QPointer<QWidget> qt_last_mouse_receiver = 0;

@@ -40,7 +40,7 @@
 
 #include <QtWidgets>
 
-#include <math.h>
+#include <cmath>
 #include <stdlib.h>
 
 #include "basictoolsplugin.h"
@@ -139,8 +139,8 @@ QPainterPath BasicToolsPlugin::generateShape(const QString &shape,
     } else if (shape == tr("Star")) {
         path.moveTo(90, 50);
         for (int i = 1; i < 5; ++i) {
-            path.lineTo(50 + 40 * cos(0.8 * i * Pi),
-                        50 + 40 * sin(0.8 * i * Pi));
+            path.lineTo(50 + 40 * std::cos(0.8 * i * Pi),
+                        50 + 40 * std::sin(0.8 * i * Pi));
         }
         path.closeSubpath();
     } else if (shape == tr("Text...")) {
