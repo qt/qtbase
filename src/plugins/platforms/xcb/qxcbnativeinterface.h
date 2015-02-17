@@ -120,7 +120,6 @@ private:
     const QByteArray m_genericEventFilterType;
 
     xcb_atom_t m_sysTraySelectionAtom;
-    xcb_visualid_t m_systrayVisualId;
 
     static QXcbScreen *qPlatformScreenForWindow(QWindow *window);
 

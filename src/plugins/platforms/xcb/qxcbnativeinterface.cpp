@@ -47,6 +47,7 @@
 #include <QtGui/qscreen.h>
 
 #include <QtPlatformHeaders/qxcbwindowfunctions.h>
+#include <QtPlatformHeaders/qxcbintegrationfunctions.h>
 
 #ifndef QT_NO_DBUS
 #include "QtPlatformSupport/private/qdbusmenuconnection_p.h"
@@ -85,8 +86,7 @@ static int resourceType(const QByteArray &key)
 
 QXcbNativeInterface::QXcbNativeInterface() :
     m_genericEventFilterType(QByteArrayLiteral("xcb_generic_event_t")),
-    m_sysTraySelectionAtom(XCB_ATOM_NONE),
-    m_systrayVisualId(XCB_NONE)
+    m_sysTraySelectionAtom(XCB_ATOM_NONE)
 {
 }
 
@@ -145,42 +145,9 @@ xcb_window_t QXcbNativeInterface::locateSystemTray(xcb_connection_t *conn, const
     return selection_window;
 }
 
-bool QXcbNativeInterface::systrayVisualHasAlphaChannel() {
-    const QXcbScreen *screen = static_cast<QXcbScreen *>(QGuiApplication::primaryScreen()->handle());
-
-    if (m_systrayVisualId == XCB_NONE) {
-        xcb_connection_t *xcb_conn = screen->xcb_connection();
-        xcb_atom_t tray_atom = screen->atom(QXcbAtom::_NET_SYSTEM_TRAY_VISUAL);
-
-        xcb_window_t systray_window = locateSystemTray(xcb_conn, screen);
-        if (systray_window == XCB_WINDOW_NONE)
-            return false;
-
-        // Get the xcb property for the _NET_SYSTEM_TRAY_VISUAL atom
-        xcb_get_property_cookie_t systray_atom_cookie;
-        xcb_get_property_reply_t *systray_atom_reply;
-
-        systray_atom_cookie = xcb_get_property_unchecked(xcb_conn, false, systray_window,
-                                                        tray_atom, XCB_ATOM_VISUALID, 0, 1);
-        systray_atom_reply = xcb_get_property_reply(xcb_conn, systray_atom_cookie, 0);
-
-        if (!systray_atom_reply)
-            return false;
-
-        if (systray_atom_reply->value_len > 0 && xcb_get_property_value_length(systray_atom_reply) > 0) {
-            xcb_visualid_t * vids = (uint32_t *)xcb_get_property_value(systray_atom_reply);
-            m_systrayVisualId = vids[0];
-        }
-
-        free(systray_atom_reply);
-    }
-
-    if (m_systrayVisualId != XCB_NONE) {
-        quint8 depth = screen->depthOfVisual(m_systrayVisualId);
-        return depth == 32;
-    } else {
-        return false;
-    }
+bool QXcbNativeInterface::systrayVisualHasAlphaChannel()
+{
+    return QXcbConnection::xEmbedSystemTrayVisualHasAlphaChannel();
 }
 
 void QXcbNativeInterface::setParentRelativeBackPixmap(QWindow *window)
@@ -372,6 +339,9 @@ QFunctionPointer QXcbNativeInterface::platformFunction(const QByteArray &functio
 
     if (function == QXcbWindowFunctions::systemTrayWindowGlobalGeometryIdentifier())
         return QFunctionPointer(QXcbWindowFunctions::SystemTrayWindowGlobalGeometry(QXcbWindow::systemTrayWindowGlobalGeometryStatic));
+
+    if (function == QXcbIntegrationFunctions::xEmbedSystemTrayVisualHasAlphaChannelIdentifier())
+        return QFunctionPointer(QXcbIntegrationFunctions::XEmbedSystemTrayVisualHasAlphaChannel(QXcbConnection::xEmbedSystemTrayVisualHasAlphaChannel));
 
     return Q_NULLPTR;
 }

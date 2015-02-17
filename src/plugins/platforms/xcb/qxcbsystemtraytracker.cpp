@@ -63,14 +63,14 @@ QXcbSystemTrayTracker *QXcbSystemTrayTracker::create(QXcbConnection *connection)
     const xcb_atom_t selection = connection->internAtom(netSysTray.constData());
     if (!selection)
         return 0;
-    return new QXcbSystemTrayTracker(connection, trayAtom, selection, connection);
+
+    return new QXcbSystemTrayTracker(connection, trayAtom, selection);
 }
 
 QXcbSystemTrayTracker::QXcbSystemTrayTracker(QXcbConnection *connection,
                                              xcb_atom_t trayAtom,
-                                             xcb_atom_t selection,
-                                             QObject *parent)
-    : QObject(parent)
+                                             xcb_atom_t selection)
+    : QObject(connection)
     , m_selection(selection)
     , m_trayAtom(trayAtom)
     , m_connection(connection)
@@ -125,6 +125,7 @@ xcb_window_t QXcbSystemTrayTracker::trayWindow()
 // does not work for the QWindow parented on the tray.
 QRect QXcbSystemTrayTracker::systemTrayWindowGlobalGeometry(xcb_window_t window) const
 {
+
     xcb_connection_t *conn = m_connection->xcb_connection();
     xcb_get_geometry_reply_t *geomReply =
         xcb_get_geometry_reply(conn, xcb_get_geometry(conn, window), 0);
@@ -161,9 +162,43 @@ void QXcbSystemTrayTracker::handleDestroyNotifyEvent(const xcb_destroy_notify_ev
 {
     if (event->window == m_trayWindow) {
         m_connection->removeWindowEventListener(m_trayWindow);
-        m_trayWindow = 0;
+        m_trayWindow = XCB_WINDOW_NONE;
         emitSystemTrayWindowChanged();
     }
+}
+
+bool QXcbSystemTrayTracker::visualHasAlphaChannel()
+{
+    if (m_trayWindow == XCB_WINDOW_NONE)
+        return false;
+
+    xcb_atom_t tray_atom = m_connection->atom(QXcbAtom::_NET_SYSTEM_TRAY_VISUAL);
+
+    // Get the xcb property for the _NET_SYSTEM_TRAY_VISUAL atom
+    xcb_get_property_cookie_t systray_atom_cookie;
+    xcb_get_property_reply_t *systray_atom_reply;
+
+    systray_atom_cookie = xcb_get_property_unchecked(m_connection->xcb_connection(), false, m_trayWindow,
+                                                    tray_atom, XCB_ATOM_VISUALID, 0, 1);
+    systray_atom_reply = xcb_get_property_reply(m_connection->xcb_connection(), systray_atom_cookie, 0);
+
+    if (!systray_atom_reply)
+        return false;
+
+    xcb_visualid_t systrayVisualId;
+    if (systray_atom_reply->value_len > 0 && xcb_get_property_value_length(systray_atom_reply) > 0) {
+        xcb_visualid_t * vids = (uint32_t *)xcb_get_property_value(systray_atom_reply);
+        systrayVisualId = vids[0];
+    }
+
+    free(systray_atom_reply);
+
+    if (systrayVisualId != XCB_NONE) {
+        quint8 depth = m_connection->primaryScreen()->depthOfVisual(systrayVisualId);
+        return depth == 32;
+    }
+
+    return false;
 }
 
 QT_END_NAMESPACE

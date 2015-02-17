@@ -463,7 +463,9 @@ public:
 
     QXcbNativeInterface *nativeInterface() const { return m_nativeInterface; }
 
-    QXcbSystemTrayTracker *systemTrayTracker();
+    QXcbSystemTrayTracker *systemTrayTracker() const;
+    static bool xEmbedSystemTrayAvailable();
+    static bool xEmbedSystemTrayVisualHasAlphaChannel();
 
 #ifdef XCB_USE_XINPUT2
     void handleEnterEvent(const xcb_enter_notify_event_t *);
@@ -474,6 +476,7 @@ public:
     bool canGrab() const { return m_canGrabServer; }
 
     QXcbGlIntegration *glIntegration() const { return m_glIntegration; }
+
 protected:
     bool event(QEvent *e) Q_DECL_OVERRIDE;
 

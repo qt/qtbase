@@ -709,4 +709,5 @@ QXcbXSettings *QXcbScreen::xSettings() const
     }
     return m_xSettings;
 }
+
 QT_END_NAMESPACE

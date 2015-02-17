@@ -1791,15 +1791,32 @@ bool QXcbConnection::xi2PrepareXIGenericDeviceEvent(xcb_ge_event_t *ev, int opCo
 }
 #endif // defined(XCB_USE_XINPUT2)
 
-QXcbSystemTrayTracker *QXcbConnection::systemTrayTracker()
+QXcbSystemTrayTracker *QXcbConnection::systemTrayTracker() const
 {
     if (!m_systemTrayTracker) {
-        if ( (m_systemTrayTracker = QXcbSystemTrayTracker::create(this)) ) {
+        QXcbConnection *self = const_cast<QXcbConnection *>(this);
+        if ((self->m_systemTrayTracker = QXcbSystemTrayTracker::create(self))) {
             connect(m_systemTrayTracker, SIGNAL(systemTrayWindowChanged(QScreen*)),
                     QGuiApplication::platformNativeInterface(), SIGNAL(systemTrayWindowChanged(QScreen*)));
         }
     }
     return m_systemTrayTracker;
+}
+
+bool QXcbConnection::xEmbedSystemTrayAvailable()
+{
+    if (!QGuiApplicationPrivate::platformIntegration())
+        return false;
+    QXcbConnection *connection = static_cast<QXcbIntegration *>(QGuiApplicationPrivate::platformIntegration())->defaultConnection();
+    return connection->systemTrayTracker();
+}
+
+bool QXcbConnection::xEmbedSystemTrayVisualHasAlphaChannel()
+{
+    if (!QGuiApplicationPrivate::platformIntegration())
+        return false;
+    QXcbConnection *connection = static_cast<QXcbIntegration *>(QGuiApplicationPrivate::platformIntegration())->defaultConnection();
+    return connection->systemTrayTracker() && connection->systemTrayTracker()->visualHasAlphaChannel();
 }
 
 bool QXcbConnection::event(QEvent *e)

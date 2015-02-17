@@ -53,6 +53,7 @@
 #include <qdebug.h>
 
 #include <QtPlatformHeaders/qxcbwindowfunctions.h>
+#include <QtPlatformHeaders/qxcbintegrationfunctions.h>
 #ifndef QT_NO_SYSTEMTRAYICON
 QT_BEGIN_NAMESPACE
 
@@ -113,10 +114,7 @@ QSystemTrayIconSys::QSystemTrayIconSys(QSystemTrayIcon *qIn)
     // window to ParentRelative (so that it inherits the background of its X11 parent window), call
     // xcb_clear_region before painting (so that the inherited background is visible) and then grab
     // the just-drawn background from the X11 server.
-    bool hasAlphaChannel = false;
-    QMetaObject::invokeMethod(QGuiApplication::platformNativeInterface(),
-                              "systrayVisualHasAlphaChannel", Qt::DirectConnection,
-                              Q_RETURN_ARG(bool, hasAlphaChannel));
+    bool hasAlphaChannel = QXcbIntegrationFunctions::xEmbedSystemTrayVisualHasAlphaChannel();
     setAttribute(Qt::WA_TranslucentBackground, hasAlphaChannel);
     if (!hasAlphaChannel) {
         createWinId();
