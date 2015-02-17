@@ -19,7 +19,7 @@ HEADERS += \
            $$PWD/qpepperinstance_p.h \
            $$PWD/qpepperintegration.h \
            $$PWD/qpeppermodule_p.h \
-           $$PWD/qpeppermwindow.h \
+           $$PWD/qpepperwindow.h \
            $$PWD/qpepperscreen.h \
            $$PWD/qpepperservices.h \
            $$PWD/qpeppertheme.h \
