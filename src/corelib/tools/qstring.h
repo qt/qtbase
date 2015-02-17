@@ -84,7 +84,7 @@ class QLatin1String
 public:
     Q_DECL_CONSTEXPR inline explicit QLatin1String(const char *s) : m_size(s ? int(strlen(s)) : 0), m_data(s) {}
     Q_DECL_CONSTEXPR inline explicit QLatin1String(const char *s, int sz) : m_size(sz), m_data(s) {}
-    inline explicit QLatin1String(const QByteArray &s) : m_size(int(qstrnlen(s.constData(), s.size()))), m_data(s.constData()) {}
+    inline explicit QLatin1String(const QByteArray &s) : m_size(s.size()), m_data(s.constData()) {}
 
     inline const char *latin1() const { return m_data; }
     inline int size() const { return m_size; }
@@ -534,11 +534,11 @@ public:
         return fromLocal8Bit_helper(str, (str && size == -1) ? int(strlen(str)) : size);
     }
     static inline QString fromLatin1(const QByteArray &str)
-    { return str.isNull() ? QString() : fromLatin1(str.data(), qstrnlen(str.constData(), str.size())); }
+    { return str.isNull() ? QString() : fromLatin1(str.data(), str.size()); }
     static inline QString fromUtf8(const QByteArray &str)
-    { return str.isNull() ? QString() : fromUtf8(str.data(), qstrnlen(str.constData(), str.size())); }
+    { return str.isNull() ? QString() : fromUtf8(str.data(), str.size()); }
     static inline QString fromLocal8Bit(const QByteArray &str)
-    { return str.isNull() ? QString() : fromLocal8Bit(str.data(), qstrnlen(str.constData(), str.size())); }
+    { return str.isNull() ? QString() : fromLocal8Bit(str.data(), str.size()); }
     static QString fromUtf16(const ushort *, int size = -1);
     static QString fromUcs4(const uint *, int size = -1);
     static QString fromRawData(const QChar *, int size);
@@ -650,7 +650,7 @@ public:
         : d(fromAscii_helper(ch, ch ? int(strlen(ch)) : -1))
     {}
     inline QT_ASCII_CAST_WARN QString(const QByteArray &a)
-        : d(fromAscii_helper(a.constData(), qstrnlen(a.constData(), a.size())))
+        : d(fromAscii_helper(a.constData(), a.size()))
     {}
     inline QT_ASCII_CAST_WARN QString &operator=(const char *ch)
     { return (*this = fromUtf8(ch)); }
@@ -1211,30 +1211,30 @@ inline QT_ASCII_CAST_WARN bool QLatin1String::operator>=(const QByteArray &s) co
 { return QString::fromUtf8(s) <= *this; }
 
 inline QT_ASCII_CAST_WARN bool QString::operator==(const QByteArray &s) const
-{ return QString::compare_helper(constData(), size(), s.constData(), qstrnlen(s.constData(), s.size())) == 0; }
+{ return QString::compare_helper(constData(), size(), s.constData(), s.size()) == 0; }
 inline QT_ASCII_CAST_WARN bool QString::operator!=(const QByteArray &s) const
-{ return QString::compare_helper(constData(), size(), s.constData(), qstrnlen(s.constData(), s.size())) != 0; }
+{ return QString::compare_helper(constData(), size(), s.constData(), s.size()) != 0; }
 inline QT_ASCII_CAST_WARN bool QString::operator<(const QByteArray &s) const
-{ return QString::compare_helper(constData(), size(), s.constData(), qstrnlen(s.constData(), s.size())) < 0; }
+{ return QString::compare_helper(constData(), size(), s.constData(), s.size()) < 0; }
 inline QT_ASCII_CAST_WARN bool QString::operator>(const QByteArray &s) const
-{ return QString::compare_helper(constData(), size(), s.constData(), qstrnlen(s.constData(), s.size())) > 0; }
+{ return QString::compare_helper(constData(), size(), s.constData(), s.size()) > 0; }
 inline QT_ASCII_CAST_WARN bool QString::operator<=(const QByteArray &s) const
-{ return QString::compare_helper(constData(), size(), s.constData(), qstrnlen(s.constData(), s.size())) <= 0; }
+{ return QString::compare_helper(constData(), size(), s.constData(), s.size()) <= 0; }
 inline QT_ASCII_CAST_WARN bool QString::operator>=(const QByteArray &s) const
-{ return QString::compare_helper(constData(), size(), s.constData(), qstrnlen(s.constData(), s.size())) >= 0; }
+{ return QString::compare_helper(constData(), size(), s.constData(), s.size()) >= 0; }
 
 inline bool QByteArray::operator==(const QString &s) const
-{ return QString::compare_helper(s.constData(), s.size(), constData(), qstrnlen(constData(), size())) == 0; }
+{ return QString::compare_helper(s.constData(), s.size(), constData(), size()) == 0; }
 inline bool QByteArray::operator!=(const QString &s) const
-{ return QString::compare_helper(s.constData(), s.size(), constData(), qstrnlen(constData(), size())) != 0; }
+{ return QString::compare_helper(s.constData(), s.size(), constData(), size()) != 0; }
 inline bool QByteArray::operator<(const QString &s) const
-{ return QString::compare_helper(s.constData(), s.size(), constData(), qstrnlen(constData(), size())) < 0; }
+{ return QString::compare_helper(s.constData(), s.size(), constData(), size()) < 0; }
 inline bool QByteArray::operator>(const QString &s) const
-{ return QString::compare_helper(s.constData(), s.size(), constData(), qstrnlen(constData(), size())) > 0; }
+{ return QString::compare_helper(s.constData(), s.size(), constData(), size()) > 0; }
 inline bool QByteArray::operator<=(const QString &s) const
-{ return QString::compare_helper(s.constData(), s.size(), constData(), qstrnlen(constData(), size())) <= 0; }
+{ return QString::compare_helper(s.constData(), s.size(), constData(), size()) <= 0; }
 inline bool QByteArray::operator>=(const QString &s) const
-{ return QString::compare_helper(s.constData(), s.size(), constData(), qstrnlen(constData(), size())) >= 0; }
+{ return QString::compare_helper(s.constData(), s.size(), constData(), size()) >= 0; }
 #endif // !defined(QT_NO_CAST_FROM_ASCII) && !defined(QT_RESTRICTED_CAST_FROM_ASCII)
 
 #ifndef QT_NO_CAST_TO_ASCII
