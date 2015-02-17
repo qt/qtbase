@@ -142,6 +142,15 @@ public:
     QXcbWindowFunctions::WmWindowTypes wmWindowTypes() const;
     void setWmWindowType(QXcbWindowFunctions::WmWindowTypes types);
 
+    static void setParentRelativeBackPixmapStatic(QWindow *window);
+    void setParentRelativeBackPixmap();
+
+    static bool requestSystemTrayWindowDockStatic(const QWindow *window);
+    bool requestSystemTrayWindowDock() const;
+
+    static QRect systemTrayWindowGlobalGeometryStatic(const QWindow *window);
+    QRect systemTrayWindowGlobalGeometry() const;
+
     bool needsSync() const;
 
     void postSyncWindowRequest();

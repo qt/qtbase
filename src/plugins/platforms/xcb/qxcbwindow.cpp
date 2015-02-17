@@ -46,6 +46,7 @@
 #include "qxcbwmsupport.h"
 #include "qxcbimage.h"
 #include "qxcbnativeinterface.h"
+#include "qxcbsystemtraytracker.h"
 
 #include <qpa/qplatformintegration.h>
 
@@ -1662,6 +1663,48 @@ void QXcbWindow::setWmWindowType(QXcbWindowFunctions::WmWindowTypes types)
                                        atoms.count(), atoms.constData()));
     }
     xcb_flush(xcb_connection());
+}
+
+void QXcbWindow::setParentRelativeBackPixmapStatic(QWindow *window)
+{
+    if (window->handle())
+        static_cast<QXcbWindow *>(window->handle())->setParentRelativeBackPixmap();
+}
+
+void QXcbWindow::setParentRelativeBackPixmap()
+{
+    const quint32 mask = XCB_CW_BACK_PIXMAP;
+    const quint32 values[] = { XCB_BACK_PIXMAP_PARENT_RELATIVE };
+    Q_XCB_CALL(xcb_change_window_attributes(xcb_connection(), m_window, mask, values));
+}
+
+bool QXcbWindow::requestSystemTrayWindowDockStatic(const QWindow *window)
+{
+    if (window->handle())
+        return static_cast<QXcbWindow *>(window->handle())->requestSystemTrayWindowDock();
+    return false;
+}
+
+bool QXcbWindow::requestSystemTrayWindowDock() const
+{
+    if (!connection()->systemTrayTracker())
+        return false;
+    connection()->systemTrayTracker()->requestSystemTrayWindowDock(m_window);
+    return true;
+}
+
+QRect QXcbWindow::systemTrayWindowGlobalGeometryStatic(const QWindow *window)
+{
+    if (window->handle())
+        return static_cast<QXcbWindow *>(window->handle())->systemTrayWindowGlobalGeometry();
+    return QRect();
+}
+
+QRect QXcbWindow::systemTrayWindowGlobalGeometry() const
+{
+   if (!connection()->systemTrayTracker())
+       return QRect();
+   return connection()->systemTrayTracker()->systemTrayWindowGlobalGeometry(m_window);
 }
 
 class ExposeCompressor

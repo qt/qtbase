@@ -109,22 +109,12 @@ bool QXcbNativeInterface::systemTrayAvailable(const QScreen *screen) const
 
 bool QXcbNativeInterface::requestSystemTrayWindowDock(const QWindow *window)
 {
-    const QPlatformWindow *platformWindow = window->handle();
-    if (!platformWindow)
-        return false;
-    QXcbSystemTrayTracker *trayTracker = systemTrayTracker(window->screen());
-    if (!trayTracker)
-        return false;
-    trayTracker->requestSystemTrayWindowDock(static_cast<const QXcbWindow *>(platformWindow)->xcb_window());
-    return true;
+    return QXcbWindow::requestSystemTrayWindowDockStatic(window);
 }
 
 QRect QXcbNativeInterface::systemTrayWindowGlobalGeometry(const QWindow *window)
 {
-    if (const QPlatformWindow *platformWindow = window->handle())
-        if (const QXcbSystemTrayTracker *trayTracker = systemTrayTracker(window->screen()))
-            return trayTracker->systemTrayWindowGlobalGeometry(static_cast<const QXcbWindow *>(platformWindow)->xcb_window());
-    return QRect();
+    return QXcbWindow::systemTrayWindowGlobalGeometryStatic(window);
 }
 
 xcb_window_t QXcbNativeInterface::locateSystemTray(xcb_connection_t *conn, const QXcbScreen *screen)
@@ -193,16 +183,9 @@ bool QXcbNativeInterface::systrayVisualHasAlphaChannel() {
     }
 }
 
-void QXcbNativeInterface::setParentRelativeBackPixmap(const QWindow *qwindow)
+void QXcbNativeInterface::setParentRelativeBackPixmap(QWindow *window)
 {
-    if (const QPlatformWindow *platformWindow = qwindow->handle()) {
-        const QXcbWindow *qxwindow = static_cast<const QXcbWindow *>(platformWindow);
-        xcb_connection_t *xcb_conn = qxwindow->xcb_connection();
-
-        const quint32 mask = XCB_CW_BACK_PIXMAP;
-        const quint32 values[] = { XCB_BACK_PIXMAP_PARENT_RELATIVE };
-        Q_XCB_CALL(xcb_change_window_attributes(xcb_conn, qxwindow->xcb_window(), mask, values));
-    }
+    QXcbWindow::setParentRelativeBackPixmapStatic(window);
 }
 
 void *QXcbNativeInterface::nativeResourceForIntegration(const QByteArray &resourceString)
@@ -378,9 +361,18 @@ QFunctionPointer QXcbNativeInterface::platformFunction(const QByteArray &functio
         return func;
 
     //case sensitive
-    if (function == QXcbWindowFunctions::setWmWindowTypeIdentifier()) {
-        return QFunctionPointer(QXcbWindow::setWmWindowTypeStatic);
-    }
+    if (function == QXcbWindowFunctions::setWmWindowTypeIdentifier())
+        return QFunctionPointer(QXcbWindowFunctions::SetWmWindowType(QXcbWindow::setWmWindowTypeStatic));
+
+    if (function == QXcbWindowFunctions::setParentRelativeBackPixmapIdentifier())
+        return QFunctionPointer(QXcbWindowFunctions::SetParentRelativeBackPixmap(QXcbWindow::setParentRelativeBackPixmapStatic));
+
+    if (function == QXcbWindowFunctions::requestSystemTrayWindowDockIdentifier())
+        return QFunctionPointer(QXcbWindowFunctions::RequestSystemTrayWindowDock(QXcbWindow::requestSystemTrayWindowDockStatic));
+
+    if (function == QXcbWindowFunctions::systemTrayWindowGlobalGeometryIdentifier())
+        return QFunctionPointer(QXcbWindowFunctions::SystemTrayWindowGlobalGeometry(QXcbWindow::systemTrayWindowGlobalGeometryStatic));
+
     return Q_NULLPTR;
 }
 
