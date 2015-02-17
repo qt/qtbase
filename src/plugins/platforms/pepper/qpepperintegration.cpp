@@ -19,7 +19,7 @@
 
 #include "qpepperintegration.h"
 #include "qpepperscreen.h"
-#include "qpepperplatformwindow.h"
+#include "qpepperwindow.h"
 #include "qpepperfontdatabase.h"
 #include "qpepperclipboard.h"
 #include "qpepperbackingstore.h"

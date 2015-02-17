@@ -21,7 +21,7 @@
 #define QPEPPERINTEGRATION_H
 
 #include "qpepperscreen.h"
-#include "qpepperplatformwindow.h"
+#include "qpepperwindow.h"
 #include "qpepperglcontext.h"
 #include "qpepperinstance_p.h"
 #include "qpeppereventdispatcher.h"

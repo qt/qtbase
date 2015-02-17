@@ -19,7 +19,7 @@
 
 #include "qpepperbackingstore.h"
 #include "qpeppercompositor.h"
-#include "qpepperplatformwindow.h"
+#include "qpepperwindow.h"
 #include "qpepperinstance.h"
 #include "qpepperinstance_p.h"
 

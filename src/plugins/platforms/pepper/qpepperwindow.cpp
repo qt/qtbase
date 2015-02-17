@@ -17,7 +17,7 @@
 **
 ****************************************************************************/
 
-#include "qpepperplatformwindow.h"
+#include "qpepperwindow.h"
 #include "qpepperglcontext.h"
 #include "qpeppermodule.h"
 #include "qpeppercompositor.h"
