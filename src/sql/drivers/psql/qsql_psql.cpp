@@ -1248,6 +1248,23 @@ QSqlRecord QPSQLDriver::record(const QString& tablename) const
     return info;
 }
 
+template <class FloatType>
+inline void assignSpecialPsqlFloatValue(FloatType val, QString *target)
+{
+    if (isnan(val)) {
+        *target = QLatin1String("'NaN'");
+    } else {
+        switch (isinf(val)) {
+        case 1:
+            *target = QLatin1String("'Infinity'");
+            break;
+        case -1:
+            *target = QLatin1String("'-Infinity'");
+            break;
+        }
+    }
+}
+
 QString QPSQLDriver::formatValue(const QSqlField &field, bool trimStrings) const
 {
     Q_D(const QPSQLDriver);
@@ -1255,7 +1272,7 @@ QString QPSQLDriver::formatValue(const QSqlField &field, bool trimStrings) const
     if (field.isNull()) {
         r = QLatin1String("NULL");
     } else {
-        switch (field.type()) {
+        switch (int(field.type())) {
         case QVariant::DateTime:
 #ifndef QT_NO_DATESTRING
             if (field.value().toDateTime().isValid()) {
@@ -1305,21 +1322,16 @@ QString QPSQLDriver::formatValue(const QSqlField &field, bool trimStrings) const
             qPQfreemem(data);
             break;
         }
-        case QVariant::Double: {
-            double val = field.value().toDouble();
-            if (isnan(val))
-                r = QLatin1String("'NaN'");
-            else {
-                int res = isinf(val);
-                if (res == 1)
-                    r = QLatin1String("'Infinity'");
-                else if (res == -1)
-                    r = QLatin1String("'-Infinity'");
-                else
-                    r = QSqlDriver::formatValue(field, trimStrings);
-            }
+        case QMetaType::Float:
+            assignSpecialPsqlFloatValue(field.value().toFloat(), &r);
+            if (r.isEmpty())
+                r = QSqlDriver::formatValue(field, trimStrings);
             break;
-        }
+        case QVariant::Double:
+            assignSpecialPsqlFloatValue(field.value().toDouble(), &r);
+            if (r.isEmpty())
+                r = QSqlDriver::formatValue(field, trimStrings);
+            break;
         default:
             r = QSqlDriver::formatValue(field, trimStrings);
             break;
