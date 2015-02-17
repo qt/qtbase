@@ -188,16 +188,18 @@ void QGLXContext::init(QXcbScreen *screen, QPlatformOpenGLContext *share)
     Window window = 0; // Temporary window used to query OpenGL context
 
     if (config) {
+        const QByteArrayList glxExt = QByteArray(glXQueryExtensionsString(m_display, screen->screenNumber())).split(' ');
+
         // Resolve entry point for glXCreateContextAttribsARB
         glXCreateContextAttribsARBProc glXCreateContextAttribsARB = 0;
-        glXCreateContextAttribsARB = (glXCreateContextAttribsARBProc) glXGetProcAddress((const GLubyte*)"glXCreateContextAttribsARB");
+        if (glxExt.contains("GLX_ARB_create_context"))
+            glXCreateContextAttribsARB = (glXCreateContextAttribsARBProc) glXGetProcAddress((const GLubyte*)"glXCreateContextAttribsARB");
 
-        QList<QByteArray> glxExt = QByteArray(glXQueryExtensionsString(m_display, screen->screenNumber())).split(' ');
-        bool supportsProfiles = glxExt.contains("GLX_ARB_create_context_profile");
+        const bool supportsProfiles = glxExt.contains("GLX_ARB_create_context_profile");
 
         // Use glXCreateContextAttribsARB if available
         // Also, GL ES context creation requires GLX_EXT_create_context_es2_profile
-        if (glxExt.contains("GLX_ARB_create_context") && glXCreateContextAttribsARB != 0
+        if (glXCreateContextAttribsARB != 0
                 && (m_format.renderableType() != QSurfaceFormat::OpenGLES || (supportsProfiles && glxExt.contains("GLX_EXT_create_context_es2_profile")))) {
             // Try to create an OpenGL context for each known OpenGL version in descending
             // order from the requested version.
