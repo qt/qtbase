@@ -30,11 +30,11 @@ QT_BEGIN_NAMESPACE
 
 Q_LOGGING_CATEGORY(QT_PLATFORM_PEPPER_WINDOW, "qt.platform.pepper.window")
 
-QPepperPlatformWindow::QPepperPlatformWindow(QWindow *window)
+QPepperWindow::QPepperWindow(QWindow *window)
     : QPlatformWindow(window)
     , m_isVisible(false)
 {
-    qCDebug(QT_PLATFORM_PEPPER_WINDOW) << "Create QPepperPlatformWindow for" << window;
+    qCDebug(QT_PLATFORM_PEPPER_WINDOW) << "Create QPepperWindow for" << window;
 
     m_pepperIntegration = QPepperIntegration::getPepperIntegration();
 
@@ -47,15 +47,15 @@ QPepperPlatformWindow::QPepperPlatformWindow(QWindow *window)
         m_compositor->addRasterWindow(this->window());
 }
 
-QPepperPlatformWindow::~QPepperPlatformWindow()
+QPepperWindow::~QPepperWindow()
 {
     if (m_compositor)
         m_compositor->removeWindow(this->window());
 }
 
-WId QPepperPlatformWindow::winId() const { return WId(this); }
+WId QPepperWindow::winId() const { return WId(this); }
 
-void QPepperPlatformWindow::setVisible(bool visible)
+void QPepperWindow::setVisible(bool visible)
 {
     qCDebug(QT_PLATFORM_PEPPER_WINDOW) << "setVisible" << visible;
 
@@ -67,7 +67,7 @@ void QPepperPlatformWindow::setVisible(bool visible)
         m_compositor->setVisible(this->window(), visible);
 }
 
-void QPepperPlatformWindow::setWindowState(Qt::WindowState state)
+void QPepperWindow::setWindowState(Qt::WindowState state)
 {
     qCDebug(QT_PLATFORM_PEPPER_WINDOW) << "setWindowState" << state;
 
@@ -87,7 +87,7 @@ void QPepperPlatformWindow::setWindowState(Qt::WindowState state)
     }
 }
 
-void QPepperPlatformWindow::raise()
+void QPepperWindow::raise()
 {
     qCDebug(QT_PLATFORM_PEPPER_WINDOW) << "raise";
 
@@ -95,7 +95,7 @@ void QPepperPlatformWindow::raise()
         m_compositor->raise(this->window());
 }
 
-void QPepperPlatformWindow::lower()
+void QPepperWindow::lower()
 {
     qCDebug(QT_PLATFORM_PEPPER_WINDOW) << "lower";
 
@@ -103,7 +103,7 @@ void QPepperPlatformWindow::lower()
         m_compositor->lower(this->window());
 }
 
-void QPepperPlatformWindow::setGeometry(const QRect &rect)
+void QPepperWindow::setGeometry(const QRect &rect)
 {
     qCDebug(QT_PLATFORM_PEPPER_WINDOW) << "setGeometry" << rect;
 
@@ -112,15 +112,15 @@ void QPepperPlatformWindow::setGeometry(const QRect &rect)
     QPepperInstancePrivate::get()->scheduleWindowSystemEventsFlush();
 }
 
-void QPepperPlatformWindow::setParent(const QPlatformWindow *parent)
+void QPepperWindow::setParent(const QPlatformWindow *parent)
 {
-    qCDebug(QT_PLATFORM_PEPPER_WINDOW) << "QPepperPlatformWindow::setParent" << parent;
+    qCDebug(QT_PLATFORM_PEPPER_WINDOW) << "QPepperWindow::setParent" << parent;
 
     if (m_compositor)
         m_compositor->setParent(this->window(), parent->window());
 }
 
-bool QPepperPlatformWindow::setKeyboardGrabEnabled(bool grab)
+bool QPepperWindow::setKeyboardGrabEnabled(bool grab)
 {
     qCDebug(QT_PLATFORM_PEPPER_WINDOW) << "setKeyboardGrabEnabled" << grab;
 
@@ -128,7 +128,7 @@ bool QPepperPlatformWindow::setKeyboardGrabEnabled(bool grab)
     return false;
 }
 
-bool QPepperPlatformWindow::setMouseGrabEnabled(bool grab)
+bool QPepperWindow::setMouseGrabEnabled(bool grab)
 {
     qCDebug(QT_PLATFORM_PEPPER_WINDOW) << "setMouseGrabEnabled" << grab;
 
@@ -136,7 +136,7 @@ bool QPepperPlatformWindow::setMouseGrabEnabled(bool grab)
     return false;
 }
 
-qreal QPepperPlatformWindow::devicePixelRatio() const
+qreal QPepperWindow::devicePixelRatio() const
 {
     return QPepperInstancePrivate::get()->devicePixelRatio();
 }

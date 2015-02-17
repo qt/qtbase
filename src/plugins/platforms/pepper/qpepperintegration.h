@@ -38,7 +38,7 @@ class QPepperFontDatabase;
 class QPlatformClipboard;
 class QPepperClipboard;
 class QPepperCompositor;
-class QPepperPlatformWindow;
+class QPepperWindow;
 class QPepperServices;
 class QAbstractEventDispatcher;
 class QPepperIntegration : public QObject, public QPlatformIntegration
@@ -85,7 +85,7 @@ public:
     QPepperCompositor *m_compositor;
     PepperEventTranslator *m_eventTranslator;
     mutable QPepperEventDispatcher *m_pepperEventDispatcher;
-    mutable QPepperPlatformWindow *m_topLevelWindow;
+    mutable QPepperWindow *m_topLevelWindow;
     mutable QPepperFontDatabase *m_fontDatabase;
     mutable QPepperClipboard *m_clipboard;
     mutable QPepperServices *m_services;

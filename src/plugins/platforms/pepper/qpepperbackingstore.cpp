@@ -48,7 +48,7 @@ QPepperBackingStore::QPepperBackingStore(QWindow *window)
     // Compositor disabled
     m_compositor = QPepperIntegration::getPepperIntegration()->pepperCompositor();
     m_compositor->addRasterWindow(window);
-    QPepperPlatformWindow *platformWindow = reinterpret_cast<QPepperPlatformWindow *>(window->handle());
+    QPepperWindow *platformWindow = reinterpret_cast<QPepperWindow *>(window->handle());
     platformWindow->setCompositor(m_compositor);
 #endif
 

@@ -32,11 +32,11 @@ Q_DECLARE_LOGGING_CATEGORY(QT_PLATFORM_PEPPER_WINDOW)
 
 class QPepperWindowSurface;
 class QPepperGLContext;
-class QPepperPlatformWindow : public QPlatformWindow
+class QPepperWindow : public QPlatformWindow
 {
 public:
-    QPepperPlatformWindow(QWindow *window);
-    ~QPepperPlatformWindow();
+    QPepperWindow(QWindow *window);
+    ~QPepperWindow();
 
     WId winId() const;
     void setVisible(bool visible);

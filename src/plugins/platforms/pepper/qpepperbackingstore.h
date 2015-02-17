@@ -31,7 +31,7 @@ QT_BEGIN_NAMESPACE
 
 Q_DECLARE_LOGGING_CATEGORY(QT_PLATFORM_PEPPER_BACKINGSTORE)
 
-class QPepperPlatformWindow;
+class QPepperWindow;
 class QPepperCompositor;
 class QPepperInstance;
 class QPepperBackingStore : public QPlatformBackingStore
@@ -57,7 +57,7 @@ public:
 
 private:
     QSize m_size;
-    QPepperPlatformWindow *m_PepperWindow;
+    QPepperWindow *m_PepperWindow;
     QPepperCompositor *m_compositor;
     pp::Graphics2D *m_context2D;
     pp::ImageData *m_imageData2D;

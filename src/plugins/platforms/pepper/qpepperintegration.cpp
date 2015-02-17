@@ -96,7 +96,7 @@ bool QPepperIntegration::hasOpenGL() const { return true; }
 
 QPlatformWindow *QPepperIntegration::createPlatformWindow(QWindow *window) const
 {
-    QPepperPlatformWindow *platformWindow = new QPepperPlatformWindow(window);
+    QPepperWindow *platformWindow = new QPepperWindow(window);
     if (m_topLevelWindow == 0)
         m_topLevelWindow = platformWindow;
 
