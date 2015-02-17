@@ -41,6 +41,8 @@
 
 #include <pthread.h>
 
+QT_BEGIN_NAMESPACE
+
 Q_DECLARE_LOGGING_CATEGORY(QT_PLATFORM_PEPPER_INSTANCE)
 
 // ThreadSafeQueue is a simple thread-safe queue. T must
@@ -157,5 +159,7 @@ public:
 
     pp::CompletionCallbackFactory<QPepperInstancePrivate> m_callbackFactory;
 };
+
+QT_END_NAMESPACE
 
 #endif

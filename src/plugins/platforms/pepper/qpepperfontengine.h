@@ -26,6 +26,8 @@
 
 #include <ppapi/cpp/dev/font_dev.h>
 
+QT_BEGIN_NAMESPACE
+
 class QFontEnginePepper : public QFontEngine
 {
 public:
@@ -50,6 +52,8 @@ private:
     pp::Font_Dev m_pepperFont;
     PP_FontMetrics_Dev m_pepperFontMetrics;
 };
+
+QT_END_NAMESPACE
 
 #endif
 #endif

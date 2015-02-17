@@ -26,6 +26,10 @@
 #include <ppapi/cpp/image_data.h>
 #include <ppapi/utility/completion_callback_factory.h>
 
+QT_BEGIN_NAMESPACE
+
+Q_DECLARE_LOGGING_CATEGORY(QT_PLATFORM_PEPPER_COMPOSITOR)
+
 class QPepperCompositedWindow
 {
 public:
@@ -39,8 +43,6 @@ public:
     bool visible;
     QList<QWindow *> childWindows;
 };
-
-Q_DECLARE_LOGGING_CATEGORY(QT_PLATFORM_PEPPER_COMPOSITOR)
 
 class QPepperCompositor : public QObject
 {
@@ -93,5 +95,7 @@ private:
 
     pp::CompletionCallbackFactory<QPepperCompositor> m_callbackFactory;
 };
+
+QT_END_NAMESPACE
 
 #endif

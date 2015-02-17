@@ -28,6 +28,8 @@
 #include <ppapi/cpp/rect.h>
 #include <ppapi/cpp/var.h>
 
+QT_BEGIN_NAMESPACE
+
 pp::Rect toPPRect(const QRect rect);
 QRect toQRect(pp::Rect rect);
 QSize toQSize(pp::Size size);
@@ -48,5 +50,7 @@ public:
     int32_t Release();
     QAtomicInt ref;
 };
+
+QT_END_NAMESPACE
 
 #endif

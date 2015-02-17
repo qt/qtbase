@@ -31,6 +31,8 @@
 #include <ppapi/cpp/graphics_3d.h>
 #include <ppapi/utility/completion_callback_factory.h>
 
+QT_BEGIN_NAMESPACE
+
 Q_DECLARE_LOGGING_CATEGORY(QT_PLATFORM_PEPPER_GLCONTEXT)
 
 class QPepperInstance;
@@ -55,6 +57,8 @@ private:
     bool m_pendingFlush;
     pp::CompletionCallbackFactory<QPepperGLContext> m_callbackFactory;
 };
+
+QT_END_NAMESPACE
 
 #endif
 

@@ -24,6 +24,8 @@
 #include <ppapi/cpp/instance.h>
 #include <ppapi/cpp/module.h>
 
+QT_BEGIN_NAMESPACE
+
 class QPepperModule;
 class QPepperModulePrivate
 {
@@ -36,5 +38,7 @@ public:
 private:
     QPepperModule *q;
 };
+
+QT_END_NAMESPACE
 
 #endif
