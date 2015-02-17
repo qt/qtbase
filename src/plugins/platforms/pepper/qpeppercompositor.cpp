@@ -24,10 +24,10 @@
 #include <QtGui>
 #include <qpa/qwindowsysteminterface.h>
 
-#include "ppapi/cpp/var.h"
-#include "ppapi/cpp/graphics_2d.h"
-#include "ppapi/cpp/image_data.h"
-#include "ppapi/cpp/instance.h"
+#include <ppapi/cpp/var.h>
+#include <ppapi/cpp/graphics_2d.h>
+#include <ppapi/cpp/image_data.h>
+#include <ppapi/cpp/instance.h>
 
 using namespace pp;
 

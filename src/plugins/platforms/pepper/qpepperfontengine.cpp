@@ -21,7 +21,7 @@
 
 #ifdef QT_PEPPER_USE_PEPPER_FONT_ENGINE
 
-#include "ppapi/cpp/dev/font_dev.h"
+#include <ppapi/cpp/dev/font_dev.h>
 
 static inline unsigned int getChar(const QChar *str, int &i, const int len)
 {

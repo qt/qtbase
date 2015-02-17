@@ -26,8 +26,8 @@
 #include <QtCore/qloggingcategory.h>
 #include <QtGui/qwindow.h>
 
-#include "ppapi/c/pp_input_event.h"
-#include "ppapi/cpp/input_event.h"
+#include <ppapi/c/pp_input_event.h>
+#include <ppapi/cpp/input_event.h>
 
 Q_DECLARE_LOGGING_CATEGORY(QT_PLATFORM_PEPPER_EVENT_KEYBOARD)
 

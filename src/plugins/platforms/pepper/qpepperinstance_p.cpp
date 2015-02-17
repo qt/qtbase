@@ -28,10 +28,10 @@
 
 #include <qpa/qwindowsysteminterface.h>
 
-#include "ppapi/cpp/var.h"
-#include "ppapi/cpp/instance.h"
-#include "ppapi/cpp/completion_callback.h"
-#include "ppapi/utility/threading/simple_thread.h"
+#include <ppapi/cpp/var.h>
+#include <ppapi/cpp/instance.h>
+#include <ppapi/cpp/completion_callback.h>
+#include <ppapi/utility/threading/simple_thread.h>
 
 #ifdef Q_OS_NACL_NEWLIB
 #include "error_handling/error_handling.h"
