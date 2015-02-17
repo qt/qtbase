@@ -274,21 +274,23 @@ void QXcbConnection::xi2Select(xcb_window_t window)
     unsigned char *xiBitMask = reinterpret_cast<unsigned char *>(&bitMask);
 
 #ifdef XCB_USE_XINPUT22
-    bitMask |= XI_TouchBeginMask;
-    bitMask |= XI_TouchUpdateMask;
-    bitMask |= XI_TouchEndMask;
-    XIEventMask mask;
-    mask.mask_len = sizeof(bitMask);
-    mask.mask = xiBitMask;
-    if (!m_touchDevices.isEmpty()) {
-        mask.deviceid = XIAllMasterDevices;
-        Status result = XISelectEvents(xDisplay, window, &mask, 1);
-        // If we select for touch events on the master pointer, XInput2
-        // will not synthesize mouse events. This means Qt must do it,
-        // which is also preferable, since Qt can control better when
-        // to do so.
-        if (m_xi2Minor >= 2 && result == Success)
-            has_touch_without_mouse_emulation = true;
+    if (isUsingXInput22()) {
+        bitMask |= XI_TouchBeginMask;
+        bitMask |= XI_TouchUpdateMask;
+        bitMask |= XI_TouchEndMask;
+        XIEventMask mask;
+        mask.mask_len = sizeof(bitMask);
+        mask.mask = xiBitMask;
+        if (!m_touchDevices.isEmpty()) {
+            mask.deviceid = XIAllMasterDevices;
+            Status result = XISelectEvents(xDisplay, window, &mask, 1);
+            // If we select for touch events on the master pointer, XInput2
+            // will not synthesize mouse events. This means Qt must do it,
+            // which is also preferable, since Qt can control better when
+            // to do so.
+            if (result == Success)
+                has_touch_without_mouse_emulation = true;
+        }
     }
 #endif // XCB_USE_XINPUT22
 

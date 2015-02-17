@@ -404,11 +404,15 @@ public:
     void xi2Select(xcb_window_t window);
 #endif
 #ifdef XCB_USE_XINPUT21
-    bool isUsingXInput21() { return m_xi2Enabled && m_xi2Minor >= 1; }
+    bool isUsingXInput21() const { return m_xi2Enabled && m_xi2Minor >= 1; }
 #else
-    bool isUsingXInput21() { return false; }
+    bool isUsingXInput21() const { return false; }
 #endif
-
+#ifdef XCB_USE_XINPUT22
+    bool isUsingXInput22() const { return m_xi2Enabled && m_xi2Minor >= 2; }
+#else
+    bool isUsingXInput22() const { return false; }
+#endif
 
     void sync();
 
