@@ -22,9 +22,6 @@
 
 #include "qpepperinstance_p.h"
 
-#include <QtGui>
-#include <QtCore>
-
 #include <ppapi/cpp/graphics_2d.h>
 #include <ppapi/cpp/image_data.h>
 #include <ppapi/utility/completion_callback_factory.h>
