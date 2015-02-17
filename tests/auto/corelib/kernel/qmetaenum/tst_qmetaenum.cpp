@@ -46,6 +46,8 @@ public:
 
 private slots:
     void fromType();
+    void valuesToKeys_data();
+    void valuesToKeys();
 };
 
 void tst_QMetaEnum::fromType()
@@ -55,6 +57,38 @@ void tst_QMetaEnum::fromType()
     QCOMPARE(meta.name(), "SuperEnum");
     QCOMPARE(meta.enclosingMetaObject(), &staticMetaObject);
     QCOMPARE(meta.keyCount(), 2);
+}
+
+Q_DECLARE_METATYPE(Qt::WindowFlags)
+
+void tst_QMetaEnum::valuesToKeys_data()
+{
+   QTest::addColumn<Qt::WindowFlags>("windowFlags");
+   QTest::addColumn<QByteArray>("expected");
+
+   QTest::newRow("Window")
+       << Qt::WindowFlags(Qt::Window)
+       << QByteArrayLiteral("Window");
+
+   // Verify that Qt::Dialog does not cause 'Window' to appear in the output.
+   QTest::newRow("Frameless_Dialog")
+       << (Qt::Dialog | Qt::FramelessWindowHint)
+       << QByteArrayLiteral("Dialog|FramelessWindowHint");
+
+   // Similarly, Qt::WindowMinMaxButtonsHint should not show up as
+   // WindowMinimizeButtonHint|WindowMaximizeButtonHint
+   QTest::newRow("Tool_MinMax_StaysOnTop")
+       << (Qt::Tool | Qt::WindowMinMaxButtonsHint | Qt::WindowStaysOnTopHint)
+       << QByteArrayLiteral("Tool|WindowMinMaxButtonsHint|WindowStaysOnTopHint");
+}
+
+void tst_QMetaEnum::valuesToKeys()
+{
+    QFETCH(Qt::WindowFlags, windowFlags);
+    QFETCH(QByteArray, expected);
+
+    QMetaEnum me = QMetaEnum::fromType<Qt::WindowFlags>();
+    QCOMPARE(me.valueToKeys(windowFlags), expected);
 }
 
 QTEST_MAIN(tst_QMetaEnum)

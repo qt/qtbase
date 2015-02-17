@@ -2665,13 +2665,14 @@ QByteArray QMetaEnum::valueToKeys(int value) const
     int count = mobj->d.data[handle + 2];
     int data = mobj->d.data[handle + 3];
     int v = value;
-    for(int i = 0; i < count; i++) {
+    // reverse iterate to ensure values like Qt::Dialog=0x2|Qt::Window are processed first.
+    for (int i = count - 1; i >= 0; --i) {
         int k = mobj->d.data[data + 2*i + 1];
         if ((k != 0 && (v & k) == k ) ||  (k == value))  {
             v = v & ~k;
             if (!keys.isEmpty())
-                keys += '|';
-            keys += stringData(mobj, mobj->d.data[data + 2*i]);
+                keys.prepend('|');
+            keys.prepend(stringData(mobj, mobj->d.data[data + 2*i]));
         }
     }
     return keys;
