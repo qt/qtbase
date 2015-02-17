@@ -17,8 +17,8 @@
 **
 ****************************************************************************/
 
-#ifndef QT_PEPPER_MODULE_P_H
-#define QT_PEPPER_MODULE_P_H
+#ifndef QPEPPERMODULE_P_H
+#define QPEPPERMODULE_P_H
 
 #include <ppapi/cpp/core.h>
 #include <ppapi/cpp/module.h>

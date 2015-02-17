@@ -17,8 +17,8 @@
 **
 ****************************************************************************/
 
-#ifndef QPLATFORMGLCONTEXT_PEPPER_H
-#define QPLATFORMGLCONTEXT_PEPPER_H
+#ifndef QPEPPERGLCONTEXT_H
+#define QPEPPERGLCONTEXT_H
 
 #include <qglobal.h>
 

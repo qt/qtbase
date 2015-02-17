@@ -17,8 +17,8 @@
 **
 ****************************************************************************/
 
-#ifndef QT_PEPPER_INSTANCE_IMPL_H
-#define QT_PEPPER_INSTANCE_IMPL_H
+#ifndef QTPEPPERINSTANCE_P_H
+#define QTPEPPERINSTANCE_P_H
 
 #include "qpeppereventtranslator.h"
 #include "qpepperhelpers.h"

@@ -17,8 +17,8 @@
 **
 ****************************************************************************/
 
-#ifndef QPLATFORMINTEGRATION_PEPPER_H
-#define QPLATFORMINTEGRATION_PEPPER_H
+#ifndef QPEPPERINTEGRATION_H
+#define QPEPPERINTEGRATION_H
 
 #include "qpepperscreen.h"
 #include "qpepperplatformwindow.h"

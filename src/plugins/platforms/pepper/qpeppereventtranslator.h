@@ -17,8 +17,8 @@
 **
 ****************************************************************************/
 
-#ifndef QT_PEPPEREVENT_TRANSLATOR_H
-#define QT_PEPPEREVENT_TRANSLATOR_H
+#ifndef QPEPPEREVENTTRANSLATOR_H
+#define QPEPPEREVENTTRANSLATOR_H
 
 #ifndef QT_NO_PEPPER_INTEGRATION
 

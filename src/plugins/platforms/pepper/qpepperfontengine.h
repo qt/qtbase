@@ -17,8 +17,8 @@
 **
 ****************************************************************************/
 
-#ifndef QFONTENGINE_NACL_P_H
-#define QFONTENGINE_NACL_P_H
+#ifndef QPEPPERFONTENGINE_P_H
+#define QPEPPERFONTENGINE_P_H
 
 #include <private/qfontengine_p.h>
 
