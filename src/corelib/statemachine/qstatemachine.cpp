@@ -1878,9 +1878,11 @@ void QStateMachinePrivate::_q_process()
     Q_ASSERT(!processing);
     processing = true;
     processingScheduled = false;
+    beginMacrostep();
 #ifdef QSTATEMACHINE_DEBUG
     qDebug() << q << ": starting the event processing loop";
 #endif
+    bool didChange = false;
     while (processing) {
         if (stop) {
             processing = false;
@@ -1923,15 +1925,17 @@ void QStateMachinePrivate::_q_process()
             }
         }
         if (!enabledTransitions.isEmpty()) {
+            didChange = true;
             q->beginMicrostep(e);
             microstep(e, enabledTransitions, &calculationCache);
             q->endMicrostep(e);
         }
-#ifdef QSTATEMACHINE_DEBUG
         else {
+            noMicrostep();
+#ifdef QSTATEMACHINE_DEBUG
             qDebug() << q << ": no transitions enabled";
-        }
 #endif
+        }
         delete e;
     }
 #ifdef QSTATEMACHINE_DEBUG
@@ -1944,6 +1948,7 @@ void QStateMachinePrivate::_q_process()
 
     switch (stopProcessingReason) {
     case EventQueueEmpty:
+        processedPendingEvents(didChange);
         break;
     case Finished:
         state = NotRunning;
@@ -1960,6 +1965,7 @@ void QStateMachinePrivate::_q_process()
         emit q->runningChanged(false);
         break;
     }
+    endMacrostep(didChange);
 }
 
 void QStateMachinePrivate::_q_startDelayedEventTimer(int id, int delay)
@@ -2079,6 +2085,46 @@ void QStateMachinePrivate::emitStateFinished(QState *forState, QFinalState *guil
 #endif
 
     QStatePrivate::get(forState)->emitFinished();
+}
+
+/*
+  This function is called when the state machine is performing no
+  microstep because no transition is enabled (i.e. an event is ignored).
+
+  The default implementation does nothing.
+*/
+void QStateMachinePrivate::noMicrostep()
+{ }
+
+/*
+  This function is called when the state machine has reached a stable
+  state (no pending events), and has not finished yet.
+  For each event the state machine receives it is guaranteed that
+  1) beginMacrostep is called
+  2) selectTransition is called at least once
+  3) begin/endMicrostep is called at least once or noMicrostep is called
+     at least once (possibly both, but at least one)
+  4) the state machine either enters an infinite loop, or stops (runningChanged(false),
+     and either finished or stopped are emitted), or processedPendingEvents() is called.
+  5) if the machine is not in an infinite loop endMacrostep is called
+
+  didChange is set to true if at least one microstep was performed, it is possible
+  that the machine returned to exactly the same state as before, but some transitions
+  were triggered.
+
+  The default implementation does nothing.
+*/
+void QStateMachinePrivate::processedPendingEvents(bool didChange)
+{
+    Q_UNUSED(didChange);
+}
+
+void QStateMachinePrivate::beginMacrostep()
+{ }
+
+void QStateMachinePrivate::endMacrostep(bool didChange)
+{
+    Q_UNUSED(didChange);
 }
 
 namespace _QStateMachine_Internal{

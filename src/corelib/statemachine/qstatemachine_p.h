@@ -128,6 +128,10 @@ public:
     void removeConflictingTransitions(QList<QAbstractTransition*> &enabledTransitions, CalculationCache *cache);
     void microstep(QEvent *event, const QList<QAbstractTransition*> &transitionList, CalculationCache *cache);
     QList<QAbstractTransition *> selectTransitions(QEvent *event, CalculationCache *cache);
+    virtual void noMicrostep();
+    virtual void processedPendingEvents(bool didChange);
+    virtual void beginMacrostep();
+    virtual void endMacrostep(bool didChange);
     void exitStates(QEvent *event, const QList<QAbstractState *> &statesToExit_sorted,
                     const QHash<QAbstractState*, QList<QPropertyAssignment> > &assignmentsForEnteredStates);
     QList<QAbstractState*> computeExitSet(const QList<QAbstractTransition*> &enabledTransitions, CalculationCache *cache);
