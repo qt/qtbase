@@ -123,6 +123,10 @@ public:
     QAbstractTransition *createInitialTransition() const;
 
     void microstep(QEvent *event, const QList<QAbstractTransition*> &transitionList);
+    virtual void noMicrostep();
+    virtual void processedPendingEvents(bool didChange);
+    virtual void beginMacrostep();
+    virtual void endMacrostep(bool didChange);
     bool isPreempted(const QAbstractState *s, const QSet<QAbstractTransition*> &transitions) const;
     QSet<QAbstractTransition*> selectTransitions(QEvent *event) const;
     void exitStates(QEvent *event, const QList<QAbstractState *> &statesToExit_sorted,
