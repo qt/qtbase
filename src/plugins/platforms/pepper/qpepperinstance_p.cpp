@@ -251,12 +251,12 @@ void QPepperInstancePrivate::didChangeView(int32_t result, const View &view)
         m_qtStarted = true;
         startQt();
     } else {
-        if (m_pepperIntegraton)
-            m_pepperIntegraton->resizeScreen(this->geometry().size(), m_currentDevicePixelRatio);
+        if (QPepperIntegration *pepperIntegraion = QPepperIntegration::get())
+            pepperIntegraion->resizeScreen(this->geometry().size(), m_currentDevicePixelRatio);
     }
 
-    if (m_pepperIntegraton)
-        m_pepperIntegraton->processEvents();
+    if (QPepperIntegration *pepperIntegraion = QPepperIntegration::get())
+        QPepperIntegration::get()->processEvents();
 }
 
 void QPepperInstancePrivate::didChangeFocus(int32_t result, bool hasFucus)

@@ -43,50 +43,43 @@ class QPepperIntegration : public QObject, public QPlatformIntegration
 {
     Q_OBJECT
 public:
-    static QPepperIntegration *createPepperIntegration();
-    static QPepperIntegration *getPepperIntegration();
+    static QPepperIntegration *create();
+    static QPepperIntegration *get();
+
     QPepperIntegration();
     ~QPepperIntegration();
-    virtual bool hasOpenGL() const;
 
-    QPlatformWindow *createPlatformWindow(QWindow *window) const;
-    QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const;
-    QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const;
-    QAbstractEventDispatcher *createEventDispatcher() const;
-
-    QPlatformFontDatabase *fontDatabase() const;
-    QPlatformClipboard *clipboard() const;
-
-    QStringList themeNames() const;
-    QPlatformTheme *createPlatformTheme(const QString &name) const;
-
-    QPlatformServices *services() const;
-
-    QVariant styleHint(StyleHint hint) const;
-    Qt::WindowState defaultWindowState(Qt::WindowFlags) const;
+    QPlatformWindow *createPlatformWindow(QWindow *window) const Q_DECL_OVERRIDE;
+    QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const Q_DECL_OVERRIDE;
+    QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const Q_DECL_OVERRIDE;
+    QAbstractEventDispatcher *createEventDispatcher() const Q_DECL_OVERRIDE;
+    QPlatformFontDatabase *fontDatabase() const Q_DECL_OVERRIDE;
+    QPlatformClipboard *clipboard() const Q_DECL_OVERRIDE;
+    QPlatformServices *services() const Q_DECL_OVERRIDE;
+    QVariant styleHint(StyleHint hint) const Q_DECL_OVERRIDE;
+    Qt::WindowState defaultWindowState(Qt::WindowFlags) const Q_DECL_OVERRIDE;
+    ;
+    QStringList themeNames() const Q_DECL_OVERRIDE;
+    QPlatformTheme *createPlatformTheme(const QString &name) const Q_DECL_OVERRIDE;
 
     QPepperCompositor *pepperCompositor() const;
-
     QPepperEventTranslator *pepperEventTranslator();
     void processEvents();
-
-    bool wantsOpenGLGraphics() const;
     void resizeScreen(QSize size, qreal devicePixelRatio);
 
 private Q_SLOTS:
     void getWindowAt(const QPoint &point, QWindow **window);
     void getKeyWindow(QWindow **window);
-    void handleMessage(const QByteArray &tag, const QString &message);
 
 public:
-    QPepperScreen *m_screen;
+    mutable QPepperClipboard *m_clipboard;
+    mutable QPepperEventDispatcher *m_eventDispatcher;
+    mutable QPepperFontDatabase *m_fontDatabase;
+    mutable QPepperServices *m_services;
+    mutable QPepperWindow *m_topLevelWindow;
     QPepperCompositor *m_compositor;
     QPepperEventTranslator *m_eventTranslator;
-    mutable QPepperEventDispatcher *m_pepperEventDispatcher;
-    mutable QPepperWindow *m_topLevelWindow;
-    mutable QPepperFontDatabase *m_fontDatabase;
-    mutable QPepperClipboard *m_clipboard;
-    mutable QPepperServices *m_services;
+    QPepperScreen *m_screen;
 };
 
 QT_END_NAMESPACE

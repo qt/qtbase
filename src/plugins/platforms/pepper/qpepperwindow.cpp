@@ -38,8 +38,6 @@ QPepperWindow::QPepperWindow(QWindow *window)
 {
     qCDebug(QT_PLATFORM_PEPPER_WINDOW) << "Create QPepperWindow for" << window;
 
-    m_pepperIntegration = QPepperIntegration::getPepperIntegration();
-
     m_compositor = 0;
 
     // Set window state (fullscreen windows resize here)
