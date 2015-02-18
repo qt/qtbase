@@ -14,7 +14,7 @@ DEFINES += HAVE_ATEXIT
 unix: DEFINES += HAVE_PTHREAD HAVE_SCHED_H HAVE_SCHED_YIELD
 
 INCLUDEPATH += $$PWD/include
-INCLUDEPATH += $$OUT_PWD/../../../include
+INCLUDEPATH += $$QT.core.includes
 
 SOURCES += \
     $$PWD/src/hb-blob.cc \
