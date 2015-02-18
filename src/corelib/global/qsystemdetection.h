@@ -75,6 +75,7 @@
      BSD4     - Any BSD 4.4 system
      UNIX     - Any UNIX BSD/SYSV system
      ANDROID  - Android platform
+     NACL     - Native Client and Portable Native Client [has variants]
      HAIKU    - Haiku
 
    The following operating systems have variants:
@@ -84,6 +85,9 @@
               - only Q_OS_QNX is defined if building for other QNX targets
      FREEBSD  - Q_OS_FREEBSD is defined only when building for FreeBSD with a BSD userland
               - Q_OS_FREEBSD_KERNEL is always defined on FreeBSD, even if the userland is from GNU
+     NACL     - Q_OS_NACL_PNACL is defined for Portable Native Client builds.
+              - Q_OS_NACL_NEWLIB and Q_OS_NACL_GLIBC are defined for static newlib builds
+                and shared library glibc builds, respectively.
 */
 
 #if defined(__APPLE__) && (defined(__GNUC__) || defined(__xlC__) || defined(__xlc__))
