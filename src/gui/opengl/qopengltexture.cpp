@@ -522,6 +522,8 @@ static QOpenGLTexture::PixelType pixelTypeCompatibleWithInternalFormat(QOpenGLTe
         return QOpenGLTexture::UInt8;
 
     case QOpenGLTexture::DepthFormat:
+        return QOpenGLTexture::UInt32;
+
     case QOpenGLTexture::AlphaFormat:
     case QOpenGLTexture::RGBFormat:
     case QOpenGLTexture::RGBAFormat:
@@ -1534,7 +1536,7 @@ QOpenGLTexture *QOpenGLTexturePrivate::createTextureView(QOpenGLTexture::Target 
     \value SRGB_Alpha_DXT5 Equivalent to GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT
     \value SRGB_BP_UNorm Equivalent to GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM_ARB
 
-    \value DepthFormat Equivalent to GL_DEPTH_COMPONENT (OpenGL ES 2 only and  when OES_depth_texture is present)
+    \value DepthFormat Equivalent to GL_DEPTH_COMPONENT (only OpenGL ES 3 or ES 2 with OES_depth_texture)
     \value AlphaFormat Equivalent to GL_ALPHA (OpenGL ES 2 only)
     \value RGBFormat Equivalent to GL_RGB (OpenGL ES 2 only)
     \value RGBAFormat Equivalent to GL_RGBA (OpenGL ES 2 only)
