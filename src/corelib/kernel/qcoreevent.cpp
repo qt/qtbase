@@ -167,7 +167,7 @@ QT_BEGIN_NAMESPACE
     \value NonClientAreaMouseButtonPress    A mouse button press occurred outside the client area.
     \value NonClientAreaMouseButtonRelease  A mouse button release occurred outside the client area.
     \value NonClientAreaMouseMove           A mouse move occurred outside the client area.
-    \value MacSizeChange                    The user changed his widget sizes (Mac OS X only).
+    \value MacSizeChange                    The user changed his widget sizes (OS X only).
     \value MetaCall                         An asynchronous method invocation via QMetaObject::invokeMethod().
     \value ModifiedChange                   Widgets modification state has been changed.
     \value MouseButtonDblClick              Mouse press again (QMouseEvent).
@@ -210,7 +210,7 @@ QT_BEGIN_NAMESPACE
     \omitvalue ThemeChange
     \value ThreadChange                     The object is moved to another thread. This is the last event sent to this object in the previous thread. See QObject::moveToThread().
     \value Timer                            Regular timer events (QTimerEvent).
-    \value ToolBarChange                    The toolbar button is toggled on Mac OS X.
+    \value ToolBarChange                    The toolbar button is toggled on OS X.
     \value ToolTip                          A tooltip was requested (QHelpEvent).
     \value ToolTipChange                    The widget's tooltip has changed.
     \value TouchBegin                       Beginning of a sequence of touch-screen or track-pad events (QTouchEvent).

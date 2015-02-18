@@ -159,7 +159,7 @@ static void setBoolLane(QBasicAtomicInt *atomic, bool enable, int shift)
     by QStandardPaths::GenericConfigLocation, e.g.
 
     \list
-    \li on Mac OS X: \c ~/Library/Preferences
+    \li on OS X and iOS: \c ~/Library/Preferences
     \li on Unix: \c ~/.config, \c /etc/xdg
     \li on Windows: \c %LOCALAPPDATA%, \c %ProgramData%,
         \l QCoreApplication::applicationDirPath(),

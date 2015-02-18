@@ -412,7 +412,7 @@ bool QFileSystemEngine::fillMetaData(const QFileSystemEntry &entry, QFileSystemM
             what |= QFileSystemMetaData::DirectoryType;
     }
     if (what & QFileSystemMetaData::HiddenAttribute) {
-        // Mac OS >= 10.5: st_flags & UF_HIDDEN
+        // OS X >= 10.5: st_flags & UF_HIDDEN
         what |= QFileSystemMetaData::PosixStatFlags;
     }
 #endif // defined(Q_OS_MACX)

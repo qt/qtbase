@@ -902,7 +902,7 @@
 # endif // Q_OS_QNX
 # if (defined(Q_CC_CLANG) || defined(Q_CC_INTEL)) && defined(Q_OS_MAC) && defined(__GNUC_LIBSTD__) \
     && ((__GNUC_LIBSTD__-0) * 100 + __GNUC_LIBSTD_MINOR__-0 <= 402)
-// Mac OS X: Apple has not updated libstdc++ since 2007, which means it does not have
+// Apple has not updated libstdc++ since 2007, which means it does not have
 // <initializer_list> or std::move. Let's disable these features
 #  undef Q_COMPILER_INITIALIZER_LISTS
 #  undef Q_COMPILER_RVALUE_REFS
@@ -918,7 +918,7 @@
 #  endif
 # endif
 # if defined(Q_COMPILER_THREADSAFE_STATICS) && defined(Q_OS_MAC)
-// Mac OS X: Apple's low-level implementation of the C++ support library
+// Apple's low-level implementation of the C++ support library
 // (libc++abi.dylib, shared between libstdc++ and libc++) has deadlocks. The
 // C++11 standard requires the deadlocks to be removed, so this will eventually
 // be fixed; for now, let's disable this.

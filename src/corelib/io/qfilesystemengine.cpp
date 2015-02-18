@@ -323,7 +323,7 @@ void QFileSystemMetaData::fillFromDirEnt(const QT_DIRENT &entry)
         }
     }
 #elif defined(_DIRENT_HAVE_D_TYPE) || defined(Q_OS_BSD4)
-    // BSD4 includes Mac OS X
+    // BSD4 includes OS X and iOS
 
     // ### This will clear all entry flags and knownFlagsMask
     switch (entry.d_type)

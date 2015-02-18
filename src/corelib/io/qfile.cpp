@@ -199,9 +199,9 @@ QAbstractFileEngine *QFilePrivate::engine() const
 
     \section1 Platform Specific Issues
 
-    File permissions are handled differently on Linux/Mac OS X and
+    File permissions are handled differently on Unix-like systems and
     Windows.  In a non \l{QIODevice::isWritable()}{writable}
-    directory on Linux, files cannot be created. This is not always
+    directory on Unix-like systems, files cannot be created. This is not always
     the case on Windows, where, for instance, the 'My Documents'
     directory usually is not writable, but it is still possible to
     create files in it.

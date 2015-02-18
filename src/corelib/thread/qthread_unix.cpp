@@ -406,7 +406,7 @@ int QThread::idealThreadCount() Q_DECL_NOTHROW
         cores = (int)psd.psd_proc_cnt;
     }
 #elif defined(Q_OS_BSD4)
-    // FreeBSD, OpenBSD, NetBSD, BSD/OS, Mac OS X
+    // FreeBSD, OpenBSD, NetBSD, BSD/OS, OS X, iOS
     size_t len = sizeof(cores);
     int mib[2];
     mib[0] = CTL_HW;

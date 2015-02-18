@@ -603,7 +603,7 @@ qint64 QFSFileEnginePrivate::readFdFh(char *data, qint64 len)
             result = fread(data + readBytes, 1, size_t(len - readBytes), fh);
             eof = feof(fh);
             if (retry && eof && result == 0) {
-                // On Mac OS, this is needed, e.g., if a file was written to
+                // On OS X, this is needed, e.g., if a file was written to
                 // through another stream since our last read. See test
                 // tst_QFile::appendAndRead
                 QT_FSEEK(fh, QT_FTELL(fh), SEEK_SET); // re-sync stream.
@@ -875,7 +875,7 @@ bool QFSFileEngine::supportsExtension(Extension extension) const
 
 /*! \fn QFileInfoList QFSFileEngine::drives()
   For Windows, returns the list of drives in the file system as a list
-  of QFileInfo objects. On unix, Mac OS X and Windows CE, only the
+  of QFileInfo objects. On Unix and Windows CE, only the
   root path is returned.  On Windows, this function returns all drives
   (A:\, C:\, D:\, etc.).
 

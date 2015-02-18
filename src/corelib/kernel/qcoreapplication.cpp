@@ -663,7 +663,7 @@ QCoreApplication::QCoreApplication(QCoreApplicationPrivate &p)
 
     If you are doing graphical changes inside a loop that does not
     return to the event loop on asynchronous window systems like X11
-    or double buffered window systems like Mac OS X, and you want to
+    or double buffered window systems like Quartz (OS X and iOS), and you want to
     visualize these changes immediately (e.g. Splash Screens), call
     this function.
 
@@ -1975,7 +1975,7 @@ void QCoreApplicationPrivate::setApplicationFilePath(const QString &path)
     directory, and you run the \c{regexp} example, this function will
     return "C:/Qt/examples/tools/regexp".
 
-    On Mac OS X this will point to the directory actually containing the
+    On OS X and iOS this will point to the directory actually containing the
     executable, which may be inside of an application bundle (if the
     application is bundled).
 
