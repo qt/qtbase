@@ -60,7 +60,8 @@
 {
     Q_UNUSED(picker);
     NSURL *url = [info objectForKey:UIImagePickerControllerReferenceURL];
-    m_fileDialog->selectedFilesChanged(QList<QUrl>() << QUrl::fromNSURL(url));
+    QUrl fileUrl = QUrl::fromLocalFile(QString::fromNSString([url description]));
+    m_fileDialog->selectedFilesChanged(QList<QUrl>() << fileUrl);
     emit m_fileDialog->accept();
 }
 

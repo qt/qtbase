@@ -42,9 +42,9 @@
 class QIOSAssetData : public QObject
 {
 public:
-    QIOSAssetData(const QString &fileName, QIOSFileEngineAssetsLibrary *engine)
+    QIOSAssetData(const QString &assetUrl, QIOSFileEngineAssetsLibrary *engine)
         : m_asset(0)
-        , m_fileName(fileName)
+        , m_assetUrl(assetUrl)
         , m_assetLibrary(0)
     {
         switch ([ALAssetsLibrary authorizationStatus]) {
@@ -71,7 +71,7 @@ public:
                 // reuse its data. Since QFile is (mostly) reentrant, we need to protect m_currentAssetData
                 // from being modified by several threads at the same time.
                 QMutexLocker lock(&g_mutex);
-                if (g_currentAssetData && g_currentAssetData->m_fileName == fileName) {
+                if (g_currentAssetData && g_currentAssetData->m_assetUrl == assetUrl) {
                     m_assetLibrary = [g_currentAssetData->m_assetLibrary retain];
                     m_asset = [g_currentAssetData->m_asset retain];
                     return;
@@ -87,7 +87,7 @@ public:
         dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
 
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-            NSURL *url = [NSURL URLWithString:m_fileName.toNSString()];
+            NSURL *url = [NSURL URLWithString:assetUrl.toNSString()];
             m_assetLibrary = [[ALAssetsLibrary alloc] init];
             [m_assetLibrary assetForURL:url resultBlock:^(ALAsset *asset) {
                 m_asset = [asset retain];
@@ -117,7 +117,7 @@ public:
     ALAsset *m_asset;
 
 private:
-    QString m_fileName;
+    QString m_assetUrl;
     ALAssetsLibrary *m_assetLibrary;
 
     static QBasicMutex g_mutex;
@@ -143,8 +143,18 @@ QIOSFileEngineAssetsLibrary::~QIOSFileEngineAssetsLibrary()
 
 ALAsset *QIOSFileEngineAssetsLibrary::loadAsset() const
 {
-    if (!m_data)
-        m_data = new QIOSAssetData(m_fileName, const_cast<QIOSFileEngineAssetsLibrary *>(this));
+    if (!m_data) {
+        // QUrl::fromLocalFile() will remove double slashes. Since the asset url is passed around as a file
+        // name in the app (and converted to/from a file url, e.g in QFileDialog), we need to check if we still
+        // have two leading slashes after the scheme, and restore the second slash if not.
+        QString assetUrl = m_fileName;
+        const int index = 16; // "assets-library://"
+        if (assetUrl[index] != QLatin1Char('/'))
+            assetUrl.insert(index, '/');
+
+        m_data = new QIOSAssetData(assetUrl, const_cast<QIOSFileEngineAssetsLibrary *>(this));
+    }
+
     return m_data->m_asset;
 }
 
