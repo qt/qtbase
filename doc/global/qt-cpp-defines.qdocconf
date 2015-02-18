@@ -140,7 +140,9 @@ Cpp.ignoredirectives    += \
                           QT_DEPRECATED_X \
                           Q_DISABLE_COPY \
                           Q_DUMMY_COMPARISON_OPERATOR \
+                          Q_ENUM \
                           Q_ENUMS \
+                          Q_FLAG \
                           Q_FLAGS \
                           Q_INTERFACES \
                           Q_PRIVATE_PROPERTY \
