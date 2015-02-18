@@ -188,7 +188,12 @@ DBusMessage *QDBusMessagePrivate::toDBusMessage(const QDBusMessage &message, QDB
 
     // check if everything is ok
     if (marshaller.ok)
+    {
+        QDBusMessage *m = (QDBusMessage*)&message;
+        q_dbus_message_ref(msg);
+        m->d_ptr->msg = msg;
         return msg;
+    }
 
     // not ok;
     q_dbus_message_unref(msg);
@@ -315,6 +320,16 @@ QDBusMessage QDBusMessagePrivate::makeLocalReply(const QDBusConnectionPrivate &c
     if (callMsg.d_ptr->localReply)
         return makeLocal(conn, *callMsg.d_ptr->localReply);
     return QDBusMessage();      // failed
+}
+
+uint QDBusMessagePrivate::serial()
+{
+    return msg ? q_dbus_message_get_serial(msg) : reply ? q_dbus_message_get_serial(reply) : 0;
+}
+
+uint QDBusMessagePrivate::replySerial()
+{
+    return msg ? q_dbus_message_get_reply_serial(msg) : reply ? q_dbus_message_get_reply_serial(reply) : 0;
 }
 
 /*!
@@ -630,6 +645,32 @@ QString QDBusMessage::errorName() const
 QString QDBusMessage::signature() const
 {
     return d_ptr->signature;
+}
+
+/*!
+    Returns the serial of the message or 0 if undefined.
+
+    The serial number is a unique identifier of a message coming from a
+    given connection.
+
+    The serial is set to a non zero value after the message has been sent
+    over a D-Bus connection.
+*/
+uint QDBusMessage::serial() const
+{
+    return d_ptr->serial();
+}
+
+/*!
+    Returns the serial of the message this is a reply to or 0 if undefined.
+
+    The serial number is a unique identifier of a message coming from a
+    given connection and D-Bus messages of 'method return' or 'error' type
+    use them to match the reply to the method call message.
+*/
+uint QDBusMessage::replySerial() const
+{
+    return d_ptr->replySerial();
 }
 
 /*!

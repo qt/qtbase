@@ -104,6 +104,8 @@ public:
     QString errorMessage() const;
     MessageType type() const;
     QString signature() const;
+    uint serial() const;
+    uint replySerial() const;
 
     bool isReplyRequired() const;
 

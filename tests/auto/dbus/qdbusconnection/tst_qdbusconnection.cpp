@@ -71,6 +71,7 @@ void tst_QDBusConnection::noConnection()
     QVERIFY(con.callWithCallback(msg, &spy, SLOT(asyncReply)) == 0);
 
     QDBusMessage reply = con.call(msg);
+    QCOMPARE(msg.serial(), reply.replySerial());
     QVERIFY(reply.type() == QDBusMessage::ErrorMessage);
 
     QDBusReply<void> voidreply(reply);
@@ -152,6 +153,7 @@ void tst_QDBusConnection::send()
 
     QDBusMessage reply = con.call(msg);
 
+    QCOMPARE(msg.serial(), reply.replySerial());
     QCOMPARE(reply.arguments().count(), 1);
     QCOMPARE(reply.arguments().at(0).typeName(), "QStringList");
     QVERIFY(reply.arguments().at(0).toStringList().contains(con.baseService()));
@@ -171,6 +173,7 @@ void tst_QDBusConnection::sendWithGui()
 
     QDBusMessage reply = con.call(msg, QDBus::BlockWithGui);
 
+    QCOMPARE(msg.serial(), reply.replySerial());
     QCOMPARE(reply.arguments().count(), 1);
     QCOMPARE(reply.arguments().at(0).typeName(), "QStringList");
     QVERIFY(reply.arguments().at(0).toStringList().contains(con.baseService()));
@@ -840,6 +843,7 @@ void tst_QDBusConnection::callSelf()
                                                       QString(), "test3");
     msg << 44;
     reply = connection.call(msg);
+    QCOMPARE(msg.serial(), reply.replySerial());
     QCOMPARE(reply.arguments().value(0).toInt(), 45);
 }
 
@@ -907,6 +911,7 @@ void tst_QDBusConnection::callSelfByAnotherName()
                                                       QString(), "test0");
     QDBusMessage reply = con.call(msg, QDBus::Block, 1000);
 
+    QCOMPARE(msg.serial(), reply.replySerial());
     QVERIFY(reply.type() == QDBusMessage::ReplyMessage);
 }
 
@@ -922,6 +927,7 @@ void tst_QDBusConnection::multipleInterfacesInQObject()
     QDBusMessage msg = QDBusMessage::createMethodCall(con.baseService(), "/p1",
                                                       "local.BaseObject", "anotherMethod");
     QDBusMessage reply = con.call(msg, QDBus::Block);
+    QCOMPARE(msg.serial(), reply.replySerial());
     QCOMPARE(reply.type(), QDBusMessage::ReplyMessage);
     QVERIFY(reply.arguments().count() == 0);
 }
@@ -1202,6 +1208,7 @@ void tst_QDBusConnection::callVirtualObjectLocal()
 
     QDBusMessage message = QDBusMessage::createMethodCall(con.baseService(), path, QString(), "hello");
     QDBusMessage reply = con.call(message, QDBus::Block, 5000);
+    QCOMPARE(message.serial(), reply.replySerial());
     QCOMPARE(obj.callCount, 1);
     QCOMPARE(obj.lastMessage.service(), con.baseService());
     QCOMPARE(obj.lastMessage.interface(), QString());
