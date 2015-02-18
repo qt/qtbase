@@ -76,6 +76,7 @@ struct QWindowsUser32DLL
     inline void init();
     inline bool initTouch();
 
+    typedef BOOL (WINAPI *IsTouchWindow)(HWND, PULONG);
     typedef BOOL (WINAPI *RegisterTouchWindow)(HWND, ULONG);
     typedef BOOL (WINAPI *UnregisterTouchWindow)(HWND);
     typedef BOOL (WINAPI *GetTouchInputInfo)(HANDLE, UINT, PVOID, int);
@@ -99,6 +100,7 @@ struct QWindowsUser32DLL
     IsHungAppWindow isHungAppWindow;
 
     // Touch functions from Windows 7 onwards (also for use with Q_CC_MSVC).
+    IsTouchWindow isTouchWindow;
     RegisterTouchWindow registerTouchWindow;
     UnregisterTouchWindow unregisterTouchWindow;
     GetTouchInputInfo getTouchInputInfo;
