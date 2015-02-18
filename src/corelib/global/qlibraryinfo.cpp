@@ -230,7 +230,7 @@ QLibraryInfo::licensedProducts()
 /*!
     \since 4.6
     \deprecated
-    This function used to return the the installation date for this build of Qt, but now returns an a constant date.
+    This function used to return the installation date for this build of Qt, but now returns a constant date.
 */
 #ifndef QT_NO_DATESTRING
 #if QT_DEPRECATED_SINCE(5, 5)
