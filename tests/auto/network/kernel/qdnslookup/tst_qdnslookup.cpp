@@ -170,6 +170,38 @@ void tst_QDnsLookup::lookup_data()
     QTest::newRow("txt-multi-multirr") << int(QDnsLookup::TXT) << "txt-multi-multirr" << int(QDnsLookup::NoError) << "" << "" << "" << "" << "" << "" << "Hello;World";
 }
 
+static QByteArray msgDnsLookup(QDnsLookup::Error actualError,
+                               int expectedError,
+                               const QString &domain,
+                               const QString &cname,
+                               const QString &host,
+                               const QString &srv,
+                               const QString &mx,
+                               const QString &ns,
+                               const QString &ptr,
+                               const QString &errorString)
+{
+    QString result;
+    QTextStream str(&result);
+    str << "Actual error: " << actualError;
+    if (!errorString.isEmpty())
+        str << " (" << errorString << ')';
+    str << ", expected: " << expectedError;
+    str << ", domain: " << domain;
+    if (!cname.isEmpty())
+        str << ", cname: " << cname;
+    str << ", host: " << host;
+    if (!srv.isEmpty())
+        str << " server: " << srv;
+    if (!mx.isEmpty())
+        str << " mx: " << mx;
+    if (!ns.isEmpty())
+        str << " ns: " << ns;
+    if (!ptr.isEmpty())
+        str << " ptr: " << ptr;
+    return result.toLocal8Bit();
+}
+
 void tst_QDnsLookup::lookup()
 {
     QFETCH(int, type);
@@ -206,7 +238,8 @@ void tst_QDnsLookup::lookup()
         QEXPECT_FAIL("", "Not yet supported on Android", Abort);
 #endif
 
-    QVERIFY2(int(lookup.error()) == error, qPrintable(lookup.errorString()));
+    QVERIFY2(int(lookup.error()) == error,
+             msgDnsLookup(lookup.error(), error, domain, cname, host, srv, mx, ns, ptr, lookup.errorString()));
     if (error == QDnsLookup::NoError)
         QVERIFY(lookup.errorString().isEmpty());
     QCOMPARE(int(lookup.type()), type);
