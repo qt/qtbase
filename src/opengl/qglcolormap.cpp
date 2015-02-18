@@ -37,7 +37,7 @@
     a QGLWidget.
 
     \obsolete
-    \inmodule OpenGL
+    \inmodule QtOpenGL
     \ingroup painting-3D
     \ingroup shared
 
