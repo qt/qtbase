@@ -63,14 +63,14 @@ QDBusMenuConnection::QDBusMenuConnection(QObject *parent)
     : QObject(parent)
     , m_connection(QDBusConnection::sessionBus())
     , m_dbusWatcher(new QDBusServiceWatcher(StatusNotifierWatcherService, m_connection, QDBusServiceWatcher::WatchForRegistration, this))
-    , m_watcherRegistered(false)
+    , m_statusNotifierHostRegistered(false)
 {
 #ifndef QT_NO_SYSTEMTRAYICON
-    // Start monitoring if any known tray-related services are registered.
-    if (m_connection.interface()->isServiceRegistered(StatusNotifierWatcherService))
-        m_watcherRegistered = true;
+    QDBusInterface systrayHost(StatusNotifierWatcherService, StatusNotifierWatcherPath, StatusNotifierWatcherService, m_connection);
+    if (systrayHost.isValid() && systrayHost.property("IsStatusNotifierHostRegistered").toBool())
+        m_statusNotifierHostRegistered = true;
     else
-        qCDebug(qLcMenu) << "failed to find service" << StatusNotifierWatcherService;
+        qCDebug(qLcMenu) << "StatusNotifierHost is not registered";
 #endif
 }
 
