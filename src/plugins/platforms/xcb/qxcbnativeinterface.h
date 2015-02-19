@@ -121,7 +121,6 @@ private:
 
     xcb_atom_t m_sysTraySelectionAtom;
     xcb_visualid_t m_systrayVisualId;
-    QDBusMenuConnection *m_dbusTrayConnection;
 
     static QXcbScreen *qPlatformScreenForWindow(QWindow *window);
 

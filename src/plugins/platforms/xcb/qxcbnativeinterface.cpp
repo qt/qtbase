@@ -86,8 +86,7 @@ static int resourceType(const QByteArray &key)
 QXcbNativeInterface::QXcbNativeInterface() :
     m_genericEventFilterType(QByteArrayLiteral("xcb_generic_event_t")),
     m_sysTraySelectionAtom(XCB_ATOM_NONE),
-    m_systrayVisualId(XCB_NONE),
-    m_dbusTrayConnection(Q_NULLPTR)
+    m_systrayVisualId(XCB_NONE)
 {
 }
 
