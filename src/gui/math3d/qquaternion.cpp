@@ -592,25 +592,28 @@ QMatrix3x3 QQuaternion::toRotationMatrix() const
 
     QMatrix3x3 rot3x3(Qt::Uninitialized);
 
-    const float xx = xp * xp;
-    const float xy = xp * yp;
-    const float xz = xp * zp;
-    const float xw = xp * wp;
-    const float yy = yp * yp;
-    const float yz = yp * zp;
-    const float yw = yp * wp;
-    const float zz = zp * zp;
-    const float zw = zp * wp;
+    const float f2x = xp + xp;
+    const float f2y = yp + yp;
+    const float f2z = zp + zp;
+    const float f2xw = f2x * wp;
+    const float f2yw = f2y * wp;
+    const float f2zw = f2z * wp;
+    const float f2xx = f2x * xp;
+    const float f2xy = f2x * yp;
+    const float f2xz = f2x * zp;
+    const float f2yy = f2y * yp;
+    const float f2yz = f2y * zp;
+    const float f2zz = f2z * zp;
 
-    rot3x3(0, 0) = 1.0f - 2.0f * (yy + zz);
-    rot3x3(0, 1) =        2.0f * (xy - zw);
-    rot3x3(0, 2) =        2.0f * (xz + yw);
-    rot3x3(1, 0) =        2.0f * (xy + zw);
-    rot3x3(1, 1) = 1.0f - 2.0f * (xx + zz);
-    rot3x3(1, 2) =        2.0f * (yz - xw);
-    rot3x3(2, 0) =        2.0f * (xz - yw);
-    rot3x3(2, 1) =        2.0f * (yz + xw);
-    rot3x3(2, 2) = 1.0f - 2.0f * (xx + yy);
+    rot3x3(0, 0) = 1.0f - (f2yy + f2zz);
+    rot3x3(0, 1) =         f2xy - f2zw;
+    rot3x3(0, 2) =         f2xz + f2yw;
+    rot3x3(1, 0) =         f2xy + f2zw;
+    rot3x3(1, 1) = 1.0f - (f2xx + f2zz);
+    rot3x3(1, 2) =         f2yz - f2xw;
+    rot3x3(2, 0) =         f2xz - f2yw;
+    rot3x3(2, 1) =         f2yz + f2xw;
+    rot3x3(2, 2) = 1.0f - (f2xx + f2yy);
 
     return rot3x3;
 }

@@ -1322,27 +1322,33 @@ void QMatrix4x4::rotate(const QQuaternion& quaternion)
 {
     // Algorithm from:
     // http://www.j3d.org/matrix_faq/matrfaq_latest.html#Q54
-    QMatrix4x4 m(1);
-    float xx = quaternion.x() * quaternion.x();
-    float xy = quaternion.x() * quaternion.y();
-    float xz = quaternion.x() * quaternion.z();
-    float xw = quaternion.x() * quaternion.scalar();
-    float yy = quaternion.y() * quaternion.y();
-    float yz = quaternion.y() * quaternion.z();
-    float yw = quaternion.y() * quaternion.scalar();
-    float zz = quaternion.z() * quaternion.z();
-    float zw = quaternion.z() * quaternion.scalar();
-    m.m[0][0] = 1.0f - 2 * (yy + zz);
-    m.m[1][0] =        2 * (xy - zw);
-    m.m[2][0] =        2 * (xz + yw);
+
+    QMatrix4x4 m(Qt::Uninitialized);
+
+    const float f2x = quaternion.x() + quaternion.x();
+    const float f2y = quaternion.y() + quaternion.y();
+    const float f2z = quaternion.z() + quaternion.z();
+    const float f2xw = f2x * quaternion.scalar();
+    const float f2yw = f2y * quaternion.scalar();
+    const float f2zw = f2z * quaternion.scalar();
+    const float f2xx = f2x * quaternion.x();
+    const float f2xy = f2x * quaternion.y();
+    const float f2xz = f2x * quaternion.z();
+    const float f2yy = f2y * quaternion.y();
+    const float f2yz = f2y * quaternion.z();
+    const float f2zz = f2z * quaternion.z();
+
+    m.m[0][0] = 1.0f - (f2yy + f2zz);
+    m.m[1][0] =         f2xy - f2zw;
+    m.m[2][0] =         f2xz + f2yw;
     m.m[3][0] = 0.0f;
-    m.m[0][1] =        2 * (xy + zw);
-    m.m[1][1] = 1.0f - 2 * (xx + zz);
-    m.m[2][1] =        2 * (yz - xw);
+    m.m[0][1] =         f2xy + f2zw;
+    m.m[1][1] = 1.0f - (f2xx + f2zz);
+    m.m[2][1] =         f2yz - f2xw;
     m.m[3][1] = 0.0f;
-    m.m[0][2] =        2 * (xz - yw);
-    m.m[1][2] =        2 * (yz + xw);
-    m.m[2][2] = 1.0f - 2 * (xx + yy);
+    m.m[0][2] =         f2xz - f2yw;
+    m.m[1][2] =         f2yz + f2xw;
+    m.m[2][2] = 1.0f - (f2xx + f2yy);
     m.m[3][2] = 0.0f;
     m.m[0][3] = 0.0f;
     m.m[1][3] = 0.0f;
