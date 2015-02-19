@@ -35,8 +35,8 @@
 #include <private/qdrawingprimitive_sse2_p.h>
 #include <private/qguiapplication_p.h>
 #include <private/qsimd_p.h>
-
 #include <private/qimage_p.h>
+#include <qendian.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -289,6 +289,108 @@ static void convert_ARGB_to_ARGB_PM_sse4(QImageData *dest, const QImageData *src
     convert_ARGB_to_ARGB_PM(dest, src, flags);
 }
 #endif
+
+Q_GUI_EXPORT void QT_FASTCALL qt_convert_rgb888_to_rgb32(quint32 *dest_data, const uchar *src_data, int len)
+{
+    int pixel = 0;
+    // prolog: align input to 32bit
+    while ((quintptr(src_data) & 0x3) && pixel < len) {
+        *dest_data = 0xff000000 | (src_data[0] << 16) | (src_data[1] << 8) | (src_data[2]);
+        src_data += 3;
+        ++dest_data;
+        ++pixel;
+    }
+
+    // Handle 4 pixels at a time 12 bytes input to 16 bytes output.
+    for (; pixel + 3 < len; pixel += 4) {
+        const quint32 *src_packed = (quint32 *) src_data;
+        const quint32 src1 = qFromBigEndian(src_packed[0]);
+        const quint32 src2 = qFromBigEndian(src_packed[1]);
+        const quint32 src3 = qFromBigEndian(src_packed[2]);
+
+        dest_data[0] = 0xff000000 | (src1 >> 8);
+        dest_data[1] = 0xff000000 | (src1 << 16) | (src2 >> 16);
+        dest_data[2] = 0xff000000 | (src2 << 8) | (src3 >> 24);
+        dest_data[3] = 0xff000000 | src3;
+
+        src_data += 12;
+        dest_data += 4;
+    }
+
+    // epilog: handle left over pixels
+    for (; pixel < len; ++pixel) {
+        *dest_data = 0xff000000 | (src_data[0] << 16) | (src_data[1] << 8) | (src_data[2]);
+        src_data += 3;
+        ++dest_data;
+    }
+}
+
+Q_GUI_EXPORT void QT_FASTCALL qt_convert_rgb888_to_rgbx8888(quint32 *dest_data, const uchar *src_data, int len)
+{
+    int pixel = 0;
+    // prolog: align input to 32bit
+    while ((quintptr(src_data) & 0x3) && pixel < len) {
+        *dest_data = ARGB2RGBA(0xff000000 | (src_data[0] << 16) | (src_data[1] << 8) | (src_data[2]));
+        src_data += 3;
+        ++dest_data;
+        ++pixel;
+    }
+
+    // Handle 4 pixels at a time 12 bytes input to 16 bytes output.
+    for (; pixel + 3 < len; pixel += 4) {
+        const quint32 *src_packed = (quint32 *) src_data;
+        const quint32 src1 = src_packed[0];
+        const quint32 src2 = src_packed[1];
+        const quint32 src3 = src_packed[2];
+
+#if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
+        dest_data[0] = 0xff000000 | src1;
+        dest_data[1] = 0xff000000 | (src1 >> 24) | (src2 << 8);
+        dest_data[2] = 0xff000000 | (src2 >> 16) | (src3 << 16);
+        dest_data[3] = 0xff000000 | (src3 >> 8);
+#else
+        dest_data[0] = 0xff | src1;
+        dest_data[1] = 0xff | (src1 << 24) | (src2 >> 8);
+        dest_data[2] = 0xff | (src2 << 16) | (src3 >> 16);
+        dest_data[3] = 0xff | (src3 << 8);
+#endif
+
+        src_data += 12;
+        dest_data += 4;
+    }
+
+    // epilog: handle left over pixels
+    for (; pixel < len; ++pixel) {
+        *dest_data = ARGB2RGBA(0xff000000 | (src_data[0] << 16) | (src_data[1] << 8) | (src_data[2]));
+        src_data += 3;
+        ++dest_data;
+    }
+}
+
+typedef void (QT_FASTCALL *Rgb888ToRgbConverter)(quint32 *dst, const uchar *src, int len);
+
+template <bool rgbx>
+static void convert_RGB888_to_RGB(QImageData *dest, const QImageData *src, Qt::ImageConversionFlags)
+{
+    Q_ASSERT(src->format == QImage::Format_RGB888);
+    if (rgbx)
+        Q_ASSERT(dest->format == QImage::Format_RGBX8888 || dest->format == QImage::Format_RGBA8888 || dest->format == QImage::Format_RGBA8888_Premultiplied);
+    else
+        Q_ASSERT(dest->format == QImage::Format_RGB32 || dest->format == QImage::Format_ARGB32 || dest->format == QImage::Format_ARGB32_Premultiplied);
+    Q_ASSERT(src->width == dest->width);
+    Q_ASSERT(src->height == dest->height);
+
+    const uchar *src_data = (uchar *) src->data;
+    quint32 *dest_data = (quint32 *) dest->data;
+
+    Rgb888ToRgbConverter line_converter= rgbx ? qt_convert_rgb888_to_rgbx8888 : qt_convert_rgb888_to_rgb32;
+
+    for (int i = 0; i < src->height; ++i) {
+        line_converter(dest_data, src_data, src->width);
+        src_data += src->bytes_per_line;
+        dest_data = (quint32 *)((uchar*)dest_data + dest->bytes_per_line);
+    }
+}
 
 extern bool convert_ARGB_to_ARGB_PM_inplace_sse2(QImageData *data, Qt::ImageConversionFlags);
 
@@ -2052,6 +2154,9 @@ Image_Converter qimage_converter_map[QImage::NImageFormats][QImage::NImageFormat
         0,
         0,
         0,
+        convert_RGB888_to_RGB<false>,
+        convert_RGB888_to_RGB<false>,
+        convert_RGB888_to_RGB<false>,
         0,
         0,
         0,
@@ -2061,12 +2166,10 @@ Image_Converter qimage_converter_map[QImage::NImageFormats][QImage::NImageFormat
         0,
         0,
         0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0, 0, 0, 0, 0, 0, 0
+        convert_RGB888_to_RGB<true>,
+        convert_RGB888_to_RGB<true>,
+        convert_RGB888_to_RGB<true>,
+        0, 0, 0, 0, 0, 0
     }, // Format_RGB888
 
     {

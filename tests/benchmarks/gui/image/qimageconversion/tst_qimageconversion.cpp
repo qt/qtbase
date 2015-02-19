@@ -43,6 +43,9 @@ private slots:
     void convertRgb888ToRgb32_data();
     void convertRgb888ToRgb32();
 
+    void convertRgb888ToRgbx8888_data();
+    void convertRgb888ToRgbx8888();
+
     void convertRgb32ToRgb888_data();
     void convertRgb32ToRgb888();
 
@@ -74,8 +77,8 @@ void tst_QImageConversion::convertRgb888ToRgb32_data()
     // 16 pixels, minimum for the SSSE3 implementation
     QTest::newRow("width: 16px; height: 5000px;") << generateImageRgb888(16, 5000);
 
-    // 50 pixels, more realistic use case
-    QTest::newRow("width: 50px; height: 5000px;") << generateImageRgb888(50, 5000);
+    // 200 pixels, more realistic use case
+    QTest::newRow("width: 200px; height: 5000px;") << generateImageRgb888(200, 5000);
 
     // 2000 pixels -> typical values for pictures
     QTest::newRow("width: 2000px; height: 2000px;") << generateImageRgb888(2000, 2000);
@@ -87,6 +90,23 @@ void tst_QImageConversion::convertRgb888ToRgb32()
 
     QBENCHMARK {
         volatile QImage output = inputImage.convertToFormat(QImage::Format_RGB32);
+        // we need the volatile and the following to make sure the compiler does not do
+        // anything stupid :)
+        (void)output;
+    }
+}
+
+void tst_QImageConversion::convertRgb888ToRgbx8888_data()
+{
+    convertRgb888ToRgb32_data();
+}
+
+void tst_QImageConversion::convertRgb888ToRgbx8888()
+{
+    QFETCH(QImage, inputImage);
+
+    QBENCHMARK {
+        volatile QImage output = inputImage.convertToFormat(QImage::Format_RGBX8888);
         // we need the volatile and the following to make sure the compiler does not do
         // anything stupid :)
         (void)output;
