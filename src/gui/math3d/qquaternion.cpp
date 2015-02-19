@@ -748,6 +748,18 @@ QQuaternion QQuaternion::fromRotationMatrix(const QMatrix3x3 &rot3x3)
     \sa QQuaternion::operator/=()
 */
 
+#ifndef QT_NO_VECTOR3D
+
+/*!
+    \fn QVector3D operator*(const QQuaternion &quaternion, const QVector3D &vec)
+    \since 5.5
+    \relates QQuaternion
+
+    Rotates a vector \a vec with a quaternion \a quaternion to produce a new vector in 3D space.
+*/
+
+#endif
+
 /*!
     \fn bool qFuzzyCompare(const QQuaternion& q1, const QQuaternion& q2)
     \relates QQuaternion

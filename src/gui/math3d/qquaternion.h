@@ -308,6 +308,11 @@ inline QVector3D QQuaternion::vector() const
     return QVector3D(xp, yp, zp);
 }
 
+inline QVector3D operator*(const QQuaternion &quaternion, const QVector3D &vec)
+{
+    return quaternion.rotatedVector(vec);
+}
+
 inline void QQuaternion::getAxisAndAngle(QVector3D *axis, float *angle) const
 {
     float aX, aY, aZ;
