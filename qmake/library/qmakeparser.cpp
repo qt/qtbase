@@ -320,7 +320,7 @@ void QMakeParser::read(ProFile *pro, const QString &in, int line, SubGrammar gra
     m_canElse = false;
   freshLine:
     m_state = StNew;
-    m_invert = false;
+    m_invert = 0;
     m_operator = NoOperator;
     m_markLine = m_lineNo;
     m_inError = false;
@@ -603,7 +603,7 @@ void QMakeParser::read(ProFile *pro, const QString &in, int line, SubGrammar gra
                         quote = 0;
                         goto nextChr;
                     } else if (c == '!' && ptr == xprPtr && context == CtxTest) {
-                        m_invert ^= true;
+                        m_invert++;
                         goto nextChr;
                     }
                 } else if (c == '\'' || c == '"') {
@@ -666,7 +666,7 @@ void QMakeParser::read(ProFile *pro, const QString &in, int line, SubGrammar gra
                         term = ':';
                         goto funcCall;
                     } else if (c == '!' && ptr == xprPtr) {
-                        m_invert ^= true;
+                        m_invert++;
                         goto nextChr;
                     } else if (c == ':') {
                         FLUSH_LHS_LITERAL();
@@ -923,7 +923,7 @@ void QMakeParser::warnOperator(const char *msg)
 {
     if (m_invert) {
         languageWarning(fL1S("Stray NOT operator %1.").arg(fL1S(msg)));
-        m_invert = false;
+        m_invert = 0;
     }
     if (m_operator == AndOperator) {
         languageWarning(fL1S("Stray AND operator %1.").arg(fL1S(msg)));
@@ -939,7 +939,7 @@ bool QMakeParser::failOperator(const char *msg)
     bool fail = false;
     if (m_invert) {
         parseError(fL1S("Unexpected NOT operator %1.").arg(fL1S(msg)));
-        m_invert = false;
+        m_invert = 0;
         fail = true;
     }
     if (m_operator == AndOperator) {
@@ -980,10 +980,9 @@ void QMakeParser::finalizeTest(ushort *&tokPtr)
     flushScopes(tokPtr);
     putLineMarker(tokPtr);
     putOperator(tokPtr);
-    if (m_invert) {
+    if (m_invert & 1)
         putTok(tokPtr, TokNot);
-        m_invert = false;
-    }
+    m_invert = 0;
     m_state = StCond;
     m_canElse = true;
 }
@@ -994,7 +993,7 @@ void QMakeParser::bogusTest(ushort *&tokPtr, const QString &msg)
         parseError(msg);
     flushScopes(tokPtr);
     m_operator = NoOperator;
-    m_invert = false;
+    m_invert = 0;
     m_state = StCond;
     m_canElse = true;
 }
