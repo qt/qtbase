@@ -470,7 +470,7 @@ public:
 
     QByteArray systemTimeZoneId() const Q_DECL_OVERRIDE;
 
-    QSet<QByteArray> availableTimeZoneIds() const Q_DECL_OVERRIDE;
+    QList<QByteArray> availableTimeZoneIds() const Q_DECL_OVERRIDE;
 
 private:
     void init(const QByteArray &zoneId);
