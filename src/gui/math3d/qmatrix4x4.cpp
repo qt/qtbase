@@ -1530,7 +1530,11 @@ void QMatrix4x4::perspective(float verticalAngle, float aspectRatio, float nearP
 */
 void QMatrix4x4::lookAt(const QVector3D& eye, const QVector3D& center, const QVector3D& up)
 {
-    QVector3D forward = (center - eye).normalized();
+    QVector3D forward = center - eye;
+    if (qFuzzyIsNull(forward.x()) && qFuzzyIsNull(forward.y()) && qFuzzyIsNull(forward.z()))
+        return;
+
+    forward.normalize();
     QVector3D side = QVector3D::crossProduct(forward, up).normalized();
     QVector3D upVector = QVector3D::crossProduct(side, forward);
 
