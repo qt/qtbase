@@ -363,7 +363,7 @@ QVector3D QQuaternion::rotatedVector(const QVector3D& vector) const
 #ifndef QT_NO_VECTOR3D
 
 /*!
-    \fn void QQuaternion::toAxisAndAngle(QVector3D *axis, float *angle) const
+    \fn void QQuaternion::getAxisAndAngle(QVector3D *axis, float *angle) const
     \since 5.5
     \overload
 
@@ -377,7 +377,7 @@ QVector3D QQuaternion::rotatedVector(const QVector3D& vector) const
     Creates a normalized quaternion that corresponds to rotating through
     \a angle degrees about the specified 3D \a axis.
 
-    \sa toAxisAndAngle()
+    \sa getAxisAndAngle()
 */
 QQuaternion QQuaternion::fromAxisAndAngle(const QVector3D& axis, float angle)
 {
@@ -402,7 +402,7 @@ QQuaternion QQuaternion::fromAxisAndAngle(const QVector3D& axis, float angle)
 
     \sa fromAxisAndAngle()
 */
-void QQuaternion::toAxisAndAngle(float *x, float *y, float *z, float *angle) const
+void QQuaternion::getAxisAndAngle(float *x, float *y, float *z, float *angle) const
 {
     Q_ASSERT(x && y && z && angle);
 
@@ -433,7 +433,7 @@ void QQuaternion::toAxisAndAngle(float *x, float *y, float *z, float *angle) con
     Creates a normalized quaternion that corresponds to rotating through
     \a angle degrees about the 3D axis (\a x, \a y, \a z).
 
-    \sa toAxisAndAngle()
+    \sa getAxisAndAngle()
 */
 QQuaternion QQuaternion::fromAxisAndAngle
         (float x, float y, float z, float angle)
@@ -485,7 +485,7 @@ QQuaternion QQuaternion::fromAxisAndAngle
 
     \sa fromEulerAngles()
 */
-void QQuaternion::toEulerAngles(float *pitch, float *yaw, float *roll) const
+void QQuaternion::getEulerAngles(float *pitch, float *yaw, float *roll) const
 {
     Q_ASSERT(pitch && yaw && roll);
 
@@ -543,7 +543,7 @@ void QQuaternion::toEulerAngles(float *pitch, float *yaw, float *roll) const
     \a roll degrees around the z axis, \a pitch degrees around the x axis,
     and \a yaw degrees around the y axis (in that order).
 
-    \sa toEulerAngles()
+    \sa getEulerAngles()
 */
 QQuaternion QQuaternion::fromEulerAngles(float pitch, float yaw, float roll)
 {

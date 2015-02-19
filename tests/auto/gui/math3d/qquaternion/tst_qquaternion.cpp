@@ -727,7 +727,7 @@ void tst_QQuaternion::fromAxisAndAngle()
     {
         QVector3D answerAxis;
         float answerAngle;
-        answer.toAxisAndAngle(&answerAxis, &answerAngle);
+        answer.getAxisAndAngle(&answerAxis, &answerAngle);
         QVERIFY(qFuzzyCompare(answerAxis.x(), vector.x()));
         QVERIFY(qFuzzyCompare(answerAxis.y(), vector.y()));
         QVERIFY(qFuzzyCompare(answerAxis.z(), vector.z()));
@@ -743,7 +743,7 @@ void tst_QQuaternion::fromAxisAndAngle()
     {
         float answerAxisX, answerAxisY, answerAxisZ;
         float answerAngle;
-        answer.toAxisAndAngle(&answerAxisX, &answerAxisY, &answerAxisZ, &answerAngle);
+        answer.getAxisAndAngle(&answerAxisX, &answerAxisY, &answerAxisZ, &answerAngle);
         QVERIFY(qFuzzyCompare(answerAxisX, vector.x()));
         QVERIFY(qFuzzyCompare(answerAxisY, vector.y()));
         QVERIFY(qFuzzyCompare(answerAxisZ, vector.z()));
@@ -872,7 +872,7 @@ void tst_QQuaternion::fromEulerAngles()
 
     {
         float answerPitch, answerYaw, answerRoll;
-        answer.toEulerAngles(&answerPitch, &answerYaw, &answerRoll);
+        answer.getEulerAngles(&answerPitch, &answerYaw, &answerRoll);
         QVERIFY(myFuzzyCompareDegrees(answerPitch, pitch));
         QVERIFY(myFuzzyCompareDegrees(answerYaw, yaw));
         QVERIFY(myFuzzyCompareDegrees(answerRoll, roll));
