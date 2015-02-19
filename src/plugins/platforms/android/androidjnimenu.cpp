@@ -350,6 +350,10 @@ namespace QtAndroidMenu
                 item->activated();
                 visibleMenu->aboutToHide();
                 visibleMenu = 0;
+                foreach (QAndroidPlatformMenu *menu, pendingContextMenus) {
+                    if (menu->isVisible())
+                        menu->aboutToHide();
+                }
                 pendingContextMenus.clear();
             }
         }
