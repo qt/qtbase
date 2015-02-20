@@ -178,6 +178,8 @@ private slots:
 
     void cleanupFunctions();
 
+    void devicePixelRatio();
+
 private:
     const QString m_prefix;
 };
@@ -2728,6 +2730,33 @@ void tst_QImage::cleanupFunctions()
         QVERIFY(called);
     }
 
+}
+
+// test image devicePixelRatio setting and detaching
+void tst_QImage::devicePixelRatio()
+{
+    // create image
+    QImage a(64, 64, QImage::Format_ARGB32);
+    a.fill(Qt::white);
+    QCOMPARE(a.devicePixelRatio(), qreal(1.0));
+    QCOMPARE(a.isDetached(), true);
+
+    // copy image
+    QImage b = a;
+    QCOMPARE(b.devicePixelRatio(), qreal(1.0));
+    QCOMPARE(a.isDetached(), false);
+    QCOMPARE(b.isDetached(), false);
+
+    // set devicePixelRatio to the current value: does not detach
+    a.setDevicePixelRatio(qreal(1.0));
+    QCOMPARE(a.isDetached(), false);
+    QCOMPARE(b.isDetached(), false);
+
+    // set devicePixelRatio to a new value: may detach (currently
+    // does, but we may want to avoid the data copy the future)
+    a.setDevicePixelRatio(qreal(2.0));
+    QCOMPARE(a.devicePixelRatio(), qreal(2.0));
+    QCOMPARE(b.devicePixelRatio(), qreal(1.0));
 }
 
 QTEST_GUILESS_MAIN(tst_QImage)

@@ -164,6 +164,7 @@ private slots:
     void detachOnLoad_QTBUG29639();
 
     void copyOnNonAlignedBoundary();
+    void devicePixelRatio();
 
 private:
     const QString m_prefix;
@@ -1541,6 +1542,33 @@ void tst_QPixmap::copyOnNonAlignedBoundary()
 
     QPixmap pm1 = QPixmap::fromImage(img, Qt::NoFormatConversion);
     QPixmap pm2 = pm1.copy(QRect(5, 0, 3, 2)); // When copying second line: 2 bytes too many are read which might cause an access violation.
+}
+
+// test pixmap devicePixelRatio setting and detaching
+void tst_QPixmap::devicePixelRatio()
+{
+    // create pixmap
+    QPixmap a(64, 64);
+    a.fill(Qt::white);
+    QCOMPARE(a.devicePixelRatio(), qreal(1.0));
+    QCOMPARE(a.isDetached(), true);
+
+    // copy pixmap
+    QPixmap b = a;
+    QCOMPARE(b.devicePixelRatio(), qreal(1.0));
+    QCOMPARE(a.isDetached(), false);
+    QCOMPARE(b.isDetached(), false);
+
+    // set devicePixelRatio to the current value: does not detach
+    a.setDevicePixelRatio(qreal(1.0));
+    QCOMPARE(a.isDetached(), false);
+    QCOMPARE(b.isDetached(), false);
+
+    // set devicePixelRatio to a new value: may detach (currently
+    // does, but we may want to avoid the data copy the future)
+    a.setDevicePixelRatio(qreal(2.0));
+    QCOMPARE(a.devicePixelRatio(), qreal(2.0));
+    QCOMPARE(b.devicePixelRatio(), qreal(1.0));
 }
 
 QTEST_MAIN(tst_QPixmap)
