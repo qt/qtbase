@@ -173,8 +173,8 @@ void tst_QSharedMemory::cleanup()
 #ifndef Q_OS_WIN
 #include <private/qsharedmemory_p.h>
 #include <sys/types.h>
-#include <sys/ipc.h>
 #ifndef QT_POSIX_IPC
+#include <sys/ipc.h>
 #include <sys/shm.h>
 #else
 #include <sys/mman.h>

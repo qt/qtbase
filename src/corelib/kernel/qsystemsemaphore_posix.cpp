@@ -45,8 +45,6 @@
 #ifndef QT_NO_SYSTEMSEMAPHORE
 
 #include <sys/types.h>
-#include <sys/ipc.h>
-#include <sys/sem.h>
 #include <fcntl.h>
 #include <errno.h>
 

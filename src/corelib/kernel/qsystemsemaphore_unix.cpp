@@ -40,8 +40,8 @@
 #ifndef QT_NO_SYSTEMSEMAPHORE
 
 #include <sys/types.h>
-#include <sys/ipc.h>
 #ifndef QT_POSIX_IPC
+#include <sys/ipc.h>
 #include <sys/sem.h>
 #endif
 #include <fcntl.h>
