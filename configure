@@ -678,7 +678,7 @@ CFG_TSLIB=auto
 CFG_NIS=auto
 CFG_CUPS=auto
 CFG_ICONV=auto
-CFG_DBUS=runtime
+CFG_DBUS=auto
 CFG_GLIB=auto
 CFG_QGTKSTYLE=auto
 CFG_LARGEFILE=auto
@@ -3084,6 +3084,9 @@ if ( [ "$CFG_XCB" = "system" ] || [ "$CFG_XCB" = "qt" ] ) && [ "$CFG_XKBCOMMON" 
 fi
 
 if [ "$XPLATFORM_ANDROID" = "yes" ]; then
+    if [ "$CFG_DBUS" = "auto" ]; then
+        CFG_DBUS="no"
+    fi
     if [ -z "$CFG_DEFAULT_ANDROID_NDK_HOST" ]; then
         case $PLATFORM in
         linux-*)
@@ -4867,6 +4870,9 @@ if [ "$CFG_ICONV" != "no" ]; then
 fi
 
 # auto-detect libdbus-1 support
+if [ "$CFG_DBUS" = "auto" ]; then
+    CFG_DBUS="runtime"
+fi
 if [ "$CFG_DBUS" = "linked" ]; then
     if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --atleast-version="$MIN_DBUS_1_VERSION" dbus-1 2>/dev/null; then
         QT_CFLAGS_DBUS=`$PKG_CONFIG --cflags dbus-1 2>/dev/null`
