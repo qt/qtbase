@@ -457,7 +457,7 @@ QQuaternion QQuaternion::fromAxisAndAngle
     \since 5.5
     \overload
 
-    Calculates \a roll, \a pitch, and \a yaw Euler angles (in degrees)
+    Calculates roll, pitch, and yaw Euler angles (in degrees)
     that corresponds to this quaternion.
 
     \sa fromEulerAngles()
@@ -468,9 +468,9 @@ QQuaternion QQuaternion::fromAxisAndAngle
     \since 5.5
     \overload
 
-    Creates a quaternion that corresponds to a rotation of
-    \a eulerAngles.z() degrees around the z axis, \a eulerAngles.x() degrees around the x axis,
-    and \a eulerAngles.y() degrees around the y axis (in that order).
+    Creates a quaternion that corresponds to a rotation of \a eulerAngles:
+    eulerAngles.z() degrees around the z axis, eulerAngles.x() degrees around the x axis,
+    and eulerAngles.y() degrees around the y axis (in that order).
 
     \sa toEulerAngles()
 */

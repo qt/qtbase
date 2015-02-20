@@ -420,7 +420,7 @@ QVector3D QVector3D::project(const QMatrix4x4 &modelView, const QMatrix4x4 &proj
     component of the vector components takes place. To prevent dividing by 0 if
     w equals to 0, it is set to 1.
 
-    \note y coordinates in \a point should use OpenGL orientation. OpenGL
+    \note y coordinates in \a viewport should use OpenGL orientation. OpenGL
     expects the bottom to be 0 whereas for Qt top is 0.
 
     \sa project()
