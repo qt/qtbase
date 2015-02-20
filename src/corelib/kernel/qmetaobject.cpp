@@ -2678,7 +2678,7 @@ QByteArray QMetaEnum::valueToKeys(int value) const
 }
 
 /*!
-    \fn QMetaEnum QMetaEnum::fromType() const
+    \fn QMetaEnum QMetaEnum::fromType()
     \since 5.5
 
     Returns the QMetaEnum corresponding to the type in the template parameter.

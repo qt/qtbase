@@ -1110,7 +1110,7 @@ QDBusConnection QDBusConnection::systemBus()
   \deprecated
 
   Always returns a disconnected, invalid QDBusConnection object. For the old
-  functionality of determining the sender connection, please use \ref QDBusContext.
+  functionality of determining the sender connection, please use QDBusContext.
 
   \sa QDBusContext
 */
