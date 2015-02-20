@@ -18,6 +18,7 @@ qhttpnetworkconnection \
 qimagereader \
 qlayout \
 qlocale \
+qmimedatabase \
 qnetworkaccessmanager/qget \
 qnetworkconfigurationmanager \
 qnetworkconfiguration \
@@ -59,5 +60,5 @@ win32 {
     wince*:SUBDIRS -= lance windowmodality
 }
 
-lessThan(QT_MAJOR_VERSION, 5): SUBDIRS -= bearerex lance qnetworkaccessmanager/qget qnetworkreply \
+lessThan(QT_MAJOR_VERSION, 5): SUBDIRS -= bearerex lance qnetworkaccessmanager/qget qmimedatabase qnetworkreply \
 qpainfo qscreen  socketengine xembed-raster xembed-widgets windowtransparency
