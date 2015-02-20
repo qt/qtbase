@@ -675,7 +675,7 @@ qreal QPixmap::devicePixelRatio() const
     high-DPI pixmap rather than a large pixmap
     (see \l{Drawing High Resolution Versions of Pixmaps and Images}).
 
-        \sa devicePixelRatio()
+    \sa devicePixelRatio()
 */
 void QPixmap::setDevicePixelRatio(qreal scaleFactor)
 {
