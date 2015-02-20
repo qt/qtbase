@@ -245,6 +245,8 @@ Configure::Configure(int& argc, char** argv)
 
     dictionary[ "SHARED" ]          = "yes";
 
+    dictionary[ "STATIC_RUNTIME" ]  = "no";
+
     dictionary[ "ZLIB" ]            = "auto";
 
     dictionary[ "PCRE" ]            = "auto";
@@ -464,6 +466,8 @@ void Configure::parseCmdLine()
             dictionary[ "SHARED" ] = "yes";
         else if (configCmdLine.at(i) == "-static")
             dictionary[ "SHARED" ] = "no";
+        else if (configCmdLine.at(i) == "-static-runtime")
+            dictionary[ "STATIC_RUNTIME" ] = "yes";
         else if (configCmdLine.at(i) == "-developer-build")
             dictionary[ "BUILDDEV" ] = "yes";
         else if (configCmdLine.at(i) == "-opensource") {
@@ -1775,6 +1779,8 @@ bool Configure::displayHelp()
         desc("SHARED", "yes",   "-shared",              "Create and use shared Qt libraries.");
         desc("SHARED", "no",    "-static",              "Create and use static Qt libraries.\n");
 
+        desc("STATIC_RUNTIME",  "no", "-static-runtime","Statically link the C/C++ runtime library.\n");
+
         desc("LTCG", "yes",   "-ltcg",                  "Use Link Time Code Generation. (Release builds only)");
         desc("LTCG", "no",    "-no-ltcg",               "Do not use Link Time Code Generation.\n");
 
@@ -2499,6 +2505,11 @@ bool Configure::verifyConfiguration()
         dictionary["C++11"] = "auto";
     }
 
+    if (dictionary["STATIC_RUNTIME"] == "yes" && dictionary["SHARED"] == "yes") {
+        cout << "ERROR: -static-runtime requires -static" << endl << endl;
+        dictionary[ "DONE" ] = "error";
+    }
+
     if (dictionary["SEPARATE_DEBUG_INFO"] == "yes") {
         if (dictionary[ "SHARED" ] == "no") {
             cout << "ERROR: -separate-debug-info is incompatible with -static" << endl << endl;
@@ -2643,6 +2654,9 @@ void Configure::generateOutputVars()
         qtConfig += "static";
     else
         qtConfig += "shared";
+
+    if (dictionary[ "STATIC_RUNTIME" ] == "yes")
+        qtConfig += "static_runtime";
 
     if (dictionary[ "GUI" ] == "no") {
         qtConfig += "no-gui";
@@ -3362,6 +3376,8 @@ void Configure::generateQConfigPri()
         configStream << dictionary[ "BUILD" ];
         configStream << (dictionary[ "SHARED" ] == "no" ? " static" : " shared");
 
+        if (dictionary["STATIC_RUNTIME"] == "yes")
+            configStream << " static_runtime";
         if (dictionary[ "LTCG" ] == "yes")
             configStream << " ltcg";
         if (dictionary[ "RTTI" ] == "yes")
