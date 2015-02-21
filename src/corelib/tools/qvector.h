@@ -265,7 +265,6 @@ private:
     {
         return (i <= d->end()) && (d->begin() <= i);
     }
-    iterator c2m(const_iterator it) { return begin() + (it - cbegin()); }
     class AlignmentDummy { Data header; T array[1]; };
 };
 
