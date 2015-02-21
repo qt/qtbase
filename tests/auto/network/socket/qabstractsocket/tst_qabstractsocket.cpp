@@ -37,11 +37,6 @@
 #include <qcoreapplication.h>
 #include <qdebug.h>
 #include <qabstractsocket.h>
-#include <qtcpserver.h>
-#include <qtcpsocket.h>
-#ifndef QT_NO_SSL
-#include <qsslsocket.h>
-#endif
 
 class tst_QAbstractSocket : public QObject
 {
@@ -52,9 +47,7 @@ public:
     virtual ~tst_QAbstractSocket();
 
 private slots:
-    void initTestCase();
     void getSetCheck();
-    void serverDisconnectWithBuffered();
 };
 
 tst_QAbstractSocket::tst_QAbstractSocket()
@@ -72,11 +65,6 @@ public:
     void setLocalPort(quint16 port) { QAbstractSocket::setLocalPort(port); }
     void setPeerPort(quint16 port) { QAbstractSocket::setPeerPort(port); }
 };
-
-void tst_QAbstractSocket::initTestCase()
-{
-    qRegisterMetaType<QAbstractSocket::SocketState>("QAbstractSocket::SocketState");
-}
 
 // Testing get/set functions
 void tst_QAbstractSocket::getSetCheck()
@@ -104,47 +92,6 @@ void tst_QAbstractSocket::getSetCheck()
     QCOMPARE(quint16(0), obj1.peerPort());
     obj1.setPeerPort(quint16(0xffff));
     QCOMPARE(quint16(0xffff), obj1.peerPort());
-}
-
-// Test buffered socket being properly closed on remote disconnect
-void tst_QAbstractSocket::serverDisconnectWithBuffered()
-{
-    QTcpServer tcpServer;
-#ifndef QT_NO_SSL
-    QSslSocket testSocket;
-#else
-    QTcpSocket testSocket;
-#endif
-
-    QVERIFY(tcpServer.listen(QHostAddress::LocalHost));
-    testSocket.connectToHost(tcpServer.serverAddress(), tcpServer.serverPort());
-    // Accept connection on server side
-    QVERIFY(tcpServer.waitForNewConnection(5000));
-    QTcpSocket *newConnection = tcpServer.nextPendingConnection();
-    // Send one char and drop link
-    QVERIFY(newConnection != NULL);
-    QVERIFY(newConnection->putChar(0));
-    QVERIFY(newConnection->flush());
-    delete newConnection;
-
-    QVERIFY(testSocket.waitForConnected(5000)); // ready for write
-    QVERIFY(testSocket.state() == QAbstractSocket::ConnectedState);
-
-    QSignalSpy spyStateChanged(&testSocket, SIGNAL(stateChanged(QAbstractSocket::SocketState)));
-    QSignalSpy spyDisconnected(&testSocket, SIGNAL(disconnected()));
-
-    QVERIFY(testSocket.waitForReadyRead(5000)); // have one char already in internal buffer
-    char buf[128];
-    QCOMPARE(testSocket.read(buf, sizeof(buf)), Q_INT64_C(1));
-    if (testSocket.state() != QAbstractSocket::UnconnectedState) {
-        QVERIFY(testSocket.waitForDisconnected(5000));
-        QVERIFY(testSocket.state() == QAbstractSocket::UnconnectedState);
-    }
-    // Test signal emitting
-    QVERIFY(spyDisconnected.count() == 1);
-    QVERIFY(spyStateChanged.count() > 0);
-    QVERIFY(qvariant_cast<QAbstractSocket::SocketState>(spyStateChanged.last().first())
-            == QAbstractSocket::UnconnectedState);
 }
 
 QTEST_MAIN(tst_QAbstractSocket)

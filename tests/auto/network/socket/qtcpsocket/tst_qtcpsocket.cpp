@@ -197,6 +197,7 @@ private slots:
 
     void setSocketOption();
     void clientSendDataOnDelayedDisconnect();
+    void serverDisconnectWithBuffered();
 
 protected slots:
     void nonBlockingIMAP_hostFound();
@@ -2843,6 +2844,51 @@ void tst_QTcpSocket::clientSendDataOnDelayedDisconnect()
     while (newConnection->waitForReadyRead(5000)) // have data to read
         recData += newConnection->readAll();
     QCOMPARE(sendData, recData);
+
+    delete socket;
+}
+
+// Test buffered socket being properly closed on remote disconnect
+void tst_QTcpSocket::serverDisconnectWithBuffered()
+{
+    QFETCH_GLOBAL(bool, setProxy);
+    if (setProxy)
+        return;
+
+    qRegisterMetaType<QAbstractSocket::SocketState>("QAbstractSocket::SocketState");
+
+    QTcpServer tcpServer;
+    QTcpSocket *socket = newSocket();
+
+    QVERIFY(tcpServer.listen(QHostAddress::LocalHost));
+    socket->connectToHost(tcpServer.serverAddress(), tcpServer.serverPort());
+    // Accept connection on server side
+    QVERIFY(tcpServer.waitForNewConnection(5000));
+    QTcpSocket *newConnection = tcpServer.nextPendingConnection();
+    // Send one char and drop link
+    QVERIFY(newConnection != NULL);
+    QVERIFY(newConnection->putChar(0));
+    QVERIFY(newConnection->flush());
+    delete newConnection;
+
+    QVERIFY(socket->waitForConnected(5000)); // ready for write
+    QVERIFY(socket->state() == QAbstractSocket::ConnectedState);
+
+    QSignalSpy spyStateChanged(socket, SIGNAL(stateChanged(QAbstractSocket::SocketState)));
+    QSignalSpy spyDisconnected(socket, SIGNAL(disconnected()));
+
+    QVERIFY(socket->waitForReadyRead(5000)); // have one char already in internal buffer
+    char buf[128];
+    QCOMPARE(socket->read(buf, sizeof(buf)), Q_INT64_C(1));
+    if (socket->state() != QAbstractSocket::UnconnectedState) {
+        QVERIFY(socket->waitForDisconnected(5000));
+        QVERIFY(socket->state() == QAbstractSocket::UnconnectedState);
+    }
+    // Test signal emitting
+    QVERIFY(spyDisconnected.count() == 1);
+    QVERIFY(spyStateChanged.count() > 0);
+    QVERIFY(qvariant_cast<QAbstractSocket::SocketState>(spyStateChanged.last().first())
+            == QAbstractSocket::UnconnectedState);
 
     delete socket;
 }
