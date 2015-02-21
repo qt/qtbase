@@ -2185,7 +2185,7 @@ static QString qt_tzname(QDateTimePrivate::DaylightStatus daylightStatus)
 // then null date/time will be returned, you should adjust the date first if
 // you need a guaranteed result.
 static qint64 qt_mktime(QDate *date, QTime *time, QDateTimePrivate::DaylightStatus *daylightStatus,
-                        QString *abbreviation, bool *ok)
+                        QString *abbreviation, bool *ok = 0)
 {
     const qint64 msec = time->msec();
     int yy, mm, dd;
@@ -2446,7 +2446,7 @@ static bool epochMSecsToLocalTime(qint64 msecs, QDate *localDate, QTime *localTi
 static qint64 localMSecsToEpochMSecs(qint64 localMsecs,
                                      QDateTimePrivate::DaylightStatus *daylightStatus,
                                      QDate *localDate = 0, QTime *localTime = 0,
-                                     QString *abbreviation = 0, bool *ok = 0)
+                                     QString *abbreviation = 0)
 {
     QDate dt;
     QTime tm;
@@ -2469,8 +2469,6 @@ static qint64 localMSecsToEpochMSecs(qint64 localMsecs,
                     *localDate = dt;
                 if (localTime)
                     *localTime = tm;
-                if (ok)
-                    *ok = true;
                 return utcMsecs;
             }
         } else {
@@ -2485,8 +2483,6 @@ static qint64 localMSecsToEpochMSecs(qint64 localMsecs,
             *daylightStatus = QDateTimePrivate::StandardTime;
         if (abbreviation)
             *abbreviation = qt_tzname(QDateTimePrivate::StandardTime);
-        if (ok)
-            *ok = true;
         return utcMsecs;
 
     } else if (localMsecs >= msecsMax - MSECS_PER_DAY) {
@@ -2505,8 +2501,6 @@ static qint64 localMSecsToEpochMSecs(qint64 localMsecs,
                     *localDate = dt;
                 if (localTime)
                     *localTime = tm;
-                if (ok)
-                    *ok = true;
                 return utcMsecs;
             }
         }
@@ -2520,7 +2514,7 @@ static qint64 localMSecsToEpochMSecs(qint64 localMsecs,
             --day;
         QDate fakeDate(2037, month, day);
         qint64 fakeDiff = fakeDate.daysTo(dt);
-        qint64 utcMsecs = qt_mktime(&fakeDate, &tm, daylightStatus, abbreviation, ok);
+        qint64 utcMsecs = qt_mktime(&fakeDate, &tm, daylightStatus, abbreviation);
         if (localDate)
             *localDate = fakeDate.addDays(fakeDiff);
         if (localTime)
@@ -2535,7 +2529,7 @@ static qint64 localMSecsToEpochMSecs(qint64 localMsecs,
     } else {
 
         // Clearly falls inside 1970-2037 suported range so can use mktime
-        qint64 utcMsecs = qt_mktime(&dt, &tm, daylightStatus, abbreviation, ok);
+        qint64 utcMsecs = qt_mktime(&dt, &tm, daylightStatus, abbreviation);
         if (localDate)
             *localDate = dt;
         if (localTime)
