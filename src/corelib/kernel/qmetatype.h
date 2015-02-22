@@ -1364,15 +1364,15 @@ namespace QtPrivate
         enum { Value = sizeof(checkType(static_cast<T*>(0))) == sizeof(void*)  };
     };
 
-    char qt_getEnumMetaObject(...);
-    char qt_getEnumMetaObject(); // Workaround bugs in MSVC.
+    template<typename T> char qt_getEnumMetaObject(const T&);
 
     template<typename T>
     struct IsQEnumHelper {
         static const T &declval();
-        // If the type was declared with Q_ENUM, the friend qt_getEnumMetaObject(T) declared in the
+        // If the type was declared with Q_ENUM, the friend qt_getEnumMetaObject() declared in the
         // Q_ENUM macro will be chosen by ADL, and the return type will be QMetaObject*.
-        // Otherwise the chosen overload will be qt_getEnumMetaObject(...) which returne 'char'
+        // Otherwise the chosen overload will be the catch all template function
+        // qt_getEnumMetaObject(T) which returns 'char'
         enum { Value = sizeof(qt_getEnumMetaObject(declval())) == sizeof(QMetaObject*) };
     };
 
