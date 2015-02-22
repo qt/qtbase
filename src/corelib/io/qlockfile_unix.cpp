@@ -137,7 +137,7 @@ QLockFile::LockError QLockFilePrivate::tryLock_sys()
     // (otherwise we'd have to check every write call)
     // Use operator% from the fast builder to avoid multiple memory allocations.
     QByteArray fileData = QByteArray::number(QCoreApplication::applicationPid()) % '\n'
-                          % qAppName().toUtf8() % '\n'
+                          % QCoreApplication::applicationName().toUtf8() % '\n'
                           % localHostName() % '\n';
 
     const QByteArray lockFileName = QFile::encodeName(fileName);

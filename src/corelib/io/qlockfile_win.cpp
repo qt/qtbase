@@ -94,7 +94,7 @@ QLockFile::LockError QLockFilePrivate::tryLock_sys()
     QByteArray fileData;
     fileData += QByteArray::number(QCoreApplication::applicationPid());
     fileData += '\n';
-    fileData += qAppName().toUtf8();
+    fileData += QCoreApplication::applicationName().toUtf8();
     fileData += '\n';
     fileData += localHostName();
     fileData += '\n';
