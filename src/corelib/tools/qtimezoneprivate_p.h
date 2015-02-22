@@ -181,6 +181,8 @@ public:
 
     QTimeZonePrivate *clone();
 
+    Data data(qint64 forMSecsSinceEpoch) const Q_DECL_OVERRIDE;
+
     QLocale::Country country() const Q_DECL_OVERRIDE;
     QString comment() const Q_DECL_OVERRIDE;
 

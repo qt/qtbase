@@ -619,6 +619,15 @@ QTimeZonePrivate *QUtcTimeZonePrivate::clone()
     return new QUtcTimeZonePrivate(*this);
 }
 
+QTimeZonePrivate::Data QUtcTimeZonePrivate::data(qint64 forMSecsSinceEpoch) const
+{
+    Data d = invalidData();
+    d.abbreviation = m_abbreviation;
+    d.atMSecsSinceEpoch = forMSecsSinceEpoch;
+    d.offsetFromUtc = m_offsetFromUtc;
+    return d;
+}
+
 void QUtcTimeZonePrivate::init(const QByteArray &zoneId)
 {
     m_id = zoneId;

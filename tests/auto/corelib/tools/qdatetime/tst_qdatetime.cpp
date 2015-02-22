@@ -2804,10 +2804,12 @@ void tst_QDateTime::timeZones() const
     QCOMPARE(invalidDateTime.time(), QTime(0, 0, 0));
 
     QTimeZone nzTz = QTimeZone("Pacific/Auckland");
+    QTimeZone nzTzOffset = QTimeZone(12 * 3600);
 
     // During Standard Time NZ is +12:00
     QDateTime utcStd(QDate(2012, 6, 1), QTime(0, 0, 0), Qt::UTC);
     QDateTime nzStd(QDate(2012, 6, 1), QTime(12, 0, 0), nzTz);
+    QDateTime nzStdOffset(QDate(2012, 6, 1), QTime(12, 0, 0), nzTzOffset);
 
     QCOMPARE(nzStd.isValid(), true);
     QCOMPARE(nzStd.timeSpec(), Qt::TimeZone);
@@ -2818,6 +2820,16 @@ void tst_QDateTime::timeZones() const
     QCOMPARE(nzStd.offsetFromUtc(), 43200);
     QCOMPARE(nzStd.isDaylightTime(), false);
     QCOMPARE(nzStd.toMSecsSinceEpoch(), utcStd.toMSecsSinceEpoch());
+
+    QCOMPARE(nzStdOffset.isValid(), true);
+    QCOMPARE(nzStdOffset.timeSpec(), Qt::TimeZone);
+    QCOMPARE(nzStdOffset.date(), QDate(2012, 6, 1));
+    QCOMPARE(nzStdOffset.time(), QTime(12, 0, 0));
+    QVERIFY(nzStdOffset.timeZone() == nzTzOffset);
+    QCOMPARE(nzStdOffset.timeZone().id(), QByteArray("UTC+12:00"));
+    QCOMPARE(nzStdOffset.offsetFromUtc(), 43200);
+    QCOMPARE(nzStdOffset.isDaylightTime(), false);
+    QCOMPARE(nzStdOffset.toMSecsSinceEpoch(), utcStd.toMSecsSinceEpoch());
 
     // During Daylight Time NZ is +13:00
     QDateTime utcDst(QDate(2012, 1, 1), QTime(0, 0, 0), Qt::UTC);
