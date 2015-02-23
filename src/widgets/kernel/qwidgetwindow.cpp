@@ -639,7 +639,7 @@ void QWidgetWindow::handleScreenChange()
 
 void QWidgetWindow::repaintWindow()
 {
-    if (!m_widget->isVisible() || !m_widget->updatesEnabled())
+    if (!m_widget->isVisible() || !m_widget->updatesEnabled() || !m_widget->rect().isValid())
         return;
 
     QTLWExtra *tlwExtra = m_widget->window()->d_func()->maybeTopData();
