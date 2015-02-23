@@ -30,16 +30,16 @@ class QPepperScreen : public QPlatformScreen
 {
 public:
     QPepperScreen();
-    QRect geometry() const;
-    int depth() const { return m_depth; }
-    QImage::Format format() const { return m_format; }
-    qreal devicePixelRatio() const;
-    QPlatformCursor *cursor() const;
+
+    QRect geometry() const Q_DECL_OVERRIDE;
+    int depth() const Q_DECL_OVERRIDE;
+    QImage::Format format() const Q_DECL_OVERRIDE;
+    qreal devicePixelRatio() const Q_DECL_OVERRIDE;
+    QPlatformCursor *cursor() const Q_DECL_OVERRIDE;
+
     void resizeMaximizedWindows();
 
-public:
-    int m_depth;
-    QImage::Format m_format;
+private:
     QScopedPointer<QPlatformCursor> m_cursor;
 };
 

@@ -259,8 +259,8 @@ void QPepperInstancePrivate::didChangeFocus(int32_t result, bool hasFucus)
     Q_UNUSED(result);
     qCDebug(QT_PLATFORM_PEPPER_INSTANCE) << "DidChangeFocus" << hasFucus;
 
-    QWindow *fucusWindow = (hasFucus && m_pepperIntegraton && m_pepperIntegraton->m_topLevelWindow)
-                               ? m_pepperIntegraton->m_topLevelWindow->window()
+    QWindow *fucusWindow = (hasFucus && m_pepperIntegraton && m_pepperIntegraton->topLevelWindow())
+                               ? m_pepperIntegraton->topLevelWindow()->window()
                                : 0;
     QWindowSystemInterface::handleWindowActivated(fucusWindow, Qt::ActiveWindowFocusReason);
 }

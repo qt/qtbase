@@ -99,7 +99,7 @@ class QPepperInstancePrivate
 {
 public:
     QPepperInstancePrivate(QPepperInstance *instance);
-    virtual ~QPepperInstancePrivate();
+    ~QPepperInstancePrivate();
 
     static QPepperInstancePrivate *get();
     static pp::Instance *getPPInstance();

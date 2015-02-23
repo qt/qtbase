@@ -45,6 +45,7 @@ QPepperTheme::QPepperTheme()
 }
 
 QPepperTheme::~QPepperTheme() {}
+
 QVariant QPepperTheme::themeHint(ThemeHint hint) const
 {
     switch (hint) {

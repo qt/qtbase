@@ -32,7 +32,8 @@ public:
     QPepperTheme();
     ~QPepperTheme();
 
-    QVariant themeHint(ThemeHint hint) const;
+    QVariant themeHint(ThemeHint hint) const Q_DECL_OVERRIDE;
+
 public Q_SLOTS:
     void handleGetAppVersionMessage(const QByteArray &message);
 

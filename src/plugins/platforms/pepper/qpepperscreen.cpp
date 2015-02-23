@@ -36,9 +36,7 @@ QT_BEGIN_NAMESPACE
 // to then top-left (0,0). Top-level windows are positioned in screen geometry as usual.
 
 QPepperScreen::QPepperScreen()
-    : m_depth(32)
-    , m_format(QImage::Format_ARGB32_Premultiplied)
-    , m_cursor(new QPepperCursor)
+    : m_cursor(new QPepperCursor)
 {
 }
 
@@ -46,6 +44,10 @@ QRect QPepperScreen::geometry() const
 {
     return QRect(QPoint(), QPepperInstancePrivate::get()->geometry().size());
 }
+
+int QPepperScreen::depth() const { return 32; }
+
+QImage::Format QPepperScreen::format() const { return QImage::Format_ARGB32_Premultiplied; }
 
 qreal QPepperScreen::devicePixelRatio() const
 {

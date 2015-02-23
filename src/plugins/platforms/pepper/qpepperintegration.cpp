@@ -165,7 +165,10 @@ QPlatformTheme *QPepperIntegration::createPlatformTheme(const QString &name) con
 
 QPepperCompositor *QPepperIntegration::pepperCompositor() const { return m_compositor; }
 
-QPepperEventTranslator *QPepperIntegration::pepperEventTranslator() { return m_eventTranslator; }
+QPepperEventTranslator *QPepperIntegration::pepperEventTranslator() const
+{
+    return m_eventTranslator;
+}
 
 void QPepperIntegration::processEvents() { m_eventDispatcher->processEvents(); }
 
@@ -191,6 +194,8 @@ void QPepperIntegration::resizeScreen(QSize size, qreal devicePixelRatio)
     if (m_compositor)
         m_compositor->endResize();
 }
+
+QPepperWindow *QPepperIntegration::topLevelWindow() const { return m_topLevelWindow; }
 
 void QPepperIntegration::getWindowAt(const QPoint &point, QWindow **window)
 {

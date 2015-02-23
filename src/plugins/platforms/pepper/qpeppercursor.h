@@ -33,8 +33,6 @@ public:
     QPepperCursor();
     ~QPepperCursor();
     void changeCursor(QCursor *cursor, QWindow *window);
-
-private:
 };
 
 QT_END_NAMESPACE

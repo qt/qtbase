@@ -31,7 +31,7 @@ class QPepperIntegrationPlugin : public QPlatformIntegrationPlugin
                           "pepper.json")
 public:
     QStringList keys() const;
-    QPlatformIntegration *create(const QString &, const QStringList &);
+    QPlatformIntegration *create(const QString &, const QStringList &) Q_DECL_OVERRIDE;
 };
 
 QStringList QPepperIntegrationPlugin::keys() const

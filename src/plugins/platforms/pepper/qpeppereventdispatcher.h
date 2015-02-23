@@ -37,15 +37,14 @@ public:
     explicit QPepperEventDispatcher(QObject *parent = 0);
     ~QPepperEventDispatcher();
 
+    bool processEvents(QEventLoop::ProcessEventsFlags flags
+                       = QEventLoop::EventLoopExec) Q_DECL_OVERRIDE;
+    bool hasPendingEvents() Q_DECL_OVERRIDE;
+
     void registerTimer(int timerId, int interval, Qt::TimerType timerType,
                        QObject *object) Q_DECL_OVERRIDE;
     bool unregisterTimer(int timerId) Q_DECL_OVERRIDE;
     bool unregisterTimers(QObject *object) Q_DECL_OVERRIDE;
-
-    bool processEvents(QEventLoop::ProcessEventsFlags flags
-                       = QEventLoop::EventLoopExec) Q_DECL_OVERRIDE;
-
-    bool hasPendingEvents() Q_DECL_OVERRIDE;
 
     void flush() Q_DECL_OVERRIDE;
     void wakeUp() Q_DECL_OVERRIDE;

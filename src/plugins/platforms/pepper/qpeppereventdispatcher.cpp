@@ -35,6 +35,19 @@ QPepperEventDispatcher::QPepperEventDispatcher(QObject *parent)
 
 QPepperEventDispatcher::~QPepperEventDispatcher() {}
 
+bool QPepperEventDispatcher::processEvents(QEventLoop::ProcessEventsFlags flags)
+{
+    do {
+        QUnixEventDispatcherQPA::processEvents(flags);
+    } while (hasPendingEvents());
+    return true;
+}
+
+bool QPepperEventDispatcher::hasPendingEvents()
+{
+    return QUnixEventDispatcherQPA::hasPendingEvents();
+}
+
 void QPepperEventDispatcher::registerTimer(int timerId, int interval, Qt::TimerType timerType,
                                            QObject *object)
 {
@@ -87,19 +100,6 @@ bool QPepperEventDispatcher::unregisterTimers(QObject *object)
         unregisterTimer(timerId);
 
     return true;
-}
-
-bool QPepperEventDispatcher::processEvents(QEventLoop::ProcessEventsFlags flags)
-{
-    do {
-        QUnixEventDispatcherQPA::processEvents(flags);
-    } while (hasPendingEvents());
-    return true;
-}
-
-bool QPepperEventDispatcher::hasPendingEvents()
-{
-    return QUnixEventDispatcherQPA::hasPendingEvents();
 }
 
 void QPepperEventDispatcher::flush()

@@ -40,15 +40,14 @@ class QPepperGLContext : public QPlatformOpenGLContext
 {
 public:
     explicit QPepperGLContext();
-    virtual ~QPepperGLContext();
+    ~QPepperGLContext();
 
-    virtual bool makeCurrent(QPlatformSurface *);
-    virtual void doneCurrent();
-    virtual void swapBuffers(QPlatformSurface *);
+    QSurfaceFormat format() const Q_DECL_OVERRIDE;
+    void swapBuffers(QPlatformSurface *) Q_DECL_OVERRIDE;
+    bool makeCurrent(QPlatformSurface *) Q_DECL_OVERRIDE;
+    void doneCurrent() Q_DECL_OVERRIDE;
+    QFunctionPointer getProcAddress(const QByteArray &) Q_DECL_OVERRIDE;
     void flushCallback(int32_t);
-    virtual QFunctionPointer getProcAddress(const QByteArray &);
-
-    virtual QSurfaceFormat format() const;
 
 private:
     bool initGl();

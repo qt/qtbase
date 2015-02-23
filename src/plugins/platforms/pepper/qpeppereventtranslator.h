@@ -20,8 +20,6 @@
 #ifndef QPEPPEREVENTTRANSLATOR_H
 #define QPEPPEREVENTTRANSLATOR_H
 
-#ifndef QT_NO_PEPPER_INTEGRATION
-
 #include <QtCore/QLoggingCategory>
 #include <QtCore/QObject>
 
@@ -47,6 +45,7 @@ public:
     Qt::MouseButtons translatePepperMouseModifiers(uint32_t modifier);
     Qt::Key translatePepperKey(uint32_t pepperKey, bool *outAlphanumretic);
     Qt::KeyboardModifiers translatePepperKeyModifiers(uint32_t modifier);
+
 Q_SIGNALS:
     void getWindowAt(const QPoint &point, QWindow **window);
     void getKeyWindow(QWindow **window);
@@ -55,7 +54,5 @@ private:
     uint32_t currentPepperKey;
     QPoint currentMouseGlobalPos;
 };
-
-#endif
 
 #endif // PEPPEREVENTTRANSLATOR_H

@@ -28,7 +28,7 @@ class QPepperServices : public QPlatformServices
 {
 public:
     QPepperServices();
-    bool openUrl(const QUrl &url);
+    bool openUrl(const QUrl &url) Q_DECL_OVERRIDE;
 };
 
 QT_END_NAMESPACE

@@ -58,20 +58,21 @@ public:
     QPlatformServices *services() const Q_DECL_OVERRIDE;
     QVariant styleHint(StyleHint hint) const Q_DECL_OVERRIDE;
     Qt::WindowState defaultWindowState(Qt::WindowFlags) const Q_DECL_OVERRIDE;
-    ;
+
     QStringList themeNames() const Q_DECL_OVERRIDE;
     QPlatformTheme *createPlatformTheme(const QString &name) const Q_DECL_OVERRIDE;
 
     QPepperCompositor *pepperCompositor() const;
-    QPepperEventTranslator *pepperEventTranslator();
+    QPepperEventTranslator *pepperEventTranslator() const;
     void processEvents();
     void resizeScreen(QSize size, qreal devicePixelRatio);
+    QPepperWindow *topLevelWindow() const;
 
 private Q_SLOTS:
     void getWindowAt(const QPoint &point, QWindow **window);
     void getKeyWindow(QWindow **window);
 
-public:
+private:
     mutable QPepperClipboard *m_clipboard;
     mutable QPepperEventDispatcher *m_eventDispatcher;
     mutable QPepperFontDatabase *m_fontDatabase;

@@ -41,6 +41,32 @@ QPepperGLContext::QPepperGLContext()
 
 QPepperGLContext::~QPepperGLContext() {}
 
+QSurfaceFormat QPepperGLContext::format() const
+{
+    qCDebug(QT_PLATFORM_PEPPER_GLCONTEXT) << "format";
+
+    QSurfaceFormat format;
+    format.setSwapBehavior(QSurfaceFormat::DoubleBuffer);
+    format.setDepthBufferSize(24);
+    format.setStencilBufferSize(8);
+    format.setAlphaBufferSize(8);
+    format.setRenderableType(QSurfaceFormat::OpenGLES);
+    return format;
+}
+
+void QPepperGLContext::swapBuffers(QPlatformSurface *surface)
+{
+    qCDebug(QT_PLATFORM_PEPPER_GLCONTEXT) << "swapBuffers";
+
+    if (m_pendingFlush) {
+        qCDebug(QT_PLATFORM_PEPPER_GLCONTEXT) << "swapBuffers overflush";
+        return;
+    }
+
+    m_pendingFlush = true;
+    m_context.SwapBuffers(m_callbackFactory.NewCallback(&QPepperGLContext::flushCallback));
+}
+
 bool QPepperGLContext::makeCurrent(QPlatformSurface *surface)
 {
     qCDebug(QT_PLATFORM_PEPPER_GLCONTEXT) << "makeCurrent";
@@ -68,23 +94,6 @@ void QPepperGLContext::doneCurrent()
     glSetCurrentContextPPAPI(0);
 }
 
-void QPepperGLContext::swapBuffers(QPlatformSurface *surface)
-{
-    qCDebug(QT_PLATFORM_PEPPER_GLCONTEXT) << "swapBuffers";
-
-    if (m_pendingFlush) {
-        qCDebug(QT_PLATFORM_PEPPER_GLCONTEXT) << "swapBuffers overflush";
-        return;
-    }
-
-    m_pendingFlush = true;
-    m_context.SwapBuffers(m_callbackFactory.NewCallback(&QPepperGLContext::flushCallback));
-}
-
-void QPepperGLContext::flushCallback(int32_t) { m_pendingFlush = false; }
-
-//    virtual void (*getProcAddress(const QByteArray&));
-
 QFunctionPointer QPepperGLContext::getProcAddress(const QByteArray &procName)
 {
     qCDebug(QT_PLATFORM_PEPPER_GLCONTEXT) << "getProcAddress" << procName;
@@ -100,18 +109,7 @@ QFunctionPointer QPepperGLContext::getProcAddress(const QByteArray &procName)
     return 0;
 }
 
-QSurfaceFormat QPepperGLContext::format() const
-{
-    qCDebug(QT_PLATFORM_PEPPER_GLCONTEXT) << "format";
-
-    QSurfaceFormat format;
-    format.setSwapBehavior(QSurfaceFormat::DoubleBuffer);
-    format.setDepthBufferSize(24);
-    format.setStencilBufferSize(8);
-    format.setAlphaBufferSize(8);
-    format.setRenderableType(QSurfaceFormat::OpenGLES);
-    return format;
-}
+void QPepperGLContext::flushCallback(int32_t) { m_pendingFlush = false; }
 
 bool QPepperGLContext::initGl()
 {
