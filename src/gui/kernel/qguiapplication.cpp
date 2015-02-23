@@ -163,6 +163,7 @@ QWindow *QGuiApplicationPrivate::focus_window = 0;
 
 static QBasicMutex applicationFontMutex;
 QFont *QGuiApplicationPrivate::app_font = 0;
+QStyleHints *QGuiApplicationPrivate::styleHints = Q_NULLPTR;
 bool QGuiApplicationPrivate::obey_desktop_settings = true;
 
 QInputDeviceManager *QGuiApplicationPrivate::m_inputDeviceManager = 0;
@@ -595,7 +596,6 @@ QGuiApplication::~QGuiApplication()
 
 QGuiApplicationPrivate::QGuiApplicationPrivate(int &argc, char **argv, int flags)
     : QCoreApplicationPrivate(argc, argv, flags),
-      styleHints(0),
       inputMethod(0),
       lastTouchType(QEvent::TouchEnd),
       ownGlobalShareContext(false)
@@ -1349,7 +1349,8 @@ QGuiApplicationPrivate::~QGuiApplicationPrivate()
 
     cleanupThreadData();
 
-    delete styleHints;
+    delete QGuiApplicationPrivate::styleHints;
+    QGuiApplicationPrivate::styleHints = Q_NULLPTR;
     delete inputMethod;
 
     qt_cleanupFontDatabase();
@@ -1717,7 +1718,7 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
         }
         mouse_buttons = buttons = e->buttons;
         if (button & e->buttons) {
-            ulong doubleClickInterval = static_cast<ulong>(qApp->styleHints()->mouseDoubleClickInterval());
+            ulong doubleClickInterval = static_cast<ulong>(QGuiApplication::styleHints()->mouseDoubleClickInterval());
             doubleClick = e->timestamp - mousePressTime < doubleClickInterval && button == mousePressButton;
             type = frameStrut ? QEvent::NonClientAreaMouseButtonPress : QEvent::MouseButtonPress;
             mousePressTime = e->timestamp;
@@ -3294,9 +3295,9 @@ void QGuiApplication::restoreOverrideCursor()
   */
 QStyleHints *QGuiApplication::styleHints()
 {
-    if (!qGuiApp->d_func()->styleHints)
-        qGuiApp->d_func()->styleHints = new QStyleHints();
-    return qGuiApp->d_func()->styleHints;
+    if (!QGuiApplicationPrivate::styleHints)
+        QGuiApplicationPrivate::styleHints = new QStyleHints();
+    return QGuiApplicationPrivate::styleHints;
 }
 
 /*!

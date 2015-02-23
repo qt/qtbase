@@ -2892,7 +2892,7 @@ void QApplication::setStartDragTime(int ms)
 
 int QApplication::startDragTime()
 {
-    return qApp->styleHints()->startDragTime();
+    return QGuiApplication::styleHints()->startDragTime();
 }
 
 /*
@@ -2930,7 +2930,7 @@ void QApplication::setStartDragDistance(int l)
 
 int QApplication::startDragDistance()
 {
-    return qApp->styleHints()->startDragDistance();
+    return QGuiApplication::styleHints()->startDragDistance();
 }
 
 /*!
@@ -3973,7 +3973,7 @@ void QApplication::setCursorFlashTime(int msecs)
 
 int QApplication::cursorFlashTime()
 {
-    return qApp->styleHints()->cursorFlashTime();
+    return QGuiApplication::styleHints()->cursorFlashTime();
 }
 
 /*!
@@ -3991,7 +3991,7 @@ void QApplication::setDoubleClickInterval(int ms)
 
 int QApplication::doubleClickInterval()
 {
-    return qApp->styleHints()->mouseDoubleClickInterval();
+    return QGuiApplication::styleHints()->mouseDoubleClickInterval();
 }
 
 /*!
@@ -4019,7 +4019,7 @@ void QApplication::setKeyboardInputInterval(int ms)
 
 int QApplication::keyboardInputInterval()
 {
-    return qApp->styleHints()->keyboardInputInterval();
+    return QGuiApplication::styleHints()->keyboardInputInterval();
 }
 
 /*!

@@ -172,6 +172,7 @@ private slots:
 
     void abortQuitOnShow();
 
+    void settableStyleHints_data();
     void settableStyleHints();  // Needs to run last as it changes style hints.
 };
 
@@ -2298,10 +2299,21 @@ void tst_QApplication::abortQuitOnShow()
     QCOMPARE(app.exec(), 1);
 }
 
+void tst_QApplication::settableStyleHints_data()
+{
+    QTest::addColumn<bool>("appInstance");
+    QTest::newRow("app") << true;
+    QTest::newRow("no-app") << false;
+}
+
 void tst_QApplication::settableStyleHints()
 {
+    QFETCH(bool, appInstance);
     int argc = 0;
-    QApplication app(argc, 0);
+    QScopedPointer<QApplication> app;
+    if (appInstance)
+        app.reset(new QApplication(argc, 0));
+
     QApplication::setCursorFlashTime(437);
     QCOMPARE(QApplication::cursorFlashTime(), 437);
     QApplication::setDoubleClickInterval(128);

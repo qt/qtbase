@@ -37,7 +37,9 @@
 #include <QtGui/QWindow>
 #include <QtGui/QScreen>
 #include <QtGui/QCursor>
+#include <QtGui/QFont>
 #include <QtGui/QPalette>
+#include <QtGui/QStyleHints>
 #include <qpa/qwindowsysteminterface.h>
 #include <qgenericplugin.h>
 
@@ -74,6 +76,9 @@ private slots:
     void genericPluginsAndWindowSystemEvents();
     void layoutDirection();
     void globalShareContext();
+
+    void settableStyleHints_data();
+    void settableStyleHints(); // Needs to run last as it changes style hints.
 };
 
 void tst_QGuiApplication::cleanup()
@@ -959,6 +964,26 @@ void tst_QGuiApplication::globalShareContext()
 #else
     QSKIP("No OpenGL support");
 #endif
+}
+
+void tst_QGuiApplication::settableStyleHints_data()
+{
+    QTest::addColumn<bool>("appInstance");
+    QTest::newRow("app") << true;
+    QTest::newRow("no-app") << false;
+}
+
+void tst_QGuiApplication::settableStyleHints()
+{
+    QFETCH(bool, appInstance);
+    int argc = 0;
+    QScopedPointer<QGuiApplication> app;
+    if (appInstance)
+        app.reset(new QGuiApplication(argc, 0));
+
+    const int keyboardInputInterval = 555;
+    QGuiApplication::styleHints()->setKeyboardInputInterval(keyboardInputInterval);
+    QCOMPARE(QGuiApplication::styleHints()->keyboardInputInterval(), keyboardInputInterval);
 }
 
 QTEST_APPLESS_MAIN(tst_QGuiApplication)
