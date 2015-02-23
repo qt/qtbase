@@ -63,7 +63,7 @@ class QDBusMenuConnection : public QObject
 public:
     QDBusMenuConnection(QObject *parent = 0);
     QDBusConnection connection() const { return m_connection; }
-    bool isWatcherRegistered() const { return m_watcherRegistered; }
+    bool isStatusNotifierHostRegistered() const { return m_statusNotifierHostRegistered; }
 #ifndef QT_NO_SYSTEMTRAYICON
     bool registerTrayIcon(QDBusTrayIcon *item);
     bool unregisterTrayIcon(QDBusTrayIcon *item);
@@ -80,7 +80,7 @@ private Q_SLOTS:
 private:
     QDBusConnection m_connection;
     QDBusServiceWatcher *m_dbusWatcher;
-    bool m_watcherRegistered;
+    bool m_statusNotifierHostRegistered;
 };
 
 QT_END_NAMESPACE

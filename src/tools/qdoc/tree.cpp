@@ -225,7 +225,7 @@ const FunctionNode* Tree::findFunctionNode(const QStringList& path,
         if (!qcn) {
             QStringList p(path[1]);
             Node* n = findNodeByNameAndType(p, Node::QmlType);
-            if (n && n->isQmlType())
+            if (n && (n->isQmlType() || n->isJsType()))
                 qcn = static_cast<QmlTypeNode*>(n);
         }
         if (qcn)
@@ -253,7 +253,7 @@ const FunctionNode* Tree::findFunctionNode(const QStringList& path,
             else
                 next = ((InnerNode*) node)->findChildNode(path.at(i), genus);
 
-            if (!next && node->type() == Node::Class && (findFlags & SearchBaseClasses)) {
+            if (!next && node->isClass() && (findFlags & SearchBaseClasses)) {
                 NodeList baseClasses = allBaseClasses(static_cast<const ClassNode*>(node));
                 foreach (const Node* baseClass, baseClasses) {
                     if (i == path.size() - 1)
@@ -489,7 +489,7 @@ void Tree::resolveCppToQmlLinks()
 {
 
     foreach (Node* child, root_.childNodes()) {
-        if (child->isQmlType()) {
+        if (child->isQmlType() || child->isJsType()) {
             QmlTypeNode* qcn = static_cast<QmlTypeNode*>(child);
             ClassNode* cn = const_cast<ClassNode*>(qcn->classNode());
             if (cn)
@@ -694,7 +694,7 @@ const Node* Tree::findNodeForTarget(const QStringList& path,
         p = path.join(QString("::"));
     else if ((genus == Node::DontCare) || (genus == Node::DOC)) {
         p = path.at(0);
-        node = findDocNodeByTitle(p);
+        node = findDocumentNodeByTitle(p);
         if (node) {
             if (!target.isEmpty()) {
                 ref = getRef(target, node);
@@ -967,12 +967,12 @@ void Tree::resolveTargets(InnerNode* root)
     // need recursion
     foreach (Node* child, root->childNodes()) {
         if (child->type() == Node::Document) {
-            DocNode* node = static_cast<DocNode*>(child);
+            DocumentNode* node = static_cast<DocumentNode*>(child);
             QString key = node->title();
             if (!key.isEmpty()) {
                 if (key.contains(QChar(' ')))
                     key = Doc::canonicalTitle(key);
-                QList<DocNode*> nodes = docNodesByTitle_.values(key);
+                QList<DocumentNode*> nodes = docNodesByTitle_.values(key);
                 bool alreadyThere = false;
                 if (!nodes.empty()) {
                     for (int i=0; i< nodes.size(); ++i) {
@@ -1095,9 +1095,9 @@ Tree::findUnambiguousTarget(const QString& target, QString& ref) const
 /*!
   This function searches for a node with the specified \a title.
  */
-const DocNode* Tree::findDocNodeByTitle(const QString& title) const
+const DocumentNode* Tree::findDocumentNodeByTitle(const QString& title) const
 {
-    DocNodeMultiMap::const_iterator i;
+    DocumentNodeMultiMap::const_iterator i;
     if (title.contains(QChar(' ')))
         i = docNodesByTitle_.constFind(Doc::canonicalTitle(title));
     else
@@ -1108,7 +1108,7 @@ const DocNode* Tree::findDocNodeByTitle(const QString& title) const
           overkill. We should report the duplicate file and let
           that suffice.
         */
-        DocNodeMultiMap::const_iterator j = i;
+        DocumentNodeMultiMap::const_iterator j = i;
         ++j;
         if (j != docNodesByTitle_.constEnd() && j.key() == i.key()) {
             QList<Location> internalLocations;
@@ -1164,62 +1164,89 @@ QString Tree::refForAtom(const Atom* atom)
 */
 
 /*!
-  Returns the collection node in this tree that has the same
-  name and type as \a cn. Returns 0 if no match is found.
-
-  If the matching node is \a cn, return 0.
+  Returns a pointer to the collection map specified by \a genus.
+  Returns null if \a genus is not specified.
  */
-CollectionNode* Tree::getCorrespondingCollection(CollectionNode* cn)
+CNMap* Tree::getCollectionMap(Node::Genus genus)
 {
-    CollectionNode* ccn = 0;
-    if (cn->isGroup())
-        ccn = getGroup(cn->name());
-    else if (cn->isModule())
-        ccn = getModule(cn->name());
-    else if (cn->isQmlModule())
-        ccn = getQmlModule(cn->name());
-    if (ccn == cn)
-        ccn = 0;
-    return ccn;
-}
-
-/*!
-  Find the group node named \a name and return a pointer
-  to it. If a matching node is not found, return 0.
- */
-GroupNode* Tree::getGroup(const QString& name)
-{
-    CNMap::const_iterator i = groups_.find(name);
-    if (i != groups_.end())
-        return static_cast<GroupNode*>(i.value());
+    switch (genus) {
+    case Node::DOC:
+        return &groups_;
+    case Node::CPP:
+        return &modules_;
+    case Node::QML:
+        return &qmlModules_;
+    case Node::JS:
+        return &jsModules_;
+    default:
+        break;
+    }
     return 0;
 }
 
 /*!
-  Find the module node named \a name and return a pointer
-  to it. If a matching node is not found, return 0.
+  Returns a pointer to the collection named \a name of the
+  specified \a genus in this tree. If there is no matching
+  collection in this tree, 0 is returned.
  */
-ModuleNode* Tree::getModule(const QString& name)
+CollectionNode* Tree::getCollection(const QString& name, Node::Genus genus)
 {
-    CNMap::const_iterator i = modules_.find(name);
-    if (i != modules_.end())
-        return static_cast<ModuleNode*>(i.value());
+    CNMap* m = getCollectionMap(genus);
+    if (m) {
+        CNMap::const_iterator i = m->find(name);
+        if (i != m->end())
+            return i.value();
+    }
     return 0;
 }
 
 /*!
-  Find the QML module node named \a name and return a pointer
-  to it. If a matching node is not found, return 0.
+  Find the group, module, QML module, or JavaScript module
+  named \a name and return a pointer to that collection node.
+  \a genus specifies which kind of collection node you want.
+  If a collection node with the specified \a name and \a genus
+  is not found, a new one is created, and the pointer to the
+  new one is returned.
+
+  If a new collection node is created, its parent is the tree
+  root, and the new collection node is marked \e{not seen}.
+
+  \a genus must be specified, i.e. it must not be \c{DontCare}.
+  If it is \c{DontCare}, 0 is returned, which is a programming
+  error.
  */
-QmlModuleNode* Tree::getQmlModule(const QString& name)
+CollectionNode* Tree::findCollection(const QString& name, Node::Genus genus)
 {
-    CNMap::const_iterator i = qmlModules_.find(name);
-    if (i != qmlModules_.end())
-        return static_cast<QmlModuleNode*>(i.value());
-    return 0;
+    CNMap* m = getCollectionMap(genus);
+    if (!m) // error
+        return 0;
+    CNMap::const_iterator i = m->find(name);
+    if (i != m->end())
+        return i.value();
+    Node::Type t = Node::NoType;
+    switch (genus) {
+    case Node::DOC:
+        t = Node::Group;
+        break;
+    case Node::CPP:
+        t = Node::Module;
+        break;
+    case Node::QML:
+        t = Node::QmlModule;
+        break;
+    case Node::JS:
+        t = Node::QmlModule;
+        break;
+    default:
+        break;
+    }
+    CollectionNode* cn = new CollectionNode(t, root(), name, genus);
+    cn->markNotSeen();
+    m->insert(name, cn);
+    return cn;
 }
 
-/*!
+/*! \fn CollectionNode* Tree::findGroup(const QString& name)
   Find the group node named \a name and return a pointer
   to it. If the group node is not found, add a new group
   node named \a name and return a pointer to the new one.
@@ -1227,18 +1254,8 @@ QmlModuleNode* Tree::getQmlModule(const QString& name)
   If a new group node is added, its parent is the tree root,
   and the new group node is marked \e{not seen}.
  */
-GroupNode* Tree::findGroup(const QString& name)
-{
-    CNMap::const_iterator i = groups_.find(name);
-    if (i != groups_.end())
-        return static_cast<GroupNode*>(i.value());;
-    GroupNode* gn = new GroupNode(root(), name);
-    gn->markNotSeen();
-    groups_.insert(name, gn);
-    return gn;
-}
 
-/*!
+/*! \fn CollectionNode* Tree::findModule(const QString& name)
   Find the module node named \a name and return a pointer
   to it. If a matching node is not found, add a new module
   node named \a name and return a pointer to that one.
@@ -1246,77 +1263,56 @@ GroupNode* Tree::findGroup(const QString& name)
   If a new module node is added, its parent is the tree root,
   and the new module node is marked \e{not seen}.
  */
-ModuleNode* Tree::findModule(const QString& name)
-{
-    CNMap::const_iterator i = modules_.find(name);
-    if (i != modules_.end())
-        return static_cast<ModuleNode*>(i.value());
-    ModuleNode* mn = new ModuleNode(root(), name);
-    mn->markNotSeen();
-    modules_.insert(name, mn);
-    return mn;
-}
 
-/*!
+/*! \fn CollectionNode* Tree::findQmlModule(const QString& name)
   Find the QML module node named \a name and return a pointer
   to it. If a matching node is not found, add a new QML module
   node named \a name and return a pointer to that one.
 
   If a new QML module node is added, its parent is the tree root,
-  and the new QML module node is marked \e{not seen}.
+  and the new node is marked \e{not seen}.
  */
-QmlModuleNode* Tree::findQmlModule(const QString& name)
-{
-    CNMap::const_iterator i = qmlModules_.find(name);
-    if (i != qmlModules_.end())
-        return static_cast<QmlModuleNode*>(i.value());
-    QmlModuleNode* qmn = new QmlModuleNode(root(), name);
-    qmn->markNotSeen();
-    qmn->setQmlModuleInfo(name);
-    qmlModules_.insert(name, qmn);
-    return qmn;
-}
 
-/*!
+/*! \fn CollectionNode* Tree::findJsModule(const QString& name)
+  Find the JavaScript module named \a name and return a pointer
+  to it. If a matching node is not found, add a new JavaScript
+  module node named \a name and return a pointer to that one.
+
+  If a new JavaScript module node is added, its parent is the
+  tree root, and the new node is marked \e{not seen}.
+ */
+
+/*! \fn CollectionNode* Tree::addGroup(const QString& name)
   Looks up the group node named \a name in the collection
   of all group nodes. If a match is found, a pointer to the
   node is returned. Otherwise, a new group node named \a name
   is created and inserted into the collection, and the pointer
   to that node is returned.
  */
-GroupNode* Tree::addGroup(const QString& name)
-{
-    GroupNode* group = findGroup(name);
-    return group;
-}
 
-/*!
+/*! \fn CollectionNode* Tree::addModule(const QString& name)
   Looks up the module node named \a name in the collection
   of all module nodes. If a match is found, a pointer to the
   node is returned. Otherwise, a new module node named \a name
   is created and inserted into the collection, and the pointer
   to that node is returned.
  */
-ModuleNode* Tree::addModule(const QString& name)
-{
-    ModuleNode* module = findModule(name);
-    return module;
-}
 
-/*!
+/*! \fn CollectionNode* Tree::addQmlModule(const QString& name)
   Looks up the QML module node named \a name in the collection
   of all QML module nodes. If a match is found, a pointer to the
   node is returned. Otherwise, a new QML module node named \a name
   is created and inserted into the collection, and the pointer
   to that node is returned.
  */
-QmlModuleNode* Tree::addQmlModule(const QString& name)
-{
-    QStringList blankSplit = name.split(QLatin1Char(' '));
-    QmlModuleNode* qmn = findQmlModule(blankSplit[0]);
-    qmn->setQmlModuleInfo(name);
-    return qmn;
-}
+
+/*! \fn CollectionNode* Tree::addJsModule(const QString& name)
+  Looks up the JavaScript module node named \a name in the collection
+  of all JavaScript module nodes. If a match is found, a pointer to the
+  node is returned. Otherwise, a new JavaScrpt module node named \a name
+  is created and inserted into the collection, and the pointer
+  to that node is returned.
+ */
 
 /*!
   Looks up the group node named \a name in the collection
@@ -1327,14 +1323,14 @@ QmlModuleNode* Tree::addQmlModule(const QString& name)
   \a node is not changed by this function. Returns a pointer to
   the group node.
  */
-GroupNode* Tree::addToGroup(const QString& name, Node* node)
+CollectionNode* Tree::addToGroup(const QString& name, Node* node)
 {
-    GroupNode* gn = findGroup(name);
+    CollectionNode* cn = findGroup(name);
     if (!node->isInternal()) {
-        gn->addMember(node);
+        cn->addMember(node);
         node->appendGroupName(name);
     }
-    return gn;
+    return cn;
 }
 
 /*!
@@ -1344,12 +1340,12 @@ GroupNode* Tree::addToGroup(const QString& name, Node* node)
   Then append \a node to the module's members list. The parent of
   \a node is not changed by this function. Returns the module node.
  */
-ModuleNode* Tree::addToModule(const QString& name, Node* node)
+CollectionNode* Tree::addToModule(const QString& name, Node* node)
 {
-    ModuleNode* mn = findModule(name);
-    mn->addMember(node);
+    CollectionNode* cn = findModule(name);
+    cn->addMember(node);
     node->setPhysicalModuleName(name);
-    return mn;
+    return cn;
 }
 
 /*!
@@ -1358,7 +1354,7 @@ ModuleNode* Tree::addToModule(const QString& name, Node* node)
   list. The parent of \a node is not changed by this function.
   Returns the pointer to the QML module node.
  */
-QmlModuleNode* Tree::addToQmlModule(const QString& name, Node* node)
+CollectionNode* Tree::addToQmlModule(const QString& name, Node* node)
 {
     QStringList qmid;
     QStringList dotSplit;
@@ -1370,9 +1366,9 @@ QmlModuleNode* Tree::addToQmlModule(const QString& name, Node* node)
         qmid.append(blankSplit[0] + dotSplit[0]);
     }
 
-    QmlModuleNode* qmn = findQmlModule(blankSplit[0]);
-    qmn->addMember(node);
-    node->setQmlModule(qmn);
+    CollectionNode* cn = findQmlModule(blankSplit[0]);
+    cn->addMember(node);
+    node->setQmlModule(cn);
     if (node->isQmlType()) {
         QmlTypeNode* n = static_cast<QmlTypeNode*>(node);
         for (int i=0; i<qmid.size(); ++i) {
@@ -1380,7 +1376,38 @@ QmlModuleNode* Tree::addToQmlModule(const QString& name, Node* node)
             insertQmlType(key, n);
         }
     }
-    return qmn;
+    return cn;
+}
+
+/*!
+  Looks up the QML module named \a name. If it isn't there,
+  create it. Then append \a node to the QML module's member
+  list. The parent of \a node is not changed by this function.
+  Returns the pointer to the QML module node.
+ */
+CollectionNode* Tree::addToJsModule(const QString& name, Node* node)
+{
+    QStringList qmid;
+    QStringList dotSplit;
+    QStringList blankSplit = name.split(QLatin1Char(' '));
+    qmid.append(blankSplit[0]);
+    if (blankSplit.size() > 1) {
+        qmid.append(blankSplit[0] + blankSplit[1]);
+        dotSplit = blankSplit[1].split(QLatin1Char('.'));
+        qmid.append(blankSplit[0] + dotSplit[0]);
+    }
+
+    CollectionNode* cn = findJsModule(blankSplit[0]);
+    cn->addMember(node);
+    node->setQmlModule(cn);
+    if (node->isJsType()) {
+        QmlTypeNode* n = static_cast<QmlTypeNode*>(node);
+        for (int i=0; i<qmid.size(); ++i) {
+            QString key = qmid[i] + "::" + node->name();
+            insertQmlType(key, n);
+        }
+    }
+    return cn;
 }
 
 /*!

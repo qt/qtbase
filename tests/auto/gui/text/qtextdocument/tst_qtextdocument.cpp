@@ -191,6 +191,7 @@ private slots:
 private:
     void backgroundImage_checkExpectedHtml(const QTextDocument &doc);
     void buildRegExpData();
+    static QString cssFontSizeString(const QFont &font);
 
     QTextDocument *doc;
     QTextCursor cursor;
@@ -211,6 +212,13 @@ public:
     QRectF blockBoundingRect(const QTextBlock &) const { return QRectF(); }
     void documentChanged(int, int, int) {}
 };
+
+QString tst_QTextDocument::cssFontSizeString(const QFont &font)
+{
+    return font.pointSize() >= 0
+            ? QStringLiteral("%1pt").arg(font.pointSizeF())
+            : QStringLiteral("%1px").arg(font.pixelSize());
+}
 
 // Testing get/set functions
 void tst_QTextDocument::getSetCheck()
@@ -254,8 +262,12 @@ void tst_QTextDocument::init()
             "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
             "p, li { white-space: pre-wrap; }\n"
             "</style></head>"
-            "<body style=\" font-family:'%1'; font-size:%2pt; font-weight:%3; font-style:%4;\">\n");
-    htmlHead = htmlHead.arg(defaultFont.family()).arg(defaultFont.pointSizeF()).arg(defaultFont.weight() * 8).arg((defaultFont.italic() ? "italic" : "normal"));
+            "<body style=\" font-family:'%1'; font-size:%2; font-weight:%3; font-style:%4;\">\n");
+    htmlHead = htmlHead
+                .arg(defaultFont.family())
+                .arg(cssFontSizeString(defaultFont))
+                .arg(defaultFont.weight() * 8)
+                .arg((defaultFont.italic() ? "italic" : "normal"));
 
     htmlTail = QString("</body></html>");
 }
@@ -1789,12 +1801,16 @@ void tst_QTextDocument::toHtmlBodyBgColor()
             "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
             "p, li { white-space: pre-wrap; }\n"
             "</style></head>"
-            "<body style=\" font-family:'%1'; font-size:%2pt; font-weight:%3; font-style:%4;\""
+            "<body style=\" font-family:'%1'; font-size:%2; font-weight:%3; font-style:%4;\""
             " bgcolor=\"#0000ff\">\n"
             "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Blah</p>"
             "</body></html>");
 
-    expectedHtml = expectedHtml.arg(defaultFont.family()).arg(defaultFont.pointSizeF()).arg(defaultFont.weight() * 8).arg((defaultFont.italic() ? "italic" : "normal"));
+    expectedHtml = expectedHtml
+                    .arg(defaultFont.family())
+                    .arg(cssFontSizeString(defaultFont))
+                    .arg(defaultFont.weight() * 8)
+                    .arg((defaultFont.italic() ? "italic" : "normal"));
 
     QCOMPARE(doc.toHtml(), expectedHtml);
 }
@@ -1814,12 +1830,15 @@ void tst_QTextDocument::toHtmlBodyBgColorRgba()
             "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
             "p, li { white-space: pre-wrap; }\n"
             "</style></head>"
-            "<body style=\" font-family:'%1'; font-size:%2pt; font-weight:%3; font-style:%4;\""
+            "<body style=\" font-family:'%1'; font-size:%2; font-weight:%3; font-style:%4;\""
             " bgcolor=\"rgba(255,0,0,0.2)\">\n"
             "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Blah</p>"
             "</body></html>");
 
-    expectedHtml = expectedHtml.arg(defaultFont.family()).arg(defaultFont.pointSizeF()).arg(defaultFont.weight() * 8).arg((defaultFont.italic() ? "italic" : "normal"));
+    expectedHtml = expectedHtml.arg(defaultFont.family())
+                    .arg(cssFontSizeString(defaultFont))
+                    .arg(defaultFont.weight() * 8)
+                    .arg((defaultFont.italic() ? "italic" : "normal"));
 
     QCOMPARE(doc.toHtml(), expectedHtml);
 }
@@ -1839,12 +1858,16 @@ void tst_QTextDocument::toHtmlBodyBgColorTransparent()
             "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
             "p, li { white-space: pre-wrap; }\n"
             "</style></head>"
-            "<body style=\" font-family:'%1'; font-size:%2pt; font-weight:%3; font-style:%4;\""
+            "<body style=\" font-family:'%1'; font-size:%2; font-weight:%3; font-style:%4;\""
             " bgcolor=\"transparent\">\n"
             "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Blah</p>"
             "</body></html>");
 
-    expectedHtml = expectedHtml.arg(defaultFont.family()).arg(defaultFont.pointSizeF()).arg(defaultFont.weight() * 8).arg((defaultFont.italic() ? "italic" : "normal"));
+    expectedHtml = expectedHtml
+                    .arg(defaultFont.family())
+                    .arg(cssFontSizeString(defaultFont))
+                    .arg(defaultFont.weight() * 8)
+                    .arg((defaultFont.italic() ? "italic" : "normal"));
 
     QCOMPARE(doc.toHtml(), expectedHtml);
 }
@@ -2463,8 +2486,10 @@ void tst_QTextDocument::html_defaultFont()
     doc->setDefaultFont(f);
     doc->setPlainText("Test");
 
-    QString bodyPart = QString::fromLatin1("<body style=\" font-family:'%1'; font-size:%2pt; font-weight:%3; font-style:italic;\">")
-                       .arg(f.family()).arg(f.pointSizeF()).arg(f.weight() * 8);
+    QString bodyPart = QString::fromLatin1("<body style=\" font-family:'%1'; font-size:%2; font-weight:%3; font-style:italic;\">")
+                       .arg(f.family())
+                       .arg(cssFontSizeString(f))
+                       .arg(f.weight() * 8);
 
     QString html = doc->toHtml();
     if (!html.contains(bodyPart)) {
@@ -2600,13 +2625,17 @@ void tst_QTextDocument::backgroundImage_checkExpectedHtml(const QTextDocument &d
             "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
             "p, li { white-space: pre-wrap; }\n"
             "</style></head>"
-            "<body style=\" font-family:'%1'; font-size:%2pt; font-weight:%3; font-style:%4;\">\n"
+            "<body style=\" font-family:'%1'; font-size:%2; font-weight:%3; font-style:%4;\">\n"
             "<table border=\"0\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px;\" cellspacing=\"2\" cellpadding=\"0\">"
             "\n<tr>\n<td background=\"foo.png\">"
             "\n<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Blah</p>"
             "</td></tr></table></body></html>");
 
-    expectedHtml = expectedHtml.arg(defaultFont.family()).arg(defaultFont.pointSizeF()).arg(defaultFont.weight() * 8).arg((defaultFont.italic() ? "italic" : "normal"));
+    expectedHtml = expectedHtml
+                    .arg(defaultFont.family())
+                    .arg(cssFontSizeString(defaultFont))
+                    .arg(defaultFont.weight() * 8)
+                    .arg((defaultFont.italic() ? "italic" : "normal"));
 
     QCOMPARE(doc.toHtml(), expectedHtml);
 }

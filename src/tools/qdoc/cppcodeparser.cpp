@@ -285,7 +285,6 @@ const QSet<QString>& CppCodeParser::topicCommands()
                        << COMMAND_PROPERTY
                        << COMMAND_TYPEDEF
                        << COMMAND_VARIABLE
-                       << COMMAND_QMLCLASS
                        << COMMAND_QMLTYPE
                        << COMMAND_QMLPROPERTY
                        << COMMAND_QMLPROPERTYGROUP
@@ -295,7 +294,17 @@ const QSet<QString>& CppCodeParser::topicCommands()
                        << COMMAND_QMLMETHOD
                        << COMMAND_QMLATTACHEDMETHOD
                        << COMMAND_QMLBASICTYPE
-                       << COMMAND_QMLMODULE;
+                       << COMMAND_QMLMODULE
+                       << COMMAND_JSTYPE
+                       << COMMAND_JSPROPERTY
+                       << COMMAND_JSPROPERTYGROUP
+                       << COMMAND_JSATTACHEDPROPERTY
+                       << COMMAND_JSSIGNAL
+                       << COMMAND_JSATTACHEDSIGNAL
+                       << COMMAND_JSMETHOD
+                       << COMMAND_JSATTACHEDMETHOD
+                       << COMMAND_JSBASICTYPE
+                       << COMMAND_JSMODULE;
     }
     return topicCommands_;
 }
@@ -436,37 +445,56 @@ Node* CppCodeParser::processTopicCommand(const Doc& doc,
         }
     }
     else if (command == COMMAND_EXTERNALPAGE) {
-        DocNode* dn = new DocNode(qdb_->primaryTreeRoot(), arg.first, Node::ExternalPage, Node::ArticlePage);
+        DocumentNode* dn = new DocumentNode(qdb_->primaryTreeRoot(),
+                                            arg.first,
+                                            Node::ExternalPage,
+                                            Node::ArticlePage);
         dn->setLocation(doc.startLocation());
         return dn;
     }
     else if (command == COMMAND_FILE) {
-        DocNode* dn = new DocNode(qdb_->primaryTreeRoot(), arg.first, Node::File, Node::NoPageType);
+        DocumentNode* dn = new DocumentNode(qdb_->primaryTreeRoot(),
+                                            arg.first,
+                                            Node::File,
+                                            Node::NoPageType);
         dn->setLocation(doc.startLocation());
         return dn;
     }
     else if (command == COMMAND_HEADERFILE) {
-        DocNode* dn = new DocNode(qdb_->primaryTreeRoot(), arg.first, Node::HeaderFile, Node::ApiPage);
+        DocumentNode* dn = new DocumentNode(qdb_->primaryTreeRoot(),
+                                            arg.first,
+                                            Node::HeaderFile,
+                                            Node::ApiPage);
         dn->setLocation(doc.startLocation());
         return dn;
     }
     else if (command == COMMAND_GROUP) {
-        GroupNode* gn = qdb_->addGroup(arg.first);
-        gn->setLocation(doc.startLocation());
-        gn->markSeen();
-        return gn;
+        CollectionNode* cn = qdb_->addGroup(arg.first);
+        cn->setLocation(doc.startLocation());
+        cn->markSeen();
+        return cn;
     }
     else if (command == COMMAND_MODULE) {
-        ModuleNode* mn = qdb_->addModule(arg.first);
-        mn->setLocation(doc.startLocation());
-        mn->markSeen();
-        return mn;
+        CollectionNode* cn = qdb_->addModule(arg.first);
+        cn->setLocation(doc.startLocation());
+        cn->markSeen();
+        return cn;
     }
     else if (command == COMMAND_QMLMODULE) {
-        QmlModuleNode* qmn = qdb_->addQmlModule(arg.first);
-        qmn->setLocation(doc.startLocation());
-        qmn->markSeen();
-        return qmn;
+        QStringList blankSplit = arg.first.split(QLatin1Char(' '));
+        CollectionNode* cn = qdb_->addQmlModule(blankSplit[0]);
+        cn->setLogicalModuleInfo(blankSplit);
+        cn->setLocation(doc.startLocation());
+        cn->markSeen();
+        return cn;
+    }
+    else if (command == COMMAND_JSMODULE) {
+        QStringList blankSplit = arg.first.split(QLatin1Char(' '));
+        CollectionNode* cn = qdb_->addJsModule(blankSplit[0]);
+        cn->setLogicalModuleInfo(blankSplit);
+        cn->setLocation(doc.startLocation());
+        cn->markSeen();
+        return cn;
     }
     else if (command == COMMAND_PAGE) {
         Node::PageType ptype = Node::ArticlePage;
@@ -498,66 +526,41 @@ Node* CppCodeParser::processTopicCommand(const Doc& doc,
                                    tr("Also used here: %1").arg(other));
         }
 #endif
-        DocNode* dn = 0;
+        DocumentNode* dn = 0;
         if (ptype == Node::DitaMapPage)
             dn = new DitaMapNode(qdb_->primaryTreeRoot(), args[0]);
         else
-            dn = new DocNode(qdb_->primaryTreeRoot(), args[0], Node::Page, ptype);
+            dn = new DocumentNode(qdb_->primaryTreeRoot(), args[0], Node::Page, ptype);
         dn->setLocation(doc.startLocation());
         return dn;
     }
     else if (command == COMMAND_DITAMAP) {
-        DocNode* dn = new DitaMapNode(qdb_->primaryTreeRoot(), arg.first);
+        DocumentNode* dn = new DitaMapNode(qdb_->primaryTreeRoot(), arg.first);
         dn->setLocation(doc.startLocation());
         return dn;
     }
-    else if ((command == COMMAND_QMLCLASS) || (command == COMMAND_QMLTYPE)) {
-        if (command == COMMAND_QMLCLASS)
-            doc.startLocation().warning(tr("\\qmlclass is deprecated; use \\qmltype instead"));
-        ClassNode* classNode = 0;
-        QStringList names = arg.first.split(QLatin1Char(' '));
-        if (names.size() > 1) {
-            if (names[1] != "0")
-                doc.startLocation().warning(tr("\\qmltype no longer has a 2nd argument; "
-                                               "use '\\instantiates <class>' in \\qmltype "
-                                               "comments instead"));
-            else
-                doc.startLocation().warning(tr("The 0 arg is no longer used for indicating "
-                                               "that the QML type does not instantiate a "
-                                               "C++ class"));
-            /*
-              If the second argument of the \\qmlclass command
-              is 0 we should ignore the C++ class. The second
-              argument should only be 0 when you are documenting
-              QML in a .qdoc file.
-             */
-            if (names[1] != "0")
-                classNode = qdb_->findClassNode(names[1].split("::"));
-        }
-
-#if 0
-        const Node* n = qdb_->checkForCollision(names[0]);
-        if (n) {
-            QString other = n->doc().location().fileName();
-            doc.location().warning(tr("Name/title collision detected: '%1' in '\\%2'")
-                                   .arg(names[0]).arg(command),
-                                   tr("Also used here: %1").arg(other));
-        }
-#endif
-        QmlTypeNode* qcn = new QmlTypeNode(qdb_->primaryTreeRoot(), names[0]);
-        qcn->setClassNode(classNode);
+    else if ((command == COMMAND_QMLTYPE) || (command == COMMAND_JSTYPE)) {
+        QmlTypeNode* qcn = new QmlTypeNode(qdb_->primaryTreeRoot(), arg.first);
+        if (command == COMMAND_JSTYPE)
+            qcn->setGenus(Node::JS);
         qcn->setLocation(doc.startLocation());
         return qcn;
     }
-    else if (command == COMMAND_QMLBASICTYPE) {
+    else if ((command == COMMAND_QMLBASICTYPE) || (command == COMMAND_JSBASICTYPE)) {
         QmlBasicTypeNode* n = new QmlBasicTypeNode(qdb_->primaryTreeRoot(), arg.first);
+        if (command == COMMAND_JSBASICTYPE)
+            n->setGenus(Node::JS);
         n->setLocation(doc.startLocation());
         return n;
     }
     else if ((command == COMMAND_QMLSIGNAL) ||
              (command == COMMAND_QMLMETHOD) ||
              (command == COMMAND_QMLATTACHEDSIGNAL) ||
-             (command == COMMAND_QMLATTACHEDMETHOD)) {
+             (command == COMMAND_QMLATTACHEDMETHOD) ||
+             (command == COMMAND_JSSIGNAL) ||
+             (command == COMMAND_JSMETHOD) ||
+             (command == COMMAND_JSATTACHEDSIGNAL) ||
+             (command == COMMAND_JSATTACHEDMETHOD)) {
         QString module;
         QString qmlTypeName;
         QString type;
@@ -566,16 +569,20 @@ Node* CppCodeParser::processTopicCommand(const Doc& doc,
             if (qmlType) {
                 bool attached = false;
                 Node::Type nodeType = Node::QmlMethod;
-                if (command == COMMAND_QMLSIGNAL)
+                if ((command == COMMAND_QMLSIGNAL) ||
+                    (command == COMMAND_JSSIGNAL))
                     nodeType = Node::QmlSignal;
-                else if (command == COMMAND_QMLATTACHEDSIGNAL) {
+                else if ((command == COMMAND_QMLATTACHEDSIGNAL) ||
+                         (command == COMMAND_JSATTACHEDSIGNAL)) {
                     nodeType = Node::QmlSignal;
                     attached = true;
                 }
-                else if (command == COMMAND_QMLMETHOD) {
+                else if ((command == COMMAND_QMLMETHOD) ||
+                         (command == COMMAND_JSMETHOD)) {
                     // do nothing
                 }
-                else if (command == COMMAND_QMLATTACHEDMETHOD)
+                else if ((command == COMMAND_QMLATTACHEDMETHOD) ||
+                         (command == COMMAND_JSATTACHEDMETHOD))
                     attached = true;
                 else
                     return 0; // never get here.
@@ -585,8 +592,14 @@ Node* CppCodeParser::processTopicCommand(const Doc& doc,
                                                     nodeType,
                                                     attached,
                                                     command);
-                if (fn)
+                if (fn) {
                     fn->setLocation(doc.startLocation());
+                    if ((command == COMMAND_JSSIGNAL) ||
+                        (command == COMMAND_JSMETHOD) ||
+                        (command == COMMAND_JSATTACHEDSIGNAL) ||
+                        (command == COMMAND_JSATTACHEDMETHOD))
+                        fn->setGenus(Node::JS);
+                }
                 return fn;
             }
         }
@@ -731,7 +744,10 @@ bool CppCodeParser::splitQmlMethodArg(const QString& arg,
   Currently, this function is called only for \e{qmlproperty}
   and \e{qmlattachedproperty}.
  */
-void CppCodeParser::processQmlProperties(const Doc& doc, NodeList& nodes, DocList& docs)
+void CppCodeParser::processQmlProperties(const Doc& doc,
+                                         NodeList& nodes,
+                                         DocList& docs,
+                                         bool jsProps)
 {
     QString arg;
     QString type;
@@ -746,14 +762,18 @@ void CppCodeParser::processQmlProperties(const Doc& doc, NodeList& nodes, DocLis
     Topic qmlPropertyGroupTopic;
     const TopicList& topics = doc.topicsUsed();
     for (int i=0; i<topics.size(); ++i) {
-        if (topics.at(i).topic == COMMAND_QMLPROPERTYGROUP) {
+        if ((topics.at(i).topic == COMMAND_QMLPROPERTYGROUP) ||
+            (topics.at(i).topic == COMMAND_JSPROPERTYGROUP)) {
             qmlPropertyGroupTopic = topics.at(i);
             break;
         }
     }
     if (qmlPropertyGroupTopic.isEmpty() && topics.size() > 1) {
         qmlPropertyGroupTopic = topics.at(0);
-        qmlPropertyGroupTopic.topic = COMMAND_QMLPROPERTYGROUP;
+        if (jsProps)
+            qmlPropertyGroupTopic.topic = COMMAND_JSPROPERTYGROUP;
+        else
+            qmlPropertyGroupTopic.topic = COMMAND_QMLPROPERTYGROUP;
         arg = qmlPropertyGroupTopic.args;
         if (splitQmlPropertyArg(arg, type, module, qmlTypeName, property)) {
             int i = property.indexOf('.');
@@ -780,6 +800,8 @@ void CppCodeParser::processQmlProperties(const Doc& doc, NodeList& nodes, DocLis
             if (qmlType) {
                 qpgn = new QmlPropertyGroupNode(qmlType, property);
                 qpgn->setLocation(doc.startLocation());
+                if (jsProps)
+                    qpgn->setGenus(Node::JS);
                 nodes.append(qpgn);
                 docs.append(doc);
             }
@@ -791,8 +813,10 @@ void CppCodeParser::processQmlProperties(const Doc& doc, NodeList& nodes, DocLis
         }
         topic = topics.at(i).topic;
         arg = topics.at(i).args;
-        if ((topic == COMMAND_QMLPROPERTY) || (topic == COMMAND_QMLATTACHEDPROPERTY)) {
-            bool attached = (topic == COMMAND_QMLATTACHEDPROPERTY);
+        if ((topic == COMMAND_QMLPROPERTY) || (topic == COMMAND_QMLATTACHEDPROPERTY) ||
+            (topic == COMMAND_JSPROPERTY) || (topic == COMMAND_JSATTACHEDPROPERTY)) {
+            bool attached = ((topic == COMMAND_QMLATTACHEDPROPERTY) ||
+                             (topic == COMMAND_JSATTACHEDPROPERTY));
             if (splitQmlPropertyArg(arg, type, module, qmlTypeName, property)) {
                 qmlType = qdb_->findQmlType(module, qmlTypeName);
                 if (qmlType) {
@@ -803,10 +827,14 @@ void CppCodeParser::processQmlProperties(const Doc& doc, NodeList& nodes, DocLis
                     else if (qpgn) {
                         qpn = new QmlPropertyNode(qpgn, property, type, attached);
                         qpn->setLocation(doc.startLocation());
+                        if (jsProps)
+                            qpn->setGenus(Node::JS);
                     }
                     else {
                         qpn = new QmlPropertyNode(qmlType, property, type, attached);
                         qpn->setLocation(doc.startLocation());
+                        if (jsProps)
+                            qpn->setGenus(Node::JS);
                         nodes.append(qpn);
                         docs.append(doc);
                     }
@@ -931,14 +959,14 @@ void CppCodeParser::processOtherMetaCommand(const Doc& doc,
     else if (command == COMMAND_QMLINHERITS) {
         if (node->name() == arg)
             doc.location().warning(tr("%1 tries to inherit itself").arg(arg));
-        else if (node->isQmlType()) {
+        else if (node->isQmlType() || node->isJsType()) {
             QmlTypeNode* qmlType = static_cast<QmlTypeNode*>(node);
             qmlType->setQmlBaseName(arg);
             QmlTypeNode::addInheritedBy(arg,node);
         }
     }
     else if (command == COMMAND_QMLINSTANTIATES) {
-        if (node->isQmlType()) {
+        if (node->isQmlType() || node->isJsType()) {
             ClassNode* classNode = qdb_->findClassNode(arg.split("::"));
             if (classNode)
                 node->setClassNode(classNode);
@@ -983,7 +1011,7 @@ void CppCodeParser::processOtherMetaCommand(const Doc& doc,
         }
     }
     else if (command == COMMAND_QMLABSTRACT) {
-        if (node->isQmlType())
+        if (node->isQmlType() || node->isJsType())
             node->setAbstract(true);
     }
     else {
@@ -2085,6 +2113,7 @@ bool CppCodeParser::matchDocsAndStuff()
             Doc doc(start_loc,end_loc,comment,metacommandsAllowed, topicCommandsAllowed);
             QString topic;
             bool isQmlPropertyTopic = false;
+            bool isJsPropertyTopic = false;
 
             const TopicList& topics = doc.topicsUsed();
             if (!topics.isEmpty()) {
@@ -2093,6 +2122,11 @@ bool CppCodeParser::matchDocsAndStuff()
                     (topic == COMMAND_QMLPROPERTYGROUP) ||
                     (topic == COMMAND_QMLATTACHEDPROPERTY)) {
                     isQmlPropertyTopic = true;
+                }
+                else if ((topic == COMMAND_JSPROPERTY) ||
+                         (topic == COMMAND_JSPROPERTYGROUP) ||
+                         (topic == COMMAND_JSATTACHEDPROPERTY)) {
+                    isJsPropertyTopic = true;
                 }
             }
             NodeList nodes;
@@ -2130,9 +2164,9 @@ bool CppCodeParser::matchDocsAndStuff()
                                 .arg(COMMAND_FN).arg(COMMAND_PAGE));
                 }
             }
-            else if (isQmlPropertyTopic) {
+            else if (isQmlPropertyTopic || isJsPropertyTopic) {
                 Doc nodeDoc = doc;
-                processQmlProperties(nodeDoc, nodes, docs);
+                processQmlProperties(nodeDoc, nodes, docs, isJsPropertyTopic);
             }
             else {
                 ArgList args;
@@ -2316,7 +2350,7 @@ void CppCodeParser::instantiateIteratorMacro(const QString &container,
     matchDeclList(QDocDatabase::qdocDB()->primaryTreeRoot());
 }
 
-void CppCodeParser::createExampleFileNodes(DocNode *dn)
+void CppCodeParser::createExampleFileNodes(DocumentNode *dn)
 {
     QString examplePath = dn->name();
     QString proFileName = examplePath + QLatin1Char('/') + examplePath.split(QLatin1Char('/')).last() + ".pro";
@@ -2384,13 +2418,13 @@ void CppCodeParser::createExampleFileNodes(DocNode *dn)
     }
 
     foreach (const QString &exampleFile, exampleFiles) {
-        new DocNode(dn,
+        new DocumentNode(dn,
                     exampleFile.mid(sizeOfBoringPartOfName),
                     Node::File,
                     Node::NoPageType);
     }
     foreach (const QString &imageFile, imageFiles) {
-        new DocNode(dn,
+        new DocumentNode(dn,
                     imageFile.mid(sizeOfBoringPartOfName),
                     Node::Image,
                     Node::NoPageType);

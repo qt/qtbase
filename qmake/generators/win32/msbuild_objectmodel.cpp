@@ -1900,11 +1900,11 @@ bool VCXProjectWriter::outputFileConfig(OutputFilterData *d, XmlOutput &xml, Xml
                 fileAdded = true;
 
                 xmlFilter << tag("CustomBuild")
-                    << attrTag("Include",Option::fixPathToLocalOS(filename))
+                    << attrTag("Include", Option::fixPathToTargetOS(filename))
                     << attrTagS("Filter", filter.Name);
 
                 xml << tag("CustomBuild")
-                    << attrTag("Include",Option::fixPathToLocalOS(filename));
+                    << attrTag("Include", Option::fixPathToTargetOS(filename));
 
                 if (filter.Name.startsWith("Form Files")
                         || filter.Name.startsWith("Generated Files")
@@ -1963,7 +1963,7 @@ bool VCXProjectWriter::outputFileConfig(OutputFilterData *d, XmlOutput &xml, Xml
 void VCXProjectWriter::outputFileConfig(XmlOutput &xml, XmlOutput &xmlFilter,
                                         const QString &filePath, const QString &filterName)
 {
-    const QString nativeFilePath = Option::fixPathToLocalOS(filePath);
+    const QString nativeFilePath = Option::fixPathToTargetOS(filePath);
     if (filterName.startsWith("Source Files")) {
         xmlFilter << tag("ClCompile")
                   << attrTag("Include", nativeFilePath)

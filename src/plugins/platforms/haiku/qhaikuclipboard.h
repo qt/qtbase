@@ -1,9 +1,9 @@
-/****************************************************************************
+/***************************************************************************
 **
-** Copyright (C) 2013 Klarälvdalens Datakonsult AB <info@kdab.com>
+** Copyright (C) 2015 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Tobias Koenig <tobias.koenig@kdab.com>
 ** Contact: http://www.qt.io/licensing/
 **
-** This file is part of the QtCore module of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL21$
 ** Commercial License Usage
@@ -31,4 +31,34 @@
 **
 ****************************************************************************/
 
-#include "../../blackberry-armle-v7-qcc/qplatformdefs.h"
+#ifndef QHAIKUCLIPBOARD_H
+#define QHAIKUCLIPBOARD_H
+
+#if !defined(QT_NO_CLIPBOARD)
+
+#include <qpa/qplatformclipboard.h>
+
+#include <Handler.h>
+
+QT_BEGIN_NAMESPACE
+
+class QHaikuClipboard : public QPlatformClipboard, public BHandler
+{
+public:
+    QHaikuClipboard();
+    ~QHaikuClipboard();
+
+    QMimeData *mimeData(QClipboard::Mode mode = QClipboard::Clipboard) Q_DECL_OVERRIDE;
+    void setMimeData(QMimeData *data, QClipboard::Mode mode = QClipboard::Clipboard) Q_DECL_OVERRIDE;
+    bool supportsMode(QClipboard::Mode mode) const Q_DECL_OVERRIDE;
+    bool ownsMode(QClipboard::Mode mode) const Q_DECL_OVERRIDE;
+
+    // override from BHandler to catch change notifications from Haiku clipboard
+    void MessageReceived(BMessage* message) Q_DECL_OVERRIDE;
+};
+
+QT_END_NAMESPACE
+
+#endif
+
+#endif

@@ -1,6 +1,6 @@
 TEMPLATE	= subdirs
-SUBDIRS	= simple_app \
-		  simple_dll
+SUBDIRS	= simple_dll \
+		  simple_app
 CONFIG	+= ordered
 
 

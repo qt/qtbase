@@ -116,7 +116,7 @@ protected:
     virtual void generateClassLikeNode(InnerNode* inner, CodeMarker* marker);
     virtual void generateQmlTypePage(QmlTypeNode* , CodeMarker* ) { }
     virtual void generateQmlBasicTypePage(QmlBasicTypeNode* , CodeMarker* ) { }
-    virtual void generateDocNode(DocNode* dn, CodeMarker* marker);
+    virtual void generateDocumentNode(DocumentNode* dn, CodeMarker* marker);
     virtual void generateCollectionNode(CollectionNode* cn, CodeMarker* marker);
     virtual void generateInheritedBy(const ClassNode *classe, CodeMarker *marker);
     virtual void generateInherits(const ClassNode *classe, CodeMarker *marker);
@@ -149,8 +149,8 @@ protected:
                                  CodeMarker *marker,
                                  bool generate,
                                  int& numGeneratedAtoms);
-    void generateExampleFiles(const DocNode *dn, CodeMarker *marker);
-    void generateFileList(const DocNode* dn,
+    void generateExampleFiles(const DocumentNode *dn, CodeMarker *marker);
+    void generateFileList(const DocumentNode* dn,
                           CodeMarker* marker,
                           Node::SubType subtype,
                           const QString& tag);

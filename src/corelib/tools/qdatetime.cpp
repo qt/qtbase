@@ -117,7 +117,12 @@ static inline qint64 julianDayFromDate(int year, int month, int day)
     return day + floordiv(153 * m + 2, 5) + 365 * y + floordiv(y, 4) - floordiv(y, 100) + floordiv(y, 400) - 32045;
 }
 
-static void getDateFromJulianDay(qint64 julianDay, int *yearp, int *monthp, int *dayp)
+struct ParsedDate
+{
+    int year, month, day;
+};
+
+static ParsedDate getDateFromJulianDay(qint64 julianDay)
 {
 /*
  * Math from The Calendar FAQ at http://www.tondering.dk/claus/cal/julperiod.php
@@ -140,12 +145,8 @@ static void getDateFromJulianDay(qint64 julianDay, int *yearp, int *monthp, int 
     if (year <= 0)
         --year ;
 
-    if (yearp)
-        *yearp = year;
-    if (monthp)
-        *monthp = month;
-    if (dayp)
-        *dayp = day;
+    const ParsedDate result = { year, month, day };
+    return result;
 }
 
 /*****************************************************************************
@@ -186,82 +187,55 @@ static int fromShortMonthName(const QStringRef &monthName)
 #endif // QT_NO_TEXTDATE
 
 #ifndef QT_NO_DATESTRING
-static void rfcDateImpl(const QString &s, QDate *dd = 0, QTime *dt = 0, int *utcOffset = 0)
+struct ParsedRfcDateTime {
+    QDate date;
+    QTime time;
+    int utcOffset;
+};
+
+static ParsedRfcDateTime rfcDateImpl(const QString &s)
 {
-    int day = -1;
-    int month = -1;
-    int year = -1;
-    int hour = -1;
-    int min = -1;
-    int sec = -1;
-    int hourOffset = 0;
-    int minOffset = 0;
-    bool positiveOffset = false;
+    ParsedRfcDateTime result;
 
     // Matches "Wdy, DD Mon YYYY HH:mm:ss ±hhmm" (Wdy, being optional)
     QRegExp rex(QStringLiteral("^(?:[A-Z][a-z]+,)?[ \\t]*(\\d{1,2})[ \\t]+([A-Z][a-z]+)[ \\t]+(\\d\\d\\d\\d)(?:[ \\t]+(\\d\\d):(\\d\\d)(?::(\\d\\d))?)?[ \\t]*(?:([+-])(\\d\\d)(\\d\\d))?"));
     if (s.indexOf(rex) == 0) {
-        if (dd) {
-            day = rex.cap(1).toInt();
-            month = qt_monthNumberFromShortName(rex.cap(2));
-            year = rex.cap(3).toInt();
-        }
-        if (dt) {
-            if (!rex.cap(4).isEmpty()) {
-                hour = rex.cap(4).toInt();
-                min = rex.cap(5).toInt();
-                sec = rex.cap(6).toInt();
-            }
-            positiveOffset = (rex.cap(7) == QLatin1String("+"));
-            hourOffset = rex.cap(8).toInt();
-            minOffset = rex.cap(9).toInt();
-        }
-        if (utcOffset)
-            *utcOffset = ((hourOffset * 60 + minOffset) * (positiveOffset ? 60 : -60));
+        const QStringList cap = rex.capturedTexts();
+        result.date = QDate(cap[3].toInt(), qt_monthNumberFromShortName(cap[2]), cap[1].toInt());
+        if (!cap[4].isEmpty())
+            result.time = QTime(cap[4].toInt(), cap[5].toInt(), cap[6].toInt());
+        const bool positiveOffset = (cap[7] == QLatin1String("+"));
+        const int hourOffset = cap[8].toInt();
+        const int minOffset = cap[9].toInt();
+        result.utcOffset = ((hourOffset * 60 + minOffset) * (positiveOffset ? 60 : -60));
     } else {
         // Matches "Wdy Mon DD HH:mm:ss YYYY"
         QRegExp rex(QStringLiteral("^[A-Z][a-z]+[ \\t]+([A-Z][a-z]+)[ \\t]+(\\d\\d)(?:[ \\t]+(\\d\\d):(\\d\\d):(\\d\\d))?[ \\t]+(\\d\\d\\d\\d)[ \\t]*(?:([+-])(\\d\\d)(\\d\\d))?"));
         if (s.indexOf(rex) == 0) {
-            if (dd) {
-                month = qt_monthNumberFromShortName(rex.cap(1));
-                day = rex.cap(2).toInt();
-                year = rex.cap(6).toInt();
-            }
-            if (dt) {
-                if (!rex.cap(3).isEmpty()) {
-                    hour = rex.cap(3).toInt();
-                    min = rex.cap(4).toInt();
-                    sec = rex.cap(5).toInt();
-                }
-                positiveOffset = (rex.cap(7) == QLatin1String("+"));
-                hourOffset = rex.cap(8).toInt();
-                minOffset = rex.cap(9).toInt();
-            }
-            if (utcOffset)
-                *utcOffset = ((hourOffset * 60 + minOffset) * (positiveOffset ? 60 : -60));
+            const QStringList cap = rex.capturedTexts();
+            result.date = QDate(cap[6].toInt(), qt_monthNumberFromShortName(cap[1]), cap[2].toInt());
+            if (!cap[3].isEmpty())
+                result.time = QTime(cap[3].toInt(), cap[4].toInt(), cap[5].toInt());
+            const bool positiveOffset = (cap[7] == QLatin1String("+"));
+            const int hourOffset = cap[8].toInt();
+            const int minOffset = cap[9].toInt();
+            result.utcOffset = ((hourOffset * 60 + minOffset) * (positiveOffset ? 60 : -60));
         }
     }
 
-    if (dd)
-        *dd = QDate(year, month, day);
-    if (dt)
-        *dt = QTime(hour, min, sec);
+    return result;
 }
 #endif // QT_NO_DATESTRING
 
 // Return offset in [+-]HH:mm format
-// Qt::ISODate puts : between the hours and minutes, but Qt:TextDate does not
 static QString toOffsetString(Qt::DateFormat format, int offset)
 {
-    QString result;
-    if (format == Qt::TextDate)
-        result = QStringLiteral("%1%2%3");
-    else // Qt::ISODate
-        result = QStringLiteral("%1%2:%3");
-
-    return result.arg(offset >= 0 ? QLatin1Char('+') : QLatin1Char('-'))
-                 .arg(qAbs(offset) / SECS_PER_HOUR, 2, 10, QLatin1Char('0'))
-                 .arg((qAbs(offset) / 60) % 60, 2, 10, QLatin1Char('0'));
+    return QString::asprintf("%c%02d%s%02d",
+                             offset >= 0 ? '+' : '-',
+                             qAbs(offset) / SECS_PER_HOUR,
+                             // Qt::ISODate puts : between the hours and minutes, but Qt:TextDate does not:
+                             format == Qt::TextDate ? "" : ":",
+                             (qAbs(offset) / 60) % 60);
 }
 
 // Parse offset in [+-]HH[[:]mm] format
@@ -449,9 +423,7 @@ int QDate::year() const
     if (isNull())
         return 0;
 
-    int y;
-    getDateFromJulianDay(jd, &y, 0, 0);
-    return y;
+    return getDateFromJulianDay(jd).year;
 }
 
 /*!
@@ -483,9 +455,7 @@ int QDate::month() const
     if (isNull())
         return 0;
 
-    int m;
-    getDateFromJulianDay(jd, 0, &m, 0);
-    return m;
+    return getDateFromJulianDay(jd).month;
 }
 
 /*!
@@ -501,9 +471,7 @@ int QDate::day() const
     if (isNull())
         return 0;
 
-    int d;
-    getDateFromJulianDay(jd, 0, 0, &d);
-    return d;
+    return getDateFromJulianDay(jd).day;
 }
 
 /*!
@@ -555,12 +523,11 @@ int QDate::daysInMonth() const
     if (isNull())
         return 0;
 
-    int y, m;
-    getDateFromJulianDay(jd, &y, &m, 0);
-    if (m == 2 && isLeapYear(y))
+    const ParsedDate pd = getDateFromJulianDay(jd);
+    if (pd.month == 2 && isLeapYear(pd.year))
         return 29;
     else
-        return monthDays[m];
+        return monthDays[pd.month];
 }
 
 /*!
@@ -576,9 +543,7 @@ int QDate::daysInYear() const
     if (isNull())
         return 0;
 
-    int y;
-    getDateFromJulianDay(jd, &y, 0, 0);
-    return isLeapYear(y) ? 366 : 365;
+    return isLeapYear(getDateFromJulianDay(jd).year) ? 366 : 365;
 }
 
 /*!
@@ -895,7 +860,7 @@ QString QDate::toString(Qt::DateFormat format) const
     if (!isValid())
         return QString();
 
-    int y, m, d;
+    ParsedDate pd;
 
     switch (format) {
     case Qt::SystemLocaleDate:
@@ -913,19 +878,17 @@ QString QDate::toString(Qt::DateFormat format) const
     default:
 #ifndef QT_NO_TEXTDATE
     case Qt::TextDate:
-        getDateFromJulianDay(jd, &y, &m, &d);
+        pd = getDateFromJulianDay(jd);
         return QString::fromLatin1("%1 %2 %3 %4").arg(shortDayName(dayOfWeek()))
-                                                 .arg(shortMonthName(m))
-                                                 .arg(d)
-                                                 .arg(y);
+                                                 .arg(shortMonthName(pd.month))
+                                                 .arg(pd.day)
+                                                 .arg(pd.year);
 #endif
     case Qt::ISODate:
-        getDateFromJulianDay(jd, &y, &m, &d);
-        if (y < 0 || y > 9999)
+        pd = getDateFromJulianDay(jd);
+        if (pd.year < 0 || pd.year > 9999)
             return QString();
-        return QString::fromLatin1("%1-%2-%3").arg(y, 4, 10, QLatin1Char('0'))
-                                              .arg(m, 2, 10, QLatin1Char('0'))
-                                              .arg(d, 2, 10, QLatin1Char('0'));
+        return QString::asprintf("%04d-%02d-%02d", pd.year, pd.month, pd.day);
     }
 }
 
@@ -1031,16 +994,16 @@ bool QDate::setDate(int year, int month, int day)
 */
 void QDate::getDate(int *year, int *month, int *day)
 {
-    if (isValid()) {
-        getDateFromJulianDay(jd, year, month, day);
-    } else {
-        if (year)
-            *year = 0;
-        if (month)
-            *month = 0;
-        if (day)
-            *day = 0;
-    }
+    ParsedDate pd = { 0, 0, 0 };
+    if (isValid())
+        pd = getDateFromJulianDay(jd);
+
+    if (year)
+        *year = pd.year;
+    if (month)
+        *month = pd.month;
+    if (day)
+        *day = pd.day;
 }
 
 /*!
@@ -1082,7 +1045,12 @@ QDate QDate::addMonths(int nmonths) const
         return *this;
 
     int old_y, y, m, d;
-    getDateFromJulianDay(jd, &y, &m, &d);
+    {
+        const ParsedDate pd = getDateFromJulianDay(jd);
+        y = pd.year;
+        m = pd.month;
+        d = pd.day;
+    }
     old_y = y;
 
     bool increasing = nmonths > 0;
@@ -1140,19 +1108,18 @@ QDate QDate::addYears(int nyears) const
     if (!isValid())
         return QDate();
 
-    int y, m, d;
-    getDateFromJulianDay(jd, &y, &m, &d);
+    ParsedDate pd = getDateFromJulianDay(jd);
 
-    int old_y = y;
-    y += nyears;
+    int old_y = pd.year;
+    pd.year += nyears;
 
     // was there a sign change?
-    if ((old_y > 0 && y <= 0) ||
-        (old_y < 0 && y >= 0))
+    if ((old_y > 0 && pd.year <= 0) ||
+        (old_y < 0 && pd.year >= 0))
         // yes, adjust the date by +1 or -1 years
-        y += nyears > 0 ? +1 : -1;
+        pd.year += nyears > 0 ? +1 : -1;
 
-    return fixedDate(y, m, d);
+    return fixedDate(pd.year, pd.month, pd.day);
 }
 
 /*!
@@ -1255,11 +1222,8 @@ QDate QDate::fromString(const QString& string, Qt::DateFormat format)
         return QLocale().toDate(string, QLocale::ShortFormat);
     case Qt::DefaultLocaleLongDate:
         return QLocale().toDate(string, QLocale::LongFormat);
-    case Qt::RFC2822Date: {
-        QDate date;
-        rfcDateImpl(string, &date);
-        return date;
-    }
+    case Qt::RFC2822Date:
+        return rfcDateImpl(string).date;
     default:
 #ifndef QT_NO_TEXTDATE
     case Qt::TextDate: {
@@ -2003,11 +1967,8 @@ QTime QTime::fromString(const QString& string, Qt::DateFormat format)
         return QLocale().toTime(string, QLocale::ShortFormat);
     case Qt::DefaultLocaleLongDate:
         return QLocale().toTime(string, QLocale::LongFormat);
-    case Qt::RFC2822Date: {
-        QTime time;
-        rfcDateImpl(string, 0, &time);
-        return time;
-    }
+    case Qt::RFC2822Date:
+        return rfcDateImpl(string).time;
     case Qt::ISODate:
     case Qt::TextDate:
     default:
@@ -4417,16 +4378,13 @@ QDateTime QDateTime::fromString(const QString& string, Qt::DateFormat format)
     case Qt::DefaultLocaleLongDate:
         return QLocale().toDateTime(string, QLocale::LongFormat);
     case Qt::RFC2822Date: {
-        QDate date;
-        QTime time;
-        int utcOffset = 0;
-        rfcDateImpl(string, &date, &time, &utcOffset);
+        const ParsedRfcDateTime rfc = rfcDateImpl(string);
 
-        if (!date.isValid() || !time.isValid())
+        if (!rfc.date.isValid() || !rfc.time.isValid())
             return QDateTime();
 
-        QDateTime dateTime(date, time, Qt::UTC);
-        dateTime.setOffsetFromUtc(utcOffset);
+        QDateTime dateTime(rfc.date, rfc.time, Qt::UTC);
+        dateTime.setOffsetFromUtc(rfc.utcOffset);
         return dateTime;
     }
     case Qt::ISODate: {
@@ -5007,9 +4965,11 @@ QDebug operator<<(QDebug dbg, const QTime &time)
 QDebug operator<<(QDebug dbg, const QDateTime &date)
 {
     QDebugStateSaver saver(dbg);
-    dbg.nospace() << "QDateTime(" << date.toString(QStringLiteral("yyyy-MM-dd HH:mm:ss.zzz t"))
-                  << ' ' << date.timeSpec();
-    switch (date.d->m_spec) {
+    const Qt::TimeSpec ts = date.timeSpec();
+    dbg.nospace() << "QDateTime(";
+    dbg.noquote() << date.toString(QStringLiteral("yyyy-MM-dd HH:mm:ss.zzz t"))
+                  << ' ' << ts;
+    switch (ts) {
     case Qt::UTC:
         break;
     case Qt::OffsetFromUTC:

@@ -41,6 +41,8 @@
 
 #include <qdebug.h>
 
+#include <algorithm>
+
 QT_BEGIN_NAMESPACE
 
 /*
@@ -247,18 +249,21 @@ QByteArray QMacTimeZonePrivate::systemTimeZoneId() const
     return QCFString::toQString([[NSTimeZone systemTimeZone] name]).toUtf8();
 }
 
-QSet<QByteArray> QMacTimeZonePrivate::availableTimeZoneIds() const
+QList<QByteArray> QMacTimeZonePrivate::availableTimeZoneIds() const
 {
     NSEnumerator *enumerator = [[NSTimeZone knownTimeZoneNames] objectEnumerator];
     QByteArray tzid = QCFString::toQString([enumerator nextObject]).toUtf8();
 
-    QSet<QByteArray> set;
+    QList<QByteArray> list;
     while (!tzid.isEmpty()) {
-        set << tzid;
+        list << tzid;
         tzid = QCFString::toQString([enumerator nextObject]).toUtf8();
     }
 
-    return set;
+    std::sort(list.begin(), list.end());
+    list.erase(std::unique(list.begin(), list.end()), list.end());
+
+    return list;
 }
 
 QT_END_NAMESPACE

@@ -9,7 +9,7 @@ QT += gui-private
 
 DEFINES += X11_PREFIX='\\"$$QMAKE_X11_PREFIX\\"'
 
-SOURCES += $$PWD/main.cpp \
+SOURCES += $$PWD/qcomposeplatforminputcontextmain.cpp \
            $$PWD/qcomposeplatforminputcontext.cpp \
            $$PWD/generator/qtablegenerator.cpp \
 

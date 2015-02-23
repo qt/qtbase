@@ -310,7 +310,7 @@ QString Generator::fileBase(const Node *node) const
         return node->fileNameBase();
 
     QString base;
-    if (node->isDocNode()) {
+    if (node->isDocumentNode()) {
         base = node->name();
         if (base.endsWith(".html") && !node->isExampleFile())
             base.truncate(base.length() - 5);
@@ -326,7 +326,8 @@ QString Generator::fileBase(const Node *node) const
             base.append(QLatin1String("-example"));
         }
     }
-    else if (node->isQmlType() || node->isQmlBasicType()) {
+    else if (node->isQmlType() || node->isQmlBasicType() ||
+             node->isJsType() || node->isJsBasicType()) {
         base = node->name();
         if (!node->logicalModuleName().isEmpty()) {
             base.prepend(node->logicalModuleName() + QLatin1Char('-'));
@@ -336,7 +337,10 @@ QString Generator::fileBase(const Node *node) const
           we prepend a prefix (by default, "qml-") to the file name of QML
           element doc files.
         */
-        base.prepend(outputPrefix(QLatin1String("QML")));
+        if (node->isQmlType() || node->isQmlBasicType())
+            base.prepend(outputPrefix(QLatin1String("QML")));
+        else
+            base.prepend(outputPrefix(QLatin1String("JS")));
     }
     else if (node->isCollectionNode()) {
         base = node->name();
@@ -345,6 +349,9 @@ QString Generator::fileBase(const Node *node) const
 
         if (node->isQmlModule()) {
             base.append("-qmlmodule");
+        }
+        else if (node->isJsModule()) {
+            base.append("-jsmodule");
         }
         else if (node->isModule()) {
             base.append("-module");
@@ -356,7 +363,7 @@ QString Generator::fileBase(const Node *node) const
         forever {
             const Node *pp = p->parent();
             base.prepend(p->name());
-            if (!pp || pp->name().isEmpty() || pp->isDocNode())
+            if (!pp || pp->name().isEmpty() || pp->isDocumentNode())
                 break;
             base.prepend(QLatin1Char('-'));
             p = pp;
@@ -456,9 +463,12 @@ QString Generator::fullDocumentLocation(const Node *node, bool useSubdir)
         else
             return QString();
     }
-    else if (node->isQmlType() || node->isQmlBasicType()) {
+    else if (node->isQmlType() || node->isQmlBasicType() ||
+             node->isJsType() || node->isJsBasicType()) {
         QString fb = fileBase(node);
         if (fb.startsWith(Generator::outputPrefix(QLatin1String("QML"))))
+            return fb + QLatin1Char('.') + currentGenerator()->fileExtension();
+        else if (fb.startsWith(Generator::outputPrefix(QLatin1String("JS"))))
             return fb + QLatin1Char('.') + currentGenerator()->fileExtension();
         else {
             QString mq;
@@ -466,11 +476,14 @@ QString Generator::fullDocumentLocation(const Node *node, bool useSubdir)
                 mq = node->logicalModuleName().replace(QChar('.'),QChar('-'));
                 mq = mq.toLower() + QLatin1Char('-');
             }
-            return fdl+ Generator::outputPrefix(QLatin1String("QML")) + mq +
-                fileBase(node) + QLatin1Char('.') + currentGenerator()->fileExtension();
+            QLatin1String prefix = QLatin1String("QML");
+            if (node->isJsType() || node->isJsBasicType())
+                prefix = QLatin1String("JS");
+            return fdl+ Generator::outputPrefix(prefix) + mq + fileBase(node) +
+                QLatin1Char('.') + currentGenerator()->fileExtension();
         }
     }
-    else if (node->isDocNode() || node->isCollectionNode()) {
+    else if (node->isDocumentNode() || node->isCollectionNode()) {
         parentName = fileBase(node) + QLatin1Char('.') + currentGenerator()->fileExtension();
     }
     else if (fileBase(node).isEmpty())
@@ -482,7 +495,7 @@ QString Generator::fullDocumentLocation(const Node *node, bool useSubdir)
         parentName = fullDocumentLocation(node->relates());
     }
     else if ((parentNode = node->parent())) {
-        if (parentNode->type() == Node::QmlPropertyGroup) {
+        if (parentNode->isQmlPropertyGroup() || parentNode->isJsPropertyGroup()) {
             parentNode = parentNode->parent();
             parentName = fullDocumentLocation(parentNode);
         }
@@ -683,7 +696,7 @@ void Generator::generateBody(const Node *node, CodeMarker *marker)
     bool quiet = false;
 
     if (node->type() == Node::Document) {
-        const DocNode *dn = static_cast<const DocNode *>(node);
+        const DocumentNode *dn = static_cast<const DocumentNode *>(node);
         if ((dn->subType() == Node::File) || (dn->subType() == Node::Image)) {
             quiet = true;
         }
@@ -808,8 +821,8 @@ void Generator::generateBody(const Node *node, CodeMarker *marker)
         }
     }
 
-    if (node->isDocNode()) {
-        const DocNode *dn = static_cast<const DocNode *>(node);
+    if (node->isDocumentNode()) {
+        const DocumentNode *dn = static_cast<const DocumentNode *>(node);
         if (dn->isExample()) {
             generateExampleFiles(dn, marker);
         }
@@ -829,7 +842,7 @@ void Generator::generateClassLikeNode(InnerNode* /* classe */, CodeMarker* /* ma
 {
 }
 
-void Generator::generateExampleFiles(const DocNode *dn, CodeMarker *marker)
+void Generator::generateExampleFiles(const DocumentNode *dn, CodeMarker *marker)
 {
     if (dn->childNodes().isEmpty())
         return;
@@ -837,7 +850,7 @@ void Generator::generateExampleFiles(const DocNode *dn, CodeMarker *marker)
     generateFileList(dn, marker, Node::Image, QString("Images:"));
 }
 
-void Generator::generateDocNode(DocNode* /* dn */, CodeMarker* /* marker */)
+void Generator::generateDocumentNode(DocumentNode* /* dn */, CodeMarker* /* marker */)
 {
 }
 
@@ -852,7 +865,7 @@ void Generator::generateCollectionNode(CollectionNode* , CodeMarker* )
   by the example. The images are copied into a subtree of
   \c{...doc/html/images/used-in-examples/...}
  */
-void Generator::generateFileList(const DocNode* dn,
+void Generator::generateFileList(const DocumentNode* dn,
                                  CodeMarker* marker,
                                  Node::SubType subtype,
                                  const QString& tag)
@@ -973,8 +986,8 @@ void Generator::generateInnerNode(InnerNode* node)
     if (node->isInternal() && !showInternal_)
         return;
 
-    if (node->isDocNode()) {
-        DocNode* docNode = static_cast<DocNode*>(node);
+    if (node->isDocumentNode()) {
+        DocumentNode* docNode = static_cast<DocumentNode*>(node);
         if (docNode->subType() == Node::ExternalPage)
             return;
         if (docNode->subType() == Node::Image)
@@ -984,7 +997,7 @@ void Generator::generateInnerNode(InnerNode* node)
                 qDebug("PAGE %s HAS CHILDREN", qPrintable(docNode->title()));
         }
     }
-    else if (node->isQmlPropertyGroup())
+    else if (node->isQmlPropertyGroup() || node->isJsPropertyGroup())
         return;
 
     /*
@@ -998,44 +1011,44 @@ void Generator::generateInnerNode(InnerNode* node)
             generateClassLikeNode(node, marker);
             endSubPage();
         }
-        if (node->isQmlType()) {
+        if (node->isQmlType() || node->isJsType()) {
             beginSubPage(node, fileName(node));
             QmlTypeNode* qcn = static_cast<QmlTypeNode*>(node);
             generateQmlTypePage(qcn, marker);
             endSubPage();
         }
-        else if (node->isDocNode()) {
+        else if (node->isDocumentNode()) {
             beginSubPage(node, fileName(node));
-            generateDocNode(static_cast<DocNode*>(node), marker);
+            generateDocumentNode(static_cast<DocumentNode*>(node), marker);
             endSubPage();
         }
-        else if (node->isQmlBasicType()) {
+        else if (node->isQmlBasicType() || node->isJsBasicType()) {
             beginSubPage(node, fileName(node));
             QmlBasicTypeNode* qbtn = static_cast<QmlBasicTypeNode*>(node);
             generateQmlBasicTypePage(qbtn, marker);
             endSubPage();
         }
         else if (node->isCollectionNode()) {
-            CollectionNode* cn = static_cast<CollectionNode*>(node);
             /*
-              A collection node is one of: group, module,
-              or QML module.
+              A collection node collects: groups, C++ modules,
+              QML modules or JavaScript modules.
 
               Don't output an HTML page for the collection
-              node unless the \group, \module, or \qmlmodule
-              command was actually seen by qdoc in the qdoc
-              comment for the node.
+              node unless the \group, \module, \qmlmodule or
+              \jsmodule command was actually seen by qdoc in
+              the qdoc comment for the node.
 
               A key prerequisite in this case is the call to
-              mergeCollections(cn). We don't know if this
-              collection (group, module, or QML module) has
-              members in other modules. We know at this point
-              that cn's members list contains only members in
-              the current module. Therefore, before outputting
-              the page for cn, we must search for members of
-              cn in the other modules and add them to the
-              members list.
+              mergeCollections(cn). We must determine whether
+              this group, module, QML module, or JavaScript
+              module has members in other modules. We know at
+              this point that cn's members list contains only
+              members in the current module. Therefore, before
+              outputting the page for cn, we must search for
+              members of cn in the other modules and add them
+              to the members list.
             */
+            CollectionNode* cn = static_cast<CollectionNode*>(node);
             if (cn->wasSeen()) {
                 qdb_->mergeCollections(cn);
                 beginSubPage(node, fileName(node));
@@ -1652,8 +1665,10 @@ void Generator::initialize(const Config &config)
         foreach (const QString &prefix, prefixes)
             outputPrefixes[prefix] = config.getString(CONFIG_OUTPUTPREFIXES + Config::dot + prefix);
     }
-    else
+    else {
         outputPrefixes[QLatin1String("QML")] = QLatin1String("qml-");
+        outputPrefixes[QLatin1String("JS")] = QLatin1String("js-");
+    }
     noLinkErrors_ = config.getBool(CONFIG_NOLINKERRORS);
     autolinkErrors_ = config.getBool(CONFIG_AUTOLINKERRORS);
 }

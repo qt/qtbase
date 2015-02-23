@@ -2821,9 +2821,6 @@ QString DocParser::slashed(const QString& str)
     return QLatin1Char('/') + result + QLatin1Char('/');
 }
 
-#define COMMAND_BRIEF                   Doc::alias("brief")
-#define COMMAND_QMLBRIEF                Doc::alias("qmlbrief")
-
 /*!
   Parse the qdoc comment \a source. Build up a list of all the topic
   commands found including their arguments.  This constructor is used

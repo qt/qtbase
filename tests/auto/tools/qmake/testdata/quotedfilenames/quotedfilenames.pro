@@ -2,8 +2,12 @@ TEMPLATE		= app
 TARGET		= quotedfilenames
 SOURCES		= main.cpp
 
+CONFIG += no_batch
+
+INCLUDEPATH += "include folder"
+
 RCCINPUT = "rc folder/test.qrc"
-RCCOUTPUT = test.cpp
+RCCOUTPUT = "cpp folder/test.cpp"
 
 qtPrepareTool(QMAKE_RCC, rcc)
 

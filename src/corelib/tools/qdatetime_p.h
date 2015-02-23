@@ -101,16 +101,6 @@ public:
     QDateTimePrivate(const QDate &toDate, const QTime &toTime, const QTimeZone & timeZone);
 #endif // QT_BOOTSTRAPPED
 
-    QDateTimePrivate(const QDateTimePrivate &other) : QSharedData(other),
-                                                      m_msecs(other.m_msecs),
-                                                      m_spec(other.m_spec),
-                                                      m_offsetFromUtc(other.m_offsetFromUtc),
-#ifndef QT_BOOTSTRAPPED
-                                                      m_timeZone(other.m_timeZone),
-#endif // QT_BOOTSTRAPPED
-                                                      m_status(other.m_status)
-    {}
-
     // ### XXX: when the tooling situation improves, look at fixing the padding.
     // 4 bytes padding
 
@@ -136,17 +126,17 @@ public:
     void refreshDateTime();
 
     // Get/set date and time status
-    inline bool isNullDate() const { return (m_status & NullDate) == NullDate; }
-    inline bool isNullTime() const { return (m_status & NullTime) == NullTime; }
-    inline bool isValidDate() const { return (m_status & ValidDate) == ValidDate; }
-    inline bool isValidTime() const { return (m_status & ValidTime) == ValidTime; }
-    inline bool isValidDateTime() const { return (m_status & ValidDateTime) == ValidDateTime; }
-    inline void setValidDateTime() { m_status = m_status | ValidDateTime; }
-    inline void clearValidDateTime() { m_status = m_status & ~ValidDateTime; }
-    inline bool isTimeZoneCached() const { return (m_status & TimeZoneCached) == TimeZoneCached; }
-    inline void setTimeZoneCached() { m_status = m_status | TimeZoneCached; }
-    inline void clearTimeZoneCached() { m_status = m_status & ~TimeZoneCached; }
-    inline void clearSetToDaylightStatus() { m_status = m_status & ~SetToStandardTime & ~SetToDaylightTime; }
+    inline bool isNullDate() const { return m_status & NullDate; }
+    inline bool isNullTime() const { return m_status & NullTime; }
+    inline bool isValidDate() const { return m_status & ValidDate; }
+    inline bool isValidTime() const { return m_status & ValidTime; }
+    inline bool isValidDateTime() const { return m_status & ValidDateTime; }
+    inline void setValidDateTime() { m_status |= ValidDateTime; }
+    inline void clearValidDateTime() { m_status &= ~ValidDateTime; }
+    inline bool isTimeZoneCached() const { return m_status & TimeZoneCached; }
+    inline void setTimeZoneCached() { m_status |= TimeZoneCached; }
+    inline void clearTimeZoneCached() { m_status &= ~TimeZoneCached; }
+    inline void clearSetToDaylightStatus() { m_status &= ~(SetToStandardTime | SetToDaylightTime); }
 
 #ifndef QT_BOOTSTRAPPED
     static qint64 zoneMSecsToEpochMSecs(qint64 msecs, const QTimeZone &zone,

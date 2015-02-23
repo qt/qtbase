@@ -218,7 +218,8 @@ const QSet<QString>& CodeParser::commonMetaCommands()
                             << COMMAND_SUBTITLE
                             << COMMAND_THREADSAFE
                             << COMMAND_TITLE
-                            << COMMAND_WRAPPER;
+                            << COMMAND_WRAPPER
+                            << COMMAND_INJSMODULE;
     }
     return commonMetaCommands_;
 }
@@ -250,6 +251,9 @@ void CodeParser::processCommonMetaCommand(const Location& location,
     }
     else if (command == COMMAND_INQMLMODULE) {
         qdb_->addToQmlModule(arg.first,node);
+    }
+    else if (command == COMMAND_INJSMODULE) {
+        qdb_->addToJsModule(arg.first, node);
     }
     else if (command == COMMAND_MAINCLASS) {
         node->setStatus(Node::Main);
@@ -297,14 +301,14 @@ void CodeParser::processCommonMetaCommand(const Location& location,
     }
     else if (command == COMMAND_TITLE) {
         node->setTitle(arg.first);
-        if (!node->isDocNode() && !node->isCollectionNode())
+        if (!node->isDocumentNode() && !node->isCollectionNode())
             location.warning(tr("Ignored '\\%1'").arg(COMMAND_SUBTITLE));
         else if (node->isExample())
             qdb_->addExampleNode(static_cast<ExampleNode*>(node));
     }
     else if (command == COMMAND_SUBTITLE) {
         node->setSubTitle(arg.first);
-        if (!node->isDocNode() && !node->isCollectionNode())
+        if (!node->isDocumentNode() && !node->isCollectionNode())
             location.warning(tr("Ignored '\\%1'").arg(COMMAND_SUBTITLE));
     }
     else if (command == COMMAND_QTVARIABLE) {

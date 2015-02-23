@@ -119,24 +119,6 @@ void QQnxBpsEventFilter::unregisterForScreenEvents(QQnxScreen *screen)
         qWarning("QQNX: failed to unregister for screen events on screen %p", screen->nativeContext());
 }
 
-#if defined(Q_OS_BLACKBERRY_TABLET)
-void QQnxBpsEventFilter::registerForDialogEvents(QQnxFileDialogHelper *dialog)
-{
-    if (dialog_request_events(0) != BPS_SUCCESS)
-        qWarning("QQNX: failed to register for dialog events");
-    dialog_instance_t nativeDialog = dialog->nativeDialog();
-    if (!m_dialogMapper.contains(nativeDialog))
-        m_dialogMapper.insert(nativeDialog, dialog);
-}
-
-void QQnxBpsEventFilter::unregisterForDialogEvents(QQnxFileDialogHelper *dialog)
-{
-    int count = m_dialogMapper.remove(dialog->nativeDialog());
-    if (count == 0)
-        qWarning("QQNX: attempting to unregister dialog that was not registered");
-}
-#endif // Q_OS_BLACKBERRY_TABLET
-
 bool QQnxBpsEventFilter::nativeEventFilter(const QByteArray &eventType, void *message, long *result)
 {
     Q_UNUSED(eventType);
@@ -154,15 +136,6 @@ bool QQnxBpsEventFilter::nativeEventFilter(const QByteArray &eventType, void *me
         screen_event_t screenEvent = screen_event_get_event(event);
         return m_screenEventHandler->handleEvent(screenEvent);
     }
-
-#if defined(Q_OS_BLACKBERRY_TABLET)
-    if (eventDomain == dialog_get_domain()) {
-        dialog_instance_t nativeDialog = dialog_event_get_dialog_instance(event);
-        QQnxFileDialogHelper *dialog = m_dialogMapper.value(nativeDialog, 0);
-        if (dialog)
-            return dialog->handleEvent(event);
-    }
-#endif
 
     if (eventDomain == navigator_get_domain())
         return handleNavigatorEvent(event);
@@ -218,14 +191,8 @@ bool QQnxBpsEventFilter::handleNavigatorEvent(bps_event_t *event)
             break;
         case NAVIGATOR_WINDOW_THUMBNAIL:
             m_navigatorEventHandler->handleWindowGroupStateChanged(id, Qt::WindowMinimized);
-#if defined(Q_OS_BLACKBERRY_TABLET)
-            m_navigatorEventHandler->handleWindowGroupActivated(id);
-#endif
             break;
         case NAVIGATOR_WINDOW_INVISIBLE:
-#if defined(Q_OS_BLACKBERRY_TABLET)
-            m_navigatorEventHandler->handleWindowGroupDeactivated(id);
-#endif
             break;
         }
 

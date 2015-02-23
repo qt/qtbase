@@ -196,7 +196,7 @@ QStringList HelpProjectWriter::keywordDetails(const Node *node) const
 {
     QStringList details;
 
-    if (node->type() == Node::QmlProperty) {
+    if (node->isQmlProperty() || node->isJsProperty()) {
         // "name"
         details << node->name();
         // "id"
@@ -215,8 +215,12 @@ QStringList HelpProjectWriter::keywordDetails(const Node *node) const
         details << node->name();
         details << "QML." + node->name();
     }
-    else if (node->isDocNode()) {
-        const DocNode *fake = static_cast<const DocNode *>(node);
+    else if (node->isJsType() || node->isJsBasicType()) {
+        details << node->name();
+        details << "JS." + node->name();
+    }
+    else if (node->isDocumentNode()) {
+        const DocumentNode *fake = static_cast<const DocumentNode *>(node);
         details << fake->fullTitle();
         details << fake->fullTitle();
     }
@@ -224,7 +228,7 @@ QStringList HelpProjectWriter::keywordDetails(const Node *node) const
         details << node->name();
         details << node->name();
     }
-    details << gen_->fullDocumentLocation(node,Generator::useOutputSubdirs());
+    details << gen_->fullDocumentLocation(node, false);
     return details;
 }
 
@@ -246,8 +250,8 @@ bool HelpProjectWriter::generateSection(HelpProject &project,
         return false;
 
     QString objName;
-    if (node->isDocNode()) {
-        const DocNode *fake = static_cast<const DocNode *>(node);
+    if (node->isDocumentNode()) {
+        const DocumentNode *fake = static_cast<const DocumentNode *>(node);
         objName = fake->fullTitle();
     }
     else
@@ -269,7 +273,7 @@ bool HelpProjectWriter::generateSection(HelpProject &project,
             else {
                 // Accept only fake nodes with subtypes contained in the selector's
                 // mask.
-                const DocNode *docNode = static_cast<const DocNode *>(node);
+                const DocumentNode *docNode = static_cast<const DocumentNode *>(node);
                 if (subproject.selectors[node->type()].contains(docNode->subType()) &&
                         docNode->subType() != Node::ExternalPage &&
                         !docNode->fullTitle().isEmpty()) {
@@ -293,12 +297,12 @@ bool HelpProjectWriter::generateSection(HelpProject &project,
                     QStringList details;
                     details << keyword->string()
                             << keyword->string()
-                            << gen_->fullDocumentLocation(node,Generator::useOutputSubdirs()) +
+                            << gen_->fullDocumentLocation(node, false) +
                         QLatin1Char('#') + Doc::canonicalTitle(keyword->string());
                     project.keywords.append(details);
                 }
                 else
-                    node->doc().location().warning(tr("Bad keyword in %1").arg(gen_->fullDocumentLocation(node,Generator::useOutputSubdirs())));
+                    node->doc().location().warning(tr("Bad keyword in %1").arg(gen_->fullDocumentLocation(node, false)));
             }
         }
         project.keywords.append(keywordDetails(node));
@@ -325,7 +329,7 @@ bool HelpProjectWriter::generateSection(HelpProject &project,
                 details << item.name(); // "name"
                 details << item.name(); // "id"
             }
-            details << gen_->fullDocumentLocation(node,Generator::useOutputSubdirs());
+            details << gen_->fullDocumentLocation(node, false);
             project.keywords.append(details);
         }
     }
@@ -343,13 +347,13 @@ bool HelpProjectWriter::generateSection(HelpProject &project,
                             QStringList details;
                             details << keyword->string()
                                     << keyword->string()
-                                    << gen_->fullDocumentLocation(node, Generator::useOutputSubdirs()) +
+                                    << gen_->fullDocumentLocation(node, false) +
                                        QLatin1Char('#') + Doc::canonicalTitle(keyword->string());
                             project.keywords.append(details);
                         }
                         else
                             cn->doc().location().warning(
-                                      tr("Bad keyword in %1").arg(gen_->fullDocumentLocation(node,Generator::useOutputSubdirs()))
+                                      tr("Bad keyword in %1").arg(gen_->fullDocumentLocation(node, false))
                                      );
                     }
                 }
@@ -397,7 +401,7 @@ bool HelpProjectWriter::generateSection(HelpProject &project,
         // Use the location of any associated enum node in preference
         // to that of the typedef.
         if (enumNode)
-            typedefDetails[2] = gen_->fullDocumentLocation(enumNode,Generator::useOutputSubdirs());
+            typedefDetails[2] = gen_->fullDocumentLocation(enumNode, false);
 
         project.keywords.append(typedefDetails);
     }
@@ -412,7 +416,7 @@ bool HelpProjectWriter::generateSection(HelpProject &project,
         // Document nodes (such as manual pages) contain subtypes, titles and other
         // attributes.
     case Node::Document: {
-        const DocNode *docNode = static_cast<const DocNode*>(node);
+        const DocumentNode *docNode = static_cast<const DocumentNode*>(node);
         if (docNode->subType() != Node::ExternalPage &&
                 docNode->subType() != Node::Image &&
                 !docNode->fullTitle().isEmpty()) {
@@ -424,12 +428,12 @@ bool HelpProjectWriter::generateSection(HelpProject &project,
                             QStringList details;
                             details << keyword->string()
                                     << keyword->string()
-                                    << gen_->fullDocumentLocation(node,Generator::useOutputSubdirs()) +
+                                    << gen_->fullDocumentLocation(node, false) +
                                        QLatin1Char('#') + Doc::canonicalTitle(keyword->string());
                             project.keywords.append(details);
                         } else
                             docNode->doc().location().warning(
-                                        tr("Bad keyword in %1").arg(gen_->fullDocumentLocation(node,Generator::useOutputSubdirs()))
+                                        tr("Bad keyword in %1").arg(gen_->fullDocumentLocation(node, false))
                                         );
                     }
                 }
@@ -481,17 +485,17 @@ void HelpProjectWriter::generateSections(HelpProject &project,
                 continue;
 
             if (childNode->type() == Node::Document) {
-                childMap[static_cast<const DocNode *>(childNode)->fullTitle()] = childNode;
+                childMap[static_cast<const DocumentNode *>(childNode)->fullTitle()] = childNode;
             }
-            else if (childNode->type() == Node::QmlPropertyGroup) {
+            else if (childNode->isQmlPropertyGroup() || childNode->isJsPropertyGroup()) {
                 /*
-                  Don't visit QML property group nodes,
+                  Don't visit QML/JS property group nodes,
                   but visit their children, which are all
-                  QML property nodes.
+                  QML/JS property nodes.
 
                   This is probably not correct anymore,
-                  because The Qml Property Group is an
-                  actual documented thing.
+                  because The Qml/Js Property Group is
+                  an actual documented thing.
                  */
                 const InnerNode* inner = static_cast<const InnerNode*>(childNode);
                 foreach (const Node* n, inner->childNodes()) {
@@ -554,7 +558,7 @@ void HelpProjectWriter::writeSection(QXmlStreamWriter &writer, const QString &pa
 void HelpProjectWriter::addMembers(HelpProject &project, QXmlStreamWriter &writer,
                                           const Node *node)
 {
-    QString href = gen_->fullDocumentLocation(node,Generator::useOutputSubdirs());
+    QString href = gen_->fullDocumentLocation(node, false);
     href = href.left(href.size()-5);
     if (href.isEmpty())
         return;
@@ -566,7 +570,8 @@ void HelpProjectWriter::addMembers(HelpProject &project, QXmlStreamWriter &write
     // Do not generate a 'List of all members' for namespaces or header files,
     // but always generate it for derived classes and QML classes
     if (!node->isNamespace() && !node->isHeaderFile() &&
-        (derivedClass || node->isQmlType() || !project.memberStatus[node].isEmpty())) {
+        (derivedClass || node->isQmlType() || node->isJsType() ||
+         !project.memberStatus[node].isEmpty())) {
         QString membersPath = href + QStringLiteral("-members.html");
         writeSection(writer, membersPath, tr("List of all members"));
     }
@@ -583,7 +588,7 @@ void HelpProjectWriter::addMembers(HelpProject &project, QXmlStreamWriter &write
 void HelpProjectWriter::writeNode(HelpProject &project, QXmlStreamWriter &writer,
                                   const Node *node)
 {
-    QString href = gen_->fullDocumentLocation(node,Generator::useOutputSubdirs());
+    QString href = gen_->fullDocumentLocation(node, false);
     QString objName = node->name();
 
     switch (node->type()) {
@@ -615,7 +620,7 @@ void HelpProjectWriter::writeNode(HelpProject &project, QXmlStreamWriter &writer
     case Node::Document: {
         // Document nodes (such as manual pages) contain subtypes, titles and other
         // attributes.
-        const DocNode *docNode = static_cast<const DocNode*>(node);
+        const DocumentNode *docNode = static_cast<const DocumentNode*>(node);
 
         writer.writeStartElement("section");
         writer.writeAttribute("ref", href);
@@ -652,7 +657,7 @@ void HelpProjectWriter::generateProject(HelpProject &project)
     qdb_->setLocalSearch();
 
     if (!project.indexRoot.isEmpty())
-        rootNode = qdb_->findDocNodeByTitle(project.indexRoot);
+        rootNode = qdb_->findDocumentNodeByTitle(project.indexRoot);
     else
         rootNode = qdb_->primaryTreeRoot();
 
@@ -695,12 +700,12 @@ void HelpProjectWriter::generateProject(HelpProject &project)
 
     writer.writeStartElement("toc");
     writer.writeStartElement("section");
-    const Node* node = qdb_->findDocNodeByTitle(project.indexTitle);
+    const Node* node = qdb_->findDocumentNodeByTitle(project.indexTitle);
     if (node == 0)
         node = qdb_->findNodeByNameAndType(QStringList("index.html"), Node::Document);
     QString indexPath;
     if (node)
-        indexPath = gen_->fullDocumentLocation(node,Generator::useOutputSubdirs());
+        indexPath = gen_->fullDocumentLocation(node, false);
     else
         indexPath = "index.html";
     writer.writeAttribute("ref", indexPath);
@@ -742,8 +747,7 @@ void HelpProjectWriter::generateProject(HelpProject &project)
 
                             const Node *page = qdb_->findNodeForTarget(atom->string(), 0);
                             writer.writeStartElement("section");
-                            QString indexPath = gen_->fullDocumentLocation(page,
-                                                                           Generator::useOutputSubdirs());
+                            QString indexPath = gen_->fullDocumentLocation(page, false);
                             writer.writeAttribute("ref", indexPath);
                             writer.writeAttribute("title", atom->string());
 
@@ -768,7 +772,7 @@ void HelpProjectWriter::generateProject(HelpProject &project)
             if (!name.isEmpty()) {
                 writer.writeStartElement("section");
                 QString indexPath = gen_->fullDocumentLocation(qdb_->findNodeForTarget(subproject.indexTitle, 0),
-                                                               Generator::useOutputSubdirs());
+                                                               false);
                 writer.writeAttribute("ref", indexPath);
                 writer.writeAttribute("title", subproject.title);
             }

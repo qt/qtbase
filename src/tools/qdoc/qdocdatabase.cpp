@@ -325,31 +325,6 @@ const Node* QDocForest::findNodeForTarget(QStringList& targetPath,
 }
 
 /*!
-  This function merges all the collection maps for collection
-  nodes of node type \a t into the collection multimap \a cnmm,
-  which is cleared before starting.
-
-  This is mainly useful for groups, which often cross module
-  boundaries. It might be true that neither modules nor QML
-  modules cross module boundaries, but this function works for
-  those cases as well.
- */
-void QDocForest::mergeCollectionMaps(Node::Type nt, CNMultiMap& cnmm)
-{
-    foreach (Tree* t, searchOrder()) {
-        const CNMap& cnm = t->getCollections(nt);
-        if (!cnm.isEmpty()) {
-            CNMap::const_iterator i = cnm.begin();
-            while (i != cnm.end()) {
-                if (!i.value()->isInternal())
-                    cnmm.insert(i.key(), i.value());
-                ++i;
-            }
-        }
-    }
-}
-
-/*!
   Print the list of module names ordered according
   to how many successful searches each tree had.
  */
@@ -633,29 +608,30 @@ void QDocDatabase::initializeDB()
  */
 
 /*!
-  \fn const GroupMap& QDocDatabase::groups()
+  \fn const CNMap& QDocDatabase::groups()
   Returns a const reference to the collection of all
   group nodes in the primary tree.
 */
 
 /*!
-  \fn const ModuleMap& QDocDatabase::modules()
+  \fn const CNMap& QDocDatabase::modules()
   Returns a const reference to the collection of all
   module nodes in the primary tree.
 */
 
 /*!
-  \fn const QmlModuleMap& QDocDatabase::qmlModules()
+  \fn const CNMap& QDocDatabase::qmlModules()
   Returns a const reference to the collection of all
   QML module nodes in the primary tree.
 */
 
-/*! \fn GroupNode* QDocDatabase::getGroup(const QString& name)
-  Find the group node named \a name and return a pointer
-  to it. If a matching node is not found, return 0.
- */
+/*!
+  \fn const CNMap& QDocDatabase::jsModules()
+  Returns a const reference to the collection of all
+  JovaScript module nodes in the primary tree.
+*/
 
-/*! \fn GroupNode* QDocDatabase::findGroup(const QString& name)
+/*! \fn CollectionNode* QDocDatabase::findGroup(const QString& name)
   Find the group node named \a name and return a pointer
   to it. If a matching node is not found, add a new group
   node named \a name and return a pointer to that one.
@@ -664,7 +640,7 @@ void QDocDatabase::initializeDB()
   and the new group node is marked \e{not seen}.
  */
 
-/*! \fn ModuleNode* QDocDatabase::findModule(const QString& name)
+/*! \fn CollectionNode* QDocDatabase::findModule(const QString& name)
   Find the module node named \a name and return a pointer
   to it. If a matching node is not found, add a new module
   node named \a name and return a pointer to that one.
@@ -673,16 +649,19 @@ void QDocDatabase::initializeDB()
   and the new module node is marked \e{not seen}.
  */
 
-/*! \fn QmlModuleNode* QDocDatabase::findQmlModule(const QString& name)
+/*! \fn CollectionNode* QDocDatabase::findQmlModule(const QString& name, bool javaScript)
   Find the QML module node named \a name and return a pointer
   to it. If a matching node is not found, add a new QML module
   node named \a name and return a pointer to that one.
 
-  If a new QML module node is added, its parent is the tree root,
-  and the new QML module node is marked \e{not seen}.
+  If \a javaScript is set, the return collection must be a
+  JavaScript module.
+
+  If a new QML or JavaScript module node is added, its parent
+  is the tree root, and the new node is marked \e{not seen}.
  */
 
-/*! \fn GroupNode* QDocDatabase::addGroup(const QString& name)
+/*! \fn CollectionNode* QDocDatabase::addGroup(const QString& name)
   Looks up the group named \a name in the primary tree. If
   a match is found, a pointer to the node is returned.
   Otherwise, a new group node named \a name is created and
@@ -690,7 +669,7 @@ void QDocDatabase::initializeDB()
   is returned.
  */
 
-/*! \fn ModuleNode* QDocDatabase::addModule(const QString& name)
+/*! \fn CollectionNode* QDocDatabase::addModule(const QString& name)
   Looks up the module named \a name in the primary tree. If
   a match is found, a pointer to the node is returned.
   Otherwise, a new module node named \a name is created and
@@ -698,7 +677,7 @@ void QDocDatabase::initializeDB()
   is returned.
  */
 
-/*! \fn QmlModuleNode* QDocDatabase::addQmlModule(const QString& name)
+/*! \fn CollectionNode* QDocDatabase::addQmlModule(const QString& name)
   Looks up the QML module named \a name in the primary tree.
   If a match is found, a pointer to the node is returned.
   Otherwise, a new QML module node named \a name is created
@@ -706,7 +685,15 @@ void QDocDatabase::initializeDB()
   node is returned.
  */
 
-/*! \fn GroupNode* QDocDatabase::addToGroup(const QString& name, Node* node)
+/*! \fn CollectionNode* QDocDatabase::addJsModule(const QString& name)
+  Looks up the JavaScript module named \a name in the primary
+  tree. If a match is found, a pointer to the node is returned.
+  Otherwise, a new JavaScript module node named \a name is
+  created and inserted into the collection, and the pointer to
+  that node is returned.
+ */
+
+/*! \fn CollectionNode* QDocDatabase::addToGroup(const QString& name, Node* node)
   Looks up the group node named \a name in the collection
   of all group nodes. If a match is not found, a new group
   node named \a name is created and inserted into the collection.
@@ -716,7 +703,7 @@ void QDocDatabase::initializeDB()
   the group node.
  */
 
-/*! \fn ModuleNode* QDocDatabase::addToModule(const QString& name, Node* node)
+/*! \fn CollectionNode* QDocDatabase::addToModule(const QString& name, Node* node)
   Looks up the module node named \a name in the collection
   of all module nodes. If a match is not found, a new module
   node named \a name is created and inserted into the collection.
@@ -724,9 +711,15 @@ void QDocDatabase::initializeDB()
   \a node is not changed by this function. Returns the module node.
  */
 
-/*! \fn QmlModuleNode* QDocDatabase::addToQmlModule(const QString& name, Node* node)
+/*! \fn Collection* QDocDatabase::addToQmlModule(const QString& name, Node* node)
   Looks up the QML module named \a name. If it isn't there,
   create it. Then append \a node to the QML module's member
+  list. The parent of \a node is not changed by this function.
+ */
+
+/*! \fn Collection* QDocDatabase::addToJsModule(const QString& name, Node* node)
+  Looks up the JavaScript module named \a name. If it isn't there,
+  create it. Then append \a node to the JavaScript module's member
   list. The parent of \a node is not changed by this function.
  */
 
@@ -761,7 +754,7 @@ QmlTypeNode* QDocDatabase::findQmlType(const QString& qmid, const QString& name)
 
     QStringList path(name);
     Node* n = forest_.findNodeByNameAndType(path, Node::QmlType);
-    if (n && n->isQmlType())
+    if (n && (n->isQmlType() || n->isJsType()))
         return static_cast<QmlTypeNode*>(n);
     return 0;
 }
@@ -1009,7 +1002,8 @@ void QDocDatabase::findAllClasses(InnerNode* node)
                     serviceClasses_.insert(serviceName, *c);
                 }
             }
-            else if (((*c)->isQmlType() || (*c)->isQmlBasicType())&& !(*c)->doc().isEmpty()) {
+            else if (((*c)->isQmlType() || (*c)->isQmlBasicType() ||
+                      (*c)->isJsType() || (*c)->isJsBasicType()) && !(*c)->doc().isEmpty()) {
                 QString qmlTypeName = (*c)->name();
                 if (qmlTypeName.startsWith(QLatin1String("QML:")))
                     qmlTypes_.insert(qmlTypeName.mid(4),*c);
@@ -1017,7 +1011,7 @@ void QDocDatabase::findAllClasses(InnerNode* node)
                     qmlTypes_.insert(qmlTypeName,*c);
 
                 //also add to the QML basic type map
-                if ((*c)->isQmlBasicType())
+                if ((*c)->isQmlBasicType() || (*c)->isJsType())
                     qmlBasicTypes_.insert(qmlTypeName,*c);
             }
             else if ((*c)->isInnerNode()) {
@@ -1121,7 +1115,7 @@ void QDocDatabase::findAllObsoleteThings(InnerNode* node)
                         name = (*c)->parent()->name() + "::" + name;
                     obsoleteClasses_.insert(name, *c);
                 }
-                else if ((*c)->isQmlType()) {
+                else if ((*c)->isQmlType() || (*c)->isJsType()) {
                     if (name.startsWith(QLatin1String("QML:")))
                         name = name.mid(4);
                     name = (*c)->logicalModuleName() + "::" + name;
@@ -1157,7 +1151,7 @@ void QDocDatabase::findAllObsoleteThings(InnerNode* node)
                     ++p;
                 }
             }
-            else if ((*c)->isQmlType()) {
+            else if ((*c)->isQmlType() || (*c)->isJsType()) {
                 InnerNode* n = static_cast<InnerNode*>(*c);
                 bool inserted = false;
                 NodeList::const_iterator p = n->childNodes().constBegin();
@@ -1170,9 +1164,11 @@ void QDocDatabase::findAllObsoleteThings(InnerNode* node)
                         case Node::QmlMethod:
                             if ((*c)->parent()) {
                                 Node* parent = (*c)->parent();
-                                if (parent->type() == Node::QmlPropertyGroup && parent->parent())
+                                if ((parent->isQmlPropertyGroup() ||
+                                     parent->isJsPropertyGroup()) && parent->parent())
                                     parent = parent->parent();
-                                if (parent && parent->isQmlType() && !parent->name().isEmpty())
+                                if (parent && (parent->isQmlType() || parent->isJsType()) &&
+                                    !parent->name().isEmpty())
                                     name = parent->name() + "::" + name;
                             }
                             qmlTypesWithObsoleteMembers_.insert(name,*c);
@@ -1241,7 +1237,7 @@ void QDocDatabase::findAllSince(InnerNode* node)
                     nsmap.value().insert(className,(*child));
                     ncmap.value().insert(className,(*child));
                 }
-                else if ((*child)->isQmlType()) {
+                else if ((*child)->isQmlType() || (*child)->isJsType()) {
                     // Insert QML elements into the since and element maps.
                     QString className = (*child)->name();
                     if ((*child)->parent() && !(*child)->parent()->name().isEmpty()) {
@@ -1250,7 +1246,7 @@ void QDocDatabase::findAllSince(InnerNode* node)
                     nsmap.value().insert(className,(*child));
                     nqcmap.value().insert(className,(*child));
                 }
-                else if ((*child)->type() == Node::QmlProperty) {
+                else if ((*child)->isQmlProperty() || (*child)->isJsProperty()) {
                     // Insert QML properties into the since map.
                     QString propertyName = (*child)->name();
                     nsmap.value().insert(propertyName,(*child));
@@ -1380,7 +1376,7 @@ const Node* QDocDatabase::findNodeForTarget(const QString& target, const Node* r
                 return n;
             relative = 0;
         }
-        node = findDocNodeByTitle(target);
+        node = findDocumentNodeByTitle(target);
     }
     return node;
 }
@@ -1397,7 +1393,7 @@ void QDocDatabase::resolveQmlInheritance(InnerNode* root)
     NodeMap previousSearches;
     // Do we need recursion?
     foreach (Node* child, root->childNodes()) {
-        if (child->isQmlType()) {
+        if (child->isQmlType() || child->isJsType()) {
             QmlTypeNode* qcn = static_cast<QmlTypeNode*>(child);
             if (qcn->qmlBaseNodeNotSet() && !qcn->qmlBaseName().isEmpty()) {
                 QmlTypeNode* bqcn = static_cast<QmlTypeNode*>(previousSearches.value(qcn->qmlBaseName()));
@@ -1536,18 +1532,28 @@ Node* QDocDatabase::findNodeInOpenNamespace(QStringList& path, Node::Type type)
 }
 
 /*!
-  Finds all the collection nodes of type \a nt into the
-  collection node map \a cnn. Nodes that match \a relative
-  are not included.
+  Finds all the collection nodes of the specified \a genus
+  into the collection node map \a cnm. Nodes that match the
+  \a relative node are not included.
  */
-void QDocDatabase::mergeCollections(Node::Type nt, CNMap& cnm, const Node* relative)
+void QDocDatabase::mergeCollections(Node::Genus genus, CNMap& cnm, const Node* relative)
 {
-    QRegExp singleDigit("\\b([0-9])\\b");
-    CNMultiMap cnmm;
-    forest_.mergeCollectionMaps(nt, cnmm);
     cnm.clear();
+    CNMultiMap cnmm;
+    foreach (Tree* t, searchOrder()) {
+        CNMap* m = t->getCollectionMap(genus);
+        if (m && !m->isEmpty()) {
+            CNMap::const_iterator i = m->begin();
+            while (i != m->end()) {
+                if (!i.value()->isInternal())
+                    cnmm.insert(i.key(), i.value());
+                ++i;
+            }
+        }
+    }
     if (cnmm.isEmpty())
         return;
+    QRegExp singleDigit("\\b([0-9])\\b");
     QStringList keys = cnmm.uniqueKeys();
     foreach (const QString &key, keys) {
         QList<CollectionNode*> values = cnmm.values(key);
@@ -1580,19 +1586,16 @@ void QDocDatabase::mergeCollections(Node::Type nt, CNMap& cnm, const Node* relat
 
 /*!
   Finds all the collection nodes with the same name
-  and type as \a cn and merges their members into the
-  members list of \a cn.
+  and genus as \a c and merges their members into the
+  members list of \a c.
  */
-void QDocDatabase::mergeCollections(CollectionNode* cn)
+void QDocDatabase::mergeCollections(CollectionNode* c)
 {
-    CollectionList cl;
-    forest_.getCorrespondingCollections(cn, cl);
-    if (!cl.empty()) {
-        foreach (CollectionNode* v, cl) {
-            if (v != cn) {
-                foreach (Node* t, v->members())
-                    cn->addMember(t);
-            }
+    foreach (Tree* t, searchOrder()) {
+        CollectionNode* cn = t->getCollection(c->name(), c->genus());
+        if (cn && cn != c) {
+            foreach (Node* n, cn->members())
+                c->addMember(n);
         }
     }
 }

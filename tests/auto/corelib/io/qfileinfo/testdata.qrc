@@ -1,5 +1,5 @@
 <RCC>
-    <qresource prefix="/android_testdata">
+    <qresource prefix="/testdata">
         <file>resources/file1</file>
         <file>resources/file1.ext1</file>
         <file>resources/file1.ext1.ext2</file>

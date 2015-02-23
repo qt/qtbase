@@ -98,7 +98,7 @@ static bool isDBusTrayAvailable() {
     static bool dbusTrayAvailableKnown = false;
     if (!dbusTrayAvailableKnown) {
         QDBusMenuConnection conn;
-        if (conn.isWatcherRegistered())
+        if (conn.isStatusNotifierHostRegistered())
             dbusTrayAvailable = true;
         dbusTrayAvailableKnown = true;
         qCDebug(qLcTray) << "D-Bus tray available:" << dbusTrayAvailable;

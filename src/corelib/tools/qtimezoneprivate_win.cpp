@@ -38,6 +38,8 @@
 
 #include "qdebug.h"
 
+#include <algorithm>
+
 QT_BEGIN_NAMESPACE
 
 /*
@@ -632,14 +634,16 @@ QByteArray QWinTimeZonePrivate::systemTimeZoneId() const
     return ianaId;
 }
 
-QSet<QByteArray> QWinTimeZonePrivate::availableTimeZoneIds() const
+QList<QByteArray> QWinTimeZonePrivate::availableTimeZoneIds() const
 {
-    QSet<QByteArray> set;
+    QList<QByteArray> result;
     foreach (const QByteArray &winId, availableWindowsIds()) {
         foreach (const QByteArray &ianaId, windowsIdToIanaIds(winId))
-            set << ianaId;
+            result << ianaId;
     }
-    return set;
+    std::sort(result.begin(), result.end());
+    result.erase(std::unique(result.begin(), result.end()), result.end());
+    return result;
 }
 
 QWinTimeZonePrivate::QWinTransitionRule QWinTimeZonePrivate::ruleForYear(int year) const

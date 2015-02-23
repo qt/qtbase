@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2015 The Qt Company Ltd and/or its subsidiary(-ies).
+** Copyright (C) 2015 The Qt Company Ltd.
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -161,6 +161,10 @@ void QCoreTextFontEngine::init()
 {
     Q_ASSERT(ctfont != NULL);
     Q_ASSERT(cgFont != NULL);
+
+    face_id.index = 0;
+    QCFString name = CTFontCopyName(ctfont, kCTFontUniqueNameKey);
+    face_id.filename = QCFString::toQString(name).toUtf8();
 
     QCFString family = CTFontCopyFamilyName(ctfont);
     fontDef.family = family;
@@ -696,13 +700,7 @@ void QCoreTextFontEngine::recalcAdvances(QGlyphLayout *glyphs, QFontEngine::Shap
 
 QFontEngine::FaceId QCoreTextFontEngine::faceId() const
 {
-    FaceId result;
-    result.index = 0;
-
-    QCFString name = CTFontCopyName(ctfont, kCTFontUniqueNameKey);
-    result.filename = QCFString::toQString(name).toUtf8();
-
-    return result;
+    return face_id;
 }
 
 bool QCoreTextFontEngine::canRender(const QChar *string, int len) const

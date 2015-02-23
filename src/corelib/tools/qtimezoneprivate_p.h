@@ -126,9 +126,9 @@ public:
 
     virtual QByteArray systemTimeZoneId() const;
 
-    virtual QSet<QByteArray> availableTimeZoneIds() const;
-    virtual QSet<QByteArray> availableTimeZoneIds(QLocale::Country country) const;
-    virtual QSet<QByteArray> availableTimeZoneIds(int utcOffset) const;
+    virtual QList<QByteArray> availableTimeZoneIds() const;
+    virtual QList<QByteArray> availableTimeZoneIds(QLocale::Country country) const;
+    virtual QList<QByteArray> availableTimeZoneIds(int utcOffset) const;
 
     virtual void serialize(QDataStream &ds) const;
 
@@ -199,9 +199,9 @@ public:
 
     QByteArray systemTimeZoneId() const Q_DECL_OVERRIDE;
 
-    QSet<QByteArray> availableTimeZoneIds() const Q_DECL_OVERRIDE;
-    QSet<QByteArray> availableTimeZoneIds(QLocale::Country country) const Q_DECL_OVERRIDE;
-    QSet<QByteArray> availableTimeZoneIds(int utcOffset) const Q_DECL_OVERRIDE;
+    QList<QByteArray> availableTimeZoneIds() const Q_DECL_OVERRIDE;
+    QList<QByteArray> availableTimeZoneIds(QLocale::Country country) const Q_DECL_OVERRIDE;
+    QList<QByteArray> availableTimeZoneIds(int utcOffset) const Q_DECL_OVERRIDE;
 
     void serialize(QDataStream &ds) const Q_DECL_OVERRIDE;
 
@@ -250,9 +250,9 @@ public:
 
     QByteArray systemTimeZoneId() const Q_DECL_OVERRIDE;
 
-    QSet<QByteArray> availableTimeZoneIds() const Q_DECL_OVERRIDE;
-    QSet<QByteArray> availableTimeZoneIds(QLocale::Country country) const Q_DECL_OVERRIDE;
-    QSet<QByteArray> availableTimeZoneIds(int offsetFromUtc) const Q_DECL_OVERRIDE;
+    QList<QByteArray> availableTimeZoneIds() const Q_DECL_OVERRIDE;
+    QList<QByteArray> availableTimeZoneIds(QLocale::Country country) const Q_DECL_OVERRIDE;
+    QList<QByteArray> availableTimeZoneIds(int offsetFromUtc) const Q_DECL_OVERRIDE;
 
 private:
     void init(const QByteArray &ianaId);
@@ -318,8 +318,8 @@ public:
 
     QByteArray systemTimeZoneId() const Q_DECL_OVERRIDE;
 
-    QSet<QByteArray> availableTimeZoneIds() const Q_DECL_OVERRIDE;
-    QSet<QByteArray> availableTimeZoneIds(QLocale::Country country) const Q_DECL_OVERRIDE;
+    QList<QByteArray> availableTimeZoneIds() const Q_DECL_OVERRIDE;
+    QList<QByteArray> availableTimeZoneIds(QLocale::Country country) const Q_DECL_OVERRIDE;
 
 private:
     void init(const QByteArray &ianaId);
@@ -369,7 +369,7 @@ public:
 
     QByteArray systemTimeZoneId() const Q_DECL_OVERRIDE;
 
-    QSet<QByteArray> availableTimeZoneIds() const Q_DECL_OVERRIDE;
+    QList<QByteArray> availableTimeZoneIds() const Q_DECL_OVERRIDE;
 
 private:
     void init(const QByteArray &zoneId);
@@ -420,7 +420,7 @@ public:
 
     QByteArray systemTimeZoneId() const Q_DECL_OVERRIDE;
 
-    QSet<QByteArray> availableTimeZoneIds() const Q_DECL_OVERRIDE;
+    QList<QByteArray> availableTimeZoneIds() const Q_DECL_OVERRIDE;
 
 private:
     void init(const QByteArray &ianaId);
@@ -470,7 +470,7 @@ public:
 
     QByteArray systemTimeZoneId() const Q_DECL_OVERRIDE;
 
-    QSet<QByteArray> availableTimeZoneIds() const Q_DECL_OVERRIDE;
+    QList<QByteArray> availableTimeZoneIds() const Q_DECL_OVERRIDE;
 
 private:
     void init(const QByteArray &zoneId);

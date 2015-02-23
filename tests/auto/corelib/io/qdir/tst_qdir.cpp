@@ -2176,7 +2176,11 @@ void tst_QDir::cdNonreadable()
 
 void tst_QDir::cdBelowRoot()
 {
-#if defined (Q_OS_UNIX)
+#if defined (Q_OS_ANDROID)
+#define ROOT QString("/")
+#define DIR QString("/system")
+#define CD_INTO "system"
+#elif defined (Q_OS_UNIX)
 #define ROOT QString("/")
 #define DIR QString("/tmp")
 #define CD_INTO "tmp"

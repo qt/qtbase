@@ -81,7 +81,7 @@ protected:
     virtual Node* processTopicCommand(const Doc& doc,
                                       const QString& command,
                                       const ArgLocPair& arg);
-    void processQmlProperties(const Doc& doc, NodeList& nodes, DocList& docs);
+    void processQmlProperties(const Doc& doc, NodeList& nodes, DocList& docs, bool jsProps);
     bool splitQmlPropertyGroupArg(const QString& arg,
                                   QString& module,
                                   QString& element,
@@ -148,7 +148,7 @@ protected:
     void instantiateIteratorMacro(const QString &container,
                                   const QString &includeFile,
                                   const QString &macroDef);
-    void createExampleFileNodes(DocNode *dn);
+    void createExampleFileNodes(DocumentNode *dn);
 
  protected:
     QMap<QString, Node::Type> nodeTypeMap;
@@ -203,7 +203,6 @@ protected:
 #define COMMAND_TYPEDEF                 Doc::alias("typedef")
 #define COMMAND_VARIABLE                Doc::alias("variable")
 #define COMMAND_QMLABSTRACT             Doc::alias("qmlabstract")
-#define COMMAND_QMLCLASS                Doc::alias("qmlclass")
 #define COMMAND_QMLTYPE                 Doc::alias("qmltype")
 #define COMMAND_QMLPROPERTY             Doc::alias("qmlproperty")
 #define COMMAND_QMLPROPERTYGROUP        Doc::alias("qmlpropertygroup")
@@ -234,11 +233,17 @@ protected:
 #define COMMAND_LICENSEDESCRIPTION      Doc::alias("licensedescription")
 #define COMMAND_RELEASEDATE             Doc::alias("releasedate")
 #define COMMAND_QTVARIABLE              Doc::alias("qtvariable")
-#define COMMAND_JSTYPE                  Doc::alias("jstype")
-#define COMMAND_JSPROPERTY              Doc::alias("jsproperty")
-#define COMMAND_JSMETHOD                Doc::alias("jsmethod")
-#define COMMAND_JSSIGNAL                Doc::alias("jssignal")
-#define COMMAND_JSMODULE                Doc::alias("jsmodule")
+// Some of these are not used currenmtly, but they are included now for completeness.
+#define COMMAND_JSTYPE                 Doc::alias("jstype")
+#define COMMAND_JSPROPERTY             Doc::alias("jsproperty")
+#define COMMAND_JSPROPERTYGROUP        Doc::alias("jspropertygroup")
+#define COMMAND_JSATTACHEDPROPERTY     Doc::alias("jsattachedproperty")
+#define COMMAND_JSSIGNAL               Doc::alias("jssignal")
+#define COMMAND_JSATTACHEDSIGNAL       Doc::alias("jsattachedsignal")
+#define COMMAND_JSMETHOD               Doc::alias("jsmethod")
+#define COMMAND_JSATTACHEDMETHOD       Doc::alias("jsattachedmethod")
+#define COMMAND_JSBASICTYPE            Doc::alias("jsbasictype")
+#define COMMAND_JSMODULE               Doc::alias("jsmodule")
 
 QT_END_NAMESPACE
 

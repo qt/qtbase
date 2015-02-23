@@ -262,9 +262,9 @@ QByteArray QAndroidTimeZonePrivate::systemTimeZoneId() const
     return systemTZid;
 }
 
-QSet<QByteArray> QAndroidTimeZonePrivate::availableTimeZoneIds() const
+QList<QByteArray> QAndroidTimeZonePrivate::availableTimeZoneIds() const
 {
-    QSet<QByteArray> availableTimeZoneIdList;
+    QList<QByteArray> availableTimeZoneIdList;
     QJNIObjectPrivate androidAvailableIdList = QJNIObjectPrivate::callStaticObjectMethod("java.util.TimeZone", "getAvailableIDs", "()[Ljava/lang/String;");
 
     QJNIEnvironmentPrivate jniEnv;
@@ -277,7 +277,7 @@ QSet<QByteArray> QAndroidTimeZonePrivate::availableTimeZoneIds() const
     for (int i=0; i<androidTZcount; i++ ) {
         androidTZobject = jniEnv->GetObjectArrayElement( static_cast<jobjectArray>( androidAvailableIdList.object() ), i );
         androidTZ = androidTZobject;
-        availableTimeZoneIdList.insert( androidTZ.toString().toUtf8() );
+        availableTimeZoneIdList.append( androidTZ.toString().toUtf8() );
         jniEnv->DeleteLocalRef(androidTZobject);
     }
 

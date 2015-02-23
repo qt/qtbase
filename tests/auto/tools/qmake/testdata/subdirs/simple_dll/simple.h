@@ -35,8 +35,13 @@
 
 #include <qstring.h>
 
-//class SIMPLEDLL_EXPORT Simple
-class Simple
+#ifdef SIMPLEDLL_MAKEDLL
+# define SIMPLEDLL_EXPORT Q_DECL_EXPORT
+#else
+# define SIMPLEDLL_EXPORT Q_DECL_IMPORT
+#endif
+
+class SIMPLEDLL_EXPORT Simple
 {
 public:
     Simple();

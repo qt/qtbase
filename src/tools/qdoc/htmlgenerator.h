@@ -98,7 +98,7 @@ protected:
     virtual void generateClassLikeNode(InnerNode* inner, CodeMarker* marker) Q_DECL_OVERRIDE;
     virtual void generateQmlTypePage(QmlTypeNode* qcn, CodeMarker* marker) Q_DECL_OVERRIDE;
     virtual void generateQmlBasicTypePage(QmlBasicTypeNode* qbtn, CodeMarker* marker) Q_DECL_OVERRIDE;
-    virtual void generateDocNode(DocNode* dn, CodeMarker* marker) Q_DECL_OVERRIDE;
+    virtual void generateDocumentNode(DocumentNode* dn, CodeMarker* marker) Q_DECL_OVERRIDE;
     virtual void generateCollectionNode(CollectionNode* cn, CodeMarker* marker) Q_DECL_OVERRIDE;
     virtual QString fileExtension() const Q_DECL_OVERRIDE;
     virtual QString refForNode(const Node *node);

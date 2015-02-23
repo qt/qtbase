@@ -1,6 +1,6 @@
-/****************************************************************************
+/***************************************************************************
 **
-** Copyright (C) 2015 The Qt Company Ltd.
+** Copyright (C) 2015 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Tobias Koenig <tobias.koenig@kdab.com>
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -31,32 +31,43 @@
 **
 ****************************************************************************/
 
-#include <qpa/qplatforminputcontextplugin_p.h>
+#include "qhaikubuffer.h"
 
-#include <QtCore/QStringList>
-
-#include "qcomposeplatforminputcontext.h"
+#include <Bitmap.h>
+#include <Rect.h>
 
 QT_BEGIN_NAMESPACE
 
-class QComposePlatformInputContextPlugin : public QPlatformInputContextPlugin
+QHaikuBuffer::QHaikuBuffer()
+    : m_buffer(Q_NULLPTR)
 {
-    Q_OBJECT
-    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QPlatformInputContextFactoryInterface" FILE "compose.json")
+}
 
-public:
-    QComposeInputContext *create(const QString &, const QStringList &) Q_DECL_OVERRIDE;
-};
-
-QComposeInputContext *QComposePlatformInputContextPlugin::create(const QString &system, const QStringList &paramList)
+QHaikuBuffer::QHaikuBuffer(BBitmap *buffer)
+    : m_buffer(buffer)
 {
-    Q_UNUSED(paramList);
+    // wrap buffer in an image
+    m_image = QImage(static_cast<uchar*>(m_buffer->Bits()), m_buffer->Bounds().right, m_buffer->Bounds().bottom, m_buffer->BytesPerRow(), QImage::Format_RGB32);
+}
 
-    if (system.compare(system, QLatin1String("compose"), Qt::CaseInsensitive) == 0)
-        return new QComposeInputContext;
-    return 0;
+BBitmap* QHaikuBuffer::nativeBuffer() const
+{
+    return m_buffer;
+}
+
+const QImage *QHaikuBuffer::image() const
+{
+    return (m_buffer != Q_NULLPTR) ? &m_image : Q_NULLPTR;
+}
+
+QImage *QHaikuBuffer::image()
+{
+    return (m_buffer != Q_NULLPTR) ? &m_image : Q_NULLPTR;
+}
+
+QRect QHaikuBuffer::rect() const
+{
+    return m_image.rect();
 }
 
 QT_END_NAMESPACE
-
-#include "main.moc"

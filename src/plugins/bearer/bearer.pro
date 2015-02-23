@@ -1,6 +1,6 @@
 TEMPLATE = subdirs
 
-linux*:qtHaveModule(dbus) {
+!android:linux*:qtHaveModule(dbus) {
     SUBDIRS += generic
     SUBDIRS += connman networkmanager
 }

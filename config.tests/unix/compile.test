@@ -33,18 +33,18 @@ while [ "$#" -gt 0 ]; do
         shift
         ;;
     -F*|-m*|-x*)
-        LFLAGS="$LFLAGS $PARAM"
-        CXXFLAGS="$CXXFLAGS $PARAM"
+        LFLAGS="$LFLAGS \"$PARAM\""
+        CXXFLAGS="$CXXFLAGS \"$PARAM\""
         ;;
     -L*|-l*|-pthread)
-	LFLAGS="$LFLAGS $PARAM"
+        LFLAGS="$LFLAGS \"$PARAM\""
 	;;
     -I*)
         INC=`echo $PARAM | sed -e 's/^-I//'`
-        INCLUDEPATH="$INCLUDEPATH $INC"
+        INCLUDEPATH="$INCLUDEPATH \"$INC\""
         ;;
     -f*|-D*)
-        CXXFLAGS="$CXXFLAGS $PARAM"
+        CXXFLAGS="$CXXFLAGS \"$PARAM\""
         ;;
     -Qoption)
 	# Two-argument form for the Sun Compiler

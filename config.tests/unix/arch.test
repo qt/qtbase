@@ -23,14 +23,14 @@ while [ "$#" -gt 0 ]; do
     PARAM=$1
     case $PARAM in
     -L*|-l*)
-        LFLAGS="$LFLAGS $PARAM"
+        LFLAGS="$LFLAGS \"$PARAM\""
         ;;
     -I*)
         INC=`echo $PARAM | sed -e 's/^-I//'`
-        INCLUDEPATH="$INCLUDEPATH $INC"
+        INCLUDEPATH="$INCLUDEPATH \"$INC\""
         ;;
     -D*)
-        CXXFLAGS="$CXXFLAGS $PARAM"
+        CXXFLAGS="$CXXFLAGS \"$PARAM\""
         ;;
     *)  ;;
     esac

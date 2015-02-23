@@ -77,6 +77,7 @@ QDBusTrayIcon::QDBusTrayIcon()
     , m_status(m_defaultStatus)
     , m_tempIcon(Q_NULLPTR)
     , m_tempAttentionIcon(Q_NULLPTR)
+    , m_registered(false)
 {
     qCDebug(qLcTray);
     if (instanceCount == 1) {
@@ -101,15 +102,17 @@ QDBusTrayIcon::~QDBusTrayIcon()
 void QDBusTrayIcon::init()
 {
     qCDebug(qLcTray) << "registering" << m_instanceId;
-    dBusConnection()->registerTrayIcon(this);
+    m_registered = dBusConnection()->registerTrayIcon(this);
 }
 
 void QDBusTrayIcon::cleanup()
 {
     qCDebug(qLcTray) << "unregistering" << m_instanceId;
-    dBusConnection()->unregisterTrayIcon(this);
+    if (m_registered)
+        dBusConnection()->unregisterTrayIcon(this);
     delete m_dbusConnection;
     m_dbusConnection = Q_NULLPTR;
+    m_registered = false;
 }
 
 void QDBusTrayIcon::activate(int x, int y)
@@ -281,11 +284,8 @@ void QDBusTrayIcon::notificationClosed(uint id, uint reason)
 bool QDBusTrayIcon::isSystemTrayAvailable() const
 {
     QDBusMenuConnection * conn = const_cast<QDBusTrayIcon *>(this)->dBusConnection();
-
-    // If the KDE watcher service is registered, we must be on a desktop
-    // where a StatusNotifier-conforming system tray exists.
-    qCDebug(qLcTray) << conn->isWatcherRegistered();
-    return conn->isWatcherRegistered();
+    qCDebug(qLcTray) << conn->isStatusNotifierHostRegistered();
+    return conn->isStatusNotifierHostRegistered();
 }
 
 QT_END_NAMESPACE

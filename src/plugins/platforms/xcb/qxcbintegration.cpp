@@ -170,7 +170,7 @@ QXcbIntegration::QXcbIntegration(const QStringList &parameters, int &argc, char 
         qDebug() << "QXcbIntegration: Connecting to additional display: " << parameters.at(i) << parameters.at(i+1);
 #endif
         QString display = parameters.at(i) + QLatin1Char(':') + parameters.at(i+1);
-        m_connections << new QXcbConnection(m_nativeInterface.data(), display.toLatin1().constData());
+        m_connections << new QXcbConnection(m_nativeInterface.data(), m_canGrab, display.toLatin1().constData());
     }
 
     m_fontDatabase.reset(new QGenericUnixFontDatabase());

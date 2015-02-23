@@ -41,6 +41,7 @@
 
 #include <qdebug.h>
 
+#include <algorithm>
 
 QT_BEGIN_NAMESPACE
 
@@ -956,20 +957,23 @@ QByteArray QTzTimeZonePrivate::systemTimeZoneId() const
     return ianaId;
 }
 
-QSet<QByteArray> QTzTimeZonePrivate::availableTimeZoneIds() const
+QList<QByteArray> QTzTimeZonePrivate::availableTimeZoneIds() const
 {
-    return tzZones->keys().toSet();
+    QList<QByteArray> result = tzZones->keys();
+    std::sort(result.begin(), result.end());
+    return result;
 }
 
-QSet<QByteArray> QTzTimeZonePrivate::availableTimeZoneIds(QLocale::Country country) const
+QList<QByteArray> QTzTimeZonePrivate::availableTimeZoneIds(QLocale::Country country) const
 {
     // TODO AnyCountry
-    QSet<QByteArray> set;
+    QList<QByteArray> result;
     foreach (const QByteArray &key, tzZones->keys()) {
         if (tzZones->value(key).country == country)
-            set << key;
+            result << key;
     }
-    return set;
+    std::sort(result.begin(), result.end());
+    return result;
 }
 
 QT_END_NAMESPACE

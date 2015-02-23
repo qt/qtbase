@@ -77,7 +77,7 @@ const QString
 &QMakeLocalFileName::local() const
 {
     if(!is_null && local_name.isNull())
-        local_name = Option::fixPathToLocalOS(real_name, true);
+        local_name = Option::normalizePath(real_name);
     return local_name;
 }
 

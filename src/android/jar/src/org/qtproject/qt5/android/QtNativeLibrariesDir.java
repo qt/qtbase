@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2015 The Qt Company Ltd and/or its subsidiary(-ies).
+** Copyright (C) 2015 The Qt Company Ltd.
 ** Copyright (C) 2012 BogDan Vatra <bogdan@kde.org>
 ** Contact: http://www.qt.io/licensing/
 **

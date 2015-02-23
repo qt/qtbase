@@ -205,13 +205,6 @@ QT_BEGIN_NAMESPACE
 #ifdef Q_OS_BLACKBERRY
 static const char cellularStatusFile[] = "/pps/services/radioctrl/modem0/status_public";
 
-#ifdef Q_OS_BLACKBERRY_TABLET
-static bool pps_decoder_is_integer(pps_decoder_t *decoder, const char *name)
-{
-    return (pps_decoder_type(decoder, name) == PPS_TYPE_NUMBER);
-}
-#endif // Q_OS_BLACKBERRY_TABLET
-
 static QNetworkConfiguration::BearerType cellularStatus()
 {
     QNetworkConfiguration::BearerType ret = QNetworkConfiguration::BearerUnknown;

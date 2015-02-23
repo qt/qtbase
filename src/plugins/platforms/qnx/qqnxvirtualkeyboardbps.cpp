@@ -38,7 +38,7 @@
 #include <bps/event.h>
 #include <bps/locale.h>
 #include <bps/virtualkeyboard.h>
-#if defined(Q_OS_BLACKBERRY) && !defined(Q_OS_BLACKBERRY_TABLET)
+#if defined(Q_OS_BLACKBERRY)
 #include <bbndk.h>
 #endif
 
@@ -118,21 +118,17 @@ virtualkeyboard_layout_t QQnxVirtualKeyboardBps::keyboardLayout() const
         return VIRTUALKEYBOARD_LAYOUT_WEB;
     case NumPunc:
         return VIRTUALKEYBOARD_LAYOUT_NUM_PUNC;
-#ifndef Q_OS_BLACKBERRY_TABLET
     case Number:
         return VIRTUALKEYBOARD_LAYOUT_NUMBER;
-#endif
     case Symbol:
         return VIRTUALKEYBOARD_LAYOUT_SYMBOL;
     case Phone:
         return VIRTUALKEYBOARD_LAYOUT_PHONE;
     case Pin:
         return VIRTUALKEYBOARD_LAYOUT_PIN;
-#ifndef Q_OS_BLACKBERRY_TABLET
     case Password:
         return VIRTUALKEYBOARD_LAYOUT_PASSWORD;
-#endif
-#if defined(Q_OS_BLACKBERRY) && !defined(Q_OS_BLACKBERRY_TABLET)
+#if defined(Q_OS_BLACKBERRY)
 #if BBNDK_VERSION_AT_LEAST(10, 2, 1)
     case Alphanumeric:
         return VIRTUALKEYBOARD_LAYOUT_ALPHANUMERIC;

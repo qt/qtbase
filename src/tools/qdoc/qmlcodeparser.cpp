@@ -76,6 +76,19 @@ QT_BEGIN_NAMESPACE
 #define COMMAND_QMLBASICTYPE            Doc::alias("qmlbasictype")
 #define COMMAND_QMLMODULE               Doc::alias("qmlmodule")
 
+#define COMMAND_JSTYPE                 Doc::alias("jstype")
+#define COMMAND_JSMODULE               Doc::alias("jsmodule")
+#define COMMAND_JSPROPERTY             Doc::alias("jsproperty")
+#define COMMAND_JSPROPERTYGROUP        Doc::alias("jspropertygroup")
+#define COMMAND_JSATTACHEDPROPERTY     Doc::alias("jsattachedproperty")
+#define COMMAND_INJSMODULE             Doc::alias("injsmodule")
+#define COMMAND_JSSIGNAL               Doc::alias("jssignal")
+#define COMMAND_JSATTACHEDSIGNAL       Doc::alias("jsattachedsignal")
+#define COMMAND_JSMETHOD               Doc::alias("jsmethod")
+#define COMMAND_JSATTACHEDMETHOD       Doc::alias("jsattachedmethod")
+#define COMMAND_JSBASICTYPE            Doc::alias("jsbasictype")
+#define COMMAND_JSMODULE               Doc::alias("jsmodule")
+
 /*!
   Constructs the QML code parser.
  */
@@ -205,7 +218,16 @@ const QSet<QString>& QmlCodeParser::topicCommands()
                        << COMMAND_QMLATTACHEDSIGNAL
                        << COMMAND_QMLMETHOD
                        << COMMAND_QMLATTACHEDMETHOD
-                       << COMMAND_QMLBASICTYPE;
+                       << COMMAND_QMLBASICTYPE
+                       << COMMAND_JSTYPE
+                       << COMMAND_JSPROPERTY
+                       << COMMAND_JSPROPERTYGROUP
+                       << COMMAND_JSATTACHEDPROPERTY
+                       << COMMAND_JSSIGNAL
+                       << COMMAND_JSATTACHEDSIGNAL
+                       << COMMAND_JSMETHOD
+                       << COMMAND_JSATTACHEDMETHOD
+                       << COMMAND_JSBASICTYPE;
     }
     return topicCommands_;
 }
@@ -231,6 +253,7 @@ const QSet<QString>& QmlCodeParser::otherMetaCommands()
                            << COMMAND_SINCE
                            << COMMAND_QMLABSTRACT
                            << COMMAND_INQMLMODULE
+                           << COMMAND_INJSMODULE
                            << COMMAND_WRAPPER;
     }
     return otherMetaCommands_;

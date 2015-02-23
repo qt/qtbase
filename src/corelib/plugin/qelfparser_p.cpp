@@ -94,7 +94,7 @@ int QElfParser::parse(const char *dataStart, ulong fdlen, const QString &library
     // endian
     if (data[5] == 0) {
         if (lib)
-            lib->errorString = QLibrary::tr("'%1' is an invalid ELF object (%2)").arg(library).arg(QLatin1String("odd endianess"));
+            lib->errorString = QLibrary::tr("'%1' is an invalid ELF object (%2)").arg(library).arg(QLatin1String("odd endianness"));
         return Corrupt;
     }
     m_endian = (data[5] == 1 ? ElfLittleEndian : ElfBigEndian);
