@@ -34,7 +34,6 @@ Q_LOGGING_CATEGORY(QT_PLATFORM_PEPPER_WINDOW, "qt.platform.pepper.window")
 
 QPepperWindow::QPepperWindow(QWindow *window)
     : QPlatformWindow(window)
-    , m_isVisible(false)
 {
     qCDebug(QT_PLATFORM_PEPPER_WINDOW) << "Create QPepperWindow for" << window;
 
@@ -53,7 +52,14 @@ QPepperWindow::~QPepperWindow()
         m_compositor->removeWindow(this->window());
 }
 
-WId QPepperWindow::winId() const { return WId(this); }
+void QPepperWindow::setGeometry(const QRect &rect)
+{
+    qCDebug(QT_PLATFORM_PEPPER_WINDOW) << "setGeometry" << rect;
+
+    QPlatformWindow::setGeometry(rect);
+    QWindowSystemInterface::handleGeometryChange(window(), rect);
+    QPepperInstancePrivate::get()->scheduleWindowSystemEventsFlush();
+}
 
 void QPepperWindow::setVisible(bool visible)
 {
@@ -87,6 +93,16 @@ void QPepperWindow::setWindowState(Qt::WindowState state)
     }
 }
 
+WId QPepperWindow::winId() const { return WId(this); }
+
+void QPepperWindow::setParent(const QPlatformWindow *parent)
+{
+    qCDebug(QT_PLATFORM_PEPPER_WINDOW) << "QPepperWindow::setParent" << parent;
+
+    if (m_compositor)
+        m_compositor->setParent(this->window(), parent->window());
+}
+
 void QPepperWindow::raise()
 {
     qCDebug(QT_PLATFORM_PEPPER_WINDOW) << "raise";
@@ -103,21 +119,9 @@ void QPepperWindow::lower()
         m_compositor->lower(this->window());
 }
 
-void QPepperWindow::setGeometry(const QRect &rect)
+qreal QPepperWindow::devicePixelRatio() const
 {
-    qCDebug(QT_PLATFORM_PEPPER_WINDOW) << "setGeometry" << rect;
-
-    QPlatformWindow::setGeometry(rect);
-    QWindowSystemInterface::handleGeometryChange(window(), rect);
-    QPepperInstancePrivate::get()->scheduleWindowSystemEventsFlush();
-}
-
-void QPepperWindow::setParent(const QPlatformWindow *parent)
-{
-    qCDebug(QT_PLATFORM_PEPPER_WINDOW) << "QPepperWindow::setParent" << parent;
-
-    if (m_compositor)
-        m_compositor->setParent(this->window(), parent->window());
+    return QPepperInstancePrivate::get()->devicePixelRatio();
 }
 
 bool QPepperWindow::setKeyboardGrabEnabled(bool grab)
@@ -134,11 +138,6 @@ bool QPepperWindow::setMouseGrabEnabled(bool grab)
 
     Q_UNUSED(grab);
     return false;
-}
-
-qreal QPepperWindow::devicePixelRatio() const
-{
-    return QPepperInstancePrivate::get()->devicePixelRatio();
 }
 
 QT_END_NAMESPACE

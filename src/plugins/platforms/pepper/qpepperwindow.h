@@ -36,21 +36,17 @@ public:
     QPepperWindow(QWindow *window);
     ~QPepperWindow();
 
-    WId winId() const;
-    void setVisible(bool visible);
-    void setWindowState(Qt::WindowState state);
-    void raise();
-    void lower();
-    void setGeometry(const QRect &rect);
-    void setParent(const QPlatformWindow *window);
+    void setGeometry(const QRect &rect) Q_DECL_OVERRIDE;
+    void setVisible(bool visible) Q_DECL_OVERRIDE;
+    void setWindowState(Qt::WindowState state) Q_DECL_OVERRIDE;
+    WId winId() const Q_DECL_OVERRIDE;
+    void setParent(const QPlatformWindow *window) Q_DECL_OVERRIDE;
+    void raise() Q_DECL_OVERRIDE;
+    void lower() Q_DECL_OVERRIDE;
 
-    bool setKeyboardGrabEnabled(bool grab);
-    bool setMouseGrabEnabled(bool grab);
-
-    qreal devicePixelRatio() const;
-
-    bool m_isVisible;
-    bool m_trackInstanceSize;
+    qreal devicePixelRatio() const Q_DECL_OVERRIDE;
+    bool setKeyboardGrabEnabled(bool grab) Q_DECL_OVERRIDE;
+    bool setMouseGrabEnabled(bool grab) Q_DECL_OVERRIDE;
 
 private:
     QPepperCompositor *m_compositor;
