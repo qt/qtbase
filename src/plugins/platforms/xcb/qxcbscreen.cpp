@@ -48,10 +48,15 @@
 QT_BEGIN_NAMESPACE
 
 QXcbScreen::QXcbScreen(QXcbConnection *connection, xcb_screen_t *scr,
-                       xcb_randr_get_output_info_reply_t *output, const QString &outputName, int number)
+                       xcb_randr_output_t outputId, xcb_randr_get_output_info_reply_t *output,
+                       QString outputName, int number)
     : QXcbObject(connection)
     , m_screen(scr)
+    , m_output(outputId)
     , m_crtc(output ? output->crtc : 0)
+    , m_mode(XCB_NONE)
+    , m_primary(false)
+    , m_rotation(XCB_RANDR_ROTATION_ROTATE_0)
     , m_outputName(outputName)
     , m_outputSizeMillimeters(output ? QSize(output->mm_width, output->mm_height) : QSize())
     , m_virtualSize(scr->width_in_pixels, scr->height_in_pixels)
@@ -67,11 +72,20 @@ QXcbScreen::QXcbScreen(QXcbConnection *connection, xcb_screen_t *scr,
     , m_antialiasingEnabled(-1)
     , m_xSettings(0)
 {
-    if (connection->hasXRandr())
+    if (connection->hasXRandr()) {
         xcb_randr_select_input(xcb_connection(), screen()->root, true);
-
-    updateGeometry(output ? output->timestamp : 0);
-    updateRefreshRate();
+        xcb_randr_get_crtc_info_cookie_t crtcCookie =
+            xcb_randr_get_crtc_info_unchecked(xcb_connection(), m_crtc, output ? output->timestamp : 0);
+        xcb_randr_get_crtc_info_reply_t *crtc =
+            xcb_randr_get_crtc_info_reply(xcb_connection(), crtcCookie, NULL);
+        if (crtc) {
+            updateGeometry(QRect(crtc->x, crtc->y, crtc->width, crtc->height), crtc->rotation);
+            updateRefreshRate(crtc->mode);
+            free(crtc);
+        }
+    } else {
+        updateGeometry(output ? output->timestamp : 0);
+    }
 
     const int dpr = int(devicePixelRatio());
     // On VNC, it can be that physical size is unknown while
@@ -352,9 +366,15 @@ QPlatformCursor *QXcbScreen::cursor() const
 */
 void QXcbScreen::handleScreenChange(xcb_randr_screen_change_notify_event_t *change_event)
 {
-    updateGeometry(change_event->config_timestamp);
+    // No need to do anything when screen rotation did not change - if any
+    // xcb output geometry has changed, we will get RRCrtcChangeNotify and
+    // RROutputChangeNotify events next
+    if (change_event->rotation == m_rotation)
+        return;
 
-    switch (change_event->rotation) {
+    m_rotation = change_event->rotation;
+    updateGeometry(change_event->timestamp);
+    switch (m_rotation) {
     case XCB_RANDR_ROTATION_ROTATE_0: // xrandr --rotate normal
         m_orientation = Qt::LandscapeOrientation;
         m_virtualSize.setWidth(change_event->width);
@@ -406,35 +426,37 @@ void QXcbScreen::handleScreenChange(xcb_randr_screen_change_notify_event_t *chan
 
 void QXcbScreen::updateGeometry(xcb_timestamp_t timestamp)
 {
-    QRect xGeometry;
-    QRect xAvailableGeometry;
+    xcb_randr_get_crtc_info_cookie_t crtcCookie =
+        xcb_randr_get_crtc_info_unchecked(xcb_connection(), m_crtc, timestamp);
+    xcb_randr_get_crtc_info_reply_t *crtc =
+        xcb_randr_get_crtc_info_reply(xcb_connection(), crtcCookie, NULL);
+    if (crtc) {
+        updateGeometry(QRect(crtc->x, crtc->y, crtc->width, crtc->height), crtc->rotation);
+        free(crtc);
+    }
+}
 
-    if (connection()->hasXRandr()) {
-        xcb_randr_get_crtc_info_reply_t *crtc = xcb_randr_get_crtc_info_reply(xcb_connection(),
-            xcb_randr_get_crtc_info_unchecked(xcb_connection(), m_crtc, timestamp), NULL);
-        if (crtc) {
-            xGeometry = QRect(crtc->x, crtc->y, crtc->width, crtc->height);
-            xAvailableGeometry = xGeometry;
-            switch (crtc->rotation) {
-            case XCB_RANDR_ROTATION_ROTATE_0: // xrandr --rotate normal
-                m_orientation = Qt::LandscapeOrientation;
-                m_sizeMillimeters = m_outputSizeMillimeters;
-                break;
-            case XCB_RANDR_ROTATION_ROTATE_90: // xrandr --rotate left
-                m_orientation = Qt::PortraitOrientation;
-                m_sizeMillimeters = m_outputSizeMillimeters.transposed();
-                break;
-            case XCB_RANDR_ROTATION_ROTATE_180: // xrandr --rotate inverted
-                m_orientation = Qt::InvertedLandscapeOrientation;
-                m_sizeMillimeters = m_outputSizeMillimeters;
-                break;
-            case XCB_RANDR_ROTATION_ROTATE_270: // xrandr --rotate right
-                m_orientation = Qt::InvertedPortraitOrientation;
-                m_sizeMillimeters = m_outputSizeMillimeters.transposed();
-                break;
-            }
-            free(crtc);
-        }
+void QXcbScreen::updateGeometry(const QRect &geom, uint8_t rotation)
+{
+    QRect xGeometry = geom;
+    QRect xAvailableGeometry = xGeometry;
+    switch (rotation) {
+    case XCB_RANDR_ROTATION_ROTATE_0: // xrandr --rotate normal
+        m_orientation = Qt::LandscapeOrientation;
+        m_sizeMillimeters = m_outputSizeMillimeters;
+        break;
+    case XCB_RANDR_ROTATION_ROTATE_90: // xrandr --rotate left
+        m_orientation = Qt::PortraitOrientation;
+        m_sizeMillimeters = m_outputSizeMillimeters.transposed();
+        break;
+    case XCB_RANDR_ROTATION_ROTATE_180: // xrandr --rotate inverted
+        m_orientation = Qt::InvertedLandscapeOrientation;
+        m_sizeMillimeters = m_outputSizeMillimeters;
+        break;
+    case XCB_RANDR_ROTATION_ROTATE_270: // xrandr --rotate right
+        m_orientation = Qt::InvertedPortraitOrientation;
+        m_sizeMillimeters = m_outputSizeMillimeters.transposed();
+        break;
     }
 
     xcb_get_property_reply_t * workArea =
@@ -463,31 +485,38 @@ void QXcbScreen::updateGeometry(xcb_timestamp_t timestamp)
     m_geometry = QRect(xGeometry.topLeft()/dpr, xGeometry.size()/dpr);
     m_nativeGeometry = QRect(xGeometry.topLeft(), xGeometry.size());
     m_availableGeometry = QRect(xAvailableGeometry.topLeft()/dpr, xAvailableGeometry.size()/dpr);
-
     QWindowSystemInterface::handleScreenGeometryChange(QPlatformScreen::screen(), m_geometry, m_availableGeometry);
 }
 
-void QXcbScreen::updateRefreshRate()
+void QXcbScreen::updateRefreshRate(xcb_randr_mode_t mode)
 {
     if (!connection()->hasXRandr())
         return;
 
-    int rate = m_refreshRate;
-
-    xcb_randr_get_screen_info_reply_t *screenInfoReply =
-        xcb_randr_get_screen_info_reply(xcb_connection(), xcb_randr_get_screen_info_unchecked(xcb_connection(), m_screen->root), 0);
-
-    if (screenInfoReply) {
-        rate = screenInfoReply->rate;
-        free(screenInfoReply);
-    }
-
-    if (rate == m_refreshRate)
+    if (m_mode == mode)
         return;
 
-    m_refreshRate = rate;
+    // we can safely use get_screen_resources_current here, because in order to
+    // get here, we must have called get_screen_resources before
+    xcb_randr_get_screen_resources_current_cookie_t resourcesCookie =
+        xcb_randr_get_screen_resources_current_unchecked(xcb_connection(), m_screen->root);
+    xcb_randr_get_screen_resources_current_reply_t *resources =
+        xcb_randr_get_screen_resources_current_reply(xcb_connection(), resourcesCookie, NULL);
+    if (resources) {
+        xcb_randr_mode_info_iterator_t modesIter =
+            xcb_randr_get_screen_resources_current_modes_iterator(resources);
+        for (; modesIter.rem; xcb_randr_mode_info_next(&modesIter)) {
+            xcb_randr_mode_info_t *modeInfo = modesIter.data;
+            if (modeInfo->id == mode) {
+                m_refreshRate = modeInfo->dot_clock / (modeInfo->htotal * modeInfo->vtotal);
+                m_mode = mode;
+                break;
+            }
+        }
 
-    QWindowSystemInterface::handleScreenRefreshRateChange(QPlatformScreen::screen(), rate);
+        free(resources);
+        QWindowSystemInterface::handleScreenRefreshRateChange(QPlatformScreen::screen(), m_refreshRate);
+    }
 }
 
 QPixmap QXcbScreen::grabWindow(WId window, int x, int y, int width, int height) const

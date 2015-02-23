@@ -35,6 +35,7 @@
 #define QXCBCONNECTION_H
 
 #include <xcb/xcb.h>
+#include <xcb/randr.h>
 
 #include "qxcbexport.h"
 #include <QHash>
@@ -492,9 +493,15 @@ private:
     void initializeXShape();
     void initializeXKB();
     void handleClientMessageEvent(const xcb_client_message_event_t *event);
-    QXcbScreen* findOrCreateScreen(QList<QXcbScreen *>& newScreens, int screenNumber,
-        xcb_screen_t* xcbScreen, xcb_randr_get_output_info_reply_t *output = NULL);
-    void updateScreens();
+    QXcbScreen* createScreen(int screenNumber, xcb_screen_t* xcbScreen,
+                             xcb_randr_output_t outputId = XCB_NONE,
+                             xcb_randr_get_output_info_reply_t *output = 0);
+    QXcbScreen* findScreenForCrtc(xcb_window_t rootWindow, xcb_randr_crtc_t crtc);
+    QXcbScreen* findScreenForOutput(xcb_window_t rootWindow, xcb_randr_output_t output);
+    xcb_screen_t* xcbScreenForRootWindow(xcb_window_t rootWindow, int *xcbScreenNumber = 0);
+    bool checkOutputIsPrimary(xcb_window_t rootWindow, xcb_randr_output_t output);
+    void initializeScreens();
+    void updateScreens(const xcb_randr_notify_event_t *event);
     void handleButtonPress(xcb_generic_event_t *event);
     void handleButtonRelease(xcb_generic_event_t *event);
     void handleMotionNotify(xcb_generic_event_t *event);
