@@ -251,7 +251,7 @@ void QPepperInstancePrivate::didChangeView(int32_t result, const pp::View &view)
     }
 
     if (QPepperIntegration *pepperIntegraion = QPepperIntegration::get())
-        QPepperIntegration::get()->processEvents();
+        pepperIntegraion->processEvents();
 }
 
 void QPepperInstancePrivate::didChangeFocus(int32_t result, bool hasFucus)

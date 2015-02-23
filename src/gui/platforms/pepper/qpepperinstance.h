@@ -24,6 +24,8 @@
 
 #include <ppapi/cpp/instance.h>
 
+QT_BEGIN_NAMESPACE
+
 class QPepperInstancePrivate;
 class QPepperInstance : public pp::Instance
 {
@@ -40,5 +42,7 @@ public:
 private:
     QPepperInstancePrivate *d;
 };
+
+QT_END_NAMESPACE
 
 #endif

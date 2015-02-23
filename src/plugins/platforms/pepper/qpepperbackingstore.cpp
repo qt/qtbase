@@ -108,6 +108,7 @@ void QPepperBackingStore::resize(const QSize &size, const QRegion &)
 
 void QPepperBackingStore::beginPaint(const QRegion &region)
 {
+    Q_UNUSED(region);
     qCDebug(QT_PLATFORM_PEPPER_BACKINGSTORE) << "beginPaint" << window();
 
     m_isInPaint = true;

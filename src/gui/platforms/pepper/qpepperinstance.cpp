@@ -47,6 +47,8 @@ bool QPepperInstance::Init(uint32_t argc, const char* argn[], const char* argv[]
         uint32_t unused = 0;
         d->init(unused, argc, vargn, vargv);
     }
+
+    return true;
 }
 
 void QPepperInstance::DidChangeView(const pp::View &view)

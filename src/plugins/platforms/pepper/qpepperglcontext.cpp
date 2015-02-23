@@ -56,6 +56,7 @@ QSurfaceFormat QPepperGLContext::format() const
 
 void QPepperGLContext::swapBuffers(QPlatformSurface *surface)
 {
+    Q_UNUSED(surface);
     qCDebug(QT_PLATFORM_PEPPER_GLCONTEXT) << "swapBuffers";
 
     if (m_pendingFlush) {
@@ -69,6 +70,7 @@ void QPepperGLContext::swapBuffers(QPlatformSurface *surface)
 
 bool QPepperGLContext::makeCurrent(QPlatformSurface *surface)
 {
+    Q_UNUSED(surface);
     qCDebug(QT_PLATFORM_PEPPER_GLCONTEXT) << "makeCurrent";
 
     if (m_context.is_null())
