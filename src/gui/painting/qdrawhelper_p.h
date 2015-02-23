@@ -666,11 +666,6 @@ static Q_ALWAYS_INLINE uint qAlphaRgb30(uint c)
     return a;
 }
 
-
-// FIXME: Remove when all Qt modules have stopped using PREMUL and INV_PREMUL
-#define PREMUL(x) qPremultiply(x)
-#define INV_PREMUL(p) qUnpremultiply(p)
-
 struct quint24 {
     quint24(uint value);
     operator uint() const;
