@@ -19,14 +19,11 @@
 
 #include "qpepperinstance_p.h"
 
-#include "qpepperinstance.h"
-
-#ifndef QT_PEPPER_STANDALONE_MODE
 #include "qpepperhelpers.h"
+#include "qpepperinstance.h"
 #include "qpepperintegration.h"
 #include "qpeppermodule_p.h"
 #include "qpepperwindow.h"
-#endif
 
 #include <qpa/qwindowsysteminterface.h>
 
