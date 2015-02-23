@@ -7390,7 +7390,7 @@ void QGraphicsItem::setInputMethodHints(Qt::InputMethodHints hints)
     QWidget *fw = QApplication::focusWidget();
     if (!fw)
         return;
-    qApp->inputMethod()->update(Qt::ImHints);
+    QGuiApplication::inputMethod()->update(Qt::ImHints);
 }
 
 /*!
@@ -7408,7 +7408,7 @@ void QGraphicsItem::updateMicroFocus()
             for (int i = 0 ; i < scene()->views().count() ; ++i) {
                 if (scene()->views().at(i) == fw) {
                     if (qApp)
-                        qApp->inputMethod()->update(Qt::ImQueryAll);
+                        QGuiApplication::inputMethod()->update(Qt::ImQueryAll);
                     break;
                 }
             }
@@ -10141,9 +10141,9 @@ bool QGraphicsTextItem::sceneEvent(QEvent *event)
         // Reset the focus widget's input context, regardless
         // of how this item gained or lost focus.
         if (event->type() == QEvent::FocusIn || event->type() == QEvent::FocusOut) {
-            qApp->inputMethod()->reset();
+            QGuiApplication::inputMethod()->reset();
         } else {
-            qApp->inputMethod()->update(Qt::ImQueryInput);
+            QGuiApplication::inputMethod()->update(Qt::ImQueryInput);
         }
         break;
     case QEvent::ShortcutOverride:

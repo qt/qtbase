@@ -230,7 +230,7 @@ public:
     {
 #ifndef QT_NO_IM
         if (composeMode())
-            qApp->inputMethod()->reset();
+            QGuiApplication::inputMethod()->reset();
 #endif
         internalSetText(txt, -1, false);
     }
@@ -328,7 +328,7 @@ public:
     Qt::LayoutDirection layoutDirection() const {
         if (m_layoutDirection == Qt::LayoutDirectionAuto) {
             if (m_text.isEmpty())
-                return qApp->inputMethod()->inputDirection();
+                return QGuiApplication::inputMethod()->inputDirection();
             return m_text.isRightToLeft() ? Qt::RightToLeft : Qt::LeftToRight;
         }
         return m_layoutDirection;

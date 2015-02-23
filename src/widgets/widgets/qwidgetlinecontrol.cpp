@@ -183,7 +183,7 @@ void QWidgetLineControl::commitPreedit()
     if (!composeMode())
         return;
 
-    qApp->inputMethod()->commit();
+    QGuiApplication::inputMethod()->commit();
     if (!composeMode())
         return;
 

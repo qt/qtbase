@@ -361,7 +361,7 @@ bool QWindowsInputContext::startComposition(HWND hwnd)
     if (!fo)
         return false;
     // This should always match the object.
-    QWindow *window = qApp->focusWindow();
+    QWindow *window = QGuiApplication::focusWindow();
     if (!window)
         return false;
     qCDebug(lcQpaInputMethods) << __FUNCTION__ << fo << window;
@@ -561,7 +561,7 @@ bool QWindowsInputContext::handleIME_Request(WPARAM wParam,
 
 int QWindowsInputContext::reconvertString(RECONVERTSTRING *reconv)
 {
-    QObject *fo = qApp->focusObject();
+    QObject *fo = QGuiApplication::focusObject();
     if (!fo)
         return false;
 

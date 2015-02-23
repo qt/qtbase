@@ -618,7 +618,7 @@ void QGestureManager::deliverEvents(const QSet<QGesture *> &gestures,
             if (gesture->hasHotSpot()) {
                 // guess the target widget using the hotspot of the gesture
                 QPoint pt = gesture->hotSpot().toPoint();
-                if (QWidget *topLevel = qApp->topLevelAt(pt)) {
+                if (QWidget *topLevel = QApplication::topLevelAt(pt)) {
                     QWidget *child = topLevel->childAt(topLevel->mapFromGlobal(pt));
                     target = child ? child : topLevel;
                 }

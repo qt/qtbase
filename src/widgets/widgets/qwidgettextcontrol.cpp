@@ -1739,7 +1739,7 @@ void QWidgetTextControlPrivate::mouseMoveEvent(QEvent *e, Qt::MouseButton button
             _q_updateCurrentCharFormatAndSelection();
 #ifndef QT_NO_IM
             if (contextWidget)
-                qApp->inputMethod()->update(Qt::ImQueryInput);
+                QGuiApplication::inputMethod()->update(Qt::ImQueryInput);
 #endif //QT_NO_IM
         } else {
             //emit q->visibilityRequest(QRectF(mousePos, QSizeF(1, 1)));
@@ -1887,7 +1887,7 @@ bool QWidgetTextControlPrivate::sendMouseEventToInputContext(
 
         if (cursorPos >= 0) {
             if (eventType == QEvent::MouseButtonRelease)
-                qApp->inputMethod()->invokeAction(QInputMethod::Click, cursorPos);
+                QGuiApplication::inputMethod()->invokeAction(QInputMethod::Click, cursorPos);
 
             e->setAccepted(true);
             return true;
@@ -2867,7 +2867,7 @@ void QWidgetTextControlPrivate::commitPreedit()
     if (!isPreediting())
         return;
 
-    qApp->inputMethod()->commit();
+    QGuiApplication::inputMethod()->commit();
 
     if (!isPreediting())
         return;

@@ -255,18 +255,18 @@ void QBasicDrag::updateCursor(Qt::DropAction action)
         }
     }
 
-    QCursor *cursor = qApp->overrideCursor();
+    QCursor *cursor = QGuiApplication::overrideCursor();
     QPixmap pixmap = m_drag->dragCursor(action);
     if (!cursor) {
-        qApp->changeOverrideCursor((pixmap.isNull()) ? QCursor(cursorShape) : QCursor(pixmap));
+        QGuiApplication::changeOverrideCursor((pixmap.isNull()) ? QCursor(cursorShape) : QCursor(pixmap));
     } else {
         if (!pixmap.isNull()) {
             if ((cursor->pixmap().cacheKey() != pixmap.cacheKey())) {
-                qApp->changeOverrideCursor(QCursor(pixmap));
+                QGuiApplication::changeOverrideCursor(QCursor(pixmap));
             }
         } else {
             if (cursorShape != cursor->shape()) {
-                qApp->changeOverrideCursor(QCursor(cursorShape));
+                QGuiApplication::changeOverrideCursor(QCursor(cursorShape));
             }
         }
     }

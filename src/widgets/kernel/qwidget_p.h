@@ -598,7 +598,7 @@ public:
             QStyle::RequestSoftwareInputPanel behavior = QStyle::RequestSoftwareInputPanel(
                     q->style()->styleHint(QStyle::SH_RequestSoftwareInputPanel));
             if (!clickCausedFocus || behavior == QStyle::RSIP_OnMouseClick) {
-                qApp->inputMethod()->show();
+                QGuiApplication::inputMethod()->show();
             }
         }
     }
