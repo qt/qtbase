@@ -100,8 +100,9 @@ class QPepperInstancePrivate
 public:
     QPepperInstancePrivate(QPepperInstance *instance);
     virtual ~QPepperInstancePrivate();
+
     static QPepperInstancePrivate *get();
-    static QPepperInstance *getInstance();
+    static pp::Instance *getPPInstance();
 
     bool init(int32_t result, uint32_t argc, const QVector<QByteArray> &vargn,
               const QVector<QByteArray> &vargv);

@@ -20,7 +20,6 @@
 #include "qpeppercompositor.h"
 
 #include "qpepperhelpers.h"
-#include "qpepperinstance.h"
 #include "qpepperinstance_p.h"
 
 #include <qpa/qwindowsysteminterface.h>
@@ -276,7 +275,7 @@ void QPepperCompositor::createFrameBuffer()
     Size devicePixelSize(m_targetSize.width() * m_targetDevicePixelRatio,
                          m_targetSize.height() * m_targetDevicePixelRatio);
 
-    QPepperInstance *instance = QPepperInstancePrivate::getInstance();
+    pp::Instance *instance = QPepperInstancePrivate::getPPInstance();
 
     // Create new graphics context and frame buffer.
     m_context2D = new Graphics2D(instance, devicePixelSize, false);

@@ -22,7 +22,6 @@
 #ifndef QT_NO_OPENGL
 #include "qpepperglcontext.h"
 
-#include "qpepperinstance.h"
 #include "qpepperinstance_p.h"
 
 #include <QtCore/QDebug>
@@ -133,7 +132,7 @@ bool QPepperGLContext::initGl()
       PP_GRAPHICS3DATTRIB_NONE
     };
 
-    QPepperInstance *instance = QPepperInstancePrivate::getInstance();
+    pp::Instance *instance = QPepperInstancePrivate::getPPInstance();
     m_context = pp::Graphics3D(instance, attrib_list);
     if (!instance->BindGraphics(m_context)) {
         qWarning("Unable to bind 3d context!\n");

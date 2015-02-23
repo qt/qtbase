@@ -41,7 +41,7 @@ bool QPepperModule::Init()
 
 pp::Instance* QPepperModule::CreateInstance(PP_Instance ppInstance)
 {
-    return  d->createInstance(ppInstance);
+    return d->createInstance(ppInstance);
 }
 
 // Helper function for Q_GUI_MAIN: allows creating a QPepperModule

@@ -19,7 +19,6 @@
 
 #include "qpeppercursor.h"
 
-#include "qpepperinstance.h"
 #include "qpepperinstance_p.h"
 
 #include <QtGui/QCursor>
@@ -112,7 +111,7 @@ void QPepperCursor::changeCursor(QCursor *cursor, QWindow *window)
     qCDebug(QT_PLATFORM_PEPPER_CURSOR) << "changeCursor" << shape << window;
     if (shape > Qt::LastCursor)
         qCWarning(QT_PLATFORM_PEPPER_CURSOR) << "Custom cursors are not supported";
-    pp::MouseCursor::SetCursor(QPepperInstancePrivate::getInstance(), cursorTypeForShape(shape),
+    pp::MouseCursor::SetCursor(QPepperInstancePrivate::getPPInstance(), cursorTypeForShape(shape),
                                pp::ImageData(), pp::Point());
 }
 

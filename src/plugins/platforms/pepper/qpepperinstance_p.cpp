@@ -114,7 +114,7 @@ QPepperInstancePrivate::~QPepperInstancePrivate()
 
 QPepperInstancePrivate *QPepperInstancePrivate::get() { return g_pepperInstancePrivate; }
 
-QPepperInstance *QPepperInstancePrivate::getInstance() { return g_pepperInstancePrivate->q; }
+pp::Instance *QPepperInstancePrivate::getPPInstance() { return g_pepperInstancePrivate->q; }
 
 void QPepperInstancePrivate::processCall(pp::CompletionCallback call)
 {
@@ -166,7 +166,7 @@ void qtExceptionHandler(const char *json)
 void qtMessageHandler(QtMsgType, const QMessageLogContext &context, const QString &message)
 {
     QByteArray bytes = context.category + message.toLatin1() + "\n";
-    QPepperInstancePrivate::getInstance()->PostMessage(pp::Var(bytes.constData()));
+    QPepperInstancePrivate::getPPInstance()->PostMessage(pp::Var(bytes.constData()));
 }
 
 // There is one global app pp::Instance. It corresponds to the
