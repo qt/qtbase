@@ -334,6 +334,7 @@ QDebug &QDebug::resetFormat()
     stream->space = true;
     if (stream->context.version > 1)
         stream->flags = 0;
+    stream->setVerbosity(Stream::defaultVerbosity);
     return *this;
 }
 
@@ -421,6 +422,32 @@ QDebug &QDebug::resetFormat()
     The default character is a double quote \c{"}.
 
     \sa quote(), noquote()
+*/
+
+/*!
+    \fn int QDebug::verbosity() const
+    \since 5.6
+
+    Returns the verbosity of the debug stream.
+
+    Streaming operators can check the value to decide whether
+    verbose output is desired and print more information depending on the
+    level. Higher values indicate that more information is desired.
+
+    The allowed range is from 0 to 7. The default value is 2.
+
+    \sa setVerbosity()
+*/
+
+/*!
+    \fn void QDebug::setVerbosity(int verbosityLevel)
+    \since 5.6
+
+    Sets the verbosity of the stream to \a verbosityLevel.
+
+    The allowed range is from 0 to 7. The default value is 2.
+
+    \sa verbosity()
 */
 
 /*!
