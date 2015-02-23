@@ -279,7 +279,7 @@ static const char *openType[] = {
     "deva",  // Devanagari
     "beng",  // Bengali
     "guru",  // Gurmukhi
-    "gurj",  // Gujarati
+    "gujr",  // Gujarati
     "orya",  // Oriya
     "taml",  // Tamil
     "telu",  // Telugu
