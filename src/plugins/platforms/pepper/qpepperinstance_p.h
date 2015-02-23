@@ -136,7 +136,6 @@ public:
     void flushCompletedCallback(int32_t);
 
     QPepperInstance *q;
-    QPepperIntegration *m_pepperIntegraton;
 
     bool m_qtStarted;
     bool m_runQtOnThread;

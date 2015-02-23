@@ -56,7 +56,6 @@ QPepperInstancePrivate::QPepperInstancePrivate(QPepperInstance *instance)
     : m_qtThread(instance)
 {
     q = instance;
-    m_pepperIntegraton = 0; // set by the QPepperIntegration constructor
 
     qtPepperInstance = instance;
     g_pepperInstancePrivate = this;
@@ -259,9 +258,11 @@ void QPepperInstancePrivate::didChangeFocus(int32_t result, bool hasFucus)
     Q_UNUSED(result);
     qCDebug(QT_PLATFORM_PEPPER_INSTANCE) << "DidChangeFocus" << hasFucus;
 
-    QWindow *fucusWindow = (hasFucus && m_pepperIntegraton && m_pepperIntegraton->topLevelWindow())
-                               ? m_pepperIntegraton->topLevelWindow()->window()
-                               : 0;
+    QPepperIntegration *pepperIntegration = QPepperIntegration::get();
+    if (!pepperIntegration)
+        return;
+
+    QWindow *fucusWindow = hasFucus ? pepperIntegration->topLevelWindow()->window() : 0;
     QWindowSystemInterface::handleWindowActivated(fucusWindow, Qt::ActiveWindowFocusReason);
 }
 
@@ -271,11 +272,12 @@ bool QPepperInstancePrivate::handleInputEvent(int32_t result, const pp::InputEve
     // this one is spammy (mouse moves)
     // qCDebug(QT_PLATFORM_PEPPER_INSTANCE) << "HandleInputEvent";
 
-    if (!m_pepperIntegraton)
+    QPepperIntegration *pepperIntegration = QPepperIntegration::get();
+    if (!pepperIntegration)
         return false;
 
-    bool ret = m_pepperIntegraton->pepperEventTranslator()->processEvent(event);
-    m_pepperIntegraton->processEvents();
+    bool ret = pepperIntegration->pepperEventTranslator()->processEvent(event);
+    pepperIntegration->processEvents();
     return ret;
 }
 
