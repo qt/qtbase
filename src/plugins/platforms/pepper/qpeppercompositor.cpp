@@ -29,8 +29,6 @@
 #include <ppapi/cpp/instance.h>
 #include <ppapi/cpp/var.h>
 
-using namespace pp;
-
 QPepperCompositedWindow::QPepperCompositedWindow()
     : window(0)
     , frameBuffer(0)
@@ -272,18 +270,19 @@ void QPepperCompositor::createFrameBuffer()
     if (!m_targetSize.isValid())
         return;
 
-    Size devicePixelSize(m_targetSize.width() * m_targetDevicePixelRatio,
-                         m_targetSize.height() * m_targetDevicePixelRatio);
+    pp::Size devicePixelSize(m_targetSize.width() * m_targetDevicePixelRatio,
+                             m_targetSize.height() * m_targetDevicePixelRatio);
 
     pp::Instance *instance = QPepperInstancePrivate::getPPInstance();
 
     // Create new graphics context and frame buffer.
-    m_context2D = new Graphics2D(instance, devicePixelSize, false);
+    m_context2D = new pp::Graphics2D(instance, devicePixelSize, false);
     if (!instance->BindGraphics(*m_context2D)) {
         qWarning("Couldn't bind the device context\n");
     }
 
-    m_imageData2D = new ImageData(instance, PP_IMAGEDATAFORMAT_BGRA_PREMUL, devicePixelSize, true);
+    m_imageData2D
+        = new pp::ImageData(instance, PP_IMAGEDATAFORMAT_BGRA_PREMUL, devicePixelSize, true);
 
     m_frameBuffer = new QImage(reinterpret_cast<uchar *>(m_imageData2D->data()),
                                m_targetSize.width() * m_targetDevicePixelRatio,

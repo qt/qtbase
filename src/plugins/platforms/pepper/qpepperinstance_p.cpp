@@ -39,8 +39,6 @@
 #include <error_handling/error_handling.h>
 #endif
 
-using namespace pp;
-
 QObject *qtScriptableObject;
 
 Q_LOGGING_CATEGORY(QT_PLATFORM_PEPPER_INSTANCE, "qt.platform.pepper.instance")
@@ -84,7 +82,7 @@ QPepperInstancePrivate::QPepperInstancePrivate(QPepperInstance *instance)
         m_useQtMessageLoop = true;
 #endif
 
-    m_currentGeometry = Rect();
+    m_currentGeometry = pp::Rect();
     m_callbackFactory.Initialize(this);
 
     if (m_runQtOnThread) {
@@ -219,10 +217,10 @@ bool QPepperInstancePrivate::init(int32_t result, uint32_t argc, const QVector<Q
 
 // DidchangeView is called on div tag geometry or configuration change, for
 // example if the pixel scaling changes. This is also where Qt is started.
-void QPepperInstancePrivate::didChangeView(int32_t result, const View &view)
+void QPepperInstancePrivate::didChangeView(int32_t result, const pp::View &view)
 {
     Q_UNUSED(result);
-    Rect geometry = view.GetRect();
+    pp::Rect geometry = view.GetRect();
     // Compute the effective devicePixelRatio. DeviceScale is related
     // to the hardware and is often an integer. CSSScale is the is the
     // zoom factor and is often a real number.
@@ -284,14 +282,14 @@ bool QPepperInstancePrivate::handleInputEvent(int32_t result, const pp::InputEve
     return ret;
 }
 
-bool QPepperInstancePrivate::handleDocumentLoad(int32_t result, const URLLoader &url_loader)
+bool QPepperInstancePrivate::handleDocumentLoad(int32_t result, const pp::URLLoader &url_loader)
 {
     Q_UNUSED(result);
     Q_UNUSED(url_loader);
     return false;
 }
 
-void QPepperInstancePrivate::handleMessage(int32_t result, const Var &var_message)
+void QPepperInstancePrivate::handleMessage(int32_t result, const pp::Var &var_message)
 {
     Q_UNUSED(result);
 
