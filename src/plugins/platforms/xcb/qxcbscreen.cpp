@@ -93,25 +93,6 @@ QXcbScreen::QXcbScreen(QXcbConnection *connection, xcb_screen_t *scr,
     if (dpr_scaling_enabled)
         m_noFontHinting = true;
 
-#ifdef Q_XCB_DEBUG
-    qDebug();
-    qDebug("Screen output %s of xcb screen %d:", m_outputName.toUtf8().constData(), m_number);
-    qDebug("  width..........: %lf", m_sizeMillimeters.width());
-    qDebug("  height.........: %lf", m_sizeMillimeters.height());
-    qDebug("  geometry.......: %d x %d +%d +%d", m_geometry.width(), m_geometry.height(), m_geometry.x(), m_geometry.y());
-    qDebug("  virtual width..: %lf", m_virtualSizeMillimeters.width());
-    qDebug("  virtual height.: %lf", m_virtualSizeMillimeters.height());
-    qDebug("  virtual geom...: %d x %d", m_virtualSize.width(), m_virtualSize.height());
-    qDebug("  avail virt geom: %d x %d +%d +%d", m_availableGeometry.width(), m_availableGeometry.height(), m_availableGeometry.x(), m_availableGeometry.y());
-    qDebug("  orientation....: %d", m_orientation);
-    qDebug("  pixel ratio....: %d", m_devicePixelRatio);
-    qDebug("  depth..........: %d", screen()->root_depth);
-    qDebug("  white pixel....: %x", screen()->white_pixel);
-    qDebug("  black pixel....: %x", screen()->black_pixel);
-    qDebug("  refresh rate...: %d", m_refreshRate);
-    qDebug("  root ID........: %x", screen()->root);
-#endif
-
     QScopedPointer<xcb_get_window_attributes_reply_t, QScopedPointerPodDeleter> rootAttribs(
         xcb_get_window_attributes_reply(xcb_connection(),
             xcb_get_window_attributes_unchecked(xcb_connection(), screen()->root), NULL));
@@ -146,10 +127,6 @@ QXcbScreen::QXcbScreen(QXcbConnection *connection, xcb_screen_t *scr,
                                      atom(QXcbAtom::UTF8_STRING), 0, 1024), NULL);
             if (windowManagerReply && windowManagerReply->format == 8 && windowManagerReply->type == atom(QXcbAtom::UTF8_STRING)) {
                 m_windowManagerName = QString::fromUtf8((const char *)xcb_get_property_value(windowManagerReply), xcb_get_property_value_length(windowManagerReply));
-#ifdef Q_XCB_DEBUG
-                qDebug("  window manager.: %s", qPrintable(m_windowManagerName));
-                qDebug();
-#endif
             }
 
             free(windowManagerReply);
@@ -709,4 +686,48 @@ QXcbXSettings *QXcbScreen::xSettings() const
     }
     return m_xSettings;
 }
+
+static inline void formatRect(QDebug &debug, const QRect r)
+{
+    debug << r.width() << 'x' << r.height()
+        << forcesign << r.x() << r.y() << noforcesign;
+}
+
+static inline void formatSizeF(QDebug &debug, const QSizeF s)
+{
+    debug << s.width() << 'x' << s.height() << "mm";
+}
+
+Q_XCB_EXPORT QDebug operator<<(QDebug debug, const QXcbScreen *screen)
+{
+    const QDebugStateSaver saver(debug);
+    debug.nospace();
+    debug << "QXcbScreen(" << (void *)screen;
+    if (screen) {
+        debug << fixed << qSetRealNumberPrecision(1);
+        debug << ", name=" << screen->name();
+        debug << ", geometry=";
+        formatRect(debug, screen->geometry());
+        debug << ", availableGeometry=";
+        formatRect(debug, screen->availableGeometry());
+        debug << ", devicePixelRatio=" << screen->devicePixelRatio();
+        debug << ", logicalDpi=" << screen->logicalDpi();
+        debug << ", physicalSize=";
+        formatSizeF(debug, screen->physicalSize());
+        // TODO 5.6 if (debug.verbosity() > 2) {
+        debug << ", screenNumber=" << screen->screenNumber();
+        debug << ", virtualSize=" << screen->virtualSize().width() << "x" << screen->virtualSize().height() << " (";
+        formatSizeF(debug, screen->virtualSize());
+        debug << "), nativeGeometry=";
+        formatRect(debug, screen->nativeGeometry());
+        debug << ", orientation=" << screen->orientation();
+        debug << ", depth=" << screen->depth();
+        debug << ", refreshRate=" << screen->refreshRate();
+        debug << ", root=" << hex << screen->root();
+        debug << ", windowManagerName=" << screen->windowManagerName();
+    }
+    debug << ')';
+    return debug;
+}
+
 QT_END_NAMESPACE

@@ -80,6 +80,7 @@ QT_BEGIN_NAMESPACE
 
 Q_LOGGING_CATEGORY(lcQpaXInput, "qt.qpa.input")
 Q_LOGGING_CATEGORY(lcQpaXInputDevices, "qt.qpa.input.devices")
+Q_LOGGING_CATEGORY(lcQpaScreen, "qt.qpa.screen")
 
 #ifdef XCB_USE_XLIB
 static const char * const xcbConnectionErrors[] = {
@@ -185,15 +186,11 @@ void QXcbConnection::updateScreens()
                         if (output == NULL)
                             continue;
 
-#ifdef Q_XCB_DEBUG
-                        QString outputName = QString::fromUtf8((const char*)xcb_randr_get_output_info_name(output),
-                                                               xcb_randr_get_output_info_name_length(output));
-#endif
 
                         if (output->crtc == XCB_NONE) {
-#ifdef Q_XCB_DEBUG
-                            qDebug("Screen output %s is not connected", qPrintable(outputName));
-#endif
+                            qCDebug(lcQpaScreen, "output %s is not connected", qPrintable(
+                                        QString::fromUtf8((const char*)xcb_randr_get_output_info_name(output),
+                                                          xcb_randr_get_output_info_name_length(output))));
                             continue;
                         }
 
@@ -209,9 +206,6 @@ void QXcbConnection::updateScreens()
                             if (!primaryScreen || (primary && outputs[i] == primary->output)) {
                                 primaryScreen = screen;
                                 siblings.prepend(siblings.takeLast());
-#ifdef Q_XCB_DEBUG
-                                qDebug("Primary output is %d: %s", primary->output, qPrintable(outputName));
-#endif
                             }
                         }
                         free(output);
@@ -224,9 +218,7 @@ void QXcbConnection::updateScreens()
         // If there's no randr extension, or there was some error above, or the screen
         // doesn't have outputs for some other reason (e.g. on VNC or ssh -X), just assume there is one screen.
         if (connectedOutputCount == 0) {
-#ifdef Q_XCB_DEBUG
-                qDebug("Found a screen with zero outputs");
-#endif
+            qCDebug(lcQpaScreen, "found a screen with zero outputs");
             QXcbScreen *screen = findOrCreateScreen(newScreens, xcbScreenNumber, xcbScreen);
             siblings << screen;
             activeScreens << screen;
@@ -259,18 +251,21 @@ void QXcbConnection::updateScreens()
     if (newScreens.contains(primaryScreen)) {
         newScreens.removeOne(primaryScreen);
         m_screens.prepend(primaryScreen);
+        qCDebug(lcQpaScreen) << "adding as primary" << primaryScreen;
         integration->screenAdded(primaryScreen, true);
     }
 
     // Add the remaining new screens
     foreach (QXcbScreen* screen, newScreens) {
         m_screens.append(screen);
+        qCDebug(lcQpaScreen) << "adding" << screen;
         integration->screenAdded(screen);
     }
 
     // Delete the old screens, now that the new ones were added
     // and we are sure that there is at least one screen available
     foreach (QXcbScreen* screen, screensToDelete) {
+        qCDebug(lcQpaScreen) << "removing" << screen;
         integration->destroyScreen(screen);
     }
 
@@ -284,6 +279,9 @@ void QXcbConnection::updateScreens()
             m_screens.prepend(primaryScreen);
         }
     }
+
+    if (!m_screens.isEmpty())
+        qCDebug(lcQpaScreen) << "primary output is" << m_screens.first()->name();
 }
 
 QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGrabServer, const char *displayName)

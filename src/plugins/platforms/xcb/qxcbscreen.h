@@ -50,6 +50,9 @@ QT_BEGIN_NAMESPACE
 class QXcbConnection;
 class QXcbCursor;
 class QXcbXSettings;
+#ifndef QT_NO_DEBUG_STREAM
+class QDebug;
+#endif
 
 class Q_XCB_EXPORT QXcbScreen : public QXcbObject, public QPlatformScreen
 {
@@ -68,6 +71,8 @@ public:
     int depth() const Q_DECL_OVERRIDE { return m_screen->root_depth; }
     QImage::Format format() const Q_DECL_OVERRIDE;
     QSizeF physicalSize() const Q_DECL_OVERRIDE { return m_sizeMillimeters; }
+    QSize virtualSize() const { return m_virtualSize; }
+    QSizeF physicalVirtualSize() const { return m_virtualSizeMillimeters; }
     QDpi logicalDpi() const Q_DECL_OVERRIDE;
     qreal devicePixelRatio() const Q_DECL_OVERRIDE;
     QPlatformCursor *cursor() const Q_DECL_OVERRIDE;
@@ -139,6 +144,10 @@ private:
     int m_antialiasingEnabled;
     QXcbXSettings *m_xSettings;
 };
+
+#ifndef QT_NO_DEBUG_STREAM
+Q_GUI_EXPORT QDebug operator<<(QDebug, const QXcbScreen *);
+#endif
 
 QT_END_NAMESPACE
 
