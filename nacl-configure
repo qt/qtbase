@@ -19,6 +19,13 @@ if [ ! -d "$NACL_SDK_ROOT" ]; then
 
 fi
 
+# simple mac/linux detecton
+platform='mac'
+unamestr=`uname`
+if [[ "$unamestr" == 'Linux' ]]; then
+   platform='linux'
+fi
+
 # Require a toolcahin as an argument
 if [ $# -eq 0 ]
   then
@@ -26,18 +33,22 @@ if [ $# -eq 0 ]
     echo "No arguments supplied. Usage:"
     echo "\"nacl-configure <tooolchain> [release|debug] [32|64]"
     echo "Toolchain is one of:" 
-    echo "    mac_arm_newlib"
-    echo "    mac_pnacl"
-    echo "    mac_x86_glibc"
-    echo "    mac_x86_newlib"
+    echo "    ${platform}_arm_newlib"
+    echo "    ${platform}_pnacl"
+    echo "    ${platform}_x86_glibc"
+    echo "    ${platform}_x86_newlib"
     echo "    host"
-    echo "(replace "mac" with your platform)"
     echo ""
     exit 
 fi
 
-# QtBase and configure script location:
+# QtBase and configure script location. Look for ../configure first,
+# use the qtbase configure if not found.
 QTBASE="$(dirname $0)"
+CONFIGURE="$QTBASE/../configure"
+if [ ! -f $CONFIGURE ]; then
+   CONFIGURE="$QTBASE/configure"
+fi
 
 # Argument 1: Which toolchain?
 TOOLCHAIN=$1
@@ -154,7 +165,7 @@ if [[ $TOOLCHAIN == host ]]
 fi
 
 # Assemble command-line options for the configure line
-NACL_CONFIGURE_LINE="$QTBASE/../configure"
+NACL_CONFIGURE_LINE="$CONFIGURE"
 # mkspec and nacl toolchain path
 NACL_CONFIGURE_LINE="$NACL_CONFIGURE_LINE  $QT_PLATFPORM -device-option CROSS_COMPILE=$NACL_SDK_ROOT/toolchain/$TOOLCHAIN/bin/"
 NACL_CONFIGURE_LINE="$NACL_CONFIGURE_LINE -I $NACL_SDK_ROOT/include -L $NACL_SDK_ROOT/lib/$LIBDIR/Release"
@@ -170,7 +181,7 @@ if [[ $TOOLCHAIN != "host" ]]; then
     NACL_CONFIGURE_LINE="$NACL_CONFIGURE_LINE -no-sse2"
 fi
 # misc
-NACL_CONFIGURE_LINE="$NACL_CONFIGURE_LINE -no-qpa-platform-guard -skip xmlpatterns -skip qtsvg -no-warnings-are-errors -no-qml-debug -no-dbus"
+NACL_CONFIGURE_LINE="$NACL_CONFIGURE_LINE -no-qpa-platform-guard -no-warnings-are-errors -no-qml-debug -no-dbus"
 
 # Newlib is static builds only.
 if [[ $QT_MKSPEC == *newlib* ]]
@@ -200,3 +211,4 @@ echo $NACL_CONFIGURE_LINE
 
 # Run configure
 $NACL_CONFIGURE_LINE
+
