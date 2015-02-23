@@ -40,24 +40,21 @@ public:
     QPepperBackingStore(QWindow *window);
     ~QPepperBackingStore();
 
-    QPaintDevice *paintDevice();
-    void beginPaint(const QRegion &);
-    void endPaint();
-    void flush(QWindow *widget, const QRegion &region, const QPoint &offset);
-    void resize(const QSize &size, const QRegion &);
+    QPaintDevice *paintDevice() Q_DECL_OVERRIDE;
+    void flush(QWindow *widget, const QRegion &region, const QPoint &offset) Q_DECL_OVERRIDE;
+    void resize(const QSize &size, const QRegion &) Q_DECL_OVERRIDE;
+    void beginPaint(const QRegion &) Q_DECL_OVERRIDE;
+    void endPaint() Q_DECL_OVERRIDE;
 
     void createFrameBuffer(QSize size, qreal devicePixelRatio);
     void setFrameBuffer(QImage *frameBuffer);
     void setPepperInstance(QPepperInstance *instance);
-
     void flushCompletedCallback(int32_t);
 
+private:
     bool m_isInPaint;
     bool m_isInFlush;
-
-private:
     QSize m_size;
-    QPepperWindow *m_PepperWindow;
     QPepperCompositor *m_compositor;
     pp::Graphics2D *m_context2D;
     pp::ImageData *m_imageData2D;

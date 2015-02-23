@@ -35,16 +35,17 @@ Q_LOGGING_CATEGORY(QT_PLATFORM_PEPPER_BACKINGSTORE, "qt.platform.pepper.backings
 
 QPepperBackingStore::QPepperBackingStore(QWindow *window)
     : QPlatformBackingStore(window)
+    , m_isInPaint(false)
+    , m_isInFlush(false)
+    , m_compositor(0)
+    , m_context2D(0)
+    , m_imageData2D( 0)
+    , m_frameBuffer(0)
+    , m_ownsFrameBuffer(false)
     , m_callbackFactory(this)
 {
     qCDebug(QT_PLATFORM_PEPPER_BACKINGSTORE) << "QPepperBackingStore for" << window;
 
-    m_isInPaint = false;
-    m_compositor = 0;
-    m_context2D = 0;
-    m_imageData2D = 0;
-    m_frameBuffer = 0;
-    m_ownsFrameBuffer = false;
 
 #if 0
     // Compositor disabled
@@ -68,25 +69,6 @@ QPaintDevice *QPepperBackingStore::paintDevice()
     qCDebug(QT_PLATFORM_PEPPER_BACKINGSTORE) << "paintDevice framebuffer" << m_frameBuffer;
 
     return m_frameBuffer;
-}
-
-void QPepperBackingStore::beginPaint(const QRegion &region)
-{
-    qCDebug(QT_PLATFORM_PEPPER_BACKINGSTORE) << "beginPaint" << window();
-
-    m_isInPaint = true;
-    if (m_compositor) {
-        m_compositor->waitForFlushed(window());
-    } else {
-        // noop
-    }
-}
-
-void QPepperBackingStore::endPaint()
-{
-    qCDebug(QT_PLATFORM_PEPPER_BACKINGSTORE) << "endPaint";
-
-    m_isInPaint = false;
 }
 
 void QPepperBackingStore::flush(QWindow *window, const QRegion &region, const QPoint &offset)
@@ -125,6 +107,25 @@ void QPepperBackingStore::resize(const QSize &size, const QRegion &)
     }
 }
 
+void QPepperBackingStore::beginPaint(const QRegion &region)
+{
+    qCDebug(QT_PLATFORM_PEPPER_BACKINGSTORE) << "beginPaint" << window();
+
+    m_isInPaint = true;
+    if (m_compositor) {
+        m_compositor->waitForFlushed(window());
+    } else {
+        // noop
+    }
+}
+
+void QPepperBackingStore::endPaint()
+{
+    qCDebug(QT_PLATFORM_PEPPER_BACKINGSTORE) << "endPaint";
+
+    m_isInPaint = false;
+}
+
 void QPepperBackingStore::createFrameBuffer(QSize size, qreal devicePixelRatio)
 {
     qCDebug(QT_PLATFORM_PEPPER_BACKINGSTORE) << "createFrameBuffer" << size << devicePixelRatio;
@@ -160,7 +161,7 @@ void QPepperBackingStore::setFrameBuffer(QImage *frameBuffer)
     qCDebug(QT_PLATFORM_PEPPER_BACKINGSTORE) << "setFrameBuffer" << frameBuffer;
 
     if (m_isInPaint)
-        qFatal("QPepperBackingStore::setFrameBuffer called.");
+        qFatal("QPepperBackingStore::setFrameBuffer called while painting");
 
     if (m_ownsFrameBuffer)
         delete m_frameBuffer;
