@@ -81,7 +81,7 @@ int QtNaclDeployer::deploy()
         quickImports = true;
     }
 
-    // Set up template replacments. There is one global map
+    // Set up template replacements. There is one global map
     // for all templates.
     templateReplacements["%MAINHTML%"] = mainHtmlFileName;
     templateReplacements["%APPNAME%"] = appName.toUtf8();
@@ -233,7 +233,12 @@ int QtNaclDeployer::deploy()
     }
 
     // Find chrome, print startup instructions
+#ifdef Q_OS_LINUX
+    // TODO: look up chrome binary location.
+    QString chromeExecutable = "/usr/bin/google-chrome";
+#else
     QString chromeExecutable = "/Applications/Google\\ Chrome.app/Contents/MacOS/Google\\ Chrome";
+#endif
     QString chromeNormalOptions = " --disable-cache --no-default-browser-check";
     QString chromeDebugOptions = chromeNormalOptions + " --enable-nacl-debug --no-sandbox";
     QString chromeOpenAppOptions = " --load-and-launch-app=" + outDir;
@@ -413,7 +418,7 @@ int main(int argc, char **argv)
 
     parser.addOption(QCommandLineOption(QStringList() << "p" << "print", "Print Chrome and debugging help."));
     parser.addOption(QCommandLineOption(QStringList() << "r" << "run", "Run the application in Chrome."));
-    parser.addOption(QCommandLineOption(QStringList() << "d" << "debug", "Debug the application in Chrome."));
+    parser.addOption(QCommandLineOption(QStringList() << "d" << "debug", "Debug the application in Chrome [OS X only]."));
     parser.addOption(QCommandLineOption(QStringList() << "e" << "testlib", "Run in QTestLib mode"));
 
     parser.process(app);
@@ -428,6 +433,13 @@ int main(int argc, char **argv)
     deployer.run = parser.isSet("run");
     deployer.debug = parser.isSet("debug");
     deployer.testlibMode = parser.isSet("testlib");
+
+#ifdef Q_OS_LINUX
+    if (deployer.debug) {
+        qDebug() << "Error: --debug is currently supported on OS X only.";
+	exit(1);
+    }
+#endif
 
     // Get target binary file name from command line, or find one
     // in the currrent directory
