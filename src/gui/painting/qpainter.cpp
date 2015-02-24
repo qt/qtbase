@@ -6664,6 +6664,16 @@ QRectF QPainter::boundingRect(const QRectF &r, const QString &text, const QTextO
     potentially much more efficient depending on the underlying window
     system.
 
+    drawTiledPixmap() will produce the same visual tiling pattern on
+    high-dpi displays (with devicePixelRatio > 1), compared to normal-
+    dpi displays. Set the devicePixelRatio on the \a pixmap to control
+    the tile size. For example, setting it to 2 halves the tile width
+    and height (on both 1x and 2x displays), and produces high-resolution
+    output on 2x displays.
+
+    The \a position offset is always in the painter coordinate system,
+    indepentent of display devicePixelRatio.
+
     \sa drawPixmap()
 */
 void QPainter::drawTiledPixmap(const QRectF &r, const QPixmap &pixmap, const QPointF &sp)

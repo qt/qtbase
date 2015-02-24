@@ -334,6 +334,59 @@ void PixmapPainter::paintEvent(QPaintEvent *)
     x+=dx * 2; p.drawImage(QRect(x, y, pixmapPointSize * 2, pixmapPointSize * 2), imageLarge);
  }
 
+class TiledPixmapPainter : public QWidget
+{
+public:
+    QPixmap pixmap1X;
+    QPixmap pixmap2X;
+    QPixmap pixmapLarge;
+
+    TiledPixmapPainter();
+    void paintEvent(QPaintEvent *event);
+};
+
+TiledPixmapPainter::TiledPixmapPainter()
+{
+    pixmap1X = QPixmap(":/qticon32.png");
+    pixmap2X = QPixmap(":/qticon32@2x.png");
+    pixmapLarge = QPixmap(":/qticon64.png");
+}
+
+void TiledPixmapPainter::paintEvent(QPaintEvent *event)
+{
+    QPainter p(this);
+
+    int xoff = 10;
+    int yoff = 10;
+    int tiles = 4;
+    int pixmapEdge = 32;
+    int tileAreaEdge = pixmapEdge * tiles;
+
+    // Expected behavior for both 1x and 2x dislays:
+    // 1x pixmap   : 4 x 4 tiles
+    // large pixmap: 2 x 2 tiles
+    // 2x pixmap   : 4 x 4 tiles
+    //
+    // On a 2x display the 2x pimxap tiles
+    // will be drawn in high resolution.
+    p.drawTiledPixmap(QRect(xoff, yoff, tileAreaEdge, tileAreaEdge), pixmap1X);
+    yoff += tiles * pixmapEdge + 10;
+    p.drawTiledPixmap(QRect(xoff, yoff, tileAreaEdge, tileAreaEdge), pixmapLarge);
+    yoff += tiles * pixmapEdge + 10;
+    p.drawTiledPixmap(QRect(xoff, yoff, tileAreaEdge, tileAreaEdge), pixmap2X);
+
+    // Again, with an offset. The offset is in
+    // device-independent pixels.
+    QPoint offset(40, 40); // larger than the pixmap edge size to exercise that code path
+    yoff = 10;
+    xoff = 20 + tiles * pixmapEdge ;
+    p.drawTiledPixmap(QRect(xoff, yoff, tileAreaEdge, tileAreaEdge), pixmap1X, offset);
+    yoff += tiles * pixmapEdge + 10;
+    p.drawTiledPixmap(QRect(xoff, yoff, tileAreaEdge, tileAreaEdge), pixmapLarge, offset);
+    yoff += tiles * pixmapEdge + 10;
+    p.drawTiledPixmap(QRect(xoff, yoff, tileAreaEdge, tileAreaEdge), pixmap2X, offset);
+}
+
 class Labels : public QWidget
 {
 public:
@@ -1119,6 +1172,7 @@ int main(int argc, char **argv)
 
     DemoContainerList demoList;
     demoList << new DemoContainer<PixmapPainter>("pixmap", "Test pixmap painter");
+    demoList << new DemoContainer<TiledPixmapPainter>("tiledpixmap", "Test tiled pixmap painter");
     demoList << new DemoContainer<Labels>("label", "Test Labels");
     demoList << new DemoContainer<MainWindow>("mainwindow", "Test QMainWindow");
     demoList << new DemoContainer<StandardIcons>("standard-icons", "Test standard icons");

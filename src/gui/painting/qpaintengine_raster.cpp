@@ -2502,10 +2502,13 @@ void QRasterPaintEngine::drawTiledPixmap(const QRectF &r, const QPixmap &pixmap,
     if (image.depth() == 1)
         image = d->rasterBuffer->colorizeBitmap(image, s->pen.color());
 
-    if (s->matrix.type() > QTransform::TxTranslate) {
+    const qreal pixmapDevicePixelRatio = pixmap.devicePixelRatio();
+    if (s->matrix.type() > QTransform::TxTranslate || pixmapDevicePixelRatio > qreal(1.0)) {
         QTransform copy = s->matrix;
         copy.translate(r.x(), r.y());
         copy.translate(-sr.x(), -sr.y());
+        const qreal inverseDpr = qreal(1.0) / pixmapDevicePixelRatio;
+        copy.scale(inverseDpr, inverseDpr);
         d->image_filler_xform.clip = d->clip();
         d->image_filler_xform.initTexture(&image, s->intOpacity, QTextureData::Tiled);
         if (!d->image_filler_xform.blend)
