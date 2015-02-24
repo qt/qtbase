@@ -49,6 +49,8 @@
 
 QT_BEGIN_NAMESPACE
 
+class QSocketNotifier;
+
 class QFbVtHandler : public QObject
 {
     Q_OBJECT
@@ -57,13 +59,24 @@ public:
     QFbVtHandler(QObject *parent = 0);
     ~QFbVtHandler();
 
-private:
-    void cleanup();
-    static void crashHandler();
+    void suspend();
 
-    static QFbVtHandler *self;
+signals:
+    void interrupted();
+    void suspendRequested();
+    void resumed();
+
+private slots:
+    void handleSignal();
+
+private:
+    void restoreKeyboard();
+    void handleInt();
+
     int m_tty;
     int m_oldKbdMode;
+    int m_signalFd;
+    QSocketNotifier *m_signalNotifier;
 };
 
 QT_END_NAMESPACE

@@ -37,9 +37,34 @@
 
 #include <QtCore/QLoggingCategory>
 
+#include <QtGui/private/qguiapplication_p.h>
+#include <QtPlatformSupport/private/qeglplatformintegration_p.h>
+#include <QtPlatformSupport/private/qfbvthandler_p.h>
+
 QT_BEGIN_NAMESPACE
 
 Q_DECLARE_LOGGING_CATEGORY(qLcEglfsKmsDebug)
+
+class QEglFSKmsInterruptHandler : public QObject
+{
+public:
+    QEglFSKmsInterruptHandler(QEglFSKmsScreen *screen) : m_screen(screen) {
+        m_vtHandler = static_cast<QEGLPlatformIntegration *>(QGuiApplicationPrivate::platformIntegration())->vtHandler();
+        connect(m_vtHandler, &QFbVtHandler::interrupted, this, &QEglFSKmsInterruptHandler::restoreVideoMode);
+        connect(m_vtHandler, &QFbVtHandler::suspendRequested, this, &QEglFSKmsInterruptHandler::handleSuspendRequest);
+    }
+
+public slots:
+    void restoreVideoMode() { m_screen->restoreMode(); }
+    void handleSuspendRequest() {
+        m_screen->restoreMode();
+        m_vtHandler->suspend();
+    }
+
+private:
+    QFbVtHandler *m_vtHandler;
+    QEglFSKmsScreen *m_screen;
+};
 
 void QEglFSKmsScreen::bufferDestroyedHandler(gbm_bo *bo, void *data)
 {
@@ -93,12 +118,18 @@ QEglFSKmsScreen::QEglFSKmsScreen(QEglFSKmsIntegration *integration,
     , m_output(output)
     , m_pos(position)
     , m_cursor(Q_NULLPTR)
+    , m_interruptHandler(new QEglFSKmsInterruptHandler(this))
 {
 }
 
 QEglFSKmsScreen::~QEglFSKmsScreen()
 {
     restoreMode();
+    if (m_output.saved_crtc) {
+        drmModeFreeCrtc(m_output.saved_crtc);
+        m_output.saved_crtc = Q_NULLPTR;
+    }
+    delete m_interruptHandler;
 }
 
 QRect QEglFSKmsScreen::geometry() const
@@ -267,9 +298,6 @@ void QEglFSKmsScreen::restoreMode()
                        0, 0,
                        &m_output.connector_id, 1,
                        &m_output.saved_crtc->mode);
-
-        drmModeFreeCrtc(m_output.saved_crtc);
-        m_output.saved_crtc = Q_NULLPTR;
 
         m_output.mode_set = false;
     }
