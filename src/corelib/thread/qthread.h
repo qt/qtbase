@@ -90,6 +90,7 @@ public:
     void setEventDispatcher(QAbstractEventDispatcher *eventDispatcher);
 
     bool event(QEvent *event) Q_DECL_OVERRIDE;
+    int loopLevel() const;
 
 public Q_SLOTS:
     void start(Priority = InheritPriority);
