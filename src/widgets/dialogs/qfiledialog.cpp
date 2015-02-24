@@ -2711,7 +2711,7 @@ void QFileDialogPrivate::createWidgets()
         return;
     Q_Q(QFileDialog);
     model = new QFileSystemModel(q);
-    options->setFilter(model->filter());
+    model->setFilter(options->filter());
     model->setObjectName(QLatin1String("qt_filesystem_model"));
     if (QPlatformFileDialogHelper *helper = platformFileDialogHelper())
         model->setNameFilterDisables(helper->defaultNameFilterDisables());

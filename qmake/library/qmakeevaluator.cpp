@@ -970,7 +970,11 @@ static ProString msvcBinDirToQMakeArch(QString subdir)
 
 static ProString defaultMsvcArchitecture()
 {
+#if defined(Q_OS_WIN64)
+    return ProString("x86_64");
+#else
     return ProString("x86");
+#endif
 }
 
 static ProString msvcArchitecture(const QString &vcInstallDir, const QString &pathVar)

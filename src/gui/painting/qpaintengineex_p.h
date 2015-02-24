@@ -65,8 +65,6 @@ struct StrokeHandler;
 QDebug Q_GUI_EXPORT &operator<<(QDebug &, const QVectorPath &path);
 #endif
 
-class QPixmapFilter;
-
 class Q_GUI_EXPORT QPaintEngineEx : public QPaintEngine
 {
     Q_DECLARE_PRIVATE(QPaintEngineEx)
@@ -139,13 +137,6 @@ public:
 
     virtual void beginNativePainting() {}
     virtual void endNativePainting() {}
-
-    // Return a pixmap filter of "type" that can render the parameters
-    // in "prototype".  The returned filter is owned by the engine and
-    // will be destroyed when the engine is destroyed.  The "prototype"
-    // allows the engine to pick different filters based on the parameters
-    // that will be requested, and not just the "type".
-    virtual QPixmapFilter *pixmapFilter(int /*type*/, const QPixmapFilter * /*prototype*/) { return 0; }
 
     // These flags are needed in the implementation of paint buffers.
     enum Flags

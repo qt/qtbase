@@ -414,7 +414,7 @@ bool QUrlQuery::operator ==(const QUrlQuery &other) const
 }
 
 /*!
-    Returns \c true if this QUrlQUery object contains no key-value pairs, such as
+    Returns \c true if this QUrlQuery object contains no key-value pairs, such as
     after being default-constructed or after parsing an empty query string.
 
     \sa setQuery(), clear()

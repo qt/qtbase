@@ -497,6 +497,7 @@ private:
     void updateScreens();
     void handleButtonPress(xcb_generic_event_t *event);
     void handleButtonRelease(xcb_generic_event_t *event);
+    void handleMotionNotify(xcb_generic_event_t *event);
 
     bool m_xi2Enabled;
     int m_xi2Minor;
@@ -507,6 +508,7 @@ private:
     XInput2TouchDeviceData *touchDeviceForId(int id);
     void xi2HandleEvent(xcb_ge_event_t *event);
     void xi2HandleHierachyEvent(void *event);
+    void xi2HandleDeviceChangedEvent(void *event);
     int m_xiOpCode, m_xiEventBase, m_xiErrorBase;
 #ifndef QT_NO_TABLETEVENT
     struct TabletData {
@@ -540,6 +542,7 @@ private:
         Qt::Orientations legacyOrientations;
         QPointF lastScrollPosition;
     };
+    void updateScrollingDevice(ScrollingDevice& scrollingDevice, int num_classes, void *classes);
     void xi2HandleScrollEvent(void *event, ScrollingDevice &scrollingDevice);
     QHash<int, ScrollingDevice> m_scrollingDevices;
 #endif // XCB_USE_XINPUT2

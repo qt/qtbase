@@ -1696,7 +1696,7 @@ glyph_metrics_t QFontEngineFT::boundingBox(glyph_t glyph, const QTransform &matr
 
 glyph_metrics_t QFontEngineFT::alphaMapBoundingBox(glyph_t glyph, QFixed subPixelPosition, const QTransform &matrix, QFontEngine::GlyphFormat format)
 {
-    Glyph *g = loadGlyphFor(glyph, subPixelPosition, format, matrix);
+    Glyph *g = loadGlyphFor(glyph, subPixelPosition, format, matrix, true);
 
     glyph_metrics_t overall;
     if (g) {
@@ -1839,7 +1839,8 @@ void QFontEngineFT::unlockAlphaMapForGlyph()
 QFontEngineFT::Glyph *QFontEngineFT::loadGlyphFor(glyph_t g,
                                                   QFixed subPixelPosition,
                                                   GlyphFormat format,
-                                                  const QTransform &t)
+                                                  const QTransform &t,
+                                                  bool fetchBoundingBox)
 {
     FT_Face face = 0;
     QGlyphSet *glyphSet = 0;
@@ -1852,7 +1853,7 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyphFor(glyph_t g,
         Q_ASSERT(glyphSet != 0);
     }
 
-    if (glyphSet != 0 && glyphSet->outline_drawing)
+    if (glyphSet != 0 && glyphSet->outline_drawing && !fetchBoundingBox)
         return 0;
 
     Glyph *glyph = glyphSet != 0 ? glyphSet->getGlyph(g, subPixelPosition) : 0;

@@ -357,14 +357,6 @@ bool QNativeSocketEngine::initialize(QAbstractSocket::SocketType socketType, QAb
         return false;
     }
 
-    // Make the socket nonblocking.
-    if (!setOption(NonBlockingSocketOption, 1)) {
-        d->setError(QAbstractSocket::UnsupportedSocketOperationError,
-                    QNativeSocketEnginePrivate::NonBlockingInitFailedErrorString);
-        close();
-        return false;
-    }
-
     // Set the broadcasting flag if it's a UDP socket.
     if (socketType == QAbstractSocket::UdpSocket
         && !setOption(BroadcastSocketOption, 1)) {

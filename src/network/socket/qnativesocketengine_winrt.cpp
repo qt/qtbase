@@ -768,7 +768,7 @@ bool QNativeSocketEnginePrivate::createNewSocket(QAbstractSocket::SocketType soc
             return false;
         }
         socketDescriptor = qintptr(socket.Detach());
-        return true;
+        break;
     }
     case QAbstractSocket::UdpSocket: {
         ComPtr<IDatagramSocket> socket;
@@ -780,13 +780,21 @@ bool QNativeSocketEnginePrivate::createNewSocket(QAbstractSocket::SocketType soc
         EventRegistrationToken token;
         socketDescriptor = qintptr(socket.Detach());
         udpSocket()->add_MessageReceived(Callback<DatagramReceivedHandler>(this, &QNativeSocketEnginePrivate::handleNewDatagram).Get(), &token);
-        return true;
+        break;
     }
     default:
         qWarning("Invalid socket type");
         return false;
     }
-    return false;
+
+    // Make the socket nonblocking.
+    if (!setOption(QAbstractSocketEngine::NonBlockingSocketOption, 1)) {
+        setError(QAbstractSocket::UnsupportedSocketOperationError, NonBlockingInitFailedErrorString);
+        q_func()->close();
+        return false;
+    }
+
+    return true;
 }
 
 QNativeSocketEnginePrivate::QNativeSocketEnginePrivate()

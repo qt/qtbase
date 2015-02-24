@@ -78,11 +78,12 @@
 
 #ifndef QT_BOOTSTRAPPED
 #if !defined QT_NO_REGULAREXPRESSION
-#  if (defined(__GLIBC__) && defined(__GLIBCXX__)) || (__has_include(<cxxabi.h>) && __has_include(<execinfo.h>))
+#  ifdef __UCLIBC__
+#    if __UCLIBC_HAS_BACKTRACE__
+#      define QLOGGING_HAVE_BACKTRACE
+#    endif
+#  elif (defined(__GLIBC__) && defined(__GLIBCXX__)) || (__has_include(<cxxabi.h>) && __has_include(<execinfo.h>))
 #    define QLOGGING_HAVE_BACKTRACE
-#    include <qregularexpression.h>
-#    include <cxxabi.h>
-#    include <execinfo.h>
 #  endif
 #endif
 
@@ -115,6 +116,12 @@ static QT_PREPEND_NAMESPACE(qint64) qt_gettid()
     QT_USE_NAMESPACE
     return qintptr(QThread::currentThreadId());
 }
+#endif
+
+#ifdef QLOGGING_HAVE_BACKTRACE
+#  include <qregularexpression.h>
+#  include <cxxabi.h>
+#  include <execinfo.h>
 #endif
 #endif // !QT_BOOTSTRAPPED
 
@@ -998,7 +1005,7 @@ QMessagePattern::QMessagePattern()
 
 QMessagePattern::~QMessagePattern()
 {
-    for (int i = 0; literals[i] != 0; ++i)
+    for (int i = 0; literals[i]; ++i)
         delete [] literals[i];
     delete [] literals;
     literals = 0;
@@ -1008,8 +1015,12 @@ QMessagePattern::~QMessagePattern()
 
 void QMessagePattern::setPattern(const QString &pattern)
 {
+    if (literals) {
+        for (int i = 0; literals[i]; ++i)
+            delete [] literals[i];
+        delete [] literals;
+    }
     delete [] tokens;
-    delete [] literals;
 
     // scanner
     QList<QString> lexemes;
@@ -1285,13 +1296,13 @@ QString qFormatLogMessage(QtMsgType type, const QMessageLogContext &context, con
             message.append(QString::number(qlonglong(QThread::currentThread()->currentThread()), 16));
 #ifdef QLOGGING_HAVE_BACKTRACE
         } else if (token == backtraceTokenC) {
-            QVarLengthArray<void*, 32> buffer(15 + pattern->backtraceDepth);
+            QVarLengthArray<void*, 32> buffer(7 + pattern->backtraceDepth);
             int n = backtrace(buffer.data(), buffer.size());
             if (n > 0) {
-                QScopedPointer<char*, QScopedPointerPodDeleter> strings(backtrace_symbols(buffer.data(), n));
                 int numberPrinted = 0;
                 for (int i = 0; i < n && numberPrinted < pattern->backtraceDepth; ++i) {
-                    QString trace = QString::fromLatin1(strings.data()[i]);
+                    QScopedPointer<char*, QScopedPointerPodDeleter> strings(backtrace_symbols(buffer.data() + i, 1));
+                    QString trace = QString::fromLatin1(strings.data()[0]);
                     // The results of backtrace_symbols looks like this:
                     //    /lib/libc.so.6(__libc_start_main+0xf3) [0x4a937413]
                     // The offset and function name are optional.

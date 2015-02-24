@@ -79,6 +79,8 @@ void QLinuxFbIntegration::initialize()
 
     m_inputContext = QPlatformInputContextFactory::create();
 
+    m_nativeInterface.reset(new QPlatformNativeInterface);
+
     m_vtHandler.reset(new QFbVtHandler);
 
     if (!qEnvironmentVariableIntValue("QT_QPA_FB_DISABLE_INPUT"))
@@ -139,6 +141,11 @@ void QLinuxFbIntegration::createInputHandlers()
 #endif // QT_NO_TSLIB
         new QEvdevTouchScreenHandlerThread(QString(), this);
 #endif
+}
+
+QPlatformNativeInterface *QLinuxFbIntegration::nativeInterface() const
+{
+    return m_nativeInterface.data();
 }
 
 QT_END_NAMESPACE

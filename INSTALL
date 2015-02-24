@@ -1,10 +1,10 @@
         INSTALLING Qt Source Package Version %VERSION%.
 
 For instructions on building and installing Qt for each supported platform,
-please see http://qt-project.org/doc/qt-%SHORTVERSION%/build-sources.html,
+please see http://doc.qt.io/qt-%SHORTVERSION%/build-sources.html,
 or follow one of these links:
 
-Mac OS X:         http://qt-project.org/doc/qt-%SHORTVERSION%/macosx-building.html
-Windows:          http://qt-project.org/doc/qt-%SHORTVERSION%/windows-building.html
-X11 Platforms:    http://qt-project.org/doc/qt-%SHORTVERSION%/linux-building.html
-Windows CE:       http://qt-project.org/doc/qt-%SHORTVERSION%/install-wince.html
+Mac OS X:         http://doc.qt.io/qt-%SHORTVERSION%/osx-building.html
+Windows:          http://doc.qt.io/qt-%SHORTVERSION%/windows-building.html
+X11 Platforms:    http://doc.qt.io/qt-%SHORTVERSION%/linux-building.html
+Windows CE:       http://doc.qt.io/qt-%SHORTVERSION%/install-wince.html

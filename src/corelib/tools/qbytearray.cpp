@@ -786,7 +786,7 @@ static inline char qToLower(char c)
     occurrences of a particular value with another, use one of the
     two-parameter replace() overloads.
 
-    {QByteArray}s can be compared using overloaded operators such as
+    \l{QByteArray}s can be compared using overloaded operators such as
     operator<(), operator<=(), operator==(), operator>=(), and so on.
     The comparison is based exclusively on the numeric values
     of the characters and is very fast, but is not what a human would
@@ -831,7 +831,7 @@ static inline char qToLower(char c)
     lastIndexOf(), operator<(), operator<=(), operator>(),
     operator>=(), toLower() and toUpper().
 
-    This issue does not apply to {QString}s since they represent
+    This issue does not apply to \l{QString}s since they represent
     characters using Unicode.
 
     \sa QString, QBitArray

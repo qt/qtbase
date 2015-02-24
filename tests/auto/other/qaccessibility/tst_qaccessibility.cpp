@@ -769,6 +769,7 @@ void tst_QAccessibility::textAttributes_data()
     QTest::newRow("left right left aligned 10") << defaultFont << leftRightLeftAligned << 10 << 10 << 11 << rightAlign;
     QTest::newRow("left right left aligned 11") << defaultFont << leftRightLeftAligned << 11 << 11 << 15 << bold;
     QTest::newRow("left right left aligned 15") << defaultFont << leftRightLeftAligned << 15 << 11 << 15 << bold;
+    QTest::newRow("empty with no fragments") << defaultFont << QString::fromLatin1("\n\n\n\n") << 0 << 0 << 1 << defaults;
 }
 
 void tst_QAccessibility::textAttributes()

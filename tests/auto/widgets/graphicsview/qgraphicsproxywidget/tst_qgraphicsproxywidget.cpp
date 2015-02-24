@@ -175,6 +175,7 @@ private slots:
     void windowFrameMargins();
     void QTBUG_6986_sendMouseEventToAlienWidget();
     void mapToGlobal();
+    void mapToGlobalWithoutScene();
     void QTBUG_43780_visibility();
 };
 
@@ -3688,6 +3689,16 @@ void tst_QGraphicsProxyWidget::mapToGlobal() // QTBUG-41135
              qPrintable(QStringLiteral("%1, %2 != %3, %4")
                         .arg(viewCenter.x()).arg(viewCenter.y())
                         .arg(embeddedCenterGlobal.x()).arg(embeddedCenterGlobal.y())));
+}
+
+void tst_QGraphicsProxyWidget::mapToGlobalWithoutScene() // QTBUG-44509
+{
+    QGraphicsProxyWidget proxyWidget;
+    QWidget *embeddedWidget = new QWidget;
+    proxyWidget.setWidget(embeddedWidget);
+    const QPoint localPos(0, 0);
+    const QPoint globalPos = embeddedWidget->mapToGlobal(localPos);
+    QCOMPARE(embeddedWidget->mapFromGlobal(globalPos), localPos);
 }
 
 // QTBUG_43780: Embedded widgets have isWindow()==true but showing them should not

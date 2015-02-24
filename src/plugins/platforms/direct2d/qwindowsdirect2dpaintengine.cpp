@@ -68,8 +68,6 @@ enum {
     D2DDebugFillRectTag,
     D2DDebugDrawRectsTag,
     D2DDebugDrawRectFsTag,
-    D2DDebugDrawLinesTag,
-    D2DDebugDrawLineFsTag,
     D2DDebugDrawEllipseTag,
     D2DDebugDrawEllipseFTag,
     D2DDebugDrawImageTag,
@@ -102,15 +100,20 @@ static inline ID2D1Factory1 *factory()
     return QWindowsDirect2DContext::instance()->d2dFactory();
 }
 
-static inline D2D1_MATRIX_3X2_F transformFromLine(const QLineF &line, qreal penWidth)
+static inline D2D1_MATRIX_3X2_F transformFromLine(const QLineF &line, qreal penWidth, qreal dashOffset)
 {
     const qreal halfWidth = penWidth / 2;
     const qreal angle = -qDegreesToRadians(line.angle());
-    QTransform transform = QTransform::fromTranslate(line.p1().x() + qSin(angle) * halfWidth,
-                                                     line.p1().y() - qCos(angle) * halfWidth);
+    const qreal sinA = qSin(angle);
+    const qreal cosA = qCos(angle);
+    QTransform transform = QTransform::fromTranslate(line.p1().x() + dashOffset * cosA + sinA * halfWidth,
+                                                     line.p1().y() + dashOffset * sinA - cosA * halfWidth);
     transform.rotateRadians(angle);
     return to_d2d_matrix_3x2_f(transform);
 }
+
+static void adjustLine(QPointF *p1, QPointF *p2);
+static bool isLinePositivelySloped(const QPointF &p1, const QPointF &p2);
 
 class Direct2DPathGeometryWriter
 {
@@ -118,6 +121,7 @@ public:
     Direct2DPathGeometryWriter()
         : m_inFigure(false)
         , m_roundCoordinates(false)
+        , m_adjustPositivelySlopedLines(false)
     {
 
     }
@@ -152,6 +156,11 @@ public:
         m_roundCoordinates = enable;
     }
 
+    void setPositiveSlopeAdjustmentEnabled(bool enable)
+    {
+        m_adjustPositivelySlopedLines = enable;
+    }
+
     bool isInFigure() const
     {
         return m_inFigure;
@@ -164,11 +173,20 @@ public:
 
         m_sink->BeginFigure(adjusted(point), D2D1_FIGURE_BEGIN_FILLED);
         m_inFigure = true;
+        m_previousPoint = point;
     }
 
     void lineTo(const QPointF &point)
     {
-        m_sink->AddLine(adjusted(point));
+        QPointF pt = point;
+        if (m_adjustPositivelySlopedLines && isLinePositivelySloped(m_previousPoint, point)) {
+            moveTo(m_previousPoint - QPointF(0, 1));
+            pt -= QPointF(0, 1);
+        }
+        m_sink->AddLine(adjusted(pt));
+        if (pt != point)
+            moveTo(point);
+        m_previousPoint = point;
     }
 
     void curveTo(const QPointF &p1, const QPointF &p2, const QPointF &p3)
@@ -180,6 +198,7 @@ public:
         };
 
         m_sink->AddBezier(segment);
+        m_previousPoint = p3;
     }
 
     void close()
@@ -212,6 +231,8 @@ private:
 
     bool m_inFigure;
     bool m_roundCoordinates;
+    bool m_adjustPositivelySlopedLines;
+    QPointF m_previousPoint;
 };
 
 struct D2DVectorPathCache {
@@ -257,6 +278,7 @@ public:
         ComPtr<ID2D1Brush> brush;
         ComPtr<ID2D1StrokeStyle1> strokeStyle;
         ComPtr<ID2D1BitmapBrush1> dashBrush;
+        int dashLength;
 
         inline void reset() {
             emulate = false;
@@ -264,6 +286,7 @@ public:
             brush.Reset();
             strokeStyle.Reset();
             dashBrush.Reset();
+            dashLength = 0;
         }
     } pen;
 
@@ -566,6 +589,7 @@ public:
             D2D1_BITMAP_BRUSH_PROPERTIES1 bitmapBrushProperties = D2D1::BitmapBrushProperties1(
                         D2D1_EXTEND_MODE_WRAP, D2D1_EXTEND_MODE_CLAMP, D2D1_INTERPOLATION_MODE_LINEAR);
             hr = dc()->CreateBitmapBrush(bitmap.bitmap(), bitmapBrushProperties, &pen.dashBrush);
+            pen.dashLength = bitmap.size().width();
         } else {
             hr = factory()->CreateStrokeStyle(props, NULL, 0, &pen.strokeStyle);
         }
@@ -795,6 +819,8 @@ public:
 
         writer.setWindingFillEnabled(path.hasWindingFill());
         writer.setAliasingEnabled(alias);
+        writer.setPositiveSlopeAdjustmentEnabled(path.shape() == QVectorPath::LinesHint
+                                                 || path.shape() == QVectorPath::PolygonHint);
 
         const QPainterPath::ElementType *types = path.elements();
         const int count = path.elementCount();
@@ -908,6 +934,90 @@ public:
                            NULL,
                            pen.brush.Get(),
                            DWRITE_MEASURING_MODE_GDI_CLASSIC);
+    }
+
+    void stroke(const QVectorPath &path)
+    {
+        Q_Q(QWindowsDirect2DPaintEngine);
+
+        // Default path (no optimization)
+        if (!(path.shape() == QVectorPath::LinesHint || path.shape() == QVectorPath::PolygonHint)
+                || !pen.dashBrush || q->state()->renderHints.testFlag(QPainter::HighQualityAntialiasing)) {
+            ComPtr<ID2D1Geometry> geometry = vectorPathToID2D1PathGeometry(path);
+            if (!geometry) {
+                qWarning("%s: Could not convert path to d2d geometry", __FUNCTION__);
+                return;
+            }
+            dc()->DrawGeometry(geometry.Get(), pen.brush.Get(), pen.qpen.widthF(), pen.strokeStyle.Get());
+            return;
+        }
+
+        // Optimized dash line drawing
+        const bool isPolygon = path.shape() == QVectorPath::PolygonHint && path.elementCount() >= 3;
+        const bool implicitClose = isPolygon && (path.hints() & QVectorPath::ImplicitClose);
+        const bool skipJoin = !isPolygon // Non-polygons don't require joins
+                || (pen.qpen.joinStyle() == Qt::MiterJoin && qFuzzyIsNull(pen.qpen.miterLimit()));
+        const qreal *points = path.points();
+        const int lastElement = path.elementCount() - (implicitClose ? 1 : 2);
+        qreal dashOffset = 0;
+        QPointF jointStart;
+        ID2D1Brush *brush = pen.dashBrush ? pen.dashBrush.Get() : pen.brush.Get();
+        for (int i = 0; i <= lastElement; ++i) {
+            QPointF p1(points[i * 2], points[i * 2 + 1]);
+            QPointF p2 = implicitClose && i == lastElement ? QPointF(points[0], points[1])
+                                                           : QPointF(points[i * 2 + 2], points[i * 2 + 3]);
+            if (!isPolygon) // Advance the count for lines
+                ++i;
+
+            // Match raster engine output
+            if (p1 == p2 && pen.qpen.widthF() <= 1.0) {
+                q->fillRect(QRectF(p1, QSizeF(pen.qpen.widthF(), pen.qpen.widthF())), pen.qpen.brush());
+                continue;
+            }
+
+            if (!q->antiAliasingEnabled())
+                adjustLine(&p1, &p2);
+
+            q->adjustForAliasing(&p1);
+            q->adjustForAliasing(&p2);
+
+            const QLineF line(p1, p2);
+            const qreal lineLength = line.length();
+            if (pen.dashBrush) {
+                pen.dashBrush->SetTransform(transformFromLine(line, pen.qpen.widthF(), dashOffset));
+                dashOffset = pen.dashLength - fmod(lineLength - dashOffset, pen.dashLength);
+            }
+            dc()->DrawLine(to_d2d_point_2f(p1), to_d2d_point_2f(p2),
+                           brush, pen.qpen.widthF(), NULL);
+
+            if (skipJoin)
+                continue;
+
+            // Patch the join with the original brush
+            const qreal patchSegment = pen.dashBrush ? qBound(0.0, (pen.dashLength - dashOffset) / lineLength, 1.0)
+                                                     : pen.qpen.widthF();
+            if (i > 0) {
+                Direct2DPathGeometryWriter writer;
+                writer.begin();
+                writer.moveTo(jointStart);
+                writer.lineTo(p1);
+                writer.lineTo(line.pointAt(patchSegment));
+                writer.close();
+                dc()->DrawGeometry(writer.geometry().Get(), pen.brush.Get(), pen.qpen.widthF(), pen.strokeStyle.Get());
+            }
+            // Record the start position of the next joint
+            jointStart = line.pointAt(1 - patchSegment);
+
+            if (implicitClose && i == lastElement) { // Close the polygon
+                Direct2DPathGeometryWriter writer;
+                writer.begin();
+                writer.moveTo(jointStart);
+                writer.lineTo(p2);
+                writer.lineTo(QLineF(p2, QPointF(points[2], points[3])).pointAt(patchSegment));
+                writer.close();
+                dc()->DrawGeometry(writer.geometry().Get(), pen.brush.Get(), pen.qpen.widthF(), pen.strokeStyle.Get());
+            }
+        }
     }
 
     ComPtr<IDWriteFontFace> fontFaceFromFontEngine(QFontEngine *fe)
@@ -1055,20 +1165,12 @@ void QWindowsDirect2DPaintEngine::setState(QPainterState *s)
 
 void QWindowsDirect2DPaintEngine::draw(const QVectorPath &path)
 {
-    Q_D(QWindowsDirect2DPaintEngine);
-
-    ComPtr<ID2D1Geometry> geometry = d->vectorPathToID2D1PathGeometry(path);
-    if (!geometry) {
-        qWarning("%s: Could not convert path to d2d geometry", __FUNCTION__);
-        return;
-    }
-
     const QBrush &brush = state()->brush;
     if (qbrush_style(brush) != Qt::NoBrush) {
         if (emulationRequired(BrushEmulation))
             rasterFill(path, brush);
         else
-            fill(geometry.Get(), brush);
+            fill(path, brush);
     }
 
     const QPen &pen = state()->pen;
@@ -1076,7 +1178,7 @@ void QWindowsDirect2DPaintEngine::draw(const QVectorPath &path)
         if (emulationRequired(PenEmulation))
             QPaintEngineEx::stroke(path, pen);
         else
-            stroke(geometry.Get(), pen);
+            stroke(path, pen);
     }
 }
 
@@ -1106,18 +1208,6 @@ void QWindowsDirect2DPaintEngine::fill(const QVectorPath &path, const QBrush &br
     d->dc()->FillGeometry(geometry.Get(), d->brush.brush.Get());
 }
 
-void QWindowsDirect2DPaintEngine::fill(ID2D1Geometry *geometry, const QBrush &brush)
-{
-    Q_D(QWindowsDirect2DPaintEngine);
-    D2D_TAG(D2DDebugFillTag);
-
-    ensureBrush(brush);
-    if (!d->brush.brush)
-        return;
-
-    d->dc()->FillGeometry(geometry, d->brush.brush.Get());
-}
-
 void QWindowsDirect2DPaintEngine::stroke(const QVectorPath &path, const QPen &pen)
 {
     Q_D(QWindowsDirect2DPaintEngine);
@@ -1135,25 +1225,7 @@ void QWindowsDirect2DPaintEngine::stroke(const QVectorPath &path, const QPen &pe
     if (!d->pen.brush)
         return;
 
-    ComPtr<ID2D1Geometry> geometry = d->vectorPathToID2D1PathGeometry(path);
-    if (!geometry) {
-        qWarning("%s: Could not convert path to d2d geometry", __FUNCTION__);
-        return;
-    }
-
-    d->dc()->DrawGeometry(geometry.Get(), d->pen.brush.Get(), d->pen.qpen.widthF(), d->pen.strokeStyle.Get());
-}
-
-void QWindowsDirect2DPaintEngine::stroke(ID2D1Geometry *geometry, const QPen &pen)
-{
-    Q_D(QWindowsDirect2DPaintEngine);
-    D2D_TAG(D2DDebugFillTag);
-
-    ensurePen(pen);
-    if (!d->pen.brush)
-        return;
-
-    d->dc()->DrawGeometry(geometry, d->pen.brush.Get(), d->pen.qpen.widthF(), d->pen.strokeStyle.Get());
+    d->stroke(path);
 }
 
 void QWindowsDirect2DPaintEngine::clip(const QVectorPath &path, Qt::ClipOperation op)
@@ -1298,88 +1370,6 @@ static void adjustLine(QPointF *p1, QPointF *p2)
     if (isLinePositivelySloped(*p1, *p2)) {
         p1->ry() -= qreal(1.0);
         p2->ry() -= qreal(1.0);
-    }
-}
-
-void QWindowsDirect2DPaintEngine::drawLines(const QLine *lines, int lineCount)
-{
-    Q_D(QWindowsDirect2DPaintEngine);
-    D2D_TAG(D2DDebugDrawLinesTag);
-
-    ensurePen();
-
-    if (emulationRequired(PenEmulation)) {
-        QPaintEngineEx::drawLines(lines, lineCount);
-    } else if (d->pen.brush) {
-        for (int i = 0; i < lineCount; i++) {
-            QPointF p1 = lines[i].p1();
-            QPointF p2 = lines[i].p2();
-
-            // Match raster engine output
-            if (p1 == p2 && d->pen.qpen.widthF() <= 1.0) {
-                fillRect(QRectF(p1, QSizeF(d->pen.qpen.widthF(), d->pen.qpen.widthF())),
-                         d->pen.qpen.brush());
-                continue;
-            }
-
-            // Match raster engine output
-            if (!antiAliasingEnabled())
-                adjustLine(&p1, &p2);
-
-            adjustForAliasing(&p1);
-            adjustForAliasing(&p2);
-
-            D2D1_POINT_2F d2d_p1 = to_d2d_point_2f(p1);
-            D2D1_POINT_2F d2d_p2 = to_d2d_point_2f(p2);
-
-            if (!d->pen.dashBrush || state()->renderHints.testFlag(QPainter::HighQualityAntialiasing)) {
-                d->dc()->DrawLine(d2d_p1, d2d_p2, d->pen.brush.Get(), d->pen.qpen.widthF(), d->pen.strokeStyle.Get());
-            } else {
-                d->pen.dashBrush->SetTransform(transformFromLine(lines[i], d->pen.qpen.widthF()));
-                d->dc()->DrawLine(d2d_p1, d2d_p2, d->pen.dashBrush.Get(), d->pen.qpen.widthF(), NULL);
-            }
-        }
-    }
-}
-
-void QWindowsDirect2DPaintEngine::drawLines(const QLineF *lines, int lineCount)
-{
-    Q_D(QWindowsDirect2DPaintEngine);
-    D2D_TAG(D2DDebugDrawLineFsTag);
-
-    ensurePen();
-
-    if (emulationRequired(PenEmulation)) {
-        QPaintEngineEx::drawLines(lines, lineCount);
-    } else if (d->pen.brush) {
-        for (int i = 0; i < lineCount; i++) {
-            QPointF p1 = lines[i].p1();
-            QPointF p2 = lines[i].p2();
-
-            // Match raster engine output
-            if (p1 == p2 && d->pen.qpen.widthF() <= 1.0) {
-                fillRect(QRectF(p1, QSizeF(d->pen.qpen.widthF(), d->pen.qpen.widthF())),
-                         d->pen.qpen.brush());
-                continue;
-            }
-
-            // Match raster engine output
-            if (!antiAliasingEnabled())
-                adjustLine(&p1, &p2);
-
-            adjustForAliasing(&p1);
-            adjustForAliasing(&p2);
-
-            D2D1_POINT_2F d2d_p1 = to_d2d_point_2f(p1);
-            D2D1_POINT_2F d2d_p2 = to_d2d_point_2f(p2);
-
-            if (!d->pen.dashBrush || state()->renderHints.testFlag(QPainter::HighQualityAntialiasing)) {
-                d->dc()->DrawLine(d2d_p1, d2d_p2, d->pen.brush.Get(), d->pen.qpen.widthF(), d->pen.strokeStyle.Get());
-            } else {
-                d->pen.dashBrush->SetTransform(transformFromLine(lines[i], d->pen.qpen.widthF()));
-                d->dc()->DrawLine(d2d_p1, d2d_p2, d->pen.dashBrush.Get(), d->pen.qpen.widthF(), NULL);
-            }
-        }
     }
 }
 

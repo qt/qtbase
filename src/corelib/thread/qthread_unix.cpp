@@ -389,14 +389,13 @@ Qt::HANDLE QThread::currentThreadId() Q_DECL_NOTHROW
 
 int QThread::idealThreadCount() Q_DECL_NOTHROW
 {
-    int cores = -1;
+    int cores = 1;
 
 #if defined(Q_OS_HPUX)
     // HP-UX
     struct pst_dynamic psd;
     if (pstat_getdynamic(&psd, sizeof(psd), 1, 0) == -1) {
         perror("pstat_getdynamic");
-        cores = -1;
     } else {
         cores = (int)psd.psd_proc_cnt;
     }
@@ -408,7 +407,6 @@ int QThread::idealThreadCount() Q_DECL_NOTHROW
     mib[1] = HW_NCPU;
     if (sysctl(mib, 2, &cores, &len, NULL, 0) != 0) {
         perror("sysctl");
-        cores = -1;
     }
 #elif defined(Q_OS_IRIX)
     // IRIX
@@ -443,9 +441,9 @@ int QThread::idealThreadCount() Q_DECL_NOTHROW
 #else
     // the rest: Linux, Solaris, AIX, Tru64
     cores = (int)sysconf(_SC_NPROCESSORS_ONLN);
-#endif
     if (cores == -1)
         return 1;
+#endif
     return cores;
 }
 

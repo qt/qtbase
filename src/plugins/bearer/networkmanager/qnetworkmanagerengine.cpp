@@ -80,10 +80,10 @@ QNetworkManagerEngine::QNetworkManagerEngine(QObject *parent)
             this, SLOT(ofonoUnRegistered(QString)));
 
     if (QDBusConnection::systemBus().interface()->isServiceRegistered("org.ofono"))
-        ofonoRegistered();
+        QMetaObject::invokeMethod(this, "ofonoRegistered", Qt::QueuedConnection);
 
     if (QDBusConnection::systemBus().interface()->isServiceRegistered(NM_DBUS_SERVICE))
-        nmRegistered();
+        QMetaObject::invokeMethod(this, "nmRegistered", Qt::QueuedConnection);
 }
 
 QNetworkManagerEngine::~QNetworkManagerEngine()

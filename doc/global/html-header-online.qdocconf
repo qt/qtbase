@@ -79,7 +79,7 @@ HTML.postheader = \
     "                            </a>\n" \
     "                        </li>\n" \
     "                        <li>\n" \
-    "                            <a target=\"_blank\" href=\"http://blog.qt.digia.com/\" data-icon=\"\">\n" \
+    "                            <a target=\"_blank\" href=\"http://blog.qt.io/\" data-icon=\"\">\n" \
     "                                <span>Blog</span>\n" \
     "                            </a>\n" \
     "                        </li>\n" \

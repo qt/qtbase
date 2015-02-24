@@ -54,6 +54,7 @@
 #  include <sys/statvfs.h>
 #elif defined(Q_OS_SOLARIS)
 #  include <sys/mnttab.h>
+#  include <sys/statvfs.h>
 #elif defined(Q_OS_HAIKU)
 #  include <Directory.h>
 #  include <Path.h>
@@ -210,17 +211,17 @@ inline bool QStorageIterator::next()
 
 inline QString QStorageIterator::rootPath() const
 {
-    return QFile::decodeName(mnt->mnt_mountp);
+    return QFile::decodeName(mnt.mnt_mountp);
 }
 
 inline QByteArray QStorageIterator::fileSystemType() const
 {
-    return QByteArray(mnt->mnt_fstype);
+    return QByteArray(mnt.mnt_fstype);
 }
 
 inline QByteArray QStorageIterator::device() const
 {
-    return QByteArray(mnt->mnt_mntopts);
+    return QByteArray(mnt.mnt_mntopts);
 }
 
 #elif defined(Q_OS_ANDROID)

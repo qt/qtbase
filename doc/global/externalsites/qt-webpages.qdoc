@@ -74,7 +74,7 @@
     \title Livecoding video effects with Qt5
 */
 /*!
-    \externalpage http://blog.qt.digia.com/2012/02/29/pimp-my-video-shader-effects-and-multimedia/
+    \externalpage http://blog.qt.io/2012/02/29/pimp-my-video-shader-effects-and-multimedia/
     \title Pimp my video
 */
 /*!
@@ -92,12 +92,12 @@
 */
 
 /*!
-    \externalpage http://qt-project.org/doc/qt-4.8
+    \externalpage http://doc.qt.io/qt-4.8
     \title Qt 4.8 Reference Documentation
 */
 
 /*!
-    \externalpage http://qt-project.org/doc/qt-4.8/qtquick.html
+    \externalpage http://doc.qt.io/qt-4.8/qtquick.html
     \title Qt Quick 1 Reference Documentation
 */
 
