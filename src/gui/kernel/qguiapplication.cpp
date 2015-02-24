@@ -1329,6 +1329,9 @@ void QGuiApplicationPrivate::init()
 #endif
 
 #ifndef QT_NO_LIBRARY
+    if (qEnvironmentVariableIntValue("QT_LOAD_TESTABILITY") > 0)
+        loadTestability = true;
+
     if (loadTestability) {
         QLibrary testLib(QStringLiteral("qttestability"));
         if (testLib.load()) {
