@@ -84,7 +84,15 @@ class tst_QAccessibilityLinux : public QObject
     Q_OBJECT
 
 public:
-    tst_QAccessibilityLinux() : m_window(0), root(0), rootApplication(0), mainWindow(0) {}
+    tst_QAccessibilityLinux() : m_window(0), root(0), rootApplication(0), mainWindow(0)
+    {
+        qputenv("QT_LINUX_ACCESSIBILITY_ALWAYS_ON", QByteArrayLiteral("1"));
+        dbus = new DBusConnection();
+    }
+    ~tst_QAccessibilityLinux()
+    {
+        delete dbus;
+    }
 
 private slots:
     void initTestCase();
@@ -112,7 +120,7 @@ private:
     QDBusInterface *rootApplication;
     QDBusInterface *mainWindow;
 
-    DBusConnection dbus;
+    DBusConnection *dbus;
 };
 
 // helper to find children of a dbus object
@@ -149,7 +157,7 @@ QString tst_QAccessibilityLinux::getParent(QDBusInterface *interface)
 // helper to get dbus object
 QDBusInterface *tst_QAccessibilityLinux::getInterface(const QString &path, const QString &interfaceName)
 {
-    return new QDBusInterface(address, path, interfaceName, dbus.connection(), this);
+    return new QDBusInterface(address, path, interfaceName, dbus->connection(), this);
 }
 
 void tst_QAccessibilityLinux::initTestCase()
@@ -158,14 +166,22 @@ void tst_QAccessibilityLinux::initTestCase()
     qApp->setStyle("fusion");
     qApp->setApplicationName("tst_QAccessibilityLinux app");
 
-    // Pretend we are a screen reader
+
+    // trigger launching of at-spi if it isn't running already
     QDBusConnection c = QDBusConnection::sessionBus();
     OrgA11yStatusInterface *a11yStatus = new OrgA11yStatusInterface(QStringLiteral("org.a11y.Bus"), QStringLiteral("/org/a11y/bus"), c, this);
-    a11yStatus->setScreenReaderEnabled(true);
+    // don't care about the result, calling any function on "org.a11y.Bus" will launch the service
+    a11yStatus->isEnabled();
+    for (int i = 0; i < 5; ++i) {
+        if (!dbus->isEnabled())
+            QTest::qWait(100);
+    }
 
-    QTRY_VERIFY(dbus.isEnabled());
-    QTRY_VERIFY(dbus.connection().isConnected());
-    address = dbus.connection().baseService().toLatin1().data();
+    if (!dbus->isEnabled())
+        QSKIP("Could not connect to AT-SPI, make sure lib atspi2 is installed.");
+    QTRY_VERIFY(dbus->isEnabled());
+    QTRY_VERIFY(dbus->connection().isConnected());
+    address = dbus->connection().baseService().toLatin1().data();
     QVERIFY(!address.isEmpty());
 
     m_window = new AccessibleTestWindow();
@@ -185,7 +201,7 @@ void tst_QAccessibilityLinux::cleanupTestCase()
 
 void tst_QAccessibilityLinux::registerDbus()
 {
-    QVERIFY(dbus.connection().isConnected());
+    QVERIFY(dbus->connection().isConnected());
 
     root = getInterface("/org/a11y/atspi/accessible/root",
                         "org.a11y.atspi.Accessible");
