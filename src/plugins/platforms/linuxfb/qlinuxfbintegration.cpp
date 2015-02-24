@@ -69,6 +69,8 @@ void QLinuxFbIntegration::initialize()
 
     m_inputContext = QPlatformInputContextFactory::create();
 
+    m_nativeInterface.reset(new QPlatformNativeInterface);
+
     m_vtHandler.reset(new QFbVtHandler);
 }
 
@@ -111,6 +113,11 @@ QPlatformFontDatabase *QLinuxFbIntegration::fontDatabase() const
 QPlatformServices *QLinuxFbIntegration::services() const
 {
     return m_services.data();
+}
+
+QPlatformNativeInterface *QLinuxFbIntegration::nativeInterface() const
+{
+    return m_nativeInterface.data();
 }
 
 QT_END_NAMESPACE
