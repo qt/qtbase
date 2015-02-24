@@ -58,7 +58,6 @@ public:
 
 private:
     QImage m_qImage;
-    CGImageRef m_cgImage;
     QSize m_requestedSize;
 };
 

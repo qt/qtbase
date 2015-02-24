@@ -39,14 +39,11 @@ QT_BEGIN_NAMESPACE
 
 QCocoaBackingStore::QCocoaBackingStore(QWindow *window)
     : QPlatformBackingStore(window)
-    , m_cgImage(0)
 {
 }
 
 QCocoaBackingStore::~QCocoaBackingStore()
 {
-    CGImageRelease(m_cgImage);
-    m_cgImage = 0;
 }
 
 QPaintDevice *QCocoaBackingStore::paintDevice()
@@ -58,9 +55,6 @@ QPaintDevice *QCocoaBackingStore::paintDevice()
     // either due to a window resize or devicePixelRatio change.
     QSize effectiveBufferSize = m_requestedSize * windowDevicePixelRatio;
     if (m_qImage.size() != effectiveBufferSize) {
-        CGImageRelease(m_cgImage);
-        m_cgImage = 0;
-
         QImage::Format format = (window()->format().hasAlpha() || cocoaWindow->m_drawContentBorderGradient)
                 ? QImage::Format_ARGB32_Premultiplied : QImage::Format_RGB32;
         m_qImage = QImage(effectiveBufferSize, format);
@@ -73,15 +67,6 @@ QPaintDevice *QCocoaBackingStore::paintDevice()
 
 void QCocoaBackingStore::flush(QWindow *win, const QRegion &region, const QPoint &offset)
 {
-    // A flush means that qImage has changed. Since CGImages are seen as
-    // immutable, CoreImage fails to pick up this change for m_cgImage
-    // (since it usually cached), so we must recreate it. We await doing this
-    // until one of the views needs it, since, together with calling
-    // "setNeedsDisplayInRect" instead of "displayRect" we will, in most
-    // cases, get away with doing this once for every repaint. Also note that
-    // m_cgImage is only a reference to the data inside m_qImage, it is not a copy.
-    CGImageRelease(m_cgImage);
-    m_cgImage = 0;
     if (!m_qImage.isNull()) {
         if (QCocoaWindow *cocoaWindow = static_cast<QCocoaWindow *>(win->handle()))
             [cocoaWindow->m_qtView flushBackingStore:this region:region offset:offset];
