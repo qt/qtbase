@@ -117,6 +117,14 @@ static void initResources()
 
 QT_BEGIN_NAMESPACE
 
+// Helper macro for static functions to check on the existence of the application class.
+#define CHECK_QAPP_INSTANCE(...) \
+    if (Q_LIKELY(QCoreApplication::instance())) { \
+    } else { \
+        qWarning("Must construct a QApplication first."); \
+        return __VA_ARGS__; \
+    }
+
 Q_CORE_EXPORT void qt_call_post_routines();
 
 QApplicationPrivate *QApplicationPrivate::self = 0;
@@ -2855,6 +2863,7 @@ void QApplicationPrivate::sendSyntheticEnterLeave(QWidget *widget)
 */
 QDesktopWidget *QApplication::desktop()
 {
+    CHECK_QAPP_INSTANCE(Q_NULLPTR)
     if (!qt_desktopWidget || // not created yet
          !(qt_desktopWidget->windowType() == Qt::Desktop)) { // reparented away
         qt_desktopWidget = new QDesktopWidget();
@@ -4110,6 +4119,7 @@ void QApplication::setEffectEnabled(Qt::UIEffect effect, bool enable)
 */
 bool QApplication::isEffectEnabled(Qt::UIEffect effect)
 {
+    CHECK_QAPP_INSTANCE(false)
     return QColormap::instance().depth() >= 16
            && (QApplicationPrivate::enabledAnimations & QPlatformTheme::GeneralUiEffect)
            && (QApplicationPrivate::enabledAnimations & uiEffectToFlag(effect));

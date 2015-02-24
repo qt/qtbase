@@ -172,6 +172,8 @@ private slots:
 
     void abortQuitOnShow();
 
+    void staticFunctions();
+
     void settableStyleHints_data();
     void settableStyleHints();  // Needs to run last as it changes style hints.
 };
@@ -2297,6 +2299,28 @@ void tst_QApplication::abortQuitOnShow()
     QWidget *window2 = new ShowCloseShowWidget(true);
     window2->show();
     QCOMPARE(app.exec(), 1);
+}
+
+// Test that static functions do not crash if there is no application instance.
+void tst_QApplication::staticFunctions()
+{
+    QApplication::setStyle(QStringLiteral("blub"));
+    QApplication::colorSpec();
+    QApplication::setColorSpec(42);
+    QApplication::allWidgets();
+    QApplication::topLevelWidgets();
+    QApplication::desktop();
+    QApplication::activePopupWidget();
+    QApplication::activeModalWidget();
+    QApplication::focusWidget();
+    QApplication::activeWindow();
+    QApplication::setActiveWindow(Q_NULLPTR);
+    QApplication::widgetAt(QPoint(0, 0));
+    QApplication::topLevelAt(QPoint(0, 0));
+    QApplication::setGlobalStrut(QSize(0, 0));
+    QApplication::globalStrut();
+    QApplication::isEffectEnabled(Qt::UI_General);
+    QApplication::setEffectEnabled(Qt::UI_General, false);
 }
 
 void tst_QApplication::settableStyleHints_data()
