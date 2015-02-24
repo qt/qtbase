@@ -372,7 +372,7 @@ QStringList QCommandLineOption::defaultValues() const
     All options are visible by default. Setting \a hidden to true for
     a particular option makes it internal, i.e. not listed in the help output.
 
-    \since 5.5
+    \since 5.6
     \sa isHidden
  */
 void QCommandLineOption::setHidden(bool hide)
@@ -384,7 +384,7 @@ void QCommandLineOption::setHidden(bool hide)
     Returns true if this option is omitted from the help output,
     false if the option is listed.
 
-    \since 5.5
+    \since 5.6
     \sa setHidden()
  */
 bool QCommandLineOption::isHidden() const
