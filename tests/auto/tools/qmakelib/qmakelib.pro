@@ -9,4 +9,8 @@ VPATH += ../../../../qmake/library
 SOURCES += \
     tst_qmakelib.cpp \
     ioutils.cpp \
-    proitems.cpp
+    proitems.cpp \
+    qmakevfs.cpp \
+    qmakeparser.cpp
+
+DEFINES += PROPARSER_DEBUG

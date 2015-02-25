@@ -96,6 +96,10 @@ public:
 
     void discardFileFromCache(const QString &fileName);
 
+#ifdef PROPARSER_DEBUG
+    static QString formatProBlock(const QString &block);
+#endif
+
 private:
     enum ScopeNesting {
         NestNone = 0,
