@@ -812,8 +812,10 @@ void QXcbConnection::handleMotionNotify(xcb_generic_event_t *ev)
     xcb_motion_notify_event_t *event = (xcb_motion_notify_event_t *)ev;
 
     m_buttons = (m_buttons & ~0x7) | translateMouseButtons(event->state);
-    if (Q_UNLIKELY(lcQpaXInput().isDebugEnabled()))
-        qDebug("xcb: moved mouse to %4d, %4d; button state %X", event->event_x, event->event_y, static_cast<unsigned int>(m_buttons));
+#ifdef Q_XCB_DEBUG
+    qCDebug(lcQpaXInput, "xcb: moved mouse to %4d, %4d; button state %X",
+           event->event_x, event->event_y, static_cast<unsigned int>(m_buttons));
+#endif
 }
 
 #ifndef QT_NO_XKB
