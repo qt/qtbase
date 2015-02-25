@@ -155,6 +155,11 @@ static inline QPoint dpr_ceil(const QPoint &p, int dpr)
     return QPoint((p.x() + dpr - 1) / dpr, (p.y() + dpr - 1) / dpr);
 }
 
+static inline QSize dpr_ceil(const QSize &s, int dpr)
+{
+    return QSize((s.width() + dpr - 1) / dpr, (s.height() + dpr - 1) / dpr);
+}
+
 static inline QRect mapExposeFromNative(const QRect &xRect, int dpr)
 {
     return QRect(dpr_floor(xRect.topLeft(), dpr), dpr_ceil(xRect.bottomRight(), dpr));
@@ -162,7 +167,7 @@ static inline QRect mapExposeFromNative(const QRect &xRect, int dpr)
 
 static inline QRect mapGeometryFromNative(const QRect &xRect, int dpr)
 {
-    return QRect(xRect.topLeft() / dpr, xRect.bottomRight() / dpr);
+    return QRect(xRect.topLeft() / dpr, dpr_ceil(xRect.size(), dpr));
 }
 
 // Returns \c true if we should set WM_TRANSIENT_FOR on \a w
