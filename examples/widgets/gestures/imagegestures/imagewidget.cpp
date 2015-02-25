@@ -142,16 +142,12 @@ void ImageWidget::pinchTriggered(QPinchGesture *gesture)
 {
     QPinchGesture::ChangeFlags changeFlags = gesture->changeFlags();
     if (changeFlags & QPinchGesture::RotationAngleChanged) {
-        const qreal value = gesture->property("rotationAngle").toReal();
-        const qreal lastValue = gesture->property("lastRotationAngle").toReal();
-        const qreal rotationAngleDelta = value - lastValue;
-        rotationAngle += rotationAngleDelta;
-        qCDebug(lcExample) << "pinchTriggered(): rotation by" << rotationAngleDelta << rotationAngle;
+        rotationAngle += gesture->rotationAngle() - gesture->lastRotationAngle();
+        qCDebug(lcExample) << "pinchTriggered(): rotate to" << rotationAngle;
     }
     if (changeFlags & QPinchGesture::ScaleFactorChanged) {
-        qreal value = gesture->property("scaleFactor").toReal();
-        currentStepScaleFactor = value;
-        qCDebug(lcExample) << "pinchTriggered(): " << currentStepScaleFactor;
+        currentStepScaleFactor = gesture->totalScaleFactor();
+        qCDebug(lcExample) << "pinchTriggered(): zoom by" << gesture->scaleFactor() << "->" << currentStepScaleFactor;
     }
     if (gesture->state() == Qt::GestureFinished) {
         scaleFactor *= currentStepScaleFactor;
