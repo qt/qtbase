@@ -83,18 +83,50 @@
     QGesture subclass.
 
     To illustrate how a standard gesture can be interpreted by an application, we
-    show the implementation of the \c swipeTriggered() function, which handles the
-    gesture associated with a brushing or swiping motion on the user's display or
+    show the implementation of the \c pinchTriggered() function, which handles the
+    pinch gesture when the user moves two fingers around on the display or
     input device:
 
-    \snippet gestures/imagegestures/imagewidget.cpp swipe function
+    \snippet gestures/imagegestures/imagewidget.cpp pinch function
 
-    The QSwipeGesture class provides specialized functions and defines a enum
-    to make it more convenient for developers to discover which direction, if
-    any, the user swiped the display. Here, we simply navigate to the previous
-    image in the collection if the user swiped upwards or to the left; otherwise
-    we navigate to the next image in the collection.
+    The QPinchGesture class provides properties to interpret the changing
+    distance between the two touch points as a zoom factor, and the angle delta
+    as a rotation to be applied to the image. The center point between the
+    touch points could be used to drag the image, but in this example we use
+    the pan gesture for that purpose.
 
-    The other gestures are also handled by special purpose functions, but use
-    the values of properties held by the QGesture object passed to them.
+    The \c scaleFactor() is a relative value representing how much the zoom
+    should change from one event to the next, whereas \c totalScaleFactor()
+    provides the amount of zoom that has been expressed since the gesture
+    began. When the touch points are released and another gesture begins,
+    \c totalScaleFactor() will begin again at 1.0. In this case we store
+    \c totalScaleFactor() into the \c currentStepScaleFactor variable so that
+    it can be used in \c paintEvent() to scale the image. Alternatively it would
+    be possible to simply multiply the stored total scale factor by
+    \c scaleFactor() here in the pinch handler.
+
+    In contrast, \c rotationAngle() represents the amount of rotation since the
+    pinch gesture began, while \c lastRotationAngle() provides the previous
+    value. So it is necessary to subtract in order to get an incremental delta.
+    When the user begins a new pinch gesture, \c rotationAngle() will start
+    from zero, and we want the image to begin to rotate from its current angle.
+    This is achieved by adding the delta to the stored \c rotationAngle (which
+    will be applied in \c paintEvent()). If we simply assigned
+    \c totalRotationAngle() to the stored \c rotationAngle, a new gesture would
+    cause the image to reset to a right-side-up orientation before beginning to
+    rotate again. But it would be possible to store the rotation angle since the
+    gesture began and add it to \c rotationAngle in \c paintEvent(), just as
+    we store the amount of zoom since the gesture began.
+
+    The pan and swipe gestures in this example are also handled in separate
+    functions, and use the values of properties from the QGesture objects
+    passed to them.
+
+    \snippet gestures/imagegestures/imagewidget.cpp paint method
+
+    In \c paintEvent(), scaleFactor represents the zoom level before the pinch
+    gesture began, while currentStepScaleFactor represents the additional zoom
+    factor while a pinch gesture is in progress. But for rotation, only the
+    current rotationAngle is stored. The horizontal and vertical offsets
+    represent the distance that the image has been dragged by the pan gesture.
 */

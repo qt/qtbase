@@ -77,6 +77,7 @@ bool ImageWidget::event(QEvent *event)
 }
 //! [event handler]
 
+//! [paint method]
 void ImageWidget::paintEvent(QPaintEvent*)
 {
     QPainter p(this);
@@ -93,6 +94,7 @@ void ImageWidget::paintEvent(QPaintEvent*)
     p.translate(-iw/2, -ih/2);
     p.drawImage(0, 0, currentImage);
 }
+//! [paint method]
 
 void ImageWidget::mouseDoubleClickEvent(QMouseEvent *)
 {
@@ -138,16 +140,20 @@ void ImageWidget::panTriggered(QPanGesture *gesture)
     update();
 }
 
+//! [pinch function]
 void ImageWidget::pinchTriggered(QPinchGesture *gesture)
 {
     QPinchGesture::ChangeFlags changeFlags = gesture->changeFlags();
     if (changeFlags & QPinchGesture::RotationAngleChanged) {
-        rotationAngle += gesture->rotationAngle() - gesture->lastRotationAngle();
-        qCDebug(lcExample) << "pinchTriggered(): rotate to" << rotationAngle;
+        qreal rotationDelta = gesture->rotationAngle() - gesture->lastRotationAngle();
+        rotationAngle += rotationDelta;
+        qCDebug(lcExample) << "pinchTriggered(): rotate by" <<
+            rotationDelta << "->" << rotationAngle;
     }
     if (changeFlags & QPinchGesture::ScaleFactorChanged) {
         currentStepScaleFactor = gesture->totalScaleFactor();
-        qCDebug(lcExample) << "pinchTriggered(): zoom by" << gesture->scaleFactor() << "->" << currentStepScaleFactor;
+        qCDebug(lcExample) << "pinchTriggered(): zoom by" <<
+            gesture->scaleFactor() << "->" << currentStepScaleFactor;
     }
     if (gesture->state() == Qt::GestureFinished) {
         scaleFactor *= currentStepScaleFactor;
@@ -155,6 +161,7 @@ void ImageWidget::pinchTriggered(QPinchGesture *gesture)
     }
     update();
 }
+//! [pinch function]
 
 //! [swipe function]
 void ImageWidget::swipeTriggered(QSwipeGesture *gesture)
