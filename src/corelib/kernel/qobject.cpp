@@ -4106,20 +4106,6 @@ QDebug operator<<(QDebug dbg, const QObject *o)
     dbg << ')';
     return dbg;
 }
-
-QDebug qt_QMetaEnum_debugOperator(QDebug &dbg, int value, const QMetaObject *meta, const char *name)
-{
-    QDebugStateSaver saver(dbg);
-    QMetaEnum me = meta->enumerator(meta->indexOfEnumerator(name));
-    const char *key = me.valueToKey(value);
-    dbg.nospace() << meta->className() << "::" << name << '(';
-    if (key)
-        dbg << key;
-    else
-        dbg << value;
-    dbg << ')';
-    return dbg;
-}
 #endif
 
 /*!

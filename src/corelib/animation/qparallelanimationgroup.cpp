@@ -44,7 +44,7 @@
     animations in parallel. The animation group finishes when the
     longest lasting animation has finished.
 
-    You can treat QParallelAnimation as any other QAbstractAnimation,
+    You can treat QParallelAnimationGroup as any other QAbstractAnimation,
     e.g., pause, resume, or add it to other animation groups.
 
     \code

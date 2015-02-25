@@ -240,7 +240,7 @@ void qt_from_latin1(ushort *dst, const char *str, size_t size)
     dst += offset;
     str += offset;
 #  ifdef Q_COMPILER_LAMBDA
-    return UnrollTailLoop<15>::exec(size, [=](int i) { dst[i] = (uchar)str[i]; });
+    return UnrollTailLoop<15>::exec(int(size), [=](int i) { dst[i] = (uchar)str[i]; });
 #  endif
 #endif
 #if defined(__mips_dsp)

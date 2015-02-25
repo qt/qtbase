@@ -1530,7 +1530,13 @@ static void writePluginMetaData(FILE *out, const QJsonObject &data)
     const QByteArray binary = doc.toBinaryData();
     const int last = binary.size() - 1;
     for (int i = 0; i < last; ++i) {
-        fprintf(out, " 0x%02x,", (uchar)binary.at(i));
+        uchar c = (uchar)binary.at(i);
+        if (c < 0x20 || c >= 0x7f)
+            fprintf(out, " 0x%02x,", c);
+        else if (c == '\'' || c == '\\')
+            fprintf(out, " '\\%c',", c);
+        else
+            fprintf(out, " '%c', ", c);
         if (!((i + 1) % 8))
             fputs("\n   ", out);
     }

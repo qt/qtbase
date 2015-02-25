@@ -416,17 +416,7 @@ void QPixmapConvolutionFilter::draw(QPainter *painter, const QPointF &p, const Q
     if (src.isNull())
         return;
 
-    QPixmapFilter *filter = painter->paintEngine() && painter->paintEngine()->isExtended() ?
-        static_cast<QPaintEngineEx *>(painter->paintEngine())->pixmapFilter(type(), this) : 0;
-    QPixmapConvolutionFilter *convolutionFilter = static_cast<QPixmapConvolutionFilter*>(filter);
-    if (convolutionFilter) {
-        convolutionFilter->setConvolutionKernel(d->convolutionKernel, d->kernelWidth, d->kernelHeight);
-        convolutionFilter->d_func()->convoluteAlpha = d->convoluteAlpha;
-        convolutionFilter->draw(painter, p, src, srcRect);
-        return;
-    }
-
-    // falling back to raster implementation
+    // raster implementation
 
     QImage *target = 0;
     if (painter->paintEngine()->paintDevice()->devType() == QInternal::Image) {
@@ -925,16 +915,6 @@ void QPixmapBlurFilter::draw(QPainter *painter, const QPointF &p, const QPixmap 
     if (qt_scaleForTransform(painter->transform(), &scale))
         scaledRadius /= scale;
 
-    QPixmapFilter *filter = painter->paintEngine() && painter->paintEngine()->isExtended() ?
-        static_cast<QPaintEngineEx *>(painter->paintEngine())->pixmapFilter(type(), this) : 0;
-    QPixmapBlurFilter *blurFilter = static_cast<QPixmapBlurFilter*>(filter);
-    if (blurFilter) {
-        blurFilter->setRadius(scaledRadius);
-        blurFilter->setBlurHints(d->hints);
-        blurFilter->draw(painter, p, src, srcRect);
-        return;
-    }
-
     QImage srcImage;
     QImage destImage;
 
@@ -1095,17 +1075,7 @@ void QPixmapColorizeFilter::draw(QPainter *painter, const QPointF &dest, const Q
     if (src.isNull())
         return;
 
-    QPixmapFilter *filter = painter->paintEngine() && painter->paintEngine()->isExtended() ?
-        static_cast<QPaintEngineEx *>(painter->paintEngine())->pixmapFilter(type(), this) : 0;
-    QPixmapColorizeFilter *colorizeFilter = static_cast<QPixmapColorizeFilter*>(filter);
-    if (colorizeFilter) {
-        colorizeFilter->setColor(d->color);
-        colorizeFilter->setStrength(d->strength);
-        colorizeFilter->draw(painter, dest, src, srcRect);
-        return;
-    }
-
-    // falling back to raster implementation
+    // raster implementation
 
     if (!d->opaque) {
         painter->drawPixmap(dest, src, srcRect);
@@ -1328,17 +1298,6 @@ void QPixmapDropShadowFilter::draw(QPainter *p,
 
     if (px.isNull())
         return;
-
-    QPixmapFilter *filter = p->paintEngine() && p->paintEngine()->isExtended() ?
-        static_cast<QPaintEngineEx *>(p->paintEngine())->pixmapFilter(type(), this) : 0;
-    QPixmapDropShadowFilter *dropShadowFilter = static_cast<QPixmapDropShadowFilter*>(filter);
-    if (dropShadowFilter) {
-        dropShadowFilter->setColor(d->color);
-        dropShadowFilter->setBlurRadius(d->radius);
-        dropShadowFilter->setOffset(d->offset);
-        dropShadowFilter->draw(p, pos, px, src);
-        return;
-    }
 
     QImage tmp(px.size(), QImage::Format_ARGB32_Premultiplied);
     tmp.fill(0);

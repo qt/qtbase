@@ -1675,15 +1675,13 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
     if (e->globalPos != QGuiApplicationPrivate::lastCursorPosition && (stateChange != Qt::NoButton)) {
         // A mouse event should not change both position and buttons at the same time. Instead we
         // should first send a move event followed by a button changed event. Since this is not the case
-        // with the current event, we fake a move-only event that we recurse and process first. This
-        // will update the global mouse position and cause the second event to be a button only event.
-        QWindowSystemInterfacePrivate::MouseEvent moveEvent(e->window.data(),
-                e->timestamp, e->type, e->localPos, e->globalPos, buttons, e->modifiers, e->source);
+        // with the current event, we split it in two.
+        QWindowSystemInterfacePrivate::MouseEvent *mouseButtonEvent = new QWindowSystemInterfacePrivate::MouseEvent(
+                    e->window.data(), e->timestamp, e->type, e->localPos, e->globalPos, e->buttons, e->modifiers);
         if (e->flags & QWindowSystemInterfacePrivate::WindowSystemEvent::Synthetic)
-            moveEvent.flags |= QWindowSystemInterfacePrivate::WindowSystemEvent::Synthetic;
-        processMouseEvent(&moveEvent);
-        Q_ASSERT(e->globalPos == QGuiApplicationPrivate::lastCursorPosition);
-        // continue with processing mouse button change event
+            mouseButtonEvent->flags |= QWindowSystemInterfacePrivate::WindowSystemEvent::Synthetic;
+        QWindowSystemInterfacePrivate::windowSystemEventQueue.prepend(mouseButtonEvent);
+        stateChange = Qt::NoButton;
     }
 
     QWindow *window = e->window.data();

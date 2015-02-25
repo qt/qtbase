@@ -727,19 +727,31 @@ QString QAccessibleTextWidget::attributes(int offset, int *startOffset, int *end
     int blockEnd = blockStart + block.length();
 
     QTextBlock::iterator iter = block.begin();
-    while (!iter.fragment().contains(offset))
+    int lastFragmentIndex = blockStart;
+    while (!iter.atEnd()) {
+        QTextFragment f = iter.fragment();
+        if (f.contains(offset))
+            break;
+        lastFragmentIndex = f.position() + f.length();
         ++iter;
+    }
 
-    QTextFragment fragment = iter.fragment();
-    int pos = fragment.position();
-
-    // text block and fragment may overlap, use the smallest common range
-    *startOffset = qMax(pos, blockStart);
+    QTextCharFormat charFormat;
+    if (!iter.atEnd()) {
+        QTextFragment fragment = iter.fragment();
+        charFormat = fragment.charFormat();
+        int pos = fragment.position();
+        // text block and fragment may overlap, use the smallest common range
+        *startOffset = qMax(pos, blockStart);
+        *endOffset = qMin(pos + fragment.length(), blockEnd);
+    } else {
+        charFormat = block.charFormat();
+        *startOffset = lastFragmentIndex;
+        *endOffset = blockEnd;
+    }
     Q_ASSERT(*startOffset <= offset);
-    *endOffset = qMin(pos + fragment.length(), blockEnd);
     Q_ASSERT(*endOffset >= offset);
 
-    QTextCharFormat charFormat = fragment.charFormat();
     QTextBlockFormat blockFormat = cursor.blockFormat();
 
     QMap<QByteArray, QString> attrs;

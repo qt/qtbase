@@ -152,8 +152,10 @@ static int getFontWeight(const QString &weightString)
         return QFont::ExtraBold;
 
     // And now the contains() checks for the translated strings.
+    //: The word for "Extra" as in "Extra Bold, Extra Thin" used as a pattern for string searches
     const QString translatedExtra = QCoreApplication::translate("QFontDatabase", "Extra").toLower();
     if (s.contains(translatedBold)) {
+        //: The word for "Demi" as in "Demi Bold" used as a pattern for string searches
         QString translatedDemi = QCoreApplication::translate("QFontDatabase", "Demi").toLower();
         if (s .contains(translatedDemi))
             return QFont::DemiBold;

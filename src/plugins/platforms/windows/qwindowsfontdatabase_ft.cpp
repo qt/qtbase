@@ -41,6 +41,7 @@
 #include <QtCore/QDir>
 #include <QtCore/QDirIterator>
 #include <QtCore/QSettings>
+#include <QtCore/QRegularExpression>
 #include <QtGui/private/qfontengine_ft_p.h>
 #include <QtGui/QGuiApplication>
 #include <QtGui/QFontDatabase>
@@ -101,7 +102,67 @@ static FontFile * createFontFile(const QString &fileName, int index)
 extern bool localizedName(const QString &name);
 extern QString getEnglishName(const QString &familyName);
 
-#ifdef Q_OS_WINCE
+#ifndef Q_OS_WINCE
+
+namespace {
+struct FontKey
+{
+    QString fileName;
+    QStringList fontNames;
+};
+} // namespace
+
+typedef QVector<FontKey> FontKeys;
+
+static FontKeys &fontKeys()
+{
+    static FontKeys result;
+    if (result.isEmpty()) {
+        const QSettings fontRegistry(QStringLiteral("HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Fonts"),
+                                     QSettings::NativeFormat);
+        const QStringList allKeys = fontRegistry.allKeys();
+        const QString trueType = QStringLiteral("(TrueType)");
+        const QRegularExpression sizeListMatch(QStringLiteral("\\s(\\d+,)+\\d+"));
+        Q_ASSERT(sizeListMatch.isValid());
+        const int size = allKeys.size();
+        result.reserve(size);
+        for (int i = 0; i < size; ++i) {
+            FontKey fontKey;
+            const QString &registryFontKey = allKeys.at(i);
+            fontKey.fileName = fontRegistry.value(registryFontKey).toString();
+            QString realKey = registryFontKey;
+            realKey.remove(trueType);
+            realKey.remove(sizeListMatch);
+            const QStringList fontNames = realKey.trimmed().split(QLatin1Char('&'));
+            fontKey.fontNames.reserve(fontNames.size());
+            foreach (const QString &fontName, fontNames)
+                fontKey.fontNames.append(fontName.trimmed());
+            result.append(fontKey);
+        }
+    }
+    return result;
+}
+
+static const FontKey *findFontKey(const QString &name, int *indexIn = Q_NULLPTR)
+{
+    typedef FontKeys::ConstIterator ConstIt;
+
+     const FontKeys &keys = fontKeys();
+     for (ConstIt it = keys.constBegin(), cend = keys.constEnd(); it != cend; ++it) {
+         const int index = it->fontNames.indexOf(name);
+         if (index >= 0) {
+             if (indexIn)
+                 *indexIn = index;
+             return &(*it);
+         }
+     }
+     if (indexIn)
+         *indexIn = -1;
+     return Q_NULLPTR;
+}
+
+#else // Q_OS_WINCE
+
 typedef struct {
     quint16 majorVersion;
     quint16 minorVersion;
@@ -220,24 +281,67 @@ static QString fontNameFromTTFile(const QString &filename)
     }
     return retVal;
 }
+
+static inline QString fontSettingsOrganization() { return QStringLiteral("Qt-Project"); }
+static inline QString fontSettingsApplication()  { return QStringLiteral("Qtbase"); }
+static inline QString fontSettingsGroup()        { return QStringLiteral("CEFontCache"); }
+
+static QString findFontFile(const QString &faceName)
+{
+    static QHash<QString, QString> fontCache;
+
+    if (fontCache.isEmpty()) {
+        QSettings settings(QSettings::SystemScope, fontSettingsOrganization(), fontSettingsApplication());
+        settings.beginGroup(fontSettingsGroup());
+        foreach (const QString &fontName, settings.allKeys())
+            fontCache.insert(fontName, settings.value(fontName).toString());
+        settings.endGroup();
+    }
+
+    QString value = fontCache.value(faceName);
+
+    //Fallback if we haven't cached the font yet or the font got removed/renamed iterate again over all fonts
+    if (value.isEmpty() || !QFile::exists(value)) {
+        QSettings settings(QSettings::SystemScope, fontSettingsOrganization(), fontSettingsApplication());
+        settings.beginGroup(fontSettingsGroup());
+
+        //empty the cache first, as it seems that it is dirty
+        settings.remove(QString());
+
+        QDirIterator it(QStringLiteral("/Windows"), QStringList(QStringLiteral("*.ttf")), QDir::Files | QDir::Hidden | QDir::System);
+
+        while (it.hasNext()) {
+            const QString fontFile = it.next();
+            const QString fontName = fontNameFromTTFile(fontFile);
+            if (fontName.isEmpty())
+                continue;
+            fontCache.insert(fontName, fontFile);
+            settings.setValue(fontName, fontFile);
+
+            if (localizedName(fontName)) {
+                QString englishFontName = getEnglishName(fontName);
+                fontCache.insert(englishFontName, fontFile);
+                settings.setValue(englishFontName, fontFile);
+            }
+        }
+        settings.endGroup();
+        value = fontCache.value(faceName);
+    }
+    return value;
+}
 #endif // Q_OS_WINCE
 
-static bool addFontToDatabase(const QString &familyName, uchar charSet,
+static bool addFontToDatabase(const QString &faceName,
+                              const QString &fullName,
+                              uchar charSet,
                               const TEXTMETRIC *textmetric,
                               const FONTSIGNATURE *signature,
                               int type)
 {
-    typedef QPair<QString, QStringList> FontKey;
-
     // the "@family" fonts are just the same as "family". Ignore them.
-    if (familyName.isEmpty() || familyName.at(0) == QLatin1Char('@') || familyName.startsWith(QLatin1String("WST_")))
+    if (faceName.isEmpty() || faceName.at(0) == QLatin1Char('@') || faceName.startsWith(QLatin1String("WST_")))
         return false;
 
-    const int separatorPos = familyName.indexOf(QStringLiteral("::"));
-    const QString faceName =
-            separatorPos != -1 ? familyName.left(separatorPos) : familyName;
-    const QString fullName =
-            separatorPos != -1 ? familyName.mid(separatorPos + 2) : QString();
     static const int SMOOTH_SCALABLE = 0xffff;
     const QString foundryName; // No such concept.
     const NEWTEXTMETRIC *tm = (NEWTEXTMETRIC *)textmetric;
@@ -254,7 +358,7 @@ static bool addFontToDatabase(const QString &familyName, uchar charSet,
     if (QWindowsContext::verbose > 2) {
         QString message;
         QTextStream str(&message);
-        str << __FUNCTION__ << ' ' << familyName << ' ' << charSet << " TTF=" << ttf;
+        str << __FUNCTION__ << ' ' << faceName << "::" << fullName << ' ' << charSet << " TTF=" << ttf;
         if (type & DEVICE_FONTTYPE)
             str << " DEVICE";
         if (type & RASTER_FONTTYPE)
@@ -297,93 +401,19 @@ static bool addFontToDatabase(const QString &familyName, uchar charSet,
             writingSystems.setSupported(ws);
     }
 
+    int index = 0;
 #ifndef Q_OS_WINCE
-    const QSettings fontRegistry(QStringLiteral("HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Fonts"),
-                                QSettings::NativeFormat);
-
-    static QVector<FontKey> allFonts;
-    if (allFonts.isEmpty()) {
-        const QStringList allKeys = fontRegistry.allKeys();
-        allFonts.reserve(allKeys.size());
-        const QString trueType = QStringLiteral("(TrueType)");
-        const QRegExp sizeListMatch(QStringLiteral("\\s(\\d+,)+\\d+"));
-        foreach (const QString &key, allKeys) {
-            QString realKey = key;
-            realKey.remove(trueType);
-            realKey.remove(sizeListMatch);
-            QStringList fonts;
-            const QStringList fontNames = realKey.trimmed().split(QLatin1Char('&'));
-            foreach (const QString &fontName, fontNames)
-                fonts.push_back(fontName.trimmed());
-            allFonts.push_back(FontKey(key, fonts));
-        }
+    const FontKey *key = findFontKey(faceName, &index);
+    if (!key) {
+        key = findFontKey(fullName, &index);
+        if (!key && !englishName.isEmpty())
+            key = findFontKey(englishName, &index);
+        if (!key)
+            return false;
     }
-
-    QString value;
-    int index = 0;
-    for (int k = 0; k < allFonts.size(); ++k) {
-        const FontKey &fontKey = allFonts.at(k);
-        for (int i = 0; i < fontKey.second.length(); ++i) {
-            const QString &font = fontKey.second.at(i);
-            if (font == faceName || fullName == font || englishName == font) {
-                value = fontRegistry.value(fontKey.first).toString();
-                index = i;
-                break;
-            }
-        }
-        if (!value.isEmpty())
-            break;
-    }
+    QString value = key->fileName;
 #else
-    QString value;
-    int index = 0;
-
-    static QHash<QString, QString> fontCache;
-
-    if (fontCache.isEmpty()) {
-        QSettings settings(QSettings::SystemScope, QStringLiteral("Qt-Project"), QStringLiteral("Qtbase"));
-        settings.beginGroup(QStringLiteral("CEFontCache"));
-
-        foreach (const QString &fontName, settings.allKeys()) {
-            const QString fontFileName = settings.value(fontName).toString();
-            fontCache.insert(fontName, fontFileName);
-        }
-
-        settings.endGroup(); // CEFontCache
-    }
-
-    value = fontCache.value(faceName);
-
-    //Fallback if we haven't cached the font yet or the font got removed/renamed iterate again over all fonts
-    if (value.isEmpty() || !QFile::exists(value)) {
-        QSettings settings(QSettings::SystemScope, QStringLiteral("Qt-Project"), QStringLiteral("Qtbase"));
-        settings.beginGroup(QStringLiteral("CEFontCache"));
-
-        //empty the cache first, as it seems that it is dirty
-        foreach (const QString &fontName, settings.allKeys())
-            settings.remove(fontName);
-
-        QDirIterator it(QStringLiteral("/Windows"), QStringList(QStringLiteral("*.ttf")), QDir::Files | QDir::Hidden | QDir::System);
-
-        while (it.hasNext()) {
-            const QString fontFile = it.next();
-            const QString fontName = fontNameFromTTFile(fontFile);
-            if (fontName.isEmpty())
-                continue;
-            fontCache.insert(fontName, fontFile);
-            settings.setValue(fontName, fontFile);
-
-            if (localizedName(fontName)) {
-                QString englishFontName = getEnglishName(fontName);
-                fontCache.insert(englishFontName, fontFile);
-                settings.setValue(englishFontName, fontFile);
-            }
-        }
-
-        value = fontCache.value(faceName);
-
-        settings.endGroup(); // CEFontCache
-    }
+    QString value = findFontFile(faceName);
 #endif
 
     if (value.isEmpty())
@@ -440,9 +470,9 @@ static int QT_WIN_CALLBACK storeFont(ENUMLOGFONTEX* f, NEWTEXTMETRICEX *textmetr
                                      int type, LPARAM namesSetIn)
 {
     typedef QSet<QString> StringSet;
-    const QString familyName = QString::fromWCharArray(f->elfLogFont.lfFaceName)
-                               + QStringLiteral("::")
-                               + QString::fromWCharArray(f->elfFullName);
+
+    const QString faceName = QString::fromWCharArray(f->elfLogFont.lfFaceName);
+    const QString fullName = QString::fromWCharArray(f->elfFullName);
     const uchar charSet = f->elfLogFont.lfCharSet;
 
 #ifndef Q_OS_WINCE
@@ -476,8 +506,10 @@ static int QT_WIN_CALLBACK storeFont(ENUMLOGFONTEX* f, NEWTEXTMETRICEX *textmetr
     // NEWTEXTMETRICEX is a NEWTEXTMETRIC, which according to the documentation is
     // identical to a TEXTMETRIC except for the last four members, which we don't use
     // anyway
-    if (addFontToDatabase(familyName, charSet, (TEXTMETRIC *)textmetric, &signature, type))
-        reinterpret_cast<StringSet *>(namesSetIn)->insert(familyName);
+    if (addFontToDatabase(faceName, fullName,
+                          charSet, (TEXTMETRIC *)textmetric, &signature, type)) {
+        reinterpret_cast<StringSet *>(namesSetIn)->insert(faceName + QStringLiteral("::") + fullName);
+    }
 
     // keep on enumerating
     return 1;

@@ -85,7 +85,7 @@ public:
     bool makeCurrent(QPlatformSurface *surface) Q_DECL_OVERRIDE;
     void doneCurrent() Q_DECL_OVERRIDE;
     void swapBuffers(QPlatformSurface *surface) Q_DECL_OVERRIDE;
-    void (*getProcAddress(const QByteArray &procName)) () Q_DECL_OVERRIDE;
+    QFunctionPointer getProcAddress(const QByteArray &procName) Q_DECL_OVERRIDE;
 
     QSurfaceFormat format() const Q_DECL_OVERRIDE;
     bool isSharing() const Q_DECL_OVERRIDE;

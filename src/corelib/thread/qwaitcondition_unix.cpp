@@ -52,9 +52,12 @@
 QT_BEGIN_NAMESPACE
 
 #ifdef Q_OS_ANDROID
-// Android lacks pthread_condattr_setclock, but it does have a nice function
-// for relative waits. Use weakref so we can determine at runtime whether it is
-// present.
+// pthread_condattr_setclock is available only since Android 5.0. On older versions, there's
+// a private function for relative waits (hidden in 5.0).
+// Use weakref so we can determine at runtime whether each of them is present.
+static int local_condattr_setclock(pthread_condattr_t*, clockid_t)
+__attribute__((weakref("pthread_condattr_setclock")));
+
 static int local_cond_timedwait_relative(pthread_cond_t*, pthread_mutex_t *, const timespec *)
 __attribute__((weakref("__pthread_cond_timedwait_relative")));
 #endif
@@ -70,9 +73,14 @@ void qt_initialize_pthread_cond(pthread_cond_t *cond, const char *where)
     pthread_condattr_t condattr;
 
     pthread_condattr_init(&condattr);
-#if !defined(Q_OS_MAC) && !defined(Q_OS_ANDROID) && !defined(Q_OS_HAIKU) && (_POSIX_MONOTONIC_CLOCK-0 >= 0)
+#if (_POSIX_MONOTONIC_CLOCK-0 >= 0)
+#if defined(Q_OS_ANDROID)
+    if (local_condattr_setclock && QElapsedTimer::clockType() == QElapsedTimer::MonotonicClock)
+        local_condattr_setclock(&condattr, CLOCK_MONOTONIC);
+#elif !defined(Q_OS_MAC) && !defined(Q_OS_HAIKU)
     if (QElapsedTimer::clockType() == QElapsedTimer::MonotonicClock)
         pthread_condattr_setclock(&condattr, CLOCK_MONOTONIC);
+#endif
 #endif
     report_error(pthread_cond_init(cond, &condattr), where, "cv init");
     pthread_condattr_destroy(&condattr);
@@ -108,7 +116,7 @@ public:
     {
         timespec ti;
 #ifdef Q_OS_ANDROID
-        if (Q_LIKELY(local_cond_timedwait_relative)) {
+        if (local_cond_timedwait_relative) {
             ti.tv_sec = time / 1000;
             ti.tv_nsec = time % 1000 * Q_UINT64_C(1000) * 1000;
             return local_cond_timedwait_relative(&cond, &mutex, &ti);

@@ -163,7 +163,7 @@ Q_GLOBAL_STATIC(QGLSignalProxy, theSignalProxy)
 QGLSignalProxy *QGLSignalProxy::instance()
 {
     QGLSignalProxy *proxy = theSignalProxy();
-    if (proxy && proxy->thread() != qApp->thread()) {
+    if (proxy && qApp && proxy->thread() != qApp->thread()) {
         if (proxy->thread() == QThread::currentThread())
             proxy->moveToThread(qApp->thread());
     }

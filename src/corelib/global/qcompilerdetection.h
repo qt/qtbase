@@ -173,7 +173,11 @@
 #    else
 #      define Q_CC_CLANG ((__clang_major__ * 100) + __clang_minor__)
 #    endif
-#    define Q_ASSUME_IMPL(expr)  if (expr){} else __builtin_unreachable()
+#    if __has_builtin(__builtin_assume)
+#      define Q_ASSUME_IMPL(expr)   __builtin_assume(expr)
+#    else
+#      define Q_ASSUME_IMPL(expr)  if (expr){} else __builtin_unreachable()
+#    endif
 #    define Q_UNREACHABLE_IMPL() __builtin_unreachable()
 #    if !defined(__has_extension)
 #      /* Compatibility with older Clang versions */
@@ -545,7 +549,10 @@
 #      define Q_COMPILER_UNRESTRICTED_UNIONS
 #    endif
 #    if __INTEL_COMPILER >= 1500
-#      define Q_COMPILER_CONSTEXPR
+#      if __INTEL_COMPILER * 100 + __INTEL_COMPILER_UPDATE >= 150001
+//       the bug mentioned above is fixed in 15.0.1
+#        define Q_COMPILER_CONSTEXPR
+#      endif
 #      define Q_COMPILER_ALIGNAS
 #      define Q_COMPILER_ALIGNOF
 #      define Q_COMPILER_INHERITING_CONSTRUCTORS

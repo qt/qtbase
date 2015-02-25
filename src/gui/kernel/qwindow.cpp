@@ -2238,10 +2238,12 @@ bool QWindow::nativeEvent(const QByteArray &eventType, void *message, long *resu
 QPoint QWindow::mapToGlobal(const QPoint &pos) const
 {
     Q_D(const QWindow);
-    if (d->platformWindow && d->platformWindow->isEmbedded(0))
+    // QTBUG-43252, prefer platform implementation for foreign windows.
+    if (d->platformWindow
+        && (type() == Qt::ForeignWindow || d->platformWindow->isEmbedded(0))) {
         return d->platformWindow->mapToGlobal(pos);
-    else
-        return pos + d_func()->globalPosition();
+    }
+    return pos + d_func()->globalPosition();
 }
 
 
@@ -2256,10 +2258,12 @@ QPoint QWindow::mapToGlobal(const QPoint &pos) const
 QPoint QWindow::mapFromGlobal(const QPoint &pos) const
 {
     Q_D(const QWindow);
-    if (d->platformWindow && d->platformWindow->isEmbedded(0))
+    // QTBUG-43252, prefer platform implementation for foreign windows.
+    if (d->platformWindow
+        && (type() == Qt::ForeignWindow || d->platformWindow->isEmbedded(0))) {
         return d->platformWindow->mapFromGlobal(pos);
-    else
-        return pos - d_func()->globalPosition();
+    }
+    return pos - d_func()->globalPosition();
 }
 
 

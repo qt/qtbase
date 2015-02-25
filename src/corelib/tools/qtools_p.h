@@ -63,9 +63,9 @@ Q_DECL_CONSTEXPR inline char toHexLower(uint value) Q_DECL_NOTHROW
 
 Q_DECL_CONSTEXPR inline int fromHex(uint c) Q_DECL_NOTHROW
 {
-    return ((c >= '0') && (c <= '9')) ? c - '0' :
-           ((c >= 'A') && (c <= 'F')) ? c - 'A' + 10 :
-           ((c >= 'a') && (c <= 'f')) ? c - 'a' + 10 :
+    return ((c >= '0') && (c <= '9')) ? int(c - '0') :
+           ((c >= 'A') && (c <= 'F')) ? int(c - 'A' + 10) :
+           ((c >= 'a') && (c <= 'f')) ? int(c - 'a' + 10) :
            /* otherwise */              -1;
 }
 
@@ -76,7 +76,7 @@ Q_DECL_CONSTEXPR inline char toOct(uint value) Q_DECL_NOTHROW
 
 Q_DECL_CONSTEXPR inline int fromOct(uint c) Q_DECL_NOTHROW
 {
-    return ((c >= '0') && (c <= '7')) ? c - '0' : -1;
+    return ((c >= '0') && (c <= '7')) ? int(c - '0') : -1;
 }
 }
 

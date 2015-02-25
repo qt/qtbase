@@ -92,9 +92,6 @@ public:
     void drawRects(const QRect *rects, int rectCount) Q_DECL_OVERRIDE;
     void drawRects(const QRectF *rects, int rectCount) Q_DECL_OVERRIDE;
 
-    void drawLines(const QLine *lines, int lineCount) Q_DECL_OVERRIDE;
-    void drawLines(const QLineF *lines, int lineCount) Q_DECL_OVERRIDE;
-
     void drawEllipse(const QRectF &r) Q_DECL_OVERRIDE;
     void drawEllipse(const QRect &r) Q_DECL_OVERRIDE;
 

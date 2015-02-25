@@ -34,6 +34,8 @@
 #include <QtTest/QtTest>
 #include <QtSql/QtSql>
 
+#include <numeric>
+
 #include "../qsqldatabase/tst_databases.h"
 
 const QString qtest(qTableName("qtest", __FILE__, QSqlDatabase()));
@@ -159,6 +161,8 @@ private slots:
     void bindBool();
     void psql_bindWithDoubleColonCastOperator_data() { generic_data("QPSQL"); }
     void psql_bindWithDoubleColonCastOperator();
+    void psql_specialFloatValues_data() { generic_data("QPSQL"); }
+    void psql_specialFloatValues();
     void queryOnInvalidDatabase_data() { generic_data(); }
     void queryOnInvalidDatabase();
     void createQueryOnClosedDatabase_data() { generic_data(); }
@@ -2435,6 +2439,38 @@ void tst_QSqlQuery::psql_bindWithDoubleColonCastOperator()
         QCOMPARE( q.executedQuery(), QString( "select sum((fld1 - fld2)::int) from " + tablename + " where id1 = ? and id2 =? and id3=?" ) );
     else
         QCOMPARE( q.executedQuery(), QString( "select sum((fld1 - fld2)::int) from " + tablename + " where id1 = 1 and id2 =2 and id3=3" ) );
+}
+
+void tst_QSqlQuery::psql_specialFloatValues()
+{
+    if (!std::numeric_limits<float>::has_quiet_NaN)
+        QSKIP("Platform does not have quiet_NaN");
+    if (!std::numeric_limits<float>::has_infinity)
+        QSKIP("Platform does not have infinity");
+
+    QFETCH( QString, dbName );
+    QSqlDatabase db = QSqlDatabase::database( dbName );
+
+    CHECK_DATABASE( db );
+    QSqlQuery query(db);
+    const QString tableName = qTableName("floattest", __FILE__, db);
+    QVERIFY_SQL( query, exec("create table " + tableName + " (value float)" ) );
+    QVERIFY_SQL(query, prepare("insert into " + tableName + " values(:value)") );
+
+    QVariantList data;
+    data << QVariant(double(42.42))
+         << QVariant(std::numeric_limits<double>::quiet_NaN())
+         << QVariant(std::numeric_limits<double>::infinity())
+         << QVariant(float(42.42))
+         << QVariant(std::numeric_limits<float>::quiet_NaN())
+         << QVariant(std::numeric_limits<float>::infinity());
+
+    foreach (const QVariant &v, data) {
+        query.bindValue(":value", v);
+        QVERIFY_SQL( query, exec() );
+    }
+
+    QVERIFY_SQL( query, exec("drop table " + tableName) );
 }
 
 /* For task 157397: Using QSqlQuery with an invalid QSqlDatabase

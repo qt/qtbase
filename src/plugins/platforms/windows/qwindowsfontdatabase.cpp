@@ -1674,8 +1674,10 @@ QFontEngine *QWindowsFontDatabase::createEngine(const QFontDef &request,
 
     HFONT hfont = 0;
     hfont = CreateFontIndirect(&lf);
-    if (!hfont)
+    if (!hfont) {
         qErrnoWarning("%s: CreateFontIndirect failed", __FUNCTION__);
+        hfont = QWindowsFontDatabase::systemFont();
+    }
 
     bool ttf = false;
     int avWidth = 0;
@@ -1689,18 +1691,17 @@ QFontEngine *QWindowsFontDatabase::createEngine(const QFontDef &request,
     SelectObject(data->hdc, oldObj);
 
     if (!useDirectWrite) {
-        if (hfont && (!ttf || request.stretch != 100)) {
+        if (!ttf || request.stretch != 100) {
             DeleteObject(hfont);
             if (!res)
                 qErrnoWarning("%s: GetTextMetrics failed", __FUNCTION__);
             lf.lfWidth = avWidth * request.stretch/100;
             hfont = CreateFontIndirect(&lf);
-            if (!hfont)
+            if (!hfont) {
                 qErrnoWarning("%s: CreateFontIndirect with stretch failed", __FUNCTION__);
+                hfont = QWindowsFontDatabase::systemFont();
+            }
         }
-
-        if (!hfont)
-            hfont = QWindowsFontDatabase::systemFont();
     }
 
 #if !defined(QT_NO_DIRECTWRITE)

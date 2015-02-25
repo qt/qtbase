@@ -706,7 +706,7 @@ bool QIODevice::reset()
     number of bytes to allocate in a buffer before reading.
 
     Subclasses that reimplement this function must call the base
-    implementation in order to include the size of QIODevices' buffer. Example:
+    implementation in order to include the size of the buffer of QIODevice. Example:
 
     \snippet code/src_corelib_io_qiodevice.cpp 1
 

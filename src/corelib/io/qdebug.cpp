@@ -40,6 +40,7 @@
 #endif
 
 #include "qdebug.h"
+#include "qmetaobject.h"
 #include <private/qtextstream_p.h>
 #include <private/qtools_p.h>
 
@@ -284,12 +285,12 @@ void QDebug::putString(const QChar *begin, size_t length)
     if (stream->testFlag(Stream::NoQuotes)) {
         // no quotes, write the string directly too (no pretty-printing)
         // this respects the QTextStream state, though
-        stream->ts.d_ptr->putString(begin, length);
+        stream->ts.d_ptr->putString(begin, int(length));
     } else {
         // we'll reset the QTextStream formatting mechanisms, so save the state
         QDebugStateSaver saver(*this);
         stream->ts.d_ptr->params.reset();
-        putEscapedString(stream->ts.d_ptr.data(), reinterpret_cast<const ushort *>(begin), length);
+        putEscapedString(stream->ts.d_ptr.data(), reinterpret_cast<const ushort *>(begin), int(length));
     }
 }
 
@@ -302,14 +303,14 @@ void QDebug::putByteArray(const char *begin, size_t length, Latin1Content conten
     if (stream->testFlag(Stream::NoQuotes)) {
         // no quotes, write the string directly too (no pretty-printing)
         // this respects the QTextStream state, though
-        QString string = content == ContainsLatin1 ? QString::fromLatin1(begin, length) : QString::fromUtf8(begin, length);
+        QString string = content == ContainsLatin1 ? QString::fromLatin1(begin, int(length)) : QString::fromUtf8(begin, int(length));
         stream->ts.d_ptr->putString(string);
     } else {
         // we'll reset the QTextStream formatting mechanisms, so save the state
         QDebugStateSaver saver(*this);
         stream->ts.d_ptr->params.reset();
         putEscapedString(stream->ts.d_ptr.data(), reinterpret_cast<const uchar *>(begin),
-                         length, content == ContainsLatin1);
+                         int(length), content == ContainsLatin1);
     }
 }
 
@@ -642,5 +643,24 @@ QDebugStateSaver::~QDebugStateSaver()
 {
     d->restoreState();
 }
+
+#ifndef QT_NO_QOBJECT
+/*!
+    \internal
+ */
+QDebug qt_QMetaEnum_debugOperator(QDebug &dbg, int value, const QMetaObject *meta, const char *name)
+{
+    QDebugStateSaver saver(dbg);
+    QMetaEnum me = meta->enumerator(meta->indexOfEnumerator(name));
+    const char *key = me.valueToKey(value);
+    dbg.nospace() << meta->className() << "::" << name << '(';
+    if (key)
+        dbg << key;
+    else
+        dbg << value;
+    dbg << ')';
+    return dbg;
+}
+#endif
 
 QT_END_NAMESPACE

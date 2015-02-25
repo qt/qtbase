@@ -138,8 +138,9 @@
     QRect previousGeometry = requestedGeometry != actualGeometry ?
             requestedGeometry : qt_window_private(m_qioswindow->window())->geometry;
 
-    QWindowSystemInterface::handleGeometryChange(m_qioswindow->window(), actualGeometry, previousGeometry);
-    QWindowSystemInterface::flushWindowSystemEvents();
+    QWindow *window = m_qioswindow->window();
+    QWindowSystemInterface::handleGeometryChange(window, actualGeometry, previousGeometry);
+    QWindowSystemInterface::flushWindowSystemEvents(window->inherits("QWidgetWindow") ? QEventLoop::ExcludeUserInputEvents : QEventLoop::AllEvents);
 
     if (actualGeometry.size() != previousGeometry.size()) {
         // Trigger expose event on resize

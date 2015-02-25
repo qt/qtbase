@@ -2166,8 +2166,6 @@ public:
 
 void tst_QWidget::resizeEvent()
 {
-    QSKIP("QTBUG-30744");
-
     {
         QWidget wParent;
         wParent.resize(200, 200);
@@ -3239,7 +3237,7 @@ void tst_QWidget::restoreVersion1Geometry()
     widget.showNormal();
     QTest::qWait(10);
 
-    if (m_platform == QStringLiteral("xcb") || m_platform == QStringLiteral("windows"))
+    if (m_platform == QStringLiteral("xcb"))
         QSKIP("QTBUG-26421");
 
     if (expectedWindowState != Qt::WindowNoState) {
@@ -3680,8 +3678,6 @@ void tst_QWidget::optimizedResizeMove()
 
 void tst_QWidget::optimizedResize_topLevel()
 {
-    QSKIP("We do not yet have static contents support, see QTBUG-28012");
-
     StaticWidget topLevel;
     topLevel.gotPaintEvent = false;
     topLevel.show();

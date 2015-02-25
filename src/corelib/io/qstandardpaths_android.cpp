@@ -57,7 +57,7 @@ static QJNIObjectPrivate applicationContext()
     if (appCtx.isValid())
         return appCtx;
 
-    QJNIObjectPrivate activity = QtAndroidPrivate::activity();
+    QJNIObjectPrivate activity(QtAndroidPrivate::activity());
     if (!activity.isValid())
         return appCtx;
 
@@ -131,7 +131,7 @@ static QString getExternalFilesDir(const char *directoryField = 0)
     if (!path.isEmpty())
         return path;
 
-    QJNIObjectPrivate activity = QtAndroidPrivate::activity();
+    QJNIObjectPrivate activity(QtAndroidPrivate::activity());
     if (!activity.isValid())
         return QString();
 

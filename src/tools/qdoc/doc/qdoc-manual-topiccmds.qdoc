@@ -393,11 +393,11 @@
 
         Files:
         \list
-        \li \l{http://qt-project.org/doc/qt-5.0/qtwidgets/widgets-imageviewer-imageviewer-cpp.html}
+        \li \l{http://doc.qt.io/qt-5/qtwidgets-widgets-imageviewer-imageviewer-cpp.html}
            {widgets/imageviewer/imageviewer.cpp}
-        \li \l{http://qt-project.org/doc/qt-5.0/qtwidgets/widgets-imageviewer-imageviewer-h.html}
+        \li \l{http://doc.qt.io/qt-5/qtwidgets-widgets-imageviewer-imageviewer-h.html}
            {widgets/imageviewer/imageviewer.h}
-        \li \l{http://qt-project.org/doc/qt-5.0/qtwidgets/widgets-imageviewer-main-cpp.html}
+        \li \l{http://doc.qt.io/qt-5/qtwidgets-widgets-imageviewer-main-cpp.html}
            {widgets/imageviewer/main.cpp}
         \endlist
 
@@ -414,7 +414,7 @@
 
     \code
     / *!
-        \externalpage http://qt-project.org/doc/
+        \externalpage http://doc.qt.io/
         \title Qt Documentation Site
     * /
     \endcode
@@ -432,7 +432,7 @@
     QDoc renders this as:
 
     \quotation
-        At the \l {http://qt-project.org/doc/}{Qt Documentation Site}
+        At the \l {http://doc.qt.io/}{Qt Documentation Site}
         you can find the latest documentation for Qt, Qt Creator, the Qt SDK
         and much more.
     \endquotation
@@ -443,7 +443,7 @@
 
     \code
     / *!
-        At the \l {http://qt-project.org/doc/}{Qt Documentation Site}
+        At the \l {http://doc.qt.io/}{Qt Documentation Site}
         you can find the latest documentation for Qt, Qt Creator, the Qt SDK
         and much more.
     * /
@@ -543,7 +543,7 @@
          <table width="100%">
              <tr valign="top" bgcolor="#e0e0e0">
              <td><b>
-             <a href="http://qt-project.org/doc/qt-5.0/qtnetwork/qabstractsocket.html">QAbstractSocket</a>
+             <a href="http://doc.qt.io/qt-5/qabstractsocket.html">QAbstractSocket</a>
              </b></td>
              <td>
              The base functionality common to all socket types
@@ -551,7 +551,7 @@
 
              <tr valign="top" bgcolor="#e0e0e0">
              <td><b>
-             <a href="http://qt-project.org/doc/qt-5.0/qtcore/qbuffer.html">QBuffer</a>
+             <a href="http://doc.qt.io/qt-5/qbuffer.html">QBuffer</a>
              </b></td>
              <td>
              QIODevice interface for a QByteArray
@@ -559,7 +559,7 @@
 
              <tr valign="top" bgcolor="#e0e0e0">
              <td><b>
-             <a href="http://qt-project.org/doc/qt-5.0/qtgui/qclipboard.html">QClipboard</a>
+             <a href="http://doc.qt.io/qt-5/qclipboard.html">QClipboard</a>
              </b></td>
              <td>
              Access to the window system clipboard
@@ -635,7 +635,7 @@
                <h3>Functions</h3>
                <ul>
                <li>RandomAccessIterator
-               <a href="http://qt-project.org/doc/qt-5.0/qtcore/qtalgorithms.html#qBinaryFind">qBinaryFind</a></b>
+               <a href="http://doc.qt.io/qt-5/qtalgorithms-obsolete.html#qBinaryFind">qBinaryFind</a></b>
                (RandomAccessIterator begin, RandomAccessIterator end,
                const T & value)</li>
                <li>...</li></ul>
@@ -804,7 +804,7 @@
                <table width="100%">
                    <tr valign="top" bgcolor="#d0d0d0">
                    <td><b>
-                   <a href="http://qt-project.org/doc/qt-5.0/qtnetwork/qabstractsocket.html">QAbstractSocket</a>
+                   <a href="http://doc.qt.io/qt-5/qabstractsocket.html">QAbstractSocket</a>
                    </b></td>
                    <td>
                    The base functionality common to all socket types
@@ -1539,7 +1539,7 @@
     \quotation
         \raw HTML
         <h3>
-            <a href="http://qt-project.org/doc/qt-5.0/qtgui/qpalette.html">
+            <a href="http://doc.qt.io/qt-5/qpalette.html">
                 QPalette
             </a>
             QStyleOption::palette
