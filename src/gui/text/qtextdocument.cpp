@@ -1453,7 +1453,7 @@ QTextCursor QTextDocument::find(const QRegExp & expr, int from, FindFlags option
     \overload
 
     Finds the next occurrence, matching the regular expression, \a expr, in the document.
-    The search starts at the position of the given \a from cursor, and proceeds
+    The search starts at the position of the given from \a cursor, and proceeds
     forwards through the document unless specified otherwise in the search
     options. The \a options control the type of search performed. The FindCaseSensitively
     option is ignored for this overload, use QRegExp::caseSensitivity instead.

@@ -2757,7 +2757,7 @@ static inline bool isWindowsBuildDirectory(const QString &dirName)
 }
 #endif
 
-/* !
+/*!
     Extract a directory from resources to disk. The content is extracted
     recursively to a temporary folder. The extracted content is not removed
     automatically.
