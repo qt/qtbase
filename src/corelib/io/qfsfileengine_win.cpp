@@ -544,7 +544,7 @@ bool QFSFileEngine::renameOverwrite(const QString &newName)
     bool ret = ::DeleteAndRenameFile((wchar_t*)QFileSystemEntry(newName).nativeFilePath().utf16(),
                                      (wchar_t*)d->fileEntry.nativeFilePath().utf16()) != 0;
     if (!ret) {
-        ret = ::DeleteFile((wchar_t*)d->fileEntry.nativeFilePath().utf16()) != 0;
+        ret = ::DeleteFile((wchar_t*)QFileSystemEntry(newName).nativeFilePath().utf16()) != 0;
         if (ret)
             ret = ::MoveFile((wchar_t*)d->fileEntry.nativeFilePath().utf16(),
                              (wchar_t*)QFileSystemEntry(newName).nativeFilePath().utf16()) != 0;
