@@ -4088,7 +4088,7 @@ void Configure::generateQConfigCpp()
                   << ";\n"
                   << endl;
         if ((platform() != WINDOWS) && (platform() != WINDOWS_CE) && (platform() != WINDOWS_RT))
-            tmpStream << "#define QT_CONFIGURE_SETTINGS_PATH \"" << QDir::cleanPath(dictionary["QT_INSTALL_SETTINGS"]) << "\"" << endl;
+            tmpStream << "#define QT_CONFIGURE_SETTINGS_PATH \"" << dictionary["QT_REL_INSTALL_SETTINGS"] << "\"" << endl;
 
         tmpStream << endl
                   << "#ifdef QT_BUILD_QMAKE\n"
