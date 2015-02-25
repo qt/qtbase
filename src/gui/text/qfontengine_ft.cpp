@@ -510,7 +510,7 @@ void QFreetypeFace::addGlyphToPath(FT_Face face, FT_GlyphSlot g, const QFixedPoi
 
 extern void qt_addBitmapToPath(qreal x0, qreal y0, const uchar *image_data, int bpl, int w, int h, QPainterPath *path);
 
-void QFreetypeFace::addBitmapToPath(FT_GlyphSlot slot, const QFixedPoint &point, QPainterPath *path, bool)
+void QFreetypeFace::addBitmapToPath(FT_GlyphSlot slot, const QFixedPoint &point, QPainterPath *path)
 {
     if (slot->format != FT_GLYPH_FORMAT_BITMAP
         || slot->bitmap.pixel_mode != FT_PIXEL_MODE_MONO)
@@ -1430,7 +1430,7 @@ void QFontEngineFT::addOutlineToPath(qreal x, qreal y, const QGlyphLayout &glyph
         for (int gl = 0; gl < glyphs.numGlyphs; gl++) {
             FT_UInt glyph = positioned_glyphs[gl];
             FT_Load_Glyph(face, glyph, FT_LOAD_TARGET_MONO);
-            freetype->addBitmapToPath(face->glyph, positions[gl], path);
+            QFreetypeFace::addBitmapToPath(face->glyph, positions[gl], path);
         }
         unlockFace();
     }
@@ -1696,7 +1696,7 @@ glyph_metrics_t QFontEngineFT::boundingBox(glyph_t glyph, const QTransform &matr
 
 glyph_metrics_t QFontEngineFT::alphaMapBoundingBox(glyph_t glyph, QFixed subPixelPosition, const QTransform &matrix, QFontEngine::GlyphFormat format)
 {
-    Glyph *g = loadGlyphFor(glyph, subPixelPosition, format, matrix);
+    Glyph *g = loadGlyphFor(glyph, subPixelPosition, format, matrix, true);
 
     glyph_metrics_t overall;
     if (g) {
@@ -1839,7 +1839,8 @@ void QFontEngineFT::unlockAlphaMapForGlyph()
 QFontEngineFT::Glyph *QFontEngineFT::loadGlyphFor(glyph_t g,
                                                   QFixed subPixelPosition,
                                                   GlyphFormat format,
-                                                  const QTransform &t)
+                                                  const QTransform &t,
+                                                  bool fetchBoundingBox)
 {
     FT_Face face = 0;
     QGlyphSet *glyphSet = 0;
@@ -1852,7 +1853,7 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyphFor(glyph_t g,
         Q_ASSERT(glyphSet != 0);
     }
 
-    if (glyphSet != 0 && glyphSet->outline_drawing)
+    if (glyphSet != 0 && glyphSet->outline_drawing && !fetchBoundingBox)
         return 0;
 
     Glyph *glyph = glyphSet != 0 ? glyphSet->getGlyph(g, subPixelPosition) : 0;

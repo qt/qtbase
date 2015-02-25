@@ -25,7 +25,7 @@ qhp.QtCore.subprojects.classes.sortPages = true
 
 tagfile                 = ../../../doc/qtcore/qtcore.tags
 
-depends                 += activeqt qtdbus qtgui qtwidgets qtnetwork qtdoc qtmacextras qtquick qtlinguist qtdesigner qtconcurrent qtxml qmake
+depends                 += activeqt qtdbus qtgui qtwidgets qtnetwork qtdoc qtmacextras qtquick qtlinguist qtdesigner qtconcurrent qtxml qmake qtwinextras
 # depends               += qtqml # Qt namespace collides with QtQml::Qt, see QTBUG-38630
 
 headerdirs  += ..

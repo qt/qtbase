@@ -5229,6 +5229,9 @@ QGraphicsEffect *QWidget::graphicsEffect() const
 
     \note This function will apply the effect on itself and all its children.
 
+    \note Graphics effects are not supported for OpenGL-based widgets, such as QGLWidget,
+    QOpenGLWidget and QQuickWidget.
+
     \since 4.6
 
     \sa graphicsEffect()
@@ -12271,7 +12274,7 @@ QPoint QWidget::mapToGlobal(const QPoint &pos) const
 {
 #ifndef QT_NO_GRAPHICSVIEW
     Q_D(const QWidget);
-    if (d->extra && d->extra->proxyWidget) {
+    if (d->extra && d->extra->proxyWidget && d->extra->proxyWidget->scene()) {
         const QList <QGraphicsView *> views = d->extra->proxyWidget->scene()->views();
         if (!views.isEmpty()) {
             const QPointF scenePos = d->extra->proxyWidget->mapToScene(pos);
@@ -12306,7 +12309,7 @@ QPoint QWidget::mapFromGlobal(const QPoint &pos) const
 {
 #ifndef QT_NO_GRAPHICSVIEW
     Q_D(const QWidget);
-    if (d->extra && d->extra->proxyWidget) {
+    if (d->extra && d->extra->proxyWidget && d->extra->proxyWidget->scene()) {
         const QList <QGraphicsView *> views = d->extra->proxyWidget->scene()->views();
         if (!views.isEmpty()) {
             const QPoint viewPortPos = views.first()->viewport()->mapFromGlobal(pos);

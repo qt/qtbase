@@ -13,7 +13,7 @@ SUBDIRS=\
    modeltest \
    networkselftest \
    qaccessibility \
-   qaccessibilitylinux \
+   # qaccessibilitylinux \ # QTBUG-44434
    qaccessibilitymac \
    qcomplextext \
    qfocusevent \

@@ -96,6 +96,7 @@ private slots:
     void taskQTBUG_40609_addingWidgetToItsOwnLayout();
     void taskQTBUG_40609_addingLayoutToItself();
     void replaceWidget();
+    void dontCrashWhenExtendsToEnd();
 
 private:
     QWidget *testWidget;
@@ -1726,6 +1727,23 @@ void tst_QGridLayout::replaceWidget()
         olditem->widget()->deleteLater();
         delete olditem;
     }
+}
+
+void tst_QGridLayout::dontCrashWhenExtendsToEnd()
+{
+    QWidget window;
+    window.resize(320,200);
+    QWidget parent(&window);
+    QLabel *lbl0 = new QLabel(QLatin1String("lbl0:"));
+    QLabel *lbl1 = new QLabel(QLatin1String("lbl1:"));
+    QPushButton *pb = new QPushButton(QLatin1String("pb1"));
+    QGridLayout *l = new QGridLayout(&parent);
+    l->addWidget(lbl0, 0, 0);
+    l->addWidget(lbl1, 1, 0);
+    // adding an item in the bottom right corner than spans to the end (!)...
+    l->addWidget(pb, 1, 1, -1, -1);
+    // ...should not cause a crash when the items are distributed....
+    l->setGeometry(QRect(0, 0, 200, 50));    // DONT CRASH HERE
 }
 
 QTEST_MAIN(tst_QGridLayout)

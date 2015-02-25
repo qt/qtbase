@@ -42,7 +42,7 @@
 
 // use compiler intrinsics for all atomic functions
 # define QT_INTERLOCKED_PREFIX _
-# define QT_INTERLOCKED_PROTOTYPE __cdecl
+# define QT_INTERLOCKED_PROTOTYPE
 # define QT_INTERLOCKED_DECLARE_PROTOTYPES
 # define QT_INTERLOCKED_INTRINSIC
 # define Q_ATOMIC_INT16_IS_SUPPORTED

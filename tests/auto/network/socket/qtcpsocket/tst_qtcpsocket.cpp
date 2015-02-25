@@ -492,11 +492,11 @@ void tst_QTcpSocket::bind_data()
 
     // iterate all interfaces, add all addresses on them as test data
     QList<QNetworkInterface> interfaces = QNetworkInterface::allInterfaces();
-    foreach (const QNetworkInterface &interface, interfaces) {
-        if (!interface.isValid())
+    foreach (const QNetworkInterface &netinterface, interfaces) {
+        if (!netinterface.isValid())
             continue;
 
-        foreach (const QNetworkAddressEntry &entry, interface.addressEntries()) {
+        foreach (const QNetworkAddressEntry &entry, netinterface.addressEntries()) {
             if (entry.ip().isInSubnet(QHostAddress::parseSubnet("fe80::/10"))
                 || entry.ip().isInSubnet(QHostAddress::parseSubnet("169.254/16")))
                 continue; // link-local bind will fail, at least on Linux, so skip it.

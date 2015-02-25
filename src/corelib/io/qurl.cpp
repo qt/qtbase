@@ -82,7 +82,7 @@
     For the convenience of generating encoded URL strings or query
     strings, there are two static functions called
     fromPercentEncoding() and toPercentEncoding() which deal with
-    percent encoding and decoding of QStrings.
+    percent encoding and decoding of QString objects.
 
     Calling isRelative() will tell whether or not the URL is
     relative. A relative URL can be resolved by passing it as argument
@@ -172,7 +172,7 @@
                        setters setting components of a URL; it is not permitted in
                        the QUrl constructor, in fromEncoded() or in setUrl().
                        For more information on this mode, see the documentation for
-                       QUrl::FullyDecoded.
+                       \l {QUrl::ComponentFormattingOption}{QUrl::FullyDecoded}.
 
     In TolerantMode, the parser has the following behaviour:
 
@@ -3083,6 +3083,21 @@ bool QUrl::hasFragment() const
     URL does not contain a valid TLD, in which case the function returns
     an empty string.
 
+    Note that this function considers a TLD to be any domain that allows users
+    to register subdomains under, including many home, dynamic DNS websites and
+    blogging providers. This is useful for determining whether two websites
+    belong to the same infrastructure and communication should be allowed, such
+    as browser cookies: two domains should be considered part of the same
+    website if they share at least one label in addition to the value
+    returned by this function.
+
+    \list
+      \li \c{foo.co.uk} and \c{foo.com} do not share a top-level domain
+      \li \c{foo.co.uk} and \c{bar.co.uk} share the \c{.co.uk} domain, but the next label is different
+      \li \c{www.foo.co.uk} and \c{ftp.foo.co.uk} share the same top-level domain and one more label,
+          so they are considered part of the same site
+    \endlist
+
     If \a options includes EncodeUnicode, the returned string will be in
     ASCII Compatible Encoding.
 */
@@ -4041,7 +4056,7 @@ QString QUrl::errorString() const
 /*!
     \since 5.1
 
-    Converts a list of \a urls into a list of QStrings, using toString(\a options).
+    Converts a list of \a urls into a list of QString objects, using toString(\a options).
 */
 QStringList QUrl::toStringList(const QList<QUrl> &urls, FormattingOptions options)
 {

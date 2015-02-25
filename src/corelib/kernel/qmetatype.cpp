@@ -201,6 +201,8 @@ struct DefinedTypesFilter {
     \enum QMetaType::Type
 
     These are the built-in types supported by QMetaType:
+    Read doc on QChar
+    Read doc on \l QChar
 
     \value Void \c void
     \value Bool \c bool

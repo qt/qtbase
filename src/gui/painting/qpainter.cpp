@@ -5536,6 +5536,11 @@ void QPainter::drawGlyphRun(const QPointF &position, const QGlyphRun &glyphRun)
 {
     Q_D(QPainter);
 
+    if (!d->engine) {
+        qWarning("QPainter::drawGlyphRun: Painter not active");
+        return;
+    }
+
     QRawFont font = glyphRun.rawFont();
     if (!font.isValid())
         return;

@@ -84,7 +84,10 @@ public:
     QJNIObjectPrivate(const char *className, const char *sig, ...);
     explicit QJNIObjectPrivate(jclass clazz);
     QJNIObjectPrivate(jclass clazz, const char *sig, ...);
-    QJNIObjectPrivate(jobject obj);
+    // In most cases you should never call this function with a local ref. unless you intend
+    // to manage the local ref. yourself.
+    // NOTE: see fromLocalRef() for converting a local ref. to QJNIObjectPrivate.
+    explicit QJNIObjectPrivate(jobject globalRef);
 
     template <typename T>
     T callMethod(const char *methodName,
@@ -182,6 +185,9 @@ public:
 
         return *this;
     }
+
+    // This function takes ownership of the jobject and releases the local ref. before returning.
+    static QJNIObjectPrivate fromLocalRef(jobject lref);
 
 private:
     friend class QAndroidJniObject;

@@ -1417,6 +1417,9 @@ void tst_QMetaObject::enumDebugStream()
     QTest::ignoreMessage(QtDebugMsg, "hello MyNamespace::MyClass::MyEnum(MyEnum2) world ");
     MyNamespace::MyClass::MyEnum e = MyNamespace::MyClass::MyEnum2;
     qDebug() << "hello" << e << "world";
+
+    QTest::ignoreMessage(QtDebugMsg, "Qt::WindowType(WindowTitleHint) Qt::WindowType(Window) Qt::WindowType(Desktop) Qt::WindowType(WindowSystemMenuHint)");
+    qDebug() << Qt::WindowTitleHint << Qt::Window <<Qt::Desktop << Qt::WindowSystemMenuHint;
 }
 
 QTEST_MAIN(tst_QMetaObject)

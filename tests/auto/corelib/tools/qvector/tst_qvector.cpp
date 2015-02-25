@@ -1512,11 +1512,18 @@ void tst_QVector::remove() const
     QVERIFY(myvec.removeOne(val2));
     QCOMPARE(myvec, QVector<T>() << val1 << val3  << val1 << val3  << val1 << val2 << val3);
 
+    QVector<T> myvecCopy = myvec;
+    QVERIFY(myvecCopy.isSharedWith(myvec));
     // removeAll()
     QCOMPARE(myvec.removeAll(val4), 0);
+    QVERIFY(myvecCopy.isSharedWith(myvec));
     QCOMPARE(myvec.removeAll(val1), 3);
+    QVERIFY(!myvecCopy.isSharedWith(myvec));
     QCOMPARE(myvec, QVector<T>() << val3  << val3  << val2 << val3);
+    myvecCopy = myvec;
+    QVERIFY(myvecCopy.isSharedWith(myvec));
     QCOMPARE(myvec.removeAll(val2), 1);
+    QVERIFY(!myvecCopy.isSharedWith(myvec));
     QCOMPARE(myvec, QVector<T>() << val3  << val3  << val3);
 
     // remove rest

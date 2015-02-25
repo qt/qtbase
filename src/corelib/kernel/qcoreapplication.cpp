@@ -80,6 +80,11 @@
 #ifdef Q_OS_WIN
 # ifdef Q_OS_WINRT
 #  include "qeventdispatcher_winrt_p.h"
+#  include "qfunctions_winrt.h"
+#  include <wrl.h>
+#  include <Windows.ApplicationModel.core.h>
+   using namespace ABI::Windows::ApplicationModel::Core;
+   using namespace Microsoft::WRL;
 # else
 #  include "qeventdispatcher_win_p.h"
 # endif
@@ -1244,6 +1249,19 @@ void QCoreApplication::exit(int returnCode)
         QEventLoop *eventLoop = data->eventLoops.at(i);
         eventLoop->exit(returnCode);
     }
+#ifdef Q_OS_WINRT
+    qWarning("QCoreApplication::exit: It is not recommended to explicitly exit an application on Windows Store Apps");
+    ComPtr<ICoreApplication> app;
+    HRESULT hr = RoGetActivationFactory(Wrappers::HString::MakeReference(RuntimeClass_Windows_ApplicationModel_Core_CoreApplication).Get(),
+                                IID_PPV_ARGS(&app));
+    RETURN_VOID_IF_FAILED("Could not acquire ICoreApplication object");
+    ComPtr<ICoreApplicationExit> appExit;
+
+    hr = app.As(&appExit);
+    RETURN_VOID_IF_FAILED("Could not acquire ICoreApplicationExit object");
+    hr = appExit->Exit();
+    RETURN_VOID_IF_FAILED("Could not exit application");
+#endif // Q_OS_WINRT
 }
 
 /*****************************************************************************
@@ -2405,7 +2423,7 @@ Q_GLOBAL_STATIC_WITH_ARGS(QMutex, libraryPathMutex, (QMutex::Recursive))
     INSTALL/plugins, where \c INSTALL is the directory where Qt was
     installed).  The directory of the application executable (NOT the
     working directory) is always added, as well as the colon separated
-    entries of the QT_PLUGIN_PATH environment variable.
+    entries of the \c QT_PLUGIN_PATH environment variable.
 
     If you want to iterate over the list, you can use the \l foreach
     pseudo-keyword:
@@ -2550,7 +2568,7 @@ void QCoreApplication::removeLibraryPath(const QString &path)
     \note Native event filters will be disabled when the application the
     Qt::AA_MacPluginApplication attribute is set.
 
-    For maximum portability, you should always try to use QEvents
+    For maximum portability, you should always try to use QEvent
     and QObject::installEventFilter() whenever possible.
 
     \sa QObject::installEventFilter()

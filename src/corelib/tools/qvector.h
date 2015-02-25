@@ -154,7 +154,9 @@ public:
         const const_iterator ce = this->cend(), cit = std::find(this->cbegin(), ce, t);
         if (cit == ce)
             return 0;
-        const iterator e = end(), it = std::remove(c2m(cit), e, t);
+        // next operation detaches, so ce, cit may become invalidated:
+        const int firstFoundIdx = std::distance(this->cbegin(), cit);
+        const iterator e = end(), it = std::remove(begin() + firstFoundIdx, e, t);
         const int result = std::distance(it, e);
         erase(it, e);
         return result;

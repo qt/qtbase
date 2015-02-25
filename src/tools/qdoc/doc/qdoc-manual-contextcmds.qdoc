@@ -428,7 +428,7 @@
     \quotation
         \raw HTML
         <h3>
-        <a href="http://qt-project.org/doc/qt-5.0/qtcore/qchar.html#Joining-enum">Joining</a>
+        <a href="http://doc.qt.io/qt-5/qchar.html#JoiningType-enum">Joining</a>
         QChar::joining () const</h3>
         \endraw
 
@@ -787,7 +787,7 @@
 
     \quotation
         \raw HTML
-        <h3><a href="http://qt-project.org/doc/qt-5.0/qtwidgets/qaction.html">QAction</a>
+        <h3><a href="http://doc.qt.io/qt-5/qaction.html">QAction</a>
         * QMenu::addAction ( const QIcon & <i>icon</i>,
         const QString & <i>text</i> )
         </h3>
