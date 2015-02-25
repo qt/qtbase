@@ -2813,12 +2813,15 @@ QString QSysInfo::prettyProductName()
     \macro void Q_CHECK_PTR(void *pointer)
     \relates <QtGlobal>
 
-    If \a pointer is 0, prints a warning message containing the source
+    If \a pointer is 0, prints a message containing the source
     code's file name and line number, saying that the program ran out
-    of memory.
+    of memory and aborts program execution. It throws \c std::bad_alloc instead
+    if exceptions are enabled.
 
-    Q_CHECK_PTR does nothing if \c QT_NO_DEBUG was defined during
-    compilation.
+    Q_CHECK_PTR does nothing if \c QT_NO_DEBUG and \c QT_NO_EXCEPTIONS were
+    defined during compilation. Therefore you must not use Q_CHECK_PTR to check
+    for successful memory allocations because the check will be disabled in
+    some cases.
 
     Example:
 
