@@ -6215,7 +6215,7 @@ static void drawTextItemDecoration(QPainter *painter, const QPointF &pos, const 
     pen.setWidthF(fe->lineThickness().toReal());
     pen.setCapStyle(Qt::FlatCap);
 
-    QLineF line(pos.x(), pos.y(), pos.x() + width, pos.y());
+    QLineF line(qFloor(pos.x()), pos.y(), qFloor(pos.x() + width), pos.y());
 
     bool wasCompatiblePainting = painter->renderHints()
             & QPainter::Qt4CompatiblePainting;
