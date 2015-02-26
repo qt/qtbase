@@ -273,6 +273,12 @@ namespace QXcbAtom {
         RelHorizScroll,
         RelVertScroll,
 
+#ifdef Q_OS_LINUX_TIZEN
+        _E_COMP_FLUSH,
+        _NET_CM_WINDOW_EFFECT_CLIENT_STATE,
+        _X_ILLUME_ACTIVATE_WINDOW,
+        _X_ILLUME_DEACTIVATE_WINDOW,
+#endif
         _XSETTINGS_SETTINGS,
 
         _COMPIZ_DECOR_PENDING,

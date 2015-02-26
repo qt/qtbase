@@ -1331,6 +1331,20 @@ void QXcbConnection::handleClientMessageEvent(const xcb_client_message_event_t *
     if (!window)
         return;
 
+#ifdef Q_OS_LINUX_TIZEN
+    if (event->type == atom(QXcbAtom::_X_ILLUME_DEACTIVATE_WINDOW)) {
+        QWindowSystemInterface::handleApplicationStateChanged(Qt::ApplicationSuspended);
+        return;
+    } if (event->type == atom(QXcbAtom::_X_ILLUME_ACTIVATE_WINDOW)) {
+        QWindowSystemInterface::handleApplicationStateChanged(Qt::ApplicationActive);
+        return;
+    } else if (event->type == atom(QXcbAtom::_E_COMP_FLUSH)
+            || event->type == atom(QXcbAtom::_NET_CM_WINDOW_EFFECT_CLIENT_STATE)) {
+        //silence the Tizen Mobile X11 WM messages for now
+        return;
+    }
+#endif // Q_OS_LINUX_TIZEN
+
     window->handleClientMessageEvent(event);
 }
 
@@ -1536,6 +1550,12 @@ static const char * xcb_atomnames = {
     "Rel Vert Wheel\0"
     "Rel Horiz Scroll\0"
     "Rel Vert Scroll\0"
+#ifdef Q_OS_LINUX_TIZEN
+    "_E_COMP_FLUSH\0"
+    "_NET_CM_WINDOW_EFFECT_CLIENT_STATE\0"
+    "_X_ILLUME_ACTIVATE_WINDOW\0"
+    "_X_ILLUME_DEACTIVATE_WINDOW\0"
+#endif
     "_XSETTINGS_SETTINGS\0"
     "_COMPIZ_DECOR_PENDING\0"
     "_COMPIZ_DECOR_REQUEST\0"

@@ -321,6 +321,9 @@ bool QXcbIntegration::hasCapability(QPlatformIntegration::Capability cap) const
     case ForeignWindows: return true;
     case SyncState: return true;
     case RasterGLSurface: return true;
+#ifdef Q_OS_LINUX_TIZEN
+    case ApplicationState: return true;
+#endif
     default: return QPlatformIntegration::hasCapability(cap);
     }
 }

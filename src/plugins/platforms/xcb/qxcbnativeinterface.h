@@ -116,6 +116,7 @@ signals:
 
 private:
     xcb_window_t locateSystemTray(xcb_connection_t *conn, const QXcbScreen *screen);
+    Q_INVOKABLE void setDeviceOrientation(int orientation);
 
     const QByteArray m_genericEventFilterType;
 

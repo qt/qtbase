@@ -53,6 +53,7 @@
 #endif
 
 #include <QtPlatformHeaders/qxcbwindowfunctions.h>
+#include <QtPlatformHeaders/qxcbfunctions.h>
 
 #ifdef XCB_USE_XLIB
 #  include <X11/Xlib.h>
@@ -334,10 +335,34 @@ QPlatformNativeInterface::NativeResourceForScreenFunction QXcbNativeInterface::n
     return 0;
 }
 
+static void _setDeviceOrientation(Qt::ScreenOrientation orientation) {
+    //QMetaObject::invokeMethod method is used here because it is possible
+    //and very probable that this function will be invoked from non-Gui thread.
+    //This way thread safety is guqranteed in easy way
+    QMetaObject::invokeMethod(QGuiApplication::platformNativeInterface(),
+                              "setDeviceOrientation",
+                              Q_ARG(int, orientation));
+}
+
+void QXcbNativeInterface::setDeviceOrientation(int orientation) {
+    //This slot is private and supposed to be invoked only by _setDeviceOrientation function
+    Qt::ScreenOrientation screenOrientation = (Qt::ScreenOrientation) orientation;
+    QScreen *screen = QGuiApplication::primaryScreen();
+    if (screen)
+        QWindowSystemInterface::handleScreenOrientationChange(screen, screenOrientation);
+    else
+        qWarning() <<  "Can't set device orientation to:" << qPrintable(screenOrientation)
+                    << "because there is no primary screen";
+}
+
 QFunctionPointer QXcbNativeInterface::platformFunction(const QByteArray &function) const
 {
     if (function == QXcbWindowFunctions::setWmWindowTypeIdentifier()) {
         return QFunctionPointer(QXcbWindow::setWmWindowTypeStatic);
+    }
+    if (function == QXcbFunctions::setDeviceOrientationTypeIdentifier()) {
+        //Pointer to static function is returned because - see comment in that function
+        return QFunctionPointer(_setDeviceOrientation);
     }
     return Q_NULLPTR;
 }
