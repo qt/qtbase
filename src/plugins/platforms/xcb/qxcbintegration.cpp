@@ -88,6 +88,10 @@
 #endif
 #endif
 
+#ifdef Q_OS_LINUX_TIZEN
+#include <aul/aul.h>
+#endif // Q_OS_LINUX_TIZEN
+
 #include <QtCore/QFileInfo>
 
 QT_BEGIN_NAMESPACE
@@ -118,12 +122,38 @@ static bool runningUnderDebugger()
 #endif
 }
 
+#ifdef Q_OS_LINUX_TIZEN
+static int aul_handler(aul_type type, bundle *, void *)
+{
+    switch (type) {
+    case AUL_START:
+        QWindowSystemInterface::handleApplicationStateChanged(Qt::ApplicationActive);
+        break;
+    case AUL_RESUME:
+        if (!QGuiApplication::topLevelWindows().isEmpty())
+            QGuiApplication::topLevelWindows().first()->requestActivate();
+        break;
+    case AUL_TERMINATE:
+        QCoreApplication::quit();
+        break;
+    }
+    return 0;
+}
+#endif // Q_OS_LINUX_TIZEN
+
 QXcbIntegration::QXcbIntegration(const QStringList &parameters, int &argc, char **argv)
     : m_services(new QGenericUnixServices)
     , m_instanceName(0)
     , m_canGrab(true)
 {
+
     qRegisterMetaType<QXcbWindow*>();
+
+#ifdef Q_OS_LINUX_TIZEN
+    aul_launch_init(aul_handler, 0);
+    aul_launch_argv_handler(argc, argv);
+#endif // Q_OS_LINUX_TIZEN
+
 #ifdef XCB_USE_XLIB
     XInitThreads();
 #endif
@@ -321,6 +351,9 @@ bool QXcbIntegration::hasCapability(QPlatformIntegration::Capability cap) const
     case ForeignWindows: return true;
     case SyncState: return true;
     case RasterGLSurface: return true;
+#ifdef Q_OS_LINUX_TIZEN
+    case ApplicationState: return true;
+#endif
     default: return QPlatformIntegration::hasCapability(cap);
     }
 }
