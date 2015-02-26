@@ -99,6 +99,8 @@ QCocoaMenuItem::QCocoaMenuItem() :
 
 QCocoaMenuItem::~QCocoaMenuItem()
 {
+    QCocoaAutoReleasePool pool;
+
     if (m_menu && COCOA_MENU_ANCESTOR(m_menu) == this)
         SET_COCOA_MENU_ANCESTOR(m_menu, 0);
     if (m_merged) {

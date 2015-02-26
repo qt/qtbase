@@ -33,6 +33,7 @@
 
 #include "qcocoaintegration.h"
 
+#include "qcocoaautoreleasepool.h"
 #include "qcocoawindow.h"
 #include "qcocoabackingstore.h"
 #include "qcocoanativeinterface.h"
@@ -136,6 +137,7 @@ void QCocoaScreen::updateGeometry()
 
 qreal QCocoaScreen::devicePixelRatio() const
 {
+    QCocoaAutoReleasePool pool;
     NSScreen * screen = osScreen();
     return qreal(screen ? [screen backingScaleFactor] : 1.0);
 }
