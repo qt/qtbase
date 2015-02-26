@@ -45,6 +45,9 @@ public:
 private slots:
     void create();
 
+    void dotProduct_data();
+    void dotProduct();
+
     void length_data();
     void length();
 
@@ -217,6 +220,58 @@ void tst_QQuaternion::create()
     QCOMPARE(v10.y(), 2.5f);
     QCOMPARE(v10.z(), -89.25f);
     QCOMPARE(v10.w(), 34.0f);
+}
+
+// Test the computation of dot product.
+void tst_QQuaternion::dotProduct_data()
+{
+    QTest::addColumn<float>("x1");
+    QTest::addColumn<float>("y1");
+    QTest::addColumn<float>("z1");
+    QTest::addColumn<float>("scalar1");
+    QTest::addColumn<float>("x2");
+    QTest::addColumn<float>("y2");
+    QTest::addColumn<float>("z2");
+    QTest::addColumn<float>("scalar2");
+    QTest::addColumn<float>("dot");
+
+    QTest::newRow("null")
+        << 0.0f << 0.0f << 0.0f << 0.0f
+        << 0.0f << 0.0f << 0.0f << 0.0f
+        << 0.0f;
+
+    QTest::newRow("identity")
+        << 0.0f << 0.0f << 0.0f << 1.0f
+        << 0.0f << 0.0f << 0.0f << 1.0f
+        << 1.0f;
+
+    QTest::newRow("unitvec")
+        << 1.0f << 0.0f << 0.0f << 0.0f
+        << 0.0f << 1.0f << 0.0f << 0.0f
+        << 0.0f;
+
+    QTest::newRow("complex")
+        << 1.0f << 2.0f << 3.0f << 4.0f
+        << 4.0f << 5.0f << 6.0f << 7.0f
+        << 60.0f;
+}
+void tst_QQuaternion::dotProduct()
+{
+    QFETCH(float, x1);
+    QFETCH(float, y1);
+    QFETCH(float, z1);
+    QFETCH(float, scalar1);
+    QFETCH(float, x2);
+    QFETCH(float, y2);
+    QFETCH(float, z2);
+    QFETCH(float, scalar2);
+    QFETCH(float, dot);
+
+    QQuaternion q1(scalar1, x1, y1, z1);
+    QQuaternion q2(scalar2, x2, y2, z2);
+
+    QCOMPARE(QQuaternion::dotProduct(q1, q2), dot);
+    QCOMPARE(QQuaternion::dotProduct(q2, q1), dot);
 }
 
 // Test length computation for quaternions.

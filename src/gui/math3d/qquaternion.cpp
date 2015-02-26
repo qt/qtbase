@@ -213,9 +213,18 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \fn float QQuaternion::dotProduct(const QQuaternion &q1, const QQuaternion &q2)
+    \since 5.5
+
+    Returns the dot product of \a q1 and \a q2.
+
+    \sa length()
+*/
+
+/*!
     Returns the length of the quaternion.  This is also called the "norm".
 
-    \sa lengthSquared(), normalized()
+    \sa lengthSquared(), normalized(), dotProduct()
 */
 float QQuaternion::length() const
 {
@@ -225,7 +234,7 @@ float QQuaternion::length() const
 /*!
     Returns the squared length of the quaternion.
 
-    \sa length()
+    \sa length(), dotProduct()
 */
 float QQuaternion::lengthSquared() const
 {
@@ -240,7 +249,7 @@ float QQuaternion::lengthSquared() const
     will be returned as-is.  Otherwise the normalized form of the
     quaternion of length 1 will be returned.
 
-    \sa length(), normalize()
+    \sa normalize(), length(), dotProduct()
 */
 QQuaternion QQuaternion::normalized() const
 {
@@ -792,13 +801,10 @@ QQuaternion QQuaternion::slerp
         return q2;
 
     // Determine the angle between the two quaternions.
-    QQuaternion q2b;
-    float dot;
-    dot = q1.xp * q2.xp + q1.yp * q2.yp + q1.zp * q2.zp + q1.wp * q2.wp;
-    if (dot >= 0.0f) {
-        q2b = q2;
-    } else {
-        q2b = -q2;
+    QQuaternion q2b(q2);
+    float dot = QQuaternion::dotProduct(q1, q2);
+    if (dot < 0.0f) {
+        q2b = -q2b;
         dot = -dot;
     }
 
@@ -844,13 +850,10 @@ QQuaternion QQuaternion::nlerp
         return q2;
 
     // Determine the angle between the two quaternions.
-    QQuaternion q2b;
-    float dot;
-    dot = q1.xp * q2.xp + q1.yp * q2.yp + q1.zp * q2.zp + q1.wp * q2.wp;
-    if (dot >= 0.0f)
-        q2b = q2;
-    else
-        q2b = -q2;
+    QQuaternion q2b(q2);
+    float dot = QQuaternion::dotProduct(q1, q2);
+    if (dot < 0.0f)
+        q2b = -q2b;
 
     // Perform the linear interpolation.
     return (q1 * (1.0f - t) + q2b * t).normalized();
