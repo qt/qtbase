@@ -2279,9 +2279,9 @@ void tst_QMatrixNxN::rotate4x4_data()
     float y = 2.0f;
     float z = -6.0f;
     float angle = -45.0f;
-    float c = qCos(angle * M_PI / 180.0f);
-    float s = qSin(angle * M_PI / 180.0f);
-    float len = sqrtf(x * x + y * y + z * z);
+    float c = std::cos(angle * M_PI / 180.0f);
+    float s = std::sin(angle * M_PI / 180.0f);
+    float len = std::sqrt(x * x + y * y + z * z);
     float xu = x / len;
     float yu = y / len;
     float zu = z / len;
