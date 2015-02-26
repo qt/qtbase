@@ -1331,6 +1331,7 @@ void QDocDatabase::resolveStuff()
     resolveQmlInheritance(primaryTreeRoot());
     //primaryTree()->resolveTargets(primaryTreeRoot());
     primaryTree()->resolveCppToQmlLinks();
+    primaryTree()->resolveUsingClauses();
 }
 
 /*!

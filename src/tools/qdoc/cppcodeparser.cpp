@@ -1692,35 +1692,76 @@ bool CppCodeParser::matchNamespaceDecl(InnerNode *parent)
     return matched && match(Tok_RightBrace);
 }
 
-bool CppCodeParser::matchUsingDecl()
+/*!
+  Match a C++ \c using clause. Return \c true if the match
+  is successful. Otherwise false.
+
+  If the \c using clause is for a namespace, an open namespace
+  <is inserted for qdoc to look in to find things.
+
+  If the \c using clause is a base class member function, the
+  member function is added to \a parent as an unresolved
+  \c using clause.
+ */
+bool CppCodeParser::matchUsingDecl(InnerNode* parent)
 {
+    bool usingNamespace = false;
     readToken(); // skip 'using'
 
-    // 'namespace'
-    if (tok != Tok_namespace)
-        return false;
-
-    readToken();
-    // identifier
-    if (tok != Tok_Ident)
-        return false;
-
-    QString name;
-    while (tok == Tok_Ident) {
-        name += lexeme();
-        readToken();
-        if (tok == Tok_Semicolon)
-            break;
-        else if (tok != Tok_Gulbrandsen)
-            return false;
-        name += "::";
+    if (tok == Tok_namespace) {
+        usingNamespace = true;
         readToken();
     }
 
-    /*
-        So far, so good. We have 'using namespace Foo;'.
-    */
-    qdb_->insertOpenNamespace(name);
+    int openLeftAngles = 0;
+    int openLeftParens = 0;
+    bool usingOperator = false;
+    QString name;
+    while (tok != Tok_Semicolon) {
+        if ((tok != Tok_Ident) && (tok != Tok_Gulbrandsen)) {
+            if (tok == Tok_LeftAngle) {
+                ++openLeftAngles;
+            }
+            else if (tok == Tok_RightAngle) {
+                if (openLeftAngles <= 0)
+                    return false;
+                --openLeftAngles;
+            }
+            else if (tok == Tok_Comma) {
+                if (openLeftAngles <= 0)
+                    return false;
+            }
+            else if (tok == Tok_operator) {
+                usingOperator = true;
+            }
+            else if (tok == Tok_SomeOperator) {
+                if (!usingOperator)
+                    return false;
+            }
+            else if (tok == Tok_LeftParen) {
+                ++openLeftParens;
+            }
+            else if (tok == Tok_RightParen) {
+                if (openLeftParens <= 0)
+                    return false;
+                --openLeftParens;
+            }
+            else {
+                return false;
+            }
+        }
+        name += lexeme();
+        readToken();
+    }
+
+    if (usingNamespace) {
+        // 'using namespace Foo;'.
+        qdb_->insertOpenNamespace(name);
+    }
+    else if (parent && parent->isClass()) {
+        ClassNode* cn = static_cast<ClassNode*>(parent);
+        cn->addUnresolvedUsingClause(name);
+    }
     return true;
 }
 
@@ -1961,7 +2002,7 @@ bool CppCodeParser::matchDeclList(InnerNode *parent)
             matchNamespaceDecl(parent);
             break;
         case Tok_using:
-            matchUsingDecl();
+            matchUsingDecl(parent);
             break;
         case Tok_template:
             {
@@ -2221,7 +2262,7 @@ bool CppCodeParser::matchDocsAndStuff()
             }
         }
         else if (tok == Tok_using) {
-            matchUsingDecl();
+            matchUsingDecl(0);
         }
         else {
             QStringList parentPath;

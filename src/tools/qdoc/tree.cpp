@@ -499,6 +499,29 @@ void Tree::resolveCppToQmlLinks()
 }
 
 /*!
+  For each C++ class node, resolve any \c using clauses
+  that appeared in the class declaration.
+ */
+void Tree::resolveUsingClauses()
+{
+    foreach (Node* child, root_.childNodes()) {
+        if (child->isClass()) {
+            ClassNode* cn = static_cast<ClassNode*>(child);
+            QList<UsingClause>& usingClauses = cn->usingClauses();
+            QList<UsingClause>::iterator uc = usingClauses.begin();
+            while (uc != usingClauses.end()) {
+                if (!(*uc).node()) {
+                    const Node* n = qdb_->findFunctionNode((*uc).signature(), cn, Node::CPP);
+                    if (n)
+                        (*uc).setNode(n);
+                }
+                ++uc;
+            }
+        }
+    }
+}
+
+/*!
  */
 void Tree::fixInheritance(NamespaceNode* rootNode)
 {
@@ -1427,7 +1450,8 @@ void Tree::insertQmlType(const QString& key, QmlTypeNode* n)
 const Node* Tree::findFunctionNode(const QString& target, const Node* relative, Node::Genus genus)
 {
     QString t = target;
-    t.chop(2);
+    if (t.endsWith("()"))
+        t.chop(2);
     QStringList path = t.split("::");
     const FunctionNode* fn = findFunctionNode(path, relative, SearchBaseClasses, genus);
     if (fn && fn->metaness() != FunctionNode::MacroWithoutParams)

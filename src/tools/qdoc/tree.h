@@ -153,6 +153,7 @@ class Tree
     void resolveInheritanceHelper(int pass, ClassNode* cn);
     void resolveProperties();
     void resolveCppToQmlLinks();
+    void resolveUsingClauses();
     void fixInheritance(NamespaceNode *rootNode = 0);
     NamespaceNode *root() { return &root_; }
 
