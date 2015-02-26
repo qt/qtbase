@@ -138,6 +138,8 @@ public:
     void getAxes(QVector3D *xAxis, QVector3D *yAxis, QVector3D *zAxis) const;
     static QQuaternion fromAxes(const QVector3D &xAxis, const QVector3D &yAxis, const QVector3D &zAxis);
 
+    static QQuaternion fromDirection(const QVector3D &direction, const QVector3D &up);
+
     static QQuaternion rotationTo(const QVector3D &from, const QVector3D &to);
 #endif
 
