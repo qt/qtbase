@@ -88,6 +88,7 @@
 QT_BEGIN_NAMESPACE
 
 using QtMiscUtils::toHexUpper;
+using QtMiscUtils::fromHex;
 
 /*!
    \namespace QTest
@@ -2184,7 +2185,7 @@ char *toHexRepresentation(const char *ba, int length)
 /*!
     \internal
     Returns the same QByteArray but with only the ASCII characters still shown;
-    everything else is replaced with \c {\OOO}.
+    everything else is replaced with \c {\xHH}.
 */
 char *toPrettyCString(const char *p, int length)
 {
@@ -2193,12 +2194,28 @@ char *toPrettyCString(const char *p, int length)
     const char *end = p + length;
     char *dst = buffer.data();
 
+    bool lastWasHexEscape = false;
     *dst++ = '"';
     for ( ; p != end; ++p) {
+        // we can add:
+        //  1 byte: a single character
+        //  2 bytes: a simple escape sequence (\n)
+        //  3 bytes: "" and a character
+        //  4 bytes: an hex escape sequence (\xHH)
         if (dst - buffer.data() > 246) {
-            // plus the the quote, the three dots and NUL, it's 251, 252 or 255
+            // plus the the quote, the three dots and NUL, it's 255 in the worst case
             trimmed = true;
             break;
+        }
+
+        // check if we need to insert "" to break an hex escape sequence
+        if (Q_UNLIKELY(lastWasHexEscape)) {
+            if (fromHex(*p) != -1) {
+                // yes, insert it
+                *dst++ = '"';
+                *dst++ = '"';
+            }
+            lastWasHexEscape = false;
         }
 
         if (*p < 0x7f && *p >= 0x20 && *p != '\\' && *p != '"') {
@@ -2230,10 +2247,12 @@ char *toPrettyCString(const char *p, int length)
             *dst++ = 't';
             break;
         default:
-            // write as octal
-            *dst++ = '0' + ((uchar(*p) >> 6) & 7);
-            *dst++ = '0' + ((uchar(*p) >> 3) & 7);
-            *dst++ = '0' + ((uchar(*p)) & 7);
+            // print as hex escape
+            *dst++ = 'x';
+            *dst++ = toHexUpper(uchar(*p) >> 4);
+            *dst++ = toHexUpper(uchar(*p));
+            lastWasHexEscape = true;
+            break;
         }
     }
 
