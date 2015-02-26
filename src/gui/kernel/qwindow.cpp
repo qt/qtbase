@@ -487,6 +487,13 @@ void QWindow::setVisible(bool visible)
             }
             if (!app_priv->forcedWindowIcon.isNull())
                 setIcon(app_priv->forcedWindowIcon);
+
+            // Handling of the -qwindowgeometry, -geometry command line arguments
+            static bool geometryApplied = false;
+            if (!geometryApplied) {
+                geometryApplied = true;
+                QGuiApplicationPrivate::applyWindowGeometrySpecificationTo(this);
+            }
         }
 
         QShowEvent showEvent;

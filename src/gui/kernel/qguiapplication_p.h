@@ -277,7 +277,7 @@ public:
 
     virtual void notifyWindowIconChanged();
 
-    static QRect applyWindowGeometrySpecification(const QRect &windowGeometry, const QWindow *window);
+    static void applyWindowGeometrySpecificationTo(QWindow *window);
 
     static void setApplicationState(Qt::ApplicationState state, bool forcePropagate = false);
 
