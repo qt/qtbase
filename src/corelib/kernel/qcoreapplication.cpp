@@ -2076,7 +2076,7 @@ QString QCoreApplication::applicationFilePath()
     }
 #endif
 #if defined( Q_OS_UNIX )
-#  if defined(Q_OS_LINUX) && (!defined(Q_OS_ANDROID) || defined(Q_OS_ANDROID_NO_SDK))
+#  if defined(Q_OS_LINUX) && ((!defined(Q_OS_ANDROID) && !defined(Q_OS_LINUX_TIZEN)) || defined(Q_OS_ANDROID_NO_SDK))
     // Try looking for a /proc/<pid>/exe symlink first which points to
     // the absolute path of the executable
     QFileInfo pfi(QString::fromLatin1("/proc/%1/exe").arg(getpid()));
