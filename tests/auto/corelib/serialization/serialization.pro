@@ -1,6 +1,7 @@
 TEMPLATE = subdirs
 SUBDIRS = \
     json \
+    qcborstreamwriter \
     qdatastream \
     qtextstream \
     qxmlstream

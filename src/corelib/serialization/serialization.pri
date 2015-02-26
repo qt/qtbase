@@ -1,6 +1,8 @@
 # Qt data formats core module
 
 HEADERS += \
+    serialization/qcborcommon.h \
+    serialization/qcborstream.h \
     serialization/qdatastream.h \
     serialization/qdatastream_p.h \
     serialization/qjson_p.h \
@@ -17,6 +19,7 @@ HEADERS += \
     serialization/qxmlutils_p.h
 
 SOURCES += \
+    serialization/qcborstream.cpp \
     serialization/qdatastream.cpp \
     serialization/qjson.cpp \
     serialization/qjsondocument.cpp \
@@ -28,3 +31,5 @@ SOURCES += \
     serialization/qtextstream.cpp \
     serialization/qxmlstream.cpp \
     serialization/qxmlutils.cpp
+
+INCLUDEPATH += ../3rdparty/tinycbor/src
