@@ -32,7 +32,6 @@
 ****************************************************************************/
 
 #include <QtGui/private/qguiapplication_p.h>
-#include <private/qmath_p.h>
 #include <QtCore/QDebug>
 
 #include "qxcbconnection.h"
@@ -1325,45 +1324,6 @@ void QXcbConnection::handleClientMessageEvent(const xcb_client_message_event_t *
         drag()->handleFinished(event);
     }
 #endif
-
-#ifdef Q_OS_LINUX_TIZEN
-    if (event->type == atom(QXcbAtom::_X_ILLUME_DEACTIVATE_WINDOW)) {
-        QWindowSystemInterface::handleApplicationStateChanged(Qt::ApplicationHidden);
-        return;
-    } else if (event->type == atom(QXcbAtom::_E_WINDOW_ROTATION_CHANGE_PREPARE)) {
-        xcb_client_message_event_t reply = *event;
-        reply.response_type = XCB_CLIENT_MESSAGE;
-        reply.type = atom(QXcbAtom::_E_WINDOW_ROTATION_CHANGE_PREPARE_DONE);
-        xcb_send_event(xcb_connection(), 0, reply.window,  XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY| XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT, (const char *)&reply);
-        xcb_flush(xcb_connection());
-        return;
-    } else if (event->type == atom(QXcbAtom::_E_WINDOW_ROTATION_CHANGE_REQUEST)) {
-        xcb_client_message_event_t reply = *event;
-        reply.response_type = XCB_CLIENT_MESSAGE;
-        reply.type = atom(QXcbAtom::_E_WINDOW_ROTATION_CHANGE_DONE);
-
-        xcb_randr_screen_change_notify_event_t e;
-        e.config_timestamp = (xcb_timestamp_t)QDateTime::currentMSecsSinceEpoch();
-        switch (reply.data.data32[1]) {
-            case 0: e.rotation = XCB_RANDR_ROTATION_ROTATE_90; break;
-            case 90: e.rotation = XCB_RANDR_ROTATION_ROTATE_180; break;
-            case 180: e.rotation = XCB_RANDR_ROTATION_ROTATE_270; break;
-            case 270: e.rotation = XCB_RANDR_ROTATION_ROTATE_0; break;
-        }
-
-        QXcbScreen *scrn = m_screens.at(primaryScreen());
-        e.width = scrn->geometry().width();
-        e.height = scrn->geometry().height();
-        e.mwidth = scrn->logicalDpi().first/Q_MM_PER_INCH/e.width;
-        e.mheight = scrn->logicalDpi().second/Q_MM_PER_INCH/e.height;
-        scrn->handleScreenChange(&e);
-        xcb_send_event(xcb_connection(), 0, reply.window,  XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY| XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT, (const char *)&reply);
-        xcb_flush(xcb_connection());
-        return;
-    }
-#endif // Q_OS_LINUX_TIZEN
-
-
     if (m_systemTrayTracker && event->type == atom(QXcbAtom::MANAGER))
         m_systemTrayTracker->notifyManagerClientMessageEvent(event);
 
@@ -1578,17 +1538,7 @@ static const char * xcb_atomnames = {
     "Rel Vert Scroll\0"
 #ifdef Q_OS_LINUX_TIZEN
     "_X_ILLUME_DEACTIVATE_WINDOW\0"
-    "_E_WINDOW_ROTATION_AVAILABLE_LIST\0"
-    "_E_ILLUME_ROTATE_WINDOW_ANGLE\0"
-    "_E_WINDOW_ROTATION_PREFERRED_ROTATION\0"
-    "_E_ILLUME_ROTATE_ROOT_ANGLE\0"
-    "_E_WINDOW_ROTATION_SUPPORTED\0"
-    "_E_WINDOW_ROTATION_CHANGE_PREPARE\0"
-    "_E_WINDOW_ROTATION_CHANGE_PREPARE_DONE\0"
-    "_E_WINDOW_ROTATION_CHANGE_REQUEST\0"
-    "_E_WINDOW_ROTATION_CHANGE_DONE\0"
-    "_E_WINDOW_ROTATION_APP_SUPPORTED\0"
-#endif  //Q_OS_LINUX_TIZEN
+#endif
     "_XSETTINGS_SETTINGS\0"
     "_COMPIZ_DECOR_PENDING\0"
     "_COMPIZ_DECOR_REQUEST\0"
