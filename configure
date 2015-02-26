@@ -710,6 +710,7 @@ XPLATFORM_IOS=no        # Whether target platform is iOS
 XPLATFORM_ANDROID=no
 XPLATFORM_MINGW=no      # Whether target platform is MinGW (win32-g++*)
 XPLATFORM_QNX=no
+XPLATFORM_TIZEN=no
 PLATFORM=$QMAKESPEC
 QT_CROSS_COMPILE=no
 OPT_CONFIRM_LICENSE=no
@@ -2789,6 +2790,9 @@ case "$XPLATFORM" in
     *android-g++*)
         XPLATFORM_ANDROID=yes
         ;;
+    *tizen*)
+        XPLATFORM_TIZEN=yes
+        ;;
 esac
 
 #-------------------------------------------------------------------------------
@@ -3229,6 +3233,11 @@ if [ -n "$CFG_SYSROOT" ] && [ "$CFG_GCC_SYSROOT" = "yes" ]; then
 else
     SYSROOT_FLAG=
 fi
+
+if [ "$XPLATFORM_TIZEN" = "yes" -a -n "$TIZEN_SYSROOT" ]; then
+    SYSROOT_FLAG="--sysroot=$TIZEN_SYSROOT"
+fi
+
 export SYSROOT_FLAG    # used by config.tests/unix/{compile.test,arch.test}
 
 # auto-detect precompiled header support
