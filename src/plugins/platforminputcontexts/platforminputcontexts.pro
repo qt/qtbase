@@ -6,4 +6,4 @@ qtHaveModule(dbus) {
 
 contains(QT_CONFIG, xcb-plugin): SUBDIRS += compose
 
-contains(DEFINES,Q_OS_LINUX_TIZEN_MOBILE): SUBDIRS += tizenscim
+contains(DEFINES,TIZEN_SCIM): SUBDIRS += tizenscim
