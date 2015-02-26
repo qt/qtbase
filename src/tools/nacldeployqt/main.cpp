@@ -53,10 +53,10 @@ int QtNaclDeployer::deploy()
     stdoutCaptureFile = "qt_stdout";
     stderrCaptureFile = "qt_stderr";
 
-    if (testlibMode && !run) // "--testlib" implies "run"
+    if (testlibMode && !run) // "--testlib" implies "--run"
         run = true;
 
-    if (run && debug) // "--debug" takes priority over "run"
+    if (run && debug) // "--debug" takes priority over "--run"
         run = false;
 
     // outDir should end with "/" and exist on disk.
@@ -122,7 +122,7 @@ int QtNaclDeployer::deploy()
     QString nmfFileName = appName + ".nmf";
     QString nmfFilePath = outDir + nmfFileName;
 
-    // Print info about the environment; exept in testlib mdoe, where we only
+    // Print info about the environment; except in testlib mode, where we only
     // want testlib output.
     if (!testlibMode) {
         qDebug() << " ";
@@ -212,6 +212,7 @@ int QtNaclDeployer::deploy()
     // NOTE: At this point deployment is done. The following are
     // development aides for running or debugging the app.
 
+    // Clean up testlib mode files from previous runs
     if (testlibMode) {
         QFile::remove(stdoutCaptureFile);
         QFile::remove(stderrCaptureFile);
@@ -254,7 +255,7 @@ int QtNaclDeployer::deploy()
         qDebug() << "";
     }
 
-    // Start Chrome with proper options
+    // Start Chrome with correct options
     if (run)
         runCommand(chromeExecutable + chromeNormalOptions + chromeOpenOptions + chromeRedirectOptions + " &");
     else if (debug)
@@ -298,7 +299,7 @@ int QtNaclDeployer::deploy()
             do {
                 line = out.readLine().trimmed();
                 if (!line.isEmpty()) {
-                    printf("L %s\n", line.constData());
+                    printf("%s\n", line.constData());
                     ++skipLines;
                 }
                 if (line.contains("********* Finished testing of")) {
