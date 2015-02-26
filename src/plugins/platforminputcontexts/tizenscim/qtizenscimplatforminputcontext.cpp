@@ -224,14 +224,6 @@ namespace TizenScim {
                 default:
                     break;
             }
-        } else if (type == (uint32)ECORE_IMF_INPUT_PANEL_GEOMETRY_EVENT) {
-            int x = 0, y  = 0, w = 0, h = 0;
-            panelClient.prepare(TizenScim::contextId);
-            panelClient.get_ise_window_geometry(&x, &y, &w, &h);
-            panelClientRectangle.setRect(x, y, w, h);
-            qCDebug(QT_TIZENSCIM_INPUT_METHOD) << panelClientRectangle;
-            if (tizenInputContext)
-                tizenInputContext->emitKeyboardRectChanged();
         }
     }
 
