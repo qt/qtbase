@@ -536,6 +536,12 @@ void QXcbWindow::create()
                                    atom(QXcbAtom::_XEMBED_INFO),
                                    32, 2, (void *)data));
 
+#ifdef Q_OS_LINUX_TIZEN
+    int set = 1;
+    Q_XCB_CALL(xcb_change_property(xcb_connection(), XCB_PROP_MODE_REPLACE, m_window,
+                                   atom(QXcbAtom::_E_WINDOW_ROTATION_SUPPORTED), XCB_ATOM_CARDINAL, 32,
+                                   1, &set));
+#endif //Q_OS_LINUX_TIZEN
 
 #if defined(XCB_USE_XINPUT2)
     connection()->xi2Select(m_window);
