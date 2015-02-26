@@ -213,10 +213,15 @@ BEGIN {
     gsub("[ \t]+$", "", value)
 
     ovalue = ""
-    while (match(value, /\$\$(\{[_A-Z0-9.]+\}|[_A-Z0-9.]+)/)) {
+    while (match(value, /\$\$(\([_A-Z0-9.]+\)|\{[_A-Z0-9.]+\}|[_A-Z0-9.]+)/)) {
         ovalue = ovalue substr(value, 1, RSTART - 1)
         var = substr(value, RSTART + 2, RLENGTH - 2)
         value = substr(value, RSTART + RLENGTH)
+        if (var ~ /^\(/) {
+            var = substr(var, 2, length(var) - 2)
+            ovalue = ovalue ENVIRON[var]
+            continue
+        }
         if (var ~ /^\{/) {
             var = substr(var, 2, length(var) - 2)
         }
