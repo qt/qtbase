@@ -592,7 +592,7 @@ QQuaternion QQuaternion::fromEulerAngles(float pitch, float yaw, float roll)
     \note If this quaternion is not normalized,
     the resulting rotation matrix will contain scaling information.
 
-    \sa fromRotationMatrix()
+    \sa fromRotationMatrix(), getAxes()
 */
 QMatrix3x3 QQuaternion::toRotationMatrix() const
 {
@@ -635,7 +635,7 @@ QMatrix3x3 QQuaternion::toRotationMatrix() const
     \note If a given rotation matrix is not normalized,
     the resulting quaternion will contain scaling information.
 
-    \sa toRotationMatrix()
+    \sa toRotationMatrix(), fromAxes()
 */
 QQuaternion QQuaternion::fromRotationMatrix(const QMatrix3x3 &rot3x3)
 {
@@ -671,6 +671,53 @@ QQuaternion QQuaternion::fromRotationMatrix(const QMatrix3x3 &rot3x3)
 
     return QQuaternion(scalar, axis[0], axis[1], axis[2]);
 }
+
+#ifndef QT_NO_VECTOR3D
+
+/*!
+    \since 5.5
+
+    Returns the 3 orthonormal axes (\a xAxis, \a yAxis, \a zAxis) defining the quaternion.
+
+    \sa fromAxes(), toRotationMatrix()
+*/
+void QQuaternion::getAxes(QVector3D *xAxis, QVector3D *yAxis, QVector3D *zAxis) const
+{
+    Q_ASSERT(xAxis && yAxis && zAxis);
+
+    const QMatrix3x3 rot3x3(toRotationMatrix());
+
+    *xAxis = QVector3D(rot3x3(0, 0), rot3x3(1, 0), rot3x3(2, 0));
+    *yAxis = QVector3D(rot3x3(0, 1), rot3x3(1, 1), rot3x3(2, 1));
+    *zAxis = QVector3D(rot3x3(0, 2), rot3x3(1, 2), rot3x3(2, 2));
+}
+
+/*!
+    \since 5.5
+
+    Constructs the quaternion using 3 axes (\a xAxis, \a yAxis, \a zAxis).
+
+    \note The axes are assumed to be orthonormal.
+
+    \sa getAxes(), fromRotationMatrix()
+*/
+QQuaternion QQuaternion::fromAxes(const QVector3D &xAxis, const QVector3D &yAxis, const QVector3D &zAxis)
+{
+    QMatrix3x3 rot3x3(Qt::Uninitialized);
+    rot3x3(0, 0) = xAxis.x();
+    rot3x3(1, 0) = xAxis.y();
+    rot3x3(2, 0) = xAxis.z();
+    rot3x3(0, 1) = yAxis.x();
+    rot3x3(1, 1) = yAxis.y();
+    rot3x3(2, 1) = yAxis.z();
+    rot3x3(0, 2) = zAxis.x();
+    rot3x3(1, 2) = zAxis.y();
+    rot3x3(2, 2) = zAxis.z();
+
+    return QQuaternion::fromRotationMatrix(rot3x3);
+}
+
+#endif // QT_NO_VECTOR3D
 
 /*!
     \fn bool operator==(const QQuaternion &q1, const QQuaternion &q2)
