@@ -106,6 +106,7 @@ contains(QT_CONFIG, xcb-qt) {
     XCB_DIR = ../../../3rdparty/xcb
     INCLUDEPATH += $$XCB_DIR/include $$XCB_DIR/sysinclude
     LIBS += -lxcb -L$$OUT_PWD/xcb-static -lxcb-static
+    !isEmpty(XCB_STATIC_LINK): LIBS += -lXau
 } else {
     LIBS += -lxcb -lxcb-image -lxcb-icccm -lxcb-sync -lxcb-xfixes -lxcb-shm -lxcb-randr -lxcb-shape -lxcb-keysyms
     !contains(DEFINES, QT_NO_XKB):LIBS += -lxcb-xkb
