@@ -45,8 +45,8 @@ QWindowsPipeReader::QWindowsPipeReader(QObject *parent)
       handle(INVALID_HANDLE_VALUE),
       readBufferMaxSize(0),
       actualReadBufferSize(0),
-      readSequenceStarted(false),
       emitReadyReadTimer(new QTimer(this)),
+      readSequenceStarted(false),
       pipeBroken(false),
       readyReadEmitted(false)
 {
@@ -133,12 +133,12 @@ qint64 QWindowsPipeReader::read(char *data, qint64 maxlen)
         actualReadBufferSize--;
         readSoFar = 1;
     } else {
-        qint64 bytesToRead = qMin(qint64(actualReadBufferSize), maxlen);
+        qint64 bytesToRead = qMin(actualReadBufferSize, maxlen);
         readSoFar = 0;
         while (readSoFar < bytesToRead) {
             const char *ptr = readBuffer.readPointer();
-            int bytesToReadFromThisBlock = qMin(bytesToRead - readSoFar,
-                                                qint64(readBuffer.nextDataBlockSize()));
+            qint64 bytesToReadFromThisBlock = qMin(bytesToRead - readSoFar,
+                                                   readBuffer.nextDataBlockSize());
             memcpy(data + readSoFar, ptr, bytesToReadFromThisBlock);
             readSoFar += bytesToReadFromThisBlock;
             readBuffer.free(bytesToReadFromThisBlock);

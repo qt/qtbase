@@ -60,7 +60,7 @@ void tst_QRingBuffer::sizeWhenReserved()
     QRingBuffer ringBuffer;
     ringBuffer.reserve(5);
 
-    QCOMPARE(ringBuffer.size(), 5);
+    QCOMPARE(ringBuffer.size(), Q_INT64_C(5));
 }
 
 void tst_QRingBuffer::sizeWhenReservedAndChopped()
@@ -69,14 +69,14 @@ void tst_QRingBuffer::sizeWhenReservedAndChopped()
     ringBuffer.reserve(31337);
     ringBuffer.chop(31337);
 
-    QCOMPARE(ringBuffer.size(), 0);
+    QCOMPARE(ringBuffer.size(), Q_INT64_C(0));
 }
 
 void tst_QRingBuffer::sizeWhenEmpty()
 {
     QRingBuffer ringBuffer;
 
-    QCOMPARE(ringBuffer.size(), 0);
+    QCOMPARE(ringBuffer.size(), Q_INT64_C(0));
 }
 
 void tst_QRingBuffer::readPointerAtPositionReadTooMuch()
@@ -101,22 +101,22 @@ void tst_QRingBuffer::readPointerAtPositionWithHead()
     qint64 length;
     const char* buf2 = ringBuffer.readPointerAtPosition(0, length);
 
-    QCOMPARE(length, qint64(2));
+    QCOMPARE(length, Q_INT64_C(2));
     QVERIFY(*buf2 == '2');
     QVERIFY(*(buf2+1) == '3');
 
     // advance 2 more, ringBuffer should be empty then
     ringBuffer.free(2);
     buf2 = ringBuffer.readPointerAtPosition(0, length);
-    QCOMPARE(length, qint64(0));
+    QCOMPARE(length, Q_INT64_C(0));
     QVERIFY(buf2 == 0);
 
     // check buffer with 2 blocks
     memcpy(ringBuffer.reserve(4), "0123", 4);
     ringBuffer.append(QByteArray("45678", 5));
     ringBuffer.free(3);
-    buf2 = ringBuffer.readPointerAtPosition(1, length);
-    QCOMPARE(length, qint64(5));
+    buf2 = ringBuffer.readPointerAtPosition(Q_INT64_C(1), length);
+    QCOMPARE(length, Q_INT64_C(5));
 }
 
 void tst_QRingBuffer::readPointerAtPositionEmptyRead()
@@ -149,14 +149,14 @@ void tst_QRingBuffer::readPointerAtPositionWriteRead()
         // write in chunks of 50 bytes
         // this ensures there will be multiple QByteArrays inside the QRingBuffer
         // since QRingBuffer is then only using individual arrays of around 4000 bytes
-        qint64 thisWrite = qMin(remaining, qint64(50));
+        qint64 thisWrite = qMin(remaining, Q_INT64_C(50));
         char *pos = ringBuffer.reserve(thisWrite);
         inData.read(pos, thisWrite);
         remaining -= thisWrite;
     }
     // was data put into it?
     QVERIFY(ringBuffer.size() > 0);
-    QCOMPARE(qint64(ringBuffer.size()), inData.size());
+    QCOMPARE(ringBuffer.size(), inData.size());
 
     //read from the QRingBuffer in loop, put back into another QBuffer
     QBuffer outData;
@@ -187,12 +187,12 @@ void tst_QRingBuffer::free()
     ringBuffer.append(QByteArray("01234", 5));
 
     ringBuffer.free(1);
-    QCOMPARE(ringBuffer.size(), 4095 + 2048 + 5);
+    QCOMPARE(ringBuffer.size(), Q_INT64_C(4095 + 2048 + 5));
     ringBuffer.free(4096);
-    QCOMPARE(ringBuffer.size(), 2047 + 5);
+    QCOMPARE(ringBuffer.size(), Q_INT64_C(2047 + 5));
     ringBuffer.free(48);
     ringBuffer.free(2000);
-    QCOMPARE(ringBuffer.size(), 4);
+    QCOMPARE(ringBuffer.size(), Q_INT64_C(4));
     QVERIFY(memcmp(ringBuffer.readPointer(), "1234", 4) == 0);
 }
 
@@ -211,8 +211,8 @@ void tst_QRingBuffer::reserveAndRead()
     for (int i = 1; i < 256; ++i) {
         QByteArray ba;
         ba.resize(i);
-        int thisRead = ringBuffer.read(ba.data(), i);
-        QCOMPARE(thisRead, i);
+        qint64 thisRead = ringBuffer.read(ba.data(), i);
+        QCOMPARE(thisRead, qint64(i));
         QVERIFY(ba.count(char(i)) == i);
     }
     QVERIFY(ringBuffer.size() == 0);
@@ -227,12 +227,12 @@ void tst_QRingBuffer::chop()
     ringBuffer.reserve(4096);
 
     ringBuffer.chop(1);
-    QCOMPARE(ringBuffer.size(), 5 + 2048 + 4095);
+    QCOMPARE(ringBuffer.size(), Q_INT64_C(5 + 2048 + 4095));
     ringBuffer.chop(4096);
-    QCOMPARE(ringBuffer.size(), 5 + 2047);
+    QCOMPARE(ringBuffer.size(), Q_INT64_C(5 + 2047));
     ringBuffer.chop(48);
     ringBuffer.chop(2000);
-    QCOMPARE(ringBuffer.size(), 4);
+    QCOMPARE(ringBuffer.size(), Q_INT64_C(4));
     QVERIFY(memcmp(ringBuffer.readPointer(), "0123", 4) == 0);
 }
 
@@ -248,7 +248,7 @@ void tst_QRingBuffer::ungetChar()
         ringBuffer.getChar();
         ringBuffer.ungetChar(char(c)); // unget first char
     }
-    QCOMPARE(ringBuffer.size(), 1);
+    QCOMPARE(ringBuffer.size(), Q_INT64_C(1));
 }
 
 void tst_QRingBuffer::indexOf()
@@ -258,8 +258,8 @@ void tst_QRingBuffer::indexOf()
         ringBuffer.putChar(char(i));
 
     for (int i = 1; i < 256; ++i) {
-        int index = ringBuffer.indexOf(char(i));
-        QCOMPARE(i - 1, index);
+        qint64 index = ringBuffer.indexOf(char(i));
+        QCOMPARE(qint64(i - 1), index);
         QCOMPARE(index, ringBuffer.indexOf(char(i), i));
         QVERIFY(ringBuffer.indexOf(char(i), i - 1) == -1); // test for absent char
     }
@@ -298,7 +298,7 @@ void tst_QRingBuffer::readLine()
 
     // check first empty string reading
     stringBuf[0] = char(0xFF);
-    QCOMPARE(ringBuffer.readLine(stringBuf, int(sizeof(stringBuf)) - 2), ba2.size());
+    QCOMPARE(ringBuffer.readLine(stringBuf, int(sizeof(stringBuf)) - 2), qint64(ba2.size()));
     QVERIFY(stringBuf[0] == ba2[0]);
 
     QVERIFY(ringBuffer.readLine(stringBuf, int(sizeof(stringBuf)) - 2) == (ba3.size() + ba4.size()

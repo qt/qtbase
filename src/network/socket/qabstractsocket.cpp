@@ -812,7 +812,7 @@ bool QAbstractSocketPrivate::canWriteNotification()
 #if defined (QABSTRACTSOCKET_DEBUG)
     qDebug("QAbstractSocketPrivate::canWriteNotification() flushing");
 #endif
-    int tmp = writeBuffer.size();
+    qint64 tmp = writeBuffer.size();
     flush();
 
     if (socketEngine) {
@@ -872,7 +872,7 @@ bool QAbstractSocketPrivate::flush()
         return false;
     }
 
-    int nextSize = writeBuffer.nextDataBlockSize();
+    qint64 nextSize = writeBuffer.nextDataBlockSize();
     const char *ptr = writeBuffer.readPointer();
 
     // Attempt to write it all in one chunk.
@@ -1707,9 +1707,9 @@ qint64 QAbstractSocket::bytesToWrite() const
 {
     Q_D(const QAbstractSocket);
 #if defined(QABSTRACTSOCKET_DEBUG)
-    qDebug("QAbstractSocket::bytesToWrite() == %i", d->writeBuffer.size());
+    qDebug("QAbstractSocket::bytesToWrite() == %lld", d->writeBuffer.size());
 #endif
-    return (qint64)d->writeBuffer.size();
+    return d->writeBuffer.size();
 }
 
 /*!

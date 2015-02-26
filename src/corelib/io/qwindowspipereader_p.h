@@ -98,9 +98,9 @@ private:
     QWinOverlappedIoNotifier *dataReadNotifier;
     qint64 readBufferMaxSize;
     QRingBuffer readBuffer;
-    int actualReadBufferSize;
-    bool readSequenceStarted;
+    qint64 actualReadBufferSize;
     QTimer *emitReadyReadTimer;
+    bool readSequenceStarted;
     bool pipeBroken;
     bool readyReadEmitted;
 };
