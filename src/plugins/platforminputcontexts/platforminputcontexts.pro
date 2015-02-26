@@ -1,6 +1,6 @@
 TEMPLATE = subdirs
 
-!contains(DEFINES,Q_OS_LINUX_TIZEN_MOBILE):!contains(DEFINES,Q_OS_LINUX_TIZEN_SIMULATOR): {
+!contains(DEFINES,Q_OS_LINUX_TIZEN_MOBILE): {
     qtHaveModule(dbus) {
         !mac:!win32:SUBDIRS += ibus
     }
