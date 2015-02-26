@@ -1,0 +1,105 @@
+!equals(TEMPLATE,app):error(Only TEMPLATE - app is handled)
+isEmpty(TARGET): error(TARGET variable is not defined)
+
+!exists($$_PRO_FILE_PWD_/tizen/manifest.xml): warning(No manifest.xml file in $$_PRO_FILE_PWD_/tizen tizen_app feature cannot be used)
+
+isEmpty(TIZEN_APP_ID):TIZEN_APP_ID=$$system(grep \"<Id>\" $$_PRO_FILE_PWD_/tizen/manifest.xml | sed \"s!<[/]*Id>!!gi\" | sed \"s/ //gi\")
+isEmpty(TIZEN_APP_ID): warning(TIZEN_APP_ID variable is not defined)
+
+isEmpty(TIZEN_PACKAGE_DIR):TIZEN_PACKAGE_DIR=$$OUT_PWD/ApplicationPackage/$$TIZEN_APP_ID
+
+tizen_bin.path=$$TIZEN_PACKAGE_DIR/bin
+tizen_data.path=$$TIZEN_PACKAGE_DIR/data
+tizen_info.path=$$TIZEN_PACKAGE_DIR/info
+tizen_lib.path=$$TIZEN_PACKAGE_DIR/lib
+tizen_res.path=$$TIZEN_PACKAGE_DIR/res
+tizen_setting.path=$$TIZEN_PACKAGE_DIR/setting
+tizen_shared.path=$$TIZEN_PACKAGE_DIR/shared
+
+target.path = $${tizen_bin.path}
+
+tizen {
+    target.path = $${TIZEN_PACKAGE_DIR}/CommandLineBuild
+
+    manifest.path =  $$TIZEN_PACKAGE_DIR
+    manifest.files = $$_PRO_FILE_PWD_/tizen/manifest.xml
+    INSTALLS += manifest
+    target.depends += install_manifest
+    QMAKE_CLEAN += -r $$TIZEN_PACKAGE_DIR
+    QMAKE_LFLAGS+=-pie -rdynamic
+    !contains(TARGET,.exe): TARGET=$${TARGET}.exe
+
+    !equals(QT_ARCH, $${QMAKE_HOST.arch}) {
+
+        contains(QT_ARCH,arm) {
+            BUILD_DATA_ARCH = armel
+        } else {
+            BUILD_DATA_ARCH = $$QT_ARCH
+        }
+
+        build_data_generator.target = build_data_generator
+        build_data_generator.path = $${TIZEN_PACKAGE_DIR}/CommandLineBuild
+        build_data_generator.CONFIG += no_check_exist
+        build_data_generator.files = $${OUT_PWD}/build_data
+        build_data_generator.commands = printf \"PLATFORM_VER:Tizen 2.2\nARCHITECTURE:$$BUILD_DATA_ARCH\nTOOLCHAIN:GCC-4.5\nTYPE:app\n\" > $${OUT_PWD}/build_data
+        target.depends += install_build_data_generator
+        QMAKE_EXTRA_TARGETS += build_data_generator
+        POST_TARGETDEPS += build_data_generator
+        QMAKE_CLEAN += build_data
+        INSTALLS += build_data_generator
+
+        contains(CONFIG, TIZEN_STANDALONE_PACKAGE): {
+            for(lib,TIZEN_BUNDLED_QT_LIBS) {
+                LIBS += -l$$lib
+                tizen_lib.files += $$[QT_INSTALL_LIBS]/lib$${lib}.so.5
+            }
+            QMAKE_LFLAGS += -Wl,--enable-new-dtags
+            QMAKE_LFLAGS += -Wl,-rpath,/opt/usr/apps/$$TIZEN_APP_ID/lib
+            tizen_data.files += $$[QT_INSTALL_QML]
+            tizen_data.files += $$[QT_INSTALL_PLUGINS]
+
+            qt_conf_file_generator.target = qt_conf_file_generator
+            qt_conf_file_generator.CONFIG += no_check_exist
+            qt_conf_file_generator.path = $${tizen_bin.path}
+            qt_conf_file_generator.files = $${OUT_PWD}/qt.conf
+            qt_conf_file_generator.commands = printf \"[Paths]\nPlugins=../data/plugins\nQml2Imports=../data/qml\n\" > $${OUT_PWD}/qt.conf
+            QMAKE_EXTRA_TARGETS += qt_conf_file_generator
+            POST_TARGETDEPS += qt_conf_file_generator
+            QMAKE_CLEAN += qt.conf
+            INSTALLS += qt_conf_file_generator
+            target.depends += install_qt_conf_file_generator
+        }
+    }
+}
+
+
+!isEmpty(tizen_bin.files): {
+    INSTALLS += tizen_bin
+    target.depends += install_tizen_bin
+}
+!isEmpty(tizen_data.files): {
+    INSTALLS += tizen_data
+    target.depends += install_tizen_data
+}
+!isEmpty(tizen_info.files): {
+    INSTALLS += tizen_info
+    target.depends += install_tizen_info
+}
+!isEmpty(tizen_lib.files): {
+    INSTALLS += tizen_lib
+    target.depends += install_tizen_lib
+}
+!isEmpty(tizen_res.files): {
+    INSTALLS += tizen_res
+    target.depends += install_tizen_res
+}
+!isEmpty(tizen_setting.files): {
+    INSTALLS += tizen_setting
+    target.depends += install_tizen_setting
+}
+!isEmpty(tizen_shared.files): {
+    INSTALLS += tizen_shared
+    target.depends += install_tizen_shared
+}
+
+INSTALLS += target
