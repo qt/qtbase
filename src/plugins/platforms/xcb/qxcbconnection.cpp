@@ -1351,7 +1351,7 @@ void QXcbConnection::handleClientMessageEvent(const xcb_client_message_event_t *
             case 270: e.rotation = XCB_RANDR_ROTATION_ROTATE_0; break;
         }
 
-        QXcbScreen *scrn = primaryScreen();
+        QXcbScreen *scrn = m_screens.at(primaryScreen());
         e.width = scrn->geometry().width();
         e.height = scrn->geometry().height();
         e.mwidth = scrn->logicalDpi().first/Q_MM_PER_INCH/e.width;
