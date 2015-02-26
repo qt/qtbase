@@ -1536,9 +1536,6 @@ static const char * xcb_atomnames = {
     "Rel Vert Wheel\0"
     "Rel Horiz Scroll\0"
     "Rel Vert Scroll\0"
-#ifdef Q_OS_LINUX_TIZEN
-    "_X_ILLUME_DEACTIVATE_WINDOW\0"
-#endif
     "_XSETTINGS_SETTINGS\0"
     "_COMPIZ_DECOR_PENDING\0"
     "_COMPIZ_DECOR_REQUEST\0"
