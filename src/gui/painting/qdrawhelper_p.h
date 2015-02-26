@@ -46,6 +46,7 @@
 //
 
 #include "QtCore/qglobal.h"
+#include "QtCore/qmath.h"
 #include "QtGui/qcolor.h"
 #include "QtGui/qpainter.h"
 #include "QtGui/qimage.h"
@@ -55,7 +56,6 @@
 #endif
 #include "private/qrasterdefs_p.h"
 #include <private/qsimd_p.h>
-#include <private/qmath_p.h>
 
 QT_BEGIN_NAMESPACE
 
