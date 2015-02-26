@@ -138,6 +138,9 @@ private slots:
     void fromAxes_data();
     void fromAxes();
 
+    void rotationTo_data();
+    void rotationTo();
+
     void fromEulerAngles_data();
     void fromEulerAngles();
 
@@ -927,6 +930,63 @@ void tst_QQuaternion::fromAxes()
     QQuaternion answer = QQuaternion::fromAxes(axes[0], axes[1], axes[2]);
 
     QVERIFY(qFuzzyCompare(answer, result) || qFuzzyCompare(-answer, result));
+}
+
+// Test shortest arc quaternion.
+void tst_QQuaternion::rotationTo_data()
+{
+    QTest::addColumn<QVector3D>("from");
+    QTest::addColumn<QVector3D>("to");
+
+    // same
+    QTest::newRow("+X -> +X") << QVector3D(10.0f, 0.0f, 0.0f) << QVector3D(10.0f, 0.0f, 0.0f);
+    QTest::newRow("-X -> -X") << QVector3D(-10.0f, 0.0f, 0.0f) << QVector3D(-10.0f, 0.0f, 0.0f);
+    QTest::newRow("+Y -> +Y") << QVector3D(0.0f, 10.0f, 0.0f) << QVector3D(0.0f, 10.0f, 0.0f);
+    QTest::newRow("-Y -> -Y") << QVector3D(0.0f, -10.0f, 0.0f) << QVector3D(0.0f, -10.0f, 0.0f);
+    QTest::newRow("+Z -> +Z") << QVector3D(0.0f, 0.0f, 10.0f) << QVector3D(0.0f, 0.0f, 10.0f);
+    QTest::newRow("-Z -> -Z") << QVector3D(0.0f, 0.0f, -10.0f) << QVector3D(0.0f, 0.0f, -10.0f);
+    QTest::newRow("+X+Y+Z -> +X+Y+Z") << QVector3D(10.0f, 10.0f, 10.0f) << QVector3D(10.0f, 10.0f, 10.0f);
+    QTest::newRow("-X-Y-Z -> -X-Y-Z") << QVector3D(-10.0f, -10.0f, -10.0f) << QVector3D(-10.0f, -10.0f, -10.0f);
+
+    // arbitrary
+    QTest::newRow("+Z -> +X") << QVector3D(0.0f, 0.0f, 10.0f) << QVector3D(10.0f, 0.0f, 0.0f);
+    QTest::newRow("+Z -> -X") << QVector3D(0.0f, 0.0f, 10.0f) << QVector3D(-10.0f, 0.0f, 0.0f);
+    QTest::newRow("+Z -> +Y") << QVector3D(0.0f, 0.0f, 10.0f) << QVector3D(0.0f, 10.0f, 0.0f);
+    QTest::newRow("+Z -> -Y") << QVector3D(0.0f, 0.0f, 10.0f) << QVector3D(0.0f, -10.0f, 0.0f);
+    QTest::newRow("-Z -> +X") << QVector3D(0.0f, 0.0f, -10.0f) << QVector3D(10.0f, 0.0f, 0.0f);
+    QTest::newRow("-Z -> -X") << QVector3D(0.0f, 0.0f, -10.0f) << QVector3D(-10.0f, 0.0f, 0.0f);
+    QTest::newRow("-Z -> +Y") << QVector3D(0.0f, 0.0f, -10.0f) << QVector3D(0.0f, 10.0f, 0.0f);
+    QTest::newRow("-Z -> -Y") << QVector3D(0.0f, 0.0f, -10.0f) << QVector3D(0.0f, -10.0f, 0.0f);
+    QTest::newRow("+X -> +Y") << QVector3D(10.0f, 0.0f, 0.0f) << QVector3D(0.0f, 10.0f, 0.0f);
+    QTest::newRow("+X -> -Y") << QVector3D(10.0f, 0.0f, 0.0f) << QVector3D(0.0f, -10.0f, 0.0f);
+    QTest::newRow("-X -> +Y") << QVector3D(-10.0f, 0.0f, 0.0f) << QVector3D(0.0f, 10.0f, 0.0f);
+    QTest::newRow("-X -> -Y") << QVector3D(-10.0f, 0.0f, 0.0f) << QVector3D(0.0f, -10.0f, 0.0f);
+    QTest::newRow("+X+Y+Z -> +X-Y-Z") << QVector3D(10.0f, 10.0f, 10.0f) << QVector3D(10.0f, -10.0f, -10.0f);
+    QTest::newRow("-X-Y+Z -> -X+Y-Z") << QVector3D(-10.0f, -10.0f, 10.0f) << QVector3D(-10.0f, 10.0f, -10.0f);
+    QTest::newRow("+X+Y+Z -> +Z") << QVector3D(10.0f, 10.0f, 10.0f) << QVector3D(0.0f, 0.0f, 10.0f);
+
+    // collinear
+    QTest::newRow("+X -> -X") << QVector3D(10.0f, 0.0f, 0.0f) << QVector3D(-10.0f, 0.0f, 0.0f);
+    QTest::newRow("+Y -> -Y") << QVector3D(0.0f, 10.0f, 0.0f) << QVector3D(0.0f, -10.0f, 0.0f);
+    QTest::newRow("+Z -> -Z") << QVector3D(0.0f, 0.0f, 10.0f) << QVector3D(0.0f, 0.0f, -10.0f);
+    QTest::newRow("+X+Y+Z -> -X-Y-Z") << QVector3D(10.0f, 10.0f, 10.0f) << QVector3D(-10.0f, -10.0f, -10.0f);
+}
+void tst_QQuaternion::rotationTo()
+{
+    QFETCH(QVector3D, from);
+    QFETCH(QVector3D, to);
+
+    QQuaternion q1 = QQuaternion::rotationTo(from, to);
+    QVERIFY(myFuzzyCompare(q1, q1.normalized()));
+    QVector3D vec1(q1 * from);
+    vec1 *= (to.length() / from.length()); // discard rotated length
+    QVERIFY(myFuzzyCompare(vec1, to));
+
+    QQuaternion q2 = QQuaternion::rotationTo(to, from);
+    QVERIFY(myFuzzyCompare(q2, q2.normalized()));
+    QVector3D vec2(q2 * to);
+    vec2 *= (from.length() / to.length()); // discard rotated length
+    QVERIFY(myFuzzyCompare(vec2, from));
 }
 
 // Test quaternion creation from an axis and an angle.

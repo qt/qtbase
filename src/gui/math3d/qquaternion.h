@@ -137,6 +137,8 @@ public:
 #ifndef QT_NO_VECTOR3D
     void getAxes(QVector3D *xAxis, QVector3D *yAxis, QVector3D *zAxis) const;
     static QQuaternion fromAxes(const QVector3D &xAxis, const QVector3D &yAxis, const QVector3D &zAxis);
+
+    static QQuaternion rotationTo(const QVector3D &from, const QVector3D &to);
 #endif
 
     static QQuaternion slerp

@@ -717,6 +717,38 @@ QQuaternion QQuaternion::fromAxes(const QVector3D &xAxis, const QVector3D &yAxis
     return QQuaternion::fromRotationMatrix(rot3x3);
 }
 
+/*!
+    \since 5.5
+
+    Returns the shortest arc quaternion to rotate from the direction described by the vector \a from
+    to the direction described by the vector \a to.
+*/
+QQuaternion QQuaternion::rotationTo(const QVector3D &from, const QVector3D &to)
+{
+    // Based on Stan Melax's article in Game Programming Gems
+
+    const QVector3D v0(from.normalized());
+    const QVector3D v1(to.normalized());
+
+    float d = QVector3D::dotProduct(v0, v1) + 1.0f;
+
+    // if dest vector is close to the inverse of source vector, ANY axis of rotation is valid
+    if (qFuzzyIsNull(d)) {
+        QVector3D axis = QVector3D::crossProduct(QVector3D(1.0f, 0.0f, 0.0f), v0);
+        if (qFuzzyIsNull(axis.lengthSquared()))
+            axis = QVector3D::crossProduct(QVector3D(0.0f, 1.0f, 0.0f), v0);
+        axis.normalize();
+
+        // same as QQuaternion::fromAxisAndAngle(axis, 180.0f)
+        return QQuaternion(0.0f, axis.x(), axis.y(), axis.z());
+    }
+
+    d = std::sqrt(2.0f * d);
+    const QVector3D axis(QVector3D::crossProduct(v0, v1) / d);
+
+    return QQuaternion(d * 0.5f, axis).normalized();
+}
+
 #endif // QT_NO_VECTOR3D
 
 /*!
