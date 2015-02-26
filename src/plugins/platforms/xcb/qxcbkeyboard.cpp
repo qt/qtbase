@@ -246,6 +246,10 @@
 #define XF86XK_TouchpadOff         0x1008FFB1
 #define XF86XK_AudioMicMute        0x1008FFB2
 
+#ifdef Q_OS_LINUX_TIZEN
+#define TIZEN_Key_Back             XF86XK_Stop
+#define TIZEN_Key_Menu             XF86XK_Send
+#endif //Q_OS_LINUX_TIZEN
 
 // end of XF86keysyms.h
 
@@ -422,7 +426,11 @@ static const unsigned int KeyTbl[] = {
         // wireless/bluetooth/uwb keys, special launcher keys, etc.
     XF86XK_Back,                Qt::Key_Back,
     XF86XK_Forward,             Qt::Key_Forward,
+#ifdef Q_OS_LINUX_TIZEN
+    TIZEN_Key_Back,             Qt::Key_Back,
+#else
     XF86XK_Stop,                Qt::Key_Stop,
+#endif //Q_OS_LINUX_TIZEN
     XF86XK_Refresh,             Qt::Key_Refresh,
     XF86XK_Favorites,           Qt::Key_Favorites,
     XF86XK_AudioMedia,          Qt::Key_LaunchMedia,
@@ -504,7 +512,11 @@ static const unsigned int KeyTbl[] = {
     XF86XK_RotationPB,          Qt::Key_RotationPB,
     XF86XK_RotationKB,          Qt::Key_RotationKB,
     XF86XK_Save,                Qt::Key_Save,
+#ifdef Q_OS_LINUX_TIZEN
+    TIZEN_Key_Menu,             Qt::Key_Menu,
+#else
     XF86XK_Send,                Qt::Key_Send,
+#endif //Q_OS_LINUX_TIZEN
     XF86XK_Spell,               Qt::Key_Spell,
     XF86XK_SplitScreen,         Qt::Key_SplitScreen,
     XF86XK_Support,             Qt::Key_Support,
@@ -563,7 +575,6 @@ static const unsigned int KeyTbl[] = {
     XF86XK_LaunchD,             Qt::Key_LaunchF,
     XF86XK_LaunchE,             Qt::Key_LaunchG,
     XF86XK_LaunchF,             Qt::Key_LaunchH,
-
     0,                          0
 };
 
@@ -1414,6 +1425,12 @@ void QXcbKeyboard::handleKeyEvent(xcb_window_t sourceWindow, QEvent::Type type, 
         targetWindow->updateNetWmUserTime(time);
 
     xcb_keysym_t sym = xkb_state_key_get_one_sym(xkb_state, code);
+#ifdef Q_OS_LINUX_TIZEN
+    if (type == QEvent::KeyPress && (sym == TIZEN_Key_Back || sym == TIZEN_Key_Menu)) {
+        //silently omit press events for Back and Menu keys
+        return;
+    }
+#endif //Q_OS_LINUX_TIZEN
 
     QPlatformInputContext *inputContext = QGuiApplicationPrivate::platformIntegration()->inputContext();
     QMetaMethod method;
