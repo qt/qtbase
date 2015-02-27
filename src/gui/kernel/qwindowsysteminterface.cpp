@@ -292,8 +292,13 @@ void QWindowSystemInterface::handleKeyEvent(QWindow *w, QEvent::Type t, int k, Q
 
 void QWindowSystemInterface::handleKeyEvent(QWindow *tlw, ulong timestamp, QEvent::Type t, int k, Qt::KeyboardModifiers mods, const QString & text, bool autorep, ushort count)
 {
+    // This is special handling needed for OS X which eventually will call sendEvent(), on other platforms
+    // this might not be safe, e.g., on Android. See: QGuiApplicationPrivate::processKeyEvent() for
+    // shortcut overriding on other platforms.
+#if defined(Q_OS_OSX)
     if (t == QEvent::KeyPress && QWindowSystemInterface::tryHandleShortcutEvent(tlw, timestamp, k, mods, text))
         return;
+#endif // Q_OS_OSX
 
     QWindowSystemInterfacePrivate::KeyEvent * e =
             new QWindowSystemInterfacePrivate::KeyEvent(tlw, timestamp, t, k, mods, text, autorep, count);
@@ -318,10 +323,7 @@ void QWindowSystemInterface::handleExtendedKeyEvent(QWindow *tlw, ulong timestam
                                                     const QString& text, bool autorep,
                                                     ushort count, bool tryShortcutOverride)
 {
-    // on OS X we try the shortcut override even earlier and thus shouldn't handle it here
-    if (tryShortcutOverride && type == QEvent::KeyPress && QWindowSystemInterface::tryHandleShortcutEvent(tlw, timestamp, key, modifiers, text))
-        return;
-
+    Q_UNUSED(tryShortcutOverride)
     QWindowSystemInterfacePrivate::KeyEvent * e =
             new QWindowSystemInterfacePrivate::KeyEvent(tlw, timestamp, type, key, modifiers,
                 nativeScanCode, nativeVirtualKey, nativeModifiers, text, autorep, count);
