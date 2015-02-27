@@ -67,11 +67,13 @@
 
 QT_BEGIN_NAMESPACE
 
+namespace {
 class QColorLuminancePicker;
 class QColorPicker;
 class QColorShower;
 class QWellArray;
 class QColorPickingEventFilter;
+} // unnamed namespace
 
 class QColorDialogPrivate : public QDialogPrivate
 {
@@ -180,6 +182,8 @@ private:
 };
 
 //////////// QWellArray BEGIN
+
+namespace {
 
 struct QWellArrayData;
 
@@ -562,6 +566,8 @@ private:
     QColorDialogPrivate *m_dp;
 };
 
+} // unnamed namespace
+
 /*!
     Returns the number of custom colors supported by QColorDialog. All
     color dialogs share the same custom colors.
@@ -621,6 +627,8 @@ static inline void rgb2hsv(QRgb rgb, int &h, int &s, int &v)
     c.setRgb(rgb);
     c.getHsv(&h, &s, &v);
 }
+
+namespace {
 
 class QColorWell : public QWellArray
 {
@@ -1091,8 +1099,8 @@ private:
     QColorDialog *colorDialog;
     QGridLayout *gl;
 
-    friend class QColorDialog;
-    friend class QColorDialogPrivate;
+    friend class QT_PREPEND_NAMESPACE(QColorDialog);
+    friend class QT_PREPEND_NAMESPACE(QColorDialogPrivate);
 };
 
 class QColorShowLabel : public QFrame
@@ -1380,6 +1388,8 @@ QColorShower::QColorShower(QColorDialog *parent)
 
     retranslateStrings();
 }
+
+} // unnamed namespace
 
 inline QRgb QColorDialogPrivate::currentColor() const { return cs->currentColor(); }
 inline int QColorDialogPrivate::currentAlpha() const { return cs->currentAlpha(); }
