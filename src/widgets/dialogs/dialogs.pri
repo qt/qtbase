@@ -2,7 +2,6 @@
 
 HEADERS += \
 	dialogs/qcolordialog.h \
-	dialogs/qcolordialog_p.h \
         dialogs/qfscompleter_p.h \
 	dialogs/qdialog.h \
 	dialogs/qdialog_p.h \
