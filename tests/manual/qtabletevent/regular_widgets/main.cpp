@@ -147,29 +147,23 @@ void EventReportWidget::paintEvent(QPaintEvent *)
 
 void EventReportWidget::tabletEvent(QTabletEvent *event)
 {
-
     QWidget::tabletEvent(event);
-    QString type;
+    bool isMove = false;
     switch (event->type()) {
     case QEvent::TabletEnterProximity:
-        type = QString::fromLatin1("TabletEnterProximity");
-        break;
     case QEvent::TabletLeaveProximity:
-        type = QString::fromLatin1("TabletLeaveProximity");
         break;
     case QEvent::TabletMove:
-        type = QString::fromLatin1("TabletMove");
         m_points.push_back(TabletPoint(event->pos(), TabletMove, m_lastButton, event->pointerType(), event->pressure(), event->rotation()));
         update();
+        isMove = true;
         break;
     case QEvent::TabletPress:
-        type = QString::fromLatin1("TabletPress");
         m_points.push_back(TabletPoint(event->pos(), TabletButtonPress, event->button(), event->pointerType(), event->rotation()));
         m_lastButton = event->button();
         update();
         break;
     case QEvent::TabletRelease:
-        type = QString::fromLatin1("TabletRelease");
         m_points.push_back(TabletPoint(event->pos(), TabletButtonRelease, event->button(), event->pointerType(), event->rotation()));
         update();
         break;
@@ -178,84 +172,24 @@ void EventReportWidget::tabletEvent(QTabletEvent *event)
         break;
     }
 
-    QString pointerType = "UNKNOWN";
-    switch (event->pointerType()) {
-    case QTabletEvent::Pen:
-        pointerType = "Pen";
-        break;
-    case QTabletEvent::Cursor:
-        pointerType = "Cursor";
-        break;
-    case QTabletEvent::Eraser:
-        pointerType = "Eraser";
-        break;
-    default:
-        break;
+    if (!(isMove && m_lastIsTabletMove)) {
+        QDebug d = qDebug();
+        d << event << " global position = " << event->globalPos()
+                   << " cursor at " << QCursor::pos();
+        if (event->button() != Qt::NoButton)
+            d << " changed button " << event->button();
     }
-
-    QString device = "UNKNOWN";
-    switch (event->device()) {
-    case QTabletEvent::Puck:
-        pointerType = "Puck";
-        break;
-    case QTabletEvent::Stylus:
-        pointerType = "Stylus";
-        break;
-    case QTabletEvent::Airbrush:
-        pointerType = "Airbrush";
-        break;
-    case QTabletEvent::FourDMouse:
-        pointerType = "FourDMouse";
-        break;
-    case QTabletEvent::RotationStylus:
-        pointerType = "RotationStylus";
-        break;
-    default:
-        break;
-    }
-
-    if (!m_lastIsTabletMove)
-        qDebug() << "Tablet event, type = " << type
-                 << " position = " << event->pos()
-                 << " global position = " << event->globalPos()
-                 << " cursor at " << QCursor::pos()
-                 << " buttons " << event->buttons() << " changed " << event->button()
-                 << " pointer type " << pointerType << " device " << device;
-
-    m_lastIsTabletMove = (event->type() == QEvent::TabletMove);
+    m_lastIsTabletMove = isMove;
 }
 
 void EventReportWidget::outputMouseEvent(QMouseEvent *event)
 {
-    QString type;
-    switch (event->type()) {
-    case QEvent::MouseButtonDblClick:
-        m_lastIsMouseMove = false;
-        type = QString::fromLatin1("MouseButtonDblClick");
-        break;
-    case QEvent::MouseButtonPress:
-        m_lastIsMouseMove = false;
-        type = QString::fromLatin1("MouseButtonPress");
-        break;
-    case QEvent::MouseButtonRelease:
-        m_lastIsMouseMove = false;
-        type = QString::fromLatin1("MouseButtonRelease");
-        break;
-    case QEvent::MouseMove:
+    if (event->type() == QEvent::MouseMove)  {
         if (m_lastIsMouseMove)
             return; // only show one move to keep things readable
-
         m_lastIsMouseMove = true;
-        type = QString::fromLatin1("MouseMove");
-        break;
-    default:
-        Q_ASSERT(false);
-        break;
     }
-
-    qDebug() << "Mouse event, type = " << type
-             << " position = " << event->pos()
-             << " global position = " << event->globalPos();
+    qDebug() << event;
 }
 
 int main(int argc, char *argv[])
