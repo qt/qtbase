@@ -345,6 +345,12 @@ static NSString *_q_NSWindowDidChangeOcclusionStateNotification = nil;
     if (m_platformWindow->m_nsWindow && geometry == m_platformWindow->geometry())
         return;
 
+    // It can happen that self.window is nil (if we are changing
+    // styleMask from/to borderless and content view is being re-parented)
+    // - this results in an invalid coordinates.
+    if (m_platformWindow->m_inSetStyleMask && !self.window)
+        return;
+
 #ifdef QT_COCOA_ENABLE_WINDOW_DEBUG
     qDebug() << "QNSView::udpateGeometry" << m_platformWindow << geometry;
 #endif

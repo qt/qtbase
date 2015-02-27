@@ -269,6 +269,7 @@ public: // for QNSView
     bool m_inConstructor;
     bool m_inSetVisible;
     bool m_inSetGeometry;
+    bool m_inSetStyleMask;
 #ifndef QT_NO_OPENGL
     QCocoaGLContext *m_glContext;
 #endif

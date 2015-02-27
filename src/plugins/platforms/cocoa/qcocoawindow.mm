@@ -374,6 +374,7 @@ QCocoaWindow::QCocoaWindow(QWindow *tlw)
     , m_inConstructor(true)
     , m_inSetVisible(false)
     , m_inSetGeometry(false)
+    , m_inSetStyleMask(false)
 #ifndef QT_NO_OPENGL
     , m_glContext(0)
 #endif
@@ -869,7 +870,11 @@ void QCocoaWindow::setWindowFlags(Qt::WindowFlags flags)
     if (m_nsWindow && !m_isNSWindowChild) {
         NSUInteger styleMask = windowStyleMask(flags);
         NSInteger level = this->windowLevel(flags);
+        // While setting style mask we can have -updateGeometry calls on a content
+        // view with null geometry, reporting an invalid coordinates as a result.
+        m_inSetStyleMask = true;
         [m_nsWindow setStyleMask:styleMask];
+        m_inSetStyleMask = false;
         [m_nsWindow setLevel:level];
         setWindowShadow(flags);
         if (!(styleMask & NSBorderlessWindowMask)) {
