@@ -516,7 +516,7 @@ void QCoreApplicationPrivate::createEventDispatcher()
 {
     Q_Q(QCoreApplication);
 #if defined(Q_OS_UNIX)
-#  if defined(Q_OS_NACL)
+#  if defined(Q_OS_NACL_PEPPER)
     eventDispatcher = new QCorePepperEventDispatcher(q);
 #  elif defined(Q_OS_BLACKBERRY)
     eventDispatcher = new QEventDispatcherBlackberry(q);

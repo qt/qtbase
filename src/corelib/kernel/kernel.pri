@@ -124,13 +124,14 @@ mac {
 }
 
 nacl {
-    SOURCES += \
-        kernel/qfunctions_nacl.cpp \
-        kernel/qcorepeppereventdispatcher.cpp
-    HEADERS += \
-        kernel/qfunctions_nacl.h \
-        kernel/qcorepeppereventdispatcher_p.h
     LIBS += -lppapi -lppapi_cpp
+    SOURCES += kernel/qfunctions_nacl.cpp
+    HEADERS += kernel/qfunctions_nacl.h
+}
+
+pepper {
+    SOURCES += kernel/qcorepeppereventdispatcher.cpp
+    HEADERS += kernel/qcorepeppereventdispatcher_p.h
 }
 
 unix|integrity {

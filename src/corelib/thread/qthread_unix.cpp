@@ -254,7 +254,7 @@ typedef void*(*QtThreadCallback)(void*);
 void QThreadPrivate::createEventDispatcher(QThreadData *data)
 {
 
-#if defined(Q_OS_NACL)
+#if defined(Q_OS_NACL_PEPPER)
     data->eventDispatcher.storeRelease(new QCorePepperEventDispatcher);
 #elif defined(Q_OS_BLACKBERRY)
     data->eventDispatcher.storeRelease(new QEventDispatcherBlackberry);
