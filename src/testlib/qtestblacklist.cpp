@@ -36,6 +36,9 @@
 #include <QtTest/qtestcase.h>
 #include <QtCore/qbytearray.h>
 #include <QtCore/qfile.h>
+#include <QtCore/qset.h>
+#include <QtCore/qcoreapplication.h>
+#include <QtCore/qvariant.h>
 
 #include <set>
 
@@ -59,67 +62,71 @@ QT_BEGIN_NAMESPACE
  The known keys are listed below:
 */
 
-// this table can be extended with new keywords as required
-const char *matchedConditions[] =
+static QSet<QByteArray> keywords()
 {
-    "*",
+    // this list can be extended with new keywords as required
+   QSet<QByteArray> set = QSet<QByteArray>()
+             << "*"
 #ifdef Q_OS_LINUX
-    "linux",
+            << "linux"
 #endif
 #ifdef Q_OS_OSX
-    "osx",
+            << "osx"
 #endif
 #ifdef Q_OS_WIN
-    "windows",
+            << "windows"
 #endif
 #ifdef Q_OS_IOS
-    "ios",
+            << "ios"
 #endif
 #ifdef Q_OS_ANDROID
-    "android",
+            << "android"
 #endif
 #ifdef Q_OS_QNX
-    "qnx",
+            << "qnx"
 #endif
 #ifdef Q_OS_WINRT
-    "winrt",
+            << "winrt"
 #endif
 #ifdef Q_OS_WINCE
-    "wince",
+            << "wince"
 #endif
 
 #if QT_POINTER_SIZE == 8
-    "64bit",
+            << "64bit"
 #else
-    "32bit",
+            << "32bit"
 #endif
 
 #ifdef Q_CC_GNU
-    "gcc",
+            << "gcc"
 #endif
 #ifdef Q_CC_CLANG
-    "clang",
+            << "clang"
 #endif
 #ifdef Q_CC_MSVC
-    "msvc",
+            << "msvc"
 #endif
 
 #ifdef Q_AUTOTEST_EXPORT
-    "developer-build",
+            << "developer-build"
 #endif
-    0
-};
+            ;
 
+            QCoreApplication *app = QCoreApplication::instance();
+            if (app) {
+                const QVariant platformName = app->property("platformName");
+                if (platformName.isValid())
+                    set << platformName.toByteArray();
+            }
+
+            return set;
+}
 
 static bool checkCondition(const QByteArray &condition)
 {
+    static QSet<QByteArray> matchedConditions = keywords();
     QList<QByteArray> conds = condition.split(' ');
-    std::set<QByteArray> matches;
-    const char **m = matchedConditions;
-    while (*m) {
-        matches.insert(*m);
-        ++m;
-    }
 
     for (int i = 0; i < conds.size(); ++i) {
         QByteArray c = conds.at(i);
@@ -127,7 +134,7 @@ static bool checkCondition(const QByteArray &condition)
         if (result)
             c = c.mid(1);
 
-        result ^= (matches.find(c) != matches.end());
+        result ^= matchedConditions.contains(c);
         if (!result)
             return false;
     }
