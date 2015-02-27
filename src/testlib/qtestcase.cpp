@@ -2057,6 +2057,7 @@ static bool qInvokeTestMethod(const char *slotName, const char *data=0)
             /* For each entry in the data table, do: */
             do {
                 QTestResult::setSkipCurrentTest(false);
+                QTestResult::setBlacklistCurrentTest(false);
                 if (!data || !qstrcmp(data, table.testData(curDataIndex)->dataTag())) {
                     foundFunction = true;
 
@@ -2088,6 +2089,7 @@ static bool qInvokeTestMethod(const char *slotName, const char *data=0)
 
     QTestResult::finishedCurrentTestFunction();
     QTestResult::setSkipCurrentTest(false);
+    QTestResult::setBlacklistCurrentTest(false);
     QTestResult::setCurrentTestData(0);
     delete[] slot;
 
@@ -2381,6 +2383,7 @@ static void qInvokeTestMethods(QObject *testObject)
         }
 
         QTestResult::setSkipCurrentTest(false);
+        QTestResult::setBlacklistCurrentTest(false);
         QTestResult::setCurrentTestFunction("cleanupTestCase");
         invokeMethod(testObject, "cleanupTestCase()");
         QTestResult::finishedCurrentTestData();
