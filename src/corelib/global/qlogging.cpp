@@ -158,6 +158,8 @@ static bool willLogToConsole()
 #if defined(Q_OS_WINCE) || defined(Q_OS_WINRT)
     // these systems have no stderr, so always log to the system log
     return false;
+#elif defined(Q_OS_NACL)
+    return false;
 #elif defined(QT_BOOTSTRAPPED)
     return true;
 #else
@@ -1480,6 +1482,11 @@ static void qDefaultMessageHandler(QtMsgType type, const QMessageLogContext &con
         return;
 #elif defined(Q_OS_ANDROID)
         android_default_message_handler(type, context, logMessage);
+        return;
+#elif defined(Q_OS_NACL)
+        // Log to stdout to separate from Chrome output on stderr
+        fprintf(stdout, "%s\n", logMessage.toLocal8Bit().constData());
+        fflush(stdout);
         return;
 #endif
     }
