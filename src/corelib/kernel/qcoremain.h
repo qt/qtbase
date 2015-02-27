@@ -65,7 +65,7 @@ int Q_CORE_EXPORT qCoreMainWithBlockingFunction(int argc, char **argv,
 
 #define Q_CORE_BLOCKING_MAIN(appBlockingFunction) \
 int main(int argc, char **argv) { \
-    return qCoreMainWithBlockingFunction(appBlockingFunction); \
+    return qCoreMainWithBlockingFunction(argc, argv, appBlockingFunction); \
 }
 
 QT_END_NAMESPACE
