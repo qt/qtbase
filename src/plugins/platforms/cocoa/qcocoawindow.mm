@@ -877,7 +877,7 @@ void QCocoaWindow::setWindowFlags(Qt::WindowFlags flags)
         m_inSetStyleMask = false;
         [m_nsWindow setLevel:level];
         setWindowShadow(flags);
-        if (!(styleMask & NSBorderlessWindowMask)) {
+        if (!(flags & Qt::FramelessWindowHint)) {
             setWindowTitle(window()->title());
         }
 
