@@ -3,6 +3,7 @@ TEMPLATE = subdirs
 SUBDIRS = \ 
     qmake \                         # build a standard ppapi "hello world" example with qmake.
     qtcore \                        # simple QtCore usage (qstring).
+    qtcore_main \                   # implement main and use QtCore
     clipboard \                     # test javascript clipboard events
     resources \                     # test the qrc resources system
     urlload \                       # test url loading
