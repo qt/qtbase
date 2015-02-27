@@ -341,6 +341,14 @@ QSpacerItem * QSpacerItem::spacerItem()
 }
 
 /*!
+    Returns the size policy of this item.
+*/
+QSizePolicy QSpacerItem::sizePolicy() const
+{
+    return sizeP;
+}
+
+/*!
     If this item is a QWidget, it is returned as a QWidget; otherwise
     0 is returned. This function provides type-safe casting.
 */
