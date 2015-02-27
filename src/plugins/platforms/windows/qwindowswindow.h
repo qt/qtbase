@@ -240,8 +240,6 @@ public:
     void setCursor(const QWindowsWindowCursor &c);
     void applyCursor();
 
-    static QByteArray debugWindowFlags(Qt::WindowFlags wf);
-
     inline bool testFlag(unsigned f) const  { return (m_flags & f) != 0; }
     inline void setFlag(unsigned f) const   { m_flags |= f; }
     inline void clearFlag(unsigned f) const { m_flags &= ~f; }

@@ -417,7 +417,7 @@ struct WindowCreationData
 
 QDebug operator<<(QDebug debug, const WindowCreationData &d)
 {
-    debug.nospace() << QWindowsWindow::debugWindowFlags(d.flags)
+    debug.nospace() << d.flags
         << " topLevel=" << d.topLevel << " popup="
         << d.popup << " dialog=" << d.dialog << " desktop=" << d.desktop
         << " embedded=" << d.embedded
@@ -1530,8 +1530,7 @@ void QWindowsWindow::setWindowTitle(const QString &title)
 void QWindowsWindow::setWindowFlags(Qt::WindowFlags flags)
 {
     qCDebug(lcQpaWindows) << '>' << __FUNCTION__ << this << window() << "\n    from: "
-        << QWindowsWindow::debugWindowFlags(m_data.flags)
-        << "\n    to: " << QWindowsWindow::debugWindowFlags(flags);
+        << m_data.flags << "\n    to: " << flags;
     const QRect oldGeometry = geometryDp();
     if (m_data.flags != flags) {
         m_data.flags = flags;
@@ -1549,8 +1548,7 @@ void QWindowsWindow::setWindowFlags(Qt::WindowFlags flags)
         handleGeometryChange();
 
     qCDebug(lcQpaWindows) << '<' << __FUNCTION__ << "\n    returns: "
-        << QWindowsWindow::debugWindowFlags(m_data.flags)
-        << " geometry " << oldGeometry << "->" << newGeometry;
+        << m_data.flags << " geometry " << oldGeometry << "->" << newGeometry;
 }
 
 QWindowsWindowData QWindowsWindow::setWindowFlags_sys(Qt::WindowFlags wt,
@@ -2200,62 +2198,6 @@ void QWindowsWindow::setEnabled(bool enabled)
     }
     if (newStyle != oldStyle)
         setStyle(newStyle);
-}
-
-QByteArray QWindowsWindow::debugWindowFlags(Qt::WindowFlags wf)
-{
-    const int iwf = int(wf);
-    QByteArray rc = "0x";
-    rc += QByteArray::number(iwf, 16);
-    rc += " [";
-
-    switch ((iwf & Qt::WindowType_Mask)) {
-    case Qt::Widget:
-        rc += " Widget";
-        break;
-    case Qt::Window:
-        rc += " Window";
-        break;
-    case Qt::Dialog:
-        rc += " Dialog";
-        break;
-    case Qt::Sheet:
-        rc += " Sheet";
-        break;
-    case Qt::Popup:
-        rc += " Popup";
-        break;
-    case Qt::Tool:
-        rc += " Tool";
-        break;
-    case Qt::ToolTip:
-        rc += " ToolTip";
-        break;
-    case Qt::SplashScreen:
-        rc += " SplashScreen";
-        break;
-    case Qt::Desktop:
-        rc += " Desktop";
-        break;
-    case Qt::SubWindow:
-        rc += " SubWindow";
-        break;
-    }
-    if (iwf & Qt::MSWindowsFixedSizeDialogHint) rc += " MSWindowsFixedSizeDialogHint";
-    if (iwf & Qt::MSWindowsOwnDC) rc += " MSWindowsOwnDC";
-    if (iwf & Qt::FramelessWindowHint) rc += " FramelessWindowHint";
-    if (iwf & Qt::WindowTitleHint) rc += " WindowTitleHint";
-    if (iwf & Qt::WindowSystemMenuHint) rc += " WindowSystemMenuHint";
-    if (iwf & Qt::WindowMinimizeButtonHint) rc += " WindowMinimizeButtonHint";
-    if (iwf & Qt::WindowMaximizeButtonHint) rc += " WindowMaximizeButtonHint";
-    if (iwf & Qt::WindowContextHelpButtonHint) rc += " WindowContextHelpButtonHint";
-    if (iwf & Qt::WindowShadeButtonHint) rc += " WindowShadeButtonHint";
-    if (iwf & Qt::WindowStaysOnTopHint) rc += " WindowStaysOnTopHint";
-    if (iwf & Qt::CustomizeWindowHint) rc += " CustomizeWindowHint";
-    if (iwf & Qt::WindowStaysOnBottomHint) rc += " WindowStaysOnBottomHint";
-    if (iwf & Qt::WindowCloseButtonHint) rc += " WindowCloseButtonHint";
-    rc += ']';
-    return rc;
 }
 
 static HICON createHIcon(const QIcon &icon, int xSize, int ySize)
