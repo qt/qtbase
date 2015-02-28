@@ -1066,7 +1066,7 @@ void QRegularExpressionValidatorPrivate::setRegularExpression(const QRegularExpr
 
     if (origRe != re) {
         usedRe = origRe = re; // copies also the pattern options
-        usedRe.setPattern(QStringLiteral("\\A(?:") + re.pattern() + QStringLiteral(")\\z"));
+        usedRe.setPattern(QLatin1String("\\A(?:") + re.pattern() + QLatin1String(")\\z"));
         emit q->regularExpressionChanged(re);
         emit q->changed();
     }

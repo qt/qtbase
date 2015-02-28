@@ -258,7 +258,7 @@ void QColorDialogStaticData::readSettings()
 #ifndef QT_NO_SETTINGS
     const QSettings settings(QSettings::UserScope, QStringLiteral("QtProject"));
     for (int i = 0; i < int(CustomColorCount); ++i) {
-        const QVariant v = settings.value(QStringLiteral("Qt/customColors/") + QString::number(i));
+        const QVariant v = settings.value(QLatin1String("Qt/customColors/") + QString::number(i));
         if (v.isValid())
             customRgb[i] = v.toUInt();
     }
@@ -271,7 +271,7 @@ void QColorDialogStaticData::writeSettings() const
     if (!customSet) {
         QSettings settings(QSettings::UserScope, QStringLiteral("QtProject"));
         for (int i = 0; i < int(CustomColorCount); ++i)
-            settings.setValue(QStringLiteral("Qt/customColors/") + QString::number(i), customRgb[i]);
+            settings.setValue(QLatin1String("Qt/customColors/") + QString::number(i), customRgb[i]);
     }
 #endif
 }
