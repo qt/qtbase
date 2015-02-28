@@ -1527,7 +1527,7 @@ static QString nameFilterForMime(const QString &mimeType)
             return QFileDialog::tr("All files (*)");
         } else {
             const QString patterns = mime.globPatterns().join(QLatin1Char(' '));
-            return mime.comment() + QStringLiteral(" (") + patterns + QLatin1Char(')');
+            return mime.comment() + QLatin1String(" (") + patterns + QLatin1Char(')');
         }
     }
     return QString();
