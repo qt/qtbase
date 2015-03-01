@@ -760,7 +760,7 @@ static inline void formatSizeF(QDebug &debug, const QSizeF s)
     debug << s.width() << 'x' << s.height() << "mm";
 }
 
-Q_XCB_EXPORT QDebug operator<<(QDebug debug, const QXcbScreen *screen)
+QDebug operator<<(QDebug debug, const QXcbScreen *screen)
 {
     const QDebugStateSaver saver(debug);
     debug.nospace();
