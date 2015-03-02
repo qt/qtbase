@@ -1,8 +1,7 @@
 TARGET = qeglfs-x11-integration
 
-PLUGIN_CLASS_NAME=QEglFSX11IntegrationPlugin
-PLUGIN_TYPE=egldeviceintegrations
-
+PLUGIN_TYPE = egldeviceintegrations
+PLUGIN_CLASS_NAME = QEglFSX11IntegrationPlugin
 load(qt_plugin)
 
 QT += core-private gui-private platformsupport-private eglfs_device_lib-private

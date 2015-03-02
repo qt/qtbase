@@ -1,8 +1,7 @@
 TARGET = qeglfs-kms-integration
 
-PLUGIN_CLASS_NAME=QEglFSKmsIntegrationPlugin
-PLUGIN_TYPE=egldeviceintegrations
-
+PLUGIN_TYPE = egldeviceintegrations
+PLUGIN_CLASS_NAME = QEglFSKmsIntegrationPlugin
 load(qt_plugin)
 
 QT += core-private gui-private platformsupport-private eglfs_device_lib-private

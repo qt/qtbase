@@ -3,7 +3,7 @@
 ** Copyright (C) 2015 The Qt Company Ltd.
 ** Contact: http://www.qt.io/licensing/
 **
-** This file is part of the qmake spec of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL21$
 ** Commercial License Usage
@@ -31,80 +31,27 @@
 **
 ****************************************************************************/
 
-#include "qeglfshooks.h"
-#include <EGL/fbdev_window.h>
+#ifndef QEGLFSVIVINTEGRATION_H
+#define QEGLFSVIVINTEGRATION_H
 
-#include <unistd.h>
-#include <fcntl.h>
-#include <sys/ioctl.h>
-#include <linux/fb.h>
-
-#include <private/qcore_unix_p.h>
+#include "qeglfsdeviceintegration.h"
 
 QT_BEGIN_NAMESPACE
 
-class QEglFSHiX5Hd2Hooks : public QEglFSHooks
+class QEglFSVivIntegration : public QEGLDeviceIntegration
 {
-private:
-    void fbInit();
 public:
     void platformInit() Q_DECL_OVERRIDE;
+    QSize screenSize() const Q_DECL_OVERRIDE;
     EGLNativeWindowType createNativeWindow(QPlatformWindow *window, const QSize &size, const QSurfaceFormat &format) Q_DECL_OVERRIDE;
     void destroyNativeWindow(EGLNativeWindowType window) Q_DECL_OVERRIDE;
+    EGLNativeDisplayType platformDisplay() const Q_DECL_OVERRIDE;
+
+private:
+    QSize mScreenSize;
+    EGLNativeDisplayType mNativeDisplay;
 };
 
-void QEglFSHiX5Hd2Hooks::fbInit()
-{
-    int fd = qt_safe_open("/dev/fb0", O_RDWR, 0);
-    if (fd == -1)
-        qWarning("Failed to open fb to detect screen resolution!");
-
-    struct fb_var_screeninfo vinfo;
-    memset(&vinfo, 0, sizeof(vinfo));
-    if (ioctl(fd, FBIOGET_VSCREENINFO, &vinfo) == -1)
-        qWarning("Could not get variable screen info");
-
-    vinfo.bits_per_pixel   = 32;
-    vinfo.red.length       = 8;
-    vinfo.green.length     = 8;
-    vinfo.blue.length      = 8;
-    vinfo.transp.length    = 8;
-    vinfo.blue.offset      = 0;
-    vinfo.green.offset     = 8;
-    vinfo.red.offset       = 16;
-    vinfo.transp.offset    = 24;
-    vinfo.yres_virtual     = 2 * vinfo.yres;
-
-    if (ioctl(fd, FBIOPUT_VSCREENINFO, &vinfo) == -1)
-        qErrnoWarning(errno, "Unable to set double buffer mode!");
-
-    qt_safe_close(fd);
-    return;
-}
-
-void QEglFSHiX5Hd2Hooks::platformInit()
-{
-    QEglFSHooks::platformInit();
-    fbInit();
-}
-
-EGLNativeWindowType QEglFSHiX5Hd2Hooks::createNativeWindow(QPlatformWindow *window, const QSize &size, const QSurfaceFormat &format)
-{
-    fbdev_window *fbwin = reinterpret_cast<fbdev_window *>(malloc(sizeof(fbdev_window)));
-    if (NULL == fbwin)
-        return 0;
-
-    fbwin->width = size.width();
-    fbwin->height = size.height();
-    return (EGLNativeWindowType)fbwin;
-}
-
-void QEglFSHiX5Hd2Hooks::destroyNativeWindow(EGLNativeWindowType window)
-{
-    free(window);
-}
-
-QEglFSHiX5Hd2Hooks eglFSHiX5Hd2Hooks;
-QEglFSHooks *platformHooks = &eglFSHiX5Hd2Hooks;
-
 QT_END_NAMESPACE
+
+#endif

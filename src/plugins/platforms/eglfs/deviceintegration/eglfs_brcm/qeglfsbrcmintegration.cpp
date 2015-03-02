@@ -3,7 +3,7 @@
 ** Copyright (C) 2015 The Qt Company Ltd.
 ** Contact: http://www.qt.io/licensing/
 **
-** This file is part of the qmake spec of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL21$
 ** Commercial License Usage
@@ -31,13 +31,7 @@
 **
 ****************************************************************************/
 
-#include "qeglfshooks.h"
-
-#include <QtDebug>
-
-#include <QtPlatformSupport/private/qeglconvenience_p.h>
-#include <QtPlatformSupport/private/qeglplatformcontext_p.h>
-
+#include "qeglfsbrcmintegration.h"
 #include <bcm_host.h>
 
 QT_BEGIN_NAMESPACE
@@ -88,54 +82,41 @@ static void destroyDispmanxLayer(EGLNativeWindowType window)
     delete eglWindow;
 }
 
-class QEglFSPiHooks : public QEglFSHooks
-{
-public:
-    virtual void platformInit();
-    virtual void platformDestroy();
-    virtual EGLNativeDisplayType platformDisplay() const;
-    virtual QSize screenSize() const;
-    virtual EGLNativeWindowType createNativeWindow(QPlatformWindow *window, const QSize &size, const QSurfaceFormat &format);
-    virtual void destroyNativeWindow(EGLNativeWindowType window);
-    virtual bool hasCapability(QPlatformIntegration::Capability cap) const;
-
-};
-
-void QEglFSPiHooks::platformInit()
+void QEglFSBrcmIntegration::platformInit()
 {
     bcm_host_init();
 }
 
-EGLNativeDisplayType QEglFSPiHooks::platformDisplay() const
+EGLNativeDisplayType QEglFSBrcmIntegration::platformDisplay() const
 {
     dispman_display = vc_dispmanx_display_open(0/* LCD */);
     return EGL_DEFAULT_DISPLAY;
 }
 
-void QEglFSPiHooks::platformDestroy()
+void QEglFSBrcmIntegration::platformDestroy()
 {
     vc_dispmanx_display_close(dispman_display);
 }
 
-QSize QEglFSPiHooks::screenSize() const
+QSize QEglFSBrcmIntegration::screenSize() const
 {
     uint32_t width, height;
     graphics_get_display_size(0 /* LCD */, &width, &height);
     return QSize(width, height);
 }
 
-EGLNativeWindowType QEglFSPiHooks::createNativeWindow(QPlatformWindow *window, const QSize &size, const QSurfaceFormat &format)
+EGLNativeWindowType QEglFSBrcmIntegration::createNativeWindow(QPlatformWindow *window, const QSize &size, const QSurfaceFormat &format)
 {
     Q_UNUSED(window)
     return createDispmanxLayer(QPoint(0, 0), size, 1, format.hasAlpha() ? DISPMANX_FLAGS_ALPHA_FROM_SOURCE : DISPMANX_FLAGS_ALPHA_FIXED_ALL_PIXELS);
 }
 
-void QEglFSPiHooks::destroyNativeWindow(EGLNativeWindowType window)
+void QEglFSBrcmIntegration::destroyNativeWindow(EGLNativeWindowType window)
 {
     destroyDispmanxLayer(window);
 }
 
-bool QEglFSPiHooks::hasCapability(QPlatformIntegration::Capability cap) const
+bool QEglFSBrcmIntegration::hasCapability(QPlatformIntegration::Capability cap) const
 {
     switch (cap) {
         case QPlatformIntegration::ThreadedPixmaps:
@@ -147,8 +128,5 @@ bool QEglFSPiHooks::hasCapability(QPlatformIntegration::Capability cap) const
             return false;
     }
 }
-
-QEglFSPiHooks eglFSPiHooks;
-QEglFSHooks *platformHooks = &eglFSPiHooks;
 
 QT_END_NAMESPACE
