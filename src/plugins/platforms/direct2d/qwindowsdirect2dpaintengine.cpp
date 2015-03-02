@@ -51,6 +51,10 @@
 #include <QtGui/private/qfontengine_p.h>
 #include <QtGui/private/qstatictext_p.h>
 
+#include <d2d1_1.h>
+#include <dwrite_1.h>
+#include <wrl.h>
+
 using Microsoft::WRL::ComPtr;
 
 QT_BEGIN_NAMESPACE

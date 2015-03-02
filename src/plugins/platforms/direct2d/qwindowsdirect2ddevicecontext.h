@@ -34,8 +34,6 @@
 #ifndef QWINDOWSDIRECT2DDEVICECONTEXT_H
 #define QWINDOWSDIRECT2DDEVICECONTEXT_H
 
-#include "qwindowsdirect2dhelpers.h"
-
 #include <QtCore/QScopedPointer>
 
 QT_BEGIN_NAMESPACE

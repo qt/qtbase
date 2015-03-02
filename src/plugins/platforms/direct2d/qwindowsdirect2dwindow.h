@@ -35,12 +35,14 @@
 #define QWINDOWSDIRECT2DWINDOW_H
 
 #include "qwindowswindow.h"
-#include "qwindowsdirect2dbitmap.h"
-
-#include <dxgi1_2.h>
 #include <wrl.h>
 
+struct IDXGISwapChain1;
+struct ID2D1DeviceContext;
+
 QT_BEGIN_NAMESPACE
+
+class QWindowsDirect2DBitmap;
 
 class QWindowsDirect2DWindow : public QWindowsWindow
 {
