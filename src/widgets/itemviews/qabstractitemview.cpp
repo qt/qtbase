@@ -3016,9 +3016,8 @@ int QAbstractItemView::sizeHintForRow(int row) const
     QStyleOptionViewItem option = d->viewOptionsV1();
     int height = 0;
     int colCount = d->model->columnCount(d->root);
-    QModelIndex index;
     for (int c = 0; c < colCount; ++c) {
-        index = d->model->index(row, c, d->root);
+        const QModelIndex index = d->model->index(row, c, d->root);
         if (QWidget *editor = d->editorForIndex(index).widget.data())
             height = qMax(height, editor->height());
         int hint = d->delegateForIndex(index)->sizeHint(option, index).height();
@@ -3047,9 +3046,8 @@ int QAbstractItemView::sizeHintForColumn(int column) const
     QStyleOptionViewItem option = d->viewOptionsV1();
     int width = 0;
     int rows = d->model->rowCount(d->root);
-    QModelIndex index;
     for (int r = 0; r < rows; ++r) {
-        index = d->model->index(r, column, d->root);
+        const QModelIndex index = d->model->index(r, column, d->root);
         if (QWidget *editor = d->editorForIndex(index).widget.data())
             width = qMax(width, editor->sizeHint().width());
         int hint = d->delegateForIndex(index)->sizeHint(option, index).width();
