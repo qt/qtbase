@@ -97,7 +97,8 @@ equals(TEMPLATE, app) {
 
                     target = $${sdk}-$${cfg}$${action_target_suffix}
 
-                    $${target}.commands = "@bash -o pipefail -c 'xcodebuild $$action -scheme $(TARGET) -sdk $$sdk -configuration $$title($$cfg) | grep -v setenv'"
+                    $${target}.commands = "xcodebuild $$action -scheme $(TARGET) -sdk $$sdk -configuration $$title($$cfg)"
+
                     QMAKE_EXTRA_TARGETS += $$target
 
                     $${action_target}.depends += $$target
