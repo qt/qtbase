@@ -94,6 +94,7 @@ private:
                                QAbstractSocket::SocketError &errorCode);
     bool setSessionProtocol();
     // Aux. functions to do a verification during handshake phase:
+    bool canIgnoreTrustVerificationFailure() const;
     bool verifySessionProtocol() const;
     bool verifyPeerTrust();
 
