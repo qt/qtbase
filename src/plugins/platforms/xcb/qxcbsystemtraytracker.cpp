@@ -185,7 +185,7 @@ bool QXcbSystemTrayTracker::visualHasAlphaChannel()
     if (!systray_atom_reply)
         return false;
 
-    xcb_visualid_t systrayVisualId;
+    xcb_visualid_t systrayVisualId = XCB_NONE;
     if (systray_atom_reply->value_len > 0 && xcb_get_property_value_length(systray_atom_reply) > 0) {
         xcb_visualid_t * vids = (uint32_t *)xcb_get_property_value(systray_atom_reply);
         systrayVisualId = vids[0];
