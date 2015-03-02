@@ -166,7 +166,8 @@ void tst_QDnsLookup::lookup_data()
     QTest::newRow("txt-empty") << int(QDnsLookup::TXT) << "" << int(QDnsLookup::InvalidRequestError) << "" << "" << "" << "" << "" << "" << "";
     QTest::newRow("txt-notfound") << int(QDnsLookup::TXT) << "invalid.invalid" << int(QDnsLookup::NotFoundError) << "" << "" << "" << "" << "" << "" << "";
     QTest::newRow("txt-single") << int(QDnsLookup::TXT) << "txt-single" << int(QDnsLookup::NoError) << "" << "" << "" << "" << "" << "" << "Hello";
-    QTest::newRow("txt-multi-onerr") << int(QDnsLookup::TXT) << "txt-multi-onerr" << int(QDnsLookup::NoError) << "" << "" << "" << "" << "" << "" << "Hello World";
+    QTest::newRow("txt-multi-onerr") << int(QDnsLookup::TXT) << "txt-multi-onerr" << int(QDnsLookup::NoError) << "" << "" << "" << "" << "" << ""
+                                     << QString::fromLatin1("Hello\0World", sizeof("Hello\0World") - 1);
     QTest::newRow("txt-multi-multirr") << int(QDnsLookup::TXT) << "txt-multi-multirr" << int(QDnsLookup::NoError) << "" << "" << "" << "" << "" << "" << "Hello;World";
 }
 
@@ -315,7 +316,7 @@ void tst_QDnsLookup::lookup()
         QString text;
         foreach (const QByteArray &ba, record.values()) {
             if (!text.isEmpty())
-                text += ' ';
+                text += '\0';
             text += QString::fromLatin1(ba);
         }
         texts << text;
