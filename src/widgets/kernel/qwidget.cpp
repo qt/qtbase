@@ -100,6 +100,7 @@
 
 #include "qwindowcontainer_p.h"
 
+#include <QtPlatformHeaders/qxcbwindowfunctions.h>
 
 // widget/widget data creation count
 //#define QWIDGET_EXTRA_DEBUG
@@ -704,7 +705,7 @@ void QWidget::setAutoFillBackground(bool enabled)
         close().
 
     \row \li Top-level windows \li
-        \l windowModified, \l windowTitle, \l windowIcon, \l windowIconText,
+        \l windowModified, \l windowTitle, \l windowIcon,
         \l isActiveWindow, activateWindow(), \l minimized, showMinimized(),
         \l maximized, showMaximized(), \l fullScreen, showFullScreen(),
         showNormal().
@@ -5934,7 +5935,7 @@ void QWidget::unsetLocale()
     window title, if set. This is done by the QPA plugin, so it is shown to the
     user, but isn't part of the windowTitle string.
 
-    \sa windowIcon, windowIconText, windowModified, windowFilePath
+    \sa windowIcon, windowModified, windowFilePath
 */
 QString QWidget::windowTitle() const
 {
@@ -6029,7 +6030,11 @@ void QWidgetPrivate::setWindowIconText_helper(const QString &title)
 
 void QWidgetPrivate::setWindowIconText_sys(const QString &iconText)
 {
-    Q_UNUSED(iconText);
+    Q_Q(QWidget);
+    // ### The QWidget property is deprecated, but the XCB window function is not.
+    // It should remain available for the rare application that needs it.
+    if (QWindow *window = q->windowHandle())
+        QXcbWindowFunctions::setWmWindowIconText(window, iconText);
 }
 
 /*!
@@ -6039,6 +6044,9 @@ void QWidgetPrivate::setWindowIconText_sys(const QString &iconText)
     new \a iconText as an argument.
 
     \since 5.2
+    \obsolete
+
+    This signal is deprecated.
 */
 
 void QWidget::setWindowIconText(const QString &iconText)
@@ -6089,7 +6097,7 @@ void QWidget::setWindowTitle(const QString &title)
     has been set, windowIcon() returns the application icon
     (QApplication::windowIcon()).
 
-    \sa windowIconText, windowTitle
+    \sa windowTitle
 */
 QIcon QWidget::windowIcon() const
 {
@@ -6149,10 +6157,15 @@ void QWidgetPrivate::setWindowIcon_sys()
 
 /*!
     \property QWidget::windowIconText
-    \brief the widget's icon text
+    \brief the text to be displayed on the icon of a minimized window
 
     This property only makes sense for windows. If no icon
-    text has been set, this functions returns an empty string.
+    text has been set, this accessor returns an empty string.
+    It is only implemented on the X11 platform, and only certain
+    window managers use this window property.
+
+    \obsolete
+    This property is deprecated.
 
     \sa windowIcon, windowTitle
 */

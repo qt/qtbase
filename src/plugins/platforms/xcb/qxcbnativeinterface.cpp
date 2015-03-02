@@ -331,6 +331,9 @@ QFunctionPointer QXcbNativeInterface::platformFunction(const QByteArray &functio
     if (function == QXcbWindowFunctions::setWmWindowTypeIdentifier())
         return QFunctionPointer(QXcbWindowFunctions::SetWmWindowType(QXcbWindow::setWmWindowTypeStatic));
 
+    if (function == QXcbWindowFunctions::setWmWindowIconTextIdentifier())
+        return QFunctionPointer(QXcbWindowFunctions::SetWmWindowIconText(QXcbWindow::setWindowIconTextStatic));
+
     if (function == QXcbWindowFunctions::setParentRelativeBackPixmapIdentifier())
         return QFunctionPointer(QXcbWindowFunctions::SetParentRelativeBackPixmap(QXcbWindow::setParentRelativeBackPixmapStatic));
 

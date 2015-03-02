@@ -50,6 +50,8 @@ PropertyWatcher::PropertyWatcher(QObject *subject, QString annotation, QWidget *
         if (prop.isReadable()) {
             PropertyField* field = new PropertyField(m_subject, prop);
             m_layout->addRow(prop.name(), field);
+            if (!qstrcmp(prop.name(), "name"))
+                setWindowIconText(prop.read(subject).toString());
         }
     }
     QPushButton *updateButton = new QPushButton("update");

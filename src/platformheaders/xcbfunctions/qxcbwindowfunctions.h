@@ -69,6 +69,13 @@ public:
         return QXcbFunctionsHelper::callPlatformFunction<void, SetWmWindowType, QWindow *, WmWindowType>(setWmWindowTypeIdentifier(), window, type);
     }
 
+    typedef void (*SetWmWindowIconText)(QWindow *window, const QString &text);
+    static const QByteArray setWmWindowIconTextIdentifier() { return QByteArrayLiteral("XcbSetWmWindowIconText"); }
+    static void setWmWindowIconText(QWindow *window, const QString &text)
+    {
+        return QXcbFunctionsHelper::callPlatformFunction<void, SetWmWindowIconText, QWindow *, const QString &>(setWmWindowIconTextIdentifier(), window, text);
+    }
+
     typedef void (*SetParentRelativeBackPixmap)(const QWindow *window);
     static const QByteArray setParentRelativeBackPixmapIdentifier() { return QByteArrayLiteral("XcbSetParentRelativeBackPixmap"); }
     static void setParentRelativeBackPixmap(const QWindow *window)

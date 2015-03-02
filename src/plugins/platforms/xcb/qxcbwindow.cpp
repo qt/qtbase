@@ -1393,10 +1393,22 @@ void QXcbWindow::setWindowTitle(const QString &title)
     xcb_flush(xcb_connection());
 }
 
+void QXcbWindow::setWindowIconText(const QString &title)
+{
+    const QByteArray ba = title.toUtf8();
+    Q_XCB_CALL(xcb_change_property(xcb_connection(),
+                                   XCB_PROP_MODE_REPLACE,
+                                   m_window,
+                                   atom(QXcbAtom::_NET_WM_ICON_NAME),
+                                   atom(QXcbAtom::UTF8_STRING),
+                                   8,
+                                   ba.length(),
+                                   ba.constData()));
+}
+
 void QXcbWindow::setWindowIcon(const QIcon &icon)
 {
     QVector<quint32> icon_data;
-
     if (!icon.isNull()) {
         QList<QSize> availableSizes = icon.availableSizes();
         if (availableSizes.isEmpty()) {
@@ -1559,6 +1571,12 @@ void QXcbWindow::setWmWindowTypeStatic(QWindow *window, QXcbWindowFunctions::WmW
         static_cast<QXcbWindow *>(window->handle())->setWmWindowType(windowTypes);
     else
         window->setProperty(wm_window_type_property_id, QVariant::fromValue(static_cast<int>(windowTypes)));
+}
+
+void QXcbWindow::setWindowIconTextStatic(QWindow *window, const QString &text)
+{
+    if (window->handle())
+        static_cast<QXcbWindow *>(window->handle())->setWindowIconText(text);
 }
 
 QXcbWindowFunctions::WmWindowTypes QXcbWindow::wmWindowTypes() const

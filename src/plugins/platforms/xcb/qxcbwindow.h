@@ -86,6 +86,7 @@ public:
     QPoint mapFromGlobal(const QPoint &pos) const Q_DECL_OVERRIDE;
 
     void setWindowTitle(const QString &title) Q_DECL_OVERRIDE;
+    void setWindowIconText(const QString &title);
     void setWindowIcon(const QIcon &icon) Q_DECL_OVERRIDE;
     void raise() Q_DECL_OVERRIDE;
     void lower() Q_DECL_OVERRIDE;
@@ -141,6 +142,8 @@ public:
 
     QXcbWindowFunctions::WmWindowTypes wmWindowTypes() const;
     void setWmWindowType(QXcbWindowFunctions::WmWindowTypes types);
+
+    static void setWindowIconTextStatic(QWindow *window, const QString &text);
 
     static void setParentRelativeBackPixmapStatic(QWindow *window);
     void setParentRelativeBackPixmap();
