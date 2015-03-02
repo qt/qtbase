@@ -661,6 +661,9 @@ template<> struct TestValueFactory<QMetaType::QUuid> {
 template<> struct TestValueFactory<QMetaType::QModelIndex> {
     static QModelIndex *create() { return new QModelIndex(); }
 };
+template<> struct TestValueFactory<QMetaType::QPersistentModelIndex> {
+    static QPersistentModelIndex *create() { return new QPersistentModelIndex(); }
+};
 template<> struct TestValueFactory<QMetaType::QRegExp> {
     static QRegExp *create()
     {
@@ -1735,6 +1738,7 @@ struct StreamingTraits
 DECLARE_NONSTREAMABLE(void)
 DECLARE_NONSTREAMABLE(void*)
 DECLARE_NONSTREAMABLE(QModelIndex)
+DECLARE_NONSTREAMABLE(QPersistentModelIndex)
 DECLARE_NONSTREAMABLE(QJsonValue)
 DECLARE_NONSTREAMABLE(QJsonObject)
 DECLARE_NONSTREAMABLE(QJsonArray)
