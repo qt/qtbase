@@ -38,6 +38,7 @@
 #include "qwindowsscreen.h"
 #include "qwindowsscaling.h"
 #include "qwindowsintegration.h"
+#include "qwindowsopenglcontext.h"
 #ifdef QT_NO_CURSOR
 #  include "qwindowscursor.h"
 #endif

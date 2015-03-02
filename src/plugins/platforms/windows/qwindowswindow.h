@@ -40,7 +40,6 @@
 #endif
 #include "qwindowsscaling.h"
 #include "qwindowscursor.h"
-#include "qwindowsopenglcontext.h"
 
 #include <qpa/qplatformwindow.h>
 #include <QtPlatformHeaders/qwindowswindowfunctions.h>

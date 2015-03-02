@@ -62,6 +62,7 @@
 #include <QtCore/QTextStream>
 #include <QtCore/QSysInfo>
 #include <QtCore/QCache>
+#include <QtGui/QColor>
 #include <QtGui/QPalette>
 #include <QtGui/QGuiApplication>
 #include <QtGui/QPainter>
@@ -76,6 +77,16 @@
 #endif
 
 QT_BEGIN_NAMESPACE
+
+static inline COLORREF qColorToCOLORREF(const QColor &color)
+{
+    return RGB(color.red(), color.green(), color.blue());
+}
+
+static inline QColor COLORREFToQColor(COLORREF cr)
+{
+    return QColor(GetRValue(cr), GetGValue(cr), GetBValue(cr));
+}
 
 static inline QTextStream& operator<<(QTextStream &str, const QColor &c)
 {

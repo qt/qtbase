@@ -36,12 +36,9 @@
 
 #include "qtwindows_additional.h"
 
-#include <QtCore/QObject>
 #include <QtCore/QMap>
-#include <QtCore/QPoint>
 #include <QtCore/QPointer>
 #include <QtCore/QVector>
-#include <QtCore/QRect>
 
 #include <objidl.h>
 
