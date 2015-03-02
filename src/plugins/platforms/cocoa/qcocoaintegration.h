@@ -92,6 +92,10 @@ public:
     QCocoaVulkanInstance *getCocoaVulkanInstance() const;
 #endif
 
+#if QT_CONFIG(sessionmanager)
+    QPlatformSessionManager *createPlatformSessionManager(const QString &id, const QString &key) const override;
+#endif
+
     QCoreTextFontDatabase *fontDatabase() const override;
     QCocoaNativeInterface *nativeInterface() const override;
     QPlatformInputContext *inputContext() const override;

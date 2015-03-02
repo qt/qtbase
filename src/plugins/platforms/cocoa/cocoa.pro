@@ -87,6 +87,11 @@ qtConfig(accessibility) {
         qcocoaaccessibility.h
 }
 
+qtConfig(sessionmanager) {
+    SOURCES += qcocoasessionmanager.cpp
+    HEADERS += qcocoasessionmanager.h
+}
+
 RESOURCES += qcocoaresources.qrc
 
 LIBS += -framework AppKit -framework CoreServices -framework Carbon -framework IOKit -framework QuartzCore -framework CoreVideo -framework Metal -framework IOSurface -lcups

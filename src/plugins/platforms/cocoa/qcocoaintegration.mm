@@ -52,6 +52,9 @@
 #include "qcocoamimetypes.h"
 #include "qcocoaaccessibility.h"
 #include "qcocoascreen.h"
+#if QT_CONFIG(sessionmanager)
+#  include "qcocoasessionmanager.h"
+#endif
 
 #include <qpa/qplatforminputcontextfactory_p.h>
 #include <qpa/qplatformaccessibility.h>
@@ -254,6 +257,13 @@ QCocoaIntegration::Options QCocoaIntegration::options() const
 {
     return mOptions;
 }
+
+#if QT_CONFIG(sessionmanager)
+QPlatformSessionManager *QCocoaIntegration::createPlatformSessionManager(const QString &id, const QString &key) const
+{
+    return new QCocoaSessionManager(id, key);
+}
+#endif
 
 bool QCocoaIntegration::hasCapability(QPlatformIntegration::Capability cap) const
 {
