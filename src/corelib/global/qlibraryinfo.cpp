@@ -457,8 +457,10 @@ QLibraryInfo::rawLocation(LibraryLocation loc, PathGroup group)
             defaultValue = QLatin1String(qtConfEntries[loc].value);
         }
 #ifndef Q_OS_WIN // On Windows we use the registry
-        else if (loc == SettingsPath)
+        else if (loc == SettingsPath) {
             key = QLatin1String("Settings");
+            defaultValue = QLatin1String(".");
+        }
 #endif
 
         if(!key.isNull()) {

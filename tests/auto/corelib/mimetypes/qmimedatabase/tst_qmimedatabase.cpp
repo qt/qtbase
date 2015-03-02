@@ -109,14 +109,11 @@ void tst_QMimeDatabase::initTestCase()
     if (m_testSuite.isEmpty())
         qWarning("%s", qPrintable(testSuiteWarning()));
 
+    const QString errorMessage = QString::fromLatin1("Cannot find '%1'");
     m_yastMimeTypes = QLatin1String(RESOURCE_PREFIX) + yastFileName;
-    QVERIFY2(!m_yastMimeTypes.isEmpty(),
-             qPrintable(QString::fromLatin1("Cannot find '%1' starting from '%2'").
-                        arg(yastFileName, QDir::currentPath())));
+    QVERIFY2(QFile::exists(m_yastMimeTypes), qPrintable(errorMessage.arg(yastFileName)));
     m_qmlAgainFileName = QLatin1String(RESOURCE_PREFIX) + qmlAgainFileName;
-    QVERIFY2(!m_qmlAgainFileName.isEmpty(),
-             qPrintable(QString::fromLatin1("Cannot find '%1' starting from '%2'").
-                        arg(qmlAgainFileName, QDir::currentPath())));
+    QVERIFY2(QFile::exists(m_qmlAgainFileName), qPrintable(errorMessage.arg(qmlAgainFileName)));
 
     init();
 }

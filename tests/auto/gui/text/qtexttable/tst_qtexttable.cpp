@@ -44,6 +44,11 @@
 #ifndef QT_NO_WIDGETS
 #include <qtextedit.h>
 #endif
+#ifndef QT_NO_PRINTER
+#include <QPagedPaintDevice>
+#include <QPainter>
+#include <QPaintEngine>
+#endif
 
 typedef QList<int> IntList;
 
@@ -96,6 +101,9 @@ private slots:
     void QTBUG11282_insertBeforeMergedEnding();
 #endif
     void QTBUG22011_insertBeforeRowSpan();
+#ifndef QT_NO_PRINTER
+    void QTBUG31330_renderBackground();
+#endif
 
 private:
     QTextTable *create2x2Table();
@@ -1023,6 +1031,113 @@ void tst_QTextTable::QTBUG22011_insertBeforeRowSpan()
     QCOMPARE(table->rows(), 4);
     QCOMPARE(table->columns(), 6);
 }
+
+#ifndef QT_NO_PRINTER
+namespace {
+class QTBUG31330_PaintDevice : public QPagedPaintDevice
+{
+public:
+    class PaintEngine : public QPaintEngine
+    {
+    public:
+        QList<QRectF> rects;
+
+        PaintEngine()
+            : QPaintEngine(0)
+        {}
+        virtual Type type() const
+        {
+            return User;
+        }
+        virtual bool begin(QPaintDevice *)
+        {
+            return true;
+        }
+        virtual bool end()
+        {
+            return true;
+        }
+        virtual void updateState(const QPaintEngineState &)
+        {}
+        virtual void drawRects(const QRect *, int)
+        {}
+        virtual void drawRects(const QRectF *r, int)
+        {
+            if (painter()->brush() == QBrush(Qt::green))
+            {
+                rects.append(*r);
+            }
+        }
+        virtual void drawPixmap(const QRectF &, const QPixmap &, const QRectF &)
+        {}
+    };
+
+    int pages;
+    QPaintEngine* engine;
+
+    QTBUG31330_PaintDevice(QPaintEngine* engine)
+        : pages(1), engine(engine)
+    {
+        QPageLayout layout = pageLayout();
+        layout.setUnits(QPageLayout::Point);
+        setPageLayout(layout);
+    }
+    virtual int metric(PaintDeviceMetric metric) const
+    {
+        if (PdmDevicePixelRatio == metric)
+            return 1;
+        if (PdmDpiY == metric)
+            return 96;
+        if (PdmDpiX == metric)
+            return 96;
+        if (PdmHeight == metric)
+            return 1000;
+        if (PdmWidth == metric)
+            return 700;
+        return 900;
+    }
+    virtual QPaintEngine *paintEngine() const
+    {
+        return engine;
+    }
+    bool newPage()
+    {
+        ++pages;
+        return true;
+    }
+};
+}
+
+void tst_QTextTable::QTBUG31330_renderBackground()
+{
+    QTextDocument doc;
+    QTextCursor cursor(&doc);
+    QTextTable* table = cursor.insertTable(4, 2);
+
+    QTextTableCell cell = table->cellAt(3, 0);
+
+    QTextCharFormat cellFormat = cell.format();
+    cellFormat.setBackground(QBrush(Qt::green));
+    cell.setFormat(cellFormat);
+
+    QTextCursor tc = cell.firstCursorPosition();
+    for (int i = 0; i < 60; ++i) {
+        tc.insertBlock();
+    }
+    QTBUG31330_PaintDevice::PaintEngine engine;
+    QTBUG31330_PaintDevice paintDevice(&engine);
+    paintDevice.setPageSize(QPagedPaintDevice::A4);
+    doc.print(&paintDevice);
+
+    QVERIFY(paintDevice.pages >= 2);
+    QCOMPARE(engine.rects.count(), paintDevice.pages);
+    for (int i = 0; i < engine.rects.count(); ++i) {
+        QRectF rect = engine.rects[i];
+        QVERIFY(rect.top() > 0);
+        QVERIFY(rect.bottom() < 1000);
+    }
+}
+#endif
 
 QTEST_MAIN(tst_QTextTable)
 #include "tst_qtexttable.moc"

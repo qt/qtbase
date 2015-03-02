@@ -2507,6 +2507,19 @@ void tst_QImage::inplaceConversion()
     }
     if (image.depth() == imageConverted.depth())
         QCOMPARE(imageConverted.constScanLine(0), originalPtr);
+
+    {
+        // Test attempted inplace conversion of images created on existing, readonly buffer
+        static const quint32 readOnlyData[] = { 0x00010203U, 0x04050607U, 0x08091011U, 0x12131415U };
+
+        QImage roImage((const uchar *)readOnlyData, 2, 2, format);
+        QImage inplaceConverted = std::move(roImage).convertToFormat(dest_format);
+
+        QImage roImage2((const uchar *)readOnlyData, 2, 2, format);
+        QImage normalConverted = roImage2.convertToFormat(dest_format);
+
+        QCOMPARE(normalConverted, inplaceConverted);
+    }
 #endif
 }
 

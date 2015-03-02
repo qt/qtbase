@@ -1115,6 +1115,13 @@ void QTextDocumentLayoutPrivate::drawTableCell(const QRectF &cellRect, QPainter 
     const QFixed leftPadding = td->leftPadding(fmt);
     const QFixed topPadding = td->topPadding(fmt);
 
+    qreal topMargin = (td->effectiveTopMargin + td->cellSpacing + td->border).toReal();
+    qreal bottomMargin = (td->effectiveBottomMargin + td->cellSpacing + td->border).toReal();
+
+    const int headerRowCount = qMin(table->format().headerRowCount(), table->rows() - 1);
+    if (r >= headerRowCount)
+        topMargin += td->headerHeight.toReal();
+
     if (td->border != 0) {
         const QBrush oldBrush = painter->brush();
         const QPen oldPen = painter->pen();
@@ -1142,13 +1149,6 @@ void QTextDocumentLayoutPrivate::drawTableCell(const QRectF &cellRect, QPainter 
             break;
         }
 
-        qreal topMargin = (td->effectiveTopMargin + td->cellSpacing + td->border).toReal();
-        qreal bottomMargin = (td->effectiveBottomMargin + td->cellSpacing + td->border).toReal();
-
-        const int headerRowCount = qMin(table->format().headerRowCount(), table->rows() - 1);
-        if (r >= headerRowCount)
-            topMargin += td->headerHeight.toReal();
-
         drawBorder(painter, borderRect, topMargin, bottomMargin,
                    border, table->format().borderBrush(), cellBorder);
 
@@ -1159,7 +1159,30 @@ void QTextDocumentLayoutPrivate::drawTableCell(const QRectF &cellRect, QPainter 
     const QBrush bg = cell.format().background();
     const QPointF brushOrigin = painter->brushOrigin();
     if (bg.style() != Qt::NoBrush) {
-        fillBackground(painter, cellRect, bg, cellRect.topLeft());
+        const qreal pageHeight = document->pageSize().height();
+        const int topPage = pageHeight > 0 ? static_cast<int>(cellRect.top() / pageHeight) : 0;
+        const int bottomPage = pageHeight > 0 ? static_cast<int>((cellRect.bottom()) / pageHeight) : 0;
+
+        if (topPage == bottomPage)
+            fillBackground(painter, cellRect, bg, cellRect.topLeft());
+        else {
+            for (int i = topPage; i <= bottomPage; ++i) {
+                QRectF clipped = cellRect.toRect();
+
+                if (topPage != bottomPage) {
+                    const qreal top = qMax(i * pageHeight + topMargin, cell_context.clip.top());
+                    const qreal bottom = qMin((i + 1) * pageHeight - bottomMargin, cell_context.clip.bottom());
+
+                    clipped.setTop(qMax(clipped.top(), top));
+                    clipped.setBottom(qMin(clipped.bottom(), bottom));
+
+                    if (clipped.bottom() <= clipped.top())
+                        continue;
+
+                    fillBackground(painter, clipped, bg, cellRect.topLeft());
+                }
+            }
+        }
 
         if (bg.style() > Qt::SolidPattern)
             painter->setBrushOrigin(cellRect.topLeft());

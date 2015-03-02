@@ -25,5 +25,3 @@ HTML.nosubdirs = "false"
 
 # Set navigation homepage
 navigation.homepage = "Qt Documentation"
-
-sourcedirs += includes-online

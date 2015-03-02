@@ -58,7 +58,7 @@
 */
 
 /*!
-    \externalpage http://qt-project.org/wiki/Qt_Coding_Style
+    \externalpage http://wiki.qt.io/?title=Qt_Coding_Style
     \title Qt Coding Style
 */
 /*!
@@ -78,16 +78,16 @@
     \title Pimp my video
 */
 /*!
-    \externalpage http://qt-project.org/wiki/QtMediaHub
+    \externalpage http://wiki.qt.io/?title=QtMediaHub
     \title QtMediaHub
 */
 /*!
-    \externalpage http://qt-project.org/wiki/Qt-RaspberryPi
+    \externalpage http://wiki.qt.io/?title=Qt_RaspberryPi
     \title QtonPi
 */
 
 /*!
-    \externalpage http://qt-project.org/wiki/jom
+    \externalpage http://wiki.qt.io/?title=jom
     \title jom
 */
 
@@ -102,11 +102,11 @@
 */
 
 /*!
-    \externalpage http://qt-project.org/wiki/Qt-Localization
+    \externalpage http://wiki.qt.io/?title=Qt_Localization
     \title external: Translating Qt Into Other Languages
 */
 
 /*!
-    \externalpage http://qt-project.org/wiki/BlackBerry
+    \externalpage http://wiki.qt.io/?title=BlackBerry
     \title Qt for BlackBerry
 */

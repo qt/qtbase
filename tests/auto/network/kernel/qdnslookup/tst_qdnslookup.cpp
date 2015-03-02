@@ -67,8 +67,8 @@ private slots:
 void tst_QDnsLookup::initTestCase()
 {
     QTest::addColumn<QString>("tld");
-    QTest::newRow("normal") << ".test.qt-project.org";
-    QTest::newRow("idn") << ".alqualond\xc3\xab.test.qt-project.org";
+    QTest::newRow("normal") << ".test.macieira.org";
+    QTest::newRow("idn") << ".alqualond\xc3\xab.test.macieira.org";
 }
 
 QString tst_QDnsLookup::domainName(const QString &input)
@@ -145,8 +145,8 @@ void tst_QDnsLookup::lookup_data()
 
     QTest::newRow("ns-empty") << int(QDnsLookup::NS) << "" << int(QDnsLookup::InvalidRequestError) << "" << "" << "" << "" << "" << "" << "";
     QTest::newRow("ns-notfound") << int(QDnsLookup::NS) << "invalid.invalid" << int(QDnsLookup::NotFoundError) << "" << "" << "" << "" << "" << "" << "";
-    QTest::newRow("ns-single") << int(QDnsLookup::NS) << "ns-single" << int(QDnsLookup::NoError) << "" << "" << "" << "ns-foo.linpro.net." << "" << "" << "";
-    QTest::newRow("ns-multi") << int(QDnsLookup::NS) << "ns-multi" << int(QDnsLookup::NoError) << "" << "" << "" << "ns-bar.linpro.net.;ns-foo.linpro.net." << "" << "" << "";
+    QTest::newRow("ns-single") << int(QDnsLookup::NS) << "ns-single" << int(QDnsLookup::NoError) << "" << "" << "" << "ns3.macieira.info." << "" << "" << "";
+    QTest::newRow("ns-multi") << int(QDnsLookup::NS) << "ns-multi" << int(QDnsLookup::NoError) << "" << "" << "" << "gondolin.macieira.info.;ns3.macieira.info." << "" << "" << "";
 
     QTest::newRow("ptr-empty") << int(QDnsLookup::PTR) << "" << int(QDnsLookup::InvalidRequestError) << "" << "" << "" << "" << "" << "" << "";
     QTest::newRow("ptr-notfound") << int(QDnsLookup::PTR) << "invalid.invalid" << int(QDnsLookup::NotFoundError) << "" << "" << "" << "" << "" << "" << "";
