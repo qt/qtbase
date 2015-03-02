@@ -1269,12 +1269,6 @@ void Configure::parseCmdLine()
             dictionary["QT_INOTIFY"] = "no";
         }
 
-        else if (configCmdLine.at(i) == "-neon") {
-            dictionary["NEON"] = "yes";
-        } else if (configCmdLine.at(i) == "-no-neon") {
-            dictionary["NEON"] = "no";
-        }
-
         else if (configCmdLine.at(i) == "-largefile") {
             dictionary["LARGE_FILE"] = "yes";
         }
@@ -1845,9 +1839,6 @@ bool Configure::displayHelp()
 
         desc("NIS",  "no",      "-no-nis",              "Do not compile NIS support.");
         desc("NIS",  "yes",     "-nis",                 "Compile NIS support.\n");
-
-        desc("NEON", "yes",     "-neon",                "Enable the use of NEON instructions.");
-        desc("NEON", "no",      "-no-neon",             "Do not enable the use of NEON instructions.\n");
 
         desc("QT_ICONV",    "disable", "-no-iconv",     "Do not enable support for iconv(3).");
         desc("QT_ICONV",    "yes",     "-iconv",        "Enable support for iconv(3).");
