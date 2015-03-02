@@ -67,8 +67,8 @@ equals(TEMPLATE, app) {
                     args += $$system_quote($$arg)
                 system("cd $$system_quote($$OUT_PWD) && $$QMAKE_QMAKE $$args $$system_quote($$_PRO_FILE_) -spec macx-xcode")
 
-                check.commands = "$(MAKE) -f $(MAKEFILE).ReleaseSimulator xcode_build_check"
-                QMAKE_EXTRA_TARGETS += check
+                # We have a target, even though our template is aux
+                CONFIG += have_target
 
             } else {
                 load(resolve_config)
@@ -83,10 +83,13 @@ equals(TEMPLATE, app) {
                 else: \
                     cfg = release
 
-                for(action, $$list(build install clean)) {
+                for(action, $$list(build install clean test)) {
                     equals(action, build) {
                         action_target_suffix =
                         action_target = all
+                    } else: equals(action, test) {
+                        action_target_suffix = -check
+                        action_target = check
                     } else {
                         action_target_suffix = -$$action
                         action_target = $$action
@@ -94,7 +97,7 @@ equals(TEMPLATE, app) {
 
                     target = $${sdk}-$${cfg}$${action_target_suffix}
 
-                    $${target}.commands = "@bash -o pipefail -c 'xcodebuild $$action -sdk $$sdk -configuration $$title($$cfg) | grep -v setenv'"
+                    $${target}.commands = "@bash -o pipefail -c 'xcodebuild $$action -scheme $(TARGET) -sdk $$sdk -configuration $$title($$cfg) | grep -v setenv'"
                     QMAKE_EXTRA_TARGETS += $$target
 
                     $${action_target}.depends += $$target
@@ -106,12 +109,7 @@ equals(TEMPLATE, app) {
                 QMAKE_EXTRA_TARGETS += xcode_build_dir_distclean
                 distclean.depends = xcode_build_dir_distclean
                 QMAKE_EXTRA_TARGETS += distclean
-
-                xcode_build_check.commands = "$(TESTRUNNER) $$title($$cfg)-$${sdk}/$(TARGET).app $(TESTARGS)"
-                QMAKE_EXTRA_TARGETS += xcode_build_check
             }
-
-            CONFIG =
         }
     }
 } else: equals(TEMPLATE, lib) {
