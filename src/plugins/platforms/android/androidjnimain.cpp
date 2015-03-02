@@ -42,6 +42,7 @@
 #include "androidjniinput.h"
 #include "androidjniclipboard.h"
 #include "androidjnimenu.h"
+#include "androiddeadlockprotector.h"
 #include "qandroidplatformdialoghelpers.h"
 #include "qandroidplatformintegration.h"
 #include "qandroidassetsfileenginehandler.h"
@@ -604,7 +605,11 @@ static void updateApplicationState(JNIEnv */*env*/, jobject /*thiz*/, jint state
         QAndroidEventDispatcherStopper::instance()->goingToStop(true);
         QCoreApplication::processEvents();
         QWindowSystemInterface::handleApplicationStateChanged(Qt::ApplicationState(state));
-        QWindowSystemInterface::flushWindowSystemEvents();
+        {
+            AndroidDeadlockProtector protector;
+            if (protector.acquire())
+                QWindowSystemInterface::flushWindowSystemEvents();
+        }
         if (state == Qt::ApplicationSuspended)
             QAndroidEventDispatcherStopper::instance()->stopAll();
     } else {
