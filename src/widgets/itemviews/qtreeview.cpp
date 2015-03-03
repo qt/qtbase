@@ -1913,7 +1913,7 @@ void QTreeView::mouseReleaseEvent(QMouseEvent *event)
     if (d->itemDecorationAt(event->pos()) == -1) {
         QAbstractItemView::mouseReleaseEvent(event);
     } else {
-        if (state() == QAbstractItemView::DragSelectingState)
+        if (state() == QAbstractItemView::DragSelectingState || state() == QAbstractItemView::DraggingState)
             setState(QAbstractItemView::NoState);
         if (style()->styleHint(QStyle::SH_ListViewExpand_SelectMouseType, 0, this) == QEvent::MouseButtonRelease)
             d->expandOrCollapseItemAtPos(event->pos());
