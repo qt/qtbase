@@ -38,7 +38,7 @@ HTML.footer += \
     "    <li id=\"menu-item-1363\" class=\"menu-item menu-item-type-custom menu-item-object-custom menu-item-1363\"><a href=\"http://doc.qt.io/qt-5/topics-app-development.html\">Tools</a></li>\n" \
     "    <li id=\"menu-item-1361\" class=\"menu-item menu-item-type-custom menu-item-object-custom menu-item-1361\"><a href=\"http://wiki.qt.io/\">Wiki</a></li>\n" \
     "    <li id=\"menu-item-1360\" class=\"menu-item menu-item-type-custom menu-item-object-custom menu-item-1360\"><a href=\"http://qt-project.org/forums\">Forums</a></li>\n" \
-    "    <li id=\"menu-item-1362\" class=\"menu-item menu-item-type-custom menu-item-object-custom menu-item-1362\"><a href=\"http://wiki.qt.io/?title=Qt_Contribution_Guidelines\">Contribute to Qt</a></li>\n" \
+    "    <li id=\"menu-item-1362\" class=\"menu-item menu-item-type-custom menu-item-object-custom menu-item-1362\"><a href=\"http://wiki.qt.io/Qt_Contribution_Guidelines\">Contribute to Qt</a></li>\n" \
     "</ul>\n" \
     "</li>\n" \
     "<li id=\"menu-item-1347\" class=\"menu-item menu-item-type-post_type menu-item-object-page current-menu-ancestor current-menu-parent current_page_parent current_page_ancestor menu-item-has-children menu-item-1347\"><a href=\"http://qt.io/services/\">Services</a>\n" \
