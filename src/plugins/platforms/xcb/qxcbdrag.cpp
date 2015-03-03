@@ -444,7 +444,7 @@ void QXcbDrag::move(const QPoint &globalPos)
 
             DEBUG() << "sending Xdnd enter source=" << enter.data.data32[0];
             if (w)
-                handleEnter(w, &enter);
+                handleEnter(w, &enter, current_proxy_target);
             else if (target)
                 xcb_send_event(xcb_connection(), false, proxy_target, XCB_EVENT_MASK_NO_EVENT, (const char *)&enter);
             waiting_for_status = false;
@@ -665,7 +665,7 @@ static bool checkEmbedded(QWidget* w, const XEvent* xe)
 #endif
 
 
-void QXcbDrag::handleEnter(QPlatformWindow *window, const xcb_client_message_event_t *event)
+void QXcbDrag::handleEnter(QPlatformWindow *window, const xcb_client_message_event_t *event, xcb_window_t proxy)
 {
     Q_UNUSED(window);
     DEBUG() << "handleEnter" << window;
@@ -677,6 +677,9 @@ void QXcbDrag::handleEnter(QPlatformWindow *window, const xcb_client_message_eve
         return;
 
     xdnd_dragsource = event->data.data32[0];
+    if (!proxy)
+        proxy = xdndProxy(connection(), xdnd_dragsource);
+    current_proxy_target = proxy ? proxy : xdnd_dragsource;
 
     if (event->data.data32[1] & 1) {
         // get the types from XdndTypeList
@@ -775,7 +778,7 @@ void QXcbDrag::handle_xdnd_position(QPlatformWindow *w, const xcb_client_message
     if (xdnd_dragsource == connection()->clipboard()->owner())
         handle_xdnd_status(&response);
     else
-        Q_XCB_CALL(xcb_send_event(xcb_connection(), false, xdnd_dragsource,
+        Q_XCB_CALL(xcb_send_event(xcb_connection(), false, current_proxy_target,
                                   XCB_EVENT_MASK_NO_EVENT, (const char *)&response));
 }
 
@@ -967,7 +970,7 @@ void QXcbDrag::handleDrop(QPlatformWindow *, const xcb_client_message_event_t *e
     finished.data.data32[0] = currentWindow ? xcb_window(currentWindow.data()) : XCB_NONE;
     finished.data.data32[1] = response.isAccepted(); // flags
     finished.data.data32[2] = toXdndAction(response.acceptedAction());
-    Q_XCB_CALL(xcb_send_event(xcb_connection(), false, xdnd_dragsource,
+    Q_XCB_CALL(xcb_send_event(xcb_connection(), false, current_proxy_target,
                               XCB_EVENT_MASK_NO_EVENT, (char *)&finished));
 
     xdnd_dragsource = 0;
@@ -1132,7 +1135,11 @@ void QXcbDrag::handleSelectionRequest(const xcb_selection_request_event_t *event
         }
     }
 
-    xcb_send_event(xcb_connection(), false, event->requestor, XCB_EVENT_MASK_NO_EVENT, (const char *)&notify);
+    xcb_window_t proxy_target = xdndProxy(connection(), event->requestor);
+    if (!proxy_target)
+        proxy_target = event->requestor;
+
+    xcb_send_event(xcb_connection(), false, proxy_target, XCB_EVENT_MASK_NO_EVENT, (const char *)&notify);
 }
 
 
