@@ -747,6 +747,12 @@ Q_GLOBAL_STATIC(QSurfaceFormat, qt_default_surface_format)
     and surfaces, even the ones created internally by Qt, will use the same
     format.
 
+    \note When setting Qt::AA_ShareOpenGLContexts, it is strongly recommended to
+    place the call to this function before the construction of the
+    QGuiApplication or QApplication. Otherwise \a format will not be applied to
+    the global share context and therefore issues may arise with context sharing
+    afterwards.
+
     \since 5.4
     \sa defaultFormat()
  */

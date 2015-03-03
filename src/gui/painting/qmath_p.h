@@ -50,14 +50,7 @@
 QT_BEGIN_NAMESPACE
 
 static const qreal Q_PI   = qreal(M_PI);     // pi
-static const qreal Q_2PI  = qreal(2 * M_PI); // 2*pi
-static const qreal Q_PI2  = qreal(M_PI_2);   // pi/2
 static const qreal Q_MM_PER_INCH = 25.4;
-
-inline int qIntSqrtInt(int v)
-{
-    return static_cast<int>(qSqrt(static_cast<qreal>(v)));
-}
 
 QT_END_NAMESPACE
 

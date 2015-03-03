@@ -48,6 +48,18 @@
 
 QT_BEGIN_NAMESPACE
 
+namespace {
+class AutoReleasePool
+{
+public:
+    AutoReleasePool(): pool([[NSAutoreleasePool alloc] init]) {}
+    ~AutoReleasePool() { [pool release]; }
+
+private:
+    NSAutoreleasePool *pool;
+};
+}
+
 // this could become a list of all languages used for each writing
 // system, instead of using the single most common language.
 static const char *languageForWritingSystem[] = {
@@ -438,6 +450,8 @@ QStringList QCoreTextFontDatabase::fallbacksForFamily(const QString &family, QFo
 {
     Q_UNUSED(style);
     Q_UNUSED(script);
+
+    AutoReleasePool pool;
 
     static QHash<QString, QStringList> fallbackLists;
 

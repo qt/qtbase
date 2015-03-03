@@ -32,7 +32,6 @@
 ****************************************************************************/
 
 #include <sys/types.h>
-#include <sys/ipc.h>
 #include <sys/mman.h>
 #include <semaphore.h>
 #include <fcntl.h>

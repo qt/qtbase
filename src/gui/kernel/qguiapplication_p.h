@@ -190,8 +190,6 @@ public:
     static void updateBlockedStatus(QWindow *window);
     virtual bool isWindowBlocked(QWindow *window, QWindow **blockingWindow = 0) const;
 
-    static bool synthesizeMouseFromTouchEventsEnabled();
-
     static Qt::MouseButtons buttons;
     static ulong mousePressTime;
     static Qt::MouseButton mousePressButton;
@@ -220,7 +218,7 @@ public:
 
     static QFont *app_font;
 
-    QStyleHints *styleHints;
+    static QStyleHints *styleHints;
     static bool obey_desktop_settings;
     QInputMethod *inputMethod;
 

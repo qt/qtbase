@@ -465,7 +465,7 @@
     imaginary item one position past the last item in the container.
     \l {QList::end()}{end()} marks an invalid position; it must never be dereferenced.
     It is typically used in a loop's break condition. If the list is
-    empty, \l{QList::begin}{begin()} equals \l{QList:end()}{end()}, so we never execute the loop.
+    empty, \l{QList::begin}{begin()} equals \l{QList::end()}{end()}, so we never execute the loop.
 
     The diagram below shows the valid iterator positions as red
     arrows for a vector containing four items:

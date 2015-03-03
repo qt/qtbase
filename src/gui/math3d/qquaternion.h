@@ -115,10 +115,10 @@ public:
     operator QVariant() const;
 
 #ifndef QT_NO_VECTOR3D
-    inline void toAxisAndAngle(QVector3D *axis, float *angle) const;
+    inline void getAxisAndAngle(QVector3D *axis, float *angle) const;
     static QQuaternion fromAxisAndAngle(const QVector3D& axis, float angle);
 #endif
-    void toAxisAndAngle(float *x, float *y, float *z, float *angle) const;
+    void getAxisAndAngle(float *x, float *y, float *z, float *angle) const;
     static QQuaternion fromAxisAndAngle
             (float x, float y, float z, float angle);
 
@@ -126,7 +126,7 @@ public:
     inline QVector3D toEulerAngles() const;
     static inline QQuaternion fromEulerAngles(const QVector3D &eulerAngles);
 #endif
-    void toEulerAngles(float *pitch, float *yaw, float *roll) const;
+    void getEulerAngles(float *pitch, float *yaw, float *roll) const;
     static QQuaternion fromEulerAngles(float pitch, float yaw, float roll);
 
     QMatrix3x3 toRotationMatrix() const;
@@ -308,17 +308,22 @@ inline QVector3D QQuaternion::vector() const
     return QVector3D(xp, yp, zp);
 }
 
-inline void QQuaternion::toAxisAndAngle(QVector3D *axis, float *angle) const
+inline QVector3D operator*(const QQuaternion &quaternion, const QVector3D &vec)
+{
+    return quaternion.rotatedVector(vec);
+}
+
+inline void QQuaternion::getAxisAndAngle(QVector3D *axis, float *angle) const
 {
     float aX, aY, aZ;
-    toAxisAndAngle(&aX, &aY, &aZ, angle);
+    getAxisAndAngle(&aX, &aY, &aZ, angle);
     *axis = QVector3D(aX, aY, aZ);
 }
 
 inline QVector3D QQuaternion::toEulerAngles() const
 {
     float pitch, yaw, roll;
-    toEulerAngles(&pitch, &yaw, &roll);
+    getEulerAngles(&pitch, &yaw, &roll);
     return QVector3D(pitch, yaw, roll);
 }
 

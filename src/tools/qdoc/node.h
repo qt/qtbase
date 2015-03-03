@@ -479,6 +479,18 @@ struct RelatedClass
     QString             signature_;
 };
 
+struct UsingClause
+{
+    UsingClause() { }
+    UsingClause(const QString& signature) : node_(0), signature_(signature) { }
+    const QString& signature() const { return signature_; }
+    const Node* node() { return node_; }
+    void setNode(const Node* n) { node_ = n; }
+
+    const Node* node_;
+    QString     signature_;
+};
+
 class ClassNode : public InnerNode
 {
 public:
@@ -493,16 +505,19 @@ public:
     void addResolvedBaseClass(Access access, ClassNode* node);
     void addDerivedClass(Access access, ClassNode* node);
     void addUnresolvedBaseClass(Access access, const QStringList& path, const QString& signature);
+    void addUnresolvedUsingClause(const QString& signature);
     void fixBaseClasses();
     void fixPropertyUsingBaseClasses(PropertyNode* pn);
 
     QList<RelatedClass>& baseClasses() { return bases_; }
     QList<RelatedClass>& derivedClasses() { return derived_; }
     QList<RelatedClass>& ignoredBaseClasses() { return ignoredBases_; }
+    QList<UsingClause>& usingClauses() { return usingClauses_; }
 
     const QList<RelatedClass> &baseClasses() const { return bases_; }
     const QList<RelatedClass> &derivedClasses() const { return derived_; }
     const QList<RelatedClass> &ignoredBaseClasses() const { return ignoredBases_; }
+    const QList<UsingClause>& usingClauses() const { return usingClauses_; }
 
     QString serviceName() const { return sname; }
     void setServiceName(const QString& value) { sname = value; }
@@ -517,6 +532,7 @@ private:
     QList<RelatedClass> bases_;
     QList<RelatedClass> derived_;
     QList<RelatedClass> ignoredBases_;
+    QList<UsingClause> usingClauses_;
     bool abstract_;
     bool wrapper_;
     QString sname;

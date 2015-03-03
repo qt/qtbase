@@ -386,8 +386,6 @@ QVariant QPlatformIntegration::styleHint(StyleHint hint) const
         return QPlatformTheme::defaultThemeHint(QPlatformTheme::StartDragVelocity);
     case UseRtlExtensions:
         return QVariant(false);
-    case SynthesizeMouseFromTouchEvents:
-        return true;
     case SetFocusOnTouchRelease:
         return QVariant(false);
     case MousePressAndHoldInterval:
@@ -443,11 +441,15 @@ QList<int> QPlatformIntegration::possibleKeys(const QKeyEvent *) const
 
   The screen should be deleted by calling QPlatformIntegration::destroyScreen().
 */
-void QPlatformIntegration::screenAdded(QPlatformScreen *ps)
+void QPlatformIntegration::screenAdded(QPlatformScreen *ps, bool isPrimary)
 {
     QScreen *screen = new QScreen(ps);
     ps->d_func()->screen = screen;
-    QGuiApplicationPrivate::screen_list << screen;
+    if (isPrimary) {
+        QGuiApplicationPrivate::screen_list.prepend(screen);
+    } else {
+        QGuiApplicationPrivate::screen_list.append(screen);
+    }
     emit qGuiApp->screenAdded(screen);
 }
 

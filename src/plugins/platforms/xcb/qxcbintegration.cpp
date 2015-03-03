@@ -110,11 +110,15 @@ static bool runningUnderDebugger()
 #endif
 }
 
+QXcbIntegration *QXcbIntegration::m_instance = Q_NULLPTR;
+
 QXcbIntegration::QXcbIntegration(const QStringList &parameters, int &argc, char **argv)
     : m_services(new QGenericUnixServices)
     , m_instanceName(0)
     , m_canGrab(true)
 {
+    m_instance = this;
+
     qRegisterMetaType<QXcbWindow*>();
 #ifdef XCB_USE_XLIB
     XInitThreads();
@@ -166,9 +170,7 @@ QXcbIntegration::QXcbIntegration(const QStringList &parameters, int &argc, char 
     m_connections << new QXcbConnection(m_nativeInterface.data(), m_canGrab, displayName);
 
     for (int i = 0; i < parameters.size() - 1; i += 2) {
-#ifdef Q_XCB_DEBUG
-        qDebug() << "QXcbIntegration: Connecting to additional display: " << parameters.at(i) << parameters.at(i+1);
-#endif
+        qCDebug(lcQpaScreen) << "connecting to additional display: " << parameters.at(i) << parameters.at(i+1);
         QString display = parameters.at(i) + QLatin1Char(':') + parameters.at(i+1);
         m_connections << new QXcbConnection(m_nativeInterface.data(), m_canGrab, display.toLatin1().constData());
     }
@@ -179,6 +181,7 @@ QXcbIntegration::QXcbIntegration(const QStringList &parameters, int &argc, char 
 QXcbIntegration::~QXcbIntegration()
 {
     qDeleteAll(m_connections);
+    m_instance = Q_NULLPTR;
 }
 
 QPlatformWindow *QXcbIntegration::createPlatformWindow(QWindow *window) const
@@ -371,9 +374,6 @@ QVariant QXcbIntegration::styleHint(QPlatformIntegration::StyleHint hint) const
         // X11 always has support for windows, but the
         // window manager could prevent it (e.g. matchbox)
         return false;
-    case QPlatformIntegration::SynthesizeMouseFromTouchEvents:
-        // We do not want Qt to synthesize mouse events if X11 already does it.
-        return m_connections.at(0)->hasTouchWithoutMouseEmulation();
     default:
         break;
     }

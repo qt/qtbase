@@ -224,8 +224,6 @@ QVariant QWinRTTheme::styleHint(QPlatformIntegration::StyleHint hint)
         return defaultThemeHint(StartDragVelocity);
     case QPlatformIntegration::UseRtlExtensions:
         return false;
-    case QPlatformIntegration::SynthesizeMouseFromTouchEvents:
-        return true;
     case QPlatformIntegration::PasswordMaskCharacter:
         return defaultThemeHint(PasswordMaskCharacter);
     case QPlatformIntegration::SetFocusOnTouchRelease:

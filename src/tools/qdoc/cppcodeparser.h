@@ -127,7 +127,7 @@ protected:
     bool matchClassDecl(InnerNode *parent,
                         const QString &templateStuff = QString());
     bool matchNamespaceDecl(InnerNode *parent);
-    bool matchUsingDecl();
+    bool matchUsingDecl(InnerNode* parent);
     bool matchEnumItem(InnerNode *parent, EnumNode *enume);
     bool matchEnumDecl(InnerNode *parent);
     bool matchTypedefDecl(InnerNode *parent);

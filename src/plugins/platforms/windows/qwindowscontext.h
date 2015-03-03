@@ -67,6 +67,7 @@ struct QWindowCreationContext;
 struct QWindowsContextPrivate;
 class QPoint;
 class QKeyEvent;
+class QTouchDevice;
 
 #ifndef Q_OS_WINCE
 struct QWindowsUser32DLL
@@ -218,6 +219,8 @@ public:
     static QByteArray comErrorString(HRESULT hr);
     bool asyncExpose() const;
     void setAsyncExpose(bool value);
+
+    QTouchDevice *touchDevice() const;
 
 private:
     void handleFocusEvent(QtWindows::WindowsEventType et, QWindowsWindow *w);

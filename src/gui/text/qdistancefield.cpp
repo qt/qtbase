@@ -833,6 +833,17 @@ QDistanceField::QDistanceField(QFontEngine *fontEngine, glyph_t glyph, bool doub
     setGlyph(fontEngine, glyph, doubleResolution);
 }
 
+QDistanceField::QDistanceField(const QPainterPath &path, glyph_t glyph, bool doubleResolution)
+{
+    QPainterPath dfPath = path;
+    dfPath.translate(-dfPath.boundingRect().topLeft());
+    dfPath.setFillRule(Qt::WindingFill);
+
+    d = QDistanceFieldData::create(dfPath, doubleResolution);
+    d->glyph = glyph;
+}
+
+
 QDistanceField::QDistanceField(QDistanceFieldData *data)
     : d(data)
 {

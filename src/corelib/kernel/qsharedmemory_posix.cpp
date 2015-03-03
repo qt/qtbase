@@ -46,7 +46,6 @@
 
 #ifndef QT_NO_SHAREDMEMORY
 #include <sys/types.h>
-#include <sys/ipc.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <fcntl.h>

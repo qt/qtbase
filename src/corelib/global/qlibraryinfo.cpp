@@ -230,7 +230,7 @@ QLibraryInfo::licensedProducts()
 /*!
     \since 4.6
     \deprecated
-    This function used to return the the installation date for this build of Qt, but now returns an a constant date.
+    This function used to return the installation date for this build of Qt, but now returns a constant date.
 */
 #ifndef QT_NO_DATESTRING
 #if QT_DEPRECATED_SINCE(5, 5)
@@ -457,8 +457,10 @@ QLibraryInfo::rawLocation(LibraryLocation loc, PathGroup group)
             defaultValue = QLatin1String(qtConfEntries[loc].value);
         }
 #ifndef Q_OS_WIN // On Windows we use the registry
-        else if (loc == SettingsPath)
+        else if (loc == SettingsPath) {
             key = QLatin1String("Settings");
+            defaultValue = QLatin1String(".");
+        }
 #endif
 
         if(!key.isNull()) {

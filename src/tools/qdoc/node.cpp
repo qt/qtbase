@@ -1415,6 +1415,17 @@ void ClassNode::addUnresolvedBaseClass(Access access,
 }
 
 /*!
+  Add an unresolved \c using clause to this class node's list
+  of \c using clauses. The unresolved \c using clause will be
+  resolved before the generate phase of qdoc. In an unresolved
+  \c using clause, the pointer to the function node is 0.
+ */
+void ClassNode::addUnresolvedUsingClause(const QString& signature)
+{
+    usingClauses_.append(UsingClause(signature));
+}
+
+/*!
  */
 void ClassNode::fixBaseClasses()
 {

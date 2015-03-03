@@ -131,16 +131,16 @@ static NSString *const kSelectorPrefix = @"_qtMenuItem_";
         self.toolbar = [[[UIToolbar alloc] initWithFrame:CGRectMake(0, 0, 100, 44)] autorelease];
         self.toolbar.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 
-        UIBarButtonItem *doneButton = [[[UIBarButtonItem alloc]
-                initWithBarButtonSystemItem:UIBarButtonSystemItemDone
-                target:self action:@selector(closeMenu)] autorelease];
         UIBarButtonItem *spaceButton = [[[UIBarButtonItem alloc]
                 initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace
                 target:self action:@selector(closeMenu)] autorelease];
         UIBarButtonItem *cancelButton = [[[UIBarButtonItem alloc]
                 initWithBarButtonSystemItem:UIBarButtonSystemItemCancel
                 target:self action:@selector(cancelMenu)] autorelease];
-        [self.toolbar setItems:[NSArray arrayWithObjects:doneButton, spaceButton, cancelButton, nil]];
+        UIBarButtonItem *doneButton = [[[UIBarButtonItem alloc]
+                initWithBarButtonSystemItem:UIBarButtonSystemItemDone
+                target:self action:@selector(closeMenu)] autorelease];
+        [self.toolbar setItems:[NSArray arrayWithObjects:cancelButton, spaceButton, doneButton, nil]];
 
         [self setDelegate:self];
         [self setDataSource:self];

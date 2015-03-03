@@ -86,6 +86,11 @@ QSslContext::~QSslContext()
         q_SSL_SESSION_free(session);
 }
 
+static inline QString msgErrorSettingEllipticCurves(const QString &why)
+{
+    return QSslSocket::tr("Error when setting the elliptic curves (%1)").arg(why);
+}
+
 QSslContext* QSslContext::fromConfiguration(QSslSocket::SslMode mode, const QSslConfiguration &configuration, bool allowRootCertOnDemandLoading)
 {
     QSslContext *sslContext = new QSslContext();
@@ -342,7 +347,7 @@ init_context:
                                 SSL_CTRL_SET_CURVES,
                                 qcurves.size(),
                                 const_cast<int *>(reinterpret_cast<const int *>(qcurves.data())))) {
-                sslContext->errorStr = QSslSocket::tr("Error when setting the elliptic curves (%1)").arg(QSslSocketBackendPrivate::getErrorsFromOpenSsl());
+                sslContext->errorStr = msgErrorSettingEllipticCurves(QSslSocketBackendPrivate::getErrorsFromOpenSsl());
                 sslContext->errorCode = QSslError::UnspecifiedError;
                 return sslContext;
             }
@@ -350,7 +355,7 @@ init_context:
 #endif // OPENSSL_VERSION_NUMBER >= 0x10002000L && !defined(OPENSSL_NO_EC)
         {
             // specific curves requested, but not possible to set -> error
-            sslContext->errorStr = QSslSocket::tr("Error when setting the elliptic curves (OpenSSL version too old, need at least v1.0.2)");
+            sslContext->errorStr = msgErrorSettingEllipticCurves(QSslSocket::tr("OpenSSL version too old, need at least v1.0.2"));
             sslContext->errorCode = QSslError::UnspecifiedError;
             return sslContext;
         }

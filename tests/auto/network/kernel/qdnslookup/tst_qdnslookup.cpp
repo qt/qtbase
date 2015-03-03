@@ -67,8 +67,8 @@ private slots:
 void tst_QDnsLookup::initTestCase()
 {
     QTest::addColumn<QString>("tld");
-    QTest::newRow("normal") << ".test.qt-project.org";
-    QTest::newRow("idn") << ".alqualond\xc3\xab.test.qt-project.org";
+    QTest::newRow("normal") << ".test.macieira.org";
+    QTest::newRow("idn") << ".alqualond\xc3\xab.test.macieira.org";
 }
 
 QString tst_QDnsLookup::domainName(const QString &input)
@@ -145,8 +145,8 @@ void tst_QDnsLookup::lookup_data()
 
     QTest::newRow("ns-empty") << int(QDnsLookup::NS) << "" << int(QDnsLookup::InvalidRequestError) << "" << "" << "" << "" << "" << "" << "";
     QTest::newRow("ns-notfound") << int(QDnsLookup::NS) << "invalid.invalid" << int(QDnsLookup::NotFoundError) << "" << "" << "" << "" << "" << "" << "";
-    QTest::newRow("ns-single") << int(QDnsLookup::NS) << "ns-single" << int(QDnsLookup::NoError) << "" << "" << "" << "ns-foo.linpro.net." << "" << "" << "";
-    QTest::newRow("ns-multi") << int(QDnsLookup::NS) << "ns-multi" << int(QDnsLookup::NoError) << "" << "" << "" << "ns-bar.linpro.net.;ns-foo.linpro.net." << "" << "" << "";
+    QTest::newRow("ns-single") << int(QDnsLookup::NS) << "ns-single" << int(QDnsLookup::NoError) << "" << "" << "" << "ns3.macieira.info." << "" << "" << "";
+    QTest::newRow("ns-multi") << int(QDnsLookup::NS) << "ns-multi" << int(QDnsLookup::NoError) << "" << "" << "" << "gondolin.macieira.info.;ns3.macieira.info." << "" << "" << "";
 
     QTest::newRow("ptr-empty") << int(QDnsLookup::PTR) << "" << int(QDnsLookup::InvalidRequestError) << "" << "" << "" << "" << "" << "" << "";
     QTest::newRow("ptr-notfound") << int(QDnsLookup::PTR) << "invalid.invalid" << int(QDnsLookup::NotFoundError) << "" << "" << "" << "" << "" << "" << "";
@@ -168,6 +168,38 @@ void tst_QDnsLookup::lookup_data()
     QTest::newRow("txt-single") << int(QDnsLookup::TXT) << "txt-single" << int(QDnsLookup::NoError) << "" << "" << "" << "" << "" << "" << "Hello";
     QTest::newRow("txt-multi-onerr") << int(QDnsLookup::TXT) << "txt-multi-onerr" << int(QDnsLookup::NoError) << "" << "" << "" << "" << "" << "" << "Hello World";
     QTest::newRow("txt-multi-multirr") << int(QDnsLookup::TXT) << "txt-multi-multirr" << int(QDnsLookup::NoError) << "" << "" << "" << "" << "" << "" << "Hello;World";
+}
+
+static QByteArray msgDnsLookup(QDnsLookup::Error actualError,
+                               int expectedError,
+                               const QString &domain,
+                               const QString &cname,
+                               const QString &host,
+                               const QString &srv,
+                               const QString &mx,
+                               const QString &ns,
+                               const QString &ptr,
+                               const QString &errorString)
+{
+    QString result;
+    QTextStream str(&result);
+    str << "Actual error: " << actualError;
+    if (!errorString.isEmpty())
+        str << " (" << errorString << ')';
+    str << ", expected: " << expectedError;
+    str << ", domain: " << domain;
+    if (!cname.isEmpty())
+        str << ", cname: " << cname;
+    str << ", host: " << host;
+    if (!srv.isEmpty())
+        str << " server: " << srv;
+    if (!mx.isEmpty())
+        str << " mx: " << mx;
+    if (!ns.isEmpty())
+        str << " ns: " << ns;
+    if (!ptr.isEmpty())
+        str << " ptr: " << ptr;
+    return result.toLocal8Bit();
 }
 
 void tst_QDnsLookup::lookup()
@@ -206,7 +238,8 @@ void tst_QDnsLookup::lookup()
         QEXPECT_FAIL("", "Not yet supported on Android", Abort);
 #endif
 
-    QVERIFY2(int(lookup.error()) == error, qPrintable(lookup.errorString()));
+    QVERIFY2(int(lookup.error()) == error,
+             msgDnsLookup(lookup.error(), error, domain, cname, host, srv, mx, ns, ptr, lookup.errorString()));
     if (error == QDnsLookup::NoError)
         QVERIFY(lookup.errorString().isEmpty());
     QCOMPARE(int(lookup.type()), type);

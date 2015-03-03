@@ -46,6 +46,7 @@
 //
 
 #include "QtCore/qglobal.h"
+#include "QtCore/qmath.h"
 #include "QtGui/qcolor.h"
 #include "QtGui/qpainter.h"
 #include "QtGui/qimage.h"
@@ -55,7 +56,6 @@
 #endif
 #include "private/qrasterdefs_p.h"
 #include <private/qsimd_p.h>
-#include <private/qmath_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -665,11 +665,6 @@ static Q_ALWAYS_INLINE uint qAlphaRgb30(uint c)
     a |= a << 4;
     return a;
 }
-
-
-// FIXME: Remove when all Qt modules have stopped using PREMUL and INV_PREMUL
-#define PREMUL(x) qPremultiply(x)
-#define INV_PREMUL(p) qUnpremultiply(p)
 
 struct quint24 {
     quint24(uint value);

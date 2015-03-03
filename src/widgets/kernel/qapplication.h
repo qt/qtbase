@@ -165,9 +165,9 @@ public:
 
 #if QT_DEPRECATED_SINCE(5, 0)
     QT_DEPRECATED static QLocale keyboardInputLocale()
-    { return qApp ? qApp->inputMethod()->locale() : QLocale::c(); }
+    { return qApp ? QGuiApplication::inputMethod()->locale() : QLocale::c(); }
     QT_DEPRECATED static Qt::LayoutDirection keyboardInputDirection()
-    { return qApp ? qApp->inputMethod()->inputDirection() : Qt::LeftToRight; }
+    { return qApp ? QGuiApplication::inputMethod()->inputDirection() : Qt::LeftToRight; }
 #endif
 
     static int exec();

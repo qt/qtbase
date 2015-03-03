@@ -68,6 +68,7 @@ private slots:
     void isActive();
     void testInputEvents();
     void touchToMouseTranslation();
+    void touchToMouseTranslationForDevices();
     void mouseToTouchTranslation();
     void mouseToTouchLoop();
     void touchCancel();
@@ -705,8 +706,6 @@ void tst_QWindow::testInputEvents()
 
 void tst_QWindow::touchToMouseTranslation()
 {
-    if (!QGuiApplicationPrivate::platformIntegration()->styleHint(QPlatformIntegration::SynthesizeMouseFromTouchEvents).toBool())
-        QSKIP("Mouse events are synthesized by the system on this platform.");
     InputTestWindow window;
     window.ignoreTouch = true;
     window.setGeometry(QRect(m_availableTopLeft + QPoint(80, 80), m_testWindowSize));
@@ -777,6 +776,35 @@ void tst_QWindow::touchToMouseTranslation()
     // mouse event synthesizing disabled
     QTRY_COMPARE(window.mousePressButton, 0);
     QTRY_COMPARE(window.mouseReleaseButton, 0);
+}
+
+void tst_QWindow::touchToMouseTranslationForDevices()
+{
+    InputTestWindow window;
+    window.ignoreTouch = true;
+    window.setGeometry(QRect(m_availableTopLeft + QPoint(80, 80), m_testWindowSize));
+    window.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&window));
+
+    QPoint touchPoint(10, 10);
+
+    QTest::touchEvent(&window, touchDevice).press(0, touchPoint, &window);
+    QTest::touchEvent(&window, touchDevice).release(0, touchPoint, &window);
+    QCoreApplication::processEvents();
+
+    QCOMPARE(window.mousePressedCount, 1);
+    QCOMPARE(window.mouseReleasedCount, 1);
+
+    window.resetCounters();
+
+    touchDevice->setCapabilities(touchDevice->capabilities() | QTouchDevice::MouseEmulation);
+    QTest::touchEvent(&window, touchDevice).press(0, touchPoint, &window);
+    QTest::touchEvent(&window, touchDevice).release(0, touchPoint, &window);
+    QCoreApplication::processEvents();
+    touchDevice->setCapabilities(touchDevice->capabilities() & ~QTouchDevice::MouseEmulation);
+
+    QCOMPARE(window.mousePressedCount, 0);
+    QCOMPARE(window.mouseReleasedCount, 0);
 }
 
 void tst_QWindow::mouseToTouchTranslation()
@@ -907,8 +935,6 @@ void tst_QWindow::touchCancel()
 
 void tst_QWindow::touchCancelWithTouchToMouse()
 {
-    if (!QGuiApplicationPrivate::platformIntegration()->styleHint(QPlatformIntegration::SynthesizeMouseFromTouchEvents).toBool())
-        QSKIP("Mouse events are synthesized by the system on this platform.");
     InputTestWindow window;
     window.ignoreTouch = true;
     window.setGeometry(QRect(m_availableTopLeft + QPoint(80, 80), m_testWindowSize));

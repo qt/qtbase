@@ -217,6 +217,8 @@ QCocoaMenu::QCocoaMenu() :
     m_menuBar(0),
     m_containingMenuItem(0)
 {
+    QCocoaAutoReleasePool pool;
+
     m_delegate = [[QCocoaMenuDelegate alloc] initWithMenu:this];
     m_nativeItem = [[NSMenuItem alloc] initWithTitle:@"" action:nil keyEquivalent:@""];
     m_nativeMenu = [[NSMenu alloc] initWithTitle:@"Untitled"];

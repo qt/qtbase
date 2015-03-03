@@ -44,6 +44,18 @@
 
 QT_BEGIN_NAMESPACE
 
+namespace {
+class AutoReleasePool
+{
+public:
+    AutoReleasePool(): pool([[NSAutoreleasePool alloc] init]) {}
+    ~AutoReleasePool() { [pool release]; }
+
+private:
+    NSAutoreleasePool *pool;
+};
+}
+
 /******************************************************************************
 ** Wrappers for Mac locale system functions
 */
@@ -414,6 +426,7 @@ QLocale QSystemLocale::fallbackUiLocale() const
 
 QVariant QSystemLocale::query(QueryType type, QVariant in = QVariant()) const
 {
+    AutoReleasePool pool;
     switch(type) {
 //     case Name:
 //         return getMacLocaleName();

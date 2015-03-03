@@ -847,7 +847,7 @@ void QGraphicsScenePrivate::setFocusItemHelper(QGraphicsItem *item,
             // the views, but if we are changing focus, we have to
             // do it ourselves.
             if (qApp)
-                qApp->inputMethod()->commit();
+                QGuiApplication::inputMethod()->commit();
         }
 #endif //QT_NO_IM
 

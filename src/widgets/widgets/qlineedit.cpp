@@ -2153,7 +2153,7 @@ QMenu *QLineEdit::createStandardContextMenu()
     d->selectAllAction = action;
     connect(action, SIGNAL(triggered()), SLOT(selectAll()));
 
-    if (!d->control->isReadOnly() && qApp->styleHints()->useRtlExtensions()) {
+    if (!d->control->isReadOnly() && QGuiApplication::styleHints()->useRtlExtensions()) {
         popup->addSeparator();
         QUnicodeControlCharacterMenu *ctrlCharacterMenu = new QUnicodeControlCharacterMenu(this, popup);
         popup->addMenu(ctrlCharacterMenu);

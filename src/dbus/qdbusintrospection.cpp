@@ -267,14 +267,6 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \variable QDBusIntrospection::Object::introspection
-    The XML document fragment describing this object, its interfaces and sub-objects at the time
-    of the parsing.
-
-    The result of parseObject with this XML data should be the same as the Object struct.
-*/
-
-/*!
     \variable QDBusIntrospection::Object::interfaces
     The list of interface names in this object.
 */

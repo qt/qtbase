@@ -1,5 +1,6 @@
 TEMPLATE=subdirs
 SUBDIRS=\
+   qmakelib \
    qmake \
    uic \
    moc \

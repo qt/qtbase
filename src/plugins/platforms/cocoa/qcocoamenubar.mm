@@ -145,6 +145,8 @@ void QCocoaMenuBar::removeMenu(QPlatformMenu *platformMenu)
 
 void QCocoaMenuBar::syncMenu(QPlatformMenu *menu)
 {
+    QCocoaAutoReleasePool pool;
+
     QCocoaMenu *cocoaMenu = static_cast<QCocoaMenu *>(menu);
     Q_FOREACH (QCocoaMenuItem *item, cocoaMenu->items())
         cocoaMenu->syncMenuItem(item);

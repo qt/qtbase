@@ -1420,6 +1420,14 @@ void tst_QMetaObject::enumDebugStream()
 
     QTest::ignoreMessage(QtDebugMsg, "Qt::WindowType(WindowTitleHint) Qt::WindowType(Window) Qt::WindowType(Desktop) Qt::WindowType(WindowSystemMenuHint)");
     qDebug() << Qt::WindowTitleHint << Qt::Window <<Qt::Desktop << Qt::WindowSystemMenuHint;
+
+    QTest::ignoreMessage(QtDebugMsg, "hello QFlags<MyNamespace::MyClass::MyFlags>(MyFlag1) world");
+    MyNamespace::MyClass::MyFlags f1 = MyNamespace::MyClass::MyFlag1;
+    qDebug() << "hello" << f1 << "world";
+
+    MyNamespace::MyClass::MyFlags f2 = MyNamespace::MyClass::MyFlag2 | MyNamespace::MyClass::MyFlag3;
+    QTest::ignoreMessage(QtDebugMsg, "QFlags<MyNamespace::MyClass::MyFlags>(MyFlag1) QFlags<MyNamespace::MyClass::MyFlags>(MyFlag2|MyFlag3)");
+    qDebug() << f1 << f2;
 }
 
 QTEST_MAIN(tst_QMetaObject)

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2015 The Qt Company Ltd.
-** Copyright (C) 2014 Intel Corporation
+** Copyright (C) 2015 Intel Corporation
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -2120,10 +2120,10 @@ const QSysInfo::WinVersion QSysInfo::WindowsVersion = QSysInfo::windowsVersion()
 #    define USE_ETC_OS_RELEASE
 struct QUnixOSVersion
 {
-    // from /etc/os-release
-    QString productType;            // $ID
-    QString productVersion;         // $VERSION_ID
-    QString prettyName;             // $PRETTY_NAME
+                                    // from /etc/os-release         older /etc/lsb-release
+    QString productType;            // $ID                          $DISTRIB_ID
+    QString productVersion;         // $VERSION_ID                  $DISTRIB_RELEASE
+    QString prettyName;             // $PRETTY_NAME                 $DISTRIB_DESCRIPTION
 };
 
 static QString unquote(const char *begin, const char *end)
@@ -2135,10 +2135,11 @@ static QString unquote(const char *begin, const char *end)
     return QString::fromLatin1(begin, end - begin);
 }
 
-static bool readEtcOsRelease(QUnixOSVersion &v)
+static bool readEtcFile(QUnixOSVersion &v, const char *filename,
+                        const QByteArray &idKey, const QByteArray &versionKey, const QByteArray &prettyNameKey)
 {
     // we're avoiding QFile here
-    int fd = qt_safe_open("/etc/os-release", O_RDONLY);
+    int fd = qt_safe_open(filename, O_RDONLY);
     if (fd == -1)
         return false;
 
@@ -2155,47 +2156,73 @@ static bool readEtcOsRelease(QUnixOSVersion &v)
     const char *ptr = buffer.constData();
     const char *end = buffer.constEnd();
     const char *eol;
+    QByteArray line;
     for ( ; ptr != end; ptr = eol + 1) {
-        static const char idString[] = "ID=";
-        static const char prettyNameString[] = "PRETTY_NAME=";
-        static const char versionIdString[] = "VERSION_ID=";
-
         // find the end of the line after ptr
         eol = static_cast<const char *>(memchr(ptr, '\n', end - ptr));
         if (!eol)
             eol = end - 1;
+        line.setRawData(ptr, eol - ptr);
 
-        // note: we're doing a binary search here, so comparison
-        // must always be sorted
-        int cmp = strncmp(ptr, idString, strlen(idString));
-        if (cmp < 0)
-            continue;
-        if (cmp == 0) {
-            ptr += strlen(idString);
+        if (line.startsWith(idKey)) {
+            ptr += idKey.length();
             v.productType = unquote(ptr, eol);
             continue;
         }
 
-        cmp = strncmp(ptr, prettyNameString, strlen(prettyNameString));
-        if (cmp < 0)
-            continue;
-        if (cmp == 0) {
-            ptr += strlen(prettyNameString);
+        if (line.startsWith(prettyNameKey)) {
+            ptr += prettyNameKey.length();
             v.prettyName = unquote(ptr, eol);
             continue;
         }
 
-        cmp = strncmp(ptr, versionIdString, strlen(versionIdString));
-        if (cmp < 0)
-            continue;
-        if (cmp == 0) {
-            ptr += strlen(versionIdString);
+        if (line.startsWith(versionKey)) {
+            ptr += versionKey.length();
             v.productVersion = unquote(ptr, eol);
             continue;
         }
     }
 
     return true;
+}
+
+static bool readEtcOsRelease(QUnixOSVersion &v)
+{
+    return readEtcFile(v, "/etc/os-release", QByteArrayLiteral("ID="),
+                       QByteArrayLiteral("VERSION_ID="), QByteArrayLiteral("PRETTY_NAME="));
+}
+
+static bool readEtcLsbRelease(QUnixOSVersion &v)
+{
+    bool ok = readEtcFile(v, "/etc/lsb-release", QByteArrayLiteral("DISTRIB_ID="),
+                          QByteArrayLiteral("DISTRIB_RELEASE="), QByteArrayLiteral("DISTRIB_DESCRIPTION="));
+    if (ok && (v.prettyName.isEmpty() || v.prettyName == v.productType)) {
+        // some distributions have redundant information for the pretty name,
+        // so try /etc/<lowercasename>-release
+
+        // we're still avoiding QFile here
+        QByteArray distrorelease = "/etc/" + v.productType.toLatin1().toLower() + "-release";
+        int fd = qt_safe_open(distrorelease, O_RDONLY);
+        if (fd != -1) {
+            QT_STATBUF sbuf;
+            if (QT_FSTAT(fd, &sbuf) != -1 && sbuf.st_size > v.prettyName.length()) {
+                // file apparently contains interesting information
+                QByteArray buffer(sbuf.st_size, Qt::Uninitialized);
+                buffer.resize(qt_safe_read(fd, buffer.data(), sbuf.st_size));
+                v.prettyName = QString::fromLatin1(buffer.trimmed());
+            }
+            qt_safe_close(fd);
+        }
+    }
+
+    return ok;
+}
+
+static bool findUnixOsVersion(QUnixOSVersion &v)
+{
+    if (readEtcOsRelease(v))
+        return true;
+    return readEtcLsbRelease(v);
 }
 #  endif // USE_ETC_OS_RELEASE
 #endif // Q_OS_UNIX
@@ -2531,7 +2558,7 @@ QString QSysInfo::productType()
 
 #elif defined(USE_ETC_OS_RELEASE) // Q_OS_UNIX
     QUnixOSVersion unixOsVersion;
-    readEtcOsRelease(unixOsVersion);
+    findUnixOsVersion(unixOsVersion);
     if (!unixOsVersion.productType.isEmpty())
         return unixOsVersion.productType;
 #endif
@@ -2587,7 +2614,7 @@ QString QSysInfo::productVersion()
     }
 #elif defined(USE_ETC_OS_RELEASE) // Q_OS_UNIX
     QUnixOSVersion unixOsVersion;
-    readEtcOsRelease(unixOsVersion);
+    findUnixOsVersion(unixOsVersion);
     if (!unixOsVersion.productVersion.isEmpty())
         return unixOsVersion.productVersion;
 #endif
@@ -2664,7 +2691,7 @@ QString QSysInfo::prettyProductName()
 #elif defined(Q_OS_UNIX)
 #  ifdef USE_ETC_OS_RELEASE
     QUnixOSVersion unixOsVersion;
-    readEtcOsRelease(unixOsVersion);
+    findUnixOsVersion(unixOsVersion);
     if (!unixOsVersion.prettyName.isEmpty())
         return unixOsVersion.prettyName;
 #  endif

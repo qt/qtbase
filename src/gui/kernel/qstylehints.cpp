@@ -35,6 +35,7 @@
 #include <qpa/qplatformintegration.h>
 #include <qpa/qplatformtheme.h>
 #include <private/qguiapplication_p.h>
+#include <qdebug.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -46,6 +47,10 @@ static inline QVariant hint(QPlatformIntegration::StyleHint h)
 static inline QVariant themeableHint(QPlatformTheme::ThemeHint th,
                                      QPlatformIntegration::StyleHint ih)
 {
+    if (!QCoreApplication::instance()) {
+        qWarning() << "Must construct a QGuiApplication before accessing a platform theme hint.";
+        return QVariant();
+    }
     if (const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme()) {
         const QVariant themeHint = theme->themeHint(th);
         if (themeHint.isValid())

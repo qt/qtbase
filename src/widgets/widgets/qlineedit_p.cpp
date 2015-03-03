@@ -250,7 +250,7 @@ void QLineEditPrivate::resetInputMethod()
 {
     Q_Q(QLineEdit);
     if (q->hasFocus() && qApp) {
-        qApp->inputMethod()->reset();
+        QGuiApplication::inputMethod()->reset();
     }
 }
 
@@ -270,7 +270,7 @@ bool QLineEditPrivate::sendMouseEventToInputContext( QMouseEvent *e )
 
         if (mousePos >= 0) {
             if (e->type() == QEvent::MouseButtonRelease)
-                qApp->inputMethod()->invokeAction(QInputMethod::Click, mousePos);
+                QGuiApplication::inputMethod()->invokeAction(QInputMethod::Click, mousePos);
 
             return true;
         }

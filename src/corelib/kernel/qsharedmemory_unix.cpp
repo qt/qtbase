@@ -42,8 +42,8 @@
 
 #ifndef QT_NO_SHAREDMEMORY
 #include <sys/types.h>
-#include <sys/ipc.h>
 #ifndef QT_POSIX_IPC
+#include <sys/ipc.h>
 #include <sys/shm.h>
 #else
 #include <sys/mman.h>

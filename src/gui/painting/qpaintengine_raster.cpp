@@ -48,7 +48,6 @@
 
 //   #include <private/qdatabuffer_p.h>
 //   #include <private/qpainter_p.h>
-#include <private/qmath_p.h>
 #include <private/qtextengine_p.h>
 #include <private/qfontengine_p.h>
 #include <private/qpixmap_raster_p.h>
@@ -4466,7 +4465,7 @@ void QSpanData::setup(const QBrush &brush, int alpha, QPainter::CompositionMode 
             QPointF center = g->center();
             conicalData.center.x = center.x();
             conicalData.center.y = center.y();
-            conicalData.angle = g->angle() * 2 * Q_PI / 360.0;
+            conicalData.angle = qDegreesToRadians(g->angle());
         }
         break;
 

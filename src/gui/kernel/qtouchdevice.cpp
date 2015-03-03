@@ -96,6 +96,9 @@ QT_BEGIN_NAMESPACE
 
     \value NormalizedPosition Indicates that the normalized position is available, meaning that normalizedPos()
                               returns a valid value.
+
+    \value MouseEmulation Indicates that the device synthesizes mouse events.
+                          This enum value has been introduced in Qt 5.5.
 */
 
 /*!

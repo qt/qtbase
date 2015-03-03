@@ -77,6 +77,7 @@ QT_BEGIN_NAMESPACE
 
 Q_DECLARE_LOGGING_CATEGORY(lcQpaXInput)
 Q_DECLARE_LOGGING_CATEGORY(lcQpaXInputDevices)
+Q_DECLARE_LOGGING_CATEGORY(lcQpaScreen)
 
 class QXcbScreen;
 class QXcbWindow;
@@ -441,7 +442,6 @@ public:
     bool hasXShape() const { return has_shape_extension; }
     bool hasXRandr() const { return has_randr_extension; }
     bool hasInputShape() const { return has_input_shape; }
-    bool hasTouchWithoutMouseEmulation() const { return has_touch_without_mouse_emulation; }
     bool hasXKB() const { return has_xkb; }
 
     bool supportsThreadedRendering() const { return m_reader->isRunning(); }
@@ -611,7 +611,6 @@ private:
     bool has_shape_extension;
     bool has_randr_extension;
     bool has_input_shape;
-    bool has_touch_without_mouse_emulation;
     bool has_xkb;
 
     Qt::MouseButtons m_buttons;

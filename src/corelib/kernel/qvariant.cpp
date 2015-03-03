@@ -460,7 +460,7 @@ static bool convert(const QVariant::Private *d, int t, void *result, bool *ok)
             {
                 QMetaEnum en = metaEnumFromType(d->type);
                 if (en.isValid()) {
-                    *str = QString::fromUtf8(en.valueToKeys(qConvertToNumber(d, ok)));
+                    *str = QString::fromUtf8(en.valueToKey(qConvertToNumber(d, ok)));
                     return *ok;
                 }
             }
@@ -637,7 +637,7 @@ static bool convert(const QVariant::Private *d, int t, void *result, bool *ok)
             {
                 QMetaEnum en = metaEnumFromType(d->type);
                 if (en.isValid()) {
-                    *ba = en.valueToKeys(qConvertToNumber(d, ok));
+                    *ba = en.valueToKey(qConvertToNumber(d, ok));
                     return *ok;
                 }
             }

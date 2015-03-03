@@ -1117,7 +1117,7 @@ bool QMetaType::isRegistered(int type)
 }
 
 /*!
-    \fn int qMetaTypeTypeImpl(const char *typeName)
+    \fn int qMetaTypeTypeImpl(const char *typeName, int length)
     \internal
 
     Implementation of QMetaType::type().

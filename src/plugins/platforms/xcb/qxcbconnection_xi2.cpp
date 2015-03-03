@@ -282,14 +282,14 @@ void QXcbConnection::xi2Select(xcb_window_t window)
         mask.mask_len = sizeof(bitMask);
         mask.mask = xiBitMask;
         if (!m_touchDevices.isEmpty()) {
-            mask.deviceid = XIAllMasterDevices;
-            Status result = XISelectEvents(xDisplay, window, &mask, 1);
             // If we select for touch events on the master pointer, XInput2
             // will not synthesize mouse events. This means Qt must do it,
             // which is also preferable, since Qt can control better when
             // to do so.
-            if (result == Success)
-                has_touch_without_mouse_emulation = true;
+            mask.deviceid = XIAllMasterDevices;
+            Status result = XISelectEvents(xDisplay, window, &mask, 1);
+            if (result != Success)
+                qCDebug(lcQpaXInput, "XInput 2.2: failed to select touch events, window %x, result %d", window, result);
         }
     }
 #endif // XCB_USE_XINPUT22
@@ -424,6 +424,9 @@ XInput2TouchDeviceData *QXcbConnection::touchDeviceForId(int id)
                     dev->size.width() > 10000 || dev->size.height() > 10000)
                 dev->size = QSizeF(130, 110);
         }
+        if (!isUsingXInput22() || type == QTouchDevice::TouchPad)
+            caps |= QTouchDevice::MouseEmulation;
+
         if (type >= QTouchDevice::TouchScreen && type <= QTouchDevice::TouchPad) {
             dev->qtTouchDevice = new QTouchDevice;
             dev->qtTouchDevice->setName(QString::fromUtf8(dev->xiDeviceInfo->name));

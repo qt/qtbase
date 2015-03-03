@@ -1200,7 +1200,7 @@ void QItemSelectionModel::select(const QModelIndex &index, QItemSelectionModel::
     \fn void QItemSelectionModel::modelChanged(QAbstractItemModel *model)
     \since 5.5
 
-    This signal is emitted when the model is successfully set with setModel().
+    This signal is emitted when the \a model is successfully set with setModel().
 
     \sa model(), setModel()
 */

@@ -359,12 +359,12 @@ void QWidgetPrivate::setWSGeometry()
 void QWidgetPrivate::updateWidgetTransform(QEvent *event)
 {
     Q_Q(QWidget);
-    if (q == qGuiApp->focusObject() || event->type() == QEvent::FocusIn) {
+    if (q == QGuiApplication::focusObject() || event->type() == QEvent::FocusIn) {
         QTransform t;
         QPoint p = q->mapTo(q->topLevelWidget(), QPoint(0,0));
         t.translate(p.x(), p.y());
-        qApp->inputMethod()->setInputItemTransform(t);
-        qApp->inputMethod()->setInputItemRectangle(q->rect());
+        QGuiApplication::inputMethod()->setInputItemTransform(t);
+        QGuiApplication::inputMethod()->setInputItemRectangle(q->rect());
     }
 }
 
@@ -3401,10 +3401,10 @@ void QWidgetPrivate::setEnabled_helper(bool enable)
 
         if (enable) {
             if (focusWidget->testAttribute(Qt::WA_InputMethodEnabled))
-                qApp->inputMethod()->update(Qt::ImEnabled);
+                QGuiApplication::inputMethod()->update(Qt::ImEnabled);
         } else {
-            qApp->inputMethod()->commit();
-            qApp->inputMethod()->update(Qt::ImEnabled);
+            QGuiApplication::inputMethod()->commit();
+            QGuiApplication::inputMethod()->update(Qt::ImEnabled);
         }
     }
 #endif //QT_NO_IM
@@ -6427,7 +6427,7 @@ void QWidget::setFocus(Qt::FocusReason reason)
         if (prev) {
             if (reason != Qt::PopupFocusReason && reason != Qt::MenuBarFocusReason
                 && prev->testAttribute(Qt::WA_InputMethodEnabled)) {
-                qApp->inputMethod()->commit();
+                QGuiApplication::inputMethod()->commit();
             }
 
             if (reason != Qt::NoFocusReason) {
@@ -6550,7 +6550,7 @@ void QWidget::clearFocus()
 {
     if (hasFocus()) {
         if (testAttribute(Qt::WA_InputMethodEnabled))
-            qApp->inputMethod()->commit();
+            QGuiApplication::inputMethod()->commit();
 
         QFocusEvent focusAboutToChange(QEvent::FocusAboutToChange);
         QApplication::sendEvent(this, &focusAboutToChange);
@@ -9429,7 +9429,7 @@ void QWidget::focusOutEvent(QFocusEvent *)
 #ifndef Q_OS_IOS
     // FIXME: revisit autoSIP logic, QTBUG-42906
     if (qApp->autoSipEnabled() && testAttribute(Qt::WA_InputMethodEnabled))
-        qApp->inputMethod()->hide();
+        QGuiApplication::inputMethod()->hide();
 #endif
 }
 
@@ -9718,8 +9718,8 @@ void QWidget::setInputMethodHints(Qt::InputMethodHints hints)
     if (d->imHints == hints)
         return;
     d->imHints = hints;
-    if (this == qApp->focusObject())
-        qApp->inputMethod()->update(Qt::ImHints);
+    if (this == QGuiApplication::focusObject())
+        QGuiApplication::inputMethod()->update(Qt::ImHints);
 #endif //QT_NO_IM
 }
 
@@ -11061,18 +11061,18 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
             d->createTLSysExtra();
 #ifndef QT_NO_IM
         QWidget *focusWidget = d->effectiveFocusWidget();
-        if (on && !internalWinId() && this == qApp->focusObject()
+        if (on && !internalWinId() && this == QGuiApplication::focusObject()
             && focusWidget->testAttribute(Qt::WA_InputMethodEnabled)) {
-            qApp->inputMethod()->commit();
-            qApp->inputMethod()->update(Qt::ImEnabled);
+            QGuiApplication::inputMethod()->commit();
+            QGuiApplication::inputMethod()->update(Qt::ImEnabled);
         }
         if (!qApp->testAttribute(Qt::AA_DontCreateNativeWidgetSiblings) && parentWidget())
             parentWidget()->d_func()->enforceNativeChildren();
         if (on && !internalWinId() && testAttribute(Qt::WA_WState_Created))
             d->createWinId();
-        if (isEnabled() && focusWidget->isEnabled() && this == qApp->focusObject()
+        if (isEnabled() && focusWidget->isEnabled() && this == QGuiApplication::focusObject()
             && focusWidget->testAttribute(Qt::WA_InputMethodEnabled)) {
-            qApp->inputMethod()->update(Qt::ImEnabled);
+            QGuiApplication::inputMethod()->update(Qt::ImEnabled);
         }
 #endif //QT_NO_IM
         break;
@@ -11105,10 +11105,10 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
         break;
     case Qt::WA_InputMethodEnabled: {
 #ifndef QT_NO_IM
-        if (qApp->focusObject() == this) {
+        if (QGuiApplication::focusObject() == this) {
             if (!on)
-                qApp->inputMethod()->commit();
-            qApp->inputMethod()->update(Qt::ImEnabled);
+                QGuiApplication::inputMethod()->commit();
+            QGuiApplication::inputMethod()->update(Qt::ImEnabled);
         }
 #endif //QT_NO_IM
         break;
@@ -11596,8 +11596,8 @@ void QWidget::setShortcutAutoRepeat(int id, bool enable)
 void QWidget::updateMicroFocus()
 {
     // updating everything since this is currently called for any kind of state change
-    if (this == qApp->focusObject())
-        qApp->inputMethod()->update(Qt::ImQueryAll);
+    if (this == QGuiApplication::focusObject())
+        QGuiApplication::inputMethod()->update(Qt::ImQueryAll);
 }
 
 /*!

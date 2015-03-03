@@ -1235,6 +1235,11 @@ void QWindowsContext::setAsyncExpose(bool value)
     d->m_asyncExpose = value;
 }
 
+QTouchDevice *QWindowsContext::touchDevice() const
+{
+    return d->m_mouseHandler.touchDevice();
+}
+
 /*!
     \brief Windows functions for actual windows.
 

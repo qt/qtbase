@@ -37,7 +37,9 @@
 #include <QtGui/QWindow>
 #include <QtGui/QScreen>
 #include <QtGui/QCursor>
+#include <QtGui/QFont>
 #include <QtGui/QPalette>
+#include <QtGui/QStyleHints>
 #include <qpa/qwindowsysteminterface.h>
 #include <qgenericplugin.h>
 
@@ -74,6 +76,11 @@ private slots:
     void genericPluginsAndWindowSystemEvents();
     void layoutDirection();
     void globalShareContext();
+
+    void staticFunctions();
+
+    void settableStyleHints_data();
+    void settableStyleHints(); // Needs to run last as it changes style hints.
 };
 
 void tst_QGuiApplication::cleanup()
@@ -959,6 +966,62 @@ void tst_QGuiApplication::globalShareContext()
 #else
     QSKIP("No OpenGL support");
 #endif
+}
+
+// Test that static functions do not crash if there is no application instance.
+void tst_QGuiApplication::staticFunctions()
+{
+    QGuiApplication::setApplicationDisplayName(QString());
+    QGuiApplication::applicationDisplayName();
+    QGuiApplication::allWindows();
+    QGuiApplication::topLevelWindows();
+    QGuiApplication::topLevelAt(QPoint(0, 0));
+    QGuiApplication::setWindowIcon(QIcon());
+    QGuiApplication::windowIcon();
+    QGuiApplication::platformName();
+    QGuiApplication::modalWindow();
+    QGuiApplication::focusWindow();
+    QGuiApplication::focusObject();
+    QGuiApplication::primaryScreen();
+    QGuiApplication::screens();
+    QGuiApplication::overrideCursor();
+    QGuiApplication::setOverrideCursor(QCursor());
+    QGuiApplication::changeOverrideCursor(QCursor());
+    QGuiApplication::restoreOverrideCursor();
+    QGuiApplication::keyboardModifiers();
+    QGuiApplication::queryKeyboardModifiers();
+    QGuiApplication::mouseButtons();
+    QGuiApplication::setLayoutDirection(Qt::LeftToRight);
+    QGuiApplication::layoutDirection();
+    QGuiApplication::styleHints();
+    QGuiApplication::setDesktopSettingsAware(true);
+    QGuiApplication::desktopSettingsAware();
+    QGuiApplication::inputMethod();
+    QGuiApplication::platformNativeInterface();
+    QGuiApplication::platformFunction(QByteArrayLiteral("bla"));
+    QGuiApplication::setQuitOnLastWindowClosed(true);
+    QGuiApplication::quitOnLastWindowClosed();
+    QGuiApplication::applicationState();
+}
+
+void tst_QGuiApplication::settableStyleHints_data()
+{
+    QTest::addColumn<bool>("appInstance");
+    QTest::newRow("app") << true;
+    QTest::newRow("no-app") << false;
+}
+
+void tst_QGuiApplication::settableStyleHints()
+{
+    QFETCH(bool, appInstance);
+    int argc = 0;
+    QScopedPointer<QGuiApplication> app;
+    if (appInstance)
+        app.reset(new QGuiApplication(argc, 0));
+
+    const int keyboardInputInterval = 555;
+    QGuiApplication::styleHints()->setKeyboardInputInterval(keyboardInputInterval);
+    QCOMPARE(QGuiApplication::styleHints()->keyboardInputInterval(), keyboardInputInterval);
 }
 
 QTEST_APPLESS_MAIN(tst_QGuiApplication)

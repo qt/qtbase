@@ -594,6 +594,7 @@ CFG_WIDGETS=yes
 CFG_QCONFIG=full
 CFG_DEBUG=auto
 CFG_MYSQL_CONFIG=
+CFG_PSQL_CONFIG=
 CFG_DEBUG_RELEASE=no
 CFG_FORCEDEBUGINFO=no
 CFG_SHARED=yes
@@ -678,7 +679,7 @@ CFG_TSLIB=auto
 CFG_NIS=auto
 CFG_CUPS=auto
 CFG_ICONV=auto
-CFG_DBUS=runtime
+CFG_DBUS=auto
 CFG_GLIB=auto
 CFG_QGTKSTYLE=auto
 CFG_LARGEFILE=auto
@@ -913,6 +914,7 @@ while [ "$#" -gt 0 ]; do
     -arch| \
     -host-arch| \
     -mysql_config| \
+    -psql_config| \
     -qpa| \
     -qconfig| \
     -qreal| \
@@ -1105,6 +1107,9 @@ while [ "$#" -gt 0 ]; do
     mysql_config)
 	CFG_MYSQL_CONFIG="$VAL"
 	;;
+    psql_config)
+        CFG_PSQL_CONFIG="$VAL"
+        ;;
     prefix)
         QT_INSTALL_PREFIX="$VAL"
         ;;
@@ -3084,6 +3089,9 @@ if ( [ "$CFG_XCB" = "system" ] || [ "$CFG_XCB" = "qt" ] ) && [ "$CFG_XKBCOMMON" 
 fi
 
 if [ "$XPLATFORM_ANDROID" = "yes" ]; then
+    if [ "$CFG_DBUS" = "auto" ]; then
+        CFG_DBUS="no"
+    fi
     if [ -z "$CFG_DEFAULT_ANDROID_NDK_HOST" ]; then
         case $PLATFORM in
         linux-*)
@@ -3401,7 +3409,7 @@ fi
 
 # auto-detect -fuse-ld=gold support
 if [ "$CFG_USE_GOLD_LINKER" != "no" ]; then
-    if linkerSupportsFlag $TEST_COMPILER -fuse-ld=gold; then
+    if compilerSupportsFlag $TEST_COMPILER -fuse-ld=gold; then
        CFG_USE_GOLD_LINKER=yes
     else
         if [ "$CFG_USE_GOLD_LINKER" = "yes" ]; then
@@ -4612,10 +4620,11 @@ for _SQLDR in $CFG_SQL_AVAILABLE; do
             ;;
         psql)
             if [ "$CFG_SQL_psql" != "no" ]; then
+                [ -z "$CFG_PSQL_CONFIG" ] && CFG_PSQL_CONFIG=`"$WHICH" pg_config`
                 # Be careful not to use native pg_config when cross building.
-                if [ "$XPLATFORM_MINGW" != "yes" ] && "$WHICH" pg_config >/dev/null 2>&1; then
-                    QT_CFLAGS_PSQL=`pg_config --includedir 2>/dev/null | filterIncludePath`
-                    QT_LFLAGS_PSQL=`pg_config --libdir 2>/dev/null | filterLibraryPath`
+                if [ "$XPLATFORM_MINGW" != "yes" ] && [ -x "$CFG_PSQL_CONFIG" ]; then
+                    QT_CFLAGS_PSQL=`$CFG_PSQL_CONFIG --includedir 2>/dev/null | filterIncludePath`
+                    QT_LFLAGS_PSQL=`$CFG_PSQL_CONFIG --libdir 2>/dev/null | filterLibraryPath`
                 fi
                 [ -z "$QT_CFLAGS_PSQL" ] || QT_CFLAGS_PSQL="-I$QT_CFLAGS_PSQL"
                 [ -z "$QT_LFLAGS_PSQL" ] || QT_LFLAGS_PSQL="-L$QT_LFLAGS_PSQL"
@@ -4867,6 +4876,9 @@ if [ "$CFG_ICONV" != "no" ]; then
 fi
 
 # auto-detect libdbus-1 support
+if [ "$CFG_DBUS" = "auto" ]; then
+    CFG_DBUS="runtime"
+fi
 if [ "$CFG_DBUS" = "linked" ]; then
     if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --atleast-version="$MIN_DBUS_1_VERSION" dbus-1 2>/dev/null; then
         QT_CFLAGS_DBUS=`$PKG_CONFIG --cflags dbus-1 2>/dev/null`

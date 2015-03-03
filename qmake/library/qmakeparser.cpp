@@ -320,7 +320,7 @@ void QMakeParser::read(ProFile *pro, const QString &in, int line, SubGrammar gra
     m_canElse = false;
   freshLine:
     m_state = StNew;
-    m_invert = false;
+    m_invert = 0;
     m_operator = NoOperator;
     m_markLine = m_lineNo;
     m_inError = false;
@@ -577,7 +577,6 @@ void QMakeParser::read(ProFile *pro, const QString &in, int line, SubGrammar gra
                                 parseError(fL1S("Missing %1 terminator [found %2]")
                                     .arg(QChar(term))
                                     .arg(c ? QString(c) : QString::fromLatin1("end-of-line")));
-                                pro->setOk(false);
                                 m_inError = true;
                                 // Just parse on, as if there was a terminator ...
                             } else {
@@ -604,7 +603,7 @@ void QMakeParser::read(ProFile *pro, const QString &in, int line, SubGrammar gra
                         quote = 0;
                         goto nextChr;
                     } else if (c == '!' && ptr == xprPtr && context == CtxTest) {
-                        m_invert ^= true;
+                        m_invert++;
                         goto nextChr;
                     }
                 } else if (c == '\'' || c == '"') {
@@ -661,20 +660,20 @@ void QMakeParser::read(ProFile *pro, const QString &in, int line, SubGrammar gra
                                 parseError(fL1S("Extra characters after test expression."));
                             else
                                 parseError(fL1S("Opening parenthesis without prior test name."));
-                            pro->setOk(false);
                             ptr = buf; // Put empty function name
                         }
                         *ptr++ = TokTestCall;
                         term = ':';
                         goto funcCall;
                     } else if (c == '!' && ptr == xprPtr) {
-                        m_invert ^= true;
+                        m_invert++;
                         goto nextChr;
                     } else if (c == ':') {
                         FLUSH_LHS_LITERAL();
                         finalizeCond(tokPtr, buf, ptr, wordCount);
+                        warnOperator("in front of AND operator");
                         if (m_state == StNew)
-                            parseError(fL1S("And operator without prior condition."));
+                            parseError(fL1S("AND operator without prior condition."));
                         else
                             m_operator = AndOperator;
                       nextItem:
@@ -683,26 +682,33 @@ void QMakeParser::read(ProFile *pro, const QString &in, int line, SubGrammar gra
                     } else if (c == '|') {
                         FLUSH_LHS_LITERAL();
                         finalizeCond(tokPtr, buf, ptr, wordCount);
+                        warnOperator("in front of OR operator");
                         if (m_state != StCond)
-                            parseError(fL1S("Or operator without prior condition."));
+                            parseError(fL1S("OR operator without prior condition."));
                         else
                             m_operator = OrOperator;
                         goto nextItem;
                     } else if (c == '{') {
                         FLUSH_LHS_LITERAL();
                         finalizeCond(tokPtr, buf, ptr, wordCount);
-                        flushCond(tokPtr);
-                        ++m_blockstack.top().braceLevel;
-                        if (grammar == TestGrammar) {
-                            parseError(fL1S("Opening scope not permitted in this context."));
-                            pro->setOk(false);
+                        if (m_operator == AndOperator) {
+                            languageWarning(fL1S("Excess colon in front of opening brace."));
+                            m_operator = NoOperator;
                         }
+                        failOperator("in front of opening brace");
+                        flushCond(tokPtr);
+                        m_state = StNew; // Reset possible StCtrl, so colons get rejected.
+                        ++m_blockstack.top().braceLevel;
+                        if (grammar == TestGrammar)
+                            parseError(fL1S("Opening scope not permitted in this context."));
                         goto nextItem;
                     } else if (c == '}') {
                         FLUSH_LHS_LITERAL();
                         finalizeCond(tokPtr, buf, ptr, wordCount);
-                        flushScopes(tokPtr);
+                        m_state = StNew; // De-facto newline
                       closeScope:
+                        flushScopes(tokPtr);
+                        failOperator("in front of closing brace");
                         if (!m_blockstack.top().braceLevel) {
                             parseError(fL1S("Excess closing brace."));
                         } else if (!--m_blockstack.top().braceLevel
@@ -734,13 +740,12 @@ void QMakeParser::read(ProFile *pro, const QString &in, int line, SubGrammar gra
                       doOp:
                         FLUSH_LHS_LITERAL();
                         flushCond(tokPtr);
+                        acceptColon("in front of assignment");
                         putLineMarker(tokPtr);
                         if (grammar == TestGrammar) {
                             parseError(fL1S("Assignment not permitted in this context."));
-                            pro->setOk(false);
                         } else if (wordCount != 1) {
                             parseError(fL1S("Assignment needs exactly one word on the left hand side."));
-                            pro->setOk(false);
                             // Put empty variable name.
                         } else {
                             putBlock(tokPtr, buf, ptr - buf);
@@ -809,7 +814,7 @@ void QMakeParser::read(ProFile *pro, const QString &in, int line, SubGrammar gra
                     } else if (context == CtxPureValue) {
                         putTok(tokPtr, TokValueTerminator);
                     } else {
-                        bogusTest(tokPtr);
+                        bogusTest(tokPtr, QString());
                     }
                 } else if (context == CtxValue) {
                     FLUSH_VALUE_LIST();
@@ -820,6 +825,7 @@ void QMakeParser::read(ProFile *pro, const QString &in, int line, SubGrammar gra
                     putTok(tokPtr, TokValueTerminator);
                 } else {
                     finalizeCond(tokPtr, buf, ptr, wordCount);
+                    warnOperator("at end of line");
                 }
                 if (!cur)
                     break;
@@ -835,10 +841,8 @@ void QMakeParser::read(ProFile *pro, const QString &in, int line, SubGrammar gra
     }
 
     flushScopes(tokPtr);
-    if (m_blockstack.size() > 1) {
+    if (m_blockstack.size() > 1 || m_blockstack.top().braceLevel)
         parseError(fL1S("Missing closing brace(s)."));
-        pro->setOk(false);
-    }
     while (m_blockstack.size())
         leaveScope(tokPtr);
     tokBuff.resize(tokPtr - (ushort *)tokBuff.constData()); // Reserved capacity stays
@@ -915,39 +919,90 @@ void QMakeParser::flushCond(ushort *&tokPtr)
     }
 }
 
+void QMakeParser::warnOperator(const char *msg)
+{
+    if (m_invert) {
+        languageWarning(fL1S("Stray NOT operator %1.").arg(fL1S(msg)));
+        m_invert = 0;
+    }
+    if (m_operator == AndOperator) {
+        languageWarning(fL1S("Stray AND operator %1.").arg(fL1S(msg)));
+        m_operator = NoOperator;
+    } else if (m_operator == OrOperator) {
+        languageWarning(fL1S("Stray OR operator %1.").arg(fL1S(msg)));
+        m_operator = NoOperator;
+    }
+}
+
+bool QMakeParser::failOperator(const char *msg)
+{
+    bool fail = false;
+    if (m_invert) {
+        parseError(fL1S("Unexpected NOT operator %1.").arg(fL1S(msg)));
+        m_invert = 0;
+        fail = true;
+    }
+    if (m_operator == AndOperator) {
+        parseError(fL1S("Unexpected AND operator %1.").arg(fL1S(msg)));
+        m_operator = NoOperator;
+        fail = true;
+    } else if (m_operator == OrOperator) {
+        parseError(fL1S("Unexpected OR operator %1.").arg(fL1S(msg)));
+        m_operator = NoOperator;
+        fail = true;
+    }
+    return fail;
+}
+
+bool QMakeParser::acceptColon(const char *msg)
+{
+    if (m_operator == AndOperator)
+        m_operator = NoOperator;
+    return !failOperator(msg);
+}
+
+void QMakeParser::putOperator(ushort *&tokPtr)
+{
+    if (m_operator== AndOperator) {
+        // A colon must be used after else and for() if no brace is used,
+        // but in this case it is obviously not a binary operator.
+        if (m_state == StCond)
+            putTok(tokPtr, TokAnd);
+        m_operator = NoOperator;
+    } else if (m_operator == OrOperator) {
+        putTok(tokPtr, TokOr);
+        m_operator = NoOperator;
+    }
+}
+
 void QMakeParser::finalizeTest(ushort *&tokPtr)
 {
     flushScopes(tokPtr);
     putLineMarker(tokPtr);
-    if (m_operator != NoOperator) {
-        putTok(tokPtr, (m_operator == AndOperator) ? TokAnd : TokOr);
-        m_operator = NoOperator;
-    }
-    if (m_invert) {
+    putOperator(tokPtr);
+    if (m_invert & 1)
         putTok(tokPtr, TokNot);
-        m_invert = false;
-    }
+    m_invert = 0;
     m_state = StCond;
     m_canElse = true;
 }
 
-void QMakeParser::bogusTest(ushort *&tokPtr)
+void QMakeParser::bogusTest(ushort *&tokPtr, const QString &msg)
 {
+    if (!msg.isEmpty())
+        parseError(msg);
     flushScopes(tokPtr);
     m_operator = NoOperator;
-    m_invert = false;
+    m_invert = 0;
     m_state = StCond;
     m_canElse = true;
-    m_proFile->setOk(false);
 }
 
 void QMakeParser::finalizeCond(ushort *&tokPtr, ushort *uc, ushort *ptr, int wordCount)
 {
     if (wordCount != 1) {
-        if (wordCount) {
-            parseError(fL1S("Extra characters after test expression."));
-            bogusTest(tokPtr);
-        }
+        if (wordCount)
+            bogusTest(tokPtr, fL1S("Extra characters after test expression."));
         return;
     }
 
@@ -958,10 +1013,8 @@ void QMakeParser::finalizeCond(ushort *&tokPtr, ushort *uc, ushort *ptr, int wor
         if (uce == ptr) {
             m_tmp.setRawData((QChar *)uc + 4, nlen);
             if (!m_tmp.compare(statics.strelse, Qt::CaseInsensitive)) {
-                if (m_invert || m_operator != NoOperator) {
-                    parseError(fL1S("Unexpected operator in front of else."));
+                if (failOperator("in front of else"))
                     return;
-                }
                 BlockScope &top = m_blockstack.top();
                 if (m_canElse && (!top.special || top.braceLevel)) {
                     // A list of tests (the last one likely with side effects),
@@ -1006,18 +1059,18 @@ void QMakeParser::finalizeCall(ushort *&tokPtr, ushort *uc, ushort *ptr, int arg
             const QString *defName;
             ushort defType;
             if (m_tmp == statics.strfor) {
-                if (m_invert || m_operator == OrOperator) {
-                    // '|' could actually work reasonably, but qmake does nonsense here.
-                    parseError(fL1S("Unexpected operator in front of for()."));
-                    bogusTest(tokPtr);
+                if (!acceptColon("in front of for()")) {
+                    bogusTest(tokPtr, QString());
                     return;
                 }
                 flushCond(tokPtr);
                 putLineMarker(tokPtr);
+                --ptr;
+                Q_ASSERT(*ptr == TokFuncTerminator);
                 if (*uce == (TokLiteral|TokNewStr)) {
                     nlen = uce[1];
                     uc = uce + 2 + nlen;
-                    if (*uc == TokFuncTerminator) {
+                    if (uc == ptr) {
                         // for(literal) (only "ever" would be legal if qmake was sane)
                         putTok(tokPtr, TokForLoop);
                         putHashStr(tokPtr, (ushort *)0, (uint)0);
@@ -1058,8 +1111,7 @@ void QMakeParser::finalizeCall(ushort *&tokPtr, ushort *uc, ushort *ptr, int arg
                 defType = TokTestDef;
               deffunc:
                 if (m_invert) {
-                    parseError(fL1S("Unexpected operator in front of function definition."));
-                    bogusTest(tokPtr);
+                    bogusTest(tokPtr, fL1S("Unexpected NOT operator in front of function definition."));
                     return;
                 }
                 flushScopes(tokPtr);
@@ -1067,10 +1119,7 @@ void QMakeParser::finalizeCall(ushort *&tokPtr, ushort *uc, ushort *ptr, int arg
                 if (*uce == (TokLiteral|TokNewStr)) {
                     uint nlen = uce[1];
                     if (uce[nlen + 2] == TokFuncTerminator) {
-                        if (m_operator != NoOperator) {
-                            putTok(tokPtr, (m_operator == AndOperator) ? TokAnd : TokOr);
-                            m_operator = NoOperator;
-                        }
+                        putOperator(tokPtr);
                         putTok(tokPtr, defType);
                         putHashStr(tokPtr, uce + 2, nlen);
                         enterScope(tokPtr, true, StCtrl);
@@ -1083,14 +1132,12 @@ void QMakeParser::finalizeCall(ushort *&tokPtr, ushort *uc, ushort *ptr, int arg
             } else if (m_tmp == statics.strreturn) {
                 if (m_blockstack.top().nest & NestFunction) {
                     if (argc > 1) {
-                        parseError(fL1S("return() requires zero or one argument."));
-                        bogusTest(tokPtr);
+                        bogusTest(tokPtr, fL1S("return() requires zero or one argument."));
                         return;
                     }
                 } else {
                     if (*uce != TokFuncTerminator) {
-                        parseError(fL1S("Top-level return() requires zero arguments."));
-                        bogusTest(tokPtr);
+                        bogusTest(tokPtr, fL1S("Top-level return() requires zero arguments."));
                         return;
                     }
                 }
@@ -1103,19 +1150,16 @@ void QMakeParser::finalizeCall(ushort *&tokPtr, ushort *uc, ushort *ptr, int arg
                 defType = TokBreak;
               ctrlstm:
                 if (*uce != TokFuncTerminator) {
-                    parseError(fL1S("%1() requires zero arguments.").arg(m_tmp));
-                    bogusTest(tokPtr);
+                    bogusTest(tokPtr, fL1S("%1() requires zero arguments.").arg(m_tmp));
                     return;
                 }
                 if (!(m_blockstack.top().nest & NestLoop)) {
-                    parseError(fL1S("Unexpected %1().").arg(m_tmp));
-                    bogusTest(tokPtr);
+                    bogusTest(tokPtr, fL1S("Unexpected %1().").arg(m_tmp));
                     return;
                 }
               ctrlstm2:
                 if (m_invert) {
-                    parseError(fL1S("Unexpected NOT operator in front of %1().").arg(m_tmp));
-                    bogusTest(tokPtr);
+                    bogusTest(tokPtr, fL1S("Unexpected NOT operator in front of %1().").arg(m_tmp));
                     return;
                 }
                 finalizeTest(tokPtr);
@@ -1125,8 +1169,7 @@ void QMakeParser::finalizeCall(ushort *&tokPtr, ushort *uc, ushort *ptr, int arg
             } else if (m_tmp == statics.stroption) {
                 if (m_state != StNew || m_blockstack.top().braceLevel || m_blockstack.size() > 1
                         || m_invert || m_operator != NoOperator) {
-                    parseError(fL1S("option() must appear outside any control structures."));
-                    bogusTest(tokPtr);
+                    bogusTest(tokPtr, fL1S("option() must appear outside any control structures."));
                     return;
                 }
                 if (*uce == (TokLiteral|TokNewStr)) {
@@ -1206,5 +1249,259 @@ void QMakeParser::message(int type, const QString &msg) const
     if (!m_inError && m_handler)
         m_handler->message(type, msg, m_proFile->fileName(), m_lineNo);
 }
+
+#ifdef PROPARSER_DEBUG
+
+#define BOUNDS_CHECK(need) \
+    do { \
+        int have = limit - offset; \
+        if (have < (int)need) { \
+            *outStr += fL1S("<out of bounds (need %1, got %2)>").arg(need).arg(have); \
+            return false; \
+        } \
+    } while (0)
+
+static bool getRawUshort(const ushort *tokens, int limit, int &offset, ushort *outVal, QString *outStr)
+{
+    BOUNDS_CHECK(1);
+    uint val = tokens[offset++];
+    *outVal = val;
+    return true;
+}
+
+static bool getUshort(const ushort *tokens, int limit, int &offset, ushort *outVal, QString *outStr)
+{
+    *outStr += fL1S(" << H(");
+    if (!getRawUshort(tokens, limit, offset, outVal, outStr))
+        return false;
+    *outStr += QString::number(*outVal) + QLatin1Char(')');
+    return true;
+}
+
+static bool getRawUint(const ushort *tokens, int limit, int &offset, uint *outVal, QString *outStr)
+{
+    BOUNDS_CHECK(2);
+    uint val = tokens[offset++];
+    val |= (uint)tokens[offset++] << 16;
+    *outVal = val;
+    return true;
+}
+
+static bool getUint(const ushort *tokens, int limit, int &offset, uint *outVal, QString *outStr)
+{
+    *outStr += fL1S(" << I(");
+    if (!getRawUint(tokens, limit, offset, outVal, outStr))
+        return false;
+    *outStr += QString::number(*outVal) + QLatin1Char(')');
+    return true;
+}
+
+static bool getRawStr(const ushort *tokens, int limit, int &offset, int strLen, QString *outStr)
+{
+    BOUNDS_CHECK(strLen);
+    *outStr += fL1S("L\"");
+    bool attn = false;
+    for (int i = 0; i < strLen; i++) {
+        ushort val = tokens[offset++];
+        switch (val) {
+        case '"': *outStr += fL1S("\\\""); break;
+        case '\n': *outStr += fL1S("\\n"); break;
+        case '\r': *outStr += fL1S("\\r"); break;
+        case '\t': *outStr += fL1S("\\t"); break;
+        case '\\': *outStr += fL1S("\\\\"); break;
+        default:
+            if (val < 32 || val > 126) {
+                *outStr += (val > 255 ? fL1S("\\u") : fL1S("\\x")) + QString::number(val, 16);
+                attn = true;
+                continue;
+            }
+            if (attn && isxdigit(val))
+                *outStr += fL1S("\"\"");
+            *outStr += QChar(val);
+            break;
+        }
+        attn = false;
+    }
+    *outStr += QLatin1Char('"');
+    return true;
+}
+
+static bool getStr(const ushort *tokens, int limit, int &offset, QString *outStr)
+{
+    *outStr += fL1S(" << S(");
+    ushort len;
+    if (!getRawUshort(tokens, limit, offset, &len, outStr))
+        return false;
+    if (!getRawStr(tokens, limit, offset, len, outStr))
+        return false;
+    *outStr += QLatin1Char(')');
+    return true;
+}
+
+static bool getHashStr(const ushort *tokens, int limit, int &offset, QString *outStr)
+{
+    *outStr += fL1S(" << HS(");
+    uint hash;
+    if (!getRawUint(tokens, limit, offset, &hash, outStr))
+        return false;
+    ushort len;
+    if (!getRawUshort(tokens, limit, offset, &len, outStr))
+        return false;
+    const QChar *chars = (const QChar *)tokens + offset;
+    if (!getRawStr(tokens, limit, offset, len, outStr))
+        return false;
+    uint realhash = ProString::hash(chars, len);
+    if (realhash != hash)
+        *outStr += fL1S(" /* Bad hash ") + QString::number(hash) + fL1S(" */");
+    *outStr += QLatin1Char(')');
+    return true;
+}
+
+static bool getBlock(const ushort *tokens, int limit, int &offset, QString *outStr, int indent);
+
+static bool getSubBlock(const ushort *tokens, int limit, int &offset, QString *outStr, int indent,
+                        const char *scope)
+{
+    *outStr += fL1S("\n    /* %1 */ ").arg(offset, 5)
+               + QString(indent * 4, QLatin1Char(' '))
+               + fL1S("/* ") + fL1S(scope) + fL1S(" */");
+    uint len;
+    if (!getUint(tokens, limit, offset, &len, outStr))
+        return false;
+    if (len) {
+        BOUNDS_CHECK(len);
+        int tmpOff = offset;
+        offset += len;
+        forever {
+            if (!getBlock(tokens, offset, tmpOff, outStr, indent + 1))
+                break;  // Error was already reported, try to continue
+            if (tmpOff == offset)
+                break;
+            *outStr += QLatin1Char('\n') + QString(20 + indent * 4, QLatin1Char(' '))
+                       + fL1S("/* Warning: Excess tokens follow. */");
+        }
+    }
+    return true;
+}
+
+static bool getBlock(const ushort *tokens, int limit, int &offset, QString *outStr, int indent)
+{
+    static const char * const tokNames[] = {
+        "TokTerminator",
+        "TokLine",
+        "TokAssign", "TokAppend", "TokAppendUnique", "TokRemove", "TokReplace",
+        "TokValueTerminator",
+        "TokLiteral", "TokHashLiteral", "TokVariable", "TokProperty", "TokEnvVar",
+        "TokFuncName", "TokArgSeparator", "TokFuncTerminator",
+        "TokCondition", "TokTestCall",
+        "TokReturn", "TokBreak", "TokNext",
+        "TokNot", "TokAnd", "TokOr",
+        "TokBranch", "TokForLoop",
+        "TokTestDef", "TokReplaceDef"
+    };
+
+    while (offset != limit) {
+        *outStr += fL1S("\n    /* %1 */").arg(offset, 5)
+                   + QString(indent * 4, QLatin1Char(' '));
+        BOUNDS_CHECK(1);
+        ushort tok = tokens[offset++];
+        ushort maskedTok = tok & TokMask;
+        if (maskedTok >= sizeof(tokNames)/sizeof(tokNames[0])
+            || (tok & ~(TokNewStr | TokQuoted | TokMask))) {
+            *outStr += fL1S(" << {invalid token %1}").arg(tok);
+            return false;
+        }
+        *outStr += fL1S(" << H(") + fL1S(tokNames[maskedTok]);
+        if (tok & TokNewStr)
+            *outStr += fL1S(" | TokNewStr");
+        if (tok & TokQuoted)
+            *outStr += fL1S(" | TokQuoted");
+        *outStr += QLatin1Char(')');
+        bool ok;
+        switch (maskedTok) {
+        case TokFuncTerminator:   // Recursion, but not a sub-block
+            return true;
+        case TokArgSeparator:
+        case TokValueTerminator:  // Not recursion
+        case TokTerminator:       // Recursion, and limited by (sub-)block length
+        case TokCondition:
+        case TokReturn:
+        case TokBreak:
+        case TokNext:
+        case TokNot:
+        case TokAnd:
+        case TokOr:
+            ok = true;
+            break;
+        case TokTestCall:
+            ok = getBlock(tokens, limit, offset, outStr, indent + 1);
+            break;
+        case TokBranch:
+            ok = getSubBlock(tokens, limit, offset, outStr, indent, "then branch");
+            if (ok)
+                ok = getSubBlock(tokens, limit, offset, outStr, indent, "else branch");
+            break;
+        default:
+            switch (maskedTok) {
+            case TokAssign:
+            case TokAppend:
+            case TokAppendUnique:
+            case TokRemove:
+            case TokReplace:
+                // The parameter is the sizehint for the output.
+                // fallthrough
+            case TokLine: {
+                ushort dummy;
+                ok = getUshort(tokens, limit, offset, &dummy, outStr);
+                break; }
+            case TokLiteral:
+            case TokEnvVar:
+                ok = getStr(tokens, limit, offset, outStr);
+                break;
+            case TokHashLiteral:
+            case TokVariable:
+            case TokProperty:
+                ok = getHashStr(tokens, limit, offset, outStr);
+                break;
+            case TokFuncName:
+                ok = getHashStr(tokens, limit, offset, outStr);
+                if (ok)
+                    ok = getBlock(tokens, limit, offset, outStr, indent + 1);
+                break;
+            case TokForLoop:
+                ok = getHashStr(tokens, limit, offset, outStr);
+                if (ok)
+                    ok = getSubBlock(tokens, limit, offset, outStr, indent, "iterator");
+                if (ok)
+                    ok = getSubBlock(tokens, limit, offset, outStr, indent, "body");
+                break;
+            case TokTestDef:
+            case TokReplaceDef:
+                ok = getHashStr(tokens, limit, offset, outStr);
+                if (ok)
+                    ok = getSubBlock(tokens, limit, offset, outStr, indent, "body");
+                break;
+            default:
+                Q_ASSERT(!"unhandled token");
+            }
+        }
+        if (!ok)
+            return false;
+    }
+    return true;
+}
+
+QString QMakeParser::formatProBlock(const QString &block)
+{
+    QString outStr;
+    outStr += fL1S("\n            << TS(");
+    int offset = 0;
+    getBlock(reinterpret_cast<const ushort *>(block.constData()), block.length(),
+             offset, &outStr, 0);
+    outStr += QLatin1Char(')');
+    return outStr;
+}
+
+#endif // PROPARSER_DEBUG
 
 QT_END_NAMESPACE

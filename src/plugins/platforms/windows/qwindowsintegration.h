@@ -91,9 +91,9 @@ public:
     Qt::KeyboardModifiers queryKeyboardModifiers() const Q_DECL_OVERRIDE;
     QList<int> possibleKeys(const QKeyEvent *e) const Q_DECL_OVERRIDE;
 
-    static QWindowsIntegration *instance();
+    static QWindowsIntegration *instance() { return m_instance; }
 
-    inline void emitScreenAdded(QPlatformScreen *s) { screenAdded(s); }
+    inline void emitScreenAdded(QPlatformScreen *s, bool isPrimary = false) { screenAdded(s, isPrimary); }
     inline void emitDestroyScreen(QPlatformScreen *s) { destroyScreen(s); }
 
     unsigned options() const;
@@ -104,6 +104,8 @@ public:
 
 private:
     QScopedPointer<QWindowsIntegrationPrivate> d;
+
+    static QWindowsIntegration *m_instance;
 };
 
 QT_END_NAMESPACE

@@ -428,7 +428,7 @@ void Q_CORE_EXPORT qRegisterStaticPluginFunction(QStaticPlugin plugin)
 /*!
     Returns a list of static plugin instances (root components) held
     by the plugin loader.
-    \sa staticPlugin()
+    \sa staticPlugins()
 */
 QObjectList QPluginLoader::staticInstances()
 {

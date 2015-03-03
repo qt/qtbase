@@ -227,6 +227,18 @@ QWindowsIntegrationPrivate::QWindowsIntegrationPrivate(const QStringList &paramL
     qCDebug(lcQpaWindows)
         << __FUNCTION__ << "DpiAwareness=" << dpiAwareness <<",Scaling="
         << QWindowsScaling::factor();
+
+    QTouchDevice *touchDevice = m_context.touchDevice();
+    if (touchDevice) {
+#ifdef Q_OS_WINCE
+        touchDevice->setCapabilities(touchDevice->capabilities() | QTouchDevice::MouseEmulation);
+#else
+        if (!(m_options & QWindowsIntegration::DontPassOsMouseEventsSynthesizedFromTouch)) {
+            touchDevice->setCapabilities(touchDevice->capabilities() | QTouchDevice::MouseEmulation);
+        }
+#endif
+        QWindowSystemInterface::registerTouchDevice(touchDevice);
+    }
 }
 
 QWindowsIntegrationPrivate::~QWindowsIntegrationPrivate()
@@ -235,9 +247,12 @@ QWindowsIntegrationPrivate::~QWindowsIntegrationPrivate()
         delete m_fontDatabase;
 }
 
+QWindowsIntegration *QWindowsIntegration::m_instance = Q_NULLPTR;
+
 QWindowsIntegration::QWindowsIntegration(const QStringList &paramList) :
     d(new QWindowsIntegrationPrivate(paramList))
 {
+    m_instance = this;
 #ifndef QT_NO_CLIPBOARD
     d->m_clipboard.registerViewer();
 #endif
@@ -246,6 +261,7 @@ QWindowsIntegration::QWindowsIntegration(const QStringList &paramList) :
 
 QWindowsIntegration::~QWindowsIntegration()
 {
+    m_instance = Q_NULLPTR;
 }
 
 void QWindowsIntegration::initialize()
@@ -492,13 +508,6 @@ QVariant QWindowsIntegration::styleHint(QPlatformIntegration::StyleHint hint) co
         break;
     case QPlatformIntegration::UseRtlExtensions:
         return QVariant(d->m_context.useRTLExtensions());
-    case QPlatformIntegration::SynthesizeMouseFromTouchEvents:
-#ifdef Q_OS_WINCE
-        // We do not want Qt to synthesize mouse events as Windows also does that.
-       return false;
-#else // Q_OS_WINCE
-       return QVariant(bool(d->m_options & DontPassOsMouseEventsSynthesizedFromTouch));
-#endif // !Q_OS_WINCE
     default:
         break;
     }
@@ -539,11 +548,6 @@ QPlatformAccessibility *QWindowsIntegration::accessibility() const
     return &d->m_accessibility;
 }
 #endif
-
-QWindowsIntegration *QWindowsIntegration::instance()
-{
-    return static_cast<QWindowsIntegration *>(QGuiApplicationPrivate::platformIntegration());
-}
 
 unsigned QWindowsIntegration::options() const
 {

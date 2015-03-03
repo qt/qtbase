@@ -163,7 +163,7 @@ QRectF QPlatformInputContext::keyboardRect() const
  */
 void QPlatformInputContext::emitKeyboardRectChanged()
 {
-    emit qApp->inputMethod()->keyboardRectangleChanged();
+    emit QGuiApplication::inputMethod()->keyboardRectangleChanged();
 }
 
 /*!
@@ -182,7 +182,7 @@ bool QPlatformInputContext::isAnimating() const
  */
 void QPlatformInputContext::emitAnimatingChanged()
 {
-    emit qApp->inputMethod()->animatingChanged();
+    emit QGuiApplication::inputMethod()->animatingChanged();
 }
 
 /*!
@@ -214,7 +214,7 @@ bool QPlatformInputContext::isInputPanelVisible() const
  */
 void QPlatformInputContext::emitInputPanelVisibleChanged()
 {
-    emit qApp->inputMethod()->visibleChanged();
+    emit QGuiApplication::inputMethod()->visibleChanged();
 }
 
 QLocale QPlatformInputContext::locale() const
@@ -224,7 +224,7 @@ QLocale QPlatformInputContext::locale() const
 
 void QPlatformInputContext::emitLocaleChanged()
 {
-    emit qApp->inputMethod()->localeChanged();
+    emit QGuiApplication::inputMethod()->localeChanged();
 }
 
 Qt::LayoutDirection QPlatformInputContext::inputDirection() const
@@ -234,7 +234,7 @@ Qt::LayoutDirection QPlatformInputContext::inputDirection() const
 
 void QPlatformInputContext::emitInputDirectionChanged(Qt::LayoutDirection newDirection)
 {
-    emit qApp->inputMethod()->inputDirectionChanged(newDirection);
+    emit QGuiApplication::inputMethod()->inputDirectionChanged(newDirection);
 }
 
 /*!

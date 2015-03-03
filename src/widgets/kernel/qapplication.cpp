@@ -117,6 +117,14 @@ static void initResources()
 
 QT_BEGIN_NAMESPACE
 
+// Helper macro for static functions to check on the existence of the application class.
+#define CHECK_QAPP_INSTANCE(...) \
+    if (Q_LIKELY(QCoreApplication::instance())) { \
+    } else { \
+        qWarning("Must construct a QApplication first."); \
+        return __VA_ARGS__; \
+    }
+
 Q_CORE_EXPORT void qt_call_post_routines();
 
 QApplicationPrivate *QApplicationPrivate::self = 0;
@@ -827,7 +835,7 @@ QApplication::~QApplication()
     if (QWidgetPrivate::allWidgets) {
         QWidgetSet *mySet = QWidgetPrivate::allWidgets;
         QWidgetPrivate::allWidgets = 0;
-        for (QWidgetSet::ConstIterator it = mySet->constBegin(); it != mySet->constEnd(); ++it) {
+        for (QWidgetSet::ConstIterator it = mySet->constBegin(), cend = mySet->constEnd(); it != cend; ++it) {
             QWidget *w = *it;
             if (!w->parent())                        // window
                 w->destroy(true, true);
@@ -1190,7 +1198,7 @@ void QApplication::setStyle(QStyle *style)
     // clean up the old style
     if (QApplicationPrivate::app_style) {
         if (QApplicationPrivate::is_app_running && !QApplicationPrivate::is_app_closing) {
-            for (QWidgetList::ConstIterator it = all.constBegin(); it != all.constEnd(); ++it) {
+            for (QWidgetList::ConstIterator it = all.constBegin(), cend = all.constEnd(); it != cend; ++it) {
                 QWidget *w = *it;
                 if (!(w->windowType() == Qt::Desktop) &&        // except desktop
                      w->testAttribute(Qt::WA_WState_Polished)) { // has been polished
@@ -1238,8 +1246,8 @@ void QApplication::setStyle(QStyle *style)
 
     // re-polish existing widgets if necessary
     if (QApplicationPrivate::is_app_running && !QApplicationPrivate::is_app_closing) {
-        for (QWidgetList::ConstIterator it1 = all.constBegin(); it1 != all.constEnd(); ++it1) {
-            QWidget *w = *it1;
+        for (QWidgetList::ConstIterator it = all.constBegin(), cend = all.constEnd(); it != cend; ++it) {
+            QWidget *w = *it;
             if (w->windowType() != Qt::Desktop && w->testAttribute(Qt::WA_WState_Polished)) {
                 if (w->style() == QApplicationPrivate::app_style)
                     QApplicationPrivate::app_style->polish(w);                // repolish
@@ -1250,8 +1258,8 @@ void QApplication::setStyle(QStyle *style)
             }
         }
 
-        for (QWidgetList::ConstIterator it2 = all.constBegin(); it2 != all.constEnd(); ++it2) {
-            QWidget *w = *it2;
+        for (QWidgetList::ConstIterator it = all.constBegin(), cend = all.constEnd(); it != cend; ++it) {
+            QWidget *w = *it;
             if (w->windowType() != Qt::Desktop && !w->testAttribute(Qt::WA_SetStyle)) {
                     QEvent e(QEvent::StyleChange);
                     QApplication::sendEvent(w, &e);
@@ -1416,12 +1424,15 @@ void QApplication::setGlobalStrut(const QSize& strut)
 */
 QPalette QApplication::palette(const QWidget* w)
 {
+    typedef PaletteHash::const_iterator PaletteHashConstIt;
+
     PaletteHash *hash = app_palettes();
     if (w && hash && hash->size()) {
-        QHash<QByteArray, QPalette>::ConstIterator it = hash->constFind(w->metaObject()->className());
-        if (it != hash->constEnd())
+        PaletteHashConstIt it = hash->constFind(w->metaObject()->className());
+        const PaletteHashConstIt cend = hash->constEnd();
+        if (it != cend)
             return *it;
-        for (it = hash->constBegin(); it != hash->constEnd(); ++it) {
+        for (it = hash->constBegin(); it != cend; ++it) {
             if (w->inherits(it.key()))
                 return it.value();
         }
@@ -1480,7 +1491,7 @@ void QApplicationPrivate::setPalette_helper(const QPalette &palette, const char*
         QApplication::sendEvent(QApplication::instance(), &e);
 
         QWidgetList wids = QApplication::allWidgets();
-        for (QWidgetList::ConstIterator it = wids.constBegin(); it != wids.constEnd(); ++it) {
+        for (QWidgetList::ConstIterator it = wids.constBegin(), cend = wids.constEnd(); it != cend; ++it) {
             QWidget *w = *it;
             if (all || (!className && w->isWindow()) || w->inherits(className)) // matching class
                 QApplication::sendEvent(w, &e);
@@ -1582,6 +1593,8 @@ QFont QApplication::font()
 
 QFont QApplication::font(const QWidget *widget)
 {
+    typedef FontHash::const_iterator FontHashConstIt;
+
     FontHash *hash = app_fonts();
 
     if (widget && hash  && hash->size()) {
@@ -1593,11 +1606,11 @@ QFont QApplication::font(const QWidget *widget)
             return hash->value(QByteArrayLiteral("QMiniFont"));
         }
 #endif
-        QHash<QByteArray, QFont>::ConstIterator it =
-                hash->constFind(widget->metaObject()->className());
-        if (it != hash->constEnd())
+        FontHashConstIt it = hash->constFind(widget->metaObject()->className());
+        const FontHashConstIt cend = hash->constEnd();
+        if (it != cend)
             return it.value();
-        for (it = hash->constBegin(); it != hash->constEnd(); ++it) {
+        for (it = hash->constBegin(); it != cend; ++it) {
             if (widget->inherits(it.key()))
                 return it.value();
         }
@@ -1662,7 +1675,7 @@ void QApplication::setFont(const QFont &font, const char *className)
         QApplication::sendEvent(QApplication::instance(), &e);
 
         QWidgetList wids = QApplication::allWidgets();
-        for (QWidgetList::ConstIterator it = wids.constBegin(); it != wids.constEnd(); ++it) {
+        for (QWidgetList::ConstIterator it = wids.constBegin(), cend = wids.constEnd(); it != cend; ++it) {
             QWidget *w = *it;
             if (all || (!className && w->isWindow()) || w->inherits(className)) // matching class
                 sendEvent(w, &e);
@@ -1767,7 +1780,7 @@ QWidgetList QApplication::topLevelWidgets()
     QWidgetList list;
     QWidgetList all = allWidgets();
 
-    for (QWidgetList::ConstIterator it = all.constBegin(); it != all.constEnd(); ++it) {
+    for (QWidgetList::ConstIterator it = all.constBegin(), cend = all.constEnd(); it != cend; ++it) {
         QWidget *w = *it;
         if (w->isWindow() && w->windowType() != Qt::Desktop)
             list.append(w);
@@ -2146,7 +2159,7 @@ void QApplication::setActiveWindow(QWidget* act)
 
     if (QApplicationPrivate::focus_widget) {
         if (QApplicationPrivate::focus_widget->testAttribute(Qt::WA_InputMethodEnabled))
-            qApp->inputMethod()->commit();
+            QGuiApplication::inputMethod()->commit();
 
         QFocusEvent focusAboutToChange(QEvent::FocusAboutToChange, Qt::ActiveWindowFocusReason);
         QApplication::sendEvent(QApplicationPrivate::focus_widget, &focusAboutToChange);
@@ -2850,6 +2863,7 @@ void QApplicationPrivate::sendSyntheticEnterLeave(QWidget *widget)
 */
 QDesktopWidget *QApplication::desktop()
 {
+    CHECK_QAPP_INSTANCE(Q_NULLPTR)
     if (!qt_desktopWidget || // not created yet
          !(qt_desktopWidget->windowType() == Qt::Desktop)) { // reparented away
         qt_desktopWidget = new QDesktopWidget();
@@ -2887,7 +2901,7 @@ void QApplication::setStartDragTime(int ms)
 
 int QApplication::startDragTime()
 {
-    return qApp->styleHints()->startDragTime();
+    return QGuiApplication::styleHints()->startDragTime();
 }
 
 /*
@@ -2925,7 +2939,7 @@ void QApplication::setStartDragDistance(int l)
 
 int QApplication::startDragDistance()
 {
-    return qApp->styleHints()->startDragDistance();
+    return QGuiApplication::styleHints()->startDragDistance();
 }
 
 /*!
@@ -3968,7 +3982,7 @@ void QApplication::setCursorFlashTime(int msecs)
 
 int QApplication::cursorFlashTime()
 {
-    return qApp->styleHints()->cursorFlashTime();
+    return QGuiApplication::styleHints()->cursorFlashTime();
 }
 
 /*!
@@ -3986,7 +4000,7 @@ void QApplication::setDoubleClickInterval(int ms)
 
 int QApplication::doubleClickInterval()
 {
-    return qApp->styleHints()->mouseDoubleClickInterval();
+    return QGuiApplication::styleHints()->mouseDoubleClickInterval();
 }
 
 /*!
@@ -4014,7 +4028,7 @@ void QApplication::setKeyboardInputInterval(int ms)
 
 int QApplication::keyboardInputInterval()
 {
-    return qApp->styleHints()->keyboardInputInterval();
+    return QGuiApplication::styleHints()->keyboardInputInterval();
 }
 
 /*!
@@ -4105,6 +4119,7 @@ void QApplication::setEffectEnabled(Qt::UIEffect effect, bool enable)
 */
 bool QApplication::isEffectEnabled(Qt::UIEffect effect)
 {
+    CHECK_QAPP_INSTANCE(false)
     return QColormap::instance().depth() >= 16
            && (QApplicationPrivate::enabledAnimations & QPlatformTheme::GeneralUiEffect)
            && (QApplicationPrivate::enabledAnimations & uiEffectToFlag(effect));

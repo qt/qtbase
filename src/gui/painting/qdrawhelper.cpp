@@ -50,7 +50,6 @@
 #if defined(QT_COMPILER_SUPPORTS_MIPS_DSP) || defined(QT_COMPILER_SUPPORTS_MIPS_DSPR2)
 #include <private/qdrawhelper_mips_dsp_p.h>
 #endif
-#include <private/qmath_p.h>
 #include <private/qguiapplication_p.h>
 #include <qmath.h>
 
@@ -2689,6 +2688,8 @@ static const uint * QT_FASTCALL qt_fetch_conical_gradient(uint *buffer, const Op
                + data->dy + data->m12 * (x + qreal(0.5));
     bool affine = !data->m13 && !data->m23;
 
+    const qreal inv2pi = M_1_PI / 2.0;
+
     const uint *end = buffer + length;
     if (affine) {
         rx -= data->gradient.conical.center.x;
@@ -2696,7 +2697,7 @@ static const uint * QT_FASTCALL qt_fetch_conical_gradient(uint *buffer, const Op
         while (buffer < end) {
             qreal angle = qAtan2(ry, rx) + data->gradient.conical.angle;
 
-            *buffer = qt_gradient_pixel(&data->gradient, 1 - angle / (2*Q_PI));
+            *buffer = qt_gradient_pixel(&data->gradient, 1 - angle * inv2pi);
 
             rx += data->m11;
             ry += data->m12;
@@ -2712,7 +2713,7 @@ static const uint * QT_FASTCALL qt_fetch_conical_gradient(uint *buffer, const Op
                                 rx/rw - data->gradient.conical.center.y)
                           + data->gradient.conical.angle;
 
-            *buffer = qt_gradient_pixel(&data->gradient, 1. - angle / (2*Q_PI));
+            *buffer = qt_gradient_pixel(&data->gradient, 1 - angle * inv2pi);
 
             rx += data->m11;
             ry += data->m12;

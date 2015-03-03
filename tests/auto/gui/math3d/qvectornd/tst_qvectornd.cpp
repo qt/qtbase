@@ -667,7 +667,7 @@ void tst_QVectorND::length2_data()
     QTest::newRow("1y")   <<  0.0f <<  1.0f << 1.0f;
     QTest::newRow("-1x")  << -1.0f <<  0.0f << 1.0f;
     QTest::newRow("-1y")  <<  0.0f << -1.0f << 1.0f;
-    QTest::newRow("two")  <<  2.0f << -2.0f << sqrtf(8.0f);
+    QTest::newRow("two")  <<  2.0f << -2.0f << std::sqrt(8.0f);
 }
 void tst_QVectorND::length2()
 {
@@ -695,7 +695,7 @@ void tst_QVectorND::length3_data()
     QTest::newRow("-1x") << -1.0f << 0.0f << 0.0f << 1.0f;
     QTest::newRow("-1y") << 0.0f << -1.0f << 0.0f << 1.0f;
     QTest::newRow("-1z") << 0.0f << 0.0f << -1.0f << 1.0f;
-    QTest::newRow("two") << 2.0f << -2.0f << 2.0f << sqrtf(12.0f);
+    QTest::newRow("two") << 2.0f << -2.0f << 2.0f << std::sqrt(12.0f);
 }
 void tst_QVectorND::length3()
 {
@@ -727,7 +727,7 @@ void tst_QVectorND::length4_data()
     QTest::newRow("-1y") << 0.0f << -1.0f << 0.0f << 0.0f << 1.0f;
     QTest::newRow("-1z") << 0.0f << 0.0f << -1.0f << 0.0f << 1.0f;
     QTest::newRow("-1w") << 0.0f << 0.0f << 0.0f << -1.0f << 1.0f;
-    QTest::newRow("two") << 2.0f << -2.0f << 2.0f << 2.0f << sqrtf(16.0f);
+    QTest::newRow("two") << 2.0f << -2.0f << 2.0f << 2.0f << std::sqrt(16.0f);
 }
 void tst_QVectorND::length4()
 {

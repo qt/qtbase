@@ -363,7 +363,7 @@ QVector3D QQuaternion::rotatedVector(const QVector3D& vector) const
 #ifndef QT_NO_VECTOR3D
 
 /*!
-    \fn void QQuaternion::toAxisAndAngle(QVector3D *axis, float *angle) const
+    \fn void QQuaternion::getAxisAndAngle(QVector3D *axis, float *angle) const
     \since 5.5
     \overload
 
@@ -377,7 +377,7 @@ QVector3D QQuaternion::rotatedVector(const QVector3D& vector) const
     Creates a normalized quaternion that corresponds to rotating through
     \a angle degrees about the specified 3D \a axis.
 
-    \sa toAxisAndAngle()
+    \sa getAxisAndAngle()
 */
 QQuaternion QQuaternion::fromAxisAndAngle(const QVector3D& axis, float angle)
 {
@@ -402,7 +402,7 @@ QQuaternion QQuaternion::fromAxisAndAngle(const QVector3D& axis, float angle)
 
     \sa fromAxisAndAngle()
 */
-void QQuaternion::toAxisAndAngle(float *x, float *y, float *z, float *angle) const
+void QQuaternion::getAxisAndAngle(float *x, float *y, float *z, float *angle) const
 {
     Q_ASSERT(x && y && z && angle);
 
@@ -433,7 +433,7 @@ void QQuaternion::toAxisAndAngle(float *x, float *y, float *z, float *angle) con
     Creates a normalized quaternion that corresponds to rotating through
     \a angle degrees about the 3D axis (\a x, \a y, \a z).
 
-    \sa toAxisAndAngle()
+    \sa getAxisAndAngle()
 */
 QQuaternion QQuaternion::fromAxisAndAngle
         (float x, float y, float z, float angle)
@@ -457,7 +457,7 @@ QQuaternion QQuaternion::fromAxisAndAngle
     \since 5.5
     \overload
 
-    Calculates \a roll, \a pitch, and \a yaw Euler angles (in degrees)
+    Calculates roll, pitch, and yaw Euler angles (in degrees)
     that corresponds to this quaternion.
 
     \sa fromEulerAngles()
@@ -468,9 +468,9 @@ QQuaternion QQuaternion::fromAxisAndAngle
     \since 5.5
     \overload
 
-    Creates a quaternion that corresponds to a rotation of
-    \a eulerAngles.z() degrees around the z axis, \a eulerAngles.x() degrees around the x axis,
-    and \a eulerAngles.y() degrees around the y axis (in that order).
+    Creates a quaternion that corresponds to a rotation of \a eulerAngles:
+    eulerAngles.z() degrees around the z axis, eulerAngles.x() degrees around the x axis,
+    and eulerAngles.y() degrees around the y axis (in that order).
 
     \sa toEulerAngles()
 */
@@ -485,7 +485,7 @@ QQuaternion QQuaternion::fromAxisAndAngle
 
     \sa fromEulerAngles()
 */
-void QQuaternion::toEulerAngles(float *pitch, float *yaw, float *roll) const
+void QQuaternion::getEulerAngles(float *pitch, float *yaw, float *roll) const
 {
     Q_ASSERT(pitch && yaw && roll);
 
@@ -543,7 +543,7 @@ void QQuaternion::toEulerAngles(float *pitch, float *yaw, float *roll) const
     \a roll degrees around the z axis, \a pitch degrees around the x axis,
     and \a yaw degrees around the y axis (in that order).
 
-    \sa toEulerAngles()
+    \sa getEulerAngles()
 */
 QQuaternion QQuaternion::fromEulerAngles(float pitch, float yaw, float roll)
 {
@@ -592,25 +592,28 @@ QMatrix3x3 QQuaternion::toRotationMatrix() const
 
     QMatrix3x3 rot3x3(Qt::Uninitialized);
 
-    const float xx = xp * xp;
-    const float xy = xp * yp;
-    const float xz = xp * zp;
-    const float xw = xp * wp;
-    const float yy = yp * yp;
-    const float yz = yp * zp;
-    const float yw = yp * wp;
-    const float zz = zp * zp;
-    const float zw = zp * wp;
+    const float f2x = xp + xp;
+    const float f2y = yp + yp;
+    const float f2z = zp + zp;
+    const float f2xw = f2x * wp;
+    const float f2yw = f2y * wp;
+    const float f2zw = f2z * wp;
+    const float f2xx = f2x * xp;
+    const float f2xy = f2x * yp;
+    const float f2xz = f2x * zp;
+    const float f2yy = f2y * yp;
+    const float f2yz = f2y * zp;
+    const float f2zz = f2z * zp;
 
-    rot3x3(0, 0) = 1.0f - 2.0f * (yy + zz);
-    rot3x3(0, 1) =        2.0f * (xy - zw);
-    rot3x3(0, 2) =        2.0f * (xz + yw);
-    rot3x3(1, 0) =        2.0f * (xy + zw);
-    rot3x3(1, 1) = 1.0f - 2.0f * (xx + zz);
-    rot3x3(1, 2) =        2.0f * (yz - xw);
-    rot3x3(2, 0) =        2.0f * (xz - yw);
-    rot3x3(2, 1) =        2.0f * (yz + xw);
-    rot3x3(2, 2) = 1.0f - 2.0f * (xx + yy);
+    rot3x3(0, 0) = 1.0f - (f2yy + f2zz);
+    rot3x3(0, 1) =         f2xy - f2zw;
+    rot3x3(0, 2) =         f2xz + f2yw;
+    rot3x3(1, 0) =         f2xy + f2zw;
+    rot3x3(1, 1) = 1.0f - (f2xx + f2zz);
+    rot3x3(1, 2) =         f2yz - f2xw;
+    rot3x3(2, 0) =         f2xz - f2yw;
+    rot3x3(2, 1) =         f2yz + f2xw;
+    rot3x3(2, 2) = 1.0f - (f2xx + f2yy);
 
     return rot3x3;
 }
@@ -747,6 +750,18 @@ QQuaternion QQuaternion::fromRotationMatrix(const QMatrix3x3 &rot3x3)
 
     \sa QQuaternion::operator/=()
 */
+
+#ifndef QT_NO_VECTOR3D
+
+/*!
+    \fn QVector3D operator*(const QQuaternion &quaternion, const QVector3D &vec)
+    \since 5.5
+    \relates QQuaternion
+
+    Rotates a vector \a vec with a quaternion \a quaternion to produce a new vector in 3D space.
+*/
+
+#endif
 
 /*!
     \fn bool qFuzzyCompare(const QQuaternion& q1, const QQuaternion& q2)

@@ -237,7 +237,7 @@ void tst_QQuaternion::length_data()
     QTest::newRow("-1y") << 0.0f << -1.0f << 0.0f << 0.0f << 1.0f;
     QTest::newRow("-1z") << 0.0f << 0.0f << -1.0f << 0.0f << 1.0f;
     QTest::newRow("-1w") << 0.0f << 0.0f << 0.0f << -1.0f << 1.0f;
-    QTest::newRow("two") << 2.0f << -2.0f << 2.0f << 2.0f << sqrtf(16.0f);
+    QTest::newRow("two") << 2.0f << -2.0f << 2.0f << 2.0f << std::sqrt(16.0f);
 }
 void tst_QQuaternion::length()
 {
@@ -710,8 +710,9 @@ void tst_QQuaternion::fromAxisAndAngle()
     // http://www.j3d.org/matrix_faq/matrfaq_latest.html#Q56
     // to calculate the answer we expect to get.
     QVector3D vector = QVector3D(x1, y1, z1).normalized();
-    float sin_a = sinf((angle * M_PI / 180.0) / 2.0);
-    float cos_a = cosf((angle * M_PI / 180.0) / 2.0);
+    const float a = (angle * M_PI / 180.0) / 2.0;
+    const float sin_a = std::sin(a);
+    const float cos_a = std::cos(a);
     QQuaternion result(cos_a,
                        (vector.x() * sin_a),
                        (vector.y() * sin_a),
@@ -727,7 +728,7 @@ void tst_QQuaternion::fromAxisAndAngle()
     {
         QVector3D answerAxis;
         float answerAngle;
-        answer.toAxisAndAngle(&answerAxis, &answerAngle);
+        answer.getAxisAndAngle(&answerAxis, &answerAngle);
         QVERIFY(qFuzzyCompare(answerAxis.x(), vector.x()));
         QVERIFY(qFuzzyCompare(answerAxis.y(), vector.y()));
         QVERIFY(qFuzzyCompare(answerAxis.z(), vector.z()));
@@ -743,7 +744,7 @@ void tst_QQuaternion::fromAxisAndAngle()
     {
         float answerAxisX, answerAxisY, answerAxisZ;
         float answerAngle;
-        answer.toAxisAndAngle(&answerAxisX, &answerAxisY, &answerAxisZ, &answerAngle);
+        answer.getAxisAndAngle(&answerAxisX, &answerAxisY, &answerAxisZ, &answerAngle);
         QVERIFY(qFuzzyCompare(answerAxisX, vector.x()));
         QVERIFY(qFuzzyCompare(answerAxisY, vector.y()));
         QVERIFY(qFuzzyCompare(answerAxisZ, vector.z()));
@@ -872,7 +873,7 @@ void tst_QQuaternion::fromEulerAngles()
 
     {
         float answerPitch, answerYaw, answerRoll;
-        answer.toEulerAngles(&answerPitch, &answerYaw, &answerRoll);
+        answer.getEulerAngles(&answerPitch, &answerYaw, &answerRoll);
         QVERIFY(myFuzzyCompareDegrees(answerPitch, pitch));
         QVERIFY(myFuzzyCompareDegrees(answerYaw, yaw));
         QVERIFY(myFuzzyCompareDegrees(answerRoll, roll));

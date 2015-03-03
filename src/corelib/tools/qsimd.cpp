@@ -512,7 +512,9 @@ int ffs(int i)
 #endif
 }
 #endif
-#endif // Q_OS_WIN
+#elif defined(Q_OS_ANDROID)
+# define ffs __builtin_ffs
+#endif
 
 QBasicAtomicInt qt_cpu_features = Q_BASIC_ATOMIC_INITIALIZER(0);
 

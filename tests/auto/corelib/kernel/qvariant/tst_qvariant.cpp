@@ -77,7 +77,7 @@ public:
     }
 
 
-    enum MetaEnumTest_Enum0 { MetaEnumTest_Enum0_value = 42, MetaEnsureSignedEnum0 = -1 };
+    enum MetaEnumTest_Enum0 { MetaEnumTest_Enum0_dummy = 2, MetaEnumTest_Enum0_value = 42, MetaEnsureSignedEnum0 = -1 };
     Q_ENUM(MetaEnumTest_Enum0)
     enum MetaEnumTest_Enum1 { MetaEnumTest_Enum1_value = 42, MetaEnumTest_Enum1_bigValue = (Q_INT64_C(1) << 33) + 50 };
     Q_ENUM(MetaEnumTest_Enum1)

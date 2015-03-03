@@ -836,7 +836,8 @@ error:
 static bool addFontToDatabase(const QString &familyName, uchar charSet,
                               const TEXTMETRIC *textmetric,
                               const FONTSIGNATURE *signature,
-                              int type)
+                              int type,
+                              bool registerAlias)
 {
     // the "@family" fonts are just the same as "family". Ignore them.
     if (familyName.isEmpty() || familyName.at(0) == QLatin1Char('@') || familyName.startsWith(QLatin1String("WST_")))
@@ -873,7 +874,7 @@ static bool addFontToDatabase(const QString &familyName, uchar charSet,
 #endif
 
     QString englishName;
-    if (ttf && localizedName(familyName))
+    if (registerAlias && ttf && localizedName(familyName))
         englishName = getEnglishName(familyName);
 
     QSupportedWritingSystems writingSystems;
@@ -942,7 +943,7 @@ static int QT_WIN_CALLBACK storeFont(ENUMLOGFONTEX* f, NEWTEXTMETRICEX *textmetr
     // NEWTEXTMETRICEX is a NEWTEXTMETRIC, which according to the documentation is
     // identical to a TEXTMETRIC except for the last four members, which we don't use
     // anyway
-    addFontToDatabase(familyName, charSet, (TEXTMETRIC *)textmetric, &signature, type);
+    addFontToDatabase(familyName, charSet, (TEXTMETRIC *)textmetric, &signature, type, false);
 
     // keep on enumerating
     return 1;
@@ -977,7 +978,7 @@ struct PopulateFamiliesContext
 };
 } // namespace
 
-static int QT_WIN_CALLBACK populateFontFamilies(ENUMLOGFONTEX* f, NEWTEXTMETRICEX *, int, LPARAM lparam)
+static int QT_WIN_CALLBACK populateFontFamilies(ENUMLOGFONTEX* f, NEWTEXTMETRICEX *tm, int, LPARAM lparam)
 {
     // the "@family" fonts are just the same as "family". Ignore them.
     const wchar_t *faceNameW = f->elfLogFont.lfFaceName;
@@ -987,6 +988,19 @@ static int QT_WIN_CALLBACK populateFontFamilies(ENUMLOGFONTEX* f, NEWTEXTMETRICE
         PopulateFamiliesContext *context = reinterpret_cast<PopulateFamiliesContext *>(lparam);
         if (!context->seenSystemDefaultFont && faceName == context->systemDefaultFont)
             context->seenSystemDefaultFont = true;
+
+        // Register current font's english name as alias
+        const bool ttf = (tm->ntmTm.tmPitchAndFamily & TMPF_TRUETYPE);
+        if (ttf && localizedName(faceName)) {
+            const QString englishName = getEnglishName(faceName);
+            if (!englishName.isEmpty()) {
+                QPlatformFontDatabase::registerAliasToFontFamily(faceName, englishName);
+                // Check whether the system default font name is an alias of the current font family name,
+                // as on Chinese Windows, where the system font "SimSun" is an alias to a font registered under a local name
+                if (!context->seenSystemDefaultFont && englishName == context->systemDefaultFont)
+                    context->seenSystemDefaultFont = true;
+            }
+        }
     }
     return 1; // continue
 }
@@ -1344,7 +1358,7 @@ QStringList QWindowsFontDatabase::addApplicationFont(const QByteArray &fontData,
             GetTextMetrics(hdc, &textMetrics);
 
             addFontToDatabase(familyName, lf.lfCharSet, &textMetrics, &signatures.at(j),
-                              TRUETYPE_FONTTYPE);
+                              TRUETYPE_FONTTYPE, true);
 
             SelectObject(hdc, oldobj);
             DeleteObject(hfont);

@@ -2760,7 +2760,7 @@ void QOpenGLShaderProgram::setUniformValueArray
     should be used when setting an array of sampler values.
 
     \note This function is not aware of unsigned int support in modern OpenGL
-    versions and therefore treats \a value as a GLint and calls glUniform1iv.
+    versions and therefore treats \a values as a GLint and calls glUniform1iv.
 
     \sa setAttributeValue()
 */

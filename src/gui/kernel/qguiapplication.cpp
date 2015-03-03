@@ -105,6 +105,14 @@
 
 QT_BEGIN_NAMESPACE
 
+// Helper macro for static functions to check on the existence of the application class.
+#define CHECK_QAPP_INSTANCE(...) \
+    if (Q_LIKELY(QCoreApplication::instance())) { \
+    } else { \
+        qWarning("Must construct a QGuiApplication first."); \
+        return __VA_ARGS__; \
+    }
+
 Q_GUI_EXPORT bool qt_is_gui_used = true;
 
 Qt::MouseButtons QGuiApplicationPrivate::mouse_buttons = Qt::NoButton;
@@ -163,6 +171,7 @@ QWindow *QGuiApplicationPrivate::focus_window = 0;
 
 static QBasicMutex applicationFontMutex;
 QFont *QGuiApplicationPrivate::app_font = 0;
+QStyleHints *QGuiApplicationPrivate::styleHints = Q_NULLPTR;
 bool QGuiApplicationPrivate::obey_desktop_settings = true;
 
 QInputDeviceManager *QGuiApplicationPrivate::m_inputDeviceManager = 0;
@@ -595,7 +604,6 @@ QGuiApplication::~QGuiApplication()
 
 QGuiApplicationPrivate::QGuiApplicationPrivate(int &argc, char **argv, int flags)
     : QCoreApplicationPrivate(argc, argv, flags),
-      styleHints(0),
       inputMethod(0),
       lastTouchType(QEvent::TouchEnd),
       ownGlobalShareContext(false)
@@ -648,6 +656,7 @@ QString QGuiApplication::applicationDisplayName()
 */
 QWindow *QGuiApplication::modalWindow()
 {
+    CHECK_QAPP_INSTANCE(Q_NULLPTR)
     if (QGuiApplicationPrivate::self->modalWindowList.isEmpty())
         return 0;
     return QGuiApplicationPrivate::self->modalWindowList.first();
@@ -786,12 +795,6 @@ bool QGuiApplicationPrivate::isWindowBlocked(QWindow *window, QWindow **blocking
     }
     *blockingWindow = 0;
     return false;
-}
-
-bool QGuiApplicationPrivate::synthesizeMouseFromTouchEventsEnabled()
-{
-    return QCoreApplication::testAttribute(Qt::AA_SynthesizeMouseForUnhandledTouchEvents)
-            && QGuiApplicationPrivate::platformIntegration()->styleHint(QPlatformIntegration::SynthesizeMouseFromTouchEvents).toBool();
 }
 
 /*!
@@ -1355,7 +1358,8 @@ QGuiApplicationPrivate::~QGuiApplicationPrivate()
 
     cleanupThreadData();
 
-    delete styleHints;
+    delete QGuiApplicationPrivate::styleHints;
+    QGuiApplicationPrivate::styleHints = Q_NULLPTR;
     delete inputMethod;
 
     qt_cleanupFontDatabase();
@@ -1435,6 +1439,7 @@ Qt::KeyboardModifiers QGuiApplication::keyboardModifiers()
 */
 Qt::KeyboardModifiers QGuiApplication::queryKeyboardModifiers()
 {
+    CHECK_QAPP_INSTANCE(Qt::KeyboardModifiers(0))
     QPlatformIntegration *pi = QGuiApplicationPrivate::platformIntegration();
     return pi->queryKeyboardModifiers();
 }
@@ -1723,7 +1728,7 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
         }
         mouse_buttons = buttons = e->buttons;
         if (button & e->buttons) {
-            ulong doubleClickInterval = static_cast<ulong>(qApp->styleHints()->mouseDoubleClickInterval());
+            ulong doubleClickInterval = static_cast<ulong>(QGuiApplication::styleHints()->mouseDoubleClickInterval());
             doubleClick = e->timestamp - mousePressTime < doubleClickInterval && button == mousePressButton;
             type = frameStrut ? QEvent::NonClientAreaMouseButtonPress : QEvent::MouseButtonPress;
             mousePressTime = e->timestamp;
@@ -2423,9 +2428,9 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
         }
 
         QGuiApplication::sendSpontaneousEvent(w, &touchEvent);
-        if (!e->synthetic() && !touchEvent.isAccepted() && synthesizeMouseFromTouchEventsEnabled()) {
-            // exclude touchpads as those generate their own mouse events
-            if (touchEvent.device()->type() != QTouchDevice::TouchPad) {
+        if (!e->synthetic() && !touchEvent.isAccepted() && qApp->testAttribute(Qt::AA_SynthesizeMouseForUnhandledTouchEvents)) {
+            // exclude devices which generate their own mouse events
+            if (!(touchEvent.device()->capabilities() & QTouchDevice::MouseEmulation)) {
                 Qt::MouseButtons b = eventType == QEvent::TouchEnd ? Qt::NoButton : Qt::LeftButton;
                 if (b == Qt::NoButton)
                     self->synthesizedMousePoints.clear();
@@ -3172,6 +3177,7 @@ Qt::LayoutDirection QGuiApplication::layoutDirection()
 #ifndef QT_NO_CURSOR
 QCursor *QGuiApplication::overrideCursor()
 {
+    CHECK_QAPP_INSTANCE(Q_NULLPTR)
     return qGuiApp->d_func()->cursor_list.isEmpty() ? 0 : &qGuiApp->d_func()->cursor_list.first();
 }
 
@@ -3185,6 +3191,7 @@ QCursor *QGuiApplication::overrideCursor()
  */
 void QGuiApplication::changeOverrideCursor(const QCursor &cursor)
 {
+    CHECK_QAPP_INSTANCE()
     if (qGuiApp->d_func()->cursor_list.isEmpty())
         return;
     qGuiApp->d_func()->cursor_list.removeFirst();
@@ -3259,6 +3266,7 @@ static inline void applyWindowCursor(const QList<QWindow *> &l)
 */
 void QGuiApplication::setOverrideCursor(const QCursor &cursor)
 {
+    CHECK_QAPP_INSTANCE()
     qGuiApp->d_func()->cursor_list.prepend(cursor);
     applyCursor(QGuiApplicationPrivate::window_list, cursor);
 }
@@ -3276,6 +3284,7 @@ void QGuiApplication::setOverrideCursor(const QCursor &cursor)
 */
 void QGuiApplication::restoreOverrideCursor()
 {
+    CHECK_QAPP_INSTANCE()
     if (qGuiApp->d_func()->cursor_list.isEmpty())
         return;
     qGuiApp->d_func()->cursor_list.removeFirst();
@@ -3300,9 +3309,9 @@ void QGuiApplication::restoreOverrideCursor()
   */
 QStyleHints *QGuiApplication::styleHints()
 {
-    if (!qGuiApp->d_func()->styleHints)
-        qGuiApp->d_func()->styleHints = new QStyleHints();
-    return qGuiApp->d_func()->styleHints;
+    if (!QGuiApplicationPrivate::styleHints)
+        QGuiApplicationPrivate::styleHints = new QStyleHints();
+    return QGuiApplicationPrivate::styleHints;
 }
 
 /*!
@@ -3343,6 +3352,7 @@ bool QGuiApplication::desktopSettingsAware()
   */
 QInputMethod *QGuiApplication::inputMethod()
 {
+    CHECK_QAPP_INSTANCE(Q_NULLPTR)
     if (!qGuiApp->d_func()->inputMethod)
         qGuiApp->d_func()->inputMethod = new QInputMethod();
     return qGuiApp->d_func()->inputMethod;

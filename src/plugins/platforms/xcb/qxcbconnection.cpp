@@ -80,6 +80,7 @@ QT_BEGIN_NAMESPACE
 
 Q_LOGGING_CATEGORY(lcQpaXInput, "qt.qpa.input")
 Q_LOGGING_CATEGORY(lcQpaXInputDevices, "qt.qpa.input.devices")
+Q_LOGGING_CATEGORY(lcQpaScreen, "qt.qpa.screen")
 
 #ifdef XCB_USE_XLIB
 static const char * const xcbConnectionErrors[] = {
@@ -143,9 +144,8 @@ QXcbScreen* QXcbConnection::findOrCreateScreen(QList<QXcbScreen *>& newScreens,
 void QXcbConnection::updateScreens()
 {
     xcb_screen_iterator_t it = xcb_setup_roots_iterator(m_setup);
-    int screenNumber = 0;       // index of this QScreen in QGuiApplication::screens()
     int xcbScreenNumber = 0;    // screen number in the xcb sense
-    QSet<QXcbScreen *> activeScreens;
+    QList<QXcbScreen *> activeScreens;
     QList<QXcbScreen *> newScreens;
     QXcbScreen* primaryScreen = NULL;
     while (it.rem) {
@@ -156,6 +156,7 @@ void QXcbConnection::updateScreens()
         xcb_screen_t *xcbScreen = it.data;
         QList<QPlatformScreen *> siblings;
         int outputCount = 0;
+        int connectedOutputCount = 0;
         if (has_randr_extension) {
             xcb_generic_error_t *error = NULL;
             xcb_randr_get_output_primary_cookie_t primaryCookie =
@@ -185,22 +186,18 @@ void QXcbConnection::updateScreens()
                         if (output == NULL)
                             continue;
 
-#ifdef Q_XCB_DEBUG
-                        QString outputName = QString::fromUtf8((const char*)xcb_randr_get_output_info_name(output),
-                                                               xcb_randr_get_output_info_name_length(output));
-#endif
 
                         if (output->crtc == XCB_NONE) {
-#ifdef Q_XCB_DEBUG
-                            qDebug("Screen output %s is not connected", qPrintable(outputName));
-#endif
+                            qCDebug(lcQpaScreen, "output %s is not connected", qPrintable(
+                                        QString::fromUtf8((const char*)xcb_randr_get_output_info_name(output),
+                                                          xcb_randr_get_output_info_name_length(output))));
                             continue;
                         }
 
                         QXcbScreen *screen = findOrCreateScreen(newScreens, xcbScreenNumber, xcbScreen, output);
                         siblings << screen;
                         activeScreens << screen;
-                        ++screenNumber;
+                        ++connectedOutputCount;
                         // There can be multiple outputs per screen, use either
                         // the first or an exact match.  An exact match isn't
                         // always available if primary->output is XCB_NONE
@@ -209,9 +206,6 @@ void QXcbConnection::updateScreens()
                             if (!primaryScreen || (primary && outputs[i] == primary->output)) {
                                 primaryScreen = screen;
                                 siblings.prepend(siblings.takeLast());
-#ifdef Q_XCB_DEBUG
-                                qDebug("Primary output is %d: %s", primary->output, qPrintable(outputName));
-#endif
                             }
                         }
                         free(output);
@@ -223,16 +217,13 @@ void QXcbConnection::updateScreens()
         }
         // If there's no randr extension, or there was some error above, or the screen
         // doesn't have outputs for some other reason (e.g. on VNC or ssh -X), just assume there is one screen.
-        if (outputCount == 0) {
-#ifdef Q_XCB_DEBUG
-                qDebug("Found a screen with zero outputs");
-#endif
+        if (connectedOutputCount == 0) {
+            qCDebug(lcQpaScreen, "found a screen with zero outputs");
             QXcbScreen *screen = findOrCreateScreen(newScreens, xcbScreenNumber, xcbScreen);
             siblings << screen;
             activeScreens << screen;
             if (!primaryScreen)
                 primaryScreen = screen;
-            ++screenNumber;
         }
         foreach (QPlatformScreen* s, siblings)
             ((QXcbScreen*)s)->setVirtualSiblings(siblings);
@@ -240,29 +231,57 @@ void QXcbConnection::updateScreens()
         ++xcbScreenNumber;
     } // for each xcb screen
 
-    QXcbIntegration *integration = static_cast<QXcbIntegration *>(QGuiApplicationPrivate::platformIntegration());
-    // Now activeScreens is the complete set of screens which are active at this time.
-    // Delete any existing screens which are not in activeScreens
+    QXcbIntegration *integration = QXcbIntegration::instance();
+
+    // Rebuild screen list, ensuring primary screen is always in front,
+    // both in the QXcbConnection::m_screens list as well as in the
+    // QGuiApplicationPrivate::screen_list list, which gets updated via
+    //  - screen added: integration->screenAdded()
+    //  - screen removed: integration->destroyScreen
+
+    // Gather screens to delete
+    QList<QXcbScreen*> screensToDelete;
     for (int i = m_screens.count() - 1; i >= 0; --i) {
         if (!activeScreens.contains(m_screens[i])) {
-            integration->destroyScreen(m_screens.at(i));
-            m_screens.removeAt(i);
+            screensToDelete.append(m_screens.takeAt(i));
         }
     }
 
-    // Add any new screens, and make sure the primary screen comes first
-    // since it is used by QGuiApplication::primaryScreen()
-    foreach (QXcbScreen* screen, newScreens) {
-        if (screen == primaryScreen)
-            m_screens.prepend(screen);
-        else
-            m_screens.append(screen);
+    // If there is a new primary screen, add that one first
+    if (newScreens.contains(primaryScreen)) {
+        newScreens.removeOne(primaryScreen);
+        m_screens.prepend(primaryScreen);
+        qCDebug(lcQpaScreen) << "adding as primary" << primaryScreen;
+        integration->screenAdded(primaryScreen, true);
     }
 
-    // Now that they are in the right order, emit the added signals for new screens only
-    foreach (QXcbScreen* screen, m_screens)
-        if (newScreens.contains(screen))
-            integration->screenAdded(screen);
+    // Add the remaining new screens
+    foreach (QXcbScreen* screen, newScreens) {
+        m_screens.append(screen);
+        qCDebug(lcQpaScreen) << "adding" << screen;
+        integration->screenAdded(screen);
+    }
+
+    // Delete the old screens, now that the new ones were added
+    // and we are sure that there is at least one screen available
+    foreach (QXcbScreen* screen, screensToDelete) {
+        qCDebug(lcQpaScreen) << "removing" << screen;
+        integration->destroyScreen(screen);
+    }
+
+    // Ensure that the primary screen is first in m_screens too
+    // (in case the assignment of primary was the only change,
+    // without adding or removing screens)
+    if (primaryScreen) {
+        Q_ASSERT(!m_screens.isEmpty());
+        if (m_screens.first() != primaryScreen) {
+            m_screens.removeOne(primaryScreen);
+            m_screens.prepend(primaryScreen);
+        }
+    }
+
+    if (!m_screens.isEmpty())
+        qCDebug(lcQpaScreen) << "primary output is" << m_screens.first()->name();
 }
 
 QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGrabServer, const char *displayName)
@@ -280,7 +299,6 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGra
     , has_shape_extension(false)
     , has_randr_extension(false)
     , has_input_shape(false)
-    , has_touch_without_mouse_emulation(false)
     , has_xkb(false)
     , m_buttons(0)
     , m_focusWindow(0)
@@ -404,7 +422,7 @@ QXcbConnection::~QXcbConnection()
 
     delete m_reader;
 
-    QXcbIntegration *integration = static_cast<QXcbIntegration *>(QGuiApplicationPrivate::platformIntegration());
+    QXcbIntegration *integration = QXcbIntegration::instance();
     // Delete screens in reverse order to avoid crash in case of multiple screens
     while (!m_screens.isEmpty())
         integration->destroyScreen(m_screens.takeLast());
@@ -794,8 +812,10 @@ void QXcbConnection::handleMotionNotify(xcb_generic_event_t *ev)
     xcb_motion_notify_event_t *event = (xcb_motion_notify_event_t *)ev;
 
     m_buttons = (m_buttons & ~0x7) | translateMouseButtons(event->state);
-    if (Q_UNLIKELY(lcQpaXInput().isDebugEnabled()))
-        qDebug("xcb: moved mouse to %4d, %4d; button state %X", event->event_x, event->event_y, static_cast<unsigned int>(m_buttons));
+#ifdef Q_XCB_DEBUG
+    qCDebug(lcQpaXInput, "xcb: moved mouse to %4d, %4d; button state %X",
+           event->event_x, event->event_y, static_cast<unsigned int>(m_buttons));
+#endif
 }
 
 #ifndef QT_NO_XKB

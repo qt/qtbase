@@ -67,7 +67,6 @@
 #include <private/qopengl_p.h>
 #include <private/qopenglcontext_p.h>
 #include <private/qopenglextensions_p.h>
-#include <private/qmath_p.h>
 #include <private/qpaintengineex_p.h>
 #include <QPaintEngine>
 #include <private/qpainter_p.h>
@@ -350,7 +349,7 @@ void QOpenGL2PaintEngineExPrivate::updateBrushUniforms()
             const QConicalGradient *g = static_cast<const QConicalGradient *>(currentBrush.gradient());
             translationPoint   = g->center();
 
-            GLfloat angle = -(g->angle() * 2 * Q_PI) / 360.0;
+            GLfloat angle = -qDegreesToRadians(g->angle());
 
             shaderManager->currentProgram()->setUniformValue(location(QOpenGLEngineShaderManager::Angle), angle);
 
@@ -2010,8 +2009,8 @@ void QOpenGL2PaintEngineExPrivate::drawPixmapFragments(const QPainter::PixmapFra
         qreal s = 0;
         qreal c = 1;
         if (fragments[i].rotation != 0) {
-            s = qFastSin(fragments[i].rotation * Q_PI / 180);
-            c = qFastCos(fragments[i].rotation * Q_PI / 180);
+            s = qFastSin(qDegreesToRadians(fragments[i].rotation));
+            c = qFastCos(qDegreesToRadians(fragments[i].rotation));
         }
 
         qreal right = 0.5 * fragments[i].scaleX * fragments[i].width;

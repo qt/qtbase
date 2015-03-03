@@ -13,7 +13,7 @@ qtPrepareTool(QMAKE_IDC, idc)
 contains(TEMPLATE, "vc.*") {
     ACTIVEQT_IDC = $${QMAKE_IDC}
     ACTIVEQT_IDL = $${QMAKE_IDL}
-    ACTIVEQT_TARGET = "$(TargetPath)"
+    ACTIVEQT_TARGET = \"$(TargetPath)\"
     win32-msvc {
         ACTIVEQT_NEWLINE = $$escape_expand(\\t)
         ACTIVEQT_OUTPUT = $(IntDir)/$${TARGET}
@@ -21,7 +21,7 @@ contains(TEMPLATE, "vc.*") {
         ACTIVEQT_NEWLINE = $$escape_expand(\\n\\t)
         ACTIVEQT_OUTPUT = $(IntDir)$${TARGET}
     }
-    ACTIVEQT_TLBOUT = "$(TargetDir)/$${TARGET}.tlb"
+    ACTIVEQT_TLBOUT = \"$(TargetDir)/$${TARGET}.tlb\"
     GENERATED += $${OBJECTS_DIR}/$${TARGET}.idl $${ACTIVEQT_TLBOUT}
 } else {
     ACTIVEQT_IDC = -$(IDC)

@@ -191,7 +191,7 @@ bool QWidgetWindow::event(QEvent *event)
     case QEvent::FocusAboutToChange:
         if (QApplicationPrivate::focus_widget) {
             if (QApplicationPrivate::focus_widget->testAttribute(Qt::WA_InputMethodEnabled))
-                qApp->inputMethod()->commit();
+                QGuiApplication::inputMethod()->commit();
 
             QGuiApplication::sendSpontaneousEvent(QApplicationPrivate::focus_widget, event);
         }

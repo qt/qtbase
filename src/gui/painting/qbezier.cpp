@@ -40,7 +40,6 @@
 #include <qmath.h>
 
 #include <private/qnumeric_p.h>
-#include <private/qmath_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -363,7 +362,7 @@ static bool addCircle(const QBezier *b, qreal offset, QBezier *o)
             cos_a = 1.;
         if (cos_a < -1.)
             cos_a = -1;
-        angles[i] = qAcos(cos_a)/Q_PI;
+        angles[i] = qAcos(cos_a) * qreal(M_1_PI);
     }
 
     if (angles[0] + angles[1] > 1.) {
