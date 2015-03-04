@@ -114,7 +114,7 @@ template <typename StringType> struct QStringAlgorithms
             return str;
         const Char *src = str.cbegin();
         const Char *end = str.cend();
-        NakedStringType result = isConst ?
+        NakedStringType result = isConst || !str.isDetached() ?
                                      StringType(str.size(), Qt::Uninitialized) :
                                      qMove(str);
 
