@@ -132,8 +132,6 @@
 
     Since Qt 4.5, Qt style sheets fully supports Mac OS X.
 
-    \warning Qt style sheets are currently not supported for custom QStyle
-    subclasses. We plan to address this in some future release.
 */
 
 /*!
