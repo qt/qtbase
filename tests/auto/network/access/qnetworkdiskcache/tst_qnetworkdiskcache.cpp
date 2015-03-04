@@ -38,7 +38,7 @@
 
 #include <algorithm>
 
-#define EXAMPLE_URL "http://user:pass@www.example.com/#foo"
+#define EXAMPLE_URL "http://user:pass@localhost:4/#foo"
 //cached objects are organized into these many subdirs
 #define NUM_SUBDIRECTORIES 16
 
@@ -409,7 +409,7 @@ void tst_QNetworkDiskCache::accessAfterRemoveReadyReadSlot()
 void tst_QNetworkDiskCache::setCookieHeader() // QTBUG-41514
 {
     SubQNetworkDiskCache *cache = new SubQNetworkDiskCache();
-    url = QUrl("http://www.foo.com/cookieTest.html");
+    url = QUrl("http://localhost:4/cookieTest.html");   // hopefully no one is running an HTTP server on port 4
     QNetworkCacheMetaData metaData;
     metaData.setUrl(url);
 
@@ -518,7 +518,7 @@ void tst_QNetworkDiskCache::expire()
         if (i % 3 == 0)
             QTest::qWait(2000);
         QNetworkCacheMetaData m;
-        m.setUrl(QUrl("http://www.foo.com/" + QString::number(i)));
+        m.setUrl(QUrl("http://localhost:4/" + QString::number(i)));
         QIODevice *d = cache.prepare(m);
         QString bigString;
         bigString.fill(QLatin1Char('Z'), (1024 * 1024 / 4));
@@ -540,7 +540,7 @@ void tst_QNetworkDiskCache::expire()
     std::sort(cacheList.begin(), cacheList.end());
     for (int i = 0; i < cacheList.count(); ++i) {
         QString fileName = cacheList[i];
-        QCOMPARE(fileName, QString("http://www.foo.com/%1").arg(i + 6));
+        QCOMPARE(fileName, QString("http://localhost:4/%1").arg(i + 6));
     }
 }
 
