@@ -1500,10 +1500,10 @@ void QWindow::setFramePosition(const QPoint &point)
 {
     Q_D(QWindow);
     d->positionPolicy = QWindowPrivate::WindowFrameInclusive;
+    d->positionAutomatic = false;
     if (d->platformWindow) {
         d->platformWindow->setGeometry(QRect(point, size()));
     } else {
-        d->positionAutomatic = false;
         d->geometry.moveTopLeft(point);
     }
 }
