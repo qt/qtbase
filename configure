@@ -5283,6 +5283,8 @@ if [ "$CFG_LIBINPUT" != "no" ] && [ "$CFG_LIBUDEV" != "no" ]; then
     else
         CFG_LIBINPUT=no
     fi
+else
+    CFG_LIBINPUT=no
 fi
 if [ "$CFG_LIBINPUT" = "no" ]; then
     QMakeVar add DEFINES QT_NO_LIBINPUT
