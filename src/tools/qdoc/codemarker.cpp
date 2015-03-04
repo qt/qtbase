@@ -391,12 +391,11 @@ void CodeMarker::insert(FastSection &fastSection,
     bool inheritedMember = false;
     if (!node->relates()) {
         InnerNode* p = node->parent();
-        if (p->type() == Node::QmlPropertyGroup)
+        if (p->isQmlPropertyGroup())
             p = p->parent();
         if (p != fastSection.parent_) {
-            if ((!p->isQmlType() && !p->isJsType()) || !p->isAbstract()) {
+            if ((!p->isQmlType() && !p->isJsType()) || !p->isAbstract())
                 inheritedMember = true;
-            }
         }
     }
 
@@ -438,7 +437,7 @@ void CodeMarker::insert(FastSection &fastSection,
             fastSection.memberMap.insertMulti(key, node);
         }
         else {
-            if (node->parent()->type() == Node::Class) {
+            if (node->parent()->isClass() || node->parent()->isNamespace()) {
                 if (fastSection.inherited.isEmpty()
                         || fastSection.inherited.last().first != node->parent()) {
                     QPair<InnerNode *, int> p(node->parent(), 0);

@@ -278,7 +278,7 @@ class QDocDatabase
     NodeMap& getClassesWithObsoleteMembers();
     NodeMap& getObsoleteQmlTypes();
     NodeMap& getQmlTypesWithObsoleteMembers();
-    NodeMap& getNamespaces();
+    NodeMap& getNamespaces() { resolveNamespaces(); return namespaceIndex_; }
     NodeMap& getServiceClasses();
     NodeMap& getQmlBasicTypes();
     NodeMap& getQmlTypes();
@@ -404,9 +404,8 @@ class QDocDatabase
     }
     TargetList* getTargetList(const QString& t) { return primaryTree()->getTargetList(t); }
     QStringList getTargetListKeys() { return primaryTree()->getTargetListKeys(); }
-    QStringList keys() {
-        return forest_.keys();
-    }
+    QStringList keys() { return forest_.keys(); }
+    void resolveNamespaces();
 
  private:
     friend class QDocIndexFiles;
@@ -447,6 +446,7 @@ class QDocDatabase
     NodeMap                 obsoleteQmlTypes_;
     NodeMap                 qmlTypesWithObsoleteMembers_;
     NodeMap                 namespaceIndex_;
+    NodeMultiMap            nmm_;
     NodeMap                 serviceClasses_; // MWS: not needed, should be deleted
     NodeMap                 qmlBasicTypes_;
     NodeMap                 qmlTypes_;

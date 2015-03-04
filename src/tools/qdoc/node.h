@@ -373,9 +373,7 @@ public:
     virtual ~InnerNode();
 
     Node* findChildNode(const QString& name, Node::Genus genus) const;
-    //Node* findChildNode(const QString& name, bool qml) const;
     Node* findChildNode(const QString& name, Type type);
-    //void findNodes(const QString& name, NodeList& n);
     virtual void findChildren(const QString& name, NodeList& nodes) const Q_DECL_OVERRIDE;
     FunctionNode* findFunctionNode(const QString& name) const;
     FunctionNode* findFunctionNode(const FunctionNode* clone);
@@ -410,6 +408,8 @@ public:
     const QStringList& groupNames() const { return groupNames_; }
     virtual void appendGroupName(const QString& t) Q_DECL_OVERRIDE { groupNames_.append(t); }
     void printChildren(const QString& title);
+    void addChild(Node* child);
+    void removeChild(Node* child);
 
 protected:
     InnerNode(Type type, InnerNode* parent, const QString& name);
@@ -418,9 +418,7 @@ private:
     friend class Node;
 
     static bool isSameSignature(const FunctionNode* f1, const FunctionNode* f2);
-    void addChild(Node* child);
     void removeRelated(Node* pseudoChild);
-    void removeChild(Node* child);
 
     QString outputFileName_;
     QStringList pageKeywds;
@@ -455,9 +453,14 @@ public:
     virtual ~NamespaceNode() { }
     virtual bool isNamespace() const Q_DECL_OVERRIDE { return true; }
     virtual Tree* tree() const Q_DECL_OVERRIDE { return (parent() ? parent()->tree() : tree_); }
+    virtual bool wasSeen() const Q_DECL_OVERRIDE { return seen_; }
+
+    void markSeen() { seen_ = true; }
+    void markNotSeen() { seen_ = false; }
     void setTree(Tree* t) { tree_ = t; }
 
  private:
+    bool        seen_;
     Tree*       tree_;
 };
 

@@ -1112,7 +1112,9 @@ bool InnerNode::isSameSignature(const FunctionNode *f1, const FunctionNode *f2)
 }
 
 /*!
-  Adds the \a child to this node's child list.
+  Adds the \a child to this node's child list. It might also
+  be necessary to update this node's internal collections and
+  the child's parent pointer and output subdirectory.
  */
 void InnerNode::addChild(Node *child)
 {
@@ -1132,6 +1134,10 @@ void InnerNode::addChild(Node *child)
             enumChildren_.append(child);
         childMap.insertMulti(child->name(), child);
     }
+    if (child->parent() == 0) {
+        child->setParent(this);
+        child->setOutputSubdirectory(this->outputSubdirectory());
+    }
 }
 
 /*!
@@ -1146,6 +1152,10 @@ void InnerNode::addChild(Node* child, const QString& title)
 }
 
 /*!
+  The \a child is removed from this node's child list and
+  from this node's internal collections. The child's parent
+  pointer is set to 0, but its output subdirectory is not
+  changed.
  */
 void InnerNode::removeChild(Node *child)
 {
@@ -1185,6 +1195,7 @@ void InnerNode::removeChild(Node *child)
         }
         ++ent;
     }
+    child->setParent(0);
 }
 
 /*!
@@ -1357,7 +1368,7 @@ LeafNode::LeafNode(InnerNode* parent, Type type, const QString& name)
   Constructs a namespace node.
  */
 NamespaceNode::NamespaceNode(InnerNode *parent, const QString& name)
-    : InnerNode(Namespace, parent, name), tree_(0)
+    : InnerNode(Namespace, parent, name), seen_(false), tree_(0)
 {
     setGenus(Node::CPP);
     setPageType(ApiPage);
