@@ -585,6 +585,10 @@ class QDataStream;
 #  define QT_NO_SOCKS5
 #endif
 
+#if defined(Q_OS_IOS)
+#  define QT_NO_PROCESS
+#endif
+
 inline void qt_noop(void) {}
 
 /* These wrap try/catch so we can switch off exceptions later.
