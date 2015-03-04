@@ -194,10 +194,10 @@ void QWindowsFontEngine::getCMap()
     _faceId.index = 0;
     if(cmap) {
         OUTLINETEXTMETRIC *otm = getOutlineTextMetric(hdc);
-        designToDevice = QFixed((int)otm->otmEMSquare)/int(otm->otmTextMetrics.tmHeight);
+        designToDevice = QFixed((int)otm->otmEMSquare)/QFixed::fromReal(fontDef.pixelSize);
         unitsPerEm = otm->otmEMSquare;
         x_height = (int)otm->otmsXHeight;
-        loadKerningPairs(designToDevice);
+        loadKerningPairs(QFixed((int)otm->otmEMSquare)/int(otm->otmTextMetrics.tmHeight));
         _faceId.filename = QFile::encodeName(QString::fromWCharArray((wchar_t *)((char *)otm + (quintptr)otm->otmpFullName)));
         lineWidth = otm->otmsUnderscoreSize;
         fsType = otm->otmfsType;
@@ -361,7 +361,7 @@ glyph_t QWindowsFontEngine::glyphIndex(uint ucs4) const
 HGDIOBJ QWindowsFontEngine::selectDesignFont() const
 {
     LOGFONT f = m_logfont;
-    f.lfHeight = unitsPerEm;
+    f.lfHeight = -unitsPerEm;
     f.lfWidth = 0;
     HFONT designFont = CreateFontIndirect(&f);
     return SelectObject(m_fontEngineData->hdc, designFont);
