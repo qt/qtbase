@@ -305,6 +305,14 @@ Configure::Configure(int& argc, char** argv)
     dictionary[ "LTCG" ]            = "no";
     dictionary[ "NATIVE_GESTURES" ] = "yes";
     dictionary[ "MSVC_MP" ] = "no";
+
+    if (dictionary["QMAKESPEC"] == QString("win32-g++")) {
+        const QString zero = QStringLiteral("0");
+        const QStringList parts = Environment::gccVersion().split(QLatin1Char('.'));
+        dictionary["QT_GCC_MAJOR_VERSION"] = parts.value(0, zero);
+        dictionary["QT_GCC_MINOR_VERSION"] = parts.value(1, zero);
+        dictionary["QT_GCC_PATCH_VERSION"] = parts.value(2, zero);
+    }
 }
 
 Configure::~Configure()
@@ -3465,6 +3473,12 @@ void Configure::generateQConfigPri()
 
         if (dictionary[ "SHARED" ] == "no")
             configStream << "QT_DEFAULT_QPA_PLUGIN = q" << qpaPlatformName() << endl;
+
+        if (!dictionary["QT_GCC_MAJOR_VERSION"].isEmpty()) {
+            configStream << "QT_GCC_MAJOR_VERSION = " << dictionary["QT_GCC_MAJOR_VERSION"] << endl
+                         << "QT_GCC_MINOR_VERSION = " << dictionary["QT_GCC_MINOR_VERSION"] << endl
+                         << "QT_GCC_PATCH_VERSION = " << dictionary["QT_GCC_PATCH_VERSION"] << endl;
+        }
 
         if (!configStream.flush())
             dictionary[ "DONE" ] = "error";
