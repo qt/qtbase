@@ -923,13 +923,11 @@ void QNetworkReplyImpl::abort()
 
     QNetworkReply::close();
 
-    if (d->state != QNetworkReplyPrivate::Finished) {
-        // call finished which will emit signals
-        d->error(OperationCanceledError, tr("Operation canceled"));
-        if (d->state == QNetworkReplyPrivate::WaitingForSession)
-            d->state = QNetworkReplyPrivate::Working;
-        d->finished();
-    }
+    // call finished which will emit signals
+    d->error(OperationCanceledError, tr("Operation canceled"));
+    if (d->state == QNetworkReplyPrivate::WaitingForSession)
+        d->state = QNetworkReplyPrivate::Working;
+    d->finished();
     d->state = QNetworkReplyPrivate::Aborted;
 
     // finished may access the backend
