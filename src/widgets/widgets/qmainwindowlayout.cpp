@@ -1280,7 +1280,9 @@ QTabBar *QMainWindowLayout::getTabBar()
         result->setDrawBase(true);
         result->setElideMode(Qt::ElideRight);
         result->setDocumentMode(_documentMode);
+        result->setMovable(true);
         connect(result, SIGNAL(currentChanged(int)), this, SLOT(tabChanged()));
+        connect(result, &QTabBar::tabMoved, this, &QMainWindowLayout::tabMoved);
     }
 
     usedTabBars.insert(result);
@@ -1315,6 +1317,16 @@ void QMainWindowLayout::tabChanged()
 
     if (QWidget *w = centralWidget())
         w->raise();
+}
+
+void QMainWindowLayout::tabMoved(int from, int to)
+{
+    QTabBar *tb = qobject_cast<QTabBar*>(sender());
+    Q_ASSERT(tb);
+    QDockAreaLayoutInfo *info = layoutState.dockAreaLayout.info(tb);
+    Q_ASSERT(info);
+
+    info->moveTab(from, to);
 }
 #endif // QT_NO_TABBAR
 

@@ -2244,6 +2244,22 @@ QRect QDockAreaLayoutInfo::tabContentRect() const
 
     return result;
 }
+
+int QDockAreaLayoutInfo::tabIndexToListIndex(int tabIndex) const
+{
+    Q_ASSERT(tabbed && tabBar);
+    quintptr data = qvariant_cast<quintptr>(tabBar->tabData(tabIndex));
+    for (int i = 0; i < item_list.count(); ++i) {
+        if (tabId(item_list.at(i)) == data)
+            return i;
+    }
+    return -1;
+}
+
+void QDockAreaLayoutInfo::moveTab(int from, int to)
+{
+    item_list.move(tabIndexToListIndex(from), tabIndexToListIndex(to));
+}
 #endif // QT_NO_TABBAR
 
 /******************************************************************************
