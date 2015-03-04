@@ -69,18 +69,10 @@ extern "C" {
 
 QT_BEGIN_NAMESPACE
 
-void QT_FASTCALL convert_rgb888_to_rgb32_C(quint32 *dst, const uchar *src, int len)
-{
-    // Expand 24->32 bpp.
-    for (int i = 0; i < len; ++i) {
-        *dst++ = qRgb(src[0], src[1], src[2]);
-        src += 3;
-    }
-}
-
+Q_GUI_EXPORT void QT_FASTCALL qt_convert_rgb888_to_rgb32(quint32 *dst, const uchar *src, int len);
 typedef void (QT_FASTCALL *Rgb888ToRgb32Converter)(quint32 *dst, const uchar *src, int len);
 
-static Rgb888ToRgb32Converter rgb888ToRgb32ConverterPtr = convert_rgb888_to_rgb32_C;
+static Rgb888ToRgb32Converter rgb888ToRgb32ConverterPtr = qt_convert_rgb888_to_rgb32;
 
 struct my_error_mgr : public jpeg_error_mgr {
     jmp_buf setjmp_buffer;
@@ -1008,10 +1000,8 @@ QJpegHandler::QJpegHandler()
 #endif
 
 #if defined(QT_COMPILER_SUPPORTS_SSSE3)
-    // from qimage_ssse3.cpp
-
-    if (false) {
-    } else if (qCpuHasFeature(SSSE3)) {
+    // from qimage_ssse3.cpps
+    if (qCpuHasFeature(SSSE3)) {
         rgb888ToRgb32ConverterPtr = qt_convert_rgb888_to_rgb32_ssse3;
     }
 #endif // QT_COMPILER_SUPPORTS_SSSE3

@@ -44,6 +44,11 @@
 
 QT_BEGIN_NAMESPACE
 
+// If the change in scale for a single touch event is out of this range,
+// we consider it to be spurious.
+static const qreal kSingleStepScaleMax = 2.0;
+static const qreal kSingleStepScaleMin = 0.1;
+
 QGesture *QPanGestureRecognizer::create(QObject *target)
 {
     if (target && target->isWidgetType()) {
@@ -197,7 +202,10 @@ QGestureRecognizer::Result QPinchGestureRecognizer::recognize(QGesture *state,
                 d->lastScaleFactor = d->scaleFactor;
                 QLineF line(p1.screenPos(), p2.screenPos());
                 QLineF lastLine(p1.lastScreenPos(),  p2.lastScreenPos());
-                d->scaleFactor = line.length() / lastLine.length();
+                qreal newScaleFactor = line.length() / lastLine.length();
+                if (newScaleFactor > kSingleStepScaleMax || newScaleFactor < kSingleStepScaleMin)
+                    return QGestureRecognizer::Ignore;
+                d->scaleFactor = newScaleFactor;
             }
             d->totalScaleFactor = d->totalScaleFactor * d->scaleFactor;
             d->changeFlags |= QPinchGesture::ScaleFactorChanged;

@@ -195,15 +195,19 @@ private slots:
     void task191545_dragSelectRows();
     void taskQTBUG_5062_spansInconsistency();
     void taskQTBUG_4516_clickOnRichTextLabel();
+#ifndef QT_NO_WHEELEVENT
     void taskQTBUG_5237_wheelEventOnHeader();
+#endif
     void taskQTBUG_8585_crashForNoGoodReason();
     void taskQTBUG_7774_RtoLVisualRegionForSelection();
     void taskQTBUG_8777_scrollToSpans();
     void taskQTBUG_10169_sizeHintForRow();
     void taskQTBUG_30653_doItemsLayout();
 
+#ifndef QT_NO_WHEELEVENT
     void mouseWheel_data();
     void mouseWheel();
+#endif
 
     void addColumnWhileEditing();
     void task234926_setHeaderSorting();
@@ -3994,7 +3998,7 @@ void tst_QTableView::task248688_autoScrollNavigation()
     }
 }
 
-
+#ifndef QT_NO_WHEELEVENT
 void tst_QTableView::mouseWheel_data()
 {
     QTest::addColumn<int>("scrollMode");
@@ -4051,6 +4055,7 @@ void tst_QTableView::mouseWheel()
     QApplication::sendEvent(view.viewport(), &verticalEvent);
     QVERIFY(qAbs(view.verticalScrollBar()->value() - verticalPosition) < 10);
 }
+#endif // !QT_NO_WHEELEVENT
 
 void tst_QTableView::addColumnWhileEditing()
 {
@@ -4311,6 +4316,7 @@ void tst_QTableView::changeHeaderData()
     QVERIFY(view.verticalHeader()->width() > textWidth);
 }
 
+#ifndef QT_NO_WHEELEVENT
 void tst_QTableView::taskQTBUG_5237_wheelEventOnHeader()
 {
     QTableView view;
@@ -4327,6 +4333,7 @@ void tst_QTableView::taskQTBUG_5237_wheelEventOnHeader()
     int sbValueAfter = view.verticalScrollBar()->value();
     QVERIFY(sbValueBefore != sbValueAfter);
 }
+#endif
 
 class TestTableView : public QTableView {
 Q_OBJECT

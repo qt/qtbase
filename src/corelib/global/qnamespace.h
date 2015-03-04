@@ -1680,6 +1680,7 @@ public:
     QT_Q_ENUM(InputMethodQuery)
     QT_Q_FLAG(InputMethodHints)
     QT_Q_FLAG(InputMethodQueries)
+    QT_Q_FLAG(TouchPointStates)
     QT_Q_ENUM(ScreenOrientation)
     QT_Q_FLAG(ScreenOrientations)
     QT_Q_ENUM(ConnectionType)

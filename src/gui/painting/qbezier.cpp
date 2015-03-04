@@ -401,8 +401,8 @@ int QBezier::shifted(QBezier *curveSegments, int maxSegments, qreal offset, floa
     Q_ASSERT(curveSegments);
     Q_ASSERT(maxSegments > 0);
 
-    if (x1 == x2 && x1 == x3 && x1 == x4 &&
-        y1 == y2 && y1 == y3 && y1 == y4)
+    if (qFuzzyCompare(x1, x2) && qFuzzyCompare(x1, x3) && qFuzzyCompare(x1, x4) &&
+        qFuzzyCompare(y1, y2) && qFuzzyCompare(y1, y3) && qFuzzyCompare(y1, y4))
         return 0;
 
     --maxSegments;
