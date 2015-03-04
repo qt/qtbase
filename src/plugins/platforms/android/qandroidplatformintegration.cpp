@@ -34,6 +34,7 @@
 #include "qandroidplatformintegration.h"
 
 #include <QtCore/private/qjni_p.h>
+#include <QtGui/private/qguiapplication_p.h>
 #include <QGuiApplication>
 #include <QOpenGLContext>
 #include <QThread>
@@ -71,6 +72,8 @@ int QAndroidPlatformIntegration::m_defaultPhysicalSizeHeight = 71;
 
 Qt::ScreenOrientation QAndroidPlatformIntegration::m_orientation = Qt::PrimaryOrientation;
 Qt::ScreenOrientation QAndroidPlatformIntegration::m_nativeOrientation = Qt::PrimaryOrientation;
+
+Qt::ApplicationState QAndroidPlatformIntegration::m_defaultApplicationState = Qt::ApplicationActive;
 
 void *QAndroidPlatformNativeInterface::nativeResourceForIntegration(const QByteArray &resource)
 {
@@ -176,6 +179,8 @@ QAndroidPlatformIntegration::QAndroidPlatformIntegration(const QStringList &para
             QWindowSystemInterface::registerTouchDevice(m_touchDevice);
         }
     }
+
+    QGuiApplicationPrivate::instance()->setApplicationState(m_defaultApplicationState);
 }
 
 bool QAndroidPlatformIntegration::needsBasicRenderloopWorkaround()

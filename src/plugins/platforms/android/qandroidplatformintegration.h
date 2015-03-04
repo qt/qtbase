@@ -115,6 +115,7 @@ public:
 
     QTouchDevice *touchDevice() const { return m_touchDevice; }
     void setTouchDevice(QTouchDevice *touchDevice) { m_touchDevice = touchDevice; }
+    static void setDefaultApplicationState(Qt::ApplicationState applicationState) { m_defaultApplicationState = applicationState; }
 
     EGLDisplay m_eglDisplay;
 private:
@@ -135,6 +136,8 @@ private:
 
     static Qt::ScreenOrientation m_orientation;
     static Qt::ScreenOrientation m_nativeOrientation;
+
+    static Qt::ApplicationState m_defaultApplicationState;
 
     QPlatformFontDatabase *m_androidFDB;
     QImage *m_FbScreenImage;
