@@ -36,7 +36,8 @@ exampledirs += \
                ../ \
                snippets \
                ../../../examples/corelib \
-               ../../../examples/network/dnslookup
+               ../../../examples/network/dnslookup \
+               ../../../examples/widgets/tools
 
 imagedirs   += images
 
