@@ -427,9 +427,6 @@ void tst_QEasingCurve::setCustomType()
     QCOMPARE(curve.valueForProgress(0.15), 0.1);
     QCOMPARE(curve.valueForProgress(0.20), 0.2);
     QCOMPARE(curve.valueForProgress(0.25), 0.2);
-#if defined(UBUNTU_ONEIRIC) && defined(__i386__)
-    QEXPECT_FAIL("", "QTBUG-32432: Fails on Ubuntu 11.10 32 bit configurations", Abort);
-#endif
     QCOMPARE(curve.valueForProgress(0.30), 0.3);
     QCOMPARE(curve.valueForProgress(0.35), 0.3);
     QCOMPARE(curve.valueForProgress(0.999999), 0.9);
