@@ -4797,11 +4797,11 @@ QString QString::trimmed_helper(QString &str)
 \overload operator[]()
 
 Returns the character at the specified \a position in the string as a
-modifiable reference. Equivalent to \c at(position).
+modifiable reference.
 */
 
 /*! \fn const QChar QString::operator[](uint position) const
-
+    Equivalent to \c at(position).
 \overload operator[]()
 */
 
