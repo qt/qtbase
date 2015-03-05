@@ -1864,13 +1864,10 @@ QImage QFontEngineFT::alphaMapForGlyph(glyph_t g, QFixed subPixelPosition)
 
 QImage QFontEngineFT::alphaMapForGlyph(glyph_t g, QFixed subPixelPosition, const QTransform &t)
 {
-    lockFace();
-
     Glyph *glyph = loadGlyphFor(g, subPixelPosition, antialias ? Format_A8 : Format_Mono, t);
     if (!glyph || !glyph->data) {
         if (!cacheEnabled && glyph != &emptyGlyph)
             delete glyph;
-        unlockFace();
         return QFontEngine::alphaMapForGlyph(g);
     }
 
@@ -1891,7 +1888,6 @@ QImage QFontEngineFT::alphaMapForGlyph(glyph_t g, QFixed subPixelPosition, const
 
     if (!cacheEnabled && glyph != &emptyGlyph)
         delete glyph;
-    unlockFace();
 
     return img;
 }
@@ -1901,13 +1897,10 @@ QImage QFontEngineFT::alphaRGBMapForGlyph(glyph_t g, QFixed subPixelPosition, co
     if (t.type() > QTransform::TxRotate)
         return QFontEngine::alphaRGBMapForGlyph(g, subPixelPosition, t);
 
-    lockFace();
-
     Glyph *glyph = loadGlyphFor(g, subPixelPosition, Format_A32, t);
     if (!glyph || !glyph->data) {
         if (!cacheEnabled && glyph != &emptyGlyph)
             delete glyph;
-        unlockFace();
         return QFontEngine::alphaRGBMapForGlyph(g, subPixelPosition, t);
     }
 
@@ -1916,7 +1909,6 @@ QImage QFontEngineFT::alphaRGBMapForGlyph(glyph_t g, QFixed subPixelPosition, co
 
     if (!cacheEnabled && glyph != &emptyGlyph)
         delete glyph;
-    unlockFace();
 
     return img;
 }
