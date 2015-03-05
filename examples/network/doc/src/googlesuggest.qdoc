@@ -68,12 +68,8 @@
     in the explicit \c editor member variable.
 
     We then create a QTreeWidget as a toplevel widget and configure the various
-    properties to give it the look of a popup widget.
-
-    The popup will be populated by the results returned from Google. We set
-    the number of columns to be two, since we want to display both the
-    suggested search term and the number of hits it will trigger in the search
-    engine.
+    properties to give it the look of a popup widget. The widget is populated
+    with the results by Google Suggest API request.
 
     Furthermore, we install the GSuggestCompletion instance as an event filter
     on the QTreeWidget, and connect the \c itemClicked() signal with the \c
@@ -110,8 +106,8 @@
     \snippet googlesuggest/googlesuggest.cpp 4
 
     The \c showCompletion() function populates the QTreeWidget with the results
-    returned from the query. It takes two QStringLists, one with the suggested
-    search terms and the other with the corresponding number of hits.
+    returned from the query. It takes a QStringList of the suggested search
+    terms.
 
     \snippet googlesuggest/googlesuggest.cpp 5
 
