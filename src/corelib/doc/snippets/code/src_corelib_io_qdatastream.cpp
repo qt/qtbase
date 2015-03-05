@@ -118,4 +118,14 @@ QDataStream out(file);
 out.setVersion(QDataStream::Qt_4_0);
 //! [5]
 
+//! [6]
+in.startTransaction();
+QString str;
+qint32 a;
+in >> str >> a; // try to read packet atomically
+
+if (!in.commitTransaction())
+    return;     // wait for more data
+//! [6]
+
 }

@@ -41,8 +41,7 @@
     request a line of text from a fortune server (from the
     \l{fortuneserver}{Fortune Server} example). The client requests a
     fortune by simply connecting to the server. The server then responds with
-    a 16-bit (quint16) integer containing the length of the fortune text,
-    followed by a QString.
+    a QString which contains the fortune text.
 
     QTcpSocket supports two general approaches to network programming:
 
@@ -71,8 +70,8 @@
     \snippet fortuneclient/client.h 0
 
     Other than the widgets that make up the GUI, the data members include a
-    QTcpSocket pointer, a copy of the fortune text currently displayed, and
-    the size of the packet we are currently reading (more on this later).
+    QTcpSocket pointer, a QDataStream object that operates on the socket, and
+    a copy of the fortune text currently displayed.
 
     The socket is initialized in the Client constructor. We'll pass the main
     widget as parent, so that we won't have to worry about deleting the
@@ -81,6 +80,12 @@
     \snippet fortuneclient/client.cpp 0
     \dots
     \snippet fortuneclient/client.cpp 1
+
+    The protocol is based on QDataStream, so we set the stream device to the
+    newly created socket. We then explicitly set the protocol version of the
+    stream to QDataStream::Qt_4_0 to ensure that we're using the same version
+    as the fortune server, no matter which version of Qt the client and
+    server use.
 
     The only QTcpSocket signals we need in this example are
     QTcpSocket::readyRead(), signifying that data has been received, and
@@ -96,8 +101,7 @@
 
     \snippet fortuneclient/client.cpp 6
 
-    In this slot, we initialize \c blockSize to 0, preparing to read a new block
-    of data.  Because we allow the user to click \uicontrol{Get Fortune} before the
+    Because we allow the user to click \uicontrol{Get Fortune} before the
     previous connection finished closing, we start off by aborting the
     previous connection by calling QTcpSocket::abort(). (On an unconnected
     socket, this function does nothing.) We then proceed to connecting to the
@@ -131,31 +135,26 @@
     signal is connected to \c Client::readFortune():
 
     \snippet fortuneclient/client.cpp 8
-    \codeline
-    \snippet fortuneclient/client.cpp 10
-
-    The protocol is based on QDataStream, so we start by creating a stream
-    object, passing the socket to QDataStream's constructor. We then
-    explicitly set the protocol version of the stream to QDataStream::Qt_4_0
-    to ensure that we're using the same version as the fortune server, no
-    matter which version of Qt the client and server use.
 
     Now, TCP is based on sending a stream of data, so we cannot expect to get
     the entire fortune in one go. Especially on a slow network, the data can
     be received in several small fragments. QTcpSocket buffers up all incoming
     data and emits \l{QTcpSocket::readyRead()}{readyRead()} for every new
     block that arrives, and it is our job to ensure that we have received all
-    the data we need before we start parsing. The server's response starts
-    with the size of the packet, so first we need to ensure that we can read
-    the size, then we will wait until QTcpSocket has received the full packet.
+    the data we need before we start parsing.
 
-    \snippet fortuneclient/client.cpp 11
-    \codeline
-    \snippet fortuneclient/client.cpp 12
-
+    For this purpose we use a QDataStream read transaction. It keeps reading
+    stream data into an internal buffer and rolls it back in case of an
+    incomplete read. We start by calling startTransaction() which also resets
+    the stream status to indicate that new data was received on the socket.
     We proceed by using QDataStream's streaming operator to read the fortune
-    from the socket into a QString. Once read, we can call QLabel::setText()
-    to display the fortune.
+    from the socket into a QString. Once read, we complete the transaction by
+    calling QDataStream::commitTransaction(). If we did not receive a full
+    packet, this function restores the stream data to the initial position,
+    after which we can wait for a new readyRead() signal.
+
+    After a successful read transaction, we call QLabel::setText() to display
+    the fortune.
 
     \sa {Fortune Server Example}, {Blocking Fortune Client Example}
 */

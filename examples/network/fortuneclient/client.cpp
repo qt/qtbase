@@ -49,10 +49,7 @@ Client::Client(QWidget *parent)
     , hostCombo(new QComboBox)
     , portLineEdit(new QLineEdit)
     , getFortuneButton(new QPushButton(tr("Get Fortune")))
-//! [1]
     , tcpSocket(new QTcpSocket(this))
-//! [1]
-    , blockSize(0)
     , networkSession(Q_NULLPTR)
 {
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
@@ -99,6 +96,11 @@ Client::Client(QWidget *parent)
     QDialogButtonBox *buttonBox = new QDialogButtonBox;
     buttonBox->addButton(getFortuneButton, QDialogButtonBox::ActionRole);
     buttonBox->addButton(quitButton, QDialogButtonBox::RejectRole);
+
+//! [1]
+    in.setDevice(tcpSocket);
+    in.setVersion(QDataStream::Qt_4_0);
+//! [1]
 
     connect(hostCombo, &QComboBox::editTextChanged,
             this, &Client::enableGetFortuneButton);
@@ -171,7 +173,6 @@ Client::Client(QWidget *parent)
 void Client::requestNewFortune()
 {
     getFortuneButton->setEnabled(false);
-    blockSize = 0;
     tcpSocket->abort();
 //! [7]
     tcpSocket->connectToHost(hostCombo->currentText(),
@@ -183,39 +184,24 @@ void Client::requestNewFortune()
 //! [8]
 void Client::readFortune()
 {
-//! [9]
-    QDataStream in(tcpSocket);
-    in.setVersion(QDataStream::Qt_4_0);
-
-    if (blockSize == 0) {
-        if (tcpSocket->bytesAvailable() < (int)sizeof(quint16))
-            return;
-//! [8]
-
-//! [10]
-        in >> blockSize;
-    }
-
-    if (tcpSocket->bytesAvailable() < blockSize)
-        return;
-//! [10] //! [11]
+    in.startTransaction();
 
     QString nextFortune;
     in >> nextFortune;
+
+    if (!in.commitTransaction())
+        return;
 
     if (nextFortune == currentFortune) {
         QTimer::singleShot(0, this, &Client::requestNewFortune);
         return;
     }
-//! [11]
 
-//! [12]
     currentFortune = nextFortune;
-//! [9]
     statusLabel->setText(currentFortune);
     getFortuneButton->setEnabled(true);
 }
-//! [12]
+//! [8]
 
 //! [13]
 void Client::displayError(QAbstractSocket::SocketError socketError)

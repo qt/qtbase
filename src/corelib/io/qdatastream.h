@@ -168,6 +168,11 @@ public:
 
     int skipRawData(int len);
 
+    void startTransaction();
+    bool commitTransaction();
+    void rollbackTransaction();
+    void abortTransaction();
+
 private:
     Q_DISABLE_COPY(QDataStream)
 
@@ -179,6 +184,8 @@ private:
     ByteOrder byteorder;
     int ver;
     Status q_status;
+
+    int readBlock(char *data, int len);
 };
 
 

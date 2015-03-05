@@ -63,10 +63,7 @@ void FortuneThread::run()
     QByteArray block;
     QDataStream out(&block, QIODevice::WriteOnly);
     out.setVersion(QDataStream::Qt_4_0);
-    out << (quint16)0;
     out << text;
-    out.device()->seek(0);
-    out << (quint16)(block.size() - sizeof(quint16));
 //! [3] //! [4]
 
     tcpSocket.write(block);

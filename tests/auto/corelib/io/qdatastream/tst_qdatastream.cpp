@@ -186,6 +186,11 @@ private slots:
 
     void floatingPointNaN();
 
+    void transaction_data();
+    void transaction();
+    void nestedTransactionsResult_data();
+    void nestedTransactionsResult();
+
 private:
     void writebool(QDataStream *s);
     void writeQBitArray(QDataStream *s);
@@ -3188,6 +3193,165 @@ void tst_QDataStream::floatingPointPrecision()
         QCOMPARE(234.0, d);
     }
 
+}
+
+void tst_QDataStream::transaction_data()
+{
+    QTest::addColumn<qint8>("i8Data");
+    QTest::addColumn<qint16>("i16Data");
+    QTest::addColumn<qint32>("i32Data");
+    QTest::addColumn<qint64>("i64Data");
+    QTest::addColumn<bool>("bData");
+    QTest::addColumn<float>("fData");
+    QTest::addColumn<double>("dData");
+    QTest::addColumn<QByteArray>("strData");
+    QTest::addColumn<QByteArray>("rawData");
+
+    QTest::newRow("1") << qint8(1) << qint16(2) << qint32(3) << qint64(4) << true << 5.0f
+                       << double(6.0) << QByteArray("Hello world!") << QByteArray("Qt rocks!");
+    QTest::newRow("2") << qint8(1 << 6) << qint16(1 << 14) << qint32(1 << 30) << qint64Data(3) << false << 123.0f
+                       << double(234.0) << stringData(5).toUtf8() << stringData(6).toUtf8();
+    QTest::newRow("3") << qint8(-1) << qint16(-2) << qint32(-3) << qint64(-4) << true << -123.0f
+                       << double(-234.0) << stringData(3).toUtf8() << stringData(4).toUtf8();
+}
+
+void tst_QDataStream::transaction()
+{
+    QByteArray testBuffer;
+
+    QFETCH(qint8, i8Data);
+    QFETCH(qint16, i16Data);
+    QFETCH(qint32, i32Data);
+    QFETCH(qint64, i64Data);
+    QFETCH(bool, bData);
+    QFETCH(float, fData);
+    QFETCH(double, dData);
+    QFETCH(QByteArray, strData);
+    QFETCH(QByteArray, rawData);
+
+    {
+        QDataStream stream(&testBuffer, QIODevice::WriteOnly);
+
+        stream << i8Data << i16Data << i32Data << i64Data
+               << bData << fData << dData << strData.constData();
+        stream.writeRawData(rawData.constData(), rawData.size());
+    }
+
+    for (int splitPos = 0; splitPos <= testBuffer.size(); ++splitPos) {
+        QByteArray readBuffer(testBuffer.left(splitPos));
+        SequentialBuffer dev(&readBuffer);
+        dev.open(QIODevice::ReadOnly);
+        QDataStream stream(&dev);
+
+        qint8 i8;
+        qint16 i16;
+        qint32 i32;
+        qint64 i64;
+        bool b;
+        float f;
+        double d;
+        char *str;
+        QByteArray raw(rawData.size(), 0);
+
+        forever {
+            stream.startTransaction();
+            stream >> i8 >> i16 >> i32 >> i64 >> b >> f >> d >> str;
+            stream.readRawData(raw.data(), raw.size());
+
+            if (stream.commitTransaction())
+                break;
+
+            QVERIFY(stream.status() == QDataStream::ReadPastEnd);
+            QVERIFY(splitPos == 0 || !stream.atEnd());
+            QVERIFY(readBuffer.size() < testBuffer.size());
+            delete [] str;
+            raw.fill(0);
+            readBuffer.append(testBuffer.right(testBuffer.size() - splitPos));
+        }
+
+        QVERIFY(stream.atEnd());
+        QCOMPARE(i8, i8Data);
+        QCOMPARE(i16, i16Data);
+        QCOMPARE(i32, i32Data);
+        QCOMPARE(i64, i64Data);
+        QCOMPARE(b, bData);
+        QCOMPARE(f, fData);
+        QCOMPARE(d, dData);
+        QVERIFY(strData == str);
+        delete [] str;
+        QCOMPARE(raw, rawData);
+    }
+}
+
+void tst_QDataStream::nestedTransactionsResult_data()
+{
+    QTest::addColumn<bool>("commitFirst");
+    QTest::addColumn<bool>("rollbackFirst");
+    QTest::addColumn<bool>("commitSecond");
+    QTest::addColumn<bool>("rollbackSecond");
+    QTest::addColumn<bool>("successExpected");
+    QTest::addColumn<bool>("expectedAtEnd");
+    QTest::addColumn<int>("expectedStatus");
+
+    QTest::newRow("1") << false << false << false << false
+                       << false << true << int(QDataStream::ReadCorruptData);
+    QTest::newRow("2") << false << false << false << true
+                       << false << true << int(QDataStream::ReadCorruptData);
+    QTest::newRow("3") << false << false << true << false
+                       << false << true << int(QDataStream::ReadCorruptData);
+
+    QTest::newRow("4") << false << true << false << false
+                       << false << true << int(QDataStream::ReadCorruptData);
+    QTest::newRow("5") << false << true << false << true
+                       << false << false << int(QDataStream::ReadPastEnd);
+    QTest::newRow("6") << false << true << true << false
+                       << false << false << int(QDataStream::ReadPastEnd);
+
+    QTest::newRow("7") << true << false << false << false
+                       << false << true << int(QDataStream::ReadCorruptData);
+    QTest::newRow("8") << true << false << false << true
+                       << false << false << int(QDataStream::ReadPastEnd);
+    QTest::newRow("9") << true << false << true << false
+                       << true << true << int(QDataStream::Ok);
+}
+
+void tst_QDataStream::nestedTransactionsResult()
+{
+    QByteArray testBuffer(1, 0);
+    QDataStream stream(&testBuffer, QIODevice::ReadOnly);
+    uchar c;
+
+    QFETCH(bool, commitFirst);
+    QFETCH(bool, rollbackFirst);
+    QFETCH(bool, commitSecond);
+    QFETCH(bool, rollbackSecond);
+    QFETCH(bool, successExpected);
+    QFETCH(bool, expectedAtEnd);
+    QFETCH(int, expectedStatus);
+
+    stream.startTransaction();
+    stream.startTransaction();
+    stream >> c;
+
+    if (commitFirst)
+        QVERIFY(stream.commitTransaction());
+    else if (rollbackFirst)
+        stream.rollbackTransaction();
+    else
+        stream.abortTransaction();
+
+    stream.startTransaction();
+
+    if (commitSecond)
+        QCOMPARE(stream.commitTransaction(), commitFirst);
+    else if (rollbackSecond)
+        stream.rollbackTransaction();
+    else
+        stream.abortTransaction();
+
+    QCOMPARE(stream.commitTransaction(), successExpected);
+    QCOMPARE(stream.atEnd(), expectedAtEnd);
+    QCOMPARE(int(stream.status()), expectedStatus);
 }
 
 QTEST_MAIN(tst_QDataStream)

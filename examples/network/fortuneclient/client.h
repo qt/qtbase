@@ -43,6 +43,7 @@
 
 #include <QDialog>
 #include <QTcpSocket>
+#include <QDataStream>
 
 QT_BEGIN_NAMESPACE
 class QComboBox;
@@ -75,8 +76,8 @@ private:
     QPushButton *getFortuneButton;
 
     QTcpSocket *tcpSocket;
+    QDataStream in;
     QString currentFortune;
-    quint16 blockSize;
 
     QNetworkSession *networkSession;
 };

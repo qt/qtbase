@@ -125,39 +125,22 @@
     other \c waitFor...() functions, is part of QTcpSocket's \e{blocking
     API}.
 
-    After this statement, we have a connected socket to work with. Now it's
-    time to see what the fortune server has sent us.
-
-    \snippet blockingfortuneclient/fortunethread.cpp 9
-    \snippet blockingfortuneclient/fortunethread.cpp 10
-
-    This step is to read the size of the packet. Although we are only reading
-    two bytes here, and the \c while loop may seem to overdo it, we present this
-    code to demonstrate a good pattern for waiting for data using
-    QTcpSocket::waitForReadyRead(). It goes like this: For as long as we still
-    need more data, we call waitForReadyRead(). If it returns false,
-    we abort the operation. After this statement, we know that we have received
-    enough data.
+    After this statement, we have a connected socket to work with.
 
     \snippet blockingfortuneclient/fortunethread.cpp 11
 
     Now we can create a QDataStream object, passing the socket to
     QDataStream's constructor, and as in the other client examples we set
-    the stream protocol version to QDataStream::Qt_4_0, and read the size
-    of the packet.
+    the stream protocol version to QDataStream::Qt_4_0.
 
     \snippet blockingfortuneclient/fortunethread.cpp 12
-    \snippet blockingfortuneclient/fortunethread.cpp 13
 
-    Again, we'll use a loop that waits for more data by calling
-    QTcpSocket::waitForReadyRead(). In this loop, we're waiting until
-    QTcpSocket::bytesAvailable() returns the full packet size.
-
-    \snippet blockingfortuneclient/fortunethread.cpp 14
-
-    Now that we have all the data that we need, we can use QDataStream to
-    read the fortune string from the packet. The resulting fortune is
-    delivered by emitting newFortune().
+    We proceed by initiating a loop that waits for the fortune string data by
+    calling QTcpSocket::waitForReadyRead(). If it returns false, we abort the
+    operation. After this statement, we start a stream read transaction. We
+    exit the loop when QDataStream::commitTransaction() returns true, which
+    means successful fortune string loading. The resulting fortune is
+    delivered by emitting newFortune():
 
     \snippet blockingfortuneclient/fortunethread.cpp 15
 

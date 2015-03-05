@@ -73,17 +73,8 @@
     using QTcpSocket. First we create a QByteArray and a QDataStream object,
     passing the bytearray to QDataStream's constructor. We then explicitly set
     the protocol version of QDataStream to QDataStream::Qt_4_0 to ensure that
-    we can communicate with clients from future versions of Qt. (See
-    QDataStream::setVersion().)
-
-    \snippet fortuneserver/server.cpp 6
-
-    At the start of our QByteArray, we reserve space for a 16 bit integer that
-    will contain the total size of the data block we are sending. We continue
-    by streaming in a random fortune. Then we seek back to the beginning of
-    the QByteArray, and overwrite the reserved 16 bit integer value with the
-    total size of the array. By doing this, we provide a way for clients to
-    verify how much data they can expect before reading the whole packet.
+    we can communicate with clients from future versions of Qt (see
+    QDataStream::setVersion()). We continue by streaming in a random fortune.
 
     \snippet fortuneserver/server.cpp 7
 

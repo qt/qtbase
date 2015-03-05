@@ -96,37 +96,27 @@ void FortuneThread::run()
             emit error(socket.error(), socket.errorString());
             return;
         }
-//! [8] //! [9]
+//! [8] //! [11]
 
-        while (socket.bytesAvailable() < (int)sizeof(quint16)) {
-            if (!socket.waitForReadyRead(Timeout)) {
-                emit error(socket.error(), socket.errorString());
-                return;
-            }
-//! [9] //! [10]
-        }
-//! [10] //! [11]
-
-        quint16 blockSize;
         QDataStream in(&socket);
         in.setVersion(QDataStream::Qt_4_0);
-        in >> blockSize;
+        QString fortune;
 //! [11] //! [12]
 
-        while (socket.bytesAvailable() < blockSize) {
+        do {
             if (!socket.waitForReadyRead(Timeout)) {
                 emit error(socket.error(), socket.errorString());
                 return;
             }
-//! [12] //! [13]
-        }
-//! [13] //! [14]
+
+            in.startTransaction();
+            in >> fortune;
+        } while (!in.commitTransaction());
+//! [12] //! [15]
 
         mutex.lock();
-        QString fortune;
-        in >> fortune;
         emit newFortune(fortune);
-//! [7] //! [14] //! [15]
+//! [7]
 
         cond.wait(&mutex);
         serverName = hostName;

@@ -53,9 +53,11 @@ QT_BEGIN_NAMESPACE
 class QDataStreamPrivate
 {
 public:
-    QDataStreamPrivate() : floatingPointPrecision(QDataStream::DoublePrecision) { }
+    QDataStreamPrivate() : floatingPointPrecision(QDataStream::DoublePrecision),
+        transactionDepth(0) { }
 
     QDataStream::FloatingPointPrecision floatingPointPrecision;
+    int transactionDepth;
 };
 #endif
 
