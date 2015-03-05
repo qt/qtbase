@@ -86,6 +86,7 @@
 #include <qpa/qplatformbackingstore.h>
 #include <qpa/qwindowsysteminterface.h>
 
+#include <QTextCodec>
 #include <stdio.h>
 
 #ifdef XCB_USE_XLIB
@@ -242,6 +243,48 @@ static inline bool positionIncludesFrame(QWindow *w)
 {
     return qt_window_private(w)->positionPolicy == QWindowPrivate::WindowFrameInclusive;
 }
+
+#ifdef XCB_USE_XLIB
+static inline XTextProperty* qstringToXTP(Display *dpy, const QString& s)
+{
+    #include <X11/Xatom.h>
+
+    static XTextProperty tp = { 0, 0, 0, 0 };
+    static bool free_prop = true; // we can't free tp.value in case it references
+                                  // the data of the static QByteArray below.
+    if (tp.value) {
+        if (free_prop)
+            XFree(tp.value);
+        tp.value = 0;
+        free_prop = true;
+    }
+
+    static const QTextCodec* mapper = QTextCodec::codecForLocale();
+    int errCode = 0;
+    if (mapper) {
+        QByteArray mapped = mapper->fromUnicode(s);
+        char* tl[2];
+        tl[0] = mapped.data();
+        tl[1] = 0;
+        errCode = XmbTextListToTextProperty(dpy, tl, 1, XStdICCTextStyle, &tp);
+        if (errCode < 0)
+            qDebug("XmbTextListToTextProperty result code %d", errCode);
+    }
+    if (!mapper || errCode < 0) {
+        mapper = QTextCodec::codecForName("latin1");
+        if (!mapper || !mapper->canEncode(s))
+            return Q_NULLPTR;
+        static QByteArray qcs;
+        qcs = s.toLatin1();
+        tp.value = (uchar*)qcs.data();
+        tp.encoding = XA_STRING;
+        tp.format = 8;
+        tp.nitems = qcs.length();
+        free_prop = false;
+    }
+    return &tp;
+}
+#endif // XCB_USE_XLIB
 
 static const char *wm_window_type_property_id = "_q_xcb_wm_window_type";
 
@@ -1423,6 +1466,12 @@ void QXcbWindow::setWindowTitle(const QString &title)
                                    8,
                                    ba.length(),
                                    ba.constData()));
+
+#ifdef XCB_USE_XLIB
+    XTextProperty *text = qstringToXTP(DISPLAY_FROM_XCB(this), title);
+    if (text)
+        XSetWMName(DISPLAY_FROM_XCB(this), m_window, text);
+#endif
     xcb_flush(xcb_connection());
 }
 

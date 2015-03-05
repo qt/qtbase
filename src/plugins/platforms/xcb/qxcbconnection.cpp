@@ -1480,6 +1480,7 @@ static const char * xcb_atomnames = {
     "WM_STATE\0"
     "WM_CHANGE_STATE\0"
     "WM_CLASS\0"
+    "WM_NAME\0"
 
     // Session management
     "WM_CLIENT_LEADER\0"
