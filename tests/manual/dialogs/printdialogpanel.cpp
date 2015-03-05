@@ -50,6 +50,7 @@
 #include <QGridLayout>
 #include <QFormLayout>
 #include <QVBoxLayout>
+#include <QMessageBox>
 #include <QDoubleSpinBox>
 #include <QPainter>
 #include <QFont>
@@ -258,9 +259,27 @@ static void drawVertCmRuler(QPainter &painter, int x, int y1, int y2)
     }
 }
 
-static void print(QPrinter *printer)
+static bool print(QPrinter *printer, QString *errorMessage)
 {
-    QPainter painter(printer);
+    QPainter painter;
+
+    if (!printer->isValid()) {
+        *errorMessage = QLatin1String("Invalid printer.");
+        return false;
+    }
+
+    if (printer->printerState() != QPrinter::Idle) {
+        *errorMessage = QLatin1String("Printer not idle (state ")
+            + QString::number(printer->printerState())
+            + QLatin1String(").");
+        return false;
+    }
+
+    if (!painter.begin(printer)) {
+        *errorMessage = QLatin1String("QPainter::begin() failed.");
+        return false;
+    }
+
     const QRectF pageF = printer->pageRect();
 
     QFont font = painter.font();
@@ -280,8 +299,8 @@ static void print(QPrinter *printer)
         << *printer;
 
     if (!painter.device()->logicalDpiY() || !painter.device()->logicalDpiX()) {
-        qWarning() << Q_FUNC_INFO << "Bailing out due to invalid DPI: " << msg;
-        return;
+        *errorMessage = QLatin1String("Bailing out due to invalid DPI.");
+        return false;
     }
 
     painter.drawRect(pageF);
@@ -296,7 +315,21 @@ static void print(QPrinter *printer)
         textPoint.ry() += (15 * charHeight) / 10;
     }
 
-    painter.end();
+    if (!painter.end()) {
+        *errorMessage = QLatin1String("QPainter::end() failed.");
+        return false;
+    }
+
+    return true;
+}
+
+static bool print(QPrinter *printer, QWidget *dialogParent)
+{
+    QString errorMessage;
+    const bool result = print(printer, &errorMessage);
+    if (!result)
+        QMessageBox::warning(dialogParent, QLatin1String("Printing Failed"), errorMessage);
+    return result;
 }
 
 class PrintPreviewDialog : public QPrintPreviewDialog {
@@ -308,7 +341,7 @@ public:
     }
 
 public slots:
-    void slotPaintRequested(QPrinter *p) { print(p); }
+    void slotPaintRequested(QPrinter *p) { print(p, this); }
 };
 
 PrintDialogPanel::PrintDialogPanel(QWidget *parent)
@@ -669,7 +702,7 @@ void PrintDialogPanel::showPrintDialog()
     dialog.setOptions(m_panel.m_dialogOptionsGroupBox->value<QPrintDialog::PrintDialogOptions>());
     if (dialog.exec() == QDialog::Accepted) {
         retrieveSettings(m_printer.data());
-        print(m_printer.data());
+        print(m_printer.data(), this);
     }
 }
 
@@ -693,7 +726,7 @@ void PrintDialogPanel::showPageSetupDialog()
 void PrintDialogPanel::directPrint()
 {
     applySettings(m_printer.data());
-    print(m_printer.data());
+    print(m_printer.data(), this);
     retrieveSettings(m_printer.data());
 }
 
