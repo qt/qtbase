@@ -108,7 +108,7 @@ public:
     void setWindowState(bool floating, bool unplug = false, const QRect &rect = QRect());
     void nonClientAreaMouseEvent(QMouseEvent *event);
     void initDrag(const QPoint &pos, bool nca);
-    void startDrag();
+    void startDrag(bool group = true);
     void endDrag(bool abort = false);
     void moveEvent(QMoveEvent *event);
 
@@ -151,6 +151,7 @@ public:
     int minimumTitleWidth() const;
     int titleHeight() const;
     void updateMaxSize();
+    static bool wmSupportsNativeWindowDeco();
     bool nativeWindowDeco() const;
     bool nativeWindowDeco(bool floating) const;
 

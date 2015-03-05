@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2015 The Qt Company Ltd.
+** Copyright (C) 2015 Olivier Goffart <ogoffart@woboq.com>
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the QtWidgets module of the Qt Toolkit.
@@ -1854,20 +1855,6 @@ static Qt::DockWidgetArea toDockWidgetArea(QInternal::DockPosition pos)
     return Qt::NoDockWidgetArea;
 }
 
-static QRect constrainedRect(QRect rect, const QRect &desktop)
-{
-    if (desktop.isValid()) {
-        rect.setWidth(qMin(rect.width(), desktop.width()));
-        rect.setHeight(qMin(rect.height(), desktop.height()));
-        rect.moveLeft(qMax(rect.left(), desktop.left()));
-        rect.moveTop(qMax(rect.top(), desktop.top()));
-        rect.moveRight(qMin(rect.right(), desktop.right()));
-        rect.moveBottom(qMin(rect.bottom(), desktop.bottom()));
-    }
-
-    return rect;
-}
-
 bool QDockAreaLayoutInfo::restoreState(QDataStream &stream, QList<QDockWidget*> &widgets, bool testing)
 {
     uchar marker;
@@ -1958,11 +1945,7 @@ bool QDockAreaLayoutInfo::restoreState(QDataStream &stream, QList<QDockWidget*> 
 #endif
                     if (!testing) {
                         QRect r(x, y, w, h);
-                        QDesktopWidget *desktop = QApplication::desktop();
-                        if (desktop->isVirtualDesktop())
-                            r = constrainedRect(r, desktop->screenGeometry(desktop->screenNumber(r.topLeft())));
-                        else
-                            r = constrainedRect(r, desktop->screenGeometry(widget));
+                        r = QDockAreaLayout::constrainedRect(r, widget);
                         widget->move(r.topLeft());
                         widget->resize(r.size());
                     }
@@ -2075,6 +2058,36 @@ void QDockAreaLayoutInfo::updateSeparatorWidgets() const
 #endif //QT_NO_TABBAR
 
 #ifndef QT_NO_TABBAR
+/*! \internal
+    reparent all the widgets contained in this layout portion to the
+    specified parent. This is used to reparent dock widgets and tabbars
+    to the floating window or the main window
+ */
+void QDockAreaLayoutInfo::reparentWidgets(QWidget *parent)
+{
+    if (tabBar)
+        tabBar->setParent(parent);
+
+    for (int i = 0; i < item_list.count(); ++i) {
+        const QDockAreaLayoutItem &item = item_list.at(i);
+        if (item.flags & QDockAreaLayoutItem::GapItem)
+            continue;
+        if (item.skip())
+            continue;
+        if (item.subinfo)
+            item.subinfo->reparentWidgets(parent);
+        if (item.widgetItem) {
+            QWidget *w = item.widgetItem->widget();
+            if (w->parent() != parent) {
+                bool hidden = w->isHidden();
+                w->setParent(parent);
+                if (!hidden)
+                    w->show();
+            }
+        }
+    }
+}
+
 //returns whether the tabbar is visible or not
 bool QDockAreaLayoutInfo::updateTabBar() const
 {
@@ -2981,6 +2994,33 @@ QSize QDockAreaLayout::minimumSize() const
     return QSize(qMax(row1, row2, row3), qMax(col1, col2, col3));
 }
 
+/*! \internal
+    Try to fit the given rectangle \a rect on the screen which contains
+    the window \a widget.
+    Used to compute the geometry of a dragged a dock widget that should
+    be shown with \a rect, but needs to be visible on the screen
+ */
+QRect QDockAreaLayout::constrainedRect(QRect rect, QWidget* widget)
+{
+    QRect desktop;
+    QDesktopWidget *desktopW = QApplication::desktop();
+    if (desktopW->isVirtualDesktop())
+        desktop = desktopW->screenGeometry(rect.topLeft());
+    else
+        desktop = desktopW->screenGeometry(widget);
+
+    if (desktop.isValid()) {
+        rect.setWidth(qMin(rect.width(), desktop.width()));
+        rect.setHeight(qMin(rect.height(), desktop.height()));
+        rect.moveLeft(qMax(rect.left(), desktop.left()));
+        rect.moveTop(qMax(rect.top(), desktop.top()));
+        rect.moveRight(qMin(rect.right(), desktop.right()));
+        rect.moveBottom(qMin(rect.bottom(), desktop.bottom()));
+    }
+
+    return rect;
+}
+
 bool QDockAreaLayout::restoreDockWidget(QDockWidget *dockWidget)
 {
     QList<int> index = indexOfPlaceHolder(dockWidget->objectName());
@@ -2994,9 +3034,7 @@ bool QDockAreaLayout::restoreDockWidget(QDockWidget *dockWidget)
     item.widgetItem = new QDockWidgetItem(dockWidget);
 
     if (placeHolder->window) {
-        const QRect screenGeometry =
-            QApplication::desktop()->screenGeometry(placeHolder->topLevelRect.center());
-        const QRect r = constrainedRect(placeHolder->topLevelRect, screenGeometry);
+        const QRect r = constrainedRect(placeHolder->topLevelRect, dockWidget);
         dockWidget->d_func()->setWindowState(true, true, r);
     }
     dockWidget->setVisible(!placeHolder->hidden);

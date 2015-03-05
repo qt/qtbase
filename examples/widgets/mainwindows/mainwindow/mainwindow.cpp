@@ -156,6 +156,11 @@ void MainWindow::setupMenuBar()
     action->setChecked(dockOptions() & VerticalTabs);
     connect(action, SIGNAL(toggled(bool)), this, SLOT(setDockOptions()));
 
+    action = mainWindowMenu->addAction(tr("Grouped dragging"));
+    action->setCheckable(true);
+    action->setChecked(dockOptions() & GroupedDragging);
+    connect(action, SIGNAL(toggled(bool)), this, SLOT(setDockOptions()));
+
     QMenu *toolBarMenu = menuBar()->addMenu(tr("Tool bars"));
     for (int i = 0; i < toolBars.count(); ++i)
         toolBarMenu->addMenu(toolBars.at(i)->menu);
@@ -187,6 +192,8 @@ void MainWindow::setDockOptions()
         opts |= ForceTabbedDocks;
     if (actions.at(4)->isChecked())
         opts |= VerticalTabs;
+    if (actions.at(5)->isChecked())
+        opts |= GroupedDragging;
 
     QMainWindow::setDockOptions(opts);
 }
