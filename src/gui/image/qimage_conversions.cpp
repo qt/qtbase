@@ -286,7 +286,7 @@ Q_GUI_EXPORT void QT_FASTCALL qt_convert_rgb888_to_rgb32(quint32 *dest_data, con
 
     // Handle 4 pixels at a time 12 bytes input to 16 bytes output.
     for (; pixel + 3 < len; pixel += 4) {
-        const quint32 *src_packed = (quint32 *) src_data;
+        const quint32 *src_packed = (const quint32 *) src_data;
         const quint32 src1 = qFromBigEndian(src_packed[0]);
         const quint32 src2 = qFromBigEndian(src_packed[1]);
         const quint32 src3 = qFromBigEndian(src_packed[2]);
@@ -321,7 +321,7 @@ Q_GUI_EXPORT void QT_FASTCALL qt_convert_rgb888_to_rgbx8888(quint32 *dest_data, 
 
     // Handle 4 pixels at a time 12 bytes input to 16 bytes output.
     for (; pixel + 3 < len; pixel += 4) {
-        const quint32 *src_packed = (quint32 *) src_data;
+        const quint32 *src_packed = (const quint32 *) src_data;
         const quint32 src1 = src_packed[0];
         const quint32 src2 = src_packed[1];
         const quint32 src3 = src_packed[2];
@@ -1092,12 +1092,12 @@ void dither_to_Mono(QImageData *dst, const QImageData *src,
         } else {                                // 32 bit image
             if (fromalpha) {
                 while (p < end) {
-                    *b2++ = 255 - (*(uint*)p >> 24);
+                    *b2++ = 255 - (*(const uint*)p >> 24);
                     p += 4;
                 }
             } else {
                 while (p < end) {
-                    *b2++ = qGray(*(uint*)p);
+                    *b2++ = qGray(*(const uint*)p);
                     p += 4;
                 }
             }
@@ -1115,12 +1115,12 @@ void dither_to_Mono(QImageData *dst, const QImageData *src,
                 } else {                        // 24 bit image
                     if (fromalpha) {
                         while (p < end) {
-                            *b2++ = 255 - (*(uint*)p >> 24);
+                            *b2++ = 255 - (*(const uint*)p >> 24);
                             p += 4;
                         }
                     } else {
                         while (p < end) {
-                            *b2++ = qGray(*(uint*)p);
+                            *b2++ = qGray(*(const uint*)p);
                             p += 4;
                         }
                     }

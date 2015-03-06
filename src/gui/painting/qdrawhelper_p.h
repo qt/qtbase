@@ -769,7 +769,7 @@ do {                                          \
 do {                                          \
     /* Duff's device */                       \
     ushort *_d = (ushort*)(dest);         \
-    const ushort *_s = (ushort*)(src);    \
+    const ushort *_s = (const ushort*)(src);    \
     int n = ((length) + 7) / 8;               \
     switch ((length) & 0x07)                  \
     {                                         \

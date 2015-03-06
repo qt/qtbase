@@ -1718,7 +1718,7 @@ Q_GUI_EXPORT QDebug operator<<(QDebug d, const QAccessibleInterface *iface)
         return d;
     }
     d.nospace();
-    d << "QAccessibleInterface(" << hex << (void *) iface << dec;
+    d << "QAccessibleInterface(" << hex << (const void *) iface << dec;
     if (iface->isValid()) {
         d << " name=" << iface->text(QAccessible::Name) << " ";
         d << "role=" << qAccessibleRoleString(iface->role()) << " ";

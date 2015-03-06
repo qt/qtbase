@@ -531,7 +531,7 @@ void QBlitterPaintEngine::fill(const QVectorPath &path, const QBrush &brush)
 {
     Q_D(QBlitterPaintEngine);
     if (path.shape() == QVectorPath::RectangleHint) {
-        QRectF rect(((QPointF *) path.points())[0], ((QPointF *) path.points())[2]);
+        QRectF rect(((const QPointF *) path.points())[0], ((const QPointF *) path.points())[2]);
         fillRect(rect, brush);
     } else {
         d->lock();

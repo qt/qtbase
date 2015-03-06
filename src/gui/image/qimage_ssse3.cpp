@@ -65,7 +65,7 @@ Q_GUI_EXPORT void QT_FASTCALL qt_convert_rgb888_to_rgb32_ssse3(quint32 *dst, con
     // Mask to have alpha = 0xff
     const __m128i alphaMask = _mm_set1_epi32(0xff000000);
 
-    __m128i *inVectorPtr = (__m128i *)src;
+    const __m128i *inVectorPtr = (const __m128i *)src;
     __m128i *dstVectorPtr = (__m128i *)dst;
 
     const int simdRoundCount = (len - prologLength) / 16; // one iteration in the loop converts 16 pixels
@@ -110,7 +110,7 @@ Q_GUI_EXPORT void QT_FASTCALL qt_convert_rgb888_to_rgb32_ssse3(quint32 *dst, con
         _mm_store_si128(dstVectorPtr, _mm_or_si128(outputVector, alphaMask));
         ++dstVectorPtr;
     }
-    src = (uchar *)inVectorPtr;
+    src = (const uchar *)inVectorPtr;
     dst = (quint32 *)dstVectorPtr;
 
     while (dst != end) {

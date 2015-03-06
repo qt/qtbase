@@ -2053,7 +2053,7 @@ static QImage convertWithPalette(const QImage &src, QImage::Format format,
 
     if (format == QImage::Format_Indexed8) {
         for (int y=0; y<h; ++y) {
-            QRgb *src_pixels = (QRgb *) src.scanLine(y);
+            const QRgb *src_pixels = (const QRgb *) src.scanLine(y);
             uchar *dest_pixels = (uchar *) dest.scanLine(y);
             for (int x=0; x<w; ++x) {
                 int src_pixel = src_pixels[x];
@@ -2069,7 +2069,7 @@ static QImage convertWithPalette(const QImage &src, QImage::Format format,
         QVector<QRgb> table = clut;
         table.resize(2);
         for (int y=0; y<h; ++y) {
-            QRgb *src_pixels = (QRgb *) src.scanLine(y);
+            const QRgb *src_pixels = (const QRgb *) src.scanLine(y);
             for (int x=0; x<w; ++x) {
                 int src_pixel = src_pixels[x];
                 int value = cache.value(src_pixel, -1);
@@ -2680,7 +2680,7 @@ QImage QImage::createHeuristicMask(bool clipTight) const
         return img32.createHeuristicMask(clipTight);
     }
 
-#define PIX(x,y)  (*((QRgb*)scanLine(y)+x) & 0x00ffffff)
+#define PIX(x,y)  (*((const QRgb*)scanLine(y)+x) & 0x00ffffff)
 
     int w = width();
     int h = height();
@@ -2714,7 +2714,7 @@ QImage QImage::createHeuristicMask(bool clipTight) const
             ypp = ypc;
             ypc = ypn;
             ypn = (y == h-1) ? 0 : m.scanLine(y+1);
-            QRgb *p = (QRgb *)scanLine(y);
+            const QRgb *p = (const QRgb *)scanLine(y);
             for (x = 0; x < w; x++) {
                 // slowness here - it's possible to do six of these tests
                 // together in one go. oh well.
@@ -2740,7 +2740,7 @@ QImage QImage::createHeuristicMask(bool clipTight) const
             ypp = ypc;
             ypc = ypn;
             ypn = (y == h-1) ? 0 : m.scanLine(y+1);
-            QRgb *p = (QRgb *)scanLine(y);
+            const QRgb *p = (const QRgb *)scanLine(y);
             for (x = 0; x < w; x++) {
                 if ((*p & 0x00ffffff) != background) {
                     if (x > 0)
@@ -2784,7 +2784,7 @@ QImage QImage::createMaskFromColor(QRgb color, Qt::MaskMode mode) const
 
     if (depth() == 32) {
         for (int h = 0; h < d->height; h++) {
-            const uint *sl = (uint *) scanLine(h);
+            const uint *sl = (const uint *) scanLine(h);
             for (int w = 0; w < d->width; w++) {
                 if (sl[w] == color)
                     *(s + (w >> 3)) |= (1 << (w & 7));
@@ -3877,7 +3877,7 @@ bool qt_xForm_helper(const QTransform &trueMat, int xoffset, int type, int depth
                 case 16:                        // 16 bpp transform
                 while (dptr < maxp) {
                     if (trigx < maxws && trigy < maxhs)
-                        *((ushort*)dptr) = *((ushort *)(sptr+sbpl*(trigy>>12) +
+                        *((ushort*)dptr) = *((const ushort *)(sptr+sbpl*(trigy>>12) +
                                                      ((trigx>>12)<<1)));
                     trigx += m11;
                     trigy += m12;
@@ -3903,7 +3903,7 @@ bool qt_xForm_helper(const QTransform &trueMat, int xoffset, int type, int depth
                 case 32:                        // 32 bpp transform
                 while (dptr < maxp) {
                     if (trigx < maxws && trigy < maxhs)
-                        *((uint*)dptr) = *((uint *)(sptr+sbpl*(trigy>>12) +
+                        *((uint*)dptr) = *((const uint *)(sptr+sbpl*(trigy>>12) +
                                                    ((trigx>>12)<<2)));
                     trigx += m11;
                     trigy += m12;
@@ -4050,7 +4050,7 @@ void QImage::setAlphaChannel(const QImage &alphaChannel)
     // Slight optimization since alphachannels are returned as 8-bit grays.
     if (alphaChannel.format() == QImage::Format_Alpha8 ||( alphaChannel.d->depth == 8 && alphaChannel.isGrayscale())) {
         const uchar *src_data = alphaChannel.d->data;
-        const uchar *dest_data = d->data;
+        uchar *dest_data = d->data;
         for (int y=0; y<h; ++y) {
             const uchar *src = src_data;
             QRgb *dest = (QRgb *)dest_data;
@@ -4071,7 +4071,7 @@ void QImage::setAlphaChannel(const QImage &alphaChannel)
     } else {
         const QImage sourceImage = alphaChannel.convertToFormat(QImage::Format_RGB32);
         const uchar *src_data = sourceImage.d->data;
-        const uchar *dest_data = d->data;
+        uchar *dest_data = d->data;
         for (int y=0; y<h; ++y) {
             const QRgb *src = (const QRgb *) src_data;
             QRgb *dest = (QRgb *) dest_data;

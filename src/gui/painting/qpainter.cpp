@@ -4626,7 +4626,7 @@ void QPainter::drawLines(const QPointF *pointPairs, int lineCount)
 {
     Q_ASSERT(sizeof(QLineF) == 2*sizeof(QPointF));
 
-    drawLines((QLineF*)pointPairs, lineCount);
+    drawLines((const QLineF*)pointPairs, lineCount);
 }
 
 /*!
@@ -4639,7 +4639,7 @@ void QPainter::drawLines(const QPoint *pointPairs, int lineCount)
 {
     Q_ASSERT(sizeof(QLine) == 2*sizeof(QPoint));
 
-    drawLines((QLine*)pointPairs, lineCount);
+    drawLines((const QLine*)pointPairs, lineCount);
 }
 
 

@@ -194,7 +194,7 @@ static int inflate(Bytef *dest, ulong *destLen, const Bytef *source, ulong sourc
     z_stream stream;
     int err;
 
-    stream.next_in = (Bytef*)source;
+    stream.next_in = const_cast<Bytef*>(source);
     stream.avail_in = (uInt)sourceLen;
     if ((uLong)stream.avail_in != sourceLen)
         return Z_BUF_ERROR;
@@ -229,7 +229,7 @@ static int deflate (Bytef *dest, ulong *destLen, const Bytef *source, ulong sour
     z_stream stream;
     int err;
 
-    stream.next_in = (Bytef*)source;
+    stream.next_in = const_cast<Bytef*>(source);
     stream.avail_in = (uInt)sourceLen;
     stream.next_out = dest;
     stream.avail_out = (uInt)*destLen;
@@ -1008,7 +1008,7 @@ QByteArray QZipReader::fileData(const QString &fileName) const
         do {
             baunzip.resize(len);
             res = inflate((uchar*)baunzip.data(), &len,
-                          (uchar*)compressed.constData(), compressed_size);
+                          (const uchar*)compressed.constData(), compressed_size);
 
             switch (res) {
             case Z_OK:

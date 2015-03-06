@@ -1864,7 +1864,7 @@ void QRasterPaintEngine::fillPolygon(const QPointF *points, int pointCount, Poly
     }
 
     // Compose polygon fill..,
-    QVectorPath vp((qreal *) points, pointCount, 0, QVectorPath::polygonFlags(mode));
+    QVectorPath vp((const qreal *) points, pointCount, 0, QVectorPath::polygonFlags(mode));
     ensureOutlineMapper();
     QT_FT_Outline *outline = d->outlineMapper->convertPath(vp);
 
@@ -1889,7 +1889,7 @@ void QRasterPaintEngine::drawPolygon(const QPointF *points, int pointCount, Poly
 #endif
     Q_ASSERT(pointCount >= 2);
 
-    if (mode != PolylineMode && QVectorPath::isRect((qreal *) points, pointCount)) {
+    if (mode != PolylineMode && QVectorPath::isRect((const qreal *) points, pointCount)) {
         QRectF r(points[0], points[2]);
         drawRects(&r, 1);
         return;
@@ -1905,7 +1905,7 @@ void QRasterPaintEngine::drawPolygon(const QPointF *points, int pointCount, Poly
 
     // Do the outline...
     if (s->penData.blend) {
-        QVectorPath vp((qreal *) points, pointCount, 0, QVectorPath::polygonFlags(mode));
+        QVectorPath vp((const qreal *) points, pointCount, 0, QVectorPath::polygonFlags(mode));
         if (s->flags.fast_pen) {
             QCosmeticStroker stroker(s, d->deviceRect, d->deviceRectUnclipped);
             stroker.setLegacyRoundingEnabled(s->flags.legacy_rounding);
@@ -1930,7 +1930,7 @@ void QRasterPaintEngine::drawPolygon(const QPoint *points, int pointCount, Polyg
         qDebug() << "   - " << points[i];
 #endif
     Q_ASSERT(pointCount >= 2);
-    if (mode != PolylineMode && QVectorPath::isRect((int *) points, pointCount)) {
+    if (mode != PolylineMode && QVectorPath::isRect((const int *) points, pointCount)) {
         QRect r(points[0].x(),
                 points[0].y(),
                 points[2].x() - points[0].x(),
@@ -1968,7 +1968,7 @@ void QRasterPaintEngine::drawPolygon(const QPoint *points, int pointCount, Polyg
         int count = pointCount * 2;
         QVarLengthArray<qreal> fpoints(count);
         for (int i=0; i<count; ++i)
-            fpoints[i] = ((int *) points)[i];
+            fpoints[i] = ((const int *) points)[i];
         QVectorPath vp((qreal *) fpoints.data(), pointCount, 0, QVectorPath::polygonFlags(mode));
 
         if (s->flags.fast_pen) {
@@ -2695,7 +2695,7 @@ void QRasterPaintEngine::alphaPenBlt(const void* src, int bpl, int depth, int rx
             scanline += bpl;
         }
     } else { // 32-bit alpha...
-        uint *sl = (uint *) scanline;
+        const uint *sl = (const uint *) scanline;
         for (int y = y0; y < y1; ++y) {
             for (int x = x0; x < x1; ) {
                 // Skip those with 0 coverage

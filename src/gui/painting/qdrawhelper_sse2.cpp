@@ -111,7 +111,7 @@ void qt_blend_rgb32_on_rgb32_sse2(uchar *destPixels, int dbpl,
                 }
 
                 for (; x < w-3; x += 4) {
-                    __m128i srcVector = _mm_loadu_si128((__m128i *)&src[x]);
+                    __m128i srcVector = _mm_loadu_si128((const __m128i *)&src[x]);
                     if (_mm_movemask_epi8(_mm_cmpeq_epi32(srcVector, nullVector)) != 0xffff) {
                         const __m128i dstVector = _mm_load_si128((__m128i *)&dst[x]);
                         __m128i result;
@@ -162,7 +162,7 @@ void QT_FASTCALL comp_func_Plus_sse2(uint *dst, const uint *src, int length, uin
 
         // 2) composition with SSE2
         for (; x < length - 3; x += 4) {
-            const __m128i srcVector = _mm_loadu_si128((__m128i *)&src[x]);
+            const __m128i srcVector = _mm_loadu_si128((const __m128i *)&src[x]);
             const __m128i dstVector = _mm_load_si128((__m128i *)&dst[x]);
 
             const __m128i result = _mm_adds_epu8(srcVector, dstVector);
@@ -185,7 +185,7 @@ void QT_FASTCALL comp_func_Plus_sse2(uint *dst, const uint *src, int length, uin
         const __m128i colorMask = _mm_set1_epi32(0x00ff00ff);
         // 2) composition with SSE2
         for (; x < length - 3; x += 4) {
-            const __m128i srcVector = _mm_loadu_si128((__m128i *)&src[x]);
+            const __m128i srcVector = _mm_loadu_si128((const __m128i *)&src[x]);
             const __m128i dstVector = _mm_load_si128((__m128i *)&dst[x]);
 
             __m128i result = _mm_adds_epu8(srcVector, dstVector);
@@ -218,7 +218,7 @@ void QT_FASTCALL comp_func_Source_sse2(uint *dst, const uint *src, int length, u
         const __m128i constAlphaVector = _mm_set1_epi16(const_alpha);
         const __m128i oneMinusConstAlpha =  _mm_set1_epi16(ialpha);
         for (; x < length - 3; x += 4) {
-            const __m128i srcVector = _mm_loadu_si128((__m128i *)&src[x]);
+            const __m128i srcVector = _mm_loadu_si128((const __m128i *)&src[x]);
             __m128i dstVector = _mm_load_si128((__m128i *)&dst[x]);
             INTERPOLATE_PIXEL_255_SSE2(dstVector, srcVector, dstVector, constAlphaVector, oneMinusConstAlpha, colorMask, half)
             _mm_store_si128((__m128i *)&dst[x], dstVector);

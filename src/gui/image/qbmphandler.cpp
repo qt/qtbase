@@ -639,7 +639,7 @@ bool qt_write_dib(QDataStream &s, QImage image)
 
     if (nbits == 1 || nbits == 8) {                // direct output
         for (y=image.height()-1; y>=0; y--) {
-            if (d->write((char*)image.constScanLine(y), bpl) == -1)
+            if (d->write((const char*)image.constScanLine(y), bpl) == -1)
                 return false;
         }
         return true;
