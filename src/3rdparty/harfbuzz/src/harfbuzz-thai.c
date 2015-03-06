@@ -68,7 +68,7 @@ static int init_libthai() {
         return 0;
 }
 
-static void to_tis620(const HB_UChar16 *string, hb_uint32 len, const char *cstr)
+static void to_tis620(const HB_UChar16 *string, hb_uint32 len, char *cstr)
 {
     hb_uint32 i;
     unsigned char *result = (unsigned char *)cstr;
@@ -183,7 +183,7 @@ static int thai_contain_glyphs (HB_ShaperItem *shaper_item, const int glyph_map[
 
     for (c = 0; c < 0x80; c++) {
         if ( glyph_map[c] ) {
-            if ( !shaper_item->font->klass->canRender (shaper_item->font, (HB_UChar16 *) &glyph_map[c], 1) )
+            if ( !shaper_item->font->klass->canRender (shaper_item->font, (const HB_UChar16 *) &glyph_map[c], 1) )
                 return 0;
         }
     }
