@@ -884,12 +884,24 @@ public:
     bool isOverload() const { return ove; }
     bool isReimp() const Q_DECL_OVERRIDE { return reimp; }
     bool isFunction() const Q_DECL_OVERRIDE { return true; }
-    virtual bool isQmlSignal() const Q_DECL_OVERRIDE { return genus() == Node::QML; }
-    virtual bool isJsSignal() const Q_DECL_OVERRIDE { return genus() == Node::JS; }
-    virtual bool isQmlSignalHandler() const Q_DECL_OVERRIDE { return genus() == Node::QML; }
-    virtual bool isJsSignalHandler() const Q_DECL_OVERRIDE { return genus() == Node::JS; }
-    virtual bool isQmlMethod() const Q_DECL_OVERRIDE { return genus() == Node::QML; }
-    virtual bool isJsMethod() const Q_DECL_OVERRIDE { return genus() == Node::JS; }
+    virtual bool isQmlSignal() const Q_DECL_OVERRIDE {
+        return (type() == Node::QmlSignal) && (genus() == Node::QML);
+    }
+    virtual bool isJsSignal() const Q_DECL_OVERRIDE {
+        return (type() == Node::QmlSignal) && (genus() == Node::JS);
+    }
+    virtual bool isQmlSignalHandler() const Q_DECL_OVERRIDE {
+        return (type() == Node::QmlSignalHandler) && (genus() == Node::QML);
+    }
+    virtual bool isJsSignalHandler() const Q_DECL_OVERRIDE {
+        return (type() == Node::QmlSignalHandler) && (genus() == Node::JS);
+    }
+    virtual bool isQmlMethod() const Q_DECL_OVERRIDE {
+        return (type() == Node::QmlMethod) && (genus() == Node::QML);
+    }
+    virtual bool isJsMethod() const Q_DECL_OVERRIDE {
+        return (type() == Node::QmlMethod) && (genus() == Node::JS);
+    }
     int overloadNumber() const;
     const QList<Parameter>& parameters() const { return params; }
     QStringList parameterNames() const;
