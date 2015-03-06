@@ -43,6 +43,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.text.ClipboardManager;
+import android.os.Build;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.Menu;
@@ -301,32 +302,49 @@ public class QtNative
 
     static public void sendTouchEvent(MotionEvent event, int id)
     {
-        //@ANDROID-5
-        touchBegin(id);
-        for (int i=0;i<event.getPointerCount();i++) {
-                touchAdd(id,
-                         event.getPointerId(i),
-                         getAction(i, event),
-                         i == 0,
-                         (int)event.getX(i),
-                         (int)event.getY(i),
-                         event.getSize(i),
-                         event.getPressure(i));
+        int pointerType = 0;
+
+        if (Build.VERSION.SDK_INT >= 14) {
+            switch (event.getToolType(0)) {
+            case MotionEvent.TOOL_TYPE_STYLUS:
+                pointerType = 1; // QTabletEvent::Pen
+                break;
+            case MotionEvent.TOOL_TYPE_ERASER:
+                pointerType = 3; // QTabletEvent::Eraser
+                break;
+            // TODO TOOL_TYPE_MOUSE
+            }
         }
 
-        switch (event.getAction()) {
-            case MotionEvent.ACTION_DOWN:
-                touchEnd(id,0);
-                break;
+        if (pointerType != 0) {
+            tabletEvent(id, event.getDeviceId(), event.getEventTime(), event.getAction(), pointerType,
+                event.getButtonState(), event.getX(), event.getY(), event.getPressure());
+        } else {
+            touchBegin(id);
+            for (int i = 0; i < event.getPointerCount(); ++i) {
+                    touchAdd(id,
+                             event.getPointerId(i),
+                             getAction(i, event),
+                             i == 0,
+                             (int)event.getX(i),
+                             (int)event.getY(i),
+                             event.getSize(i),
+                             event.getPressure(i));
+            }
 
-            case MotionEvent.ACTION_UP:
-                touchEnd(id,2);
-                break;
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+                    touchEnd(id, 0);
+                    break;
 
-            default:
-                touchEnd(id,1);
+                case MotionEvent.ACTION_UP:
+                    touchEnd(id, 2);
+                    break;
+
+                default:
+                    touchEnd(id, 1);
+            }
         }
-        //@ANDROID-5
     }
 
     static public void sendTrackballEvent(MotionEvent event, int id)
@@ -591,6 +609,10 @@ public class QtNative
     public static native void touchEnd(int winId, int action);
     public static native void longPress(int winId, int x, int y);
     // pointer methods
+
+    // tablet methods
+    public static native void tabletEvent(int winId, int deviceId, long time, int action, int pointerType, int buttonState, float x, float y, float pressure);
+    // tablet methods
 
     // keyboard methods
     public static native void keyDown(int key, int unicode, int modifier, boolean autoRepeat);
