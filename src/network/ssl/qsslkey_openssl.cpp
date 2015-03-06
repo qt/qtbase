@@ -139,7 +139,7 @@ void QSslKeyPrivate::decodePem(const QByteArray &pem, const QByteArray &passPhra
     if (!bio)
         return;
 
-    void *phrase = (void *)passPhrase.constData();
+    void *phrase = const_cast<char *>(passPhrase.constData());
 
     if (algorithm == QSsl::Rsa) {
         RSA *result = (type == QSsl::PublicKey)
@@ -201,7 +201,7 @@ QByteArray QSslKeyPrivate::toPem(const QByteArray &passPhrase) const
                     bio, rsa,
                     // ### the cipher should be selectable in the API:
                     passPhrase.isEmpty() ? (const EVP_CIPHER *)0 : q_EVP_des_ede3_cbc(),
-                    (uchar *)passPhrase.data(), passPhrase.size(), 0, 0)) {
+                    const_cast<uchar *>((const uchar *)passPhrase.data()), passPhrase.size(), 0, 0)) {
                 fail = true;
             }
         }
@@ -214,7 +214,7 @@ QByteArray QSslKeyPrivate::toPem(const QByteArray &passPhrase) const
                     bio, dsa,
                     // ### the cipher should be selectable in the API:
                     passPhrase.isEmpty() ? (const EVP_CIPHER *)0 : q_EVP_des_ede3_cbc(),
-                    (uchar *)passPhrase.data(), passPhrase.size(), 0, 0)) {
+                    const_cast<uchar *>((const uchar *)passPhrase.data()), passPhrase.size(), 0, 0)) {
                 fail = true;
             }
         }
@@ -228,7 +228,7 @@ QByteArray QSslKeyPrivate::toPem(const QByteArray &passPhrase) const
                     bio, ec,
                     // ### the cipher should be selectable in the API:
                     passPhrase.isEmpty() ? (const EVP_CIPHER *)0 : q_EVP_des_ede3_cbc(),
-                    (uchar *)passPhrase.data(), passPhrase.size(), 0, 0)) {
+                    const_cast<uchar *>((const uchar *)passPhrase.data()), passPhrase.size(), 0, 0)) {
                 fail = true;
             }
         }
