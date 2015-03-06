@@ -57,11 +57,92 @@ private slots:
     void quoteArgWin();
     void pathUtils();
 
+    void proString();
     void proStringList();
 
     void proParser_data();
     void proParser();
 };
+
+void tst_qmakelib::proString()
+{
+    QString qs1(QStringLiteral("this is a string"));
+
+    ProString s1(qs1);
+    QCOMPARE(s1.toQString(), QStringLiteral("this is a string"));
+
+    ProString s2(qs1, 5, 8);
+    QCOMPARE(s2.toQString(), QStringLiteral("is a str"));
+
+    QCOMPARE(s2.hash(), 0x80000000);
+    qHash(s2);
+    QCOMPARE(s2.hash(), 90404018U);
+
+    QCOMPARE(s2.mid(0, 10).toQString(), QStringLiteral("is a str"));
+    QCOMPARE(s2.mid(1, 5).toQString(), QStringLiteral("s a s"));
+    QCOMPARE(s2.mid(10, 3).toQString(), QStringLiteral(""));
+
+    QString qs2(QStringLiteral("   spacy  string   "));
+    QCOMPARE(ProString(qs2, 3, 13).trimmed().toQString(), QStringLiteral("spacy  string"));
+    QCOMPARE(ProString(qs2, 1, 17).trimmed().toQString(), QStringLiteral("spacy  string"));
+
+    QVERIFY(s2.toQStringRef().string()->isSharedWith(qs1));
+    s2.prepend(ProString("there "));
+    QCOMPARE(s2.toQString(), QStringLiteral("there is a str"));
+    QVERIFY(!s2.toQStringRef().string()->isSharedWith(qs1));
+
+    ProString s3("this is a longish string with bells and whistles");
+    s3 = s3.mid(18, 17);
+    // Prepend to detached string with lots of spare space in it.
+    s3.prepend(ProString("another "));
+    QCOMPARE(s3.toQString(), QStringLiteral("another string with bells"));
+
+    // Note: The string still has plenty of spare space.
+    s3.append(QLatin1Char('.'));
+    QCOMPARE(s3.toQString(), QStringLiteral("another string with bells."));
+    s3.append(QLatin1String(" eh?"));
+    QCOMPARE(s3.toQString(), QStringLiteral("another string with bells. eh?"));
+
+    s3.append(ProString(" yeah!"));
+    QCOMPARE(s3.toQString(), QStringLiteral("another string with bells. eh? yeah!"));
+
+    bool pending = false; // Not in string, but joining => add space
+    s3.append(ProString("..."), &pending);
+    QCOMPARE(s3.toQString(), QStringLiteral("another string with bells. eh? yeah! ..."));
+    QVERIFY(pending);
+
+    ProStringList sl1;
+    sl1 << ProString("") << ProString("foo") << ProString("barbaz");
+    ProString s4a("hallo");
+    s4a.append(sl1);
+    QCOMPARE(s4a.toQString(), QStringLiteral("hallo foo barbaz"));
+    ProString s4b("hallo");
+    pending = false;
+    s4b.append(sl1, &pending);
+    QCOMPARE(s4b.toQString(), QStringLiteral("hallo  foo barbaz"));
+    ProString s4c;
+    pending = false;
+    s4c.append(sl1, &pending);
+    QCOMPARE(s4c.toQString(), QStringLiteral(" foo barbaz"));
+    // bizarreness
+    ProString s4d("hallo");
+    pending = false;
+    s4d.append(sl1, &pending, true);
+    QCOMPARE(s4d.toQString(), QStringLiteral("hallo foo barbaz"));
+    ProString s4e;
+    pending = false;
+    s4e.append(sl1, &pending, true);
+    QCOMPARE(s4e.toQString(), QStringLiteral("foo barbaz"));
+
+    ProStringList sl2;
+    sl2 << ProString("foo");
+    ProString s5;
+    s5.append(sl2);
+    QCOMPARE(s5.toQString(), QStringLiteral("foo"));
+    QVERIFY(s5.toQStringRef().string()->isSharedWith(*sl2.first().toQStringRef().string()));
+
+    QCOMPARE(ProString("one") + ProString(" more"), QStringLiteral("one more"));
+}
 
 void tst_qmakelib::proStringList()
 {
