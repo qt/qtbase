@@ -178,7 +178,7 @@ FunctionNode* Tree::findFunctionNode(const QStringList& parentPath, const Functi
         parent = findNode(parentPath, 0, 0, Node::DontCare);
     if (parent == 0 || !parent->isInnerNode())
         return 0;
-    return ((InnerNode*)parent)->findFunctionNode(clone);
+    return ((const InnerNode*)parent)->findFunctionNode(clone);
 }
 
 
@@ -249,9 +249,9 @@ const FunctionNode* Tree::findFunctionNode(const QStringList& path,
 
             const Node* next;
             if (i == path.size() - 1)
-                next = ((InnerNode*) node)->findFunctionNode(path.at(i));
+                next = ((const InnerNode*) node)->findFunctionNode(path.at(i));
             else
-                next = ((InnerNode*) node)->findChildNode(path.at(i), genus);
+                next = ((const InnerNode*) node)->findChildNode(path.at(i), genus);
 
             if (!next && node->isClass() && (findFlags & SearchBaseClasses)) {
                 NodeList baseClasses = allBaseClasses(static_cast<const ClassNode*>(node));

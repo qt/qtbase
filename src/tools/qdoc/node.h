@@ -376,10 +376,10 @@ public:
     Node* findChildNode(const QString& name, Type type);
     virtual void findChildren(const QString& name, NodeList& nodes) const Q_DECL_OVERRIDE;
     FunctionNode* findFunctionNode(const QString& name) const;
-    FunctionNode* findFunctionNode(const FunctionNode* clone);
+    FunctionNode* findFunctionNode(const FunctionNode* clone) const;
     void addInclude(const QString &include);
     void setIncludes(const QStringList &includes);
-    void setOverload(const FunctionNode* func, bool overlode);
+    void setOverload(FunctionNode* func, bool overlode);
     void normalizeOverloads();
     void makeUndocumentedChildrenInternal();
     void deleteChildren();

@@ -396,7 +396,7 @@ QString Config::getString(const QString& var) const
         while (i >= 0) {
             const ConfigVar& cv = configVars[i];
             if (!cv.location_.isEmpty())
-                (Location&) lastLocation_ = cv.location_;
+                const_cast<Config *>(this)->lastLocation_ = cv.location_;
             if (!cv.values_.isEmpty()) {
                 if (!cv.plus_)
                     value.clear();
@@ -443,7 +443,7 @@ QStringList Config::getStringList(const QString& var) const
         int i = configVars.size() - 1;
         while (i >= 0) {
             if (!configVars[i].location_.isEmpty())
-                (Location&) lastLocation_ = configVars[i].location_;
+                const_cast<Config *>(this)->lastLocation_ = configVars[i].location_;
             if (configVars[i].plus_)
                 values.append(configVars[i].values_);
             else
@@ -478,7 +478,7 @@ QStringList Config::getCanonicalPathList(const QString& var, bool validate) cons
         while (i >= 0) {
             const ConfigVar& cv = configVars[i];
             if (!cv.location_.isEmpty())
-                (Location&) lastLocation_ = cv.location_;
+                const_cast<Config *>(this)->lastLocation_ = cv.location_;
             if (!cv.plus_)
                 t.clear();
             const QString d = cv.currentPath_;
