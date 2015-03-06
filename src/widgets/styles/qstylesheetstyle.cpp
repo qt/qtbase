@@ -1478,7 +1478,7 @@ public:
         do {
             const ushort *uc = (const ushort *)nodeName.constData();
             const ushort *e = uc + nodeName.length();
-            const uchar *c = (uchar *)metaObject->className();
+            const uchar *c = (const uchar *)metaObject->className();
             while (*c && uc != e && (*uc == *c || (*c == ':' && *uc == '-'))) {
                 ++uc;
                 ++c;
@@ -1579,7 +1579,7 @@ QVector<QCss::StyleRule> QStyleSheetStyle::styleRules(const QObject *obj) const
     styleSelector.styleSheets += objectSs;
 
     StyleSelector::NodePtr n;
-    n.ptr = (void *)obj;
+    n.ptr = const_cast<QObject *>(obj);
     QVector<QCss::StyleRule> rules = styleSelector.styleRulesForNode(n);
     styleSheetCaches->styleRulesCache.insert(obj, rules);
     return rules;

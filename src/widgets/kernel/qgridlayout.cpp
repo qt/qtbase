@@ -1275,7 +1275,7 @@ QSize QGridLayout::maximumSize() const
 */
 bool QGridLayout::hasHeightForWidth() const
 {
-    return ((QGridLayout*)this)->d_func()->hasHeightForWidth(horizontalSpacing(), verticalSpacing());
+    return const_cast<QGridLayout*>(this)->d_func()->hasHeightForWidth(horizontalSpacing(), verticalSpacing());
 }
 
 /*!

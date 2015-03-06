@@ -4284,7 +4284,7 @@ QPoint QWidget::mapFromParent(const QPoint &pos) const
 
 QWidget *QWidget::window() const
 {
-    QWidget *w = (QWidget *)this;
+    QWidget *w = const_cast<QWidget *>(this);
     QWidget *p = w->parentWidget();
     while (!w->isWindow() && p) {
         w = p;

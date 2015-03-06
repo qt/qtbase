@@ -4056,7 +4056,7 @@ QPixmap QGtkStyle::standardPixmap(StandardPixmap sp, const QStyleOption *option,
     switch (sp) {
 
     case SP_TitleBarNormalButton: {
-        QImage restoreButton((const char **)dock_widget_restore_xpm);
+        QImage restoreButton(dock_widget_restore_xpm);
         QColor alphaCorner = restoreButton.color(2);
         alphaCorner.setAlpha(80);
         restoreButton.setColor(2, alphaCorner.rgba());
@@ -4069,7 +4069,7 @@ QPixmap QGtkStyle::standardPixmap(StandardPixmap sp, const QStyleOption *option,
     case SP_TitleBarCloseButton: // Fall through
     case SP_DockWidgetCloseButton: {
 
-        QImage closeButton((const char **)dock_widget_close_xpm);
+        QImage closeButton(dock_widget_close_xpm);
         QColor alphaCorner = closeButton.color(2);
         alphaCorner.setAlpha(80);
         closeButton.setColor(2, alphaCorner.rgba());
