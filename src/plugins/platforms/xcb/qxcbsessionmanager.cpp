@@ -125,7 +125,7 @@ static void sm_setProperty(const QString &name, const QString &value)
     QByteArray v = value.toUtf8();
     SmPropValue prop;
     prop.length = v.length();
-    prop.value = (SmPointer) v.constData();
+    prop.value = (SmPointer) const_cast<char *>(v.constData());
     sm_setProperty(name.toLatin1().data(), SmARRAY8, 1, &prop);
 }
 

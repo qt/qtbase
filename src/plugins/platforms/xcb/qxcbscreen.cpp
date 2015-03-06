@@ -703,7 +703,7 @@ Q_XCB_EXPORT QDebug operator<<(QDebug debug, const QXcbScreen *screen)
 {
     const QDebugStateSaver saver(debug);
     debug.nospace();
-    debug << "QXcbScreen(" << (void *)screen;
+    debug << "QXcbScreen(" << (const void *)screen;
     if (screen) {
         debug << fixed << qSetRealNumberPrecision(1);
         debug << ", name=" << screen->name();

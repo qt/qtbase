@@ -524,7 +524,7 @@ QImage ICOReader::iconAt(int index)
 
             iod->seek(iconEntry.dwImageOffset);
 
-            const QByteArray pngMagic = QByteArray::fromRawData((char*)pngMagicData, sizeof(pngMagicData));
+            const QByteArray pngMagic = QByteArray::fromRawData((const char*)pngMagicData, sizeof(pngMagicData));
             const bool isPngImage = (iod->read(pngMagic.size()) == pngMagic);
 
             if (isPngImage) {
