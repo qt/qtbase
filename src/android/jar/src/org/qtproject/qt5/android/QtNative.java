@@ -279,12 +279,14 @@ public class QtNative
         if (action == MotionEvent.ACTION_MOVE) {
             int hsz = event.getHistorySize();
             if (hsz > 0) {
-                if (event.getX(index) != event.getHistoricalX(index, hsz-1)
-                    || event.getY(index) != event.getHistoricalY(index, hsz-1)) {
-                    return 1;
-                } else {
-                    return 2;
+                float x = event.getX(index);
+                float y = event.getY(index);
+                for (int h = 0; h < hsz; ++h) {
+                    if ( event.getHistoricalX(index, h) != x ||
+                         event.getHistoricalY(index, h) != y )
+                        return 1;
                 }
+                return 2;
             }
             return 1;
         }
