@@ -112,6 +112,7 @@ bool QPlatformGraphicsBufferHelper::bindSWToTexture(const QPlatformGraphicsBuffe
                                                     bool *swizzleRandB,
                                                     const QRect &subRect)
 {
+#ifndef QT_NO_OPENGL
     if (!QOpenGLContext::currentContext())
         return false;
 
@@ -172,6 +173,12 @@ bool QPlatformGraphicsBufferHelper::bindSWToTexture(const QPlatformGraphicsBuffe
 
     return true;
 
+#else
+    Q_UNUSED(graphicsBuffer)
+    Q_UNUSED(swizzleRandB)
+    Q_UNUSED(subRect)
+    return false;
+#endif // QT_NO_OPENGL
 }
 
 QT_END_NAMESPACE
