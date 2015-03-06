@@ -208,15 +208,22 @@ static inline QString resolveBugListFile(const QString &fileName)
     return QStandardPaths::locate(QStandardPaths::ConfigLocation, fileName);
 }
 
+#  ifndef QT_NO_OPENGL
 typedef QHash<QOpenGLConfig::Gpu, QWindowsOpenGLTester::Renderers> SupportedRenderersCache;
 Q_GLOBAL_STATIC(SupportedRenderersCache, supportedRenderersCache)
+#  endif
 
 #endif // !Q_OS_WINCE
 
 QWindowsOpenGLTester::Renderers QWindowsOpenGLTester::detectSupportedRenderers(const GpuDescription &gpu, bool glesOnly)
 {
     Q_UNUSED(gpu)
-#ifndef Q_OS_WINCE
+    Q_UNUSED(glesOnly)
+#if defined(QT_NO_OPENGL)
+    return 0;
+#elif defined(Q_OS_WINCE)
+    return QWindowsOpenGLTester::Gles;
+#else
     QOpenGLConfig::Gpu qgpu;
     qgpu.deviceId = gpu.deviceId;
     qgpu.vendorId = gpu.vendorId;
@@ -265,9 +272,7 @@ QWindowsOpenGLTester::Renderers QWindowsOpenGLTester::detectSupportedRenderers(c
 
     srCache->insert(qgpu, result);
     return result;
-#else // !Q_OS_WINCE
-    return QWindowsOpenGLTester::Gles;
-#endif
+#endif // !Q_OS_WINCE && !QT_NO_OPENGL
 }
 
 QWindowsOpenGLTester::Renderers QWindowsOpenGLTester::supportedGlesRenderers()
@@ -288,7 +293,7 @@ QWindowsOpenGLTester::Renderers QWindowsOpenGLTester::supportedRenderers()
 
 bool QWindowsOpenGLTester::testDesktopGL()
 {
-#ifndef Q_OS_WINCE
+#if !defined(QT_NO_OPENGL) && !defined(Q_OS_WINCE)
     HMODULE lib = 0;
     HWND wnd = 0;
     HDC dc = 0;
@@ -414,9 +419,9 @@ cleanup:
     // No FreeLibrary. Some implementations, Mesa in particular, deadlock when trying to unload.
 
     return result;
-#else // !Q_OS_WINCE
+#else
     return false;
-#endif
+#endif // !QT_NO_OPENGL && !Q_OS_WINCE
 }
 
 QT_END_NAMESPACE

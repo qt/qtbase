@@ -2265,6 +2265,7 @@ void QWindowsWindow::setCustomMargins(const QMargins &newCustomMargins)
 void *QWindowsWindow::surface(void *nativeConfig, int *err)
 {
 #ifdef QT_NO_OPENGL
+    Q_UNUSED(nativeConfig)
     return 0;
 #else
     if (!m_surface) {
@@ -2278,11 +2279,13 @@ void *QWindowsWindow::surface(void *nativeConfig, int *err)
 
 void QWindowsWindow::invalidateSurface()
 {
+#ifndef QT_NO_OPENGL
     if (m_surface) {
         if (QWindowsStaticOpenGLContext *staticOpenGLContext = QWindowsIntegration::staticOpenGLContext())
             staticOpenGLContext->destroyWindowSurface(m_surface);
         m_surface = 0;
     }
+#endif // QT_NO_OPENGL
 }
 
 void QWindowsWindow::setTouchWindowTouchTypeStatic(QWindow *window, QWindowsWindowFunctions::TouchWindowTouchTypes touchTypes)
