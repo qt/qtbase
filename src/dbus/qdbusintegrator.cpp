@@ -91,7 +91,7 @@ static inline QString dbusInterfaceString()
 
 static inline QDebug operator<<(QDebug dbg, const QThread *th)
 {
-    dbg.nospace() << "QThread(ptr=" << (void*)th;
+    dbg.nospace() << "QThread(ptr=" << (const void*)th;
     if (th && !th->objectName().isEmpty())
         dbg.nospace() << ", name=" << th->objectName();
     else if (th)
@@ -104,7 +104,7 @@ static inline QDebug operator<<(QDebug dbg, const QThread *th)
 static inline QDebug operator<<(QDebug dbg, const QDBusConnectionPrivate *conn)
 {
     dbg.nospace() << "QDBusConnection("
-                  << "ptr=" << (void*)conn
+                  << "ptr=" << (const void*)conn
                   << ", name=" << conn->name
                   << ", baseService=" << conn->baseService
                   << ", thread=";
