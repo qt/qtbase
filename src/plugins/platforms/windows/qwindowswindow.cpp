@@ -933,7 +933,7 @@ QWindowsWindow::QWindowsWindow(QWindow *aWindow, const QWindowsWindowData &data)
             setFlag(OpenGL_ES2);
     }
 #endif // QT_NO_OPENGL
-    updateDropSite();
+    updateDropSite(window()->isTopLevel());
 
 #ifndef Q_OS_WINCE
     if ((QWindowsContext::instance()->systemInfo() & QWindowsContext::SI_SupportsTouch)
@@ -1020,10 +1020,10 @@ void QWindowsWindow::destroyWindow()
     }
 }
 
-void QWindowsWindow::updateDropSite()
+void QWindowsWindow::updateDropSite(bool topLevel)
 {
     bool enabled = false;
-    if (window()->isTopLevel()) {
+    if (topLevel) {
         switch (window()->type()) {
         case Qt::Window:
         case Qt::Dialog:
@@ -1306,7 +1306,7 @@ void QWindowsWindow::setParent_sys(const QPlatformWindow *parent)
         if (wasTopLevel != isTopLevel) {
             setDropSiteEnabled(false);
             setWindowFlags_sys(window()->flags(), unsigned(isTopLevel ? WindowCreationData::ForceTopLevel : WindowCreationData::ForceChild));
-            updateDropSite();
+            updateDropSite(isTopLevel);
         }
     }
 }
@@ -1561,7 +1561,7 @@ void QWindowsWindow::setWindowFlags(Qt::WindowFlags flags)
         m_data.flags = flags;
         if (m_data.hwnd) {
             m_data = setWindowFlags_sys(flags);
-            updateDropSite();
+            updateDropSite(window()->isTopLevel());
         }
     }
     // When switching to a frameless window, geometry

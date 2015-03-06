@@ -274,7 +274,7 @@ private:
     void destroyWindow();
     inline bool isDropSiteEnabled() const { return m_dropTarget != 0; }
     void setDropSiteEnabled(bool enabled);
-    void updateDropSite();
+    void updateDropSite(bool topLevel);
     void handleGeometryChange();
     void handleWindowStateChange(Qt::WindowState state);
     inline void destroyIcon();
