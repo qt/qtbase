@@ -1078,7 +1078,7 @@ static QByteArray qStringAsUcs2Le(const QString& src)
 }
 
 
-static QString qStringFromUcs2Le(const QByteArray& src)
+static QString qStringFromUcs2Le(QByteArray src)
 {
     Q_ASSERT(src.size() % 2 == 0);
     unsigned short *d = (unsigned short*)src.data();
