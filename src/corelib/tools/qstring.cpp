@@ -216,7 +216,7 @@ void qt_from_latin1(ushort *dst, const char *str, size_t size)
 
     // we're going to read str[offset..offset+15] (16 bytes)
     for ( ; str + offset + 15 < e; offset += 16) {
-        const __m128i chunk = _mm_loadu_si128((__m128i*)(str + offset)); // load
+        const __m128i chunk = _mm_loadu_si128((const __m128i*)(str + offset)); // load
 #ifdef __AVX2__
         // zero extend to an YMM register
         const __m256i extended = _mm256_cvtepu8_epi16(chunk);
@@ -317,10 +317,10 @@ static void qt_to_latin1(uchar *dst, const ushort *src, int length)
 
     // we're going to write to dst[offset..offset+15] (16 bytes)
     for ( ; dst + offset + 15 < e; offset += 16) {
-        __m128i chunk1 = _mm_loadu_si128((__m128i*)(src + offset)); // load
+        __m128i chunk1 = _mm_loadu_si128((const __m128i*)(src + offset)); // load
         chunk1 = mergeQuestionMarks(chunk1);
 
-        __m128i chunk2 = _mm_loadu_si128((__m128i*)(src + offset + 8)); // load
+        __m128i chunk2 = _mm_loadu_si128((const __m128i*)(src + offset + 8)); // load
         chunk2 = mergeQuestionMarks(chunk2);
 
         // pack the two vector to 16 x 8bits elements
@@ -459,8 +459,8 @@ static int ucstrncmp(const QChar *a, const QChar *b, int l)
 
     // we're going to read ptr[0..15] (16 bytes)
     for ( ; ptr + 15 < reinterpret_cast<const char *>(a); ptr += 16) {
-        __m128i a_data = _mm_loadu_si128((__m128i*)ptr);
-        __m128i b_data = _mm_loadu_si128((__m128i*)(ptr + distance));
+        __m128i a_data = _mm_loadu_si128((const __m128i*)ptr);
+        __m128i b_data = _mm_loadu_si128((const __m128i*)(ptr + distance));
         __m128i result = _mm_cmpeq_epi16(a_data, b_data);
         uint mask = ~_mm_movemask_epi8(result);
         if (ushort(mask)) {
@@ -542,14 +542,14 @@ static int ucstrncmp(const QChar *a, const uchar *c, int l)
     for ( ; uc + offset + 15 < e; offset += 16) {
         // similar to fromLatin1_helper:
         // load 16 bytes of Latin 1 data
-        __m128i chunk = _mm_loadu_si128((__m128i*)(c + offset));
+        __m128i chunk = _mm_loadu_si128((const __m128i*)(c + offset));
 
 #  ifdef __AVX2__
         // expand Latin 1 data via zero extension
         __m256i ldata = _mm256_cvtepu8_epi16(chunk);
 
         // load UTF-16 data and compare
-        __m256i ucdata = _mm256_loadu_si256((__m256i*)(uc + offset));
+        __m256i ucdata = _mm256_loadu_si256((const __m256i*)(uc + offset));
         __m256i result = _mm256_cmpeq_epi16(ldata, ucdata);
 
         uint mask = ~_mm256_movemask_epi8(result);
@@ -559,8 +559,8 @@ static int ucstrncmp(const QChar *a, const uchar *c, int l)
         __m128i secondHalf = _mm_unpackhi_epi8(chunk, nullmask);
 
         // load UTF-16 data and compare
-        __m128i ucdata1 = _mm_loadu_si128((__m128i*)(uc + offset));
-        __m128i ucdata2 = _mm_loadu_si128((__m128i*)(uc + offset + 8));
+        __m128i ucdata1 = _mm_loadu_si128((const __m128i*)(uc + offset));
+        __m128i ucdata2 = _mm_loadu_si128((const __m128i*)(uc + offset + 8));
         __m128i result1 = _mm_cmpeq_epi16(firstHalf, ucdata1);
         __m128i result2 = _mm_cmpeq_epi16(secondHalf, ucdata2);
 
@@ -578,10 +578,10 @@ static int ucstrncmp(const QChar *a, const uchar *c, int l)
     // we'll read uc[offset..offset+7] (16 bytes) and c[offset..offset+7] (8 bytes)
     if (uc + offset + 7 < e) {
         // same, but we're using an 8-byte load
-        __m128i chunk = _mm_cvtsi64_si128(*(long long *)(c + offset));
+        __m128i chunk = _mm_cvtsi64_si128(*(const long long *)(c + offset));
         __m128i secondHalf = _mm_unpacklo_epi8(chunk, nullmask);
 
-        __m128i ucdata = _mm_loadu_si128((__m128i*)(uc + offset));
+        __m128i ucdata = _mm_loadu_si128((const __m128i*)(uc + offset));
         __m128i result = _mm_cmpeq_epi16(secondHalf, ucdata);
         uint mask = ~_mm_movemask_epi8(result);
         if (ushort(mask)) {
@@ -673,7 +673,7 @@ static int findChar(const QChar *str, int len, QChar ch, int from,
 
             // we're going to read n[0..7] (16 bytes)
             for (const ushort *next = n + 8; next <= e; n = next, next += 8) {
-                __m128i data = _mm_loadu_si128((__m128i*)n);
+                __m128i data = _mm_loadu_si128((const __m128i*)n);
                 __m128i result = _mm_cmpeq_epi16(data, mch);
                 uint mask = _mm_movemask_epi8(result);
                 if (ushort(mask)) {
@@ -2622,7 +2622,7 @@ bool operator<(const QString &s1, const QString &s2)
 */
 bool QString::operator<(QLatin1String other) const
 {
-    const uchar *c = (uchar *) other.latin1();
+    const uchar *c = (const uchar *) other.latin1();
     if (!c || *c == 0)
         return false;
 
@@ -2727,7 +2727,7 @@ bool QString::operator<(QLatin1String other) const
 */
 bool QString::operator>(QLatin1String other) const
 {
-    const uchar *c = (uchar *) other.latin1();
+    const uchar *c = (const uchar *) other.latin1();
     if (!c || *c == '\0')
         return !isEmpty();
 
@@ -5270,7 +5270,7 @@ int QString::compare_helper(const QChar *data1, int length1, QLatin1String s2,
 {
     const ushort *uc = reinterpret_cast<const ushort *>(data1);
     const ushort *uce = uc + length1;
-    const uchar *c = (uchar *)s2.latin1();
+    const uchar *c = (const uchar *)s2.latin1();
 
     if (!c)
         return length1;

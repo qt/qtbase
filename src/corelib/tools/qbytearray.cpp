@@ -510,7 +510,7 @@ QByteArray qCompress(const uchar* data, int nbytes, int compressionLevel)
     int res;
     do {
         bazip.resize(len + 4);
-        res = ::compress2((uchar*)bazip.data()+4, &len, (uchar*)data, nbytes, compressionLevel);
+        res = ::compress2((uchar*)bazip.data()+4, &len, data, nbytes, compressionLevel);
 
         switch (res) {
         case Z_OK:
@@ -601,7 +601,7 @@ QByteArray qUncompress(const uchar* data, int nbytes)
         d->size = 0; // Shut up valgrind "uninitialized variable" warning
 
         int res = ::uncompress((uchar*)d->data(), &len,
-                               (uchar*)data+4, nbytes-4);
+                               data+4, nbytes-4);
 
         switch (res) {
         case Z_OK:
@@ -2148,9 +2148,9 @@ QByteArray &QByteArray::replace(const char *before, int bsize, const char *after
     }
 
     if (a != after)
-        ::free((char *)a);
+        ::free(const_cast<char *>(a));
     if (b != before)
-        ::free((char *)b);
+        ::free(const_cast<char *>(b));
 
 
     return *this;

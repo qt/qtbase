@@ -819,13 +819,13 @@ bool QFSFileEngine::extension(Extension extension, const ExtensionOption *option
         return feof(d->fh);
 
     if (extension == MapExtension) {
-        const MapExtensionOption *options = (MapExtensionOption*)(option);
+        const MapExtensionOption *options = (const MapExtensionOption*)(option);
         MapExtensionReturn *returnValue = static_cast<MapExtensionReturn*>(output);
         returnValue->address = d->map(options->offset, options->size, options->flags);
         return (returnValue->address != 0);
     }
     if (extension == UnMapExtension) {
-        UnMapExtensionOption *options = (UnMapExtensionOption*)option;
+        const UnMapExtensionOption *options = (const UnMapExtensionOption*)option;
         return d->unmap(options->address);
     }
 

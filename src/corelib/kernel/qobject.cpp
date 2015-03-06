@@ -4093,7 +4093,7 @@ QDebug operator<<(QDebug dbg, const QObject *o)
     QDebugStateSaver saver(dbg);
     if (!o)
         return dbg << "QObject(0x0)";
-    dbg.nospace() << o->metaObject()->className() << '(' << (void *)o;
+    dbg.nospace() << o->metaObject()->className() << '(' << (const void *)o;
     if (!o->objectName().isEmpty())
         dbg << ", name = " << o->objectName();
     dbg << ')';

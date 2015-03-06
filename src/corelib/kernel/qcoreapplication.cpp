@@ -438,7 +438,7 @@ QCoreApplicationPrivate::QCoreApplicationPrivate(int &aargc, char **aargv, uint 
     static const char *const empty = "";
     if (argc == 0 || argv == 0) {
         argc = 0;
-        argv = (char **)&empty;
+        argv = const_cast<char **>(&empty);
     }
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
     if (!isArgvModified(argc, argv)) {

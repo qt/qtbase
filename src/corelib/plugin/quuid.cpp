@@ -543,7 +543,7 @@ QUuid QUuid::fromRfc4122(const QByteArray &bytes)
 QString QUuid::toString() const
 {
     QString result(38, Qt::Uninitialized);
-    ushort *data = (ushort *)result.unicode();
+    ushort *data = (ushort *)result.data();
 
     _q_uuidToHex(data, data1, data2, data3, data4);
 

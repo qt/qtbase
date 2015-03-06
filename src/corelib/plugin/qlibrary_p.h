@@ -108,7 +108,7 @@ public:
         raw += strlen("QTMETADATA  ");
         // the size of the embedded JSON object can be found 8 bytes into the data (see qjson_p.h),
         // but doesn't include the size of the header (8 bytes)
-        QByteArray json(raw, qFromLittleEndian<uint>(*(uint *)(raw + 8)) + 8);
+        QByteArray json(raw, qFromLittleEndian<uint>(*(const uint *)(raw + 8)) + 8);
         return QJsonDocument::fromBinaryData(json);
     }
 
