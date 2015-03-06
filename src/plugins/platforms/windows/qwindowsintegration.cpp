@@ -420,7 +420,10 @@ QOpenGLContext::OpenGLModuleType QWindowsIntegration::openGLModuleType()
 
 QWindowsStaticOpenGLContext *QWindowsIntegration::staticOpenGLContext()
 {
-    QWindowsIntegrationPrivate *d = QWindowsIntegration::instance()->d.data();
+    QWindowsIntegration *integration = QWindowsIntegration::instance();
+    if (!integration)
+        return 0;
+    QWindowsIntegrationPrivate *d = integration->d.data();
     if (d->m_staticOpenGLContext.isNull())
         d->m_staticOpenGLContext = QSharedPointer<QWindowsStaticOpenGLContext>(QWindowsStaticOpenGLContext::create());
     return d->m_staticOpenGLContext.data();
