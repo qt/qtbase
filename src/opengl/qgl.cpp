@@ -2312,7 +2312,7 @@ static void convertToGLFormatHelper(QImage &dst, const QImage &img, GLenum textu
         qreal sy = target_height / qreal(img.height());
 
         quint32 *dest = (quint32 *) dst.scanLine(0); // NB! avoid detach here
-        uchar *srcPixels = (uchar *) img.scanLine(img.height() - 1);
+        const uchar *srcPixels = img.constScanLine(img.height() - 1);
         int sbpl = img.bytesPerLine();
         int dbpl = dst.bytesPerLine();
 
