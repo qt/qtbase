@@ -44,6 +44,21 @@ contains(TEMPLATE, .*lib) {
     QMAKE_PRL_INSTALL_REPLACE += lib_replace
 }
 
+# Extra warnings for Qt non-example code, to ensure cleanliness of the sources.
+# The block below may turn these warnings into errors for some Qt targets.
+# -Wdate-time: warn if we use __DATE__ or __TIME__ (we want to be able to reproduce the exact same binary)
+# -Wvla: use of variable-length arrays (an extension to C++)
+clang {
+    # Clang 3.5 introduced -Wdate-time
+    # The conditional assumes we aren't compiling against Clang 2.x anymore
+    greaterThan(QT_CLANG_MAJOR_VERSION, 3)|greaterThan(QT_CLANG_MINOR_VERSION, 4): \
+        QMAKE_CXXFLAGS_WARN_ON += -Wdate-time
+} else: gcc:!intel_icc {
+    QMAKE_CXXFLAGS_WARN_ON += -Wvla
+    # GCC 5 introduced -Wdate-time
+    greaterThan(QT_GCC_MAJOR_VERSION, 4): QMAKE_CXXFLAGS_WARN_ON += -Wdate-time
+}
+
 warnings_are_errors:warning_clean {
     # If the module declares that it has does its clean-up of warnings, enable -Werror.
     # This setting is compiler-dependent anyway because it depends on the version of the

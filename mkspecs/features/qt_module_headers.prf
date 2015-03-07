@@ -124,7 +124,8 @@ headersclean:!internal_module {
                 hcleanFLAGS -= -Wshadow
             }
         } else {
-            hcleanFLAGS += -Wchar-subscripts
+            # options accepted by GCC and Clang
+            hcleanFLAGS += -Wchar-subscripts -Wold-style-cast
 
             !contains(QT_ARCH, arm):!contains(QT_ARCH, mips): \
                 hcleanFLAGS += -Wcast-align
