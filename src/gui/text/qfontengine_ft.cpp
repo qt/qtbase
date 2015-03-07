@@ -808,13 +808,9 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph,
 {
 //     Q_ASSERT(freetype->lock == 1);
 
-    if (format == Format_None) {
-        if (defaultFormat != Format_None) {
-            format = defaultFormat;
-        } else {
-            format = Format_Mono;
-        }
-    }
+    if (format == Format_None)
+        format = defaultFormat != Format_None ? defaultFormat : Format_Mono;
+    Q_ASSERT(format != Format_None);
 
     Glyph *g = set ? set->getGlyph(glyph, subPixelPosition) : 0;
     if (g && g->format == format && (fetchMetricsOnly || g->data))
@@ -823,31 +819,27 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph,
     if (!g && set && set->isGlyphMissing(glyph))
         return &emptyGlyph;
 
-    QFontEngineFT::GlyphInfo info;
 
-    Q_ASSERT(format != Format_None);
+    FT_Face face = freetype->face;
+
+    FT_Matrix matrix = freetype->matrix;
+
+    FT_Vector v;
+    v.x = format == Format_Mono ? 0 : FT_Pos(subPixelPosition.value());
+    v.y = 0;
+    FT_Set_Transform(face, &matrix, &v);
+
     bool hsubpixel = false;
     int vfactor = 1;
     int load_flags = loadFlags(set, format, 0, hsubpixel, vfactor);
 
-    if (format != Format_Mono && !embeddedbitmap)
-        load_flags |= FT_LOAD_NO_BITMAP;
-
-    FT_Matrix matrix = freetype->matrix;
     bool transform = matrix.xx != 0x10000
                      || matrix.yy != 0x10000
                      || matrix.xy != 0
                      || matrix.yx != 0;
 
-    if (transform)
+    if (transform || (format != Format_Mono && !embeddedbitmap))
         load_flags |= FT_LOAD_NO_BITMAP;
-
-    FT_Face face = freetype->face;
-
-    FT_Vector v;
-    v.x = format == Format_Mono ? 0 : FT_Pos(subPixelPosition.toReal() * 64);
-    v.y = 0;
-    FT_Set_Transform(face, &freetype->matrix, &v);
 
     FT_Error err = FT_Load_Glyph(face, glyph, load_flags);
     if (err && (load_flags & FT_LOAD_NO_BITMAP)) {
@@ -892,6 +884,7 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph,
         FT_Matrix_Multiply(&m, &matrix);
     }
 
+    GlyphInfo info;
     info.xOff = TRUNC(ROUND(slot->advance.x));
     info.yOff = 0;
 
