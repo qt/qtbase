@@ -1844,7 +1844,7 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyphFor(glyph_t g,
         return 0;
 
     Glyph *glyph = glyphSet != 0 ? glyphSet->getGlyph(g, subPixelPosition) : 0;
-    if (!glyph || glyph->format != format) {
+    if (!glyph || glyph->format != format || (!fetchBoundingBox && !glyph->data)) {
         lockFace();
         FT_Matrix m = this->matrix;
         FT_Matrix ftMatrix = glyphSet != 0 ? glyphSet->transformationMatrix : QTransformToFTMatrix(t);
