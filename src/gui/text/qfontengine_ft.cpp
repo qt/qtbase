@@ -1334,14 +1334,14 @@ static inline FT_Matrix QTransformToFTMatrix(const QTransform &matrix)
     return m;
 }
 
-QFontEngineFT::QGlyphSet *QFontEngineFT::loadTransformedGlyphSet(const QTransform &matrix)
+QFontEngineFT::QGlyphSet *QFontEngineFT::loadGlyphSet(const QTransform &matrix)
 {
     if (matrix.type() > QTransform::TxShear || !cacheEnabled)
         return 0;
 
     // FT_Set_Transform only supports scalable fonts
     if (!FT_IS_SCALABLE(freetype->face))
-        return 0;
+        return matrix.type() <= QTransform::TxTranslate ? &defaultGlyphSet : Q_NULLPTR;
 
     FT_Matrix m = QTransformToFTMatrix(matrix);
 
@@ -1758,15 +1758,11 @@ QImage *QFontEngineFT::lockedAlphaMapForGlyph(glyph_t glyphIndex, QFixed subPixe
     QFontEngineFT::Glyph *glyph;
     QScopedPointer<QFontEngineFT::Glyph> glyphGuard;
     if (cacheEnabled) {
-        QFontEngineFT::QGlyphSet *gset = &defaultGlyphSet;
+        QGlyphSet *gset = loadGlyphSet(t);
         QFontEngine::HintStyle hintStyle = default_hint_style;
         if (t.type() >= QTransform::TxScale) {
             // disable hinting if the glyphs are transformed
             default_hint_style = HintNone;
-            if (t.isAffine())
-                gset = loadTransformedGlyphSet(t);
-            else
-                gset = 0;
         }
 
         if (gset) {
@@ -1843,15 +1839,7 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyphFor(glyph_t g,
                                                   const QTransform &t,
                                                   bool fetchBoundingBox)
 {
-    QGlyphSet *glyphSet = 0;
-    if (cacheEnabled) {
-        if (t.type() > QTransform::TxTranslate && FT_IS_SCALABLE(freetype->face))
-            glyphSet = loadTransformedGlyphSet(t);
-        else
-            glyphSet = &defaultGlyphSet;
-        Q_ASSERT(glyphSet != 0);
-    }
-
+    QGlyphSet *glyphSet = loadGlyphSet(t);
     if (glyphSet != 0 && glyphSet->outline_drawing && !fetchBoundingBox)
         return 0;
 
