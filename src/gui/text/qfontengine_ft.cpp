@@ -43,6 +43,7 @@
 
 #include "qfile.h"
 #include "qfileinfo.h"
+#include <qscopedvaluerollback.h>
 #include "qthreadstorage.h"
 #include <qmath.h>
 
@@ -1757,7 +1758,6 @@ QImage *QFontEngineFT::lockedAlphaMapForGlyph(glyph_t glyphIndex, QFixed subPixe
                                               const QTransform &t, QPoint *offset)
 {
     Q_ASSERT(currentlyLockedAlphaMap.isNull());
-    lockFace();
 
     if (isBitmapFont())
         neededFormat = Format_Mono;
@@ -1766,37 +1766,7 @@ QImage *QFontEngineFT::lockedAlphaMapForGlyph(glyph_t glyphIndex, QFixed subPixe
     else if (neededFormat == Format_None)
         neededFormat = Format_A8;
 
-    QFontEngineFT::Glyph *glyph;
-    if (cacheEnabled) {
-        QGlyphSet *gset = loadGlyphSet(t);
-        QFontEngine::HintStyle hintStyle = default_hint_style;
-        if (t.type() >= QTransform::TxScale) {
-            // disable hinting if the glyphs are transformed
-            default_hint_style = HintNone;
-        }
-
-        if (gset) {
-            FT_Matrix m = matrix;
-            FT_Matrix_Multiply(&gset->transformationMatrix, &m);
-            FT_Set_Transform(freetype->face, &m, 0);
-            freetype->matrix = m;
-        }
-
-        if (!gset || gset->outline_drawing || !(glyph = loadGlyph(gset, glyphIndex, subPixelPosition,
-                                                                  neededFormat))) {
-            default_hint_style = hintStyle;
-            return QFontEngine::lockedAlphaMapForGlyph(glyphIndex, subPixelPosition, neededFormat, t,
-                                                       offset);
-        }
-        default_hint_style = hintStyle;
-    } else {
-        FT_Matrix m = matrix;
-        FT_Matrix extra = QTransformToFTMatrix(t);
-        FT_Matrix_Multiply(&extra, &m);
-        FT_Set_Transform(freetype->face, &m, 0);
-        freetype->matrix = m;
-        glyph = loadGlyph(0, glyphIndex, subPixelPosition, neededFormat);
-    }
+    Glyph *glyph = loadGlyphFor(glyphIndex, subPixelPosition, neededFormat, t);
 
     if (offset != 0 && glyph != 0)
         *offset = QPoint(glyph->x, -glyph->y);
@@ -1808,10 +1778,8 @@ QImage *QFontEngineFT::lockedAlphaMapForGlyph(glyph_t glyphIndex, QFixed subPixe
         delete glyph;
     }
 
-    if (currentlyLockedAlphaMap.isNull()) {
-        unlockFace();
+    if (currentlyLockedAlphaMap.isNull())
         return QFontEngine::lockedAlphaMapForGlyph(glyphIndex, subPixelPosition, neededFormat, t, offset);
-    }
 
     QImageData *data = currentlyLockedAlphaMap.data_ptr();
     data->is_locked = true;
@@ -1821,9 +1789,7 @@ QImage *QFontEngineFT::lockedAlphaMapForGlyph(glyph_t glyphIndex, QFixed subPixe
 
 void QFontEngineFT::unlockAlphaMapForGlyph()
 {
-    Q_ASSERT(!currentlyLockedAlphaMap.isNull());
-    unlockFace();
-    currentlyLockedAlphaMap = QImage();
+    QFontEngine::unlockAlphaMapForGlyph();
 }
 
 QFontEngineFT::Glyph *QFontEngineFT::loadGlyphFor(glyph_t g,
@@ -1838,6 +1804,10 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyphFor(glyph_t g,
 
     Glyph *glyph = glyphSet != 0 ? glyphSet->getGlyph(g, subPixelPosition) : 0;
     if (!glyph || glyph->format != format || (!fetchBoundingBox && !glyph->data)) {
+        QScopedValueRollback<HintStyle> saved_default_hint_style(default_hint_style);
+        if (t.type() >= QTransform::TxScale)
+            default_hint_style = HintNone; // disable hinting if the glyphs are transformed
+
         lockFace();
         FT_Matrix m = this->matrix;
         FT_Matrix ftMatrix = glyphSet != 0 ? glyphSet->transformationMatrix : QTransformToFTMatrix(t);
