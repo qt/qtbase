@@ -1756,7 +1756,6 @@ QImage *QFontEngineFT::lockedAlphaMapForGlyph(glyph_t glyphIndex, QFixed subPixe
     };
 
     QFontEngineFT::Glyph *glyph;
-    QScopedPointer<QFontEngineFT::Glyph> glyphGuard;
     if (cacheEnabled) {
         QGlyphSet *gset = loadGlyphSet(t);
         QFontEngine::HintStyle hintStyle = default_hint_style;
@@ -1772,15 +1771,13 @@ QImage *QFontEngineFT::lockedAlphaMapForGlyph(glyph_t glyphIndex, QFixed subPixe
             freetype->matrix = m;
         }
 
-        if (!gset || gset->outline_drawing || !loadGlyph(gset, glyphIndex, subPixelPosition,
-                                                         neededFormat)) {
+        if (!gset || gset->outline_drawing || !(glyph = loadGlyph(gset, glyphIndex, subPixelPosition,
+                                                                  neededFormat))) {
             default_hint_style = hintStyle;
             return QFontEngine::lockedAlphaMapForGlyph(glyphIndex, subPixelPosition, neededFormat, t,
                                                        offset);
         }
         default_hint_style = hintStyle;
-
-        glyph = gset->getGlyph(glyphIndex, subPixelPosition);
     } else {
         FT_Matrix m = matrix;
         FT_Matrix extra = QTransformToFTMatrix(t);
@@ -1788,10 +1785,11 @@ QImage *QFontEngineFT::lockedAlphaMapForGlyph(glyph_t glyphIndex, QFixed subPixe
         FT_Set_Transform(freetype->face, &m, 0);
         freetype->matrix = m;
         glyph = loadGlyph(0, glyphIndex, subPixelPosition, neededFormat);
-        glyphGuard.reset(glyph);
     }
 
     if (glyph == 0 || glyph->data == 0 || glyph->width == 0 || glyph->height == 0) {
+        if (!cacheEnabled && glyph != &emptyGlyph)
+            delete glyph;
         unlockFace();
         return 0;
     }
@@ -1816,8 +1814,10 @@ QImage *QFontEngineFT::lockedAlphaMapForGlyph(glyph_t glyphIndex, QFixed subPixe
         *offset = QPoint(glyph->x, -glyph->y);
 
     currentlyLockedAlphaMap = QImage(glyph->data, glyph->width, glyph->height, pitch, format);
-    if (!glyphGuard.isNull())
+    if (!cacheEnabled && glyph != &emptyGlyph) {
         currentlyLockedAlphaMap = currentlyLockedAlphaMap.copy();
+        delete glyph;
+    }
     Q_ASSERT(!currentlyLockedAlphaMap.isNull());
 
     QImageData *data = currentlyLockedAlphaMap.data_ptr();
@@ -1866,8 +1866,10 @@ QImage QFontEngineFT::alphaMapForGlyph(glyph_t g, QFixed subPixelPosition, const
 {
     lockFace();
 
-    QScopedPointer<Glyph> glyph(loadGlyphFor(g, subPixelPosition, antialias ? Format_A8 : Format_Mono, t));
+    Glyph *glyph = loadGlyphFor(g, subPixelPosition, antialias ? Format_A8 : Format_Mono, t);
     if (!glyph || !glyph->data) {
+        if (!cacheEnabled && glyph != &emptyGlyph)
+            delete glyph;
         unlockFace();
         return QFontEngine::alphaMapForGlyph(g);
     }
@@ -1886,8 +1888,9 @@ QImage QFontEngineFT::alphaMapForGlyph(glyph_t g, QFixed subPixelPosition, const
         for (int y = 0; y < glyph->height; ++y)
             memcpy(img.scanLine(y), &glyph->data[y * pitch], pitch);
     }
-    if (cacheEnabled)
-        glyph.take();
+
+    if (!cacheEnabled && glyph != &emptyGlyph)
+        delete glyph;
     unlockFace();
 
     return img;
@@ -1900,8 +1903,10 @@ QImage QFontEngineFT::alphaRGBMapForGlyph(glyph_t g, QFixed subPixelPosition, co
 
     lockFace();
 
-    QScopedPointer<Glyph> glyph(loadGlyphFor(g, subPixelPosition, Format_A32, t));
+    Glyph *glyph = loadGlyphFor(g, subPixelPosition, Format_A32, t);
     if (!glyph || !glyph->data) {
+        if (!cacheEnabled && glyph != &emptyGlyph)
+            delete glyph;
         unlockFace();
         return QFontEngine::alphaRGBMapForGlyph(g, subPixelPosition, t);
     }
@@ -1909,8 +1914,8 @@ QImage QFontEngineFT::alphaRGBMapForGlyph(glyph_t g, QFixed subPixelPosition, co
     QImage img(glyph->width, glyph->height, QImage::Format_RGB32);
     memcpy(img.bits(), glyph->data, 4 * glyph->width * glyph->height);
 
-    if (cacheEnabled)
-        glyph.take();
+    if (!cacheEnabled && glyph != &emptyGlyph)
+        delete glyph;
     unlockFace();
 
     return img;
