@@ -891,8 +891,6 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph,
         FT_Matrix_Multiply(&m, &matrix);
     }
 
-    FT_Library library = qt_getFreetype();
-
     info.xOff = TRUNC(ROUND(slot->advance.x));
     info.yOff = 0;
 
@@ -935,7 +933,7 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph,
 #if defined(QT_USE_FREETYPE_LCDFILTER)
     bool useFreetypeRenderGlyph = false;
     if (slot->format == FT_GLYPH_FORMAT_OUTLINE && (hsubpixel || vfactor != 1)) {
-        err = FT_Library_SetLcdFilter(library, (FT_LcdFilter)lcdFilterType);
+        err = FT_Library_SetLcdFilter(slot->library, (FT_LcdFilter)lcdFilterType);
         if (err == FT_Err_Ok)
             useFreetypeRenderGlyph = true;
     }
@@ -946,7 +944,7 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph,
         if (err != FT_Err_Ok)
             qWarning("render glyph failed err=%x face=%p, glyph=%d", err, face, glyph);
 
-        FT_Library_SetLcdFilter(library, FT_LCD_FILTER_NONE);
+        FT_Library_SetLcdFilter(slot->library, FT_LCD_FILTER_NONE);
 
         info.height = slot->bitmap.rows / vfactor;
         info.width = hsubpixel ? slot->bitmap.width / 3 : slot->bitmap.width;
@@ -1058,7 +1056,7 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph,
 
         FT_Outline_Transform(&slot->outline, &matrix);
         FT_Outline_Translate (&slot->outline, (hsubpixel ? -3*left +(4<<6) : -left), -bottom*vfactor);
-        FT_Outline_Get_Bitmap(library, &slot->outline, &bitmap);
+        FT_Outline_Get_Bitmap(slot->library, &slot->outline, &bitmap);
         if (hsubpixel) {
             Q_ASSERT (bitmap.pixel_mode == FT_PIXEL_MODE_GRAY);
             Q_ASSERT(antialias);
