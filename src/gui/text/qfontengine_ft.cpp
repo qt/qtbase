@@ -928,8 +928,8 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph,
         return g;
     }
 
-    uchar *glyph_buffer = 0;
     int glyph_buffer_size = 0;
+    QScopedArrayPointer<uchar> glyph_buffer;
 #if defined(QT_USE_FREETYPE_LCDFILTER)
     bool useFreetypeRenderGlyph = false;
     if (slot->format == FT_GLYPH_FORMAT_OUTLINE && (hsubpixel || vfactor != 1)) {
@@ -952,12 +952,12 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph,
         info.y = slot->bitmap_top;
 
         glyph_buffer_size = info.width * info.height * 4;
-        glyph_buffer = new uchar[glyph_buffer_size];
+        glyph_buffer.reset(new uchar[glyph_buffer_size]);
 
         if (hsubpixel)
-            convertRGBToARGB(slot->bitmap.buffer, (uint *)glyph_buffer, info.width, info.height, slot->bitmap.pitch, subpixelType != Subpixel_RGB, false);
+            convertRGBToARGB(slot->bitmap.buffer, (uint *)glyph_buffer.data(), info.width, info.height, slot->bitmap.pitch, subpixelType != Subpixel_RGB, false);
         else if (vfactor != 1)
-            convertRGBToARGB_V(slot->bitmap.buffer, (uint *)glyph_buffer, info.width, info.height, slot->bitmap.pitch, subpixelType != Subpixel_VRGB, false);
+            convertRGBToARGB_V(slot->bitmap.buffer, (uint *)glyph_buffer.data(), info.width, info.height, slot->bitmap.pitch, subpixelType != Subpixel_VRGB, false);
     } else
 #endif
     {
@@ -1028,26 +1028,30 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph,
                         || ((signed char)(info.xOff) != info.xOff));
 
     if (large_glyph) {
-        delete [] glyph_buffer;
         return 0;
     }
 
     int pitch = (format == Format_Mono ? ((info.width + 31) & ~31) >> 3 :
                  (format == Format_A8 ? (info.width + 3) & ~3 : info.width * 4));
-    glyph_buffer_size = pitch * info.height;
-    glyph_buffer = new uchar[glyph_buffer_size];
-    memset(glyph_buffer, 0, glyph_buffer_size);
+    if (glyph_buffer_size < pitch * info.height) {
+        glyph_buffer_size = pitch * info.height;
+        glyph_buffer.reset(new uchar[glyph_buffer_size]);
+    }
+    memset(glyph_buffer.data(), 0, glyph_buffer_size);
 
     if (slot->format == FT_GLYPH_FORMAT_OUTLINE) {
         FT_Bitmap bitmap;
         bitmap.rows = info.height*vfactor;
         bitmap.width = hpixels;
         bitmap.pitch = format == Format_Mono ? (((info.width + 31) & ~31) >> 3) : ((bitmap.width + 3) & ~3);
-        if (!hsubpixel && vfactor == 1 && format != Format_A32)
-            bitmap.buffer = glyph_buffer;
-        else
-            bitmap.buffer = new uchar[bitmap.rows*bitmap.pitch];
-        memset(bitmap.buffer, 0, bitmap.rows*bitmap.pitch);
+        int bitmap_buffer_size = bitmap.rows * bitmap.pitch;
+        if (!hsubpixel && vfactor == 1 && format != Format_A32) {
+            Q_ASSERT(glyph_buffer_size <= bitmap_buffer_size);
+            bitmap.buffer = glyph_buffer.data();
+        } else {
+            bitmap.buffer = new uchar[bitmap_buffer_size];
+            memset(bitmap.buffer, 0, bitmap_buffer_size);
+        }
         bitmap.pixel_mode = format == Format_Mono ? FT_PIXEL_MODE_MONO : FT_PIXEL_MODE_GRAY;
         FT_Matrix matrix;
         matrix.xx = (hsubpixel ? 3 : 1) << 16;
@@ -1060,7 +1064,7 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph,
         if (hsubpixel) {
             Q_ASSERT (bitmap.pixel_mode == FT_PIXEL_MODE_GRAY);
             Q_ASSERT(antialias);
-            uchar *convoluted = new uchar[bitmap.rows*bitmap.pitch];
+            uchar *convoluted = new uchar[bitmap_buffer_size];
             bool useLegacyLcdFilter = false;
 #if defined(FC_LCD_FILTER) && defined(FT_LCD_FILTER_H)
             useLegacyLcdFilter = (lcdFilterType == FT_LCD_FILTER_LEGACY);
@@ -1070,20 +1074,20 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph,
                 convoluteBitmap(bitmap.buffer, convoluted, bitmap.width, info.height, bitmap.pitch);
                 buffer = convoluted;
             }
-            convertRGBToARGB(buffer + 1, (uint *)glyph_buffer, info.width, info.height, bitmap.pitch, subpixelType != Subpixel_RGB, useLegacyLcdFilter);
+            convertRGBToARGB(buffer + 1, (uint *)glyph_buffer.data(), info.width, info.height, bitmap.pitch, subpixelType != Subpixel_RGB, useLegacyLcdFilter);
             delete [] convoluted;
         } else if (vfactor != 1) {
-            convertRGBToARGB_V(bitmap.buffer, (uint *)glyph_buffer, info.width, info.height, bitmap.pitch, subpixelType != Subpixel_VRGB, true);
+            convertRGBToARGB_V(bitmap.buffer, (uint *)glyph_buffer.data(), info.width, info.height, bitmap.pitch, subpixelType != Subpixel_VRGB, true);
         } else if (format == Format_A32 && bitmap.pixel_mode == FT_PIXEL_MODE_GRAY) {
-            convertGRAYToARGB(bitmap.buffer, (uint *)glyph_buffer, info.width, info.height, bitmap.pitch);
+            convertGRAYToARGB(bitmap.buffer, (uint *)glyph_buffer.data(), info.width, info.height, bitmap.pitch);
         }
 
-        if (bitmap.buffer != glyph_buffer)
+        if (bitmap.buffer != glyph_buffer.data())
             delete [] bitmap.buffer;
     } else if (slot->format == FT_GLYPH_FORMAT_BITMAP) {
         Q_ASSERT(slot->bitmap.pixel_mode == FT_PIXEL_MODE_MONO);
         uchar *src = slot->bitmap.buffer;
-        uchar *dst = glyph_buffer;
+        uchar *dst = glyph_buffer.data();
         int h = slot->bitmap.rows;
         if (format == Format_Mono) {
             int bytes = ((info.width + 7) & ~7) >> 3;
@@ -1128,7 +1132,6 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph,
         }
     } else {
         qWarning("QFontEngine: Glyph neither outline nor bitmap format=%d", slot->format);
-        delete [] glyph_buffer;
         return 0;
     }
     }
@@ -1147,7 +1150,7 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph,
     g->advance = info.xOff;
     g->format = format;
     delete [] g->data;
-    g->data = glyph_buffer;
+    g->data = glyph_buffer.take();
 
     if (set)
         set->setGlyph(glyph, subPixelPosition, g);
