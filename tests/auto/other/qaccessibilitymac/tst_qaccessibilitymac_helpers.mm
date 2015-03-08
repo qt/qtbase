@@ -114,6 +114,7 @@ QDebug operator<<(QDebug dbg, AXErrorTag err)
     @property (readonly) NSString *description;
     @property (readonly) NSString *value;
     @property (readonly) CGRect rect;
+    @property (readonly) NSArray *actions;
 @end
 
 @implementation TestAXObject
@@ -329,10 +330,34 @@ QDebug operator<<(QDebug dbg, AXErrorTag err)
     return value;
 }
 
+- (NSArray*)actions
+{
+    AXError err;
+    CFArrayRef actions;
+
+    if (kAXErrorSuccess != (err = AXUIElementCopyActionNames(reference, &actions)))
+    {
+        qDebug() << "AXUIElementCopyActionNames(...) returned error = " << AXErrorTag(err);
+    }
+
+    return (NSArray*)actions;
+}
+
+- (void)performAction:(CFStringRef)action
+{
+    AXError err;
+
+    if (kAXErrorSuccess != (err = AXUIElementPerformAction(reference, action)))
+    {
+        qDebug() << "AXUIElementPerformAction("  << QString::fromCFString(action) << ") returned error = " << AXErrorTag(err);
+    }
+}
+
 - (NSString*)           role { return [self _stringAttributeValue:kAXRoleAttribute]; }
 - (NSString*)           title { return [self _stringAttributeValue:kAXTitleAttribute]; }
 - (NSString*)           description { return [self _stringAttributeValue:kAXDescriptionAttribute]; }
 - (NSString*)           value { return [self _stringAttributeValue:kAXValueAttribute]; }
+- (NSInteger)           valueNumber { return [self _numberAttributeValue:kAXValueAttribute]; }
 - (NSRect)              rect
 {
     NSRect rect;
@@ -560,6 +585,40 @@ bool notifications(QWidget *w)
     QCoreApplication::processEvents();
     EXPECT(notificationList.length() == 4);
     EXPECT(notificationList.at(3) == QAccessible::ValueChanged);
+
+    return true;
+}
+
+bool testCheckBox()
+{
+    TestAXObject *appObject = [TestAXObject getApplicationAXObject];
+    EXPECT(appObject);
+
+    NSArray *windowList = [appObject windowList];
+    // one window
+    EXPECT([windowList count] == 1);
+    AXUIElementRef windowRef = (AXUIElementRef) [windowList objectAtIndex: 0];
+    EXPECT(windowRef != nil);
+    TestAXObject *window = [[TestAXObject alloc] initWithAXUIElementRef: windowRef];
+
+    // children of window:
+    AXUIElementRef checkBox = [window findDirectChildByRole: kAXCheckBoxRole];
+    EXPECT(checkBox != nil);
+
+    TestAXObject *cb = [[TestAXObject alloc] initWithAXUIElementRef: checkBox];
+
+    // here start actual checkbox tests
+    EXPECT([cb valueNumber] == 0);
+    EXPECT([cb.title isEqualToString:@"Great option"]);
+    // EXPECT(cb.description == nil); // currently returns "" instead of nil
+
+    EXPECT([cb.actions containsObject:(NSString*)kAXPressAction]);
+
+    [cb performAction:kAXPressAction];
+    EXPECT([cb valueNumber] == 1);
+
+    [cb performAction:kAXPressAction];
+    EXPECT([cb valueNumber] == 0);
 
     return true;
 }

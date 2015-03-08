@@ -75,6 +75,7 @@ private slots:
     void lineEditTest();
     void hierarchyTest();
     void notificationsTest();
+    void checkBoxTest();
 
 private:
     AccessibleTestWindow *m_window;
@@ -149,6 +150,20 @@ void tst_QAccessibilityMac::notificationsTest()
         return;
 
     QVERIFY(notifications(m_window));
+}
+
+void tst_QAccessibilityMac::checkBoxTest()
+{
+    if (!macNativeAccessibilityEnabled())
+        return;
+
+    QCheckBox *cb = new QCheckBox(m_window);
+    cb->setText("Great option");
+    m_window->addWidget(cb);
+    QVERIFY(QTest::qWaitForWindowExposed(m_window));
+    QCoreApplication::processEvents();
+
+    QVERIFY(testCheckBox());
 }
 
 QTEST_MAIN(tst_QAccessibilityMac)
