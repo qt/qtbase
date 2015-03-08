@@ -1811,6 +1811,10 @@ QRect QAndroidStyle::AndroidSpinnerControl::subControlRect(const QStyleOptionCom
 {
     if (sc == QStyle::SC_ComboBoxListBoxPopup)
         return option->rect;
+    if (sc == QStyle::SC_ComboBoxArrow) {
+        const QRect editField = subControlRect(option, QStyle::SC_ComboBoxEditField, widget);
+        return QRect(editField.topRight(), QSize(option->rect.width() - editField.width(), option->rect.height()));
+    }
     return AndroidControl::subControlRect(option, sc, widget);
 }
 
