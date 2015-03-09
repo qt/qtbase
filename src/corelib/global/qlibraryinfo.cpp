@@ -63,12 +63,16 @@ extern void qDumpCPUFeatures(); // in qsimd.cpp
 struct QLibrarySettings
 {
     QLibrarySettings();
+    void load();
+
     QScopedPointer<QSettings> settings;
 #ifdef QT_BUILD_QMAKE
     bool haveDevicePaths;
     bool haveEffectiveSourcePaths;
     bool haveEffectivePaths;
     bool havePaths;
+#else
+    bool reloadOnQAppAvailable;
 #endif
 };
 Q_GLOBAL_STATIC(QLibrarySettings, qt_library_settings)
@@ -93,16 +97,31 @@ public:
     static QSettings *configuration()
     {
         QLibrarySettings *ls = qt_library_settings();
-        return ls ? ls->settings.data() : 0;
+        if (ls) {
+#ifndef QT_BUILD_QMAKE
+            if (ls->reloadOnQAppAvailable && QCoreApplication::instance() != 0)
+                ls->load();
+#endif
+            return ls->settings.data();
+        } else {
+            return 0;
+        }
     }
 };
 
 static const char platformsSection[] = "Platforms";
 
 QLibrarySettings::QLibrarySettings()
-    : settings(QLibraryInfoPrivate::findConfiguration())
 {
+    load();
+}
+
+void QLibrarySettings::load()
+{
+    // If we get any settings here, those won't change when the application shows up.
+    settings.reset(QLibraryInfoPrivate::findConfiguration());
 #ifndef QT_BUILD_QMAKE
+    reloadOnQAppAvailable = (settings.data() == 0 && QCoreApplication::instance() == 0);
     bool haveDevicePaths;
     bool haveEffectivePaths;
     bool havePaths;
