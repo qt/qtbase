@@ -96,19 +96,19 @@ static const char * const connector_type_names[] = {
     "eDP",
 };
 
-static QString nameForConnector(const drmModeConnectorPtr connector)
+static QByteArray nameForConnector(const drmModeConnectorPtr connector)
 {
-    QString connectorName = "UNKNOWN";
+    QByteArray connectorName("UNKNOWN");
 
     if (connector->connector_type < ARRAY_LENGTH(connector_type_names))
         connectorName = connector_type_names[connector->connector_type];
 
-    connectorName += QString::number(connector->connector_type_id);
+    connectorName += QByteArray::number(connector->connector_type_id);
 
     return connectorName;
 }
 
-static bool parseModeline(const QString &s, drmModeModeInfoPtr mode)
+static bool parseModeline(const QByteArray &text, drmModeModeInfoPtr mode)
 {
     char hsync[16];
     char vsync[16];
@@ -120,7 +120,7 @@ static bool parseModeline(const QString &s, drmModeModeInfoPtr mode)
     mode->vrefresh = 0;
     mode->flags = 0;
 
-    if (sscanf(qPrintable(s), "%f %hd %hd %hd %hd %hd %hd %hd %hd %15s %15s",
+    if (sscanf(text.constData(), "%f %hd %hd %hd %hd %hd %hd %hd %hd %15s %15s",
                &fclock,
                &mode->hdisplay,
                &mode->hsync_start,
@@ -153,7 +153,7 @@ static bool parseModeline(const QString &s, drmModeModeInfoPtr mode)
 
 QEglFSKmsScreen *QEglFSKmsDevice::screenForConnector(drmModeResPtr resources, drmModeConnectorPtr connector, QPoint pos)
 {
-    const QString connectorName = nameForConnector(connector);
+    const QByteArray connectorName = nameForConnector(connector);
 
     const int crtc = crtcForConnector(resources, connector);
     if (crtc < 0) {
@@ -165,19 +165,20 @@ QEglFSKmsScreen *QEglFSKmsDevice::screenForConnector(drmModeResPtr resources, dr
     QSize configurationSize;
     drmModeModeInfo configurationModeline;
 
-    const QString mode = m_integration->outputSettings().value(connectorName).value("mode", "preferred").toString().toLower();
+    const QByteArray mode = m_integration->outputSettings().value(QString::fromUtf8(connectorName))
+            .value(QStringLiteral("mode"), QStringLiteral("preferred")).toByteArray().toLower();
     if (mode == "off") {
         configuration = OutputConfigOff;
     } else if (mode == "preferred") {
         configuration = OutputConfigPreferred;
     } else if (mode == "current") {
         configuration = OutputConfigCurrent;
-    } else if (sscanf(qPrintable(mode), "%dx%d", &configurationSize.rwidth(), &configurationSize.rheight()) == 2) {
+    } else if (sscanf(mode.constData(), "%dx%d", &configurationSize.rwidth(), &configurationSize.rheight()) == 2) {
         configuration = OutputConfigMode;
     } else if (parseModeline(mode, &configurationModeline)) {
         configuration = OutputConfigModeline;
     } else {
-        qWarning("Invalid mode \"%s\" for output %s", qPrintable(mode), qPrintable(connectorName));
+        qWarning("Invalid mode \"%s\" for output %s", mode.constData(), connectorName.constData());
         configuration = OutputConfigPreferred;
     }
 
@@ -273,7 +274,7 @@ QEglFSKmsScreen *QEglFSKmsDevice::screenForConnector(drmModeResPtr resources, dr
     }
 
     QEglFSKmsOutput output = {
-        connectorName,
+        QString::fromUtf8(connectorName),
         connector->connector_id,
         crtc_id,
         QSizeF(connector->mmWidth, connector->mmHeight),
