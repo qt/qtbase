@@ -1293,8 +1293,10 @@ void QAbstractButton::focusInEvent(QFocusEvent *e)
 void QAbstractButton::focusOutEvent(QFocusEvent *e)
 {
     Q_D(QAbstractButton);
-    if (e->reason() != Qt::PopupFocusReason)
+    if (e->reason() != Qt::PopupFocusReason && d->down) {
         d->down = false;
+        d->emitReleased();
+    }
     QWidget::focusOutEvent(e);
 }
 
@@ -1304,8 +1306,10 @@ void QAbstractButton::changeEvent(QEvent *e)
     Q_D(QAbstractButton);
     switch (e->type()) {
     case QEvent::EnabledChange:
-        if (!isEnabled())
-            setDown(false);
+        if (!isEnabled() && d->down) {
+            d->down = false;
+            d->emitReleased();
+        }
         break;
     default:
         d->sizeHint = QSize();
