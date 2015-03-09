@@ -52,8 +52,12 @@ void QCollatorPrivate::init()
     UErrorCode status = U_ZERO_ERROR;
     QByteArray name = locale.bcp47Name().replace(QLatin1Char('-'), QLatin1Char('_')).toLatin1();
     collator = ucol_open(name.constData(), &status);
-    if (U_FAILURE(status))
+    if (U_FAILURE(status)) {
         qWarning("Could not create collator: %d", status);
+        collator = 0;
+        dirty = false;
+        return;
+    }
 
     // enable normalization by default
     ucol_setAttribute(collator, UCOL_NORMALIZATION_MODE, UCOL_ON, &status);
@@ -97,17 +101,26 @@ int QCollator::compare(const QChar *s1, int len1, const QChar *s2, int len2) con
     if (d->dirty)
         d->init();
 
-    return ucol_strcoll(d->collator, (const UChar *)s1, len1, (const UChar *)s2, len2);
+    if (d->collator)
+        return ucol_strcoll(d->collator, (const UChar *)s1, len1, (const UChar *)s2, len2);
+
+    return QString::compare(QString(s1, len1), QString(s2, len2), d->caseSensitivity);
 }
 
 int QCollator::compare(const QString &s1, const QString &s2) const
 {
-    return compare(s1.constData(), s1.size(), s2.constData(), s2.size());
+    if (d->collator)
+        return compare(s1.constData(), s1.size(), s2.constData(), s2.size());
+
+    return QString::compare(s1, s2, d->caseSensitivity);
 }
 
 int QCollator::compare(const QStringRef &s1, const QStringRef &s2) const
 {
-    return compare(s1.constData(), s1.size(), s2.constData(), s2.size());
+    if (d->collator)
+        return compare(s1.constData(), s1.size(), s2.constData(), s2.size());
+
+    return QStringRef::compare(s1, s2, d->caseSensitivity);
 }
 
 QCollatorSortKey QCollator::sortKey(const QString &string) const
@@ -115,16 +128,20 @@ QCollatorSortKey QCollator::sortKey(const QString &string) const
     if (d->dirty)
         d->init();
 
-    QByteArray result(16 + string.size() + (string.size() >> 2), Qt::Uninitialized);
-    int size = ucol_getSortKey(d->collator, (const UChar *)string.constData(),
-                               string.size(), (uint8_t *)result.data(), result.size());
-    if (size > result.size()) {
-        result.resize(size);
-        size = ucol_getSortKey(d->collator, (const UChar *)string.constData(),
-                               string.size(), (uint8_t *)result.data(), result.size());
+    if (d->collator) {
+        QByteArray result(16 + string.size() + (string.size() >> 2), Qt::Uninitialized);
+        int size = ucol_getSortKey(d->collator, (const UChar *)string.constData(),
+                                   string.size(), (uint8_t *)result.data(), result.size());
+        if (size > result.size()) {
+            result.resize(size);
+            size = ucol_getSortKey(d->collator, (const UChar *)string.constData(),
+                                   string.size(), (uint8_t *)result.data(), result.size());
+        }
+        result.truncate(size);
+        return QCollatorSortKey(new QCollatorSortKeyPrivate(result));
     }
-    result.truncate(size);
-    return QCollatorSortKey(new QCollatorSortKeyPrivate(result));
+
+    return QCollatorSortKey(new QCollatorSortKeyPrivate(QByteArray()));
 }
 
 int QCollatorSortKey::compare(const QCollatorSortKey &otherKey) const
