@@ -3633,6 +3633,13 @@ QRect QGtkStyle::subControlRect(ComplexControl control, const QStyleOptionComple
                 QFont font = widget->font();
                 font.setBold(true);
                 fontMetrics = QFontMetrics(font);
+            } else if (QStyleHelper::isInstanceOf(groupBox->styleObject, QAccessible::Grouping)) {
+                QVariant var = groupBox->styleObject->property("font");
+                if (var.isValid() && var.canConvert<QFont>()) {
+                    QFont font = var.value<QFont>();
+                    font.setBold(true);
+                    fontMetrics = QFontMetrics(font);
+                }
             }
 
             QSize textRect = fontMetrics.boundingRect(groupBox->text).size() + QSize(4, 4);
