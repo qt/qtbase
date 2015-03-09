@@ -162,7 +162,7 @@ QSettings *QLibraryInfoPrivate::findConfiguration()
     if(!QFile::exists(qtconfig))
         qtconfig = qmake_libraryInfoFile();
 #else
-    if (!QFile::exists(qtconfig) && QCoreApplication::instance()) {
+    if (!QFile::exists(qtconfig)) {
 #ifdef Q_OS_MAC
         CFBundleRef bundleRef = CFBundleGetMainBundle();
         if (bundleRef) {
@@ -177,10 +177,12 @@ QSettings *QLibraryInfoPrivate::findConfiguration()
         }
         if (qtconfig.isEmpty())
 #endif
-            {
+        {
+            if (QCoreApplication::instance()) {
                 QDir pwd(QCoreApplication::applicationDirPath());
                 qtconfig = pwd.filePath(QLatin1String("qt.conf"));
             }
+        }
     }
 #endif
     if (QFile::exists(qtconfig))
