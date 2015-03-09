@@ -134,7 +134,7 @@ static inline uint makeScopeId(const QHostAddress &addr)
         return 0;
 
     bool ok;
-    uint id = scopeid.toInt(&ok);
+    uint id = scopeid.toUInt(&ok);
 #ifndef QT_NO_IPV6IFNAME
     if (!ok)
         id = ::if_nametoindex(scopeid.toLatin1());

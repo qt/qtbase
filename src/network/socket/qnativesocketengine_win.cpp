@@ -209,7 +209,7 @@ void QNativeSocketEnginePrivate::setPortAndAddress(sockaddr_in * sockAddrIPv4, q
         || socketProtocol == QAbstractSocket::AnyIPProtocol) {
         memset(sockAddrIPv6, 0, sizeof(qt_sockaddr_in6));
         sockAddrIPv6->sin6_family = AF_INET6;
-        sockAddrIPv6->sin6_scope_id = address.scopeId().toInt();
+        sockAddrIPv6->sin6_scope_id = address.scopeId().toUInt();
         WSAHtons(socketDescriptor, port, &(sockAddrIPv6->sin6_port));
         Q_IPV6ADDR tmp = address.toIPv6Address();
         memcpy(&(sockAddrIPv6->sin6_addr.qt_s6_addr), &tmp, sizeof(tmp));
