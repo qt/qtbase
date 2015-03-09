@@ -118,6 +118,8 @@ contains(QT_CONFIG,dynamicgl) {
     RESOURCES += $$PWD/cursors.qrc
 }
 
+!wince*: RESOURCES += $$PWD/openglblacklists.qrc
+
 contains(QT_CONFIG, freetype) {
     DEFINES *= QT_NO_FONTCONFIG
     QT_FREETYPE_DIR = $$QT_SOURCE_TREE/src/3rdparty/freetype

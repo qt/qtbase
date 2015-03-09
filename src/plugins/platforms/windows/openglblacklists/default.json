@@ -1,0 +1,18 @@
+{
+    "name": "Qt built-in GPU driver blacklist",
+    "version": "5.5",
+    "entries": [
+        {
+            "id": 1,
+            "description": "Desktop OpenGL is unreliable on Intel HD3000/GMA (QTBUG-43263, QTBUG-42240)",
+            "vendor_id": "0x8086",
+            "device_id": [ "0x0A16" ],
+            "os": {
+                "type": "win"
+            },
+            "features": [
+                "disable_desktopgl"
+            ]
+        }
+    ]
+}
