@@ -76,11 +76,6 @@ private slots:
     void sizeHint_data();
     void sizeHint();
     void taskQTBUG_20191_shortcutWithKeypadModifer();
-/*
-    void state();
-    void group();
-    void stateChanged();
-*/
 
 protected slots:
     void resetCounters();
@@ -419,19 +414,6 @@ void tst_QPushButton::clicked()
     QCOMPARE( release_count, (uint)10 );
 }
 
-/*
-void tst_QPushButton::group()
-{
-}
-
-void tst_QPushButton::state()
-{
-}
-
-void tst_QPushButton::stateChanged()
-{
-}
-*/
 QPushButton *pb = 0;
 void tst_QPushButton::helperSlotDelete()
 {
