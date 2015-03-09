@@ -994,6 +994,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
           << "\t\t\t" << writeSettings("name", "Qt Sublibs") << ";\n"
           << "\t\t\t" << writeSettings("shellPath", "/bin/sh") << "\n"
           << "\t\t\t" << writeSettings("shellScript", "make -C " + IoUtils::shellQuoteUnix(qmake_getpwd()) + " -f " + IoUtils::shellQuoteUnix(mkfile)) << ";\n"
+          << "\t\t\t" << writeSettings("showEnvVarsInLog", "0") << ";\n"
           << "\t\t};\n";
     }
 
@@ -1029,6 +1030,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
           << "\t\t\t" << writeSettings("name", "Qt Prelink") << ";\n"
           << "\t\t\t" << writeSettings("shellPath", "/bin/sh") << ";\n"
           << "\t\t\t" << writeSettings("shellScript", project->values("QMAKE_PRE_LINK")) << ";\n"
+          << "\t\t\t" << writeSettings("showEnvVarsInLog", "0") << ";\n"
           << "\t\t};\n";
     }
 
