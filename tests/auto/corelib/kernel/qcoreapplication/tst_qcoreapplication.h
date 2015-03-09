@@ -63,6 +63,7 @@ private slots:
     void applicationEventFilters_auxThread();
     void threadedEventDelivery_data();
     void threadedEventDelivery();
+    void addRemoveLibPaths();
 };
 
 #endif // TST_QCOREAPPLICATION_H

@@ -903,6 +903,33 @@ void tst_QCoreApplication::threadedEventDelivery()
     QCOMPARE(receiver.recordedEvents.contains(QEvent::User + 1), eventsReceived);
 }
 
+void tst_QCoreApplication::addRemoveLibPaths()
+{
+    QStringList paths = QCoreApplication::libraryPaths();
+    if (paths.isEmpty())
+        QSKIP("Cannot add/remove library paths if there are none.");
+
+    QString currentDir = QDir().absolutePath();
+    QCoreApplication::addLibraryPath(currentDir);
+    QVERIFY(QCoreApplication::libraryPaths().contains(currentDir));
+
+    QCoreApplication::removeLibraryPath(paths[0]);
+    QVERIFY(!QCoreApplication::libraryPaths().contains(paths[0]));
+
+    int argc = 1;
+    char *argv[] = { const_cast<char*>(QTest::currentAppName()) };
+    TestApplication app(argc, argv);
+
+    // Check that modifications stay alive across the creation of an application.
+    QVERIFY(QCoreApplication::libraryPaths().contains(currentDir));
+    QVERIFY(!QCoreApplication::libraryPaths().contains(paths[0]));
+
+    QStringList replace;
+    replace << currentDir << paths[0];
+    QCoreApplication::setLibraryPaths(replace);
+    QVERIFY(QCoreApplication::libraryPaths() == replace);
+}
+
 static void createQObjectOnDestruction()
 {
     // Make sure that we can create a QObject after the last QObject has been

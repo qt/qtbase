@@ -325,12 +325,14 @@ struct QCoreApplicationData {
     QCoreApplicationData() Q_DECL_NOTHROW {
 #ifndef QT_NO_LIBRARY
         app_libpaths = 0;
+        manual_libpaths = 0;
 #endif
         applicationNameSet = false;
     }
     ~QCoreApplicationData() {
 #ifndef QT_NO_LIBRARY
         delete app_libpaths;
+        delete manual_libpaths;
 #endif
 #ifndef QT_NO_QOBJECT
         // cleanup the QAdoptedThread created for the main() thread
@@ -376,6 +378,7 @@ struct QCoreApplicationData {
 
 #ifndef QT_NO_LIBRARY
     QStringList *app_libpaths;
+    QStringList *manual_libpaths;
 #endif
 
 };
@@ -767,6 +770,38 @@ void QCoreApplication::init()
 
     QLoggingRegistry::instance()->init();
 
+#ifndef QT_NO_LIBRARY
+    // Reset the lib paths, so that they will be recomputed, taking the availability of argv[0]
+    // into account. If necessary, recompute right away and replay the manual changes on top of the
+    // new lib paths.
+    QStringList *appPaths = coreappdata()->app_libpaths;
+    QStringList *manualPaths = coreappdata()->manual_libpaths;
+    if (appPaths) {
+        coreappdata()->app_libpaths = 0;
+        if (manualPaths) {
+            // Replay the delta. As paths can only be prepended to the front or removed from
+            // anywhere in the list, we can just linearly scan the lists and find the items that
+            // have been removed. Once the original list is exhausted we know all the remaining
+            // items have been added.
+            coreappdata()->manual_libpaths = 0;
+            QStringList newPaths(libraryPaths());
+            for (int i = manualPaths->length(), j = appPaths->length(); i > 0 || j > 0; qt_noop()) {
+                if (--j < 0) {
+                    newPaths.prepend((*manualPaths)[--i]);
+                } else if (--i < 0) {
+                    newPaths.removeAll((*appPaths)[j]);
+                } else if ((*manualPaths)[i] != (*appPaths)[j]) {
+                    newPaths.removeAll((*appPaths)[j]);
+                    ++i; // try again with next item.
+                }
+            }
+            delete manualPaths;
+            coreappdata()->manual_libpaths = new QStringList(newPaths);
+        }
+        delete appPaths;
+    }
+#endif
+
 #ifndef QT_NO_QOBJECT
     // use the event dispatcher created by the app programmer (if any)
     if (!QCoreApplicationPrivate::eventDispatcher)
@@ -783,11 +818,6 @@ void QCoreApplication::init()
 
     d->threadData->eventDispatcher = QCoreApplicationPrivate::eventDispatcher;
     d->eventDispatcherReady();
-#endif
-
-#ifndef QT_NO_LIBRARY
-    if (coreappdata()->app_libpaths)
-        d->appendApplicationPathToLibraryPaths();
 #endif
 
 #ifdef QT_EVAL
@@ -844,6 +874,8 @@ QCoreApplication::~QCoreApplication()
 #ifndef QT_NO_LIBRARY
     delete coreappdata()->app_libpaths;
     coreappdata()->app_libpaths = 0;
+    delete coreappdata()->manual_libpaths;
+    coreappdata()->manual_libpaths = 0;
 #endif
 }
 
@@ -2503,6 +2535,10 @@ Q_GLOBAL_STATIC_WITH_ARGS(QMutex, libraryPathMutex, (QMutex::Recursive))
 QStringList QCoreApplication::libraryPaths()
 {
     QMutexLocker locker(libraryPathMutex());
+
+    if (coreappdata()->manual_libpaths)
+        return *(coreappdata()->manual_libpaths);
+
     if (!coreappdata()->app_libpaths) {
         QStringList *app_libpaths = coreappdata()->app_libpaths = new QStringList;
         QString installPathPlugins =  QLibraryInfo::location(QLibraryInfo::PluginsPath);
@@ -2545,14 +2581,25 @@ QStringList QCoreApplication::libraryPaths()
     \a paths. All existing paths will be deleted and the path list
     will consist of the paths given in \a paths.
 
+    The library paths are reset to the default when an instance of
+    QCoreApplication is destructed.
+
     \sa libraryPaths(), addLibraryPath(), removeLibraryPath(), QLibrary
  */
 void QCoreApplication::setLibraryPaths(const QStringList &paths)
 {
     QMutexLocker locker(libraryPathMutex());
+
+    // setLibraryPaths() is considered a "remove everything and then add some new ones" operation.
+    // When the application is constructed it should still amend the paths. So we keep the originals
+    // around, and even create them if they don't exist, yet.
     if (!coreappdata()->app_libpaths)
-        coreappdata()->app_libpaths = new QStringList;
-    *(coreappdata()->app_libpaths) = paths;
+        libraryPaths();
+
+    if (!coreappdata()->manual_libpaths)
+        coreappdata()->manual_libpaths = new QStringList;
+    *(coreappdata()->manual_libpaths) = paths;
+
     locker.unlock();
     QFactoryLoader::refreshAll();
 }
@@ -2567,6 +2614,9 @@ void QCoreApplication::setLibraryPaths(const QStringList &paths)
   is \c INSTALL/plugins, where \c INSTALL is the directory where Qt was
   installed.
 
+  The library paths are reset to the default when an instance of
+  QCoreApplication is destructed.
+
   \sa removeLibraryPath(), libraryPaths(), setLibraryPaths()
  */
 void QCoreApplication::addLibraryPath(const QString &path)
@@ -2574,23 +2624,37 @@ void QCoreApplication::addLibraryPath(const QString &path)
     if (path.isEmpty())
         return;
 
+    QString canonicalPath = QDir(path).canonicalPath();
+    if (canonicalPath.isEmpty())
+        return;
+
     QMutexLocker locker(libraryPathMutex());
 
-    // make sure that library paths is initialized
-    libraryPaths();
+    QStringList *libpaths = coreappdata()->manual_libpaths;
+    if (libpaths) {
+        if (libpaths->contains(canonicalPath))
+            return;
+    } else {
+        // make sure that library paths are initialized
+        libraryPaths();
+        QStringList *app_libpaths = coreappdata()->app_libpaths;
+        if (app_libpaths->contains(canonicalPath))
+            return;
 
-    QString canonicalPath = QDir(path).canonicalPath();
-    if (!canonicalPath.isEmpty()
-        && !coreappdata()->app_libpaths->contains(canonicalPath)) {
-        coreappdata()->app_libpaths->prepend(canonicalPath);
-        locker.unlock();
-        QFactoryLoader::refreshAll();
+        libpaths = coreappdata()->manual_libpaths = new QStringList(*app_libpaths);
     }
+
+    libpaths->prepend(canonicalPath);
+    locker.unlock();
+    QFactoryLoader::refreshAll();
 }
 
 /*!
     Removes \a path from the library path list. If \a path is empty or not
     in the path list, the list is not changed.
+
+    The library paths are reset to the default when an instance of
+    QCoreApplication is destructed.
 
     \sa addLibraryPath(), libraryPaths(), setLibraryPaths()
 */
@@ -2599,13 +2663,28 @@ void QCoreApplication::removeLibraryPath(const QString &path)
     if (path.isEmpty())
         return;
 
+    QString canonicalPath = QDir(path).canonicalPath();
+    if (canonicalPath.isEmpty())
+        return;
+
     QMutexLocker locker(libraryPathMutex());
 
-    // make sure that library paths is initialized
-    libraryPaths();
+    QStringList *libpaths = coreappdata()->manual_libpaths;
+    if (libpaths) {
+        if (libpaths->removeAll(canonicalPath) == 0)
+            return;
+    } else {
+        // make sure that library paths is initialized
+        libraryPaths();
+        QStringList *app_libpaths = coreappdata()->app_libpaths;
+        if (!app_libpaths->contains(canonicalPath))
+            return;
 
-    QString canonicalPath = QDir(path).canonicalPath();
-    coreappdata()->app_libpaths->removeAll(canonicalPath);
+        libpaths = coreappdata()->manual_libpaths = new QStringList(*app_libpaths);
+        libpaths->removeAll(canonicalPath);
+    }
+
+    locker.unlock();
     QFactoryLoader::refreshAll();
 }
 
